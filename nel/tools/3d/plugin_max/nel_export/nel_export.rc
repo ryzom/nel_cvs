@@ -234,18 +234,27 @@ BEGIN
     CONTROL         "If checked, use per vertex lighting attenuation else use global lighting attenuation for the object. Doesn't work with per pixel lighting shader.",
                     IDC_USE_LIGHT_LOCAL_ATTENUATION,"Button",BS_AUTO3STATE | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,15,95,120,41
-    GROUPBOX        "Properties for lights",IDC_STATIC,160,5,185,100
-    CONTROL         "RealTime Light",IDC_EXPORT_REALTIME_LIGHT,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,170,20,65,10
-    CONTROL         "RealTime Sun Light",IDC_EXPORT_AS_SUN_LIGHT,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,170,35,80,10
-    CONTROL         "LightMap Light",IDC_EXPORT_LIGHTMAP_LIGHT,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,170,50,65,10
-    LTEXT           "LightMap Name:",IDC_STATIC,170,65,55,15,SS_CENTERIMAGE
-    EDITTEXT        IDC_EXPORT_LIGHTMAP_NAME,230,65,45,15,ES_AUTOHSCROLL
+    GROUPBOX        "Properties for lights",IDC_STATIC,160,5,185,188
+    CONTROL         "RealTime Light. If set, this light will light scene objects.",
+                    IDC_EXPORT_REALTIME_LIGHT,"Button",BS_AUTO3STATE | 
+                    BS_TOP | BS_MULTILINE | WS_TABSTOP,170,15,165,20
+    CONTROL         "RealTime Sun Light. If set, this DIRECTIONNAL light will be used as sun light to light scene objects.",
+                    IDC_EXPORT_AS_SUN_LIGHT,"Button",BS_AUTO3STATE | BS_TOP | 
+                    BS_MULTILINE | WS_TABSTOP,170,34,170,25
+    CONTROL         "LightMap Light. If set, this light will be used to compute the lightmaps of the project objects.",
+                    IDC_EXPORT_LIGHTMAP_LIGHT,"Button",BS_AUTO3STATE | 
+                    BS_TOP | BS_MULTILINE | WS_TABSTOP,170,60,170,20
+    LTEXT           "LightMap Animation Name. This is the name of the animation used to flick the light color.",
+                    IDC_STATIC,170,135,170,20
+    EDITTEXT        IDC_EXPORT_LIGHTMAP_NAME,170,155,85,15,ES_AUTOHSCROLL
     CONTROL         "Animated Dynamic Light",IDC_EXPORT_LIGHTMAP_ANIMATED,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,170,86,125,10
-    PUSHBUTTON      "Reset name",IDC_RESET_NAME,280,65,60,15
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,170,180,125,10
+    CONTROL         "Always group",IDC_LIGHT_GROUP_ALWAYS,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,170,80,150,15
+    CONTROL         "Day group",IDC_LIGHT_GROUP_DAY,"Button",
+                    BS_AUTORADIOBUTTON,170,95,150,15
+    CONTROL         "Night group",IDC_LIGHT_GROUP_NIGHT,"Button",
+                    BS_AUTORADIOBUTTON,170,110,150,15
 END
 
 IDD_MISC DIALOG DISCARDABLE  0, 0, 360, 221

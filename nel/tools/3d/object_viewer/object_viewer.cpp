@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.89 2003/03/26 10:28:30 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.90 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,7 @@
 #include "select_string.h"
 #include "global_wind_dlg.h"
 #include "sound_anim_dlg.h"
+#include "light_group_factor.h"
 
 
 
@@ -214,6 +215,7 @@ CObjectViewer::CObjectViewer ()
 	_VegetableCollisionEntity= NULL;
 	_CameraFocal = 75.f; // default value for the focal
 	_SelectedObject = 0xffffffff;
+	_LightGroupDlg = NULL;
 
 	// no lag is the default
 	_Lag = 0;
@@ -466,6 +468,8 @@ CObjectViewer::~CObjectViewer ()
 		delete _WaterPoolDlg;
 	if (_SoundAnimDlg)
 		delete _SoundAnimDlg;
+	if (_LightGroupDlg)
+		delete _LightGroupDlg;
 	if (_VegetableDlg)
 		delete _VegetableDlg;
 	if (_GlobalWindDlg)
@@ -632,6 +636,10 @@ void CObjectViewer::initUI (HWND parent)
 	_SoundAnimDlg->Create (IDD_SOUND_ANIM_DLG, _MainFrame);
 	getRegisterWindowState (_SoundAnimDlg, REGKEY_OBJ_SOUND_ANIM_DLG, false);
 
+	// Create light group editor dialog
+	_LightGroupDlg = new CLightGroupFactor(_MainFrame);
+	_LightGroupDlg->Create (IDD_LIGHT_GROUP_FACTOR, _MainFrame);
+	getRegisterWindowState (_LightGroupDlg, REGKEY_OBJ_LIGHT_GROUP_DLG, false);
 
 	// Set backgroupnd color
 	setBackGroundColor(_MainFrame->BgColor);
@@ -965,6 +973,9 @@ void CObjectViewer::go ()
 			// Handle sound animation
 			_SoundAnimDlg->handle ();
 
+			// Handle sound animation
+			_LightGroupDlg->handle ();
+
 			// Setup the channel mixer
 			_AnimationSetDlg->UpdateData ();
 
@@ -977,7 +988,8 @@ void CObjectViewer::go ()
 			// Animate the automatic animation in the scene
 			//CNELU::Scene.animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
 
-			CNELU::Scene.animate( (float) 0.001f * NLMISC::CTime::getLocalTime());
+			static sint64 firstTime = NLMISC::CTime::getLocalTime();
+			CNELU::Scene.animate ( 0.001f * (float) (NLMISC::CTime::getLocalTime() - firstTime));
 
 			// Eval channel mixer for transform
 			for (uint i=0; i<_ListInstance.size(); i++)

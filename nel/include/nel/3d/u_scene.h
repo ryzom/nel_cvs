@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.35 2003/03/26 10:22:21 berenguier Exp $
+ * $Id: u_scene.h,v 1.36 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -306,6 +306,8 @@ public:
 	virtual	void				setSunSpecular(NLMISC::CRGBA specular) =0;
 	/// set the Direction of the Sun used for the scene.
 	virtual	void				setSunDirection(const NLMISC::CVector &direction) =0;
+	/// set the color of a light group.
+	virtual void				setLightGroupColor(uint lightmapGroup, NLMISC::CRGBA color) =0;
 
 
 	/// get the global Ambient used for the scene. Default to (50, 50, 50).

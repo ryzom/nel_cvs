@@ -1,7 +1,7 @@
 /** \file point_light_named.h
  * <File description>
  *
- * $Id: point_light_named.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: point_light_named.h,v 1.2 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,9 +48,11 @@ class	CLightInfluenceInterpolator;
 class CPointLightNamed : public CPointLight
 {
 public:
-	/// Identifier of this PointLight. used for UInstanceGroup::setLightFactor(), and ULandscape::setLightFactor();
-	std::string		LightGroupName;
+	/// Animation used by this light
+	std::string		AnimatedLight;
 
+	/// Group of the light
+	uint32			LightGroup;
 
 public:
 

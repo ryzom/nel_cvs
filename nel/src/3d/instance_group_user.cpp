@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.30 2003/03/17 09:48:30 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.31 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -338,14 +338,6 @@ const UInstance *CInstanceGroupUser::getByName (std::string &name) const
 }
 
 // ***************************************************************************
-
-void CInstanceGroupUser::setLightFactor (const std::string &LightName, CRGBA nFactor)
-{
-	NL3D_MEM_IG
-	_InstanceGroup.setLightFactor (LightName, nFactor);
-}
-
-// ***************************************************************************
 void CInstanceGroupUser::setBlendShapeFactor (const std::string &bsName, float rFactor)
 {
 	NL3D_MEM_IG
@@ -444,13 +436,6 @@ void			CInstanceGroupUser::unfreezeHRC()
 	_InstanceGroup.unfreezeHRC();
 }
 
-
-// ***************************************************************************
-void			CInstanceGroupUser::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
-{
-	NL3D_MEM_IG
-	_InstanceGroup.setPointLightFactor(lightGroupName, nFactor);
-}
 
 // ***************************************************************************
 bool			CInstanceGroupUser::getStaticLightSetup(

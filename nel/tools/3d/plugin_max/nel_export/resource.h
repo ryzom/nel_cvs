@@ -216,6 +216,9 @@
 #define IDC_OPEN_OCC_MODEL              1529
 #define IDC_ENV_FX                      1531
 #define IDC_SOUND_GROUP                 1532
+#define IDC_LIGHT_GROUP_ALWAYS          1533
+#define IDC_LIGHT_GROUP_DAY             1534
+#define IDC_LIGHT_GROUP_NIGHT           1535
 
 // Next default values for new objects
 // 
@@ -223,7 +226,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        126
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1533
+#define _APS_NEXT_CONTROL_VALUE         1534
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.22 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.23 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,11 +113,10 @@ public:
 	// @{
 	uint32 getNbLightMap();
 	void getLightMapName( uint32 nLightMapNb, std::string &LightMapName );
-	void setLightMapFactor( const std::string &LightMapName, CRGBA nFactor );
 	// @}
 
-	// To build lightmap
-	void setAnimatedLightmap (CAnimatedLightmap *alm);
+	// To init lightmap informations
+	void initAnimatedLightIndex (const CScene &scene);
 
 	/// \name BlendShape properties
 	// @{
@@ -221,9 +220,10 @@ private:
 	 */
 	std::vector<CAnimatedMaterial>	_AnimatedMaterials;
 
-	std::vector<CAnimatedLightmap*> _AnimatedLightmap;
+	// Index of the Animated lightmap in the scene
+	std::vector<sint>				_AnimatedLightmap;
 
-	std::vector<CAnimatedMorph> _AnimatedMorphFactor; 
+	std::vector<CAnimatedMorph>		_AnimatedMorphFactor; 
 
 	/// \name Async Texture Loading
 	// @{

@@ -276,6 +276,7 @@
 #define IDD_SELECT_SIZE                 1124
 #define IDC_ROT_SPEED_MAX               1125
 #define IDC_TAIL_FADE                   1125
+#define IDD_LIGHT_GROUP_FACTOR          1125
 #define IDC_UPDATE_MAX_ROT_SPEED        1126
 #define IDC_TAIL_IN_SYSTEM_BASIS        1126
 #define IDC_BROWSE_SHAPE                1126
@@ -374,10 +375,13 @@
 #define IDC_SLIDER_VEGETABLE_SCALE_NOISE 1198
 #define IDC_SLIDER_VEGETABLE_WIND_POWER 1198
 #define IDC_ANIM_SPEED                  1198
+#define IDC_LIGHT_GROUP1                1198
 #define IDC_SLIDER_ANGLE_MAX            1199
 #define IDC_SLIDER_VEGETABLE_WIND_BENDSTART 1199
+#define IDC_LIGHT_GROUP2                1199
 #define IDC_LIST_VEGETABLE              1200
 #define IDC_SLIDER_VEGETABLE_WIND_FREQUENCY 1200
+#define IDC_LIGHT_GROUP3                1200
 #define IDC_AUTOMATIC_WAVES_GENERATION  1203
 #define IDC_VEGETABLE_NOISE_VALUE_NAME  1204
 #define IDC_LOAD_POOL                   1205
@@ -717,13 +721,14 @@
 #define ID_VIEW_SET_SCENE_ROTATION      32909
 #define IDC_RELOAD_TEXTURES             32910
 #define ID_SHOOT_SCENE                  32911
+#define ID_SCENE_SETLIGHTGROUPFACTOR    32912
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1125
-#define _APS_NEXT_COMMAND_VALUE         32912
+#define _APS_NEXT_RESOURCE_VALUE        1126
+#define _APS_NEXT_COMMAND_VALUE         32913
 #define _APS_NEXT_CONTROL_VALUE         1366
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

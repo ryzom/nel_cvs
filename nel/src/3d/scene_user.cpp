@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.38 2003/03/26 16:45:29 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.39 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -269,6 +269,13 @@ void				CSceneUser::setSunDirection(const NLMISC::CVector &direction)
 	NL3D_HAUTO_UI_SCENE;
 
 	_Scene.setSunDirection(direction);
+}
+void				CSceneUser::setLightGroupColor(uint lightmapGroup, NLMISC::CRGBA color)
+{
+	NL3D_MEM_LIGHT
+	NL3D_HAUTO_UI_SCENE;
+
+	_Scene.setLightGroupColor(lightmapGroup, color);
 }
 
 

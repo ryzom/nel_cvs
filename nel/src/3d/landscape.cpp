@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.124 2002/09/10 13:38:25 berenguier Exp $
+ * $Id: landscape.cpp,v 1.125 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 
 #include "3d/landscape.h"
+#include "3d/landscape_model.h"
 #include "nel/misc/bsphere.h"
 #include "3d/texture_file.h"
 #include "3d/texture_far.h"
@@ -185,6 +186,8 @@ CLandscape::CLandscape() :
 	_Far1VB(CLandscapeVBAllocator::Far1),
 	_TileVB(CLandscapeVBAllocator::Tile)
 {
+	OwnerModel = NULL;
+
 	TileInfos.resize(NL3D::NbTilesMax);
 
 	// Resize the vectors of sert of render pass for the far texture
@@ -403,13 +406,12 @@ bool			CLandscape::addZone(const CZone	&newZone)
 	zone->build(newZone);
 
 	// Affect the current lighting of pointLight to the zone.
-	ItLightGroupColorMap	itLGC= _LightGroupColorMap.begin();
-	while( itLGC != _LightGroupColorMap.end() )
+	if (OwnerModel)
 	{
-		zone->_PointLightArray.setPointLightFactor(itLGC->first, itLGC->second);
-		itLGC++;
+		CScene *scene = OwnerModel->getOwnerScene();
+		zone->_PointLightArray.initAnimatedLightIndex(*scene);
+		zone->_PointLightArray.setPointLightFactor(*scene);
 	}
-
 
 	// apply the landscape heightField, modifying BBoxes.
 	zone->applyHeightField(*this);
@@ -3250,15 +3252,12 @@ void			CLandscape::removeAllPointLights()
 
 
 // ***************************************************************************
-void			CLandscape::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
+void			CLandscape::setPointLightFactor(const CScene &scene)
 {
-	// Store the result in the map for addZone().
-	_LightGroupColorMap[lightGroupName]= nFactor;
-
 	// Affect currently added zones.
 	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 	{
-		(*it).second->_PointLightArray.setPointLightFactor(lightGroupName, nFactor);
+		(*it).second->_PointLightArray.setPointLightFactor(scene);
 	}
 }
 
@@ -3551,6 +3550,17 @@ void			CLandscape::setDLMGlobalVegetableColor(CRGBA gvc)
 void			CLandscape::setPointLightDiffuseMaterial(CRGBA diffuse)
 {
 	_PointLightDiffuseMaterial= diffuse;
+}
+
+
+// ***************************************************************************
+void			CLandscape::initAnimatedLightIndex(const CScene &scene)
+{
+	// Affect currently added zones.
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		(*it).second->_PointLightArray.initAnimatedLightIndex(scene);
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.42 2003/02/05 17:45:20 corvazier Exp $
+ * $Id: object_viewer.h,v 1.43 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@
 #define REGKEY_OBJ_VIEW_VEGETABLE_DLG "Software\\Nevrax\\nel\\object_viewer\\vegetable_dlg"
 #define REGKEY_OBJ_GLOBAL_WIND_DLG "Software\\Nevrax\\nel\\object_viewer\\global_wind_dlg"
 #define REGKEY_OBJ_SOUND_ANIM_DLG "Software\\Nevrax\\nel\\object_viewer\\sound_anim_dlg"
+#define REGKEY_OBJ_LIGHT_GROUP_DLG "Software\\Nevrax\\nel\\object_viewer\\light_group_dlg"
 
 
 
@@ -76,12 +77,13 @@ class CVisualCollisionEntity;
 
 class CMainFrame;
 
-class CParticleDlg ;
-class CDayNightDlg ;
+class CParticleDlg;
+class CDayNightDlg;
 class CWaterPoolEditor;
-class CVegetableDlg ;
-class CGlobalWindDlg ;
+class CVegetableDlg;
+class CGlobalWindDlg;
 class CSoundAnimDlg;
+class CLightGroupFactor;
 
 
 
@@ -438,6 +440,7 @@ private:
 	CWaterPoolEditor							*_WaterPoolDlg;
 	CVegetableDlg								*_VegetableDlg;
 	CSoundAnimDlg								*_SoundAnimDlg;
+	CLightGroupFactor							*_LightGroupDlg;
 	uint32										_SelectedObject;
 
 	// Vector of loaded instance

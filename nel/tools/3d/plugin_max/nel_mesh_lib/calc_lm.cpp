@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.44 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.45 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,7 @@ SLightBuild::SLightBuild()
 	Specular = CRGBA(0, 0, 0, 0);
 	bCastShadow = false;
 	rMult = 1.0f;
-	GroupName = "GlobalLight";
+	LightGroup = 0;
 	rDirRadius = 0.0f;
 }
 
@@ -134,7 +134,8 @@ void SLightBuild::convertFromMaxLight (INode *node,TimeValue tvTime)
 		return;
 
 	// Retrieve the correct light Group Name
-	this->GroupName = CExportNel::getLightGroupName (node);
+	this->AnimatedLight = CExportNel::getAnimatedLight (node);
+	this->LightGroup = CExportNel::getLightGroup (node);
 
 	// Eval the light state fot this tvTime
 	// Set the light mode
@@ -979,18 +980,6 @@ void getLightBuilds( vector<SLightBuild> &lights, TimeValue tvTime, Interface& i
 	{
 		lights[i].convertFromMaxLight (nodeLights[i], tvTime);
 	}
-
-	// Add the global Ambient one.
-	SLightBuild amb;
-
-	amb.Type = SLightBuild::EType::LightAmbient;
-	amb.GroupName = "GlobalLight";
-	amb.Ambient.R = (uint8)(ip.GetAmbient( tvTime, FOREVER ).x*255);
-	amb.Ambient.G = (uint8)(ip.GetAmbient( tvTime, FOREVER ).y*255);
-	amb.Ambient.B = (uint8)(ip.GetAmbient( tvTime, FOREVER ).z*255);
-	amb.Ambient.A = 255;
-	amb.Specular = amb.Diffuse = CRGBA(0,0,0,0);
-	lights.push_back( amb );
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -1856,10 +1845,12 @@ void getLightInteract( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, 
 		{
 			// Is the light name already exist
 			for( j = 0; j < nNbGroup; ++j )
-				if( AllLights[vvLights[j].operator[](0)].GroupName == AllLights[i].GroupName )
+				if ( ( AllLights[vvLights[j].operator[](0)].AnimatedLight == AllLights[i].AnimatedLight ) &&
+					 ( AllLights[vvLights[j].operator[](0)].LightGroup == AllLights[i].LightGroup ) )
 					break;
+
 			// The light name does not exist create a new group
-			if( j == nNbGroup )
+			if ( j == nNbGroup )
 			{
 				vvLights.push_back( vlbTmp ); // Static lighting
 				vvLights[nNbGroup].push_back( i );
@@ -1961,22 +1952,40 @@ void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* p
 
 // -----------------------------------------------------------------------------------------------
 // Add information for ont mesh to reference all the lights that interact with him
-void addLightInfo( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, string &LightName, uint8 nMatNb, uint8 nStageNb )
+void addLightInfo( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, string &animatedLight, uint lightGroup, uint8 nMatNb, uint8 nStageNb )
 {
-	CMesh::CMatStage ms;
-	ms.nMatNb = nMatNb;
-	ms.nStageNb = nStageNb;
-	CMesh::CLightInfoMapList listTemp;
-	//list< pair< uint8, uint8 > > listTemp;
-	CMesh::TLightInfoMap::iterator itMap = pMBB->LightInfoMap.find( LightName );
-	if( itMap == pMBB->LightInfoMap.end() )
+	/* Search in the light mesh info the good light group. Add the material stage if it exists. 
+	 * Else, add a new entry in the light group. */
+
+	const uint count = pMBB->LightInfoMap.size ();
+	uint i;
+	for (i=0; i<count; i++)
 	{
-		listTemp.push_back(	ms );
-		pMBB->LightInfoMap.insert( pair< string, CMesh::CLightInfoMapList >(LightName, listTemp) );
+		CMeshBase::CLightMapInfoList &info = pMBB->LightInfoMap[i];
+		if ( (info.AnimatedLight == animatedLight) && (info.LightGroup == lightGroup) )
+		{
+			// This one, append the material stage
+			CMeshBase::CLightMapInfoList::CMatStage temp;
+			temp.MatId = nMatNb;
+			temp.StageId = nStageNb;
+			info.StageList.push_back (temp);
+			break;
+		}
 	}
-	else
+	
+	// Not found ?
+	if (i == count)
 	{
-		itMap->second.push_back( ms );
+		// Add a new entry
+
+		CMeshBase::CLightMapInfoList info;
+		info.LightGroup = lightGroup;
+		info.AnimatedLight = animatedLight;
+		CMeshBase::CLightMapInfoList::CMatStage temp;
+		temp.MatId = nMatNb;
+		temp.StageId = nStageNb;
+		info.StageList.push_back (temp);
+		pMBB->LightInfoMap.push_back (info);
 	}
 }
 
@@ -2524,7 +2533,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
 				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
-				addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );				
+				addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].AnimatedLight, AllLights[vvLights[j].operator[](0)].LightGroup, 
+					(uint8)i, (uint8)nLightMapNb );				
 			}
 			++nLightMapNb;
 		}

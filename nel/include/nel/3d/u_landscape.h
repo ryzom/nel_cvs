@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.19 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: u_landscape.h,v 1.20 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,14 +122,6 @@ public:
 	/**	 \see setPointLightDiffuseMaterial
 	  */
 	virtual	CRGBA	getPointLightDiffuseMaterial () const =0;
-
-
-	/** 
-	 *	set the Light factor for all pointLights in All zones with LightGroupName= "lightGroupName".
-	 *	Additionaly, it stores a map<lightGroupName, NLMISC::CRGBA nFactor>, so each added zone will
-	 *	be correclty assigned.
-	 */
-	virtual	void	setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor) =0;
 
 
 	/** Set the frequency of lighting update. If freq==1, ALL patchs are updated each second.

@@ -1,7 +1,7 @@
 /** \file animated_lightmap.cpp
  * <File description>
  *
- * $Id: animated_lightmap.cpp,v 1.3 2002/08/19 09:34:32 berenguier Exp $
+ * $Id: animated_lightmap.cpp,v 1.4 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/animated_lightmap.h"
+#include "3d/scene.h"
 #include "nel/misc/common.h"
 
 using namespace NLMISC;
@@ -41,13 +42,14 @@ namespace NL3D
 
 
 // ***************************************************************************
-CAnimatedLightmap::CAnimatedLightmap()
+CAnimatedLightmap::CAnimatedLightmap (uint lightmapGroup)
 {
 	// IAnimatable.
 	IAnimatable::resize( AnimValueLast );
 
 	_DefaultFactor.setValue( CRGBA(255,0,255,255) );
 	_Factor.affect( _DefaultFactor.getValue() );
+	_GroupColor.resize (lightmapGroup, CRGBA::White);
 }
 
 // ***************************************************************************
@@ -141,5 +143,20 @@ void	CAnimatedLightmap::registerToChannelMixer(CChannelMixer *chanMixer, const s
 
 }
 
+// ***************************************************************************
+
+void	CAnimatedLightmap::updateGroupColors (class NL3D::CScene &scene)
+{
+	// For each colors
+	const uint count = scene.getNumLightGroup ();
+	_GroupColor.resize (count);
+	uint i;
+	for (i=0; i<count; i++)
+	{
+		_GroupColor[i].modulateFromColor (scene.getLightmapGroupColor (i), _Factor.Value);
+	}
+}
+
+// ***************************************************************************
 
 } // NL3D

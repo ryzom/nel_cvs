@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.28 2003/01/08 15:48:57 boucher Exp $
+ * $Id: export_scene.cpp,v 1.29 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -561,8 +561,10 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 					plNamed.setDiffuse(sLightBuild.Diffuse);
 					plNamed.setDefaultSpecular(sLightBuild.Specular);
 					plNamed.setSpecular(sLightBuild.Specular);
+
 					// GroupName.
-					plNamed.LightGroupName= sLightBuild.GroupName;
+					plNamed.AnimatedLight = sLightBuild.AnimatedLight;
+					plNamed.LightGroup = sLightBuild.LightGroup;
 
 					// Which light type??
 					if(sLightBuild.bAmbientOnly || sLightBuild.Type== SLightBuild::LightAmbient)

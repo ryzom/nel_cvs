@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.26 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.27 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,6 +149,8 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 8:
+		- new format for CLightMapInfoList
 	Version 7:
 		- _LodCharacterTexture
 	Version 6:
@@ -167,7 +169,7 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- 1st version.
 	*/
-	sint ver = f.serialVersion(7);
+	sint ver = f.serialVersion(8);
 
 	if (ver >= 2)
 	{
@@ -185,7 +187,14 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	f.serialCont(_Materials);
 	f.serialCont(_AnimatedMaterials);
-	f.serialCont(_LightInfos);
+
+	if(ver >= 8)
+		f.serialCont(_LightInfos);
+	else
+	{
+		TLightInfoMapV7 temp;
+		f.serialCont(temp);
+	}
 
 	if(ver>=3)
 		// read/write _IsLightable flag.
@@ -336,7 +345,8 @@ void	CMeshBase::applyMaterialUsageOptim(const std::vector<bool> &materialUsed, s
 	// remove unused materials and build remap
 	vector<CMaterial>::iterator		itMat= _Materials.begin();
 	uint							dstIdx= 0;
-	for(uint i=0;i<materialUsed.size();i++)
+	uint i;
+	for(i=0;i<materialUsed.size();i++)
 	{
 		// if used, still use it, and remap.
 		if(materialUsed[i])
@@ -353,24 +363,25 @@ void	CMeshBase::applyMaterialUsageOptim(const std::vector<bool> &materialUsed, s
 	}
 
 	// apply the remap to LightMaps infos
-	TLightInfoMap::iterator		itLight;
-	for(itLight= _LightInfos.begin();itLight!= _LightInfos.end();itLight++)
+	const uint count = _LightInfos.size ();
+	for (i=0; i<count; i++)
 	{
-		CLightInfoMapList::iterator		itList= itLight->second.begin();
-		for(;itList!=itLight->second.end();)
+		CLightMapInfoList &mapInfoList = _LightInfos[i];
+		std::list<CMeshBase::CLightMapInfoList::CMatStage>::iterator ite = mapInfoList.StageList.begin ();
+		while (ite != mapInfoList.StageList.end ())
 		{
-			sint	newId= remap[itList->nMatNb];
+			sint	newId= remap[ite->MatId];
 			// If material used
 			if(newId>=0)
 			{
 				// apply remap on the material id
-				itList->nMatNb= newId;
-				itList++;
+				ite->MatId= newId;
+				ite++;
 			}
 			else
 			{
 				// remove it from list of light infos
-				itList= itLight->second.erase(itList);
+				ite= mapInfoList.StageList.erase(ite);
 			}
 		}
 	}

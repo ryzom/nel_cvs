@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.32 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.33 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -415,14 +415,6 @@ void		CLandscapeUser::setVegetableUpdateLightingFrequency(float freq)
 	_Landscape->Landscape.setVegetableUpdateLightingFrequency(freq);
 }
 
-
-//****************************************************************************
-void		CLandscapeUser::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
-{
-	NL3D_MEM_LANDSCAPE
-	NL3D_HAUTO_UI_LANDSCAPE;
-	_Landscape->Landscape.setPointLightFactor(lightGroupName, nFactor);
-}
 
 //****************************************************************************
 void		CLandscapeUser::setUpdateLightingFrequency(float freq)

@@ -1,7 +1,7 @@
 /** \file point_light_named.cpp
  * <File description>
  *
- * $Id: point_light_named.cpp,v 1.3 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: point_light_named.cpp,v 1.4 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,16 +60,19 @@ void			CPointLightNamed::setLightFactor(NLMISC::CRGBA nFactor)
 // ***************************************************************************
 void			CPointLightNamed::serial(NLMISC::IStream &f)
 {
-	(void)f.serialVersion(0);
+	sint ver = f.serialVersion(1);
 
 	// Serialize parent.
 	CPointLight::serial(f);
 
 	// Serialize my data
-	f.serial(LightGroupName);
+	f.serial(AnimatedLight);
 	f.serial(_DefaultAmbient);
 	f.serial(_DefaultDiffuse);
 	f.serial(_DefaultSpecular);
+
+	if (ver>=1)
+		f.serial(LightGroup);
 }
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.43 2002/09/10 13:38:26 berenguier Exp $
+ * $Id: landscape.h,v 1.44 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,6 +141,7 @@ public:
 	// The bank of tiles information.
 	CTileBank		TileBank;
 	CTileFarBank	TileFarBank;
+	class CLandscapeModel	*OwnerModel;
 
 public:
 
@@ -403,7 +404,11 @@ public:
 	 *	Additionaly, it stores a map<lightGroupName, NLMISC::CRGBA nFactor>, so each added zone will
 	 *	be correclty assigned.
 	 */
-	void	setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
+	void	setPointLightFactor(const CScene &scene);
+
+
+	// To init lightmap informations
+	void	initAnimatedLightIndex(const CScene &scene);
 
 
 	// @}
@@ -762,12 +767,6 @@ private:
 
 	bool			_AutomaticLighting;
 	CVector			_AutomaticLightDir;
-
-	// The map LightGroupName -> Color.
-	typedef	std::map<std::string, NLMISC::CRGBA>	TLightGroupColorMap;
-	typedef	TLightGroupColorMap::iterator			ItLightGroupColorMap;
-	TLightGroupColorMap		_LightGroupColorMap;
-
 
 private:
 	// Internal only. Force load of the tile (with TileBank).

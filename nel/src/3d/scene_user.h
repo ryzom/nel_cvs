@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.39 2003/03/20 14:55:18 berenguier Exp $
+ * $Id: scene_user.h,v 1.40 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -240,6 +240,7 @@ public:
 	virtual	void				setSunDiffuse(NLMISC::CRGBA diffuse);
 	virtual	void				setSunSpecular(NLMISC::CRGBA specular);
 	virtual	void				setSunDirection(const NLMISC::CVector &direction);
+	virtual void				setLightGroupColor(uint lightmapGroup, NLMISC::CRGBA color);
 
 	virtual	NLMISC::CRGBA		getAmbientGlobal() const;
 	virtual	NLMISC::CRGBA		getSunAmbient() const;

@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.22 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: u_instance_group.h,v 1.23 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -227,12 +227,6 @@ public:
 	 */
 	virtual const UInstance *getByName (std::string& name) const=0;
 
-
-	/**
-	 * Control a lightmap
-	 */
-	virtual void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor)=0;
-
 	/**
 	 * Control a blendshape
 	 */
@@ -306,9 +300,6 @@ public:
 
 	/// \name PointLight part
 	// @{
-
-	/// set the Light factor for all pointLights of "lightGroupName".
-	virtual void			setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor) =0;
 
 	/** get the StaticLightSetup for a model at position localPos/retrieverIdentifier/surfaceId.
 	 *	NB: all are get with help of UGlobalPosition. localPos= gp.LocalPosition.Estimated

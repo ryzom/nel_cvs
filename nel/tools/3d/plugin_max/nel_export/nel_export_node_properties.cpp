@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.47 2003/02/19 18:58:11 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.48 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,7 +200,7 @@ public:
 	std::string				LumelSizeMul;
 	std::string				SoftShadowRadius;
 	std::string				SoftShadowConeLength;
-
+	sint					LightGroup;
 
 	// VertexProgram.
 	int						VertexProgramId;
@@ -382,7 +382,7 @@ void exploreNode(INode *node)
 	if (soundGroup != "no sound")
 		_KnownSoundGroups.insert(soundGroup);
 	
-	for (uint i= 0; i<node->NumChildren(); ++i)
+	for (int i= 0; i<node->NumChildren(); ++i)
 	{
 		exploreNode(node->GetChildNode(i));
 	}
@@ -410,7 +410,7 @@ int CALLBACK AccelDialogCallback (
 			{
 				INode *root = theCNelExport._Ip->GetRootNode();
 
-				for (uint i= 0; i<root->NumChildren(); ++i)
+				for (int i= 0; i<root->NumChildren(); ++i)
 				{
 					exploreNode(root->GetChildNode(i));
 				}
@@ -1020,6 +1020,8 @@ int CALLBACK LightmapDialogCallback (
 
 			// Set enable disable
 			LightingStateChanged (hwndDlg, currentParam);
+
+			CheckRadioButton (hwndDlg, IDC_LIGHT_GROUP_ALWAYS, IDC_LIGHT_GROUP_NIGHT, IDC_LIGHT_GROUP_ALWAYS+(currentParam->LightGroup%3));
 		}
 		break;
 
@@ -1054,6 +1056,16 @@ int CALLBACK LightmapDialogCallback (
 							currentParam->ExportLightMapAnimated = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_ANIMATED), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), tmp, 512);
 							currentParam->ExportLightMapName = tmp;
+
+							// Get the acceleration type
+							if (IsDlgButtonChecked (hwndDlg, IDC_LIGHT_GROUP_ALWAYS) == BST_CHECKED)
+								currentParam->LightGroup = 0;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_LIGHT_GROUP_DAY) == BST_CHECKED)
+								currentParam->LightGroup = 1;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_LIGHT_GROUP_NIGHT) == BST_CHECKED)
+								currentParam->LightGroup = 2;
+							else
+								currentParam->LightGroup = -1;
 						}
 					break;
 					case IDC_EXPORT_REALTIME_LIGHT:
@@ -2168,7 +2180,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.VegetableBendFactor = toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT));
 		param.VegetableForceBestSidedLighting= CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING, BST_UNCHECKED);
 
-		param.ExportLightMapName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, NEL3D_LM_GROUPNAME_DEFAULT);
+		param.ExportLightMapName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED_LIGHT, NEL3D_APPDATA_LM_ANIMATED_LIGHT_DEFAULT);
 
 		// Ligoscape
 		param.LigoSymmetry = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, BST_UNCHECKED);
@@ -2186,6 +2198,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 		// LightmapLigt. (true by default)
 		param.ExportLightMapAnimated= CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED, BST_UNCHECKED);
+
+		param.LightGroup = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_LIGHT_GROUP, 0);
 
 		// ExportAsSunLight.
 		param.ExportAsSunLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, BST_UNCHECKED);
@@ -2287,6 +2301,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.EnvironmentFX = "";
 			}
 
+			if ( param.LightGroup != CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_LIGHT_GROUP, 0) )
+				param.LightGroup = -1;
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, "")!=param.InstanceShape)
 				param.InstanceShape = "...";
@@ -2411,7 +2427,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ExportAsSunLight= BST_INDETERMINATE;
 
 			// Lightmap name
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, NEL3D_LM_GROUPNAME_DEFAULT)!=param.ExportLightMapName)
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED_LIGHT, NEL3D_APPDATA_LM_ANIMATED_LIGHT_DEFAULT)!=param.ExportLightMapName)
 			{
 				param.ExportLightMapName = "";
 			}
@@ -2551,7 +2567,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				if (param.GetInterfaceNormalsFromSceneObjects != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS, param.GetInterfaceNormalsFromSceneObjects);
 		
-
+				if (param.LightGroup != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LM_LIGHT_GROUP, param.LightGroup);
 
 				if (param.DontExport != BST_INDETERMINATE)
 				{
@@ -2649,7 +2666,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 				// ExportLightMapName
 				if ( (param.ExportLightMapName != "") || (listNode.size()==1))
-					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, param.ExportLightMapName);
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED_LIGHT, param.ExportLightMapName);
 
 				// UseLightingLocalAttenuation
 				if (param.UseLightingLocalAttenuation != BST_INDETERMINATE)

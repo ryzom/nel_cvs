@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.65 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: export_nel.h,v 1.66 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -588,8 +588,11 @@ public:
 	// Get the backgorund value
 	NLMISC::CRGBA					getBackGroundColor (TimeValue time);
 
-	// Get LightGroupName, from AppData (New style), or NelLight modifier (oldStyle) if appData groupName undefined
-	static std::string				getLightGroupName (INode *node);
+	// Get the light group
+	static uint						getLightGroup (INode *node);
+
+	// Get the light animation name
+	static std::string				getAnimatedLight (INode *node);
 
 	// *** Script access
 

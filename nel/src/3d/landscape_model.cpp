@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.31 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.32 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ void	CLandscapeModel::registerBasic()
 // ***************************************************************************
 CLandscapeModel::CLandscapeModel()
 {
+	Landscape.OwnerModel = this;
 	Landscape.init();
 	_ActiveAdditive=false;
 	_Additive=1.f;

@@ -1,7 +1,7 @@
 /** \file calc_lm.h
  * LightMap Calculation settings
  *
- * $Id: calc_lm.h,v 1.5 2002/03/04 13:03:01 berenguier Exp $
+ * $Id: calc_lm.h,v 1.6 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,10 +40,12 @@
 // ***********************************************************************************************
 
 #define NEL3D_APPDATA_LM			41654684
-#define NEL3D_APPDATA_LM_GROUPNAME	(NEL3D_APPDATA_LM+1)
-#define NEL3D_APPDATA_LM_ANIMATED	(NEL3D_APPDATA_LM+2)
+#define NEL3D_APPDATA_LM_ANIMATED_LIGHT	(NEL3D_APPDATA_LM+1)		// The name of the animation used by light
+#define NEL3D_APPDATA_LM_ANIMATED	(NEL3D_APPDATA_LM+2)			// 1 if this light give an animation, 0 else
+#define NEL3D_APPDATA_LM_LIGHT_GROUP	(NEL3D_APPDATA_LM+3)		// The light group. 0 : global, 1 : day, 2 : night etc..
 
-#define NEL3D_LM_GROUPNAME_DEFAULT	"(Use NelLight Modifier)"
+#define NEL3D_APPDATA_LM_ANIMATED_LIGHT_DEFAULT	""
+#define NEL3D_APPDATA_LM_LIGHT_GROUP_DEFAULT 0
 
 // ***********************************************************************************************
 extern void convertToWorldCoordinate	(NL3D::CMesh::CMeshBuild *pMB, 
@@ -57,7 +59,8 @@ extern NLMISC::CMatrix getObjectToWorldMatrix	(NL3D::CMesh::CMeshBuild *pMB,
 // Light representation from max
 struct SLightBuild
 {
-	std::string GroupName;
+	std::string		AnimatedLight;
+	uint			LightGroup;
 	enum EType { LightAmbient, LightPoint, LightDir, LightSpot };
 	EType			Type;
 	NLMISC::CVector Position;				// Used by LightPoint and LightSpot

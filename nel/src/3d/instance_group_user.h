@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.23 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: instance_group_user.h,v 1.24 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,7 +96,6 @@ private:
 	UInstance *getByName (std::string& name);
 	const UInstance *getByName (std::string& name) const;
 
-	void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor);
 	void setBlendShapeFactor (const std::string &bsName, float rFactor);
 
 	void createRoot (UScene &scene);
@@ -110,7 +109,6 @@ private:
 	void setPos (const NLMISC::CVector &pos);
 	void setRotQuat (const NLMISC::CQuat &q);
 
-	void setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
 	bool getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
 		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient);
 

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.19 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.20 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,25 +133,7 @@ void CMeshBaseInstance::getLightMapName( uint32 nLightMapNb, std::string &LightM
 	CMeshBase* pMesh=(CMeshBase*)(IShape*)Shape;
 	if( nLightMapNb >= pMesh->_LightInfos.size() )
 		return;
-	CMeshBase::TLightInfoMap::iterator itMap = pMesh->_LightInfos.begin();
-	for( uint32 i = 0; i < nLightMapNb; ++i ) ++itMap;
-	LightMapName = itMap->first;
-}
-
-// ***************************************************************************
-void CMeshBaseInstance::setLightMapFactor( const std::string &LightMapName, CRGBA Factor )
-{
-	CMeshBase* pMesh=(CMeshBase*)(IShape*)Shape;
-	CMeshBase::TLightInfoMap::iterator itMap = pMesh->_LightInfos.find( LightMapName );
-	if( itMap == pMesh->_LightInfos.end() )
-		return;
-	CMeshBase::CLightInfoMapList::iterator itList = itMap->second.begin();
-	uint32 nNbElt = itMap->second.size();
-	for( uint32 i = 0; i < nNbElt; ++i )
-	{
-		Materials[itList->nMatNb].setLightMapFactor( itList->nStageNb, Factor );
-		++itList;
-	}
+	LightMapName = pMesh->_LightInfos[nLightMapNb].AnimatedLight;
 }
 
 // ***************************************************************************
@@ -237,11 +219,33 @@ void CMeshBaseInstance::traverseAnimDetail()
 	}
 
 	// Lightmap automatic animation
-	for( uint i = 0; i < _AnimatedLightmap.size(); ++i )
+
+	// Animated lightmap must have the same size than shape info lightmap.
+	const uint count0 = _AnimatedLightmap.size();
+	const uint count1 = mb->_LightInfos.size ();
+	nlassert (count0 == count1);
+	if (count0 == count1)
 	{
-		const char *LightGroupName = strchr( _AnimatedLightmap[i]->getName().c_str(), '.' )+1;
-		setLightMapFactor(	LightGroupName,
-								_AnimatedLightmap[i]->getFactor() );
+		for ( uint i = 0; i < count0; ++i )
+		{
+			CMeshBase::CLightMapInfoList &groupInfo = mb->_LightInfos[i];
+			std::list<CMeshBase::CLightMapInfoList::CMatStage>::iterator ite = groupInfo.StageList.begin ();
+			while (ite != groupInfo.StageList.end ())
+			{
+				sint animatedLightmap = _AnimatedLightmap[i];
+				if (animatedLightmap != -1)
+				{
+					CRGBA factor = getOwnerScene ()->getAnimatedLightFactor (animatedLightmap, groupInfo.LightGroup);
+					Materials[ite->MatId].setLightMapFactor ( ite->StageId, factor );
+				}
+				else
+				{
+					CRGBA factor = getOwnerScene ()->getLightmapGroupColor (groupInfo.LightGroup);
+					Materials[ite->MatId].setLightMapFactor ( ite->StageId, factor );
+				}
+				ite++;
+			}
+		}
 	}
 }
 
@@ -295,11 +299,33 @@ void CMeshBaseInstance::selectTextureSet(uint id)
 
 
 // ***************************************************************************
-void CMeshBaseInstance::setAnimatedLightmap (CAnimatedLightmap *alm)
+void CMeshBaseInstance::initAnimatedLightIndex (const CScene &scene)
 {
-	_AnimatedLightmap.push_back( alm );
+	/* Scan lightmaps used by the shape, and for each, bind the transform shape to an 
+	 * animated lightmap index from the scene. This index will be used at runtime to 
+	 * get quickly a lightmap factor. This index is not set in the CShape because
+	 * the CShape can be used with several CScene.
+	 */
+
+	// For each lightmap in the shape
+	CMeshBase *pMB = static_cast<CMeshBase*> (static_cast<IShape*> (Shape));
+	const uint count = pMB->_LightInfos.size ();
+	uint i;
+
+	// Resize the index array
+	_AnimatedLightmap.resize (count);
+
+	for (i=0; i<count; i++)
+	{
+		// The light info
+		CMeshBase::CLightMapInfoList &lightInfo = pMB->_LightInfos[i];
+
+		// Get the lightmap info
+		_AnimatedLightmap[i] = scene.getAnimatedLightNameToIndex (lightInfo.AnimatedLight);
+	}
+
 	// Must be traversed in AnimDetail, even if no channel mixer registered
-	CTransform::setIsForceAnimDetail(true);
+	CTransform::setIsForceAnimDetail (count != 0);
 }
 
 

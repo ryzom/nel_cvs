@@ -1,7 +1,7 @@
 /** \file animated_lightmap.h
  * <File description>
  *
- * $Id: animated_lightmap.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: animated_lightmap.h,v 1.4 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ public:
 	// @{
 	/** Constructor.
 	 */
-	CAnimatedLightmap();
+	CAnimatedLightmap (uint lightmapGroup);
 	virtual ~CAnimatedLightmap() {}
 	// @}
 
@@ -84,7 +84,16 @@ public:
 	void setName( const std::string &s ) { _Name = s; }
 	std::string getName() const { return _Name; }
 
-	NLMISC::CRGBA	getFactor() { return _Factor.Value; }
+	// Update the group color with the scene
+	void			updateGroupColors (class NL3D::CScene &scene);
+
+	NLMISC::CRGBA	getFactor (uint group) const 
+	{ 
+		if (group < _GroupColor.size ())
+			return _GroupColor[group]; 
+		else
+			return _Factor.Value;
+	}
 
 // ********************
 private:
@@ -93,8 +102,9 @@ private:
 
 	// AnimValues.
 
-	CAnimatedValueRGBA		_Factor;
-	CTrackDefaultRGBA		_DefaultFactor; 
+	CAnimatedValueRGBA			_Factor;
+	CTrackDefaultRGBA			_DefaultFactor; 
+	std::vector<NLMISC::CRGBA>	_GroupColor;
 };
 
 

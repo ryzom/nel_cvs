@@ -56,6 +56,7 @@ public:
 	bool		    VegetableWindow;
 	bool		    GlobalWindWindow;
 	bool		    SoundAnimWindow;
+	bool		    LightGroupWindow;
 	TMouseMove		MouseMoveType;
 	bool			X;
 	bool			Y;
@@ -119,6 +120,7 @@ public:
 	afx_msg void OnWindowDayNight();
 	afx_msg void OnWindowWaterPool();
 	afx_msg void OnWindowSoundAnim();
+	afx_msg void OnSetLightGroupFactor();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnUpdateWindowAnimation(CCmdUI* pCmdUI);
@@ -134,6 +136,7 @@ public:
 	afx_msg void OnUpdateEditY(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZ(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditMoveelement(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowLightGroup(CCmdUI* pCmdUI);
 	afx_msg void OnHelpAboutobjectviewer();
 	afx_msg void OnSetLag();
 	afx_msg void OnRemoveAllInstancesFromScene();

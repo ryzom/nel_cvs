@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.19 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: landscape_user.h,v 1.20 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,6 @@ public:
 	virtual	void	setPointLightDiffuseMaterial(CRGBA diffuse);
 	virtual	CRGBA	getPointLightDiffuseMaterial () const;
 
-	virtual	void	setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
 
 	virtual	void	setUpdateLightingFrequency(float freq);
 

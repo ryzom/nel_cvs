@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.98 2003/03/31 10:29:06 vizerie Exp $
+ * $Id: scene.cpp,v 1.99 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -431,23 +431,9 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 #endif // not GNUC
 	CMeshBaseInstance *pMBI = dynamic_cast<CMeshBaseInstance*>( pTShp );
 	if( ( pMB != NULL ) && ( pMBI != NULL ) )
-	{ // Try to bind to automatic animation
-		CMeshBase::TLightInfoMap::iterator itLM = pMB->_LightInfos.begin();
-		while( itLM != pMB->_LightInfos.end() )
-		{	// Is it the same name in the name of the lightmap ?
-			set<CAnimatedLightmap*>::iterator itSet = _AnimatedLightmap.begin();
-			while( itSet != _AnimatedLightmap.end() )
-			{
-				const char *GroupName = strchr( (*itSet)->getName().c_str(), '.')+1;
-				if( GroupName == itLM->first )
-				{
-					// Ok bind automatic animation
-					pMBI->setAnimatedLightmap( *itSet );
-				}
-				++itSet;
-			}
-			++itLM;
-		}
+	{ 
+		// Init lightmap information
+		pMBI->initAnimatedLightIndex (*this);
 
 		// Auto animations
 		//==========================
@@ -458,6 +444,7 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 			{
 				
 				std::string animName = CFile::getFilenameWithoutExtension(shapeName);			
+				animName = strlwr (animName);
 				uint animID = _AutomaticAnimationSet->getAnimationIdByName(animName);
 				if (animID != CAnimationSet::NotFound)
 				{
@@ -471,6 +458,13 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 				}
 			}	
 		}
+	}
+
+	CLandscapeModel *pLM = dynamic_cast<CLandscapeModel*>( pTShp );
+	if( pLM != NULL ) 
+	{ 
+		// Init lightmap information
+		pLM->Landscape.initAnimatedLightIndex (*this);
 	}
 
 	return pTShp;
@@ -521,13 +515,9 @@ void CScene::setAutoAnim( CAnimation *pAnim )
 	// Reset the automatic animation if no animation wanted
 	if( pAnim == NULL )
 	{
-		set<CAnimatedLightmap*>::iterator itSAL = _AnimatedLightmap.begin();
-		while( itSAL != _AnimatedLightmap.end() )
-		{
-			delete *itSAL;
-			++itSAL;
-		}
-		_AnimatedLightmap.clear();
+		_AnimatedLight.clear();
+		_AnimatedLightPtr.clear();
+		_AnimatedLightNameToIndex.clear();
 		nAnimNb = _LightmapAnimations.getAnimationIdByName("Automatic");
 		if( nAnimNb != CAnimationSet::NotFound )
 		{
@@ -554,16 +544,19 @@ void CScene::setAutoAnim( CAnimation *pAnim )
 		string ate = *itSel;
 		if( strncmp( itSel->c_str(), "LightmapController.", 19 ) == 0 )
 		{
-			CAnimatedLightmap *animLM = new CAnimatedLightmap();
-			animLM->setName( *itSel );
+			// The light name
+			const char *lightName = strrchr ((*itSel).c_str (), '.')+1;
 
-			cm->addChannel( animLM->getName(), animLM, animLM->getValue(CAnimatedLightmap::FactorValue),
-				animLM->getDefaultTrack(CAnimatedLightmap::FactorValue), CAnimatedLightmap::FactorValue, 
+			// Add an automatic animation
+			_AnimatedLight.push_back ( CAnimatedLightmap (_LightGroupColor.size ()) );
+			_AnimatedLightPtr.push_back ( &_AnimatedLight.back () );
+			_AnimatedLightNameToIndex.insert ( std::map<std::string, uint>::value_type (lightName, _AnimatedLightPtr.size ()-1 ) );
+			CAnimatedLightmap &animLM = _AnimatedLight.back ();
+			animLM.setName( *itSel );
+
+			cm->addChannel( animLM.getName(), &animLM, animLM.getValue(CAnimatedLightmap::FactorValue),
+				animLM.getDefaultTrack(CAnimatedLightmap::FactorValue), CAnimatedLightmap::FactorValue, 
 				CAnimatedLightmap::OwnerBit, false);
-
-			//animLM->registerToChannelMixer( cm, "" );
-			_AnimatedLightmap.insert( animLM );
-
 		}
 		++itSel;
 	}
@@ -616,21 +609,16 @@ void CScene::animate( TGlobalAnimationTime atTime )
 	_LMAnimsAuto.animate( atTime );
 	_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems
 
-
 	// Change PointLightFactors of all pointLights in registered Igs.
 	//----------------
-	static	vector<string>	anlNames;
-	static	vector<CRGBA>	anlFactors;
-	anlNames.clear();
-	anlFactors.clear();
+
 	// First list all current AnimatedLightmaps (for faster vector iteration per ig)
-	std::set<CAnimatedLightmap*>::iterator	itAnlSet;
-	for(itAnlSet= _AnimatedLightmap.begin(); itAnlSet!=_AnimatedLightmap.end(); itAnlSet++)
+	const uint count = _AnimatedLightPtr.size ();
+	uint i;
+	for (i=0; i<count; i++)
 	{
-		const char *GroupName = strchr( (*itAnlSet)->getName().c_str(), '.')+1;
-		// Append to vector
-		anlNames.push_back(GroupName);
-		anlFactors.push_back( (*itAnlSet)->getFactor() );
+		// Blend final colors
+		_AnimatedLightPtr[i]->updateGroupColors (*this);
 	}
 
 	// For all registered igs.
@@ -638,11 +626,9 @@ void CScene::animate( TGlobalAnimationTime atTime )
 	for(itAnIgSet= _AnimatedIgSet.begin(); itAnIgSet!=_AnimatedIgSet.end(); itAnIgSet++)
 	{
 		CInstanceGroup	*ig= *itAnIgSet;
-		// For all Animated Light Factor
-		for(uint i= 0; i<anlNames.size(); i++)
-		{
-			ig->setPointLightFactor(anlNames[i], anlFactors[i]);
-		}
+
+		// Set the light factor
+		ig->setPointLightFactor(*this);
 	}
 }
 
@@ -990,6 +976,28 @@ void	CScene::updateModels()
 }
 
 
+// ***************************************************************************
+void	CScene::setLightGroupColor(uint lightmapGroup, NLMISC::CRGBA color)
+{
+	// If too small, resize with white
+	if (lightmapGroup >= _LightGroupColor.size ())
+	{
+		_LightGroupColor.resize (lightmapGroup+1, CRGBA::White);
+	}
 
+	// Set the color
+	_LightGroupColor[lightmapGroup] = color;
+}
+
+
+// ***************************************************************************
+sint CScene::getAnimatedLightNameToIndex (const std::string &name) const
+{
+	std::map<std::string, uint>::const_iterator ite = _AnimatedLightNameToIndex.find (name);
+	if (ite != _AnimatedLightNameToIndex.end ())
+		return (sint)ite->second;
+	else
+		return -1;
+}
 
 } // NL3D

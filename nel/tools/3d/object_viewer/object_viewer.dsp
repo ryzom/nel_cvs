@@ -211,6 +211,10 @@ SOURCE=.\global_wind_dlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\light_group_factor.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main_dlg.cpp
 # ADD CPP /Yu"std_afx.h"
 # End Source File
@@ -331,6 +335,10 @@ SOURCE=.\fog_dlg.h
 # Begin Source File
 
 SOURCE=.\global_wind_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\light_group_factor.h
 # End Source File
 # Begin Source File
 

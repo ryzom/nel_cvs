@@ -1,7 +1,7 @@
 /** \file point_light_named_array.cpp
  * <File description>
  *
- * $Id: point_light_named_array.cpp,v 1.4 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: point_light_named_array.cpp,v 1.5 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/point_light_named_array.h"
+#include "3d/scene.h"
 #include <algorithm>
 
 
@@ -49,7 +50,9 @@ struct	CPointLightNamedSort
 
 	bool	operator<(const CPointLightNamedSort &b) const
 	{
-		return PointLight->LightGroupName < b.PointLight->LightGroupName;
+		if (PointLight->AnimatedLight < b.PointLight->AnimatedLight)
+			return true;
+		return (PointLight->LightGroup < b.PointLight->LightGroup);
 	}
 };
 
@@ -97,45 +100,58 @@ void			CPointLightNamedArray::build(const std::vector<CPointLightNamed> &pointLi
 	{
 		bool	first= true;
 		string	precName;
+		uint precGroup;
 		// for all sorted pointLights
 		uint i;
 		for(i=0;i<_PointLights.size();i++)
 		{
-			const	std::string &curName= _PointLights[i].LightGroupName;
-			if(first || precName!=curName )
+			const	std::string &curName = _PointLights[i].AnimatedLight;
+			const	uint curGroup = _PointLights[i].LightGroup;
+			if ( first || (precName!=curName) || (precGroup != curGroup) )
 			{
 				// End last group
 				if(first)
 					first= false;
 				else
-					_PointLightGroupMap[precName].EndId= i;
+					_PointLightGroupMap.back ().EndId= i;
 
 				// Start new group
-				_PointLightGroupMap[curName].StartId= i;
-				precName= curName;
+				_PointLightGroupMap.push_back (CPointLightGroup ());
+				_PointLightGroupMap.back ().StartId= i;
+				_PointLightGroupMap.back ().AnimationLight = curName;
+				_PointLightGroupMap.back ().LightGroup = curGroup;
+				precName = curName;
+				precGroup = curGroup;
 			}
 		}
 		// End last group.
-		_PointLightGroupMap[precName].EndId= i;
+		_PointLightGroupMap.back ().EndId= i;
 	}
 }
 
 // ***************************************************************************
-void			CPointLightNamedArray::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
+void			CPointLightNamedArray::setPointLightFactor(const CScene &scene)
 {
 	// Search in the map.
-	ItPLGMap	it= _PointLightGroupMap.find(lightGroupName);
-	if( it != _PointLightGroupMap.end() )
+	const uint count = _PointLightGroupMap.size ();
+	uint i;
+	for (i=0; i<count; i++)
 	{
+		// Ref
+		CPointLightGroup &lightGroup = _PointLightGroupMap[i];
+		
+		// Get the factor
+		CRGBA factor = scene.getAnimatedLightFactor (lightGroup.AnimationLightIndex, lightGroup.LightGroup);
+
 		// Found the group. what entries in the array?
-		uint	startId= it->second.StartId;
-		uint	endId= it->second.EndId;
+		uint	startId= lightGroup.StartId;
+		const uint	endId= lightGroup.EndId;
 		nlassert(endId<=_PointLights.size());
 
 		// for all entries, setLightFactor
 		for(uint i=startId;i<endId;i++)
 		{
-			_PointLights[i].setLightFactor(nFactor);
+			_PointLights[i].setLightFactor (factor);
 		}
 	}
 }
@@ -144,12 +160,34 @@ void			CPointLightNamedArray::setPointLightFactor(const std::string &lightGroupN
 // ***************************************************************************
 void			CPointLightNamedArray::serial(NLMISC::IStream &f)
 {
-	(void)f.serialVersion(0);
+	sint ver = f.serialVersion(1);
 
 	f.serialCont(_PointLights);
-	f.serialCont(_PointLightGroupMap);
+
+	if (ver == 0)
+	{
+		std::map<string, CPointLightGroupV0> oldMap;
+		f.serialCont(oldMap);
+	}
+	else
+	{
+		f.serialCont(_PointLightGroupMap);
+	}
 }
 
 
+// ***************************************************************************
+void			CPointLightNamedArray::initAnimatedLightIndex (const CScene &scene)
+{
+	// Search in the map.
+	const uint count = _PointLightGroupMap.size ();
+	uint i;
+	for (i=0; i<count; i++)
+	{
+		// Ref
+		CPointLightGroup &lightGroup = _PointLightGroupMap[i];
+		lightGroup.AnimationLightIndex = scene.getAnimatedLightNameToIndex (lightGroup.AnimationLight);
+	}
+}
 
 } // NL3D

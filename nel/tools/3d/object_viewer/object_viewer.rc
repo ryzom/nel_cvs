@@ -1462,6 +1462,23 @@ BEGIN
     LTEXT           "NB: Rot Order is ZXY",IDC_STATIC,125,50,55,15
 END
 
+IDD_LIGHT_GROUP_FACTOR DIALOG DISCARDABLE  0, 0, 227, 68
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Light Group Factors"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&Close",IDOK,175,50,50,14
+    CONTROL         "Slider1",IDC_LIGHT_GROUP1,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,55,5,172,13
+    LTEXT           "Light group 1",IDC_STATIC,5,5,45,15,SS_CENTERIMAGE
+    CONTROL         "Slider1",IDC_LIGHT_GROUP2,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,55,20,172,13
+    LTEXT           "Light group 2",IDC_STATIC,5,20,45,15,SS_CENTERIMAGE
+    CONTROL         "Slider1",IDC_LIGHT_GROUP3,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,55,35,172,13
+    LTEXT           "Light group 3",IDC_STATIC,5,35,45,15,SS_CENTERIMAGE
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1990,6 +2007,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 64
     END
+
+    IDD_LIGHT_GROUP_FACTOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 220
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 61
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2292,6 +2317,7 @@ BEGIN
         MENUITEM "Vegetable               (&7)", ID_WINDOW_VEGETABLE
         MENUITEM "Global Wind            (&8)", ID_WINDOW_GLOBALWIND
         MENUITEM "Sound                     (&9)", ID_WINDOW_ANIMSOUND
+        MENUITEM "&Light Group Factor",         ID_SCENE_SETLIGHTGROUPFACTOR
     END
     POPUP "&Help"
     BEGIN

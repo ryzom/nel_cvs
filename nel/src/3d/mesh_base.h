@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.14 2002/11/13 17:02:48 berenguier Exp $
+ * $Id: mesh_base.h,v 1.15 2003/03/31 12:47:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	/// \name Structures for building a mesh.
 	//@{
 
-	struct CMatStage
+	struct CMatStageV7
 	{ 
 		uint8 nMatNb, nStageNb; 
 		void	serial(NLMISC::IStream &f)
@@ -66,14 +66,49 @@ public:
 			f.serial(nStageNb);
 		}
 	};
-	struct CLightInfoMapList : std::list< CMatStage >
+	struct CLightInfoMapListV7 : std::list< CMatStageV7 >
 	{
 		void	serial(NLMISC::IStream &f)
 		{
+			f.serialCont((std::list< CMatStageV7 >&)*this);
+		}
+	};
+	typedef std::map< std::string, CLightInfoMapListV7 >	TLightInfoMapV7;
+
+	// Optinnal lightmap factor information
+	class CLightMapInfoList
+	{
+	public:
+		// Index of the material stage where the lightmap is used
+		class CMatStage
+		{ 
+		public:
+			// Material ID
+			uint8	MatId;
+
+			// Stage ID
+			uint8	StageId;
+
+			void	serial (NLMISC::IStream &f)
+			{
+				f.serialVersion (0);
+				f.serial(MatId);
+				f.serial(StageId);
+			}
+		};
+
+		uint32					LightGroup;
+		std::string				AnimatedLight;
+		std::list<CMatStage>	StageList;
+		void	serial(NLMISC::IStream &f)
+		{
+			f.serialVersion (0);
+			f.serial (LightGroup);
+			f.serial (AnimatedLight);
 			f.serialCont((std::list< CMatStage >&)*this);
 		}
 	};
-	typedef std::map< std::string, CLightInfoMapList >	TLightInfoMap;
+	typedef std::vector< CLightMapInfoList >	TLightMapInfo;
 
 	/// A mesh material information.
 	struct	CMeshBaseBuild
@@ -93,7 +128,7 @@ public:
 		std::vector<CMaterial>	Materials;
 
 		// Map of light information
-		TLightInfoMap			LightInfoMap;
+		TLightMapInfo			LightInfoMap;
 
 		// Default position of the blend shapes factors
 		std::vector<float>		DefaultBSFactors;
@@ -196,7 +231,7 @@ protected:
 
 public:
 	// Map of light information ( LightName, list(MaterialNb, StageNb) )
-	TLightInfoMap				_LightInfos;
+	TLightMapInfo				_LightInfos;
 
 
 protected:

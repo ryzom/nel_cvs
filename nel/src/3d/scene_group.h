@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.20 2003/01/10 17:11:56 boucher Exp $
+ * $Id: scene_group.h,v 1.21 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,9 +246,6 @@ public:
 	/// Get all lights (lightmaps) from an instance group
 	void getLights (std::set<std::string> &LightNames);
 
-	/// Set the lightmap factor for the whole instance group
-	void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor);
-
 	
 
 	/**
@@ -326,7 +323,7 @@ public:
 	} 
 
 	/// set the Light factor for all pointLights "lightGroupName".
-	void			setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
+	void			setPointLightFactor(const CScene &scene);
 
 	/// See CIGSurfaceLight::getStaticLightSetup()
 	bool			getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const CVector &localPos,

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.48 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.49 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -477,6 +477,9 @@ void CInstanceGroup::setIGAddBeginCallback(IIGAddBegin *callback)
 // ***************************************************************************
 bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 {
+	// Init the scene lights
+	_PointLightArray.initAnimatedLightIndex (scene);
+
 	uint32 i, j;
 
 	// Test if portals are linked to their 2 clusters 
@@ -749,6 +752,9 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 // ***************************************************************************
 bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 {
+	// Init the scene lights
+	_PointLightArray.initAnimatedLightIndex (scene);
+
 	uint32 i;
 
 	_AddToSceneState = StateAdding;
@@ -1008,19 +1014,6 @@ void CInstanceGroup::getLights( set<string> &LightNames )
 }
 
 // ***************************************************************************
-void CInstanceGroup::setLightFactor( const string &LightName, CRGBA Factor )
-{
-	for( uint32 i = 0; i < _Instances.size(); ++i )
-	{
-		CMeshBaseInstance *pMI = dynamic_cast<CMeshBaseInstance*>(_Instances[i]);
-		if( pMI != NULL )
-		{
-			pMI->setLightMapFactor( LightName, Factor );
-		}
-	}
-}
-
-// ***************************************************************************
 void CInstanceGroup::getBlendShapes( set<string> &BlendShapeNames )
 {
 	BlendShapeNames.clear();
@@ -1211,9 +1204,9 @@ void			CInstanceGroup::buildPointLightList(const std::vector<CPointLightNamed> &
 }
 
 // ***************************************************************************
-void			CInstanceGroup::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
+void			CInstanceGroup::setPointLightFactor(const CScene &scene)
 {
-	_PointLightArray.setPointLightFactor(lightGroupName, nFactor);
+	_PointLightArray.setPointLightFactor(scene);
 }
 
 

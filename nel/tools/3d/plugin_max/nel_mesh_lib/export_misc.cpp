@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.31 2002/11/20 10:21:36 berenguier Exp $
+ * $Id: export_misc.cpp,v 1.32 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -859,46 +859,22 @@ INode *CExportNel::getRootNode() const
 	return _Ip->GetRootNode();
 }
 
+// ***********************************************************************************************
 
-
-// --------------------------------------------------
-std::string		CExportNel::getLightGroupName (INode *node)
+std::string		CExportNel::getAnimatedLight (INode *node)
 {
 	std::string		ret;
-	ret = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, NEL3D_LM_GROUPNAME_DEFAULT);
-	// Not Defined => Use old Modifier style?
-	if(ret == NEL3D_LM_GROUPNAME_DEFAULT)
-	{
-		// Modifier NelLight attached to the light?
-		Modifier *pModifier = CExportNel::getModifier( node, Class_ID(NEL_LIGHT_CLASS_ID_A, 
-																	NEL_LIGHT_CLASS_ID_B) );
-		if( pModifier != NULL )
-		{
-			int bDynamic;
-			std::string sGroup;
-			// Get the value of the parameters
-			CExportNel::getValueByNameUsingParamBlock2( *pModifier, "bDynamic", 
-														(ParamType2)TYPE_BOOL, &bDynamic, 0);
-			CExportNel::getValueByNameUsingParamBlock2( *pModifier, "sGroup", 
-														(ParamType2)TYPE_STRING, &sGroup, 0);
-			if( bDynamic )
-				ret = sGroup;
-			else
-				ret = "GlobalLight";
-		}
-		else
-		{
-			ret = "GlobalLight";
-		}
-	}
-
-
-	return ret;
+	return CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED_LIGHT, NEL3D_APPDATA_LM_ANIMATED_LIGHT_DEFAULT);
 }
 
+// ***********************************************************************************************
 
+uint CExportNel::getLightGroup (INode *node)
+{
+	return CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_LIGHT_GROUP, NEL3D_APPDATA_LM_LIGHT_GROUP_DEFAULT);
+}
 
-
+// ***********************************************************************************************
 
 // a segment (used by maxPolygonMeshToOrderedPoly)
 struct CMaxMeshSeg

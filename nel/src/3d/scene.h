@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.39 2003/03/26 16:45:29 berenguier Exp $
+ * $Id: scene.h,v 1.40 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -380,6 +380,8 @@ public:
 	void			setSunSpecular(NLMISC::CRGBA specular);
 	/// set the Direction of the Sun used for the scene.
 	void			setSunDirection(const NLMISC::CVector &direction);
+	/// set the color of a light group.
+	void			setLightGroupColor(uint lightmapGroup, NLMISC::CRGBA color);
 
 
 	/// get the global Ambient used for the scene. Default to (50, 50, 50).
@@ -392,7 +394,33 @@ public:
 	NLMISC::CRGBA	getSunSpecular() const;
 	/// get the Direction of the Sun used for the scene.
 	NLMISC::CVector	getSunDirection() const;
-
+	/// get the number of light group.
+	uint			getNumLightGroup () const
+	{
+		return _LightGroupColor.size ();
+	}
+	/// get the color of a lightmap group.
+	NLMISC::CRGBA	getLightmapGroupColor(uint lightGroup) const
+	{
+		if (lightGroup<_LightGroupColor.size())
+			return _LightGroupColor[lightGroup];
+		else
+			return CRGBA::White;
+	}
+	/// get an animated light factor.
+	NLMISC::CRGBA	getAnimatedLightFactor (sint animatedLightmap, uint lightGroup) const
+	{
+		if (((uint)animatedLightmap)<_AnimatedLightPtr.size ())
+		{
+			return _AnimatedLightPtr[animatedLightmap]->getFactor (lightGroup);
+		}
+		else
+		{
+			return getLightmapGroupColor (lightGroup);
+		}
+	}
+	/// get an animated lightmap index by name. Return -1 if not found.
+	sint			getAnimatedLightNameToIndex (const std::string &name) const;
 
 	/** setup the max number of point light that can influence a model. NB: clamped by NL3D_MAX_LIGHT_CONTRIBUTION
 	 *	Default is 3.
@@ -551,8 +579,15 @@ private:
 
 	// The Ligths automatic movements
 	CAnimationSet	_LightmapAnimations;
-	std::set<CAnimatedLightmap*> _AnimatedLightmap;
+	std::map<std::string, uint>					_AnimatedLightNameToIndex;
+	std::list<CAnimatedLightmap>				_AnimatedLight;
+	std::vector<CAnimatedLightmap*>				_AnimatedLightPtr;
 	CPlayListManager _LMAnimsAuto;
+
+	/* Lightmap factor for each lightmap group. 
+	 * size() must be == to CAnimatedLightmap::_GroupColor.size () */
+	std::vector<NLMISC::CRGBA>		_LightGroupColor;		
+
 	// List of InstanceGroup to animate PointLightFactor.
 	typedef std::set<CInstanceGroup*>	TAnimatedIgSet;
 	typedef TAnimatedIgSet::iterator	ItAnimatedIgSet;

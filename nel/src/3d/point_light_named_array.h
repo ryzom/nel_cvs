@@ -1,7 +1,7 @@
 /** \file point_light_named_array.h
  * <File description>
  *
- * $Id: point_light_named_array.h,v 1.2 2002/04/16 16:21:47 vizerie Exp $
+ * $Id: point_light_named_array.h,v 1.3 2003/03/31 12:47:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 
 
 namespace NL3D {
+
+class CScene;
 
 
 // ***************************************************************************
@@ -64,10 +66,17 @@ public:
 	std::vector<CPointLightNamed>		&getPointLights() {return _PointLights;}
 
 	/// set the Light factor for all pointLights "lightGroupName".
-	void			setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
+	void			setPointLightFactor(const CScene &scene);
 
 	// serial
 	void			serial(NLMISC::IStream &f);
+
+	/* Init lighting information
+	 * Scan lights used by the array, and for each, bind the array to an 
+	 * animated light index from the scene. This index will be used at runtime to 
+	 * get quickly a light factor.
+	 */
+	void			initAnimatedLightIndex (const CScene &scene);
 
 private:
 
@@ -77,18 +86,45 @@ private:
 	/// LightGroupName mgt.
 	struct	CPointLightGroup
 	{
-		uint32	StartId;	// start in the array.
-		uint32	EndId;		// EndId-StartId==number of pointlights with this name.
+		std::string		AnimationLight;
+		sint32			AnimationLightIndex;
+		uint32			LightGroup;
+		uint32			StartId;	// start in the array.
+		uint32			EndId;		// EndId-StartId==number of pointlights with this name.
+
+		CPointLightGroup ()
+		{
+			AnimationLightIndex = -1;
+		}
+
+		void	serial(NLMISC::IStream &f)
+		{
+			f.serialVersion (0);
+			f.serial(AnimationLight);
+			f.serial(LightGroup);
+			f.serial(StartId);
+			f.serial(EndId);
+
+			// Reset the animation light index in the scene
+			AnimationLightIndex = -1;
+		}
+	};
+
+	/// Deprecated serials
+	struct	CPointLightGroupV0
+	{
+		uint32			StartId;	// start in the array.
+		uint32			EndId;		// EndId-StartId==number of pointlights with this name.
 
 		void	serial(NLMISC::IStream &f)
 		{
 			f.serial(StartId, EndId);
 		}
 	};
-	typedef std::map<std::string, CPointLightGroup>				TPLGMap;
-	typedef std::map<std::string, CPointLightGroup>::iterator	ItPLGMap;
+
+	typedef std::vector<CPointLightGroup>				TPLGVec;
 	/// Info for LightGroupName and setPointLightFactor
-	TPLGMap							_PointLightGroupMap;
+	TPLGVec							_PointLightGroupMap;
 
 };
 

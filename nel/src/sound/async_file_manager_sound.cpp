@@ -1,7 +1,7 @@
 /** \file async_file_manager_sound.cpp
  * <File description>
  *
- * $Id: async_file_manager_sound.cpp,v 1.1 2002/11/04 15:40:43 boucher Exp $
+ * $Id: async_file_manager_sound.cpp,v 1.2 2002/12/13 09:13:35 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,7 @@ public:
 
 void	CAsyncFileManagerSound::cancelLoadWaveFile(const std::string &filename)
 {
+	nlwarning("CAsyncFileManagerSound::cancelLoadWaveFile : not implemented yet !");
 //	CAsyncFileManager::getInstance().cancelLoadTask(CCancelLoadWavFile(filename));
 }
 
@@ -97,16 +98,32 @@ void CAsyncFileManagerSound::loadFile (const std::string &fileName, uint8 **pPtr
 
 void CAsyncFileManagerSound::loadFiles (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs)
 {
+	if (vFileNames.size() != vPtrs.size())
+	{
+		nlwarning("CAsyncFileManagerSound::loadFiles : number of filenames and pointer differ ! (%u file, %u ptr)", vFileNames.size(), vPtrs.size());
+		// ignore load request...
+		return;
+	}
 	CAsyncFileManager::getInstance().loadFiles(vFileNames, vPtrs);
 }
 
 void CAsyncFileManagerSound::signal (bool *pSgn)
 {
+	if (pSgn == 0)
+	{
+		nlwarning("CAsyncFileManagerSound::signal : trying to signal with a null pointer !");
+		return;
+	}
 	CAsyncFileManager::getInstance().signal(pSgn);
 }
 
 void CAsyncFileManagerSound::cancelSignal (bool *pSgn)
 {
+	if (pSgn == 0)
+	{
+		nlwarning("CAsyncFileManagerSound::cancelSignal : trying to remove a signal with a null pointer !");
+		return;
+	}
 	CAsyncFileManager::getInstance().cancelSignal(pSgn);
 }
 
@@ -114,13 +131,54 @@ void CAsyncFileManagerSound::cancelSignal (bool *pSgn)
 // Load task.
 CAsyncFileManagerSound::CLoadWavFile::CLoadWavFile (IBuffer *pdestBuffer, const std::string &filename)
 :_Filename(filename), _pDestbuffer(pdestBuffer)
-{}
+{
+	if (_Filename.empty())
+	{
+		nlwarning("CAsyncFileManagerSound::CLoadWavFile::CLoadWavFile : file name is empty !");
+	}
+	if (_pDestbuffer == 0)
+	{
+		nlwarning("CAsyncFileManagerSound::CLoadWavFile::CLoadWavFile : dest buffer ptr is null!");
+	}
+}
 
 void CAsyncFileManagerSound::CLoadWavFile::run (void)
 {
 	nldebug("Loading sample %s...", _Filename.c_str());
 //	nlSleep(500);
-	CAudioMixerUser::instance()->getSoundDriver()->loadWavFile(_pDestbuffer, _Filename.c_str());
+	CAudioMixerUser *mixer = CAudioMixerUser::instance();
+	if (mixer == 0)
+	{
+		nlwarning("CAsyncFileManagerSound::CLoadWavFile::run : mixer is not avalable !");
+		return;
+	}
+	
+	ISoundDriver *sndDrv = mixer->getSoundDriver();
+	if (sndDrv == 0)
+	{
+		nlwarning("CAsyncFileManagerSound::CLoadWavFile::run : sound driver is null !");
+		return;
+	}
+	
+	if (_pDestbuffer == 0)
+	{
+		nlwarning("CAsyncFileManagerSound::CLoadWavFile::run : dest buffer is null !");
+		return;
+	}
+
+	if (_Filename.empty())
+	{
+		nlwarning("CAsyncFileManagerSound::CLoadWavFile::run : filename is empty !");
+		return;
+	}
+	try
+	{
+		sndDrv->loadWavFile(_pDestbuffer, _Filename.c_str());
+	}
+	catch(...)
+	{
+		nlwarning("CAsyncFileManagerSound::CLoadWavFile::run : Exeption detected during IDriver::loadWavFile(%p, %s)", _pDestbuffer, _Filename.c_str());
+	}
 }
 	
 

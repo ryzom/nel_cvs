@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.14 2001/07/27 13:05:00 legros Exp $
+ * $Id: network.cpp,v 1.15 2001/07/27 15:50:40 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,7 @@ static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 
 	msgin.serial (id, name, race, startPosition);
 
-	nlinfo ("%s", stringFromVector (msgin.bufferAsVector()));
+	nlinfo ("%s", stringFromVector (msgin.bufferAsVector()).c_str());
 
 	nlinfo ("Receive add entity %u '%s' %s (%f,%f,%f)", id, name.c_str(), race==0?"penguin":"gnu", startPosition.x, startPosition.y, startPosition.z);
 
@@ -250,6 +250,7 @@ void	sendChatLine (string Line)
 	if (!isOnline ()) return;
 
 	CMessage msgout (Connection->getSIDA(), "CHAT");
+	string s;
 	if (Self != NULL)
 	{
 		string line = Self->Name + string("> ") + Line;

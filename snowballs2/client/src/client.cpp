@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.43 2001/07/27 09:05:56 lecroart Exp $
+ * $Id: client.cpp,v 1.44 2001/07/27 15:50:40 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,10 @@
 #include "pacs.h"
 #include "animation.h"
 #include "network.h"
+#ifdef NL_OS_WINDOWS
+// Sound currently disabled under Linux
 #include "sound.h"
+#endif
 #include "interface.h"
 #include "lens_flare.h"
 #include "mouse_listener.h"
@@ -220,9 +223,11 @@ int main(int argc, char **argv)
 	displayLoadingState ("Initialize Graph");
 	initGraph();
 
+#ifdef NL_OS_WINDOWS
 	// Init sound control
 	displayLoadingState ("Initialize Sound");
 	initSound();
+#endif
 
 	// Init the command control
 	displayLoadingState ("Initialize Commands");
@@ -295,8 +300,10 @@ int main(int argc, char **argv)
 		// Update the landscape
 		updateLandscape ();
 
+#ifdef NL_OS_WINDOWS
 		// Update the sound
 		updateSound ();
+#endif
 
 		// Set new animation date
 		Scene->animate (float(NewTime)/1000);
@@ -478,7 +485,9 @@ int main(int argc, char **argv)
 	releaseAiming();
 	releasePACS();
 	releaseLandscape();
+#ifdef NL_OS_WINDOWS	
 	releaseSound ();
+#endif
 
 	// Release the mouse listener
 	MouseListener->removeFromServer(Driver->EventServer);

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.6 2001/07/31 12:52:17 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.7 2001/08/24 12:44:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,8 +80,10 @@ public:
 
 	/// Load environment effects
 	virtual void		loadEnvEffects( const char *filename ) = 0;
-	/// Load buffers
-	virtual	void		loadSoundBuffers( const char *filename ) = 0;
+	/** Load buffers. Returns the number of buffers successfully loaded.
+	 *  If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
+	 */
+	virtual uint32		loadSoundBuffers( const char *filename, std::vector<std::string> *notfoundfiles=NULL ) = 0;
 	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
 	virtual	void		loadEnvSounds( const char *filename,
 									   UEnvSound **treeRoot=NULL ) = 0;
@@ -107,6 +109,8 @@ public:
 
 	/// Return the number of mixing tracks (voices)
 	virtual uint		getPolyphony() const = 0;
+	/// Return the names of the sounds (call this method after loadSoundBuffers())
+	virtual void		getSoundNames( std::vector<const char *>& names ) const = 0;
 
 
 	/// Destructor

@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.26 2003/07/07 10:25:59 berenguier Exp $
+ * $Id: scene_group.h,v 1.25 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,11 +122,7 @@ public:
 		 *	This is a special trick for the "Matis Serre" where the exterior mesh cast shadow in the interior, but
 		 *	is not visible in the interior in realTime because of cluster clipping.... omg :(
 		 */
-		bool	DontCastShadowForInterior;
-		/** This is the opposite of DontCastShadowForInterior. zone_lighter or zone_ig_lighter test it and if true,
-		 *	assume this instance dont cast shadow
-		 */
-		bool	DontCastShadowForExterior;
+		bool	DontCastShadowForIgLighter;
 
 
 		/// Constructor

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.45 2003/07/09 16:32:30 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.44 2003/05/26 09:04:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,8 +110,6 @@ CSkeletonModel::CSkeletonModel()
 
 	// RenderFilter: We are a skeleton
 	_RenderFilterType= UScene::FilterSkeleton;
-
-	_AnimCtrlUsage= 0;
 }
 
 	
@@ -616,10 +614,6 @@ void	CSkeletonModel::traverseAnimDetail()
 	// Compute bones
 	//===============
 
-	// If User AnimCtrl, then must update
-	if(_AnimCtrlUsage>0)
-		forceUpdate= true;
-
 	// test if bones must be updated. either if animation change or if BoneUsage change.
 	if(IAnimatable::isTouched(CSkeletonModel::OwnerBit) || forceUpdate)
 	{
@@ -634,7 +628,7 @@ void	CSkeletonModel::traverseAnimDetail()
 		for(;numBoneToCompute>0;numBoneToCompute--, pBoneCompute++)
 		{
 			// compute the bone with his father, if any
-			pBoneCompute->Bone->compute( pBoneCompute->Father, modelWorldMatrix, this);
+			pBoneCompute->Bone->compute( pBoneCompute->Father, modelWorldMatrix);
 
 			// Lod interpolation on this bone .. only if interp is enabled now, and if bone wants it
 			if(lodNext && pBoneCompute->MustInterpolate)
@@ -674,11 +668,11 @@ void		CSkeletonModel::computeAllBones(const CMatrix &modelWorldMatrix)
 		sint	fatherId= Bones[i].getFatherId();
 		// if a root bone...
 		if(fatherId==-1)
-			// Compute root bone worldMatrix. Do not allow special AnimCtrl
-			Bones[i].compute( NULL, modelWorldMatrix, NULL);
+			// Compute root bone worldMatrix.
+			Bones[i].compute( NULL, modelWorldMatrix);
 		else
-			// Compute bone worldMatrix. Do not allow special AnimCtrl
-			Bones[i].compute( &Bones[fatherId], modelWorldMatrix, NULL);
+			// Compute bone worldMatrix.
+			Bones[i].compute( &Bones[fatherId], modelWorldMatrix);
 	}
 
 }
@@ -1566,35 +1560,6 @@ void		CSkeletonModel::getLightHotSpotInWorld(CVector &modelPos, float &modelRadi
 
 	// Consider Skeletons as not big lightable
 	modelRadius= 0;
-}
-
-
-// ***************************************************************************
-void		CSkeletonModel::setBoneAnimCtrl(uint boneId, IAnimCtrl *ctrl)
-{
-	if(boneId>=Bones.size())
-		return;
-
-	CBone	&bone= Bones[boneId];
-
-	// Update refCount
-	if(ctrl && !bone._AnimCtrl)
-		_AnimCtrlUsage++;
-	else if(!ctrl && bone._AnimCtrl)
-		_AnimCtrlUsage--;
-
-	// set
-	bone._AnimCtrl= ctrl;
-}
-
-
-// ***************************************************************************
-IAnimCtrl	*CSkeletonModel::getBoneAnimCtrl(uint boneId) const
-{
-	if(boneId>=Bones.size())
-		return NULL;
-
-	return Bones[boneId]._AnimCtrl;
 }
 
 

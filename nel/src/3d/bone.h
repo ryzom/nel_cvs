@@ -1,7 +1,7 @@
 /** \file bone.h
  * <File description>
  *
- * $Id: bone.h,v 1.6 2003/07/09 16:32:30 berenguier Exp $
+ * $Id: bone.h,v 1.5 2002/03/21 16:07:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,11 +33,6 @@
 
 namespace NL3D
 {
-
-
-// ***************************************************************************
-class	IAnimCtrl;
-class	CSkeletonModel;
 
 
 // ***************************************************************************
@@ -108,8 +103,6 @@ public:
 	const std::string	&getBoneName() const {nlassert(_BoneBase); return _BoneBase->Name;}
 	/// retrieve the fatherId from BoneBase.
 	sint32				getFatherId() const {nlassert(_BoneBase); return _BoneBase->FatherId;}
-	/// retrieve the boneBase
-	CBoneBase			&getBoneBase() const {nlassert(_BoneBase); return *_BoneBase;}
 
 
 	/// \name Herited from ITransformable
@@ -128,9 +121,8 @@ public:
 	 * NB: the result boneSkinMatrix depends on BoneBase::InvBindPos. \n
 	 * \param parent the parent of this bone (maybe NULL if root). his WorldMatrix is used, so it should be computed before.
 	 * \param rootMatrix is used as father worldmatrix if parent==NULL. Usefull for computing WorldMatrix.
-	 * \param skeletonForAnimCtrl if NULL, no AnimCtrl is performed, else skeletonForAnimCtrl->getWorldMAtrix() should be == to rootMatrix
 	 */
-	void			compute(CBone *parent, const CMatrix &rootMatrix, CSkeletonModel *skeletonForAnimCtrl);
+	void			compute(CBone *parent, const CMatrix &rootMatrix);
 
 	/** Interpolate the current result of _BoneSkinMatrix fith otherMatrix.
 	 *	when interp==0.f, _BoneSkinMatrix= otherMatrix.
@@ -153,11 +145,6 @@ public:
 
 
 // *************************
-public:
-	// Private to SkeletonModel. You should not set this ptr directly. see CSkeletonModel::setBoneAnimCtrl()
-	// The extra controller (IK...) on this bone
-	IAnimCtrl					*_AnimCtrl;
-
 private:
 	// the boneBase of the skeletonShape which create this bone..
 	NLMISC::CRefPtr<CBoneBase>	_BoneBase;

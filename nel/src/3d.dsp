@@ -1181,10 +1181,6 @@ SOURCE=.\3d\mrm_parameters.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\3d\anim_ctrl.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\animatable.cpp
 # End Source File
 # Begin Source File
@@ -1298,10 +1294,6 @@ SOURCE=.\3d\skeleton_weight.cpp
 # Begin Source File
 
 SOURCE=.\3d\skeleton_weight.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\target_anim_ctrl.cpp
 # End Source File
 # Begin Source File
 
@@ -1605,10 +1597,6 @@ SOURCE=.\3d\water_user.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\include\nel\3d\anim_ctrl.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\include\nel\3d\animation_time.h
 # End Source File
 # Begin Source File
@@ -1638,10 +1626,6 @@ SOURCE=..\include\nel\3d\primitive_profile.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\scissor.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\target_anim_ctrl.h
 # End Source File
 # Begin Source File
 

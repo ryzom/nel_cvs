@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.6 2003/07/07 10:27:24 berenguier Exp $
+ * $Id: main.cpp,v 1.5 2003/07/04 13:34:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,10 +191,8 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 				fprintf(logStream, "    'StaticLight Not Computed' means the instance has a ASP flag or the ig is not yet lighted\n");
 				fprintf(logStream, "    If lighted, for each instance, the format is 'SunContribution(8Bit) - idLight0;idLight1 (or NOLIGHT) - LocalAmbientId (or GLOBAL_AMBIENT)' \n");
 				fprintf(logStream, "    DCS means the instance don't cast shadow (used in the lighter)\n");
-				fprintf(logStream, "    DCSINT Same but very special for ig_lighter.exe only\n");
-				fprintf(logStream, "    DCSEXT Same but very special for zone_lighter and zone_ig_lighter.exe only\n");
+				fprintf(logStream, "    DCSIGL Same but very special for ig_lighter.exe only\n");
 				fprintf(logStream, "    ASP means the instance AvoidStaticLightPreCompute (used in the lighter.exe)\n");
-				fprintf(logStream, "  -------------------------------------------------------------\n");
 				uint k;
 				for(k = 0; k < ig._InstancesInfos.size(); ++k)
 				{
@@ -223,10 +221,8 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 					}
 					if(instance.DontCastShadow)
 						fprintf(logStream, "DCS,");
-					if(instance.DontCastShadowForInterior)
-						fprintf(logStream, "DCSINT,");
-					if(instance.DontCastShadowForExterior)
-						fprintf(logStream, "DCSEXT,");
+					if(instance.DontCastShadowForIgLighter)
+						fprintf(logStream, "DCSIGL,");
 					if(instance.AvoidStaticLightPreCompute)
 						fprintf(logStream, "ASP,");
 

@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.22 2003/07/09 15:17:08 cado Exp $
+ * $Id: message.cpp,v 1.21 2002/07/10 17:08:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,29 +38,21 @@ namespace NLNET
 
 bool CMessage::_DefaultStringMode = false;
 
-const char *LockedSubMessageError = "a sub message is forbidden";
 
 #define FormatLong 1
 #define FormatShort 0
 
 
-/*
- * Constructor by id (disabled)
- */
 CMessage::CMessage (NLMISC::CStringIdArray &sida, const std::string &name, bool inputStream, TStreamFormat streamformat, uint32 defaultCapacity) :
 	NLMISC::CMemStream (inputStream, false, defaultCapacity),
-	_TypeSet (false), _SIDA (&sida), _HeaderSize(0xFFFFFFFF), _SubMessagePosR(0), _LengthR(0)
+	_TypeSet (false), _SIDA (&sida), _HeaderSize(0xFFFFFFFF)
 {
 	init( name, streamformat );
 }
 
-
-/*
- * Constructor by name
- */
 CMessage::CMessage (const std::string &name, bool inputStream, TStreamFormat streamformat, uint32 defaultCapacity) :
 	NLMISC::CMemStream (inputStream, false, defaultCapacity),
-	_TypeSet (false), _SIDA (NULL), _HeaderSize(0xFFFFFFFF), _SubMessagePosR(0), _LengthR(0)
+	_TypeSet (false), _SIDA (NULL), _HeaderSize(0xFFFFFFFF)
 {
 	init( name, streamformat );
 }
@@ -85,41 +77,37 @@ void CMessage::init( const std::string &name, TStreamFormat streamformat )
 }
 
 
-/*
- * Constructor with copy from CMemStream
- */
 CMessage::CMessage (NLMISC::CMemStream &memstr) :
-	NLMISC::CMemStream( memstr ),
-	_TypeSet(false), _HeaderSize(0xFFFFFFFF), _SubMessagePosR(0), _LengthR(0)
+	_HeaderSize(0xFFFFFFFF)
 {
-	sint32 pos = getPos();
-	bool reading = isReading();
-	if ( reading ) // force input mode to read the type
-		readType(); // sets _TypeSet, _HeaderSize and _LengthR
+	fill (memstr.buffer (), memstr.length ());
+	uint8 LongFormat=2;
+	serial (LongFormat);
+
+	if (LongFormat)
+	{
+		std::string name;
+		serial (name);
+		setType (name);
+	}
 	else
-		invert(); // calls readType()
-	if ( ! reading )
-		invert(); // set ouput mode back if necessary
-	seek( pos, begin ); // sets the same position as the one in the memstream
+	{
+		NLMISC::CStringIdArray::TStringId id;
+		serial (id);
+		setType (id);
+	}
 }
 
 
-/*
- * Copy constructor
- */
+/// Copy constructor
 CMessage::CMessage (const CMessage &other)
 {
 	operator= (other);
 }
 
-/*
- * Assignment operator
- */
+/// Assignment operator
 CMessage &CMessage::operator= (const CMessage &other)
 {
-	nlassertex( (!other.isReading()) || (!other.hasLockedSubMessage()), ("Storing %s", LockedSubMessageError) );
-	nlassertex( (!isReading()) || (!hasLockedSubMessage()), ("Assigning %s", LockedSubMessageError) );
-
 	CMemStream::operator= (other);
 	_TypeSet = other._TypeSet;
 	_SIDA = other._SIDA;
@@ -128,48 +116,11 @@ CMessage &CMessage::operator= (const CMessage &other)
 	_Name = other._Name;
 	_Id = other._Id;
 	_HeaderSize = other._HeaderSize;
-	_SubMessagePosR = other._SubMessagePosR;
-	_LengthR = other._LengthR;
 	return *this;
 
 }
 
-
-/**
- * Similar to operator=, but makes the current message contain *only* the locked sub message in msgin
- * or the whole msgin if it is not locked
- *
- * Preconditions:
- * - msgin is an input message (isReading())
- * - The current message is blank (new or reset with clear())
- *
- * Postconditions:
- * - If msgin has been locked using lockSubMessage(), the current message contains only the locked
- *   sub message in msgin, otherwise the current message is exactly msgin
- * - The current message is an input message, it is not locked
- */
-void CMessage::assignFromSubMessage( const CMessage& msgin )
-{
-	nlassert( msgin.isReading() );
-	nlassert( ! _TypeSet );
-	if ( ! isReading() )
-		invert();
-
-	if ( msgin.hasLockedSubMessage() )
-	{
-		fill( msgin.buffer() + msgin._SubMessagePosR, msgin._LengthR-msgin._SubMessagePosR );
-		readType();
-	}
-	else
-	{
-		operator=( msgin );
-	}
-}
-
-
-/*
- * Sets the message type as a number (in range 0..32767) and put it in the buffer if we are in writing mode
- */
+/// Sets the message type as a number (in range 0..32767) and put it in the buffer if we are in writing mode
 void CMessage::setType (NLMISC::CStringIdArray::TStringId id)
 {
 	// PATCH: the id system is not available
@@ -223,9 +174,7 @@ void CMessage::setType (NLMISC::CStringIdArray::TStringId id)
 	_TypeSet = true;
 }
 
-/*
- * Sets the message type as a string and put it in the buffer if we are in writing mode
- */
+/// Sets the message type as a string and put it in the buffer if we are in writing mode
 void CMessage::setType (const std::string &name)
 {
 	// check if we already do a setType ()
@@ -289,33 +238,15 @@ void CMessage::setType (const std::string &name)
 	_TypeSet = true;
 }
 
-
-/*
- * Warning: MUST be of the same size than previous name!
- * Output message only.
- */
-void CMessage::changeType (const std::string &name)
-{
-	sint32 prevPos = getPos();
-	seek( sizeof(uint32)+sizeof(uint8), begin );
-	serial ((std::string&)name);
-	seek( prevPos, begin );
-}
-
-
-/*
- * Returns the size, in byte of the header that contains the type name of the message or the type number
- */
+/// Returns the size, in byte of the header that contains the type name of the message or the type number
 uint32 CMessage::getHeaderSize ()
 {
+	nlassert (!isReading ());
 	nlassert (_HeaderSize != 0xFFFFFFFF);
 	return _HeaderSize;
 }
 
-
-/*
- * The message was filled with an CMemStream, Now, we'll get the message type on this buffer
- */
+// The message was filled with an CMemStream, Now, we'll get the message type on this buffer
 void CMessage::readType ()
 {
 	nlassert (isReading ());
@@ -324,7 +255,6 @@ void CMessage::readType ()
 	// \todo remove this debug feature when ok
 
 	// we remove the message from the message
-	resetSubMessageInternals();
 	const uint HeaderSize = 4;
 	seek (HeaderSize, begin);
 //		uint32 zeroValue;
@@ -352,41 +282,7 @@ void CMessage::readType ()
 		serial (id);
 		setType (id);
 	}
-	_HeaderSize = getPos();
 }
-
-
-/*
- * Get the message name (input message only) and advance the current pos
- */
-std::string CMessage::readTypeAtCurrentPos()
-{
-	nlassert( isReading() );
-
-	const uint HeaderSize = 4;
-	seek( getPos() + HeaderSize, begin );
-
-	bool sm = _StringMode;
-	_StringMode = false;
-
-	uint8 format;
-	serial( format );
-	bool LongFormat = (format & 1);
-	_StringMode = (format >> 1) & 1;
-	if ( LongFormat )
-	{
-		std::string name;
-		serial( name );
-		_StringMode = sm;
-		return name;
-	}
-	else
-		nlerror( "Id not supported" );
-
-	_StringMode = sm;
-	return "";
-}
-
 
 // Returns true if the message type was already set
 bool CMessage::typeIsSet () const
@@ -397,45 +293,25 @@ bool CMessage::typeIsSet () const
 // Clear the message. With this function, you can reuse a message to create another message
 void CMessage::clear ()
 {
-	nlassertex( (!isReading()) || (!hasLockedSubMessage()), ("Clearing %s", LockedSubMessageError) );
-
 	CMemStream::clear ();
 	_TypeSet = false;
-	_SubMessagePosR = 0;
-	_LengthR = 0;
 }
 
-/*
- * Returns the type name in string if available. Be sure that the message have the name of the message type
- */
+/// Returns the type name in string if available. Be sure that the message have the name of the message type
 std::string CMessage::getName () const
 {
-	if ( hasLockedSubMessage() )
-	{
-		CMessage& notconstMsg = const_cast<CMessage&>(*this);
-		sint32 savedPos = notconstMsg.getPos();
-		notconstMsg.seek( _SubMessagePosR, begin ); // not really const... but removing the const from getName() would need too many const changes elsewhere
-		std::string name = notconstMsg.readTypeAtCurrentPos();
-		notconstMsg.seek( savedPos, begin );
-		return name;
-	}
-	else
-	{
-		nlassert (_TypeSet && TypeHasAName);
-		return _Name;
-	}
+	nlassert (_TypeSet && TypeHasAName);
+	return _Name;
 }
 
-/*
- * Returns the type id of this message is available.
- */
+/// Returns the type id of this message is available.
 NLMISC::CStringIdArray::TStringId CMessage::getId () const
 {
 	nlassert (_TypeSet && TypeHasAnId);
 	return _Id;
 }
 
-/* Returns a readable string to display it to the screen. It's only for debugging purpose!
+/** Returns a readable string to display it to the screen. It's only for debugging purpose!
  * Don't use it for anything else than to debugging, the string format could change in the futur
  */
 std::string CMessage::toString () const
@@ -448,44 +324,6 @@ std::string CMessage::toString () const
 	return s.str();
 }
 
-
-/*
- * Return an input stream containing the stream beginning in the message at the specified pos
- */
-NLMISC::CMemStream	CMessage::extractStreamFromPos( sint32 pos )
-{
-	NLMISC::CMemStream msg( true );
-	sint32 len = length() - pos;
-	memcpy( msg.bufferToFill( len ), buffer() + pos, len );
-	return msg;
-}
-
-
-/*
- * Encapsulate/decapsulate another message inside the current message
- */
-void	CMessage::serialMessage( CMessage& msg )
-{
-	if ( isReading() )
-	{
-		// Init 'msg' with the contents serialised from 'this'
-		uint32 len;
-		serial( len );
-		if ( ! msg.isReading() )
-			msg.invert();
-		serialBuffer( msg.bufferToFill( len ), len );
-		msg.readType();
-		msg.invert();
-		msg.seek( 0, CMemStream::end );
-	}
-	else
-	{
-		// Store into 'this' the contents of 'msg'
-		uint32 len = msg.length();
-		serial( len );
-		serialBuffer( const_cast<uint8*>(msg.buffer()), msg.length() );
-	}
-}
 
 
 }

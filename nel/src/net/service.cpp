@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.181 2003/07/09 15:19:33 cado Exp $
+ * $Id: service.cpp,v 1.180 2003/06/30 18:46:51 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1107,9 +1107,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 					else
 					{
 						nlinfo( "Exiting..." );
-						beep( 880, 400 );
+						/*beep( 880, 400 );
 						beep( 440, 400 );
-						beep( 220, 400 );
+						beep( 220, 400 );*/
+						nlSleep (1200);
 						return 10;
 					}
 				}

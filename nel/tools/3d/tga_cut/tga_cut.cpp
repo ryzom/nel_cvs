@@ -1,7 +1,7 @@
 /** \file tga_cut.cpp
  * TGA to DDS converter
  *
- * $Id: tga_cut.cpp,v 1.3 2003/07/09 14:03:05 meyrignac Exp $
+ * $Id: tga_cut.cpp,v 1.1 2003/07/04 15:24:43 meyrignac Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,6 @@ using namespace std;
 #define NOT_DEFINED 0xff
 
 const int CutSize = 160;
-const int SaveSize = 256;
 
 void writeInstructions();
 void main(int argc, char **argv);
@@ -151,43 +150,7 @@ void main(int argc, char **argv)
 		cerr<<"Image not supported : "<<imageDepth<<endl;
 		exit(1);
 	}
-
-	if(!input.seek (0, NLMISC::IStream::begin))
-	{
-		cerr << "Seek to beginning failed"<<endl;
-		exit(1);
-	}
-	
-	// Reading header, 
-	// To make sure that the bitmap is TGA, we check imageType and imageDepth.
-	uint8	lengthID;
-	uint8	cMapType;
-	uint8	imageType;
-	uint16	tgaOrigin;
-	uint16	length;
-	uint8	depth;
-	uint16	xOrg;
-	uint16	yOrg;
-	uint16	width2;
-	uint16	height2;
-	uint8	imageDepth2;
-	uint8	desc;
-	
-	input.serial(lengthID);
-	input.serial(cMapType);
-	input.serial(imageType);
-	input.serial(tgaOrigin);
-	input.serial(length);
-	input.serial(depth);
-	input.serial(xOrg);
-	input.serial(yOrg);
-	input.serial(width2);
-	input.serial(height2);
-	input.serial(imageDepth2);
-	input.serial(desc);
-
 	input.close();
-
 	sint32 height = picTga.getHeight();
 	sint32 width= picTga.getWidth();
 	picTga.convertToType (CBitmap::RGBA);
@@ -197,11 +160,11 @@ void main(int argc, char **argv)
 	CObjectVector<uint8> RGBASrc = picTga.getPixels();
 	CObjectVector<uint8> RGBASrc2;
 	CObjectVector<uint8> RGBADest;
-	RGBADest.resize(SaveSize*SaveSize*4);
+	RGBADest.resize(CutSize*CutSize*4);
 	uint	dstRGBADestId= 0;
 
 	// Copy to the dest bitmap.
-	picSrc.resize(SaveSize, SaveSize, CBitmap::RGBA);
+	picSrc.resize(CutSize, CutSize, CBitmap::RGBA);
 	picSrc.getPixels(0) = RGBADest;
 
 	// Must be RGBA
@@ -211,31 +174,21 @@ void main(int argc, char **argv)
 	uint8 *pixelSrc = &(picTga.getPixels ()[0]);
 	uint8 *pixelDest = &(picSrc.getPixels ()[0]);
 	
-	// clear the whole texture
-	for (sint y = 0;y < SaveSize;++y)
-	{
-		for (sint x = 0;x < SaveSize;++x)
-		{
-			pixelDest[(y*SaveSize+x)*4]=-1;
-			pixelDest[(y*SaveSize+x)*4+1]=-1;
-			pixelDest[(y*SaveSize+x)*4+2]=-1;
-			pixelDest[(y*SaveSize+x)*4+3]=-1;
-		}
-	}
 	// Resample
 	sint xzone, yzone;
-	for (yzone = int(yOrg/CutSize)*CutSize; yzone < yOrg+height; yzone += CutSize)
+	for (yzone = 0; yzone < height; yzone += CutSize)
 	{
-		for (xzone = int(xOrg/CutSize)*CutSize; xzone < xOrg+width; xzone += CutSize)
+		for (xzone = 0; xzone < width; xzone += CutSize)
 		{
 			sint x, y;
 			for (y=0; y<CutSize; y++)
 			{
 				for (x=0; x<CutSize; x++)
 				{
-					const uint offsetDest = (y*SaveSize+x)*4;
+					const uint offsetSrc = ((y+yzone)*width+x+xzone)*4;
+					const uint offsetDest = (y*CutSize+x)*4;
 					uint i;
-					if (x+xzone-xOrg>= width || y+yzone-yOrg>=height || x+xzone-xOrg<0 || y+yzone-yOrg<0)
+					if (x+xzone>= width || y+yzone>=height)
 					{
 						// black outside the bitmap
 						for (i=0; i<4; i++)
@@ -245,7 +198,6 @@ void main(int argc, char **argv)
 					}
 					else
 					{
-						const uint offsetSrc = ((y+yzone-yOrg)*width+x+xzone-xOrg)*4;
 						for (i=0; i<4; i++)
 						{
 							pixelDest[offsetDest+i] = pixelSrc[offsetSrc+i];
@@ -253,31 +205,24 @@ void main(int argc, char **argv)
 					}
 				}
 			}
-#if 0
-			// if we don't want to save the empty pictures (useless now)
 			int empty = 1;
-			for (y = 0;y < CutSize;++y)
+			for (x=0;x<CutSize*CutSize*4;x+=4)
 			{
-				for (x=0;x<CutSize;++x)
+				// tests R,G,B (omit A)
+				if (pixelDest[x] || pixelDest[x+1] || pixelDest[x+2])
 				{
-					// test if pixel is black (RGB==0)
-					int offset = (y*SaveSize+x)*4;
-					if (pixelDest[offset] || pixelDest[offset+1] || pixelDest[offset+2])
-					{
-						empty = 0;
-						break;
-					}
+					empty = 0;
+					break;
 				}
 			}
 			if (empty) continue;
-#endif
 
 			// if the picture is empty, we don't save it !!!
 			
 			NLMISC::COFile output;
 
 			string ZoneName;
-			if (!getZoneNameFromXY(xzone/CutSize, -(yzone/CutSize+1), ZoneName))
+			if (!getZoneNameFromXY(xzone/CutSize, -yzone/CutSize, ZoneName))
 			{
 				cerr<<"Too large image"<<endl;
 				exit(1);
@@ -291,7 +236,6 @@ void main(int argc, char **argv)
 				exit(1);
 			}
 
-			cout<<"Saving "<<ZoneName<<endl;
 			// Saving TGA file
 			try 
 			{

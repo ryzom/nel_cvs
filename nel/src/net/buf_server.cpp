@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.40 2003/07/09 15:20:00 cado Exp $
+ * $Id: buf_server.cpp,v 1.39 2003/02/07 16:08:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -588,8 +588,8 @@ void CBufServer::receive( CMemStream& buffer, TSockId* phostid )
 	}
 
 	// Extract hostid (and event type)
-	*phostid = *((TSockId*)&(buffer.buffer()[buffer.size()-sizeof(TSockId)-1]));
-	nlassert( buffer.buffer()[buffer.size()-1] == CBufNetBase::User );
+	*phostid = *((TSockId*)&(buffer.buffer()[buffer.length()-sizeof(TSockId)-1]));
+	nlassert( buffer.buffer()[buffer.length()-1] == CBufNetBase::User );
 
 	// debug features, we number all packet to be sure that they are all sent and received
 	// \todo remove this debug feature when ok
@@ -609,13 +609,13 @@ void CBufServer::receive( CMemStream& buffer, TSockId* phostid )
 
 	(*phostid)->ReceiveNextValue++;
 
-	buffer.resize( buffer.size()-sizeof(TSockId)-1 );
+	buffer.resize( buffer.length()-sizeof(TSockId)-1 );
 
 	// TODO OPTIM remove the nldebug for speed
-	//commented for optimisation nldebug( "LNETL1: Read buffer (%d+%d B) from %s", buffer.size(), sizeof(TSockId)+1, /*stringFromVector(buffer).c_str(), */(*phostid)->asString().c_str() );
+	//commented for optimisation nldebug( "LNETL1: Read buffer (%d+%d B) from %s", buffer.length(), sizeof(TSockId)+1, /*stringFromVector(buffer).c_str(), */(*phostid)->asString().c_str() );
 
 	// Statistics
-	_BytesPoppedIn += buffer.size() + sizeof(TBlockSize);
+	_BytesPoppedIn += buffer.length() + sizeof(TBlockSize);
 }
 
 

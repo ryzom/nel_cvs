@@ -213,7 +213,7 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_LIGHTMAP DIALOG DISCARDABLE  0, 0, 360, 211
+IDD_LIGHTMAP DIALOG DISCARDABLE  0, 0, 360, 200
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -234,7 +234,7 @@ BEGIN
     CONTROL         "If checked, use per vertex lighting attenuation else use global lighting attenuation for the object. Doesn't work with per pixel lighting shader.",
                     IDC_USE_LIGHT_LOCAL_ATTENUATION,"Button",BS_AUTO3STATE | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,15,95,120,41
-    GROUPBOX        "Properties for lights",IDC_STATIC,160,5,185,195
+    GROUPBOX        "Properties for lights",IDC_STATIC,160,5,185,188
     CONTROL         "RealTime Light. If set, this light will light scene objects.",
                     IDC_EXPORT_REALTIME_LIGHT,"Button",BS_AUTO3STATE | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,170,15,165,20
@@ -255,15 +255,10 @@ BEGIN
                     BS_AUTORADIOBUTTON,170,95,150,15
     CONTROL         "Night group",IDC_LIGHT_GROUP_NIGHT,"Button",
                     BS_AUTORADIOBUTTON,170,110,150,15
-    GROUPBOX        "Misc",IDC_STATIC,5,145,150,55
-    CONTROL         "Don't cast shadow for Interior. Known as Trick of the ""Matis serre""",
-                    IDC_LIGHT_DONT_CAST_SHADOW_INTERIOR,"Button",
-                    BS_AUTO3STATE | BS_TOP | BS_MULTILINE | WS_TABSTOP,15,
-                    155,135,20
-    CONTROL         "Don't cast shadow for Exterior. Known as Trick of the ""Matis serre""",
-                    IDC_LIGHT_DONT_CAST_SHADOW_EXTERIOR,"Button",
-                    BS_AUTO3STATE | BS_TOP | BS_MULTILINE | WS_TABSTOP,15,
-                    175,135,20
+    GROUPBOX        "Misc",IDC_STATIC,5,145,150,45
+    CONTROL         "Don't cast shadow for ig_lighter.exe. Known as Trick of the ""Matis serre""",
+                    IDC_LIGHT_DONT_CAST_SHADOW_IG,"Button",BS_AUTO3STATE | 
+                    BS_TOP | BS_MULTILINE | WS_TABSTOP,15,155,135,20
 END
 
 IDD_MISC DIALOG DISCARDABLE  0, 0, 360, 221
@@ -477,7 +472,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 353
         TOPMARGIN, 7
-        BOTTOMMARGIN, 204
+        BOTTOMMARGIN, 193
     END
 
     IDD_MISC, DIALOG

@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.25 2003/07/09 15:20:00 cado Exp $
+ * $Id: buf_client.cpp,v 1.24 2003/02/07 16:08:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -284,9 +284,9 @@ void CBufClient::receive( NLMISC::CMemStream& buffer )
 	}
 
 	// Extract event type
-	nlassert( buffer.buffer()[buffer.size()-1] == CBufNetBase::User );
-	//commented for optimisation nldebug( "LNETL1: Client read buffer (%d+%d B)", buffer.size(), sizeof(TSockId)+1 );
-	buffer.resize( buffer.size()-1 );
+	nlassert( buffer.buffer()[buffer.length()-1] == CBufNetBase::User );
+	//commented for optimisation nldebug( "LNETL1: Client read buffer (%d+%d B)", buffer.length(), sizeof(TSockId)+1 );
+	buffer.resize( buffer.length()-1 );
 }
 
 

@@ -219,8 +219,7 @@
 #define IDC_LIGHT_GROUP_ALWAYS          1533
 #define IDC_LIGHT_GROUP_DAY             1534
 #define IDC_LIGHT_GROUP_NIGHT           1535
-#define IDC_LIGHT_DONT_CAST_SHADOW_INTERIOR 1536
-#define IDC_LIGHT_DONT_CAST_SHADOW_EXTERIOR 1537
+#define IDC_LIGHT_DONT_CAST_SHADOW_IG   1536
 
 // Next default values for new objects
 // 

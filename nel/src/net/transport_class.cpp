@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.17 2003/07/09 15:17:19 cado Exp $
+ * $Id: transport_class.cpp,v 1.16 2003/05/14 10:24:11 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -255,8 +255,7 @@ void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 {
 	nldebug ("NETTC: cbReceiveMessage");
 
-	CTransportClass::TempMessage.clear();
-	CTransportClass::TempMessage.assignFromSubMessage( msgin );
+	CTransportClass::TempMessage = msgin;
 
 	string className;
 	CTransportClass::TempMessage.serial (className);

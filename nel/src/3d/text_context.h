@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.12 2003/07/08 16:18:06 corvazier Exp $
+ * $Id: text_context.h,v 1.11 2003/01/23 17:59:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,9 +138,7 @@ public:
 	 * Printing methods
 	 */
 
-	/** Print a string that is in the cache from its index (it leaves the string in the cache)
-	  * z : if the hotspot is bottom z is the position of the line of the string, not the bottom of the string bounding box !
-	  */
+	/// Print a string that is in the cache from its index (it leaves the string in the cache)
 	void printAt (float x, float z, uint32 index)
 	{
 		nlassert (index < _CacheStrings.size());
@@ -156,9 +154,7 @@ public:
 		rCS.render2D (*_Driver, x, z, _HotSpot, _ScaleX, _ScaleZ);
 	}
 
-	/** Clip and print a string that is in the cache (it leaves the string in the cache)
-	  * z : if the hotspot is bottom z is the position of the line of the string, not the bottom of the string bounding box !
-	  */
+	/// Clip and print a string that is in the cache (it leaves the string in the cache)
 	void printClipAt (CRenderStringBuffer &rdrBuffer, float x, float z, uint32 index, float xmin, float ymin, float xmax, float ymax)
 	{
 		nlassert (index < _CacheStrings.size());

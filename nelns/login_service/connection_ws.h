@@ -1,7 +1,7 @@
 /** \file connection_ws.h
  * <File description>
  *
- * $Id: connection_ws.h,v 1.1 2001/05/02 12:36:39 lecroart Exp $
+ * $Id: connection_ws.h,v 1.2 2002/01/14 17:48:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 
-void connectionWSInit ();
+void connectionWSInit (uint16 port);
 
 #endif // NL_CONNECTION_WS_H
 

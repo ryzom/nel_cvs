@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.2 2001/05/18 16:51:01 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.3 2002/01/14 17:48:06 lecroart Exp $
  *
  */
 
@@ -80,8 +80,6 @@ static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 */
 	const CInetAddress &ia = CNetManager::getNetBase("WSLS")->hostAddress (from);
 
-	// at this time, it could be a new shard or a ne client.
-
 	nldebug("new potential shard: %s", ia.asString ().c_str ());
 
 	// first, check if it an authorized shard
@@ -106,26 +104,28 @@ static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 			return;
 		}
 	}
-#if ACCEPT_EXTERNAL_SHARD
-	// New externam shard connected, add it in the file
-	Shards.push_back (CShard(ia));
-	sint32 pos = Shards.size()-1;
-	Shards[pos].Online = true;
-	Shards[pos].SockId = from;
-	nlinfo("External shard with ip '%s' is online!", Shards[pos].WSAddr.c_str ());
-	writePlayerDatabase ();
-#else
-	nlwarning("It's not a authorized shard, disconnect it");
-	CNetManager::getNetBase("WSLS")->disconnect(from);
-#endif
+	if (AcceptExternalShard)
+	{
+		// New externam shard connected, add it in the file
+		Shards.push_back (CShard(ia));
+		sint32 pos = Shards.size()-1;
+		Shards[pos].Online = true;
+		Shards[pos].SockId = from;
+		nlinfo("External shard with ip '%s' is online!", Shards[pos].WSAddr.c_str ());
+		writePlayerDatabase ();
+	}
+	else
+	{
+		nlwarning("It's not a authorized shard, disconnect it");
+		CNetManager::getNetBase("WSLS")->disconnect(from);
+	}
 
 	displayShards ();
-
 }
 
 static void cbWSDisconnection (const string &serviceName, TSockId from, void *arg)
 {
-	CCallbackNetBase *cnb = CNetManager::getNetBase("LS");
+	CCallbackNetBase *cnb = CNetManager::getNetBase("WSLS");
 	const CInetAddress &ia = cnb->hostAddress (from);
 
 	nldebug("shard disconnection: %s", ia.asString ().c_str ());
@@ -304,6 +304,36 @@ void cbShardComesIn (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 }
 */
 
+// 
+static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	const CInetAddress &ia = netbase.hostAddress (from);
+
+	string shardName;
+	msgin.serial(shardName);
+	nldebug("new potential identification: %s", shardName);
+
+	// first, check if it an authorized shard
+	for (sint32 i = 0; i < (sint32) Shards.size (); i++)
+	{
+		if (Shards[i].WSAddr == ia.ipAddress ())
+		{
+			if (Shards[i].Online)
+			{
+				nlinfo("Shard with ip '%s' is identified to '%s'!", Shards[i].WSAddr.c_str (), shardName);
+				Shards[i].ShardName = shardName;
+			}
+			else
+			{
+				nlwarning("Shard with ip '%s' is not online! Disconnect this intruder", ia.asString().c_str ());
+				netbase.disconnect(from);
+			}
+			displayShards ();
+			return;
+		}
+	}
+}
+
 static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	//
@@ -374,12 +404,16 @@ static const TCallbackItem WSCallbackArray[] =
 	{ "SCS", cbWSShardChooseShard },
 
 	{ "CC", cbWSClientConnected },
+
+	{ "WS_IDENT", cbWSIdentification },
 };
 
-void connectionWSInit ()
+void connectionWSInit (uint16 port)
 {
-	CNetManager::addServer ("WSLS", 49998);
+	CNetManager::addServer ("WSLS", port);
 	CNetManager::addCallbackArray ("WSLS", WSCallbackArray, sizeof(WSCallbackArray)/sizeof(WSCallbackArray[0]));
 	CNetManager::setConnectionCallback ("WSLS", cbWSConnection, NULL);
 	CNetManager::setDisconnectionCallback ("WSLS", cbWSDisconnection, NULL);
+
+	nlinfo ("Set the server connection for welcome service to port %hu", port);
 }

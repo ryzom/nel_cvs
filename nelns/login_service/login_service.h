@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.3 2001/09/20 08:54:47 lecroart Exp $
+ * $Id: login_service.h,v 1.4 2002/01/14 17:48:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,16 +45,16 @@ using namespace NLNET;
 
 /// Set the version of the server. you have to increase it each time the client-server protocol changes.
 /// You have to increment the client too (the server and client version must be the same)
-static const uint32 ServerVersion = 1;
+extern uint32 ServerVersion;
 
 // 1 if you want to add new player, 0 if you want to eject new player
-#define ACCEPT_NEW_USER 1
+extern bool AcceptNewUser;
 
 // 1 is you accept external shard (not referenced in the config file), 0 if you want to eject unknown shards
-#define ACCEPT_EXTERNAL_SHARD 1
+extern bool AcceptExternalShard;
 
 // 1 is you want to store password in crypted format, 0 for plain text
-#define CRYPT_PASSWORD 1
+extern bool CryptPassword;
 
 
 
@@ -86,10 +86,11 @@ struct CUser
 
 	TSockId			ShardId;		// connection to the WS where the user is
 	
+	std::string		ShardPrivilege;	// something like "RYZOM:SNOWBALL" or empty string that say for each player who can go where
 
 	CUser (string login) : Login(login), State(Offline), SockId(NULL), ShardId(NULL), Loaded(false) { }
 	CUser (string login, string password) : Login(login), Password(password), Id(NextUserId++), State(Offline), SockId(NULL), ShardId(NULL), Loaded(true) { }
-	CUser (string login, string password, uint32 id) : Login(login), Password(password), Id(id), State(Offline), SockId(NULL), ShardId(NULL), Loaded(true)
+	CUser (string login, string password, uint32 id, string shardPrivilege) : ShardPrivilege(shardPrivilege), Login(login), Password(password), Id(id), State(Offline), SockId(NULL), ShardId(NULL), Loaded(true)
 	{
 		if (id >= CUser::NextUserId)
 			CUser::NextUserId = id + 1;
@@ -110,6 +111,7 @@ struct CShard
 	bool			Online;
 	TSockId			SockId;		// Connection of to the shard
 	sint			NbPlayers;
+	string			ShardName;	// name for privilege
 
 	CShard (string addr, string name) : Name(name), WSAddr(addr), NbPlayers(0), Loaded(true), Online(false), SockId(NULL) { }
 	CShard (const CInetAddress &ia) : NbPlayers(0), Loaded(true), Online(false), SockId(NULL)

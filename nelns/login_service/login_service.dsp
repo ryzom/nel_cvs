@@ -164,11 +164,19 @@ SOURCE=.\connection_ws.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\login_service.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\login_service.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\login_service.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\login_service_database.cfg
 # End Source File
 # End Target
 # End Project

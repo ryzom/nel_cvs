@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.7 2001/09/20 08:54:47 lecroart Exp $
+ * $Id: login_service.cpp,v 1.8 2002/01/14 17:48:06 lecroart Exp $
  *
  */
 
@@ -52,6 +52,14 @@ using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
+//
+// Variables
+//
+
+uint32 ServerVersion = 1;
+bool AcceptNewUser = true;
+bool AcceptExternalShard = true;
+bool CryptPassword = true;
 
 // store specific user information
 NLMISC::CFileDisplayer Fd ("ls.log");
@@ -211,7 +219,7 @@ void displayShards ()
 	nlinfo ("There's %d shards in the list:", Shards.size());
 	for (uint i = 0; i < Shards.size(); i++)
 	{
-		nlinfo(" > %s %d %d %s %s", Shards[i].Name.c_str(), Shards[i].Online, Shards[i].NbPlayers, Shards[i].SockId->asString().c_str(), Shards[i].WSAddr.c_str());
+		nlinfo(" > %s %d %d %s %s '%s'", Shards[i].Name.c_str(), Shards[i].Online, Shards[i].NbPlayers, Shards[i].SockId->asString().c_str(), Shards[i].WSAddr.c_str(), Shards[i].ShardName);
 	}
 	nlinfo ("End of the list");
 
@@ -240,16 +248,23 @@ void readPlayerDatabase ()
 		Users[i].Loaded = false;
 
 	const CConfigFile::CVar &v = PlayerDatabase->getVar ("Users");
-	for (i = 0; i < v.size(); i+=3)
+
+	if (v.size()%4 != 0)
+	{
+		nlerror ("Old player database, now, each player must have 4 entries");
+	}
+
+	for (i = 0; i < v.size(); i+=4)
 	{
 		for (k = 0; k < (sint)Users.size (); k++)
 		{
 			if (Users[k].Login == v.asString(i))
 			{
-				nldebug("Update user '%s' from '%s' '%d' to '%s' '%s'", Users[k].Login.c_str(), Users[k].Password.c_str(), Users[k].Id, v.asString(i+1).c_str(), v.asString(i+2).c_str());
+				nldebug("Update user '%s' from '%s' '%d' '%s' to '%s' '%s' '%s'", Users[k].Login.c_str(), Users[k].Password.c_str(), Users[k].Id, Users[k].ShardPrivilege.c_str(), v.asString(i+1).c_str(), v.asString(i+2).c_str(), v.asString(i+3).c_str());
 				Users[k].Loaded = true;
 				Users[k].Password = v.asString(i+1);
 				Users[k].Id = atoi(v.asString(i+2).c_str());
+				Users[k].ShardPrivilege = v.asString(i+3);
 				if (Users[k].Id >= CUser::NextUserId) CUser::NextUserId = Users[k].Id + 1;
 				break;
 			}
@@ -257,8 +272,8 @@ void readPlayerDatabase ()
 		if (k == (sint)Users.size())
 		{
 			// new user
-			nldebug("New user '%s' '%s' '%s'", v.asString(i).c_str(), v.asString(i+1).c_str(), v.asString(i+2).c_str());
-			Users.push_back (CUser(v.asString(i), v.asString(i+1), atoi(v.asString(i+2).c_str())));
+			nldebug("New user '%s' '%s' '%s' '%s'", v.asString(i).c_str(), v.asString(i+1).c_str(), v.asString(i+2).c_str(), v.asString(i+3).c_str());
+			Users.push_back (CUser(v.asString(i), v.asString(i+1), atoi(v.asString(i+2).c_str()), v.asString(i+3)));
 		}
 	}
 
@@ -342,7 +357,7 @@ void writePlayerDatabase ()
 		fprintf (fp, "Users = {\n");
 		for (i = 0; i < (sint) Users.size (); i++)
 		{
-			fprintf (fp, " \"%s\",\"%s\",\"%d\"%c\n", Users[i].Login.c_str(), Users[i].Password.c_str(), Users[i].Id, (i==(sint)Users.size()-1)?' ':',');
+			fprintf (fp, " \"%s\",\"%s\",\"%d\",\"%s\",\n", Users[i].Login.c_str(), Users[i].Password.c_str(), Users[i].Id, Users[i].ShardPrivilege.c_str());
 		}
 		fprintf (fp, "};\n");
 
@@ -352,7 +367,7 @@ void writePlayerDatabase ()
 		fprintf (fp, "\nShards = {\n");
 		for (i = 0; i < (sint) Shards.size (); i++)
 		{
-			fprintf (fp, " \"%s\", \"%s\"%c\n", Shards[i].WSAddr.c_str (), Shards[i].Name.c_str (), (i==(sint)Shards.size()-1)?' ':',');
+			fprintf (fp, " \"%s\", \"%s\",\n", Shards[i].WSAddr.c_str (), Shards[i].Name.c_str ());
 		}
 		fprintf (fp, "};\n");
 
@@ -404,7 +419,25 @@ public:
 
 		connectionClientInit ();
 		
-		connectionWSInit ();
+		//
+		// Get Config file variables
+		//
+
+		uint16 port = 49998;
+		try
+		{
+			port = ConfigFile.getVar("WSPort").asInt();
+		}
+		catch (Exception &)
+		{
+		}
+		connectionWSInit (port);
+
+		try { ServerVersion = ConfigFile.getVar("ServerVersion").asInt(); } catch (Exception &) { }
+
+		try { AcceptNewUser = ConfigFile.getVar("AcceptNewUser").asInt() == 1; } catch (Exception &) { }
+		try { AcceptExternalShard = ConfigFile.getVar("AcceptExternalShard").asInt() == 1; } catch (Exception &) { }
+		try { CryptPassword = ConfigFile.getVar("CryptPassword").asInt() == 1; } catch (Exception &) { }
 
 		Init = true;
 	}
@@ -417,6 +450,8 @@ public:
 			writePlayerDatabase ();
 			delete PlayerDatabase;
 		}
+
+		Output.displayNL ("Login Service released");
 	}
 };
 
@@ -437,7 +472,7 @@ NLMISC_COMMAND (shards, "displays the list of all registered shards", "")
 	log.displayNL ("Display the %d registered shards :", Shards.size());
 	for (uint i = 0; i < Shards.size(); i++)
 	{
-		log.displayNL ("> %s %d %d %s %s", Shards[i].Name.c_str(), Shards[i].Online, Shards[i].NbPlayers, Shards[i].SockId->asString().c_str(), Shards[i].WSAddr.c_str());
+		log.displayNL ("> %s %d %d %s '%s' '%s'", Shards[i].Name.c_str(), Shards[i].Online, Shards[i].NbPlayers, Shards[i].SockId->asString().c_str(), Shards[i].WSAddr.c_str(), Shards[i].ShardName);
 	}
 	log.displayNL ("End ot the list");
 
@@ -453,7 +488,7 @@ NLMISC_COMMAND (users, "displays the list of all registered users", "")
 	log.displayNL ("Display the %d registered users :", Users.size());
 	for (uint i = 0; i < Users.size(); i++)
 	{
-		log.displayNL ("> %d %d %s %s '%s' '%s'", Users[i].Id, Users[i].State, Users[i].Login.c_str(), Users[i].Cookie.toString().c_str(), Users[i].SockId->asString().c_str(), Users[i].ShardId->asString().c_str());
+		log.displayNL ("> %d %d %s %s '%s' '%s' '%s'", Users[i].Id, Users[i].State, Users[i].Login.c_str(), Users[i].Cookie.toString().c_str(), Users[i].SockId->asString().c_str(), Users[i].ShardId->asString().c_str(), Users[i].ShardPrivilege.c_str());
 	}
 	log.displayNL ("End ot the list");
 

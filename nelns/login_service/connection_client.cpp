@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_client.cpp,v 1.5 2001/09/20 08:54:47 lecroart Exp $
+ * $Id: connection_client.cpp,v 1.6 2002/01/14 17:48:05 lecroart Exp $
  *
  */
 
@@ -43,10 +43,11 @@
 #include "nel/net/login_cookie.h"
 #include "login_service.h"
 
-#ifdef NL_OS_UNIX
+#define CRYPT_PASSWORD 1
+
+#if defined(NL_OS_UNIX) && CRYPT_PASSWORD
 extern "C" char *crypt (const char *__key, const char *__salt);
 #endif
-
 
 using namespace std;
 using namespace NLMISC;
@@ -66,14 +67,19 @@ static uint32 rand64 ()
 string cryptPassword (const string &password)
 {
 #if defined(NL_OS_UNIX) && CRYPT_PASSWORD
-	char Salt[3];
-	static char SaltString[65] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./";
+	if (CryptPassword)
+	{
+		char Salt[3];
+		static char SaltString[65] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./";
 
-	Salt[0] = SaltString[rand64()];
-	Salt[1] = SaltString[rand64()];
-	Salt[2] = '\0';
+		Salt[0] = SaltString[rand64()];
+		Salt[1] = SaltString[rand64()];
+		Salt[2] = '\0';
 
-	return string (crypt (password.c_str(), Salt));
+		return string (crypt (password.c_str(), Salt));
+	}
+	else
+		return password;
 #else
 	return password;
 #endif
@@ -83,19 +89,26 @@ string cryptPassword (const string &password)
 bool checkPassword (const string &password, const string &encrypted)
 {
 #if defined(NL_OS_UNIX) && CRYPT_PASSWORD
-	char Salt[3];
-
-	if (encrypted.size() != EncryptedSize)
+	if (CryptPassword)
 	{
-		nlwarning ("checkPassword(): \"%s\" is not a valid encrypted password", encrypted.c_str());
-		return false;
+		char Salt[3];
+
+		if (encrypted.size() != EncryptedSize)
+		{
+			nlwarning ("checkPassword(): \"%s\" is not a valid encrypted password", encrypted.c_str());
+			return false;
+		}
+
+		Salt[0] = encrypted[0];
+		Salt[1] = encrypted[1];
+		Salt[2] = '\0';
+
+		return encrypted == crypt (password.c_str(), Salt);
 	}
-
-	Salt[0] = encrypted[0];
-	Salt[1] = encrypted[1];
-	Salt[2] = '\0';
-
-	return encrypted == crypt (password.c_str(), Salt);
+	else
+	{
+		return encrypted == password;
+	}
 #else
 	return encrypted == password;
 #endif
@@ -143,6 +156,20 @@ bool stringIsStandard(const string &str)
 	return true;
 }
 
+bool havePrivilege (string userPriv, string shardPriv)
+{
+	if (userPriv.empty())
+	{
+		return shardPriv.empty();
+	}
+	else
+	{
+		if (shardPriv.empty())
+			return true;
+		else
+			return userPriv.find (shardPriv) != string::npos;
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -223,17 +250,20 @@ static void cbClientVerifyLoginPassword (CMessage &msgin, TSockId from, CCallbac
 		if (userPos == -1)
 		{
 			// unknown user
-#if ACCEPT_NEW_USER
-			// add the new user
-			addUser (Login, Password);
-			// take the new user entry
-			userPos = findUser (Login);
-			Output.displayNL ("---: %3d New User (new id:%d)", -1, userToLog(userPos));
-#else
-			// reject the new user
-			reason = "Bad login";
-			Output.displayNL ("---: %3d Bad Login", userToLog(userPos));
-#endif
+			if (AcceptNewUser)
+			{
+				// add the new user
+				addUser (Login, Password);
+				// take the new user entry
+				userPos = findUser (Login);
+				Output.displayNL ("---: %3d New User (new id:%d)", -1, userToLog(userPos));
+			}
+			else
+			{
+				// reject the new user
+				reason = "Bad login";
+				Output.displayNL ("---: %3d Bad Login", userToLog(userPos));
+			}
 		}
 		else
 		{
@@ -261,7 +291,8 @@ static void cbClientVerifyLoginPassword (CMessage &msgin, TSockId from, CCallbac
 		// count online shards
 		for (uint i = 0; i < Shards.size (); i++)
 		{
-			if (Shards[i].Online)
+			// add it only if the shard is on line and the user can go to this shard
+			if (Shards[i].Online && havePrivilege(Users[userPos].ShardPrivilege, Shards[i].ShardName))
 			{
 				nbshard++;
 			}
@@ -286,7 +317,7 @@ static void cbClientVerifyLoginPassword (CMessage &msgin, TSockId from, CCallbac
 		// send address and name of all online shards
 		for (uint i = 0; i < Shards.size (); i++)
 		{
-			if (Shards[i].Online)
+			if (Shards[i].Online && havePrivilege (Users[userPos].ShardPrivilege, Shards[i].ShardName))
 			{
 				// serial the name of the shard
 				string shardname;
@@ -347,7 +378,7 @@ static void cbClientChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase
 
 			for (sint32 i = 0; i < (sint32) Shards.size (); i++)
 			{
-				if (Shards[i].Online && Shards[i].WSAddr == WSAddr)
+				if (Shards[i].Online && Shards[i].WSAddr == WSAddr && havePrivilege ((*it).ShardPrivilege, Shards[i].ShardName))
 				{
 					CMessage msgout (CNetManager::getNetBase("WSLS")->getSIDA (), "CS");
 					const CInetAddress &ia = netbase.hostAddress ((*it).SockId);

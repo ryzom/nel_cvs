@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.6 2002/06/11 09:36:09 hanappe Exp $
+ * $Id: source_dsound.cpp,v 1.7 2002/06/20 08:38:53 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -389,7 +389,7 @@ void CSourceDSound::play()
 	}
 
 	_UserState = NL_DSOUND_PLAYING;
-	DBGPOS(("PLAY: PLAYING"));
+	DBGPOS(("[%p] PLAY: PLAYING", this));
 
     LeaveCriticalSection(&_CriticalSection); 
 }
@@ -405,7 +405,7 @@ void CSourceDSound::stop()
 	TSourceDSoundUserState old = _UserState;
 
 	_UserState = NL_DSOUND_STOPPED;
-	DBGPOS(("STOP: STOPPED"));
+	DBGPOS(("[%p] STOP: STOPPED", this));
 
 	if (old == NL_DSOUND_PLAYING)
 	{
@@ -428,7 +428,7 @@ void CSourceDSound::pause()
 	TSourceDSoundUserState old = _UserState;
 
 	_UserState = NL_DSOUND_PAUSED;
-	DBGPOS(("PAUZ: PAUSED"));
+	DBGPOS(("[%p] PAUZ: PAUSED", this));
 
 	if (old == NL_DSOUND_PLAYING)
 	{
@@ -1325,7 +1325,7 @@ bool CSourceDSound::fill()
 			{
 				if (_Loop)
 				{
-					DBGPOS(("FILL: LOOP"));
+					DBGPOS(("[%p] FILL: LOOP", this));
 
 					CFastMem::memcpy(ptr2 + bytes, data, bytes2 - bytes); 
 					_BytesWritten = bytes2 - bytes;
@@ -1348,7 +1348,7 @@ bool CSourceDSound::fill()
 
 		if (_Loop)
 		{
-			DBGPOS(("FILL: LOOP"));
+			DBGPOS(("[%p] FILL: LOOP", this));
 
 			CFastMem::memcpy(ptr1 + bytes, data, bytes1 - bytes);                    
 			_BytesWritten = bytes1 - bytes;
@@ -1391,7 +1391,7 @@ bool CSourceDSound::fill()
 		if (_Loop)
 		{
 			// If we're looping, start all over again
-			DBGPOS(("FILL: LOOP"));
+			DBGPOS(("[%p] FILL: LOOP", this));
 			_BytesWritten = 0;
 		}
 		else
@@ -1409,8 +1409,8 @@ bool CSourceDSound::fill()
 
 			_EndState = (playPos > _EndPosition)? NL_DSOUND_TAIL1 : NL_DSOUND_TAIL2;
 
-			DBGPOS(("FILL: SILENCING"));
-			DBGPOS(("FILL: ENDSTATE=%d, E=%d, P=%d", (int) _EndState, _EndPosition, playPos));
+			DBGPOS(("[%p] FILL: SILENCING", this));
+			DBGPOS(("[%p] FILL: ENDSTATE=%d, E=%d, P=%d", this, (int) _EndState, _EndPosition, playPos));
 		}
 	}
 
@@ -1422,7 +1422,7 @@ bool CSourceDSound::fill()
 		_NextWritePos  -= _SecondaryBufferSize;
 	}
  
-	DBGPOS(("FILL: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
+	DBGPOS(("[%p] FILL: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", this, playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
 
 
 #if NLSOUND_PROFILE
@@ -1516,20 +1516,20 @@ bool CSourceDSound::silence()
 	{
 		// The buffer played passed the last sample. Flag the source as stopped.
 		_EndState = NL_DSOUND_ENDED;
-		DBGPOS(("SLNC: ENDED"));
+		DBGPOS(("[%p] SLNC: ENDED", this));
 
 		// If the buffer was playing, mark it as stopped
 		if (_UserState == NL_DSOUND_PLAYING)
 		{
 			_UserState = NL_DSOUND_STOPPED;
-			DBGPOS(("SLNC: STOPPED"));
+			DBGPOS(("[%p] SLNC: STOPPED", this));
 		}
 	}
 	else if ((playPos < _EndPosition) && (_EndState == NL_DSOUND_TAIL1))
 	{
 		// The play cursor wrapped around the buffer and is now before the end position
 		_EndState = NL_DSOUND_TAIL2;
-		DBGPOS(("FILL: ENDSTATE=%d, E=%d, P=%d", (int) _EndState, _EndPosition, playPos));
+		DBGPOS(("[%p] FILL: ENDSTATE=%d, E=%d, P=%d", this, (int) _EndState, _EndPosition, playPos));
 	}
 
 
@@ -1539,17 +1539,17 @@ bool CSourceDSound::silence()
 	{
 		// The buffer is now completely filled with silence
 		_SecondaryBufferState = NL_DSOUND_SILENCED;
-		DBGPOS(("SLNC: SILENCED"));
+		DBGPOS(("[%p] SLNC: SILENCED", this));
 
 		// If the buffer was playing, mark it as stopped
 		if (_UserState == NL_DSOUND_PLAYING)
 		{
 			_UserState = NL_DSOUND_STOPPED;
-			DBGPOS(("SLNC: STOPPED*"));
+			DBGPOS(("[%p] SLNC: STOPPED*", this));
 		}
 	}
 
-	DBGPOS(("SLNC: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
+	DBGPOS(("[%p] SLNC: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", this, playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
 
 
 #if NLSOUND_PROFILE
@@ -1594,7 +1594,7 @@ bool CSourceDSound::silence()
 
 	writtenTooMuch = NLSOUND_DISTANCE(writePos, _NextWritePos, _SecondaryBufferSize);
 
-    DBGPOS(("FADE: TOO=%d", writtenTooMuch));
+    DBGPOS(("[%p] FADE: TOO=%d", this, writtenTooMuch));
 
 
 	uint8* data = ((CBufferDSound*) _Buffer)->getData();
@@ -1622,7 +1622,7 @@ bool CSourceDSound::silence()
             xfadeSize = 0;                            
         }
 
-        DBGPOS(("FADE: END, TOO=%d, S=%d, F=%d", writtenTooMuch, _SilenceWritten, xfadeSize));
+        DBGPOS(("[%p] FADE: END, TOO=%d, S=%d, F=%d", this, writtenTooMuch, _SilenceWritten, xfadeSize));
     }
     
     // If the sound looped, it's possible that the number of samples
@@ -1642,7 +1642,7 @@ bool CSourceDSound::silence()
             xfadeSize = writtenTooMuch / 2;
         }
 
-        DBGPOS(("FADE: LOOPED, TOO=%d, F=%d", writtenTooMuch, xfadeSize));
+        DBGPOS(("[%p] FADE: LOOPED, TOO=%d, F=%d", this, writtenTooMuch, xfadeSize));
 
     }
 
@@ -1660,7 +1660,7 @@ bool CSourceDSound::silence()
             xfadeSize = _BufferSize - _BytesWritten;
         }
 
-        DBGPOS(("FADE: STD, TOO=%d, F=%d", writtenTooMuch, xfadeSize));
+        DBGPOS(("[%p] FADE: STD, TOO=%d, F=%d", this, writtenTooMuch, xfadeSize));
     }
 }
 
@@ -1862,8 +1862,8 @@ void CSourceDSound::crossFade()
 	}
 
 
-    DBGPOS(("XFADE"));
-    DBGPOS(("P=%d, W=%d, NW=%d, SZ=%d, BW=%d, B=%d", playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, bytes1 + bytes2));
+    DBGPOS(("[%p] XFADE", this));
+    DBGPOS(("[%p] P=%d, W=%d, NW=%d, SZ=%d, BW=%d, B=%d", this, playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, bytes1 + bytes2));
 
 	
 
@@ -2039,7 +2039,7 @@ void CSourceDSound::fadeOut()
 
 
 	_SecondaryBufferState = NL_DSOUND_SILENCING;
-	DBGPOS(("FDOU: SILENCING"));
+	DBGPOS(("[%p] FDOU: SILENCING", this));
 
 	// Keep track of where tha last sample was written and the position
 	// of the play cursor relative to the end position. if the _EndState
@@ -2051,10 +2051,10 @@ void CSourceDSound::fadeOut()
 	}
 
 	_EndState = (playPos > _EndPosition)? NL_DSOUND_TAIL1 : NL_DSOUND_TAIL2;
-	DBGPOS(("FDOU: ENDSTATE=%d, E=%d, P=%d", (int) _EndState, _EndPosition, playPos));
+	DBGPOS(("[%p] FDOU: ENDSTATE=%d, E=%d, P=%d", this, (int) _EndState, _EndPosition, playPos));
 
 
-	DBGPOS(("FDOU: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
+	DBGPOS(("[%p] FDOU: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", this, playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
 
 
 
@@ -2142,7 +2142,7 @@ void CSourceDSound::fadeIn()
 			{
 				if (_Loop)
 				{
-					DBGPOS(("FDIN: LOOP"));
+					DBGPOS(("[%p] FDIN: LOOP", this));
 
 					CFastMem::memcpy(ptr2 + bytes, data, bytes2 - bytes); 
 					_BytesWritten = bytes2 - bytes;
@@ -2165,7 +2165,7 @@ void CSourceDSound::fadeIn()
 
 		if (_Loop)
 		{
-			DBGPOS(("FDIN: LOOP"));
+			DBGPOS(("[%p] FDIN: LOOP", this));
 
 			CFastMem::memcpy(ptr1 + bytes, data, bytes1 - bytes);                    
 			_BytesWritten = bytes1 - bytes;
@@ -2199,7 +2199,7 @@ void CSourceDSound::fadeIn()
 	// Update the state variables
 
 	_SecondaryBufferState = NL_DSOUND_FILLING;
-	DBGPOS(("FDIN: FILLING"));
+	DBGPOS(("[%p] FDIN: FILLING", this));
 
 
 	// Check if we've reached the end of the file
@@ -2208,7 +2208,7 @@ void CSourceDSound::fadeIn()
 		if (_Loop)
 		{
 			// If we're looping, start all over again
-			DBGPOS(("FDIN: LOOP"));
+			DBGPOS(("[%p] FDIN: LOOP", this));
 			_BytesWritten = 0;
 		}
 		else
@@ -2227,8 +2227,8 @@ void CSourceDSound::fadeIn()
 
 			_EndState = (playPos > _EndPosition)? NL_DSOUND_TAIL1 : NL_DSOUND_TAIL2;
 
-			DBGPOS(("FDIN: SILENCING"));
-			DBGPOS(("FDIN: ENDSTATE=%d, E=%d, P=%d", (int) _EndState, _EndPosition, playPos));
+			DBGPOS(("[%p] FDIN: SILENCING", this));
+			DBGPOS(("[%p] FDIN: ENDSTATE=%d, E=%d, P=%d", this, (int) _EndState, _EndPosition, playPos));
 		}
 	}
 
@@ -2240,7 +2240,7 @@ void CSourceDSound::fadeIn()
 		_NextWritePos  -= _SecondaryBufferSize;
 	}
  
-	DBGPOS(("FDIN: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
+	DBGPOS(("[%p] FDIN: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", this, playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
 
 
 #if NLSOUND_PROFILE

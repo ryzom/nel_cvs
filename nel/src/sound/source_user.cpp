@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.21 2002/06/04 10:04:45 hanappe Exp $
+ * $Id: source_user.cpp,v 1.22 2002/06/20 08:36:59 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,7 +156,7 @@ void					CSourceUser::play()
 #ifdef NL_DEBUG
 	if ( _Sound != NULL )
 	{
-		nlassert( (_Sound->getBuffer() != NULL) );
+		nlassert( _Sound->getBuffer() != NULL );
 	}
 #endif
 
@@ -350,6 +350,7 @@ void					CSourceUser::setSourceRelativeMode( bool mode )
 }
 
 
+
 /*
  * Copy the source data into a track
  */
@@ -455,6 +456,7 @@ void					CSourceUser::enable( bool toplay, float gain )
 /*
  * Serial sound and looping state (warning: partial serial, for CEnvSoundUser)
  */
+/*
 void					CSourceUser::serial( NLMISC::IStream& s )
 {
 	// If you change this, increment the version number in CEnvSoundUser::load() !
@@ -474,6 +476,7 @@ void					CSourceUser::serial( NLMISC::IStream& s )
 		}
 	}
 }
+*/
 
 
 /*
@@ -534,7 +537,7 @@ bool					CSourceUser::isStopped()
 		{
 			if (CTime::getLocalTime()-_PlayStart < _Sound->getDuration())
 			{
-				nlwarning ("openal bug (think that the sample is finished but not : %u %u", (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
+				nlwarning ("openal bug (think that the sample [%p] is finished but not : %u %u", getTrack()->DrvSource, (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
 			}
 		}
 	}

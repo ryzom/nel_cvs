@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.2 2001/01/08 17:02:07 lecroart Exp $
+ * $Id: system_info.cpp,v 1.3 2001/01/08 17:24:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,13 +23,13 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/types_nl.h"
+
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
 #include <tchar.h>
 #include <string>
 #endif
-
-#include "nel/misc/types_nl.h"
 
 #include "nel/misc/common.h"
 #include "nel/misc/system_info.h"

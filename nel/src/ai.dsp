@@ -178,10 +178,6 @@ SOURCE=.\ai\agent\digital.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\agent\gd_agent_script.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ai\agent\group_type.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.8 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.9 2004/02/23 13:49:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -238,7 +238,6 @@ bool CPSQuad::hasOpaqueFaces(void)
 void CPSQuad::init(void)
 {	
 	_Mat.setLighting(false);	
-	_Mat.setZFunc(CMaterial::less);
 	_Mat.setDoubleSided(true);
 
 

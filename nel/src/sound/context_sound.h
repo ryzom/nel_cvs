@@ -1,6 +1,6 @@
 /** \file context_sound.h
  *
- * $Id: context_sound.h,v 1.7 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: context_sound.h,v 1.8 2004/06/11 12:29:51 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,7 +175,7 @@ class CContextSoundContainer : public IContextSoundContainer
 
 		if (i != NbJoker)
 			return;
-		nlassert(i==NbJoker);
+		nlassertex(i==NbJoker, ("Error while adding sound '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
 
 		int randomValue;
 		if (UseRandom)
@@ -190,7 +190,7 @@ class CContextSoundContainer : public IContextSoundContainer
 				}
 				else if (!arg.empty())
 				{
-					nlassert (ok == false);
+					nlassertex (ok == false, ("Error while adding sound '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
 					// end of the argument.
 					randomValue = atoi(arg.c_str());
 					arg = "";
@@ -200,13 +200,13 @@ class CContextSoundContainer : public IContextSoundContainer
 			// read the potential last arg.
 			if (!arg.empty())
 			{
-				nlassert (ok == false);
+				nlassertex (ok == false, ("Error while adding sound '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
 				// end of the argument.
 				randomValue = atoi(arg.c_str());
 				arg = "";
 				ok = true;
 			}
-			nlassert (ok == true);
+			nlassertex (ok == true, ("Error while adding sound '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
 
 		}
 		else
@@ -238,7 +238,7 @@ class CContextSoundContainer : public IContextSoundContainer
 		if (!ret.second)
 		{
 			THashContextSound::iterator it = _ContextSounds.find(cm);
-			nlassert(it != _ContextSounds.end());
+			nlassertex(it != _ContextSounds.end(), ("Error wile adding soudn '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
 
 			nlwarning("Sound %s has the same context matcher as the sound %s", NLMISC::CStringMapper::unmap(sound->getName()).c_str(), NLMISC::CStringMapper::unmap(it->second->getName()).c_str());
 		}

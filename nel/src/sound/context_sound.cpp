@@ -1,6 +1,6 @@
 /** \file context_sound.cpp
  *
- * $Id: context_sound.cpp,v 1.5 2003/11/21 16:21:39 corvazier Exp $
+ * $Id: context_sound.cpp,v 1.6 2004/06/11 12:29:51 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,7 +196,7 @@ void CContextSound::init()
 				}
 				else
 				{
-					nlassert(nbJoker < SoundContextNbArgs);
+					nlassertex(nbJoker < SoundContextNbArgs, ("Error will trying to play ContextSound '%s'", CStringMapper::unmap(_Name).c_str()));
 					contextArgIndex[nbJoker++] = atoi(index.c_str());
 					parseArg = false;
 					index = "";
@@ -204,13 +204,13 @@ void CContextSound::init()
 			}
 			else if (*first == 'r')
 			{
-				nlassert(useRandom == false);
+				nlassertex(useRandom == false, ("Error will trying to play ContextSound '%s'", CStringMapper::unmap(_Name).c_str()));
 				useRandom = true;
 			}
 		}
 		else if (*first == '%')
 		{
-			nlassert(useRandom == false);
+			nlassertex(useRandom == false, ("Error will trying to play ContextSound '%s'", CStringMapper::unmap(_Name).c_str()));
 			parseArg = true;
 		}
 	}
@@ -224,7 +224,7 @@ void CContextSound::init()
 		}
 		else
 		{
-			nlassert(nbJoker < SoundContextNbArgs);
+			nlassertex(nbJoker < SoundContextNbArgs, ("Error will trying to play ContextSound '%s'", CStringMapper::unmap(_Name).c_str()));
 			contextArgIndex[nbJoker++] = atoi(index.c_str());
 			parseArg = false;
 		}
@@ -256,7 +256,7 @@ void CContextSound::init()
 		LM_CASE_CONTAINER_CREATOR(9)
 		LM_CASE_CONTAINER_CREATOR(10)
 	default:
-		nlwarning("Unsuported number of context argument !");
+		nlwarning("Unsuported number of context argument in context sound '%s'!", CStringMapper::unmap(_Name).c_str());
 		return;
 	}
 	// cleanup macro

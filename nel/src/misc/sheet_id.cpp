@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.31 2004/07/08 16:45:09 boucher Exp $
+ * $Id: sheet_id.cpp,v 1.32 2004/07/30 15:37:30 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -384,6 +384,19 @@ string CSheetId::toString() const
 	}
 
 } // toString //
+
+void CSheetId::serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+{
+	f.serial( _Id.Id );
+
+#ifdef NL_DEBUG_SHEET_ID
+	CStaticMap<uint32, CChar>::iterator it(_SheetIdToName.find(_Id.Id));
+	if (it != _SheetIdToName.end())
+		_DebugSheetName = it->second.Ptr;
+	else
+		_DebugSheetName = NULL;
+#endif
+}
 
 
 

@@ -1,7 +1,7 @@
 /** \file nel_3dsmax_shared.cpp
  * Defines the entry point for the DLL application.
  *
- * $Id: nel_3dsmax_shared.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: nel_3dsmax_shared.cpp,v 1.2 2001/08/10 07:50:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,6 @@
 #include "stdafx.h"
 #include "..\nel_patch_lib\rpo.h"
 #include "nel_3dsmax_shared.h"
-#include "..\nel_export\checkversion.h"
 
 BOOL APIENTRY DllMain( HANDLE hModule, 
                        DWORD  ul_reason_for_call, 
@@ -48,13 +47,6 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
 void init ()
 {
-	// Check version
-	static bool bPassed=false;
-	if (!bPassed)
-	{
-		bPassed=true;
-		CheckPluginVersion ("plugins max\\nel_3dsmax_shared.dll");
-	}
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
- * <File description>
+ * Network engine, layer 4, server
  *
- * $Id: callback_server.cpp,v 1.2 2001/02/22 18:04:25 cado Exp $
+ * $Id: callback_server.cpp,v 1.3 2001/02/23 09:48:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,6 +104,15 @@ void CCallbackServer::send( CMessage& outmsg, TSockId hostid )
 void CCallbackServer::setConnectionCallback( TNetCallback cb )
 {
 	_ConnectionCallback = cb;
+}
+
+
+/*
+ * Returns the internet address of the listening socket
+ */
+const CInetAddress *CCallbackServer::listenAddress()
+{
+	return CMsgSocket::listenAddress();
 }
 
 

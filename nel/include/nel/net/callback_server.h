@@ -1,7 +1,7 @@
 /** \file callback_server.h
- * <File description>
+ * Network engine, layer 4, server
  *
- * $Id: callback_server.h,v 1.2 2001/02/22 18:04:16 cado Exp $
+ * $Id: callback_server.h,v 1.3 2001/02/23 09:48:19 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,9 @@
 namespace NLNET {
 
 
+class CInetAddress;
+
+
 /**
  * Server class for layer 4
  * Implementation: using CMsgSocket
@@ -60,6 +63,9 @@ public:
 
 	/// Sets callback for incoming connections
 	void	setConnectionCallback( TNetCallback cb );
+
+	/// Returns the internet address of the listening socket
+	const CInetAddress	*listenAddress();
 
 	// Internal use
 	friend void cbProcessConnectionCallback( CMessage& msg, TSockId id );

@@ -767,5 +767,45 @@ SOURCE=.\sh\setup.sh
 SOURCE=.\update_tools.bat
 # End Source File
 # End Group
+# Begin Group "VegetSet Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\vegetset\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\vegetset\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\vegetset\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\vegetset\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\vegetset\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\vegetset\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\vegetset\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\vegetset\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\vegetset\sh\install.sh
+# End Source File
+# End Group
 # End Target
 # End Project

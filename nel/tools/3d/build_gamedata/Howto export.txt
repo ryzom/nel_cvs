@@ -495,6 +495,31 @@ Copy the build_gamedata/processes/farbank/farbank/*.farbank files in the client/
 
 -----------------------------------------------------------------------------------------------------
 
+* EXPORT A VEGETABLE SET
+
+Manual process:
+---------------
+
+Directly copy your vegetset file in the client directory client/data/vegetables.
+
+Automatic process:
+------------------
+
+Clean:
+Clean will delete build_gamedata/processes/vegetset/vegetset/*.* file.
+
+Export:
+Copy the file from database/landscape/vegetables in build_gamedata/processes/vegetset/vegetset.
+
+Build:
+Does nothing.
+
+Install:
+Copy the file from build_gamedata/processes/vegetset/vegetset in client/data/vegetables.
+
+-----------------------------------------------------------------------------------------------------
+
+
 
 
 -----------------------------------------------------------------------------------------------------

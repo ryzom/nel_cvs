@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.54 2001/05/04 14:44:29 lecroart Exp $
+ * $Id: service.cpp,v 1.55 2001/05/10 08:12:26 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -169,7 +169,7 @@ IService::IService()
 	// Singleton
 	nlassert( IService::Instance == NULL );
 	IService::Instance = this;
-
+	_Initialized = false;
 }
 
 
@@ -204,9 +204,14 @@ void AESConnection (const string &serviceName, TSockId from, void *arg)
 	// established a connection to the AES, identify myself
 		
 	CMessage msgout (CNetManager::getSIDA ("AES"), "SID");
-	msgout.serial (IService::_ShortName);
-	msgout.serial (IService::_LongName);
+	msgout.serial (IService::_ShortName, IService::_LongName);
 	CNetManager::send ("AES", msgout);
+
+	if (IService::Instance->_Initialized)
+	{
+		CMessage msgout2 (CNetManager::getSIDA ("AES"), "SR");
+		CNetManager::send ("AES", msgout2);
+	}
 }
 
 
@@ -330,7 +335,7 @@ sint IService::main (int argc, char **argv)
 			bool ok = false;
 			while (!ok)
 			{
-				// todo read the naming service address from the config file
+				// read the naming service address from the config file
 				CInetAddress loc(_ConfigFile.getVar("NSHost").asString(), _ConfigFile.getVar("NSPort").asInt());
 				try
 				{
@@ -350,13 +355,13 @@ sint IService::main (int argc, char **argv)
 		}
 
 		//
-		// Connect to the local AES
+		// Connect to the local AES and send identification
 		//
 
 		if (_ShortName != "AES" && _ShortName != "AS")
 		{
-			CNetManager::addClient ("AES", "localhost:49997");
 			CNetManager::setConnectionCallback ("AES", AESConnection, NULL);
+			CNetManager::addClient ("AES", "localhost:49997");
 		}
 
 		//
@@ -365,11 +370,15 @@ sint IService::main (int argc, char **argv)
 
 		try
 		{
-			_SId = _ConfigFile.getVar("SId").asInt();
-			if (_SId<0 || _SId>255)
+			sint32 sid = _ConfigFile.getVar("SId").asInt();
+			if (sid<0 || sid>255)
 			{
-				nlwarning("Bad SId in the config file %d in not in [0;255] range", _SId);
+				nlwarning("Bad SId in the config file, %d is not in [0;255] range", sid);
 				_SId = 0;
+			}
+			else
+			{
+				_SId = (uint8) sid;
 			}
 		}
 		catch(EUnknownVar&)
@@ -472,6 +481,8 @@ sint IService::main (int argc, char **argv)
 		//
 		// On Unix system, the service fork itself to give back the hand to the shell
 		//
+		// note: we don't forking anymore because it doesn't work with thread system
+		//
 
 #ifdef NL_OS_UNIX
 		/*
@@ -500,11 +511,13 @@ sint IService::main (int argc, char **argv)
 
 		if (_ShortName != "AES" && _ShortName != "AS")
 		{
-			// send the identification
+			// send the ready message (service init finished)
 			CMessage msgout (CNetManager::getSIDA ("AES"), "SR");
 			CNetManager::send ("AES", msgout);
 		}
 
+		_Initialized = true;
+		
 		nlinfo ("Service ready");
 
 		//

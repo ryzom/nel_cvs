@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.80 2002/10/02 09:50:24 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.81 2002/10/10 12:58:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2442,8 +2442,11 @@ void CObjectViewer::enableDynamicObjectLightingTest(NLPACS::CGlobalRetriever *gl
 		}
 		else
 		{
-			string	str= string("Path not found for Light Test Shape: ") + _ObjectLightTestShape;
-			::MessageBox(NULL, str.c_str(), "Dynamic Object Light Test", MB_OK|MB_ICONEXCLAMATION);
+			if (!_ObjectLightTestShape.empty())
+			{			
+				string	str= string("Path not found for Light Test Shape: ") + _ObjectLightTestShape;
+				::MessageBox(NULL, str.c_str(), "Dynamic Object Light Test", MB_OK|MB_ICONEXCLAMATION);
+			}
 			// disable.
 			_ObjectLightTest= NULL;
 			_GlobalRetriever= NULL;

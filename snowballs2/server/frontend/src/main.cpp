@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.3 2001/07/24 17:00:47 valignat Exp $
+ * $Id: main.cpp,v 1.4 2001/07/24 17:30:03 lecroart Exp $
  */
 
 /*
@@ -35,7 +35,7 @@
 #include <nel/net/net_manager.h>
 #include <nel/net/login_server.h>
 
-#include <hash_map>
+#include <map>
 #include <utility>
 
 using namespace NLMISC;
@@ -57,7 +57,7 @@ struct _player
 	TSockId  con;
 };
 
-typedef hash_map<uint32, _player> _pmap;
+typedef map<uint32, _player> _pmap;
 
 _pmap localPlayers;
 

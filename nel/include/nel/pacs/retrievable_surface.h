@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.2 2001/05/09 12:59:24 legros Exp $
+ * $Id: retrievable_surface.h,v 1.3 2001/05/10 12:18:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,6 +105,9 @@ protected:
 	/// The topologies associated with the surface, for each type of model.
 	sint32								_Topologies[NumCreatureModels];
 
+	/// The center of the surface.
+	NLMISC::CVector						_Center;
+
 public:
 	CRetrievableSurface()
 	{
@@ -122,6 +125,8 @@ public:
 	sint32								getTopology(uint model) const { return _Topologies[model]; }
 
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }
+
+	const NLMISC::CVector				&getCenter() const { return _Center; }
 
 	void								serial(NLMISC::IStream &f);
 };

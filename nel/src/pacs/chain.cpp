@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.3 2001/05/09 12:59:06 legros Exp $
+ * $Id: chain.cpp,v 1.4 2001/05/10 12:19:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,27 @@ void	NLPACS::COrderedChain::serial(IStream &f)
 	f.serialCont(_Vertices);
 	f.serial(_Forward);
 	f.serial(_ParentId);
+}
+
+
+void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
+{
+	if (_Right != -2)
+	{
+		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
+		nlwarning("Tried to set the right surface of a chain whereas previous value is different from -2");
+		return;
+	}
+
+	if (index < 0)
+	{
+		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
+		nlwarning("Can't set negative index");
+		return;
+	}
+
+	_Edges = (1<<edge);
+	_Right = -index-256;
 }
 
 

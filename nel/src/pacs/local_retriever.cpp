@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.2 2001/05/09 12:59:06 legros Exp $
+ * $Id: local_retriever.cpp,v 1.3 2001/05/10 12:19:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -197,16 +197,28 @@ void	NLPACS::CLocalRetriever::findEdgeChains()
 			_OrderedChains[_Chains[chain]._SubChains[0]].getVertices().size() == 2 &&
 			(edges = start.Edges & stop.Edges) != 0)
 		{
+			uint	nbEdges = 0;
+			uint	edge;
+
 			for (i=0; i<4; ++i)
 			{
 				if (edges & 1)
 				{
-					_Chains[chain]._Edges |= (1<<i);
-					_EdgeChains[i].push_back(chain);
+					++nbEdges;
+					edge = i;
 				}
-
 				edges >>= 1;
 			}
+
+			if (nbEdges > 1)
+			{
+				nlwarning("in NLPACS::CLocalRetriever::findEdgeChains()");
+				nlerror("Chain %d belongs to more than one zone edge", chain);
+			}
+
+			sint32	numOnEdge = _EdgeChains[edge].size();
+			_EdgeChains[edge].push_back(chain);
+			_Chains[chain].setIndexOnEdge(edge, numOnEdge);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.2 2001/05/09 12:59:06 legros Exp $
+ * $Id: surface_quad.cpp,v 1.3 2001/05/10 12:19:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -301,7 +301,7 @@ bool	NLPACS::CSurfaceQuadTree::check() const
 	return true;
 }
 
-const NLPACS::CQuadLeaf	*NLPACS::CSurfaceQuadTree::getLeaf(CVector &v) const
+const NLPACS::CQuadLeaf	*NLPACS::CSurfaceQuadTree::getLeaf(const CVector &v) const
 {
 	if (_Root == NULL || !_BBox.include(v))
 		return NULL;

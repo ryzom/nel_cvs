@@ -1,7 +1,7 @@
-/** \file retrievable_surface.cpp
+/** \file retriever_bank.h
+ * 
  *
- *
- * $Id: retrievable_surface.cpp,v 1.2 2001/05/10 12:19:02 legros Exp $
+ * $Id: retriever_bank.h,v 1.1 2001/05/10 12:18:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,38 +23,36 @@
  * MA 02111-1307, USA.
  */
 
-#include <vector>
+#ifndef NL_RETRIEVER_BANK_H
+#define NL_RETRIEVER_BANK_H
 
+#include <vector>
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/file.h"
 
-#include "nel/misc/debug.h"
+#include "nel/pacs/local_retriever.h"
 
-#include "nel/pacs/retrievable_surface.h"
-
-using namespace std;
-using namespace NLMISC;
-
-
-float			NLPACS::Models[NumCreatureModels][NumModelCharacteristics] =
+namespace NLPACS
 {
-	{ 0.5f, 1.0f, -1.0f },
-	{ 0.8f, 2.0f, -0.5f },
-	{ 2.0f, 4.0f, +0.5f },
-	{ 4.0f, 8.0f, +0.707f }
+
+class CRetrieverBank
+{
+protected:
+	/// The retrievers stored in the retriever bank.
+	std::vector<CLocalRetriever>	_Retrievers;
+
+public:
+	const std::vector<CLocalRetriever>	&getRetrievers() const { return _Retrievers; }
+	uint								size() const { return _Retrievers.size(); }
+
+	const CLocalRetriever				&getRetriever(uint n) const { return _Retrievers[n]; }
+
+	void								addRetriever(const CLocalRetriever &retriever) { _Retrievers.push_back(retriever); }
 };
 
-void	NLPACS::CRetrievableSurface::serial(IStream &f)
-{
-	uint	i;
-	f.serial(_NormalQuanta);
-	f.serial(_OrientationQuanta);
-	f.serial(_Material);
-	f.serial(_Character);
-	f.serial(_Level);
-	f.serialCont(_Chains);
-	f.serial(_Quad);
-	for (i=0; i<NumCreatureModels; ++i)
-		f.serial(_Topologies[i]);
-	f.serial(_Center);
-}
+}; // NLPACS
+
+#endif // NL_RETRIEVER_BANK_H
+
+/* End of retriever_bank.h */

@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.2 2001/05/09 12:59:24 legros Exp $
+ * $Id: retriever_instance.h,v 1.3 2001/05/10 12:18:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include <vector>
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/vectord.h"
 #include "nel/misc/file.h"
 
 #include "nel/misc/aabbox.h"
@@ -82,18 +83,28 @@ protected:
 public:
 	CRetrieverInstance();
 
+	void								resetInstance();
+	void								resetLinks();
+	void								resetLinks(uint edge);
+
+	sint32								getInstanceId() const { return _InstanceId; }
+	sint32								getRetrieverId() const { return _RetrieverId; }
+
 	void								make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
 											 uint8 orientation, const NLMISC::CVector &origin);
 
 	void								link(const CRetrieverInstance &neighbor, uint8 edge,
 											 const std::vector<CLocalRetriever> &retrievers);
 
-	CLocalRetriever::CPosition			retrievePosition(NLMISC::CVector estimated, const CLocalRetriever &retriever);
+	void								unlink(std::vector<CRetrieverInstance> &instances);
+
+	CLocalRetriever::CLocalPosition		retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever);
 	
 	void								serial(NLMISC::IStream &f);
 
-	NLMISC::CVector						getLocalPosition(const NLMISC::CVector &globalPosition);
-	NLMISC::CVector						getGlobalPosition(const NLMISC::CVector &localPosition);
+	NLMISC::CVector						getLocalPosition(const NLMISC::CVector &globalPosition) const;
+	NLMISC::CVector						getGlobalPosition(const NLMISC::CVector &localPosition) const;
+	NLMISC::CVectorD					getDoubleGlobalPosition(const NLMISC::CVector &localPosition) const;
 
 	NLMISC::CAABBox						getBBox() { return _BBox; }
 };

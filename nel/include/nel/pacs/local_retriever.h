@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.3 2001/05/09 12:59:24 legros Exp $
+ * $Id: local_retriever.h,v 1.4 2001/05/10 12:18:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,16 +99,18 @@ public:
 
 	/**
 	 * An estimation of the position of a point on a specified surface.
+	 * The estimated position is LOCAL reference to the retriever axis.
 	 * \author Benjamin Legros
 	 * \author Nevrax France
 	 * \date 2001
 	 */
-	class CPosition
+	class CLocalPosition
 	{
 	public:
 		sint32							Surface;
 		NLMISC::CVector					Estimation;
 	public:
+		CLocalPosition(sint32 surface=-1, const NLMISC::CVector &estimation=NLMISC::CVector::Null) : Surface(surface), Estimation(estimation) { }
 		void							serial(NLMISC::IStream &f) { f.serial(Surface, Estimation); }
 	};
 

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.2 2001/05/09 12:59:06 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.3 2001/05/10 12:19:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,13 +39,37 @@ using namespace NLMISC;
 
 NLPACS::CRetrieverInstance::CRetrieverInstance()
 {
+	resetInstance();
+}
+
+void	NLPACS::CRetrieverInstance::resetLinks()
+{
 	uint	i;
+	for (i=0; i<4; ++i)
+	{
+		_Neighbors[i] = -1;
+		_EdgeTipLinks[i].clear();
+		_EdgeChainLinks[i].clear();
+	}
+}
+
+void	NLPACS::CRetrieverInstance::resetLinks(uint edge)
+{
+	_Neighbors[edge] = -1;
+	_EdgeTipLinks[edge].clear();
+	_EdgeChainLinks[edge].clear();
+}
+
+void	NLPACS::CRetrieverInstance::resetInstance()
+{
+	_RetrieveTable.clear();
 	_InstanceId = -1;
 	_RetrieverId = -1;
 	_Orientation = 0;
 	_Origin = CVector::Null;
-	for (i=0; i<4; ++i)
-		_Neighbors[i] = -1;
+	_BBox.setHalfSize(CVector::Null);
+	_BBox.setCenter(CVector::Null);
+	resetLinks();
 }
 
 void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
@@ -81,13 +105,16 @@ void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 
 	uint	nEdge = (edge+2)%4;
 
 	// First check if there is no previous link
-	if (_Neighbors[edge] != -1)
+	if (_Neighbors[edge] != -1 && _Neighbors[edge] != neighbor._InstanceId)
 	{
 		nlwarning("in call to NLPACS::CRetrieverInstance::link");
 		nlwarning("_InstanceId=%d _RetrieverId=%d _Neighbors[%d]=%d", _InstanceId, _RetrieverId, edge, _Neighbors[edge]);
 		nlwarning("neighbor._InstanceId=%d", neighbor._InstanceId);
 		nlerror("Neighbor %d has already been set to %d in instance %d", edge, _Neighbors[edge], _InstanceId);
 	}
+
+	if (_Neighbors[edge] == neighbor._InstanceId)
+		return;
 
 	if (neighbor._Neighbors[nEdge] != -1 && neighbor._Neighbors[nEdge] != _InstanceId)
 	{
@@ -190,11 +217,26 @@ void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 
 	}
 }
 
-
-NLPACS::CLocalRetriever::CPosition	NLPACS::CRetrieverInstance::retrievePosition(NLMISC::CVector estimated, const CLocalRetriever &retriever)
+void	NLPACS::CRetrieverInstance::unlink(vector<CRetrieverInstance> &instances)
 {
-	CVector						localEstimated;
-	CLocalRetriever::CPosition	retrieved;
+	uint	edge;
+
+	for (edge=0; edge<4; ++edge)
+	{
+		if (_Neighbors[edge] != -1)
+		{
+			CRetrieverInstance	&neighbor = instances[_Neighbors[edge]];
+			neighbor.resetLinks((edge+2)%4);
+		}
+		resetLinks(edge);
+	}
+}
+
+
+NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever)
+{
+	CVector							localEstimated;
+	CLocalRetriever::CLocalPosition	retrieved;
 
 	// !!!!!! MODIFY THIS !!!!!!
 	localEstimated = estimated;
@@ -239,7 +281,7 @@ NLPACS::CLocalRetriever::CPosition	NLPACS::CRetrieverInstance::retrievePosition(
 	return retrieved;
 }
 
-CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPosition)
+CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPosition) const
 {
 	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
 	static const float	cosTable[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
@@ -252,7 +294,7 @@ CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPositi
 					+globalPosition.z-_Origin.z );
 }
 
-CVector	NLPACS::CRetrieverInstance::getGlobalPosition(const CVector &localPosition)
+CVector	NLPACS::CRetrieverInstance::getGlobalPosition(const CVector &localPosition) const
 {
 	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
 	static const float	cosTable[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
@@ -265,6 +307,18 @@ CVector	NLPACS::CRetrieverInstance::getGlobalPosition(const CVector &localPositi
 					localPosition.z+_Origin.z );
 }
 
+CVectorD	NLPACS::CRetrieverInstance::getDoubleGlobalPosition(const CVector &localPosition) const
+{
+	static const float	sinTable[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
+	static const float	cosTable[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
+
+	double	s = sinTable[_Orientation],
+			c = cosTable[_Orientation];
+
+	return CVectorD( +c*localPosition.x-s*localPosition.y+_Origin.x,
+					 +s*localPosition.x+c*localPosition.y+_Origin.y,
+					 (double)(localPosition.z)+(double)(_Origin.z) );
+}
 
 
 

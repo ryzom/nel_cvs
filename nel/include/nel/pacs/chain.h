@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.2 2001/05/09 12:59:24 legros Exp $
+ * $Id: chain.h,v 1.3 2001/05/10 12:18:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,7 +85,6 @@ protected:
 	friend class CLocalRetriever;
 
 	/// The list of ordered chains that compose the chain.
-//	std::vector<COrderedChain>			_SubChains;
 	std::vector<uint16>					_SubChains;
 
 	/// The surface on the left of the chain.
@@ -107,9 +106,10 @@ protected:
 	/// Build the whole surface from a vector of CVector and the left and right surfaces.
 	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId);
 
+	void								setIndexOnEdge(uint edge, sint32 index);
+
 public:
 	/// Returns a vector of ordered chains that compose the entire chain
-//	const std::vector<COrderedChain>	&getSubChains() const { return _SubChains; }
 	const std::vector<uint16>			&getSubChains() const { return _SubChains; }
 
 	/// Returns the left surface id.
@@ -118,6 +118,12 @@ public:
 	/// Returns the right surface id.
 	sint32								getRight() const { return _Right; }
 
+	/// Gets the index of the chain on the given edge (in the local retriever object.)
+	sint32								getIndexOnEdge(uint edge) const
+	{
+		return (_Edges & (1<<edge) && _Right <= -256) ? -(_Right+256) : -1;
+	}
+	
 	uint16								getStartTip() const { return _StartTip; }
 
 	uint16								getStopTip() const { return _StopTip; }

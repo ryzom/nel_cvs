@@ -1,7 +1,7 @@
 /** \file surface_quad.h
  * 
  *
- * $Id: surface_quad.h,v 1.2 2001/05/09 12:59:24 legros Exp $
+ * $Id: surface_quad.h,v 1.3 2001/05/10 12:18:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,15 +152,18 @@ public:
 	CSurfaceQuadTree(const CSurfaceQuadTree &quad);
 	CSurfaceQuadTree			&operator = (const CSurfaceQuadTree &quad);
 
+	const IQuadNode				*getRoot() const { return _Root; }
+	float						getMaxThickness() const { return _MaxThickness; }
+	uint8						getMaxLevel() const { return _MaxLevel; }
+	const NLMISC::CAABBox		&getBBox() const { return _BBox; }
+
 	void						clear();
 	void						init(float maxThickness, uint maxLevel, NLMISC::CVector &center, float halfSize=80.0f);
-	const NLMISC::CAABBox		&getBBox() const { return _BBox; }
 	void						addVertex(NLMISC::CVector &v);
 	void						compile();
-	const IQuadNode				*getRoot() const { return _Root; }
 
 	bool						check() const;
-	const CQuadLeaf				*getLeaf(NLMISC::CVector &v) const;
+	const CQuadLeaf				*getLeaf(const NLMISC::CVector &v) const;
 
 	void						serial(NLMISC::IStream &f);
 };

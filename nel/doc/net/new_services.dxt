@@ -58,9 +58,7 @@ write IService instead of CNewService.
 \subsection new_services_examples Examples
 
 See the Logging Service and the Naming Service source code
-for an example on how to create a class inherited from
+for examples on how to create a class inherited from
 IService.
-An example of direct usage of IService can be found
-in /code/test/test_rknet.
 
 */

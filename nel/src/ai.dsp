@@ -266,6 +266,10 @@ SOURCE=..\include\nel\ai\agent\msg_group.h
 
 SOURCE=..\include\nel\ai\agent\object_type.h
 # End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\performative.h
+# End Source File
 # End Group
 # End Group
 # Begin Group "common"

@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.13 2002/06/20 08:36:59 hanappe Exp $
+ * $Id: source_user.h,v 1.14 2002/07/25 13:35:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ class CSourceUser : public USource, public IPlayable
 public:
 
 	/// Constructor
-	CSourceUser( TSoundId id=NULL, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL );
+	CSourceUser( TSoundId id=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, CSoundContext *context=0 );
 	/// Destructor
 	virtual ~CSourceUser();
 
@@ -64,14 +64,13 @@ public:
 
 	
 	/// Change the sound binded to the source
-	virtual void					setSound( TSoundId id );
+	virtual void					setSound( TSoundId id, CSoundContext *context = 0 );
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound()									{ return _Sound; }
 	/// Change the priority of the source
 	virtual void					setPriority( TSoundPriority pr, bool redispatch=true );
 	/// Return the priority
 	TSoundPriority					getPriority()								{ return _Priority; }
-
 
 	/// \name Playback control
 	//@{
@@ -170,6 +169,7 @@ public:
 
 	//NLMISC_DECLARE_CLASS(CSourceUser);
 
+	virtual IBuffer					*getBuffer();
 	
 protected:
 
@@ -181,6 +181,8 @@ private:
 	// These data are copied to a track when the source selected is for playing
 
 	CSound							*_Sound;
+	// name of a buffer get by getBuffer()
+	std::string						_Buffername;
 	TSoundPriority					_Priority;
 	bool							_Playing;
 	bool							_Looping;

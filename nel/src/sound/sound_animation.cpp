@@ -1,7 +1,7 @@
 /** \file sound_anim_track.cpp
  * An animation sound track
  *
- * $Id: sound_animation.cpp,v 1.2 2002/06/28 19:33:15 hanappe Exp $
+ * $Id: sound_animation.cpp,v 1.3 2002/07/25 13:35:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,7 @@ void CSoundAnimation::save()
 
 // ********************************************************
 
-void CSoundAnimation::play(UAudioMixer* mixer, float lastTime, float curTime, NLMISC::CVector& position)
+void CSoundAnimation::play(UAudioMixer* mixer, float lastTime, float curTime, CSoundContext &context)
 {
 	vector<CSoundAnimMarker*>::iterator iter;
 	for (iter = _Markers.begin(); iter != _Markers.end(); iter++)
@@ -143,7 +143,7 @@ void CSoundAnimation::play(UAudioMixer* mixer, float lastTime, float curTime, NL
 
 		if ((lastTime <= marker->getTime()) && (marker->getTime() < curTime))
 		{
-			marker->play(mixer, position);
+			marker->play(mixer, context);
 		}
 	}
 }

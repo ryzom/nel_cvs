@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.12 2002/06/20 08:36:16 hanappe Exp $
+ * $Id: sound.h,v 1.13 2002/07/25 13:35:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@ namespace NLSOUND {
 class ISoundDriver;
 class IBuffer;
 class CSound;
+
 
 
 // Comparision for const char*
@@ -98,8 +99,10 @@ public:
 	/// Load the sound parameters from georges' form
 	virtual void		importForm(std::string& filename, NLGEORGES::UFormElm& formRoot);
 
-	/// Return the buffer
-	IBuffer*			getBuffer();	//				{ return _Buffer; }
+	/// Return the name of the buffer, can be depend of a context
+	void				getBuffername(std::string &buffername, CSoundContext *context);
+	/// Return the buffer and the buffername if not null
+	IBuffer*			getBuffer(std::string *buffername = 0);
 	/// Return the gain
 	float				getGain() const					{ return _Gain; }
 	/// Return the pitch
@@ -121,7 +124,7 @@ public:
 	/// Return the outer gain of the cone
 	float				getConeOuterGain() const			{ return _ConeOuterGain; }
 	/// Return the length of the sound in ms
-	uint32				getDuration();
+	uint32				getDuration(std::string *buffername = NULL);
 	/// Return the filename
 	const std::string&	getFilename() const					{ return _Filename; }
 	/// Return the name (must be unique)
@@ -174,6 +177,9 @@ private:
 	bool				_Detailed;
 	float				_MinDist, _MaxDist;
 	float				_ConeInnerAngle, _ConeOuterAngle, _ConeOuterGain;
+
+	// true if the buffer name contains some %. It means that the buffer name can be know only at runtime
+	bool				_NeedContext;
 
 	// Sound name and filename (required for output (EDIT))
 	std::string			_Filename;

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.25 2002/07/16 13:16:37 lecroart Exp $
+ * $Id: source_user.cpp,v 1.26 2002/07/25 13:35:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,13 +41,13 @@ namespace NLSOUND
 /*
  * Constructor
  */
-CSourceUser::CSourceUser( TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam ) :
+CSourceUser::CSourceUser( TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam, CSoundContext *context) :
 	_Priority(MidPri), _Playing(false),
 	_Position(CVector::Null), _Velocity(CVector::Null), _Direction(CVector::Null),
 	_Gain(1.0f), _Pitch(1.0f), _RelativeMode(false), _Looping(false),
 	_Track(NULL), _3DPosition(NULL), _PlayStart(0), _Spawn(spawn), _SpawnEndCb(cb), _CbUserParam(cbUserParam)
 {
-	setSound( id );
+	setSound( id, context );
 }
 
 
@@ -71,7 +71,7 @@ CSourceUser::~CSourceUser()
 /*
  * Change the sound binded to the source
  */
-void					CSourceUser::setSound( TSoundId id )
+void					CSourceUser::setSound( TSoundId id, CSoundContext *context )
 {
 	if ( id == NULL )
 	{
@@ -84,6 +84,14 @@ void					CSourceUser::setSound( TSoundId id )
 		_Pitch = _Sound->getPitch();
 		_Looping = _Sound->getLooping();
 		_Priority = _Sound->getPriority();
+
+		// get the buffername with a specific context
+		_Sound->getBuffername(_Buffername, context);
+		if (_Sound->getBuffer(&_Buffername) == NULL)
+		{
+			nlwarning ("buffername '%s' is not found", _Buffername.c_str());
+			_Sound = NULL;
+		}
 	}
 
 	// Set the buffer
@@ -91,15 +99,15 @@ void					CSourceUser::setSound( TSoundId id )
 	{
 		if ( _Sound != NULL )
 		{
-			nlassert( _Sound->getBuffer() != NULL );
+			nlassert( _Sound->getBuffer(&_Buffername) != NULL );
 			nlassert( ! isPlaying() );
-			_Track->DrvSource->setStaticBuffer( _Sound->getBuffer() );
+			_Track->DrvSource->setStaticBuffer( _Sound->getBuffer(&_Buffername) );
 
 			// Take into account the static properties in _Sound
 			_Track->DrvSource->setGain( _Gain );
 			_Track->DrvSource->setPitch( _Pitch );
 			_Track->DrvSource->setLooping( _Looping );
-			if ( ! _Sound->getBuffer()->isStereo() )
+			if ( ! _Sound->getBuffer(&_Buffername)->isStereo() )
 			{
 				_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );
 				_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
@@ -107,6 +115,14 @@ void					CSourceUser::setSound( TSoundId id )
 			}
 		}
 	}
+}
+
+IBuffer					*CSourceUser::getBuffer()
+{
+	if (_Sound != NULL)
+		return _Sound->getBuffer(&_Buffername);
+	else
+		return NULL;
 }
 
 
@@ -153,13 +169,12 @@ bool					CSourceUser::getLooping() const
  */
 void					CSourceUser::play()
 {
-
-#ifdef NL_DEBUG
-	if ( _Sound != NULL )
+	if ( _Sound == NULL || _Sound->getBuffer(&_Buffername) == NULL )
 	{
-		nlassert( _Sound->getBuffer() != NULL );
+		nlwarning ("sound is available but buffer name '%s' is not found", _Buffername.c_str());
+		_Playing = false;
+		return;
 	}
-#endif
 
 	if ( _Track != NULL )
 	{
@@ -245,7 +260,7 @@ void					CSourceUser::setDirection( const NLMISC::CVector& dir )
 	// Set the direction
 	if ( _Track != NULL )
 	{
-		if ( ! _Sound->getBuffer()->isStereo() )
+		if ( ! _Sound->getBuffer(&_Buffername)->isStereo() )
 		{
 			static bool coneset = false;
 			if ( dir.isNull() ) // workaround
@@ -359,11 +374,11 @@ void					CSourceUser::copyToTrack()
 {
 	nlassert( _Track != NULL ); 
 
-	nlassert( _Sound->getBuffer() != NULL );
-	_Track->DrvSource->setStaticBuffer( _Sound->getBuffer() );
+	nlassert( _Sound->getBuffer(&_Buffername) != NULL );
+	_Track->DrvSource->setStaticBuffer( _Sound->getBuffer(&_Buffername) );
 
 	_Track->DrvSource->setPos( _Position );
-	if ( ! _Sound->getBuffer()->isStereo() )
+	if ( ! _Sound->getBuffer(&_Buffername)->isStereo() )
 	{
 		_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );
 		setDirection( _Direction ); // because there is a workaround inside
@@ -387,14 +402,14 @@ void					CSourceUser::enterTrack( CTrack *track )
 	// FIXME: SWAPTEST
 	if ( _Track != NULL && _Track->DrvSource->isPlaying() )
 	{
-		nlassert(0);
+		nlstopex( ("buffer name = %s", _Buffername.c_str()) );
 	}
 
 	if ( _Track != NULL )
 	{
-		nlassert( _Sound != NULL );
+		nlassertex( _Sound != NULL, ("buffer name = %s", _Buffername.c_str()) );
 
-		if (_Sound->getBuffer() != NULL)
+		if (_Sound->getBuffer(&_Buffername) != NULL)
 		{
 			copyToTrack(); // must always be synchronized, because the tracks may not have the default settings
 			_Track->setUserSource( this );
@@ -524,7 +539,7 @@ bool					CSourceUser::isPlaying()
 				// Not played yet
 				return false;
 			}
-			else if ( _Looping || (CTime::getLocalTime()-_PlayStart < _Sound->getDuration()) )
+			else if ( _Looping || (CTime::getLocalTime()-_PlayStart < _Sound->getDuration(&_Buffername)) )
 			{
 				return true;
 			}
@@ -551,7 +566,7 @@ bool					CSourceUser::isStopped()
 	{
 		if ( getTrack()->DrvSource->isStopped() )
 		{
-			if (CTime::getLocalTime()-_PlayStart < _Sound->getDuration())
+			if (CTime::getLocalTime()-_PlayStart < _Sound->getDuration(&_Buffername))
 			{
 				//nlwarning ("openal bug (think that the sample [%p] is finished but not : %u %u", getTrack()->DrvSource, (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
 			}
@@ -579,13 +594,15 @@ bool					CSourceUser::isStopped()
 	}
 	else
 */	{
-		nlassert( _Sound );
+		if ( _Sound == 0)
+			return true;
+
 		if ( _PlayStart == 0 )
 		{
 			// Not played yet
 			return false;
 		}
-		else if ( (!_Looping) && (CTime::getLocalTime()-_PlayStart > _Sound->getDuration()) )
+		else if ( (!_Looping) && (CTime::getLocalTime()-_PlayStart > _Sound->getDuration(&_Buffername)) )
 		{
 			_Playing = false;
 			return true;

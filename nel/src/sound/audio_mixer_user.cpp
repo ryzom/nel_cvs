@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.26 2002/07/16 13:16:16 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.27 2002/07/25 13:35:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -532,7 +532,7 @@ void				CAudioMixerUser::addSource( CSourceUser *source )
 
 // ******************************************************************
 
-USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb, void *userParam )
+USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb, void *userParam, CSoundContext *context )
 {
 #if NL_PROFILE_MIXER
 	TTicks start = CTime::getPerformanceTime();
@@ -549,14 +549,22 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 		return NULL;
 	}
 
+	string bn;
+	id->getBuffername(bn, context);
+	if (id->getBuffer(&bn) == NULL)
+	{
+		nlwarning ("Can't create the sound '%s'", bn.c_str());
+		return NULL;
+	}
+
 	// Create source
-	CSourceUser *source = new CSourceUser( id, spawn, cb, userParam );
+	CSourceUser *source = new CSourceUser( id, spawn, cb, userParam, context );
 	addSource( source );
 
-	if (id->getBuffer() != 0)
+	if (source->getBuffer() != 0)
 	{
 		// Link the position to the listener position if it'a stereo source
-		if ( id->getBuffer()->isStereo() )
+		if ( source->getBuffer()->isStereo() )
 		{
 			source->set3DPositionVector( &_ListenPosition );
 		}
@@ -581,9 +589,9 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 
 // ******************************************************************
 
-USource				*CAudioMixerUser::createSource( const char *name, bool spawn, TSpawnEndCallback cb, void *userParam )
+USource				*CAudioMixerUser::createSource( const char *name, bool spawn, TSpawnEndCallback cb, void *userParam, CSoundContext *context)
 {
-	return createSource( getSoundId( name ), spawn, cb, userParam );
+	return createSource( getSoundId( name ), spawn, cb, userParam, context );
 }
 
 
@@ -801,7 +809,7 @@ string			CAudioMixerUser::getSourcesStats() const
 			smprintf( line, 80, "%s: %u%% %s %s",
 					  (*ips)->getSound()->getName().c_str(),
 					  (uint32)((*ips)->getGain()*100.0f),
-					  (*ips)->getSound()->getBuffer()->isStereo()?"ST":"MO",
+					  (*ips)->getBuffer()->isStereo()?"ST":"MO",
 					  PriToCStr[(*ips)->getPriority()] );
 			s += string(line) + "\n";
 		}

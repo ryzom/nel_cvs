@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.20 2001/06/25 09:22:35 portier Exp $
+ * $Id: actor_script.h,v 1.21 2001/06/29 14:30:31 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,8 @@ namespace NLAIAGENT
 			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
 			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
 
-			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
+//			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
+			tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 //			virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 //			virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;
@@ -148,7 +149,7 @@ namespace NLAIAGENT
 			virtual void cancel();
 
 			/// Own success and failure functions
-			/// These function telle other operators and goals that might be waiting for
+			/// These function telle other operators and goals that might be waiting for 
 			/// the execution of this one.
 			virtual void success() {}
 			virtual void failure() {}

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.51 2003/12/11 09:29:21 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.52 2004/03/04 14:38:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -834,9 +834,9 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				}
 
 				if (newModel)
-				{		
+				{					
 					newModel->setTransformMode(NL3D::CTransform::DirectMatrix);
-					newModel->setMatrix(NLMISC::CMatrix::Identity);
+					newModel->setMatrix(NLMISC::CMatrix::Identity);					
 					// link to the root for manipulation
 					_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(newModel);
 
@@ -861,6 +861,9 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					ps->stopSound();
 					
 					buildTreeFromPS(ps, psm);
+
+					// flush textures
+					newModel->Shape->flushTextures(*CNELU::Driver, 0);
 					
 				}
 				else

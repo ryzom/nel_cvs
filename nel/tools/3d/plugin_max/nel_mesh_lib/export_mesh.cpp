@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.46 2002/07/23 17:09:59 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.47 2002/07/26 16:06:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -420,7 +420,7 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 		enableSkinModifier (node, true);
 
 	// Set the dist max for this shape
-	if (retShape && !multiLodObject)
+	if (retShape && !multiLodObject && buildLods)
 	{
 		// Get the dist max for this node
 		float distmax = getScriptAppData (&node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);

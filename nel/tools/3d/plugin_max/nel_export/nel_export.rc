@@ -373,7 +373,7 @@ BEGIN
                     BS_AUTO3STATE | WS_TABSTOP,20,155,120,15
 END
 
-IDD_INSTANCE DIALOG DISCARDABLE  0, 0, 360, 195
+IDD_INSTANCE DIALOG DISCARDABLE  0, 0, 360, 226
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -396,12 +396,22 @@ BEGIN
     CONTROL         "Don't export the shape. If checked, no shape file will be exported from this object.",
                     IDC_DONT_EXPORT,"Button",BS_AUTO3STATE | WS_TABSTOP,5,86,
                     271,10
-    GROUPBOX        "Collision",IDC_STATIC,5,142,170,45
+    GROUPBOX        "Collision",IDC_STATIC,5,175,170,40
     CONTROL         "Collision Mesh",IDC_CHECK_COLLISION,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,10,152,110,10
+                    BS_AUTO3STATE | WS_TABSTOP,15,185,110,10
     CONTROL         "Collision Mesh Exterior",IDC_CHECK_COLLISION_EXTERIOR,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,10,168,110,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,199,110,10
     LTEXT           "Enter ... to erase all.",IDC_STATIC,195,15,108,10
+    GROUPBOX        "Camera Collision",IDC_STATIC,5,105,270,55
+    CONTROL         "Automatic (collision only if mesh is lightmapped)",
+                    IDC_CAMERA_COL_RADIO1,"Button",BS_AUTORADIOBUTTON,15,115,
+                    230,10
+    CONTROL         "Disable (don't collision with camera)",
+                    IDC_CAMERA_COL_RADIO2,"Button",BS_AUTORADIOBUTTON,15,130,
+                    230,10
+    CONTROL         "Forced (collision with camera, even if not lightmapped)",
+                    IDC_CAMERA_COL_RADIO3,"Button",BS_AUTORADIOBUTTON,15,145,
+                    230,10
 END
 
 IDD_ANIM DIALOG DISCARDABLE  0, 0, 360, 221
@@ -509,7 +519,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 353
         TOPMARGIN, 7
-        BOTTOMMARGIN, 188
+        BOTTOMMARGIN, 219
     END
 
     IDD_ANIM, DIALOG

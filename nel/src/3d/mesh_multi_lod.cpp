@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.35 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.36 2004/05/19 14:25:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -824,8 +824,9 @@ void	CMeshMultiLod::compileRunTime()
 		delete _VisualCollisionMesh;
 		_VisualCollisionMesh= NULL;
 	}
-	// build only if some lightmap!! (suppose lightmap == big mesh interesting for collision)
-	if(!_LightInfos.empty())
+	// build only if wanted
+	if( (_CollisionMeshGeneration==AutoCameraCol && !_LightInfos.empty()) ||
+		_CollisionMeshGeneration==ForceCameraCol )
 	{
 		NL3D_MEM_CAMERA_COLLISION
 

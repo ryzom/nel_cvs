@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.30 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.31 2004/05/19 14:25:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,8 @@ CMeshBase::CMeshBase()
 	_AutoAnim = false;
 
 	_LodCharacterTexture= NULL;
+
+	_CollisionMeshGeneration= AutoCameraCol;
 
 	_VisualCollisionMesh= NULL;
 }
@@ -125,6 +127,7 @@ CMeshBase::CMeshBaseBuild::CMeshBaseBuild()
 	bCastShadows= false;
 	bRcvShadows= false;
 	UseLightingLocalAttenuation= false;
+	CollisionMeshGeneration= CMeshBase::AutoCameraCol;
 }
 
 // ***************************************************************************
@@ -153,11 +156,12 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 }
 #endif
 
-
 // ***************************************************************************
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 9:
+		- _CollisionMeshGeneration
 	Version 8:
 		- new format for CLightMapInfoList
 	Version 7:
@@ -178,7 +182,7 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- 1st version.
 	*/
-	sint ver = f.serialVersion(8);
+	sint ver = f.serialVersion(9);
 
 	if (ver >= 2)
 	{
@@ -228,6 +232,11 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if(ver >= 7)
 		f.serialPtr(_LodCharacterTexture);
 
+	if(ver >= 9)
+		f.serialEnum(_CollisionMeshGeneration);
+	else
+		_CollisionMeshGeneration= AutoCameraCol;
+
 }
 
 
@@ -261,6 +270,9 @@ void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
 	computeIsLightable();
 	// copy _UseLightingLocalAttenuation
 	_UseLightingLocalAttenuation= m.UseLightingLocalAttenuation;
+
+	// copy CollisionMeshGeneration
+	_CollisionMeshGeneration= m.CollisionMeshGeneration;
 }
 
 

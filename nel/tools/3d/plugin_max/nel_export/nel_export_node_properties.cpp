@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.53 2004/05/19 10:19:10 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.54 2004/05/19 14:27:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,6 +279,7 @@ public:
 	int						RemanenceSliceNumber;
 	float					RemanenceSamplingPeriod;
 	float                   RemanenceRollupRatio;
+	int						CollisionMeshGeneration; // -1->undeterminate   0->Auto 1->NoCameraCol 2->ForceCameraCol
 
 	// Animation
 	int						ExportNodeAnimation;
@@ -928,8 +929,6 @@ int CALLBACK InstanceDialogCallback (
 
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
 
-			
-
 			EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), true);
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_SETCHECK, currentParam->DontExport, 0);
 
@@ -937,6 +936,9 @@ int CALLBACK InstanceDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION_EXTERIOR), BM_SETCHECK, currentParam->CollisionExterior, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
 
+			bool colOk = currentParam->CollisionMeshGeneration>=0 && currentParam->CollisionMeshGeneration<3;
+			CheckRadioButton (hwndDlg, IDC_CAMERA_COL_RADIO1, IDC_CAMERA_COL_RADIO3, colOk?(IDC_CAMERA_COL_RADIO1+(currentParam->CollisionMeshGeneration)):0);
+			
 			InstanceStateChanged(hwndDlg);
 		}
 		break;
@@ -967,6 +969,16 @@ int CALLBACK InstanceDialogCallback (
 
 							currentParam->Collision= SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION), BM_GETCHECK, 0, 0);
 							currentParam->CollisionExterior= SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION_EXTERIOR), BM_GETCHECK, 0, 0);
+
+							// Get the CollisionMeshGeneration
+							if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO1) == BST_CHECKED)
+								currentParam->CollisionMeshGeneration = NL3D::CMeshBase::AutoCameraCol;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO2) == BST_CHECKED)
+								currentParam->CollisionMeshGeneration = NL3D::CMeshBase::NoCameraCol;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO3) == BST_CHECKED)
+								currentParam->CollisionMeshGeneration = NL3D::CMeshBase::ForceCameraCol;
+							else
+								currentParam->CollisionMeshGeneration = -1;
 						}
 					break;
 					case IDC_DONT_ADD_TO_SCENE:
@@ -979,6 +991,20 @@ int CALLBACK InstanceDialogCallback (
 						if ( LOWORD(wParam) == IDC_CHECK_COLLISION )
 							InstanceStateChanged(hwndDlg);
 						break;
+					case IDC_CAMERA_COL_RADIO1:
+					case IDC_CAMERA_COL_RADIO2:
+					case IDC_CAMERA_COL_RADIO3:
+						// Get the acceleration type
+						if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO1) == BST_CHECKED)
+							currentParam->CollisionMeshGeneration = NL3D::CMeshBase::AutoCameraCol;
+						else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO2) == BST_CHECKED)
+							currentParam->CollisionMeshGeneration = NL3D::CMeshBase::NoCameraCol;
+						else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO3) == BST_CHECKED)
+							currentParam->CollisionMeshGeneration = NL3D::CMeshBase::ForceCameraCol;
+						else
+							currentParam->CollisionMeshGeneration = -1;
+						break;
+
 				}
 			}
 		break;
@@ -2482,6 +2508,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			param.LMCDiffuse[i]= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START+i, CRGBA::White);
 		}
 		
+		// CollisionMeshGeneration
+		param.CollisionMeshGeneration=CExportNel::getScriptAppData (node, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, 0);
 		
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
@@ -2732,6 +2760,9 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					param.LMCDiffuse[i].setDifferentValuesMode();
 			}
 			
+			// CollisionMeshGeneration
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, 0)!=param.CollisionMeshGeneration)
+				param.CollisionMeshGeneration = -1;
 			
 			// Next sel
 			ite++;
@@ -3022,6 +3053,9 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START+i, param.LMCDiffuse[i]);
 				}
 				
+				// CollisionMeshGeneration
+				if (param.CollisionMeshGeneration != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, param.CollisionMeshGeneration);
 				
 				// Next node
 				ite++;

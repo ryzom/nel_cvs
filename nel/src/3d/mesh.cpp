@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.82 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: mesh.cpp,v 1.83 2004/05/19 14:25:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2475,8 +2475,9 @@ void	CMesh::compileRunTime()
 		delete _VisualCollisionMesh;
 		_VisualCollisionMesh= NULL;
 	}
-	// build only if some lightmap!! (suppose lightmap == big mesh interesting for collision)
-	if(!_LightInfos.empty())
+	// build only if wanted
+	if( (_CollisionMeshGeneration==AutoCameraCol && !_LightInfos.empty()) ||
+		_CollisionMeshGeneration==ForceCameraCol )
 	{
 		NL3D_MEM_CAMERA_COLLISION
 

@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.18 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: mesh_base.h,v 1.19 2004/05/19 14:25:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,13 @@ class	CVisualCollisionMesh;
  */
 class CMeshBase : public IShape
 {
+public:
+	/** If AutoCameraCol, meshs will build the cameracollision mesh only if the mesh is lightmapped
+	 *	if NoCameraCol, the cameracollision won't be generated
+	 *	if ForceCameraCol, the cameracollision will be generated wether lightmaped or not (as long as possible)
+	 */
+	enum	TCameraCollisionGenerate {AutoCameraCol= 0, NoCameraCol, ForceCameraCol};
+
 public:
 
 	/// \name Structures for building a mesh.
@@ -136,6 +143,8 @@ public:
 		std::vector<float>		DefaultBSFactors;
 		std::vector<std::string>BSNames;
 
+		// Indicate how this mesh should build the collision mesh (for camera ThirPerson collision)
+		TCameraCollisionGenerate	CollisionMeshGeneration;
 
 		CMeshBaseBuild();
 
@@ -266,6 +275,8 @@ protected:
 
 	bool						_AutoAnim;
 
+	// Indicate how this mesh should build the collision mesh (for camera ThirPerson collision)
+	TCameraCollisionGenerate	_CollisionMeshGeneration;
 	// Built only by CMesh and CMeshMultiLod
 	CVisualCollisionMesh		*_VisualCollisionMesh;
 

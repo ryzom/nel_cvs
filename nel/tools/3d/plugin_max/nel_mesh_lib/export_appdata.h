@@ -1,7 +1,7 @@
 /** \file export_appdata.h
  * Define NeL appdata for 3dsmax
  *
- * $Id: export_appdata.h,v 1.6 2004/05/14 15:00:14 berenguier Exp $
+ * $Id: export_appdata.h,v 1.7 2004/05/19 14:27:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,8 +172,11 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 #define NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START		NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START + NEL3D_APPDATA_EXPORT_LMC_MAX_LIGHT_GROUP
 // End at 1423062671.
 
+// CollisionMeshGeneration
+#define NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION	(1423062671)
 
-// Next free appData is 1423062671
+
+// Next free appData is 1423062672
 // WARNING!!!!!!!!!  : 700+ and 800+ are already used....
 
 

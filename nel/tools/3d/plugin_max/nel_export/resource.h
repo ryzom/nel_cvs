@@ -246,6 +246,9 @@
 #define IDC_LMC_STATIC8                 1553
 #define IDC_LMC_AUTO_SETUP              1554
 #define IDC_LMC_AUTO_SETUP_VISIBLEONLY  1555
+#define IDC_CAMERA_COL_RADIO1           1555
+#define IDC_CAMERA_COL_RADIO2           1556
+#define IDC_CAMERA_COL_RADIO3           1557
 
 // Next default values for new objects
 // 
@@ -253,7 +256,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        127
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1555
+#define _APS_NEXT_CONTROL_VALUE         1558
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

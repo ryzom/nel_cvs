@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.66 2004/05/14 16:18:22 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.67 2004/05/19 14:27:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,7 +125,15 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, CM
 }
 
 // ***************************************************************************
+static void	copyMultiLodMeshBaseLod0Infos(CMeshBase::CMeshBaseBuild &dst, const CMeshBase::CMeshBaseBuild &src)
+{
+	dst.DefaultScale = src.DefaultScale;
+	dst.DefaultRotQuat = src.DefaultRotQuat;
+	dst.DefaultPos = src.DefaultPos;
+	dst.CollisionMeshGeneration = src.CollisionMeshGeneration;
+}
 
+// ***************************************************************************
 // Export a mesh
 IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, bool buildLods)
 {
@@ -243,10 +251,9 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::IsOpaque;
 					multiLodBuild.StaticLod=getScriptAppData (&node, NEL3D_APPDATA_LOD_DYNAMIC_MESH, NEL3D_APPDATA_LOD_DYNAMIC_MESH_DEFAULT)==0;
 
-					// Bacup scale, rot and pos
-					CVector backupedScale=multiLodBuild.BaseMesh.DefaultScale;
-					CQuat	backupedRot=multiLodBuild.BaseMesh.DefaultRotQuat;
-					CVector backupedPos=multiLodBuild.BaseMesh.DefaultPos;
+					// Bacup scale, rot and pos, etc...
+					CMeshBase::CMeshBaseBuild	bkupMeshBase;
+					copyMultiLodMeshBaseLod0Infos(bkupMeshBase, multiLodBuild.BaseMesh);
 
 					// Build a world to local matrix
 					CMatrix worldToNodeMatrix;
@@ -285,7 +292,7 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 							}
 							else
 							{
-								buildNeLMatrix (parentMatrix, backupedScale, backupedRot, backupedPos);
+								buildNeLMatrix (parentMatrix, bkupMeshBase.DefaultScale, bkupMeshBase.DefaultRotQuat, bkupMeshBase.DefaultPos);
 							}
 
 							// Fill the structure
@@ -307,10 +314,9 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 						}
 					}
 
-					// Restaure default pos, scale and rot
-					multiLodBuild.BaseMesh.DefaultScale=backupedScale;
-					multiLodBuild.BaseMesh.DefaultRotQuat=backupedRot;
-					multiLodBuild.BaseMesh.DefaultPos=backupedPos;
+					// Restaure default pos, scale and rot, etc...
+					copyMultiLodMeshBaseLod0Infos(multiLodBuild.BaseMesh, bkupMeshBase);
+
 
 					// Make a CMeshMultiLod mesh object
 					CMeshMultiLod* multiMesh=new CMeshMultiLod;
@@ -528,8 +534,14 @@ Point3 CExportNel::getLocalNormal (int face, int corner, Mesh& mesh)
 void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildMesh, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
 										 TimeValue time, const CMatrix& nodeBasis)
 {
+	// *** ***************
+	// *** Exports some flags
+	// *** ***************
+
+	// shadow
 	buildMesh.bCastShadows = (node.CastShadows() != 0);
 	buildMesh.bRcvShadows  = (node.RcvShadows() != 0);
+
 	// Export RealTime lighting info.
 	NL3D::CMaterial::TShader shader;
 	bool needVp = hasMaterialWithShaderForVP(node, time, shader);
@@ -543,6 +555,8 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 		buildMesh.UseLightingLocalAttenuation = false;
 	}
 
+	// Export Camera Third person related
+	buildMesh.CollisionMeshGeneration= (NL3D::CMeshBase::TCameraCollisionGenerate)CExportNel::getScriptAppData (&node, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, 0);
 
 	// *** ****************
 	// *** Export materials

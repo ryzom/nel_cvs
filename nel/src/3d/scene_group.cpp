@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.72 2004/05/14 15:43:19 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.73 2004/06/08 10:00:28 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1276,10 +1276,10 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 	CIndexBuffer		clusterLines;
 	CIndexBuffer		portalTriangles;
 	CIndexBuffer		portalLines;
-	clusterTriangles.reserve(maxVertices*3);
-	clusterLines.reserve(maxVertices*2);
-	portalTriangles.reserve(maxVertices*3);
-	portalLines.reserve(maxVertices*2);
+	clusterTriangles.setNumIndexes(maxVertices*3);
+	clusterLines.setNumIndexes(maxVertices*2);
+	portalTriangles.setNumIndexes(maxVertices*3);
+	portalLines.setNumIndexes(maxVertices*2);
 	
 	// setup identity matrix
 	drv->setupModelMatrix(CMatrix::Identity);
@@ -1355,8 +1355,8 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 				uint	j;
 
 				// build the cluster geometry
-				clusterTriangles.setNumIndexes(0);
-				clusterLines.setNumIndexes(0);
+				clusterTriangles.setNumIndexes(maxVertices*3);
+				clusterLines.setNumIndexes(maxVertices*2);
 
 				// Locks
 				CVertexBufferReadWrite vba;
@@ -1410,8 +1410,8 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 				clusterLines.setNumIndexes(numLineIndexes);
 
 				// build the portal geometry
-				portalTriangles.setNumIndexes(0);
-				portalLines.setNumIndexes(0);
+				portalTriangles.setNumIndexes(maxVertices*3);
+				portalLines.setNumIndexes(maxVertices*2);
 
 				// Locks
 				CIndexBufferReadWrite ibaPT;

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.43 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: object_viewer.h,v 1.44 2003/04/10 10:16:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -342,10 +342,10 @@ public:
 	void removeMainLoopCallBack(IMainLoopCallBack *i) ;
 	  
 	/// set the lag in milliseconds between each frame; 0 is the default
-	void setLag(uint32 milliSec) { _Lag = milliSec; }
+	void setFrameDelay(uint32 milliSec) { _FrameDelay = milliSec; }
 
-	/// get the lag in milliseconds
-	uint32 getLag() const		  { return _Lag; }
+	/// get the frame delay in milliseconds
+	uint32 getFrameDelay() const		  { return _FrameDelay; }
 
 	/// eval sound tracks
 	void evalSoundTrack (float lastTime, float currentTime);
@@ -460,7 +460,7 @@ private:
 	NL3D::CFontGenerator						*_FontGenerator;	
 	std::string									_FontPath;
 	std::vector<IMainLoopCallBack *>			_CallBackList;
-	uint32										_Lag; 
+	uint32										_FrameDelay; 
 	float										_CameraFocal;	
 	float										_LastTime;
 	NL3D::CWaterPoolManager						*_Wpm;

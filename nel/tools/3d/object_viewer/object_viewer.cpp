@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.91 2003/04/02 09:49:16 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.92 2003/04/10 10:16:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,8 +231,8 @@ CObjectViewer::CObjectViewer ()
 	_SelectedObject = 0xffffffff;
 	_LightGroupDlg = NULL;
 
-	// no lag is the default
-	_Lag = 0;
+	// no frame delay is the default
+	_FrameDelay = 0;
 
 	// Hotspot color
 	_HotSpotColor.R=255;
@@ -945,9 +945,9 @@ void CObjectViewer::setupPlaylist (float time)
 				}
 				else
 				{
-					_ListInstance[i]->TransformShape->setPos (CVector::Null);
+					/* _ListInstance[i]->TransformShape->setPos (CVector::Null);
 					_ListInstance[i]->TransformShape->setRotQuat (CQuat::Identity);
-					_ListInstance[i]->TransformShape->setScale (1, 1, 1);
+					_ListInstance[i]->TransformShape->setScale (1, 1, 1); */
 				}
 			}
 		}
@@ -976,7 +976,8 @@ void CObjectViewer::go ()
 	_InstanceRunning = true;
 
 	do
-	{				
+	{		
+		_CrtCheckMemory();
 		if (isParentWnd(_MainFrame->m_hWnd, GetForegroundWindow()))
 		{
  			CNELU::Driver->activate ();
@@ -1225,10 +1226,10 @@ void CObjectViewer::go ()
 			CSoundSystem::poll();
 
 
-			// simulate lag
-			if (_Lag)
+			// simulate frame delay
+			if (_FrameDelay)
 			{
-				NLMISC::nlSleep(_Lag);
+				NLMISC::nlSleep(_FrameDelay);
 			}
 
 

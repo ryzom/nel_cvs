@@ -202,7 +202,8 @@
 #define IDC_ATTR_BITMAP                 1081
 #define IDD_PICK_SOUND                  1081
 #define IDC_CONSTANT_VALUE_POS          1082
-#define IDD_CHOOSE_LAG                  1082
+#define IDD_CHOOSE_FRAME_DELAY          1082
+#define IDD_CHOOSE_FRAME_DELAY          1082
 #define IDD_EDITSPINNER                 1083
 #define IDD_SCHEME_BANK_DLG             1084
 #define IDD_CHOOSE_NAME                 1085
@@ -328,7 +329,7 @@
 #define IDC_BUTTON_VEGETABLE_INSERT     1171
 #define IDC_BUTTON_VEGETABLE_GENERAL_NONE 1171
 #define IDC_UPDATE_SPEED_ALTERNATE      1171
-#define IDC_LAG                         1172
+#define IDC_FRAME_DELAY                 1172
 #define IDC_GO_UP                       1172
 #define IDC_RENAME_POOL                 1172
 #define IDC_BUTTON_VEGETABLE_REMOVE     1172
@@ -678,7 +679,7 @@
 #define ID_HELP_ABOUTOBJECTVIEWER       32858
 #define IDM_LB_EXTERN_ID                32859
 #define ID_FILE_BINDSCENEANIMATION      32861
-#define IDM_SET_LAG                     32862
+#define IDM_SET_FRAME_DELAY             32862
 #define IDM_REMOVE_ALL_INSTANCES_FROM_SCENE 32863
 #define IDM_MERGE_PS                    32864
 #define IDM_RIBBON_LOOK_AT              32865

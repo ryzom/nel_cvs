@@ -144,7 +144,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none /incremental:no
-# ADD LINK32 nlligo_df.lib nlgeorges_df.lib freetype_debug.lib mfcs42d.lib msvcrtd.lib libxml2_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
+# ADD LINK32 freetype.lib mfcs42d.lib version.lib libxml2_debug.lib  nlligo_df.lib nlgeorges_df.lib freetype_debug.lib mfcs42d.lib msvcrtd.lib version.lib libxml2_debug.lib  nlligo_df.lib nlgeorges_df.lib freetype_debug.lib mfcs42d.lib msvcrtd.lib libxml2_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
@@ -179,7 +179,7 @@ SOURCE=.\blend_wnd.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\choose_lag.cpp
+SOURCE=.\choose_frame_delay.cpp
 # End Source File
 # Begin Source File
 
@@ -306,7 +306,7 @@ SOURCE=.\blend_wnd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\choose_lag.h
+SOURCE=.\choose_frame_delay.h
 # End Source File
 # Begin Source File
 

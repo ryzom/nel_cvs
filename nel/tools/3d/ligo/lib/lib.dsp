@@ -143,15 +143,23 @@ SOURCE=.\ligo_error.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\material.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\transition.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\zone_bank.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\zone_template.cpp
+SOURCE=.\zone_edge.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\zone_template_vertex.cpp
+SOURCE=.\zone_template.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -167,15 +175,23 @@ SOURCE=.\ligo_error.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\material.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\transition.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\zone_bank.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\zone_template.h
+SOURCE=.\zone_edge.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\zone_template_vertex.h
+SOURCE=.\zone_template.h
 # End Source File
 # End Group
 # Begin Group "Configuration Files"

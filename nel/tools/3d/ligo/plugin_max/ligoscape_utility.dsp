@@ -155,5 +155,21 @@ SOURCE=.\resource.h
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
+# Begin Group "Scripts Files"
+
+# PROP Default_Filter "ms"
+# Begin Source File
+
+SOURCE=.\ligoscript.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\macroscripts\nel_ligoscape.mcr
+# End Source File
+# Begin Source File
+
+SOURCE=.\scripts\nel_ligoscape.ms
+# End Source File
+# End Group
 # End Target
 # End Project

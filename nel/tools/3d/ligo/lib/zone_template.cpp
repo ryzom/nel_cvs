@@ -1,7 +1,7 @@
 /** \file zone_template.cpp
  * Ligo zone template implementation
  *
- * $Id: zone_template.cpp,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ * $Id: zone_template.cpp,v 1.2 2001/10/29 09:35:15 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,12 +28,16 @@
 #include "ligo_config.h"
 
 #include "nel/misc/stream.h"
+#include "nel/misc/matrix.h"
 
 using namespace std;
 using namespace NLMISC;
 
 namespace NLLIGO
 {
+
+const uint SnappedXFlag = 1;
+const uint SnappedYFlag = 2;
 
 // ***************************************************************************
 
@@ -123,12 +127,12 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 		// Snap the point on the X grid
 		if (isSnapedOnGrid (vertices[vertex].x, config.CellSize, config.Snap))
 			// Flag on X
-			boundaryFlags[vertex]|=CZoneTemplateVertex::SnappedXFlag;
+			boundaryFlags[vertex]|=SnappedXFlag;
 
 		// Snap the point on the Y grid
 		if (isSnapedOnGrid (vertices[vertex].y, config.CellSize, config.Snap))
 			// Flag on Y
-			boundaryFlags[vertex]|=CZoneTemplateVertex::SnappedYFlag;
+			boundaryFlags[vertex]|=SnappedYFlag;
 	}
 
 	// *** Build the edge set
@@ -158,29 +162,17 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 				bool keep = false;
 
 				// Snapped both on X ?
-				if ( common & CZoneTemplateVertex::SnappedXFlag )
+				if ( common & SnappedXFlag )
 				{
-					// Same indexes on x ?
-					/*sint32 firstX = getSnappedIndex (vertices[theEdge.first].x, config.CellSize, config.Snap);
-					sint32 secondX = getSnappedIndex (vertices[theEdge.second].x, config.CellSize, config.Snap);
-					if ( firstX == secondX )*/
-					{
-						// Keep it
-						keep = true;
-					}
+					// Keep it
+					keep = true;
 				}
 
 				// Snapped both on X ?
-				if ( common & CZoneTemplateVertex::SnappedYFlag )
+				if ( common & SnappedYFlag )
 				{
-					// Same indexes on y ?
-					/*sint32 firstY = getSnappedIndex (vertices[theEdge.first].y, config.CellSize, config.Snap);
-					sint32 secondY = getSnappedIndex (vertices[theEdge.second].y, config.CellSize, config.Snap);
-					if ( firstY == secondY )*/
-					{
-						// Keep it
-						keep = true;
-					}
+					// Keep it
+					keep = true;
 				}
 
 				// Keep this edge ?
@@ -371,7 +363,7 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 			uint commonFlags = boundaryFlags[previous]&boundaryFlags[next];
 
 			// The both on X ?
-			if ( commonFlags & CZoneTemplateVertex::SnappedXFlag )
+			if ( commonFlags & SnappedXFlag )
 			{
 				// Get x index
 				sint32 prevIndex = getSnappedIndex (vertices[previous].x, config.CellSize, config.Snap);
@@ -407,24 +399,181 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 
 			// Remove first
 			listVert.erase (vertIte);
-			vertIte = listVert.begin();
 
-			// Resize the vertex array
-			_Vertices.resize (listVert.size());
-
-			// Vert index
-			uint index=0;
-
-			// For each vertices
-			while (vertIte != listVert.end ())
+			// Find a corner
+			list<uint>::iterator firstIte = listVert.begin();
+			while (firstIte != listVert.end())
 			{
-				// Vertices 
-				_Vertices[index] = CZoneTemplateVertex (vertices[*vertIte], boundaryFlags[*vertIte]);
+				// Corner ?
+				if ( (boundaryFlags[*firstIte] & (SnappedXFlag|SnappedYFlag)) == (SnappedXFlag|SnappedYFlag) )
+					// Yes, exit
+					break;
 
-				// Next vertices
-				vertIte++;
-				index++;
+				// Next 
+				firstIte++;
 			}
+
+			// Can't be the last
+			nlassert (firstIte != listVert.end());
+
+			// First of the segment
+			vertIte = firstIte;
+
+			// Current edge list
+			std::vector<uint32> edge;
+
+			// Push the first
+			edge.push_back (*vertIte);
+
+			// Next 
+			vertIte++;
+
+			// End ?
+			if (vertIte == listVert.end())
+				// Start
+				vertIte = listVert.begin();
+
+			// Edge index
+			uint edgeIndex = 0;
+
+			// Build the edges
+			while (1)
+			{
+				// Add it
+				edge.push_back (*vertIte);
+
+				// Corner ?
+				if ( (boundaryFlags[*vertIte] & (SnappedXFlag|SnappedYFlag)) == (SnappedXFlag|SnappedYFlag) )
+				{
+					// Get the index of start and end of the edge
+					sint32 startX = getSnappedIndex (vertices[edge[0]].x, config.CellSize, config.Snap);
+					sint32 startY = getSnappedIndex (vertices[edge[0]].y, config.CellSize, config.Snap);
+					sint32 endX = getSnappedIndex (vertices[edge[edge.size()-1]].x, config.CellSize, config.Snap);
+					sint32 endY = getSnappedIndex (vertices[edge[edge.size()-1]].y, config.CellSize, config.Snap);
+
+					// Get rotation
+					uint rotation = 4;
+					if ((endX-startX)==1)
+					{
+						if ((endY-startY)==0)
+							rotation = 0;
+					}
+					else if ((endX-startX)==-1)
+					{					
+						if ((endY-startY)==0)
+							rotation = 2;
+					}
+					else if ((endX-startX)==0)
+					{
+						if ((endY-startY)==1)
+							rotation = 1;
+						else if ((endY-startY)==-1)
+							rotation = 3;
+					}
+
+					// Checks
+					nlassert (rotation != 4);
+					
+					// Build the vertex array
+					vector<CVector> vertexArray;
+					vertexArray.resize (edge.size());
+
+					// Rotate matrix
+					CMatrix mat;
+					mat.identity();
+					mat.rotateZ ((float)rotation * (float)Pi / 2);
+					mat.setPos (CVector (vertices[edge[0]].x, vertices[edge[0]].y, 0));
+					mat.invert ();
+
+					// Rotate the array
+					for (uint i=0; i<edge.size(); i++)
+					{
+						// Get the value on the edge
+						vertexArray[i] = mat * vertices[edge[i]];
+					}
+
+					// Build the edge
+					_Edges.resize (edgeIndex+1);
+
+					// It must work without errors
+					CLigoError errorBis;
+					if (!_Edges[edgeIndex].build (vertexArray, edge, rotation, startX, startY, config, errorBis))
+					{
+						// Flat zone
+						errors.MainError = CLigoError::FlatZone;
+
+						return false;
+					}
+
+					// One more edge
+					edgeIndex++;
+
+					// Exit ?
+					if (vertIte == firstIte)
+						break;
+
+					// Clear the temp edge
+					edge.clear ();
+
+					// Push back the last vertex
+					edge.push_back (*vertIte);
+				}
+
+				// Next vertex
+				vertIte++;
+
+				// End ?
+				if (vertIte == listVert.end())
+					// Start
+					vertIte = listVert.begin();
+			}
+			
+			sint32 bestX = 0x7fffffff;
+			sint32 bestY = 0x80000000;
+			uint bestEdge = 0xffffffff;
+
+			// Sort edges : the first as the lower x then greater y
+			uint edgeId;
+			for (edgeId=0; edgeId<_Edges.size(); edgeId++)
+			{
+				// Get the matrix
+				CMatrix mat;
+				_Edges[edgeId].buildMatrix (mat, config);
+
+				// First vertex
+				CVector pos = mat * _Edges[edgeId].getVertex (0);
+
+				// Get X and Y
+				sint32 x = getSnappedIndex (pos.x, config.CellSize, config.Snap);
+				sint32 y = getSnappedIndex (pos.y, config.CellSize, config.Snap);
+
+				// Best ?
+				if ((x<bestX)||((x==bestX)&&(y>bestY)))
+				{
+					// This edgeId is best
+					bestX=x;
+					bestY=y;
+					bestEdge = edgeId;
+				}
+			}
+			
+			// Check
+			nlassert (bestEdge!=0xffffffff);
+
+			// Reoder
+			std::vector<CZoneEdge>	newEdge (_Edges.size());
+			for (edgeId=0; edgeId<_Edges.size(); edgeId++)
+			{
+				// Copy the edge
+				newEdge[edgeId]=_Edges[bestEdge++];
+
+				// Next
+				if (bestEdge==_Edges.size())
+					bestEdge=0;
+			}
+
+			// Copy the final array
+			_Edges=newEdge;
 
 			// Return ok
 			return true;
@@ -440,16 +589,16 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 void CZoneTemplate::serial (NLMISC::IStream& s)
 {
 	// open an XML node
-	s.xmlPush ("LIGO ZONE TEMPLATE");
+	s.xmlPush ("LIGO_ZONE_TEMPLATE");
 
 		// An header file
-		s.serialCheck (string ("LIGO ZONE TEMPLATE") );
+		s.serialCheck (string ("LigoZoneTemplate") );
 
 		// Node for the boundaries
-		s.xmlPush ("BOUNDARIES");
+		s.xmlPush ("EDGES");
 
 			// Serial the Vertices
-			s.serialCont (_Vertices);
+			s.serialCont (_Edges);
 
 		// Node for the boundaries
 		s.xmlPop ();

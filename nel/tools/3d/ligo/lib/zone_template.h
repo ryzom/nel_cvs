@@ -1,7 +1,7 @@
 /** \file zone_template.h
  * Ligo zone template definition
  *
- * $Id: zone_template.h,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ * $Id: zone_template.h,v 1.2 2001/10/29 09:35:15 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,10 +27,10 @@
 #define NL_ZONE_TEMPLATE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
 
-#include "zone_template_vertex.h"
+#include "zone_edge.h"
 
-#include <vector>
 #include <map>
 
 namespace NLLIGO
@@ -64,6 +64,9 @@ public:
 	/// Serialisation
 	void serial (NLMISC::IStream& s);
 
+	/// Get the vertex array of the template
+	const std::vector<CZoneEdge>	&getEdges () const { return _Edges; }
+
 private:
 
 	/// Round a value on the snap resolution
@@ -79,7 +82,7 @@ private:
 	static inline sint32 getSnappedIndex (float value, float resolution, float snap);
 
 	/// Vertex array
-	std::vector<CZoneTemplateVertex>	_Vertices;
+	std::vector<CZoneEdge>	_Edges;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file ligo_error.h
  * Error handling interface
  *
- * $Id: ligo_error.h,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ * $Id: ligo_error.h,v 1.2 2001/10/29 09:35:15 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -61,7 +61,28 @@ public:
 		VertexList,
 
 		/// The vertex has not been inserted in the edge list
-		NotInserted
+		NotInserted,
+
+		/// Flat zone, all vertex are in the same corner
+		FlatZone,
+
+		/// 4 edge to define a material
+		MustHave4Edges,
+
+		/// 4 edge to define a material
+		NotSymetrical,
+
+		/// Not same number of vertices
+		NotSameVerticesNumber,
+
+		/// Vertex is not the same
+		NotSameVertex,
+
+		/// Unkown error
+		UnknownError,
+
+		/// Error count
+		ErrorCount
 	};
 
 	/// Constructor
@@ -78,6 +99,9 @@ public:
 
 	/// Get a vertex error
 	TError getVertexError (uint error, uint &id, uint &edge) const;
+
+	/// Get an error string
+	static const char* getStringError (TError errorCode);
 
 public:
 
@@ -112,6 +136,9 @@ private:
 
 	/// Vertex error
 	std::vector<CVertex>		_VertexError;
+
+	/// Error string
+	static const char* _StringError[];
 };
 
 }

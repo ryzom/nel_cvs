@@ -1,7 +1,7 @@
-/** \file zone_template_vertex.h
- * Ligo zone template vertex definition
+/** \file material.h
+ * A ligoscape material
  *
- * $Id: zone_template_vertex.h,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ * $Id: material.h,v 1.1 2001/10/29 09:35:15 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,58 +23,49 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_ZONE_TEMPLATE_VERTEX_H
-#define NL_ZONE_TEMPLATE_VERTEX_H
+#ifndef NL_MATERIAL_H
+#define NL_MATERIAL_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
+#include "zone_template.h"
 
-namespace NLMISC
-{
-class NLMISC::IStream;
-}
+// NeL include
+#include "3d/zone.h"
 
 namespace NLLIGO
 {
 
+class CLigoError;
+class CLigoConfig;
+
 /**
- * Ligo zone template vertex 
+ * A ligoscape material
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
  * \date 2001
  */
-class CZoneTemplateVertex
+class CMaterial
 {
 public:
 
-	/// Vertex position flag
-	enum TVertexEdge
-	{
-		SnappedXFlag	=1,
-		SnappedYFlag	=2,
-	};
+	/// Build method
+	bool build (const CZoneTemplate &tplt, const CLigoConfig &config, CLigoError &errors);
 
-	/// Default constructor does nothing
-	CZoneTemplateVertex () {};
+	/// Return the material edge
+	const CZoneEdge& getEdge () const { return _ZoneEdge; }
 
-	/// Constructor
-	CZoneTemplateVertex (const NLMISC::CVector& pos, uint edgeFlags);
-
-	/// Serial
+	/// Serial method
 	void serial (NLMISC::IStream &s);
 
 private:
 
-	/// Vertex position
-	NLMISC::CVector		_Position;
-
-	/// Edge flags
-	uint32				_EdgeFlags;
+	// The zone template for this material
+	CZoneEdge		_ZoneEdge;
 };
 
 }
 
-#endif // NL_ZONE_TEMPLATE_VERTEX_H
+#endif // NL_MATERIAL_H
 
-/* End of zone_template_vertex.h */
+/* End of material.h */

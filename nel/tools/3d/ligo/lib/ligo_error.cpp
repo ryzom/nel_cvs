@@ -1,7 +1,7 @@
 /** \file ligo_error.cpp
  * Error handling implementation
  *
- * $Id: ligo_error.cpp,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ * $Id: ligo_error.cpp,v 1.2 2001/10/29 09:35:15 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -66,6 +66,38 @@ void CLigoError::clear ()
 {
 	MainError = NoError;
 	_VertexError.clear ();
+}
+
+// ***************************************************************************
+
+const char* CLigoError::_StringError[CLigoError::ErrorCount]=
+{
+	"No error",						// NoError
+	"No vertex in the edge list",	// NoEdgeVertices
+	"Opened edges detected",		// OpenedEdge
+	"Mulitple edge on the boundary",// MultipleEdge
+	"Vertex list invalid. One vertex should be a corner",	// VertexList
+	"The vertex has not been inserted in the edge list",	// NotInserted
+	"Flat zone, all vertices are in the same corner",		// FlatZone
+	"The zone must have 4 edges to define a material",	// MustHave4Edges
+	"A edge of the zone is not symetrical",		// NotSymetrical
+	"Not the same number of vertex",	// NotSameVerticesNumber
+	"Some vertices are not the same",	// NotSameVertex
+	"Unkown error",						// UnknownError
+};
+
+// ***************************************************************************
+
+const char* CLigoError::getStringError (TError errorCode)
+{
+	if (errorCode<=ErrorCount)
+	{
+		return _StringError[errorCode];
+	}
+	else
+	{
+		return _StringError[UnknownError];
+	}
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.44 2002/02/21 11:25:10 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.45 2002/02/27 13:51:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -233,21 +233,11 @@ bool CParticleSystem::hasParticles(void) const
 
 ///=======================================================================================
 void CParticleSystem::stepLocated(TPSProcessPass pass, TAnimationTime et, TAnimationTime realEt)
-{
-	if (pass == PSSolidRender || pass == PSBlendRender || pass == PSToolRender)
+{	
+	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
-		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
-		{
-			(*it)->step(pass, et, realEt);
-		}
-	}
-	else
-	{
-		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
-		{
-			if (!(*it)->isParametricMotionEnabled()) (*it)->step(pass, et, realEt);
-		}
-	}
+		(*it)->step(pass, et, realEt);
+	}	
 }
 
 
@@ -330,15 +320,16 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			float realEt = _KeepEllapsedTimeForLifeUpdate ? (ellapsedTime / nbPass)
 														  : et;
 			do
-			{	
-				_SystemDate += realEt;				
+			{					
+				// the order of the following is important...
+				stepLocated(PSCollision, et,  realEt);
 				for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 				{
 					(*it)->updateLife(realEt);
 					(*it)->step(PSMotion, et, realEt);					
 				}
-				stepLocated(PSEmit, et,  realEt);
-				stepLocated(PSCollision, et,  realEt);
+				_SystemDate += realEt;
+				stepLocated(PSEmit, et,  realEt);								
 			}
 			while (--nbPass);
 			

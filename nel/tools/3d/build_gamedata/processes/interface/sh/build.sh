@@ -47,6 +47,13 @@ done
 build_interface.exe tga/texture_interfaces_dxtc.tga tga_tmp
 # DO NOT COMPRESS ../../bin/tga2dds tga_tmp/texture_interfaces_dxtc.tga -o tga/texture_interfaces_dxtc.dds -a 5
 
+
+# Compress animation. Important to avoid 'memory fragmentation'
+mv -u 3d/*.[aA][nN][iI][mM] anim_tmp 2>> log.log
+anim_builder.exe anim_tmp 3d ../../cfg/properties.cfg
+
+
+
 # Idle
 ../../idle.bat
 

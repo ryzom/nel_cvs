@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.22 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.23 2004/09/19 09:56:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -210,6 +210,7 @@ void CPSRibbonLookAt::updateMatAndVbForColor(void)
 {
 	NL_PS_FUNC(CPSRibbonLookAt_updateMatAndVbForColor)
 	_Mat.setTexture(0, _Tex);
+	_Mat.setDoubleSided(true);
 }
 
 //=======================================================	

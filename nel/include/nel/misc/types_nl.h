@@ -5,15 +5,34 @@
  *						RELEASE	: full optimization, no debug information, no log for the client
  */
 
-#ifndef TYPES_H
-#define TYPES_H
+/*
+ * Evalable constantes :
+ *	NL_OS_WINDOWS		: windows operating system (32bits)
+ *	NL_OS_LINUX			: linux operating system
+ *
+ *	NL_BIG_ENDIAN		: other processor
+ *	NL_LITTLE_ENDIAN	: x86 processor
+ */
+
+
+#ifndef NL_TYPES_H
+#define NL_TYPES_H
 
 // Operating systems
 
 #ifdef WIN32
-#define OS_WINDOWS
+#  define NL_OS_WINDOWS
+#  define NL_LITTLE_ENDIAN
 #else
-#define OS_LINUX
+#  define NL_OS_LINUX
+#  define NL_BIG_ENDIAN
+#endif
+
+// Stupid Visual C++ warning
+
+#ifdef NL_OS_WINDOWS
+#  pragma warning (disable : 4786)			// STL too long indentifier
+#  pragma warning (disable : 4290)			// throw() not implemented warning
 #endif
 
 // Standard types
@@ -24,7 +43,7 @@
  * correct misc types:		void, bool, float, double
  */
 
-#ifdef OS_WINDOWS
+#ifdef NL_OS_WINDOWS
 
 typedef	signed		__int8		sint8;
 typedef	unsigned	__int8		uint8;
@@ -38,7 +57,7 @@ typedef	unsigned	__int64		uint64;
 typedef	signed		__int32		sint;			// at least 32bits (depend of processor)
 typedef	unsigned	__int32		uint;			// at least 32bits (depend of processor)
 
-#elif OS_LINUX
+#elif NL_OS_LINUX
 
 typedef	signed		char		sint8;
 typedef	unsigned	char		uint8;
@@ -67,4 +86,4 @@ class Exception
 };
 
 
-#endif // TYPES_H
+#endif // NL_TYPES_H

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.24 2001/11/05 09:30:14 corvazier Exp $
+ * $Id: object_viewer.h,v 1.25 2001/11/07 17:14:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,8 @@
 #define REGKEY_OBJ_VIEW_ANIMATION_SET_DLG "Software\\Nevrax\\nel\\object_viewer\\animation_set_dlg"
 #define REGKEY_OBJ_VIEW_SLOT_DLG "Software\\Nevrax\\nel\\object_viewer\\slot_dlg"
 #define REGKEY_OBJ_PARTICLE_DLG "Software\\Nevrax\\nel\\object_viewer\\particle_dlg"
+#define REGKEY_OBJ_DAYNIGHT_DLG "Software\\Nevrax\\nel\\object_viewer\\daynight_dlg"
+
 
 
 #include "resource.h"
@@ -48,8 +50,7 @@
 #include "main_dlg.h"
 #include "animation_set_dlg.h"
 #include "animation_dlg.h"
-//#include "scene_dlg.h"
-//#include "particle_dlg.h"
+
 #include <3d/animation_set.h>
 #include <3d/channel_mixer.h>
 #include <3d/shape.h>
@@ -62,11 +63,14 @@
 namespace NL3D
 {
 class CFontGenerator;
+class CWaterPoolManager;
 }
 
 class CMainFrame;
 
 class CParticleDlg ;
+class CDayNightDlg ;
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CObject_viewerApp
@@ -170,6 +174,9 @@ public:
 	// Set ambient color
 	void setLight (unsigned char id, const NL3D::CLight& light);
 
+
+
+
 	// Load a shape
 	void resetCamera ();
 
@@ -252,6 +259,11 @@ public:
 	/// Manage matrix increment
 	void addTransformation (NLMISC::CMatrix &current, NL3D::CAnimation *anim, float begin, float end, NL3D::ITrack *posTrack, NL3D::ITrack *rotquatTrack, bool removeLast);
 
+	/// inherited from CObjectViewerInterface
+	void setWaterPoolManager(NL3D::CWaterPoolManager &wpm) { _Wpm = &wpm; }
+
+	NL3D::CWaterPoolManager &getWaterPoolManager() { return *_Wpm; }
+
 
 private:
 
@@ -260,6 +272,7 @@ private:
 	CMainDlg									*_SlotDlg;
 	CAnimationSetDlg							*_AnimationSetDlg;
 	CParticleDlg								*_ParticleDlg ;
+	CDayNightDlg								*_DayNightDlg ;
 	std::vector<std::string>					_ListShapeBaseName;
 	std::vector<CMeshDesc>						_ListMeshes;
 	std::vector<class NL3D::CTransformShape*>	_ListTransformShape;
@@ -273,12 +286,13 @@ private:
 
 	// Font mgt
 	NL3D::CFontManager							_FontManager;
-	NL3D::CFontGenerator						*_FontGenerator;
+	NL3D::CFontGenerator						*_FontGenerator;	
 	std::string									_FontPath;
 	std::vector<IMainLoopCallBack *>			_CallBackList;
 	uint32										_Lag; 
 	float										_CameraFocal;	
 	float										_LastTime;
+	NL3D::CWaterPoolManager						*_Wpm;
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

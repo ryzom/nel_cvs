@@ -1,7 +1,7 @@
 /** \file layered_ordering_table.h
  * <File description>
  *
- * $Id: layered_ordering_table.h,v 1.3 2002/06/19 12:19:53 besson Exp $
+ * $Id: layered_ordering_table.h,v 1.4 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -60,8 +60,9 @@ public:
 
 	/**
 	 * Put all the layers to empty
+	 *	\param maxElementToInsert prepare allocator for insert by setting maximum insert() that will arise.
 	 */
-	void reset();
+	void reset(uint maxElementToInsert);
 
 	/**
 	 * Insert an element in the ordering table
@@ -137,10 +138,10 @@ uint32 CLayeredOrderingTable<T>::getSize()
 
 //==================================================================
 template <class T>
-void CLayeredOrderingTable<T>::reset()
+void CLayeredOrderingTable<T>::reset(uint maxElementToInsert)
 {
-	_Layer0.reset();
-	_Layer2.reset();
+	_Layer0.reset(maxElementToInsert);
+	_Layer2.reset(maxElementToInsert);
 	_Layer1.clear();
 }
 

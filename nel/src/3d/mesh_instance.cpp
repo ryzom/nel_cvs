@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.12 2002/06/10 14:02:47 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.13 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,13 @@ using namespace std;
 namespace NL3D 
 {
 
+// ***************************************************************************
+CMeshInstance::CMeshInstance()
+{
+	// LoadBalancing is not usefull for Mesh, because meshs cannot be reduced in faces.
+	// Override CTransformShape state.
+	CTransform::setIsLoadbalancable(false);
+}
 
 // ***************************************************************************
 CMeshInstance::~CMeshInstance()

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.28 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.29 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "nel/misc/hierarchical_timer.h"
 
 #include "3d/transform.h"
+#include "3d/fast_floor.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -104,17 +105,30 @@ void		CRenderTrav::traverse()
 	// This is done here and not in the addRenderObs because of the LoadBalancing traversal which can modify
 	// the transparency flag (multi lod for instance)
 
-	// clear the OTs.
-	OrderOpaqueList.reset();
-	OrderTransparentList.reset();
+	// clear the OTs, and prepare to allocate max element space
+	OrderOpaqueList.reset(RenderList.size());
+	OrderTransparentList.reset(RenderList.size());
 
 	// fill the OTs.
-	std::vector<IBaseRenderObs*>::iterator it = RenderList.begin();
-	uint32 nNbObs = RenderList.size();
-	float rPseudoZ, rPseudoZ2;
-	for( uint32 i = 0; i < nNbObs; ++i )
+	IBaseRenderObs		**itRdrObs= NULL;
+	uint32				nNbObs = RenderList.size();
+	if(nNbObs)	
+		itRdrObs= &RenderList[0];
+	float	rPseudoZ, rPseudoZ2;
+
+	// Some precalc
+	float	OOFar= 1.0f / this->Far;
+	uint32	opaqueOtSize= OrderOpaqueList.getSize();
+	uint32	opaqueOtMax= OrderOpaqueList.getSize()-1;
+	uint32	transparentOtSize= OrderTransparentList.getSize();
+	uint32	transparentOtMax= OrderTransparentList.getSize()-1;
+	uint32	otId;
+	// fast floor
+	OptFastFloorBegin();
+	// For all rdr observers
+	for( ; nNbObs>0; itRdrObs++, nNbObs-- )
 	{
-		IBaseRenderObs		*pObs = *it;
+		IBaseRenderObs		*pObs= *itRdrObs;
 		// Only rdrObserver of transform models can be inserted!! It's a requirement
 		CTransform			*pTransform = safe_cast<CTransform*>(pObs->Model);
 		CTransformHrcObs	*trHrcObs= safe_cast<CTransformHrcObs*>(pObs->HrcObs);
@@ -128,25 +142,29 @@ void		CRenderTrav::traverse()
 			rPseudoZ = (trHrcObs->WorldMatrix.getPos() - CamPos).norm();
 
 		// rPseudoZ from 0.0 -> 1.0
-		rPseudoZ =  sqrtf( rPseudoZ / this->Far );
+		rPseudoZ =  sqrtf( rPseudoZ * OOFar );
 
 		if( pTransform->isOpaque() )
 		{
-			rPseudoZ2 = rPseudoZ * OrderOpaqueList.getSize();
-			clamp( rPseudoZ2, 0.0f, OrderOpaqueList.getSize() - 1 );
-			OrderOpaqueList.insert( (uint32)rPseudoZ2, pObs );
+			// since norm, we are sure that rPseudoZ>=0
+			rPseudoZ2 = rPseudoZ * opaqueOtSize;
+			otId= OptFastFloor(rPseudoZ2);
+			otId= min(otId, opaqueOtMax);
+			OrderOpaqueList.insert( otId, pObs );
 		}
 		if( pTransform->isTransparent() )
 		{
-			rPseudoZ2 = rPseudoZ * OrderTransparentList.getSize();
-			rPseudoZ2 = OrderTransparentList.getSize() - rPseudoZ2;
-			clamp( rPseudoZ2, 0.0f, OrderTransparentList.getSize() - 1 );				
-			OrderTransparentList.insert( pTransform->getOrderingLayer(), pObs, (uint32)rPseudoZ2 );
+			// since norm, we are sure that rPseudoZ>=0
+			rPseudoZ2 = rPseudoZ * transparentOtSize;
+			otId= OptFastFloor(rPseudoZ2);
+			otId= min(otId, transparentOtMax);
+			// must invert id, because transparent, sort from back to front
+			OrderTransparentList.insert( pTransform->getOrderingLayer(), pObs, transparentOtMax-otId );
 		}
 
-		// next
-		++it;
 	}
+	// fast floor
+	OptFastFloorEnd();
 
 
 	// Standard traverse (maybe not used)
@@ -241,26 +259,6 @@ void		CRenderTrav::setSunDirection(const CVector &dir)
 	_SunDirection.normalize();
 }
 
-
-
-// ***************************************************************************
-// ***************************************************************************
-// IBaseClipObs
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-void		IBaseRenderObs::init()
-{
-	IObs::init();
-	nlassert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
-	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
-	nlassert( dynamic_cast<IBaseClipObs*> (getObs(ClipTravId)) );
-	ClipObs= static_cast<IBaseClipObs*> (getObs(ClipTravId));
-	nlassert( dynamic_cast<IBaseLightObs*> (getObs(LightTravId)) );
-	LightObs= static_cast<IBaseLightObs*> (getObs(LightTravId));
-}
 
 
 // ***************************************************************************

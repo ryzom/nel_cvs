@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.12 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: clip_trav.h,v 1.13 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,10 +42,6 @@ using NLMISC::CMatrix;
 
 
 class	IBaseClipObs;
-class	IBaseHrcObs;
-class	IBaseRenderObs;
-class	IBaseAnimDetailObs;
-class	IBaseLoadBalancingObs;
 class	CRenderTrav;
 class	CAnimDetailTrav;
 class	CLoadBalancingTrav;
@@ -172,126 +168,6 @@ private:
 	std::vector<CTransformClipObs*>	_VisibleList;
 
 	CQuadGridClipManager		*_QuadGridClipManager;
-};
-
-
-// ***************************************************************************
-/**
- * The base interface for clip traversal.
- * Clip observers MUST derive from IBaseClipObs.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the init() method, to set shortcut to neighbor observers.
- *
- * \b DERIVER \b RULES:
- * - implement the notification system (see IObs and IObs() for details).
- * - implement the clip() method.
- * - implement the traverse(), which should call clip(). see CTransform for an implementation.
- * - possibly modify/extend the graph methods (such as a graph behavior).
- *
- * \sa CClipTrav
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class IBaseClipObs : public IObs
-{
-public:
-	/// Shortcut to observers.
-	IBaseHrcObs		*HrcObs;
-	IBaseRenderObs	*RenderObs;
-	IBaseAnimDetailObs		*AnimDetailObs;
-	IBaseLoadBalancingObs	*LoadBalancingObs;
-
-	/** OUT variable (good after traverse()).
-	 * set to true is the object is visible (not clipped).
-	 */
-	bool			Visible;
-
-	enum TClipReason	{FrustumClip=0, DistMaxClip, countClip};
-
-public:
-	
-
-	/// Constructor.
-	IBaseClipObs()
-	{
-		HrcObs=NULL;
-		RenderObs= NULL;
-		Visible=false;
-		_IndexInVisibleList= -1;
-	}
-	// Dtor: remove me from _VisibleList.
-	virtual	~IBaseClipObs();
-
-	/// Build shortcut to HrcObs and RenderObs.
-	virtual	void	init();
-
-
-	/** Should return true if object is visible (eg in frustum)
-	 * \param caller the caller obs (may NULL)
-	 */
-	virtual	bool	clip(IBaseClipObs *caller)=0;
-
-
-	/** The base doit method.
-	 * The default behavior should be:
-	 *	- test if HrcObs->WorldVis is visible.
-	 *	- test if the observer is clipped with clip()
-	 *	- if visible and not clipped, set \c Visible=true (else false).
-	 *	- if Visible==true, add it to the post-clip traversals which need it (if renderable, animDetailable etc...)
-	 *	- always traverseSons(), to clip the sons.
-	 */
-	virtual	void	traverse(IObs *caller) =0;
-
-
-	/** This method is called when a father want to clip all his sons (eg: QuadGridClipCluster)
-	 *  The default behavior is just to call this method on observer sons
-	 *	\param TClipReason is the reason of the forced clip. either a frustrum clip or a DistMax Clip
-	 */
-	virtual	void	forceClip(TClipReason clipReason);
-
-
-	/** 
-	 * Because the clip traversal is a graph of observer not a hierarchy
-	 */
-	virtual bool	isTreeNode() {return false;}
-
-private:
-	friend class	CClipTrav;
-
-	// The index of the Observer in the _VisibleList; -1 (default) means not in
-	sint			_IndexInVisibleList;
-};
-
-
-// ***************************************************************************
-/**
- * The default clip observer, used by unspecified models.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the clip() method to return true.
- * - leave the traverse() method as IBaseClipObs.
- *
- * \sa IBaseClipObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class CDefaultClipObs : public IBaseClipObs
-{
-public:
-
-	/// Don't clip.
-	virtual	bool	clip(IBaseClipObs *caller) {return true;}
-
-
-	/// just traverseSons().
-	virtual	void	traverse(IObs *caller)
-	{
-		traverseSons();
-	}
-
 };
 
 

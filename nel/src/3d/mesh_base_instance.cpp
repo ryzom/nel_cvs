@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.11 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.12 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/scene.h"
 #include "3d/animation.h"
 #include "nel/misc/debug.h"
+#include "3d/anim_detail_trav.h"
 
 
 using namespace NLMISC;

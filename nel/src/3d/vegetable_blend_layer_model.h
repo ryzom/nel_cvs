@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.h
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.h,v 1.2 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: vegetable_blend_layer_model.h,v 1.3 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,8 @@ namespace	NL3D
 class	CVegetableManager;
 class	CVegetableSortBlock;
 class	CVegetableBlendLayerRenderObs;
+class	IDriver;
+
 
 // ***************************************************************************
 // ClassIds.

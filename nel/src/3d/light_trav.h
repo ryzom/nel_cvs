@@ -1,7 +1,7 @@
 /** \file light_trav.h
  * <File description>
  *
- * $Id: light_trav.h,v 1.3 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: light_trav.h,v 1.4 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,8 +39,6 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 	
-class	IBaseHrcObs;
-class	IBaseClipObs;
 class	IBaseLightObs;
 class	CTransform;
 class	CRootModel;
@@ -117,69 +115,6 @@ private:
 
 };
 
-
-
-// ***************************************************************************
-/**
- * The base interface for clip traversal.
- * Clip observers MUST derive from IBaseLightObs.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - leave the traverse() method as undefined.
- * - implement the init() method, to set shortcut to neighbor observers.
- *
- * \b DERIVER \b RULES:
- * - implement the notification system (see IObs and IObs() for details).
- * - implement the traverse() method.
- * - possibly modify/extend the graph methods (such as a graph behavior).
- *
- * \sa CLightTrav
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class IBaseLightObs : public IObs
-{
-public:
-	/// Shortcut to observers.
-	IBaseHrcObs		*HrcObs;
-	IBaseClipObs	*ClipObs;
-	
-
-public:
-
-	/// Constructor.
-	IBaseLightObs()
-	{
-		HrcObs=NULL;
-		ClipObs= NULL;
-	}
-	/// Build shortcut to HrcObs and RenderObs.
-	virtual	void	init();
-};
-
-
-// ***************************************************************************
-/**
- * The base interface for clip traversal.
- * Clip observers MUST derive from IBaseLightObs.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the traverse() method to DO NOTHING (but traverseSons()).
- *
- * \sa CLightTrav
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class CDefaultLightObs : public IBaseLightObs
-{
-public:
-	void	traverse(IObs * caller)
-	{
-		traverseSons();
-	}
-};
 
 
 }

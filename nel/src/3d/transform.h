@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.23 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: transform.h,v 1.24 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,18 +28,20 @@
 
 #include "3d/mot.h"
 #include "3d/hrc_trav.h"
-#include "3d/clip_trav.h"
-#include "3d/render_trav.h"
 #include "3d/track.h"
 #include "3d/transformable.h"
 #include "3d/animated_value.h"
-#include "3d/anim_detail_trav.h"
 #include "3d/channel_mixer.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/rgba.h"
-#include "3d/light_trav.h"
 #include "3d/light_contribution.h"
 #include "3d/lighting_manager.h"
+
+// include base observers
+#include "3d/base_clip_obs.h"
+#include "3d/base_anim_detail_obs.h"
+#include "3d/base_light_obs.h"
+#include "3d/base_render_obs.h"
 
 
 namespace	NLMISC
@@ -87,6 +89,9 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  * CTransform by default IS NOT ANIMDETAIL-able. ie never inserted in anim detail list.
  *	It is automatically inserted in anim detail list if registerToChannelMixer() is called.
  *	Deriver should call setIsForceAnimdetail(true) to make the model always anim-detail-ed
+ *
+ * CTransform by default IS NOT LOADBALANCE-able. ie never inserted into list for LoadBlancing.
+ *	Deriver should call setIsLoadbalancable(true) to support this traversal.
  *
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -412,6 +417,8 @@ protected:
 	 *	registerToChannelMixer() has been called or not
 	 */
 	void				setIsForceAnimDetail(bool val);
+	/// Deriver must use this method with true to indicate the model support loadBalancing.
+	void				setIsLoadbalancable(bool val);
 
 	// @}
 

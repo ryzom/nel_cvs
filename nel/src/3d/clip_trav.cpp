@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.25 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.26 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -398,56 +398,6 @@ void CClipTrav::addVisibleObs(CTransformClipObs *obs)
 	_VisibleList.push_back(obs);
 }
 
-
-
-// ***************************************************************************
-// ***************************************************************************
-// IBaseClipObs
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-IBaseClipObs::~IBaseClipObs()
-{
-	// I must remove me from _VisibleList.
-	if(_IndexInVisibleList>=0)
-	{
-		CClipTrav	*clipTrav= (CClipTrav*) Trav;
-		nlassert(_IndexInVisibleList < (sint)clipTrav->_VisibleList.size() );
-		// Mark NULL. NB: faster than a CRefPtr.
-		clipTrav->_VisibleList[_IndexInVisibleList]= NULL;
-		_IndexInVisibleList= -1;
-	}
-}
-
-
-// ***************************************************************************
-void IBaseClipObs::init()
-{
-	IObs::init();
-	nlassert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
-	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
-	nlassert( dynamic_cast<IBaseRenderObs*> (getObs(RenderTravId)) );
-	RenderObs= static_cast<IBaseRenderObs*> (getObs(RenderTravId));
-
-	AnimDetailObs= safe_cast<IBaseAnimDetailObs*> (getObs(AnimDetailTravId));
-	LoadBalancingObs= safe_cast<IBaseLoadBalancingObs*> (getObs(LoadBalancingTravId));
-
-}
-
-
-// ***************************************************************************
-void	IBaseClipObs::forceClip(TClipReason clipReason)
-{
-	// for all sons
-	for(IObs *c= getFirstChild(); c!=NULL; c= getNextChild())
-	{
-		IBaseClipObs	*clipObs= static_cast<IBaseClipObs*>(c);
-		// call it on son.
-		clipObs->forceClip(clipReason);
-	}
-}
 
 
 }

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.11 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: render_trav.h,v 1.12 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,9 +45,6 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 class	IBaseRenderObs;
-class	IBaseHrcObs;
-class	IBaseClipObs;
-class	IBaseLightObs;
 class	IDriver;
 class	CMaterial;
 
@@ -323,78 +320,6 @@ private:
 
 	// @}
 
-};
-
-
-// ***************************************************************************
-/**
- * The base interface for render observers.
- * Render observers MUST derive from IBaseRenderObs.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - leave traverse() to undefined.
- * - implement the init() method, to set shortcut to neighbor observers.
- *
- * \b DERIVER \b RULES:
- * - implement the notification system (see IObs and IObs() for details).
- * - implement the traverse(). See traverse() for more information. 
- * - possibly (but obviously not) modify/extend the graph methods (such as a graph behavior).
- *
- * \sa CRenderTrav
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class IBaseRenderObs : public IObs
-{
-public:
-	/// Shortcut to observers.
-	IBaseHrcObs		*HrcObs;
-	IBaseClipObs	*ClipObs;
-	IBaseLightObs	*LightObs;
-
-public:
-
-	/// Constructor.
-	IBaseRenderObs()
-	{
-		HrcObs=NULL;
-		ClipObs= NULL;
-		LightObs= NULL;
-	}
-	/// Build shortcut to Hrc, Clip and Light.
-	virtual	void	init();
-
-
-	/** The base render method.
-	 * The observers should not traverseSons(), for speed improvement.
-	 */
-	virtual	void	traverse(IObs *caller)=0;
-};
-
-
-
-// ***************************************************************************
-/**
- * The default render observer, used by unspecified models.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - define the traverse() method to DO NOTHING..
- *
- * \sa IBaseRenderObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class CDefaultRenderObs : public IBaseRenderObs
-{
-public:
-
-
-	/// Do nothing, and don't traverseSons() too.
-	virtual	void	traverse(IObs *caller)
-	{
-	}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * <File description>
  *
- * $Id: light_trav.cpp,v 1.8 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: light_trav.cpp,v 1.9 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,20 +103,6 @@ void		CLightTrav::traverse()
 	}
 
 }
-
-
-
-// ***************************************************************************
-void		IBaseLightObs::init()
-{
-	IObs::init();
-	nlassert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
-	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
-	nlassert( dynamic_cast<IBaseClipObs*> (getObs(ClipTravId)) );
-	ClipObs= static_cast<IBaseClipObs*> (getObs(ClipTravId));
-}
-
-
 
 
 }

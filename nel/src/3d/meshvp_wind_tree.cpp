@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.5 2002/06/17 12:54:46 berenguier Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.6 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/driver.h"
 #include <math.h>
 #include "nel/misc/common.h"
+#include "3d/render_trav.h"
 
 
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.63 2002/06/27 12:25:13 besson Exp $
+ * $Id: mesh.cpp,v 1.64 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "nel/misc/hierarchical_timer.h"
 #include "3d/mesh_blender.h"
 #include "3d/matrix_3x4.h"
+#include "3d/render_trav.h"
 
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.24 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: particle_system_model.h,v 1.25 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,9 @@
 #include "3d/transform_shape.h"
 #include "3d/particle_system.h"
 #include "3d/particle_system_manager.h"
+#include "3d/clip_trav.h"
+#include "3d/anim_detail_trav.h"
+#include "3d/load_balancing_trav.h"
 
 #include <vector>
 

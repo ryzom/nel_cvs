@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.8 2002/06/10 14:02:47 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.9 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,9 +62,7 @@ public:
 
 protected:
 	/// Constructor
-	CMeshInstance()
-	{
-	}
+	CMeshInstance();
 
 	/// Destructor
 	virtual ~CMeshInstance();

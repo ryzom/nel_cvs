@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.21 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.22 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include "3d/skeleton_model.h"
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
+#include "3d/anim_detail_trav.h"
+#include "3d/render_trav.h"
 #include "3d/skeleton_shape.h"
 #include "3d/scene.h"
 #include "3d/lod_character_manager.h"

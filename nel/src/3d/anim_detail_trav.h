@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.h
  * <File description>
  *
- * $Id: anim_detail_trav.h,v 1.5 2002/06/27 16:31:39 berenguier Exp $
+ * $Id: anim_detail_trav.h,v 1.6 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,8 +42,6 @@ using NLMISC::CMatrix;
 
 
 class	IBaseAnimDetailObs;
-class	IBaseHrcObs;
-class	IBaseClipObs;
 class	CClipTrav;
 class	CTransformAnimDetailObs;
 
@@ -107,84 +105,6 @@ private:
 	std::vector<CTransformAnimDetailObs*>	_VisibleList;
 
 };
-
-
-
-// ***************************************************************************
-/**
- * The base interface for AnimDetail traversal.
- * AnimDetail observers MUST derive from IBaseAnimDetailObs.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - leave traverse() undefined
- *
- * \b DERIVER \b RULES:
- * - implement the notification system (see IObs for details).
- * - implement the traverse() method.
- *
- * \sa CAnimDetailTrav
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class IBaseAnimDetailObs : public IObs
-{
-public:
-	/// Shortcut to observers.
-	IBaseHrcObs		*HrcObs;
-	IBaseClipObs	*ClipObs;
-
-public:
-
-	/// Constructor.
-	IBaseAnimDetailObs()
-	{
-		HrcObs=NULL;
-		ClipObs= NULL;
-	}
-	/// Build shortcut to Hrc and Clip.
-	virtual	void	init();
-
-
-	/// \name The base doit method.
-	//@{
-	virtual	void	traverse(IObs *caller) =0;
-	//@}
-
-
-};
-
-
-// ***************************************************************************
-/**
- * The default AnimDetail observer, used by unspecified models.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the traverse() method to DO NOTHING.
- *
- * \sa IBaseAnimDetailObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class CDefaultAnimDetailObs : public IBaseAnimDetailObs
-{
-public:
-
-
-	/// Constructor.
-	CDefaultAnimDetailObs() {}
-
-	/// \name The base doit method.
-	//@{
-	virtual	void	traverse(IObs *caller)
-	{
-		// no need to traverseSons. No graph here.
-	}
-	//@}
-
-};
-
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.9 2002/06/27 16:31:39 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.10 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 
 #include "3d/anim_detail_trav.h"
 #include "3d/hrc_trav.h"
-#include "3d/clip_trav.h"
 #include "3d/transform.h"
 #include "3d/skeleton_model.h"
 #include "nel/misc/hierarchical_timer.h"
@@ -132,18 +131,6 @@ void	CAnimDetailTrav::traverseHrcRecurs(IBaseAnimDetailObs *adObs)
 		sonHrcObs= static_cast<IBaseHrcObs*>(hrcObs->getNextChild());
 	}
 }
-
-
-// ***************************************************************************
-void	IBaseAnimDetailObs::init()
-{
-	IObs::init();
-	nlassert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
-	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
-	nlassert( dynamic_cast<IBaseClipObs*> (getObs(ClipTravId)) );
-	ClipObs= static_cast<IBaseClipObs*> (getObs(ClipTravId));
-}
-
 
 
 } // NL3D

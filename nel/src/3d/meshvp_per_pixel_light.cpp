@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.cpp
  * <File description>
  *
- * $Id: meshvp_per_pixel_light.cpp,v 1.2 2002/06/17 12:54:46 berenguier Exp $
+ * $Id: meshvp_per_pixel_light.cpp,v 1.3 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/driver.h"
 #include "3d/scene.h"
+#include "3d/render_trav.h"
 
 #include <string>
 

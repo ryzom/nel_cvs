@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.29 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.30 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,13 +25,15 @@
 
 #include "std3d.h"
 
-#include "3d/transform_shape.h"
-#include "3d/driver.h"
-#include "3d/skeleton_model.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/render_trav.h"
-#include "3d/mesh_base_instance.h"
 #include "nel/misc/debug.h"
+#include "3d/driver.h"
+#include "3d/transform_shape.h"
+#include "3d/skeleton_model.h"
+#include "3d/mesh_base_instance.h"
+#include "3d/clip_trav.h"
+#include "3d/render_trav.h"
+#include "3d/load_balancing_trav.h"
 
 
 using namespace NLMISC;
@@ -57,6 +59,9 @@ CTransformShape::CTransformShape()
 	_NumTrianglesAfterLoadBalancing= 100;
 	_CurrentLightContribution= NULL;
 	_CurrentUseLocalAttenuation= false;
+
+	// By default all transformShape are LoadBalancable
+	CTransform::setIsLoadbalancable(true);
 
 	// The model is renderable
 	CTransform::setIsRenderable(true);

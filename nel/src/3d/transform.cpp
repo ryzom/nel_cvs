@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.45 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: transform.cpp,v 1.46 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,7 @@ CTransform::CTransform()
 	/*
 		Default are:
 			IsAnimDetailable= 0
-			IsLoadBalancable= 1
+			IsLoadBalancable= 0
 			IsLightable= 0
 			IsRenderable= 0
 			IsTransparent= 0
@@ -104,7 +104,7 @@ CTransform::CTransform()
 
 			IsDeleteChannelMixer = 0;
 	*/
-	_StateFlags= IsLoadBalancable | IsOpaque | IsUserLightable;
+	_StateFlags= IsOpaque | IsUserLightable;
 }
 
 
@@ -495,6 +495,11 @@ void		CTransform::setIsForceAnimDetail(bool val)
 
 	// Update flag, if we must be inserted in AnimDetail
 	setStateFlag(IsAnimDetailable, _ChannelMixer || getStateFlag(IsForceAnimDetail) );
+}
+// ***************************************************************************
+void		CTransform::setIsLoadbalancable(bool val)
+{
+	setStateFlag(IsLoadBalancable, val );
 }
 
 

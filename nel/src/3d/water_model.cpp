@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.23 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: water_model.cpp,v 1.24 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,17 +25,19 @@
 
 #include "std3d.h"
 
+#include "nel/misc/vector_2d.h"
+#include "nel/misc/vector_h.h"
+#include "nel/misc/hierarchical_timer.h"
+#include "nel/3d/animation_time.h"
 #include "3d/water_model.h"
 #include "3d/water_shape.h"
 #include "3d/water_pool_manager.h"
 #include "3d/water_height_map.h"
 #include "3d/dru.h"
 #include "3d/scene.h"
-#include "nel/3d/animation_time.h"
-#include "nel/misc/vector_2d.h"
-#include "nel/misc/vector_h.h"
-#include "nel/misc/hierarchical_timer.h"
-
+#include "3d/driver.h"
+#include "3d/render_trav.h"
+#include "3d/anim_detail_trav.h"
 
 
 

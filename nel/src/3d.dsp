@@ -145,6 +145,38 @@ SOURCE=.\3d\anim_detail_trav.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\base_anim_detail_obs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\base_anim_detail_obs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\base_clip_obs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\base_clip_obs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\base_light_obs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\base_light_obs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\base_render_obs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\base_render_obs.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\clip_trav.cpp
 # End Source File
 # Begin Source File

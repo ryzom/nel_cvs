@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.13 2002/04/04 12:33:08 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.14 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/material.h"
 #include "3d/dru.h"
 #include "3d/scene.h"
+#include "3d/render_trav.h"
 
 
 

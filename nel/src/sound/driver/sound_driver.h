@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.11 2003/01/08 15:44:47 boucher Exp $
+ * $Id: sound_driver.h,v 1.12 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,12 @@ namespace NLSOUND {
 class IBuffer;
 class IListener;
 class ISource;
+
+/** Configuration for compiling with or without EAX support.
+ *	Undef if you don't have EAX library or don't whant EAX support.
+ *	This definition impact on code generation for driver AND sound lib.
+ */
+#define EAX_AVAILABLE
 
 
 #ifdef NL_OS_WINDOWS

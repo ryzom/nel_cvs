@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.37 2003/01/08 17:35:44 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.38 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,7 @@
 #include "nel/misc/command.h"
 #include "nel/misc/progress_callback.h"
 #include "3d/scene_user.h"
+#include "driver/sound_driver.h"
 
 #include "context_sound.h"
 #include <iomanip.h>

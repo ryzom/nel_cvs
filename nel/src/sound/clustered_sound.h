@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.h,v 1.1 2003/01/08 15:52:59 boucher Exp $
+ * $Id: clustered_sound.h,v 1.2 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -247,8 +247,12 @@ private:
 	/// The cluster for the next travesal step
 	TClusterTravContextMap	_NextTraversalStep;
 
-	/// The current cluster playing source
-	std::map<std::string, CClusterSound>	_Sources;
+	/// The current cluster playing source indexed with sound group id
+//	std::map<std::string, CClusterSound>	_Sources;
+	std::hash_map<uint, CClusterSound>		_Sources;
+
+	/// The sound_group to sound assoc
+	std::hash_map<uint, std::string>		_SoundGroupToSound;
 
 	/// The mapping for env name Id to EAX environement number
 	std::hash_map<uint, uint>				_IdToEaxEnv;

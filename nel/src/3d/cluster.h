@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.7 2003/01/08 15:47:43 boucher Exp $
+ * $Id: cluster.h,v 1.8 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,6 +136,7 @@ public:
 	//@{
 	void				setSoundGroup(const std::string &soundGroup);
 	const std::string	&getSoundGroup();
+	uint				getSoundGroupId();
 	void				setEnvironmentFx(const std::string &environmentFx);
 	const std::string	&getEnvironmentFx();
 	uint				getEnvironmentFxId();
@@ -167,7 +168,9 @@ private:
 	std::vector<NLMISC::CPlane> _Volume;
 
 	/// Sound group
-	std::string		_SoundGroup;
+//	std::string		_SoundGroup;
+	/// Sound group name id
+	uint			_SoundGroupId;
 	/// Environment Fx name
 ///	std::string		_EnvironmentFx;
 	/// Environement Fx name Id (using CStringMapper)

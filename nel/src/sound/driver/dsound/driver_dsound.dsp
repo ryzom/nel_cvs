@@ -39,7 +39,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "../../../../obj/Release/driver_dsound"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "NLSOUND_PROFILE" /D "EAX_AVAILABLE" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "NLSOUND_PROFILE" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /c
 # SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -58,7 +58,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/Debug/driver_dsound"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_DEBUG" /D "__STL_DEBUG" /D "EAX_AVAILABLE" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_DEBUG" /D "__STL_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /GZ /c
 # SUBTRACT CPP /Gf /Gy /Fr /YX /Yc /Yu
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -77,7 +77,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/ReleaseDebug/driver_dsound"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "EAX_AVAILABLE" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /c
 # SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -97,7 +97,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/DebugFast/driver_dsound"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_DEBUG" /D "NL_DEBUG_FAST" /D "EAX_AVAILABLE" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_DEBUG" /D "NL_DEBUG_FAST" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /GZ /c
 # SUBTRACT CPP /Gf /Gy /Fr /YX /Yc /Yu
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c

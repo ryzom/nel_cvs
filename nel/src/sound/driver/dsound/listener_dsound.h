@@ -1,7 +1,7 @@
 /** \file listener_dsound.h
  * DirectSound sound listener
  *
- * $Id: listener_dsound.h,v 1.5 2003/01/08 15:48:11 boucher Exp $
+ * $Id: listener_dsound.h,v 1.6 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "sound/driver/listener.h"
 //#include <windows.h>
+#include "../sound_driver.h"
 #include <dsound.h>
 
 #ifdef EAX_AVAILABLE

@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.12 2003/01/08 15:48:11 boucher Exp $
+ * $Id: listener_dsound.cpp,v 1.13 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "stddsound.h"
+#include "../sound_driver.h"
 
 #ifdef EAX_AVAILABLE
 # include <eax.h>
@@ -47,9 +48,11 @@ CListenerDSound	*CListenerDSound::_Instance = NULL;
  * Constructor
  */
 CListenerDSound::CListenerDSound(LPDIRECTSOUND3DLISTENER8 dsoundListener) //: IListener()
-:	_EAXListener(0),
-	_Pos(CVector::Null)
+:	_Pos(CVector::Null)
 {
+#ifdef EAX_AVAILABLE
+	_EAXListener = 0;
+#endif
 	if ( _Instance == NULL )
 	{
 		_Instance = this;
@@ -84,11 +87,13 @@ void CListenerDSound::release()
         _Listener->Release();
 		_Listener = NULL;
     }
+#ifdef EAX_AVAILABLE
 	if (_EAXListener != NULL)
 	{
 		_EAXListener->Release();
 		_EAXListener = NULL;
 	}
+#endif
 }
 
 

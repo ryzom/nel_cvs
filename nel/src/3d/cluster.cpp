@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.11 2003/01/08 15:47:43 boucher Exp $
+ * $Id: cluster.cpp,v 1.12 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,8 @@ CCluster::CCluster ()
 
 	// map a no fx string
 	_EnvironmentFxId = CStringMapper::map("no fx");
+	// map a no soundgroup string
+	_SoundGroupId = CStringMapper::map("");
 }
 
 
@@ -65,11 +67,16 @@ CCluster::~CCluster()
 
 void CCluster::setSoundGroup(const std::string &soundGroup)
 {
-	_SoundGroup = soundGroup;
+	_SoundGroupId = CStringMapper::map(soundGroup);
 }
 const std::string &CCluster::getSoundGroup()
 {
-	return _SoundGroup;
+	return CStringMapper::unmap(_SoundGroupId);
+}
+
+uint CCluster::getSoundGroupId()
+{
+	return _SoundGroupId;
 }
 void CCluster::setEnvironmentFx(const std::string &environmentFx)
 {
@@ -245,12 +252,14 @@ void CCluster::serial (IStream&f)
 
 	if (version >= 2)
 	{
-		f.serial(_SoundGroup);
-
-		std::string envFxName;
 		if (f.isReading())
 		{
+			std::string soundGroup;
 			std::string envFxName;
+
+			f.serial(soundGroup);
+			_SoundGroupId = CStringMapper::map(soundGroup);
+
 			f.serial(envFxName);
 			if (envFxName == "")
 				envFxName = "no fx";
@@ -258,14 +267,17 @@ void CCluster::serial (IStream&f)
 		}
 		else
 		{
-			// write the enf fx name
+			// write the sound group
+			std::string soundGroup = CStringMapper::unmap(_SoundGroupId);
+			f.serial(soundGroup);
+			// write the env fx name
 			std::string envFxName = CStringMapper::unmap(_EnvironmentFxId);
 			if (envFxName == "no fx")
 				envFxName = "";
 			f.serial(envFxName);
 		}
 		
-		nldebug("Cluster %s, sound [%s]", Name.c_str(), _SoundGroup.c_str());
+		nldebug("Cluster %s, sound group [%s]", Name.c_str(), CStringMapper::unmap(_SoundGroupId).c_str());
 	}
 }
 

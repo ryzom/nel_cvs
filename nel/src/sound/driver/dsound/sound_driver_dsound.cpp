@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.11 2003/01/08 15:44:47 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.12 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #define INITGUID
 
 #include "stddsound.h"
+#include "../sound_driver.h"
 
 #include <math.h>
 #include <eax.h>
@@ -351,10 +352,20 @@ bool CSoundDriverDSound::init(HWND wnd, bool useEax)
 
     // Create a DirectSound object and set the cooperative level.
 
-    if (EAXDirectSoundCreate8(NULL, &_DirectSound, NULL) != DS_OK) 
-    {
-        throw ESoundDriver("Failed to create the DirectSound object");
-    }
+	if (useEax)
+	{
+		if (EAXDirectSoundCreate8(NULL, &_DirectSound, NULL) != DS_OK) 
+		{
+			throw ESoundDriver("Failed to create the DirectSound object from EAX proxy funtion");
+		}
+	}
+	else
+	{
+		if (DirectSoundCreate8(NULL, &_DirectSound, NULL) != DS_OK) 
+		{
+			throw ESoundDriver("Failed to create the DirectSound object");
+		}
+	}
 
 
     if (_DirectSound->SetCooperativeLevel(wnd, DSSCL_PRIORITY) != DS_OK) 

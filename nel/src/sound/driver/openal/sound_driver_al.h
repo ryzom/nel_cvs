@@ -1,7 +1,7 @@
 /** \file sound_driver_al.h
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.h,v 1.8 2002/08/21 09:41:46 lecroart Exp $
+ * $Id: sound_driver_al.h,v 1.9 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "sound/driver/openal/source_al.h"
 #include "sound/driver/openal/buffer_al.h"
 #include <AL/al.h>
+#include "../sound_driver.h"
 #ifdef NL_OS_WINDOWS
 #include <objbase.h> // needed before eax.h
 #define EAX_AVAILABLE

@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.15 2003/01/08 15:40:35 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.16 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "sound_driver_dsound.h"
 #include "buffer_dsound.h"
 #include "listener_dsound.h"
+#include "../sound_driver.h"
 
 #ifdef EAX_AVAILABLE
 #include <eax.h>
@@ -99,9 +100,12 @@ uint32 CSourceDSound::_TotalUpdateSize = 0;
 
 CSourceDSound::CSourceDSound( uint sourcename ) 
 :	ISource(), 
-	_SourceName(sourcename),
-	_EAXSource(0)
+	_SourceName(sourcename)
 {
+#ifdef EAX_AVAILABLE
+	_EAXSource = 0;
+#endif
+
 	_BufferSize = 0;
 	_SwapBuffer = 0;
 	_SecondaryBuffer = 0;
@@ -149,11 +153,13 @@ void CSourceDSound::release()
 {
 	_Buffer = 0;
 
+#ifdef EAX_AVAILABLE
 	if (_EAXSource != 0)
 	{
 		_EAXSource->Release();
 		_EAXSource = 0;
 	}
+#endif
 
 	if (_SecondaryBuffer != 0)
 	{

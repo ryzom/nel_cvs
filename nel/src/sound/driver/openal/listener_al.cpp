@@ -1,7 +1,7 @@
 /** \file listener_al.cpp
  * OpenAL sound listener
  *
- * $Id: listener_al.cpp,v 1.9 2002/11/25 14:11:41 boucher Exp $
+ * $Id: listener_al.cpp,v 1.10 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdopenal.h"
 
 #include "listener_al.h"
+#include "../sound_driver.h"
 
 
 using namespace NLMISC;

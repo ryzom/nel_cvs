@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.19 2002/08/09 09:31:13 berenguier Exp $
+ * $Id: scene_group.h,v 1.20 2003/01/10 17:11:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,16 +180,16 @@ public:
 	 *	Build with an empty list of light
 	 */
 	void build (const CVector &vGlobalPos, const TInstanceArray& array, 
-				const std::vector<CCluster>& Portals, 
-				const std::vector<CPortal>& Clusters);
+				const std::vector<CCluster>& Clusters, 
+				const std::vector<CPortal>& Portals);
 
 	/** Build the group
 	 *	Build also the list of light. NB: sort by LightGroupName the array.
 	 *	Give also a ptr on a retrieverGridMap to build surfaces (if not NULL).
 	 */
 	void build (const CVector &vGlobalPos, const TInstanceArray& array, 
-				const std::vector<CCluster>& Portals, 
-				const std::vector<CPortal>& Clusters,
+				const std::vector<CCluster>& Clusters, 
+				const std::vector<CPortal>& Portals,
 				const std::vector<CPointLightNamed> &pointLightList,
 				const CIGSurfaceLight::TRetrieverGridMap *retrieverGridMap= NULL, 
 				float igSurfaceLightCellSize= 0);
@@ -197,8 +197,8 @@ public:
 	/** Retreive group information. NB: data may have changed, eg: order of lights.
 	 */
 	void retrieve (CVector &vGlobalPos, TInstanceArray& array, 
-				std::vector<CCluster>& Portals, 
-				std::vector<CPortal>& Clusters,
+				std::vector<CCluster>& Clusters, 
+				std::vector<CPortal>& Portals,
 				std::vector<CPointLightNamed> &pointLightList) const;
 
 	/// Serial the group

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.5 2004/06/04 15:04:08 corvazier Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.6 2004/06/22 09:44:46 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -134,7 +134,7 @@ const D3DTEXTUREFILTERTYPE RemapMipTextureFilterTypeNeL2D3D[ITexture::MinFilterC
 const D3DFORMAT RemapTextureFormatTypeNeL2D3D[CBitmap::ModeCount]=
 {
 	D3DFMT_A8R8G8B8,	// RGBA
-	D3DFMT_L16,			// Luminance
+	D3DFMT_L8,			// Luminance
 	D3DFMT_A8,			// Alpha
 	D3DFMT_A8L8,		// AlphaLuminance
 	D3DFMT_DXT1,		// DXTC1

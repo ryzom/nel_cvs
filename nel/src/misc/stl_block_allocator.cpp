@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.cpp
  * <File description>
  *
- * $Id: stl_block_allocator.cpp,v 1.1 2001/12/27 14:24:42 berenguier Exp $
+ * $Id: stl_block_allocator.cpp,v 1.2 2001/12/28 10:33:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdmisc.h"
 
 #include "nel/misc/stl_block_allocator.h"
 

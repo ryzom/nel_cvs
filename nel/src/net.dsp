@@ -248,11 +248,27 @@ SOURCE=..\include\nel\net\net_manager.h
 # End Group
 # Begin Source File
 
+SOURCE=.\net\login_client.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\login_client.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\login_cookie.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\net\login_cookie.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\login_server.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\login_server.h
 # End Source File
 # Begin Source File
 

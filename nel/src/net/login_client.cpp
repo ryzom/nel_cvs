@@ -1,6 +1,6 @@
 /** \file login_client.cpp
  *
- * $Id: login_client.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: login_client.cpp,v 1.2 2001/05/02 12:54:13 lecroart Exp $
  *
  */
 
@@ -30,10 +30,10 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/system_info.h"
 
-#include "v2/callback_client.h"
+#include "nel/net/callback_client.h"
 
-#include "../login_cookie.h"
-#include "login_client.h"
+#include "nel/net/login_cookie.h"
+#include "nel/net/login_client.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -251,7 +251,7 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx
 /////////////////////////////////////////////
 /////////////////////////////////////////////
 /////////////////////////////////////////////
-
+/*
 using namespace NLMISC;
 using namespace NLNET;
 using namespace std;
@@ -303,3 +303,4 @@ void main ()
 
 	getchar ();
 }
+*/

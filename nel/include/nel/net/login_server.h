@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.1 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: login_server.h,v 1.2 2001/05/02 12:54:13 lecroart Exp $
  * 
  */
 
@@ -32,7 +32,7 @@
 
 #include "nel/misc/types_nl.h"
 
-#include "v2/callback_server.h"
+#include "nel/net/callback_server.h"
 
 namespace NLNET
 {

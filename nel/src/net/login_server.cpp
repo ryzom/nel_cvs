@@ -1,6 +1,6 @@
 /** \file login_server.cpp
  *
- * $Id: login_server.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: login_server.cpp,v 1.2 2001/05/02 12:54:13 lecroart Exp $
  *
  */
 
@@ -29,11 +29,11 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 
-#include "v2/callback_client.h"
-#include "v2/net_manager.h"
+#include "nel/net/callback_client.h"
+#include "nel/net/net_manager.h"
 
-#include "../login_cookie.h"
-#include "login_server.h"
+#include "nel/net/login_cookie.h"
+#include "nel/net/login_server.h"
 
 using namespace std;
 
@@ -249,7 +249,7 @@ void CLoginServer::clientDisconnected (uint32 userId)
 /////////////////////////////////////////////
 /////////////////////////////////////////////
 /////////////////////////////////////////////
-
+/*
 #include "v2/service.h"
 
 using namespace std;
@@ -283,3 +283,4 @@ public:
 
 /// Naming Service
 NLNET_SERVICE_MAIN (CFrontEndService, "FES", "front_end_service", 0);
+*/

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.19 2000/12/08 11:00:08 cado Exp $
+ * $Id: base_socket.h,v 1.20 2000/12/08 13:35:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,16 +45,16 @@ public:
 	/// Constructor
 	ESocket( const char *reason="", uint errnum=0 )
 	{
-		_Reason = std::string("Socket error: ") + std::string(reason);
+		std::stringstream ss;
+		ss << "Socket error: " << reason << " : Error " << _ErrNum;
+		_Reason = ss.str();
 		_ErrNum = errnum;
 	}
 
 	/// Returns the reason of the exception	
 	virtual const char	*what() const
 	{
-		static std::stringstream ss;
-		ss << _Reason.c_str() << " : Error " << _ErrNum;
-		return ss.str().c_str();
+		return _Reason.c_str();
 	}
 
 	/// Returns the error code

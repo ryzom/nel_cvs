@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.4 2001/06/27 16:50:09 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.5 2001/07/04 12:23:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,7 +164,7 @@ protected:
 
 			struct CDirectionWrapper : public IPSWrapper<NLMISC::CVector>
 			{
-			   NL3D::CPSEmitterDirection *E ;
+			   NL3D::CPSDirection *E ;
 			   NLMISC::CVector get(void) const { return E->getDir() ; }
 			   void set(const NLMISC::CVector &d){ E->setDir(d) ; }	
 			} _DirectionWrapper ;

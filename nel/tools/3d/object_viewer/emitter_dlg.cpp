@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.5 2001/06/27 16:50:09 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.6 2001/07/04 12:23:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,12 +207,12 @@ BOOL CEmitterDlg::OnInitDialog()
 	}
 
 	// deals with emitters that have a direction
-	if (dynamic_cast<NL3D::CPSEmitterDirection *>(_Emitter))
+	if (dynamic_cast<NL3D::CPSDirection *>(_Emitter))
 	{
 		CDirectionAttr *da = new CDirectionAttr(std::string("DIRECTION")) ;
 		pushWnd(da) ;
 		da->init(posX, posY, this) ;
-		_DirectionWrapper.E = dynamic_cast<NL3D::CPSEmitterDirection *>(_Emitter) ;
+		_DirectionWrapper.E = dynamic_cast<NL3D::CPSDirection *>(_Emitter) ;
 		da->setWrapper(&_DirectionWrapper) ;
 		da->GetClientRect(&r) ;
 		posY += r.bottom ;

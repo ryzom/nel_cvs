@@ -1,7 +1,7 @@
 /** \file network.cpp
  * manage the connection to the shard and messages
  *
- * $Id: network.cpp,v 1.1 2001/07/12 16:29:19 lecroart Exp $
+ * $Id: network.cpp,v 1.2 2001/07/12 17:07:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,25 +31,127 @@
 #include <nel/misc/log.h>
 #include <nel/misc/displayer.h>
 
+#include <nel/net/login_client.h>
+
+#include "client.h"
+#include "commands.h"
 #include "network.h"
 
 using namespace std;
 using namespace NLMISC;
+using namespace NLNET;
 
-// true if we are online
-bool Online = false;
+CCallbackClient Connection;
+
+static void cbClientDisconnected (TSockId from, void *arg)
+{
+	nlwarning ("You lost the connection to the server");
+}
+
+static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	nlinfo ("Receive add entity");
+}
+
+static void cbRemoveEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	nlinfo ("Receive remove entity");
+}
+
+static void cbEntityPos (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	nlinfo ("Receive entity pos");
+}
+
+static void cbSBHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	nlinfo ("Receive hit msg");
+}
+
+static void cbChat (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	string line;
+	addLine (line);
+}
+
+/*static void cbDummy (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+}*/
+
+static TCallbackItem ClientCallbackArray[] =
+{
+	{ "ADD_ENTITY", cbAddEntity },
+	{ "REMOVE_ENTITY", cbRemoveEntity },
+	{ "ENTITY_POS", cbEntityPos },
+	{ "SB_HIT", cbSBHit },
+	{ "CHAT", cbChat },
+//	{ "", cbDummy },
+};
+
+
+bool	isOnline ()
+{
+	return Connection.connected ();
+}
+
+void	sendChatLine (string Line)
+{
+	if (!isOnline ()) return;
+
+	CMessage msgout (Connection.getSIDA(), "CHAT");
+	msgout.serial (Line);
+	Connection.send (msgout);
+}
 
 
 void	initNetwork()
 {
+	Connection.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
+	Connection.setDisconnectionCallback (cbClientDisconnected, NULL);
 }
 
 void	updateNetwork()
 {
+	Connection.update ();
 }
 
 void	releaseNetwork()
 {
+	if (Connection.connected ())
+		Connection.disconnect ();
 }
 
 
+NLMISC_COMMAND(connect,"connect to the login system","<login> <password>")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if (args.size() != 2) return false;
+
+	string LoginSystemHost = ConfigFile.getVar("LoginSystemHost").asString ();
+
+	string res = CLoginClient::authenticate (LoginSystemHost+":49999", args[0], args[1], 1);
+	if (!res.empty ()) log.displayNL ("Authentification failed: %s", res.c_str());
+
+	log.displayNL ("Please select a shard in the list using \"/select <num>\" where <num> is the shard number");
+	for (uint32 i = 0; i < CLoginClient::ShardList.size (); i++)
+	{
+		log.displayNL ("Shard %d: %s (%s)", i, CLoginClient::ShardList[i].ShardName.c_str(), CLoginClient::ShardList[i].WSAddr.c_str());
+	}
+
+	return true;
+}
+
+NLMISC_COMMAND(select,"select a shard using his number","<shard_number>")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if (args.size() != 1) return false;
+
+	uint32 num = (uint32) atoi (args[0].c_str());
+
+	string res = CLoginClient::connectToShard (num, Connection);
+	if (!res.empty ()) log.displayNL ("Connection failed: %s", res.c_str());
+
+	log.displayNL ("You are online!!!");
+
+	return true;
+}

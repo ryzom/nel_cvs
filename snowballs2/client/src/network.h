@@ -1,7 +1,7 @@
 /** \file network.h
  * 
  *
- * $Id: network.h,v 1.1 2001/07/12 16:29:19 lecroart Exp $
+ * $Id: network.h,v 1.2 2001/07/12 17:07:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,11 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-// true if we are online
-extern bool Online;
+#include <string>
+
+// return true if the client is online
+bool	isOnline ();
+void	sendChatLine (std::string Line);
 
 void	initNetwork ();
 void	updateNetwork ();

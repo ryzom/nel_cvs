@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: commands.cpp,v 1.6 2001/07/12 12:54:15 lecroart Exp $
+ * $Id: commands.cpp,v 1.7 2001/07/12 17:07:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
 
+#include "network.h"
 #include "client.h"
 
 using namespace std;
@@ -141,8 +142,11 @@ class CCommandsListener : public IEventListener
 			// if, it s a command, execute it and don't send the command
 			if ( ! commandLine( _Line ) )
 			{
-				/// \todo ace: send the string to the server
-				addLine (string ("you said> ") + _Line);
+				// it s a chat line, send  it to the server
+				if (isOnline ())
+					sendChatLine (_Line);
+				else
+					addLine (string ("you said> ") + _Line);
 			}
 			_Line = "";
 			_MaxWidthReached = false;

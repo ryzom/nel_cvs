@@ -1,7 +1,7 @@
 /** \file commands.h
  * 
  *
- * $Id: commands.h,v 1.4 2001/07/12 12:54:15 lecroart Exp $
+ * $Id: commands.h,v 1.5 2001/07/12 17:07:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+#include <string>
+
 #include <nel/misc/log.h>
 
 extern NLMISC::CLog CommandsLog;
@@ -35,6 +37,7 @@ void	updateCommands ();
 void	releaseCommands ();
 
 void	clearCommands ();
+void	addLine (const std::string &line);
 
 #endif // COMMANDS_H
 

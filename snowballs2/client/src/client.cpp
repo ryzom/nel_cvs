@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.21 2001/07/12 17:06:58 legros Exp $
+ * $Id: client.cpp,v 1.22 2001/07/12 17:07:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,6 +159,9 @@ int main(int argc, char **argv)
 										ConfigFile.getVar("StartPoint").asFloat(1),
 										ConfigFile.getVar("StartPoint").asFloat(2)));
 
+	// Init the network structure
+	initNetwork();
+
 	// Display the firsts line
 	nlinfo ("Welcome to Snowballs 2");
 
@@ -195,9 +198,9 @@ int main(int argc, char **argv)
 		if (ShowRadar) updateRadar ();
 
 		TextContext->setHotSpot (UTextContext::TopRight);
-		TextContext->setColor (CRGBA(255, 0, 0));
-		TextContext->setFontSize (20);
-		TextContext->printfAt (1.0f, 1.0f, Online?"Online":"Offline");
+		TextContext->setColor (isOnline()?CRGBA(0, 255, 0):CRGBA(255, 0, 0));
+		TextContext->setFontSize (18);
+		TextContext->printfAt (0.99f, 0.99f, isOnline()?"Online":"Offline");
 
 
 		// Swap
@@ -224,10 +227,14 @@ int main(int argc, char **argv)
 			clearCommands ();
 		}
 
+		// Update network messages
+		updateNetwork ();
+
 		// Check if the config file was modified by another program
 		CConfigFile::checkConfigFiles ();
 	}
 
+	releaseNetwork ();
 	releasePACS();
 	releaseLandscape();
 

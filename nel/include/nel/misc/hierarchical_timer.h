@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.14 2002/06/10 09:24:26 berenguier Exp $
+ * $Id: hierarchical_timer.h,v 1.15 2002/06/10 13:14:59 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -89,7 +89,6 @@ namespace NLMISC
 
 inline uint64 rdtsc()
 {
-
 	uint64 ticks;
 #	ifndef NL_OS_WINDOWS		
 		__asm__ volatile(".byte 0x0f, 0x31" : "=a" (ticks.low), "=d" (ticks.high));				
@@ -220,9 +219,9 @@ public:
 	/// ctor
 	CHTimer(const char *name, bool isRoot = false) : _Name(name), _IsRoot(isRoot) {}
 	/// Starts a measuring session
-	inline void CHTimer::before();
+	void		before();
 	// Ends a measuring session
-	inline void		after(bool displayAfter = false);		
+	void		after(bool displayAfter = false);		
 	// Get this node name
 	const char	   *getName() const { return _Name; }
 	/** Starts a bench session
@@ -467,12 +466,12 @@ public:
 ////////////////////////////
 // inlines implementation //
 ////////////////////////////
-
+#if 0
 //===============================================
 inline void	CHTimer::before()
 {	
 	if (!_Benching) return;
-	_PreambuleClock.start();	
+	_PreambuleClock.start();
 	walkTreeToCurrent();			
 	++ _CurrNode->NumVisits;
 	_CurrNode->SonsPreambule = 0;
@@ -532,7 +531,8 @@ inline void	CHTimer::after(bool displayAfter /*= false*/)
 		_PreambuleClock.stop();
 	}
 }
-	
+#endif
+
 } // NLMISC
 
 #endif // NL_HIERARCHICAL_TIMER_H

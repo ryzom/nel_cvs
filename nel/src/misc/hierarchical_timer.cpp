@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.11 2002/06/10 09:25:15 berenguier Exp $
+ * $Id: hierarchical_timer.cpp,v 1.12 2002/06/10 13:14:45 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -776,6 +776,70 @@ bool CHTimer::CStatSorter::operator()(const CHTimer::CStats *lhs, const CHTimer:
 }
 
 
+//===============================================
+void	CHTimer::before()
+{	
+	if (!_Benching) return;
+	_PreambuleClock.start();	
+	walkTreeToCurrent();			
+	++ _CurrNode->NumVisits;
+	_CurrNode->SonsPreambule = 0;
+	if (!_Parent && _CurrTimer != this)
+	{
+		_Parent = _CurrTimer;
+		// register as a son of the parent
+		_Parent->_Sons.push_back(this); 
+	}
+	_CurrTimer = this;
+	_PreambuleClock.stop();
+	if (_CurrNode->Parent)
+	{	
+		_CurrNode->Parent->SonsPreambule += _PreambuleClock.getNumTicks();
+	}
+	_CurrNode->Clock.start();
+}
+
+//===============================================
+void	CHTimer::after(bool displayAfter /*= false*/)
+{
+	if (!_Benching) return;
+	_CurrNode->Clock.stop();		
+	_PreambuleClock.start();
+	//		
+	//nlinfo((std::string("clock ") + _Name + std::string(" time = ") + NLMISC::toString(_CurrNode->Clock.getNumTicks())).c_str());
+	uint64 numTicks = _CurrNode->Clock.getNumTicks()  - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
+
+	_CurrNode->TotalTime += numTicks;		
+	_CurrNode->MinTime = std::min(_CurrNode->MinTime, numTicks);
+	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, numTicks);
+	_CurrNode->LastSonsTotalTime = _CurrNode->SonsTotalTime;
+	if (displayAfter)
+	{		
+		nlinfo("FEHTIMER> %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);
+	}
+	//
+	if (_WantStandardDeviation)
+	{
+		_CurrNode->Measures.push_back(numTicks * _MsPerTick);
+	}
+	//
+	if (_Parent)
+	{
+		_CurrTimer = _Parent;
+	}	
+	//
+	if (_CurrNode->Parent)
+	{
+		_PreambuleClock.stop();
+		_CurrNode = _CurrNode->Parent;
+		_CurrNode->SonsTotalTime += numTicks;
+		_CurrNode->SonsPreambule += _PreambuleClock.getNumTicks();
+	}
+	else
+	{
+		_PreambuleClock.stop();
+	}
+}
 
 } // NLMISC
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: config_file.cpp,v 1.1 2000/10/04 09:38:41 lecroart Exp $
+ * $Id: config_file.cpp,v 1.2 2000/10/04 13:59:03 lecroart Exp $
  *
  * Implementation of CConfigFile.
  */
@@ -29,6 +29,11 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
+
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "nel/misc/config_file.h"
 
@@ -43,30 +48,30 @@ namespace NLMISC
 
 char *CConfigFile::CVar::TypeName[] = { "Integer", "String", "Float" };
 
-int CConfigFile::CVar::asInt (int Index)
+int CConfigFile::CVar::asInt (int index)
 {
 	if (Type != T_INT) throw EBadType (Name, Type, T_INT);
-	else if (Index >= IntValues.size () || Index < 0) throw EBadSize (Name, IntValues.size (), Index);
-	else return IntValues[Index];
+	else if (index >= IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
+	else return IntValues[index];
 }
 
-double CConfigFile::CVar::asDouble (int Index)
+double CConfigFile::CVar::asDouble (int index)
 {
 	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
-	else if (Index >= RealValues.size () || Index < 0) throw EBadSize (Name, RealValues.size (), Index);
-	else return RealValues[Index];
+	else if (index >= RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
+	else return RealValues[index];
 }
 
-float CConfigFile::CVar::asFloat (int Index)
+float CConfigFile::CVar::asFloat (int index)
 {
-	return (float) asDouble (Index);
+	return (float) asDouble (index);
 }
 
-std::string &CConfigFile::CVar::asString (int Index)
+std::string &CConfigFile::CVar::asString (int index)
 {
 	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
-	else if (Index >= StrValues.size () || Index < 0) throw EBadSize (Name, StrValues.size (), Index);
-	else return StrValues[Index];
+	else if (index >= StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+	else return StrValues[index];
 }
 
 int CConfigFile::CVar::size ()
@@ -80,28 +85,49 @@ int CConfigFile::CVar::size ()
 	}
 }
 
-CConfigFile::CConfigFile (const std::string FileName)
+CConfigFile::~CConfigFile ()
+{
+	vector<CConfigFile *>::iterator it = find (ConfigFiles.begin (), ConfigFiles.end (), this);
+	if (it != ConfigFiles.end ())
+	{
+		ConfigFiles.erase (it);
+		printf("rem %s\n", FileName.c_str ());
+	}
+}
+
+void CConfigFile::parse (const string fileName)
+{
+	FileName = fileName;
+	LastModified = getLastModified ();
+	CConfigFile::ConfigFiles.push_back (this);
+	printf("add %s\n", FileName.c_str ());
+	reparse ();
+}
+
+void CConfigFile::reparse ()
 {
 	cfin = fopen (FileName.c_str (), "r");
 	if (cfin != NULL)
 	{
-		parsingOK = (cfparse (&(Vars)) == 0);
+		Vars.clear ();
+		bool parsingOK = (cfparse (&(Vars)) == 0);
 		fclose (cfin);
 		if (!parsingOK) throw EParseError (FileName, cf_CurrentLine);
 	}
 }
 
-CConfigFile::CVar &CConfigFile::getVar (const std::string VarName)
+
+CConfigFile::CVar &CConfigFile::getVar (const std::string varName)
 {
 	for (int i = 0; i < Vars.size(); i++)
 	{
-		if (Vars[i].Name == VarName)
+		if (Vars[i].Name == varName)
 		{
 			return Vars[i];
 			break;
 		}
 	}
-	throw EUnknownVar (VarName);
+	throw EUnknownVar (varName);
 }
 
 void CConfigFile::print ()
@@ -162,5 +188,39 @@ void CConfigFile::print ()
 		}
 	}
 }
+
+vector<CConfigFile *> CConfigFile::ConfigFiles;
+
+uint32 CConfigFile::getLastModified ()
+{
+#if defined(WIN32)
+	struct _stat buf;
+#else
+	struct stat buf;
+#endif
+
+	int result = _stat (FileName.c_str (), &buf);
+	if (result != 0) return 0;
+	else return buf.st_mtime;
+}
+
+
+void CConfigFile::checkConfigFiles ()
+{
+	static clock_t LastCheckClock = clock ();
+	
+	if ((float)(clock () - LastCheckClock)/(float)CLOCKS_PER_SEC < 1.0f) return;
+
+	LastCheckClock = clock ();
+
+	for (vector<CConfigFile *>::iterator it = ConfigFiles.begin (); it != ConfigFiles.end (); it++)
+	{
+		if ((*it)->LastModified != (*it)->getLastModified ())
+		{
+			(*it)->reparse ();
+		}
+	}
+}
+
 
 } // NLMISC

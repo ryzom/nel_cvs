@@ -18,10 +18,12 @@
  */
 
 /*
- * $Id: config_file.h,v 1.1 2000/10/04 09:38:41 lecroart Exp $
+ * $Id: config_file.h,v 1.2 2000/10/04 13:58:58 lecroart Exp $
  *
  * Manage a configuration files
  */
+
+/// \todo kan on reload, ca capte les exceptions en cas particulier pour pas tout troncher mais juste un nlwarning()
 
 #ifndef NL_CONFIG_FILE_H
 #define NL_CONFIG_FILE_H
@@ -35,40 +37,40 @@ namespace NLMISC
 {
 
 /**
- * ConfigFile class. Useful when you want to have a configuration file with variables.
+ * CConfigFile class. Useful when you want to have a configuration file with variables.
  * It manages integers, real (double), and string basic types. A variable can be an array of
  * basic type. In this case, all elements of the array must be the same type.
  *
- * Sample:
+ * Example:
  *\code
-	try
-	{
-		// Load and parse "test.txt" file
-		CConfigFile cf ("test.txt");
-
-		// Get the foo variable (suppose it's a string variable)
-		CConfigFile::CVar &foo = cf.getVar ("foo");
-
-		// Display the content of the variable
-		printf ("foo = %s\n", foo.asString ().c_str ());
-
-		// Get the bar variable (suppose it's an array of int)
-		CConfigFile::CVar &bar = cf.getVar ("bar");
-
-		// Display the content of the all elements of the bar variable
-		printf ("bar have %d elements : \n", bar.size ());
-		for (int i = 0; i < bar.size (); i++)
-			printf ("%d ", bar.asInt (i));
-		printf("\n");
-	}
-	catch (EConfigFile &e)
-	{
-		// Something goes wrong... catch that
-		printf ("%s\n", e.what ());
-	}
+ * try
+ * {
+ * 	 // Load and parse "test.txt" file
+ * 	CConfigFile cf ("test.txt");
+ * 
+ * 	// Get the foo variable (suppose it's a string variable)
+ * 	CConfigFile::CVar &foo = cf.getVar ("foo");
+ * 
+ * 	// Display the content of the variable
+ * 	printf ("foo = %s\n", foo.asString ().c_str ());
+ * 
+ * 	// Get the bar variable (suppose it's an array of int)
+ * 	CConfigFile::CVar &bar = cf.getVar ("bar");
+ * 
+ * 	// Display the content of the all elements of the bar variable
+ * 	printf ("bar have %d elements : \n", bar.size ());
+ * 	for (int i = 0; i < bar.size (); i++)
+ * 		printf ("%d ", bar.asInt (i));
+ * 	printf("\n");
+ * }
+ * catch (EConfigFile &e)
+ * {
+ *	// Something goes wrong... catch that
+ * 	printf ("%s\n", e.what ());
+ * }
  *\endcode
  *
- * Sample of config file:
+ * Example of config file:
  *\code
  * // one line comment
  * / * big comment
@@ -107,19 +109,36 @@ class CConfigFile
 {
 public:
 
+	/**
+	 * CVar class. Used by CConfigFile. A CVar is return when you want to have a variable.
+	 *
+	 * Example: see the CConfigFile example
+	 *
+	 * \author Vianney Lecroart
+	 * \author Nevrax France
+	 * \date 2000
+	 */
 	struct CVar
 	{
 	public:
 
-		int			 asInt		(int Index=0);
+		/// \name Access to the variable content.
+		//@{
+		/// Get the content of the variable as an integer
+		int			 asInt		(int index=0);
+		/// Get the content of the variable as a double
+		double		 asDouble	(int index=0);
+		/// Get the content of the variable as a float
+		float		 asFloat	(int index=0);
+		/// Get the content of the variable as a STL string
+		std::string	&asString	(int index=0);
+		//@}
 
-		double		 asDouble	(int Index=0);
-		float		 asFloat	(int Index=0);
-
-		std::string	&asString	(int Index=0);
-
+		// Get the size of the variable. It's the number of element of the array or 1 if it's not an array.
 		int			 size ();
 
+		/// \name Internal use. You should never use these stuffs
+		//@{
 		static char *TypeName[];
 
 		enum TVarType { T_INT, T_STRING, T_REAL };
@@ -130,18 +149,37 @@ public:
 		std::vector<int>			IntValues;
 		std::vector<double>			RealValues;
 		std::vector<std::string>	StrValues;
-
+		//@}
 	};
 
+	/// Load and parse a file
+	virtual ~CConfigFile ();
+
+	/// Get a variable with the variable name
+	CVar &getVar (const std::string varName);
+
+	/// load and parse the file
+	void parse (const std::string fileName);
+
+	/// reload and reparse the file
+	void reparse ();
+
+	/// 
+	void print ();
+
+	static void checkConfigFiles ();
+
+private:
+
+	/// Get the content of the variable as a STL string
 	std::vector<CVar>	Vars;
 
-	bool	parsingOK;
-	
-	CConfigFile (const std::string FileName);
+	std::string FileName;
 
-	CVar &getVar (const std::string VarName);
+	uint32	getLastModified ();
+	uint32	LastModified;
 
-	void print ();
+	static std::vector<CConfigFile *> ConfigFiles;
 };
 
 struct EConfigFile : public Exception
@@ -151,35 +189,42 @@ struct EConfigFile : public Exception
 
 struct EBadType : public EConfigFile
 {
-	int varType;
-	int wantedType;
-	std::string varName;
-	EBadType (std::string VarName, int VarType, int WantedType) : varName(VarName), varType (VarType), wantedType (WantedType) {}
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Bad variable type, variable \"%s\" is a %s and not a %s", varName.c_str (), CConfigFile::CVar::TypeName[varType], CConfigFile::CVar::TypeName[wantedType]); return str; }
+	int VarType;
+	int WantedType;
+	std::string VarName;
+	EBadType (std::string varName, int varType, int wantedType) : VarName(varName), VarType (varType), WantedType (wantedType) {}
+	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Bad variable type, variable \"%s\" is a %s and not a %s", VarName.c_str (), CConfigFile::CVar::TypeName[VarType], CConfigFile::CVar::TypeName[WantedType]); return str; }
 };
 
 struct EBadSize : public EConfigFile
 {
-	int varSize;
-	int varIndex;
-	std::string varName;
-	EBadSize (std::string VarName, int VarSize, int VarIndex) : varName(VarName), varSize (VarSize), varIndex (VarIndex) {}
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Trying to access to the index %d but the variable \"%s\" size is %d", varIndex, varName.c_str (), varSize); return str; }
+	int VarSize;
+	int VarIndex;
+	std::string VarName;
+	EBadSize (std::string varName, int varSize, int varIndex) : VarName(varName), VarSize (varSize), VarIndex (varIndex) {}
+	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Trying to access to the index %d but the variable \"%s\" size is %d", VarIndex, VarName.c_str (), VarSize); return str; }
 };
 
 struct EUnknownVar : public EConfigFile
 {
-	std::string varName;
-	EUnknownVar (std::string VarName) : varName(VarName) {}
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Unknown variable \"%s\"", varName.c_str ()); return str; }
+	std::string VarName;
+	EUnknownVar (std::string varName) : VarName(varName) {}
+	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Unknown variable \"%s\"", VarName.c_str ()); return str; }
 };
 
 struct EParseError : public EConfigFile
 {
-	std::string fileName;
-	int currentLine;
-	EParseError (std::string FileName, int CurrentLine) : fileName(FileName), currentLine (CurrentLine) {}
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Parse error on the \"%s\" file, line %d", fileName.c_str (), currentLine); return str; }
+	std::string FileName;
+	int CurrentLine;
+	EParseError (std::string fileName, int currentLine) : FileName(fileName), CurrentLine (currentLine) {}
+	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Parse error on the \"%s\" file, line %d", FileName.c_str (), CurrentLine); return str; }
+};
+
+struct EFileNotFound : public EConfigFile
+{
+	std::string FileName;
+	EFileNotFound (std::string fileName, int currentLine) : FileName(fileName) {}
+	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "File \"%s\" not found", FileName.c_str ()); return str; }
 };
 
 

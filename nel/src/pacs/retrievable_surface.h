@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.11 2004/06/29 17:16:28 legros Exp $
+ * $Id: retrievable_surface.h,v 1.12 2004/07/27 09:01:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,18 +167,19 @@ public:
 
 	uint8								getNormalQuanta() const { return _NormalQuanta; }
 	uint8								getOrientationQuanta() const { return _OrientationQuanta; }
-	uint8								getMaterial() const { return _Material; }
-	uint8								getCharacter() const { return _Character; }
-	uint8								getLevel() const { return _Level; }
-	bool								isFloor() const { return _IsFloor; }
-	bool								isCeiling() const { return _IsCeiling; }
-	bool								clusterHint() const { return (_Flags & ClusterHintBit) != 0; }
-	const CSurfaceQuadTree				&getQuadTree() const { return _Quad; }
+	uint8								getMaterial() const		{ return _Material; }
+	uint8								getCharacter() const	{ return _Character; }
+	uint8								getLevel() const		{ return _Level; }
+	bool								isFloor() const			{ return _IsFloor; }
+	bool								isCeiling() const		{ return _IsCeiling; }
+	bool								isUnderWater() const	{ return (_Flags & (1 << CRetrievableSurface::IsUnderWaterBit)) != 0; }
+	bool								clusterHint() const		{ return (_Flags & ClusterHintBit) != 0; }
+	const CSurfaceQuadTree				&getQuadTree() const	{ return _Quad; }
 	sint32								getTopology(uint model) const { return _Topologies[model]; }
-	uint32								getFlags() const { return _Flags; }
-	float								getWaterHeight() const { return _WaterHeight; }
-	sint8								getQuantHeight() const { return _QuantHeight; }
-	float								getMeanHeight() const { return _QuantHeight*2.0f + 1.0f; }
+	uint32								getFlags() const		{ return _Flags; }
+	float								getWaterHeight() const	{ return _WaterHeight; }
+	sint8								getQuantHeight() const	{ return _QuantHeight; }
+	float								getMeanHeight() const	{ return _QuantHeight*2.0f + 1.0f; }
 
 	/// Gets links from this surface to its neighbors through chains...
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }

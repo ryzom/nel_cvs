@@ -1,7 +1,7 @@
 /** \file o_xml.h
  * Output xml stream
  *
- * $Id: o_xml.h,v 1.5 2002/10/02 13:33:01 corvazier Exp $
+ * $Id: o_xml.h,v 1.6 2003/03/10 18:13:33 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -86,6 +86,7 @@ class COXml : public IStream
 {
 	friend int xmlOutputWriteCallbackForNeL ( void *context, const char *buffer, int len );
 	friend int xmlOutputCloseCallbackForNeL ( void *context );
+	friend void xmlGenericErrorFuncWrite (void *ctx, const char *msg, ...);
 public:
 
 	/** Stream ctor
@@ -101,6 +102,11 @@ public:
 	  * \return true if initialisation is successful, false if the stream passed is not an output stream.
 	  */
 	bool init (IStream *stream, const char *version="1.0");
+
+	/** Return the error string.
+	  * if not empty, something wrong appends
+	  */
+	const char *getErrorString () const;
 
 	/** Default dstor
 	  *
@@ -178,6 +184,9 @@ private:
 
 	// Current content string
 	std::string		_ContentString;
+
+	// Error message
+	std::string		_ErrorString;
 };
 
 

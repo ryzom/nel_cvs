@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.9 2002/10/02 13:33:01 corvazier Exp $
+ * $Id: o_xml.cpp,v 1.10 2003/03/10 18:13:33 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,6 +28,9 @@
 #include "nel/misc/o_xml.h"
 
 #ifndef NL_DONT_USE_EXTERNAL_CODE
+
+// Include from libxml2
+#include <libxml/xmlerror.h>
 
 using namespace std;
 
@@ -95,11 +98,25 @@ COXml::COXml () : IStream (false /* Output mode */)
 
 // ***************************************************************************
 
+void xmlGenericErrorFuncWrite (void *ctx, const char *msg, ...)
+{
+	// Get the error string
+	string str;
+	NLMISC_CONVERT_VARGS (str, msg, NLMISC::MaxCStringSize);
+	((COXml*)ctx)->_ErrorString += str;
+}
+
+// ***************************************************************************
+
 bool COXml::init (IStream *stream, const char *version)
 {
 	// Output stream ?
 	if (!stream->isReading())
 	{
+		// Set error handler
+		_ErrorString = "";
+		xmlSetGenericErrorFunc	(this, xmlGenericErrorFuncWrite);
+
 		// Set XML mode
 		setXMLMode (true);
 
@@ -676,6 +693,11 @@ bool COXml::isStringValidForProperties (const char *str)
 }
 
 // ***************************************************************************
+
+const char *COXml::getErrorString () const
+{
+	return _ErrorString.c_str ();
+}
 
 } // NLMISC
 

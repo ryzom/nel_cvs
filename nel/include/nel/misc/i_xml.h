@@ -1,7 +1,7 @@
 /** \file i_xml.h
  * Input xml stream
  *
- * $Id: i_xml.h,v 1.5 2002/11/28 16:19:30 corvazier Exp $
+ * $Id: i_xml.h,v 1.6 2003/03/10 18:13:33 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ struct EXmlParsingError : public EStream
  */
 class CIXml : public IStream
 {
-	friend void xmlGenericErrorFuncForNeL (void *ctx, const char *msg, ...);
+	friend void xmlGenericErrorFuncRead (void *ctx, const char *msg, ...);
 public:
 
 	/** Default ctor

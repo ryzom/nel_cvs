@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.15 2000/11/24 14:06:17 berenguier Exp $
+ * $Id: patch.cpp,v 1.16 2000/11/28 11:14:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -236,6 +236,7 @@ void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVe
 
 	nlassert(orderS==2 || orderS==4 || orderS==8 || orderS==16);
 	nlassert(orderT==2 || orderT==4 || orderT==8 || orderT==16);
+	nlassert(orderS>=orderT);
 	OrderS= orderS;
 	OrderT= orderT;
 

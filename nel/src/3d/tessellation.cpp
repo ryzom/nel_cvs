@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.17 2000/11/24 14:06:17 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.18 2000/11/28 11:14:34 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -266,6 +266,8 @@ CTessFace::CTessFace()
 	TileMaterial= NULL;
 	TileUvBase= TileUvLeft= TileUvRight= NULL;
 	// TileId and TileType undefined.
+
+	RecursMark=false;
 }
 
 
@@ -508,14 +510,87 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 {
 	CTessFace	*f0= this;
 	CTessFace	*f1= FBase;
-
 	// Rectangular case: FBase must exist.
 	nlassert(f1);
 
 	// In rectangular case, we split at the same time this and FBase (f0 and f1).
 
 
-	// 1. Create sons, and update links.
+	/*
+		Tesselation is:
+        
+       lt                    rt        lt        top         rt
+		---------------------        	---------------------
+		|----               |        	|\        |\        |
+		|    ----      f1   |        	|  \  f1l |  \  f1r |
+		|        ----       |    --> 	|    \    |    \    |
+		|   f0       ----   |        	| f0r  \  | f0l  \  |
+		|                ---|        	|        \|        \|
+		---------------------        	---------------------
+	   lb                    rb        lb        bot         rb
+
+		Why? For symetry and bind/split reasons: FBase->SonLeft->VBase is always the good vertex to take 
+		(see vertex binding).
+	*/
+	CParamCoord		pclt= f1->PVLeft;
+	CParamCoord		pclb= f0->PVBase;
+	CParamCoord		pcrt= f1->PVBase;
+	CParamCoord		pcrb= f1->PVRight;
+	CTessVertex		*vlt= f1->VLeft;
+	CTessVertex		*vlb= f0->VBase;
+	CTessVertex		*vrt= f1->VBase;
+	CTessVertex		*vrb= f1->VRight;
+
+
+	// 1. create new vertices.
+	//------------------------
+
+	// Create splitted vertices.
+	CParamCoord		pctop(f1->PVBase, f1->PVLeft);
+	CParamCoord		pcbot(f0->PVBase, f0->PVLeft);
+	CTessVertex		*vtop= NULL;
+	CTessVertex		*vbot= NULL;
+	// Compute top.
+	if(f1->FLeft==NULL || f1->FLeft->isLeaf())
+	{
+		// The base neighbor is a leaf or NULL. So must create the new vertex.
+		vtop= new CTessVertex;
+
+		// Compute pos.
+		vtop->StartPos= (f1->VLeft->EndPos + f1->VBase->EndPos)/2;
+		vtop->EndPos= f1->Patch->computeVertex(pctop.getS(), pctop.getT());
+		// Init Pos= InitialPos. Important in the case of enforced split.
+		vtop->Pos= vtop->StartPos;
+	}
+	else
+	{
+		// Else, get from neighbor.
+		// NB: since *FLeft is not a leaf, FBase->SonLeft!=NULL...
+		// NB: this work with both rectangular and square triangles.
+		vtop= f1->FLeft->SonLeft->VBase;
+	}
+	// Compute bot.
+	if(f0->FLeft==NULL || f0->FLeft->isLeaf())
+	{
+		// The base neighbor is a leaf or NULL. So must create the new vertex.
+		vbot= new CTessVertex;
+
+		// Compute pos.
+		vbot->StartPos= (f0->VLeft->EndPos + f0->VBase->EndPos)/2;
+		vbot->EndPos= Patch->computeVertex(pcbot.getS(), pcbot.getT());
+		// Init Pos= InitialPos. Important in the case of enforced split.
+		vbot->Pos= vbot->StartPos;
+	}
+	else
+	{
+		// Else, get from neighbor.
+		// NB: since *FLeft is not a leaf, FBase->SonLeft!=NULL...
+		// NB: this work with both rectangular and square triangles.
+		vbot= f0->FLeft->SonLeft->VBase;
+	}
+
+	
+	// 2. Create sons, and update links.
 	//----------------------------------
 
 	CTessFace	*f0l, *f0r;
@@ -548,135 +623,62 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	f1r->Level= f1->Level+1;
 	f1r->Size= f1->Size*0.5f;
 
-	CParamCoord		pclt= f1->PVLeft;
-	CParamCoord		pclb= f0->PVBase;
-	CParamCoord		pcrt= f1->PVBase;
-	CParamCoord		pcrb= f1->PVRight;
-	CTessVertex		*vlt= f1->VLeft;
-	CTessVertex		*vlb= f0->VBase;
-	CTessVertex		*vrt= f1->VBase;
-	CTessVertex		*vrb= f1->VRight;
+	// Patch coordinates.
+	f0r->PVRight= pclt;
+	f0r->PVBase= pclb;
+	f0r->PVLeft= pcbot;
+	f1l->PVBase= pctop;
+	f1l->PVLeft= f0r->PVRight;
+	f1l->PVRight= f0r->PVLeft;
 
-	// 1a. update links in !tall case.
-	//--------------------------------
-	if(!isTall())
-	{
-		/*
-			Tesselation is:
+	f0l->PVRight= pctop;
+	f0l->PVBase= pcbot;
+	f0l->PVLeft= pcrb;
+	f1r->PVBase= pcrt;
+	f1r->PVLeft= f0l->PVRight;
+	f1r->PVRight= f0l->PVLeft;
 
-           lt        top         rt
-			---------------------
-			|\        |\        |
-			|  \  f1l |  \  f1r |
-			|    \    |    \    |
-			| f0r  \  | f0l  \  |
-			|        \|        \|
-			---------------------
-		   lb        bot         rb
+	// link existing vertex.
+	f0r->VRight= vlt;
+	f0r->VBase= vlb;
+	f0r->VLeft= vbot;
+	f1l->VBase= vtop;
+	f1l->VLeft= f0r->VRight;
+	f1l->VRight= f0r->VLeft;
 
-			Why? For symetry and bind/split reasons: FBase->SonLeft->VBase is always the good vertex to take 
-			(see vertex binding).
-		*/
+	f0l->VRight= vtop;
+	f0l->VBase= vbot;
+	f0l->VLeft= vrb;
+	f1r->VBase= vrt;
+	f1r->VLeft= f0l->VRight;
+	f1r->VRight= f0l->VLeft;
 
-		// Patch coordinates.
-		CParamCoord		pctop(f1->PVBase, f1->PVLeft);
-		CParamCoord		pcbot(f0->PVBase, f0->PVLeft);
-		f0r->PVRight= pclt;
-		f0r->PVBase= pclb;
-		f0r->PVLeft= pcbot;
-		f1l->PVBase= pctop;
-		f1l->PVLeft= f0r->PVRight;
-		f1l->PVRight= f0r->PVLeft;
-
-		f0l->PVRight= pctop;
-		f0l->PVBase= pcbot;
-		f0l->PVLeft= pcrb;
-		f1r->PVBase= pcrt;
-		f1r->PVLeft= f0l->PVRight;
-		f1r->PVRight= f0l->PVLeft;
-
-		// TODO: create good vertex pointers here (before, not in 3).
-		CTessVertex		*vtop= NULL;
-		CTessVertex		*vbot= NULL;
-
-		// link existing vertex.
-		f0r->VRight= vlt;
-		f0r->VBase= vlb;
-		f0r->VLeft= vbot;
-		f1l->VBase= vtop;
-		f1l->VLeft= f0r->VRight;
-		f1l->VRight= f0r->VLeft;
-
-		f0l->VRight= vtop;
-		f0l->VBase= vbot;
-		f0l->VLeft= vrb;
-		f1r->VBase= vrt;
-		f1r->VLeft= f0l->VRight;
-		f1r->VRight= f0l->VLeft;
-
-		// link neigbhor faces.
-		f0r->FBase= f1l;
-		f1l->FBase= f0r;
-		f0l->FBase= f1r;
-		f1r->FBase= f0l;
-		f1l->FRight= f0l;
-		f0l->FRight= f1l;
-		f0r->FRight= f0->FRight;
+	// link neigbhor faces.
+	f0r->FBase= f1l;
+	f1l->FBase= f0r;
+	f0l->FBase= f1r;
+	f1r->FBase= f0l;
+	f1l->FRight= f0l;
+	f0l->FRight= f1l;
+	f0r->FRight= f0->FRight;
+	if(f0->FRight)
 		f0->FRight->changeNeighbor(f0, f0r);
-		f1r->FRight= f1->FRight;
+	f1r->FRight= f1->FRight;
+	if(f1->FRight)
 		f1->FRight->changeNeighbor(f1, f1r);
-		// 4 links (2x2) are stil invalid here.
+	// 4 links (all FLeft sons ) are stil invalid here.
+	f0l->FLeft= NULL;
+	f0r->FLeft= NULL;
+	f1l->FLeft= NULL;
+	f1r->FLeft= NULL;
+
+	// Neigbors pointers of undetermined splitted face are not changed. Must Doesn't change this. 
+	// Used and Updated in section 5. ...
 
 
-	}
-	// 1b. else update links in tall case.
-	//------------------------------------
-	else
-	{
-		nlstop;
-		// TODO: voir avec cyril pour avoir des patchs en longueur seulement:
-		/*
-			- pose pb ds la tesselation (double le code :), et les bugs).
-			- risque de poser des pbs ds les texturesFar (cache)?  Ptet plus simple si on a ke des textures carrées, 
-			et en longueur seulement.
-
-			Pb: comment a t il fait pour l'orientation des patchs? (change t il déja l'ordre des points  pour l'orientation?).
-		*/
-	}
-
-	// FBase->FBase==this. Must Doesn't change this. Used and Updated in section 5. ...
-
-	// 2. Update Tile infos.
+	// 3. Update Tile infos.
 	//----------------------
 	// There is no update tileinfo with rectangular patch, since tiles are always squares. (TileLimitLevel>SquareLimitLevel).
-
-
-	// 3. Update/Create Vertex infos.
-	//-------------------------------
-
-	// Must create/link *->VBase.
-	if(FBase==NULL || FBase->isLeaf())
-	{
-		// The base neighbor is a leaf or NULL. So must create the new vertex.
-		CTessVertex	*newVertex= new CTessVertex;
-		SonRight->VBase= newVertex;
-		SonLeft->VBase= newVertex;
-
-		// Compute pos.
-		newVertex->StartPos= (VLeft->EndPos + VRight->EndPos)/2;
-		newVertex->EndPos= Patch->computeVertex(SonLeft->PVBase.getS(), SonLeft->PVBase.getT());
-
-		// Init Pos= InitialPos. Important in the case of enforced split.
-		newVertex->Pos= newVertex->StartPos;
-	}
-	else
-	{
-		// Else, get from neighbor.
-		// NB: since *FBase is not a leaf, FBase->SonLeft!=NULL...
-		SonRight->VBase= FBase->SonLeft->VBase;
-		SonLeft->VBase= FBase->SonLeft->VBase;
-	}
-
 
 
 	// 4. Compute centers.
@@ -690,32 +692,65 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	// 5. Propagate, or link sons of base.
 	//------------------------------------
 	// TODO : verify if work.
-	// If current face and FBase has sons, just links.
-	if(FBase==NULL)
+	for(sint i=0;i<2;i++)
 	{
-		// Just update sons neighbors.
-		SonLeft->FRight= NULL;
-		SonRight->FLeft= NULL;
-	}
-	else if(!FBase->isLeaf())
-	{
-		// Cross connection of sons.
-		SonLeft->FRight= FBase->SonRight;
-		FBase->SonRight->FLeft= SonLeft;
+		CTessFace	*f, *fl, *fr;
+		// TOP face.
+		if(i==0)
+		{
+			f= f1;
+			fl= f1l;
+			fr= f1r;
+		}
+		// then BOT face.
+		else
+		{
+			f= f0;
+			fl= f0l;
+			fr= f0r;
+		}
 
-		SonRight->FLeft= FBase->SonLeft;
-		FBase->SonLeft->FRight= SonRight;
-	}
-	else if (propagateSplit)
-	{
-		// Warning: at each iteration, the pointer of FBase may change (because of split() which can change the neighbor 
-		// and so "this").
-		while(FBase->isLeaf())
-			FBase->split();
+		// If current face and FBase has sons, just links.
+		if(f->FLeft==NULL)
+		{
+			// Just update sons neighbors.
+			fl->FLeft= NULL;
+			fr->FLeft= NULL;
+		}
+		else if(!f->FLeft->isLeaf())
+		{
+			CTessFace	*toLeft, *toRight;
+			toLeft= f->FLeft->SonLeft;
+			toRight= f->FLeft->SonRight;
+			// Cross connection of sons.
+			if( !f->FLeft->isRectangular() )
+			{
+				// Case neigbhor is square.
+				fl->FLeft= toLeft;
+				fr->FLeft= toRight;
+				toLeft->FRight= fl;
+				toRight->FLeft= fr;
+			}
+			else
+			{
+				// Case neigbhor is rectangle.
+				fl->FLeft= toRight;
+				fr->FLeft= toLeft;
+				toLeft->FLeft= fr;
+				toRight->FLeft= fl;
+			}
+		}
+		else if (propagateSplit)
+		{
+			// Warning: at each iteration, the pointer of FLeft may change (because of split() which can change the neighbor 
+			// and so f).
+			while(f->FLeft->isLeaf())
+				f->FLeft->split();
 
-		// There is a possible bug here (maybe easily patched). Sons may have be propagated splitted.
-		// And problems may arise because this face hasn't yet good connectivity.
-		nlassert(SonLeft->isLeaf() && SonRight->isLeaf());
+			// There is a possible bug here (maybe easily patched). Sons may have be propagated splitted.
+			// And problems may arise because this face hasn't yet good connectivity (especially for rectangles!! :) ).
+			nlassert(fl->isLeaf() && fr->isLeaf());
+		}
 	}
 
 }
@@ -767,7 +802,7 @@ void		CTessFace::split(bool propagateSplit)
 	SonLeft->FBase= FLeft;
 	if(FLeft)	FLeft->changeNeighbor(this, SonLeft);
 	SonLeft->FLeft= SonRight;
-	SonLeft->FRight= FBase;		// Temporary. updated later.
+	SonLeft->FRight= NULL;		// Temporary. updated later.
 	// link neighbor vertex.
 	SonLeft->VLeft= VBase;
 	SonLeft->VRight= VLeft;
@@ -780,7 +815,7 @@ void		CTessFace::split(bool propagateSplit)
 	// link neighbor face.
 	SonRight->FBase= FRight;
 	if(FRight)	FRight->changeNeighbor(this, SonRight);
-	SonRight->FLeft= FBase;		// Temporary. updated later.
+	SonRight->FLeft= NULL;		// Temporary. updated later.
 	SonRight->FRight= SonLeft;
 	// link neighbor vertex.
 	SonRight->VLeft= VRight;
@@ -872,6 +907,7 @@ void		CTessFace::split(bool propagateSplit)
 	{
 		// Else, get from neighbor.
 		// NB: since *FBase is not a leaf, FBase->SonLeft!=NULL...
+		// NB: this work with both rectangular and square triangles (see splitRectangular()).
 		SonRight->VBase= FBase->SonLeft->VBase;
 		SonLeft->VBase= FBase->SonLeft->VBase;
 	}
@@ -896,12 +932,29 @@ void		CTessFace::split(bool propagateSplit)
 	}
 	else if(!FBase->isLeaf())
 	{
+		CTessFace	*toLeft, *toRight;
+		CTessFace	*fl, *fr;
+		fl= SonLeft;
+		fr= SonRight;
+		toLeft= FBase->SonLeft;
+		toRight= FBase->SonRight;
 		// Cross connection of sons.
-		SonLeft->FRight= FBase->SonRight;
-		FBase->SonRight->FLeft= SonLeft;
-
-		SonRight->FLeft= FBase->SonLeft;
-		FBase->SonLeft->FRight= SonRight;
+		if(!FBase->isRectangular())
+		{
+			// Case neigbhor is square.
+			fl->FRight= toRight;
+			fr->FLeft= toLeft;
+			toLeft->FRight= fr;
+			toRight->FLeft= fl;
+		}
+		else
+		{
+			// Case neigbhor is rectangular.
+			fl->FRight= toLeft;
+			fr->FLeft= toRight;
+			toLeft->FLeft= fl;
+			toRight->FLeft= fr;
+		}
 	}
 	else if (propagateSplit)
 	{
@@ -921,137 +974,171 @@ void		CTessFace::split(bool propagateSplit)
 // ***************************************************************************
 bool		CTessFace::canMerge(bool testEm)
 {
-	CTessFace	*face1,*face2;
-	face1= this;
-	face2= FBase;
+	if(this== &CantMergeFace)
+		return false;
 
-	// Test bind/CantMerge config.
-	if(face1 == &CantMergeFace)
-		return false;
-	if(face2 == &CantMergeFace)
-		return false;
-	// If already a leaf, cant merge.
-	if(face1->isLeaf())
-		return false;
+	nlassert(!isLeaf());
+
 	// Test diamond config (sons must be leaves).
-	if(!face1->SonLeft->isLeaf())
+	if(!SonLeft->isLeaf())
 		return false;
-	if(!face1->SonRight->isLeaf())
+	if(!SonRight->isLeaf())
 		return false;
-	// Test bind/CantMerge config of face2.
-	if(face2!=NULL)
-	{
-		nlassert(!face2->isLeaf());
-		if(!face2->SonLeft->isLeaf())
-			return false;
-		if(!face2->SonRight->isLeaf())
-			return false;
-	}
-
 	// If Errormetric must be considered for this test.
 	if(testEm)
 	{
-		float	ps2= FBase->updateErrorMetric();
+		float	ps2= updateErrorMetric();
 		ps2*= OORefineThreshold;
 		if(ps2>=1.0f)
 			return false;
 	}
 
-	return true;
+	// Then test neighbors.
+	RecursMark= true;
+	bool	ok= true;
+	if(!isRectangular())
+	{
+		if(FBase && !FBase->RecursMark)
+		{
+			if(!FBase->canMerge(testEm))
+				ok= false;
+		}
+	}
+	else
+	{
+		// Rectangular case. May have a longer propagation...
+		if(FBase && !FBase->RecursMark)
+		{
+			if(!FBase->canMerge(testEm))
+				ok= false;
+		}
+		if(ok && FLeft && !FLeft->RecursMark)
+		{
+			if(!FLeft->canMerge(testEm))
+				ok= false;
+		}
+	}
+	// Must not return false in preceding tests, because must set RecursMark to false.
+	RecursMark= false;
+
+	return ok;
 }
+
+
+// ***************************************************************************
+void		CTessFace::doMerge()
+{
+	// Assume that canMerge() return true.
+	// And Assume that !isLeaf().
+	nlassert(!isLeaf());
+
+	if(!isRectangular())
+	{
+		// 1. Let's merge vertex.
+		//-----------------------
+		// Delete vertex, only if not already done by the neighbor (ie neighbor not already merged to a leaf).
+		// NB: this work even if neigbor is rectnagular.
+		if(!FBase || !FBase->isLeaf())
+			delete SonLeft->VBase;
+
+
+		// 2. Let's merge Uv.
+		//-------------------
+		// Delete Uv.
+		// Must do it for face1 and face2 separately, since they may not have same tile level (if != patch).
+		// Delete Tile for face1.
+		if(SonLeft->Level== Patch->TileLimitLevel)
+		{
+			// Square patch assumption: the sons are not of the same TileId/Patch.
+			nlassert(!sameTile(SonLeft, SonRight));
+			// release tiles.
+			SonLeft->releaseTileMaterial();
+			SonRight->releaseTileMaterial();
+		}
+		else if(SonLeft->Level > Patch->TileLimitLevel)
+		{
+			// Delete Uv, only if not already done by the neighbor (ie neighbor not already merged to a leaf).
+			// But Always delete if neighbor exist and has not same tile as me.
+			// NB: this work with rectangular neigbor patch, since sameTile() will return false if different patch.
+			if(!FBase || !FBase->isLeaf() || !sameTile(this, FBase))
+				delete SonLeft->TileUvBase;
+		}
+		
+		// 3. Let's merge Face.
+		//-------------------
+		// Change father 's neighbor pointers.
+		FLeft= SonLeft->FBase;
+		if(FLeft)	FLeft->changeNeighbor(SonLeft, this);
+		FRight= SonRight->FBase;
+		if(FRight)	FRight->changeNeighbor(SonRight, this);
+		// delete sons.
+		delete SonLeft;
+		delete SonRight;
+		SonLeft=NULL;
+		SonRight=NULL;
+
+		// If not already done, merge the neighbor.
+		if(FBase!=NULL && !FBase->isLeaf())
+		{
+			FBase->doMerge();
+		}
+
+	}
+	else
+	{
+		// Rectangular case.
+		// Since minimum Order is 2, Sons of rectangular face are NEVER at TileLimitLevel. => no Uv merge to do.
+		nlassert(SonLeft->Level< Patch->TileLimitLevel);
+		nlassert(FBase);
+
+		// 1. Let's merge vertex.
+		//-----------------------
+		// Delete vertex, only if not already done by the neighbor (ie neighbor not already merged to a leaf).
+		// NB: this work even if neigbor is rectangular (see tesselation rules in splitRectangular()).
+		if(!FLeft || !FLeft->isLeaf())
+			delete SonLeft->VBase;
+
+
+		// 3. Let's merge Face.
+		//-------------------
+		// Change father 's neighbor pointers (see splitRectangular()).
+		FRight= SonRight->FRight;
+		if(FRight)	FRight->changeNeighbor(SonRight, this);
+		// delete sons.
+		delete SonLeft;
+		delete SonRight;
+		SonLeft=NULL;
+		SonRight=NULL;
+
+		// First, do it for my rectangular co-worker FBase (if not already done).
+		if(!FBase->isLeaf())
+		{
+			FBase->doMerge();
+		}
+		// If not already done, merge the neighbor.
+		if(FLeft!=NULL && !FLeft->isLeaf())
+		{
+			FLeft->doMerge();
+		}
+	}
+}
+
 
 // ***************************************************************************
 bool		CTessFace::merge()
 {
-	CTessFace	*face1,*face2;
-
-	face1= this;
-	face2= FBase;
-
+	// Must not be a leaf.
+	nlassert(!isLeaf());
 
 	// 0. Verify if merge is posible.
 	//----------------------------
 	if(!canMerge(false))
 		return false;
 
-	// 1. Let's merge vertex.
+	// 1. Let's merge the face.
 	//-----------------------
-	// Delete vertex.
-	delete face1->SonLeft->VBase;
-
-
-	// 2. Let's merge Uv.
-	//-------------------
-	// Delete Uv.
-	// Check cross validity.
-	if(face1 && face1->SonLeft->Level==face1->Patch->TileLimitLevel &&
-		face2 && face2->SonLeft->Level==face2->Patch->TileLimitLevel)
-	{
-		nlassert(!sameTile(face1->SonLeft, face2->SonLeft));
-		nlassert(!sameTile(face1->SonRight, face2->SonRight));
-		nlassert(!sameTile(face1->SonLeft, face2->SonRight));
-		nlassert(!sameTile(face2->SonLeft, face1->SonRight));
-	}
-	// Must do it for face1 and face2 separately, since they may not have same tile level (if != patch).
-	// Delete Tile for face1.
-	if(face1->SonLeft->Level==face1->Patch->TileLimitLevel)
-	{
-		// Square patch assumption: the sons are not of the same TileId/Patch.
-		nlassert(!sameTile(face1->SonLeft, face1->SonRight));
-		// release tiles.
-		face1->SonLeft->releaseTileMaterial();
-		face1->SonRight->releaseTileMaterial();
-	}
-	else if(face1->SonLeft->Level > face1->Patch->TileLimitLevel)
-	{
-		delete face1->SonLeft->TileUvBase;
-	}
-	// Delete Tile for face2.
-	if(face2)
-	{
-		if(face2->SonLeft->Level==face2->Patch->TileLimitLevel)
-		{
-			// Square patch assumption: the sons are not of the same TileId/Patch.
-			nlassert(!sameTile(face2->SonLeft, face2->SonRight));
-			// release tiles.
-			face2->SonLeft->releaseTileMaterial();
-			face2->SonRight->releaseTileMaterial();
-		}
-		else if(face2->SonLeft->Level > face2->Patch->TileLimitLevel)
-		{
-			// If Uv not shared, delete the two Uvs.
-			if(!sameTile(face1, face2))
-				delete face2->SonLeft->TileUvBase;
-		}
-	}
-
-	
-	// 3. Let's merge Face.
-	//-------------------
-	// Change father 's neighbor pointers.
-	face1->FLeft= face1->SonLeft->FBase;
-	if(face1->FLeft)	face1->FLeft->changeNeighbor(face1->SonLeft, face1);
-	face1->FRight= face1->SonRight->FBase;
-	if(face1->FRight)	face1->FRight->changeNeighbor(face1->SonRight, face1);
-	if(face2!=NULL)
-	{
-		face2->FLeft= face2->SonLeft->FBase;
-		if(face2->FLeft)	face2->FLeft->changeNeighbor(face2->SonLeft, face2);
-		face2->FRight= face2->SonRight->FBase;
-		if(face2->FRight)	face2->FRight->changeNeighbor(face2->SonRight, face2);
-	}
-	// delete sons.
-	delete face1->SonLeft;
-	delete face1->SonRight;
-	face1->SonLeft=NULL;
-	face1->SonRight=NULL;
-	if(face2!=NULL)
-	{
-		delete face2->SonLeft;
-		delete face2->SonRight;
-		face2->SonLeft=NULL;
-		face2->SonRight=NULL;
-	}
+	// Propagation is done in doMerge().
+	doMerge();
 
 	return true;
 }
@@ -1092,9 +1179,10 @@ void		CTessFace::refine()
 		// Else, if splitted, must merge (if not already the case).
 		else if(ps<1.0f && !isLeaf())
 		{
-			// Merge only if neighbor agree.
-			// canMerge() test all the good thing: FBase==CantMergeFace, or FBase is rectangular (and then must recurs) etc...
-			if(FBase==NULL || FBase->canMerge(true))
+			// Merge only if agree, and neighbors agree.
+			// canMerge() test all the good thing: FBase==CantMergeFace, or this is rectangular etc...
+			// The test is propagated to neighbors.
+			if(canMerge(true))
 			{
 				merge();
 			}
@@ -1107,14 +1195,20 @@ void		CTessFace::refine()
 		// But errorMetric are not computed twice.
 		if(ps>1.0f && !isLeaf())
 		{
+			// NB: morph ptr is good even with rectangular patch. See splitRectangular().
 			CTessVertex		*morph=SonLeft->VBase;
-			float	pgeom= ps;
+			float			pgeom= ps;
 
 			// get the neighbor, to have the max projectedsize.
 			// => geo-split() at the maximum level of the two faces.
-			if(FBase && FBase!=&CantMergeFace)
+			CTessFace	*nbor;
+			if(!isRectangular())
+				nbor= FBase;
+			else
+				nbor= FLeft;	// Rectangular subdivision...
+			if(nbor && nbor!=&CantMergeFace)
 			{
-				float	ps2= FBase->updateErrorMetric();
+				float	ps2= nbor->updateErrorMetric();
 				ps2*= OORefineThreshold;
 				pgeom= max(pgeom, ps2);
 			}
@@ -1180,51 +1274,105 @@ void		CTessFace::unbind(CPatch *except[4])
 {
 	// NB: since CantMergeFace has a NULL patch ptr, it is unbound too.
 
-	// Change Left/Right neighbors.
-	if(isLeaf())
+	// Square case.
+	//=============
+	if(!isRectangular())
 	{
-		// FLeft and FRight pointers are only valid in Leaves nodes.
+		// Change Left/Right neighbors.
+		if(isLeaf())
+		{
+			// FLeft and FRight pointers are only valid in Leaves nodes.
+			if(FLeft && FLeft->Patch!=Patch)
+			{
+				if(!exceptPatch(FLeft->Patch, except))
+				{
+					FLeft->changeNeighbor(this, NULL);
+					FLeft= NULL;
+				}
+			}
+			if(FRight && FRight->Patch!=Patch)
+			{
+				if(!exceptPatch(FRight->Patch, except))
+				{
+					FRight->changeNeighbor(this, NULL);
+					FRight= NULL;
+				}
+			}
+		}
+		// Change Base neighbors.
+		if(FBase && FBase->Patch!=Patch)
+		{
+			if(!exceptPatch(FBase->Patch, except))
+			{
+				FBase->changeNeighbor(this, NULL);
+				FBase= NULL;
+				if(!isLeaf())
+				{
+					// Duplicate the VBase of sons, so the unbind is correct and no vertices are shared.
+					CTessVertex	*old= SonLeft->VBase;
+					SonLeft->VBase= new CTessVertex(*old);
+					SonRight->VBase= SonLeft->VBase;
+				}
+			}
+		}
+	}
+	// Rectangular case.
+	//==================
+	else
+	{
+		// Doens't need to test FBase, since must be same patch.
+		// In rectangular, FLeft has the behavior of FBase in square case.
 		if(FLeft && FLeft->Patch!=Patch)
 		{
 			if(!exceptPatch(FLeft->Patch, except))
 			{
 				FLeft->changeNeighbor(this, NULL);
 				FLeft= NULL;
+				if(!isLeaf())
+				{
+					// Duplicate the VBase of sons, so the unbind is correct and no vertices are shared.
+					// NB: this code is a bit different from square case.
+					CTessVertex	*old= SonLeft->VBase;
+					SonLeft->VBase= new CTessVertex(*old);
+					// This is the difference:  (see rectangle tesselation rules).
+					SonRight->VLeft= SonLeft->VBase;
+				}
 			}
 		}
-		if(FRight && FRight->Patch!=Patch)
+		// But FRight still valid in leaves nodes only.
+		if(isLeaf())
 		{
-			if(!exceptPatch(FRight->Patch, except))
+			if(FRight && FRight->Patch!=Patch)
 			{
-				FRight->changeNeighbor(this, NULL);
-				FRight= NULL;
-			}
-		}
-	}
-	// Change Base neighbors.
-	if(FBase && FBase->Patch!=Patch)
-	{
-		if(!exceptPatch(FBase->Patch, except))
-		{
-			FBase->changeNeighbor(this, NULL);
-			FBase= NULL;
-			if(!isLeaf())
-			{
-				// Duplicate the VBase of sons, so the unbind is correct and no vertices are shared.
-				CTessVertex	*old= SonLeft->VBase;
-				SonLeft->VBase= new CTessVertex(*old);
-				SonRight->VBase= SonLeft->VBase;
+				if(!exceptPatch(FRight->Patch, except))
+				{
+					FRight->changeNeighbor(this, NULL);
+					FRight= NULL;
+				}
 			}
 		}
 	}
 
+	// Propagate unbind.
+	//==================
 	if(!isLeaf())
 	{
-		// update vertex pointers (since I may have been updated by my father).
-		SonLeft->VLeft= VBase;
-		SonLeft->VRight= VLeft;
-		SonRight->VLeft= VRight;
-		SonRight->VRight= VBase;
+		// update sons vertex pointers (since they may have been updated by me or my grandfathers).
+		if(!isRectangular())
+		{
+			SonLeft->VLeft= VBase;
+			SonLeft->VRight= VLeft;
+			SonRight->VLeft= VRight;
+			SonRight->VRight= VBase;
+		}
+		else
+		{
+			// Rectangular case. Update only ptrs which may have changed.
+			SonLeft->VLeft= VLeft;
+			SonRight->VBase= VBase;
+			SonRight->VRight= VRight;
+			// TODODODO: test.
+		}
 
 		// unbind the sons.
 		SonLeft->unbind(except);
@@ -1235,19 +1383,35 @@ void		CTessFace::unbind(CPatch *except[4])
 // ***************************************************************************
 void		CTessFace::forceMerge()
 {
+	if(this== &CantMergeFace)
+		return;
+
 	if(!isLeaf())
 	{
 		// First, force merge of Sons and neighbor sons, to have a diamond configuration.
 		SonLeft->forceMerge();
 		SonRight->forceMerge();
-		// CantMergeFace is implicitly tested here, with !FBase->isLeaf() (since CantMergeFace 
-		// is a leaf, by code...)
-		if(FBase && !FBase->isLeaf())
+
+		// forceMerge of necessary neighbors.
+		RecursMark=true;
+		if(!isRectangular())
 		{
-			FBase->SonLeft->forceMerge();
-			FBase->SonRight->forceMerge();
+			if(FBase && !FBase->RecursMark)
+				FBase->forceMerge();
 		}
-		merge();
+		else
+		{
+			// Rectangular case. May have a longer propagation...
+			if(FBase && !FBase->RecursMark)
+				FBase->forceMerge();
+			if(FLeft && !FLeft->RecursMark)
+				FLeft->forceMerge();
+		}
+		RecursMark=false;
+
+		// If still a parent, merge.
+		if(!isLeaf())
+			merge();
 	}
 }
 
@@ -1264,50 +1428,85 @@ bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted)
 	if(edgeFace->isLeaf())
 		return true;
 
-	// MultiPatch face is implicitly tested here, since it is always FBase which points on us.
+	/*
+		Look at the callers, and you'll see that "this" is always a leaf.
+		Therefore, edgeFace is a valid pointer (either if it is FLeft, FRight or FBase).
+	*/
 
-	// If the neighbor is splitted  on ourself, split...
-	if(edgeFace->FBase==this)
+	// MultiPatch face case.
+	//======================
+	// If neighbor is a multiple face.
+	if(edgeFace->Patch==NULL && edgeFace->FBase==this)
 	{
 		splitWanted= true;
 		return true;
 	}
-	else
+
+
+	// neighbor is a "Square face" case.
+	//==================================
+	if(!edgeFace->isRectangular())
 	{
-		/*
-			Look at the callers, and you'll see that "this" is always a leaf.
-			Therefore, edgeFace is a valid pointer
-		*/
-		// Just update pointers...
-		if(edgeFace->FLeft==this)
+		// NB: this code works either if I AM a rectangular face or a square face.
+
+		// If the neighbor is splitted  on ourself, split...
+		if(edgeFace->FBase==this)
 		{
-			// TODO: this is only valid on non rectangle patch.
-			CTessFace	*sonLeft= edgeFace->SonLeft;
-			sonLeft->FBase= this;
-			edgeFace= sonLeft;
-		}
-		else if(edgeFace->FRight==this)
-		{
-			// TODO: this is only valid on non rectangle patch.
-			CTessFace	*sonRight= edgeFace->SonRight;
-			sonRight->FBase= this;
-			edgeFace= sonRight;
+			splitWanted= true;
+			return true;
 		}
 		else
 		{
-			/*
-				Look at the callers, and you'll see that "this" is always a leaf.
-				Therefore, we should never be here.
-			*/
-			nlstop;
-			/*// We should aready be splitted.
-			nlassert(!isLeaf());
-			// The neighbor should link already to one of our son.
-			nlassert(SonLeft == edgeFace->FLeft || SonRight == edgeFace->FLeft ||
-				SonLeft == edgeFace->FRight || SonRight == edgeFace->FRight ||
-				SonLeft == edgeFace->FBase || SonRight == edgeFace->FBase);
+			// Just update pointers...
+			if(edgeFace->FLeft==this)
+			{
+				CTessFace	*sonLeft= edgeFace->SonLeft;
+				sonLeft->FBase= this;
+				edgeFace= sonLeft;
+			}
+			else if(edgeFace->FRight==this)
+			{
+				CTessFace	*sonRight= edgeFace->SonRight;
+				sonRight->FBase= this;
+				edgeFace= sonRight;
+			}
+			else
+			{
+				// Look at the callers, and you'll see that "this" is always a leaf.
+				// Therefore, we should never be here.
+				nlstop;
+			}
+		}
+	}
+	// neighbor is a "Rectangle face" case.
+	//=====================================
+	else
+	{
+		// NB: this code works either if I AM a rectangular face or a square face.
+
+		// If the neighbor is splitted  on ourself, split...
+		// Test FLeft because of rectangular case... :)
+		// FBase should be tested too. If edgeFace->FBase==this, I should be myself a rectangular face.
+		if(edgeFace->FLeft==this || edgeFace->FBase==this)
+		{
+			splitWanted= true;
 			return true;
-			*/
+		}
+		else
+		{
+			if(edgeFace->FRight==this)
+			{
+				// See rectangular tesselation rules, too know why we do this.
+				CTessFace	*sonRight= edgeFace->SonRight;
+				sonRight->FRight= this;
+				edgeFace= sonRight;
+			}
+			else
+			{
+				// Look at the callers, and you'll see that "this" is always a leaf.
+				// Therefore, we should never be here.
+				nlstop;
+			}
 		}
 	}
 
@@ -1320,6 +1519,8 @@ bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted)
 void		CTessFace::updateBindAndSplit()
 {
 	bool	splitWanted= false;
+	CTessFace	*f0= NULL;
+	CTessFace	*f1= NULL;
 	/*
 		Look at the callers, and you'll see that "this" is always a leaf.
 		Therefore, FBase, FLeft and FRight are good pointers, and *FLeft and *FRight should be Ok too.
@@ -1329,30 +1530,89 @@ void		CTessFace::updateBindAndSplit()
 	// FLeft and FRight pointers are only valid in Leaves nodes.
 	while(!updateBindEdge(FLeft, splitWanted));
 	while(!updateBindEdge(FRight, splitWanted));
-
-	// If normal face case.
-	if(!FBase || FBase->Patch!=NULL)
+	// In rectangular case, we MUST also update edges of FBase.
+	// Because splitRectangular() split those two faces at the same time.
+	if(isRectangular())
 	{
-		split(false);
-		if(FBase)
-		{
-			while(FBase->isLeaf())
-				FBase->updateBindAndSplit();
+		f0= this;
+		f1= FBase;
+		nlassert(FBase);
+		nlassert(FBase->isLeaf());
+		// Doesn't need to update FBase->FBase, since it's me!
+		// FLeft and FRight pointers are only valid in Leaves nodes.
+		while(!updateBindEdge(FBase->FLeft, splitWanted));
+		while(!updateBindEdge(FBase->FRight, splitWanted));
+	}
 
-			// There is a possible bug here (maybe easily patched). Sons may have be propagated splitted.
-			// And problems may arise because this face hasn't yet good connectivity.
-			nlassert(SonLeft->isLeaf() && SonRight->isLeaf());
+
+
+	CTessFace	*fmult= NULL;
+	CTessFace	*fmult0= NULL;
+	CTessFace	*fmult1= NULL;
+	// If multipatch face case.
+	//=========================
+	if(!isRectangular())
+	{
+		if(FBase && FBase->Patch==NULL)
+		{
+			fmult= FBase;
+			// First, trick: FBase is NULL, so during the split. => no ptr problem.
+			FBase= NULL;
 		}
 	}
 	else
 	{
-		// Multipatch face case.!!
-		CTessFace	*fmult= FBase;
+		if(f0->FLeft && f0->FLeft->Patch==NULL)
+		{
+			fmult0= f0->FLeft;
+			// First, trick: neighbor is NULL, so during the split. => no ptr problem.
+			f0->FLeft= NULL;
+		}
+		if(f1->FLeft && f1->FLeft->Patch==NULL)
+		{
+			fmult1= f1->FLeft;
+			// First, trick: neighbor is NULL, so during the split. => no ptr problem.
+			f1->FLeft= NULL;
+		}
+	}
 
-		// First, trick: FBase is NULL, during the split. => no split problem.
-		FBase= NULL;
-		split(false);
+	// Then split, and propagate.
+	//===========================
+	split(false);
+	if(!isRectangular())
+	{
+		if(FBase)
+		{
+			while(FBase->isLeaf())
+				FBase->updateBindAndSplit();
+		}
+		// There is a possible bug here (maybe easily patched). Sons may have be propagated splitted.
+		// And problems may arise because this face hasn't yet good connectivity.
+		nlassert(SonLeft->isLeaf() && SonRight->isLeaf());
+	}
+	else
+	{
+		if(f0->FLeft)
+		{
+			while(f0->FLeft->isLeaf())
+				f0->FLeft->updateBindAndSplit();
+		}
+		if(f1->FLeft)
+		{
+			while(f1->FLeft->isLeaf())
+				f1->FLeft->updateBindAndSplit();
+		}
+		// There is a possible bug here (maybe easily patched). Sons may have be propagated splitted.
+		// And problems may arise because this face hasn't yet good connectivity.
+		nlassert(f0->SonLeft->isLeaf() && f0->SonRight->isLeaf());
+		nlassert(f1->SonLeft->isLeaf() && f1->SonRight->isLeaf());
+	}
 
+
+	// If multipatch face case, update neighbors.
+	//===========================================
+	if(!isRectangular() && fmult)
+	{
 		// Update good Face neighbors.
 		//============================
 		SonLeft->FRight= fmult->SonRight;
@@ -1386,8 +1646,64 @@ void		CTessFace::updateBindAndSplit()
 
 		// Therefore, the vertex will be never deleted (since face not merged).
 		// The only way to do this, is to unbind the patch from all (then the vertex is cloned), then the merge will be Ok.
+	}
+	// Else if rectangular.
+	else if(fmult0 || fmult1)
+	{
+		CTessFace	*f;
+		sint		i;
 
-		// TODO: All this is only valid on non rectangle patch.
+		// Same reasoning for rectangular patchs, as above.
+		for(i=0;i<2;i++)
+		{
+			if(i==0)
+				f= f0, fmult= fmult0;
+			else
+				f= f1, fmult= fmult1;
+			if(fmult)
+			{
+				// Update good Face neighbors (when I am a rectangle).
+				//============================
+				// Consider the fmult face as a square face.
+				CTessFace	*toLeft, *toRight;
+				CTessFace	*fl=f->SonLeft, *fr=f->SonRight;
+				toLeft= fmult->SonLeft;
+				toRight= fmult->SonRight;
+				// Cross connection of sons.
+				fl->FLeft= toLeft;
+				fr->FLeft= toRight;
+				toLeft->changeNeighbor(&CTessFace::MultipleBindFace, fl);
+				toRight->changeNeighbor(&CTessFace::MultipleBindFace, fr);
+
+				// Update good vertex pointer.
+				//============================
+				CTessVertex	*vert= fmult->VBase;
+
+				// Copy the good coordinate: those splitted (because of noise).
+				// NB: this work too with rectangular patch (see tesselation rules).
+				vert->Pos= vert->StartPos= vert->EndPos= fl->VBase->EndPos;
+				// But delete the pointer.
+				delete fl->VBase;
+				// And update sons pointers, to good vertex (rectangular case, see tesselation rules).
+				fl->VBase= vert;
+				fr->VLeft= vert;
+				f->FBase->SonLeft->VRight= vert;
+
+				// Point to a bind 1/N indicator.
+				f->FLeft= &CantMergeFace;
+			}
+		}
+		// After all updates done. recompute centers of both sons 's faces.
+		for(i=0;i<2;i++)
+		{
+			if(i==0)
+				f= f0;
+			else
+				f= f1;
+			// Compute correct centers.
+			f->SonRight->Center= (f->SonRight->VBase->EndPos + f->SonRight->VLeft->EndPos + f->SonRight->VRight->EndPos)/3;
+			f->SonLeft->Center= (f->SonLeft->VBase->EndPos + f->SonLeft->VLeft->EndPos + f->SonLeft->VRight->EndPos)/3;
+		}
 	}
 }
 
@@ -1402,6 +1718,8 @@ void		CTessFace::updateBind()
 		sons).
 		Also, since we are splitted, and correctly linked (this may not be the case in updateBindAndSplit()), FBase IS
 		correct. His FBase neighbor and him form a diamond. So we don't need to update him.
+
+		Same remarks for rectangular patchs.
 	*/
 	if(isLeaf())
 	{
@@ -1445,11 +1763,6 @@ void		CTessFace::appendToRenderList(CTessFace *&root)
 bool		CTessFace::isRectangular() const
 {
 	return Level<Patch->SquareLimitLevel;
-}
-// ***************************************************************************
-bool		CTessFace::isTall() const
-{
-	return Patch->OrderT>Patch->OrderS;
 }
 
 

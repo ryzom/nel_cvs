@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.14 2000/11/24 14:06:04 berenguier Exp $
+ * $Id: tessellation.h,v 1.15 2000/11/28 11:14:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -347,6 +347,8 @@ public:
 	uint8			Level;			// Level of Detail of this face. (++ at each split).
 	// See ErrorMetric part. NeedCompute says if this face need to compute his errorMetric.
 	bool			NeedCompute;
+	// Mark of recursion (see canMerge() ...).
+	bool			RecursMark;
 	//@}
 
 	/// \name Tile Material Infos (uvs...).
@@ -383,8 +385,6 @@ public:
 	// Utilities.
 	bool			isLeaf() const {return SonLeft==NULL;}
 	bool			isRectangular() const;
-	// tall is true if rectangle of type NxN+ (eg: 4x8) , false otherwise. isTall() implies isRectangular().
-	bool			isTall() const;
 	bool			hasVertex(CTessVertex *v) const {return VBase==v || VLeft==v || VRight==v;}
 	bool			hasEdge(CTessVertex *v0, CTessVertex *v1) const {return hasVertex(v0) && hasVertex(v1);}
 	void			changeNeighbor(CTessFace *from, CTessFace *to)
@@ -482,14 +482,16 @@ private:
 
 	// see split().
 	void	splitRectangular(bool propagateSplit);
+	void	doMerge();
 
 
 private:
+	// Fake face are the only ones which have a NULL patch ptr (with mult face).
 	// The fake face which indicates a "can't merge". Usefull for bind 2/4 or 1/4.
-	// The fake face is the only one which has a NULL patch ptr (with mult face).
 	static	CTessFace	CantMergeFace;
 
 public:
+	// The fake face which indicates a multiple patch face. Used in updateBind(), for multiple bind.
 	static	CTessFace	MultipleBindFace;
 };
 

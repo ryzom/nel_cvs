@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.11 2000/11/22 13:15:24 berenguier Exp $
+ * $Id: zone.cpp,v 1.12 2000/11/28 11:14:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -609,14 +609,14 @@ static	void	checkTess()
 
 
 // ***************************************************************************
-// Temp Yoyo.
+// TempYoyo.
 //volatile sint pipo1;
 //volatile sint pipo2;
 void			CZone::refine()
 {
 	nlassert(Compiled);
 
-	// Temp Yoyo.
+	// TempYoyo.
 	/*
 	// For the monkey bind test.
 	extern sint numFrames;

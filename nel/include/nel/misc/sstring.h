@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.27 2005/03/17 10:52:33 boucher Exp $
+ * $Id: sstring.h,v 1.28 2005/03/18 11:29:00 guignot Exp $
  */
 
 
@@ -61,16 +61,6 @@ public:
 	std::string::const_reference operator[](std::string::size_type idx) const;
 	/// Non-Const [] operator
 	std::string::reference operator[](std::string::size_type idx);
-
-	// cast to std::string
-	operator std::string& ()
-	{ 
-		return reinterpret_cast<std::string&>(*this); 
-	}
-	operator const std::string& () const
-	{ 
-		return reinterpret_cast<const std::string&>(*this); 
-	}
 
 	/// Return the first character, or '\\0' is the string is empty
 	char operator*();

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.70 2004/07/09 09:44:33 lecroart Exp $
+ * $Id: local_retriever.cpp,v 1.71 2004/10/08 14:05:50 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -660,7 +660,7 @@ void	NLPACS::CLocalRetriever::buildSurfacePolygons(uint32 surface, list<CPolygon
 
 	for (i=0; i<surf._Loops.size(); ++i)
 	{
-		polygons.push_back();
+		polygons.push_back(CPolygon());
 		CPolygon	&poly = polygons.back();
 
 		for (j=0; j<surf._Loops[i].size(); ++j)
@@ -719,7 +719,7 @@ void	NLPACS::CLocalRetriever::build3dSurfacePolygons(uint32 surface, list<CPolyg
 
 	for (i=0; i<surf._Loops.size(); ++i)
 	{
-		polygons.push_back();
+		polygons.push_back(CPolygon());
 		CPolygon	&poly = polygons.back();
 
 		for (j=0; j<surf._Loops[i].size(); ++j)

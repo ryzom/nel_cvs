@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.29 2004/06/29 17:16:28 legros Exp $
+ * $Id: local_retriever.h,v 1.30 2004/10/08 14:06:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -436,7 +436,7 @@ public:
 		uint	i;
 		for (i=0; i<_Surfaces.size(); ++i)
 		{
-			polygons.push_back();
+			polygons.push_back(std::list<NLMISC::CPolygon>());
 			buildSurfacePolygons(i, polygons.back());
 		}
 	}
@@ -450,7 +450,7 @@ public:
 		uint	i;
 		for (i=0; i<_Surfaces.size(); ++i)
 		{
-			polygons.push_back();
+			polygons.push_back(std::list<NLMISC::CPolygon>());
 			build3dSurfacePolygons(i, polygons.back());
 		}
 	}

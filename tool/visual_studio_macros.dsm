@@ -1,0 +1,86 @@
+'------------------------------------------------------------------------------
+'FILE DESCRIPTION: New Macro File
+'------------------------------------------------------------------------------
+
+Sub NevraxInsertFileHeader( filename )
+	ActiveDocument.Selection.StartOfDocument
+	ActiveDocument.Selection = _
+		"/* " + filename + vbLf + _
+		" *" + vbLf + _
+		" * Copyright (C) 2000 Nevrax. All rights reserved." + vbLf + _
+		" *" + vbLf + _
+		" * The redistribution, use and modification in source or binary forms of" + vbLf + _
+		" * this software is subject to the conditions set forth in the copyright" + vbLf + _
+		" * document (""Copyright"") included with this distribution." + vbLf + _
+		" */" + vbLf + vbLf + _
+		"/*" + vbLf + _
+		" * $Id: visual_studio_macros.dsm,v 1.1 2000/06/09 11:10:05 cado Exp $" + vbLf + _
+		" *" + vbLf + _
+		" * <Replace this by a description of the file>" + vbLf + _
+		" */" + vbLf
+End Sub
+
+
+Sub NevraxNewClass()
+'DESCRIPTION: Wizard for new class creation
+'TODO: - Automatic filename deduction
+'      - Allow cancelation
+
+	' Input class name and file name
+	ClassName = InputBox( "Nom de la nouvelle classe :", "Nouvelle classe (1)" )
+	Filename = InputBox( "Nom de fichier sans l'extension:", "Nouvelle classe (2)" )
+	UniqueName = UCase( Filename ) + "_H"
+	HFilename = Filename + ".h"
+	CppFilename = Filename + ".cpp"
+
+	' Input ancestor class name and file name
+	AncClassName = InputBox( "Nom de la classe de base :", "Nouvelle classe (3)" )
+	if AncClassName <> "" then
+		AncFilename = InputBox( "Nom de fichier sans l'extension:", "Nouvelle classe (4)" )
+	end if
+	AncHFilename = AncFilename + ".h"
+
+	' Write .h
+	Documents.Add( "Text" )
+	NevraxInsertFileHeader( HFilename )
+	ActiveDocument.Selection = vbLf + "#ifndef " + UniqueName + vbLf + _
+		"#define " + UniqueName + vbLf + vbLf
+	if AncClassName <> "" then
+		ActiveDocument.Selection = "#include """ + AncHFilename + """" + vbLf + vbLf
+	end if
+	ActiveDocument.Selection = vbLf + _
+		"/**" + vbLf + _
+		" * <Replace this by a description of the class>" + vbLf + _
+		" * \author Olivier Cado" + vbLf + _
+		" * \author Nevrax France" + vbLf + _
+		" * \date 2000" + vbLf + _
+		" */" + vbLf + _
+		"class " + ClassName
+	if AncClassName <> "" then
+		ActiveDocument.Selection = " : public " + AncClassName
+	end if
+	ActiveDocument.Selection = ";" + vbLf + _
+		"{" + vbLf + _
+		"public:" + vbLf + vbLf + _
+		"	/// Constructor" + vbLf + _
+		"	" + ClassName + "();" + vbLf + vbLf + _
+		"};" + vbLf + vbLf
+	ActiveDocument.Selection = "#endif" + vbLf
+	ActiveDocument.Selection = vbLf + "/* End of " + HFilename + " */"
+	ActiveDocument.Save( HFilename )
+	ActiveProject.AddFile( HFilename )
+
+	' Write .cpp
+	Documents.Add( "Text" )
+	NevraxInsertFileHeader( CppFilename )
+	ActiveDocument.Selection = vbLf + "#include """ + HFilename + """" + vbLf + vbLf + vbLf
+	ActiveDocument.Selection = "/*" + vbLf + _
+		" * Constructor" + vbLf + _
+		" */" + vbLf + _
+		ClassName + "::" + ClassName + "()" + vbLf + _
+		"{" + vbLf + _
+		"}" + vbLf + vbLf + vbLf
+	ActiveDocument.Save( CppFilename )
+	ActiveProject.AddFile( CppFilename )
+
+End Sub

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.7 2004/08/13 15:30:45 vizerie Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.8 2004/09/02 16:58:14 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -95,7 +95,7 @@ HRESULT CDriverD3D::SetLight(DWORD Index, CONST D3DLIGHT9* pLight)
 HRESULT CDriverD3D::SetMaterial(CONST D3DMATERIAL9* pMaterial)
 {
 	H_AUTO_D3D(CDriverD3D_SetMaterial)
-	_DeviceInterface->SetMaterial( pMaterial );
+	setMaterialState( *pMaterial );
 	return D3D_OK;
 }
 

@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.22 2001/05/22 16:08:16 chafik Exp $
+ * $Id: yacc.cpp,v 1.23 2001/06/07 15:35:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -536,7 +536,7 @@ namespace NLAISCRIPT
 	void CCompilateur::RegisterClass()
 	{
 		IClassInterpret *c = (IClassInterpret *)_SelfClass.get();
-		//c->buildVTable();
+//		c->initStatics();
 		const NLAIAGENT::IVarName &className = *c->getClassName();		
 #ifdef NL_DEBUG
 	className.getString();
@@ -573,7 +573,8 @@ namespace NLAISCRIPT
 		IClassInterpret *c = (IClassInterpret *)_SelfClass.get();
 		try
 		{
-			((CAgentClass *)c)->buildChildsMessageMap();
+//			((CAgentClass *)c)->buildChildsMessageMap();
+			((CAgentClass *)c)->initStatics();
 		}
 		catch(NLAIE::IException &e)
 		{

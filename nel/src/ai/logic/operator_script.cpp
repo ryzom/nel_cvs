@@ -182,6 +182,7 @@ namespace NLAIAGENT
 
 
 				activate();
+
 				if ( _OnActivateIndex != -1 )
 				{
 					if ( getAgentManager() != NULL )

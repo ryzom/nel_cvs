@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.17 2001/06/01 14:51:36 portier Exp $
+ * $Id: interpret_object_agent.h,v 1.18 2001/06/07 15:35:00 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -25,6 +25,7 @@
 #define NL_INTERPRET_OBJECT_AGENT_H
 #include "nel/ai/script/interpret_object.h"
 #include "nel/ai/agent/msg.h"
+#include "nel/ai/script/codage.h"
 
 namespace NLAIAGENT {
 	class CAgentScript;
@@ -254,6 +255,9 @@ namespace NLAISCRIPT
 		sint32 findMethod(const NLAIAGENT::IVarName &name,const CParam &CParam) const;
 
 		virtual sint32 getChildMessageIndex(const NLAIAGENT::IMessageBase *, sint32);
+
+		virtual void initStatics();
+		virtual void setStaticMember(sint32, NLAIAGENT::IObjectIA *);
 	};
 }
 #endif

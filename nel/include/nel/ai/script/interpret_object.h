@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.12 2001/05/22 16:08:01 chafik Exp $
+ * $Id: interpret_object.h,v 1.13 2001/06/07 15:35:00 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,8 @@ namespace NLAISCRIPT
 		NLAIAGENT::IVarName *RegisterName;	
 		///Name of the Component.
 		NLAIAGENT::IVarName *ObjectName;
+		/// Static value if the component is a static one
+		NLAIAGENT::IObjectIA *StaticValue;
 
 		/**
 		Local define the distribution type.
@@ -62,6 +64,7 @@ namespace NLAISCRIPT
 			ObjectName = NULL;
 			Local = false;
 			Static = false;
+			StaticValue = NULL;
 		}
 		/**
 		Save component characteristic.
@@ -162,6 +165,10 @@ namespace NLAISCRIPT
 		const NLAIAGENT::IVarName *getName() const
 		{
 			return _Name;
+		}
+
+		virtual void initStatics()
+		{
 		}
 	};	
 

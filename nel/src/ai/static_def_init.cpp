@@ -105,6 +105,22 @@
 																NLAIC::CTypeOfOperator::opSupEq |
 																NLAIC::CTypeOfOperator::opNot |
 																NLAIC::CTypeOfOperator::opDiff));	
+/*
+	const NLAIC::CIdentType CInt16::IdInt16("Int16",	NLAIC::CSelfClassFactory(DigitalType(0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+																NLAIC::CTypeOfOperator::opSub | 
+																NLAIC::CTypeOfOperator::opMul | 
+																NLAIC::CTypeOfOperator::opDiv | 
+																NLAIC::CTypeOfOperator::opEq | 
+																NLAIC::CTypeOfOperator::opInf | 
+																NLAIC::CTypeOfOperator::opSup | 
+																NLAIC::CTypeOfOperator::opInfEq | 
+																NLAIC::CTypeOfOperator::opSupEq |
+																NLAIC::CTypeOfOperator::opNot |
+																NLAIC::CTypeOfOperator::opDiff));
+																*/
+
 
 	const NLAIC::CIdentType BorneDigitalType::IdBorneDigitalType("BornedFloat",	NLAIC::CSelfClassFactory(BorneDigitalType(-1,1)),
 																				NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
@@ -237,7 +253,7 @@
 
 	
 
-	const NLAIC::CIdentType CBoolType::IdBoolType("BoolType",NLAIC::CSelfClassFactory(CBoolType(false)),	NLAIC::CTypeOfObject::tLogic  | 
+	const NLAIC::CIdentType CBoolType::IdBoolType("Bool",NLAIC::CSelfClassFactory(CBoolType(false)),	NLAIC::CTypeOfObject::tLogic  | 
 																									NLAIC::CTypeOfObject::tNombre,
 																									NLAIC::CTypeOfOperator::opAdd |
 																									NLAIC::CTypeOfOperator::opSub |

@@ -910,7 +910,11 @@ using  namespace NLAIFUZZY;
 								if(c != NULL) c->Local = true;								
 							}
 							SUP
-						|	TypeDeComp VIRGULE STATIC 
+						|	StaticDef
+						;
+
+
+	StaticDef			:	TypeDeComp VIRGULE STATIC 
 							{
 								CComponent *c = ((IClassInterpret *)_SelfClass.get())->getComponent(_LastRegistered);								
 								if(c != NULL) c->Static = true;

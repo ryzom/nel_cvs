@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.30 2001/06/01 14:51:00 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.31 2001/06/07 15:35:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
 #include "nel/ai/script/lexsupport.h"
+#include "nel/ai/script/libcode.h"
 
 namespace NLAISCRIPT
 {	
@@ -494,7 +495,6 @@ namespace NLAISCRIPT
 						NLAIC::CIdentType id(classType->getComponent(i)->RegisterName->getString());
 						const NLAIAGENT::IObjectIA *o = (const NLAIAGENT::IObjectIA *)id.getFactory()->getClass();
 						return o;
-
 					}
 					/*if (classType->getComponent(i)->ObjectName != NULL && *classType->getComponent(i)->ObjectName == name) 
 					{										
@@ -729,13 +729,17 @@ namespace NLAISCRIPT
 				sint32 class_index = NLAIC::getRegistry()->getNumIdent( comp->RegisterName->getString() );
 
 				obj = (NLAIAGENT::IObjectIA *) NLAIC::getRegistry()->createInstance( class_index );
-				comps.push_back( obj );
 			}
 			else
 			{
-				obj = _StaticComponents[st_comp_nb];
-				obj->incRef();
+#ifdef NL_DEBUG
+				std::string buf;
+				comp->StaticValue->getDebugString(buf);
+#endif
+				obj = comp->StaticValue;
+				comp->StaticValue->incRef();
 			}
+			comps.push_back( obj );
 		}
 	}
 
@@ -1010,5 +1014,32 @@ namespace NLAISCRIPT
 	void CAgentClass::setRunMethod(sint32 index)
 	{
 		_RunIndex = index + getBaseMethodCount();
+	}
+
+	void CAgentClass::initStatics()
+	{	
+		NLAIAGENT::CStringVarName staticinit_func_name("StaticInit");
+		sint32 id_func = findMethod( staticinit_func_name, NLAISCRIPT::CParam() );
+		if ( id_func != -1 )
+		{	
+			NLAISCRIPT::CStackPointer stack;
+			NLAISCRIPT::CStackPointer heap;
+			NLAISCRIPT::CCodeContext codeContext(stack,heap,NULL,this, NLAISCRIPT::CCallPrint::inputOutput);
+			codeContext.Self = this;
+			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)getBrancheCode( id_func ).getCode();
+			codeContext.Code = o;
+			IObjectIA::CProcessResult r = o->run(codeContext);
+		}
+	}
+
+	void CAgentClass::setStaticMember(sint32 index, NLAIAGENT::IObjectIA *obj)
+	{
+#ifdef NL_DEBUG
+		std::string buf;
+		obj->getDebugString(buf);
+#endif
+		sint32 base_index = getBaseClass()->getStaticMemberSize();
+		CComponent *comp = _Components[index - base_index];
+		comp->StaticValue = obj;
 	}
 }

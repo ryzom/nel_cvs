@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.67 2001/05/22 16:08:15 chafik Exp $
+ * $Id: agent_script.cpp,v 1.68 2001/06/07 15:35:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1456,66 +1456,9 @@ namespace NLAIAGENT
 		return _AgentClass->getInheritedStaticMemberIndex(name);
 	}
 
-	////////////////////////////////////////////////////////////////////////
-	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
+///////////////////////////////////////////////////////////////////////////////////////
 /*
-	IObjectIA::CProcessResult CAgentScript::runGoalMsg(IBaseGroupType *g)
-	{
-		CGoalMsg *goal_msg = (CGoalMsg *) g->get();
-		NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) goal_msg->get()->clone();
-#ifdef NL_DEBUG
-		char buffer[1024 * 2];
-		goal->getDebugString( buffer );
-#endif
-		goal->setReceiver( (IBasicAgent *) this );
-		_GoalStack.push_back( goal );
-
-		IObjectIA::CProcessResult r;
-		r.Result = NULL;
-
-		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
-		context.Stack++;
-		context.Stack[(int)context.Stack] = new CGoalMsg();
-		return r;
-	}
-
-	IObjectIA::CProcessResult CAgentScript::runCancelGoalMsg(IBaseGroupType *g)
-	{
-		CGoalMsg *goal_msg = (CGoalMsg *) g->get();
-		NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) goal_msg->get()->clone();
-#ifdef NL_DEBUG
-		char buffer[1024 * 2];
-		goal->getDebugString( buffer );
-#endif
-
-		IObjectIA::CProcessResult r;
-		r.Result = NULL;
-
-		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
-		context.Stack++;
-		context.Stack[(int)context.Stack] = new CGoalMsg();
-
-
-		// Removes goals
-		std::vector<NLAILOGIC::CGoal *>::iterator it_g = _GoalStack.begin();
-		while ( it_g != _GoalStack.end() )
-		{
-			if ( (**it_g) == (*goal) )
-			{
-				(*it_g)->cancel();
-				(*it_g)->release();
-				_GoalStack.erase(it_g);
-				return r;
-			}
-			it_g++;
-		} */
-/*		goal->setReceiver( (IBasicAgent *) this );
-		_GoalStack.push_back( goal );
-*/
-/*		return r;
-	}
-
-
+	
 	IObjectIA::CProcessResult CAgentScript::runFactMsg(IBaseGroupType *g)
 	{
 		NLAILOGIC::CFact *fact = (NLAILOGIC::CFact *) g->get()->clone();
@@ -1609,5 +1552,4 @@ namespace NLAIAGENT
 		}		
 		return NLAIAGENT::tQueue();
 	}
-
 }

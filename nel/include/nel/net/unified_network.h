@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.4 2001/11/12 10:21:28 legros Exp $
+ * $Id: unified_network.h,v 1.5 2001/11/13 11:58:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,12 +138,18 @@ public:
 	/** Sets callback for incoming connections (or NULL to disable callback).
 	 * On a client, the callback will be call when the connection to the server is established (the first connection or after the server shutdown and started)
 	 * On a server, the callback is called each time a new client is connected to him
+	 * 
+	 * If the serviceName is "*", the callback will be call for any services
+	 * You can set more than one callback for each service, in this case, these callbacks will be call one after other.
 	 */
 	void	setServiceUpCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg);
 
 	/** Sets callback for disconnections (or NULL to disable callback).
 	 * On a client, the callback will be call each time the connection to the server is lost.
 	 * On a server, the callback is called each time a client is disconnected.
+	 * 
+	 * If the serviceName is "*", the callback will be call for any services
+	 * You can set more than one callback for each service, in this case, these callbacks will be call one after other.
 	 */
 	void	setServiceDownCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg);
 

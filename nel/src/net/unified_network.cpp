@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.4 2001/11/13 10:53:46 legros Exp $
+ * $Id: unified_network.cpp,v 1.5 2001/11/13 11:58:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -237,6 +237,11 @@ void	CUnifiedNetwork::release()
 	_UpCallbacks.clear();
 	_DownCallbacks.clear();
 	_Callbacks.clear();
+	_UpUniCallback.first = NULL;
+	_UpUniCallback.second = NULL;
+	_DownUniCallback.first = NULL;
+	_DownUniCallback.second = NULL;
+
 }
 
 void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, bool sendId, bool external, uint16 sid, bool autoRetry)

@@ -1,0 +1,203 @@
+/** \file driver_opengl_vertx_program.cpp
+ * OpenGL driver implementation for vertex program manipulation.
+ *
+ * $Id: driver_opengl_vertex_program.cpp,v 1.1 2001/09/06 07:33:58 corvazier Exp $
+ *
+ * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include "nel/misc/types_nl.h"
+#include "3d/primitive_block.h"
+#include "3d/vertex_program.h"
+#include "driver_opengl.h"
+
+
+using namespace std;
+using namespace NLMISC;
+
+
+namespace NL3D
+{
+
+// ***************************************************************************
+class CVertexProgamDrvInfosGL : public IVertexProgramDrvInfos
+{
+public:
+	// The GL Id.
+	GLuint					ID;
+
+	// The gl id is auto created here.
+	CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInfoPtrList it);
+};
+
+
+// ***************************************************************************
+CVertexProgamDrvInfosGL::CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInfoPtrList it) : IVertexProgramDrvInfos (drv, it) 
+{
+	// Extension must exist
+	nlassert (drv->_Extensions.NVVertexProgram);
+
+	// Generate a program
+	glGenProgramsNV (1, &ID);
+}
+
+
+// ***************************************************************************
+bool CDriverGL::isVertexProgramSupported () const
+{
+	return _Extensions.NVVertexProgram;
+}
+
+
+// ***************************************************************************
+bool CDriverGL::activeVertexProgram (CVertexProgram *program)
+{
+	// Extension here ?
+	if (_Extensions.NVVertexProgram)
+	{
+		// Setup or unsetup ?
+		if (program)
+		{
+			// Enable vertex program
+			glEnable (GL_VERTEX_PROGRAM_NV);
+
+			// Driver info
+			CVertexProgamDrvInfosGL *drvInfo;
+
+			// Program setuped ?
+			if (program->_DrvInfo==NULL)
+			{
+				// Insert into driver list. (so it is deleted when driver is deleted).
+				ItVtxPrgDrvInfoPtrList	it= _VtxPrgDrvInfos.insert(_VtxPrgDrvInfos.end());
+
+				// Create a driver info
+				drvInfo=new CVertexProgamDrvInfosGL (this, it);
+
+				// Set the pointer
+				program->_DrvInfo=drvInfo;
+
+				// Compile the program
+				glLoadProgramNV (GL_VERTEX_PROGRAM_NV, drvInfo->ID, program->getProgram().length(), (const GLubyte*)program->getProgram().c_str());
+
+				// Get loading error code
+				GLint errorLine;
+				glGetIntegerv (GL_PROGRAM_ERROR_POSITION_NV, &errorLine);
+
+				// Compilation error ?
+				if (errorLine>=0)
+				{
+					// Show the error
+					nlinfo ("Vertex program syntax error line %d\n", errorLine);
+
+					// Disable vertex program
+					glDisable (GL_VERTEX_PROGRAM_NV);
+
+					// Setup not ok
+					return false;
+				}
+
+				// Setup ok
+				return true;
+			}
+			else
+			{
+				// Cast the driver info pointer
+				drvInfo=safe_cast<CVertexProgamDrvInfosGL*>((IVertexProgramDrvInfos*)program->_DrvInfo);
+			}
+
+			// Setup this program
+			glBindProgramNV (GL_VERTEX_PROGRAM_NV, drvInfo->ID);
+
+			// Ok
+			return true;
+		}
+		else // Unsetup
+		{
+			// Disable vertex program
+			glDisable (GL_VERTEX_PROGRAM_NV);
+
+			// Ok
+			return true;
+		}
+	}
+
+	// Can't do anything
+	return false;
+}
+
+
+// ***************************************************************************
+
+void CDriverGL::setConstant (uint index, float f0, float f1, float f2, float f3)
+{
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram)
+	{
+		// Setup constant
+		glProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, f0, f1, f2, f3);
+	}
+}
+
+
+// ***************************************************************************
+
+void CDriverGL::setConstant (uint index, double d0, double d1, double d2, double d3)
+{
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram)
+	{
+		// Setup constant
+		glProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, d0, d1, d2, d3);
+	}
+}
+
+
+// ***************************************************************************
+
+void CDriverGL::setConstant (uint index, const NLMISC::CVector* value)
+{
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram)
+	{
+		// Setup constant
+		glProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, value->x, value->y, value->z, 0);
+	}
+}
+
+
+// ***************************************************************************
+
+void CDriverGL::setConstant (uint index, const NLMISC::CVectorD* value)
+{
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram)
+	{
+		// Setup constant
+		glProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, value->x, value->y, value->z, 0);
+	}
+}
+
+
+// ***************************************************************************
+
+
+} // NL3D

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.91 2004/06/22 10:05:58 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.92 2004/06/29 13:52:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -463,7 +463,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		//===================
 		_DriverGLStates.enableZWrite(mat.getFlags()&IDRV_MAT_ZWRITE);
 		_DriverGLStates.depthFunc(pShader->ZComp);
-		_DriverGLStates.setDepthRange (mat.getZBias () * _OODeltaZ);
+		_DriverGLStates.setZBias (mat.getZBias () * _OODeltaZ);
 
 		// Color-Lighting Part.
 		//=====================

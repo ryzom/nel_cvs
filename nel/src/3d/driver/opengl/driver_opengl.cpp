@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.119 2001/09/20 16:43:10 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.120 2001/09/21 10:00:48 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -650,8 +650,11 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		// init default env.
 		CMaterial::CTexEnv	env;	// envmode init to default.
 		env.ConstantColor.set(255,255,255,255);
-		activateTexEnvMode(stage, env);
-		activateTexEnvColor(stage, env);
+		forceActivateTexEnvMode(stage, env);
+		forceActivateTexEnvColor(stage, env);
+
+		// Not special TexEnv.
+		_CurrentTexEnvSpecial[stage]= TexEnvSpecialDisabled;
 	}
 
 	// Get num of light for this driver
@@ -799,8 +802,8 @@ bool CDriverGL::swapBuffers()
 		// init default env.
 		CMaterial::CTexEnv	env;	// envmode init to default.
 		env.ConstantColor.set(255,255,255,255);
-		activateTexEnvMode(stage, env);
-		activateTexEnvColor(stage, env);
+		forceActivateTexEnvMode(stage, env);
+		forceActivateTexEnvColor(stage, env);
 	}
 	glActiveTextureARB(GL_TEXTURE0_ARB);
 

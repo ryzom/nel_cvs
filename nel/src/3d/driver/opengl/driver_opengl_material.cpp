@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.38 2001/09/20 16:43:10 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.39 2001/09/21 10:00:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,29 +101,30 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	}
 
 	// Activate the textures.
-	for(stage=0 ; stage<getNbTextureStages() ; stage++)
+	// Do not do it for Lightmap, because done in multipass in a very special fashion.
+	// This avoid the useless multiple change of texture states per lightmapped object.
+	if(mat.getShader()!=CMaterial::LightMap)
 	{
-		ITexture	*text= mat.getTexture(stage);
-
-		// activate the texture, or disable texturing if NULL.
-		activateTexture(stage,text);
-
-		// If texture not NULL, Change texture env fonction.
-		//==================================================
-		if(text)
+		for(stage=0 ; stage<getNbTextureStages() ; stage++)
 		{
-			CMaterial::CTexEnv	&env= mat._TexEnvs[stage];
+			ITexture	*text= mat.getTexture(stage);
 
-			if(_CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
+			// activate the texture, or disable texturing if NULL.
+			activateTexture(stage,text);
+
+			// If texture not NULL, Change texture env fonction.
+			//==================================================
+			if(text)
 			{
+				CMaterial::CTexEnv	&env= mat._TexEnvs[stage];
+
+				// Activate the env for this stage.
+				// NB: Thoses calls use caching.
 				activateTexEnvMode(stage, env);
-			}
-			if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
-			{
 				activateTexEnvColor(stage, env);
 			}
-		}
 
+		}
 	}
 
 	
@@ -388,8 +389,14 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 		env.Env.OpRGB= CMaterial::Replace;
 		env.Env.SrcArg0RGB= CMaterial::Texture;
 		env.Env.OpArg0RGB= CMaterial::SrcColor;
-		if(_CurrentTexEnv[0].EnvPacked!= env.EnvPacked)
-			activateTexEnvMode(0, env);
+		activateTexEnvMode(0, env);
+
+		// And disable other stages.
+		for(sint stage=1 ; stage<getNbTextureStages() ; stage++)
+		{
+			// disable texturing.
+			activateTexture(stage, NULL);
+		}
 
 		return;
 	}
@@ -433,10 +440,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 					glColor4ub(lmapFactor.R, lmapFactor.G, lmapFactor.B, 255);
 
 					// Leave stage as default env (Modulate with previous)
-					if(_CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
-						activateTexEnvMode(stage, env);
-					// NB: no need to disable modulate2x here, because always setuped at the last stage
-					// (but for the last pass).
+					activateTexEnvMode(stage, env);
 				}
 				else
 				{
@@ -445,32 +449,38 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 
 					// setup constant color with Lightmap factor.
 					env.ConstantColor=lmapFactor;
-					if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
-						activateTexEnvColor(stage, env);
+					activateTexEnvColor(stage, env);
 
 					// setup TexEnvCombine4 (ignore alpha part).
-					// What we want to setup is  Texture*Constant + Previous*1.
-					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+					if(_CurrentTexEnvSpecial[stage] != TexEnvSpecialLightMapNV4)
+					{
+						// TexEnv is special.
+						_CurrentTexEnvSpecial[stage] = TexEnvSpecialLightMapNV4;
 
-					// Operator.
-					glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
-					glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
-					// Arg0.
-					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
-					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
-					// Arg1.
-					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT );
-					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
-					// Arg2.
-					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
-					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
-					// Arg3.
-					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
-					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+						// Setup env for texture stage.
+						// TODODO: test if bug without this line. it should (didn't bug before because
+						// of activateTexture() which always must setup the texture.
+						glActiveTextureARB(GL_TEXTURE0_ARB+stage);
 
+						// What we want to setup is  Texture*Constant + Previous*1.
+						glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
 
-					// NB: no need to disable modulate2x here, because always setuped at the last stage
-					// (but for the last pass).
+						// Operator.
+						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
+						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
+						// Arg0.
+						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+						// Arg1.
+						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT );
+						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+						// Arg2.
+						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
+						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+						// Arg3.
+						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+					}
 				}
 
 				// setup UV, with UV1.
@@ -479,20 +489,18 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 		}
 		else if(stage<nstages)
 		{
-			// optim: do this only for first pass, and last pass (last pass only if stage!=nLMapPerPass)
+			// optim: do this only for first pass, and last pass only if stage!=nLMapPerPass 
+			// (meaning not the same stage as preceding passes).
 			if(pass==0 || (pass==_NLightMapPass-1 && stage!=_NLightMapPerPass))
 			{
 				// setup texture in final stage.
 				ITexture	*text= mat.getTexture(0);
 				activateTexture(stage,text);
 
-				// activate the texture at last stage, with modulate2x.
-				// force setup default env (modulate). (to disable possible COMBINE4_NV setup).
+				// activate the texture at last stage.
+				// setup default env (modulate). (this may disable possible COMBINE4_NV setup).
 				CMaterial::CTexEnv	env;
 				activateTexEnvMode(stage, env);
-				// special modulate2x.
-				//glActiveTextureARB(GL_TEXTURE0_ARB+stage);
-				//glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 2);
 
 
 				// setup UV, with UV0.
@@ -525,20 +533,6 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 // ***************************************************************************
 void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 {
-	// special for all stage, clean up envstages + blend mode.
-	for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++)
-	{
-		// if multiFactor is OK, force reset a normal modulate env.
-		if(_Extensions.NVTextureEnvCombine4)
-		{
-			CMaterial::CTexEnv	env;
-			activateTexEnvMode(stage, env);
-		}
-		// special: disable  modulate2x.
-		//glActiveTextureARB(GL_TEXTURE0_ARB+stage);
-		//glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1);
-	}
-
 	// special for all stage, normal UV behavior.
 	for(sint i=0; i<getNbTextureStages(); i++)
 	{
@@ -550,7 +544,9 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 	if (_LastVB.VertexFormat & CVertexBuffer::PrimaryColorFlag)
 		glEnableClientState(GL_COLOR_ARRAY);
 
-	// NB: for now, nothing to do with blending/lighting, since always setuped in activeMaterial().
+	// nothing to do with blending/lighting, since always setuped in activeMaterial().
+	// If material is the same, then it is still a lightmap material (if changed => touched => different!)
+	// So no need to reset lighting/blending here.
 }
 
 // ***************************************************************************
@@ -587,61 +583,82 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 		_DriverGLStates.enableBlend(false);
 
 		// Stage 0
-		glActiveTextureARB(GL_TEXTURE0_ARB+0);
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
-		// Operator.
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
-		// Arg0.
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA );
-		// Arg1.
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_ONE_MINUS_SRC_ALPHA );
-		// Arg2.
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_ZERO );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR );
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_ALPHA );
-		// Arg3.
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_SRC_COLOR);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA );
-		// Result RGB : Texture*Diffuse, Alpha : Texture
+		if(_CurrentTexEnvSpecial[0] != TexEnvSpecialSpecularStage0NV4)
+		{
+			// TexEnv is special.
+			_CurrentTexEnvSpecial[0] = TexEnvSpecialSpecularStage0NV4;
+
+			glActiveTextureARB(GL_TEXTURE0_ARB+0);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+			// Operator.
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
+			// Arg0.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA );
+			// Arg1.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_ONE_MINUS_SRC_ALPHA );
+			// Arg2.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR );
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_ALPHA );
+			// Arg3.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_SRC_COLOR);
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA );
+			// Result RGB : Texture*Diffuse, Alpha : Texture
+		}
 
 		// Set Stage 1
-		glActiveTextureARB(GL_TEXTURE0_ARB+1);
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
-		// Operator Add (Arg0*Arg1+Arg2*Arg3)
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
-		// Arg0.
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
-		// Arg1.
+		// Special: not the same sepcial env if there is or not texture in stage 0.
+		CTexEnvSpecial		newEnvStage1;
 		if( mat.getTexture(0) == NULL )
-		{
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_ZERO );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_ONE_MINUS_SRC_COLOR);
-		}
+			newEnvStage1= TexEnvSpecialSpecularStage1NoTextNV4;
 		else
+			newEnvStage1= TexEnvSpecialSpecularStage1NV4;
+		// Test if same env as prec.
+		if(_CurrentTexEnvSpecial[1] != newEnvStage1)
 		{
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT );
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_ALPHA );
-		}
-		// Arg2.
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR );
-		// Arg3.
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO );
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
-		// Result : Texture*Previous.Alpha+Previous
+			// TexEnv is special.
+			_CurrentTexEnvSpecial[1] = newEnvStage1;
 
+			glActiveTextureARB(GL_TEXTURE0_ARB+1);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+			// Operator Add (Arg0*Arg1+Arg2*Arg3)
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
+			// Arg0.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
+			// Arg1.
+			if( newEnvStage1 == TexEnvSpecialSpecularStage1NoTextNV4 )
+			{
+				glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_ZERO );
+				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_ONE_MINUS_SRC_COLOR);
+			}
+			else
+			{
+				glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT );
+				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_ALPHA );
+			}
+			// Arg2.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR );
+			// Arg3.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+			// Result : Texture*Previous.Alpha+Previous
+		}
+
+		// Setup TexCoord gen for stage1.
+		glActiveTextureARB(GL_TEXTURE0_ARB+1);
 		glEnable( GL_TEXTURE_CUBE_MAP_ARB );
 		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
 		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
@@ -672,8 +689,7 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 			env.Env.SrcArg0RGB = CMaterial::Texture;
 			env.Env.OpArg0RGB = CMaterial::SrcAlpha;
 
-			if(_CurrentTexEnv[0].EnvPacked!= env.EnvPacked)
-				activateTexEnvMode(0, env);
+			activateTexEnvMode(0, env);
 
 
 			// Set stage 1
@@ -693,8 +709,7 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 				env.Env.OpArg1RGB = CMaterial::SrcColor;
 			}
 
-			if(_CurrentTexEnv[1].EnvPacked!= env.EnvPacked)
-				activateTexEnvMode(1, env);
+			activateTexEnvMode(1, env);
 
 			// Set Stage 1
 			glActiveTextureARB(GL_TEXTURE0_ARB+1);
@@ -711,18 +726,12 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 // ***************************************************************************
 void			CDriverGL::endSpecularMultiPass(const CMaterial &mat)
 {
+	// Disable Texture coord generation.
 	glActiveTextureARB( GL_TEXTURE0_ARB+1);
 	glDisable( GL_TEXTURE_GEN_S );
 	glDisable( GL_TEXTURE_GEN_T );
 	glDisable( GL_TEXTURE_GEN_R );
 	//glDisable( GL_TEXTURE_CUBE_MAP_ARB );
-
-	if(_Extensions.NVTextureEnvCombine4)
-	{
-		CMaterial::CTexEnv	env;
-		activateTexEnvMode(0, env);
-		activateTexEnvMode(1, env);
-	}
 
 	// Happiness !!! we have already enabled the stage 1
 	glMatrixMode(GL_TEXTURE);

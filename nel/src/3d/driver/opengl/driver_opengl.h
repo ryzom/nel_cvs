@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.88 2001/09/20 16:43:10 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.89 2001/09/21 10:00:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -636,22 +636,45 @@ private:
 	CVector						_WorldLightPos[MaxLight];			// World position of the lights.
 	CVector						_WorldLightDirection[MaxLight];		// World direction of the lights.
 
-	// Prec settings, for optimisation.
+	/// \name Prec settings, for optimisation.
+	// @{
+
+	// Special Texture environnements.
+	enum	CTexEnvSpecial {
+		TexEnvSpecialDisabled= 0, 
+		TexEnvSpecialLightMapNV4, 
+		TexEnvSpecialSpecularStage0NV4,
+		TexEnvSpecialSpecularStage1NV4,
+		TexEnvSpecialSpecularStage1NoTextNV4,
+	};
+
 	// NB: CRefPtr are not used for mem/spped optimisation. setupMaterial() and setupTexture() reset those states.
-	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
 	CMaterial*				_CurrentMaterial;
+	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
 	CMaterial::CTexEnv		_CurrentTexEnv[IDRV_MAT_MAXTEXTURES];
-	bool					_CurrentGlNormalize;
+	// Special Texture Environnement.
+	CTexEnvSpecial			_CurrentTexEnvSpecial[IDRV_MAT_MAXTEXTURES];
+
 	// Prec settings for material.
 	CDriverGLStates			_DriverGLStates;
 	// Optim: To not test change in Materials states if just texture has changed. Very usefull for landscape.
 	uint32					_MaterialAllTextureTouchedFlag;
 
+	// @}
+
+	bool					_CurrentGlNormalize;
+
 private:
 	bool					setupVertexBuffer(CVertexBuffer& VB);
+	// Activate Texture Environnement. Do it with caching.
 	bool					activateTexture(uint stage, ITexture *tex);
+	// NB: this test _CurrentTexEnv[] and _CurrentTexEnvSpecial[].
 	void					activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
 	void					activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
+	// Force Activate Texture Environnement. no caching here. TexEnvSpecial is disabled.
+	void					forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
+	void					forceActivateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
+
 
 	// Called by activeVertexBuffer when _ViewMatrixSetupDirty is true to clean the view matrix.
 	// set _ViewMatrixSetupDirty to false;

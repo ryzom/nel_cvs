@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.33 2001/09/06 15:20:54 besson Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.34 2001/09/21 10:00:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -704,7 +704,7 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 }
 
 // ***************************************************************************
-void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
+void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 {
 	// This maps the CMaterial::TTexOperator
 	static	const	GLenum	operatorLUT[8]= { GL_REPLACE, GL_MODULATE, GL_ADD, GL_ADD_SIGNED_EXT, 
@@ -724,6 +724,9 @@ void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 
 	// cache mgt.
 	_CurrentTexEnv[stage].EnvPacked= env.EnvPacked;
+	// Disable Special tex env f().
+	_CurrentTexEnvSpecial[stage]= TexEnvSpecialDisabled;
+
 
 	// Setup the gl env mode.
 	glActiveTextureARB(GL_TEXTURE0_ARB+stage);
@@ -783,7 +786,7 @@ void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 }
 
 // ***************************************************************************
-void		CDriverGL::activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
+void		CDriverGL::forceActivateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
 {
 	static	const float	OO255= 1.0f/255;
 	const CRGBA		&col= env.ConstantColor;
@@ -799,6 +802,28 @@ void		CDriverGL::activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
 	glcol[2]= col.B*OO255;
 	glcol[3]= col.A*OO255;
 	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, glcol);
+}
+
+
+// ***************************************************************************
+void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
+{
+	// If a special Texture environnement is setuped, or if not the same normal texture environnement,
+	// must setup a new normal Texture environnement.
+	if( _CurrentTexEnvSpecial[stage] != TexEnvSpecialDisabled || _CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
+	{
+		forceActivateTexEnvMode(stage, env);
+	}
+}
+
+
+// ***************************************************************************
+void		CDriverGL::activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
+{
+	if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
+	{
+		forceActivateTexEnvColor(stage, env);
+	}
 }
 
 

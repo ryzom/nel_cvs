@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.2 2001/10/08 14:03:33 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.3 2001/10/09 16:37:00 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -63,7 +63,6 @@ void CBitMemStream::serialBuffer( uint8 *buf, uint len )
 	{
 		for ( i=0; i!=len; ++i )
 		{
-			v = 0;
 			serial( v, 8 );
 			buf[i] = (uint8)v;
 		}
@@ -149,7 +148,7 @@ void	CBitMemStream::serialBit( bool& bit )
 /*
  * Serialize only the nbits lower bits of value (when reading, please initialize to zero your variables)
  */
-void	CBitMemStream::serial( uint32& value, uint nbits )
+void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 {
 	nlassert( (nbits <= 32) && (nbits != 0) );
 
@@ -160,7 +159,12 @@ void	CBitMemStream::serial( uint32& value, uint nbits )
 		{
 			throw EStreamOverflow();
 		}
-	
+
+		if ( resetvalue )
+		{
+			value = 0;
+		}
+
 		// Clear high-order bits after _FreeBits
 		uint8 v = *_BufPos; // & ((1 << _FreeBits) - 1);
 
@@ -172,7 +176,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits )
 			uint readbits = _FreeBits;
 			displayByteBits( *_BufPos, 8, readbits-1 );
 			_FreeBits = 8;
-			serial( value, nbits - readbits );
+			serial( value, nbits - readbits, false ); // read without resetting value
 		}
 		else
 		{

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.14 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: base_socket.h,v 1.15 2000/11/08 15:52:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,6 +220,12 @@ public:
 
 	//@}
 
+	/// Returns the number of bytes received since the beginning
+	uint32				bytesReceived() const { return _BytesReceived; }
+
+	/// Returns the number of bytes sent since the beginning
+	uint32				bytesSent() const { return _BytesSent; }
+
 protected:
 
 	/// Sets the local address
@@ -240,6 +246,9 @@ protected:
 
 
 private:
+
+	uint32			_BytesReceived;
+	uint32			_BytesSent;
 
 	static bool		_Initialized;
 

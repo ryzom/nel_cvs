@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.21 2000/11/08 14:57:45 lecroart Exp $
+ * $Id: msg_socket.cpp,v 1.22 2000/11/08 15:52:25 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,9 +64,14 @@ TSenderId			CMsgSocket::_SenderIdNb;
 long				CMsgSocket::_TimeoutS = 0;
 long				CMsgSocket::_TimeoutM = 0;
 
+bool				CMsgSocket::_ReceiveAll;
+
 const TCallbackItem	*CMsgSocket::_CallbackArray;
 TTypeNum			CMsgSocket::_CbaSize;
 CSearchSet			CMsgSocket::_SearchSet;
+
+uint32				CMsgSocket::_PrevBytesReceived = 0;
+uint32				CMsgSocket::_PrevBytesSent = 0;
 
   
 /*
@@ -175,6 +180,9 @@ void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize )
 {
 	_Binded = false;
 	_SenderIdNb = 0;
+	_ReceiveAll = true;
+	_PrevBytesReceivedFromHost = 0;
+	_PrevBytesSentToHost = 0;
 	_CallbackArray = callbackarray;
 	_CbaSize = arraysize;
 	
@@ -338,7 +346,7 @@ void CMsgSocket::sendToAllExceptHost( CMessage& outmsg, TSenderId excluded )
 void CMsgSocket::update()
 {
 	// Check data available on all sockets, including the server socket
-	if ( getDataAvailableStatus() )
+	while ( getDataAvailableStatus() )
 	{
 		// Iterate on the sockets where data are available
 		CConnections::iterator ilps;
@@ -408,6 +416,11 @@ void CMsgSocket::update()
 			{
 				ilps++;
 			}
+		}
+		// Receive only one message per update if not in "receive all" mode
+		if ( ! receiveAllMode() )
+		{
+			break;
 		}
 	}
 }
@@ -602,6 +615,105 @@ const CInetAddress *CMsgSocket::listenAddress()
 	}
 }
 
+
+/*
+ * Returns the number of bytes received from the host since the beginning
+ */
+uint32 CMsgSocket::bytesReceivedFromHost()
+{
+	nlassert( _ClientSock != NULL );
+	return _ClientSock->bytesReceived();
+}
+
+
+/*
+ * Returns the number of bytes sent to the host since the beginning
+ */
+uint32 CMsgSocket::bytesSentToHost()
+{
+	nlassert( _ClientSock != NULL );
+	return _ClientSock->bytesSent();
+}
+
+
+/*
+ * Returns the number of bytes downloaded since the previous call to this method
+ */
+uint CMsgSocket::newBytesReceivedFromHost()
+{
+	uint32 b = bytesReceivedFromHost();
+	uint nbrecvd = b - _PrevBytesReceivedFromHost;
+	_PrevBytesReceivedFromHost = b;
+	return nbrecvd;
+
+}
+
+
+/*
+ * Returns the number of bytes uploaded since the previous call to this method
+ */
+uint CMsgSocket::newBytesSentToHost()
+{
+	uint32 b = bytesSentToHost();
+	uint nbrecvd = b - _PrevBytesSentToHost;
+	_PrevBytesSentToHost = b;
+	return nbrecvd;
+
+}
+
+
+/*
+ * Returns the number of bytes received since the beginning
+ */
+uint32 CMsgSocket::bytesReceived()
+{
+	uint32 sum = 0;
+	CConnections::iterator ic;
+	for ( ic=_Connections.begin(); ic!=_Connections.end(); ++ic )
+	{
+		sum += (*ic)->bytesReceived();
+	}
+	return sum;
+}
+
+
+/*
+ * Returns the number of bytes sent since the beginning
+ */
+uint32 CMsgSocket::bytesSent()
+{
+	uint32 sum = 0;
+	CConnections::iterator ic;
+	for ( ic=_Connections.begin(); ic!=_Connections.end(); ++ic )
+	{
+		sum += (*ic)->bytesReceived();
+	}
+	return sum;
+}
+
+
+/*
+ * Returns the number of bytes downloaded since the previous call to this method
+ */
+uint CMsgSocket::newBytesReceived()
+{
+	uint32 b = bytesReceived();
+	uint nbrecvd = b - _PrevBytesReceived;
+	_PrevBytesReceived = b;
+	return nbrecvd;
+}
+
+
+/*
+ * Returns the number of bytes uploaded since the previous call to this method
+ */
+uint CMsgSocket::newBytesSent()
+{
+	uint32 b = bytesSent();
+	uint nbrecvd = b - _PrevBytesSent;
+	_PrevBytesSent = b;
+	return nbrecvd;
+}
 
 
 } // NLNET

@@ -1,7 +1,7 @@
 /** \file remote_entity.cpp
  * Remote-controlled entities
  *
- * $Id: remote_entity.cpp,v 1.4 2000/11/07 16:44:44 cado Exp $
+ * $Id: remote_entity.cpp,v 1.5 2000/11/08 15:52:25 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,9 @@
 
 #include "nel/net/remote_entity.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/vector.h"
+
+using namespace NLMISC;
 
 
 namespace NLNET {
@@ -58,9 +61,24 @@ CRemoteEntity::CRemoteEntity( const IMovingEntity& es ) :
  */
 void CRemoteEntity::changeStateTo( const IMovingEntity& es )
 {
-	setPos( es.pos() );
-	setTrajVector( es.trajVector() );
-	setBodyHeading( es.bodyHeading() );
+	if ( groundMode() )
+	{
+		CVector p = es.pos();
+		CVector v = es.trajVector();
+		CVector h = es.bodyHeading();
+		p.z = pos().z;
+		v.z = trajVector().z;
+		h.z = bodyHeading().z;
+		setPos( p );
+		setTrajVector( v );
+		setBodyHeading( h );
+	}
+	else
+	{
+		setPos( es.pos() );
+		setTrajVector( es.trajVector() );
+		setBodyHeading( es.bodyHeading() );
+	}
 	setAngularVelocity( es.angularVelocity() );
 	setRollAngle( es.rollAngle() );
 }

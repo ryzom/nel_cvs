@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.14 2000/11/06 14:00:07 cado Exp $
+ * $Id: base_socket.cpp,v 1.15 2000/11/08 15:52:25 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,9 @@ CBaseSocket::CBaseSocket( bool reliable, bool logging ) :
 	_Sock( INVALID_SOCKET ),
 	_Reliable( reliable ),
 	_Logging( logging ),
-	_Connected( false )
+	_Connected( false ),
+	_BytesReceived( 0 ),
+	_BytesSent( 0 )
 
 {
 	CBaseSocket::init();
@@ -120,7 +122,9 @@ CBaseSocket::CBaseSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (E
 	_Reliable( true ),
 	_Connected( true ),
 	_Logging( true ),
-	_RemoteAddr( remoteaddr )
+	_RemoteAddr( remoteaddr ),
+	_BytesReceived( 0 ),
+	_BytesSent( 0 )
 {
 	CBaseSocket::init();
 
@@ -299,6 +303,8 @@ void CBaseSocket::sendTo( const uint8 *buffer, uint len, const CInetAddress& add
 	{
 		throw ESocket( "Unable to send datagram", ERROR_NUM );
 	}
+	_BytesSent += len;
+
 	if ( _Logging )
 	{
 		nldebug( "Socket %d sent %d bytes to %s", _Sock, len, addr.asIPString().c_str() );
@@ -335,6 +341,7 @@ bool CBaseSocket::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) th
 	// Get sender's address
 	addr.setSockAddr( &saddr );
 
+	_BytesReceived += len;
 	if ( _Logging )
 	{
 		nldebug( "Socket %d received %d bytes from %s", _Sock, len, addr.asIPString().c_str() );
@@ -353,6 +360,8 @@ void CBaseSocket::send( const uint8* buffer, uint len ) throw (ESocket)
 	{
 		throw ESocket( "Unable to send data", ERROR_NUM );
 	}
+	_BytesSent += len;
+	
 	if ( _Logging )
 	{
 		nldebug( "Socket %d sent %d bytes", _Sock, len );
@@ -411,7 +420,7 @@ void CBaseSocket::doReceive( uint8 *buffer, uint len )
 	{
 		nldebug( "Socket %d received %d bytes", _Sock, len );
 	}*/
-
+	_BytesReceived += len;
 }
 
 

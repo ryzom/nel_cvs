@@ -1,7 +1,7 @@
 /** \file local_area.cpp
- * <File description>
+ * The area all around a player
  *
- * $Id: local_area.cpp,v 1.4 2000/11/07 16:44:44 cado Exp $
+ * $Id: local_area.cpp,v 1.5 2000/11/08 15:52:25 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,6 +121,7 @@ void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 	TEntityId id;
 	msgin.serial( id );
 	CLocalArea::Instance->User.setId( id );
+	nldebug( "Local entity has id %u", id );
 }
 
 
@@ -132,6 +133,7 @@ void NLNET::cbRemoveEntity( CMessage& msgin, TSenderId idfrom )
 	TEntityId id;
 	msgin.serial( id );
 	CLocalArea::Instance->_Neighbors.erase( id );
+	nldebug( "Removed entity %u", id );
 }
 
 
@@ -157,7 +159,7 @@ namespace NLNET {
  * Constructor
  */
 CLocalArea::CLocalArea() :
-	_Radius( 200 )
+	_Radius( 400 )
 {
 	CLocalArea::Instance = this;
 	ClientSocket = new CMsgSocket( CbArray, sizeof(CbArray)/sizeof(CbArray[0]), "DRServer" );
@@ -199,7 +201,7 @@ void CLocalArea::init()
  */
 void CLocalArea::update()
 {
-	CMsgSocket::update();
+	ClientSocket->update();
 
 	// Compute time difference
 #ifdef NL_OS_WINDOWS

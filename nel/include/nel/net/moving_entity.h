@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.4 2000/11/07 16:44:44 cado Exp $
+ * $Id: moving_entity.h,v 1.5 2000/11/08 15:52:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,7 @@ public:
 	}
 
 
-	/// Entity state properties
+	///@name Entity state properties
 	//@{
 
 	/// Returns identifier
@@ -175,13 +175,13 @@ public:
 
 protected:
 
-	/// Set position
+	///@name Set position
 	//@{
 	void					setPos ( const NLMISC::CVector& p )				{ _Pos = p; }
 	void					setPos ( TPosUnit x, TPosUnit y, TPosUnit z )	{ _Pos.set( x, y, z ); }
 	//@}
 
-	/// Set heading vector for moves and for body
+	///@name Set heading vector for moves and for body
 	//@{
 	void					setTrajVector ( const NLMISC::CVector& hdg )			{ _Vector = hdg; }
 	void					setTrajVector ( TPosUnit x, TPosUnit y, TPosUnit z )	{ _Vector.set( x, y, z ); }

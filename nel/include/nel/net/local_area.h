@@ -1,7 +1,7 @@
 /** \file local_area.h
- * Local Area
+ * The area all around a player
  *
- * $Id: local_area.h,v 1.4 2000/11/07 16:44:44 cado Exp $
+ * $Id: local_area.h,v 1.5 2000/11/08 15:52:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

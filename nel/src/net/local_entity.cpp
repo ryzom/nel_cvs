@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.6 2000/11/08 15:12:07 lecroart Exp $
+ * $Id: local_entity.cpp,v 1.7 2000/11/08 15:52:25 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,14 @@ void CLocalEntity::update( TDuration deltatime )
 }
 
 
+// Distance ignoring Z
+TPosUnit distanceXY( const CVector& p1, const CVector& p2 )
+{
+	TPosUnit x = p2.x - p1.x;
+	TPosUnit y = p2.y - p1.y;
+	return sqrt( x*x + y*y );
+}
+
 
 /*
  * Dead Reckoning divergence test: returns true if the replica needs to converge
@@ -85,19 +93,29 @@ void CLocalEntity::update( TDuration deltatime )
 bool CLocalEntity::drDivergeTest()
 {
 	bool bh = false;
-	if ( _DRTestBodyHeading )
+
+	// At the moment, test heading (orientation) divergence computing vector difference.
+	// Because bodyHeading() is normed(), i.e. its norm is 1.0, if _DRThresholdHeading
+	// equals 1.0, the corresponding angle is PI/3.
+	if ( groundMode() )
 	{
-		// At the moment, test heading (orientation) divergence computing vector difference.
-		// Because bodyHeading() is normed(), i.e. its norm is 1.0, if _DRThresholdHeading
-		// equals 1.0, the corresponding angle is PI/3.
-		// At the moment, the divergence test returns true if the orientation changes in
-		// any direction, not only horizontally.
-
-		bh = ( (bodyHeading()-_DRReplica.bodyHeading()).norm() > _DRThresholdHeading );
+		if ( _DRTestBodyHeading )
+		{
+			bh = distanceXY( bodyHeading(), _DRReplica.bodyHeading() ) > _DRThresholdHeading;
+		}
+		// Position divergence test
+		return bh || ( distanceXY( pos(), _DRReplica.pos() ) > _DRThresholdPos );
 	}
-
-	// Position divergence test
-	return bh || ( (pos()-_DRReplica.pos()).norm() > _DRThresholdPos );
+	else
+	{
+		if ( _DRTestBodyHeading )
+		{
+			bh = ( (bodyHeading()-_DRReplica.bodyHeading()).norm() > _DRThresholdHeading );
+		}
+		// Position divergence test
+		return bh || ( (pos()-_DRReplica.pos()).norm() > _DRThresholdPos );
+	}
+	
 	/*CVector p1 = pos();
 	CVector p2 = _DRReplica.pos();
 	TPosUnit diff = (p1-p2).norm();

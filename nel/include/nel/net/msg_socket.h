@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.18 2000/11/06 14:00:36 cado Exp $
+ * $Id: msg_socket.h,v 1.19 2000/11/08 15:52:25 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,6 +95,18 @@ public:
 	/// Destructor. It closes all sockets (connections) that have been created by this CMsgSocket object
 	~CMsgSocket();
 
+	/// Sets the socket in "receive all" mode
+	static void		setReceiveAllMode( bool all )
+	{
+		_ReceiveAll = all;
+	}
+
+	/// Returns the "receive all" mode state
+	static bool		receiveAllMode()
+	{
+		return _ReceiveAll;
+	}
+
 	/// Send an outpput message (client mode only)
 	void			send( CMessage& outmsg );
 
@@ -120,6 +132,35 @@ public:
 	{
 		return _Connections.size();
 	}
+
+	///@name Statistics
+	//@{
+
+	/// Returns the number of bytes received from the host since the beginning
+	uint32						bytesReceivedFromHost();
+
+	/// Returns the number of bytes sent to the host since the beginning
+	uint32						bytesSentToHost();
+
+	/// Returns the number of bytes downloaded since the previous call to this method
+	uint						newBytesReceivedFromHost();
+
+	/// Returns the number of bytes uploaded since the previous call to this method
+	uint						newBytesSentToHost();
+
+	/// Returns the number of bytes received since the beginning
+	static uint32				bytesReceived();
+
+	/// Returns the number of bytes sent since the beginning
+	static uint32				bytesSent();
+
+	/// Returns the number of bytes downloaded since the previous call to this method
+	static uint					newBytesReceived();
+
+	/// Returns the number of bytes uploaded since the previous call to this method
+	static uint					newBytesSent();
+
+	//@}
 
 	/** Updates the connected sockets and accept new connections.
 	 * - When a new connection incomes (server mode only), the callback of name "C" is called if it exists. Its message contains the address of the remote socket (CInetAddress).
@@ -161,9 +202,6 @@ protected:
 	/// Add a new connection socket
 	static void		addNewConnection( CSocket *connection );
 
-	/// Returns if the listening socket of the server and the connection sockets have incoming data available.
-	static bool		getDataAvailableStatus();
-
 	/// Returns true if msg is a binding message
 	static bool		msgIsBinding( const CMessage& msg );
 
@@ -173,6 +211,9 @@ protected:
 	 * \return False if an error occurred (i.e. no callback defined for the message type)
 	 */
 	static bool		processReceivedMessage( CMessage& msg, CSocket& sock );
+
+	/// Returns if the listening socket of the server and the connection sockets have incoming data available.
+	static bool		getDataAvailableStatus();
 
 	/// Returns a pointer to the socket object having the specified sender id
 	static CSocket	*socketFromId( TSenderId id );
@@ -199,6 +240,8 @@ protected:
 private:
 
 	CSocket						*_ClientSock;
+	uint32						_PrevBytesReceivedFromHost;
+	uint32						_PrevBytesSentToHost;
 	std::string					_ServiceName;
 	time_t						_ConnectTime;
 	uint16						_ValidityTime;
@@ -206,6 +249,8 @@ private:
 	static bool					_Binded;
 	static CConnections			_Connections;
 	static TSenderId			_SenderIdNb;
+
+	static bool					_ReceiveAll;
 
 	/// Number of milliseconds to wait in receive(). The higher, the nicer for the speed of the rest of the system.
 	static long					_TimeoutS, _TimeoutM;
@@ -215,6 +260,8 @@ private:
 	static TTypeNum				_CbaSize;
 	static CSearchSet			_SearchSet;
 
+	static uint32				_PrevBytesReceived;
+	static uint32				_PrevBytesSent;
 };
 
 }

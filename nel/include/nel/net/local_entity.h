@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.4 2000/11/07 16:44:44 cado Exp $
+ * $Id: local_entity.h,v 1.5 2000/11/08 15:52:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,7 @@ public:
 	/// Sets dead reckoning threshold for heading divergence test (angle in radian)
 	void			setThresholdForHeading( TAngle a );
 
-	/// @name Input controls.
+	/// @name Input controls
 	//@{
 
 	/// Sets the front velocity. Positive value for forward motion; negative value for backward motion.

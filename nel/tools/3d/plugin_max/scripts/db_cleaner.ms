@@ -16,7 +16,7 @@ group "The Checker "
 --	CheckBox CheckOnly "report only please" checked:true
 --	Label textcheck "(Don't modify Database)" enabled:true
 --	Label textclean "(Do Clean the Database)" enabled:false
-	progressbar progress_bar color:blue width:348
+	progressbar progress_bar color:blue width:588
 	Label textcurrentproj "Current file : --" enabled:false align:#left
 	)
 
@@ -37,7 +37,7 @@ group "Auto "
 	button basic_clean_all "Basic Clean Listed Files " -- enabled:false
 	button test_only_basic_clean_all "Tst Bazc Clean Listd Filz" -- enabled:false
 	button collapse_nel_patch_all "Collapse all listed"
-	progressbar progress_bar2 color:green height:8 width:348
+	progressbar progress_bar2 color:green height:8 width:588
 	)
 group "The objects "
 	(
@@ -480,18 +480,22 @@ checkMeshName =		#(	true,							false,							false,							false )
 checkProjectName =	#(	true,							true,							true,							true )
 objectDouble = #()
 objectDoubleProject = #()
+objectArray = #()
 
 rollout dbase_cleaner_double_rollout "Database Double Detector"
 (
 	-- A button to select the config file
 	label ConfigFileLabel "Config files path:" align:#left
-	edittext ConfigFile "" width:348
-	button SelectConfigFile "Browse for config path" width:348
+	edittext ConfigFile "" width:588
+	button SelectConfigFile "Browse for config path" width:588
 	dropdownlist TypeCheck "Type of project to check:" items:fileType selection:0
-	listbox DirectoryList "List of directory to check:" width:348
-	button Check "Check for double" width:348
-	listbox DoubleObject "List of project with same object name:" width:348
-	listbox DoubleProject "List of project with the same name:" width:348
+	listbox DirectoryList "List of directory to check:" width:588
+	label ExcludeLabel "Excluded names:" align:#left
+	edittext Exclude "" width:588
+	button Refresh "Refresh list" width:588
+	button Check "Check for double" width:588
+	listbox DoubleObject "List of project with same object name:" width:588
+	listbox DoubleProject "List of project with the same name:" width:588
 
 	-- On select the config file
 	on SelectConfigFile pressed do
@@ -640,46 +644,36 @@ rollout dbase_cleaner_double_rollout "Database Double Detector"
 		return outstring     -- value of outstring will be returned as function result 
 	)
 
-	-- Check
-	on Check pressed do
+	-- Refresh list
+	fn refreshList = 
 	(
-		-- Check double name in objects
-		if checkMeshName[TypeCheck.selection] == true then
-		(
-			-- Object array
-			objectArray = #()
-			objectDouble = #()
-			objectDoubleProject = #()
+		objectDouble = #()
+		objectDoubleProject = #()
 
-			-- For each directory
-			for folder in DirectoryList.items do
+		-- Get the keyword list
+		keywords = filterString Exclude.text " "
+
+		-- Search for double
+		object = 1
+		while object <= objectArray.count-1 do
+		(				
+			-- First names
+			firstNames = filterString objectArray[object] ";"
+
+			-- Filter first name
+			same = false
+			for keys in keywords do
 			(
-				-- Get the max files
-				files = getFiles (folder+"/*.max")
-				for file in files do
+				if keys == firstNames[1] then
 				(
-					-- Get the object in the max file
-					objectsMax = getMAXFileObjectNames file
-
-					-- For each object
-					for object in objectsMax do
-					(
-						-- Insert a reference
-						append objectArray ( (lowercase (object as string) ) + ";" + file)
-					)
+					same = true
+					exit
 				)
 			)
 
-			-- Sort the array
-			sort objectArray
-
-			-- Search for double
-			object = 1
-			while object <= objectArray.count-1 do
-			(				
-				-- First names
-				firstNames = filterString objectArray[object] ";"
-
+			-- Not keyword
+			if same == false then
+			(
 				-- Second names
 				secondNames = filterString objectArray[object+1] ";"
 
@@ -706,12 +700,54 @@ rollout dbase_cleaner_double_rollout "Database Double Detector"
 						secondNames = filterString objectArray[object+1] ";"
 					)
 				)
-
-				object = object + 1
 			)
 
-			-- Copy the array
-			DoubleObject.items = objectDouble
+			object = object + 1
+		)
+
+		-- Copy the array
+		DoubleObject.items = objectDouble
+	)
+
+	-- Refresh
+	on Refresh pressed do
+	(
+		refreshList ()
+	)
+
+	-- Check
+	on Check pressed do
+	(
+		-- Check double name in objects
+		if checkMeshName[TypeCheck.selection] == true then
+		(
+			-- Object array
+			objectArray = #()
+
+			-- For each directory
+			for folder in DirectoryList.items do
+			(
+				-- Get the max files
+				files = getFiles (folder+"/*.max")
+				for file in files do
+				(
+					-- Get the object in the max file
+					objectsMax = getMAXFileObjectNames file
+
+					-- For each object
+					for object in objectsMax do
+					(
+						-- Insert a reference
+						append objectArray ( (lowercase (object as string) ) + ";" + file)
+					)
+				)
+			)
+
+			-- Sort the array
+			sort objectArray
+
+			-- Refresh list
+			refreshList ()
 		)
 		else
 			DoubleObject.items = #()
@@ -720,7 +756,7 @@ rollout dbase_cleaner_double_rollout "Database Double Detector"
 		if checkProjectName[TypeCheck.selection] == true then
 		(
 			-- Object array
-			objectArray = #()
+			objectArrayProject = #()
 			projectDouble = #()
 
 			-- For each directory
@@ -730,22 +766,22 @@ rollout dbase_cleaner_double_rollout "Database Double Detector"
 				files = getFiles (folder+"/*.max")
 				for file in files do
 				(
-					append objectArray ( (filenameFromPath (convertString (lowercase file))) + ";" + (lowercase file) )
+					append objectArrayProject ( (filenameFromPath (convertString (lowercase file))) + ";" + (lowercase file) )
 				)
 			)
 
 			-- Sort the array
-			sort objectArray
+			sort objectArrayProject
 
 			-- Search for double
 			object = 1
-			while object <= objectArray.count-1 do
+			while object <= objectArrayProject.count-1 do
 			(
 				-- First names
-				firstNames = filterString objectArray[object] ";"
+				firstNames = filterString objectArrayProject[object] ";"
 
 				-- Second names
-				secondNames = filterString objectArray[object+1] ";"
+				secondNames = filterString objectArrayProject[object+1] ";"
 
 				-- Same name ?
 				if firstNames[1] == secondNames[1] then
@@ -763,11 +799,11 @@ rollout dbase_cleaner_double_rollout "Database Double Detector"
 						object = object + 1
 
 						-- Last one ?
-						if (object == objectArray.count) then
+						if (object == objectArrayProject.count) then
 							exit
 
 						-- Get the new second
-						secondNames = filterString objectArray[object+1] ";"
+						secondNames = filterString objectArrayProject[object+1] ";"
 					)
 				)
 
@@ -809,7 +845,7 @@ if dbase_cleaner_floater != undefined do
 	(
 	closerolloutfloater dbase_cleaner_floater
 	)	
-dbase_cleaner_Floater = newRolloutFloater "Database Cleaner" 400 815 800 200
+dbase_cleaner_Floater = newRolloutFloater "Database Cleaner" 640 815 800 200
 addrollout dbase_cleaner_rollout dbase_cleaner_Floater  rolledUp:true
 addrollout dbase_cleaner_double_rollout dbase_cleaner_Floater  rolledUp:true
 

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.13 2004/09/17 15:07:03 vizerie Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.14 2004/10/04 08:54:00 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -527,10 +527,6 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 		// Create the shared Name.
 		std::string	name;
 		getTextureShareName (tex, name);
-		if (name == "ma_mairie2_wi.tga@Fmt:0@MMp:On")
-			int toto=0;
-		if (name == "ma_loupiotte.tga@Fmt:0@MMp:On")
-			int toto=0;
 
 		// insert or get the texture.
 		{

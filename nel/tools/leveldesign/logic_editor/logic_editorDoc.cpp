@@ -12,7 +12,10 @@
 
 #include "logic/logic_state_machine.h"
 
+//#include <nel/misc/o_xml.h>
+//#include <nel/misc/i_xml.h>
 #include "nel/misc/file.h"
+
 
 #include <vector>
 
@@ -45,7 +48,9 @@ END_MESSAGE_MAP()
 
 CLogic_editorDoc::CLogic_editorDoc()
 {
-	// TODO: add one-time construction code here
+	InitCounterPage = FALSE;
+	InitConditionPage = FALSE;
+	InitStatePage = FALSE;
 
 }
 
@@ -450,14 +455,19 @@ void CLogic_editorDoc::deleteState( CString name)
 //------------------------------------------------------
 BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 {
-	while(true);
-
 	POSITION pos;
 	CString eltName;
 
-	string fName( fileName );
-	COFile f( fName );
+	/*
+	COFile fileOut;
+	fileOut.open( fileName );
+	COXml xmlfileOut;
+	xmlfileOut.init(&fileOut);
+	*/
 
+	COFile xmlfileOut;
+	xmlfileOut.open( fileName );//TEMP!!!
+		
 	CLogicStateMachine logicStateMachine;
 		
 	/// convert and store the variables
@@ -471,9 +481,9 @@ BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 	}
 	
 	// convert and store the counters
-	CCounter * pCounter = new CCounter();
 	for( pos = m_counters.GetStartPosition(); pos != NULL; )
 	{
+		CCounter * pCounter = new CCounter();
 		// get counter
 		m_counters.GetNextAssoc( pos, eltName, (void*&)pCounter );
 		// set logic counter from counter
@@ -516,8 +526,8 @@ BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 	}
 
 	// save the logic state machine
-	f.serial( logicStateMachine );
-	
+	logicStateMachine.serial( xmlfileOut );
+
 	return true;
 
 } // OnSaveDocument //
@@ -533,31 +543,68 @@ BOOL CLogic_editorDoc::load( LPCTSTR fileName )
 	if (!CDocument::OnOpenDocument(fileName))
 		return FALSE;
 
-	CIFile f( fileName );
+	
+	/*
+	CIFile fileIn;
+	fileIn.open( fileName );
+	CIXml xmlfileIn;
+	xmlfileIn.init(fileIn);
+	*/
+	CIFile xmlfileIn;
+	xmlfileIn.open( fileName ); //TEMP!!!
+	
 
 	// load the logic state machine
-	vector<CLogicVariable> variables;
-	vector<CLogicCounter> counters;
-	map<string,CLogicState> states;
-	f.serialCont( variables );
-	f.serialCont( counters );
-	f.serialCont( states );
+	map<string,CLogicVariable>	variables;
+	map<string,CLogicCounter>	counters;
+	map<string,CLogicCondition>	conditions;
+	map<string,CLogicState>		states;
+	
+	xmlfileIn.xmlPush("STATE_MACHINE");
+	xmlfileIn.serialCont( variables );
+	xmlfileIn.serialCont( counters );
+	xmlfileIn.serialCont( conditions );
+	xmlfileIn.serialCont( states );
+	xmlfileIn.xmlPop();
 
 	// init the variables
-	vector<CLogicVariable>::iterator itVar;
+	map<string,CLogicVariable>::iterator itVar;
 	for( itVar = variables.begin(); itVar != variables.end(); ++itVar )
 	{
-		m_variables.AddTail( CString((*itVar).getName().c_str()) );
+		m_variables.AddTail( CString((*itVar).first.c_str()) );
 	}
 
 	// init the counters
-	vector<CLogicCounter>::iterator itCounter; 
+	map<string,CLogicCounter>::iterator itCounter; 
 	for( itCounter = counters.begin(); itCounter != counters.end(); ++itCounter )
 	{
 		CCounter * counter = new CCounter();
-		cLogicCounterToCCounter( *itCounter, *counter );
-		m_counters[CString((*itCounter).getName().c_str())] = counter;
+		cLogicCounterToCCounter( (*itCounter).second, *counter );
+		m_counters[CString((*itCounter).first.c_str())] = counter;
 	}
+
+	// init the conditions
+	map<string,CLogicCondition>::iterator itCondition;
+	for( itCondition = conditions.begin(); itCondition != conditions.end(); ++itCondition )
+	{
+		CCondition * condition = new CCondition();
+		cLogicConditionToCCondition( (*itCondition).second, *condition );
+		m_conditions[CString((*itCondition).first.c_str())] = condition;
+	}
+
+	// init the states
+	map<string,CLogicState>::iterator itState;
+	for( itState = states.begin(); itState != states.end(); ++itState )
+	{
+		CState * state = new CState();
+		cLogicStateToCState( (*itState).second, *state );
+		m_states[CString((*itState).first.c_str())] = state;
+	}
+	
+	InitCounterPage = TRUE;
+	InitConditionPage = TRUE;
+	InitStatePage = TRUE;
+
 /*
 	// get the child frame
 	CMainFrame *pFrame = (CMainFrame*)AfxGetApp()->m_pMainWnd;

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.43 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.44 2003/07/16 09:06:08 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,7 @@ UAnimationSet			*CSceneUser::createAnimationSet()
 	NL_ALLOC_CONTEXT( 3dAnmSt )
 	NL3D_HAUTO_ELT_SCENE;
 
-	return new CAnimationSetUser();
+	return _AnimationSets.insert(new CAnimationSetUser());
 }
 // ***************************************************************************
 UAnimationSet			*CSceneUser::createAnimationSet(const std::string &animationSetFile) 

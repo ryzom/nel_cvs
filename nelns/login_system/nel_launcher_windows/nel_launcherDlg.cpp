@@ -27,7 +27,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 const char *PleaseWaitFilename = "pleasewait.html";
-string PleaseWaitFullPath;
 
 void CNel_launcherDlg::openUrl (const std::string &url)
 {
@@ -91,12 +90,26 @@ BOOL CNel_launcherDlg::OnInitDialog()
 		nlerror ("Working path '%s' doesn't exists", workingPath.c_str ());
 	}
 
-	_chdir (workingPath.c_str ());
-
-	// load the pleasewait html page if available
+	// load the pleasewait html page if available in the nel_launcher directory
+	bool PleaseWaitLoaded = false;
+	string PleaseWaitFullPath;
 	PleaseWaitFullPath = CPath::getFullPath (PleaseWaitFilename, false);
 	if (NLMISC::CFile::isExists (PleaseWaitFullPath))
+	{
 		openUrl(PleaseWaitFullPath.c_str());
+		PleaseWaitLoaded = true;
+	}
+
+	_chdir (workingPath.c_str ());
+
+	// load the pleasewait html page if available in the client directory
+	PleaseWaitFullPath = CPath::getFullPath (PleaseWaitFilename, false);
+	if (!PleaseWaitLoaded && NLMISC::CFile::isExists (PleaseWaitFullPath))
+	{
+		openUrl(PleaseWaitFullPath.c_str());
+	}
+
+
 
 	string Version = getVersion ();
 
@@ -105,7 +118,7 @@ BOOL CNel_launcherDlg::OnInitDialog()
 	url += "&newClientApplication=" + ConfigFile.getVar ("Application").asString(0);
 
 	openUrl (url);
-	
+
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -353,7 +366,7 @@ string getValue (const string &str, const string &token)
 	uint spos = str.find (realtoken);
 	if (spos == string::npos) return "";
 
-	uint spos2 = str.find ("\"", spos+realtoken.size ()+1);
+	uint spos2 = str.find ("\"", spos+realtoken.size ());
 	if (spos == string::npos) return "";
 
 	return str.substr (spos+realtoken.size (), spos2-spos-realtoken.size ());
@@ -415,8 +428,6 @@ void CNel_launcherDlg::launch (const string &str)
 
 void CNel_launcherDlg::patch (const string &str)
 {
-	string path = ConfigFile.getVar ("Application").asString(2);
-
 	string url = "http://"+ConfigFile.getVar ("StartupHost").asString();
 
 	string serverVersion = getValue (str, "serverVersion");
@@ -525,6 +536,7 @@ void CNel_launcherDlg::OnTimer(UINT nIDEvent)
 	{
 		nlinfo ("finnish");
 		KillTimer (0);
+		MessageBox ("Patch completed", "patch");
 		openUrl (url.c_str());
 	}
 }

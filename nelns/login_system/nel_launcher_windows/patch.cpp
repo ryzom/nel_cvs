@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.2 2002/10/21 14:52:35 lecroart Exp $
+ * $Id: patch.cpp,v 1.3 2002/10/22 08:42:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,8 +114,19 @@ private:
 			string ClientRootPath = "./";
 			string ClientPatchPath = "./patch/";
 			string ServerRootPath = CPath::standardizePath (ServerPath);
+			string DisplayedServerRootPath;		// contains the serverpath without login and password
+			
+			uint pos = ServerRootPath.find ("@");
+			if (pos != string::npos)
+			{
+				DisplayedServerRootPath = "http://"+ServerRootPath.substr (pos+1);
+			}
+			else
+			{
+				DisplayedServerRootPath = ServerRootPath;
+			}
 
-			setState(true, "Patching from '%s'", ServerRootPath.c_str());
+			setState(true, "Patching from '%s'", DisplayedServerRootPath.c_str());
 
 			// create the patch directory if not exists
 			if (!NLMISC::CFile::isExists ("patch"))
@@ -189,7 +200,7 @@ private:
 					path = ClientPatchPath + needToGetFilesList[i].Filename;
 				}
 
-				nlinfo ("Get the file from '%s' to '%s'", string(ServerRootPath+needToGetFilesList[i].Filename).c_str(), path.c_str());
+				nlinfo ("Get the file from '%s' to '%s'", string(DisplayedServerRootPath+needToGetFilesList[i].Filename).c_str(), path.c_str());
 
 				// get the new file
 				downloadFile (ServerRootPath+needToGetFilesList[i].Filename+".gz", path+".gz");

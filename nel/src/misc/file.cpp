@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: file.cpp,v 1.6 2000/10/12 13:55:34 lecroart Exp $
+ * $Id: file.cpp,v 1.7 2000/10/18 12:36:55 corvazier Exp $
  *
  * Standard File Input/Output.
  */
@@ -81,6 +81,7 @@ void		CIFile::serialBit(bool &bit) throw(EReadError)
 	// Simple for now.
 	uint8	v=bit;
 	serialBuffer(&v, 1);
+	bit=(v!=0);
 }
 
 

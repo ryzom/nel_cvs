@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.h,v 1.2 2000/09/20 10:09:51 berenguier Exp $
+ * $Id: matrix.h,v 1.3 2000/09/21 08:14:39 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -265,21 +265,21 @@ private:
 	// access to M, in math conventions (mat(1,1) ... mat(4,4)).
 	float	&mat(sint i, sint j)
 	{
-		return M[ ((j-1)<<2) + i];
+		return M[ (j<<2) + i];
 	}
 	const float	&mat(sint i, sint j) const
 	{
-		return M[ ((j-1)<<2) + i];
+		return M[ (j<<2) + i];
 	}
 	// return the good 3x3 Id to compute the minor of (i,j);
 	void	getCofactIndex(sint i, sint &l1, sint &l2, sint &l3) const
 	{
 		switch(i)
 		{
-			case 1: l1=2; l2=3; l3=4; break;
-			case 2: l1=1; l2=3; l3=4; break;
-			case 3: l1=1; l2=2; l3=4; break;
-			case 4: l1=1; l2=2; l3=3; break;
+			case 1: l1=1; l2=2; l3=3; break;
+			case 2: l1=0; l2=2; l3=3; break;
+			case 3: l1=0; l2=1; l3=3; break;
+			case 4: l1=0; l2=1; l3=2; break;
 		}
 	}
 };

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.cpp,v 1.2 2000/09/20 10:09:45 berenguier Exp $
+ * $Id: matrix.cpp,v 1.3 2000/09/21 08:14:50 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -735,9 +735,9 @@ bool	CMatrix::slowInvert44(CMatrix &ret) const
 
 	// Compute Cofactors
 	//==================
-	for(i=1;i<=4;i++)
+	for(i=0;i<=3;i++)
 	{
-		for(j=1;j<=4;j++)
+		for(j=0;j<=3;j++)
 		{
 			sint	l1,l2,l3;
 			sint	c1,c2,c3;
@@ -760,24 +760,24 @@ bool	CMatrix::slowInvert44(CMatrix &ret) const
 
 	// Compute determinant.
 	//=====================
-	s= ret.mat(1,1) * mat(1,1) + ret.mat(1,2) * mat(1,2) + ret.mat(1,3) * mat(1,3) + ret.mat(1,4) * mat(1,4);
+	s= ret.mat(0,0) * mat(0,0) + ret.mat(0,1) * mat(0,1) + ret.mat(0,2) * mat(0,2) + ret.mat(0,3) * mat(0,3);
 	if(s==0)
 		return false;
 
 	// Divide by determinant.
 	//=======================
 	s=1.0/s;
-	for(i=1;i<=4;i++)
+	for(i=0;i<=3;i++)
 	{
-		for(j=1;j<=4;j++)
+		for(j=0;j<=3;j++)
 			ret.mat(i,j)*= s;
 	}
 
 	// Transpose the comatrice.
 	//=========================
-	for(i=1;i<=4;i++)
+	for(i=0;i<=3;i++)
 	{
-		for(j=i+1;j<=4;j++)
+		for(j=0;j<=3;j++)
 		{
 			swap(ret.mat(i,j), ret.mat(j,i));
 		}

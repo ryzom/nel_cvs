@@ -1,7 +1,7 @@
 /** \file main.h
  * mini agent exemple
  *
- * $Id: main.h,v 1.2 2002/03/11 16:58:25 chafik Exp $
+ * $Id: main.h,v 1.3 2002/03/11 17:39:17 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,16 +32,59 @@
 #define EXMPL_MAIN_H
 
 #include "main_agent.h"
+#include "nel/misc/path.h"
 
 #define AgentServiceName "AgS"
 
 
-namespace NLMISC
-{	
-	class CPath;
-}
 namespace Expl
 {	
+
+	//This class is the output and input class for the agent class.
+	//Later we could make one with a python interface, very simple but take a lot of time to write it (because nead mult-theard interface).
+	class CIO : public NLAIC::IIO
+	{
+	public:
+		static const NLAIC::CIdentType idCIO;
+	public:
+
+		CIO() {/*Nothing to do*/}
+
+		virtual void Echo(char *txt, ...) const;
+		virtual const std::string InPut() const
+		{
+			return std::string("\n");
+		}
+
+		virtual void save(NLMISC::IStream &os)
+		{
+			//Nothing to save.
+		}		
+
+		void getDebugString(std::string &t) const
+		{
+			//Nothing to debug.
+			t = "this is an CIO";
+		}
+
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new CIO();			
+			return m;
+		}
+
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual void load(NLMISC::IStream &is)
+		{
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;				
+		virtual ~CIO() {/*nothing to delete*/}
+	};
 
 	/**
 	This class allow us to make the service.
@@ -49,8 +92,10 @@ namespace Expl
 	class CAgentService : public NLNET::IService5
 	{
 	public:
-		static CAgentManager *_Agent;
+		static CAgentManager *Agent;
 		static NLMISC::CPath *Path;
+		static std::list<std::string> AgScript;
+		static CIO *AgIO;
 	public:
 		
 		CAgentService();

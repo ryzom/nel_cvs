@@ -1,7 +1,7 @@
 /** \file main.cpp
  * mini agent exemple
  *
- * $Id: main.cpp,v 1.2 2002/03/11 16:58:25 chafik Exp $
+ * $Id: main.cpp,v 1.3 2002/03/11 17:39:17 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,12 +27,41 @@
 
 //For init lib
 #include "nel/ai/nl_ai.h"
-#include "nel/misc/path.h"
+
 
 namespace Expl
 {
-	CAgentManager *CAgentService::_Agent = NULL;
+
+	//Type of the class
+	const NLAIC::CIdentType &CIO::getType() const
+	{
+		//register the class in the classFactory.
+		static const NLAIC::CIdentType idCIO("CIO",	NLAIC::CSelfClassFactory(*this),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+		return idCIO;
+
+	}
+
+	//we could do better, but time .....
+	void CIO::Echo(char *txt, ...) const
+	{
+		//Large to be sure
+		char lageBuffer[64*1024];
+		char	temp[64*1024];
+		va_list argument;
+		va_start (argument, txt);	
+		
+		vsprintf(temp, txt, argument);		
+		strcpy(lageBuffer,temp);
+		
+		nlinfo("%s",lageBuffer);		
+	}
+
+
+	CAgentManager *CAgentService::Agent = NULL;
 	NLMISC::CPath *CAgentService::Path = NULL;
+	std::list<std::string> CAgentService::AgScript = std::list<std::string>();
+	CIO *CAgentService::AgIO = new CIO();
 
 
 	CAgentService::CAgentService()
@@ -45,15 +74,16 @@ namespace Expl
 		//This for uinitialize the ai lib
 		NLAILINK::initIALib();
 		//This for uinitialize the manager how deliver distruibuted message.
-		NLAILINK::setMainManager(CAgentService::_Agent);
+		NLAILINK::setMainManager(CAgentService::Agent);
 		//This time is allow message transfer.
 		setUpdateTimeout(10);
 
 		CAgentService::Path = new NLMISC::CPath;
 
+		//Set the input/output way.
+		NLAIC::setDefaultIIO(CAgentService::AgIO);
 
 		NLMISC::CConfigFile cf;
-
 		try
 		{
 			//read the special agent var in the ag_s.cfg file.
@@ -63,20 +93,31 @@ namespace Expl
 			for(i = 0; i < ScriptPath.size(); i ++)
 			{
 				std::string s = ScriptPath.asString(i);
-				CAgentService::Path->addSearchPath(s, true,true);
-				//_ScriptPath.push_back(new std::string(s));
+				CAgentService::Path->addSearchPath(s, true,true);				
 			}
-			
+
+			NLMISC::CConfigFile::CVar &RunScript = cf.getVar ("RunScript");			
+			for(i = 0; i < RunScript.size(); i ++)
+			{
+				std::string s = RunScript.asString(i);
+				AgScript.push_back(std::string(s));
+			}			
 		}
 		catch (NLMISC::EConfigFile &e)
 		{
 			nlerror("%s",e.what());
 		}
+
+		//instance of the agent manager.
+		CAgentService::Agent = new CAgentManager(CAgentService::AgIO);
+
+		//Script run if exist.
+		CAgentService::Agent->init();
 	}
 
 	void CAgentService::release()
 	{
-		_Agent->release();
+		Agent->release();
 		//This lines is to run the agent internal timer.
 		{
 			NLMISC::CSynchronized<NLAIAGENT::CAgentScript *>::CAccessor accessor(NLAIAGENT::CAgentManagerTimer::TimerManager);
@@ -86,7 +127,7 @@ namespace Expl
 
 	bool CAgentService::update()
 	{
-		_Agent->run();
+		Agent->run();
 		return true;
 	}
 
@@ -106,9 +147,9 @@ namespace Expl
 		agtinmsg.serial( dest_aid );		
 		
 		NLAIAGENT::IRefrence *ag;
-		if ( (ag = _Agent->agentIsPresent( dest_aid )) != NULL )
+		if ( (ag = Agent->agentIsPresent( dest_aid )) != NULL )
 		{		
-			_Agent->deliverMsg( ag, agtinmsg );
+			Agent->deliverMsg( ag, agtinmsg );
 		}
 		else
 		{

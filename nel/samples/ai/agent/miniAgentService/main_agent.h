@@ -1,7 +1,7 @@
 /** \file main_agent.h
  * mini agent exemple
  *
- * $Id: main_agent.h,v 1.1 2002/03/04 10:50:32 chafik Exp $
+ * $Id: main_agent.h,v 1.2 2002/03/11 17:39:17 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,8 @@ namespace Expl
 		CAgentManager(NLAIC::IIO *io):CMainAgentScript(NULL,io)
 		{
 		}
-			
+	
+		void init();
 		
 		/// Deliver a message to an agent which must be present in this agent service
 		/// This function assum the distrubution of messages on the serverver.

@@ -1,7 +1,7 @@
 /** \file main_agent.cpp
  * mini agent exemple
  *
- * $Id: main_agent.cpp,v 1.1 2002/03/04 10:50:32 chafik Exp $
+ * $Id: main_agent.cpp,v 1.2 2002/03/11 17:39:17 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,13 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/net/service_5.h"
+
+#include "nel/ai/nl_ai.h"
+#include "nel/ai/agent/agent.h"
+//for script
+#include "nel/ai/script/codage.h"
+#include "nel/ai/script/interpret_object_agent.h"
+#include "main.h"
 #include "main_agent.h"
 
 namespace Expl
@@ -125,4 +132,54 @@ namespace Expl
 		}
 		return NLAIAGENT::IObjectIA::CProcessResult();
 	}	
+
+	void CAgentManager::init()
+	{
+		NLAISCRIPT::IScriptDebugSource* sourceCode;
+		std::string sourceString;
+
+		uint8 erreur = 0;
+
+		while(CAgentService::AgScript.begin() != CAgentService::AgScript.end())
+		{
+			std::string sourceString = CAgentService::Path->lookup(CAgentService::AgScript.front());
+			if(sourceString != "")
+			{
+				_CodeContext->InputOutput->Echo("#########################\n");
+				_CodeContext->InputOutput->Echo("#########################\n");
+				_CodeContext->InputOutput->Echo("compiling '%s' file\n",sourceString.c_str());
+				_CodeContext->InputOutput->Echo("#########################\n");
+				_CodeContext->InputOutput->Echo("#########################\n");
+				sourceCode = new NLAISCRIPT::CScriptDebugSourceFile(sourceString.c_str());
+				sourceString = sourceCode->getSourceBuffer();
+
+				NLAIAGENT::IObjectIA::CProcessResult r;
+				NLAISCRIPT::CCompilateur *comp = new NLAISCRIPT::CCompilateur(*_CodeContext->InputOutput, sourceString.c_str(), sourceString.size(), sourceCode);	
+				r = comp->Compile();
+				delete comp;
+
+				erreur |= (r.ResultState == NLAIAGENT::processError);
+
+				if(!erreur)
+				{
+					if( r.Result != NULL)
+					{
+						NLAIAGENT::CMessageList *m = new NLAIAGENT::CMessageList();
+						m->setPerformatif(NLAIAGENT::IMessageBase::PExec);
+						NLAIAGENT::CMessageGroup group(1);
+						m->setGroup(group);				
+						m->push(r.Result);
+						m->setSender(this);
+						((NLAIAGENT::IObjectIA *)this)->sendMessage((NLAIAGENT::IObjectIA *)m);
+					}
+				}
+				else
+				{
+					if( r.Result != NULL) r.Result->release();
+				}
+				delete sourceCode;
+			}
+			CAgentService::AgScript.pop_front();
+		}
+	}
 }

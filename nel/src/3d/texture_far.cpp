@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.19 2002/08/21 17:18:18 berenguier Exp $
+ * $Id: texture_far.cpp,v 1.20 2002/08/21 17:25:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1092,6 +1092,7 @@ static void		NL3D_asmAssembleShading2x2(const uint8 *lumels, const CRGBA *colorM
 
 
 // ***************************************************************************
+#  pragma warning (disable : 4731)			// frame pointer register 'ebp' modified by inline assembly code
 /**	Lightmap Combining for Far level 0 (nearest)
  *	read 1 lumel, and deals with UserColor and TLI
  */
@@ -1157,6 +1158,8 @@ static void		NL3D_asmAssembleShading4x4(const uint8 *lumels, const CRGBA *colorM
 	}
 
 }
+
+#  pragma warning (default : 4731)			// frame pointer register 'ebp' modified by inline assembly code
 
 
 #else // NL_OS_WINDOWS

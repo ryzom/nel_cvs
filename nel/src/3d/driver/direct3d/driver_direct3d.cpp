@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.18 2004/08/19 16:29:04 besson Exp $
+ * $Id: driver_direct3d.cpp,v 1.19 2004/08/19 17:54:00 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -193,7 +193,7 @@ CDriverD3D::CDriverD3D()
 	_VolatileIndexBufferRAM[0]= new CVolatileIndexBuffer;
 	_VolatileIndexBufferRAM[1]= new CVolatileIndexBuffer;
 	_VolatileIndexBufferAGP[0]= new CVolatileIndexBuffer;
-	_VolatileIndexBufferAGP[1]= new CVolatileIndexBuffer;
+	_VolatileIndexBufferAGP[1]= new CVolatileIndexBuffer;	
 }
 
 // ***************************************************************************
@@ -246,7 +246,12 @@ void CDriverD3D::resetRenderVariables()
 	for (i=0; i<MaxTexture; i++)
 	{
 		if ((uint32)(_TexturePtrStateCache[i].Texture) != 0xcccccccc)
-			touchRenderVariable (&(_TexturePtrStateCache[i]));
+		{
+			touchRenderVariable (&(_TexturePtrStateCache[i]));			
+			// reset texture because it may reference an old render target
+			CTexturePtrState &textureState = (CTexturePtrState &)(_TexturePtrStateCache[i]);
+			textureState.Texture = NULL;
+		}
 	}
 	for (i=0; i<MaxSampler; i++)
 	{
@@ -777,7 +782,7 @@ static void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wPara
 						driver->_WindowX = rect.left;
 						driver->_WindowY = rect.top;
 					}
-				}
+				}				
 			}
 			// This is the window itself
 			else if (sameWindow)
@@ -1800,11 +1805,10 @@ bool CDriverD3D::reset (const GfxMode& mode)
 		nlassert ((*ite)->DrvTexture != NULL);
 		CTextureDrvInfosD3D *info = static_cast<CTextureDrvInfosD3D*>(static_cast<ITextureDrvInfos*>((*ite)->DrvTexture));
 		if (info->RenderTarget)
-		{
+		{			
 			// Remove it
 			delete *ite;
 		}
-
 		ite = iteNext;
 	}
 

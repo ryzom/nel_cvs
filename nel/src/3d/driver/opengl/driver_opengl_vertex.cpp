@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.46 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.47 2004/04/08 16:12:42 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -148,8 +148,11 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 			*it= VB.DrvInfos = info;
 			
 			// Preferred memory
+			CVertexBuffer::TPreferredMemory preferred = VB.getPreferredMemory ();
+			if ((preferred == CVertexBuffer::RAMVolatile) || (preferred == CVertexBuffer::AGPVolatile))
+				preferred = CVertexBuffer::RAMPreferred;
 			const uint size = VB.capacity()*VB.getVertexSize();
-			uint preferredMemory = _Extensions.DisableHardwareVertexArrayAGP?CVertexBuffer::RAMPreferred:VB.getPreferredMemory ();
+			uint preferredMemory = _Extensions.DisableHardwareVertexArrayAGP?CVertexBuffer::RAMPreferred:preferred;
 			while (preferredMemory != CVertexBuffer::RAMPreferred)
 			{
 				// Vertex buffer hard

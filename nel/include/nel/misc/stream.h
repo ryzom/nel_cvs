@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.44 2001/07/09 17:17:49 corvazier Exp $
+ * $Id: stream.h,v 1.45 2001/07/10 08:59:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -567,7 +567,7 @@ private:
 		{
 			for(sint i=0;i<len;i++)
 			{
-				__iterator it = cont.insert(cont.end());
+				__iterator it = cont.insert(cont.end(), __value_type());
 				serial(const_cast<__value_type&>(*it));
 			}
 		}

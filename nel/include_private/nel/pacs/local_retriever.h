@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.3 2001/05/23 11:57:19 legros Exp $
+ * $Id: local_retriever.h,v 1.4 2001/05/25 10:00:35 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "nel/misc/aabbox.h"
 
+#include "nel/pacs/vector_2s.h"
 #include "nel/pacs/surface_quad.h"
 #include "nel/pacs/chain.h"
 #include "nel/pacs/retrievable_surface.h"
@@ -159,14 +160,6 @@ protected:
 	/// The tips making links between different chains.
 	std::vector<CTip>					_Tips;
 
-/*
-	/// The axis aligned bounding box of the zone. Obsolete.
-	NLMISC::CAABBox						_BBox;
-
-	/// The id of the zone. Obsolete.
-	sint32								_ZoneId;
-*/
-
 	/// The tips on the edges of the zone.
 	std::vector<uint16>					_EdgeTips[4];
 
@@ -212,23 +205,17 @@ private:
 		}
 	};
 
+	struct CIntersectionMarker
+	{
+		float	T;
+		uint16	OChain;
+		uint16	Edge;
+	};
+
 public:
-/*
-	/// Sets the bbox of the local retriever. Obsolete since local retrievers are now CVector::Null centered...
-	void								setBBox(const NLMISC::CAABBox &box) { _BBox = box; }
-	/// Sets the ZoneId of the local retriever. Obsolete since only instances have ids...
-	void								setZoneId (sint32 id) { _ZoneId = id; }
-*/
 
 	/// @name Selectors
 	// @{
-
-/*
-	/// Gets the bbox of the retriever. Obsolete.
-	const NLMISC::CAABBox				&getBBox() const { return _BBox; }
-	/// Gets the ZoneId of the retriever. Obsolete.
-	sint32								getZoneId() const { return _ZoneId; }
-*/
 
 	/// Returns the chain tips inside the local retrievers.
 	const std::vector<CTip>				&getTips() const { return _Tips; }
@@ -283,7 +270,8 @@ public:
 	 * the left and right surfaces id and the edge on which the chain is stuck
 	 */
 	sint32								addChain(const std::vector<NLMISC::CVector> &vertices,
-												 sint32 left, sint32 right, sint edge);
+												 sint32 left, sint32 right, sint edge,
+												 std::vector<COrderedChain3f> &fullChains);
 
 	/// Builds topologies tables.
 	void								computeTopologies();
@@ -327,7 +315,9 @@ protected:
 
 	/// Retrieves a position inside the retriever (from the local position.)
 	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable) const;
-	
+
+	/// Finds a path in a given surface, from the point A to the point B.
+	void								findPath(const CLocalPosition &A, const CLocalPosition &B, std::vector<CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst) const;
 };
 
 }; // NLPACS

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.11 2001/05/23 11:57:02 legros Exp $
+ * $Id: local_retriever.cpp,v 1.12 2001/05/25 10:00:45 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,8 @@ sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 }
 
 sint32	NLPACS::CLocalRetriever::addChain(const std::vector<NLMISC::CVector> &vertices,
-										  sint32 left, sint32 right, sint edge)
+										  sint32 left, sint32 right, sint edge,
+										 vector<COrderedChain3f> &fullChains)
 {
 	sint32		newId = _Chains.size();
 	_Chains.resize(newId+1);
@@ -90,7 +91,7 @@ sint32	NLPACS::CLocalRetriever::addChain(const std::vector<NLMISC::CVector> &ver
 		nlerror("in NLPACS::CLocalRetriever::addChain(): reached the maximum number of chains");
 
 	// make the chain and its subchains.
-	chain.make(vertices, left, right, _OrderedChains, (uint16)newId, edge);
+	chain.make(vertices, left, right, _OrderedChains, (uint16)newId, edge, fullChains);
 
 	CRetrievableSurface	*leftSurface = (left>=0) ? &(_Surfaces[left]) : NULL;
 	CRetrievableSurface	*rightSurface = (right>=0) ? &(_Surfaces[right]) : NULL;
@@ -163,11 +164,6 @@ void	NLPACS::CLocalRetriever::sortTips()
 void	NLPACS::CLocalRetriever::findEdgeTips()
 {
 	uint	i;
-
-/*
-	CVector	bmin = _BBox.getMin(),
-			bmax = _BBox.getMax();
-*/
 
 	// prepares some flags...
 	for (i=0; i<_Tips.size(); ++i)
@@ -328,8 +324,6 @@ void	NLPACS::CLocalRetriever::translate(const NLMISC::CVector &translation)
 		_Surfaces[i].translate(translation);
 	for (i=0; i<_Tips.size(); ++i)
 		_Tips[i].translate(translation);
-
-//	_BBox.setCenter(_BBox.getCenter()+translation);
 }
 
 void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
@@ -345,8 +339,6 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	f.serialCont(_OrderedChains);
 	f.serialCont(_Surfaces);
 	f.serialCont(_Tips);
-//	f.serial(_BBox);
-//	f.serial(_ZoneId);
 	for (i=0; i<4; ++i)
 		f.serialCont(_EdgeTips[i]);
 	for (i=0; i<4; ++i)
@@ -449,6 +441,30 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 	}
 }
 
+void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosition &A, const NLPACS::CLocalRetriever::CLocalPosition &B, std::vector<NLPACS::CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst) const
+{
+	if (A.Surface != B.Surface)
+	{
+		nlwarning("in NLPACS::CLocalRetriever::findPath()");
+		nlerror("Try to find a path between 2 points that are not in the same surface (A=%d, B=%d)", A.Surface, B.Surface);
+	}
+
+	_ChainQuad.selectEdges(A.Estimation, B.Estimation, cst);
+
+	vector<CIntersectionMarker>	intersections;
+
+	uint	i, j;
+
+	for (i=0; i<cst.EdgeChainEntries.size(); ++i)
+	{
+		CEdgeChainEntry		&entry = cst.EdgeChainEntries[i];
+		const COrderedChain	&chain = _OrderedChains[entry.OChainId];
+
+		for (j=entry.EdgeStart; j<entry.EdgeEnd; ++j)
+		{
+		}
+	}
+}
 
 
 // ***************************************************************************

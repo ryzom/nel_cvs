@@ -1,7 +1,7 @@
 /** \file chain_quad.h
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: chain_quad.h,v 1.2 2001/05/25 10:00:35 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,6 +81,15 @@ public:
 	 * \return number of edgechain found. stored in cst.EdgeChainEntries (array cleared first).
 	 */
 	sint			selectEdges(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst) const;
+
+	/** look in the quad to select a list of chain from a bbox.
+	 * NB: The outpout do not contains any redundant edge. A OChain appears only one time in the result.
+	 * \param start the starting point of the selection segment.
+	 * \param end the ending point of the selection segment.
+	 * \param cst the array of CEdgeChainEntry to fill. contain also OChainLUT, an array for internal use. In: must be filled with 0xFFFF. Out: still filled with 0xFFFF.
+	 * \return number of edgechain found. stored in cst.EdgeChainEntries (array cleared first).
+	 */
+	sint			selectEdges(CVector start, CVector end, CCollisionSurfaceTemp &cst) const;
 
 
 	/// serial.

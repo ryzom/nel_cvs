@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.8 2001/05/22 16:41:41 legros Exp $
+ * $Id: chain.cpp,v 1.9 2001/05/25 10:00:45 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,17 @@ static inline bool	isEqual(const CVector &a, const CVector &b)
 }
 
 
+// COrderedChain3f methods implementation
+
+void	NLPACS::COrderedChain3f::serial(IStream &f)
+{
+	f.serialCont(_Vertices);
+	f.serial(_Forward);
+	f.serial(_ParentId);
+}
+
+// end of COrderedChain3f methods implementation
+
 // COrderedChain methods implementation
 
 // translates the ordered chain by the vector translation
@@ -117,7 +128,8 @@ void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
 // the chains vector is the vector where to store generated ordered chains.
 // thisId is the current id of the CChain, and edge is the number of the edge the CChain belongs to (-1
 // if none.)
-void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId, sint edge)
+void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId, sint edge,
+							 vector<COrderedChain3f> &fullChains)
 {
 	sint		first = 0, last = 0, i;
 
@@ -147,21 +159,25 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 		_SubChains.push_back((uint16)subChainId);
 
 		// and creates a new COrderedChain
-		chains.resize(chains.size()+1);
-		COrderedChain	&subchain = chains.back();
-		subchain._Vertices.reserve(last-first+1);
-		subchain._Forward = forward;
-		subchain._ParentId = thisId;
+		fullChains.resize(fullChains.size()+1);
+		COrderedChain3f	&subchain3f = fullChains.back();
+		subchain3f._Vertices.reserve(last-first+1);
+		subchain3f._Forward = forward;
+		subchain3f._ParentId = thisId;
 
 		// and then copies the vertices (sorted, btw!)
 		if (forward)
 			for (i=first; i<=last; ++i)
-				subchain._Vertices.push_back(CVector2s(vertices[i]));
+				subchain3f._Vertices.push_back(vertices[i]);
 		else
 			for (i=last; i>=first; --i)
-				subchain._Vertices.push_back(CVector2s(vertices[i]));
+				subchain3f._Vertices.push_back(vertices[i]);
 
 		first = last;
+
+		chains.resize(chains.size()+1);
+		COrderedChain	&subchain = chains.back();
+		subchain.pack(subchain3f);
 	}
 }
 

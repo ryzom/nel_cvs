@@ -231,6 +231,14 @@ SOURCE=.\pacs\surface_quad.cpp
 
 SOURCE=..\include_private\nel\pacs\surface_quad.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\pacs\vector_2s.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include_private\nel\pacs\vector_2s.h
+# End Source File
 # End Group
 # Begin Group "User"
 

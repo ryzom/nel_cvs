@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.2 2001/05/22 16:41:12 legros Exp $
+ * $Id: chain.h,v 1.3 2001/05/25 10:00:35 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,53 @@ namespace NLPACS
  * A list of ordered vertices, partially delimiting 2 different surfaces.
  * In the vertex list, we consider the following order
  *    v1 < v2 iff  v1.x < v2.x  ||  v1.x == v2.x && v1.y < v2.y  ||  v1.x == v2.x && v1.y == v2.y && v1.z < v2.z
+ * The vertices composing the chain are actual CVector (12 bytes per vertex.)
+ * \author Benjamin Legros
+ * \author Nevrax France
+ * \date 2001
+ */
+class COrderedChain3f
+{
+protected:
+	friend class CChain;
+	friend class CChainCycle;
+	friend class CRetrievableSurface;
+
+	/// The vertices of the chain, ordered following x growth.
+	std::vector<NLMISC::CVector>		_Vertices;
+
+	/// Set if the chain should be read forward within the parent CChain (for sequential access to vertices.)
+	bool								_Forward;
+
+	/// The parent chain Id.
+	uint16								_ParentId;
+
+public:
+	/// Returns the vertices of the chain
+	const std::vector<NLMISC::CVector>	&getVertices() const { return _Vertices; }
+
+	/// Returns true if the chain should be accessed forward within the parent CChain (see _Forward.)
+	bool								isForward() const { return _Forward; }
+
+	/// Returns the parent chain Id of this ordered chain.
+	uint16								getParentId() const { return _ParentId; }
+
+	void								translate(const NLMISC::CVector &translation)
+	{
+		uint	i;
+		for (i=0; i<_Vertices.size(); ++i)
+			_Vertices[i] += translation;
+	}
+
+	void								serial(NLMISC::IStream &f);
+};
+
+/**
+ * A list of ordered vertices, partially delimiting 2 different surfaces.
+ * In the vertex list, we consider the following order
+ *    v1 < v2 iff  v1.x < v2.x  ||  v1.x == v2.x && v1.y < v2.y
+ * The vertices composing the chain are only 2 coordinates (x, y) wide, packed on 16 bits each
+ * (4 bytes per vertex.)
  * \author Benjamin Legros
  * \author Nevrax France
  * \date 2001
@@ -71,9 +118,20 @@ public:
 
 	void								translate(const NLMISC::CVector &translation);
 
-	void								serial(NLMISC::IStream &f);
-};
+	void								pack(const COrderedChain3f &chain)
+	{
+		uint	i;
+		const std::vector<NLMISC::CVector>	&vertices = chain.getVertices();
+		_Vertices.resize(vertices.size());
+		_Forward = chain.isForward();
+		_ParentId = chain.getParentId();
+		for (i=0; i<vertices.size(); ++i)
+			_Vertices[i] = CVector2s(vertices[i]);
+	}
 
+	void								serial(NLMISC::IStream &f);
+
+};
 
 /**
  * A list of ordered chains of vertices, delimiting 2 surfaces.
@@ -107,7 +165,8 @@ protected:
 	friend class CLocalRetriever;
 
 	/// Build the whole surface from a vector of CVector and the left and right surfaces.
-	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId, sint edges);
+	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId, sint edges,
+											 std::vector<COrderedChain3f> &fullChains);
 
 	void								setIndexOnEdge(uint edge, sint32 index);
 

@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.4 2001/05/22 16:41:41 legros Exp $
+ * $Id: chain_quad.cpp,v 1.5 2001/05/25 10:00:45 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -343,6 +343,87 @@ sint			CChainQuad::selectEdges(const NLMISC::CAABBox &bbox, CCollisionSurfaceTem
 	return nRes;
 }
 
+sint		CChainQuad::selectEdges(CVector start, CVector end, CCollisionSurfaceTemp &cst) const
+{
+	sint	nRes=0;
+	sint	i;
+	uint16	*ochainLUT= cst.OChainLUT;
+
+	// start: no edge found.
+	cst.EdgeChainEntries.clear();
+
+	if (end.x < start.x)
+		swap(start, end);
+
+	sint32	x0, x1, ya, yb;
+	sint	x, y;
+	float	fx, fxa, fxb, fya, fyb;
+
+	x0 = (sint32)floor(start.x / _QuadElementSize) - _X;
+	x1 = (sint32)ceil(end.x / _QuadElementSize) - _X;
+	fx = (x0+_X)*_QuadElementSize;
+
+	for (x=x0; x<x1; ++x)
+	{
+		fxa = (fx < start.x) ? start.x : fx;
+		fxb = (fx+_QuadElementSize > end.x) ? end.x : fx+_QuadElementSize;
+
+		fya = start.y+(end.y-start.y)*(fxa-start.x)/(end.x-start.x);
+		fyb = start.y+(end.y-start.y)*(fxb-start.x)/(end.x-start.x);
+
+		if (fya > fyb)
+			swap (fya, fyb);
+
+		ya = (sint32)floor(fya / _QuadElementSize) - _Y;
+		yb = (sint32)ceil(fyb / _QuadElementSize) - _Y;
+
+		for (y=ya; y<yb; ++y)
+		{
+			uint8	*quadNode= _Quad[y*_Width+x];
+
+			// no edgechain entry??
+			if(!quadNode)
+				continue;
+
+			// get edgechain entries
+			sint	numEdgeChainEntries= *((uint16*)quadNode);
+			quadNode+= sizeof(uint16);
+			CEdgeChainEntry		*ptrEdgeChainEntry= (CEdgeChainEntry*)quadNode;
+
+			// For each one, add it to the result list.
+			for(i=0;i<numEdgeChainEntries;i++)
+			{
+				uint16	ochainId= ptrEdgeChainEntry[i].OChainId;
+
+				// if ochain not yet inserted.
+				if(ochainLUT[ochainId]==0xFFFF)
+				{
+					// inc the list.
+					ochainLUT[ochainId]= nRes;
+					cst.EdgeChainEntries.push_back(ptrEdgeChainEntry[i]);
+					nRes++;
+				}
+				else
+				{
+					// extend the entry in the list.
+					uint16 id= ochainLUT[ochainId];
+					CEdgeChainEntry		&ece= cst.EdgeChainEntries[id];
+					ece.EdgeStart= min(ece.EdgeStart, ptrEdgeChainEntry[i].EdgeStart);
+					ece.EdgeEnd= max(ece.EdgeEnd, ptrEdgeChainEntry[i].EdgeEnd);
+				}
+			}
+		}
+	}
+
+	// reset LUT to 0xFFFF for all ochains selected.
+	for(i=0;i<nRes;i++)
+	{
+		uint16	ochainId= cst.EdgeChainEntries[i].OChainId;
+		ochainLUT[ochainId]= 0xFFFF;
+	}
+
+	return nRes;
+}
 
 // ***************************************************************************
 void		CChainQuad::serial(NLMISC::IStream &f)

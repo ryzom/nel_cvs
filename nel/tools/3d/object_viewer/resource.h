@@ -181,6 +181,7 @@
 #define IDC_ATTR_BITMAP                 1081
 #define IDD_PICK_SOUND                  1081
 #define IDC_CONSTANT_VALUE_POS          1082
+#define IDD_CHOOSE_LAG                  1082
 #define IDC_AVAILABLE_TARGET            1086
 #define IDC_PARTICLE_COLOR              1087
 #define IDC_BINDABLE_TYPE               1088
@@ -263,6 +264,7 @@
 #define IDC_BUTTON1                     1170
 #define IDC_MUTE                        1171
 #define IDC_PLAY_SOUND                  1171
+#define IDC_LAG                         1172
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -335,16 +337,16 @@
 #define IDM_SOUND                       32857
 #define ID_HELP_ABOUTOBJECTVIEWER       32858
 #define IDM_LB_EXTERN_ID                32859
-#define ID_FILE_LOADINSTANCEGROUP       32860
 #define ID_FILE_BINDSCENEANIMATION      32861
+#define IDM_SET_LAG                     32862
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1082
-#define _APS_NEXT_COMMAND_VALUE         32862
-#define _APS_NEXT_CONTROL_VALUE         1172
+#define _APS_NEXT_RESOURCE_VALUE        1083
+#define _APS_NEXT_COMMAND_VALUE         32863
+#define _APS_NEXT_CONTROL_VALUE         1173
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

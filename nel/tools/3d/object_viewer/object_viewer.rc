@@ -775,6 +775,17 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,142,3,58,42
 END
 
+IDD_CHOOSE_LAG DIALOG DISCARDABLE  0, 0, 153, 36
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "choose lag time"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,101,2,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,101,18,50,14
+    EDITTEXT        IDC_LAG,4,7,67,15,ES_AUTOHSCROLL
+    LTEXT           "ms",IDC_STATIC,77,10,11,9
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1071,6 +1082,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 207
     END
+
+    IDD_CHOOSE_LAG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 146
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 29
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1270,7 +1289,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Load config...",              ID_FILE_LOADCONFIG
         MENUITEM "Save config...",              ID_FILE_SAVECONFIG
-        MENUITEM "Load instance group",         ID_FILE_LOADINSTANCEGROUP
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
         MENUITEM "Bind scene animation",        ID_FILE_BINDSCENEANIMATION
@@ -1281,6 +1299,8 @@ BEGIN
         MENUITEM "&Set background...",          ID_VIEW_SETBACKGROUND
         MENUITEM SEPARATOR
         MENUITEM "&Reset camera",               ID_VIEW_RESET_CAMERA
+        MENUITEM SEPARATOR
+        MENUITEM "Set lag",                     IDM_SET_LAG
     END
     POPUP "&Scene"
     BEGIN

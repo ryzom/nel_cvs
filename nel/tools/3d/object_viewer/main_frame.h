@@ -86,14 +86,8 @@ public:
 	afx_msg void OnEnableElementZrotate();
 	afx_msg void OnFileExit();
 	afx_msg void OnFileLoadconfig();
-	afx_msg void OnFileOpen();
-	afx_msg void OnLoadInstanceGroup();
+	afx_msg void OnFileOpen();	
 	afx_msg void OnFileSaveconfig();
-	afx_msg void OnInstanciateLocated();
-	afx_msg void OnMenuDelete();
-	afx_msg void OnMenuLoadPs();
-	afx_msg void OnMenuNewlocated();
-	afx_msg void OnMenuSavePs();
 	afx_msg void OnViewFirstpersonmode();
 	afx_msg void OnViewObjectmode();
 	afx_msg void OnResetCamera();
@@ -116,6 +110,7 @@ public:
 	afx_msg void OnUpdateEditZ(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditMoveelement(CCmdUI* pCmdUI);
 	afx_msg void OnHelpAboutobjectviewer();
+	afx_msg void OnSetLag();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

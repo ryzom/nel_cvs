@@ -7,6 +7,7 @@
 #include "set_value_dlg.h"
 #include "particle_dlg.h"
 #include "about_dialog.h"
+#include "choose_lag.h"
 
 #include <nel/misc/file.h>
 
@@ -123,13 +124,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_EXIT, OnFileExit)
 	ON_COMMAND(ID_FILE_LOADCONFIG, OnFileLoadconfig)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
-	ON_COMMAND(ID_FILE_SAVECONFIG, OnFileSaveconfig)
-	ON_COMMAND(ID_FILE_LOADINSTANCEGROUP, OnLoadInstanceGroup)
-	ON_COMMAND(ID_INSTANCIATE_LOCATED, OnInstanciateLocated)
-	ON_COMMAND(ID_MENU_DELETE, OnMenuDelete)
-	ON_COMMAND(ID_MENU_LOAD_PS, OnMenuLoadPs)
-	ON_COMMAND(ID_MENU_NEWLOCATED, OnMenuNewlocated)
-	ON_COMMAND(ID_MENU_SAVE_PS, OnMenuSavePs)
+	ON_COMMAND(ID_FILE_SAVECONFIG, OnFileSaveconfig)	
 	ON_COMMAND(ID_VIEW_FIRSTPERSONMODE, OnViewFirstpersonmode)
 	ON_COMMAND(ID_VIEW_OBJECTMODE, OnViewObjectmode)
 	ON_COMMAND(ID_VIEW_RESET_CAMERA, OnResetCamera)
@@ -152,6 +147,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Z, OnUpdateEditZ)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVEELEMENT, OnUpdateEditMoveelement)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
+	ON_COMMAND(IDM_SET_LAG, OnSetLag)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -483,11 +479,12 @@ void CMainFrame::OnFileOpen()
 	update ();
 
 	// Create a dialog
-	static char BASED_CODE szFilter[] = "NeL Shape Files (*.shape)|*.shape|All Files (*.*)|*.*||";
+	static char BASED_CODE szFilter[] = "NeL Shape Files (*.shape)|*.shape|Instances Groups (*.ig)|*.ig|All Files (*.*)|*.*||";
 	CFileDialog fileDlg( TRUE, ".shape", "*.shape", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
 	if (fileDlg.DoModal()==IDOK)
 	{
-
+		// test wether it is a single shape or an intance group
+		//if ( std::string(fileDlg.GetPathName()).find("
 		// Create a dialog
 		static char BASED_CODE szFilter2[] = "NeL Skeleton Files (*.skel)|*.skel|All Files (*.*)|*.*||";
 		CFileDialog fileDlg2 ( TRUE, ".skel", "*.skel", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter2);
@@ -551,35 +548,7 @@ void CMainFrame::OnFileSaveconfig()
 	}
 }
 
-void CMainFrame::OnInstanciateLocated() 
-{
-	// TODO: Add your command handler code here
-	
-}
 
-void CMainFrame::OnMenuDelete() 
-{
-	// TODO: Add your command handler code here
-	
-}
-
-void CMainFrame::OnMenuLoadPs() 
-{
-	// TODO: Add your command handler code here
-	
-}
-
-void CMainFrame::OnMenuNewlocated() 
-{
-	// TODO: Add your command handler code here
-	
-}
-
-void CMainFrame::OnMenuSavePs() 
-{
-	// TODO: Add your command handler code here
-	
-}
 
 void CMainFrame::OnViewFirstpersonmode() 
 {
@@ -762,7 +731,13 @@ void CMainFrame::OnHelpAboutobjectviewer()
 }
 
 
-void CMainFrame::OnLoadInstanceGroup()
+void CMainFrame::OnSetLag()
 {
-
+CChooseLag cl;
+cl.m_LagTime = ObjView->getLag();
+if (cl.DoModal() == IDOK)
+{
+	ObjView->setLag(cl.m_LagTime);
 }
+}
+

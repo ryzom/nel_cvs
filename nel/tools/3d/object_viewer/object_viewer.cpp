@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.34 2001/09/04 16:19:34 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.35 2001/09/05 10:04:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include <3d/skeleton_model.h>
 #include <3d/init_3d.h>
 
+#include <nel/misc/common.h>
 #include <nel/misc/file.h>
 #include <nel/misc/path.h>
 #include <nel/misc/time_nl.h>
@@ -544,6 +545,13 @@ void CObjectViewer::go ()
 		
 		CSoundSystem::setListenerMatrix(_MouseListener.getViewMatrix());
 		CSoundSystem::poll();
+
+
+		// simulate lag
+		if (_Lag)
+		{
+			NLMISC::nlSleep(_Lag);
+		}
 
 	}
 	while (!CNELU::AsyncListener.isKeyPushed(KeyESCAPE)&&CNELU::Driver->isActive());

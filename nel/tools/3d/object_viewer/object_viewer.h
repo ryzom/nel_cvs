@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.17 2001/08/09 15:21:23 corvazier Exp $
+ * $Id: object_viewer.h,v 1.18 2001/09/05 10:04:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,7 +209,11 @@ public:
 	/// remove an object that was registered with registerMainLoopCallBack()
 	void removeMainLoopCallBack(IMainLoopCallBack *i) ;
 	  
+	/// set the lag in milliseconds between each frame; 0 is the default
+	void setLag(uint32 milliSec) { _Lag = milliSec; }
 
+	/// get the lag in milliseconds
+	uint32 getLag() const		  { return _Lag; }
 
 private:
 
@@ -233,7 +237,8 @@ private:
 	NL3D::CFontManager							_FontManager;
 	NL3D::CFontGenerator						*_FontGenerator;
 	std::string									_FontPath;
-	std::vector<IMainLoopCallBack *>			_CallBackList ;
+	std::vector<IMainLoopCallBack *>			_CallBackList;
+	uint32										_Lag; 
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

@@ -2,6 +2,23 @@
 
 -----------------------------------------------------------------------------------------------------
 
+SUMMARY
+
+EXPORT USER GUIDE
+
+* EXPORT DATA FOR THE LOCAL CLIENT
+* EXPORT DATA IN THE GAMEDATA DIRECTORY
+* EXPORT DSS FILES FROM PHOTOSHOP
+* EXPORT LANDSCAPE TEXTURES
+* EXPORT A SKELETON
+* EXPORT A SKELETON TEMPLATE WEIGHT
+* EXPORT AN ANIMATION
+* EXPORT A ZONE
+
+TECHNICAL NOTES ABOUT EXPORT PROCESSES
+
+-----------------------------------------------------------------------------------------------------
+
 DIRECTORIES
 
 There is 4 main directories:
@@ -13,23 +30,28 @@ build_gamedata/ is the root directory of the build data system
 
 -----------------------------------------------------------------------------------------------------
 
-SUMMARY
 
-* EXPORT DATA FOR THE LOCAL CLIENT
-* EXPORT DATA IN THE GAMEDATA DIRECTORY
-* EXPORT DSS FILES FROM PHOTOSHOP
-* EXPORT LANDSCAPE TEXTURES
-* EXPORT A SKELETON
-* EXPORT A SKELETON TEMPLATE WEIGHT
-* EXPORT AN ANIMATION
-* EXPORT A ZONE
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------
+
+**** EXPORT USER GUIDE ****
 
 -----------------------------------------------------------------------------------------------------
 
 * EXPORT DATA FOR THE LOCAL CLIENT
 
 The data for your local client are stored in the client/data directory.
-You can export here your data to test it with your client.
+You can manually export here your data to test it with your client.
 
 -----------------------------------------------------------------------------------------------------
 
@@ -81,14 +103,14 @@ Automatic process:
 Clear:
 The clear process will delete build_gamedata/skel/skel/*.*
 
-Update: 
-Does nothing
-
-Build:
-The build process will open each max projects placed in the folder database/Stuff/<race>/Agents/Actors/<sexe/bot>/animation/skeletons/.
+Export: 
+The export process will open each max projects placed in the folder database/Stuff/<race>/Agents/Actors/<sexe/bot>/animation/skeletons/.
 It will select "Bip01" in the project an export the skel. The root of the skeleton must have been named "Bip01".
 The skel files are exported in the build folder build_gamedata/skel/skel/.
 The name of the skel files are the name of the max projects.
+
+Build:
+Does nothing
 
 Install:
 The install process will copy build_gamedata/skel/skel/*.* in client/data/animations/skeletons
@@ -111,13 +133,13 @@ Automatic process:
 Clear:
 The clear process will delete build_gamedata/swt/swt/*.*
 
-Update: 
-Does nothing
-
-Build:
-The build process will open each max projects placed in the folder database/Stuff/<race>/Agents/Actors/<sexe/bot>/animation/swt/.
+Export: 
+The export process will open each max projects placed in the folder database/Stuff/<race>/Agents/Actors/<sexe/bot>/animation/swt/.
 It will select all the objects in the project an export the swt. The swt files are exported in the build folder build_gamedata/swt/swt/.
 The name of the swt files are the name of the max projects.
+
+Build:
+Does nothing
 
 Install:
 The install process will copy build_gamedata/swt/swt/*.* in client/data/animations/skeletons
@@ -137,3 +159,20 @@ The animation directory for the client is client/data/animations/anim.
 * EXPORT A ZONE
 
 In order to export a zone in your local client, you must install the zone builder project.
+
+
+-----------------------------------------------------------------------------------------------------
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------
+
+**** TECHNICAL NOTES ABOUT AUTOMATIC DATA PROCESSES ****
+
+-----------------------------------------------------------------------------------------------------
+
+The automatic data process are divided in several automatic data processes.
+
+Each automatic data processes must be located in a separated directory in build_gamedata/processes/

@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.10 2000/11/28 13:23:03 coutelas Exp $
+ * $Id: bitmap.cpp,v 1.11 2000/12/01 16:35:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1221,6 +1221,8 @@ void CBitmap::buildMiMaps()
 
 	if(PixelFormat!=RGBA) return;
 	if(_MipMapCount>0) return;
+	if(!NLMISC::isPowerOf2(_Width)) return;
+	if(!NLMISC::isPowerOf2(_Height)) return;
 	
 	uint32 w = _Width;
 	uint32 h = _Height;
@@ -1290,14 +1292,12 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 		return;
 	}
 	
-	if(!NLMISC::isPowerOf2(nNewWidth)) return;
-	if(!NLMISC::isPowerOf2(nNewHeight)) return;
-
 	std::vector<uint8> pDestui;
 	pDestui.resize(nNewWidth*nNewHeight*4);
 	NLMISC::CRGBA *pDestRgba = (NLMISC::CRGBA*)&pDestui[0];
 
 	resamplePicture32 ((NLMISC::CRGBA*)&_Data[0][0], pDestRgba, _Width, _Height, nNewWidth, nNewHeight);
+	NLMISC::contReset(_Data[0]); // free memory
 	_Data[0] =  pDestui;
 
 	// Rebuilding mipmaps
@@ -1307,6 +1307,29 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 	}
 }
 
+
+/*-------------------------------------------------------------------*\
+							resize
+\*-------------------------------------------------------------------*/
+void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight)
+{
+	// Deleting mipmaps
+	if(_MipMapCount!=0)
+	{
+		for(uint32 i=1; i<_MipMapCount; i++)
+		{
+			NLMISC::contReset(_Data[i]); // free memory
+			_Data[i].resize(1);
+		}
+		_MipMapCount = 0;
+	}
+
+	_Width = nNewWidth;
+	_Height = nNewHeight;
+	
+	NLMISC::contReset(_Data[0]); // free memory
+	_Data[0].resize(nNewWidth*nNewHeight*4);
+}
 
 
 /*-------------------------------------------------------------------*\

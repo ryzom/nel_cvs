@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.11 2000/12/01 16:35:34 corvazier Exp $
+ * $Id: landscape.cpp,v 1.12 2000/12/01 15:54:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,10 +56,17 @@ public:
 		for (int x=0; x<16; x++)
 		{
 			_Data[0][(x*4)]=0xff;
-			_Data[0][(x*4*16*4)]=0xff;
+			_Data[0][(x*4)+1]=0xff;
+			_Data[0][(x*4)+2]=0xff;
+
+			_Data[0][(x*16*4)]=0xff;
+			_Data[0][(x*16*4)+1]=0xff;
+			_Data[0][(x*16*4)+2]=0xff;
+
 			_Data[0][(x*4)+(x*4*16)]=0xff;
 			_Data[0][(x*4)+(x*4*16)+1]=0xff;
 			_Data[0][(x*4)+(x*4*16)+2]=0xff;
+
 			_Data[0][(16*4-x*4)+(x*4*16)]=0xff;
 			_Data[0][(16*4-x*4)+(x*4*16)+1]=0xff;
 			_Data[0][(16*4-x*4)+(x*4*16)+2]=0xff;

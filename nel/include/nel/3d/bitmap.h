@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.10 2000/11/23 13:26:30 berenguier Exp $
+ * $Id: bitmap.h,v 1.11 2000/12/01 16:35:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -328,6 +328,16 @@ public:
 	 * \param nNewHeight height after resample
 	 */	
 	void resample (sint32 nNewWidth, sint32 nNewHeight);
+	
+		
+	/** 
+	 * Resize the bitmap. If mipmaps exist they are deleted and not rebuilt.
+	 * This is not a crop. Pixels are lost after resize.
+	 *
+	 * \param nNewWidth width after resize
+	 * \param nNewHeight height after resize
+	 */	
+	void resize (sint32 nNewWidth, sint32 nNewHeight);
 
 
 	/** 

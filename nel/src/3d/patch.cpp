@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.18 2000/11/30 10:54:58 berenguier Exp $
+ * $Id: patch.cpp,v 1.19 2000/12/01 16:35:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -826,11 +826,9 @@ CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass)
 	sint	tileNumber= Tiles[tileId].Tile[passNum];
 	if(tileNumber==0xFFFF)
 	{
-		// Diffuse tile 0 should never be NULL.
-		nlassert(pass!=0);
-		// In release, display a "fake".
+		// Display a "fake" only if pass 0.
 		if(pass==0)
-			return Zone->Landscape->getTileRenderPass(0, false);
+			return Zone->Landscape->getTileRenderPass(0xFFFF, false);
 		return NULL;
 	}
 	else

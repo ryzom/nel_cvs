@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * <File description>
  *
- * $Id: tile_element.cpp,v 1.1 2000/11/30 10:55:25 berenguier Exp $
+ * $Id: tile_element.cpp,v 1.2 2000/12/01 16:35:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,13 +35,15 @@ void	CTileElement::setTileOrient(sint i, uint8 orient)
 {
 	nlassert(i>=0 && i<=2);
 	nlassert(orient>=0 && orient<=3);
-	Flags&= ~(3<<(2*i));
-	Flags|= orient<<(2*i);
+	Flags&= ~(NL_TILE_ELM_MASK_ROTATE<<(NL_TILE_ELM_SIZE_ROTATE*i));
+	Flags|= orient<<(NL_TILE_ELM_SIZE_ROTATE*i+NL_TILE_ELM_OFFSET_ROTATE);
 }
-uint8	CTileElement::getTileOrient(sint i)
+
+
+uint8	CTileElement::getTileOrient(sint i) const
 {
 	nlassert(i>=0 && i<=2);
-	return (Flags>>(2*i)) &3;
+	return uint8((Flags>>(NL_TILE_ELM_SIZE_ROTATE*i+NL_TILE_ELM_OFFSET_ROTATE)) & ((1<<NL_TILE_ELM_SIZE_ROTATE)-1));
 }
 
 

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.7 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.8 2003/04/10 16:39:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,13 +136,13 @@ void	CPSRibbonBase::setSegDuration(TAnimationTime ellapsedTime)
 }
 
 //=======================================================	
-void	CPSRibbonBase::updateGlobals()
+void	CPSRibbonBase::updateGlobals(float realET)
 {
 	nlassert(!_Parametric);
 	nlassert(_Owner);
 	const uint size = _Owner->getSize();
 	if (!size) return;
-	const TAnimationTime currDate = _Owner->getOwner()->getSystemDate();
+	const TAnimationTime currDate = _Owner->getOwner()->getSystemDate() + realET;
 	if (currDate  - _LastUpdateDate >= _SegDuration)
 	{
 		if (_RibbonIndex == 0) _RibbonIndex = _NbSegs + EndRibbonStorage;
@@ -178,6 +178,7 @@ void	CPSRibbonBase::computeHermitteRibbon(uint index, NLMISC::CVector *dest, uin
 	TPosVect::iterator startIt = _Ribbons.begin() + (_NbSegs + 1 + EndRibbonStorage) * index;
 	TPosVect::iterator endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
 	TPosVect::iterator currIt  = startIt + _RibbonIndex;	
+	const TPosVect::const_iterator firstIt = currIt;
 	TPosVect::iterator nextIt  = currIt + 1;
 	if (nextIt == endIt) nextIt = startIt;
 	TPosVect::iterator nextNextIt = nextIt + 1;	
@@ -191,6 +192,7 @@ void	CPSRibbonBase::computeHermitteRibbon(uint index, NLMISC::CVector *dest, uin
 
 	float lambda = 0.f;
 	float lambdaStep = 1.f;
+	
 
 	for (;;)
 	{		
@@ -232,7 +234,14 @@ void	CPSRibbonBase::computeHermitteRibbon(uint index, NLMISC::CVector *dest, uin
 		nextIt = nextNextIt;
 		++nextNextIt;
 		if (nextNextIt == endIt) nextNextIt = startIt;
-		t1 = 0.5f * (*nextNextIt - *currIt);		
+		if (nextNextIt == firstIt)
+		{
+			t1 = *nextIt - *currIt;
+		}
+		else
+		{		
+			t1 = 0.5f * (*nextNextIt - *currIt);
+		}		
 	}
 }
 

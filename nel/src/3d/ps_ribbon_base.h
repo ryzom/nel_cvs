@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.3 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: ps_ribbon_base.h,v 1.4 2003/04/10 16:39:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,9 +94,13 @@ public:
 	float					getLODDegradation() const { return _LODDegradation; }
 
 protected:
+	typedef std::vector<NLMISC::CVector> TPosVect;
+	typedef	std::vector<float>			 TFloatVect; // all positions for each ribbons packed in a single vector
+	
 	uint32							  _NbSegs;
 	TAnimationTime					  _SegDuration;
 	bool							  _Parametric; // if this is set to true, then the owner has activated parametric motion.	
+
 	
 	/// inherited from CPSLocatedBindable
 	virtual void					newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
@@ -117,24 +121,28 @@ protected:
 												  );
 
 	/// Called each time the time of the system change in order to update the ribbons positions
-	void							updateGlobals();
+	void							updateGlobals(float realET);
 
 	/// must be called for the lod to apply (updates UsedNbSegs)
 	void                            updateLOD();
 
+	// get index of the ribbons head in the sampling vect
+	uint32							getRibbonIndex() const { return _RibbonIndex; }
+	// get sampling date for each pos of the ribbon
+	const TFloatVect				&getSamplingDate() const { return _SamplingDate; }
 	
 	/// value to use after lod computation
 	uint32							  _UsedNbSegs;
 	TAnimationTime					  _UsedSegDuration;
 	float							  _UsedSegLength;
 
-private:
-	typedef std::vector<NLMISC::CVector> TPosVect;
-	typedef	std::vector<float>			 TFloatVect; // all positions for each ribbons packed in a single vector
+private:	
 
-	TPosVect						  _Ribbons;	
 	TFloatVect					      _SamplingDate;
 	uint							  _RibbonIndex;  // indicate which is the first index for the ribbons head	
+	
+
+	TPosVect						  _Ribbons;		
 	TAnimationTime					  _LastUpdateDate;	
 	TRibbonMode						  _RibbonMode;
 	TInterpolationMode				  _InterpolationMode;

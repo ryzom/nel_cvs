@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.25 2001/01/10 11:13:02 berenguier Exp $
+ * $Id: zone.cpp,v 1.26 2001/01/11 13:55:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -658,7 +658,8 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 
 
 // ***************************************************************************
-// Code for Debug test Only..
+// DebugYoyo.
+// Code for Debug test Only.. Do not erase it, may be used later :)
 /*
 static	void	cleanTess(CTessFace *face)
 {
@@ -716,7 +717,7 @@ static	void	checkTess()
 
 
 // ***************************************************************************
-// TempYoyo.
+// DebugYoyo.
 //volatile sint pipo1;
 //volatile sint pipo2;
 void			CZone::refine()
@@ -725,7 +726,7 @@ void			CZone::refine()
 	// Must be 2^X-1.
 	static const	sint	hideRefineFreq= 7;
 
-	// TempYoyo.
+	// DebugYoyo.
 	// For the monkey bind test.
 	/*extern sint numFrames;
 	pipo1=(rand()>>12)&1;

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.24 2001/01/09 15:25:02 berenguier Exp $
+ * $Id: patch.h,v 1.25 2001/01/11 13:54:04 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -51,6 +51,7 @@ using NLMISC::CVector;
 
 class	CZone;
 class	CBezierPatch;
+class	ITexture;
 
 
 // ***************************************************************************
@@ -304,14 +305,29 @@ private:
 	void			appendFaceToTileRdrList(CTessFace *face);
 	void			removeFaceFromRenderList(CTessFace *face);
 
-	// Texture mgt.
+	/// Texture mgt.
+	// @{
 	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
-	// desired pass. NULL may be returned if the pass is not present (eg: no alpha for this tile...).
-	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);
+	// desired pass. NULL may be returned if the pass is not present (eg: no additive for this tile...).
+	// The tile lightmap is also required, to get the good lightmapped tile...
+	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass, ITexture *lightmap);
 	// For CTessFace::computeMaterial(). Return the orient/scalebias for the tile in the patchtexture, and the
 	// desired pass.
 	void			getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvScaleBias, bool &is256x256, uint8 &uvOff);
-	// For Render
+	// @}
+
+	// Tile LightMap mgt.
+	// @{
+	// for a given tile (accessed from the (ts,tt) coordinates), compute and get a lightmapId.
+	// lightmap returned is to be uses with getTileRenderPass(). The id returned must be stored.
+	uint		getTileLightMap(sint ts, sint tt, ITexture *&lightmap);
+	// tileLightMapId must be the id returned  by getTileLightMap().
+	void		getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias);
+	// tileLightMapId must be the id returned  by getTileLightMap().
+	void		releaseTileLightMap(uint tileLightMapId);
+	// @}
+
+	// For Render. Those methods compute the vertices for Driver (in CTessFace::CurrentVB).
 	sint			getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc);
 	sint			getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc);
 	void			computeTileVertex(CTessVertex *vert, ITileUv *uv, sint idUv);

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.30 2001/01/10 11:13:02 berenguier Exp $
+ * $Id: patch.cpp,v 1.31 2001/01/11 13:55:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -757,7 +757,15 @@ void			CPatch::computeTileVertex(CTessVertex *vert, ITileUv *uv, sint idUv)
 	//CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 0, uvpass.PUv0);
 	//CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 1, uvpass.PUv1);
 	*(CUV*)(CurVBPtr+CurUV0Off)= uvpass.PUv0;
-	*(CUV*)(CurVBPtr+CurUV1Off)= uvpass.PUv0;
+	*(CUV*)(CurVBPtr+CurUV1Off)= uvpass.PUv1;
+
+	// TempYoyo.
+	/*nlassert( ((CUV*)(CurVBPtr+CurUV1Off))->U!=1);
+	nlassert( ((CUV*)(CurVBPtr+CurUV1Off))->V!=1);
+	CUV		pipo;
+	pipo.U= 0.1;
+	pipo.V= 0.1;
+	*(CUV*)(CurVBPtr+CurUV1Off)= pipo;*/
 
 	// Compute color.
 	static CRGBA	col(255,255,255,255);
@@ -1118,7 +1126,7 @@ void			CPatch::serial(NLMISC::IStream &f)
 
 
 // ***************************************************************************
-CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass)
+CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass, ITexture *lightmap)
 {
 	nlassert(pass>=0 && pass<6);
 
@@ -1129,14 +1137,15 @@ CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass)
 	if(tileNumber==0xFFFF)
 	{
 		// Display a "fake" only if pass 0.
+		// Fake are NOT lightmapped!!
 		if(pass==0)
-			return Zone->Landscape->getTileRenderPass(0xFFFF, false, this);
+			return Zone->Landscape->getTileRenderPass(0xFFFF, false, NULL);
 		return NULL;
 	}
 	else
 	{
 		// return still may be NULL, in additive case.
-		return Zone->Landscape->getTileRenderPass(tileNumber, additive, this);
+		return Zone->Landscape->getTileRenderPass(tileNumber, additive, lightmap);
 	}
 }
 
@@ -1188,6 +1197,128 @@ void			CPatch::recreateTileUvs()
 		RdrTileRoot[i]=NULL;
 	Son0->recreateTileUvs();
 	Son1->recreateTileUvs();
+}
+
+	}
+}
+extern "C" void	NL3D_bilinearTileLightMap(CRGBA *tex);
+uint		CPatch::getTileLightMap(sint ts, sint tt, ITexture *&lightmap)
+// ***************************************************************************
+	// Compute the lightmap texture, with help of TileColors.
+	CRGBA	lightText[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE];
+	// Following code assume size of 5...
+	nlassert(NL_TILE_LIGHTMAP_SIZE==5);
+		}
+	// Get the tilecolors at the corners.
+	for(sint i=0;i<4;i++)
+
+		static	uint	lut[4]= {0, 4, 20, 24};
+		CTileColor	&tcol= TileColors[ (tt+(i>>1))*(OrderS+1) + (ts+(i&1)) ];
+	modulateTileLightmapPixelWithTileColors(ts, tt, s, t, dest);
+		// Blend the color.
+		CRGBA	col;
+		col.set565(tcol.Color565);
+		col.modulateFromui(col, tcol.Shade);
+		col.A=255;
+	sint	u, v;
+		lightText[lut[i]]= col;
+		// try to know if we must go on a neighbor patch (maybe false with bind X/1).
+		if( u<0 || u>=OrderS*NL_LUMEL_BY_TILE || v<0 || v>=OrderT*NL_LUMEL_BY_TILE)
+	// Bilinear!!!
+	NL3D_bilinearTileLightMap(lightText);
+			mustLookOnNeighbor= true;
+	return Zone->Landscape->getTileLightMap(lightText, lightmap);
+
+}
+void		CPatch::getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias)
+
+	Zone->Landscape->getTileLightMapUvInfo(tileLightMapId, uvScaleBias);
+	uint	ttDec= tt & 1;
+}
+void		CPatch::releaseTileLightMap(uint tileLightMapId)
+
+	Zone->Landscape->releaseTileLightMap(tileLightMapId);
+	{
+			// second compression
+				// Copy compressed data
+	if (UncompressedLumels.begin()!=UncompressedLumels.end())
+		contReset (UncompressedLumels);
+}
+
+// ***************************************************************************
+// ***************************************************************************
+// Functions (C/ASM).
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+#define		a00	tex[0]
+#define		a10	tex[1]
+#define		a20	tex[2]
+#define		a30	tex[3]
+#define		a40	tex[4]
+
+#define		a01	tex[5]
+#define		a11	tex[6]
+#define		a21	tex[7]
+#define		a31	tex[8]
+#define		a41	tex[9]
+
+#define		a02	tex[10]
+#define		a12	tex[11]
+#define		a22	tex[12]
+#define		a32	tex[13]
+#define		a42	tex[14]
+
+#define		a03	tex[15]
+#define		a13	tex[16]
+#define		a23	tex[17]
+#define		a33	tex[18]
+#define		a43	tex[19]
+
+#define		a04	tex[20]
+#define		a14	tex[21]
+#define		a24	tex[22]
+#define		a34	tex[23]
+#define		a44	tex[24]
+
+void	NL3D_bilinearTileLightMap(CRGBA *tex)
+{
+	// Fast bilinear of a 5x5 tile.
+	// Corners must be set.
+	// Later: pass it to ASM.
+
+	// Fill first column 0 and column 4.
+	a02.avg2(a00, a04);
+	a01.avg2(a00, a02);
+	a03.avg2(a02, a04);
+	a42.avg2(a40, a44);
+	a41.avg2(a40, a42);
+	a43.avg2(a42, a44);
+
+	// Fill Line 0.
+	a20.avg2(a00, a40);
+	a10.avg2(a00, a20);
+	a30.avg2(a20, a40);
+
+	// Fill Line 1.
+	a21.avg2(a01, a41);
+	a11.avg2(a01, a21);
+	a31.avg2(a21, a41);
+
+	// Fill Line 2. 
+	a22.avg2(a02, a42);
+	a12.avg2(a02, a22);
+	a32.avg2(a22, a42);
+
+	// Fill Line 3. 
+	a23.avg2(a03, a43);
+	a13.avg2(a03, a23);
+	a33.avg2(a23, a43);
+
+	// Fill Line 4. 
+	a24.avg2(a04, a44);
 	a14.avg2(a04, a24);
 		neighborEdge.MultipleBindNum= 0;
 	}

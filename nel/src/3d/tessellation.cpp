@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.27 2000/12/18 11:06:13 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.28 2001/01/11 13:55:23 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -293,7 +293,7 @@ void		CTessFace::updateErrorMetric()
 
 
 // ***************************************************************************
-void		CTessFace::initTileUv(sint pass, CParamCoord pointCoord, CParamCoord middle, CUV &uv)
+void		CTessFace::initTileUv0(sint pass, CParamCoord pointCoord, CParamCoord middle, CUV &uv)
 {
 	// Get good coordinate according to patch orientation.
 	uv.U= pointCoord.S<=middle.S? 0.0f: 1.0f;
@@ -350,6 +350,26 @@ void		CTessFace::initTileUv(sint pass, CParamCoord pointCoord, CParamCoord middl
 
 
 // ***************************************************************************
+void		CTessFace::initTileUv1(CParamCoord pointCoord, CParamCoord middle, CUV &uv)
+{
+	// Get good coordinate according to patch orientation.
+	uv.U= pointCoord.S<=middle.S? 0.0f: 1.0f;
+	uv.V= pointCoord.T<=middle.T? 0.0f: 1.0f;
+	
+	// Get Tile Lightmap Uv info: bias and scale.
+	CVector		uvScaleBias;
+	Patch->getTileLightMapUvInfo(TileMaterial->LightMapId, uvScaleBias);
+
+	// Scale the UV.
+	uv.U*= uvScaleBias.z;
+	uv.V*= uvScaleBias.z;
+	uv.U+= uvScaleBias.x;
+	uv.V+= uvScaleBias.y;
+}
+
+
+
+// ***************************************************************************
 void		CTessFace::computeTileMaterial()
 {
 	// 0. Compute TileId.
@@ -373,7 +393,6 @@ void		CTessFace::computeTileMaterial()
 	sint ts= ((sint)middle.S * (sint)Patch->OrderS) / 0x8000;
 	sint tt= ((sint)middle.T * (sint)Patch->OrderT) / 0x8000;
 	TileId= tt*Patch->OrderS + ts;
-	// TODO: verify the square patch assumption, and verify it can work with rectangular patch (4x8 patchs...)
 
 
 	// 1. Compute Tile Material.
@@ -391,10 +410,16 @@ void		CTessFace::computeTileMaterial()
 	{
 		sint	i;
 		TileMaterial= new CTileMaterial;
+
+		// First, build a lightmap for this tile, and get his id.
+		ITexture	*lightmap;	// local, used to get the correct render pass.
+		TileMaterial->LightMapId= Patch->getTileLightMap(ts, tt, lightmap);
+
 		// Fill pass of multi pass material.
 		for(i=0;i<NL3D_MAX_TILE_PASS;i++)
 		{
-			TileMaterial->Pass[i]= Patch->getTileRenderPass(TileId, i);
+			// Get the correct render pass, according to the tile number, the pass, and the lightmap.
+			TileMaterial->Pass[i]= Patch->getTileRenderPass(TileId, i, lightmap);
 		}
 		// Use NULL in TileMaterial->TilePass to know the format and bind PassToUv.
 		sint	uvcount=0;
@@ -415,6 +440,9 @@ void		CTessFace::computeTileMaterial()
 	//----------------
 	// Must allocate the base uv.
 	TileUvBase= allocTileUv(TileMaterial->TileUvFmt);
+	// Init LightMap UV!!
+	CUV			uvLightMapBase;
+	initTileUv1(PVBase, middle, uvLightMapBase);
 	// Init UV!
 	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
 	{
@@ -423,7 +451,9 @@ void		CTessFace::computeTileMaterial()
 		if(TileMaterial->Pass[i])
 		{
 			sint	uvpass= TileMaterial->PassToUv[i];
-			initTileUv(i, PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv0);
+			initTileUv0(i, PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv0);
+			// Copy lightmap part...
+			((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv1= uvLightMapBase;
 		}
 		// TODO_BUMP....
 	}
@@ -437,8 +467,14 @@ void		CTessFace::computeTileMaterial()
 	}
 	else
 	{
+		// Must allocate the left/right uv.
 		TileUvLeft= allocTileUv(TileMaterial->TileUvFmt);
 		TileUvRight= allocTileUv(TileMaterial->TileUvFmt);
+		// Init first the lightmap UVs.
+		CUV			uvLightMapLeft;
+		CUV			uvLightMapRight;
+		initTileUv1(PVLeft, middle, uvLightMapLeft);
+		initTileUv1(PVRight, middle, uvLightMapRight);
 		// Init UV!
 		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
 		{
@@ -447,8 +483,11 @@ void		CTessFace::computeTileMaterial()
 			if(TileMaterial->Pass[i])
 			{
 				sint	uvpass= TileMaterial->PassToUv[i];
-				initTileUv(i, PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv0);
-				initTileUv(i, PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv0);
+				initTileUv0(i, PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv0);
+				initTileUv0(i, PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv0);
+				// Copy lightmap part...
+				((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv1= uvLightMapLeft;
+				((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv1= uvLightMapRight;
 			}
 			// TODO_BUMP....
 		}
@@ -477,6 +516,8 @@ void	CTessFace::releaseTileMaterial()
 		delete TileUvRight;
 		TileUvLeft= NULL;
 		TileUvRight= NULL;
+		// Release the tile lightmap part.
+		Patch->releaseTileLightMap(TileMaterial->LightMapId);
 		delete TileMaterial;
 		TileMaterial= NULL;
 	}

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.25 2001/01/10 09:25:55 berenguier Exp $
+ * $Id: landscape.h,v 1.26 2001/01/11 13:54:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,10 +38,12 @@
 #include "nel/3d/primitive_block.h"
 #include "nel/3d/material.h"
 #include "nel/3d/tile_far_bank.h"
+#include "nel/3d/texture_near.h"
 #include <map>
 
 #define NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT (NL_MAX_TILES_BY_PATCH_EDGE_SHIFT+NL_NUM_PIXELS_ON_FAR_TILE_EDGE_SHIFT)
 #define NL_MAX_SIZE_OF_TEXTURE_EDGE (1<<NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT)		// Size max of a far texture edge in pixel
+
 
 namespace NL3D 
 {
@@ -50,6 +52,11 @@ namespace NL3D
 // ***************************************************************************
 // The maximum amount of different tiles in world.
 const	sint	NbTilesMax= 65536;
+// Size of a CTextureNear. 256 by default (works everywhere).
+// Texures must be square, because of uvscalebias...
+const	sint	TextureNearSize= 256;
+const	sint	NbTilesByLine= TextureNearSize/NL_TILE_LIGHTMAP_SIZE;
+const	sint	NbTilesByTexture= NbTilesByLine*NbTilesByLine;
 
 
 // ***************************************************************************
@@ -202,8 +209,8 @@ private:
 	CPatchRdrPass	*getFarRenderPass(CPatch* pPatch, uint farIndex, float& far1UVScale, float& far1UBias, float& far1VBias, bool& bRot);
 	// Free the render pass for a far texture here.
 	void freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint farIndex);
-	// Return the render pass for a tile Id, and a patch Near Lightmap Texture.
-	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass, CPatch *patch);
+	// Return the render pass for a tile Id, and a patch Lightmap.
+	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass, ITexture *lightmap);
 	// Return the UvScaleBias for a tile Id. uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
 	void			getTileUvScaleBias(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
 
@@ -263,6 +270,10 @@ private:
 	TTileRdrPassSet				TileRdrPassSet;
 	// The parrallel array of tile of those existing in TileBank. size of NbTilesMax.
 	std::vector<CTileInfo*>		TileInfos;
+	// The Lightmap for tiles.
+	typedef	NLMISC::CSmartPtr<CTextureNear>			PTextureNear;
+	std::vector<PTextureNear>	_TextureNears;
+	uint						_NFreeLightMaps;
 
 
 	// The Tile material.
@@ -300,6 +311,18 @@ private:
 	void			releaseTile(uint16 tileId);
 	ITexture		*findTileTexture(const std::string &textName);
 	CPatchRdrPass	*findTileRdrPass(const CPatchRdrPass &pass);
+
+	// Tile LightMap mgt.
+	// @{
+	// Compute and get a lightmapId.
+	// lightmap returned is to be uses with getTileRenderPass(). The id returned must be stored.
+	uint		getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE], ITexture *&lightmap);
+	// tileLightMapId must be the id returned  by getTileLightMap().
+	void		getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias);
+	// tileLightMapId must be the id returned  by getTileLightMap().
+	void		releaseTileLightMap(uint tileLightMapId);
+	// @}
+
 
 };
 

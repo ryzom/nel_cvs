@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * ARGB pixel format
  *
- * $Id: rgba.cpp,v 1.6 2000/10/25 08:37:39 corvazier Exp $
+ * $Id: rgba.cpp,v 1.7 2001/01/11 13:55:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,15 @@ void CRGBA::blendFromui(CRGBA &c0, CRGBA &c1, uint coef) // coef must be in [0,2
 	B = (c0.B*a2 + c1.B*a1) >>8;
 	A = (c0.A*a2 + c1.A*a1) >>8;
 }
+
+void	CRGBA::modulateFromui (CRGBA &c0, uint a)
+{
+	R = (c0.R*a) >>8;
+	G = (c0.G*a) >>8;
+	B = (c0.B*a) >>8;
+	A = (c0.A*a) >>8;
+}
+
 
 
 // ***************************************************************************

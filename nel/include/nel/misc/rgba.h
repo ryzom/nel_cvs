@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.9 2001/01/09 15:25:16 berenguier Exp $
+ * $Id: rgba.h,v 1.10 2001/01/11 13:54:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,9 +87,16 @@ public:
 	 * Blend two colors.
 	 * \param c0 Color 0.
 	 * \param c1 Color 1.
-	 * \param factor Blend factor. 0~255. 0 return c0 and 255 return c1.
+	 * \param coef Blend factor. 0~255. 0 return c0 and 255 return c1.
 	 */
-	void	blendFromui (CRGBA &c0, CRGBA &c1, uint factor); 
+	void	blendFromui (CRGBA &c0, CRGBA &c1, uint coef); 
+
+	/** 
+	 * Modulate colors with a constant.
+	 * \param c0 Color 0.
+	 * \param a E [0,255].  col*factor returned into this.
+	 */
+	void	modulateFromui (CRGBA &c0, uint a); 
 
 	/** 
 	 * Set colors.
@@ -121,6 +128,30 @@ public:
 		R= (R<<3) + (R>>2);
 		G= (G<<2) + (G>>4);
 		B= (B<<3) + (B>>2);
+	}
+
+
+	/**
+	 * Compute in this the average of 2 RGBA.
+	 */
+	void	avg2(const CRGBA &a, const CRGBA &b)
+	{
+		R= ((sint)a.R+(sint)b.R)>>1;
+		G= ((sint)a.G+(sint)b.G)>>1;
+		B= ((sint)a.B+(sint)b.B)>>1;
+		A= ((sint)a.A+(sint)b.A)>>1;
+	}
+
+	/**
+	 * Compute in this the average of 4 RGBA.
+	 * The average is "correct": +1 is added to the four color, to make a "round" like average.
+	 */
+	void	avg4(const CRGBA &a, const CRGBA &b, const CRGBA &c, const CRGBA &d)
+	{
+		R= ((sint)a.R+(sint)b.R+(sint)c.R+(sint)d.R+ 1)>>1;
+		G= ((sint)a.G+(sint)b.G+(sint)c.G+(sint)d.G+ 1)>>1;
+		B= ((sint)a.B+(sint)b.B+(sint)c.B+(sint)d.B+ 1)>>1;
+		A= ((sint)a.A+(sint)b.A+(sint)c.A+(sint)d.A+ 1)>>1;
 	}
 
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.30 2001/01/10 09:26:09 berenguier Exp $
+ * $Id: landscape.cpp,v 1.31 2001/01/11 13:55:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,7 @@ CLandscape::CLandscape()
 
 	_TileDistNear=100.f;
 	_RefineMode=true;
+	_NFreeLightMaps= 0;
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -515,7 +516,7 @@ void			CLandscape::loadTile(uint16 tileId)
 	// =======================
 	// Fill rdrpass.
 	CPatchRdrPass	pass;
-	// TODODODO: hulud neg alpha.
+	// TODO: hulud neg alpha.
 	if(true)
 		pass.BlendType= CPatchRdrPass::Alpha;
 	else
@@ -563,12 +564,21 @@ void			CLandscape::releaseTile(uint16 tileId)
 	CTileInfo	*tileInfo;
 	tileInfo= TileInfos[tileId];
 	nlassert(tileInfo!=NULL);
+
 	// "Release" the rdr pass.
 	if(tileInfo->AdditiveRdrPass)
 		tileInfo->AdditiveRdrPass->RefCount--;
 	if(tileInfo->DiffuseRdrPass)
 		tileInfo->DiffuseRdrPass->RefCount--;
-	// TODODO: do something with list of lightmapped version.
+
+	// Release the lighted render passes.
+	ItTileRdrPassPtrSet	itPtr;
+	for(itPtr= tileInfo->LightedRdrPass.begin(); itPtr!= tileInfo->LightedRdrPass.end(); itPtr++)
+	{
+		(*itPtr)->RefCount--;
+	}
+	// Delete those render passes...
+	tileInfo->LightedRdrPass.clear();
 
 	delete tileInfo;
 	TileInfos[tileId]= NULL;
@@ -576,22 +586,12 @@ void			CLandscape::releaseTile(uint16 tileId)
 
 
 // ***************************************************************************
-CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass, CPatch *patch)
+CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass, ITexture *lightmap)
 {
-	/*
-	// TODO_TEXTURE and TODO_BUMP.
-		Actually, there should be more than One RdrPass per tile.
-		The correct thing is: One per tuple  "tile - NearLightMapTexture".
-		Optimisations could be done by:
-			- have NearLightMapTexture of all patchs sticked together in multiple as big as possible texture.
-				(maybe only one??)
-
-		NB: a tile is himself a tuple of: diffuseTexture/bumpTexture/additiveTexture.
-	*/
-
 	CTileInfo	*tile= TileInfos[tileId];
 
 	// If not here, create it.
+	//========================
 	if(tile==NULL)
 	{
 		// Force loading of tile.
@@ -602,14 +602,18 @@ CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass
 	}
 
 	// Retrieve.
+	//========================
 	if(additiveRdrPass)
+	{
+		// NB: additive pass is not lighted by the lightmap, so there is no lighted version of this rednerpass.
 		return tile->AdditiveRdrPass;
+	}
 	else
 	{
-		// If no patch id given, return the one with no LightMap.
-		//if(!patch || !patch->NearLightMap)
+		// If no lightmap is given, return the one with no LightMap.
+		if(!lightmap)
 			return tile->DiffuseRdrPass;
-		/*else
+		else
 		{
 			// Must get the good render pass for the correct lightmaped version of this tile.
 
@@ -618,24 +622,25 @@ CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass
 			pass.BlendType= tile->DiffuseRdrPass->BlendType;
 			pass.TextureDiffuse= tile->DiffuseRdrPass->TextureDiffuse;
 			pass.TextureBump= tile->DiffuseRdrPass->TextureBump;
-			// Retrieve the lightmap from the patch.
-			pass.LightMap= patch->NearLightMap;
+			// Set the wanted lightmap.
+			pass.LightMap= lightmap;
 
 			// Insert/Retrieve this rdrpass.
 			CPatchRdrPass	*rdrpass= findTileRdrPass(pass);
 
-			// If not already inserted in the tile list.
+			// If not already inserted in the tile list, insert it.
+			// This is important for release...
 			ItTileRdrPassPtrSet	itPtr;
-			itPtr= LightedRdrPass.find(rdrpass);
-			if(itPtr==LightedRdrPass.end())
+			itPtr= tile->LightedRdrPass.find(rdrpass);
+			if(itPtr== tile->LightedRdrPass.end())
 			{
-				itPtr= LightedRdrPass.insert(rdrpass);
+				tile->LightedRdrPass.insert(rdrpass);
 				// Now, we have one more tile which use this lighted rdrpass...
 				rdrpass->RefCount++;
 			}
-			// TODODODO.
-			// ptain de probleme de release.
-		}*/
+
+			return rdrpass;
+		}
 	}
 }
 
@@ -709,7 +714,6 @@ void			CLandscape::flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles)
 // ***************************************************************************
 void			CLandscape::releaseTiles(uint16 tileStart, uint16 nbTiles)
 {
-	// TODODODO: do something with TileTextures and lightmaps.
 	// release tiles.
 	for(sint tileId= tileStart; tileId<tileStart+nbTiles; tileId++)
 	{
@@ -734,9 +738,90 @@ void			CLandscape::releaseTiles(uint16 tileStart, uint16 nbTiles)
 			it++;
 	}
 
-	// Textures are automaticly deleted, but not their entry. => doesn't matter since findTileTexture() manages this case.
-	// But if CRefPtr doesn't work, textures are not deleted...
+	// Textures are automaticly deleted, but not their entry int the map. 
+	// => doesn't matter since findTileTexture() manages this case.
+	// And the memory overhead is not a problem (we talk about pointers).
 }
+
+
+// ***************************************************************************
+uint		CLandscape::getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE], ITexture *&lightmap)
+{
+	sint	textNum;
+	uint	lightMapId;
+	/* 
+		NB: TextureNear are a grow only Array... TextureNear are never deleted. Why? :
+		1/ There is an important issue with releasing texture nears: tiles may acces them (see getTileRenderPass())
+		2/ Unused near texture may be uncahced by opengl (and maybe by windows, in memory).
+	*/
+	// 0. Alloc Near Texture if necessary.
+	//====================================
+	if(_NFreeLightMaps==0)
+	{
+		CTextureNear	*text= new CTextureNear(TextureNearSize);
+		_TextureNears.push_back(text);
+		_NFreeLightMaps+= text->getNbAvailableTiles();
+	}
+
+	// 1. Search the first texture which has a free tile.
+	//==================================================
+	CTextureNear	*nearText= NULL;
+	for(textNum=0;textNum<(sint)_TextureNears.size();textNum++)
+	{
+		nearText= _TextureNears[textNum];
+		if(nearText->getNbAvailableTiles()!=0)
+			break;
+	}
+	nlassert(textNum<(sint)_TextureNears.size());
+	// A empty space has been found.
+	_NFreeLightMaps--;
+
+	// 2. Fill the texture with the data, and updaterect.
+	//===================================================
+	lightMapId= nearText->getTileAndFillRect(map);
+	// Compute the Id.
+	lightMapId= textNum*NbTilesByTexture + lightMapId;
+
+	// Result:
+	lightmap= nearText;
+	return lightMapId;
+}
+// ***************************************************************************
+void		CLandscape::getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias)
+{
+	uint	id, s,t;
+
+	// Scale.
+	float	scale5= (float)NL_TILE_LIGHTMAP_SIZE/TextureNearSize;
+	float	scale4= (float)(NL_TILE_LIGHTMAP_SIZE-1)/TextureNearSize;
+	float	scale1= (float)(1)/TextureNearSize;
+	uvScaleBias.z= scale4;
+
+	// Get the id local in the texture.
+	id= tileLightMapId%NbTilesByTexture;
+
+	// Commpute UVBias.
+	// Get the coordinate of the tile, in tile number.
+	s= id%NbTilesByLine;
+	t= id/NbTilesByLine;
+	uvScaleBias.x= s*scale5 + 0.5f*scale1;
+	uvScaleBias.y= t*scale5 + 0.5f*scale1;
+}
+// ***************************************************************************
+void		CLandscape::releaseTileLightMap(uint tileLightMapId)
+{
+	uint	id, textNum;
+
+	// Get the id local in the texture.
+	textNum= tileLightMapId/NbTilesByTexture;
+	id= tileLightMapId%NbTilesByTexture;
+	nlassert(textNum>=0 && textNum<_TextureNears.size());
+
+	// Release the tile in this texture.
+	_TextureNears[textNum]->releaseTile(id);
+	_NFreeLightMaps++;
+}
+
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.21 2000/12/18 11:05:53 berenguier Exp $
+ * $Id: tessellation.h,v 1.22 2001/01/11 13:54:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,8 @@ struct	CTileMaterial
 	//  3: additive pass for 1st alpha tile.
 	//  4: 2nd alpha tile.
 	//  5: additive pass for 2nd alpha tile.
+	// The global id of the little lightmap part for this tile.
+	uint			LightMapId;
 
 	// ptrs are Null by default.
 	CTileMaterial();
@@ -93,8 +95,8 @@ struct	CTileRenderPtrs
  * A Landscape Base TileUv.
  * virtual inheritance would have be usefull, for automatic clone(), middle() etc... but too heavy (a vftable...).
  *
- * NB: why don't use a UvPasses ptr, and aloc it on demand??? For future allocation improvement, where we need to allocate
- * fixed size element.
+ * NB: why don't use a "UvPasses" ptr in the CTessFace, and aloc it on demand with the number of UV wanted??? 
+ * For future allocation improvement, where we need to allocate fixed size element...
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -443,7 +445,9 @@ private:
 	void	heritTileMaterial();
 
 	// see computeTileMaterial().
-	void	initTileUv(sint pass, CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
+	void	initTileUv0(sint pass, CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
+	// The same, but for the lightmap pass.
+	void	initTileUv1(CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
 
 private:
 	// Fake face are the only ones which have a NULL patch ptr (with mult face).

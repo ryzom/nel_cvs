@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.12 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: ps_ribbon.cpp,v 1.13 2004/03/22 17:57:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -737,25 +737,24 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 	{
 		const uint numRibbonInVB = getNumRibbonsInVB();
 		CVBnPB &VBnPB = map[VBnPDIndex]; // make an entry
-
+		CIndexBuffer &pb = VBnPB.PB;
+		CVertexBuffer &vb = VBnPB.VB;		
 		/// set the vb format & size
 		/// In the case of a ribbon with color and fading, we encode the fading in a texture
-		/// If the ribbon has fading, but only a global color, we encode it in the primary color
-		CVertexBuffer &vb = VBnPB.VB;
-		CVertexBufferReadWrite vba;
-		vb.lock (vba);
+		/// If the ribbon has fading, but only a global color, we encode it in the primary color		
 		vb.setVertexFormat(CVertexBuffer::PositionFlag	| /* alway need position */
 						   (_ColorScheme || _ColorFading ? CVertexBuffer::PrimaryColorFlag : 0) | /* need a color ? */
 						   ((_ColorScheme && _ColorFading) ||  _Tex != NULL ? CVertexBuffer::TexCoord0Flag : 0) | /* need texture coordinates ? */
 						   (_Tex != NULL && _ColorScheme && _ColorFading ? CVertexBuffer::TexCoord1Flag : 0) /* need 2nd texture coordinates ? */
 						  );
 		vb.setNumVertices((_UsedNbSegs + 1) * numRibbonInVB * numVerticesInSlice); // 1 seg = 1 line + terminal vertices
-
-		// set the primitive block size
-		CIndexBuffer &pb = VBnPB.PB;
+		// set the primitive block size		
+		pb.setNumIndexes(3 * ((_UsedNbSegs * numRibbonInVB * _Shape.size()) << 1));
+		//
 		CIndexBufferReadWrite ibaWrite;
 		pb.lock (ibaWrite);
-		pb.setNumIndexes(3 * ((_UsedNbSegs * numRibbonInVB * _Shape.size()) << 1));
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);
 		/// Setup the pb and vb parts. Not very fast but executed only once
 		uint vbIndex = 0;
 		uint pbIndex = 0; 

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.16.4.1 2004/09/09 11:51:19 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.16.4.2 2004/09/14 17:17:37 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -309,7 +309,7 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 
 		// Setup the vertex stream
 		_VertexStream.release();
-		_VertexStream.init(driver, NL3D_CLOD_VERTEX_FORMAT, _MaxNumVertices, _NumVBHard, "CLodManagerVB");
+		_VertexStream.init(driver, NL3D_CLOD_VERTEX_FORMAT, _MaxNumVertices, _NumVBHard, "CLodManagerVB", false); // nb : don't use volatile lock as we keep the buffer locked
 	}
 	
 	// prepare for render.

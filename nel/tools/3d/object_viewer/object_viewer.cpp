@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.117 2004/04/09 14:43:34 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.118 2004/04/19 12:27:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -283,34 +283,51 @@ CObjectViewer::CObjectViewer ()
 	_CS = NULL;
 }
 
+
+// ***************************************************************************
+std::string CObjectViewer::getModulePath() const
+{
+	// Get the module path
+	// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
+#ifdef NL_DEBUG_FAST
+	HMODULE hModule = GetModuleHandle("object_viewer_debug_fast.dll");
+#elif defined (NL_DEBUG)
+	HMODULE hModule = GetModuleHandle("object_viewer_debug.dll");
+#elif defined (NL_RELEASE_DEBUG)
+	HMODULE hModule = GetModuleHandle("object_viewer_rd.dll");
+#else
+	HMODULE hModule = GetModuleHandle("object_viewer.dll");
+#endif
+	nlassert (hModule);		
+	char sModulePath[256];
+	int res=GetModuleFileName(hModule, sModulePath, 256);
+	nlassert(res);
+	_splitpath (sModulePath, SDrive, SDir, NULL, NULL);
+	_makepath (sModulePath, SDrive, SDir, "object_viewer", ".cfg");
+	return sModulePath;	
+}
+
+
+// ***************************************************************************
+void CObjectViewer::loadDriverName()
+{
+	// Load the config file
+	CConfigFile cf;
+	cf.load (getModulePath());
+	CConfigFile::CVar *var = cf.getVarPtr("driver");
+	_Direct3d = var && (var->asString() == "direct3d");
+}
+
 // ***************************************************************************
 void CObjectViewer::loadConfigFile()
 {
 	// Charge l'object_viewer.ini
 	try
 	{
-		// Get the module path
-// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
-#ifdef NL_DEBUG_FAST
-		HMODULE hModule = GetModuleHandle("object_viewer_debug_fast.dll");
-#elif defined (NL_DEBUG)
-		HMODULE hModule = GetModuleHandle("object_viewer_debug.dll");
-#elif defined (NL_RELEASE_DEBUG)
-		HMODULE hModule = GetModuleHandle("object_viewer_rd.dll");
-#else
-		HMODULE hModule = GetModuleHandle("object_viewer.dll");
-#endif
-		nlassert (hModule);		
-		char sModulePath[256];
-		int res=GetModuleFileName(hModule, sModulePath, 256);
-		nlassert(res);
-		_splitpath (sModulePath, SDrive, SDir, NULL, NULL);
-		_makepath (sModulePath, SDrive, SDir, "object_viewer", ".cfg");
-
 		// Load the config file
 		CConfigFile cf;
-		cf.load (sModulePath);
-
+		cf.load (getModulePath());
+		//
 		try
 		{
 			// Add search pathes
@@ -495,13 +512,10 @@ void CObjectViewer::loadConfigFile()
 		}
 		catch (EUnknownVar &)
 		{
-		}
-
-		CConfigFile::CVar *var = cf.getVarPtr("driver");
-		_Direct3d = var && (var->asString() == "direct3d");
+		}		
 
 		// Fog
-		var = cf.getVarPtr("fog");
+		CConfigFile::CVar *var = cf.getVarPtr("fog");
 		if (var)
 			_Fog = var->asInt() != 0;
 		var = cf.getVarPtr("fog_start");
@@ -624,7 +638,10 @@ bool CObjectViewer::initUI (HWND parent)
 
 	// Create the icon
 	HICON hIcon = (HICON)LoadImage(theApp.m_hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON,
-		16, 16, 0);	
+		16, 16, 0);
+	
+	// load name of the driver from the config file
+	loadDriverName();
 
 	// Create a doomy driver
 	IDriver *driver= _Direct3d?CDRU::createD3DDriver():CDRU::createGlDriver();

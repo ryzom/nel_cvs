@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.53 2004/03/19 10:11:37 corvazier Exp $
+ * $Id: object_viewer.h,v 1.54 2004/04/19 12:27:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -630,6 +630,10 @@ private:
 
 	// load the config file
 	void	loadConfigFile();
+	// get path of the dll
+	std::string getModulePath() const;
+	// load driver name from the config file
+	void	loadDriverName();
 
 	void	drawFXUserMatrix();	
 	void	drawFXMatrix();

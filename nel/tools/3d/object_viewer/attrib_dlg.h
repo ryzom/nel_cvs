@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.6 2001/06/27 16:51:47 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.7 2001/07/04 12:24:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,9 +51,16 @@ class CAttribDlg : public CDialog
 {
 // Construction
 public:
-	CAttribDlg(const std::string &valueID);   // standard constructor
+	/** construct the dialog
+	  * \param : valueID : an unique id for this dialog
+	  * \param : enableConstantValue when false, only a scheme is available
+	  */
+	CAttribDlg(const std::string &valueID, bool enableConstantValue = true);   // standard constructor
 	CAttribDlg::~CAttribDlg() ;
 	
+
+	/// must be called before init, disable constant value usage
+	void disableConstantValue(void) { _EnableConstantValue = false ; }
 
 // Dialog Data
 	//{{AFX_DATA(CAttribDlg)
@@ -82,6 +89,18 @@ public:
 	//}}AFX_VIRTUAL
 
 public:
+	/** Disable the possibility to choose a scheme that has memory. (for example, a scheme for lifetime of a located has no sense
+	  * because located have already some memory to store it)
+	  */
+	void enableMemoryScheme(bool enabled = false) { _DisableMemoryScheme = !enabled ; }
+
+	/** tells wether memory schemes are enables
+	  * \see enableMemoryScheme()
+	  */
+	bool isMemorySchemeEnabled(void) const { return !_DisableMemoryScheme ; }
+
+
+public:
 	// private usage (not private because accessed by a static function) : return the nbCycles parameter of the scheme (e.g the input multiplier).
 	virtual float getSchemeNbCycles(void) const = 0 ;
 
@@ -93,7 +112,8 @@ public:
 // Implementation
 protected:
 	
-	
+	// true if constant values are allowed
+	bool _EnableConstantValue ;
 
 	// change the dialog for constant values
 	void cstValueUpdate() ;
@@ -146,6 +166,9 @@ protected:
 
 	// the dialog used to tune the nb cycles param (when available)
 	CEditableRangeFloat *_NbCyclesDlg ;	
+
+	// this is equal to true when memory schemes are not permitted
+	bool _DisableMemoryScheme ;
 
 	// wrapper to tune the number of cycles
 	struct CNbCyclesWrapper : public IPSWrapperFloat
@@ -208,7 +231,7 @@ public:
 
 	virtual bool hasSchemeCustomInput(void) const { return _SchemeWrapper->getScheme()->hasCustomInput() ; }
 	virtual uint getSchemeInput(void) const { return (uint)  _SchemeWrapper->getScheme()->getInput() ; }	
-	virtual void setSchemeInput(uint index) { _SchemeWrapper->getScheme()->setInput((NL3D::CPSLocated::AttributeType) index) ; }
+	virtual void setSchemeInput(uint index) { _SchemeWrapper->getScheme()->setInput((NL3D::TPSInputType::TInputType) index) ; }
 
 
 	virtual float getSchemeNbCycles(void) const { return _SchemeWrapper->getScheme()->getNbCycles() ; }
@@ -217,7 +240,7 @@ public:
 
 	
 	virtual bool isSchemeClamped(void) const { return _SchemeWrapper->getScheme()->getClamping() ; }
-	virtual void clampScheme(bool clamped = true) { _SchemeWrapper->getScheme()->setClamping(true) ; }	
+	virtual void clampScheme(bool clamped = true) { _SchemeWrapper->getScheme()->setClamping(clamped) ; }	
 	virtual bool isClampingSupported(void) const { return _SchemeWrapper->getScheme()->isClampingSupported() ; } ;
 
 
@@ -257,7 +280,7 @@ public:
 	 *  \param minValue : the min value for the editable range dlg(for constant value)
 	 *  \param maxValue : the min value for the editable range dlg (for constant value)
 	 */
-	CAttribDlgFloat(const std::string &valueID, float minValue, float maxValue)  ;
+	CAttribDlgFloat(const std::string &valueID, float minValue = 0, float maxValue = 10)  ;
 
 	
 	// inherited from CAttribDlg
@@ -289,7 +312,7 @@ public:
 	 *  \param minValue : the min value for the editable range dlg(for constant value)
 	 *  \param maxValue : the min value for the editable range dlg (for constant value)
 	 */
-	CAttribDlgUInt(const std::string &valueID, uint32 minValue, uint32 maxValue)  ;
+	CAttribDlgUInt(const std::string &valueID, uint32 minValue = 0, uint32 maxValue = 10)  ;
 
 	
 	// inherited from CAttribDlg
@@ -322,7 +345,7 @@ public:
 	 *  \param minValue : the min value for the editable range dlg(for constant value)
 	 *  \param maxValue : the min value for the editable range dlg (for constant value)
 	 */
-	CAttribDlgInt(const std::string &valueID, sint32 minValue, sint32 maxValue)  ;
+	CAttribDlgInt(const std::string &valueID, sint32 minValue = 0, sint32 maxValue = 10)  ;
 
 	
 	// inherited from CAttribDlg

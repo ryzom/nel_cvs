@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.12 2003/07/03 16:16:45 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.13 2003/07/31 13:41:16 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -170,6 +170,9 @@ class CPSConstraintMesh : public CPSParticle,
 						  public CPSShapeParticle,
 						  public CPSColoredParticle
 {
+public:
+	// errors during loading of meshs
+	enum TError { ShapeFileNotLoaded = -1, ShapeFileIsNotAMesh = -2, ShapeHasTooMuchVertices = -3 };
 public:	
 	/// ctor
 	CPSConstraintMesh();
@@ -349,7 +352,16 @@ public:
 
 	//@}
 
+	/** test if mesh is correctly loaded and built (e.g all shape have been loaded and have compatible format)
+	  * * NB : this force the meshs to be loaded
+	  */
+	bool isValidBuild() const;
 	
+	/** get number of vertices for each mesh, or an error code if loading failed (see TError enum)
+	  * NB : this force the meshs to be reloaded
+	  */
+	void getShapeNumVerts(std::vector<sint> &numVerts);
+
 
 protected:
 	friend class CPSConstraintMeshHelper;
@@ -395,9 +407,10 @@ protected:
 	virtual void		resize(uint32 size);	
 	
 	/** Build the mesh data, if the 'touch' flag is set.
+	  * \param  numVerts, if not NULL, the dest vector will be filled with the number of vertices of each mesh (or a TError enumerated value if loading failed)
 	  * \return true if the mesh could be found and match the requirement
 	  */
-	bool				update(void);
+	bool				update(std::vector<sint> *numVerts = NULL);
 
 	/// make a vb for the prerotated mesh from a source vb
 	CVertexBuffer	    &makePrerotatedVb(const CVertexBuffer &inVB, TAnimationTime ellapsedTime);
@@ -532,15 +545,16 @@ protected:
 	uint8   _ModulatedStages;
 
 	// A new mesh has been set, so we must reconstruct it when needed	
-	uint8	_Touched : 1;	
+	uint8	_Touched                          : 1;	
 	// flags that indicate wether the object has transparent faces. When the 'touch' flag is set, it is undefined, until the next update() call.
-	uint8	_HasTransparentFaces : 1;
+	uint8	_HasTransparentFaces              : 1;
 	// flags that indicate wether the object has opaques faces. When the 'touch' flag is set, it is undefined, until the next update() call.
 	uint8	_HasOpaqueFaces                   : 1;
 	uint8   _VertexColorLightingForced        : 1;
 	uint8   _GlobalAnimationEnabled           : 1;
 	uint8   _ReinitGlobalAnimTimeOnNewElement : 1;
 	uint8   _HasLightableFaces                : 1;
+	uint8   _ValidBuild                       : 1;
 
 	
 	/// Infos for global texture animation

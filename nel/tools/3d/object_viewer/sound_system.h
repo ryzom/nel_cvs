@@ -1,7 +1,7 @@
 /** \file sound_system.h
  * This initilize the sound system
  *
- * $Id: sound_system.h,v 1.3 2001/09/04 14:02:35 vizerie Exp $
+ * $Id: sound_system.h,v 1.4 2001/09/05 15:44:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 
 #include <nel/misc/types_nl.h>
 #include <string>
+#include <set>
 
 namespace NLSOUND
 {
@@ -47,9 +48,9 @@ class CSoundSystem
 {
 public:
 	/// set the name of the file containing the sound bank
-	static void setSoundBank(const char *soundBankFileName)
+	static void addSoundBank(const std::string &soundBankFileName)
 	{
-		_SoundBankFileName = soundBankFileName;
+		_SoundBanksFileName.insert(soundBankFileName);
 	}
 	/** Init the sound system this also load the sound bank
 	  * See setSoundBank
@@ -73,7 +74,7 @@ public:
 
 private:
 	static NLSOUND::UAudioMixer *_AudioMixer;
-	static std::string			 _SoundBankFileName;
+	static std::set<std::string>	_SoundBanksFileName;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.6 2001/09/04 14:04:35 vizerie Exp $
+ * $Id: sound_system.cpp,v 1.7 2001/09/05 15:44:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "edit_ps_sound.h"
 
 NLSOUND::UAudioMixer *CSoundSystem::_AudioMixer = NULL;
-std::string			 CSoundSystem::_SoundBankFileName;
+std::set<std::string>		 CSoundSystem::_SoundBanksFileName;
 static				 NLMISC::CVector SoundListenerPos = NLMISC::CVector::Null;
 
 
@@ -59,25 +59,32 @@ void CSoundSystem::initSoundSystem(void)
 	}
 	catch (NLMISC::Exception &e)
 	{
-		std::string mess = std::string("Unable to load sound file :") + e.what();
+		std::string mess = std::string("Unable to init sound :") + e.what();
 		::MessageBox(NULL, mess.c_str(), "Object viewer", MB_OK);
 		_AudioMixer = NULL;
 		return;
 	}
 	initPSSoundSystem(_AudioMixer);
 
-	if (_SoundBankFileName.size())
+	if (_SoundBanksFileName.size())
 	{
-		try
-		{
-			_AudioMixer->loadSoundBuffers(NLMISC::CPath::lookup(_SoundBankFileName).c_str());
-		}
-		catch (NLMISC::Exception &e)
-		{
-			std::string mess = "Unable to load sound file :" + _SoundBankFileName
+		
+			for (std::set<std::string>::const_iterator it = _SoundBanksFileName.begin();
+				 it != _SoundBanksFileName.end();
+				 ++it)
+			{
+				try
+				{
+					_AudioMixer->loadSoundBuffers(NLMISC::CPath::lookup(*it).c_str());
+				}
+				catch (NLMISC::Exception &e)
+				{
+					std::string mess = "Unable to load sound file :" + *it
 								+ "\n" + e.what();
-			::MessageBox(NULL, mess.c_str(), "stream error", MB_OK);
-		}
+					::MessageBox(NULL, mess.c_str(), "stream error", MB_OK);
+				}
+			}					
+		
 	}
 }
 

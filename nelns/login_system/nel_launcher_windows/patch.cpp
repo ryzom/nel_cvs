@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.8 2003/04/08 12:43:34 lecroart Exp $
+ * $Id: patch.cpp,v 1.9 2003/04/08 18:25:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,8 +109,10 @@ public:
 	{
 	}
 	
-	bool Ended;
-	string Url;
+	bool Ended;	// true if the thread have ended the patch
+	bool PatchOk; // true if the patch was good
+	string Url;	// url to display after the patch
+	
 	string State;
 	string StateLog;
 	bool StateChanged;
@@ -223,12 +225,56 @@ private:
 			}
 			gzclose (gz);
 
-			// get file if necessary
+			// if we need to update nel_launcher.exe don't patch other file now, get
+			// nel_launcher.exe and relaunch it now
 			uint i;
 			for (i = 0; i < needToGetFilesList.size (); i++)
 			{
-				nlSleep (1000);
-				
+				if (needToGetFilesList[i].Filename == "nel_launcher.exe")
+				{
+					// special case for patching nel_launcher.exe
+
+					string path = ClientPatchPath + needToGetFilesList[i].Filename;
+
+					nlinfo ("Get the file from '%s' to '%s'", string(DisplayedServerRootPath+needToGetFilesList[i].Filename).c_str(), path.c_str());
+					
+					// get the new file
+					
+					downloadFile (ServerRootPath+needToGetFilesList[i].Filename+".ngz", path+".ngz");
+					// decompress it
+					decompressFile (path+".ngz", needToGetFilesList[i].Date);
+
+					// create a .bat for moving the new nel_launcher.exe
+					FILE *fp = fopen ("update_nel_launcher.bat", "wt");
+					if (fp == NULL)
+					{
+						string err = toString("Can't open file 'update_nel_launcher.bat' for writing: code=%d %s", errno, strerror(errno));
+						throw Exception (err);
+					}
+
+					fprintf(fp, "@echo off\n");
+					fprintf(fp, ":loop\n");
+					fprintf(fp, "del /F /Q nel_launcher.exe\n");
+					fprintf(fp, "if exist nel_launcher.exe goto loop\n");
+					fprintf(fp, "move /Y patch\\nel_launcher.exe .\n");
+					fprintf(fp, "nel_launcher.exe\n");
+
+					fclose (fp);
+
+					setState (true, "Launching update_nel_launcher.bat");
+					nlinfo ("Need to execute update_nel_launcher.bat");
+					_execlp ("update_nel_launcher.bat", "update_nel_launcher.bat", NULL);
+					exit(0);
+				}
+			}
+
+			// get file if necessary
+			for (i = 0; i < needToGetFilesList.size (); i++)
+			{
+				// special case for nel_launcher.exe
+				if (needToGetFilesList[i].Filename == "nel_launcher.exe")
+					continue;
+					
 				string path = ClientRootPath+needToGetFilesList[i].Filename;
 				if (!NLMISC::CFile::fileExists (path))
 				{
@@ -302,12 +348,14 @@ private:
 			setState (true, "Patching completed");
 		
 			Url = UrlOk;
+			PatchOk = true;
 			Ended = true;
 		}
 		catch (Exception &e)
 		{
 			Url = UrlFailed;
 			Url += e.what();
+			PatchOk = false;
 			Ended = true;
 		}
 	}
@@ -475,7 +523,7 @@ private:
 				}
 
 				int res2 = fwrite (buffer, 1, realSize, fp);
-				if (res2 != realSize)
+				if ((DWORD)res2 != realSize)
 				{
 					string err = toString("Can't write file '%s' : code=%d %s", dest.c_str(), errno, strerror(errno));
 
@@ -553,20 +601,22 @@ void startPatchThread (const std::string &serverPath, const std::string &serverV
 	}
 	
 	PatchThread = new CPatchThread (serverPath, serverVersion, urlOk, urlFailed, logSeparator);
+	nlassert (PatchThread != NULL);
 
 	IThread *thread = IThread::create (PatchThread);
+	nlassert (thread != NULL);
 	thread->start ();
 }
 
-bool patchEnded (string &url)
+bool patchEnded (string &url, bool &ok)
 {
-	if (PatchThread == NULL)
-		return true;
+	nlassert (PatchThread != NULL);
 
 	bool end = PatchThread->Ended;
 	if (end)
 	{
 		url = PatchThread->Url;
+		ok = PatchThread->PatchOk;
 
 		delete PatchThread;
 		PatchThread = NULL;

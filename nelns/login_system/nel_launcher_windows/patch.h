@@ -1,6 +1,6 @@
 /** \file patch.h
  *
- * $Id: patch.h,v 1.1 2002/09/30 16:23:07 lecroart Exp $
+ * $Id: patch.h,v 1.2 2003/04/08 18:25:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 extern NLMISC::CConfigFile ConfigFile;
 
 void startPatchThread (const std::string &serverPath, const std::string &serverVersion, const std::string &urlOk, const std::string &urlFailed, const std::string &logSeparator);
-bool patchEnded (std::string &url);
+bool patchEnded (std::string &url, bool &ok);
 bool patchState (std::string &state, std::string &stateLog);
 
 

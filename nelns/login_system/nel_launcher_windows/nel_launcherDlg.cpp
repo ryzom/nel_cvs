@@ -109,8 +109,10 @@ BOOL CNel_launcherDlg::OnInitDialog()
 		openUrl(PleaseWaitFullPath.c_str());
 	}
 
-
-
+	// remove temp files
+	if (NLMISC::CFile::fileExists ("update_nel_launcher.bat"))
+		NLMISC::CFile::deleteFile ("update_nel_launcher.bat");
+				
 	string Version = getVersion ();
 
 	string url = "http://"+ConfigFile.getVar ("StartupHost").asString()+ConfigFile.getVar ("StartupPage").asString();
@@ -536,11 +538,15 @@ void CNel_launcherDlg::OnTimer(UINT nIDEvent)
 	}
 
 	string url;
-	if (patchEnded(url))
+	bool res;
+	if (patchEnded(url, res))
 	{
 		nlinfo ("finnish");
 		KillTimer (0);
-		MessageBox ("Patch completed", "patch");
+		if (res)
+			MessageBox ("Patch completed succesfuly", "patch");
+		else
+			MessageBox ("Patch completed with error", "patch");
 		openUrl (url.c_str());
 	}
 }

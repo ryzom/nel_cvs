@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.24 2003/11/25 14:40:48 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.25 2003/11/25 16:57:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -352,7 +352,7 @@ void CParticleDlg::go(void)
 	}
 	// copy user matrix into current fx
 	nlassert(_ObjView);
-	_CurrSystemModel->setUserMatrix(&_ObjView->getFXUserMatrix());
+	_CurrSystemModel->setUserMatrix(_ObjView->getFXUserMatrix());
 }
 
 //**************************************************************************************************************************

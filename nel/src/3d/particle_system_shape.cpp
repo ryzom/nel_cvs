@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.40 2003/11/25 14:38:30 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.41 2003/11/25 16:57:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,7 +246,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	if (ps->isSharingEnabled())
 	{
 		ps->setSysMat(&(psm->getWorldMatrix()));
-		ps->setUserMatrix(psm->getUserMatrix());
+		ps->setUserMatrix(&(psm->getUserMatrix()));
 	}
 	
 	// Setup the matrix.

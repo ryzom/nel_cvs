@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.36 2003/11/25 14:38:30 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.37 2003/11/25 16:57:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -266,17 +266,16 @@ public:
 	void			setUserColor(NLMISC::CRGBA userColor);
 	NLMISC::CRGBA	getUserColor() const { return _UserColor; }	
 
-	/** Set user matrix of the system. Passing NULL causes this matrix to be the same than the particle system matrix
+	/** Set user matrix of the system.
 	   *
 	   * Particle can be located in various coordinate system :
 	   * - in world (identity matrix)
 	   * - local to the particle system (matrix of the particle system)
 	   * - local to the coord. sys. defined by the user matrix
-	   *	   
-	   * NB : the pointer should remains valid as long as this instance is!! no copy of the matrix is kept
+	   *	   	   
 	   */
-	void setUserMatrix(const NLMISC::CMatrix *userMatrix) { _UserMatrix = userMatrix; }	
-	const NLMISC::CMatrix *getUserMatrix() const { return _UserMatrix; }
+	void setUserMatrix(const NLMISC::CMatrix &userMatrix) { _UserMatrix = userMatrix; }	
+	const NLMISC::CMatrix &getUserMatrix() const { return _UserMatrix; }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +349,7 @@ private:
 	CAnimatedValueFloat						_UserParam[MaxPSUserParam];
 	uint8                                   _BypassGlobalUserParam;  // mask to bypass a global user param. This state is not serialized
 	NLMISC::CRGBA							_UserColor;
-	const NLMISC::CMatrix					*_UserMatrix;
+	NLMISC::CMatrix							_UserMatrix;
 
 };
 

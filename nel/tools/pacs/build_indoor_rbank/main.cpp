@@ -1,7 +1,7 @@
 /** \file main.cpp
  * 
  *
- * $Id: main.cpp,v 1.7 2003/03/24 16:38:28 legros Exp $
+ * $Id: main.cpp,v 1.8 2003/03/31 12:55:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,15 +179,22 @@ void makeGlobalRetriever(vector<CVector> &translation)
 	for (i=0; i<Meshes.size(); ++i)
 	{
 		CLocalRetriever		lr;
-		openAndSerial(lr, OutputPath+Meshes[i]+".lr");
-
-		uint	rid = rb.addRetriever(lr);
-
-		if (AddToRetriever)
+		try
 		{
-			uint	iid = (gr.makeInstance(rid, 0, -translation[i])).getInstanceId();
+			openAndSerial(lr, OutputPath+Meshes[i]+".lr");
 
-			ninst.push_back(iid);
+			uint	rid = rb.addRetriever(lr);
+
+			if (AddToRetriever)
+			{
+				uint	iid = (gr.makeInstance(rid, 0, -translation[i])).getInstanceId();
+
+				ninst.push_back(iid);
+			}
+		}
+		catch (Exception &e)
+		{
+			nlwarning("WARNING: can't merge lr '%s.lr': %s", Meshes[i].c_str(), e.what());
 		}
 	}
 
@@ -202,21 +209,24 @@ void makeGlobalRetriever(vector<CVector> &translation)
 
 	COFile	output;
 
+	/*
+	 * This way, at the end of the build process, 
+	 * the rbank should be 5 bytes only and lr should be saved as well next to the rbank
+	 */
+
 	if (Merge)
 	{
-		serialAndSave(rb, OutputPath+MergeOutputPrefix+".rbank");
 		serialAndSave(gr, OutputPath+MergeOutputPrefix+".gr");
+		rb.saveShortBank(OutputPath, MergeOutputPrefix, true);	// save 5 bytes rbank and lr as well
 
-		rb.saveRetrievers(OutputPath, MergeOutputPrefix);
-		rb.saveShortBank(OutputPath, MergeOutputPrefix);
+//		serialAndSave(rb, OutputPath+MergeOutputPrefix+".rbank");
 	}
 	else
 	{
-		serialAndSave(rb, OutputPath+OutputPrefix+".rbank");
 		serialAndSave(gr, OutputPath+OutputPrefix+".gr");
+		rb.saveShortBank(OutputPath, OutputPrefix, true);		// save 5 bytes rbank and lr as well
 
-		rb.saveRetrievers(OutputPath, OutputPrefix);
-		rb.saveShortBank(OutputPath, OutputPrefix);
+//		serialAndSave(rb, OutputPath+OutputPrefix+".rbank");
 	}
 
 	gr.check();
@@ -244,41 +254,49 @@ void createRetriever(vector<CVector> &translation)
 		string					meshName = Meshes[i];
 
 		nlinfo("compute retriever %s", meshName);
-		openAndSerial(cmb, MeshPath+meshName+".cmb");
 
+		try
 		{
-			vector<bool>	usedMaterials;
-			uint			j;
-			uint			maxMat = 0;
+			openAndSerial(cmb, MeshPath+meshName+".cmb");
 
-			for (j=0; j<cmb.Faces.size(); ++j)
-				if (cmb.Faces[j].Material > (sint)maxMat)
-					maxMat = cmb.Faces[j].Material;
+			{
+				vector<bool>	usedMaterials;
+				uint			j;
+				uint			maxMat = 0;
 
-			usedMaterials.resize(maxMat+1);
+				for (j=0; j<cmb.Faces.size(); ++j)
+					if (cmb.Faces[j].Material > (sint)maxMat)
+						maxMat = cmb.Faces[j].Material;
 
-			for (j=0; j<usedMaterials.size(); ++j)
-				usedMaterials[j] = false;
-			for (j=0; j<cmb.Faces.size(); ++j)
-				usedMaterials[cmb.Faces[j].Material] = true;
+				usedMaterials.resize(maxMat+1);
 
-			for (j=0; j<usedMaterials.size(); ++j)
-				if (usedMaterials[j])
-					nlinfo("Material %d used", j);
+				for (j=0; j<usedMaterials.size(); ++j)
+					usedMaterials[j] = false;
+				for (j=0; j<cmb.Faces.size(); ++j)
+					usedMaterials[cmb.Faces[j].Material] = true;
+
+				for (j=0; j<usedMaterials.size(); ++j)
+					if (usedMaterials[j])
+						nlinfo("Material %d used", j);
+			}
+
+
+			computeRetriever(cmb, lr, translation[i], true);
+			
+			// Compute an identifier name
+			string indentifier = meshName;
+			int sharpPos = indentifier.rfind ('#');
+			if (sharpPos != string::npos)
+				indentifier = indentifier.substr (0, sharpPos);
+			lr.setIdentifier(indentifier);
+
+			// Save the lr file
+			serialAndSave(lr, OutputPath+meshName+".lr");
 		}
-
-
-		computeRetriever(cmb, lr, translation[i], true);
-		
-		// Compute an identifier name
-		string indentifier = meshName;
-		int sharpPos = indentifier.rfind ('#');
-		if (sharpPos != string::npos)
-			indentifier = indentifier.substr (0, sharpPos);
-		lr.setIdentifier(indentifier);
-
-		// Save the lr file
-		serialAndSave(lr, OutputPath+meshName+".lr");
+		catch (Exception &e)
+		{
+			nlwarning("WARNING: can compute lr '%s.lr': %s", meshName.c_str(), e.what());
+		}
 	}
 }
 
@@ -327,6 +345,20 @@ void	loadAndDumpPositions()
 }
 
 //
+
+/*
+int main(int argc, char **argv)
+{
+	CRetrieverBank	bank;
+	CIFile			f("R:/code/ryzom/data/3d/continents/matis/pacs/matis.rbank");
+
+	f.serial(bank);
+
+	bank.saveShortBank("R:/code/ryzom/data/3d/continents/matis/pacs", "matis");
+}
+*/
+
+
 int main(int argc, char **argv)
 {
 	vector<CVector>	translation;

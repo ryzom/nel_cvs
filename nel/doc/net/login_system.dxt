@@ -1,175 +1,145 @@
 /**
 \page login_system How the login system works ?
 
-$Id: login_system.dxt,v 1.1 2001/04/26 09:01:29 lecroart Exp $
+$Id: login_system.dxt,v 1.2 2002/09/30 14:02:40 lecroart Exp $
 
 \author Vianney Lecroart
 
-\date 04/25/2001
+\date 09/30/2002
 
 \subsection login_system_intro Introduction
 
 This document briefly describes the connection process of a client to a shard
 running a NeL-based system.
 
+Here it is a picture that displays different system with interaction between them:
+
+\image html login_system.png
+
 \subsection login_system_abbr Abbreviations
 
-\b Services
-
-- \b LS: Login Service (a single unique LS services the entire shard set), on port 49999.
-- \b WS: Welcome Service (one for each shard), on port 49998.
-- \b FES: Front-End Service (N per shard), port numbers are dynamically attributed by the naming service.
-
-\b Messages
-
-- \b "VLP":	VerifyLoginPassword
-- \b "CS":	ChooseShard
-- \b "SCS":	ShardChooseShard (answer of the "CS" message)
-- \b "SV":	ShardValidation
-- \b "CC":	ClientConnected
+- \b LS: Login Service (a single unique LS services the entire shard set) that accept connection from web server on port 49990
+and accept Welcome Service on port 49998.
+- \b WS: Welcome Service (one for each shard).
+- \b FS: FrontEnd Service (N per shard), port numbers are dynamically attributed by the Naming Service.
+- \b NL: nel_launcher, it's the program on the client side that the player launch. This program is used to identify, select a shard
+                   and patch the game. It also launchs the game with good parameters to identiy the game to the shard.
 
 \subsection login_system_steps Login system steps
 
-\c Sxx is the step number, you can search the code for this step is coded.
+- \b Step1: The client launchs the NL and automatically connects to the login server (cnx1).
 
-- \b S01: In function \p CLoginClient::authenticate() in \p login_client.cpp.
+- \b Step2: The Web Server, using NeL Login Webpages and the NeL Database decides if the user has a valid login password (cnx2).
+            It also sends the list of available shard to the NL
 
-          The client initiates a connection to the LS, using the supplied IP and port
-          from the configuration file, with the help of the DNS for IP resolution.
+- \b Step3: The user selects the shard he wants to connect to. If the NL has to patch the client it connects to the
+Patch Directory and process the patch. After that, the NL sends the selected shard to the Web Server.
 
-\e Note: DNS spoofing or configuration file modification can lead to LS
-spoofing and hacking of the login/password information of the client.
-However, DNS is needed for flexibility of the login service location.
-It would be possible to supply the client with a range of valid IP address for the LS, and
-for the client to test the DNS' response against this range, in order to thwart this.
+- \b Step4: The Web Server connects (cnx4) to the LS using a fake NeL TCP connection (with a php script) and send the client requests,
+the LS sends the requests to the selected Welcome Service (cnx5) and creates a uniq cookie for this client.
 
-- \b S02: In function \p CLoginClient::authenticate() in \p login_client.cpp.
-          
-		  The client sends "VLP" message with login (\p string), password (\p string),
-		  client version (\p uint32) and system capabilities (4 \p string) to the LS.
+- \b Step5: The WS looks which FS is the best to receive the client and returns the FS IP to the LS and send the information to the selected
+FS to says that it'll receive a client with this cookie (cnx6). The LS forwards to the php and then forward to the NL.
 
-- \b S03: In function \p cbClientVerifyLoginPassword in \p connection_client.cpp of the LS.
-
-          The LS receives "VLP" message from the client and checks the client login/password validity.
-
-		  The LS also generates a single-use cookie to validate the incoming connection with this client.
-
-		  If something fails, the LS sends "VLP" message to the client with the reason why it failed and it
-		  disconnects the client.
-
-		  If everything succees, the LS builds a list of all available shards according to account
-		  information and current system settings. This list contains shards names (\p string) and the
-		  IP (in string format) for the WS of that shard. It sends "VLP" message to client with
-		  this list.
-
-- \b S04: In function \p cbVerifyLoginPassword in \p login_client.cpp.
-
-		  The client receives "VLP" message from LS and handles the result.
-
-- \b S05: In function \p CLoginClient::connectToShard() in \p login_client.cpp.
-
-		  The user selected the shard it wants to login to, and the client sends "CS" message with
-		  the IP address of its WS (in string format) to the LS.
-
-- \b S06: In function \p cbClientChooseShard() in \p connection_client.cpp of the LS.
-
-		  The LS receives the "CS" message from client.
-
-		  If something goes wrong, the LS sends a "SCS" message to the client with the
-		  reason for the problem and disconnects the client.
-
-		  In a normal case, The LS sends "CS" message to the selected WS of the client's connection
-          desires with the cookie generated in the step S03 (CLoginCookie).
-
-- \b S07: In function \p cbLSChooseShard() in \p welcome_service.cpp of the WS.
-
-		  The WS receives the "CS" message from LS. The WS selects a FES to accept the client
-		  connexion, and sends "CS" message with the cookie to the selected FES.
-
-		  If something goes wrong, the LS sends a "SCS" message to the LS with the
-		  reason for the problem.
-
-- \b S08: In function \p cbWSChooseShard in \p login_server.cpp.
-
-		  The FES checks its capacity to accept the client. It stores the cookie
-		  and sends a "SCS" message to the WS with reason why it failed with it failed or with
-		  the cookie and the listen address (\p string) where the client will try to connect.
-
-- \b S09: In function \p cbFESShardChooseShard() in \p welcome_service.cpp of the WS.
-
-		  The WS receives the "SCS" message from FES and sends it to the LS.
-
-- \b S10: In function \p cbWSShardChooseShard() in \p connection_ws.cpp of the LS.
-
-		  The LS receives "SCS" message from WS and sends "SCS" message to the client
-		  and disconnects the client connection.
-
-- \b S11: In function \p cbShardChooseShard() in \p login_client.cpp.
-
-		  The client receives "SCS" message from LS and handles it.
-
-- \b S12: In function \p CLoginClient::connectToShard() in \p login_client.cpp.
-
-		  The client initiates a connection to the indicated FES and sends "SV" message
-		  to the FES with the submitted cookie.
-
-- \b S13: In function \p cbShardValidation in \p login_server.cpp.
-
-		  The FES receives the cookie from the client. It checks if the cookie is good.
-		  The FES sends "SV" message to the client to say if it accepts the client.
-		  
-		  If the check failed, the "SV" message contains the reason (\p string) explains what
-		  goes wrong and the FES disconnects the client.
-
-		  Otherwise, the "SV" message contains an empty string. In this case, the FES also
-		  sends a "CC" message to the WS with the userid (\p uint32) and an \p uint8 saying that the
-		  client is connected.
-
-- \b S14: In function \p cbShardValidate() in \p login_client.cpp.
-
-		  The client receives "SV" message saying whether all is ok or not.
-
-- \b S15: In function \p cbFESClientConnected() in \p welcome_service.cpp of the WS.
-
-		  The WS receives "CC" message from FES and sends "CC" message to the LS
-
-- \b S16: In function \p cbWSClientConnected() in \p connection_ws.cpp of the LS.
-
-		  The LS receives "CC" message from WS and handles the message. The LS is now
-		  able to see whether the same account is being used to connects 2 different people and
-		  know exactly how many people are on each shard.
-
+- \b Step6: The NL has now the FS IP and cookie. It connects to the FS and sends the cookie (cnx7). The FS checks if the client IP and
+cookie is valid and send to the WS that the client is effectively connected. The WS forwards that to the LS and the LS updates the NeL
+Database (cnx3) to says that the user is online.
 
 \subsection logout_system_steps Logout system steps
 
+The FS detects the deconnection of a client, sends a message to the WS that is forward to the LS. Then, the LS updates the
+NeL database setting the user offline.
 
-It's similar to steps S13 to S16. The FES receives the disconnection of a client.
-It sends "CC" message to the WS with the userid (\p uint32) and an \p uint8 to 0 saying that the client
-is disconnected. The WS receives the message and sends the same message to the LS. The LS receives
-the message and handles it.
+\subsection nel_launcher_config nel_launcher configuration
 
+The configuration parameters are in the nel_launcher.cfg.
+
+- \b StartupHost is the server where the web server is. It's only an ip, not an URL
+- \b StartupPage is where the first web page is. It must starts with a /
+
+The startup url is composed using this rule: http://<StartupHost><StartupPage>
+
+For example if StartupHost is "itsalive.nevrax.org" and StartupPage is "/login/welcome.php",
+the resulting url will be "http://itsalive.nevrax.org/login/welcome.php",
+
+- \b Application is the application that the NS will launch when it's necessary. The first value is
+the application name that will be compared with the server database to select good shards. The second
+value is the executable filename with a path if necessary. the third value is the path where the launcher
+will go before executing the application.
+
+\subsection login_service_config Login Service configuration
+
+The configuration parameters are in the login_service.cfg.
+
+- \b WSPort is the port that will be used by the Welcome Service (default is 49998) to connect to the LS.
+- \b AcceptExternalShards is 1 if the LS accept shard that are not already in the NeL database. If you set the value to 0,
+                       the shard will be disconnected if it s not in the database.
+- \b Beep is 1 if you want the LS beeps when users comes (debug purpose and only on Windows).
+- \b DatabaseHost is a string that contains the address of where the database server is. For example "localhost".
+- \b DatabaseName is the name of the database where we can find needed info (default is "nel").
+- \b DatabaseLogin is the login to access the database (default is "").
+- \b DatabasePassword is the passwrd to access the database (default is "").
+- \b ForceDatabaseReconnection can be anything. Change this value to force a configfile reload and reconnection to the database
+ to take in count the new value of Database*. The content of this variable doesn't matter, it s just a fake to reload database var.
+
+\subsection welcome_service_config Welcome Service configuration
+
+The configuration parameters are in the welcome_service.cfg.
+
+- \b LSHost is an address of where the Login Service is (for example "localhost").
+- \b FrontendServiceName is the little name of the frontend service that will be use to know when a FS is up or down using the
+naming service (default is "FS").
+- \b ShardId is the value that identify the shard in the NeL Database. It must be uniq for each different shard.
+
+
+\subsection nel_database NeL Database
+
+The Database name is "nel" by default. It contains 2 tables; "shard" and "user".
+
+\b shard \b table
+
+- \b ShardId is an int that identify a shard. It must be uniq and is used when a shard connects to the LS.
+- \b WsAddr is a string that is the ip address in numerical format (127.0.0.1). This address is used to check if the shard
+can connect. The WsAddr must be the same as the connection and also the ShardId to accept a shard.
+- \b NbPlayers unsigned int. Contains the number of player really connected to this shard.
+- \b Name is the string that is display when displaying the list of available shards.
+- \b Online is 1 if the shard is online an ready to accept players.
+- \b ClientApplication is a string that must match the Application variables in the nel_launcher.cfg. It's used to display
+only shards that are compatible with the nel_launcher.
+- \b Version is a string that represent the version of the shard. If the version is not the same on the client in the VERSION file
+and in the shard, the nel_launcher will have to patch to connect to this shard.
+
+\b user \b table
+
+- \b UId is a uniq number for a player.
+- \b Login is the user login.
+- \b Password is the user password.
+- \b ShardId is the ShardId where the client is connected to if the user is online, otherwise the ShardId is -1
+- \b State describes the user state, if he's online or not.
+
+\subsection web_notes NeL Webpages
+
+- \b index.php contains all "customizable" php code. It manages the login/password verification using database access,
+    display available shard and use cookie to remember users.
+
+- \b service_connection.inc contains codes that enables the connection to the Login Service and send/receive messages.
+
+- \b make_patch.php is a page that create all stuffs needed to realize a patch. It compress all files and create a dir.gz
+that contains all files with date and size used by the nel_launcher to patch a client.
 
 \subsection login_system_notes Side notes
 
-Whenever a shard starts, the WS establishes a permanent link with the LS,
-using an encrypted link (it is assumed that the LS and WS are located on two
-physically and probably geographically distinct networks). A "SHARD" message
-serves as authentification, and the WS then updates the LS with its state,
-name and IP address. The LS may have a list of valid IP/port addresses for WS
-to avoid the occasional pirate server registration.
+Whenever a shard starts, the WS establishes a permanent link with the LS. A validation on the LS will done to check
+that the shard is authorized to work on this login system using the WS IP and the ShardId.
 
-If the LS detects that a person is trying to connect to an account that is already on use by another person, then
+\b outofdate If the LS detects that a person is trying to connect to an account that is already on use by another person, then
 the 2 people will be disconnected. The goal is to discourage people from sharing their accounts and
 also to avoid account deadlock in the case of bug. If for an obscur reason the user state in the LS is bad, then
 the next time the user tries to connect, they will be disconnected and their account will be reseted to the
 offline state and the user will be able to retry with a normal state.
 
-A \e cookie is a class (\p CLoginCookie in \p login_cookie.cpp) that contains the client's IP (\p uint32)
+A \e cookie is a class (\p CLoginCookie in \p login_cookie.cpp) that contains the web server's IP (\p uint32)
 as seen by the LS (to avoid address translation problems) for validation, a unique key (\p uint32) and the user id (\p uint32).
-
-An \e account is a class that contains information about a physical person like their visa card number and their userid.
-
-A \e userid is an unique number associated to an account for life.
 
 
 */

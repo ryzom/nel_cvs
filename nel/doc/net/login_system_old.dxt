@@ -1,20 +1,20 @@
 /**
 \page login_system How the login system works ?
 
-$Id: login_system_old.dxt,v 1.1 2002/09/30 14:02:40 lecroart Exp $
+$Id: login_system_old.dxt,v 1.2 2002/09/30 14:03:26 lecroart Exp $
 
 \author Vianney Lecroart
 
 \date 04/25/2001
 
-\subsection login_system_intro Introduction
+\subsection old_login_system_intro Introduction
 
 This document is \b deprecated.
 
 This document briefly describes the connection process of a client to a shard
 running a NeL-based system.
 
-\subsection login_system_abbr Abbreviations
+\subsection old_login_system_abbr Abbreviations
 
 \b Services
 
@@ -30,7 +30,7 @@ running a NeL-based system.
 - \b "SV":	ShardValidation
 - \b "CC":	ClientConnected
 
-\subsection login_system_steps Login system steps
+\subsection old_login_system_steps Login system steps
 
 \c Sxx is the step number, you can search the code for this step is coded.
 
@@ -142,7 +142,7 @@ for the client to test the DNS' response against this range, in order to thwart 
 		  know exactly how many people are on each shard.
 
 
-\subsection logout_system_steps Logout system steps
+\subsection old_logout_system_steps Logout system steps
 
 
 It's similar to steps S13 to S16. The FES receives the disconnection of a client.
@@ -151,7 +151,7 @@ is disconnected. The WS receives the message and sends the same message to the L
 the message and handles it.
 
 
-\subsection login_system_notes Side notes
+\subsection old_login_system_notes Side notes
 
 Whenever a shard starts, the WS establishes a permanent link with the LS,
 using an encrypted link (it is assumed that the LS and WS are located on two

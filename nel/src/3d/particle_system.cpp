@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.42 2002/02/15 16:59:30 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.43 2002/02/20 11:01:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,7 +154,7 @@ void CParticleSystem::notifyMaxNumFacesChanged(void)
 	
 	_MaxNumFacesWanted = 0;	
 	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
-	{		
+	{				
 		_MaxNumFacesWanted += (*it)->querryMaxWantedNumFaces();
 	}
 }
@@ -165,7 +165,9 @@ float CParticleSystem::getWantedNumTris(float dist)
 {
 			 	 
 	if (dist > _MaxViewDist) return 0;
-	else return ((1.f - dist * _InvMaxViewDist) * _MaxNumFacesWanted);	
+	float retValue = ((1.f - dist * _InvMaxViewDist) * _MaxNumFacesWanted);	
+	nlassertex(retValue >= 0 && retValue < 10000, ("dist = %f, _MaxViewDist = %f, _MaxNumFacesWanted = %d, retValue = %f",  dist, _MaxViewDist, _MaxNumFacesWanted, retValue));
+	return retValue;
 }
 
 
@@ -322,28 +324,28 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 					}
 				}			
 			}
-
 			updateLODRatio();
 
 			// process passes
 			float realEt = _KeepEllapsedTimeForLifeUpdate ? (ellapsedTime / nbPass)
 														  : et;
 			do
-			{
-				stepLocated(PSEmit, et, realEt);
-				stepLocated(PSCollision,et,  realEt);
-				stepLocated(PSMotion, et, realEt);
-				stepLocated(PSCollision, et, realEt);
-				stepLocated(PSDynamic, et, realEt);
-				stepLocated(PSPostdynamic, et, realEt);
-				_SystemDate += et;
+			{	
+				_SystemDate += realEt;				
+				for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+				{
+					(*it)->updateLife(realEt);
+					(*it)->step(PSMotion, et, realEt);					
+				}
+				stepLocated(PSEmit, et,  realEt);
+				stepLocated(PSCollision, et,  realEt);
 			}
 			while (--nbPass);
 			
 			// perform parametric motion if present
 			for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 			{
-				if ((*it)->isParametricMotionEnabled()) (*it)->performParametricMotion(_SystemDate, ellapsedTime);
+				if ((*it)->isParametricMotionEnabled()) (*it)->performParametricMotion(_SystemDate, ellapsedTime, realEt);
 			}				
 			
 		}

@@ -1,7 +1,7 @@
 /** \file list_manager.h
  * Sevral class for objects manipulation.
  *
- * $Id: list_manager.h,v 1.6 2001/05/29 15:18:29 chafik Exp $
+ * $Id: list_manager.h,v 1.7 2001/05/29 15:47:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,7 @@ namespace NLAIAGENT
 
 		virtual CConstIteratorContener getIterator() const
 		{
-			return getIterator();
+			return _List->getIterator();
 		}
 		
 		virtual void cpy(const IObjectIA &o);

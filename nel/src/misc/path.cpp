@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.13 2001/12/10 17:02:50 lecroart Exp $
+ * $Id: path.cpp,v 1.14 2001/12/13 13:30:01 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -170,7 +170,7 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 	}
 }
 
-string CPath::lookup (const string &filename, bool throwException)
+string CPath::lookup (const string &filename, bool throwException, bool displayWarning)
 {
 	// Try to find in the current directory
 	if ( CFile::fileExists(filename) )
@@ -215,7 +215,8 @@ string CPath::lookup (const string &filename, bool throwException)
 
 
 	// Not found
-	nlwarning ("CPath::lookup(%s): file not found", filename.c_str());
+	if (displayWarning)
+		nlwarning ("CPath::lookup(%s): file not found", filename.c_str());
 
 	if (throwException)
 		throw EPathNotFound (filename);

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.10 2002/04/25 08:30:54 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.11 2002/04/25 12:22:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,7 @@ protected:
 	afx_msg void OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult);	
+	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 	//}}AFX_MSG
 
 	CImageList _ImageList ;  // the image list containing the icons

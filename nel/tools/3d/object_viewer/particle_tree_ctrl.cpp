@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.33 2002/04/25 08:30:54 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.34 2002/04/25 12:22:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -235,7 +235,7 @@ BEGIN_MESSAGE_MAP(CParticleTreeCtrl, CTreeCtrl)
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelchanged)
 	ON_WM_RBUTTONDOWN()
 	ON_NOTIFY_REFLECT(TVN_ENDLABELEDIT, OnEndlabeledit)
-
+	ON_WM_CHAR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -799,7 +799,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName())));
 
 					if (newModel)
-					{			
+					{		
+						_ParticleDlg->StartStopDlg->reset();
 						CParticleSystemModel *psm = newModel;					
 						psm->setEditionMode(true); // this also force the system instanciation
 						CParticleSystem      *ps  = psm->getPS();
@@ -1167,3 +1168,10 @@ NLMISC::CMatrix CParticleTreeCtrl::getElementMatrix(void) const
 	return NLMISC::CMatrix::Identity;
 }
 
+
+void CParticleTreeCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
+{
+	// TODO: Add your message handler code here and/or call default
+	
+	CTreeCtrl::OnChar(nChar, nRepCnt, nFlags);
+}

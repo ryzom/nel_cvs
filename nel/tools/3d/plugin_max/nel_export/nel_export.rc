@@ -431,6 +431,9 @@ BEGIN
     CONTROL         "Allow automatic animation. If the shape is ""obj.shape"", then it will bind ""obj.anim"" automatically.",
                     IDC_AUTOMATIC_ANIM,"Button",BS_AUTO3STATE | BS_MULTILINE | 
                     WS_TABSTOP,5,65,315,10
+    CONTROL         "Export SSS track (Skeleton Spawn Script)",
+                    IDC_EXPORT_SSS_TRACK,"Button",BS_AUTO3STATE | WS_TABSTOP,
+                    5,80,310,10
 END
 
 

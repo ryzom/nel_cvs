@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.58 2004/06/03 10:18:13 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.59 2004/07/08 16:12:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -285,6 +285,7 @@ public:
 	int						ExportNodeAnimation;
 	int						PrefixeTracksNodeName;
 	int						ExportNoteTrack;
+	int						ExportSSSTrack;
 	int						ExportAnimatedMaterials;
 	int						AutomaticAnimation;
 
@@ -2412,6 +2413,7 @@ int CALLBACK AnimationDialogCallback (
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_SETCHECK, currentParam->ExportNoteTrack, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_SSS_TRACK), BM_SETCHECK, currentParam->ExportSSSTrack, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_SETCHECK, currentParam->ExportAnimatedMaterials, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NODE_ANIMATION), BM_SETCHECK, currentParam->ExportNodeAnimation, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATION_PREFIXE_NAME), BM_SETCHECK, currentParam->PrefixeTracksNodeName, 0);
@@ -2431,6 +2433,7 @@ int CALLBACK AnimationDialogCallback (
 					case IDOK:
 						{
 							currentParam->ExportNoteTrack = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);
+							currentParam->ExportSSSTrack = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_SSS_TRACK), BM_GETCHECK, 0, 0);
 							currentParam->ExportAnimatedMaterials = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_GETCHECK, 0, 0);
 							currentParam->ExportNodeAnimation = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NODE_ANIMATION), BM_GETCHECK, 0, 0);
 							currentParam->PrefixeTracksNodeName = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATION_PREFIXE_NAME), BM_GETCHECK, 0, 0);
@@ -2438,6 +2441,7 @@ int CALLBACK AnimationDialogCallback (
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
+					case IDC_EXPORT_SSS_TRACK:
 					case IDC_EXPORT_ANIMATED_MATERIALS:
 					case IDC_EXPORT_ANIMATION_PREFIXE_NAME:
 					case IDC_EXPORT_NODE_ANIMATION:
@@ -2669,6 +2673,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.GetInterfaceNormalsFromSceneObjects = CExportNel::getScriptAppData (node, NEL3D_APPDATA_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS, 0);
 		param.DontExport=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED);
 		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED);
+		param.ExportSSSTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SSS_TRACK, BST_UNCHECKED);
 		param.ExportAnimatedMaterials=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, BST_UNCHECKED);
 		param.ExportNodeAnimation=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NODE_ANIMATION, BST_UNCHECKED);
 		param.PrefixeTracksNodeName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME, BST_UNCHECKED);
@@ -2865,6 +2870,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.DontExport= BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED)!=param.ExportNoteTrack)
 				param.ExportNoteTrack = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SSS_TRACK, BST_UNCHECKED)!=param.ExportSSSTrack)
+				param.ExportSSSTrack = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, BST_UNCHECKED)!=param.ExportAnimatedMaterials)
 				param.ExportAnimatedMaterials = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NODE_ANIMATION, BST_UNCHECKED)!=param.ExportNodeAnimation)
@@ -3155,6 +3162,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, param.DontExport);
 					if (param.ExportNoteTrack != BST_INDETERMINATE)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, param.ExportNoteTrack);
+					if (param.ExportSSSTrack != BST_INDETERMINATE)
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_SSS_TRACK, param.ExportSSSTrack);
 					if (param.ExportAnimatedMaterials != BST_INDETERMINATE)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, param.ExportAnimatedMaterials);
 					if (param.ExportNodeAnimation != BST_INDETERMINATE)

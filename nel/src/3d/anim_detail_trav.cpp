@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.13 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.14 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,9 @@ void				CAnimDetailTrav::traverse()
 	// Traverse all nodes of the visibility list.
 	for(uint i=0; i<_CurrentNumVisibleModels; i++)
 	{
+		// NB: some model creation may be done by CParticleSystemModel during this pass.
+		// createModel() may resize _VisibleList.
+		// Hence, must test the actual _VisibleList vector, and not a temporary pointer.
 		CTransform		*model= _VisibleList[i];
 		// If this object has an ancestorSkeletonModel
 		if(model->_AncestorSkeletonModel)

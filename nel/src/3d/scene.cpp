@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.125 2004/06/29 13:36:47 vizerie Exp $
+ * $Id: scene.cpp,v 1.126 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@
 #include "3d/lod_character_manager.h"
 #include "3d/seg_remanence.h"
 #include "3d/async_texture_manager.h"
+#include "3d/skeleton_spawn_script.h"
 
 #include <memory>
 
@@ -188,7 +189,7 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 	_VisualCollisionManagerForShadow= NULL;
 
 	_WaterCallback = NULL;
-	_DeleteModelLater = false;
+	_IsRendering = false;
 
 	_FirstFlare = NULL;
 
@@ -201,14 +202,44 @@ void	CScene::release()
 	if( _QuadGridClipManager )
 		_QuadGridClipManager->reset();
 
-	// First, delete models
+	// First, delete models.
 	set<CTransform*>::iterator	it;
 	it= _Models.begin();
 	while( it!=_Models.end())
 	{
-		deleteModel(*it);
+		CTransform	*tr= *it;
+		// Don't delete The Roots, because used, for instance in ~CSkeletonModel()
+		if(tr!=Root && tr!=RootCluster && tr!=SonsOfAncestorSkeletonModelGroup)
+			deleteModel(tr);
+		// temp erase from the list
+		else
+			_Models.erase(it);
+		// NB: important to take begin(), and not it++, cause ~CSkeletonModel() may delete ScriptSpawned models
 		it= _Models.begin();
 	}
+
+	// Then delete the roots
+	// reinsert
+	if(Root)									_Models.insert(Root);
+	if(RootCluster)								_Models.insert(RootCluster);
+	if(SonsOfAncestorSkeletonModelGroup)		_Models.insert(SonsOfAncestorSkeletonModelGroup);
+	// delete in the reverse order of initDefaultRoots()
+	if(SonsOfAncestorSkeletonModelGroup)
+	{
+		deleteModel(SonsOfAncestorSkeletonModelGroup);
+		SonsOfAncestorSkeletonModelGroup= NULL;
+	}
+	if(RootCluster)
+	{
+		deleteModel(RootCluster);
+		RootCluster= NULL;
+	}
+	if(Root)
+	{
+		deleteModel(Root);
+		Root= NULL;
+	}
+
 	// No models at all.
 	_UpdateModelList= NULL;
 
@@ -301,7 +332,8 @@ void	CScene::initQuadGridClipManager ()
 void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::RenderAll */)
 {	
 	// Do not delete model during the rendering
-	_DeleteModelLater = true;
+	// Also do not create model with CSkeletonSpawnScript model animation
+	_IsRendering = true;
 		
 	if ((renderPart & _RenderedPart) != 0) // start to render again ?
 	{
@@ -397,11 +429,15 @@ void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::
 	_RenderedPart = (UScene::TRenderPart) (_RenderedPart | renderPart);
 
 	// Delete model deleted during the rendering
-	_DeleteModelLater = false;
+	_IsRendering = false;
 	uint i;
 	for (i=0; i<_ToDelete.size(); i++)
 		deleteModel (_ToDelete[i]);
 	_ToDelete.clear ();
+
+	// Special for SkeletonSpawnScript animation. create models spawned now
+	flushSSSModelRequests();
+
 
 	/*
 	uint64 total = PSStatsRegisterPSModelObserver +
@@ -1109,8 +1145,16 @@ void	CScene::deleteModel(CTransform *model)
 		return;
 
 	// No model delete during the render
-	if (_DeleteModelLater)
+	if (_IsRendering)
+	{
+		// add ot list of object to delete
 		_ToDelete.push_back (model);
+		// remove this object from the RenderTrav, hence it won't be displayed
+		// still animDetail/Light/LoadBalance it. This is unusefull, but very rare
+		// and I prefer doing like this than to add a NULL ptr Test in each Traversal (which I then must do in CRenderTrav)
+		RenderTrav.removeRenderModel(model);
+	}
+	// standard delete
 	else
 	{
 		set<CTransform*>::iterator	it= _Models.find(model);
@@ -1501,6 +1545,21 @@ void CScene::renderOcclusionTestMeshs()
 	getDriver()->setPolygonMode(oldPolygonMode);
 }
 
+// ***************************************************************************
+void CScene::addSSSModelRequest(const class CSSSModelRequest &req)
+{
+	_SSSModelRequests.push_back(req);
+}
+
+// ***************************************************************************
+void CScene::flushSSSModelRequests()
+{
+	for(uint i=0;i<_SSSModelRequests.size();i++)
+	{
+		_SSSModelRequests[i].execute();
+	}
+	_SSSModelRequests.clear();
+}
 
 
 } // NL3D

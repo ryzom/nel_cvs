@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.57 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.58 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,8 +58,59 @@ void		CSkeletonModel::registerBasic()
 
 
 // ***************************************************************************
+CTrackDefaultString		CSkeletonModel::_DefaultSpawnScript;
+
+
+// ***************************************************************************
+IAnimatedValue	*CSkeletonModel::getValue (uint valueId)
+{
+	// what value ?
+	switch (valueId)
+	{
+	case SpawnScriptValue: return &_SpawnScript;
+	}
+
+	return CTransformShape::getValue(valueId);
+}
+
+// ***************************************************************************
+const char	*CSkeletonModel::getValueName (uint valueId) const
+{
+	// what value ?
+	switch (valueId)
+	{
+	case SpawnScriptValue: return getSpawnScriptValueName();
+	}
+	
+	return CTransformShape::getValueName(valueId);
+}
+
+// ***************************************************************************
+ITrack		*CSkeletonModel::getDefaultTrack (uint valueId)
+{
+	// what value ?
+	switch (valueId)
+	{
+	case SpawnScriptValue: return &_DefaultSpawnScript;
+	}
+	
+	return CTransformShape::getDefaultTrack(valueId);
+}
+
+// ***************************************************************************
 void		CSkeletonModel::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
 {
+	/* add the Spawn Script value. The animation is evaluated at detail time, as the script evaluation.
+		This seems dangerous (create and delete models at evalDetail time) but works because:
+		- deletedModels() in a current CScene::render() are delayed to end of render() 
+			and are "temp removed" from the render trav
+		- createdModels() in CSkeletonSpawnScript are delayed to the end of CScene::render()
+		- if a skeleton is not visible, or in LOD form, then its sticked SpawnedModels are not visible too,
+			wether or not they are too old regarding the animation time
+	*/
+	_SpawnScriptChannelId= addValue(chanMixer, SpawnScriptValue, OwnerBit, prefix, true);
+	
+	// add standard
 	CTransformShape::registerToChannelMixer(chanMixer, prefix);
 
 	// Add any bones.
@@ -116,6 +167,11 @@ CSkeletonModel::CSkeletonModel()
 	// ShadowMap
 	CTransform::setIsShadowMapCaster(true);
 	_ShadowMap= NULL;
+
+	// SpawnScript
+	_SSSWOPos= CVector::Null;
+	_SSSWODir= CVector::J;
+	_SpawnScriptChannelId= -1;
 }
 
 	
@@ -125,6 +181,9 @@ CSkeletonModel::~CSkeletonModel()
 	// if initModel() called
 	if(getOwnerScene())
 	{
+		// release the _SpawnScriptEvaluator (delete any instance sticked)
+		_SpawnScriptEvaluator.release(getOwnerScene());
+
 		// remove from scene
 		getOwnerScene()->eraseSkeletonModelToList(_ItSkeletonInScene);
 	}
@@ -363,7 +422,9 @@ void		CSkeletonModel::updateBoneToCompute()
 		}
 	}
 
-	// For 
+	// Enable SpawnScript animation only if we are not in CLod
+	if(_SpawnScriptChannelId>=0 && chanMixer)
+		chanMixer->lodEnableChannel(_SpawnScriptChannelId, !isDisplayedAsLodCharacter());
 
 	// computed
 	_BoneToComputeDirty= false;
@@ -712,6 +773,11 @@ void	CSkeletonModel::traverseAnimDetail()
 	// Animate skeleton.
 	CTransformShape::traverseAnimDetailWithoutUpdateWorldMatrix();
 
+	// If in normal mode, must update the SpawnScript
+	if(!isDisplayedAsLodCharacter())
+	{
+		_SpawnScriptEvaluator.evaluate(this);
+	}
 
 	// Prepare Lod Bone interpolation.
 	//===============
@@ -2089,6 +2155,7 @@ void		CSkeletonModel::renderIntoSkeletonShadowMap(CSkeletonModel *rootSkeleton, 
 		stickModel->renderIntoSkeletonShadowMap(rootSkeleton, castMat);
 	}
 }
+
 
 
 } // NL3D

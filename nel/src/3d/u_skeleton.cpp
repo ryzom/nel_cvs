@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: u_skeleton.cpp,v 1.2 2004/05/12 12:51:50 corvazier Exp $
+ * $Id: u_skeleton.cpp,v 1.3 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -409,5 +409,40 @@ IAnimCtrl	*USkeleton::getBoneAnimCtrl(uint boneId) const
 }
 
 // ***************************************************************************
+void					USkeleton::setSSSWOPos(const NLMISC::CVector &pos)
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+	CSkeletonModel	*object = getObjectPtr();
+	object->setSSSWOPos(pos);
+}
+
+// ***************************************************************************
+const NLMISC::CVector	&USkeleton::getSSSWOPos() const
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+	CSkeletonModel	*object = getObjectPtr();
+	return object->getSSSWOPos();
+}
+
+// ***************************************************************************
+void					USkeleton::setSSSWODir(const NLMISC::CVector &dir)
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+	CSkeletonModel	*object = getObjectPtr();
+	object->setSSSWODir(dir);
+}
+
+// ***************************************************************************
+const NLMISC::CVector	&USkeleton::getSSSWODir() const
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+	CSkeletonModel	*object = getObjectPtr();
+	return object->getSSSWODir();
+}
+
 
 } // NL3D

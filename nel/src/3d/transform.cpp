@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.75 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: transform.cpp,v 1.76 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -964,10 +964,24 @@ void			CTransform::updateWorldMatrixFromFather()
 		}
 		else
 		{
-			// get the worldMatrix of the bone if I am sticked.
-			const CMatrix &parentWM= _FatherSkeletonModel->Bones[_FatherBoneId].getWorldMatrix();
-			// combine worldMatrix
-			_WorldMatrix= parentWM * _LocalMatrix;
+			// get the worldMatrix of the bone if I am sticked (standard stick)
+			if(!getStateFlag(SSSWO))
+			{
+				const CMatrix &parentWM= _FatherSkeletonModel->Bones[_FatherBoneId].getWorldMatrix();
+				// combine worldMatrix
+				_WorldMatrix= parentWM * _LocalMatrix;
+			}
+			// Special SkeletonSpawnScript stick
+			else
+			{
+				// The parent matrix must be computed from a special matrix given to the skeleton model
+				CMatrix		parentWM;
+				parentWM.setRot(CVector::I, _FatherSkeletonModel->getSSSWODir(), CVector::K);
+				parentWM.normalize(CMatrix::YZX);
+				parentWM.setPos(_FatherSkeletonModel->getSSSWOPos());
+				// combine worldMatrix
+				_WorldMatrix= parentWM * _LocalMatrix;
+			}
 		}
 	}
 }

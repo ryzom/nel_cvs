@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.12 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animation_set_user.h,v 1.13 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NL3D
 
 
 class	CPlayListManagerUser;
+class	CDriverUser;
 
 
 // ***************************************************************************
@@ -56,15 +57,19 @@ class CAnimationSetUser : public UAnimationSet
 {
 private:
 	NLMISC::CSmartPtr<CAnimationSet>		_AnimationSet;
+	CDriverUser								*_Owner;
 	friend class CPlayListManagerUser;
 	friend class CSceneUser;
 
 public:
 
 	/// Constructor
-	CAnimationSetUser()
+	CAnimationSetUser(CDriverUser *owner)
 	{
 		NL3D_MEM_ANIMATION_SET
+
+		nlassert(owner);
+		_Owner= owner;
 
 		nlassert((uint)UAnimationSet::NotFound == (uint)CAnimationSet::NotFound );
 
@@ -73,10 +78,13 @@ public:
 	}
 
 	/// Constructor
-	CAnimationSetUser(NLMISC::IStream	&f)
+	CAnimationSetUser(CDriverUser *owner, NLMISC::IStream	&f)
 	{
 		NL3D_MEM_ANIMATION_SET
 
+		nlassert(owner);
+		_Owner= owner;
+		
 		nlassert((uint)UAnimationSet::NotFound == (uint)CAnimationSet::NotFound );
 
 		// create a smartptred animation set. DO NOT Allow header compression, cause serial()
@@ -125,12 +133,7 @@ public:
 	/**
 	  *  Build the animation set. Call build after adding all your animations.
 	  */
-	virtual	void build ()
-	{
-		NL3D_MEM_ANIMATION_SET
-
-		_AnimationSet->build ();
-	}
+	virtual	void build ();
 
 	/**
 	  *  Add a skeleton weight in the animation set.

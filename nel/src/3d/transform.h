@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.56 2004/07/01 09:36:02 berenguier Exp $
+ * $Id: transform.h,v 1.57 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -583,6 +583,12 @@ public:
 	// test if the model is a flare
 	virtual	bool isFlare() const { return false; }	
 
+
+	/// Don't use, used by CSkeletonSpawnScript to indicate that the WorldMatrix of this object is special
+	void		setSSSWO(bool state) {setStateFlag(SSSWO, state);}
+	bool		getSSSWO() const {return getStateFlag(SSSWO)!=0;}
+
+
 // ********
 private:
 	CHrcTrav::TVisibility	Visibility;
@@ -733,7 +739,8 @@ private:
 	friend class	CScene;
 	friend class	CClipTrav;
 	friend class	CAnimDetailTrav;
-
+	friend class	CRenderTrav;
+	
 	// The Scene which owns us
 	CScene			*_OwnerScene;
 
@@ -851,9 +858,11 @@ private:
 		ForceClipRoot			= 0x2000000,// Force the object to always be attached to the root
 		                                    // As a consequence, it can't be inserted into a cluster system (even the root cluster)
 											// and is thus always visible when in the frustum
-		ClusterSystemAuto		= 0x4000000
+		ClusterSystemAuto		= 0x4000000,
 
-		// NB: may continue on >=0x8000000
+		SSSWO					= 0x8000000	// Special for SkeletonSpawnScript. if set, the WorldMatrix is special
+
+		// NB: may continue on >=0x10000000
 	};
 
 	/// Flags for the General State of the Transform. They are both static or dynamic flags.
@@ -895,8 +904,8 @@ protected:
 	sint64		_LocalDate;				// The update date of the LocalMatrix.
 	/// Hrc OUT variables.
 	CMatrix		_WorldMatrix;
-	bool		_WorldVis;			// Is the node visible? (enabled?)
 	sint64		_WorldDate;			// The update date of the WorldMatrix.
+	bool		_WorldVis;			// Is the node visible? (enabled?)
 	// Transform Specicic Hrc
 	bool		_Frozen;
 	bool		_DontUnfreezeChildren; // Usefull when cluster system move to not test instance again
@@ -917,14 +926,19 @@ protected:
 
 	/// date of last traverseClip()
 	sint64		_ClipDate;
-	/// set to true is the object is visible (not clipped).
-	bool		_Visible;
 	// The index of the Observer in the _VisibleList; -1 (default) means not in
 	sint		_IndexInVisibleList;
+	/// set to true is the object is visible (not clipped).
+	bool		_Visible;
 
 	// @}
 
-
+	/// \name Render Traversal
+	// @{
+	// Used by CRenderTrav. see CRenderTrav::removeRenderModel() implementation
+	uint8		_IndexLSBInRenderList;
+	// @}
+	
 	/// \name AnimDetail Traversal
 	// @{
 

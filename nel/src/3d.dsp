@@ -1318,6 +1318,14 @@ SOURCE=.\3d\play_list_manager.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\skeleton_spawn_script.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\skeleton_spawn_script.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\skeleton_weight.cpp
 # End Source File
 # Begin Source File

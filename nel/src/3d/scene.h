@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.56 2004/06/29 13:44:38 vizerie Exp $
+ * $Id: scene.h,v 1.57 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,6 +286,8 @@ public:
 	/// get the number of time render has been called
 	uint64				getNumRender() const { return _NumRender; }
 
+	/// true if currently rendering
+	bool				isRendering() const {return _IsRendering;}
 
 	/// \name LoadBalancing mgt.
 	//@{
@@ -527,6 +529,10 @@ public:
 	void						unregisterShadowCasterToList(CTransform *sc);
 	ItShadowCasterList			getShadowCasterListBegin() {return _ShadowCasterList.begin();}
 	ItShadowCasterList			getShadowCasterListEnd() {return _ShadowCasterList.end();}
+
+	/// For skeleton spawn script model creation
+	void						addSSSModelRequest(const class CSSSModelRequest &req);
+
 	// @}
 
 
@@ -779,11 +785,15 @@ private:
 	CVisualCollisionManager		*_VisualCollisionManagerForShadow;
 
 	// Delayed model delete
-	bool			_DeleteModelLater;
+	bool			_IsRendering;
 	std::vector<CTransform*>	_ToDelete;
 
 	UScene::TRenderPart	_RenderedPart;
 	void			renderOcclusionTestMeshsWithCurrMaterial();
+
+	/// Delayed model creation For skeleton spawn script animation
+	std::vector<class CSSSModelRequest>		_SSSModelRequests;
+	void									flushSSSModelRequests();
 };
 
 

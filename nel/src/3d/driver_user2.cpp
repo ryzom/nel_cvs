@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.25 2004/06/23 09:13:14 besson Exp $
+ * $Id: driver_user2.cpp,v 1.26 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,7 +167,7 @@ UAnimationSet			*CDriverUser::createAnimationSet()
 {
 	NL_ALLOC_CONTEXT( 3dAnmSt )
 	
-	return _AnimationSets.insert(new CAnimationSetUser());
+	return _AnimationSets.insert(new CAnimationSetUser(this));
 }
 // ***************************************************************************
 UAnimationSet			*CDriverUser::createAnimationSet(const std::string &animationSetFile) 
@@ -179,7 +179,7 @@ UAnimationSet			*CDriverUser::createAnimationSet(const std::string &animationSet
 	// throw exception if not found.
 	std::string	path= CPath::lookup(animationSetFile);
 	f.open(path);
-	return _AnimationSets.insert(new CAnimationSetUser(f));
+	return _AnimationSets.insert(new CAnimationSetUser(this, f));
 }
 // ***************************************************************************
 void			CDriverUser::deleteAnimationSet(UAnimationSet *animationSet) 

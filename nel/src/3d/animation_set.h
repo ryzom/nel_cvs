@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.7 2004/06/17 08:18:40 vizerie Exp $
+ * $Id: animation_set.h,v 1.8 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,8 +40,11 @@ class IStream;
 struct EStream;
 }
 
-namespace NL3D {
+namespace NL3D 
+{
 
+class IDriver;
+class CShapeBank;
 
 /**
  * An CAnimationSet is set of CAnimation. It manages global channel ID for a set of
@@ -251,6 +254,13 @@ public:
 	/// see CAnimationSet ctor
 	bool	isAnimHeaderOptimized() const {return _AnimHeaderOptimisation;}
 
+	/** For SkeletonSpawnScript (SSS) animation.
+	 *	call this after build(). This method preload ALL the shapes/texture 
+	 *	that can be spawned due to any animation
+	 */
+	void	preloadSSSShapes(IDriver &drv, CShapeBank &shapeBank);
+
+
 private:
 	std::vector <CAnimation*>		_Animation;
 	std::vector <CSkeletonWeight*>	_SkeletonWeight;
@@ -263,6 +273,8 @@ private:
 	uint							_SampleDivisor;
 	bool							_AnimHeaderOptimisation;
 	bool							_Built;
+	/// All Shapes that can be spawned in any animation
+	std::set<std::string>			_SSSShapes;
 
 
 	void	buildChannelNameFromMap();

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.124 2004/07/01 09:37:04 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.125 2004/07/08 16:10:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,7 @@ static char SDir[256];
 
 uint SkeletonUsedForSound = 0xFFFFFFFF;
 CSoundContext SoundContext;
+
 
 //
 //	Note!
@@ -1143,7 +1144,6 @@ void CObjectViewer::go ()
 		if (isParentWnd(_MainFrame->m_hWnd, GetForegroundWindow()))
 		{
  			CNELU::Driver->activate ();			
-
 
 			// Handle animation
 			_AnimationDlg->handle ();
@@ -3540,6 +3540,10 @@ void CObjectViewer::addAnimation (NL3D::CAnimation* anim, const char* filename, 
 
 	// Rebuild the animationSet
 	_ListInstance[instance]->AnimationSet.build ();
+	if(CNELU::Driver && CNELU::ShapeBank)
+	{
+		_ListInstance[instance]->AnimationSet.preloadSSSShapes(*CNELU::Driver, *CNELU::ShapeBank);
+	}
 
 	_SoundAnimDlg->refresh (TRUE);
 }

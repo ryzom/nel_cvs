@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.18 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_skeleton.h,v 1.19 2004/07/08 16:09:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -204,6 +204,13 @@ public:
 	 */
 	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0, bool forceCompute = false, bool computeInWorld= false);
 
+	/// SkeletonSpawnScript (SSS) special: World Spawned objects are still relative to this position (default: Null)
+	void					setSSSWOPos(const NLMISC::CVector &pos);
+	const NLMISC::CVector	&getSSSWOPos() const;
+	/// SkeletonSpawnScript special: World Spawned objects are still relative to this direction (default: J)
+	void					setSSSWODir(const NLMISC::CVector &dir);
+	const NLMISC::CVector	&getSSSWODir() const;
+	
 	// @}
 
 

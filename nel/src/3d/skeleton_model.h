@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.40 2004/07/01 09:36:02 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.41 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/bone.h"
 #include "3d/mrm_level_detail.h"
 #include "3d/lod_character_instance.h"
+#include "3d/skeleton_spawn_script.h"
 
 namespace NLMISC
 {
@@ -103,12 +104,22 @@ public:
 	enum	TAnimValues
 	{
 		OwnerBit= CTransformShape::AnimValueLast, 
-
+		SpawnScriptValue,
 		AnimValueLast,
 	};
 
-	// Register bones into chanMixer.
+	/// From IAnimatable
+	virtual IAnimatedValue* getValue (uint valueId);
+	/// From IAnimatable
+	virtual const char *getValueName (uint valueId) const;
+	/// Default Track Values for SpawnScriptValue is empty string
+	virtual ITrack* getDefaultTrack (uint valueId);
+	/// Register bones into chanMixer.
 	virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix);
+
+	/// Return the name of the spwan script track
+	static const char *getSpawnScriptValueName() {return "spawn_script";}
+
 	// @}
 
 
@@ -239,6 +250,20 @@ public:
 	 *	\return true if the bbox is computed, false otherwise.
 	 */
 	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompute = false, bool computeInWorld= false);
+
+	/// return the current Script of Spwan.
+	const std::string		&getSpawnScript() const {return _SpawnScript.Value;}
+	/// set the current Spawn Script (for debug, should only be used by animation)
+	void					setSpawnScript(const std::string &s) {_SpawnScript.Value= s;}
+
+	/// SkeletonSpawnScript special: World Spawned objects are still relative to this position (default: Null)
+	void			setSSSWOPos(const CVector &pos) {_SSSWOPos= pos;}
+	const CVector	&getSSSWOPos() const {return _SSSWOPos;}
+	/// SkeletonSpawnScript special: World Spawned objects are still relative to this direction (default: J)
+	void			setSSSWODir(const CVector &dir) {_SSSWODir= dir;}
+	const CVector	&getSSSWODir() const {return _SSSWODir;}
+	/// don't use
+	CSkeletonSpawnScript	&getSSSScript() {return _SpawnScriptEvaluator;}
 
 	// @}
 
@@ -522,6 +547,24 @@ private:
 	CShadowMap			*_ShadowMap;
 	void			updateShadowMap(IDriver *driver);
 	void			renderShadowSkins(CMaterial	&castMat);
+
+
+	/// \name Spawn Script Animation
+	// @{
+
+	// The animated Spawn script
+	CAnimatedValueString			_SpawnScript;
+	// The manager which evaluates the script and appropriate process
+	CSkeletonSpawnScript			_SpawnScriptEvaluator;
+	// Special for World Objects
+	CVector							_SSSWOPos;
+	CVector							_SSSWODir;
+	sint							_SpawnScriptChannelId;
+	
+	// Default track
+	static CTrackDefaultString		_DefaultSpawnScript;		// ""
+	// @}
+
 protected:
 	virtual void			createShadowMap();
 	virtual void			deleteShadowMap();

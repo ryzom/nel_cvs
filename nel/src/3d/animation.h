@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.11 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animation.h,v 1.12 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,17 @@ public:
 	// @}
 
 
+	/** For SkeletonSpawnScript (SSS) animation.
+	 *	Add manualy the shapes that can be spawned by the channel "spawn_script" in this animation
+	 *	This add into a vector (avoid duplicates)
+	 *
+	 *	Then CAnimationSet::preloadSSSShapes() can be used after CAnimationSet::build() to force loading 
+	 *	into the ShapeBank/Texture of thoses shapes, so there is no problem of shape loading during animation
+	 */
+	void							addSSSShape(const std::string &shape);
+	const std::vector<std::string>	&getSSSShapes() const {return _SSSShapes;}
+
+
 	/// \name CAnimationSet private
 	// @{
 	/** For each track that support it (CTrackSampled for instance), divide its number of sampled keys, 
@@ -195,6 +206,10 @@ private:
 	std::vector<uint16>	_IdByChannelId;
 	// The AnimationSet. NULL if applyAnimHeaderCompression() NOT called
 	class CAnimationSet	*_AnimationSetOwner;
+
+	// see addSSSShape()
+	std::vector<std::string>		_SSSShapes;
+	
 };
 
 

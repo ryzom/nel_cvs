@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.71 2004/05/14 15:00:14 berenguier Exp $
+ * $Id: export_nel.h,v 1.72 2004/07/08 16:11:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -240,6 +240,30 @@ public:
 
 
 // ***************************************************************************
+/// Skeleton Spawn Script build, used at addAnimation()
+class CSSSBuild
+{
+public:
+	struct CKey
+	{
+		std::string				Value;
+		NL3D::TAnimationTime	Time;
+	};
+	struct CBoneScript
+	{
+		// The name of the bone on which the track is bound
+		std::string			BoneName;
+		// The Temp Track definition
+		std::vector<CKey>	Track;
+	};
+	std::vector<CBoneScript>	Bones;
+	
+	// if not empty, compile all bone scripts, and add to the animation of the skeleton
+	void	compile(NL3D::CAnimation &dest, const char* sBaseName);
+};
+
+
+// ***************************************************************************
 
 /**
  * 3dsmax to NeL export interface for other things that landscape.
@@ -394,15 +418,21 @@ public:
 
 	// Add tracks for the bone and its children (recursive)
 	void							addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, 
-										CAnimationBuildCtx	*animBuildCtx, bool root);
+										CAnimationBuildCtx	*animBuildCtx, bool root, CSSSBuild &ssBuilder);
 
 	// Add biped tracks
 	void							addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName,
-										CAnimationBuildCtx	*animBuildCtx, bool root);
+										CAnimationBuildCtx	*animBuildCtx, bool root, CSSSBuild &ssBuilder);
 
 
 	// Add a note track. It tackes the first note track of the object
 	static void						addNoteTrack(NL3D::CAnimation& animation, INode& node);
+
+	// Add a SkeletonSpawnScript track. It takes the first note track of the object
+	static void						addSSSTrack(CSSSBuild	&ssBuilder, INode& node);
+	
+	// Build a Nel String track from the first NoteTrack
+	static NL3D::CTrackKeyFramerConstString*		buildFromNoteTrack(INode& node);
 
 	// Convert keyframe methods
 	static void						buildNelKey (NL3D::CKeyFloat& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
@@ -922,11 +952,8 @@ private:
 
 	// Add tracks for the node
 	void							addNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName,
-													CAnimationBuildCtx	*animBuildCtx, bool root, 
+													CAnimationBuildCtx	*animBuildCtx, bool root, CSSSBuild &ssBuilder,
 													bool bodyBiped=false);
-
-	// Add tracks for the node's bones 
-	void							addBonesTracks (NL3D::CAnimation& animation, INode& node, const char* parentName);
 
 	// Add tracks for the light
 	void							addLightTracks (NL3D::CAnimation& animation, INode& node, const char* parentName);

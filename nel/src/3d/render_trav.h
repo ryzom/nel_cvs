@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.24 2004/06/29 13:38:43 vizerie Exp $
+ * $Id: render_trav.h,v 1.25 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,11 +123,20 @@ public:
 	 */
 	void			addRenderModel(CTransform *m)
 	{
+		// for possible removeRenderModel()
+		m->_IndexLSBInRenderList= uint8(_CurrentNumVisibleModels&255);
+		// add the model in the list
 		RenderList[_CurrentNumVisibleModels]= m;
-		_CurrentNumVisibleModels++;				
+		_CurrentNumVisibleModels++;
 	}
 	// for createModel().
-	void				reserveRenderList(uint numModels);
+	void			reserveRenderList(uint numModels);
+
+	/* This is for the rare case where objects are deleted during CScene::render(). called by deleteModel()
+	 *	This method don't need to be called by ~CTransform
+	 */
+	void			removeRenderModel(CTransform *m);
+
 	//@}
 
 

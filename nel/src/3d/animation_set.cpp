@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.18 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animation_set.cpp,v 1.19 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,12 @@
 #include "std3d.h"
 
 #include "3d/animation_set.h"
+#include "3d/driver.h"
+#include "3d/shape_bank.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
+#include "nel/misc/algo.h"
 
 
 #include <memory>
@@ -113,6 +116,7 @@ void CAnimationSet::reset ()
 	_ChannelIdByName.clear();
 	_AnimationIdByName.clear();
 	_SkeletonWeightIdByName.clear();
+	_SSSShapes.clear();
 }
 
 // ***************************************************************************
@@ -132,7 +136,8 @@ void CAnimationSet::build ()
 	std::set<std::string> channelNames;
 
 	// For each animation in the set
-	for (uint a=0; a<_Animation.size(); a++)
+	uint a;
+	for (a=0; a<_Animation.size(); a++)
 	{
 		// Fill the set of channel names
 		getAnimation (a)->getTrackNames (channelNames);
@@ -161,6 +166,18 @@ void CAnimationSet::build ()
 			_Animation[a]->applyAnimHeaderCompression (this, _ChannelIdByName);
 		}
 	}
+
+	// Build the set of SSS Shapes from each animation
+	for (a=0; a<_Animation.size(); a++)
+	{
+		const std::vector<std::string>	&shapes= _Animation[a]->getSSSShapes();
+		for(uint s=0;s<shapes.size();s++)
+		{
+			// insert (may be already done)
+			_SSSShapes.insert(shapes[s]);
+		}
+	}
+
 
 	// TestYoyo
 	/*nlinfo("ANIMYOYO: %d channels", _ChannelIdByName.size());
@@ -258,6 +275,55 @@ void	CAnimationSet::buildChannelNameFromMap()
 	for(it= _ChannelIdByName.begin();it!=_ChannelIdByName.end();it++)
 	{
 		_ChannelName[it->second]= it->first;
+	}
+}
+
+// ***************************************************************************
+void	CAnimationSet::preloadSSSShapes(IDriver &drv, CShapeBank &shapeBank)
+{
+	const	std::string		shapeCacheName= "SSS_PreLoad";
+
+	// Create the Animation Set Shape cache if do not exist
+	if(!shapeBank.isShapeCache(shapeCacheName))
+	{
+		// allow "inifinite" number of preloaded shapes
+		shapeBank.addShapeCache(shapeCacheName);
+		shapeBank.setShapeCacheSize(shapeCacheName, 1000000);
+	}
+	
+	// For all files
+	std::set<std::string>::iterator		it;
+	for(it=_SSSShapes.begin();it!=_SSSShapes.end();it++)
+	{
+		string	fileName= toLower(*it);
+
+		// link the shape to the shapeCache
+		shapeBank.linkShapeToShapeCache(fileName, shapeCacheName);
+		
+		// If !present in the shapeBank
+		if( shapeBank.isPresent(fileName)==CShapeBank::NotPresent )
+		{
+			// Don't load it if no more space in the cache
+			if( shapeBank.getShapeCacheFreeSpace(shapeCacheName)>0 )
+			{
+				// load it.
+				shapeBank.load(fileName);
+				
+				// If success
+				if( shapeBank.isPresent(fileName)!=CShapeBank::NotPresent )
+				{
+					// When a shape is first added to the bank, it is not in the cache. 
+					// add it and release it to force it to be in the cache.
+					IShape	*shp= shapeBank.addRef(fileName);
+					if(shp)
+					{
+						//nlinfo("Loading %s", CPath::lookup(fileName.c_str(), false, false).c_str());
+						shp->flushTextures(drv, 0);
+						shapeBank.release(shp);
+					}
+				}
+			}
+		}
 	}
 }
 

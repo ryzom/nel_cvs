@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.52 2004/06/29 13:38:43 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.53 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,6 +166,10 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 		for( ; nNbModels>0; itRdrModel++, nNbModels-- )
 		{
 			CTransform			*pTransform = *itRdrModel;
+
+			// if this entry was killed by removeRenderModel(), skip!
+			if(!pTransform)
+				continue;
 
 			// Yoyo: skins are rendered through skeletons, so models WorldMatrix are all good here (even sticked objects)
 			rPseudoZ = (pTransform->getWorldMatrix().getPos() - CamPos).norm();
@@ -430,6 +434,25 @@ void		CRenderTrav::reserveRenderList(uint numModels)
 	// enlarge only.
 	if(numModels>RenderList.size())
 		RenderList.resize(numModels);
+}
+
+// ***************************************************************************
+void		CRenderTrav::removeRenderModel(CTransform *m)
+{
+	// NB: storing a 8 bit in CTransform, instead of a 32 bits, is just to save space.
+	uint	lsb= m->_IndexLSBInRenderList;
+
+	// this method is rarely called, so don't bother the slow down
+	// btw, we parse the entire list / 256!!! which is surely fast!!
+	for(uint i=lsb;i<_CurrentNumVisibleModels;i+=256)
+	{
+		// if i am really this entry, then set NULL
+		if(RenderList[i]==m)
+		{
+			RenderList[i]= NULL;
+			break;
+		}
+	}
 }
 
 

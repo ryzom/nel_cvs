@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.38 2004/07/08 16:11:14 berenguier Exp $
+ * $Id: export_anim.cpp,v 1.39 2004/07/08 16:12:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,9 +46,6 @@ static Class_ID DefNoteTrackClassID(NOTETRACK_CLASS_ID, 0);
 
 #define BOOL_CONTROL_CLASS_ID 0x984b8d27
 
-
-// TempYoyo
-#pragma optimize("", off)
 
 // --------------------------------------------------
 

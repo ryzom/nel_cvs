@@ -1,7 +1,7 @@
 /** \file animation_set_user.cpp
  * <File description>
  *
- * $Id: animation_set_user.cpp,v 1.7 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animation_set_user.cpp,v 1.8 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/animation_set_user.h"
+#include "3d/driver_user.h"
 
 
 namespace NL3D 
@@ -59,6 +60,19 @@ void CAnimationSetUser::setAnimationSampleDivisor(uint sampleDivisor)
 uint CAnimationSetUser::getAnimationSampleDivisor() const
 {
 	return _AnimationSet->getAnimationSampleDivisor();
+}
+
+// ***************************************************************************
+void CAnimationSetUser::build ()
+{
+	NL3D_MEM_ANIMATION_SET
+
+	// build
+	_AnimationSet->build ();
+
+	// and preload all SSS shapes that can be spawned during animation
+	nlassert(_Owner->getDriver() && _Owner->getShapeBank());
+	_AnimationSet->preloadSSSShapes(*_Owner->getDriver(), ((CShapeBankUser*)_Owner->getShapeBank())->_ShapeBank);
 }
 
 

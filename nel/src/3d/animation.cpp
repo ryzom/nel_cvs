@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.18 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animation.cpp,v 1.19 2004/07/08 16:08:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,7 +106,7 @@ void CAnimation::serial (NLMISC::IStream& f)
 	f.serialCheck ((uint32)'MINA');
 
 	// Serial a version
-	sint version=f.serialVersion (1);
+	sint version=f.serialVersion (2);
 
 	// Serial the name
 	f.serial (_Name);
@@ -121,6 +121,12 @@ void CAnimation::serial (NLMISC::IStream& f)
 	if (version>=1)
 	{
 		f.serial (_MinEndTime);
+	}
+
+	// Serial the SSS shapes
+	if (version>=2)
+	{
+		f.serialCont (_SSSShapes);
 	}
 
 	// TestYoyo
@@ -521,6 +527,12 @@ uint	CAnimation::getIdTrackByChannelId (uint16 channelId) const
 		else
 			return CAnimation::NotFound;
 	}
+}
+
+// ***************************************************************************
+void	CAnimation::addSSSShape(const std::string &shape)
+{
+	_SSSShapes.push_back(shape);
 }
 
 

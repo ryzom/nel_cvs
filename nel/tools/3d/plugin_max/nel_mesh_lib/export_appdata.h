@@ -1,7 +1,7 @@
 /** \file export_appdata.h
  * Define NeL appdata for 3dsmax
  *
- * $Id: export_appdata.h,v 1.7 2004/05/19 14:27:54 berenguier Exp $
+ * $Id: export_appdata.h,v 1.8 2004/07/08 16:11:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,6 +102,7 @@
 #define NEL3D_APPDATA_EXPORT_NOTE_TRACK				(1423062566)
 #define NEL3D_APPDATA_EXPORT_NODE_ANIMATION			(1423062800)
 #define NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME (1423062801)
+#define NEL3D_APPDATA_EXPORT_SSS_TRACK				(1423062802)
 
 /// Export RealTime light
 #define NEL3D_APPDATA_EXPORT_REALTIME_LIGHT			(1423062588)

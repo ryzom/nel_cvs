@@ -1,7 +1,7 @@
 /** \file sound_anim_view.cpp
  * Dialog for the sound animations 
  *
- * $Id: sound_anim_view.cpp,v 1.1 2002/06/18 16:04:59 hanappe Exp $
+ * $Id: sound_anim_view.cpp,v 1.2 2002/06/27 15:42:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,8 @@ bool CSoundAnimView::registerClass()
 	_MarkerBrush.CreateSolidBrush(RGB(0, 0, 0));
 	_SelectBrush.CreateSolidBrush(RGB(0, 210, 210));
 	_RedPen.CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+
+	_Registered = true;
 
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.16 2002/06/10 16:51:09 berenguier Exp $
+ * $Id: hierarchical_timer.h,v 1.17 2002/06/11 09:34:04 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -340,6 +340,9 @@ private:
 		uint64	NumVisits;
 		double	MinTime;
 		double	MaxTime;		
+
+		// build stats from a single node
+		void buildFromNode(CNode *node, double msPerTick);
 		
 		// build stats from a vector of nodes
 		void buildFromNodes(CNode **firstNode, uint numNodes, double msPerTick);
@@ -350,7 +353,7 @@ private:
 		/** Get a string for stats (all stats on the same line)
 		  * \param statEx display extended stats
 		  */
-		void getStats(std::string &dest, bool statEx, bool wantStandardDeviation = false);
+		void getStats(std::string &dest, bool statEx, double rootTotalTime, bool wantStandardDeviation = false);
 	};
 	// Stats and the associated timer
 	struct CTimerStat : public CStats

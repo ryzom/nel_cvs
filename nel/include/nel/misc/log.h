@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.29 2002/03/28 17:44:20 lecroart Exp $
+ * $Id: log.h,v 1.30 2002/06/11 09:34:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,6 +145,13 @@ protected:
 
 	/// "Crop" filter
 	std::list<std::string>			  _PositiveFilter;
+
+	/// Display a string in decorated form to all attached displayers.
+	void displayString (const char *str);
+
+	/// Display a Raw string to all attached displayers.
+	void displayRawString (const char *str);
+
 };
 
 

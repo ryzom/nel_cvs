@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.14 2002/06/11 08:34:01 berenguier Exp $
+ * $Id: hierarchical_timer.cpp,v 1.15 2002/06/11 09:34:13 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -308,8 +308,12 @@ void	CHTimer::display(CLog *log, TSortCriterion criterion, bool displayInline /*
 		CStatSorter sorter(criterion);
 		std::sort(statsPtr.begin(), statsPtr.end(), sorter);		
 	}
-	// 4 ) display statistics
 
+	// 4 ) get root total time.
+	CStats	rootStats;
+	rootStats.buildFromNode( &_RootNode, _MsPerTick);
+
+	// 5 ) display statistics
 	uint maxNodeLenght = 0;
 	std::string format;
 	if (displayInline)
@@ -322,7 +326,7 @@ void	CHTimer::display(CLog *log, TSortCriterion criterion, bool displayInline /*
 	}
 	std::string statsInline;
 
-	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |       min |       max |      mean");
+	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits | loc%% / glb%% |       min |       max |      mean");
 
 	for(TTimerStatPtrVect::iterator statIt = statsPtr.begin(); statIt != statsPtr.end(); ++statIt)
 	{
@@ -334,7 +338,7 @@ void	CHTimer::display(CLog *log, TSortCriterion criterion, bool displayInline /*
 		}
 		else
 		{
-			(*statIt)->getStats(statsInline, displayEx, _WantStandardDeviation);
+			(*statIt)->getStats(statsInline, displayEx, rootStats.TotalTime, _WantStandardDeviation);
 			char out[4096];
 			NLMISC::smprintf(out, 2048, format.c_str(), (*statIt)->Timer->_Name, statsInline.c_str());
 			log->displayRawNL(out);					
@@ -367,7 +371,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		CNode *currNode = nodeLeft.back();
 		
 		nodeStats.push_back();
-		nodeStats.back().buildFromNodes(&currNode, 1, _MsPerTick);
+		nodeStats.back().buildFromNode(currNode, _MsPerTick);
 		nodeStats.back().Node = currNode;
 
 		nodeLeft.pop_back();
@@ -390,7 +394,11 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		std::sort(nodeStatsPtrs.begin(), nodeStatsPtrs.end(), sorter);
 	}
 
-	// 4 ) display statistics
+	// 4 ) get root total time.
+	CStats	rootStats;
+	rootStats.buildFromNode(&_RootNode, _MsPerTick);
+
+	// 5 ) display statistics
 	std::string statsInline;
 	std::string nodePath;
 
@@ -414,7 +422,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		}
 	}
 
-	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |       min |       max |      mean");
+	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits | loc%% / glb%% |       min |       max |      mean");
 
 	for(TNodeStatPtrVect::iterator it = nodeStatsPtrs.begin(); it != nodeStatsPtrs.end(); ++it)
 	{
@@ -426,7 +434,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		}
 		else
 		{
-			(*it)->getStats(statsInline, displayEx, _WantStandardDeviation);
+			(*it)->getStats(statsInline, displayEx, rootStats.TotalTime, _WantStandardDeviation);
 			(*it)->Node->getPath(nodePath);
 
 			char out[2048];
@@ -460,8 +468,13 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		nodeLeft.insert(nodeLeft.end(), currNode->Sons.begin(), currNode->Sons.end());
 
 	}
-	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
-	/// 2 ) walk the timers tree and display infos (cumulate infos of nodes of each execution path)
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits | loc%% / glb%% |       min |       max |      mean", labelNumChar, "");
+
+	/// 2 ) get root total time.
+	CStats	rootStats;
+	rootStats.buildFromNode(&_RootNode, _MsPerTick);
+
+	/// 3 ) walk the timers tree and display infos (cumulate infos of nodes of each execution path)
 	CStats	currNodeStats;
 	std::vector<uint> sonsIndex;
 	uint depth = 0;
@@ -484,7 +497,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 			}
 			TNodeVect &execNodes = nodeMap[currTimer];
 			currNodeStats.buildFromNodes(&execNodes[0], execNodes.size(), _MsPerTick);			
-			currNodeStats.getStats(resultStats, displayEx, _WantStandardDeviation);
+			currNodeStats.getStats(resultStats, displayEx, rootStats.TotalTime, _WantStandardDeviation);
 			log->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
 		}
 		if (sonsIndex.back() == currTimer->_Sons.size())
@@ -524,11 +537,16 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 	nlassert(_BenchStartedOnce); // should have done at least one bench
 	bool wasBenching = _Benching;	
 
+	// get root total time.
+	CStats	rootStats;
+	rootStats.buildFromNode(&_RootNode, _MsPerTick);
+
+
 	// display header.
 	TDisplayInfo	dummyDspInfo;
 	log->displayNL("HTIMER: =========================================================================");
 	log->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
-	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits | loc%% / glb%% |       min |       max |      mean", labelNumChar, "");
 
 
 	// use list because vector of vector is bad.
@@ -573,7 +591,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 				for(i=0; i<children.size(); i++)
 				{
 					CNode	*childNode= node->Sons[i];
-					stats[i].buildFromNodes(&childNode, 1, _MsPerTick);
+					stats[i].buildFromNode(childNode, _MsPerTick);
 					stats[i].Node = childNode;
 					ptrStats[i]= &stats[i];
 				}
@@ -604,8 +622,8 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 			}
 
 			// build the stats string.
-			currNodeStats.buildFromNodes(&node, 1, _MsPerTick);			
-			currNodeStats.getStats(resultStats, displayEx, _WantStandardDeviation);
+			currNodeStats.buildFromNode(node, _MsPerTick);			
+			currNodeStats.getStats(resultStats, displayEx, rootStats.TotalTime, _WantStandardDeviation);
 
 			// display
 			log->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
@@ -638,6 +656,12 @@ void	CHTimer::clear()
 	_RootNode.releaseSons();
 	_CurrNode = &_RootNode;
 	_RootNode.reset();	
+}
+
+//=================================================================
+void CHTimer::CStats::buildFromNode(CNode *node, double msPerTick)
+{
+	buildFromNodes(&node, 1, msPerTick);
 }
 
 //=================================================================
@@ -703,7 +727,7 @@ void CHTimer::CStats::display(CLog *log, bool displayEx, bool wantStandardDeviat
 
 
 //=================================================================
-void CHTimer::CStats::getStats(std::string &dest, bool statEx, bool wantStandardDeviation /*= false*/)
+void CHTimer::CStats::getStats(std::string &dest, bool statEx, double rootTotalTime, bool wantStandardDeviation /*= false*/)
 {
 	char buf[1024];
 	if (!wantStandardDeviation)
@@ -714,8 +738,9 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, bool wantStandard
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %9.3f | %9.3f | %9.3f",
+			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %4.1f%% / %4.1f%% | %9.3f | %9.3f | %9.3f",
 					  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
+					  float(100*TotalTimeWithoutSons/rootTotalTime), float(100*TotalTime/rootTotalTime), 
 					  (float) MinTime, (float) MaxTime, (float) MeanTime
 					 );
 		}
@@ -728,8 +753,9 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, bool wantStandard
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %9.3f | %9.3f | %9.3f | std deviation %9.3f",
+			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %4.1f%% / %4.1f%% | %9.3f | %9.3f | %9.3f | std deviation %9.3f",
 							  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
+							  float(100*TotalTimeWithoutSons/rootTotalTime), float(100*TotalTime/rootTotalTime), 
 							  (float) MinTime, (float) MaxTime, (float) MeanTime,
 							  (float) TimeStandardDeviation
 							);

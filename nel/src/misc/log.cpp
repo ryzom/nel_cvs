@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.38 2002/05/22 16:05:38 cado Exp $
+ * $Id: log.cpp,v 1.39 2002/06/11 09:34:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -206,40 +206,8 @@ bool CLog::attached(IDisplayer *displayer) const
 }
 
 
-/*
- * Display the string with decoration and final new line to all attached displayers
- */
-void CLog::displayNL (const char *format, ...)
+void CLog::displayString (const char *str)
 {
-	if ( noDisplayer() )
-	{
-		return;
-	}
-	
-	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
-
-	if (strlen(str)<NLMISC::MaxCStringSize-1)
-		strcat (str, "\n");
-	else
-		str[NLMISC::MaxCStringSize-2] = '\n';
-
-	display (str);
-}
-
-/*
- * Display the string with decoration to all attached displayers
- */
-void CLog::display (const char *format, ...)
-{
-	if ( noDisplayer() )
-	{
-		return;
-	}
-
-	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
-
 	TDisplayInfo args;
 	time (&args.Date);
 	args.LogType = _LogType;
@@ -268,7 +236,44 @@ void CLog::display (const char *format, ...)
 	}
 
 	unsetPosition();
+}
 
+
+/*
+ * Display the string with decoration and final new line to all attached displayers
+ */
+void CLog::displayNL (const char *format, ...)
+{
+	if ( noDisplayer() )
+	{
+		return;
+	}
+	
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	if (strlen(str)<NLMISC::MaxCStringSize-1)
+		strcat (str, "\n");
+	else
+		str[NLMISC::MaxCStringSize-2] = '\n';
+
+	displayString (str);
+}
+ 
+/*
+ * Display the string with decoration to all attached displayers
+ */
+void CLog::display (const char *format, ...)
+{
+	if ( noDisplayer() )
+	{
+		return;
+	}
+
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	displayString (str);
 /*
 	char cstime[25];
 	strftime( cstime, 25, "%y/%m/%d %H:%M:%S", localtime( &t ) );
@@ -301,40 +306,8 @@ void CLog::display (const char *format, ...)
 }
 
 
-/*
- * Display a string (and nothing more) to all attached displayers
- */
-void CLog::displayRawNL( const char *format, ... )
+void CLog::displayRawString (const char *str)
 {
-	if ( noDisplayer() )
-	{
-		return;
-	}
-
-	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
-
-	if (strlen(str)<NLMISC::MaxCStringSize-1)
-		strcat (str, "\n");
-	else
-		str[NLMISC::MaxCStringSize-2] = '\n';
-
-	displayRaw(str);
-}
-
-/*
- * Display a string (and nothing more) to all attached displayers
- */
-void CLog::displayRaw( const char *format, ... )
-{
-	if ( noDisplayer() )
-	{
-		return;
-	}
-
-	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
-
 	TDisplayInfo args;
 	args.Date = 0;
 	args.LogType = LOG_NO;
@@ -359,6 +332,43 @@ void CLog::displayRaw( const char *format, ... )
 	}
 
 	unsetPosition();
+}
+
+/*
+ * Display a string (and nothing more) to all attached displayers
+ */
+void CLog::displayRawNL( const char *format, ... )
+{
+	if ( noDisplayer() )
+	{
+		return;
+	}
+
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	if (strlen(str)<NLMISC::MaxCStringSize-1)
+		strcat (str, "\n");
+	else
+		str[NLMISC::MaxCStringSize-2] = '\n';
+
+	displayRawString(str);
+}
+
+/*
+ * Display a string (and nothing more) to all attached displayers
+ */
+void CLog::displayRaw( const char *format, ... )
+{
+	if ( noDisplayer() )
+	{
+		return;
+	}
+
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	displayRawString(str);
 }
 
 

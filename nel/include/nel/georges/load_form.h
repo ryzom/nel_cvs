@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.16 2002/10/24 14:44:11 coutelas Exp $
+ * $Id: load_form.h,v 1.17 2002/10/25 16:34:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,6 +121,9 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		packedFilenamePath = packedFilename;
 	}
 
+	// make sure the CSheetId singleton has been properly initialised
+	NLMISC::CSheetId::init(updatePackedSheet);
+
 	bool olde, newe;
 	NLMISC::CIFile::getVersionException(olde, newe);
 	// load the packed sheet if exists
@@ -148,9 +151,6 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		container.clear ();
 	}
 	NLMISC::CIFile::setVersionException(olde, newe);
-
-	// make sure the CSheetId singleton has been properly initialised
-	NLMISC::CSheetId::init(updatePackedSheet);
 
 	// if we don't want to update packed sheet, we nothing more to do
 	if (!updatePackedSheet)

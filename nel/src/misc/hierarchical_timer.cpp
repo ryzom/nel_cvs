@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.1 2002/03/13 13:52:28 cado Exp $
+ * $Id: hierarchical_timer.cpp,v 1.2 2002/05/28 12:55:42 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,124 +26,474 @@
 #include "stdmisc.h"
 
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/common.h"
 #include "nel/misc/debug.h"
 
-#ifdef ALLOW_TIMING_MEASURES
+#include <map>
 
-std::vector<CHTimer*>		CHTimer::_Stack;
-std::vector<CHTimer*>		CHTimer::_Roots;
-double						CHTimer::_TicksPerTest;
-double						CHTimer::_MsPerTick;
-
-
-void	CHTimer::bench()
+namespace NLMISC
 {
-	clear();
-	uint	i;
-	CHTimer		t("Test");
-	CHTimer		g("Global");
 
-	NLMISC::TTicks	st = NLMISC::CTime::getPerformanceTime();
-	g.before();
-	for (i=0; i<10000; ++i)
-	{
-		t.before();
-		t.after();
+     
+bool   CSimpleClock::_InitDone = false;
+uint64 CSimpleClock::_StartStopNumTicks;
+
+
+// root node for all execution paths
+CHTimer::CNode  CHTimer::_RootNode;
+CHTimer::CNode *CHTimer::_CurrNode = &_RootNode;
+CSimpleClock	CHTimer::_PreambuleClock;
+CHTimer			CHTimer::_RootTimer("root");
+bool			CHTimer::_Benching = false;
+bool			CHTimer::_BenchStartedOnce = false;
+double			CHTimer::_MsPerTick;
+bool			CHTimer::_WantStandardDeviation = false;
+
+
+
+
+
+
+//=================================================================
+void CSimpleClock::init()
+{	
+	const uint numSamples = 10000;
+
+	CSimpleClock observedClock;
+	CSimpleClock measuringClock;
+	
+	measuringClock.start();
+	for(uint l = 0; l < numSamples; ++l)
+	{		
+		observedClock.start();
+		observedClock.stop();
 	}
-	NLMISC::TTicks	et = NLMISC::CTime::getPerformanceTime();
-	g.after();
+	measuringClock.stop();
 
-	_TicksPerTest = (double)t._TotalTicks / (double)i;
-	_MsPerTick = NLMISC::CTime::ticksToSecond(et-st)*1000.0 / (double)g._TotalTicks;
-	clear();
+	_StartStopNumTicks = (measuringClock.getNumTicks() >> 1) / numSamples;	
+	_InitDone = true;
 }
 
-void	CHTimer::display()
+
+
+//=================================================================
+/** Do simple statistics on a list of values (mean value, standard deviation) 
+  */ 
+/*static void PerformStatistics(const std::vector<double> &values, double &standardDeviation)
 {
-	uint	i;
-	nlinfo("FEHTIMER> _TicksPerTest = %.2f", _TicksPerTest);
-	nlinfo("FEHTIMER> _MsPerTick = %g (%.0f MHz)", _MsPerTick, 2.0/(1000.0*_MsPerTick));
-	for (i=0; i<_Roots.size(); ++i)
-		_Roots[i]->displayNode(0, _Roots[i]);
+	nlassert(!values.empty());
+	double total = 0;	
+	double variance = 0;
+	uint k;
+	for(k = 0; k < values.size(); ++k)
+	{
+		total += (double) values[k];		
+	}
+	meanValue = total / values.size();
+	if (values.size() <= 1)
+	{
+		standardDeviation = 0.f;
+		return;
+	}
+	for(k = 0; k < values.size(); ++k)
+	{
+		variance += NLMISC::sqr((values[k] - meanValue));
+	}
+	standardDeviation = ::sqrt(variance / values.size() - 1);
+}*/
+
+
+
+//=================================================================
+CHTimer::CNode::~CNode()
+{
+	releaseSons();
+	for(uint k = 0; k < Sons.size(); ++k)
+		delete Sons[k];
 }
 
+//=================================================================
+void CHTimer::CNode::releaseSons()
+{
+	for(uint k = 0; k < Sons.size(); ++k)
+		delete Sons[k];
+	Sons.clear();
+}
+
+//=================================================================
+uint64 CHTimer::CNode::getTimeWithoutSons() const
+{
+	uint64 sonsTime = 0;
+	for(uint k = 0; k < Sons.size(); ++k)
+	{
+		sonsTime += Sons[k]->TotalTime;
+	}
+	return TotalTime - sonsTime;
+}
+
+//=================================================================
+void CHTimer::CNode::displayPath() const
+{
+	std::string path;
+	getPath(path);
+	nlinfo(("FEHTIMER> " + path).c_str());
+}
+
+//=================================================================
+void CHTimer::CNode::getPath(std::string &path) const
+{
+	path.clear();
+	const CNode *currNode = this;
+	do
+	{
+		path = path.empty() ? currNode->Owner->getName() 
+			: currNode->Owner->getName() + std::string("::") + path;
+		currNode = currNode->Parent;
+	}
+	while (currNode);
+}
+
+
+//=================================================================
+uint CHTimer::CNode::getNumNodes() const
+{
+	uint sum = 1;
+	for(uint k = 0; k < Sons.size(); ++k)
+	{
+		sum += Sons[k]->getNumNodes();
+	}
+	return sum;
+}
+
+
+//=================================================================
+void CHTimer::walkTreeToCurrent()
+{
+	if (_CurrNode->Owner == this) return;
+	bool found = false;
+	for(uint k = 0; k < _CurrNode->Sons.size(); ++k)
+	{
+		if (_CurrNode->Sons[k]->Owner == this)
+		{
+			_CurrNode = _CurrNode->Sons[k];
+			found = true;
+			break;
+		}
+	}
+	if (!found)
+	{
+		// no node for this execution path : create a new one
+		_CurrNode->Sons.push_back(new CNode(this, _CurrNode));
+		_CurrNode->Sons.back()->Parent = _CurrNode;
+		_CurrNode = _CurrNode->Sons.back();
+	}
+}
+
+//=================================================================
+void	CHTimer::startBench(bool wantStandardDeviation /*= false*/)
+{
+	nlassert(!_Benching)
+	clear();
+	_Benching = true;
+	_BenchStartedOnce = true;
+	_RootNode.Owner = &_RootTimer;
+	_MsPerTick = NLMISC::CTime::ticksToSecond(1) * 0.001;
+	CSimpleClock::init();
+	_RootNode.Owner = &_RootTimer;
+	_WantStandardDeviation = wantStandardDeviation;
+	_RootTimer.before();
+}
+
+//=================================================================
+void	CHTimer::endBench()
+{
+	_RootTimer.after();
+	nlassert(_Benching);
+	nlassert(_CurrNode == &_RootNode);
+	_Benching = false;	
+}
+
+//=================================================================
+void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, bool displayEx)
+{	
+	nlassert(!_Benching); // should have called endBench
+	nlassert(_BenchStartedOnce); // should have done at least one bench
+	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
+	TNodeMap nodeMap;
+	TNodeVect nodeLeft;	
+	nodeLeft.push_back(&_RootNode);
+	/// 1 ) walk the tree to build the node map (well, in a not very optimal way..)		  
+	while (!nodeLeft.empty())
+	{	
+		CNode *currNode = nodeLeft.back();
+		nodeMap[currNode->Owner].push_back(currNode);
+		nodeLeft.pop_back();
+		nodeLeft.insert(nodeLeft.end(), currNode->Sons.begin(), currNode->Sons.end());
+
+	}
+	//	
+	// 2 ) build statistics	
+	typedef std::vector<CTimerStat> TTimerStatVect;
+	typedef std::vector<CTimerStat *> TTimerStatPtrVect;
+	TTimerStatVect		stats(nodeMap.size());
+	TTimerStatPtrVect	statsPtr(stats.size());
+	//
+	uint k = 0;
+	for(TNodeMap::iterator it = nodeMap.begin(); it != nodeMap.end(); ++it)
+	{
+		statsPtr[k] = &stats[k];
+		stats[k].Timer = it->first;
+		stats[k].buildFromNodes(&(it->second[0]), it->second.size(), _MsPerTick);
+		++k;
+	}
+	// 3 ) sort statistics
+	if (criterion != NoSort)
+	{
+		CStatSorter sorter(criterion);
+		std::sort(statsPtr.begin(), statsPtr.end(), sorter);		
+	}
+	// 4 ) display statistics
+
+	uint maxNodeLenght = 0;
+	std::string format;
+	if (displayInline)
+	{
+		for(TTimerStatPtrVect::iterator statIt = statsPtr.begin(); statIt != statsPtr.end(); ++statIt)
+		{
+			maxNodeLenght = std::max(maxNodeLenght, strlen((*statIt)->Timer->_Name));
+		}
+		format = "FEHTIMER> %-" + NLMISC::toString(maxNodeLenght + 1) + "s %s";
+	}
+	std::string statsInline;
+	for(TTimerStatPtrVect::iterator statIt = statsPtr.begin(); statIt != statsPtr.end(); ++statIt)
+	{
+		if (!displayInline)
+		{		
+			nlinfo("FEHTIMER> =================================");
+			nlinfo("FEHTIMER> Node %s", (*statIt)->Timer->_Name);		
+			(*statIt)->display(displayEx, _WantStandardDeviation);
+		}
+		else
+		{
+			(*statIt)->getStats(statsInline, displayEx, _WantStandardDeviation);
+			char out[4096];
+			NLMISC::smprintf(out, 2048, format.c_str(), (*statIt)->Timer->_Name, statsInline.c_str());
+			nlinfo(out);					
+		}
+	}
+	
+}
+
+//================================================================================================
+void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInline, bool alignPaths, bool displayEx)
+{
+	nlassert(!_Benching); // should have called endBench
+	nlassert(_BenchStartedOnce); // should have done at least one bench	
+	//
+	typedef std::vector<CNodeStat>   TNodeStatVect;
+	typedef std::vector<CNodeStat *> TNodeStatPtrVect;
+
+	TNodeStatVect nodeStats;
+	nodeStats.reserve(_RootNode.getNumNodes());
+	TNodeVect nodeLeft;	
+	nodeLeft.push_back(&_RootNode);
+	/// 1 ) walk the tree to build the node map (well, in a not very optimal way..)		  
+	while (!nodeLeft.empty())
+	{	
+		CNode *currNode = nodeLeft.back();
+		
+		nodeStats.push_back();
+		nodeStats.back().buildFromNodes(&currNode, 1, _MsPerTick);
+		nodeStats.back().Node = currNode;
+
+		nodeLeft.pop_back();
+		nodeLeft.insert(nodeLeft.end(), currNode->Sons.begin(), currNode->Sons.end());
+
+	}
+
+	/// 2 ) sort statistics
+	// create a pointer list
+	TNodeStatPtrVect nodeStatsPtrs(nodeStats.size());
+	for(uint k = 0; k < nodeStats.size(); ++k)
+	{
+		nodeStatsPtrs[k] = &nodeStats[k];
+	}
+
+	// 3 ) sort statistics
+	if (criterion != NoSort)
+	{
+		CStatSorter sorter(criterion);
+		std::sort(nodeStatsPtrs.begin(), nodeStatsPtrs.end(), sorter);
+	}
+
+	// 4 ) display statistics
+	std::string statsInline;
+	std::string nodePath;
+
+	std::string format;
+	if (displayInline)
+	{
+		if (alignPaths)
+		{
+			uint maxSize = 0;
+			std::string nodePath;
+			for(TNodeStatPtrVect::iterator it = nodeStatsPtrs.begin(); it != nodeStatsPtrs.end(); ++it)
+			{
+				(*it)->Node->getPath(nodePath);
+				maxSize = std::max(maxSize, nodePath.size());
+			}
+			format = "FEHTIMER> %-" + NLMISC::toString(maxSize) +"s %s";
+		}
+		else
+		{
+			format = "FEHTIMER> %s %s";
+		}
+	}
+
+	for(TNodeStatPtrVect::iterator it = nodeStatsPtrs.begin(); it != nodeStatsPtrs.end(); ++it)
+	{
+		if (!displayInline)
+		{		
+			nlinfo("FEHTIMER> =================================");
+			(*it)->Node->displayPath();
+			(*it)->display(displayEx, _WantStandardDeviation);
+		}
+		else
+		{
+			(*it)->getStats(statsInline, displayEx, _WantStandardDeviation);
+			(*it)->Node->getPath(nodePath);
+
+			char out[2048];
+			NLMISC::smprintf(out, 2048, format.c_str(), nodePath.c_str(), statsInline.c_str());
+			nlinfo(out);
+		}
+	}
+
+}
+
+//=================================================================
 void	CHTimer::clear()
 {
-	_Stack.clear();
-	uint	i;
-	for (i=0; i<_Roots.size(); ++i)
-		_Roots[i]->clearNode();
-	_Roots.clear();
+	// should not be benching !
+	nlassert(_CurrNode == &_RootNode)
+	_RootNode.releaseSons();
+	_CurrNode = &_RootNode;
+	_RootNode.reset();	
 }
 
-void	CHTimer::adjust()
+//=================================================================
+void CHTimer::CStats::buildFromNodes(CNode **nodes, uint numNodes, double msPerTick)
 {
-	uint	i;
-	for (i=0; i<_Roots.size(); ++i)
-		_Roots[i]->adjustNode();
-}
-
-//
-
-uint32	CHTimer::adjustNode()
-{
-	uint32	totalTests = _NumTests;
-
-	uint	i;
-	for (i=0; i<_Children.size(); ++i)
-		totalTests += _Children[i]->adjustNode();
-
-	_AdjustedTicks = _TotalTicks - (sint64)(totalTests*_TicksPerTest);
-	return totalTests;
-}
-
-//
-
-void	CHTimer::displayNode(uint level, CHTimer *root)
-{
-	static char	str[256];
-
-	uint	i;
-
-	str[0] = 0;
-	for (i=0; i<level; ++i)
-		strcat(str, "  ");
-
-	strcat(str, _Name);
-
-	if (level == 0)
-	{
-		nlinfo("FEHTIMER> %s %.3fms %d loops", str, _AdjustedTicks*_MsPerTick/(double)_NumTests, _NumTests);
+	TotalTime = 0;	
+	TotalTimeWithoutSons = 0;	
+	NumVisits = 0;
+	
+	uint64 minTime = (uint64) -1;
+	uint64 maxTime = 0;
+	
+	uint k, l;
+	for(k = 0; k < numNodes; ++k)
+	{		
+		TotalTime += nodes[k]->TotalTime * msPerTick;
+		TotalTimeWithoutSons += nodes[k]->getTimeWithoutSons() * msPerTick;
+		NumVisits += nodes[k]->NumVisits;
+		minTime = std::min(minTime, nodes[k]->MinTime);
+		maxTime = std::max(maxTime, nodes[k]->MaxTime);				
 	}
-	else if (level == 1)
+	MinTime  = minTime * msPerTick;
+	MaxTime  = maxTime * msPerTick;
+	MeanTime = TotalTime / NumVisits;
+
+	// compute standard deviation
+	double varianceSum = 0;
+	uint   numMeasures = 0;
+	for(k = 0; k < numNodes; ++k)
 	{
-//		nlinfo("> %s%s: %.2f global", str, _Name, 100.0*(double)_TotalTicks/(double)root->_TotalTicks);
-		nlinfo("FEHTIMER> %-32s%5.2f global               %8.3fms/loop, mean=%8.3fms min=%8.3fms max=%8.3fms ticks=%-11"NL_I64"d tests=%-9d", str, 100.0*(double)_AdjustedTicks/(double)root->_AdjustedTicks, _AdjustedTicks*_MsPerTick/(double)root->_NumTests,  _AdjustedTicks*_MsPerTick/(double)_NumTests, _MsPerTick*_MinTicks, _MsPerTick*_MaxTicks, (sint64)_AdjustedTicks, _NumTests);
+		numMeasures += nodes[k]->Measures.size();
+		for(l = 0; l < nodes[k]->Measures.size(); ++l)
+		{
+			varianceSum += NLMISC::sqr(nodes[k]->Measures[l] - MeanTime);
+		}		
+	}
+	TimeStandardDeviation = numMeasures == 0 ? 0
+											 : ::sqrt(varianceSum / (numMeasures +1));
+}
+
+//=================================================================
+void CHTimer::CStats::display(bool displayEx, bool wantStandardDeviation /* = false*/)
+{
+	nlinfo("FEHTIMER> Total time                = %.3f ms", (float) TotalTime);
+	nlinfo("FEHTIMER> Total time without sons   = %.3f ms", (float) TotalTimeWithoutSons);
+	nlinfo(("FEHTIMER> Num visits                = " + NLMISC::toString(NumVisits)).c_str());	
+	if (displayEx)
+	{
+			nlinfo("FEHTIMER> Min time                  = %.3f ms", (float) MinTime);
+			nlinfo("FEHTIMER> Max time                  = %.3f ms", (float) MaxTime);
+			nlinfo("FEHTIMER> Mean time                 = %.3f ms", (float) MeanTime);
+			if (wantStandardDeviation)
+			{
+			nlinfo("FEHTIMER> Standard deviation        = %.3f ms", (float) TimeStandardDeviation);
+			}
+			//nlinfo("Time standard deviation	= %.3f ms", (float) TimeStandardDeviation);
+	}
+}
+
+
+//=================================================================
+void CHTimer::CStats::getStats(std::string &dest, bool statEx, bool wantStandardDeviation /*= false*/)
+{
+	char buf[1024];
+	if (!wantStandardDeviation)
+	{	
+		if (!statEx)
+		{	
+			NLMISC::smprintf(buf, 1024, " | total  %12.3f  | local  %12.3f | visits  %12s ", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str());
+		}
+		else
+		{
+			NLMISC::smprintf(buf, 1024, " | total  %12.3f  | local  %12.3f | visits  %12s | min %12.3f | max %12.3f | mean %12.3f",
+					  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
+					  (float) MinTime, (float) MaxTime, (float) MeanTime
+					 );
+		}
 	}
 	else
 	{
-//		nlinfo("> %s%s: %.2f global, %.2f local", str, _Name, 100.0*(double)_TotalTicks/(double)root->_TotalTicks, 100.0*(double)_TotalTicks/(double)_Parent->_TotalTicks);
-		nlinfo("FEHTIMER> %-32s%5.2f global, %5.2f local, %8.3fms/loop, mean=%8.3fms min=%8.3fms max=%8.3fms ticks=%-11"NL_I64"d tests=%-9d", str, 100.0*(double)_AdjustedTicks/(double)root->_AdjustedTicks, 100.0*(double)_AdjustedTicks/(double)_Parent->_AdjustedTicks, _AdjustedTicks*_MsPerTick/(double)root->_NumTests, _AdjustedTicks*_MsPerTick/(double)_NumTests, _MsPerTick*_MinTicks, _MsPerTick*_MaxTicks, (sint64)_AdjustedTicks, _NumTests);
+		if (!statEx)
+		{	
+			NLMISC::smprintf(buf, 1024, " | total  %12.3f  | local  %12.3f | visits  %12s | std deviation %12.3f", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), (float) TimeStandardDeviation);
+		}
+		else
+		{
+			NLMISC::smprintf(buf, 1024, " | total  %12.3f  | local  %12.3f | visits  %12s | min %12.3f | max %12.3f | mean %12.3f | std deviation %12.3f",
+							  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
+							  (float) MinTime, (float) MaxTime, (float) MeanTime,
+							  (float) TimeStandardDeviation
+							);
+		}
 	}
-
-	if (_Children.size() != 0)
-	{
-		sint64	totalChildren = 0;
-		for (i=0; i<_Children.size(); ++i)
-			totalChildren += _Children[i]->_AdjustedTicks;
-
-		str[0] = 0;
-		for (i=0; i<level+1; ++i)
-			strcat(str, "  ");
-
-		strcat(str, "[unmeasured]");
-
-		sint64	totalLeft = _AdjustedTicks - totalChildren;
-		nlinfo("FEHTIMER> %-32s%5.2f global, %5.2f local,                                                                ticks=%-11"NL_I64"d", str, 100.0*(double)totalLeft/(double)root->_AdjustedTicks, 100.0*(double)totalLeft/(double)_AdjustedTicks, (sint64)totalLeft);
-	}
-
-	for (i=0; i<_Children.size(); ++i)
-		_Children[i]->displayNode(level+1, root);
+	dest = buf;
 }
 
-#endif // ALLOW_TIMING_MEASURES
+
+//=================================================================
+bool CHTimer::CStatSorter::operator()(const CHTimer::CStats *lhs, const CHTimer::CStats *rhs)
+{
+	switch(Criterion)
+	{
+		case CHTimer::TotalTime:				return lhs->TotalTime >= rhs->TotalTime;
+		case CHTimer::TotalTimeWithoutSons:		return lhs->TotalTimeWithoutSons >= rhs->TotalTimeWithoutSons;
+		case CHTimer::MeanTime:					return lhs->MeanTime >= rhs->MeanTime;
+		case CHTimer::NumVisits:				return lhs->NumVisits >= rhs->NumVisits;
+		case CHTimer::MaxTime:					return lhs->MaxTime >= rhs->MaxTime;
+		case CHTimer::MinTime:					return lhs->MinTime < rhs->MinTime;	
+		default:
+			nlassert(0); // not a valid criterion
+		break;
+	}	
+}
+
+
+
+} // NLMISC
+

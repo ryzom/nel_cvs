@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.2 2002/04/30 10:13:59 lecroart Exp $
+ * $Id: hierarchical_timer.h,v 1.3 2002/05/28 12:55:51 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,32 +33,121 @@
 #include "nel/misc/time_nl.h"
 #include "nel/misc/debug.h"
 
+#include <algorithm>
+
 #define ALLOW_TIMING_MEASURES
 
 
-// Several macros to use
+#ifdef ALLOW_TIMING_MEASURES
+	// Several macros to use
+	#define H_TIME(name, inst) \
+	{ \
+		static NLMISC::CHTimer	nl_h_timer(name); \
+		nl_h_timer.before(); \
+		inst \
+		nl_h_timer.after(); \
+	}
+	//
+	#define H_BEFORE(__name)	static NLMISC::CHTimer	__name##_timer(#__name); __name##_timer.before();
+	#define H_AFTER(__name)		__name##_timer.after();
+	//
+	#define H_AUTO(__name)		static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer);
+	// display the timer info after each loop call
+	#define H_AUTO_INST(__name)	static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer, true);
+#else
+	// void macros
+	#define H_TIME(name, inst)	
+	#define H_BEFORE(__name)
+	#define H_AFTER(__name)	
+	#define H_AUTO(__name)	
+	#define H_AUTO_INST(__name)
+#endif
 
-#define H_TIME(name, inst) \
-{ \
-	static CHTimer	nl_h_timer(name); \
-	nl_h_timer.before(); \
-	inst \
-	nl_h_timer.after(); \
+
+namespace NLMISC
+{
+
+// Read the time stamp counter (intel architecture only for now..)
+inline uint64 rdtsc()
+{
+	uint64 ticks;
+	#ifndef NL_OS_WINDOWS		
+		__asm__ volatile(".byte 0x0f, 0xa2"); // using 'cpuid' before calling this prevent out of order execution
+		__asm__ volatile(".byte 0x0f, 0x31" : "=a" (ticks.low), "=d" (ticks.high));		
+	#else 
+		__asm	cpuid
+		__asm	rdtsc
+		__asm	mov		DWORD PTR [ticks], eax
+		__asm	mov		DWORD PTR [ticks + 4], edx
+	#endif
+	return ticks;
 }
 
 
+/**  A simple clock to measure ticks.
+  *  
+  * \sa CStopWatch
+  * \author Nicolas Vizerie
+  * \author Nevrax France
+  * \date 2002
+  */
+class CSimpleClock
+{
+public:	
+	CSimpleClock() : _NumTicks(0)
+	{
+		#ifdef NL_DEBUG
+			_Started = false;
+		#endif
+	}
+	// start measure
+	void start()
+	{
+		#ifdef  NL_DEBUG
+			nlassert(!_Started);
+			_Started = true;
+		#endif
+		_StartTick = rdtsc();
+	}
+	// end measure
+	void stop()
+	{
+		#ifdef  NL_DEBUG
+			nlassert(_Started);
+			_Started = false;
+		#endif
+		_NumTicks = rdtsc() - _StartTick;
+	}	
+	// get measure
+	uint64	getNumTicks() const
+	{
+		nlassert(!_Started);
+		nlassert(_NumTicks != 0);
+		return _NumTicks;
+	}	
+	// This compute the duration of start and stop (in cycles).
+	static void init();
+	/** Get the number of ticks needed to perform start().
+	  * Should have called init() before calling this.
+	  */
+	static uint64 getStartStopNumTicks() 
+	{ 
+		nlassert(_InitDone);
+		return _StartStopNumTicks; 
+	}	
+private:
+	uint64  _StartTick;
+	uint64	_NumTicks;
+	#ifdef  NL_DEBUG
+		bool	_Started;
+	#endif
+	static bool		_InitDone;
+	static uint64	_StartStopNumTicks;	
+};
 
-#define H_BEFORE(__name)	static CHTimer	__name##_timer(#__name); __name##_timer.before();
-#define H_AFTER(__name)		__name##_timer.after();
-
-#define H_AUTO(__name)		static CHTimer	__name##_timer(#__name); CAutoTimer	__name##_auto(&__name##_timer);
-
-// display the timer info after each loop call
-#define H_AUTO_INST(__name)	static CHTimer	__name##_timer(#__name); CAutoTimer	__name##_auto(&__name##_timer, true);
 
 
 
-#ifdef ALLOW_TIMING_MEASURES
 
 /**
  * Hierarchical timing system. Allows to accurately measure performance of routines, and displays results hierarchically.
@@ -79,125 +168,176 @@
  * \warning Supports only Intel processors.
  *
  * \author Benjamin Legros
+ * \author Nicolas Vizerie
  * \author Nevrax France
- * \date 2001
+ * \date 2001, 2002
  */
 class CHTimer
 {
-private:
-	const char						*_Name;
-	CHTimer							*_Parent;
-	std::vector<CHTimer*>			_Children;
-
-	uint32							_StartTick;
-	sint64							_TotalTicks;
-	sint64							_AdjustedTicks;
-	uint32							_NumTests;
-	uint32							_MinTicks;
-	uint32							_MaxTicks;
-
-	static std::vector<CHTimer*>	_Stack;
-	static std::vector<CHTimer*>	_Roots;
-	static double					_TicksPerTest;
-	static double					_MsPerTick;
-
 public:
-	/// Constructor.
-	CHTimer(const char *name) : _Name(name), _Parent(NULL), _TotalTicks(0), _NumTests(0), _MinTicks(0xffffffff), _MaxTicks(0) {}
-
+	// this enum is used to sort displayed results
+	enum TSortCriterion { NoSort, 
+						  TotalTime,
+						  TotalTimeWithoutSons,
+						  MeanTime,
+						  NumVisits,
+						  MaxTime,
+						  MinTime,
+						  SortCriterionsLast
+						};
+public:
+	/// ctor
+	CHTimer(const char *name) : _Name(name) {}
 	/// Starts a measuring session
-	void	before()
-	{
-		if (_Parent == NULL)
-		{
-			if (_Stack.empty())
-			{
-				_Roots.push_back(this);
-				_Parent = this;
-			}
-			else
-			{
-				_Parent = _Stack.back();
-				_Parent->_Children.push_back(this);
-			}
-		}
-
-		_Stack.push_back(this);
-
-#ifdef NL_OS_WINDOWS
-		uint32	tick;
-		__asm	rdtsc
-		__asm	mov		tick, eax
-		_StartTick = tick;
-#else
-		unsigned long long int x;
-		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-		_StartTick = (uint32)x;
-#endif
-	}
-
-	/// Stops a measuring session
-	void	after(bool displayAfter = false)
-	{
-		uint32	dt;
-#ifdef NL_OS_WINDOWS
-		uint32	tick;
-		__asm	rdtsc
-		__asm	mov		tick, eax
-		dt = ((tick-_StartTick) >> 1);
-#else
-		unsigned long long int x;
-		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-		dt = (((uint32)x-_StartTick) >> 1);
-#endif
-		_TotalTicks += dt;
-		if (dt < _MinTicks)	_MinTicks = dt;
-		if (dt > _MaxTicks)	_MaxTicks = dt;
-		nlassertex(!_Stack.empty(), ("in %s", _Name));
-		nlassertex(_Stack.back() == this, ("in %s, _StackTop at %s", _Name, _Stack.back()->_Name));
-		++_NumTests;
-		_Stack.pop_back();
-
-		if (displayAfter)
-			nlinfo("FEHTIMER> %s %.3fms loop number %d", _Name, dt*_MsPerTick, _NumTests);
-	}
-
-	//
-
-	/// Call bench() before any test (sets own timer loop perf up)
-	static void		bench();
-
-	/// Adjust values recorded according to the bench previously performed
-	static void		adjust();
-
-	/// Display results hierarchically
-	static void		display();
-
+	inline void CHTimer::before();
+	// Ends a measuring session
+	inline void		after(bool displayAfter = false);		
+	// Get this node name
+	const char	   *getName() const { return _Name; }
+	/** Starts a bench session
+	  * \param wantStandardDeviation When true, benchs will report the standard deviation of values. This require more memory, howeve, because each samples must be kept.	  
+	  */
+	static void		startBench(bool wantStandardDeviation = false);
+	/// Ends a bench session
+	static void		endBench();
+	/** Display results
+	  * \param displayEx true to display more detailed infos
+	  */
+	static void		display(TSortCriterion criterion, bool displayInline, bool displayEx);
+	/** Display results by execution paths	
+	  * \param displayInline true to display each result on a single line.
+	  * \param alignPaths    true to display all execution paths aligned.
+	  * \param displayEx	 true to display more detailed infos.
+	  */
+	static void		displayByExecutionPath(TSortCriterion criterion, bool displayInline, bool alignPaths, bool displayEx);
 	/// Clears stats, and reinits all timer structure
-	static void		clear();
+	static void		clear();		
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
+	struct CNode;
+	typedef std::vector<CNode *> TNodeVect;
+	//
+	/// a node in an execution path
+	struct CNode
+	{		
+		typedef std::vector<double> TTimeVect;
+		//
+		CNode					*Parent;
+		TNodeVect				Sons;
+		CHTimer					*Owner;	   // the hierarchical timer this node is associated with		
+		uint64					TotalTime; // the total time spent in that node, including sons
+		TTimeVect				Measures;  // All time measures. Used only when standard deviation is wanted
+		uint64					MinTime;   // the minimum time spent in that node
+		uint64					MaxTime;   // the maximum time spent in that node
+		uint64					NumVisits; // the number of time the execution has gone through this node		
+		//
+		uint64					SonsPreambule; // preambule time for the sons		
+		CSimpleClock			Clock; // a clock to do the measures at this node
+		// ctor 
+		CNode(CHTimer	*owner = NULL, CNode	*parent = NULL) : Owner(owner), Parent(parent)
+		{
+			reset();
+		}
+		// dtor
+		~CNode();
+		// Get the number of nodes in the tree starting at this node
+		uint  getNumNodes() const;
+		// release the sons, should not be benching when calling this
+		void	releaseSons();
+		// reset this node measures
+		void	reset()
+		{
+			TotalTime	  = 0;
+			MaxTime		  = 0;
+			MinTime		  = (uint64) -1;
+			NumVisits	  = 0;
+			SonsPreambule = 0;
+			NLMISC::contReset(Measures);
+		}
+		// Display this node path
+		void	displayPath() const;
+		// Get this node path
+		void    getPath(std::string &dest) const;
+		// Get the time spent in this node without its sons time
+		uint64	getTimeWithoutSons() const;
+	};
+
+	/** Some statistics
+	  * They can be build from a set of nodes
+	  */
+	struct CStats
+	{	
+		double  TimeStandardDeviation;
+		double	TotalTime;		
+		double	TotalTimeWithoutSons;
+		double	MeanTime;
+		uint64	NumVisits;
+		double	MinTime;
+		double	MaxTime;		
+		
+		// build stats from a vector of nodes
+		void buildFromNodes(CNode **firstNode, uint numNodes, double msPerTick);
+
+		// display stats
+		void display(bool displayEx = false, bool wantStandardDeviation = false);
+
+		/** Get a string for stats (all stats on the same line)
+		  * \param statEx display extended stats
+		  */
+		void getStats(std::string &dest, bool statEx, bool wantStandardDeviation = false);
+	};
+	// Stats and the associated timer
+	struct CTimerStat : public CStats
+	{
+		CHTimer *Timer;			
+	};
+	// Stats and the associated node
+	struct CNodeStat : public CStats
+	{
+		CNode *Node;
+	};	
+
+
+	/** A statistics sorter, based on some criterion.
+	  * It works on pointers on CStats objects
+	  */
+	struct CStatSorter
+	{
+		CStatSorter(TSortCriterion criterion = TotalTime) : Criterion(criterion)
+		{}
+		TSortCriterion Criterion;
+		// Less operator
+		bool operator()(const CStats *lhs, const CStats *rhs);
+	};
 
 private:
-
-	void			displayNode(uint level, CHTimer *root);
-
-	void			clearNode()
-	{
-		_Parent = NULL;
-		_TotalTicks = 0;
-		_AdjustedTicks = 0;
-		_NumTests = 0;
-		_MinTicks = 0xffffffff;
-		_MaxTicks = 0;
-
-		uint	i;
-		for (i=0; i<_Children.size(); ++i)
-			_Children[i]->clearNode();
-
-		_Children.clear();
-	}
-
-	uint32			adjustNode();
+	// walk the tree to current execution node, creating it if necessary
+	void	walkTreeToCurrent();
+private:
+	// node name
+	const  char						*_Name;
+	// root node of the hierarchy
+	static CNode					_RootNode;
+	// the current node of the execution
+	static CNode					*_CurrNode;	
+	// the root timer
+	static CHTimer					 _RootTimer;
+	/** This clock is used to measure the preambule of methods such as CHTimer::before()
+	  * This is static, but the Hierarchical Timer doesn't support multithreading anyway..
+      */
+	static CSimpleClock				_PreambuleClock;
+	//
+	static double					_MsPerTick;
+	//
+	static bool						_Benching;
+	//
+	static bool						_BenchStartedOnce;
+	//
+	static bool						_WantStandardDeviation;
 };
+
+
 
 /**
  * An automatic measuring timer. Encapsulates calls to CHTimer, and avoids missuses of before() and after().
@@ -225,42 +365,59 @@ public:
 	~CAutoTimer() { _HTimer->after(_DisplayAfter); }
 };
 
-#else // ALLOW_TIMING_MEASURES
 
-class CHTimer
+////////////////////////////
+// inlines implementation //
+////////////////////////////
+
+//===============================================
+inline void	CHTimer::before()
+{	
+	_PreambuleClock.start();	
+	walkTreeToCurrent();		
+	++ _CurrNode->NumVisits;
+	_CurrNode->SonsPreambule = 0;
+	_PreambuleClock.stop();
+	if (_CurrNode->Parent)
+	{	
+		_CurrNode->Parent->SonsPreambule += _PreambuleClock.getNumTicks();
+	}
+	_CurrNode->Clock.start();
+}
+
+//===============================================
+inline void	CHTimer::after(bool displayAfter /*= false*/)
 {
-public:
-	CHTimer(const char *name) {}
-
-	void	before() {}
-
-	void	after()	{}
-
-	static void		bench() {}
-
-	static void		display() {}
-
-	static void		clear() {}
-
-	static void		adjust() {}
-
-private:
-
-	void			displayNode(uint level, CHTimer *root) {}
-
-	void			clearNode() {}
-
-	uint32			adjustNode() {}
-};
-
-class CAutoTimer
-{
-public:
-	CAutoTimer(CHTimer *timer) {}
-	~CAutoTimer() {}
-};
-
-#endif // ALLOW_TIMING_MEASURES
+	_PreambuleClock.start();
+	//	
+	_CurrNode->Clock.stop();		
+	uint64 numTicks = _CurrNode->Clock.getNumTicks() - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
+	_CurrNode->TotalTime += numTicks;
+	_CurrNode->MinTime = std::min(_CurrNode->MinTime, numTicks);
+	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, numTicks);
+	if (displayAfter)
+	{		
+		nlinfo("FEHTIMER> %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);
+	}
+	//
+	if (_WantStandardDeviation)
+	{
+		_CurrNode->Measures.push_back(numTicks * _MsPerTick);
+	}
+	//
+	if (_CurrNode->Parent)
+	{
+		_PreambuleClock.stop();
+		_CurrNode = _CurrNode->Parent;
+		_CurrNode->SonsPreambule += _PreambuleClock.getNumTicks();
+	}
+	else
+	{
+		_PreambuleClock.stop();
+	}
+}
+	
+} // NLMISC
 
 #endif // NL_HIERARCHICAL_TIMER_H
 

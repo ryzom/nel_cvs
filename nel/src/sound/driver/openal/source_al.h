@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.3 2001/07/13 09:42:54 cado Exp $
+ * $Id: source_al.h,v 1.4 2001/07/17 14:19:59 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,11 +92,11 @@ public:
 	 * 3D mode -> 3D position
 	 * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
 	 */
-	virtual void			setPosition( const NLMISC::CVector& pos );
+	virtual void			setPos( const NLMISC::CVector& pos );
 	/** Get the position vector.
-	 * See setPosition() for details.
+	 * See setPos() for details.
 	 */
-	virtual void			getPosition( NLMISC::CVector& pos ) const;
+	virtual void			getPos( NLMISC::CVector& pos ) const;
 	/// Set the velocity vector (3D mode only) (default: (0,0,0))
 	virtual void			setVelocity( const NLMISC::CVector& vel );
 	/// Get the velocity vector

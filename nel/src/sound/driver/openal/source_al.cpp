@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.4 2001/07/13 09:42:54 cado Exp $
+ * $Id: source_al.cpp,v 1.5 2001/07/17 14:19:59 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -189,7 +189,7 @@ void					CSourceAL::update()
  * 3D mode -> 3D position
  * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
  */
-void					CSourceAL::setPosition( const NLMISC::CVector& pos )
+void					CSourceAL::setPos( const NLMISC::CVector& pos )
 {
 	alSource3f( _SourceName, AL_POSITION, pos.x, pos.y, pos.z );
 	TestALError();
@@ -197,9 +197,9 @@ void					CSourceAL::setPosition( const NLMISC::CVector& pos )
 
 
 /* Get the position vector.
- * See setPosition() for details.
+ * See setPos() for details.
  */
-void					CSourceAL::getPosition( NLMISC::CVector& pos ) const
+void					CSourceAL::getPos( NLMISC::CVector& pos ) const
 {
 	ALfloat v[3];
 	alGetSourcefv( _SourceName, AL_POSITION, v );

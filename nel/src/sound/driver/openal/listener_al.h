@@ -1,7 +1,7 @@
 /** \file listener_al.h
  * OpenAL sound listener
  *
- * $Id: listener_al.h,v 1.2 2001/07/04 13:11:03 cado Exp $
+ * $Id: listener_al.h,v 1.3 2001/07/17 14:19:59 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,11 +52,11 @@ public:
 	/// \name Listener properties
 	//@{
 	/// Set the position vector (default: (0,0,0)) (3D mode only)
-	virtual void			setPosition( const NLMISC::CVector& pos );
+	virtual void			setPos( const NLMISC::CVector& pos );
 	/** Get the position vector.
-	 * See setPosition() for details.
+	 * See setPos() for details.
 	 */
-	virtual void			getPosition( NLMISC::CVector& pos ) const;
+	virtual void			getPos( NLMISC::CVector& pos ) const;
 	/// Set the velocity vector (3D mode only) (default: (0,0,0))
 	virtual void			setVelocity( const NLMISC::CVector& vel );
 	/// Get the velocity vector

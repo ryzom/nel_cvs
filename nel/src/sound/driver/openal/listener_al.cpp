@@ -1,7 +1,7 @@
 /** \file listener_al.cpp
  * OpenAL sound listener
  *
- * $Id: listener_al.cpp,v 1.3 2001/07/13 09:42:54 cado Exp $
+ * $Id: listener_al.cpp,v 1.4 2001/07/17 14:19:59 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ CListenerAL::CListenerAL() : IListener()
 /*
  * Set the position vector (default: (0,0,0)) (3D mode only)
  */
-void					CListenerAL::setPosition( const NLMISC::CVector& pos )
+void					CListenerAL::setPos( const NLMISC::CVector& pos )
 {
 	alListener3f( AL_POSITION, pos.x, pos.y, pos.z );
 	nlassert( alGetError() == AL_NO_ERROR );
@@ -65,9 +65,9 @@ void					CListenerAL::setPosition( const NLMISC::CVector& pos )
 
 
 /** Get the position vector.
- * See setPosition() for details.
+ * See setPos() for details.
  */
-void					CListenerAL::getPosition( NLMISC::CVector& pos ) const
+void					CListenerAL::getPos( NLMISC::CVector& pos ) const
 {
 	alGetListener3f( AL_POSITION, &pos.x, &pos.y, &pos.z );
 	nlassert( alGetError() == AL_NO_ERROR );

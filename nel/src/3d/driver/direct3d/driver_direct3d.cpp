@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.12 2004/06/29 13:56:08 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.13 2004/07/06 16:53:22 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -986,7 +986,8 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_TextureCubeSupported = (caps.TextureCaps & D3DPTEXTURECAPS_CUBEMAP) != 0;
 		_NbNeLTextureStages = (caps.MaxSimultaneousTextures<IDRV_MAT_MAXTEXTURES)?caps.MaxSimultaneousTextures:IDRV_MAT_MAXTEXTURES;
 		_MADOperatorSupported = (caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0;
-		_EMBMSupported = (caps.TextureOpCaps &  D3DTOP_BUMPENVMAP) != 0;		
+		_EMBMSupported = (caps.TextureOpCaps &  D3DTOP_BUMPENVMAP) != 0;
+		_PixelShaderVersion = caps.PixelShaderVersion;
 	}
 	else
 	{
@@ -994,6 +995,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_NbNeLTextureStages = 1;
 		_MADOperatorSupported = false;
 		_EMBMSupported = false;
+		_PixelShaderVersion = 0;
 	}
 	// test for occlusion query support
 	IDirect3DQuery9 *dummyQuery = NULL;
@@ -2236,6 +2238,13 @@ uint COcclusionQueryD3D::getVisibleCount()
 	if (getOcclusionType() == NotAvailable) return 0;
 	return VisibleCount;
 }
+
+// ***************************************************************************
+bool CDriverD3D::isWaterShaderSupported() const
+{
+	return _PixelShaderVersion >= D3DPS_VERSION(1, 1);
+}
+
 
 
 

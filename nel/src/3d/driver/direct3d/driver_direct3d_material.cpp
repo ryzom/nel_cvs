@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.10 2004/06/22 10:05:12 berenguier Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.11 2004/07/06 16:51:53 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -30,6 +30,7 @@
 #include "3d/vertex_buffer.h"
 #include "3d/light.h"
 #include "3d/index_buffer.h"
+#include "3d/texture_bump.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/di_event_emitter.h"
 #include "nel/misc/mouse_device.h"
@@ -41,6 +42,7 @@
 
 using namespace std;
 using namespace NLMISC;
+
 
 namespace NL3D 
 {
@@ -908,7 +910,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 				setTextureState (1, D3DTSS_COLORARG2, D3DTA_CURRENT|D3DTA_ALPHAREPLICATE);
 			}
 			break;
-		case CMaterial::Cloud:
+			case CMaterial::Cloud:
 			{
 				activeShader (&_ShaderCloud);
 
@@ -931,6 +933,138 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 					return false;
 			}
 			break;
+			case CMaterial::Water:
+			{				
+				activeShader(mat.getTexture(3) ? &_ShaderWaterDiffuse : &_ShaderWaterNoDiffuse);
+				// Get the shader
+				nlassert (_CurrentShader);
+				CShaderDrvInfosD3D *shaderInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
+				// Set the textures
+				if (_PixelShaderVersion >= D3DPS_VERSION(1, 4))
+				{
+					ITexture *tex = mat.getTexture(0);
+					if (tex) 
+					{						
+						tex->setUploadFormat(ITexture::RGBA8888);
+						if (tex->isBumpMap())
+						{
+							CTextureBump *tb = static_cast<CTextureBump *>(tex);
+							tb->setSignedFormat(false);
+						}						
+						setupTexture(*tex);
+						setShaderTexture (0, tex);
+					}
+				}
+				ITexture *tex = mat.getTexture(1);		
+				if (tex) 
+				{	
+					if (_PixelShaderVersion < D3DPS_VERSION(1, 4))
+					{
+						tex->setUploadFormat(ITexture::DsDt);
+						if (tex->isBumpMap())
+						{
+							CTextureBump *tb = static_cast<CTextureBump *>(tex);
+							tb->setSignedFormat(false);
+						}
+					}
+					else
+					{					
+						tex->setUploadFormat(ITexture::RGBA8888);
+						if (tex->isBumpMap())
+						{
+							CTextureBump *tb = static_cast<CTextureBump *>(tex);
+							tb->setSignedFormat(false);
+						}
+					}
+					setupTexture(*tex);
+					setShaderTexture (1, tex);
+				}				
+				//				
+				tex = mat.getTexture(2);
+				if (tex) 
+				{					
+					setupTexture(*tex);
+					setShaderTexture (2, tex);
+				}
+				tex = mat.getTexture(3);
+				if (tex) 
+				{					
+					setupTexture(*tex);
+					setShaderTexture (3, tex);
+				}
+				
+				// Set the constants
+				ID3DXEffect			*effect = shaderInfo->Effect;					
+				if (_PixelShaderVersion < D3DPS_VERSION(2, 0))				
+				{		
+					if (_PixelShaderVersion < D3DPS_VERSION(1, 4))
+					{
+						if (mat.getTexture(1) && mat.getTexture(1)->isBumpMap())
+						{
+							float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(1))->getNormalizationFactor();
+							effect->SetFloat(shaderInfo->ScalarHandle[0], factor);
+						}
+						else
+						{
+							effect->SetFloat(shaderInfo->ScalarHandle[0], 1.f);
+						}						
+					}
+					else
+					{					
+						if (mat.getTexture(0) && mat.getTexture(0)->isBumpMap())
+						{
+							float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(0))->getNormalizationFactor();
+							float cst[4] = { factor, factor, factor, 0.f };
+							effect->SetFloatArray(shaderInfo->FactorHandle[0], cst, 4);
+						}
+						else
+						{
+							float cst[4] = { 1.f, 1.f, 1.f, 0.f };
+							effect->SetFloatArray(shaderInfo->FactorHandle[0], cst, 4);
+						}
+						//
+						if (mat.getTexture(1) && mat.getTexture(1)->isBumpMap())
+						{
+							float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(1))->getNormalizationFactor();
+							float cst[4] = { factor, factor, factor, 0.f };
+							effect->SetFloatArray(shaderInfo->FactorHandle[1], cst, 4);
+						}
+						else
+						{
+							float cst[4] = { 1.f, 1.f, 1.f, 0.f };
+							effect->SetFloatArray(shaderInfo->FactorHandle[1], cst, 4);
+						}
+					}
+				}
+				else
+				{				
+					// setup the constant
+					if (mat.getTexture(0) && mat.getTexture(0)->isBumpMap())
+					{
+						float factor = 0.25f * NLMISC::safe_cast<CTextureBump *>(mat.getTexture(0))->getNormalizationFactor();
+						float bmScale[4] = { -1.f * factor, -1.f * factor, 2.f * factor, 0.f };
+						effect->SetFloatArray(shaderInfo->FactorHandle[0], bmScale, 4);
+					}
+					else
+					{					
+						float bmScale[4] = { -1.f, -1.f, 2.f, 0.f };
+						effect->SetFloatArray(shaderInfo->FactorHandle[0], bmScale, 4);		
+					}
+					// setup the constant
+					if (mat.getTexture(1) && mat.getTexture(1)->isBumpMap())
+					{
+						float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(1))->getNormalizationFactor();
+						float bmScale[4] = { -1.f * factor, -1.f * factor, 2.f * factor, 0.f };
+						effect->SetFloatArray(shaderInfo->FactorHandle[1], bmScale, 4);	
+					}
+					else
+					{
+						float bmScale[4] = { -1.f, -1.f, 2.f, 0.f };
+						effect->SetFloatArray(shaderInfo->FactorHandle[1], bmScale, 4);	
+					}
+				}
+			}
+			// CMaterial::Water
 		}
 
 		// New material setuped

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.15 2004/06/29 13:56:08 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.16 2004/07/06 16:52:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -262,6 +262,9 @@ public:
 
 	// Factor handles
 	D3DXHANDLE				FactorHandle[MaxShaderTexture];
+
+	// Scalar handles
+	D3DXHANDLE				ScalarHandle[MaxShaderTexture];
 
 	CShaderDrvInfosD3D(IDriver *drv, ItShaderDrvInfoPtrList it);
 	virtual ~CShaderDrvInfosD3D();
@@ -572,7 +575,7 @@ public:
 	virtual bool			supportTextureShaders() const {return false;};
 	virtual	bool			supportMADOperator() const;
 	// todo hulud d3d adressing mode
-	virtual bool			isWaterShaderSupported() const {return false;};
+	virtual bool			isWaterShaderSupported() const;
 	// todo hulud d3d adressing mode
 	virtual bool			isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const {return false;};
 	// todo hulud d3d adressing mode
@@ -1502,7 +1505,8 @@ private:
 	sint					_NbNeLTextureStages;			// Number of texture stage for NeL (max IDRV_MAT_MAXTEXTURES)
 	uint					_MaxVerticesByVertexBufferHard;
 	uint					_MaxLight;
-
+	uint32					_PixelShaderVersion;
+	
 	// Profiling
 	CPrimitiveProfile									_PrimitiveProfileIn;
 	CPrimitiveProfile									_PrimitiveProfileOut;
@@ -1627,6 +1631,8 @@ private:
 	CShader					_ShaderLightmap3BlendX2;
 	CShader					_ShaderLightmap4BlendX2;
 	CShader					_ShaderCloud;
+	CShader					_ShaderWaterNoDiffuse;	
+	CShader					_ShaderWaterDiffuse;	
 
 	// Backup frame buffer
 	IDirect3DSurface9		*_BackBuffer;

@@ -47,6 +47,8 @@ lightmap2blend_x2       FX      DISCARDABLE     "lightmap2blend_x2.fx"
 lightmap3blend_x2       FX      DISCARDABLE     "lightmap3blend_x2.fx"
 lightmap4blend_x2       FX      DISCARDABLE     "lightmap4blend_x2.fx"
 cloud                   FX      DISCARDABLE     "cloud.fx"
+water_no_diffuse        FX      DISCARDABLE     "water_no_diffuse.fx"
+water_diffuse           FX      DISCARDABLE     "water_diffuse.fx"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

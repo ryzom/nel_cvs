@@ -202,6 +202,14 @@ SOURCE=.\lightmap4blend.fx
 
 SOURCE=.\lightmap4blend_x2.fx
 # End Source File
+# Begin Source File
+
+SOURCE=.\water_diffuse.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\water_no_diffuse.fx
+# End Source File
 # End Group
 # Begin Source File
 

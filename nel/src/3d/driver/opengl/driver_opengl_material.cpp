@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.83 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.84 2004/04/01 19:10:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,6 +112,7 @@ static inline void convTexAddr(ITexture *tex, CMaterial::TTexAddressingMode mode
 		glenum = glTexCubeAddrModesNV[(uint) mode];
 	}
 }
+
 
 
 // --------------------------------------------------
@@ -638,8 +639,8 @@ void CDriverGL::computeLightMapInfos (const CMaterial &mat)
 
 	// Compute how many pass, according to driver caps.
 	_NLightMapPerPass = inlGetNumTextStages()-1;
-	// Can do more than 2 texture stages only if NVTextureEnvCombine4 or ATIXTextureEnvCombine3
-	if (!_Extensions.NVTextureEnvCombine4 && !_Extensions.ATIXTextureEnvCombine3)
+	// Can do more than 2 texture stages only if NVTextureEnvCombine4 or ATITextureEnvCombine3
+	if (!_Extensions.NVTextureEnvCombine4 && !_Extensions.ATITextureEnvCombine3)
 		_NLightMapPerPass = 1;
 
 	// Number of pass.
@@ -749,7 +750,7 @@ void			CDriverGL::setupLightMapPass(uint pass)
 				else
 				{
 					// Here, we are sure that texEnvCombine4 or texEnvCombine3 is OK.
-					nlassert(_Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3);
+					nlassert(_Extensions.NVTextureEnvCombine4 || _Extensions.ATITextureEnvCombine3);
 
 					// setup constant color with Lightmap factor.
 					stdEnv.ConstantColor=lmapFactor;
@@ -792,8 +793,8 @@ void			CDriverGL::setupLightMapPass(uint pass)
 							// What we want to setup is  Texture*Constant + Previous.
 							glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 							// Operator.
-							glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);
-							glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATIX);						
+							glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATI);
+							glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATI);						
 							// Arg0.
 							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
 							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
@@ -1058,7 +1059,7 @@ sint			CDriverGL::beginSpecularMultiPass()
 	if(!_Extensions.ARBTextureCubeMap)
 		return 1;
 	
-	if( _Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3) // NVidia or ATI optimization
+	if( _Extensions.NVTextureEnvCombine4 || _Extensions.ATITextureEnvCombine3) // NVidia or ATI optimization
 		return 1;
 	else
 		return 2;
@@ -1133,7 +1134,7 @@ void			CDriverGL::setupSpecularPass(uint pass)
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA);
 		}
 	}
-	else if (_Extensions.ATIXTextureEnvCombine3)
+	else if (_Extensions.ATITextureEnvCombine3)
 	{
 		// Ok we can do it in a single pass
 
@@ -1153,8 +1154,8 @@ void			CDriverGL::setupSpecularPass(uint pass)
 			_DriverGLStates.activeTextureARB(1);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 			// Operator Add (Arg0*Arg2+Arg1)
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX );
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATIX );
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATI );
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATI );
 			// Arg0.
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
@@ -1446,7 +1447,7 @@ void			CDriverGL::setupPPLPass(uint pass)
 		{
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 			
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);			
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATI);
 			// Arg0 = Diffuse read in cube map
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
@@ -1513,7 +1514,7 @@ void			CDriverGL::setupPPLPass(uint pass)
 		{
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);		
 			//== colors ==
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);			
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATI);
 			// Arg0 = Specular read in cube map
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
@@ -1525,7 +1526,7 @@ void			CDriverGL::setupPPLPass(uint pass)
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);			
 
 			//== alpha ==
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATIX);			
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATI);
 			// Arg0 = PREVIOUS ALPHA
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PREVIOUS_EXT);
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_COLOR);
@@ -1613,7 +1614,7 @@ void			CDriverGL::setupPPLNoSpecPass(uint pass)
 		{
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 			
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);			
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATI);
 			// Arg0 = Diffuse read in cube map alpha
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);

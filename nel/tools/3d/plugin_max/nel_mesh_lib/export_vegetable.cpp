@@ -1,7 +1,7 @@
 /** \file export_vegetable.cpp
  * Export from 3dsmax a NeL vegetable mesh
  *
- * $Id: export_vegetable.cpp,v 1.5 2002/08/27 12:40:46 corvazier Exp $
+ * $Id: export_vegetable.cpp,v 1.6 2003/11/03 17:31:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,6 @@ using namespace NLMISC;
 using namespace NL3D;
 
 // ***************************************************************************
-
 bool  CExportNel::buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INode& node, TimeValue time)
 {
 	// Is it a tri object ?
@@ -132,13 +131,10 @@ bool  CExportNel::buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INo
 							vegetableBuild.Lighted = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_LIGHTED, 0) != 2;
 
 							// Precompute light ?
-							vegetableBuild.PreComputeLighting = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_LIGHTED, 0) == 1;
+							vegetableBuild.PreComputeLighting = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_LIGHTED, 0) == 0;
 
 							// Double sided ?
 							vegetableBuild.DoubleSided = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED, 0) != BST_UNCHECKED;
-
-							// Lighted ?
-							vegetableBuild.Lighted = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_ON_LIGHTED, 0) == 0;
 						}
 
 						// PreComputeLighting?

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.50 2003/06/11 15:24:24 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.51 2003/06/12 14:36:49 lecroart Exp $
  *
  */
 
@@ -356,7 +356,7 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 	while (msgin.getPos() < (sint32)msgin.length())
 	{
 		string service, var;
-		uint32 val;
+		sint32 val;
 		msgin.serial (service, var, val);
 		msgout.serial(service, var, val);
 	}

@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.4 2003/06/12 14:28:56 lecroart Exp $
+ * $Id: admin.cpp,v 1.5 2003/06/12 14:35:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,7 +134,7 @@ void updateAdmin()
 				ICommand::execute(GraphUpdates[j].Name, logDisplayVars, true, false);
 				const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
 				nlassert (strs.size() == 1);
-				uint32 val = atoi(strs[0].c_str());
+				sint32 val = atoi(strs[0].c_str());
 
 				string name = IService::getInstance()->getServiceAliasName();
 				if (name.empty())

@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.29 2003/06/12 14:28:42 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.30 2003/06/12 14:36:49 lecroart Exp $
  *
  */
 
@@ -379,7 +379,7 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 	while (msgin.getPos() < (sint32)msgin.length())
 	{
 		string var, service;
-		uint32 val;
+		sint32 val;
 		msgin.serial (service, var, val);
 
 		AESIT aesit = findAES (sid);

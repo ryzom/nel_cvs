@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.30 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: sheet_id.cpp,v 1.31 2004/07/08 16:45:09 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -61,6 +61,25 @@ void CSheetId::cbFileChange (const std::string &filename)
 //	CSheetId
 //
 //-----------------------------------------------
+CSheetId::CSheetId( uint32 sheetRef) 
+{ 
+	_Id.Id = sheetRef; 
+#ifdef NL_DEBUG_SHEET_ID
+	CStaticMap<uint32, CChar>::iterator it(_SheetIdToName.find(sheetRef));
+	if (it != _SheetIdToName.end())
+	{
+		_DebugSheetName = it->second.Ptr;
+	}
+	else
+		_DebugSheetName = NULL;
+#endif
+}
+
+
+//-----------------------------------------------
+//	CSheetId
+//
+//-----------------------------------------------
 CSheetId::CSheetId( const string& sheetName )
 {
 	if (!build(sheetName))
@@ -90,7 +109,11 @@ bool CSheetId::build(const std::string& sheetName)
 	delete [] c.Ptr;
 	if( itId != _SheetNameToId.end() )
 	{
-		_Id.Id = (*itId).second;
+		_Id.Id = itId->second;
+#ifdef NL_DEBUG_SHEET_ID
+		// store debug info
+		_DebugSheetName = itId->first.Ptr;
+#endif
 		return true;
 	}
 	return false;		
@@ -266,6 +289,10 @@ CSheetId& CSheetId::operator=( const CSheetId& sheetId )
 	}
 
 	_Id.Id = sheetId.asInt();
+
+#ifdef NL_DEBUG_SHEET_ID
+	_DebugSheetName = sheetId._DebugSheetName;
+#endif
 
     return *this;
 
@@ -535,6 +562,17 @@ void	CSheetId::build(uint32 shortId, uint8 type)
 {
 	_Id.IdInfos.Id= shortId;
 	_Id.IdInfos.Type= type;
+
+#ifdef NL_DEBUG_SHEET_ID
+	CStaticMap<uint32, CChar>::iterator it(_SheetIdToName.find(_Id.Id));
+	if (it != _SheetIdToName.end())
+	{
+		_DebugSheetName = it->second.Ptr;
+	}
+	else
+		_DebugSheetName = NULL;
+#endif
+
 }
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.17 2004/05/18 16:30:48 coutelas Exp $
+ * $Id: sheet_id.h,v 1.18 2004/07/08 16:42:55 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -37,6 +37,10 @@
 
 namespace NLMISC {
 
+#if defined(NL_DEBUG) || defined(NL_DEBUG_FAST)
+#  define NL_DEBUG_SHEET_ID
+#endif
+
 /**
  * CSheetId
  *
@@ -54,7 +58,7 @@ public :
 	/**
 	 *	Constructor
 	 */
-	explicit CSheetId( uint32 sheetRef = 0 ) { _Id.Id = sheetRef; }
+	explicit CSheetId( uint32 sheetRef = 0 );
 
 	/**
 	 *	Constructor
@@ -179,6 +183,11 @@ private :
 		} IdInfos;
 	};
 	TSheetId _Id;
+
+#ifdef NL_DEBUG_SHEET_ID
+	// Add some valuable debug information to sheetId
+	const char	*_DebugSheetName;
+#endif
 
 	/// associate sheet id and sheet name
 	//static std::map<uint32,std::string> _SheetIdToName;

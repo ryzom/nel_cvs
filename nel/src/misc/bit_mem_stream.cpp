@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.17 2002/05/23 13:09:56 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.18 2002/05/23 17:32:31 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -51,7 +51,6 @@ CBitMemStream::CBitMemStream( const CBitMemStream& other ) :
 	CMemStream( other ),
 	_FreeBits( other._FreeBits )
 {
-	_BufPos--;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.7 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.8 2001/05/09 14:33:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ const CFontManager *CParticleSystemProcess::getFontManager(void) const
 
 
 
-void CParticleSystemProcess::serial(NLMISC::IStream &f)
+void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialCheck((uint32) 'PSPR') ;
 	f.serialVersion(1) ;
@@ -162,7 +162,7 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	}
 }
 
-void CParticleSystem::serial(NLMISC::IStream &f)
+void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 {
 	uint32 size ;
 	f.serialCheck((uint32) 'PSYS') ;

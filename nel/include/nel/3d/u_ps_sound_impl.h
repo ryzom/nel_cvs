@@ -1,7 +1,7 @@
 /** \file ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.1 2001/08/29 14:26:41 vizerie Exp $
+ * $Id: u_ps_sound_impl.h,v 1.2 2001/09/04 13:41:03 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -43,6 +43,9 @@ namespace NL3D
 {
 
 
+inline void SpawnedSourceEndedCallback(NLSOUND::USource *source, void *userParam);
+
+
 /// This class implement a sound instance (a sound source)
 class CPSSoundInstanceImpl : public UPSSoundInstance
 {
@@ -50,9 +53,19 @@ public:
 	/// construct this object from a nel sound source
 	/** The system will call this method to set the parameters of the sound	  
 	  */
-	CPSSoundInstanceImpl(NLSOUND::USource *source) : _Source(source)
+	CPSSoundInstanceImpl() 
+		: _Source(NULL), _AudioMixer(NULL), _Spawned(false)
+	{			
+	}
+
+	/// init this sound instance parameters
+	void init(NLSOUND::USource *source, NLSOUND::UAudioMixer *am, bool spawned)
 	{
-		
+		nlassert(source);
+		nlassert(am);
+		_Source = source;
+		_AudioMixer = am;
+		_Spawned    = spawned;
 	}
 
 	/// change this sound source paramerters
@@ -62,7 +75,11 @@ public:
 						   , float pitch
 						  )
 	{
-		nlassert(_Source);
+		if (!_Source) return;		
+		if (gain < 0) gain = 0;
+		if (gain > 1) gain = 1;
+		if (pitch > 1) pitch = 1;
+		if (pitch < 0.0001f) pitch = 0.0001f;
 		_Source->setPos(pos);
 		_Source->setVelocity(velocity);
 		_Source->setGain(gain);
@@ -72,32 +89,47 @@ public:
 	/// start to play the sound
 	virtual void play(void)
 	{
-		nlassert(_Source);
+		if (!_Source) return;
 		_Source->play();
 	}
 
 
 	virtual bool isPlaying(void) const
 	{
+		if (!_Source) return false;
 		return _Source->isPlaying();
 	}
 
 	/// stop the sound
 	virtual void stop(void)
 	{
-		nlassert(_Source);
+		if (!_Source) return;
 		_Source->stop();
 	}
 
 	/// release the sound source
 	virtual void release(void)
-	{
-		delete _Source;
+	{	
+		if (!_Spawned) // remove this source from the audio mixer if it hasn't been spawned
+		{
+			nlassert(_AudioMixer);
+			_AudioMixer->removeSource(_Source);
+		}
+		else
+		{
+			if (_Source) // tells this spawned source not to notify us when it ends
+			{
+				_Source->unregisterSpawnCallBack();
+			}
+		}
 		delete this;
 	}
 
 protected:
+	friend inline void SpawnedSourceEndedCallback(NLSOUND::USource *source, void *userParam);
 	NLSOUND::USource *_Source;
+	bool			 _Spawned;
+	NLSOUND::UAudioMixer *_AudioMixer;
 };
 
 
@@ -136,16 +168,20 @@ public:
 
 
 	/// inherited from IPSSoundServer
-	UPSSoundInstance *createSound(const std::string &soundName)
+	UPSSoundInstance *createSound(const std::string &soundName, bool spawned = true)
 	{		
 		nlassert(_AudioMixer);
-		NLSOUND::USource *source = _AudioMixer->createSource(soundName.c_str());
+		CPSSoundInstanceImpl *sound = new CPSSoundInstanceImpl;
+		NLSOUND::USource *source = _AudioMixer->createSource(soundName.c_str(), spawned, SpawnedSourceEndedCallback, sound );
 		if (source)
 		{						
-			return new CPSSoundInstanceImpl(source);
+			sound->init(source, _AudioMixer, spawned);
+			return sound;
 		}
 		else
 		{
+			// should usually not happen
+			delete sound;
 			return NULL;
 		}
 	}
@@ -156,6 +192,13 @@ protected:
 
 };
 
+
+/// this callback is called when a spawned source has ended, so that we know that the pointer to it is invalid...
+inline void SpawnedSourceEndedCallback(NLSOUND::USource *source, void *userParam)
+{
+	nlassert(((CPSSoundInstanceImpl *) userParam)->_Source == source);
+	((CPSSoundInstanceImpl *) userParam)->_Source = NULL;
+}
 
 
 

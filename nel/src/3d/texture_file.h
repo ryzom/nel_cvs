@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * TODO: File description
  *
- * $Id: texture_file.h,v 1.16 2005/02/22 10:19:12 besson Exp $
+ * $Id: texture_file.h,v 1.17 2005/03/31 13:39:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile() { _AllowDegradation=true; _SupportSharing= true; _DontStretchNonPOW2Tex = false; _MipMapSkipAtLoad=0; }
+	CTextureFile() { _AllowDegradation=true; _SupportSharing= true; _EnlargeCanvasNonPOW2Tex = false; _MipMapSkipAtLoad=0; }
 
 	// copy ctor
 	CTextureFile(const CTextureFile &other);
@@ -78,7 +78,7 @@ public:
 		touch(); _FileName = s; 
 		_AllowDegradation=true;
 		_SupportSharing= true; 
-		_DontStretchNonPOW2Tex = false;
+		_EnlargeCanvasNonPOW2Tex = false;
 		_MipMapSkipAtLoad=0;
 	} 
 
@@ -136,22 +136,25 @@ public:
 
 
 	//// Used to fill a bitmap by reading a file, looking in CPath if necessary, and using user_color
-	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip=0, bool dontStretchNonPOW2Tex = false);
+	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip=0, bool enlargeCanvasNonPOW2Tex = false);
 
 
 	/// If the file is a DDS texture with mipmap, skip the first skipLod mipmaps (0 by default) at loading
 	void			setMipMapSkipAtLoad(uint8 level);
 	uint8			getMipMapSkipAtLoad() const {return _MipMapSkipAtLoad;}
 
-	// Flag that tell that textures that have dimension that are not power of 2 are snapped to the top-left corner of a power-of-2 sized texture
-	void			setDontStretchNonPOW2Tex(bool dontStretch) { _DontStretchNonPOW2Tex =  true; }
-	bool			getDontStretchNonPOW2Tex() const { return _DontStretchNonPOW2Tex; }
+	/** Flag that tell that textures that have dimension that are not power of 2 are snapped to the top-left corner of a power-of-2 sized texture
+	 *	Default is false. Any texture that are non power of 2 are considered as a bug and thus a DummyTexture is displayed
+	 *	NB: if true, CBitmap::getWidth() and CBitmap::getHeight() will return the new enlarged size
+	 */
+	void			setEnlargeCanvasNonPOW2Tex(bool enlarge) { _EnlargeCanvasNonPOW2Tex =  enlarge; }
+	bool			getEnlargeCanvasNonPOW2Tex() const { return _EnlargeCanvasNonPOW2Tex; }
 
 private:
 	std::string _FileName;
 	bool		_AllowDegradation;	// Default is true.
 	bool		_SupportSharing;	// Default is true.
-	bool        _DontStretchNonPOW2Tex;    // Non power of 2 textures are cropped. Default is false
+	bool        _EnlargeCanvasNonPOW2Tex;    // Non power of 2 textures are cropped. Default is false
 	uint8		_MipMapSkipAtLoad;	// Default is 0.
 private:
 	void		dupInfo(const CTextureFile &other);

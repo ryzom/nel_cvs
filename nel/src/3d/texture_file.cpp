@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.16 2002/06/24 17:11:13 vizerie Exp $
+ * $Id: texture_file.cpp,v 1.17 2002/07/16 14:49:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,14 +59,14 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 		if (dest.PixelFormat == RGBA)
 		{
 			// Make a filename
-			string path = fileName;
+			string path = CFile::getFilename(fileName);
 			string ext = strrchr (fileName.c_str(), '.');
 			path.resize (path.size () - ext.size());
 			path += "_usercolor" + ext;
 
 			// Loopup the texture
 			string file2 = CPath::lookup( path, false, false);
-			if (file2 != "")
+			if (!file2.empty())
 			{
 				// The file2 exist, load and compute it
 				CBitmap bitmap;
@@ -157,11 +157,11 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 			}
 		}
 	}
-	catch(EPathNotFound &)
+	catch(EPathNotFound &e)
 	{
 		// Not found...
 		dest.makeDummy();
-		nlwarning("Missing textureFile: %s", fileName.c_str());
+		nlwarning("Missing textureFile: %s (%s)", fileName.c_str(), e.what());
 	}
 }
 

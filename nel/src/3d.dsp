@@ -207,14 +207,6 @@ SOURCE=.\3d\camera.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\coarse_mesh_manager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\coarse_mesh_manager.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\flare_model.cpp
 # End Source File
 # Begin Source File
@@ -2494,6 +2486,14 @@ SOURCE=.\3d\coarse_mesh_build.cpp
 # Begin Source File
 
 SOURCE=.\3d\coarse_mesh_build.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\coarse_mesh_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\coarse_mesh_manager.h
 # End Source File
 # Begin Source File
 

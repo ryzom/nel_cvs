@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.32 2003/03/12 13:42:17 berenguier Exp $
+ * $Id: u_scene.h,v 1.33 2003/03/13 14:21:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -271,13 +271,9 @@ public:
 	/// \name Coarse meshes mgt.
 	//@{
 
-	/** Set the static coarse meshes's common texture.
+	/** Set the coarse meshes's common texture.
 	*/
-	virtual void				setStaticCoarseMeshManagerTexture (const char *sPath) =0;
-
-	/** Set the dynamic coarse meshes's common texture.
-	*/
-	virtual void				setDynamicCoarseMeshManagerTexture (const char *sPath) =0;
+	virtual void				setCoarseMeshManagerTexture (const char *sPath) =0;
 
 	/**
 	 *	Each coarseMesh lighting will be updated every "period" frame. clamped to 1,255
@@ -421,6 +417,7 @@ public:
 		FilterSegRemanence= 0x00000200,
 		FilterPS=			0x00000400,
 		FilterFlare=		0x00000800,
+		FilterCoarseMesh=	0x00001000,			// Disable render of CoarseMesh (but not management through Meshs!)
 
 		// Combos:
 		FilterAllMeshNoVP=	FilterMeshNoVP + FilterMeshMRMNoVP + FilterMeshLodNoVP,

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.23 2002/11/04 15:40:44 boucher Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.24 2003/04/10 09:26:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,13 +82,22 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 	ShowWindow(SW_SHOW);
 	_ParticleDlg = pParent;
 
-	if (_Bindable->getOwner()->getOwner()->isAutoLODEnabled() == false)
-	{
-		GetDlgItem(IDC_NO_AUTO_LOD)->EnableWindow(FALSE);
+	NL3D::CParticleSystem *ps = _Bindable->getOwner()->getOwner();
+	if (ps->isSharingEnabled())
+	{	
+		GetDlgItem(IDC_NO_AUTO_LOD)->ShowWindow(TRUE);
+		if (ps->isAutoLODEnabled() == false)
+		{
+			GetDlgItem(IDC_NO_AUTO_LOD)->EnableWindow(FALSE);
+		}
+		else
+		{
+			((CButton *) GetDlgItem(IDC_NO_AUTO_LOD))->SetCheck(NLMISC::safe_cast<NL3D::CPSParticle *>(_Bindable)->isAutoLODDisabled());
+		}
 	}
 	else
 	{
-		((CButton *) GetDlgItem(IDC_NO_AUTO_LOD))->SetCheck(NLMISC::safe_cast<NL3D::CPSParticle *>(_Bindable)->isAutoLODDisabled());
+		GetDlgItem(IDC_NO_AUTO_LOD)->ShowWindow(FALSE);
 	}
 
 	uint yPos = 35;

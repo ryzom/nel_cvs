@@ -18,7 +18,7 @@ echo "EXP_SmallBank = $name_bank" >> prim_export.cfg
 name_farbank=`cat ../../cfg/properties.cfg | grep "bankfar_name" | sed -e 's/bankfar_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
 echo "EXP_FarBank = $name_farbank" >> prim_export.cfg
 
-displacedir=`cat ../../cfg/directories.cfg | grep "displace_source_directories" | sed -e 's/displace_source_directories//' | sed -e 's/ //g' | sed -e 's/=//g'`
+displacedir=`cat ../../cfg/directories.cfg | grep "displace_source_directory" | sed -e 's/displace_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 echo "EXP_DisplaceDir = \"$dir_database/$displacedir\";" >> prim_export.cfg
 

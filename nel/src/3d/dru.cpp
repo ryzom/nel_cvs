@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.34 2002/02/28 12:59:49 besson Exp $
+ * $Id: dru.cpp,v 1.35 2002/06/26 10:15:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,10 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 	{
 		throw EDruOpenglDriverNotFound();
 	}
+
+	char buffer[1024], *ptr;
+	SearchPath (NULL, NL3D_DLL_NAME, NULL, 1023, buffer, &ptr);
+	nlinfo ("Using the library '"NL3D_DLL_NAME"' that is in the directory: '%s'", buffer);
 
 	createDriver = (IDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
 	if (createDriver == NULL)

@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.6 2002/06/11 09:37:21 hanappe Exp $
+ * $Id: sound_driver.cpp,v 1.7 2002/06/26 10:15:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,10 @@ ISoundDriver	*ISoundDriver::createDriver()
 	{
 		throw ESoundDriverNotFound();
 	}
+
+	char buffer[1024], *ptr;
+	SearchPath (NULL, NLSOUND_DLL_NAME, NULL, 1023, buffer, &ptr);
+	nlinfo ("Using the library '"NLSOUND_DLL_NAME"' that is in the directory: '%s'", buffer);
 
 	createSoundDriver = (ISDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
 	if (createSoundDriver == NULL)

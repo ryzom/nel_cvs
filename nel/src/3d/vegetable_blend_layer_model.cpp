@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.2 2001/12/05 11:03:50 berenguier Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.3 2001/12/11 14:41:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,8 @@ CVegetableBlendLayerModel::CVegetableBlendLayerModel()
 // ***************************************************************************
 void	CVegetableBlendLayerModel::initModel()
 {
+	CTransform::initModel();
+
 	_HrcObs= safe_cast<CTransformHrcObs	*>(getObs(HrcTravId));
 }
 

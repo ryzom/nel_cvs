@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.cpp
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.cpp,v 1.4 2001/06/25 13:00:37 vizerie Exp $
+ * $Id: ps_mover_dlg.cpp,v 1.5 2001/06/25 16:13:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/ps_located.h"
 
 #include "editable_range.h"
+#include "direction_attr.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,6 +43,7 @@ static char THIS_FILE[] = __FILE__;
 
 CPSMoverDlg::CPSMoverDlg(CParticleTreeCtrl *parent, NL3D::CEvent3dMouseListener *ml,  HTREEITEM editedItem)   // standard constructor
 	: CDialog(CPSMoverDlg::IDD, parent)
+	  , _DirectionDlg(NULL)
 	  , _MouseListener(ml)
 	  ,	_Scale(NULL), _XScale(NULL), _YScale(NULL), _ZScale(NULL)
 	  , _ScaleText(NULL), _XScaleText(NULL), _YScaleText(NULL), _ZScaleText(NULL)
@@ -67,6 +69,11 @@ CPSMoverDlg::CPSMoverDlg(CParticleTreeCtrl *parent, NL3D::CEvent3dMouseListener 
 CPSMoverDlg::~CPSMoverDlg()
 {
 	cleanScaleCtrl() ;
+	if (_DirectionDlg) 
+	{
+		_DirectionDlg->DestroyWindow() ;
+		delete _DirectionDlg ;
+	}
 }
 
 void CPSMoverDlg::updateListener(void)
@@ -196,17 +203,18 @@ BOOL CPSMoverDlg::OnInitDialog()
 
 void CPSMoverDlg::cleanScaleCtrl(void)
 {
-	#define REMOVE_SCALE_WINDOW(w) if (w) { w->DestroyWindow() ; delete w ; w = NULL ; }
+	#define REMOVE_WINDOW(w) if (w) { w->DestroyWindow() ; delete w ; w = NULL ; }
 									
-	REMOVE_SCALE_WINDOW(_Scale) ;
-	REMOVE_SCALE_WINDOW(_XScale) ;
-	REMOVE_SCALE_WINDOW(_YScale) ;
-	REMOVE_SCALE_WINDOW(_ZScale) ;
+	REMOVE_WINDOW(_Scale) ;
+	REMOVE_WINDOW(_XScale) ;
+	REMOVE_WINDOW(_YScale) ;
+	REMOVE_WINDOW(_ZScale) ;
 
-	REMOVE_SCALE_WINDOW(_ScaleText) ;
-	REMOVE_SCALE_WINDOW(_XScaleText) ;
-	REMOVE_SCALE_WINDOW(_YScaleText) ;
-	REMOVE_SCALE_WINDOW(_ZScaleText) ;
+	REMOVE_WINDOW(_ScaleText) ;
+	REMOVE_WINDOW(_XScaleText) ;
+	REMOVE_WINDOW(_YScaleText) ;
+	REMOVE_WINDOW(_ZScaleText) ;
+	REMOVE_WINDOW(_DirectionDlg) ;
 }
 
 void CPSMoverDlg::createScaleControls(void)
@@ -222,6 +230,8 @@ void CPSMoverDlg::createScaleControls(void)
 	sint yPos = 330 ;
 	
 
+	RECT r ;
+
 	if (m->supportUniformScaling() && ! m->supportNonUniformScaling() )
 	{
 		_Scale = new CEditableRangeFloat("UNIFORM SCALE", 0.f, 4.f)  ;
@@ -234,10 +244,13 @@ void CPSMoverDlg::createScaleControls(void)
 		_ScaleText = new CStatic ;
 		_ScaleText ->Create("Scale : ", SS_LEFT, CRect(xPos, yPos + 10, xPos + 60, yPos + 32), this) ;
 		_ScaleText ->ShowWindow(SW_SHOW) ;
+
+		_Scale->GetClientRect(&r) ;
+		yPos += r.bottom ;
 	}
 	else if (m->supportNonUniformScaling())
 	{
-		RECT r ;
+		
 
 		// dialog for edition of x scale
 		_XScale = new CEditableRangeFloat("X SCALE", 0.f, 4.f)  ;
@@ -284,7 +297,14 @@ void CPSMoverDlg::createScaleControls(void)
 	}
 
 
-
+	if (m->onlyStoreNormal())
+	{
+		_DirectionDlg = new CDirectionAttr(" ELEMENT DIRECTION") ;
+		_DirectionDlg->init(xPos, yPos, this) ;
+		_DirectionWrapper.M = m ;
+		_DirectionWrapper.Index = _EditedNode->LocatedInstanceIndex ;
+		_DirectionDlg->setWrapper(&_DirectionWrapper) ;
+	}
 
 	
 }

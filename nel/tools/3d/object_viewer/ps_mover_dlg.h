@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.h
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.h,v 1.3 2001/06/25 13:00:37 vizerie Exp $
+ * $Id: ps_mover_dlg.h,v 1.4 2001/06/25 16:13:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,11 +35,18 @@ namespace NL3D
 	class CEvent3dMouseListener ;
 }
 
+namespace NLMISC
+{
+	class CVector ;
+}
+
 #include "ps_wrapper.h"
+
 
 template <class T> class CEditableRangeT ;
 typedef CEditableRangeT<float> CEditableRangeFloat ;
 
+class CDirectionAttr ;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPSMoverDlg dialog
@@ -92,6 +99,8 @@ protected:
 	CEditableRangeFloat *_Scale, *_XScale, *_YScale, *_ZScale ;
 
 	CStatic  *_ScaleText, *_XScaleText, *_YScaleText, *_ZScaleText ;
+
+	CDirectionAttr *_DirectionDlg ;
 
 	// this generate control for scaling
 	void createScaleControls(void) ;
@@ -158,6 +167,17 @@ protected:
 			M->setScale(Index, NLMISC::CVector(v.x, v.y, s) ) ; 
 		}
 	} _ZScaleWrapper ;
+
+	/// wrapper for direction
+	struct tagDirectionWrapper : public IPSWrapper<NLMISC::CVector>
+	{
+		uint32 Index ;
+		NL3D::IPSMover *M ;
+		NLMISC::CVector get(void) const { return M->getNormal(Index) ; }
+		void set(const NLMISC::CVector &v) { M->setNormal(Index, v) ; }
+
+
+	} _DirectionWrapper ;
 	 
 
 	// update the mouse listener position when the user entered a value with the keyboard

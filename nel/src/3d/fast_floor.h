@@ -1,7 +1,7 @@
 /** \file fast_floor.h
  * <File description>
  *
- * $Id: fast_floor.h,v 1.2 2001/07/24 09:43:15 vizerie Exp $
+ * $Id: fast_floor.h,v 1.3 2002/04/12 12:04:58 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ inline sint32 __stdcall OptFastFloor(float x)
 		fstp	qword ptr res		
 	}
 
-	return (sint32) res;
+	return (sint32) (res&0xFFFFFFFF);
 }
 
 

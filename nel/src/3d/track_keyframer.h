@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.9 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: track_keyframer.h,v 1.10 2002/04/12 12:04:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,8 +139,8 @@ public:
 		float	date= inDate;
 		const CKeyT *previous=NULL;
 		const CKeyT *next=NULL;
-		TAnimationTime datePrevious;
-		TAnimationTime dateNext;
+		TAnimationTime datePrevious = 0;
+		TAnimationTime dateNext = 0;
 
 		// must precalc ??
 		testAndClean();

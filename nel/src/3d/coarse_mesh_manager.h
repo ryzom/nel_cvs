@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.7 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.8 2002/04/12 12:04:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,7 +149,7 @@ private:
 	  */
 	static uint32 getRenderPassId (uint64 id)
 	{
-		return (uint32)id;
+		return (uint32)(id&0xFFFFFFFF);
 	}
 
 	/**

@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
+ * $Id: ps_fan_light.cpp,v 1.4 2002/04/12 12:04:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -217,12 +217,12 @@ void CPSFanLight::initFanLightPrecalc(void)
 	float currPhase, nextPhase, phaseStep;
 	for (uint l = 0; l < 32 ; l++)
 	{
-		nextPhase = (float) (uint8) rand();
+		nextPhase = (float) (uint8) (rand()&0xFF);
 		uint32 k = 0;
 		while (k < 128)
 		{
 			currPhase = nextPhase;
-			nextPhase = (float) (uint8) rand();			
+			nextPhase = (float) (uint8) (rand()&0xFF);
 			phaseStep = (nextPhase - currPhase) / (l + 1);
 
 			for (uint32 m = 0; m <= l; ++m)

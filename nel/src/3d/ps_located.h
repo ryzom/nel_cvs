@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.15 2002/01/28 14:30:16 vizerie Exp $
+ * $Id: ps_located.h,v 1.16 2002/02/15 17:06:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -302,7 +302,7 @@ public:
 	/**
 	* process the system
 	*/
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
 
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.40 2002/01/28 14:36:13 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.41 2002/02/15 17:06:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,7 +158,7 @@ void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ell
 		}
 		while (it != endIt);
 	}
-	step(PSEmit, ellapsedTime);
+	step(PSEmit, ellapsedTime, ellapsedTime);
 	updateLife(ellapsedTime);
 }
 
@@ -313,6 +313,14 @@ void CPSLocated::setInitialLife(TAnimationTime lifeTime)
 	_InitialLife = lifeTime;
 	delete _LifeScheme;
 	_LifeScheme = NULL;	
+
+	/** Reset all particles current date to 0. This is needed because we do not check
+	  * if particle life is over when the date of the system has not gone beyond the life duration of particles
+	  */
+	for (uint k = 0; k < _Size; ++k)
+	{
+		_Time[k] = 0.f;
+	}
 
 }
 void CPSLocated::setLifeScheme(CPSAttribMaker<float> *scheme)
@@ -673,7 +681,7 @@ void CPSLocated::deleteElement(uint32 index)
 
 void CPSLocated::resize(uint32 newSize)
 {
-
+	nlassert(newSize < (1 << 16));
 	if (newSize < _Size)
 	{
 		for (uint32 k = _Size - 1; k >= newSize; --k)
@@ -875,7 +883,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 // integrate speed of particles. Makes eventually use of SSE instructions when present
 static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ellapsedTime)
 {	
-	#if 0 // this works, but is not enabled for now..
+	#if 0 // this works, but is not enabled for now. The precision is not that good...
 		#ifdef NL_OS_WINDOWS
 
 
@@ -985,7 +993,7 @@ static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ell
 }
 
 
-void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 {
 	if (!_Size) return;	
 
@@ -1085,8 +1093,7 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 				
 			}
 
-
-			updateLife(ellapsedTime);			
+			updateLife(realEt);			
 		}
 		else
 		{
@@ -1094,13 +1101,24 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 		}
 	}
 
-	// apply the pass to all bound objects
-	for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	if (pass != PSMotion)
 	{
-		if ((*it)->getLOD() == PSLod1n2 || _Owner->getLOD() == (*it)->getLOD()) // has this object the right LOD ?
+		// apply the pass to all bound objects
+		for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 		{
-			(*it)->step(pass, ellapsedTime);
+			if ((*it)->getLOD() == PSLod1n2 || _Owner->getLOD() == (*it)->getLOD()) // has this object the right LOD ?
+			{
+				(*it)->step(pass, ellapsedTime);
+			}
 		}
+	}
+	else
+	{
+		for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+		{		
+			(*it)->step(pass, ellapsedTime);		
+		}
+
 	}
 }
 
@@ -1108,19 +1126,66 @@ void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 {
 	if (! _LastForever)
 	{
-		TPSAttribTime::iterator itTime = _Time.begin(), itTimeInc = _TimeIncrement.begin();
-		for (uint32 k = 0; k < _Size;)
-		{
-			*itTime += ellapsedTime * *itTimeInc;
-			if (*itTime >= 1.0f)
+		if (_LifeScheme != NULL)
+		{			
+			TPSAttribTime::iterator itTime = _Time.begin(), itTimeInc = _TimeIncrement.begin();			
+			for (uint32 k = 0; k < _Size;)
 			{
-				deleteElement(k);
+				*itTime += ellapsedTime * *itTimeInc;
+				if (*itTime >= 1.0f)
+				{
+					deleteElement(k);
+				}
+				else
+				{
+					++k;
+					++itTime;
+					++itTimeInc;
+				}
+			}
+		}
+		else /// all particles have the same lifetime
+		{
+			if (_InitialLife != 0)
+			{
+				nlassert(_Owner);
+				float timeInc = ellapsedTime * 1.f / _InitialLife;
+				if (_Owner->getSystemDate() >= (_InitialLife - ellapsedTime))
+				{					
+					TPSAttribTime::iterator itTime = _Time.begin();
+					for (uint32 k = 0; k < _Size;)
+					{
+						*itTime += timeInc;
+						if (*itTime >= 1.0f)
+						{
+							deleteElement(k);
+						}
+						else
+						{
+							++k;
+							++itTime;					
+						}
+					}
+				}
+				else
+				{
+					TPSAttribTime::iterator itTime = _Time.begin(), itEndTime = _Time.end();
+					do
+					{
+						*itTime += timeInc;
+						++itTime;
+					}
+					while (itTime != itEndTime);
+				}
 			}
 			else
 			{
-				++k;
-				++itTime;
-				++itTimeInc;
+				uint size = _Size;
+				do
+				{
+					deleteElement(0);
+				}
+				while (--size);				
 			}
 		}
 	}

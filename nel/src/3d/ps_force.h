@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.4 2001/07/12 15:46:39 vizerie Exp $
+ * $Id: ps_force.h,v 1.5 2001/07/13 17:00:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -431,6 +431,9 @@ public:
 	{		
 	}
 
+	#ifdef NL_OS_WINDOWS
+		__forceinline
+	#endif
 	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
 	 {
 		speed -= (ellapsedTime * _K * invMass * speed)  ;
@@ -501,11 +504,14 @@ public:
 	{		
 	}
 
+	#ifdef NL_OS_WINDOWS
+		__forceinline
+	#endif
 	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
 	 {
-		speed += ellapsedTime * _K * invMass * NLMISC::CVector (rand() * (2.f / RAND_MAX) - 1.f,
-														rand() * (2.f / RAND_MAX) - 1.f,
-														rand() * (2.f / RAND_MAX) - 1.f) ;
+		static double divRand = (2.f / RAND_MAX) ;
+		NLMISC::CVector dir(float(rand() * divRand - 1), float(rand() * divRand - 1) , float(rand() * divRand - 1) ) ;
+		speed += ellapsedTime * _K * invMass * dir ;
 	 }
 
 	 virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
@@ -564,6 +570,9 @@ protected:
 
 struct CPSTurbulForceFunc
 {	
+	#ifdef NL_OS_WINDOWS
+		__forceinline
+	#endif
 	void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
 	{
 		nlassert(0) ;

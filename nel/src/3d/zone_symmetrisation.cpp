@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.cpp
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.cpp,v 1.7 2004/02/10 16:04:29 besson Exp $
+ * $Id: zone_symmetrisation.cpp,v 1.8 2004/02/12 10:30:48 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -699,201 +699,207 @@ bool CZoneSymmetrisation::propagateTileState (uint patch, uint s, uint t, const 
 			if ((tileSetToPropagate < 0) || (tileSetToPropagate >= bank.getTileSetCount()))
 			{
 				nlwarning("CZoneSymmetrisation::propagateTileState: tile %d has an unknown tileSet (%d)", tileIndex, tileSetToPropagate);
-				return false;
 			}
-
-			// Oriented ?
-			bool oriented = bank.getTileSet (tileSetToPropagate)->getOriented ();
-
-			// If oriented, must not be a corner
-			if (!(oriented && getOrientedTileCorner (patch, tile)))
+			else
 			{
-				// Current node
-				CFillStackNode currentNode (patch, s, t, currentPatchPtr->Tiles[tile].getTileOrient(layer), getTileState (patch, tile, layer));
+				// Oriented ?
+				bool oriented = bank.getTileSet (tileSetToPropagate)->getOriented ();
 
-				// Propagate non-Nothing tiles
-				if ( (!forceRegular && (currentNode.State != Nothing)) || (forceRegular && (currentNode.State == Nothing)) )
+				// If oriented, must not be a corner
+				if (!(oriented && getOrientedTileCorner (patch, tile)))
 				{
-					// Force to Regular ?
-					if (forceRegular)
+					// Current node
+					CFillStackNode currentNode (patch, s, t, currentPatchPtr->Tiles[tile].getTileOrient(layer), getTileState (patch, tile, layer));
+
+					// Propagate non-Nothing tiles
+					if ( (!forceRegular && (currentNode.State != Nothing)) || (forceRegular && (currentNode.State == Nothing)) )
 					{
-						setTileState (patch, tile, layer, Regular);
-						currentNode.State = Regular;
-					}
-
-					// Fill stack
-					vector<CFillStackNode>	stack;
-					stack.push_back (currentNode);
-
-					// While people in the stack
-					while (!stack.empty ())
-					{		
-						// Pop last element
-						currentNode = stack.back ();
-						stack.pop_back ();
-
-						do
+						// Force to Regular ?
+						if (forceRegular)
 						{
-							// Set current patch pointer
-							currentPatchPtr = &(patchInfo[currentNode.Patch]);
+							setTileState (patch, tile, layer, Regular);
+							currentNode.State = Regular;
+						}
 
-							// Get neighbor
-							CFillStackNode neighborNode (currentNode.Patch, currentNode.S, currentNode.T, currentNode.Rotate, currentNode.State);
-							switch (currentNode.Edge)
-							{
-							case 0:
-								neighborNode.S--;
-								break;
-							case 1:
-								neighborNode.T++;
-								break;
-							case 2:
-								neighborNode.S++;
-								break;
-							case 3:
-								neighborNode.T--;
-								break;
-							}
+						// Fill stack
+						vector<CFillStackNode>	stack;
+						stack.push_back (currentNode);
 
-							// Is still in patch ?
-							if ( (neighborNode.S>=patchInfo[currentNode.Patch].OrderS) || (neighborNode.T>=patchInfo[currentNode.Patch].OrderT) )
+						// While people in the stack
+						while (!stack.empty ())
+						{		
+							// Pop last element
+							currentNode = stack.back ();
+							stack.pop_back ();
+
+							do
 							{
-								// No, found new patch
-								uint position;
+								// Set current patch pointer
+								currentPatchPtr = &(patchInfo[currentNode.Patch]);
+
+								// Get neighbor
+								CFillStackNode neighborNode (currentNode.Patch, currentNode.S, currentNode.T, currentNode.Rotate, currentNode.State);
 								switch (currentNode.Edge)
 								{
 								case 0:
-									position = neighborNode.T;
+									neighborNode.S--;
 									break;
 								case 1:
-									position = neighborNode.S;
+									neighborNode.T++;
 									break;
 								case 2:
-									position = patchInfo[currentNode.Patch].OrderT - neighborNode.T - 1;
+									neighborNode.S++;
 									break;
 								case 3:
-									position = patchInfo[currentNode.Patch].OrderS - neighborNode.S - 1;
+									neighborNode.T--;
 									break;
 								}
 
-								// Get next patch
-								uint patchOut;
-								sint sOut;
-								sint tOut;
-								if (patchInfo[currentNode.Patch].getNeighborTile (currentNode.Patch, currentNode.Edge, position, 
-									patchOut, sOut, tOut, patchInfo))
+								// Is still in patch ?
+								if ( (neighborNode.S>=patchInfo[currentNode.Patch].OrderS) || (neighborNode.T>=patchInfo[currentNode.Patch].OrderT) )
 								{
-									// Should be another patch
-									nlassert (patchOut != currentNode.Patch);
-
-									// Get patch id
-									neighborNode.Patch = patchOut;
-
-									// Coordinate must be IN the patch
-									nlassert (sOut >= 0);
-									nlassert (tOut >= 0);
-									nlassert (sOut < patchInfo[neighborNode.Patch].OrderS);
-									nlassert (tOut < patchInfo[neighborNode.Patch].OrderT);
-
-									// Copy it
-									neighborNode.S = sOut;
-									neighborNode.T = tOut;
-
-									// Find neighbor
-									const CPatchInfo::CBindInfo &neighborBindInfo = patchInfo[currentNode.Patch].BindEdges[currentNode.Edge];
-									uint edgePatch;
-									for (edgePatch=0; edgePatch<(uint)neighborBindInfo.NPatchs; edgePatch++)
+									// No, found new patch
+									uint position;
+									switch (currentNode.Edge)
 									{
-										if (neighborBindInfo.Next[edgePatch] == neighborNode.Patch)
-											break;
-									}
-
-									// Must find one patch
-									nlassert (edgePatch<(uint)neighborBindInfo.NPatchs);
-
-									// Rotation
-									neighborNode.Rotate = (currentNode.Rotate + 2 + neighborBindInfo.Edge[edgePatch] - currentNode.Edge) & 3;
-
-									// Toggle the state ?
-									if ((neighborNode.Rotate ^ currentNode.Rotate) & 1)
-									{
-										// Yes
-										neighborNode.State = (neighborNode.State == Regular) ? Goofy : Regular;
-									}
-								}
-								else
-								{
-									// No propagation, continue
-									currentNode.Edge++;
-									continue;
-								}
-							}
-
-							// Neighbor patch
-							const CPatchInfo *neighborPatchPtr = &(patchInfo[neighborNode.Patch]);
-
-							// Get the tile index
-							uint neighborTile = neighborNode.S+neighborNode.T*neighborPatchPtr->OrderS;
-							
-							// Look for the same tile set in the new tile
-							uint neighborLayer;
-							for (neighborLayer=0; neighborLayer<3; neighborLayer++)
-							{
-								// Get the tile index
-								uint neighborTileIndex = neighborPatchPtr->Tiles[neighborTile].Tile[neighborLayer];
-
-								if (neighborTileIndex != NL_TILE_ELM_LAYER_EMPTY)
-								{
-									// Valid tile number ?
-									if (neighborTileIndex >= (uint)bank.getTileCount ())
-									{
-										nlwarning ("CZoneSymmetrisation::propagateTileState: Invalid tile index");
-										return false;
-									}
-
-									// Get tileset
-									int neighborTileSet;
-									int neighborNumber;
-									CTileBank::TTileType neighborType;
-									bank.getTileXRef (neighborTileIndex, neighborTileSet, neighborNumber, neighborType);
-
-									// Same tileset ? Stop!
-									if (	(neighborTileSet == tileSetToPropagate) && 
-											(neighborNode.Rotate == neighborPatchPtr->Tiles[neighborTile].getTileOrient(neighborLayer)) )
+									case 0:
+										position = neighborNode.T;
 										break;
-								}
-							}
+									case 1:
+										position = neighborNode.S;
+										break;
+									case 2:
+										position = patchInfo[currentNode.Patch].OrderT - neighborNode.T - 1;
+										break;
+									case 3:
+										position = patchInfo[currentNode.Patch].OrderS - neighborNode.S - 1;
+										break;
+									}
 
-							// Found ?
-							if (neighborLayer<3)
-							{
-								// If oriented, must not be a corner
-								if (!(oriented && getOrientedTileCorner (neighborNode.Patch, neighborTile)))
-								{
-									// Propagate in the new node ?
-									TState neighborState = getTileState (neighborNode.Patch, neighborTile, neighborLayer);
-									if (neighborState == Nothing)
+									// Get next patch
+									uint patchOut;
+									sint sOut;
+									sint tOut;
+									if (patchInfo[currentNode.Patch].getNeighborTile (currentNode.Patch, currentNode.Edge, position, 
+										patchOut, sOut, tOut, patchInfo))
 									{
-										// Set the state
-										setTileState (neighborNode.Patch, neighborTile, neighborLayer, neighborNode.State);
+										// Should be another patch
+										nlassert (patchOut != currentNode.Patch);
 
-										// Stack current node if some neighbor left to visit
-										if (currentNode.Edge < 3)
+										// Get patch id
+										neighborNode.Patch = patchOut;
+
+										// Coordinate must be IN the patch
+										nlassert (sOut >= 0);
+										nlassert (tOut >= 0);
+										nlassert (sOut < patchInfo[neighborNode.Patch].OrderS);
+										nlassert (tOut < patchInfo[neighborNode.Patch].OrderT);
+
+										// Copy it
+										neighborNode.S = sOut;
+										neighborNode.T = tOut;
+
+										// Find neighbor
+										const CPatchInfo::CBindInfo &neighborBindInfo = patchInfo[currentNode.Patch].BindEdges[currentNode.Edge];
+										uint edgePatch;
+										for (edgePatch=0; edgePatch<(uint)neighborBindInfo.NPatchs; edgePatch++)
 										{
-											currentNode.Edge++;
-											stack.push_back (currentNode);
+											if (neighborBindInfo.Next[edgePatch] == neighborNode.Patch)
+												break;
 										}
 
-										// Continue with the new node
-										currentNode = neighborNode;
-									}
-									else if (neighborState != neighborNode.State)
-									{
-										// Error, same tile but not same state
-										// nlwarning ("CZoneSymmetrisation::propagateTileState: error, find same iso surfaces with different state.");
+										// Must find one patch
+										nlassert (edgePatch<(uint)neighborBindInfo.NPatchs);
 
+										// Rotation
+										neighborNode.Rotate = (currentNode.Rotate + 2 + neighborBindInfo.Edge[edgePatch] - currentNode.Edge) & 3;
+
+										// Toggle the state ?
+										if ((neighborNode.Rotate ^ currentNode.Rotate) & 1)
+										{
+											// Yes
+											neighborNode.State = (neighborNode.State == Regular) ? Goofy : Regular;
+										}
+									}
+									else
+									{
 										// No propagation, continue
 										currentNode.Edge++;
+										continue;
+									}
+								}
+
+								// Neighbor patch
+								const CPatchInfo *neighborPatchPtr = &(patchInfo[neighborNode.Patch]);
+
+								// Get the tile index
+								uint neighborTile = neighborNode.S+neighborNode.T*neighborPatchPtr->OrderS;
+								
+								// Look for the same tile set in the new tile
+								uint neighborLayer;
+								for (neighborLayer=0; neighborLayer<3; neighborLayer++)
+								{
+									// Get the tile index
+									uint neighborTileIndex = neighborPatchPtr->Tiles[neighborTile].Tile[neighborLayer];
+
+									if (neighborTileIndex != NL_TILE_ELM_LAYER_EMPTY)
+									{
+										// Valid tile number ?
+										if (neighborTileIndex >= (uint)bank.getTileCount ())
+										{
+											nlwarning ("CZoneSymmetrisation::propagateTileState: Invalid tile index");
+											return false;
+										}
+
+										// Get tileset
+										int neighborTileSet;
+										int neighborNumber;
+										CTileBank::TTileType neighborType;
+										bank.getTileXRef (neighborTileIndex, neighborTileSet, neighborNumber, neighborType);
+
+										// Same tileset ? Stop!
+										if (	(neighborTileSet == tileSetToPropagate) && 
+												(neighborNode.Rotate == neighborPatchPtr->Tiles[neighborTile].getTileOrient(neighborLayer)) )
+											break;
+									}
+								}
+
+								// Found ?
+								if (neighborLayer<3)
+								{
+									// If oriented, must not be a corner
+									if (!(oriented && getOrientedTileCorner (neighborNode.Patch, neighborTile)))
+									{
+										// Propagate in the new node ?
+										TState neighborState = getTileState (neighborNode.Patch, neighborTile, neighborLayer);
+										if (neighborState == Nothing)
+										{
+											// Set the state
+											setTileState (neighborNode.Patch, neighborTile, neighborLayer, neighborNode.State);
+
+											// Stack current node if some neighbor left to visit
+											if (currentNode.Edge < 3)
+											{
+												currentNode.Edge++;
+												stack.push_back (currentNode);
+											}
+
+											// Continue with the new node
+											currentNode = neighborNode;
+										}
+										else if (neighborState != neighborNode.State)
+										{
+											// Error, same tile but not same state
+											// nlwarning ("CZoneSymmetrisation::propagateTileState: error, find same iso surfaces with different state.");
+
+											// No propagation, continue
+											currentNode.Edge++;
+										}
+										else
+										{
+											// No propagation, continue
+											currentNode.Edge++;
+										}
 									}
 									else
 									{
@@ -902,16 +908,11 @@ bool CZoneSymmetrisation::propagateTileState (uint patch, uint s, uint t, const 
 									}
 								}
 								else
-								{
 									// No propagation, continue
 									currentNode.Edge++;
-								}
 							}
-							else
-								// No propagation, continue
-								currentNode.Edge++;
+							while (currentNode.Edge<4);
 						}
-						while (currentNode.Edge<4);
 					}
 				}
 			}

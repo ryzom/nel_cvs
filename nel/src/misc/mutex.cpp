@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.23 2001/09/20 13:32:51 cado Exp $
+ * $Id: mutex.cpp,v 1.24 2001/09/20 13:34:48 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -312,7 +312,7 @@ CFairMutex::CFairMutex()
 }
 
 
-CFairMutex::CFairMutex(	CFairMutex(const std::string &name) )
+CFairMutex::CFairMutex(	const std::string &name )
 {
 	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }

@@ -1,7 +1,7 @@
 /** \file flare_shape.h
  * <File description>
  *
- * $Id: flare_shape.h,v 1.1 2001/07/24 08:45:37 vizerie Exp $
+ * $Id: flare_shape.h,v 1.2 2001/07/24 13:38:51 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ public:
 	/// set the persistence of this shape, in second (the time it takes to fade from white to black)
 	void						setPersistence(CAnimationTime persistence) 
 	{ 
-		nlassert(persistance > 0) ; 
+		nlassert(persistence > 0) ; 
 		_Persistence = persistence ; 
 	}
 

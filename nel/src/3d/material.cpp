@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.49 2004/10/05 17:04:10 vizerie Exp $
+ * $Id: material.cpp,v 1.50 2004/10/14 10:37:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -193,17 +193,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 	for(uint32 i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 	{
 		// Serial texture descriptor.
-		ITexture*	text;
-		if(f.isReading())
-		{
-			f.serialPolyPtr(text);
-			_Textures[i]= text;
-		}
-		else
-		{
-			text= _Textures[i];
-			f.serialPolyPtr(text);
-		}
+		_Textures[i].serialPolyPtr(f);
 
 		// Read texture environnement, or setup them.
 		if(ver>=1)
@@ -451,17 +441,7 @@ void			CMaterial::CLightMap::serial(NLMISC::IStream &f)
 {
 	f.serial(Factor);
 	// Serial texture descriptor.
-	ITexture*	text= NULL;
-	if(f.isReading())
-	{
-		f.serialPolyPtr(text);
-		Texture= text;
-	}
-	else
-	{
-		text= Texture;
-		f.serialPolyPtr(text);
-	}
+	Texture.serialPolyPtr(f);
 }
 
 // ***************************************************************************
@@ -474,17 +454,7 @@ void			CMaterial::CLightMap::serial2(NLMISC::IStream &f)
 	if(ver>=1)
 		f.serial(LMCAmbient);
 	// Serial texture descriptor.
-	ITexture*	text= NULL;
-	if(f.isReading())
-	{
-		f.serialPolyPtr(text);
-		Texture= text;
-	}
-	else
-	{
-		text= Texture;
-		f.serialPolyPtr(text);
-	}
+	Texture.serialPolyPtr(f);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.26 2004/09/07 19:12:27 boucher Exp $
+ * $Id: smart_ptr.h,v 1.27 2004/10/14 10:37:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,8 +219,38 @@ public:
 
 	std::string toString() { if(Ptr) return toString(*Ptr); else return "<null>"; }
 
-	// serial
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream ) { f.serial( *Ptr ); }
+	// serial using serialPtr
+	void serialPtr(NLMISC::IStream &f) throw(NLMISC::EStream ) 
+	{
+		T*	obj= NULL;
+		if(f.isReading())
+		{
+			f.serialPtr(obj);
+			// assign correctly (NB: obj may be NULL)
+			*this= obj;
+		}
+		else
+		{
+			obj= Ptr;
+			f.serialPtr(obj);
+		}
+	}
+	// serial using serialPloyPtr
+	void serialPolyPtr(NLMISC::IStream &f) throw(NLMISC::EStream ) 
+	{ 
+		T*	obj= NULL;
+		if(f.isReading())
+		{
+			f.serialPolyPtr(obj);
+			// assign correctly (NB: obj may be NULL)
+			*this= obj;
+		}
+		else
+		{
+			obj= Ptr;
+			f.serialPolyPtr(obj);
+		}
+	}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.6 2001/07/25 08:40:58 cado Exp $
+ * $Id: sound_driver_al.cpp,v 1.7 2001/08/01 16:12:14 valignat Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,8 +49,8 @@ EAXGet					EAXGetProp = NULL;
 // Currently, the OpenAL headers are different between Windows and Linux versions !
 // AL_INVALID_XXXX are part of the spec, though.
 #ifdef NL_OS_UNIX
-#define AL_ILLEGAL_ENUM AL_INVALID_ENUM
-#define AL_ILLEGAL_COMMAND AL_INVALID_OPERATION
+#define AL_INVALID_ENUM AL_ILLEGAL_ENUM  
+#define AL_INVALID_OPERATION AL_ILLEGAL_COMMAND 
 #endif
 
 

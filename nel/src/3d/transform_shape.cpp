@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.3 2001/03/16 16:50:30 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.4 2001/03/27 09:53:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,7 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 
 	// render the shape.
 	if(m->Shape)
-		m->Shape->render(drv);
+		m->Shape->render(drv, m);
 }
 
 } // NL3D

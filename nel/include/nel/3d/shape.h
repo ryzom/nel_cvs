@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.5 2000/12/18 15:13:20 corvazier Exp $
+ * $Id: shape.h,v 1.6 2001/03/27 09:53:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,10 +86,10 @@ public:
 	 */
 	virtual bool				clip(const std::vector<CPlane>	&pyramid) {return true;}
 
-	/** render() this shape in a driver.
+	/** render() this shape in a driver, with the specified TransformShape information.
 	 * CTransfromShape call this method in the render traversal.
 	 */
-	virtual void				render(IDriver *drv)=0;
+	virtual void				render(IDriver *drv, CTransformShape *trans)=0;
 };
 
 // ***************************************************************************

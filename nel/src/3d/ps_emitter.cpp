@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.37 2002/04/15 12:32:40 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.38 2002/04/18 16:48:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -627,9 +627,13 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 				{
 					*phaseIt += ellapsedTime;
 					if ( *phaseIt >= *currEmitPeriod) // phase is greater than period -> must emit
-					{					
+					{									
 						if (*currEmitPeriod != 0)
-						{					
+						{		
+							/** Must ensure phase is valid if period decrease over time
+							  */
+							*phaseIt = std::min(*phaseIt, *currEmitPeriod + ellapsedTime);
+							//
 							/// compute the number of emissions
 							uint numEmissions = (uint) ::floorf(*phaseIt / *currEmitPeriod);
 							*phaseIt -= *currEmitPeriod * numEmissions;
@@ -661,8 +665,7 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 													  realEllapsedTimeRatio);
 								deltaT += *currEmitPeriod;								
 							}
-							while (k);			
-							
+							while (k);																	
 						}
 						else
 						{
@@ -685,7 +688,11 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 					if ( *phaseIt >= *currEmitPeriod + _EmitDelay) // phase is greater than period -> must emit
 					{						
 						if (*currEmitPeriod != 0)
-						{																					
+						{		
+							/** Must ensure phase is valid if period decrease over time
+							  */
+							*phaseIt = std::min(*phaseIt, *currEmitPeriod + ellapsedTime + _EmitDelay);
+							//
 							uint numEmissions = (uint) ::floorf((*phaseIt - _EmitDelay) / *currEmitPeriod);
 							*phaseIt -= *currEmitPeriod * numEmissions;
 							float deltaT = *phaseIt - _EmitDelay;
@@ -745,6 +752,10 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 						{
 							if (*currEmitPeriod != 0)
 							{
+								/** Must ensure phase is valid if period decrease over time
+								 */
+								*phaseIt = std::min(*phaseIt, *currEmitPeriod + ellapsedTime);
+								//
 								uint numEmissions = (uint) ::floorf(*phaseIt / *currEmitPeriod);
 								*numEmitIt +=  numEmissions;								
 								*phaseIt -= *currEmitPeriod * numEmissions;
@@ -806,7 +817,11 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 						if ( *phaseIt >= *currEmitPeriod + _EmitDelay) // phase is greater than period -> must emit
 						{							
 							if (*currEmitPeriod != 0)
-							{																
+							{		
+								/** Must ensure phase is valid if period decrease over time
+								 */
+								*phaseIt = std::min(*phaseIt, *currEmitPeriod + ellapsedTime + _EmitDelay);
+								//
 								uint numEmissions = (uint) ::floorf((*phaseIt - _EmitDelay) / *currEmitPeriod);
 								*numEmitIt +=  numEmissions;								
 								*phaseIt -= *currEmitPeriod * numEmissions;

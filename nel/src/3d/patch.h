@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.21 2002/03/07 15:39:08 berenguier Exp $
+ * $Id: patch.h,v 1.22 2002/03/14 17:50:38 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -626,6 +626,11 @@ public:
 	void		appendTileLightInfluences(const CUV &uv, 
 		std::vector<CPointLightInfluence> &pointLightList) const;
 
+	/** For CTextureFar, compute current TLI Lightmap at tile level. array should be allocated of at least
+	 *  sqr(NL_MAX_TILES_BY_PATCH_EDGE+1).
+	 */
+	void		computeCurrentTLILightmap(NLMISC::CRGBA *array) const;
+
 	// @}
 
 
@@ -927,6 +932,17 @@ private:
 	void		modulateTileLightmapPixelWithTileColors(uint ts, uint tt, uint s, uint t, NLMISC::CRGBA *dest);
 	// get the tileColors at the corners of the tile. corner order: 0,0; 1,0; 0,1; 1,1. NB: A undefined.
 	void		getTileTileColors(uint ts, uint tt, NLMISC::CRGBA corners[4]);
+
+
+	// get the current TLIColor given a TLI coordinate (in (0..OrderS/2+1, 0..OrderT/2+1) )
+	CRGBA		CPatch::getCurrentTLIColor(uint x, uint y) const;
+	// get the current TLIColors at the corners of the tile (according to pointLights current colors)
+	// corner order: 0,0; 1,0; 0,1; 1,1. NB: A undefined.
+	void		getCurrentTileTLIColors(uint ts, uint tt, NLMISC::CRGBA corners[4]);
+	// Methods to add dest with result of TLI lighting. NB: A unmodified.
+	void		addTileLightmapWithTLI(uint ts, uint tt, NLMISC::CRGBA *dest, uint stride);
+	void		addTileLightmapEdgeWithTLI(uint ts, uint tt, uint edge, NLMISC::CRGBA *dest, uint stride, bool inverse);
+	void		addTileLightmapPixelWithTLI(uint ts, uint tt, uint s, uint t, NLMISC::CRGBA *dest);
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.1 2002/03/14 11:21:08 berenguier Exp $
+ * $Id: patch_lightmap.cpp,v 1.2 2002/03/14 17:50:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -363,7 +363,7 @@ void		CPatch::getTileTileColors(uint ts, uint tt, CRGBA corners[4])
 
 // ***************************************************************************
 // bilinear at center of the pixels. x E [0, 3], y E [0, 3].
-inline void		bilinearTileColorAndModulate(CRGBA	corners[4], uint x, uint y, CRGBA &res)
+inline void		bilinearColor(CRGBA	corners[4], uint x, uint y, uint &R, uint &G, uint &B)
 {
 	// Fast bilinear and modulate. 
 	// \todo yoyo: TODO_OPTIMIZE: should be ASMed later. (MMX...)
@@ -383,7 +383,6 @@ inline void		bilinearTileColorAndModulate(CRGBA	corners[4], uint x, uint y, CRGB
 	uint	x1y1=	x1*y1;
 
 	// bilinear
-	uint	R,G,B;
 	// pix left top.
 	R = corners[0].R * x1y1;
 	G = corners[0].G * x1y1;
@@ -401,6 +400,16 @@ inline void		bilinearTileColorAndModulate(CRGBA	corners[4], uint x, uint y, CRGB
 	G+= corners[3].G * xy;
 	B+= corners[3].B * xy;
 
+}
+
+
+// ***************************************************************************
+// bilinear at center of the pixels. x E [0, 3], y E [0, 3].
+inline void		bilinearColorAndModulate(CRGBA	corners[4], uint x, uint y, CRGBA &res)
+{
+	uint	R,G,B;
+	bilinearColor(corners, x, y, R, G, B);
+
 	// modulate with input.
 	R*= res.R;
 	G*= res.G;
@@ -411,6 +420,29 @@ inline void		bilinearTileColorAndModulate(CRGBA	corners[4], uint x, uint y, CRGB
 	res.G= G >> 14;
 	res.B= B >> 14;
 }
+
+
+// ***************************************************************************
+// bilinear at center of the pixels. x E [0, 3], y E [0, 3].
+inline void		bilinearColorAndAdd(CRGBA	corners[4], uint x, uint y, CRGBA &res)
+{
+	uint	R,G,B;
+	bilinearColor(corners, x, y, R, G, B);
+
+	// add with input.
+	R= (R>>6) + res.R;
+	G= (G>>6) + res.G;
+	B= (B>>6) + res.B;
+	R= min(R, 255U);
+	G= min(G, 255U);
+	B= min(B, 255U);
+
+	// result.
+	res.R= R;
+	res.G= G;
+	res.B= B;
+}
+
 
 
 // ***************************************************************************
@@ -427,7 +459,7 @@ void		CPatch::modulateTileLightmapWithTileColors(uint ts, uint tt, CRGBA *dest, 
 		for(x=0; x<NL_LUMEL_BY_TILE; x++)
 		{
 			// compute this pixel, and modulate
-			bilinearTileColorAndModulate(corners, x, y, dest[y*stride + x]);
+			bilinearColorAndModulate(corners, x, y, dest[y*stride + x]);
 		}
 	}
 }
@@ -464,7 +496,7 @@ void		CPatch::modulateTileLightmapEdgeWithTileColors(uint ts, uint tt, uint edge
 		if(inverse)		where= (NL_LUMEL_BY_TILE-1)-i;
 		else			where= i;
 		// compute this pixel, and modulate
-		bilinearTileColorAndModulate(corners, x, y, dest[where*stride]);
+		bilinearColorAndModulate(corners, x, y, dest[where*stride]);
 	}
 }
 
@@ -477,7 +509,7 @@ void		CPatch::modulateTileLightmapPixelWithTileColors(uint ts, uint tt, uint s, 
 	getTileTileColors(ts, tt, corners);
 
 	// compute this pixel, and modulate
-	bilinearTileColorAndModulate(corners, s, t, *dest);
+	bilinearColorAndModulate(corners, s, t, *dest);
 }
 
 
@@ -792,7 +824,11 @@ void		CPatch::computeTileLightmap(uint ts, uint tt, CRGBA *dest, uint stride)
 	if(getLandscape()->getAutomaticLighting())
 		computeTileLightmapAutomatic(ts, tt, dest, stride);
 	else
+	{
 		computeTileLightmapPrecomputed(ts, tt, dest, stride);
+		// Add the inlufence of TLI.
+		addTileLightmapWithTLI(ts, tt, dest, stride);
+	}
 
 	// modulate dest with tileColors (at center of lumels).
 	modulateTileLightmapWithTileColors(ts, tt, dest, stride);
@@ -803,7 +839,11 @@ void		CPatch::computeTileLightmapEdge(uint ts, uint tt, uint edge, CRGBA *dest, 
 	if(getLandscape()->getAutomaticLighting())
 		computeTileLightmapEdgeAutomatic(ts, tt, edge, dest, stride, inverse);
 	else
+	{
 		computeTileLightmapEdgePrecomputed(ts, tt, edge, dest, stride, inverse);
+		// Add the inlufence of TLI.
+		addTileLightmapEdgeWithTLI(ts, tt, edge, dest, stride, inverse);
+	}
 
 	// modulate dest with tileColors (at center of lumels).
 	modulateTileLightmapEdgeWithTileColors(ts, tt, edge, dest, stride, inverse);
@@ -816,7 +856,11 @@ void		CPatch::computeTileLightmapPixel(uint ts, uint tt, uint s, uint t, CRGBA *
 	if(getLandscape()->getAutomaticLighting())
 		computeTileLightmapPixelAutomatic(ts, tt, s, t, dest);
 	else
+	{
 		computeTileLightmapPixelPrecomputed(ts, tt, s, t, dest);
+		// Add the inlufence of TLI.
+		addTileLightmapPixelWithTLI(ts, tt, s, t, dest);
+	}
 
 	// modulate dest with tileColors (at center of lumels).
 	modulateTileLightmapPixelWithTileColors(ts, tt, s, t, dest);
@@ -1445,20 +1489,6 @@ void		CPatch::clearUncompressedLumels ()
 
 
 // ***************************************************************************
-void		CPatch::resetTileLightInfluences()
-{
-	// Fill default.
-	TileLightInfluences.resize((OrderS/2 +1) * (OrderT/2 +1));
-	// Disable All light influence on all points
-	for(uint i=0;i <TileLightInfluences.size(); i++)
-	{
-		// Disable all light influence on this point.
-		TileLightInfluences[i].Light[0]= 0xFF;
-	}
-}
-
-
-// ***************************************************************************
 // ***************************************************************************
 // Functions (C/ASM).
 // ***************************************************************************
@@ -1567,6 +1597,28 @@ uint8		CPatch::getLumel(const CUV &uv) const
 	return ret;
 }
 
+
+// ***************************************************************************
+// ***************************************************************************
+// TileLightInfluences
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CPatch::resetTileLightInfluences()
+{
+	// Fill default.
+	TileLightInfluences.resize((OrderS/2 +1) * (OrderT/2 +1));
+	// Disable All light influence on all points
+	for(uint i=0;i <TileLightInfluences.size(); i++)
+	{
+		// Disable all light influence on this point.
+		TileLightInfluences[i].Light[0]= 0xFF;
+	}
+}
+
+
 // ***************************************************************************
 void		CPatch::appendTileLightInfluences(const CUV &uv, 
 	std::vector<CPointLightInfluence> &pointLightList) const
@@ -1639,6 +1691,257 @@ void		CPatch::appendTileLightInfluences(const CUV &uv,
 	// interpolate.
 	interp.interpolate(pointLightList, xSub/256.f, ySub/256.f);
 }
+
+
+// ***************************************************************************
+CRGBA		CPatch::getCurrentTLIColor(uint x, uint y) const
+{
+	CRGBA	ret;
+	ret= CRGBA::Black;
+
+	// if at least the zone has pointLights, add them.
+	if( getZone()->_PointLightArray.getPointLights().size() >0 )
+	{
+		const CPointLightNamed	*zonePointLights;
+		zonePointLights= (&(getZone()->_PointLightArray.getPointLights()[0]));
+
+		uint	wTLI= (OrderS>>1)+1;
+
+		const CTileLightInfluence	&tli= TileLightInfluences[ y*wTLI + x];
+		for(uint lid=0;lid<CTileLightInfluence::NumLightPerCorner;lid++)
+		{
+			// Not influenced by a pointLight?, stop
+			if(tli.Light[lid]==0xFF)
+				break;
+			// Append the influence of this pointLight. 
+			CRGBA	lightCol= zonePointLights[tli.Light[lid]].getDiffuse();
+			// modulate with precomputed diffuse factor
+			lightCol.modulateFromuiRGBOnly(lightCol, tli.getDiffuseLightFactor(lid) );
+			// add to the corner
+			ret.addRGBOnly(ret, lightCol);
+		}
+	}
+
+	return ret;
+}
+
+
+// ***************************************************************************
+void		CPatch::getCurrentTileTLIColors(uint ts, uint tt, NLMISC::CRGBA corners[4])
+{
+	// Get ref on array of PointLightNamed.
+	if( getZone()->_PointLightArray.getPointLights().size() >0 )
+	{
+		// get coord of the tessBlock
+		uint	tbs= ts>>1;
+		uint	tbt= tt>>1;
+		// get tile id local to tessBlock.
+		uint	tls= ts-(tbs<<1);
+		uint	tlt= tt-(tbt<<1);
+		// Size of TileLightInfluences
+		uint	wTLI= (OrderS>>1)+1;
+		uint	hTLI= (OrderT>>1)+1;
+
+		// For each corner of the tessBlock, compute lighting with pointLights.
+		CRGBA	tbCorners[4];
+		for(uint y=0;y<2;y++)
+		{
+			for(uint x=0;x<2;x++)
+			{
+				CRGBA	&cornerCol= tbCorners[y*2+x];
+				cornerCol= getCurrentTLIColor(tbs+x, tbt+y);
+			}
+		}
+
+		// Then biLinear to tile Level (tessBlock==2x2 tiles).
+		CRGBA	tbEdges[4];
+		CRGBA	tbMiddle;
+		// left.
+		tbEdges[0].avg2RGBOnly(tbCorners[0], tbCorners[2]);
+		// bottom
+		tbEdges[1].avg2RGBOnly(tbCorners[2], tbCorners[3]);
+		// right
+		tbEdges[2].avg2RGBOnly(tbCorners[1], tbCorners[3]);
+		// up
+		tbEdges[3].avg2RGBOnly(tbCorners[0], tbCorners[1]);
+		// middle.
+		tbMiddle.avg2RGBOnly(tbEdges[0], tbEdges[2]);
+		
+		// just copy result according to tile pos in tessBlock.
+		if(tlt==0)
+		{
+			if(tls==0)
+			{
+				corners[0]= tbCorners[0];
+				corners[1]= tbEdges[3];
+				corners[2]= tbEdges[0];
+				corners[3]= tbMiddle;
+			}
+			else
+			{
+				corners[0]= tbEdges[3];
+				corners[1]= tbCorners[1];
+				corners[2]= tbMiddle;
+				corners[3]= tbEdges[2];
+			}
+		}
+		else
+		{
+			if(tls==0)
+			{
+				corners[0]= tbEdges[0];
+				corners[1]= tbMiddle;
+				corners[2]= tbCorners[2];
+				corners[3]= tbEdges[1];
+			}
+			else
+			{
+				corners[0]= tbMiddle;
+				corners[1]= tbEdges[2];
+				corners[2]= tbEdges[1];
+				corners[3]= tbCorners[3];
+			}
+		}
+	}
+	else
+	{
+		// Just fill with 0s.
+		corners[0]= CRGBA::Black;
+		corners[1]= CRGBA::Black;
+		corners[2]= CRGBA::Black;
+		corners[3]= CRGBA::Black;
+	}
+}
+
+// ***************************************************************************
+void		CPatch::addTileLightmapWithTLI(uint ts, uint tt, NLMISC::CRGBA *dest, uint stride)
+{
+	// compute colors ar corners of the tile.
+	CRGBA	corners[4];
+	getCurrentTileTLIColors(ts, tt, corners);
+
+	// Bilinear accross the tile, and add to dest.
+	uint	x, y;
+	for(y=0; y<NL_LUMEL_BY_TILE; y++)
+	{
+		for(x=0; x<NL_LUMEL_BY_TILE; x++)
+		{
+			// compute this pixel, and add
+			bilinearColorAndAdd(corners, x, y, dest[y*stride + x]);
+		}
+	}
+}
+
+// ***************************************************************************
+void		CPatch::addTileLightmapEdgeWithTLI(uint ts, uint tt, uint edge, NLMISC::CRGBA *dest, uint stride, bool inverse)
+{
+	// compute colors ar corners of the tile.
+	CRGBA	corners[4];
+	getCurrentTileTLIColors(ts, tt, corners);
+
+	// get coordinate according to edge.
+	uint	x,y;
+	switch(edge)
+	{
+	case 0: x= 0; break;
+	case 1: y= NL_LUMEL_BY_TILE-1; break;
+	case 2: x= NL_LUMEL_BY_TILE-1; break;
+	case 3: y= 0; break;
+	};
+
+	// For all lumel of the edge, bilinear.
+	uint	i;
+	for(i=0; i<NL_LUMEL_BY_TILE; i++)
+	{
+		// if vertical edge
+		if( (edge&1)==0 )	y= i;
+		// else horizontal edge
+		else				x= i;
+
+		// manage inverse.
+		uint	where;
+		if(inverse)		where= (NL_LUMEL_BY_TILE-1)-i;
+		else			where= i;
+		// compute this pixel, and modulate
+		bilinearColorAndAdd(corners, x, y, dest[where*stride]);
+	}
+}
+
+// ***************************************************************************
+void		CPatch::addTileLightmapPixelWithTLI(uint ts, uint tt, uint s, uint t, NLMISC::CRGBA *dest)
+{
+	// compute colors ar corners of the tile.
+	CRGBA	corners[4];
+	getCurrentTileTLIColors(ts, tt, corners);
+
+	// compute this pixel, and modulate
+	bilinearColorAndAdd(corners, s, t, *dest);
+}
+
+
+// ***************************************************************************
+void		CPatch::computeCurrentTLILightmap(NLMISC::CRGBA *array) const
+{
+	// Size of TileLightInfluences
+	uint	wTLI= (OrderS>>1)+1;
+	uint	hTLI= (OrderT>>1)+1;
+	// colros at corners of tiles size.
+	uint	wTC= OrderS+1;
+	uint	wTCx2= wTC*2;
+	uint	hTC= OrderT+1;
+	uint	x, y;
+
+	// Compute TLI colors at each corner of each TessBlocks.
+	//=============
+	for(y=0;y<hTLI;y++)
+	{
+		// store every 2 tiles corners.
+		CRGBA	*dst= array + y*2*wTC;
+		for(x=0;x<wTLI;x++)
+		{
+			*dst= getCurrentTLIColor(x, y);
+			// skip 2 tiles corners.
+			dst++;
+			dst++;
+		}
+	}
+
+	// Compute TLI colors at each corner of each Tiles.
+	//=============
+
+	// Compute corner at middle of vertical TessBlock edges.
+	for(y=0;y<hTC-1;y+=2)
+	{
+		CRGBA	*dst= array + y*wTC;
+		for(x=0;x<wTC;x+=2)
+		{
+			// Average midlle with cur and next.
+			(dst+wTC)->avg2RGBOnly(*dst, *(dst + wTCx2) );
+
+			// skip 2 tiles corners.
+			dst++;
+			dst++;
+		}
+	}
+
+	// Compute corner at middle of horizontal TessBlock edges, and at middle of TessBlock.
+	for(y=0;y<hTC;y++)
+	{
+		CRGBA	*dst= array + y*wTC;
+		for(x=0;x<wTC-1;x+=2)
+		{
+			// Average midlle with cur and next.
+			(dst+1)->avg2RGBOnly(*dst, *(dst+2));
+
+			// skip 2 tiles corners.
+			dst++;
+			dst++;
+		}
+	}
+
+
+}
+
 
 
 

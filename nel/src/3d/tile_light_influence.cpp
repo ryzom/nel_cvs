@@ -1,7 +1,7 @@
 /** \file tile_light_influence.cpp
  * <File description>
  *
- * $Id: tile_light_influence.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
+ * $Id: tile_light_influence.cpp,v 1.3 2002/03/14 17:50:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,6 +57,7 @@ uint8			CTileLightInfluence::getDiffuseLightFactor(uint i) const
 
 	// Choose what factor
 	uint8	ret= PackedLightFactor >> (4*i);
+	ret&= 0x0F;
 
 	// expand to 0..255
 	return ret + (ret<<4);

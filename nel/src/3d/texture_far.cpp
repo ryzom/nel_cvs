@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.14 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_far.cpp,v 1.15 2002/03/14 17:50:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@ namespace NL3D {
 
 CRGBA CTextureFar::_LightmapExpanded[NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE];
 uint8 CTextureFar::_LumelExpanded[(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)*(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)];
+CRGBA CTextureFar::_TileTLIColors[(NL_MAX_TILES_BY_PATCH_EDGE+1)*(NL_MAX_TILES_BY_PATCH_EDGE+1)];
 
 void CTextureFar::setSizeOfFarPatch (sint width, sint height)
 {
@@ -334,6 +335,9 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 	lightMap.Height=nT+1;
 	lightMap.StaticLightColor=patch->getZone()->getLandscape()->getStaticLight();
 	lightMap.DstPixels=_LightmapExpanded;
+	// Compute current TLI colors.
+	patch->computeCurrentTLILightmap(_TileTLIColors);
+	lightMap.TLIColor= _TileTLIColors;
 
 	// Expand the shadowmap
 	switch (tileSize)
@@ -576,26 +580,40 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 	uint dstWidth=(pLightmap->Width-1)*pLightmap->MulFactor;
 	uint dstHeight=(pLightmap->Height-1)*pLightmap->MulFactor;
 
-	// *** First expand user color
-	CRGBA expandedUserColor[(NL_MAX_TILES_BY_PATCH_EDGE+1)*(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE)];
+	// *** First expand user color and TLI colors
+	// First pass, expand on U
+	static CRGBA expandedUserColorLine[ (NL_MAX_TILES_BY_PATCH_EDGE+1)*
+		(NL_MAX_TILES_BY_PATCH_EDGE+1)*NL_LUMEL_BY_TILE ];
+	static CRGBA expandedTLIColorLine[ (NL_MAX_TILES_BY_PATCH_EDGE+1)*
+		(NL_MAX_TILES_BY_PATCH_EDGE+1)*NL_LUMEL_BY_TILE ];
+	// Second pass, expand on V.
+	static CRGBA expandedUserColor[ (NL_MAX_TILES_BY_PATCH_EDGE+1)*NL_LUMEL_BY_TILE * 
+		(NL_MAX_TILES_BY_PATCH_EDGE+1)*NL_LUMEL_BY_TILE ];
+	static CRGBA expandedTLIColor[ (NL_MAX_TILES_BY_PATCH_EDGE+1)*NL_LUMEL_BY_TILE * 
+		(NL_MAX_TILES_BY_PATCH_EDGE+1)*NL_LUMEL_BY_TILE ];
+
 
 	// ** Expand on U
+	//=========
 	uint u, v;
 
 	// Expansion factor
 	uint expandFactor=((pLightmap->Width-1)<<8)/(dstWidth-1);
 
 	// Destination  pointer
-	CRGBA *expandedUserColorPtr=expandedUserColor;
+	CRGBA *expandedUserColorLinePtr= expandedUserColorLine;
+	CRGBA *expandedTLIColorLinePtr= expandedTLIColorLine;
 
 	// Source pointer
-	const NL3D::CTileColor *colorTilePtr=pLightmap->ColorTile;
+	const NL3D::CTileColor	*colorTilePtr=pLightmap->ColorTile;
+	const NLMISC::CRGBA		*colorTLIPtr= pLightmap->TLIColor;
 
 	// Go for U
 	for (v=0; v<pLightmap->Height; v++)
 	{
 		// First pixel
-		expandedUserColorPtr[0].set565 (colorTilePtr[0].Color565);
+		expandedUserColorLinePtr[0].set565 (colorTilePtr[0].Color565);
+		expandedTLIColorLinePtr[0]= colorTLIPtr[0];
 
 		// Index next pixel
 		uint srcIndexPixel=expandFactor;
@@ -603,7 +621,7 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 		for (u=1; u<dstWidth-1; u++)
 		{
 			// Check
-			nlassert ( (u+v*dstWidth) < (sizeof(expandedUserColor)/sizeof(CRGBA)) );
+			nlassert ( (u+v*dstWidth) < (sizeof(expandedUserColorLine)/sizeof(CRGBA)) );
 
 			// Color index
 			uint srcIndex=srcIndexPixel>>8;
@@ -615,34 +633,51 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 			CRGBA color1;
 			color0.set565 (colorTilePtr[srcIndex].Color565);
 			color1.set565 (colorTilePtr[srcIndex+1].Color565);
-			expandedUserColorPtr[u].blendFromui (color0, color1, srcIndexPixel&0xff);
+			expandedUserColorLinePtr[u].blendFromui (color0, color1, srcIndexPixel&0xff);
+			// Compute current TLI color
+			color0= colorTLIPtr[srcIndex];
+			color1= colorTLIPtr[srcIndex+1];
+			expandedTLIColorLinePtr[u].blendFromui (color0, color1, srcIndexPixel&0xff);
 
 			// Next index
 			srcIndexPixel+=expandFactor;
 		}
 
 		// Last pixel
-		expandedUserColorPtr[dstWidth-1].set565 (colorTilePtr[pLightmap->Width-1].Color565);
+		expandedUserColorLinePtr[dstWidth-1].set565 (colorTilePtr[pLightmap->Width-1].Color565);
+		expandedTLIColorLinePtr[dstWidth-1]= colorTLIPtr[pLightmap->Width-1];
 
 		// Next line
-		expandedUserColorPtr+=dstWidth;
+		expandedUserColorLinePtr+= dstWidth;
+		expandedTLIColorLinePtr+= dstWidth;
 		colorTilePtr+=pLightmap->Width;
+		colorTLIPtr+=pLightmap->Width;
 	}
 
 	// ** Expand on V
+	//=========
 
 	// Expansion factor
 	expandFactor=((pLightmap->Height-1)<<8)/(dstHeight-1);
 
 	// Destination  pointer
-	expandedUserColorPtr=pLightmap->DstPixels;
+	CRGBA *expandedUserColorPtr= expandedUserColor;
+	CRGBA *expandedTLIColorPtr= expandedTLIColor;
+
+	// Src pointer
+	expandedUserColorLinePtr= expandedUserColorLine;
+	expandedTLIColorLinePtr= expandedTLIColorLine;
 
 	// Copy first row
 	for (u=0; u<dstWidth; u++)
-		expandedUserColorPtr[u]=expandedUserColor[u];
+	{
+		expandedUserColorPtr[u]= expandedUserColorLinePtr[u];
+		expandedTLIColorPtr[u]= expandedTLIColorLinePtr[u];
+	}
 
 	// Next line
 	expandedUserColorPtr+=dstWidth;
+	expandedTLIColorPtr+=dstWidth;
 
 	// Index next pixel
 	uint indexPixel=expandFactor;
@@ -654,29 +689,44 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 		uint index=indexPixel>>8;
 
 		// Source pointer
-		CRGBA *colorTilePtr0=expandedUserColor+index*dstWidth;
-		CRGBA *colorTilePtr1=expandedUserColor+(index+1)*dstWidth;
+		CRGBA *colorTilePtr0= expandedUserColorLine + index*dstWidth;
+		CRGBA *colorTilePtr1= expandedUserColorLine + (index+1)*dstWidth;
+		CRGBA *colorTLIPtr0= expandedTLIColorLine + index*dstWidth;
+		CRGBA *colorTLIPtr1= expandedTLIColorLine + (index+1)*dstWidth;
 
 		// Copy the row
 		for (u=0; u<dstWidth; u++)
+		{
 			expandedUserColorPtr[u].blendFromui (colorTilePtr0[u], colorTilePtr1[u], indexPixel&0xff);
+			expandedTLIColorPtr[u].blendFromui (colorTLIPtr0[u], colorTLIPtr1[u],  indexPixel&0xff);
+		}
 
 		// Next index
 		indexPixel+=expandFactor;
 
 		// Next line
 		expandedUserColorPtr+=dstWidth;
+		expandedTLIColorPtr+=dstWidth;
 	}
 
 	// Last row
-	expandedUserColorPtr=pLightmap->DstPixels+dstWidth*(dstHeight-1);
-	CRGBA *colorPtr=expandedUserColor+dstWidth*(pLightmap->Height-1);
+	// Destination  pointer
+	expandedUserColorPtr= expandedUserColor + dstWidth*(dstHeight-1);
+	expandedTLIColorPtr= expandedTLIColor + dstWidth*(dstHeight-1);
+	// Src pointer
+	expandedUserColorLinePtr= expandedUserColorLine + dstWidth*(pLightmap->Height-1);
+	expandedTLIColorLinePtr= expandedTLIColorLine + dstWidth*(pLightmap->Height-1);
 
 	// Copy last row
 	for (u=0; u<dstWidth; u++)
-		expandedUserColorPtr[u]=colorPtr[u];
+	{
+		expandedUserColorPtr[u]= expandedUserColorLinePtr[u];
+		expandedTLIColorPtr[u]= expandedTLIColorLinePtr[u];
+	}
 
-	// *** Now blend with shading
+
+	// *** Now combine with shading
+	//=========
 
 	// Switch to the optimal method for each expansion value
 	switch (pLightmap->MulFactor)
@@ -684,7 +734,9 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 	case 1:
 		{
 			// Make 4x4 -> 1x1 blend
-			CRGBA *lineTexelPtr=pLightmap->DstPixels;
+			CRGBA *lineUSCPtr= expandedUserColor;
+			CRGBA *lineTLIPtr= expandedTLIColor;
+			CRGBA *lineDestPtr=pLightmap->DstPixels;
 			const uint8 *lineLumelPtr=pLightmap->LumelTile;
 			uint lineWidth=dstWidth<<2;
 			uint lineWidthx2=lineWidth<<1;
@@ -708,14 +760,18 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 						+(uint)lineLumelPtr[lumelIndex+lineWidthx3]+(uint)lineLumelPtr[lumelIndex+1+lineWidthx3]+(uint)lineLumelPtr[lumelIndex+2+lineWidthx3]+(uint)lineLumelPtr[lumelIndex+3+lineWidthx3]
 						)>>4;
 
-					// Mul by the shading
-					lineTexelPtr[u].R=(uint8)(((uint)lineTexelPtr[u].R*(uint)pLightmap->StaticLightColor[shading].R)>>8);
-					lineTexelPtr[u].G=(uint8)(((uint)lineTexelPtr[u].G*(uint)pLightmap->StaticLightColor[shading].G)>>8);
-					lineTexelPtr[u].B=(uint8)(((uint)lineTexelPtr[u].B*(uint)pLightmap->StaticLightColor[shading].B)>>8);
+					// Add shading with TLI color.
+					CRGBA	col;
+					col.addRGBOnly(pLightmap->StaticLightColor[shading], lineTLIPtr[u]);
+
+					// Mul by the userColor
+					lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
 				}
 
 				// Next line
-				lineTexelPtr+=dstWidth;
+				lineUSCPtr+=dstWidth;
+				lineTLIPtr+=dstWidth;
+				lineDestPtr+=dstWidth;
 				lineLumelPtr+=lineWidthx4;
 			}
 			break;
@@ -723,7 +779,9 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 	case 2:
 		{
 			// Make 2x2 -> 1x1 blend
-			CRGBA *lineTexelPtr=pLightmap->DstPixels;
+			CRGBA *lineUSCPtr= expandedUserColor;
+			CRGBA *lineTLIPtr= expandedTLIColor;
+			CRGBA *lineDestPtr=pLightmap->DstPixels;
 			const uint8 *lineLumelPtr=pLightmap->LumelTile;
 			uint lineWidth=dstWidth*2;
 			uint lineWidthx2=lineWidth<<1;
@@ -741,15 +799,18 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 					uint shading=
 						((uint)lineLumelPtr[lumelIndex]+(uint)lineLumelPtr[lumelIndex+1]+(uint)lineLumelPtr[lumelIndex+lineWidth]+(uint)lineLumelPtr[lumelIndex+1+lineWidth])>>2;
 
-					// Mul by the shading
-					const CRGBA *sourceTexel=pLightmap->StaticLightColor+shading;
-					lineTexelPtr[u].R=(uint8)(((uint)lineTexelPtr[u].R*(uint)sourceTexel->R)>>8);
-					lineTexelPtr[u].G=(uint8)(((uint)lineTexelPtr[u].G*(uint)sourceTexel->G)>>8);
-					lineTexelPtr[u].B=(uint8)(((uint)lineTexelPtr[u].B*(uint)sourceTexel->B)>>8);
+					// Add shading with TLI color.
+					CRGBA	col;
+					col.addRGBOnly(pLightmap->StaticLightColor[shading], lineTLIPtr[u]);
+
+					// Mul by the userColor
+					lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
 				}
 
 				// Next line
-				lineTexelPtr+=dstWidth;
+				lineUSCPtr+=dstWidth;
+				lineTLIPtr+=dstWidth;
+				lineDestPtr+=dstWidth;
 				lineLumelPtr+=lineWidthx2;
 			}
 			break;
@@ -757,7 +818,9 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 
 	case 4:
 			// Make copy
-			CRGBA *lineTexelPtr=pLightmap->DstPixels;
+			CRGBA *lineUSCPtr= expandedUserColor;
+			CRGBA *lineTLIPtr= expandedTLIColor;
+			CRGBA *lineDestPtr=pLightmap->DstPixels;
 			const uint8 *lineLumelPtr=pLightmap->LumelTile;
 			uint nbTexel=dstWidth*dstHeight;
 
@@ -767,11 +830,12 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 				// Shading is filtred
 				uint shading=lineLumelPtr[u];
 
-				// Mul by the shading
-				const CRGBA *sourceTexel=pLightmap->StaticLightColor+shading;
-				lineTexelPtr[u].R=(uint8)(((uint)lineTexelPtr[u].R*(uint)sourceTexel->R)>>8);
-				lineTexelPtr[u].G=(uint8)(((uint)lineTexelPtr[u].G*(uint)sourceTexel->G)>>8);
-				lineTexelPtr[u].B=(uint8)(((uint)lineTexelPtr[u].B*(uint)sourceTexel->B)>>8);
+				// Add shading with TLI color.
+				CRGBA	col;
+				col.addRGBOnly(pLightmap->StaticLightColor[shading], lineTLIPtr[u]);
+
+				// Mul by the userColor
+				lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
 			}
 			break;
 	}

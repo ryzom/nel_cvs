@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.2 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: texture_far.h,v 1.3 2002/03/14 17:50:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,8 +154,9 @@ private:
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) {};
 
 	// Some static buffers
-	static NLMISC::CRGBA _LightmapExpanded[];
-	static uint8		_LumelExpanded[];
+	static NLMISC::CRGBA	_LightmapExpanded[];
+	static uint8			_LumelExpanded[];
+	static NLMISC::CRGBA	_TileTLIColors[];
 
 	NLMISC_DECLARE_CLASS(CTextureFar);
 };
@@ -203,6 +204,8 @@ struct NL3D_CExpandLightmap
 public:
 	// CTileColor array.
 	const NL3D::CTileColor*		ColorTile;
+	// TLI Color array.
+	const NLMISC::CRGBA*		TLIColor;
 
 	// Lumel array. 4x4 lumels by tile.
 	const uint8*				LumelTile;

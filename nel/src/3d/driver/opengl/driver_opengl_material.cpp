@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.37 2001/09/10 13:32:49 besson Exp $
+ * $Id: driver_opengl_material.cpp,v 1.38 2001/09/20 16:43:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,49 +137,61 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		*it= mat.pShader= new CShaderGL(this, it);
 
 		// Must create all OpenGL shader states.
-		touched= 0xFFFFFFFF;
+		touched= IDRV_TOUCHED_ALL;
 	}
 	pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
 
 
-	// 2. Setup modified flags of material.
+	// 2. Setup modified fields of material.
 	//=====================================
-	if(touched)
+	if( touched ) 
 	{
-		// Convert Material to driver shader.
-		if (touched & IDRV_TOUCHED_BLENDFUNC)
+		/* Exception: if only Textures are modified in the material, no need to "Bind OpenGL States", or even to test
+			for change, because textures are activated alone, see above.
+			No problem with delete/new problem (see below), because in this case, IDRV_TOUCHED_ALL is set (see above).
+		*/
+		// If any flag is set (but a flag of texture)
+		if( touched & (~_MaterialAllTextureTouchedFlag) )
 		{
-			convBlend( mat.getSrcBlend(),glenum );
-			pShader->SrcBlend=glenum;
-			convBlend( mat.getDstBlend(),glenum );
-			pShader->DstBlend=glenum;
-		}
-		if (touched & IDRV_TOUCHED_ZFUNC)
-		{
-			convZFunction( mat.getZFunc(),glenum);
-			pShader->ZComp= glenum;
-		}
-		if (touched & IDRV_TOUCHED_LIGHTING)
-		{
-			if(! (mat.getFlags()&IDRV_MAT_DEFMAT) )
+			// Convert Material to driver shader.
+			if (touched & IDRV_TOUCHED_BLENDFUNC)
 			{
-				convColor(mat.getEmissive(), pShader->Emissive);
-				convColor(mat.getAmbient(), pShader->Ambient);
-				convColor(mat.getDiffuse(), pShader->Diffuse);
-				convColor(mat.getSpecular(), pShader->Specular);
+				convBlend( mat.getSrcBlend(),glenum );
+				pShader->SrcBlend=glenum;
+				convBlend( mat.getDstBlend(),glenum );
+				pShader->DstBlend=glenum;
 			}
-		}
+			if (touched & IDRV_TOUCHED_ZFUNC)
+			{
+				convZFunction( mat.getZFunc(),glenum);
+				pShader->ZComp= glenum;
+			}
+			if (touched & IDRV_TOUCHED_LIGHTING)
+			{
+				if(! (mat.getFlags()&IDRV_MAT_DEFMAT) )
+				{
+					convColor(mat.getEmissive(), pShader->Emissive);
+					convColor(mat.getAmbient(), pShader->Ambient);
+					convColor(mat.getDiffuse(), pShader->Diffuse);
+					convColor(mat.getSpecular(), pShader->Specular);
+					pShader->PackedEmissive= mat.getEmissive().getPacked();
+					pShader->PackedAmbient= mat.getAmbient().getPacked();
+					pShader->PackedDiffuse= mat.getDiffuse().getPacked();
+					pShader->PackedSpecular= mat.getSpecular().getPacked();
+				}
+			}
 
+
+			// Since modified, must rebind all openGL states. And do this also for the delete/new problem.
+			/* If an old material is deleted, _CurrentMaterial is invalid. But this is grave only if a new 
+				material is created, with the same pointer (bad luck). Since an newly allocated material always 
+				pass here before use, we are sure to avoid any problems.
+			*/
+			_CurrentMaterial= NULL;
+		}
 
 		// Optimize: reset all flags at the end.
 		mat.clearTouched(0xFFFFFFFF);
-
-		// Since modified, must rebind all openGL states. And do this also for the delete/new problem.
-		/* If an old material is deleted, _CurrentMaterial is invalid. But this is grave only if a new 
-			material is created, with the same pointer (bad luck). Since an newly allocated material always 
-			pass here before use, we are sure to avoid any problems.
-		*/
-		_CurrentMaterial= NULL;
 	}
 
 
@@ -187,88 +199,65 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	//=======================
 	if (_CurrentMaterial!=&mat)
 	{
-		// \todo: yoyo: optimize with precedent material flags test.
-		// => must change the way it works with _CurrentMaterial.
-		// Warning! this implies modification in setupPass()/endMultiPass() for multiPass materials.
-
 		// Bind Blend Part.
 		//=================
+		_DriverGLStates.enableBlend(mat.getFlags()&IDRV_MAT_BLEND);
 		if(mat.getFlags()&IDRV_MAT_BLEND)
-		{
-			glEnable(GL_BLEND);
-			glBlendFunc(pShader->SrcBlend, pShader->DstBlend);
-		}
-		else
-		{
-			glDisable(GL_BLEND);
-		}
+			_DriverGLStates.blendFunc(pShader->SrcBlend, pShader->DstBlend);
 
 		// Double Sided Part.
 		//===================
-		if(mat.getFlags()&IDRV_MAT_DOUBLE_SIDED)
-		{
-			glDisable(GL_CULL_FACE);
-		}
-		else
-		{
-			glEnable(GL_CULL_FACE);
-		}
+		// NB: inverse state: DoubleSided <=> !CullFace.
+		uint32	twoSided= mat.getFlags()&IDRV_MAT_DOUBLE_SIDED;
+		_DriverGLStates.enableCullFace( twoSided==0 );
+
 
 		// Alpha Test Part.
 		//=================
-		if(mat.getFlags()&IDRV_MAT_ALPHA_TEST)
-		{
-			glEnable(GL_ALPHA_TEST);
-			glAlphaFunc(GL_GREATER, 0.5f);
-		}
-		else
-		{
-			glDisable(GL_ALPHA_TEST);
-			glAlphaFunc(GL_ALWAYS, 0.0f);
-		}
+		_DriverGLStates.enableAlphaTest(mat.getFlags()&IDRV_MAT_ALPHA_TEST);
 
 
 		// Bind ZBuffer Part.
 		//===================
-		if(mat.getFlags()&IDRV_MAT_ZWRITE)
-			glDepthMask(GL_TRUE);
-		else
-			glDepthMask(GL_FALSE);
-		glDepthFunc(pShader->ZComp);
+		_DriverGLStates.enableZWrite(mat.getFlags()&IDRV_MAT_ZWRITE);
+		_DriverGLStates.depthFunc(pShader->ZComp);
 
 
 		// Color-Lighting Part.
 		//=====================
-		// Color unlit part.
-		CRGBA	col= mat.getColor();
-		glColor4ub(col.R, col.G, col.B, col.A);
 
 		// Light Part.
+		_DriverGLStates.enableLighting(mat.getFlags()&IDRV_MAT_LIGHTING);
 		if(mat.getFlags()&IDRV_MAT_LIGHTING)
 		{
-			glEnable(GL_LIGHTING);
 			// Temp. Yoyo, defo light.
 			glEnable(GL_LIGHT0);
 			if(mat.getFlags()&IDRV_MAT_DEFMAT)
 			{
-				GLfloat		one[4]= {1,1,1,1};
-				GLfloat		zero[4]= {0,0,0,1};
-				glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
-				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, one);
-				glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
+				static const uint32			packedOne= (CRGBA(255,255,255,255)).getPacked();
+				static const uint32			packedZero= (CRGBA(0,0,0,255)).getPacked();
+				static const GLfloat		one[4]= {1,1,1,1};
+				static const GLfloat		zero[4]= {0,0,0,1};
+				_DriverGLStates.setEmissive(packedZero, zero);
+				_DriverGLStates.setAmbient(packedOne, one);
+				_DriverGLStates.setDiffuse(packedOne, one);
+				_DriverGLStates.setSpecular(packedZero, zero);
 			}
 			else
 			{
-				glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pShader->Emissive);
-				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pShader->Ambient);
-				glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pShader->Diffuse);
-				glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pShader->Specular);
-				glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat.getShininess());
+				_DriverGLStates.setEmissive(pShader->PackedEmissive, pShader->Emissive);
+				_DriverGLStates.setAmbient(pShader->PackedAmbient, pShader->Ambient);
+				_DriverGLStates.setDiffuse(pShader->PackedDiffuse, pShader->Diffuse);
+				_DriverGLStates.setSpecular(pShader->PackedSpecular, pShader->Specular);
+				_DriverGLStates.setShininess(mat.getShininess());
 			}
 		}
 		else
-			glDisable(GL_LIGHTING);
-
+		{
+			// Color unlit part.
+			CRGBA	col= mat.getColor();
+			glColor4ub(col.R, col.G, col.B, col.A);
+		}
 
 
 		_CurrentMaterial=&mat;
@@ -330,19 +319,36 @@ void			CDriverGL::endMultiPass(const CMaterial &mat)
 
 
 // ***************************************************************************
-void CDriverGL::computeLightMapInfos (const CMaterial &mat, uint &nLMaps, uint &nLMapPerPass, uint &nPass) const
+void CDriverGL::computeLightMapInfos (const CMaterial &mat)
 {
-	// beg modif
-	nLMaps = 0;
+	static const uint32 RGBMaskPacked = CRGBA(255,255,255,0).getPacked();
+
+	// For optimisation consideration, suppose there is not too much lightmap.
+	nlassert(mat._LightMaps.size()<=NL3D_DRV_MAX_LIGHTMAP);
+
+	// Compute number of lightmaps really used (ie factor not NULL), and build the LUT.
+	_NLightMaps = 0;
+	// For all lightmaps of the material.
 	for (uint i = 0; i < mat._LightMaps.size(); ++i)
-	if (mat._LightMaps[i].Factor != CRGBA(0,0,0,0))
-		++nLMaps;
-	// end
-	// sup nLMaps= mat._LightMaps.size();
-	nLMapPerPass = getNbTextureStages()-1;
+	{
+		// If the lightmap's factor is not null.
+		if (mat._LightMaps[i].Factor.getPacked() & RGBMaskPacked)
+		{
+			_LightMapLUT[_NLightMaps]= i;
+			++_NLightMaps;
+		}
+	}
+
+	// Compute how many pass, according to driver caps.
+	_NLightMapPerPass = getNbTextureStages()-1;
+	// Can do more than 2 texture stages only if NVTextureEnvCombine4.
 	if (!_Extensions.NVTextureEnvCombine4)
-		nLMapPerPass = 1;
-	nPass = (nLMaps+nLMapPerPass-1)/(nLMapPerPass);
+		_NLightMapPerPass = 1;
+
+	// Number of pass.
+	_NLightMapPass = (_NLightMaps + _NLightMapPerPass-1)/(_NLightMapPerPass);
+
+	// NB: _NLightMaps==0 means there is no lightmaps at all.
 }
 
 
@@ -352,18 +358,18 @@ sint CDriverGL::beginLightMapMultiPass (const CMaterial &mat)
 	// One texture stage hardware not supported.
 	if (getNbTextureStages()<2)
 		return 1;
-	uint	nLMaps, nLMapPerPass, nPass;
-	computeLightMapInfos (mat, nLMaps, nLMapPerPass, nPass);
+
+	// compute how many lightmap and pass we must process.
+	computeLightMapInfos (mat);
 
 	// Too be sure, disable vertex coloring / lightmap.
-	glDisable (GL_LIGHTING);
+	_DriverGLStates.enableLighting(false);
 	// reset VertexColor array if necessary.
 	if (_LastVB.VertexFormat & CVertexBuffer::PrimaryColorFlag)
 		glDisableClientState (GL_COLOR_ARRAY);
 
 	// Manage too if no lightmaps.
-	nPass= std::max (nPass, (uint)1);
-	return	nPass;
+	return	std::max (_NLightMapPass, (uint)1);
 }
 // ***************************************************************************
 void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
@@ -371,13 +377,9 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 	// One texture stage hardware not supported.
 	if(getNbTextureStages()<2)
 		return;
-	// compute Lightmaps infos.
-	//=========================
-	uint	nLMaps, nLMapPerPass, nPass;
-	computeLightMapInfos(mat, nLMaps, nLMapPerPass, nPass);
 
 	// No lightmap??, just setup "replace texture" for stage 0.
-	if(nPass==0)
+	if(_NLightMaps==0)
 	{
 		ITexture	*text= mat.getTexture(0);
 		activateTexture(0,text);
@@ -392,16 +394,16 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 		return;
 	}
 
-	nlassert(pass<nPass);
+	nlassert(pass<_NLightMapPass);
 
 
 	// setup Texture Pass.
 	//=========================
 	uint	lmapId;
 	uint	nstages;
-	lmapId= pass*nLMapPerPass; // Nb lightmaps already processed
+	lmapId= pass * _NLightMapPerPass; // Nb lightmaps already processed
 	// N lightmaps for this pass, plus the texture.
-	nstages= std::min(nLMapPerPass, nLMaps-lmapId) + 1;
+	nstages= std::min(_NLightMapPerPass, _NLightMaps-lmapId) + 1;
 	// setup all stages.
 	for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++)
 	{
@@ -409,17 +411,12 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 		if(stage<nstages-1)
 		{
 			// setup lightMap.
-			// beg modif
-			ITexture *text = NULL;
-			CRGBA lmapFactor = CRGBA(0,0,0,0);
-			while ((text == NULL)||(lmapFactor == CRGBA(0,0,0,0)))
-			{
-				text = mat._LightMaps[lmapId].Texture;
-				lmapFactor = mat._LightMaps[lmapId].Factor;
-				lmapId++;
-			}
-			// end
-			// sup ITexture	*text= mat._LightMaps[lmapId].Texture;
+			uint	whichLightMap= _LightMapLUT[lmapId];
+			// get text and factor.
+			ITexture *text	 = mat._LightMaps[whichLightMap].Texture;
+			CRGBA lmapFactor = mat._LightMaps[whichLightMap].Factor;
+			lmapFactor.A= 255;
+
 			activateTexture(stage,text);
 
 			// If texture not NULL, Change texture env fonction.
@@ -427,8 +424,6 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 			if(text)
 			{
 				CMaterial::CTexEnv	env;
-				// sup CRGBA	lmapFactor= mat._LightMaps[lmapId].Factor;
-				lmapFactor.A= 255;
 
 				// NB, !_Extensions.NVTextureEnvCombine4, nstages==2, so here always stage==0.
 				if (stage==0)
@@ -485,7 +480,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 		else if(stage<nstages)
 		{
 			// optim: do this only for first pass, and last pass (last pass only if stage!=nLMapPerPass)
-			if(pass==0 || (pass==nPass-1 && stage!=nLMapPerPass))
+			if(pass==0 || (pass==_NLightMapPass-1 && stage!=_NLightMapPerPass))
 			{
 				// setup texture in final stage.
 				ITexture	*text= mat.getTexture(0);
@@ -517,13 +512,13 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 	if(pass==0)
 	{
 		// no transparency for first pass.
-		glDisable(GL_BLEND);
+		_DriverGLStates.enableBlend(false);
 	}
 	else if(pass==1)
 	{
 		// setup an Additive transparency (only for pass 1, will be kept for successives pass).
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE);
+		_DriverGLStates.enableBlend(true);
+		_DriverGLStates.blendFunc(GL_ONE, GL_ONE);
 	}
 
 }
@@ -589,7 +584,7 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 	/// Support NVidia combine 4 extension to do specular map in a single pass
 	if( _Extensions.NVTextureEnvCombine4 )
 	{	// Ok we can do it in a single pass
-		glDisable(GL_BLEND);
+		_DriverGLStates.enableBlend(false);
 
 		// Stage 0
 		glActiveTextureARB(GL_TEXTURE0_ARB+0);
@@ -660,14 +655,14 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 
 		if( pass == 0 )
 		{ // Just display the texture
-			glDisable(GL_BLEND);
+			_DriverGLStates.enableBlend(false);
 			glActiveTextureARB(GL_TEXTURE0_ARB+1);
 			glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 		}
 		else
 		{ // Multiply texture1 by alpha_texture0 and display with add
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ONE, GL_ONE);
+			_DriverGLStates.enableBlend(true);
+			_DriverGLStates.blendFunc(GL_ONE, GL_ONE);
 
 			// Set stage 0
 			glActiveTextureARB(GL_TEXTURE0_ARB+0);

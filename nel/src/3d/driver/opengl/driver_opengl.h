@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.87 2001/09/18 14:42:16 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.88 2001/09/20 16:43:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,7 @@
 #include "nel/misc/bit_set.h"
 #include "3d/ptr_set.h"
 #include "nel/misc/heap_memory.h"
+#include "driver_opengl_states.h"
 
 
 
@@ -68,6 +69,10 @@
 #elif defined (NL_OS_UNIX)
 #include "unix_event_emitter.h"
 #endif // NL_OS_UNIX
+
+
+// For optimisation consideration, allow 256 lightmaps at max.
+#define	NL3D_DRV_MAX_LIGHTMAP		256
 
 
 namespace NL3D {
@@ -136,6 +141,11 @@ public:
 	GLfloat		Ambient[4];
 	GLfloat		Diffuse[4];
 	GLfloat		Specular[4];
+	// For fast comp.
+	uint32		PackedEmissive;
+	uint32		PackedAmbient;
+	uint32		PackedDiffuse;
+	uint32		PackedSpecular;
 
 	CShaderGL(IDriver *drv, ItShaderPtrList it) : IShader(drv, it) {}
 };
@@ -632,6 +642,10 @@ private:
 	CMaterial*				_CurrentMaterial;
 	CMaterial::CTexEnv		_CurrentTexEnv[IDRV_MAT_MAXTEXTURES];
 	bool					_CurrentGlNormalize;
+	// Prec settings for material.
+	CDriverGLStates			_DriverGLStates;
+	// Optim: To not test change in Materials states if just texture has changed. Very usefull for landscape.
+	uint32					_MaterialAllTextureTouchedFlag;
 
 private:
 	bool					setupVertexBuffer(CVertexBuffer& VB);
@@ -676,10 +690,18 @@ private:
 
 	/// \name Lightmap.
 	// @{
-	void			computeLightMapInfos(const CMaterial &mat, uint &nLMaps, uint &nLMapPerPass, uint &nPass) const;
+	void			computeLightMapInfos(const CMaterial &mat);
 	sint			beginLightMapMultiPass(const CMaterial &mat);
 	void			setupLightMapPass(const CMaterial &mat, uint pass);
 	void			endLightMapMultiPass(const CMaterial &mat);
+
+	/// Temp Variables computed in beginLightMapMultiPass(). Reused in setupLightMapPass().
+	uint			_NLightMaps;
+	uint			_NLightMapPerPass;
+	uint			_NLightMapPass;
+	// This array is the LUT from lmapId in [0, _NLightMaps[, to original lightmap id in material.
+	std::vector<uint>		_LightMapLUT;
+
 	// @}
 
 	/// \name Specular.

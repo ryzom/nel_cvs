@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.118 2001/09/18 14:42:16 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.119 2001/09/20 16:43:10 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -61,7 +61,6 @@ using namespace NLMISC;
 // ***************************************************************************
 // try to allocate 16Mo by default of AGP Ram.
 #define	NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE		(16384*1024)
-
 
 
 // ***************************************************************************
@@ -199,6 +198,19 @@ CDriverGL::CDriverGL()
 	_ForceDXTCCompression= false;
 
 	_SumTextureMemoryUsed = false;
+
+
+	// Compute the Flag which say if one texture has been changed in CMaterial.
+	uint	i;
+	_MaterialAllTextureTouchedFlag= 0;
+	for(i=0; i<IDRV_MAT_MAXTEXTURES; i++)
+	{
+		_MaterialAllTextureTouchedFlag|= IDRV_TOUCHED_TEX[i];
+	}
+
+
+	// reserve enough space to never reallocate, nor test for reallocation.
+	_LightMapLUT.resize(NL3D_DRV_MAX_LIGHTMAP);
 }
 
 
@@ -595,22 +607,19 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	glOrtho(0,mode.Width,mode.Height,0,-1.0f,1.0f);	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_AUTO_NORMAL);
-	glDisable(GL_BLEND);
 	glDisable(GL_COLOR_MATERIAL);
-	glEnable(GL_CULL_FACE);
 	glEnable(GL_DITHER);
 	glDisable(GL_FOG);
-	glDisable(GL_LIGHTING);
 	glDisable(GL_LINE_SMOOTH);
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
-	glDepthFunc(GL_LEQUAL);
 	glDisable(GL_NORMALIZE);
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;
+	// Setup defaults for blend, lighting ...
+	_DriverGLStates.forceDefaults();
 
 	// Be always in EXTSeparateSpecularColor.
 	if(_Extensions.EXTSeparateSpecularColor)
@@ -738,7 +747,7 @@ bool CDriverGL::clear2D(CRGBA rgba)
 bool CDriverGL::clearZBuffer(float zval)
 {
 	glClearDepth(zval);
-	glDepthMask(GL_TRUE);
+	_DriverGLStates.enableZWrite(true);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	return true;
 }
@@ -794,6 +803,12 @@ bool CDriverGL::swapBuffers()
 		activateTexEnvColor(stage, env);
 	}
 	glActiveTextureARB(GL_TEXTURE0_ARB);
+
+
+	// Activate the default material.
+	//===========================================================
+	// Same reasoning as textures :)
+	_DriverGLStates.forceDefaults();
 
 
 	// Reset the profiling counter.
@@ -1278,13 +1293,13 @@ void CDriverGL::setPolygonMode (TPolygonMode mode)
 	switch (_PolygonMode)
 	{
 	case Filled:
-		glPolygonMode (GL_FRONT, GL_FILL);
+		glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 		break;
 	case Line:
-		glPolygonMode (GL_FRONT, GL_LINE);
+		glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
 		break;
 	case Point:
-		glPolygonMode (GL_FRONT, GL_POINT);
+		glPolygonMode (GL_FRONT_AND_BACK, GL_POINT);
 		break;
 	}
 }

@@ -155,8 +155,6 @@ void CSuperGridCtrl::ExpandAll(CTreeItem *pItem, int& nScroll)
 	
 }
 
-
-
 int CSuperGridCtrl::Expand(CTreeItem* pSelItem, int nIndex)
 {
 	if(ItemHasChildren(pSelItem) && IsCollapsed(pSelItem))
@@ -420,7 +418,11 @@ void CMySuperGrid::ExpandAllItems()
 	EnsureVisible(nScroll, TRUE);
 }
 
-
+void CMySuperGrid::InsertItemEx(CTreeItem *pSelItem, int nItem)
+{
+	currenttreeitem = pSelItem;
+	OnListNewitem();
+}
 
 void CMySuperGrid::OnListNewitem() 
 {
@@ -436,7 +438,6 @@ void CMySuperGrid::OnListNewitem()
 	
 	unsigned int curlistoldnbelt = pdoc->GetItemNbElt( currentlistindex-1 );
 	pdoc->AddListParent( currentlistindex );
-	unsigned int curlistnewnbelt = pdoc->GetItemNbElt( currentlistindex-1 );
 
 	SetRedraw(0);
 	BOOL bUpdate = FALSE;
@@ -567,6 +568,26 @@ BOOL CMySuperGrid::CanEdit( CTreeItem* const _pItem )
 	return( pdoc->CanEditItem( index-1 ) );
 }
 
+BOOL CMySuperGrid::OnDeleteItem(CTreeItem* pItem, int nIndex)
+{
+	CItemInfo *lp = GetData( pItem );
+	if( lp == NULL )
+		return( false );
+	unsigned int index = lp->GetItemIndex();
+	unsigned int infos = pdoc->GetItemInfos( lp->GetItemIndex()-1 );
+	return( infos & ITEM_ISLISTCHILD );
+}
+
+BOOL CMySuperGrid::OnInsertItem(CTreeItem* pItem, int nIndex)
+{
+	CItemInfo *lp = GetData( pItem );
+	if( lp == NULL )
+		return( false );
+	unsigned int index = lp->GetItemIndex();
+	unsigned int infos = pdoc->GetItemInfos( lp->GetItemIndex()-1 );
+	return( infos & ITEM_ISLIST );
+}
+
 BOOL CMySuperGrid::OnVkReturn()
 {
 	BOOL bResult=FALSE;
@@ -608,10 +629,6 @@ BOOL CMySuperGrid::OnVkReturn()
 	}
 	return( bResult );
 }
-
-
-
-
 
 #define IDC_COMBOBOXINLISTVIEW 0x1235
 CComboBox* CMySuperGrid::ShowList(int nItem, int nCol, CStringList *lstItems)
@@ -826,7 +843,6 @@ void CMySuperGrid::HowToLoopThroughAllItems_that_has_a_checkmark_and_print_them_
 //HOWTO: Search nodeptr that have a specific item and subitems also shows you how to select the node and delete it
 void CMySuperGrid::HowToSearch_I_am_using_hardcoded_values_here_cause_I_am_tired_now(void)
 {
-
 	//one Item and two Subitems
 	CTreeItem *pNode =	Search(__T("Hello World"),_T("Happy"),_T("Programming"),NULL);
 	
@@ -884,10 +900,8 @@ void CMySuperGrid::HowToSearch_I_am_using_hardcoded_values_here_cause_I_am_tired
 				DeleteItemEx(pItem, nIndex);
 		}
 	}
-		
 	if( pItem == NULL )
 		AfxMessageBox(_T("not found"));
-
 
 }
 
@@ -1044,15 +1058,6 @@ CMySuperGrid::CTreeItem* CMySuperGrid::SearchEx(CTreeItem *pStartPosition, CStri
 
 
 
-
-
-BOOL CMySuperGrid::OnDeleteItem(CTreeItem* pItem, int nIndex)
-{
-	return 1;
-}
-
-
-
 BOOL CMySuperGrid::OnItemExpanding(CTreeItem *pItem, int iItem)
 {
 	return 1;
@@ -1070,23 +1075,18 @@ BOOL CMySuperGrid::OnCollapsing(CTreeItem *pItem)
 	return 1;
 }
 
-
-
 BOOL CMySuperGrid::OnItemCollapsed(CTreeItem *pItem)
 {
 	return 1;
 }
 
-
 CImageList *CMySuperGrid::CreateDragImageEx(int nItem)
 {
-		if(m_bDrag)
-			return CSuperGridCtrl::CreateDragImageEx(GetDragItem());
-		else
-			return NULL;
+	if(m_bDrag)
+		return CSuperGridCtrl::CreateDragImageEx(GetDragItem());
+	else
+		return NULL;
 }
-
-
 
 void CMySuperGrid::_DeleteAll()
 {
@@ -1145,10 +1145,7 @@ void CMySuperGrid::_DeleteAll()
 	Expand(pRoot, 0 /*listview index 0*/); 
 	UINT uflag = LVIS_SELECTED | LVIS_FOCUSED;
 	SetItemState(0, uflag, uflag);
-
-
 }
-
 
 void CMySuperGrid::DynamicUpdateSomeItems(int nItem)
 {

@@ -232,6 +232,8 @@ public:
 	virtual BOOL OnItemCollapsed(CTreeItem *pItem);
 	//called before item is about to be deleted,return TRUE to continue, FALSE to prevent delete item
 	virtual BOOL OnDeleteItem(CTreeItem* pItem, int nIndex);
+	//called before item is about to be inserted,return TRUE to continue, FALSE to prevent insert item
+	virtual BOOL OnInsertItem(CTreeItem* pItem, int nIndex);
 	//called before VK_MULTIPLY keydown, return TRUE to continue, FALSE to prevent expandall
 	virtual BOOL OnVKMultiply(CTreeItem *pItem, int nIndex);
 	//called before VK_SUBTRACT keydown, return TRUE to continue, FALSE to prevent collapse item
@@ -313,6 +315,7 @@ public:
 	//takes the node to be delete and its listview item index as arg.
 	//note the item you delete must be visible, hence the nItem as arg. 
 	void DeleteItemEx(CTreeItem *pSelItem, int nItem);
+	virtual void InsertItemEx(CTreeItem *pSelItem, int nItem);
 	//returns the number of columns in the listview
 	int GetNumCol(void);
 	//does a Quicksort of the rootitems and all children if bSortChildren set TRUE

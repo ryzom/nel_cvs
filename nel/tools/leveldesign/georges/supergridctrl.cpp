@@ -614,6 +614,19 @@ void CSuperGridCtrl::OnKeydown(NMHDR* pNMHDR, LRESULT* pResult)
 				}
 			}	break;
 
+		case VK_INSERT: 
+			{
+				int nItem = GetSelectedItem();
+				if(nItem!=-1)
+				{
+					CTreeItem* pSelItem = GetTreeItem(nItem);
+					if(pSelItem != NULL)
+					{
+						if(OnInsertItem(pSelItem, nItem))
+							InsertItemEx(pSelItem, nItem);
+					}	
+				}
+			}	break;
 
 		case VK_MULTIPLY:
 			{  
@@ -1882,6 +1895,9 @@ void CSuperGridCtrl::ExpandUntil(CTreeItem *pItem, CTreeItem* pStopAt)
 }
 
 
+void CSuperGridCtrl::InsertItemEx(CTreeItem *pSelItem, int nItem)
+{
+}
 
 void CSuperGridCtrl::DeleteItemEx(CTreeItem *pSelItem, int nItem)
 {
@@ -2585,7 +2601,10 @@ BOOL CSuperGridCtrl::OnDeleteItem(CTreeItem* pItem, int nIndex)
 	return 1;
 }
 
-
+BOOL CSuperGridCtrl::OnInsertItem(CTreeItem* pItem, int nIndex)
+{
+	return 1;
+}
 
 BOOL CSuperGridCtrl::OnItemExpanding(CTreeItem *pItem, int iItem)
 {

@@ -45,6 +45,7 @@ public:
 	void HowToSearch_I_am_using_hardcoded_values_here_cause_I_am_tired_now(void);
 	void SortData(void);
 	void _DeleteAll(void);
+	void InsertItemEx(CTreeItem *pSelItem, int nItem);
 	void DynamicUpdateSomeItems(int nItem);
 	void SetNewImage(int nItem);
 	CImageList *CreateDragImageEx(int nItem);
@@ -68,6 +69,7 @@ public:
 	BOOL OnCollapsing(CTreeItem *pItem);
 	BOOL OnItemCollapsed(CTreeItem *pItem);
 	BOOL OnDeleteItem(CTreeItem* pItem, int nIndex);
+	BOOL OnInsertItem(CTreeItem* pItem, int nIndex);
 	BOOL OnVkReturn(void);
 	BOOL OnItemLButtonDown(LVHITTESTINFO& ht);
 	BOOL OnItemRButtonDown(LVHITTESTINFO& ht);

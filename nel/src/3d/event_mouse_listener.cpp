@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.1 2000/12/01 10:34:30 corvazier Exp $
+ * $Id: event_mouse_listener.cpp,v 1.2 2000/12/05 10:39:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,10 +71,10 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 		}
 		else	// 3d edit style (edit3dStyle)
 		{
-			bRotate=(mouseEvent->Button==(altButton|middleButton));
-			bTranslateXY=(mouseEvent->Button==middleButton);
-			bTranslateZ=(mouseEvent->Button==(ctrlButton|middleButton));
-			bZoom=(mouseEvent->Button==(altButton|ctrlButton|middleButton));
+			bRotate=(mouseEvent->Button==(altButton|leftButton));
+			bTranslateXY=(mouseEvent->Button==(ctrlButton|leftButton));
+			bTranslateZ=(mouseEvent->Button==(ctrlButton|shiftButton|leftButton));
+			bZoom=(mouseEvent->Button==(shiftButton|leftButton));
 		}
 
 		if (bRotate)

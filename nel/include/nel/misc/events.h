@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.14 2000/12/04 14:32:55 corvazier Exp $
+ * $Id: events.h,v 1.15 2000/12/05 10:39:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -293,7 +293,7 @@ public:
 
 /**
  * CEventMouseDown
- * Send when a single mouse button is pushed down. The Button value should have only ONE flag set.
+ * Send when a single mouse button is pushed down. The Button value should have only ONE flag set between leftButton, rightButton and middleButton.
  * X and Y have the new mouse position in window coordinate system.
  */
 class CEventMouseDown : public CEventMouse
@@ -306,7 +306,7 @@ public:
 
 /**
  * CEventMouseUp
- * Send when a single mouse button is pushed down. The Button value should have only ONE flag set.
+ * Send when a single mouse button is pushed down. The Button value should have only ONE flag set between leftButton, rightButton and middleButton.
  * X and Y have the new mouse position in window coordinate system.
  */
 class CEventMouseUp : public CEventMouse
@@ -332,7 +332,7 @@ public:
 
 /**
  * CEventMouseDblClk
- * Send when a single mouse button is double clicked. The Button value should have only ONE flag set.
+ * Send when a single mouse button is double clicked. The Button value should have only ONE flag set between leftButton, rightButton and middleButton.
  * X and Y have the new mouse position in window coordinate system.
  */
 class CEventMouseDblClk : public CEventMouse

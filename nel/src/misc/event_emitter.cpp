@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.14 2000/12/04 14:32:41 corvazier Exp $
+ * $Id: event_emitter.cpp,v 1.15 2000/12/05 10:38:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,33 +139,33 @@ void CEventEmitterWin32::processMessage (uint32 hWnd, uint32 msg, uint32 wParam,
 				break;
 
 			case WM_RBUTTONDOWN:
-				server->postEvent (new CEventMouseDown (fX, fY, rightButton, this));
+				server->postEvent (new CEventMouseDown (fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
 				break;
 			case WM_MBUTTONDOWN:
-				server->postEvent (new CEventMouseDown (fX, fY, middleButton, this));
+				server->postEvent (new CEventMouseDown (fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
 				break;
 			case WM_LBUTTONDOWN:
-				server->postEvent (new CEventMouseDown (fX, fY, leftButton, this));
+				server->postEvent (new CEventMouseDown (fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
 				break;
 
 			case WM_RBUTTONUP:
-				server->postEvent (new CEventMouseUp (fX, fY, rightButton, this));
+				server->postEvent (new CEventMouseUp (fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
 				break;
 			case WM_MBUTTONUP:
-				server->postEvent (new CEventMouseUp (fX, fY, middleButton, this));
+				server->postEvent (new CEventMouseUp (fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
 				break;
 			case WM_LBUTTONUP:
-				server->postEvent (new CEventMouseUp (fX, fY, leftButton, this));
+				server->postEvent (new CEventMouseUp (fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
 				break;
 
 			case WM_RBUTTONDBLCLK:
-				server->postEvent (new CEventMouseDblClk (fX, fY, rightButton, this));
+				server->postEvent (new CEventMouseDblClk (fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
 				break;
 			case WM_MBUTTONDBLCLK:
-				server->postEvent (new CEventMouseDblClk (fX, fY, middleButton, this));
+				server->postEvent (new CEventMouseDblClk (fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
 				break;
 			case WM_LBUTTONDBLCLK:
-				server->postEvent (new CEventMouseDblClk (fX, fY, leftButton, this));
+				server->postEvent (new CEventMouseDblClk (fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
 				break;
 			}
 			break;

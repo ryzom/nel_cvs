@@ -101,5 +101,47 @@ then
 	done
 fi
 
+# Log error
+echo ------- >> log.log
+echo --- Build zone : weld zones without heightmap >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Build zone : weld zones without heightmap 
+echo ------- 
+date >> log.log
+date
+
+# List the zones to weld
+list_zone=`ls -1 zone_exported/*.[zZ][oO][nN][eE][nN][hH]`
+
+# Build a zones list to weld
+echo -- Build a list of file to weld
+rm zone_to_weld.txt 2> /dev/null
+for i in $list_zone ; do
+  dest=`echo $i | sed -e 's/zone_exported/zone_welded/g' | sed -e 's/.zonenh/.zonenhw/g'`
+  if ( ! test -e $dest ) || ( test $i -nt $dest )
+  then
+	echo $i >> zone_to_weld.txt
+  fi
+
+	# Idle
+	../../idle.bat
+done
+
+# Weld the zone
+if (test -f zone_to_weld.txt) 
+then
+	list_zone=`cat zone_to_weld.txt`
+	for i in $list_zone ; do
+		echo -- Weld $i
+		echo -- Weld $i >> log.log
+	    $exec_timeout $weld_timeout $zone_welder $i $dest
+		echo 
+
+		# Idle
+		../../idle.bat
+	done
+fi
+
 # Build a zones list to weld
 rm zone_to_weld.txt 2> /dev/null

@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.7 2002/03/26 09:43:19 lecroart Exp $
+ * $Id: transport_class.h,v 1.8 2002/03/28 17:45:59 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/entity_id.h"
 
+#include "nel/net/unified_network.h"
 #include "nel/net/message.h"
 
 #include <vector>

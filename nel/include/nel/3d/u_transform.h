@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.19 2003/08/07 08:53:50 berenguier Exp $
+ * $Id: u_transform.h,v 1.20 2003/12/01 09:39:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -242,6 +242,16 @@ public:
 	/// true if the instance receive shadow. By default false
 	virtual bool			canReceiveShadowMap() const =0;
 	// @}
+	
+	/** Force the transform to always be attached to the root
+	  * As a consequence, it can't be inserted into a cluster system (even the root cluster)
+	  * and is thus always visible when in the frustum (not clusterized)
+	  * NB : any call to setClusterSystem will be ignored (must remain unclesterized)
+	  * NB : any call to parent will be ignored (must remain linked to the root)
+      */
+	virtual void		setForceClipRoot(bool forceClipRoot) = 0;
+	virtual bool		getForceClipRoot() const = 0;
+	
 
 };
 

@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "3d"=..\..\nel\src\3d.dsp - Package Owner=<4>
+Project: "3d"=..\..\..\src\3d.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +15,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "misc"=..\..\nel\src\misc.dsp - Package Owner=<4>
+Project: "misc"=..\..\..\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -23,9 +23,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name 3d
-    End Project Dependency
 }}}
 
 ###############################################################################

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.13 2003/12/10 12:49:54 berenguier Exp $
+ * $Id: main.cpp,v 1.14 2003/12/16 18:01:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,6 +157,7 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 	bool ms = options.find ("-ms") != options.end();
 	bool vi = options.find ("-vi") != options.end();
 	bool vl = options.find ("-vl") != options.end();
+	bool vp = options.find ("-vp") != options.end();
 	bool veil = options.find ("-veil") != options.end();
 
 	// Special option.
@@ -227,6 +228,45 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 					fprintf(logStream, "    light group = %d, anim = \"%s\" x=%.1f, y=%.1f, z=%.1f, r=%d, g=%d, b=%d, dr=%d, dg=%d, db=%d\n", pl.LightGroup, 
 						pl.AnimatedLight.c_str(), pl.getPosition().x, pl.getPosition().y, pl.getPosition().z, 
 						diffuse.R, diffuse.G, diffuse.B, defaultDiffuse.R, defaultDiffuse.G, defaultDiffuse.B);
+				}
+			}
+			if (vp)
+			{
+				CZoneInfo zoneInfo;
+				zone.retrieve (zoneInfo);
+
+				// Patch informations
+				uint k;
+				for(k = 0; k < zoneInfo.Patchs.size(); ++k)
+				{
+					fprintf(logStream, "   Patch %d, S %d, T %d, smooth flags %d %d %d %d, corner flags %d %d %d %d\n",
+						k, 
+						zoneInfo.Patchs[k].OrderS,
+						zoneInfo.Patchs[k].OrderT,
+						zoneInfo.Patchs[k].getSmoothFlag (0),
+						zoneInfo.Patchs[k].getSmoothFlag (1),
+						zoneInfo.Patchs[k].getSmoothFlag (2),
+						zoneInfo.Patchs[k].getSmoothFlag (3),
+						zoneInfo.Patchs[k].getCornerSmoothFlag(0),
+						zoneInfo.Patchs[k].getCornerSmoothFlag(1),
+						zoneInfo.Patchs[k].getCornerSmoothFlag(2),
+						zoneInfo.Patchs[k].getCornerSmoothFlag(3));
+					uint l;
+					for (l=0; l<4; l++)
+					{
+						fprintf(logStream, "    Bind edge %d, NPatchs %d, ZoneId %d, Next %d %d %d %d, Edge %d %d %d %d\n",
+							l, 
+							zoneInfo.Patchs[k].BindEdges[l].NPatchs,
+							zoneInfo.Patchs[k].BindEdges[l].ZoneId,
+							zoneInfo.Patchs[k].BindEdges[l].Next[0],
+							zoneInfo.Patchs[k].BindEdges[l].Next[1],
+							zoneInfo.Patchs[k].BindEdges[l].Next[2],
+							zoneInfo.Patchs[k].BindEdges[l].Next[3],
+							zoneInfo.Patchs[k].BindEdges[l].Edge[0],
+							zoneInfo.Patchs[k].BindEdges[l].Edge[1],
+							zoneInfo.Patchs[k].BindEdges[l].Edge[2],
+							zoneInfo.Patchs[k].BindEdges[l].Edge[3]);
+					}
 				}
 			}
 		}
@@ -569,6 +609,7 @@ int		main(int argc, const char *argv[])
 		puts("    -ms display only a Warning if file is a .shape and is a Mesh, skinned, but without MRM");
 		puts("    -vi verbose instance informations");
 		puts("    -vl verbose light informations");
+		puts("    -vp verbose patche informations");
 		puts("    -veil verbose instances bound to light extra information");
 		puts("Press any key");
 		_getch();

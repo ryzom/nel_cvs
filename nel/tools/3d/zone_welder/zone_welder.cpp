@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.18 2003/09/26 14:25:34 lecroart Exp $
+ * $Id: zone_welder.cpp,v 1.19 2003/12/16 18:01:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -587,6 +587,12 @@ void weldZones(const char *center)
 					adjZonePatchs[patchIndex].BindEdges[edgeIndex].ZoneId = centerZoneId;
 					adjZonePatchs[patchIndex].BindEdges[edgeIndex].Next[0] = ptch;
 					adjZonePatchs[patchIndex].BindEdges[edgeIndex].Edge[0] = j;
+
+					// force the same smooth flag
+					bool smoothFlag = centerZonePatchs[ptch].getSmoothFlag (j);
+					smoothFlag |= adjZonePatchs[patchIndex].getSmoothFlag (edgeIndex);
+					centerZonePatchs[ptch].setSmoothFlag (j, smoothFlag);
+					adjZonePatchs[patchIndex].setSmoothFlag (edgeIndex, smoothFlag);
 
 					// tangent become the mean or both tangents (adj and center)
 					// Here we cross the mean because adjacent edges are counter-oriented

@@ -1,7 +1,7 @@
-/** \file scene_ut.h
+/** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.5 2000/12/04 10:13:09 corvazier Exp $
+ * $Id: nelu.h,v 1.6 2000/12/04 13:21:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_SCENE_UT_H
-#define NL_SCENE_UT_H
+#ifndef NL_NELU_H
+#define NL_NELU_H
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
@@ -40,16 +40,16 @@ namespace NL3D
  * 3d Engine Utilities. Simple Open / Close framework.
  * Designed to work only with a mono-threaded / mono-scene / single-windowed app.
  *
- * If your app want to register other Models with basics CScene traversals, it could use CSceneUt, and register his 
- * models/observers after, or even before CSceneUt::init3d().
+ * If your app want to register other Models with basics CScene traversals, it could use CNELU, and register his 
+ * models/observers after, or even before CNELU::init3d().
  *
- * If your app want to add funky traversals, it MUST NOT use CSceneUt (see CScene for more information...).
+ * If your app want to add funky traversals, it MUST NOT use CNELU (see CScene for more information...).
  *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class CSceneUt
+class CNELU
 {
 public:
 	// Default Perspective of camera.
@@ -69,7 +69,7 @@ public:
 	 * - init the scene, with basic Traversals, 
 	 * - create a default camera, linked to the scene, and with default frustum as specified above.
 	 *
-	 * After creation, use the CSceneUt::Camera to manipulates the camera of scene (but you may change all you want 
+	 * After creation, use the CNELU::Camera to manipulates the camera of scene (but you may change all you want 
 	 * to this camera or create/use an other camera if you want...)
 	 *
 	 * You can retrieve the created driver with scene.getDriver(). Usefull for window message processing as example.
@@ -93,6 +93,6 @@ public:
 } // NL3D
 
 
-#endif // NL_SCENE_UT_H
+#endif // NL_NELU_H
 
-/* End of scene_ut.h */
+/* End of nelu.h */

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.136 2002/02/15 17:43:03 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.137 2002/03/04 10:29:54 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1214,33 +1214,45 @@ IDriver::TMessageBoxId	CDriverGL::systemMessageBox (const char* message, const c
 void CDriverGL::setupViewport (const class CViewport& viewport)
 {
 #ifdef NL_OS_WINDOWS
-	if (_hWnd)
-	{
-		// Get window rect
-		RECT rect;
-		GetClientRect (_hWnd, &rect);
+	if (_hWnd == NULL) return;
 
-		// Get viewport
-		float x;
-		float y;
-		float width;
-		float height;
-		viewport.getValues (x, y, width, height);
+	// Get window rect
+	RECT rect;
+	GetClientRect (_hWnd, &rect);
 
-		// Setup gl viewport
-		int clientWidth=rect.right-rect.left;
-		int clientHeight=rect.bottom-rect.top;
-		int ix=(int)((float)clientWidth*x);
-		clamp (ix, 0, clientWidth);
-		int iy=(int)((float)clientHeight*y);
-		clamp (iy, 0, clientHeight);
-		int iwidth=(int)((float)clientWidth*width);
-		clamp (iwidth, 0, clientWidth-ix);
-		int iheight=(int)((float)clientHeight*height);
-		clamp (iheight, 0, clientHeight-iy);
-		glViewport (ix, iy, iwidth, iheight);
-	}
+	// Setup gl viewport
+	int clientWidth=rect.right-rect.left;
+	int clientHeight=rect.bottom-rect.top;
+
+#else // NL_OS_WINDOWS
+
+	XWindowAttributes win_attributes;
+	if (!XGetWindowAttributes(dpy, win, &win_attributes))
+		throw EBadDisplay("Can't get window attributes.");
+
+	// Setup gl viewport
+	int clientWidth=win_attributes.width;
+	int clientHeight=win_attributes.height;
+
 #endif // NL_OS_WINDOWS
+
+	// Get viewport
+	float x;
+	float y;
+	float width;
+	float height;
+	viewport.getValues (x, y, width, height);
+
+	// Setup gl viewport
+	int ix=(int)((float)clientWidth*x);
+	clamp (ix, 0, clientWidth);
+	int iy=(int)((float)clientHeight*y);
+	clamp (iy, 0, clientHeight);
+	int iwidth=(int)((float)clientWidth*width);
+	clamp (iwidth, 0, clientWidth-ix);
+	int iheight=(int)((float)clientHeight*height);
+	clamp (iheight, 0, clientHeight-iy);
+	glViewport (ix, iy, iwidth, iheight);
 }
 
 

@@ -13,6 +13,8 @@ using namespace NLMISC;
 
 /* Constantes */
 
+// WARNING!!!! DEBUG_PRINTF are commented using // so IT MUST HAVE NO INSTRUCTION AFTER A DEBUG_PRINTF OR THEY LL BE COMMENTED
+
 //#define DEBUG_PRINTF	InfoLog->displayRaw
 #ifdef __GNUC__
 #define DEBUG_PRINTF(format, args...)
@@ -101,7 +103,11 @@ string		\"[^\"]*\"
 
 (\ |\t)		{ /* ignore tabulation and spaces */; }
 
-"\n"		{ /* ignore new line but count them */ cf_CurrentLine++; DEBUG_PRINTF("*****line++ %d\n", cf_CurrentLine); }
+"\n"		{
+				/* ignore new line but count them */
+				cf_CurrentLine++;
+				DEBUG_PRINTF("*****line++ %d\n", cf_CurrentLine);
+			}
 
 "//"		{ comment(); }
 

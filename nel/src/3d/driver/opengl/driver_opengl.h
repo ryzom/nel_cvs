@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.78 2001/07/31 12:11:49 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.79 2001/08/07 15:01:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -435,7 +435,12 @@ public:
 	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect);
 
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect);
-
+		
+	virtual void			copyFrameBufferToTexture(ITexture *tex, uint32 level
+														, uint32 offsetx, uint32 offsety
+													    , uint32 x, uint32 y
+														, uint32 width, uint32 height														
+													)  ;
 	virtual void			setPolygonMode (TPolygonMode mode);
 
 	virtual void			setLight (uint8 num, const CLight& light);

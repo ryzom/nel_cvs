@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.112 2001/07/18 13:42:59 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.113 2001/08/07 15:01:47 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1183,6 +1183,8 @@ void			CDriverGL::getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &r
 	if(clipRect(rect))
 	{
 		zbuffer.resize(rect.Width*rect.Height);
+		glPixelTransferf(GL_DEPTH_SCALE, 1.0f) ;
+		glPixelTransferf(GL_DEPTH_BIAS, 0.f) ;
 		glReadPixels (rect.X, rect.Y, rect.Width, rect.Height, GL_DEPTH_COMPONENT , GL_FLOAT, &(zbuffer[0]));
 	}
 }
@@ -1200,6 +1202,44 @@ void CDriverGL::getBuffer (CBitmap &bitmap)
 	CRect	rect(0,0);
 	getWindowSize(rect.Width, rect.Height);
 	getBufferPart(bitmap, rect);
+}
+
+
+void CDriverGL::copyFrameBufferToTexture(ITexture *tex, uint32 level
+														, uint32 offsetx, uint32 offsety
+													    , uint32 x, uint32 y
+														, uint32 width, uint32 height														
+													)
+{
+	nlassert(!tex->isTextureCube()) ;
+
+	bool compressed = false ;
+	GLint tfm = getGlTextureFormat(*tex, compressed);
+	nlassert(!compressed) ;
+
+	
+	// first, mark the texture as valid, and make sure there is a corresponding texture in the device memory	
+	setupTexture(*tex) ;	
+
+	CTextureDrvInfosGL*	gltext = (CTextureDrvInfosGL*)(ITextureDrvInfos*)(tex->TextureDrvShare->DrvTexture) ;
+	
+	
+	
+	
+
+	
+
+	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glEnable(GL_TEXTURE_2D) ; 
+	glBindTexture(GL_TEXTURE_2D, gltext->ID);	
+
+
+	glCopyTexSubImage2D(GL_TEXTURE_2D, level, offsetx, offsety, x, y, width, height);
+	
+
+	glDisable(GL_TEXTURE_2D) ;
+
+
 }
 
 

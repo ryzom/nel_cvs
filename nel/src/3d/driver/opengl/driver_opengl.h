@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.176 2004/06/29 13:53:58 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.177 2004/08/03 16:31:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -584,6 +584,8 @@ public:
 
 	virtual uint64			getSwapBufferCounter() const { return _SwapBufferCounter; }	
 	
+	virtual void			setCullMode(TCullMode cullMode);
+	virtual	TCullMode       getCullMode() const;
 
 
 private:
@@ -825,7 +827,8 @@ private:
 													 uint32 x,
 													 uint32 y,
 													 uint32 width,
-													 uint32 height														
+													 uint32 height,
+													 uint   cubeFace = 0
 													);
 
 	/// \name Material multipass.
@@ -1158,6 +1161,8 @@ private:
 	// init EMBM settings (set each stage to modify the next)
 	void	initEMBM();
 
+
+
 	// Monitor color parameters backup
 #ifdef WIN32
 	bool							_NeedToRestaureGammaRamp;
@@ -1201,10 +1206,12 @@ private:
 	uint32					_TextureTargetY;
 	uint32					_TextureTargetWidth;
 	uint32					_TextureTargetHeight;
-	bool					_TextureTargetUpdload;
+	bool					_TextureTargetUpload;
+	uint					_TextureTargetCubeFace;
 	// @}	
 	// misc
 public:
+	static GLenum NLCubeFaceToGLCubeFace[6];
 	static CMaterial::CTexEnv	_TexEnvReplace;
 	// occlusion query
 	TOcclusionQueryList			_OcclusionQueryList;

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.76 2004/05/14 15:03:44 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.77 2004/08/03 16:31:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -504,13 +504,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 
 
 			if(tex.isTextureCube())
-			{
-				static GLenum face_map[6] = {	GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
-												GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
-												GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB,
-												GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
-												GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
-												GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB };
+			{				
 				CTextureCube *pTC = NLMISC::safe_cast<CTextureCube *>(&tex);
 				
 				// Regenerate all the texture.
@@ -563,7 +557,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 						if (bUpload)
 						{
 							NEL_MEASURE_UPLOAD_TIME_START
-							glTexImage2D (face_map[nText], i, glfmt, w, h, 0, glSrcFmt, glSrcType, ptr);
+							glTexImage2D (NLCubeFaceToGLCubeFace[nText], i, glfmt, w, h, 0, glSrcFmt, glSrcType, ptr);
 							bAllUploaded = true;
 							NEL_MEASURE_UPLOAD_TIME_END
 								
@@ -571,7 +565,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 						else
 						{
 							NEL_MEASURE_UPLOAD_TIME_START
-							glTexImage2D (face_map[nText], i, glfmt, w, h, 0, glSrcFmt, glSrcType, NULL);
+							glTexImage2D (NLCubeFaceToGLCubeFace[nText], i, glfmt, w, h, 0, glSrcFmt, glSrcType, NULL);
 							NEL_MEASURE_UPLOAD_TIME_END
 						}
 						// profiling: count TextureMemory usage.
@@ -1647,11 +1641,11 @@ bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width
 		nlassertex (tex->getRenderTarget(), ("The texture must be a render target. Call ITexture::setRenderTarget(true)."));
 
 	// Have a previous texture ?
-	if (_TextureTarget && _TextureTarget != tex && _TextureTargetUpdload)
+	if (_TextureTarget && (_TextureTarget != tex || _TextureTargetCubeFace != cubeFace) && _TextureTargetUpload)
 	{
 		// Flush it
 		copyFrameBufferToTexture (_TextureTarget, _TextureTargetLevel, _TextureTargetX, _TextureTargetY, 0,
-			0, _TextureTargetWidth, _TextureTargetHeight);
+			0, _TextureTargetWidth, _TextureTargetHeight, _TextureTargetCubeFace);
 	}
 
 	// Backup the texture
@@ -1666,7 +1660,8 @@ bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width
 		_TextureTargetY = y;
 		_TextureTargetWidth = width;
 		_TextureTargetHeight = height;
-		_TextureTargetUpdload = true;
+		_TextureTargetUpload = true;
+		_TextureTargetCubeFace = cubeFace;
 	}
 
 	// Update the viewport
@@ -1691,7 +1686,7 @@ bool CDriverGL::copyTargetToTexture (ITexture *tex,
 {
 	if (!_TextureTarget)
 		return false;
-	_TextureTargetUpdload = false;
+	_TextureTargetUpload = false;
 	if ((width == 0) || (height == 0))
 	{
 		uint32 _width;

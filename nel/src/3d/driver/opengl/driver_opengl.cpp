@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.221 2004/06/29 13:53:58 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.222 2004/08/03 16:31:57 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -204,6 +204,15 @@ static Bool WndProc(Display *d, XEvent *e, char *arg)
 #endif // NL_OS_UNIX
 
 
+GLenum CDriverGL::NLCubeFaceToGLCubeFace[6] =
+{
+	GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB,
+	GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
+	GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB
+};
 
 // ***************************************************************************
 CDriverGL::CDriverGL()
@@ -336,6 +345,9 @@ CDriverGL::CDriverGL()
 
 	// to avoid any problem if light0 never setuped, and ligthmap rendered
 	_UserLight0.setupDirectional(CRGBA::Black, CRGBA::White, CRGBA::White, CVector::K);
+
+	_TextureTargetCubeFace = 0;
+	_TextureTargetUpload = false;
 }
 
 
@@ -1639,7 +1651,7 @@ void CDriverGL::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 
 // --------------------------------------------------
 bool CDriverGL::swapBuffers()
-{
+{	
 	++ _SwapBufferCounter;
 	// Reset texture shaders
 	//resetTextureShaders();
@@ -1669,32 +1681,7 @@ bool CDriverGL::swapBuffers()
 		//
 		activeVertexBuffer(dummyVB);
 		nlassert(_CurrentVertexBufferHard==NULL);
-	}
-	/*
-	else if (_Extensions.ARBVertexBufferObject || _Extensions.ATIVertexArrayObject)
-	{		
-		static	CVertexBuffer	dummyVB;
-		static	bool			dummyVBinit= false; 
-		if(!dummyVBinit)
-		{
-			dummyVBinit= true;
-			// setup a full feature VB (maybe not usefull ... :( ).
-			dummyVB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag|
-				CVertexBuffer::PrimaryColorFlag|CVertexBuffer::SecondaryColorFlag|
-				CVertexBuffer::TexCoord0Flag|CVertexBuffer::TexCoord1Flag|
-				CVertexBuffer::TexCoord2Flag|CVertexBuffer::TexCoord3Flag
-				);
-			// some vertices.
-			dummyVB.setNumVertices(10);
-			dummyVB.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
-		}
-		// setup a vb hard to clean streams		
-		activeVertexBuffer(dummyVB);
-		nlassert(_CurrentVertexBufferHard!=NULL);		
-	}
-	*/
-	
-
+	}		
 
 	/* PATCH For Possible NVidia Synchronisation.
 	/*/
@@ -2086,9 +2073,9 @@ void	CDriverGL::setupScissor (const class CScissor& scissor)
 		float factorX = 1;
 		float factorY = 1;
 		if(clientWidth)
-			factorX = (float)_TextureTarget->getWidth() / (float)clientWidth;
+			factorX = (float) _TextureTarget->getWidth() / (float)clientWidth;
 		if(clientHeight)
-			factorY = (float)_TextureTarget->getHeight() / (float)clientHeight;
+			factorY = (float) _TextureTarget->getHeight() / (float)clientHeight;
 		x *= factorX;
 		y *= factorY;
 		width *= factorX;
@@ -2412,10 +2399,10 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 										 uint32 x,
 										 uint32 y,
 										 uint32 width,
-										 uint32 height														
+										 uint32 height,
+										 uint cubeFace /*= 0*/
 										)
-{
-	nlassert(!tex->isTextureCube());
+{	
 	bool compressed = false;
 	getGlTextureFormat(*tex, compressed);
 	nlassert(!compressed);	
@@ -2425,8 +2412,16 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 	_DriverGLStates.activeTextureARB(0);
 	// setup texture mode, after activeTextureARB()
 	_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
-	glBindTexture(GL_TEXTURE_2D, gltext->ID);	
-	glCopyTexSubImage2D(GL_TEXTURE_2D, level, offsetx, offsety, x, y, width, height);	
+	if (tex->isTextureCube())
+	{
+		glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, gltext->ID);
+		glCopyTexSubImage2D(NLCubeFaceToGLCubeFace[cubeFace], level, offsetx, offsety, x, y, width, height);
+	}
+	else
+	{
+		glBindTexture(GL_TEXTURE_2D, gltext->ID);	
+		glCopyTexSubImage2D(GL_TEXTURE_2D, level, offsetx, offsety, x, y, width, height);	
+	}
 	// disable texturing.
 	_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
 	_CurrentTexture[0] = NULL;
@@ -3882,6 +3877,17 @@ void CDriverGL::getDepthRange(float &znear, float &zfar) const
 	_DriverGLStates.getDepthRange(znear, zfar);
 }
 
+// ***************************************************************************
+void CDriverGL::setCullMode(TCullMode cullMode)
+{
+	_DriverGLStates.setCullMode((CDriverGLStates::TCullMode) cullMode);
+}
+
+// ***************************************************************************
+CDriverGL::TCullMode CDriverGL::getCullMode() const
+{
+	return (CDriverGL::TCullMode) _DriverGLStates.getCullMode();
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.12 2003/05/06 12:00:44 boucher Exp $
+ * $Id: clustered_sound.cpp,v 1.13 2003/07/01 10:14:11 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -588,7 +588,8 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 			_AudibleClusters.insert(make_pair(cluster, css));
 
 			// 1st, look each portal
-			for (uint i=0; i<cluster->getNbPortals(); ++i)
+			uint i;
+			for (i=0; i<cluster->getNbPortals(); ++i)
 			{
 				CPortal *portal = cluster->getPortal(i);
 				// get the other cluster

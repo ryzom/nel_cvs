@@ -1,6 +1,6 @@
 /** \file context_sound.h
  *
- * $Id: context_sound.h,v 1.4 2003/04/24 19:39:37 boucher Exp $
+ * $Id: context_sound.h,v 1.5 2003/07/01 10:13:39 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,8 @@ struct CContextMatcher
 	CContextMatcher(uint32 *jokersValues, uint32 randomValue)
 		: HashValue(0)
 	{
-		for (uint i=0; i<NbJoker; ++i)
+		uint i;
+		for (i=0; i<NbJoker; ++i)
 		{
 			JokersValues[i] = jokersValues[i];
 			
@@ -149,7 +150,8 @@ class CContextSoundContainer : public IContextSoundContainer
 //		for (; first == first2; ++first, ++first2);
 
 		// 2nd, read all the joker values
-		for (uint i=0; i<NbJoker && first != last; ++first)
+		uint i;
+		for ( i=0; i<NbJoker && first != last; ++first)
 		{
 			if (isdigit(int(*first)))
 			{

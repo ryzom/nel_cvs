@@ -1,7 +1,7 @@
 /** \file ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.3 2001/09/04 16:16:55 vizerie Exp $
+ * $Id: u_ps_sound_impl.h,v 1.4 2001/09/10 09:32:10 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -46,6 +46,9 @@ namespace NL3D
 inline void SpawnedSourceEndedCallback(NLSOUND::USource *source, void *userParam);
 
 
+class CPSSoundServImpl;
+
+
 /// This class implement a sound instance (a sound source)
 class CPSSoundInstanceImpl : public UPSSoundInstance
 {
@@ -54,18 +57,17 @@ public:
 	/** The system will call this method to set the parameters of the sound	  
 	  */
 	CPSSoundInstanceImpl() 
-		: _Source(NULL), _AudioMixer(NULL), _Spawned(false)
+		: _Source(NULL), _SoundServImpl(NULL), _Spawned(false)
 	{			
 	}
 
 	/// init this sound instance parameters
-	void init(NLSOUND::USource *source, NLSOUND::UAudioMixer *am, bool spawned)
+	void init(NLSOUND::USource *source, CPSSoundServImpl *soundServImp, bool spawned)
 	{
 		nlassert(source);
-		nlassert(am);
-		_Source = source;
-		_AudioMixer = am;
+		_Source = source;		
 		_Spawned    = spawned;
+		_SoundServImpl = soundServImp;
 	}
 
 	/// change this sound source paramerters
@@ -108,28 +110,13 @@ public:
 	}
 
 	/// release the sound source
-	virtual void release(void)
-	{	
-		if (!_Spawned) // remove this source from the audio mixer if it hasn't been spawned
-		{
-			nlassert(_AudioMixer);
-			_AudioMixer->removeSource(_Source);
-		}
-		else
-		{
-			if (_Source) // tells this spawned source not to notify us when it ends
-			{
-				_Source->unregisterSpawnCallBack();
-			}
-		}
-		delete this;
-	}
+	virtual void release(void);	
 
 protected:
 	friend inline void SpawnedSourceEndedCallback(NLSOUND::USource *source, void *userParam);
 	NLSOUND::USource *_Source;
 	bool			 _Spawned;
-	NLSOUND::UAudioMixer *_AudioMixer;
+	CPSSoundServImpl   *_SoundServImpl;
 };
 
 
@@ -156,8 +143,7 @@ public:
 
 	/// init this particle system sound server, using the given audio mixer
 	void init(NLSOUND::UAudioMixer *audioMixer)
-	{
-		nlassert(audioMixer);
+	{		
 		_AudioMixer = audioMixer;
 	}
 
@@ -179,7 +165,7 @@ public:
 			{
 				source->setLooping(false);
 			}
-			sound->init(source, _AudioMixer, spawned);
+			sound->init(source, this, spawned);
 			return sound;
 		}
 		else
@@ -202,6 +188,27 @@ inline void SpawnedSourceEndedCallback(NLSOUND::USource *source, void *userParam
 {
 	nlassert(((CPSSoundInstanceImpl *) userParam)->_Source == source);
 	((CPSSoundInstanceImpl *) userParam)->_Source = NULL;
+}
+
+
+
+void CPSSoundInstanceImpl::release(void)
+{	
+	if (!_Spawned) // remove this source from the audio mixer if it hasn't been spawned
+	{
+		if (_SoundServImpl->getAudioMixer())
+		{			
+			_SoundServImpl->getAudioMixer()->removeSource(_Source);
+		}
+	}
+	else
+	{
+		if (_Source) // tells this spawned source not to notify us when it ends
+		{
+			_Source->unregisterSpawnCallBack();
+		}
+	}
+	delete this;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.28 2004/09/17 15:22:27 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.29 2004/10/26 13:49:56 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -110,7 +110,7 @@ void CFlareModel::registerBasic()
 
 
 // write a vector in a vertex buffer
-static inline void vbWrite(uint8 *&dest, CVector &v)
+static inline void vbWrite(uint8 *&dest, const CVector &v)
 {
 	((float *) dest)[0] = v.x;
 	((float *) dest)[1] = v.y;

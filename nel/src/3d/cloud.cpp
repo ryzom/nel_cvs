@@ -1,7 +1,7 @@
 /** \file cloud.cpp
  * cloud implementation
  *
- * $Id: cloud.cpp,v 1.4 2002/11/04 14:08:58 coutelas Exp $
+ * $Id: cloud.cpp,v 1.5 2003/07/02 16:16:36 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -508,6 +508,14 @@ void CCloud::calcBill (const CVector &Viewer, const CVector &Center, const CVect
 // Create the billboard (in the screen at pos (NbW*Width, 0)
 void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 {
+	// If minimized mode (screenW / H is 0) abort.
+	uint32 nScreenW, nScreenH;
+	_Driver->getWindowSize (nScreenW, nScreenH);
+	if(nScreenW<=0 || nScreenH<=0)
+		return;
+
+
+	// Compute the Bill
 	uint32 sizeTMP = _OldBillSize;
 	uint8 *MemTMP = _MemOldBill;
 	CSmartPtr<CTextureMem>	TexTMP = _TexOldBill;
@@ -535,8 +543,6 @@ void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 
 	CViewport viewport, viewportOLD;
 	viewportOLD.initFullScreen();
-	uint32 nScreenW, nScreenH;
-	_Driver->getWindowSize (nScreenW, nScreenH);
 	viewport.init(0.0f, 0.0f, ((float)_BillSize+1)/((float)nScreenW), ((float)_BillSize+1)/((float)nScreenH));
 	_Driver->setupViewport (viewport);
 

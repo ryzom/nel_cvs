@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.36 2003/01/22 14:17:24 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.37 2003/02/07 16:09:14 lecroart Exp $
  *
  */
 
@@ -777,6 +777,8 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							else
 								val = "Failed";
 						}
+						else if (subvarpath.Destination[k].first == "State=2")
+							val = "Relaunching";
 
 						vala.push_back (val);
 					}
@@ -904,6 +906,8 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 								else
 									val = "Failed";
 							}
+							else if (subvarpath.Destination[k].first == "State=2")
+								val = "Relaunching";
 							
 							vala.push_back (val);
 						}

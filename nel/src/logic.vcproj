@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="logic"
 	SccProjectName=""
 	SccLocalPath="">
@@ -11,9 +11,9 @@
 	</Platforms>
 	<Configurations>
 		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory=".\../obj/Debug/logic"
-			IntermediateDirectory=".\../obj/Debug/logic"
+			Name="DebugFast|Win32"
+			OutputDirectory=".\../obj/DebugFast/logic"
+			IntermediateDirectory=".\../obj/DebugFast/logic"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -21,14 +21,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_LIB,__STL_DEBUG,_DEBUG,WIN32,LIBXML_STATIC"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="_LIB;_DEBUG;NL_DEBUG_FAST;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../obj/Debug/logic/logic.pch"
-				AssemblerListingLocation=".\../obj/Debug/logic/"
-				ObjectFile=".\../obj/Debug/logic/"
-				ProgramDataBaseFileName=".\../obj/Debug/logic/"
+				PrecompiledHeaderFile=".\../obj/DebugFast/logic/logic.pch"
+				AssemblerListingLocation=".\../obj/DebugFast/logic/"
+				ObjectFile=".\../obj/DebugFast/logic/"
+				ProgramDataBaseFileName=".\../obj/DebugFast/logic/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -36,7 +37,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nllogic_d.lib"
+				OutputFile="../lib/nllogic_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -52,6 +53,62 @@
 				Culture="1036"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory=".\../obj/Release/logic"
+			IntermediateDirectory=".\../obj/Release/logic"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;LIBXML_STATIC"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				PrecompiledHeaderFile=".\../obj/Release/logic/logic.pch"
+				AssemblerListingLocation=".\../obj/Release/logic/"
+				ObjectFile=".\../obj/Release/logic/"
+				ProgramDataBaseFileName=".\../obj/Release/logic/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="../lib/nllogic_r.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
@@ -63,8 +120,9 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_LIB,LIBXML_STATIC,NL_RELEASE_DEBUG,WIN32,NDEBUG"
+				PreprocessorDefinitions="_LIB;LIBXML_STATIC;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -96,54 +154,17 @@
 				Culture="1036"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
-			Name="Release|Win32"
-			OutputDirectory=".\../obj/Release/logic"
-			IntermediateDirectory=".\../obj/Release/logic"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32,LIBXML_STATIC"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../obj/Release/logic/logic.pch"
-				AssemblerListingLocation=".\../obj/Release/logic/"
-				ObjectFile=".\../obj/Release/logic/"
-				ProgramDataBaseFileName=".\../obj/Release/logic/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="../lib/nllogic_r.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="DebugFast|Win32"
-			OutputDirectory=".\../obj/DebugFast/logic"
-			IntermediateDirectory=".\../obj/DebugFast/logic"
+			Name="Debug|Win32"
+			OutputDirectory=".\../obj/Debug/logic"
+			IntermediateDirectory=".\../obj/Debug/logic"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -151,15 +172,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_LIB,_DEBUG,NL_DEBUG_FAST,WIN32,LIBXML_STATIC"
+				PreprocessorDefinitions="_LIB;__STL_DEBUG;_DEBUG;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../obj/DebugFast/logic/logic.pch"
-				AssemblerListingLocation=".\../obj/DebugFast/logic/"
-				ObjectFile=".\../obj/DebugFast/logic/"
-				ProgramDataBaseFileName=".\../obj/DebugFast/logic/"
+				PrecompiledHeaderFile=".\../obj/Debug/logic/logic.pch"
+				AssemblerListingLocation=".\../obj/Debug/logic/"
+				ObjectFile=".\../obj/Debug/logic/"
+				ProgramDataBaseFileName=".\../obj/Debug/logic/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -167,7 +187,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib/nllogic_df.lib"
+				OutputFile="../lib/nllogic_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -183,14 +203,52 @@
 				Culture="1036"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="State"
 			Filter="">
 			<File
-				RelativePath=".\logic\logic_state.cpp">
+				RelativePath="logic\logic_state.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\nel\logic\logic_state.h">
@@ -200,7 +258,37 @@
 			Name="Variable"
 			Filter="">
 			<File
-				RelativePath=".\logic\logic_variable.cpp">
+				RelativePath="logic\logic_variable.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\nel\logic\logic_variable.h">
@@ -210,7 +298,37 @@
 			Name="Event"
 			Filter="">
 			<File
-				RelativePath=".\logic\logic_event.cpp">
+				RelativePath="logic\logic_event.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\nel\logic\logic_event.h">
@@ -220,14 +338,74 @@
 			Name="Condition"
 			Filter="">
 			<File
-				RelativePath=".\logic\logic_condition.cpp">
+				RelativePath="logic\logic_condition.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\nel\logic\logic_condition.h">
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\logic\logic_state_machine.cpp">
+			RelativePath="logic\logic_state_machine.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\include\nel\logic\logic_state_machine.h">

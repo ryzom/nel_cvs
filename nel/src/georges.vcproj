@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="georges"
 	SccProjectName=""
 	SccLocalPath="">
@@ -10,6 +10,57 @@
 			Name="Win32"/>
 	</Platforms>
 	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory=".\../obj/Debug/georges"
+			IntermediateDirectory=".\../obj/Debug/georges"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				PreprocessorDefinitions="_LIB;__STL_DEBUG;_DEBUG;WIN32;LIBXML_STATIC"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdgeorges.h"
+				PrecompiledHeaderFile=".\../obj/Debug/georges/georges.pch"
+				AssemblerListingLocation=".\../obj/Debug/georges/"
+				ObjectFile=".\../obj/Debug/georges/"
+				ProgramDataBaseFileName=".\../obj/Debug/georges/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="../lib/nlgeorges_d.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
 			OutputDirectory=".\../obj/DebugFast/georges"
@@ -22,7 +73,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_LIB,_DEBUG,NL_DEBUG_FAST,WIN32,LIBXML_STATIC"
+				PreprocessorDefinitions="_LIB;_DEBUG;NL_DEBUG_FAST;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
@@ -55,6 +106,12 @@
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
@@ -66,8 +123,9 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_LIB,NL_RELEASE_DEBUG,LIBXML_STATIC,WIN32,NDEBUG"
+				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -101,51 +159,12 @@
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory=".\../obj/Debug/georges"
-			IntermediateDirectory=".\../obj/Debug/georges"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
 			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				PreprocessorDefinitions="_LIB,__STL_DEBUG,_DEBUG,WIN32,LIBXML_STATIC"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdgeorges.h"
-				PrecompiledHeaderFile=".\../obj/Debug/georges/georges.pch"
-				AssemblerListingLocation=".\../obj/Debug/georges/"
-				ObjectFile=".\../obj/Debug/georges/"
-				ProgramDataBaseFileName=".\../obj/Debug/georges/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="../lib/nlgeorges_d.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -157,8 +176,9 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32,LIBXML_STATIC"
+				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;LIBXML_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -191,80 +211,308 @@
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<File
-			RelativePath=".\georges\form.cpp">
+			RelativePath="georges\form.cpp">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\georges\form.h">
+			RelativePath="georges\form.h">
 		</File>
 		<File
-			RelativePath=".\georges\form_dfn.cpp">
+			RelativePath="georges\form_dfn.cpp">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\georges\form_dfn.h">
+			RelativePath="georges\form_dfn.h">
 		</File>
 		<File
-			RelativePath=".\georges\form_elm.cpp">
+			RelativePath="georges\form_elm.cpp">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\georges\form_elm.h">
+			RelativePath="georges\form_elm.h">
 		</File>
 		<File
-			RelativePath=".\georges\form_loader.cpp">
+			RelativePath="georges\form_loader.cpp">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\georges\form_loader.h">
+			RelativePath="georges\form_loader.h">
 		</File>
 		<File
-			RelativePath=".\georges\header.cpp">
+			RelativePath="georges\header.cpp">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\georges\header.h">
+			RelativePath="georges\header.h">
 		</File>
 		<File
-			RelativePath=".\georges\load_form.cpp">
+			RelativePath="georges\load_form.cpp">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\include\nel\georges\load_form.h">
 		</File>
 		<File
-			RelativePath=".\georges\stdgeorges.cpp">
+			RelativePath="georges\stdgeorges.cpp">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					UsePrecompiledHeader="1"/>
+			</FileConfiguration>
 			<FileConfiguration
 				Name="DebugFast|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
 					UsePrecompiledHeader="1"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="ReleaseDebug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="1"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
 					UsePrecompiledHeader="1"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
 					UsePrecompiledHeader="1"/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\georges\stdgeorges.h">
+			RelativePath="georges\stdgeorges.h">
 		</File>
 		<File
-			RelativePath=".\georges\type.cpp">
+			RelativePath="georges\type.cpp">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\georges\type.h">
+			RelativePath="georges\type.h">
 		</File>
 		<File
 			RelativePath="..\include\nel\georges\u_form.h">

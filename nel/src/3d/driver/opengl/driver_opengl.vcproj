@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="driver_opengl"
 	SccProjectName=""
 	SccLocalPath="">
@@ -40,7 +40,6 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="dinput.lib dxguid.lib odbc32.lib odbccp32.lib opengl32.lib"
 				OutputFile="../../../../lib/nel_drv_opengl_win_df.dll"
 				LinkIncremental="1"
@@ -48,14 +47,16 @@
 				ModuleDefinitionFile=".\driver_opengl.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\../../../../obj/DebugFast/driver_opengl/nel_drv_opengl_win_df.pdb"
-				ImportLibrary=".\../../../../obj/DebugFast/driver_opengl/nel_drv_opengl_win_df.lib"/>
+				ImportLibrary=".\../../../../obj/DebugFast/driver_opengl/nel_drv_opengl_win_df.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj/DebugFast/driver_opengl/driver_opengl.tlb"/>
+				TypeLibraryName=".\../../../../obj/DebugFast/driver_opengl/driver_opengl.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -69,7 +70,146 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory=".\../../../../obj/Release/driver_opengl"
+			IntermediateDirectory=".\../../../../obj/Release/driver_opengl"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;LIBXML_STATIC"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdopengl.h"
+				PrecompiledHeaderFile=".\../../../../obj/Release/driver_opengl/driver_opengl.pch"
+				AssemblerListingLocation=".\../../../../obj/Release/driver_opengl/"
+				ObjectFile=".\../../../../obj/Release/driver_opengl/"
+				ProgramDataBaseFileName=".\../../../../obj/Release/driver_opengl/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="dinput.lib dxguid.lib odbc32.lib odbccp32.lib opengl32.lib"
+				OutputFile="../../../../lib/nel_drv_opengl_win_r.dll"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				ModuleDefinitionFile=".\driver_opengl.def"
+				ImportLibrary=".\../../../../obj/Release/driver_opengl/nel_drv_opengl_win_r.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\../../../../obj/Release/driver_opengl/driver_opengl.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="ReleaseDebug|Win32"
+			OutputDirectory=".\../../../../obj/ReleaseDebug/driver_opengl"
+			IntermediateDirectory=".\../../../../obj/ReleaseDebug/driver_opengl"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdopengl.h"
+				PrecompiledHeaderFile=".\../../../../obj/ReleaseDebug/driver_opengl/driver_opengl.pch"
+				AssemblerListingLocation=".\../../../../obj/ReleaseDebug/driver_opengl/"
+				ObjectFile=".\../../../../obj/ReleaseDebug/driver_opengl/"
+				ProgramDataBaseFileName=".\../../../../obj/ReleaseDebug/driver_opengl/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="dinput.lib dxguid.lib odbc32.lib odbccp32.lib opengl32.lib"
+				OutputFile="../../../../lib/nel_drv_opengl_win_rd.dll"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				ModuleDefinitionFile=".\driver_opengl.def"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\../../../../obj/ReleaseDebug/driver_opengl/nel_drv_opengl_win_rd.pdb"
+				ImportLibrary=".\../../../../obj/ReleaseDebug/driver_opengl/nel_drv_opengl_win_rd.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\../../../../obj/ReleaseDebug/driver_opengl/driver_opengl.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
@@ -99,7 +239,6 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="dinput.lib dxguid.lib odbc32.lib odbccp32.lib opengl32.lib"
 				OutputFile="../../../../lib/nel_drv_opengl_win_d.dll"
 				LinkIncremental="1"
@@ -107,14 +246,16 @@
 				ModuleDefinitionFile=".\driver_opengl.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\../../../../obj/Debug/driver_opengl/nel_drv_opengl_win_d.pdb"
-				ImportLibrary=".\../../../../obj/Debug/driver_opengl/nel_drv_opengl_win_d.lib"/>
+				ImportLibrary=".\../../../../obj/Debug/driver_opengl/nel_drv_opengl_win_d.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj/Debug/driver_opengl/driver_opengl.tlb"/>
+				TypeLibraryName=".\../../../../obj/Debug/driver_opengl/driver_opengl.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -128,204 +269,405 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-		</Configuration>
-		<Configuration
-			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../../../../obj/ReleaseDebug/driver_opengl"
-			IntermediateDirectory=".\../../../../obj/ReleaseDebug/driver_opengl"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdopengl.h"
-				PrecompiledHeaderFile=".\../../../../obj/ReleaseDebug/driver_opengl/driver_opengl.pch"
-				AssemblerListingLocation=".\../../../../obj/ReleaseDebug/driver_opengl/"
-				ObjectFile=".\../../../../obj/ReleaseDebug/driver_opengl/"
-				ProgramDataBaseFileName=".\../../../../obj/ReleaseDebug/driver_opengl/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="dinput.lib dxguid.lib odbc32.lib odbccp32.lib opengl32.lib"
-				OutputFile="../../../../lib/nel_drv_opengl_win_rd.dll"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				ModuleDefinitionFile=".\driver_opengl.def"
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\../../../../obj/ReleaseDebug/driver_opengl/nel_drv_opengl_win_rd.pdb"
-				ImportLibrary=".\../../../../obj/ReleaseDebug/driver_opengl/nel_drv_opengl_win_rd.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj/ReleaseDebug/driver_opengl/driver_opengl.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
 				Name="VCWebDeploymentTool"/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory=".\../../../../obj/Release/driver_opengl"
-			IntermediateDirectory=".\../../../../obj/Release/driver_opengl"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
 			<Tool
-				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;LIBXML_STATIC"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdopengl.h"
-				PrecompiledHeaderFile=".\../../../../obj/Release/driver_opengl/driver_opengl.pch"
-				AssemblerListingLocation=".\../../../../obj/Release/driver_opengl/"
-				ObjectFile=".\../../../../obj/Release/driver_opengl/"
-				ProgramDataBaseFileName=".\../../../../obj/Release/driver_opengl/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
+				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="dinput.lib dxguid.lib odbc32.lib odbccp32.lib opengl32.lib"
-				OutputFile="../../../../lib/nel_drv_opengl_win_r.dll"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				ModuleDefinitionFile=".\driver_opengl.def"
-				ImportLibrary=".\../../../../obj/Release/driver_opengl/nel_drv_opengl_win_r.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj/Release/driver_opengl/driver_opengl.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<File
-			RelativePath=".\driver_opengl.cpp">
-		</File>
-		<File
-			RelativePath=".\driver_opengl.def">
-		</File>
-		<File
-			RelativePath=".\driver_opengl.h">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_extension.cpp">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_extension.h">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_extension_def.h">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_light.cpp">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_material.cpp">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_matrix.cpp">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_states.cpp">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_states.h">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_texture.cpp">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_vertex.cpp">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_vertex_buffer_hard.cpp">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_vertex_buffer_hard.h">
-		</File>
-		<File
-			RelativePath=".\driver_opengl_vertex_program.cpp">
-		</File>
-		<File
-			RelativePath=".\stdopengl.cpp">
+			RelativePath="driver_opengl.cpp">
 			<FileConfiguration
 				Name="DebugFast|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="1"/>
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="Debug|Win32">
+				Name="Release|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="1"/>
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="ReleaseDebug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="driver_opengl.def">
+		</File>
+		<File
+			RelativePath="driver_opengl.h">
+		</File>
+		<File
+			RelativePath="driver_opengl_extension.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="driver_opengl_extension.h">
+		</File>
+		<File
+			RelativePath="driver_opengl_extension_def.h">
+		</File>
+		<File
+			RelativePath="driver_opengl_light.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="driver_opengl_material.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="driver_opengl_matrix.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="driver_opengl_states.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="driver_opengl_states.h">
+		</File>
+		<File
+			RelativePath="driver_opengl_texture.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="driver_opengl_vertex.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="driver_opengl_vertex_buffer_hard.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="driver_opengl_vertex_buffer_hard.h">
+		</File>
+		<File
+			RelativePath="driver_opengl_vertex_program.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="stdopengl.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"
 					UsePrecompiledHeader="1"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					UsePrecompiledHeader="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_MBCS;$(NoInherit)"
+					UsePrecompiledHeader="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;_MBCS;LIBXML_STATIC;$(NoInherit)"
+					BasicRuntimeChecks="3"
 					UsePrecompiledHeader="1"/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\stdopengl.h">
+			RelativePath="stdopengl.h">
 		</File>
 	</Files>
 	<Globals>

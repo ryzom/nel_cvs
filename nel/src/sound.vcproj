@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="sound"
 	SccProjectName=""
 	SccLocalPath="">
@@ -10,143 +10,6 @@
 			Name="Win32"/>
 	</Platforms>
 	<Configurations>
-		<Configuration
-			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../obj/ReleaseDebug/sound"
-			IntermediateDirectory=".\../obj/ReleaseDebug/sound"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="NL_RELEASE_DEBUG,_LIB,LIBXML_STATIC,WIN32,NDEBUG"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdsound.h"
-				PrecompiledHeaderFile=".\../obj/ReleaseDebug/sound/sound.pch"
-				AssemblerListingLocation=".\../obj/ReleaseDebug/sound/"
-				ObjectFile=".\../obj/ReleaseDebug/sound/"
-				ProgramDataBaseFileName=".\../obj/ReleaseDebug/sound/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="../lib/nlsound_rd.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory=".\../obj/Release/sound"
-			IntermediateDirectory=".\../obj/Release/sound"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32,LIBXML_STATIC"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdsound.h"
-				PrecompiledHeaderFile=".\../obj/Release/sound/sound.pch"
-				AssemblerListingLocation=".\../obj/Release/sound/"
-				ObjectFile=".\../obj/Release/sound/"
-				ProgramDataBaseFileName=".\../obj/Release/sound/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="../lib/nlsound_r.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory=".\../obj/Debug/sound"
-			IntermediateDirectory=".\../obj/Debug/sound"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm400 "
-				Optimization="0"
-				PreprocessorDefinitions="__STL_DEBUG,_DEBUG,_LIB,WIN32,LIBXML_STATIC"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="stdsound.h"
-				PrecompiledHeaderFile=".\../obj/Debug/sound/sound.pch"
-				AssemblerListingLocation=".\../obj/Debug/sound/"
-				ObjectFile=".\../obj/Debug/sound/"
-				ProgramDataBaseFileName=".\../obj/Debug/sound/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="1"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="../lib/nlsound_d.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
 			OutputDirectory=".\../obj/DebugFast/sound"
@@ -159,7 +22,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_DEBUG,NL_DEBUG_FAST,_LIB,WIN32,LIBXML_STATIC"
+				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_LIB;WIN32;LIBXML_STATIC"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -193,8 +56,173 @@
 				Culture="1036"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="ReleaseDebug|Win32"
+			OutputDirectory=".\../obj/ReleaseDebug/sound"
+			IntermediateDirectory=".\../obj/ReleaseDebug/sound"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="NL_RELEASE_DEBUG;_LIB;LIBXML_STATIC;WIN32;NDEBUG"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdsound.h"
+				PrecompiledHeaderFile=".\../obj/ReleaseDebug/sound/sound.pch"
+				AssemblerListingLocation=".\../obj/ReleaseDebug/sound/"
+				ObjectFile=".\../obj/ReleaseDebug/sound/"
+				ProgramDataBaseFileName=".\../obj/ReleaseDebug/sound/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="../lib/nlsound_rd.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory=".\../obj/Release/sound"
+			IntermediateDirectory=".\../obj/Release/sound"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;LIBXML_STATIC"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdsound.h"
+				PrecompiledHeaderFile=".\../obj/Release/sound/sound.pch"
+				AssemblerListingLocation=".\../obj/Release/sound/"
+				ObjectFile=".\../obj/Release/sound/"
+				ProgramDataBaseFileName=".\../obj/Release/sound/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="../lib/nlsound_r.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory=".\../obj/Debug/sound"
+			IntermediateDirectory=".\../obj/Debug/sound"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm400 "
+				Optimization="0"
+				PreprocessorDefinitions="__STL_DEBUG;_DEBUG;_LIB;WIN32;LIBXML_STATIC"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="stdsound.h"
+				PrecompiledHeaderFile=".\../obj/Debug/sound/sound.pch"
+				AssemblerListingLocation=".\../obj/Debug/sound/"
+				ObjectFile=".\../obj/Debug/sound/"
+				ProgramDataBaseFileName=".\../obj/Debug/sound/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="1"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="../lib/nlsound_d.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="User"
@@ -216,106 +244,440 @@
 			Name="UserImp"
 			Filter="">
 			<File
-				RelativePath=".\sound\audio_mixer_user.cpp">
+				RelativePath="sound\audio_mixer_user.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\audio_mixer_user.h">
+				RelativePath="sound\audio_mixer_user.h">
 			</File>
 			<File
-				RelativePath=".\sound\env_sound_user.cpp">
+				RelativePath="sound\env_sound_user.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="ReleaseDebug|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="sound\env_sound_user.h">
 				<FileConfiguration
 					Name="DebugFast|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\env_sound_user.h">
+				RelativePath="sound\listener_user.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\listener_user.cpp">
-			</File>
-			<File
-				RelativePath=".\sound\listener_user.h">
+				RelativePath="sound\listener_user.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="Makefile"
 			Filter="">
 			<File
-				RelativePath=".\sound\Makefile.am">
+				RelativePath="sound\Makefile.am">
 			</File>
 		</Filter>
 		<Filter
 			Name="SoundClass"
 			Filter="">
 			<File
-				RelativePath=".\sound\background_sound.cpp">
+				RelativePath="sound\background_sound.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\background_sound.h">
+				RelativePath="sound\background_sound.h">
 			</File>
 			<File
-				RelativePath=".\sound\complex_sound.cpp">
+				RelativePath="sound\complex_sound.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\complex_sound.h">
+				RelativePath="sound\complex_sound.h">
 			</File>
 			<File
-				RelativePath=".\sound\context_sound.cpp">
+				RelativePath="sound\context_sound.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\context_sound.h">
+				RelativePath="sound\context_sound.h">
 			</File>
 			<File
-				RelativePath=".\sound\simple_sound.cpp">
+				RelativePath="sound\simple_sound.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\simple_sound.h">
+				RelativePath="sound\simple_sound.h">
 			</File>
 			<File
-				RelativePath=".\sound\sound.cpp">
+				RelativePath="sound\sound.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\sound.h">
+				RelativePath="sound\sound.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="Animation"
 			Filter="">
 			<File
-				RelativePath=".\sound\sound_anim_manager.cpp">
+				RelativePath="sound\sound_anim_manager.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\nel\sound\sound_anim_manager.h">
 			</File>
 			<File
-				RelativePath=".\sound\sound_anim_marker.cpp">
+				RelativePath="sound\sound_anim_marker.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\nel\sound\sound_anim_marker.h">
 			</File>
 			<File
-				RelativePath=".\sound\sound_animation.cpp">
+				RelativePath="sound\sound_animation.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\nel\sound\sound_animation.h">
@@ -325,158 +687,536 @@
 			Name="source"
 			Filter="">
 			<File
-				RelativePath=".\sound\background_source.cpp">
+				RelativePath="sound\background_source.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\background_source.h">
+				RelativePath="sound\background_source.h">
 			</File>
 			<File
-				RelativePath=".\sound\complex_source.cpp">
+				RelativePath="sound\complex_source.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\complex_source.h">
+				RelativePath="sound\complex_source.h">
 			</File>
 			<File
-				RelativePath=".\sound\simple_source.cpp">
+				RelativePath="sound\simple_source.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\simple_source.h">
+				RelativePath="sound\simple_source.h">
 			</File>
 			<File
-				RelativePath=".\sound\source_common.cpp">
+				RelativePath="sound\source_common.cpp">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sound\source_common.h">
+				RelativePath="sound\source_common.h">
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\sound\ambiant_source.cpp">
+			RelativePath="sound\ambiant_source.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
 			<FileConfiguration
 				Name="ReleaseDebug|Win32"
 				ExcludedFromBuild="TRUE">
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32"
 				ExcludedFromBuild="TRUE">
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|Win32"
 				ExcludedFromBuild="TRUE">
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\ambiant_source.h">
 			<FileConfiguration
 				Name="DebugFast|Win32"
 				ExcludedFromBuild="TRUE">
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCustomBuildTool"/>
 			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\sound\ambiant_source.h">
-		</File>
-		<File
-			RelativePath=".\sound\async_file_manager_sound.cpp">
-		</File>
-		<File
-			RelativePath=".\sound\async_file_manager_sound.h">
-		</File>
-		<File
-			RelativePath=".\sound\background_sound_manager.cpp">
-		</File>
-		<File
-			RelativePath=".\sound\background_sound_manager.h">
-		</File>
-		<File
-			RelativePath=".\sound\clustered_sound.cpp">
-		</File>
-		<File
-			RelativePath=".\sound\clustered_sound.h">
-		</File>
-		<File
-			RelativePath=".\sound\env_effect.cpp">
 			<FileConfiguration
 				Name="ReleaseDebug|Win32"
 				ExcludedFromBuild="TRUE">
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCustomBuildTool"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32"
 				ExcludedFromBuild="TRUE">
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCustomBuildTool"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|Win32"
 				ExcludedFromBuild="TRUE">
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCustomBuildTool"/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\async_file_manager_sound.cpp">
 			<FileConfiguration
-				Name="DebugFast|Win32"
-				ExcludedFromBuild="TRUE">
+				Name="DebugFast|Win32">
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\sound\env_effect.h">
-		</File>
-		<File
-			RelativePath=".\sound\mixing_track.cpp">
-		</File>
-		<File
-			RelativePath=".\sound\mixing_track.h">
-		</File>
-		<File
-			RelativePath=".\sound\sample_bank.cpp">
-		</File>
-		<File
-			RelativePath=".\sound\sample_bank.h">
-		</File>
-		<File
-			RelativePath=".\sound\sound_bank.cpp">
-		</File>
-		<File
-			RelativePath=".\sound\sound_bank.h">
-		</File>
-		<File
-			RelativePath=".\sound\sound_controller.h">
-		</File>
-		<File
-			RelativePath=".\sound\stdsound.cpp">
 			<FileConfiguration
 				Name="ReleaseDebug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\async_file_manager_sound.h">
+		</File>
+		<File
+			RelativePath="sound\background_sound_manager.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\background_sound_manager.h">
+		</File>
+		<File
+			RelativePath="sound\clustered_sound.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\clustered_sound.h">
+		</File>
+		<File
+			RelativePath="sound\env_effect.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\env_effect.h">
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\mixing_track.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\mixing_track.h">
+		</File>
+		<File
+			RelativePath="sound\sample_bank.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\sample_bank.h">
+		</File>
+		<File
+			RelativePath="sound\sound_bank.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="sound\sound_bank.h">
+		</File>
+		<File
+			RelativePath="sound\sound_controller.h">
+		</File>
+		<File
+			RelativePath="sound\stdsound.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					UsePrecompiledHeader="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
 					UsePrecompiledHeader="1"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
 					UsePrecompiledHeader="1"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="1"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="DebugFast|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
 					UsePrecompiledHeader="1"/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\sound\stdsound.h">
+			RelativePath="sound\stdsound.h">
 		</File>
 	</Files>
 	<Globals>

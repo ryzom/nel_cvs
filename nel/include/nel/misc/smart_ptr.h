@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: smart_ptr.h,v 1.5 2000/10/02 16:58:46 berenguier Exp $
+ * $Id: smart_ptr.h,v 1.6 2000/10/02 17:09:41 berenguier Exp $
  *
  * CSmartPtr and CRefPtr class.
  */
@@ -68,10 +68,10 @@ public:
 
 // ***************************************************************************
 // For debug only.
-//#define	SMART_TRACE(_s)	((void)0)
-//#define	REF_TRACE(_s)	((void)0)
-#define	SMART_TRACE(_s)	printf("%s: %d \n", _s, Ptr?Ptr->crefs:0)
-#define	REF_TRACE(_s)	printf("%s: %d \n", _s, pinfo!=&CRefCount::NullPtrInfo?pinfo->RefCount:0)
+#define	SMART_TRACE(_s)	((void)0)
+#define	REF_TRACE(_s)	((void)0)
+//#define	SMART_TRACE(_s)	printf("%s: %d \n", _s, Ptr?Ptr->crefs:0)
+//#define	REF_TRACE(_s)	printf("%s: %d \n", _s, pinfo!=&CRefCount::NullPtrInfo?pinfo->RefCount:0)
 
 
 /**

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.26 2002/09/13 08:22:01 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.27 2002/10/10 13:00:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,10 @@
 #include "3d/scene.h"
 #include "3d/shape_bank.h"
 #include "3d/zone_symmetrisation.h"
+#include "3d/particle_system_shape.h"
+#include "3d/particle_system.h"
+
+
 
 #include <vector>
 
@@ -371,19 +375,92 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 			{
 				// Test against all clusters
 
-				CMesh::CMeshBuild *pMB;
-				CMeshBase::CMeshBaseBuild *pMBB;
-				pMB = createMeshBuild (*pNode, tvTime, pMBB);
+				// The list of vertices used to test against cluster
+				std::vector<NLMISC::CVector> *testVertices;
+				std::vector<NLMISC::CVector>       FXVertices;  // Used only if the obj is a fx. It contains the corners of the bbox.
+				bool  buildMeshBBox = true;
 
-				convertToWorldCoordinate( pMB, pMBB );
+				/** If it is a mesh, we build its bbox and transform in world
+				  * If it is a FX, we read its bbox from its shape
+				  * If we can't read it, we use the bbox of the fx helper in max
+				  */
+				Object *obj = pNode->EvalWorldState(tvTime).obj;
+				// Check if there is an object
+				if (obj)
+				{
+					Class_ID  clid = obj->ClassID();
+					// is the object a particle system ?					
+					if (clid.PartA() == NEL_PARTICLE_SYSTEM_CLASS_ID)
+					{
+						// build the shape from the file name
+						std::string objName = CExportNel::getNelObjectName(*pNode); 						
+						if (!objName.empty())
+						{											
+							NL3D::CShapeStream ss;
+							NLMISC::CIFile iF;
+							if (iF.open(objName.c_str()))
+							{
+								try
+								{								
+									iF.serial(ss);
+									NL3D::CParticleSystemShape *pss = dynamic_cast<NL3D::CParticleSystemShape *>(ss.getShapePointer());
+									if (!pss)
+									{
+										nlwarning("Node %s shape is not a FX", CExportNel::getName(*pNode));
+									}
+									else
+									{									
+										NLMISC::CAABBox bbox;
+										pss->getAABBox(bbox);
+										// transform in world
+										Matrix3 xForm = pNode->GetNodeTM(tvTime);
+										NLMISC::CMatrix nelXForm;
+										CExportNel::convertMatrix(nelXForm, xForm);									
+										bbox = NLMISC::CAABBox::transformAABBox(nelXForm, bbox);
+										// store vertices of the bbox in the list
+										FXVertices.reserve(8);
+										for(uint k = 0; k < 8; ++k)
+										{
+											FXVertices.push_back(CVector(((k & 1) ? 1 : -1) * bbox.getHalfSize().x + bbox.getCenter().x,
+																		 ((k & 2) ? 1 : -1) * bbox.getHalfSize().y + bbox.getCenter().y,
+																		 ((k & 4) ? 1 : -1) * bbox.getHalfSize().z + bbox.getCenter().z));
+										}
+										//
+										testVertices = &FXVertices;
+										buildMeshBBox = false;
+									}
+									delete ss.getShapePointer();
+								}
+								catch (NLMISC::Exception &e)
+								{
+									nlwarning(e.what());									
+								}
+							}							
+							if (buildMeshBBox)
+							{
+								nlwarning("Can't get bbox of a particle system from its shape, using helper bbox instead");
+							}
+						}
+					}
+				}
+
+				CMesh::CMeshBuild *pMB = NULL;
+				CMeshBase::CMeshBaseBuild *pMBB = NULL;
+
+				if (buildMeshBBox)
+				{				
+					pMB = createMeshBuild (*pNode, tvTime, pMBB);
+					convertToWorldCoordinate( pMB, pMBB );
+					testVertices = &pMB->Vertices;
+				}
 
 				for(k = 0; k < vClusters.size(); ++k)
 				{
 					bool bMeshInCluster = false;
 
-					for(j = 0; j < pMB->Vertices.size(); ++j)
+					for(j = 0; j < testVertices->size(); ++j)
 					{
-						if (vClusters[k].isIn (pMB->Vertices[j]))
+						if (vClusters[k].isIn ((*testVertices)[j]))
 						{
 							bMeshInCluster = true;
 							break;

@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.1 2001/10/04 16:52:34 corvazier Exp $
+ * $Id: i_xml.cpp,v 1.2 2001/10/09 16:20:26 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -232,7 +232,7 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 
 						// Make an error message
 						char tmp[512];
-						_snprintf (tmp, 512, "NeL XML Syntax error in block line %d\nAttribute \"%s\" is missing in node \"%s\"", 
+						smprintf (tmp, 512, "NeL XML Syntax error in block line %d\nAttribute \"%s\" is missing in node \"%s\"", 
 							(int)_CurrentElement->content, _AttribName.c_str(), _CurrentElement->name);
 						throw EXmlParsingError (tmp);
 					}
@@ -280,7 +280,7 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 
 						// Make an error message
 						char tmp[512];
-						_snprintf (tmp, 512, "NeL XML Syntax error in block line %d \nCan't open child text node in the node %s ", 
+						smprintf (tmp, 512, "NeL XML Syntax error in block line %d \nCan't open child text node in the node %s ", 
 							(int)_CurrentElement->content, _CurrentElement->name);
 						throw EXmlParsingError (tmp);
 					}
@@ -338,7 +338,7 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 
 					// Make an error message
 					char tmp[512];
-					_snprintf (tmp, 512, "NeL XML Syntax error in block line %d \nMissing keywords in text child node in the node %s", 
+					smprintf (tmp, 512, "NeL XML Syntax error in block line %d \nMissing keywords in text child node in the node %s", 
 						(int)_CurrentElement->content, _CurrentElement->name);
 					throw EXmlParsingError (tmp);
 				}
@@ -467,7 +467,7 @@ void CIXml::serial(char &b)
 
 			// Make an error message
 			char tmp[512];
-			_snprintf (tmp, 512, "NeL XML Syntax error in block line %d \nValue is not a char in the node named %s", 
+			smprintf (tmp, 512, "NeL XML Syntax error in block line %d \nValue is not a char in the node named %s", 
 				(int)_CurrentElement->content, _CurrentElement->name);
 			throw EXmlParsingError (tmp);
 		}
@@ -574,7 +574,7 @@ bool CIXml::xmlPushBeginInternal (const char *nodeName)
 					{
 						// Make an error message
 						char tmp[512];
-						_snprintf (tmp, 512, "NeL XML Syntax error : root node has the wrong name : \"%s\" should have \"%s\"",
+						smprintf (tmp, 512, "NeL XML Syntax error : root node has the wrong name : \"%s\" should have \"%s\"",
 							_CurrentNode->name, nodeName);
 						throw EXmlParsingError (tmp);
 					}
@@ -583,7 +583,7 @@ bool CIXml::xmlPushBeginInternal (const char *nodeName)
 				{
 					// Make an error message
 					char tmp[512];
-					_snprintf (tmp, 512, "NeL XML Syntax error : no root node found.");
+					smprintf (tmp, 512, "NeL XML Syntax error : no root node found.");
 					throw EXmlParsingError (tmp);
 				}
 			}
@@ -617,7 +617,7 @@ bool CIXml::xmlPushBeginInternal (const char *nodeName)
 			{
 				// Make an error message
 				char tmp[512];
-				_snprintf (tmp, 512, "NeL XML Syntax error in block line %d \nCan't open the node named %s in node named %s", 
+				smprintf (tmp, 512, "NeL XML Syntax error in block line %d \nCan't open the node named %s in node named %s", 
 					(int)_CurrentElement->content, nodeName, _CurrentElement->name);
 				throw EXmlParsingError (tmp);
 			}

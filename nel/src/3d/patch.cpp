@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.57 2001/07/10 10:01:19 berenguier Exp $
+ * $Id: patch.cpp,v 1.58 2001/07/23 14:40:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NL3D
 CBezierPatch	CPatch::CachePatch;
 const CPatch	*CPatch::LastPatch= NULL;
 uint8			CPatch::_ShadingBuffer[(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)*(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)];
-uint32			CPatch::_Version=2;
+uint32			CPatch::_Version=3;
 
 // ***************************************************************************
 CPatch::CPatch()
@@ -66,6 +66,16 @@ CPatch::CPatch()
 	// Null the two passes
 	Pass0=NULL;
 	Pass1=NULL;
+
+	// Default: not binded.
+	_BindZoneNeighbor[0]= NULL;
+	_BindZoneNeighbor[1]= NULL;
+	_BindZoneNeighbor[2]= NULL;
+	_BindZoneNeighbor[3]= NULL;
+	NoiseRotation= 0;
+	// No smooth by default.
+	_NoiseSmooth= 0;
+
 }
 // ***************************************************************************
 CPatch::~CPatch()
@@ -969,10 +979,14 @@ void			CPatch::makeRoots()
 
 
 // ***************************************************************************
-void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVertices[4], float errorSize)
+void			CPatch::compile(CZone *z, uint patchId, uint8 orderS, uint8 orderT, CTessVertex *baseVertices[4], float errorSize)
 {
 	nlassert(z);
 	Zone= z;
+
+	// only 65536 patch per zone allowed.
+	nlassert(patchId<0x10000);
+	PatchId= (uint16)patchId;
 
 	if(errorSize==0)
 		computeDefaultErrorSize();
@@ -1017,11 +1031,16 @@ void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVe
 // ***************************************************************************
 CVector			CPatch::computeVertex(float s, float t) const
 {
-	// First, unpack...
-	CBezierPatch	*patch= unpackIntoCache();
+	// \todo yoyo: TODO_UVCORRECT: use UV correction.
 
-	// \todo yoyo: TODO_NOISE/TODO_UVCORRECT: use UV correction, and use displacement map, to disturb result.
-	return patch->eval(s,t);
+	// compute displacement map to disturb result.
+	CVector		displace;
+	computeNoise(s,t, displace);
+
+	// return patch(s,t) + dispalcement result.
+	// unpack. Do it after computeNoise(), because this last may change the cache.
+	CBezierPatch	*patch= unpackIntoCache();
+	return patch->eval(s,t) + displace;
 }
 // ***************************************************************************
 void			CPatch::refine()
@@ -1115,6 +1134,9 @@ void			CPatch::resetRenderFar()
 void			CPatch::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 3:
+		- NoiseRotation.
+		- NoiseSmooth.
 	Version 2:
 		- Lumels.
 	Version 1:
@@ -1138,6 +1160,18 @@ void			CPatch::serial(NLMISC::IStream &f)
 		f.serialCont(CompressedLumels);
 	}
 	// Else cannot create here the TileColors, because we need the OrderS/OrderT information... Done into CZone serial.
+	if(ver>=3)
+	{
+		f.serial(NoiseRotation);
+		f.serial(_NoiseSmooth);
+	}
+	else
+	{
+		// No Rotation / smooth by default.
+		NoiseRotation= 0;
+		_NoiseSmooth= 0;
+	}
+
 }
 
 
@@ -1162,6 +1196,14 @@ void			CPatch::unbind(CPatch *except[4])
 	// Even if I am still binded to a "bigger" neigbhor patch, forcemerge should have be completed.
 	// It is because only bind 1/2 and 1/4 could be done... (make a draw to understand).
 	nlassert(Son0->isLeaf() && Son1->isLeaf());
+
+
+	// unbind Noise.
+	_BindZoneNeighbor[0]= NULL;
+	_BindZoneNeighbor[1]= NULL;
+	_BindZoneNeighbor[2]= NULL;
+	_BindZoneNeighbor[3]= NULL;
+
 }
 
 
@@ -1262,8 +1304,17 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	nlassert(Son0->isLeaf() && Son1->isLeaf());
 	// Can't test if OK, since bind 2/1 or 4/1 are not unbound.
 
+
+	// bind the Realtime bind info here (before any computeVertex).
+	sint	i;
+	for(i=0;i<4;i++)
+	{
+		// just Copy zone (if not NULL).
+		_BindZoneNeighbor[i]= Edges[i].Zone;
+	}
+
+
 	// Just recompute base vertices.
-	// \todo yoyo: TODO_NOISE. bind the noise info before.
 	CTessVertex *a= BaseVertices[0];
 	CTessVertex *b= BaseVertices[1];
 	CTessVertex *c= BaseVertices[2];
@@ -1280,7 +1331,7 @@ void			CPatch::bind(CBindInfo	Edges[4])
 
 
 	// Bind the roots.
-	for(sint i=0;i<4;i++)
+	for(i=0;i<4;i++)
 	{
 		CBindInfo	&bind= Edges[i];
 
@@ -1963,6 +2014,44 @@ void		CPatch::appendTessellationLeaves(std::vector<const CTessFace*>  &leaves) c
 
 
 // ***************************************************************************
+CLandscape		*CPatch::getLandscape () const
+{
+	return Zone->getLandscape();
+}
+
+
+
+
+
+// ***************************************************************************
+uint8			CPatch::getOrderForEdge(sint8 edge) const
+{
+	uint	e= ((sint)edge + 256)&3;
+	// If an horizontal edge.
+	if( e&1 )	return OrderS;
+	else		return OrderT;
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Realtime Bind info.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	CPatch::getBindNeighbor(uint edge, CBindInfo &neighborEdge) const
+{
+	nlassert(edge<4);
+
+	if(_BindZoneNeighbor[edge]!=NULL)
+	{
+		getZone()->buildBindInfo(PatchId, edge, _BindZoneNeighbor[edge], neighborEdge);
+	}
+	else
+	{
+		neighborEdge.Zone= NULL;
 		neighborEdge.NPatchs= 0;
 		neighborEdge.MultipleBindNum= 0;
 	}

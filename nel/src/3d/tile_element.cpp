@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * <File description>
  *
- * $Id: tile_element.cpp,v 1.6 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tile_element.cpp,v 1.7 2001/07/23 14:40:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,23 @@ void	CTileElement::getTile256Info(bool &is256x256, uint8 &uvOff) const
 	sint	info= ((Flags>>where) & NL_TILE_ELM_MASK_UVINFO);
 	uvOff= info&3;
 	is256x256= (info&4)?true:false;
+}
+
+
+void	CTileElement::setTileSubNoise(uint8 subNoise)
+{
+	nlassert(subNoise<=15);
+	sint	where= NL_TILE_ELM_OFFSET_SUBNOISE;
+	Flags&= ~(NL_TILE_ELM_MASK_SUBNOISE<<where);
+	Flags|= subNoise<<where;
+}
+
+
+uint8	CTileElement::getTileSubNoise() const
+{
+	sint	where= NL_TILE_ELM_OFFSET_SUBNOISE;
+	sint	info= ((Flags>>where) & NL_TILE_ELM_MASK_SUBNOISE);
+	return	info;
 }
 
 

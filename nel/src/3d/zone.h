@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.5 2001/07/10 10:01:19 berenguier Exp $
+ * $Id: zone.h,v 1.6 2001/07/23 14:40:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -483,6 +483,10 @@ private:
 
 	// compute AABBox, PatchBias and PatchScale, from a bbox.
 	void			computeBBScaleBias(const CAABBox	&bb);
+
+
+	// For CPatch: build a bindInfo.
+	void			buildBindInfo(uint patchId, uint edge, CZone *neighborZone, CPatch::CBindInfo	&paBind);
 
 };
 

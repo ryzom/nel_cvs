@@ -1,7 +1,7 @@
 /** \file tile_element.h
  * <File description>
  *
- * $Id: tile_element.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tile_element.h,v 1.2 2001/07/23 14:40:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,9 @@ namespace NL3D
 #define NL_TILE_ELM_MASK_UVINFO				0x07
 #define NL_TILE_ELM_OFFSET_UVINFO			6
 #define NL_TILE_ELM_SIZE_UVINFO				3
+#define NL_TILE_ELM_MASK_SUBNOISE			0x0F
+#define NL_TILE_ELM_OFFSET_SUBNOISE			9
+#define NL_TILE_ELM_SIZE_SUBNOISE			4
 
 #define NL_TILE_ELM_LAYER_EMPTY				0xffff
 
@@ -90,6 +93,15 @@ public:
 	/** Get the tile 256x256 information.
 	 */
 	void	getTile256Info(bool &is256x256, uint8 &uvOff) const;
+
+
+	/** Set the tile SubNoise. subNoise E [0, 15].
+	 */
+	void	setTileSubNoise(uint8 subNoise);
+	
+	/** Get the tile SubNoise information.
+	 */
+	uint8	getTileSubNoise() const;
 
 
 	void	serial(NLMISC::IStream &f);

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.7 2001/07/10 10:01:19 berenguier Exp $
+ * $Id: landscape.h,v 1.8 2001/07/23 14:40:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ namespace NL3D
 
 
 class	CHeightMap;
-
+class	CTileNoiseMap;
 
 // ***************************************************************************
 // The maximum amount of different tiles in world.
@@ -576,6 +576,14 @@ private:
 	 */
 	void			addPatchBlocksInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds);
 	// @}
+
+
+	/// Noise Geometry.
+	// @{
+	/// Retrieve the Tile Noise Map for the wanted tile/tileSubNoise.
+	CTileNoiseMap	*getTileNoiseMap(uint16 tileId, uint tileSubNoise);
+	// @}
+
 
 };
 

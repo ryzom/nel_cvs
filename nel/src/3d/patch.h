@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.7 2001/07/10 10:01:19 berenguier Exp $
+ * $Id: patch.h,v 1.8 2001/07/23 14:40:20 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -276,7 +276,18 @@ public:
 
 	struct	CBindInfo
 	{
-		sint			NPatchs;	// The number of patchs on this edge. 0,1, 2 or 4.
+		// The zone on this edge. NULL if not loaded (or if none).
+		CZone			*Zone;
+
+		// The number of patchs on this edge. 0,1, 2 or 4. if MultipleBindNum>1, NPatchs==1.
+		sint			NPatchs;
+
+		// Special case: on this edge, we are a small patch connected to a bigger: this is the X of 1/X (1,2 or 4).
+		// 0 if this is not the case.
+		uint8			MultipleBindNum;
+		// valid only if MultipleBindNum>1. this tells our place in this MultipleBind: 0<=MultipleBindId<MultipleBindNum.
+		uint8			MultipleBindId;
+
 
 		CPatch			*Next[4];	// The neighbor patch i.
 		sint			Edge[4];	// On which edge of Nexti we are binded.
@@ -305,6 +316,28 @@ public:
 	// There is OrderS*OrderT tiles color. CZone build it at build() time.
 	std::vector<CTileColor>		TileColors;
 
+
+	/// Noise Data.
+	// @{
+	/// The orientation of the NoiseMap. 0,1,2,3. This represent a CCW rotation of the NoiseMap.
+	uint8			NoiseRotation;
+
+	/// setup NoiseSmooth flags: used for Noise geometry and lighting.
+	void			setNoiseSmoothEdge(uint edge, bool smooth);
+	/// setup NoiseSmooth flags: used for Noise geometry and lighting. NB: convention: corner0==A, corner1==B ...
+	void			setNoiseSmoothCorner(uint corner, bool smooth);
+
+	bool			getNoiseSmoothEdge(uint edge) const;
+	bool			getNoiseSmoothCorner(uint corner) const;
+
+private:
+	/// Put here for packing with NoiseRotation.
+	uint8			_NoiseSmooth;
+
+public:
+	// @}
+
+
 public:
 
 	/// Constructor
@@ -321,7 +354,7 @@ public:
 	 * \param errorSize if 0, setup() compute himself the errormetric of the patch. May be setup to surface of patch, 
 	 *  modulated by tangents and displacement map.
 	 */
-	void			compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVertices[4], float errorSize=0);
+	void			compile(CZone *z, uint patchId, uint8 orderS, uint8 orderT, CTessVertex *baseVertices[4], float errorSize=0);
 	/// Un-compile a patch. Tesselation is deleted. if patch is not compiled, no - op.
 	void			release();
 
@@ -331,6 +364,7 @@ public:
 	CZone			*getZone() const {return Zone;}
 	uint8			getOrderS() const {return OrderS;}
 	uint8			getOrderT() const {return OrderT;}
+	uint8			getOrderForEdge(sint8 edge) const;
 	float			getErrorSize() const {return ErrorSize;}
 	sint			getFar0() const {return Far0;}
 	sint			getFar1() const {return Far1;}
@@ -522,6 +556,9 @@ private:
 	friend	class CZone;
 
 	CZone			*Zone;
+
+	// Number of this patch in the zone. valid at compile Time.
+	uint16			PatchId;
 	// Tile Order for the patch.
 	uint8			OrderS, OrderT;
 
@@ -720,6 +757,68 @@ private:
 	 */
 	void		addPatchBlocksInBBoxRecurs(CPatchIdent paId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds, 
 		const CBezierPatch &pa, uint8 s0, uint8 s1, uint8 t0, uint8 t1) const;
+	// @}
+
+
+private:
+
+
+
+	/// Realtime Bind information.
+	// @{
+
+	/// The 4 neighbors zone of this patch (setuped at bind() time). NB: NULL if zone not loaded, or if no patch near us.
+	CZone		*_BindZoneNeighbor[4];
+
+	/// return neighborhood information.
+	void		getBindNeighbor(uint edge, CBindInfo &neighborEdge) const;
+	// @}
+
+
+
+	/// Noise Geometry.
+	// @{
+
+
+	/** compute the displacement for s,t ([0;OrderS], [0;OrderT]) 
+	 *  (sTile, tTile) choose what NoiseMap to use, and (s,t) choose the coordinate in the patch to compute this NoiseMap.
+	 *	Any rotation of the NoiseMap is included in this method.
+	 *	NB: s,t does not have to be clamped to ([0;OrderS], [0;OrderT]).
+	 */
+	float		computeDisplaceRaw(float sTile, float tTile, float s, float t) const;
+	/** usefull only for computeDisplaceCornerSmooth().
+	 *	This method, if nessecary (ie sTile or tTile <0 or >Order), look on his neighbor to compute the value.
+	 */
+	float		computeDisplaceRawOnNeighbor(float sTile, float tTile, float s, float t) const;
+
+
+	/** compute the smoothed displacement for s,t ([0;OrderS], [0;OrderT]).
+	 */
+	float		computeDisplaceInteriorSmooth(float s, float t) const;
+	/** compute the smoothed displacement for s,t ([0;OrderS], [0;OrderT]). Special case on edge.
+	 */
+	float		computeDisplaceEdgeSmooth(float s, float t, sint8 smoothBorderX, sint8 smoothBorderY) const;
+	/** compute the smoothed displacement for s,t ([0;OrderS], [0;OrderT]). Special case on corner.
+	 */
+	float		computeDisplaceCornerSmooth(float s, float t, sint8 smoothBorderX, sint8 smoothBorderY) const;
+
+
+	/** compute the smoothed normal for s,t ([0;OrderS], [0;OrderT]). Special case on edge.
+	 */
+	CVector		computeNormalEdgeSmooth(float s, float t, sint8 smoothBorderX, sint8 smoothBorderY) const;
+	/** compute the smoothed normal for s,t ([0;OrderS], [0;OrderT]). Special case on corner.
+	 */
+	CVector		computeNormalCornerSmooth(float	s, float t, sint8 smoothBorderX, sint8 smoothBorderY) const;
+	/** same reasoning as in computeDisplaceRawOnNeighbor().
+	 */
+	CVector		computeNormalOnNeighbor(float s, float t, uint edgeExclude) const;
+
+
+	/** compute the Final displacement for s,t ([0;1], [0;1]). This is the top call.
+	 *	displace.norm() should be <= NL3D_NOISE_MAX.
+	 */
+	void		computeNoise(float s, float t, CVector &displace) const;
+
 	// @}
 
 

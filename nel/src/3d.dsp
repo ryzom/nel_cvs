@@ -331,6 +331,10 @@ SOURCE=.\3d\patch.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\patch_noise.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\patch_rdr_pass.cpp
 # End Source File
 # Begin Source File
@@ -340,6 +344,14 @@ SOURCE=.\3d\patch_rdr_pass.h
 # Begin Source File
 
 SOURCE=.\3d\patch_render.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\patchuv_locator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\patchuv_locator.h
 # End Source File
 # Begin Source File
 
@@ -404,6 +416,14 @@ SOURCE=.\3d\tile_lumel.cpp
 # Begin Source File
 
 SOURCE=.\3d\tile_lumel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tile_noise_map.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tile_noise_map.h
 # End Source File
 # Begin Source File
 

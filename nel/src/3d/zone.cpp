@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.43 2001/07/17 09:34:49 legros Exp $
+ * $Id: zone.cpp,v 1.44 2001/07/23 14:40:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -390,7 +390,7 @@ void			CZone::compile(CLandscape *landscape, TZoneMap &loadedZones)
 		baseVertices[1]= &(BaseVertices[pc.BaseVertices[1]]->Vert);
 		baseVertices[2]= &(BaseVertices[pc.BaseVertices[2]]->Vert);
 		baseVertices[3]= &(BaseVertices[pc.BaseVertices[3]]->Vert);
-		pa.compile(this, pa.OrderS, pa.OrderT, baseVertices, pc.ErrorSize);
+		pa.compile(this, j, pa.OrderS, pa.OrderT, baseVertices, pc.ErrorSize);
 	};
 
 	// bind() the patchs. (after all compiled).
@@ -536,6 +536,64 @@ CPatch		*CZone::getZonePatch(TZoneMap &loadedZones, sint zoneId, sint patch)
 
 
 // ***************************************************************************
+void		CZone::buildBindInfo(uint patchId, uint edge, CZone *neighborZone, CPatch::CBindInfo	&paBind)
+{
+	nlassert(patchId < Patchs.size());
+	nlassert(neighborZone);
+
+	CPatchConnect	&pc= PatchConnects[patchId];
+
+
+	// Get the bind info of this patch to his neighbor on "edge".
+	CPatchInfo::CBindInfo	&pcBind= pc.BindEdges[edge];
+	nlassert(pcBind.NPatchs==0 || pcBind.NPatchs==1 || pcBind.NPatchs==2 || pcBind.NPatchs==4 || pcBind.NPatchs==5);
+
+
+	// copy zone ptr.
+	paBind.Zone= neighborZone;
+
+
+	// Special case of a small patch connected to a bigger.
+	if(pcBind.NPatchs==5)
+	{
+		paBind.NPatchs= 1;
+		paBind.Next[0]= neighborZone->getPatch(pcBind.Next[0]);
+		paBind.Edge[0]= pcBind.Edge[0];
+		
+		// Get the twin bindInfo of pcBind.
+		const CPatchInfo::CBindInfo	&pcBindNeighbor= 
+			neighborZone->getPatchConnect(pcBind.Next[0])->BindEdges[pcBind.Edge[0]];
+		// must have a multiple bind.	
+		nlassert(pcBindNeighbor.NPatchs == 2 || pcBindNeighbor.NPatchs == 4);
+
+		// number of bind is stored on the twin bindInfo.
+		paBind.MultipleBindNum= pcBindNeighbor.NPatchs;
+
+		// Search our patchId on neighbor;
+		paBind.MultipleBindId= 255;
+		for(sint i=0; i<paBind.MultipleBindNum; i++)
+		{
+			if(pcBindNeighbor.Next[i]==patchId)
+				paBind.MultipleBindId= i;
+		}
+		nlassert(paBind.MultipleBindId!= 255);
+	}
+	else
+	{
+		paBind.MultipleBindNum= 0;
+		paBind.NPatchs= pcBind.NPatchs;
+		for(sint i=0;i<paBind.NPatchs; i++)
+		{
+			paBind.Next[i]= neighborZone->getPatch(pcBind.Next[i]);
+			paBind.Edge[i]= pcBind.Edge[i];
+		}
+	}
+
+
+}
+
+
+// ***************************************************************************
 void		CZone::unbindAndMakeBindInfo(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc, CPatch::CBindInfo	edges[4])
 {
 	CPatch	*exceptions[4]= {NULL, NULL, NULL, NULL};
@@ -555,6 +613,16 @@ void		CZone::unbindAndMakeBindInfo(TZoneMap &loadedZones, CPatch &pa, CPatchConn
 
 		nlassert(pcBind.NPatchs==0 || pcBind.NPatchs==1 || pcBind.NPatchs==2 || pcBind.NPatchs==4 || pcBind.NPatchs==5);
 		paBind.NPatchs= pcBind.NPatchs;
+
+
+		// Find the zone.
+		TZoneMap::iterator	itZoneMap;
+		// If no neighbor, or if zone neighbor not loaded.
+		if( paBind.NPatchs==0 || (itZoneMap=loadedZones.find(pcBind.ZoneId)) == loadedZones.end() )
+			paBind.Zone= NULL;
+		else
+			paBind.Zone= itZoneMap->second;
+
 
 		// Special case of a small patch connected to a bigger.
 		if(paBind.NPatchs==5)

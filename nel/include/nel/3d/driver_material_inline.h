@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.13 2001/01/23 15:39:41 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.14 2001/03/26 14:55:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,7 +118,8 @@ inline void CMaterial::setLighting(	bool active, bool DefMat,
 									NLMISC::CRGBA emissive, 
 									NLMISC::CRGBA ambient, 
 									NLMISC::CRGBA diffuse, 
-									NLMISC::CRGBA specular )
+									NLMISC::CRGBA specular,
+									float	shininess)
 {
 	if (active)
 	{
@@ -140,6 +141,7 @@ inline void CMaterial::setLighting(	bool active, bool DefMat,
 	_Ambient=ambient;
 	_Diffuse=diffuse;
 	_Specular=specular;
+	_Shininess= shininess;
 	_Touched|=IDRV_TOUCHED_LIGHTING;
 }
 

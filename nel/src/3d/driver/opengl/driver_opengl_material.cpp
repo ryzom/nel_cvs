@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.22 2001/01/25 10:21:15 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.23 2001/03/26 14:59:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,6 +221,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pShader->Ambient);
 				glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pShader->Diffuse);
 				glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pShader->Specular);
+				glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat.getShininess());
 			}
 		}
 		else

@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.15 2001/01/09 14:55:20 berenguier Exp $
+ * $Id: material.cpp,v 1.16 2001/03/26 14:55:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,7 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 	_Ambient= mat._Ambient;
 	_Diffuse= mat._Diffuse;
 	_Specular= mat._Specular;
+	_Shininess= mat._Shininess;
 
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 	{
@@ -114,13 +115,15 @@ CMaterial::~CMaterial()
 void		CMaterial::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 2:
+		- Shininess.
 	Version 1:
 		- texture environement.
 	Version 0:
 		- base version.
 	*/
 
-	sint	ver= f.serialVersion(1);
+	sint	ver= f.serialVersion(2);
 	// For the version <=1:
 	nlassert(IDRV_MAT_MAXTEXTURES==4);
 
@@ -132,6 +135,10 @@ void		CMaterial::serial(NLMISC::IStream &f)
 	f.serial(_ZBias);
 	f.serial(_Color);
 	f.serial(_Emissive, _Ambient, _Diffuse, _Specular);
+	if(ver>=2)
+	{
+		f.serial(_Shininess);
+	}
 
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 	{

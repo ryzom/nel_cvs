@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.12 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: material.h,v 1.13 2001/03/26 14:55:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,13 +182,17 @@ public:
 											CRGBA emissive=CRGBA(0,0,0), 
 											CRGBA ambient=CRGBA(0,0,0), 
 											CRGBA diffuse=CRGBA(0,0,0), 
-											CRGBA specular=CRGBA(0,0,0) );
+											CRGBA specular=CRGBA(0,0,0),
+											float shininess= 10);
+
+	bool					isLighted() {return (_Flags&IDRV_MAT_LIGHTING)!=0;}
 
 	CRGBA					getColor(void) const { return(_Color); }
 	CRGBA					getEmissive() const { return _Emissive;}
 	CRGBA					getAmbient() const { return _Ambient;}
 	CRGBA					getDiffuse() const { return _Diffuse;}
 	CRGBA					getSpecular() const { return _Specular;}
+	float					getShininess() const { return _Shininess;}
 	// @}
 
 
@@ -318,6 +322,7 @@ private:
 	float					_ZBias;
 	CRGBA					_Color;
 	CRGBA					_Emissive,_Ambient,_Diffuse,_Specular;
+	float					_Shininess;
 	uint32					_Touched;
 
 	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];

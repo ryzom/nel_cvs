@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.19 2004/04/27 12:01:24 vizerie Exp $
+ * $Id: patch_render.cpp,v 1.20 2004/09/17 15:19:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -488,8 +488,8 @@ static	inline	void	renderFaceVector(uint32 *fv)
 
 		// making lot of render() is slower than copy a block, and render it.
 		//CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(fv+1, *fv);
-
-#ifdef	NL_OS_WINDOWS
+		CHECK_IBA_RANGE(CLandscapeGlobals::PassTriArrayIBA, NL3D_LandscapeGlobals_PassTriCurPtr,  *fv*3 * sizeof(uint32));
+#ifdef NL_OS_WINDOWS
 		__asm
 		{
 			mov		ebx, fv
@@ -991,28 +991,36 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
 		// Set Pos. Set it local to the current center of landscape
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr, sizeof(CVector));
 		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 		// Set Uvs.
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff0, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff0)= uv;
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1)= uvDLM;
 	}
 	else
 	{
 		// Else must setup Vertex program inputs
 		// v[0]== StartPos.
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr, sizeof(CVector));
 		*(CVector*)CurVBPtr= pVert->Src->StartPos;
 		// v[8]== Tex0
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff0, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff0)= uv;
 		// v[9]== Tex1
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1)= uvDLM;
 
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
 		geomInfo.U= pVert->Src->MaxFaceSize * CLandscapeGlobals::OORefineThreshold;
 		geomInfo.V= pVert->Src->MaxNearLimit;
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.GeomInfoOff, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.GeomInfoOff)= geomInfo;
 
 		// v[11]== EndPos - StartPos
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.DeltaPosOff, sizeof(CVector))
 		*(CVector*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.DeltaPosOff)=
 			pVert->Src->EndPos - pVert->Src->StartPos;
 	}
@@ -1067,31 +1075,40 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
 		// Set Pos. Set it local to the current center of landscape
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr, sizeof(CVector));
 		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 		// Set Uvs.
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff0, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff0)= uv;
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1)= uvDLM;
 		// Set default color.
 		static CRGBA	col(255,255,255,255);
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.ColorOff, sizeof(CRGBA));
 		*(CRGBA*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.ColorOff)= col;
 	}
 	else
 	{
 		// Else must setup Vertex program inputs
 		// v[0]== StartPos.
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr, sizeof(CVector));
 		*(CVector*)CurVBPtr= pVert->Src->StartPos;
 		// v[8]== Tex0
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff0, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff0)= uv;
 		// v[9]== Tex1
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1)= uvDLM;
 
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
 		geomInfo.U= pVert->Src->MaxFaceSize * CLandscapeGlobals::OORefineThreshold;
 		geomInfo.V= pVert->Src->MaxNearLimit;
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.GeomInfoOff, sizeof(CUV));
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.GeomInfoOff)= geomInfo;
 
 		// v[11]== EndPos - StartPos
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.DeltaPosOff, sizeof(CVector))
 		*(CVector*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.DeltaPosOff)=
 			pVert->Src->EndPos - pVert->Src->StartPos;
 
@@ -1100,6 +1117,7 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 		// So TransitionSqrMin and OOTransitionSqrDelta in CPath are valid.
 		geomInfo.U= TransitionSqrMin;
 		geomInfo.V= OOTransitionSqrDelta;
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.AlphaInfoOff, sizeof(CUV))
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.AlphaInfoOff)= geomInfo;
 
 	}
@@ -1126,31 +1144,41 @@ inline void		CPatch::fillTileVertexVB(CTessNearVertex *pVert)
 	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
 		// Set Pos. Set it local to the current center of landscape
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr, sizeof(CVector))
 		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 		// Set Uvs.
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff0, sizeof(CUV))
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff1, sizeof(CUV))
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff2, sizeof(CUV))
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff2)= pVert->PUv2;
 	}
 	else
 	{
 		// Else must setup Vertex program inputs
 		// v[0]== StartPos.
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr, sizeof(CVector))
 		*(CVector*)CurVBPtr= pVert->Src->StartPos;
 		// v[8]== Tex0
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff0, sizeof(CUV))
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
 		// v[9]== Tex1
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff1, sizeof(CUV))
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
 		// v[12]== Tex2
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff2, sizeof(CUV))
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff2)= pVert->PUv2;
 
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
 		geomInfo.U= pVert->Src->MaxFaceSize * CLandscapeGlobals::OORefineThreshold;
 		geomInfo.V= pVert->Src->MaxNearLimit;
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.GeomInfoOff, sizeof(CUV))
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.GeomInfoOff)= geomInfo;
 
 		// v[11]== EndPos - StartPos
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.DeltaPosOff, sizeof(CVector))
 		*(CVector*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.DeltaPosOff)=
 			pVert->Src->EndPos - pVert->Src->StartPos;
 	}
@@ -1320,6 +1348,7 @@ void		CPatch::computeGeomorphFar0VertexListVB(CTessList<CTessFarVertex>  &vertLi
 		CurVBPtr+= pVert->Index0 * CLandscapeGlobals::CurrentFar0VBInfo.VertexSize;
 
 		// Set Geomorphed Position. Set it local to the current center of landscape
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr, sizeof(CVector))
 		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 	}
 }
@@ -1340,6 +1369,7 @@ void		CPatch::computeGeomorphAlphaFar1VertexListVB(CTessList<CTessFarVertex>  &v
 		// NB: the filling order of data is important, for AGP write combiners.
 
 		// Set Geomorphed Position. Set it local to the current center of landscape
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr, sizeof(CVector))
 		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 
 		// Set Alpha color.
@@ -1350,6 +1380,7 @@ void		CPatch::computeGeomorphAlphaFar1VertexListVB(CTessList<CTessFarVertex>  &v
 		f= (f-TransitionSqrMin) * OOTransitionSqrDelta;
 		clamp(f,0,1);
 		col.A= (uint8)(f*255);
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.ColorOff, sizeof(CRGBA))
 		*(CRGBA*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.ColorOff)= col;
 	}
 }
@@ -1368,6 +1399,7 @@ void		CPatch::computeGeomorphTileVertexListVB(CTessList<CTessNearVertex>  &vertL
 		CurVBPtr+= pVert->Index * CLandscapeGlobals::CurrentTileVBInfo.VertexSize;
 
 		// Set Geomorphed Position. Set it local to the current center of landscape
+		CHECK_VBA_RANGE(CLandscapeGlobals::CurrentTileVBInfo.Accessor, CurVBPtr, sizeof(CVector))
 		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 	}
 }
@@ -1636,6 +1668,7 @@ void		CPatch::fillFar0DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList
 			uvDLM.V= pc.getT()* _DLMContext->DLMVScale + _DLMContext->DLMVBias;
 
 			// Set Uv DLM only (NB: same code for VertexProgram or not, only TexCoordOff1 may change).
+			CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1, sizeof(CUV))
 			*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1)= uvDLM;
 		}
 	}
@@ -1655,6 +1688,7 @@ void		CPatch::fillFar0DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList
 			CurVBPtr+= pVert->Index0 * CLandscapeGlobals::CurrentFar0VBInfo.VertexSize;
 
 			// Set Uv DLM only (NB: same code for VertexProgram or not, only TexCoordOff1 may change).
+			CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar0VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1, sizeof(CUV))
 			*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1)= uvDLM;
 		}
 	}
@@ -1691,6 +1725,7 @@ void		CPatch::fillFar1DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList
 			uvDLM.V= pc.getT()* _DLMContext->DLMVScale + _DLMContext->DLMVBias;
 
 			// Set Uv DLM only (NB: same code for VertexProgram or not, only TexCoordOff1 may change).
+			CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1, sizeof(CUV))
 			*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1)= uvDLM;
 		}
 	}
@@ -1710,6 +1745,7 @@ void		CPatch::fillFar1DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList
 			CurVBPtr+= pVert->Index1 * CLandscapeGlobals::CurrentFar1VBInfo.VertexSize;
 
 			// Set Uv DLM only (NB: same code for VertexProgram or not, only TexCoordOff1 may change).
+			CHECK_VBA_RANGE(CLandscapeGlobals::CurrentFar1VBInfo.Accessor, CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1, sizeof(CUV))
 			*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1)= uvDLM;
 		}
 	}

@@ -17,7 +17,7 @@ for i in maps_tga/*.tga ; do
 	dest=`echo $i | sed -e 's/maps_tga/maps_final/g' | sed -e 's/.tga/.dds/g'`
 	if ( ! test -e $dest ) || ( test $i -nt $dest )
 	then
-		$tga_2_dds $i -o $dest -a 5
+		$tga_2_dds $i -o $dest -a 5 -m
 		if ( test -e $dest )
 		then
 			echo OK $dest >> log.log

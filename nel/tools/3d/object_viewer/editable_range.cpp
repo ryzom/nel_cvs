@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.7 2001/09/13 14:27:34 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.8 2001/11/22 17:16:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,8 +110,9 @@ BEGIN_MESSAGE_MAP(CEditableRange, CDialog)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER, OnReleasedcaptureSlider)
 	ON_BN_CLICKED(IDC_SELECT_RANGE, OnSelectRange)	
 	ON_EN_SETFOCUS(IDC_VALUE, OnSetfocusValue)
-	ON_WM_KEYDOWN()
 	ON_BN_CLICKED(IDC_UPDATE_VALUE, OnUpdateValue)
+	ON_EN_KILLFOCUS(IDC_VALUE, OnKillfocusValue)
+	ON_EN_CHANGE(IDC_VALUE, OnChangeValue)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -168,16 +169,6 @@ void CEditableRange::OnUpdateValue()
 }
 
 
-void CEditableRange::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
-{
-	if (nChar == 13)
-	{
-		UpdateData();	
-		updateValueFromText();		
-	}
-}
-
-
 void CEditableRange::emptyDialog(void)
 {
 	m_Value = CString("");
@@ -190,6 +181,43 @@ void CEditableRange::OnSetfocusValue()
 	CEdit *ce = (CEdit *) GetDlgItem(IDC_VALUE);
 	ce->PostMessage(EM_SETSEL, 0, -1);	
 	ce->Invalidate();
+}
+
+
+void CEditableRange::OnKillfocusValue() 
+{
+	// When kill Focus from the edit text, update the value.
+	UpdateData();	
+	updateValueFromText();		
+}
+
+
+static	void concatEdit2Lines(CEdit &edit)
+{
+	const	uint lineLen= 1000;
+	uint	n;
+	// retrieve the 2 lines.
+	char	tmp0[2*lineLen];
+	char	tmp1[lineLen];
+	n= edit.GetLine(0, tmp0, lineLen);	tmp0[n]= 0;
+	n= edit.GetLine(1, tmp1, lineLen);	tmp1[n]= 0;
+	// concat and update the CEdit.
+	edit.SetWindowText(strcat(tmp0, tmp1));
+}
+
+
+void CEditableRange::OnChangeValue() 
+{
+	UpdateData();	
+	// Trick to track "Enter" keypress: CEdit are multiline. If GetLineCount()>1, then
+	// user has press enter.
+	if(m_ValueCtrl.GetLineCount()>1)
+	{
+		// must ccat 2 lines of the CEdit.
+		concatEdit2Lines(m_ValueCtrl);
+		m_ValueCtrl.GetWindowText(m_Value);
+		updateValueFromText();		
+	}
 }
 
 
@@ -283,8 +311,5 @@ CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin,
 				return "invalid value";
 			}	
 		}
-
-
-
 
 

@@ -9,6 +9,7 @@
 #include "about_dialog.h"
 #include "choose_lag.h"
 #include "day_night_dlg.h"
+#include "vegetable_dlg.h"
 
 #include <nel/misc/file.h>
 
@@ -94,6 +95,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	MixerSlotsWindow=false;
 	ParticlesWindow=false;
 	DayNightWindow=false;
+	VegetableWindow=false;
 	MoveElement=false;
 	MoveMode=true;
 	X=true;
@@ -153,6 +155,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
 	ON_COMMAND(IDM_SET_LAG, OnSetLag)
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)
+	ON_COMMAND(ID_WINDOW_VEGETABLE, OnWindowVegetable)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_VEGETABLE, OnUpdateWindowVegetable)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -177,6 +181,7 @@ void CMainFrame::update ()
 	ObjView->_SlotDlg->ShowWindow (MixerSlotsWindow?SW_SHOW:SW_HIDE);
 	ObjView->_ParticleDlg->ShowWindow (ParticlesWindow?SW_SHOW:SW_HIDE);
 	ObjView->_DayNightDlg->ShowWindow (DayNightWindow?SW_SHOW:SW_HIDE);
+	ObjView->_VegetableDlg->ShowWindow (VegetableWindow?SW_SHOW:SW_HIDE);
 }
 
 // ***************************************************************************
@@ -201,6 +206,8 @@ void CMainFrame::registerValue (bool read)
 			RegQueryValueEx (hKey, "ViewParticles", 0, &type, (LPBYTE)&ParticlesWindow, &len);
 			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewDayNight", 0, &type, (LPBYTE)&DayNightWindow, &len);
+			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewVegetable", 0, &type, (LPBYTE)&VegetableWindow, &len);
 			len=sizeof (float);
 			RegQueryValueEx (hKey, "MoveSpeed", 0, &type, (LPBYTE)&MoveSpeed, &len);
 			len=sizeof (BOOL);
@@ -218,7 +225,8 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "ViewAnimationSet", 0, REG_BINARY, (LPBYTE)&AnimationSetWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewSlots", 0, REG_BINARY, (LPBYTE)&MixerSlotsWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewParticles", 0, REG_BINARY, (LPBYTE)&ParticlesWindow, sizeof(bool));
-			RegSetValueEx(hKey, "ViewDayNight", 0, REG_BINARY, (LPBYTE)&ParticlesWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewDayNight", 0, REG_BINARY, (LPBYTE)&DayNightWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewVegetable", 0, REG_BINARY, (LPBYTE)&VegetableWindow, sizeof(bool));
 			RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
 			RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&MoveMode, sizeof(BOOL));
 			RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&BgColor, sizeof(NLMISC::CRGBA));
@@ -728,6 +736,12 @@ void CMainFrame::OnWindowDayNight()
 	update ();
 }
 
+void CMainFrame::OnWindowVegetable() 
+{
+	VegetableWindow^=true;
+	update ();
+}
+
 
 static UINT indicators[] =
 {
@@ -803,6 +817,11 @@ void CMainFrame::OnUpdateWindowDayNight(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck (DayNightWindow);
 }
 
+void CMainFrame::OnUpdateWindowVegetable(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (VegetableWindow);
+}
+
 void CMainFrame::OnUpdateViewObjectmode(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (MoveMode);
@@ -864,4 +883,5 @@ void CMainFrame::OnRemoveAllInstancesFromScene()
 		ObjView->reinitChannels ();
 	}
 }
+
 

@@ -190,6 +190,10 @@ SOURCE=.\day_night_dlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\dialog_progress.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main_dlg.cpp
 # ADD CPP /Yu"std_afx.h"
 # End Source File
@@ -260,6 +264,10 @@ SOURCE=.\choose_name.h
 # Begin Source File
 
 SOURCE=.\day_night_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\dialog_progress.h
 # End Source File
 # Begin Source File
 
@@ -748,6 +756,106 @@ SOURCE=.\value_gradient_dlg.cpp
 # Begin Source File
 
 SOURCE=.\value_gradient_dlg.h
+# End Source File
+# End Group
+# Begin Group "vegetable editor"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\vegetable_apperance_page.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_apperance_page.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_copy_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_copy_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_density_page.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_density_page.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\vegetable_edit_tools.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\vegetable_edit_tools.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_list_color.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_list_color.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_noise_value_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_noise_value_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_refresh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_refresh.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_rotate_page.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_rotate_page.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_scale_page.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_scale_page.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_select_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_select_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_wind_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_wind_dlg.h
 # End Source File
 # End Group
 # Begin Source File

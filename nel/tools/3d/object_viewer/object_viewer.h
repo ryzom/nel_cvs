@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.26 2001/11/12 18:13:32 corvazier Exp $
+ * $Id: object_viewer.h,v 1.27 2001/11/22 17:16:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #define REGKEY_OBJ_VIEW_SLOT_DLG "Software\\Nevrax\\nel\\object_viewer\\slot_dlg"
 #define REGKEY_OBJ_PARTICLE_DLG "Software\\Nevrax\\nel\\object_viewer\\particle_dlg"
 #define REGKEY_OBJ_DAYNIGHT_DLG "Software\\Nevrax\\nel\\object_viewer\\daynight_dlg"
+#define REGKEY_OBJ_VIEW_VEGETABLE_DLG "Software\\Nevrax\\nel\\object_viewer\\vegetable_dlg"
 
 
 
@@ -64,12 +65,17 @@ namespace NL3D
 {
 class CFontGenerator;
 class CWaterPoolManager;
+class CTileVegetableDesc;
+class CLandscapeModel;
+class CVisualCollisionManager;
+class CVisualCollisionEntity;
 }
 
 class CMainFrame;
 
 class CParticleDlg ;
 class CDayNightDlg ;
+class CVegetableDlg ;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -266,6 +272,41 @@ public:
 	NL3D::CWaterPoolManager &getWaterPoolManager() { return *_Wpm; }
 
 
+	/// \name Landscape Vegetable Edition
+	// @{
+
+	/// true if landscape is created
+	bool		isVegetableLandscapeCreated() const {return _VegetableLandscape!=NULL;}
+
+	/// load the landscape with help of setup in object_viewer.cfg. return true if OK.
+	bool		createVegetableLandscape();
+
+	/// if created, show the landscape
+	void		showVegetableLandscape();
+	/// if created, hide the landscape
+	void		hideVegetableLandscape();
+
+	/// display vegetable with landscape
+	void		enableLandscapeVegetable(bool enable);
+
+	/// refresh the vegetables in landscape, with the new vegetableSet
+	void		refreshVegetableLandscape(const NL3D::CTileVegetableDesc &tvdesc);
+
+
+	/// get vegetable Wind wetup.
+	float		getVegetableWindPower() const {return _VegetableWindPower;}
+	float		getVegetableWindBendStart() const {return _VegetableWindBendMin;}
+	float		getVegetableWindFrequency() const {return _VegetableWindFreq;}
+	/// set vegetable Wind wetup (updat view if possible)
+	void		setVegetableWindPower(float w);
+	void		setVegetableWindBendStart(float w);
+	void		setVegetableWindFrequency(float w);
+
+	/// if enable, snap the camera to the ground of the landscape.
+	void		snapToGroundVegetableLandscape(bool enable);
+
+	// @}
+
 private:
 
 	CMainFrame									*_MainFrame;
@@ -274,6 +315,7 @@ private:
 	CAnimationSetDlg							*_AnimationSetDlg;
 	CParticleDlg								*_ParticleDlg ;
 	CDayNightDlg								*_DayNightDlg ;
+	CVegetableDlg								*_VegetableDlg ;
 	std::vector<std::string>					_ListShapeBaseName;
 	std::vector<CMeshDesc>						_ListMeshes;
 	std::vector<class NL3D::CTransformShape*>	_ListTransformShape;
@@ -294,6 +336,45 @@ private:
 	float										_CameraFocal;	
 	float										_LastTime;
 	NL3D::CWaterPoolManager						*_Wpm;
+
+	/// \name Vegetable Edition
+	// @{
+	/// Our landscape
+	NL3D::CLandscapeModel						*_VegetableLandscape;
+
+	// File info to build it
+	std::string									_VegetableLandscapeTileBank;
+	std::string									_VegetableLandscapeTileFarBank;
+	std::vector<std::string>					_VegetableLandscapeZoneNames;
+
+	// Misc.
+	float										_VegetableLandscapeThreshold;
+	float										_VegetableLandscapeTileNear;
+	NLMISC::CRGBA								_VegetableLandscapeAmbient;
+	NLMISC::CRGBA								_VegetableLandscapeDiffuse;
+	std::string									_VegetableTexture;
+	NLMISC::CRGBA								_VegetableAmbient;
+	NLMISC::CRGBA								_VegetableDiffuse;
+	NLMISC::CVector								_VegetableLightDir;
+	// Vegetable wind.
+	NLMISC::CVector								_VegetableWindDir;
+	float										_VegetableWindFreq;
+	float										_VegetableWindPower;
+	float										_VegetableWindBendMin;
+
+	bool										_VegetableEnabled;
+
+	// Collision
+	bool										_VegetableSnapToGround;
+	float										_VegetableSnapHeight;
+	NL3D::CVisualCollisionManager				*_VegetableCollisionManager;
+	NL3D::CVisualCollisionEntity				*_VegetableCollisionEntity;
+
+	// load cfg.
+	void		loadVegetableLandscapeCfg(NLMISC::CConfigFile &cf);
+
+	// @}
+
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

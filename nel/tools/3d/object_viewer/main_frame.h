@@ -50,6 +50,7 @@ public:
 	bool			MixerSlotsWindow;
 	bool			ParticlesWindow;
 	bool		    DayNightWindow;
+	bool		    VegetableWindow;
 	bool			MoveElement;
 	bool			X;
 	bool			Y;
@@ -115,6 +116,8 @@ public:
 	afx_msg void OnHelpAboutobjectviewer();
 	afx_msg void OnSetLag();
 	afx_msg void OnRemoveAllInstancesFromScene();
+	afx_msg void OnWindowVegetable();
+	afx_msg void OnUpdateWindowVegetable(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.48 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.49 2001/11/22 17:16:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,9 @@
 
 #include <nel/sound/u_audio_mixer.h>
 #include <3d/water_pool_manager.h>
+#include <3d/landscape_model.h>
+#include <3d/visual_collision_manager.h>
+#include <3d/visual_collision_entity.h>
 
 
 
@@ -72,6 +75,8 @@
 #include "sound_system.h"
 #include "scheme_manager.h"
 #include "day_night_dlg.h"
+#include "vegetable_dlg.h"
+#include "dialog_progress.h"
 
 
 
@@ -184,6 +189,9 @@ CObjectViewer::CObjectViewer ()
 	_AnimationDlg=NULL;
 	_ParticleDlg = NULL;
 	_FontGenerator = NULL;
+	_VegetableLandscape= NULL;
+	_VegetableCollisionManager= NULL;
+	_VegetableCollisionEntity= NULL;
 
 	// no lag is the default
 	_Lag = 0;
@@ -254,7 +262,11 @@ CObjectViewer::CObjectViewer ()
 			_CameraFocal = 75.f; // default value for the focal
 		}
 
-		
+
+		// Load vegetable Landscape cfg.
+		loadVegetableLandscapeCfg(cf);
+
+
 	}
 	catch (Exception& e)
 	{
@@ -279,6 +291,8 @@ CObjectViewer::~CObjectViewer ()
 		delete _ParticleDlg;
 	if (_DayNightDlg)
 		delete _DayNightDlg;
+	if (_VegetableDlg)
+		delete _VegetableDlg;
 	if (_FontGenerator)
 		delete _FontGenerator;
 }
@@ -412,6 +426,11 @@ void CObjectViewer::initUI (HWND parent)
 	_DayNightDlg=new CDayNightDlg (this, _MainFrame);
 	_DayNightDlg->Create (IDD_DAYNIGHT);
 	getRegisterWindowState (_DayNightDlg, REGKEY_OBJ_DAYNIGHT_DLG, false);
+
+	// Create vegetable dialog
+	_VegetableDlg=new CVegetableDlg (this, _MainFrame);
+	_VegetableDlg->Create (IDD_VEGETABLE_DLG);
+	getRegisterWindowState (_VegetableDlg, REGKEY_OBJ_VIEW_VEGETABLE_DLG, false);
 
 	// Set backgroupnd color
 	setBackGroundColor(_MainFrame->BgColor);
@@ -778,7 +797,8 @@ void CObjectViewer::go ()
 		{
 			nbPlayingSources = nbSources = NULL;
 		}
-														   
+
+		// Display std info.
 		sprintf (msgBar, "Nb tri: %d -Texture VRAM used (Mo): %5.2f -Texture VRAM allocated (Mo): %5.2f -Distance: %5.0f -Sounds: %d/%d -Fps: %03.1f",						 
 						 in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips, (float)CNELU::Driver->getUsedTextureMemory () / (float)(1024*1024), 
 						 (float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024), 
@@ -787,7 +807,23 @@ void CObjectViewer::go ()
 						 nbSources,
 						 fps
 						 );
+		// Display
 		_MainFrame->StatusBar.SetWindowText (msgBar);
+
+		// Display Vegetable info.
+		if(_VegetableDlg!=NULL)
+		{
+			if(_VegetableLandscape != NULL)
+			{
+				char vegetMsgBar[1024];
+				sprintf (vegetMsgBar, "%d", _VegetableLandscape->Landscape.getNumVegetableFaceRendered());
+				_VegetableDlg->StaticPolyCount.SetWindowText(vegetMsgBar);
+			}
+			else
+			{
+				_VegetableDlg->StaticPolyCount.SetWindowText("0");
+			}
+		}
 
 	
 
@@ -811,6 +847,24 @@ void CObjectViewer::go ()
 			// New matrix from camera
 			CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
 			CNELU::Camera->setMatrix (_MouseListener.getViewMatrix());
+
+			// Vegetable: manage collision snapping if wanted and possible
+			if(_VegetableSnapToGround && _VegetableLandscape)
+			{
+				// get matrix from camera.
+				CMatrix	matrix= CNELU::Camera->getMatrix();
+				// snap To ground.
+				CVector	pos= matrix.getPos();
+				// if succes to snap to ground
+				if(_VegetableCollisionEntity->snapToGround(pos))
+				{
+					pos.z+= _VegetableSnapHeight;
+					matrix.setPos(pos);
+					// reset the moveListener and the camera.
+					_MouseListener.setMatrix(matrix);
+					CNELU::Camera->setMatrix(matrix);
+				}
+			}
 		}
 		else
 		{
@@ -871,6 +925,27 @@ void CObjectViewer::releaseUI ()
 	_MouseListener.removeFromServer (CNELU::EventServer);
 
 	// exit
+
+	// remove first possibly created collisions objects.
+	if(_VegetableCollisionEntity)
+	{
+		_VegetableCollisionManager->deleteEntity(_VegetableCollisionEntity);
+		_VegetableCollisionEntity= NULL;
+	}
+	if(_VegetableCollisionManager)
+	{
+		delete _VegetableCollisionManager;
+		_VegetableCollisionManager= NULL;
+	}
+
+	// delete Landscape
+	if(_VegetableLandscape)
+	{
+		CNELU::Scene.deleteModel(_VegetableLandscape);
+		_VegetableLandscape= NULL;
+	}
+
+	// release other 3D.
 	CNELU::release();
 
 	
@@ -1651,3 +1726,471 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 }
 
 
+
+// ***************************************************************************
+// ***************************************************************************
+// Vegetable Landscape Part.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CObjectViewer::loadVegetableLandscapeCfg(NLMISC::CConfigFile &cf)
+{
+	// vegetable display is true by default.
+	_VegetableEnabled= true;
+	_VegetableSnapToGround= true;
+
+
+	// Load landscape setup
+	// --------------
+	try
+	{
+		// tileBank setup.
+		CConfigFile::CVar &tileBank = cf.getVar("veget_tile_bank");
+		_VegetableLandscapeTileBank= tileBank.asString();
+		CConfigFile::CVar &tileFarBank = cf.getVar("veget_tile_far_bank");
+		_VegetableLandscapeTileFarBank= tileFarBank.asString();
+		// zone list.
+		_VegetableLandscapeZoneNames.clear();
+		CConfigFile::CVar &zones = cf.getVar("veget_landscape_zones");
+		for (uint i=0; i<(uint)zones.size(); i++)
+			_VegetableLandscapeZoneNames.push_back(zones.asString(i).c_str());
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableLandscapeTileBank.clear();
+		_VegetableLandscapeTileFarBank.clear();
+		_VegetableLandscapeZoneNames.clear();
+	}
+
+
+	// Load Landscape params.
+	// --------------
+	// threshold
+	try
+	{
+		CConfigFile::CVar &thre= cf.getVar("veget_landscape_threshold");
+		_VegetableLandscapeThreshold= thre.asFloat();
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableLandscapeThreshold= 0.003f;
+	}
+	// tilenear
+	try
+	{
+		CConfigFile::CVar &tileNear= cf.getVar("veget_landscape_tile_near");
+		_VegetableLandscapeTileNear= tileNear.asFloat();
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableLandscapeTileNear= 50;
+	}
+	// ambient
+	try
+	{
+		CConfigFile::CVar &color= cf.getVar("veget_landscape_ambient");
+		_VegetableLandscapeAmbient.R= color.asInt(0);
+		_VegetableLandscapeAmbient.G= color.asInt(1);
+		_VegetableLandscapeAmbient.B= color.asInt(2);
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableLandscapeAmbient.set(80, 80, 80);
+	}
+	// diffuse
+	try
+	{
+		CConfigFile::CVar &color= cf.getVar("veget_landscape_diffuse");
+		_VegetableLandscapeDiffuse.R= color.asInt(0);
+		_VegetableLandscapeDiffuse.G= color.asInt(1);
+		_VegetableLandscapeDiffuse.B= color.asInt(2);
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableLandscapeDiffuse.set(255, 255, 255);
+	}
+	// Snapping
+	try
+	{
+		CConfigFile::CVar &var= cf.getVar("veget_landscape_snap_height");
+		_VegetableSnapHeight= var.asFloat();
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableSnapHeight= 1.70f;
+	}
+
+
+	// Load Vegetable params.
+	// --------------
+
+	// vegetable texture
+	try
+	{
+		CConfigFile::CVar &var= cf.getVar("veget_texture");
+		_VegetableTexture= var.asString();
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableTexture= "";
+	}
+
+	// vegetable ambient
+	try
+	{
+		CConfigFile::CVar &color= cf.getVar("veget_ambient");
+		_VegetableAmbient.R= color.asInt(0);
+		_VegetableAmbient.G= color.asInt(1);
+		_VegetableAmbient.B= color.asInt(2);
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableAmbient.set(80, 80, 80);
+	}
+	// vegetable diffuse
+	try
+	{
+		CConfigFile::CVar &color= cf.getVar("veget_diffuse");
+		// setup to behave correclty ie as maxLightFactor:
+		sint	R= color.asInt(0) - _VegetableAmbient.R;	clamp(R, 0, 255);	_VegetableDiffuse.R= R;
+		sint	G= color.asInt(1) - _VegetableAmbient.G;	clamp(G, 0, 255);	_VegetableDiffuse.G= G;
+		sint	B= color.asInt(2) - _VegetableAmbient.B;	clamp(B, 0, 255);	_VegetableDiffuse.B= B;
+	}
+	catch (EUnknownVar &)
+	{
+		sint	R= 255 - _VegetableAmbient.R;	clamp(R, 0, 255);	_VegetableDiffuse.R= R;
+		sint	G= 255 - _VegetableAmbient.G;	clamp(G, 0, 255);	_VegetableDiffuse.G= G;
+		sint	B= 255 - _VegetableAmbient.B;	clamp(B, 0, 255);	_VegetableDiffuse.B= B;
+	}
+	// vegetable lightDir
+	try
+	{
+		CConfigFile::CVar &var= cf.getVar("veget_light_dir");
+		_VegetableLightDir.x= var.asFloat(0);
+		_VegetableLightDir.y= var.asFloat(1);
+		_VegetableLightDir.z= var.asFloat(2);
+		_VegetableLightDir.normalize();
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableLightDir.set(0, 1, -1);
+		_VegetableLightDir.normalize();
+	}
+
+	// windDir
+	try
+	{
+		CConfigFile::CVar &var= cf.getVar("veget_wind_dir");
+		_VegetableWindDir.x= var.asFloat(0);
+		_VegetableWindDir.y= var.asFloat(1);
+		_VegetableWindDir.z= var.asFloat(2);
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableWindDir.x= 0.5f;
+		_VegetableWindDir.y= 0.5f;
+		_VegetableWindDir.z= 0;
+	}
+	// windFreq
+	try
+	{
+		CConfigFile::CVar &var= cf.getVar("veget_wind_freq");
+		_VegetableWindFreq= var.asFloat();
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableWindFreq= 0.5;
+	}
+	// windPower
+	try
+	{
+		CConfigFile::CVar &var= cf.getVar("veget_wind_power");
+		_VegetableWindPower= var.asFloat();
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableWindPower= 1;
+	}
+	// windBendMin
+	try
+	{
+		CConfigFile::CVar &var= cf.getVar("veget_wind_bend_min");
+		_VegetableWindBendMin= var.asFloat();
+	}
+	catch (EUnknownVar &)
+	{
+		_VegetableWindBendMin= 0;
+	}
+
+
+}
+
+
+// ***************************************************************************
+bool		CObjectViewer::createVegetableLandscape()
+{
+	// If not already done.
+	if(!_VegetableLandscape)
+	{
+		// create the landscape.
+		_VegetableLandscape= static_cast<CLandscapeModel*>(CNELU::Scene.createModel(LandscapeModelId));
+
+		// Create a Progress Dialog.
+		CDialogProgress		dlgProgress;
+		dlgProgress.Create(CDialogProgress::IDD, _MainFrame);
+		dlgProgress.ShowWindow(true);
+
+		try
+		{
+			if(_VegetableLandscapeTileBank=="")
+			{
+				throw Exception("Landscape CFG not fully defined");
+			}
+
+			// Load The Bank files (copied from CLandscapeUser :) ).
+			// ================
+			// progress
+			dlgProgress.ProgressText.SetWindowText("Loading TileBanks...");
+			dlgProgress.ProgressBar.SetPos(0);
+			// load
+			CIFile bankFile(CPath::lookup(_VegetableLandscapeTileBank));
+			_VegetableLandscape->Landscape.TileBank.serial(bankFile);
+			_VegetableLandscape->Landscape.TileBank.makeAllPathRelative();
+			_VegetableLandscape->Landscape.TileBank.makeAllExtensionDDS();
+			_VegetableLandscape->Landscape.TileBank.setAbsPath ("");
+
+			// progress
+			dlgProgress.ProgressBar.SetPos(50);
+			// load
+			CIFile farbankFile(CPath::lookup(_VegetableLandscapeTileFarBank));
+			_VegetableLandscape->Landscape.TileFarBank.serial(farbankFile);
+			if ( ! _VegetableLandscape->Landscape.initTileBanks() )
+			{
+				nlwarning( "You need to recompute bank.farbank for the far textures" );
+			}
+			bankFile.close();
+			farbankFile.close();
+
+
+			// flushTiles.
+			// ================
+			if(CNELU::Driver)
+			{
+				// progress
+				dlgProgress.ProgressText.SetWindowText("Loading Tiles...");
+				dlgProgress.ProgressBar.SetPos(0);
+
+				// count nbText to load.
+				sint	ts;
+				sint	nbTextTotal= 0;
+				for (ts=0; ts<_VegetableLandscape->Landscape.TileBank.getTileSetCount (); ts++)
+				{
+					CTileSet *tileSet=_VegetableLandscape->Landscape.TileBank.getTileSet (ts);
+					nbTextTotal+= tileSet->getNumTile128();
+					nbTextTotal+= tileSet->getNumTile256();
+					nbTextTotal+= CTileSet::count;
+				}
+
+				// load.
+				sint	nbTextDone= 0;
+				for (ts=0; ts<_VegetableLandscape->Landscape.TileBank.getTileSetCount (); ts++)
+				{
+					CTileSet *tileSet=_VegetableLandscape->Landscape.TileBank.getTileSet (ts);
+					sint tl;
+					for (tl=0; tl<tileSet->getNumTile128(); tl++, nbTextDone++)
+					{
+						_VegetableLandscape->Landscape.flushTiles (CNELU::Driver, (uint16)tileSet->getTile128(tl), 1);
+						dlgProgress.ProgressBar.SetPos(nbTextDone*100/nbTextTotal);
+					}
+					for (tl=0; tl<tileSet->getNumTile256(); tl++, nbTextDone++)
+					{
+						_VegetableLandscape->Landscape.flushTiles (CNELU::Driver, (uint16)tileSet->getTile256(tl), 1);
+						dlgProgress.ProgressBar.SetPos(nbTextDone*100/nbTextTotal);
+					}
+					for (tl=0; tl<CTileSet::count; tl++, nbTextDone++)
+					{
+						_VegetableLandscape->Landscape.flushTiles (CNELU::Driver, (uint16)tileSet->getTransition(tl)->getTile (), 1);
+						dlgProgress.ProgressBar.SetPos(nbTextDone*100/nbTextTotal);
+					}
+				}
+			}
+
+
+			// misc setup.
+			// ================
+			_VegetableLandscape->Landscape.setThreshold(_VegetableLandscapeThreshold);
+			_VegetableLandscape->Landscape.setTileNear(_VegetableLandscapeTileNear);
+			_VegetableLandscape->Landscape.setupStaticLight(_VegetableLandscapeDiffuse, _VegetableLandscapeAmbient, 1);
+			_VegetableLandscape->Landscape.loadVegetableTexture(_VegetableTexture);
+			_VegetableLandscape->Landscape.setupVegetableLighting(_VegetableAmbient, _VegetableDiffuse, _VegetableLightDir);
+			_VegetableLandscape->Landscape.setVegetableWind(_VegetableWindDir, _VegetableWindFreq, _VegetableWindPower, _VegetableWindBendMin);
+
+
+			// Load the zones.
+			// ================
+			// landscape recentering.
+			bool	zoneLoaded= false;
+			CAABBox	landscapeBBox;
+			// progress
+			dlgProgress.ProgressText.SetWindowText("Loading Zones...");
+			dlgProgress.ProgressBar.SetPos(0);
+			uint	nbZones= _VegetableLandscapeZoneNames.size();
+			for(uint i=0; i<nbZones;i++)
+			{
+				// open the file
+				CIFile	zoneFile(CPath::lookup(_VegetableLandscapeZoneNames[i]));
+				CZone	zone;
+				// load
+				zoneFile.serial(zone);
+				// append to landscape
+				_VegetableLandscape->Landscape.addZone(zone);
+				// progress
+				dlgProgress.ProgressBar.SetPos(i*100/nbZones);
+
+				// Add to the bbox.
+				if(!zoneLoaded)
+				{
+					zoneLoaded= true;
+					landscapeBBox.setCenter(zone.getZoneBB().getCenter());
+				}
+				else
+					landscapeBBox.extend(zone.getZoneBB().getCenter());
+			}
+
+			// After All zone loaded, recenter the mouse listener on the landscape.
+			if(zoneLoaded)
+			{
+				CMatrix		matrix;
+				_MouseListener.setHotSpot(landscapeBBox.getCenter());
+				matrix.setPos(landscapeBBox.getCenter());
+				matrix.rotateX(-(float)Pi/4);
+				matrix.translate(CVector(0,-100,0));
+				_MouseListener.setMatrix(matrix);
+			}
+
+			// Create collisions objects.
+			_VegetableCollisionManager= new CVisualCollisionManager;
+			_VegetableCollisionManager->setLandscape(&_VegetableLandscape->Landscape);
+			_VegetableCollisionEntity= _VegetableCollisionManager->createEntity();
+		}
+		catch (Exception &e)
+		{
+			// close the progress dialog
+			dlgProgress.DestroyWindow();
+
+			MessageBox(_MainFrame->m_hWnd, e.what(), "Failed to Load landscape", MB_OK | MB_APPLMODAL);
+
+			// remove first possibly created collisions objects.
+			if(_VegetableCollisionEntity)
+			{
+				_VegetableCollisionManager->deleteEntity(_VegetableCollisionEntity);
+				_VegetableCollisionEntity= NULL;
+			}
+			if(_VegetableCollisionManager)
+			{
+				delete _VegetableCollisionManager;
+				_VegetableCollisionManager= NULL;
+			}
+
+			// remove the landscape
+			CNELU::Scene.deleteModel(_VegetableLandscape);
+			_VegetableLandscape= NULL;
+
+			return false;
+		}
+
+		// close the progress dialog
+		dlgProgress.DestroyWindow();
+	}
+
+	return true;
+}
+
+
+// ***************************************************************************
+void		CObjectViewer::showVegetableLandscape()
+{
+	if(_VegetableLandscape)
+	{
+		_VegetableLandscape->show();
+	}
+}
+
+// ***************************************************************************
+void		CObjectViewer::hideVegetableLandscape()
+{
+	if(_VegetableLandscape)
+	{
+		_VegetableLandscape->hide();
+	}
+}
+
+
+// ***************************************************************************
+void		CObjectViewer::enableLandscapeVegetable(bool enable)
+{
+	// update
+	_VegetableEnabled= enable;
+
+	// update view.
+	if(_VegetableLandscape)
+	{
+		_VegetableLandscape->Landscape.enableVegetable(_VegetableEnabled);
+	}
+}
+
+
+// ***************************************************************************
+void		CObjectViewer::refreshVegetableLandscape(const NL3D::CTileVegetableDesc &tvdesc)
+{
+	// if landscape is displayed.
+	if(_VegetableLandscape)
+	{
+		// first disable the vegetable, to delete any vegetation
+		_VegetableLandscape->Landscape.enableVegetable(false);
+
+		// Then change all the tileSet of all the TileBanks.
+		for (sint ts=0; ts<_VegetableLandscape->Landscape.TileBank.getTileSetCount (); ts++)
+		{
+			CTileSet *tileSet=_VegetableLandscape->Landscape.TileBank.getTileSet (ts);
+			// change the vegetableTileDesc of this tileSet.
+			tileSet->setTileVegetableDesc(tvdesc);
+		}
+
+		// re-Enable the vegetable (if wanted).
+		_VegetableLandscape->Landscape.enableVegetable(_VegetableEnabled);
+	}
+}
+
+
+// ***************************************************************************
+void		CObjectViewer::setVegetableWindPower(float w)
+{
+	_VegetableWindPower= w;
+	if(_VegetableLandscape)
+		_VegetableLandscape->Landscape.setVegetableWind(_VegetableWindDir, _VegetableWindFreq, _VegetableWindPower, _VegetableWindBendMin);
+}
+// ***************************************************************************
+void		CObjectViewer::setVegetableWindBendStart(float w)
+{
+	_VegetableWindBendMin= w;
+	if(_VegetableLandscape)
+		_VegetableLandscape->Landscape.setVegetableWind(_VegetableWindDir, _VegetableWindFreq, _VegetableWindPower, _VegetableWindBendMin);
+}
+// ***************************************************************************
+void		CObjectViewer::setVegetableWindFrequency(float w)
+{
+	_VegetableWindFreq= w;
+	if(_VegetableLandscape)
+		_VegetableLandscape->Landscape.setVegetableWind(_VegetableWindDir, _VegetableWindFreq, _VegetableWindPower, _VegetableWindBendMin);
+}
+
+
+// ***************************************************************************
+void		CObjectViewer::snapToGroundVegetableLandscape(bool enable)
+{
+	// update
+	_VegetableSnapToGround= enable;
+}

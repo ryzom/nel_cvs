@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.16 2003/04/28 10:23:11 ledorze Exp $
+ * $Id: transport_class.h,v 1.17 2003/05/14 10:24:22 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -335,7 +335,7 @@ protected:
 	//
 	
 	// Read the TempMessage and call the callback
-	void read (const std::string &name, uint8 sid);
+	bool read (const std::string &name, uint8 sid);
 
 	// Used to create a TempMessage with this class
 	NLNET::CMessage &write ();
@@ -475,11 +475,14 @@ inline NLNET::CMessage &CTransportClass::write ()
 	return TempMessage;
 }
 
-inline void CTransportClass::read (const std::string &name, uint8 sid)
+inline bool CTransportClass::read (const std::string &name, uint8 sid)
 {
 	nlassert (Init);
 	nlassert (Mode == 0);
-	nlassert (States.size() > sid);
+	
+	// there's no info about how to read this message from this sid, give up
+	if (sid >= States.size())
+		return false;
 
 	// set flag of all prop
 

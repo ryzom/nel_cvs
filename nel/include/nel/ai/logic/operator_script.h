@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.7 2001/03/28 12:15:27 portier Exp $
+ * $Id: operator_script.h,v 1.8 2001/03/30 15:55:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@ namespace NLAIAGENT
 		private:
 			std::vector<NLAIAGENT::IObjectIA *> _VarValues;		// Values of the vars for the instanciated operator
 			NLAILOGIC::CFactBase				*_FactBase;		// The father's factbase
+			bool _Activated;
 
 		public:
 			// Builds and actor with its father

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.30 2001/03/07 14:53:03 cado Exp $
+ * $Id: debug.cpp,v 1.31 2001/03/30 15:54:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,7 +122,5 @@ void nlMtDebug( const char *format, ... )
 	DebugLog.displayNL (str);
 	MutexNLDebug.leave();
 }
-
-
 
 } // NLMISC

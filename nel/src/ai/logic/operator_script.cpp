@@ -11,6 +11,7 @@ namespace NLAIAGENT
 
 	COperatorScript::COperatorScript(const COperatorScript &a) : CAgentScript(a)
 	{
+		_Activated = a._Activated;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -19,10 +20,12 @@ namespace NLAIAGENT
 							   NLAISCRIPT::COperatorClass *actor_class )
 	: CAgentScript(manager, father, components, actor_class )
 	{	
+		_Activated = false;
 	}	
 
 	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
 	{
+		_Activated = false;
 	}
 
 	COperatorScript::~COperatorScript()
@@ -208,10 +211,24 @@ namespace NLAIAGENT
 		// Runs the operator if every precondition is validated	
 		if ( is_activated )
 		{
+			if ( _Activated == false)
+			{
+				tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnActivate"), NLAISCRIPT::CParam() );
+				if ( !r.empty() )
+				{
+					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+					context->Self = this;
+					runMethodeMember( r.top().Index ,context);
+				}
+
+				_Activated = true;
+			}
 			return CAgentScript::run();
 		}
 		else
 		{
+			if ( _Activated == true )
+				_Activated = false;
 			setState(processIdle,NULL);			
 			return IObjectIA::ProcessRun;
 		}

@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.4 2001/03/08 13:42:34 portier Exp $
+ * $Id: msg_goal.cpp,v 1.5 2001/03/30 15:09:15 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ namespace NLAIAGENT
 
 	void CGoalMsg::getDebugString(char *t) const
 	{
-		double i = ((const INombreDefine *)getFront())->getNumber();
+/*		double i = ((const INombreDefine *)getFront())->getNumber();
 		if(i != 0.0)
 		{
 			char txt[1024*4];
@@ -89,9 +89,9 @@ namespace NLAIAGENT
 			sprintf(t,"CGoalMsg<true,%s>",txt);
 		}
 		else
-		{
+		{*/
 			sprintf(t,"CGoalMsg<false,NULL>");
-		}
+//		}
 	}
 
 

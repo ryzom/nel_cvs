@@ -1,7 +1,7 @@
 /** \file automata_desc.cpp
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.cpp,v 1.5 2001/03/30 13:30:23 chafik Exp $
+ * $Id: automata_desc.cpp,v 1.6 2001/03/30 15:09:16 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,6 +152,9 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 		tmp_script << "From Actor : Define FailureState" << endl << "{" << endl;
 		tmp_script << "}" << endl << endl;
 */
+
+		tmp_script << "// " << getAutomatName() << " FSM definition generated script" << endl << endl;
+
 		// Generates states
 		std::map<sint32,CState>::const_iterator it_m = _States.begin();
 		while ( it_m != _States.end() )
@@ -199,9 +202,9 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 			{
 				tmp_script << "\tRun()" << endl;
 				if ( state_id == IDSUCCESS )
-					tmp_script << "\t\tFather().Send(new SuccessMsg(0.0));" << endl;
+					tmp_script << "\t\tFather().Send(TELL, new SuccessMsg(0.0));" << endl;
 				else
-					tmp_script << "\t\tFather().Send(new FailureMsg(0.0));" << endl;
+					tmp_script << "\t\tFather().Send(TELL, new FailureMsg(0.0));" << endl;
 				tmp_script << "\tEnd" << endl;
 			}
 

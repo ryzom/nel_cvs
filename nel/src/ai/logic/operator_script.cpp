@@ -191,6 +191,7 @@ namespace NLAIAGENT
 		// If a goal is posted corresponding to this operator's one
 		if ( activated_goals.size() )
 		{
+			is_activated = true;
 			// Checks the boolean funcs conditions
 			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
 			context->Self = this;

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.42 2001/03/29 16:32:20 chafik Exp $
+ * $Id: agent_script.cpp,v 1.43 2001/03/30 15:09:15 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1426,7 +1426,8 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::runGoalMsg(IBaseGroupType *g)
 	{
-		NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) g->get()->clone();
+		CGoalMsg *goal_msg = (CGoalMsg *) g->get();
+		NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) goal_msg->get()->clone();
 #ifdef NL_DEBUG
 		char buffer[1024 * 2];
 		goal->getDebugString( buffer );

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.4 2000/11/10 09:52:01 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.5 2000/11/21 18:13:33 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,7 +210,7 @@ void CVertexBuffer::setNormalCoord(uint idx, const CVector &v)
 
 // --------------------------------------------------
 
-void CVertexBuffer::setRGBA(uint idx, CRGBA& rgba)
+void CVertexBuffer::setRGBA(uint idx, CRGBA rgba)
 {
 	uint8*	ptr;
 

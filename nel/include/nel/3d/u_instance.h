@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.14 2004/02/09 11:11:39 besson Exp $
+ * $Id: u_instance.h,v 1.15 2004/03/23 10:11:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,6 +182,9 @@ public:
 	virtual void		setSliceTime(float duration) = 0;
 	virtual float		getSliceTime() const = 0;
 	// @}
+
+	// Test if driver support rendering of all textures of that shape.
+	virtual	bool		supportMaterialRendering(UDriver &drv) = 0;
 
 };
 

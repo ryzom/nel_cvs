@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: group_type.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,8 +72,8 @@ namespace NLAIAGENT
 	tQueue IBaseGroupType::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
 	{
 		tQueue a;
-		NLIASCRIPT::CParam methodParam;
-		NLIASCRIPT::CParam &param = (NLIASCRIPT::CParam &)p;
+		NLAISCRIPT::CParam methodParam;
+		NLAISCRIPT::CParam &param = (NLAISCRIPT::CParam &)p;
 		
 		if(className == NULL)
 		{
@@ -937,8 +937,8 @@ namespace NLAIAGENT
 	tQueue CVectorGroupType::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
 	{
 		tQueue a;
-		NLIASCRIPT::CParam methodParam;
-		NLIASCRIPT::CParam &param = (NLIASCRIPT::CParam &)p;
+		NLAISCRIPT::CParam methodParam;
+		NLAISCRIPT::CParam &param = (NLAISCRIPT::CParam &)p;
 		
 		if(param.size() != 1) return IBaseGroupType::isMember(className,methodName,p);
 

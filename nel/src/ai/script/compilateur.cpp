@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: compilateur.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include <queue>
 #include <stdarg.h>
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {	
 	/*struct BestP
 	{
@@ -61,7 +61,7 @@ namespace NLIASCRIPT
 
 	NLAIAGENT::IObjectIA::CProcessResult CCompilateur::Compile()
 	{
-		NLIASCRIPT::InitDico();
+		NLAISCRIPT::InitDico();
 		int k = yywrap();
 		yyLine = yyColone = 1;
 		_Error = false;
@@ -69,7 +69,7 @@ namespace NLIASCRIPT
 		sint32 i = yyparse();
 		while(yylex());
 		
-		NLIASCRIPT::EraseDico();
+		NLAISCRIPT::EraseDico();
 
 		NLAIAGENT::IObjectIA::CProcessResult r;
 		if(_Error)
@@ -183,7 +183,7 @@ namespace NLIASCRIPT
 
 	const NLAIAGENT::IObjectIA *CCompilateur::validateHierarchyMethode(std::list<sint32> &listH,sint32 &h,const NLAIAGENT::IObjectIA *classType,NLAIAGENT::IBaseGroupType &listName)
 	{
-		std::list<NLIASCRIPT::CStringType> listClassName;		
+		std::list<NLAISCRIPT::CStringType> listClassName;		
 		NLAIAGENT::CIteratorContener it = listName.getIterator();
 		listName.size();
 		while(!it.isInEnd())

@@ -1,7 +1,7 @@
 
 /** \file varstack.h
  *
- * $Id: varstack.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: varstack.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_VAR_STACK_H
 
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	/**
 	* Class CVarPStack.

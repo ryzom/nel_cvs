@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: codage.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #include "script/constraint.h"
 
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {	
 	NLAIC::IIO	*CCodeBrancheRun::InputOutput = NULL;	
 

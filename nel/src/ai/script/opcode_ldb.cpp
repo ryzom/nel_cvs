@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
 #include "script/compilateur.h"
 #include "agent/agent_script.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 
 	NLAIAGENT::TProcessStatement CLdbOpCode::runOpCode(CCodeContext &context)

@@ -7,13 +7,13 @@
 #include "c/registry_class.h"
 
 
-namespace NLIALINK 
+namespace NLAILINK 
 {
 	using namespace NLAIAGENT;
 	void initIALib()
 	{
 		NLAIC::initRegistry();
-		NLIASCRIPT::initExternalLib();		
+		NLAISCRIPT::initExternalLib();		
 	}
 
 	void releaseIALib()

@@ -10,7 +10,7 @@
 #include "fuzzy/fuzzy.h"
 
 
-using  namespace NLIASCRIPT;
+using  namespace NLAISCRIPT;
 using  namespace NLAILOGIC;
 using  namespace NLAIFUZZY;
 %}
@@ -408,7 +408,7 @@ using  namespace NLAIFUZZY;
 
 	Affectation			:	Variable
 							{								
-								std::list<NLIASCRIPT::CStringType>::iterator i = _LasVarStr.begin();
+								std::list<NLAISCRIPT::CStringType>::iterator i = _LasVarStr.begin();
 								_LasAffectationVarStr.clear();
 								while(i != _LasVarStr.end())
 								{

@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: message_script.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "agent/agent.h"
 #include "script/virtual_op_code.h"
 
-namespace NLIASCRIPT 
+namespace NLAISCRIPT 
 {
 	class CMessageClass;
 }
@@ -49,7 +49,7 @@ namespace NLAIAGENT
 		public:
 			static const NLAIC::CIdentType IdMessageScript;
 		private:			
-			NLIASCRIPT::CMessageClass *_MessageClass;
+			NLAISCRIPT::CMessageClass *_MessageClass;
 
 		public:
 			/// \name IObjectIA member class. 
@@ -85,15 +85,15 @@ namespace NLAIAGENT
 		public:
 			CMessageScript(const CMessageScript &);
 			CMessageScript();
-			CMessageScript( std::list<IObjectIA *> &, NLIASCRIPT::CMessageClass *);
+			CMessageScript( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
 
 			virtual ~CMessageScript();			
 				
 
 			///get the closure correspondent of the method indexed by index in the base class inheritance.
-			NLIASCRIPT::IOpCode &getMethode(sint32 inheritance,sint32 index); 
+			NLAISCRIPT::IOpCode &getMethode(sint32 inheritance,sint32 index); 
 			///get the closure correspondent of the method indexed by index.
-			NLIASCRIPT::IOpCode &getMethode(sint32 index);
+			NLAISCRIPT::IOpCode &getMethode(sint32 index);
 
 			/// Return the nomber of internal C++ hard coded method that the class can process.
 			sint32 getBaseMethodCount() const;

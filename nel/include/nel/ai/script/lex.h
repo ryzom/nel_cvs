@@ -1,7 +1,7 @@
 /** \file lex.h
  * 
  *
- * $Id: lex.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: lex.h,v 1.2 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@ struct yy_buffer_state;
 typedef int yy_state_type;
 #define YY_SKIP_YYWRAP
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	
 	

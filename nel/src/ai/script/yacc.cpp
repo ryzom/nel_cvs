@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: yacc.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "agent/main_agent_script.h"
 #include "script/interpret_object_manager.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {		
 	void CCompilateur::interrogationEnd()
 	{		
@@ -355,12 +355,12 @@ namespace NLIASCRIPT
 		return true;
 	}	
 
-	sint32 CCompilateur::isValidateVarName(std::list<sint32> &ref,std::list<NLIASCRIPT::CStringType> &listName,IOpType *&type)
+	sint32 CCompilateur::isValidateVarName(std::list<sint32> &ref,std::list<NLAISCRIPT::CStringType> &listName,IOpType *&type)
 	{		
 		return isValidateVarName(_SelfClass.get(),ref,listName,type);
 	}
 	
-	sint32 CCompilateur::isValidateVarName(const NLAIAGENT::IObjectIA *base,std::list<sint32> &ref,std::list<NLIASCRIPT::CStringType> &listName,IOpType *&type)
+	sint32 CCompilateur::isValidateVarName(const NLAIAGENT::IObjectIA *base,std::list<sint32> &ref,std::list<NLAISCRIPT::CStringType> &listName,IOpType *&type)
 	{		
 		NLAIAGENT::CStringVarName varName(listName.back().data());
 		sint32 h;
@@ -395,7 +395,7 @@ namespace NLIASCRIPT
 		return false;		
 	}
 
-	sint32 CCompilateur::affectationiMember(const IClassInterpret *baseClass,std::list<NLIASCRIPT::CStringType> &varHName)
+	sint32 CCompilateur::affectationiMember(const IClassInterpret *baseClass,std::list<NLAISCRIPT::CStringType> &varHName)
 	{
 
 		return true;		
@@ -498,10 +498,10 @@ namespace NLIASCRIPT
 		g->incRef();
 		_LastStringParam.push_back(g);		
 		
-		std::list<NLIASCRIPT::CStringType>::iterator i = _LasVarStr.begin();
+		std::list<NLAISCRIPT::CStringType>::iterator i = _LasVarStr.begin();
 		while(i != _LasVarStr.end())
 		{
-			NLIASCRIPT::CStringType &s = *i++;
+			NLAISCRIPT::CStringType &s = *i++;
 			g->cpy(NLAIAGENT::CStringType(NLAIAGENT::CStringVarName(s.data())));
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file context_debug.cpp
  * Debug informations in the context.
  *
- * $Id: context_debug.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: context_debug.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "script/code_branche_run_debug.h"
 #include "script/codage.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	CContextDebug::CContextDebug(): HeapDebug(*(new CStackPointer()))
 	{

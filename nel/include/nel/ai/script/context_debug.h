@@ -1,7 +1,7 @@
 /** \file context_debug.h
  * Debug informations in the context.
  *
- * $Id: context_debug.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: context_debug.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "agent/agentpack.h"
 #include "agent/agent_script.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	enum TDebugMode
 	{

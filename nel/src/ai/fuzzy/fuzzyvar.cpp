@@ -1,7 +1,7 @@
 /** \file fuzzyvar.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: fuzzyvar.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: fuzzyvar.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -399,13 +399,13 @@ namespace NLAIFUZZY
 		{
 			if ( *name == CStringVarName("addSubset") )
 			{
-				IObjectIA *op_type = (IObjectIA *) new NLIASCRIPT::COperandVoid();
+				IObjectIA *op_type = (IObjectIA *) new NLAISCRIPT::COperandVoid();
 				op_type->incRef();
 				result.push( NLAIAGENT::CIdMethod(1 + IObjetOp::getMethodIndexSize(), 0.0,NULL, op_type ) );
 			}
 			if ( *name == CStringVarName("unfuzify") )
 			{
-				IObjectIA *op_type = (IObjectIA *) new NLIASCRIPT::COperandSimple( new NLAIC::CIdentType( DigitalType::IdDigitalType) );
+				IObjectIA *op_type = (IObjectIA *) new NLAISCRIPT::COperandSimple( new NLAIC::CIdentType( DigitalType::IdDigitalType) );
 				op_type->incRef();
 				result.push( NLAIAGENT::CIdMethod(2 + IObjetOp::getMethodIndexSize(), 0.0, NULL, op_type ) );
 			}

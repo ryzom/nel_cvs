@@ -1,7 +1,7 @@
 /** \file fuzzy_script.h
  * Interpret class for the fuzzy controler
  *
- * $Id: fuzzy_script.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: fuzzy_script.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 #include "agent/agent.h"
 
-namespace NLIASCRIPT 
+namespace NLAISCRIPT 
 {
 	class CMessageClass;
 	class CFuzzyControlerClass;
@@ -40,7 +40,7 @@ namespace NLAIFUZZY
 {
 	class CFuzzyControlerScript : public NLAIAGENT::IMessageBase {
 		private:
-			NLIASCRIPT::CMessageClass *_MessageClass;
+			NLAISCRIPT::CMessageClass *_MessageClass;
  
 		public:
 
@@ -62,7 +62,7 @@ namespace NLAIFUZZY
 
 			CFuzzyControlerScript(const CFuzzyControlerScript &);
 			CFuzzyControlerScript();
-			CFuzzyControlerScript( std::list<NLAIAGENT::IObjectIA *> &, NLIASCRIPT::CFuzzyControlerClass *);
+			CFuzzyControlerScript( std::list<NLAIAGENT::IObjectIA *> &, NLAISCRIPT::CFuzzyControlerClass *);
 
 			virtual ~CFuzzyControlerScript();
 			virtual void load(NLMISC::IStream &is);
@@ -70,8 +70,8 @@ namespace NLAIFUZZY
 	
 			const CProcessResult &run();
 
-			NLIASCRIPT::IOpCode &getMethode(sint32 inheritance,sint32 index); 
-			NLIASCRIPT::IOpCode &getMethode(sint32 index);
+			NLAISCRIPT::IOpCode &getMethode(sint32 inheritance,sint32 index); 
+			NLAISCRIPT::IOpCode &getMethode(sint32 index);
 
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;

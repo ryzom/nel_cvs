@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: interpret_object_operator.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "script/interpret_object_agent.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	
 	class COperatorClass: public CAgentClass

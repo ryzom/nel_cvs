@@ -1,7 +1,7 @@
 /** \file interpret_fuzzy_controler.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: interpret_fuzzy_controler.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: interpret_fuzzy_controler.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "fuzzy/interpret_fuzzy_controler.h"
 #include "fuzzy/fuzzy_script.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 
 	CFuzzyControlerClass::CFuzzyControlerClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)

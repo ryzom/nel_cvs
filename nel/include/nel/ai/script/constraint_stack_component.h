@@ -1,7 +1,7 @@
 /** \file constraint_stack_component.h
  * Class for the compiler fonctionality.
  *
- * $Id: constraint_stack_component.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: constraint_stack_component.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef NL_CONSTRAINT_STACK_COMPONENT_H
 #define NL_CONSTRAINT_STACK_COMPONENT_H
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 
 	/**
@@ -53,7 +53,7 @@ namespace NLIASCRIPT
 		///Set the type of component, it can be an unresolved constraint.
 		IOpType	*_TypeStack;
 		///Set herarchy name (a hierarchy name is some thing like classBaseName.className.component).
-		std::list<NLIASCRIPT::CStringType > _MemberName;
+		std::list<NLAISCRIPT::CStringType > _MemberName;
 
 		/// \name Attribut need for IConstraint method.
 		//@{
@@ -72,7 +72,7 @@ namespace NLIASCRIPT
 		sint32	_StackPos;
 
 	public:
-		CConstraintStackComp(OpCodeType opCodeType,sint32 stackPos,const std::list<NLIASCRIPT::CStringType > &memberName,IOpType *typeStack,sint32 lign,sint32 col);
+		CConstraintStackComp(OpCodeType opCodeType,sint32 stackPos,const std::list<NLAISCRIPT::CStringType > &memberName,IOpType *typeStack,sint32 lign,sint32 col);
 		/// \name IConstraint method.
 		//@{
 		const char *getInfo() 

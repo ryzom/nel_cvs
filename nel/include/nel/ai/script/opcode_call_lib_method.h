@@ -1,7 +1,7 @@
 /** \file opcode_call_lib_method.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode_call_lib_method.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: opcode_call_lib_method.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_OP_CODE_CALL_LIB_METHOD_H
 #define NL_OP_CODE_CALL_LIB_METHOD_H
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	///\name Call method in an IObjectIA.
 	//@{

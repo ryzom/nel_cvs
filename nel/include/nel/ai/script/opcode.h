@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
+ * $Id: opcode.h,v 1.4 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "script/interpret_methodes.h"
 #include "script/constraint.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	/**
 	* Class CLdbNewOpCode.

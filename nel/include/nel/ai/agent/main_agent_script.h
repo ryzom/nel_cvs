@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
+ * $Id: main_agent_script.h,v 1.4 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,8 +30,8 @@
 namespace NLAIAGENT
 {	
 
-	class NLIASCRIPT::CCodeContext;
-	class NLIASCRIPT::CStackPointer;
+	class NLAISCRIPT::CCodeContext;
+	class NLAISCRIPT::CStackPointer;
 
 	/**	
 	This class is the main agent, this main agent is a reception centre for all agent in a serveur. Wen agent is in it, he can access to an script
@@ -47,9 +47,9 @@ namespace NLAIAGENT
 	private:
 
 		///Context for the script.
-		NLIASCRIPT::CCodeContext	*_CodeContext;
+		NLAISCRIPT::CCodeContext	*_CodeContext;
 		///Heap and stack for the script.
-		NLIASCRIPT::CStackPointer	*_Stack,*_Heap;
+		NLAISCRIPT::CStackPointer	*_Stack,*_Heap;
 		
 	public:
 		static const NLAIC::CIdentType IdMainAgentScript;

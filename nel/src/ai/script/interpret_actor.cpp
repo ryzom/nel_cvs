@@ -5,7 +5,7 @@
 #include "script/interpret_actor.h"
 #include "agent/actor_script.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	CActorClass::CActorClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
 	{

@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: libcode.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "script/type_def.h"
 #include "script/object_unknown.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	const NLAIC::CIdentType CCallPrint::IdCallPrint = NLAIC::CIdentType(	"Print",
 																	NLAIC::CSelfClassCFactory(CCallPrint()),																
@@ -52,24 +52,24 @@ namespace NLIASCRIPT
 			{
 				if(*mathodName == format)
 				{
-					NLIASCRIPT::COperandSimple typeR(new NLAIC::CIdentType(NLAIAGENT::CStringType::IdStringType));
-					NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
+					NLAISCRIPT::COperandSimple typeR(new NLAIC::CIdentType(NLAIAGENT::CStringType::IdStringType));
+					NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
 					t->incRef();					
 					m.push(NLAIAGENT::CIdMethod(2,0.0,NULL,t));
 				}
 				else
 				if(*mathodName == print)
 				{
-					NLIASCRIPT::COperandVoid typeR;
-					NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
+					NLAISCRIPT::COperandVoid typeR;
+					NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
 					t->incRef();
 					m.push(NLAIAGENT::CIdMethod(0,0.0,NULL,t));
 				}				
 				else
 				if(*mathodName == constructor && p == param)
 				{
-					NLIASCRIPT::COperandVoid typeR;
-					NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
+					NLAISCRIPT::COperandVoid typeR;
+					NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
 					t->incRef();
 					m.push(NLAIAGENT::CIdMethod(1,0.0,NULL,t));
 				}
@@ -79,16 +79,16 @@ namespace NLIASCRIPT
 		{
 			if(*mathodName == print)
 			{
-				NLIASCRIPT::COperandVoid typeR;
-				NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
+				NLAISCRIPT::COperandVoid typeR;
+				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
 				t->incRef();
 				m.push(NLAIAGENT::CIdMethod(0,0.0,NULL,t));
 			}
 			else
 			if(*mathodName == constructor && p == param)
 			{
-				NLIASCRIPT::COperandVoid typeR;
-				NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
+				NLAISCRIPT::COperandVoid typeR;
+				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
 				t->incRef();
 				m.push(NLAIAGENT::CIdMethod(1,0.0,NULL,t));
 			}
@@ -172,7 +172,7 @@ namespace NLIASCRIPT
 		CCallPrint p;
 
 		NLAIC::CSelfClassCFactory &f = (NLAIC::CSelfClassCFactory&)*((CAgentClass::IdAgentClass).getFactory());
-		f = NLIASCRIPT::CAgentClass(CAgentClass::IdAgentClass);
+		f = NLAISCRIPT::CAgentClass(CAgentClass::IdAgentClass);
 		((CAgentClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CAgentClass::IdAgentClass));
 
 		NLAIC::CSelfClassCFactory &fi = (NLAIC::CSelfClassCFactory&)*((CMessageClass::IdMessageClass).getFactory());

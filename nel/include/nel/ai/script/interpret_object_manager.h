@@ -1,7 +1,7 @@
 /** \file interpret_object_list.h
  * Class for define an agent manager.
  *
- * $Id: interpret_object_manager.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
+ * $Id: interpret_object_manager.h,v 1.4 2001/01/08 11:16:29 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -25,7 +25,7 @@
 #define NL_INTERPRET_OBJECT_MANAGER_H
 #include "script/interpret_object_agent.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	class CManagerClass: public CAgentClass
 	{

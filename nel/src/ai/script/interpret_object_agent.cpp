@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.4 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "script/object_unknown.h"
 #include "script/lexsupport.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {	
 
 	const NLAIAGENT::IObjectIA::CProcessResult &CAgentClass::run()

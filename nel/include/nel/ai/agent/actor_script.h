@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: actor_script.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,7 +131,7 @@ namespace NLAIAGENT
 			CActorScript(IAgentManager *, bool activated = false);
 			// copy constructor
 			CActorScript(const CActorScript &);
-			CActorScript(IAgentManager *, IBasicAgent *, std::list<IObjectIA *> &, NLIASCRIPT::CActorClass *);
+			CActorScript(IAgentManager *, IBasicAgent *, std::list<IObjectIA *> &, NLAISCRIPT::CActorClass *);
 			virtual ~CActorScript();
 
 			/// Returns true if the actor has a token

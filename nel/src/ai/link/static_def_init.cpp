@@ -23,7 +23,7 @@
 	tRegistry *registry = new tRegistry;
 }*/
 
-//namespace NLIALINK
+//namespace NLAILINK
 //{
 	using namespace NLAIAGENT;
 	using namespace NLAILOGIC;
@@ -299,7 +299,7 @@
 
 //}
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	const NLAIC::CIdentType CMethodeName::IdMethodeName("MethodeName",NLAIC::CSelfClassCFactory( CMethodeName() ),
 		NLAIC::CTypeOfObject::tObject,

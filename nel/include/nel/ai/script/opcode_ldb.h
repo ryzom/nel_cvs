@@ -1,7 +1,7 @@
 /** \file opcode_ldb.h
  * Sevral op-code for loading object to the stack.
  *
- * $Id: opcode_ldb.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: opcode_ldb.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef NL_OPCODE_LDB_H
 #define NL_OPCODE_LDB_H
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {			
 	class CLdbOpCode : public IOpRunCode
 	{

@@ -1,7 +1,7 @@
 /** \file constraint_find_run.h
  * Class for the compiler fonctionality.
  *
- * $Id: constraint_find_run.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: constraint_find_run.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef NL_CONSTRAINT_FIND_RUN_H
 #define NL_CONSTRAINT_FIND_RUN_H
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {	
 	/**
 	* Class CConstraintFindRun.

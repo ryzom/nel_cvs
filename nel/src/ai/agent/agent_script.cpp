@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.3 2001/01/08 10:51:01 chafik Exp $
+ * $Id: agent_script.cpp,v 1.4 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ namespace NLAIAGENT
 
 	CAgentScript::CAgentScript(IAgentManager *manager, IBasicAgent *father,//The agent's father 
 							  std::list<IObjectIA *> &components,	//Static components							  
-							  NLIASCRIPT::CAgentClass *agent_class )	//Class
+							  NLAISCRIPT::CAgentClass *agent_class )	//Class
 	
 	: IAgentManager(father), _AgentClass( agent_class )
 	{	
@@ -167,7 +167,7 @@ namespace NLAIAGENT
 		return _Components[ index ];
 	}
 
-	NLIASCRIPT::IOpCode &CAgentScript::getMethode(sint32 inheritance,sint32 index)
+	NLAISCRIPT::IOpCode &CAgentScript::getMethode(sint32 inheritance,sint32 index)
 	{
 #ifdef _DEBUG
 		if ( index >= _AgentClass->getMethodIndexSize())
@@ -180,10 +180,10 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionIndexError();
 		}
 #endif
-		return (NLIASCRIPT::IOpCode &)_AgentClass->getBrancheCode(inheritance,index).getCode();
+		return (NLAISCRIPT::IOpCode &)_AgentClass->getBrancheCode(inheritance,index).getCode();
 	}
 
-	NLIASCRIPT::IOpCode &CAgentScript::getMethode(sint32 index)
+	NLAISCRIPT::IOpCode &CAgentScript::getMethode(sint32 index)
 	{
 #ifdef _DEBUG
 		if ( index >= _AgentClass->getMethodIndexSize())
@@ -191,7 +191,7 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionIndexError();
 		}
 #endif
-		return (NLIASCRIPT::IOpCode &)_AgentClass->getBrancheCode(index).getCode();
+		return (NLAISCRIPT::IOpCode &)_AgentClass->getBrancheCode(index).getCode();
 	}
 
 	void CAgentScript::save(NLMISC::IStream &os)
@@ -373,7 +373,7 @@ namespace NLAIAGENT
 
 	void CAgentScript::processMessages()
 	{		
-		NLIASCRIPT::CCodeContext &context = (NLIASCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
+		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
 		while(_ScriptMail->getMessageCount())
 		{
 			IMessageBase &msg = (IMessageBase &)_ScriptMail->getMessage();
@@ -387,22 +387,22 @@ namespace NLAIAGENT
 			{
 				//IObjectIA::CProcessResult r;
 
-				NLIASCRIPT::IMethodContext *methodContex;				
+				NLAISCRIPT::IMethodContext *methodContex;				
 
 				if (context.ContextDebug.Active)
 				{
 					context.ContextDebug.Param.push_back(&listBidon);
 					listBidon.incRef();
 					listBidon.incRef();
-					methodContex = new NLIASCRIPT::CMethodContextDebug();
+					methodContex = new NLAISCRIPT::CMethodContextDebug();
 				}				
 				else
 				{
-					methodContex = new NLIASCRIPT::CMethodContext();
+					methodContex = new NLAISCRIPT::CMethodContext();
 				}
 				const IObjectIA *self = context.Self;
 				context.Self = this;
-				NLIASCRIPT::CCallMethod opCall(methodContex,msg.getHeritanceIndex(),msg.getMethodIndex());
+				NLAISCRIPT::CCallMethod opCall(methodContex,msg.getHeritanceIndex(),msg.getMethodIndex());
 				opCall.runOpCode(context);
 				context.Self = self;				
 			}
@@ -422,7 +422,7 @@ namespace NLAIAGENT
 
 		if(_AgentClass->getRunMethod() >= 0) 
 		{
-			NLIASCRIPT::CCodeContext *context = (NLIASCRIPT::CCodeContext *)_AgentManager->getAgentContext();
+			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext();
 			context->Self = this;
 			runMethodeMember(_AgentClass->getRunMethod(), context);
 		}
@@ -509,13 +509,13 @@ namespace NLAIAGENT
 	IObjectIA::CProcessResult CAgentScript::runMethodeMember(sint32 inheritance, sint32 index, IObjectIA *c)	
 	{
 
-		if(c->getType() != NLIASCRIPT::CCodeContext::IdCodeContext)
+		if(c->getType() != NLAISCRIPT::CCodeContext::IdCodeContext)
 		{
 			return IAgent::runMethodeMember(inheritance,index, c);
 		}
 		
-		NLIASCRIPT::IOpCode *opPtr = NULL;
-		NLIASCRIPT::CCodeContext &context = (NLIASCRIPT::CCodeContext &)*c;
+		NLAISCRIPT::IOpCode *opPtr = NULL;
+		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*c;
 
 		int i = index - getBaseMethodCount();
 		if(i < 0)
@@ -541,10 +541,10 @@ namespace NLAIAGENT
 			opPtr = &getMethode(inheritance,i);
 		}
 		
-		NLIASCRIPT::IOpCode &op = *opPtr;
-		NLIASCRIPT::CCodeBrancheRun *opTmp = context.Code;
+		NLAISCRIPT::IOpCode &op = *opPtr;
+		NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
 		int ip = (uint32)*context.Code;
-		context.Code = (NLIASCRIPT::CCodeBrancheRun *)&op;		
+		context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
 		*context.Code = 0;
 
 		/*TProcessStatement k = IObjectIA::ProcessIdle;
@@ -554,7 +554,7 @@ namespace NLAIAGENT
 			k = op.run(context);
 		}*/
 
-		IObjectIA::CProcessResult r = ((NLIASCRIPT::ICodeBranche *)opPtr)->run(context);
+		IObjectIA::CProcessResult r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
 		// If we are in Debug Mode
 		if (context.ContextDebug.Active)
 		{
@@ -567,13 +567,13 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::runMethodeMember(sint32 index, IObjectIA *c)	
 	{
-		if(c->getType() != NLIASCRIPT::CCodeContext::IdCodeContext)
+		if(c->getType() != NLAISCRIPT::CCodeContext::IdCodeContext)
 		{
 			return IAgent::runMethodeMember(index, c);
 		}
 
-		NLIASCRIPT::IOpCode *opPtr = NULL;
-		NLIASCRIPT::CCodeContext &context = (NLIASCRIPT::CCodeContext &)*c;
+		NLAISCRIPT::IOpCode *opPtr = NULL;
+		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*c;
 
 		int i = index - getBaseMethodCount();
 		if(i < 0)
@@ -599,10 +599,10 @@ namespace NLAIAGENT
 			opPtr = &getMethode(i);
 		}
 		
-		NLIASCRIPT::IOpCode &op = *opPtr;//getMethode(inheritance,i);
-		NLIASCRIPT::CCodeBrancheRun *opTmp = context.Code;
+		NLAISCRIPT::IOpCode &op = *opPtr;//getMethode(inheritance,i);
+		NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
 		int ip = (uint32)*context.Code;
-		context.Code = (NLIASCRIPT::CCodeBrancheRun *)opPtr;		
+		context.Code = (NLAISCRIPT::CCodeBrancheRun *)opPtr;		
 		*context.Code = 0;
 
 		/*TProcessStatement k = IObjectIA::ProcessIdle;
@@ -611,7 +611,7 @@ namespace NLAIAGENT
 		{
 			k = op.run(context);	
 		}*/		
-		IObjectIA::CProcessResult r = ((NLIASCRIPT::ICodeBranche *)opPtr)->run(context);
+		IObjectIA::CProcessResult r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
 
 		// If we are in Debug Mode
 		if (context.ContextDebug.Active)
@@ -636,8 +636,8 @@ namespace NLAIAGENT
 		if(*methodName == send)
 		{
 			tQueue r;			
-			NLIASCRIPT::CParam p;
-			NLIASCRIPT::COperandSimple m(new NLAIC::CIdentType(NLIASCRIPT::CMessageClass::IdMessageClass));
+			NLAISCRIPT::CParam p;
+			NLAISCRIPT::COperandSimple m(new NLAIC::CIdentType(NLAISCRIPT::CMessageClass::IdMessageClass));
 			m.incRef();
 			m.incRef();
 			p.push(&m);
@@ -649,10 +649,10 @@ namespace NLAIAGENT
 	p.getDebugString(txt2);
 #endif			
 
-			if(p.eval( (const NLIASCRIPT::CParam &)param ) >= 0.0)
+			if(p.eval( (const NLAISCRIPT::CParam &)param ) >= 0.0)
 			{
-				NLIASCRIPT::COperandVoid typeR;
-				NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
+				NLAISCRIPT::COperandVoid typeR;
+				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
 				t->incRef();
 				r.push(CIdMethod((IAgent::getMethodIndexSize() + sendTag),0.0,NULL,t));
 			}			
@@ -663,16 +663,16 @@ namespace NLAIAGENT
 		{
 			tQueue r;			
 
-			NLIASCRIPT::CParam p;
-			NLIASCRIPT::COperandSimple m(new NLAIC::CIdentType(CStringType::IdStringType));
+			NLAISCRIPT::CParam p;
+			NLAISCRIPT::COperandSimple m(new NLAIC::CIdentType(CStringType::IdStringType));
 			m.incRef();
 			m.incRef();
 			p.push(&m);		
 					
-			if(p.eval( (const NLIASCRIPT::CParam &)param ) >= 0.0)
+			if(p.eval( (const NLAISCRIPT::CParam &)param ) >= 0.0)
 			{
-				NLIASCRIPT::COperandSimple typeR(new NLAIC::CIdentType(IAgent::IdAgent));
-				NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
+				NLAISCRIPT::COperandSimple typeR(new NLAIC::CIdentType(IAgent::IdAgent));
+				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
 				t->incRef();
 				
 				r.push(CIdMethod((IAgent::getMethodIndexSize() + getChildTag),0.0,NULL,t));
@@ -684,9 +684,9 @@ namespace NLAIAGENT
 		if(*methodName == aChild)
 		{
 			tQueue r;	
-			NLIASCRIPT::CParam p;
-			NLIASCRIPT::COperandSimple m(new NLAIC::CIdentType(CStringType::IdStringType));
-			NLIASCRIPT::COperandSimple n(new NLAIC::CIdentType("Agent"));
+			NLAISCRIPT::CParam p;
+			NLAISCRIPT::COperandSimple m(new NLAIC::CIdentType(CStringType::IdStringType));
+			NLAISCRIPT::COperandSimple n(new NLAIC::CIdentType("Agent"));
 
 			m.incRef();
 			m.incRef();
@@ -696,10 +696,10 @@ namespace NLAIAGENT
 			n.incRef();
 			p.push(&n);
 
-			if(p.eval( (const NLIASCRIPT::CParam &)param ) >= 0.0)
+			if(p.eval( (const NLAISCRIPT::CParam &)param ) >= 0.0)
 			{
-				NLIASCRIPT::COperandSimple typeR(new NLAIC::CIdentType(DigitalType::IdDigitalType));
-				NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
+				NLAISCRIPT::COperandSimple typeR(new NLAIC::CIdentType(DigitalType::IdDigitalType));
+				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
 				t->incRef();
 				r.push(CIdMethod((IAgent::getMethodIndexSize() + addChildTag),0.0,NULL,t));
 			}

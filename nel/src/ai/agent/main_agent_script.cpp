@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,26 +30,26 @@ namespace NLAIAGENT
 {
 	CMainAgentScript::CMainAgentScript(const CMainAgentScript &a): CAgentScript(a)
 	{
-		_Stack = new NLIASCRIPT::CStackPointer();
-		_Heap = new NLIASCRIPT::CStackPointer();
+		_Stack = new NLAISCRIPT::CStackPointer();
+		_Heap = new NLAISCRIPT::CStackPointer();
 
-		_CodeContext = new NLIASCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,a._CodeContext->InputOutput);
+		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,a._CodeContext->InputOutput);
 		_CodeContext->incRef();
 	}
 
 	CMainAgentScript::CMainAgentScript(IAgentManager *main,NLAIC::IIO *io):CAgentScript (main)
 	{
-		_Stack = new NLIASCRIPT::CStackPointer();
-		_Heap = new NLIASCRIPT::CStackPointer();
-		_CodeContext = new NLIASCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
+		_Stack = new NLAISCRIPT::CStackPointer();
+		_Heap = new NLAISCRIPT::CStackPointer();
+		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
 		_CodeContext->incRef();
 	}
 	
 	CMainAgentScript::CMainAgentScript(NLAIC::IIO *io):CAgentScript (NULL)
 	{		
-		_Stack = new NLIASCRIPT::CStackPointer();
-		_Heap = new NLIASCRIPT::CStackPointer();
-		_CodeContext = new NLIASCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
+		_Stack = new NLAISCRIPT::CStackPointer();
+		_Heap = new NLAISCRIPT::CStackPointer();
+		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
 		_CodeContext->incRef();		
 	}
 
@@ -95,7 +95,7 @@ namespace NLAIAGENT
 		if(m.getGroup().getId() == 1)
 		{
 			CIteratorContener i = m.getIterator();
-			NLIASCRIPT::CCodeBrancheRun *o = (NLIASCRIPT::CCodeBrancheRun *)i++;
+			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)i++;
 			_CodeContext->Code = o;			
 //			IObjectIA::CProcessResult r = o->run(*this);
 			IObjectIA::CProcessResult r = o->run(*_CodeContext);
@@ -107,7 +107,7 @@ namespace NLAIAGENT
 	{
 		if(getFactoryClass() != NULL)
 		{		
-			NLIASCRIPT::CCodeContext &context = (NLIASCRIPT::CCodeContext &)*getAgentManager()->getAgentContext();
+			NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*getAgentManager()->getAgentContext();
 			while(getLocalMailBox()->getMessageCount())
 			{
 				const IMessageBase &msg = ((IMailBox *)getLocalMailBox())->getMessage();

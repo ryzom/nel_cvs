@@ -1,7 +1,7 @@
 /** \file object_load.h
  * Sevral class for loading object from the context.
  *
- * $Id: object_load.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: object_load.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_OBJECT_LOAD_H
 #define NL_OBJECT_LOAD_H
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	/**
 	* Class ILoadObject.

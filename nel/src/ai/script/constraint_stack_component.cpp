@@ -1,6 +1,6 @@
 /** \file constraint_stack_component.cpp
  *
- * $Id: constraint_stack_component.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: constraint_stack_component.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,19 +26,19 @@
 #include "script/type_def.h"
 #include "script/constraint_stack_component.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 
-	CConstraintStackComp::CConstraintStackComp(OpCodeType opCodeType,sint32 stackPos,const std::list<NLIASCRIPT::CStringType > &memberName,IOpType *typeStack,sint32 lign,sint32 col):
+	CConstraintStackComp::CConstraintStackComp(OpCodeType opCodeType,sint32 stackPos,const std::list<NLAISCRIPT::CStringType > &memberName,IOpType *typeStack,sint32 lign,sint32 col):
 	_MemberName(memberName),_TypeStack(typeStack),_Lin(lign),_Col(col)
 	{
 		char txt[1028*24];
 		char m[1028*8];
-		std::list<NLIASCRIPT::CStringType >::const_iterator i = _MemberName.begin();
+		std::list<NLAISCRIPT::CStringType >::const_iterator i = _MemberName.begin();
 		m[0] = 0;
 		while(i != _MemberName.end())
 		{
-			const NLIASCRIPT::CStringType &s = *i;
+			const NLAISCRIPT::CStringType &s = *i;
 			strcat(m,s.data());
 			i ++;
 			if(i != _MemberName.end()) strcat(m,".");

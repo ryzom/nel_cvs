@@ -2,7 +2,7 @@
 #define NL_INTERPRET_ACTOR_H
 #include "script/interpret_object_agent.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	class CActorClass: public CAgentClass
 	{

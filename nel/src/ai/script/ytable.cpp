@@ -96,7 +96,7 @@
 #include "fuzzy/fuzzy.h"
 
 
-using  namespace NLIASCRIPT;
+using  namespace NLAISCRIPT;
 using  namespace NLAILOGIC;
 using  namespace NLAIFUZZY;
 #ifndef YYSTYPE
@@ -1351,7 +1351,7 @@ case 59:
 case 61:
 #line 410 "grammar.yacc"
 {								
-								std::list<NLIASCRIPT::CStringType>::iterator i = _LasVarStr.begin();
+								std::list<NLAISCRIPT::CStringType>::iterator i = _LasVarStr.begin();
 								_LasAffectationVarStr.clear();
 								while(i != _LasVarStr.end())
 								{

@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.4 2001/01/08 10:50:46 chafik Exp $
+ * $Id: compilateur.h,v 1.5 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@
 
 
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	class IConstraint;
 
@@ -91,7 +91,7 @@ namespace NLIASCRIPT
 		///This list containe the range of a variable memeber.
 		std::list<sint32>	Member;
 		///Name of the hiearchie variable for exemple pos.y.
-		std::list<NLIASCRIPT::CStringType > MemberName;
+		std::list<NLAISCRIPT::CStringType > MemberName;
 		///It use when we acces to a stack statement.
 		IOpType			*TypeStack;		
 		CFactorType();		
@@ -148,7 +148,7 @@ namespace NLIASCRIPT
 		///This variable allow to simulate the heap allocation.
 		CIndexStackPointer				_VarState;			
 		CStackPointer					_Stack,_Heap;
-		std::list<NLIASCRIPT::CStringType>	_LasVarStr,_LasAffectationVarStr;
+		std::list<NLAISCRIPT::CStringType>	_LasVarStr,_LasAffectationVarStr;
 		std::list<IOpType *>			_TypeList;
 		bool							_Error;
 		sint32							_LastRegistered;		
@@ -370,13 +370,13 @@ namespace NLIASCRIPT
 		The variable is define by a CStringType hiarchie name in the nameHierarchy argument (a hiarchie name is a list same as [myBaseClass myClass myVariable] where it define the string myBaseClass.myClass.myVariable = 5).
 		If the var name is validate then ref contain how to make reference and type containe the type of the attribut.
 		*/
-		sint32 isValidateVarName(const NLAIAGENT::IObjectIA *baseClass,std::list<sint32> &ref,std::list<NLIASCRIPT::CStringType> &nameHierarchy,IOpType *&type);
+		sint32 isValidateVarName(const NLAIAGENT::IObjectIA *baseClass,std::list<sint32> &ref,std::list<NLAISCRIPT::CStringType> &nameHierarchy,IOpType *&type);
 		/**
 		Search if a member variable is validete in the lase class parsed.
 		The variable is define by a CStringType hiarchie name in the nameHierarchy argument (a hiarchie name is a list same as [myBaseClass myClass myVariable] where it define the string myBaseClass.myClass.myVariable = 5).
 		If the var name is validate then ref contain how to make reference and type containe the type of the attribut.
 		*/
-		sint32 isValidateVarName(std::list<sint32> &ref,std::list<NLIASCRIPT::CStringType> &nameHierarchy,IOpType *&type);		
+		sint32 isValidateVarName(std::list<sint32> &ref,std::list<NLAISCRIPT::CStringType> &nameHierarchy,IOpType *&type);		
 
 		/// Set the Debug Mode
 		void setDebugMode(bool bmode){ _Debug = bmode;}
@@ -439,10 +439,10 @@ namespace NLIASCRIPT
 		void RegisterClass();
 		sint32 affectationMember(sint32 member);
 		sint32 affectationMember(IClassInterpret *,sint32 member);
-		sint32 affectationiMember(const IClassInterpret *baseClass,std::list<NLIASCRIPT::CStringType> &varHName);
+		sint32 affectationiMember(const IClassInterpret *baseClass,std::list<NLAISCRIPT::CStringType> &varHName);
 		sint32 PrivateError();
-		const NLAIAGENT::IObjectIA *getValidateHierarchyBase(std::list<sint32> &ref,sint32 &h,std::list<NLIASCRIPT::CStringType> &listName);
-		const NLAIAGENT::IObjectIA *getValidateHierarchyBase(const NLAIAGENT::IObjectIA *base,std::list<sint32> &ref,sint32 &h,std::list<NLIASCRIPT::CStringType> &listName);		
+		const NLAIAGENT::IObjectIA *getValidateHierarchyBase(std::list<sint32> &ref,sint32 &h,std::list<NLAISCRIPT::CStringType> &listName);
+		const NLAIAGENT::IObjectIA *getValidateHierarchyBase(const NLAIAGENT::IObjectIA *base,std::list<sint32> &ref,sint32 &h,std::list<NLAISCRIPT::CStringType> &listName);		
 		void nameMethodeProcessing();		
 		void initParam();
 		bool registerMethod();

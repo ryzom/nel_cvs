@@ -1,6 +1,6 @@
 /** \file constraint_type.cpp
  *
- * $Id: constraint_type.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: constraint_type.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
 #include "script/compilateur.h"
 #include "script/constraint.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	CConstraintChkMethodeType::CConstraintChkMethodeType(IConstraint *constraint,int lin,int col):
 					_Constraint(constraint),_Satisfied(false),_Lin(lin),_Col(col)

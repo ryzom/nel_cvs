@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
+ * $Id: var_control.cpp,v 1.4 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "script/constraint_stack_component.h"
 #include "script/object_unknown.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	sint32 CCompilateur::castVariable(const NLAIAGENT::CStringVarName &v,NLAIAGENT::CStringVarName &t)
 	{

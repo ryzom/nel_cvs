@@ -12,7 +12,7 @@ namespace NLAIAGENT
 	CActorScript::CActorScript(IAgentManager *manager, 
 							   IBasicAgent *father,
 							   std::list<IObjectIA *> &components,	
-							   NLIASCRIPT::CActorClass *actor_class )
+							   NLAISCRIPT::CActorClass *actor_class )
 	
 	: CAgentScript(manager, father, components, actor_class )
 	{	

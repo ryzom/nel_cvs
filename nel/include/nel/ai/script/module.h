@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: module.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,10 @@
 #ifndef NL_MODULE_H
 #define NL_MODULE_H
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	///this typedef define an correct std::map for store local variable in the heap.
-	typedef std::map<NLIASCRIPT::CStringType , NLAIAGENT::IObjectIA *,std::less<NLIASCRIPT::CStringType> > tDicoStr;
+	typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA *,std::less<NLAISCRIPT::CStringType> > tDicoStr;
 
 	/**
 	* Class IBlock.
@@ -47,7 +47,7 @@ namespace NLIASCRIPT
 
 	protected:
 		///this typedef define an correct std::map iterator for store local variable in the heap.
-		typedef std::map<NLIASCRIPT::CStringType , NLAIAGENT::IObjectIA *,std::less<NLIASCRIPT::CStringType> >::iterator tDicoStrIter;
+		typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA *,std::less<NLAISCRIPT::CStringType> >::iterator tDicoStrIter;
 		
 	private:
 		///Op-code that define the block. This object is build at the end of parse.
@@ -114,7 +114,7 @@ namespace NLIASCRIPT
 		///Gets a pointer to a locale variable.
 		NLAIAGENT::IObjectIA *getVar(const char *Name)
 		{
-			tDicoStr::iterator Itr = _DicoLocVar->find(NLIASCRIPT::CStringType(Name));
+			tDicoStr::iterator Itr = _DicoLocVar->find(NLAISCRIPT::CStringType(Name));
 
 			if(Itr != _DicoLocVar->end())
 			{

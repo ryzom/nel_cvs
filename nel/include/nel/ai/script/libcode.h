@@ -1,7 +1,7 @@
 /** \file libcode.h
  * Library class exemple for the script.
  *
- * $Id: libcode.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: libcode.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef NL_LIB_CODE_H
 #define NL_LIB_CODE_H
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {	
 
 	/**

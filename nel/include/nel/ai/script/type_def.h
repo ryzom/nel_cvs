@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
+ * $Id: type_def.h,v 1.4 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_TYPE_DEF_H
 #include "script/constraint.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {	
 	struct CFactorType;
 

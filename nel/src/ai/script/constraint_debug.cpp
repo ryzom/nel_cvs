@@ -1,6 +1,6 @@
 /** \file constraint_debug.cpp
  *
- * $Id: constraint_debug.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: constraint_debug.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #include "script/compilateur.h"
 #include "script/constraint_debug.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	CConstraintDebug::CConstraintDebug(int lin, int col):
 		_Satisfied(false),_Lin(lin),_Col(col)

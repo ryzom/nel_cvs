@@ -1,6 +1,6 @@
 /** \file hierarchy.cpp
  *
- * $Id: hierarchy.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
+ * $Id: hierarchy.cpp,v 1.4 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
 #include "script/compilateur.h"
 #include "script/constraint.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {	
 	const IClassInterpret *CCompilateur::getInheritanceRange(sint32 &h,const IClassInterpret *classType,NLAIAGENT::IBaseGroupType &listName) const
 	{		
@@ -96,15 +96,15 @@ namespace NLIASCRIPT
 		return 0;
 	}*/
 
-	const NLAIAGENT::IObjectIA *CCompilateur::getValidateHierarchyBase(std::list<sint32> &ref,sint32 &h,std::list<NLIASCRIPT::CStringType> &listName)
+	const NLAIAGENT::IObjectIA *CCompilateur::getValidateHierarchyBase(std::list<sint32> &ref,sint32 &h,std::list<NLAISCRIPT::CStringType> &listName)
 	{
 		return getValidateHierarchyBase((IClassInterpret *)_SelfClass.get(),ref,h,listName);
 	}
 
-	const NLAIAGENT::IObjectIA *CCompilateur::getValidateHierarchyBase(const NLAIAGENT::IObjectIA *base,std::list<sint32> &ref,sint32 &h,std::list<NLIASCRIPT::CStringType> &listName)
+	const NLAIAGENT::IObjectIA *CCompilateur::getValidateHierarchyBase(const NLAIAGENT::IObjectIA *base,std::list<sint32> &ref,sint32 &h,std::list<NLAISCRIPT::CStringType> &listName)
 	{		
-		std::list<NLIASCRIPT::CStringType> classHName;
-		std::list<NLIASCRIPT::CStringType> varHName;
+		std::list<NLAISCRIPT::CStringType> classHName;
+		std::list<NLAISCRIPT::CStringType> varHName;
 		const NLAIAGENT::IObjectIA *baseClass = base;		
 
 		ref.clear();
@@ -144,7 +144,7 @@ namespace NLIASCRIPT
 
 		if(classHName.size())
 		{
-			std::list<NLIASCRIPT::CStringType>::iterator i = classHName.begin();			
+			std::list<NLAISCRIPT::CStringType>::iterator i = classHName.begin();			
 			while(i != classHName.end())
 			{
 				NLAIAGENT::CStringVarName str( NLAIAGENT::CStringVarName((*i++).data()));

@@ -1,7 +1,7 @@
 /** \file code_branche_run_debug.h
  * A debug version of CCodeBrancheRun. It keep a trace between original source code and OpCode.
  *
- * $Id: code_branche_run_debug.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: code_branche_run_debug.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -15,7 +15,7 @@
 
 #include "script/codage.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 //	typedef	std::list<CBagOfCode *> TListCode;
 //	typedef	std::list<CBagOfCode *>::iterator tListCodeIter;

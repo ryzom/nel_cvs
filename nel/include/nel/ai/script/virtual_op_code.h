@@ -1,6 +1,6 @@
 /** \file virtual_op_code.h
  * Basic definition for op-codes maniputation.
- * $Id: virtual_op_code.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: virtual_op_code.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
 #ifndef NL_VIRTUAL_OP_CODE_H
 #define NL_VIRTUAL_OP_CODE_H
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {	
 	class CCodeContext;	
 

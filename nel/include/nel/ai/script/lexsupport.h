@@ -1,7 +1,7 @@
 /** \file lexsupport.h
  * Method and class for lex&yacc support.
  *
- * $Id: lexsupport.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: lexsupport.h,v 1.2 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@
 #include <map>
 #include <string>
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	
 	class iStack;	

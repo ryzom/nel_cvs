@@ -1,7 +1,7 @@
 /** \file interpret_fuzzy_controler.h
  *	Scripted class for a fuzzy controler
  *
- * $Id: interpret_fuzzy_controler.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: interpret_fuzzy_controler.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "script/interpret_object_agent.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	
 	class CFuzzyControlerClass : public CAgentClass
@@ -40,7 +40,7 @@ namespace NLIASCRIPT
 	public:
 		static const NLAIC::CIdentType IdOperatorClass;
 		
-		CFuzzyControlerClass( std::list<NLAIAGENT::IObjectIA *> &, NLIASCRIPT::CFuzzyControlerClass *);
+		CFuzzyControlerClass( std::list<NLAIAGENT::IObjectIA *> &, NLAISCRIPT::CFuzzyControlerClass *);
 
 		CFuzzyControlerClass(const NLAIAGENT::IVarName &);
 		CFuzzyControlerClass(const NLAIC::CIdentType &);

@@ -56,7 +56,7 @@ namespace NLAILOGIC
 
 		if ( *name == CStringVarName("set") )
 		{
-			IObjectIA *op_type = (IObjectIA *) new NLIASCRIPT::COperandVoid();
+			IObjectIA *op_type = (IObjectIA *) new NLAISCRIPT::COperandVoid();
 			op_type->incRef();
 			result.push( CIdMethod(IObjetOp::getMethodIndexSize() + 1,0.0,NULL, op_type ) );
 		}

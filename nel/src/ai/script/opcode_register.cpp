@@ -1,6 +1,6 @@
 /** \file opcode_register.cpp
  *
- * $Id: opcode_register.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: opcode_register.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "script/type_def.h"
 #include "script/object_load.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 
 const NLAIC::CIdentType CLdbOpCode::IdLdbOpCode = NLAIC::CIdentType("LdbOpCode",

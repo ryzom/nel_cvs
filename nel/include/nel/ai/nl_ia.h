@@ -3,7 +3,7 @@
 
 #include "script/compilateur.h"
 
-namespace NLIALINK
+namespace NLAILINK
 {
 	void initIALib();
 	void releaseIALib();

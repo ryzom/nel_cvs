@@ -1,7 +1,7 @@
 /** \file opcode_call_method.h
  * Sevral call op-code fonctionality.
  *
- * $Id: opcode_call_method.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: opcode_call_method.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef NL_OP_CODE_CALL_METHOD_H
 #define NL_OP_CODE_CALL_METHOD_H
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	class IMethodContext
 	{

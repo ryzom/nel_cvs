@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: agent_script.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "agent/agent_manager.h"
 #include "logic/operator.h"
 
-namespace NLIASCRIPT 
+namespace NLAISCRIPT 
 {
 	class CAgentClass;
 	class IOpCode;
@@ -86,7 +86,7 @@ namespace NLAIAGENT
 
 	protected:
 		///The creator of this instance. This useful for find scripted method entry point.
-		NLIASCRIPT::CAgentClass *_AgentClass;
+		NLAISCRIPT::CAgentClass *_AgentClass;
 
 	public:
 		static const NLAIC::CIdentType IdAgentScript;
@@ -98,7 +98,7 @@ namespace NLAIAGENT
 		///Build with an knowning manager.
 		CAgentScript(IAgentManager *);
 		///Build with an knowning manager and a list of static compoment.
-		CAgentScript(IAgentManager *, IBasicAgent *, std::list<IObjectIA *> &, NLIASCRIPT::CAgentClass *);
+		CAgentScript(IAgentManager *, IBasicAgent *, std::list<IObjectIA *> &, NLAISCRIPT::CAgentClass *);
 
 		virtual ~CAgentScript();
 		
@@ -120,9 +120,9 @@ namespace NLAIAGENT
 		*/
 		virtual IObjectIA::CProcessResult getDynamicAgent(NLAIAGENT::IBaseGroupType *g);
 		///get the closure correspondent of the method indexed by index in the base class inheritance.
-		NLIASCRIPT::IOpCode &getMethode(sint32 inheritance,sint32 index); 
+		NLAISCRIPT::IOpCode &getMethode(sint32 inheritance,sint32 index); 
 		///get the closure correspondent of the method indexed by index.
-		NLIASCRIPT::IOpCode &getMethode(sint32 index);
+		NLAISCRIPT::IOpCode &getMethode(sint32 index);
 		///Get the manager of the instance.
 		const IAgentManager *getAgentManager() const
 		{
@@ -130,7 +130,7 @@ namespace NLAIAGENT
 		}
 
 		///Get the creator of this instance.
-		const NLIASCRIPT::CAgentClass *getFactoryClass() const
+		const NLAISCRIPT::CAgentClass *getFactoryClass() const
 		{
 			return _AgentClass;
 		}

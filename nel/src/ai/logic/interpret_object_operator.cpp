@@ -23,7 +23,7 @@
 
 #include "logic/interpret_object_operator.h"
 
-namespace NLIASCRIPT
+namespace NLAISCRIPT
 {
 	using namespace NLAIAGENT;
 

@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.20 2002/03/15 16:10:44 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.21 2002/04/30 08:26:39 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1729,6 +1729,7 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 	_Locator.resize (zoneCount);
 	_Binded.resize (zoneCount);
 	_BindInfo.resize (zoneCount);
+	_BezierPatch.resize (zoneCount);
 
 	// For each zone
 	for (uint zone=0; zone<zoneCount; zone++)
@@ -1744,7 +1745,7 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 		{
 			// Resize the arraies
 			_Lumels.resize(patchCount);
-			_BezierPatch.resize(patchCount);
+//			_BezierPatch.resize(patchCount);
 			_OversampleEdges.resize(patchCount);
 			visited.resize(patchCount);
 		}
@@ -3386,6 +3387,10 @@ uint CZoneLighter::getAPatch (uint process)
 	// Current index
 	uint index = _LastPatchComputed[process];
 	uint firstIndex = index;
+
+	if (access.value().size() == 0)
+		// no more patches
+		return 0xffffffff;
 
 	while (access.value()[index])
 	{

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.8 2000/11/15 17:23:43 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.9 2000/11/28 13:28:03 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,9 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		{
 			glDisable(GL_BLEND);
 		}
+		// Color unlit part.
+		CRGBA	col= mat.getColor();
+		glColor4ub(col.R, col.G, col.B, col.A);
 
 
 		_Material=&mat;

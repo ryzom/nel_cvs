@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: particle_system_model.h,v 1.2 2001/06/26 09:23:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ class CParticleSystemModel : public CTransformShape
 
 
 
-	protected:
+	
 		/** set the particle system for this transform shape after it has been instanciated (from a memory stream)
 		 *  see CParticleSystemShape
 		 */
@@ -108,6 +108,7 @@ class CParticleSystemModel : public CTransformShape
 			nlassert(!_ParticleSystem) ;
 			_ParticleSystem = ps ;			
 		}
+	protected:
 
 		// instance of the particle system that this model holds
 		CParticleSystem *_ParticleSystem ;

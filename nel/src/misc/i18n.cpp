@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.4 2000/11/21 14:00:30 valignat Exp $
+ * $Id: i18n.cpp,v 1.5 2000/11/23 14:32:39 coutelas Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -162,7 +162,10 @@ void CI18N::load (uint32 lid)
 		char c;
 		// get the language name
 		c = skipWS (cf, line);
-		if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
+		if (c != '"')
+		{
+			nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
+		}
 		do
 		{
 			cf.serial (c);
@@ -184,7 +187,10 @@ void CI18N::load (uint32 lid)
 
 			// get the coder string
 			c = skipWS (cf, line);
-			if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
+			if (c != '"')
+			{
+				nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
+			}
 			startstr = true;
 			do
 			{
@@ -203,13 +209,19 @@ void CI18N::load (uint32 lid)
 			equal = true;
 			// get the '='
 			c = skipWS (cf, line);
-			if (c != '=') nlerror ("'=' missing in \"%s\" line %d", _FileName.c_str(), line);
+			if (c != '=')
+			{
+				nlerror ("'=' missing in \"%s\" line %d", _FileName.c_str(), line);
+			}
 			equal = false;
 			
 			second = true;
 			// get the translated string
 			c = skipWS (cf, line);
-			if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
+			if (c != '"')
+			{
+				nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
+			}
 			startstr = true;
 			do
 			{
@@ -238,9 +250,18 @@ void CI18N::load (uint32 lid)
 	catch (EReadError)
 	{
 		// always comes here when it's the end of file
-		if (startstr) nlerror ("a string didn't have the close '\"' in \"%s\" line %d", _FileName.c_str(), line);
-		if (equal) nlerror ("'=' missing in \"%s\" line %d", _FileName.c_str(), line);
-		if (second) nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
+		if (startstr)
+		{
+			nlerror ("a string didn't have the close '\"' in \"%s\" line %d", _FileName.c_str(), line);
+		}
+		if (equal)
+		{
+			nlerror ("'=' missing in \"%s\" line %d", _FileName.c_str(), line);
+		}
+		if (second)
+		{
+			nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
+		}
 		cf.close ();
 	}
 }
@@ -299,7 +320,10 @@ const vector<string> &CI18N::getLanguageNames()
 					char c;
 					// get the language name
 					c = skipWS (cf, line);
-					if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", fn.c_str(), line);
+					if (c != '"')
+					{
+						nlerror ("open '\"' missing in \"%s\" line %d", fn.c_str(), line);
+					}
 					do
 					{
 						cf.serial (c);

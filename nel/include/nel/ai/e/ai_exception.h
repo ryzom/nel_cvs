@@ -1,7 +1,7 @@
 /** \file ai_exception.h
  * some ai exception class.
  *
- * $Id: ai_exception.h,v 1.19 2002/02/20 18:05:04 lecroart Exp $
+ * $Id: ai_exception.h,v 1.20 2002/10/04 09:59:01 coutelas Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -59,7 +59,7 @@ namespace NLAIE
 		{
 		}		
 		virtual const IException *clone() const = 0;
-		virtual ~IException()
+		virtual ~IException() throw()
 		{
 		}
 	};
@@ -72,7 +72,7 @@ namespace NLAIE
 		CExceptionContainer(const std::string &name);
 
 		virtual const IException *clone() const;		
-		virtual ~CExceptionContainer()
+		virtual ~CExceptionContainer() throw()
 		{			
 		}
 	};
@@ -87,7 +87,7 @@ namespace NLAIE
 
 		virtual const IException *clone() const;
 
-		virtual ~CExceptionIndexError()
+		virtual ~CExceptionIndexError() throw()
 		{
 		}
 	};
@@ -103,7 +103,7 @@ namespace NLAIE
 			
 		virtual const IException *clone() const;
 
-		virtual ~CExceptionIndexHandeledError()
+		virtual ~CExceptionIndexHandeledError() throw()
 		{
 		}
 	};
@@ -117,7 +117,7 @@ namespace NLAIE
 
 		virtual const IException *clone() const;
 
-		~CExceptionUnRegisterClassError()
+		~CExceptionUnRegisterClassError() throw()
 		{			
 		}
 
@@ -135,7 +135,7 @@ namespace NLAIE
 
 		virtual const IException *clone() const;
 
-		~CExceptionObjectNotFoundError()
+		~CExceptionObjectNotFoundError() throw()
 		{		
 		}
 	};
@@ -150,7 +150,7 @@ namespace NLAIE
 
 		virtual const IException *clone() const;
 
-		virtual ~CExceptionNotImplemented()
+		virtual ~CExceptionNotImplemented() throw()
 		{			
 		}
 	};
@@ -165,7 +165,7 @@ namespace NLAIE
 
 		virtual const IException *clone() const;
 
-		virtual ~CExceptionUnReference()
+		virtual ~CExceptionUnReference() throw()
 		{			
 		}
 	};	
@@ -185,7 +185,7 @@ namespace NLAIE
 		
 		virtual const IException *clone() const;
 
-		virtual ~CExceptionAllReadyExist()
+		virtual ~CExceptionAllReadyExist() throw()
 		{		
 		}
 	};	

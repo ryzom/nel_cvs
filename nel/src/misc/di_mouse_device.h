@@ -1,7 +1,7 @@
 /** \file di_mouse_device.h
  * <File description>
  *
- * $Id: di_mouse_device.h,v 1.5 2004/01/05 16:44:59 besson Exp $
+ * $Id: di_mouse_device.h,v 1.6 2004/02/11 09:52:56 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -122,7 +122,8 @@ private:
 	TMessageMode				_MessageMode;
 	//
 	TAxisMode					_MouseAxisMode[NumMouseAxis];
-	sint32						_XMousePos, _YMousePos; // position encoded in fixed point 32 : 32. This allow wrapping and no loss of precision, when not in clamped mode
+	sint64						_XMousePos, _YMousePos; // position encoded in fixed point 32 : 32. This allow wrapping and no loss of precision, when not in clamped mode
+	                                                    // NB: this is sint64 because of max range reached with 16:16 when looping around x with great mouse speed
 	bool						_FirstX, _FirstY;
 	float						_MouseSpeed;
 	uint						_MouseAccel;

@@ -1,7 +1,7 @@
 /** \file di_mouse.cpp
  * <File description>
  *
- * $Id: di_mouse_device.cpp,v 1.6 2004/01/05 16:44:59 besson Exp $
+ * $Id: di_mouse_device.cpp,v 1.7 2004/02/11 09:52:26 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -138,8 +138,8 @@ uint				CDIMouse::getBufferSize() const { return _MouseBufferSize; }
 void	CDIMouse::setMousePos(float x, float y)
 {	
 	nlassert(_MessageMode == NormalMode);
-	_XMousePos = (sint32) (x * (1 << 16));
-	_YMousePos = (sint32) (y * (1 << 16));
+	_XMousePos = (sint64) ((double) x * ((sint64) 1 << 32));
+	_YMousePos = (sint64) ((double) y * ((sint64) 1 << 32));
 }
 
 //======================================================
@@ -200,8 +200,8 @@ uint				CDIMouse::getDoubleClickDelay() const { return _DoubleClickDelay; }
 //======================================================
 inline void	CDIMouse::clampMouseAxis()
 {
-	if (_MouseAxisMode[XAxis] == Clamped) clamp(_XMousePos, (sint32) _MouseFrame.X  << 16, (sint32) (_MouseFrame.X + _MouseFrame.Width - 1) << 16);
-	if (_MouseAxisMode[YAxis] == Clamped) clamp(_YMousePos, (sint32) _MouseFrame.Y << 16, (sint32) (_MouseFrame.X + _MouseFrame.Height - 1) << 16);	
+	if (_MouseAxisMode[XAxis] == Clamped) clamp(_XMousePos, (sint64) _MouseFrame.X  << 32, (sint64) (_MouseFrame.X + _MouseFrame.Width - 1) << 32);
+	if (_MouseAxisMode[YAxis] == Clamped) clamp(_YMousePos, (sint64) _MouseFrame.Y << 32, (sint64) (_MouseFrame.X + _MouseFrame.Height - 1) << 32);	
 }
 
 //======================================================
@@ -274,8 +274,8 @@ void CDIMouse::onButtonClicked(uint button, CEventServer *server, uint32 date)
 		if (date - _MouseButtonsLastClickDate < _DoubleClickDelay)
 		{
 			CEventMouseDblClk *emdc 
-			= new CEventMouseDblClk((float) (_XMousePos >> 16),
-										    (float) (_YMousePos >> 16),
+			= new CEventMouseDblClk((float) (_XMousePos >> 32),
+										    (float) (_YMousePos >> 32),
 										    buildMouseSingleButtonFlags(button),
 										    _DIEventEmitter);
 			server->postEvent(emdc);
@@ -300,8 +300,8 @@ void CDIMouse::processButton(uint button, bool pressed, CEventServer *server, ui
 	if (pressed)
 	{
 		CEventMouseDown *emd = 
-		new CEventMouseDown((float) (_XMousePos >> 16),
-								    (float) (_YMousePos >> 16),
+		new CEventMouseDown((float) (_XMousePos >> 32),
+								    (float) (_YMousePos >> 32),
 								    buildMouseSingleButtonFlags(button),
 								    _DIEventEmitter);
 		server->postEvent(emd);
@@ -309,8 +309,8 @@ void CDIMouse::processButton(uint button, bool pressed, CEventServer *server, ui
 	else
 	{
 		CEventMouseUp *emu = 
-		new CEventMouseUp((float) (_XMousePos >> 16),
-								  (float) (_YMousePos >> 16),
+		new CEventMouseUp((float) (_XMousePos >> 32),
+								  (float) (_YMousePos >> 32),
 								  buildMouseSingleButtonFlags(button),
 								  _DIEventEmitter);
 		server->postEvent(emu);
@@ -378,8 +378,8 @@ void CDIMouse::submit(IInputDeviceEvent *deviceEvent, CEventServer *server)
 				sint dep = die->Datas.dwData - OldDIZPos;
 				OldDIZPos = (sint32) die->Datas.dwData;
 				CEventMouseWheel *emw = 
-				new CEventMouseWheel((float) (_XMousePos >> 16),
-											 (float) (_XMousePos >> 16),										 
+				new CEventMouseWheel((float) (_XMousePos >> 32),
+											 (float) (_XMousePos >> 32),
 											 buildMouseButtonFlags(),
 											 dep > 0,
 											 _DIEventEmitter);
@@ -412,10 +412,10 @@ void	CDIMouse::updateMove(CEventServer *server)
 	{
 		if (_MessageMode == NormalMode)
 		{
-			_XMousePos += (sint32) (_MouseSpeed * _XAcc * (1 << 16)); 
-			_YMousePos += (sint32) (_MouseSpeed * _YAcc * (1 << 16)); 			
+			_XMousePos += (sint64) ((double) _MouseSpeed * (sint64) _XAcc * ((sint64) 1 << 32)); 
+			_YMousePos += (sint64) ((double) _MouseSpeed * (sint64) _YAcc * ((sint64)  1 << 32)); 
 			clampMouseAxis();
-			CEventMouseMove *emm = new CEventMouseMove(_XFactor * (float) (_XMousePos >> 16), _YFactor *(float) (_YMousePos >> 16), buildMouseButtonFlags(), _DIEventEmitter);
+			CEventMouseMove *emm = new CEventMouseMove((float) (_XFactor * (double) _XMousePos / ((double) 65536 * (double) 65536)), (float) (_YFactor * (double) _YMousePos / ((double) 65536 * (double) 65536)), buildMouseButtonFlags(), _DIEventEmitter);
 			server->postEvent(emm);
 		}
 		else
@@ -477,5 +477,26 @@ void	CDIMouse::setMessagesMode(TMessageMode mode)
 } // NLMISC
 
 #endif // NL_OS_WINDOWS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

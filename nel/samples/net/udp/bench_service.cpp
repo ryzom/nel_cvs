@@ -1,7 +1,7 @@
 /** \file udp/frontend_service.cpp
  * <todo> a mettre
  *
- * $Id: bench_service.cpp,v 1.3 2002/11/29 10:15:38 lecroart Exp $
+ * $Id: bench_service.cpp,v 1.4 2003/01/24 13:53:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,9 +151,9 @@ string getDate()
 	newtime = localtime( &long_time );
 	if (newtime)
 	{
-		string res = toString(newtime->tm_year-100) + "_";
-		res += toString(newtime->tm_mon+1) + "_";
-		res	+= toString(newtime->tm_mday);
+		string res = toString("%2d", newtime->tm_year-100) + "_";
+		res += toString("%2d", newtime->tm_mon+1) + "_";
+		res	+= toString("%2d", newtime->tm_mday);
 		return res;
 	}
 
@@ -260,7 +260,12 @@ void CClient::updatePong (sint64 pingTime, sint64 pongTime, uint32 pongNumber, u
 		LastPongReceived = pongNumber;
 
 	// write each pong in a file
-	string fn = StatPathName + ConnectionName + "_" + Address.hostName() + "_" + getDate() + ".pong";
+	string ha = Address.hostName();
+	if (ha.empty())
+	{
+		ha = Address.ipAddress();
+	}
+	string fn = StatPathName + ConnectionName + "_" + ha + "_" + getDate() + ".pong";
 	
 	FILE *fp = fopen (fn.c_str(), "rt");
 	if (fp == NULL)
@@ -312,7 +317,12 @@ void CClient::updateFullStat ()
 
 	{
 		// write each pong in a file
-		string fn = StatPathName + ConnectionName + "_" + Address.hostName() + "_" + getDate() + ".stat";
+		string ha = Address.hostName();
+		if (ha.empty())
+		{
+			ha = Address.ipAddress();
+		}
+		string fn = StatPathName + ConnectionName + "_" + ha + "_" + getDate() + ".stat";
 		
 		string line = "Full Summary: ";
 		line += "NbPing " + toString(LastPongReceived) + " ";
@@ -349,7 +359,12 @@ void CClient::updateFullStat ()
 
 	{
 		// write each ping in a file
-		string fn = StatPathName + ConnectionName + "_" + Address.hostName() + "_" + getDate() + ".ping";
+		string ha = Address.hostName();
+		if (ha.empty())
+		{
+			ha = Address.ipAddress();
+		}
+		string fn = StatPathName + ConnectionName + "_" + ha + "_" + getDate() + ".ping";
 		
 		FILE *fp = fopen (fn.c_str(), "rt");
 		if (fp == NULL)
@@ -401,7 +416,12 @@ void CClient::updateFullStat ()
 void CClient::updateStat ()
 {
 	// write each pong in a file
-	string fn = StatPathName + ConnectionName + "_" + Address.hostName() + "_" + getDate() + ".stat";
+	string ha = Address.hostName();
+	if (ha.empty())
+	{
+		ha = Address.ipAddress();
+	}
+	string fn = StatPathName + ConnectionName + "_" + ha + "_" + getDate() + ".stat";
 	
 	string line;
 	line += "NbPing " + toString(NbPing) + " ";

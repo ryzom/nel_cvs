@@ -1,7 +1,7 @@
 /** \file fe_receive_task.cpp
  * <File description>
  *
- * $Id: receive_task.cpp,v 1.1 2002/04/17 08:08:32 lecroart Exp $
+ * $Id: receive_task.cpp,v 1.2 2003/01/24 13:53:55 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -83,16 +83,7 @@ CReceiveTask::CReceiveTask( uint16 port, uint32 msgsize ) :
 	DataSock = new CUdpSock( false );
 	nlassert( DataSock );
 
-	// Test of multihomed host
-	vector<CInetAddress> addrlist;
-	addrlist = CInetAddress::localAddresses();
-	vector<CInetAddress>::iterator ivi;
-	for ( ivi=addrlist.begin(); ivi!=addrlist.end(); ++ivi )
-	{
-		nlinfo( "%s", (*ivi).asIPString().c_str() );
-	}
-	addrlist[0].setPort( port );
-	DataSock->bind( addrlist[0] );
+	DataSock->bind( port );
 }
 
 

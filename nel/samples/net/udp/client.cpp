@@ -1,7 +1,7 @@
 /** \file udp/client.cpp
  * todo
  *
- * $Id: client.cpp,v 1.3 2003/01/21 17:44:15 lecroart Exp $
+ * $Id: client.cpp,v 1.4 2003/01/24 13:53:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,6 @@
  * MA 02111-1307, USA.
  */
 
-// comment this define if  you don't want 3d output
-//#define USE_3D
-
 
 //
 // Includes
@@ -42,6 +39,9 @@
 #include "nel/net/inet_address.h"
 #include "nel/net/udp_sim_sock.h"
 
+#include "graph.h"
+
+
 #ifdef USE_3D
 
 #include "nel/3d/u_driver.h"
@@ -55,10 +55,7 @@
 #include "nel/3d/u_texture.h"
 #include "3d/event_mouse_listener.h"
 
-#include "graph.h"
-
 using namespace NL3D;
-
 #endif
 
 

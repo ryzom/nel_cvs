@@ -388,10 +388,10 @@ public:
 				allocatedMemory += size;
 
 				// Allocate the pointer
-				uint64 startTick = rdtsc();
+				uint64 startTick = ::rdtsc();
 				uint8 *ptr = allocator.allocate (size);
 				memset (ptr, 0xff, size);
-				uint64 endTick = rdtsc();
+				uint64 endTick = ::rdtsc();
 				endTick -= startTick;
 
 				// Update amout of memory
@@ -413,9 +413,9 @@ public:
 				// Free the block
 				uint8 *ptr = allocations[blockId].Pointer;
 				uint size = allocations[blockId].Size;
-				uint64 startTick = rdtsc();
+				uint64 startTick = ::rdtsc();
 				allocator.free (ptr, size);
-				uint64 endTick = rdtsc();
+				uint64 endTick = ::rdtsc();
 				endTick -= startTick;
 				_FreeTime += endTick;
 	

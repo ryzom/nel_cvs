@@ -1,7 +1,7 @@
 /** \file memory_mutex.h
  * Mutex used by the memory manager
  *
- * $Id: memory_mutex.h,v 1.3 2004/06/07 16:50:35 corvazier Exp $
+ * $Id: memory_mutex.h,v 1.4 2004/06/07 16:52:00 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -60,7 +60,6 @@ public:
 	__forceinline static bool atomic_swap (volatile uint32 *lockPtr)
 	{
 		uint32 result;
-#ifdef NL_OS_WINDOWS
 #ifdef NL_DEBUG_FAST
 		// Workaround for dumb inlining bug (returning of function goes into the choux): push/pop registers
 		__asm
@@ -83,9 +82,6 @@ public:
 			mov [result],eax
 		}
 #endif
-#else
-		ASM_ASWAP_FOR_GCC_XCHG
-#endif // NL_OS_WINDOWS
 		return result != 0;
 	}
 

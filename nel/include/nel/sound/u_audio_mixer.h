@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.4 2001/07/19 12:46:12 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.5 2001/07/20 16:08:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,19 +81,26 @@ public:
 	/// Load environment effects
 	virtual void		loadEnvEffects( const char *filename ) = 0;
 	/// Load buffers
-	virtual	void		loadSoundBuffers( const char *filename,
-										  const std::vector<TSoundId> **idvec ) = 0;
+	virtual	void		loadSoundBuffers( const char *filename ) = 0;
 	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
 	virtual	void		loadEnvSounds( const char *filename,
 									   UEnvSound **treeRoot=NULL ) = 0;
-	/// Add logical sound source (to remove a source, delete it)
+	/// Get a TSoundId from a name (returns NULL if not found)
+	virtual TSoundId	getSoundId( const char *name ) = 0;
+
+
+	/// Add a logical sound source (returns NULL if name not found). To remove a source, just delete it.
+	virtual USource		*createSource( const char *name ) = 0;
+	/// Add a logical sound source (by sound id). To remove a source, just delete it.
 	virtual USource		*createSource( TSoundId id ) = 0;
+
+
 	/// Return the listener interface
 	virtual UListener	*getListener() = 0;
 
 
 	/// Choose the environmental effect(s) corresponding to tag
-	virtual void		selectEnvEffects( const std::string& tag ) = 0;
+	virtual void		selectEnvEffects( const char *tag ) = 0;
 	/// Update audio mixer (call evenly)
 	virtual void		update() = 0; 
 

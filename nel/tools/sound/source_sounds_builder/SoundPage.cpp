@@ -6,10 +6,11 @@
 #include "source_sounds_builderDlg.h"
 #include "SoundPage.h"
 
+#include "../src/sound/driver/buffer.h"
+
 #include <nel/misc/common.h>
 using namespace NLMISC;
 
-#include <string>
 using namespace std;
 
 
@@ -36,12 +37,30 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	m_OuterAngleDeg = 360;
 	m_OuterGain = 1.0f;
 	m_Looped = FALSE;
+	m_Stereo = _T("");
 	//}}AFX_DATA_INIT
 
 	_CurrentSound = NULL;
 	_Tree = NULL;
-	_AudioMixer = NULL;
 	_Source = NULL;
+
+	CWaitCursor waitcursor;
+
+	// Load driver
+	_AudioMixer = UAudioMixer::createAudioMixer();
+	try
+	{
+		_AudioMixer->init();
+	}
+	catch( Exception& e )
+	{
+		waitcursor.Restore();
+
+		CString s;
+		s.Format( "No sound driver: %s", e.what() );
+		AfxMessageBox( s );
+		_AudioMixer = NULL;
+	}
 }
 
 
@@ -64,6 +83,7 @@ void CSoundPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EditOuterGain, m_OuterGain);
 	DDV_MinMaxFloat(pDX, m_OuterGain, 0.f, 1.f);
 	DDX_Check(pDX, IDC_Looped, m_Looped);
+	DDX_Text(pDX, IDC_Stereo, m_Stereo);
 	//}}AFX_DATA_MAP
 }
 
@@ -85,11 +105,56 @@ END_MESSAGE_MAP()
 /*
  *
  */
+const char *StereoToCStr( CSound* snd, bool *st )
+{
+	static const char empty [] = "";
+	static const char mono [] = "Mono";
+	static const char stereo [] = "Stereo";
+	if ( snd->getBuffer() == NULL )
+	{
+		*st = false;
+		return empty;
+	}
+	else
+	{
+		if ( snd->getBuffer()->isStereo() )
+		{
+			*st = true;
+			return stereo;
+		}
+		else
+		{
+			*st = false;
+			return mono;
+		}
+	}
+}
+
+
+/*
+ *
+ */
+void		CSoundPage::UpdateStereo()
+{
+	bool stereo;
+	m_Stereo = StereoToCStr( _CurrentSound, &stereo );
+	if ( stereo )
+	{
+		m_Pos3D = false;
+	}
+	GetDlgItem( IDC_Pos3D )->EnableWindow( ! stereo );
+}
+
+
+/*
+ *
+ */
 void		CSoundPage::getPropertiesFromSound()
 {
 	m_Filename = _CurrentSound->getFilename().c_str();
 	m_Gain = _CurrentSound->getGain();
 	m_Pos3D = _CurrentSound->isDetailed();
+	UpdateStereo();
 
 	if ( m_Pos3D )
 	{
@@ -155,7 +220,9 @@ void CSoundPage::OnApply()
 	(static_cast<CSource_sounds_builderDlg*>(GetOwner()))->setModified();
 
 	nlassert( _Tree && _CurrentSound );
-	_Tree->SetItemText( _HItem, m_Filename );
+
+	CString s = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem ) + " (" + m_Filename + ")";
+	_Tree->SetItemText( _HItem, s );
 	_Tree->SelectItem( NULL );
 
 	GetOwner()->SetFocus();
@@ -184,11 +251,37 @@ void CSoundPage::OnCancel()
 void CSoundPage::OnChooseFile() 
 {
 	// Prompt filename
-	CFileDialog opendlg( true, "wav", "", 0, "PCM Wave files (*.wav)|*.wav", this );
+	CFileDialog opendlg( true, "wav", "", OFN_OVERWRITEPROMPT, "PCM Wave files (*.wav)|*.wav", this );
 	if ( opendlg.DoModal()==IDOK )
 	{
+		UpdateData( true );
 		m_Filename = opendlg.GetFileName();
+		try 
+		{
+			LoadSound();
+		}
+		catch ( Exception& e )
+		{
+			CString s;
+			s.Format( "%s", e.what() );
+			AfxMessageBox( s );
+		}
 		UpdateData( false );
+	}
+}
+
+
+/*
+ *
+ */
+void CSoundPage::LoadSound()
+{
+	UpdateCurrentSound();
+	nlassert( _CurrentSound );
+	if ( _CurrentSound->getBuffer() == NULL )
+	{
+		_CurrentSound->loadBuffer( string(m_Filename) );
+		UpdateStereo();
 	}
 }
 
@@ -210,33 +303,13 @@ void CSoundPage::OnPlaySound()
 {
 	CWaitCursor waitcursor;
 
-	if ( _AudioMixer == NULL )
-	{
-		// Load driver
-		_AudioMixer = UAudioMixer::createAudioMixer();
-		try
-		{
-			_AudioMixer->init();
-		}
-		catch( Exception& e )
-		{
-			waitcursor.Restore();
-
-			CString s;
-			s.Format( "No sound driver: %s", e.what() );
-			AfxMessageBox( s );
-			return;
-		}
-	}
-
 	// Load sound
-	UpdateData( true );
-	UpdateCurrentSound();
 	try 
 	{
-		nlassert( _CurrentSound );
-		_CurrentSound->loadBuffer( string(m_Filename) );
-
+		UpdateData( true );
+		LoadSound();
+		UpdateData( false );
+		
 		// Play source
 		if ( _Source == NULL )
 		{
@@ -288,13 +361,14 @@ void CSoundPage::OnLooped()
  */
 void CSoundPage::UpdateCurrentSound()
 {
+	CString name = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem );
 	if ( ! m_Pos3D )
 	{
-		_CurrentSound->setProperties( string(m_Filename), m_Gain, m_Pos3D );
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pos3D );
 	}
 	else
 	{
-		_CurrentSound->setProperties( string(m_Filename), m_Gain, m_Pos3D,
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pos3D,
 			m_MinDist, m_MaxDist, degToRad(m_InnerAngleDeg), degToRad(m_OuterAngleDeg), m_OuterGain );
 	}
 }

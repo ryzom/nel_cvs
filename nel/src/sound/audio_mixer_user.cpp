@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.5 2001/07/18 17:14:35 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.6 2001/07/20 16:08:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,10 +97,10 @@ CAudioMixerUser::~CAudioMixerUser()
 	delete _EnvSounds;
 
 	// Remaining sources (should have been removed and deleted by the user !)
-	set<CSourceUser*>::iterator ips;
-	for ( ips=_Sources.begin(); ips!=_Sources.end(); ++ips )
+	set<CSourceUser*>::iterator ipsrc;
+	for ( ipsrc=_Sources.begin(); ipsrc!=_Sources.end(); ++ipsrc )
 	{
-		delete (*ips); // 3D sources, the envsounds were removed above
+		delete (*ipsrc); // 3D sources, the envsounds were removed above
 	}
 
 	// EnvEffects
@@ -111,10 +111,17 @@ CAudioMixerUser::~CAudioMixerUser()
 	}
 
 	// Sounds
-	vector<CSound*>::iterator ipsnds;
+	vector<CSound*> sndvec;
+	TSoundMap::iterator ipsnds;
 	for ( ipsnds=_Sounds.begin(); ipsnds!=_Sounds.end(); ++ipsnds )
 	{
-		delete (*ipsnds);
+		// We can't delete directly second because the map is based on second->getName()
+		sndvec.push_back( (*ipsnds).second );
+	}
+	vector<CSound*>::iterator ips;
+	for ( ips=sndvec.begin(); ips!=sndvec.end(); ++ips )
+	{
+		delete (*ips);
 	}
 
 	// Tracks
@@ -358,10 +365,34 @@ void				CAudioMixerUser::update()
 
 
 /*
- * Add sound source
+ * Get a TSoundId from a name (returns NULL if not found)
+ */
+TSoundId			CAudioMixerUser::getSoundId( const char *name )
+{
+	// Find sound
+	TSoundMap::iterator ism = _Sounds.find(name);
+	if ( ism == _Sounds.end() )
+	{
+		return NULL;
+	}
+	else
+	{
+		return (*ism).second;
+	}
+}
+
+
+/*
+ * Add a logical sound source (by sound id). To remove a source, just delete it.
  */
 USource				*CAudioMixerUser::createSource( TSoundId id )
 {
+	if ( id == NULL )
+	{
+		nldebug( "AM: Sound not created: invalid sound id" );
+		return NULL;
+	}
+
 	// Create source
 	CSourceUser *source = new CSourceUser( id );
 	_Sources.insert( source );
@@ -379,6 +410,15 @@ USource				*CAudioMixerUser::createSource( TSoundId id )
 	}
 	nldebug( "AM: Source created" ); 
 	return source;
+}
+
+
+/*
+ * Add a logical sound source (returns NULL if name not found). To remove a source, just delete it.
+ */
+USource				*CAudioMixerUser::createSource( const char *name )
+{
+	return createSource( getSoundId( name ) );
 }
 
 
@@ -406,7 +446,7 @@ void				CAudioMixerUser::removeSource( USource *source )
 /*
  * Choose the environmental effect(s) corresponding to tag
  */
-void				CAudioMixerUser::selectEnvEffects( const std::string& tag )
+void				CAudioMixerUser::selectEnvEffects( const char *tag )
 {
 	// Select Env
 	vector<CEnvEffect*>::iterator ipe;
@@ -440,7 +480,7 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 
 	// Load env effects
 	CIFile file;
-	if ( file.open( NLMISC::CPath::lookup( filename ) ) )
+	if ( file.open( CPath::lookup( filename ) ) )
 	{
 		uint32 n = CEnvEffect::load( _EnvEffects, file );
 		nldebug( "AM: Loaded %u environmental effects", n );
@@ -455,14 +495,14 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 /*
  * Load buffers
  */
-void			CAudioMixerUser::loadSoundBuffers( const char *filename, const vector<TSoundId> **idvec )
+void			CAudioMixerUser::loadSoundBuffers( const char *filename )
 {
 	nlassert( filename != NULL );
 	nldebug( "AM: Loading sound buffers..." );
 
 
 	CIFile file;
-	if ( file.open( NLMISC::CPath::lookup( filename ) ) )
+	if ( file.open( CPath::lookup( filename ) ) )
 	{
 		uint32 n = CSound::load( _Sounds, file );
 		nldebug( "AM: Loaded %u sound buffers", n );
@@ -471,8 +511,6 @@ void			CAudioMixerUser::loadSoundBuffers( const char *filename, const vector<TSo
 	{
 		nlwarning( "AM: Sound description file not found: %s", filename );
 	}
-	nlassert( idvec != NULL );
-	*idvec = &_Sounds;
 }
 
 
@@ -485,7 +523,7 @@ void			CAudioMixerUser::loadEnvSounds( const char *filename, UEnvSound **treeRoo
 	nldebug( "AM: Loading environment sounds..." );
 
 	CIFile file;
-	if ( file.open( NLMISC::CPath::lookup( filename ) ) )
+	if ( file.open( CPath::lookup( filename ) ) )
 	{
 		uint32 n = CEnvSoundUser::load( _EnvSounds, file );
 		nldebug( "AM: Loaded %u environment sounds", n );

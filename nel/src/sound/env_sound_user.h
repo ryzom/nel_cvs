@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.6 2001/07/18 17:14:35 cado Exp $
+ * $Id: env_sound_user.h,v 1.7 2001/07/20 16:08:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,7 +103,7 @@ public:
 	/// Moves the envsound (and its transition envsound if it has one)
 	virtual void			setPos( const NLMISC::CVector& pos );
 	/// Select the current env
-	virtual void			selectEnv( const std::string& tag );
+	virtual void			selectEnv( const char *tag );
 	/// Return the children envsounds
 	virtual std::vector<UEnvSound*>& getChildren();
 

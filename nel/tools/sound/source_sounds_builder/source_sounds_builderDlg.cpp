@@ -9,6 +9,7 @@
 using namespace NLMISC;
 
 #include <string>
+#include <fstream>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,6 +48,9 @@ BEGIN_MESSAGE_MAP(CSource_sounds_builderDlg, CDialog)
 	ON_BN_CLICKED(IDC_MoveUp, OnMoveUp)
 	ON_BN_CLICKED(IDC_MoveDown, OnMoveDown)
 	ON_WM_CLOSE()
+	ON_BN_CLICKED(IDC_Import, OnImport)
+	ON_NOTIFY(TVN_BEGINLABELEDIT, IDC_TREE1, OnBeginlabeleditTree1)
+	ON_NOTIFY(TVN_ENDLABELEDIT, IDC_TREE1, OnEndlabeleditTree1)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -132,11 +136,67 @@ void CSource_sounds_builderDlg::ResetTree()
  */
 void CSource_sounds_builderDlg::OnAddSound() 
 {
+	AddSound( "<New Sound>" );
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::AddSound( const char *name )
+{
 	_Sounds.push_back( new CSound() );
-	HTREEITEM item = m_Tree.InsertItem( _T("New sound"), m_Tree.GetRootItem(), TVI_LAST );
+	HTREEITEM item = m_Tree.InsertItem( name, m_Tree.GetRootItem(), TVI_LAST );
 	m_Tree.SetItemData( item, _Sounds.size()-1 );
 	m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
-	m_Tree.SelectItem( item );
+	m_Tree.EditLabel( item );
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnBeginlabeleditTree1(NMHDR* pNMHDR, LRESULT* pResult) 
+{
+	TV_DISPINFO* pTVDispInfo = (TV_DISPINFO*)pNMHDR;
+
+	CString s = m_Tree.GetItemText( pTVDispInfo->item.hItem );
+	if ( (s != "") && (s[0] == '<' ) )
+	{
+		// Sound added by the user
+		m_Tree.SelectItem( pTVDispInfo->item.hItem );
+		GetDlgItem( IDC_AddSound )->EnableWindow( false );
+		*pResult = 0;
+	}
+	else
+	{
+		*pResult = 1;
+	}
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnEndlabeleditTree1(NMHDR* pNMHDR, LRESULT* pResult) 
+{
+	TV_DISPINFO* pTVDispInfo = (TV_DISPINFO*)pNMHDR;
+
+	if ( (pTVDispInfo->item.pszText != NULL) && (pTVDispInfo->item.pszText[0] != '\0') )
+	{
+		// Changed
+		CString s;
+		s.Format( "%s*", pTVDispInfo->item.pszText );
+		m_Tree.SetItemText( pTVDispInfo->item.hItem, s );
+	}
+	else
+	{
+		// Cancelled
+		m_Tree.SetItemText( pTVDispInfo->item.hItem, "<New Sound>*" );
+	}
+
+	GetDlgItem( IDC_AddSound )->EnableWindow( true );
+	*pResult = 0;
 }
 
 
@@ -257,10 +317,29 @@ void CSource_sounds_builderDlg::OnMoveDown()
 /*
  *
  */
+CString CSource_sounds_builderDlg::SoundName( HTREEITEM hitem )
+{
+	CString s = m_Tree.GetItemText( hitem );
+	uint last;
+	if ( s[s.GetLength()-1] == '*' )
+	{
+		last = s.GetLength()-2;
+	}
+	else
+	{
+		last = s.ReverseFind( '(' )-2;
+	}
+	return s.Left( last+1 );
+}
+
+
+/*
+ *
+ */
 void CSource_sounds_builderDlg::OnSave() 
 {
 	// Prompt filename
-	CFileDialog savedlg( false, "nss", "sounds.nss", OFN_OVERWRITEPROMPT, "NeL Source Sounds (*.nss)|*.nss", this );
+	CFileDialog savedlg( false, "nss", "sounds.nss", OFN_OVERWRITEPROMPT, "NeL Source Sounds (*.nss)|*.nss||", this );
 	if ( savedlg.DoModal()==IDOK )
 	{
 		CWaitCursor waitcursor;
@@ -284,27 +363,37 @@ void CSource_sounds_builderDlg::OnSave()
 void CSource_sounds_builderDlg::OnLoad() 
 {
 	// Prompt filename
-	CFileDialog opendlg( true, "nss", "", 0, "NeL Source Sounds (*.nss)|*.nss", this );
+	CFileDialog opendlg( true, "nss", "", OFN_HIDEREADONLY, "NeL Source Sounds (*.nss)|*.nss||", this );
 	if ( opendlg.DoModal()==IDOK )
 	{
 		CWaitCursor waitcursor;
 
-		// Clear tree
+		// Clear tree and sound vector
 		ResetTree();
 		_SoundPage->ShowWindow( SW_HIDE );
 		((CButton*)GetDlgItem( IDC_Save ))->EnableWindow( true );
+		_Sounds.clear();
 
 		// Load
 		CIFile file;
 		file.open( string( opendlg.GetPathName() ), false );
-		CSound::load( _Sounds, file );
+		TSoundMap soundmap;
+		CSound::load( soundmap, file );
+		TSoundMap::iterator ipsnds;
+		for ( ipsnds=soundmap.begin(); ipsnds!=soundmap.end(); ++ipsnds )
+		{
+			_Sounds.push_back( (*ipsnds).second );
+		}
+
 		file.close();
 
 		// Update tree
 		uint32 i;
 		for ( i=0; i!=_Sounds.size(); i++ )
 		{
-			HTREEITEM item = m_Tree.InsertItem( _Sounds[i]->getFilename().c_str(), m_Tree.GetRootItem(), TVI_LAST );
+			CString s;
+			s.Format( "%s (%s)", _Sounds[i]->getName().c_str(), _Sounds[i]->getFilename().c_str() );
+			HTREEITEM item = m_Tree.InsertItem( s, m_Tree.GetRootItem(), TVI_LAST );
 			m_Tree.SetItemData( item, i );
 		}
 		m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
@@ -337,3 +426,55 @@ void CSource_sounds_builderDlg::OnClose()
 		}
 	}
 }
+
+
+/*
+ *
+ */
+HTREEITEM CSource_sounds_builderDlg::FindInTree( char *name )
+{
+	HTREEITEM hitem = m_Tree.GetChildItem( m_Tree.GetRootItem() );
+	while ( hitem != NULL )
+	{
+		if ( SoundName( hitem ) == CString(name) )
+		{
+			return hitem;
+		}
+		hitem = m_Tree.GetNextItem( hitem, TVGN_NEXT );
+	}
+	return NULL;
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnImport() 
+{
+	// Prompt filename
+	CFileDialog opendlg( true, "nsn", "", OFN_HIDEREADONLY, "NeL Sounds Names (*.nsn; *.txt)|*.nsn; *.txt||", this );
+	if ( opendlg.DoModal()==IDOK )
+	{
+		CWaitCursor waitcursor;
+
+		char name [80];
+		ifstream fs;
+		fs.open( opendlg.GetPathName() );
+		while ( ! fs.eof() )
+		{
+			fs.getline( name, 40 );
+
+			// Add new name if not already existing (useful for new versions of the names file)
+			HTREEITEM hitem = FindInTree( name );
+			if ( hitem == NULL )
+			{
+				AddSound( (string(name)+string("*")).c_str() );
+			}
+
+			// Note1: does not check if some names have been removed
+			// Note2: does not check if there is twice the same name
+		}
+		fs.close();
+	}
+}
+

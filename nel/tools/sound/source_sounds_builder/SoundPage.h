@@ -9,6 +9,8 @@
 #include "nel/sound/u_audio_mixer.h"
 using namespace NLSOUND;
 
+#include <string>
+
 
 // SoundPage.h : header file
 //
@@ -34,6 +36,7 @@ public:
 	UINT	m_OuterAngleDeg;
 	float	m_OuterGain;
 	BOOL	m_Looped;
+	CString	m_Stereo;
 	//}}AFX_DATA
 
 
@@ -72,6 +75,8 @@ protected:
 	USource						*_Source;
 
 	void						UpdateCurrentSound();
+	void						UpdateStereo();
+	void						LoadSound();
 };
 
 //{{AFX_INSERT_LOCATION}}

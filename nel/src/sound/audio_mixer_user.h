@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.6 2001/07/19 12:49:41 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.7 2001/07/20 16:08:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "driver/source.h"
 #include "listener_user.h"
 #include "track.h"
+#include "sound.h"
 #include <vector>
 #include <set>
 
@@ -93,24 +94,31 @@ public:
 	/// Load environmental effects
 	virtual void				loadEnvEffects( const char *filename );
 	/// Load buffers
-	virtual void				loadSoundBuffers( const char *filename,
-											  const std::vector<TSoundId> **idvec );
+	virtual void				loadSoundBuffers( const char *filename );
 	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
 	virtual	void				loadEnvSounds( const char *filename,
 											   UEnvSound **treeRoot=NULL );
-	/// Add logical sound source
-	virtual USource				*createSource( TSoundId id );
+	/// Get a TSoundId from a name (returns NULL if not found)
+	virtual TSoundId	getSoundId( const char *name );
+
+
+	/// Add a logical sound source (returns NULL if name not found). To remove a source, just delete it.
+	virtual USource		*createSource( const char *name );
+	/// Add a logical sound source (by sound id). To remove a source, just delete it.
+	virtual USource		*createSource( TSoundId id );
+
+
 	/// Return the listener interface
 	virtual UListener			*getListener()	{ return &_Listener; }
 
 
 	/// Choose the environmental effect(s) corresponding to tag
-	virtual void				selectEnvEffects( const std::string& tag );
+	virtual void				selectEnvEffects( const char *tag );
 	/// Update audio mixer (call evenly)
 	virtual void				update(); 
 
 
-	/// Remove logical sound source
+	/// Remove logical sound source (called by CSourceUser's destructor)
 	void						removeSource( USource *source );
 	/// Add a source which was created by an EnvSound
 	void						addSource( CSourceUser *source )		{ _Sources.insert( source ); }
@@ -147,7 +155,7 @@ private:
 	ISoundDriver				*_SoundDriver;
 
 	/// Sound buffers and static properties
-	std::vector<CSound*>		_Sounds;
+	TSoundMap					_Sounds;
 
 	/// The listener instance
 	CListenerUser				_Listener;

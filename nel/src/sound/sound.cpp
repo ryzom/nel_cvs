@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.4 2001/07/19 12:48:57 cado Exp $
+ * $Id: sound.cpp,v 1.5 2001/07/20 16:08:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,8 @@ void				CSound::serial( NLMISC::IStream& s )
 	// If you change this, increment the version number in serialFileHeader()
 	
 	// Static properties
+	s.serial( _Name );
+	s.serial( _Filename );
 	s.serial( _Gain );
 	s.serial( _Detailed );
 	if ( _Detailed )
@@ -95,7 +97,6 @@ void				CSound::serial( NLMISC::IStream& s )
 		s.serial( _ConeOuterAngle );
 		s.serial( _ConeOuterGain );
 	}
-	s.serial( _Filename );
 	
 	if ( s.isReading() )
 	{
@@ -123,9 +124,17 @@ void				CSound::serial( NLMISC::IStream& s )
 void				CSound::loadBuffer( const std::string& filename )
 {
 	_Buffer = _SoundDriver->createBuffer();
-	if ( ! _SoundDriver->loadWavFile( _Buffer, CPath::lookup( _Filename ).c_str() ) )
+	try
 	{
-		throw ESoundFileNotFound( _Filename );
+		if ( ! _SoundDriver->loadWavFile( _Buffer, CPath::lookup( _Filename ).c_str() ) )
+		{
+			throw ESoundFileNotFound( _Filename );
+		}
+	}
+	catch ( Exception& )
+	{
+		_Buffer = NULL;
+		throw;
 	}
 }
 
@@ -136,7 +145,7 @@ void				CSound::loadBuffer( const std::string& filename )
 void				CSound::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 {
 	s.serialCheck( (uint32)'SSN' ); // NeL Source Sounds
-	s.serialVersion( 0 );
+	s.serialVersion( 1 );
 	s.serial( nb );
 }
 
@@ -144,7 +153,7 @@ void				CSound::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 /*
  * Load several sounds and return the number of sound loaded
  */
-uint32				CSound::load( std::vector<CSound*>& container, NLMISC::IStream& s )
+uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s )
 {
 	if ( s.isReading() )
 	{
@@ -157,7 +166,8 @@ uint32				CSound::load( std::vector<CSound*>& container, NLMISC::IStream& s )
 			{
 				sound = new CSound();
 				s.serial( *sound );
-				container.push_back( sound );
+				nlassert( ! sound->getName().empty() );
+				container[ sound->getName().c_str() ] = sound;
 			}
 			catch ( ESoundFileNotFound& e )
 			{
@@ -179,11 +189,13 @@ uint32				CSound::load( std::vector<CSound*>& container, NLMISC::IStream& s )
 /*
  * Set properties (EDIT)
  */
-void				CSound::setProperties( const std::string& filename, float gain, bool detail,
+void				CSound::setProperties( const std::string& name, const std::string& filename,
+										   float gain, bool detail,
 										   float mindist, float maxdist,
 										   float innerangle, float outerangle, float outergain )
 {
-	_Filename = filename; _Gain = gain; _Detailed = detail; _MinDist = mindist; _MaxDist = maxdist;
+	_Name = name; _Filename = filename;
+	_Gain = gain; _Detailed = detail; _MinDist = mindist; _MaxDist = maxdist;
 	_ConeInnerAngle = innerangle; _ConeOuterAngle = outerangle; _ConeOuterGain = outergain;
 }
 

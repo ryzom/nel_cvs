@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.4 2001/07/19 12:48:57 cado Exp $
+ * $Id: sound.h,v 1.5 2001/07/20 16:08:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,12 +29,28 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include <string>
+#include <hash_map>
 
 namespace NLSOUND {
 
 
 class ISoundDriver;
 class IBuffer;
+class CSound;
+
+
+// Comparision for const char*
+struct eqstr
+{
+  bool operator()(const char* s1, const char* s2) const
+  {
+    return strcmp(s1, s2) == 0;
+  }
+};
+
+
+/// Sound names hash map
+typedef std::hash_map<const char*, CSound*, std::hash<const char*>, eqstr> TSoundMap;
 
 
 /**
@@ -64,7 +80,7 @@ public:
 	/// Serialize file header
 	static void			serialFileHeader( NLMISC::IStream& s, uint32& nb );
 	/// Load several sounds and return the number of sounds loaded
-	static uint32		load( std::vector<CSound*>& container, NLMISC::IStream& s );
+	static uint32		load( TSoundMap& container, NLMISC::IStream& s );
 
 	/// Return the buffer
 	IBuffer				*getBuffer()					{ return _Buffer; }
@@ -86,9 +102,12 @@ public:
 	uint32				getDuration() const;
 	/// Return the filename
 	const std::string&	getFilename() const					{ return _Filename; }
+	/// Return the name (must be unique)
+	const std::string&	getName() const						{ return _Name; }
 
 	/// Set properties (EDIT)
-	void				setProperties( const std::string& filename, float gain, bool detail,
+	void				setProperties( const std::string& name, const std::string& filename,
+									   float gain, bool detail,
 									   float mindist=1.0f, float maxdist=1000000.0f,
 									   float innerangle=6.283185f, float outerangle=6.283185f, // 360°
 									   float outergain=1.0f );
@@ -110,8 +129,10 @@ private:
 	float				_MinDist, _MaxDist;
 	float				_ConeInnerAngle, _ConeOuterAngle, _ConeOuterGain;
 
-	// Filename (required for output (EDIT) and for sound buffer sharing when loading)
+	// Sound name and filename (required for output (EDIT))
 	std::string			_Filename;
+	std::string			_Name;
+
 };
 
 

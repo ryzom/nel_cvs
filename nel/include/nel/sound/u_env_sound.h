@@ -1,7 +1,7 @@
 /** \file u_env_sound.h
  * UEnvSound: Game interface for localized environment sounds
  *
- * $Id: u_env_sound.h,v 1.4 2001/07/17 16:56:41 cado Exp $
+ * $Id: u_env_sound.h,v 1.5 2001/07/20 16:08:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	/// Moves the envsound (and its transition envsound if it has one)
 	virtual void					setPos( const NLMISC::CVector& pos ) = 0;
 	/// Select the current env
-	virtual void					selectEnv( const std::string& tag ) = 0;
+	virtual void					selectEnv( const char *tag ) = 0;
 	/// Return the children envsounds
 	virtual std::vector<UEnvSound*>& getChildren() = 0;
 

@@ -26,6 +26,7 @@ public:
 	CSource_sounds_builderDlg(CWnd* pParent = NULL);	// standard constructor
 
 	void	setModified() { _Modified = true; }
+	CString SoundName( HTREEITEM hitem );
 	
 // Dialog Data
 	//{{AFX_DATA(CSource_sounds_builderDlg)
@@ -57,6 +58,9 @@ protected:
 	afx_msg void OnMoveUp();
 	afx_msg void OnMoveDown();
 	afx_msg void OnClose();
+	afx_msg void OnImport();
+	afx_msg void OnBeginlabeleditTree1(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnEndlabeleditTree1(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -67,6 +71,8 @@ protected:
 	bool				_Modified;
 
 	void				ResetTree();
+	void				AddSound( const char *name );
+	HTREEITEM			FindInTree( char *name );
 
 };
 

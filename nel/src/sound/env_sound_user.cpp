@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.8 2001/07/19 12:50:43 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.9 2001/07/20 16:08:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,21 +164,21 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 /*
  * Select current env
  */
-void			CEnvSoundUser::selectEnv( const std::string& tag )
+void			CEnvSoundUser::selectEnv( const char *tag )
 {
 	uint i;
 	for ( i=0; i!= _Tags.size(); i++ )
 	{
-		if ( _Tags[i] == tag )
+		if ( _Tags[i] == string(tag) )
 		{
 			_Source->enable( false, 1.0f );
 			_Source = _SrcBank[i];
-			nldebug( "AM: EnvSound: Environment changed to %s", tag.c_str() );
+			nldebug( "AM: EnvSound: Environment changed to %s", tag );
 			CAudioMixerUser::instance()->getEnvSounds()->recompute();
 			return;
 		}
 	}
-	nldebug( "AM: EnvSound: Environment %s not found", tag.c_str() );
+	nldebug( "AM: EnvSound: Environment %s not found", tag );
 	// Don't change _Source if not found
 }
 

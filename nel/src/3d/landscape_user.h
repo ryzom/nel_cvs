@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.2 2001/06/26 15:22:31 berenguier Exp $
+ * $Id: landscape_user.h,v 1.3 2001/08/22 16:40:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,8 +81,10 @@ public:
 	virtual	void	loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile);
 	/// Load all Zones around a position. This is a blocking call.
 	virtual	void	loadAllZonesAround(const CVector &pos, float radius);
+	virtual	void	loadAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded);
 	/// Delete old zones, or load new zones, around a position. new Zones are loaded async.
 	virtual	void	refreshZonesAround(const CVector &pos, float radius);
+	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved);
 	// @}
 
 

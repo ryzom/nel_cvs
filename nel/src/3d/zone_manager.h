@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: zone_manager.h,v 1.2 2001/08/22 16:40:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,8 @@ struct CLoadZone
     
 	CLoadZone() : NameZone (std::string("")), IdZone (0), LoadAsked (false), Loaded (false), LoadInProgress (false), Runnable(NULL), FileNotFound(false) {}
 	CLoadZone (std::string name, uint16 idZone , bool loadAsked) : NameZone (name), IdZone (idZone), LoadAsked (loadAsked), Loaded (false), LoadInProgress (false), Runnable(NULL), FileNotFound(false) {}
+
+	std::string	getNameWithoutExtension() const;
 };
 
 /**
@@ -77,11 +79,15 @@ public:
 	uint16	IdZoneToRemove;
 	// Set to true when zone is removed
 	bool	ZoneRemoved;
+	// Name of the Zone for remove to landscape
+	std::string		NameZoneRemoved;
 
 	// Set to true when zone is added
 	bool	ZoneAdded;
 	// Zone for add to landscape
 	CZone	*Zone;
+	// Name of the Zone for add to landscape
+	std::string		NameZoneAdded;
 
 	/// Constructor
 	CZoneManager();

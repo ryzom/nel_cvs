@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.6 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.7 2001/08/22 16:40:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,16 +77,22 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	}
 
 }
+
+
 //****************************************************************************
-void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius)
+void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded)
 {
+	zonesAdded.clear();
+
 	_ZoneManager.loadAllZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius, true);
 	while(_ZoneManager.getTaskListSize() != 0)
 	{
 		if(!_ZoneManager.ZoneAdded)
 		{
 			_Landscape->Landscape.addZone(*_ZoneManager.Zone);
+
 			delete _ZoneManager.Zone;
+			zonesAdded.push_back(_ZoneManager.NameZoneAdded);
 			_ZoneManager.ZoneAdded = true;
 		}
 		else
@@ -99,8 +105,25 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius)
 	_Landscape->Landscape.checkBinds();
 }
 //****************************************************************************
+void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius)
+{
+	std::vector<std::string>	dummy;
+	loadAllZonesAround(pos, radius, dummy);
+}
+
+
+//****************************************************************************
 void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius)
 {
+	std::string	dummy1, dummy2;
+	refreshZonesAround(pos, radius, dummy1, dummy2);
+}
+//****************************************************************************
+void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved)
+{
+	zoneRemoved= "";
+	zoneAdded= "";
+
 	// Check if new zone must be added to landscape
 	if(!_ZoneManager.ZoneAdded)
 	{
@@ -110,6 +133,7 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius)
 		_Landscape->Landscape.checkBinds(_ZoneManager.Zone->getZoneId());
 
 		delete _ZoneManager.Zone;
+		zoneAdded= _ZoneManager.NameZoneAdded;
 		_ZoneManager.ZoneAdded = true;
 	}
 
@@ -117,13 +141,13 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius)
 	if(!_ZoneManager.ZoneRemoved)
 	{
 		_Landscape->Landscape.removeZone(_ZoneManager.IdZoneToRemove);
+
+		zoneRemoved= _ZoneManager.NameZoneRemoved;
 		_ZoneManager.ZoneRemoved = true;
 	}
 
 	_ZoneManager.loadAllZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius, false);
 }
-
-
 
 
 //****************************************************************************

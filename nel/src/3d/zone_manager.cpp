@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: zone_manager.cpp,v 1.3 2001/08/22 16:40:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,6 +214,7 @@ void CZoneLoadingTask::run(void)
 		file.close();
 
 		_Lz->IdZone = _Zm->Zone->getZoneId();
+		_Zm->NameZoneAdded= _Lz->getNameWithoutExtension();
 		_Zm->ZoneAdded = false;
 		_Lz->LoadInProgress = false;
 		_Lz->Loaded = true;
@@ -241,11 +242,19 @@ void CZoneUnloadingTask::run(void)
 		_Zm->getTask()->sleepTask();
 	}
 	_Zm->IdZoneToRemove = _Lz->IdZone;
+	_Zm->NameZoneRemoved= _Lz->getNameWithoutExtension();
 	_Zm->ZoneRemoved = false;
 
 	delete _Lz;
 	delete this;
 }
+
+
+std::string	CLoadZone::getNameWithoutExtension() const
+{
+	return NameZone.substr(0, NameZone.find('.'));
+}
+
 
 
 

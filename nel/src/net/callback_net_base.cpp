@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.36 2002/08/22 14:24:43 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.37 2002/08/22 14:32:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -411,6 +411,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 
 	while (!exit)
 	{
+		nlwarning ("avant dataava");
 		// process all messages in the queue
 		while (dataAvailable ())
 		{
@@ -421,6 +422,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 				break;
 			}
 		}
+		nlwarning ("apres dataava");
 
 		// need to exit?
 		if (timeout != -1 && (timeout == 0 || (sint32)(CTime::getLocalTime() - t0) > timeout))

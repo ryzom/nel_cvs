@@ -661,7 +661,7 @@ namespace NLAISCRIPT
 	/// Compiles the conds and concs internaly
 	void COperatorClass::buildLogicTables()
 	{
-		_FactBase = new NLAILOGIC::CFactBase();
+//		_FactBase = new NLAILOGIC::CFactBase();
 		int i;
 		for ( i = 0; i < (int) _CondAsserts.size() ; i++ )
 		{

@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.7 2003/08/29 15:34:15 lecroart Exp $
+ * $Id: ucstring.h,v 1.8 2003/09/01 12:06:07 lecroart Exp $
  *
  */
 
@@ -148,7 +148,7 @@ public:
 		ucstring::const_iterator first(begin()), last(end());
 		for (; first != last; ++first)
 		{
-			ucchar	c = *first;
+			//ucchar	c = *first;
 			uint nbLoop = 0;
 			if (*first < 0x80)
 				res += char(*first);

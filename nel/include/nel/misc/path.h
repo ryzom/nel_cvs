@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.24 2002/07/01 09:27:07 lecroart Exp $
+ * $Id: path.h,v 1.25 2002/07/02 15:56:05 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -275,7 +275,7 @@ struct CFile
 	 *
 	 * ie:
 	 * void cb (const std::string &filename) { nlinfo ("the file %s changed", filename.c_str()); }
-	 * CPath::addFileChangeCallback ("myfile.txt", cb);
+	 * CFile::addFileChangeCallback ("myfile.txt", cb);
 	 *
 	 */
 	static void addFileChangeCallback (const std::string &filename, void (*)(const std::string &filename));

@@ -94,7 +94,7 @@ plugin material NelMaterial
     classID:#(0x64c75fec, 0x222b9eb9)
     extends:standard 
 	replaceUI:false 
-	version:4.0
+	version:5.0
 (
 	local loadShader
 	local globalUpdateUI
@@ -144,6 +144,9 @@ plugin material NelMaterial
 		bSpecular		type:#boolean
 		bNormalShader	type:#boolean
 		cUserColor		type:#color default:[255,0,255] ui:cpUserColor
+		
+		-- New in version 5		
+		bExportTextureMatrix    type:#boolean default:false	ui:cbExportTextureMatrix
 	)
 
     parameters textures rollout:NelTexture
@@ -360,6 +363,7 @@ plugin material NelMaterial
 		(
 			dropdownlist dlVertexProgram "Vertex Program" items:#( "Disable" ) across:2
 			ColorPicker cpUserColor "User Color" color:[255,0,0] align:#right height:40
+			CheckBox cbExportTextureMatrix "Export texture matrix"
 		)
 		
 		Fn updateUI update =

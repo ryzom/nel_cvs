@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.30 2003/06/12 14:36:49 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.31 2003/06/16 15:23:01 lecroart Exp $
  *
  */
 
@@ -209,7 +209,8 @@ MYSQL *DatabaseConnection = NULL;
 
 vector<CRequest> Requests;
 
-sint32 AdminEmailAccumlationTime = 5;
+// cumulate 5 seconds of alert
+sint32 AdminAlertAccumlationTime = 5;
 
 //
 // Functions
@@ -298,12 +299,12 @@ MYSQL_ROW sqlNextRow ()
 string Email;
 uint32 FirstEmailTime = 0;
 
-void sendAdminEmail (const char *format, ...)
+void sendAdminAlert (const char *format, ...)
 {
 	char *text;
 	NLMISC_CONVERT_VARGS (text, format, 4096);
 
-	if (AdminEmailAccumlationTime == -1)
+	if (AdminAlertAccumlationTime == -1)
 	{
 		// we don't send email so just display a warning
 		nlwarning ("%s", text);
@@ -324,36 +325,52 @@ void sendAdminEmail (const char *format, ...)
 	}
 }
 
-void updateSendAdminEmail ()
+void updateSendAdminAlert ()
 {
-	if(!Email.empty() && FirstEmailTime != 0 && AdminEmailAccumlationTime >=0 && CTime::getSecondsSince1970() > FirstEmailTime + AdminEmailAccumlationTime)
+	if(!Email.empty() && FirstEmailTime != 0 && AdminAlertAccumlationTime >=0 && CTime::getSecondsSince1970() > FirstEmailTime + AdminAlertAccumlationTime)
 	{
-		vector<string> admins;
-		explode (IService::getInstance()->ConfigFile.getVar("AdminEmail").asString(), ";", admins, true);
-		
 		vector<string> lines;
 		explode (Email, "\n", lines, true);
-		string subject;
 		if (!lines.empty())
 		{
-			if (lines.size() == 1)
+
+			if (IService::getInstance()->ConfigFile.exists("SysLogPath") && IService::getInstance()->ConfigFile.exists("SysLogParams"))
 			{
-				subject = lines[0];
-			}
-			else
-			{
-				subject = "Multiple problems";
-			}
-		
-			for (uint i = 0; i < admins.size(); i++)
-			{
-				if (!sendEmail ("", CInetAddress::localHost().hostName()+"@admin.org", admins[i], subject, Email))
+				// syslog
+				string param;
+				if (lines.size() > 1)
 				{
-					nlwarning ("Can't send email to '%s'", admins[i].c_str());
+					param = "Multiple problems, first is: ";
+				}
+				param += lines[0];
+				string res = toString(IService::getInstance()->ConfigFile.getVar("SysLogParams").asString().c_str(), param.c_str());
+				launchProgram(IService::getInstance()->ConfigFile.getVar("SysLogPath").asString(), res);
+			}
+
+			if (IService::getInstance()->ConfigFile.exists("AdminEmail"))
+			{
+				// email
+				string subject;
+				if (lines.size() == 1)
+				{
+					subject = lines[0];
 				}
 				else
 				{
-					nlinfo ("Sent email to admin %s the subject: %s", admins[i].c_str(), subject.c_str());
+					subject = "Multiple problems";
+				}
+				
+				CConfigFile::CVar &var = IService::getInstance()->ConfigFile.getVar("AdminEmail");
+				for (sint i = 0; i < var.size(); i++)
+				{
+					if (!sendEmail ("", CInetAddress::localHost().hostName()+"@admin.org", var.asString(i), subject, Email))
+					{
+						nlwarning ("Can't send email to '%s'", var.asString(i).c_str());
+					}
+					else
+					{
+						nlinfo ("Sent email to admin %s the subject: %s", var.asString(i).c_str(), subject.c_str());
+					}
 				}
 			}
 		}
@@ -368,7 +385,7 @@ static void cbAdminEmail (CMessage &msgin, const std::string &serviceName, uint1
 {
 	string str;
 	msgin.serial(str);
-	sendAdminEmail (str.c_str());
+	sendAdminAlert (str.c_str());
 }
 
 static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint16 sid)
@@ -1750,9 +1767,9 @@ void addRequest (const string &rawvarpath, TSockId from)
 }
 
 
-void varAdminEmailAccumlationTime (CConfigFile::CVar &var)
+void varAdminAlertAccumlationTime (CConfigFile::CVar &var)
 {
-	AdminEmailAccumlationTime = var.asInt();
+	AdminAlertAccumlationTime = var.asInt();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1787,8 +1804,8 @@ public:
 		CUnifiedNetwork::getInstance ()->setServiceUpCallback ("AES", cbAESConnection);
 		CUnifiedNetwork::getInstance ()->setServiceDownCallback ("AES", cbAESDisconnection);
 
-		ConfigFile.setCallback("AdminEmailAccumlationTime", &varAdminEmailAccumlationTime);
-		varAdminEmailAccumlationTime (ConfigFile.getVar ("AdminEmailAccumlationTime"));
+		ConfigFile.setCallback("AdmimAlertAccumlationTime", &varAdminAlertAccumlationTime);
+		varAdminAlertAccumlationTime (ConfigFile.getVar ("AdminAlertAccumlationTime"));
 
 		//
 		// Get the list of AESHosts, add in the structures and create connection to all AES
@@ -1840,7 +1857,7 @@ public:
 		cleanRequest ();
 		connectionWebUpdate ();
 		
-		updateSendAdminEmail ();
+		updateSendAdminAlert ();
 		return true;
 	}
 
@@ -1897,6 +1914,15 @@ NLMISC_COMMAND (displayRequests, "display all pending requests", "")
 		log.displayNL ("id: %d wait: %d recv: %d from: %s nbrow: %d", Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived, Requests[i].From->asString ().c_str (), Requests[i].NbRow);
 	}
 	log.displayNL ("End of display pending requests");
+
+	return true;
+}
+
+NLMISC_COMMAND (generateAlert, "generate an alert", "<text>")
+{
+	if(args.size() != 1) return false;
+	
+	sendAdminAlert (args[0].c_str());
 
 	return true;
 }

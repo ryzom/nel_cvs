@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.6 2001/07/25 08:40:58 cado Exp $
+ * $Id: source_al.h,v 1.7 2001/08/02 13:47:05 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,6 +117,12 @@ public:
 	virtual void			setGain( float gain );
 	/// Get the gain
 	virtual float			getGain() const;
+	/** Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
+	 * of one octave. 0 is not a legal value.
+	 */
+	virtual void			setPitch( float pitch );
+	/// Get the pitch
+	virtual float			getPitch() const;
 	/// Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false)
 	virtual void			setSourceRelativeMode( bool mode );
 	/// Get the source relative mode

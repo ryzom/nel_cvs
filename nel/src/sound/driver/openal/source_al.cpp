@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.8 2001/07/25 08:40:58 cado Exp $
+ * $Id: source_al.cpp,v 1.9 2001/08/02 13:47:05 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -282,6 +282,29 @@ float					CSourceAL::getGain() const
 	alGetSourcef( _SourceName, AL_GAIN, &gain );
 	TestALError();
 	return gain;
+}
+
+
+/* Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
+ * of one octave. 0 is not a legal value.
+ */
+void					CSourceAL::setPitch( float pitch )
+{
+	nlassert( (pitch > 0) && (pitch <= 1.0f ) );
+	alSourcef( _SourceName, AL_PITCH, pitch );
+	TestALError();
+}
+
+
+/*
+ * Get the pitch
+ */
+float					CSourceAL::getPitch() const
+{
+	ALfloat pitch;
+	alGetSourcef( _SourceName, AL_PITCH, &pitch );
+	TestALError();
+	return pitch;
 }
 
 

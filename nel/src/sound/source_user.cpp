@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.8 2001/07/26 13:39:33 cado Exp $
+ * $Id: source_user.cpp,v 1.9 2001/08/02 13:47:26 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,7 @@ namespace NLSOUND {
 CSourceUser::CSourceUser( TSoundId id ) :
 	_Priority(MidPri), _Playing(false),
 	_Position(CVector::Null), _Velocity(CVector::Null), _Direction(CVector::Null),
-	_Gain(1.0f), _RelativeMode(false), _Looping(false),
+	_Gain(1.0f), _Pitch(1.0f), _RelativeMode(false), _Looping(false),
 	_Track(NULL), _3DPosition(NULL)
 {
 	setSound( id );
@@ -87,12 +87,14 @@ void					CSourceUser::setSound( TSoundId id )
 			nlassert( _Sound->getBuffer() != NULL );
 			nlassert( ! isPlaying() );
 			_Track->DrvSource->setStaticBuffer( _Sound->getBuffer() );
+
+			// Take into account the static property in _Sound (including the gain)
 			_Track->DrvSource->setGain( _Gain );
 			if ( ! _Sound->getBuffer()->isStereo() )
 			{
 				_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );
 				_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
-				_Track->DrvSource->setDirection( _Direction );
+				_Track->DrvSource->setDirection( _Direction ); // apply cone
 			}
 		}
 	}
@@ -303,6 +305,22 @@ float					CSourceUser::getRelativeGain() const
 }
 
 
+/* Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
+ * of one octave. 0 is not a legal value.
+ */
+void					CSourceUser::setPitch( float pitch )
+{
+	nlassert( (pitch > 0) && (pitch <= 1.0f ) );
+	_Pitch = pitch;
+
+	// Set the pitch
+	if ( _Track != NULL )
+	{
+		_Track->DrvSource->setPitch( pitch );
+	}
+}
+
+
 /*
  * Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false)
  */
@@ -338,6 +356,7 @@ void					CSourceUser::copyToTrack()
 	_Track->DrvSource->setGain( _Gain );
 	_Track->DrvSource->setSourceRelativeMode( _RelativeMode );
 	_Track->DrvSource->setLooping( _Looping );
+	_Track->DrvSource->setPitch( _Pitch );
 }
 
 

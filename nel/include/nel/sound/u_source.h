@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.4 2001/07/17 14:30:24 cado Exp $
+ * $Id: u_source.h,v 1.5 2001/08/02 13:48:44 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,6 +117,12 @@ public:
 	virtual void					setRelativeGain( float gain ) = 0;
 	/// Return the relative gain (see setRelativeGain()), or the absolute gain if getSource() is null.
 	virtual float					getRelativeGain() const = 0;
+	/** Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
+	 * of one octave. 0 is not a legal value.
+	 */
+	virtual void					setPitch( float pitch ) = 0;
+	/// Get the pitch
+	virtual float					getPitch() const = 0;
 	/// Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false)
 	virtual void					setSourceRelativeMode( bool mode ) = 0;
 	/// Get the source relative mode

@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.6 2001/07/17 16:57:42 cado Exp $
+ * $Id: source_user.h,v 1.7 2001/08/02 13:47:26 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,6 +118,12 @@ public:
 	virtual void					setRelativeGain( float gain );
 	/// Return the relative gain (see setRelativeGain()), or the absolute gain if getSource() is null.
 	virtual float					getRelativeGain() const;
+	/** Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
+	 * of one octave. 0 is not a legal value.
+	 */
+	virtual void					setPitch( float pitch );
+	/// Get the pitch
+	virtual float					getPitch() const							{ return _Pitch; }
 	/// Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false)
 	virtual void					setSourceRelativeMode( bool mode );
 	/// Get the source relative mode
@@ -164,6 +170,7 @@ private:
 	NLMISC::CVector					_Velocity;
 	NLMISC::CVector					_Direction;
 	float							_Gain;
+	float							_Pitch;
 	bool							_RelativeMode;
 
 	// Corresponding track (if selected for playing)

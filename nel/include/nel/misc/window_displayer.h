@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.1 2001/11/05 15:42:49 lecroart Exp $
+ * $Id: window_displayer.h,v 1.2 2001/11/19 14:08:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #include "nel/misc/displayer.h"
 #include "nel/misc/mutex.h"
+#include "nel/misc/thread.h"
 
 namespace NLMISC {
 
@@ -47,10 +48,12 @@ class CWindowDisplayer : public NLMISC::IDisplayer
 public:
 
 	CWindowDisplayer (const char *displayerName = "") :
-	  IDisplayer(displayerName), _Init (false), _ToolBarHeight (25), _InputEditHeight (25),
-		_Buffer("CWindowDisplayer::_Buffer"), _Labels ("CWindowDisplayer::_Labels"), _CommandsToExecute ("CWindowDisplayer::_CommandsToExecute"),
-		_Continue (true)
+	  IDisplayer(displayerName), _Init(false), _ToolBarHeight(25), _InputEditHeight(25),
+		_Buffer("CWindowDisplayer::_Buffer"), _Labels("CWindowDisplayer::_Labels"), _CommandsToExecute("CWindowDisplayer::_CommandsToExecute"),
+		_Continue(true), _Thread(NULL)
 	  { }
+
+	virtual ~CWindowDisplayer ();
 
 	// open the window and run the display thread (MT)
 	void	create (std::string windowNameEx = "", sint x = -1, sint y = -1, sint w = 700, sint h = 300, sint hs = 10000);
@@ -99,6 +102,9 @@ protected:
 	sint _HistorySize;
 	sint _ToolBarHeight;
 	sint _InputEditHeight;
+
+	// the thread used to update the display
+	NLMISC::IThread *_Thread;
 
 	friend class CUpdateThread;
 };

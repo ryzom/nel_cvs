@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.10 2001/11/13 11:57:17 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.11 2001/11/19 14:06:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -355,7 +355,7 @@ void CWinDisplayer::clear ()
 
 void CWinDisplayer::display_main ()
 {
-	while (true)
+	while (_Continue)
 	{
 		//
 		// Display the bufferized string

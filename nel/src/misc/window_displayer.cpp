@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.1 2001/11/05 15:42:36 lecroart Exp $
+ * $Id: window_displayer.cpp,v 1.2 2001/11/19 14:06:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,15 @@ public:
 	}
 };
 
+CWindowDisplayer::~CWindowDisplayer ()
+{
+	// we have to wait the exit of the thread
+	_Continue = false;
+	nlassert (_Thread != NULL);
+	_Thread->wait();
+	delete _Thread;
+}
+
 bool CWindowDisplayer::update ()
 {
 	vector<string> copy;
@@ -102,9 +111,10 @@ void CWindowDisplayer::setLabel (uint label, const string &value)
 
 void CWindowDisplayer::create (string windowNameEx, sint x, sint y, sint w, sint h, sint hs)
 {
-	IThread *thread = IThread::create (new CUpdateThread(this, windowNameEx, x, y, w, h, hs));
+	nlassert (_Thread == NULL);
+	_Thread = IThread::create (new CUpdateThread(this, windowNameEx, x, y, w, h, hs));
 	
-	thread->start ();
+	_Thread->start ();
 }
 
 void CWindowDisplayer::doDisplay (const NLMISC::TDisplayInfo &args, const char *message)

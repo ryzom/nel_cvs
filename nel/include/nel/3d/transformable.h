@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.2 2001/03/19 14:07:57 berenguier Exp $
+ * $Id: transformable.h,v 1.3 2001/03/19 15:38:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,9 @@ public:
 	{
 		DirectMatrix=0,		// DirectMatrixMode (default).
 		RotEuler,			// Matrix is computed from sperated composantes, with euler rotation.
-		RotQuat				// Matrix is computed from sperated composantes, with quat rotation.
+		RotQuat,			// Matrix is computed from sperated composantes, with quat rotation.
+
+		TransformModeCount
 	};
 
 
@@ -155,6 +157,18 @@ public:
 
 	/// \name Matrix Get operations.
 	//@{
+
+	/// get the current transform mode.
+	TTransformMode	getTransformMode()
+	{
+		return _Mode;
+	}
+	/// get the current rotorder (information vlaid only when RotEuler mode).
+	CMatrix::TRotOrder	getRotOrder()
+	{
+		return _RotOrder;
+	}
+
 	/// Work only in Rot* mode(nlassert).
 	void	getPos(CVector &pos)
 	{

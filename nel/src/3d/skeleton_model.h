@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.23 2002/08/05 15:29:11 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.24 2002/08/09 14:56:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -250,7 +250,7 @@ public:
 	virtual float	getNumTriangles (float distance);
 
 	/** Special version for skins. NB: skins never follow their original MRM distance setup, but follow
-	 *	this skeleton MRM setup. Default is 3-10-50. 
+	 *	this skeleton MRM setup. Default is to follow the MAX of all skins binded (ie the finer).
 	 *	NB: Unlike CMeshBaseInstance::changeMRMDistanceSetup(), this setup applies to the SkeletonModel, not the shape.
 	 *	NB: no-op if distanceFinest<0, distanceMiddle<=distanceFinest or if distanceCoarsest<=distanceMiddle.
 	 *	\param distanceFinest The MRM has its max faces when dist<=distanceFinest.
@@ -258,6 +258,9 @@ public:
 	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
 	 */
 	void			changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
+
+	/// Reset the Default MRM setup: follow MAX skin setup (ie the finer)
+	void			resetDefaultMRMDistanceSetup();
 
 	// @}
 
@@ -299,6 +302,8 @@ private:
 
 	// see dirtSkinRenderLists
 	bool						_SkinToRenderDirty;
+	// see _LevelDetail
+	bool						_DefaultMRMSetup;
 	// Raw lists of Skins. Both for transparent and opaque pass
 	typedef NLMISC::CObjectVector<CTransform*, false>	TTransformArray;
 	TTransformArray				_OpaqueSkins;

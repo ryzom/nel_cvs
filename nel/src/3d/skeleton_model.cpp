@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.30 2002/08/05 15:29:11 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.31 2002/08/09 14:56:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,6 +81,8 @@ CSkeletonModel::CSkeletonModel()
 	_DisplayedAsLodCharacter= false;
 	_LodCharacterDistance= 0;
 	_DisplayLodCharacterDate= -1;
+
+	_DefaultMRMSetup= true;
 
 	_SkinToRenderDirty= false;
 
@@ -899,6 +901,13 @@ void			CSkeletonModel::updateSkinRenderLists()
 		// Reset the LevelDetail.
 		_LevelDetail.MinFaceUsed= 0;
 		_LevelDetail.MaxFaceUsed= 0;
+		// If must follow default MRM setup from skins.
+		if(_DefaultMRMSetup)
+		{
+			_LevelDetail.DistanceCoarsest= 0;
+			_LevelDetail.DistanceMiddle= 0;
+			_LevelDetail.DistanceFinest= 0;
+		}
 
 		// Parse to count new size of the arrays, and to build MRM info
 		uint	opaqueSize= 0;
@@ -930,10 +939,28 @@ void			CSkeletonModel::updateSkinRenderLists()
 					// Add Faces to the Skeleton level detail
 					_LevelDetail.MinFaceUsed+= skinLevelDetail->MinFaceUsed;
 					_LevelDetail.MaxFaceUsed+= skinLevelDetail->MaxFaceUsed;
+					// MRM Max skin setup.
+					if(_DefaultMRMSetup)
+					{
+						// Get the maximum distance setup (ie the one which degrades the less)
+						_LevelDetail.DistanceCoarsest= max(_LevelDetail.DistanceCoarsest, skinLevelDetail->DistanceCoarsest);
+						_LevelDetail.DistanceMiddle= max(_LevelDetail.DistanceMiddle, skinLevelDetail->DistanceMiddle);
+						_LevelDetail.DistanceFinest= max(_LevelDetail.DistanceFinest, skinLevelDetail->DistanceFinest);
+					}
 				}
 			}
 		}
 
+		// MRM Max skin setup.
+		if(_DefaultMRMSetup)
+		{
+			// compile LevelDetail.
+			if(_LevelDetail.MaxFaceUsed==0)
+				// build a bug-free level detail
+				buildDefaultLevelDetail();
+			else
+				_LevelDetail.compileDistanceSetup();
+		}
 
 		// alloc array.
 		_OpaqueSkins.clear();
@@ -984,9 +1011,9 @@ void			CSkeletonModel::buildDefaultLevelDetail()
 	// Avoid divide by zero.
 	_LevelDetail.MinFaceUsed= 0;
 	_LevelDetail.MaxFaceUsed= 0;
-	_LevelDetail.DistanceFinest= 3;
-	_LevelDetail.DistanceMiddle= 10;
-	_LevelDetail.DistanceCoarsest= 50;
+	_LevelDetail.DistanceFinest= 1;
+	_LevelDetail.DistanceMiddle= 2;
+	_LevelDetail.DistanceCoarsest= 3;
 	_LevelDetail.compileDistanceSetup();
 }
 
@@ -1234,6 +1261,19 @@ void			CSkeletonModel::changeMRMDistanceSetup(float distanceFinest, float distan
 
 	// compile 
 	_LevelDetail.compileDistanceSetup();
+
+	// Never more use MAX skin setup.
+	_DefaultMRMSetup= false;
+}
+
+
+// ***************************************************************************
+void			CSkeletonModel::resetDefaultMRMDistanceSetup()
+{
+	_DefaultMRMSetup= true;
+
+	// Must use Skins linked to know the MRM setup.
+	dirtSkinRenderLists();
 }
 
 

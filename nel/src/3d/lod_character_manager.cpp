@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.4 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.5 2002/08/09 14:56:57 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -61,6 +61,7 @@ CLodCharacterManager::CLodCharacterManager()
 	// setup the material
 	_Material.initUnlit();
 	_Material.setAlphaTest(true);
+	_Material.setDoubleSided(true);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.76 2004/04/01 18:27:53 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.77 2004/04/26 18:30:31 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -27,6 +27,10 @@
 
 #include "nel/net/unified_network.h"
 #include "nel/misc/entity_id.h" // for createMessage()
+
+//#ifdef NL_OS_UNIX
+//#include <sched.h>
+//#endif
 
 using namespace std;
 using namespace NLMISC;
@@ -928,6 +932,8 @@ void	CUnifiedNetwork::update(TTime timeout)
 	H_BEFORE(UNUpdateCnx);
 	while (true)
 	{
+		H_AUTO(L5OneLoopUpdate);
+
 		// update all server connections
 		if (_CbServer)
 		{
@@ -937,10 +943,12 @@ void	CUnifiedNetwork::update(TTime timeout)
 		// update all client connections
 		for (uint k = 0; k<_UsedConnection.size(); ++k)
 		{
+			H_AUTO(UNBrowseConnections);
 			CUnifiedConnection &uc = _IdCnx[_UsedConnection[k]];
 			nlassert (uc.State == CUnifiedNetwork::CUnifiedConnection::Ready);
 			for (uint j = 0; j < uc.Connection.size (); j++)
 			{
+				H_AUTO(UNBrowseSubConnections);
 				if (!uc.Connection[j].valid())
 					continue;
 
@@ -1023,8 +1031,12 @@ void	CUnifiedNetwork::update(TTime timeout)
 		if (CTime::getLocalTime() - t0 > timeout)
 			break;
 		
+//#ifdef NL_OS_WINDOWS
 		// Enable windows multithreading before rescanning all connections
-		H_TIME(L5UpdateSleep, nlSleep(1););
+		H_TIME(L5UpdateSleep, nlSleep(1);); // 0 (yield) would be too harmful to other applications
+//#else
+//		sched_yield(); // makes all slow!
+//#endif
 	}
 	H_AFTER(UNUpdateCnx);
 

@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.12 2001/01/17 10:32:29 chafik Exp $
+ * $Id: codage.h,v 1.13 2001/04/04 16:33:28 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -658,7 +658,6 @@ namespace NLAISCRIPT
 		//@{
 		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const{ return true;}	
 		//@}
-
 
 		/// \name IObjectIA method.
 		//@{

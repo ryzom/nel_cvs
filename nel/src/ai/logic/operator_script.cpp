@@ -192,10 +192,6 @@ namespace NLAIAGENT
 		if ( activated_goals.size() )
 		{
 			is_activated = true;
-			// Registers with the goal and gets the args
-			NLAILOGIC::CGoal *current_goal = activated_goals.front();
-			current_goal->addSuccessor( (IBasicAgent *) this );
-
 
 			// Checks the boolean funcs conditions
 			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
@@ -213,6 +209,11 @@ namespace NLAIAGENT
 		{
 			if ( _Activated == false)
 			{
+				// Registers with the goal and gets the args
+				NLAILOGIC::CGoal *current_goal = activated_goals.front();
+				current_goal->addSuccessor( (IBasicAgent *) this );
+
+				// Executes the OnActivate() function
 				tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnActivate"), NLAISCRIPT::CParam() );
 				if ( !r.empty() )
 				{

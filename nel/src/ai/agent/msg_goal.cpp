@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.6 2001/04/03 10:05:04 portier Exp $
+ * $Id: msg_goal.cpp,v 1.7 2001/04/04 16:33:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,7 +127,7 @@ namespace NLAIAGENT
 		{
 		case 0:
 			{					
-				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->get()->clone();
+				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->getFront()->clone();
 				param->popFront();
 #ifdef NL_DEBUG
 				char buffer[1024 * 2];
@@ -244,7 +244,7 @@ namespace NLAIAGENT
 		{
 		case 0:
 			{					
-				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->get()->clone();
+				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->getFront()->clone();
 				param->popFront();
 #ifdef NL_DEBUG
 				char buffer[1024 * 2];

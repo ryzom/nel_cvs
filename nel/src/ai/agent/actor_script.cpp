@@ -455,4 +455,9 @@ namespace NLAIAGENT
 
 		return result;
 	}
+
+	void CActorScript::cancel()
+	{
+		Kill();
+	}
 }

@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.12 2001/03/29 16:02:44 portier Exp $
+ * $Id: actor_script.h,v 1.13 2001/04/04 16:33:28 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,6 +132,8 @@ namespace NLAIAGENT
 			virtual sint32 getMethodIndexSize() const;
 
 			void getFatherComponent(IVarName &);
+
+			virtual void cancel();
 	};
 }
 #endif

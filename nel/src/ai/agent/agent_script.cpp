@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.48 2001/04/04 10:06:37 chafik Exp $
+ * $Id: agent_script.cpp,v 1.49 2001/04/04 16:33:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1495,23 +1495,30 @@ namespace NLAIAGENT
 		goal->getDebugString( buffer );
 #endif
 
-		// Removes goals
-		std::vector<NLAILOGIC::CGoal *>::iterator it_g = _GoalStack.begin();
-		while ( it_g != _GoalStack.end() )
-		{
-			if ( (**it_g) == (*goal) )
-				(*it_g)->cancel();
-			it_g++;
-		}
-/*		goal->setReceiver( (IBasicAgent *) this );
-		_GoalStack.push_back( goal );
-*/
 		IObjectIA::CProcessResult r;
 		r.Result = NULL;
 
 		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
 		context.Stack++;
 		context.Stack[(int)context.Stack] = new CGoalMsg();
+
+
+		// Removes goals
+		std::vector<NLAILOGIC::CGoal *>::iterator it_g = _GoalStack.begin();
+		while ( it_g != _GoalStack.end() )
+		{
+			if ( (**it_g) == (*goal) )
+			{
+				(*it_g)->cancel();
+				(*it_g)->release();
+				_GoalStack.erase(it_g);
+				return r;
+			}
+			it_g++;
+		}
+/*		goal->setReceiver( (IBasicAgent *) this );
+		_GoalStack.push_back( goal );
+*/
 		return r;
 	}
 

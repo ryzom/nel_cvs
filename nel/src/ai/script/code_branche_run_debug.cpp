@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.17 2001/03/29 10:26:56 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.18 2001/04/04 16:33:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -245,7 +245,7 @@ namespace NLAISCRIPT
 		_TableCode = new IOpCode * [_Count];		
 		for(sint32 i = 0; i < _Count;i ++)
 		{
-			_TableCode[i ++] = (IOpCode *)l._TableCode[i]->clone();
+			_TableCode[i] = (IOpCode *)l._TableCode[i]->clone();	
 		}
 	}
 

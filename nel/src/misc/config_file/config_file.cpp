@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.43.6.2 2003/08/22 12:43:57 corvazier Exp $
+ * $Id: config_file.cpp,v 1.43.6.3 2003/09/01 16:31:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -301,10 +301,11 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 
 	while (!fn.empty())
 	{
-		nldebug ("Adding config file '%s' in the configfile", fn.c_str());
+		fn = NLMISC::CPath::getFullPath(fn, false);
+		nldebug ("Adding config file '%s' in the config file", fn.c_str());
 		FileNames.push_back (fn);
 		LastModified.push_back (CFile::getFileModificationDate(fn));
-		
+
 		if (cf_ifile.open (fn))
 		{
 			cfrestart (NULL);
@@ -330,6 +331,16 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 		if (var)
 		{
 			string RootConfigFilename = var->asString();
+
+			if (!NLMISC::CFile::fileExists(RootConfigFilename))
+			{
+				// file is not found, try with the path of the master cfg
+				string path = NLMISC::CPath::standardizePath (NLMISC::CFile::getPath(FileNames[0]));
+				RootConfigFilename = path + RootConfigFilename;
+			}
+
+			RootConfigFilename = NLMISC::CPath::getFullPath(RootConfigFilename, false);
+
 			if (RootConfigFilename != fn)
 			{
 				nlinfo ("RootConfigFilename variable found in the '%s' config file, parse the root config file '%s'", fn.c_str(), RootConfigFilename.c_str());

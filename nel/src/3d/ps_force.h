@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.5 2001/07/13 17:00:49 vizerie Exp $
+ * $Id: ps_force.h,v 1.6 2001/07/16 15:48:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,11 +35,7 @@
 
 
 namespace NL3D {
-
-
-
-/** This struct describe where 
- * 
+ 
 
 
 /**
@@ -510,7 +506,7 @@ public:
 	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
 	 {
 		static double divRand = (2.f / RAND_MAX) ;
-		NLMISC::CVector dir(float(rand() * divRand - 1), float(rand() * divRand - 1) , float(rand() * divRand - 1) ) ;
+		NLMISC::CVector dir( (float) (rand() * divRand - 1), (float) (rand() * divRand - 1) , (float) (rand() * divRand - 1) ) ;
 		speed += ellapsedTime * _K * invMass * dir ;
 	 }
 

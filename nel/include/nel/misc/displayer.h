@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.11 2001/12/10 17:52:32 lecroart Exp $
+ * $Id: displayer.h,v 1.12 2002/01/14 17:52:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,8 +135,7 @@ public:
 	/// Constructor
 	CFileDisplayer (const std::string &filename, bool eraseLastLog = false, const char *displayerName = "");
 
-	/// Constructor
-	CFileDisplayer (const char *displayerName = "");
+	CFileDisplayer ();
 
 	/// Set Parameter of the displayer if not set at the ctor time
 	void setParam (const std::string &filename, bool eraseLastLog = false);

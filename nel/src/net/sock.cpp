@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.36 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: sock.cpp,v 1.37 2004/01/07 18:32:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -557,6 +557,9 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 						sync.value() = false;
 					}*/
 					_Connected = false;
+					len = total;
+					_BytesReceived += len;
+					
 					if ( throw_exception )
 					{
 						throw ESocketConnectionClosed();
@@ -567,6 +570,9 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 				// Socket error
 				case SOCKET_ERROR :
 				{
+					len = total;
+					_BytesReceived += len;
+					
 					if ( throw_exception )
 					{
 						throw ESocket( "Unable to receive data" );

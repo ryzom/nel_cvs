@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.12 2001/10/02 16:37:07 vizerie Exp $
+ * $Id: ps_located.h,v 1.13 2001/10/03 15:49:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -490,6 +490,27 @@ public:
 						 uint32 indexInLocated,
 						 NLMISC::CVector *destPos,						
 						uint posStride = sizeof(NLMISC::CVector));
+
+	/// Enable a trigger on death. It is used to create emission on an emitter with a given ID
+	void				enableTriggerOnDeath(bool enable = true) { _TriggerOnDeath = enable; }
+
+	/// Test wether a trigger on death has been enabled
+	bool                isTriggerOnDeathEnabled(void) const { return _TriggerOnDeath; }
+
+	/// Set an ID for the emitter to be triggered on death
+	void				setTriggerEmitterID(uint32 id) 
+	{ 
+		nlassert(_TriggerOnDeath);
+		_TriggerID = id; 
+	}
+
+	/// Get the ID for the emitter to be triggered on death
+	uint32				getTriggerEmitterID(void) const 
+	{ 
+		nlassert(_TriggerOnDeath);
+		return _TriggerID; 
+	}
+
 protected:
 
 
@@ -629,22 +650,23 @@ protected:
 	 /// this prepare the located ofr collision tests
 	 void resetCollisionInfo(void);
 	
-	 typedef std::vector<CPSLocatedBindable *> TDtorObserversVect;
-
-	 TDtorObserversVect _DtorObserversVect;
+	 typedef std::vector<CPSLocatedBindable *>			TDtorObserversVect;
+	 TDtorObserversVect									_DtorObserversVect;
 
 	 /// true when LOD degradation apply to this located
-	 bool _LODDegradation;
+	 bool												_LODDegradation;
 
 	 /** number of force, and zones etc. that are not integrable over time. If this is not 0, then the trajectory
 	   * cannot be computed at any time. A force that is integrable must be in the same basis than the located.
 	   */
-	 uint16 _NonIntegrableForceNbRefs;
+	 uint16												_NonIntegrableForceNbRefs;
 	 /// number of forces that apply on that located that have the same basis that this one (required for parametric animation)
-	 uint16 _NumIntegrableForceWithDifferentBasis;
+	 uint16												_NumIntegrableForceWithDifferentBasis;
 	 /// a vector of integrable forces that apply on this located
-	 typedef std::vector<CPSForce *> TForceVect;
-	 TForceVect						 _IntegrableForces;
+	 typedef std::vector<CPSForce *>					TForceVect;
+	 TForceVect											_IntegrableForces;
+	 bool												_TriggerOnDeath;
+	uint32												_TriggerID;
 
 	 /// When set to true, this tells the system to use parametric motion. Only parametric forces must have been applied.
 	 bool _ParametricMotion;
@@ -902,6 +924,7 @@ public:
 
 	/// called when a located has switch between incrmental / parametric motion. The default does nothing
 	virtual	void	    motionTypeChanged(bool parametric) {}
+
 protected:    
 
 	/// tells when this object must be dealt with
@@ -953,8 +976,7 @@ protected:
 	}
 
 	CPSLocated  *_Owner;
-	
-	uint32 _ExternID;
+	uint32		_ExternID;
 };
 
 

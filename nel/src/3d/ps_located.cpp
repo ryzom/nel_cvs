@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.36 2001/10/02 16:37:07 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.37 2001/10/03 15:49:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "3d/ps_located.h"
 #include "3d/ps_particle.h"
 #include "3d/ps_force.h"
+#include "3d/ps_emitter.h"
 #include "3d/ps_misc.h"
 
 #include "nel/misc/line.h"
@@ -64,6 +65,8 @@ namespace NL3D {
 						 , _NonIntegrableForceNbRefs(0)
 						 , _NumIntegrableForceWithDifferentBasis(0)
 						 , _ParametricMotion(false)
+						 , _TriggerOnDeath(false)
+						 , _TriggerID((uint32) 'NONE')
 {		
 }
 
@@ -585,6 +588,19 @@ void CPSLocated::postNewElement(const CVector &pos, const CVector &speed)
 }
 
 
+		
+static inline uint32 IDToLittleEndian(uint32 input)
+{
+	#ifdef NL_LITTLE_ENDIAN
+		return input;
+	#else
+		return ((input & (0xff<<24))>>24)
+				|| ((input & (0xff<<16))>>8)
+				|| ((input & (0xff<<8))<<8)
+				|| ((input & 0xff)<<24);
+	#endif
+}
+
 /**
  * delete an element
  */
@@ -626,6 +642,27 @@ void CPSLocated::deleteElement(uint32 index)
 	}
 
 	--_Size;
+
+	if (_TriggerOnDeath)
+	{
+		const uint32 id = IDToLittleEndian(_TriggerID);
+		nlassert(_Owner);		
+		uint numLb  = _Owner->getNumLocatedBindableByExternID(id);		
+		for (uint k = 0; k < numLb; ++k)
+		{
+			CPSLocatedBindable *lb = _Owner->getLocatedBindableByExternID(id, k);		
+			if (lb->getType() == PSEmitter)
+			{
+				CPSEmitter *e = NLMISC::safe_cast<CPSEmitter *>(lb);
+				nlassert(e->getOwner());
+				uint nbInstances = e->getOwner()->getSize();				
+				for (uint l = 0; l < nbInstances; ++l)
+				{
+					e->singleEmit(l, 1);
+				}
+			}
+		}
+	}
 }
 
 
@@ -679,7 +716,7 @@ void CPSLocated::resize(uint32 newSize)
 
 void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(3);
+	sint ver = f.serialVersion(4);
 	CParticleSystemProcess::serial(f);
 	
 	f.serial(_Name);
@@ -823,6 +860,11 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			allocateParametricInfos();			
 		}
+	}
+
+	if (ver > 3)
+	{
+		f.serial(_TriggerOnDeath, _TriggerID);
 	}
 }
 

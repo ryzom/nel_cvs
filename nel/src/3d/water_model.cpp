@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.47 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: water_model.cpp,v 1.47.10.1 2005/01/10 15:33:06 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -56,35 +56,35 @@ const uint WATER_MODEL_DEFAULT_NUM_VERTICES = 5000;
 
 NLMISC::CRefPtr<IDriver> CWaterModel::_CurrDrv;
 
-CVertexBuffer CWaterModel::VB;
+
 
 
 
 //=======================================================================
-void CWaterModel::setupVertexBuffer(uint numWantedVertices, IDriver *drv)
+void CWaterModel::setupVertexBuffer(CVertexBuffer &vb, uint numWantedVertices, IDriver *drv)
 {
 	if (!numWantedVertices) return;	
-	if (VB.getNumVertices() == 0 || drv != _CurrDrv) // not setupped yet, or driver changed ?
+	if (vb.getNumVertices() == 0 || drv != _CurrDrv) // not setupped yet, or driver changed ?
 	{
-		VB.setNumVertices(0);
-		VB.setName("Water");
-		VB.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
+		vb.setNumVertices(0);
+		vb.setName("Water");
+		vb.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
 		if (drv->isWaterShaderSupported())
 		{		
-			VB.setVertexFormat(CVertexBuffer::PositionFlag);
+			vb.setVertexFormat(CVertexBuffer::PositionFlag);
 		}
 		else
 		{
-			VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+			vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 		}
 		_CurrDrv = drv;
 	}
 	uint numVerts = std::max(numWantedVertices, WATER_MODEL_DEFAULT_NUM_VERTICES);
-	if (numVerts > VB.getNumVertices())
+	if (numVerts > vb.getNumVertices())
 	{
-		const uint VB_INCREASE_SIZE = 1000;
-		numVerts = VB_INCREASE_SIZE * ((numVerts + (VB_INCREASE_SIZE - 1)) / VB_INCREASE_SIZE); // snap size
-		VB.setNumVertices((uint32) numVerts);
+		const uint vb_INCREASE_SIZE = 1000;
+		numVerts = vb_INCREASE_SIZE * ((numVerts + (vb_INCREASE_SIZE - 1)) / vb_INCREASE_SIZE); // snap size
+		vb.setNumVertices((uint32) numVerts);
 	}
 }
 
@@ -97,8 +97,7 @@ CWaterModel::CWaterModel()
 	// RenderFilter: We are a SegRemanece
 	_RenderFilterType= UScene::FilterWater;
 	_Prev = NULL;
-	_Next = NULL;
-	_VB = NULL;
+	_Next = NULL;	
 	_MatrixUpdateDate = 0;
 }
 
@@ -1415,7 +1414,6 @@ uint CWaterModel::getNumWantedVertices()
 uint CWaterModel::fillVB(void *datas, uint startTri, IDriver &drv)
 {	
 	H_AUTO( NL3D_Water_Render );
-	_VB = &VB;
 	if (drv.isWaterShaderSupported())
 	{
 		return fillVBHard(datas, startTri);
@@ -1665,8 +1663,7 @@ uint CWaterModel::fillVBHard(void *datas, uint startTri)
 //***************************************************************************************************************
 void	CWaterModel::traverseRender()
 {				
-	H_AUTO( NL3D_Water_Render );
-	nlassert(_VB);
+	H_AUTO( NL3D_Water_Render );	
 
 	CRenderTrav					&renderTrav		= getOwnerScene()->getRenderTrav();
 	IDriver						*drv			= renderTrav.getDriver();		
@@ -1679,18 +1676,19 @@ void	CWaterModel::traverseRender()
 	modelMat.setPos(NLMISC::CVector(obsPos.x, obsPos.y, zHeight));
 	drv->setupModelMatrix(modelMat);	
 	bool isAbove = obsPos.z > getWorldMatrix().getPos().z;	
+	CVertexBuffer &vb = renderTrav.Scene->getWaterVB();
 	if (drv->isWaterShaderSupported())
 	{
 		setupMaterialNVertexShader(drv, shape, obsPos, isAbove, zHeight);
-		nlassert(_VB->getNumVertices() > 0);
-		drv->activeVertexBuffer(*_VB);
+		nlassert(vb.getNumVertices() > 0);
+		drv->activeVertexBuffer(vb);
 		drv->renderRawTriangles(CWaterModel::_WaterMat, _StartTri, _NumTris);	
 		drv->activeVertexProgram(NULL);
 	}
 	else
 	{
 		setupSimpleRender(shape, obsPos, isAbove);
-		drv->activeVertexBuffer(*_VB);
+		drv->activeVertexBuffer(vb);
 		drv->activeVertexProgram(NULL);		
 		drv->renderRawTriangles(CWaterModel::_SimpleWaterMat, _StartTri, _NumTris);		
 	}

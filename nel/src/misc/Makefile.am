@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.77 2004/12/17 14:32:32 legros Exp $
+# $Id: Makefile.am,v 1.77.4.1 2005/01/14 16:15:27 testserver Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -65,6 +65,7 @@ libnelmisc_la_SOURCES = \
 	line.cpp \
 	log.cpp \
 	matrix.cpp \
+	md5.cpp \
 	mem_displayer.cpp \
 	mem_stream.cpp \
 	mouse_smoother.cpp \

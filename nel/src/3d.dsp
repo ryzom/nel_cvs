@@ -412,11 +412,11 @@ SOURCE=..\include\nel\3d\scene.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\scene_ut.cpp
+SOURCE=.\3d\nelu.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\scene_ut.h
+SOURCE=..\include\nel\3d\nelu.h
 # End Source File
 # End Target
 # End Project

@@ -1,7 +1,7 @@
-/** \file scene_ut.cpp
+/** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.5 2000/12/04 10:12:54 corvazier Exp $
+ * $Id: nelu.cpp,v 1.6 2000/12/04 13:22:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/scene_ut.h"
+#include "nel/3d/nelu.h"
 #include "nel/3d/dru.h"
 #include "nel/3d/camera.h"
 #include "nel/misc/debug.h"
@@ -32,24 +32,24 @@
 namespace NL3D 
 {
 
-const float		CSceneUt::DefLx=0.26f;
-const float		CSceneUt::DefLy=0.2f;
-const float		CSceneUt::DefLzNear=0.15f;
-const float		CSceneUt::DefLzFar=1000.0f;
-NLMISC::CSmartPtr<CCamera>	CSceneUt::Camera;
-IDriver			*CSceneUt::Driver;
+const float		CNELU::DefLx=0.26f;
+const float		CNELU::DefLy=0.2f;
+const float		CNELU::DefLzNear=0.15f;
+const float		CNELU::DefLzFar=1000.0f;
+NLMISC::CSmartPtr<CCamera>	CNELU::Camera;
+IDriver			*CNELU::Driver;
 
 
-void			CSceneUt::init3d(CScene &scene, uint w, uint h, const CViewport& viewport, uint bpp, bool windowed ) throw(EDru)
+void			CNELU::init3d(CScene &scene, uint w, uint h, const CViewport& viewport, uint bpp, bool windowed ) throw(EDru)
 {
 	// Init debug system
 	NLMISC::InitDebug();
 
 	// Init driver.
-	CSceneUt::Driver= CDRU::createGlDriver();
-	nlverify(CSceneUt::Driver->init());
-	nlverify(CSceneUt::Driver->setDisplay(NULL, GfxMode(w, h, bpp, windowed)));
-	nlverify(CSceneUt::Driver->activate());
+	CNELU::Driver= CDRU::createGlDriver();
+	nlverify(CNELU::Driver->init());
+	nlverify(CNELU::Driver->setDisplay(NULL, GfxMode(w, h, bpp, windowed)));
+	nlverify(CNELU::Driver->activate());
 
 	// Register basic csene.
 	CScene::registerBasics();
@@ -62,31 +62,31 @@ void			CSceneUt::init3d(CScene &scene, uint w, uint h, const CViewport& viewport
 	scene.initDefaultRoots();
 	
 	// Set driver.
-	scene.setDriver(CSceneUt::Driver);
+	scene.setDriver(CNELU::Driver);
 
 	// Set viewport
 	scene.setViewport (viewport);
 
 	// Create/link a camera.
-	CSceneUt::Camera= (CCamera*)scene.createModel(CameraId);
-	scene.CurrentCamera= CSceneUt::Camera;
-	CSceneUt::Camera->setFrustum(DefLx, DefLy, DefLzNear, DefLzFar);
+	CNELU::Camera= (CCamera*)scene.createModel(CameraId);
+	scene.CurrentCamera= CNELU::Camera;
+	CNELU::Camera->setFrustum(DefLx, DefLy, DefLzNear, DefLzFar);
 
 }
 
 
-void			CSceneUt::release3d(CScene &scene)
+void			CNELU::release3d(CScene &scene)
 {
 	// Release the camera.
-	CSceneUt::Camera= NULL;
+	CNELU::Camera= NULL;
 
 	// "Release" the scene.
 	scene.setDriver(NULL);
 
 	// "Release" the driver.
-	CSceneUt::Driver->release();
-	delete CSceneUt::Driver;
-	CSceneUt::Driver= NULL;
+	CNELU::Driver->release();
+	delete CNELU::Driver;
+	CNELU::Driver= NULL;
 }
 
 

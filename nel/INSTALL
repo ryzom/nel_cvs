@@ -27,13 +27,12 @@ Requirements
       - Yacc / Bison   <URL:http://www.gnu.org/software/bison/bison.html>
       - Mesa     3.3   <URL:http://www.mesa3d.org/>
 
-   Some of the GNU/Linux distributions uses a "custom" version of Mesa which
-   include the last SGI's version of the glext.h file, which is good :-).
-   The other GNU/Linux distributions use a strict distribution of Mesa,
-   which migth use an older version of that file. So if you encounter
-   some problems during the NeL compilation concerning the GL_GLEXT_VERSION,
-   you should download the last version of the glext.h on SGI's website :
-   <URL:http://oss.sgi.com/projects/ogl-sample/ABI/glext.h>.
+   On some OpenGL implementations, you migth have some troubles, coming from
+   the <GL/glext.h> file, to get NeL to compile. This file could be missing
+   or not up to date. You will find the latest version of this file on SGI's
+   website :
+
+      - glext.h        <URL:http://oss.sgi.com/projects/ogl-sample/ABI/glext.h>
 
    Most of our documentation is done using Doxygen, so you might need it
    to read our prose and our code documentation. If you want have nice

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.168 2004/04/09 14:38:56 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.169 2004/04/21 08:49:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,20 @@
 
 // For optimisation consideration, allow 256 lightmaps at max.
 #define	NL3D_DRV_MAX_LIGHTMAP		256
+
+
+void displayGLError(GLenum error);
+
+/*
+#define CHECK_GL_ERROR { \
+	GLenum error = glGetError(); \
+	if (error != GL_NO_ERROR)\
+	{\
+		displayGLError(error);\
+		nlassert(0);\
+	}\
+}
+*/
 
 
 namespace NL3D {

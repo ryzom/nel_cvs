@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.212 2004/04/09 14:38:56 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.213 2004/04/21 08:49:09 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -476,7 +476,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		} 
 
 		// Create gl context
-		HGLRC tempGLRC = wglCreateContext(tempHDC);
+		HGLRC tempGLRC = wglCreateContext(tempHDC); 
 		if (tempGLRC == NULL)
 		{
 			DWORD error = GetLastError ();
@@ -489,8 +489,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			return false;
 		}
 
+		
+
 		// Make the context current
-		if (!wglMakeCurrent(tempHDC,tempGLRC))
+		if (!wglMakeCurrent(tempHDC,tempGLRC)) 
 		{
 			DWORD error = GetLastError ();
 			nlwarning ("CDriverGL::setDisplay: wglMakeCurrent failed: 0x%x", error);
@@ -503,10 +505,13 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			return false;
 		}
 
+		
+
 		// Register WGL functions
 		registerWGlExtensions (_Extensions, tempHDC);
 
 		HDC hdc = wglGetCurrentDC ();
+		
 		if (hdc == NULL)
 		{
 			DWORD error = GetLastError ();
@@ -571,6 +576,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			DestroyWindow (tmpHWND);
 			return false;
 		}
+		
 
 		/* After determining a compatible pixel format, the next step is to create a pbuffer of the
 			chosen format. Fortunately this step is fairly easy, as you merely select one of the formats
@@ -583,6 +589,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			DWORD error = GetLastError ();
 			nlwarning ("CDriverGL::setDisplay: wglCreatePbufferARB failed: 0x%x", error);
 			wglDeleteContext (tempGLRC);
+			
 			DestroyWindow (tmpHWND);
 			_PBuffer = NULL;
 			_hWnd = NULL;
@@ -604,6 +611,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			_hDC = NULL;
 			return false;
 		}
+		
 		if ( !wglQueryPbufferARB( _PBuffer, WGL_PBUFFER_HEIGHT_ARB, (int*)&height ) )
 		{
 			DWORD error = GetLastError ();
@@ -616,6 +624,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			_hDC = NULL;
 			return false;
 		}
+		
 		_WindowWidth = width;
 		_WindowHeight = height;
 		
@@ -627,7 +636,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			DWORD error = GetLastError ();
 			nlwarning ("CDriverGL::setDisplay: wglGetPbufferDCARB failed: 0x%x", error);
 			wglDestroyPbufferARB( _PBuffer );
+			
 			wglDeleteContext (tempGLRC);
+			
 			DestroyWindow (tmpHWND);
 			_PBuffer = NULL;
 			_hWnd = NULL;
@@ -644,9 +655,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		{
 			DWORD error = GetLastError ();
 			nlwarning ("CDriverGL::setDisplay: wglCreateContext failed: 0x%x", error);
-			wglReleasePbufferDCARB( _PBuffer, _hDC );
-			wglDestroyPbufferARB( _PBuffer );
-			wglDeleteContext (tempGLRC);
+			wglReleasePbufferDCARB( _PBuffer, _hDC ); 						
+			wglDestroyPbufferARB( _PBuffer ); 						
+			wglDeleteContext (tempGLRC); 					
 			DestroyWindow (tmpHWND);
 			_PBuffer = NULL;
 			_hWnd = NULL;
@@ -780,6 +791,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 
 		_hDC=GetDC(_hWnd);
 		wglMakeCurrent(_hDC,NULL);
+			
 		_Depth=GetDeviceCaps(_hDC,BITSPIXEL);
 		// ---
 		memset(&_pfd,0,sizeof(_pfd));
@@ -810,7 +822,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			return false;
 		} 
 		_hRC=wglCreateContext(_hDC);
+			
 		wglMakeCurrent(_hDC,_hRC);
+			
 	}
 
 	/// release old emitter
@@ -1090,6 +1104,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_SUM_EXT);
+	
+		
 	_CurrViewport.init(0.f, 0.f, 1.f, 1.f);
 	_CurrScissor.initFullScreen();
 	_CurrentGlNormalize= false;
@@ -1108,6 +1124,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	if(_Extensions.EXTSeparateSpecularColor)
 	{
 		glLightModeli((GLenum)GL_LIGHT_MODEL_COLOR_CONTROL_EXT, GL_SEPARATE_SPECULAR_COLOR_EXT);
+		
+			
 	}
 
 	_VertexProgramEnabled= false;
@@ -1222,12 +1240,16 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		params[0]=0; params[1]=0; params[2]=0; params[3]=1;
 		glTexGenfv(GL_Q, GL_OBJECT_PLANE, params);
 		glTexGenfv(GL_Q, GL_EYE_PLANE, params);
+		
+			
 	}
 	resetTextureShaders();
 
 	// Get num of light for this driver
 	int numLight;
 	glGetIntegerv (GL_MAX_LIGHTS, &numLight);
+	
+		
 	_MaxDriverLight=(uint)numLight;
 	if (_MaxDriverLight>MaxLight)
 		_MaxDriverLight=MaxLight;
@@ -1245,6 +1267,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	// meaning that light direction is always (0,1,0) in eye-space
 	// use enableLighting(0....), to get normal behaviour
 	glEnable(GL_LIGHT0);
+	
+		
 
 	_Initialized = true;
 
@@ -1268,6 +1292,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			_EVSPositionHandle = nglBindParameterEXT(GL_CURRENT_VERTEX_EXT);
 			_EVSNormalHandle   = nglBindParameterEXT(GL_CURRENT_NORMAL);
 			_EVSColorHandle    = nglBindParameterEXT(GL_CURRENT_COLOR);
+			
+				
 			if (!_EVSPositionHandle || !_EVSNormalHandle || !_EVSColorHandle)
 			{
 				nlwarning("Unable to bind input parameters for use with EXT_vertex_shader, vertex program support is disabled");
@@ -1279,6 +1305,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 				for(uint k = 0; k < 8; ++k)
 				{				
 					_EVSTexHandle[k] = nglBindTextureUnitParameterEXT(GL_TEXTURE0_ARB + k, GL_CURRENT_TEXTURE_COORDS);
+					
+						
 				}
 				// Other attributes are managed using variant pointers :
 				// Secondary color
@@ -1289,6 +1317,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 
 				// Allocate invariants. One assitionnal variant is needed for fog coordinate if fog bug is not fixed in driver version
 				_EVSConstantHandle = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_INVARIANT_EXT, GL_FULL_RANGE_EXT, _EVSNumConstant + (_ATIFogRangeFixed ? 0 : 1));
+				
+					
 
 				if (_EVSConstantHandle == 0)
 				{
@@ -1453,17 +1483,25 @@ void CDriverGL::resetTextureShaders()
 	if (_Extensions.NVTextureShader)
 	{
 		glEnable(GL_TEXTURE_SHADER_NV);
+		
+			
 		for (uint stage = 0; stage < (uint) inlGetNumTextStages(); ++stage)
 		{		
 			_DriverGLStates.activeTextureARB(stage);
 			if (stage != 0)
 			{
 				glTexEnvi(GL_TEXTURE_SHADER_NV, GL_PREVIOUS_TEXTURE_INPUT_NV, GL_TEXTURE0_ARB + stage - 1);	
+				
+					
 			}
 			glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, GL_NONE);	
+			
+				
 			_CurrentTexAddrMode[stage] = GL_NONE;			
 		}
 		glDisable(GL_TEXTURE_SHADER_NV);
+		
+			
 		_NVTextureShaderEnabled = false;
 	}
 }
@@ -1485,6 +1523,8 @@ bool CDriverGL::activate()
 {
 #ifdef NL_OS_WINDOWS
 	HGLRC hglrc=wglGetCurrentContext();
+	
+		
 	if (hglrc!=_hRC)
 	{
 		wglMakeCurrent(_hDC,_hRC);
@@ -1494,6 +1534,8 @@ bool CDriverGL::activate()
 	if (nctx != NULL && nctx!=ctx)
 	{
 		glXMakeCurrent(dpy, win,ctx);
+		
+			
 	}
 #endif // NL_OS_WINDOWS
 	return true;
@@ -1522,7 +1564,11 @@ bool CDriverGL::isTextureExist(const ITexture&tex)
 bool CDriverGL::clear2D(CRGBA rgba)
 {
 	glClearColor((float)rgba.R/255.0f,(float)rgba.G/255.0f,(float)rgba.B/255.0f,(float)rgba.A/255.0f);
+	
+		
 	glClear(GL_COLOR_BUFFER_BIT);
+	
+		
 
 	return true;
 }
@@ -1532,8 +1578,12 @@ bool CDriverGL::clear2D(CRGBA rgba)
 bool CDriverGL::clearZBuffer(float zval)
 {
 	glClearDepth(zval);
+	
+		
 	_DriverGLStates.enableZWrite(true);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	
+		
 
 	return true;
 }
@@ -1543,11 +1593,13 @@ bool CDriverGL::clearZBuffer(float zval)
 void CDriverGL::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 {
 	glColorMask (bRed, bGreen, bBlue, bAlpha);
+	
+		
 }
 
 // --------------------------------------------------
 bool CDriverGL::swapBuffers()
-{	
+{		
 	// Reset texture shaders
 	//resetTextureShaders();
 
@@ -1556,25 +1608,51 @@ bool CDriverGL::swapBuffers()
 	/* Yoyo: must do this (GeForce bug ??) esle weird results if end render with a VBHard.
 		Setup a std vertex buffer to ensure NVidia synchronisation.
 	*/
-	static	CVertexBuffer	dummyVB;
-	static	bool			dummyVBinit= false; 
-	if(!dummyVBinit)
-	{
-		dummyVBinit= true;
-		// setup a full feature VB (maybe not usefull ... :( ).
-		dummyVB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag|
-			CVertexBuffer::PrimaryColorFlag|CVertexBuffer::SecondaryColorFlag|
-			CVertexBuffer::TexCoord0Flag|CVertexBuffer::TexCoord1Flag|
-			CVertexBuffer::TexCoord2Flag|CVertexBuffer::TexCoord3Flag
-			);
-		// some vertices.
-		dummyVB.setNumVertices(10);
+	if (_Extensions.NVVertexArrayRange)
+	{	
+		static	CVertexBuffer	dummyVB;
+		static	bool			dummyVBinit= false; 
+		if(!dummyVBinit)
+		{
+			dummyVBinit= true;
+			// setup a full feature VB (maybe not usefull ... :( ).
+			dummyVB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag|
+				CVertexBuffer::PrimaryColorFlag|CVertexBuffer::SecondaryColorFlag|
+				CVertexBuffer::TexCoord0Flag|CVertexBuffer::TexCoord1Flag|
+				CVertexBuffer::TexCoord2Flag|CVertexBuffer::TexCoord3Flag
+				);
+			// some vertices.
+			dummyVB.setNumVertices(10);
+		}
+		// activate each frame to close VBHard rendering. 
+		//	NVidia: This also force a SetFence on if last VB was a VBHard, "closing" it before swap.
+		//
+		activeVertexBuffer(dummyVB);
+		nlassert(_CurrentVertexBufferHard==NULL);
 	}
-	/* activate each frame to close VBHard rendering. 
-		NVidia: This also force a SetFence on if last VB was a VBHard, "closing" it before swap.
-	*/
-	activeVertexBuffer(dummyVB);
-	nlassert(_CurrentVertexBufferHard==NULL);
+	else if (_Extensions.ARBVertexBufferObject)
+	{
+		static	CVertexBuffer	dummyVB;
+		static	bool			dummyVBinit= false; 
+		if(!dummyVBinit)
+		{
+			dummyVBinit= true;
+			// setup a full feature VB (maybe not usefull ... :( ).
+			dummyVB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag|
+				CVertexBuffer::PrimaryColorFlag|CVertexBuffer::SecondaryColorFlag|
+				CVertexBuffer::TexCoord0Flag|CVertexBuffer::TexCoord1Flag|
+				CVertexBuffer::TexCoord2Flag|CVertexBuffer::TexCoord3Flag
+				);
+			// some vertices.
+			dummyVB.setNumVertices(10);
+			dummyVB.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
+		}
+		// must setup a vbhard each frame on ati, else rendering with a ram vb fails (happens only when there's some lock pattern in previous frame when a landscape zone is loaded ... :-|??)
+		// maybe it's a driver bug..
+		activeVertexBuffer(dummyVB);
+		nlassert(_CurrentVertexBufferHard!=NULL);
+	}
+	
 
 
 	/* PATCH For Possible NVidia Synchronisation.
@@ -1628,12 +1706,14 @@ bool CDriverGL::swapBuffers()
 	SwapBuffers(_hDC);
 #else // NL_OS_WINDOWS
 	glXSwapBuffers(dpy, win);
+	
+		
 #endif // NL_OS_WINDOWS
 	
 	// Activate the default texture environnments for all stages.
 	//===========================================================
 	// This is not a requirement, but it ensure a more stable state each frame.
-	// (well, maybe the good reason is "it hides much more the bugs"  :o) ).
+	// (well, maybe the good reason is "it hides much more the bugs"  :o) ).	
 	for(sint stage=0;stage<inlGetNumTextStages(); stage++)
 	{
 		// init no texture.
@@ -1646,16 +1726,18 @@ bool CDriverGL::swapBuffers()
 		env.ConstantColor.set(255,255,255,255);
 		forceActivateTexEnvMode(stage, env);
 		forceActivateTexEnvColor(stage, env);
-	}
+	}	
 	
 
 	// Activate the default material.
 	//===========================================================
-	// Same reasoning as textures :)
+	// Same reasoning as textures :)	
 	_DriverGLStates.forceDefaults(inlGetNumTextStages());
 	if (_NVTextureShaderEnabled)
 	{
 		glDisable(GL_TEXTURE_SHADER_NV);
+		
+			
 		_NVTextureShaderEnabled = false;
 	}
 	_CurrentMaterial= NULL;
@@ -1674,7 +1756,7 @@ bool CDriverGL::swapBuffers()
 	{
 		_CurVBHardLockCount= 0;
 		_NumVBHardProfileFrame++;
-	}
+	}	
 
 	return true;
 }
@@ -1716,12 +1798,15 @@ bool CDriverGL::release()
 			wglDeleteContext( _hRC );
 			wglReleasePbufferDCARB( _PBuffer, _hDC );
 			wglDestroyPbufferARB( _PBuffer );
+			
+				
 		}
 	}
 	else
 	{
 		if (_hRC)
-			wglDeleteContext(_hRC);
+			wglDeleteContext(_hRC);		
+			
 		if (_hWnd&&_hDC)
 		{
 			ReleaseDC(_hWnd,_hDC);
@@ -1887,6 +1972,8 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 	int iheight=(int)((float)clientHeight*height+0.5f);
 	clamp (iheight, 0, clientHeight-iy);
 	glViewport (ix, iy, iwidth, iheight);
+	
+		
 
 }
 
@@ -1944,6 +2031,7 @@ void	CDriverGL::setupScissor (const class CScissor& scissor)
 	if(x==0 && x==0 && width>=1 && height>=1)
 	{
 		glDisable(GL_SCISSOR_TEST);
+					
 	}
 	else
 	{
@@ -1966,6 +2054,8 @@ void	CDriverGL::setupScissor (const class CScissor& scissor)
 
 		glScissor (ix0, iy0, iwidth, iheight);
 		glEnable(GL_SCISSOR_TEST);
+		
+			
 	}
 }
 
@@ -2047,6 +2137,8 @@ void CDriverGL::getWindowSize(uint32 &width, uint32 &height)
 		{
 			wglQueryPbufferARB( _PBuffer, WGL_PBUFFER_WIDTH_ARB, (int*)&width );
 			wglQueryPbufferARB( _PBuffer, WGL_PBUFFER_HEIGHT_ARB, (int*)&height );
+			
+				
 		}
 	}
 	else
@@ -2116,6 +2208,8 @@ const char *CDriverGL::getVideocardInformation ()
 	const char *vendor = (const char *) glGetString (GL_VENDOR);
 	const char *renderer = (const char *) glGetString (GL_RENDERER);
 	const char *version = (const char *) glGetString (GL_VERSION);
+	
+		
 
 	smprintf(name, 1024, "OpenGL / %s / %s / %s", vendor, renderer, version);
 	return name;
@@ -2187,6 +2281,8 @@ void			CDriverGL::getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect)
 	{
 		bitmap.resize(rect.Width, rect.Height, CBitmap::RGBA);
 		glReadPixels (rect.X, rect.Y, rect.Width, rect.Height, GL_RGBA, GL_UNSIGNED_BYTE, bitmap.getPixels ().getPtr());
+		
+			
 	}
 }
 
@@ -2201,6 +2297,8 @@ void			CDriverGL::getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &r
 		glPixelTransferf(GL_DEPTH_SCALE, 1.0f) ;
 		glPixelTransferf(GL_DEPTH_BIAS, 0.f) ;
 		glReadPixels (rect.X, rect.Y, rect.Width, rect.Height, GL_DEPTH_COMPONENT , GL_FLOAT, &(zbuffer[0]));
+		
+			
 	}
 }
 
@@ -2229,6 +2327,8 @@ bool CDriverGL::fillBuffer (CBitmap &bitmap)
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 	glDrawPixels (rect.Width, rect.Height, GL_RGBA, GL_UNSIGNED_BYTE, &(bitmap.getPixels()[0]) );
+	
+		
 
 	return true;
 }
@@ -2260,6 +2360,8 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 	_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
 	_CurrentTexture[0] = NULL;
 	_CurrentTextureInfoGL[0] = NULL;
+	
+		
 }
 
 
@@ -2280,6 +2382,8 @@ void CDriverGL::setPolygonMode (TPolygonMode mode)
 		glPolygonMode (GL_FRONT_AND_BACK, GL_POINT);
 		break;
 	}
+	
+		
 }
 
 
@@ -2326,6 +2430,8 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 	}
 	_FogStart = start;
 	_FogEnd = end;
+	
+		
 }
 
 
@@ -2454,6 +2560,8 @@ void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const uint stage, const floa
 	nlassert(stage < (uint) inlGetNumTextStages() );
 	_DriverGLStates.activeTextureARB(stage);
 	glTexEnvfv(GL_TEXTURE_SHADER_NV, GL_OFFSET_TEXTURE_MATRIX_NV, mat);
+	
+		
 }
 
 
@@ -2472,6 +2580,8 @@ void      CDriverGL::enableNVTextureShader(bool enabled)
 			glDisable(GL_TEXTURE_SHADER_NV);		
 		}
 		_NVTextureShaderEnabled = enabled;
+		
+			
 	}	
 }
 
@@ -2623,6 +2733,8 @@ void			CDriverGL::setBlendConstantColor(NLMISC::CRGBA col)
 		return;
 	static const	float	OO255= 1.0f/255;
 	nglBlendColorEXT(col.R*OO255, col.G*OO255, col.B*OO255, col.A*OO255);
+	
+		
 }
 // ***************************************************************************
 NLMISC::CRGBA	CDriverGL::getBlendConstantColor() const
@@ -2645,6 +2757,8 @@ void CDriverGL::refreshProjMatrixFromGL()
 	glGetFloatv(GL_PROJECTION_MATRIX, mat);
 	_GLProjMat.set(mat);	
 	_ProjMatDirty = false;
+	
+		
 }
 
 
@@ -2731,6 +2845,8 @@ void CDriverGL::setEMBMMatrix(const uint stage,const float mat[4])
 	{
 		_DriverGLStates.activeTextureARB(stage);
 		nglTexBumpParameterfvATI(GL_BUMP_ROT_MATRIX_ATI, const_cast<float *>(mat));
+		
+			
 	}
 }
 
@@ -2745,9 +2861,13 @@ void CDriverGL::initEMBM()
 			// Test which stage support EMBM
 			GLint numEMBMUnits;
 			nglGetTexBumpParameterivATI(GL_BUMP_NUM_TEX_UNITS_ATI, &numEMBMUnits);
+			
+				
 			std::vector<GLint> EMBMUnits(numEMBMUnits);
 			// get array of units that supports EMBM
 			nglGetTexBumpParameterivATI(GL_BUMP_TEX_UNITS_ATI, &EMBMUnits[0]);
+			
+				
 			uint k;
 			for(k = 0; k < (EMBMUnits.size() - 1); ++k)
 			{
@@ -2766,6 +2886,8 @@ void CDriverGL::initEMBM()
 					_DriverGLStates.activeTextureARB(k);
 					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);	  
 					glTexEnvi(GL_TEXTURE_ENV, GL_BUMP_TARGET_ATI, GL_TEXTURE0_ARB + k + 1);				
+					
+						
 				}
 			}
 			_DriverGLStates.activeTextureARB(0);
@@ -2938,6 +3060,8 @@ uint loadARBFragmentProgramStringNative(const char *prog)
 		}
 		return 0;
 	}
+	
+		
 }
 
 
@@ -2965,7 +3089,8 @@ static void fetchPerturbedEnvMapR200()
 	// PASS 2 //
 	////////////
 	nglSampleMapATI(GL_REG_2_ATI, GL_REG_2_ATI, GL_SWIZZLE_STR_ATI); // fetch envmap at perturbed texcoords	
-
+	
+		
 }
 
 // ***************************************************************************
@@ -3002,7 +3127,11 @@ void CDriverGL::initFragmentShaders()
 		// WATER //
 		///////////
 		ATIWaterShaderHandleNoDiffuseMap = nglGenFragmentShadersATI(1);
+		
+			
 		ATIWaterShaderHandle = nglGenFragmentShadersATI(1);
+		
+			
 		if (!ATIWaterShaderHandle || !ATIWaterShaderHandleNoDiffuseMap)
 		{
 			ATIWaterShaderHandleNoDiffuseMap = ATIWaterShaderHandle = 0;
@@ -3039,11 +3168,15 @@ void CDriverGL::initFragmentShaders()
 			error = glGetError();
 		    nlassert(error == GL_NONE);
 			nglBindFragmentShaderATI(0);
+			
+				
 		}
 		////////////
 		// CLOUDS //
 		////////////
 		ATICloudShaderHandle = nglGenFragmentShadersATI(1);		
+		
+			
 		if (!ATICloudShaderHandle)
 		{			
 			nlwarning("Couldn't generate cloud shader using ATI_fragment_shader !");			
@@ -3067,6 +3200,8 @@ void CDriverGL::initFragmentShaders()
 			GLenum error = glGetError();
 			nlassert(error == GL_NONE);	
 			nglBindFragmentShaderATI(0);
+			
+				
 		}
 	}	
 
@@ -3083,6 +3218,8 @@ void CDriverGL::deleteARBFragmentPrograms()
 		{
 			GLuint progId = (GLuint) ARBWaterShader[k];
 			nglDeleteProgramsARB(1, &progId);
+			
+				
 			ARBWaterShader[k] = 0;
 		}
 	}
@@ -3093,6 +3230,8 @@ void CDriverGL::deleteARBFragmentPrograms()
 void CDriverGL::deleteFragmentShaders()
 {	
 	deleteARBFragmentPrograms();
+	
+		
 	if (ATIWaterShaderHandleNoDiffuseMap)
 	{		
 		nglDeleteFragmentShaderATI((GLuint) ATIWaterShaderHandleNoDiffuseMap);		
@@ -3108,6 +3247,8 @@ void CDriverGL::deleteFragmentShaders()
 		nglDeleteFragmentShaderATI((GLuint) ATICloudShaderHandle);		
 		ATICloudShaderHandle = 0;
 	}
+	
+		
 }
 
 
@@ -3115,6 +3256,8 @@ void CDriverGL::deleteFragmentShaders()
 void CDriverGL::finish()
 {
 	glFinish();
+	
+		
 }
 
 
@@ -3126,6 +3269,8 @@ void	CDriverGL::setSwapVBLInterval(uint interval)
 	if(_Extensions.WGLEXTSwapControl && _Initialized)
 	{
 		wglSwapIntervalEXT(_Interval);
+		
+			
 	}
 #endif
 }
@@ -3152,6 +3297,8 @@ void	CDriverGL::enablePolygonSmoothing(bool smooth)
 		glEnable(GL_POLYGON_SMOOTH);
 	else
 		glDisable(GL_POLYGON_SMOOTH);
+				
+		
 	_PolygonSmooth= smooth;
 }
 
@@ -3407,6 +3554,8 @@ bool CDriverGL::getAdapter(uint adapter, CAdapter &desc) const
 		desc.DeviceName = (const char *) glGetString (GL_RENDERER);
 		desc.Driver = (const char *) glGetString (GL_VERSION);
 		desc.Vendor= (const char *) glGetString (GL_VENDOR);
+		
+			
 		desc.Description = "Default openGL adapter";
 		desc.DeviceId = 0;
 		desc.DriverVersion = 0;
@@ -3466,4 +3615,23 @@ void CDriverGL::displayBench (class NLMISC::CLog *log)
 
 // ***************************************************************************
 
+
 } // NL3D
+
+void displayGLError(GLenum error)
+{
+	switch(error)
+	{
+	case GL_NO_ERROR: nlwarning("GL_NO_ERROR"); break;
+	case GL_INVALID_ENUM: nlwarning("GL_INVALID_ENUM"); break;
+	case GL_INVALID_VALUE: nlwarning("GL_INVALID_VALUE"); break;
+	case GL_INVALID_OPERATION: nlwarning("GL_INVALID_OPERATION"); break;
+	case GL_STACK_OVERFLOW: nlwarning("GL_STACK_OVERFLOW"); break;
+	case GL_STACK_UNDERFLOW: nlwarning("GL_STACK_UNDERFLOW"); break;
+	case GL_OUT_OF_MEMORY: nlwarning("GL_OUT_OF_MEMORY"); break;
+	default:
+		nlwarning("GL_ERROR");
+		break;
+	}
+}
+

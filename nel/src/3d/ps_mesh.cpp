@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.18 2002/03/14 18:14:45 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.19 2002/04/25 08:28:18 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -410,17 +410,16 @@ void CPSMesh::resize(uint32 size)
 
 //====================================================================================
 CPSMesh::~CPSMesh()
-{
+{	
+	if (_Owner && _Owner->getOwner())
+	{	
+		CScene *scene = _Owner->getScene();
+		nlassert(scene); // the setScene method of the particle system should have been called
 
-	nlassert(_Owner);
-	nlassert(_Owner->getOwner());
-
-	CScene *scene = _Owner->getScene();
-	nlassert(scene); // the setScene method of the particle system should have been called
-
-	for (TInstanceCont::iterator it = _Instances.begin(); it != _Instances.end(); ++it)
-	{
-		scene->deleteInstance(*it);
+		for (TInstanceCont::iterator it = _Instances.begin(); it != _Instances.end(); ++it)
+		{
+			scene->deleteInstance(*it);
+		}
 	}
 }
 

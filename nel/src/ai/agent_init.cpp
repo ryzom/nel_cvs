@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.5 2001/10/16 15:44:26 chafik Exp $
+ * $Id: agent_init.cpp,v 1.6 2001/10/17 08:34:10 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,8 +89,14 @@ void staticReleaseLibClass()
 
 namespace NLAIE
 {		
-	CExceptionContainer::CExceptionContainer(const IException &exc):_Excep((IException *)exc.clone())
+	
+	CExceptionContainer::CExceptionContainer(const CExceptionContainer &exc)
 	{
+		_Excep = (IException *)exc.clone();
+	}
+	CExceptionContainer::CExceptionContainer(const IException &exc)
+	{
+		_Excep = (IException *)exc.clone();
 	}
 
 	const IException *CExceptionContainer::clone() const

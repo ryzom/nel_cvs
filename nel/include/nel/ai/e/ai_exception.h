@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.9 2001/10/16 15:49:30 chafik Exp $
+ * $Id: ai_exception.h,v 1.10 2001/10/17 08:34:23 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -62,6 +62,7 @@ namespace NLAIE
 	private:
 		IException *_Excep;
 	public:
+		CExceptionContainer(const CExceptionContainer &exc);
 		CExceptionContainer(const IException &exc);/*:_Excep((IException *)exc.clone())
 		{
 		}*/

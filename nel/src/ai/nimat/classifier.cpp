@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.2 2002/10/08 09:30:13 robert Exp $
+ * $Id: classifier.cpp,v 1.3 2002/10/10 08:35:18 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,8 +170,9 @@ void CClassifierSystem::getDebugString(std::string &t) const
 		}
 		std::string actionName = (*itClassifiers)->Behavior;
 		sint16		prio = (*itClassifiers)->Priority;
-		char v[8];
-		dbg += "> " + actionName + " [" + itoa(prio,v,10) + "]\n";
+		//char v[8];
+		//dbg += "> " + actionName + " [" + itoa(prio,v,10) + "]\n";
+		dbg += "> " + actionName + " [" + NLMISC::toString(prio) + "]\n";
 	}
 	t += dbg;
 }

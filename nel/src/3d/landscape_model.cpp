@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.32 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: landscape_model.cpp,v 1.33 2003/04/14 09:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,9 @@ CLandscapeModel::CLandscapeModel()
 	// The model is renderable
 	CTransform::setIsRenderable(true);
 
+	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
+	CTransform::setIsForceAnimDetail(true);
+
 	// RenderFilter: We are a Landscape
 	_RenderFilterType= UScene::FilterLandscape;
 }
@@ -81,33 +84,72 @@ void	CLandscapeModel::initModel()
 
 
 // ***************************************************************************
-bool	CLandscapeModel::clip()
+void	CLandscapeModel::traverseClip()
 {
+	CClipTrav		&clipTrav= getOwnerScene()->getClipTrav();
+
+	/// if already clipped in this frame, This means that we are visible from 2 CCluster.
+	if (_ClipDate == clipTrav.CurrentDate)
+	{
+		// We may set the WorldFrustumPyramid. But do this only if not already set.
+		if(!ClusteredPyramidIsFrustum)
+		{
+			/* If the current pyramid is different from the last stored pyramid, this mean per exemple
+			 that the player is in a room and look the landscape from 2 windows through portals.
+			 The other case is that the camera is in 2 clusters, so the clusterSystem start from this 2, and so we arrive 
+			 here 2 times (but through the same portal => same pyramid obviously...)
+			 */
+			if( ClusteredPyramid!=clipTrav.WorldPyramid )
+			{
+				// in this rare case take the Whole frustum pyramid (a more correct code is to make an Union of the 2 pyramids...)
+				ClusteredPyramid= clipTrav.WorldFrustumPyramid;
+				ClusteredPyramidIsFrustum= true;
+			}
+		}
+	}
+	else
+	{
+		// If the camera is in Rootcluster or visible through a protal from one Room Cluster only, use the clustered pyramid.
+		ClusteredPyramid= clipTrav.WorldPyramid;
+		// We are not sure we are the FrustumPyramid
+		ClusteredPyramidIsFrustum= false;
+	}
+
+	// Call normal CTransform traverseClip to insert this model in render list etc...
+	// NB: CTransform::traverseClip() update _ClipDate...
+	CTransform::traverseClip();
+}
+
+
+// ***************************************************************************
+void	CLandscapeModel::traverseAnimDetail()
+{
+	// Father call (usefull?)
+	CTransform::traverseAnimDetail();
+
+	// The real Landscape clip is done in traverseAnimDetail
 	H_AUTO( NL3D_Landscape_Clip );
 
 	CClipTrav		&clipTrav= getOwnerScene()->getClipTrav();
 
-	// Before Landscape clip, must setup Driver, for good VB allocation.
-	Landscape.setDriver(getOwnerScene()->getRenderTrav().getDriver());
-
-	// Use the unClipped pyramid (not changed by cluster System).
-	vector<CPlane>	&pyramid= clipTrav.WorldFrustumPyramid;
-
-	// We are sure that pyramid has normalized plane normals.
-	Landscape.clip(clipTrav.CamPos, pyramid);
-
 	// Yes, this is ugly, but the clip pass is finished in render(), for clipping TessBlocks.
 	// This saves an other Landscape patch traversal, so this is faster...
 	// Order them in order which clip faster (first horizontal, then vertical).
-	CurrentPyramid[0]= pyramid[NL3D_CLIP_PLANE_LEFT];
-	CurrentPyramid[1]= pyramid[NL3D_CLIP_PLANE_RIGHT];
-	CurrentPyramid[2]= pyramid[NL3D_CLIP_PLANE_TOP];
-	CurrentPyramid[3]= pyramid[NL3D_CLIP_PLANE_BOTTOM];
+	// NB: TessBlock are ALWAYS clipped with the frustum pyramid, not the clustered one (faster clip for most common cases).
+	CurrentPyramid[0]= clipTrav.WorldFrustumPyramid[NL3D_CLIP_PLANE_LEFT];
+	CurrentPyramid[1]= clipTrav.WorldFrustumPyramid[NL3D_CLIP_PLANE_RIGHT];
+	CurrentPyramid[2]= clipTrav.WorldFrustumPyramid[NL3D_CLIP_PLANE_TOP];
+	CurrentPyramid[3]= clipTrav.WorldFrustumPyramid[NL3D_CLIP_PLANE_BOTTOM];
 	nlassert(NL3D_TESSBLOCK_NUM_CLIP_PLANE==4);
 
-	// Well, always visible....
-	return true;
+	// Before Landscape clip, must setup Driver, for good VB allocation.
+	Landscape.setDriver(getOwnerScene()->getRenderTrav().getDriver());
+
+	// Use the Clustered pyramid for Patch, but Frustum pyramid for TessBlocks.
+	// We are sure that pyramid has normalized plane normals.
+	Landscape.clip(clipTrav.CamPos, ClusteredPyramid);
 }
+
 
 // ***************************************************************************
 void	CLandscapeModel::traverseRender()

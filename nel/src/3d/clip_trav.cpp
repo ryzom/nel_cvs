@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.33 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.34 2003/04/14 09:31:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -250,6 +250,13 @@ void CClipTrav::traverse()
 		vCluster.push_back (RootCluster);
 	}
 
+	/// Flag all cluster to know if they are in camera or not.
+	for(i=0;i<vCluster.size();i++)
+	{
+		vCluster[i]->setCameraIn(true);
+	}
+
+
 	H_AFTER( NL3D_TravClip_FindCameraCluster);
 
 	// Manage Moving Objects
@@ -349,6 +356,10 @@ void CClipTrav::traverse()
 	// Unlink the cluster where we are
 	for (i = 0; i < vCluster.size(); ++i)
 	{
+		// reset Camera In Flag.
+		vCluster[i]->setCameraIn(false);
+
+		// remove from Clip Root
 		sceneRoot->clipDelChild(vCluster[i]);
 	}
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.125 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: landscape.cpp,v 1.126 2003/04/14 09:33:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -976,6 +976,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// -1. clear all PatchRenderPass renderList
 	//===================
 
+	H_BEFORE( NL3D_Landscape_Render_Clear );
+
 	// Fars.
 	for(itFar= _FarRdrPassSet.begin(); itFar!= _FarRdrPassSet.end(); itFar++)
 	{
@@ -1000,8 +1002,12 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		pass.clearAllRenderList();
 	}
 
+	H_AFTER( NL3D_Landscape_Render_Clear );
+
 	// 0. preRender pass.
 	//===================
+
+	H_BEFORE( NL3D_Landscape_Render_PreRender );
 
 	// change Far0 / Far1.
 	// Clip TessBlocks against pyramid and Far Limit.
@@ -1015,6 +1021,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		(*it).second->preRender();
 	}
 
+	H_AFTER( NL3D_Landscape_Render_PreRender );
+	H_BEFORE( NL3D_Landscape_Render_Refill );
 
 	// Reallocation Mgt. If any of the VB is reallocated, we must refill it entirely.
 	// NB: all VBs are refilled entirely. It is not optimal (maybe 3* too slow), but reallocation are supposed
@@ -1059,6 +1067,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		}
 	}
 
+	H_AFTER( NL3D_Landscape_Render_Refill );
+	H_BEFORE( NL3D_Landscape_Render_SoftGeomorph );
 
 	// If software GeoMorph / Alpha Transition (no VertexShader), do it now.
 	if(!_VertexShaderOk)
@@ -1092,6 +1102,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		*/
 	}
 
+	H_AFTER( NL3D_Landscape_Render_SoftGeomorph );
 
 	// Must realase VB Buffers Now!! The VBuffers are now OK!
 	// NB: no parallelism is made between 3dCard and Fill of vertices.
@@ -1124,6 +1135,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// 1. TileRender pass.
 	//====================
 
+	// Yoyo: profile
+	NL3D_PROFILE_LAND_SET(ProfNTileSetupMaterial, driver->profileSetupedMaterials() );
+	H_BEFORE( NL3D_Landscape_Render_Tile );
 
 	// First, update Dynamic Lighting for Near, ie multiply Dynamic Lightmap with UserColor, and upload to texture.
 	// ==================
@@ -1155,7 +1169,6 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// ==================
 	// Before any render call. Set the global driver used to render.
 	CLandscapeGlobals::PatchCurrentDriver= driver;
-
 
 	// Render Order. Must "invert", since initial order is NOT the render order. This is done because the lightmap pass
 	// DO NOT have to do any renderTile(), since it is computed in RGB0 pass.
@@ -1391,10 +1404,16 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		}
 	}
 
+	// Yoyo: profile
+	NL3D_PROFILE_LAND_SET(ProfNTileSetupMaterial, driver->profileSetupedMaterials()-ProfNTileSetupMaterial );
+	H_AFTER( NL3D_Landscape_Render_Tile );
 
 	// 2. Far0Render pass.
 	//====================
 
+	// Yoyo: profile
+	NL3D_PROFILE_LAND_SET(ProfNFar0SetupMaterial, driver->profileSetupedMaterials() );
+	H_BEFORE( NL3D_Landscape_Render_Far0 );
 
 	// First, update Dynamic Lighting for Far, ie multiply Dynamic Lightmap with TextureFar, and upload to texture.
 	// ==================
@@ -1460,10 +1479,17 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		itFar++;
 	}
 
+	// Yoyo: profile
+	NL3D_PROFILE_LAND_SET(ProfNFar0SetupMaterial, driver->profileSetupedMaterials()-ProfNFar0SetupMaterial );
+	H_AFTER( NL3D_Landscape_Render_Far0 );
 
 
 	// 3. Far1Render pass.
 	//====================
+
+	// Yoyo: profile
+	NL3D_PROFILE_LAND_SET(ProfNFar1SetupMaterial, driver->profileSetupedMaterials() );
+	H_BEFORE( NL3D_Landscape_Render_Far1 );
 
 	// Active VB.
 	// ==================
@@ -1510,6 +1536,10 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		// Next render pass
 		itFar++;
 	}
+
+	// Yoyo: profile
+	NL3D_PROFILE_LAND_SET(ProfNFar1SetupMaterial, driver->profileSetupedMaterials()-ProfNFar1SetupMaterial );
+	H_AFTER( NL3D_Landscape_Render_Far1 );
 
 
 	// 4. "Release" texture materials.

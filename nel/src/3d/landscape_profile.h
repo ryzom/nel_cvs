@@ -1,7 +1,7 @@
 /** \file landscape_profile.h
  * Yoyo: for landscape profile only.
  *
- * $Id: landscape_profile.h,v 1.4 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: landscape_profile.h,v 1.5 2003/04/14 09:35:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,10 @@ extern	sint		ProfNMerges;
 extern	sint		ProfNRefineInTileTransition;
 extern	sint		ProfNRefineWithLowDistance;
 extern	sint		ProfNSplitsPass;
+// Material setup Profile
+extern	sint		ProfNTileSetupMaterial;
+extern	sint		ProfNFar0SetupMaterial;
+extern	sint		ProfNFar1SetupMaterial;
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.65 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: zone.cpp,v 1.66 2003/04/14 09:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/landscape.h"
 #include "3d/zone_symmetrisation.h"
 #include "nel/misc/common.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace NLMISC;
@@ -874,10 +875,17 @@ bool			CZone::patchOnBorder(const CPatchConnect &pc) const
 // ***************************************************************************
 void			CZone::clip(const std::vector<CPlane>	&pyramid)
 {
+	H_AUTO( NLMISC_ClipZone );
+
 	nlassert(Compiled);
 
 	// bkup old ClipResult. NB: by default, it is ClipOut (no VB created).
 	sint	oldClipResult= ClipResult;
+
+	// Pyramid with only the planes that clip the zone
+	static std::vector<CPlane>		patchPyramid(10);
+	static std::vector<uint>		patchPyramidIndex(10);
+	patchPyramidIndex.clear();
 
 	// Compute ClipResult.
 	//-------------------
@@ -896,12 +904,14 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 		{
 			// Force ClipResult to be ClipSide, and not ClipIn.
 			ClipResult=ClipSide;
+			// Append the plane index to list to test
+			patchPyramidIndex.push_back(i);
 		}
 	}
 
 
 	// Easy Clip  :)
-	if(Patchs.size()==0)
+	if(Patchs.empty())
 	{
 		ClipResult= ClipOut;
 		// don't need to go below...
@@ -913,6 +923,8 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	//--------------------
 	if(ClipResult==ClipOut)
 	{
+		H_AUTO( NLMISC_ClipZone_Out );
+
 		CPatch		*pPatch= &(*Patchs.begin());
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
@@ -923,6 +935,8 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	}
 	else if(ClipResult==ClipIn)
 	{
+		H_AUTO( NLMISC_ClipZone_In );
+
 		CPatch		*pPatch= &(*Patchs.begin());
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
@@ -933,10 +947,22 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	}
 	else
 	{
+		H_AUTO( NLMISC_ClipZone_Side );
+
+		// Copy only the pyramid planes of interest
+		patchPyramid.resize(patchPyramidIndex.size());
+		uint i;
+		for(i=0;i<patchPyramidIndex.size();i++)
+		{
+			patchPyramid[i]= pyramid[patchPyramidIndex[i]];
+		}
+
+		// For all patchs
 		CPatch		*pPatch= &(*Patchs.begin());
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
-			pPatch->clip(pyramid);
+			// clip with the simplified pyramid
+			pPatch->clip(patchPyramid);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.8 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: landscape_model.h,v 1.9 2003/04/14 09:33:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,8 +97,12 @@ public:
 	/** Override CTransform::initModel(), to create CLandscape's VegetableManager's BlendLayer models in the scene.
 	 */
 	virtual void	initModel();
-	/// special clip() and traverseRender()
-	virtual bool	clip();
+	/// special clip()
+	virtual void	traverseClip();
+	virtual bool	clip() {return true;}
+	/// traverseAnimDetail() do the actual clipping.
+	virtual void	traverseAnimDetail();
+	/// special traverseRender()
 	virtual void	traverseRender();
 
 
@@ -113,7 +117,13 @@ private:
 	float	_Additive;
 
 	// The current small pyramid, for faster clip.
-	CPlane		CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
+	CPlane					CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
+
+	// The current clustered pyramid. computed in clip(), and parsed in traverseAnimDetail()
+	std::vector<CPlane>		ClusteredPyramid;
+
+	// If ClusteredPyramid is already the WorldFrustumPyramid. NB: if false, it may still be actually
+	bool					ClusteredPyramidIsFrustum;
 };
 
 

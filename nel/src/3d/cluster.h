@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.11 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: cluster.h,v 1.12 2003/04/14 09:31:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,6 +148,9 @@ public:
 	virtual void	traverseHrc();
 	virtual void	traverseClip();
 	virtual	bool	clip();
+	// For ClipTrav only.
+	void			setCameraIn(bool state) {_CameraIn= state;}
+	bool			isCameraIn() const {return _CameraIn;}
 	// @}
 
 	// clusters to clusters calls
@@ -195,7 +198,8 @@ private:
 
 	/// ***** Clip Traversal
 	bool	_Visited;
-
+	// true if in clip pass the camera is in. valid only during clip pass...
+	bool	_CameraIn;
 
 	/// Friends classes
 	friend class CInstanceGroup;

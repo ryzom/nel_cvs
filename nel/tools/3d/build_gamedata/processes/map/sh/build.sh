@@ -53,9 +53,6 @@ if test "$panoply_file_list" ; then
 	ls panoply >> $panoply_file_list
 fi
 
-
-
-
 # For each directoy
 for i in tga/*.[tT][gG][aA] ; do
 
@@ -102,3 +99,9 @@ for i in panoply/*.[tT][gG][aA] ; do
 	# Idle
 	../../idle.bat
 done
+
+# Put old panoply in cache
+rmdir cache 2>> log.log
+mkdir cache 2>> log.log
+mv panoply/* cache 2>> log.log
+mkdir panoply 2>> log.log

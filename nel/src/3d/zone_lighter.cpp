@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.9 2001/10/30 10:59:22 lecroart Exp $
+ * $Id: zone_lighter.cpp,v 1.10 2001/11/23 10:06:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1393,7 +1393,7 @@ void CZoneLighter::addTriangles (CLandscape &landscape, vector<uint> &listZone, 
 		float endT=max (max (face->PVBase.getT(), face->PVLeft.getT()), face->PVRight.getT());
 
 		// Add a triangle
-		triangleArray.push_back (CTriangle (NLMISC::CTriangle (face->VBase->Pos, face->VLeft->Pos, face->VRight->Pos), 
+		triangleArray.push_back (CTriangle (NLMISC::CTriangle (face->VBase->EndPos, face->VLeft->EndPos, face->VRight->EndPos), 
 			face->Patch->getZone()->getZoneId(), face->Patch->getPatchId(), startS ,endS, startT, endT));
 	}
 
@@ -1757,13 +1757,13 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 			// *** Center coordinates
 			float centerS=(face->PVLeft.getS()+face->PVRight.getS())/2.f;
 			float centerT=(face->PVLeft.getT()+face->PVRight.getT())/2.f;
-			CVector centerPos=(face->VLeft->Pos+face->VRight->Pos)/2.f;
+			CVector centerPos=(face->VLeft->EndPos+face->VRight->EndPos)/2.f;
 
 			// *** Base Coordinates
 			CVector pos[14];
-			pos[0]=face->VBase->Pos;		// p0
-			pos[1]=face->VRight->Pos;
-			pos[2]=face->VLeft->Pos;		// p2
+			pos[0]=face->VBase->EndPos;		// p0
+			pos[1]=face->VRight->EndPos;
+			pos[2]=face->VLeft->EndPos;		// p2
 			pos[3]=(pos[1]+pos[2])/2;
 			pos[4]=(pos[0]+pos[1])/2;				// p4
 			pos[5]=(pos[0]+pos[2])/2;
@@ -1858,10 +1858,12 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 			{
 				uint s=(uint)((float)orderS*4*interpolatedS[i]);
 				uint t=(uint)((float)orderT*4*interpolatedT[i]);
+
 				/*nlassert (s>=0);
 				nlassert (s<orderS*4);
 				nlassert (t>=0);
 				nlassert (t<orderT*4);*/
+
 				if ((s>=0)&&(s<orderS*4)&&(t>=0)&&(t<orderT*4))
 				{
 					// Triangle index
@@ -1946,6 +1948,7 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 		uint powerT=getPowerOf2 (orderT);
 		uint lumelS=4<<powerS;
 		uint lumelT=4<<powerT;
+
 		for (uint t=0; t<lumelT; t++)
 		for (uint s=0; s<lumelS; s++)
 		{
@@ -2033,7 +2036,7 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 
 			// Normal
 			CPlane plane;
-			plane.make (face->VBase->Pos, face->VLeft->Pos, face->VRight->Pos);
+			plane.make (face->VBase->EndPos, face->VLeft->EndPos, face->VRight->EndPos);
 			lumels[index].Normal+=plane.getNormal();
 		}
 	}

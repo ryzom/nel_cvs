@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.34 2003/03/18 20:19:12 boucher Exp $
+ * $Id: i18n.cpp,v 1.35 2003/04/24 14:00:24 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -55,6 +55,13 @@ bool					CI18N::_StrMapLoaded = false;
 const ucstring			CI18N::_NotTranslatedValue("<Not Translated>");
 bool					CI18N::_LanguagesNamesLoaded = false;
 sint32					CI18N::_SelectedLanguage = -1;
+CI18N::ILoadProxy		*CI18N::_LoadProxy = 0;
+
+
+void CI18N::setLoadProxy(ILoadProxy *loadProxy)
+{
+	_LoadProxy = loadProxy;
+}
 
 
 void CI18N::load (const std::string &languageCode)
@@ -84,7 +91,10 @@ void CI18N::load (const std::string &languageCode)
 
 	ucstring text;
 	// read in the text
-	readTextFile(fileName, text);
+	if (_LoadProxy)
+		_LoadProxy->loadStringFile(fileName, text);
+	else
+		readTextFile(fileName, text);
 	// remove any comment
 	remove_C_Comment(text);
 
@@ -227,11 +237,6 @@ void	CI18N::skipWhiteSpace(ucstring::const_iterator &it, ucstring::const_iterato
 			// store the final '\n'
 			if (it != last)
 				storeComments->push_back(*it++);
-			if (it != last && *it == '\r')
-			{
-				// also store the cariage return !
-				storeComments->push_back(*it++);
-			}
 		}
 		else if (storeComments && *it == '/' && it+1 != last && *(it+1) == '*')
 		{
@@ -302,6 +307,11 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 		while (it != last && *it != closeMark)
 		{
 			// ignore tab, new lines and line feed
+			if (*it == openMark)
+			{
+				nlwarning("Found a non escaped openmark %c in a delimited string (Delimiters : '%c' - '%c')", char(openMark), char(openMark), char(closeMark));
+				return false;
+			}
 			if (*it == '\t' || *it == '\n' || *it == '\r')
 				++it;
 			else if (*it == '\\' && it+1 != last && *(it+1) != '\\')
@@ -324,6 +334,9 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 					// escape the close mark ?
 					if(*it == closeMark)
 						result.push_back(closeMark);
+					// escape the open mark ?
+					else if(*it == openMark)
+						result.push_back(openMark);
 					else
 						nlwarning("Ignoring unknown escape code \\%c (char value : %u)", char(*it), *it);
 				}
@@ -358,9 +371,13 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 }
 
 
-void CI18N::readTextFile(const std::string &filename, ucstring &result, bool forceUtf8)
+void CI18N::readTextFile(const std::string &filename, ucstring &result, bool forceUtf8, bool fileLookup)
 {
-	std::string fullName = CPath::lookup(filename, false);
+	std::string fullName;
+	if (fileLookup)
+		fullName = CPath::lookup(filename, false);
+	else
+		fullName = filename;
 
 	if (fullName.empty())
 		return;
@@ -402,7 +419,8 @@ void CI18N::readTextBuffer(uint8 *buffer, uint size, ucstring &result, bool forc
 	else if (text.find(utf8Header) == 0)
 	{
 		// remove utf8 header
-		text = std::string(&(*(text.begin()+3)), text.size()-3);
+//		text = std::string(&(*(text.begin()+3)), text.size()-3);
+		text = text.substr(3);
 		result.fromUtf8(text);
 	}
 	else if (text.find(utf16Header) == 0)
@@ -447,19 +465,36 @@ void CI18N::readTextBuffer(uint8 *buffer, uint size, ucstring &result, bool forc
 }
 
 
-void CI18N::writeTextFile(const std::string filename, const ucstring &content)
+void CI18N::writeTextFile(const std::string filename, const ucstring &content, bool utf8)
 {
 	COFile file(filename);
 
-	// write the unicode 16 bits tag
-	uint16 unicodeTag = 0xfeff;
-	file.serial(unicodeTag);
-
-	uint i;
-	for (i=0; i<content.size(); ++i)
+	if (!utf8)
 	{
-		uint16 c = content[i];
-		file.serial(c);
+		// write the unicode 16 bits tag
+		uint16 unicodeTag = 0xfeff;
+		file.serial(unicodeTag);
+
+		uint i;
+		for (i=0; i<content.size(); ++i)
+		{
+			uint16 c = content[i];
+			file.serial(c);
+		}
+	}
+	else
+	{
+		static char utf8Header[] = {char(0xef), char(0xbb), char(0xbf), 0};
+
+		std::string str = encodeUTF8(content);
+		// add the UTF-8 'not official' header
+		str = utf8Header + str;
+
+		uint i;
+		for (i=0; i<str.size(); ++i)
+		{
+			file.serial(str[i]);
+		}
 	}
 }
 
@@ -498,6 +533,116 @@ ucstring CI18N::makeMarkedString(ucchar openMark, ucchar closeMark, const ucstri
 
 	return ret;
 }
+
+
+string CI18N::encodeUTF8(const ucstring &str)
+{
+	string	res;
+	ucstring::const_iterator first(str.begin()), last(str.end());
+	for (; first != last; ++first)
+	{
+		ucchar	c = *first;
+		uint nbLoop = 0;
+		if (*first < 0x80)
+			res += char(*first);
+		else if (*first < 0x800)
+		{
+			ucchar c = *first;
+			c = c >> 6;
+			c = c & 0x1F;
+			res += c | 0xC0;
+			nbLoop = 1;
+		}
+		else if (*first < 0x10000)
+		{
+			ucchar c = *first;
+			c = c >> 12;
+			c = c & 0x0F;
+			res += c | 0xE0;
+			nbLoop = 2;
+		}
+
+		for (uint i=0; i<nbLoop; ++i)
+		{
+			ucchar	c = *first;
+			c = c >> ((nbLoop - i - 1) * 6);
+			c = c & 0x3F;
+			res += char(c) | 0x80; 
+		}
+	}
+
+	return res;
+}
+
+/* UTF-8 conversion table
+U-00000000 - U-0000007F:  0xxxxxxx  
+U-00000080 - U-000007FF:  110xxxxx 10xxxxxx  
+U-00000800 - U-0000FFFF:  1110xxxx 10xxxxxx 10xxxxxx  
+// not used as we convert from 16 bits unicode
+U-00010000 - U-001FFFFF:  11110xxx 10xxxxxx 10xxxxxx 10xxxxxx  
+U-00200000 - U-03FFFFFF:  111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx  
+U-04000000 - U-7FFFFFFF:  1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx  
+*/
+
+
+uint64	CI18N::makeHash(const ucstring &str)
+{
+	// on passe au moins 8 fois sur chaque octet de resultat
+	if (str.empty())
+		return 0;
+	const	uint32	MIN_TURN = 8*8;
+	uint64	hash = 0;
+	uint8	*ph = (uint8*)&hash;
+	uint8	*pc = (uint8*)str.data();
+
+	uint nbLoop = max(uint32(str.size()*2), MIN_TURN);
+	uint roll = 0;
+
+	for (uint i=0; i<nbLoop; ++i)
+	{
+		ph[(i/2) & 0x7] += pc[i%(str.size()*2)] << roll;
+		ph[(i/2) & 0x7] += pc[i%(str.size()*2)] >> (8-roll);
+
+		roll++;
+		roll &= 0x7;
+	}
+
+	return hash;
+}
+
+// convert a hash value to a readable string 
+string CI18N::hashToString(uint64 hash)
+{
+	uint32 *ph = (uint32*)&hash;
+
+	char temp[] = "0011223344556677";
+	sprintf(temp, "%08X%08X", ph[0], ph[1]);
+
+	return string(temp);
+}
+
+// convert a readable string into a hash value.
+uint64 CI18N::stringToHash(const std::string &str)
+{
+	nlassert(str.size() == 16);
+	uint32	low, hight;
+
+	string sl, sh;
+	sh = str.substr(0, 8);
+	sl = str.substr(8, 8);
+
+	sscanf(sh.c_str(), "%08X", &hight);
+	sscanf(sl.c_str(), "%08X", &low);
+
+	uint64 hash;
+	uint32 *ph = (uint32*)&hash;
+
+	ph[0] = hight;
+	ph[1] = low;
+
+	return hash;
+}
+
 
 
 } // NLMISC

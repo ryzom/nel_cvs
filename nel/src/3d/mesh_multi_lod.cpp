@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.21 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.22 2002/05/06 16:52:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -482,7 +482,8 @@ void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstan
 		// NB Here, the meshGeom may still be a coarseMesh, but rendered through CMeshGeom
 		if(slotRef.Flags&CMeshSlot::CoarseMesh)
 		{
-			if(manager)
+			// Render only if in passOpaque (avoid rendering twice for nothing!!)
+			if(manager && passOpaque)
 			{
 				// Render the CoarseMesh with the manager material
 				CMaterial	&material= manager->getMaterial();

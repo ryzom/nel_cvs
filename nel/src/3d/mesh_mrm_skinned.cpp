@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.4 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.5 2004/06/11 14:52:24 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2096,9 +2096,14 @@ void CMeshMRMSkinnedGeom::getVertexBuffer(CVertexBuffer &output) const
 	output.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag|CVertexBuffer::TexCoord0Flag);
 	const uint numVertices = _VBufferFinal.getNumVertices();
 	output.setNumVertices (numVertices);
+
+	// Set all UV routing on 0
+	uint i;
+	for (i=0; i<CVertexBuffer::MaxStage; i++)
+		output.setUVRouting (i, 0);
+
 	CVertexBufferReadWrite vba;
 	output.lock (vba);
-	uint i;
 	const CPackedVertexBuffer::CPackedVertex	*vertex = _VBufferFinal.getPackedVertices();
 	for (i=0; i<numVertices; i++)
 	{

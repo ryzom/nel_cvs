@@ -1,7 +1,7 @@
 /** \file pool_memory.h
  * Pool memory allocation
  *
- * $Id: pool_memory.h,v 1.2 2001/05/31 09:22:05 corvazier Exp $
+ * $Id: pool_memory.h,v 1.3 2001/06/06 09:34:17 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,6 @@ template<class T>
 class CPoolMemory
 {
 public:
-
 	/*
 	 * Constructor
 	 *
@@ -123,6 +122,94 @@ public:
 	{
 		_BlockList.clear();
 		_BlockPointer=_BlockList.end();
+	}
+
+	/*
+	 * The container iterator
+	 */
+	class Iterator
+	{
+		friend class CPoolMemory;
+
+		/// Cstr
+		Iterator (uint index, std::list< std::vector<T> >::iterator	blockPointer, CPoolMemory *container)
+		{
+			_Index=index;
+			_BlockPointer=blockPointer;
+			_Container=container;
+		}
+	public:
+
+		/// Increment operator
+		void operator++ () const
+		{
+			index++;
+			while (index>=(sint)_BlockPointer->size))
+			{
+				_BlockPointer++;
+				if (_BlockPointer==this->_BlockPointer.end())
+				{
+					index=0xffffffff;
+					break;
+				}
+				else
+					index=0;
+			}
+		}
+
+		/// Decrement operator
+		void operator-- () const
+		{
+			index--;
+			while (index<0)
+			{
+				if (_BlockPointer==this->_BlockPointer.begin())
+				{
+					index=0;
+					break;
+				}
+				else
+				{
+					_BlockPointer--;
+					index=((sint)_BlockPointer->size())-1;
+				}
+			}
+		}
+
+		/// Star operator
+		T&	operator* () const
+		{
+			return (*_BlockPointer)[_Index];
+		}
+
+		/// Arrow operator
+		T&	operator-> () const
+		{
+			return (*_BlockPointer)[_Index];
+		}
+	private:
+		sint									_Index;
+		std::list< std::vector<T> >::iterator	_BlockPointer;
+	};
+
+	/*
+	 * Get a begin iterator. Only valid between two allocations.
+	 */
+	Iterator begin()
+	{
+		std::list< std::vector<T> >::iterator ite=_BlockList.begin();
+		if (ite==_BlockList.end())
+			return end();
+		else
+			return Iterator (0, ite, this);
+	}
+
+	/*
+	 * Get an end iterator. Only valid between two allocations.
+	 */
+	Iterator end ()
+	{
+		return Iterator (0xffffffff, _BlockList.end(), this);
 	}
 
 private:

@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.3 2001/11/14 15:37:01 vizerie Exp $
+ * $Id: texture_bump.cpp,v 1.4 2001/11/21 16:01:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -53,11 +53,17 @@ static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest)
 /*
  * Constructor
  */
-CTextureBump::CTextureBump()
+CTextureBump::CTextureBump() : _DisableSharing(false)
 {
+	// mipmapping not supported for now, disable it
+	ITexture::setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
 }
 
 
+void CTextureBump::setFilterMode(TMagFilter magf, TMinFilter minf)
+{	
+	nlstop; // set filter mode not allowed with bump textures (not supported by some GPUs)
+}
 
 void CTextureBump::setHeightMap(ITexture *heightMap)
 {
@@ -89,7 +95,7 @@ void CTextureBump::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 void CTextureBump::doGenerate()
-{
+{	
 	nlassert(_HeightMap);
 	// generate the height map
 	_HeightMap->generate();
@@ -101,9 +107,7 @@ void CTextureBump::doGenerate()
 	releaseMipMaps();
 	uint width = _HeightMap->getWidth();
 	uint height = _HeightMap->getHeight();
-	CBitmap::resize(_HeightMap->getWidth(), _HeightMap->getHeight(), CBitmap::DsDt);
-	// mipmapping not supported for now, disable it
-	ITexture::setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
+	CBitmap::resize(_HeightMap->getWidth(), _HeightMap->getHeight(), CBitmap::DsDt);	
 	// build the DsDt map
 	BuildDsDt((uint32 *) &(_HeightMap->getPixels()[0]), width, height, (uint16 *) &(getPixels()[0]));
 	if (_HeightMap->getReleasable())
@@ -126,7 +130,7 @@ void CTextureBump::release()
 
 
 bool	CTextureBump::supportSharing() const
-{
+{	
 	return !_DisableSharing && _HeightMap && _HeightMap->supportSharing();	
 }
 

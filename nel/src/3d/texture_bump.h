@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * <File description>
  *
- * $Id: texture_bump.h,v 1.2 2001/11/07 10:40:19 vizerie Exp $
+ * $Id: texture_bump.h,v 1.3 2001/11/21 16:01:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -63,7 +63,7 @@ public:
 	void					enableSharing(bool enabled = true) { _DisableSharing = !enabled; }
 
 	bool					isSharingEnabled() const { return !_DisableSharing; }
-
+	
 protected:
 	// inherited from ITexture. Generate this bumpmap pixels
 	virtual void doGenerate();
@@ -71,6 +71,9 @@ protected:
 	virtual void release();	
 	NLMISC::CSmartPtr<ITexture> _HeightMap;
 	bool						_DisableSharing;
+private:
+	/// we don't allow for mipmap for bump so we redefine this to prevent the user from doing this on the base class Itexture
+	virtual         void setFilterMode(TMagFilter magf, TMinFilter minf);
 };
 
 

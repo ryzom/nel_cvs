@@ -1,7 +1,7 @@
 /** \file resource_ptr.h
  * CResourcePtr class.
  *
- * $Id: resource_ptr.h,v 1.2 2004/11/17 16:46:53 corvazier Exp $
+ * $Id: resource_ptr.h,v 1.3 2004/11/17 17:00:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NLMISC
  *\code
 
 	// Our resource type
-	class CResource
+	class CResource : NLMISC::CRefCount
 	{
 	public:
 		int data;

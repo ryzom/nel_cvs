@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.3 2001/07/10 16:48:41 cado Exp $
+ * $Id: sound_driver.h,v 1.4 2001/07/19 12:47:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,10 @@ public:
 	/// Version of the driver interface. To increment when the interface change.
 	static const uint32		InterfaceVersion;
 
-	/// The static method which builds the sound driver instance
+	/** The static method which builds the sound driver instance
+	 * In case of failure, can throw one of these ESoundDriver exception objects:
+	 * ESoundDriverNotFound, ESoundDriverCorrupted, ESoundDriverOldVersion, ESoundDriverUnknownVersion
+	 */
 	static	ISoundDriver	*createDriver();
 
 	/// Create a sound buffer
@@ -89,7 +92,7 @@ public:
 	virtual	ISource			*createSource() = 0;
 
 	/// Temp
-	virtual bool			loadWavFile( IBuffer *destbuffer, char *filename ) = 0;
+	virtual bool			loadWavFile( IBuffer *destbuffer, const char *filename ) = 0;
 
 	// Does not create a sound loader
 

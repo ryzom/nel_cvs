@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.30 2003/02/25 08:29:47 besson Exp $
+ * $Id: u_scene.h,v 1.31 2003/03/11 09:32:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -405,6 +405,79 @@ public:
 
 	//@}
 
+	/// \name Profiling and Render Filtering
+	// @{
+	enum	TRenderFilter
+	{
+		FilterLandscape=	0x00000001,
+		FilterWater=		0x00000002,
+		FilterMeshNoVP=		0x00000004,
+		FilterMeshVP=		0x00000008,
+		FilterMeshMRMNoVP=	0x00000010,
+		FilterMeshMRMVP=	0x00000020,
+		FilterMeshLodNoVP=	0x00000040,
+		FilterMeshLodVP=	0x00000080,
+		FilterSkeleton=		0x00000100,			// For skins, and also for sticked objects.
+		FilterSegRemanence= 0x00000200,
+		FilterPS=			0x00000400,
+		FilterFlare=		0x00000800,
+
+		// Combos:
+		FilterAllMeshNoVP=	FilterMeshNoVP + FilterMeshMRMNoVP + FilterMeshLodNoVP,
+		FilterAllMeshVP=	FilterMeshVP + FilterMeshMRMVP + FilterMeshLodVP,
+		FilterAllMesh=		FilterAllMeshNoVP+FilterAllMeshVP,
+		FilterFX=			FilterSegRemanence + FilterPS + FilterFlare,
+	};
+
+	/** Enable or disable some Models to be rendered (for profile). Default is ALL enabled
+	 *	NB: filtering is made at clip pass. Hence, much of the render processing is skipped (animDetail, light, lod, render)
+	 */
+	virtual	void				enableElementRender(TRenderFilter elt, bool state) =0;
+
+	/// For Scene Profiling
+	struct	CBenchResults
+	{
+		std::map<uint32, uint32>							MeshMRMProfileTriVBFormat;
+		std::map<uint32, uint32>							MeshProfileTriVBFormat;
+		uint32												NumMeshRdrNormal;
+		uint32												NumMeshRdrBlock;
+		uint32												NumMeshRdrBlockWithVBHeap;
+		uint32												NumMeshTriRdrNormal;
+		uint32												NumMeshTriRdrBlock;
+		uint32												NumMeshTriRdrBlockWithVBHeap;
+		uint32												NumMeshMRMRdrNormal;
+		uint32												NumMeshMRMRdrBlock;
+		uint32												NumMeshMRMRdrBlockWithVBHeap;
+		uint32												NumMeshMRMTriRdrNormal;
+		uint32												NumMeshMRMTriRdrBlock;
+		uint32												NumMeshMRMTriRdrBlockWithVBHeap;
+
+		void	reset()
+		{
+			MeshMRMProfileTriVBFormat.clear();
+			MeshProfileTriVBFormat.clear();
+			NumMeshRdrNormal= 0;
+			NumMeshRdrBlock= 0;
+			NumMeshRdrBlockWithVBHeap= 0;
+			NumMeshTriRdrNormal= 0;
+			NumMeshTriRdrBlock= 0;
+			NumMeshTriRdrBlockWithVBHeap= 0;
+			NumMeshMRMRdrNormal= 0;
+			NumMeshMRMRdrBlock= 0;
+			NumMeshMRMRdrBlockWithVBHeap= 0;
+			NumMeshMRMTriRdrNormal= 0;
+			NumMeshMRMTriRdrBlock= 0;
+			NumMeshMRMTriRdrBlockWithVBHeap= 0;
+		}
+	};
+
+	/// Enable Profiling for the next render(). Reset All stats.
+	virtual void				profileNextRender() =0;
+
+	/// get The result of the profiling.
+	virtual void				getProfileResults(CBenchResults &results) =0;
+
+	// @}
 };
 
 

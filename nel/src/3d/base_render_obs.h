@@ -1,7 +1,7 @@
 /** \file base_render_obs.h
  * Base Observers for CRenderTrav. separated for compilation optimisation
  *
- * $Id: base_render_obs.h,v 1.1 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: base_render_obs.h,v 1.2 2003/03/11 09:32:47 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -83,6 +83,12 @@ public:
 	 * The observers should not traverseSons(), for speed improvement.
 	 */
 	virtual	void	traverse(IObs *caller)=0;
+
+
+	/** This Method is used for Profiling Render
+	 */
+	virtual	void	profile() {}
+
 };
 
 

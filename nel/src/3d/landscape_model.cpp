@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.28 2002/10/29 17:17:28 corvazier Exp $
+ * $Id: landscape_model.cpp,v 1.29 2003/03/11 09:32:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,9 @@ CLandscapeModel::CLandscapeModel()
 
 	// The model is renderable
 	CTransform::setIsRenderable(true);
+
+	// RenderFilter: We are a Landscape
+	_RenderFilterType= UScene::FilterLandscape;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.16 2002/12/04 09:46:10 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.17 2003/03/11 09:32:47 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -45,6 +45,9 @@ CFlareModel::CFlareModel() : _Intensity(0)
 {
 	setTransparency(true);
 	setOpacity(false);
+
+	// RenderFilter: We are a flare
+	_RenderFilterType= UScene::FilterFlare;
 }
 
 void CFlareModel::registerBasic()

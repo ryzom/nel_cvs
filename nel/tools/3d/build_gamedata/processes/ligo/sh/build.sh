@@ -1,6 +1,10 @@
 #!/bin/bash
 
+rm ./output/*.zone
+
+# ********************
 # Make the config file
+# ********************
 
 rm land_exporter.cfg
 echo "// land_exporter.cfg" > land_exporter.cfg
@@ -19,11 +23,9 @@ dir_ligobricks=`cat ../../cfg/directories.cfg | grep "ligo_bricks_directory" | s
 
 echo "RefZoneDir = \"$dir_ligobricks/zones\";" >> land_exporter.cfg
 
-
 # LigoBankDir is Where all .ligozone are (those used by the .land)
 
 echo "LigoBankDir = \"$dir_ligobricks/zoneligos\";" >> land_exporter.cfg
-
 
 # TileBankFile is the .bank file (used to know if a tile is oriented and the like)
 
@@ -65,10 +67,16 @@ dir_current=`pwd`
 land_name=`cat ../../cfg/config.cfg | grep "ligo_export_land" | sed -e 's/ligo_export_land//' | sed -e 's/ //g' | sed -e 's/=//g'`
 echo "ZoneRegionFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> land_exporter.cfg
 
-# ok the CFG is generated now launch the exporter
+# ok the CFG is generated
+
+# *******************
+# launch the exporter
+# *******************
+
 ../../bin/land_export.exe land_exporter.cfg
 
 # rename *.zonel *.zone
+
 dir_current=`pwd`
 cd output
 list_zonel=`ls -1 *.zonel`

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.1 2001/07/25 10:23:38 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.2 2001/07/25 13:15:05 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,33 +29,30 @@
 
 namespace NL3D {
 
-CParticleSystemInstanceUser::CParticleSystemInstanceUser(CScene *scene, IModel *model) : CTransformUser(scene, model)
+CParticleSystemInstanceUser::CParticleSystemInstanceUser(CScene *scene, IModel *model) 
+								: CTransformUser(scene, model), _Invalidated(false)
 {
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-	psm->registerDtorObserver(this) ;
+	psm->registerPSModelObserver(this) ;
 }
 
 
 CParticleSystemInstanceUser::~CParticleSystemInstanceUser()
-{
-	// if the model hasn't been detroyed yet ...
-	if (_Transform)
-	{
-		CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-		psm->removeDtorObserver(this) ;	
-	}
+{	
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
+	psm->removePSModelObserver(this) ;		
 }
 
 bool		CParticleSystemInstanceUser::isSystemPresent(void) const
 {
-	if (!_Transform) return false ; // the system is not even valid
+	if (_Invalidated) return false ; // the system is not even valid
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
 	return psm->getPS() != NULL ;
 }
 
-bool		CParticleSystemInstanceUser::getBBox(NLMISC::CAABBox &bbox)
+bool		CParticleSystemInstanceUser::getSystemBBox(NLMISC::CAABBox &bbox)
 {
-	if (!_Transform) return false ;
+	if (_Invalidated) return false ;
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
 	if (!psm->getPS()) return false ;
 	psm->getPS()->computeBBox(bbox) ;
@@ -81,7 +78,7 @@ float		CParticleSystemInstanceUser::getUserParam(uint index) const
 
 bool		CParticleSystemInstanceUser::isValid(void) const
 {
-	return _Transform != NULL ;
+	return !_Invalidated ;
 }
 
 void		CParticleSystemInstanceUser::registerPSObserver(IPSObserver *observer)
@@ -102,10 +99,10 @@ void		CParticleSystemInstanceUser::removePSObserver(IPSObserver *observer)
 }
 
 
-void		CParticleSystemInstanceUser::psDestroyed(CParticleSystemModel *psm)
+void		CParticleSystemInstanceUser::invalidPS(CParticleSystemModel *psm)
 {
 	// the instance pointer is invalid now
-	_Transform = NULL ;
+	_Invalidated = true ;
 	std::vector<IPSObserver *> obserCopy(_Observers.begin(), _Observers.end()) ;
 	for (std::vector<IPSObserver *>::iterator it = _Observers.begin(); it != _Observers.end() ; ++it)
 	{

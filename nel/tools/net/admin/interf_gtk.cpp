@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.12 2002/03/18 13:15:26 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.13 2002/03/18 13:34:22 lecroart Exp $
  *
  *
  */
@@ -55,10 +55,11 @@ using namespace NLNET;
 #pragma comment(lib, "gthread-1.3.lib")
 #endif
 
-
-
-
+#ifdef NL_DEBUG
 #undef NO_DEBUG_OUTPUT
+#else // NL_RELEASE
+#define NO_DEBUG_OUTPUT
+#endif // NL_RELEASE
 
 //
 // Variables
@@ -749,7 +750,7 @@ void interfUpdateService (CService *s)
 {
 	string name;
 #ifdef NO_DEBUG_OUTPUT
-	name = s->AliasName + " " + s->ShortName + " " + s->LongName;
+	name = s->AliasName + " (" + s->ShortName + " " + s->LongName + ")";
 #else // NO_DEBUG_OUTPUT
 	name = "S" + toString((sint32)s->Id) + " '" + s->AliasName + "' '" + s->ShortName + "' '" + s->LongName + "' (U" + toString(s->Unknown) + ", C" + toString(s->Connected) + ", I" + toString(s->InConfig) + ", R" + toString(s->Ready) + ")";
 #endif // NO_DEBUG_OUTPUT

@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.14 2004/02/04 16:50:35 besson Exp $
+ * $Id: zone_manager.cpp,v 1.15 2004/02/05 09:48:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,8 @@ namespace NL3D
 CZoneManager::CZoneManager()
 {
 	_RemovingZone= false;
-	_ZoneTileColor = true;
+	_ZoneTileColorMono = true;
+	_ZoneTileColorFactor = 1.0f;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -157,7 +158,7 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 				getZonePos (newZone.ZoneToAddId, x, y);
 //				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, CVector ((float)x, -(float)y, 0)));
 				CVector v = CVector ((float)x, -(float)y, 0);
-				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, v, !_ZoneTileColor));
+				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, v, _ZoneTileColorMono, _ZoneTileColorFactor));
 			}
 		}
 	}
@@ -220,13 +221,14 @@ bool CZoneManager::isWorkComplete (CZoneManager::SZoneManagerWork &rWork)
 // ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
-CZoneLoadingTask::CZoneLoadingTask(const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &position, bool monochrome)
+CZoneLoadingTask::CZoneLoadingTask(const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &pos, bool monochrome, float factor)
 {
 	*ppZone = NULL;
 	_Zone = ppZone;
 	_ZoneName = sZoneName;
-	Position = position;
+	Position = pos;
 	_Monochrome = monochrome;
+	_TileColorFactor = factor;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -243,8 +245,7 @@ void CZoneLoadingTask::run(void)
 	{
 		ZoneTmp->serial(file);
 		file.close();
-		if (_Monochrome)
-			ZoneTmp->setMonochrome();
+		ZoneTmp->setTileColor(_Monochrome, _TileColorFactor);
 		*_Zone = ZoneTmp;
 	}
 	else

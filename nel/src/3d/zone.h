@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.21 2004/02/04 16:50:35 besson Exp $
+ * $Id: zone.h,v 1.22 2004/02/05 09:48:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -446,10 +446,12 @@ public:
 	const std::vector<CTileColor> &getPatchColor(sint numPatch) const;
 
 	/** 
-	 * Set the zone to monochrome
-	 * Set all tile colors of all patch of this zone to monochrome
+	 * Set the zone tile color to monochrome or not and apply multiplier factor
+	 * Set all tile colors of all patch of this zone to monochrome or not and apply a multiplier factor
+	 * convertion to monochrome is done by that formula : newR = newG = newB = 0.28 * R + 0.59 * G + 0.13 * B;
+	 * for monochrome the factor is applied like for the color mode
 	 */
-	void setMonochrome();
+	void setTileColor(bool monochrome, float factor);
 
 	/**
 	 *  Get the landscape in which is placed this zone. If no landscape, return NULL.

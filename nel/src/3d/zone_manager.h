@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.10 2004/02/04 16:50:35 besson Exp $
+ * $Id: zone_manager.h,v 1.11 2004/02/05 09:48:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,13 +109,13 @@ public:
 	inline std::string getZonePath (void) { return _zonePath; }
 
 	/// set the zone tile color (if false tile are monochromed with the tile color)
-	void setZoneTileColor(bool color) { _ZoneTileColor = color; }
-
-	bool getZoneTileColor() const { return _ZoneTileColor; }
+	void setZoneTileColor(bool monochrome, float factor) { _ZoneTileColorMono = monochrome; _ZoneTileColorFactor = factor; }
 
 private:
 
-	bool _ZoneTileColor;
+	// Zone Tile Color parameters to apply at load time : Mono = Monochrome, Factor = Multiplier
+	bool _ZoneTileColorMono;
+	float _ZoneTileColorFactor;
 
 	/// Path for zone loading
 	std::string _zonePath;
@@ -159,7 +159,7 @@ class CZoneLoadingTask : public NLMISC::IRunnablePos
 {
 public:
 	/// Constructor
-	CZoneLoadingTask (const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &position, bool monochrome);
+	CZoneLoadingTask (const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &pos, bool monochrome, float factor);
 
 	/// Runnable Task
 	void run (void);
@@ -170,6 +170,7 @@ private:
 	TVolatileZonePtr	*_Zone;
 	std::string			_ZoneName;
 	bool				_Monochrome;
+	float				_TileColorFactor;
 };
 
 

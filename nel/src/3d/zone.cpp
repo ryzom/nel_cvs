@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.69 2004/02/04 16:50:35 besson Exp $
+ * $Id: zone.cpp,v 1.70 2004/02/05 09:48:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1354,26 +1354,64 @@ const std::vector<CTileColor> &CZone::getPatchColor(sint numPatch) const
 }
 
 // ***************************************************************************
-void CZone::setMonochrome()
+void CZone::setTileColor(bool monochrome, float factor)
 {
-	for (uint32 i = 0; i < Patchs.size(); ++i)
+	nlassert(factor >= 0.0f); // factor must not be negative as its a multiplier
+
+	if (monochrome)
 	{
-		vector<CTileColor> &rTC = Patchs[i].TileColors;
-		for (uint32 j =  0; j < rTC.size(); ++j)
+		for (uint32 i = 0; i < Patchs.size(); ++i)
 		{
-			float fR = (rTC[j].Color565 & 31) / 32.0f;
-			float fG = ((rTC[j].Color565 >> 5) & 63) / 64.0f;
-			float fB = ((rTC[j].Color565 >> 11) & 31) / 32.0f;
+			vector<CTileColor> &rTC = Patchs[i].TileColors;
+			for (uint32 j =  0; j < rTC.size(); ++j)
+			{
+				float fR = (rTC[j].Color565 & 31) / 32.0f;
+				float fG = ((rTC[j].Color565 >> 5) & 63) / 64.0f;
+				float fB = ((rTC[j].Color565 >> 11) & 31) / 32.0f;
 
-			fR = 0.28f * fR + 0.59f * fG + 0.13f * fB;
-			
-			nlassert(fR < 0.99f);
+				fR = 0.28f * fR + 0.59f * fG + 0.13f * fB;
+				
+				nlassert(fR < 0.99f);
 
-			uint16 nR = (uint16)(fR * 32.0f);
-			uint16 nG = (uint16)(fR * 64.0f);
-			uint16 nB = (uint16)(fR * 32.0f);
+				fR *= factor;
+				if (fR > 0.99f) fR = 0.99f; // Avoid reaching 1
 
-			rTC[j].Color565 = nR + (nG << 5) + (nB << 11);
+				uint16 nR = (uint16)(fR * 32.0f);
+				uint16 nG = (uint16)(fR * 64.0f);
+				uint16 nB = (uint16)(fR * 32.0f);
+
+				rTC[j].Color565 = nR + (nG << 5) + (nB << 11);
+			}
+		}
+	}
+	else
+	{
+		if (factor != 1.0f)
+		{
+			for (uint32 i = 0; i < Patchs.size(); ++i)
+			{
+				vector<CTileColor> &rTC = Patchs[i].TileColors;
+				for (uint32 j =  0; j < rTC.size(); ++j)
+				{
+					float fR = (rTC[j].Color565 & 31) / 32.0f;
+					float fG = ((rTC[j].Color565 >> 5) & 63) / 64.0f;
+					float fB = ((rTC[j].Color565 >> 11) & 31) / 32.0f;
+
+					fR *= factor;
+					fG *= factor;
+					fB *= factor;
+					
+					if (fR > 0.99f) fR = 0.99f;
+					if (fG > 0.99f) fG = 0.99f;
+					if (fB > 0.99f) fB = 0.99f;
+
+					uint16 nR = (uint16)(fR * 32.0f);
+					uint16 nG = (uint16)(fG * 64.0f);
+					uint16 nB = (uint16)(fB * 32.0f);
+
+					rTC[j].Color565 = nR + (nG << 5) + (nB << 11);
+				}
+			}
 		}
 	}
 }

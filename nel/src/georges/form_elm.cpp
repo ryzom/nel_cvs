@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.28 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.29 2002/09/05 14:06:48 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2561,14 +2561,14 @@ void CFormElmArray::read (xmlNodePtr node, CFormLoader &loader, CForm *form)
 			nlassert (FormDfn == NULL);
 
 			// Count children
-			uint childCount = CIXml::countChildren (node, "atom.");
+			uint childCount = CIXml::countChildren (node, "ATOM");
 
 			// Resize the table
 			Elements.resize (childCount);
 
 			// For each children
 			uint childNum=0;
-			xmlNodePtr child = CIXml::getFirstChildNode (node, "atom.");
+			xmlNodePtr child = CIXml::getFirstChildNode (node, "ATOM");
 			while (child)
 			{
 				// Get node name
@@ -2585,7 +2585,7 @@ void CFormElmArray::read (xmlNodePtr node, CFormLoader &loader, CForm *form)
 				newElt->read (child, loader, Type, form);
 
 				// Next child
-				child = CIXml::getNextChildNode (child, "atom.");
+				child = CIXml::getNextChildNode (child, "ATOM");
 				childNum++;
 			}
 		}

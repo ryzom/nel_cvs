@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.27 2001/01/19 09:17:43 lecroart Exp $
+ * $Id: dru.cpp,v 1.28 2001/01/31 08:54:23 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,9 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 
 	static CMaterial mat;
 	mat.initUnlit ();
+	mat.setSrcBlend(CMaterial::srcalpha);
+	mat.setDstBlend(CMaterial::invsrcalpha);
+	mat.setBlend(true);
 	mat.setColor(col);
 
 	static CVertexBuffer vb;
@@ -293,6 +296,34 @@ void	CDRU::drawQuad (float xcenter, float ycenter, float radius, IDriver& driver
 	pb.setQuad (0, 0, 1, 2, 3);
 
 	driver.render(pb, mat);
+}
+
+
+// ***************************************************************************
+void	CDRU::drawWiredQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport)
+{
+	// v-left
+	CDRU::drawLine(x0,y0,x0,y1 ,driver,col,viewport);	
+	// v-right
+	CDRU::drawLine(x1,y0,x1,y1 ,driver,col,viewport);	
+	// h-up
+	CDRU::drawLine(x0,y1,x1,y1,driver,col,viewport);	
+	// h-bottom
+	CDRU::drawLine(x0,y0,x1,y0,driver,col,viewport);	
+}
+
+
+// ***************************************************************************
+void	CDRU::drawWiredQuad (float xcenter, float ycenter, float radius, IDriver& driver, CRGBA col, CViewport viewport)
+{
+	// v-left
+	CDRU::drawLine(xcenter-radius,ycenter-radius,xcenter-radius,ycenter+radius,driver,col,viewport);	
+	// v-right
+	CDRU::drawLine(xcenter+radius,ycenter-radius,xcenter+radius,ycenter+radius,driver,col,viewport);	
+	// h-up
+	CDRU::drawLine(xcenter-radius,ycenter+radius,xcenter+radius,ycenter+radius,driver,col,viewport);	
+	// h-bottom
+	CDRU::drawLine(xcenter-radius,ycenter-radius,xcenter+radius,ycenter-radius,driver,col,viewport);
 }
 
 

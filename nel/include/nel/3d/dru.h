@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.14 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: dru.h,v 1.15 2001/01/31 08:53:45 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,11 @@ public:
 	static void			drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport);
 	/// Draw a Quad in 2D. Warning: this is slow...
 	static void			drawQuad (float xcenter, float ycenter, float radius, IDriver& driver, CRGBA col, CViewport viewport);
+	/// Draw a Quad in 2D. Warning: this is slow...
+	static void			drawWiredQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport);
+	/// Draw a Quad in 2D. Warning: this is slow...
+	static void			drawWiredQuad (float xcenter, float ycenter, float radius, IDriver& driver, CRGBA col, CViewport viewport);
+	
 	// @}
 
 	/// \name Easy render (2D or 3D).

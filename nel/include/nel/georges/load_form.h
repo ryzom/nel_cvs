@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.4 2002/06/18 10:01:54 lecroart Exp $
+ * $Id: load_form.h,v 1.5 2002/07/03 09:55:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,99 +128,126 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	if (sheetIds.empty())
 		return;
 
-	// check if we need to create a new .pitems or just read it
-	uint32 packedFiledate = NLMISC::CFile::getFileModificationDate(packedFilename);
+	string packedFilenamePath = NLMISC::CPath::lookup(packedFilename, false);
+	if (packedFilenamePath.empty())
+	{
+		packedFilenamePath = packedFilename;
+	}
 
-	bool needRebuild = false;
+	// load the packed sheet if exists
+	try
+	{
+		NLMISC::CIFile ifile;
+		ifile.setCacheFileOnOpen(true);
+		ifile.open (packedFilenamePath);
+		// an exception will be launch if the file is not the good version or if the file is not found
+
+		nlinfo ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
+		
+		uint32 nbEntries;
+		ifile.serial (nbEntries);
+		ifile.setVersionException (true, true);
+		uint ver = T::getVersion ();
+		ifile.serialVersion(ver);
+		ifile.serialCont (container);
+		ifile.close ();
+	}
+	catch (NLMISC::Exception &e)
+	{
+		nlinfo ("loadForm(): Exception during reading the packed file, I'll reconstruct it (%s)", e.what());
+		// clear the container because it can contains partially loaded sheet so we must clean it before continue
+		container.clear ();
+	}
+
+	// set up the current sheet in container to remove sheet that are in the container and not in the directory anymore
+	std::map<NLMISC::CSheetId, bool> sheetToRemove;
+	for (std::map<NLMISC::CSheetId, T>::iterator it = container.begin(); it != container.end(); it++)
+	{
+		sheetToRemove.insert (make_pair((*it).first, true));
+	}
+
+	// check if we need to create a new .pitems or just read it
+	uint32 packedFiledate = NLMISC::CFile::getFileModificationDate(packedFilenamePath);
+
+	bool containerChanged = false;
+
+	NLGEORGES::UFormLoader *formLoader = NULL;
+
 	for (uint j = 0; j < filenames.size(); j++)
 	{
-		std::string f = filenames[j];
-		std::string p = NLMISC::CPath::lookup (f, false);
+		std::string p = NLMISC::CPath::lookup (filenames[j], false, false);
 		if (p.empty()) continue;
 		uint32 d = NLMISC::CFile::getFileModificationDate(p);
-		//nlinfo ("%s %s %d %d",f.c_str(), p.c_str(), d, packedFiledate);
-		if( d > packedFiledate)
-		{
-			needRebuild = true;
-			break;
-		}
-	}
 
-	if (needRebuild)
-	{
-NeedRebuild:
-		nlinfo ("loadForm(): Packed file '%s' is out of date, reconstruct it", packedFilename.c_str());
-		WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
-		// setup a form loader to read our forms with
-		NLGEORGES::UFormLoader *formLoader = NLGEORGES::UFormLoader::createLoader ();
+		// no need to remove this sheet
+		sheetToRemove[sheetIds[j]] = false;
 
-		// iterate through the vector of sheet ids
-		for(std::vector<NLMISC::CSheetId>::iterator it = sheetIds.begin(); it != sheetIds.end(); ++it)
+		if( d > packedFiledate || container.find (sheetIds[j]) == container.end())
 		{
-			string s = (*it).toString();
+			// create the georges loader if necessary
+			if (formLoader == NULL)
+			{
+				WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
+				formLoader = NLGEORGES::UFormLoader::createLoader ();
+			}
+
 			// Load the form with given sheet id
-			NLMISC::CSmartPtr<NLGEORGES::UForm> form = formLoader->loadForm ((*it).toString().c_str ());
+			NLMISC::CSmartPtr<NLGEORGES::UForm> form = formLoader->loadForm (sheetIds[j].toString().c_str ());
 			if (form)
 			{
-				// add the new creature
-				std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(*it,T()));
-
-				if (!res.second)
+				if (packedFiledate > 0)
 				{
-					nlwarning ("There's 2 sheet with the same id (sheetId=%s), overwrite the old one", (*it).toString().c_str());
+					if (d > packedFiledate)
+						nlinfo ("loadForm(): the sheet '%s' is newer than the packed one, I reload it", p.c_str());
+					else
+						nlinfo ("loadForm(): the sheet '%s' is not in the packed sheets, I load it", p.c_str());
 				}
+				
+				// add the new creature, it could be already loaded by the packed sheets but will be overwrite with the new one
+				std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(sheetIds[j],T()));
 
-				(*res.first).second.readGeorges (form, *it);
+				(*res.first).second.readGeorges (form, sheetIds[j]);
+				containerChanged = true;
 			}
 		}
+	}
+
+	// free the georges loader if necessary
+	if (formLoader != NULL)
+	{
 		NLGEORGES::UFormLoader::releaseLoader (formLoader);
 		WarningLog->removeFilter ("CFormLoader: Can't open the form file");
-
-		// now, save the new container in the packedfile
-		std::string path = NLMISC::CPath::lookup (packedFilename, false);
-		if (path.empty())
-		{
-			path = packedFilename;
-		}
-		NLMISC::COFile ofile;
-		ofile.open(path);
-		uint ver = T::getVersion ();
-		uint32 nbEntries = sheetIds.size();
-		ofile.serial (nbEntries);
-		ofile.serialVersion(ver);
-		ofile.serialCont(container);
-		ofile.close ();
 	}
-	else
-	{
-		nlinfo ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
 
-		// don't need to rebuild, only read the packedFilename
-		try
+	// we have now to remove sheet that are in the container and not exist anymore in the sheet directories
+	for (std::map<NLMISC::CSheetId, bool>::iterator it2 = sheetToRemove.begin(); it2 != sheetToRemove.end(); it2++)
+	{
+		if((*it2).second)
 		{
-			NLMISC::CIFile ifile;
-			ifile.setCacheFileOnOpen(true);
-			ifile.open (NLMISC::CPath::lookup(packedFilename));
-			// an exception will be launch if the file is not the good version
-			uint32 nbEntries;
-			ifile.serial (nbEntries);
-			if(nbEntries != sheetIds.size())
-			{
-				ifile.close();
-				nlinfo ("loadForm(): there's %d file in the directory and only %d in the packed file, reconstruct it", sheetIds.size(), nbEntries);
-				goto NeedRebuild;
-			}
-			ifile.setVersionException (true, true);
+			nlinfo ("the sheet '%s' is not in the directory, remove it from container", (*it2).first.toString().c_str());
+			container.erase((*it2).first);
+			containerChanged = true;
+		}
+	}
+
+	// now, save the new container in the packedfile
+	try
+	{
+		if(containerChanged)
+		{
+			NLMISC::COFile ofile;
+			ofile.open(packedFilenamePath);
 			uint ver = T::getVersion ();
-			ifile.serialVersion(ver);
-			ifile.serialCont (container);
-			ifile.close ();
+			uint32 nbEntries = sheetIds.size();
+			ofile.serial (nbEntries);
+			ofile.serialVersion(ver);
+			ofile.serialCont(container);
+			ofile.close ();
 		}
-		catch (NLMISC::EStream &e)
-		{
-			nlinfo ("loadForm(): Exception during reading the packed file, reconstruct it (%s)", e.what());
-			goto NeedRebuild;
-		}
+	}
+	catch (NLMISC::Exception &e)
+	{
+		nlinfo ("loadForm(): Exception during saving the packed file, it will be recreated next launch (%s)", e.what());
 	}
 
 	// housekeeping

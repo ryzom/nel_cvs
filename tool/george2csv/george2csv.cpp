@@ -307,7 +307,7 @@ void scanFiles(std::string filespec)
 						while (arrayIndex<arraySize)
 						{
 							if	(fieldForm->getArrayValue(valueString,arrayIndex,fields[i]._evaluated, &where))
-								addQuotesRoundString	(valueString);
+								;//addQuotesRoundString	(valueString);
 							else
 								setErrorString	(valueString, fields[i]._evaluated, where);
 
@@ -320,11 +320,10 @@ void scanFiles(std::string filespec)
 					else
 					{
 						if	(form->getRootNode ().getValueByName(valueString,fields[i]._name.c_str(),fields[i]._evaluated,&where))	//fieldForm->getValue(valueString,fields[i]._evaluated))
-							addQuotesRoundString	(valueString);
+							;//addQuotesRoundString	(valueString);
 						else
 							setErrorString	(valueString, fields[i]._evaluated, where);
 					}
-
 				}
 //				else	//	node not found.
 //				{

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.61 2003/05/13 15:35:27 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.62 2003/05/22 09:16:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "3d/fast_floor.h"
 #include "3d/raw_skin.h"
 #include "3d/shifted_triangle_cache.h"
+#include "3d/texture_file.h"
 
 
 using namespace NLMISC;
@@ -1498,7 +1499,7 @@ void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVert
 		{
 			material.setDiffuse(CRGBA(250, 251, 252));
 			// Set all texture the same.
-			static CTextureFile	*pTexFile= new CTextureFile("fy_hom_visage_c1_fy_e1.tga");
+			static CSmartPtr<ITexture>	pTexFile= new CTextureFile("fy_hom_visage_c1_fy_e1.tga");
 			material.setTexture(0, pTexFile );
 			// Remove Specular.
 			if(material.getShader()==CMaterial::Specular)

@@ -1,7 +1,7 @@
 /** \file event_emitter.h
  * <File description>
  *
- * $Id: event_emitter.h,v 1.1 2000/11/09 16:16:53 coutelas Exp $
+ * $Id: event_emitter.h,v 1.2 2000/11/09 17:28:09 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,11 @@ public:
 class CEventEmitterWin32
 {
 public:
-	CEventEmitterWin32 (uint32 hWnd)
+	CEventEmitterWin32 ()
+	{
+		_HWnd=NULL;
+	}
+	void setHWnd (uint32 hWnd)
 	{
 		_HWnd=hWnd;
 	}

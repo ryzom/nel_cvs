@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.1 2000/11/09 16:17:43 coutelas Exp $
+ * $Id: event_emitter.cpp,v 1.2 2000/11/09 17:25:21 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/misc/events.h"
 #include "nel/misc/event_emitter.h"
 #include "nel/misc/event_server.h"
+#include "nel/misc/types_nl.h"
 
 
 namespace NLMISC {
@@ -47,6 +48,16 @@ void CEventEmitterWin32::submitEvents(CEventServer & server)
 			{
 				case WM_KEYDOWN:
 					server.postEvent (new CEventKeyDown (msg.wParam));
+				break;
+				case WM_KEYUP:
+					server.postEvent (new CEventKeyUp (msg.wParam));
+				break;
+				case WM_CHAR:
+					server.postEvent (new CEventChar ((ucchar)msg.wParam));
+				case WM_MBUTTONDOWN:
+					server.postEvent (new CEventMouseDown (GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+				case WM_MBUTTONUP:
+					server.postEvent (new CEventMouseUp (GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
 				break;
 			}
 		}

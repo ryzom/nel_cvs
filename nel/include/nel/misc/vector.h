@@ -1,7 +1,7 @@
 /** \file vector.h
  * CVector class
  *
- * $Id: vector.h,v 1.7 2000/12/11 15:54:48 berenguier Exp $
+ * $Id: vector.h,v 1.8 2000/12/20 10:19:46 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,6 +109,7 @@ public:		// Methods.
 	bool	operator<(const CVector &v) const;
 	/** 
 	 * Setup the vector with spheric coordinates.
+	 * sphericToCartesian(1,0,0) build the I vector  ((1,0,0)).
 	 * the formula is:  \n
 	 * x= r*cos(theta)*cos(phi) \n
 	 * y= r*sin(theta)*cos(phi) \n
@@ -121,7 +122,7 @@ public:		// Methods.
 	 * See sphericToCartesian() to know coordinates conventions.
 	 * \sa sphericToCartesian()
 	 */
-	void	cartesianToSpheric(float &theta,float &phi, float &r) const;
+	void	cartesianToSpheric(float &r, float &theta,float &phi) const;
 	/// Set all vector x/y/z as minimum of a/b x/y/z  (respectively).
 	void	minof(const CVector &a, const CVector &b);
 	/// Set all vector x/y/z as maximum of a/b x/y/z  (respectively).

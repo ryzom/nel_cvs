@@ -1,7 +1,7 @@
 /** \file vectord.h
  * CVectorD class
  *
- * $Id: vectord.h,v 1.2 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: vectord.h,v 1.3 2000/12/20 10:19:46 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,7 @@ public:		// Methods.
 	bool	isNull() const;
 	/** 
 	 * Setup the vector with spheric coordinates.
+	 * sphericToCartesian(1,0,0) build the I vector  ((1,0,0)).
 	 * the formula is:  \n
 	 * x= r*cos(theta)*cos(phi) \n
 	 * y= r*sin(theta)*cos(phi) \n
@@ -120,7 +121,7 @@ public:		// Methods.
 	 * See sphericToCartesian() to know coordinates conventions.
 	 * \sa sphericToCartesian()
 	 */
-	void	cartesianToSpheric(double &theta,double &phi, double &r) const;
+	void	cartesianToSpheric(double &r, double &theta,double &phi) const;
 	void	serial(IStream &f);
 	CVectorD &operator=(const CVector &v);
 	operator CVector() const;

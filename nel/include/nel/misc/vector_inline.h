@@ -1,7 +1,7 @@
 /** \file vector_inline.h
  * CVector class inline definitions
  *
- * $Id: vector_inline.h,v 1.10 2000/12/11 15:54:48 berenguier Exp $
+ * $Id: vector_inline.h,v 1.11 2000/12/20 10:19:46 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,7 +170,7 @@ inline	void	CVector::cartesianToSpheric(float &r, float &theta,float &phi) const
 	phi= (float)asin(v.z);
 
 	// theta [-PI,PI]
-	theta= (float)atan2(v.x,v.y);
+	theta= (float)atan2(v.y,v.x);
 }
 inline	void	CVector::sphericToCartesian(float r, float theta,float phi)
 {

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.44 2003/12/05 11:08:16 vizerie Exp $
+ * $Id: particle_system.h,v 1.45 2003/12/11 09:28:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,6 @@ struct UPSSoundServer;
 
 /// number user params for a particle system
 const uint MaxPSUserParam = 4;
-
 
 /** Particles system classes. They can be used as it. If you want to use a particle system in 
  *  a scene (M.O.T model), see particle_system_shape.h and particle_system_instance.h
@@ -903,6 +902,7 @@ public:
 			GroundFX,			   /** usually fx of foot steps (dust clouds etc.). Always animated, persistents, duration of fxs is garanteed, 
 									 * but not velocity of particle if framerate is too choppy (usually ok because particle stay in place with those fxs)
 									 */
+			Projectile,            // like moving looping fx, but not persistent
 			PresetLast
 		};
 

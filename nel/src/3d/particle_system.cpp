@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.74 2003/12/10 11:29:34 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.75 2003/12/11 09:28:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1191,7 +1191,15 @@ void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 			setAnimType(AnimAlways);
 			setBypassMaxNumIntegrationSteps(false);
 			_KeepEllapsedTimeForLifeUpdate = true;
-		break;		
+		break;
+		case Projectile:
+			setDestroyModelWhenOutOfRange(false);
+			setDestroyCondition(noMoreParticles);
+			destroyWhenOutOfFrustum(false);
+			setAnimType(AnimVisible);
+			setBypassMaxNumIntegrationSteps(false);
+			_KeepEllapsedTimeForLifeUpdate = true;
+		break;
 		default: break;
 	}
 	_PresetBehaviour = behaviour;

@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.4 2001/05/11 09:29:19 cado Exp $
+ * $Id: buf_client.cpp,v 1.5 2001/05/17 15:37:05 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,10 +93,12 @@ void CBufClient::connect( const CInetAddress& addr )
 
 /*
  * Sends a message to the remote host
+ * The max length of the buffer is 65535 bytes.
  */
 void CBufClient::send( const std::vector<uint8>& buffer )
 {
 	nlnettrace( "CBufClient::send" );
+	nlassert( buffer.size() < 0x10000 ); // size check in debug mode
 
 	if ( ! _BufSock->pushBuffer( buffer ) )
 	{

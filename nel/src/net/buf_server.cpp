@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.3 2001/05/11 09:29:19 cado Exp $
+ * $Id: buf_server.cpp,v 1.4 2001/05/17 15:37:05 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -247,10 +247,12 @@ void CBufServer::disconnect( TSockId hostid, bool quick )
 
 /*
  * Send a message to the specified host
+ * The max length of the buffer is 65535 bytes.
  */
 void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 {
 	nlnettrace( "CBufServer::send" );
+	nlassert( buffer.size() < 0x10000 ); // size check in debug mode
 
 	if ( hostid != NULL )
 	{

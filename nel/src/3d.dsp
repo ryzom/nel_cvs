@@ -1381,6 +1381,14 @@ SOURCE=.\3d\camera_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\cloud_scape_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\cloud_scape_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\driver_user.cpp
 # End Source File
 # Begin Source File
@@ -1638,6 +1646,10 @@ SOURCE=..\include\nel\3d\u_bone.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_camera.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_cloud_scape.h
 # End Source File
 # Begin Source File
 
@@ -2482,6 +2494,34 @@ SOURCE=.\3d\lod_character_shape_bank.cpp
 # Begin Source File
 
 SOURCE=.\3d\lod_character_shape_bank.h
+# End Source File
+# End Group
+# Begin Group "CloudScape"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\cloud.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\cloud.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\cloud_scape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\cloud_scape.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\noise_3d.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\noise_3d.h
 # End Source File
 # End Group
 # Begin Source File

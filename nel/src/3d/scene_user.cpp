@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.26 2002/10/25 15:51:43 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.27 2002/10/25 16:22:48 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -755,6 +755,21 @@ void			CSceneUser::deleteLandscape(ULandscape *land)
 
 	// The component is auto added/deleted to _Scene in ctor/dtor.
 	_Landscapes.erase((CLandscapeUser*) land);
+}
+
+UCloudScape *CSceneUser::createCloudScape()
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	return _CloudScapes.insert(new CCloudScapeUser(&_Scene));
+}
+void CSceneUser::deleteCloudScape(UCloudScape *cs)
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	_CloudScapes.erase((CCloudScapeUser*) cs);
 }
 /*
 

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.32 2002/10/25 15:51:43 berenguier Exp $
+ * $Id: scene_user.h,v 1.33 2002/10/25 16:22:48 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/instance_user.h"
 #include "3d/particle_system_instance_user.h"
 #include "3d/landscape_user.h"
+#include "3d/cloud_scape_user.h"
 #include "3d/instance_group_user.h"
 #include "3d/skeleton_user.h"
 #include "3d/visual_collision_manager_user.h"
@@ -66,12 +67,14 @@ protected:
 	// Components List.
 	typedef	CPtrSet<CTransformUser>		TTransformSet;
 	typedef	CPtrSet<CLandscapeUser>		TLandscapeSet;
+	typedef	CPtrSet<CCloudScapeUser>	TCloudScapeSet;
 	typedef	CPtrSet<CInstanceGroupUser>	TInstanceGroupSet;
 	typedef	CPtrSet<CVisualCollisionManagerUser>	TVisualCollisionManagerSet;
 	typedef	CPtrSet<CAnimationSetUser>		TAnimationSetSet;
 	typedef	CPtrSet<CPlayListManagerUser>	TPlayListManagerSet;
 	TTransformSet				_Transforms;
 	TLandscapeSet				_Landscapes;
+	TCloudScapeSet				_CloudScapes;
 	TInstanceGroupSet			_InstanceGroups;
 	TVisualCollisionManagerSet	_VisualCollisionManagers;
 	TAnimationSetSet			_AnimationSets;
@@ -125,6 +128,7 @@ public:
 		_VisualCollisionManagers.clear();
 		_Transforms.clear();
 		_Landscapes.clear();
+		_CloudScapes.clear();
 		_Scene.release();
 		_Scene.setDriver(NULL);
 		_Scene.setCam(NULL);
@@ -179,6 +183,9 @@ public:
 
 	virtual	ULandscape		*createLandscape();
 	virtual	void			deleteLandscape(ULandscape *land);
+
+	virtual	UCloudScape		*createCloudScape();
+	virtual	void			deleteCloudScape(UCloudScape *cs);
 /*
 
 	virtual	UInstanceGroup	*createInstanceGroup (const std::string &instanceGroup);

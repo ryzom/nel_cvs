@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.14 2001/01/12 10:14:33 lecroart Exp $
+ * $Id: i18n.cpp,v 1.15 2001/01/12 10:31:17 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -34,7 +34,7 @@ using namespace std;
 
 namespace NLMISC {
 
-const char						*CI18N::_LanguageFiles[] = { "english", "french", "chinese", "japanese", "korean", "fun" };
+const char						*CI18N::_LanguageFiles[] = { "english", "french", "fun" };
 
 map<string, ucstring>			 CI18N::_StrMap;
 bool							 CI18N::_StrMapLoaded = false;

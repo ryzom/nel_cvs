@@ -140,6 +140,7 @@
 #define IDR_MOVE_ELEMENT                1055
 #define IDC_ACCURATE_INTEGRATION        1055
 #define IDC_DISPLAY_INTERPOLATION       1055
+#define IDC_BORDERS_ONLY                1055
 #define IDC_CHECK_VEGETABLE_MESH        1055
 #define IDR_LOCATED_INSTANCE_MENU       1056
 #define IDC_CHECK_VEGETABLE_BENDPHASE   1056
@@ -172,6 +173,7 @@
 #define IDC_USER_PARAM_INDEX            1070
 #define IDC_BIN_OP                      1070
 #define IDC_PS_DIE_ON_EVENT             1070
+#define IDC_MAP_SIZE                    1070
 #define IDC_COMBO_DIST_TYPE             1070
 #define IDC_START_PICTURE               1071
 #define IDD_SET_VALUE                   1071
@@ -206,10 +208,12 @@
 #define IDC_BROWSE_COLOR                1089
 #define IDD_DAYNIGHT                    1089
 #define IDC_VALUE1                      1090
+#define IDD_WATER_POOL                  3666
 #define IDD_VEGETABLE_DLG               1090
 #define IDC_VALUE2                      1091
 #define IDD_VEGETABLE_DENSITY_DLG       1091
 #define IDC_EDITED_VALUE                1092
+#define IDD_CHOOSE_POOL_ID              1092
 #define IDC_INSERT_VALUE                1093
 #define IDD_VEGETABLE_NOISE_VALUE_DLG   1093
 #define IDC_ADD_VALUE                   1094
@@ -294,10 +298,12 @@
 #define IDC_MUTE                        1171
 #define IDC_PLAY_SOUND                  1171
 #define IDC_ZOOM_IN                     1171
+#define IDC_DELETE_POOL                 1171
 #define IDC_BUTTON_VEGETABLE_INSERT     1171
 #define IDC_BUTTON_VEGETABLE_GENERAL_NONE 1171
 #define IDC_LAG                         1172
 #define IDC_GO_UP                       1172
+#define IDC_RENAME_POOL                 1172
 #define IDC_BUTTON_VEGETABLE_REMOVE     1172
 #define IDC_BUTTON_VEGETABLE_APPERANCE_ALL 1172
 #define IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS 1173
@@ -334,6 +340,20 @@
 #define IDC_USE_LIST                    1195
 #define IDC_USE_MIXER                   1196
 #define IDC_PLAYLIST                    1197
+#define IDC_AUTOMATIC_WAVES_GENERATION  1203
+#define IDC_LOAD_POOL                   1205
+#define IDC_SAVE_POOL                   1206
+#define IDC_POOL_LIST                   1211
+#define IDC_WATER_UNIT_SIZE             1212
+#define IDC_DAMPING                     1213
+#define IDC_FILTER_WEIGHT               1214
+#define IDC_IMPULSION_STRENGHT          1215
+#define IDC_PERIOD                      1216
+#define IDC_IMPULSION_RADIUS            1217
+#define IDC_ADD_POOL                    1218
+#define IDC_POOL_ID                     1219
+#define IDC_PROPAGATION_TIME            1219
+#define IDC_POOL_NAME                   1220
 #define IDC_SLIDER1                     1198
 #define IDC_SLIDER_ANGLE_MIN            1198
 #define IDC_SLIDER_VEGETABLE_SCALE_NOISE 1198
@@ -498,7 +518,9 @@
 #define IDM_RADIAL_EMITTER              32869
 #define IDM_RADIAL_EMITTER_LOC          32870
 #define ID_WINDOW_DAYNIGHT              32871
+#define ID_WINDOW_WATER_POOL            32873
 #define ID_WINDOW_VEGETABLE             32872
+
 
 // Next default values for new objects
 // 

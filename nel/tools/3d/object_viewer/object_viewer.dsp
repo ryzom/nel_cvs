@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
+# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
@@ -87,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib libxml2_debug.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
@@ -115,7 +115,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
-# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
+# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
 
@@ -143,7 +143,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none /incremental:no
-# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
+# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib libxml2_debug.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ENDIF 
@@ -183,6 +183,10 @@ SOURCE=.\choose_lag.cpp
 # Begin Source File
 
 SOURCE=.\choose_name.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\choose_pool_id.cpp
 # End Source File
 # Begin Source File
 
@@ -233,6 +237,10 @@ SOURCE=.\sound_system.cpp
 SOURCE=.\std_afx.cpp
 # ADD CPP /Yc"std_afx.h"
 # End Source File
+# Begin Source File
+
+SOURCE=.\water_pool_editor.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -260,6 +268,10 @@ SOURCE=.\choose_lag.h
 # Begin Source File
 
 SOURCE=.\choose_name.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\choose_pool_id.h
 # End Source File
 # Begin Source File
 
@@ -308,6 +320,10 @@ SOURCE=.\sound_system.h
 # Begin Source File
 
 SOURCE=.\std_afx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\water_pool_editor.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

@@ -50,6 +50,7 @@ public:
 	bool			MixerSlotsWindow;
 	bool			ParticlesWindow;
 	bool		    DayNightWindow;
+	bool		    WaterPoolWindow;
 	bool		    VegetableWindow;
 	bool			MoveElement;
 	bool			X;
@@ -100,6 +101,7 @@ public:
 	afx_msg void OnWindowMixersslots();
 	afx_msg void OnWindowParticles();
 	afx_msg void OnWindowDayNight();
+	afx_msg void OnWindowWaterPool();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnUpdateWindowAnimation(CCmdUI* pCmdUI);
@@ -107,6 +109,7 @@ public:
 	afx_msg void OnUpdateWindowMixersslots(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowParticles(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowDayNight(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowWaterPool(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewObjectmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewFirstpersonmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditX(CCmdUI* pCmdUI);

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.27 2001/11/22 17:16:35 berenguier Exp $
+ * $Id: object_viewer.h,v 1.28 2001/11/26 13:14:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,9 @@
 #define REGKEY_OBJ_VIEW_SLOT_DLG "Software\\Nevrax\\nel\\object_viewer\\slot_dlg"
 #define REGKEY_OBJ_PARTICLE_DLG "Software\\Nevrax\\nel\\object_viewer\\particle_dlg"
 #define REGKEY_OBJ_DAYNIGHT_DLG "Software\\Nevrax\\nel\\object_viewer\\daynight_dlg"
+#define REGKEY_OBJ_WATERPOOL_DLG "Software\\Nevrax\\nel\\object_viewer\\daynight_dlg"
 #define REGKEY_OBJ_VIEW_VEGETABLE_DLG "Software\\Nevrax\\nel\\object_viewer\\vegetable_dlg"
+
 
 
 
@@ -75,7 +77,9 @@ class CMainFrame;
 
 class CParticleDlg ;
 class CDayNightDlg ;
+class CWaterPoolEditor;
 class CVegetableDlg ;
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -315,6 +319,7 @@ private:
 	CAnimationSetDlg							*_AnimationSetDlg;
 	CParticleDlg								*_ParticleDlg ;
 	CDayNightDlg								*_DayNightDlg ;
+	CWaterPoolEditor							*_WaterPoolDlg ;
 	CVegetableDlg								*_VegetableDlg ;
 	std::vector<std::string>					_ListShapeBaseName;
 	std::vector<CMeshDesc>						_ListMeshes;

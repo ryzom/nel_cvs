@@ -887,7 +887,7 @@ BEGIN
 END
 
 IDD_DAYNIGHT DIALOG DISCARDABLE  0, 0, 191, 29
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Day/Night toggle"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -895,6 +895,60 @@ BEGIN
     LTEXT           "Night",IDC_STATIC,167,8,18,10
     SCROLLBAR       IDC_SCROLLBAR1,25,6,137,14
 END
+
+
+IDD_WATER_POOL DIALOG DISCARDABLE  0, 0, 419, 266
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Water Pool Editor"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_POOL_LIST,18,18,67,175,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Pool ID List",IDC_STATIC,13,7,78,251
+    PUSHBUTTON      "Add",IDC_ADD_POOL,21,196,63,17
+    PUSHBUTTON      "Delete",IDC_DELETE_POOL,21,216,63,17
+    LTEXT           "Size :",IDC_STATIC,104,17,20,10
+    COMBOBOX        IDC_MAP_SIZE,163,14,39,70,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Water Unit Size :",IDC_STATIC,103,37,56,11
+    LTEXT           "Damping :",IDC_STATIC,103,62,40,12
+    LTEXT           "Filter weight :",IDC_STATIC,103,86,48,9
+    CONTROL         "Enable automatic waves generation",
+                    IDC_AUTOMATIC_WAVES_GENERATION,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,103,133,129,11
+    GROUPBOX        "Waves",IDC_STATIC,104,144,303,87
+    LTEXT           "Impulsion strenght :",IDC_STATIC,112,158,62,11
+    PUSHBUTTON      "Load",IDC_LOAD_POOL,111,237,48,16
+    PUSHBUTTON      "Save",IDC_SAVE_POOL,163,237,48,16
+    GROUPBOX        "",IDC_STATIC,104,229,115,29
+    LTEXT           "Period :",IDC_STATIC,112,181,62,11
+    LTEXT           "Impulsion radius :",IDC_STATIC,112,202,62,11
+    CONTROL         "Generate on borders only.",IDC_BORDERS_ONLY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,111,217,117,13
+    GROUPBOX        "",IDC_WATER_UNIT_SIZE,160,27,225,24
+    GROUPBOX        "",IDC_DAMPING,160,50,225,24
+    GROUPBOX        "",IDC_FILTER_WEIGHT,160,74,225,24
+    GROUPBOX        "",IDC_IMPULSION_STRENGHT,176,149,225,24
+    GROUPBOX        "",IDC_PERIOD,176,171,225,24
+    GROUPBOX        "",IDC_IMPULSION_RADIUS,176,193,225,24
+    PUSHBUTTON      "Name...",IDC_RENAME_POOL,22,236,63,17
+    LTEXT           "Propagation time :",IDC_STATIC,104,104,44,17
+    GROUPBOX        "",IDC_PROPAGATION_TIME,160,98,225,24
+END
+
+IDD_CHOOSE_POOL_ID DIALOG DISCARDABLE  0, 0, 183, 47
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Chose pool ID"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,121,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,121,25,50,14
+    EDITTEXT        IDC_POOL_ID,41,7,72,15,ES_AUTOHSCROLL
+    LTEXT           "ID :",IDC_STATIC,8,10,16,9
+    EDITTEXT        IDC_POOL_NAME,41,24,72,15,ES_AUTOHSCROLL
+    LTEXT           "Name",IDC_STATIC,8,27,25,9
+END
+
 
 IDD_VEGETABLE_DLG DIALOG DISCARDABLE  0, 0, 442, 415
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
@@ -1118,7 +1172,6 @@ BEGIN
     LTEXT           "Static",IDC_STATIC_VEGETABLE_WIND_FREQUENCY,185,40,25,
                     10
 END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1464,6 +1517,23 @@ BEGIN
         BOTTOMMARGIN, 22
     END
 
+
+    IDD_WATER_POOL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 412
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 259
+    END
+
+    IDD_CHOOSE_POOL_ID, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 176
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
     IDD_VEGETABLE_DLG, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1543,6 +1613,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 69
     END
+
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1821,6 +1892,7 @@ BEGIN
         MENUITEM "&Mixer slots",                ID_WINDOW_MIXERSSLOTS
         MENUITEM "&Particles",                  ID_WINDOW_PARTICLES
         MENUITEM "Day/Night",                   ID_WINDOW_DAYNIGHT
+        MENUITEM "Water pool editor",           ID_WINDOW_WATER_POOL
         MENUITEM "Vegetable",                   ID_WINDOW_VEGETABLE
     END
     POPUP "&Help"
@@ -1941,6 +2013,25 @@ BEGIN
     0
 END
 
+
+IDD_WATER_POOL DLGINIT
+BEGIN
+    IDC_MAP_SIZE, 0x403, 3, 0
+0x3631, "\000" 
+    IDC_MAP_SIZE, 0x403, 3, 0
+0x3233, "\000" 
+    IDC_MAP_SIZE, 0x403, 3, 0
+0x3436, "\000" 
+    IDC_MAP_SIZE, 0x403, 4, 0
+0x3231, 0x0038, 
+    IDC_MAP_SIZE, 0x403, 4, 0
+0x3532, 0x0036, 
+    IDC_MAP_SIZE, 0x403, 4, 0
+0x3135, 0x0032, 
+    0
+END
+
+
 IDD_VEGETABLE_DENSITY_DLG DLGINIT
 BEGIN
     IDC_COMBO_DIST_TYPE, 0x403, 5, 0
@@ -1955,6 +2046,7 @@ BEGIN
 0x3035, 0x6d20, "\000" 
     0
 END
+
 
 
 /////////////////////////////////////////////////////////////////////////////

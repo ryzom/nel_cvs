@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.49 2001/11/22 17:16:35 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.50 2001/11/26 13:14:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,8 +75,10 @@
 #include "sound_system.h"
 #include "scheme_manager.h"
 #include "day_night_dlg.h"
+#include "water_pool_editor.h"
 #include "vegetable_dlg.h"
 #include "dialog_progress.h"
+
 
 
 
@@ -291,6 +293,8 @@ CObjectViewer::~CObjectViewer ()
 		delete _ParticleDlg;
 	if (_DayNightDlg)
 		delete _DayNightDlg;
+	if (_WaterPoolDlg)
+		delete _WaterPoolDlg;
 	if (_VegetableDlg)
 		delete _VegetableDlg;
 	if (_FontGenerator)
@@ -422,15 +426,23 @@ void CObjectViewer::initUI (HWND parent)
 	_ParticleDlg->Create (IDD_PARTICLE);
 	getRegisterWindowState (_ParticleDlg, REGKEY_OBJ_PARTICLE_DLG, false);
 
+	// Create water pool editor dialog
+	_WaterPoolDlg = new CWaterPoolEditor(_Wpm, _MainFrame);
+	_WaterPoolDlg->Create (IDD_WATER_POOL);
+	getRegisterWindowState (_WaterPoolDlg, REGKEY_OBJ_WATERPOOL_DLG, false);
+
+
 	// Create day night dialog
-	_DayNightDlg=new CDayNightDlg (this, _MainFrame);
+	_DayNightDlg = new CDayNightDlg (this, _MainFrame);
 	_DayNightDlg->Create (IDD_DAYNIGHT);
 	getRegisterWindowState (_DayNightDlg, REGKEY_OBJ_DAYNIGHT_DLG, false);
+
 
 	// Create vegetable dialog
 	_VegetableDlg=new CVegetableDlg (this, _MainFrame);
 	_VegetableDlg->Create (IDD_VEGETABLE_DLG);
 	getRegisterWindowState (_VegetableDlg, REGKEY_OBJ_VIEW_VEGETABLE_DLG, false);
+
 
 	// Set backgroupnd color
 	setBackGroundColor(_MainFrame->BgColor);

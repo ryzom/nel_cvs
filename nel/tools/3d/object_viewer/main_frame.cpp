@@ -9,10 +9,9 @@
 #include "about_dialog.h"
 #include "choose_lag.h"
 #include "day_night_dlg.h"
+#include "water_pool_editor.h"
 #include "vegetable_dlg.h"
-
 #include <nel/misc/file.h>
-
 #include <3d/nelu.h>
 #include <3d/mesh.h>
 #include <3d/transform_shape.h>
@@ -95,6 +94,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	MixerSlotsWindow=false;
 	ParticlesWindow=false;
 	DayNightWindow=false;
+	WaterPoolWindow=false;
 	VegetableWindow=false;
 	MoveElement=false;
 	MoveMode=true;
@@ -139,6 +139,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_MIXERSSLOTS, OnWindowMixersslots)
 	ON_COMMAND(ID_WINDOW_PARTICLES, OnWindowParticles)
 	ON_COMMAND(ID_WINDOW_DAYNIGHT, OnWindowDayNight)
+	ON_COMMAND(ID_WINDOW_WATER_POOL, OnWindowWaterPool)
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATION, OnUpdateWindowAnimation)
@@ -146,6 +147,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_MIXERSSLOTS, OnUpdateWindowMixersslots)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_PARTICLES, OnUpdateWindowParticles)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_DAYNIGHT, OnUpdateWindowDayNight)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_WATER_POOL, OnUpdateWindowWaterPool)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_OBJECTMODE, OnUpdateViewObjectmode)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPERSONMODE, OnUpdateViewFirstpersonmode)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_X, OnUpdateEditX)
@@ -181,6 +183,7 @@ void CMainFrame::update ()
 	ObjView->_SlotDlg->ShowWindow (MixerSlotsWindow?SW_SHOW:SW_HIDE);
 	ObjView->_ParticleDlg->ShowWindow (ParticlesWindow?SW_SHOW:SW_HIDE);
 	ObjView->_DayNightDlg->ShowWindow (DayNightWindow?SW_SHOW:SW_HIDE);
+	ObjView->_WaterPoolDlg->ShowWindow (WaterPoolWindow?SW_SHOW:SW_HIDE);
 	ObjView->_VegetableDlg->ShowWindow (VegetableWindow?SW_SHOW:SW_HIDE);
 }
 
@@ -207,6 +210,8 @@ void CMainFrame::registerValue (bool read)
 			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewDayNight", 0, &type, (LPBYTE)&DayNightWindow, &len);
 			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewWaterPool", 0, &type, (LPBYTE)&WaterPoolWindow, &len);
+			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewVegetable", 0, &type, (LPBYTE)&VegetableWindow, &len);
 			len=sizeof (float);
 			RegQueryValueEx (hKey, "MoveSpeed", 0, &type, (LPBYTE)&MoveSpeed, &len);
@@ -225,6 +230,8 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "ViewAnimationSet", 0, REG_BINARY, (LPBYTE)&AnimationSetWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewSlots", 0, REG_BINARY, (LPBYTE)&MixerSlotsWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewParticles", 0, REG_BINARY, (LPBYTE)&ParticlesWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewDayNight", 0, REG_BINARY, (LPBYTE)&DayNightWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewWaterPool", 0, REG_BINARY, (LPBYTE)&WaterPoolWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewDayNight", 0, REG_BINARY, (LPBYTE)&DayNightWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewVegetable", 0, REG_BINARY, (LPBYTE)&VegetableWindow, sizeof(bool));
 			RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
@@ -743,6 +750,13 @@ void CMainFrame::OnWindowVegetable()
 }
 
 
+void CMainFrame::OnWindowWaterPool() 
+{
+	WaterPoolWindow^=true;
+	update ();
+}
+
+
 static UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator
@@ -817,10 +831,18 @@ void CMainFrame::OnUpdateWindowDayNight(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck (DayNightWindow);
 }
 
+
+void CMainFrame::OnUpdateWindowWaterPool(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (WaterPoolWindow);
+}
+
+
 void CMainFrame::OnUpdateWindowVegetable(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (VegetableWindow);
 }
+
 
 void CMainFrame::OnUpdateViewObjectmode(CCmdUI* pCmdUI) 
 {

@@ -48,7 +48,19 @@
 			{
 				if ($row[4] != "Offline")
 				{
-					$reason = $login." is already online";
+					$reason = "$login is already online and ";
+					// ask the LS to remove the client
+					if (disconnectClient ($row[3], $row[0], $tempres))
+					{
+						$reason =  $reason."was just disconnected. Now you can retry the identification.";
+
+						$query = "update user set ShardId=-1, State='Offline' where UId=$row[0]";
+						$result = mysql_query ($query) or die ("Can't execute the query: '$query' errno:".mysql_errno().": ".mysql_error());
+					}
+					else
+					{
+						$reason = $reason."can't be disconnected: $tempres.";
+					}
 					$res = 0;
 				}
 				else
@@ -79,7 +91,6 @@
 					// ok, valid login/pass, set the cookie
 					setcookie ("login", $login, time()+3600*24*15);
 					setcookie ("password", $password, time()+3600*24*15);
-	echo "set cookie";
 					if(strlen($reason) != 0)
 					{
 						echo $reason."<br>";
@@ -268,7 +279,7 @@
 		{
 			// user selected a shard, try to add the user to the shard
 
-			if (connectToLS($shardid, $id, $res))
+			if (askClientConnection($shardid, $id, $res))
 			{
 				echo '<h1>Access validated</h1>Please wait while launching the application...<br>';
 				echo $res;

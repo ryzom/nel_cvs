@@ -21,6 +21,21 @@
 
 		function isReading () { return $this->InputStream; }
 
+		function serialuint8 (&$val)
+		{
+			if ($this->isReading())
+			{
+				$val = ord($this->Buffer{$this->Pos++});
+				//printf ("read uint8 '%d'<br>", $val);
+			}
+			else
+			{
+				$this->Buffer .= chr($val & 0xFF);
+				$this->Pos++;
+				//printf ("write uint8 '%d' %d<br>", $val, $this->Pos);
+			}
+		}
+
 		function serialuint32 (&$val)
 		{
 			if ($this->isReading())
@@ -66,10 +81,8 @@
 	// If true, $res contains the url to connect.
 	// If false, $res contains the reason why it s not okay.
 
-	function connectToLS($shardid, $uid, &$res)
+	function connectToLS(&$fp, &$res)
 	{
-		$ok = false;
-
 		// connect to the login service that must be localhost:49990
 		$fp = fsockopen ("localhost", 49990, $errno, $errstr, 30);
 		if (!$fp)
@@ -78,70 +91,131 @@
 		}
 		else
 		{
-			// send the message that say that we want to add a user
-
-			$msgout = new CMemStream;
-			$fake = 0;
-			$msgout->serialuint32 ($fake);
-			$msgout->serialuint32 ($shardid);
-			$msgout->serialuint32 ($uid);
-
-			$size = $msgout->Pos;
-			$buffer = chr(($size>>24)&0xFF);
-			$buffer .= chr(($size>>16)&0xFF);
-			$buffer .= chr(($size>>8)&0xFF);
-			$buffer .= chr($size&0xFF);
-			$buffer .= $msgout->Buffer;
-
-			fwrite ($fp, $buffer);
-
-			//printf ("sent packet size '%d'<br>", strlen($buffer));
-			
-			fflush ($fp);
-
-			// wait the answer
-
-			$size = 0;
-			$val = fread ($fp, 1);
-			$size = ord($val) << 24;
-			$val = fread ($fp, 1);
-			$size = ord($val) << 16;
-			$val = fread ($fp, 1);
-			$size += ord($val) << 8;
-			$val = fread ($fp, 1);
-			$size += ord($val);
-			//printf ("receive packet size '%d'<br>", $size);
-			$fake = fread ($fp, 4);
-			$size -= 4; // remove the fake
-
-			$buffer = fread ($fp, $size);
-			$msgin = new CMemStream;
-			$msgin->setBuffer ($buffer);
-
-			$msgin->serialstring($reason);
-			//printf("reason size %d", strlen($reason));
-			
-			if(strlen($reason) == 0)
-			{
-				// it s ok, let's connect
-				$msgin->serialstring($cookie);
-				$msgin->serialstring($addr);
-//////// faut remettre launch et commiter mon nel_launcher
-				$res = '<!--nel="login" nelArgs="'.$cookie.' '.$addr.'"-->';
-				$ok = true;
-			}
-			else
-			{
-				// can't accept it, display the error
-				// echo "Can't connect to the shard: $reason";
-				$res = $reason;
-			}
-
-			//printf("receive response '$reason' '$cookie' '$addr'<br>");
-
-			fclose ($fp);
-			//echo "sent OK.<br><br>";
+			$res = "";
 		}
+	}
+
+	function sendMessage ($fp, $msgout)
+	{
+		$size = $msgout->Pos;
+		$buffer = chr(($size>>24)&0xFF);
+		$buffer .= chr(($size>>16)&0xFF);
+		$buffer .= chr(($size>>8)&0xFF);
+		$buffer .= chr($size&0xFF);
+		$buffer .= $msgout->Buffer;
+
+		fwrite ($fp, $buffer);
+
+		//printf ("sent packet size '%d'<br>", strlen($buffer));
+		
+		fflush ($fp);
+	}
+
+	function waitMessage ($fp, &$msgin)
+	{
+		//echo "waiting a message";
+		$size = 0;
+		$val = fread ($fp, 1);
+		$size = ord($val) << 24;
+		$val = fread ($fp, 1);
+		$size = ord($val) << 16;
+		$val = fread ($fp, 1);
+		$size += ord($val) << 8;
+		$val = fread ($fp, 1);
+		$size += ord($val);
+		//printf ("receive packet size '%d'<br>", $size);
+		$fake = fread ($fp, 4);
+		$size -= 4; // remove the fake
+
+		$buffer = fread ($fp, $size);
+		$msgin = new CMemStream;
+		$msgin->setBuffer ($buffer);
+	}
+
+	function askClientConnection ($shardid, $uid, &$res)
+	{
+		$ok = false;
+
+		connectToLS($fp, $res);
+		if($res!="")
+			return $ok;
+
+		// send the message that say that we want to add a user
+		$msgout = new CMemStream;
+		$fake = 0;
+		$msgout->serialuint32 ($fake);			// fake used to number the packet
+		$messageType = 1;
+		$msgout->serialuint8 ($messageType);
+		$msgout->serialuint32 ($shardid);
+		$msgout->serialuint32 ($uid);
+
+		sendMessage ($fp, $msgout);
+
+		waitMessage ($fp, $msgin);
+
+		$msgin->serialstring($reason);
+		//printf("reason size %d", strlen($reason));
+			
+		if(strlen($reason) == 0)
+		{
+			// it s ok, let's connect
+			$msgin->serialstring($cookie);
+			$msgin->serialstring($addr);
+			$res = '<!--nel="launch" nelArgs="'.$cookie.' '.$addr.'"-->';
+			$ok = true;
+		}
+		else
+		{
+			// can't accept it, display the error
+			// echo "Can't connect to the shard: $reason";
+			$res = $reason;
+		}
+
+		//printf("receive response '$reason' '$cookie' '$addr'<br>");
+
+		fclose ($fp);
+		//echo "sent OK.<br><br>";
+
 		return $ok;
 	}
+
+	// This function connect to the LS, ask the LS to disconnect the user
+
+	function disconnectClient($shardid, $uid, &$res)
+	{
+		$ok = false;
+
+		connectToLS($fp, $res);
+		if(strlen($res) != 0)
+			return $ok;
+
+		// send the message that say that we want to add a user
+		$msgout = new CMemStream;
+		$fake = 0;
+		$msgout->serialuint32 ($fake);			// fake used to number the packet
+		$messageType = 1;
+		$msgout->serialuint8 ($messageType);
+		$msgout->serialuint32 ($shardid);
+		$msgout->serialuint32 ($uid);
+
+		sendMessage ($fp, $msgout);
+
+		waitMessage ($fp, $msgin);
+
+		$msgin->serialstring($res);
+		//printf("reason size %d", strlen($res));
+			
+		if(strlen($res) == 0)
+		{
+			$ok = true;
+		}
+
+		//printf("receive response '$reason' '$cookie' '$addr'<br>");
+
+		fclose ($fp);
+		//echo "sent OK.<br><br>";
+
+		return $ok;
+	}
+
 ?>

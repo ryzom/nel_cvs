@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.14 2001/08/07 14:12:57 vizerie Exp $
+ * $Id: particle_system.h,v 1.15 2001/08/09 08:00:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -250,7 +250,7 @@ public:
 		{
 			nlassert(numParam < MaxPSUserParam);
 			nlassert(value >= 0.f && value <= 1.f);
-			_UserParam[numParam].Value = value;
+			_UserParam[numParam] = value;
 		}
 
 		/** Get a user param.
@@ -259,15 +259,9 @@ public:
 		float getUserParam(uint numParam) const
 		{
 			nlassert(numParam < MaxPSUserParam);
-			return _UserParam[numParam].Value;
+			return _UserParam[numParam];
 		}
-
-		/// Get a pointer to a param, as an animated value.
-		CAnimatedValueFloat *getUserParamAnimatedValue(uint numParam)
-		{
-			nlassert(numParam < MaxPSUserParam);
-			return &_UserParam[numParam];
-		}
+		
 	//@}
 
 		
@@ -406,7 +400,7 @@ public:
 
 	//*****************************************************************************************************
 
-		// \name LOD balancing
+		// \name Load balancing
 		// @{
 			// get an evaluation of how many tris are needed with the system for the given distance
 			float getWantedNumTris(float dist);
@@ -550,10 +544,7 @@ protected:
 	NLMISC::CAABBox			 _PreComputedBBox;
 
 	// the driver used for rendering
-	IDriver					 *_Driver;
-
-	/// user params of the system
-	CAnimatedValueFloat		 _UserParam[MaxPSUserParam];
+	IDriver					 *_Driver;	
 		
 	typedef std::vector< CParticleSystemProcess *> TProcessVect;
 	TProcessVect			 _ProcessVect;
@@ -615,6 +606,8 @@ protected:
 	uint					 _MaxNumFacesWanted;	
 
 	static IPSSoundServer *		 _SoundServer;
+
+	float					_UserParam[MaxPSUserParam];
 	
 };
 

@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.27 2001/08/07 14:12:57 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.28 2001/08/09 08:00:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,7 +86,7 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 								
 									
 {
-	for (uint k = 0; k < MaxPSUserParam; ++k) _UserParam[k].Value = 0;
+	for (uint k = 0; k < MaxPSUserParam; ++k) _UserParam[k] = 0;
 }
 
 

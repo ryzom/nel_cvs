@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.13 2001/04/12 08:26:30 chafik Exp $
+ * $Id: main_agent_script.h,v 1.14 2001/04/13 09:44:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ namespace NLAIAGENT
 	public:
 		IMainAgent(const IMainAgent &a):CAgentScript(a){}
 		IMainAgent(IAgentManager *a):CAgentScript(a){}
+		IMainAgent(IAgentManager *a, IBasicAgent *b, std::list<IObjectIA *> &v, NLAISCRIPT::CAgentClass *c):CAgentScript(a,b,v,c){}
 		IMainAgent():CAgentScript(NULL){}
 		virtual ~IMainAgent()
 		{
@@ -88,6 +89,7 @@ namespace NLAIAGENT
 
 	public:
 		CMainAgentScript(const CMainAgentScript &);
+		CMainAgentScript(IAgentManager *a,NLAIC::IIO *io, IBasicAgent *b, std::list<IObjectIA *> &v, NLAISCRIPT::CAgentClass *c);
 		CMainAgentScript(IAgentManager *,NLAIC::IIO *io);
 		CMainAgentScript(NLAIC::IIO *io);
 		virtual ~CMainAgentScript();

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.53 2001/04/12 08:26:41 chafik Exp $
+ * $Id: agent_script.cpp,v 1.54 2001/04/13 09:44:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,9 +263,9 @@ namespace NLAIAGENT
 
 	CAgentScript::CAgentScript(const CAgentScript &a): IAgentManager(a)
 	{
+		_AgentClass = a._AgentClass;
 		if ( a._AgentClass )
-		{
-			_AgentClass = a._AgentClass;
+		{			
 			a._AgentClass->incRef();
 		}
 
@@ -730,16 +730,52 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::sendMethodCompoment(IObjectIA *param)
 	{
-		IMessageBase *msg = (IMessageBase *)((IBaseGroupType *)param)->pop();		
-		return sendMessage(msg);
+		NLAIAGENT::CIteratorContener It = ((IBaseGroupType *)param)->getIterator();
+		const CStringType *n = (const CStringType *)It++;
+		INombreDefine *p = (INombreDefine *)((IBaseGroupType *)It++);
+		IMessageBase *msg = (IMessageBase *)((IBaseGroupType *)It++);
+		msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
+		return sendMessage(n->getStr(),msg);
+	}	
+	
+	IObjectIA::CProcessResult CAgentScript::sendMessageToDynmaicChild(const IVarName &compName,IObjectIA *msg)
+	{
+		tsetDefNameAgent::iterator  p = _DynamicAgentName.find(CKeyAgent(CStringType(compName)));
+
+		while(p != _DynamicAgentName.end())
+		{
+			CAgentScript *o = (CAgentScript *)*((*p++).Itr);
+			o->sendMessage(msg);
+		}
+
+		return IObjectIA::CProcessResult();
 	}
 
 	IObjectIA::CProcessResult CAgentScript::sendMessage(const IVarName &compName,IObjectIA *msg)
 	{
-		IObjectIA *comp = (IObjectIA *)getStaticMember(getStaticMemberIndex(compName));
-		if(comp != NULL)
+		if(_AgentClass != NULL)
 		{
-			comp->sendMessage(msg);
+			int i = getStaticMemberIndex(compName);
+			if(i >= 0)
+			{
+				IObjectIA *comp = (IObjectIA *)getStaticMember(i);
+				if(comp != NULL)
+				{
+					comp->sendMessage(msg);
+				}
+				else
+				{
+					sendMessageToDynmaicChild(compName,msg);
+				}
+			}
+			else
+			{
+				sendMessageToDynmaicChild(compName,msg);
+			}
+		}
+		else			
+		{						
+			sendMessageToDynmaicChild(compName,msg);
 		}
 		return IObjectIA::CProcessResult();
 	}

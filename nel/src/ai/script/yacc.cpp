@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.20 2001/04/05 15:29:03 chafik Exp $
+ * $Id: yacc.cpp,v 1.21 2001/04/13 09:44:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -815,7 +815,7 @@ namespace NLAISCRIPT
 		{			
 			_LastBloc->addCode(new CMsgSetSender());
 			_LastBloc->addCode(new CNopOpCode());
-			sendOp = _LastBloc->getBagOfCode();
+			//sendOp = _LastBloc->getBagOfCode();
 		}
 	
 		_LastBloc->addCode(new CNopOpCode());
@@ -869,7 +869,7 @@ namespace NLAISCRIPT
 			_MethodConstraint.push_back(c);
 		}
 		b->addConstraint(c);
-		if(sendOp != NULL)
+		/*if(sendOp != NULL)
 		{
 			NLAIAGENT::IBaseGroupType *nameRun = (NLAIAGENT::IBaseGroupType *)_LastStringParam.back()->clone();
 			((NLAIAGENT::IObjectIA *)nameRun->pop())->release();			
@@ -912,10 +912,7 @@ namespace NLAISCRIPT
 
 #ifdef NL_DEBUG	
 	nameRun->getDebugString(mName);
-#endif
-
-			/*nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(_RUN_))));
-			nameRun->incRef();*/
+#endif			
 
 			int baseIsNew = false;
 			if(_LastbaseClass == NULL)
@@ -937,7 +934,7 @@ namespace NLAISCRIPT
 				nameRun->release();
 			}
 			sendOp->addConstraint(c);
-		}
+		}*/
 		return true;
 	}
 

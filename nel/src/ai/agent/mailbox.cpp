@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.15 2001/04/10 16:18:45 chafik Exp $
+ * $Id: mailbox.cpp,v 1.16 2001/04/13 09:44:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,9 +188,10 @@ namespace NLAIAGENT
 		tListMessage::const_iterator i = _ListMessage.begin();
 		while(i != _ListMessage.end())
 		{
-			const IMessageBase &m = *(*i);
+			IMessageBase &m = (IMessageBase &)*(*i);
 			os.serial( (NLAIC::CIdentType &) m.getType() );
-			os.serial( (IMessageBase &) m );
+			//os.serial( (IMessageBase &) m );
+			m.save(os);
 		}
 		
 	}

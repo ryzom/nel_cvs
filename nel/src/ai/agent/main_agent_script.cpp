@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.15 2001/04/12 08:26:41 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.16 2001/04/13 09:44:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,13 @@ namespace NLAIAGENT
 	}
 
 	CMainAgentScript::CMainAgentScript(IAgentManager *main,NLAIC::IIO *io):IMainAgent (main)
+	{
+		_Stack = new NLAISCRIPT::CStackPointer(4096*8);
+		_Heap = new NLAISCRIPT::CStackPointer(4096*8);
+		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
+	}
+
+	CMainAgentScript::CMainAgentScript(IAgentManager *a,NLAIC::IIO *io, IBasicAgent *b, std::list<IObjectIA *> &v, NLAISCRIPT::CAgentClass *c):IMainAgent(a,b,v,c)
 	{
 		_Stack = new NLAISCRIPT::CStackPointer(4096*8);
 		_Heap = new NLAISCRIPT::CStackPointer(4096*8);
@@ -125,7 +132,8 @@ namespace NLAIAGENT
 		}
 		catch(NLAIE::IException &e)
 		{			
-			_CodeContext->InputOutput->Echo("\n\n%s\n\n",(char *)e.what());
+			const char *w = e.what();
+			_CodeContext->InputOutput->Echo("\n\n%s\n\n",(char *)w);
 		}
 	}
 

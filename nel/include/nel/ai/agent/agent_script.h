@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.25 2001/04/12 08:26:30 chafik Exp $
+ * $Id: agent_script.h,v 1.26 2001/04/13 09:44:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -265,6 +265,7 @@ namespace NLAIAGENT
 
 		virtual	CProcessResult sendMessage(IObjectIA *);
 		virtual	CProcessResult sendMessage(const IVarName &,IObjectIA *);
+		CProcessResult sendMessageToDynmaicChild(const IVarName &,IObjectIA *);
 
 		virtual const IObjectIA::CProcessResult &run();
 		//@}

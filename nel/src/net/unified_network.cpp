@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.29 2002/02/07 17:16:22 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.30 2002/02/11 17:38:48 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -253,7 +253,32 @@ void	cbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 //			nlassert(idAccess.value()[sid].EntryUsed);
 //			nlassert(idAccess.value()[sid].ServiceId == sid);
 
-			(*itcb).second (msgin, idAccess.value()[sid].ServiceName, sid);
+			if (idAccess.value()[sid].ServiceId == sid)
+			{
+				(*itcb).second (msgin, idAccess.value()[sid].ServiceName, sid);
+			}
+			else if (idAccess.value()[sid].ServiceId == 0xDEAD)
+			{
+				// looks for service in the connection stack
+				uint	i;
+				for (i=0; i<inst->_ConnectionStack.size(); ++i)
+					if (inst->_ConnectionStack[i].SId == sid && !inst->_TempDisconnectionTable[sid])
+						break;
+
+				if (i == inst->_ConnectionStack.size())
+				{
+					nlwarning("HNETL5: received a message from service %d which could not be indentified by its name", sid);
+				}
+				else
+				{
+					(*itcb).second (msgin, inst->_ConnectionStack[i].SName, sid);
+				}
+			}
+			else
+			{
+				nlwarning("HNETL5: received a message from service %d which has a wrong sid in table", sid);
+				(*itcb).second (msgin, idAccess.value()[sid].ServiceName, sid);
+			}
 		}
 	}
 	else
@@ -476,6 +501,13 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 //
 //
 
+#define	TIME_BLOCK(tick, instr) \
+{ \
+	TTicks	_time_block_before = CTime::getPerformanceTime(); \
+	instr ; \
+	TTicks	_time_block_after = CTime::getPerformanceTime(); \
+	tick += (_time_block_after - _before); \
+}
 
 void	CUnifiedNetwork::update(TTime timeout)
 {
@@ -567,7 +599,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 					{
 						// assume autoretry
 						// entryUsed && not connected and not auto retry => illegal state !!
-						nlassert(cnx.AutoRetry)
+						nlassert(cnx.AutoRetry);
 						_ConnectionRetriesStack.push_back(i);
 					}
 				}

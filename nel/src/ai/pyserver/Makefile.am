@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.1 2001/01/08 16:01:58 valignat Exp $
+# $Id: Makefile.am,v 1.2 2001/01/10 16:24:38 valignat Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -7,6 +7,8 @@ MAINTAINERCLEANFILES    = Makefile.in
 noinst_LTLIBRARIES      = libpyserver.la
 
 libpyserver_la_SOURCES  = pylib.cpp pythonmethode.cpp
+
+AM_CXXFLAGS           = @PYTHON_CFLAGS@
 
 
 # End of Makefile.am

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: naming_client.cpp,v 1.2 2000/10/11 16:25:25 cado Exp $
+ * $Id: naming_client.cpp,v 1.3 2000/10/13 08:57:37 cado Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -33,12 +33,22 @@ namespace NLNET {
 
 CSocket *CNamingClient::_ClientSock;
 
-/// \todo cado How is located the naming service ?
+/// \todo Cado: How is located the naming service ? May be we can use a config file.
 CInetAddress CNamingClient::NamingServiceAddress = CInetAddress( "olivierc", 50000 );
 
 CRegServices CNamingClient::_RegisteredServices;
 
 bool CNamingClient::TransactionMode = true;
+
+
+/* These values must correspond to CallbackArray in the Naming Service.
+ * They are used instead of their string equivalents to prevent the NS from sending back
+ * binding values.
+ */
+const sint16 LK_CBINDEX = 0;
+const sint16 LA_CBINDEX = 1;
+const sint16 RG_CBINDEX = 2;
+const sint16 UN_CBINDEX = 3;
 
 
 /*
@@ -153,7 +163,7 @@ void CNamingClient::registerService( const std::string& name, const CInetAddress
 {
 	CNamingClient::openT();
 	CMessage msgout( "" ); //"RG" );
-	msgout.setType( 2 );
+	msgout.setType( RG_CBINDEX );
 	msgout.serial( const_cast<std::string&>(name) );
 	msgout.serial( const_cast<CInetAddress&>(addr) );
 	CNamingClient::_ClientSock->send( msgout );
@@ -172,7 +182,7 @@ void CNamingClient::unregisterService( const std::string& name, const CInetAddre
 {
 	CNamingClient::openT();
 	CMessage msgout( "" ); //"UN" );
-	msgout.setType( 3 );
+	msgout.setType( UN_CBINDEX );
 	msgout.serial( const_cast<std::string&>(name) );
 	msgout.serial( const_cast<CInetAddress&>(addr) );
 	CNamingClient::_ClientSock->send( msgout );
@@ -195,7 +205,7 @@ bool CNamingClient::lookup( const std::string& name, CInetAddress& addr )
 	// Send request
 	nldebug( "Looking-up for service %s...", name.c_str() );
 	CMessage msgout( "" ); // "LK" );
-	msgout.setType( 0 );
+	msgout.setType( LK_CBINDEX );
 	msgout.serial( const_cast<std::string&>(name) );
 	CNamingClient::_ClientSock->send( msgout );
 
@@ -230,7 +240,7 @@ bool CNamingClient::lookupAlternate( const std::string& name, CInetAddress& addr
 	// Send request
 	nldebug( "Looking-up again for service %s...", name.c_str() );
 	CMessage msgout( "" ); // "LA" );
-	msgout.setType( 1 );
+	msgout.setType( LA_CBINDEX );
 	msgout.serial( const_cast<std::string&>(name) );
 	msgout.serial( addr );
 	CNamingClient::_ClientSock->send( msgout );

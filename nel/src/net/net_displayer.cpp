@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.cpp,v 1.8 2000/10/11 16:25:25 cado Exp $
+ * $Id: net_displayer.cpp,v 1.9 2000/10/13 08:57:37 cado Exp $
  *
  * Implementation of CNetDisplayer
  */
@@ -31,6 +31,12 @@
 
 
 namespace NLNET {
+
+
+/* This index must correspond to the index for "LOG" in CallbackArray in the Logging Service
+ * (see CNetDisplayer::display())
+ */
+const sint16 LOG_CBINDEX = 0;
 
 
 /*
@@ -96,7 +102,7 @@ void CNetDisplayer::display( const std::string& str )
 			findAndConnect();
 		}
 		CMessage msg( "", false );
-		msg.setType( 0 ); // we don't listen for incoming replies, therefore we must not use a type as string. 0 is the default action for CLogService : "LOG"
+		msg.setType( LOG_CBINDEX ); // we don't listen for incoming replies, therefore we must not use a type as string. 0 is the default action for CLogService : "LOG"
 		msg.serial( const_cast<std::string&>(str) );
 		_Server.send( msg );
 	}

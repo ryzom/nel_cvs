@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.34 2001/08/16 17:11:50 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.35 2001/08/31 15:45:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "nel/misc/quat.h"
 #include "nel/misc/file.h"
 #include "nel/misc/line.h"
+#include "nel/misc/path.h"
 
 
 #include "3d/dru.h"
@@ -4852,7 +4853,7 @@ void CPSConstraintMesh::update(void)
 
 	CShapeBank *sb = scene->getShapeBank();
 
-	sb->load(_MeshShapeFileName);
+	sb->load(NLMISC::CPath::lookup(_MeshShapeFileName));
 
 	IShape *is;
 

@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.10 2001/01/22 17:29:57 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.11 2001/04/17 15:59:02 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,8 @@ using namespace NL3D;
 
 const sint32	Width = 800, Height = 600;
 
+// store specific user information
+NLMISC::CFileDisplayer Fd ("network_viewer.log");
 
 #ifdef NL_OS_WINDOWS
 CFontGenerator fontGen("\\\\server\\code\\fonts\\arialuni.ttf");
@@ -911,6 +913,10 @@ void main()
 		CNELU::EventServer.addEmitter(scene->getDriver()->getEventEmitter());
 		CNELU::AsyncListener.addToServer(CNELU::EventServer);
 		*/
+
+		NLMISC::InfoLog.addDisplayer (&Fd);
+		NLMISC::InfoLog.setLongInfo (true);
+		NLMISC::InfoLog.setLocalHostAndService ("", "");
 
 		// Positioning camera
 		CMatrix	camera;

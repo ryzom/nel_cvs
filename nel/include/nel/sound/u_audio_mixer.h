@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.34 2004/08/30 12:47:48 berenguier Exp $
+ * $Id: u_audio_mixer.h,v 1.35 2004/09/01 08:27:35 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -305,11 +305,11 @@ public:
 	virtual void		stopBackgroundSound () = 0;
 
 	/// Deprecated
-	virtual void		loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region) = 0;
+//	virtual void		loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region) = 0;
 	/// Deprecated
-	virtual void		loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region) = 0;
+//	virtual void		loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region) = 0;
 	/// Deprecated
-	virtual void		loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region) = 0;
+//	virtual void		loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region) = 0;
 	//@}
 
 	//@{

@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.10 2003/12/31 16:11:54 boucher Exp $
+ * $Id: background_sound_manager.h,v 1.11 2004/09/01 08:28:04 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -82,15 +82,15 @@ public:
 	/** Load the background sounds from a CPrimRegion class.
 	 *	deprecated
 	 */
-	void		loadSoundsFromRegion(const NLLIGO::CPrimRegion &region);
+//	void		loadSoundsFromRegion(const NLLIGO::CPrimRegion &region);
 	/** Load the effects from a CPrimRegion class.
 	 *	deprecated
 	 */
-	void		loadEffecsFromRegion(const NLLIGO::CPrimRegion &region);
+//	void		loadEffecsFromRegion(const NLLIGO::CPrimRegion &region);
 	/** Load the samples banks from a CPrimRegion class.
 	 *	deprecated
 	 */
-	void		loadSamplesFromRegion(const NLLIGO::CPrimRegion &region);
+//	void		loadSamplesFromRegion(const NLLIGO::CPrimRegion &region);
 	/** Load the sounds, effects and sample banks from a region class.
 	*/
 	void		loadAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot);

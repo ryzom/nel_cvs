@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.71 2004/08/30 12:32:45 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.72 2004/09/01 08:28:04 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2113,19 +2113,19 @@ void CAudioMixerUser::setBackgroundFilterFades(const TBackgroundFilterFades &bac
 }
 
 
-void CAudioMixerUser::loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region)
-{
-	_BackgroundSoundManager->loadSoundsFromRegion(region);
-}
+//void CAudioMixerUser::loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region)
+//{
+//	_BackgroundSoundManager->loadSoundsFromRegion(region);
+//}
 
-void CAudioMixerUser::loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region)
-{
-	_BackgroundSoundManager->loadEffecsFromRegion(region);
-}
-void CAudioMixerUser::loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region)
-{
-	_BackgroundSoundManager->loadSamplesFromRegion(region);
-}
+//void CAudioMixerUser::loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region)
+//{
+//	_BackgroundSoundManager->loadEffecsFromRegion(region);
+//}
+//void CAudioMixerUser::loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region)
+//{
+//	_BackgroundSoundManager->loadSamplesFromRegion(region);
+//}
 
 void CAudioMixerUser::loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot)
 {

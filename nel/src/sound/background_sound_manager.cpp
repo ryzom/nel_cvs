@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.23 2003/12/31 16:11:54 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.24 2004/09/01 08:28:04 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -534,86 +534,86 @@ void CBackgroundSoundManager::addSampleBank(const std::vector<std::string> &bank
 }
 
 
-void CBackgroundSoundManager::loadSamplesFromRegion(const NLLIGO::CPrimRegion &region)
-{
-	_Banks.clear();
+//void CBackgroundSoundManager::loadSamplesFromRegion(const NLLIGO::CPrimRegion &region)
+//{
+//	_Banks.clear();
+//
+//	for (uint i=0; i< region.VZones.size(); ++i)
+//	{
+//		if (region.VZones[i].VPoints.size() > 2)
+//		{
+//			// parse the zone name to find the samples name.
+//			std::vector<std::string>	splitted = split(region.VZones[i].Name, '-');
+//			std::vector<std::string>	bankNames;
+//
+//			if (splitted.size() > 2)
+//			{
+//				for (uint j=1; j<splitted.size()-1; ++j)
+//				{
+//					bankNames.push_back(splitted[j]);
+//				}
+//
+//				addSampleBank(bankNames, region.VZones[i].VPoints);
+//			}
+//			else
+//			{
+//				nlwarning ("A sample bank patatoid name did'nt contains banks name '%s'", region.VZones[i].Name.c_str());
+//			}
+//		}
+//		else
+//		{
+//			nlwarning ("A sample bank patatoid have less than 3 points '%s'", region.VZones[i].Name.c_str());
+//		}
+//	}
+//}
 
-	for (uint i=0; i< region.VZones.size(); ++i)
-	{
-		if (region.VZones[i].VPoints.size() > 2)
-		{
-			// parse the zone name to find the samples name.
-			std::vector<std::string>	splitted = split(region.VZones[i].Name, '-');
-			std::vector<std::string>	bankNames;
+//void CBackgroundSoundManager::loadEffecsFromRegion(const NLLIGO::CPrimRegion &region)
+//{
+//}
 
-			if (splitted.size() > 2)
-			{
-				for (uint j=1; j<splitted.size()-1; ++j)
-				{
-					bankNames.push_back(splitted[j]);
-				}
-
-				addSampleBank(bankNames, region.VZones[i].VPoints);
-			}
-			else
-			{
-				nlwarning ("A sample bank patatoid name did'nt contains banks name '%s'", region.VZones[i].Name.c_str());
-			}
-		}
-		else
-		{
-			nlwarning ("A sample bank patatoid have less than 3 points '%s'", region.VZones[i].Name.c_str());
-		}
-	}
-}
-
-void CBackgroundSoundManager::loadEffecsFromRegion(const NLLIGO::CPrimRegion &region)
-{
-}
-
-void CBackgroundSoundManager::loadSoundsFromRegion(const CPrimRegion &region)
-{
-	uint i;
-	// remember playing state
-	bool oldState = _Playing;
-	unload();
-
-	for (i = 0; i < region.VZones.size(); i++)
-	{
-		if(region.VZones[i].VPoints.size()>2)
-		{
-			addSound(region.VZones[i].Name, region.VZones[i].VPoints, false);
-		}
-		else
-		{
-			nlwarning ("A background sound patatoid have less than 3 points '%s'", region.VZones[i].Name.c_str());
-		}
-	}
-
-	for (i = 0; i < region.VPaths.size(); i++)
-	{
-		if(region.VPaths[i].VPoints.size() > 1)
-		{
-			addSound(region.VPaths[i].Name, region.VPaths[i].VPoints, true);
-		}
-		else
-		{
-			nlwarning ("A background sound path have less than 2 points '%s'", region.VPaths[i].Name.c_str());
-		}
-	}
-	for (i = 0; i < region.VPoints.size(); i++)
-	{
-		std::vector<CPrimVector>	points;
-		points.push_back(region.VPoints[i].Point);
-
-		addSound(region.VPoints[i].Name, points, false);
-	}
-
-
-	// restart playing ?
-	if (oldState)
-		play();
-}
+//void CBackgroundSoundManager::loadSoundsFromRegion(const CPrimRegion &region)
+//{
+//	uint i;
+//	// remember playing state
+//	bool oldState = _Playing;
+//	unload();
+//
+//	for (i = 0; i < region.VZones.size(); i++)
+//	{
+//		if(region.VZones[i].VPoints.size()>2)
+//		{
+//			addSound(region.VZones[i].Name, region.VZones[i].VPoints, false);
+//		}
+//		else
+//		{
+//			nlwarning ("A background sound patatoid have less than 3 points '%s'", region.VZones[i].Name.c_str());
+//		}
+//	}
+//
+//	for (i = 0; i < region.VPaths.size(); i++)
+//	{
+//		if(region.VPaths[i].VPoints.size() > 1)
+//		{
+//			addSound(region.VPaths[i].Name, region.VPaths[i].VPoints, true);
+//		}
+//		else
+//		{
+//			nlwarning ("A background sound path have less than 2 points '%s'", region.VPaths[i].Name.c_str());
+//		}
+//	}
+//	for (i = 0; i < region.VPoints.size(); i++)
+//	{
+//		std::vector<CPrimVector>	points;
+//		points.push_back(region.VPoints[i].Point);
+//
+//		addSound(region.VPoints[i].Name, points, false);
+//	}
+//
+//
+//	// restart playing ?
+//	if (oldState)
+//		play();
+//}
 
 void CBackgroundSoundManager::load (const string &continent, NLLIGO::CLigoConfig &config)
 {
@@ -707,71 +707,71 @@ void CBackgroundSoundManager::load (const string &continent, NLLIGO::CLigoConfig
 	// then, we try to load separate .prim file for sound, samples and fx
 
 	// load the sound.
-	{
-		CIFile file;
-		CPrimRegion region;
-		string fn = continent+"_audio.prim";
-
-		nlinfo ("loading '%s'", fn.c_str());
-
-		string path = CPath::lookup(fn, false);
-
-		if(!path.empty() && file.open (path))
-		{
-			CIXml xml;
-			xml.init (file);
-			region.serial(xml);
-			file.close ();
-
-			nlinfo ("Region '%s' contains %d zones for the background sounds", continent.c_str(), region.VZones.size());
-
-			loadSoundsFromRegion(region);
-		}
-	}
-	// load the effect.
-	{
-		CIFile file;
-		CPrimRegion region;
-		string fn = continent+"_effects.prim";
-
-		nlinfo ("loading '%s'", fn.c_str());
-
-		string path = CPath::lookup(fn, false);
-
-		if(!path.empty() && file.open (path))
-		{
-			CIXml xml;
-			xml.init (file);
-			region.serial(xml);
-			file.close ();
-
-			nlinfo ("Region '%s' contains %d zones for the background effetcs", continent.c_str(), region.VZones.size());
-
-			loadEffecsFromRegion(region);
-		}
-	}
-	// load the samples banks.
-	{
-		CIFile file;
-		CPrimRegion region;
-		string fn = continent+"_samples.prim";
-
-		nlinfo ("loading '%s'", fn.c_str());
-
-		string path = CPath::lookup(fn, false);
-
-		if(!path.empty() && file.open (path))
-		{
-			CIXml xml;
-			xml.init (file);
-			region.serial(xml);
-			file.close ();
-
-			nlinfo ("Region '%s' contains %d zones for the background samples banks", continent.c_str(), region.VZones.size());
-
-			loadSamplesFromRegion(region);
-		}
-	}
+//	{
+//		CIFile file;
+//		CPrimRegion region;
+//		string fn = continent+"_audio.prim";
+//
+//		nlinfo ("loading '%s'", fn.c_str());
+//
+//		string path = CPath::lookup(fn, false);
+//
+//		if(!path.empty() && file.open (path))
+//		{
+//			CIXml xml;
+//			xml.init (file);
+//			region.serial(xml);
+//			file.close ();
+//
+//			nlinfo ("Region '%s' contains %d zones for the background sounds", continent.c_str(), region.VZones.size());
+//
+//			loadSoundsFromRegion(region);
+//		}
+//	}
+//	// load the effect.
+//	{
+//		CIFile file;
+//		CPrimRegion region;
+//		string fn = continent+"_effects.prim";
+//
+//		nlinfo ("loading '%s'", fn.c_str());
+//
+//		string path = CPath::lookup(fn, false);
+//
+//		if(!path.empty() && file.open (path))
+//		{
+//			CIXml xml;
+//			xml.init (file);
+//			region.serial(xml);
+//			file.close ();
+//
+//			nlinfo ("Region '%s' contains %d zones for the background effetcs", continent.c_str(), region.VZones.size());
+//
+//			loadEffecsFromRegion(region);
+//		}
+//	}
+//	// load the samples banks.
+//	{
+//		CIFile file;
+//		CPrimRegion region;
+//		string fn = continent+"_samples.prim";
+//
+//		nlinfo ("loading '%s'", fn.c_str());
+//
+//		string path = CPath::lookup(fn, false);
+//
+//		if(!path.empty() && file.open (path))
+//		{
+//			CIXml xml;
+//			xml.init (file);
+//			region.serial(xml);
+//			file.close ();
+//
+//			nlinfo ("Region '%s' contains %d zones for the background samples banks", continent.c_str(), region.VZones.size());
+//
+//			loadSamplesFromRegion(region);
+//		}
+//	}
 }
 
 

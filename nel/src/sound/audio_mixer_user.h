@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.48 2004/08/30 12:32:45 berenguier Exp $
+ * $Id: audio_mixer_user.h,v 1.49 2004/09/01 08:28:04 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -285,9 +285,9 @@ public:
 	virtual void				setBackgroundFlagShortName(uint flagIndex, const std::string &flagShortName);
 	virtual const std::string	&getBackgroundFlagName(uint flagIndex);
 	virtual const std::string	&getBackgroundFlagShortName(uint flagIndex);
-	virtual void				loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region);
-	virtual void				loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region);
-	virtual void				loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region);
+//	virtual void				loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region);
+//	virtual void				loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region);
+//	virtual void				loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot);
 	virtual void				loadBackgroundSound (const std::string &continent, NLLIGO::CLigoConfig &config);
 	virtual void				playBackgroundSound ();

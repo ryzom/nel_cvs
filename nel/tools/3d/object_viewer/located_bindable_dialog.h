@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.12 2001/09/26 17:49:37 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.13 2001/10/03 15:53:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -259,6 +259,13 @@ protected:
 			   uint32 get(void) const { return S->getNbSegs(); }
 			   void set(const uint32 &v) { S->setNbSegs(v); }
 			} _ShockWaveNbSegWrapper;
+
+			struct CShockWaveUFactorWrapper : public IPSWrapperFloat
+			{
+			   NL3D::CPSShockWave *S;
+			   float get(void) const { return S->getUFactor(); }
+			   void set(const float &v) { S->setUFactor(v); }
+			} _ShockWaveUFactorWrapper;
 
 
 		////////////////////////

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.15 2001/09/26 17:49:08 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.16 2001/10/03 15:53:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,10 +214,10 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		// if we're dealing with a shockwave, we add dlg for the radius cut, and the number of segments
 		if (dynamic_cast<NL3D::CPSShockWave *>(_Bindable))
 		{
-
+			NL3D::CPSShockWave *sw = static_cast<NL3D::CPSShockWave *>(_Bindable);
 			CEditableRangeFloat *rc = new CEditableRangeFloat(std::string("RADIUS CUT"), 0, 1);
 			pushWnd(rc);			
-			_RadiusCutWrapper.S = static_cast<NL3D::CPSShockWave *>(_Bindable);
+			_RadiusCutWrapper.S = sw;
 			rc->setWrapper(&_RadiusCutWrapper);
 			rc->init(xPos + 140, yPos, this);
 			CStatic *s = new CStatic;			
@@ -231,7 +231,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 
 			CEditableRangeUInt *snbs = new CEditableRangeUInt(std::string("SHOCK WAVE NB SEG"), 3, 24);
 			pushWnd(snbs);
-			_ShockWaveNbSegWrapper.S = static_cast<NL3D::CPSShockWave *>(_Bindable);
+			_ShockWaveNbSegWrapper.S = sw;
 			snbs->enableLowerBound(3, false);
 			snbs->setWrapper(&_ShockWaveNbSegWrapper);
 			snbs->init(xPos + 140, yPos, this);
@@ -243,6 +243,19 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 
 			snbs->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
+
+
+			CEditableRangeFloat *uvd = new CEditableRangeFloat(std::string("TEX UFACTOR"), 0, 5);
+			pushWnd(uvd);
+			_ShockWaveUFactorWrapper.S = sw;
+			uvd->setWrapper(&_ShockWaveUFactorWrapper);
+			uvd->init(xPos + 140, yPos, this);
+			s = new CStatic;			
+			pushWnd(s);
+			s->Create("Texture U factor :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->ShowWindow(SW_SHOW);
+			uvd->GetClientRect(&rect);
+			yPos += rect.bottom + 3;	
 			
 		}
 
@@ -417,7 +430,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			uvd->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
 
-		}
+		}		
 
 		if (dynamic_cast<NL3D::CPSRibbonLookAt *>(_Bindable))
 		{									

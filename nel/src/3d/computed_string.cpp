@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.3 2000/12/08 13:45:36 lecroart Exp $
+ * $Id: computed_string.cpp,v 1.4 2000/12/12 16:43:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,6 @@ void CComputedString::render2D (IDriver& driver,
 								float rotateY
 								)
 {
-
 	//x*=ResX/ResY;
 	x*=(float)4/3;
 	driver.setFrustum(0, 4.0f/3.0f, 0, 1, -1, 1, false);  // resX/resY

@@ -13,13 +13,13 @@ namespace NL3D
 }
 
 #include "editable_range.h"
-
+#include "particle_workspace.h"
 
 class CRibbonDlg : public CDialog
 {
 // Construction
 public:
-	CRibbonDlg(NL3D::CPSRibbonBase *ribbon, CWnd* pParent = NULL);   // standard constructor
+	CRibbonDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSRibbonBase *ribbon, CWnd* pParent = NULL);   // standard constructor
 	~CRibbonDlg();
 	void init(CWnd *pParent, sint x, sint y);	
 
@@ -40,9 +40,10 @@ public:
 
 // Implementation
 protected:
-	NL3D::CPSRibbonBase *_Ribbon; // the ribbon being edited
-	CEditableRangeFloat	*_RibbonLengthDlg;
-	CEditableRangeFloat	*_LODDegradationDlg;
+	CParticleWorkspace::CNode *_Node;
+	NL3D::CPSRibbonBase		  *_Ribbon; // the ribbon being edited
+	CEditableRangeFloat		  *_RibbonLengthDlg;
+	CEditableRangeFloat		  *_LODDegradationDlg;
 
 
 	// Generated message map functions
@@ -69,6 +70,7 @@ protected:
 	} _LODDegradationWrapper;
 
 	void updateState();
+	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }
 };
 
 //{{AFX_INSERT_LOCATION}}

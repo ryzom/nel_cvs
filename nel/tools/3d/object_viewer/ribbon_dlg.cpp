@@ -13,11 +13,11 @@
 // CRibbonDlg dialog
 
 
-CRibbonDlg::CRibbonDlg(NL3D::CPSRibbonBase *ribbon, CWnd* pParent /* = NULL*/)
-
-	: CDialog(CRibbonDlg::IDD, pParent),
-	  _Ribbon(ribbon),
-	  _RibbonLengthDlg(NULL)
+CRibbonDlg::CRibbonDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSRibbonBase *ribbon, CWnd* pParent /* = NULL*/)
+					 : CDialog(CRibbonDlg::IDD, pParent),
+					   _Node(ownerNode),
+					   _Ribbon(ribbon),
+					   _RibbonLengthDlg(NULL)
 {
 	nlassert(ribbon);
 	//{{AFX_DATA_INIT(CRibbonDlg)
@@ -82,6 +82,7 @@ void CRibbonDlg::OnUseHermitteInterpolation()
 	_Ribbon->setInterpolationMode(m_UseHermitteInterpolation ? 
 									NL3D::CPSRibbonBase::Hermitte :
 									NL3D::CPSRibbonBase::Linear);
+	updateModifiedFlag();
 }
 
 ///=========================================================
@@ -92,6 +93,7 @@ void CRibbonDlg::OnConstantLength()
 						   NL3D::CPSRibbonBase::FixedSize :
 						   NL3D::CPSRibbonBase::VariableSize);
 	updateState();
+	updateModifiedFlag();
 }
 
 
@@ -100,7 +102,7 @@ BOOL CRibbonDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	//===length===========
-	CEditableRangeFloat *erf = new CEditableRangeFloat("RIBBON_LENGTH", 0.1f, 10.1f);
+	CEditableRangeFloat *erf = new CEditableRangeFloat("RIBBON_LENGTH", _Node, 0.1f, 10.1f);
 	_RibbonLengthDlg = erf;
 	_RibbonLengthWrapper.R = _Ribbon;
 	erf->setWrapper(&_RibbonLengthWrapper);
@@ -112,7 +114,7 @@ BOOL CRibbonDlg::OnInitDialog()
 
 
 	//=========lod degradation===========
-	erf = new CEditableRangeFloat("LOD_DEGRADATION", 0.f, 1.f);
+	erf = new CEditableRangeFloat("LOD_DEGRADATION", _Node, 0.f, 1.f);
 	_LODDegradationDlg = erf;
 	_LODDegradationWrapper.R = _Ribbon;
 	erf->setWrapper(&_LODDegradationWrapper);

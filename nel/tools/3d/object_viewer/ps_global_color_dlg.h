@@ -1,6 +1,6 @@
 /** \file ps_global_color_dlg.h
  * This dialog helps to tune the global color of the system depending on its distance.
- * $Id: ps_global_color_dlg.h,v 1.2 2002/02/20 11:23:05 vizerie Exp $
+ * $Id: ps_global_color_dlg.h,v 1.3 2004/06/17 08:05:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 
 #include "dialog_stack.h"
 #include "ps_wrapper.h"
+#include "particle_workspace.h"
 
 namespace NL3D
 {
@@ -44,7 +45,7 @@ class CPSGlobalColorDlg : public CDialog, public CDialogStack
 {
 // Construction
 public:
-	CPSGlobalColorDlg(NL3D::CParticleSystem *ps, IPopupNotify *pn, CWnd* pParent = NULL);   // standard constructor
+	CPSGlobalColorDlg(CParticleWorkspace::CNode *ownerNode, IPopupNotify *pn, CWnd* pParent = NULL);   // standard constructor
 
 	void init(CWnd *pParent);
 // Dialog Data
@@ -63,8 +64,8 @@ public:
 
 // Implementation
 protected:
-	NL3D::CParticleSystem *_PS;
-	IPopupNotify		  *_PN;
+	CParticleWorkspace::CNode *_Node;	
+	IPopupNotify			  *_PN;
 	// Generated message map functions
 	//{{AFX_MSG(CPSGlobalColorDlg)
 	afx_msg void OnClose();

@@ -1,7 +1,7 @@
 /** \file precomputed_rotations_dlg.h
  * a dialog to edit precomputed rotations of elements in a particle system
  *
- * $Id: precomputed_rotations_dlg.h,v 1.2 2001/06/25 13:07:14 vizerie Exp $
+ * $Id: precomputed_rotations_dlg.h,v 1.3 2004/06/17 08:06:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #pragma once
 #endif
 
+#include "particle_workspace.h"
+
 namespace NL3D
 {
 	struct CPSHintParticleRotateTheSame ;
@@ -48,7 +50,7 @@ public:
 	 *  \param prts the particle being edited
 	 *  \param toDisable a window that is disabled when precomputed rotation are activated (null = none)
 	 */
-	CPrecomputedRotationsDlg(NL3D::CPSHintParticleRotateTheSame *prts, class CAttribDlg *toDisable = NULL);   // standard constructor
+	CPrecomputedRotationsDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSHintParticleRotateTheSame *prts, class CAttribDlg *toDisable = NULL);   // standard constructor
 	void init(CWnd *pParent, sint x, sint y) ;
 
 // Dialog Data
@@ -77,9 +79,10 @@ protected:
 	// anable / disable the controls for the tuning of the number of prerotated models
 	void enablePrecompRotationControl(void) ;
 	// update the control value from the particle being edited
-	void updateFromReader(void)	;
-
-
+	void updateFromReader(void);
+	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }
+	//
+	CParticleWorkspace::CNode *_Node;
 	// the particle being edited
 	NL3D::CPSHintParticleRotateTheSame *_RotatedParticle ;
 

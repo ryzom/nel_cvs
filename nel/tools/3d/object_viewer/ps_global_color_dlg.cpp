@@ -1,6 +1,6 @@
 /** \file ps_global_color_dlg.cpp
  * This dialog helps to tune the global color of the system depending on its distance.
- * $Id: ps_global_color_dlg.cpp,v 1.4 2003/07/02 17:26:31 distrib Exp $
+ * $Id: ps_global_color_dlg.cpp,v 1.5 2004/06/17 08:05:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,11 +35,12 @@
 // CPSGlobalColorDlg dialog
 
 
-CPSGlobalColorDlg::CPSGlobalColorDlg(NL3D::CParticleSystem *ps, IPopupNotify *pn, CWnd* pParent /* = NULL */)
-	: _PS(ps),
+CPSGlobalColorDlg::CPSGlobalColorDlg(CParticleWorkspace::CNode *ownerNode, IPopupNotify *pn, CWnd* pParent /* = NULL */)
+	: _Node(ownerNode),
 	  _PN(pn),
 	  CDialog(CPSGlobalColorDlg::IDD, pParent)
 {
+	nlassert(_Node);
 	//{{AFX_DATA_INIT(CPSGlobalColorDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
@@ -96,11 +97,9 @@ void CPSGlobalColorDlg::OnClose()
 BOOL CPSGlobalColorDlg::OnInitDialog() 
 {		
 	CDialog::OnInitDialog();
-	_GlobalColorWrapper.PS = _PS;
-	
-
+	_GlobalColorWrapper.PS = _Node->getPSPointer();
 	RECT r;	
-	CAttribDlgRGBA *adr = new CAttribDlgRGBA("GLOBAL_PS_COLOR");	
+	CAttribDlgRGBA *adr = new CAttribDlgRGBA("GLOBAL_PS_COLOR", _Node);	
 	adr->setSchemeWrapper(&_GlobalColorWrapper);
 	adr->enableMemoryScheme(false);
 	adr->enableNbCycles(false);

@@ -1,7 +1,7 @@
 /** \file precomputed_rotations_dlg.cpp
  * a dialog to edit precomputed rotations of elements in a particle system
  *
- * $Id: precomputed_rotations_dlg.cpp,v 1.6 2002/11/04 15:40:45 boucher Exp $
+ * $Id: precomputed_rotations_dlg.cpp,v 1.7 2004/06/17 08:06:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,8 +35,8 @@
 // CPrecomputedRotationsDlg dialog
 
 
-CPrecomputedRotationsDlg::CPrecomputedRotationsDlg(NL3D::CPSHintParticleRotateTheSame *prts, CAttribDlg *toDisable)	
-	: _RotatedParticle(prts), _WndToDisable(toDisable)
+CPrecomputedRotationsDlg::CPrecomputedRotationsDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSHintParticleRotateTheSame *prts, CAttribDlg *toDisable)	
+	: _Node(ownerNode), _RotatedParticle(prts), _WndToDisable(toDisable)
 {
 	float minValue, maxValue;
 	uint32 nbModels = prts->checkHintRotateTheSame(minValue, maxValue);
@@ -138,14 +138,14 @@ void CPrecomputedRotationsDlg::OnUpdateMinRotSpeed()
 		uint32 nbModels = _RotatedParticle->checkHintRotateTheSame(valueMin, valueMax);
 		valueMin = newValue;
 		_RotatedParticle->hintRotateTheSame(nbModels, valueMin, valueMax);
+		updateModifiedFlag();
 	}
 	else
 	{
 		MessageBox("invalid value !!");
 	}
-
-
 	UpdateData(FALSE);
+	updateModifiedFlag();
 }
 
 void CPrecomputedRotationsDlg::OnUpdateMaxRotSpeed() 
@@ -158,15 +158,14 @@ void CPrecomputedRotationsDlg::OnUpdateMaxRotSpeed()
 		uint32 nbModels = _RotatedParticle->checkHintRotateTheSame(valueMin, valueMax);
 		valueMax = newValue;
 		_RotatedParticle->hintRotateTheSame(nbModels, valueMin, valueMax);
+		updateModifiedFlag();
 	}
 	else
 	{
 		MessageBox("invalid value !!");
 	}
-
-
 	UpdateData(FALSE);
-	
+	updateModifiedFlag();
 }
 
 void CPrecomputedRotationsDlg::OnUpdateNbModels() 
@@ -180,19 +179,18 @@ void CPrecomputedRotationsDlg::OnUpdateNbModels()
 	{
 		valid &= (newNbModels < NL3D::ConstraintMeshMaxNumPrerotatedModels);
 	}
-
 	if (valid)
 	{
 		_RotatedParticle->checkHintRotateTheSame(valueMin, valueMax);	
 		_RotatedParticle->hintRotateTheSame((uint32) newNbModels, valueMin, valueMax);
+		updateModifiedFlag();
 	}
 	else
 	{
 		MessageBox("invalid value !!");
 	}
-
-
-	UpdateData(FALSE);	
+	UpdateData(FALSE);
+	updateModifiedFlag();
 }
 
 void CPrecomputedRotationsDlg::OnHintPrecomputedRotations() 
@@ -205,11 +203,13 @@ void CPrecomputedRotationsDlg::OnHintPrecomputedRotations()
 	}
 	if (m_PrecomputedRotations)
 	{
-		_RotatedParticle->hintRotateTheSame(32);	
+		_RotatedParticle->hintRotateTheSame(32);
+		updateModifiedFlag();
 	}
 	else
 	{
 		_RotatedParticle->disableHintRotateTheSame();
+		updateModifiedFlag();
 	}
 
 	enablePrecompRotationControl(); 

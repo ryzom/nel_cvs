@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.h
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.h,v 1.9 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: ps_mover_dlg.h,v 1.10 2004/06/17 08:03:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NLMISC
 #include "3d/ps_edit.h"
 #include "ps_wrapper.h"
 #include "editable_range.h"
+#include "particle_workspace.h"
 
 
 class CDirectionAttr ;
@@ -56,7 +57,7 @@ class CPSMoverDlg : public CDialog
 // Construction
 public:
 	// construct the object with a pointer to the item being edited, and to the mouse listener to update its model matrix
-	CPSMoverDlg(CWnd *parent, NL3D::CEvent3dMouseListener *ml,  NL3D::CPSLocated *editedLocated, uint32 editedLocatedIndex);   // standard constructor
+	CPSMoverDlg(CParticleWorkspace::CNode *ownerNode, CWnd *parent, NL3D::CEvent3dMouseListener *ml,  NL3D::CPSLocated *editedLocated, uint32 editedLocatedIndex);   // standard constructor
 
 	// dtor
 	~CPSMoverDlg() ;
@@ -102,10 +103,9 @@ public:
 
 // Implementation
 protected:
-
-	
-	CParticleDlg	*_ParticleDlg;
-	NL3D::CPSLocated *_EditedLocated ;
+	CParticleWorkspace::CNode *_Node;
+	CParticleDlg			  *_ParticleDlg;
+	NL3D::CPSLocated		  *_EditedLocated ;
 	uint32 _EditedLocatedIndex ;
 	NL3D::CEvent3dMouseListener *_MouseListener ;
 

@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.5 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: hrc_trav.h,v 1.6 2000/12/08 10:34:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,7 +204,7 @@ public:
 	/// The base behavior is to update() the observer, updateWorld() states, and traverseSons().
 	virtual	void	traverse(IObs *caller)
 	{
-		// update the traversal according to the model.
+		// update the observer according to the model.
 		update();
 		// Recompute the matrix, according to caller matrix mode, and local matrix.
 		nlassert(!caller || dynamic_cast<IBaseHrcObs*>(caller));

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.h
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.h,v 1.4 2001/10/03 10:14:00 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op.h,v 1.5 2001/10/03 15:48:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,8 +69,19 @@ inline T PSBinOpSubtract(T arg1, T arg2) { return arg1 - arg2; }
 template <>
 inline CPlaneBasis PSBinOpModulate(CPlaneBasis p1, CPlaneBasis p2)
 {
-	nlassert(0); // not allowed for now
-	return CPlaneBasis(NLMISC::CVector::Null);
+	// we compute p1 * p2
+	NLMISC::CVector z = p1.X ^ p1.Y;
+	CPlaneBasis r;
+	r.X.x = p2.X.x * p1.X.x + p2.X.y * p1.Y.x + p2.X.z * z.x;
+	r.X.y = p2.X.x * p1.X.y + p2.X.y * p1.Y.y + p2.X.z * z.y;
+	r.X.z = p2.X.x * p1.X.z + p2.X.y * p1.Y.z + p2.X.z * z.z;
+
+	r.Y.x = p2.Y.x * p1.X.x + p2.Y.y * p1.Y.x + p2.Y.z * z.x;
+	r.Y.y = p2.Y.x * p1.X.y + p2.Y.y * p1.Y.y + p2.Y.z * z.y;
+	r.Y.z = p2.Y.x * p1.X.z + p2.Y.y * p1.Y.z + p2.Y.z * z.z;
+
+	return r;
+
 }
 template <>
 inline CPlaneBasis PSBinOpAdd(CPlaneBasis p1, CPlaneBasis p2)
@@ -267,7 +278,7 @@ CPSAttribMakerBinOp<T>::~CPSAttribMakerBinOp()
 /// cplane basis template specialization for supportOp
 bool CPSAttribMakerBinOp<CPlaneBasis>::supportOp(CPSBinOp::BinOp op) 
 { 
-	return  (op == CPSBinOp::selectArg1 || op == CPSBinOp::selectArg1);
+	return  (op == CPSBinOp::selectArg1 || op == CPSBinOp::selectArg2 || op == CPSBinOp::modulate);
 }
 
 

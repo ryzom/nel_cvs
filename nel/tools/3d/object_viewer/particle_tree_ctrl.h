@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.8 2001/06/26 09:19:25 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.9 2001/09/07 12:05:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,8 @@
 #include "3d/ps_particle.h"
 #include "3d/ps_edit.h"
 
+#include <algorithm>
+
 class CParticleDlg ;
 
 
@@ -46,7 +48,6 @@ namespace NL3D
 	class CParticleSystem ;
 	class CParticleSystemModel ;
 }
-
 
 
 
@@ -103,7 +104,7 @@ protected:
 	//{{AFX_MSG(CParticleTreeCtrl)
 	afx_msg void OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
-	afx_msg void OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult);	
 	//}}AFX_MSG
 
 	CImageList _ImageList ;  // the image list containing the icons
@@ -156,10 +157,11 @@ public:
 	} ;
 
 protected:
+	// instanciate a located in the given system , and return its nodetype and htreeitem
+	std::pair<CNodeType *, HTREEITEM> CParticleTreeCtrl::createLocated(NL3D::CParticleSystem *ps, HTREEITEM headItem);
 
 	// the last ps that had a selected instance in it
 	NL3D::CParticleSystem *_LastClickedPS ;
-
 	// node that we allocated
 	std::vector<CNodeType *> _NodeTypes ;
 

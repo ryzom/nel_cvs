@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.22 2001/09/06 08:45:47 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.23 2001/09/07 12:05:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -254,6 +254,7 @@ BEGIN_MESSAGE_MAP(CParticleTreeCtrl, CTreeCtrl)
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelchanged)
 	ON_WM_RBUTTONDOWN()
 	ON_NOTIFY_REFLECT(TVN_ENDLABELEDIT, OnEndlabeledit)
+
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -459,36 +460,46 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 	CPSLocatedBindable *toCreate = NULL;
 				
 	CNodeType *nt = (CNodeType *) GetItemData(GetSelectedItem());
+	bool	  createLocAndBindable = false; // when set to true, must create a located and a simultaneously a located bindable
 
 	switch(nID)
 	{
 		///////////////
 		// particles //
 		///////////////
+		case IDM_DOT_LOC: createLocAndBindable = true;
 		case IDM_DOT:
 			toCreate = new NL3D::CPSDot;
 		break;
+		case IDM_LOOKAT_LOC:  createLocAndBindable = true;
 		case IDM_LOOKAT:
 			toCreate = new NL3D::CPSFaceLookAt; 
 		break;
+		case IDM_FANLIGHT_LOC:  createLocAndBindable = true;
 		case IDM_FANLIGHT:
 			toCreate = new NL3D::CPSFanLight;
 		break;
+		case IDM_RIBBON_LOC:  createLocAndBindable = true;
 		case IDM_RIBBON:
 			toCreate = new NL3D::CPSRibbon;
 		break;
+		case IDM_TAILDOT_LOC: createLocAndBindable = true;
 		case IDM_TAILDOT:
 			toCreate = new NL3D::CPSTailDot; 
 		break;
+		case IDM_MESH_LOC:  createLocAndBindable = true;
 		case IDM_MESH:
 			toCreate = new NL3D::CPSMesh;			
 		break;
+		case IDM_CONSTRAINT_MESH_LOC:  createLocAndBindable = true;
 		case IDM_CONSTRAINT_MESH:
 			toCreate = new NL3D::CPSConstraintMesh;			
 		break;
+		case IDM_FACE_LOC:  createLocAndBindable = true;
 		case IDM_FACE:
 			toCreate = new NL3D::CPSFace;
 		break;
+		case IDM_SHOCKWAVE_LOC:  createLocAndBindable = true;
 		case IDM_SHOCKWAVE:
 			toCreate = new NL3D::CPSShockWave;
 		break;
@@ -497,18 +508,23 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		// emitters //
 		//////////////
 
+		case IDM_DIRECTIONNAL_EMITTER_LOC:  createLocAndBindable = true;
 		case IDM_DIRECTIONNAL_EMITTER:
 			toCreate = new NL3D::CPSEmitterDirectionnal;
 		break;
+		case IDM_OMNIDIRECTIONNAL_EMITTER_LOC:  createLocAndBindable = true;
 		case IDM_OMNIDIRECTIONNAL_EMITTER:
 			toCreate = new NL3D::CPSEmitterOmni;
 		break;
+		case IDM_CONIC_EMITTER_LOC:  createLocAndBindable = true;
 		case IDM_CONIC_EMITTER:
 			toCreate = new NL3D::CPSEmitterConic;
 		break; 
+		case IDM_RECTANGLE_EMITTER_LOC:  createLocAndBindable = true;
 		case IDM_RECTANGLE_EMITTER:
 			toCreate = new NL3D::CPSEmitterRectangle;
 		break;
+		case IDM_SPHERICAL_EMITTER_LOC:  createLocAndBindable = true;
 		case IDM_SPHERICAL_EMITTER:
 			toCreate = new NL3D::CPSSphericalEmitter;
 		break;
@@ -517,19 +533,24 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		////////////////
 		//   Zones    //
 		////////////////
-
+		
+		case IDM_ZONE_PLANE_LOC:  createLocAndBindable = true;
 		case IDM_ZONE_PLANE:
 			toCreate = new NL3D::CPSZonePlane;
 		break;
+		case IDM_ZONE_SPHERE_LOC:  createLocAndBindable = true;
 		case IDM_ZONE_SPHERE:
 			toCreate = new NL3D::CPSZoneSphere;
 		break;
+		case IDM_ZONE_DISC_LOC:  createLocAndBindable = true;
 		case IDM_ZONE_DISC:
 			toCreate = new NL3D::CPSZoneDisc;
 		break;
+		case IDM_ZONE_RECTANGLE_LOC:  createLocAndBindable = true;
 		case IDM_ZONE_RECTANGLE:
 			toCreate = new NL3D::CPSZoneRectangle;
 		break;
+		case IDM_ZONE_CYLINDER_LOC:  createLocAndBindable = true;
 		case IDM_ZONE_CYLINDER:
 			toCreate = new NL3D::CPSZoneCylinder;
 		break;
@@ -537,26 +558,31 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		///////////////
 		//   forces  //
 		///////////////
+		case IDM_GRAVITY_FORCE_LOC:  createLocAndBindable = true;
 		case IDM_GRAVITY_FORCE:
 			toCreate = new NL3D::CPSGravity;
 		break;
+		case IDM_DIRECTIONNAL_FORCE_LOC:  createLocAndBindable = true;
 		case IDM_DIRECTIONNAL_FORCE:
 			toCreate = new NL3D::CPSDirectionnalForce;
 		break;
+		case IDM_SPRING_FORCE_LOC:  createLocAndBindable = true;
 		case IDM_SPRING_FORCE:
 			toCreate = new NL3D::CPSSpring;
 		break;
+		case IDM_FLUID_FRICTION_LOC:  createLocAndBindable = true;
 		case IDM_FLUID_FRICTION:
 			toCreate = new NL3D::CPSFluidFriction;
 		break;
-
+		case IDM_CENTRAL_GRAVITY_LOC:  createLocAndBindable = true;
 		case IDM_CENTRAL_GRAVITY:
 			toCreate = new NL3D::CPSCentralGravity;
 		break;
-
+		case IDM_CYLINDRIC_VORTEX_LOC:  createLocAndBindable = true;
 		case IDM_CYLINDRIC_VORTEX:
 			toCreate = new NL3D::CPSCylindricVortex;
 		break;
+		case IDM_BROWNIAN_MOVE_LOC:  createLocAndBindable = true;
 		case IDM_BROWNIAN_MOVE:
 			toCreate = new NL3D::CPSBrownianForce;
 		break;
@@ -564,7 +590,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		///////////////
 		//    sound  //
 		///////////////
-
+		case IDM_SOUND_LOC:  createLocAndBindable = true;
 		case IDM_SOUND:
 			toCreate = new NL3D::CPSSound;
 		break;
@@ -700,31 +726,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		////////////////////////
 		
 		case ID_MENU_NEWLOCATED:
-		{
-			std::string name; 
-			char num[128];
-			if (_PSElementIdentifiers.count(std::string("located")))
-			{
-				sprintf(num, "%d", ++_PSElementIdentifiers[std::string("located")]);
-			}
-			else
-			{
-				name = std::string("located 0");
-			}		
-
-			nlassert(nt->Type == CNodeType::particleSystem);
-			
-			CPSLocated *loc = new CPSLocated;
-			loc->setName(name);
-			loc->setSystemBasis(true);
-			CParticleSystem *ps = nt->PS;
-			ps->attach(loc);
-
-			CNodeType *newNt = new CNodeType(loc);
-			_NodeTypes.push_back(newNt);
-			// insert item in tree
-			InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, name.c_str(), 7, 7, 0, 0, (LPARAM) newNt, GetSelectedItem(), TVI_LAST);
-			_ParticleDlg->getCurrPSModel()->touchTransparencyState();			
+		{			
+			createLocated(nt->PS, GetSelectedItem());												
 			Invalidate();
 		}
 		break;
@@ -778,7 +781,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 							nt->PS->setFontGenerator(_ParticleDlg->FontGenerator);
 
 							
-							buildTreeFromPS(nt->PS, nt->PSModel);														
+							buildTreeFromPS(nt->PS, nt->PSModel);
 						}
 						else
 						{
@@ -804,6 +807,47 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				// reset the camera
 				_ParticleDlg->MainFrame->OnResetCamera();
 
+		}
+		break;
+		case IDM_MERGE_PS:
+		{
+			try
+			{		
+				_ParticleDlg->StartStopDlg->stop();
+				static char BASED_CODE szFilter[] = "ps & shapes files(*.ps;*.shape)|*.ps; *.shape||";
+				CFileDialog fd( TRUE, ".ps", "*.ps;*.shape", 0, szFilter);
+				
+				if (fd.DoModal() == IDOK)
+				{
+					// Add to the path
+					char drive[256];
+					char dir[256];
+					char path[256];
+
+					// Add search path for the texture
+					_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
+					_makepath (path, drive, dir, NULL, NULL);
+					NLMISC::CPath::addSearchPath (path);
+																																				
+					NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName())));
+
+					if (newModel)
+					{									
+						nt->PSModel->getPS()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) newModel->Shape) );				
+					}
+					NL3D::CNELU::Scene.deleteInstance(newModel);
+					NL3D::CNELU::Scene.getShapeBank()->reset();
+
+					DeleteItem(TVI_ROOT);
+					buildTreeFromPS(nt->PS, nt->PSModel);
+					_ParticleDlg->MainFrame->OnResetCamera();			
+				}					
+			}
+
+			catch (NLMISC::Exception &e)
+			{
+				MessageBox(e.what(), "error merging particle system");						
+			}	
 		}
 		break;
 		case ID_MENU_SAVE_PS:
@@ -853,16 +897,48 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				}
 		}
 		break;
+		case ID_MENU_DELETE_PS:
+		{
+			if (MessageBox("Delete the system ?", "Particle editor", MB_YESNO) == IDYES)
+			{
+				NL3D::CParticleSystem *ps = nt->PS;			
+				while (ps->getNbProcess())
+				{
+					ps->remove(ps->getProcess(0));
+					DeleteItem(TVI_ROOT);
+					buildTreeFromPS(nt->PS, nt->PSModel);
+					_ParticleDlg->MainFrame->OnResetCamera();			
+				}
+				// remove all the located from the system
+			}
+		}
+		break;
 	}
 
 
 	if (toCreate)
 	{
+		HTREEITEM son, lastSon, father;
+		if (createLocAndBindable)
+		{
+			
+			std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> p = createLocated(nt->PS, GetSelectedItem());												
+			nt = p.first;
+			son = 0;
+			father = p.second;
+			lastSon = p.second;
+
+		}
+		else
+		{
+			son = GetChildItem(GetSelectedItem());
+			father = GetSelectedItem();
+		}
+			
+
 		// complete the name
 		std::string name = toCreate->getName();
-
 		char num[128];
-
 		if (_PSElementIdentifiers.count(name))
 		{			 
 			sprintf(num, "%d", ++_PSElementIdentifiers[name]);
@@ -881,33 +957,34 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		_NodeTypes.push_back(newNt);
 		// insert the element in the tree
 		// we want that the instance always appears in the last position
-
-		HTREEITEM son = this->GetChildItem(GetSelectedItem());
-		HTREEITEM lastSon;
-
-		if (!son)
+		
+		
+		if (!createLocAndBindable)
 		{
-			lastSon = GetSelectedItem();
-		}
-		else
-		{
+			if (!son)
+			{
+				lastSon = GetSelectedItem();
+			}
+			else
+			{
 
-			lastSon  = TVI_FIRST;
+				lastSon  = TVI_FIRST;
 
-			
-			while (son != NULL)
-			{				
-				if (((CNodeType *) GetItemData(son))->Type == CNodeType::locatedInstance)
-				{
-					break;
+				
+				while (son != NULL)
+				{				
+					if (((CNodeType *) GetItemData(son))->Type == CNodeType::locatedInstance)
+					{
+						break;
+					}
+					lastSon = son;
+					son = GetChildItem(son);
 				}
-				lastSon = son;
-				son = GetChildItem(son);
 			}
 		}
 
 
-		InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, toCreate->getName().c_str(), toCreate->getType(), toCreate->getType(), 0, 0, (LPARAM) newNt, GetSelectedItem(), lastSon);
+		InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, toCreate->getName().c_str(), toCreate->getType(), toCreate->getType(), 0, 0, (LPARAM) newNt, father, lastSon);
 
 		_ParticleDlg->getCurrPSModel()->touchTransparencyState();		
 		Invalidate();
@@ -926,8 +1003,37 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 	return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
+std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> CParticleTreeCtrl::createLocated(NL3D::CParticleSystem *ps, HTREEITEM headItem)
+{ 
+	std::string name; 
+	char num[128];
+	if (_PSElementIdentifiers.count(std::string("located")))
+	{
+		sprintf(num, "%d", ++_PSElementIdentifiers[std::string("located")]);
+	}
+	else
+	{
+		name = std::string("located 0");
+	}		
+
+	
+	
+	CPSLocated *loc = new CPSLocated;
+	loc->setName(name);
+	loc->setSystemBasis(true);	
+	ps->attach(loc);
+
+	CNodeType *newNt = new CNodeType(loc);
+	_NodeTypes.push_back(newNt);
+	// insert item in tree
+	HTREEITEM insertedItem = InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, name.c_str(), 7, 7, 0, 0, (LPARAM) newNt, headItem, TVI_LAST);
+	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+	return std::make_pair(newNt, insertedItem);
+}
+
+
+
 /// The user finished to edit a label in the tree
- 
 void CParticleTreeCtrl::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	NMTVDISPINFO* info = (NMTVDISPINFO*)pNMHDR;
@@ -1026,3 +1132,4 @@ NLMISC::CMatrix CParticleTreeCtrl::getElementMatrix(void) const
 
 	return NLMISC::CMatrix::Identity;
 }
+

@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_connect.cpp,v 1.1 2002/03/06 17:21:39 portier Exp $
+ * $Id: msg_connect.cpp,v 1.2 2002/03/07 11:09:04 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,12 +38,11 @@ namespace NLAIAGENT
 	}
 
 	CConnectObjectValueMsg::CConnectObjectValueMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
-	{		
-/*		CVectorGroupType *x = new CVectorGroupType(1);		
+	{	
+		CVectorGroupType *x = new CVectorGroupType(1);		
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);		
 		set(0, new DigitalType(0) );
-		*/
 	}
 
 	CConnectObjectValueMsg::CConnectObjectValueMsg(IBasicAgent *agent):

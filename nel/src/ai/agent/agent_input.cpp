@@ -1,7 +1,7 @@
 /** \file agent_input.cpp
  * <File description>
  *
- * $Id: agent_input.cpp,v 1.5 2001/04/24 09:06:56 chafik Exp $
+ * $Id: agent_input.cpp,v 1.6 2002/03/07 11:09:03 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ namespace NLAIAGENT
 			const IObjectIA* value = IAgentInput::getValue();
 			if (!(*value == *_LocalValue))
 			{
-				// If the component value as changed, we send a message to the list of interested IConnectIA.
+				// If the component value has changed, we send a message to the list of interested IConnectIA.
 				setValue((IObjectIA*) value);
 				COnChangeMsg msg;
 				IAgentInput::_ConnexionList.sendMessage(&msg);

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.103 2002/01/28 10:24:44 chafik Exp $
+ * $Id: agent_script.cpp,v 1.104 2002/03/07 11:09:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,12 +35,14 @@
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_message_action.h"
 #include "nel/ai/script/interpret_message_getvalue.h"
+#include "nel/ai/script/interpret_message_setvalue.h"
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/agent/agent_nombre.h"
 #include "nel/ai/agent/performative.h"
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
 #include "nel/ai/agent/msg_fact.h"
+#include "nel/ai/agent/msg_setvalue.h"
 #include "nel/ai/logic/factbase.h"
 #include "nel/ai/logic/goal.h"
 #include "nel/ai/agent/key_agent.h"
@@ -68,6 +70,9 @@ namespace NLAIAGENT
 	CAgentScript::CMethodCall **CAgentScript::StaticMethod = NULL;
 	NLAISCRIPT::COperandSimpleListOr *CAgentScript::ParamIdGetValueMsg = NULL;
 	NLAISCRIPT::CParam *CAgentScript::ParamGetValueMsg = NULL;
+	NLAISCRIPT::COperandSimpleListOr *CAgentScript::ParamIdSetValueMsg = NULL;
+	NLAISCRIPT::CParam *CAgentScript::ParamSetValueMsg = NULL;
+
 
 	void CAgentScript::initAgentScript()
 	{
@@ -129,6 +134,12 @@ namespace NLAIAGENT
 																  new NLAIC::CIdentType(NLAISCRIPT::CGetValueMsgClass::IdGetValueMsgClass)	);
 
 		CAgentScript::ParamGetValueMsg = new NLAISCRIPT::CParam(1,ParamIdGetValueMsg);
+
+		CAgentScript::ParamIdSetValueMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+																  new NLAIC::CIdentType(NLAIAGENT::CSetValueMsg::IdSetValueMsg),
+																  new NLAIC::CIdentType(NLAISCRIPT::CSetValueMsgClass::IdSetValueMsgClass)	);
+
+		CAgentScript::ParamSetValueMsg = new NLAISCRIPT::CParam(1,ParamIdSetValueMsg);
 
 
 		StaticMethod = new CAgentScript::CMethodCall *[CAgentScript::TLastM];
@@ -233,6 +244,12 @@ namespace NLAIAGENT
 
 		StaticMethod[CAgentScript::TGetValue] = new CAgentScript::CMethodCall(	_RUNASK_, 
 																				CAgentScript::TGetValue, ParamGetValueMsg,
+																				CAgentScript::CheckAll,
+																				1,
+																				new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)) ;
+
+		StaticMethod[CAgentScript::TSetValue] = new CAgentScript::CMethodCall(	_RUNTEL_, 
+																				CAgentScript::TSetValue, ParamSetValueMsg,
 																				CAgentScript::CheckAll,
 																				1,
 																				new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)) ;
@@ -429,7 +446,6 @@ namespace NLAIAGENT
 	{
 		return _NbComponents;//_AgentClass->getStaticMemberSize();
 	}
-
 	
 	const IObjectIA *CAgentScript::getStaticMember(sint32 index) const
 	{
@@ -789,6 +805,32 @@ namespace NLAIAGENT
 		r.Result = &msg_result;
 		return r;
 	}
+
+	IObjectIA::CProcessResult CAgentScript::runTellSetValue(IBaseGroupType *g)
+	{
+		NLAIAGENT::IMessageBase &msg_result = (NLAIAGENT::IMessageBase &)*g->get();
+		msg_result.incRef();
+
+		CStringType *comp_name = (CStringType *) msg_result[ (sint32) 0 ];
+		IObjectIA *comp_val = (IObjectIA *) msg_result[ (sint32) 1 ];
+		
+		sint32 index = _AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
+		if ( index != -1 )
+		{
+			// Sets the component to the new value
+			setStaticMember( index, comp_val );		
+		}
+		else
+		{
+			// Component not foud: return error msg
+		}
+
+		IObjectIA::CProcessResult r;
+		msg_result.incRef();
+		r.Result = &msg_result;
+		return r;
+	}
+
 
 	IObjectIA::CProcessResult CAgentScript::getDynamicName(NLAIAGENT::IBaseGroupType *g)
 	{
@@ -1400,15 +1442,11 @@ namespace NLAIAGENT
 		case TGetValue:
 			{
 				return runAskGetValue( (IBaseGroupType *) o );
-/*
-				CStringType *comp_name = (CStringType *)((IBaseGroupType *)param)->popFront();
-				if ( index != -1 )
-				{
-					sint32 index = _AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
-					r.Result =  _Components[ index ];				
-				}
-				return r;
-				*/
+			}
+
+		case TSetValue:
+			{
+				return runTellSetValue( (IBaseGroupType *) o );
 			}
 
 		default:
@@ -1492,7 +1530,10 @@ namespace NLAIAGENT
 				return runAskGetValue( (IBaseGroupType *) o );
 			}
 
-
+		case TSetValue:
+			{
+				return runTellSetValue( (IBaseGroupType *) o );
+			}
 
 		default:
 			return IAgent::runMethodeMember(index,o);
@@ -1577,6 +1618,12 @@ namespace NLAIAGENT
 			{				
 				return std::string("CAgentScript::runAskGetValue(MsgGetValue)");
 			}
+
+		case TSetValue:
+			{				
+				return std::string("CAgentScript::runTellSetValue(MsgGetValue)");
+			}
+
 		default:
 			return IAgentManager::getMethodeMemberDebugString(h,id);		
 		}		

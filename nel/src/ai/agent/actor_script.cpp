@@ -141,7 +141,6 @@ namespace NLAIAGENT
 			while ( _Launched.size() )
 			{
 				( (CActorScript *) _Launched.front() )->cancel();
-				_Launched.front()->Kill();
 				_Launched.front()->release();
 				_Launched.pop_front();
 			}
@@ -181,6 +180,7 @@ namespace NLAIAGENT
 
 	void CActorScript::onPause()
 	{
+		// Default: doesn't do anything.
 	}
 
 	/// Restarts the actor
@@ -445,11 +445,7 @@ namespace NLAIAGENT
 						
 						((CActorScript *)child)->activate();
 					}
-/*
 
-					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
-						((CActorScript *)child)->activate();
-*/
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
 					child->incRef();
 					
@@ -464,6 +460,7 @@ namespace NLAIAGENT
 				{
 					CVectorGroupType *result = new CVectorGroupType();
 					std::list<IBasicAgent *>::iterator it_l = _Launched.begin();
+
 					while ( it_l != _Launched.end() )
 					{
 						result->push( new CLocalMailBox( (const NLAIAGENT::IWordNumRef *) **it_l ) );

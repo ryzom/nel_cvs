@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="3d"
+	ProjectGUID="{6BF307AA-0995-43BE-81FF-C747ADBBF08C}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -266,6 +267,9 @@
 			</File>
 			<File
 				RelativePath=".\3d\render_trav.h">
+			</File>
+			<File
+				RelativePath="3d\trav_scene.cpp">
 			</File>
 			<File
 				RelativePath=".\3d\trav_scene.h">
@@ -888,6 +892,12 @@
 			</File>
 			<File
 				RelativePath=".\3d\texture_cube.h">
+			</File>
+			<File
+				RelativePath="3d\texture_dlm.cpp">
+			</File>
+			<File
+				RelativePath="3d\texture_dlm.h">
 			</File>
 			<File
 				RelativePath=".\3d\texture_file.cpp">
@@ -1945,6 +1955,12 @@
 		</File>
 		<File
 			RelativePath=".\3d\nelu.h">
+		</File>
+		<File
+			RelativePath="3d\patchdlm_context.cpp">
+		</File>
+		<File
+			RelativePath="3d\patchdlm_context.h">
 		</File>
 		<File
 			RelativePath=".\3d\register_3d.cpp">

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex.cpp,v 1.6 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d_vertex.cpp,v 1.7 2004/08/10 08:22:55 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -673,8 +673,8 @@ void CVolatileVertexBuffer::init (CVertexBuffer::TLocation	location, uint size, 
 
 // ***************************************************************************
 
-volatile int callCount = 0;
-volatile int callStop = 17700;
+//volatile int callCount = 0;
+//volatile int callStop = 17700;
 
 void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 {
@@ -682,9 +682,9 @@ void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 	/* If not enough room to allocate this buffer, resise the buffer to Size+Size/2 but do not reset CurrentIndex
 	 * to be sure the buffer will be large enough next pass. */
 
-	if (callCount == callStop)
-		nlstop;
-	callCount++;
+	//if (callCount == callStop)
+	//	nlstop;
+	//callCount++;
 
 	// Align the index
 	uint mod = CurrentIndex / stride;
@@ -731,7 +731,7 @@ void CVolatileVertexBuffer::reset ()
 {
 	H_AUTO_D3D(CVolatileVertexBuffer_reset )
 	CurrentIndex = 0;
-	callCount = 0;
+//	callCount = 0;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.4 2001/01/09 17:16:52 chafik Exp $
+ * $Id: registry_type.h,v 1.5 2001/01/10 08:58:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: registry.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: registry.h,v 1.3 2001/01/10 08:58:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

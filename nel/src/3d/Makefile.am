@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.97 2003/04/04 16:58:49 lecroart Exp $
+# $Id: Makefile.am,v 1.98 2003/04/07 14:06:51 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -430,8 +430,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        texture_blend.h \
                        texture_bump.cpp \
                        texture_bump.h \
-                       texture_embose.cpp \
-                       texture_embose.h \
+                       texture_emboss.cpp \
+                       texture_emboss.h \
                        texture.cpp \
                        texture_cube.cpp \
                        texture_cube.h \

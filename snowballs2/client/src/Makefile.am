@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.9 2002/03/19 17:42:49 valignat Exp $
+# $Id: Makefile.am,v 1.10 2003/04/07 14:06:08 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -35,9 +35,7 @@ snowballs_SOURCES    = animation.cpp                       \
                        physics.cpp                         \
                        physics.h                           \
                        radar.cpp                           \
-                       radar.h                             \
-                       sound.cpp                           \
-                       sound.h
+                       radar.h                             
 
 snowballs_LDADD      = @FREETYPE_LIBS@ @OPENAL_LIBS@
 

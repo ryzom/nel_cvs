@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.6 2002/05/23 09:29:45 vizerie Exp $
+ * $Id: landscapeig_manager.cpp,v 1.7 2002/05/24 16:28:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,8 +132,11 @@ UInstanceGroup *CLandscapeIGManager::loadZoneIG(const std::string &name)
 		if( !it->second.AddedToScene )
 		{
 			// add to the scene.
-			it->second.Ig->addToScene(*_Scene);
-			it->second.AddedToScene= true;
+			if (it->second.Ig != NULL)
+			{
+				it->second.Ig->addToScene(*_Scene);
+				it->second.AddedToScene= true;
+			}
 		}
 		return it->second.Ig;
 	}

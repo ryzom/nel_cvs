@@ -96,7 +96,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1, 0, 0, 48
+ FILEVERSION 1, 0, 0, 50
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -115,7 +115,7 @@ BEGIN
             VALUE "Comments", "TECH: cyril.corvazier\0"
             VALUE "CompanyName", "Nevrax Ltd\0"
             VALUE "FileDescription", "Standard modifiers (plugin)\0"
-            VALUE "FileVersion", "1, 0, 0, 48\0"
+            VALUE "FileVersion", "1, 0, 0, 50\0"
             VALUE "InternalName", "mods\0"
             VALUE "LegalCopyright", "Copyright © 1998 Nevrax Ltd\0"
             VALUE "LegalTrademarks", "\0"

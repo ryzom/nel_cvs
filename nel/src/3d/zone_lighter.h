@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.10 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: zone_lighter.h,v 1.11 2002/02/27 15:40:19 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -320,7 +320,7 @@ private:
 	void addTriangles (const CMeshMRMGeom &meshGeom, const CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
 
 	// One process method
-	void processCalc (uint process, uint firstPatch, uint lastPatch, const CLightDesc& description);
+	void processCalc (uint process, const CLightDesc& description);
 
 	// Build internal zone information
 	void buildZoneInformation (CLandscape &landscape, const std::vector<uint> &listZone, bool oversampling, const CLightDesc &lightDesc);
@@ -414,6 +414,8 @@ private:
 	  */
 	static void copyTileFlags(CZone &destZone, const CZone &srcZone);
 
+	// Give a thread a patch to compute
+	uint getAPatch (uint process);
 
 	// The quad grid
 	CQuadGrid<const CTriangle*>					_QuadGrid[MAX_CPU_PROCESS];
@@ -427,7 +429,11 @@ private:
 	std::vector<std::vector<uint8> >			_ShadowArray;
 
 	// Processes
+	CSynchronized<std::vector<bool> >			_PatchComputed;
+	std::vector<uint>							_LastPatchComputed;
+	uint										_NumberOfPatchComputed;
 	uint										_ProcessCount;
+	uint64										_CPUMask;
 	volatile uint								_ProcessExited;
 
 	// The shape

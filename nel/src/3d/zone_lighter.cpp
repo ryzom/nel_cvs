@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.16 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: zone_lighter.cpp,v 1.17 2002/02/27 15:40:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,7 @@ UDriver *drv=NULL;
 // ***************************************************************************
 
 
-CZoneLighter::CZoneLighter () : _TriangleListAllocateur(100000)
+CZoneLighter::CZoneLighter () : _TriangleListAllocateur(100000), _PatchComputed ("PatchComputed")
 {
 	
 }
@@ -190,26 +190,53 @@ void NEL3DCalcBase (CVector &direction, CMatrix& matrix)
 class NL3D::CCalcRunnable : public IRunnable
 {
 	// Members
-	uint			_FirstPatch;
-	uint			_LastPatch;
 	uint			_Process;
 	CZoneLighter	*_ZoneLighter;
 	const CZoneLighter::CLightDesc	*_Description;
+
+public:
+	IThread			*Thread;
+
 public:
 	// Ctor
-	CCalcRunnable (uint process, CZoneLighter *zoneLighter, uint firstPatch, uint lastPatch, const CZoneLighter::CLightDesc *description)
+	CCalcRunnable (uint process, CZoneLighter *zoneLighter, const CZoneLighter::CLightDesc *description)
 	{
-		_ZoneLighter=zoneLighter;
-		_Process=process;
-		_FirstPatch=firstPatch;
-		_LastPatch=lastPatch;
-		_Description=description;
+		_ZoneLighter = zoneLighter;
+		_Process = process;
+		_Description = description;
 	}
 
 	// Run method
 	void run()
 	{
-		_ZoneLighter->processCalc (_Process, _FirstPatch, _LastPatch, *_Description);
+		// Set the processor mask
+		uint64 mask = IProcess::getCurrentProcess()->getCPUMask ();
+
+		// Mask must not be NULL
+		nlassert (mask != 0);
+
+		if (mask != 0)
+		{
+			uint i;
+			uint count = 0;
+			while (1)
+			{
+				if (mask & (1<<i))
+				{
+					if (count == _Process)
+						break;
+					count++;
+				}
+				i++;
+				if (i==64)
+					i = 0;
+			}
+			
+			// Set the CPU mask
+			Thread->setCPUMask (1<<i);
+		}
+
+		_ZoneLighter->processCalc (_Process, *_Description);
 		_ZoneLighter->_ProcessExited++;
 	}
 };
@@ -264,6 +291,11 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 	 * - 
 	 */
 
+	// Backup thread mask
+	IThread *currentThread = IThread::getCurrentThread ();
+	uint64 threadMask = currentThread->getCPUMask();
+	currentThread->setCPUMask (1);
+
 	// Calc the ray basis
 	_LightDirection=description.LightDirection;
 	NEL3DCalcBase (_LightDirection, _RayBasis);
@@ -278,23 +310,16 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 	_ProcessCount=description.NumCPU;
 	if (_ProcessCount==0)
 	{
-#ifdef NL_OS_WINDOWS
-		// Automatique detection
-
-		// System info structure
-		SYSTEM_INFO info;
-
-		// Fill it
-		GetSystemInfo (&info);
-
-		// Get number of proc
-		_ProcessCount=info.dwNumberOfProcessors;
-#else // NL_OS_WINDOWS
-
-		// Get number of proc
-		_ProcessCount=1;
-
-#endif // NL_OS_WINDOWS
+		// Create a doomy thread
+		IProcess *pProcess=IProcess::getCurrentProcess ();
+		_CPUMask = pProcess->getCPUMask();
+		_ProcessCount = 0;
+		uint i;
+		for (i=0; i<64; i++)
+		{
+			if (_CPUMask&(1<<i))
+				_ProcessCount++;
+		}
 	}
 	if (_ProcessCount>MAX_CPU_PROCESS)
 		_ProcessCount=MAX_CPU_PROCESS;
@@ -481,14 +506,25 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 	// Number of patch
 	uint patchCount=_PatchInfo.size();
 
+	// Reset patch count
+	{
+		CSynchronized<std::vector<bool> >::CAccessor access (&_PatchComputed);
+		access.value().resize (0);
+		access.value().resize (patchCount, false);
+	}
+
 	// Patch by thread
 	uint patchCountByThread = patchCount/_ProcessCount;
 	patchCountByThread++;
 
 	// Patch to allocate
 	uint firstPatch=0;
+	_NumberOfPatchComputed = 0;
 
 	_ProcessExited=0;
+
+	// Set the thread state
+	_LastPatchComputed.resize (_ProcessCount);
 
 	// Launch threads
 	for (uint process=1; process<_ProcessCount; process++)
@@ -498,9 +534,14 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 		if (lastPatch>patchCount)
 			lastPatch=patchCount;
 
-		// Create a thread
-		IThread *pThread=IThread::create (new CCalcRunnable (process, this, firstPatch, lastPatch, &description));
+		// Last patch computed
+		_LastPatchComputed[process] = firstPatch;
 
+		// Create a thread
+		CCalcRunnable *runnable = new CCalcRunnable (process, this, &description);
+		IThread *pThread=IThread::create (runnable);
+		runnable->Thread = pThread;
+		
 		// New first patch
 		firstPatch=lastPatch;
 
@@ -512,7 +553,9 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 	uint lastPatch=firstPatch+patchCountByThread;
 	if (lastPatch>patchCount)
 		lastPatch=patchCount;
-	CCalcRunnable thread (0, this, firstPatch, lastPatch, &description);
+	_LastPatchComputed[0] = firstPatch;
+	CCalcRunnable thread (0, this, &description);
+	thread.Thread = currentThread;
 	thread.run();
 
 	// Wait for others processes
@@ -521,6 +564,8 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 		nlSleep (10);
 	}
 
+	// Reset old thread mask
+	currentThread->setCPUMask (threadMask);
 
 	// Progress bar
 	progress ("Compute Influences of PointLights", 0.f);
@@ -588,27 +633,25 @@ float CZoneLighter::getSkyContribution(const CVector &pos, const CVector &normal
 
 
 // ***************************************************************************
-void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, const CLightDesc& description)
+void CZoneLighter::processCalc (uint process, const CLightDesc& description)
 {
 	// *** Raytrace each patches
 
 	// Pointer on the zone
 	CZone *pZone=_Landscape->getZone (_ZoneToLight);
 
-	// For each patch
-	if (description.Shadow)
+	// Get a patch
+	uint patch = getAPatch (process);
+	while (patch != 0xffffffff)
 	{
-		// Shape array
-		CMultiShape *shapeArray=new CMultiShape;
-		CMultiShape *shapeArrayTmp=new CMultiShape;
-		shapeArray->Shapes.reserve (SHAPE_MAX);
-		shapeArrayTmp->Shapes.reserve (SHAPE_MAX);
-
-		for (uint patch=firstPatch; patch<lastPatch; patch++)
+		// For each patch
+		if (description.Shadow)
 		{
-			// Progress bar
-			if (process==0)
-				progress ("Raytrace", (float)(patch-firstPatch)/(float)(lastPatch-firstPatch));
+			// Shape array
+			CMultiShape *shapeArray=new CMultiShape;
+			CMultiShape *shapeArrayTmp=new CMultiShape;
+			shapeArray->Shapes.reserve (SHAPE_MAX);
+			shapeArrayTmp->Shapes.reserve (SHAPE_MAX);
 
 			// Lumels
 			std::vector<CLumelDescriptor> &lumels=_Lumels[patch];
@@ -628,13 +671,10 @@ void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, c
 				rayTrace (lumels[lumel].Position, lumels[lumel].Normal, lumels[lumel].S, lumels[lumel].T, patch, factor, *shapeArray, *shapeArrayTmp, process);
 				patchInfo.Lumels[lumel]=(uint)(factor*255);
 			}
+			delete shapeArray;
+			delete shapeArrayTmp;
 		}
-		delete shapeArray;
-		delete shapeArrayTmp;
-	}
-	else
-	{
-		for (uint patch=firstPatch; patch<lastPatch; patch++)
+		else
 		{
 			// Lumels
 			std::vector<CLumelDescriptor> &lumels=_Lumels[patch];
@@ -651,24 +691,15 @@ void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, c
 				patchInfo.Lumels[lumel]=255;
 			}
 		}
-	}
 
-	// *** Antialising
-	
-	// Id of this zone in the array
-	uint zoneNumber=_ZoneId[_ZoneToLight];
+		// *** Antialising
+		
+		// Id of this zone in the array
+		uint zoneNumber=_ZoneId[_ZoneToLight];
 
-	// Enabled ?
-	if ((description.Shadow)&&(description.Oversampling!=CLightDesc::NoOverSampling))
-	{
-		// For each patch
-		uint patch;
-		for (patch=firstPatch; patch<lastPatch; patch++)
+		// Enabled ?
+		if ((description.Shadow)&&(description.Oversampling!=CLightDesc::NoOverSampling))
 		{
-			// Progress bar
-			if (process==0)
-				progress ("Antialiasing", (float)(patch-firstPatch)/(float)(lastPatch-firstPatch));
-				
 			// Get a patch pointer
 			const CPatch *pPatch=(const_cast<const CZone*>(pZone))->getPatch (patch);
 
@@ -694,7 +725,6 @@ void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, c
 			{
 				// Over sample this lumel
 				bool oversample=false;
-				//bool shadowed=shadowPatch[s+t*orderLumelS];
 				uint8 shadowed=shadowPatch[s+t*orderLumelS];
 
 				// Left..
@@ -784,18 +814,9 @@ void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, c
 				}
 			}
 		}
-	}
 
-	// *** Lighting
-	
-	// For each patch
-	uint patch;
-	for (patch=firstPatch; patch<lastPatch; patch++)
-	{
-		// Progress bar
-		if (process==0)
-			progress ("Lighting", (float)(patch-firstPatch)/(float)(lastPatch-firstPatch));
-
+		// *** Lighting
+		
 		// Get a patch pointer
 		const CPatch *pPatch=(const_cast<const CZone*>(pZone))->getPatch (patch);
 
@@ -838,6 +859,9 @@ void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, c
 			clamp (finalLighting, 0, 255);
 			patchInfo.Lumels[lumel]=finalLighting;
 		}
+
+		// Next patch
+		patch = getAPatch (process);
 	}
 }
 
@@ -3346,4 +3370,44 @@ void CZoneLighter::setTileFlagsToDefault(std::vector<const CTessFace*> &tessFace
 			te.setVegetableState(CTileElement::AboveWater);
 		}
 	}
+}
+
+
+///***********************************************************
+uint CZoneLighter::getAPatch (uint process)
+{
+	// Accessor
+	CSynchronized<std::vector<bool> >::CAccessor access (&_PatchComputed);
+
+	// Current index
+	uint index = _LastPatchComputed[process];
+	uint firstIndex = index;
+
+	while (access.value()[index])
+	{
+		// Next patch
+		index++;
+
+		// First ?
+		if (firstIndex == index)
+			// no more patches
+			return 0xffffffff;
+
+		// Last patch ?
+		if (index == _PatchInfo.size())
+			index = 0;
+	}
+
+	// Visited
+	access.value()[index] = true;
+
+	// Last index
+	_LastPatchComputed[process] = index;
+	_NumberOfPatchComputed++;
+
+	// Print
+	progress ("Lighting patches", (float)_NumberOfPatchComputed/(float)_PatchInfo.size());
+
+	// Return the index
+	return index;
 }

@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.15.2.1 2003/04/24 14:05:44 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.15.2.2 2003/05/28 13:43:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ const float	INSIDE_FALLOF = 10.0f;
 
 
 CBackgroundSoundManager::CBackgroundSoundManager()
-: _LastPosition(0,0,0), _Playing(false)
+: _LastPosition(0,0,0), _Playing(false), _DoFade(false)
 {
 	for (uint i=0; i<UAudioMixer::TBackgroundFlags::NB_BACKGROUND_FLAGS; ++i)
 	{
@@ -610,6 +610,7 @@ void CBackgroundSoundManager::loadSoundsFromRegion(const CPrimRegion &region)
 
 void CBackgroundSoundManager::load (const string &continent)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager);
 	// First, try to load from a .primitive file (contain everythink)
 	{
 		CIFile file;

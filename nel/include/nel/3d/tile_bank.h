@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.18 2001/02/14 16:00:15 corvazier Exp $
+ * $Id: tile_bank.h,v 1.19 2001/02/16 11:09:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,7 @@ class CTile
 #define NL3D_CTILE_GROUP_MASK			0x000000f0
 #define NL3D_CTILE_GROUP_RSHIFT			0x4
 #define NL3D_CTILE_FREE_FLAG			0x00000100
+#define NL3D_CTILE_NUM_GROUP			4
 
 public:
 	friend class CTileSet;

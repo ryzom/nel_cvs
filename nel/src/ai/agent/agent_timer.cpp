@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.4 2001/04/25 10:06:04 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.5 2001/04/27 12:15:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,13 +109,13 @@ namespace NLAIAGENT
 
 	void CAgentManagerTimer::releaseClass()
 	{
-		delete CAgentManagerTimer::IdAgentTimer;
-		CAgentManagerTimer::IdAgentTimer = NULL;
-		CAgentManagerTimer::TimerManagerRun->terminate();		
+		CAgentManagerTimer::TimerManagerRun->terminate();
 		{
 			NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
 			delete accessor.value();
 		}
+		delete CAgentManagerTimer::IdAgentTimer;
+		CAgentManagerTimer::IdAgentTimer = NULL;				
 		delete CAgentManagerTimer::TimerManager;
 	}
 

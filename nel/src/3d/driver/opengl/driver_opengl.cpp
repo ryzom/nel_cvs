@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.72 2001/02/12 09:16:58 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.73 2001/02/12 15:56:40 coutelas Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -832,11 +832,33 @@ void CDriverGL::setCapture (bool b)
 {
 #ifdef NL_OS_WINDOWS
 
+
 	if (b)
+	{
+		RECT client;
+		GetClientRect (_hWnd, &client);
+		POINT pt1,pt2;
+		pt1.x = client.left;
+		pt1.y = client.top;
+		ClientToScreen (_hWnd, &pt1);
+		pt2.x = client.right;
+		pt2.y = client.bottom;
+		ClientToScreen (_hWnd, &pt2);
+		client.bottom = pt2.y;
+		client.top = pt1.y;
+		client.left = pt1.x;
+		client.right = pt2.x;
+		ClipCursor (&client);
+	}
+	else
+		ClipCursor (NULL);
+
+
+/*	if (b)
 		SetCapture (_hWnd);
 	else
 		ReleaseCapture ();
-
+*/
 #elif defined (NL_OS_UNIX)
 
 #endif // NL_OS_UNIX

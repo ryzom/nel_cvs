@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.2 2000/12/20 15:25:37 lecroart Exp $
+ * $Id: win_event_emitter.cpp,v 1.3 2001/02/12 15:56:02 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
+#include <windowsx.h>
 
 /** 
   * Needed for definition of WM_MOUSEWHEEL. It should be in winuser.h 
@@ -125,9 +126,13 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 			// MSWindows coordinates to NeL window coordinate
 			float fX, fY;
 			RECT client;
+
+			float xPos = (float)GET_X_LPARAM(lParam); 
+			float yPos = (float)GET_Y_LPARAM(lParam); 
+
 			GetClientRect ((HWND)hWnd, &client);
-			fX=(float)LOWORD(lParam)/(float)(client.right-client.left);
-			fY=1.f-(float)HIWORD(lParam)/(float)(client.bottom-client.top);
+			fX=xPos/(float)(client.right-client.left);
+			fY=1.f-yPos/(float)(client.bottom-client.top);
 
 			// buttons
 			TMouseButton button=getMouseButton (wParam);

@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.14 2001/10/16 09:22:26 legros Exp $
+ * $Id: callback_server.cpp,v 1.15 2001/10/25 12:13:02 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ CCallbackServer::CCallbackServer( TRecordingState rec, const string& recfilename
 	_ConnectionCbArg(NULL)
 {
 #ifndef USE_MESSAGE_RECORDER
-	nlassertex( rec==Off, "The message recorder is disabled at compilation time ; switch the recording state Off" );
+	nlassertex( rec==Off, ("The message recorder is disabled at compilation time ; switch the recording state Off") );
 #endif
 	
 	CBufServer::setDisconnectionCallback (_NewDisconnectionCallback, this);

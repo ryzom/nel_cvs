@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.69 2003/04/16 13:52:55 lecroart Exp $
+ * $Id: debug.cpp,v 1.70 2003/04/16 13:54:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,8 @@ void nlFatalError (const char *format, ...)
 		NLMISC_BREAKPOINT;
 
 #ifndef NL_OS_WINDOWS
-	exit(EXIT_FAILURE);
+	//	exit(EXIT_FAILURE);
+	abort ();
 #endif
 
 }

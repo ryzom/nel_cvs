@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.52 2003/03/25 16:06:26 cado Exp $
+ * $Id: log.cpp,v 1.53 2003/04/16 13:52:55 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,7 +114,8 @@ void CLog::addDisplayer (IDisplayer *displayer, bool bypassFilter)
 {
 	if (displayer == NULL)
 	{
-		nlwarning ("Trying to add a NULL displayer");
+		// Can't nlwarning because recursive call
+		printf ("Trying to add a NULL displayer\n");
 		return;
 	}
 

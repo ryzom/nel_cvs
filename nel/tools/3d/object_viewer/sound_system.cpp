@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.2 2001/08/24 16:58:46 vizerie Exp $
+ * $Id: sound_system.cpp,v 1.3 2001/08/27 09:26:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 		NLSOUND::UListener *l = _AudioMixer->getListener();
 		l->setPos(m.getPos());	
 		NLMISC::CVector j = m.getJ(), k = m.getK();
-		l->setOrientation(NLMISC::CVector(j.x, -j.z, j.y), NLMISC::CVector(k.x, -k.z, k.y));
+		l->setOrientation(j, k);
 	}
 }
 

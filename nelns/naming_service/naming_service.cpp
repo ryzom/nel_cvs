@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.25 2002/08/22 12:10:23 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.26 2002/08/22 12:54:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,7 +123,7 @@ bool canAccess (const vector<CInetAddress> &addr, const CServiceEntry &entry, ve
 
 	if (accessibleAddr.empty())
 	{
-		nldebug ("service %s-%hu is not accessible by '%s'", entry.Name.c_str, (uint16)entry.SId, vectorCInetAddressToString (addr).c_str ());
+		nldebug ("service %s-%hu is not accessible by '%s'", entry.Name.c_str(), (uint16)entry.SId, vectorCInetAddressToString (addr).c_str ());
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.14 2002/01/22 15:58:18 lecroart Exp $
+ * $Id: entity_id.h,v 1.15 2002/02/19 13:14:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,12 +53,10 @@ struct CEntityId
 	/// Local agent number.
 	uint64	Id : 40;
 
-	uint64 getRawId ()
-	{
-		return (DynamicId << 56) | (CreatorId << 48) | (Type << 40) | (Id);
-	}
+	///\name Constructor
+	//@{
 
-	CEntityId()
+	CEntityId ()
 	{
 		DynamicId = ServerId;
 		CreatorId = ServerId;
@@ -66,14 +64,23 @@ struct CEntityId
 		Id = 0;
 	}		
 
-	CEntityId(uint64 id,uint8 creator,uint8 dyn)
+	CEntityId (uint8 type, uint64 id, uint8 creator, uint8 dynamic)
 	{
-		DynamicId = dyn;
+		DynamicId = dynamic;
 		CreatorId = creator;
+		Type = type;
 		Id = id;
 	}
 
-	CEntityId(uint64 p)
+	CEntityId (uint8 type, uint64 id)
+	{
+		Type = type;
+		Id = id;
+		CreatorId = ServerId;
+		DynamicId = ServerId;
+	}
+
+	explicit CEntityId (uint64 p)
 	{			
 		DynamicId = (p & 0xff);
 		p >>= 8;
@@ -84,7 +91,7 @@ struct CEntityId
 		Id = (p);			
 	}
 
-	CEntityId(const CEntityId &a)
+	CEntityId (const CEntityId &a)
 	{
 		DynamicId = a.DynamicId;
 		CreatorId = a.CreatorId;			
@@ -93,7 +100,7 @@ struct CEntityId
 	}
 
 	///fill from read stream.
-	CEntityId(NLMISC::IStream &is)
+	CEntityId (NLMISC::IStream &is)
 	{
 		uint64 p;
 		is.serial(p);
@@ -107,7 +114,7 @@ struct CEntityId
 		Id = p;
 	}
 
-	CEntityId(const char *str)
+	explicit CEntityId (const char *str)
 	{
 		char *ident = (char*)str;
 		char *id;
@@ -142,30 +149,64 @@ struct CEntityId
 		Id = atoiInt64(id, base);
 	}
 
-	///\name comparison of two CIndexVariant.
+	//@}
+
+	uint64 getRawId ()
+	{
+		return (DynamicId << 56) | (CreatorId << 48) | (Type << 40) | (Id);
+	}
+
+	// Unknow CEntityId
+	static const CEntityId Unknown;
+
+
+	///\name comparison of two CEntityId.
 	//@{
+
 	virtual bool operator == (const CEntityId &a) const
 	{
-		return (Id == a.Id && CreatorId == a.CreatorId);
+		return (Id == a.Id && CreatorId == a.CreatorId && Type == a.Type);
 	}
 
 	virtual bool operator < (const CEntityId &a) const
 	{
-		if(Id < a.Id)
+		if (Type < a.Type)
+		{
 			return true;
-		else if(Id == a.Id)
-			return (CreatorId < a.CreatorId);
-
+		}
+		else if (Type == a.Type)
+		{
+			if (Id < a.Id)
+			{
+				return true;
+			}
+			else if (Id == a.Id)
+			{
+				return (CreatorId < a.CreatorId);
+			}
+		}
+		// greater
 		return false;
 	}
 
 	virtual bool operator > (const CEntityId &a) const
 	{
-		if(Id > a.Id)
+		if (Type > a.Type)
+		{
 			return true;
-		else if(Id == a.Id)
-			return (CreatorId > a.CreatorId);
-
+		}
+		else if (Type == a.Type)
+		{
+			if (Id > a.Id)
+			{
+				return true;
+			}
+			else if (Id == a.Id)
+			{
+				return (CreatorId > a.CreatorId);
+			}
+		}
+		// lesser
 		return false;
 	}
 	//@}
@@ -225,7 +266,7 @@ struct CEntityId
 		ServerId = sid;
 	}
 
-	///saving the nomber in an output stream.
+	/// Save the Id into an output stream.
 	virtual void save(NLMISC::IStream &os)
 	{
 		uint64 p = Id;
@@ -238,7 +279,7 @@ struct CEntityId
 		os.serial(p);
 	}
 
-	///loading the nomber from an input stream.
+	/// Load the number from an input stream.
 	virtual void load(NLMISC::IStream &is)
 	{
 		uint64 p;
@@ -253,10 +294,10 @@ struct CEntityId
 		Id = (uint64)(p);
 	}
 
-	///Have a debug string.
+	/// Have a debug string.
 	virtual std::string toString() const;
 	
-	///Have a debug string.
+	/// Have a debug string.
 	virtual void getDebugString(std::string &str) const
 	{											
 		char b[256];
@@ -295,33 +336,39 @@ struct CEntityId
 			b[19 - n] = baseTable[(x & 15)];
 			x >>= 4;
 		}
-//Sameh Pour être sûre que les nombre sont en hexa.
+//Sameh To be sure that the number is in hexa.
 		str += "0x" + std::string(b);
 	}
 
 	/// \name NLMISC::IStreamable method.
 	//@{
-	virtual std::string	getClassName()
+	virtual std::string	getClassName ()
 	{
-		return std::string("<CEntityId>");
+		return std::string ("<CEntityId>");
 	}
 
-	virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+	virtual void serial (NLMISC::IStream &f) throw (NLMISC::EStream)
 	{
-		if(f.isReading())
+		if (f.isReading ())
 		{
-			load(f);
+			load (f);
 		}
 		else
 		{				
-			save(f);
+			save (f);
 		}
 
 	}
 	//@}
 
+//	friend std::stringstream &operator << (std::stringstream &__os, const CEntityId &__t);
 };	
 
+inline std::stringstream &operator << (std::stringstream &__os, const CEntityId &__t)
+{
+	__os << __t.toString ();
+	return __os;
+}
 
 } // NLMISC
 

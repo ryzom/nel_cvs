@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.40 2002/01/22 14:07:57 lecroart Exp $
+ * $Id: service.h,v 1.41 2002/02/19 13:14:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,7 +194,7 @@ public:
 	{
 		NLMISC::CEntityId id = _NextEntityId++;
 		id.Type = Type;
-		return id;
+		return id.getRawId ();
 	}
 
 	static NLMISC::CConfigFile	ConfigFile;

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.10 2002/01/22 14:07:57 lecroart Exp $
+ * $Id: service_5.h,v 1.11 2002/02/19 13:14:38 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,7 +187,7 @@ public:
 	{
 		NLMISC::CEntityId id = _NextEntityId++;
 		id.Type = Type;
-		return id;
+		return id.getRawId ();
 	}
 
 	/// Returns the recording state

@@ -19,7 +19,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	{
 		// Init ui
 		logicEditor->initUI();
-		//logicEditor->initUILight(0,0,100,100);
+		//logicEditor->initUILight(0,0,800,800);
 
 		// Go
 		logicEditor->go();

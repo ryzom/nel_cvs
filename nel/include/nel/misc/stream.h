@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.37 2001/05/09 15:04:07 vizerie Exp $
+ * $Id: stream.h,v 1.38 2001/05/09 17:07:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,11 @@
 #include	"nel/misc/class_registry.h"
 #include	<utility>
 #include	<string>
-#include	<map>
 #include	<vector>
+#include	<deque>
+#include	<list>
+#include	<set>
+#include	<map>
 
 namespace	NLMISC
 {
@@ -275,52 +278,25 @@ public:
 	//@}
 
 
-	/**
-	 * standard STL containers serialisation. Don't work with map<> and multimap<>.
+	/** \name standard STL containers serialisation.
+	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>, map<>, multimap<>
 	 * Support up to sint32 length containers.
-	 *
-	 * the object T must provide:
-	 *	\li typedef iterator;		(providing operator++() and operator*())
-	 *	\li typedef value_type;		(a base type (uint...), or an object providing "void serial(IStream&)" method.)
-	 *	\li void clear();
-	 *	\li size_type size() const;
-	 *	\li iterator begin();
-	 *	\li iterator end();
-	 *	\li iterator insert(iterator it, const value_type& x);
-	 *
-	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>.
-	 * \param cont a STL container (vector<>, set<> ...).
 	 * \see serialContPtr() serialContPolyPtr()
 	 */
 	template<class T>
-	void			serialCont(T &cont) throw(EStream)
-	{
-		typedef typename T::value_type __value_type;
-		typedef typename T::iterator __iterator;
-
-		sint32	len=0;
-		if(isReading())
-		{
-			cont.clear();
-			serial(len);
-			for(sint i=0;i<len;i++)
-			{
-				__value_type	v;
-				serial(v);
-				cont.insert(cont.end(), v);
-			}
-		}
-		else
-		{
-			len= cont.size();
-			serial(len);
-			__iterator		it= cont.begin();
-			for(sint i=0;i<len;i++, it++)
-			{
-				serial(const_cast<__value_type&>(*it));
-			}
-		}
-	}
+	void			serialCont(std::vector<T> &cont) throw(EStream)	{serialVector(cont);}
+	template<class T>
+	void			serialCont(std::list<T> &cont) throw(EStream)	{serialSTLCont(cont);}
+	template<class T>
+	void			serialCont(std::deque<T> &cont) throw(EStream)	{serialSTLCont(cont);}
+	template<class T>
+	void			serialCont(std::set<T> &cont) throw(EStream)		{serialSTLCont(cont);}
+	template<class T>
+	void			serialCont(std::multiset<T> &cont) throw(EStream)	{serialSTLCont(cont);}
+	template<class K, class T>
+	void			serialCont(std::map<K, T> &cont) throw(EStream)			{serialMap(cont);}
+	template<class K, class T>
+	void			serialCont(std::multimap<K, T> &cont) throw(EStream)	{serialMap(cont);}
 
 
 	/// Specialisation of serialCont() for vector<uint8>
@@ -331,151 +307,39 @@ public:
 	void			serialCont(std::vector<bool> &cont) throw(EStream);
 
 
-	/**
-	 * standard STL containers serialisation of Non polymorphic Ptr. Don't work with map<> and multimap<>.
+	/** \name standard STL containers serialisation. Elements must be pointers on a base type (uint...) or on a 
+	 * object providing "void serial(IStream&)" method.
+	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>
 	 * Support up to sint32 length containers.
-	 *
-	 * the object T must provide:
-	 *	\li typedef iterator;		(providing operator++() and operator*())
-	 *	\li typedef value_type;		(a ptr on a base type (uint...) or on a object providing "void serial(IStream&)" method.)
-	 *	\li void clear();
-	 *	\li size_type size() const;
-	 *	\li iterator begin();
-	 *	\li iterator end();
-	 *	\li iterator insert(iterator it, const value_type& x);
-	 *
-	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>.
-	 * \param cont a STL container (vector<>, set<> ...).
 	 * \see serialCont() serialContPolyPtr()
 	 */
 	template<class T>
-	void			serialContPtr(T &cont) throw(EStream)
-	{
-		typedef typename T::value_type __value_type;
-		typedef typename T::iterator __iterator;
-
-		sint32	len;
-		if(isReading())
-		{
-			cont.clear();
-			serial(len);
-			for(sint i=0;i<len;i++)
-			{
-				__value_type	v;
-				serialPtr(v);
-				cont.insert(cont.end(), v);
-			}
-		}
-		else
-		{
-			len= cont.size();
-			serial(len);
-			__iterator		it= cont.begin();
-			for(sint i=0;i<len;i++, it++)
-			{
-				serialPtr(const_cast<__value_type&>(*it));
-			}
-		}
-	}
+	void			serialContPtr(std::vector<T> &cont) throw(EStream)	{serialVectorPtr(cont);}
+	template<class T>
+	void			serialContPtr(std::list<T> &cont) throw(EStream)	{serialSTLContPtr(cont);}
+	template<class T>
+	void			serialContPtr(std::deque<T> &cont) throw(EStream)	{serialSTLContPtr(cont);}
+	template<class T>
+	void			serialContPtr(std::set<T> &cont) throw(EStream)			{serialSTLContPtr(cont);}
+	template<class T>
+	void			serialContPtr(std::multiset<T> &cont) throw(EStream)	{serialSTLContPtr(cont);}
 
 
-	/**
-	 * standard STL containers serialisation of Polymorphic Ptr. Don't work with map<> and multimap<>.
+	/** \name standard STL containers serialisation. Elements must be pointers on a IStreamable object.
+	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>
 	 * Support up to sint32 length containers.
-	 *
-	 * the object T must provide:
-	 *	\li typedef iterator;		(providing operator++() and operator*())
-	 *	\li typedef value_type;		(a ptr on a IStreamable object)
-	 *	\li void clear();
-	 *	\li size_type size() const;
-	 *	\li iterator begin();
-	 *	\li iterator end();
-	 *	\li iterator insert(iterator it, const value_type& x);
-	 *
-	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>.
-	 * \param cont a STL container (vector<>, set<> ...).
 	 * \see serialCont() serialContPtr()
 	 */
 	template<class T>
-	void			serialContPolyPtr(T &cont) throw(EStream)
-	{
-		typedef typename T::value_type __value_type;
-		typedef typename T::iterator __iterator;
-
-		sint32	len;
-		if(isReading())
-		{
-			cont.clear();
-			serial(len);
-			for(sint i=0;i<len;i++)
-			{
-				__value_type	v=NULL;
-				serialPolyPtr(v);
-				cont.insert(cont.end(), v);
-			}
-		}
-		else
-		{
-			len= cont.size();
-			serial(len);
-			__iterator		it= cont.begin();
-			for(sint i=0;i<len;i++, it++)
-			{
-				serialPolyPtr(const_cast<__value_type&>(*it));
-			}
-		}
-	}
-
-
-	/**
-	 * STL map<> and multimap<> serialisation.
-	 * Support up to sint32 length containers.
-	 *
-	 * the object T must provide:
-	 *	\li typedef iterator;		(providing operator++() and operator*())
-	 *	\li typedef value_type;		(must be a std::pair<>)
-	 *	\li typedef key_type;		(must be the type of the key)
-	 *	\li void clear();
-	 *	\li size_type size() const;
-	 *	\li iterator begin();
-	 *	\li iterator end();
-	 *	\li iterator insert(iterator it, const value_type& x);
-	 *
-	 * Known Supported containers: map<>, multimap<>.
-	 * \param cont a STL map<> or multimap<> container.
-	 */
+	void			serialContPolyPtr(std::vector<T> &cont) throw(EStream)	{serialVectorPolyPtr(cont);}
 	template<class T>
-	void			serialMap(T &cont) throw(EStream)
-	{
-		typedef typename T::value_type __value_type;
-		typedef typename T::key_type __key_type;
-		typedef typename T::iterator __iterator;
-
-		sint32	len;
-		if(isReading())
-		{
-			cont.clear();
-			serial(len);
-			for(sint i=0;i<len;i++)
-			{
-				__value_type	v;
-				serial( const_cast<__key_type&>(v.first) );
-				serial(v.second);
-				cont.insert(cont.end(), v);
-			}
-		}
-		else
-		{
-			len= cont.size();
-			serial(len);
-			__iterator		it= cont.begin();
-			for(sint i=0;i<len;i++, it++)
-			{
-				serial( const_cast<__key_type&>((*it).first) );
-				serial((*it).second);
-			}
-		}
-	}
+	void			serialContPolyPtr(std::list<T> &cont) throw(EStream)	{serialSTLContPolyPtr(cont);}
+	template<class T>
+	void			serialContPolyPtr(std::deque<T> &cont) throw(EStream)	{serialSTLContPolyPtr(cont);}
+	template<class T>
+	void			serialContPolyPtr(std::set<T> &cont) throw(EStream)			{serialSTLContPolyPtr(cont);}
+	template<class T>
+	void			serialContPolyPtr(std::multiset<T> &cont) throw(EStream)	{serialSTLContPolyPtr(cont);}
 
 
 	/** 
@@ -673,6 +537,320 @@ private:
 
 	// Ptr serialisation.
 	void			serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream);
+
+
+
+private:
+	/**
+	 * standard STL containers serialisation. Don't work with map<> and multimap<>.
+	 * Support up to sint32 length containers. serialize just len  element of the container.
+	 */
+	template<class T>
+	void			serialSTLContLen(T &cont, sint32 len) throw(EStream)
+	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::iterator __iterator;
+
+		if(isReading())
+		{
+			for(sint i=0;i<len;i++)
+			{
+				__value_type	v;
+				serial(v);
+				cont.insert(cont.end(), v);
+			}
+		}
+		else
+		{
+			__iterator		it= cont.begin();
+			for(sint i=0;i<len;i++, it++)
+			{
+				serial(const_cast<__value_type&>(*it));
+			}
+		}
+	}
+
+
+	/**
+	 * standard STL containers serialisation. Don't work with map<> and multimap<>.
+	 * Support up to sint32 length containers.
+	 *
+	 * the object T must provide:
+	 *	\li typedef iterator;		(providing operator++() and operator*())
+	 *	\li typedef value_type;		(a base type (uint...), or an object providing "void serial(IStream&)" method.)
+	 *	\li void clear();
+	 *	\li size_type size() const;
+	 *	\li iterator begin();
+	 *	\li iterator end();
+	 *	\li iterator insert(iterator it, const value_type& x);
+	 *
+	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>.
+	 * \param cont a STL container (vector<>, set<> ...).
+	 */
+	template<class T>
+	void			serialSTLCont(T &cont) throw(EStream)
+	{
+		sint32	len=0;
+		if(isReading())
+		{
+			serial(len);
+			cont.clear();
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+		}
+
+		serialSTLContLen(cont, len);
+	}
+
+
+	/**
+	 * special version for serializing a vector.
+	 * Support up to sint32 length containers.
+	 */
+	template<class T>
+	void			serialVector(T &cont) throw(EStream)
+	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::iterator __iterator;
+
+		sint32	len=0;
+		if(isReading())
+		{
+			serial(len);
+			// special version for vector: adjut good size.
+			contReset(cont);
+			cont.reserve(len);
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+		}
+
+		serialSTLContLen(cont, len);
+	}
+
+
+private:
+	/**
+	 * standard STL containers serialisation. Don't work with map<> and multimap<>.  Ptr version.
+	 * Support up to sint32 length containers. serialize just len  element of the container.
+	 */
+	template<class T>
+	void			serialSTLContLenPtr(T &cont, sint32 len) throw(EStream)
+	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::iterator __iterator;
+
+		if(isReading())
+		{
+			for(sint i=0;i<len;i++)
+			{
+				__value_type	v;
+				serialPtr(v);
+				cont.insert(cont.end(), v);
+			}
+		}
+		else
+		{
+			__iterator		it= cont.begin();
+			for(sint i=0;i<len;i++, it++)
+			{
+				serialPtr(const_cast<__value_type&>(*it));
+			}
+		}
+	}
+
+
+	/**
+	 * standard STL containers serialisation. Don't work with map<> and multimap<>.  Ptr version.
+	 * Support up to sint32 length containers.
+	 */
+	template<class T>
+	void			serialSTLContPtr(T &cont) throw(EStream)
+	{
+		sint32	len=0;
+		if(isReading())
+		{
+			serial(len);
+			cont.clear();
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+		}
+
+		serialSTLContLenPtr(cont, len);
+	}
+
+
+	/**
+	 * special version for serializing a vector.  Ptr version.
+	 * Support up to sint32 length containers.
+	 */
+	template<class T>
+	void			serialVectorPtr(T &cont) throw(EStream)
+	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::iterator __iterator;
+
+		sint32	len=0;
+		if(isReading())
+		{
+			serial(len);
+			// special version for vector: adjut good size.
+			contReset(cont);
+			cont.reserve(len);
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+		}
+
+		serialSTLContLenPtr(cont, len);
+	}
+
+
+private:
+	/**
+	 * standard STL containers serialisation. Don't work with map<> and multimap<>. PolyPtr version
+	 * Support up to sint32 length containers. serialize just len  element of the container.
+	 */
+	template<class T>
+	void			serialSTLContLenPolyPtr(T &cont, sint32 len) throw(EStream)
+	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::iterator __iterator;
+
+		if(isReading())
+		{
+			for(sint i=0;i<len;i++)
+			{
+				__value_type	v=NULL;
+				serialPolyPtr(v);
+				cont.insert(cont.end(), v);
+			}
+		}
+		else
+		{
+			__iterator		it= cont.begin();
+			for(sint i=0;i<len;i++, it++)
+			{
+				serialPolyPtr(const_cast<__value_type&>(*it));
+			}
+		}
+	}
+
+
+	/**
+	 * standard STL containers serialisation. Don't work with map<> and multimap<>. PolyPtr version
+	 * Support up to sint32 length containers.
+	 */
+	template<class T>
+	void			serialSTLContPolyPtr(T &cont) throw(EStream)
+	{
+		sint32	len=0;
+		if(isReading())
+		{
+			serial(len);
+			cont.clear();
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+		}
+
+		serialSTLContLenPolyPtr(cont, len);
+	}
+
+
+	/**
+	 * special version for serializing a vector. PolyPtr version
+	 * Support up to sint32 length containers.
+	 */
+	template<class T>
+	void			serialVectorPolyPtr(T &cont) throw(EStream)
+	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::iterator __iterator;
+
+		sint32	len=0;
+		if(isReading())
+		{
+			serial(len);
+			// special version for vector: adjut good size.
+			contReset(cont);
+			cont.reserve(len);
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+		}
+
+		serialSTLContLenPolyPtr(cont, len);
+	}
+
+
+
+private:
+
+	/**
+	 * STL map<> and multimap<> serialisation.
+	 * Support up to sint32 length containers.
+	 *
+	 * the object T must provide:
+	 *	\li typedef iterator;		(providing operator++() and operator*())
+	 *	\li typedef value_type;		(must be a std::pair<>)
+	 *	\li typedef key_type;		(must be the type of the key)
+	 *	\li void clear();
+	 *	\li size_type size() const;
+	 *	\li iterator begin();
+	 *	\li iterator end();
+	 *	\li iterator insert(iterator it, const value_type& x);
+	 *
+	 * Known Supported containers: map<>, multimap<>.
+	 * \param cont a STL map<> or multimap<> container.
+	 */
+	template<class T>
+	void			serialMap(T &cont) throw(EStream)
+	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::key_type __key_type;
+		typedef typename T::iterator __iterator;
+
+		sint32	len;
+		if(isReading())
+		{
+			cont.clear();
+			serial(len);
+			for(sint i=0;i<len;i++)
+			{
+				__value_type	v;
+				serial( const_cast<__key_type&>(v.first) );
+				serial(v.second);
+				cont.insert(cont.end(), v);
+			}
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+			__iterator		it= cont.begin();
+			for(sint i=0;i<len;i++, it++)
+			{
+				serial( const_cast<__key_type&>((*it).first) );
+				serial((*it).second);
+			}
+		}
+	}
+
 };
 
 

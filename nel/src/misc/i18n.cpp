@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.55 2004/10/06 06:37:42 lecroart Exp $
+ * $Id: i18n.cpp,v 1.56 2004/11/17 10:10:11 berenguier Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -46,6 +46,7 @@ const std::string		CI18N::_LanguageCodes[] =
 	std::string("en"),		// english
 	std::string("de"),		// german
 	std::string("fr"),		// french
+	std::string("wk"),		// work translation
 //	std::string("zh-TW"),	// traditional Chinese
 //	std::string("zh-CN")	// simplified Chinese
 };

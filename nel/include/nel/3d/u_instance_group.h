@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.10 2001/08/30 10:07:11 corvazier Exp $
+ * $Id: u_instance_group.h,v 1.11 2001/10/10 15:36:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,6 +138,11 @@ public:
 	 * Control a lightmap
 	 */
 	virtual void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor)=0;
+
+	/**
+	 * Control a blendshape
+	 */
+	virtual void setBlendShapeFactor (const std::string &bsName, float rFactor)=0;
 
 	/**
 	 * Create the link between scene and instance group before the addToScene

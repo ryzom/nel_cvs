@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.10 2001/09/10 15:26:51 corvazier Exp $
+ * $Id: u_scene.h,v 1.11 2001/10/10 15:36:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,13 +145,13 @@ public:
 	/// delete a landscape.
 	virtual	void			deleteLandscape(ULandscape *land)=0;
 
-	/** Create a new instance group but do not attach it to the scene.
-	  * If fails (file not found or serial error), return NULL.
+	/** Assign the Instance Group to the root cluster
+	  * 
 	  */
+	virtual	void setToGlobalInstanceGroup(UInstanceGroup *pIGU) = 0;
 	//virtual	UInstanceGroup	*createInstanceGroup(const std::string &instanceGroup) =0;
 	/// Delete an instance group from this scene.
 	//virtual	void			deleteInstanceGroup(UInstanceGroup	*group) =0;
-	virtual	void setToGlobalInstanceGroup(UInstanceGroup *pIGU) = 0;
 	//@}
 
 	/// \name Animation gestion.

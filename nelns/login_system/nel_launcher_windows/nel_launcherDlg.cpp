@@ -428,9 +428,14 @@ void CNel_launcherDlg::launch (const string &str)
 	// go in the good path before launching
 	if (!path.empty())
 		_chdir (path.c_str ());
-	
+
 	// execute, should better use CreateProcess()
-	_execvp (exe.c_str(), args);
+	if (_execvp (exe.c_str(), args) == -1)
+	{
+		// error occurs during the launch
+		string str = toString("Can't execute '%s': code=%d %s", exe.c_str(), errno, strerror(errno));
+		MessageBox (str.c_str(), "Error");
+	}
 	exit(0);
 }
 
@@ -608,3 +613,24 @@ void CNel_launcherDlg::OnDocumentCompleteExplorer1(LPDISPATCH pDisp, VARIANT FAR
 		return;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

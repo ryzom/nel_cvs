@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.9 2003/04/08 18:25:56 lecroart Exp $
+ * $Id: patch.cpp,v 1.10 2003/04/09 13:34:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,7 +263,12 @@ private:
 
 					setState (true, "Launching update_nel_launcher.bat");
 					nlinfo ("Need to execute update_nel_launcher.bat");
-					_execlp ("update_nel_launcher.bat", "update_nel_launcher.bat", NULL);
+					if (_execlp ("update_nel_launcher.bat", "update_nel_launcher.bat", NULL) == -1)
+					{
+						// error occurs during the launch
+						string str = toString("Can't execute 'update_nel_launcher.bat': code=%d %s", errno, strerror(errno));
+						throw Exception (str);
+					}
 					exit(0);
 				}
 			}
@@ -340,7 +345,12 @@ private:
 				setState (true, "Launching patch_execute.bat");
 				nlinfo ("Need to execute patch_execute.bat");
 				_chdir (ClientPatchPath.c_str());
-				_execlp ("patch_execute.bat", "patch_execute.bat", NULL);
+				if (_execlp ("patch_execute.bat", "patch_execute.bat", NULL) == -1)
+				{
+					// error occurs during the launch
+					string str = toString("Can't execute 'patch_execute.bat': code=%d %s", errno, strerror(errno));
+					throw Exception (str);
+				}
 				exit(0);
 			}
 

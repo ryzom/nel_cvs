@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.8 2002/07/12 08:37:12 corvazier Exp $
+ * $Id: script.cpp,v 1.9 2002/07/16 12:08:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 #include "PO2RPO.h"
 #include "..\nel_patch_lib\rpo.h"
+#include "..\nel_mesh_lib\export_nel.h"
+#include "..\nel_mesh_lib\export_lod.h"
 
 #include "3d/zone.h"
 #include "3d/tile_bank.h"
@@ -161,6 +163,10 @@ export_zone_cf (Value** arg_list, int count)
 
 	// ok ?
 	Boolean *ret=&false_value;
+
+	// Is the flag dont export set ?
+	if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, 0))
+		return ret;
 
 	if (os.obj)
 	{

@@ -3957,7 +3957,7 @@ DWORD WINAPI myThread (LPVOID vData)
 						opt.bShadow=false;
 						opt.bExportLighting=false;
 						
-						pShape=export.buildShape (*pNode, pData->T, NULL, opt);
+						pShape=export.buildShape (*pNode, pData->T, NULL, opt, true);
 
 						// Export successful ?
 						if (pShape)

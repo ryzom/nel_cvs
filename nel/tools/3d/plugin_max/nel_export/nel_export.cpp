@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.31 2002/06/12 09:19:17 vizerie Exp $
+ * $Id: nel_export.cpp,v 1.32 2002/07/16 12:08:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -331,6 +331,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							strcpy (sSavePath, pNode->GetName());
 
 							// Choose a file to export
+							if (!CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_DONTEXPORT, 0))
 							if (theCNelExport.SelectFileForSave(hWnd, sNodeMsg, zoneFilter, sSavePath))
 							{
 								// Export the zone

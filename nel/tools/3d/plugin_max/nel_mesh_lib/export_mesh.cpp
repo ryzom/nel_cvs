@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.44 2002/07/03 09:16:28 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.45 2002/07/16 12:08:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,7 +129,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, CM
 // ***************************************************************************
 
 // Export a mesh
-IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, CExportNelOptions &opt)
+IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, CExportNelOptions &opt, bool buildLods)
 {
 	
 	// Here, we must check what kind of node we can build with this mesh.
@@ -212,7 +212,7 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 
 				// Is a multi lod object ?
 				uint lodCount=getScriptAppData (&node, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
-				if (lodCount)
+				if (lodCount && buildLods)
 				{
 					// Listy of material names
 					std::vector<std::string> listMaterialName;

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.58 2002/07/03 13:24:08 corvazier Exp $
+ * $Id: export_nel.h,v 1.59 2002/07/16 12:08:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,6 +101,9 @@ namespace NL3D
 	class CInstanceGroup;
 	class CVegetableShape;
 	class CLodCharacterShapeBuild;
+	class CShapeBank;
+	class IDriver;
+	class CLandscape;
 };
 
 
@@ -264,7 +267,7 @@ public:
 	  * skeletonShape must be NULL if no bones.
 	  */
 	NL3D::IShape*					buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, 
-												CExportNelOptions &opt);
+												CExportNelOptions &opt, bool buildLods);
 
 	/**
 	  * Build a NeL meshBuild
@@ -303,9 +306,25 @@ public:
 
 	/**
 	  * Build a NeL instance group
-	  *
 	  */
 	NL3D::CInstanceGroup*			buildInstanceGroup(const std::vector<INode*>& vectNode, std::vector<INode*>& resultInstanceNode, TimeValue tvTime);
+
+	/**
+	  * Build a complete NeL scene with objects attached to the scene root node
+	  *
+	  * \param scene is the scene to build
+	  * \param shapeBank is the shape bank to use with the scene
+	  * \param tvTime if the time to use to build the scene
+	  * \param options is the options structure to use to build the scene
+	  * \param landscape is a pointer ona landscape created with the scene. Can be NULL if you dan't want to build landscape zones.
+	  * \param progress is the progress bar to use to display build progression. Can be NULL if no prgoress bar is needed
+	  * \param buildHidden If it is true, build hidden nodes
+	  * \param onlySelected If it is true, build only selected nodes
+	  * \param buildLods If it is true, build lod of objects
+	  */
+	void							buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, NL3D::IDriver &driver, TimeValue tvTime, const CExportNelOptions &options, 
+												NL3D::CLandscape *landscape, IProgress *progress, bool buildHidden, bool onlySelected, bool buildLods);
+
 
 	/**
 	  * Return true if it is a mesh.

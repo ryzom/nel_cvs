@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.20 2002/07/02 12:05:24 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.21 2002/07/16 12:08:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,8 +31,11 @@
 #include "../nel_export/nel_export_scene.h"
 #include "export_lod.h"
 #include "../nel_patch_lib/rpo.h"
+#include "../../ig_lighter_lib/ig_lighter_lib.h"
 
 #include "3d/scene_group.h"
+#include "3d/scene.h"
+#include "3d/shape_bank.h"
 
 #include <vector>
 
@@ -524,4 +527,340 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 	pIG->enableRealTimeSunContribution(sunLightEnabled);
 
 	return pIG;
+}
+
+// ***************************************************************************
+
+class	CMaxInstanceLighter : public NL3D::CInstanceLighter
+{
+public:
+	void	initMaxLighter(Interface& _Ip)
+	{
+	}
+	void	closeMaxLighter()
+	{
+	}
+
+	virtual void progress (const char *message, float progress)
+	{
+	}
+};
+
+// ***************************************************************************
+
+void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, IDriver &driver, TimeValue tvTime, 
+							 const CExportNelOptions &opts, NL3D::CLandscape *landscape, IProgress *progress, bool buildHidden, 
+							 bool onlySelected, bool buildLods)
+{
+	// Register classes
+	// done in dllentry registerSerial3d ();
+	CExportNelOptions options = opts;
+
+	CScene::registerBasics ();
+
+	// Get node count
+	int nNumNode=_Ip->GetRootNode ()->NumberOfChildren ();
+	int nNbMesh=0;
+
+	// *******************
+	// * Then, build Mesh shapes
+	// *******************
+
+	// Prepare ig export.
+	std::vector<INode*>						igVectNode;
+	std::map<std::string, NL3D::IShape *>	igShapeMap;
+
+	// SunDirection.
+	NLMISC::CVector							igSunDirection(0, 1, -1);
+
+	// SunColor.
+	NLMISC::CRGBA							igSunColor(255, 255, 255);
+	SLightBuild								sgLightBuild;
+
+	// Build Mesh Shapes.
+	options.FeedBack = progress;
+	nNbMesh = 0;
+
+	// View all selected objects
+	int nNode;
+	for (nNode=0; nNode<nNumNode; nNode++)
+	{
+		// Get the node
+		INode* pNode=_Ip->GetRootNode ()->GetChildNode (nNode);
+		if ( (!pNode->IsHidden () || buildHidden) && (pNode->Selected () || !onlySelected) )
+		{
+			string sTmp = "Object Name: ";
+			sTmp += pNode->GetName();
+			if (progress)
+				progress->setLine (0, sTmp);
+			sTmp = "";
+			for (uint32 i = 1; i < 10; ++i) 
+			{
+				if (progress)
+					progress->setLine (i, sTmp);
+			}
+			sTmp = "Last Error";
+			if (progress)
+			{
+				progress->setLine (10, sTmp);
+				progress->update();
+			}
+			
+			// It is a zone ?
+			if (RPO::isZone (*pNode, tvTime) && landscape)
+			{
+				// Get a Object pointer
+				ObjectState os=pNode->EvalWorldState(_Ip->GetTime()); 
+
+				// Ok ?
+				if (os.obj)
+				{
+					// Convert in 3ds NeL patch mesh
+					RPO *tri = (RPO *) os.obj->ConvertToType(_Ip->GetTime(), RYKOLPATCHOBJ_CLASS_ID);
+					if (tri)
+					{
+						CZone zone;
+						static int zoneId = 0;
+						if (tri->rpatch->exportZone (pNode, &tri->patch, zone, zoneId++))
+							landscape->addZone (zone);
+					}
+				}
+			}
+			// Try to export a mesh
+			else if (CExportNel::isMesh (*pNode, tvTime))
+			{
+				// Build skined ?
+				bool skined=false;
+				++nNbMesh;
+				
+				// Skinning ?
+				if (CExportNel::isSkin (*pNode))
+				{
+					// todo: skinning export
+				}
+				
+				// Build skined ?
+				if (!skined)
+				{
+					// Is it an accelerator ?
+					if ((CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32)&3) == 0)
+					{
+						// Export the shape
+						IShape *pShape = NULL;
+						pShape=buildShape (*pNode, tvTime, NULL, options, buildLods);
+
+						// Export successful ?
+						if (pShape)
+						{
+							// get the nelObjectName, as used in building of the instanceGroup.
+							std::string	nelObjectName= CExportNel::getNelObjectName(*pNode);
+
+							// ugly way to verify the shape is really added to the sahepBank: use a refPtr :)
+							NLMISC::CRefPtr<IShape>		prefShape= pShape;
+
+
+							std::string nelObjectNameNoExt;
+							// Add to the view, but don't create the instance (created in ig).						
+							if (!(nelObjectName.find(".shape") != std::string::npos || nelObjectName.find(".ps") != std::string::npos))
+							{
+								nelObjectNameNoExt = nelObjectName;
+								nelObjectName += ".shape";							
+							}
+							else
+							{
+								std::string::size_type pos = nelObjectName.find(".");
+								nlassert(pos != std::string::npos);
+								nelObjectNameNoExt = std::string(nelObjectName, 0, pos);
+							}
+							
+							// Add to the view, but don't create the instance (created in ig).
+							// Since IG use strlwr version of the name, must strlwr it here.
+							std::string	nelObjectNameLwr = nelObjectName;
+							strlwr(nelObjectNameLwr);
+							shapeBank.add (nelObjectNameLwr.c_str(), CSmartPtr<IShape> (pShape));
+							scene.createInstance (nelObjectNameLwr.c_str());
+
+							// If the shape is not destroyed in addMesh() (with smarPtr), then add it to the shape map.
+							if(prefShape)
+							{
+								igShapeMap.insert( std::make_pair(nelObjectNameNoExt, pShape) );
+							}
+							
+							// Add to list of node for IgExport.
+							igVectNode.push_back(pNode);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// if ExportLighting, Export all lights in scene (not only selected ones).
+	if(options.bExportLighting)
+	{
+		// List all nodes in scene.
+		vector<INode*>	nodeList;
+		getObjectNodes(nodeList, tvTime);
+		
+		// For all of them.
+		for(uint i=0;i<nodeList.size();i++)
+		{
+			INode	*pNode= nodeList[i];
+
+			if( sgLightBuild.canConvertFromMaxLight(pNode, tvTime) )
+			{
+				// Convert it.
+				sgLightBuild.convertFromMaxLight(pNode, tvTime);
+
+				// PointLight/SpotLight/AmbientLight ??
+				if(sgLightBuild.Type != SLightBuild::LightDir)
+				{
+					// Add to list of node for IgExport.
+					igVectNode.push_back(pNode);
+				}
+				// "SunLight" ??
+				else if( sgLightBuild.Type == SLightBuild::LightDir )
+				{
+					// if this light is checked to export as Sun Light
+					int		nExportSun= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, BST_UNCHECKED);
+					if(nExportSun== BST_CHECKED)
+					{
+						// Add to list of node for IgExport (enabling SunLight in the ig)
+						igVectNode.push_back(pNode);
+
+						// Replace sun Direciton.
+						igSunDirection= sgLightBuild.Direction;
+						// Replace sun Color.
+						igSunColor= sgLightBuild.Diffuse;
+					}
+				}
+			}
+		}
+	}
+
+	options.FeedBack = NULL;
+
+
+	// *******************
+	// * Export instance Group.
+	// *******************
+
+	// Info for lighting: retrieverBank and globalRetriever.
+	CIgLighterLib::CSurfaceLightingInfo		slInfo;
+	slInfo.RetrieverBank= NULL;
+	slInfo.GlobalRetriever= NULL;
+
+	// Result instance group
+	vector<INode*> resultInstanceNode;
+
+	// Build the ig (with pointLights)
+	NL3D::CInstanceGroup	*ig= buildInstanceGroup(igVectNode, resultInstanceNode, tvTime);
+	if(ig)
+	{
+		// If ExportLighting
+		if( options.bExportLighting )
+		{
+			// Light the ig.
+			NL3D::CInstanceGroup	*igOut= new NL3D::CInstanceGroup;
+			// Init the lighter.
+			CMaxInstanceLighter		maxInstanceLighter;
+			maxInstanceLighter.initMaxLighter(*_Ip);
+
+			// Setup LightDesc Ig.
+			CInstanceLighter::CLightDesc	lightDesc;
+			// Copy map to get info on shapes.
+			lightDesc.UserShapeMap= igShapeMap;
+			// Setup Shadow and overSampling.
+			lightDesc.Shadow= options.bShadow;
+			lightDesc.OverSampling= NLMISC::raiseToNextPowerOf2(options.nOverSampling);
+			clamp(lightDesc.OverSampling, 0U, 32U);
+			if(lightDesc.OverSampling==1)
+				lightDesc.OverSampling= 0;
+			// Setup LightDirection.
+			lightDesc.LightDirection= igSunDirection.normed();
+			// For interiors ig, disable Sun contrib according to ig.
+			lightDesc.DisableSunContribution= !ig->getRealTimeSunContribution();
+
+
+			// If View SurfaceLighting enabled
+			if(options.bTestSurfaceLighting)
+			{
+				// Setup a CSurfaceLightingInfo
+				slInfo.CellSurfaceLightSize= options.SurfaceLightingCellSize;
+				NLMISC::clamp(slInfo.CellSurfaceLightSize, 0.001f, 1000000.f);
+				slInfo.CellRaytraceDeltaZ= options.SurfaceLightingDeltaZ;
+				slInfo.ColIdentifierPrefix= "col_";
+				slInfo.ColIdentifierSuffix= "_";
+			}
+
+
+			// Light Ig.
+			CIgLighterLib::lightIg(maxInstanceLighter, *ig, *igOut, lightDesc, slInfo);
+
+			// Close the lighter.
+			maxInstanceLighter.closeMaxLighter();
+
+			// Swap pointer and release unlighted one.
+			swap(ig, igOut);
+			delete igOut;
+		}
+	
+		// Add all models to the scene		
+		ig->addToScene(scene, &driver);
+
+		// Unfreeze all objects from HRC.
+		ig->unfreezeHRC();
+	}
+
+	// *******************
+	// * Launch
+	// *******************
+
+	// ExportLighting?
+	if ( options.bExportLighting )
+	{
+		// Take the ambient of the scene as the ambient of the sun.
+		CRGBA	sunAmb= getAmbientColor (tvTime);
+
+		// Disable Global ambient light
+		driver.setAmbientColor (CRGBA::Black);
+		scene.setAmbientGlobal(CRGBA::Black);
+
+		// setup lighting and sun, if any light added. Else use std OpenGL front lighting
+		scene.enableLightingSystem(true);
+
+		// Setup sun.
+		scene.setSunAmbient(sunAmb);
+		scene.setSunDiffuse(igSunColor);
+		scene.setSunSpecular(igSunColor);
+		scene.setSunDirection(igSunDirection);
+	}
+	else
+	{
+		// Setup ambient light
+		driver.setAmbientColor (getAmbientColor (tvTime));
+		scene.setAmbientGlobal (getAmbientColor (tvTime));
+
+		// Build light vector
+		std::vector<CLight> vectLight;
+		getLights (vectLight, tvTime);
+
+		// Light in the scene ?
+		if (!vectLight.empty())
+		{
+			// Use old Driver Light mgt.
+			scene.enableLightingSystem(false);
+			scene.setSunAmbient(CRGBA::Black);
+			scene.setSunDiffuse(igSunColor);
+			scene.setSunSpecular(igSunColor);
+			scene.setSunDirection(igSunDirection);
+
+			// Insert each lights
+			for (uint light=0; light<vectLight.size(); light++)
+			{
+				driver.enableLight (light);
+				driver.setLight (light, vectLight[light]);
+			}
+		}
+	}
 }

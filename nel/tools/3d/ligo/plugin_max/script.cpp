@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.12 2002/07/12 08:37:12 corvazier Exp $
+ * $Id: script.cpp,v 1.13 2002/07/16 12:06:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,10 +99,10 @@ CLigoError ScriptErrors[10];
 
 // ***************************************************************************
 
-bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, 
+bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, const NL3D::CTileFarBank &tileFarBank, 
 				   sint xmin, sint xmax, sint ymin, sint ymax, const CLigoConfig &config, bool errorInDialog);
 
-bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, 
+bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, const NL3D::CTileFarBank &tileFarBank, 
 				   sint xmax, sint ymax, const CLigoConfig &config, bool errorInDialog);
 
 // ***************************************************************************
@@ -1119,6 +1119,7 @@ Value* export_zone_cf (Value** arg_list, int count)
 						{
 							// The bank
 							static CTileBank *tileBank=NULL;
+							static CTileFarBank *tileFarBank=NULL;
 
 							// Catch exception
 							try
@@ -1138,7 +1139,7 @@ Value* export_zone_cf (Value** arg_list, int count)
 									{
 										// Error message
 										char tmp[512];
-										smprintf (tmp, 512, "Can't open the bank file %s for writing.", GetBankPathName ().c_str() );
+										smprintf (tmp, 512, "Can't open the bank file %s for reading.", GetBankPathName ().c_str() );
 										CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 									}
 								}
@@ -1148,23 +1149,45 @@ Value* export_zone_cf (Value** arg_list, int count)
 									// The .TGA
 									if (weWantToMakeASnapshot)
 									{
-										CBitmap snapshot;
-										if (MakeSnapShot (zone, snapshot, *tileBank, width, height, config, errorInDialog))
+										CIFile fileFarBank;
+										char drive[512];
+										char path[512];
+										char name[512];
+										char farBankPathName[512];
+										_splitpath (GetBankPathName ().c_str (), drive, path, name, NULL);
+										_makepath (farBankPathName, drive, path, name, "farbank");
+										if (fileFarBank.open (farBankPathName))
 										{
+											// Create an xml stream
+											CTileFarBank *tileFarBankSerial = new CTileFarBank;
+											tileFarBankSerial->serial (fileFarBank);
+											tileFarBank = tileFarBankSerial;
 
-											// Output the snap shot
-											COFile outputSnapShot;
-											if (outputSnapShot.open (outputFilenameSnapShot))
+											CBitmap snapshot;
+											if (MakeSnapShot (snapshot, *tileBank, *tileFarBank, width, height, config, errorInDialog))
 											{
-												// Write the tga file
-												snapshot.writeTGA (outputSnapShot, 32);
+
+												// Output the snap shot
+												COFile outputSnapShot;
+												if (outputSnapShot.open (outputFilenameSnapShot))
+												{
+													// Write the tga file
+													snapshot.writeTGA (outputSnapShot, 32);
+												}
+											}
+											else
+											{
+												// Error message
+												char tmp[512];
+												smprintf (tmp, 512, "Can't open the tga file %s for writing.", outputFilenameSnapShot);
+												CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 											}
 										}
 										else
 										{
 											// Error message
 											char tmp[512];
-											smprintf (tmp, 512, "Can't open the tga file %s for writing.", outputFilenameSnapShot);
+											smprintf (tmp, 512, "Can't open the farbank file %s for reading.", farBankPathName );
 											CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 										}
 									}
@@ -1924,13 +1947,13 @@ Value* get_zone_size_cf (Value** arg_list, int count)
 
 // Make a snap shot of a zone
 
-bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, 
+bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, const NL3D::CTileFarBank &tileFarBank, 
 				   sint xmax, sint ymax, const CLigoConfig &config, bool errorInDialog)
 {
-	return MakeSnapShot (zone, snapshot, tileBank, 0, xmax, 0, ymax, config, errorInDialog);
+	return MakeSnapShot (snapshot, tileBank, tileFarBank, 0, xmax, 0, ymax, config, errorInDialog);
 }
 
-bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, 
+bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, const NL3D::CTileFarBank &tileFarBank, 
 				   sint xmin, sint xmax, sint ymin, sint ymax, const CLigoConfig &config, bool errorInDialog)
 {
 	// Result
@@ -1942,6 +1965,14 @@ bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTi
 		sint widthPixel = config.ZoneSnapShotRes * (xmax-xmin);
 		sint heightPixel = config.ZoneSnapShotRes * (ymax-ymin);
 
+		sint oversampledWidth = widthPixel*4;
+		sint oversampledHeight = heightPixel*4;
+
+		if (oversampledWidth > 2048)
+			oversampledWidth = 2048;
+		if (oversampledHeight > 2048)
+			oversampledHeight = 2048;
+
 		// Region
 		float width = config.CellSize * (float)(xmax-xmin);
 		float height = config.CellSize * (float)(ymax-ymin);
@@ -1949,7 +1980,7 @@ bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTi
 		float posY = config.CellSize * (float)ymin;
 
 		// Use NELU
-		CNELU::init (widthPixel, heightPixel, CViewport(), 32, true, NULL, true);
+		CNELU::init (oversampledWidth, oversampledHeight, CViewport(), 32, true, NULL, true);
 
 		// Setup the camera
 		CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
@@ -1961,8 +1992,16 @@ bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTi
 
 		// Create a Landscape.
 		CLandscapeModel	*theLand= (CLandscapeModel*)CNELU::Scene.createModel(LandscapeModelId);
-		theLand->Landscape.setTileNear (1000.f);
+
+		// Build the scene
+		CExportNelOptions options;
+		CExportNel export (errorInDialog, false, true, MAXScript_interface, "Snapshot ligozone");
+		export.buildScene (CNELU::Scene, *CNELU::ShapeBank, *CNELU::Driver, 0, options, &theLand->Landscape, NULL, false, false, false);
+
+		theLand->Landscape.setTileNear (50.f);
 		theLand->Landscape.TileBank=tileBank;
+		theLand->Landscape.TileFarBank=tileFarBank;
+		theLand->Landscape.initTileBanks ();
 
 		// Enable additive tiles
 		theLand->enableAdditive (true);
@@ -1973,9 +2012,6 @@ bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTi
 		theLand->Landscape.enableAutomaticLighting (true);
 		theLand->Landscape.setupAutomaticLightDir (CVector (0, 0, -1));
 #endif // NL_DEBUG
-
-		// Add the zone
-		theLand->Landscape.addZone (zone);
 
 		// Clear the backbuffer and the alpha
 		CNELU::clearBuffers(CRGBA(255,0,255,0));
@@ -1990,10 +2026,13 @@ bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTi
 		snapshot.flipV ();
 
 		// Release the driver
-		CNELU::Scene.getDriver()->release ();
+		CNELU::Driver->release ();
 
 		// Release NELU
 		CNELU::release();
+
+		// Resample the bitmap
+		snapshot.resample (widthPixel, heightPixel);
 
 		// Ok
 		result = true;
@@ -2090,6 +2129,7 @@ Value* make_snapshot_cf (Value** arg_list, int count)
 
 					// The bank
 					static CTileBank *tileBank=NULL;
+					static CTileFarBank *tileFarBank=NULL;
 
 					// Catch exception
 					try
@@ -2116,94 +2156,116 @@ Value* make_snapshot_cf (Value** arg_list, int count)
 						
 						if (tileBank != NULL)
 						{
-							// Build a screenshot of the zone
-							CBitmap snapshot;
-							if (MakeSnapShot (zone, snapshot, *tileBank, xMin, xMax, yMin, yMax, config, errorInDialog))
+							CIFile fileFarBank;
+							char drive[512];
+							char path[512];
+							char name[512];
+							char farBankPathName[512];
+							_splitpath (GetBankPathName ().c_str (), drive, path, name, NULL);
+							_makepath (farBankPathName, drive, path, name, "farbank");
+							if (fileFarBank.open (farBankPathName))
 							{
-								// Build the snap shot filename
-								char outputFilenameSnapShot[512];
-								_makepath (outputFilenameSnapShot, drive, path, name, ".tga");
+								// Create an xml stream
+								CTileFarBank *tileFarBankSerial = new CTileFarBank;
+								tileFarBankSerial->serial (fileFarBank);
+								tileFarBank = tileFarBankSerial;
 
-								// Output the snap shot
-								COFile outputSnapShot;
-								if (outputSnapShot.open (outputFilenameSnapShot))
+								// Build a screenshot of the zone
+								CBitmap snapshot;
+								if (MakeSnapShot (snapshot, *tileBank, *tileFarBank, xMin, xMax, yMin, yMax, config, errorInDialog))
 								{
-									// Write the tga file
-									snapshot.writeTGA (outputSnapShot, 32);
+									// Build the snap shot filename
+									char outputFilenameSnapShot[512];
+									_makepath (outputFilenameSnapShot, drive, path, name, ".tga");
 
-									// Some categories
-									vector<pair<string, string> > categories;
-
-									// Add filled zone	
-									categories.push_back (pair<string,string> ("filled", "yes"));
-
-									// Add the zone categorie
-									categories.push_back (pair<string,string> ("square", "yes"));
-
-									// Add the size category
-									categories.push_back (pair<string,string> ("size", "1x1"));
-
-									// Add the material category
-									categories.push_back (pair<string,string> ("material", "fyros"));
-
-									// Add the material category
-									categories.push_back (pair<string,string> ("zone", name));
-
-									// Create the zone bank element
-									CZoneBankElement bankElm;
-									std::vector<bool> mask;
-									mask.push_back (true);
-									bankElm.setMask (mask, 1, 1);
-
-									// Add the category
-									for (uint j=0; j<categories.size(); j++)
+									// Output the snap shot
+									COFile outputSnapShot;
+									if (outputSnapShot.open (outputFilenameSnapShot))
 									{
-										bankElm.addCategory (strlwr (categories[j].first), strlwr (categories[j].second));
-									}
+										// Write the tga file
+										snapshot.writeTGA (outputSnapShot, 32);
 
-									// Write the zone
-									COFile outputLigoZone;
-									_makepath (outputFilenameSnapShot, drive, path, name, ".ligozone");
+										// Some categories
+										vector<pair<string, string> > categories;
 
-									// Catch exception
-									try
-									{
-										// Open the selected zone file
-										if (outputLigoZone.open (outputFilenameSnapShot))
+										// Add filled zone	
+										categories.push_back (pair<string,string> ("filled", "yes"));
+
+										// Add the zone categorie
+										categories.push_back (pair<string,string> ("square", "yes"));
+
+										// Add the size category
+										categories.push_back (pair<string,string> ("size", "1x1"));
+
+										// Add the material category
+										categories.push_back (pair<string,string> ("material", "fyros"));
+
+										// Add the material category
+										categories.push_back (pair<string,string> ("zone", name));
+
+										// Create the zone bank element
+										CZoneBankElement bankElm;
+										std::vector<bool> mask;
+										mask.push_back (true);
+										bankElm.setMask (mask, 1, 1);
+
+										// Add the category
+										for (uint j=0; j<categories.size(); j++)
 										{
-											// Create an xml stream
-											COXml outputXml;
-											outputXml.init (&outputLigoZone);
-
-											// Serial the class
-											bankElm.serial (outputXml);
-
-											// Return true
-											return &true_value;
+											bankElm.addCategory (strlwr (categories[j].first), strlwr (categories[j].second));
 										}
-										else
+
+										// Write the zone
+										COFile outputLigoZone;
+										_makepath (outputFilenameSnapShot, drive, path, name, ".ligozone");
+
+										// Catch exception
+										try
+										{
+											// Open the selected zone file
+											if (outputLigoZone.open (outputFilenameSnapShot))
+											{
+												// Create an xml stream
+												COXml outputXml;
+												outputXml.init (&outputLigoZone);
+
+												// Serial the class
+												bankElm.serial (outputXml);
+
+												// Return true
+												return &true_value;
+											}
+											else
+											{
+												// Error message
+												char tmp[512];
+												smprintf (tmp, 512, "Can't open the ligozone file %s for writing.", fileName.c_str() );
+												CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+											}
+										}
+										catch (Exception &e)
 										{
 											// Error message
 											char tmp[512];
-											smprintf (tmp, 512, "Can't open the ligozone file %s for writing.", fileName.c_str() );
+											smprintf (tmp, 512, "Error while loading the file %s : %s", fileName, e.what());
 											CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 										}
 									}
-									catch (Exception &e)
+									else
 									{
 										// Error message
 										char tmp[512];
-										smprintf (tmp, 512, "Error while loading the file %s : %s", fileName, e.what());
+										smprintf (tmp, 512, "Can't open the NeL snapshot file %s for writing.", outputFilenameSnapShot);
 										CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 									}
 								}
-								else
-								{
-									// Error message
-									char tmp[512];
-									smprintf (tmp, 512, "Can't open the NeL snapshot file %s for writing.", outputFilenameSnapShot);
-									CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
-								}
+							}
+							else
+							{
+								// Error message
+								char tmp[512];
+								smprintf (tmp, 512, "Can't open the farbank file %s for reading.", farBankPathName );
+								CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 							}
 						}
 					}

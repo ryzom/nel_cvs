@@ -34,12 +34,12 @@ struct metazone (name, posMin, posMax)
 -- Trykers : X: [194 - 215] Y: [DV - EW]     Generate : X: [96 - 115] Y: [-215 - -215+22]
 
 -- Parameters, uppercase for cell position
-old_zone_directory_fyros	=	"w:/database/landscape/zones/fyros"
-ligo_directory_fyros		=	"w:/database/landscape/ligo/desert"
+old_zone_directory_fyros	=	"r:/temp/old_fyros"
+ligo_directory_fyros		=	"r:/database/landscape/ligo/desert"
 metazones_fyros				=	#(metazone "1_MZ_city" "152_EK" "155_EO")
 
-old_zone_directory_tryker	=	"w:/database/landscape/zones/tryker"
-ligo_directory_tryker		=	"w:/database/landscape/ligo/lacustre"
+old_zone_directory_tryker	=	"r:/database/landscape/zones/tryker"
+ligo_directory_tryker		=	"r:/database/landscape/ligo/lacustre"
 metazones_tryker			=	#()
 
 cell_size			=	160.0
@@ -48,6 +48,7 @@ weld_threshold		=	1.0
 -- Constants
 alphabet			=	"ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
 NEL3D_APPDATA_LIGO_USE_BOUNDINGBOX	=	1342141818
+NEL3D_APPDATA_DONTEXPORT			=	1423062565
 
 -- Convert a name in coordinate
 fn nameToCoord name coord =
@@ -141,6 +142,48 @@ fn uppercase instring =                -- beginning of function definition
 	return outstring     -- value of outstring will be returned as function result 
 )
 
+fn mergeNeighbor x y old_zone_directory trans =
+(
+	local name, node, src
+
+	-- Get the file name
+	name = coordToName #(x, y)
+
+	-- Source filename
+	src = old_zone_directory+"/"+name+".max"
+
+	-- Delete the zone if exist
+	node = getnodebyname name
+	if (node != undefined) and ((classof node) == RklPatch) then
+	(
+		delete node
+	)
+
+	-- File exist ?
+	if (fileExist (src)) then
+	(
+		-- Load the file
+		name = uppercase (name)
+		if mergeMAXFile src #(name) #mergeDups then
+		(
+			-- Get the node
+			node = getnodebyname name
+			if (node != undefined) then
+			(
+				node.transform = translate node.transform trans
+
+				-- Collapse the node
+				collapseStack node
+
+				-- Set the appdata
+				setAppData node NEL3D_APPDATA_LIGO_USE_BOUNDINGBOX "1"
+				setAppData node NEL3D_APPDATA_DONTEXPORT "1"
+				node.isFrozen = true
+			)
+		)
+	)
+)
+
 fn convertLandscape old_zone_directory ligo_directory metazones =
 (
 	-- For each meta zone
@@ -200,75 +243,107 @@ fn convertLandscape old_zone_directory ligo_directory metazones =
 		(
 			-- Reset max
 			resetMAXFile #noprompt
-
-			-- If file exist, load metazone project
-			cont = true
-			if (fileExist (metazoneFilename) == true) then
-			(
-				if loadMaxFile metazoneFilename == false then
-				(
-					outputError ("Can't load max file "+metazoneFilename)
-					cont = false
-				)
-			)
-
-			-- Remove the patch mesh from max
-			node = getnodebyname "metazone"
-			if (node != undefined) and ((classof node) == RklPatch) then
-			(
-				delete node
-			)
 			
-			-- Continue
-			if cont == true then
+			-- For each old zone file in the meta zone
+			for y = minPos[2] to maxPos[2] do
 			(
-				-- For each old zone file in the meta zone
-				for y = minPos[2] to maxPos[2] do
+				x = 0
+				for x = minPos[1] to maxPos[1] do
 				(
-					x = 0
-					for x = minPos[1] to maxPos[1] do
+					-- Get the file name
+					name = coordToName #(x, y)
+
+					-- If the old file zone exist
+					src = old_zone_directory+"/"+name+".max"
+					
+					-- Merge the new zone file in the destination file
+					if (fileExist (src) == true) then
 					(
-						-- Get the file name
 						name = coordToName #(x, y)
+						mergeMAXFile src #(name) #mergeDups
 
-						-- If the old file zone exist
-						src = old_zone_directory+"/"+name+".max"
-						
-						-- Merge the new zone file in the destination file
-						if (fileExist (src) == true) then
+						-- Translate the node
+						node = getnodebyname name
+						if (node != undefined) then
 						(
-							name = coordToName #(x, y)
-							mergeMAXFile src #(name) #mergeDups
+							node.transform = translate node.transform trans
 
-							-- Translate the node
-							node = getnodebyname name
-							if (node != undefined) then
+							-- Collapse the node
+							collapseStack node
+							SetRykolTileSteps node -5
+
+							-- Merge it
+							if (getnodebyname "metazonetemp") == undefined then
 							(
-								node.transform = translate node.transform trans
-
-								-- Collapse the node
-								collapseStack node
-								SetRykolTileSteps node -5
-
-								-- Merge it
-								if (getnodebyname "metazone") == undefined then
-								(
-									node.name = "metazone"
-								)
-								else
-								(
-									NeLAttachPatchMesh node $metazone
-								)
+								node.name = "metazonetemp"
+							)
+							else
+							(
+								NeLAttachPatchMesh node $metazonetemp
 							)
 						)
 					)
 				)
+			)
 
-				-- Set the appdata
-				setAppData $metazone NEL3D_APPDATA_LIGO_USE_BOUNDINGBOX "1"
+			-- Set the appdata
+			setAppData $metazonetemp NEL3D_APPDATA_LIGO_USE_BOUNDINGBOX "1"
 
-				-- Weld it
-				NeLWeldPatchMesh $metazone weld_threshold
+			-- Weld it
+			NeLWeldPatchMesh $metazonetemp weld_threshold
+
+			-- Merge neighbor zones
+			for x = minPos[1]-1 to maxPos[1]+1 do
+			(
+				if x >= 0 then
+				(
+					arrayY = #(minPos[2]-1, maxPos[2]+1)
+					for y in arrayY do
+					(
+						if (y >= 0) then
+						(
+							-- Load neighbor								
+							mergeNeighbor x y old_zone_directory trans
+						)
+					)
+				)
+			)
+			for y = minPos[2] to maxPos[2] do
+			(
+				arrayX = #(minPos[1]-1, maxPos[1]+1)
+				for x in arrayX do
+				(
+					if x >= 0 then
+					(
+						-- Load neighbor
+						mergeNeighbor x y old_zone_directory trans
+					)
+				)
+			)
+
+			-- If file exist, load metazone project
+			cont = true
+			
+			if (fileExist (metazoneFilename) == true) then
+			(
+				if (mergeMAXFile metazoneFilename #mergeDups) == false then
+				(
+					outputError ("Can't merge max file "+metazoneFilename)
+					cont = false
+				)
+			)
+
+			if cont == true then
+			(
+				-- Remove the patch mesh from max
+				node = getnodebyname "metazone"
+				if (node != undefined) and ((classof node) == RklPatch) then
+				(
+					delete node
+				)
+
+				-- Rename new zone
+				$metazonetemp.name = "metazone"
 
 				-- Save the meta zone
 				saveMaxFile metazoneFilename
@@ -335,6 +410,35 @@ fn convertLandscape old_zone_directory ligo_directory metazones =
 
 						-- Set the appdata
 						setAppData node NEL3D_APPDATA_LIGO_USE_BOUNDINGBOX "1"
+
+						-- Merge neighbor zones
+						for x = pos[1]-1 to pos[1]+1 do
+						(
+							if x >= 0 then
+							(
+								arrayY = #(pos[2]-1, pos[2]+1)
+								for y in arrayY do
+								(
+									if (y >= 0) then
+									(
+										-- Load neighbor								
+										mergeNeighbor x y old_zone_directory trans
+									)
+								)
+							)
+						)
+						for y = pos[2] to pos[2] do
+						(
+							arrayX = #(pos[1]-1, pos[1]+1)
+							for x in arrayX do
+							(
+								if x >= 0 then
+								(
+									-- Load neighbor
+									mergeNeighbor x y old_zone_directory trans
+								)
+							)
+						)
 
 						-- Save the meta zone
 						saveMaxFile zoneFilename

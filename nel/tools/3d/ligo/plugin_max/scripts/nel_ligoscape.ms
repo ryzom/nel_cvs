@@ -97,6 +97,23 @@ fn addProperties node propsArray =
 		append propsArray #( "passable", "no")
 )
 
+-- Select all zone
+fn selectAllPatch =
+(
+	clearselection ()
+	for i in geometry do 
+	(
+		if (classof i) == RklPatch then 
+		(
+			if (i.isFrozen == false) then 
+			(
+				selectmore i
+			)
+		)
+	)
+)
+
+
 -- Is a material
 fn isMaterial name =
 (
@@ -1219,7 +1236,7 @@ group "Projects management"
 		(
 			curFileName = ligo_root_path + ligo_material_prefix + (substring curMat 5 100) + ".max"
 			loadMaxFile curFileName
-			max select all
+			selectAllPatch ()
 			export_and_check_and_debug_material false false false
 			refresh_list ()
 		)
@@ -1241,7 +1258,7 @@ group "Projects management"
 			(
 				curFileName = ligo_root_path + ligo_material_prefix + (substring curMat 5 100) + ".max"
 				loadMaxFile curFileName
-				max select all
+				selectAllPatch ()
 				export_and_check_and_debug_material false false false
 				refresh_list ()
 			)
@@ -1500,7 +1517,7 @@ group "Projects management"
 		(
 			curFileName = ligo_root_path + ligo_transition_prefix + (substring curtrans 5 100) + ".max"
 			loadMaxFile curFileName
-			max select all
+			selectAllPatch ()
 			export_and_check_and_debug_transition_template false false false
 			refresh_list ()
 		)
@@ -1522,7 +1539,7 @@ group "Projects management"
 			(
 				curFileName = ligo_root_path + ligo_transition_prefix + (substring curtrans 5 100) + ".max"
 				loadMaxFile curFileName
-				max select all
+				selectAllPatch ()
 				export_and_check_and_debug_transition_template false false false
 				refresh_list ()
 			)
@@ -2014,7 +2031,7 @@ group "Projects management"
 				curFileName = curFileName + MaterialDDL.selected + "-" 
 			curFileName = curFileName + (substring curZone 5 100) + ".max"
 			loadMaxFile curFileName
-			max select all
+			selectAllPatch ()
 			export_and_check_and_debug_zone false false false
 			refresh_zone_list MaterialDDL.selected
 		)
@@ -2039,7 +2056,7 @@ group "Projects management"
 					curFileName = curFileName + MaterialDDL.selected + "-" 
 				curFileName = curFileName + (substring curZone 5 100) + ".max"
 				loadMaxFile curFileName
-				max select all
+				selectAllPatch ()
 				export_and_check_and_debug_zone false false false
 				refresh_zone_list MaterialDDL.selected
 			)
@@ -2451,7 +2468,7 @@ group "Projects management"
 				curFileName = curFileName + TransitionDDL.selected + "-" 
 			curFileName = curFileName + (substring curTrans 5 100) + ".max"
 			loadMaxFile curFileName
-			max select all
+			selectAllPatch ()
 			export_and_check_and_debug_transition_zone false false false
 			refresh_list TransitionDDL.selected
 		)
@@ -2476,7 +2493,7 @@ group "Projects management"
 					curFileName = curFileName + TransitionDDL.selected + "-" 
 				curFileName = curFileName + (substring curTrans 5 100) + ".max"
 				loadMaxFile curFileName
-				max select all
+				selectAllPatch ()
 				export_and_check_and_debug_transition_zone false false false
 				refresh_list TransitionDDL.selected
 			)
@@ -2926,7 +2943,7 @@ group "Projects management"
 			curFileName = ligo_root_path + ligo_zonespecial_prefix
 			curFileName = curFileName + (substring curZone 5 100) + ".max"
 			loadMaxFile curFileName
-			max select all
+			selectAllPatch ()
 			export_and_check_and_debug_special_zone false false false
 			refresh_project_list ()
 			refresh_zone_list ()
@@ -2951,7 +2968,7 @@ group "Projects management"
 				curFileName = ligo_root_path + ligo_zonespecial_prefix
 				curFileName = curFileName + (substring curZone 5 100) + ".max"
 				loadMaxFile curFileName
-				max select all
+				selectAllPatch ()
 				export_and_check_and_debug_special_zone false false false
 				refresh_project_list ()
 				refresh_zone_list ()
@@ -3255,7 +3272,7 @@ rollout exporter_rollout "Exporter"
 			if (isMaterial curFileName) == true then
 			(
 				loadMaxFile curFileName
-				max select all
+				selectAllPatch ()
 				print ("Exporting "+ (getFilenameFile curFileName))
 				export_and_check_and_debug_material false false false
 			)
@@ -3269,7 +3286,7 @@ rollout exporter_rollout "Exporter"
 			if (isTransition curFileName) == true then
 			(
 				loadMaxFile curFileName
-				max select all
+				selectAllPatch ()
 				print ("Exporting "+ (getFilenameFile curFileName))
 				export_and_check_and_debug_transition_template false false false
 			)
@@ -3284,7 +3301,7 @@ rollout exporter_rollout "Exporter"
 			if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial")  then
 			(
 				loadMaxFile curFileName
-				max select all
+				selectAllPatch ()
 				print ("Exporting "+ (getFilenameFile curFileName))
 				export_and_check_and_debug_zone false false false
 			)
@@ -3299,7 +3316,7 @@ rollout exporter_rollout "Exporter"
 			if (tokenArray.count == 4) and (tokenArray[1] == "zonetransition") then
 			(
 				loadMaxFile curFileName
-				max select all
+				selectAllPatch ()
 				print ("Exporting "+ (getFilenameFile curFileName))
 				export_and_check_and_debug_transition_zone false false false
 			)

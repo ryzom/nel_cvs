@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.75 2001/06/29 08:47:27 lecroart Exp $
+ * $Id: service.cpp,v 1.76 2001/07/09 10:12:45 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -283,7 +283,7 @@ static void cbExecCommand (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 // if we receive the stop service, we try to exit now
 static void cbStopService (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	ExitSignalAsked = true;
+	ExitSignalAsked = 0xFFFF;
 }
 
 
@@ -909,5 +909,25 @@ NLMISC_DYNVARIABLE(uint64, SendedQueueSize, "current size in bytes of the sended
 	// we can only read the value
 	if (get) *pointer = CNetManager::getSendQueueSize ();
 }
+
+NLMISC_COMMAND (quit, "exit the service", "")
+{
+	if(args.size() != 0) return false;
+
+	ExitSignalAsked = 0xFFFF;
+
+	return true;
+}
+
+NLMISC_COMMAND (brutal_quit, "exit the service brutally", "")
+{
+	if(args.size() != 0) return false;
+
+	exit (0xFFFFFFFF);
+
+	return true;
+}
+
+
 
 } //NLNET

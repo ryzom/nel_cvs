@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.109 2002/03/13 14:25:33 chafik Exp $
+ * $Id: agent_script.cpp,v 1.110 2002/04/17 09:56:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,10 @@ namespace NLAIAGENT
 	NLAISCRIPT::CParam *CAgentScript::ParamGetValueMsg = NULL;
 	NLAISCRIPT::COperandSimpleListOr *CAgentScript::ParamIdSetValueMsg = NULL;
 	NLAISCRIPT::CParam *CAgentScript::ParamSetValueMsg = NULL;
+	NLAISCRIPT::COperandSimpleListOr *CAgentScript::ParamIdTellComponentMsg = NULL;
+	NLAISCRIPT::CParam *CAgentScript::ParamTellComponentMsg = NULL;
+	NLAISCRIPT::COperandSimpleListOr *CAgentScript::ParamIdInitComponentMsg = NULL;
+	NLAISCRIPT::CParam *CAgentScript::ParamInitComponentMsg = NULL;
 
 
 	void CAgentScript::initAgentScript()
@@ -79,11 +83,12 @@ namespace NLAIAGENT
 
 		std::string msgStr;
 		std::string scriptName("MsgAgentScript");
-		msgStr = std::string("From Message : Define MsgTellCompoment\n{");
+		msgStr = std::string("From Message : Define MsgTellComponent\n{");
 		msgStr += std::string("Component:\n");		
 		msgStr += std::string("\tString<'CompomentName'>;\n");
 		msgStr += std::string("\tMessage<'MsgType'>;\n");
 		msgStr += std::string("End\n");
+
 
 		msgStr += std::string("Constructor(String i; Message msg)\n");
 		msgStr += std::string("\tCompomentName = i;\n");
@@ -91,14 +96,15 @@ namespace NLAIAGENT
 		msgStr += std::string("End\n");
 		msgStr += std::string("}\n");
 		//NLAILINK::buildScript(msgStr,scriptName);
-		
+
 		msgStr += std::string("From Message : Define MsgInitCompoment\n{");
 		msgStr += std::string("Component:\n");				
 		msgStr += std::string("End\n}\n");
 		
 		NLAILINK::buildScript(msgStr,scriptName);
 
-		NLAIC::CIdentType idMsgTellCompomentType ("MsgTellCompoment");
+		static NLAIC::CIdentType idMsgTellComponentType ("MsgTellComponent");
+		static NLAIC::CIdentType idMsgInitComponentType ("MsgInitCompoment");
 
 		msgType = new NLAISCRIPT::COperandSimpleListOr(3,	
 														new NLAIC::CIdentType(CMessageList::IdMessage),
@@ -131,8 +137,8 @@ namespace NLAIAGENT
 
 		ParamRunParentNotify = new NLAISCRIPT::CParam(1,IdMsgNotifyParent); 
 		
-		NLAISCRIPT::COperandSimple *idMsgTellCompoment = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(idMsgTellCompomentType));
-		NLAISCRIPT::CParam *ParamTellCompoment = new NLAISCRIPT::CParam(1,idMsgTellCompoment);
+		NLAISCRIPT::COperandSimple *idMsgTellComponent = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(idMsgTellComponentType));
+		NLAISCRIPT::CParam *ParamTellComponentMsg = new NLAISCRIPT::CParam(1,idMsgTellComponent);
 
 		CAgentScript::ParamIdGetValueMsg = new NLAISCRIPT::COperandSimpleListOr(2,
 																  new NLAIC::CIdentType(NLAIAGENT::CGetValueMsg::IdGetValueMsg),
@@ -146,6 +152,13 @@ namespace NLAIAGENT
 
 		CAgentScript::ParamSetValueMsg = new NLAISCRIPT::CParam(1,ParamIdSetValueMsg);
 
+///
+		CAgentScript::ParamIdInitComponentMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+																  new NLAIC::CIdentType(idMsgInitComponentType),
+																  new NLAIC::CIdentType(idMsgInitComponentType)	);
+
+		CAgentScript::ParamInitComponentMsg = new NLAISCRIPT::CParam(1,ParamIdInitComponentMsg);
+////
 
 		StaticMethod = new CAgentScript::CMethodCall *[CAgentScript::TLastM];
 
@@ -163,20 +176,20 @@ namespace NLAIAGENT
 																						1,
 																						new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass));
 		
-		idMsgTellCompoment->incRef();
-		StaticMethod[CAgentScript::TRunTellCompoment] = new CAgentScript::CMethodCall(	_RUNTEL_, 
-																						CAgentScript::TRunTellCompoment, ParamTellCompoment,
+		idMsgTellComponent->incRef();
+		StaticMethod[CAgentScript::TRunTellComponent] = new CAgentScript::CMethodCall(	_RUNTEL_, 
+																						CAgentScript::TRunTellComponent, ParamTellComponentMsg,
 																						CAgentScript::CheckAll,
 																						1,
-																						new NLAISCRIPT::CObjectUnknown(idMsgTellCompoment));
+																						new NLAISCRIPT::CObjectUnknown(idMsgTellComponent));
 
-		ParamTellCompoment->incRef();
-		idMsgTellCompoment->incRef();
-		StaticMethod[CAgentScript::TRunAskCompoment] = new CAgentScript::CMethodCall(	_RUNASK_, 
-																						CAgentScript::TRunAskCompoment, ParamTellCompoment,
+		ParamTellComponentMsg->incRef();
+		idMsgTellComponent->incRef();
+		StaticMethod[CAgentScript::TRunAskComponent] = new CAgentScript::CMethodCall(	_RUNASK_, 
+																						CAgentScript::TRunAskComponent, ParamTellComponentMsg,
 																						CAgentScript::CheckAll,
 																						1,
-																						new NLAISCRIPT::CObjectUnknown(idMsgTellCompoment));
+																						new NLAISCRIPT::CObjectUnknown(idMsgTellComponent));
 
 		StaticMethod[CAgentScript::TSend] = new CAgentScript::CMethodCall(	_SEND_, 
 																		CAgentScript::TSend, SendParamMessageScript,
@@ -259,7 +272,14 @@ namespace NLAIAGENT
 																				1,
 																				new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)) ;
 
-		StaticMethod[CAgentScript::TDeflautProccessMsg] = new CAgentScript::CMethodCall(	"DeflautProccessMsg",
+		StaticMethod[CAgentScript::TInitComponent] = new CAgentScript::CMethodCall(	_RUNTEL_, 
+																				CAgentScript::TInitComponent, ParamInitComponentMsg,
+																				CAgentScript::CheckAll,
+																				1,
+																				new NLAISCRIPT::CObjectUnknown(ParamIdInitComponentMsg)) ;
+
+
+		StaticMethod[CAgentScript::TDeflautProccessMsg] = new CAgentScript::CMethodCall("DeflautProccessMsg",
 																						CAgentScript::TDeflautProccessMsg, NULL,
 																						CAgentScript::CheckCount,
 																						1,
@@ -484,6 +504,8 @@ namespace NLAIAGENT
 
 	NLAISCRIPT::IOpCode *CAgentScript::getMethode(sint32 index)
 	{
+		if ( _AgentClass != NULL )
+		{
 #ifdef NL_DEBUG		
 		const char *dbg_class_name = (const char *) getType();
 		const char *dbg_base_class_name = (const char *) _AgentClass->getType();
@@ -494,6 +516,8 @@ namespace NLAIAGENT
 		}
 #endif
 		return (NLAISCRIPT::IOpCode *)_AgentClass->getBrancheCode(index).getCode();
+		}
+		else return NULL;
 	}
 
 	void CAgentScript::save(NLMISC::IStream &os)
@@ -688,7 +712,8 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
 	{
-		CStringType *s = (CStringType *)g->get();		
+		CStringType *s = (CStringType *)g->getFront();
+//		NLAIAGENT::IBasicAgent *removed = (NLAIAGENT::IBasicAgent *)g->get();		
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
 		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
@@ -781,7 +806,7 @@ namespace NLAIAGENT
 		return r;
 	}
 
-	IObjectIA::CProcessResult CAgentScript::runTellCompoment(IBaseGroupType *g)
+	IObjectIA::CProcessResult CAgentScript::runTellComponent(IBaseGroupType *g)
 	{	
 		NLAIAGENT::IMessageBase &mOriginal = (NLAIAGENT::IMessageBase &)*g->get();
 		CStringType *c = (CStringType *)mOriginal[(sint32)0];
@@ -834,7 +859,7 @@ namespace NLAIAGENT
 			CStringType *comp_name = (CStringType *) msg_result[ (sint32) 0 ];
 			IObjectIA *comp_val = (IObjectIA *) msg_result[ (sint32) 1 ];
 			
-			sint32 index = _AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
+			sint32 index = getStaticMemberIndex( comp_name->getStr() );
 			if ( index != -1 )
 			{
 				// Sets the component to the new value
@@ -842,7 +867,8 @@ namespace NLAIAGENT
 			}
 			else
 			{
-				// Component not foud: return error msg?
+				// Component not found: creates it
+				
 			}
 		}
 		IObjectIA::CProcessResult r;
@@ -850,6 +876,51 @@ namespace NLAIAGENT
 		r.Result = &msg_result;
 		return r;
 	}
+
+	IObjectIA::CProcessResult CAgentScript::runInitComponent(IBaseGroupType *g)
+	{
+		NLAIAGENT::IMessageBase &msg_result = (NLAIAGENT::IMessageBase &)*g->get();
+		msg_result.incRef();
+
+
+		// Cleans previous components
+		if ( _Components != NULL )
+		{
+			for ( int i = 0; i < _NbComponents; i++ )
+				_Components[i]->release();
+		}
+
+		// Creates a new component array
+		_NbComponents = (sint32) msg_result.size() / 3;
+		_Components = new IObjectIA *[ _NbComponents ];
+
+		int test = 0;
+
+		for ( int i = 0; i < msg_result.size() ; i += 3 )
+		{
+			CStringType *comp_name = (CStringType *) msg_result[ (sint32) i ];
+			CStringType *comp_type = (CStringType *) msg_result[ (sint32) (i + 1) ];
+			IObjectIA *comp_val = (IObjectIA *) msg_result[ (sint32) (i + 2) ];
+			
+			sint32 index = getStaticMemberIndex( comp_name->getStr() ); //_AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
+			if ( index != -1 )
+			{
+				// Sets the component to the new value
+				setStaticMember( index, comp_val );		
+			}
+			else
+			{
+				setStaticMember( (sint32) (i / 3) , comp_val );
+			}
+			test++;
+		}
+
+		IObjectIA::CProcessResult r;
+		msg_result.incRef();
+		r.Result = &msg_result;
+		return r;
+	}
+
 
 
 	IObjectIA::CProcessResult CAgentScript::getDynamicName(NLAIAGENT::IBaseGroupType *g)
@@ -1460,10 +1531,10 @@ namespace NLAIAGENT
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
 
-		case TRunAskCompoment:
-		case TRunTellCompoment:
+		case TRunAskComponent:
+		case TRunTellComponent:
 			{				
-				return runTellCompoment((IBaseGroupType *)o);
+				return runTellComponent((IBaseGroupType *)o);
 			}
 
 
@@ -1486,6 +1557,12 @@ namespace NLAIAGENT
 			{
 				return runTellSetValue( (IBaseGroupType *) o );
 			}
+
+		case TInitComponent:
+			{
+				return runInitComponent( (IBaseGroupType *) o );
+			}
+
 
 		default:
 			return IAgent::runMethodeMember(index,o);
@@ -1562,10 +1639,10 @@ namespace NLAIAGENT
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
 
-		case TRunAskCompoment:
-		case TRunTellCompoment:
+		case TRunAskComponent:
+		case TRunTellComponent:
 			{				
-				return runTellCompoment((IBaseGroupType *)o);
+				return runTellComponent((IBaseGroupType *)o);
 			}
 		case TSetStatic:
 			{
@@ -1587,6 +1664,11 @@ namespace NLAIAGENT
 		case TSetValue:
 			{
 				return runTellSetValue( (IBaseGroupType *) o );
+			}
+
+		case TInitComponent:
+			{
+				return runInitComponent( (IBaseGroupType *) o );
 			}
 
 		default:
@@ -1658,10 +1740,10 @@ namespace NLAIAGENT
 				return std::string("CAgentScript::runTellarentNotify(CNotifyParent)");
 			}
 
-		case TRunAskCompoment:
-		case TRunTellCompoment:
+		case TRunAskComponent:
+		case TRunTellComponent:
 			{				
-				return std::string("CAgentScript::runTellCompoment(MsgTellCompoment)");
+				return std::string("CAgentScript::runTell/AskCompoment(MsgTellCompoment)");
 			}
 		case TSetStatic:
 			{								
@@ -1677,6 +1759,12 @@ namespace NLAIAGENT
 			{				
 				return std::string("CAgentScript::runTellSetValue(MsgGetValue)");
 			}
+
+		case TInitComponent:
+			{				
+				return std::string("CAgentScript::runInitComponent(MsgGetValue)");
+			}
+
 
 		default:
 			return IAgentManager::getMethodeMemberDebugString(h,id);		
@@ -1889,7 +1977,6 @@ namespace NLAIAGENT
 		}
 
 		return tQueue();
-
 	}
 
 	sint32 CAgentScript::isClassInheritedFrom(const IVarName &name) const

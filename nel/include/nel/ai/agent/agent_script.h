@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.47 2002/03/07 11:10:08 portier Exp $
+ * $Id: agent_script.h,v 1.48 2002/04/17 09:56:04 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,8 +75,8 @@ namespace NLAIAGENT
 			TFather, ///Get the father of the agent.
 			TSelf, ///Get The self pointer.
 			TGetName, ///Get the name of the agent in the manager child list.
-			TRunTellCompoment, ///transmit Message to an compoment.
-			TRunAskCompoment, ///transmit Message to an compoment.
+			TRunTellComponent, ///transmit Message to an compoment.
+			TRunAskComponent, ///transmit Message to an compoment.
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
 			TRunTellParentNotify, ///the offest of the runTellParentNotify method.			
 			TSetStatic,	/// Method to assign a new value to a static component
@@ -84,6 +84,7 @@ namespace NLAIAGENT
 			TSetValue,	/// Processes the "Tell(SetValueMsg)" msg to connect to the value of a distant object.
 //			TGetValueReturn,	/// Processes the "Tell(GetValueMsg)" msg resulting from a "Ask(GetValueMsg)" message sent.
 			TDeflautProccessMsg,
+			TInitComponent,
 			TLastM ///The count of export method.
 		};
 
@@ -138,6 +139,11 @@ namespace NLAIAGENT
 		static NLAISCRIPT::CParam *ParamGetValueMsg;
 		static NLAISCRIPT::COperandSimpleListOr *ParamIdSetValueMsg;
 		static NLAISCRIPT::CParam *ParamSetValueMsg;
+		static NLAISCRIPT::COperandSimpleListOr *ParamIdTellComponentMsg;
+		static NLAISCRIPT::CParam *ParamTellComponentMsg;
+		static NLAISCRIPT::COperandSimpleListOr *ParamIdInitComponentMsg;
+		static NLAISCRIPT::CParam *ParamInitComponentMsg;
+
 		static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent;
 		static NLAISCRIPT::CParam *ParamRunParentNotify;
 	private:
@@ -216,12 +222,14 @@ namespace NLAIAGENT
 		/**
 		This function process the message MsgTellCompoment the result is to transmit a Message to an compoment.
 		*/
-		virtual IObjectIA::CProcessResult runTellCompoment(IBaseGroupType *);
+		virtual IObjectIA::CProcessResult runTellComponent(IBaseGroupType *);
 
 		IObjectIA::CProcessResult runAskGetValue(IBaseGroupType *);
 
 		IObjectIA::CProcessResult runTellSetValue(IBaseGroupType *);
 
+		virtual IObjectIA::CProcessResult runInitComponent(IBaseGroupType *);
+		
 		/**
 		This function process the message CNotifyParentScript for the runTell.
 		*/

@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_setvalue.cpp,v 1.1 2002/03/06 17:21:39 portier Exp $
+ * $Id: msg_setvalue.cpp,v 1.2 2002/04/17 09:56:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,9 @@ namespace NLAIAGENT
 {
 	CSetValueMsg::CSetValueMsg( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
 	{
+		CVectorGroupType *x = new CVectorGroupType(1);		
+		setMessageGroup(x);
+		setGroup(CMessageGroup::msgScriptingGroup);		
 		set(0, new DigitalType(0) );
 	}
 
@@ -119,7 +122,7 @@ namespace NLAIAGENT
 		{
 		case 0:
 			{					
-				IObjectIA *param1 = (IObjectIA *) arg->getFront();
+/*				IObjectIA *param1 = (IObjectIA *) arg->getFront();
 				arg->popFront();
 
 				IObjectIA *param2 = (IObjectIA *) arg->getFront();
@@ -136,6 +139,7 @@ namespace NLAIAGENT
 				param2->incRef();
 				set(0, param1);
 				set(1, param2);
+				*/
 			}
 			break;
 		}

@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.26 2001/08/28 12:56:09 portier Exp $
+ * $Id: actor_script.h,v 1.27 2002/04/17 09:56:04 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ namespace NLAIAGENT
 	one transition can activate more than one actor.
 	An actor has a list of conditions under which he's going to pass activation to other actors.
 	A simple state machine is a particular case in which there's always only one token for all actors.
-	If a run() is defined, the actor becomes an active agent with an activity at each cycle.
+	If a run() is defined, the activated actor becomes an active agent with an activity at each cycle.
 	**/
 	class CActorScript  : public CAgentScript
 	{

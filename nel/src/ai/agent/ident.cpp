@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.18 2002/02/26 10:01:47 chafik Exp $
+ * $Id: ident.cpp,v 1.19 2002/04/17 09:56:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,7 +146,7 @@ namespace NLAIAGENT
 		/*else
 		{
 			throw NLAIE::CExceptionIndexHandeledError();
-		}*/
+		}*/		
 		return NULL;
 	}
 

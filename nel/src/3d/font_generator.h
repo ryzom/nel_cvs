@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.5 2002/09/11 13:51:26 besson Exp $
+ * $Id: font_generator.h,v 1.6 2003/12/22 13:00:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #undef NL_DONT_USE_EXTERNAL_CODE
 
 #ifndef NL_DONT_USE_EXTERNAL_CODE
+#	include <ft2build.h>
 #	include <freetype/freetype.h>
 #else // NL_DONT_USE_EXTERNAL_CODE
 

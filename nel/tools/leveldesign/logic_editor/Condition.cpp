@@ -282,7 +282,7 @@ void cConditionNodeToCLogicConditionNode(CConditionNode& conditionNode, CLogicCo
 			CConditionNode * pConditionNode = conditionNode.m_ctSubTree.GetNext( pos );
 			CLogicConditionNode logicConditionNodeTmp;
 			cConditionNodeToCLogicConditionNode( *pConditionNode, logicConditionNodeTmp );
-			logicConditionNode.addToSubNodes( logicConditionNodeTmp );
+			logicConditionNode.addNode( logicConditionNodeTmp );
 		}
 	}
 
@@ -298,7 +298,7 @@ void cConditionNodeToCLogicConditionNode(CConditionNode& conditionNode, CLogicCo
 void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicCondition )
 {
 	// condition name
-	logicCondition.ConditionName = string( (LPCSTR)condition.m_sName );
+	logicCondition.setName( string( (LPCSTR)condition.m_sName ) );
 
 	// nodes
 	POSITION pos;
@@ -307,7 +307,7 @@ void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicC
 		CConditionNode * pConditionNode = condition.m_ctConditionTree.GetNext( pos );
 		CLogicConditionNode logicConditionNode;
 		cConditionNodeToCLogicConditionNode( *pConditionNode,logicConditionNode );
-		logicCondition.Nodes.push_back( logicConditionNode );
+		logicCondition.addNode( logicConditionNode );
 	}
 
 } // cConditionToCLogicCondition //
@@ -326,7 +326,7 @@ void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicC
 void cLogicConditionToCCondition( CLogicCondition& logicCondition, CCondition& condition )
 {
 	// condition name
-	condition.m_sName = CString( logicCondition.ConditionName.c_str() );
+	condition.m_sName = CString( logicCondition.getName().c_str() );
 
 	// condition tree
 	vector<CLogicConditionNode>::iterator itNode;

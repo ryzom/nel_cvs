@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.17 2001/01/09 14:31:59 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.18 2001/01/18 16:13:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -297,6 +297,22 @@ void CTileBank::makeAllPathRelative ()
 		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::bump).c_str());
 		_TileVector[nTile].setFileName (CTile::bump, sTmpFileName);
 	}
+}
+
+
+// ***************************************************************************
+// Moi aussi je le parie (Yoyo).
+void CTileBank::makeAllFileDDS ()
+{
+	// For all tiles
+	for (sint nTile=0; nTile<(sint)_TileVector.size(); nTile++)
+	{
+		// string
+		// TODODO.
+/*		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::diffuse).c_str());
+		_TileVector[nTile].setFileName (CTile::diffuse, sTmpFileName);*/
+	}
+
 }
 
 

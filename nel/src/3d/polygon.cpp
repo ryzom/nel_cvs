@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.2 2001/01/18 14:14:17 berenguier Exp $
+ * $Id: polygon.cpp,v 1.3 2001/01/18 16:13:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,8 @@ void			CPolygon::clip(const CPlane	 *planes, uint nPlanes)
 		return;
 
 	// The final polygon has at maximum currentVertices+number of clipping planes.
-	vector<CVector>		tab0, tab1;
+	// For performance, the vectors are static, so reallocation rarely occurs.
+	static	vector<CVector>		tab0, tab1;
 	tab0.resize(getNumVertices()+nPlanes);
 	tab1.resize(getNumVertices()+nPlanes);
 	// Init tab0 with Vertices.

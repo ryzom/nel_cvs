@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.12 2001/01/18 14:13:43 berenguier Exp $
+ * $Id: dru.h,v 1.13 2001/01/18 16:12:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include "nel/3d/driver.h"
 #include "nel/3d/viewport.h"
 #include "nel/3d/triangle_ext.h"
+#include "nel/3d/line.h"
+
 
 #ifdef NL_OS_WINDOWS
 #ifdef NL_DEBUG
@@ -112,6 +114,13 @@ public:
 	static void			drawTrianglesUnlit(const CTriangleUV	*trilist, sint ntris, CMaterial &mat, IDriver& driver);
 	/// Draw the triangles, with Vertex and 1 UV. "mat" should not be a lighted material since no normal is computed.
 	static void			drawTrianglesUnlit(const std::vector<CTriangleUV> &trilist, CMaterial &mat, IDriver& driver);
+
+	/// Draw the Lines, with Vertex only. "mat" should not be a lighted material since no normal is computed.
+	static void			drawLinesUnlit(const CLine	*linelist, sint nlines, CMaterial &mat, IDriver& driver);
+	/// Draw the Lines, with Vertex only. "mat" should not be a lighted material since no normal is computed.
+	static void			drawLinesUnlit(const std::vector<CLine> &linelist, CMaterial &mat, IDriver& driver);
+	/// Draw one line in 3D only, with a specific color.
+	static void			drawLine(const CVector &a, const CVector &b, CRGBA color, IDriver& driver);
 	// @}
 
 };

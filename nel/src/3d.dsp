@@ -578,6 +578,14 @@ SOURCE=..\include\nel\3d\event_mouse_listener.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\line.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\line.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mini_col.cpp
 # End Source File
 # Begin Source File

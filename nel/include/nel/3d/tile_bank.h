@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.13 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: tile_bank.h,v 1.14 2001/01/18 16:12:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -380,6 +380,8 @@ public:
 	void computeXRef ();
 	void getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const;
 	void makeAllPathRelative ();
+	/// This method change ".tga" of texture tilename, to ".dds". Do this only for Additive and Diffuse part (not bump).
+	void makeAllFileDDS ();
 
 	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 private:

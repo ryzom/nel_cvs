@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.25 2001/01/18 14:14:17 berenguier Exp $
+ * $Id: dru.cpp,v 1.26 2001/01/18 16:13:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -329,6 +329,55 @@ void			CDRU::drawTrianglesUnlit(const std::vector<CTriangleUV> &trilist, CMateri
 		return;
 	
 	CDRU::drawTrianglesUnlit( &(*trilist.begin()), trilist.size(), mat, driver);
+}
+
+
+// ***************************************************************************
+void			CDRU::drawLinesUnlit(const CLine	*linelist, sint nlines, CMaterial &mat, IDriver& driver)
+{
+	static CVertexBuffer vb;
+	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setNumVertices (nlines*2);
+
+	static	CPrimitiveBlock pb;
+	pb.setNumLine(nlines);
+
+	for(sint i=0;i<nlines;i++)
+	{
+		vb.setVertexCoord (i*2+0, linelist[i].V0);
+		vb.setVertexCoord (i*2+1, linelist[i].V1);
+		pb.setLine(i, i*2+0, i*2+1);
+	}
+	
+	driver.activeVertexBuffer(vb);
+	driver.render(pb, mat);
+}
+// ***************************************************************************
+void			CDRU::drawLinesUnlit(const std::vector<CLine> &linelist, CMaterial &mat, IDriver& driver)
+{
+	if(linelist.size()==0)
+		return;
+	CDRU::drawLinesUnlit( &(*linelist.begin()), linelist.size(), mat, driver);
+}
+// ***************************************************************************
+void			CDRU::drawLine(const CVector &a, const CVector &b, CRGBA color, IDriver& driver)
+{
+	static	CLine		line;
+	static	CMaterial	mat;
+	static	bool		inited= false;
+
+	// Setup material.
+	if(!inited)
+	{
+		inited= true;
+		mat.initUnlit();
+	}
+	mat.setColor(color);
+
+
+	line.V0= a;
+	line.V1= b;
+	CDRU::drawLinesUnlit(&line, 1, mat, driver);
 }
 
 

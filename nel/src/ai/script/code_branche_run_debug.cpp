@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.9 2001/01/23 17:40:09 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.10 2001/01/24 09:35:06 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ namespace NLAISCRIPT
 	CCodeBrancheRunDebug::~CCodeBrancheRunDebug()
 	{
 		delete []_LineInSourceCodeArray;
-		if (_SourceCode) _SourceCode->decRef();
+		if (_SourceCode) _SourceCode->release();
 	}
 
 	const NLAIC::IBasicType* CCodeBrancheRunDebug::clone() const 

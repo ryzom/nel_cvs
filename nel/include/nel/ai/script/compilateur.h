@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.15 2001/01/23 16:39:02 chafik Exp $
+ * $Id: compilateur.h,v 1.16 2001/01/24 09:36:36 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -306,7 +306,7 @@ namespace NLAISCRIPT
 			cleanMethodConstraint();
 			cleanTypeConstraint();			
 			//_Heap -= (sint32)_Heap;
-			_SourceFileName->decRef();
+			_SourceFileName->release();
 		}
 		
 		///This function is needed by the lex parser for initializ the read stream (see lex documment).

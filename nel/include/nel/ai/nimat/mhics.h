@@ -1,7 +1,7 @@
 /** \file mhics.h
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.h,v 1.2 2003/06/17 12:15:27 robert Exp $
+ * $Id: mhics.h,v 1.3 2003/06/19 17:14:34 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -151,6 +151,7 @@ public :
 
 	/// Chaine de debug
 	void getDebugString(std::string &t) const;
+	void printDebugString() const;
 
 	/// Load classifiers from a file. Return false if thereis a probleme
 	bool loadClassifierFromFile(std::string fileName);

@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.3 2003/06/17 12:15:48 robert Exp $
+ * $Id: mhics.cpp,v 1.4 2003/06/19 17:14:45 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -349,6 +349,38 @@ void CMHiCSbase::getDebugString(std::string &t) const
 	}
 	t+=ret;
 }
+
+
+void CMHiCSbase::printDebugString() const
+{
+	std::string ret = "";
+	nldebug("\n---------------------------");
+	std::map<TMotivation, CClassifierSystem>::const_iterator itMotivationClassifierSystems;
+	for (itMotivationClassifierSystems = _MotivationClassifierSystems.begin(); itMotivationClassifierSystems != _MotivationClassifierSystems.end(); itMotivationClassifierSystems++)
+	{
+		ret += (("\nMotivation : " + conversionMotivation.toString((*itMotivationClassifierSystems).first)).c_str());
+		(*itMotivationClassifierSystems).second.getDebugString(ret);
+		nldebug(ret.c_str());
+		ret = "";
+	}
+	std::map<TAction, CClassifierSystem>::const_iterator itVirtualActionClassifierSystems;
+	for (itVirtualActionClassifierSystems = _VirtualActionClassifierSystems.begin(); itVirtualActionClassifierSystems != _VirtualActionClassifierSystems.end(); itVirtualActionClassifierSystems++)
+	{
+		ret += (("\nVirtual Action : " + conversionAction.toString((*itVirtualActionClassifierSystems).first)).c_str());
+		(*itVirtualActionClassifierSystems).second.getDebugString(ret);
+		nldebug(ret.c_str());
+		ret = "";
+	}
+	ret += ("\nACTIONS :\n");
+	std::set<TAction>::const_iterator itActionSet;
+	for (itActionSet = _ActionSet.begin(); itActionSet != _ActionSet.end(); itActionSet++)
+	{
+		ret += ((conversionAction.toString((*itActionSet)) + "\n").c_str());
+		nldebug(ret.c_str());
+		ret = "";
+	}
+}
+
 
 /// Load classifiers from a file. Return false if thereis a probleme
 bool CMHiCSbase::loadClassifierFromFile(std::string fileName)
@@ -777,6 +809,7 @@ void CMHiCSagent::motivationCompute()
 	Je sélectionne par roulette weel la motivation que je vais gérer
 	Je met à jour l'énergie du vainqueur
 	*/
+	TAction behav;
 	double somme = 0;
 	typedef	std::map<TMotivation, CMotivateCS>::iterator TitNameAndMotivation;
 	std::map<double, TitNameAndMotivation > mapCSweel;
@@ -813,8 +846,14 @@ void CMHiCSagent::motivationCompute()
 		
 		_pMHiCSbase->selectBehavior(selectionName,_pSensorsValues, selectedClassifierNumber, currentTargetId, lastSelectionMaxPriority);
 
-		if (selectedClassifierNumber < 0) return; // ***G*** Ici on décide de rien faire si on sait pas quoi faire. En fait il faudrait créer un règle.
-		TAction behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
+		if (selectedClassifierNumber < 0) 
+		{
+			behav = Action_DoNothing;// ***G*** Ici on décide de rien faire si on sait pas quoi faire. En fait il faudrait créer un règle.
+		}
+		else
+		{
+			behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
+		}
 
 		// We check the last action selected by the current motivation to remove the motivation influence on this action.
 		if (lastClassifierNumber >= 0)
@@ -860,21 +899,24 @@ void CMHiCSagent::motivationCompute()
 		_ClassifiersAndMotivationIntensity[selectionName].LastSelectionMaxPriority = lastSelectionMaxPriority;
 		
 		// We add the current motivation energy to the selected action.
-		if (_pMHiCSbase->isAnAction(behav))
+		if (behav != Action_DoNothing)
 		{
-			_ActionsExecutionIntensity[behav].addProvider(selectionName, pCSselection->MotivationIntensity);
+			if (_pMHiCSbase->isAnAction(behav))
+			{
+				_ActionsExecutionIntensity[behav].addProvider(selectionName, pCSselection->MotivationIntensity);
+			}
+			else
+			{
+				// Else it must be a virtual action (common CS)
+				_ClassifiersAndVirtualActionIntensity[behav].MotivationIntensity.addProvider(selectionName, pCSselection->MotivationIntensity);
+				spreadMotivationReckon(behav);
+			}
+
+			// We set the Id of this action.
+			// For moment there's no test to see if it is the same target or not. In the futur it can be usefull to make this test
+			// to avoid unwilled target switch.
+			_IdByActions[behav] = currentTargetId;
 		}
-		else
-		{
-			// Else it must be a virtual action (common CS)
-			_ClassifiersAndVirtualActionIntensity[behav].MotivationIntensity.addProvider(selectionName, pCSselection->MotivationIntensity);
-			spreadMotivationReckon(behav);
-		}
-		
-		// We set the Id of this action.
-		// For moment there's no test to see if it is the same target or not. In the futur it can be usefull to make this test
-		// to avoid unwilled target switch.
-		_IdByActions[behav] = currentTargetId;
 	}
 }
 

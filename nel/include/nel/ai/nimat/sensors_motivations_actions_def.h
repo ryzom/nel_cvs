@@ -1,7 +1,7 @@
 /** \file sensors_motivations_actions_def.h
  * Sensors, motivations and actions list of enums.
  *
- * $Id: sensors_motivations_actions_def.h,v 1.3 2003/06/17 12:15:27 robert Exp $
+ * $Id: sensors_motivations_actions_def.h,v 1.4 2003/06/19 17:14:34 robert Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -44,56 +44,37 @@ enum TAction
 	// First we have all the actions that may be executed
 	Action_DoNothing = 0,	// This action must always be in 0. It's used this way in classifier.cpp
 	
-	Action_FightContact,
-	Action_HealContact,
-	Action_MoveTo,
-	Action_MoveAwayFrom,
-	Action_MagicMissile,
-	Action_HarvestSap,
-	Action_SpellSlow,
-	Action_SpellSpeed,
-	Action_DispelMagic,
-	Action_RunToOfDeath,
-	Action_RunAwayOfDeath,
-	Action_Patrol,
-	Action_TakeWater,
-	Action_UseWater,
-
+	Action_Idle,
+	Action_Target_MoveAway,
+	Action_Target_ShootTo,
+	Action_Target_Approach,
+	Action_Item_Approach,
+	Action_Waypoint_MoveTo,
+	Action_MoveToTargetFlag,
+	Action_MoveToTargetFlagStart,
+	Action_MoveToTargetFlagGoal,
+	
 	//////////////////////////////////////////////////////////////////////////
 	// Then we have all the virtual action that are high level action
 	// They must all be after Action_VIRTUAL_ACTIONS and they must start with "V_"
 	Action_VIRTUAL_ACTIONS,
-	Action_V_Fight,
-	Action_V_Protect,
-	Action_V_Flee,
-	Action_V_MoveTo,
 	
 	Action_Unknown
 };
 
 static const NLMISC::CStringConversion<TAction>::CPair stringTableAction [] =
 { 
-	{ "DoNothing",		Action_DoNothing },
+	{ "DoNothing",				Action_DoNothing },
 
-	{ "FightContact",	Action_FightContact },
-	{ "HealContact",	Action_HealContact },
-	{ "MoveTo",			Action_MoveTo },
-	{ "MoveAwayFrom",	Action_MoveAwayFrom },
-	{ "MagicMissile",	Action_MagicMissile },
-	{ "HarvestSap",		Action_HarvestSap },
-	{ "SpellSlow",		Action_SpellSlow },
-	{ "SpellSpeed",		Action_SpellSpeed },
-	{ "DispelMagic",	Action_DispelMagic },
-	{ "RunToOfDeath",	Action_RunToOfDeath },
-	{ "RunAwayOfDeath",	Action_RunAwayOfDeath },
-	{ "Patrol",			Action_Patrol },
-	{ "TakeWater",		Action_TakeWater },
-	{ "UseWater",		Action_UseWater },
-	
-	{ "V_Fight",		Action_V_Fight },
-	{ "V_Protect",		Action_V_Protect },
-	{ "V_Flee",			Action_V_Flee },
-	{ "V_MoveTo",		Action_V_MoveTo }
+	{ "Idle",					Action_Idle },
+	{ "Target_MoveAway",		Action_Target_MoveAway },
+	{ "Target_ShootTo",			Action_Target_ShootTo },
+	{ "Target_Approach",		Action_Target_Approach },
+	{ "Item_Approach",			Action_Item_Approach },
+	{ "Waypoint_MoveTo",		Action_Waypoint_MoveTo },
+	{ "MoveToTargetFlag",		Action_MoveToTargetFlag },
+	{ "MoveToTargetFlagStart",	Action_MoveToTargetFlagStart },
+	{ "MoveToTargetFlagGoal",	Action_MoveToTargetFlagGoal }
 };
 
 static NLMISC::CStringConversion<TAction> conversionAction
@@ -108,26 +89,20 @@ enum TMotivation
 {
 	Motivation_Aggro = 0,
 	Motivation_Fear,
-	Motivation_GroupProtection,
-
-	Motivation_HarvestSap,
-	Motivation_BodyGard,
-	Motivation_TerritoryProtection,
-	Motivation_Cultivate,
+	Motivation_GroupScore,
+	Motivation_IndividualScore,
 	
 	Motivation_Unknown
 };
 
 static const NLMISC::CStringConversion<TMotivation>::CPair stringTableMotivation [] =
 { 
-	{ "Aggro",				Motivation_Aggro },
-	{ "Fear",				Motivation_Fear },
-	{ "GroupProtection",	Motivation_GroupProtection },
-	{ "HarvestSap",			Motivation_HarvestSap },
-	{ "BodyGard",			Motivation_BodyGard },
-	{ "TerritoryProtection",Motivation_TerritoryProtection },
-	{ "Cultivate",			Motivation_Cultivate }
+	{ "Aggro",			Motivation_Aggro },
+	{ "Fear",			Motivation_Fear },
+	{ "GroupScore",		Motivation_GroupScore },
+	{ "IndividualScore",	Motivation_IndividualScore }
 };
+
 static NLMISC::CStringConversion<TMotivation> conversionMotivation
 (
 	stringTableMotivation,
@@ -140,32 +115,31 @@ enum TSensor
 {
 	//////////////////////////////////////////////////////////////////////////
 	// First we have the locals sensors that don't depend of a target
-	Sensor_MyLife = 0,				//(H)igh (M)edium (L)ow (D)ead
-	Sensor_MyMana,					//(H)igh (M)edium (L)ow (E)xhausted
-	Sensor_MyLastAction,			//(F)ight (H)eal (S)hoot (M)oveTo (L)eave h(A)rvestSap
-	Sensor_ThreatOnMe,				//(H)igh (M)edium (L)ow
-	
+	Sensor_BotLife = 0,			//(H)igh (M)edium (L)ow (D)ead
+	Sensor_BotHasFlag,			//(T)rue (F)alse
+	Sensor_BotHasTarget,		//(T)rue (F)alse
+	Sensor_GroupHasFlag,		//(T)rue (F)alse
+	Sensor_EnnemyGroupHasFlag,	//(T)rue (F)alse
+
 	//////////////////////////////////////////////////////////////////////////
 	// Then we have all sensors that need a target to compute
 	// They must all be after Sensors_WITHTARGET
 	Sensors_WITHTARGET, // *** This enum is used as a delimiter between sensor with no target and sensors with target ***
 
-	Sensor_TargetLife,				//(H)igh (M)edium (L)ow (D)ead
-	Sensor_TargetMana,				//(H)igh (M)edium (L)ow (E)xhausted
-	Sensor_TargetCurrentAction,		//(F)ight (H)eal (S)hoot (M)oveTo (L)eave h(A)rvestSap
-	Sensor_ThreatOnTarget,			//(H)igh (M)edium (L)ow
-	Sensor_IsA,						//(H)omin (P)lant
-	Sensor_IsFighter,				//(T)rue (F)alse
-	Sensor_IsHealer,				//(T)rue (F)alse
-	Sensor_IsMago,					//(T)rue (F)alse
-	
-	// Self <-> target relation information
+	Sensor_TARGET_SENSORS,	
+	Sensor_TargetLife,			//(H)igh (M)edium (L)ow (D)ead
+	Sensor_TargetHasFlag,		//(T)rue (F)alse
+	Sensor_TargetIsMyFriend,	//(T)rue (F)alse
+	Sensor_TargetDistance,		//(C)ontact (L)ong (F)ar
 	Sensor_TargetIsMyCurrentTarget,	//(T)rue (F)alse
-	Sensor_IAmMyTargetCurrentTarget,//(T)rue (F)alse
-	Sensor_SpeedDifference,			//I'm (F)aster (E)gal (S)lower
-	Sensor_TargetDistance,			//(C)ontact (L)ong (F)ar
-	Sensor_LevelDifference,			//I'm (S)tronger (E)gal (W)eek
-	Sensor_Relationship,			//(E)nnemy (N)eutral (F)riend
+	Sensor_ITEM_SENSORS,	
+	Sensor_ItemDistance,		//(C)ontact (L)ong (F)ar
+	Sensor_ItemType,	
+	Sensor_ItemIsBotFlag,		//(T)rue (F)alse
+	Sensor_ItemIsEnnemyFlag,	//(T)rue (F)alse
+	Sensor_WAYPOINT_SENSORS,	
+	Sensor_wpFlag,				//(T)rue (F)alse
+	Sensor_wpFlagGoal,			//(T)rue (F)alse
 	
 	Sensor_Unknown
 };
@@ -173,26 +147,28 @@ enum TSensor
 // The conversion table
 static const NLMISC::CStringConversion<TSensor>::CPair stringTableSensor [] =
 { 
-	{ "MyLife",						Sensor_MyLife },
-	{ "MyMana",						Sensor_MyMana },
-	{ "MyLastAction",				Sensor_MyLastAction },
-	{ "ThreatOnMe",					Sensor_ThreatOnMe },
-	
-	{ "TargetLife",					Sensor_TargetLife },
-	{ "TargetMana",					Sensor_TargetMana },
-	{ "TargetCurrentAction",		Sensor_TargetCurrentAction },
-	{ "ThreatOnTarget",				Sensor_ThreatOnTarget },
-	{ "IsA",						Sensor_IsA },
-	{ "IsFighter",					Sensor_IsFighter },
-	{ "IsHealer",					Sensor_IsHealer },
-	{ "IsMago",						Sensor_IsMago },
-	
-	{ "TargetIsMyCurrentTarget",	Sensor_TargetIsMyCurrentTarget },
-	{ "IAmMyTargetCurrentTarget",	Sensor_IAmMyTargetCurrentTarget },
-	{ "SpeedDifference",			Sensor_SpeedDifference },
-	{ "TargetDistance",				Sensor_TargetDistance },
-	{ "LevelDifference",			Sensor_LevelDifference },
-	{ "Relationship",				Sensor_Relationship }
+	{"BotLife",					Sensor_BotLife },
+	{"BotHasFlag",				Sensor_BotHasFlag },
+	{"BotHasTarget",			Sensor_BotHasTarget },
+	{"GroupHasFlag",			Sensor_GroupHasFlag },
+	{"EnnemyGroupHasFlag",		Sensor_EnnemyGroupHasFlag },
+
+	{"TARGET_SENSORS",			Sensor_TARGET_SENSORS },
+	{"TargetLife",				Sensor_TargetLife },
+	{"TargetHasFlag",			Sensor_TargetHasFlag },
+	{"TargetIsMyFriend",		Sensor_TargetIsMyFriend },
+	{"TargetDistance",			Sensor_TargetDistance },
+	{"TargetIsMyCurrentTarget",	Sensor_TargetIsMyCurrentTarget },
+
+	{"ITEM_SENSORS",			Sensor_ITEM_SENSORS },
+	{"ItemDistance",			Sensor_ItemDistance },
+	{"ItemType",				Sensor_ItemType },
+	{"ItemIsBotFlag",			Sensor_ItemIsBotFlag },
+	{"ItemIsEnnemyFlag",		Sensor_ItemIsEnnemyFlag },
+
+	{"WAYPOINT_SENSORS",		Sensor_WAYPOINT_SENSORS },
+	{"wpFlag",					Sensor_wpFlag },
+	{"wpFlagGoal",				Sensor_wpFlagGoal },
 };
 static NLMISC::CStringConversion<TSensor> conversionSensor
 (

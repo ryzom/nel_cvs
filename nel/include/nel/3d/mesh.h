@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.9 2001/03/02 18:22:35 corvazier Exp $
+ * $Id: mesh.h,v 1.10 2001/03/27 09:54:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/material.h"
 #include "nel/3d/primitive_block.h"
+#include "nel/3d/animated_material.h"
 #include <set>
 
 
@@ -120,25 +121,43 @@ public:
 	/// Constructor
 	CMesh();
 
-	/// Build a mesh, replacing old.
+	/// Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
 	void			build(const CMeshBuild &mbuild);
+
+
+	/// \name animated material mgt. do it after build().
+	// @{
+	/// setup a material as animated. Material must exist or else no-op.
+	void			setAnimatedMaterial(uint id, const std::string &matName);
+	/// return NULL if this material is NOT animated. (or if material do not exist)
+	CMaterialBase	*getAnimatedMaterial(uint id);
+	// @}
+
+
+	/// \name From IShape
+	// @{
+
+	/// Create a CMeshInstance, which contains materials.
+	virtual	CTransformShape		*createInstance(CScene &scene);
 
 	/// clip this mesh in a driver.
 	virtual bool	clip(const std::vector<CPlane>	&pyramid);
 
 	/// render() this mesh in a driver.
-	virtual void	render(IDriver *drv);
+	virtual void	render(IDriver *drv, CTransformShape *trans);
+
+	/// serial this mesh.
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	NLMISC_DECLARE_CLASS(CMesh);
+
+	// @}
+
 
 	/// get the extended axis aligned bounding box of the mesh
 	const NLMISC::CAABBoxExt& getBoundingBox() const
 	{
 		return _BBox;
 	}
-
-	
-	/// serial this mesh.
-	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
-	NLMISC_DECLARE_CLASS(CMesh);
 
 
 // ************************
@@ -166,6 +185,11 @@ private:
 	std::vector<CRdrPass>	_RdrPass;
 	/// For clipping.
 	NLMISC::CAABBoxExt				_BBox;
+
+
+	/// Animated Material mgt.
+	typedef std::map<uint32, CMaterialBase>	TAnimatedMaterialMap;
+	TAnimatedMaterialMap			_AnimatedMaterials;
 
 
 private:

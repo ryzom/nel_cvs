@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.6 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: mesh.cpp,v 1.7 2001/03/27 09:54:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "nel/3d/mesh.h"
+#include "nel/3d/mesh_instance.h"
+#include "nel/3d/scene.h"
 
 
 namespace NL3D 
@@ -121,6 +123,9 @@ CMesh::CMesh()
 // ***************************************************************************
 void	CMesh::build(const CMeshBuild &m)
 {
+	// clear the animated materials.
+	_AnimatedMaterials.clear();
+
 	// Empty?
 	if(m.Vertices.size()==0 || m.Faces.size()==0)
 	{
@@ -186,6 +191,44 @@ void	CMesh::build(const CMeshBuild &m)
 }
 
 
+
+// ***************************************************************************
+CTransformShape		*CMesh::createInstance(CScene &scene)
+{
+	// Create a CMeshInstance, an instance of a mesh.
+	//===============================================
+	CMeshInstance		*mi= (CMeshInstance*)scene.createModel(NL3D::MeshInstanceId);
+	mi->Shape= this;
+
+	// setup materials.
+	//=================
+	mi->Materials.resize(_RdrPass.size());
+	for(sint i=0;i<(sint)_RdrPass.size();i++)
+	{
+		mi->Materials[i]= _RdrPass[i].Material;
+	}
+
+	// setup animated materials.
+	//==========================
+	TAnimatedMaterialMap::iterator	it;
+	mi->_AnimatedMaterials.reserve(_AnimatedMaterials.size());
+	for(it= _AnimatedMaterials.begin(); it!= _AnimatedMaterials.end(); it++)
+	{
+		CAnimatedMaterial	aniMat(&it->second);
+
+		// set the target instance material.
+		nlassert(it->first<_mi->Materials.size());
+		aniMat.setMaterial(&mi->Materials[it->first]);
+
+		// Append this animated material.
+		mi->_AnimatedMaterials.push_back(aniMat);
+	}
+	
+
+	return mi;
+}
+
+
 // ***************************************************************************
 bool	CMesh::clip(const std::vector<CPlane>	&pyramid)
 {
@@ -200,7 +243,7 @@ bool	CMesh::clip(const std::vector<CPlane>	&pyramid)
 }
 
 // ***************************************************************************
-void	CMesh::render(IDriver *drv)
+void	CMesh::render(IDriver *drv, CTransformShape *trans)
 {
 	if(_RdrPass.size()==0)
 		return;
@@ -208,10 +251,15 @@ void	CMesh::render(IDriver *drv)
 	nlassert(drv);
 	drv->activeVertexBuffer(_VBuffer);
 
+	// get the mesh instance.
+	nlassert(dynamic_cast<CMeshInstance*>(trans));
+	CMeshInstance	*mi= (CMeshInstance*)trans;
+
 	// Render all pass.
 	for(sint i=0;i<(sint)_RdrPass.size();i++)
 	{
-		drv->render(_RdrPass[i].PBlock, _RdrPass[i].Material);
+		// Render with the Mateirals of the MeshInstance.
+		drv->render(_RdrPass[i].PBlock, mi->Materials[i]);
 	}
 }
 
@@ -219,12 +267,55 @@ void	CMesh::render(IDriver *drv)
 // ***************************************************************************
 void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	// Serial the mesh
-	sint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- Animated Materials.
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(1);
 
 	f.serial(_VBuffer);
 	f.serialCont(_RdrPass);
 	f.serial(_BBox);
+
+	// _AnimatedMaterials
+	if(ver>=1)
+		f.serialMap(_AnimatedMaterials);
+	else
+	{
+		if(f.isReading())
+			_AnimatedMaterials.clear();
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Animated material.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CMesh::setAnimatedMaterial(uint id, const std::string &matName)
+{
+	if(id<_RdrPass.size())
+	{
+		// add / replace animated material.
+		_AnimatedMaterials[id].Name= matName;
+	}
+}
+
+// ***************************************************************************
+CMaterialBase	*CMesh::getAnimatedMaterial(uint id)
+{
+	TAnimatedMaterialMap::iterator	it;
+	it= _AnimatedMaterials.find(id);
+	if(it!=_AnimatedMaterials.end())
+		return &it->second;
+	else
+		return NULL;
 }
 
 

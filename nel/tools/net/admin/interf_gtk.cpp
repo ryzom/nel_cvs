@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.9 2001/10/05 15:06:45 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.10 2001/11/13 15:13:38 lecroart Exp $
  *
  *
  */
@@ -1426,7 +1426,7 @@ void runInterf ()
 
 	gtk_timeout_add (500, updateInterf, NULL);
 //	gdk_threads_enter ();
-	gtk_main ();
+	gtk_main ();	
 //	gdk_threads_leave ();
 	
 //	DebugLog->removeDisplayer (GtkDisplayer);

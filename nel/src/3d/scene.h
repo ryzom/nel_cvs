@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.27 2002/05/22 16:30:28 berenguier Exp $
+ * $Id: scene.h,v 1.28 2002/07/03 09:10:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -247,7 +247,7 @@ public:
 	TGlobalAnimationTime getCurrentTime(void) const { return _CurrentTime ; }
 
 	/// get the ellapsed time (in second) between the last 2 calls of animate.
-	TAnimationTime getEllapsedTime(void) const { return _EllapsedTime ; }
+	TAnimationTime		getEllapsedTime(void) const { return _EllapsedTime ; }
 
 	/** System time is a time that always run (independent from the animation time that run only on animate()) 
 	 *	It is updated at beginning of render()
@@ -256,6 +256,9 @@ public:
 
 	/// get the ellapsed time (in second) between the last 2 calls of render().
 	double				getEllapsedSystemTime() const { return _DeltaSystemTimeBetweenRender;}
+
+	/// get the number of time render has been called
+	uint64				getNumRender() const { return _NumRender; }
 
 
 	/// \name LoadBalancing mgt.
@@ -464,6 +467,7 @@ private:
 	// System time is a time that always run (independent from the animation time that run only on animate()) 
 	double	_DeltaSystemTimeBetweenRender;
 	double	_GlobalSystemTime;
+	uint64  _NumRender; // the number of time render has been called
 
 
 	/// \name The 5 default traversals, created / linked by CScene::initDefaultTraversals().

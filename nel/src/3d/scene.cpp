@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.80 2002/07/02 12:16:14 berenguier Exp $
+ * $Id: scene.cpp,v 1.81 2002/07/03 09:10:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,7 @@
 #include "3d/point_light_model.h"
 #include "3d/animation.h"
 #include "3d/lod_character_manager.h"
+#include "3d/seg_remanence.h"
 
 #include <memory>
 
@@ -108,6 +109,7 @@ void	CScene::registerBasics()
 	CVegetableBlendLayerModel::registerBasic();
 	CRootModel::registerBasic();
 	CPointLightModel::registerBasic();
+	CSegRemanence::registerBasic();
 }
 
 	
@@ -149,6 +151,8 @@ CScene::CScene()
 
 	// Create here the Lod Manager.
 	_LodCharacterManager= new CLodCharacterManager;
+
+	_NumRender = 0;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -369,8 +373,9 @@ void	CScene::render(bool	doHrcPass)
 	double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
 	_DeltaSystemTimeBetweenRender= fNewGlobalSystemTime - _GlobalSystemTime;
 	_GlobalSystemTime = fNewGlobalSystemTime;
-
-
+	//
+	++ _NumRender;
+	//
 	nlassert(CurrentCamera);
 
 	// validate models.

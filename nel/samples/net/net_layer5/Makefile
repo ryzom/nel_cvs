@@ -11,26 +11,24 @@ MAKE         = make
 
 # The flags for the C++ compiler
 CXXFLAGS     = -g -pipe -D_REENTRANT -D_GNU_SOURCE \
-				-I$(HOME)/cvs/code/nel/include \
-				-I$(HOME)/installs/STLport-4.0/stlport \
-				-I/usr/local/include \
-				-I/usr/local/include/freetype2
+				-I$(HOME)/install/release/include \
+				-I/home/installs/STLport-4.5.1/stlport \
+				-I/usr/local/include
 
 # The flags for the linker
-LDFLAGS      = -L$(HOME)/build/debug/nel/lib \
-				-L/home/installs/STLport-4.0/lib \
+LDFLAGS      = -L$(HOME)/install/release/lib \
+				-L/home/installs/STLport-4.5.1/lib \
 				-L/usr/local/lib \
 				-lnelmisc \
 				-lnelnet \
 				-lstlport_gcc \
-				-lpthread \
-				-lfreetype
+				-lpthread
 
 #############################################################################
 # The bit that changes each time we cut paste and hack this file :o)
 
 # The list of targets to build
-TARGETS		= frontend_service client ping_service
+TARGETS		= frontend_service gpm_service
 
 # The default build rule
 all:			$(TARGETS)
@@ -39,6 +37,9 @@ frontend_service: frontend_service.o
 	$(CXX) -o $@ $< $(LDFLAGS)
 
 ping_service: ping_service.o
+	$(CXX) -o $@ $< $(LDFLAGS)
+
+gpm_service: gpm_service.o
 	$(CXX) -o $@ $< $(LDFLAGS)
 
 client: client.o

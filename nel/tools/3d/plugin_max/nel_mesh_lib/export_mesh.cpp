@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.29 2001/12/11 10:19:55 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.30 2001/12/12 11:07:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -439,10 +439,13 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 					meshBase=multiMesh;
 
 					// ** force material to be animatable
-					/// todo hulud: check if material are animated before
-					for (uint i=0; i<listMaterialName.size(); i++)
+					if (CExportNel::getScriptAppData (&node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, 0) != 0)
 					{
-						meshBase->setAnimatedMaterial (i, listMaterialName[i]);
+						/// todo hulud: check if material are animated before
+						for (uint i=0; i<listMaterialName.size(); i++)
+						{
+							meshBase->setAnimatedMaterial (i, listMaterialName[i]);
+						}
 					}
 				}
 				else
@@ -497,12 +500,14 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 						meshBase=mesh;
 					}
 
-					// ** force material to be animatable
-					/// todo hulud: check if material are animated before
-					for (uint i=0; i<maxBaseBuild.NumMaterials; i++)
-					{
-						meshBase->setAnimatedMaterial (i, maxBaseBuild.MaterialInfo[i].MaterialName);
-					}				
+					if (CExportNel::getScriptAppData (&node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, 0) != 0)
+					{					
+						/// todo hulud: check if material are animated before
+						for (uint i=0; i<maxBaseBuild.NumMaterials; i++)
+						{
+							meshBase->setAnimatedMaterial (i, maxBaseBuild.MaterialInfo[i].MaterialName);													
+						}
+					}
 				}
 
 				// Return the mesh base
@@ -867,11 +872,18 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 					if( ! pMesh->mapSupport(nMaxChan) )
 					{
 						nMaxChan = maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._IndexInMaxMaterialAlternative;
+					}										
+
+					Matrix3 uvMatrix;
+					if (maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].TextureMatrixEnabled)
+					{
+						uvMatrix.IdentityMatrix();
 					}
-
-					// UVs matrix
-					const Matrix3 &uvMatrix=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._UVMatrix;
-
+					else
+					{
+						uvMatrix = maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._UVMatrix;
+					}					 
+					
 					// Crop values
 					float fCropU=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropU;
 					float fCropV=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropV;
@@ -1490,10 +1502,10 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 
 
 
-	const float proj[] = { 1, 0, 0, 0,
-						   0, 1, 0, 0,
-						   0, 0, 0, 0,
-						   0, 0, 0, 0 };
+	static const float proj[] = { 1, 0, 0, 0,
+								  0, 1, 0, 0,
+								  0, 0, 0, 0,
+								  0, 0, 0, 0 };
 	CMatrix projMat;
 	projMat.set(proj);
 	CPolygon2D projDest(dest, projMat); // project the poly

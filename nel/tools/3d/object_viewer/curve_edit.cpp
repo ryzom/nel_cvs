@@ -1,7 +1,7 @@
 /** \file curve_edit.cpp
  * A dialog for editing a curve
  *
- * $Id: curve_edit.cpp,v 1.5 2003/07/02 17:26:31 distrib Exp $
+ * $Id: curve_edit.cpp,v 1.6 2003/07/30 16:42:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "editable_range.h"
 #include <3d/ps_float.h>
 #include <nel/misc/common.h>
+#include <nel/misc/fast_floor.h>
 
 static const uint CtrlPointSize = 3;
 
@@ -410,9 +411,9 @@ float CurveEdit::getSampledValue(float date) const
 {
 	nlassert(Curve);
 	nlassert(date >=0 && date < 1);
-	NL3D::OptFastFloorBegin();
+	NLMISC::OptFastFloorBegin();
 	return (*Curve)(date);
-	NL3D::OptFastFloorEnd();
+	NLMISC::OptFastFloorEnd();
 }
 
 void CurveEdit::OnSmoothingOn() 

@@ -530,6 +530,10 @@ SOURCE=..\include\nel\misc\sstring.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\string_common.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\string_conversion.h
 # End Source File
 # Begin Source File

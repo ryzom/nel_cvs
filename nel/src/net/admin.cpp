@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.9 2003/08/26 14:52:22 lecroart Exp $
+ * $Id: admin.cpp,v 1.10 2003/08/26 16:47:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -538,8 +538,8 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 								vala->push_back (entity);
 							}
 
-								vara->push_back (cmd.substr(0, cmd.find(" ")));
-								vala->push_back (value);
+							vara->push_back (cmd.substr(0, cmd.find(" ")));
+							vala->push_back (value);
 						}
 						else
 						{

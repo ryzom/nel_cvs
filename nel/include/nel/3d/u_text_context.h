@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.14 2003/03/11 15:35:15 boucher Exp $
+ * $Id: u_text_context.h,v 1.15 2003/07/08 16:18:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,10 +246,12 @@ public:
 	/**
 	 * print a string of the list (2D method). x/y E [0,1]
 	 * (rq : it leaves the string in the stack)
-	 */
+	 * z : if the hotspot is bottom z is the position of the line of the string, not the bottom of the string bounding box !
+	*/
 	virtual	void			printAt (float x, float y, uint32 i) = 0;
 	/** Same as printAt but special version for interface: clip and insert in a temp buffer.
-	 */
+	  * z : if the hotspot is bottom z is the position of the line of the string, not the bottom of the string bounding box !
+	*/
 	virtual	void			printClipAt (URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
 	// TEMP
 	virtual	void			printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;

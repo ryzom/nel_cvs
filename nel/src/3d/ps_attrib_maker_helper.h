@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.9 2001/12/06 16:49:55 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.10 2001/12/13 13:33:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1029,14 +1029,14 @@ void *CPSAttribMakerT<T, F>::make(CPSLocated *loc, uint32 startIndex, void *tab,
 		break;		
 		case CPSInputType::attrSpeed:	
 		{
-			CVectNormIterator it = (loc->getSpeed().begin() ) + startIndex;
+			CVectNormIterator it( (loc->getSpeed().begin() ) + startIndex);
 			makeByIterator(it, tab, stride, numAttrib, true);
 		}
 		break;
 
 		case CPSInputType::attrPosition:	
 		{
-			CVectNormIterator it = (loc->getPos().begin() ) + startIndex;
+			CVectNormIterator it( (loc->getPos().begin() ) + startIndex);
 			makeByIterator(it, tab, stride, numAttrib, true);
 		}
 		break;
@@ -1112,14 +1112,14 @@ void CPSAttribMakerT<T, F>::make4(CPSLocated *loc, uint32 startIndex, void *tab,
 		break;		
 		case CPSInputType::attrSpeed:	
 		{
-			CVectNormIterator it = (loc->getSpeed().begin() ) + startIndex;
+			CVectNormIterator it( (loc->getSpeed().begin() ) + startIndex);
 			make4ByIterator(it, tab, stride, numAttrib, true);
 		}
 		break;
 
 		case CPSInputType::attrPosition:	
 		{
-			CVectNormIterator it = (loc->getPos().begin() ) + startIndex;
+			CVectNormIterator it( (loc->getPos().begin() ) + startIndex);
 			make4ByIterator(it, tab, stride, numAttrib, true);
 		}
 		break;
@@ -1201,14 +1201,14 @@ void CPSAttribMakerT<T, F>::makeN(CPSLocated *loc, uint32 startIndex, void *tab
 			break;				
 			case CPSInputType::attrSpeed:	
 			{
-				CVectNormIterator it = (loc->getSpeed().begin() ) + startIndex;
+				CVectNormIterator it( (loc->getSpeed().begin() ) + startIndex);
 				makeNByIterator(it, tab, stride, numAttrib, nbReplicate,  true);
 			}
 			break;
 
 			case CPSInputType::attrPosition:	
 			{
-				CVectNormIterator it = (loc->getPos().begin() ) + startIndex;
+				CVectNormIterator it( (loc->getPos().begin() ) + startIndex);
 				makeNByIterator(it, tab, stride, numAttrib, nbReplicate, true);
 			}
 			break;

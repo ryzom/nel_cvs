@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.44 2003/02/05 10:36:58 corvazier Exp $
+ * $Id: particle_system_model.cpp,v 1.45 2003/03/03 12:56:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,6 @@
 #include "3d/clip_trav.h"
 #include "3d/render_trav.h"
 #include "3d/skeleton_model.h"
-
 
 
 #include "cluster.h" // ask trap
@@ -193,7 +192,6 @@ void CParticleSystemModel::releasePSPointer()
 		// Backup user params (in animated value) so that they will be restored when the system is recreated
 		for (uint k = 0; k < MaxPSUserParam; ++k)
 		{
-			
 			_UserParam[k].Value = _ParticleSystem->getUserParam(k);					
 		}
 	}

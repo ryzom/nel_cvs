@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.54 2002/11/14 17:31:42 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.55 2003/03/03 12:56:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,8 +39,6 @@
 #include "nel/misc/aabbox.h"
 #include "nel/misc/file.h"
 #include "nel/misc/stream.h"
-
-
 
 
 namespace NL3D 

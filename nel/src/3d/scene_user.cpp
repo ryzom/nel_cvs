@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.32 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.33 2003/03/03 12:57:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/lod_character_shape_bank.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "3d/async_texture_manager.h"
+
 
 using namespace NLMISC;
 

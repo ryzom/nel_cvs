@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.20 2003/01/08 15:48:57 boucher Exp $
+ * $Id: load_form.h,v 1.21 2003/03/03 12:58:57 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,7 +184,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	std::map<NLMISC::CSheetId, bool> sheetToRemove;
 	for (typename std::map<NLMISC::CSheetId, T>::iterator it = container.begin(); it != container.end(); it++)
 	{
-		sheetToRemove.insert (make_pair((*it).first, true));
+		sheetToRemove.insert (std::make_pair((*it).first, true));
 	}
 
 	// check if we need to create a new .pitems or just read it
@@ -230,7 +230,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		// create the georges loader if necessary
 		if (formLoader == NULL)
 		{
-			WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
+			NLMISC::WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
 			formLoader = NLGEORGES::UFormLoader::createLoader ();
 		}
 
@@ -262,7 +262,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	if (formLoader != NULL)
 	{
 		NLGEORGES::UFormLoader::releaseLoader (formLoader);
-		WarningLog->removeFilter ("CFormLoader: Can't open the form file");
+		NLMISC::WarningLog->removeFilter ("CFormLoader: Can't open the form file");
 	}
 
 	// we have now to remove sheet that are in the container and not exist anymore in the sheet directories
@@ -363,6 +363,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		// clear the container because it can contains partially loaded sheet so we must clean it before continue
 		container.clear ();
 	}
+
 	NLMISC::CIFile::setVersionException(olde, newe);
 
 	// if we don't want to update packed sheet, we nothing more to do
@@ -373,10 +374,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	}
 
 	// build a vector of the sheetFilters sheet ids (ie: "item")
-//	std::vector<std::string> sheetNames;
 	std::vector<std::string> sheetNames;
-//	for (uint i = 0; i < sheetFilters.size(); i++)
-//		NLMISC::CSheetId::buildIdVector(sheetIds, filenames, sheetFilters[i]);
 	{
 		std::vector<std::string>::const_iterator first(sheetFilters.begin()), last(sheetFilters.end());
 		for (; first != last; ++first)
@@ -390,9 +388,10 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 
 	// set up the current sheet in container to remove sheet that are in the container and not in the directory anymore
 	std::map<std::string, bool> sheetToRemove;
-	for (typename std::map<std::string, T>::iterator it = container.begin(); it != container.end(); ++it)
 	{
-		sheetToRemove.insert (make_pair((*it).first, true));
+		std::map<std::string, T>::iterator first(container.begin()), last(container.end());
+		for(; first != last; ++first)
+			sheetToRemove.insert (make_pair(first->first, true));
 	}
 
 	// check if we need to create a new .pitems or just read it
@@ -407,7 +406,10 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	for (uint k = 0; k < sheetNames.size(); k++)
 	{
 		std::string p = NLMISC::CPath::lookup (sheetNames[k], false, false);
-		if (p.empty()) continue;
+		if (p.empty()) 
+		{
+			continue;
+		}
 		uint32 d = NLMISC::CFile::getFileModificationDate(p);
 
 		// no need to remove this sheet
@@ -438,7 +440,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		// create the georges loader if necessary
 		if (formLoader == NULL)
 		{
-			WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
+			NLMISC::WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
 			formLoader = NLGEORGES::UFormLoader::createLoader ();
 		}
 
@@ -446,14 +448,6 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		form = formLoader->loadForm (sheetNames[NeededToRecompute[j]].c_str ());
 		if (form)
 		{
-/*			if (packedFiledate > 0)
-			{
-				if (d > packedFiledate)
-					nlinfo ("loadForm(): the sheet '%s' is newer than the packed one, I reload it", p.c_str());
-				else
-					nlinfo ("loadForm(): the sheet '%s' is not in the packed sheets, I load it", p.c_str());
-			}*/
-			
 			// add the new creature, it could be already loaded by the packed sheets but will be overwrite with the new one
 			typedef typename std::map<std::string, T>::iterator TType1;
             typedef typename std::pair<TType1, bool> TType2;
@@ -470,18 +464,17 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	if (formLoader != NULL)
 	{
 		NLGEORGES::UFormLoader::releaseLoader (formLoader);
-		WarningLog->removeFilter ("CFormLoader: Can't open the form file");
+		NLMISC::WarningLog->removeFilter ("CFormLoader: Can't open the form file");
 	}
 
 	// we have now to remove sheet that are in the container and not exist anymore in the sheet directories
 	for (std::map<std::string, bool>::iterator it2 = sheetToRemove.begin(); it2 != sheetToRemove.end(); it2++)
 	{
-		if((*it2).second)
+		if(it2->second)
 		{
-			nlinfo ("the sheet '%s' is not in the directory, remove it from container", (*it2).first.c_str());
 			// informe the contained object that it is no more needed.
-			container.find((*it2).first)->second.removed();
-			container.erase((*it2).first);
+			container.find(it2->first)->second.removed();
+			container.erase(it2->first);
 			containerChanged = true;
 		}
 	}
@@ -507,7 +500,6 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	}
 
 	// housekeeping
-//	sheetIds.clear ();
 	sheetNames.clear ();
 }
 #endif // NL_LOAD_FORM_H

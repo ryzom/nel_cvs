@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.5 2002/10/16 17:49:10 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.6 2003/03/03 12:56:08 boucher Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/particle_system_manager.h"
 #include "3d/particle_system_model.h"
 #include "3d/scene.h"
+
 
 namespace NL3D {
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.90 2002/11/18 17:52:01 vizerie Exp $
+ * $Id: scene.cpp,v 1.91 2003/03/03 12:57:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,8 @@
 #include "nel/misc/time_nl.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
+
+
 using namespace std;
 using namespace NLMISC;
 
@@ -419,9 +421,12 @@ void	CScene::render(bool	doHrcPass)
 			continue;*/
 		// maybe don't traverse HRC pass.
 		if(doHrcPass || HrcTravId!=trav->getClassId())
+		{
+
 			// Go!
 			trav->traverse();
 
+		}
 		// if HrcTrav done, set World Camera matrix for Clip and Render.
 		if(HrcTravId==trav->getClassId())
 		{

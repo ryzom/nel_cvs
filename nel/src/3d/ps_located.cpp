@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.51 2002/11/14 17:35:44 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.52 2003/03/03 12:56:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@
 #include "nel/misc/line.h"
 #include "nel/misc/system_info.h"
 #include "nel/misc/common.h"
+
 
 namespace NL3D {
 
@@ -498,7 +499,6 @@ CPSLocated::~CPSLocated()
 	nlassert(!_CollisionInfo);
 
 	// delete all bindable
-
 	for (TLocatedBoundCont::iterator it2 = _LocatedBoundCont.begin(); it2 != _LocatedBoundCont.end(); ++it2)
 	{					
 		(*it2)->finalize();

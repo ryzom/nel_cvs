@@ -2552,6 +2552,34 @@ SOURCE=.\3d\noise_3d.cpp
 SOURCE=.\3d\noise_3d.h
 # End Source File
 # End Group
+# Begin Group "Shadows"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\shadow_map.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shadow_map.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shadow_map_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shadow_map_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shadow_poly_receiver.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shadow_poly_receiver.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\async_file_manager.cpp

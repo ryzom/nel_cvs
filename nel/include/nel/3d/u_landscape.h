@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.20 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: u_landscape.h,v 1.21 2003/08/07 08:53:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -242,6 +242,16 @@ public:
 	 */
 	virtual	CRGBA		getDLMGlobalVegetableColor() const =0;
 
+	// @}
+
+	/// \name ShadowMapping
+	// @{
+	/** By default, map shadow receiving is disabled. This enabled shadow for this model. 
+	 *	Fails if the model don't support dynamic Map Shadow Receiving (eg Particle system)
+	 */
+	virtual void			enableReceiveShadowMap(bool state) =0;
+	/// true if the instance receive shadow. By default false
+	virtual bool			canReceiveShadowMap() const =0;
 	// @}
 };
 

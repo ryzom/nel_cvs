@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.39 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: u_scene.h,v 1.40 2003/08/07 08:53:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -506,6 +506,28 @@ public:
 	virtual void				profileQuadGridClipManager() =0;
 
 	// @}
+
+
+	/// \name ShadowMapping Options
+	// @{
+	/// return the current base ShadowMap TextureSize. Default is 64 texels.
+	virtual	uint			getShadowMapTextureSize() const =0;
+	/// must be a power of 2.
+	virtual	void			setShadowMapTextureSize(uint size) =0;
+	/// return the current ShadowMap Max Depth. This is the length in the lightDir direction where the shadow can touch receivers
+	virtual	float			getShadowMapMaxDepth() const =0;
+	/// set the ShadowMap Extent
+	virtual	void			setShadowMapMaxDepth(float depth) =0;
+	/// get the size of the blur (<=3 means number of fakeBlur).
+	virtual	uint			getShadowMapBlurSize() const =0;
+	/// set the size of the blur (<=3 means number of fakeBlur).
+	virtual	void			setShadowMapBlurSize(uint bs) =0;
+	/// Enable Polygon Smoothing
+	virtual	void			enableShadowPolySmooth(bool enable) =0;
+	/// get Enable Polygon Smoothing flag
+	virtual	bool			getEnableShadowPolySmooth() const =0;
+	// @}
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.30 2003/05/19 13:14:13 corvazier Exp $
+ * $Id: u_driver.h,v 1.31 2003/08/07 08:53:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -606,6 +606,21 @@ public:
 	 *  the sum with enableUsedTextureMemorySum().
 	 */
 	virtual uint32			getUsedTextureMemory() const =0;
+
+	/** If the driver support it, enable profile VBHard locks.
+	 *	No-Op if already profiling
+	 */
+	virtual	void			startProfileVBHardLock() = 0;
+
+	/** If the driver support it, stop profile VBHard locks, and "print" result
+	 *	No-Op if already profiling
+	 *	NB: The results are the Locks in Chronogical time (since last swapBuffers).
+	 *	Since multiple frame are summed, an "*" is marked againts the VBHard name to show if it was not
+	 *	always this one (ptr test and not name test) in the chronogical order.
+	 *	NB: if the driver does not support VBHard or VBHard profiling (like ATI VBHard), result is empty.
+	 *	NB: ???? string is displayed if the VBHard has no name or if was just deleted.
+	 */
+	virtual	void			endProfileVBHardLock(std::vector<std::string> &result) = 0;
 
 	// @}
 

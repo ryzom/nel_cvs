@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.18 2003/06/20 14:53:02 puzin Exp $
+ * $Id: u_transform.h,v 1.19 2003/08/07 08:53:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -225,6 +225,24 @@ public:
 	virtual uint32			isOpaque() = 0;
 	virtual uint32			isTransparent() = 0;
 	// @}
+
+	/// \name ShadowMapping
+	// @{
+	/** By default, map shadow casting is disabled. This enabled shadow for this model. 
+	 *	Fails if the model don't support dynamic Map Shadow Casting (eg landscape)
+	 */
+	virtual void			enableCastShadowMap(bool state) =0;
+	/// true if the instance cast shadow. By default false
+	virtual bool			canCastShadowMap() const =0;
+
+	/** By default, map shadow receiving is disabled. This enabled shadow for this model. 
+	 *	Fails if the model don't support dynamic Map Shadow Receiving (eg Particle system)
+	 */
+	virtual void			enableReceiveShadowMap(bool state) =0;
+	/// true if the instance receive shadow. By default false
+	virtual bool			canReceiveShadowMap() const =0;
+	// @}
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.1 2001/10/24 14:38:25 besson Exp $
+ * $Id: primitive.h,v 1.2 2001/12/28 14:58:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,9 @@
 
 namespace NLLIGO
 {
+
+// There are only x and y used in the vector
+
 
 // ***************************************************************************
 class CPrimPoint
@@ -75,6 +78,7 @@ public:
 
 public:
 
+	bool contains (NLMISC::CVector &v);
 	void serial (NLMISC::IStream &f);
 };
 

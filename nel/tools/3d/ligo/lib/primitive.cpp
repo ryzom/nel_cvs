@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.1 2001/10/24 14:38:25 besson Exp $
+ * $Id: primitive.cpp,v 1.2 2001/12/28 14:58:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,53 @@ void CPrimPath::serial (IStream &f)
 	f.serialCont (VPoints);
 
 	f.xmlPop ();
+}
+
+// ***************************************************************************
+bool CPrimZone::contains (NLMISC::CVector &v)
+{
+	uint32 i;
+	CVector vMin, vMax;
+
+	if (VPoints.size() == 0)
+		return false;
+	
+	// Get the bounding rectangle of the zone
+	vMax = vMin = VPoints[0];
+	for (i = 0; i < VPoints.size(); ++i)
+	{
+		if (vMin.x > VPoints[i].x)
+			vMin.x = VPoints[i].x;
+		if (vMin.y > VPoints[i].y)
+			vMin.y = VPoints[i].y;
+
+		if (vMax.x < VPoints[i].x)
+			vMax.x = VPoints[i].x;
+		if (vMax.y < VPoints[i].y)
+			vMax.y = VPoints[i].y;
+	}
+
+	if ((v.x < vMin.x) || (v.y < vMin.y) || (v.x > vMax.x) || (v.y > vMax.y))
+		return false;
+
+	uint32 nNbIntersection = 0;
+	for (i = 0; i < VPoints.size(); ++i)
+	{
+		CVector &p1 = VPoints[i];
+		CVector &p2 = VPoints[(i+1)%VPoints.size()];
+
+		if (((p1.y-v.y) < 0.0)&&((p2.y-v.y) < 0.0))
+			continue;
+		if (((p1.y-v.y) > 0.0)&&((p2.y-v.y) > 0.0))
+			continue;
+		float xinter = p1.x + (p2.x-p1.x) * ((v.y-p1.y)/(p2.y-p1.y));
+		if (xinter > v.x)
+			++nNbIntersection;
+	}
+	if ((nNbIntersection&1) == 1) // odd intersections so the vertex is inside
+		return true;
+	else
+		return false;
 }
 
 // ***************************************************************************

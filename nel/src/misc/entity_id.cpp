@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: entity_id.cpp,v 1.4 2002/02/19 13:14:10 lecroart Exp $
+ * $Id: entity_id.cpp,v 1.5 2002/03/06 17:48:10 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,12 +34,5 @@ namespace NLMISC {
 const uint64 CEntityId::MaxEntityId = ((uint64)1 << (40 + 1)) - (uint64)1;
 uint8 CEntityId::ServerId = 0;
 const CEntityId CEntityId::Unknown;
-
-string CEntityId::toString () const
-{
-	string id;
-	getDebugString (id);
-	return "(" + id + ")";
-}
 
 } // NLMISC

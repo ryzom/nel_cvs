@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.17 2002/02/26 10:09:13 chafik Exp $
+ * $Id: entity_id.h,v 1.18 2002/03/06 17:47:46 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,7 +295,12 @@ struct CEntityId
 	}
 
 	/// Have a debug string.
-	virtual std::string toString() const;
+	virtual std::string toString() const
+	{
+		std::string id;
+		getDebugString (id);
+		return "(" + id + ")";
+	}
 	
 	/// Have a debug string.
 	virtual void getDebugString(std::string &str) const

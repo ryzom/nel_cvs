@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.15 2004/06/09 09:47:20 fleury Exp $
+ * $Id: sstring.h,v 1.16 2004/06/25 15:24:03 boucher Exp $
  */
 
 
@@ -1595,7 +1595,7 @@ inline CSString operator+(const char* s0,const CSString& s1)
 
 inline CSString operator+(const std::string& s0,const CSString& s1)
 {
-	return CSString(s0)+s1;
+	return s0+static_cast<const std::string&>(s1);
 }
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.19 2001/08/09 08:06:35 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.20 2001/08/09 15:19:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,13 +279,16 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		case CNodeType::located:
 		{	
-			CLocatedProperties *lp = new CLocatedProperties(nt->Loc, _ParticleDlg) ;
+
+			CLocatedProperties *lp = new CLocatedProperties(nt->Loc, _ParticleDlg) ;			
 			lp->init(0, 0) ;	
+
 			_ParticleDlg->setRightPane(lp) ;
 			if (_LastClickedPS)
 			{
 				_LastClickedPS->setCurrentEditedElement(NULL) ;
 			}
+
 
 
 			return ;
@@ -751,8 +754,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 							nt->PS->setFontGenerator(_ParticleDlg->FontGenerator) ;
 
 							
-							buildTreeFromPS(nt->PS, nt->PSModel) ;							
-																
+							buildTreeFromPS(nt->PS, nt->PSModel) ;														
 						}
 						else
 						{
@@ -771,7 +773,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					buildTreeFromPS(_ParticleDlg->getCurrPS(), _ParticleDlg->getCurrPSModel()) ;
 				}		
 				
-											
+									
 				rebuildLocatedInstance() ;
 				_LastClickedPS = NULL ;
 

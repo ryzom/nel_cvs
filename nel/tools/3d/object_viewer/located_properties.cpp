@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.9 2001/07/24 09:06:39 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.10 2001/08/09 15:18:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,14 +134,20 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	const sint xPos = 0 ;
 	sint yPos = 100 ;
 
-			
 	_LifeDialog = new CAttribDlgFloat("LIFETIME") ;
 	_LifeDialog->enableMemoryScheme(false) ;
+
 	_LifeWrapper.Located = _Located ;
+
 	_LifeDialog->setWrapper(&_LifeWrapper) ;			
+
 	_LifeDialog->setSchemeWrapper(&_LifeWrapper) ;
+
 	HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_LIFE_TIME)) ;
+
 	_LifeDialog->init(bmh, xPos, yPos, this) ;
+
+
 	_LifeDialog->GetClientRect(&r) ;	
 	yPos += r.bottom + 3 ;
 
@@ -149,6 +155,7 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	{
 		_LifeDialog->EnableWindow(FALSE) ;
 	}	
+
 
 	_MassDialog = new CAttribDlgFloat("MASS") ;
 	_MassDialog->enableMemoryScheme(false) ;
@@ -173,6 +180,7 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	m_LimitedLifeTime = _Located->getLastForever() ? FALSE : TRUE ;
 
 
+
 	_SkipFrameRateWrapper.Located = _Located ;
 	_SkipFramesDlg->setWrapper(&_SkipFrameRateWrapper) ;
 	_SkipFramesDlg->init(99, 339, this) ;
@@ -181,7 +189,11 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 
 	m_DisgradeWithLOD = _Located->hasLODDegradation() ;
 
+
+
 	ShowWindow(SW_SHOW) ;
+
+
 }
 
 void CLocatedProperties::OnLimitedLifeTime() 

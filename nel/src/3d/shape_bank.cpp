@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.7 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: shape_bank.cpp,v 1.8 2001/09/03 15:26:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,28 +87,37 @@ IShape*CShapeBank::addRef(const string &shapeName)
 void CShapeBank::release(IShape* pShp)
 {
 	// Do we have the last smartPtr on the shape ?
-	TShapeMap::iterator smIt = ShapeMap.find( *getShapeNameFromShapePtr( pShp ) );
-	if( smIt != ShapeMap.end() )
-	{
-		if( smIt->second.getNbRef() == 1 )
-		{
-			// Yes -> add the shape to its shapeCache
-			CShapeCache *pShpCache = getShapeCachePtrFromShapePtr( pShp );
-			pShpCache->Elements.push_front( pShp );
+	string* str = getShapeNameFromShapePtr( pShp );
 
-			TShapeInfoMap::iterator scfpmIt = ShapePtrToShapeInfo.find( pShp );
-			if( scfpmIt != ShapePtrToShapeInfo.end() )
-			{
-				scfpmIt->second.isAdded = true;
-			}
-			
-			// check the shape cache
-			checkShapeCache(getShapeCachePtrFromShapePtr(pShp));
-		}
+	if (str == NULL)
+	{
+		nlwarning ("Trying to release a mesh that have not be added to the shape bank");
 	}
 	else
 	{
-		nlassert( false );
+		TShapeMap::iterator smIt = ShapeMap.find( *str );
+		if( smIt != ShapeMap.end() )
+		{
+			if( smIt->second.getNbRef() == 1 )
+			{
+				// Yes -> add the shape to its shapeCache
+				CShapeCache *pShpCache = getShapeCachePtrFromShapePtr( pShp );
+				pShpCache->Elements.push_front( pShp );
+
+				TShapeInfoMap::iterator scfpmIt = ShapePtrToShapeInfo.find( pShp );
+				if( scfpmIt != ShapePtrToShapeInfo.end() )
+				{
+					scfpmIt->second.isAdded = true;
+				}
+				
+				// check the shape cache
+				checkShapeCache(getShapeCachePtrFromShapePtr(pShp));
+			}
+		}
+		else
+		{
+			nlassert( false );
+		}
 	}
 }
 

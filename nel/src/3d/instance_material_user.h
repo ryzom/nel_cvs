@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.11 2002/11/14 17:30:56 vizerie Exp $
+ * $Id: instance_material_user.h,v 1.12 2002/11/25 14:49:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -272,6 +272,61 @@ public:
 	{
 		NL3D_MEM_MATERIAL_INSTANCE
 		return (UInstanceMaterial::TBlend)(uint32)_Material->getDstBlend();
+	}
+	// @}
+
+
+
+	/// \name Texture matrix
+	// @{
+	virtual void                    enableUserTexMat(uint stage, bool enabled = true)
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		if (stage >= IDRV_MAT_MAXTEXTURES)
+		{
+			nlwarning("UInstanceMaterial::enableUserTexMat : stage %d is invalid", stage);
+			return;
+		}
+		_Material->enableUserTexMat(stage, enabled);
+	}
+	virtual bool                    isUserTexMatEnabled(uint stage) const
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		if (stage >= IDRV_MAT_MAXTEXTURES)
+		{
+			nlwarning("UInstanceMaterial::enableUserTexMat : stage %d is invalid", stage);
+			return false;
+		}
+		return _Material->isUserTexMatEnabled(stage);
+	}
+	virtual void					setUserTexMat(uint stage, const NLMISC::CMatrix &m)
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		if (stage >= IDRV_MAT_MAXTEXTURES)
+		{
+			nlwarning("UInstanceMaterial::enableUserTexMat : stage %d is invalid", stage);
+			return;
+		}
+		if (!_Material->isUserTexMatEnabled(stage))
+		{
+			nlwarning("UInstanceMaterial::setUserTexMat : texture stage %d has no user matrix.", stage);
+		}
+		_Material->setUserTexMat(stage, m);
+	}
+	virtual const NLMISC::CMatrix  &getUserTexMat(uint stage) const
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		if (stage >= IDRV_MAT_MAXTEXTURES)
+		{
+			nlwarning("UInstanceMaterial::enableUserTexMat : stage %d is invalid", stage);
+			return CMatrix::Identity;
+		}
+		if (!_Material->isUserTexMatEnabled(stage))
+		{
+			nlwarning("UInstanceMaterial::setUserTexMat : texture stage %d has no user matrix.", stage);
+			return CMatrix::Identity;
+		}
+		return _Material->getUserTexMat(stage);
 	}
 	// @}
 

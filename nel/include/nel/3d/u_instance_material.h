@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.9 2002/11/14 17:37:37 vizerie Exp $
+ * $Id: u_instance_material.h,v 1.10 2002/11/25 14:49:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,6 +138,19 @@ public:
 	 *	is called
 	 */
 	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0) = 0;		
+
+	/// \name Texture matrix
+	// @{
+	// Enable a user texture matrix for the n-th stage. The initial matrix is set to identity.
+	virtual void                    enableUserTexMat(uint stage, bool enabled = true) = 0;
+	// Test wether a user texture is enabled for the n-th stage
+	virtual bool                    isUserTexMatEnabled(uint stage) const = 0;
+	/// Set a new texture matrix for the given stage.	
+	virtual void					setUserTexMat(uint stage, const NLMISC::CMatrix &m) = 0;
+	/** Get a const ref. on the texture matrix of the n-th stage.	  
+	  */
+	virtual const NLMISC::CMatrix  &getUserTexMat(uint stage) const = 0;		
+	// @}
 };
 
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.78 2002/04/15 12:02:43 lecroart Exp $
+# $Id: Makefile.am,v 1.79 2002/05/03 08:11:32 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -459,6 +459,8 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        vegetable_shape.h                               \
                        vegetable_sort_block.cpp                        \
                        vegetable_sort_block.h                          \
+                       vegetable_uv8.cpp                               \
+                       vegetable_uv8.h                                 \
                        vertex_buffer.cpp                               \
                        vertex_buffer.h                                 \
                        vertex_buffer_hard.cpp                          \

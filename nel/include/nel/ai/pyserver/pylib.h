@@ -6,7 +6,7 @@
 #include "c/abstract_interface.h"
 
 
-namespace Py
+namespace NLAIPYSERVER
 {		
 
 	#define PyCastMethod	struct _object *(__cdecl *)(struct _object *,struct _object *)

@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: pylib.cpp,v 1.2 2001/01/08 12:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include <string.h>
 #include "pyserver/pylib.h"
 
-namespace Py
+namespace NLAIPYSERVER
 {		
 
 	sint32 CPyExport::convertResult(PyObject *Result,char *Format, void *Target)

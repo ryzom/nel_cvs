@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.3 2001/01/08 12:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  */
 #include "pyserver/pylib.h"
 #include "object.h"
-//#include "unicodeobject.h"
+
 extern PyTypeObject StackDef;
 extern PyMethodDef M_STACK[];
 
@@ -33,7 +33,7 @@ a = u'samos \u1234'
 UnicodeString(a)
 */
 
-namespace Py
+namespace NLAIPYSERVER
 {
 
 	/*PyObject *PyUnicode_FromObject(register PyObject *obj)

@@ -2,7 +2,7 @@
 #define _PYTHON_SUPPORT_H_
 
 struct PyMethodDef;
-namespace Py
+namespace NLAIPYSERVER
 {	
 	class IPythonModule
 	{

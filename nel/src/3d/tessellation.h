@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.6 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: tessellation.h,v 1.7 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,6 +83,9 @@ public:
 	uint32		TexCoordOff0;
 	uint32		ColorOff;
 
+	// Hulud VP_TEST
+	uint32		EndPosOff;
+
 	void		setupVertexBuffer(CVertexBuffer &vb);
 	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord);
 };
@@ -100,6 +103,9 @@ public:
 	void		*TexCoordPointer1;
 	uint32		TexCoordOff0;
 	uint32		TexCoordOff1;
+
+	// Hulud VP_TEST
+	uint32		EndPosOff;
 
 	void		setupVertexBuffer(CVertexBuffer &vb);
 	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord);

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.23 2001/08/30 10:17:39 vizerie Exp $
+ * $Id: export_nel.h,v 1.24 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,9 @@ enum TNelValueType
 
 enum TNelScriptValueType
 {
+	scriptNothing,
 	scriptFloat,
+	scriptBool,
 };
 
 // ***************************************************************************
@@ -217,7 +219,7 @@ public:
 	// *********************
 
 	// Add animation track of this node into the animation object pass in parameter.
-	static void						addAnimation (NL3D::CAnimation& animation, INode& node, const char* sBaseName, Interface *ip);
+	static void						addAnimation (NL3D::CAnimation& animation, INode& node, const char* sBaseName, Interface *ip, bool view);
 
 	// Build a NeL track with a 3dsmax node and a controller.
 	static NL3D::ITrack*			buildATrack (NL3D::CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, 
@@ -231,15 +233,17 @@ public:
 	static void						addParticleSystemTracks(NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip) ;
 
 	// Add tracks for the bone and its children (recursive)
-	static void						addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+	static void						addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool view);
 
 	// Add biped tracks
-	static void						addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+	static void						addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool view);
 	static void						addBipedNodeTrack (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip,
-										std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled);
+										std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled, bool root, bool view);
+	static void						addBipedPathTrack (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+
 
 	// Add a note track. It tackes the first note track of the object
-	static void							addNoteTrack(NL3D::CAnimation& animation, INode& node);
+	static void						addNoteTrack(NL3D::CAnimation& animation, INode& node);
 
 	// Convert keyframe methods
 	static void						buildNelKey (NL3D::CKeyFloat& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
@@ -282,12 +286,12 @@ public:
 	 * mapBindPos is the pointer of the map of bind pos by bone. Can be NULL if the skeleton is already in the bind pos.
 	 */
 	static void						buildSkeletonShape (NL3D::CSkeletonShape& skeletonShape, INode& node, mapBoneBindPos* mapBindPos, 
-														TInodePtrInt& mapId, TimeValue time);
+														TInodePtrInt& mapId, TimeValue time, bool view);
 
 	// Build an array of CBoneBase
 	static void						buildSkeleton (std::vector<NL3D::CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, 
 														TInodePtrInt& mapId, std::set<std::string> &nameSet, 
-														TimeValue time, sint32& idCount, sint32 father=-1);
+														TimeValue time, bool view, sint32& idCount, sint32 father=-1);
 
 	/*
 	 * Add Skinning data into the build structure.
@@ -542,6 +546,14 @@ private:
 
 	// Get a biped key parameter using script
 	static bool						getBipedKeyInfo (Interface *ip, const char* nodeName, const char* paramName, uint key, float& res);
+
+	// Get inplace biped mode
+	static bool						getBipedInplaceMode (Interface *ip, const char* nodeName, const char* inplaceFunction, 
+															bool &res);
+
+	// Change inplace biped mode
+	static bool						setBipedInplaceMode (Interface *ip, const char* nodeName, const char* inplaceFunction, 
+															bool onOff);
 };
 
 

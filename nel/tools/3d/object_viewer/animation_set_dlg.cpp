@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.6 2001/07/20 09:19:33 corvazier Exp $
+ * $Id: animation_set_dlg.cpp,v 1.7 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,9 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "animation_set_dlg.h"
+
 #include <nel/misc/file.h>
+#include <3d/track_keyframer.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -213,7 +215,31 @@ void CAnimationSetDlg::addAnimation (NL3D::CAnimation* anim, const char* name)
 	while (ite!=setString.end())
 	{
 		// Add this string
-		Tree.InsertItem (ite->c_str(), item);
+		HTREEITEM newItem = Tree.InsertItem (ite->c_str(), item);
+
+		// Get the track
+		ITrack *track=anim->getTrack (anim->getIdTrackByName (*ite));
+
+		// Keyframer ?
+		UTrackKeyframer *keyTrack=dynamic_cast<UTrackKeyframer *>(track);
+		if (keyTrack)
+		{
+			// Get number of keys
+			std::vector<CAnimationTime> keys;
+			keyTrack->getKeysInRange (track->getBeginTime ()-1, track->getEndTime ()+1, keys);
+
+			// Print track info
+			char name[512];
+			_snprintf (name, 512, "%s (%f - %f) %d keys", typeid(*track).name(), track->getBeginTime (), track->getEndTime (), keys.size());
+			Tree.InsertItem (name, newItem);
+		}
+		else
+		{
+			// Print track info
+			char name[512];
+			_snprintf (name, 512, "%s (%f - %f)", typeid(*track).name(), track->getBeginTime (), track->getEndTime ());
+			Tree.InsertItem (name, newItem);
+		}
 
 		ite++;
 	}

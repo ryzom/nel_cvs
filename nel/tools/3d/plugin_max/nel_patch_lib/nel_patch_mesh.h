@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.4 2001/08/29 12:36:57 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.5 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,7 @@ extern HINSTANCE hInstance;
 
 extern ClassDesc* GetRPODesc();
 
+#define RPATCHMESH_SERIALIZE_VERSION_9 9
 #define RPATCHMESH_SERIALIZE_VERSION_8 8
 #define RPATCHMESH_SERIALIZE_VERSION_7 7
 #define RPATCHMESH_SERIALIZE_VERSION_6 6
@@ -61,7 +62,7 @@ extern ClassDesc* GetRPODesc();
 #define RPATCHMESH_SERIALIZE_VERSION_3 3
 #define RPATCHMESH_SERIALIZE_VERSION_2 2
 #define RPATCHMESH_SERIALIZE_VERSION_1 1
-#define RPATCHMESH_SERIALIZE_VERSION RPATCHMESH_SERIALIZE_VERSION_8
+#define RPATCHMESH_SERIALIZE_VERSION RPATCHMESH_SERIALIZE_VERSION_9
 
 #define EP_OBJECT	0
 #define EP_VERTEX	1

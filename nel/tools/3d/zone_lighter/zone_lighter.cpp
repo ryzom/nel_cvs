@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.8 2001/09/10 07:41:30 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.9 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/config_file.h"
+#include "nel/misc/path.h"
 
 #include "3d/zone.h"
 #include "3d/zone_lighter.h"
@@ -134,6 +135,12 @@ int main(int argc, char* argv[])
 				string shapes_path = parameter.getVar ("shapes_path").asString();
 				if ((shapes_path[shapes_path.length()-1]!='\\')&&(shapes_path[shapes_path.length()-1]!='/'))
 					shapes_path+="/";
+
+				// Get the maps path
+				string maps_path = parameter.getVar ("maps_path").asString();
+
+				// Add it to the current path
+				CPath::addSearchPath (maps_path);
 
 				// A landscape allocated with new: it is not delete because destruction take 3 secondes more!
 				CLandscape *landscape=new CLandscape;
@@ -451,10 +458,7 @@ int main(int argc, char* argv[])
 							else
 							{
 								// Error
-								fprintf (stderr, "Error: can't load shape %s\n", name.c_str());
-
-								// Stop after adding triangles
-								continu=false;
+								fprintf (stderr, "Warning: can't load shape %s\n", name.c_str());
 							}
 						}
 						

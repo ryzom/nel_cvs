@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.50 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: zone.cpp,v 1.51 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1177,7 +1177,7 @@ void			CZone::changePatchTextureAndColor (sint numPatch, const std::vector<CTile
 	if (Compiled)
 	{
 		// If the patch is visible, then we must LockBuffers, because new VertexVB may be created.
-		if(Patchs[numPatch].RenderClipped)
+		if(!Patchs[numPatch].RenderClipped)
 			Landscape->updateGlobalsAndLockBuffers(CVector::Null);
 
 		// Recompute UVs for new setup of Tiles.
@@ -1185,7 +1185,7 @@ void			CZone::changePatchTextureAndColor (sint numPatch, const std::vector<CTile
 		Patchs[numPatch].recreateTileUvs();
 
 		// unlockBuffers() if necessary.
-		if(Patchs[numPatch].RenderClipped)
+		if(!Patchs[numPatch].RenderClipped)
 			Landscape->unlockBuffers();
 	}
 }

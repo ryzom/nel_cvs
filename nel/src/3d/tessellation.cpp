@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.51 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.52 2001/09/12 09:46:10 corvazier Exp $
  *
  */
 
@@ -80,6 +80,9 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 
 	VertexCoordPointer= vb.getVertexCoordPointer();
 
+	// Hulud VP_TEST
+	//EndPosOff= vb.getNormalOff();
+
 	TexCoordOff0= vb.getTexCoordOff(0);
 	TexCoordPointer0= vb.getTexCoordPointer(0, 0);
 
@@ -111,6 +114,9 @@ void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *v
 	}
 
 	VertexCoordPointer= vcoord;
+
+	// Hulud VP_TEST
+//	EndPosOff= vb.getNormalOff();
 
 	TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
 	TexCoordPointer0= (uint8*)vcoord + TexCoordOff0;
@@ -148,6 +154,9 @@ void		CNearVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	TexCoordPointer0= vb.getTexCoordPointer(0, 0);
 	TexCoordPointer1= vb.getTexCoordPointer(0, 1);
 
+	// Hulud VP_TEST
+//	EndPosOff= vb.getNormalOff();
+
 	TexCoordOff0= vb.getTexCoordOff(0);
 	TexCoordOff1= vb.getTexCoordOff(1);
 }
@@ -169,6 +178,9 @@ void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *
 	VertexCoordPointer= vcoord;
 	TexCoordPointer0= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord0);
 	TexCoordPointer1= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord1);
+
+	// Hulud VP_TEST
+//	EndPosOff= vb.getNormalOff();
 
 	TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
 	TexCoordOff1= vb.getValueOff (CVertexBuffer::TexCoord1);
@@ -1668,6 +1680,10 @@ void		CTessFace::refine()
 		// 1.0f is the point of split().
 		// 2.0f is the end of geomorph.
 
+		// Hulud VP_TEST
+		
+		// Calc dist min dist max
+		
 
 		// 0. Test split/merge.
 		//---------------------
@@ -1705,6 +1721,8 @@ void		CTessFace::refine()
 		// splitted patchs)
 		if(!isLeaf() && ps>1.0f && !Patch->RenderClipped)
 		{
+			// Hulud VP_TEST
+			
 			// NB: morph ptr is good even with rectangular patch. See splitRectangular().
 			CTessVertex		*morph=SonLeft->VBase;
 			if(morph->GeomDone)
@@ -1744,7 +1762,13 @@ void		CTessFace::refine()
 				}
 			}
 		}
-
+		// Hulud VP_TEST
+		/*else
+		{
+			CTessVertex		*morph=SonLeft->VBase;
+			morph->StartPos=morph->Pos;
+			morph->EndPos=morph->Pos;
+		}*/
 
 
 		// 2. Update NeedCompute.

@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.2 2001/08/29 12:36:56 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.3 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1764,6 +1764,7 @@ IOResult RPatchMesh::Load(ILoad *iload)
 
 	switch (nVersion)
 	{
+	case RPATCHMESH_SERIALIZE_VERSION_9:
 	case RPATCHMESH_SERIALIZE_VERSION_8:
 	case RPATCHMESH_SERIALIZE_VERSION_7:
 	case RPATCHMESH_SERIALIZE_VERSION_6:
@@ -1811,8 +1812,19 @@ IOResult RPatchMesh::Load(ILoad *iload)
 							getUIPatch (i).getTileDesc (j)._Flags=0;
 						
 						// Clear displace flags in version lower than 8
-						if (nVersion<RPATCHMESH_SERIALIZE_VERSION_8)
-							getUIPatch (i).getTileDesc (j).setDisplace (0);
+						if (nVersion<RPATCHMESH_SERIALIZE_VERSION_9)
+						{
+							// Random a noise tile between 0 and 7
+							uint noise=rand ()&0x7;
+							getUIPatch (i).getTileDesc (j).setDisplace (noise);
+						}
+						else
+						{
+							// Read the noise
+							uint8 noise;
+							iload->Read(&noise, sizeof (uint8), &nb);
+							getUIPatch (i).getTileDesc (j).setDisplace (noise);
+						}
 
 						for (int k=0; k<3; k++)
 						{	
@@ -1950,6 +1962,11 @@ IOResult RPatchMesh::Save(ISave *isave)
 			isave->Write(&num, sizeof (USHORT), &nb);
 			num=getUIPatch (i).getTileDesc (j)._Flags;
 			isave->Write(&num, sizeof (USHORT), &nb);
+
+			// Save noise
+			uint8 noise=getUIPatch (i).getTileDesc (j).getDisplace ();
+			isave->Write(&noise, sizeof (uint8), &nb);
+
 			for (int k=0; k<3; k++)
 			{								
 				bool invert;

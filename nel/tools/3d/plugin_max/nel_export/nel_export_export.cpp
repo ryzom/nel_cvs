@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.7 2001/09/05 15:45:46 vizerie Exp $
+ * $Id: nel_export_export.cpp,v 1.8 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, Time
 				CExportNel::addSkeletonBindPos (node, boneBindPos);
 
 				// Build the skeleton based on the bind pos information
-				CExportNel::buildSkeletonShape (*skeletonShape, *skeletonRoot, &boneBindPos, mapId, time);
+				CExportNel::buildSkeletonShape (*skeletonShape, *skeletonRoot, &boneBindPos, mapId, time, false);
 
 				// Set the pointer to not NULL
 				mapIdPtr=&mapId;
@@ -146,7 +146,7 @@ bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, I
 
 
 		// Add animation
-		CExportNel::addAnimation (animFile, *vectNode[n], nodeName.c_str(), &ip);
+		CExportNel::addAnimation (animFile, *vectNode[n], nodeName.c_str(), &ip, false);
 	}
 
 	if (vectNode.size())
@@ -186,7 +186,7 @@ bool CNelExport::exportSkeleton	(const char *sPath, INode* pNode, Interface& ip,
 	// Build the skeleton format
 	CSkeletonShape *skeletonShape=new CSkeletonShape();
 	TInodePtrInt mapId;
-	CExportNel::buildSkeletonShape (*skeletonShape, *pNode, NULL, mapId, time);
+	CExportNel::buildSkeletonShape (*skeletonShape, *pNode, NULL, mapId, time, false);
 
 	// Open a file
 	COFile file;

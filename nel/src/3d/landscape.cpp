@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.76 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: landscape.cpp,v 1.77 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,13 +32,32 @@
 #include "nel/3d/height_map.h"
 #include "3d/tile_noise_map.h"
 
+
+// Hulud VP_TEST
+#include "3d/driver/opengl/driver_opengl.h"
+#include "3d/vertex_program.h"
+
 using namespace NLMISC;
 using namespace std;
 
 
-
 namespace NL3D 
 {
+
+// Hulud VP_TEST
+const char* LandscapeProgram=
+"!!VP1.0 \n\
+DP4 o[HPOS].x, c[0], v[0];\n\
+DP4 o[HPOS].y, c[1], v[0];\n\
+DP4 o[HPOS].z, c[2], v[0];\n\
+DP4 o[HPOS].w, c[3], v[0];\n\
+MOV o[TEX0], v[8];\n\
+MOV o[TEX1], v[9];\n\
+MOV o[COL0], c[4];\n\
+END\n";
+
+// Active the vertex program
+CVertexProgram vp (LandscapeProgram);
 
 
 // ***************************************************************************
@@ -949,6 +968,10 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 	TileMaterial.setTexture(1, NULL);
 	TileMaterial.setTexture(2, NULL);
 	TileMaterial.setTexture(3, NULL);
+
+	// Hulud VP_TEST
+	// Desactive the vertex program
+	//driver->activeVertexProgram (NULL);
 
 }
 

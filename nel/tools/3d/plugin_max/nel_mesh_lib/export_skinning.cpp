@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.7 2001/08/09 15:21:23 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.8 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,7 @@ public:
 // ***************************************************************************
 
 void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node, mapBoneBindPos* mapBindPos, TInodePtrInt& mapId, 
-									 TimeValue time)
+									 TimeValue time, bool view)
 {
 	// Build a bone vector
 	std::vector<CBoneBase> bonesArray;
@@ -97,7 +97,7 @@ void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node,
 	std::set<std::string> nameSet;
 
 	// Parse the tree
-	buildSkeleton (bonesArray, node, mapBindPos, mapId, nameSet, time, idCount);
+	buildSkeleton (bonesArray, node, mapBindPos, mapId, nameSet, time, view, idCount);
 
 	// Then build the object
 	skeletonShape.build (bonesArray);
@@ -106,7 +106,7 @@ void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node,
 // ***************************************************************************
 
 void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, TInodePtrInt& mapId, 
-								std::set<std::string> &nameSet, TimeValue time, sint32& idCount, sint32 father)
+								std::set<std::string> &nameSet, TimeValue time, bool view, sint32& idCount, sint32 father)
 {
 	// **** Save the current the id
 	int id=idCount;
@@ -148,8 +148,11 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 	// ** Set default tracks
 
 	// Get the local matrix for the default pos
-	Matrix3 localTM;
-	getLocalMatrix (localTM, node, time);
+	Matrix3 localTM (TRUE);
+
+	// Biped root must be exported with Identity because path are setuped interactively in the root of the skeleton
+	if ((c&&(c->ClassID() != BIPSLAVE_CONTROL_CLASS_ID))||view)
+		getLocalMatrix (localTM, node, time);
 
 	// Decomp the matrix to get default animations tracks
 	NLMISC::CVector		nelScale;
@@ -197,7 +200,7 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 
 	// **** Call on child
 	for (int children=0; children<node.NumberOfChildren(); children++)
-		buildSkeleton (bonesArray, *node.GetChildNode(children), mapBindPos, mapId, nameSet, time, ++idCount, id);
+		buildSkeleton (bonesArray, *node.GetChildNode(children), mapBindPos, mapId, nameSet, time, view, ++idCount, id);
 }
 
 // ***************************************************************************

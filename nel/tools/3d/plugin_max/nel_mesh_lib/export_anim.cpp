@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.14 2001/08/30 10:17:39 vizerie Exp $
+ * $Id: export_anim.cpp,v 1.15 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,8 @@
 using namespace NLMISC;
 using namespace NL3D;
 
+#define BIPED_PATH_POS_NAME "PathPos"
+#define BIPED_PATH_ROT_NAME "PathRotQuat"
 
 
 static Class_ID DefNoteTrackClassID(NOTETRACK_CLASS_ID, 0);
@@ -73,7 +75,7 @@ public:
 // --------------------------------------------------
 
 // Add track in this animation
-void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* sBaseName, Interface *ip)
+void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* sBaseName, Interface *ip, bool view)
 {
 	// Get the TM controler
 	Control *transform=node.GetTMController();
@@ -82,7 +84,7 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 	if (transform && (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID))
 	{
 		// Export biped skeleton animation
-		addBipedNodeTracks (animation, node, sBaseName, ip);
+		addBipedNodeTracks (animation, node, sBaseName, ip, view);
 	}	
 	else
 	{
@@ -348,22 +350,125 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 
 // --------------------------------------------------
 
-void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const char* parentName, Interface *ip)
+void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool view)
 {
 	// Get the matrix controler
 	Control *transform=node.GetTMController();
 	nlassert (transform);
+	nlassert (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID);
 
-	// Export animation for this node
+	// Backup inplace y mode
+	/*bool inPlaceMode;
+	bool inPlaceYMode;
+	bool inPlaceXMode;
+	bool res = getBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", inPlaceYMode);
+	nlassert (res);
+	res = getBipedInplaceMode (ip, getName (node).c_str(), "inPlaceXMode", inPlaceXMode);
+	nlassert (res);
+	res = getBipedInplaceMode (ip, getName (node).c_str(), "inPlaceMode", inPlaceMode);
+	nlassert (res);
+
+	// Pass in inplace y mode
+	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", true);
+	nlassert (res);*/
+
+	// Export animations for the biped except the root
 	std::set<TimeValue> keysSampled;
 	std::set<TimeValue> keys;
-	addBipedNodeTrack (animation, node, parentName, ip, keys, keysSampled);
+	addBipedNodeTrack (animation, node, parentName, ip, keys, keysSampled, true, view);
+
+	// Exit from inplace y mode
+	/*res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", false);
+	nlassert (res);
+	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceXMode", true);
+	nlassert (res);*/
+
+	// Export root animation in special tracks for interactive interpolation
+	addBipedPathTrack (animation, node, parentName, ip);
+
+	// Set default mode
+	/*res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", inPlaceYMode);
+	nlassert (res);
+	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceXMode", inPlaceXMode);
+	nlassert (res);
+	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceMode", inPlaceMode);
+	nlassert (res);*/
+}
+
+// --------------------------------------------------
+
+void CExportNel::addBipedPathTrack (CAnimation& animation, INode& node, const char* parentName, Interface *ip)
+{
+	// Get the matrix controler
+	Control *transform=node.GetTMController();
+	nlassert (transform);
+	nlassert (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID);
+
+	//Get the Biped Export Interface from the controller 
+	IBipedExport *BipIface = (IBipedExport *) transform->GetInterface(I_BIPINTERFACE);
+	nlassert (BipIface);
+
+	// Remove the non uniform scale
+	BipIface->RemoveNonUniformScale(1);
+
+	// Export desc
+	CExportDesc desc;
+
+	// Export position
+	desc.reset();
+
+	// Get keys position for biped tracks
+	std::set<TimeValue> keysSampled;
+	std::set<TimeValue> keys;
+
+	// Add keys
+	addBipedKeyTime (*transform, keys, keysSampled, true, ip, getName (*(INode*)&node).c_str());
+
+	// Get the position controler
+	ITrack *pTrack;
+	pTrack=buildATrack (animation, *transform, typePos, node, desc, ip, &keys, &keysSampled);
+	if (pTrack)
+	{
+		// Name path track
+		std::string name=parentName+std::string (BIPED_PATH_POS_NAME);
+		if (animation.getTrackByName (name.c_str()))
+		{
+			// Delete this track because it already exist.
+			delete pTrack;
+		}
+		else
+		{
+			// Add tracks in the animation
+			animation.addTrack (name.c_str(), pTrack);
+		}
+	}
+
+	// Get the rotation controler
+	pTrack=buildATrack (animation, *transform, typeRotation, node, desc, ip, &keys, &keysSampled);
+	if (pTrack)
+	{
+		// Name path track
+		std::string name=parentName+std::string (BIPED_PATH_ROT_NAME);
+		if (animation.getTrackByName (name.c_str()))
+		{
+			// Delete this track because it already exist.
+			delete pTrack;
+		}
+		else
+		{
+			// Add tracks in the animation
+			animation.addTrack (name.c_str(), pTrack);
+		}
+	}
+
+	// Restaure the non uniform scale
+	BipIface->RemoveNonUniformScale(0);
 }
 
 // --------------------------------------------------
 
 void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const char* parentName, Interface *ip,
-									std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled)
+									std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled, bool root, bool view)
 {
 	// Get the matrix controler
 	Control *transform=node.GetTMController();
@@ -371,7 +476,6 @@ void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const ch
 
 	// Biped node
 	if ((transform->ClassID() == BIPSLAVE_CONTROL_CLASS_ID) ||
-		(transform->ClassID() == BIPBODY_CONTROL_CLASS_ID) ||
 		(transform->ClassID() == BIPBODY_CONTROL_CLASS_ID))
 	{
 		//Get the Biped Export Interface from the controller 
@@ -399,7 +503,8 @@ void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const ch
 		std::string name=parentName + getName (node) + ".";
 
 		// Export keyframes
-		addNodeTracks (animation, node, name.c_str(), ip, &keys, &keysSampled);
+		if ((!root)||view)
+			addNodeTracks (animation, node, name.c_str(), ip, &keys, &keysSampled);
 
 		// Restaure the non uniform scale
 		BipIface->RemoveNonUniformScale(0);
@@ -409,19 +514,19 @@ void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const ch
 		for (uint children=0; children<childrenCont; children++)
 		{
 			INode *child=node.GetChildNode(children);
-			addBipedNodeTrack (animation, *child, parentName, ip, keys, keysSampled);
+			addBipedNodeTrack (animation, *child, parentName, ip, keys, keysSampled, false, view);
 		}
 	}
 	else
 	{
 		// Add normal tracks
-		addBoneTracks (animation, node, parentName, ip);
+		addBoneTracks (animation, node, parentName, ip, view);
 	}
 }
 
 // --------------------------------------------------
 
-void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip)
+void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool view)
 {
 	// Create a track name
 	std::string name=parentName + getName (node) + ".";
@@ -433,7 +538,7 @@ void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const 
 	if (transform && (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID))
 	{
 		// Export biped skeleton animation
-		addBipedNodeTracks (animation, node, parentName, ip);
+		addBipedNodeTracks (animation, node, parentName, ip, view);
 	}
 	else
 	{
@@ -446,7 +551,7 @@ void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const 
 	for (uint children=0; children<childrenCont; children++)
 	{
 		INode *child=node.GetChildNode(children);
-		addBoneTracks (animation, *child, parentName, ip);
+		addBoneTracks (animation, *child, parentName, ip, view);
 	}
 }
 
@@ -1640,6 +1745,30 @@ bool CExportNel::getBipedKeyInfo (Interface *ip, const char* nodeName, const cha
 
 	// Call the script
 	return scriptEvaluate (ip, script, &res, scriptFloat);
+}
+
+// --------------------------------------------------
+
+bool CExportNel::getBipedInplaceMode (Interface *ip, const char* nodeName, const char* inplaceFunction, bool &res)
+{
+	// Make the script sequence
+	char script[512];
+	_snprintf (script, 512, "$'%s'.controller.%s", nodeName, inplaceFunction);
+
+	// Call the script
+	return scriptEvaluate (ip, script, &res, scriptBool);
+}
+
+// --------------------------------------------------
+
+bool CExportNel::setBipedInplaceMode (Interface *ip, const char* nodeName, const char* inplaceFunction, bool onOff)
+{
+	// Make the script sequence
+	char script[512];
+	_snprintf (script, 512, "$'%s'.controller.%s = %s", nodeName, inplaceFunction, onOff ? "true" : "false");
+
+	// Call the script
+	return scriptEvaluate (ip, script, NULL, scriptNothing);
 }
 
 // --------------------------------------------------

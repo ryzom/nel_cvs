@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.14 2001/08/28 08:39:37 besson Exp $
+ * $Id: nel_export_view.cpp,v 1.15 2001/09/12 09:46:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,9 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				{
 					// Get root of the skeleton
 					INode *skeletonRoot=CExportNel::getSkeletonRootBone (*pNode);
+
+					// HULUD TEST
+					//skeletonRoot=NULL;
 					
 					// Root exist ?
 					if (skeletonRoot)
@@ -132,7 +135,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 							iteSkeleton=skeletonMap.find (skeletonRoot);
 
 							// Add tracks
-							CExportNel::addBoneTracks (*anim, *skeletonRoot, (CExportNel::getName (*skeletonRoot)+".").c_str(), &ip);
+							CExportNel::addBoneTracks (*anim, *skeletonRoot, (CExportNel::getName (*skeletonRoot)+".").c_str(), &ip, true);
 						}
 						
 						// Add the bind pos for the skin
@@ -167,6 +170,9 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 					// Get root of the skeleton
 					INode *skeletonRoot=CExportNel::getSkeletonRootBone (*pNode);
 					
+					// HULUD TEST
+					//skeletonRoot=NULL;
+					
 					// Root exist ?
 					if (skeletonRoot)
 					{
@@ -184,7 +190,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 							TInodePtrInt mapId;
 
 							// Build the skeleton based on the bind pos information
-							CExportNel::buildSkeletonShape (*skelShape, *skeletonRoot, &(iteSkeleton->second), mapId, time);
+							CExportNel::buildSkeletonShape (*skelShape, *skeletonRoot, &(iteSkeleton->second), mapId, time, true);
 
 							// Add the shape in the view
 							CSkeletonModel *skelInstance=view->addSkel (skelShape, skeletonRoot->GetName(), 
@@ -207,7 +213,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 			// Is it a automatic light ? if yes add tracks from nel_light (color controller)
 			Modifier *modifier = CExportNel::getModifier( pNode, Class_ID(NEL_LIGHT_CLASS_ID_A,NEL_LIGHT_CLASS_ID_B) );
 			if( modifier != NULL )
-				CExportNel::addAnimation( *autoAnim, *pNode, "", &ip );
+				CExportNel::addAnimation( *autoAnim, *pNode, "", &ip, true);
 		}
 		view->setAutoAnimation (autoAnim);
 
@@ -247,6 +253,9 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 					// Create a skeleton
 					INode *skeletonRoot=CExportNel::getSkeletonRootBone (*pNode);
 
+					// HULUD TEST
+					//skeletonRoot=NULL;
+					
 					// Skeleton exist ?
 					if (skeletonRoot)
 					{
@@ -291,7 +300,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				}
 
 				// Add tracks
-				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip);
+				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip, true);
 				
 			}
 			ProgBar.updateProgressBar (nNbMesh);

@@ -7,12 +7,51 @@
 #include "nel/misc/common.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/algo.h"
 
 #include <vector>
 #include <string>
 
 using namespace std;
 using namespace NLMISC;
+
+// ---------------------------------------------------------------------------
+
+class CWildCard
+{
+public:
+	string		Expression;
+	bool		Not;
+};
+std::vector<CWildCard>	WildCards;
+
+// ---------------------------------------------------------------------------
+
+bool keepFile (const char *fileName)
+{
+	uint i;
+	bool ifPresent = false;
+	bool ifTrue = false;
+	string file = strlwr(CFile::getFilename (fileName));
+	for (i=0; i<WildCards.size(); i++)
+	{
+		if (WildCards[i].Not)
+		{
+			// One ifnot condition met and the file is not added
+			if (testWildCard(file.c_str(), WildCards[i].Expression.c_str()))
+				return false;
+		}
+		else
+		{
+			ifPresent = true;
+			ifTrue |= testWildCard(file.c_str(), WildCards[i].Expression.c_str());
+		}
+	}
+
+	return !ifPresent || ifTrue;
+}
+
+// ---------------------------------------------------------------------------
 
 struct BNPFile
 {
@@ -130,24 +169,27 @@ void packSubRecurse ()
 	uint i;
 	for (i=0; i<pathContent.size(); i++)
 	{
-		BNPFile ftmp;
+		if (keepFile (pathContent[i].c_str()))
+		{
+			BNPFile ftmp;
 
-		// Check if we can read the source file
-		FILE *f = fopen (pathContent[i].c_str(), "rb");
-		if (f != NULL)
-		{
-			fclose (f);
-			ftmp.Name = CFile::getFilename(pathContent[i]);
-			ftmp.Size = CFile::getFileSize(pathContent[i]);
-			ftmp.Pos = gBNPHeader.OffsetFromBeginning;
-			gBNPHeader.Files.push_back(ftmp);
-			gBNPHeader.OffsetFromBeginning += ftmp.Size;
-			append(gDestBNPFile, pathContent[i].c_str(), ftmp.Size);
-			printf("adding %s\n", pathContent[i].c_str());
-		}
-		else
-		{
-			printf("error cannot open %s\n", pathContent[i].c_str());
+			// Check if we can read the source file
+			FILE *f = fopen (pathContent[i].c_str(), "rb");
+			if (f != NULL)
+			{
+				fclose (f);
+				ftmp.Name = CFile::getFilename(pathContent[i]);
+				ftmp.Size = CFile::getFileSize(pathContent[i]);
+				ftmp.Pos = gBNPHeader.OffsetFromBeginning;
+				gBNPHeader.Files.push_back(ftmp);
+				gBNPHeader.OffsetFromBeginning += ftmp.Size;
+				append(gDestBNPFile, pathContent[i].c_str(), ftmp.Size);
+				printf("adding %s\n", pathContent[i].c_str());
+			}
+			else
+			{
+				printf("error cannot open %s\n", pathContent[i].c_str());
+			}
 		}
 	}
 }
@@ -182,10 +224,43 @@ void unpack (const string &dirName)
 void usage()
 {
 	printf ("USAGE : \n");
-	printf ("   bnp_make /p <directory_name> [<destination_path>] [<destination_filename>]\n");
+	printf ("   bnp_make /p <directory_name> [<destination_path>] [<destination_filename>] [option] ... [option]\n");
+	printf ("   option : \n");
+	printf ("      -if wildcard : add the file if it matches the wilcard (at least one 'if' conditions must be met for a file to be adding)\n");
+	printf ("      -ifnot wildcard : add the file if it doesn't match the wilcard (all the 'ifnot' conditions must be met for a file to be adding)\n");
 	printf (" Pack the directory to a bnp file\n");
 	printf ("   bnp_make /u <bnp_file>\n");
 	printf (" Unpack the bnp file to a directory\n");
+}
+
+// ---------------------------------------------------------------------------
+
+uint readOptions (int nNbArg, char **ppArgs)
+{
+	uint i;
+	uint optionCount = 0;
+	for (i=0; i<(uint)nNbArg; i++)
+	{
+		// If ?
+		if ((strcmp (ppArgs[i], "-if") == 0) && ((i+1)<(uint)nNbArg))
+		{
+			CWildCard card;
+			card.Expression = strlwr(string(ppArgs[i+1]));
+			card.Not = false;
+			WildCards.push_back (card);
+			optionCount += 2;
+		}
+		// If not ?
+		if ((strcmp (ppArgs[i], "-ifnot") == 0) && ((i+1)<(uint)nNbArg))
+		{
+			CWildCard card;
+			card.Expression = strlwr(string(ppArgs[i+1]));
+			card.Not = true;
+			WildCards.push_back (card);
+			optionCount += 2;
+		}
+	}
+	return optionCount;
 }
 
 // ---------------------------------------------------------------------------
@@ -201,6 +276,10 @@ int main (int nNbArg, char **ppArgs)
 		(strcmp(ppArgs[1], "-p") == 0) || (strcmp(ppArgs[1], "-P") == 0))
 	{
 		// Pack a directory
+		uint count = readOptions (nNbArg, ppArgs);
+		nNbArg -= count;
+
+		// Read options
 
 		char sCurDir[MAX_PATH];
 

@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.4 2001/11/07 17:42:00 legros Exp $
+ * $Id: retrievable_surface.h,v 1.5 2001/11/29 16:37:07 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,6 +165,7 @@ public:
 	const CSurfaceQuadTree				&getQuadTree() const { return _Quad; }
 	sint32								getTopology(uint model) const { return _Topologies[model]; }
 	uint32								getFlags() const { return _Flags; }
+	float								getWaterHeight() const { return _WaterHeight; }
 
 	/// Gets links from this surface to its neighbors through chains...
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }

@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.13 2001/09/12 10:25:11 legros Exp $
+ * $Id: u_global_retriever.h,v 1.14 2001/11/29 16:36:53 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,10 @@ public:
 	  * Tests if the global position is a interior position
 	  */
 	virtual bool					isInterior(const UGlobalPosition &pos) const =0;
+	/**
+	  * Tests if the global position is immerged
+	  */
+	virtual bool					isWaterPosition(const UGlobalPosition &pos, float &waterHeight) const =0;
 
 	///
 	virtual float					distanceToBorder(const UGlobalPosition &pos) const =0;

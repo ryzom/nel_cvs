@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.16 2001/09/12 10:07:05 legros Exp $
+ * $Id: global_retriever.h,v 1.17 2001/11/29 16:37:07 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,6 +192,21 @@ public:
 			return false;
 
 		return (_Instances[pos.InstanceId].getType() == CLocalRetriever::Interior);
+	}
+
+	/// Test if the position is in water
+	bool							isWaterPosition(const UGlobalPosition &pos, float &waterHeight) const
+	{
+		if (pos.InstanceId < 0 || pos.InstanceId >= (sint)_Instances.size())
+			return false;
+
+		const CRetrieverInstance	&instance = _Instances[pos.InstanceId];
+		const CLocalRetriever		&retriever = getRetriever(instance.getRetrieverId());
+		const CRetrievableSurface	&surface = retriever.getSurface(pos.LocalPosition.Surface);
+
+		waterHeight = surface.getWaterHeight();
+
+		return (surface.getFlags() & CRetrievableSurface::IsUnderWaterBit) != 0;
 	}
 
 	//@}

@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.1 2002/05/17 06:28:04 corvazier Exp $
+ * $Id: form.h,v 1.2 2002/05/17 11:38:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,8 +45,8 @@ class CForm : public UForm
 public:
 
 	// From UForm
-	UFormElm&		getRootElement ();
-	const UFormElm& getRootElement () const;
+	UFormElm&		getRootNode ();
+	const UFormElm& getRootNode () const;
 
 #pragma warning (disable : 4355)
 	CForm () : Elements (this, NULL, NULL, 0xffffffff) {};

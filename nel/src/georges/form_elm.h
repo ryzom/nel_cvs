@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.1 2002/05/17 06:28:05 corvazier Exp $
+ * $Id: form_elm.h,v 1.2 2002/05/17 11:38:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,8 +78,8 @@ public:
 	virtual UFormElm	*getParent () const;
 	virtual bool	isArray () const;
 	virtual bool	getArraySize (uint &size) const;
-	virtual bool	getArrayElement (const UFormElm **result, uint arrayIndex) const;
-	virtual bool	getArrayElement (UFormElm **result, uint arrayIndex);
+	virtual bool	getArrayNode (const UFormElm **result, uint arrayIndex) const;
+	virtual bool	getArrayNode (UFormElm **result, uint arrayIndex);
 	virtual bool	getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
@@ -93,9 +93,9 @@ public:
 	virtual bool	isStruct () const;
 	virtual bool	isVirtualStruct () const;
 	virtual bool	getStructSize (uint &size) const;
-	virtual bool	getStructElementName (uint element, std::string &result) const;
-	virtual bool	getStructElement (uint element, const UFormElm **result) const;
-	virtual bool	getStructElement (uint element, UFormElm **result);
+	virtual bool	getStructNodeName (uint element, std::string &result) const;
+	virtual bool	getStructNode (uint element, const UFormElm **result) const;
+	virtual bool	getStructNode (uint element, UFormElm **result);
 	virtual bool	isAtom () const;
 	virtual bool	getValue (std::string &result, bool evaluate) const;
 	virtual bool	getValue (sint8 &result, bool evaluate) const;
@@ -198,9 +198,9 @@ public:
 	// From UFormElm
 	bool				isStruct () const;
 	bool				getStructSize (uint &size) const;
-	bool				getStructElementName (uint element, std::string &result) const;
-	bool				getStructElement (uint element, const UFormElm **result) const;
-	bool				getStructElement (uint element, UFormElm **result);
+	bool				getStructNodeName (uint element, std::string &result) const;
+	bool				getStructNode (uint element, const UFormElm **result) const;
+	bool				getStructNode (uint element, UFormElm **result);
 
 	// From CFormElm
 	bool				isUsed (const CForm *form) const;
@@ -260,8 +260,8 @@ public:
 	// From UFormElm
 	bool				isArray () const;
 	bool				getArraySize (uint &size) const;
-	bool				getArrayElement (const UFormElm **result, uint arrayIndex) const;
-	bool				getArrayElement (UFormElm **result, uint arrayIndex);
+	bool				getArrayNode (const UFormElm **result, uint arrayIndex) const;
+	bool				getArrayNodegetArrayNode (UFormElm **result, uint arrayIndex);
 	bool				getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool				getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool				getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;

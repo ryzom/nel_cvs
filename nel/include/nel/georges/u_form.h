@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form interface class
  *
- * $Id: u_form.h,v 1.1 2002/05/17 06:34:14 corvazier Exp $
+ * $Id: u_form.h,v 1.2 2002/05/17 11:38:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,10 +48,10 @@ public:
 	  */
 
 	/// Get a mutable pointer on the root element of the form. It is a struct node.
-	virtual UFormElm&		getRootElement () = 0;
+	virtual UFormElm&		getRootNode () = 0;
 
 	/// Get a const pointer on the root element of the form. It is a struct node.
-	virtual const UFormElm& getRootElement () const = 0;
+	virtual const UFormElm& getRootNode () const = 0;
 };
 
 

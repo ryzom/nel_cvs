@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.3 2002/05/17 06:31:04 corvazier Exp $
+ * $Id: form.cpp,v 1.4 2002/05/17 11:38:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,14 +43,14 @@ UForm::~UForm ()
 
 // ***************************************************************************
 
-UFormElm& CForm::getRootElement ()
+UFormElm& CForm::getRootNode ()
 {
 	return Elements;
 }
 
 // ***************************************************************************
 
-const UFormElm& CForm::getRootElement () const
+const UFormElm& CForm::getRootNode () const
 {
 	return Elements;
 }

@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.1 2002/05/17 06:28:04 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.2 2002/05/17 11:38:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,17 +59,17 @@ bool CFormElm::getArraySize (uint &size) const
 
 // ***************************************************************************
 
-bool CFormElm::getArrayElement (const UFormElm **result, uint arrayIndex) const
+bool CFormElm::getArrayNode (const UFormElm **result, uint arrayIndex) const
 { 
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false; 
 };
 
 // ***************************************************************************
 
-bool CFormElm::getArrayElement (UFormElm **result, uint arrayIndex) 
+bool CFormElm::getArrayNode (UFormElm **result, uint arrayIndex) 
 { 
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false; 
 };
 
@@ -77,7 +77,7 @@ bool CFormElm::getArrayElement (UFormElm **result, uint arrayIndex)
 
 bool CFormElm::getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -85,7 +85,7 @@ bool CFormElm::getArrayValue (std::string &result, uint arrayIndex, bool evaluat
 
 bool CFormElm::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -93,7 +93,7 @@ bool CFormElm::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWh
 
 bool CFormElm::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -101,7 +101,7 @@ bool CFormElm::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWh
 
 bool CFormElm::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -109,7 +109,7 @@ bool CFormElm::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -117,7 +117,7 @@ bool CFormElm::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -125,7 +125,7 @@ bool CFormElm::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -133,7 +133,7 @@ bool CFormElm::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -141,7 +141,7 @@ bool CFormElm::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWh
 
 bool CFormElm::getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -149,7 +149,7 @@ bool CFormElm::getArrayValue (double &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayElement) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
 	return false;
 }
 
@@ -177,25 +177,25 @@ bool CFormElm::getStructSize (uint &size) const
 
 // ***************************************************************************
 
-bool CFormElm::getStructElementName (uint element, string &result) const 
+bool CFormElm::getStructNodeName (uint element, string &result) const 
 { 
-	nlwarning ("Georges (CFormElm::getStructElementName) : this node is not a struct"); 
+	nlwarning ("Georges (CFormElm::getStructNodeName) : this node is not a struct"); 
 	return false; 
 };
 
 // ***************************************************************************
 
-bool CFormElm::getStructElement (uint element, const UFormElm **result) const 
+bool CFormElm::getStructNode (uint element, const UFormElm **result) const 
 { 
-	nlwarning ("Georges (CFormElm::getStructElement) : this node is not a struct"); 
+	nlwarning ("Georges (CFormElm::getStructNode) : this node is not a struct"); 
 	return false; 
 };
 
 // ***************************************************************************
 
-bool CFormElm::getStructElement (uint element, UFormElm **result) 
+bool CFormElm::getStructNode (uint element, UFormElm **result) 
 { 
-	nlwarning ("Georges (CFormElm::getStructElement) : this node is not a struct"); 
+	nlwarning ("Georges (CFormElm::getStructNode) : this node is not a struct"); 
 	return false; 
 };
 
@@ -788,7 +788,7 @@ bool CFormElm::getNodeByName (const char *name, const CFormDfn **parentDfn, uint
 
 						// New current node
 						const UFormElm *elt;
-						nlverify ((*node)->getArrayElement(&elt, arrayIndex));
+						nlverify ((*node)->getArrayNode(&elt, arrayIndex));
 						*node = (const CFormElm*)elt; 
 
 						// Is a dfn ?
@@ -925,7 +925,7 @@ bool CFormElmStruct::getStructSize (uint &size) const
 
 // ***************************************************************************
 
-bool CFormElmStruct::getStructElementName (uint element, string &result) const 
+bool CFormElmStruct::getStructNodeName (uint element, string &result) const 
 {
 	if (element<Elements.size())
 	{
@@ -934,14 +934,14 @@ bool CFormElmStruct::getStructElementName (uint element, string &result) const
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmStruct::getStructElementName) : Index (%d) out of bound (%d)", element, Elements.size() );
+		nlwarning ("Georges (CFormElmStruct::getStructNodeName) : Index (%d) out of bound (%d)", element, Elements.size() );
 		return false;
 	}
 };
 
 // ***************************************************************************
 
-bool CFormElmStruct::getStructElement (uint element, const UFormElm **result) const 
+bool CFormElmStruct::getStructNode (uint element, const UFormElm **result) const 
 {
 	if (element<Elements.size())
 	{
@@ -950,14 +950,14 @@ bool CFormElmStruct::getStructElement (uint element, const UFormElm **result) co
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmStruct::getStructElement) : Index (%d) out of bound (%d)", element, Elements.size() );
+		nlwarning ("Georges (CFormElmStruct::getStructNode) : Index (%d) out of bound (%d)", element, Elements.size() );
 		return false;
 	}
 };
 
 // ***************************************************************************
 
-bool CFormElmStruct::getStructElement (uint element, UFormElm **result) 
+bool CFormElmStruct::getStructNode (uint element, UFormElm **result) 
 {
 	if (element<Elements.size())
 	{
@@ -966,7 +966,7 @@ bool CFormElmStruct::getStructElement (uint element, UFormElm **result)
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmStruct::getStructElement) : Index (%d) out of bound (%d)", element, Elements.size() );
+		nlwarning ("Georges (CFormElmStruct::getStructNode) : Index (%d) out of bound (%d)", element, Elements.size() );
 		return false;
 	}
 };
@@ -1451,7 +1451,7 @@ bool CFormElmArray::getArraySize (uint &size) const
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayElement (const UFormElm **result, uint arrayIndex) const 
+bool CFormElmArray::getArrayNode (const UFormElm **result, uint arrayIndex) const 
 {
 	if (arrayIndex<Elements.size())
 	{
@@ -1460,14 +1460,14 @@ bool CFormElmArray::getArrayElement (const UFormElm **result, uint arrayIndex) c
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayElement) : Index (%d) out of bound (%d)", arrayIndex, Elements.size() );
+		nlwarning ("Georges (CFormElmArray::getArrayNode) : Index (%d) out of bound (%d)", arrayIndex, Elements.size() );
 		return false;
 	}
 };
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayElement (UFormElm **result, uint arrayIndex) 
+bool CFormElmArray::getArrayNode (UFormElm **result, uint arrayIndex) 
 {
 	if (arrayIndex<Elements.size())
 	{
@@ -1476,7 +1476,7 @@ bool CFormElmArray::getArrayElement (UFormElm **result, uint arrayIndex)
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayElement) : Index (%d) out of bound (%d)", arrayIndex, Elements.size() );
+		nlwarning ("Georges (CFormElmArray::getArrayNode) : Index (%d) out of bound (%d)", arrayIndex, Elements.size() );
 		return false;
 	}
 };

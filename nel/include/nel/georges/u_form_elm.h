@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.1 2002/05/17 06:34:14 corvazier Exp $
+ * $Id: u_form_elm.h,v 1.2 2002/05/17 11:38:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,14 +127,14 @@ public:
 	  * If return true, fill result with the arrayIndex cell's element 
 	  * Can be NULL if the node doesn't exist.
 	  */
-	virtual bool	getArrayElement (const UFormElm **result, uint arrayIndex) const = 0;
+	virtual bool	getArrayNode (const UFormElm **result, uint arrayIndex) const = 0;
 
 	/**
 	  * Get a array sub element mutable pointer.
 	  * If return true, fill result with the arrayIndex cell's element pointer.
 	  * Can be NULL if the node doesn't exist.
 	  */
-	virtual bool	getArrayElement (UFormElm **result, uint arrayIndex) = 0;
+	virtual bool	getArrayNode (UFormElm **result, uint arrayIndex) = 0;
 
 
 	/**
@@ -172,13 +172,13 @@ public:
 	virtual bool	getStructSize (uint &size) const = 0;
 
 	/// Return the element name
-	virtual bool	getStructElementName (uint element, std::string &result) const = 0;
+	virtual bool	getStructNodeName (uint element, std::string &result) const = 0;
 
 	/// Return a const element pointer. Can be NULL if the node doesn't exist.
-	virtual bool	getStructElement (uint element, const UFormElm **result) const = 0;
+	virtual bool	getStructNode (uint element, const UFormElm **result) const = 0;
 
 	/// Return a mutable element pointer. Can be NULL if the node doesn't exist.
-	virtual bool	getStructElement (uint element, UFormElm **result) = 0;
+	virtual bool	getStructNode (uint element, UFormElm **result) = 0;
 
 
 	// ** Atom element methods

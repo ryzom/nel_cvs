@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.7 2001/11/21 16:05:12 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.8 2001/11/21 18:12:24 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -43,11 +43,11 @@ static std::auto_ptr<CVertexProgram> WaterVP(NULL);
 const char *WaterVpCode = "!!VP1.0\n\
 					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
 					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-					  MAX R2, R2, c[18];            # avoid imprecision around 0				\n\
+					  MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
 					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
 					  RCP R3, R2.x;																\n\
 					  MUL R3, c[6], R3;															\n\
-					  ADD R3, c[17], -R3;														\n\
+					  ADD R3, c[15], -R3;														\n\
 					  MAX R3, c[5],	R3;															\n\
 					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
 					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
@@ -60,10 +60,10 @@ const char *WaterVpCode = "!!VP1.0\n\
 					  DP4 o[HPOS].y, c[1], R4;													\n\
 					  DP4 o[HPOS].z, c[2], R4;													\n\
 					  DP4 o[HPOS].w, c[3], R4;													\n\
-					  MUL R3, v[0], c[12];			#compute bump 0 uv's						\n\
-					  ADD o[TEX0].xy, R3, c[11];												\n\
-					  MUL R3, v[0], c[14];			#compute bump 1 uv's						\n\
-					  ADD o[TEX1].xy, R3, c[13];												\n\
+					  MUL R3, v[0], c[10];			#compute bump 0 uv's						\n\
+					  ADD o[TEX0].xy, R3, c[9];												\n\
+					  MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\
+					  ADD o[TEX1].xy, R3, c[11];												\n\
 					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
 					  DP3 R2.x, R1, R0;\n\
 					  MUL R0, R0, R2.x;\n\
@@ -77,11 +77,11 @@ const char *WaterVpCode = "!!VP1.0\n\
 const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
 					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
 					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-					  MAX R2, R2, c[18];            # avoid imprecision around 0				\n\
+					  MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
 					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
 					  RCP R3, R2.x;																\n\
 					  MUL R3, c[6], R3;															\n\
-					  ADD R3, c[17], -R3;														\n\
+					  ADD R3, c[15], -R3;														\n\
 					  MAX R3, c[5],	R3;															\n\
 					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
 					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
@@ -94,12 +94,12 @@ const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
 					  DP4 o[HPOS].y, c[1], R4;													\n\
 					  DP4 o[HPOS].z, c[2], R4;													\n\
 					  DP4 o[HPOS].w, c[3], R4;													\n\
-					  MUL R3, v[0], c[12];			#compute bump 0 uv's						\n\
-					  ADD o[TEX0].xy, R3, c[11];												\n\
-					  MUL R3, v[0], c[14];			#compute bump 1 uv's						\n\
-					  ADD o[TEX1].xy, R3, c[13];												\n\
-					  DP4 o[TEX3].x, R4, c[15]; #compute uv for diffuse texture				\n\
-					  DP4 o[TEX3].y, R4, c[16];												\n\
+					  MUL R3, v[0], c[10];			#compute bump 0 uv's						\n\
+					  ADD o[TEX0].xy, R3, c[9];												\n\
+					  MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\
+					  ADD o[TEX1].xy, R3, c[11];												\n\
+					  DP4 o[TEX3].x, R4, c[13]; #compute uv for diffuse texture				\n\
+					  DP4 o[TEX3].y, R4, c[14];												\n\
 					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
 					  DP3 R2.x, R1, R0;\n\
 					  MUL R0, R0, R2.x;\n\
@@ -115,11 +115,11 @@ const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
 const char *WaterVpCode2Stages = "!!VP1.0\n\
 					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
 					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-					  MAX R2, R2, c[18];            # avoid imprecision around 0				\n\
+					  MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
 					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
 					  RCP R3, R2.x;																\n\
 					  MUL R3, c[6], R3;															\n\
-					  ADD R3, c[17], -R3;														\n\
+					  ADD R3, c[15], -R3;														\n\
 					  MAX R3, c[5],	R3;															\n\
 					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
 					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
@@ -144,11 +144,11 @@ const char *WaterVpCode2Stages = "!!VP1.0\n\
 const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
 					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
 					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-					  MAX R2, R2, c[18];            # avoid imprecision around 0				\n\
+					  MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
 					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
 					  RCP R3, R2.x;																\n\
 					  MUL R3, c[6], R3;															\n\
-					  ADD R3, c[17], -R3;														\n\
+					  ADD R3, c[15], -R3;														\n\
 					  MAX R3, c[5],	R3;															\n\
 					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
 					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
@@ -161,8 +161,8 @@ const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
 					  DP4 o[HPOS].y, c[1], R4;													\n\
 					  DP4 o[HPOS].z, c[2], R4;													\n\
 					  DP4 o[HPOS].w, c[3], R4;													\n\
-					  DP4 o[TEX1].x, v[0], c[15];\n\
-					  DP4 o[TEX1].y, v[0], c[16];\n\
+					  DP4 o[TEX1].x, v[0], c[13];\n\
+					  DP4 o[TEX1].y, v[0], c[14];\n\
 					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
 					  DP3 R2.x, R1, R0;\n\
 					  MUL R0, R0, R2.x;\n\

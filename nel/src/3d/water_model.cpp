@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.10 2001/11/21 16:02:48 vizerie Exp $
+ * $Id: water_model.cpp,v 1.11 2001/11/21 18:12:24 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include "3d/dru.h"
 #include "3d/scene.h"
 #include "nel/misc/vector_2d.h"
+#include "nel/misc/vector_h.h"
+
 
 
 
@@ -789,6 +791,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 
 void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight)
 {
+
 	CMaterial WaterMat;
 	WaterMat.setLighting(false);
 	WaterMat.setDoubleSided(true);	
@@ -800,7 +803,11 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 	WaterMat.setZWrite(false);
 	if (drv->isVertexProgramSupported())
 	{
+		const uint cstOffset = 4; // 4 places for the matrix
+		NLMISC::CVectorH cst[12];
 
+		nlassert(sizeof(NLMISC::CVectorH) == 4 * sizeof(float)); // if this fails, should be replaced with a tab of float
+		
 		//=========================//
 		//	setup Water material   //
 		//=========================//
@@ -851,26 +858,28 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 			WaterMat.setTexture(alphaMapStage, shape->_ColorMap);
 
 			// setup 2x3 matrix for lookup in diffuse map
-			drv->setConstant(15, shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatPos.x); 
-			drv->setConstant(16, shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatPos.y);
-			drv->setConstant(17, 0.1f, 0.1f, 0.1f, 0.1f); // used to avoid imprecision when performing a RSQ to get distance from the origin
+			cst[13 - cstOffset].set(shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatPos.x); 
+			cst[14 - cstOffset].set(shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatPos.y);			
 			WaterMat.texEnvOpRGB(alphaMapStage, CMaterial::Modulate);
 			WaterMat.texEnvOpAlpha(alphaMapStage, CMaterial::Modulate);
 		}
+		else
+		{
+			cst[13 - cstOffset].set(0, 0, 0, 0);
+			cst[14 - cstOffset].set(0, 0, 0, 0);			
+		}
 
-		
-		
-		//================================//
-		// setup vertex program contants  //
-		//================================//
+		cst[16 - cstOffset].set(0.1f, 0.1f, 0.1f, 0.1f); // used to avoid imprecision when performing a RSQ to get distance from the origin
+
+					
 
 
-		drv->setConstant(5, 0.f, 0.f, 0.f, 0.f); // claping negative values to 0
+		cst[5  - cstOffset].set(0.f, 0.f, 0.f, 0.f); // claping negative values to 0
 
 		// slope of attenuation of normal / height with distance		
 		const float invMaxDist = shape->_WaveHeightFactor / maxDist;
-		drv->setConstant(6, invMaxDist, invMaxDist, invMaxDist, invMaxDist); // upcoming light vector
-		drv->setConstant(17, shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor);
+		cst[6  - cstOffset].set(invMaxDist, invMaxDist, invMaxDist, invMaxDist); // upcoming light vector
+		cst[15  - cstOffset].set(shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor);
 
 				
 
@@ -880,21 +889,24 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 		// retrieve current time
 		float date  = 0.001f * NLMISC::CTime::getLocalTime();
 		// set bumpmaps pos
-		drv->setConstant(11, date * shape->_HeightMapSpeed[0].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 0 offset
-		drv->setConstant(12, shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 0); // bump map 0 scale
-		drv->setConstant(13, date * shape->_HeightMapSpeed[1].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 1 offset
-		drv->setConstant(14, shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 0); // bump map 1 scale
+		cst[9  - cstOffset].set(date * shape->_HeightMapSpeed[0].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 0 offset
+		cst[10  - cstOffset].set(shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 0); // bump map 0 scale
+		cst[11  - cstOffset].set(date * shape->_HeightMapSpeed[1].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 1 offset
+		cst[12  - cstOffset].set(shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 0); // bump map 1 scale
 
 				
 			
 		
 
 
-		drv->setConstant(4, 1.f, 1.f, 1.f, 1.f); // use with min man, and to get the 1 constant		
-		drv->setConstant(7, obsPos.x, obsPos.y, obsPos.z - zHeight, 0.f);
-		drv->setConstant(8, 0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
+		cst[4  - cstOffset].set(1.f, 1.f, 1.f, 1.f); // use with min man, and to get the 1 constant		
+		cst[7  - cstOffset] .set(obsPos.x, obsPos.y, obsPos.z - zHeight, 0.f);
+		cst[8  - cstOffset].set(0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
 
 	
+		/// set all our constants in one call
+		drv->setConstant(4, sizeof(cst) / (4 * sizeof(float)), (float *) &cst[0]);
+
 		shape->initVertexProgram();		
 		bool result;
 		if (drv->getNbTextureStages() >= 4)

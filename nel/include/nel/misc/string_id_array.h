@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * <File description>
  *
- * $Id: string_id_array.h,v 1.6 2001/03/16 17:17:56 lecroart Exp $
+ * $Id: string_id_array.h,v 1.7 2001/03/20 13:15:35 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -150,6 +150,13 @@ public:
 	}
 
 	void ignoreAllUnknownId (bool b) { _IgnoreAllUnknownId = b; }
+
+	void clear ()
+	{
+		_StringArray.clear ();
+		_NeedToAskStringArray.clear ();
+		_AskedStringArray.clear ();
+	}
 
 private:
 

@@ -84,7 +84,9 @@ void *nlGetSymbolAddress(NL_LIB_HANDLE libHandle, const std::string &procName)
 
 // Compilation mode specific suffixes
 #if defined (NL_OS_WINDOWS)
- #ifdef NL_DEBUG_FAST
+ #ifdef NL_DEBUG_INSTRUMENT
+  const string	NL_LIB_SUFFIXE("_di");
+ #elif defined (NL_DEBUG_FAST)
    const string	NL_LIB_SUFFIXE("_df");
  #elif defined (NL_DEBUG)
    const string	NL_LIB_SUFFIXE("_d");

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.50 2003/09/23 14:21:49 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.51 2003/11/04 09:42:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,6 +106,14 @@ void CPSEmitter::releaseRefTo(const CParticleSystemProcess *other)
 void CPSEmitter::releaseAllRef()
 {
 	setEmittedType(NULL);
+}
+
+
+///==========================================================================
+void CPSEmitter::setOwner(CPSLocated *psl)
+{
+	CPSLocatedBindable::setOwner(psl);
+	updateMaxCountVect();
 }
 
 
@@ -2017,13 +2025,12 @@ void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 ///==========================================================================
 void	CPSEmitter::updateMaxCountVect()
 {
-	if (!_MaxEmissionCount)
+	if (!_MaxEmissionCount || !_Owner)
 	{
 		_NumEmission.resize(0);
 	}
 	else
-	{
-		nlassert(_Owner);
+	{		
 		_NumEmission.resize(_Owner->getMaxSize());
 		while (_NumEmission.getSize() != 0) 
 		{		

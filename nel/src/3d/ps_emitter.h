@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.25 2003/08/19 12:52:51 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.26 2003/11/04 09:42:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -259,6 +259,9 @@ public:
 	  * NB : If the emitter isn't inserted in a CPSLocated instance, an assertion will be reaised
 	  */
 	bool					testEmitForever() const;
+
+	// from CPSLocated
+	virtual void setOwner(CPSLocated *psl);	
 
 protected:	
 

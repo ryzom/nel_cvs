@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.9 2002/03/12 16:28:45 berenguier Exp $
+ * $Id: instance_lighter.cpp,v 1.10 2002/03/14 10:16:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1004,7 +1004,7 @@ void			CInstanceLighter::addStaticPointLight(const CPointLightNamed &pln)
 	// compute plRT.OODeltaAttenuation
 	plRT.OODeltaAttenuation= pln.getAttenuationEnd() - pln.getAttenuationBegin();
 	if(plRT.OODeltaAttenuation <=0 )
-		plRT.OODeltaAttenuation= 0;
+		plRT.OODeltaAttenuation= 1e10f;
 	else
 		plRT.OODeltaAttenuation= 1.0f / plRT.OODeltaAttenuation;
 	// compute plRT.BSphere
@@ -1142,6 +1142,9 @@ bool	CInstanceLighter::CPredPointLightToPoint::operator() (CPointLightRT *pla, C
 	float	rb= (plb->BSphere.Center - Point).norm();
 	float	infA= (pla->PointLight.getAttenuationEnd() - ra) * pla->OODeltaAttenuation;
 	float	infB= (plb->PointLight.getAttenuationEnd() - rb) * plb->OODeltaAttenuation;
+	// It is important to clamp, else strange results...
+	clamp(infA, 0.f, 1.f);
+	clamp(infB, 0.f, 1.f);
 	// return which light impact the most.
 	// If same impact
 	if(infA==infB)

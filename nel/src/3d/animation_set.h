@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.8 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: animation_set.h,v 1.9 2004/11/19 18:13:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,6 +120,7 @@ public:
 	  */
 	const std::string& getAnimationName (uint animationId) const
 	{
+		nlassert(animationId<_AnimationName.size());
 		return _AnimationName[animationId];
 	}
 
@@ -128,6 +129,7 @@ public:
 	  */
 	const CAnimation* getAnimation (uint animationId) const
 	{
+		nlassert(animationId<_Animation.size());
 		return _Animation[animationId];
 	}
 
@@ -136,6 +138,7 @@ public:
 	  */
 	CAnimation* getAnimation (uint animationId)
 	{
+		nlassert(animationId<_Animation.size());
 		return _Animation[animationId];
 	}
 
@@ -165,6 +168,7 @@ public:
 	  */
 	const std::string& getSkeletonWeightName (uint skeletonId) const
 	{
+		nlassert(skeletonId<_SkeletonWeightName.size());
 		return _SkeletonWeightName[skeletonId];
 	}
 
@@ -173,6 +177,7 @@ public:
 	  */
 	const CSkeletonWeight* getSkeletonWeight (uint skeletonId) const
 	{
+		nlassert(skeletonId<_SkeletonWeight.size());
 		return _SkeletonWeight[skeletonId];
 	}
 
@@ -181,6 +186,7 @@ public:
 	  */
 	CSkeletonWeight* getSkeletonWeight (uint skeletonId)
 	{
+		nlassert(skeletonId<_SkeletonWeight.size());
 		return _SkeletonWeight[skeletonId];
 	}
 

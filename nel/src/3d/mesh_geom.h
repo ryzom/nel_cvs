@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.5 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: mesh_geom.h,v 1.6 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ namespace NL3D
 
 class IDriver;
 class CTransformShape;
+class CMeshBaseInstance;
 using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
@@ -63,6 +64,11 @@ public:
 	IMeshGeom() {}
 	/// dtor
 	virtual ~IMeshGeom() {}
+
+
+	/** store usefull information for this meshGeom in the instance. Used for IMeshVertexProgram as example
+	 */
+	virtual	void	initInstance(CMeshBaseInstance *mbi) =0;
 
 
 	/** clip this shape with a pyramid.

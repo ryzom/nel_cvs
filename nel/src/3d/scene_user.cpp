@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.10 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.11 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -249,6 +249,28 @@ void			CSceneUser::deletePointLight(UPointLight *light)
 {
 	// The component is auto added/deleted to _Scene in ctor/dtor.
 	_Transforms.erase(dynamic_cast<CTransformUser*>(light));
+}
+
+
+// ***************************************************************************
+void			CSceneUser::setGlobalWindPower(float gwp)
+{
+	_Scene.setGlobalWindPower(gwp);
+}
+// ***************************************************************************
+float			CSceneUser::getGlobalWindPower() const
+{
+	return _Scene.getGlobalWindPower();
+}
+// ***************************************************************************
+void			CSceneUser::setGlobalWindDirection(const CVector &gwd)
+{
+	_Scene.setGlobalWindDirection(gwd);
+}
+// ***************************************************************************
+const CVector	&CSceneUser::getGlobalWindDirection() const
+{
+	return _Scene.getGlobalWindDirection();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.16 2001/10/15 14:21:39 berenguier Exp $
+ * $Id: mesh.h,v 1.17 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "3d/mesh_base.h"
 #include "3d/mesh_geom.h"
 #include "3d/mesh_morpher.h"
+#include "3d/mesh_vertex_program.h"
 #include <set>
 #include <vector>
 
@@ -160,6 +161,9 @@ public:
 		// Link between VB and max vertex indices
 		std::vector<CVertLink>		VertLink; // Filled when called build
 
+		// MeshVertexProgram to copy to meshGeom.
+		NLMISC::CSmartPtr<IMeshVertexProgram>	MeshVertexProgram;
+
 		// Serialization
 		//void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
@@ -275,6 +279,9 @@ public:
 
 	/// \name From IMeshGeom
 	// @{
+
+	/// Init instance info.
+	virtual	void	initInstance(CMeshBaseInstance *mbi);
 
 	/// clip this mesh
 	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
@@ -523,6 +530,11 @@ private:
 
 	// The Mesh Morpher
 	CMeshMorpher	*_MeshMorpher; 
+
+
+	// Possible MeshVertexProgram to apply at render()
+	NLMISC::CSmartPtr<IMeshVertexProgram>	_MeshVertexProgram;
+
 
 private:
 	// Locals, for build.

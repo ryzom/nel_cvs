@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.63 2002/02/18 12:55:29 lecroart Exp $
+ * $Id: scene.cpp,v 1.64 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,6 +134,9 @@ CScene::CScene()
 	_FirstAnimateCall = true ;
 
 	_LightingSystemEnabled= false;
+
+	_GlobalWindDirection.set(1,0,0);
+	_GlobalWindPower= 1.f;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -774,6 +777,26 @@ void		CScene::setLightTransitionThreshold(float lightTransitionThreshold)
 float		CScene::getLightTransitionThreshold() const
 {
 	return LightTrav->LightingManager.getLightTransitionThreshold();
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+/// Weather mgt
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+void		CScene::setGlobalWindPower(float gwp)
+{
+	_GlobalWindPower= gwp;
+}
+// ***************************************************************************
+void		CScene::setGlobalWindDirection(const CVector &gwd)
+{
+	_GlobalWindDirection= gwd;
+	_GlobalWindDirection.z= 0;
+	_GlobalWindDirection.normalize();
 }
 
 

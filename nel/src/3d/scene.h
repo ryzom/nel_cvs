@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.18 2002/02/06 16:55:16 berenguier Exp $
+ * $Id: scene.h,v 1.19 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -347,6 +347,34 @@ public:
 
 	//@}
 
+
+	/// \name Weather mgt
+	//@{
+
+	/// Set the current windPower for all the scene. 0-1.
+	void			setGlobalWindPower(float gwp);
+	/// get the current windPower
+	float			getGlobalWindPower() const {return _GlobalWindPower;}
+
+	/// Set the current windDirection for all the scene. dir.z set to 0 and vector normalized.
+	void			setGlobalWindDirection(const CVector &gwd);
+	/// get the current windDirection
+	const CVector	&getGlobalWindDirection() const {return _GlobalWindDirection;}
+
+	//@}
+
+
+	/// \name Trav accessor. Use it with caution. (used for mesh rendering)
+	//@{
+	CHrcTrav			*getHrcTrav() const {return HrcTrav;}
+	CClipTrav			*getClipTrav() const {return ClipTrav;}
+	CLightTrav			*getLightTrav() const {return LightTrav;}
+	CAnimDetailTrav		*getAnimDetailTrav() const {return AnimDetailTrav;}
+	CLoadBalancingTrav	*getLoadBalancingTrav() const {return LoadBalancingTrav;}
+	CRenderTrav			*getRenderTrav() const {return RenderTrav;}
+	//@}
+
+
 	/// Get a ref. to the particle system manager. You shouldn't call this (has methods for private processing)
 	CParticleSystemManager &getParticleSystemManager();
 
@@ -426,6 +454,12 @@ private:
 		CParticleSystemManager	_ParticleSystemManager;
 	//@}
 
+
+	/// \name Weather mgt
+	//@{
+	float						_GlobalWindPower;
+	CVector						_GlobalWindDirection;
+	//@}
 
 };
 

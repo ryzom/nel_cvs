@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.9 2002/02/06 16:55:16 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.10 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,12 +135,18 @@ public:
 	/// Select a texture set for this mesh (if available)
 	void selectTextureSet(uint index);
 
+
+	/// Get the scene which owns this instance.
+	CScene				*getScene() const {return _OwnerScene;}
+
+
 protected:
 	/// Constructor
 	CMeshBaseInstance()
 	{
 		IAnimatable::resize(AnimValueLast);
 		_ApplySkinOk= false;
+		_OwnerScene= NULL;
 	}
 	/// Destructor
 	virtual ~CMeshBaseInstance() {}
@@ -172,6 +178,15 @@ private:
 
 	/// Skinning. true if skinned to the _Skeleton.
 	bool		_ApplySkinOk;
+
+	/// The Scene where the instance is created.
+	CScene		*_OwnerScene;
+
+/// public only for IMeshVertexProgram classes.
+public:
+
+	/// CMeshVPWindTree instance specific part.
+	float		_VPWindTreePhase;		// Phase time of the wind animation. 0-1
 
 };
 

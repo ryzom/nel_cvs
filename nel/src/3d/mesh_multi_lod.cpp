@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.14 2001/09/10 07:41:30 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.15 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,11 +187,19 @@ CTransformShape	*CMeshMultiLod::createInstance(CScene &scene)
 	// Create a CMeshInstance, an instance of a multi lod mesh.
 	CMeshMultiLodInstance *mi=(CMeshMultiLodInstance*)scene.createModel(NL3D::MeshMultiLodInstanceId);
 	mi->Shape= this;
-	mi->Scene= &scene;
 	mi->_LastLodMatrixDate=0;
 
 	// instanciate the material part of the Mesh, ie the CMeshBase.
-	CMeshBase::instanciateMeshBase(mi);
+	CMeshBase::instanciateMeshBase(mi, &scene);
+
+
+	// For all lods, do some instance init for MeshGeom
+	for(uint i=0; i<_MeshVector.size(); i++)
+	{
+		if(_MeshVector[i].MeshGeom)
+			_MeshVector[i].MeshGeom->initInstance(mi);
+	}
+
 
 	return mi;
 }
@@ -271,12 +279,12 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 				if (_StaticLod)
 				{
 					// Get the static coarse mesh manager
-					manager=instance->Scene->getStaticCoarseMeshManager();
+					manager=instance->getScene()->getStaticCoarseMeshManager();
 				}
 				else
 				{
 					// Get the dynamic coarse mesh manager
-					manager=instance->Scene->getDynamicCoarseMeshManager();
+					manager=instance->getScene()->getDynamicCoarseMeshManager();
 				}
 
 				// Manager must exist beacuse a mesh has been loaded...
@@ -448,12 +456,12 @@ void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *tran
 			if (staticLod)
 			{
 				// Get the static coarse mesh manager
-				manager=trans->Scene->getStaticCoarseMeshManager();
+				manager=trans->getScene()->getStaticCoarseMeshManager();
 			}
 			else
 			{
 				// Get the dynamic coarse mesh manager
-				manager=trans->Scene->getDynamicCoarseMeshManager();
+				manager=trans->getScene()->getDynamicCoarseMeshManager();
 			}
 
 			// Manager  exist?

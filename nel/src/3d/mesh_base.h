@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.9 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: mesh_base.h,v 1.10 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -197,7 +197,7 @@ protected:
 	void	buildMeshBase(CMeshBaseBuild &m);
 
 	/// instanciate MeshBase part to an instance (a CMeshBaseInstance).
-	void	instanciateMeshBase(CMeshBaseInstance *mi);
+	void	instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene);
 
 private:
 

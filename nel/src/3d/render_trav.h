@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.6 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: render_trav.h,v 1.7 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/rgba.h"
 #include "nel/3d/viewport.h"
 #include "3d/light_contribution.h"
+#include "3d/light.h"
 #include <vector>
 
 
@@ -47,6 +48,7 @@ class	IBaseHrcObs;
 class	IBaseClipObs;
 class	IBaseLightObs;
 class	IDriver;
+class	CMaterial;
 
 class	CTransform;
 
@@ -169,6 +171,52 @@ public:
 	 */
 	void		changeLightSetup(CLightContribution	*lightContribution, bool useLocalAttenuation);
 
+
+	/** setup the driver VP constants to get info from current LightSetup. 
+	 *	Only 3 Light + SunLights are supported. The VP do NOT support distance/Spot attenuation
+	 *	Also it does not handle World Matrix with non uniform scale correctly since lighting is made in ObjectSpace
+	 *	\param ctStart the program use ctes from ctStart to ctStart+NumCtes.
+	 *	\param supportSpecular asitsounds. PointLights and dirLight are localViewer
+	 *	\param invObjectWM the inverse of object matrix: lights are mul by this. Vp compute in object space.
+	 */
+	void		beginVPLightSetup(uint ctStart, bool supportSpecular, const CMatrix &invObjectWM);
+
+	/** change the driver VP LightSetup constants which depends on material.
+	 */
+	void		changeVPLightSetupMaterial(CMaterial &mat);
+
+
+	/** tool to get a VP fragment which compute lighting with following rules:
+	 *	IN: 
+	 *		- R5  vertex in objectSpace (ie untransformed)
+	 *		- R6  normal in objectSpace (ie untransformed)
+	 *	OUT: 
+	 *		- R6  normal normalized
+	 *		- o[COL0] and o[COL1] are setuped. NB: BF0 and BF1 not computed/setuped.
+	 *	Scratch:
+	 *		- R0, R1, R2, R3, R4
+	 *
+	 *	For information, constant mapping is (add ctStart):
+	 *	if !supportSpecular:
+	 *		- 0:		AmbientColor.
+	 *		- 1..4:		DiffuseColor of 4 lights.
+	 *		- 5:		- (directional Light direction) in objectSpace
+	 *		- 6..8:		light position (3 pointLihgts) in objectSpace
+	 *		- 9:		material Diffuse Alpha copied to output. cte is: {0,0, 1, alphaMat}
+	 *		TOTAL: 10 constants used.
+	 *	if supportSpecular:
+	 *		- 0:		AmbientColor.
+	 *		- 1..4:		DiffuseColor of 4 lights.
+	 *		- 5..8:		SpecularColor of 4 lights. NB: SpecularColor[5].w get the specular exponent of the material
+	 *		- 9:		- (directional Light direction) in objectSpace
+	 *		- 10:		material Diffuse Alpha copied to output. cte is: {0,0, 1, alphaMat}
+	 *		- 11:		eye position in objectSpace
+	 *		- 12..14:	light position (3 pointLihgts) in objectSpace
+	 *		TOTAL: 15 constants used.
+	 *
+	 */
+	static	std::string		getLightVPFragment(uint ctStart, bool supportSpecular, bool normalize);
+
 	// @}
 
 private:
@@ -203,6 +251,23 @@ private:
 	bool						_LastPointLightLocalAttenuation[NL3D_MAX_LIGHT_CONTRIBUTION];
 
 	CVector						_SunDirection;
+
+	// driver Lights setuped in changeLightSetup()
+	CLight						_DriverLight[NL3D_MAX_LIGHT_CONTRIBUTION+1];
+
+	// VP Light setup Infos.
+	enum	{MaxVPLight= 4};
+	// Current ctStart setuped with beginVPLightSetup()
+	uint						_VPCurrentCtStart;
+	// Current num of VP lights enabled.
+	uint						_VPNumLights;
+	// Current support of specular
+	bool						_VPSupportSpecular;
+	// Sum of all ambiant of all lights + ambiantGlobal.
+	NLMISC::CRGBAF				_VPFinalAmbient;
+	// Diffuse/Spec comp of all light / 255.
+	NLMISC::CRGBAF				_VPLightDiffuse[MaxVPLight];
+	NLMISC::CRGBAF				_VPLightSpecular[MaxVPLight];
 
 	// @}
 

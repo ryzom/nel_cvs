@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.23 2001/10/15 14:21:39 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.24 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -330,6 +330,11 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	_MeshMorpher.BlendShapes = meshBuildMRM.BlendShapes;
 
 
+	// SmartPtr Copy VertexProgram effect.
+	//================================================	
+	this->_MeshVertexProgram= m.MeshVertexProgram;
+
+
 }
 
 
@@ -545,6 +550,15 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 
 
 // ***************************************************************************
+void	CMeshMRMGeom::initInstance(CMeshBaseInstance *mbi)
+{
+	// init the instance with _MeshVertexProgram infos
+	if(_MeshVertexProgram)
+		_MeshVertexProgram->initInstance(mbi);
+}
+
+
+// ***************************************************************************
 bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {
 	// Speed Clip: clip just the sphere.
@@ -574,8 +588,13 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	if(_Lods.size()==0)
 		return;
 
+
 	// get the meshMRM instance.
 	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
+	// get a ptr on scene
+	CScene			*ownerScene= mi->getScene();
+	// get a ptr on renderTrav
+	CRenderTrav		*renderTrav= ownerScene->getRenderTrav();
 
 
 	// get the result of the Load Balancing.
@@ -689,12 +708,47 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	}
 
 
+	// Setup meshVertexProgram
+	//===========
+	// use MeshVertexProgram effect?
+	bool	useMeshVP= _MeshVertexProgram != NULL && drv->isVertexProgramSupported() && !drv->isVertexProgramEmulated();
+	bool	useMeshVPLightSetup= false;
+	// Test if must setup VP Lighting fragment
+	if(useMeshVP)
+	{
+		bool	meshVPLightSpecular;
+		uint	meshVPLightCteStart;
+		useMeshVPLightSetup= _MeshVertexProgram->useSceneVPLightSetup(meshVPLightSpecular, meshVPLightCteStart);
+		// If use VPLightSetup
+		if(useMeshVPLightSetup)
+		{
+			// get the matrix to object space. depnd if skinned (software skinning here) or not.
+			CMatrix		objectMatrix;
+			if (bSkinApplied)
+				objectMatrix= skeleton->getWorldMatrix();
+			else
+				objectMatrix= trans->getWorldMatrix();
+
+			// setup ctes for lighting
+			renderTrav->beginVPLightSetup(meshVPLightCteStart, meshVPLightSpecular, objectMatrix.inverted());
+		}
+	}
+
+
 	// Render the lod.
 	//===========
 
 	// force normalisation of normals..
 	bool	bkupNorm= drv->isForceNormalize();
 	drv->forceNormalize(true);
+
+
+	// If use MeshGeom special VertexProgram.
+	if(useMeshVP)
+	{
+		// Apply it.
+		_MeshVertexProgram->begin(drv, mi->getScene(), mi);
+	}
 
 
 	// active VB.
@@ -715,36 +769,47 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		{
 			CRdrPass	&rdrPass= lod.RdrPass[i];
 
-			// CMaterial Ref
-			CMaterial &material=mi->Materials[rdrPass.MaterialId];
+			if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (passOpaque == true) ) ||
+				 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (passOpaque == false) ) )
+			{
+				// CMaterial Ref
+				CMaterial &material=mi->Materials[rdrPass.MaterialId];
 
-			// Backup opacity
-			uint8 opacity=material.getOpacity ();
+				// Backup opacity
+				uint8 opacity=material.getOpacity ();
 
-			// Backup blend
-			bool blend=material.getBlend ();
-			material.setBlend (true);
+				// Backup blend
+				bool blend=material.getBlend ();
+				material.setBlend (true);
 
-			// New opacity
-			material.setOpacity (globalAlphaInt);
+				// New opacity
+				material.setOpacity (globalAlphaInt);
 
-			// Backup the zwrite
-			bool zwrite=material.getZWrite ();
+				// Backup the zwrite
+				bool zwrite=material.getZWrite ();
 
-			// New zwrite
-			material.setZWrite (false);
+				// New zwrite
+				material.setZWrite (false);
 
-			// Render
-			drv->render(rdrPass.PBlock, material);
+				// If use meshVertexProgram, and use VPLightSetup
+				if(useMeshVPLightSetup)
+				{
+					// setup ctes for Vertex Program lighting which depend on material
+					renderTrav->changeVPLightSetupMaterial(material);
+				}
 
-			// Resetup backuped opacity
-			material.setOpacity (opacity);
+				// Render
+				drv->render(rdrPass.PBlock, material);
 
-			// Resetup backuped zwrite
-			material.setZWrite (zwrite);
+				// Resetup backuped opacity
+				material.setOpacity (opacity);
 
-			// Resetup backuped blend
-			material.setBlend (blend);
+				// Resetup backuped zwrite
+				material.setZWrite (zwrite);
+
+				// Resetup backuped blend
+				material.setBlend (blend);
+			}
 		}
 	}
 	else
@@ -752,9 +817,29 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		for(uint i=0;i<lod.RdrPass.size();i++)
 		{
 			CRdrPass	&rdrPass= lod.RdrPass[i];
-			// Render with the Materials of the MeshInstance.
-			drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+
+			if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (passOpaque == true) ) ||
+				 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (passOpaque == false) ) )
+			{
+				// If use meshVertexProgram, and use VPLightSetup
+				if(useMeshVPLightSetup)
+				{
+					// setup ctes for Vertex Program lighting which depend on material
+					renderTrav->changeVPLightSetupMaterial(mi->Materials[rdrPass.MaterialId]);
+				}
+
+				// Render with the Materials of the MeshInstance.
+				drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+			}
 		}
+	}
+
+
+	// End VertexProgram effect
+	if(useMeshVP)
+	{
+		// end it.
+		_MeshVertexProgram->end(drv);
 	}
 
 
@@ -782,13 +867,29 @@ void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 2:
+		- Mesh Vertex Program.
 	Version 1:
 		- added blend shapes
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(1);
+	sint	ver= f.serialVersion(2);
 
+	// Mesh Vertex Program.
+	if (ver >= 2)
+	{
+		IMeshVertexProgram	*mvp= NULL;
+		f.serialPolyPtr(mvp);
+		_MeshVertexProgram= mvp;
+	}
+	else
+	{
+		// release vp
+		_MeshVertexProgram= NULL;
+	}
+
+	// blend shapes
 	if (ver >= 1)
 		f.serial (_MeshMorpher);
 
@@ -884,14 +985,25 @@ void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 2:
+		- Mesh Vertex Program.
 	Version 1:
 		- added blend shapes
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(1);
+	sint	ver= f.serialVersion(2);
 	uint	i;
 
+	// Mesh Vertex Program.
+	if (ver >= 2)
+	{
+		IMeshVertexProgram	*mvp= NULL;
+		mvp= _MeshVertexProgram;
+		f.serialPolyPtr(mvp);
+	}
+
+	// blend shapes
 	if (ver >= 1)
 		f.serial (_MeshMorpher);
 
@@ -1642,7 +1754,11 @@ CTransformShape		*CMeshMRM::createInstance(CScene &scene)
 
 
 	// instanciate the material part of the MeshMRM, ie the CMeshBase.
-	CMeshBase::instanciateMeshBase(mi);
+	CMeshBase::instanciateMeshBase(mi, &scene);
+
+
+	// do some instance init for MeshGeom
+	_MeshMRMGeom.initInstance(mi);
 
 
 	return mi;

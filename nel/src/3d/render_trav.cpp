@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.15 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.16 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -267,7 +267,6 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 		return;
 
 	uint		i;
-	CLight		light;
 
 	// if same lightContribution, no-op.
 	if(_CacheLightContribution == lightContribution &&  _LastLocalAttenuation == useLocalAttenuation)
@@ -326,8 +325,8 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 				sunDiffuse.modulateFromuiRGBOnly(SunDiffuse, ufactor);
 				sunSpecular.modulateFromuiRGBOnly(SunSpecular, ufactor);
 				// setup driver light
-				light.setupDirectional(finalAmbient, sunDiffuse, sunSpecular, _SunDirection);
-				Driver->setLight(0, light);
+				_DriverLight[0].setupDirectional(finalAmbient, sunDiffuse, sunSpecular, _SunDirection);
+				Driver->setLight(0, _DriverLight[0]);
 			}
 
 
@@ -358,13 +357,13 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 
 					// compute the driver light
 					if(useLocalAttenuation)
-						pl->setupDriverLight(light, inf);
+						pl->setupDriverLight(_DriverLight[plId+1], inf);
 					else
 						// Compute it with user Attenuation
-						pl->setupDriverLightUserAttenuation(light, inf);
+						pl->setupDriverLightUserAttenuation(_DriverLight[plId+1], inf);
 
 					// setup driver. decal+1 because of sun.
-					Driver->setLight(plId+1, light);
+					Driver->setLight(plId+1, _DriverLight[plId+1]);
 				}
 
 				// next light?
@@ -415,6 +414,348 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 
 
 	}
+}
+
+// ***************************************************************************
+// ***************************************************************************
+// VertexProgram LightSetup
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CRenderTrav::beginVPLightSetup(uint ctStart, bool supportSpecular, const CMatrix &invObjectWM)
+{
+	uint	i;
+
+	nlassert(MaxVPLight==4);
+	_VPNumLights= min(_NumLightEnabled, (uint)MaxVPLight);
+	_VPCurrentCtStart= ctStart;
+	_VPSupportSpecular= supportSpecular;
+
+	// Prepare Colors (to be multiplied by material)
+	//================
+	// Ambient. _VPCurrentCtStart+0
+	_VPFinalAmbient= AmbientGlobal;
+	for(i=0; i<_VPNumLights; i++)
+	{
+		_VPFinalAmbient+= _DriverLight[i].getAmbiant();
+	}
+	// Diffuse. _VPCurrentCtStart+1 to 4
+	for(i=0; i<_VPNumLights; i++)
+	{
+		_VPLightDiffuse[i]= _DriverLight[i].getDiffuse();
+	}
+	// reset other to 0.
+	for(; i<MaxVPLight; i++)
+	{
+		_VPLightDiffuse[i]= CRGBA::Black;
+		Driver->setConstant(_VPCurrentCtStart+1+i, 1, &_VPLightDiffuse[i].R);
+	}
+	// Specular. _VPCurrentCtStart+5 to 8 (only if supportSpecular)
+	if(supportSpecular)
+	{
+		for(i=0; i<_VPNumLights; i++)
+		{
+			_VPLightSpecular[i]= _DriverLight[i].getSpecular();
+		}
+		// reset other to 0.
+		for(; i<MaxVPLight; i++)
+		{
+			_VPLightSpecular[i]= CRGBA::Black;
+			Driver->setConstant(_VPCurrentCtStart+5+i, 1, &_VPLightSpecular[i].R);
+		}
+	}
+
+
+	// Compute Eye position in Object space.
+	CVector		eye= invObjectWM * CamPos;
+
+
+	// Setup Sun Directionnal light.
+	//================
+	CVector		lightDir;
+	// in objectSpace.
+	lightDir= invObjectWM * _DriverLight[0].getDirection();
+	lightDir.normalize();
+	lightDir= -lightDir; 
+	if(supportSpecular)
+	{
+		// Setup lightDir.
+		Driver->setConstant(_VPCurrentCtStart+9, &lightDir);
+	}
+	else
+	{
+		// Setup lightDir. NB: no specular color!
+		Driver->setConstant(_VPCurrentCtStart+5, &lightDir);
+	}
+
+
+	// Setup PointLights
+	//================
+	CVector		lightPos;
+	uint		startPLPos;
+	if(supportSpecular)
+	{
+		// Setup eye in objectSpace for localViewer
+		Driver->setConstant(_VPCurrentCtStart+11, &eye);
+		// Start at 12.
+		startPLPos= 12;
+	}
+	else
+	{
+		// Start at 6.
+		startPLPos= 6;
+	}
+	// For all pointLight enabled (other are black: don't matter)
+	for(i=1; i<_VPNumLights; i++)
+	{
+		// Setup position of light.
+		CVector		lightPos;
+		lightPos= invObjectWM * _DriverLight[i].getPosition();
+		Driver->setConstant(_VPCurrentCtStart+startPLPos+(i-1), &lightPos);
+	}
+
+
+}
+
+// ***************************************************************************
+void		CRenderTrav::changeVPLightSetupMaterial(CMaterial &mat)
+{
+	CRGBAF	color;
+	uint	i;
+	CRGBAF	matDiff= mat.getDiffuse();
+	CRGBAF	matSpec= mat.getSpecular();
+	float	specExp= mat.getShininess();
+
+	// setup Ambient + Emissive
+	color= _VPFinalAmbient * mat.getAmbient();
+	color+= mat.getEmissive();
+	Driver->setConstant(_VPCurrentCtStart+0, 1, &color.R);
+
+	// setup Diffuse.
+	for(i=0; i<_VPNumLights; i++)
+	{
+		color= _VPLightDiffuse[i] * matDiff;
+		Driver->setConstant(_VPCurrentCtStart+1+i, 1, &color.R);
+	}
+
+	// setup Specular
+	if(_VPSupportSpecular)
+	{
+		for(i=0; i<_VPNumLights; i++)
+		{
+			color= _VPLightSpecular[i] * matSpec;
+			color.A= specExp;
+			Driver->setConstant(_VPCurrentCtStart+5+i, 1, &color.R);
+		}
+	}
+
+	// setup alpha.
+	static	float	alphaCte[4]= {0,0,1,0};
+	alphaCte[3]= matDiff.A;
+	// setup at good place
+	if(_VPSupportSpecular)
+			Driver->setConstant(_VPCurrentCtStart+10, 1, alphaCte);
+	else
+			Driver->setConstant(_VPCurrentCtStart+9, 1, alphaCte);
+}
+
+
+// ***************************************************************************
+static const char*	LightingVPFragmentNormalize=
+"	# normalize normal																	\n\
+	DP3	R6.w, R6, R6;																	\n\
+	RSQ	R6.w, R6.w;																		\n\
+	MUL	R6, R6, R6.w;																	\n\
+";
+
+
+// ***************************************************************************
+// NB: all CTS+x are replaced with good cte index.
+static const char*	LightingVPFragmentNoSpecular=
+"																						\n\
+	# Global Ambient.																	\n\
+	MOV	R2, c[CTS+0];																	\n\
+																						\n\
+	# Diffuse Sun																		\n\
+	DP3	R0.x, R6, c[CTS+5];			# R0.x= normal*-lightDir							\n\
+	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
+	MAD	R2, R0.y, c[CTS+1], R2;		# R2= summed vertex color.							\n\
+																						\n\
+	# Diffuse PointLight 0.																\n\
+	ADD	R0, c[CTS+6], -R5;			# R0= lightPos-vertex								\n\
+	DP3	R0.w, R0, R0;				# normalize R0.										\n\
+	RSQ	R0.w, R0.w;																		\n\
+	MUL	R0, R0, R0.w;																	\n\
+	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
+	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
+	MAD	R2, R0.y, c[CTS+2], R2;		# R2= summed vertex color.							\n\
+																						\n\
+	# Diffuse PointLight 1.																\n\
+	ADD	R0, c[CTS+7], -R5;			# R0= lightPos-vertex								\n\
+	DP3	R0.w, R0, R0;				# normalize R0.										\n\
+	RSQ	R0.w, R0.w;																		\n\
+	MUL	R0, R0, R0.w;																	\n\
+	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
+	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
+	MAD	R2, R0.y, c[CTS+3], R2;		# R2= summed vertex color.							\n\
+																						\n\
+	# Diffuse PointLight 2.																\n\
+	ADD	R0, c[CTS+8], -R5;			# R0= lightPos-vertex								\n\
+	DP3	R0.w, R0, R0;				# normalize R0.										\n\
+	RSQ	R0.w, R0.w;																		\n\
+	MUL	R0, R0, R0.w;																	\n\
+	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
+	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
+	MAD	R2, R0.y, c[CTS+4], R2;		# R2= summed vertex color.							\n\
+																						\n\
+	# output to o[COL0] only, replacing alpha with material alpha.						\n\
+	MAD	o[COL0], R2, c[CTS+9].zzzx, c[CTS+9].xxxw;										\n\
+";
+
+
+// ***************************************************************************
+// NB: all CTS+x are replaced with good cte index.
+static const char*	LightingVPFragmentSpecular_Part1=
+"																						\n\
+	# Global Ambient.																	\n\
+	MOV	R2, c[CTS+0];																	\n\
+																						\n\
+	# Always keep Specular exponent in R0.w												\n\
+	MOV	R0.w, c[CTS+5].w;																\n\
+																						\n\
+	# Compute vertex-to-eye vector normed.												\n\
+	ADD	R4, c[CTS+11], -R5;																\n\
+	DP3	R4.w, R4, R4;																	\n\
+	RSQ	R4.w, R4.w;																		\n\
+	MUL R4, R4, R4.w;																	\n\
+																						\n\
+	# Diffuse-Specular Sun																\n\
+	# Compute R1= halfAngleVector= (lightDir+R4).normed().								\n\
+	ADD	R1.xyz, c[CTS+9], R4;		# R1= halfAngleVector								\n\
+	DP3	R1.w, R1, R1;				# normalize R1.										\n\
+	RSQ	R1.w, R1.w;																		\n\
+	MUL	R1.xyz, R1, R1.w;																\n\
+	# Compute Factors and colors.														\n\
+	DP3	R0.x, R6, c[CTS+9];			# R0.x= normal*-lightDir							\n\
+	DP3	R0.yz, R6, R1;				# R0.yz= normal*halfAngleVector						\n\
+	LIT	R0.yz, R0;					# R0.y= R0.x clamped, R0.z= pow(spec, R0.w) clamp	\n\
+	MAD	R2, R0.y, c[CTS+1], R2;		# R2= summed vertex color.							\n\
+	MUL	R3, R0.z, c[CTS+5];			# R3= specular color.								\n\
+																						\n\
+																						\n\
+	# Diffuse-Specular PointLight 0.													\n\
+	# Compute R0= (lightPos-vertex).normed().											\n\
+	ADD	R0.xyz, c[CTS+12], -R5;		# R0= lightPos-vertex								\n\
+	DP3	R1.w, R0, R0;				# normalize R0.										\n\
+	RSQ	R1.w, R1.w;																		\n\
+	MUL	R0.xyz, R0, R1.w;																\n\
+	# Compute R1= halfAngleVector= (R0+R4).normed().									\n\
+	ADD	R1.xyz, R0, R4;				# R1= halfAngleVector								\n\
+	DP3	R1.w, R1, R1;				# normalize R1.										\n\
+	RSQ	R1.w, R1.w;																		\n\
+	MUL	R1.xyz, R1, R1.w;																\n\
+	# Compute Factors and colors.														\n\
+	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
+	DP3	R0.yz, R6, R1;				# R0.yz= normal*halfAngleVector						\n\
+	LIT	R0.yz, R0;					# R0.y= R0.x clamped, R0.z= pow(spec, R0.w) clamp	\n\
+	MAD	R2, R0.y, c[CTS+2], R2;		# R2= summed vertex color.							\n\
+	MAD	R3, R0.z, c[CTS+6], R3;		# R3= summed specular color.						\n\
+";
+
+// Splitted in 2 because of compile limit
+static const char*	LightingVPFragmentSpecular_Part2=
+"	# Diffuse-Specular PointLight 1.													\n\
+	# Compute R0= (lightPos-vertex).normed().											\n\
+	ADD	R0.xyz, c[CTS+13], -R5;		# R0= lightPos-vertex								\n\
+	DP3	R1.w, R0, R0;				# normalize R0.										\n\
+	RSQ	R1.w, R1.w;																		\n\
+	MUL	R0.xyz, R0, R1.w;																\n\
+	# Compute R1= halfAngleVector= (R0+R4).normed().									\n\
+	ADD	R1.xyz, R0, R4;				# R1= halfAngleVector								\n\
+	DP3	R1.w, R1, R1;				# normalize R1.										\n\
+	RSQ	R1.w, R1.w;																		\n\
+	MUL	R1.xyz, R1, R1.w;																\n\
+	# Compute Factors and colors.														\n\
+	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
+	DP3	R0.yz, R6, R1;				# R0.yz= normal*halfAngleVector						\n\
+	LIT	R0.yz, R0;					# R0.y= R0.x clamped, R0.z= pow(spec, R0.w) clamp	\n\
+	MAD	R2, R0.y, c[CTS+3], R2;		# R2= summed vertex color.							\n\
+	MAD	R3, R0.z, c[CTS+7], R3;		# R3= summed specular color.						\n\
+																						\n\
+																						\n\
+	# Diffuse-Specular PointLight 2.													\n\
+	# Compute R0= (lightPos-vertex).normed().											\n\
+	ADD	R0.xyz, c[CTS+14], -R5;		# R0= lightPos-vertex								\n\
+	DP3	R1.w, R0, R0;				# normalize R0.										\n\
+	RSQ	R1.w, R1.w;																		\n\
+	MUL	R0.xyz, R0, R1.w;																\n\
+	# Compute R1= halfAngleVector= (R0+R4).normed().									\n\
+	ADD	R1.xyz, R0, R4;				# R1= halfAngleVector								\n\
+	DP3	R1.w, R1, R1;				# normalize R1.										\n\
+	RSQ	R1.w, R1.w;																		\n\
+	MUL	R1.xyz, R1, R1.w;																\n\
+	# Compute Factors and colors.														\n\
+	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
+	DP3	R0.yz, R6, R1;				# R0.yz= normal*halfAngleVector						\n\
+	LIT	R0.yz, R0;					# R0.y= R0.x clamped, R0.z= pow(spec, R0.w) clamp	\n\
+	MAD	R2, R0.y, c[CTS+4], R2;		# R2= summed vertex color.							\n\
+																						\n\
+	# output directly to secondary color.												\n\
+	MAD	o[COL1], R0.z, c[CTS+8], R3;	# final summed specular color.					\n\
+																						\n\
+	# output diffuse to o[COL0], replacing alpha with material alpha.					\n\
+	MAD	o[COL0], R2, c[CTS+10].zzzx, c[CTS+10].xxxw;									\n\
+";
+
+// ***************************************************************************
+static	void	strReplaceAll(string &strInOut, const string &tokenSrc, const string &tokenDst)
+{
+	sint	pos;
+	sint	srcLen= tokenSrc.size();
+	while( (pos=strInOut.find(tokenSrc)) != string::npos)
+	{
+		strInOut.replace(pos, srcLen, tokenDst);
+	}
+}
+
+// ***************************************************************************
+std::string		CRenderTrav::getLightVPFragment(uint ctStart, bool supportSpecular, bool normalize)
+{
+	string	ret;
+
+	// Add LightingVPFragmentNormalize fragment?
+	if(normalize)
+		ret+= LightingVPFragmentNormalize;
+
+	// Which fragment to use...
+	if(supportSpecular)
+	{
+		ret+= LightingVPFragmentSpecular_Part1;
+		ret+= LightingVPFragmentSpecular_Part2;
+	}
+	else
+	{
+		ret+= LightingVPFragmentNoSpecular;
+	}
+
+	// Replace all CTS+x with good index. do it for 15 possible indices: 0 to 14 if specular.
+	// run from 14 to 0 so CTS+14 will not be taken for a CTS+1 !!
+	for(sint i=14; i>=0; i--)
+	{
+		char	tokenSrc[256];
+		sprintf(tokenSrc, "CTS+%d", i);
+		char	tokenDst[256];
+		sprintf(tokenDst, "%d", ctStart+i);
+		// replace all in the string
+		strReplaceAll(ret, tokenSrc, tokenDst);
+	}
+
+	// verify no CTS+ leaved... (not all ctes parsed!!!)
+	nlassert( ret.find("CTS+")==string::npos );
+
+	return ret;
 }
 
 

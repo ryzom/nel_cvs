@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.19 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: scene_user.h,v 1.20 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -410,6 +410,17 @@ public:
 
 	virtual	void				setLightTransitionThreshold(float lightTransitionThreshold);
 	virtual	float				getLightTransitionThreshold() const;
+
+	//@}
+
+
+	/// \name Weather mgt
+	//@{
+
+	virtual void				setGlobalWindPower(float gwp);
+	virtual float				getGlobalWindPower() const;
+	virtual void				setGlobalWindDirection(const NLMISC::CVector &gwd);
+	virtual const NLMISC::CVector		&getGlobalWindDirection() const;
 
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.42 2001/10/15 14:21:39 berenguier Exp $
+ * $Id: mesh.cpp,v 1.43 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,6 +315,9 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	// sort triangles for better cache use.
 	optimizeTriangleOrder();
 
+	// SmartPtr Copy VertexProgram effect.
+	this->_MeshVertexProgram= m.MeshVertexProgram;
+
 
 	// End!!
 }
@@ -323,6 +326,15 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 void CMeshGeom::setBlendShapes(std::vector<CBlendShape>&bs)
 {
 	_MeshMorpher->BlendShapes = bs;
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::initInstance(CMeshBaseInstance *mbi)
+{
+	// init the instance with _MeshVertexProgram infos
+	if(_MeshVertexProgram)
+		_MeshVertexProgram->initInstance(mbi);
 }
 
 // ***************************************************************************
@@ -415,6 +427,11 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 	// get the mesh instance.
 	nlassert(dynamic_cast<CMeshInstance*>(trans));
 	CMeshInstance	*mi= (CMeshInstance*)trans;
+	// get a ptr on scene
+	CScene			*ownerScene= mi->getScene();
+	// get a ptr on renderTrav
+	CRenderTrav		*renderTrav= ownerScene->getRenderTrav();
+
 
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
@@ -432,6 +449,27 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 	else
 	{
 		drv->setupModelMatrix(trans->getWorldMatrix());
+	}
+
+
+	// use MeshVertexProgram effect?
+	bool	useMeshVP= _MeshVertexProgram != NULL && drv->isVertexProgramSupported() && !drv->isVertexProgramEmulated();
+	bool	useMeshVPLightSetup= false;
+	// Disable meshVP with Skinning, because incompatible (hardware use VertexProgram too :) ).
+	if(skinOk)
+		useMeshVP= false;
+	// Test if must setup VP Lighting fragment
+	if(useMeshVP)
+	{
+		bool	meshVPLightSpecular;
+		uint	meshVPLightCteStart;
+		useMeshVPLightSetup= _MeshVertexProgram->useSceneVPLightSetup(meshVPLightSpecular, meshVPLightCteStart);
+		// If use VPLightSetup
+		if(useMeshVPLightSetup)
+		{
+			// setup ctes for lighting
+			renderTrav->beginVPLightSetup(meshVPLightCteStart, meshVPLightSpecular, trans->getWorldMatrix().inverted());
+		}
 	}
 
 
@@ -482,6 +520,12 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 			}
 		}
 
+		// If use MeshGeom special VertexProgram.
+		if(useMeshVP)
+		{
+			// Apply it.
+			_MeshVertexProgram->begin(drv, ownerScene, mi);
+		}
 
 		// if VB Hard is here, use it.
 		if(_VertexBufferHard != NULL)
@@ -526,6 +570,13 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 					bool blend=material.getBlend ();
 					material.setBlend (true);
 
+					// If use meshVertexProgram, and use VPLightSetup
+					if(useMeshVPLightSetup)
+					{
+						// setup ctes for Vertex Program lighting which depend on material
+						renderTrav->changeVPLightSetupMaterial(material);
+					}
+
 					// Render
 					drv->render(rdrPass.PBlock, material);
 
@@ -549,8 +600,25 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 				// Render with the Materials of the MeshInstance.
 				if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (opaquePass == true) ) ||
 					( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (opaquePass == false) )		)
+				{
+					// If use meshVertexProgram, and use VPLightSetup
+					if(useMeshVPLightSetup)
+					{
+						// setup ctes for Vertex Program lighting which depend on material
+						renderTrav->changeVPLightSetupMaterial(mi->Materials[rdrPass.MaterialId]);
+					}
+
+					// render primitives
 					drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+				}
 			}
+		}
+
+		// End VertexProgram effect
+		if(useMeshVP)
+		{
+			// Apply it.
+			_MeshVertexProgram->end(drv);
 		}
 	}
 
@@ -567,6 +635,8 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 3:
+		- MeshVertexProgram.
 	Version 2:
 		- precompute of triangle order. (nothing more to load).
 	Version 1:
@@ -574,8 +644,30 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- separate serialisation CMesh / CMeshGeom.
 	*/
-	sint ver = f.serialVersion (2);
+	sint ver = f.serialVersion (3);
 
+	// Version3+: MeshVertexProgram.
+	if (ver >= 3)
+	{
+		IMeshVertexProgram	*mvp= NULL;
+		if(f.isReading())
+		{
+			f.serialPolyPtr(mvp);
+			_MeshVertexProgram= mvp;
+		}
+		else
+		{
+			mvp= _MeshVertexProgram;
+			f.serialPolyPtr(mvp);
+		}
+	}
+	else if(f.isReading())
+	{
+		// release vp
+		_MeshVertexProgram= NULL;
+	}
+
+	// Version1+: _MeshMorpher.
 	if (ver >= 1)
 		f.serial (*_MeshMorpher);
 
@@ -1109,7 +1201,11 @@ CTransformShape		*CMesh::createInstance(CScene &scene)
 
 
 	// instanciate the material part of the Mesh, ie the CMeshBase.
-	CMeshBase::instanciateMeshBase(mi);
+	CMeshBase::instanciateMeshBase(mi, &scene);
+
+
+	// do some instance init for MeshGeom
+	_MeshGeom->initInstance(mi);
 
 
 	return mi;

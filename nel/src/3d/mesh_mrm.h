@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.18 2001/10/15 14:21:39 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.19 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,9 @@ public:
 
 	/// \name From IMeshGeom
 	// @{
+
+	/// Init instance info.
+	virtual	void	initInstance(CMeshBaseInstance *mbi);
 
 	/// clip this mesh in a driver. true if visible.
 	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
@@ -387,6 +390,9 @@ private:
 
 	// The Mesh Morpher
 	CMeshMorpher				_MeshMorpher; 
+
+	// Possible MeshVertexProgram to apply at render()
+	NLMISC::CSmartPtr<IMeshVertexProgram>	_MeshVertexProgram;
 
 private:
 	/// serial a subset of the vertices.

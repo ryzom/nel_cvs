@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.14 2002/02/06 16:53:24 berenguier Exp $
+ * $Id: u_scene.h,v 1.15 2002/02/26 14:18:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -302,6 +302,24 @@ public:
 		virtual void  setLayersRenderingOrder(bool directOrder = true) = 0;
 		virtual bool  getLayersRenderingOrder() const = 0;
 	//@}
+
+
+	/// \name Weather mgt
+	//@{
+
+	/// Set the current windPower for all the scene. 0-1.
+	virtual void				setGlobalWindPower(float gwp) =0;
+	/// get the current windPower
+	virtual float				getGlobalWindPower() const =0;
+
+	/// Set the current windDirection for all the scene. dir.z set to 0 and vector normalized.
+	virtual void				setGlobalWindDirection(const NLMISC::CVector &gwd) =0;
+	/// get the current windDirection
+	virtual const NLMISC::CVector		&getGlobalWindDirection() const =0;
+
+	//@}
+
+
 
 };
 

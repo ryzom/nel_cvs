@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.4 2001/08/24 16:37:15 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.5 2002/02/26 14:17:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,9 +55,9 @@ CMeshMultiLodInstance::~CMeshMultiLodInstance ()
 
 	// Get the manager
 	if (shape->isStatic ())
-		manager=Scene->getStaticCoarseMeshManager ();
+		manager=getScene()->getStaticCoarseMeshManager ();
 	else
-		manager=Scene->getDynamicCoarseMeshManager ();
+		manager=getScene()->getDynamicCoarseMeshManager ();
 
 	// Manager ok ?
 	if (manager)

@@ -854,6 +854,22 @@ SOURCE=.\3d\mesh_multi_lod.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_vertex_program.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_vertex_program.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\meshvp_wind_tree.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\meshvp_wind_tree.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\particle_system_shape.cpp
 # End Source File
 # Begin Source File

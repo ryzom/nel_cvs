@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.5 2002/04/02 15:25:16 vizerie Exp $
+ * $Id: aabbox.cpp,v 1.6 2002/04/12 16:05:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,6 +186,21 @@ CAABBox CAABBox::computeAABBoxUnion(const CAABBox &b1, const CAABBox &b2)
 	min.minof(min1, min2);
 	result.setMinMax(min, max);
 	return result;
+}
+
+
+//==========================================================================
+void	CAABBox::computeIntersection(const CAABBox &b1, const CAABBox &b2)
+{
+	CVector	min1 = b1.getMin(), max1 = b1.getMax(),
+			min2 = b2.getMin(), max2 = b2.getMax();
+	CVector	minr, maxr;
+
+	// don't test if intersect or not.
+	maxr.minof(max1, max2);
+	minr.maxof(min1, min2);
+
+	setMinMax(minr, maxr);
 }
 
 

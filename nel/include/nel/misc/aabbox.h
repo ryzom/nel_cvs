@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.6 2002/04/02 15:25:29 vizerie Exp $
+ * $Id: aabbox.h,v 1.7 2002/04/12 16:05:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,10 +89,13 @@ public:
 	// @{
 	CVector			getMin() const {return Center-HalfSize;}
 	CVector			getMax() const {return Center+HalfSize;}
+	void			getMin(CVector &ret) const {ret= Center-HalfSize;}
+	void			getMax(CVector &ret) const {ret= Center+HalfSize;}
 	const CVector	&getCenter() const {return Center;}
 	const CVector	&getHalfSize() const {return HalfSize;}
 	/// Return the size of the bbox.
 	CVector			getSize() const {return HalfSize*2;}
+	void			getSize(CVector &ret) const {ret= HalfSize*2;}
 	/// Return the radius of the bbox.
 	float			getRadius() const {return HalfSize.norm();}
 	// @}
@@ -123,7 +126,15 @@ public:
 	* Should end up in NLMISC
 	*/
 
-	static CAABBox computeAABBoxUnion(const CAABBox &b1, const CAABBox &b2);
+	static CAABBox	computeAABBoxUnion(const CAABBox &b1, const CAABBox &b2);
+
+	/**
+	* Compute the intersection of 2 bboxs.
+	*	NB: this methods suppose the intersection exist, and doesn't check it (use intersect() to check).
+	*	If !intersect, *this is still modified and the result bbox is big chit.
+	*/
+	void			computeIntersection(const CAABBox &b1, const CAABBox &b2);
+
 
 	/** Apply a matrix on an aabbox
 	 *  \return an aabbox, bigger or equal to parameter, after the matrix multiplication

@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.9 2002/05/13 15:44:57 valignat Exp $
+ * $Id: zone_dependencies.cpp,v 1.10 2002/06/18 14:51:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,9 @@
 #include "3d/shape.h"
 #include "3d/register_3d.h"
 
-
-
+#include "nel/georges/u_form.h"
+#include "nel/georges/u_form_elm.h"
+#include "nel/georges/u_form_loader.h"
 
 #include "nel/misc/config_file.h"
 #include "nel/misc/file.h"
@@ -128,11 +129,25 @@ public:
 	CAABBoxExt	BBox;
 };
 
+typedef std::map<std::string, NLMISC::CAABBox> TString2BBox;
 /// A map to cache the shapes bbox's
-typedef std::map<std::string, NLMISC::CAABBox> TShapeMap;
+typedef TString2BBox TShapeMap;
 
 
-static bool computeIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeMap &shapeMap);
+
+
+// compute the bbox of the igs in a zone
+static bool computeZoneIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeMap &shapeMap, const TString2BBox &additionnalIG);
+// ryzom specific, see definition
+static void computeIGBBoxFromContinent(NLMISC::CConfigFile &parameter,									   
+									   TShapeMap &shapeMap,
+									   TString2BBox &zone2BBox
+							          );
+
+
+
+
+
 
 
 ///=========================================================
@@ -235,6 +250,11 @@ int main (int argc, char* argv[])
 					vector< CZoneDependencies > dependencies;
 					dependencies.resize ((lastX-firstX+1)*(lastY-firstY+1));
 
+					// Ryzom specific: build bbox for villages
+					TString2BBox villagesBBox;
+					computeIGBBoxFromContinent(properties, shapeMap, villagesBBox);
+
+
 					// Insert each zone in the quad tree
 					sint y, x;
 					for (y=firstY; y<=lastY; y++)
@@ -261,7 +281,7 @@ int main (int argc, char* argv[])
 
 								/// get bbox from the ig of this zone
 								NLMISC::CAABBox igBBox;
-								bool hasIgBBox = computeDependenciesWithIgs ? computeIGBBox(zoneName.c_str(), igBBox, shapeMap)
+								bool hasIgBBox = computeDependenciesWithIgs ? computeZoneIGBBox(zoneName.c_str(), igBBox, shapeMap, villagesBBox)
 																			: false;
 
 								// Create a zone descriptor
@@ -284,8 +304,7 @@ int main (int argc, char* argv[])
 								// Insert in the quad grid
 								quadGrid.insert (zoneDesc.BBox.getMin(), zoneDesc.BBox.getMax(), zoneDesc);
 
-								// Insert in the dependencies array
-								uint index=(x-firstX)+(y-firstY)*(lastX-firstX+1);
+								// Insert in the depee)+(y-firstY)*(lastX-firstX+1);
 
 								// Loaded
 								dependencies[index].Loaded=true;
@@ -493,43 +512,14 @@ int main (int argc, char* argv[])
 	return 0;
 }
 
+
 ///===========================================================================
-/** Load and compute the bbox of the models that are located in a given zone
+/** Load and compute the bbox of the models that are contained in a given instance group
   * \return true if the computed bbox is valid
   */
-static bool computeIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeMap &shapeMap)
+static bool computeIGBBox(const NL3D::CInstanceGroup &ig, NLMISC::CAABBox &result, TShapeMap &shapeMap)
 {
-	std::string igFileName = zoneName + std::string(".ig");
-	std::string pathName = CPath::lookup(igFileName, false, false);
-
-	if (pathName.empty())
-	{
-		nlwarning("unable to find instance group of zone : %s", zoneName);
-		return false;
-	}
-
-
-	/// Load the instance group of this zone
-	CIFile igFile;
-	if (!igFile.open(pathName))
-	{
-		nlwarning("unable to open file : %s", pathName.c_str());
-		return false;
-	}
-
-	NL3D::CInstanceGroup ig;
-	try
-	{		
-		ig.serial(igFile);
-	}
-	catch (NLMISC::Exception &e)
-	{
-		nlwarning("Error while reading an instance group file : %s \n reason : %s", pathName.c_str(), e.what());
-		return false;
-	}
-
 	bool firstBBox = true;	
-
 	/// now, compute the union of all bboxs
 	for (CInstanceGroup::TInstanceArray::const_iterator it = ig._InstancesInfos.begin(); it != ig._InstancesInfos.end(); ++it)
 	{		
@@ -593,21 +583,260 @@ static bool computeIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeM
 			/// transform the bbox
 			currBBox = NLMISC::CAABBox::transformAABBox(mat, currBBox);
 	
-		
-			if (firstBBox)
-			{
-				result = currBBox;
-				firstBBox = false;
+			if (currBBox.getHalfSize() != NLMISC::CVector::Null)
+			{					
+				if (firstBBox)
+				{
+					result = currBBox;
+					firstBBox = false;
+				}
+				else // add to previous one
+				{						
+					result = NLMISC::CAABBox::computeAABBoxUnion(result, currBBox);
+				}
 			}
-			else // add to previous one
-			{						
-				result = NLMISC::CAABBox::computeAABBoxUnion(result, currBBox);
-			}			
 		}		
 	}
+	return !firstBBox; // found at least one bbox ?	
+}
 
-	return !firstBBox; // found at least one bbox ?
+///===========================================================================
+/** Load and compute the bbox of the models that are located in a given zone
+  * \param the zone whose bbox must be computed
+  * \param result the result bbox
+  * \param shapeMap for speedup (avoid loading the same shape twice)
+  * \param additionnalIG a map that gives an additionnal ig for a zone from its name (ryzom specific : used to compute village bbox)
+  * \return true if the computed bbox is valid
+  */
+static bool computeZoneIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeMap &shapeMap, const TString2BBox &additionnalIG)
+{
+	bool hasAdditionnalBBox = false;
+	std::string lcZoneName = NLMISC::strlwr(std::string(zoneName));
+	TString2BBox::const_iterator zoneIt = additionnalIG.find(lcZoneName);
+	if (zoneIt != additionnalIG.end())
+	{
+		hasAdditionnalBBox = true;
+		result = zoneIt->second;		
+	}
+
+	std::string igFileName = zoneName + std::string(".ig");
+	std::string pathName = CPath::lookup(igFileName, false, false);
+
+	if (pathName.empty())
+	{
+		nlwarning("unable to find instance group of zone : %s", zoneName);
+		return hasAdditionnalBBox;
+	}
+
+
+	/// Load the instance group of this zone
+	CIFile igFile;
+	if (!igFile.open(pathName))
+	{
+		nlwarning("unable to open file : %s", pathName.c_str());
+		return hasAdditionnalBBox;
+	}
+
+	NL3D::CInstanceGroup ig;
+	try
+	{		
+		ig.serial(igFile);
+	}
+	catch (NLMISC::Exception &e)
+	{
+		nlwarning("Error while reading an instance group file : %s \n reason : %s", pathName.c_str(), e.what());
+		return hasAdditionnalBBox;
+	}
+	NLMISC::CAABBox tmpBBox;
+	if (!computeIGBBox(ig, tmpBBox, shapeMap)) return hasAdditionnalBBox;	
+	if (hasAdditionnalBBox)
+	{
+		result = NLMISC::CAABBox::computeAABBoxUnion(result, tmpBBox);
+	}
+	else
+	{
+		result = tmpBBox;
+	}
+	return true;
 }
 
 
 
+//=======================================================================================
+// ryzom specific build bbox of a village in a zone
+static bool computeBBoxFromVillage(const NLGEORGES::UFormElm *villageItem, 
+								   const std::string &continentName,
+								   uint villageIndex,
+								   TShapeMap &shapeMap,
+								   NLMISC::CAABBox &result
+								  )
+{	
+	const NLGEORGES::UFormElm *igNamesItem;
+	if (! (villageItem->getNodeByName (&igNamesItem, "IgList") && igNamesItem) )
+	{
+		nlwarning("No list of IGs was found in the continent form %s, village #%d", continentName.c_str(), villageIndex);
+		return false;
+	}
+
+	bool bboxFound = false;
+	// Get number of village
+	uint numIgs;
+	nlverify (igNamesItem->getArraySize (numIgs));
+	const NLGEORGES::UFormElm *currIg;
+	for(uint l = 0; l < numIgs; ++l)
+	{														
+		if (!(igNamesItem->getArrayNode (&currIg, l) && currIg))
+		{
+			nlwarning("Couldn't get ig #%d in the continent form %s, in village #%d", l, continentName.c_str(), villageIndex);
+			continue;
+		}			
+		const NLGEORGES::UFormElm *igNameItem;
+		currIg->getNodeByName (&igNameItem, "IgName");
+		std::string igName;
+		if (!igNameItem->getValue (igName))
+		{
+			nlwarning("Couldn't get ig name of ig #%d in the continent form %s, in village #%d", l, continentName.c_str(), villageIndex);
+			continue;
+		}
+		if (igName.empty())
+		{
+			nlwarning("Ig name of ig #%d in the continent form %s, in village #%d is an empty string", l, continentName.c_str(), villageIndex);
+			continue;
+		}
+
+		igName = CFile::getFilenameWithoutExtension(igName) + ".ig";
+		string nameLookup = CPath::lookup (igName, false, true);
+		if (!nameLookup.empty())
+		{		
+			CIFile inputFile;
+			// Try to open the file
+			if (inputFile.open (nameLookup))
+			{				
+				CInstanceGroup group;
+				try
+				{
+					CAABBox currBBox;
+					group.serial (inputFile);
+					if (computeIGBBox(group, currBBox, shapeMap))
+					{
+						bboxFound = true;
+						if (l == 0)
+						{
+							result = currBBox;							
+						}
+						else // add to previous one
+						{						
+							result = NLMISC::CAABBox::computeAABBoxUnion(result, currBBox);
+						}
+					}
+				}
+				catch(NLMISC::Exception &)
+				{
+					nlwarning ("Error while loading instance group %s\n", igName.c_str());	
+					continue;
+				}								
+				inputFile.close();				
+			}
+			else
+			{
+				// Error
+				nlwarning ("Can't open instance group %s\n", igName.c_str());
+			}
+		}								
+	}
+	return bboxFound;
+}
+
+
+//=======================================================================================
+/** Load additionnal ig from a continent (ryzom specific)
+  * \param parameter a config file that contains the name of the continent containing the zones we are processing
+  * \param zone2bbox This will be filled with the name of a zone and the bbox of the village it contains
+  * \param a map of shape
+  * \param a vector that will be filled with a zone name and the bbox of the village it contains
+  */
+static void computeIGBBoxFromContinent(NLMISC::CConfigFile &parameter,									   
+									   TShapeMap &shapeMap,
+									   TString2BBox &zone2BBox
+							          )
+{
+		
+	try
+	{
+		CConfigFile::CVar &continent_name_var = parameter.getVar ("continent_name");
+		CConfigFile::CVar &level_design_directory = parameter.getVar ("level_design_directory");
+		CConfigFile::CVar &level_design_world_directory = parameter.getVar ("level_design_world_directory");						
+		CConfigFile::CVar &level_design_dfn_directory = parameter.getVar ("level_design_dfn_directory");
+		CPath::addSearchPath(level_design_dfn_directory.asString(), true, false);
+
+		std::string continentName = continent_name_var.asString();
+		if (CFile::getExtension(continentName).empty())
+			continentName += ".continent";
+		// Load the form
+		NLGEORGES::UFormLoader *loader = NLGEORGES::UFormLoader::createLoader();
+		//
+		std::string pathName = level_design_world_directory.asString() + "/" + continentName;
+		if (pathName.empty())
+		{		
+			nlwarning("Can't find continent form : %s", continentName.c_str());
+			return;
+		}		
+		NLGEORGES::UForm *villageForm;
+		villageForm = loader->loadForm(pathName.c_str());
+		if(villageForm != NULL)
+		{
+			NLGEORGES::UFormElm &rootItem = villageForm->getRootNode();
+			// try to get the village list
+			// Load the village list
+			NLGEORGES::UFormElm *villagesItem;
+			if(!rootItem.getNodeByName (&villagesItem, "Villages") && villagesItem)
+			{
+				nlwarning("No villages where found in %s", continentName.c_str());
+				return;
+			}
+
+			// Get number of village
+			uint numVillage;
+			nlverify (villagesItem->getArraySize (numVillage));
+
+			// For each village
+			for(uint k = 0; k < numVillage; ++k)
+			{				
+				NLGEORGES::UFormElm *currVillage;
+				if (!(villagesItem->getArrayNode (&currVillage, k) && currVillage))
+				{
+					nlwarning("Couldn't get village %d in continent %s", continentName.c_str(), k);
+					continue;
+				}
+				// check that this village is in the dependency zones
+				NLGEORGES::UFormElm *zoneNameItem;
+				if (!currVillage->getNodeByName (&zoneNameItem, "Zone") && zoneNameItem)
+				{
+					nlwarning("Couldn't get zone item of village %d in continent %s", continentName.c_str(), k);
+					continue;
+				}
+				std::string zoneName;
+				if (!zoneNameItem->getValue(zoneName))
+				{
+					nlwarning("Couldn't get zone name of village %d in continent %s", continentName.c_str(), k);
+					continue;
+				}
+				zoneName = NLMISC::strlwr(CFile::getFilenameWithoutExtension(zoneName));				
+				CAABBox result;
+				// ok, it is in the dependant zones
+				if (computeBBoxFromVillage(currVillage, continentName, k, shapeMap, result))
+				{
+					zone2BBox[zoneName] = result;
+				}										
+			}				
+		}
+		else 
+		{
+			nlwarning("Can't load continent form : %s", continentName.c_str());
+		}				
+	}	
+	catch (NLMISC::EUnknownVar &e)
+	{
+		nlinfo(e.what());
+	}
+}

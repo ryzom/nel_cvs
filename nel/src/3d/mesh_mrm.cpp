@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * TODO: File description
  *
- * $Id: mesh_mrm.cpp,v 1.77 2004/11/15 10:24:43 lecroart Exp $
+ * $Id: mesh_mrm.cpp,v 1.78 2005/01/05 17:47:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1715,7 +1715,7 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 			f.serialCont (_ShadowSkinTriangles);
 		#else			
 			// must convert to 32 bits at serial
-			if (f.isReading())
+			nlassert(f.isReading());
 			{
 				std::vector<uint32> savedIndices;
 				f.serialCont(savedIndices);
@@ -1726,16 +1726,6 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 					_ShadowSkinTriangles[k] = (TMeshMRMIndexType) savedIndices[k];
 				}
 			}
-			else
-			{
-				std::vector<uint32> savedIndices;
-				savedIndices.resize(_ShadowSkinTriangles.size());
-				for(uint k = 0; k < savedIndices.size(); ++k)
-				{
-					savedIndices[k] = _ShadowSkinTriangles[k];
-				}
-				f.serialCont(savedIndices);
-			}			
 		#endif
 	}
 
@@ -1882,7 +1872,20 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if(ver>=5)
 	{
 		f.serialCont (_ShadowSkinVertices);
-		f.serialCont (_ShadowSkinTriangles);
+		#ifndef NL_MESH_MRM_INDEX16
+			f.serialCont (_ShadowSkinTriangles);
+		#else			
+			nlassert(!f.isReading());
+			{
+				std::vector<uint32> savedIndices;
+				savedIndices.resize(_ShadowSkinTriangles.size());
+				for(uint k = 0; k < savedIndices.size(); ++k)
+				{
+					savedIndices[k] = _ShadowSkinTriangles[k];
+				}
+				f.serialCont(savedIndices);
+			}			
+		#endif
 	}
 
 	// Serial lod offsets.

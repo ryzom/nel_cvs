@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.1 2002/07/16 13:16:10 lecroart Exp $
+ * $Id: background_sound_manager.cpp,v 1.2 2002/07/19 15:07:12 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,8 @@ public:
 };
 
 static vector<CBackgroundSound> BackgroundSounds;
+
+static float OldRatio = 10.0f;
 
 void CBackgroundSoundManager::init (UAudioMixer *am)
 {
@@ -130,6 +132,8 @@ void CBackgroundSoundManager::load (const string &continent)
 			else
 			{
 				BackgroundSounds[i].SourceDay->setPos( srcpos );
+				BackgroundSounds[i].SourceDay->setGain( 1.0f );
+				BackgroundSounds[i].SourceDay->stop();
 			}
 
 			BackgroundSounds[i].SourceNight = _AudioMixer->createSource( string(sample+"_night").c_str() );
@@ -140,9 +144,12 @@ void CBackgroundSoundManager::load (const string &continent)
 			else
 			{
 				BackgroundSounds[i].SourceNight->setPos( srcpos );
+				BackgroundSounds[i].SourceNight->setGain( 0.0f );
+				BackgroundSounds[i].SourceNight->stop();
 			}
 		}
 	}
+	OldRatio = 10.0f;
 }
 
 
@@ -220,7 +227,9 @@ void CBackgroundSoundManager::setListenerPosition (const CVector &listenerPositi
 
 		if(CPrimZone::contains(listener, BackgroundSounds[i].Points))
 		{
-			nearestPoint = listener;
+			nearestPoint = listenerPosition;	// use the real listener position, not the 0 z centered
+			nearestDist = 0.0f;
+			//nlinfo ("inside patate %d name '%s' ", i, BackgroundSounds[i].Name.c_str());
 		}
 		else
 		{
@@ -255,7 +264,13 @@ void CBackgroundSoundManager::setListenerPosition (const CVector &listenerPositi
 					nearestDist = dist;
 				}
 			}
+			//nlinfo ("near patate %d name '%s' from %f ", i, BackgroundSounds[i].Name.c_str(), nearestDist);
 		}
+
+		nearestPoint.z = listenerPosition.z;
+
+//nlinfo ("nearest dist = %f pos = %f %f %f lis %f %f %f", nearestDist, nearestPoint.x, nearestPoint.y, nearestPoint.z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
+
 		if(BackgroundSounds[i].SourceDay != NULL)
 			BackgroundSounds[i].SourceDay->setPos (nearestPoint);
 		if(BackgroundSounds[i].SourceNight != NULL)
@@ -295,6 +310,12 @@ void CBackgroundSoundManager::setDayNightRatio(float ratio)
 	// 1 is night
 
 	nlassert (ratio>=0.0f && ratio<=1.0f);
+
+	if (OldRatio == ratio)
+		return;
+	else
+		OldRatio = ratio;
+
 
 	// recompute all source volume
 

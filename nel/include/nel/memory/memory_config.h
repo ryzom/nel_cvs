@@ -1,7 +1,7 @@
 /** \file memory_config.h
  * Memory manager configuraition
  *
- * $Id: memory_config.h,v 1.6 2003/12/08 13:55:18 corvazier Exp $
+ * $Id: memory_config.h,v 1.7 2004/05/13 09:19:47 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -35,7 +35,10 @@
 // Define this to disable small block optimizations
 //#define NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
 
-// Stop when free a NULL pointer
+// Stop when allocates 0 bytes. C++ standards : an allocation of zero bytes should return a unique non-null pointer.
+//#define NL_HEAP_STOP_ALLOCATE_0
+
+// Stop when free a NULL pointer. C++ standards : deletion of a null pointer should quietly do nothing.
 //#define NL_HEAP_STOP_NULL_FREE
 
 // Define this to disable the define new used to track memory leak

@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.13 2004/03/24 16:37:37 berenguier Exp $
+ * $Id: heap_allocator.cpp,v 1.14 2004/05/13 09:19:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -650,161 +650,305 @@ void *CHeapAllocator::allocate (uint size)
 void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, const char *category)
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 {
-	// Check size is valid
-	if (size != 0)
+	// Allocates 0 byte ?
+	if (size == 0)
 	{
+		// ********
+		// * STOP *
+		// ********
+		// * Attempt to allocate 0 byte
+		// ********
+#ifdef NL_HEAP_STOP_ALLOCATE_0
+		NL_ALLOC_STOP;
+#endif // NL_HEAP_STOP_ALLOCATE_0
+
+		// C++ standards : an allocation of zero bytes should return a unique non-null pointer
+		size = 1;
+	}
+
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-		// If category is NULL
-		if (category == NULL)
+	// If category is NULL
+	if (category == NULL)
+	{
+		// Get the current category
+		CCategory *cat = (CCategory*)_CategoryStack.getPointer ();
+		if (cat)
 		{
-			// Get the current category
-			CCategory *cat = (CCategory*)_CategoryStack.getPointer ();
-			if (cat)
+			category = cat->Name;
+		}
+		else
+		{
+			// Not yet initialised
+			category = NL_HEAP_UNKNOWN_CATEGORY;
+		}
+	}
+
+	/* trap debug if (strcmp(category,"3dIns") == 0)
+	{
+		n3dDrvTotal += size;
+		uint dbg= 0;
+		dbg++;
+	}
+	*/
+
+	// Checks ?
+	if (_AlwaysCheck)
+	{
+		// Check heap integrity
+		internalCheckHeap (true);
+	}
+
+	// Check breakpoints
+	/*if (_Breakpoints.find (_AllocateCount) != _Breakpoints.end())
+	{
+		// ********
+		// * STOP *
+		// ********
+		// * Breakpoints allocation
+		// ********
+		NL_ALLOC_STOP;
+	}*/
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+
+	// Small or largs block ?
+#ifdef NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
+	if (0)
+#else // NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
+	if (size <= LastSmallBlock)
+#endif// NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
+	{
+		// *******************
+		// Small block
+		// *******************
+		
+		enterCriticalSectionSB ();
+
+		// Get pointer on the free block list
+		CNodeBegin **freeNode = (CNodeBegin **)_FreeSmallBlocks+NL_SIZE_TO_SMALLBLOCK_INDEX (size);
+
+		// Not found ?
+		if (*freeNode == NULL)
+		{
+			leaveCriticalSectionSB ();
+
+			// Size must be aligned
+			uint alignedSize = NL_ALIGN_SIZE_FOR_SMALLBLOCK (size);
+
+			// Use internal allocator
+			CSmallBlockPool *smallBlock = (CSmallBlockPool *)NelAlloc (*this, sizeof(CSmallBlockPool) + SmallBlockPoolSize * (sizeof(CNodeBegin) + alignedSize + 
+				NL_HEAP_NODE_END_SIZE), NL_HEAP_SB_CATEGORY);
+
+			enterCriticalSectionSB ();
+
+			// Link this new block
+			smallBlock->Size = alignedSize;
+			smallBlock->Next = (CSmallBlockPool*)_SmallBlockPool;
+			_SmallBlockPool = smallBlock;
+
+			// Initialize the block
+			uint pool;
+			CNodeBegin *nextNode = *freeNode;
+			for (pool=0; pool<SmallBlockPoolSize; pool++)
 			{
-				category = cat->Name;
+				// Get the pool
+				CNodeBegin *node = getSmallBlock (smallBlock, pool);
+
+				// Set as free
+				node->SizeAndFlags = alignedSize;
+
+				// Insert in the list
+				setNextSmallBlock (node, nextNode);
+				nextNode = node;
+
+				// Set debug informations
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+				// Set node free
+				setNodeFree (node);
+				
+				// End magic number
+				node->EndMagicNumber = (uint32*)(CNodeEnd*)((uint8*)node + getNodeSize (node) + sizeof (CNodeBegin));
+
+				// Begin markers
+				memset (node->BeginMarkers, BeginNodeMarkers, CNodeBegin::MarkerSize-1);
+				node->BeginMarkers[CNodeBegin::MarkerSize-1] = 0;
+
+				// End markers
+				CNodeEnd *endNode = (CNodeEnd*)((uint8*)node + getNodeSize (node) + sizeof (CNodeBegin));
+				memset (endNode->EndMarkers, EndNodeMarkers, CNodeEnd::MarkerSize-1);
+				endNode->EndMarkers[CNodeEnd::MarkerSize-1] = 0;
+
+				// Unallocated memory
+				memset ((uint8*)node + sizeof(CNodeBegin), UnallocatedMemory, getNodeSize (node) );
+
+				// No source file
+				memset (node->Category, 0, CategoryStringLength);
+				node->File = NULL;
+				node->Line = 0xffff;
+				node->AllocateNumber = 0xffffffff;
+
+				// Heap pointer
+				node->Heap = this;
+
+				NL_UPDATE_MAGIC_NUMBER (node);
+
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+			}
+
+			// Link the new blocks
+			*freeNode = nextNode;
+		}
+
+		// Check allocation as been done
+		internalAssert (*freeNode);
+
+		// Get a node
+		CNodeBegin *node = *freeNode;
+
+		// Checks
+		internalAssert (size <= getNodeSize (node));
+		internalAssert ((NL_SIZE_TO_SMALLBLOCK_INDEX (size)) < (NL_SMALLBLOCK_COUNT));
+
+		// Relink
+		*freeNode = getNextSmallBlock (node);
+
+#ifndef NL_HEAP_ALLOCATION_NDEBUG		
+		// Check the node CRC
+		checkNode (node, evalMagicNumber (node));
+
+		// Set node free for checks
+		setNodeUsed (node);
+
+		// Fill category
+		strncpy (node->Category, category, CategoryStringLength-1);
+
+		// Source filename
+		node->File = sourceFile;
+
+		// Source line
+		node->Line = line;
+
+		// Allocate count
+		node->AllocateNumber = _AllocateCount++;
+		internalAssert (node->AllocateNumber != 245);
+
+		// End magic number aligned on new size
+		node->EndMagicNumber = (uint32*)((uint8*)node + size + sizeof (CNodeBegin));
+
+		// Uninitialised memory
+		memset ((uint8*)node + sizeof(CNodeBegin), UninitializedMemory, (uint32)(node->EndMagicNumber) - ( (uint32)node + sizeof(CNodeBegin) ) );
+
+		// Crc node
+		NL_UPDATE_MAGIC_NUMBER (node);
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+
+		leaveCriticalSectionSB ();
+
+		// Return the user pointer
+		return (void*)((uint)node + sizeof (CNodeBegin));
+	}
+	else
+	{
+		// *******************
+		// Large block
+		// *******************
+
+		// Check size
+		if ( (size & ~CNodeBegin::SizeMask) == 0)
+		{
+			enterCriticalSectionLB ();
+
+			// Find a free node
+			CHeapAllocator::CFreeNode *freeNode = CHeapAllocator::find (size);
+
+			// The node
+			CNodeBegin *node;
+
+			// Node not found ?
+			if (freeNode == NULL)
+			{
+				// Block allocation mode
+				if ((_BlockAllocationMode == DontGrow) && (_MainBlockList != NULL))
+				{
+					leaveCriticalSectionLB ();
+					outOfMemory();
+					return NULL;
+				}
+
+				// The node
+				uint8 *buffer;
+
+				// Alloc size
+				uint allocSize;
+
+				// Aligned size
+				uint allignedSize = (size&~(Align-1)) + (( (size&(Align-1))==0 ) ? 0 : Align);
+				if (allignedSize < BlockDataSizeMin)
+					allignedSize = BlockDataSizeMin;
+
+				// Does the node bigger than mainNodeSize ?
+				if (allignedSize > (_MainBlockSize-sizeof (CNodeBegin)-NL_HEAP_NODE_END_SIZE))
+					// Allocate a specific block
+					allocSize = allignedSize + sizeof (CNodeBegin) + NL_HEAP_NODE_END_SIZE;
+				else
+					// Allocate a new block
+					allocSize = _MainBlockSize;
+
+				// Allocate the buffer
+				buffer = internalAllocateBlock (allocSize+Align);
+
+				// Out of memory ?
+				if (!buffer)
+				{
+					leaveCriticalSectionLB ();
+					outOfMemory();
+					return NULL;
+				}
+
+				// Add the buffer
+				CMainBlock *mainBlock = (CMainBlock*)internalAllocateBlock (sizeof(CMainBlock)); 
+
+				// Out of memory ?
+				if (!mainBlock)
+				{
+					leaveCriticalSectionLB ();
+					outOfMemory();
+					return NULL;
+				}
+
+				mainBlock->Size = allocSize+Align;
+				mainBlock->Ptr = buffer;
+				mainBlock->Next = _MainBlockList;
+				_MainBlockList = mainBlock;
+
+				// Init the new block
+				initEmptyBlock (*mainBlock);
+
+				// Get the first node
+				node = getFirstNode (mainBlock);
 			}
 			else
 			{
-				// Not yet initialised
-				category = NL_HEAP_UNKNOWN_CATEGORY;
+				// Get the node
+				node = getNode (freeNode);
+
+				// Remove the node from free blocks and get the removed block
+				erase (freeNode);
 			}
-		}
 
-		/* trap debug if (strcmp(category,"3dIns") == 0)
-		{
-			n3dDrvTotal += size;
-			uint dbg= 0;
-			dbg++;
-		}
-		*/
-
-		// Checks ?
-		if (_AlwaysCheck)
-		{
-			// Check heap integrity
-			internalCheckHeap (true);
-		}
-
-		// Check breakpoints
-		/*if (_Breakpoints.find (_AllocateCount) != _Breakpoints.end())
-		{
-			// ********
-			// * STOP *
-			// ********
-			// * Breakpoints allocation
-			// ********
-			NL_ALLOC_STOP;
-		}*/
-#endif // NL_HEAP_ALLOCATION_NDEBUG
-
-		// Small or largs block ?
-#ifdef NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
-		if (0)
-#else // NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
-		if (size <= LastSmallBlock)
-#endif// NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
-		{
-			// *******************
-			// Small block
-			// *******************
-			
-			enterCriticalSectionSB ();
-
-			// Get pointer on the free block list
-			CNodeBegin **freeNode = (CNodeBegin **)_FreeSmallBlocks+NL_SIZE_TO_SMALLBLOCK_INDEX (size);
-
-			// Not found ?
-			if (*freeNode == NULL)
-			{
-				leaveCriticalSectionSB ();
-
-				// Size must be aligned
-				uint alignedSize = NL_ALIGN_SIZE_FOR_SMALLBLOCK (size);
-
-				// Use internal allocator
-				CSmallBlockPool *smallBlock = (CSmallBlockPool *)NelAlloc (*this, sizeof(CSmallBlockPool) + SmallBlockPoolSize * (sizeof(CNodeBegin) + alignedSize + 
-					NL_HEAP_NODE_END_SIZE), NL_HEAP_SB_CATEGORY);
-
-				enterCriticalSectionSB ();
-
-				// Link this new block
-				smallBlock->Size = alignedSize;
-				smallBlock->Next = (CSmallBlockPool*)_SmallBlockPool;
-				_SmallBlockPool = smallBlock;
-
-				// Initialize the block
-				uint pool;
-				CNodeBegin *nextNode = *freeNode;
-				for (pool=0; pool<SmallBlockPoolSize; pool++)
-				{
-					// Get the pool
-					CNodeBegin *node = getSmallBlock (smallBlock, pool);
-
-					// Set as free
-					node->SizeAndFlags = alignedSize;
-
-					// Insert in the list
-					setNextSmallBlock (node, nextNode);
-					nextNode = node;
-
-					// Set debug informations
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-					// Set node free
-					setNodeFree (node);
-					
-					// End magic number
-					node->EndMagicNumber = (uint32*)(CNodeEnd*)((uint8*)node + getNodeSize (node) + sizeof (CNodeBegin));
-
-					// Begin markers
-					memset (node->BeginMarkers, BeginNodeMarkers, CNodeBegin::MarkerSize-1);
-					node->BeginMarkers[CNodeBegin::MarkerSize-1] = 0;
-
-					// End markers
-					CNodeEnd *endNode = (CNodeEnd*)((uint8*)node + getNodeSize (node) + sizeof (CNodeBegin));
-					memset (endNode->EndMarkers, EndNodeMarkers, CNodeEnd::MarkerSize-1);
-					endNode->EndMarkers[CNodeEnd::MarkerSize-1] = 0;
-
-					// Unallocated memory
-					memset ((uint8*)node + sizeof(CNodeBegin), UnallocatedMemory, getNodeSize (node) );
-
-					// No source file
-					memset (node->Category, 0, CategoryStringLength);
-					node->File = NULL;
-					node->Line = 0xffff;
-					node->AllocateNumber = 0xffffffff;
-
-					// Heap pointer
-					node->Heap = this;
-
-					NL_UPDATE_MAGIC_NUMBER (node);
-
-#endif // NL_HEAP_ALLOCATION_NDEBUG
-				}
-
-				// Link the new blocks
-				*freeNode = nextNode;
-			}
-
-			// Check allocation as been done
-			internalAssert (*freeNode);
-
-			// Get a node
-			CNodeBegin *node = *freeNode;
-
-			// Checks
-			internalAssert (size <= getNodeSize (node));
-			internalAssert ((NL_SIZE_TO_SMALLBLOCK_INDEX (size)) < (NL_SMALLBLOCK_COUNT));
-
-			// Relink
-			*freeNode = getNextSmallBlock (node);
-
-#ifndef NL_HEAP_ALLOCATION_NDEBUG		
 			// Check the node CRC
 			checkNode (node, evalMagicNumber (node));
+#endif // NL_HEAP_ALLOCATION_NDEBUG
 
-			// Set node free for checks
+			// Split the node
+			CNodeBegin *rest = splitNode (node, size);
+
+			// Fill informations for the first part of the node
+
+			// Clear free flag
 			setNodeUsed (node);
 
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
 			// Fill category
 			strncpy (node->Category, category, CategoryStringLength-1);
 
@@ -817,201 +961,69 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 			// Allocate count
 			node->AllocateNumber = _AllocateCount++;
 			internalAssert (node->AllocateNumber != 245);
-
-			// End magic number aligned on new size
-			node->EndMagicNumber = (uint32*)((uint8*)node + size + sizeof (CNodeBegin));
+			
+			// Crc node
+			NL_UPDATE_MAGIC_NUMBER (node);
 
 			// Uninitialised memory
 			memset ((uint8*)node + sizeof(CNodeBegin), UninitializedMemory, (uint32)(node->EndMagicNumber) - ( (uint32)node + sizeof(CNodeBegin) ) );
-
-			// Crc node
-			NL_UPDATE_MAGIC_NUMBER (node);
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
-			leaveCriticalSectionSB ();
+			// Node has been splited ?
+			if (rest)
+			{
+				// Fill informations for the second part of the node
+
+				// Get the freeNode
+				freeNode = getFreeNode (rest);
+
+				// Insert the free node
+				insert (freeNode);
+
+				// Crc node
+				NL_UPDATE_MAGIC_NUMBER (rest);
+			}
+
+			// Check the node size
+			internalAssert ( size <= getNodeSize (node) );
+			internalAssert ( std::max ((uint)BlockDataSizeMin, size + (uint)Align) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + BlockDataSizeMin >= getNodeSize (node) );
+
+			// Check pointer alignment
+			internalAssert (((uint32)node&(Align-1)) == 0);
+			internalAssert (((uint32)((char*)node + sizeof(CNodeBegin))&(Align-1)) == 0);
+
+			// Check size
+			internalAssert ((uint32)node->EndMagicNumber <= (uint32)((uint8*)node+sizeof(CNodeBegin)+getNodeSize (node) ));
+			internalAssert ((uint32)node->EndMagicNumber > (uint32)(((uint8*)node+sizeof(CNodeBegin)+getNodeSize (node) ) - BlockDataSizeMin - BlockDataSizeMin - sizeof(CNodeBegin) - sizeof(CNodeEnd)));
+
+			leaveCriticalSectionLB ();
 
 			// Return the user pointer
 			return (void*)((uint)node + sizeof (CNodeBegin));
 		}
 		else
 		{
-			// *******************
-			// Large block
-			// *******************
+			// ********
+			// * STOP *
+			// ********
+			// * Attempt to allocate more than 1 Go
+			// ********
+			NL_ALLOC_STOP;
 
-			// Check size
-			if ( (size & ~CNodeBegin::SizeMask) == 0)
-			{
-				enterCriticalSectionLB ();
-
-				// Find a free node
-				CHeapAllocator::CFreeNode *freeNode = CHeapAllocator::find (size);
-
-				// The node
-				CNodeBegin *node;
-
-				// Node not found ?
-				if (freeNode == NULL)
-				{
-					// Block allocation mode
-					if ((_BlockAllocationMode == DontGrow) && (_MainBlockList != NULL))
-					{
-						leaveCriticalSectionLB ();
-						outOfMemory();
-						return NULL;
-					}
-
-					// The node
-					uint8 *buffer;
-
-					// Alloc size
-					uint allocSize;
-
-					// Aligned size
-					uint allignedSize = (size&~(Align-1)) + (( (size&(Align-1))==0 ) ? 0 : Align);
-					if (allignedSize < BlockDataSizeMin)
-						allignedSize = BlockDataSizeMin;
-
-					// Does the node bigger than mainNodeSize ?
-					if (allignedSize > (_MainBlockSize-sizeof (CNodeBegin)-NL_HEAP_NODE_END_SIZE))
-						// Allocate a specific block
-						allocSize = allignedSize + sizeof (CNodeBegin) + NL_HEAP_NODE_END_SIZE;
-					else
-						// Allocate a new block
-						allocSize = _MainBlockSize;
-
-					// Allocate the buffer
-					buffer = internalAllocateBlock (allocSize+Align);
-
-					// Out of memory ?
-					if (!buffer)
-					{
-						leaveCriticalSectionLB ();
-						outOfMemory();
-						return NULL;
-					}
-
-					// Add the buffer
-					CMainBlock *mainBlock = (CMainBlock*)internalAllocateBlock (sizeof(CMainBlock)); 
-
-					// Out of memory ?
-					if (!mainBlock)
-					{
-						leaveCriticalSectionLB ();
-						outOfMemory();
-						return NULL;
-					}
-
-					mainBlock->Size = allocSize+Align;
-					mainBlock->Ptr = buffer;
-					mainBlock->Next = _MainBlockList;
-					_MainBlockList = mainBlock;
-
-					// Init the new block
-					initEmptyBlock (*mainBlock);
-
-					// Get the first node
-					node = getFirstNode (mainBlock);
-				}
-				else
-				{
-					// Get the node
-					node = getNode (freeNode);
-
-					// Remove the node from free blocks and get the removed block
-					erase (freeNode);
-				}
-
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
-				// Check the node CRC
-				checkNode (node, evalMagicNumber (node));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
-
-				// Split the node
-				CNodeBegin *rest = splitNode (node, size);
-
-				// Fill informations for the first part of the node
-
-				// Clear free flag
-				setNodeUsed (node);
-
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
-				// Fill category
-				strncpy (node->Category, category, CategoryStringLength-1);
-
-				// Source filename
-				node->File = sourceFile;
-
-				// Source line
-				node->Line = line;
-
-				// Allocate count
-				node->AllocateNumber = _AllocateCount++;
-				internalAssert (node->AllocateNumber != 245);
-				
-				// Crc node
-				NL_UPDATE_MAGIC_NUMBER (node);
-
-				// Uninitialised memory
-				memset ((uint8*)node + sizeof(CNodeBegin), UninitializedMemory, (uint32)(node->EndMagicNumber) - ( (uint32)node + sizeof(CNodeBegin) ) );
-#endif // NL_HEAP_ALLOCATION_NDEBUG
-
-				// Node has been splited ?
-				if (rest)
-				{
-					// Fill informations for the second part of the node
-
-					// Get the freeNode
-					freeNode = getFreeNode (rest);
-
-					// Insert the free node
-					insert (freeNode);
-
-					// Crc node
-					NL_UPDATE_MAGIC_NUMBER (rest);
-				}
-
-				// Check the node size
-				internalAssert ( size <= getNodeSize (node) );
-				internalAssert ( std::max ((uint)BlockDataSizeMin, size + (uint)Align) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + BlockDataSizeMin >= getNodeSize (node) );
-
-				// Check pointer alignment
-				internalAssert (((uint32)node&(Align-1)) == 0);
-				internalAssert (((uint32)((char*)node + sizeof(CNodeBegin))&(Align-1)) == 0);
-
-				// Check size
-				internalAssert ((uint32)node->EndMagicNumber <= (uint32)((uint8*)node+sizeof(CNodeBegin)+getNodeSize (node) ));
-				internalAssert ((uint32)node->EndMagicNumber > (uint32)(((uint8*)node+sizeof(CNodeBegin)+getNodeSize (node) ) - BlockDataSizeMin - BlockDataSizeMin - sizeof(CNodeBegin) - sizeof(CNodeEnd)));
-
-				leaveCriticalSectionLB ();
-
-				// Return the user pointer
-				return (void*)((uint)node + sizeof (CNodeBegin));
-			}
-			else
-			{
-				// ********
-				// * STOP *
-				// ********
-				// * Attempt to allocate more than 1 Go
-				// ********
-				NL_ALLOC_STOP;
-
-				outOfMemory();
-				return NULL;
-			}
+			outOfMemory();
+			return NULL;
 		}
 	}
-	else
+	/*else
 	{
 		// ********
 		// * STOP *
 		// ********
 		// * Attempt to allocate 0 bytes
 		// ********
-		NL_ALLOC_STOP;
+		// NL_ALLOC_STOP;
 		return NULL;
-	}
+	}*/
 }
 
 // *********************************************************
@@ -1029,6 +1041,7 @@ void CHeapAllocator::free (void *ptr)
 #ifdef NL_HEAP_STOP_NULL_FREE
 		NL_ALLOC_STOP;
 #endif // NL_HEAP_STOP_NULL_FREE
+		// C++ standards : deletion of a null pointer should quietly do nothing.
 	}
 	else
 	{

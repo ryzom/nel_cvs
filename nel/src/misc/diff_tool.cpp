@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.10 2004/08/31 17:39:47 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.11 2004/09/01 16:51:20 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -110,7 +110,7 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 */
 	ucstring text;
 
-	CI18N::readTextFile(filename, text, false, false, true);
+	CI18N::readTextFile(filename, text, false, false, true, CI18N::LINE_FMT_CRLF);
 //	CI18N::readTextBuffer(buffer, size, text);
 //	delete [] buffer;
 
@@ -280,7 +280,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 {
 	ucstring doc;
 
-	CI18N::readTextFile(filename, doc, false, false, true);
+	CI18N::readTextFile(filename, doc, false, false, true, CI18N::LINE_FMT_CRLF);
 
 	std::string lastRead("nothing");
 

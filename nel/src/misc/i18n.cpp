@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.51 2004/04/27 12:04:04 vizerie Exp $
+ * $Id: i18n.cpp,v 1.52 2004/09/01 16:51:20 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -389,7 +389,12 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 }
 
 
-void CI18N::readTextFile(const std::string &filename, ucstring &result, bool forceUtf8, bool fileLookup, bool preprocess)
+void CI18N::readTextFile(const std::string &filename, 
+						 ucstring &result, 
+						 bool forceUtf8, 
+						 bool fileLookup, 
+						 bool preprocess,
+						 TLineFormat lineFmt)
 {
 	std::string fullName;
 	if (fileLookup)
@@ -479,11 +484,54 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 			temp += result[i];
 		}
 
-//		final = final + temp;
-
 		result.swap(temp);
 	}
 
+	// apply line delimiter conversion if needed
+	if (lineFmt != LINE_FMT_NO_CARE)
+	{
+		if (lineFmt == LINE_FMT_LF)
+		{
+			// easy, just remove or replace any \r code
+			string::size_type pos;
+
+			while ((pos = result.find('\r')) != string::npos)
+			{
+				if (pos < result.size()-1 && result[pos+1] == '\n')
+					result = result.substr(0, pos) + result.substr(pos+1);
+				else
+					result[pos] = '\n';
+			}
+		}
+		else if (lineFmt == LINE_FMT_CRLF)
+		{
+			// need to replace simple '\n' or '\r' with a '\r\n' double
+			string::size_type pos = 0;
+
+			// first loop with the '\r'
+			while ((pos = result.find('\r', pos)) != string::npos)
+			{
+				if (pos >= result.size()-1 || result[pos+1] != '\n')
+					result = result.substr(0, pos+1) + '\n' + result.substr(pos+1);
+				// skip this char
+				pos++;
+			}
+			// second loop with the '\n'
+			pos = 0;
+			while ((pos = result.find('\n', pos)) != string::npos)
+			{
+				if (pos == 0 || result[pos-1] != '\r')
+				{
+					ucstring toto = result.substr(0, pos) + '\r';
+					ucstring toto2 = result.substr(pos);
+					result = toto + toto2;
+					pos++;
+				}
+				// skip this char
+				pos++;
+			}
+		}
+	}
 
 }
 

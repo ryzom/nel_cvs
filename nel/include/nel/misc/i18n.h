@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.19 2004/04/27 12:04:04 vizerie Exp $
+ * $Id: i18n.h,v 1.20 2004/09/01 16:51:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,6 +77,17 @@ class CI18N
 {
 public:
 
+	/// Control over text loading
+	enum TLineFormat
+	{
+		// the text file is just loaded, no conversion or checks done on line delimiters
+		LINE_FMT_NO_CARE,
+		// the line delimiters are forced to LF (\n, code 0x0a)
+		LINE_FMT_LF,
+		// the line delimiters are forced to CRLF (\r\n , code 0x0d 0x0a)
+		LINE_FMT_CRLF
+	};
+
 	/** Proxy interface for loading string file.
 	 *	Implemente this interface in client code and set it inside I18N
 	 *	in order to be able to do any work on string file before they
@@ -129,7 +140,11 @@ public:
 	 *	UTF-8 encoded.
 	 *	Optionnaly, you can ask the reader to interpret #include commands.
 	 */
-	static void readTextFile(const std::string &filename, ucstring &result, bool forceUtf8 = false, bool fileLookup = true, bool preprocess = false);
+	static void readTextFile(const std::string &filename, 
+								ucstring &result, bool forceUtf8 = false, 
+								bool fileLookup = true, 
+								bool preprocess = false,
+								TLineFormat lineFmt = LINE_FMT_NO_CARE);
 
 	/** Read the content of a buffer as a unicode text.
 	 *	This is to read preloaded unicode files.

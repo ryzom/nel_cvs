@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.17 2002/08/19 09:34:32 berenguier Exp $
+ * $Id: material.h,v 1.18 2002/09/24 14:46:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,7 +157,7 @@ public:
 							  Specular,
 							  Caustics,
 							  PerPixelLighting,
-							  PerPixelLightingNoSpec,
+							  PerPixelLightingNoSpec,							  
 							  shaderCount};
 
 	/// \name Texture Env Modes.
@@ -170,9 +170,11 @@ public:
 	 * Interpolate*:	out= arg0*As + arg1*(1-As),  where As is taken from the SrcAlpha of 
 	 *		Texture/Previous/Diffuse/Constant, respectively if operator is
 	 *		InterpolateTexture/InterpolatePrevious/InterpolateDiffuse/InterpolateConstant.
+	 * EMBM : apply to both color and alpha : the current texture, whose format is DSDT, is used to offset the texture in the next stage.
+	 *  NB : for EMBM and InterpolateConstant, this must be supported by driver.
 	 */
 	enum TTexOperator		{ Replace=0, Modulate, Add, AddSigned, 
-		InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant };
+							  InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant, EMBM };
 
 	/** Source argument.
 	 * Texture:		the arg is taken from the current texture of the stage.
@@ -476,13 +478,13 @@ public:
 			uint32	EnvPacked;
 			struct
 			{
-				uint32		OpRGB:3;
+				uint32		OpRGB:4;
 				uint32		SrcArg0RGB:2;
 				uint32		OpArg0RGB:2;
 				uint32		SrcArg1RGB:2;
 				uint32		OpArg1RGB:2;
 
-				uint32		OpAlpha:3;
+				uint32		OpAlpha:4;
 				uint32		SrcArg0Alpha:2;
 				uint32		OpArg0Alpha:2;
 				uint32		SrcArg1Alpha:2;

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.158 2003/01/09 17:07:45 lecroart Exp $
+ * $Id: service.cpp,v 1.159 2003/01/13 14:06:03 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -115,6 +115,20 @@ static uint SignalisedThread;
 static CFileDisplayer fd;
 static CNetDisplayer commandDisplayer(false);
 static CLog commandLog;
+
+static string CompilationDate;
+
+#ifdef NL_RELEASE_DEBUG
+string CompilationMode = "NL_RELEASE_DEBUG";
+#elif defined(NL_DEBUG_FAST)
+string CompilationMode = "NL_DEBUG_FAST";
+#elif defined(NL_DEBUG)
+string CompilationMode = "NL_DEBUG";
+#elif defined(NL_RELEASE)
+string CompilationMode = "NL_RELEASE";
+#else
+string CompilationMode = "???";
+#endif
 
 
 //
@@ -635,7 +649,7 @@ void cbLogFilter (CConfigFile::CVar &var)
 // The main function of the service
 //
 
-sint IService::main (const char *serviceShortName, const char *serviceLongName, uint16 servicePort, const char *configDir, const char *logDir)
+sint IService::main (const char *serviceShortName, const char *serviceLongName, uint16 servicePort, const char *configDir, const char *logDir, const char *compilationDate)
 {
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
@@ -654,6 +668,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		_LogDir = CPath::standardizePath(logDir);
 		_ShortName = serviceShortName;
 		_LongName = serviceLongName;
+
+		CompilationDate = compilationDate;
 
 		// Set the process name
 		CLog::setProcessName (_ShortName);
@@ -813,7 +829,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 		}
 
-		nlinfo ("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
+		nlinfo ("Starting Service '%s' using NeL ("__DATE__" "__TIME__") compiled %s", _ShortName.c_str(), CompilationDate.c_str());
 		nlinfo ("On OS: %s", CSystemInfo::getOS().c_str());
 
 		setStatus (EXIT_SUCCESS);
@@ -1488,8 +1504,8 @@ void IService::requireResetMeasures()
 
 std::string IService::getServiceUnifiedName () const
 {
-	nlassert (!_ShortName.empty())
-		string res;
+	nlassert (!_ShortName.empty());
+	string res;
 	if (!_AliasName.empty())
 	{
 		res = _AliasName+"/";
@@ -1509,8 +1525,36 @@ std::string IService::getServiceUnifiedName () const
 // Commands and Variables for controling all services
 //
 
+NLMISC_VARIABLE(string, CompilationDate, "date of the compilation");
+NLMISC_VARIABLE(string, CompilationMode, "mode of the compilation");
+
 NLMISC_VARIABLE(sint32, NetSpeedLoop, "duration of the last network loop (in ms)");
 NLMISC_VARIABLE(sint32, UserSpeedLoop, "duration of the last user loop (in ms)");
+
+NLMISC_DYNVARIABLE(uint32, ListeningPort, "default listening port for this service")
+{
+	if (get) *pointer = IService::getInstance()->getPort();
+
+}
+NLMISC_DYNVARIABLE(string, Version, "")
+{
+	if (get) *pointer = IService::getInstance()->_Version;
+}
+
+NLMISC_DYNVARIABLE(string, RunningDirectory, "path where the service is running")
+{
+	if (get) *pointer = IService::getInstance()->_RunningPath;
+}
+
+NLMISC_DYNVARIABLE(string, LogDirectory, "path where the service is logging")
+{
+	if (get) *pointer = IService::getInstance()->_LogDir;
+}
+
+NLMISC_DYNVARIABLE(string, ConfigDirectory, "path where the config file is")
+{
+	if (get) *pointer = IService::getInstance()->_ConfigDir + IService::getInstance()->_LongName + ".cfg";
+}
 
 NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this service")
 {
@@ -1605,18 +1649,7 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 	log.displayNL ("Service update timeout: %dms", IService::getInstance()->_UpdateTimeout);
 	log.displayNL ("Service %suse naming service", IService::getInstance()->_DontUseNS?"don't ":"");
 	log.displayNL ("Service %suse admin executor service", IService::getInstance()->_DontUseAES?"don't ":"");
-#ifdef NL_RELEASE_DEBUG
-	string mode = "NL_RELEASE_DEBUG";
-#elif defined(NL_DEBUG_FAST)
-	string mode = "NL_DEBUG_FAST";
-#elif defined(NL_DEBUG)
-	string mode = "NL_DEBUG";
-#elif defined(NL_RELEASE)
-	string mode = "NL_RELEASE";
-#else
-	string mode = "???";
-#endif
-	log.displayNL ("NeL is compiled in %s mode", mode.c_str());
+	log.displayNL ("NeL is compiled in %s mode", CompilationMode.c_str());
 
 	nlinfo ("Services arguments: %d args", IService::getInstance()->_Args.size ());
 	for (uint i = 0; i < IService::getInstance()->_Args.size (); i++)
@@ -1680,6 +1713,7 @@ NLMISC_COMMAND (freeze, "Freeze the service for N seconds (for debug purpose)", 
 	return true;
 }
 
+/*
 string foo = "205kb", bar = "2b";
 
 NLMISC_VARIABLE(string, foo, "test the get view system");
@@ -1780,6 +1814,9 @@ ENTITY_VARIABLE(test2, "test2")
 		_Entities[entity].second = atoi(value.c_str());
 	}
 }
+*/
+
+
 
 
 // -1 = service is quitting

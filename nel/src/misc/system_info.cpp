@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.14 2003/01/09 17:07:33 lecroart Exp $
+ * $Id: system_info.cpp,v 1.15 2003/01/13 14:06:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,44 +224,6 @@ string CSystemInfo::getProc ()
 
 	return ProcString;
 }
-
-string CSystemInfo::getMem ()
-{
-	string MemString = "Unknown";
-
-#ifdef NL_OS_WINDOWS
-
-	MEMORYSTATUS ms;
-
-	GlobalMemoryStatus (&ms);
-
-	sint extt = 0, extf = 0;
-	char *ext2str[] = { "b", "Kb", "Mb", "Gb", "Tb" };
-
-	while (ms.dwTotalPhys > 1024)
-	{
-		ms.dwTotalPhys /= 1024;
-		extt++;
-	}
-	
-	while (ms.dwAvailPhys > 1024)
-	{
-		ms.dwAvailPhys /= 1024;
-		extf++;
-	}
-
-	char mem[1024];
-	smprintf (mem, 1024, "physical memory: total: %d %s free: %d %s", ms.dwTotalPhys+1, ext2str[extt], ms.dwAvailPhys+1, ext2str[extf]);
-	MemString = mem;
-
-#elif defined NL_OS_UNIX
-
-
-#endif
-
-	return MemString;
-}
-
 
 static bool DetectMMX()
 {		
@@ -490,5 +452,9 @@ NLMISC_DYNVARIABLE(string, ProcessUsedMemory, "Memory used by this process in by
 	if (get) *pointer = bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ());
 }
 
+NLMISC_DYNVARIABLE(string, OS, "OS used")
+{
+	if (get) *pointer = CSystemInfo::getOS();
+}
 
 } // NLMISC

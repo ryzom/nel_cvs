@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.32 2002/05/27 16:50:55 lecroart Exp $
+ * $Id: naming_client.h,v 1.33 2002/07/18 15:01:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,6 +173,9 @@ private:
 
 	static CCallbackClient *_Connection;
 
+	// The service Id of this service
+	static TServiceId _MySId;
+	
 	/// Type of map of registered services
 	typedef std::map<TServiceId, std::string> TRegServices;
 

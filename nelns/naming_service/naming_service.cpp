@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.5 2001/05/09 17:19:02 berenguier Exp $
+ * $Id: naming_service.cpp,v 1.6 2001/05/15 15:21:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -725,7 +725,7 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 	bool needRegister = true;
 	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 	{
-		if ((*it).Addr.asString() == addr)
+		if ((*it).Addr.ipAddress() == addr.ipAddress() )
 		{
 			// we already have a service on this address, remplace it if it's the same name
 			if ((*it).Name == name)

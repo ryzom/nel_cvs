@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.2 2001/04/03 13:31:17 corvazier Exp $
+ * $Id: mesh_instance.cpp,v 1.3 2001/04/05 12:17:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NL3D
 void		CMeshInstance::registerBasic()
 {
 	CMOT::registerModel(MeshInstanceId, TransformShapeId, CMeshInstance::creator);
+	CMOT::registerObs(AnimDetailTravId, MeshInstanceId, CMeshInstanceAnimDetailObs::creator);
 }
 
 
@@ -49,9 +50,6 @@ void		CMeshInstance::registerToChannelMixer(CChannelMixer *chanMixer, const std:
 		// append material  matname.*
 		_AnimatedMaterials[i].registerToChannelMixer(chanMixer, prefix + _AnimatedMaterials[i].getMaterialName() + ".");
 	}
-
-
-	// TODO: Add any bones.
 }
 
 

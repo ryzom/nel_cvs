@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.3 2001/04/03 13:31:17 corvazier Exp $
+ * $Id: mesh_instance.h,v 1.4 2001/04/05 12:17:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NL3D
 
 
 class CMesh;
+class CMeshInstanceAnimDetailObs;
 
 
 // ***************************************************************************
@@ -47,7 +48,7 @@ const NLMISC::CClassId		MeshInstanceId=NLMISC::CClassId(0x6bfe0a34, 0x23b26dc9);
 // ***************************************************************************
 /**
  * An instance of CMesh.
- * NB: no observers are needed, since same functionnality as CTransformShape.
+ * NB: no observers are needed, but AnimDetailObs, since same functionnality as CTransformShape.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -99,32 +100,10 @@ protected:
 	virtual ~CMeshInstance() {}
 
 
-	/// \name IModel Interface (just update animated Materials, if isTouched()).
-	// @{
-	/// Implement the update method.
-	virtual void	update()
-	{
-		CTransformShape::update();
-
-		// test if animated materials must be updated.
-		if(IAnimatable::isTouched(OwnerBit))
-		{
-			// must test / update all AnimatedMaterials.
-			for(uint i=0;i<_AnimatedMaterials.size();i++)
-			{
-				// This test and update the pointed material.
-				_AnimatedMaterials[i].update();
-			}
-
-			IAnimatable::clearFlag(OwnerBit);
-		}
-	}
-	// @}
-
-
 private:
 	static IModel	*creator() {return new CMeshInstance;}
 	friend	class CMesh;
+	friend	class CMeshInstanceAnimDetailObs;
 
 
 	/** The list of animated materials, instanciated from the mesh.
@@ -132,6 +111,53 @@ private:
 	std::vector<CAnimatedMaterial>	_AnimatedMaterials;
 
 };
+
+
+// ***************************************************************************
+/**
+ * This observer:
+ * - leave the notification system to DO NOTHING.
+ * - extend the traverse method.
+ *
+ * \sa CAnimDetailTrav IBaseAnimDetailObs
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CMeshInstanceAnimDetailObs : public CTransformAnimDetailObs
+{
+public:
+
+	/** this do :
+	 *  - call CTransformAnimDetailObs::traverse() => traverseSons.
+	 *  - update animated materials.
+	 */
+	virtual	void	traverse(IObs *caller)
+	{
+		CTransformAnimDetailObs::traverse(caller);
+
+		// update animated materials.
+		CMeshInstance	*mi= (CMeshInstance*)Model;
+
+		// test if animated materials must be updated.
+		if(mi->IAnimatable::isTouched(CMeshInstance::OwnerBit))
+		{
+			// must test / update all AnimatedMaterials.
+			for(uint i=0;i<mi->_AnimatedMaterials.size();i++)
+			{
+				// This test and update the pointed material.
+				mi->_AnimatedMaterials[i].update();
+			}
+
+			mi->IAnimatable::clearFlag(CMeshInstance::OwnerBit);
+		}
+	}
+
+
+public:
+	static IObs	*creator() {return new CMeshInstanceAnimDetailObs;}
+};
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file animated_material.h
  * <File description>
  *
- * $Id: animated_material.h,v 1.2 2001/03/26 14:57:00 berenguier Exp $
+ * $Id: animated_material.h,v 1.3 2001/03/27 09:51:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,10 @@ public:
 	 * RGB emissive value stored into pMat.
 	 */
 	void			copyFromMaterial(CMaterial *pMat);
+
+
+	// Name of this material, for Animation access.
+	std::string				Name;
 
 
 	// Default tracks.
@@ -129,9 +133,11 @@ class CAnimatedMaterial : public IAnimatable
 {
 public:
 
+	/// \name ctor / setup.
+	// @{
 	/** Constructor.
 	 * This ctor:
-	 *	- store a RefPtr on the BaseMaterial for getDefaultTracks() method).
+	 *	- store a RefPtr on the BaseMaterial (for getDefaultTracks() method).
 	 *	- copy the material default track value into Animated Values.
 	 */
 	CAnimatedMaterial(CMaterialBase *baseMat);
@@ -141,13 +147,20 @@ public:
 	 * This method:
 	 *	- store a RefPtr on the material, for future anim update.
 	 */
-	void	setMaterial(CMaterial *pMat);
+	void			setMaterial(CMaterial *pMat);
+
+	/** Return the name of this material (stored in CMaterialBase).
+	 */
+	std::string		getMaterialName() const;
+	// @}
+
+
 	/** Check if The animated material is touched, and if necessary update the stored material (if any).
 	 * Texture animation: for now, texture animation is possible only on stage 0. If TextureValue flag is touched (ie
 	 * a texture anim track is linked to the animated value), update() look into the CMaterialBase what texture to set.
 	 * If the track gives a bad Id for the texture, no-op.
 	 */
-	void	update();
+	void			update();
 
 
 	/// \name Get some track name

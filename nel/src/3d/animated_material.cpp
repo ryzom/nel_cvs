@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.2 2001/03/26 14:57:15 berenguier Exp $
+ * $Id: animated_material.cpp,v 1.3 2001/03/27 09:51:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,7 @@ void	CMaterialBase::serial(NLMISC::IStream &f)
 {
 	sint	ver= f.serialVersion(0);
 
+	f.serial(Name);
 	f.serial(DefaultAmbient, DefaultDiffuse, DefaultSpecular);
 	f.serial(DefaultShininess, DefaultEmissive, DefaultOpacity, DefaultTexture);
 	f.serial(EmissiveFactor);
@@ -155,6 +156,15 @@ void	CAnimatedMaterial::setMaterial(CMaterial *pMat)
 {
 	_Material= pMat;
 }
+
+
+// ***************************************************************************
+std::string		CAnimatedMaterial::getMaterialName() const
+{
+	nlassert(_MaterialBase);
+	return _MaterialBase->Name;
+}
+
 
 // ***************************************************************************
 void	CAnimatedMaterial::update()

@@ -49,9 +49,7 @@ protected:
 };
 
 /** construct a dialog that allow to edit a scheme used for initial attribute generation in a particle
-  *  D is the type of the dialog to be crated for edition : CAttribDlgFloat / Int etc ..
-  *  v1 is the default value for range min
-  *  v2 is the default value for range max
+  *  D is the type of the dialog to be crated for edition : CAttribDlgFloat / Int etc ..  
   */
 template <class T, class D> class CValueFromEmitterDlgT : public CValueFromEmitterDlg
 {

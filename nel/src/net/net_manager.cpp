@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.3 2001/05/10 08:13:44 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.4 2001/05/16 16:21:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,18 +223,25 @@ void CNetManager::addServer (const std::string &serviceName, uint16 servicePort,
 }
 
 
-void CNetManager::addClient (const std::string &serviceName, const std::string &addr)
+void CNetManager::addClient (const std::string &serviceName, const std::string &addr, bool autoRetry)
 {
 	nldebug ("L4: Adding client '%s' with addr '%s' in CNetManager", serviceName.c_str (), addr.c_str());
 	ItBaseMap itbm = find (serviceName);
 	
-	// check if it's a new client
-	nlassert ((*itbm).second.NetBase.empty());
-
+	// it's a new client, add the connection
 	(*itbm).second.Type = CBaseStruct::ClientWithAddr;
+	(*itbm).second.AutoRetry = autoRetry;
 
-	nlassert ((*itbm).second.ServiceNames.empty());
-	(*itbm).second.ServiceNames.push_back(addr);
+	if ((*itbm).second.ServiceNames.empty())
+	{
+		(*itbm).second.ServiceNames.push_back(addr);
+	}
+	else
+	{
+		(*itbm).second.ServiceNames[0] = addr;
+	}
+
+	nlassert ((*itbm).second.NetBase.size() < 2);
 
 	createConnection ((*itbm).second, addr);
 }
@@ -335,13 +342,15 @@ void CNetManager::update ()
 			}
 			else
 			{
-				// if not connected, try to connect ClientWithAddr
-				if ((*itbm).second.Type == CBaseStruct::ClientWithAddr)
+				static TTime lasttime = CTime::getLocalTime();
+				if (CTime::getLocalTime() > lasttime + 5000)
 				{
-					CCallbackClient *cc = dynamic_cast<CCallbackClient *>((*itbm).second.NetBase[i]);
-					if (!cc->connected())
+					lasttime = CTime::getLocalTime();
+
+					// if not connected, try to connect ClientWithAddr
+					if ((*itbm).second.Type == CBaseStruct::ClientWithAddr && (*itbm).second.AutoRetry)
 					{
-						// TEMP: try to reconnect to the service, after he should wait the namingclient information
+						CCallbackClient *cc = dynamic_cast<CCallbackClient *>((*itbm).second.NetBase[i]);
 						try
 						{
 							nlassert ((*itbm).second.ServiceNames.size()==1);

@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.2 2001/05/04 14:44:29 lecroart Exp $
+ * $Id: net_manager.h,v 1.3 2001/05/16 16:21:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,10 @@ struct CBaseStruct
 	TNetManagerCallback				 DisconnectionCallback;
 	void							*DisconnectionCbArg;
 
-	TBaseStructType					Type;
+	// autoretry is used only when Type is ClientWithAddr. If true, the CNetManager will retry to reconnect if it lost the connection
+	bool							 AutoRetry;
+
+	TBaseStructType					 Type;
 };
 
 /**
@@ -101,7 +104,7 @@ public:
 	static void	addServer (const std::string &serviceName, uint16 servicePort, NLNET::TServiceId &sid);
 
 	/// Creates a connection to a specific IP and associate it this a "fake" serviceName (to enable you to send data for example)
-	static void	addClient (const std::string &serviceName, const std::string &addr);
+	static void	addClient (const std::string &serviceName, const std::string &addr, bool autoRetry = true);
 
 	/// Creates a connection to a service using the naming service and the serviceName
 	static void	addClient (const std::string &serviceName);

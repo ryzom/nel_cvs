@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.14 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: mhics.cpp,v 1.15 2004/10/06 06:38:00 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -130,7 +130,7 @@ void CMotivationEnergy::computeMotivationValue()
 			priorityTimer = std::max(priorityTimer, classifierTimer);
 
 
-			uint32 combinedValue = (motiveValue * 10000.0) - priorityTimer;
+			uint32 combinedValue = uint32((motiveValue * 10000.0) - priorityTimer);
 			if (combinedValue > lastMaxMotiveValue)
 			{
 				lastMaxMotiveValue = combinedValue;
@@ -481,7 +481,7 @@ bool CMHiCSbase::loadClassifierFromFile(std::string fileName)
 
 		// on récupère la force du classeur
 		CClassifierPriority laforce;
-		laforce.SetClassifierTimer( atof(leMot.c_str()) );
+		laforce.SetClassifierTimer( (uint32)atof(leMot.c_str()) );
 
 		// on rajoute la règle dans les actions.
 		std::map<TAction, CActionClassifiers >::iterator itActionsMap = actionsMap.find(actionName);

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.21 2001/10/11 10:08:30 chafik Exp $
+# $Id: Makefile.am,v 1.22 2001/12/11 13:40:39 portier Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -29,6 +29,7 @@ libagent_la_SOURCES     = baseai.cpp \
                           msg_debug.cpp \
                           msg_group.cpp \
                           msg_notify.cpp \
+                          msg_getvalue.cpp \
                           msg_on_change.cpp \
                           paire_type.cpp \
                           agent_local_mailer.cpp \

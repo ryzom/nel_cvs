@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.31.8.2 2004/09/10 15:03:17 legros Exp $
+ * $Id: login_service.cpp,v 1.31.8.3 2004/09/16 10:10:18 lecroart Exp $
  *
  */
 
@@ -77,7 +77,7 @@ using namespace NLNET;
 
 
 // store specific user information
-NLMISC::CFileDisplayer Fd (NELNS_LOGS "login_service.stat");
+NLMISC::CFileDisplayer *Fd = NULL;
 NLMISC::CStdDisplayer Sd;
 NLMISC::CLog *Output = NULL;
 
@@ -315,7 +315,11 @@ public:
 
 		Output = new CLog;
 
-		Output->addDisplayer (&Fd);
+		string fn = IService::getInstance()->SaveFilesDirectory;
+		fn += "login_service.stat";
+		nlinfo("Login stat in directory '%s'", fn.c_str());
+		Fd = new NLMISC::CFileDisplayer(fn);
+		Output->addDisplayer (Fd);
 		if (WindowDisplayer != NULL)
 			Output->addDisplayer (WindowDisplayer);
 

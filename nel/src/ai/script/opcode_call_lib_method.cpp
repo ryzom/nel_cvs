@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.12 2002/01/28 12:37:13 chafik Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.13 2002/01/28 16:14:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NLAISCRIPT
 
 		if(r.Result != NULL)
 		{
-			param->release();
+			param->release(); 
 			context.Stack[(int)context.Stack] = r.Result;
 		}
 		else

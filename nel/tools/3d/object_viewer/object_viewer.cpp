@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.100 2003/07/11 16:50:16 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.101 2003/07/23 14:39:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1543,6 +1543,20 @@ float CObjectViewer::getFrameRate ()
 
 // ***************************************************************************
 
+string getFilename (const string &file)
+{
+	if (CPath::exists (file))
+		return file;
+	
+	string path = NLMISC::CFile::getFilename(file);
+	path = CPath::lookup (path, false, false, false);
+	if (path.empty())
+		path = file;
+	return path;
+}
+
+// ***************************************************************************
+
 void CObjectViewer::serial (NLMISC::IStream& f)
 {
 	// serial "OBJV_CFG"
@@ -1579,7 +1593,8 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 					{
 						// Load the shape
 						CIFile input;
-						if (input.open (readed[i].ShapeFilename))
+						string path = getFilename (readed[i].ShapeFilename);
+						if (input.open (path))
 						{
 							// Serial a shape
 							CShapeStream serialShape;
@@ -1618,11 +1633,17 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 
 					// Load animations
 					for (uint anim=0; anim<readed[i].AnimationFileName.size(); anim++)
-						loadAnimation (readed[i].AnimationFileName[anim].c_str(), instance);
+					{
+						string path = getFilename (readed[i].AnimationFileName[anim]);
+						loadAnimation (path.c_str(), instance);
+					}
 
 					// Load SWT
 					for (uint swt=0; swt<readed[i].SWTFileName.size(); swt++)
-						loadSWT (readed[i].SWTFileName[swt].c_str(), instance);
+					{
+						string path = getFilename (readed[i].SWTFileName[swt]);
+						loadSWT (path.c_str(), instance);
+					}
 
 					// Set the playlist
 					_ListInstance[instance]->Saved.PlayList = readed[i].PlayList;

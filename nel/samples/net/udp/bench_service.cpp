@@ -1,7 +1,7 @@
 /** \file udp/frontend_service.cpp
  * <todo> a mettre
  *
- * $Id: bench_service.cpp,v 1.4 2003/01/24 13:53:55 lecroart Exp $
+ * $Id: bench_service.cpp,v 1.5 2003/02/06 15:36:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,9 +151,9 @@ string getDate()
 	newtime = localtime( &long_time );
 	if (newtime)
 	{
-		string res = toString("%2d", newtime->tm_year-100) + "_";
-		res += toString("%2d", newtime->tm_mon+1) + "_";
-		res	+= toString("%2d", newtime->tm_mday);
+		string res = toString("%02d", newtime->tm_year-100) + "_";
+		res += toString("%02d", newtime->tm_mon+1) + "_";
+		res	+= toString("%02d", newtime->tm_mday);
 		return res;
 	}
 

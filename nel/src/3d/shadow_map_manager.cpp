@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.3 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.4 2003/11/13 18:10:30 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -887,6 +887,10 @@ void			CShadowMapManager::selectShadowMapsToGenerate(CScene *scene)
 
 	// **** Clear first
 	clearGenerateShadowCasters();
+
+	// If the scene filter skeleton render, suppose no generation at all. Ugly.
+	if(! (scene->getFilterRenderFlags() & UScene::FilterSkeleton) )
+		return;
 
 	// **** Select
 	// For all ShadowCaster inserted

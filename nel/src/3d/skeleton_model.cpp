@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.49 2003/11/06 14:52:51 vizerie Exp $
+ * $Id: skeleton_model.cpp,v 1.50 2003/11/13 18:10:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1303,6 +1303,11 @@ void			CSkeletonModel::renderCLod()
 	CRenderTrav			&renderTrav= getOwnerScene()->getRenderTrav();
 	IDriver				*drv= renderTrav.getDriver();
 	CScene				*scene= getOwnerScene();
+
+	// Transparent pass? quit
+	if(!renderTrav.isCurrentPassOpaque())
+		return;
+
 	// the lod manager. no op if not here
 	CLodCharacterManager	*mngr= scene->getLodCharacterManager();
 	if(!mngr)

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.36 2003/11/06 14:52:51 vizerie Exp $
+ * $Id: skeleton_model.h,v 1.37 2003/11/13 18:10:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -489,6 +489,7 @@ private:
 	/** render the skeleton as a CLod.
 	 *  - update instance Lighting
 	 *  - render the lod.
+	 *	- no op if passTransparent
 	 */
 	void			renderCLod();
 

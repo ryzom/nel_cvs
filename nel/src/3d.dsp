@@ -772,6 +772,14 @@ SOURCE=.\3d\cube_grid.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\fast_ptr_list.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\fast_ptr_list.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\layered_ordering_table.h
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file base_clip_obs.h
  * <File description>
  *
- * $Id: base_clip_obs.h,v 1.1 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: base_clip_obs.h,v 1.2 2003/03/20 15:01:24 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -108,13 +108,6 @@ public:
 	 *	- always traverseSons(), to clip the sons.
 	 */
 	virtual	void	traverse(IObs *caller) =0;
-
-
-	/** This method is called when a father want to clip all his sons (eg: QuadGridClipCluster)
-	 *  The default behavior is just to call this method on observer sons
-	 *	\param TClipReason is the reason of the forced clip. either a frustrum clip or a DistMax Clip
-	 */
-	virtual	void	forceClip(TClipReason clipReason);
 
 
 	/** 

@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.15 2003/01/08 15:47:43 boucher Exp $
+ * $Id: clip_trav.h,v 1.16 2003/03/20 15:02:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,6 +114,7 @@ public:
 	void setLightTrav (CLightTrav* trav);
 	void setRenderTrav (CRenderTrav* trav);
 	void setQuadGridClipManager(CQuadGridClipManager *mgr);
+	const CQuadGridClipManager *getQuadGridClipManager() const {return _QuadGridClipManager;}
 
 	/// \name Visible List mgt. Those visible observers are updated each traverse(). Only support Transform Type obs.
 	//@{

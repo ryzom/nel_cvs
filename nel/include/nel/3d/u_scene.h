@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.33 2003/03/13 14:21:46 berenguier Exp $
+ * $Id: u_scene.h,v 1.34 2003/03/20 15:03:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -481,6 +481,10 @@ public:
 
 	/// get The result of the profiling.
 	virtual void				getProfileResults(CBenchResults &results) =0;
+
+	/**	output (nlinfo) Stats for Usage of the QuadClip
+	 */
+	virtual void				profileQuadGridClipManager() =0;
 
 	// @}
 };

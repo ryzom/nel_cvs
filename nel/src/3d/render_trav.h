@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * TODO: File description
  *
- * $Id: render_trav.h,v 1.27 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: render_trav.h,v 1.27.10.1 2005/01/18 14:51:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,6 +136,9 @@ public:
 	 *	This method don't need to be called by ~CTransform
 	 */
 	void			removeRenderModel(CTransform *m);
+
+	/// Special for water (list of water to render)
+	void			clearWaterModelList();
 
 	//@}
 

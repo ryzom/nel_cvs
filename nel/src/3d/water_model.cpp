@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.47.10.1 2005/01/10 15:33:06 vizerie Exp $
+ * $Id: water_model.cpp,v 1.47.10.2 2005/01/18 14:51:27 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -111,6 +111,8 @@ CWaterModel::~CWaterModel()
 		CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
 		scene->getWaterCallback()->waterSurfaceRemoved(ws->getUseSceneWaterEnvMap(0) || ws->getUseSceneWaterEnvMap(1));
 	}
+	// should be already unlinked, but security
+	unlink();
 }
 
 //=======================================================================

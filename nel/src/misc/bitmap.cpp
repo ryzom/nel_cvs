@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.27 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: bitmap.cpp,v 1.28 2002/09/25 10:47:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -313,7 +313,16 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 \*-------------------------------------------------------------------*/
 bool CBitmap::convertToDXTC5()
 {
-	uint32 i,j;
+	/* Yoyo: RGB encoding for DXTC1 and DXTC5/3 are actually different!!
+		DXTC3/5 don't rely on sign of color0>color1 to setup special encoding (ie use a special compression for Black)
+		Since this can arise if the src is DXTC1 , we can't simply compress it into DXTC5 without doing a 
+		heavy compression...
+		(the inverse is false: DXTC5 to DXTC1 is possible, with maybe swap color0/color1 and bits).
+	*/
+
+	return false;
+
+/*	uint32 i,j;
 
 	if(PixelFormat!=DXTC1) return false;
 
@@ -340,6 +349,7 @@ bool CBitmap::convertToDXTC5()
 	}
 	PixelFormat = DXTC5;
 	return true;
+*/
 }
 
 
@@ -1011,16 +1021,9 @@ bool CBitmap::decompressDXT3()
 			uncompress(color0,c[0]);
 			uncompress(color1,c[1]);	
 						
-			if(color0>color1)
-			{
-				c[2].blendFromui(c[0],c[1],85);
-				c[3].blendFromui(c[0],c[1],171);	
-			}
-			else
-			{
-				c[2].blendFromui(c[0],c[1],128);
-				c[3].set(0,0,0,255);
-			}
+			// ignore color0>color1 for DXT3 and DXT5.
+			c[2].blendFromui(c[0],c[1],85);
+			c[3].blendFromui(c[0],c[1],171);	
 
 			// computing the 16 RGBA of the block
 			
@@ -1151,16 +1154,9 @@ bool CBitmap::decompressDXT5()
 			uncompress(color0,c[0]);
 			uncompress(color1,c[1]);	
 			
-			if(color0>color1)
-			{
-				c[2].blendFromui(c[0],c[1],85);
-				c[3].blendFromui(c[0],c[1],171);	
-			}
-			else
-			{
-				c[2].blendFromui(c[0],c[1],128);
-				c[3].set(0,0,0,255);
-			}
+			// ignore color0>color1 for DXT3 and DXT5.
+			c[2].blendFromui(c[0],c[1],85);
+			c[3].blendFromui(c[0],c[1],171);	
 
 			// computing the 16 RGBA of the block
 			

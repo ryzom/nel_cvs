@@ -9,7 +9,7 @@
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
 ' when Scripting.FileSystemObject cannot be instanciated
-' $Id: nevrax_macros_98.dsm,v 1.4 2000/10/12 13:52:30 cado Exp $
+' $Id: nevrax_macros_98.dsm,v 1.5 2000/10/13 08:45:32 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -25,7 +25,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros_98.dsm,v 1.4 2000/10/12 13:52:30 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros_98.dsm,v 1.5 2000/10/13 08:45:32 cado Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/** Copyright, 2000 Nevrax Ltd." + vbLf + _
@@ -44,7 +44,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		" * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston," + vbLf + _
 		" * MA 02111-1307, USA." + vbLf + _
 		" */" + vbLf
-EEnd Sub
+End Sub
 
 
 Function IsUpCase( str )

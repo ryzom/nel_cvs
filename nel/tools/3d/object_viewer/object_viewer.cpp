@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.106 2003/10/07 12:29:34 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.107 2003/10/10 16:45:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2049,7 +2049,7 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 				// Selected ?
 				if (bindBone != 0xffffffff)
 				{
-					transformSkel->stickObject (meshInstance, bindBone);
+					transformSkel->stickObject (pTrShape, bindBone);
 					/*meshInstance->setPos (CVector::Null);
 					meshInstance->setRotQuat (CQuat::Identity);
 					meshInstance->setScale (1, 1, 1);*/

@@ -1,6 +1,6 @@
 /** \file string_mapper.h
  *
- * $Id: string_mapper.h,v 1.16 2005/02/22 10:14:12 besson Exp $
+ * $Id: string_mapper.h,v 1.17 2005/03/10 15:29:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,7 +176,7 @@ public:
 	/// Globaly unmap a string
 	const char *		get(TSStringId stringId);
 	/// Return the global id for the empty string (helper function)
-	TSStringId			emptyId() { return 0; }
+	static TSStringId	emptyId() { return 0; }
 
 	void				clear();
 

@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.24 2005/02/22 10:14:12 besson Exp $
+ * $Id: matrix.h,v 1.25 2005/03/10 15:29:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,6 +168,18 @@ public:
 	 * \param m44 the 4*4 column matrix (4x4 matrix stored in column-major order as 16 consecutive values)
 	 */
 	void		set(const float m44[16]);
+	/** Choose an arbitrary rotation matrix for the given direction. The matrix will have I==idir
+	 *	\param idir: vector direction. MUST  be normalized.
+	 */
+	void		setArbitraryRotI(const CVector &idir);
+	/** Choose an arbitrary rotation matrix for the given direction. The matrix will have J==jdir
+	 *	\param jdir: vector direction. MUST  be normalized.
+	 */
+	void		setArbitraryRotJ(const CVector &jdir);
+	/** Choose an arbitrary rotation matrix for the given direction. The matrix will have K==kdir
+	 *	\param kdir: vector direction. MUST  be normalized.
+	 */
+	void		setArbitraryRotK(const CVector &kdir);
 	//@}
 
 

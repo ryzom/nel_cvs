@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.35 2004/06/29 08:17:31 vizerie Exp $
+ * $Id: matrix.cpp,v 1.36 2005/03/10 15:29:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1532,6 +1532,38 @@ void		CMatrix::serial(IStream &f)
 	{
 		f.serial(a41, a42, a43, a44);
 	}
+}
+
+
+// ======================================================================================================
+void		CMatrix::setArbitraryRotI(const CVector &idir)
+{
+	// avoid gimbal lock. if idir == nearly K, use an other second lead vector
+	if( fabs(idir.z)<0.9f )
+		setRot(idir, CVector::J, CVector::K);
+	else
+		setRot(idir, CVector::J, CVector::I);
+	normalize(CMatrix::XZY);
+}
+
+void		CMatrix::setArbitraryRotJ(const CVector &jdir)
+{
+	// avoid gimbal lock. if jdir == nearly K, use an other second lead vector
+	if(fabs(jdir.z)<0.9f)
+		setRot(CVector::I, jdir, CVector::K);
+	else
+		setRot(CVector::I, jdir, CVector::J);
+	normalize(CMatrix::YZX);
+}
+
+void		CMatrix::setArbitraryRotK(const CVector &kdir)
+{
+	// avoid gimbal lock. if kdir == nearly I, use an other second lead vector
+	if( fabs(kdir.y)<0.9f )
+		setRot(CVector::I, CVector::J, kdir);
+	else
+		setRot(CVector::I, CVector::K, kdir);
+	normalize(CMatrix::ZYX);
 }
 
 

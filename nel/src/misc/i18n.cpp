@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.48 2004/03/05 16:38:59 boucher Exp $
+ * $Id: i18n.cpp,v 1.49 2004/03/23 16:27:21 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -150,7 +150,12 @@ const ucstring &CI18N::get (const std::string &label)
 	if (it != _StrMap.end())
 		return it->second;
 
-	nlwarning("I18N: The string %s did not exist in language %s", label.c_str(), _LanguageCodes[_SelectedLanguage].c_str());
+	static hash_set<string>	missingStrings;
+	if (missingStrings.find(label) == missingStrings.end())
+	{
+		nlwarning("I18N: The string %s did not exist in language %s (display once)", label.c_str(), _LanguageCodes[_SelectedLanguage].c_str());
+		missingStrings.insert(label);
+	}
 
 	static ucstring	badString;
 

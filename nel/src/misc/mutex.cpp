@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.21 2001/09/14 10:11:18 lecroart Exp $
+ * $Id: mutex.cpp,v 1.22 2001/09/19 15:09:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,7 +238,7 @@ namespace NLMISC {
 /*
  * Unix version
  */
-CUnfairMutex::CUnfairMutex()
+CUnfairMutex::CUnfairMutex(const std::string &name)
 {
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init( &attr );

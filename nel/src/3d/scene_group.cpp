@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.15 2001/08/24 16:37:16 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.16 2001/08/28 14:22:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -496,6 +496,7 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 	}
 
 	scene.deleteModel (_Root);
+	_Root= NULL;
 
 	return true;
 }

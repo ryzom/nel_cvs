@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.1 2003/01/08 15:52:59 boucher Exp $
+ * $Id: clustered_sound.cpp,v 1.2 2003/01/08 17:35:44 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -569,7 +569,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 							{
 								// found an occlusion material for this portal
 								uint matId = it->second;
-								css.Occlusion = max(EAXBUFFER_MINOCCLUSION, travContext.Occlusion + EAX_MATERIAL_PARAM[matId][0]); //- 1800); //EAX_MATERIAL_THINDOOR;
+								css.Occlusion = max(sint32(EAXBUFFER_MINOCCLUSION), sint32(travContext.Occlusion + EAX_MATERIAL_PARAM[matId][0])); //- 1800); //EAX_MATERIAL_THINDOOR;
 								css.OcclusionLFFactor = travContext.OcclusionLFFactor * EAX_MATERIAL_PARAM[matId][1]; //EAX_MATERIAL_THICKDOORLF; //0.66f; //0.0f; //min(EAX_MATERIAL_THINDOORLF, travContext.OcclusionLFFactor);
 								css.OcclusionRoomRatio = EAX_MATERIAL_PARAM[matId][2] * travContext.OcclusionRoomRatio;
 							}
@@ -631,7 +631,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 //								float sqrdist = (realListener - nearPoint).sqrnorm();
 								if (travContext.Dist < 2.0f)	// interpolate a 2 m
 									obst *= travContext.Dist / 2.0f;
-								css.Obstruction = max(EAXBUFFER_MINOBSTRUCTION, travContext.Obstruction - sint32(obst));
+								css.Obstruction = max(sint32(EAXBUFFER_MINOBSTRUCTION), sint32(travContext.Obstruction - sint32(obst)));
 								css.OcclusionLFFactor = 0.50f * travContext.OcclusionLFFactor;
 #endif
 							}

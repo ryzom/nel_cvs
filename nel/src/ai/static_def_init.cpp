@@ -30,13 +30,6 @@
 #include "nel/ai/agent/msg_on_change.h"
 #include "nel/ai/agent/gd_agent_script.h"
 
-/*namespace NLAIC
-{
-	tRegistry *registry = new tRegistry;
-}*/
-
-//namespace NLAILINK
-//{
 	using namespace NLAIAGENT;
 	using namespace NLAILOGIC;
 	using namespace NLAIFUZZY;
@@ -249,10 +242,10 @@
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
-/*	const NLAIC::CIdentType CGDAgentScript::IdGDAgentScript("GDAgentScript", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CGDAgentScript(NULL) ),
+	const NLAIC::CIdentType CGDAgentScript::IdGDAgentScript("GDAgentScript", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CGDAgentScript(NULL) ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
-*/
+
 	static COperatorScript staticOperatorScript(NULL);
 	const NLAIC::CIdentType COperatorScript::IdOperatorScript("OperatorScript", 
 		NLAIC::CSelfClassCFactory( (NLAIC::IBasicInterface &) staticOperatorScript ),
@@ -547,12 +540,11 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType CAgentClass::IdAgentClass("Agent", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)agentClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
-/*
+
 	static CGDAgentClass GDagentClass;	
 	const NLAIC::CIdentType CGDAgentClass::IdGDAgentClass("GDAgent", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)GDagentClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
-*/
 
 	static CActorClass actorClass;
 	const NLAIC::CIdentType CActorClass::IdActorClass("Actor", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)actorClass),
@@ -591,12 +583,11 @@ namespace NLAISCRIPT
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-/*	static COnChangeMsgClass onChangeMsgClass;
+	static COnChangeMsgClass onChangeMsgClass;
 	const NLAIC::CIdentType COnChangeMsgClass::IdOnChangeMsgClass("OnChangeMsg", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)onChangeMsgClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-*/
 	static COperatorClass operatorClass;
 	const NLAIC::CIdentType COperatorClass::IdOperatorClass("Operator", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)operatorClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
@@ -647,9 +638,7 @@ namespace NLAISCRIPT
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
-
-
-/*	const NLAIC::CIdentType COnChangeMsg::IdOnChangeMsg("OnChangeMsg", NLAIC::CSelfClassCFactory( COnChangeMsg(&NLAISCRIPT::onChangeMsgClass) ),
+	const NLAIC::CIdentType COnChangeMsg::IdOnChangeMsg("OnChangeMsg", NLAIC::CSelfClassCFactory( COnChangeMsg(&NLAISCRIPT::onChangeMsgClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
-*/
+

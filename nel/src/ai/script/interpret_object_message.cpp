@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.15 2001/03/08 13:52:16 portier Exp $
+ * $Id: interpret_object_message.cpp,v 1.16 2001/03/08 16:09:38 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,7 +261,7 @@ namespace NLAISCRIPT
 //#########################################
 //		COnChangeMsgClass
 //#########################################
-/*
+
 	COnChangeMsgClass::COnChangeMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::COnChangeMsg::IdOnChangeMsg.getFactory()->getClass());		
@@ -297,5 +297,4 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *x = new NLAIAGENT::COnChangeMsg( components,  (CMessageClass *) this );		
 		return x;
 	}	
-	*/
 }

@@ -1,7 +1,7 @@
 /** \file interpret_object_message.h
  * Class for define an message class in the interpreter.
  *
- * $Id: interpret_object_message.h,v 1.13 2001/03/08 13:42:56 portier Exp $
+ * $Id: interpret_object_message.h,v 1.14 2001/03/08 16:10:06 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -133,7 +133,7 @@ namespace NLAISCRIPT
 		//@}
 	};
 
-/*	class COnChangeMsgClass : public CMessageClass
+	class COnChangeMsgClass : public CMessageClass
 	{
 	public:
 		static const NLAIC::CIdentType IdOnChangeMsgClass;
@@ -153,6 +153,6 @@ namespace NLAISCRIPT
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
 		//@}
 	};
-*/
+
 }
 #endif

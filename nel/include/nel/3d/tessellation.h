@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.26 2001/02/20 11:03:39 berenguier Exp $
+ * $Id: tessellation.h,v 1.27 2001/02/20 14:19:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -369,6 +369,8 @@ private:
 	void	buildTileFaces();
 	// delete The TileFaces, according to the TileMaterial passes. NO REMOVAL FROM RENDERLIST!!
 	void	deleteTileFaces();
+	// return true iff TileFaces are all NULL.
+	bool	emptyTileFaces();
 
 	// @}
 

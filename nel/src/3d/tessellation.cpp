@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.35 2001/02/20 11:05:06 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.36 2001/02/20 14:19:56 berenguier Exp $
  *
  */
 
@@ -399,6 +399,20 @@ void		CTessFace::deleteTileFaces()
 			nlassert(TileFaces[i]==NULL);
 		}
 	}
+}
+
+// ***************************************************************************
+bool		CTessFace::emptyTileFaces()
+{
+	// Do nothgin for lightmap pass, of course.
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		// Some TileFace exist??
+		if(TileFaces[i])
+			return false;
+	}
+
+	return true;
 }
 
 
@@ -2141,8 +2155,9 @@ bool		CTessFace::isRectangular() const
 // ***************************************************************************
 void		CTessFace::deleteTileUvs()
 {
-	// TODODO.
-/*	if(!isLeaf())
+	// NB: NearVertices are removed from renderlist with deleteTileUv (called in releaseTileMaterial()).
+
+	if(!isLeaf())
 	{
 		// Must delete the materials of leaves first.
 		SonLeft->deleteTileUvs();
@@ -2157,24 +2172,37 @@ void		CTessFace::deleteTileUvs()
 		}
 		else if(SonLeft->Level > Patch->TileLimitLevel)
 		{
-			nlassert(!FBase->isLeaf());
-			// Delete Uv, only if not already done by the neighbor (ie neighbor not already merged to a leaf).
+			nlassert(!FBase || !FBase->isLeaf());
+
+			// Delete Uv, only if not already done by the neighbor (ie neighbor has yet TileFaces!!).
 			// But Always delete if neighbor exist and has not same tile as me.
 			// NB: this work with rectangular neigbor patch, since sameTile() will return false if different patch.
-			if(!FBase || FBase->SonLeft->TileUvBase==NULL || !sameTile(this, FBase))
-				delete SonLeft->TileUvBase;
-			SonLeft->TileUvBase= NULL;
-			SonRight->TileUvBase= NULL;
+			if(!FBase || !FBase->SonLeft->emptyTileFaces() || !sameTile(this, FBase))
+			{
+				SonLeft->deleteTileUv(IdUvBase);
+			}
+			// In all case, must delete the tilefaces of those face.
+			SonLeft->deleteTileFaces();
+			SonRight->deleteTileFaces();
 		}
-	}*/
+	}
+	else
+	{
+		// NB: this is done always BELOW tile creation (see above).
+		// Do this only for tiles.
+		if(TileMaterial)
+			Patch->removeFaceFromTileRenderList(this);
+	}
+
 }
 
 
 // ***************************************************************************
 void		CTessFace::recreateTileUvs()
 {
-	// TODODO.
-/*	if(!isLeaf())
+	// NB: NearVertices are append to renderlist with allocTileUv (called in computeTileMaterial()/heritTileMaterial()).
+
+	if(!isLeaf())
 	{
 		// Must recreate the materials of parent first.
 
@@ -2196,10 +2224,11 @@ void		CTessFace::recreateTileUvs()
 	}
 	else
 	{
+		// NB: this is done always AFTER tile creation (see above).
 		// Do this only for tiles.
 		if(TileMaterial)
 			Patch->appendFaceToTileRenderList(this);
-	}*/
+	}
 }
 
 

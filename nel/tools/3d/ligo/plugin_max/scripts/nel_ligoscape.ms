@@ -2066,8 +2066,7 @@ group "Projects management"
 					existingFile = ligo_root_path + ligo_zonematerial_prefix + MaterialDDL.selected + "-" + fileName + ".max"
 					newFile = ligo_root_path + ligo_zonematerial_prefix + MaterialDDL.selected + "-" + NewZoneName.text + ".max"
 				)
-				print existingfile
-				print newfile
+				print ("Copying "+existingfile+" to "+newfile)
 				if (copyFile existingFile newFile) == false then
 				(
 					Messagebox ("Cannot create file :"+newFile) title:title_msgbox beep:true
@@ -2080,7 +2079,8 @@ group "Projects management"
 					refresh_zone_list MaterialDDL.selected
 				)
 			)
-		)	)
+		)
+	)
 
 	on ZoneProject doubleClicked id do
 	(
@@ -2126,10 +2126,11 @@ group "Projects management"
 
 	Dropdownlist	TransitionDDL			"Transition"					height:8 align:#center
 	Listbox			ZoneProject				"transZone projects"			height:8 align:#center
-	Button			DelTransZone			"Delete transZone selected"		width:140 align:#center
+	Button			DelTransZone			"Delete selected transZone"		width:140 align:#center
 	Label			ZoneName				"transZone name:	"			align:#left
 	EditText		NewTransZoneName		""								width:140 align:#left
 	Button			AddTransZone			"Add transZone"					width:140 align:#center
+	Button			CopyTransZone			"Copy selected transZone"		width:140 align:#center
 
 	)
 
@@ -2441,6 +2442,53 @@ group "Projects management"
 			(
 				existingFile = ligo_root_path + ligo_transition_prefix + TransitionDDL.selected + ".max"
 				newFile = ligo_root_path + ligo_zonetransition_prefix + TransitionDDL.selected + "-" + NewTransZoneName.text + ".max"
+				if (copyFile existingFile newFile) == false then
+				(
+					Messagebox ("Cannot create file :"+newFile) title:title_msgbox beep:true
+				)
+				else
+				(
+					loadMaxFile newFile
+					project_cur_file = newFile
+					refresh_project_list ()
+					refresh_list TransitionDDL.selected
+				)
+			)
+		)
+	)
+
+	on CopyTransZone pressed do
+	(
+		if (NewTransZoneName.text == "")  then
+		(
+			Messagebox "Choose a name for your new transZone." title:title_msgbox beep:true
+		)
+		else
+		(
+			if (ZoneProject.selection == 0) then
+			(
+				Messagebox "Please select a valid transition zone." title:title_msgbox beep:true
+			)
+			else
+			(
+				existingFile = ligo_root_path + ligo_zonetransition_prefix
+				if (TransitionDDL.selected == "-- ALL --") then
+				(
+					tokenArray = filterString (substring ZoneProject.selected 5 100) "-"
+					existingFile = existingFile + tokenArray[1] + "-" + tokenArray[2] + "-"
+					newFile = existingFile
+					existingFile = existingFile + tokenArray[3] + ".max"
+					newFile = newFile + NewTransZoneName.text + ".max"
+				)
+				else
+				(
+					fileName = substring ZoneProject.selected 5 100
+					existingFile = existingFile + TransitionDDL.selected + "-" 
+					newFile  = existingFile
+					existingFile = existingFile + fileName + ".max"
+					newFile = newFile + NewTransZoneName.text + ".max"
+				)
+				print ("Copying "+existingfile+" to "+newfile)
 				if (copyFile existingFile newFile) == false then
 				(
 					Messagebox ("Cannot create file :"+newFile) title:title_msgbox beep:true

@@ -1,6 +1,6 @@
 /** \file water_env_map.cpp
  *
- * $Id: water_env_map.cpp,v 1.2 2004/08/13 15:48:31 vizerie Exp $
+ * $Id: water_env_map.cpp,v 1.3 2004/09/02 17:07:44 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -129,9 +129,10 @@ void CWaterEnvMap::init(uint cubeMapSize, uint projection2DSize, TGlobalAnimatio
 	_EnvCubic->setWrapS(ITexture::Clamp);
 	_EnvCubic->setWrapT(ITexture::Clamp);
 	_EnvCubic->setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
-	CTextureBlank *tb = new CTextureBlank;
+	CTexture2DUnshared *tb = new CTexture2DUnshared;
 	tb->resize(cubeMapSize, cubeMapSize); // Unfortunately,  must allocate memory in order for the driver to figure out the size 
 	                                      // that it needs to allocate for the texture, though its datas are never used (it is a render target)
+	tb->Size = cubeMapSize;
 	tb->setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);	
 	for(uint k = 0; k < 6; ++k)
 	{		

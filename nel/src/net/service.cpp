@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.190 2003/09/09 14:42:39 lecroart Exp $
+ * $Id: service.cpp,v 1.191 2003/09/09 15:08:22 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -400,13 +400,15 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Init parameters
 		//
 
+		_ShortName = serviceShortName;
+		CLog::setProcessName (_ShortName);
+		
 		// get the path where to run the service if any in the command line
 		if (haveArg('A'))
 			RunningDirectory = CPath::standardizePath(getArg('A'));
 
 		ConfigDirectory = CPath::standardizePath(configDir);
 		LogDirectory = CPath::standardizePath(logDir);
-		_ShortName = serviceShortName;
 		_LongName = serviceLongName;
 
 		CompilationDate = compilationDate;
@@ -414,9 +416,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		LaunchingDate = CTime::getSecondsSince1970();
 
 		ListeningPort = servicePort;
-
-		// Set the process name
-		CLog::setProcessName (_ShortName);
 
 		setReportEmailFunction ((void*)sendEmail);
 		setDefaultEmailParams ("gw.nevrax.com", "", "lecroart@nevrax.com");

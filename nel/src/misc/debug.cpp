@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.78 2003/08/27 16:16:25 distrib Exp $
+ * $Id: debug.cpp,v 1.79 2003/09/09 15:08:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -892,10 +892,10 @@ void createDebug (const char *logPath, bool logInFile)
 			}
 			else
 			{
-				// log.log must always be accessed in creation current path directory
-				char	tmpPath[1024];
-				fn += getcwd(tmpPath, 1024);
-				fn += "/";
+// we want the log.log to be in the current directory
+//				char	tmpPath[1024];
+//				fn += getcwd(tmpPath, 1024);
+//				fn += "/";
 			}
 			fn += "log.log";
 			fd = new CFileDisplayer (fn, false, "DEFAULT_FD");

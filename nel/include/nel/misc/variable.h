@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.12 2004/06/03 17:15:59 lecroart Exp $
+ * $Id: variable.h,v 1.13 2004/06/03 17:17:48 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -254,7 +254,7 @@ public:
 		return get ();
 	}
 
-	void set (const T &val, bool callCallback = true)
+	void set (const T &val, bool executeCallback = true)
 	{
 		_Value = val;
 		_Mean.addValue (_Value);
@@ -269,7 +269,7 @@ public:
 			if (_Value > _Max) _Max = _Value;
 			if (_Value < _Min) _Min = _Value;
 		}
-		if (ChangeCallback && callCallback) ChangeCallback (*this);
+		if (ChangeCallback && executeCallback) ChangeCallback (*this);
 	}
 	
 	const T &get () const
@@ -384,7 +384,7 @@ public:
 	CVariable (const char *commandName, const char *commandHelp, const std::string &defaultValue, uint nbMeanValue = 0, bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
 		IVariable (commandName, commandHelp, "[<value>]", useConfigFile, cc)
 	{
-		set (defaultValue);
+		set (defaultValue, false);
 	}
 	  
 	virtual void fromString (const std::string &val, bool human=false)
@@ -418,11 +418,11 @@ public:
 		return get().c_str();
 	}
 
-	void set (const std::string &val)
+	void set (const std::string &val, bool executeCallback = true)
 	{
 		_Value = val;
 		static bool RecurseSet = false;
-		if (ChangeCallback && !RecurseSet)
+		if (ChangeCallback && !RecurseSet && executeCallback)
 		{
 			RecurseSet = true;
 			ChangeCallback(*this);

@@ -12,7 +12,7 @@
 
 	// $reason contains the reason why the check failed or success
 	// return true if the check is ok
-	function checkUserValidity ($login, $password, $clientApplication, &$id, &$reason, &$priv)
+	function checkUserValidity ($login, $password, $clientApplication, &$id, &$reason, &$priv, &$extended)
 	{
 		global $DBHost, $DBUserName, $DBPassword, $DBName, $AcceptUnknownUser;
 
@@ -39,6 +39,7 @@
 					$row = mysql_fetch_row ($result);
 					$id = $row[0];
 					$priv = $row[5];
+					$extended = ""; // TODO: edit this when the "extended" row will be available in database
 
 					// add the default permission
 					$query = "INSERT INTO permission (UId) VALUES ('$id')";
@@ -102,6 +103,7 @@
 					{
 						$id = $row[0];
 						$priv = $row[5];
+						$extended = ""; // TODO: edit this when the "extended" row will be available in database
 						$res = true;
 					}
 				}
@@ -162,7 +164,7 @@
 // main 
 // --------------------------------------------------------------------------------------
 
-	if (!checkUserValidity($login, $password, $clientApplication, $id, $reason, $priv))
+	if (!checkUserValidity($login, $password, $clientApplication, $id, $reason, $priv, $extended))
 	{
 		echo "0:".$reason;
 	}
@@ -172,7 +174,7 @@
 		{
 			// user selected a shard, try to add the user to the shard
 
-			if (askClientConnection($shardid, $id, $login, $priv, $res))
+			if (askClientConnection($shardid, $id, $login, $priv, $extended, $res))
 			{
 				// access granted, send cookie and addr
 				echo "1:".$res;

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.38 2004/07/13 11:17:50 coutelas Exp $
+ * $Id: welcome_service.cpp,v 1.39 2004/08/25 16:48:58 guignot Exp $
  *
  */
 
@@ -524,7 +524,7 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 
 	CLoginCookie cookie;
 	msgin.serial (cookie);
-	string userName, userPriv;
+	string userName, userPriv, userExtended;
 	msgin.serial (userName);
 
 	try
@@ -534,6 +534,15 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	catch (Exception &)
 	{
 		nlwarning ("LS didn't give me the user privilege for user '%s', set to empty", userName.c_str());
+	}
+
+	try
+	{
+		msgin.serial (userExtended);
+	}
+	catch (Exception &)
+	{
+		nlwarning ("LS didn't give me the extended data for user '%s', set to empty", userName.c_str());
 	}
 
 	uint totalNbUsers;
@@ -591,7 +600,7 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 
 	CMessage msgout ("CS");
 	msgout.serial (cookie);
-	msgout.serial (userName, userPriv);
+	msgout.serial (userName, userPriv, userExtended);
 
 	CUnifiedNetwork::getInstance()->send (best->SId, msgout);
 	best->NbEstimatedUser++;

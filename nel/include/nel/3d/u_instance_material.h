@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.10 2002/11/25 14:49:25 vizerie Exp $
+ * $Id: u_instance_material.h,v 1.11 2003/03/04 15:53:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/matrix.h"
 
 
 namespace NL3D

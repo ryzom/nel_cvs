@@ -41,7 +41,7 @@ BEGIN
     PUSHBUTTON      "2) Patch!",IDC_DoPatch,256,65,50,14
     LTEXT           "Source Dir",IDC_SrcDirLabel,7,47,37,8
     LTEXT           "Target Dir",IDC_TargetDirLabel,7,68,37,8
-    LTEXT           "a) Choose the source and target directories. b) Get the diff between your local uncommitted code and the cvs codein the source directory. c) Look at the diff, you can edit it if you want. d) Patch it to the target directory",
+    LTEXT           "a) Choose the source and target directories. b) Get the diff between your local uncommitted code and the cvs code in the source directory. c) Look at the diff, you can edit it if you want. d) Patch it to the target directory",
                     IDC_TopText,7,7,302,32
     LTEXT           "",IDC_Filename,7,82,448,8
     PUSHBUTTON      "EnterTokens",IDC_ButtonExtractTokens,436,20,50,14

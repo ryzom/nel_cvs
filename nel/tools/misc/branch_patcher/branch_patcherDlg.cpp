@@ -474,8 +474,9 @@ void CBranch_patcherDlg::extractDirTokens()
 {
 	int beginOfToken1, beginOfToken2, endOfToken1, endOfToken2;
 	CString text;
-
 	UpdateData( true );
+
+	// Search backward from the end until a different substring is found
 	int c1 = m_SrcDir.GetLength()-1;
 	int c2 = m_DestDir.GetLength()-1;
 	while ( (c1 >= 0) && (c2 >= 0) && (m_SrcDir[c1] == m_DestDir[c2]) )
@@ -483,13 +484,18 @@ void CBranch_patcherDlg::extractDirTokens()
 		--c1;
 		--c2;
 	}
+	
+	// Test if both strings are identical
 	if ( (c1 < 0) || (c2 < 0) )
 	{
-		return; // did not found a different part
+		Token1 = m_SrcDir;
+		Token2 = m_DestDir;
+		return;
 	}
-	endOfToken1 = c1;
-	endOfToken2 = c2;
+	endOfToken1 = c1+1;
+	endOfToken2 = c2+1;
 
+	// Search forward from the beginning until a different substring is found
 	c1 = 0;
 	c2 = 0;
 	while ( (c1 < m_SrcDir.GetLength()) && (c2 < m_DestDir.GetLength()) && (m_SrcDir[c1] == m_DestDir[c2]) )
@@ -499,13 +505,30 @@ void CBranch_patcherDlg::extractDirTokens()
 	}
 	if ( (c1 == m_SrcDir.GetLength()) || (c2 == m_DestDir.GetLength()) )
 	{
-		return;
+		return; // both strings are identical (should not occur again)
+	}
+
+	// If one of the token is empty, expand both downto the closest backslash
+	if ( (c1 == endOfToken1) || (c2 == endOfToken2) )
+	{
+		--c1;
+		while ( (c1 >= 0) && (m_SrcDir[c1] != '\\') )
+		{
+			--c1;
+		}
+		++c1;
+		--c2;
+		while ( (c2 >= 0) && (m_DestDir[c2] != '\\') )
+		{
+			--c2;
+		}
+		++c2;
 	}
 	beginOfToken1 = c1;
 	beginOfToken2 = c2;
 
-	Token1 = m_SrcDir.Mid( beginOfToken1, endOfToken1-beginOfToken1+1 );
-	Token2 = m_DestDir.Mid( beginOfToken2, endOfToken2-beginOfToken2+1 );
+	Token1 = m_SrcDir.Mid( beginOfToken1, endOfToken1-beginOfToken1 );
+	Token2 = m_DestDir.Mid( beginOfToken2, endOfToken2-beginOfToken2 );
 
 //endExtract:
 	/*if ( hasTokens() )

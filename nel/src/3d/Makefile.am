@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.88 2002/08/21 15:19:35 coutelas Exp $
+# $Id: Makefile.am,v 1.89 2002/10/02 17:42:31 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -510,6 +510,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        vertex_buffer_heap.h \
                        vertex_program.cpp \
                        vertex_program.h \
+		       vertex_program_parse.cpp \
+                       vertex_program_parse.h \
                        viewport.cpp \
                        visual_collision_entity.cpp \
                        visual_collision_entity.h \

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.20 2000/11/10 10:06:24 cado Exp $
+ * $Id: msg_socket.h,v 1.21 2000/11/20 15:51:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -225,7 +225,7 @@ protected:
 	static CSocket	*socketFromId( TSenderId id );
 
 	/// Returns an iterator to the socket pointer in the list of connections, with the specified sender id
-	static CConnections::iterator	CMsgSocket::iteratorFromId( TSenderId id );
+	static CConnections::iterator	iteratorFromId( TSenderId id );
 
 	/// Gets new sender id
 	static TSenderId newSenderId()

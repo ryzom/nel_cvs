@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.25 2000/11/14 15:58:34 cado Exp $
+ * $Id: msg_socket.cpp,v 1.26 2000/11/20 15:51:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -703,7 +703,6 @@ const CInetAddress *CMsgSocket::listenAddress()
 	CConnections::iterator ips = _Connections.begin();
 	if ( (*ips)->isListening() )
 	{
-		CSocket *sock = *ips;
 		return &((*ips)->localAddr());
 	}
 	else

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.h,v 1.12 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: inet_address.h,v 1.13 2000/11/20 15:51:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,16 +80,15 @@ public:
 	~CInetAddress();
 
 	/// Resolves a name
-	CInetAddress&		setByName( const std::string& hostname ); //throw(ESocket);
-
+	CInetAddress&		setByName( const std::string& hostname );
 	/// Sets port
 	void				setPort( uint16 port );
 
 	/** Sets internal socket address directly (contents is copied).
 	 * It also retrieves the host name if CInetAddress::RetrieveNames is true.
 	 */
-	void				setSockAddr( const sockaddr_in* saddr ); //throw (ESocket);
-
+	void				setSockAddr( const sockaddr_in* saddr );
+	 
 	/// Returns if object (address and port) is valid
 	bool				isValid() const;
 
@@ -115,7 +114,7 @@ public:
 	void serial( NLMISC::IStream& s );
 
 	/// Creates a CInetAddress object with local host address, port=0
-	static CInetAddress	localHost(); // throw(ESocket);
+	static CInetAddress	localHost();
 
 	/// If true, setSockAddr() always tries to retrieve the host name from the address
 	static bool RetrieveNames;

@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.9 2000/11/10 16:58:35 cado Exp $
+ * $Id: local_entity.cpp,v 1.10 2000/11/20 15:51:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,7 +197,7 @@ void CLocalEntity::propagateState()
 	}
 
 	// Update local replica
-	drReplica().changeStateTo( *this );
+	_DRReplica.changeStateTo( *this );
 }
 
 

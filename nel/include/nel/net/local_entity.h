@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.6 2000/11/10 10:06:24 cado Exp $
+ * $Id: local_entity.h,v 1.7 2000/11/20 15:51:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 #include "nel/net/moving_entity.h"
-#include "nel/net/remote_entity.h"
+#include "nel/net/replica.h"
 
 
 namespace NLNET {
@@ -58,7 +58,8 @@ public:
 
 	/* Sends an update to all replicas, including local replica.
 	 * Call it yourself only if you explicitly want to send an update
-	 * (e.g. just after the creation and setup of the local entity)
+	 * (e.g. just after the creation and setup of the local entity, or when the user
+	 * begins or stops a movement)
 	 */
 	void			propagateState();
 
@@ -127,6 +128,19 @@ public:
 
 	//@}
 
+	/// @name Read accessors
+
+	//@{
+
+	TVelocity		frontVelocity() const	{ return _FrontVel; }
+	TVelocity		strafeVelocity() const	{ return _StrafeVel; }
+	TVelocity		vertVelocity() const	{ return _VertVel; }
+	NLMISC::CVector	previousPos() const		{ return _PrevPos; }
+
+	const CReplica&	drReplica() const		{ return _DRReplica; }
+
+	//@}
+
 protected:
 
 	/// Computes trajectory vector. \todo Cado: rotateZ() for NeL instead of rotateY() for GLTest (also in yaw() and roll())
@@ -134,12 +148,6 @@ protected:
 
 	/// Dead reckoning divergence test: returns true if the replica needs to converge
 	bool			drDivergeTest();
-
-	/// R/W Access to dead reckoning replica
-	CRemoteEntity&	drReplica()
-	{
-		return _DRReplica;
-	}
 
 private:
 
@@ -162,7 +170,7 @@ private:
 //@{
 
 	// Dead reckoning replica
-	CRemoteEntity	_DRReplica;
+	CReplica		_DRReplica;
 
 	// Threshold for dead reckoning divergence test on position
 	TPosUnit		_DRThresholdPos;

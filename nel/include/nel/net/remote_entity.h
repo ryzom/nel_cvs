@@ -1,7 +1,7 @@
 /** \file remote_entity.h
  * Remote-controlled entities
  *
- * $Id: remote_entity.h,v 1.4 2000/11/07 16:44:44 cado Exp $
+ * $Id: remote_entity.h,v 1.5 2000/11/20 15:51:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,25 +27,28 @@
 #define NL_REMOTE_ENTITY_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/net/moving_entity.h"
+#include "nel/net/replica.h"
+#include "nel/net/cubic_entity_interpolator.h"
+#include "nel/net/linear_entity_interpolator.h"
+
 
 
 namespace NLNET {
 
 
 /**
- * A moving entity that is controlled from elsewhere
+ * A remote-controlled replica, with convergency
  * \warning This class is test code and is highly subject to change.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
  */
-class CRemoteEntity : public IMovingEntity
+class CRemoteEntity : public CReplica
 {
 public:
 
 	/// Constructor
-	CRemoteEntity() {};
+	CRemoteEntity() : CReplica() {};
 	
 	/// Alt. constructor
 	CRemoteEntity( const NLMISC::CVector& pos,
@@ -58,9 +61,18 @@ public:
 	/// Alt. constructor with entity state
 	CRemoteEntity( const IMovingEntity& es );
 
-	/// Change the current state
-	void	changeStateTo( const IMovingEntity& es );
+	/// Update the entity state
+	void	update( TDuration deltatime );
 
+	/// Converge to the specified state
+	void	convergeTo( const IMovingEntity& dest_es );
+
+	/// Converge duration
+	static const TDuration ConvergeDuration;
+
+private:
+
+	CCubicEntityInterpolator	_Interpolator;
 };
 
 

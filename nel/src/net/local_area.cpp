@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.7 2000/11/10 16:58:35 cado Exp $
+ * $Id: local_area.cpp,v 1.8 2000/11/20 15:51:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,7 @@ void NLNET::processEntityState( const IMovingEntity& es )
 	if ( findEntity( es.id(), ire ) )
 	{
 		// Change state
-		(*ire).second->changeStateTo( es );
+		(*ire).second->convergeTo( es );
 	}
 	else
 	{	// Not found => create a new remote entity
@@ -88,7 +88,7 @@ void NLNET::cbProcessEntityStateInGroundMode( CMessage& msgin, TSenderId idfrom 
 	if ( findEntity( es.id(), ire ) )
 	{
 		// Change state
-		(*ire).second->changeStateTo( es );
+		(*ire).second->convergeTo( es );
 	}
 	else
 	{	// Not found => create a new remote entity
@@ -232,7 +232,6 @@ void CLocalArea::update()
 		{
 			NLMISC::CVector v1 = User.pos();
 			NLMISC::CVector v2 = (*ipe).second->pos();
-			float norm = (v2-v1).norm();
 			delete (*ipe).second;
 			CRemoteEntities::iterator ipebis = ipe;
 			ipe++;

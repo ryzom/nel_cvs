@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.5 2000/11/08 15:52:24 cado Exp $
+ * $Id: moving_entity.h,v 1.6 2000/11/20 15:51:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,7 +173,7 @@ public:
 		return _MaxId;
 	}
 
-protected:
+// protected:
 
 	///@name Set position
 	//@{
@@ -192,6 +192,8 @@ protected:
 
 	/// Sets angular velocity
 	void					setAngularVelocity ( TAngVelocity av )			{ _AngVel = av; }
+
+protected:
 
 	/// Computes position using heading and velocity
 	void					computeNextPos()

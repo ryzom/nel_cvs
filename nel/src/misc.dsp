@@ -357,5 +357,13 @@ SOURCE=..\include\nel\misc\time_nl.h
 
 SOURCE=..\include\nel\misc\types_nl.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\misc\vector_h.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vector_h.h
+# End Source File
 # End Target
 # End Project

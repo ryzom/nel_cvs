@@ -1,7 +1,7 @@
-/** \file remote_entity.cpp
- * Remote-controlled entities
+/** \file replica.cpp
+ * <File description>
  *
- * $Id: remote_entity.cpp,v 1.6 2000/11/20 15:51:49 cado Exp $
+ * $Id: replica.cpp,v 1.1 2000/11/20 15:51:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/net/remote_entity.h"
 #include "nel/net/replica.h"
-#include "nel/misc/debug.h"
+#include "nel/misc/vector.h"
+
 
 using namespace NLMISC;
 
@@ -33,20 +33,16 @@ using namespace NLMISC;
 namespace NLNET {
 
 
-/// Converge duration constant
-const TDuration CRemoteEntity::ConvergeDuration = 0.5;
-
-
 /*
  * Constructor
  */
-CRemoteEntity::CRemoteEntity( const NLMISC::CVector& pos,
+CReplica::CReplica( const NLMISC::CVector& pos,
 							  const NLMISC::CVector& hdg,
 							  const TAngle rollangle,
 							  const NLMISC::CVector& vec,
 							  const TAngVelocity av,
 							  bool groundmode ) :
-	CReplica( pos, hdg, rollangle, vec, av, groundmode )
+	IMovingEntity( pos, hdg, rollangle, vec, av, groundmode )
 {
 }
 
@@ -54,38 +50,37 @@ CRemoteEntity::CRemoteEntity( const NLMISC::CVector& pos,
 /*
  * Alt. constructor with entity state
  */
-CRemoteEntity::CRemoteEntity( const IMovingEntity& es ) :
-	CReplica( es )
+CReplica::CReplica( const IMovingEntity& es ) :
+	IMovingEntity( es )
 {
 }
 
 
 /*
- * Update the entity state
+ * Change the current state
  */
-void CRemoteEntity::update( TDuration deltatime )
+void CReplica::changeStateTo( const IMovingEntity& es )
 {
-	if ( _Interpolator.active() )
+	if ( groundMode() )
 	{
-		_Interpolator.getNextState( *this, deltatime );
+		CVector p = es.pos();
+		CVector v = es.trajVector();
+		CVector h = es.bodyHeading();
+		p.z = pos().z;
+		v.z = trajVector().z;
+		h.z = bodyHeading().z;
+		setPos( p );
+		setTrajVector( v );
+		setBodyHeading( h );
 	}
 	else
 	{
-		computePosAfterDuration( deltatime );
+		setPos( es.pos() );
+		setTrajVector( es.trajVector() );
+		setBodyHeading( es.bodyHeading() );
 	}
-}
-
-
-/*
- * Converge to the specified state
- */
-void CRemoteEntity::convergeTo( const IMovingEntity& dest_es )
-{
-	CReplica extrapolated_dest( *this );
-	extrapolated_dest.changeStateTo( dest_es );
-	extrapolated_dest.update( CRemoteEntity::ConvergeDuration );
-	_Interpolator.begin( *this, extrapolated_dest, CRemoteEntity::ConvergeDuration );
-	//changeStateTo( dest_es );
+	setAngularVelocity( es.angularVelocity() );
+	setRollAngle( es.rollAngle() );
 }
 
 

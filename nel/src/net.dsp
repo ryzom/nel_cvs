@@ -115,11 +115,31 @@ SOURCE=..\include\nel\net\base_socket.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\cubic_entity_interpolator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\cubic_entity_interpolator.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\entity_interpolator.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\inet_address.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\net\inet_address.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\linear_entity_interpolator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\linear_entity_interpolator.h
 # End Source File
 # Begin Source File
 
@@ -192,6 +212,14 @@ SOURCE=.\net\remote_entity.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\net\remote_entity.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\replica.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\replica.h
 # End Source File
 # Begin Source File
 

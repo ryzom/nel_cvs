@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.49 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.49.2.1 2003/04/23 12:46:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -489,7 +489,7 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 		if (_Portals[i]._Clusters[j] == NULL)
 		{
 			nlwarning("Portal %d (name:%s) is not linked to 2 clusters. Instance Group Not Added To Scene.", i, _Portals[i].getName().c_str());
-			return false;
+			//return false;
 		}
 	}
 	
@@ -677,9 +677,12 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 	for (i = 0; i < _Portals.size(); ++i)
 	for (j = 0; j < 2; ++j)
 	{
-		sint32 nClusterNb;
-		nClusterNb = (_Portals[i]._Clusters[j] - &_ClusterInfos[0]);
-		_Portals[i]._Clusters[j] = _ClusterInstances[nClusterNb];
+		if (_Portals[i]._Clusters[j])
+		{
+			sint32 nClusterNb;
+			nClusterNb = (_Portals[i]._Clusters[j] - &_ClusterInfos[0]);
+			_Portals[i]._Clusters[j] = _ClusterInstances[nClusterNb];
+		}
 	}
 
 	// Link shapes to clusters
@@ -937,7 +940,7 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 		if (_Portals[i]._Clusters[j] == NULL)
 		{
 			nlwarning("Portal %d (name:%s) is not linked to 2 clusters. Instance Group Not Removed From Scene.", i, _Portals[i].getName().c_str());
-			return false;
+			//return false;
 		}
 	}
 

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.21 2004/12/30 17:44:54 miller Exp $
+ * $Id: sstring.h,v 1.22 2005/01/18 18:59:54 miller Exp $
  */
 
 
@@ -145,6 +145,8 @@ public:
 	static bool isValidKeywordFirstChar(char c); 
 	/// A handy utility routine for knowing if a character is a valid subsequent char for a keyword (a..z, '_', '0'..'9')
 	static bool isValidKeywordChar(char c); 
+	/// A handy utility routine for knowing if a character is printable (isValidFileNameChar + more basic punctuation)
+	static bool isPrintable(char c);
 
 	/// A handy utility routine for knowing if a character is a hex digit 0..9, a..f
 	static bool isHexDigit(char c);
@@ -403,8 +405,20 @@ public:
 class CVectorSString : public std::vector<CSString>
 {
 public:
+	// cast to and convert from std::vector<std::string>
 	operator std::vector<std::string>& () { return reinterpret_cast<std::vector<std::string>&>(*this); }
 	CVectorSString&	operator= ( const std::vector<std::string>& v ) { *this = reinterpret_cast<const CVectorSString&>(v); return *this; }
+
+	// simple ctors
+	CVectorSString()							{}
+	CVectorSString( const CVectorSString& v )	{ operator=(v); }
+
+	// ctors for building from different vetor types
+	CVectorSString( const std::vector<CSString>& v ):							std::vector<CSString>(v)			{}
+	CVectorSString( const std::vector<std::string>& v ):						std::vector<CSString>(*(std::vector<CSString>*)&v) {}
+
+	// ctor for extracting sub_section of another vector
+	CVectorSString( const const_iterator& first, const const_iterator& last ):	std::vector<CSString>(first,last)	{}
 };
 
 
@@ -879,6 +893,38 @@ inline bool CSString::isValidFileNameChar(char c)
 	if (c=='.') return true;
 	if (c=='#') return true;
 	if (c=='-') return true;
+	return false;
+}
+
+inline bool CSString::isPrintable(char c)
+{
+	if (isValidFileNameChar(c)) return true;
+	if (c==' ') return true;
+	if (c=='*') return true;
+	if (c=='?') return true;
+	if (c=='!') return true;
+	if (c=='@') return true;
+	if (c=='&') return true;
+	if (c=='|') return true;
+	if (c=='+') return true;
+	if (c=='=') return true;
+	if (c=='%') return true;
+	if (c=='<') return true;
+	if (c=='>') return true;
+	if (c=='(') return true;
+	if (c==')') return true;
+	if (c=='[') return true;
+	if (c==']') return true;
+	if (c=='{') return true;
+	if (c=='}') return true;
+	if (c==',') return true;
+	if (c==';') return true;
+	if (c=='$') return true;
+	if (c=='£') return true;
+	if (c=='^') return true;
+	if (c=='~') return true;
+	if (c=='\'') return true;
+	if (c=='\"') return true;
 	return false;
 }
 

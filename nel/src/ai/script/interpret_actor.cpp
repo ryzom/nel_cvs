@@ -1,9 +1,9 @@
-#include "c/registry_class.h"
-#include "agent/actor_script.h"
-#include "script/lexsupport.h"
+#include "nel/ai/c/registry_class.h"
+#include "nel/ai/agent/actor_script.h"
+#include "nel/ai/script/lexsupport.h"
 
-#include "script/interpret_actor.h"
-#include "agent/actor_script.h"
+#include "nel/ai/script/interpret_actor.h"
+#include "nel/ai/agent/actor_script.h"
 
 namespace NLAISCRIPT
 {

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: interpret_object_operator.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_OPERATOR_CLASS
 #define NL_OPERATOR_CLASS
 
-#include "script/interpret_object_agent.h"
+#include "nel/ai/script/interpret_object_agent.h"
 
 namespace NLAISCRIPT
 {

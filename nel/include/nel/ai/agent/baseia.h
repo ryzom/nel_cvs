@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseia.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
+ * $Id: baseia.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 
 #include <queue>
 
-#include "agent/identifiant.h"
+#include "nel/ai/agent/identifiant.h"
 
 
 

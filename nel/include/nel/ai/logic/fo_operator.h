@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: fo_operator.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: fo_operator.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_FOOPERATOR_H
 #define NL_FOOPERATOR_H
 
-#include "agent/agent.h"
-#include "logic/operator.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/logic/operator.h"
 
 namespace NLAILOGIC
 {

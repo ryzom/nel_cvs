@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identifiant.h,v 1.3 2001/01/08 10:50:46 chafik Exp $
+ * $Id: identifiant.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #ifndef NL_IDENTIFIANT_H
 #define NL_IDENTIFIANT_H
 #include <stdlib.h>
-#include "e/ia_exception.h" 
-#include "agent/agent_string.h"
+#include "nel/ai/e/ia_exception.h" 
+#include "nel/ai/agent/agent_string.h"
 
 namespace NLAIAGENT
 {	

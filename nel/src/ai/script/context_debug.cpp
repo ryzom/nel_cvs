@@ -1,7 +1,7 @@
 /** \file context_debug.cpp
  * Debug informations in the context.
  *
- * $Id: context_debug.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: context_debug.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "script/context_debug.h"
-#include "script/code_branche_run_debug.h"
-#include "script/codage.h"
+#include "nel/ai/script/context_debug.h"
+#include "nel/ai/script/code_branche_run_debug.h"
+#include "nel/ai/script/codage.h"
 
 namespace NLAISCRIPT
 {

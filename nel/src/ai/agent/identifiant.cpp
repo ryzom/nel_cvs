@@ -1,6 +1,6 @@
 /** \file identifiant.cpp
  *
- * $Id: identifiant.cpp,v 1.3 2001/01/08 10:51:01 chafik Exp $
+ * $Id: identifiant.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,7 +21,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "agent/agent.h"
+#include "nel/ai/agent/agent.h"
 
 namespace NLAIAGENT
 {

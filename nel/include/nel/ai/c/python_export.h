@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: python_export.h,v 1.3 2001/01/08 14:17:22 chafik Exp $
+ * $Id: python_export.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,9 @@
 #ifdef NL_OS_WINDOWS
 #pragma warning (disable: 4666)
 #endif
-#include "pyserver/pylib.h"
-#include "c/abstract_interface.h"
+
+#include "nel/ai/pyserver/pylib.h"
+#include "nel/ai/c/abstract_interface.h"
 
 namespace NLAIC
 {

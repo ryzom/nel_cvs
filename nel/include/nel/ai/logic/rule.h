@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic rules with forward and backward chaining
  *
- * $Id: rule.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: rule.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,9 @@
 #ifndef NL_RULE_H
 #define NL_RULE_H
 
-#include "logic/clause.h"
+#include "nel/ai/logic/clause.h"
+
+
 namespace NLAIAGENT
 {
 	class IObjetOp;

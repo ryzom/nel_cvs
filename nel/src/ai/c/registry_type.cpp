@@ -1,6 +1,6 @@
 /** \file register_type.cpp
  *
- * $Id: registry_type.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: registry_type.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,10 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "c/abstract_interface.h" 
-#include "e/ia_exception.h" 
-#include "c/registry_class.h"
-#include "c/registry_type.h"
+#include "nel/ai/c/abstract_interface.h" 
+#include "nel/ai/e/ia_exception.h" 
+#include "nel/ai/c/registry_class.h"
+#include "nel/ai/c/registry_type.h"
 
 
 namespace NLAIC

@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,11 +21,11 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "c/registry_class.h"
-#include "agent/message_script.h"
-#include "script/lexsupport.h"
+#include "nel/ai/c/registry_class.h"
+#include "nel/ai/agent/message_script.h"
+#include "nel/ai/script/lexsupport.h"
 
-#include "script/interpret_object_message.h"
+#include "nel/ai/script/interpret_object_message.h"
 
 namespace NLAISCRIPT
 {

@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.2 2001/01/08 12:48:01 chafik Exp $
+ * $Id: pylib.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #include <stdarg.h>
 #include <iostream.h>
 #include <string.h>
-#include "pyserver/pylib.h"
+#include "nel/ai/pyserver/pylib.h"
 
 namespace NLAIPYSERVER
 {		

@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.5 2001/01/08 14:17:22 chafik Exp $
+ * $Id: abstract_interface.h,v 1.6 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@
 #include <map>
 #include <iostream>
 #include "nel/misc/file.h"
-#include "e/ia_exception.h"
+#include "nel/ai/e/ia_exception.h"
 
 namespace NLAIC //Gen pour general.
 {

@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,8 +22,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "script/code_branche_run_debug.h"
-#include "script/varstack.h"
+#include "nel/ai/script/code_branche_run_debug.h"
+#include "nel/ai/script/varstack.h"
 
 namespace NLAISCRIPT
 {

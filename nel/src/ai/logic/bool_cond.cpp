@@ -17,7 +17,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "logic/bool_cond.h"
+#include "nel/ai/logic/bool_cond.h"
 
 namespace NLAILOGIC
 {

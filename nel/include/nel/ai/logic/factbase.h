@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Factbase, a container for 0 or first order logic asserts and facts of an agent
  *
- * $Id: factbase.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: factbase.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_FACTBASE_H
 #define NL_FACTBASE_H
 
-#include "agent/agent.h"
+#include "nel/ai/agent/agent.h"
 
 namespace NLAILOGIC
 {

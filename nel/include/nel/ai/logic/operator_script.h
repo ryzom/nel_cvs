@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret base class for scripted operators
  *
- * $Id: operator_script.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: operator_script.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_OPERATOR_SCRIPT_H
 #define NL_OPERATOR_SCRIPT_H
 
-#include "logic/fo_operator.h"
+#include "nel/ai/logic/fo_operator.h"
 
 namespace NLAILOGIC
 {

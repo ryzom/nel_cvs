@@ -1,7 +1,7 @@
 /** \file actor.h
  *	
  *
- * $Id: actor.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: actor.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_ACTOR_H_
 #define NL_ACTOR_H_
 
-#include "agent/agent.h"
-#include "agent/agent_script.h"
-#include "logic/bool_cond.h"
-#include "script/type_def.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_script.h"
+#include "nel/ai/logic/bool_cond.h"
+#include "nel/ai/script/type_def.h"
 
 namespace NLAIAGENT
 {

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseia.cpp,v 1.3 2001/01/08 10:51:01 chafik Exp $
+ * $Id: baseia.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,12 +21,12 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "agent/agentexport.h"
-#include "agent/agent_object.h"
-#include "agent/baseia.h"
-#include "agent/agent_method_def.h"
-#include "agent/object_type.h"
-#include "agent/messagerie.h"
+#include "nel/ai/agent/agentexport.h"
+#include "nel/ai/agent/agent_object.h"
+#include "nel/ai/agent/baseia.h"
+#include "nel/ai/agent/agent_method_def.h"
+#include "nel/ai/agent/object_type.h"
+#include "nel/ai/agent/messagerie.h"
 
 namespace NLAIAGENT
 {

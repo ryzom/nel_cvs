@@ -1,7 +1,7 @@
 /** \file fuzzyvar.h
  *	Dexcribes a fuzzy variable with its fuzzy sets and defuzzyfication method
  *
- * $Id: fuzzyvar.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: fuzzyvar.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_FUZZY_VAR_H
 #define NL_FUZZY_VAR_H
 
-#include "fuzzy/fuzzyset.h"
-#include "logic/var.h"
-#include "fuzzy/fuzzyfact.h"
+#include "nel/ai/fuzzy/fuzzyset.h"
+#include "nel/ai/logic/var.h"
+#include "nel/ai/fuzzy/fuzzyfact.h"
 
 namespace NLAIFUZZY
 {

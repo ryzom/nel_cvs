@@ -1,6 +1,6 @@
 /** \file constraint_debug.cpp
  *
- * $Id: constraint_debug.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: constraint_debug.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,8 +22,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "script/compilateur.h"
-#include "script/constraint_debug.h"
+#include "nel/ai/script/compilateur.h"
+#include "nel/ai/script/constraint_debug.h"
 
 namespace NLAISCRIPT
 {

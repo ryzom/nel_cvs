@@ -1,6 +1,6 @@
 /** \file register_class.cpp
  *
- * $Id: registry_class.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: registry_class.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,8 +24,8 @@
 #include <iostream.h>
 #include <stdio.h>
 
-#include "e/ia_exception.h" 
-#include "c/registry_class.h"
+#include "nel/ai/e/ia_exception.h" 
+#include "nel/ai/c/registry_class.h"
 
 namespace NLAIC
 {

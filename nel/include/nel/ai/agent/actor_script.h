@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: actor_script.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,11 @@
 #ifndef NL_ACTOR_SCRIPT_H_
 #define NL_ACTOR_SCRIPT_H_
 
-#include "agent/agent.h"
-#include "agent/agent_script.h"
-#include "logic/bool_cond.h"
-#include "script/type_def.h"
-#include "script/interpret_actor.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_script.h"
+#include "nel/ai/logic/bool_cond.h"
+#include "nel/ai/script/type_def.h"
+#include "nel/ai/script/interpret_actor.h"
 
 namespace NLAIAGENT
 {

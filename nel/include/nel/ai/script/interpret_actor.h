@@ -1,6 +1,6 @@
 #ifndef NL_INTERPRET_ACTOR_H
 #define NL_INTERPRET_ACTOR_H
-#include "script/interpret_object_agent.h"
+#include "nel/ai/script/interpret_object_agent.h"
 
 namespace NLAISCRIPT
 {

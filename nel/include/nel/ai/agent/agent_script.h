@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: agent_script.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_AGENTSCRIPT_H
 #define NL_AGENTSCRIPT_H
 
-#include "agent/agent.h"
-#include "agent/agent_manager.h"
-#include "logic/operator.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_manager.h"
+#include "nel/ai/logic/operator.h"
 
 namespace NLAISCRIPT 
 {

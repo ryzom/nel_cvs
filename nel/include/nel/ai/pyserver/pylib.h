@@ -2,8 +2,8 @@
 #define _GAME_PYTHON_LIB_H_
 
 #include <Python.h>
-#include "pyserver/pythonsupport.h"
-#include "c/abstract_interface.h"
+#include "nel/ai/pyserver/pythonsupport.h"
+#include "nel/ai/c/abstract_interface.h"
 
 
 namespace NLAIPYSERVER

@@ -1,7 +1,7 @@
 /** \file fuzzycond.cpp
  * Fuzzy conditions
  *
- * $Id: fuzzycond.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: fuzzycond.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,12 +22,12 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "fuzzy/fuzzyset.h"
-#include "fuzzy/fuzzyvar.h"
-#include "fuzzy/fuzzycond.h"
+#include "nel/ai/fuzzy/fuzzyset.h"
+#include "nel/ai/fuzzy/fuzzyvar.h"
+#include "nel/ai/fuzzy/fuzzycond.h"
 
-#include "agent/agent_nombre.h"
-#include "agent/agent.h"
+#include "nel/ai/agent/agent_nombre.h"
+#include "nel/ai/agent/agent.h"
 
 namespace NLAIFUZZY
 {

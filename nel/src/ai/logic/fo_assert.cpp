@@ -18,13 +18,13 @@
  */
 
 
-#include "logic/fo_assert.h"
-#include "logic/fo_operator.h"
-#include "logic/valueset.h"
-#include "logic/varset.h"
-#include "logic/fact.h"
-#include "logic/clause.h"
-#include "agent/agent_digital.h"
+#include "nel/ai/logic/fo_assert.h"
+#include "nel/ai/logic/fo_operator.h"
+#include "nel/ai/logic/valueset.h"
+#include "nel/ai/logic/varset.h"
+#include "nel/ai/logic/fact.h"
+#include "nel/ai/logic/clause.h"
+#include "nel/ai/agent/agent_digital.h"
 
 namespace NLAILOGIC
 {

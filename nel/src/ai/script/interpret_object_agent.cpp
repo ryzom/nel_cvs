@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.4 2001/01/08 11:15:29 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.5 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,12 +21,12 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "script/interpret_object_agent.h"
-#include "c/registry_class.h"
-#include "agent/agent_script.h"
-#include "script/type_def.h"
-#include "script/object_unknown.h"
-#include "script/lexsupport.h"
+#include "nel/ai/script/interpret_object_agent.h"
+#include "nel/ai/c/registry_class.h"
+#include "nel/ai/agent/agent_script.h"
+#include "nel/ai/script/type_def.h"
+#include "nel/ai/script/object_unknown.h"
+#include "nel/ai/script/lexsupport.h"
 
 namespace NLAISCRIPT
 {	

@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.4 2001/01/08 11:15:29 chafik Exp $
+ * $Id: var_control.cpp,v 1.5 2001/01/08 14:42:12 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,11 +21,11 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "script/compilateur.h"
-#include "script/constraint.h"
-#include "script/type_def.h"
-#include "script/constraint_stack_component.h"
-#include "script/object_unknown.h"
+#include "nel/ai/script/compilateur.h"
+#include "nel/ai/script/constraint.h"
+#include "nel/ai/script/type_def.h"
+#include "nel/ai/script/constraint_stack_component.h"
+#include "nel/ai/script/object_unknown.h"
 
 namespace NLAISCRIPT
 {

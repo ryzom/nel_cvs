@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.2 2001/01/08 11:15:29 chafik Exp $
+ * $Id: lexsupport.cpp,v 1.3 2001/01/08 14:42:12 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,7 +21,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "script/lexsupport.h"
+#include "nel/ai/script/lexsupport.h"
 #include <math.h>
 #include <list>
 #include <map>

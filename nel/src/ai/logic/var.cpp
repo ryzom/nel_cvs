@@ -17,12 +17,12 @@
  * MA 02111-1307, USA.
  */
 
-#include "logic/var.h"
-#include "logic/boolval.h"
+#include "nel/ai/logic/var.h"
+#include "nel/ai/logic/boolval.h"
 
-#include "script/compilateur.h"
-#include "script/constraint.h"
-#include "script/type_def.h"
+#include "nel/ai/script/compilateur.h"
+#include "nel/ai/script/constraint.h"
+#include "nel/ai/script/type_def.h"
 
 
 namespace NLAILOGIC

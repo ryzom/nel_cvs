@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.4 2001/01/08 11:16:29 chafik Exp $
+ * $Id: opcode.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,11 @@
 #define NL_OP_CODE_H
 
 #include <math.h>
-#include "logic/varset.h"
-#include "script/opcode_ldb.h"
-#include "script/opcode_lpt.h"
-#include "script/interpret_methodes.h"
-#include "script/constraint.h"
+#include "nel/ai/logic/varset.h"
+#include "nel/ai/script/opcode_ldb.h"
+#include "nel/ai/script/opcode_lpt.h"
+#include "nel/ai/script/interpret_methodes.h"
+#include "nel/ai/script/constraint.h"
 
 namespace NLAISCRIPT
 {
@@ -2010,7 +2010,7 @@ namespace NLAISCRIPT
 	};
 }
 
-#include "script/opcode_call_method.h"
-#include "script/opcode_call_lib_method.h"
+#include "nel/ai/script/opcode_call_method.h"
+#include "nel/ai/script/opcode_call_lib_method.h"
 #endif
 

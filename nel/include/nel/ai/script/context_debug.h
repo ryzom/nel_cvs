@@ -1,7 +1,7 @@
 /** \file context_debug.h
  * Debug informations in the context.
  *
- * $Id: context_debug.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: context_debug.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include <set>
 #include <string>
-#include "agent/agentpack.h"
-#include "agent/agent_script.h"
+#include "nel/ai/agent/agentpack.h"
+#include "nel/ai/agent/agent_script.h"
 
 namespace NLAISCRIPT
 {

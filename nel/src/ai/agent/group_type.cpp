@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: group_type.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,13 +21,13 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "agent/agent.h"
-#include "agent/agent_object.h"
-#include "agent/agent_digital.h"
-#include "logic/boolval.h"
-#include "agent/object_type.h"
-#include "script/interpret_methodes.h"
-#include "agent/agent_method_def.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_object.h"
+#include "nel/ai/agent/agent_digital.h"
+#include "nel/ai/logic/boolval.h"
+#include "nel/ai/agent/object_type.h"
+#include "nel/ai/script/interpret_methodes.h"
+#include "nel/ai/agent/agent_method_def.h"
 
 namespace NLAIAGENT
 {

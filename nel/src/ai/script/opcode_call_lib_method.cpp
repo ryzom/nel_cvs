@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.4 2001/01/08 14:42:12 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,8 +21,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "script/compilateur.h"
-#include "agent/agent_script.h"
+#include "nel/ai/script/compilateur.h"
+#include "nel/ai/agent/agent_script.h"
 
 namespace NLAISCRIPT
 {

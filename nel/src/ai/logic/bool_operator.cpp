@@ -17,8 +17,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "logic/bool_operator.h"
-#include "logic/fact.h"
+#include "nel/ai/logic/bool_operator.h"
+#include "nel/ai/logic/fact.h"
 
 namespace NLAILOGIC
 {

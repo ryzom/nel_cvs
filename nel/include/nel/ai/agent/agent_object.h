@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
+ * $Id: agent_object.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #define NL_AGENT_OBJECT_DEF_H
 
 
-#include "agent/agent_string.h"
-#include "agent/agent_operator.h"
+#include "nel/ai/agent/agent_string.h"
+#include "nel/ai/agent/agent_operator.h"
 
 
 namespace NLAIAGENT

@@ -1,6 +1,6 @@
 /** \file agent_object.cpp
  *
- * $Id: agent_object.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: agent_object.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,9 +22,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "agent/agent.h"
-#include "agent/agent_object.h"
-#include "logic/boolval.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_object.h"
+#include "nel/ai/logic/boolval.h"
 
 namespace NLAIAGENT
 {		

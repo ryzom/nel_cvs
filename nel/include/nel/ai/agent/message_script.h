@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: message_script.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 #ifndef NL_MESSAGE_SCRIPT_H
 #define NL_MESSAGE_SCRIPT_H
 
-#include "agent/agent.h"
-#include "script/virtual_op_code.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/script/virtual_op_code.h"
 
 namespace NLAISCRIPT 
 {

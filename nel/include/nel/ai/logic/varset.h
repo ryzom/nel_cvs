@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Set of variables
  *
- * $Id: varset.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: varset.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_VARSET_H_
 #define NL_VARSET_H_
 
-#include "logic/boolval.h"
+#include "nel/ai/logic/boolval.h"
 
 namespace NLAILOGIC {
 

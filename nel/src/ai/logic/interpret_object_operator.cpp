@@ -17,11 +17,11 @@
  * MA 02111-1307, USA.
  */
 
-#include "c/registry_class.h"
-#include "logic/operator_script.h"
-#include "script/lexsupport.h"
+#include "nel/ai/c/registry_class.h"
+#include "nel/ai/logic/operator_script.h"
+#include "nel/ai/script/lexsupport.h"
 
-#include "logic/interpret_object_operator.h"
+#include "nel/ai/logic/interpret_object_operator.h"
 
 namespace NLAISCRIPT
 {

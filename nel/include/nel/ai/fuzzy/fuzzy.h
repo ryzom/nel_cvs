@@ -1,7 +1,7 @@
 /** \file fuzzy.h
  * Includes all fuzzy logic related files
  *
- * $Id: fuzzy.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fuzzy.h,v 1.2 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,11 @@
 #ifndef NL_FUZZY_H
 #define NL_FUZZY_H
 
-#include "fuzzy/fuzzyset.h"
-#include "fuzzy/fuzzyvar.h"
-#include "fuzzy/fuzzytype.h"
-#include "fuzzy/fuzzyrule.h"
-#include "fuzzy/fuzzycond.h"
-#include "fuzzy/fuzzyfact.h"
-#include "fuzzy/fuzzyruleset.h"
+#include "nel/ai/fuzzy/fuzzyset.h"
+#include "nel/ai/fuzzy/fuzzyvar.h"
+#include "nel/ai/fuzzy/fuzzytype.h"
+#include "nel/ai/fuzzy/fuzzyrule.h"
+#include "nel/ai/fuzzy/fuzzycond.h"
+#include "nel/ai/fuzzy/fuzzyfact.h"
+#include "nel/ai/fuzzy/fuzzyruleset.h"
 #endif

@@ -17,9 +17,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "logic/fact.h"
-#include "logic/ia_assert.h"
-#include "logic/varset.h"
+#include "nel/ai/logic/fact.h"
+#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/varset.h"
 
 namespace NLAILOGIC
 {

@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.3 2001/01/08 12:48:01 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,7 +21,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "pyserver/pylib.h"
+#include "nel/ai/pyserver/pylib.h"
 #include "object.h"
 
 extern PyTypeObject StackDef;

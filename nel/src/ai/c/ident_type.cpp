@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
+ * $Id: ident_type.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #include <stdarg.h>
 
 
-#include "c/abstract_interface.h" 
-#include "e/ia_exception.h" 
-#include "c/registry_class.h"
-#include "c/registry_type.h"
+#include "nel/ai/c/abstract_interface.h" 
+#include "nel/ai/e/ia_exception.h" 
+#include "nel/ai/c/registry_class.h"
+#include "nel/ai/c/registry_type.h"
 
 namespace NLAIC
 {	

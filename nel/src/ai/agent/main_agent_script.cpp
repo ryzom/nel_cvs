@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,10 +21,10 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "agent/agent.h"
-#include "script/codage.h"
-#include "script/interpret_object_agent.h"
-#include "agent/main_agent_script.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/script/codage.h"
+#include "nel/ai/script/interpret_object_agent.h"
+#include "nel/ai/agent/main_agent_script.h"
 
 namespace NLAIAGENT
 {

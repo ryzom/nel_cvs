@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.8 2001/01/08 14:19:43 chafik Exp $
+ * $Id: codage.h,v 1.9 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,8 @@
 #endif
 
 
-#include "script/virtual_op_code.h"
-#include "script/context_debug.h"
+#include "nel/ai/script/virtual_op_code.h"
+#include "nel/ai/script/context_debug.h"
 
 namespace NLAISCRIPT
 {
@@ -660,7 +660,7 @@ namespace NLAISCRIPT
 
 	};
 }
-#include "script/opcode.h"
+#include "nel/ai/script/opcode.h"
 
 #endif
 

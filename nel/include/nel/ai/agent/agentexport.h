@@ -1,6 +1,6 @@
 /** \file agentexport.h
  *
- * $Id: agentexport.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: agentexport.h,v 1.2 2001/01/08 14:39:59 valignat Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -43,8 +43,8 @@
 #include <istream.h>
 #include <iostream.h>
 #include <fstream.h>
-#include "e/ia_exception.h" 
-#include "c/abstract_interface.h"
-#include "c/registry_type.h"
-#include "agent/mailbox.h"
+#include "nel/ai/e/ia_exception.h" 
+#include "nel/ai/c/abstract_interface.h"
+#include "nel/ai/c/registry_type.h"
+#include "nel/ai/agent/mailbox.h"
 #endif

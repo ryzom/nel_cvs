@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Includes all logic related files
  *
- * $Id: logic.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: logic.h,v 1.2 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,20 +26,20 @@
 #ifndef NL_LOGIC_H
 #define NL_LOGIC_H
 
-#include "logic/boolval.h"
-#include "logic/var.h"
-#include "logic/varset.h"
-#include "logic/valueset.h"
-#include "logic/fact.h"
-#include "logic/ia_assert.h"
-#include "logic/bool_assert.h"
-#include "logic/fo_assert.h"
-#include "logic/rule.h"
-#include "logic/factbase.h"
-#include "logic/clause.h"
-#include "logic/bool_cond.h"
-#include "logic/operator.h"
-#include "logic/bool_operator.h"
-#include "logic/fo_operator.h"
+#include "nel/ai/logic/boolval.h"
+#include "nel/ai/logic/var.h"
+#include "nel/ai/logic/varset.h"
+#include "nel/ai/logic/valueset.h"
+#include "nel/ai/logic/fact.h"
+#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/bool_assert.h"
+#include "nel/ai/logic/fo_assert.h"
+#include "nel/ai/logic/rule.h"
+#include "nel/ai/logic/factbase.h"
+#include "nel/ai/logic/clause.h"
+#include "nel/ai/logic/bool_cond.h"
+#include "nel/ai/logic/operator.h"
+#include "nel/ai/logic/bool_operator.h"
+#include "nel/ai/logic/fo_operator.h"
 
 #endif

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base class for operators
  *
- * $Id: operator.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: operator.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_OPERATOR_H
 #define NL_OPERATOR_H
 
-#include "agent/agent.h"
-#include "logic/boolval.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/logic/boolval.h"
 
 namespace NLAILOGIC
 {

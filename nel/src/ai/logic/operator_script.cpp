@@ -1,4 +1,4 @@
-#include "logic/operator_script.h"
+#include "nel/ai/logic/operator_script.h"
 
 namespace NLAILOGIC
 {

@@ -17,16 +17,16 @@
  * MA 02111-1307, USA.
  */
 
-#include "logic/fo_operator.h"
+#include "nel/ai/logic/fo_operator.h"
 
 #include <list>
 #include <vector>
-#include "logic/ia_assert.h"
-#include "logic/varset.h"
-#include "logic/valueset.h"
-#include "logic/fact.h"
-#include "logic/factbase.h"
-#include "logic/fo_assert.h"
+#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/varset.h"
+#include "nel/ai/logic/valueset.h"
+#include "nel/ai/logic/fact.h"
+#include "nel/ai/logic/factbase.h"
+#include "nel/ai/logic/fo_assert.h"
 
 namespace NLAILOGIC
 {

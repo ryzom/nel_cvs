@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
+ * $Id: agent_digital.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_AGENT_DIGITAL_H
 #define NL_AGENT_DIGITAL_H
 
-#include "agent/agent.h"
-#include "agent/agent_object.h"
-#include "agent/agent_nombre.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_object.h"
+#include "nel/ai/agent/agent_nombre.h"
 
 namespace NLAIAGENT
 {	

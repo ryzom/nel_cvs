@@ -17,7 +17,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "logic/boolval.h"
+#include "nel/ai/logic/boolval.h"
 
 namespace NLAILOGIC
 {

@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.4 2001/01/08 11:16:29 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -23,7 +23,7 @@
  */
 #ifndef NL_INTERPRET_OBJECT_AGENT_H
 #define NL_INTERPRET_OBJECT_AGENT_H
-#include "script/interpret_object.h"
+#include "nel/ai/script/interpret_object.h"
 
 namespace NLAIAGENT {
 	class CAgentScript;

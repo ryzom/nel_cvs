@@ -1,6 +1,6 @@
-#include "agent/actor_script.h"
-#include "agent/agent_script.h"
-#include "agent/object_type.h"
+#include "nel/ai/agent/actor_script.h"
+#include "nel/ai/agent/agent_script.h"
+#include "nel/ai/agent/object_type.h"
 
 namespace NLAIAGENT
 {

@@ -1,7 +1,7 @@
 /** \file fuzzycond.h
  * Fuzzy condition, ie 
  *
- * $Id: fuzzycond.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: fuzzycond.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #ifndef NL_FUZZYCOND_H
 #define NL_FUZZYCOND_H
 
-#include "agent/agent.h"
+#include "nel/ai/agent/agent.h"
 
-#include "fuzzy/fuzzytype.h"
+#include "nel/ai/fuzzy/fuzzytype.h"
 
 namespace NLAIFUZZY
 {

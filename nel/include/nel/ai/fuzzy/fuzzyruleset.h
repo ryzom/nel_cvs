@@ -1,7 +1,7 @@
 /** \file fuzzyruleset.h
  *	A set of fuzzy rules which desribes a fuzzy controler
  *
- * $Id: fuzzyruleset.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: fuzzyruleset.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_FUZZYRULESET_H
 #define NL_FUZZYRULESET_H
 
-#include "agent/agent.h"
+#include "nel/ai/agent/agent.h"
 
 namespace NLAIFUZZY
 {

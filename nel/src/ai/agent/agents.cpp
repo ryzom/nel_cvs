@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: agents.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,9 +21,9 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "agent/agent.h"
-#include "agent/object_type.h"
-#include "agent/agent_mailer.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/object_type.h"
+#include "nel/ai/agent/agent_mailer.h"
 
 namespace NLAIAGENT
 {

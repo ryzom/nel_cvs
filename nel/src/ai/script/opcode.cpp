@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: opcode.cpp,v 1.4 2001/01/08 14:42:12 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,10 +22,10 @@
  * MA 02111-1307, USA.
  */
 #include <string>
-#include "script/compilateur.h"
-#include "agent/agent_script.h"
-#include "script/type_def.h"
-#include "script/object_load.h"
+#include "nel/ai/script/compilateur.h"
+#include "nel/ai/agent/agent_script.h"
+#include "nel/ai/script/type_def.h"
+#include "nel/ai/script/object_load.h"
 
 
 namespace NLAISCRIPT

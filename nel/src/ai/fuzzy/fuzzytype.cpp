@@ -1,7 +1,7 @@
 /** \file interpret_fuzzytype.cpp
  * Base class for the integration of fuzzy facts in conditions
  *
- * $Id: fuzzytype.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: fuzzytype.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "fuzzy/fuzzytype.h"
+#include "nel/ai/fuzzy/fuzzytype.h"
 
 namespace NLAIFUZZY
 {	

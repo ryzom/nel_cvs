@@ -1,6 +1,6 @@
 /** \file agent_operator.cpp
  *
- * $Id: agent_operator.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: agent_operator.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,8 +22,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "agent/agentexport.h"
-#include "agent/agent_operator.h"
+#include "nel/ai/agent/agentexport.h"
+#include "nel/ai/agent/agent_operator.h"
 
 namespace NLAIAGENT
 {

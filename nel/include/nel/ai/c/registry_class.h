@@ -1,7 +1,7 @@
 /** \file registry_class.h
  * Includes some methode for acces the static class factory.
  *
- * $Id: registry_class.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: registry_class.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_REGISTRY_CLASS_H
 
 
-#include "c/abstract_interface.h"
-#include "c/registry.h"
+#include "nel/ai/c/abstract_interface.h"
+#include "nel/ai/c/registry.h"
 
 
 namespace NLAIC

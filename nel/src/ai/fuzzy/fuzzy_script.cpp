@@ -1,7 +1,7 @@
 /** \file fuzzy_script.cpp
  * Scripted fuzzy controler class
  *
- * $Id: fuzzy_script.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: fuzzy_script.cpp,v 1.2 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "fuzzy/fuzzy_script.h"
+#include "nel/ai/fuzzy/fuzzy_script.h"
 
 
 

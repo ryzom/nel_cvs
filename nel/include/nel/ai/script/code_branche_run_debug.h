@@ -1,7 +1,7 @@
 /** \file code_branche_run_debug.h
  * A debug version of CCodeBrancheRun. It keep a trace between original source code and OpCode.
  *
- * $Id: code_branche_run_debug.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: code_branche_run_debug.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -10,10 +10,10 @@
 #ifndef RL_CODE_BRANCHE_RUN_DEBUG_H
 #define RL_CODE_BRANCHE_RUN_DEBUG_H
 
-#include "agent/agentpack.h"
-#include "agent/agent_script.h"
+#include "nel/ai/agent/agentpack.h"
+#include "nel/ai/agent/agent_script.h"
 
-#include "script/codage.h"
+#include "nel/ai/script/codage.h"
 
 namespace NLAISCRIPT
 {

@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.4 2001/01/08 11:16:29 chafik Exp $
+ * $Id: type_def.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #ifndef NL_TYPE_DEF_H
 #define NL_TYPE_DEF_H
-#include "script/constraint.h"
+#include "nel/ai/script/constraint.h"
 
 namespace NLAISCRIPT
 {	

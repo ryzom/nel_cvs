@@ -1,7 +1,7 @@
 /** \file fuzzyvar.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: fuzzyvar.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: fuzzyvar.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,13 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#include "fuzzy/fuzzyvar.h"
-#include "script/compilateur.h"
-#include "script/constraint.h"
-#include "script/type_def.h"
-#include "agent/agent.h"
-#include "agent/agent_digital.h"
-#include "fuzzy/fuzzycond.h"
+#include "nel/ai/fuzzy/fuzzyvar.h"
+#include "nel/ai/script/compilateur.h"
+#include "nel/ai/script/constraint.h"
+#include "nel/ai/script/type_def.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_digital.h"
+#include "nel/ai/fuzzy/fuzzycond.h"
 
 namespace NLAIFUZZY 
 {	

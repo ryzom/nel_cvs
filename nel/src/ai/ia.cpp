@@ -1,10 +1,10 @@
-#include "link/nl_ia.h"
-#include "script/compilateur.h"
-#include "agent/agent.h"
-#include "agent/agent_digital.h"
-#include "agent/msg_group.h"
-#include "script/libcode.h"
-#include "c/registry_class.h"
+#include "nel/ai/link/nl_ia.h"
+#include "nel/ai/script/compilateur.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_digital.h"
+#include "nel/ai/agent/msg_group.h"
+#include "nel/ai/script/libcode.h"
+#include "nel/ai/c/registry_class.h"
 
 
 namespace NLAILINK 

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base classes for simple and composed boolean conditions
  *
- * $Id: bool_cond.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: bool_cond.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_BOOL_COND_H
 #define NL_BOOL_COND_H
 
-#include "logic/boolval.h"
-#include "logic/bool_assert.h"
+#include "nel/ai/logic/boolval.h"
+#include "nel/ai/logic/bool_assert.h"
 
 namespace NLAILOGIC {
 	

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base class for assertions
  *
- * $Id: ia_assert.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: ia_assert.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_IA_ASSERT_H
 #define NL_IA_ASSERT_H
 
-#include "agent/agent.h"
-#include "logic/var.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/logic/var.h"
 
 namespace NLAILOGIC
 {

@@ -1,7 +1,7 @@
 #ifndef _IA_NEL_H
 #define _IA_NEL_H
 
-#include "script/compilateur.h"
+#include "nel/ai/script/compilateur.h"
 
 namespace NLAILINK
 {

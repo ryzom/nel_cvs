@@ -1,6 +1,6 @@
 /** \file opcode_register.cpp
  *
- * $Id: opcode_register.cpp,v 1.3 2001/01/08 11:15:29 chafik Exp $
+ * $Id: opcode_register.cpp,v 1.4 2001/01/08 14:42:12 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,10 +21,10 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include "script/compilateur.h"
-#include "script/libcode.h"
-#include "script/type_def.h"
-#include "script/object_load.h"
+#include "nel/ai/script/compilateur.h"
+#include "nel/ai/script/libcode.h"
+#include "nel/ai/script/type_def.h"
+#include "nel/ai/script/object_load.h"
 
 namespace NLAISCRIPT
 {

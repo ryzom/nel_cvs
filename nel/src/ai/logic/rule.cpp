@@ -17,10 +17,10 @@
  * MA 02111-1307, USA.
  */
 
-#include "logic/rule.h"
-#include "logic/ia_assert.h"
-#include "logic/valueset.h"
-#include "logic/fo_assert.h"
+#include "nel/ai/logic/rule.h"
+#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/valueset.h"
+#include "nel/ai/logic/fo_assert.h"
 
 namespace NLAILOGIC
 {

@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.4 2001/01/08 11:16:29 chafik Exp $
+ * $Id: interpret_object.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_INTERPRET_OBJECT_H
 #define NL_INTERPRET_OBJECT_H
 
-#include "agent/agent.h"
-#include "script/interpret_methodes.h"
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/script/interpret_methodes.h"
 
 namespace NLAISCRIPT
 {

@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.5 2001/01/08 11:16:29 chafik Exp $
+ * $Id: compilateur.h,v 1.6 2001/01/08 14:39:59 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,25 +26,25 @@
 #ifndef NL_COMPILATEUR_H
 #define NL_COMPILATEUR_H
 
-#include "agent/agentpack.h"
-#include "agent/agent_string.h"
-#include "agent/agent_script.h"
+#include "nel/ai/agent/agentpack.h"
+#include "nel/ai/agent/agent_string.h"
+#include "nel/ai/agent/agent_script.h"
 
-#include "script/interpret_object.h"
-#include "script/interpret_methodes.h"
-#include "script/interpret_object_list.h"
+#include "nel/ai/script/interpret_object.h"
+#include "nel/ai/script/interpret_methodes.h"
+#include "nel/ai/script/interpret_object_list.h"
 
-//#include "pyserver/pylib.h"
-#include "script/lexsupport.h"
-#include "script/varstack.h"
-#include "script/code_branche_run_debug.h"
+//#include "nel/ai/pyserver/pylib.h"
+#include "nel/ai/script/lexsupport.h"
+#include "nel/ai/script/varstack.h"
+#include "nel/ai/script/code_branche_run_debug.h"
 
-#include "script/codage.h"
-#include "script/constraint_debug.h"
-#include "script/module.h"
-#include "script/lex.h"
-#include "logic/logic.h"
-#include "fuzzy/fuzzy.h"
+#include "nel/ai/script/codage.h"
+#include "nel/ai/script/constraint_debug.h"
+#include "nel/ai/script/module.h"
+#include "nel/ai/script/lex.h"
+#include "nel/ai/logic/logic.h"
+#include "nel/ai/fuzzy/fuzzy.h"
 #include <fstream.h>
 
 

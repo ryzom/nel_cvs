@@ -46,9 +46,10 @@ NoError					= 1
 -- NotSymetrical			- color 0 255 255
 -- NotSameVerticesNumber	- color 0 0 0
 -- NotSameVertex			- color 128 0 0
+-- NoCornerFound			- color 0 0 0
 -- UnknownError				- color 255 255 255
 
-ErrorColor				= #(color 0 255 0, color 0 0 0, color 255 0 0, color 0 0 0, color 255 255 0, color 0 0 255, color 255 0 255, color 0 0 0, color 0 0 0, color 0 255 255, color 0 0 0, color 128 0 0, color 255 255 255)
+ErrorColor				= #(color 0 255 0, color 0 0 0, color 255 0 0, color 0 0 0, color 255 255 0, color 0 0 255, color 255 0 255, color 0 0 0, color 0 0 0, color 0 255 255, color 0 0 0, color 128 0 0, color 0 0 0, color 255 255 255)
 
 TransitionIds			= #( #( 1, 2 ), #( undefinded, 3 ), #( 5, 4 ), #( 6, 7, 8, 9 ) )
 EdgeType				= #( #(2, 2, -4, 4), #(4, 2, 2, -3), #(1, 3, 2, -3), #(-3, 3, 2, 2), #(1, 1, 3, -4), #(1, 4, -4, 1), #(4, 2, -4, 1), #(4, 2, -3, 1), #(3, -3, 1, 1))

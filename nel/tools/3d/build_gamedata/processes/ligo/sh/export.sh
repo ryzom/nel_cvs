@@ -30,4 +30,7 @@ if test -z "$land_name" ; then
 
 	$max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi
 
+	# Concat log.log files
+	cat $max_directory/log.log >> log.log
+
 fi

@@ -1,7 +1,7 @@
 /** \file ligo_error.h
  * Error handling interface
  *
- * $Id: ligo_error.h,v 1.2 2002/03/04 15:13:43 corvazier Exp $
+ * $Id: ligo_error.h,v 1.3 2002/03/07 08:26:37 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -80,6 +80,9 @@ public:
 
 		/// Vertex is not the same
 		NotSameVertex,
+
+		/// No corner found
+		NoCornerFound,
 
 		/// Unkown error
 		UnknownError,

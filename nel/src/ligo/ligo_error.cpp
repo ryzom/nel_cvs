@@ -1,7 +1,7 @@
 /** \file ligo_error.cpp
  * Error handling implementation
  *
- * $Id: ligo_error.cpp,v 1.2 2002/03/04 15:13:43 corvazier Exp $
+ * $Id: ligo_error.cpp,v 1.3 2002/03/07 08:26:37 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -99,6 +99,7 @@ const char* CLigoError::_StringError[CLigoError::ErrorCount]=
 	"A edge of the zone is not symetrical",		// NotSymetrical
 	"Not the same number of vertex",	// NotSameVerticesNumber
 	"Some vertices are not the same",	// NotSameVertex
+	"No corner found",					// NoCornerFound
 	"Unkown error",						// UnknownError
 };
 

@@ -1,7 +1,7 @@
 /** \file zone_template.cpp
  * Ligo zone template implementation
  *
- * $Id: zone_template.cpp,v 1.2 2002/03/04 15:13:43 corvazier Exp $
+ * $Id: zone_template.cpp,v 1.3 2002/03/07 08:26:37 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -419,7 +419,13 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 			}
 
 			// Can't be the last
-			nlassert (firstIte != listVert.end());
+			if (firstIte == listVert.end())
+			{
+				// No corner found
+				errors.MainError = CLigoError::NoCornerFound;
+
+				return false;
+			}
 
 			// First of the segment
 			vertIte = firstIte;

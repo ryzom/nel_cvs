@@ -13,6 +13,38 @@ TransitionIds			= #( #( 1, 2 ), #( undefinded, 3 ), #( 5, 4 ), #( 6, 7, 8, 9 ) )
 TransitionType			= #( "CornerA", "CornerA",	"Flat",			"CornerA",		"CornerB",	"CornerB",	"Flat",			"Flat",			"CornerB")
 TransitionNumBis		= #( 5,			4,			2,				3,				7,			6,			0,				1,				8)
 
+-- Clear the log
+fn clearlog =
+(
+	filename = ((getdir #maxroot)+"log.log")
+	deleteFile filename
+	createFile filename
+)
+
+-- Allocate 20 Me for the script
+heapSize += 15000000
+
+-- Clear log
+clearlog ()
+
+nlErrorFilename = ((getdir #maxroot)+"log.log")
+nlErrorStream = openFile nlErrorFilename mode:"a"
+if nlErrorStream == undefined then
+	nlErrorStream = createFile nlErrorFilename
+
+-- Log a message
+fn nlerror message =
+(
+	if nlErrorStream != undefined then
+	(
+		format "%\n" message to:nlErrorStream
+		flush nlErrorStream
+	)
+
+	-- To the console
+	print message
+)
+
 -- Add properties
 fn addProperties node propsArray =
 (
@@ -129,18 +161,39 @@ for curFileName in MaxFilesList do
 			loadMaxFile curFileName
 			DeleteDebugMarkersFn ()
 			selectAllPatch ()
-			print ("Exporting "+ (getFilenameFile curFileName))
 
 			props = #( #("zone", (tokenArray[2] + "-" + tokenArray[3])), #("material", tokenArray[2]) ) 
-			addProperties $ props
 
-			dstFileName = ligo_export_path + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
+			if (selection as array).count > 1 then
+			(
+				nlerror ("ERROR In file "+(getFilenameFile curFileName)+", multiple NelPatchMesh. Can't export.");
+			)
+			else 
+			(
+				if (selection as array).count == 0 then
+				(
+					nlerror ("WARNING In file "+(getFilenameFile curFileName)+", no NelPatchMesh to export.");
+				)
+				else
+				(
+					addProperties $ props
 
-			NeLLigoExportZone $ dstFileName props false false
+					dstFileName = ligo_export_path + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
+
+					if (NeLLigoExportZone $ dstFileName props false false) then
+					(
+						nlerror ("OK "+ (getFilenameFile curFileName))
+					)
+					else
+					(
+						nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile curFileName))
+					)
+				)
+			)
 		)
 		else
 		(
-			print ("Skipping "+ (getFilenameFile curFileName))
+			nlerror ("SKIP "+ (getFilenameFile curFileName))
 		)
 	)
 )
@@ -167,7 +220,7 @@ for curFileName in MaxFilesList do
 			loadMaxFile curFileName
 			DeleteDebugMarkersFn ()
 			selectAllPatch ()
-			print ("Exporting "+ (getFilenameFile curFileName))
+			nlerror ("EXPORT "+ (getFilenameFile curFileName))
 
 			cellSize = NeLLigoGetCellSize ()
 
@@ -267,7 +320,14 @@ for curFileName in MaxFilesList do
 							c.transform = mt
 
 							-- Export the zone
-							NeLLigoExportZone c filename props false false
+							if (NeLLigoExportZone c filename props false false) then
+							(
+								nlerror ("OK "+ (getFilenameFile curFileName))
+							)
+							else
+							(
+								nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile curFileName))
+							)
 
 							-- Delete
 							delete c
@@ -278,7 +338,7 @@ for curFileName in MaxFilesList do
 		)
 		else
 		(
-			print ("Skipping "+ (getFilenameFile curFileName))
+			nlerror ("SKIP "+ (getFilenameFile curFileName))
 		)
 	)
 )

@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.3 2002/05/22 12:22:08 corvazier Exp $
+ * $Id: form_dfn.h,v 1.4 2002/05/22 16:02:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/georges/u_form_elm.h"
 #include "header.h"
 #include "georges/type.h"
 
@@ -41,7 +42,7 @@ class CFormLoader;
 /**
   * This class is the defnition for a familly of from.
   */
-class CFormDfn : public NLMISC::CRefCount
+class CFormDfn : public NLMISC::CRefCount, public UFormElm
 {
 	friend class CForm;
 	friend class CType;
@@ -195,6 +196,51 @@ public:
 
 	// Get an entry
 	CEntry							&getEntry (uint entry);
+
+	// From UFormElm
+	bool							getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where) const;
+	bool							getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where);
+	bool							getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (sint16 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (uint16 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (sint32 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (uint32 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							isArray () const;
+	bool							getArraySize (uint &size) const;
+	bool							getArrayNode (const UFormElm **result, uint arrayIndex) const;
+	bool							getArrayNode (UFormElm **result, uint arrayIndex);
+	bool							getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							isStruct () const;
+	bool							isVirtualStruct () const;
+	bool							getStructSize (uint &size) const;
+	bool							getStructNodeName (uint element, std::string &result) const;
+	bool							getStructNode (uint element, const UFormElm **result) const;
+	bool							getStructNode (uint element, UFormElm **result);
+	bool							isAtom () const;
+	bool							getValue (std::string &result, bool evaluate) const;
+	bool							getValue (sint8 &result, bool evaluate) const;
+	bool							getValue (uint8 &result, bool evaluate) const;
+	bool							getValue (sint16 &result, bool evaluate) const;
+	bool							getValue (uint16 &result, bool evaluate) const;
+	bool							getValue (sint32 &result, bool evaluate) const;
+	bool							getValue (uint32 &result, bool evaluate) const;
+	bool							getValue (float &result, bool evaluate) const;
+	bool							getValue (double &result, bool evaluate) const;
+	bool							getValue (bool &result, bool evaluate) const;
 
 	// Header
 	CFileHeader						Header;

@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.3 2002/05/22 12:22:08 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.4 2002/05/22 16:02:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 
 #include "form_dfn.h"
 #include "form_loader.h"
+#include "form_elm.h"
 
 using namespace NLMISC;
 using namespace std;
@@ -544,6 +545,492 @@ const CType *CFormDfn::CEntry::getTypePtr () const
 const CFormDfn *CFormDfn::CEntry::getDfnPtr () const
 {
 	return Dfn;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormElm::TWhereIsNode *where) const
+{
+	const CFormDfn *parentDfn = NULL;
+	uint lastElement = 0xffffffff;
+	const CFormDfn *nodeDfn = this;
+	const CType *nodeType = NULL;
+	const CFormElm *node = NULL;
+	CFormDfn::CEntry::TType type = CEntry::EntryDfn;
+	bool array = false;
+
+	if (CFormElm::getIternalNodeByName (name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array))
+	{
+		if (type == CEntry::EntryDfn)
+		{
+			nlassert (nodeType);
+			*result = NULL;
+			if (where)
+				*where = NodeType;
+			return true;
+		}
+		else 
+		{
+			nlassert (type == CEntry::EntryDfn);
+			nlassert (nodeDfn);
+			*result = nodeDfn;
+			if (where)
+				*where = NodeDfn;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getNodeByName (UFormElm **result, const char *name, UFormElm::TWhereIsNode *where)
+{
+	const UFormElm *resultConst = NULL;
+	if (((const UFormElm*)this)->getNodeByName (&resultConst, name, where))
+	{
+		*result = const_cast<UFormElm*> (resultConst);
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	const CFormDfn *parentDfn = NULL;
+	uint lastElement = 0xffffffff;
+	const CFormDfn *nodeDfn = this;
+	const CType *nodeType = NULL;
+	const CFormElm *node = NULL;
+	CFormDfn::CEntry::TType type = CEntry::EntryDfn;
+	bool array = false;
+
+	if (CFormElm::getIternalNodeByName (name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array))
+	{
+		if (type == CEntry::EntryType)
+		{
+			nlassert (nodeType);
+			if (nodeType->getValue (result, NULL, NULL, *parentDfn, lastElement, evaluate, (uint32*)where) )
+				return true;
+		}
+		else
+		{
+			nlwarning ("Georges (CFormDfn::getValueByName) : %s node is note an atom, it is a structure.", name);
+		}
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (sint16 &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (uint16 &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (sint32 &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (uint32 &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::isArray () const
+{
+	nlwarning ("Georges (CFormDfn::isArray) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArraySize (uint &size) const
+{
+	nlwarning ("Georges (CFormDfn::getArraySize) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayNode (const UFormElm **result, uint arrayIndex) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayNode) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayNode (UFormElm **result, uint arrayIndex)
+{
+	nlwarning ("Georges (CFormDfn::getArrayNode) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::isStruct () const
+{
+	return true;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::isVirtualStruct () const
+{
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getStructSize (uint &size) const
+{
+	std::vector<const CFormDfn*> array;
+	array.reserve (countParentDfn ());
+	getParentDfn (array);
+	uint entryCount = 0;
+	for (uint dfn=0; dfn<array.size (); dfn++)
+	{
+		entryCount += array[dfn]->Entries.size ();
+	}
+	size = entryCount;
+	return true;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getStructNodeName (uint element, std::string &result) const
+{
+	std::vector<const CFormDfn*> array;
+	array.reserve (countParentDfn ());
+	getParentDfn (array);
+	for (uint dfn=0; dfn<array.size (); dfn++)
+	{
+		if (element < array[dfn]->Entries.size ())
+		{
+			result = array[dfn]->Entries[element].Name;
+			return true;
+		}
+		element -= array[dfn]->Entries.size ();
+	}
+
+	// Error
+	nlwarning ("Georges (CFormDfn::getStructNodeName) : element id doesn't exist"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getStructNode (uint element, const UFormElm **result) const
+{
+	std::vector<const CFormDfn*> array;
+	array.reserve (countParentDfn ());
+	getParentDfn (array);
+	for (uint dfn=0; dfn<array.size (); dfn++)
+	{
+		if (element < array[dfn]->Entries.size ())
+		{
+			if (array[dfn]->Entries[element].TypeElement == CEntry::EntryType)
+				*result = NULL;
+			else 
+				*result = array[dfn]->Entries[element].Dfn;
+			return true;
+		}
+		element -= array[dfn]->Entries.size ();
+	}
+
+	// Error
+	nlwarning ("Georges (CFormDfn::getStructNodeName) : element id doesn't exist"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getStructNode (uint element, UFormElm **result)
+{
+	std::vector<const CFormDfn*> array;
+	array.reserve (countParentDfn ());
+	getParentDfn (array);
+	for (uint dfn=0; dfn<array.size (); dfn++)
+	{
+		if (element < array[dfn]->Entries.size ())
+		{
+			if (array[dfn]->Entries[element].TypeElement == CEntry::EntryType)
+				*result = NULL;
+			else 
+				*result = array[dfn]->Entries[element].Dfn;
+			return true;
+		}
+		element -= array[dfn]->Entries.size ();
+	}
+
+	// Error
+	nlwarning ("Georges (CFormDfn::getStructNodeName) : element id doesn't exist"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::isAtom () const
+{
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (std::string &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (sint8 &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (uint8 &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (sint16 &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (uint16 &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (sint32 &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (uint32 &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (float &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (double &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (bool &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.6 2002/05/22 12:09:45 cado Exp $
+ * $Id: form_elm.cpp,v 1.7 2002/05/22 16:02:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -538,50 +538,63 @@ UFormElm *CFormElm::getParent () const
 
 // ***************************************************************************
 
-bool CFormElm::getNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, const CFormDfn **nodeDfn, const CType **nodeType, const CFormElm **node, CFormDfn::CEntry::TType &type, bool &array) const
+bool CFormElm::getNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, 
+									const CFormDfn **nodeDfn, const CType **nodeType, 
+									const CFormElm **node, CFormDfn::CEntry::TType &type, 
+									bool &array) const
+{
+	*parentDfn = ParentDfn;
+	lastElement = ParentIndex;
+	*nodeDfn = NULL;
+	*nodeType = NULL;
+	*node = this;
+	return getIternalNodeByName (name, parentDfn, lastElement, nodeDfn, nodeType, node, type, array);
+}
+
+// ***************************************************************************
+
+bool CFormElm::getIternalNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, const CFormDfn **nodeDfn, const CType **nodeType, const CFormElm **node, CFormDfn::CEntry::TType &type, bool &array)
 {
 	// *** Init output variables
 	
-	// Current node
-	(*node) = this;
-
-	// Get the parent form
-	const UFormElm *parent = getParent ();
-	const UFormElm *child = this;
-	const CFormElmStruct *parentStruct = NULL;
-
-	// Look for a parent struct 
-	while (parent && !parent->isStruct ())
-	{
-		// Look for the good index
-		child = parent;
-		parent = parent->getParent ();
-	}
-
+	// ParentDfn or Node..
+	nlassert ( (*parentDfn) || (*node) || (*nodeDfn) || (*nodeType) );
+	
 	// Parent exist ?
-	*parentDfn = ParentDfn;
-	if (ParentDfn)
+	if (*parentDfn)
 	{
 		// Get the entry
-		const CFormDfn::CEntry &theEntry = ParentDfn->getEntry (ParentIndex);
+		const CFormDfn::CEntry &theEntry = (*parentDfn)->getEntry (lastElement);
 
 		// Get the type
 		type = theEntry.getType ();
 		*nodeType = theEntry.getTypePtr ();
 		*nodeDfn = theEntry.getDfnPtr ();
-		lastElement = ParentIndex;
+		array = theEntry.getArrayFlag ();
 	}
-	else
+	else if (*node)
 	{
-		nlassert (!isArray ());
+		nlassert (!(*node)->isArray ());
 		lastElement = 0xffffffff;
-		*nodeType = isAtom () ? safe_cast<const CFormElmAtom*>(this)->Type : NULL;
-		*nodeDfn = isStruct () ? (const CFormDfn *)(safe_cast<const CFormElmStruct*>(this)->FormDfn) : NULL;
-		type = isAtom () ? CFormDfn::CEntry::EntryType : isVirtualStruct () ? CFormDfn::CEntry::EntryDfnPointer : CFormDfn::CEntry::EntryDfn;
+		*nodeType = (*node)->isAtom () ? safe_cast<const CFormElmAtom*>(*node)->Type : NULL;
+		*nodeDfn = (*node)->isStruct () ? (const CFormDfn *)(safe_cast<const CFormElmStruct*>(*node)->FormDfn) : NULL;
+		type = (*node)->isAtom () ? CFormDfn::CEntry::EntryType : (*node)->isVirtualStruct () ? CFormDfn::CEntry::EntryDfnPointer : CFormDfn::CEntry::EntryDfn;
+		array = false;
 	}
-
-	// Is this node an array ?
-	array = isArray ();
+	else if (*nodeDfn)
+	{
+		lastElement = 0xffffffff;
+		*nodeType = NULL;
+		type = CFormDfn::CEntry::EntryDfn;
+		array = false;
+	}
+	else if (*nodeType)
+	{
+		lastElement = 0xffffffff;
+		*nodeDfn = NULL;
+		type = CFormDfn::CEntry::EntryType;
+		array = false;
+	}
 
 	// *** Parsing variables
 

@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.2 2002/05/17 11:38:42 corvazier Exp $
+ * $Id: u_form_elm.h,v 1.3 2002/05/22 16:02:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,8 @@ public:
 	{
 		NodeForm,			/// The node has been found in the form
 		NodeParentForm,		/// The node has been found in the parent form
+		NodeDfn,			/// The node is a DFN
+		NodeType,			/// The node is a Type
 	};
 
 	/**
@@ -110,7 +112,8 @@ public:
 	virtual bool	getValueByName (bool &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
 
 	/// Get the parent form element. Return NULL if the element is the root form element.
-	virtual UFormElm	*getParent () const = 0;
+	// DEPRECATED
+	// virtual UFormElm	*getParent () const = 0;
 
 	
 	// ** Array element methods

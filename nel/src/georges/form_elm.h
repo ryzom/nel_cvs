@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.3 2002/05/17 11:45:19 corvazier Exp $
+ * $Id: form_elm.h,v 1.4 2002/05/22 16:02:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,10 +123,15 @@ public:
 	// ** Internal node access
 
 	// Search for a node by name
-	bool				getNodeByName (	const char *name, const CFormDfn **parentDfn, uint &lastElement, 
+	bool	getNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
 										const CFormElm **node, CFormDfn::CEntry::TType &type, 
 										bool &array) const;
+
+	static bool	getIternalNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, 
+										const CFormDfn **nodeDfn, const CType **nodeType, 
+										const CFormElm **node, CFormDfn::CEntry::TType &type, 
+										bool &array);
 
 	// Get next token, return NULL if last token
 	static const char* tokenize (const char *name, std::string &str, uint &errorIndex, uint &code);

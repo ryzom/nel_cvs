@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.11 2002/05/21 16:41:13 lecroart Exp $
+ * $Id: bit_mem_stream.h,v 1.12 2002/05/23 10:02:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 		}
 		else
 		{
-			if ( _Buffer.getPtr() == _BufPos )
+			if ( _Buffer.getPtr() -  1 == _BufPos )
 			{
 				return 0;
 			}
@@ -76,10 +76,20 @@ public:
 	}
 
 	/// Transforms the message from input to output or from output to input
-	virtual void	invert();
+	virtual void	invert()
+	{
+		_BufPos++;
+		CMemStream::invert();
+		_FreeBits = 8;
+	}
 
 	/// Clears the message
-	virtual void	clear();
+	virtual void	clear()
+	{
+		CMemStream::clear();
+		_FreeBits = 8;
+		_BufPos--;
+	}
 
 	/// Returns the number of bit from the beginning of the buffer (in bit)
 	sint32	getPosInBit();

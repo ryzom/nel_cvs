@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.15 2002/05/22 17:28:13 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.16 2002/05/23 10:02:26 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -82,26 +82,6 @@ void CBitMemStream::serialBuffer( uint8 *buf, uint len )
 
 
 /*
- * Transforms the message from input to output or from output to input
- */
-void CBitMemStream::invert()
-{
-	CMemStream::invert();
-	_FreeBits = 8;
-}
-
-
-/*
- * Clears the message
- */
-void CBitMemStream::clear()
-{
-	CMemStream::clear();
-	_FreeBits = 8;
-}
-
-
-/*
  * Serialize one bit
  */
 void CBitMemStream::serialBit( bool& bit )
@@ -128,7 +108,7 @@ sint32 CBitMemStream::getPosInBit ()
 	}
 	else
 	{
-		if (_Buffer.getPtr() == _BufPos)
+		if (_Buffer.getPtr() - 1 == _BufPos)
 			return 0;
 		else if (_FreeBits == 8)
 			return (getPos() + 1) * 8;

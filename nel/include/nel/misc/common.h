@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.54 2003/01/09 17:08:10 lecroart Exp $
+ * $Id: common.h,v 1.55 2003/01/20 13:50:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -310,6 +310,10 @@ std::string bytesToHumanReadable (uint32 bytes);
 
 /// Convert a human readable into a bytes,  for example "102kb" -> 105123
 uint32 humanReadableToBytes (const std::string &str);
+
+/// Convert a time into a string that is easily readable by an human, for example 3600 -> "1h"
+std::string secondsToHumanReadable (uint32 time);
+
 
 /// This function execute a program in the background and returns instantly (used for example to launch services in AES).
 /// The program will be launch in the current directory

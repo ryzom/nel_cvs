@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.34 2003/01/09 17:07:33 lecroart Exp $
+ * $Id: common.cpp,v 1.35 2003/01/20 13:50:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -461,6 +461,35 @@ NLMISC_COMMAND(hrtob, "Convert a human readable number into a bytes number", "<h
 		return false;
 	
 	log.displayNL("%s -> %u", args[0].c_str(), humanReadableToBytes(args[0]));
+	
+	return true;
+}
+
+
+string secondsToHumanReadable (uint32 time)
+{
+	static char *divTable[] = { "s", "mn", "h", "d" };
+	static uint  divCoef[]  = { 60, 60, 24 };
+	uint div = 0;
+	uint32 res = time;
+	uint32 newres = res;
+	while (true)
+	{
+		newres /= divCoef[div];
+		if(newres < 3 || div > 2)
+			break;
+		div++;
+		res = newres;
+	}
+	return toString ("%u%s", res, divTable[div]);
+}
+
+NLMISC_COMMAND(stohr, "Convert a second number into an human readable time", "<int>")
+{
+	if (args.size() != 1)
+		return false;
+	
+	log.displayNL("%s -> %s", args[0].c_str(), secondsToHumanReadable(atoi(args[0].c_str())).c_str());
 	
 	return true;
 }

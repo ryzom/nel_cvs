@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.11 2001/04/17 09:26:09 portier Exp $
+ * $Id: operator_script.h,v 1.12 2001/04/18 11:45:16 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,9 +43,6 @@ namespace NLAIAGENT
 			std::vector<NLAIAGENT::IObjectIA *> _VarValues;		// Values of the vars for the instanciated operator
 			NLAILOGIC::CFactBase				*_FactBase;		// The father's factbase
 			NLAILOGIC::CGoal					*_CurrentGoal;
-
-			std::list<IBasicAgent *>			_Launched;
-
 		public:
 			// Builds and actor with its father
 			COperatorScript(IAgentManager *, bool activated = false);
@@ -57,7 +54,7 @@ namespace NLAIAGENT
 			/// Priority of the operator
 			virtual float priority() const;
 
-			virtual int getBaseMethodCount() const;
+//			virtual int getBaseMethodCount() const;
 
 			/// Inherited functions
 			virtual const NLAIC::IBasicType *clone() const;
@@ -76,11 +73,11 @@ namespace NLAIAGENT
 			virtual void save(NLMISC::IStream &os);		
 			virtual void load(NLMISC::IStream &is);		
 
-			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
-			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
+//			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
+//			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
 
-			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
-			virtual sint32 getMethodIndexSize() const;
+//			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
+//			virtual sint32 getMethodIndexSize() const;
 
 			void getFatherComponent(IVarName &);
 

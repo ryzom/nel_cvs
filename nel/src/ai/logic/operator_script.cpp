@@ -96,7 +96,7 @@ namespace NLAIAGENT
 		CAgentScript::load(is);
 		// TODO
 	}
-
+/*
 	sint32 COperatorScript::getMethodIndexSize() const
 	{
 		return CAgentScript::getBaseMethodCount();
@@ -131,9 +131,9 @@ namespace NLAIAGENT
 		}
 		return CAgentScript::runMethodBase(index, heritance, params);
 	}
+*/
 
-
-
+/*
 	IObjectIA::CProcessResult COperatorScript::runMethodBase(int index,IObjectIA *params)
 	{	
 
@@ -169,7 +169,8 @@ namespace NLAIAGENT
 		return CAgentScript::getBaseMethodCount();
 	}
 
-
+*/
+/*
 	tQueue COperatorScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{		
 #ifdef NL_DEBUG
@@ -184,18 +185,19 @@ namespace NLAIAGENT
 		// Processes succes and failure functions
 		if ( *name == CStringVarName("Launch") )
 		{
+		*/
 /*			double d;
 			d = ((NLAISCRIPT::CParam &)*ParamSuccessMsg).eval((NLAISCRIPT::CParam &)param);
 			
 			if ( d >= 0.0 )
 			{*/
-			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+/*			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod(  IAgent::getMethodIndexSize() + 1, 0.0,NULL, r_type ) );
 			//}
 		}
 		return result;
 	}
-
+*/
 	const IObjectIA::CProcessResult &COperatorScript::run()
 	{
 
@@ -277,11 +279,7 @@ namespace NLAIAGENT
 
 	void COperatorScript::cancel()
 	{
-		while (  _Launched.size() )
-		{
-			_Launched.front()->Kill();
-			_Launched.pop_front();
-		}
+		CActorScript::cancel();
 	}
 
 	float COperatorScript::priority() const

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.28 2001/04/17 09:26:03 portier Exp $
+ * $Id: agents.cpp,v 1.29 2001/04/18 11:45:10 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ namespace NLAIAGENT
 		while ( _AgentList.size() )
 		{					
 			IConnectIA *c = _AgentList.front();
-			c->Kill();
+			c->onKill(this);
 			_AgentList.pop_front();
 		}
 	}

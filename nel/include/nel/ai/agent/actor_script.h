@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.14 2001/04/17 09:26:09 portier Exp $
+ * $Id: actor_script.h,v 1.15 2001/04/18 11:45:16 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ namespace NLAIAGENT
 				fid_unActivate,
 				fid_onUnActivate,
 				fid_switch,
+				fid_launch,
 				fid_last
 			};
 
@@ -67,6 +68,8 @@ namespace NLAIAGENT
 			sint32	_OnUnActivateIndex;
 
 			std::vector<CComponentHandle *> _Actors;
+
+			std::list<IBasicAgent *>		_Launched;
 			
 			/** Transfers activity to another actor.
 				The second arg bool must be set to true for this agent to stay active, false otherwise.

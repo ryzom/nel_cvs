@@ -26,7 +26,6 @@ namespace NLAIAGENT
 		_IsActivated = false;
 		_OnActivateIndex = -1;
 		_OnUnActivateIndex = -1;
-
 	}	
 
 	CActorScript::CActorScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
@@ -38,6 +37,11 @@ namespace NLAIAGENT
 
 	CActorScript::~CActorScript()
 	{
+		while (  _Launched.size() )
+		{
+			_Launched.front()->Kill();
+			_Launched.pop_front();
+		}
 	}
 
 	/// Returns true if the actor has a token
@@ -91,6 +95,8 @@ namespace NLAIAGENT
 					_OnActivateIndex = -1;
 				}
 			}
+			// Destroys launched childs?
+			cancel();
 			onUnActivate();
 			_IsActivated = false;
 		}
@@ -372,7 +378,7 @@ namespace NLAIAGENT
 				char dbg_param_string[1024 * 8];
 				params->getDebugString(dbg_param_string);
 #endif
-				const IObjectIA *fw = ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
+				const IObjectIA *fw = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
 #ifdef _DEBUG
 				const char *dbg_param_front_type = (const char *) fw->getType();
 #endif
@@ -396,6 +402,29 @@ namespace NLAIAGENT
 			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
 		}
+
+		if ( i == fid_launch )
+		{
+			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
+			{
+#ifdef _DEBUG
+				const char *dbg_param_type = (const char *) params->getType();
+				char dbg_param_string[1024 * 8];
+				params->getDebugString(dbg_param_string);
+#endif
+				const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
+#ifdef _DEBUG
+				const char *dbg_param_front_type = (const char *) child->getType();
+#endif
+				_Launched.push_back( (NLAIAGENT::IAgent *) child );
+				addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
+			}
+			IObjectIA::CProcessResult r;
+			r.ResultState =  NLAIAGENT::processIdle;
+			r.Result = NULL;
+			return r;
+		}
+
 
 		return CAgentScript::runMethodBase(index, params);
 	}
@@ -448,6 +477,12 @@ namespace NLAIAGENT
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_switch, 0.0, NULL, r_type ) );
 		}
 
+		if ( *name == CStringVarName("Launch") )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_launch, 0.0, NULL, r_type ) );
+		}
+
 		if(_AgentClass != NULL && result.empty() )
 		{
 			result = _AgentClass->isMember(className, name, param);
@@ -463,6 +498,16 @@ namespace NLAIAGENT
 
 	void CActorScript::cancel()
 	{
-		Kill();
+
+#ifdef NL_DEBUG
+		const char *dbg_this_type = (const char *) getType();
+#endif
+
+		while ( _Launched.size() )
+		{
+			_Launched.front()->Kill();
+			delete _Launched.front();
+			_Launched.pop_front();
+		}
 	}
 }

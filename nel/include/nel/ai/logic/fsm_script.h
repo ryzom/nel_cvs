@@ -2,7 +2,7 @@
  *	
  *	Instances of finite state machines
  *
- * $Id: fsm_script.h,v 1.4 2001/04/17 09:26:09 portier Exp $
+ * $Id: fsm_script.h,v 1.5 2001/04/18 11:45:16 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,10 +76,8 @@ namespace NLAIAGENT
  
 //			virtual IObjectIA *run(const IMessageBase &msg);
 
-
 //			virtual	CProcessResult sendMessage(IObjectIA *);
 			virtual const NLAIC::CIdentType &getType() const;
-
 
 			static const NLAIC::CIdentType IdFsmScript;
 
@@ -99,10 +97,8 @@ namespace NLAIAGENT
 			virtual void activate(IBasicAgent *);
 			virtual void unactivate(IBasicAgent *);
 
-
 			static void initClass();
 			static void releaseClass();
-
 	};
 }
 #endif

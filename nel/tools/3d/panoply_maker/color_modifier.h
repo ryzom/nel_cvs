@@ -1,7 +1,7 @@
 /** \file color_modifier.h
  * A class describing color modifications
  *
- * $Id: color_modifier.h,v 1.2 2002/02/06 13:15:46 vizerie Exp $
+ * $Id: color_modifier.h,v 1.3 2002/10/25 16:20:37 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -51,8 +51,11 @@ struct CColorModifier
 
 	std::string  ColID; // used to build the output fileNames
 
-	/// just convert the pixels of a bitmap by using the alpha of the given mask
-	void convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CBitmap &srcBitmap, const NLMISC::CBitmap &mask) const;
+	/** just convert the pixels of a bitmap by using the alpha of the given mask
+	 *	\param retDeltaHue take the real delta hue applied to the bitmap.
+	 */
+	void convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CBitmap &srcBitmap, const NLMISC::CBitmap &mask, 
+		float &retDeltaHue) const;
 
 	/** compute the averaged H, S and L from a bitmap	  
 	  */

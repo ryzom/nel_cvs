@@ -1,7 +1,7 @@
 /** \file color_modifier.cpp
  * A class describing color modifications
  *
- * $Id: color_modifier.cpp,v 1.7 2002/07/16 10:10:07 vizerie Exp $
+ * $Id: color_modifier.cpp,v 1.8 2002/10/25 16:20:37 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -39,7 +39,8 @@ static uint8 inline CalcBrightnessContrast(uint8 intensity, float luminosity, fl
 }
 
 ///=================================================================================================
-void CColorModifier::convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CBitmap &srcBitmap, const NLMISC::CBitmap &maskBitmap) const
+void CColorModifier::convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CBitmap &srcBitmap, 
+	const NLMISC::CBitmap &maskBitmap, float &retDeltaHue) const
 {	
 	/// make sure all bitmap have the same size
 	nlassert(destBitmap.getWidth() == srcBitmap.getWidth() && srcBitmap.getWidth() == maskBitmap.getWidth()
@@ -50,6 +51,7 @@ void CColorModifier::convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CB
 	evalBitmapStats(srcBitmap, maskBitmap, h, s, l, grey);
 	//nlinfo("Bitmap stats : (H, L, S) = (%g, %g, %g)", h, s, l);
 	float deltaH = Hue - h;
+	retDeltaHue= deltaH;
 	
 	
 	const NLMISC::CRGBA  *src   = (NLMISC::CRGBA *) &srcBitmap.getPixels()[0];

@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.7 2001/11/27 16:30:19 vizerie Exp $
+ * $Id: water_shape.h,v 1.8 2002/01/28 14:42:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -190,7 +190,11 @@ public:
 
 	// @}
 
-
+	/// \name Lighmap
+	// @{
+		/// Tells this shape that it can replace its colormap by a lightmap during the zone lighting
+	void				enableLightMapping(bool enable = true) { _ComputeLightmap = enable; }
+	bool				isLightMappingEnabled() const  { return _ComputeLightmap; }	
 
 private:	
 	friend class	CWaterModel;	
@@ -213,6 +217,7 @@ private:
 	CTrackDefaultQuat					_DefaultRotQuat;
 	float								_TransitionRatio;	
 	float								_WaveHeightFactor;
+	bool								_ComputeLightmap;
 
 
 

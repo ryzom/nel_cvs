@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.11 2002/01/04 13:48:22 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.12 2002/01/28 14:42:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -205,7 +205,7 @@ std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram2StagesAlpha;
 /*
  * Constructor
  */
-CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeightFactor(3)
+CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeightFactor(3), _ComputeLightmap(false)
 {
 	_DefaultPos.setValue(NLMISC::CVector::Null);
 	_DefaultScale.setValue(NLMISC::CVector(1, 1, 1));
@@ -254,9 +254,9 @@ void CWaterShape::initVertexProgram()
 
 void CWaterShape::setupVertexBuffer()
 {
-	const uint rotLenght = (uint) ::ceilf(::sqrtf((float) ((_XScreenGridSize >> 1) * (_XScreenGridSize >> 1)
+	const uint rotLength = (uint) ::ceilf(::sqrtf((float) ((_XScreenGridSize >> 1) * (_XScreenGridSize >> 1)
 								  + (_YScreenGridSize >> 1) * (_YScreenGridSize >> 1))));
-	_MaxGridSize = 2 * rotLenght;
+	_MaxGridSize = 2 * rotLength;
 	const uint w =  _MaxGridSize + 2 * _XGridBorder;
 
 	_VB.clearValueEx();
@@ -411,7 +411,7 @@ const ITexture		*CWaterShape::getHeightMap(uint k) const
 
 void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(0);
+	sint ver = f.serialVersion(1);
 	// serial 'shape' 
 	f.serial(_Poly);
 	// serial heightMap identifier
@@ -449,7 +449,11 @@ void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_TransitionRatio);	
 
 	f.serial(_WaveHeightFactor);
-	
+
+	if (ver >= 1)
+	{
+		f.serial(_ComputeLightmap);
+	}
 }
 
 //============================================

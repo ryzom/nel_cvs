@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.39 2003/07/01 09:41:20 lecroart Exp $
+ * $Id: form_elm.cpp,v 1.40 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -900,7 +900,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 	}
 
 	// While there is tokens
-	while (endToken = tokenize (startToken, token, errorIndex, code))
+   	while ((endToken = tokenize (startToken, token, errorIndex, code)))
 	{
 		// Ready an array index ?
 		if (!inArrayIndex)
@@ -993,7 +993,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 						nlassert (*nodeDfn);
 
 						// Look for the element
-						uint elementCount = (*nodeDfn)->getNumEntry ();
+						//						uint elementCount = (*nodeDfn)->getNumEntry ();
 
 						// Get the parents
 						vector<const CFormDfn*> arrayDfn;
@@ -1095,8 +1095,8 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 									else
 									{
 										// Save last struct
-										CFormElmStruct *lastStructElm = NULL;
-										uint lastStructIndex = 0xffffffff;
+									  //										CFormElmStruct *lastStructElm = NULL;
+									  //uint lastStructIndex = 0xffffffff;
 
 										*node = NULL;
 									}
@@ -1414,15 +1414,15 @@ exit:;
 
 		// Backup first parent default value
 		bool defaultValue = false;
-		const CFormDfn *defaultParentDfnParent;
-		uint defaultIndexDfnParent;
-		const CFormDfn *defaultNodeDfnParent;
-		const CType *defaultNodeTypeParent;
-		CFormElm *defaultNodeParent;
-		UFormDfn::TEntryType defaultTypeParent;
-		bool defaultArrayParent;
-		bool defaultCreatedParent;
-		bool defaultParentVDfnArray;
+		const CFormDfn *defaultParentDfnParent=0;
+		uint defaultIndexDfnParent=0;
+		const CFormDfn *defaultNodeDfnParent=0;
+		const CType *defaultNodeTypeParent=0;
+		CFormElm *defaultNodeParent=0;
+		UFormDfn::TEntryType defaultTypeParent = UFormDfn::EntryType;
+		bool defaultArrayParent=false;
+		bool defaultCreatedParent=false;
+		bool defaultParentVDfnArray=false;
 
 		// Look in parent form
 		for (uint parent=0; parent<form->getParentCount (); parent++)
@@ -1701,7 +1701,7 @@ void CFormElm::warning (bool exception, const char *formName, const char *formFi
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning
@@ -1875,7 +1875,7 @@ void CFormElmStruct::read (xmlNodePtr node, CFormLoader &loader, const CFormDfn 
 		for (elm=0; elm<dfnArray[dfnId]->Entries.size(); elm++)
 		{
 			// Found ?
-			bool found = false;
+		  //			bool found = false;
 
 			// Read the struct
 			xmlNodePtr child = NULL;
@@ -2137,7 +2137,7 @@ void CFormElmStruct::warning (bool exception, const char *function, const char *
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning
@@ -2268,7 +2268,7 @@ void CFormElmVirtualStruct::warning (bool exception, const char *function, const
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning
@@ -2792,7 +2792,7 @@ void CFormElmArray::warning (bool exception, const char *function, const char *f
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning
@@ -3095,7 +3095,7 @@ void CFormElmAtom::warning (bool exception, const char *function, const char *fo
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning

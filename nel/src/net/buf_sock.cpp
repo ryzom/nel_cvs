@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.36 2003/08/20 10:30:53 cado Exp $
+ * $Id: buf_sock.cpp,v 1.37 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -354,10 +354,10 @@ string CBufSock::asString() const
  */
 CNonBlockingBufSock::CNonBlockingBufSock( CTcpSock *sock ) :
 	CBufSock( sock ),
+	_MaxExpectedBlockSize( 10485760 ), // 10M
 	_NowReadingBuffer( false ),
 	_BytesRead( 0 ),
-	_Length( 0 ),
-	_MaxExpectedBlockSize( 10485760 ) // 10M
+	_Length( 0 )
 {
 	nlnettrace( "CNonBlockingBufSock::CNonBlockingBufSock" );
 }

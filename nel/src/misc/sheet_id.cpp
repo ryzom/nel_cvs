@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.22 2003/07/30 16:06:29 vizerie Exp $
+ * $Id: sheet_id.cpp,v 1.23 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -195,7 +195,7 @@ void CSheetId::loadSheetAlias ()
 
 		if (_RemoveUnknownSheet)
 		{
-			uint32 nbfiles = _SheetIdToAlias.size();
+		  //uint32 nbfiles = _SheetIdToAlias.size();
 
 			// now we remove all files that not available
 			map<uint32,string>::iterator itStr2;

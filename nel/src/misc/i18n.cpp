@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.37 2003/06/02 14:44:40 berenguier Exp $
+ * $Id: i18n.cpp,v 1.38 2003/08/27 16:16:25 distrib Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -541,7 +541,7 @@ string CI18N::encodeUTF8(const ucstring &str)
 	ucstring::const_iterator first(str.begin()), last(str.end());
 	for (; first != last; ++first)
 	{
-		ucchar	c = *first;
+	  //ucchar	c = *first;
 		uint nbLoop = 0;
 		if (*first < 0x80)
 			res += char(*first);

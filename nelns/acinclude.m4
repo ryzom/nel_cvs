@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.15 2002/10/21 10:19:03 lecroart Exp $
+dnl $Id: acinclude.m4,v 1.16 2003/08/27 16:16:24 distrib Exp $
 dnl 
 dnl =========================================================================
 
@@ -94,7 +94,7 @@ STL_DEBUG="-D__STL_DEBUG"
 NL_DEBUG="-DNL_DEBUG"
 NL_DEBUG_FAST="-DNL_DEBUG_FAST"
 NL_RELEASE_DEBUG="-DNL_RELEASE_DEBUG"
-NL_RELEASE="-DNL_RELEASE"
+NL_RELEASE="-DNL_RELEASE_RELEASE"
 
 AC_ARG_WITH(debug,
     [  --with-debug[=full|medium|fast]
@@ -125,7 +125,7 @@ if test "$ac_cv_prog_cxx_g" = "yes"
 then
     DEBUG_CXXFLAGS="-g"
     DEBUG_OPTIMIZE_CXX="-O"
-    OPTIMIZE_CXXFLAGS="-O3"
+    OPTIMIZE_CXXFLAGS="-g -O3"
     OPTIMIZE_INLINE_CXXFLAGS="-finline-functions"
 else
     DEBUG_CXXFLAGS="-g"
@@ -153,8 +153,8 @@ else
             CXXFLAGS="$DEBUG_CXXFLAGS $DEBUG_OPTIMIZE_CXX $OPTIMIZE_INLINE_CXXFLAGS $NL_DEBUG $CXXFLAGS"
         else
             dnl Optimized version. No debug
-            CFLAGS="$OPTIMIZE_CFLAGS $NL_RELEASE $CFLAGS"
-            CXXFLAGS="$OPTIMIZE_CXXFLAGS $NL_RELEASE $CXXFLAGS"
+            CFLAGS="$OPTIMIZE_CFLAGS $NL_RELEASE_DEBUG $CFLAGS"
+            CXXFLAGS="$OPTIMIZE_CXXFLAGS $NL_RELEASE_DEBUG $CXXFLAGS"
         fi
     fi
 fi

@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.12 2003/06/05 15:44:06 boucher Exp $
+ * $Id: form_loader.cpp,v 1.13 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -127,8 +127,8 @@ CType *CFormLoader::loadType (const char *filename)
 			// Insert a new entry
 			_MapType[lowerStr]= type;
 			ite = _MapType.find (lowerStr);
-			CType *typeType = ite->second;
-			int toto = 0;
+			//CType *typeType = ite->second;
+			//			int toto = 0;
 		}
 		return type;
 	}
@@ -319,7 +319,7 @@ void CFormLoader::warning (bool exception, const char *function, const char *for
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning

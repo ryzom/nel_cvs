@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.77 2003/08/19 11:53:45 lecroart Exp $
+ * $Id: debug.cpp,v 1.78 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -841,7 +841,7 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 
 void createDebug (const char *logPath, bool logInFile)
 {
-	NL_ALLOC_CONTEXT (_Debug)
+  NL_ALLOC_CONTEXT (_Debug)
 	
 	static bool alreadyCreateSharedAmongThreads = false;
 	if ( !alreadyCreateSharedAmongThreads )

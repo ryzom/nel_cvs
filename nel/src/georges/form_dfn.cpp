@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.18 2003/07/01 09:41:20 lecroart Exp $
+ * $Id: form_dfn.cpp,v 1.19 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -375,7 +375,7 @@ void CFormDfn::getParentDfn (std::vector<CFormDfn*> &array, uint32 round)
 	else
 		Round = round;
 
-	uint count = 0;
+	//uint count = 0;
 	uint i;
 	for (i=0; i<Parents.size (); i++)
 	{
@@ -401,7 +401,7 @@ void CFormDfn::getParentDfn (std::vector<const CFormDfn*> &array, uint32 round) 
 	else
 		Round = round;
 
-	uint count = 0;
+	//uint count = 0;
 	uint i;
 	for (i=0; i<Parents.size (); i++)
 	{
@@ -796,7 +796,7 @@ void CFormDfn::warning (bool exception, const char *function, const char *format
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning

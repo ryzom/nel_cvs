@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.9 2003/08/21 15:13:28 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.10 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -459,7 +459,7 @@ NLMISC_COMMAND(playerInfo,"Get informations about a player or all players in CEn
 			CEntityIdTranslator::getInstance()->getByEntity (args[0], res, false);
 		}
 		
-		log.displayNL("%d result(s) for '%s'", res.size(), args[0]);
+		log.displayNL("%d result(s) for '%s'", res.size(), args[0].c_str());
 		for (uint i = 0; i < res.size(); i++)
 		{
 			ucstring entityName;

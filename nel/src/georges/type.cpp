@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.20 2003/02/27 16:22:17 corvazier Exp $
+ * $Id: type.cpp,v 1.21 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,7 @@ CType::CType ()
 
 CType::~CType ()
 {
-	int toto = 0;
+  //	int toto = 0;
 }
 
 // ***************************************************************************
@@ -805,6 +805,7 @@ bool CType::uiCompatible (TType type, TUI ui)
 		return (ui == Edit) || (ui == NonEditableCombo) || (ui == FileBrowser) || (ui == BigEdit);
 	case Color:
 		return (ui == ColorEdit);
+	default: break;
 	}
 	return false;
 }
@@ -817,7 +818,7 @@ void CType::warning (bool exception, const char *formName, const char *formFilen
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning
@@ -832,7 +833,7 @@ void CType::warning2 (bool exception, const char *function, const char *format, 
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning

@@ -1,7 +1,7 @@
 /** \file service/chat_service.cpp
  * example of the IService class
  *
- * $Id: chat_service.cpp,v 1.4 2003/02/07 17:43:46 lecroart Exp $
+ * $Id: chat_service.cpp,v 1.5 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,13 +80,15 @@ public:
 
 //		nlinfo ("update() was called");
 
+	  nlstop;
+
 //////debug to test log flood for memory leak
 
 //		DebugLog->addNegativeFilter("flood");
 //		InfoLog->addNegativeFilter("flood");
 //		WarningLog->addNegativeFilter("flood");
 
-		string s;
+	  /*		string s;
 
 		uint v = (uint)frand(80), i;
 		for (i = 0; i < v; i++)
@@ -104,7 +106,7 @@ public:
 //			nlinfo ("info flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
 //			nlwarning ("warn flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
 		}
-
+	  */
 /////////
 //		fprintf (fp, "%d;%d;%d\n", CHeapAllocator::getAllocatedSystemMemory (), UserSpeedLoop, NetSpeedLoop);
 //		fflush (fp);

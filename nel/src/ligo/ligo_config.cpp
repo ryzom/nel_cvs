@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.5 2003/08/14 08:52:08 corvazier Exp $
+ * $Id: ligo_config.cpp,v 1.6 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

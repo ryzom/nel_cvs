@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.4 2002/11/15 18:00:18 coutelas Exp $
+# $Id: Makefile.am,v 1.5 2003/08/27 16:16:25 distrib Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -18,7 +18,6 @@ libnelmemory_la_SOURCES =
 noinst_HEADERS        = heap_allocator.h            \
                         heap_allocator_inline.h     \
                         memory_common.h             \
-                        memory_config.h             \
                         memory_mutex.h              \
                         memory_tds.h
 

@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.10 2003/08/26 16:47:04 lecroart Exp $
+ * $Id: admin.cpp,v 1.11 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,7 +136,7 @@ static void cbServGetView (CMessage &msgin, const std::string &serviceName, uint
 
 }
 
-static void cbAESConnection (const string &serviceName, uint16 sid, void *arg)
+void cbAESConnection (const string &serviceName, uint16 sid, void *arg)
 {
 	// established a connection to the AES, identify myself
 
@@ -451,7 +451,7 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 	{
 		// there s an entity in the varpath, manage this case
 
-		vector<string> *vara, *vala;
+		vector<string> *vara=0, *vala=0;
 		
 		// varpath.Destination		contains the entity number
 		// subvarpath.Destination	contains the command name

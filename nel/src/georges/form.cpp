@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.14 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: form.cpp,v 1.15 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ void warning (bool exception, const char *format, ... )
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	//	sint ret = vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning
@@ -359,7 +359,7 @@ void CForm::warning (bool exception, const char *function, const char *format, .
 	va_list args;
 	va_start( args, format );
 	char buffer[1024];
-	sint ret = vsnprintf( buffer, 1024, format, args );
+	//sint ret = vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
 	// Set the warning

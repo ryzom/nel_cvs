@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.15 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: form_dfn.h,v 1.16 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,8 @@ public:
 	{
 		Round = 0xffffffff;
 	}
+
+	virtual ~CFormDfn () { }
 
 	// A form defnition entry
 	class CEntry

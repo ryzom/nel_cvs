@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.10 2003/07/01 15:33:14 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.11 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -631,7 +631,7 @@ void CHeapAllocator::initEmptyBlock (CMainBlock& mainBlock)
 uint CHeapAllocator::getBlockSize (void *block)
 {
 	// Get the node pointer
-	CNodeBegin *node = (CNodeBegin*) ((uint)block - sizeof (CNodeBegin));
+  //CNodeBegin *node = (CNodeBegin*) ((uint)block - sizeof (CNodeBegin));
 
 	return getNodeSize (((CNodeBegin*) ((uint)block - sizeof (CNodeBegin))));
 }
@@ -1115,7 +1115,7 @@ void CHeapAllocator::free (void *ptr)
 				// *******************
 
 				// A free node
-				CHeapAllocator::CFreeNode *freeNode = NULL;
+				//CHeapAllocator::CFreeNode *freeNode = NULL;
 
 				// Previous node
 				CNodeBegin *previous = node->Previous;
@@ -1847,7 +1847,7 @@ void	CHeapAllocator::freeAll ()
 	enterCriticalSection ();
 
 	// Sum free memory
-	uint memory = 0;
+	//uint memory = 0;
 
 	// Clear the free tree
 	_FreeTreeRoot = &_NullNode.FreeNode;

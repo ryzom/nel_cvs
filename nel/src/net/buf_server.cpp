@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.42 2003/08/20 10:30:53 cado Exp $
+ * $Id: buf_server.cpp,v 1.43 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,7 +124,7 @@ void CListenTask::init( uint16 port, sint32 maxExpectedBlockSize )
 /*
  * Constructor
  */
-CServerTask::CServerTask() : _ExitRequired(false), NbLoop (0)
+CServerTask::CServerTask() : NbLoop (0), _ExitRequired(false)
 {
 #ifdef NL_OS_UNIX
 	pipe( _WakeUpPipeHandle );

@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.12 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: form.h,v 1.13 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,9 @@ public:
 	void			write (class NLMISC::IStream &stream, bool georges4CVS);
 	void			getDependencies (std::set<std::string> &dependencies) const;
 
-#pragma warning (disable : 4355)
+#ifdef NL_OS_WINDOWS
+#  pragma warning (disable : 4355)
+#endif
 	CForm ();
 	~CForm ();
 

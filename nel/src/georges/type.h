@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.9 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: type.h,v 1.10 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,7 @@ class CType : public UType
 public:
 
 	CType ();
-	~CType ();
+	virtual ~CType ();
 	
 	// ** UI
 	enum TUI

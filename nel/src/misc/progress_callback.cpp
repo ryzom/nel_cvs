@@ -1,7 +1,7 @@
 /** \file progress_callback.cpp
  * <File description>
  *
- * $Id: progress_callback.cpp,v 1.3 2002/12/18 11:13:53 coutelas Exp $
+ * $Id: progress_callback.cpp,v 1.4 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -45,7 +45,7 @@ IProgressCallback::IProgressCallback ()
 void IProgressCallback::pushCropedValues (float min, float max)
 {
 	nlassert (_CropedValues.size ()>0);
-	const CCropedValues &values = _CropedValues.back ();
+	//const CCropedValues &values = _CropedValues.back ();
 	_CropedValues.push_back (CCropedValues (getCropedValue (min), getCropedValue (max)));
 }
 

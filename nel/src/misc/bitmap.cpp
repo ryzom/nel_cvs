@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.40 2003/04/25 13:45:05 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.41 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1573,7 +1573,7 @@ void CBitmap::resizeMipMap (uint32 numMipMap, sint32 nNewWidth, sint32 nNewHeigh
 	NLMISC::contReset(_Data[numMipMap]);
 
 	// DXTC compressed??
-	bool	isDXTC= PixelFormat==DXTC1 || PixelFormat==DXTC1Alpha || PixelFormat==DXTC3 || PixelFormat==DXTC5;
+	//bool	isDXTC= PixelFormat==DXTC1 || PixelFormat==DXTC1Alpha || PixelFormat==DXTC3 || PixelFormat==DXTC5;
 	// if yes, must round up width and height to 4, for allocation
 	nNewWidth= 4*((nNewWidth+3)/4);
 	nNewHeight= 4*((nNewHeight+3)/4);

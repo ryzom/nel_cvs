@@ -1,7 +1,7 @@
 /** \file u_type.h
  * Georges form loader interface
  *
- * $Id: u_type.h,v 1.3 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: u_type.h,v 1.4 2003/08/27 16:16:25 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -42,6 +42,8 @@ namespace NLGEORGES
 class UType : public NLMISC::CRefCount
 {
 public:
+
+  virtual ~UType() { }
 
 	// ** Type
 	enum TType

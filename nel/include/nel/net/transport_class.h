@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.1 2002/02/15 14:40:28 lecroart Exp $
+ * $Id: transport_class.h,v 1.2 2002/02/15 15:22:47 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -368,9 +368,9 @@ private:
 	// Friends
 	//
 
-	friend void cbReceiveMessage (NLNET::CMessage &msgin, const std::string &name, uint16 sid);
-	friend void cbUpService (const std::string &serviceName, uint16 sid, void *arg);
-	friend void cbReceiveOtherSideClass (NLNET::CMessage &msgin, const std::string &name, uint16 sid);
+	friend void cbTCReceiveMessage (NLNET::CMessage &msgin, const std::string &name, uint16 sid);
+	friend void cbTCUpService (const std::string &serviceName, uint16 sid, void *arg);
+	friend void cbTCReceiveOtherSideClass (NLNET::CMessage &msgin, const std::string &name, uint16 sid);
 };
 
 
@@ -382,7 +382,7 @@ inline void CTransportClass::className (const std::string &name)
 {
 	if (Mode == 2)		// write
 	{
-		TempMessage.serial (std::string (name));
+		TempMessage.serial (const_cast<std::string &> (name));
 	}
 	else if (Mode == 3) // register
 	{

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.1 2002/02/15 14:40:21 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.2 2002/02/15 15:22:53 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -101,7 +101,7 @@ void CTransportClass::registerOtherSideClass (uint16 sid, TOtherSideRegisteredCl
 				{
 					if ((*it).second[j].Type != (*res).second.Instance->Prop[k]->Type)
 					{
-						nlwarning ("Property '%s' of the class '%s' have not the same type in the 2 sides (%d %d)", (*it).second[j].Name, (*it).first, (*it).second[j].Type, (*res).second.Instance->Prop[k]->Type);
+						nlwarning ("Property '%s' of the class '%s' have not the same type in the 2 sides (%d %d)", (*it).second[j].Name.c_str(), (*it).first, (*it).second[j].Type, (*res).second.Instance->Prop[k]->Type);
 					}
 					break;
 				}
@@ -190,7 +190,7 @@ void CTransportClass::displayLocalRegisteredClass ()
 	}
 }
 
-void cbReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
+void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 {
 	nlinfo ("cbReceiveMessage");
 
@@ -210,7 +210,7 @@ void cbReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 	(*it).second.Instance->read (name, (uint8)sid);
 }
 
-void cbReceiveOtherSideClass (CMessage &msgin, const string &name, uint16 sid)
+void cbTCReceiveOtherSideClass (CMessage &msgin, const string &name, uint16 sid)
 {
 	nlinfo ("cbReceiveOtherSideClass");
 
@@ -249,11 +249,11 @@ void cbReceiveOtherSideClass (CMessage &msgin, const string &name, uint16 sid)
 
 static TUnifiedCallbackItem CallbackArray[] =
 {
-	{ "CT_LRC", cbReceiveOtherSideClass },
-	{ "CT_MSG", cbReceiveMessage },
+	{ "CT_LRC", cbTCReceiveOtherSideClass },
+	{ "CT_MSG", cbTCReceiveMessage },
 };
 
-static void cbUpService (const std::string &serviceName, uint16 sid, void *arg)
+void cbTCUpService (const std::string &serviceName, uint16 sid, void *arg)
 {
 	nlinfo("CTransportClass Service %s %d is up", serviceName.c_str(), sid);
 	nlassert (sid < 256);
@@ -281,7 +281,7 @@ void CTransportClass::init ()
 	DummyProp[PropDouble] =  new CTransportClass::CRegisteredProp<double>;
 
 	// we have to know when a service comes, so add callback (put the callback before all other one because we have to send this message first)
-	CUnifiedNetwork::getInstance()->setServiceUpCallback("*", cbUpService, NULL, false);
+	CUnifiedNetwork::getInstance()->setServiceUpCallback("*", cbTCUpService, NULL, false);
 }
 
 void CTransportClass::release ()

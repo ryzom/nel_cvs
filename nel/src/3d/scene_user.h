@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.40 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: scene_user.h,v 1.41 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,8 @@ protected:
 		UInstanceGroup	*IGToLoad;
 		UInstanceGroup	**CallerPtr;
 		NLMISC::CVector Offset;
-		CWaitingIG(UInstanceGroup **callerPtr, const NLMISC::CVector &offset)	: IGToLoad(NULL), CallerPtr(callerPtr), Offset(offset)
+		uint			SelectedTexture;
+		CWaitingIG(UInstanceGroup **callerPtr, const NLMISC::CVector &offset, uint selectedTexture)	: IGToLoad(NULL), CallerPtr(callerPtr), Offset(offset), SelectedTexture(selectedTexture)
 		{}
 	};	
 	//
@@ -139,10 +140,11 @@ public:
 	virtual	void			deleteCamera(UCamera *cam);
 
 	virtual	UInstance		*createInstance(const std::string &shapeName);
-	virtual	void			createInstanceAsync(const std::string &shapeName, UInstance**ppInstance);
+	virtual	void			createInstanceAsync(const std::string &shapeName, UInstance**ppInstance, const NLMISC::CVector &position);
 	virtual	void			deleteInstance(UInstance *inst);
 
-	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset);
+	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset, 
+														uint selectedTexture);
 
 	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG);
 

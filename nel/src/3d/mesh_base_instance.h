@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.23 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: mesh_base_instance.h,v 1.24 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,7 +165,7 @@ public:
 	 *	are ready
 	 *	no op if not in async texture mode.
 	 */
-	void			startAsyncTextureLoading();
+	void			startAsyncTextureLoading(const NLMISC::CVector &position);
 	/**	return true if all the async textures of the instances are uploaded.
 	 *	if was not ready before, this swap the 
 	 *	return always true if not in async texture mode, or if startAsyncTextureLoading() has not been called

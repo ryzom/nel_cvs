@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.11 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: zone_manager.cpp,v 1.12 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,10 +45,7 @@ namespace NL3D
 // ------------------------------------------------------------------------------------------------
 CZoneManager::CZoneManager()
 {
-	_Zone = NULL;
-	_AddingZone= false;
 	_RemovingZone= false;
-	_WorkInProgress = false;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -80,8 +77,7 @@ uint CZoneManager::getNumZoneLeftToLoad ()
 // ------------------------------------------------------------------------------------------------
 void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 {
-	_WorkInProgress = true;
-	if ((_AddingZone) || (_RemovingZone)) return;
+	if (_RemovingZone) return;
 
 	// Obtain the new set of zones around
 	if ((x != _LastX) || (y != _LastY))
@@ -131,42 +127,66 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 
 		if (!bFound)
 		{
-			// We have to load this zone ! and return because only one load at a time
-			_AddingZone = true;
-			CAsyncFileManager &rAFM = CAsyncFileManager::getInstance();
-			_ZoneToAddName = getZoneNameFromId(nZone);
-			_ZoneToAddId = nZone;
-			rAFM.addTask (new CZoneLoadingTask(_ZoneToAddName, &_Zone) );
-			return;
+			// Already loading ?
+			std::list<CLoadingZone>::iterator ite = _LoadingZones.begin ();
+			while (ite != _LoadingZones.end())
+			{
+				if (ite->ZoneToAddId == nZone)
+					break;
+
+				// Next loading zone
+				ite++;
+			}
+
+			// Not loading ?
+			if (ite == _LoadingZones.end())
+			{
+				// Add a new zone to load
+				_LoadingZones.push_back(CLoadingZone ());
+				CLoadingZone &newZone = _LoadingZones.back();
+				newZone.ZoneToAddName = getZoneNameFromId(nZone);
+				newZone.ZoneToAddId = nZone;
+				newZone.Zone = NULL;
+				
+				// We have to load this zone ! and return because only one load at a time
+				CAsyncFileManager &rAFM = CAsyncFileManager::getInstance();
+
+				// Make a position
+				uint x, y;
+				getZonePos (newZone.ZoneToAddId, x, y);
+				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, CVector ((float)x, -(float)y, 0)));
+			}
 		}
 	}
-	_WorkInProgress = false;
 }
 
 // ------------------------------------------------------------------------------------------------
 bool CZoneManager::isWorkComplete (CZoneManager::SZoneManagerWork &rWork)
 {
-	// Check if the work is a loading
-	if (_AddingZone)
+	// Check if there is someting to add
+	std::list<CLoadingZone>::iterator ite = _LoadingZones.begin ();
+	while (ite != _LoadingZones.end())
 	{
-		if (_Zone != NULL)
+		// Loaded ?
+		if (ite->Zone)
 		{
-			_AddingZone= false;
 			rWork.ZoneAdded = true;
-			rWork.NameZoneAdded = _ZoneToAddName;
+			rWork.NameZoneAdded = ite->ZoneToAddName;
 			rWork.ZoneRemoved = false;
 			rWork.IdZoneToRemove = 0;
 			rWork.NameZoneRemoved = "";
-			rWork.Zone = const_cast<CZone*>(_Zone);
-			_LoadedZones.push_back (_ZoneToAddId);
+			rWork.Zone = const_cast<CZone*>(ite->Zone);
+			_LoadedZones.push_back (ite->ZoneToAddId);
+
+			// Remove from loading zone
+			_LoadingZones.erase(ite);
 			return true;
 		}
-		else
-		{
-			return false;
-		}
 
+		// Next zone
+		ite++;
 	}
+
 	if (_RemovingZone)
 	{
 		_RemovingZone = false;
@@ -188,6 +208,7 @@ bool CZoneManager::isWorkComplete (CZoneManager::SZoneManagerWork &rWork)
 		rWork.Zone = NULL;
 		return true;
 	}
+
 	return false;
 }
 
@@ -196,11 +217,12 @@ bool CZoneManager::isWorkComplete (CZoneManager::SZoneManagerWork &rWork)
 // ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
-CZoneLoadingTask::CZoneLoadingTask(const std::string &sZoneName, TVolatileZonePtr *ppZone)
+CZoneLoadingTask::CZoneLoadingTask(const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &position)
 {
 	*ppZone = NULL;
 	_Zone = ppZone;
 	_ZoneName = sZoneName;
+	Position = position;
 }
 
 // ------------------------------------------------------------------------------------------------

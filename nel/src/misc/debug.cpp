@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.70 2003/04/16 13:54:33 lecroart Exp $
+ * $Id: debug.cpp,v 1.71 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,6 +198,7 @@ void initDebug2 (bool logInFile)
 
 //
 //
+
 //
 
 static DWORD __stdcall GetModuleBase(HANDLE hProcess, DWORD dwReturnAddress)

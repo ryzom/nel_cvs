@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.13 2003/03/11 09:42:50 berenguier Exp $
+ * $Id: shape.h,v 1.14 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,7 +100,7 @@ public:
 
 	/** flush textures used by this shape.
 	 */
-	virtual void				flushTextures (IDriver &driver)=0;
+	virtual void				flushTextures (IDriver &driver, uint selectedTexture)=0;
 
 	/** return the bounding box of the shape. Default is to return Null bbox.
 	 */

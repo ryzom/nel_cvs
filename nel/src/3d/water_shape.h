@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.12 2003/03/31 10:31:39 vizerie Exp $
+ * $Id: water_shape.h,v 1.13 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -111,7 +111,7 @@ public:
 	virtual float				getNumTriangles (float distance);
 
 	/// inherited from ishape
-	virtual void				flushTextures (IDriver &driver);
+	virtual void				flushTextures (IDriver &driver, uint selectedTexture);
 
 
 	///\name Geometry setup
@@ -282,7 +282,7 @@ public:
 	virtual float				getNumTriangles (float distance) { return 0; }
 
 	/// inherited from ishape
-	virtual void				flushTextures (IDriver &driver) {}
+	virtual void				flushTextures (IDriver &driver, uint selectedTexture) {}
 
 
 	/// set the period for this wave maker

@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * <File description>
  *
- * $Id: task_manager.cpp,v 1.10 2003/05/09 12:46:07 corvazier Exp $
+ * $Id: task_manager.cpp,v 1.11 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@ CTaskManager::CTaskManager() : _RunningTask (""), _TaskQueue (""), _DoneTaskQueu
 	currentTask.value () = "";
 	_Thread = IThread::create(this);
 	_Thread->start();
+	_ChangePriorityCallback = NULL;
 }
 
 /*
@@ -60,19 +61,37 @@ CTaskManager::~CTaskManager()
 void CTaskManager::run(void)
 {
 	IRunnable *runnableTask;
+	float priorityTask;
 	while(_ThreadRunning)
 	{
 		{
-			CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+			CSynchronized<list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
 			if(acces.value().empty())
 			{
 				runnableTask = NULL;
 			}
 			else
 			{
+				// Update task priorities
+				changeTaskPriority ();
+
+				// Get the best task
+				list<CWaitingTask> &taskList = acces.value();
+				list<CWaitingTask>::iterator ite = taskList.begin();
+				list<CWaitingTask>::iterator bestIte = ite;
+				while (ite != taskList.end())
+				{
+					if (ite->Priority < bestIte->Priority)
+						bestIte = ite;
+					
+					// Next task;
+					ite++;
+				}
+
 				_IsTaskRunning = true;
-				runnableTask = acces.value().front();
-				acces.value().pop_front();
+				runnableTask = bestIte->Task;
+				priorityTask = bestIte->Priority;
+				taskList.erase (bestIte);
 			}
 		}
 		if(runnableTask)
@@ -81,18 +100,14 @@ void CTaskManager::run(void)
 				CSynchronized<string>::CAccessor currentTask(&_RunningTask);
 				string temp;
 				runnableTask->getName(temp);
-				currentTask.value () = temp;
+				currentTask.value () = temp + " " + toString (priorityTask);
 			}
-			string taskName;
-			runnableTask->getName (taskName);
 			runnableTask->run();
 			{
 				CSynchronized<string>::CAccessor currentTask(&_RunningTask);
-				currentTask.value () = "";
-			}
-			{
 				CSynchronized<list<string> >::CAccessor doneTask(&_DoneTaskQueue);
-				doneTask.value().push_front (taskName);
+				doneTask.value().push_front (currentTask.value ());
+				currentTask.value () = "";
 				if (doneTask.value().size () > NLMISC_DONE_TASK_SIZE)
 					doneTask.value().resize (NLMISC_DONE_TASK_SIZE);
 			}
@@ -108,19 +123,19 @@ void CTaskManager::run(void)
 }
 
 // Add a task to TaskManager
-void CTaskManager::addTask(IRunnable *r)
+void CTaskManager::addTask(IRunnable *r, float priority)
 {
-	CSynchronized<std::list<IRunnable *> >::CAccessor acces(&_TaskQueue);
-	acces.value().push_back(r);
+	CSynchronized<std::list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
+	acces.value().push_back(CWaitingTask(r, priority));
 }
 
 /// Delete a task, only if task is not running, return true if found and deleted
 bool CTaskManager::deleteTask(IRunnable *r)
 {
-	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
-	for(list<IRunnable *>::iterator it = acces.value().begin(); it != acces.value().end(); it++)
+	CSynchronized<list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
+	for(list<CWaitingTask>::iterator it = acces.value().begin(); it != acces.value().end(); it++)
 	{
-		if(*it == r)
+		if(it->Task == r)
 		{
 			acces.value().erase(it);
 			return true;
@@ -132,7 +147,7 @@ bool CTaskManager::deleteTask(IRunnable *r)
 /// Task list size
 uint CTaskManager::taskListSize(void)
 {
-	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	CSynchronized<list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
 	return acces.value().size();
 }
 
@@ -148,10 +163,10 @@ void	CTaskManager::waitCurrentTaskToComplete ()
 void CTaskManager::dump (std::vector<std::string> &result)
 {
 	CSynchronized<string>::CAccessor accesCurrent(&_RunningTask);
-	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	CSynchronized<list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
 	CSynchronized<list<string> >::CAccessor accesDone(&_DoneTaskQueue);
 
-	const list<IRunnable *> &taskList = acces.value();
+	const list<CWaitingTask> &taskList = acces.value();
 	const list<string> &taskDone = accesDone.value();
 	const string &taskCurrent = accesCurrent.value();
 	
@@ -176,16 +191,54 @@ void CTaskManager::dump (std::vector<std::string> &result)
 	}
 
 	// Add the waiting strings
-	list<IRunnable *>::const_iterator ite = taskList.begin ();
+	list<CWaitingTask>::const_iterator ite = taskList.begin ();
 	while (ite != taskList.end ())
 	{
 		string name;
-		(*ite)->getName (name);
-		result.push_back ("Waiting : " + name);
+		ite->Task->getName (name);
+		result.push_back ("Waiting : " + name + " " + toString(ite->Priority));
 	
 		// Next task
 		ite++;
 	}
 }
+
+// ***************************************************************************
+
+uint CTaskManager::getNumWaitingTasks()
+{
+	CSynchronized<list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
+	return acces.value().size();
+}
+
+// ***************************************************************************
+
+void CTaskManager::changeTaskPriority ()
+{
+	if (_ChangePriorityCallback)
+	{
+		CSynchronized<list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
+		list<CWaitingTask> &taskList = acces.value();
+		
+		list<CWaitingTask>::iterator ite = taskList.begin();
+		while(ite != taskList.end())
+		{
+			// Get the new priority
+			ite->Priority = _ChangePriorityCallback->getTaskPriority(*(ite->Task));
+			
+			// Next task
+			ite++;
+		}
+	}
+}
+
+// ***************************************************************************
+
+void CTaskManager::registerTaskPriorityCallback (IChangeTaskPriority *callback)
+{
+	_ChangePriorityCallback = callback;
+}
+
+// ***************************************************************************
 
 } // NLMISC

@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.h
  *
- * $Id: seg_remanence_shape.h,v 1.4 2003/03/26 10:13:19 vizerie Exp $
+ * $Id: seg_remanence_shape.h,v 1.5 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -151,7 +151,7 @@ protected:
 	///\name from IShape
 	//@{
 		virtual void				render(IDriver *drv, CTransformShape *trans, bool opaquePass);	
-		virtual void				flushTextures (IDriver &driver);
+		virtual void				flushTextures (IDriver &driver, uint selectedTexture);
 		virtual	CTransformShape		*createInstance(CScene &scene);
 		virtual float				getNumTriangles (float distance);
 	//@}

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.29 2003/05/26 09:05:22 berenguier Exp $
+ * $Id: global_retriever.h,v 1.30 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "nel/misc/aabbox.h"
 #include "nel/misc/thread.h"
 #include "nel/misc/mem_stream.h"
+#include "nel/misc/task_manager.h"
 
 #include "pacs/local_retriever.h"
 #include "pacs/retriever_instance.h"
@@ -111,11 +112,9 @@ protected:
 	friend class CLrLoader;
 
 	// Lr async loader
-	class CLrLoader : public NLMISC::IRunnable
+	class CLrLoader : public NLMISC::IRunnablePos
 	{
 	public:
-		/// Idle state
-		volatile bool		Idle;
 		/// Finished task
 		volatile bool		Finished;
 		/// Finished successfully
@@ -124,22 +123,26 @@ protected:
 		uint				LrId;
 		/// Lr to load
 		std::string			LoadFile;
-		/// Loading buffer
-		NLMISC::CMemStream	Buffer;
 
+		/// Loading buffer
+		NLMISC::CMemStream					_Buffer;
+		
 		// valid states are:
 		// Idle==true && Finished==true
 		// Idle==false && Finished==false
 		// Idle==false && Finished==true
 
-		CLrLoader() : Idle(true), Finished(true) {}
+		CLrLoader(const NLMISC::CVector &position) : Finished(true) 
+		{
+			Position = position;
+		}
 
 		void	run();
 		void	getName (std::string &result) const;
 	};
 
-	CLrLoader								_LrLoader;
-
+	std::list<CLrLoader>					_LrLoaderList;
+	
 private:
 	///
 	mutable CCollisionSurfaceTemp			_InternalCST;

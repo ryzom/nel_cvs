@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.31 2003/03/20 17:53:40 lecroart Exp $
+ * $Id: file.cpp,v 1.32 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,11 +32,18 @@
 
 using namespace std;
 
+#define NLMISC_DONE_FILE_OPENED 40
+
 namespace NLMISC
 {
 
 uint32 CIFile::_NbBytesSerialized = 0;
 uint32 CIFile::_NbBytesLoaded = 0;
+uint32 CIFile::_ReadFromFile = 0;
+uint32 CIFile::_ReadingFromFile = 0;
+uint32 CIFile::_FileOpened = 0;
+uint32 CIFile::_FileRead = 0;
+CSynchronized<std::list<std::string> > CIFile::_OpenedFiles = CSynchronized<std::list<std::string> >("");
 
 // ======================================================================================================
 CIFile::CIFile() : IStream(true)
@@ -83,7 +90,11 @@ void		CIFile::loadIntoCache()
 	_Cache = new uint8[_FileSize];
 	if(!_IsAsyncLoading)
 	{
-		fread (_Cache, _FileSize, 1, _F);
+		_ReadingFromFile += _FileSize;
+		int read = fread (_Cache, _FileSize, 1, _F);
+		_FileRead++;
+		_ReadingFromFile -= _FileSize;
+		_ReadFromFile += read * _FileSize;
 	}
 	else
 	{
@@ -94,7 +105,11 @@ void		CIFile::loadIntoCache()
 			{
 				sint	n= READPACKETSIZE-_NbBytesLoaded;
 				n= max(n, 1);
-				fread (_Cache+index, n, 1, _F);
+				_ReadingFromFile += n;
+				int read = fread (_Cache+index, n, 1, _F);
+				_FileRead++;
+				_ReadingFromFile -= n;
+				_ReadFromFile += read * n;
 				index+= n;
 
 				nlSleep (INTERPACKETSLEEP);
@@ -103,7 +118,11 @@ void		CIFile::loadIntoCache()
 			else
 			{
 				uint	n= _FileSize-index;
-				fread (_Cache+index, n, 1, _F);
+				_ReadingFromFile += n;
+				int read = fread (_Cache+index, n, 1, _F);
+				_FileRead++;
+				_ReadingFromFile -= n;
+				_ReadFromFile += read * n;
 				_NbBytesLoaded+= n;
 				index+= n;
 			}
@@ -115,6 +134,15 @@ void		CIFile::loadIntoCache()
 // ======================================================================================================
 bool		CIFile::open(const std::string &path, bool text)
 {
+	// Log opened files
+	{
+		CSynchronized<list<string> >::CAccessor fileOpened(&_OpenedFiles);
+		fileOpened.value().push_front (path);
+		if (fileOpened.value().size () > NLMISC_DONE_FILE_OPENED)
+			fileOpened.value().resize (NLMISC_DONE_FILE_OPENED);
+		_FileOpened++;
+	}
+
 	close();
 
 	// can't open empty filename
@@ -348,7 +376,13 @@ void		CIFile::serialBuffer(uint8 *buf, uint len) throw(EReadError)
 	}
 	else
 	{
-		if (fread(buf, 1, len, _F) < len)
+		int read;
+		_ReadingFromFile += len;
+		read=fread(buf, 1, len, _F);
+		_FileRead++;
+		_ReadingFromFile -= len;
+		_ReadFromFile += read * 1;
+		if (read < (int)len)
 			throw EReadError(_FileName);
 		_ReadPos += len;
 	}
@@ -415,6 +449,28 @@ void	CIFile::allowBNPCacheFileOnOpen(bool newState)
 	_AllowBNPCacheFileOnOpen= newState;
 }
 
+
+// ======================================================================================================
+void	CIFile::dump (std::vector<std::string> &result)
+{
+	CSynchronized<list<string> >::CAccessor acces(&_OpenedFiles);
+	
+	const list<string> &openedFile = acces.value();
+	
+	// Resize the destination array
+	result.clear ();
+	result.reserve (openedFile.size ());
+	
+	// Add the waiting strings
+	list<string>::const_reverse_iterator ite = openedFile.rbegin ();
+	while (ite != openedFile.rend ())
+	{
+		result.push_back (*ite);
+		
+		// Next task
+		ite++;
+	}
+}
 
 // ======================================================================================================
 // ======================================================================================================

@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.7 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: zone_manager.h,v 1.8 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,6 @@
 #include <map>
 #include "nel/misc/types_nl.h"
 #include "3d/zone.h"
-//#include "nel/misc/task_manager.h"
 
 #include "3d/async_file_manager_3d.h"
 #include "3d/zone_search.h"
@@ -87,11 +86,11 @@ public:
 	/// If a work is currently completed remove it and began another one
 	void checkZonesAround (uint x, uint y, uint area);
 
-	/// Are we currently working in the background ?
-	bool isWorking () { return _WorkInProgress; }
-
 	/// Is a work has been completed ? 
 	bool isWorkComplete (SZoneManagerWork &rWork);
+
+	/// Does the manager is loading ?
+	bool isLoading () const {return _LoadingZones.size () != 0;}
 
 	/// Return the count of zone left to load
 	uint getNumZoneLeftToLoad ();
@@ -111,19 +110,27 @@ private:
 	/// Path for zone loading
 	std::string _zonePath;
 
-	bool _WorkInProgress;
-
 	std::vector<uint16> _LoadedZones;
 
 	std::vector<uint16> _ZoneList; // Zone set at a given position
 	uint32 _LastX, _LastY;
 
-	/// Do we are currently loading ?
-	bool _AddingZone;
-	uint16 _ZoneToAddId;
-	std::string _ZoneToAddName;
-	// Loading Task - Inter-Thread values
-	TVolatileZonePtr	_Zone;
+	// Object for a zone loading process
+	class CLoadingZone
+	{
+	public:
+		// Zone ID
+		uint16				ZoneToAddId;
+		
+		// Zone name
+		std::string			ZoneToAddName;
+
+		// The pointer on the loaded zone
+		TVolatileZonePtr	Zone;
+	};
+
+	// The synchronized list of zone waiting to be loaded
+	std::list<CLoadingZone> _LoadingZones;
 
 	// Removing Task
 	bool _RemovingZone;
@@ -138,11 +145,11 @@ private:
  * \date 2000
  * sa See Also, CZoneManager, CTaskManager
  */
-class CZoneLoadingTask : public NLMISC::IRunnable
+class CZoneLoadingTask : public NLMISC::IRunnablePos
 {
 public:
 	/// Constructor
-	CZoneLoadingTask (const std::string &sZoneName, TVolatileZonePtr *ppZone);
+	CZoneLoadingTask (const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &position);
 
 	/// Runnable Task
 	void run (void);

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.36 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: u_scene.h,v 1.37 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,7 +136,7 @@ public:
 	/** Same as createInstance but the instance is loaded asynchronously.
 	 * You must poll to know if the instance if created by calling render()
 	 */
-	virtual	void			createInstanceAsync(const std::string &shapeName,UInstance**ppInstance)=0;
+	virtual	void			createInstanceAsync(const std::string &shapeName,UInstance**ppInstance, const NLMISC::CVector &position)=0;
 	/** Delete an instance via his pointer.
 	 */
 	virtual	void			deleteInstance(UInstance *inst)=0;
@@ -147,7 +147,8 @@ public:
 	  */
 	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup,														
 													    UInstanceGroup **pIG,
-														const NLMISC::CVector &offset
+														const NLMISC::CVector &offset,
+														uint selectedTexture
 													   ) = 0;
 	
 	/**	If we are adding the ig : stop loading and adding it to the scene

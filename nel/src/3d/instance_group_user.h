@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.25 2003/05/26 09:00:52 berenguier Exp $
+ * $Id: instance_group_user.h,v 1.26 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,10 +70,10 @@ private:
 	void setIGAddBeginCallback(IIGAddBegin *callback);
 
 	
-	void addToScene (class UScene& scene, UDriver *driver);
-	void addToScene (class CScene& scene, IDriver *driver);
+	void addToScene (class UScene& scene, UDriver *driver, uint selectedTexture);
+	void addToScene (class CScene& scene, IDriver *driver, uint selectedTexture);
 
-	void addToSceneAsync (class UScene& scene, UDriver *driver);
+	void addToSceneAsync (class UScene& scene, UDriver *driver, uint selectedTexture);
 	TState getAddToSceneState ();
 	void stopAddToSceneAsync ();
 

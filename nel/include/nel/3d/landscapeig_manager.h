@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.h
  * <File description>
  *
- * $Id: landscapeig_manager.h,v 1.7 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: landscapeig_manager.h,v 1.8 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,12 +33,16 @@
 
 #define NL3D_MEM_LANDSCAPE_IG						NL_ALLOC_CONTEXT( 3dLdIg )
 
+namespace NLMISC
+{
+class IProgressCallback;
+}
+
 namespace NL3D 
 {
-
-
 class	UInstanceGroup;
 class	UScene;
+class	UDriver;
 
 
 // ***************************************************************************
@@ -60,7 +64,7 @@ public:
 	 *	the file is just a list of filename eg: "150_EM.ig", separated with return.
 	 *	At this time, All UInstanceGroup are loaded, but none are addToScene() ed.
 	 */
-	void	initIG(UScene *scene, const std::string &igDesc);
+	void	initIG(UScene *scene, const std::string &igDesc, UDriver *driver, uint selectedTexture, NLMISC::IProgressCallback *callBack);
 
 	/** load of an instanceGroup of a zone. name is like "150_EM". no-op if "".
 	 *	If exist (see initIG), The instanceGroup is added to the scene.
@@ -119,13 +123,15 @@ private:
 		// delete the ig.
 		void	release();
 	};
+
+	typedef	std::map<std::string, void*>	TShapeMap;
 	typedef	std::map<std::string, CInstanceGroupElement>	TZoneInstanceGroupMap;
 	typedef	TZoneInstanceGroupMap::iterator					ItZoneInstanceGroupMap;
 	typedef	TZoneInstanceGroupMap::const_iterator			ConstItZoneInstanceGroupMap;
 	TZoneInstanceGroupMap			_ZoneInstanceGroupMap;
+	TShapeMap						_ShapeAdded;
 
 	std::string		translateName(const std::string &name) const;
-
 };
 
 

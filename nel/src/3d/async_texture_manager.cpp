@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * <File description>
  *
- * $Id: async_texture_manager.cpp,v 1.6 2002/11/13 17:53:20 berenguier Exp $
+ * $Id: async_texture_manager.cpp,v 1.7 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -148,7 +148,7 @@ void			CAsyncTextureManager::setupMaxTotalTextureSize(uint maxText)
 
 
 // ***************************************************************************
-uint			CAsyncTextureManager::addTextureRef(const string &textNameNotLwr, CMeshBaseInstance *instance)
+uint			CAsyncTextureManager::addTextureRef(const string &textNameNotLwr, CMeshBaseInstance *instance, const NLMISC::CVector &position)
 {
 	uint	ret;
 
@@ -207,7 +207,7 @@ uint			CAsyncTextureManager::addTextureRef(const string &textNameNotLwr, CMeshBa
 			// start to load a small DDS version if possible
 			text->Texture->setMipMapSkipAtLoad(_BaseLodLevel);
 			// load it async.
-			CAsyncFileManager3D::getInstance().loadTexture(text->Texture, &text->Loaded);
+			CAsyncFileManager3D::getInstance().loadTexture(text->Texture, &text->Loaded, position);
 		}
 		// Add to a list so we can check each frame if it has ended.
 		_WaitingTextures.push_back(i);
@@ -624,14 +624,13 @@ bool			CAsyncTextureManager::validDXTCMipMap(ITexture *pText)
 		pText->getPixelFormat() == CBitmap::DXTC5 );
 }
 
-
 // ***************************************************************************
 void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 {
 	sint	i;
 
 	// the array to sort
-	static	vector<CTextureLod*>	lodArray;
+	static	vector<CTextureLodToSort>	lodArray;
 	lodArray.clear();
 	uint	reserveSize= 0;
 
@@ -651,7 +650,12 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 			for(uint j=0;j<text.Instances.size();j++)
 			{
 				float	instDist= text.Instances[j]->getAsyncTextureDistance();
-				text.MinDistance= min(text.MinDistance, instDist);
+				
+				if (instDist<text.MinDistance)
+				{
+					text.MinPosition = text.Instances[j]->getPos();
+					text.MinDistance = instDist;
+				}
 			}
 
 			// avoid /0
@@ -682,15 +686,17 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 			CTextureLod	*textLod= &text.HDLod;
 			textLod->Weight= (1<<textLod->Level) / text.MinDistance;
 			// add to array
-			lodArray.push_back(textLod);
+			CTextureLodToSort toSort;
+			toSort.Lod = textLod;
+			toSort.Position = text.MinPosition;
+			lodArray.push_back(toSort);
 		}
 	}
 
 
 	// sort
 	//=============
-	CPredTextLod	pred;
-	sort(lodArray.begin(), lodArray.end(), pred);
+	sort(lodArray.begin(), lodArray.end());
 
 
 	// Compute lod to load/unload
@@ -701,9 +707,9 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 	uint	currentLoadedSize= currentBaseSize;
 	for(i=lodArray.size()-1;i>=0;i--)
 	{
-		uint	lodSize= lodArray[i]->ExtraSize;
+		uint	lodSize= lodArray[i].Lod->ExtraSize;
 		currentWantedSize+= lodSize;
-		if(lodArray[i]->UpLoaded)
+		if(lodArray[i].Lod->UpLoaded)
 			currentLoadedSize+= lodSize;
 		// if > max allowed, stop the pivot here. NB: the pivot is included in the "must load them" part.
 		if(currentWantedSize > _MaxTotalTextureSize)
@@ -715,15 +721,15 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 	// continue to count currentLoadedSize
 	for(;i>=0;i--)
 	{
-		if(lodArray[i]->UpLoaded)
-			currentLoadedSize+= lodArray[i]->ExtraSize;
+		if(lodArray[i].Lod->UpLoaded)
+			currentLoadedSize+= lodArray[i].Lod->ExtraSize;
 	}
 	// save bench.
 	_LastTextureSizeGot= currentLoadedSize;
 
 
 	// if the loadedSize is inferior to the wanted size, we can load a new LOD
-	CTextureLod		*textLod= NULL;
+	CTextureLodToSort	*textLod= NULL;
 	bool			unload;
 	if(currentLoadedSize<currentWantedSize)
 	{
@@ -731,9 +737,9 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 		// search from end of the list to pivot (included), the first LOD (ie the most important) to load.
 		for(i=lodArray.size()-1;i>=(sint)pivot;i--)
 		{
-			if(!lodArray[i]->UpLoaded)
+			if(!lodArray[i].Lod->UpLoaded)
 			{
-				textLod= lodArray[i];
+				textLod= &(lodArray[i]);
 				break;
 			}
 		}
@@ -746,9 +752,9 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 		// search from start to pivot (exclued), the first LOD (ie the less important) to unload.
 		for(i=0;i<(sint)pivot;i++)
 		{
-			if(lodArray[i]->UpLoaded)
+			if(lodArray[i].Lod->UpLoaded)
 			{
-				textLod= lodArray[i];
+				textLod= &(lodArray[i]);
 				break;
 			}
 		}
@@ -764,29 +770,29 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 	if(!unload)
 	{
 		// create a new TextureFile, with no sharing system.
-		nlassert(textLod->Texture==NULL);
-		textLod->Texture= new CTextureFile;
+		nlassert(textLod->Lod->Texture==NULL);
+		textLod->Lod->Texture= new CTextureFile;
 		// Do not allow degradation.
-		textLod->Texture->setAllowDegradation(false);
-		textLod->Texture->enableSharing(false);
-		textLod->Texture->setFileName(textLod->TextureEntry->Texture->getFileName());
-		textLod->Texture->setMipMapSkipAtLoad(textLod->Level);
+		textLod->Lod->Texture->setAllowDegradation(false);
+		textLod->Lod->Texture->enableSharing(false);
+		textLod->Lod->Texture->setFileName(textLod->Lod->TextureEntry->Texture->getFileName());
+		textLod->Lod->Texture->setMipMapSkipAtLoad(textLod->Lod->Level);
 		// setup async loading
-		_CurrentTextureLodLoaded= textLod;
+		_CurrentTextureLodLoaded= textLod->Lod;
 		// load it async.
-		CAsyncFileManager3D::getInstance().loadTexture(textLod->Texture, &textLod->Loaded);
+		CAsyncFileManager3D::getInstance().loadTexture(textLod->Lod->Texture, &textLod->Lod->Loaded, textLod->Position);
 	}
 	else
 	{
 		// Swap now the lod.
-		nlassert(textLod->Texture!=NULL);
+		nlassert(textLod->Lod->Texture!=NULL);
 		// Swap the uploaded Driver Handle with the Main texture (ot get the Ugly one)
-		pDriver->swapTextureHandle(*textLod->Texture, *textLod->TextureEntry->Texture);
+		pDriver->swapTextureHandle(*textLod->Lod->Texture, *textLod->Lod->TextureEntry->Texture);
 		// Flag the Lod.
-		textLod->UpLoaded= false;
-		textLod->Loaded= false;
+		textLod->Lod->UpLoaded= false;
+		textLod->Lod->Loaded= false;
 		// Release completly the texture in driver. (SmartPtr delete)
-		textLod->Texture= NULL;
+		textLod->Lod->Texture= NULL;
 	}
 
 }

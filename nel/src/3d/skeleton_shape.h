@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * <File description>
  *
- * $Id: skeleton_shape.h,v 1.8 2002/03/21 16:07:51 berenguier Exp $
+ * $Id: skeleton_shape.h,v 1.9 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,7 +107,7 @@ public:
 	NLMISC_DECLARE_CLASS(CSkeletonShape);
 
 	/// flush textures used by this shape.
-	virtual void				flushTextures (IDriver &driver) {};
+	virtual void				flushTextures (IDriver &driver, uint selectedTexture) {};
 
 	// @}
 

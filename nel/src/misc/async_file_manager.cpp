@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.3 2003/05/09 12:46:07 corvazier Exp $
+ * $Id: async_file_manager.cpp,v 1.4 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,13 +71,13 @@ void CAsyncFileManager::addLoadTask(IRunnable *ploadTask)
 
 bool CAsyncFileManager::cancelLoadTask(const CAsyncFileManager::ICancelCallback &callback)
 {
-	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
-	list<IRunnable*> &rTaskQueue = acces.value ();
-	list<IRunnable*>::iterator it = rTaskQueue.begin();
+	CSynchronized<list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
+	list<CWaitingTask> &rTaskQueue = acces.value ();
+	list<CWaitingTask>::iterator it = rTaskQueue.begin();
 
 	while (it != rTaskQueue.end())
 	{
-		IRunnable *pR = *it;
+		IRunnable *pR = it->Task;
 
 		// check the task with the cancel callback.
 		if (callback.callback(pR))
@@ -169,13 +169,13 @@ void CAsyncFileManager::signal (bool *pSgn)
 
 void CAsyncFileManager::cancelSignal (bool *pSgn)
 {
-	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
-	list<IRunnable*> &rTaskQueue = acces.value ();
-	list<IRunnable*>::iterator it = rTaskQueue.begin();
+	CSynchronized<list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
+	list<CWaitingTask> &rTaskQueue = acces.value ();
+	list<CWaitingTask>::iterator it = rTaskQueue.begin();
 
 	while (it != rTaskQueue.end())
 	{
-		IRunnable *pR = *it;
+		IRunnable *pR = it->Task;
 		CSignal *pS = dynamic_cast<CSignal*>(pR);
 		if (pS != NULL)
 		{

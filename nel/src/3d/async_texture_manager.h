@@ -1,7 +1,7 @@
 /** \file async_texture_manager.h
  * <File description>
  *
- * $Id: async_texture_manager.h,v 1.4 2002/11/13 17:53:20 berenguier Exp $
+ * $Id: async_texture_manager.h,v 1.5 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -88,7 +88,7 @@ public:
 	 *	the file is entirely loaded and uploaded. The problem is that upload is not cut according to maxUpLoadPerFrame, so
 	 *	some freeze may occur.
 	 */
-	uint			addTextureRef(const std::string &textName, CMeshBaseInstance *instance);
+	uint			addTextureRef(const std::string &textName, CMeshBaseInstance *instance, const NLMISC::CVector &position);
 
 	/// release a texture-instance tuple. the texture is released if no more instance use it.
 	void			releaseTexture(uint id, CMeshBaseInstance *instance);
@@ -137,7 +137,6 @@ private:
 	
 	class	CTextureEntry;
 
-
 	// A Lod version of a texture entry.
 	class	CTextureLod : public CTextureBase
 	{
@@ -159,16 +158,16 @@ private:
 	};
 
 
-	class	CPredTextLod
+	struct CTextureLodToSort
 	{
-	public:
-		bool	operator()(CTextureLod *lod0, CTextureLod *lod1)
+		CTextureLod		*Lod;
+		CVector			Position;
+		bool			operator<(const CTextureLodToSort &other) const
 		{
-			return lod0->Weight<lod1->Weight;
+			return Lod->Weight<other.Lod->Weight;
 		}
 	};
-
-
+	
 	// A texture entry
 	class	CTextureEntry : public CTextureBase
 	{
@@ -192,6 +191,8 @@ private:
 		std::vector<CMeshBaseInstance*>		Instances;
 		// min distance of all Instances.
 		float								MinDistance;
+		// min position.
+		NLMISC::CVector						MinPosition;
 		// with all mipmaps loaded, what place this takes.
 		uint								TotalTextureSizeAsked;
 

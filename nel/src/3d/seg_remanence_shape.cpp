@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.6 2003/03/26 10:13:19 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.7 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -131,9 +131,9 @@ void CSegRemanenceShape::render(IDriver *drv, CTransformShape *trans, bool opaqu
 
 
 //===========================================================
-void CSegRemanenceShape::flushTextures(IDriver &driver)
+void CSegRemanenceShape::flushTextures(IDriver &driver, uint selectedTexture)
 {
-	_Mat.flushTextures(driver);
+	_Mat.flushTextures(driver, selectedTexture);
 }
 
 //===========================================================

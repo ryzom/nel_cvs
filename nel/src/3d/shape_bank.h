@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.9 2003/01/23 15:05:24 corvazier Exp $
+ * $Id: shape_bank.h,v 1.10 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,7 @@ public:
 	/** Load the corresponding file from disk asynchronously and add it to the bank.
 	 * The driver passed to this function is used to know if we have to load the textures.
 	 */
-	void			loadAsync (const std::string &shapeName, IDriver *pDriver, bool *bSignal=NULL);
+	void			loadAsync (const std::string &shapeName, IDriver *pDriver, const NLMISC::CVector &position, bool *bSignal=NULL);
 	void			cancelLoadAsync (const std::string &shapeName);
 	bool			isShapeWaiting ();
 	/// processWaitingShapes must be done one time per frame

@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.11 2002/11/20 16:59:23 vizerie Exp $
+ * $Id: flare_shape.cpp,v 1.12 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -137,14 +137,17 @@ void				CFlareShape::getAABBox(NLMISC::CAABBox &bbox) const
 }
 
 
-void				CFlareShape::flushTextures (IDriver &driver)
+void				CFlareShape::flushTextures (IDriver &driver, uint selectedTexture)
 {
 	// Flush each texture
 	for (uint tex=0; tex<MaxFlareNum; tex++)
 	{
 		if (_Tex[tex] != NULL)
 		{
-			/// Flush texture
+			// Select the good texture
+			_Tex[tex]->selectTexture (selectedTexture);
+
+			// Flush texture
 			driver.setupTexture (*_Tex[tex]);
 		}
 	}

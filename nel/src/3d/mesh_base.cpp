@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.27 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: mesh_base.cpp,v 1.28 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -389,7 +389,7 @@ void	CMeshBase::applyMaterialUsageOptim(const std::vector<bool> &materialUsed, s
 
 
 // ***************************************************************************
-void	CMeshBase::flushTextures(IDriver &driver)
+void	CMeshBase::flushTextures(IDriver &driver, uint selectedTexture)
 {
 	// Mat count
 	uint matCount=_Materials.size();
@@ -398,7 +398,7 @@ void	CMeshBase::flushTextures(IDriver &driver)
 	for (uint mat=0; mat<matCount; mat++)
 	{
 		/// Flush material textures
-		_Materials[mat].flushTextures (driver);
+		_Materials[mat].flushTextures (driver, selectedTexture);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.18 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: instance_user.cpp,v 1.19 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,7 +148,7 @@ void		CInstanceUser::startAsyncTextureLoading()
 	NL3D_MEM_INSTANCE
 	nlassert(_Instance->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
-	mbi->startAsyncTextureLoading();
+	mbi->startAsyncTextureLoading(getPos());
 }
 // ***************************************************************************
 bool		CInstanceUser::isAsyncTextureReady() 

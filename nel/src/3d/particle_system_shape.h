@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.17 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: particle_system_shape.h,v 1.18 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,8 +138,8 @@ public:
 	  */
 	CParticleSystem *instanciatePS(CScene &scene);
 protected:
-	/// inherited from ishape
-	virtual void				flushTextures (IDriver &driver) {}		
+	/// inherited from ishape \todo nico : implement flush texture for PS
+	virtual void				flushTextures (IDriver &driver, uint selectedTexture) {}		
 
 protected:
 

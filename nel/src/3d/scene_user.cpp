@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.40 2003/04/23 12:45:30 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.41 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -419,7 +419,7 @@ void CSceneUser::updateWaitingIG()
 				{
 					case UInstanceGroup::StateNotAdded:
 						// start loading										
-						it->IGToLoad->addToSceneAsync(*this, _DriverUser);
+						it->IGToLoad->addToSceneAsync(*this, _DriverUser, it->SelectedTexture);
 					break;
 					case UInstanceGroup::StateAdded:
 						it->IGToLoad->setPos(it->Offset);
@@ -699,13 +699,13 @@ UInstance		*CSceneUser::createInstance(const std::string &shapeName)
 }
 
 
-void CSceneUser::createInstanceAsync(const std::string &shapeName, UInstance**ppInstance)
+void CSceneUser::createInstanceAsync(const std::string &shapeName, UInstance**ppInstance, const NLMISC::CVector &position)
 {
 	NL3D_MEM_INSTANCE
 	NL3D_HAUTO_CREATE_INSTANCE;
 
 	_WaitingInstances[ppInstance] = NULL;
-	_Scene.createInstanceAsync(shapeName,&_WaitingInstances[ppInstance]);
+	_Scene.createInstanceAsync(shapeName,&_WaitingInstances[ppInstance], position);
 //		CTransform	*model= _Scene.createInstance(shapeName);
 	// If not found, return NULL.
 //		if(model==NULL)
@@ -728,12 +728,13 @@ void			CSceneUser::deleteInstance(UInstance *inst)
 }
 
 
-void CSceneUser::createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset)
+void CSceneUser::createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset, 
+														uint selectedTexture)
 {
 	NL3D_MEM_IG
 	NL3D_HAUTO_ASYNC_IG;
 
-	_WaitingIGs.push_front(CWaitingIG(pIG, offset));
+	_WaitingIGs.push_front(CWaitingIG(pIG, offset, selectedTexture));
 	UInstanceGroup::createInstanceGroupAsync(instanceGroup, &(_WaitingIGs.begin()->IGToLoad));
 	// this list updat will be performed at each render, see updateWaitingIG
 }

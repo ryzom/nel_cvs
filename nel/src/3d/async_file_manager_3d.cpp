@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager_3d.cpp,v 1.2 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.3 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,9 +78,9 @@ void CAsyncFileManager3D::terminate ()
 
 // ***************************************************************************
 	
-void CAsyncFileManager3D::loadMesh(const std::string& meshName, IShape **ppShp, IDriver *pDriver)
+void CAsyncFileManager3D::loadMesh(const std::string& meshName, IShape **ppShp, IDriver *pDriver, const CVector &position)
 {
-	CAsyncFileManager::getInstance().addLoadTask(new CMeshLoad(meshName, ppShp, pDriver));
+	CAsyncFileManager::getInstance().addLoadTask(new CMeshLoad(meshName, ppShp, pDriver, position));
 }
 
 // ***************************************************************************
@@ -135,10 +135,10 @@ void CAsyncFileManager3D::loadIGUser (const std::string& IGName, UInstanceGroup 
 }
 
 // ***************************************************************************
-void CAsyncFileManager3D::loadTexture (CTextureFile *textureFile, bool *pSgn)
+void CAsyncFileManager3D::loadTexture (CTextureFile *textureFile, bool *pSgn, const NLMISC::CVector &position)
 {
 	nlassert(textureFile && pSgn);
-	CAsyncFileManager::getInstance().addLoadTask(new CTextureLoad(textureFile, pSgn));
+	CAsyncFileManager::getInstance().addLoadTask(new CTextureLoad(textureFile, pSgn, position));
 }
 
 // Callback class for canceling a load texture 
@@ -215,11 +215,12 @@ void CAsyncFileManager3D::cancelSignal (bool *pSgn)
 // MeshLoad
 // ***************************************************************************
 
-CAsyncFileManager3D::CMeshLoad::CMeshLoad(const std::string& sMeshName, IShape** ppShp, IDriver *pDriver)
+CAsyncFileManager3D::CMeshLoad::CMeshLoad(const std::string& sMeshName, IShape** ppShp, IDriver *pDriver, const CVector &position)
 {
 	_pDriver = pDriver;
 	MeshName = sMeshName;
 	_ppShp = ppShp;
+	Position = position;
 }
 
 // ***************************************************************************

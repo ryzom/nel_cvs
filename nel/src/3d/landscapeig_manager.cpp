@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.12 2003/04/03 13:01:18 corvazier Exp $
+ * $Id: landscapeig_manager.cpp,v 1.13 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,9 @@
 #include "std3d.h"
 
 #include "nel/3d/landscapeig_manager.h"
-#include "nel/3d/u_scene.h"
-#include "nel/3d/u_instance_group.h"
+#include "3d/scene_user.h"
+#include "3d/instance_group_user.h"
+#include "3d/shape.h"
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
@@ -85,7 +86,8 @@ CLandscapeIGManager::~CLandscapeIGManager()
 		throw Exception("CLandscapeIGManager not reseted");
 }
 // ***************************************************************************
-void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
+void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc, UDriver *driver, uint selectedTexture, 
+									NLMISC::IProgressCallback *callBack)
 {
 	NL3D_MEM_LANDSCAPE_IG
 	nlassert(scene);
@@ -101,6 +103,9 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 
 	CIFile file;
 
+	// Shape to add should be empty !
+	nlassert(_ShapeAdded.empty ());
+	
 	// if loading ok.
 	//if(file.is_open())
 	if (file.open (igFile))
@@ -128,6 +133,44 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 						string	tokId= token;
 						strupr(tokId);
 						_ZoneInstanceGroupMap[tokId]= CInstanceGroupElement(ig, token);
+
+						// Add a reference on the shapes
+						CInstanceGroup &_ig = static_cast<CInstanceGroupUser*>(ig)->getInternalIG();
+						CScene &_scene = static_cast<CSceneUser*>(scene)->getScene();
+						uint i;
+						for (i=0; i<_ig.getNumInstance(); i++)
+						{
+							// Get the instance name
+							string shapeName;
+							_ig.getShapeName(i, shapeName);
+							if (!shapeName.empty ())
+							{
+								// Insert a new shape ?
+								if (_ShapeAdded.find(shapeName) == _ShapeAdded.end())
+								{
+									// Shape present ?
+									CShapeBank *shapeBank = _scene.getShapeBank();
+									IShape *shape = NULL;
+									if (shapeBank->isPresent (shapeName) == CShapeBank::NotPresent)
+										shapeBank->load (shapeName);
+									if (shapeBank->isPresent (shapeName) == CShapeBank::Present)
+										shape = shapeBank->addRef(shapeName);
+
+									// Shape loaded ?
+									if (shape)
+									{
+										// Insert the shape
+										CSmartPtr<IShape> *smartPtr = new CSmartPtr<IShape>;
+										*smartPtr = shape;
+										_ShapeAdded.insert (TShapeMap::value_type (shapeName, smartPtr));
+
+										// Flush the shape
+										IDriver	*_driver = static_cast<CDriverUser*>(driver)->getDriver();
+										shape->flushTextures(*_driver, selectedTexture);
+									}
+								}
+							}
+						}
 					}
 					else
 					{
@@ -294,6 +337,23 @@ void	CLandscapeIGManager::reset()
 		_ZoneInstanceGroupMap.erase(_ZoneInstanceGroupMap.begin());
 	}
 
+	// For all shape reference
+	TShapeMap::iterator ite = _ShapeAdded.begin ();
+	while (ite != _ShapeAdded.end())
+	{
+		// Unreference shape
+		CScene &_scene = static_cast<CSceneUser*>(_Scene)->getScene();
+		CSmartPtr<IShape> *smartPtr = (CSmartPtr<IShape> *)(ite->second);
+		IShape *shapeToRelease = *smartPtr;
+		*smartPtr = NULL;
+		_scene.getShapeBank()->release(shapeToRelease);
+		delete smartPtr;
+	
+		// Next
+		ite++;
+	}
+	_ShapeAdded.clear ();
+	
 	_Scene=NULL;
 }
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.100 2003/03/31 14:36:29 berenguier Exp $
+ * $Id: scene.cpp,v 1.101 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -470,7 +470,7 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 
 // ***************************************************************************
 
-void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pInstance)
+void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pInstance, const NLMISC::CVector &position)
 {
 	// We must attach a bank to the scene (a ShapeBank handle the shape caches and 
 	// the creation/deletion of the instances)
@@ -482,7 +482,7 @@ void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pIns
 	if (_ShapeBank->isPresent( shapeName ) != CShapeBank::Present)
 	{
 		// Load it from file asynchronously
-		_ShapeBank->loadAsync( strlwr(shapeName), getDriver() );
+		_ShapeBank->loadAsync( strlwr(shapeName), getDriver(), position );
 	}
 }
 
@@ -795,8 +795,8 @@ void		CScene::removeInstanceGroupForLightAnimation(CInstanceGroup *ig)
 {
 	nlassert( ig );
 	ItAnimatedIgSet		itIg= _AnimatedIgSet.find(ig);
-	nlassert( itIg != _AnimatedIgSet.end() );
-	_AnimatedIgSet.erase(itIg);
+	if ( itIg != _AnimatedIgSet.end() )
+		_AnimatedIgSet.erase(itIg);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.22 2003/03/25 16:04:45 cado Exp $
+ * $Id: file.h,v 1.23 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,23 @@ public:		// Advanced Usage.
 	bool eof ();
 
 	virtual void		serialBuffer(uint8 *buf, uint len)throw(EReadError);
+
+	/// \name Statistics
+	
+	/// Get the number of file open from the begining of the application. Files can be in a big file.
+	static uint32	getNumFileOpen() {return _FileOpened;}
+	
+	/// Get the number of read acces to a file.
+	static uint32	getNumFileRead() {return _FileRead;}
+	
+	/// Get the number of byte read from the file system since the application start.
+	static uint32	getReadFromFile() {return _ReadFromFile;}
+	
+	/// Get the number of byte being reading from the file system at the moment.
+	static uint32	getReadingFromFile() {return _ReadingFromFile;}
+	
+	/// Get the last 40 files opened. The files can be in a big file.
+	static void		dump (std::vector<std::string> &result);
 	
 protected:
 	virtual void		serialBit(bool &bit) throw(EReadError);
@@ -128,6 +145,14 @@ private:
 	// Async
 	static uint32 _NbBytesSerialized;
 	static uint32 _NbBytesLoaded;
+
+	// Stats
+	static uint32 _FileOpened;
+	static uint32 _FileRead;
+	static uint32 _ReadFromFile;
+	static uint32 _ReadingFromFile;
+	static CSynchronized<std::list<std::string> > _OpenedFiles;
+	
 	bool _IsAsyncLoading;
 
 	// Cache 

@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.25 2003/05/26 08:56:46 berenguier Exp $
+ * $Id: u_instance_group.h,v 1.26 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,8 +132,8 @@ public:
 	 * the shapes will be preloaded in this driver. If the pointer is NULL (default), textures
 	 * will ve loaded when the shape will be used.
 	 */
-	virtual void addToScene (class UScene& scene, UDriver *driver=NULL)=0;
-	virtual void addToSceneAsync (class UScene& scene, UDriver *driver=NULL)=0;
+	virtual void addToScene (class UScene& scene, UDriver *driver=NULL, uint selectedTexture=0)=0;
+	virtual void addToSceneAsync (class UScene& scene, UDriver *driver=NULL, uint selectedTexture=0)=0;
 	virtual void stopAddToSceneAsync ()=0;
 	virtual TState getAddToSceneState ()=0;
 

@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.24 2003/05/26 09:01:57 berenguier Exp $
+ * $Id: scene_group.h,v 1.25 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -232,13 +232,18 @@ public:
 	  * the shapes will be preloaded in this driver. If the pointer is NULL (default), textures
 	  * will ve loaded when the shape will be used.
 	  */
-	bool addToScene (CScene& scene, IDriver *driver=NULL);
-	bool addToSceneAsync (CScene& scene, IDriver *driver=NULL);
+	bool addToScene (CScene& scene, IDriver *driver=NULL, uint selectedTexture=0);
+	bool addToSceneAsync (CScene& scene, IDriver *driver=NULL, uint selectedTexture=0);
 	void stopAddToSceneAsync ();
 	TState getAddToSceneState ();
 
+	/**
+	  * Get the instance name to create as written in the instance group.
+	  */
+	void getShapeName (uint instanceIndex, std::string &shapeName) const;
+
 private:
-	bool addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driver);
+	bool addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driver, uint selectedTexture);
 
 public:
 	/// Remove all the instances from the scene
@@ -395,6 +400,7 @@ private:
 	TState		_AddToSceneState;
 	CScene		*_AddToSceneTempScene;
 	IDriver		*_AddToSceneTempDriver;
+	uint		_AddToSceneTempSelectTexture;
 	// @}
 
 	ITransformName       *_TransformName;

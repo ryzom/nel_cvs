@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.20 2003/03/31 10:27:19 vizerie Exp $
+ * $Id: material.h,v 1.21 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -461,7 +461,7 @@ public:
 	void					setStainedGlassWindow(bool val) { _StainedGlassWindow = val; }
 	
 	/// Flush textures. Force texture generation.
-	void					flushTextures (IDriver &driver);
+	void					flushTextures (IDriver &driver, uint selectedTexture);
 
 	void		serial(NLMISC::IStream &f);
 

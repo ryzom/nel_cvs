@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.82 2003/05/26 09:05:22 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.83 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2492,8 +2492,7 @@ bool NLPACS::CGlobalRetriever::testRaytrace (const CVectorD &v0, const CVectorD 
 }
 
 // ***************************************************************************
-// todo hulud remove
-extern bool totoDebug;
+
 void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float radius)
 {
 	NLPACS_HAUTO_REFRESH_LR_AROUND
@@ -2502,32 +2501,37 @@ void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float ra
 	if (_RetrieverBank->allLoaded())
 		return;
 
-	// finished loaded a lr, stream it into rbank
-	if (!_LrLoader.Idle)
+	std::list<CLrLoader>::iterator ite = _LrLoaderList.begin();
+	while (ite != _LrLoaderList.end())
 	{
-		if (!_LrLoader.Finished || !_LrLoader.Successful)
+		// Finished loaded a lr, stream it into rbank
+		if (ite->Finished && ite->Successful)
 		{
-//			nlSleep(0);
-			return;
+			if (!ite->_Buffer.isReading())
+				ite->_Buffer.invert();
+			
+			ite->_Buffer.resetBufPos();
+			
+			//		NLMEMORY::CheckHeap (true);
+			
+			const_cast<CRetrieverBank*>(_RetrieverBank)->loadRetriever(ite->LrId, ite->_Buffer);
+			
+			//		NLMEMORY::CheckHeap (true);
+			
+			ite->_Buffer.clear();
+			
+			//		NLMEMORY::CheckHeap (true);
+			
+			nlinfo("Lr '%s' loading task complete", ite->LoadFile.c_str());
+
+			// Remove this entry
+			_LrLoaderList.erase (ite);
+
+			break;
 		}
-
-		if (!_LrLoader.Buffer.isReading())
-			_LrLoader.Buffer.invert();
-
-		_LrLoader.Buffer.resetBufPos();
-
-//		NLMEMORY::CheckHeap (true);
-
-		const_cast<CRetrieverBank*>(_RetrieverBank)->loadRetriever(_LrLoader.LrId, _LrLoader.Buffer);
-
-//		NLMEMORY::CheckHeap (true);
-
-		_LrLoader.Buffer.clear();
-
-//		NLMEMORY::CheckHeap (true);
-
-		nlinfo("Lr '%s' loading task complete", _LrLoader.LoadFile.c_str());
-		_LrLoader.Idle = true;
+		
+		// Next lr
+		ite++;
 	}
 
 	CAABBox	box;
@@ -2537,9 +2541,15 @@ void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float ra
 	selectInstances(box, _InternalCST);
 
 	set<uint>	newlr, in, out;
+	map<uint, CVector>	lrPosition;
+
 	uint	i;
 	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
-		newlr.insert((uint)(_Instances[_InternalCST.CollisionInstances[i]].getRetrieverId()));
+	{
+		uint lrId = (uint)(_Instances[_InternalCST.CollisionInstances[i]].getRetrieverId());
+		newlr.insert(lrId);
+		lrPosition.insert (map<uint, CVector>::value_type(lrId, _Instances[_InternalCST.CollisionInstances[i]].getBBox().getCenter()));
+	}
 
 	const_cast<CRetrieverBank*>(_RetrieverBank)->diff(newlr, in, out);
 
@@ -2553,19 +2563,39 @@ void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float ra
 	}
 
 	// if load task idle and more lr to load, setup load task
-	if (_LrLoader.Idle && !in.empty())
+	set<uint>::iterator iteIn = in.begin();
+	while (iteIn != in.end())
 	{
-		_LrLoader.Idle = false;
-		_LrLoader.Finished = false;
+		// Already exist ?
+		ite = _LrLoaderList.begin();
+		while (ite != _LrLoaderList.end())
+		{
+			if (ite->LrId == *iteIn)
+				break;
 
-		it = in.begin();
+			ite++;
+		}
+		
+		// Not found ?
+		if (ite == _LrLoaderList.end())
+		{
+			// Get the position fot this LR
+			map<uint, CVector>::iterator iteLR = lrPosition.find(*iteIn);
+			nlassert (iteLR != lrPosition.end());
 
-		_LrLoader.LrId = *it;
-		_LrLoader.LoadFile = _RetrieverBank->getNamePrefix() + "_" + toString(_LrLoader.LrId) + ".lr";
+			_LrLoaderList.push_back (CLrLoader (iteLR->second));
+			CLrLoader &loader = _LrLoaderList.back();
+			loader.Finished = false;
+			loader.LrId = *iteIn;
+			loader.LoadFile = _RetrieverBank->getNamePrefix() + "_" + toString(loader.LrId) + ".lr";
+			
+			CAsyncFileManager::getInstance().addLoadTask(&loader);
+			
+			nlinfo("Lr '%s' added to load", loader.LoadFile.c_str());
+		}
 
-		CAsyncFileManager::getInstance().addLoadTask(&_LrLoader);
-
-		nlinfo("Lr '%s' added to load", _LrLoader.LoadFile.c_str());
+		// Next lr to load
+		iteIn++;
 	}
 }
 
@@ -2575,24 +2605,33 @@ void	NLPACS::CGlobalRetriever::refreshLrAroundNow(const CVector &position, float
 	if (_RetrieverBank->allLoaded())
 		return;
 
-	while (!_LrLoader.Idle)
+	while (_LrLoaderList.size ())
 	{
-		// finished loaded a lr, stream it into rbank
-		if (!_LrLoader.Idle && _LrLoader.Finished)
+		std::list<CLrLoader>::iterator ite = _LrLoaderList.begin();
+		while (ite != _LrLoaderList.end())
 		{
-			if (!_LrLoader.Buffer.isReading())
-				_LrLoader.Buffer.invert();
+			// Finished loaded a lr, stream it into rbank
+			if (ite->Finished)
+			{
+				if (!ite->_Buffer.isReading())
+					ite->_Buffer.invert();
+				
+				const_cast<CRetrieverBank*>(_RetrieverBank)->loadRetriever(ite->LrId, ite->_Buffer);
+				
+				ite->_Buffer.clear();
+				
+				// Remove this from the list
+				_LrLoaderList.erase(ite);
 
-			const_cast<CRetrieverBank*>(_RetrieverBank)->loadRetriever(_LrLoader.LrId, _LrLoader.Buffer);
+				break;
+			}
 
-			_LrLoader.Buffer.clear();
-
-			_LrLoader.Idle = true;
+			// 
+			ite++;
 		}
-		else
-		{
+
+		if (_LrLoaderList.size ())
 			nlSleep(0);
-		}
 	}
 
 	CAABBox	box;
@@ -2638,15 +2677,15 @@ void	NLPACS::CGlobalRetriever::CLrLoader::run()
 	if (!f.open(CPath::lookup(LoadFile, false)))
 	{
 		nlwarning("Couldn't find file '%s' to load, retriever loading aborted", LoadFile.c_str());
-		Buffer.clear();
+		_Buffer.clear();
 		Finished = true;
 		return;
 	}
 
-	if (!Buffer.isReading())
-		Buffer.invert();
+	if (!_Buffer.isReading())
+		_Buffer.invert();
 
-	uint8	*buffer = Buffer.bufferToFill(f.getFileSize());
+	uint8	*buffer = _Buffer.bufferToFill(f.getFileSize());
 	f.serialBuffer(buffer, f.getFileSize());
 
 	Successful = true;

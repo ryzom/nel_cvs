@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager_3d.h,v 1.3 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: async_file_manager_3d.h,v 1.4 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,13 +54,13 @@ public:
 	static CAsyncFileManager3D &getInstance (); // Must be called instead of constructing the object
 	static void terminate (); // release singleton
 
-	void loadMesh (const std::string &sMeshName, IShape **ppShp, IDriver *pDriver);
+	void loadMesh (const std::string &sMeshName, IShape **ppShp, IDriver *pDriver, const NLMISC::CVector &position);
 	bool cancelLoadMesh (const std::string& sMeshName);
 
 	void loadIG (const std::string &igName, CInstanceGroup **ppIG);
 	void loadIGUser (const std::string &igName, UInstanceGroup **ppIG);
 
-	void loadTexture (CTextureFile *textureFile, bool *pSgn);
+	void loadTexture (CTextureFile *textureFile, bool *pSgn, const NLMISC::CVector &position);
 	bool cancelLoadTexture (CTextureFile *textFile);
 
 
@@ -87,14 +87,14 @@ private:
 	// -------------
 	
 	// Load a .shape
-	class CMeshLoad : public NLMISC::IRunnable
+	class CMeshLoad : public NLMISC::IRunnablePos
 	{
 		IShape **_ppShp;
 		IDriver *_pDriver;
 	public:
 		std::string MeshName;
 	public:
-		CMeshLoad (const std::string &meshName, IShape **ppShp, IDriver *pDriver);
+		CMeshLoad (const std::string &meshName, IShape **ppShp, IDriver *pDriver, const CVector &position);
 		void run (void);
 		void getName (std::string &result) const;
 	};
@@ -122,15 +122,17 @@ private:
 	};
 
 	// Load a texture
-	class CTextureLoad : public NLMISC::IRunnable
+	class CTextureLoad : public NLMISC::IRunnablePos
 	{
 	public:
 		CTextureFile	*TextureFile;
 		bool			*Signal;
 	public:
-		CTextureLoad(CTextureFile *textureFile, bool *psgn)
+		CTextureLoad(CTextureFile *textureFile, bool *psgn, const CVector &position)
 			: TextureFile(textureFile), Signal(psgn)
-		{}
+		{
+			Position = position;
+		}
 
 		void run();
 		void getName (std::string &result) const;

@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * Manage a list of task in a separate thread
  *
- * $Id: task_manager.h,v 1.12 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: task_manager.h,v 1.13 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_TASK_MANAGER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
 
 #include <list>
 
@@ -35,6 +36,15 @@
 
 namespace NLMISC {
 
+
+/**
+ * A class derived from IRunnable to get a position
+ */
+class IRunnablePos : public NLMISC::IRunnable
+{
+public:
+	NLMISC::CVector	Position;
+};
 
 /**
  * CTaskManager is a class that manage a list of Task with one Thread
@@ -55,8 +65,8 @@ public:
 	/// Manage TaskQueue
 	void run(void);
 
-	/// Add a task to TaskManager
-	void addTask(IRunnable *);
+	/// Add a task to TaskManager and its priority
+	void addTask(IRunnable *, float priority=0);
 
 	/// Delete a task, only if task is not running, return true if found and deleted
 	bool deleteTask(IRunnable *r);
@@ -68,13 +78,37 @@ public:
 	uint taskListSize(void); 
 
 	/// return false if exit() is required. task added with addTask() should test this flag.
-	bool	isThreadRunning() {return _ThreadRunning;}
+	bool	isThreadRunning() const {return _ThreadRunning;}
 
 	/// Dump task list
 	void dump (std::vector<std::string> &result);
+	
+	/// Get number of waiting task
+	uint	getNumWaitingTasks();
+	
+	/// Is there a current task ?
+	bool	isTaskRunning() const {return _IsTaskRunning;}
+	
+	/// A callback to modify the task priority
+	class IChangeTaskPriority
+	{
+	public:
+		virtual float getTaskPriority(const IRunnable &runable) = 0;
+	};
+
+	/// Register task priority callback
+	void	registerTaskPriorityCallback (IChangeTaskPriority *callback);
+
+private:
+
+	/// Register task priority callback
+	void	changeTaskPriority ();
+	
+	/// The callback
+	IChangeTaskPriority		*_ChangePriorityCallback;
 
 protected:
-
+	
 	/** If any, wait the current running task to complete
 	 *	this function MUST be called in a 'accessor to the _TaskQueue' statement because a mutex is required
 	 *	eg:
@@ -89,9 +123,28 @@ protected:
 
 protected:
 
+	// A task in the waiting queue with its parameters
+	class CWaitingTask
+	{
+	public:
+		CWaitingTask (IRunnable *task, float priority)
+		{
+			Task = task;
+			Priority = priority;
+		}
+		IRunnable		*Task;
+		float			Priority;
+
+		// For the sort
+		bool			operator< (const CWaitingTask &other) const
+		{
+			return Priority < other.Priority;
+		}
+	};
+
 	/// queue of tasks, using list container instead of queue for DeleteTask methode
 	CSynchronized<std::string>				_RunningTask;
-	CSynchronized<std::list<IRunnable *> >	_TaskQueue;
+	CSynchronized<std::list<CWaitingTask> >	_TaskQueue;
 	CSynchronized<std::list<std::string> >	_DoneTaskQueue;
 	
 	/// thread pointer

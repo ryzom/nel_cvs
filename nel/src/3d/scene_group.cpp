@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.53 2003/05/26 09:01:57 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.54 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -484,7 +484,7 @@ void CInstanceGroup::setIGAddBeginCallback(IIGAddBegin *callback)
 }
 
 // ***************************************************************************
-bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
+bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver, uint selectedTexture)
 {
 	// Init the scene lights
 	_PointLightArray.initAnimatedLightIndex (scene);
@@ -516,63 +516,59 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
-		CInstance &rInstanceInfo = *it;
-		if (!rInstanceInfo.DontAddToScene)
+		// Get the shape name
+		string shapeName;
+		getShapeName (i, shapeName);
+		if (!shapeName.empty ())
 		{
-			string shapeName;
-			
-			bool getShapeName = true;
-			
-			// If there is a callback added to this instance group then transform
-			// the name of the shape to load.
-			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
-			{												
-				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName);								
-				if (!shapeName.empty())
-					getShapeName = false;
-			}
-			
-			if (getShapeName)
-			{			
-				if (rInstanceInfo.Name.find('.') == std::string::npos)
-				{
-					shapeName = rInstanceInfo.Name + ".shape";
-				}
-				else	// extension has already been added
-				{
-					shapeName = rInstanceInfo.Name;
-				}
-			}
-			strlwr (shapeName);
-
-					
 			_Instances[i] = scene.createInstance (shapeName);
 			if( _Instances[i] == NULL )
 			{
-				
 				nlwarning("Not found '%s' file\n", shapeName.c_str());
-				//#if defined(NL_DEBUG) && defined(__STL_DEBUG)
-				//	nlstop;
-				//#endif
-
-				/*
-					for (uint32 j = 0; j < i; ++j)
-					{
-						scene.deleteInstance(_Instances[j]);
-						_Instances[j] = NULL;
-					}
-					throw NLMISC::Exception("CInstanceGroup::addToScene : unable to create %s shape file", rInstanceInfo.Name.c_str());
-				*/
 			}
 		}
 	}
 
-	return addToSceneWhenAllShapesLoaded (scene, driver);
+	return addToSceneWhenAllShapesLoaded (scene, driver, selectedTexture);
+}
+
+// ***************************************************************************
+
+void CInstanceGroup::getShapeName (uint instanceIndex, std::string &shapeName) const
+{
+	shapeName.clear ();
+	const CInstance &rInstanceInfo = _InstancesInfos[instanceIndex];
+	if (!rInstanceInfo.DontAddToScene)
+	{
+		bool getShapeName = true;
+	
+		// If there is a callback added to this instance group then transform
+		// the name of the shape to load.
+		if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
+		{												
+			shapeName = _TransformName->transformName (instanceIndex, rInstanceInfo.InstanceName);								
+			if (!shapeName.empty())
+				getShapeName = false;
+		}
+		
+		if (getShapeName)
+		{			
+			if (rInstanceInfo.Name.find('.') == std::string::npos)
+			{
+				shapeName = rInstanceInfo.Name + ".shape";
+			}
+			else	// extension has already been added
+			{
+				shapeName = rInstanceInfo.Name;
+			}
+		}
+		strlwr (shapeName);
+	}
 }
 
 // ***************************************************************************
 // Private method
-bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driver)
+bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driver, uint selectedTexture)
 {
 	uint32 i, j;
 
@@ -628,7 +624,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 				if (driver)
 				{
 					// Flush shape's texture with this driver
-					_Instances[i]->Shape->flushTextures (*driver);
+					_Instances[i]->Shape->flushTextures (*driver, selectedTexture);
 				}
 			}
 		}
@@ -765,7 +761,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 }
 
 // ***************************************************************************
-bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
+bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver, uint selectedTexture)
 {
 	// Init the scene lights
 	_PointLightArray.initAnimatedLightIndex (scene);
@@ -775,6 +771,7 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 	_AddToSceneState = StateAdding;
 	_AddToSceneTempScene = &scene;
 	_AddToSceneTempDriver = driver;
+	_AddToSceneTempSelectTexture = selectedTexture;
 
 	_Instances.resize (_InstancesInfos.size(), NULL);
 
@@ -823,7 +820,7 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 				if (scene.getShapeBank()->isPresent(shapeName) != CShapeBank::Present)
 				{
 					// Load it from file asynchronously
-					scene.getShapeBank()->loadAsync (shapeName, scene.getDriver(), &_AddToSceneSignal);
+					scene.getShapeBank()->loadAsync (shapeName, scene.getDriver(), rInstanceInfo.Pos, &_AddToSceneSignal);
 					loadAsyncStarted = true;
 				}
 			}
@@ -834,6 +831,7 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 	else
 		_AddToSceneSignal = false;
 	//CAsyncFileManager::getInstance().signal (&_AddToSceneSignal);
+
 	return true;
 }
 
@@ -885,7 +883,7 @@ CInstanceGroup::TState CInstanceGroup::getAddToSceneState ()
 	{
 		if (_AddToSceneSignal)
 		{
-			addToScene (*_AddToSceneTempScene, _AddToSceneTempDriver);
+			addToScene (*_AddToSceneTempScene, _AddToSceneTempDriver, _AddToSceneTempSelectTexture);
 		}
 	}
 	return _AddToSceneState;

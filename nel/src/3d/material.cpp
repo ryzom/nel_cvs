@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.41 2003/05/26 14:16:58 vizerie Exp $
+ * $Id: material.cpp,v 1.42 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -327,7 +327,7 @@ void CMaterial::setTexture(uint8 n, ITexture* ptex)
 
 
 // ***************************************************************************
-void			CMaterial::flushTextures (IDriver &driver)
+void			CMaterial::flushTextures (IDriver &driver, uint selectedTexture)
 {
 	// For each textures
 	for (uint tex=0; tex<IDRV_MAT_MAXTEXTURES; tex++)
@@ -335,6 +335,9 @@ void			CMaterial::flushTextures (IDriver &driver)
 		// Texture exist ?
 		if (_Textures[tex])
 		{
+			// Select the good texture
+			_Textures[tex]->selectTexture (selectedTexture);
+			
 			// Force setup texture
 			driver.setupTexture (*_Textures[tex]);
 		}

@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.16 2003/04/04 14:23:49 corvazier Exp $
+ * $Id: mesh_base.h,v 1.17 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,7 +191,7 @@ public:
 	void	serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	/// Flush textures
-	void	flushTextures (IDriver &driver);
+	void	flushTextures (IDriver &driver, uint selectedTexture);
 
 
 	/// Is this mesh lightable? true if one of his materials is not a lightmap. NB: result stored in file.

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.33 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.34 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,7 +142,7 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::v
 	zonesAdded.clear();
 
 	_ZoneManager.checkZonesAround ((uint)pos.x, (uint)(-pos.y), (uint)radius);
-	while (_ZoneManager.isWorking())
+	while (_ZoneManager.isLoading())
 	{
 		CZoneManager::SZoneManagerWork Work;
 		if (_ZoneManager.isWorkComplete(Work))
@@ -191,7 +191,7 @@ void	CLandscapeUser::refreshAllZonesAround(const CVector &pos, float radius, std
 
 	// Zone to load
 	uint zoneToLoad = _ZoneManager.getNumZoneLeftToLoad ();
-	while (_ZoneManager.isWorking())
+	while (_ZoneManager.isLoading())
 	{
 		// Progress bar
 		if (zoneToLoad != 0)
@@ -280,7 +280,7 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius, std::s
 				zoneAdded = Work.NameZoneAdded;
 				zoneAdded = zoneAdded.substr(0, zoneAdded.find('.'));
 			}
-		}
+	}
 
 		// Check if a zone must be removed from landscape
 		if (Work.ZoneRemoved)

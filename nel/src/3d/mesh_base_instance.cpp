@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.20 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.21 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -428,7 +428,7 @@ void			CMeshBaseInstance::enableAsyncTextureMode(bool enable)
 
 
 // ***************************************************************************
-void			CMeshBaseInstance::startAsyncTextureLoading()
+void			CMeshBaseInstance::startAsyncTextureLoading(const NLMISC::CVector &position)
 {
 	if(!getAsyncTextureMode())
 		return;
@@ -451,7 +451,7 @@ void			CMeshBaseInstance::startAsyncTextureLoading()
 			if(AsyncTextures[i].IsTextureFile[stage])
 			{
 				uint	id;
-				id= asyncTextMgr->addTextureRef(AsyncTextures[i].TextureNames[stage], this);
+				id= asyncTextMgr->addTextureRef(AsyncTextures[i].TextureNames[stage], this, position);
 				AsyncTextures[i].TextIds[stage]= id;
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.32 2003/05/26 09:00:52 berenguier Exp $
+ * $Id: instance_group_user.cpp,v 1.33 2003/06/03 13:05:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,14 +153,14 @@ void CInstanceGroupUser::setIGAddBeginCallback(IIGAddBegin *callback)
 
 
 // ***************************************************************************
-void CInstanceGroupUser::addToScene (class UScene& scene, UDriver *driver)
+void CInstanceGroupUser::addToScene (class UScene& scene, UDriver *driver, uint selectedTexture)
 {
 	NL3D_MEM_IG
 	// Get driver pointer
 	IDriver *cDriver= driver ? NLMISC::safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
 
 	// Add to the scene
-	addToScene (((CSceneUser*)&scene)->getScene(), cDriver);
+	addToScene (((CSceneUser*)&scene)->getScene(), cDriver, selectedTexture);
 }
 
 // ***************************************************************************
@@ -172,10 +172,10 @@ void CInstanceGroupUser::getInstanceMatrix(uint instanceNb,NLMISC::CMatrix &dest
 
 
 // ***************************************************************************
-void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
+void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver, uint selectedTexture)
 {
 	NL3D_MEM_IG
-	if (!_InstanceGroup.addToScene (scene, driver))
+	if (!_InstanceGroup.addToScene (scene, driver, selectedTexture))
 		return;
 	// Fill in the map accelerating search of instance by names
 	for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
@@ -192,12 +192,12 @@ void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
 }
 
 // ***************************************************************************
-void CInstanceGroupUser::addToSceneAsync (class UScene& scene, UDriver *driver)
+void CInstanceGroupUser::addToSceneAsync (class UScene& scene, UDriver *driver, uint selectedTexture)
 {
 	NL3D_MEM_IG
 	IDriver *cDriver= driver ? NLMISC::safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
 	// Add to the scene
-	_InstanceGroup.addToSceneAsync (((CSceneUser*)&scene)->getScene(), cDriver);
+	_InstanceGroup.addToSceneAsync (((CSceneUser*)&scene)->getScene(), cDriver, selectedTexture);
 	_AddToSceneState = StateAdding;
 	_AddToSceneTempScene = &scene;
 	_AddToSceneTempDriver = driver;

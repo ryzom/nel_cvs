@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex_program.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex_program.cpp,v 1.3 2004/09/17 15:06:08 vizerie Exp $
+ * $Id: driver_direct3d_vertex_program.cpp,v 1.4 2004/10/05 17:06:43 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -372,6 +372,13 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 void CDriverD3D::setConstant (uint index, float f0, float f1, float f2, float f3)
 {
 	H_AUTO_D3D(CDriverD3D_setConstant )
+	if (!_VertexProgram)
+	{
+		#ifdef NL_DEBUG
+			nlwarning("No vertex programs available!!");
+		#endif
+		return;
+	}
 	const float tabl[4] = {f0, f1, f2, f3};
 	setVertexProgramConstant (index, tabl);
 }
@@ -381,6 +388,13 @@ void CDriverD3D::setConstant (uint index, float f0, float f1, float f2, float f3
 void CDriverD3D::setConstant (uint index, double d0, double d1, double d2, double d3)
 {
 	H_AUTO_D3D(CDriverD3D_setConstant )
+	if (!_VertexProgram)
+	{
+		#ifdef NL_DEBUG
+			nlwarning("No vertex programs available!!");
+		#endif
+		return;
+	}
 	const float tabl[4] = {(float)d0, (float)d1, (float)d2, (float)d3};
 	setVertexProgramConstant (index, tabl);
 }
@@ -390,6 +404,13 @@ void CDriverD3D::setConstant (uint index, double d0, double d1, double d2, doubl
 void CDriverD3D::setConstant (uint index, const NLMISC::CVector& value)
 {
 	H_AUTO_D3D(CDriverD3D_setConstant )
+	if (!_VertexProgram)
+	{
+		#ifdef NL_DEBUG
+			nlwarning("No vertex programs available!!");
+		#endif
+		return;
+	}
 	const float tabl[4] = {value.x, value.y, value.z, 0};
 	setVertexProgramConstant (index, tabl);
 }
@@ -399,6 +420,13 @@ void CDriverD3D::setConstant (uint index, const NLMISC::CVector& value)
 void CDriverD3D::setConstant (uint index, const NLMISC::CVectorD& value)
 {
 	H_AUTO_D3D(CDriverD3D_setConstant )
+	if (!_VertexProgram)
+	{
+		#ifdef NL_DEBUG
+			nlwarning("No vertex programs available!!");
+		#endif
+		return;
+	}
 	const float tabl[4] = {(float)value.x, (float)value.y, (float)value.z, 0};
 	setVertexProgramConstant (index, tabl);
 }
@@ -408,6 +436,13 @@ void CDriverD3D::setConstant (uint index, const NLMISC::CVectorD& value)
 void CDriverD3D::setConstant (uint index, uint num, const float *src)
 {
 	H_AUTO_D3D(CDriverD3D_setConstant )
+	if (!_VertexProgram)
+	{
+		#ifdef NL_DEBUG
+			nlwarning("No vertex programs available!!");
+		#endif
+		return;
+	}
 	uint i;
 	for (i=0; i<num; i++)
 		setVertexProgramConstant (index+i, src+i*4);
@@ -418,6 +453,13 @@ void CDriverD3D::setConstant (uint index, uint num, const float *src)
 void CDriverD3D::setConstant (uint index, uint num, const double *src)
 {
 	H_AUTO_D3D(CDriverD3D_setConstant )
+	if (!_VertexProgram)
+	{
+		#ifdef NL_DEBUG
+			nlwarning("No vertex programs available!!");
+		#endif
+		return;
+	}
 	uint i;
 	for (i=0; i<num; i++)
 	{
@@ -432,6 +474,13 @@ void CDriverD3D::setConstant (uint index, uint num, const double *src)
 void CDriverD3D::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform)
 {
 	H_AUTO_D3D(CDriverD3D_setConstantMatrix )
+	if (!_VertexProgram)
+	{
+		#ifdef NL_DEBUG
+			nlwarning("No vertex programs available!!");
+		#endif
+		return;
+	}
 	D3DXMATRIX mat;
 	D3DXMATRIX *matPtr;
 	switch (matrix)

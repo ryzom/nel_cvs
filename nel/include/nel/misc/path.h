@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.18 2002/03/12 18:05:34 lecroart Exp $
+ * $Id: path.h,v 1.19 2002/03/25 09:24:46 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -120,7 +120,8 @@ public:
 
 	static void display ();
 
-	/**	eg: "C:\\Game/dir1\\" will become "C:/Game/dir1/" or "C:/Game/dir1"
+	/**	Take a path and put it in the portable format and add a terminated / if needed
+	 * ie: "C:\\Game/dir1" will become "C:/Game/dir1/" or "C:/Game/dir1" if addFinalSlash is false
 	 */
 	static std::string	standardizePath (const std::string &path, bool addFinalSlash = true);
 

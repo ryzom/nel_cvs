@@ -1,7 +1,7 @@
 /** \file memory_config.h
  * Memory manager configuraition
  *
- * $Id: memory_config.h,v 1.3 2003/09/25 12:13:13 corvazier Exp $
+ * $Id: memory_config.h,v 1.4 2003/10/22 08:27:02 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_MEMORY_CONFIG_H
 
 // Define this to disable debug features (use to trace buffer overflow and add debug informations in memory headers)
-// #define NL_HEAP_ALLOCATION_NDEBUG
+#define NL_HEAP_ALLOCATION_NDEBUG
 
 // Define this to activate internal checks (use to debug the heap code)
 // #define NL_HEAP_ALLOCATOR_INTERNAL_CHECKS

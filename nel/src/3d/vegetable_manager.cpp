@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.12 2001/12/07 09:54:26 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.13 2001/12/12 10:05:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,11 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	_ULCurrentIgInstance= 0;
 	_ULPrecTime= 0;
 	_ULPrecTimeInit= false;
+
+
+	// Misc.
+	_NumVegetableFaceRendered= 0;
+
 }
 
 
@@ -1603,6 +1608,11 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	// Prepare Render
 	//--------------------
 
+	// profile.
+	CPrimitiveProfile	ppIn, ppOut;
+	driver->profileRenderedPrimitives(ppIn, ppOut);
+	uint	precNTriRdr= ppOut.NTriangles;
+
 
 	// Disable Fog.
 	bool	bkupFog;
@@ -1927,6 +1937,10 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 		CDRU::drawLine(p0DebugLines[l]+dv, p1DebugLines[l]+dv, CRGBA(255,0,0), *driver);
 	}*/
 
+	// profile: compute number of triangles rendered with vegetable manager.
+	driver->profileRenderedPrimitives(ppIn, ppOut);
+	_NumVegetableFaceRendered= ppOut.NTriangles-precNTriRdr;
+
 }
 
 
@@ -1961,6 +1975,20 @@ void		CVegetableManager::setupRenderStateForBlendLayerModel(IDriver *driver)
 	//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram[rdrPass]->getProgram().c_str());
 	nlverify(driver->activeVertexProgram(_VertexProgram[rdrPass]));
 
+}
+
+
+// ***************************************************************************
+void		CVegetableManager::resetNumVegetableFaceRendered()
+{
+	_NumVegetableFaceRendered= 0;
+}
+
+
+// ***************************************************************************
+uint		CVegetableManager::getNumVegetableFaceRendered() const
+{
+	return _NumVegetableFaceRendered;
 }
 
 	

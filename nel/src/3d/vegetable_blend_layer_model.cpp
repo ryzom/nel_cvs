@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.3 2001/12/11 14:41:54 berenguier Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.4 2001/12/12 10:05:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,11 @@ void	CVegetableBlendLayerModel::render(IDriver *driver)
 	CVegetableVBAllocator	*vbAllocator= &VegetableManager->getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 1);
 	vbAllocator->activate();
 
+	// profile
+	CPrimitiveProfile	ppIn, ppOut;
+	driver->profileRenderedPrimitives(ppIn, ppOut);
+	uint	precNTriRdr= ppOut.NTriangles;
+
 	// render from back to front the list setuped in CVegetableManager::render()
 	for(uint i=0; i<SortBlocks.size();i++)
 	{
@@ -118,6 +123,10 @@ void	CVegetableBlendLayerModel::render(IDriver *driver)
 			ptrSortBlock->_SortedTriangleIndices[ptrSortBlock->_QuadrantId], 
 			ptrSortBlock->_NTriangles);
 	}
+
+	// add number of triangles rendered with vegetable manager.
+	driver->profileRenderedPrimitives(ppIn, ppOut);
+	VegetableManager->_NumVegetableFaceRendered+= ppOut.NTriangles-precNTriRdr;
 
 
 	// refresh list now!

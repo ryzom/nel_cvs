@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.9 2001/12/06 16:52:08 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.10 2001/12/12 10:05:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -249,6 +249,16 @@ public:
 	// @}
 
 
+	/// \name Profile
+	// @{
+
+	/// set to 0 the number of faces rendered
+	void		resetNumVegetableFaceRendered();
+	/// get the number of faces rendered by the vegetable manager
+	uint		getNumVegetableFaceRendered() const;
+
+	// @}
+
 // *********************
 private:
 	friend class	CVegetableBlendLayerModel;
@@ -283,6 +293,10 @@ private:
 	CVector											_DirectionalLight;
 	NLMISC::CRGBA									_GlobalAmbient;
 	NLMISC::CRGBA									_GlobalDiffuse;
+
+
+	/// profile
+	uint											_NumVegetableFaceRendered;
 
 
 	// return true if the ith rdrPass is 2Sided.

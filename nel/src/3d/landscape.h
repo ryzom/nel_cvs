@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.28 2001/12/06 16:52:07 berenguier Exp $
+ * $Id: landscape.h,v 1.29 2001/12/12 10:05:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -720,9 +720,6 @@ private:
 	bool						_VegetableManagerEnabled;
 	/// Tells if the current dirver support vegetable.
 	bool						_DriverOkForVegetable;
-
-	/// profile
-	uint						_NumVegetableFaceRendered;
 
 	/// List of VegetableBlock, to be tested for creation each frame.
 	CTessList<CLandscapeVegetableBlock>		_VegetableBlockList;

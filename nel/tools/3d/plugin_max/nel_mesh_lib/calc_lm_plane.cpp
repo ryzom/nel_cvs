@@ -2,7 +2,7 @@
  * This is a sub-module for calculating ligtmaps
  * This is the code of the plane wich regroup lightmap faces
  *
- * $Id: calc_lm_plane.cpp,v 1.6 2003/04/25 13:51:09 berenguier Exp $
+ * $Id: calc_lm_plane.cpp,v 1.7 2004/01/29 10:39:33 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,6 +63,46 @@ bool SLMPlane::isAllBlack (uint8 nLayerNb)
 			(col[i+w*h*nLayerNb].B > 0.06f) )
 			return false; // Not all is black
 	return true;
+}
+
+// -----------------------------------------------------------------------------------------------
+void SLMPlane::copyColToBitmap8 (CBitmap* pImage, uint32 nLayerNb)
+{
+	if( nLayerNb >= nNbLayerUsed )
+		return;
+
+	if( ( pImage->getWidth() != w ) ||
+		( pImage->getHeight() != h ) )
+	{
+		pImage->resize(w,h);
+	}
+
+	CObjectVector<uint8> &vBitmap = pImage->getPixels();
+	float r, g, b;
+	for( uint32 i = 0; i < w*h; ++i )
+	{
+		// if we are in multiply x2 we have to set the following value to 127.0
+		const float fMult = 255.0f;
+		r = fMult * col[i+w*h*nLayerNb].R;
+		if (r > 255.0f) r = 255.0f;
+
+		g = fMult * col[i+w*h*nLayerNb].G;
+		if (g > 255.0) g = 255.0f;
+
+		b = fMult * col[i+w*h*nLayerNb].B;
+		if (b > 255.0) b = 255.0f;
+
+		r = 0.28f * r + 0.59f * g + 0.13f * b;
+
+		vBitmap[4*i+0] = (uint8)r;
+		vBitmap[4*i+1] = (uint8)r;
+		vBitmap[4*i+2] = (uint8)r;
+
+		if (msk[i] != 0)
+			vBitmap[4*i+3] = 255;
+		else
+			vBitmap[4*i+3] = 0;
+	}
 }
 
 // -----------------------------------------------------------------------------------------------

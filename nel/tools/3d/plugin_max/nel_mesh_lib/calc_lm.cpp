@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.48 2004/01/20 09:33:08 besson Exp $
+ * $Id: calc_lm.cpp,v 1.49 2004/01/29 10:39:33 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2108,6 +2108,8 @@ void sans_majuscule_au_debut_LinkToObjectAround (CMesh::CMeshBuild *pMB, CMeshBa
 bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild, INode& ZeNode, 
 							TimeValue tvTime, uint firstMaterial )
 {
+	DWORD t = timeGetTime();
+
 	uint32 i, j;
 
 	gOptions = _Options;
@@ -2206,6 +2208,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		ClearFaceWithNoLM( pMB, pMBB, AllFaces );
 		if( AllFaces.size() == 0 )
 		{
+			if (InfoLog)
+				InfoLog->display("CalculateLM : %d ms\n", timeGetTime()-t);
 			return false;
 		}
 
@@ -2225,6 +2229,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			gOptions.FeedBack->setLine (11, thetext);
 			gOptions.FeedBack->update ();
 			//MessageBox( NULL, thetext.c_str(), "LightMap ERROR", MB_OK|MB_ICONERROR );
+			if (InfoLog)
+				InfoLog->display("CalculateLM : %d ms\n", timeGetTime()-t);
 			return false;
 		}
 
@@ -2511,11 +2517,25 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 				}
 			}
 			// Convert and write
-			LightMap.copyColToBitmap32 (pLightMap, j);
+			if (gOptions.b8BitsLightmap)
+				LightMap.copyColToBitmap8 (pLightMap, j);
+			else
+				LightMap.copyColToBitmap32 (pLightMap, j);
+
 			COFile f( sSaveName );
 			try
 			{
-				pLightMap->writeTGA (f, 32);
+				if (gOptions.b8BitsLightmap)
+				{
+					// In fact the output is 32 bits because we need the alpha channel
+					// to indicate where the lightmap parts are.
+					pLightMap->loadGrayscaleAsAlpha(false);
+					pLightMap->writeTGA (f, 32);
+				}
+				else
+				{
+					pLightMap->writeTGA (f, 32);
+				}
 			}
 			catch(Exception &e)
 			{
@@ -2536,11 +2556,30 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
 				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
+				
 				// If some light for this layer
 				if( !vvLights.empty() && !vvLights[j].empty() )
 				{
-					addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].AnimatedLight, AllLights[vvLights[j].operator[](0)].LightGroup, 
-						(uint8)i, (uint8)nLightMapNb );
+					// Set the light factor if it is a 8 bits lightmap
+					if (gOptions.b8BitsLightmap)
+					{
+						SLightBuild &rLB = AllLights[vvLights[j].operator[](0)];
+						// Take the first light that is not an ambiant light
+						for (uint32 li = 0; li < vvLights[j].size(); ++li)
+						{
+							SLightBuild &rTmpLB = AllLights[vvLights[j].operator[](li)];
+							if ((rTmpLB.bAmbientOnly == false) && (rTmpLB.Type != SLightBuild::LightAmbient))
+							{
+								rLB = rTmpLB;
+								break;
+							}
+						}
+						pMBB->Materials[i].setLightMapFactor( nLightMapNb, rLB.Diffuse );
+					}
+
+					addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].AnimatedLight, 
+									AllLights[vvLights[j].operator[](0)].LightGroup, 
+									(uint8)i, (uint8)nLightMapNb );
 				}
 			}
 			++nLightMapNb;
@@ -2561,6 +2600,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		pMBB->Materials[i].setColor( CRGBA(255,255,255,255) );
 	}
 
+	if (InfoLog)
+		InfoLog->display("CalculateLM : %d ms\n", timeGetTime()-t);
 	return true;	
 }
 

@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.22 2002/09/04 16:13:06 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.23 2004/01/29 10:37:29 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,7 @@ def_visible_primitive ( export_lod_character,	"NelExportLodCharacter" );
 def_visible_primitive ( node_properties,	"NelNodeProperties" );
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
-char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel]";
+char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel] [b8BitsLightmap]";
 char *sExportAnimationErrorMsg = "NelExportAnimation [node array] [Filename.anim] [bool_scene_animation]";
 char *sExportCollisionErrorMsg = "NelExportCollision [node array] [output directory]";
 char *sExportPACSPrimitivesErrorMsg = "NelExportPACSPrimitves [node array] [output filename]";
@@ -113,7 +113,7 @@ Value* export_shape_cf (Value** arg_list, int count)
 Value* export_shape_ex_cf (Value** arg_list, int count)
 {
 	// Make sure we have the correct number of arguments (10)
-	check_arg_count(export_shape, 10, count);
+	check_arg_count(export_shape, 11, count);
 
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
@@ -127,6 +127,7 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	type_check (arg_list[7], Integer, sExportShapeExErrorMsg);
 	type_check (arg_list[8], Boolean, sExportShapeExErrorMsg);
 	type_check (arg_list[9], Boolean, sExportShapeExErrorMsg);
+	type_check (arg_list[10], Boolean, sExportShapeExErrorMsg);
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -147,6 +148,7 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	theExportSceneStruct.nOverSampling = arg_list[7]->to_int();
 	theExportSceneStruct.bExcludeNonSelected = arg_list[8]->to_bool()!=FALSE;
 	theExportSceneStruct.bShowLumel = arg_list[9]->to_bool()!=FALSE;
+	theExportSceneStruct.b8BitsLightmap = arg_list[10]->to_bool()!=FALSE;
 
 	theCNelExport.init (false, false, ip, false);
 

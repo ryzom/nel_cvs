@@ -224,6 +224,7 @@
 #define IDC_LIGHT_GROUP_NIGHT           1535
 #define IDC_LIGHT_DONT_CAST_SHADOW_INTERIOR 1536
 #define IDC_LIGHT_DONT_CAST_SHADOW_EXTERIOR 1537
+#define IDC_8BITS_LIGHTMAP              1537
 
 // Next default values for new objects
 // 
@@ -231,7 +232,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        126
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1537
+#define _APS_NEXT_CONTROL_VALUE         1538
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

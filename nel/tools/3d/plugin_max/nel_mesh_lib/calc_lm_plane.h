@@ -2,7 +2,7 @@
  * LightMap Calculation settings
  * Plane of faces in the same smooth group
  *
- * $Id: calc_lm_plane.h,v 1.3 2002/04/10 17:15:20 besson Exp $
+ * $Id: calc_lm_plane.h,v 1.4 2004/01/29 10:39:33 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,6 +57,7 @@ struct SLMPlane
 
 	void newLayer ();
 	bool isAllBlack (uint8 nLayerNb);
+	void copyColToBitmap8 (CBitmap* pImage, uint32 nLayerNb);
 	void copyColToBitmap32 (CBitmap* pImage, uint32 nLayerNb);
 	void putIn (SLMPlane &Dst, bool bMaskOnly = false);
 	bool testIn (SLMPlane &Dst);

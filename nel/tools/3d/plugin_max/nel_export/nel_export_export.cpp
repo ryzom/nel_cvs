@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.20 2003/04/04 17:33:43 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.21 2004/01/29 10:37:29 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,8 +84,13 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, TimeValue time)
 			}
 		}
 
+		DWORD t = timeGetTime();
+		if (InfoLog)
+			InfoLog->display("Beg buildShape %s \n", node.GetName());
 		// Export in mesh format
 		IShape*	pShape=_ExportNel->buildShape (node, time, mapIdPtr, true);
+		if (InfoLog)
+			InfoLog->display("End buildShape in %d ms \n", timeGetTime()-t);
 
 		// Conversion success ?
 		if (pShape)

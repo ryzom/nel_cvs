@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.62 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.63 2004/01/29 10:39:33 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1258,6 +1258,8 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, TimeValue time, const TInodeP
 								std::vector<std::string>& listMaterialName,
 								bool& isTransparent, bool& isOpaque, const CMatrix& parentMatrix)
 {
+	DWORD t = timeGetTime();
+
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
 	IMeshGeom *meshGeom=NULL;
@@ -1385,6 +1387,11 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, TimeValue time, const TInodeP
 	// If skinning, renable skin modifier
 	if (nodeMap)
 		enableSkinModifier (node, true);
+
+	if (InfoLog)
+		InfoLog->display("buidlMeshGeom : %d ms\n", timeGetTime()-t);
+	if (InfoLog)
+		InfoLog->display("End of %s \n", node.GetName());
 
 	// Return the shape pointer or NULL if an error occured.
 	return meshGeom;

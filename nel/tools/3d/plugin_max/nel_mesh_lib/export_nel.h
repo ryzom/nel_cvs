@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.67 2003/04/18 15:15:04 corvazier Exp $
+ * $Id: export_nel.h,v 1.68 2004/01/29 10:39:33 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,6 +142,7 @@ struct CExportNelOptions
 	sint32 nOverSampling;
 	bool bExcludeNonSelected;
 	IProgress *FeedBack;
+	bool b8BitsLightmap;			// 8 bits grayscale lightmap
 	bool bShowLumel;
 	bool bTestSurfaceLighting;
 	float SurfaceLightingCellSize;
@@ -160,6 +161,7 @@ struct CExportNelOptions
 		nOverSampling = 1;
 		bExcludeNonSelected = false;
 		FeedBack = NULL;
+		b8BitsLightmap = false;
 		bShowLumel = false;
 		bTestSurfaceLighting= true;
 		SurfaceLightingCellSize= 1.5f;
@@ -168,11 +170,13 @@ struct CExportNelOptions
 
 	void serial(NLMISC::IStream& stream)
 	{
-		sint version = stream.serialVersion (4);
+		sint version = stream.serialVersion (5);
 
 		// Check version
 		switch (version)
 		{
+		case 5:
+			stream.serial (b8BitsLightmap);
 		case 4:
 			stream.serial (SurfaceLightingDeltaZ);
 		case 3:

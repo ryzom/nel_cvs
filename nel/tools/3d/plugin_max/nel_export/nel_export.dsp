@@ -92,7 +92,7 @@ LINK32=link.exe
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PostBuild_Desc=copy dans max normal
-PostBuild_Cmds=rem xcopy "C:\3dsmax3_1 debug\exe\*.dl*" "C:\3dsmax3_1" /D /S /Y
+PostBuild_Cmds=xcopy "C:\3dsmax3_1 debug\exe\*.dl*" "C:\3dsmax3_1" /D /S /Y
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "nel_export - Win32 Hybrid"

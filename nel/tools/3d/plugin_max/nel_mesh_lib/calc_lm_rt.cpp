@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.8 2004/01/20 09:33:13 besson Exp $
+ * $Id: calc_lm_rt.cpp,v 1.9 2004/01/29 10:39:33 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,8 @@ void CRTWorld::build (vector<SLightBuild> &AllLights, CVector &trans, bool bExcl
 	uint32 i, j, k;
 	TTicks ttTemp = CTime::getPerformanceTime();
 
+	DWORD t = timeGetTime();
+
 	GlobalTrans = trans;
 	// Get all the nodes in the scene
 	if( bExcludeNonSelected )
@@ -82,6 +84,9 @@ void CRTWorld::build (vector<SLightBuild> &AllLights, CVector &trans, bool bExcl
 	{
 		convertToWorldCoordinate (vMB[i], vMBB[i], GlobalTrans);
 	}
+
+	if (InfoLog)
+		InfoLog->display("Object Construction : %d ms\n", timeGetTime()-t);
 
 	// Construct all cube grids from all lights
 	//wrt.cgAccel.resize( AllLights.size() );

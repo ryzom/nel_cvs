@@ -27,7 +27,6 @@ else
 	echo [Ligo] OFF
 fi
 
-read
 
 # Log error
 echo ------- > log.log

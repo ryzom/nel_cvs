@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.19 2003/01/03 11:25:19 lecroart Exp $
+ * $Id: command.cpp,v 1.20 2003/01/08 10:45:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -227,7 +227,7 @@ end:
 */
 	
 	// find the command	
-	TCommand::iterator comm = (*Commands).find(command.c_str());
+	TCommand::iterator comm = (*Commands).find(command);
 	if (comm == (*Commands).end ())
 	{
 		// the command doesn't exist
@@ -355,6 +355,10 @@ void ICommand::serialCommands (IStream &f)
 	f.serialCont (cmd);
 }
 
+bool ICommand::exists (std::string &commandName)
+{
+	return ((*Commands).find(commandName) != (*Commands).end ());
+}
 
 NLMISC_COMMAND(help,"display help on a specific variable/commands or on all variables and commands", "[<variable>|<command>]")
 {	

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.17 2002/11/29 10:07:54 lecroart Exp $
+ * $Id: command.h,v 1.18 2003/01/08 10:45:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,6 +209,9 @@ public:
 	static void	expand (std::string &commandName, NLMISC::CLog &log=*InfoLog);
 
 	static void serialCommands (IStream &f);
+
+	/// returns true if the command exists
+	static bool exists (std::string &commandName);
 
 protected:
 

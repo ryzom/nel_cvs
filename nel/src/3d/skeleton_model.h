@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.35 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.36 2003/11/06 14:52:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,9 @@ public:
 class CSkeletonModel : public CTransformShape
 {
 public:
+	/// max number of bones supported in skeleton
+	enum	{ MaxNumBones = 256 };
+
 	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
@@ -177,6 +180,12 @@ public:
 
 	/// Tell if a bone has been computed in the last frame or not. false if boneId is invalid
 	bool		isBoneComputed(uint boneId) const;
+
+	/** Force to compute a bone right now (useful if the skeleton is not visible and the bone position is needed) 
+      * no-op is bone not present or already computed
+	  * \return true if good indes & bone recomputed
+	  */
+	bool		forceComputeBone(uint boneId);
 
 	/// return the number of bones currently animated/computed (because of bindSkin()/stickObject() / Lod system).
 	uint		getNumBoneComputed() const {return _BoneToCompute.size();}

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.48 2003/09/01 09:19:48 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.49 2003/11/06 14:52:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -378,6 +378,105 @@ bool		CSkeletonModel::isBoneComputed(uint boneId) const
 	else
 		return _BoneUsage[boneId].MustCompute!=0;
 }
+
+
+// struct used by CSkeletonModel::forceComputeBone only
+struct CForceComputeBoneInfo
+{
+	CTransform *Transform;
+	uint		StickBoneID; // if the transform is a skeleton, gives the bone to which child of interest is sticked
+};
+
+// ***************************************************************************
+bool CSkeletonModel::forceComputeBone(uint boneId)
+{
+	if(boneId >= _BoneUsage.size()) return false;	
+	if (!_BoneUsage[boneId].MustCompute) return false;	
+	// build list of ancestor, then must build
+	std::vector<CForceComputeBoneInfo> ancestors;
+	// count the number of ancestors (to avoid unwanted alloc with vector)
+	uint numAncestors = 0;
+	CTransform *currTransform = this;
+	for(;;)
+	{
+		currTransform = currTransform->_HrcParent ? currTransform->_HrcParent : currTransform->_FatherSkeletonModel; // find father transform (maybe a skeleton or a std transform)
+		if (!currTransform) break; // root reached ?
+		++ numAncestors;
+	}
+	ancestors.reserve(numAncestors);
+	// build list of ancestor
+	currTransform = this;
+	uint currStickBone = boneId;
+	for(;;)
+	{
+		// if curr transform is a skeleton, animate all bone from stick bone to the root bone
+		if (currTransform->isSkeleton())
+		{
+			if (_ChannelMixer)
+			{			
+				CSkeletonModel *skel = static_cast<CSkeletonModel *>(currTransform);
+				nlassert(boneId < skel->_BoneUsage.size());
+				nlassert(currStickBone < skel->Bones.size());
+				sint currBoneIndex = currStickBone;
+				// force channel mixer to eval for that bone
+				while (currBoneIndex != -1)
+				{
+					nlassert((uint) currBoneIndex < skel->Bones.size());
+					skel->Bones[currBoneIndex].forceAnimate(*_ChannelMixer);
+					currBoneIndex = skel->Bones[currBoneIndex].getFatherId();
+				}
+			}
+		}
+		else
+		{
+			// update stickBone ID (if father is a skeleton)
+			currStickBone = _FatherBoneId;
+		}
+		CForceComputeBoneInfo fcbi;
+		fcbi.StickBoneID = currStickBone;
+		fcbi.Transform   = currTransform;
+		ancestors.push_back(fcbi);
+		currTransform = currTransform->_HrcParent ? currTransform->_HrcParent : currTransform->_FatherSkeletonModel; // find father transform (maybe a skeleton or a std transform)
+		if (!currTransform) break; // root reached ?
+		++ numAncestors;
+	}
+	// bones must be recomputed from father bone to sons, so must traverse bones until root is reached to retrieve correct ordering
+	CBone *OrderedBone[MaxNumBones];
+	//
+	for(std::vector<CForceComputeBoneInfo>::reverse_iterator it = ancestors.rbegin(); it != ancestors.rend(); ++it)
+	{				
+		it->Transform->update();						// animate transform
+		it->Transform->updateWorldMatrixFromFather ();  // recompute matrix
+		if (it->Transform->isSkeleton())
+		{
+			CSkeletonModel *skel = static_cast<CSkeletonModel *>(it->Transform);
+			// reorder bones
+			uint numBones = 0;
+			nlassert(it->StickBoneID < skel->Bones.size());
+			sint currBoneIndex = it->StickBoneID;
+			nlassert(currBoneIndex != -1);			
+			do
+			{
+				nlassert(numBones < MaxNumBones);
+				nlassert((uint) currBoneIndex < skel->Bones.size());
+				OrderedBone[numBones] = &skel->Bones[currBoneIndex];
+				currBoneIndex = OrderedBone[numBones]->getFatherId();
+				++ numBones;
+			}
+			while (currBoneIndex != -1);
+			const CMatrix &modelWorldMatrix = it->Transform->getWorldMatrix();
+			// recompute bones
+			CBone *fatherBone = NULL;
+			while (numBones--)
+			{
+				OrderedBone[numBones]->compute(fatherBone, modelWorldMatrix, NULL);
+				fatherBone = OrderedBone[numBones];
+			}			
+		}		
+	}
+	return true;
+}
+
 
 
 // ***************************************************************************
@@ -1991,3 +2090,24 @@ void		CSkeletonModel::renderIntoSkeletonShadowMap(CSkeletonModel *rootSkeleton, 
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

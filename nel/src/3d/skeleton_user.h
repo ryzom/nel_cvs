@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.21 2003/07/09 16:32:30 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.22 2003/11/06 14:53:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,6 +103,7 @@ public:
 	virtual	UBone		&getBone(uint boneId);
 	virtual	sint		getBoneIdByName(const std::string &boneName) const;
 	virtual	bool		isBoneComputed(uint boneId) const;
+	virtual bool		forceComputeBone(uint boneId);
 	// @}
 
 	/// \name Lod interaction

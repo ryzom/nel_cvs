@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.17 2003/07/09 16:32:30 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.18 2003/11/06 14:53:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -181,6 +181,15 @@ bool		CSkeletonUser::isBoneComputed(uint boneId) const
 	NL3D_HAUTO_UI_SKELETON;
 
 	return _Skeleton->isBoneComputed(boneId);
+}
+
+// ***************************************************************************
+bool CSkeletonUser::forceComputeBone(uint boneId)
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+
+	return _Skeleton->forceComputeBone(boneId);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.16 2003/07/09 16:31:02 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.17 2003/11/06 14:55:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,8 @@ public:
 	virtual	sint		getBoneIdByName(const std::string &boneName) const=0;
 	/// Tell if a bone has been computed in the last frame or not. false if boneId is invalid
 	virtual	bool		isBoneComputed(uint boneId) const=0;
+	/// Force to compute a bone, even if object clipped. false if boneId is invalid 
+	virtual bool		forceComputeBone(uint boneId) = 0;
 	// @}
 
 
@@ -219,7 +221,7 @@ public:
 	 *	set to NULL if you want to reset this bone AnimCtrl.
 	 *	No-op if Bad BoneId.
 	 */
-	virtual	void		setBoneAnimCtrl(uint boneId, IAnimCtrl *ctrl) =0;
+		virtual	void		setBoneAnimCtrl(uint boneId, IAnimCtrl *ctrl) =0;
 	/// return NULL if bad BoneId
 	virtual	IAnimCtrl	*getBoneAnimCtrl(uint boneId) const =0;
 	// @}

@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.2 2000/12/14 16:49:19 coutelas Exp $
+ * $Id: zone_welder.cpp,v 1.3 2001/01/04 08:44:13 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,9 +37,10 @@
 
 using namespace NL3D;
 using namespace NLMISC;
+using namespace std;
 
 
-#define WELD_LOG 0
+#define WELD_LOG 1
 
 FILE *fdbg;
 
@@ -77,11 +78,9 @@ struct CWeldableVertexInfos
 \*******************************************************************/
 void writeInstructions()
 {
-	cout<<endl;
-	cout<<"ZONE_WELDER"<<endl;
-	cout<<"syntax : zone_welder <input.zon>"<<endl;
-	cout<<"/? for this help"<<endl;
-	cout<<endl;
+	printf("\nZONE_WELDER\n");
+	printf("syntax : zone_welder <input.zon>\n");
+	printf("/? for this help\n\n");
 }
 
 
@@ -223,7 +222,7 @@ void getZoneNameByCoord(uint16 x, uint16 y, std::string& zoneName)
 	zoneName = ystrtmp;
 	zoneName +="_";
 	zoneName +=xstrtmp;
-	zoneName +=".zone";
+	zoneName +=".zonew";
 }
 
 
@@ -326,7 +325,7 @@ void weldZones(char * centerZoneFileName)
 {
 	uint i,j;
 
-	float weldRadius = 0.03f;
+	float weldRadius = 0.05f;//0.03f;
 
 	CPath::addSearchPath(inputPath);
 
@@ -373,6 +372,7 @@ void weldZones(char * centerZoneFileName)
 
 
 	// load 8 adjacent adjZones
+	bool adjZoneFileFound[8];
 	CZone adjZones[8];
 	uint16 adjZonesId[8];
 	std::vector<std::string> adjZonesName;
@@ -381,14 +381,29 @@ void weldZones(char * centerZoneFileName)
 	{
 		if(adjZonesName[i]=="empty") continue;
 		
+		adjZoneFileFound[i] = true;
 		CIFile f;
 		try
 		{
 			f.open(CPath::lookup(adjZonesName[i]));
+			printf("reading file %s\n",adjZonesName[i].c_str());
 		}
 		catch(EPathNotFound &e)
 		{
-			printf ("%s\n", e.what ());
+			try
+			{
+				//adjZonesName[i][]='\0';
+				adjZonesName[i].erase(adjZonesName[i].size()-1);
+				f.open(CPath::lookup(adjZonesName[i]));
+				printf("reading file %s\n",adjZonesName[i].c_str());
+			}
+			catch(EPathNotFound &e)
+			{
+
+				printf ("%s\n", e.what ());
+				adjZoneFileFound[i] = false;
+				continue;
+			}
 		}
 		adjZones[i].serial(f);
 		adjZonesId[i] = adjZones[i].getZoneId();
@@ -414,6 +429,7 @@ void weldZones(char * centerZoneFileName)
 	for(i=0; i<8; i++)
 	{
 		if(adjZonesName[i]=="empty") continue;
+		if(!adjZoneFileFound[i]) continue;
 
 		// setting quad tree
 		uint qTreeDepth = 5;
@@ -428,6 +444,7 @@ void weldZones(char * centerZoneFileName)
 
 
 		// if no id yet, we add a correct id
+		nlassert(adjZonesId[i]!=0);
 		if(adjZonesId[i]==0) 
 		{
 			adjZonesId[i] = createZoneId(adjZonesName[i]);
@@ -442,7 +459,7 @@ void weldZones(char * centerZoneFileName)
 			}
 
 			// border vertices neighbour : current zone
-			for(itbv = adjZoneBorderVertices.begin(); itbv<adjZoneBorderVertices.end(); itbv++)
+			for(itbv = adjZoneBorderVertices.begin(); itbv!=adjZoneBorderVertices.end(); itbv++)
 			{
 				(*itbv).NeighborZoneId = adjZonesId[i];
 			}
@@ -470,6 +487,8 @@ void weldZones(char * centerZoneFileName)
 			}
 		}
 
+		fprintf(fdbg,"(before) zone %d vertices size : %d\n",i,adjZoneBorderVertices.size());
+
 		// delete border vertices of the adjacent zone if their neighbour zoneId
 		// is equal to current zone zoneId
 		std::vector<CBorderVertex>::iterator itborder = adjZoneBorderVertices.begin();
@@ -482,7 +501,7 @@ void weldZones(char * centerZoneFileName)
 			else
 				itborder++;
 		}
-	
+		fprintf(fdbg,"(after) zone %d vertices size : %d\n",i,adjZoneBorderVertices.size());
 
 		// A set for storing base vertex index already added in the quad tree
 		std::set<uint16> adjBaseVertexIndexSet;
@@ -704,12 +723,19 @@ void weldZones(char * centerZoneFileName)
 		}
 
 		adjZones[i].build(adjZonesId[i], adjZonePatchs, adjZoneBorderVertices);
-
+#if WELD_LOG
+		fprintf(fdbg,"[%d] binds :\n");
+		adjZones[i].debugBinds(fdbg);
+#endif
 		std::string strtmp;
 		strtmp = outputPath;
 		strtmp += adjZonesName[i];
-		strtmp += "w";
+		if(strtmp[strtmp.size()-1]!='w') 
+		{
+			strtmp += 'w';
+		}
 		COFile adjSave(strtmp);
+		printf("writing file %s\n",strtmp.c_str());
 		adjZones[i].serial(adjSave);
 
 	}
@@ -718,8 +744,12 @@ void weldZones(char * centerZoneFileName)
 	std::string strtmp;
 	strtmp = outputPath;
 	strtmp += centerZoneFileName;
-	strtmp += "w";
+	if(strtmp[strtmp.size()-1]!='w')
+	{
+		strtmp += "w";
+	}
 	COFile centerSave(strtmp);
+	printf("writing file %s\n",strtmp.c_str());
 	zone.serial(centerSave);
 
 }

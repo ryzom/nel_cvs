@@ -1,12 +1,19 @@
 #
-# $Id: Makefile.am,v 1.1 2000/10/06 14:17:35 valignat Exp $
+# $Id: Makefile.am,v 1.2 2000/11/23 11:51:35 valignat Exp $
 #
 
-noinst_LIBRARIES=     librknet.a
-MAINTAINERCLEANFILES= Makefile.in
+MAINTAINERCLEANFILES = Makefile.in
 
-librknet_a_SOURCES=   base_socket.cpp datagram_socket.cpp \
-                      inet_address.cpp message.cpp server_socket.cpp \
-                      service.cpp socket.cpp
+lib_LTLIBRARIES      = libnelnet.la
 
-# EOF
+libnelnet_la_SOURCES = base_socket.cpp cubic_entity_interpolator.cpp \
+                       inet_address.cpp linear_entity_interpolator.cpp \
+                       local_area.cpp local_entity.cpp message.cpp \
+                       moving_entity.cpp msg_socket.cpp naming_client.cpp \
+                       net_displayer.cpp pt_callback_item.cpp \
+                       remote_entity.cpp replica.cpp service.cpp socket.cpp \
+                       unitime.cpp
+
+libnelnet_la_LIBADD  = -lc
+
+# End of Makefile.am

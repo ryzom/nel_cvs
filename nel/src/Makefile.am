@@ -1,10 +1,11 @@
 #
-# $Id: Makefile.am,v 1.1 2000/10/06 14:17:35 valignat Exp $
+# $Id: Makefile.am,v 1.2 2000/11/23 11:51:35 valignat Exp $
 #
 
-SUBDIRS=              net 3d ai db misc sys python
+MAINTAINERCLEANFILES = Makefile.in
 
-MAINTAINERCLEANFILES= Makefile.in
+SUBDIRS              = misc net 3d
 
-# EOF
+
+# End of Makefile.am
 

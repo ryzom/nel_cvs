@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.32 2001/01/05 15:34:53 lecroart Exp $
+ * $Id: base_socket.cpp,v 1.33 2001/01/05 15:42:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,8 +228,11 @@ void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFa
 	{
 		if ( _Logging )
 		{
+#ifdef NL_OS_WINDOWS
 			nldebug( "Impossible to connect socket %d to %s %s (%d)", _Sock, addr.hostName().c_str(), addr.asIPString().c_str(), ERROR_NUM );
-			perror ("TEMP: ");
+#elif defined NL_OS_UNIX
+			nldebug( "Impossible to connect socket %d to %s %s (%d:%s)", _Sock, addr.hostName().c_str(), addr.asIPString().c_str(), ERROR_NUM, strerror(ERROR_NUM) );
+#endif
 		}
 		throw ESocketConnectionFailed( ERROR_NUM );
 	}

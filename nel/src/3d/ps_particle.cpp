@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.54 2001/12/12 10:28:08 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.55 2001/12/14 09:29:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -4423,8 +4423,7 @@ void CPSFace::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 	if (nbConf) // do we use precomputed basis ?
 	{
 		_IndexInPrecompBasis[_Owner->getNewElementIndex()] = rand() % nbConf;
-	}
-	newColorElement(emitterLocated, emitterIndex);
+	}	
 }
 	
 	
@@ -4436,8 +4435,7 @@ void CPSFace::deleteElement(uint32 index)
 	{
 		// replace ourself by the last element...
 		_IndexInPrecompBasis[index] = _IndexInPrecompBasis[_Owner->getSize() - 1];
-	}
-	deleteColorElement(index);
+	}	
 }
 	
 void CPSFace::resize(uint32 size)

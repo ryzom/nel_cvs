@@ -1,7 +1,7 @@
 /** \file noise_3d.cpp
  * cloud_scape implementation
  *
- * $Id: noise_3d.cpp,v 1.1 2002/10/25 16:22:48 besson Exp $
+ * $Id: noise_3d.cpp,v 1.2 2002/11/05 12:55:28 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -455,3 +455,4 @@ uint32 CNoise3d::getDepth ()
 }
 
 } // namespace NL3D
+

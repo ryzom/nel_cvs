@@ -1,7 +1,7 @@
 /** \file cloud.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: cloud_scape.h,v 1.1 2002/10/25 16:22:48 besson Exp $
+ * $Id: cloud_scape.h,v 1.2 2002/11/05 12:55:28 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -188,3 +188,4 @@ private:
 } // namespace NL3D
 
 #endif // NL_CLOUD_SCAPE_H
+

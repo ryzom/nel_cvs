@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.3 2002/10/30 13:39:16 vizerie Exp $
+ * $Id: cloud_scape.cpp,v 1.4 2002/11/05 12:55:28 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -798,3 +798,4 @@ uint32 CCloudScape::getMemSize()
 }
 
 } // namespace NL3D
+

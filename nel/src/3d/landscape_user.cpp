@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.19 2002/02/28 12:59:49 besson Exp $
+ * $Id: landscape_user.cpp,v 1.20 2002/03/26 18:05:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,7 +167,14 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius, std::s
 		_Landscape->Landscape.addZone(*_ZoneManager.Zone);
 
 		// Yoyo: must check the binds of the new inserted zone.
-		_Landscape->Landscape.checkBinds(_ZoneManager.Zone->getZoneId());
+		try
+		{
+			_Landscape->Landscape.checkBinds(_ZoneManager.Zone->getZoneId());
+		}
+		catch (EBadBind &e)
+		{
+			nlwarning ("Bind error : %s", e.what());
+		}
 
 		delete _ZoneManager.Zone;
 		zoneAdded= _ZoneManager.NameZoneAdded;

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.29 2002/09/24 15:02:29 vizerie Exp $
+ * $Id: vegetable_manager.cpp,v 1.30 2002/09/25 14:17:55 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1678,7 +1678,8 @@ bool			CVegetableManager::doubleSidedRdrPass(uint rdrPass)
 void			CVegetableManager::updateDriver(IDriver *driver)
 {
 	// update all driver
-	for(uint i=0; i <CVegetableVBAllocator::VBTypeCount; i++)
+	uint i;
+	for(i=0; i <CVegetableVBAllocator::VBTypeCount; i++)
 	{
 		_VBHardAllocator[i].updateDriver(driver);
 		_VBSoftAllocator[i].updateDriver(driver);

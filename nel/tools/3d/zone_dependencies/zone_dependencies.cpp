@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.3 2001/09/26 16:04:58 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.4 2001/10/29 09:35:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,7 +197,7 @@ int main (int argc, char* argv[])
 							catch (Exception& e)
 							{
 								// Error handling
-								printf ("ERROR: in file %s, %s", (dir+zoneName+ext).c_str(), e.what ());
+								nlwarning ("ERROR in file %s, %s", (dir+zoneName+ext).c_str(), e.what ());
 							}
 						}
 					}
@@ -353,7 +353,7 @@ int main (int argc, char* argv[])
 							}
 							else
 							{
-								printf ("ERROR: can't open %s for writing.\n", outputFileName.c_str());
+								nlwarning ("ERROR can't open %s for writing.\n", outputFileName.c_str());
 							}
 
 							// Close the file
@@ -365,18 +365,18 @@ int main (int argc, char* argv[])
 				else
 				{
 					// Not valid
-					printf ("ERROR: %s is not a valid zone name.\n", lastName.c_str());
+					nlwarning ("ERROR %s is not a valid zone name.\n", lastName.c_str());
 				}
 			}
 			else
 			{
 				// Not valid
-				printf ("ERROR: %s is not a valid zone name.\n", firstName.c_str());
+				nlwarning ("ERROR %s is not a valid zone name.\n", firstName.c_str());
 			}
 		}
 		catch (Exception &ee)
 		{
-			printf ("ERROR: %s\n", ee.what());
+			nlwarning ("ERROR %s\n", ee.what());
 		}
 	}
 

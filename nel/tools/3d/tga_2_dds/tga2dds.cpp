@@ -1,7 +1,7 @@
 /** \file tga2dds.cpp
  * TGA to DDS converter
  *
- * $Id: tga2dds.cpp,v 1.7 2001/08/29 12:38:34 corvazier Exp $
+ * $Id: tga2dds.cpp,v 1.8 2001/10/29 09:35:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,8 @@ using namespace std;
 #define	DXT1A	11
 #define	DXT3	3
 #define	DXT5	5
-
+#define	TGA16	16
+#define NOT_DEFINED 0xff
 
 
 bool sameType(const char *sFileNameDest, uint8 algo);
@@ -58,7 +59,48 @@ void main(int argc, char **argv);
 
 
 
-bool sameType(const char *sFileNameDest, uint8 algo, bool wantMipMap)
+uint8 getType(const char *sFileNameDest)
+{
+	uint32 dds;
+	FILE *f = fopen(sFileNameDest,"rb");
+	if(f==NULL)
+	{
+		return NOT_DEFINED;
+	}
+	DDSURFACEDESC2 h;
+	fread(&dds,1,4,f);
+	fread(&h,sizeof(DDSURFACEDESC2),1,f);
+	if(fclose(f))
+	{
+		cerr<<sFileNameDest<< "is not closed"<<endl;
+	}
+
+	if(h.ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X', 'T', '1')
+		&& h.ddpfPixelFormat.dwRGBBitCount==0)
+	{
+		return DXT1;
+	}
+				
+	if(h.ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X', 'T', '1')
+		&& h.ddpfPixelFormat.dwRGBBitCount>0)
+	{
+		return DXT1A;
+	}
+	
+	if(h.ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X', 'T', '3'))
+	{
+		return DXT3;
+	}
+
+	if(h.ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X', 'T', '5'))
+	{
+		return DXT5;
+	}
+
+	return NOT_DEFINED;
+}
+
+bool sameType(const char *sFileNameDest, uint8 &algo, bool wantMipMap)
 {
 	uint32 dds;
 	FILE *f = fopen(sFileNameDest,"rb");
@@ -112,7 +154,7 @@ bool sameType(const char *sFileNameDest, uint8 algo, bool wantMipMap)
 
 
 
-bool dataCheck(const char *sFileNameSrc, const char *sFileNameDest, uint8 algo, bool wantMipMap)
+bool dataCheck(const char *sFileNameSrc, const char *sFileNameDest, uint8& algo, bool wantMipMap)
 {
 	
 	HANDLE h1 = CreateFile( sFileNameSrc, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -178,6 +220,7 @@ void writeInstructions()
 	cout<<"       1A for DXTC1 with alpha"<<endl;
 	cout<<"       3  for DXTC3"<<endl;
 	cout<<"       5  for DXTC5"<<endl;
+	cout<<"       tga16  for TGA 16 bits"<<endl;
 	cout<<"-m   : Create MipMap"<<endl;
 	cout<<endl;
 	cout<<"default : DXTC1 if Tga 24b, DXTC5 if Tga 32b."<<endl;
@@ -278,7 +321,7 @@ void		compressMipMap(uint8 *pixSrc, sint width, sint height, vector<uint8>	&comp
 
 // ***************************************************************************
 string		OptOutputFileName;
-sint		OptAlgo= -1;
+uint8		OptAlgo= NOT_DEFINED;
 bool		OptMipMap= false;
 bool	parseOptions(int argc, char **argv)
 {
@@ -305,6 +348,8 @@ bool	parseOptions(int argc, char **argv)
 			if(!strcmp(argv[i],"3"))	OptAlgo = DXT3;
 			else
 			if(!strcmp(argv[i],"5"))	OptAlgo = DXT5;
+			else
+			if(!strcmp(argv[i],"tga16"))	OptAlgo = TGA16;
 			else
 			{
 				cerr<<"Algorithm unknown : "<<argv[i]<<endl;
@@ -381,7 +426,7 @@ void main(int argc, char **argv)
 		cerr<<"Can't load file : "<<inputFileName<<endl;
 		exit(1);
 	}
-	if(imageDepth!=24 && imageDepth!=32 && imageDepth!=8)
+	if(imageDepth!=16 && imageDepth!=24 && imageDepth!=32 && imageDepth!=8)
 	{
 		cerr<<"Image not supported : "<<imageDepth<<endl;
 		exit(1);
@@ -399,8 +444,13 @@ void main(int argc, char **argv)
 		outputFileName= OptOutputFileName;
 	else
 		outputFileName= getOutputFileName(inputFileName);
+
+	// Check dest algo
+	if (OptAlgo==NOT_DEFINED)
+		OptAlgo = getType (outputFileName.c_str());
+	
 	// Choose Algo.
-	if(OptAlgo!=-1)
+	if(OptAlgo!=NOT_DEFINED)
 	{
 		algo= OptAlgo;
 	}
@@ -412,17 +462,14 @@ void main(int argc, char **argv)
 			algo = DXT5;
 	}
 
-
 	// Data check
 	//===========
-	if(dataCheck(inputFileName.c_str(),outputFileName.c_str(),algo, OptMipMap))
+	if(dataCheck(inputFileName.c_str(),outputFileName.c_str(), OptAlgo, OptMipMap))
 	{
 		cout<<outputFileName<<" : a recent dds file already exists"<<endl;
 		return;
 	}
 
-
-	
 
 	// Vectors for RGBA data
 	std::vector<uint8> RGBASrc = picTga.getPixels();
@@ -563,105 +610,130 @@ void main(int argc, char **argv)
 	picSrc.resize(width, height, CBitmap::RGBA);
 	picSrc.getPixels(0)= RGBADest;
 	
-
-	// Compress
-	//===========
-	vector<uint8>		CompressedMipMaps;
-	DDSURFACEDESC		dest;
-
-	// log.
-	std::string algostr;
-	switch(algo)
+	// 16 bits tga ?
+	if (algo==TGA16)
 	{
-		case DXT1:
-			algostr = "DXTC1";
-			break;
-		case DXT1A:
-			algostr = "DXTC1A";
-			break;
-		case DXT3:
-			algostr = "DXTC3";
-			break;
-		case DXT5:
-			algostr = "DXTC5";
-			break;
-	}
-	cout<<"compressing ("<<algostr<<") "<<inputFileName<<" to "<<outputFileName<<endl;
-
-
-	// For all mipmaps, compress.
-	if(OptMipMap)
-	{
-		// Build the mipmaps.
-		picSrc.buildMipMaps();
-	}
-	for(sint mp= 0;mp<(sint)picSrc.getMipMapCount();mp++)
-	{
-		uint8	*pixDest;
-		uint8	*pixSrc= &(*picSrc.getPixels(mp).begin());
-		sint	w= picSrc.getWidth(mp);
-		sint	h= picSrc.getHeight(mp);
-		vector<uint8>	compdata;
-		DDSURFACEDESC	temp;
-		compressMipMap(pixSrc, w, h, compdata, temp, algo);
-		// Copy the result of the base dds in the dest.
-		if(mp==0)
-			dest= temp;
-
-		// Append this data to the global data.
-		sint	delta= CompressedMipMaps.size();
-		CompressedMipMaps.resize(CompressedMipMaps.size()+compdata.size());
-		pixDest= &(*CompressedMipMaps.begin())+ delta;
-		memcpy( pixDest, &(*compdata.begin()), compdata.size());
-	}
-
-
-
-	// Replace DDSURFACEDESC destination header by a DDSURFACEDESC2 header
-	//====================================================================
-	DDSURFACEDESC2 dest2;
-	memset(&dest2, 0, sizeof(dest2));
-	dest2.dwSize = sizeof(dest2);
-	dest2.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_LPSURFACE | 
-					DDSD_LINEARSIZE | DDSD_PIXELFORMAT; 
-	dest2.dwHeight = dest.dwHeight;
-	dest2.dwWidth = dest.dwWidth;
-	dest2.dwLinearSize = dest.dwLinearSize;
-	dest2.dwMipMapCount = dest.dwMipMapCount;
-	dest2.dwAlphaBitDepth = dest.dwAlphaBitDepth;
-	dest2.dwReserved = dest.dwReserved;
-	dest2.lpSurface = dest.lpSurface;
-	dest2.ddpfPixelFormat = dest.ddpfPixelFormat;
-	// Setting Nb MipMap.
-	dest2.dwFlags|= DDSD_MIPMAPCOUNT;
-	dest2.dwMipMapCount= picSrc.getMipMapCount();
-
-
-	// Saving DDS file
-	//=================
-	NLMISC::COFile output;
-	if(!output.open(outputFileName))
-	{
-		cerr<<"Can't open output file "<<outputFileName<<endl;
-		exit(1);
-	}
-	output.serialBuffer((uint8*)std::string("DDS ").c_str(),4);
-	try 
-	{
-		uint8 * pDest2 = (uint8*) &dest2;
-		output.serialBuffer(pDest2, sizeof(dest2));
-	}
-	catch(NLMISC::EWriteError &e)
-	{
-		cerr<<e.what()<<endl;
-		exit(1);
-	}
+		// Saving TGA file
+		//=================
+		NLMISC::COFile output;
+		if(!output.open(outputFileName))
+		{
+			cerr<<"Can't open output file "<<outputFileName<<endl;
+			exit(1);
+		}
+		try 
+		{
+			picSrc.writeTGA (output, 16);
+		}
+		catch(NLMISC::EWriteError &e)
+		{
+			cerr<<e.what()<<endl;
+			exit(1);
+		}
 	
-	output.serialBuffer(&(*CompressedMipMaps.begin()), CompressedMipMaps.size());
+		output.close();
 
-	
-	output.close();
+	}
+	else
+	{
+		// Compress
+		//===========
+		vector<uint8>		CompressedMipMaps;
+		DDSURFACEDESC		dest;
 
+		// log.
+		std::string algostr;
+		switch(algo)
+		{
+			case DXT1:
+				algostr = "DXTC1";
+				break;
+			case DXT1A:
+				algostr = "DXTC1A";
+				break;
+			case DXT3:
+				algostr = "DXTC3";
+				break;
+			case DXT5:
+				algostr = "DXTC5";
+				break;
+		}
+		cout<<"compressing ("<<algostr<<") "<<inputFileName<<" to "<<outputFileName<<endl;
+
+
+		// For all mipmaps, compress.
+		if(OptMipMap)
+		{
+			// Build the mipmaps.
+			picSrc.buildMipMaps();
+		}
+		for(sint mp= 0;mp<(sint)picSrc.getMipMapCount();mp++)
+		{
+			uint8	*pixDest;
+			uint8	*pixSrc= &(*picSrc.getPixels(mp).begin());
+			sint	w= picSrc.getWidth(mp);
+			sint	h= picSrc.getHeight(mp);
+			vector<uint8>	compdata;
+			DDSURFACEDESC	temp;
+			compressMipMap(pixSrc, w, h, compdata, temp, algo);
+			// Copy the result of the base dds in the dest.
+			if(mp==0)
+				dest= temp;
+
+			// Append this data to the global data.
+			sint	delta= CompressedMipMaps.size();
+			CompressedMipMaps.resize(CompressedMipMaps.size()+compdata.size());
+			pixDest= &(*CompressedMipMaps.begin())+ delta;
+			memcpy( pixDest, &(*compdata.begin()), compdata.size());
+		}
+
+
+
+		// Replace DDSURFACEDESC destination header by a DDSURFACEDESC2 header
+		//====================================================================
+		DDSURFACEDESC2 dest2;
+		memset(&dest2, 0, sizeof(dest2));
+		dest2.dwSize = sizeof(dest2);
+		dest2.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_LPSURFACE | 
+						DDSD_LINEARSIZE | DDSD_PIXELFORMAT; 
+		dest2.dwHeight = dest.dwHeight;
+		dest2.dwWidth = dest.dwWidth;
+		dest2.dwLinearSize = dest.dwLinearSize;
+		dest2.dwMipMapCount = dest.dwMipMapCount;
+		dest2.dwAlphaBitDepth = dest.dwAlphaBitDepth;
+		dest2.dwReserved = dest.dwReserved;
+		dest2.lpSurface = dest.lpSurface;
+		dest2.ddpfPixelFormat = dest.ddpfPixelFormat;
+		// Setting Nb MipMap.
+		dest2.dwFlags|= DDSD_MIPMAPCOUNT;
+		dest2.dwMipMapCount= picSrc.getMipMapCount();
+
+
+		// Saving DDS file
+		//=================
+		NLMISC::COFile output;
+		if(!output.open(outputFileName))
+		{
+			cerr<<"Can't open output file "<<outputFileName<<endl;
+			exit(1);
+		}
+		output.serialBuffer((uint8*)std::string("DDS ").c_str(),4);
+		try 
+		{
+			uint8 * pDest2 = (uint8*) &dest2;
+			output.serialBuffer(pDest2, sizeof(dest2));
+		}
+		catch(NLMISC::EWriteError &e)
+		{
+			cerr<<e.what()<<endl;
+			exit(1);
+		}
+		
+		output.serialBuffer(&(*CompressedMipMaps.begin()), CompressedMipMaps.size());
+
+		
+		output.close();
+	}
 }	
 
 

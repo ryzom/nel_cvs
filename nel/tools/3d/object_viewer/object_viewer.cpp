@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.42 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.43 2001/10/29 09:35:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -443,57 +443,73 @@ void CObjectViewer::initUI (HWND parent)
 
 // ***************************************************************************
 
-void addTransformation (CMatrix &current, CAnimation *anim, float begin, float end, ITrack *posTrack, ITrack *rotquatTrack)
+void CObjectViewer::addTransformation (CMatrix &current, CAnimation *anim, float begin, float end, ITrack *posTrack, ITrack *rotquatTrack)
 {
-	// Normalize the mt
-	CVector I = current.getI ();
-	CVector J = current.getJ ();
-	I.z = 0;
-	J.z = 0;
-	J.normalize ();
-	CVector K = I^J;
-	K.normalize ();
-	I = J^K;
-	I.normalize ();
-	CMatrix normalized;
-	normalized.setRot (I, J, K);
-	normalized.setPos (current.getPos ());
-	current = normalized;
-
-	// Remove the start of the animation
-	CQuat rotStart (0,0,0,1);
-	CVector posStart (0,0,0);
-	CQuat rotEnd (0,0,0,1);
-	CVector posEnd (0,0,0);
-	if (rotquatTrack)
+	// In place ?
+	if (_AnimationDlg->Inplace)
 	{
-		// Interpolate the rotation
-		rotquatTrack->interpolate (begin, rotStart);
-		rotquatTrack->interpolate (end, rotEnd);
+		// Just identity
+		current.identity();
 	}
-	if (posTrack)
+	else
 	{
-		// Interpolate the position
-		posTrack->interpolate (begin, posStart);
-		posTrack->interpolate (end, posEnd);
+		// Normalize the mt
+		CVector I = current.getI ();
+		CVector J = current.getJ ();
+		I.z = 0;
+		J.z = 0;
+		J.normalize ();
+		CVector K = I^J;
+		K.normalize ();
+		I = J^K;
+		I.normalize ();
+		CMatrix normalized;
+		normalized.setRot (I, J, K);
+		normalized.setPos (current.getPos ());
+		current = normalized;
+
+		// Remove the start of the animation
+		CQuat rotStart (0,0,0,1);
+		CVector posStart (0,0,0);
+		CQuat rotEnd (0,0,0,1);
+		CVector posEnd (0,0,0);
+		if (rotquatTrack)
+		{
+			// Interpolate the rotation
+			rotquatTrack->interpolate (begin, rotStart);
+			rotquatTrack->interpolate (end, rotEnd);
+		}
+		if (posTrack)
+		{
+			// Interpolate the position
+			posTrack->interpolate (begin, posStart);
+			posTrack->interpolate (end, posEnd);
+		}
+
+		// Remove the init rotation and position
+		normalized.setRot (rotStart);
+		normalized.setPos (posStart);
+		normalized.invert ();
+		current *= normalized;
+
+		// Add the final rotation and position
+		normalized.setRot (rotEnd);
+		normalized.setPos (posEnd);
+
+		// Incremental ?
+		if (_AnimationDlg->IncPos)
+			current *= normalized;
+		else
+			current = normalized;
 	}
-
-	// Remove the init rotation and position
-	normalized.setRot (rotStart);
-	normalized.setPos (posStart);
-	normalized.invert ();
-	current *= normalized;
-
-	// Add the final rotation and position
-	normalized.setRot (rotEnd);
-	normalized.setPos (posEnd);
-	current *= normalized;
 }
 
 // ***************************************************************************
 
 void CObjectViewer::setupPlaylist (float time)
 {
+	// Update animation dlg
+
 	// A playlist
 	CAnimationPlaylist playlist;
 
@@ -615,17 +631,6 @@ void CObjectViewer::setupPlaylist (float time)
 void CObjectViewer::go ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-	// Text context to show infos
-	/*
-	CTextContext topInfo;
-	topInfo.init (CNELU::Driver, &_FontManager);
-	topInfo.setKeep800x600Ratio(false);
-	topInfo.setFontGenerator (_FontPath);
-	topInfo.setHotSpot (CComputedString::TopLeft);
-	topInfo.setColor (CRGBA (255,255,255));
-	topInfo.setFontSize (12);
-	*/
 
 	do
 	{

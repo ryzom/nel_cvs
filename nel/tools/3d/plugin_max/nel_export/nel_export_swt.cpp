@@ -1,7 +1,7 @@
 /** \file nel_export_swt.cpp
  * <File description>
  *
- * $Id: nel_export_swt.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: nel_export_swt.cpp,v 1.4 2001/10/29 09:35:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,16 +96,18 @@ bool CNelExport::exportSWT(const char *sPath, std::vector<INode*>& vectNode, Int
 				// Serial the skeleton
 				sw.serial (file);
 				// All is good
+				return true;
 			}
-			catch (...)
+			catch (Exception &e)
 			{
+				nlwarning (e.what());
 			}
 		}
 	}
 	else
 	{
 		// No node found with a SWT Modifier
+		nlwarning ("No node found with a SWT Modifier");
 	}
-
-	return true;
+	return false;
 }

@@ -1,7 +1,7 @@
 /** \file build_coarse_mesh.cpp
  * Precalc coarse mesh objets to build a single texture
  *
- * $Id: build_coarse_mesh.cpp,v 1.2 2001/07/11 16:11:28 corvazier Exp $
+ * $Id: build_coarse_mesh.cpp,v 1.3 2001/10/29 09:35:56 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 						if (!found)
 						{
 							// Output error message
-							printf ("ERROR: this shape has no coarse mesh. %s\n", intputPath.c_str());
+							nlwarning ("ERROR this shape has no coarse mesh. %s\n", intputPath.c_str());
 
 							// Delete the shape
 							delete multiLod;
@@ -167,13 +167,13 @@ int main(int argc, char* argv[])
 					else
 					{
 						// not good type
-						printf ("ERROR: This mesh is not a multilod ! %s...\n", intputPath.c_str());
+						nlwarning ("ERROR This mesh is not a multilod ! %s...\n", intputPath.c_str());
 					}
 				}
 				else
 				{
 					// Output
-					printf ("ERROR: file not found: %s\n", intputPath.c_str());
+					nlwarning ("ERROR file not found: %s\n", intputPath.c_str());
 				}
 			}
 
@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
 						}
 						else
 						{
-							printf ("ERROR: can't write file %s\n", shapes[i].FileName.c_str());
+							nlwarning ("ERROR can't write file %s\n", shapes[i].FileName.c_str());
 						}
 					}
 
@@ -224,12 +224,12 @@ int main(int argc, char* argv[])
 						// Write a TGA file
 						if (!coarseBitmap.writeTGA (outputFile, 32))
 						{
-							printf ("ERROR: can't write the file %s\n", texture_output_path.c_str());
+							nlwarning ("ERROR can't write the file %s\n", texture_output_path.c_str());
 						}
 					}
 					else
 					{
-						printf ("ERROR: can't write file %s\n", texture_output_path.c_str());
+						nlwarning ("ERROR can't write file %s\n", texture_output_path.c_str());
 					}
 
 					// Show stats
@@ -239,18 +239,23 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					printf ("STOP: global texture too small to contain all textures.\nPlease increase the texture_mul_size parameter.\n");
+					nlwarning ("ERROR global texture too small to contain all textures.\nPlease increase the texture_mul_size parameter.\n");
 				}
 			}
 			else
 			{
-				printf ("STOP: no coarse mesh to compute, abort.\n");
+				nlwarning ("ERROR no coarse mesh to compute, abort.\n");
 			}
 		}
 		catch (EConfigFile &e)
 		{
 			// Something goes wrong... catch that
-			printf ("FATAL: %s\n", e.what ());
+			nlwarning ("ERROR %s\n", e.what ());
+		}
+		catch (Exception &e)
+		{
+			// Something goes wrong... catch that
+			nlwarning ("ERROR %s\n", e.what ());
 		}
 	}
 	

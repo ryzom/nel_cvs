@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.12 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: zone_welder.cpp,v 1.13 2001/10/29 09:35:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -242,13 +242,13 @@ void weldZones(const char *center)
 			}
 			else
 			{
-				printf("File not found: %s\n", ss.c_str());
+				nlwarning ("ERROR File not found: %s\n", ss.c_str());
 				adjZonesName[i]="empty";
 			}
 		}
 		catch(exception &e)
 		{
-			printf ("%s\n", e.what ());
+			nlwarning ("ERROR %s\n", e.what ());
 			adjZoneFileFound[i] = false;
 		}
 	}
@@ -889,13 +889,13 @@ void weldZones(const char *center)
 	else
 	{
 		// Main message
-		printf ("ERROR: weld failed. Correct errors below: (indices are MAX indices (+1))\n");
+		nlwarning ("ERROR weld failed. Correct errors below: (indices are MAX indices (+1))\n");
 
 		// For each message
 		for (uint i=0; i<errorMessage.size(); i++)
 		{
 			// Message
-			printf ("%s", errorMessage[i].c_str());
+			nlwarning ("%s", errorMessage[i].c_str());
 		}
 	}
 

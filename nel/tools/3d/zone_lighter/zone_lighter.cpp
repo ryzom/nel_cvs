@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.10 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.11 2001/10/29 09:35:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,13 +200,13 @@ int main(int argc, char* argv[])
 					catch (Exception &e)
 					{
 						// Error
-						fprintf (stderr, "Error: error loading tile bank %s\n%s\n", bank_path.asString().c_str(), e.what());
+						nlwarning ("ERROR error loading tile bank %s\n%s\n", bank_path.asString().c_str(), e.what());
 					}
 				}
 				else
 				{
 					// Error
-					fprintf (stderr, "Error: can't load tile bank %s\n", bank_path.asString().c_str());
+					nlwarning ("ERROR can't load tile bank %s\n", bank_path.asString().c_str());
 				}
 
 				// Add the zone
@@ -249,7 +249,7 @@ int main(int argc, char* argv[])
 						else
 						{
 							// Error
-							fprintf (stderr, "Error: can't load instance group %s\n", name.c_str());
+							nlwarning ("ERROR can't load instance group %s\n", name.c_str());
 
 							// Stop before build
 							continu=false;
@@ -281,7 +281,7 @@ int main(int argc, char* argv[])
 					else
 					{
 						// Error message and continue
-						fprintf (stderr, "Error: can't load zone %s\n", (dir+zoneName+ext).c_str());
+						nlwarning ("ERROR can't load zone %s\n", (dir+zoneName+ext).c_str());
 					}
 
 					// Try to load an instance group.
@@ -305,7 +305,7 @@ int main(int argc, char* argv[])
 						else
 						{
 							// Error message and continue
-							fprintf (stderr, "Warning: can't load instance group %s\n", name.c_str());
+							nlwarning ("WARNING can't load instance group %s\n", name.c_str());
 						}
 					}
 				}
@@ -361,7 +361,7 @@ int main(int argc, char* argv[])
 					break;
 				default:
 					// Error message
-					fprintf (stderr, "Error: oversampling value not supported. Must be 0, 2, 8, 32 or 128. Forced to 0.\n");
+					nlwarning ("ERROR oversampling value not supported. Must be 0, 2, 8, 32 or 128. Forced to 0.\n");
 					lighterDesc.Oversampling=CZoneLighter::CLightDesc::NoOverSampling;
 					break;
 				}
@@ -460,7 +460,7 @@ int main(int argc, char* argv[])
 							else
 							{
 								// Error
-								fprintf (stderr, "Warning: can't load shape %s\n", name.c_str());
+								nlwarning ("WARNING can't load shape %s\n", name.c_str());
 							}
 						}
 						
@@ -523,31 +523,31 @@ int main(int argc, char* argv[])
 						catch (Exception& except)
 						{
 							// Error message
-							fprintf (stderr, "Error writing %s: %s\n", argv[2], except.what());
+							nlwarning ("ERROR writing %s: %s\n", argv[2], except.what());
 						}
 					}
 					else
 					{
 						// Error can't open the file
-						fprintf (stderr, "Can't open %s for writing\n", argv[1]);
+						nlwarning ("ERROR Can't open %s for writing\n", argv[1]);
 					}
 				}
 				else
 				{
 					// Error
-					fprintf (stderr, "Abort: files are missing.\n");
+					nlwarning ("ERROR Abort: files are missing.\n");
 				}
 			}
 			catch (Exception& except)
 			{
 				// Error message
-				fprintf (stderr, "Error: %s\n", except.what());
+				nlwarning ("ERROR %s\n", except.what());
 			}
 		}
 		else
 		{
 			// Error can't open the file
-			fprintf (stderr, "Can't open %s for reading\n", argv[1]);
+			nlwarning ("ERROR Can't open %s for reading\n", argv[1]);
 		}
 
 	}

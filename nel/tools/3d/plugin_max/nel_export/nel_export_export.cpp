@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.9 2001/09/18 14:41:24 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.10 2001/10/29 09:35:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,8 +204,9 @@ bool CNelExport::exportSkeleton	(const char *sPath, INode* pNode, Interface& ip,
 			// All is good
 			bRet=true;
 		}
-		catch (...)
+		catch (Exception &e)
 		{
+			nlwarning (e.what());
 		}
 	}
 

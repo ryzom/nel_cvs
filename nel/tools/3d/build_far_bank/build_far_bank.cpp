@@ -80,13 +80,14 @@ bool fillTileFar (uint tile, const char* sName, CTileFarBank::TFarType type, CTi
 			
 
 			// Check size..
-			if (!((_256&&(width==256)&&(height==256))||((!_256)&&(width==128)&&(height==128))))
+			if ((!((_256&&(width==256)&&(height==256))||((!_256)&&(width==128)&&(height==128)))))
 			{
 				// New size
 				width = height = _256?256:128;
 
 				// Output a warning message
-				fprintf (stderr, "Warning: resize %s to %d x %d\n", sName, width, height);
+				if ((type!=CTileFarBank::alpha)||(width!=64)||(height!=64))
+					nlwarning ("WARNING resize %s to %d x %d\n", sName, width, height);
 
 				// Resample the picture
 				bitmap.resample ( width, height);
@@ -108,12 +109,12 @@ bool fillTileFar (uint tile, const char* sName, CTileFarBank::TFarType type, CTi
 		}
 		catch (Exception& except)
 		{
-			fprintf (stderr, "Error: %s\n", except.what());
+			nlwarning ("ERROR %s\n", except.what());
 		}
 	}
 	else
 	{
-		fprintf (stderr, "Error: can't open bitmap %s for reading\n", sName);
+		nlwarning ("ERROR can't open bitmap %s for reading\n", sName);
 	}
 	return false;
 }
@@ -357,17 +358,17 @@ int main (int argc, char **argv)
 				}
 				else	// Open failed
 				{
-					fprintf (stderr, "Can't open file %s for writing\n", argv[2]);
+					nlwarning ("ERROR Can't open file %s for writing\n", argv[2]);
 				}
 			}
 			catch (Exception& except)
 			{
-				fprintf (stderr, "Error: %s\n", except.what());
+				nlwarning ("ERROR %s\n", except.what());
 			}
 		}
 		else	// Open failed
 		{
-			fprintf (stderr, "Can't open file %s for reading\n", argv[1]);
+			nlwarning ("ERROR Can't open file %s for reading\n", argv[1]);
 		}
 	}		
 

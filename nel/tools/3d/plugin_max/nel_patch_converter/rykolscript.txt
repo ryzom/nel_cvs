@@ -221,3 +221,35 @@ Export an animation file.
 ObjectArray is an array of node
 Filename is the file name to export
 boolean_scene is false to export a model animation, true to export a scene animation.
+
+**********************************************
+NelExportSkeletonWeight ObjectArray "Filename.swt"
+
+Export a skeleton weight template.
+
+ObjectArray is an array of node
+Filename is the file name to export
+
+**********************************************
+NelExportSkeleton node "Filename.skel"
+
+Export a skeleton.
+
+node is the root of the skeleton
+Filename is the file name to export
+
+**********************************************
+NeLTestFileDate "file0" "file1"
+
+Test the date of the two file
+
+file0 is the name of the first file to test (destination file)
+file1 is the name of the second file to test (source file)
+
+If file0 doesn't exist the function return true
+If date (file0) <= date (file1) the function return true
+If date (file0) > date (file1) the function return false
+If file1 doesn't exist the function return undefined
+If an error occured, the function return undefined
+
+**********************************************

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.60 2002/03/20 11:13:59 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.61 2002/04/22 08:46:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,7 +177,7 @@ void CDriverGL::setupUserTextureMatrix(uint numStages, CMaterial& mat)
 	}
 }
 
-inline void CDriverGL::disableUserTextureMatrix()
+void CDriverGL::disableUserTextureMatrix()
 { 
 	if (_UserTexMatEnabled != 0)		
 	{

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.18 2001/11/07 13:08:51 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.19 2001/11/21 13:53:10 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1449,6 +1449,13 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 			else
 			{
 				_DriverGLStates.enableVertexAttribArray(glIndex, false);
+				/* OpenGL Driver Bug with VertexProgram, UChar4 type, and VertexArrayRange.
+					Must also disable colorArray in standard gl calls.
+				*/
+				if(glIndex==3)
+					_DriverGLStates.enableColorArray(false);
+				else if(glIndex==4)
+					_DriverGLStates.enableSecondaryColorArray(false);
 			}
 		}
 	}

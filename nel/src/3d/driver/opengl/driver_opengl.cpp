@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.127 2001/11/14 15:48:21 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.128 2001/11/21 13:53:10 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -787,10 +787,12 @@ bool CDriverGL::clearZBuffer(float zval)
 bool CDriverGL::swapBuffers()
 {
 	// Reset VertexArrayRange.
-	if(_CurrentVertexArrayRange)
+	if(_CurrentVertexBufferHard)
 	{
-		_CurrentVertexArrayRange->disable();
-		_CurrentVertexArrayRange= NULL;
+		// Then, we'll wait for this VBHard to finish before this frame (in the finishFence() below).
+		_CurrentVertexBufferHard->setFence();
+		// and we disable it.
+		_CurrentVertexBufferHard->disable();
 	}
 
 
@@ -850,12 +852,6 @@ bool CDriverGL::swapBuffers()
 
 	// Reset the texture set
 	_TextureUsed.clear();
-
-	// Reset VertexArrayRange.
-	if(_CurrentVertexBufferHard)
-	{
-		_CurrentVertexBufferHard->disable();
-	}
 
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.10 2002/03/13 14:25:44 corvazier Exp $
+ * $Id: script.cpp,v 1.11 2002/06/13 16:47:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1883,6 +1883,10 @@ bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTi
 		theLand->Landscape.setTileNear (1000.f);
 		theLand->Landscape.TileBank=tileBank;
 
+		// Enable additive tiles
+		theLand->enableAdditive (true);
+		theLand->Landscape.setRefineMode (true);
+
 		// Enbable automatique lighting
 #ifndef NL_DEBUG
 		theLand->Landscape.enableAutomaticLighting (true);
@@ -1896,6 +1900,7 @@ bool MakeSnapShot (NL3D::CZone &zone, NLMISC::CBitmap &snapshot, const NL3D::CTi
 		CNELU::clearBuffers(CRGBA(255,0,255,0));
 
 		// Render the scene
+		CNELU::Scene.render();
 		CNELU::Scene.render();
 		CNELU::Driver->swapBuffers ();
 	

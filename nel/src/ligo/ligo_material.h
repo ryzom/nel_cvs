@@ -1,7 +1,7 @@
-/** \file ligo/material.h
+/** \file ligo/ligo_material.h
  * A ligoscape material
  *
- * $Id: material.h,v 1.2 2002/02/20 18:09:06 lecroart Exp $
+ * $Id: ligo_material.h,v 1.1 2002/02/28 08:14:36 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

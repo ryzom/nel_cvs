@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.20 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: source_user.cpp,v 1.21 2002/06/04 10:04:45 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,11 +116,12 @@ void					CSourceUser::setPriority( TSoundPriority pr, bool redispatch )
 {
 	_Priority = pr;
 
+	// The AudioMixer redispatches as necessary in the update() function [PH]
 	// Redispatch the tracks if needed
-	if ( redispatch )
-	{
-		CAudioMixerUser::instance()->balanceSources();
-	}
+	//if ( redispatch )
+	//{
+	//	CAudioMixerUser::instance()->balanceSources();
+	//}
 }
 
 
@@ -151,13 +152,14 @@ bool					CSourceUser::getLooping() const
  */
 void					CSourceUser::play()
 {
+
 #ifdef NL_DEBUG
 	if ( _Sound != NULL )
 	{
 		nlassert( (_Sound->getBuffer() != NULL) );
 	}
 #endif
-	
+
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->play();
@@ -248,6 +250,7 @@ void					CSourceUser::setDirection( const NLMISC::CVector& dir )
 			if ( dir.isNull() ) // workaround
 			{
 				_Track->DrvSource->setCone( 6.283185f, 6.283185f, 1.0f ); // because the direction with 0 is not enough for a non-directional source!
+				_Track->DrvSource->setDirection( CVector::I );  // Don't send a 0 vector, DSound will complain. Send (1,0,0), it's omnidirectional anyway.
 				coneset = false;
 			}
 			else
@@ -255,10 +258,10 @@ void					CSourceUser::setDirection( const NLMISC::CVector& dir )
 				if ( ! coneset )
 				{
 					_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
+					_Track->DrvSource->setDirection( dir );
 					coneset = true;
 				}
 			}
-			_Track->DrvSource->setDirection( dir );
 		}
 	}
 }
@@ -474,7 +477,7 @@ void					CSourceUser::serial( NLMISC::IStream& s )
 
 
 /*
- * Get playing state. Return false even if the source has stopped on its own.
+ * Get playing state. Return false if the source has stopped on its own.
  */
 bool					CSourceUser::isPlaying()
 {

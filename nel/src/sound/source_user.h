@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.11 2001/09/04 13:45:41 vizerie Exp $
+ * $Id: source_user.h,v 1.12 2002/06/04 10:04:45 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,8 @@ public:
 	virtual bool					isPlaying();
 	/// Tells this source not to call its callbacks when it ends. This is valid for spawned sources only.
 	virtual	void					unregisterSpawnCallBack()					{ _SpawnEndCb = NULL; }
+	///
+	virtual NLMISC::TTicks			getPlayTime()								{ return NLMISC::CTime::getLocalTime() - _PlayStart; }
 	//@}
 
 

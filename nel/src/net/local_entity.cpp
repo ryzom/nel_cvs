@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.12 2000/11/28 13:38:24 cado Exp $
+ * $Id: local_entity.cpp,v 1.13 2000/11/29 17:24:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -284,6 +284,9 @@ void CLocalEntity::roll( TAngle delta )
 //
 void CLocalEntity::pitch( TAngle delta )
 {
+	/*CVector v1 = CVector(0,0,1) ^ _BodyHdg;
+	CVector v2 = _BodyHdg ^ v1;*/
+
 	CMatrix m;
 	m.identity();
 	m.rotateX( delta ); // TODO

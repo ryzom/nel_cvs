@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.8 2000/11/27 10:07:07 cado Exp $
+ * $Id: local_area.h,v 1.9 2000/11/29 17:24:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,13 @@ typedef std::map<TEntityId,CRemoteEntity*> CRemoteEntities;
 /// Iterator on CRemoteEntities
 typedef CRemoteEntities::iterator ItRemoteEntities;
 
+/// Callbacks for creation of new remote entities
+typedef void (*TNewEntityCallback) ( CRemoteEntity* );
+
+/// Callbacks for processing a remote entity (e.g. deletion)
+typedef void (*TEntityIdCallback) ( TEntityId );
+
+
 class CMessage;
 
 
@@ -81,6 +88,18 @@ public:
 		return _Neighbors;
 	}
 
+	/// Provides a callback function to be called after creating a new remote entity
+	void					setNewEntityCallback( TNewEntityCallback cb )
+	{
+		_NewEntityCallback = cb;
+	}
+
+	/// Provides a callback function to be called after deletion of a remote entity
+	void					setEntityRemovedCallback( TEntityIdCallback cb )
+	{
+		_EntityRemovedCallback = cb;
+	}
+
 	/// The entity controlled by the player
 	CLocalEntity			User;
 
@@ -97,14 +116,16 @@ public:
 	friend void cbHandleDisconnection( CMessage& msgin, TSenderId idfrom );
 	
 	/// Singleton
-	static CLocalArea *Instance;
+	static CLocalArea	*Instance;
 
 private:
 
-	TPosUnit		_Radius;
-	CRemoteEntities	_Neighbors;
+	TPosUnit			_Radius;
+	CRemoteEntities		_Neighbors;
+	TNewEntityCallback	_NewEntityCallback;
+	TEntityIdCallback	_EntityRemovedCallback;
 
-	NLMISC::TTime	_PreviousTime;
+	NLMISC::TTime		_PreviousTime;
 };
 
 

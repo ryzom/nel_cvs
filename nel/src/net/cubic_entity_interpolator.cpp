@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.cpp
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.cpp,v 1.5 2000/11/28 13:38:24 cado Exp $
+ * $Id: cubic_entity_interpolator.cpp,v 1.6 2000/11/29 17:24:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,7 @@ void CCubicEntityInterpolator::begin( const IMovingEntity& src, const IMovingEnt
 	_Duration = duration;
 	_Elapsed = 0;
 	_Active = true;
+	_SrcHeading = src.bodyHeading();
 
 	// Amplitude for interpolation
 	TPosUnit halfdist;
@@ -129,7 +130,7 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 	if ( ratio < 0.9 ) // not interpolating until 100%
 	{
 		// Cubic interpolation of position
-		CVectorH v( ratio*ratio*ratio, ratio*ratio, ratio, 1 );
+		CVectorH v( ratio*ratio*ratio, ratio*ratio, ratio, 1 ); // optimized by the compiler
 		v = _CubicMatrix * v;
 		es.setPos( v );
 		
@@ -137,6 +138,9 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 		CVector p = es.pos();
 		p.z = 0.0f; // assuming ground mode for now
 		es.setTrajVector( (p-prevpos).normed() / deltatime );
+
+		// Body heading : linear interpolation
+		es.setBodyHeading( _SrcHeading + ( _Dest.bodyHeading() - _SrcHeading ) * ratio );
 	}
 	else
 	{

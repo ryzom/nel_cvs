@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.11 2000/11/27 10:07:07 cado Exp $
+ * $Id: local_area.cpp,v 1.12 2000/11/29 17:24:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,10 @@ inline void NLNET::createRemoteEntity( const IMovingEntity& es )
 {
 	CRemoteEntity *new_entity = new CRemoteEntity( es );
 	CLocalArea::Instance->addNeighbor( new_entity );
+	if ( CLocalArea::Instance->_NewEntityCallback != NULL )
+	{
+		CLocalArea::Instance->_NewEntityCallback( new_entity );
+	}
 	nlinfo( "New remote entity created at %f , %f", new_entity->pos().x, new_entity->pos().y );
 }
 
@@ -131,6 +135,10 @@ void NLNET::cbRemoveEntity( CMessage& msgin, TSenderId idfrom )
 	TEntityId id = 0;
 	msgin.serial( id );
 	CLocalArea::Instance->_Neighbors.erase( id );
+	if ( CLocalArea::Instance->_EntityRemovedCallback != NULL )
+	{
+		CLocalArea::Instance->_EntityRemovedCallback( id );
+	}
 	nldebug( "Removed entity %u", id );
 }
 
@@ -168,7 +176,8 @@ namespace NLNET {
  * Constructor
  */
 CLocalArea::CLocalArea() :
-	_Radius( 400 )
+	_Radius( 400 ),
+	_NewEntityCallback( NULL )
 {
 	nlassert( CLocalArea::Instance == NULL );
 	CLocalArea::Instance = this;

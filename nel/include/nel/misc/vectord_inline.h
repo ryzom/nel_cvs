@@ -1,7 +1,7 @@
 /** \file vectord_inline.h
  * CVectorD class inline definitions.
  *
- * $Id: vectord_inline.h,v 1.5 2000/11/21 18:19:23 valignat Exp $
+ * $Id: vectord_inline.h,v 1.6 2000/11/29 17:24:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,7 +161,7 @@ inline	void	CVectorD::cartesianToSpheric(double &r, double &theta,double &phi) c
 	phi=asin(v.z);
 
 	// theta [-PI,PI]
-	theta=atan2(v.x,v.y);
+	theta=atan2(v.y,v.x);
 }
 inline	void	CVectorD::sphericToCartesian(double r, double theta,double phi)
 {

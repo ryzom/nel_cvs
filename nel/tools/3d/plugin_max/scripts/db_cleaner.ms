@@ -481,6 +481,9 @@ checkProjectName =	#(	true,							true,							true,							true )
 objectDouble = #()
 objectDoubleProject = #()
 objectArray = #()
+NEL3D_APPDATA_DONOTEXPORT = 1423062565		-- do not export me : "undefined" = export me
+											--							  "0" = export me
+											--							  "1" = DONT expo
 
 rollout dbase_cleaner_double_rollout "Database Double Detector"
 (
@@ -578,11 +581,11 @@ rollout dbase_cleaner_double_rollout "Database Double Detector"
 	on TypeCheck selected selection do
 	(
 		-- Config file path
-		configF = ConfigFile.text + "config.cfg"
+		siteF = ConfigFile.text + "site.cfg"
 
 		-- Get the database directory
 		databaseDirectory = #()
-		if (getOptions configF "database_directory" databaseDirectory) == true then
+		if (getOptions siteF "database_directory" databaseDirectory) == true then
 		(
 			-- Ok ?
 			if (databaseDirectory.count == 1) then
@@ -664,7 +667,7 @@ rollout dbase_cleaner_double_rollout "Database Double Detector"
 			same = false
 			for keys in keywords do
 			(
-				if keys == firstNames[1] then
+				if (findString firstNames[1] keys) != undefined then
 				(
 					same = true
 					exit

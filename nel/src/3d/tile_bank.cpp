@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.47 2004/02/13 10:10:50 lecroart Exp $
+ * $Id: tile_bank.cpp,v 1.48 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -277,7 +277,7 @@ sint CTileBank::getNumBitmap (CTile::TBitmap bitmap) const
 			{
 				std::vector<char> vect (str.length()+1);
 				memcpy (&*vect.begin(), str.c_str(), str.length()+1);
-				NLMISC::strlwr (&*vect.begin());
+				toLower(&*vect.begin());
 				setString.insert (std::string (&*vect.begin()));
 			}
 		}
@@ -597,8 +597,7 @@ void CTileBank::removeDisplacementMap (uint mapId)
 uint CTileBank::getDisplacementMap (const string &fileName)
 {
 	// Lower string
-	string lower=fileName;
-	lower=strlwr (lower);
+	string lower=toLower(fileName);
 
 	// Look for this texture filename
 	uint noiseTile;

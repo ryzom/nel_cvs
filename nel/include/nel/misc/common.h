@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.72 2004/05/13 13:36:07 ledorze Exp $
+ * $Id: common.h,v 1.73 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,14 +30,13 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
 #include <math.h>
-#include <algorithm>
 #include <string>
 #include <vector>
-//#include <sstream>
 #include <float.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <algorithm>
 
 #ifdef NL_OS_WINDOWS
 #	include <process.h>
@@ -202,24 +201,27 @@ inline double	isValidDouble (double v)
 /** Convert a string in lower case.
  * \param a string to transform to lower case
  */
-std::string		&strlwr ( std::string &str );
-std::string		strlwr ( const std::string &str );
 
-/** Convert a string in lower case.
- * \param a pointer to char to transform to lower case
- */
-char			*strlwr ( char *str );
+std::string	toLower ( const std::string &str );
+void		toLower ( char *str );
 
 /** Convert a string in upper case.
  * \param a string to transform to upper case
  */
-std::string		&strupr ( std::string &str );
-std::string		strupr ( const std::string &str );
 
-/** Convert a string in upper case.
- * \param a pointer to char to transform to upper case
- */
-char			*strupr ( char *str );
+std::string	toUpper ( const std::string &str);
+void		toUpper ( char *str);
+
+//////////////////////////////////////////////////////////////////////////
+// DEPRECATED: PLEASE DON'T USE THESE METHODS BUT FUNCTIONS ABOVE toLower() and toUpper()
+//////////////////////////////////////////////////////////////////////////
+inline std::string		&strlwr ( std::string &str )		{ toLower(str); return str; }
+inline std::string		 strlwr ( const std::string &str )	{ return toLower(str); }
+inline char			*strlwr ( char *str )				{ toLower(str); return str; }
+inline std::string		&strupr ( std::string &str )		{ toUpper(str); return str; }
+inline std::string		 strupr ( const std::string &str )	{ return toUpper(str); }
+inline char			*strupr ( char *str )				{ toUpper(str); return str; }
+
 
 /** Compare 2 C-Style strings without regard to case
   * \return 0 if strings are equal, < 0 if lhs < rhs, > 0 if lhs > rhs

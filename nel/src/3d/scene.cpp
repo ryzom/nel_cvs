@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.121 2004/05/26 16:05:42 berenguier Exp $
+ * $Id: scene.cpp,v 1.122 2004/06/21 17:38:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -651,8 +651,7 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 			if (pMB->getAutoAnim())
 			{
 				
-				std::string animName = CFile::getFilenameWithoutExtension(shapeName);			
-				animName = strlwr (animName);
+				std::string animName = toLower(CFile::getFilenameWithoutExtension(shapeName));
 				uint animID = _AutomaticAnimationSet->getAnimationIdByName(animName);
 				if (animID != CAnimationSet::NotFound)
 				{
@@ -692,7 +691,7 @@ void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pIns
 	if (_ShapeBank->isPresent( shapeName ) != CShapeBank::Present)
 	{
 		// Load it from file asynchronously
-		_ShapeBank->loadAsync( strlwr(shapeName), getDriver(), position, NULL, selectedTexture);
+		_ShapeBank->loadAsync( toLower(shapeName), getDriver(), position, NULL, selectedTexture);
 	}
 }
 

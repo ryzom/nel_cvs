@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.28 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: shape_bank.cpp,v 1.29 2004/06/21 17:38:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ CShapeBank::~CShapeBank()
 
 IShape*CShapeBank::addRef(const string &shapeNameNotLwr)
 {	
-	string	shapeName= strlwr(shapeNameNotLwr);
+	string	shapeName= toLower(shapeNameNotLwr);
 
 	// If the shape is inserted in a shape cache remove it
 	TShapeInfoMap::iterator scfpmIt = ShapePtrToShapeInfo.find( getShapePtrFromShapeName( shapeName ) );
@@ -396,7 +396,7 @@ bool CShapeBank::processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploa
 
 CShapeBank::TShapeState CShapeBank::isPresent (const string &shapeNameNotLwr)
 {
-	string	shapeName= strlwr(shapeNameNotLwr);
+	string	shapeName= toLower(shapeNameNotLwr);
 
 	// Is the shape is found in the shape map so return Present
 	TShapeMap::iterator smIt = ShapeMap.find (shapeName);
@@ -412,7 +412,7 @@ CShapeBank::TShapeState CShapeBank::isPresent (const string &shapeNameNotLwr)
 // ***************************************************************************
 IShape	*CShapeBank::getShape (const std::string &shapeNameNotLwr)
 {
-	string	shapeName= strlwr(shapeNameNotLwr);
+	string	shapeName= toLower(shapeNameNotLwr);
 	
 	// Is the shape is found in the shape map so return Present
 	TShapeMap::iterator smIt = ShapeMap.find (shapeName);
@@ -426,7 +426,7 @@ IShape	*CShapeBank::getShape (const std::string &shapeNameNotLwr)
 
 void CShapeBank::load (const string &shapeNameNotLwr)
 {
-	string	shapeName= strlwr(shapeNameNotLwr);
+	string	shapeName= toLower(shapeNameNotLwr);
 
 	TShapeMap::iterator smIt = ShapeMap.find(shapeName);
 	if( smIt == ShapeMap.end() )
@@ -464,7 +464,7 @@ void CShapeBank::load (const string &shapeNameNotLwr)
 
 void CShapeBank::loadAsync (const std::string &shapeNameNotLwr, IDriver *pDriver, const CVector &position, bool *bSignal, uint selectedTexture)
 {
-	string	shapeName= strlwr(shapeNameNotLwr);
+	string	shapeName= toLower(shapeNameNotLwr);
 
 	TShapeMap::iterator smIt = ShapeMap.find(shapeName);
 	if (smIt != ShapeMap.end())
@@ -496,7 +496,7 @@ void CShapeBank::loadAsync (const std::string &shapeNameNotLwr, IDriver *pDriver
 
 void CShapeBank::cancelLoadAsync (const std::string &shapeNameNotLwr)
 {
-	string	shapeName= strlwr(shapeNameNotLwr);
+	string	shapeName= toLower(shapeNameNotLwr);
 
 	TWaitingShapesMap::iterator wsmmIt = WaitingShapes.find(shapeName);
 	if (wsmmIt != WaitingShapes.end())
@@ -526,7 +526,7 @@ bool CShapeBank::isShapeWaiting ()
 
 void CShapeBank::add (const string &shapeNameNotLwr, IShape* pShp)
 {
-	string	shapeName= strlwr(shapeNameNotLwr);
+	string	shapeName= toLower(shapeNameNotLwr);
 
 	// Is the shape name already used ?
 	TShapeMap::iterator smIt = ShapeMap.find( shapeName );
@@ -644,7 +644,7 @@ sint CShapeBank::getShapeCacheFreeSpace(const std::string &shapeCacheName) const
 
 void CShapeBank::linkShapeToShapeCache(const string &shapeNameNotLwr, const string &shapeCacheName)
 {
-	string	shapeName= strlwr(shapeNameNotLwr);
+	string	shapeName= toLower(shapeNameNotLwr);
 
 	bool	canSet= true;
 	while(1)
@@ -775,8 +775,8 @@ void CShapeBank::preLoadShapes(const std::string &shapeCacheName,
 	if(!isShapeCache(shapeCacheName))
 		return;
 
-	// strlwr
-	string wildCard= strlwr(wildCardNotLwr);
+	// lower case
+	string wildCard= toLower(wildCardNotLwr);
 
 	// For all files
 	for(uint i=0;i<listFile.size();i++)
@@ -785,8 +785,7 @@ void CShapeBank::preLoadShapes(const std::string &shapeCacheName,
 		if (progress)
 			progress->progress ((float)i/(float)listFile.size ());
 
-		string	fileName= CFile::getFilename(listFile[i]);
-		strlwr(fileName);
+		string	fileName= toLower(CFile::getFilename(listFile[i]));
 		// if the file is ok for the wildCard, process it
 		if( testWildCard(fileName.c_str(), wildCard.c_str()) )
 		{

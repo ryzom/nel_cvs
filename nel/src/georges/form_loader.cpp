@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.13 2003/08/27 16:16:25 distrib Exp $
+ * $Id: form_loader.cpp,v 1.14 2004/06/21 17:38:43 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -69,7 +69,7 @@ void UFormLoader::releaseLoader (UFormLoader *loader)
 CType *CFormLoader::loadType (const char *filename)
 {
 	// Lower string filename
-	string lowerStr = strlwr ((string)filename);
+	string lowerStr = toLower((string)filename);
 	lowerStr = CFile::getFilename (lowerStr);
 
 	// Already in the map ?
@@ -139,7 +139,7 @@ CType *CFormLoader::loadType (const char *filename)
 CFormDfn *CFormLoader::loadFormDfn (const char *filename, bool forceLoad)
 {
 	// Lower string filename
-	string lowerStr = strlwr ((string)filename);
+	string lowerStr = toLower((string)filename);
 	lowerStr = CFile::getFilename (lowerStr);
 
 	// Already in the map ?
@@ -205,7 +205,7 @@ CFormDfn *CFormLoader::loadFormDfn (const char *filename, bool forceLoad)
 UForm *CFormLoader::loadForm (const char *filename)
 {
 	// Lower string filename
-	string lowerStr = strlwr ((string)filename);
+	string lowerStr = toLower((string)filename);
 	lowerStr = CFile::getFilename (lowerStr);
 
 	// Already in the map ?

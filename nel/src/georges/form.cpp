@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.18 2003/11/25 14:40:48 vizerie Exp $
+ * $Id: form.cpp,v 1.19 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -373,7 +373,7 @@ void CForm::warning (bool exception, const char *function, const char *format, .
 void CForm::getDependencies (std::set<std::string> &dependencies) const
 {
 	// Add me
-	if (dependencies.insert (strlwr(CFile::getFilename (_Filename))).second)
+	if (dependencies.insert (toLower(CFile::getFilename (_Filename))).second)
 	{
 		// Add parents
 		uint i;

@@ -1,7 +1,7 @@
 /** \file hls_texture_manager.cpp
  * <File description>
  *
- * $Id: hls_texture_manager.cpp,v 1.1 2002/10/25 15:51:25 berenguier Exp $
+ * $Id: hls_texture_manager.cpp,v 1.2 2004/06/21 17:38:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -81,7 +81,7 @@ sint			CHLSTextureManager::findTexture(const std::string &name) const
 		return -1;
 
 	// Build a valid key.
-	string	nameLwr= strlwr(name);
+	string	nameLwr= toLower(name);
 	CHLSTextureBank::CTextureInstance		textKey;
 	CHLSTextureBank::CTextureInstanceHandle	textKeyHandle;
 	textKey.buildAsKey(nameLwr.c_str());

@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.23 2004/05/26 18:00:11 vizerie Exp $
+ * $Id: texture_file.cpp,v 1.24 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -277,9 +277,7 @@ void			CTextureFile::setMipMapSkipAtLoad(uint8 level)
 // ***************************************************************************
 std::string		CTextureFile::getShareName() const
 {
-	string	ret= _FileName;
-	strlwr(ret);
-	return ret;
+	return toLower(_FileName);
 }
 
 

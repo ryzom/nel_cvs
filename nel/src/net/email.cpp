@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: email.cpp,v 1.8 2004/04/30 18:06:37 corvazier Exp $
+ * $Id: email.cpp,v 1.9 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -237,23 +237,24 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 			formatedBody += "--Multipart_nel\r\n";
 			formatedBody += "Content-Disposition: attachment;\r\n";
 
-			if(strlwr(ext) == "tga")
+			string lext = toLower(ext);
+			if(lext == "tga")
 			{
 				formatedBody += "Content-Type: image/x-targa;\r\n";
 			}
-			else if(strlwr(ext) == "bmp")
+			else if(lext == "bmp")
 			{
 				formatedBody += "Content-Type: image/bmp;\r\n";
 			}
-			else if(strlwr(ext) == "png")
+			else if(lext == "png")
 			{
 				formatedBody += "Content-Type: image/png;\r\n";
 			}
-			else if(strlwr(ext) == "jpg" || strlwr(ext) == "jpeg")
+			else if(lext == "jpg" || lext == "jpeg")
 			{
 				formatedBody += "Content-Type: image/jpeg;\r\n";
 			}
-			else if(strlwr(ext) == "dmp")
+			else if(lext == "dmp")
 			{
 				formatedBody += "Content-Type: application/octet-stream;\r\n";
 			}

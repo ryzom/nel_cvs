@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.13 2004/06/18 15:18:21 ledorze Exp $
+ * $Id: primitive_class.cpp,v 1.14 2004/06/21 17:38:43 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -354,7 +354,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 						// Read the file extension
 						parameter.FileExtension = "";
 						CIXml::getPropertyString (parameter.FileExtension, paramNode, "FILE_EXTENSION");
-						parameter.FileExtension = strlwr (parameter.FileExtension);
+						parameter.FileExtension = toLower(parameter.FileExtension);
 
 						// Autonaming preference
 						parameter.Autoname = "";
@@ -363,7 +363,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 						// Read the file extension
 						parameter.Folder = "";
 						CIXml::getPropertyString (parameter.Folder, paramNode, "FOLDER");
-						parameter.Folder = strlwr (parameter.Folder);
+						parameter.Folder = toLower(parameter.Folder);
 
 						// Read the combo values
 						xmlNodePtr comboValueNode = CIXml::getFirstChildNode (paramNode, "COMBO_VALUES");
@@ -437,7 +437,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 											for (uint i=0; i<files.size (); i++)
 											{
 												// Good extension ?
-												if (strlwr (NLMISC::CFile::getExtension (files[i])) == parameter.FileExtension)
+												if (toLower(NLMISC::CFile::getExtension (files[i])) == parameter.FileExtension)
 												{
 													// Add a combo value
 													pair<std::map<std::string, CParameter::CConstStringValue>::iterator, bool> insertResult =
@@ -447,7 +447,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 													CParameter::CConstStringValue &comboValue = insertResult.first->second;
 
 													// Get the filename without extension
-													string nameWithoutExt = strlwr (NLMISC::CFile::getFilenameWithoutExtension (files[i]));
+													string nameWithoutExt = toLower(NLMISC::CFile::getFilenameWithoutExtension (files[i]));
 
 													// Add the values
 													comboValue.Values.push_back (nameWithoutExt);

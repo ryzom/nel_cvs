@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.25 2004/04/29 19:31:01 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.26 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -106,20 +106,20 @@ void CEntityIdTranslator::getByUser (uint32 uid, vector<CEntityId> &res)
 void CEntityIdTranslator::getByUser (const string &userName, vector<CEntityId> &res, bool exact)
 {
 	H_AUTO(EIdTrans_getByUser2);
-	string lowerName = strlwr (userName);
+	string lowerName = toLower(userName);
 	
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
 		if (exact)
 		{
-			if (strlwr((*it).second.UserName) == lowerName)
+			if (toLower((*it).second.UserName) == lowerName)
 			{
 				res.push_back((*it).first);
 			}
 		}
 		else
 		{
-			if (strlwr((*it).second.UserName).find(lowerName) != string::npos)
+			if (toLower((*it).second.UserName).find(lowerName) != string::npos)
 			{
 				res.push_back((*it).first);
 			}
@@ -160,20 +160,20 @@ CEntityId CEntityIdTranslator::getByEntity (const ucstring &entityName)
 void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntityId> &res, bool exact)
 {
 	H_AUTO(EIdTrans_getByEntity3);
-	string lowerName = strlwr (entityName.toString());
+	string lowerName = toLower(entityName.toString());
 
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); ++it)
 	{
 		if (exact)
 		{
-			if (strlwr((*it).second.EntityName.toString()) == lowerName)
+			if (toLower((*it).second.EntityName.toString()) == lowerName)
 			{
 				res.push_back((*it).first);
 			}
 		}
 		else
 		{
-			if (strlwr((*it).second.EntityName.toString()).find(lowerName) != string::npos)
+			if (toLower((*it).second.EntityName.toString()).find(lowerName) != string::npos)
 			{
 				res.push_back((*it).first);
 			}
@@ -613,7 +613,7 @@ bool CEntityIdTranslator::isEntityOnline (const CEntityId &eid)
 
 std::string CEntityIdTranslator::getRegisterableString( const ucstring & entityName,bool removeBlanks )
 {
-	string ret = strlwr( entityName.toString() );
+	string ret = toLower( entityName.toString() );
 	uint pos = ret.find( 0x20 );
 	while( pos != string::npos )
 	{

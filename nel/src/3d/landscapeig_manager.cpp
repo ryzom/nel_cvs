@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.14 2003/12/10 10:17:47 corvazier Exp $
+ * $Id: landscapeig_manager.cpp,v 1.15 2004/06/21 17:38:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,8 +130,7 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc, UDriv
 					if (ig)
 					{
 						// add it to the map.
-						string	tokId= token;
-						strupr(tokId);
+						string	tokId= toUpper(string(token));
 						_ZoneInstanceGroupMap[tokId]= CInstanceGroupElement(ig, token);
 
 						// Add a reference on the shapes
@@ -145,7 +144,7 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc, UDriv
 							_ig.getShapeName(i, shapeName);
 							if (!shapeName.empty ())
 							{
-								if (strlwr(CFile::getExtension(shapeName)) != "pacs_prim")
+								if (toLower(CFile::getExtension(shapeName)) != "pacs_prim")
 								{
 									// Insert a new shape ?
 									if (_ShapeAdded.find(shapeName) == _ShapeAdded.end())
@@ -318,9 +317,7 @@ std::string		CLandscapeIGManager::translateName(const std::string &name) const
 {
 	NL3D_MEM_LANDSCAPE_IG
 	std::string		ret;
-	ret= name + ".ig";
-	strupr(ret);
-
+	ret= toUpper(name + ".ig");
 	return ret;
 }
 
@@ -391,8 +388,7 @@ void	CLandscapeIGManager::reloadAllIgs()
 		const	char	*token= bkupIgFileNameList[i].c_str();
 		UInstanceGroup	*ig = UInstanceGroup::createInstanceGroup(token);
 		// add it to the map.
-		string	tokId= token;
-		strupr(tokId);
+		string	tokId= toUpper(token);
 		_ZoneInstanceGroupMap[tokId]= CInstanceGroupElement(ig, token);
 
 		// If was addedToScene before, re-add to scene now.

@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.18 2003/12/10 15:12:38 corvazier Exp $
+ * $Id: i_xml.cpp,v 1.19 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -179,7 +179,7 @@ bool CIXml::init (IStream &stream)
 			header[1] = buffer[1];
 			header[2] = buffer[2];
 			header[3] = buffer[3];
-			header = strlwr (header);
+			toLower(header);
 
 			// Does it a xml stream ?
 			if (header != "<?xm")

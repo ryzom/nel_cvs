@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.cpp,v 1.88 2004/05/27 17:32:16 boucher Exp $
+ * $Id: driver.cpp,v 1.89 2004/06/21 17:38:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,7 +307,7 @@ bool			IDriver::invalidateShareTexture (ITexture &texture)
 void			IDriver::getTextureShareName (const ITexture& tex, string &output)
 {
 	// Create the shared Name.
-	output= strlwr(tex.getShareName());
+	output= toLower(tex.getShareName());
 
 	// append format Id of the texture.
 	static char	fmt[256];
@@ -388,7 +388,7 @@ void IDriver::profileTextureUsage(std::vector<std::string> &result)
 		// get the shareName
 		string	shareName;
 		if(text->supportSharing())
-			shareName= strlwr(text->getShareName());
+			shareName= toLower(text->getShareName());
 		else
 			shareName= "Not Shared";
 		

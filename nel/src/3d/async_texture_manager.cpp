@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * <File description>
  *
- * $Id: async_texture_manager.cpp,v 1.9 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: async_texture_manager.cpp,v 1.10 2004/06/21 17:38:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -155,9 +155,8 @@ uint			CAsyncTextureManager::addTextureRef(const string &textNameNotLwr, CMeshBa
 {
 	uint	ret;
 
-	// strlwr name
-	string	textName= textNameNotLwr;
-	strlwr(textName);
+	// lower case name
+	string	textName = toLower(textNameNotLwr);
 
 	// find the texture in map
 	ItTextureEntryMap	it;

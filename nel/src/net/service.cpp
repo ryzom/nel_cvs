@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.209 2004/06/16 15:22:33 cado Exp $
+ * $Id: service.cpp,v 1.210 2004/06/21 17:38:42 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -749,8 +749,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Load the recording state from the config file
 		if ((var = ConfigFile.getVarPtr ("Rec")) != NULL)
 		{
-			string srecstate = var->asString();
-			strupr( srecstate );
+			string srecstate = toUpper(var->asString());
 			if ( srecstate == "RECORD" )
 			{
 				_RecordingState = CCallbackNetBase::Record;

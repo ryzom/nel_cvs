@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.58 2004/06/18 14:11:36 boucher Exp $
+ * $Id: common.cpp,v 1.59 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -544,96 +544,63 @@ NLMISC_COMMAND(stohr, "Convert a second number into an human readable time", "<i
 	return true;
 }
 
-std::string strlwr (const std::string &str)
+
+std::string	toLower(const std::string &str)
 {
 	string res;
-	res.reserve (str.size());
-	for (uint i = 0; i < str.size(); i++)
+	res.reserve(str.size());
+	for(uint i = 0; i < str.size(); i++)
 	{
-		if ( (str[i] >= 'A') && (str[i] <= 'Z') )
+		if( (str[i] >= 'A') && (str[i] <= 'Z') )
 			res += str[i] - 'A' + 'a';
 		else
 			res += str[i];
 	}
-
 	return res;
 }
 
-std::string &strlwr (std::string &str)
+void		toLower(char *str)
 {
-	for (uint i = 0; i < str.size(); i++)
+	if (str == 0)
+		return;
+
+	while(*str != '\0')
 	{
-		if ( (str[i] >= 'A') && (str[i] <= 'Z') )
-		{
-			str[i] = str[i] - 'A' + 'a';
-		}
-	}
-
-	return str;
-}
-
-char *strlwr (char *str)
-{
-	char *base = str;
-	if (str == NULL)
-		return NULL;
-
-	while (*str != '\0')
-	{
-		if ( (*str >= 'A') && (*str <= 'Z') )
+		if( (*str >= 'A') && (*str <= 'Z') )
 		{
 			*str = *str - 'A' + 'a';
 		}
 		str++;
 	}
-
-	return base;
 }
 
-std::string &strupr (std::string &str)
-{
-	for (uint i = 0; i < str.size(); i++)
-	{
-		if ( (str[i] >= 'a') && (str[i] <= 'z') )
-		{
-			str[i] = str[i] - 'a' + 'A';
-		}
-	}
-
-	return str;
-}
-
-std::string strupr ( const std::string &str )
+std::string	toUpper(const std::string &str)
 {
 	string res;
-	res.reserve (str.size());
-	for (uint i = 0; i < str.size(); i++)
+	res.reserve(str.size());
+	for(uint i = 0; i < str.size(); i++)
 	{
-		if ( (str[i] >= 'a') && (str[i] <= 'z') )
+		if( (str[i] >= 'a') && (str[i] <= 'z') )
 			res += str[i] - 'a' + 'A';
 		else
 			res += str[i];
 	}
-	
 	return res;
 }
 
-
-char *strupr (char *str)
+void		toUpper(char *str)
 {
-	if (str == NULL)
-		return NULL;
+	if (str == 0)
+		return;
 
-	while (*str != '\0')
+	while(*str != '\0')
 	{
-		if ( (*str >= 'a') && (*str <= 'z') )
+		if( (*str >= 'a') && (*str <= 'z') )
 		{
 			*str = *str - 'a' + 'A';
 		}
 		str++;
 	}
-
-	return str;
 }
 
 /*sint nlstricmp(const char *lhs,const char *rhs)

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.cpp
  * <File description>
  *
- * $Id: coarse_mesh_build.cpp,v 1.7 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: coarse_mesh_build.cpp,v 1.8 2004/06/21 17:38:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,7 +121,7 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 						if (texture->supportSharing())
 						{
 							// Get sharing name
-							name+=strlwr(texture->getShareName());
+							name+=toLower(texture->getShareName());
 						}
 						else
 						{
@@ -481,7 +481,7 @@ void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coa
 						if (texture->supportSharing())
 						{
 							// Get sharing name
-							name+=strlwr(texture->getShareName());
+							name+=toLower(texture->getShareName());
 						}
 						else
 						{

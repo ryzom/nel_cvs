@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.22 2003/10/14 09:30:46 ledorze Exp $
+ * $Id: form_dfn.cpp,v 1.23 2004/06/21 17:38:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -863,7 +863,7 @@ void CFormDfn::warning (bool exception, const char *function, const char *format
 void CFormDfn::getDependencies (std::set<std::string> &dependencies) const
 {
 	// Scan only if not already inserted
-	if (dependencies.insert (strlwr (CFile::getFilename (_Filename))).second)
+	if (dependencies.insert (toLower(CFile::getFilename (_Filename))).second)
 	{
 		// Add parents
 		uint i;
@@ -879,7 +879,7 @@ void CFormDfn::getDependencies (std::set<std::string> &dependencies) const
 				Entries[i].getDfnPtr ()->getDependencies (dependencies);
 			if (Entries[i].getTypePtr ())
 			{
-				dependencies.insert (strlwr (CFile::getFilename (Entries[i].getFilename())));
+				dependencies.insert (toLower(CFile::getFilename (Entries[i].getFilename())));
 			}
 		}
 	}

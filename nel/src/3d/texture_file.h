@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.12 2004/05/26 17:59:54 vizerie Exp $
+ * $Id: texture_file.h,v 1.13 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ public:
 	 * \date 2000
 	 */	
 	virtual bool			supportSharing() const {return _SupportSharing;}
-	// return strlwr(getFileName())
+
 	virtual std::string		getShareName() const;
 	// User can disable the sharing system. Default is to be enabled. Not serialized
 	void					enableSharing(bool enable);

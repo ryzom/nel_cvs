@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.105 2004/06/04 11:53:22 cardouat Exp $
+ * $Id: path.cpp,v 1.106 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -250,8 +250,8 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 	CPath *inst = CPath::getInstance();
 	nlassert(!inst->_MemoryCompressed);
 
-	string ext1lwr = strlwr (ext1);
-	string ext2lwr = strlwr (ext2);
+	string ext1lwr = toLower(ext1);
+	string ext2lwr = toLower(ext2);
 
 	if (ext1lwr.empty() || ext2lwr.empty())
 	{
@@ -330,7 +330,7 @@ void CPath::remapFile (const std::string &file1, const std::string &file2)
 	CPath *inst = CPath::getInstance();
 	if (file1.empty()) return;
 	if (file2.empty()) return;
-	inst->_RemappedFiles[strlwr(file1)] = strlwr(file2);
+	inst->_RemappedFiles[toLower(file1)] = toLower(file2);
 }
 
 // ***************************************************************************
@@ -385,7 +385,7 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 
 	// Try to find in the map directories
 	CPath *inst = CPath::getInstance();
-	string str = strlwr(filename);
+	string str = toLower(filename);
 
 	// Remove end spaces
 	while ((!str.empty()) && (str[str.size()-1] == ' '))
@@ -444,7 +444,7 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 		// try with the remapping
 		for (uint j = 0; j < inst->_Extensions.size(); j++)
 		{
-			if (strlwr(CFile::getExtension (filename)) == inst->_Extensions[j].second)
+			if (toLower(CFile::getExtension (filename)) == inst->_Extensions[j].second)
 			{
 				string rs = inst->_AlternativePaths[i] + CFile::getFilenameWithoutExtension (filename) + "." + inst->_Extensions[j].first;
 				if ( CFile::fileExists(rs) )
@@ -479,7 +479,7 @@ bool CPath::exists (const std::string &filename)
 {
 	// Try to find in the map directories
 	CPath *inst = CPath::getInstance();
-	string str = strlwr(filename);
+	string str = toLower(filename);
 
 	// Remove end spaces
 	while ((!str.empty()) && (str[str.size()-1] == ' '))
@@ -1041,7 +1041,7 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 		// now, we have to see extension and insert in the map the remapped files
 		for (uint i = 0; i < inst->_Extensions.size (); i++)
 		{
-			if (inst->_Extensions[i].first == strlwr(ext))
+			if (inst->_Extensions[i].first == toLower(ext))
 			{
 				// need to remap
 				addSearchFile (newFile, true, inst->_Extensions[i].second, progressCallBack);
@@ -1148,7 +1148,7 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 			fread (&nFileSize2, sizeof(uint32), 1, Handle);
 			uint32 nFilePos;
 			fread (&nFilePos, sizeof(uint32), 1, Handle);
-			string sTmp = strlwr(string(FileName));
+			string sTmp = toLower(string(FileName));
 			if (sTmp.empty())
 			{
 				nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
@@ -1156,7 +1156,7 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 			}
 			string bigfilenamealone = CFile::getFilename (sBigFilename);
 			string filenamewoext = CFile::getFilenameWithoutExtension (sTmp);
-			string ext = strlwr(CFile::getExtension(sTmp));
+			string ext = toLower(CFile::getExtension(sTmp));
 
 			insertFileInMap (sTmp, bigfilenamealone + "@" + sTmp, false, ext);
 
@@ -1199,7 +1199,7 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 	CPath *inst = CPath::getInstance();
 	nlassert(!inst->_MemoryCompressed);
 	// find if the file already exist
-	map<string, CFileEntry>::iterator it = inst->_Files.find (strlwr(filename));
+	map<string, CFileEntry>::iterator it = inst->_Files.find (toLower(filename));
 	if (it != inst->_Files.end ())
 	{
 		string path = inst->SSMpath.get((*it).second.idPath);
@@ -1249,8 +1249,8 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 		fe.idPath = inst->SSMpath.add(sTmp);
 		fe.Name = filename;
 
-		inst->_Files.insert (make_pair(strlwr(filename), fe));
-		NL_DISPLAY_PATH("PATH: CPath::insertFileInMap(%s, %s, %d, %s): added", strlwr(filename).c_str(), filepath.c_str(), remap, strlwr(extension).c_str());
+		inst->_Files.insert (make_pair(toLower(filename), fe));
+		NL_DISPLAY_PATH("PATH: CPath::insertFileInMap(%s, %s, %d, %s): added", toLower(filename).c_str(), filepath.c_str(), remap, toLower(extension).c_str());
 	}
 }
 

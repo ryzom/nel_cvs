@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.21 2003/11/17 14:26:38 distrib Exp $
+ * $Id: form_elm.h,v 1.22 2004/06/21 17:38:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -632,8 +632,7 @@ inline bool CFormElm::convertValue (bool &result, const char *value) const
 	}
 	else
 	{
-		std::string temp = value;
-		temp = NLMISC::strlwr (temp);
+		std::string temp = NLMISC::toLower(std::string(value));
 		if (strcmp (temp.c_str (), "true") == 0)
 		{
 			result  = true;

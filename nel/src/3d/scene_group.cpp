@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.73 2004/06/08 10:00:28 besson Exp $
+ * $Id: scene_group.cpp,v 1.74 2004/06/21 17:38:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -567,7 +567,7 @@ void CInstanceGroup::getShapeName (uint instanceIndex, std::string &shapeName) c
 		shapeName = _TransformName->transformName (instanceIndex, rInstanceInfo.InstanceName, rInstanceInfo.Name);
 	}
 	
-	shapeName = strlwr (shapeName);
+	toLower(shapeName);
 	if (!shapeName.empty() && shapeName.find('.') == std::string::npos)
 		shapeName += ".shape";
 }
@@ -812,7 +812,7 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver, uint selec
 				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName, rInstanceInfo.Name);
 			}
 			
-			shapeName = strlwr (shapeName);
+			toLower(shapeName);
 
 			if (!shapeName.empty() && shapeName.find('.') == std::string::npos)
 				shapeName += ".shape";
@@ -872,7 +872,7 @@ void CInstanceGroup::stopAddToSceneAsync ()
 					shapeName  = rInstanceInfo.Name;
 			}
 
-			shapeName = strlwr (shapeName);
+			toLower(shapeName);
 			_AddToSceneTempScene->getShapeBank()->cancelLoadAsync (shapeName);
 		}
 	}

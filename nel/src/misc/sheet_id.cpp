@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.29 2004/05/18 16:30:48 coutelas Exp $
+ * $Id: sheet_id.cpp,v 1.30 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -84,7 +84,7 @@ bool CSheetId::build(const std::string& sheetName)
 	CChar c;
 	c.Ptr = new char [sheetName.size()+1];
 	strcpy(c.Ptr, sheetName.c_str());
-	strlwr(c.Ptr);
+	toLower(c.Ptr);
 
 	itId = _SheetNameToId.find (c);
 	delete [] c.Ptr;
@@ -167,7 +167,7 @@ void CSheetId::loadSheetId ()
 			{
 				tempVec[nNb].Ptr = _AllStrings.Ptr+nSize;
 				strcpy(_AllStrings.Ptr+nSize, it->second.c_str());
-				strlwr(_AllStrings.Ptr+nSize);
+				toLower(_AllStrings.Ptr+nSize);
 				nSize += it->second.size()+1;
 				nNb++;
 				it++;
@@ -208,7 +208,7 @@ void CSheetId::loadSheetId ()
 				if (_FileExtensions[type].empty())
 				{
 					// find the file extension part of the given file name
-					_FileExtensions[type]=strlwr(CFile::getExtension((*itStr).second.Ptr));
+					_FileExtensions[type] = toLower(CFile::getExtension((*itStr).second.Ptr));
 				}
 				nSize--;
 			}
@@ -285,7 +285,7 @@ CSheetId& CSheetId::operator=( const string& sheetName )
 	CChar c;
 	c.Ptr = new char [sheetName.size()+1];
 	strcpy(c.Ptr, sheetName.c_str());
-	strlwr(c.Ptr);
+	toLower(c.Ptr);
 
 	itId = _SheetNameToId.find (c);
 	delete [] c.Ptr;
@@ -507,7 +507,7 @@ uint32 CSheetId::typeFromFileExtension(const std::string &fileExtension)
 
 	unsigned i;
 	for (i=0;i<_FileExtensions.size();i++)
-		if (strlwr(fileExtension)==_FileExtensions[i])
+		if (toLower(fileExtension)==_FileExtensions[i])
 			return i;
 
 	return ~0;

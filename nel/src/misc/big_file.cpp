@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.14 2004/01/15 17:39:40 lecroart Exp $
+ * $Id: big_file.cpp,v 1.15 2004/06/21 17:38:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -148,7 +148,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 		BNPFile bnpfTmp;
 		bnpfTmp.Pos = nFilePos;
 		bnpfTmp.Size = nFileSize2;
-		tempMap.insert (make_pair(strlwr(string(FileName)), bnpfTmp));
+		tempMap.insert (make_pair(toLower(string(FileName)), bnpfTmp));
 	}
 
 	if (nlfseek64 (handle.File, 0, SEEK_SET) != 0)
@@ -204,7 +204,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 		bnpTmp.AlwaysOpened = true;
 	}
 
-	_BNPs.insert (make_pair(strlwr(bigfilenamealone), bnpTmp));
+	_BNPs.insert (make_pair(toLower(bigfilenamealone), bnpTmp));
 
 	return true;
 }
@@ -247,7 +247,7 @@ bool CBigFile::isBigFileAdded(const std::string &sBigFileName)
 // ***************************************************************************
 void CBigFile::list (const std::string &sBigFileName, std::vector<std::string> &vAllFiles)
 {
-	string lwrFileName = strlwr (sBigFileName);
+	string lwrFileName = toLower(sBigFileName);
 	if (_BNPs.find (lwrFileName) == _BNPs.end())
 		return;
 	vAllFiles.clear ();
@@ -273,7 +273,7 @@ void CBigFile::removeAll ()
 FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize, 
 						 uint32 &rBigFileOffset, bool &rCacheFileOnOpen, bool &rAlwaysOpened)
 {
-	string zeFileName, zeBigFileName, lwrFileName = strlwr (sFileName);
+	string zeFileName, zeBigFileName, lwrFileName = toLower(sFileName);
 	uint32 i, nPos = sFileName.find ('@');
 	if (nPos == string::npos)
 	{
@@ -347,7 +347,7 @@ char *CBigFile::getFileNamePtr(const std::string &sFileName, const std::string &
 		vector<BNPFile>::iterator itNBPFile;
 		if (rbnp.Files.size() == 0)
 			return NULL;
-		string lwrFileName = strlwr (sFileName);
+		string lwrFileName = toLower(sFileName);
 		itNBPFile = lower_bound(rbnp.Files.begin(), rbnp.Files.end(), lwrFileName.c_str(), CBNPFileComp());
 		if (itNBPFile != rbnp.Files.end())
 		{

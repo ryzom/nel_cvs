@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.218 2004/05/14 15:00:05 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.219 2004/06/21 17:38:42 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -3594,7 +3594,7 @@ void CDriverGL::retrieveATIDriverVersion()
 					result = RegQueryValueEx(subKey, "DriverDesc", NULL, &valueType, (unsigned char *) driverDesc, &driverDescBufSize);
 					if (result == ERROR_SUCCESS && valueType == REG_SZ)
 					{						
-						NLMISC::strlwr(driverDesc);
+						toLower(driverDesc);
 						if (strstr(driverDesc, "radeon")) // is it a radeon card ?
 						{
 							char driverVersion[256];

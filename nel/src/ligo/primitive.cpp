@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.32 2004/06/18 15:18:21 ledorze Exp $
+ * $Id: primitive.cpp,v 1.33 2004/06/21 17:38:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1135,7 +1135,7 @@ const	IPrimitive	*IPrimitive::getPrimitive	(const	std::string	&absoluteOrRelativ
 			childName=path.substr(0,indexStr);
 			path.erase(0, indexStr);
 		}
-		childName=strupr(childName);
+		toUpper(childName);
 		const	IPrimitive*child=NULL;
 		uint	childIndex;
 		for	(childIndex=0;childIndex<cursor->getNumChildren();childIndex++)
@@ -1143,7 +1143,7 @@ const	IPrimitive	*IPrimitive::getPrimitive	(const	std::string	&absoluteOrRelativ
 			cursor->getChild(child,childIndex);
 			string	name;
 			if	(	child->getPropertyByName("class", name)
-				&&	strupr(name)==childName	)
+				&&	toUpper(name)==childName	)
 				break;
 		}
 		if	(childIndex>=cursor->getNumChildren())

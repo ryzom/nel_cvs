@@ -1,7 +1,7 @@
 /** \file u_shape_bank.h
  * Game interface for managing shape bank.
  *
- * $Id: u_shape_bank.h,v 1.5 2004/03/12 16:24:49 berenguier Exp $
+ * $Id: u_shape_bank.h,v 1.6 2004/06/21 17:38:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 	 *	NB: crash if you try to load a non shape file (eg: a .dds etc...)
 	 *	\param shapeCacheName name of a shapeCache created with addShapeCache()/setShapeCacheSize(). no-op if don't exist
 	 *	\param path a valid path (local or not) where to find shapes. NB: CPath is used to load the shapes.
-	 *	\param wildcard a filter string like: "*.shape", "??_HOM*.shape". NB: strlwr-ed internally
+	 *	\param wildcard a filter string like: "*.shape", "??_HOM*.shape". NB: toLower-ed internally
 	 *	\param recurs true if want to recurs in sub directory
 	 */
 	virtual void	preLoadShapesFromDirectory(const std::string &shapeCacheName, 

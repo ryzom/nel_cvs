@@ -1,7 +1,7 @@
 /** \file hls_texture_bank.cpp
  * <File description>
  *
- * $Id: hls_texture_bank.cpp,v 1.1 2002/10/25 15:51:25 berenguier Exp $
+ * $Id: hls_texture_bank.cpp,v 1.2 2004/06/21 17:38:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -61,7 +61,7 @@ uint32			CHLSTextureBank::addColorTexture(const CHLSColorTexture &tex)
 // ***************************************************************************
 void			CHLSTextureBank::addTextureInstance(const std::string &name, uint32 colorTextureId, const vector<CHLSColorDelta> &cols)
 {
-	string	nameLwr= strlwr(name);
+	string	nameLwr= toLower(name);
 
 	// checks
 	nlassert(colorTextureId<_ColorTextures.size());

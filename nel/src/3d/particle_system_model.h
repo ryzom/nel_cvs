@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.38 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.39 2004/03/04 14:27:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/plane.h"
+#include "nel/misc/contiguous_block_allocator.h"
 #include "3d/transform_shape.h"
 #include "3d/particle_system.h"
 #include "3d/particle_system_manager.h"
@@ -35,6 +36,9 @@
 #include "3d/anim_detail_trav.h"
 #include "3d/load_balancing_trav.h"
 #include "3d/scene.h"
+
+// tmp
+#include "nel/misc/hierarchical_timer.h"
 
 #include <vector>
 
@@ -274,10 +278,16 @@ public:
 	   * - local to the coord. sys. defined by the user matrix
 	   *	   	   
 	   */
-	void setUserMatrix(const NLMISC::CMatrix &userMatrix) { _UserMatrix = userMatrix; }	
+	void setUserMatrix(const NLMISC::CMatrix &userMatrix) { _UserMatrix = userMatrix; }
+	// Set the user matrix, with instant update of the CParticleSystem pointed by that model (if instanciated)
+	void forceSetUserMatrix(const NLMISC::CMatrix &userMatrix);
 	const NLMISC::CMatrix &getUserMatrix() const { return _UserMatrix; }
 
 	void forceInstanciate();
+
+	// Set z-bias. Value is in world coordinates. Value remains even if ps isn't present (rsc not allocated)
+	void setZBias(float value);
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
@@ -350,9 +360,99 @@ private:
 	CAnimatedValueFloat						_UserParam[MaxPSUserParam];
 	uint8                                   _BypassGlobalUserParam;  // mask to bypass a global user param. This state is not serialized
 	NLMISC::CRGBA							_UserColor;
-	NLMISC::CMatrix							_UserMatrix;
+	NLMISC::CMatrix							_UserMatrix;	
+	float									_ZBias;
 
+	#ifdef PS_FAST_ALLOC
+		// for fast allocation of ps resources
+		NLMISC::CContiguousBlockAllocator		_Allocator;
+	#endif
 };
+
+
+// tmp
+class CMiniTimer
+{
+public:
+	NLMISC::CSimpleClock SC;
+	uint64 &Target;
+	uint64 StartDate;
+	CMiniTimer(uint64 &target) : Target(target) 
+	{
+		SC.start();		
+	}
+	~CMiniTimer()
+	{
+		SC.stop();
+		Target += SC.getNumTicks();
+	}	
+};
+
+#define MINI_TIMER(name)
+
+/*
+#define MINI_TIMER(name) CMiniTimer mt(name);
+
+
+extern uint64 PSStatsRegisterPSModelObserver;
+extern uint64 PSStatsRemovePSModelObserver;
+extern uint64 PSStatsUpdateOpacityInfos;
+extern uint64 PSStatsUpdateLightingInfos;
+extern uint64 PSStatsGetAABBox;
+extern uint64 PSStatsReallocRsc;
+extern uint64 PSStatsReleasePSPointer;
+extern uint64 PSStatsRefreshRscDeletion;
+extern uint64 PSStatsReleaseRsc;
+extern uint64 PSStatsReleaseRscAndInvalidate;
+extern uint64 PSStatsGetNumTriangles;
+extern uint64 PSStatsCheckAgainstPyramid;
+extern uint64 PSStatsTraverseAnimDetail;
+extern uint64 PSStatsTraverseAnimDetailPart1;
+extern uint64 PSStatsTraverseAnimDetailPart2;
+extern uint64 PSStatsTraverseAnimDetailPart3;
+extern uint64 PSStatsTraverseAnimDetailPart4;
+extern uint64 PSStatsDoAnimate;
+extern uint64 PSStatsDoAnimatePart1;
+extern uint64 PSStatsDoAnimatePart2;
+extern uint64 PSStatsDoAnimatePart3;
+extern uint64 PSStatsTraverseRender;
+extern uint64 PSStatsTraverseClip;
+extern uint64 PSStatsClipSystemInstanciated;
+extern uint64 PSStatsClipSystemNotInstanciated;
+extern uint64 PSStatsClipSystemCheckAgainstPyramid;
+extern uint64 PSStatsInsertInVisibleList;
+extern uint64 PSStatsCheckDestroyCondition;
+extern uint64 PSStatsForceInstanciate;
+extern uint64 PSAnim1;
+extern uint64 PSAnim2;
+extern uint64 PSAnim3;
+extern uint64 PSAnim4;
+extern uint64 PSAnim5;
+extern uint64 PSAnim6;
+extern uint64 PSAnim7;
+extern uint64 PSAnim8;
+extern uint64 PSAnim9;
+extern uint64 PSAnim10;
+extern uint64 PSAnim11;
+extern uint PSStatsNumDoAnimateCalls;;
+extern float PSMaxET;
+extern uint PSMaxNBPass;
+extern uint64 PSStatsZonePlane;
+extern uint64 PSStatsZoneSphere;
+extern uint64 PSStatsZoneDisc;
+extern uint64 PSStatsZoneRectangle;
+extern uint64 PSStatsZoneCylinder;
+extern uint64 PSMotion1;
+extern uint64 PSMotion2;
+extern uint64 PSMotion3;
+extern uint64 PSMotion4;
+extern uint64 PSStatCollision;
+extern uint64 PSStatEmit;
+extern uint64 PSStatRender;
+
+*/
+
+
 
 
 

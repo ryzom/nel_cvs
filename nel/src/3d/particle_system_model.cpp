@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.61 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.62 2004/03/04 14:27:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,73 @@
 
 namespace NL3D {
 
+
+uint64 PSStatsRegisterPSModelObserver = 0;
+uint64 PSStatsRemovePSModelObserver = 0;
+uint64 PSStatsUpdateOpacityInfos = 0;
+uint64 PSStatsUpdateLightingInfos = 0;
+uint64 PSStatsGetAABBox = 0;
+uint64 PSStatsReallocRsc = 0;
+uint64 PSStatsReleasePSPointer = 0;
+uint64 PSStatsRefreshRscDeletion = 0;
+uint64 PSStatsReleaseRsc = 0;
+uint64 PSStatsReleaseRscAndInvalidate = 0;
+uint64 PSStatsGetNumTriangles = 0;
+uint64 PSStatsCheckAgainstPyramid = 0;
+uint64 PSStatsTraverseAnimDetail = 0;
+uint64 PSStatsDoAnimate = 0;
+uint64 PSStatsDoAnimatePart1 = 0;
+uint64 PSStatsDoAnimatePart2 = 0;
+uint64 PSStatsDoAnimatePart3 = 0;
+uint64 PSStatsTraverseRender = 0;
+uint64 PSStatsTraverseClip = 0;
+uint64 PSStatsClipSystemInstanciated = 0;
+uint64 PSStatsClipSystemNotInstanciated = 0;
+uint64 PSStatsClipSystemCheckAgainstPyramid = 0;
+uint64 PSStatsInsertInVisibleList = 0;
+uint64 PSStatsCheckDestroyCondition = 0;
+uint64 PSStatsForceInstanciate = 0;
+uint64 PSStatsTraverseAnimDetailPart1 = 0;
+uint64 PSStatsTraverseAnimDetailPart2 = 0;
+uint64 PSStatsTraverseAnimDetailPart3 = 0;
+uint64 PSStatsTraverseAnimDetailPart4 = 0;
+//
+uint64 PSAnim1 = 0;
+uint64 PSAnim2 = 0;
+uint64 PSAnim3 = 0;
+uint64 PSAnim4 = 0;
+uint64 PSAnim5 = 0;
+uint64 PSAnim6 = 0;
+uint64 PSAnim7 = 0;
+uint64 PSAnim8 = 0;
+uint64 PSAnim9 = 0;
+uint64 PSAnim10 = 0;
+uint64 PSAnim11 = 0;
+//
+uint PSStatsNumDoAnimateCalls = 0;
+float PSMaxET = 0.f;
+uint PSMaxNBPass = 0;
+//
+uint64 PSStatsZonePlane = 0;
+uint64 PSStatsZoneSphere = 0;
+uint64 PSStatsZoneDisc = 0;
+uint64 PSStatsZoneRectangle = 0;
+uint64 PSStatsZoneCylinder = 0;
+//
+uint64 PSMotion1 = 0;
+uint64 PSMotion2 = 0;
+uint64 PSMotion3 = 0;
+uint64 PSMotion4 = 0;
+uint64 PSStatCollision = 0;
+uint64 PSStatEmit = 0;
+uint64 PSStatRender = 0;
+
+
+
+
+
+	
+
 ///=====================================================================================
 /// ctor
 CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
@@ -62,7 +129,8 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 											   _EmitterActive(true),
 											   _BypassGlobalUserParam(0),
 											   _AnimType(CParticleSystem::AnimVisible),
-											   _UserColor(CRGBA::White) 											   
+											   _UserColor(CRGBA::White),
+											   _ZBias(0.f)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -73,7 +141,7 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 	CTransform::setIsForceAnimDetail(true);
 
 	// RenderFilter: We are a Landscape
-	_RenderFilterType= UScene::FilterPS;
+	_RenderFilterType= UScene::FilterPS;	
 }
 
 ///=====================================================================================
@@ -95,6 +163,7 @@ void CParticleSystemModel::setEditionMode(bool enable /*= true*/)
 ///=====================================================================================
 void CParticleSystemModel::registerPSModelObserver(IPSModelObserver *obs)
 {
+	MINI_TIMER(PSStatsRegisterPSModelObserver)
 	nlassert(!isPSModelObserver(obs)); // this observer has already been registered
 	_Observers.push_back(obs);
 }
@@ -102,6 +171,7 @@ void CParticleSystemModel::registerPSModelObserver(IPSModelObserver *obs)
 ///=====================================================================================
 void CParticleSystemModel::removePSModelObserver(IPSModelObserver *obs)
 {	
+	MINI_TIMER(PSStatsRemovePSModelObserver);
 	nlassert(isPSModelObserver(obs)); // the observer must have been registered
 	std::vector<IPSModelObserver *>::iterator it = std::find(_Observers.begin(), _Observers.end(), obs);
 	_Observers.erase(it);
@@ -125,6 +195,7 @@ void CParticleSystemModel::registerBasic()
 ///=====================================================================================
 void CParticleSystemModel::updateOpacityInfos(void)
 {
+	MINI_TIMER(PSStatsUpdateOpacityInfos);
 	nlassert(_ParticleSystem);
 	if (!_TransparencyStateTouched) return;
 	nlassert(_ParticleSystem);
@@ -136,6 +207,7 @@ void CParticleSystemModel::updateOpacityInfos(void)
 ///=====================================================================================
 void CParticleSystemModel::updateLightingInfos(void)
 {
+	MINI_TIMER(PSStatsUpdateLightingInfos)
 	nlassert(_ParticleSystem);
 	if (!_LightableStateTouched) return;
 	CTransform::setIsLightable(_ParticleSystem->hasLightableObjects());	
@@ -145,6 +217,7 @@ void CParticleSystemModel::updateLightingInfos(void)
 ///=====================================================================================
 void CParticleSystemModel::getAABBox(NLMISC::CAABBox &bbox) const
 {
+	MINI_TIMER(PSStatsGetAABBox)
 	if (_ParticleSystem)
 	{
 		_ParticleSystem->computeBBox(bbox);
@@ -175,8 +248,13 @@ CParticleSystemModel::~CParticleSystemModel()
 /// Called when the resource (attached system) for this system must be reallocated
 void CParticleSystemModel::reallocRsc()
 {
+	//MINI_TIMER(PSStatsReallocRsc)
 	nlassert(_ParticleSystem == NULL);
-	_ParticleSystem = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->instanciatePS(*_Scene);
+	#ifdef PS_FAST_ALLOC
+		_ParticleSystem = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->instanciatePS(*_Scene, &_Allocator);
+	#else
+		_ParticleSystem = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->instanciatePS(*_Scene);
+	#endif
 	nlassert(_ParticleSystem);
 	nlassert(_Scene);
 	CParticleSystemManager &psmgt = _Scene->getParticleSystemManager();
@@ -194,11 +272,14 @@ void CParticleSystemModel::reallocRsc()
 	_ParticleSystem->setUserColor(_UserColor);
 	//
 	if (!_EmitterActive) _ParticleSystem->activateEmitters(false);
+	//
+	if (_ZBias != 0.f) _ParticleSystem->setZBias(_ZBias);
 }
 
 ///=====================================================================================
 void CParticleSystemModel::releasePSPointer()
 {	
+	MINI_TIMER(PSStatsReleasePSPointer)
 	nlassert(_ParticleSystem != NULL);
 	if (_ParticleSystem.getNbRef() == 1)
 	{	
@@ -225,6 +306,7 @@ void CParticleSystemModel::releasePSPointer()
 ///=====================================================================================
 void CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos)
 {
+	MINI_TIMER(PSStatsRefreshRscDeletion)
 	if (_EditionMode) return;
 	/** Here we test wether the system has not gone out of scope.
 	  * Why do we test this here addtionnaly to the clip traversal ?
@@ -277,6 +359,7 @@ void CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFr
 ///=====================================================================================
 void CParticleSystemModel::releaseRsc()
 {
+	MINI_TIMER(PSStatsReleaseRsc)
 	if (!_ParticleSystem) return;	
 	releasePSPointer();
 }
@@ -284,7 +367,7 @@ void CParticleSystemModel::releaseRsc()
 ///=====================================================================================
 void CParticleSystemModel::releaseRscAndInvalidate()
 {
-
+	MINI_TIMER(PSStatsReleaseRscAndInvalidate)
 	if (!_ParticleSystem) return;		
 	releasePSPointer();
 	_Invalidated = true;	
@@ -297,6 +380,9 @@ void CParticleSystemModel::releaseRscAndInvalidate()
 	{
 		(*it)->invalidPS(this); // if this crash, then you forgot to call removePSModelObserver !
 	}
+	#ifdef PS_FAST_ALLOC
+		_Allocator.release();
+	#endif
 }
 
 ///=====================================================================================
@@ -368,6 +454,7 @@ ITrack* CParticleSystemModel::getDefaultTrack (uint valueId)
 ///=====================================================================================
 float CParticleSystemModel::getNumTriangles (float distance)
 {
+	MINI_TIMER(PSStatsGetNumTriangles)
 	if (!_ParticleSystem) return 0;
 	return (float) _ParticleSystem->getWantedNumTris(distance);
 }
@@ -375,6 +462,7 @@ float CParticleSystemModel::getNumTriangles (float distance)
 ///=========================================================================================
 bool CParticleSystemModel::checkAgainstPyramid(const std::vector<CPlane>	&pyramid) const
 {		
+	MINI_TIMER(PSStatsCheckAgainstPyramid)
 	nlassert(_ParticleSystem);
 	NLMISC::CAABBox bbox;
 	_ParticleSystem->computeBBox(bbox);		
@@ -400,137 +488,162 @@ bool CParticleSystemModel::checkAgainstPyramid(const std::vector<CPlane>	&pyrami
 ///=====================================================================================
 void	CParticleSystemModel::traverseAnimDetail()
 {    
+	MINI_TIMER(PSStatsTraverseAnimDetail)
 	CTransformShape::traverseAnimDetail();	
 	CParticleSystem *ps = getPS();
 	if (!_WorldVis) return;
 	if (_Invalidated) return;
 	if (getVisibility() == CHrcTrav::Hide) return;
 	
-	
-	if (!_EditionMode && !_InClusterAndVisible)
-	{
-		CParticleSystemShape		*pss = NLMISC::safe_cast<CParticleSystemShape *>((IShape *)Shape);
-		if (pss->_DestroyWhenOutOfFrustum)
+	{		
+		MINI_TIMER(PSStatsTraverseAnimDetailPart1)			
+		if (!_EditionMode && !_InClusterAndVisible)
 		{
-			if (pss->_DestroyModelWhenOutOfRange)
+			CParticleSystemShape		*pss = NLMISC::safe_cast<CParticleSystemShape *>((IShape *)Shape);
+			if (pss->_DestroyWhenOutOfFrustum)
 			{
-				releaseRscAndInvalidate();			
+				if (pss->_DestroyModelWhenOutOfRange)
+				{
+					releaseRscAndInvalidate();			
+				}
+				else // remove rsc but do not invalidate the system
+				{
+					releaseRsc();
+				}
+				return;
 			}
-			else // remove rsc but do not invalidate the system
-			{
-				releaseRsc();
-			}
-			return;
-		}
-		if (!ps) return;
-	}	
+			if (!ps) return;
+		}	
 
-	// check for trigger. If the trigger is false, and there is a system instanciated, we delete it.
-	if (!_EditionMode)
-	{
-		if (!_TriggerAnimatedValue.Value)
-		{									
-			// system is off, or hasn't been instanciated now...
-			if (ps)
-			{
-				releaseRsc();				
+		// check for trigger. If the trigger is false, and there is a system instanciated, we delete it.
+		if (!_EditionMode)
+		{
+			if (!_TriggerAnimatedValue.Value)
+			{									
+				// system is off, or hasn't been instanciated now...
+				if (ps)
+				{
+					releaseRsc();				
+				}
+				return;
 			}
-			return;
 		}
 	}
 
-	// the system or its center is in the view frustum, but it may not have been instanciated from its shape now
-	if (!ps)
-	{
-		nlassert(_Scene);
-		nlassert(Shape);
-		reallocRsc();
-		ps = _ParticleSystem;
+	{	
+		MINI_TIMER(PSStatsTraverseAnimDetailPart2)
+			
+		// the system or its center is in the view frustum, but it may not have been instanciated from its shape now
+		if (!ps)
+		{
+			nlassert(_Scene);
+			nlassert(Shape);
+			reallocRsc();
+			ps = _ParticleSystem;
+		}
 	}
 
 	CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();
 	
-	if (_InClusterAndVisible ||  ps->getAnimType() == CParticleSystem::AnimInCluster)
-	{		
-		bool animate = true;
-		if (ps->isSharingEnabled()) /// with shared system, we only animate one version!
-		{
-			if (ps->_LastUpdateDate == clipTrav.CurrentDate)
+	{	
+		MINI_TIMER(PSStatsTraverseAnimDetailPart3)			
+		if (_InClusterAndVisible ||  ps->getAnimType() == CParticleSystem::AnimInCluster)
+		{		
+			bool animate = true;
+			if (ps->isSharingEnabled()) /// with shared system, we only animate one version!
 			{
-				animate = false;				
+				if (ps->_LastUpdateDate == clipTrav.CurrentDate)
+				{
+					animate = false;				
+				}
+				else
+				{
+					ps->_LastUpdateDate = clipTrav.CurrentDate;
+				}
 			}
 			else
 			{
 				ps->_LastUpdateDate = clipTrav.CurrentDate;
-			}
-		}
-		else
-		{
+			}	
 			ps->_LastUpdateDate = clipTrav.CurrentDate;
-		}	
-		ps->_LastUpdateDate = clipTrav.CurrentDate;
-		if (animate)
-		{
-			if (ps->getAnimType() != CParticleSystem::AnimAlways) // if the animation is always perfomred, 
-																  // then animation is done by the particle system manager
-																  // just before the render trav
+			if (animate)
 			{
-				doAnimate();
-			}			
-		}
-	}		
-	
+				if (ps->getAnimType() != CParticleSystem::AnimAlways) // if the animation is always perfomred, 
+																	  // then animation is done by the particle system manager
+																	  // just before the render trav
+				{
+					doAnimate();
+				}			
+			}
+		}		
+	}	
 
-	// add a render model if in cluster & not hidden
-	if (_InClusterAndVisible)
 	{
-		getOwnerScene()->getRenderTrav().addRenderModel(this);
+		MINI_TIMER(PSStatsTraverseAnimDetailPart4)			
+		// add a render model if in cluster & not hidden
+		if (_InClusterAndVisible)
+		{
+			getOwnerScene()->getRenderTrav().addRenderModel(this);
+		}
 	}
 }
 
 ///=====================================================================================
 void	CParticleSystemModel::doAnimate()
 {
+	++ PSStatsNumDoAnimateCalls;
+	MINI_TIMER(PSStatsDoAnimate)
 	nlassert(!_Invalidated);
 	CParticleSystem		*ps = getPS();
 	CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();
 	const CMatrix		&mat= getWorldMatrix();	 
-	// Set the 'hide' flag. This prevent trails from being created is the system is hidden, moved, and then showed in the next frame.	  	  
-	ps->hide(!this->isHrcVisible());
-	ps->setSysMat(&mat);	
-	ps->setUserMatrix(&_UserMatrix);
-	ps->setViewMat(clipTrav.ViewMatrix);
-	updateOpacityInfos();
-	updateLightingInfos();
-
+	//
+	{	
+		MINI_TIMER(PSStatsDoAnimatePart1)
+			
+		// Set the 'hide' flag. This prevent trails from being created is the system is hidden, moved, and then showed in the next frame.	  	  
+		ps->hide(!this->isHrcVisible());
+		ps->setSysMat(&mat);	
+		ps->setUserMatrix(&_UserMatrix);
+		ps->setViewMat(clipTrav.ViewMatrix);
+		updateOpacityInfos();
+		updateLightingInfos();
+	}
 	//ps->setSysMat(getWorldMatrix());
 	nlassert(ps->getScene());	
 
 
-	// setup the number of faces we allow
-	ps->setNumTris((uint) getNumTrianglesAfterLoadBalancing());
-
-
-	// set the global user param that are bypassed
-	nlctassert(MaxPSUserParam < 8); // there should be less than 8 parameters because of mask stored in a byte
-	ps->_BypassGlobalUserParam = _BypassGlobalUserParam;
-
-	// setup system user parameters for parameters that have been touched
-	for (uint k = 0; k < MaxPSUserParam; ++k)
 	{
-		if (isTouched((uint)CParticleSystemModel::PSParam0 + k))
+		MINI_TIMER(PSStatsDoAnimatePart2)
+			
+		// setup the number of faces we allow
+		ps->setNumTris((uint) getNumTrianglesAfterLoadBalancing());
+
+
+		// set the global user param that are bypassed
+		nlctassert(MaxPSUserParam < 8); // there should be less than 8 parameters because of mask stored in a byte
+		ps->_BypassGlobalUserParam = _BypassGlobalUserParam;
+
+		// setup system user parameters for parameters that have been touched
+		for (uint k = 0; k < MaxPSUserParam; ++k)
 		{
-			ps->setUserParam(k, _UserParam[k].Value);
-			clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+			if (isTouched((uint)CParticleSystemModel::PSParam0 + k))
+			{
+				ps->setUserParam(k, _UserParam[k].Value);
+				clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+			}
+		}	
+		if (isAutoGetEllapsedTimeEnabled())
+		{
+			setEllapsedTime(ps->getScene()->getEllapsedTime() * getEllapsedTimeRatio());
 		}
-	}	
-	if (isAutoGetEllapsedTimeEnabled())
-	{
-		setEllapsedTime(ps->getScene()->getEllapsedTime() * getEllapsedTimeRatio());
 	}
-	TAnimationTime delay = getEllapsedTime();
-	// animate particles				
-	ps->step(CParticleSystem::Anim, delay);						
+	{
+		MINI_TIMER(PSStatsDoAnimatePart3)			
+		TAnimationTime delay = getEllapsedTime();
+		// animate particles				
+		ps->step(CParticleSystem::Anim, delay);
+	}
 }
 
 
@@ -539,6 +652,7 @@ void	CParticleSystemModel::doAnimate()
 //////////////////////////////////////////////
 void	CParticleSystemModel::traverseRender()
 {
+	MINI_TIMER(PSStatsTraverseRender)
 /*
 	if (!_OutOfFrustum)
 	{*/
@@ -583,7 +697,8 @@ void	CParticleSystemModel::traverseRender()
  */
 	
 void	CParticleSystemModel::traverseClip()
-{
+{		
+	MINI_TIMER(PSStatsTraverseClip)
 	// disable H_AUTO, because slowdown when lot of models (eg 1000-2000 tested in forest)
 	//H_AUTO ( NL3D_Particles_Clip );
 
@@ -612,6 +727,7 @@ void	CParticleSystemModel::traverseClip()
 		
 		if (ps) // system instanciated
 		{
+			MINI_TIMER(PSStatsClipSystemInstanciated)
 			// if there are no more particles, no need to even clip..
 			if (checkDestroyCondition(ps)) return;
 			// check for anim mode change
@@ -659,8 +775,11 @@ void	CParticleSystemModel::traverseClip()
 			}
 			//
 			if (visible)
-			{								
-				insertInVisibleList();				
+			{	
+				{				
+					MINI_TIMER(PSStatsInsertInVisibleList)
+					insertInVisibleList();
+				}
 				_InClusterAndVisible = true;
 				return;
 			}
@@ -686,8 +805,11 @@ void	CParticleSystemModel::traverseClip()
 				{				
 					// NB : The test to see wether the system is not too far is performed by the particle system manager					
 					if (!_EditionMode)
-					{						
-						insertInVisibleList();
+					{	
+						{				
+							MINI_TIMER(PSStatsInsertInVisibleList)
+							insertInVisibleList();
+						}
 					}					
 				}
 			}
@@ -710,6 +832,7 @@ void	CParticleSystemModel::traverseClip()
 		
 		if(!ps) ///====================== system resource not allocated, test if it entered the scope
 		{
+			MINI_TIMER(PSStatsClipSystemNotInstanciated)
 			CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)Shape);
 			nlassert(pss);
 
@@ -743,12 +866,18 @@ void	CParticleSystemModel::traverseClip()
 				{					
 					if ( (pyramid[i]   *  mat  ).d > 0.0f )  // in its basis, the system is at the center
 
-					{												
-						insertInVisibleList();
+					{	
+						{				
+							MINI_TIMER(PSStatsInsertInVisibleList)
+							insertInVisibleList();
+						}
 						return;
 					}
 				}									
-				insertInVisibleList();				
+				{				
+					MINI_TIMER(PSStatsInsertInVisibleList)
+					insertInVisibleList();
+				}
 				_InClusterAndVisible = true;
 				return;						
 			}
@@ -759,12 +888,18 @@ void	CParticleSystemModel::traverseClip()
 				for(sint i=0; i < (sint)pyramid.size(); i++)
 				{					
 					if ( !pss->_PrecomputedBBox.clipBack(pyramid[i]  * mat  ) ) 
-					{												
-						insertInVisibleList();
+					{	
+						{				
+							MINI_TIMER(PSStatsInsertInVisibleList)
+							insertInVisibleList();
+						}
 						return;					
 					}
 				}							
-				insertInVisibleList();
+				{				
+					MINI_TIMER(PSStatsInsertInVisibleList)
+					insertInVisibleList();
+				}
 				_InClusterAndVisible = true;
 				return;
 				
@@ -791,15 +926,24 @@ void	CParticleSystemModel::traverseClip()
 		}
 		if (checkAgainstPyramid(pyramid) == false)
 		{
+			MINI_TIMER(PSStatsClipSystemCheckAgainstPyramid)
 			if (!_EditionMode)
 			{
 				// system near, but maybe not in cluster..					
-				insertInVisibleList();
+				{				
+					MINI_TIMER(PSStatsInsertInVisibleList)
+					insertInVisibleList();
+				}
 			}				
 			return;
 		}
 				
-		insertInVisibleList();
+		{	
+			{				
+				MINI_TIMER(PSStatsInsertInVisibleList)
+				insertInVisibleList();
+			}
+		}
 		_InClusterAndVisible = true;
 }
 
@@ -815,6 +959,7 @@ bool	CParticleSystemModel::clip()
 //===================================================================
 bool	CParticleSystemModel::checkDestroyCondition(CParticleSystem *ps)
 {
+	MINI_TIMER(PSStatsCheckDestroyCondition)
 	nlassert(ps);
 	if (!_EditionMode)
 	{
@@ -897,10 +1042,29 @@ void CParticleSystemModel::setUserColor(NLMISC::CRGBA userColor)
 //===================================================================
 void CParticleSystemModel::forceInstanciate()
 {
+	MINI_TIMER(PSStatsForceInstanciate)
 	if (_Invalidated) return;
 	if (_ParticleSystem) return;
 	reallocRsc();
 }
 
+//===================================================================
+void CParticleSystemModel::setZBias(float value)
+{
+	if (value == _ZBias) return;
+	_ZBias = value;
+	if (_ParticleSystem) _ParticleSystem->setZBias(_ZBias);
+}
 
+//===================================================================
+void CParticleSystemModel::forceSetUserMatrix(const NLMISC::CMatrix &userMatrix)
+{
+	_UserMatrix = userMatrix;
+	if (getPS())
+	{
+		getPS()->setUserMatrix(&_UserMatrix);
+	}
+}
+
+ 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.2 2001/07/04 13:07:16 cado Exp $
+ * $Id: source.h,v 1.3 2001/07/13 09:38:19 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,11 @@ public:
 	virtual void					play() = 0;
 	/// Stop playing
 	virtual void					stop() = 0;
+	/// Pause. Call play() to resume.
+	virtual void					pause() = 0;
+	/// Return the playing state
+	virtual bool					isPlaying() const = 0;
+
 	/// Update the source (e.g. continue to stream the data in)
 	virtual void					update() = 0;
 	//@}

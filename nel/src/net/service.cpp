@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.186 2003/08/29 15:35:31 lecroart Exp $
+ * $Id: service.cpp,v 1.187 2003/09/01 12:22:25 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -144,40 +144,11 @@ string CompilationMode = "NL_RELEASE";
 string CompilationMode = "???";
 #endif
 
-// use to display result of command (on file and windows displayer) **without** filter
-static CLog CommandLog;
-
 static bool Bench = false;
 
 //
 // Callback managing
 //
-
-
-static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint16 sid)
-{
-	string command;
-	msgin.serial (command);
-
-	nlinfo ("Executing command from network : '%s'", command.c_str());
-	ICommand::execute (command, CommandLog);
-}
-
-
-static void cbStopService (CMessage &msgin, const std::string &serviceName, uint16 sid)
-{
-	nlinfo ("Receive a stop from service %s-%d, need to quit", serviceName.c_str(), sid);
-	ExitSignalAsked = 0xFFFF;
-}
-
-
-
-// layer 5
-static TUnifiedCallbackItem AESCallbackArray[] =
-{
-	{ "STOPS", cbStopService },
-	{ "EXEC_COMMAND", cbExecCommand },
-};
 
 //
 // Signals managing
@@ -389,7 +360,7 @@ void cbExecuteCommands (CConfigFile::CVar &var)
 {
 	for (sint i = 0; i < var.size(); i++)
 	{
-		ICommand::execute (var.asString(i), CommandLog);
+		ICommand::execute (var.asString(i), IService::getInstance()->CommandLog);
 	}
 }
 
@@ -402,7 +373,7 @@ void cbExecuteCommands (CConfigFile::CVar &var)
 sint IService::main (const char *serviceShortName, const char *serviceLongName, uint16 servicePort, const char *configDir, const char *logDir, const char *compilationDate)
 {
 	bool userInitCalled = false;
-	bool resyncEvenly = false;
+//	bool resyncEvenly = false;
 	CConfigFile::CVar *var = NULL;
 	
 	// a short name service can't be a number

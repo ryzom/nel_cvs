@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.65 2003/08/26 14:52:22 lecroart Exp $
+ * $Id: service.h,v 1.66 2003/09/01 12:22:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,6 +269,9 @@ public:
 	// @{
 
 	NLMISC::CConfigFile	ConfigFile;
+
+	// use to display result of command (on file and windows displayer) **without** filter
+	NLMISC::CLog CommandLog;
 
 	//@}
 

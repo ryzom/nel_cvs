@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.11 2003/08/27 16:16:25 distrib Exp $
+ * $Id: admin.cpp,v 1.12 2003/09/01 12:22:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,6 +136,24 @@ static void cbServGetView (CMessage &msgin, const std::string &serviceName, uint
 
 }
 
+
+static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	string command;
+	msgin.serial (command);
+	
+	nlinfo ("Executing command from network : '%s'", command.c_str());
+	ICommand::execute (command, IService::getInstance()->CommandLog);
+}
+
+
+static void cbStopService (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	nlinfo ("Receive a stop from service %s-%d, need to quit", serviceName.c_str(), sid);
+	IService::getInstance()->exit (0xFFFF);
+}
+
+
 void cbAESConnection (const string &serviceName, uint16 sid, void *arg)
 {
 	// established a connection to the AES, identify myself
@@ -162,10 +180,13 @@ static void cbAESDisconnection (const std::string &serviceName, uint16 sid, void
 {
 }
 
+
 static TUnifiedCallbackItem CallbackArray[] =
 {
 	{ "INFORMATIONS",	cbInformations },
 	{ "GET_VIEW",		cbServGetView },
+	{ "STOPS",			cbStopService },
+	{ "EXEC_COMMAND",	cbExecCommand },
 };
 
 

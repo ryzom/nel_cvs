@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.40 2002/06/13 09:42:12 lecroart Exp $
+ * $Id: log.cpp,v 1.41 2002/07/16 09:46:17 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -250,12 +250,12 @@ void CLog::displayNL (const char *format, ...)
 	}
 	
 	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+	NLMISC_CONVERT_VARGS (str, format, 256/*NLMISC::MaxCStringSize*/);
 
-	if (strlen(str)<NLMISC::MaxCStringSize-1)
+	if (strlen(str)<256/*NLMISC::MaxCStringSize*/-1)
 		strcat (str, "\n");
 	else
-		str[NLMISC::MaxCStringSize-2] = '\n';
+		str[256/*NLMISC::MaxCStringSize*/-2] = '\n';
 
 	displayString (str);
 }
@@ -271,7 +271,7 @@ void CLog::display (const char *format, ...)
 	}
 
 	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+	NLMISC_CONVERT_VARGS (str, format, 256/*NLMISC::MaxCStringSize*/);
 
 	displayString (str);
 /*
@@ -345,12 +345,12 @@ void CLog::displayRawNL( const char *format, ... )
 	}
 
 	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+	NLMISC_CONVERT_VARGS (str, format, 256/*NLMISC::MaxCStringSize*/);
 
-	if (strlen(str)<NLMISC::MaxCStringSize-1)
+	if (strlen(str)<256/*NLMISC::MaxCStringSize*/-1)
 		strcat (str, "\n");
 	else
-		str[NLMISC::MaxCStringSize-2] = '\n';
+		str[256/*NLMISC::MaxCStringSize*/-2] = '\n';
 
 	displayRawString(str);
 }
@@ -366,7 +366,7 @@ void CLog::displayRaw( const char *format, ... )
 	}
 
 	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+	NLMISC_CONVERT_VARGS (str, format, 256/*NLMISC::MaxCStringSize*/);
 
 	displayRawString(str);
 }
@@ -380,7 +380,7 @@ void CLog::forceDisplayRaw (const char *format, ...)
 	}
 
 	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+	NLMISC_CONVERT_VARGS (str, format, 256/*NLMISC::MaxCStringSize*/);
 
 	TDisplayInfo args;
 

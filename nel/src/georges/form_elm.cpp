@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.22 2002/07/11 13:21:44 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.23 2002/07/16 09:46:17 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -764,7 +764,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 	nlassert ( (*parentDfn) || (*node) );
 
 	// Error message
-	char error[512] = {0};
+	char error[256];
 
 	// Parent exist ?
 	if (*parentDfn)

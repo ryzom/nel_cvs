@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.15 2001/08/09 08:00:42 vizerie Exp $
+ * $Id: particle_system.h,v 1.16 2001/08/16 17:04:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,11 +35,14 @@
 #include "3d/particle_system_process.h"
 #include "3d/ps_lod.h"
 
+#include <map>
+
 
 
 namespace NL3D {
 
 class CParticleSystem;
+class CPSLocatedBindable;
 class CFontGenerator;
 class CFontManager;
 class CPSCopyHelper;
@@ -536,6 +539,31 @@ public:
 
 		// @}
 	
+	//*****************************************************************************************************
+	///\name external access to locatedBindable. PRIVATE PART (to avoid the use of friend)
+		// @{
+			/** register a locatedBindable, and allow it to be referenced by the given ID
+			  * this locatedBindable must belong to this system.
+			  * each pair <id, locatedBindable> must be unqiue, but there may be sevral LB for the same key
+			  */
+			void registerLocatedBindableExternID(uint32 id, CPSLocatedBindable *lb);
+
+			/// unregister the given located bindable. An assertion is raised if it has not been registered before
+			void unregisterLocatedBindableExternID(CPSLocatedBindable *lb);
+		// @}
+
+	//*****************************************************************************************************
+	///\name external access to locatedBindable. PUBLIC PART
+		// @{
+				/// return the number the number of located bindable bound with this ID
+				uint			   getNumLocatedBindableByExternID(uint32 id) const;
+				/// return the nth locatedBindable associtaed with this ID. An assertion is raised if it doesn't exist
+				CPSLocatedBindable *getLocatedBindableByExternID(uint32 id, uint index);
+				const CPSLocatedBindable *getLocatedBindableByExternID(uint32 id, uint index) const;
+		// @}
+
+
+	
 
 protected:
 
@@ -583,31 +611,35 @@ protected:
 	std::string _Name;
 
 
-	bool					 _AccurateIntegration;	
-	CAnimationTime			 _TimeThreshold;
-	CAnimationTime			 _SystemDate;
-	uint32					 _MaxNbIntegrations;
-	bool					 _CanSlowDown;
+	bool										_AccurateIntegration;	
+	CAnimationTime								_TimeThreshold;
+	CAnimationTime								_SystemDate;
+	uint32										_MaxNbIntegrations;
+	bool										_CanSlowDown;
 
 
-	float					 _LODRatio;
-	float					 _OneMinusCurrentLODRatio;
-	float					 _MaxViewDist;
-	float					 _InvMaxViewDist;
-	float					 _InvCurrentViewDist; // inverse of the current view dist. It can be the same than _InvMaxViewDist
-											       // but when there's LOD, the view distance may be reduced
-	bool					 _Touch;
+	float										_LODRatio;
+	float										_OneMinusCurrentLODRatio;
+	float										_MaxViewDist;
+	float										_InvMaxViewDist;
+	float										_InvCurrentViewDist; // inverse of the current view dist. It can be the same than _InvMaxViewDist
+														        // but when there's LOD, the view distance may be reduced
+	bool										_Touch;
 
-	TDieCondition			 _DieCondition;
-	CAnimationTime			 _DelayBeforeDieTest;
-	bool					 _DestroyModelWhenOutOfRange;
-	bool					 _DestroyWhenOutOfFrustum;	
-	bool					 _PerformMotionWhenOutOfFrustum;
-	uint					 _MaxNumFacesWanted;	
+	TDieCondition								_DieCondition;
+	CAnimationTime								_DelayBeforeDieTest;
+	bool										_DestroyModelWhenOutOfRange;
+	bool										_DestroyWhenOutOfFrustum;	
+	bool										_PerformMotionWhenOutOfFrustum;
+	uint										_MaxNumFacesWanted;	
 
-	static IPSSoundServer *		 _SoundServer;
+	static IPSSoundServer *						_SoundServer;
 
-	float					_UserParam[MaxPSUserParam];
+	float										_UserParam[MaxPSUserParam];
+
+	typedef 
+	std::multimap<uint32, CPSLocatedBindable *> TLBMap;
+	TLBMap										_LBMap;
 	
 };
 

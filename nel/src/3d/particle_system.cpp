@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.29 2001/08/15 12:01:43 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.30 2001/08/16 17:04:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -222,13 +222,15 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 }
 
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{	
+{		
 	sint version =  f.serialVersion(7);	
 	//f.serial(_ViewMat);
 	f.serial(_SysMat);
 	f.serial(_Date);
 	if (f.isReading())
 	{
+		// delete previous multimap
+		_LBMap.clear();
 		// delete previously attached process
 		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 		{
@@ -441,6 +443,56 @@ TPSLod CParticleSystem::getLOD(void) const
 	const float dist = fabsf(_InvCurrentViewDist * (_SysMat.getPos() - _InvertedViewMat.getPos()) * _InvertedViewMat.getJ());
 	return dist > _LODRatio ? PSLod2 : PSLod1;
 }
+
+
+void CParticleSystem::registerLocatedBindableExternID(uint32 id, CPSLocatedBindable *lb)
+{
+	nlassert(lb);
+	nlassert(lb->getOwner() && lb->getOwner()->getOwner() == this); // the located bindable must belong to that system
+	#ifdef NL_DEBUG		
+		// check that this lb hasn't been inserted yet
+		TLBMap::iterator lbd = _LBMap.lower_bound(id), ubd = _LBMap.upper_bound(id);
+		nlassert(std::find(lbd, ubd, TLBMap::value_type (id, lb), std::iterator_category(lbd)) == ubd);
+	#endif
+		_LBMap.insert(TLBMap::value_type (id, lb) );
+}
+
+void CParticleSystem::unregisterLocatedBindableExternID(CPSLocatedBindable *lb)
+{
+	nlassert(lb);	
+	nlassert(lb->getOwner() && lb->getOwner()->getOwner() == this); // the located bindable must belong to that system
+	uint32 id = lb->getExternID();
+	if (!id) return;
+	TLBMap::iterator lbd = _LBMap.lower_bound(id), ubd = _LBMap.upper_bound(id);
+	TLBMap::iterator el = std::find(lbd, ubd, TLBMap::value_type (id, lb), std::iterator_category(lbd));
+	nlassert(el != ubd); 
+	_LBMap.erase(el);
+}
+
+uint CParticleSystem::getNumLocatedBindableByExternID(uint32 id) const
+{
+	return _LBMap.count(id);
+}
+
+CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 id, uint index)
+{
+	nlassert(index < _LBMap.count(id));
+	TLBMap::const_iterator el = _LBMap.lower_bound(id);
+	uint left = index;
+	while (left--) ++el;
+	return  el->second;
+
+}
+
+const CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 id, uint index) const
+{
+	nlassert(index < _LBMap.count(id));
+	TLBMap::const_iterator el = _LBMap.lower_bound(id);
+	uint left = index;
+	while (left--) ++el;
+	return  el->second;
+}
+
 
 
 } // NL3D

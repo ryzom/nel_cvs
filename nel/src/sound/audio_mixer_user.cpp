@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.45 2003/03/25 16:56:52 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.46 2003/03/25 18:32:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -429,7 +429,8 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 		const std::string &sp = _SamplePath;
 
 		std::vector <std::string> dirList;
-		CPath::getPathContent(sp, false, true, false, dirList);
+		if(!sp.empty())
+			CPath::getPathContent(sp, false, true, false, dirList);
 
 		while (!dirList.empty())
 		{

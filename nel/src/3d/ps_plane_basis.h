@@ -1,7 +1,7 @@
 /** \file ps_plane_basis.h
  * <File description>
  *
- * $Id: ps_plane_basis.h,v 1.2 2001/07/12 15:42:29 vizerie Exp $
+ * $Id: ps_plane_basis.h,v 1.3 2001/09/07 12:00:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,11 @@ struct CPlaneBasis
 		NLMISC::CMatrix mat = CPSUtil::buildSchmidtBasis(normal) ;
 		X = mat.getI() ;
 		Y = mat.getJ() ;
+	}
+
+	// construct this basis by giving its X and Y vectors
+	CPlaneBasis(const NLMISC::CVector &x, const NLMISC::CVector &y) : X(x), Y(y)
+	{		
 	}
 
 	/// compute the normal of the plane basis

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.12 2003/10/07 12:33:51 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.13 2004/03/23 10:14:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -235,6 +235,7 @@ private:
 	// Last number of particle that was displayed (keep this to avoid flickering)
 	sint _LastCurrNumParticles;
 	sint _LastMaxNumParticles;
+	sint _LastNumWantedFaces;
 	// last displayed date for the system
 	float _LastSystemDate;
 	//

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.20 2004/03/11 17:27:08 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.21 2004/03/23 10:14:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,7 @@ CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg,
 	  _ResetAutoCount(true),
 	  _LastCurrNumParticles(-1),
 	  _LastMaxNumParticles(-1),
+	  _LastNumWantedFaces(-1),
 	  _LastSystemDate(-1.f),
 	  _AutoRepeat(false),
 	  _AnimationDLG(animationDLG),
@@ -600,6 +601,17 @@ void CStartStopParticleSystem::go()
 		GetDlgItem(IDC_NUM_PARTICLES)->SetWindowText((LPCTSTR) numParts);
 		_LastCurrNumParticles = currNumParticles;
 		_LastMaxNumParticles = maxNumParticles;
+	}
+	// display max number of wanted faces
+	NLMISC::CMatrix camMat = ps->getScene()->getCam()->getMatrix();
+	sint numWantedFaces = (uint) ps->getWantedNumTris((ps->getSysMat().getPos() - camMat.getPos()).norm());
+	if (numWantedFaces != _LastNumWantedFaces)
+	{	
+		CString numWF;
+		numWF.LoadString(IDS_NUM_WANTED_FACES);
+		numWF += CString(NLMISC::toString("%d",(int) numWantedFaces).c_str());
+		GetDlgItem(IDC_NUM_ASKED_FACES)->SetWindowText((LPCTSTR) numWF);
+		_LastNumWantedFaces = numWantedFaces;		
 	}
 	// display system date
 	if (_ParticleDlg->getCurrPS()->getSystemDate() != _LastSystemDate)

@@ -1,6 +1,6 @@
 /** \file object_arena_allocator.cpp
  *
- * $Id: object_arena_allocator.cpp,v 1.1 2004/03/04 14:33:15 vizerie Exp $
+ * $Id: object_arena_allocator.cpp,v 1.2 2004/03/05 16:47:24 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -29,7 +29,9 @@
 namespace NLMISC
 {
 
-CObjectArenaAllocator CObjectArenaAllocator::DefaultObjectArenaAllocator(16384); // most objects should be under that size
+
+CObjectArenaAllocator *CObjectArenaAllocator::_DefaultAllocator = NULL;
+
 
 //*****************************************************************************************************************
 CObjectArenaAllocator::CObjectArenaAllocator(uint maxAllocSize, uint granularity /* = 4*/)
@@ -142,6 +144,17 @@ uint CObjectArenaAllocator::getNumAllocatedBlocks() const
 	}
 	return numObjs;
 }
+
+//*****************************************************************************************************************
+CObjectArenaAllocator &CObjectArenaAllocator::getDefaultAllocator()
+{
+	if (!_DefaultAllocator)
+	{
+		_DefaultAllocator = new CObjectArenaAllocator(32768);
+	}
+	return *_DefaultAllocator;
+}
+
 
 #ifdef NL_DEBUG
 

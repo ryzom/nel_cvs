@@ -1,6 +1,6 @@
 /** \file object_arena_allocator.h
  *
- * $Id: object_arena_allocator.h,v 1.1 2004/03/04 14:34:50 vizerie Exp $
+ * $Id: object_arena_allocator.h,v 1.2 2004/03/05 16:47:09 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -25,6 +25,8 @@
 #ifndef NL_OBJECT_ARENA_ALLOCATOR_H
 #define NL_OBJECT_ARENA_ALLOCATOR_H
 
+#include "nel/misc/singelton.h"
+
 namespace NLMISC
 {
 
@@ -43,9 +45,6 @@ class CFixedSizeAllocator;
   */
 class CObjectArenaAllocator
 {
-public:
-	// default object arena allocator
-	static CObjectArenaAllocator DefaultObjectArenaAllocator;
 public:
 	/** ctor
 	  * \param maxAllocSize maximum intended size of allocation.	  
@@ -67,6 +66,8 @@ public:
 		// set a break for the given allocation
 		void setBreakForAllocID(bool enabled, uint id);
 	#endif
+	// for convenience, a default allocator is available
+	static CObjectArenaAllocator &getDefaultAllocator();
 private:
 	std::vector<CFixedSizeAllocator *> _ObjectSizeToAllocator;
 	uint							 _MaxAllocSize;
@@ -77,6 +78,7 @@ private:
 		bool							 _WantBreakOnAlloc;
 		uint							 _BreakAllocID;
 	#endif
+	static CObjectArenaAllocator		 *_DefaultAllocator;
 };
 
 // Macro that redefines the new & delete operator of a class so that the default arena object allocator is used.
@@ -84,8 +86,8 @@ private:
 // All derived class will use the same allocator, so this definition can be used only at the top of the hierachy of class for
 // which it is of interest.
 #define NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR \
-void *operator new(size_t size) { return NLMISC::CObjectArenaAllocator::DefaultObjectArenaAllocator.alloc((uint) size); }\
-void operator delete(void *block) { NLMISC::CObjectArenaAllocator::DefaultObjectArenaAllocator.free(block); }
+	void *operator new(size_t size) { return NLMISC::CObjectArenaAllocator::getDefaultAllocator().alloc((uint) size); }\
+void operator delete(void *block) { NLMISC::CObjectArenaAllocator::getDefaultAllocator().free(block); }
 
 	
 

@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.17 2002/09/13 08:22:01 corvazier Exp $
+ * $Id: script.cpp,v 1.18 2002/10/21 16:09:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1984,10 +1984,10 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 		sint oversampledHeight = heightPixel*4;
 
 		// Oversampled size should be < 2048
-		if (oversampledWidth > 2048)
-			oversampledWidth = 2048;
-		if (oversampledHeight > 2048)
-			oversampledHeight = 2048;
+		if (oversampledWidth > 512)
+			oversampledWidth = 512;
+		if (oversampledHeight > 512)
+			oversampledHeight = 512;
 		
 		// Oversampled size should be < sreen size
 		DEVMODE	devMode;

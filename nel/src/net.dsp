@@ -54,7 +54,6 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/Debug/net"
 # PROP Target_Dir ""
 # ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdnet.h" /FD /GZ /c
-# SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe

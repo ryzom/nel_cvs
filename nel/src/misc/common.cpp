@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.9 2001/05/29 09:30:42 lecroart Exp $
+ * $Id: common.cpp,v 1.10 2001/05/30 09:12:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,17 +81,20 @@ string stringFromVector( const vector<uint8>& v )
 {
 	string s;
 
-	// Copy contents
-	s.resize( v.size() );
-	memcpy( &*s.begin(), &*v.begin(), v.size() );
-
-	// Replace unprintable characters
-	string::iterator is;
-	for ( is=s.begin(); is!=s.end(); ++is )
+	if ( ! v.empty() )
 	{
-		if ( ! isprint((*is)) )
+		// Copy contents
+		s.resize( v.size() );
+		memcpy( &*s.begin(), &*v.begin(), v.size() );
+
+		// Replace '\0' characters
+		string::iterator is;
+		for ( is=s.begin(); is!=s.end(); ++is )
 		{
-			(*is) = '?';
+			if ( ! isprint((*is)) )
+			{
+				(*is) = '?';
+			}
 		}
 	}
 

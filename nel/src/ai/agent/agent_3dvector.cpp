@@ -1,7 +1,7 @@
 /** \file agent_3dvector.cpp
  * This file contain a class to manage a 3DVector in the script.
  *
- * $Id: agent_3dvector.cpp,v 1.1 2001/03/26 08:44:57 chafik Exp $
+ * $Id: agent_3dvector.cpp,v 1.2 2001/03/26 09:26:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,13 +24,12 @@
  */
 
 
-#include "agent_3dvector.h"
 #include "nel/ai/agent/agent_digital.h"
 #include "nel/ai/script/interpret_methodes.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/agent/agent_method_def.h"
-
+#include "nel/ai/agent/agent_3dvector.h"
 
 // Add some code in the namespace "NLAIAGENT".
 namespace NLAIAGENT
@@ -393,9 +392,10 @@ namespace NLAIAGENT
 }// Enf of the namespace "NLAIAGENT" //
 
 using namespace NLAIAGENT;
-const NLAIC::CIdentType VectorType::IdVectorType("CVector",	NLAIC::CSelfClassCFactory(VectorType(0, 0, 0)), 
+const NLAIC::CIdentType VectorType::IdVectorType("Vector3D",NLAIC::CSelfClassFactory(VectorType(0, 0, 0)), 
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 															NLAIC::CTypeOfOperator::opSub | 
 															NLAIC::CTypeOfOperator::opEq | 
 															NLAIC::CTypeOfOperator::opDiff));
+

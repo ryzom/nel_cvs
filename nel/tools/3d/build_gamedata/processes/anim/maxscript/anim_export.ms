@@ -67,10 +67,16 @@ try
 						-- Select Bip01
 						select $Bip01
 
+						-- Select the lights
+						for li in lights do
+						(
+							selectmore li
+						)
+
 						if ($ != undefined) then
 						(
 							-- Export the animation
-							if (NelExportAnimation #($) output false) == false then
+							if (NelExportAnimation (selection as array) output false) == false then
 							(
 								nlerror ("ERROR exporting animation "+files[i])
 							)

@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
  * TODO: File description
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.11 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.12 2005/01/19 08:54:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,6 +119,16 @@ void	CVegetableBlendLayerModel::render(IDriver *driver)
 
 		// render him. we are sure that size > 0, because tested before.
 		driver->activeIndexBuffer(ptrSortBlock->_SortedTriangleArray);
+		#ifdef NL_DEBUG
+			if (ptrSortBlock->ZSortHardMode)
+			{
+				nlassert(ptrSortBlock->_SortedTriangleArray.getFormat() == CIndexBuffer::Indices16);
+			}
+			else
+			{
+				nlassert(ptrSortBlock->_SortedTriangleArray.getFormat() == CIndexBuffer::Indices32);
+			}
+		#endif
 		driver->renderSimpleTriangles(
 			ptrSortBlock->_SortedTriangleIndices[ptrSortBlock->_QuadrantId], 
 			ptrSortBlock->_NTriangles);

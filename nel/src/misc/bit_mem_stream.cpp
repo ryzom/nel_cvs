@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.7 2001/11/13 16:07:45 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.8 2001/11/13 17:53:53 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -183,7 +183,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 	if ( isReading() )
 	{
 		// Check that we don't read more than there is to read
-		if ( lengthS()+(nbits+8-_FreeBits)/8 > lengthR()) // _Freebits ranges from 8 downto 1
+		if (getPosInBit() + nbits > lengthR() * 8)
 		{
 			throw EStreamOverflow();
 		}

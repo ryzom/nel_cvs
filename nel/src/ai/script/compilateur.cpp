@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.17 2001/12/05 09:54:38 chafik Exp $
+ * $Id: compilateur.cpp,v 1.18 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,7 +318,7 @@ namespace NLAISCRIPT
 			if( !c->satisfied() ) 
 			{				
 				_ConstraintType.erase(j);
-				yyerror((char *)c->getInfo());
+				//yyerror((char *)c->getInfo());
 				c->release();				
 			}			
 		}

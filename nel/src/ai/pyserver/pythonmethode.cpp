@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.17 2001/11/12 17:44:22 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.18 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,6 +166,7 @@ namespace NLAIPYSERVER
 		return M_Constructeur;
 	}
 	
+	static PyObject *Dictionarry = NULL;
 
 	CPyExport *initPythonLib(NLAIC::IIO *P,char *pathWay)
 	{
@@ -215,7 +216,7 @@ namespace NLAIPYSERVER
 		k = (char *)Py_GetPath();
 #endif 
 		
-		PyObject *O = Py_InitModule("RysonSytemeIO",M_Constructeur);
+		Dictionarry = Py_InitModule("RysonSytemeIO",M_Constructeur);
 
 		char CodeExec[] =	"import sys\n"
 							"from RysonSytemeIO import *\n"
@@ -250,7 +251,9 @@ namespace NLAIPYSERVER
 
 	void endPythonInterface(CPyExport *Int) 
 	{
+		Py_DECREF(Dictionarry);
 		delete Int;
 		Interface->release();
+
 	}
 }

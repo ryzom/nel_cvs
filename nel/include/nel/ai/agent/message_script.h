@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.10 2001/12/05 10:00:35 portier Exp $
+ * $Id: message_script.h,v 1.11 2001/12/11 09:26:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,7 @@ namespace NLAIAGENT
 			virtual	IObjectIA::CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 			virtual	IObjectIA::CProcessResult runMethodeMember(sint32 index,IObjectIA *);
 
-			virtual void setStaticMember(sint32,IObjectIA *);
+			virtual bool setStaticMember(sint32,IObjectIA *);
 			virtual const IObjectIA *getStaticMember(sint32) const;
 			virtual sint32 getStaticMemberSize() const;
 			virtual sint32 getStaticMemberIndex(const IVarName &) const;

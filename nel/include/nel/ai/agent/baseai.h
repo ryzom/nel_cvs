@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.21 2001/09/06 16:47:58 chafik Exp $
+ * $Id: baseai.h,v 1.22 2001/12/11 09:26:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,15 +263,15 @@ namespace NLAIAGENT
 		/**
 		to cahnge a given components given by an index.
 		*/
-		void setStaticMember(const IVarName &compName,IObjectIA *change)
+		bool setStaticMember(const IVarName &compName,IObjectIA *change)
 		{
-			setStaticMember(getStaticMemberIndex(compName),change);
+			return setStaticMember(getStaticMemberIndex(compName),change);
 		}
 
 		/**
 		to cahnge a given components given by a string.
 		*/
-		virtual void setStaticMember(sint32,IObjectIA *);
+		virtual bool setStaticMember(sint32,IObjectIA *);
 
 		/**
 		getMethodIndexSize define the nomber of method define in the class.

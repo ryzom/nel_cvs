@@ -1,6 +1,6 @@
 /** \file constraint_find_run.cpp
  *
- * $Id: constraint_find_run.cpp,v 1.11 2001/05/22 16:08:16 chafik Exp $
+ * $Id: constraint_find_run.cpp,v 1.12 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,7 @@ namespace NLAISCRIPT
 				//const NLAIAGENT::IObjectIA *b = c.validateHierarchyMethode(method.Member,method.Inheritance,cl,*_MethodName);
 				if(b)
 				{					
-					if(!(( (const NLAIC::CTypeOfObject &)b->getType() ) & NLAIC::CTypeOfObject::tAgentInterpret))
+					if(!(( (const NLAIC::CTypeOfObject &)b->getType() ) & NLAIC::CTypeOfObject::tInterpret))
 					{
 						_Satisfied = true;
 						_MethodName->incRef();

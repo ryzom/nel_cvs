@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.15 2001/12/05 10:00:35 portier Exp $
+ * $Id: registry_type.h,v 1.16 2001/12/11 09:26:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -178,7 +178,12 @@ namespace NLAIC
 		//@}
 
 		///Get value of class.
-		operator uint32 () const
+		operator uint () const
+		{
+			return _Bites;
+		}
+
+		uint getValue() const
 		{
 			return _Bites;
 		}
@@ -254,10 +259,10 @@ namespace NLAIC
 			///The object is an agent.
 			tAgent = 32,
 			//tExec = 64,
-			///The object is an IBasicInterface object.
-			tObject = 128,
 			///The object is an agent defiend with the interpret. Agents class must derived from NLAIAGENT::CAgentScript.
-			tAgentInterpret = 256,
+			tInterpret = 256,
+			///The object is an IBasicInterface object.
+			tObject = 128,			
 			///The object is an performative.
 			tPerformative = 512,
 			/// The object is an actor

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.42 2001/12/05 10:00:35 portier Exp $
+ * $Id: agent_script.h,v 1.43 2001/12/11 09:26:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -282,7 +282,7 @@ namespace NLAIAGENT
 		virtual sint32 getStaticMemberSize() const;
 		virtual sint32 getStaticMemberIndex(const IVarName &) const;
 		virtual const IObjectIA *getStaticMember(sint32) const;		
-		virtual void setStaticMember(sint32,IObjectIA *);
+		virtual bool setStaticMember(sint32,IObjectIA *);
 
 		virtual tQueue getPrivateMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
 		virtual tQueue isMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.24 2001/09/25 08:41:10 portier Exp $
+ * $Id: group_type.cpp,v 1.25 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -354,7 +354,8 @@ namespace NLAIAGENT
 
 	void CGroupType::cpy(const IObjectIA &o) 
 	{
-		_List.push_back((const IObjectIA *)o.clone());
+		const IObjectIA *t = (const IObjectIA *)o.clone();	
+		_List.push_back(t);
 	}
 
 	const IObjectIA *CGroupType::pop() 

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.95 2001/12/10 16:13:57 portier Exp $
+ * $Id: agent_script.cpp,v 1.96 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -267,23 +267,25 @@ namespace NLAIAGENT
 		_iComponents = 0;
 
 		_AgentClass = a._AgentClass;
-		if ( a._AgentClass )
+		/*if ( a._AgentClass )
 		{			
 			a._AgentClass->incRef();
-		}
+		}*/
 
 		_NbComponents = a._NbComponents;
 		if ( _NbComponents != 0 )
 		{
 			_Components = new IObjectIA *[ _NbComponents ];
+
 			//sint32 nb_scripted = 0;
 			for ( int i = 0; i < _NbComponents; i++ )
 			{
 				_Components[i] = (IObjectIA *)a._Components[i]->clone();		
 
-				if(((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
-				{
-					///incRef();
+				uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+				const NLAIC::CTypeOfObject &t = (const NLAIC::CTypeOfObject &)_Components[i]->getType();
+				if( (t.getValue() & b ) == b)
+				{					
 					((CAgentScript *)_Components[i])->setParent( (const IWordNumRef *) *this);
 				}
 			}
@@ -316,8 +318,8 @@ namespace NLAIAGENT
 	
 	: IAgentManager(father), _AgentClass( agent_class )
 	{	
-		if ( _AgentClass )
-			_AgentClass->incRef();
+		/*if ( _AgentClass )
+			_AgentClass->incRef();*/
 
 		_iComponents = 0;
 
@@ -335,7 +337,10 @@ namespace NLAIAGENT
 				IObjectIA *o = (IObjectIA *)*it_c;
 				_Components[id_c] = o;
 
-				if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+				uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+				const NLAIC::CTypeOfObject &t = o->getType();
+
+				if((t.getValue() & b) == b)
 				{
 					((CAgentScript *)o)->setParent( (const IWordNumRef *) *this);
 				}
@@ -351,8 +356,8 @@ namespace NLAIAGENT
 	CAgentScript::~CAgentScript()
 	{
 		Kill();
-		if ( _AgentClass )
-			_AgentClass->release();		
+		/*if ( _AgentClass )
+			_AgentClass->release();*/
 
 		// destruction of static components
 		if(_Components != NULL)
@@ -373,16 +378,13 @@ namespace NLAIAGENT
 		//if(_AgentManager != NULL) _AgentManager->release();
 		_AgentManager = manager;
 		for ( int i = 0; i < _NbComponents; i++ )
-		{
-			const NLAIC::CTypeOfObject obj_type = (const NLAIC::CTypeOfObject) _Components[i]->getType();
-			if( obj_type & NLAIC::CTypeOfObject::tAgentInterpret ) 
-			{
-				sint32 test = ( obj_type & NLAIC::CTypeOfObject::tMessage );
-				if ( test == 0)
-				{
-					//_AgentManager->incRef();
-					((CAgentScript *)_Components[i])->setAgentManager(_AgentManager);
-				}
+		{			
+
+			uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+			const NLAIC::CTypeOfObject &t = (const NLAIC::CTypeOfObject &)_Components[i]->getType();
+			if( (t.getValue() & b ) == b)			
+			{				
+				((CAgentScript *)_Components[i])->setAgentManager(_AgentManager);			
 			}
 		}
 	}
@@ -392,7 +394,7 @@ namespace NLAIAGENT
 		return _AgentClass->getChildMessageIndex( msg, child_index );
 	}
 
-	void CAgentScript::setStaticMember(sint32 index,IObjectIA *op)
+	bool CAgentScript::setStaticMember(sint32 index,IObjectIA *op)
 	{
 #ifdef NL_DEBUG
 		if ( index >= _NbComponents )
@@ -401,16 +403,20 @@ namespace NLAIAGENT
 		}
 #endif
 		IObjectIA *old_comp = _Components[ index ];
-		_Components[ index ] = op;
-		op->incRef();
-		if(op != old_comp) old_comp->release();
+		_Components[ index ] = op;		
 
-
-
-		if(((const NLAIC::CTypeOfObject &) op->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+		uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+		const NLAIC::CTypeOfObject &t = op->getType();
+		if((t.getValue() & b) == b)
 		{
 			((CAgentScript *)op)->setParent( (const IWordNumRef *) *this);
 		}
+		if(op != old_comp)  
+		{
+			old_comp->release();
+			return false;
+		}
+		return true;
 	}
 
 	sint32 CAgentScript::getStaticMemberSize() const
@@ -595,7 +601,10 @@ namespace NLAIAGENT
 		m->setPerformatif(IMessageBase::PTell);
 		((IObjectIA *)o)->sendMessage(m);
 
-		if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+		uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+		const NLAIC::CTypeOfObject &t = o->getType();
+
+		if((t.getValue() & b) == b)
 		{
 			((CAgentScript *)o)->setAgentManager(this);
 		}
@@ -805,18 +814,28 @@ namespace NLAIAGENT
 		compName.getDebugString(txtName);
 #endif
 
-		while(p.first != p.second)
+		IObjectIA::CProcessResult r;
+
+		if(p.first != p.second)
 		{
-			CAgentScript *o = (CAgentScript *)*((*(p.first)).Itr);
+			while(p.first != p.second)
+			{
+				CAgentScript *o = (CAgentScript *)*((*(p.first)).Itr);
 #ifdef NL_DEBUG	
 	const char *compNameDb = (const char *)o->getType();
 #endif
-			o->sendMessage(msg);
-			p.first ++;
-			if(p.first != p.second) msg = (IObjectIA *)msg->clone();
+				o->sendMessage(msg);
+				p.first ++;
+				if(p.first != p.second) msg = (IObjectIA *)msg->clone();
+			}
+		}
+		else
+		{
+			r.ResultState = processError;
+			r.Result = NULL;			
 		}
 
-		return IObjectIA::CProcessResult();
+		return r;
 	}
 
 	IObjectIA::CProcessResult CAgentScript::sendMessage(const IVarName &compName,IObjectIA *msg)
@@ -837,17 +856,17 @@ namespace NLAIAGENT
 				}
 				else
 				{
-					sendMessageToDynmaicChild(compName,msg);
+					if(sendMessageToDynmaicChild(compName,msg).ResultState == processError) msg->release();
 				}
 			}
 			else
 			{
-				sendMessageToDynmaicChild(compName,msg);
+				if(sendMessageToDynmaicChild(compName,msg).ResultState == processError) msg->release();
 			}
 		}
 		else			
 		{						
-			sendMessageToDynmaicChild(compName,msg);
+			if(sendMessageToDynmaicChild(compName,msg).ResultState == processError) msg->release();
 		}
 		return IObjectIA::CProcessResult();
 	}
@@ -872,7 +891,10 @@ namespace NLAIAGENT
 		msg->setReceiver(this);
 		if(msg->getMethodIndex() < 0)
 		{			
-			if( ((const NLAIC::CTypeOfObject &)m->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+			uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tMessage;
+			const NLAIC::CTypeOfObject &t = m->getType();
+
+			if((t.getValue() & b) == b)			
 			{
 				//char runMsg[1024];
 				//strcpy(runMsg,_RUN_);
@@ -951,8 +973,8 @@ namespace NLAIAGENT
 
 	void CAgentScript::runChildren()
 	{
-#ifdef NL_DEBUG	
-	const char *classBase = (const char *)getType();
+#ifdef NL_DEBUG		
+	const char *classBase = (const char *)getType();	
 #endif
 		// Activation des agents de la partie statique
 		int i = _NbComponents;
@@ -987,7 +1009,12 @@ namespace NLAIAGENT
 	void CAgentScript::processMessages(IMessageBase *msg,IObjectIA *c)
 	{
 #ifdef NL_DEBUG
-	const char *txt = (const char *)msg->getType();
+	const char *txt = (const char *)msg->getType();	
+	bool dbugB = false;	
+	if(std::string(txt) == "MsgClock")
+	{
+		dbugB = true;
+	}
 #endif
 		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*c;
 		IBaseGroupType *param = new CGroupType();

@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.15 2001/07/26 13:17:01 chafik Exp $
+ * $Id: opcode.cpp,v 1.16 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,8 +41,9 @@ namespace NLAISCRIPT
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 		NLAIAGENT::IObjectIA *obj = ((NLAIAGENT::IObjectIA *)context.Stack);
-		obj->incRef();
-		a->setStaticMember(*i,obj);
+		
+		if(!a->setStaticMember(*i,obj))
+								obj->incRef();
 		context.Stack --;
 		return NLAIAGENT::processIdle;
 	}
@@ -50,8 +51,9 @@ namespace NLAISCRIPT
 	NLAIAGENT::TProcessStatement CAffMemberOpCode::runOpCode(CCodeContext &context)
 	{	
 		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Stack);
-		a->incRef();
-		((NLAIAGENT::IObjectIA *)context.Self)->setStaticMember(_I,a);
+		
+		if(!((NLAIAGENT::IObjectIA *)context.Self)->setStaticMember(_I,a))
+																	a->incRef();
 		context.Stack --;
 		return NLAIAGENT::processIdle;
 	}	
@@ -136,8 +138,9 @@ namespace NLAISCRIPT
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}		
 		NLAIAGENT::IObjectIA *obj = ((NLAIAGENT::IObjectIA *)context.Stack);
-		obj->incRef();
-		a->setStaticMember(*i,obj);			
+		
+		if(!a->setStaticMember(*i,obj))
+									obj->incRef();
 		context.Stack --;			
 		return NLAIAGENT::processIdle;
 	}

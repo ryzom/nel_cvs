@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.31 2001/10/24 16:37:04 chafik Exp $
+ * $Id: baseai.cpp,v 1.32 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,11 +195,12 @@ namespace NLAIAGENT
 		return NULL;
 	}
 
-	void IObjectIA::setStaticMember(sint32,IObjectIA *)
+	bool IObjectIA::setStaticMember(sint32,IObjectIA *)
 	{
 		std::string text;
 		text = NLAIC::stringGetBuild("Function void IObjectIA::setStaticMember(sint32,IObjectIA *) note implementaited for the '%s' interface",(const char *)getType());
 		throw NLAIE::CExceptionNotImplemented(text.c_str());
+		return false;
 	}
 
 	tQueue IObjectIA::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
@@ -281,7 +282,9 @@ namespace NLAIAGENT
 				if(((IBaseGroupType *)a)->size())
 				{					
 					CStringType *name = (CStringType *)((IBaseGroupType *)a)->pop();
-					return sendMessage(name->getStr(),msg);
+					IObjectIA::CProcessResult r = sendMessage(name->getStr(),msg);
+					name->release();
+					return r;
 					
 				}				
 				return sendMessage(msg);

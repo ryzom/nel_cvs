@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.14 2001/10/29 15:54:34 chafik Exp $
+ * $Id: constraint.cpp,v 1.15 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,8 +146,9 @@ namespace NLAISCRIPT
 		{
 			_Satisfied = true;
 			IOpCode *x;
+						
 
-			if(((const NLAIC::CTypeOfObject &)_M.Object->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+			if(((const NLAIC::CTypeOfObject &)_M.Object->getType()) & NLAIC::CTypeOfObject::tInterpret)
 			{				
 				IMethodContext *methodContex;
 				if (comp.getDebugMode())

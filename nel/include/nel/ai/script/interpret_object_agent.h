@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.20 2001/09/06 13:46:33 portier Exp $
+ * $Id: interpret_object_agent.h,v 1.21 2001/12/11 09:26:49 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -258,9 +258,15 @@ namespace NLAISCRIPT
 
 		// Static components 
 		virtual void initStatics();
-		virtual void setStaticMember(sint32, NLAIAGENT::IObjectIA *);
+		virtual bool setStaticMember(sint32, NLAIAGENT::IObjectIA *);
 		virtual void updateStaticMember(sint32, NLAIAGENT::IObjectIA *);
 		virtual NLAIAGENT::IObjectIA *getStaticComponentValue(std::string &);
+
+		virtual NLAIC::CTypeOfObject getTypeClass() const		
+		{
+			uint b = NLAIC::CTypeOfObject::tObject | NLAIC::CTypeOfObject::tAgent;
+			return NLAIC::CTypeOfObject((uint)IClassInterpret::getTypeClass() | b);
+		}
 	};
 }
 #endif

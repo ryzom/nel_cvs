@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.28 2001/12/04 12:53:21 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.29 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -347,7 +347,8 @@ namespace NLAIAGENT
 		while(i != _Call.end())
 		{
 			if((*i).first == a)
-			{				
+			{			
+				(*i).second.first->release();
 				break;
 			}
 			i++;

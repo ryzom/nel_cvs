@@ -1,7 +1,7 @@
 /** \file agent_local_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_local_mailer.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
+ * $Id: agent_local_mailer.h,v 1.5 2001/12/11 09:26:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,9 +126,9 @@ namespace NLAIAGENT
 			return _HostAgent->getStaticMember(i);
 		}
 
-		virtual void setStaticMember(sint32 i,IObjectIA *o)
+		virtual bool setStaticMember(sint32 i,IObjectIA *o)
 		{
-			_HostAgent->setStaticMember(i,o);
+			return _HostAgent->setStaticMember(i,o);
 		}
 
 		virtual sint32 getMethodIndexSize() const

@@ -1,6 +1,6 @@
 /** \file hierarchy.cpp
  *
- * $Id: hierarchy.cpp,v 1.8 2001/10/24 16:37:04 chafik Exp $
+ * $Id: hierarchy.cpp,v 1.9 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,7 +207,7 @@ namespace NLAISCRIPT
 				}
 				else
 				{
-					if((const NLAIC::CTypeOfObject &)baseClass->getType() & NLAIC::CTypeOfObject::tAgentInterpret) 
+					if((const NLAIC::CTypeOfObject &)baseClass->getType() & NLAIC::CTypeOfObject::tInterpret) 
 					{
 						baseClass = getInheritanceRange(h,(const IClassInterpret *)baseClass,lastClassName);	
 					}

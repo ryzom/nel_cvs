@@ -25,6 +25,7 @@ namespace NLAILOGIC
 		while ( it_g != _Goals.end() )
 		{
 			(*it_g)->cancel();
+			(*it_g)->release();
 			it_g++;
 		}
 	}
@@ -89,6 +90,8 @@ namespace NLAILOGIC
 			if ( (**it_g) == *g )
 			{
 				(*it_g)->cancel();
+				//Samos
+				(*it_g)->release();
 				_Goals.erase( it_g );
 				return;
 			}

@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.12 2001/08/30 17:11:00 portier Exp $
+ * $Id: test_method.cpp,v 1.13 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,7 +146,7 @@ namespace NLAISCRIPT
 	CLibTest::CLibTest()
 	{	
 
-		srand(clock());
+		//srand(clock());
 
 	}
 	sint32 CLibTest::isClassInheritedFrom(const NLAIAGENT::IVarName &className) const
@@ -332,7 +332,7 @@ namespace NLAISCRIPT
 
 	sint CLibTest::dRand(sint d1, sint d2) const
 	{
-		srand((sint16)clock() );
+		//srand((sint16)clock() );
 		sint ra = ::rand();
 		sint d = (d2 - d1);
 		if(d < 0) d = -d;

@@ -1,7 +1,7 @@
 /** \file interpret_object_message.h
  * Class for define an message class in the interpreter.
  *
- * $Id: interpret_object_message.h,v 1.20 2001/12/05 10:00:35 portier Exp $
+ * $Id: interpret_object_message.h,v 1.21 2001/12/11 09:26:49 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -47,9 +47,10 @@ namespace NLAISCRIPT
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
 		//@}
 
-		NLAIC::CTypeOfObject getTypeClass() const
+		virtual NLAIC::CTypeOfObject getTypeClass() const		
 		{
-			return NLAIC::CTypeOfObject::tObject; // | NLAIC::CTypeOfObject::tMessage;
+			uint b = NLAIC::CTypeOfObject::tObject | NLAIC::CTypeOfObject::tMessage;
+			return NLAIC::CTypeOfObject((uint)IClassInterpret::getTypeClass() | b);
 		}
 
 		virtual const NLAIC::CIdentType &getType() const;

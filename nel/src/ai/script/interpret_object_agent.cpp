@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.40 2001/10/29 16:11:45 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.41 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,7 +159,7 @@ namespace NLAISCRIPT
 		for (i =0; i < (int) components.size() ; i++ ) // ... for each of its components ...
 		{
 			NLAIC::CIdentType c_type( components[ i ]->RegisterName->getString() );
-			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
+			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tInterpret ) // ...if it's a scripted agent...
 				nb_scripted_components ++;
 		}
 
@@ -187,7 +187,7 @@ namespace NLAISCRIPT
 #ifdef NL_DEBUG
 			const char *dbg_class_name = components[ i ]->RegisterName->getString();
 #endif
-			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
+			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tInterpret ) // ...if it's a scripted agent...
 			{
 				CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
 #ifdef NL_DEBUG
@@ -1053,7 +1053,7 @@ namespace NLAISCRIPT
 		}
 	}
 
-	void CAgentClass::setStaticMember(sint32 index, NLAIAGENT::IObjectIA *obj)
+	bool CAgentClass::setStaticMember(sint32 index, NLAIAGENT::IObjectIA *obj)
 	{
 #ifdef NL_DEBUG
 		std::string buf;
@@ -1074,7 +1074,9 @@ namespace NLAISCRIPT
 		component->ObjectName->getDebugString(buf3);
 #endif
 
-		component->StaticValue = obj;
+		if(component->StaticValue != obj ) component->StaticValue = obj;
+																return false;
+		return true;
 	}
 
 	void CAgentClass::updateStaticMember(sint32 index, NLAIAGENT::IObjectIA *obj)

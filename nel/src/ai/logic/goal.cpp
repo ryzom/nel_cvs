@@ -277,6 +277,7 @@ namespace NLAILOGIC
 						_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront()->clone() );
 						param->popFront();
 					}
+					name->release();
 					return IObjectIA::CProcessResult();		
 				} 
 				break;

@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.25 2001/11/12 17:44:22 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.26 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,7 +167,9 @@ namespace NLAIAGENT
 		i++;
 		IBasicAgent *o = (IBasicAgent *)i++;
 
-		if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+		uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+		const NLAIC::CTypeOfObject &t = o->getType();
+		if((t.getValue() & b) == b)
 		{
 			((CAgentScript *)o)->setAgentManager(this);
 		}

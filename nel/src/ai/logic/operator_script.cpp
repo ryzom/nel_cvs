@@ -503,8 +503,8 @@ namespace NLAIAGENT
 		std::vector<sint32>::iterator it_pos = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoalVarPos().begin();
 		while ( it_arg != g->getArgs().end() )
 		{
-			setStaticMember( *it_pos, *it_arg );
-			(*it_arg)->incRef();
+			if(!setStaticMember( *it_pos, *it_arg ))
+										(*it_arg)->incRef();
 			it_arg++;
 			it_pos++;
 		}
@@ -768,7 +768,7 @@ namespace NLAIAGENT
 				it_msg = msg_list.begin();
 				while ( it_msg != msg_list.end() )
 				{
-					const IMessageBase *msg = *it_msg;
+					IMessageBase *msg = (NLAIAGENT::IMessageBase *)*it_msg;
 #ifdef NL_DEBUG
 					const char *id = (const char *) msg->getType();
 					std::string buf;
@@ -780,7 +780,8 @@ namespace NLAIAGENT
 						return false;
 					else
 					{
-						setStaticMember( msg_comp_pos, (NLAIAGENT::IObjectIA *) msg );
+						if(!setStaticMember( msg_comp_pos, (NLAIAGENT::IObjectIA *) msg ))
+																				msg->incRef();						
 					}
 					it_msg++;
 				}	

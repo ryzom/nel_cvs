@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.18 2001/07/11 16:25:08 chafik Exp $
+ * $Id: message_script.cpp,v 1.19 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -258,7 +258,7 @@ namespace NLAIAGENT
 		return _MessageClass->isClassInheritedFrom( class_name );
 	}	
 
-	void CMessageScript::setStaticMember(sint32 index,IObjectIA *op)
+	bool CMessageScript::setStaticMember(sint32 index,IObjectIA *op)
 	{
 #ifdef NL_DEBUG
 		if ( index >= size() )
@@ -268,8 +268,10 @@ namespace NLAIAGENT
 #endif
 		CVectorGroupType *a = (CVectorGroupType *)getMessageGroup();
 		IObjectIA *b = (IObjectIA *)(*a)[ index ];
-		b->release();
-		a->setObject(index, op);		
+		a->setObject(index, op);
+		if(op != b) b->release();
+		else return true;
+		return false;
 	}
 
 	const IObjectIA *CMessageScript::getStaticMember(sint32 index) const
@@ -327,6 +329,7 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CMessageScript::clone() const
 	{		
 		CMessageScript *cl = new CMessageScript( *this );
+
 		return cl;
 	}
 

@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.12 2001/12/04 16:54:53 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.13 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,8 @@
  */
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/agent/agent_script.h"
+#include "nel/ai/script/interpret_object_agent.h"
+#include "nel/ai/script/interpret_object_message.h"
 
 namespace NLAISCRIPT
 {
@@ -49,14 +51,34 @@ namespace NLAISCRIPT
 	NLAIAGENT::TProcessStatement CLdbMemberOpCode::runOpCode(CCodeContext &context)
 	{
 		context.Stack ++;
-		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)(context.Self)->getStaticMember(_B)->clone();
+
+		NLAIAGENT::IObjectIA *t = (NLAIAGENT::IObjectIA *)(context.Self)->getStaticMember(_B)->clone();
+		context.Stack[(int)context.Stack] = t;
 		return NLAIAGENT::IObjectIA::ProcessIdle;;
 	}
 
 	void CLdbMemberOpCode::getDebugResult(std::string &str,CCodeContext &context) const
-	{
+	{		
+		const NLAIAGENT::IObjectIA *r = (context.Self);
+		std::string name = "????";
+		std::string className = "????";
+
+		if(((const NLAIC::CTypeOfObject &)r->getType()) & NLAIC::CTypeOfObject::tInterpret)
+		{
+			if(((const NLAIC::CTypeOfObject &)r->getType()) & NLAIC::CTypeOfObject::tAgent)
+			{			
+				name = ((NLAIAGENT::CAgentScript *)r)->getClass()->getComponentName(_B);
+			}
+			else
+			if(((const NLAIC::CTypeOfObject &)r->getType()) & NLAIC::CTypeOfObject::tMessage)
+			{			
+				name = ((NLAIAGENT::CMessageScript *)r)->getCreatorClass()->getComponentName(_B);
+			}
+		}
+		className = (const char *)r->getType();
+		r = r->getStaticMember(_B);
 					
-		str += NLAIC::stringGetBuild("ldb le composant membre %d de la class '%s'",_B,(const char *)((NLAIAGENT::IObjectIA *)(context.Self))->getType());
+		str += NLAIC::stringGetBuild("ldb le composant membre %d named: '%s' de la class '%s'",_B, name.c_str(),className.c_str());
 	}
 
 
@@ -66,8 +88,9 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *obj = a; 
 		std::list<sint32>::iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
+		
 		while(n --)
-		{
+		{			
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
@@ -80,13 +103,28 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Stack);		
 		std::list<sint32>::const_iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
+		std::string name = "????";
+		std::string className = "????";
 		while(n --)
 		{
+			if(((const NLAIC::CTypeOfObject &)a->getType()) & NLAIC::CTypeOfObject::tInterpret)
+			{
+				if(((const NLAIC::CTypeOfObject &)a->getType()) & NLAIC::CTypeOfObject::tAgent)
+				{			
+					name = ((NLAIAGENT::CAgentScript *)a)->getClass()->getComponentName(*i);
+				}
+				else
+				if(((const NLAIC::CTypeOfObject &)a->getType()) & NLAIC::CTypeOfObject::tMessage)
+				{			
+					name = ((NLAIAGENT::CMessageScript *)a)->getCreatorClass()->getComponentName(*i);
+				}
+			}
+			className = (const char *)a->getType();
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 		std::string txt;
 		a->getStaticMember(*i)->getDebugString(txt);
-		str += NLAIC::stringGetBuild("ldb %s le composan membre sur la pile de la class '%s'",txt.c_str(),(const char *)a->getType());
+		str += NLAIC::stringGetBuild("ldb %s le composon '%s' membre sur la pile de la class '%s'",txt.c_str(),name.c_str(),className.c_str());
 	}
 
 	NLAIAGENT::TProcessStatement CLdbHeapMemberiOpCode::runOpCode(CCodeContext &context)
@@ -101,6 +139,7 @@ namespace NLAISCRIPT
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
+			
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 		a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
@@ -117,15 +156,30 @@ namespace NLAISCRIPT
 		text = NLAIC::stringGetBuild("ldb le composant membre sur le heap de la class '%s'",(const char *)a->getType());		
 #endif
 		
+		std::string name = "????";
+		std::string className = "????";
 		std::list<sint32>::const_iterator i = _I.begin();
 		while(i != _I.end())
 		{
+			if(((const NLAIC::CTypeOfObject &)a->getType()) & NLAIC::CTypeOfObject::tInterpret)
+			{			
+				if(((const NLAIC::CTypeOfObject &)a->getType()) & NLAIC::CTypeOfObject::tAgent)
+				{			
+					name = ((NLAIAGENT::CAgentScript *)a)->getClass()->getComponentName(*i);
+				}
+				else
+				if(((const NLAIC::CTypeOfObject &)a->getType()) & NLAIC::CTypeOfObject::tMessage)
+				{			
+					name = ((NLAIAGENT::CMessageScript *)a)->getCreatorClass()->getComponentName(*i);
+				}
+			}
+			className = (const char *)a->getType();
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 
 		std::string txt;
 		a->getDebugString(txt);
-		str += NLAIC::stringGetBuild("ldb %s le composant membre sur le heap de la class '%s'",txt.c_str(),(const char *)a->getType());		
+		str += NLAIC::stringGetBuild("ldb %s le composon '%s' membre sur le heap de la class '%s'",txt.c_str(),name.c_str(),className.c_str());		
 	}
 
 	NLAIAGENT::TProcessStatement CLdbMemberiOpCode::runOpCode(CCodeContext &context)
@@ -147,13 +201,28 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
 		std::list<sint32>::const_iterator i = _I.begin();
 		int j;
+		std::string className, name = "????";
+
 		while(i != _I.end())
 		{
 			j = *i++;
+			if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tInterpret)
+			{			
+				if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tAgent)
+				{			
+					name = ((NLAIAGENT::CAgentScript *)obj)->getClass()->getComponentName(j);
+				}
+				else
+				if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tMessage)
+				{			
+					name = ((NLAIAGENT::CMessageScript *)obj)->getCreatorClass()->getComponentName(j);
+				}
+			}
+			className = (const char *)obj->getType();
 			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(j);
 		}			
 					
-		str += NLAIC::stringGetBuild("ldb le composant membre <%d> member de la class '%s'",j,(const char *)obj->getType());		
+		str += NLAIC::stringGetBuild("ldb le composon '%s' membre <%d> member de la class '%s'",name.c_str(),j,className.c_str());		
 	}
 
 	NLAIAGENT::TProcessStatement CLdbRefOpCode::runOpCode(CCodeContext &context)

@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.16 2001/12/04 12:53:21 chafik Exp $
+ * $Id: msg.cpp,v 1.17 2001/12/11 09:27:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,26 @@
 
 namespace NLAIAGENT
 {
+
+	const NLAIC::IBasicType *CMessageGroup::clone() const 
+	{
+		NLAIC::IBasicType *x = new CMessageGroup( *this );
+
+#ifdef NL_DEBUG
+	static sint kaka = 0;	
+	//kaka++;
+	//nlinfo ("UnTruc: %d at %0x",kaka ++, x);
+#endif
+		return x;
+	}
+
+	const NLAIC::IBasicType *CMessageGroup::newInstance() const 
+	{
+		NLAIC::IBasicType *x = new CMessageGroup( *this );
+		return x;
+	}
+
+
 	const static sint32 _TSender = 0;
 	const static sint32 _TReceiver = 1;
 	const static sint32 _TXchgReceiverIsSender = 2;
@@ -71,6 +91,9 @@ namespace NLAIAGENT
 		_comeFromC_PLUS = true;
 		_Dispatch = false;
 		_ProtectSender = false;
+		_SenderIsVolatile = false;
+		_ReceiverIsVolatile = false;		
+		_ContinuationIsVolatile = false;
 	}
 	IMessageBase::IMessageBase(IObjectIA *sender,IBaseGroupType *g):IListBasicManager(g),_Sender(sender),_MsgGroup(NULL)
 	{
@@ -82,6 +105,9 @@ namespace NLAIAGENT
 		_comeFromC_PLUS = true;
 		_Dispatch = false;
 		_ProtectSender = false;
+		_SenderIsVolatile = false;
+		_ReceiverIsVolatile = false;		
+		_ContinuationIsVolatile = false;
 	}
 
 	IMessageBase::IMessageBase(IObjectIA *sender, IBasicMessageGroup &msg_group,IBaseGroupType *g):
@@ -95,15 +121,21 @@ namespace NLAIAGENT
 		_comeFromC_PLUS = true;
 		_Dispatch = false;
 		_ProtectSender = false;
+		_SenderIsVolatile = false;
+		_ReceiverIsVolatile = false;		
+		_ContinuationIsVolatile = false;
 	}
 
 	IMessageBase::IMessageBase(const IMessageBase &m):IListBasicManager(m._List != NULL ? (IBaseGroupType *)m._List->clone(): NULL)
 	{
 		_Sender = m._Sender;
+		_SenderIsVolatile = m._SenderIsVolatile;
 		if(_SenderIsVolatile && _Sender != NULL) _Sender->incRef();
 		_Receiver = m._Receiver;
+		_ReceiverIsVolatile = m._ReceiverIsVolatile;
 		if(_ReceiverIsVolatile && _Receiver != NULL) _Receiver->incRef();
 		_Continuation = m._Continuation;
+		_ContinuationIsVolatile = m._ContinuationIsVolatile;
 		if(_ContinuationIsVolatile && _Continuation != NULL) _Continuation->incRef();
 
 		if(m._MsgGroup) _MsgGroup = (IBasicMessageGroup *)m._MsgGroup->clone();

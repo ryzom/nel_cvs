@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.49 2002/04/09 12:27:47 lecroart Exp $
+ * $Id: service.h,v 1.50 2002/04/25 10:28:43 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -308,6 +308,9 @@ public:
 	void setOldCallbackArray (TCallbackItem *array, uint nbelem) { _IsService5 = false; _CallbackArray = array; _CallbackArraySize = nbelem; }
 	void setCallbackArray (TUnifiedCallbackItem *array, uint nbelem) { _IsService5 = true; _CallbackArray5 = array; _CallbackArraySize = nbelem; }
 
+	/// Require to reset the hierarchical timer
+	void requireResetMeasures();
+
 	/// Ctor. You must not inherit ctor but overload init() function
 	IService ();
 
@@ -388,6 +391,8 @@ private:
 	/// true if the service don't use the admin executor service
 	bool								_DontUseAES;
 
+	/// Require to reset the hierarchical timer
+	bool								_ResetMeasures;
 
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.117 2002/04/25 09:36:56 legros Exp $
+ * $Id: service.cpp,v 1.118 2002/04/25 10:28:21 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -57,6 +57,7 @@
 #include "nel/misc/gtk_displayer.h"
 #include "nel/misc/win_displayer.h"
 #include "nel/misc/path.h"
+#include "nel/misc/hierarchical_timer.h"
 
 #include "nel/net/naming_client.h"
 #include "nel/net/service.h"
@@ -301,7 +302,7 @@ static void initSignal()
 
 // Ctor
 IService::IService() :
-	_Initialized(false), _WindowDisplayer(NULL), _UpdateTimeout(100), _Port(0), _RecordingState(CCallbackNetBase::Off), _SId(0), _Status(0), _IsService5(false)
+	_Initialized(false), _WindowDisplayer(NULL), _UpdateTimeout(100), _Port(0), _RecordingState(CCallbackNetBase::Off), _SId(0), _Status(0), _IsService5(false), _ResetMeasures(false)
 {
 	// Singleton
 	nlassert( _Instance == NULL );
@@ -990,7 +991,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		try
 		{
 			CConfigFile::CVar &var = ConfigFile.getVar("StartCommands");
-			for (uint i = 0; i < var.size(); i++)
+			for (sint i = 0; i < var.size(); i++)
 			{
 				ICommand::execute (var.asString(i), *InfoLog);
 			}
@@ -1005,6 +1006,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		do
 		{
+			//H_BEFORE(NLNETServiceLoop);
 			// count the amount of time to manage internal system
 			TTime bbefore = CTime::getLocalTime ();
 
@@ -1012,7 +1014,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			//H_BEFORE(ServiceUpdate);
 			if (!update ())
 			{
-				H_AFTER(ServiceUpdate);
+				//H_AFTER(NLNETServiceLoop);
 				break;
 			}
 			//H_AFTER(ServiceUpdate);
@@ -1030,12 +1032,13 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// stop the loop if the exit signal asked
 			if (ExitSignalAsked)
 			{
+				//H_AFTER(NLNETServiceLoop)
 				break;
 			}
 	
 			CConfigFile::checkConfigFiles ();
 
-			//H_BEFORE(NetworkUpdate);
+			//H_BEFORE(NLNETManageMessages);
 			if (isService5())
 			{
 				// get and manage layer 5 messages
@@ -1046,7 +1049,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				// get and manage layer 4 messages
 				CNetManager::update (_UpdateTimeout);
 			}
-			//H_AFTER(NetworkUpdate);
+			//H_AFTER(NLNETManageMessages);
 			
 			// resync the clock every hours
 			if (resyncEvenly)
@@ -1118,6 +1121,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
+			//H_AFTER(NLNETServiceLoop);
+
+			// Resetting the hierarchical timer must be done outside the top-level timer
+			if ( _ResetMeasures )
+			{
+				CHTimer::clear();
+				_ResetMeasures = false;
+			}
 		}
 		while (true);
 	}
@@ -1217,6 +1228,15 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	CHTimer::display();
 
 	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
+}
+
+
+/*
+ * Require to reset the hierarchical timer
+ */
+void IService::requireResetMeasures()
+{
+	_ResetMeasures = true;
 }
 
 
@@ -1366,13 +1386,13 @@ NLMISC_COMMAND (time, "displays the universal time", "")
 }
 */
 
-NLMISC_COMMAND(reset_measures, "reset hierarchical timer", "")
+NLMISC_COMMAND(resetMeasures, "reset hierarchical timer", "")
 {
-	CHTimer::clear();
+	IService::getInstance()->requireResetMeasures();
 	return true;
 }
 
-NLMISC_COMMAND(display_measures, "display hierarchical timer", "")
+NLMISC_COMMAND(displayMeasures, "display hierarchical timer", "")
 {
 	CHTimer::adjust();
 	CHTimer::display();

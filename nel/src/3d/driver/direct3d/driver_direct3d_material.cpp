@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.19 2004/10/25 16:25:49 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.20 2004/11/29 10:50:20 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -242,7 +242,7 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 			AlphaArg2[stage] = srcOp[env.Env.SrcArg1Alpha];
 			AlphaArg2[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg1Alpha];
 		}
-		ConstantColor[stage] = NL_D3DCOLOR_RGBA(env.ConstantColor);				
+		ConstantColor[stage] = NL_D3DCOLOR_RGBA(env.ConstantColor);						
 	}
 	else
 	{
@@ -310,10 +310,9 @@ static inline void setShaderParam(CMaterialDrvInfosD3D *pShader, uint index, flo
 	pShader->FXCache->Params.setVector(index, D3DXVECTOR4(vector[0], vector[1], vector[2], vector[3]));
 }
 
-
 // ***************************************************************************
 bool CDriverD3D::setupMaterial(CMaterial &mat)
-{			
+{				
 	H_AUTO_D3D(CDriverD3D_setupMaterial)
 	CMaterialDrvInfosD3D*	pShader;
 		
@@ -352,7 +351,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 			setRenderState(D3DRS_FOGCOLOR, _FogColor);
 		}
 	}
-	{			
+	{				
 		H_AUTO_D3D(CDriverD3D_setupMaterial_light)
 		// if the shader has changed since last time
 		if(matShader != _CurrentMaterialSupportedShader)
@@ -389,10 +388,21 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 	
 
 	{
-		H_AUTO_D3D(CDriverD3D_setupMaterial_touchupdate)
+		// count number of tex stages 
+		uint numUsedTexStages = 0;
+		for(numUsedTexStages = 0; numUsedTexStages < IDRV_MAT_MAXTEXTURES; ++numUsedTexStages)
+		{
+			if (mat.getTexture(numUsedTexStages) == NULL) break;
+		}
+
+		H_AUTO_D3D(CDriverD3D_setupMaterial_touchupdate)		
+		if (pShader->NumUsedTexStages != numUsedTexStages)
+		{
+			touched |= IDRV_TOUCHED_TEXENV;
+		}		
 		// Something to setup ?
 		if (touched)
-		{	
+		{			
 			if (touched & IDRV_TOUCHED_SHADER)
 			{
 				delete pShader->FXCache;
@@ -407,8 +417,8 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 				for change, because textures are activated alone, see below.
 				No problem with delete/new problem (see below), because in this case, IDRV_TOUCHED_ALL is set (see above).
 			*/
-			// If any flag is set (but a flag of texture)
-			if( touched & (~_MaterialAllTextureTouchedFlag) )
+			// If any flag is set (but a flag of texture).
+			if(touched & (~_MaterialAllTextureTouchedFlag))
 			{
 				// Convert Material to driver shader.
 				if (touched & IDRV_TOUCHED_BLENDFUNC)
@@ -463,7 +473,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 					// todo hulud d3d material shaders
 					// Get shader. Fallback to other shader if not supported.
 					// pShader->SupportedShader= getSupportedShader(mat.getShader());
-				}
+				}				
 				if (touched & IDRV_TOUCHED_TEXENV)
 				{
 					// Build the tex env cache.
@@ -522,7 +532,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 					}				
 				}
 
-				// Does this material needs a pixel shader ?
+				// Does this material needs a pixel shader ?				
 				if (touched & (IDRV_TOUCHED_TEXENV|IDRV_TOUCHED_BLEND|IDRV_TOUCHED_ALPHA_TEST))
 				{
 					std::fill(pShader->RGBPipe, pShader->RGBPipe + IDRV_MAT_MAXTEXTURES, true);
@@ -600,13 +610,13 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 								}
 								pShader->PixelShader = NULL;
 								pShader->PixelShaderUnlightedNoVertexColor = NULL;
-								// compute relevant parts of the pipeline
+								// compute relevant parts of the pipeline																
 								computeRelevantTexEnv(mat, pShader->RGBPipe, pShader->AlphaPipe);
 							}
 						}
 						else
 						{
-							// compute relevant parts of the pipeline
+							// compute relevant parts of the pipeline							
 							computeRelevantTexEnv(mat, pShader->RGBPipe, pShader->AlphaPipe);
 						}
 					}
@@ -633,9 +643,10 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 				*/
 				_CurrentMaterial= NULL;
 			}
-
+	
 			// Optimize: reset all flags at the end.
 			mat.clearTouched(0xFFFFFFFF);
+			pShader->NumUsedTexStages = numUsedTexStages;
 		}
 	}
 
@@ -709,7 +720,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 								}
 							}
 						}
-						if (pShader->AlphaPipe[stage])
+ 						if (pShader->AlphaPipe[stage])
 						{
 							setTextureState (stage, D3DTSS_ALPHAOP, pShader->AlphaOp[stage]);
 							setTextureState (stage, D3DTSS_ALPHAARG1, pShader->AlphaArg1[stage]);

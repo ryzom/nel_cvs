@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.34 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: driver_direct3d.h,v 1.35 2004/11/29 10:50:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,7 @@
 // #define NL_FORCE_TEXTURE_STAGE_COUNT 2
 
 // Define this to force the use of pixel shader in the normal shaders (default is undefined)
-// #define NL_FORCE_PIXEL_SHADER_USE_FOR_NORMAL_SHADERS
+//#define NL_FORCE_PIXEL_SHADER_USE_FOR_NORMAL_SHADERS
 
 // Define this to enable profiling by the NV Perf HUD tool (default is undefined)
 //#define NL_D3D_USE_NV_PERF_HUD
@@ -554,7 +554,11 @@ public:
 	uint8			ConstantIndex;				    // Index of the constant color to use (when only one constant color is needed and NeedsConstantForDiffuse == false);
 	uint8			ConstantIndex2;                 // stage at which the 2nd constant is used (for emulation without pixel shaders)
 
-	CRGBA			Constant2;						// value of the 2nd constant being used (for emulation without pixel shaders)
+	CRGBA			Constant2;						// value of the 2nd constant being used (for emulation without pixel shaders)	
+
+	uint			NumUsedTexStages;				// Last number of textures that were set in the material
+	                                                // Tex Env are only built for stages at which textures are set so if the number of used texture
+	                                                // change they must be rebuilt
 
 	// Relevant parts of the pixel pipe for normal shader
 	bool			RGBPipe[IDRV_MAT_MAXTEXTURES];
@@ -570,12 +574,14 @@ public:
 		std::fill(RGBPipe, RGBPipe + IDRV_MAT_MAXTEXTURES, true);
 		std::fill(AlphaPipe, AlphaPipe + IDRV_MAT_MAXTEXTURES, true);
 		FXCache = NULL;
+		NumUsedTexStages = 0;
 	}
 	~CMaterialDrvInfosD3D()
 	{
 		delete FXCache;
 	}
 	void buildTexEnv (uint stage, const CMaterial::CTexEnv &env, bool textured);
+	
 };
 
 

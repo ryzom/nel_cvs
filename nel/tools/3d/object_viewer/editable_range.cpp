@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.12 2002/11/04 15:40:44 boucher Exp $
+ * $Id: editable_range.cpp,v 1.13 2003/04/07 12:42:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,8 +183,8 @@ void CEditableRange::OnSetfocusValue()
 void CEditableRange::OnKillfocusValue() 
 {
 	// When kill Focus from the edit text, update the value.
-	UpdateData();	
-	updateValueFromText();		
+	/*UpdateData();	
+	updateValueFromText();		*/
 }
 
 

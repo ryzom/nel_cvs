@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.33 2002/04/23 16:27:51 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.34 2002/04/30 13:37:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -741,6 +741,7 @@ int CALLBACK InstanceDialogCallback (
 
 			SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION), BM_SETCHECK, currentParam->Collision, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION_EXTERIOR), BM_SETCHECK, currentParam->CollisionExterior, 0);
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
 
 			InstanceStateChanged(hwndDlg);
 		}
@@ -1575,7 +1576,6 @@ int CALLBACK MiscDialogCallback (
 				SetWindowText (GetDlgItem (hwndDlg, IDC_RADIAL_NORMAL_29+smoothGroup), currentParam->RadialNormals[smoothGroup].c_str());
 
 			// Mesh interfaces
-			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_FILE), currentParam->InterfaceFileName.c_str());
 			
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_THRESHOLD), 
@@ -2531,7 +2531,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				if (param.AccelType != -1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, param.AccelType);
 
-				if (param.InstanceShape != "")
+				if ( (param.InstanceShape != "") || (listNode.size()==1))
 					CExportNel::setScriptAppData (node, NEL_OBJET_NAME_DATA, param.InstanceShape);
 				if (param.InstanceName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);
@@ -2558,7 +2558,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				// Radial normals
 				for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
 				{
-					if (param.RadialNormals[smoothGroup] != "")
+					if ( (param.RadialNormals[smoothGroup] != "")  || (listNode.size()==1))
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_RADIAL_NORMAL_SM+smoothGroup, param.RadialNormals[smoothGroup]);
 				}
 
@@ -2637,7 +2637,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, param.ExportAsSunLight);
 
 				// ExportLightMapName
-				if (param.ExportLightMapName != "")
+				if ( (param.ExportLightMapName != "") || (listNode.size()==1))
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, param.ExportLightMapName);
 
 				// UseLightingLocalAttenuation

@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "3d"=..\..\..\..\..\code\nel\src\3d.dsp - Package Owner=<4>
+Project: "3d"=..\..\..\src\3d.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -11,11 +11,14 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "driver_opengl"=..\..\..\..\..\code\nel\src\3d\driver\opengl\driver_opengl.dsp - Package Owner=<4>
+Project: "driver_opengl"=..\..\..\src\3d\driver\opengl\driver_opengl.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -33,7 +36,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "misc"=..\..\..\..\..\code\nel\src\misc.dsp - Package Owner=<4>
+Project: "misc"=..\..\..\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -156,7 +159,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "object_viewer"=..\..\..\..\..\code\nel\tools\3d\object_viewer\object_viewer.dsp - Package Owner=<4>
+Project: "object_viewer"=..\object_viewer\object_viewer.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

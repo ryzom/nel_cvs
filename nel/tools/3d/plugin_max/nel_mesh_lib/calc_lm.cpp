@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.6 2001/06/18 15:45:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,8 @@ struct SLightBuild
 	float rMult;
 	Bitmap *pProjMap;
 	CMatrix mProj;
+
+	set<string> setExclusion;
 
 	// -----------------------------------------------------------------------------------------------
 	SLightBuild()
@@ -259,6 +261,14 @@ struct SLightBuild
 				BitmapTex* bmt = (BitmapTex*)tm;
 				this->pProjMap = bmt->GetBitmap(tvTime);
 			}
+		}
+
+		// Convert exclusion list
+		NameTab& ntExclu = maxLight->GetExclusionList();
+		for( sint i = 0; i < ntExclu.Count(); ++i )
+		{
+			string tmp = *ntExclu.Addr(i);
+			this->setExclusion.insert( tmp );
 		}
 	
 		if( deleteIt )
@@ -974,6 +984,8 @@ public :
 struct SWorldRT
 {
 	vector<CMesh::CMeshBuild *> vMB;
+	vector<INode *>				vINode;
+	
 	vector<SCubeGrid> cgAccel; // One cube grid by light
 	vector<CBitmap> proj; // One projector by light
 };
@@ -2890,7 +2902,8 @@ void getLightInteract( CMesh::CMeshBuild* pMB, vector<SLightBuild> &AllLights, v
 }
 
 // -----------------------------------------------------------------------------------------------
-void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes, Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath )
+void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< INode* > &INodes, 
+						Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath )
 {
 	// Get time
 	TimeValue tvTime = ip.GetTime();
@@ -2917,7 +2930,10 @@ void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes, Interface& ip, ve
 				break;
 			}
 			if( bInteract )
+			{
 				Meshes.push_back( pMB );
+				INodes.push_back( pNode );
+			}
 			else
 				delete pMB; // No interaction so delete the mesh
 		}
@@ -2925,7 +2941,8 @@ void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes, Interface& ip, ve
 }
 
 // -----------------------------------------------------------------------------------------------
-void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath,
+void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< INode* > &INodes,
+					   Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath,
 					   INode* pNode = NULL )
 {
 	if( pNode == NULL )
@@ -2949,13 +2966,16 @@ void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, Interface& ip, vec
 			break;
 		}
 		if( bInteract )
+		{
 			Meshes.push_back( pMB );
+			INodes.push_back( pNode );
+		}
 		else
 			delete pMB; // No interaction so delete the mesh
 	}
 
 	for( sint32 i = 0; i < pNode->NumberOfChildren(); ++i )
-		GetAllNodeInScene( Meshes, ip, AllLights, pNode->GetChildNode(i) );
+		GetAllNodeInScene( Meshes, INodes, ip, AllLights, bAbsPath, pNode->GetChildNode(i) );
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -2965,9 +2985,9 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 
 	// Get all the nodes in the scene
 	if( gOptions.bExcludeNonSelected )
-		GetAllSelectedNode( wrt.vMB, ip, AllLights, absPath );
+		GetAllSelectedNode( wrt.vMB, wrt.vINode, ip, AllLights, absPath );
 	else
-		GetAllNodeInScene( wrt.vMB, ip, AllLights, absPath );
+		GetAllNodeInScene( wrt.vMB, wrt.vINode, ip, AllLights, absPath );
 
 	// Transform the meshbuilds vertices and normals to have world coordinates
 	for( i = 0; i < wrt.vMB.size(); ++i )
@@ -2998,8 +3018,11 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 			case SLightBuild::LightSpot: // For the moment spot like point
 			case SLightBuild::LightPoint:
 			{
-				for( j = 0; j < wrt.vMB.size(); ++j )
-				{
+			for( j = 0; j < wrt.vMB.size(); ++j )
+			{
+				if( AllLights[i].setExclusion.find( wrt.vINode[j]->GetName() ) != AllLights[i].setExclusion.end() ) 
+					continue;
+				
 				for( k = 0; k < wrt.vMB[j]->Faces.size(); ++k )
 				{
 					SCubeGridCell cell;
@@ -3012,7 +3035,7 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 					if( intersectionTriangleSphere( tri, CBSphere(CVector(0,0,0), AllLights[i].rRadiusMax) ) )
 						wrt.cgAccel[i].insert( tri, cell );
 				}
-				}
+			}
 			}
 			break;
 			case SLightBuild::LightDir:
@@ -3080,7 +3103,7 @@ void supprLightNoInteract( vector<SLightBuild> &vLights,
 }
 
 // -----------------------------------------------------------------------------------------------
-void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* pMB)
+void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* pMB, INode &node )
 {
 	uint32 i, j;
 
@@ -3088,11 +3111,15 @@ void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* p
 	{
 		bool bInteract = false;
 
-		if( isInteractionLightMesh( vLights[i], *pMB ) )
+		if( vLights[i].setExclusion.find( node.GetName() ) != vLights[i].setExclusion.end() )
 		{
-			bInteract = true;
-			break;
+			bInteract = false;
 		}
+		else
+			if( isInteractionLightMesh( vLights[i], *pMB ) )
+			{
+				bInteract = true;			
+			}
 		if( !bInteract )
 		{
 			// Suppress the light because it has no interaction with selected meshes
@@ -3179,7 +3206,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 	getLightBuilds( AllLights, tvTime, ip );
 	// Get all lights L that have influence over the mesh selected
 	// supprLightNoInteract( AllLights, AllMeshBuilds );
-	supprLightNoInteractOne( AllLights, pZeMeshBuild );
+	supprLightNoInteractOne( AllLights, pZeMeshBuild, ZeNode );
 	// Get all meshes that are influenced by the lights L			
 	buildWorldRT( WorldRT, AllLights, ip, absolutePath );
 

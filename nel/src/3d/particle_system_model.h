@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.20 2002/01/28 14:25:20 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.21 2002/02/15 16:59:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ class CParticleSystemModel : public CTransformShape
 		///\name Embedded particle system
 			//@{
 
-			/** Get the particle system contained in this transform shape
+			/** Get the particle system contained in this transform shape. (NB: This is shared by a smart ptr)
 			  * \return pointer to the system, or NULL if no system is currently hold by this model.
 			  *			this may happen when the system is not visible and that it has been deleted
 			  */
@@ -83,16 +83,15 @@ class CParticleSystemModel : public CTransformShape
 				return _ParticleSystem;
 			}
 
-			/** Get the particle system contained in this transform shape. this may be null if the model
-			  * Is not visible
+			/** Get the particle system (NB : This is shared by a smart ptr) contained in this transform shape. 
+			  * This may be null if the model is not visible. 
 			  */
 			const CParticleSystem		*getPS(void) const
 			{		
 				return _ParticleSystem;
 			}
-
 			
-			/** set the particle system for this transform shape after it has been instanciated (from a memory stream)
+			/** Set the particle system for this transform shape after it has been instanciated (from a memory stream, or by sharing)
 			 *  see CParticleSystemShape
 			 */
 			void						setParticleSystem(CParticleSystem *ps)
@@ -287,7 +286,7 @@ class CParticleSystemModel : public CTransformShape
 		CParticleSystemManager::TModelHandle    _AnimatedModelHandle; // handle for permanenlty animated models
 																
 		bool									_AutoGetEllapsedTime;		
-		CParticleSystem						   *_ParticleSystem;
+		NLMISC::CSmartPtr<CParticleSystem>		_ParticleSystem;
 		CScene							  	   *_Scene;
 		TAnimationTime						    _EllapsedTime;
 

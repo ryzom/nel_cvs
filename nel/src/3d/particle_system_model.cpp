@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.28 2002/01/28 14:25:20 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.29 2002/02/15 16:59:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,7 +132,7 @@ CParticleSystemModel::~CParticleSystemModel()
 	if (_ParticleSystem)
 	{
 		_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);
-		delete _ParticleSystem;
+		/* _ParticleSystem = NULL; */
 	}
 }
 
@@ -167,7 +167,11 @@ bool CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFr
 
 	nlassert(_ParticleSystem);	
 	CParticleSystemShape		*shape = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape);
-	NLMISC::CVector sysPos = _ParticleSystem->getSysMat().getPos();
+	
+	NLMISC::CVector sysPos = getTransformMode() == DirectMatrix ?
+							 getMatrix().getPos()			    :
+							 getPos();
+	
 	NLMISC::CVector v = sysPos - viewerPos;
 	/// test if not too far
 	const float dist2 = v * v;
@@ -178,9 +182,8 @@ bool CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFr
 		{
 			_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
 			_AnimatedModelHandle.Valid = false;
-		}
-		delete _ParticleSystem;
-		_ParticleSystem = NULL;
+		}		
+		_ParticleSystem = NULL; // one less ref with the smart ptr
 		if (shape->_DestroyModelWhenOutOfRange)
 		{			
 			_Invalidated = true;
@@ -200,16 +203,10 @@ bool CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFr
 			}
 
 			if (shape->_DestroyModelWhenOutOfRange)
-			{
-				delete _ParticleSystem;
-				_ParticleSystem = NULL;
+			{							
 				_Invalidated = true;
 			}
-			else // remove rsc but do not invalidate the system
-			{
-				delete _ParticleSystem;
-				_ParticleSystem = NULL;
-			}
+			_ParticleSystem = NULL; // one less ref with the smart ptr
 			return true;
 		}
 	}
@@ -226,9 +223,8 @@ void CParticleSystemModel::releaseRsc()
 	{
 		_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
 		_AnimatedModelHandle.Valid = false;
-	}
-	delete _ParticleSystem;
-	_ParticleSystem = NULL;
+	}	
+	_ParticleSystem = NULL; // one less ref with the smart ptr
 	nlassert(_Scene);
 	_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);
 }
@@ -243,9 +239,8 @@ void CParticleSystemModel::releaseRscAndInvalidate()
 	{
 		_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
 		_AnimatedModelHandle.Valid = false;
-	}
-	delete _ParticleSystem;
-	_ParticleSystem = NULL;
+	}	
+	_ParticleSystem = NULL; // one less ref with the smart ptr
 	_Invalidated = true;
 
 	nlassert(_Scene);
@@ -340,7 +335,7 @@ bool CParticleSystemModel::checkAgainstPyramid(const std::vector<CPlane>	&pyrami
 	nlassert(_ParticleSystem)
 	NLMISC::CAABBox bbox;
 	_ParticleSystem->computeBBox(bbox);		
-	const CMatrix		&mat = _ParticleSystem->getSysMat();
+	const CMatrix		&mat = getMatrix();
 	
 	// Transform the pyramid in Object space.	
 	for(sint i=0; i < (sint) pyramid.size(); i++)
@@ -415,41 +410,57 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 	
 	if (psm->_InClusterAndVisible ||  ps->getAnimType() == CParticleSystem::AnimInCluster)
 	{		
-		const CMatrix		&mat= HrcObs->WorldMatrix;	 
-		ps->setSysMat(mat);
-		ps->setViewMat(trav->ViewMatrix);				
-
-		psm->updateOpacityInfos();
-
-		//ps->setSysMat(psm->getWorldMatrix());
-		nlassert(ps->getScene());	
-
-
-		// setup the number of faces we allow
-		ps->setNumTris((uint) psm->getNumTrianglesAfterLoadBalancing());
-
-		// setup system user parameters for parameters that have been touched
-		for (uint k = 0; k < MaxPSUserParam; ++k)
+		bool animate = true;
+		if (ps->isSharingEnabled()) /// with shared system, we only animate one version!
 		{
-			if (psm->isTouched((uint)CParticleSystemModel::PSParam0 + k))
+			if (ps->_LastUpdateDate != trav->CurrentDate)
 			{
-				ps->setUserParam(k, psm->_UserParam[k].Value);
-				psm->clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+				ps->_LastUpdateDate = trav->CurrentDate;
+			}
+			else
+			{
+				animate = false;
 			}
 		}
 
-		if (ps->getAnimType() != CParticleSystem::AnimAlways) // if the animation is always perfomed, then its done by the particle system manager
+
+		if (animate)
 		{
-			if (psm->isAutoGetEllapsedTimeEnabled())
+			const CMatrix		&mat= HrcObs->WorldMatrix;	 
+			ps->setSysMat(mat);
+			ps->setViewMat(trav->ViewMatrix);				
+
+			psm->updateOpacityInfos();
+
+			//ps->setSysMat(psm->getWorldMatrix());
+			nlassert(ps->getScene());	
+
+
+			// setup the number of faces we allow
+			ps->setNumTris((uint) psm->getNumTrianglesAfterLoadBalancing());
+
+			// setup system user parameters for parameters that have been touched
+			for (uint k = 0; k < MaxPSUserParam; ++k)
 			{
-				psm->setEllapsedTime(ps->getScene()->getEllapsedTime());
+				if (psm->isTouched((uint)CParticleSystemModel::PSParam0 + k))
+				{
+					ps->setUserParam(k, psm->_UserParam[k].Value);
+					psm->clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+				}
 			}
-			TAnimationTime delay = psm->getEllapsedTime();
-			// animate particles
-			ps->step(CParticleSystem::Anim, delay);	
+
+			if (ps->getAnimType() != CParticleSystem::AnimAlways) // if the animation is always perfomed, then its done by the particle system manager
+			{
+				if (psm->isAutoGetEllapsedTimeEnabled())
+				{
+					psm->setEllapsedTime(ps->getScene()->getEllapsedTime());
+				}
+				TAnimationTime delay = psm->getEllapsedTime();
+				// animate particles				
+				ps->step(CParticleSystem::Anim, delay);					
+			}
 		}
-	}
-	
+	}	
 
 	// add a render obs if in cluster
 	if (psm->_InClusterAndVisible)

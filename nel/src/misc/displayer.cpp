@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.44 2002/11/12 17:23:07 lecroart Exp $
+ * $Id: displayer.cpp,v 1.45 2002/11/15 17:02:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,7 +94,7 @@ const char *IDisplayer::dateToHumanString (time_t date)
 	if (tms)
 		strftime (cstime, 25, "%Y/%m/%d %H:%M:%S", tms);
 	else
-		sprintf(cstime, "bad date %d", date);
+		sprintf(cstime, "bad date %d", (uint32)date);
 	return cstime;
 }
 
@@ -530,7 +530,7 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 		body += "ProcName: " + args.ProcessName + "\n";
 		body += "Date: " + string(dateToHumanString(args.Date)) + "\n";
 		if(args.Filename == NULL)
-			body += "File: <???>\n";
+			body += "File: <Unknown>\n";
 		else
 			body += "File: " + string(args.Filename) + "\n";
 		body += "Line: " + toString(args.Line) + "\n";

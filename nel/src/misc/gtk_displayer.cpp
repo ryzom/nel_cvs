@@ -1,7 +1,7 @@
 /** \file gtk_displayer.cpp
  * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: gtk_displayer.cpp,v 1.3 2002/11/15 15:40:43 lecroart Exp $
+ * $Id: gtk_displayer.cpp,v 1.4 2002/11/15 17:01:59 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,9 +114,8 @@ void CGtkDisplayer::updateLabels ()
 			{
 				string n;
 				
-				// do this fucking tricks to be sure that windows will clear what is after the number
 				if (access.value()[i].Value[0] != '@')
-					n = access.value()[i].Value + "                                                 ";
+					n = access.value()[i].Value;
 				else
 				{
 					int pos = access.value()[i].Value.find ('|');

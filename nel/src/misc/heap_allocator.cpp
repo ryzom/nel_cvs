@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.5 2002/11/13 15:45:53 lecroart Exp $
+ * $Id: heap_allocator.cpp,v 1.6 2002/11/15 17:02:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,11 @@
 #include "nel/misc/debug.h"
 
 #ifdef NL_OS_WINDOWS
-#include <windows.h>
+#	include <windows.h>
+#else
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#	include <fcntl.h>
 #endif // NL_OS_WINDOWS
 
 #include <set>
@@ -827,7 +831,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 				// ********
 				// * Attempt to allocate more than 1 Go
 				// ********
-				NL_ALLOC_STOP
+				NL_ALLOC_STOP;
 
 				// Select outofmemory mode
 				if (_OutOfMemoryMode == ReturnNull)
@@ -2235,6 +2239,24 @@ void CHeapAllocator::checkNode (const CNodeBegin *node, uint32 crc) const
 #endif // NL_OS_WINDOWS
 
 #endif // NL_HEAP_ALLOCATION_NDEBUG
+
+
+
+
+#ifndef NL_OS_WINDOWS
+static inline char *skipWS(const char *p)
+{
+    while (isspace(*p)) p++;
+    return (char *)p;
+}
+
+static inline char *skipToken(const char *p)
+{
+    while (isspace(*p)) p++;
+    while (*p && !isspace(*p)) p++;
+    return (char *)p;
+}
+#endif
 
 // *********************************************************
 

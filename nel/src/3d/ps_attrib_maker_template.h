@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.2 2001/06/19 16:02:34 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.3 2001/06/20 09:36:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,7 +59,7 @@ template <>
 inline CRGBA PSValueBlend(const CRGBA &t1, const CRGBA &t2, float alpha)
 {
 	CRGBA result ;
-	result.blendFromui(t1, t2, (uint) (255.0f * alpha)) ;
+	result.blendFromui(t1, t2, (uint) (256.0f * alpha)) ;
 	return result ;
 }
 

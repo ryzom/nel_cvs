@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.15 2001/05/17 16:55:01 berenguier Exp $
+ * $Id: rgba.h,v 1.16 2001/06/20 09:36:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,7 @@ public:
 	 * Blend two colors.
 	 * \param c0 Color 0.
 	 * \param c1 Color 1.
-	 * \param coef Blend factor. 0~255. 0 return c0 and 255 return c1.
+	 * \param coef Blend factor. 0~256. 0 return c0 and 256 return c1.
 	 */	
 	void blendFromui(const CRGBA &c0, const CRGBA &c1, uint coef) // coef must be in [0,256]
 	{
@@ -102,7 +102,7 @@ public:
 	/** 
 	 * Modulate colors with a constant.
 	 * \param c0 Color 0.
-	 * \param a E [0,255]. c0*a returned into this.
+	 * \param a E [0,256]. c0*a returned into this.
 	 */
 	void	modulateFromui (CRGBA &c0, uint a)
 	{
@@ -283,7 +283,7 @@ public:
 	 * Blend two colors.
 	 * \param c0 Color 0.
 	 * \param c1 Color 1.
-	 * \param factor Blend factor. 0~255. 0 return c0 and 255 return c1.
+	 * \param factor Blend factor. 0~256. 0 return c0 and 256 return c1.
 	 */
 	void blendFromui(CBGRA &c0, CBGRA &c1, uint factor); 
 

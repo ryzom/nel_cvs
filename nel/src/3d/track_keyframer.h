@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: track_keyframer.h,v 1.2 2001/06/20 09:36:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -608,7 +608,7 @@ public:
 			NLMISC::clamp(date, 0,1);
 			
 			// blend.
-			_Value.Value.blendFromui(previous->Value, next->Value, (uint)(date*255));
+			_Value.Value.blendFromui(previous->Value, next->Value, (uint)(date*256));
 		}
 		else
 		{

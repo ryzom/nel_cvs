@@ -8,10 +8,12 @@
  */
 
 /*
- * $Id: service.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
+ * $Id: service.cpp,v 1.3 2000/10/04 09:38:41 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
+
+#include <stdlib.h>
 
 #include "nel/misc/types_nl.h"
 
@@ -29,6 +31,8 @@ IService::IService(int argc, char **argv)
 	{
 		_Args.push_back (argv[i]);
 	}
+
+	setStatus (EXIT_SUCCESS);
 }
 
 } //NLNET

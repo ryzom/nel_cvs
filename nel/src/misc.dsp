@@ -25,7 +25,7 @@ CFG=misc - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "misc - Win32 Release"
@@ -47,7 +47,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -70,7 +70,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -158,6 +158,98 @@ SOURCE=R:\code\nel\include\nel\misc\vectord.h
 # Begin Source File
 
 SOURCE=R:\code\nel\include\nel\misc\vectord_inline.h
+# End Source File
+# End Group
+# Begin Group "config_file"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\config_file\config_file.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\config_file.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\config_file\config_file.lex
+
+!IF  "$(CFG)" == "misc - Win32 Release"
+
+# Begin Custom Build
+InputPath=.\misc\config_file\config_file.lex
+
+"misc/config_file/config_file.lex.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	flex -f -8 -Pcf -Smisc/config_file/aceflex.skl -omisc/config_file/config_file.lex.cpp misc/config_file/config_file.lex
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+
+# Begin Custom Build
+InputPath=.\misc\config_file\config_file.lex
+
+"misc/config_file/config_file.lex.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	flex -f -8 -Pcf -Smisc/config_file/aceflex.skl -omisc/config_file/config_file.lex.cpp misc/config_file/config_file.lex
+
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\config_file\config_file.lex.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\config_file\config_file.yacc
+
+!IF  "$(CFG)" == "misc - Win32 Release"
+
+# Begin Custom Build
+InputPath=.\misc\config_file\config_file.yacc
+
+BuildCmds= \
+	set BISON_SIMPLE=misc/config_file/acebison.simple \
+	bison -d -p cf -o misc/config_file/config_file.yacc.cpp misc/config_file/config_file.yacc \
+	
+
+"misc/config_file/config_file.yacc.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"misc/config_file/config_file.yacc.cpp.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+
+# Begin Custom Build
+InputPath=.\misc\config_file\config_file.yacc
+
+BuildCmds= \
+	set BISON_SIMPLE=misc/config_file/acebison.simple \
+	bison -d -p cf -o misc/config_file/config_file.yacc.cpp misc/config_file/config_file.yacc \
+	
+
+"misc/config_file/config_file.yacc.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"misc/config_file/config_file.yacc.cpp.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\config_file\config_file.yacc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\config_file\config_file.yacc.cpp.h
 # End Source File
 # End Group
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.4 2001/03/21 16:55:27 chafik Exp $
+ * $Id: identtype.h,v 1.5 2001/03/22 17:53:22 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #define NL_IDENTTYPE_H
 #include <stdlib.h>
 #include "nel/misc/file.h"
-#include "nel/ai/e/ai_exception.h" 
+#include "nel/ai/e/ai_exception.h"
 #include "nel/ai/agent/agent_string.h"
 
 namespace NLAIAGENT

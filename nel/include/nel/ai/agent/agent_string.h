@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for string manipulation.
  *
- * $Id: agent_string.h,v 1.3 2001/01/17 10:32:29 chafik Exp $
+ * $Id: agent_string.h,v 1.4 2001/03/22 17:53:22 saffray Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -24,6 +24,8 @@
 #ifndef NL_AGENT_STRING_H
 #define NL_AGENT_STRING_H
 #include <list>
+
+#include "nel/ai/c/abstract_interface.h"
 
 namespace NLAIAGENT
 {	

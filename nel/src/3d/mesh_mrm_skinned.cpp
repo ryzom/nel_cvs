@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.6 2004/07/01 09:36:02 berenguier Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.7 2004/08/13 15:39:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1964,10 +1964,12 @@ void			CMeshMRMSkinnedGeom::renderShadowSkinPrimitives(CMeshMRMSkinnedInstance	*
 
 	// TODO_SHADOW: optim: Special triangle cache for shadow!
 	static	CIndexBuffer		shiftedTris;
-	if(shiftedTris.getNumIndexes()<_ShadowSkinTriangles.size())
-	{
+	shiftedTris.setPreferredMemory(CIndexBuffer::AGPVolatile, false);
+	if (shiftedTris.getName().empty()) NL_SET_IB_NAME(shiftedTris, "CMeshMRMSkinnedGeom::renderShadowSkinPrimitives::shiftedTris");
+	//if(shiftedTris.getNumIndexes()<_ShadowSkinTriangles.size())
+	//{
 		shiftedTris.setNumIndexes(_ShadowSkinTriangles.size());
-	}
+	//}
 	{
 		CIndexBufferReadWrite iba;
 		shiftedTris.lock(iba);

@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * 
  *
- * $Id: admin.cpp,v 1.5 2001/05/31 16:41:59 lecroart Exp $
+ * $Id: admin.cpp,v 1.6 2001/06/18 09:38:15 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -48,7 +48,7 @@ int main (int argc, char **argv)
 //	DebugLog->addNegativeFilter ("L1:");
 //	DebugLog->addNegativeFilter ("L2:");
 
-	CNetManager::init (NULL);
+	CNetManager::init (NULL, CCallbackNetBase::Off);
 
 	initInterf ();
 

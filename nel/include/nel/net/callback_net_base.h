@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.16 2001/06/18 09:06:02 cado Exp $
+ * $Id: callback_net_base.h,v 1.17 2001/06/18 09:38:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,7 +135,7 @@ public:
 	 */
 	void	setOtherSideAssociations (const char **associationarray, NLMISC::CStringIdArray::TStringId arraysize);
 
-	void	CCallbackNetBase::displayAllMyAssociations ();
+	void	displayAllMyAssociations ();
 
 	/// If you ignore all unknown id, the net will not ask for other side to know new association.
 	/// It's used in the naming service for example because the naming client will never answer.

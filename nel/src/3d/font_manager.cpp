@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.8 2000/12/08 13:45:36 lecroart Exp $
+ * $Id: font_manager.cpp,v 1.9 2000/12/11 15:53:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,7 +127,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 	fontSize = fontSize*desc.ResX/800;
 	
 	// Setting vertices format
-	output.Vertices.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_RGBA | IDRV_VF_UV[0]);
+	output.Vertices.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]);
 	output.Vertices.setNumVertices(4 * s.size());
 	
 	output.Primitives.resize(s.size());
@@ -157,7 +157,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 			z/= desc.ResY;
 			output.Vertices.setVertexCoord(4*i, x, 0, z);
 			output.Vertices.setTexCoord(4*i,0,0,vm);
-			output.Vertices.setRGBA(4*i, color);
+			output.Vertices.setColor(4*i, color);
 
 			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * desc.FontRatio;
 			z = (penz + dz) * desc.FontRatio;
@@ -165,7 +165,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 			z/= desc.ResY;
 			output.Vertices.setVertexCoord(4*i+1, x, 0, z);
 			output.Vertices.setTexCoord(4*i+1,0,um,vm);
-			output.Vertices.setRGBA(4*i+1, color);
+			output.Vertices.setColor(4*i+1, color);
 
 			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * desc.FontRatio;
 			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * desc.FontRatio;
@@ -173,7 +173,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 			z/= desc.ResY;
 			output.Vertices.setVertexCoord(4*i+2, x, 0, z); 
 			output.Vertices.setTexCoord(4*i+2,0,um,0);
-			output.Vertices.setRGBA(4*i+2, color);
+			output.Vertices.setColor(4*i+2, color);
 
 			x = (penx + dx) * desc.FontRatio;
 			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * desc.FontRatio;
@@ -181,7 +181,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 			z/= desc.ResY;
 			output.Vertices.setVertexCoord(4*i+3, x, 0, z); 
 			output.Vertices.setTexCoord(4*i+3,0,0,0);
-			output.Vertices.setRGBA(4*i+3, color);
+			output.Vertices.setColor(4*i+3, color);
 			
 			if(z>output.StringHeight) output.StringHeight = z;
 		}

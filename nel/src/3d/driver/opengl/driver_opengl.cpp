@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.28 2000/12/08 09:38:32 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.29 2000/12/11 15:54:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,7 +316,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 	flags=VB.getVertexFormat();
 
-	if (flags & IDRV_VF_RGBA)
+	if (flags & IDRV_VF_COLOR)
 	{
 		glEnableClientState(GL_COLOR_ARRAY);
 		glColorPointer(4,GL_UNSIGNED_BYTE,VB.getVertexSize(),VB.getColorPointer());

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.14 2002/05/21 16:41:31 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.15 2002/05/22 17:28:13 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@ CBitMemStream::CBitMemStream( bool inputStream, uint32 defaultcapacity ) :
 	CMemStream( inputStream, false, defaultcapacity ),
 	_FreeBits( 8 )
 {
+	_BufPos--;
 }
 
 
@@ -50,6 +51,7 @@ CBitMemStream::CBitMemStream( const CBitMemStream& other ) :
 	CMemStream( other ),
 	_FreeBits( other._FreeBits )
 {
+	_BufPos--;
 }
 
 
@@ -239,7 +241,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 			{
 				// need to resize
 				_Buffer.resize(_Buffer.size()*2+1);
-				_BufPos = _Buffer.getPtr() + (_Buffer.size()/2-1);
+				_BufPos = _Buffer.getPtr() + ((_Buffer.size()-1)/2);
 			}
 			else
 			{

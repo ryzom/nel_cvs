@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.129 2002/06/13 09:42:26 lecroart Exp $
+ * $Id: service.cpp,v 1.130 2002/06/13 14:40:53 legros Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1132,6 +1132,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
+			H_AFTER(NLNETServiceLoop);
 
 			// Resetting the hierarchical timer must be done outside the top-level timer
 			if ( _ResetMeasures )
@@ -1139,7 +1140,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				CHTimer::clear();
 				_ResetMeasures = false;
 			}
-			H_AFTER(NLNETServiceLoop);
 		}
 		while (true);
 	}
@@ -1238,7 +1238,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	CHTimer::display();
 	CHTimer::displayByExecutionPath ();
 	CHTimer::displayHierarchical(InfoLog, true, 64);
-	CHTimer::displayHierarchicalByExecutionPath (InfoLog, true, 64);
+	CHTimer::displayHierarchicalByExecutionPathSorted (InfoLog, CHTimer::TotalTime, true, 64);
 
 	nlinfo ("Service ends");
 
@@ -1389,7 +1389,7 @@ NLMISC_COMMAND(resetMeasures, "reset hierarchical timer", "")
 NLMISC_COMMAND(displayMeasures, "display hierarchical timer", "")
 {
 	CHTimer::display();
-	CHTimer::displayByExecutionPath ();
+	CHTimer::displayHierarchicalByExecutionPathSorted (InfoLog, CHTimer::TotalTime, true, 64);
 	return true;
 }
 

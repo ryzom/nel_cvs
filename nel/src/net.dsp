@@ -255,6 +255,10 @@ SOURCE=..\include\nel\net\admin.h
 # End Source File
 # Begin Source File
 
+SOURCE=R:\code\nel\include\nel\net\cvar_log_filter.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\email.cpp
 # End Source File
 # Begin Source File

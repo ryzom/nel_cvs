@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.4 2001/06/27 15:15:35 corvazier Exp $
+ * $Id: primitive_world_image.cpp,v 1.5 2001/07/25 08:12:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -954,10 +954,10 @@ void CPrimitiveWorldImage::precalcBB (double beginTime, double endTime, CMovePri
 	if (type==UMovePrimitive::_2DOrientedBox)
 	{
 		// Point index
-		const static minX[4]={ 3, 2, 1, 0 };
-		const static minY[4]={ 0, 3, 2, 1 };
-		const static maxX[4]={ 1, 0, 3, 2 };
-		const static maxY[4]={ 2, 1, 0, 3 };
+		const static uint minX[4]={ 3, 2, 1, 0 };
+		const static uint minY[4]={ 0, 3, 2, 1 };
+		const static uint maxX[4]={ 1, 0, 3, 2 };
+		const static uint maxY[4]={ 2, 1, 0, 3 };
 
 		// Orientation index
 		sint orient= (sint)(256.f*_OBData.Orientation/(2.f*NLMISC::Pi));

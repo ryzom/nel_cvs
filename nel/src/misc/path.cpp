@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.101 2004/03/01 19:47:53 cado Exp $
+ * $Id: path.cpp,v 1.102 2004/03/12 16:51:13 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -506,9 +506,9 @@ std::string CPath::getCurrentPath ()
 	char buffer [10000];
 
 #ifdef NL_OS_WINDOWS
-	return _getcwd(buffer, 10000);
+	return standardizePath(_getcwd(buffer, 10000), false);
 #else
-	return getcwd(buffer, 10000);
+	return standardizePath(getcwd(buffer, 10000), false);
 #endif
 }
 

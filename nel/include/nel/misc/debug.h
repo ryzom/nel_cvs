@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.54 2003/07/09 15:18:27 cado Exp $
+ * $Id: debug.h,v 1.55 2003/08/19 15:04:12 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -520,7 +520,16 @@ template<class T, class U>	inline T	type_cast(U o)
 	if (o)
 		nlassert(dynamic_cast<T >(o));
 #endif
-	return static_cast<T >(o);
+	//	optimization made to check pointeur validity before adresse translation. (hope it works on linux).
+	if ((long)(static_cast<T>((U)0x0400))==(long)((U)0x0400))
+	{
+		return static_cast<T >(o);
+	}
+	else
+	{
+		return	(o==NULL)?NULL:static_cast<T >(o);
+	}
+
 }
 
 /** Compile time assertion

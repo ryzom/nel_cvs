@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.13 2002/01/30 15:39:59 chafik Exp $
+# $Id: Makefile.am,v 1.14 2002/03/11 10:20:20 portier Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -34,6 +34,8 @@ libscript_la_SOURCES    = constraint.cpp \
                           constraint_stack_component.cpp \
                           lexsupport.cpp \
                           interpret_object_message.cpp \
+						  interpret_message_setvalue.cpp \
+						  interpret_message_connect.cpp \
                           opcode.cpp \
                           yacc.cpp \
                           opcode_call_lib_method.cpp \

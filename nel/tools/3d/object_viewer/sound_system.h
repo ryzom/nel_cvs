@@ -1,7 +1,7 @@
 /** \file sound_system.h
  * This initilize the sound system
  *
- * $Id: sound_system.h,v 1.7 2002/07/25 13:36:43 lecroart Exp $
+ * $Id: sound_system.h,v 1.8 2002/11/25 14:14:32 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,11 +51,11 @@ class CSoundSystem
 {
 public:
 	/// set the name of the file containing the sound bank
-	static void addSoundBank(const std::string &soundBankFileName)
+/*	static void addSoundBank(const std::string &soundBankFileName)
 	{
 		_SoundBanksFileName.insert(soundBankFileName);
 	}
-	/// set the name of the file containing the sample bank
+*/	/// set the name of the file containing the sample bank
 	static void addSampleBank(const std::string &sampleBankFileName)
 	{
 		_SampleBanksFileName.insert(sampleBankFileName);
@@ -98,7 +98,7 @@ public:
 
 private:
 	static NLSOUND::UAudioMixer			*_AudioMixer;
-	static std::set<std::string>		_SoundBanksFileName;
+//	static std::set<std::string>		_SoundBanksFileName;
 	static std::set<std::string>		_SampleBanksFileName;
 	static NLSOUND::CSoundAnimManager	*_AnimManager;
 	//static sint							_AnimIndex;

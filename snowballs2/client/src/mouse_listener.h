@@ -1,7 +1,7 @@
 /** \file mouse_listener.h
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.h,v 1.5 2001/07/19 13:47:40 legros Exp $
+ * $Id: mouse_listener.h,v 1.6 2001/07/20 14:29:56 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,11 @@
 
 using NLMISC::CVector;
 using NLMISC::CMatrix;
+
+namespace NL3D
+{
+	class	UInstance;
+};
 
 //
 // External classes
@@ -93,7 +98,12 @@ public:
 	  */
 	C3dMouseListener();
 
+	~C3dMouseListener();
+
 	/// \name Setup
+
+	/// Setup the mouse mode. No op actually.
+	void setMouseMode(TMouseMode mouseMode) {}
 
 	/// Setup the camera to be used
 	void setCamera (NL3D::UCamera *camera) { _Camera = camera; }
@@ -146,44 +156,6 @@ public:
 	{
 		_HotSpot=hotSpot;
 	}
-
-	/** 
-	  * Set the mouse mode.
-	  * \param mouseMode is the mode you want to use.
-	  * \see TMouseMode
-	  */
-	void setMouseMode(TMouseMode mouseMode)
-	{
-		_MouseMode=mouseMode;
-	}
-
-	/// enable / disable model matrix edition mode. (the default deals with the with matrix)
-	void enableModelMatrixEdition(bool enable = true) 
-	{ 
-		_EnableModelMatrixEdition = enable ;
-	}
-	  
-	enum TAxis { xAxis = 0, yAxis = 1, zAxis = 2 } ;
-
-	/// set the current axe of rotation for the model matrix
-	void setModelMatrixRotationAxis(TAxis axis) { _CurrentModelRotationAxis = axis ;}
-
-	/// get the current axe of rotation for the model matrix
-	TAxis getModelMatrixRotationAxis(void) const  { return _CurrentModelRotationAxis ;}
-
-	
-
-	/** enable / disable an axe for translation (model matrix)
-	  * \param axis the axis to enable / diable
-	  * \param enabled true if the trnaslation is permitted on that axis
-	  */
-	void enableModelTranslationAxis(TAxis axis, bool enabled) ;
-
-	/** check wether translation on the given axis is permitted
-	  * \param axis the axis to check
-	  * \return true if translation is permitted
-	  */
-	bool isModelTranslationEnabled(TAxis axis) ;
 
 
 	/** 
@@ -252,9 +224,11 @@ public:
 	CVector	getViewDirection();
 	/// get the aiming state
 	bool getAimingState() const { return _AimingState; }
+	/// get the target position (only if getAimingState() == true)
+	CVector	getAimedTarget() const { return _AimedTarget; }
 
-	///
-	void updateKeys();
+	/// Updates the mouselistener
+	void update();
 
 	/// Updates the camera
 	void updateCamera();
@@ -269,11 +243,6 @@ private:
 	virtual void operator ()(const NLMISC::CEvent& event);
 
 
-
-	TAxis                _CurrentModelRotationAxis ;
-	bool                _XModelTranslateEnabled ;
-	bool                _YModelTranslateEnabled ;
-	bool                _ZModelTranslateEnabled ;
 
 	CMatrix				_Matrix;
 	CMatrix				_ModelMatrix ;
@@ -291,7 +260,7 @@ private:
 	TMouseMode			_MouseMode;
 	NLMISC::CEventListenerAsync	_AsyncListener;
 
-	NL3D::UCamera				*_Camera;
+	NL3D::UCamera		*_Camera;
 	float				_ViewLagBehind;
 	float				_ViewHeight;
 	float				_ViewTargetHeight;
@@ -299,13 +268,13 @@ private:
 	float				_AimingDamage;
 	float				_AimingSpeed;
 	float				_AimingMax;
-	NLMISC::TTime		_AimingLastTime;
+	NLMISC::TTime		_AimingStartTime;
+	NLMISC::TTime		_AimingLastUpdateTime;
+	NLMISC::TTime		_AimingRefreshRate;
+	NLMISC::CVector		_AimedTarget;
+	NLMISC::CVector		_AimingPosition;
+	NL3D::UInstance		*_AimingInstance;
 	bool				_InvertedMouse;
-
-	/** remove composant of translations that are not permitted
-	  * \see enableModelTranslationAxis()
-	  */
-	void truncateVect(CVector &v) ;
 };
 
 //

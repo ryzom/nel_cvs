@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.29 2001/07/20 09:55:49 lecroart Exp $
+ * $Id: entities.cpp,v 1.30 2001/07/20 14:29:56 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,22 +79,10 @@ using namespace NLPACS;
 // Variables
 //
 
-// The collision bits used by pacs (dynamic collisions)
-enum
-{
-	SelfCollisionBit = 1,
-	OtherCollisionBit = 2,
-	SnowballCollisionBit = 4
-};
-
 // A map of entities. All entities are later reffered by their unique id
 map<uint32, CEntity>	Entities;
 
 CEntity					*Self = NULL;
-
-UInstance				*AimingInstance = NULL;
-TTime					LastAimingUpdate = 0;
-TTime					RefreshRate = 100;
 
 // The size of the world, in meter
 float					WorldWidth = 20*160;
@@ -180,11 +168,11 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		// it's a cylinder
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
 		// the entity should slide against obstacles
-		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
+		entity.MovePrimitive->setReactionType(UMovePrimitive::Reflexion);
 		// do not generate event if there is a collision
 		entity.MovePrimitive->setTriggerType(UMovePrimitive::NotATrigger);
 		// which entity should collide against me
-		entity.MovePrimitive->setCollisionMask(OtherCollisionBit+SnowballCollisionBit);
+		entity.MovePrimitive->setCollisionMask(OtherCollisionBit+SnowballCollisionBit+StaticCollisionBit);
 		// the self collision bit
 		entity.MovePrimitive->setOcclusionMask(SelfCollisionBit);
 		// the self is an obstacle
@@ -202,6 +190,7 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.Skeleton = Scene->createSkeleton ("gnu.skel");
 		// use the instance on the skeleton
 		entity.Skeleton->bindSkin (entity.Instance);
+
 		entity.Instance->hide ();
 
 		// setup final parameters
@@ -497,34 +486,6 @@ void stateNormal (CEntity &entity)
 
 		// tell the move container how much the entity should move
 		entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
-
-		// If the player is aiming (left mouse button down), show the target
-		if (MouseListener->getAimingState() && Self != NULL && AimingInstance != NULL)
-		{
-			// We only refresh the target at predefined rate to avoid to much cpu consuming
-			// If it's time to update the target
-			if (CTime::getLocalTime() - LastAimingUpdate > RefreshRate)
-			{
-				LastAimingUpdate = CTime::getLocalTime();
-				// get the start of the snowball
-				CVector start = MouseListener->getPosition()+CVector(0.0f, 0.0f, 1.3f);
-				// get the direction of aiming
-				CVector direction = MouseListener->getViewDirection().normed();
-				// and compute the target
-				CVector	target = getTarget(start, direction, 100);
-				// Eventually, setup the aiming mesh
-				AimingInstance->lookAt(target, Camera->getMatrix().getPos());
-				AimingInstance->show();
-			}
-			float	scale = MouseListener->getDamage();
-			AimingInstance->setScale(scale, scale, scale);
-		}
-		else
-		{
-			// If the player is not aiming, just hide the target
-			LastAimingUpdate = 0;
-			AimingInstance->hide();
-		}
 	}
 	else if (entity.Type == CEntity::Other && pDelta.norm()>0.1f)
 	{
@@ -558,14 +519,10 @@ void stateNormal (CEntity &entity)
 	}
 	else if (entity.Type == CEntity::Snowball && pDeltaOri.norm()>0.1f)
 	{
-		// go to the server position with linear interpolation
-
-		pDelta.normalize();
-		pDeltaOri.normalize();
-		entity.Angle = (float)atan2(pDelta.y, pDelta.x);
-		pDeltaOri *= -entity.Speed;
-		entity.Position += pDeltaOri*(float)dt;
-		if ((entity.ServerPosition-entity.Position)*pDeltaOri < 0.0f)
+		// go to the server position using trajectory interpolation
+		entity.Position = entity.Trajectory.eval(NewTime);
+		CVector	direction = entity.Trajectory.evalSpeed(NewTime).normed();
+		if ((entity.ServerPosition-entity.Position)*direction <= 0.0f)
 		{
 			entity.Position = entity.ServerPosition;
 		}
@@ -656,7 +613,7 @@ void updateEntities ()
 				jdir = CVector(-(float)cos(entity.Angle), -(float)sin(entity.Angle), 0.0f);
 				break;
 			case CEntity::Snowball:
-				jdir = CVector(-(float)cos(entity.Angle), -(float)sin(entity.Angle), 0.0f);
+				jdir = entity.Trajectory.evalSpeed(NewTime).normed();
 				break;
 			}
 
@@ -727,15 +684,10 @@ void initEntities()
 
 	cbUpdateEntities (ConfigFile.getVar ("EntityNameColor"));
 	cbUpdateEntities (ConfigFile.getVar ("EntityNameSize"));
-
-	AimingInstance = Scene->createInstance("box.shape");
-	AimingInstance->setTransformMode(UTransformable::RotQuat);
 }
 
 void releaseEntities()
 {
-	Scene->deleteInstance(AimingInstance);
-	AimingInstance = NULL;
 }
 
 
@@ -765,7 +717,7 @@ void	resetEntityPosition(uint32 eid)
 }
 
 
-void	shotSnowball(uint32 eid, const CVector &start, const CVector &target)
+void	shotSnowball(uint32 eid, const CVector &start, const CVector &target, const CVector &speed)
 {
 	uint32 sbid = NextEID++;
 	EIT eit = findEntity (eid);
@@ -781,10 +733,14 @@ void	shotSnowball(uint32 eid, const CVector &start, const CVector &target)
 	CEntity	&snowball = (*eit).second;
 	snowball.AutoMove = 1;
 
+	snowball.Trajectory.init(start, speed, CTime::getLocalTime());
+
 	if (launcher.Type == CEntity::Self)
 	{
 		/// \todo Ben inform the server the player is shooting a snowball
-		snowball.ServerPosition = getTarget(start, direction, 200);
+		snowball.ServerPosition = getTarget(snowball.Trajectory, 
+											(TTime)(100.0f/(SnowballSpeed*100)*1000.0f),
+											100);
 	}
 }
 
@@ -823,7 +779,7 @@ NLMISC_COMMAND(add_entity,"add a local entity","<nb_entities> <auto_update>")
 	return true;
 }
 
-NLMISC_COMMAND(set_speed,"set the speed of an identity","<eid> <speed>")
+NLMISC_COMMAND(set_speed,"set the speed of an identity","<eid> <speed in m/s>")
 {
 	// check args, if there s not the right number of parameter, return bad
 	if(args.size() != 2) return false;
@@ -866,8 +822,8 @@ NLMISC_COMMAND(goto, "go to a given position", "<x> <y>")
 
 	float	x, y;
 
-	x = (float)atof(args[1].c_str());
-	y = (float)atof(args[2].c_str());
+	x = (float)atof(args[0].c_str());
+	y = (float)atof(args[1].c_str());
 
 	//
 	if (entity.MovePrimitive != NULL && entity.VisualCollisionEntity != NULL)

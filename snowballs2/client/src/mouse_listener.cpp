@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.8 2001/07/20 09:55:49 lecroart Exp $
+ * $Id: mouse_listener.cpp,v 1.9 2001/07/20 14:29:56 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,9 @@
 #include <nel/3d/u_driver.h>
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_visual_collision_entity.h>
+#include <nel/3d/u_scene.h>
+#include <nel/3d/u_instance.h>
+
 #include <nel/misc/time_nl.h>
 #include <nel/misc/quat.h>
 #include <nel/misc/plane.h>
@@ -39,6 +42,7 @@
 #include "mouse_listener.h"
 #include "entities.h"
 #include "camera.h"
+#include "landscape.h"
 
 //
 // Namespaces
@@ -59,10 +63,7 @@ static float GroundCamLimit = 0.5f;
 // Functions
 //
 
-C3dMouseListener::C3dMouseListener() :  _CurrentModelRotationAxis(zAxis),
-										_XModelTranslateEnabled(true),
-										_YModelTranslateEnabled(true),
-										_ZModelTranslateEnabled(true)
+C3dMouseListener::C3dMouseListener()
 {
 	_Matrix.identity();
 	_ModelMatrix.identity() ;
@@ -75,49 +76,27 @@ C3dMouseListener::C3dMouseListener() :  _CurrentModelRotationAxis(zAxis),
 	_LastTime=CTime::getLocalTime ();
 
 	_ViewLagBehind = 3.0f;
-	_ViewHeight = 5.5f;
-	_ViewTargetHeight = 5.0f;
+	_ViewHeight = 2.0f;
+	_ViewTargetHeight = 3.0f;
 	_AimingState = false;
 	_AimingDamage = 0.0f;
 	_AimingSpeed = 1.0f;
 	_AimingMax = 5.0f;
-	_AimingLastTime = 0;
+	_AimingStartTime = 0;
+	_AimingRefreshRate = 100;
+	_AimingInstance = Scene->createInstance("box.shape");
+	_AimingInstance->setTransformMode(UTransformable::RotQuat);
 
 	_X = 0.5f;
 	_Y = 0.5f;
 	_InvertedMouse = false;
 }
 
-
-
-void C3dMouseListener::enableModelTranslationAxis(TAxis axis, bool enabled)
+C3dMouseListener::~C3dMouseListener()
 {
-	switch (axis)
-	{
-		case xAxis: _XModelTranslateEnabled = enabled ; break ;
-		case yAxis: _YModelTranslateEnabled = enabled ; break ;
-		case zAxis: _ZModelTranslateEnabled = enabled ; break ;
-	}
+	Scene->deleteInstance(_AimingInstance);
 }
 
-bool C3dMouseListener::isModelTranslationEnabled(TAxis axis)
-{
-	switch (axis)
-	{
-		case xAxis: return _XModelTranslateEnabled ; break ;
-		case yAxis: return _YModelTranslateEnabled ; break ;
-		case zAxis: return _ZModelTranslateEnabled ; break ;
-		default: return false ; break ;
-	}	
-}
-
-
-void C3dMouseListener::truncateVect(CVector &v)
-{
-	if (!_XModelTranslateEnabled) v.x = 0.f ;	
-	if (!_YModelTranslateEnabled) v.y = 0.f ;	
-	if (!_ZModelTranslateEnabled) v.z = 0.f ;	
-}
 
 
 void C3dMouseListener::operator ()(const CEvent& event)
@@ -125,83 +104,53 @@ void C3dMouseListener::operator ()(const CEvent& event)
 	CEventMouse* mouseEvent=(CEventMouse*)&event;
 	if (event==EventMouseMoveId) // && mouseEvent->Button&leftButton!=0)
 	{
-		bool bRotate=false;
-		bool bTranslateXY=false;
-		bool bTranslateZ=false;
-		bool bZoom=false;
-		
-
 		// Rotate Axis
 		CVector axis;
 
-//		bRotate=(mouseEvent->Button&leftButton)!=0;
 		axis=_Matrix.getPos();
 
-		if (!_EnableModelMatrixEdition)
-		{							
-			// First in the hotSpot
-			CMatrix comeFromHotSpot=_Matrix;
-			comeFromHotSpot.setPos (axis);
+		// First in the hotSpot
+		CMatrix comeFromHotSpot=_Matrix;
+		comeFromHotSpot.setPos (axis);
 
-			// Then turn along the Z axis with X mouse
-			CMatrix turnZ;
-			turnZ.identity();
-			turnZ.rotateZ ((float) Pi*2.f*(_X-mouseEvent->X));
+		// Then turn along the Z axis with X mouse
+		CMatrix turnZ;
+		turnZ.identity();
+		turnZ.rotateZ ((float) Pi*2.f*(_X-mouseEvent->X));
 
-			// Then turn along the X axis with Y mouse
-			CMatrix turnX;
-			turnX.identity();
-			if (_InvertedMouse)
-				_ViewHeight += 3.0f*(mouseEvent->Y-_Y);
-			else
-				_ViewHeight -= 3.0f*(mouseEvent->Y-_Y);
-
-			// Then come back from hotspot
-			CMatrix goToHotSpot=comeFromHotSpot;
-			goToHotSpot.invert();
-
-			// Make the matrix
-			CMatrix negPivot, Pivot;
-			negPivot.identity();
-			negPivot.setPos (-axis);
-			Pivot.identity();
-			Pivot.setPos (axis);
-
-			// Make this transformation \\//
-			//_Matrix=Pivot*turnZ*negPivot*comeFromHotSpot*turnX*goToHotSpot*_Matrix;
-			Pivot*=turnZ;
-			Pivot*=negPivot;
-			Pivot*=comeFromHotSpot;
-			Pivot*=turnX;
-			Pivot*=goToHotSpot;
-
-			
-			Pivot*=_Matrix;
-			_Matrix=Pivot;						
-			// Normalize, too much transformation could give an ugly matrix..
-			_Matrix.normalize (CMatrix::XYZ);			
-		
-		}
+		// Then turn along the X axis with Y mouse
+		CMatrix turnX;
+		turnX.identity();
+		if (_InvertedMouse)
+			_ViewHeight += 3.0f*(mouseEvent->Y-_Y);
 		else
-		{
-			CVector pos = _ModelMatrix.getPos() ;
-			NLMISC::CQuat r ;
-			switch (_CurrentModelRotationAxis)
-			{
-				case xAxis : r = CQuat(CAngleAxis(_ModelMatrix.getI(), (float) Pi*2.f*(_X-mouseEvent->X))) ; break ;
-				case yAxis : r = CQuat(CAngleAxis(_ModelMatrix.getJ(), (float) Pi*2.f*(_X-mouseEvent->X))) ; break ;
-				case zAxis : r = CQuat(CAngleAxis(_ModelMatrix.getK(), (float) Pi*2.f*(_X-mouseEvent->X))) ; break ;
-			} ;
+			_ViewHeight -= 3.0f*(mouseEvent->Y-_Y);
+
+		// Then come back from hotspot
+		CMatrix goToHotSpot=comeFromHotSpot;
+		goToHotSpot.invert();
+
+		// Make the matrix
+		CMatrix negPivot, Pivot;
+		negPivot.identity();
+		negPivot.setPos (-axis);
+		Pivot.identity();
+		Pivot.setPos (axis);
+
+		// Make this transformation \\//
+		//_Matrix=Pivot*turnZ*negPivot*comeFromHotSpot*turnX*goToHotSpot*_Matrix;
+		Pivot*=turnZ;
+		Pivot*=negPivot;
+		Pivot*=comeFromHotSpot;
+		Pivot*=turnX;
+		Pivot*=goToHotSpot;
 
 		
-			CMatrix rm ;
-			rm.rotate(r) ;
-			
-			_ModelMatrix = rm * _ModelMatrix ;
-			_ModelMatrix.setPos(pos) ;
+		Pivot*=_Matrix;
+		_Matrix=Pivot;						
+		// Normalize, too much transformation could give an ugly matrix..
+		_Matrix.normalize (CMatrix::XYZ);			
 
-			_ModelMatrix.normalize (CMatrix::XYZ);
-		}
 
 		// Update mouse position
 		Driver->setMousePos(0.5f, 0.5f);
@@ -213,17 +162,17 @@ void C3dMouseListener::operator ()(const CEvent& event)
 		// aim
 		_AimingState = true;
 		_AimingDamage = 0.0f;
-		_AimingLastTime = CTime::getLocalTime();
+		_AimingStartTime = CTime::getLocalTime();
+		_AimingLastUpdateTime = 0;
 	}
 	else if (event==EventMouseUpId)
 	{
 		// throw snowball
 		nlinfo("damage=%f", _AimingDamage);
 		_AimingState = false;
-		_AimingLastTime = 0;
-		CVector start = getPosition()+CVector(0.0f, 0.0f, 1.3f);
-		CVector direction = getViewDirection().normed();
-		shotSnowball(Self->Id, start, start+direction*100.0f);
+		_AimingStartTime = 0;
+		CVector	direction = (_AimedTarget-_AimingPosition).normed();
+		shotSnowball(Self->Id, _AimingPosition, _AimedTarget, direction*SnowballSpeed);
 	}
 	else if (event==EventMouseWheelId)
 	{
@@ -258,7 +207,7 @@ const NLMISC::CMatrix& C3dMouseListener::getViewMatrix ()
 	return _Matrix;
 }
 
-void C3dMouseListener::updateKeys ()
+void C3dMouseListener::update()
 {
 	// CVector
 	CVector dir (0,0,0);
@@ -296,14 +245,42 @@ void C3dMouseListener::updateKeys ()
 		find=true;
 	}
 
+	// if is aiming
 	if (_AimingState)
 	{
 		find = false;
 		TTime	newTime = CTime::getLocalTime();
-		float	delta = (float)(newTime-_AimingLastTime)/1000.0f;
+		float	delta = (float)(newTime-_AimingStartTime)/1000.0f;
 		_AimingDamage = _AimingSpeed*delta;
 		_AimingDamage = std::min(_AimingDamage, _AimingMax);
+
+		// if we have to update the aiming position
+		if (newTime - _AimingLastUpdateTime > _AimingRefreshRate)
+		{
+			// update the last target
+			_AimingLastUpdateTime = newTime;
+			// set up the aiming position
+			_AimingPosition = MouseListener->getPosition()+CVector(0.0f, 0.0f, 2.0f);
+			// compute the target
+			_AimedTarget = getTarget(_AimingPosition,
+									 MouseListener->getViewDirection(),
+									 100);
+		}
+
+		if (Self != NULL && _AimingInstance != NULL)
+		{
+			_AimingInstance->lookAt(MouseListener->getAimedTarget(), Camera->getMatrix().getPos());
+			float	scale = MouseListener->getDamage();
+			_AimingInstance->setScale(scale, scale, scale);
+			_AimingInstance->show();
+		}
 	}
+	else
+	{
+		if (Self != NULL && _AimingInstance != NULL)
+			_AimingInstance->hide();
+	}
+
 
 	// key found ?
 	if (find)
@@ -356,10 +333,10 @@ float	C3dMouseListener::getOrientation()
 
 CVector	C3dMouseListener::getViewDirection()
 {
-	float	angle = getOrientation();
-	return CVector((float)cos(angle), (float)sin(angle), (2.0f-_ViewHeight)/_ViewLagBehind).normed();
+//	float	angle = getOrientation();
+//	return CVector((float)cos(angle), (float)sin(angle), (_ViewTar-_ViewHeight)/_ViewLagBehind).normed();
+	return Camera->getMatrix().getJ();
 }
-
 
 void	C3dMouseListener::updateCamera()
 {

@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.6 2001/07/20 09:55:49 lecroart Exp $
+ * $Id: animation.cpp,v 1.7 2001/07/20 14:29:56 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,9 @@ Anim AnimIdArray[][2] =
 
 void	playAnimation (CEntity &entity, EAnim anim)
 {
+	if (entity.Skeleton == NULL)
+		return;
+
 	// If the first time we play an animation, creates the animation class
 	if (entity.PlayList == NULL)
 		createAnimation (entity);

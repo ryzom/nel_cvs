@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.37 2001/07/20 09:55:49 lecroart Exp $
+ * $Id: client.cpp,v 1.38 2001/07/20 14:29:56 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -273,7 +273,7 @@ int main(int argc, char **argv)
 		updateAnimation ();
 
 		// Update all entities positions
-		MouseListener->updateKeys();
+		MouseListener->update();
 		updateEntities();
 
 		// setup the camera

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.12 2001/07/19 17:30:39 lecroart Exp $
+ * $Id: landscape.cpp,v 1.13 2001/07/20 14:29:56 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,7 @@
 #include "pacs.h"
 #include "commands.h"
 #include "mouse_listener.h"
+#include "physics.h"
 
 //
 // Namespaces
@@ -70,6 +71,7 @@ using namespace NL3D;
 
 ULandscape				*Landscape = NULL;
 UVisualCollisionEntity	*AimingEntity = NULL;
+UInstanceGroup			*InstanceGroup = NULL;
 
 ULight					*Sun = NULL;
 
@@ -140,9 +142,9 @@ void	initLandscape()
 		CRGBA(ConfigFile.getVar("LandscapeDiffuseColor").asInt(0), ConfigFile.getVar("LandscapeDiffuseColor").asInt(1), ConfigFile.getVar("LandscapeDiffuseColor").asInt(2)),
 		ConfigFile.getVar("LandscapeMultiplyFactor").asFloat(0));
 
-	UInstanceGroup *pIG = UInstanceGroup::createInstanceGroup ("6_AG.ig");
-	nlassert (pIG != NULL);
-	pIG->addToScene (*Scene);
+	InstanceGroup = UInstanceGroup::createInstanceGroup ("6_AG.ig");
+	nlassert (InstanceGroup != NULL);
+	InstanceGroup->addToScene (*Scene);
 
 	Sun = ULight::createLight ();
 	nlassert (Sun != NULL);
@@ -198,6 +200,53 @@ void	releaseAiming()
 	VisualCollisionManager->deleteEntity(AimingEntity);
 }
 
+
+CVector	getTarget(const CVector &start, const CVector &step, uint numSteps)
+{
+	CVector	testPos = start;
+
+	uint	i;
+	for (i=0; i<numSteps; ++i)
+	{
+		CVector	snapped = testPos, 
+				normal;
+
+		// here use normal to check if we have collision
+		if (AimingEntity->snapToGround(snapped, normal) && (testPos.z-snapped.z)*normal.z < 0.0f)
+		{
+			testPos -= step*0.5f;
+			break;
+		}
+		testPos += step;
+	}
+	return testPos;
+}
+
+CVector	getTarget(CTrajectory &trajectory, TTime dtSteps, uint numSteps)
+{
+	TTime	t = trajectory.getStartTime();
+	CVector	testPos;
+
+	uint	i;
+	for (i=0; i<numSteps; ++i)
+	{
+		testPos = trajectory.eval(t);
+		CVector	snapped = testPos, 
+				normal;
+
+		// here use normal to check if we have collision
+		if (AimingEntity->snapToGround(snapped, normal) && (testPos.z-snapped.z)*normal.z < 0.0f)
+		{
+			t -= (dtSteps/2);
+			testPos = trajectory.eval(t);
+			break;
+		}
+		t += dtSteps;
+	}
+	return testPos;
+}
+
+/*
 CVector	getTarget(const CVector &start, const CVector &step, uint numSteps)
 {
 	CVector	testPos = start;
@@ -219,6 +268,7 @@ CVector	getTarget(const CVector &start, const CVector &step, uint numSteps)
 
 	return testPos;
 }
+*/
 
 
 NLMISC_DYNVARIABLE(float,tilenear,"landscape tile near")

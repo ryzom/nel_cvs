@@ -1,7 +1,7 @@
 /** \file landscape.h
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.h,v 1.7 2001/07/19 17:30:39 lecroart Exp $
+ * $Id: landscape.h,v 1.8 2001/07/20 14:29:56 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,17 +30,30 @@
 // Includes
 //
 
+#include <nel/3d/u_landscape.h>
+#include <nel/misc/time_nl.h>
 #include <nel/misc/vector.h>
 
-#include <nel/3d/u_landscape.h>
+//
+// External definitions
+//
+
+namespace NL3D
+{
+	class UInstanceGroup;
+}
+
+class CTrajectory;
+
 
 //
 // External variables
 //
 
 extern NL3D::ULandscape		*Landscape;
-
+extern NL3D::UInstanceGroup	*InstanceGroup;
 extern NLMISC::CVector		 SunDirection;
+
 
 //
 // External functions
@@ -54,8 +67,10 @@ void			initAiming();
 void			releaseAiming();
 
 // Compute the collision with the landscape from the start position, using the given step,
-// at maximum numSteps steps from the start.
+// at maximum numSteps steps from the start. It uses full (!) physics computation, and should be
+// identical on the server
 NLMISC::CVector	getTarget(const NLMISC::CVector &start, const NLMISC::CVector &step, uint numSteps);
+NLMISC::CVector	getTarget(CTrajectory &trajectory, NLMISC::TTime dtSteps, uint numSteps);
 
 #endif // LANDSCAPE_H
 

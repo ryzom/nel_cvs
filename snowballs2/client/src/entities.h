@@ -1,7 +1,7 @@
 /** \file entities.h
  * Snowballs 2 specific code for managing the entities
  *
- * $Id: entities.h,v 1.19 2001/07/20 09:55:49 lecroart Exp $
+ * $Id: entities.h,v 1.20 2001/07/20 14:29:56 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include <nel/misc/vector.h>
 #include <nel/misc/time_nl.h>
 
+#include "physics.h"
 #include "animation.h"
 
 //
@@ -95,6 +96,10 @@ public:
 	// Various angle controls for the interpolation
 									AuxiliaryAngle, InterpolatedAuxiliaryAngle;
 
+	// The trajectory (only for snowballs, defined in physics.h)
+	CTrajectory						Trajectory;
+
+
 	// The state enum of the entity
 	enum TState	{ Appear, Normal, Disappear };
 
@@ -137,6 +142,19 @@ public:
 };
 
 //
+// Enums
+//
+
+// The collision bits used by pacs (dynamic collisions)
+enum
+{
+	SelfCollisionBit = 1,
+	OtherCollisionBit = 2,
+	SnowballCollisionBit = 4,
+	StaticCollisionBit = 8
+};
+
+//
 // External variables
 //
 
@@ -145,6 +163,8 @@ extern CEntity								*Self;
 
 // The speed of the player
 extern float								PlayerSpeed;
+// The speed of the snowball
+extern float								SnowballSpeed;
 
 // The entities storage
 extern std::map<uint32, CEntity>			Entities;
@@ -163,7 +183,7 @@ void	updateEntities ();
 // Reset the pacs position of an entity (in case pacs went wrong)
 void	resetEntityPosition(uint32 eid);
 // Process the event when an entity shoots a snowball
-void	shotSnowball(uint32 eid, const NLMISC::CVector &startPos, const NLMISC::CVector &target);
+void	shotSnowball(uint32 eid, const NLMISC::CVector &start, const NLMISC::CVector &target, const NLMISC::CVector &speed);
 
 void	renderEntitiesNames ();
 

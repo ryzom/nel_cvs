@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Bool asserts for rules and operators
  *
- * $Id: bool_assert.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: bool_assert.h,v 1.4 2001/01/10 11:27:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NLAILOGIC {
 		private:
 			bool _Value;
 		public:
-			CBoolAssert( NLAIAGENT::IVarName &, bool truth = false); 
+			CBoolAssert( const NLAIAGENT::IVarName &, bool truth = false); 
 			CBoolAssert( const CBoolAssert &);
 			virtual ~CBoolAssert();
 			virtual void addFact(NLAILOGIC::CFact *);

@@ -217,7 +217,7 @@
 		NLAIC::CTypeOfOperator::opNot ); 
 
 	const NLAIC::CIdentType CBoolAssert::IdBoolAssert = NLAIC::CIdentType( "BoolAssert", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CBoolAssert( (NLAIAGENT::IVarName &) CStringVarName("Inst") )),
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CBoolAssert( (const NLAIAGENT::IVarName &) CStringVarName("Inst") )),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNeg | 

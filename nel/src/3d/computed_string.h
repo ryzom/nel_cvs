@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.14 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: computed_string.h,v 1.15 2004/08/13 15:24:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,6 +135,7 @@ public:
 		{
 			Vertices.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 			Vertices.setPreferredMemory (CVertexBuffer::RAMVolatile, true);
+			Vertices.setName("CComputedString");
 		}
 		SelectStart= 0;
 		SelectSize= ~0;

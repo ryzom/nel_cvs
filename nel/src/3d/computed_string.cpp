@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.33 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: computed_string.cpp,v 1.34 2004/08/13 15:24:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -635,7 +635,8 @@ CRenderStringBuffer::CRenderStringBuffer()
 	// Use color per vertex
 	Vertices.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::PrimaryColorFlag);
 	Vertices.setPreferredMemory (CVertexBuffer::RAMVolatile, true);
-	NumQuads= 0;
+	Vertices.setName("CRenderStringBuffer");
+	NumQuads= 0;	
 }
 
 

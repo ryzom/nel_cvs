@@ -731,20 +731,12 @@ SOURCE=.\ai\logic\var.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\logic\var_mem.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ai\logic\varset.cpp
 # End Source File
 # End Group
 # Begin Group "l_h"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\include\nel\ai\script\action_class.h
-# End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\ai\logic\bool_assert.h
@@ -843,10 +835,6 @@ SOURCE=..\include\nel\ai\logic\var.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\ai\logic\var_mem.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\include\nel\ai\logic\varset.h
 # End Source File
 # End Group
@@ -896,10 +884,6 @@ SOURCE=.\ai\script\context_debug.cpp
 # Begin Source File
 
 SOURCE=.\ai\script\factor_type.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ai\script\goal_path_class.cpp
 # End Source File
 # Begin Source File
 
@@ -1056,10 +1040,6 @@ SOURCE=..\include\nel\ai\script\constraint_type.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\script\context_debug.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\ai\script\goal_path_class.h
 # End Source File
 # Begin Source File
 

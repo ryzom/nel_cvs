@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * events listener
  *
- * $Id: event_listener.h,v 1.6 2000/12/01 10:08:53 corvazier Exp $
+ * $Id: event_listener.h,v 1.7 2000/12/05 10:37:00 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,7 @@ public:
 	  */
 	bool isKeyPush (TKey key) const;
 
-private:
+protected:
 	/*
 	 * Call back of the listener.
 	 * \param event is the event send to the listener

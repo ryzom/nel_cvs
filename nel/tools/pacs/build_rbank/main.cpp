@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.2 2002/01/07 11:46:16 lecroart Exp $
+ * $Id: main.cpp,v 1.3 2002/01/09 10:30:29 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "3d/register_3d.h"
 
 #include "build_surf.h"
-#include "moulinette.h"
+#include "build_rbank.h"
 
 #include "pacs/global_retriever.h"
 #include "pacs/retriever_bank.h"

@@ -1,7 +1,7 @@
 /** \file value_smoother.cpp
  * <File description>
  *
- * $Id: value_smoother.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: value_smoother.cpp,v 1.4 2002/10/30 17:00:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,15 @@ CValueSmoother::CValueSmoother(uint n)
 {
 	nlassert(n!=0);
 	init(n);
+}
+
+void		CValueSmoother::reset()
+{
+	fill(_LastFrames.begin(), _LastFrames.end(), 0);
+
+	_CurFrame= 0;
+	_NumFrame= 0;
+	_FrameSum= 0;
 }
 
 void		CValueSmoother::init(uint n)

@@ -1,7 +1,7 @@
 /** \file value_smoother.h
  * <File description>
  *
- * $Id: value_smoother.h,v 1.3 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: value_smoother.h,v 1.4 2002/10/30 17:00:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,9 @@ public:
 
 	/// reset the ValueSmoother, and set the number of frame to smooth.
 	void		init(uint n);
+
+	/// reset only the ValueSmoother
+	void		reset();
 
 	/// add a new value to be smoothed.
 	void		addValue(float dt);

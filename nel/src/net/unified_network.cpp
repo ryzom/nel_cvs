@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.64.2.1 2003/04/23 16:28:55 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.64.2.2 2003/04/25 16:04:48 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -939,6 +939,13 @@ void	CUnifiedNetwork::update(TTime timeout)
 							msg.serial(_Name);
 
 							uint16		ssid = _SId;
+							if (uc.IsExternal)
+							{
+								// in the case that the service is external, we can't send our sid because the external service can
+								// have other connectin with the same sid (for example, LS can have 2 WS with same sid => sid = 0 and leave
+								// the other side to find a good number
+								ssid = 0;
+							}
 							msg.serial(ssid);	// serializes a 16 bits service id
 							uint8 pos = j;
 							msg.serial(pos);	// send the position in the connection table

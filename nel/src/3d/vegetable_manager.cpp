@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * TODO: File description
  *
- * $Id: vegetable_manager.cpp,v 1.44 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_manager.cpp,v 1.45 2004/12/09 09:46:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1469,6 +1469,9 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			// get the index of the vertex in the shape
 			uint	vid= shape->TriangleIndices[i];
 			// re-direction, using InstanceVertices;
+			#ifdef NL_DEBUG
+				nlassert(shape->InstanceVertices[vid] <= 0xffff);
+			#endif
 			ptr[offTriIdx + i]= (uint16) shape->InstanceVertices[vid];
 			// local re-direction: adding vertexOffset.
 			vegetRdrPass.TriangleLocalIndices[offTriIdx + i]= offVertex + vid;
@@ -1556,7 +1559,7 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 	{
 		// get idx in src allocator.
 		uint	srcId= vegetRdrPass.Vertices[i];
-		// allocate a verex in the dst allocator.
+		// allocate a vertex in the dst allocator.
 		uint	dstId= dstAllocator.allocateVertex();
 
 		CVertexBufferReadWrite vbaOut;
@@ -1592,18 +1595,18 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 			// get the index in Vertices.
 			uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
 			// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices
-			ptr[i]= (TIndexType) vegetRdrPass.Vertices[localVid];
+			ptr[i]= (uint16) vegetRdrPass.Vertices[localVid];
 		}
 	}
 	else
-	{
+	{		
 		uint32 *ptr = (uint32 *) ibaWrite.getPtr();
 		for(i=0;i<vegetRdrPass.NTriangles*3;i++)
 		{
 			// get the index in Vertices.
 			uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
-			// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices
-			ptr[i]= (TIndexType) vegetRdrPass.Vertices[localVid];
+			// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices			
+			ptr[i]= (uint32) vegetRdrPass.Vertices[localVid];			
 		}
 	}
 
@@ -2000,6 +2003,16 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 								if(vegetRdrPass.NTriangles)
 								{
 									driver->activeIndexBuffer(vegetRdrPass.TriangleIndices);
+									#ifdef NL_DEBUG
+										if (vegetRdrPass.HardMode)
+										{
+											nlassert(vegetRdrPass.TriangleIndices.getFormat() == CIndexBuffer::Indices16);
+										}
+										else
+										{
+											nlassert(vegetRdrPass.TriangleIndices.getFormat() == CIndexBuffer::Indices32);
+										}
+									#endif
 									driver->renderSimpleTriangles(0,
 										vegetRdrPass.NTriangles);
 								}

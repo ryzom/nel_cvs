@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.1 2002/10/25 16:22:48 besson Exp $
+ * $Id: cloud_scape.cpp,v 1.2 2002/10/28 10:14:59 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -107,6 +107,7 @@ void SCloudTexture3D::init (uint32 nWidth, uint32 nHeight, uint32 nDepth)
 	Tex->setWrapT (ITexture::Clamp);
 	Tex->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 	Tex->setReleasable (false);
+	Tex->generate ();
 
 	ToLight.setTexture (0, Tex);
 
@@ -194,8 +195,8 @@ void SCloudTextureClamp::init (uint32 nWidth, uint32 nHeight, uint32 nDepth, con
 	Tex->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 
 	Tex->touch();
-	Tex->generate();
 	Tex->setReleasable (false);
+	Tex->generate();
 
 	ToClamp.setTexture(0, Tex);
 

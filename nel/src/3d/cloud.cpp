@@ -1,7 +1,7 @@
 /** \file cloud.cpp
  * cloud implementation
  *
- * $Id: cloud.cpp,v 1.1 2002/10/25 16:22:48 besson Exp $
+ * $Id: cloud.cpp,v 1.2 2002/10/28 10:14:58 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -522,8 +522,8 @@ void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 		_TexBill->setWrapS (ITexture::Clamp);
 		_TexBill->setWrapT (ITexture::Clamp);
 		_TexBill->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
-		_TexBill->generate();
 		_TexBill->setReleasable (false);
+		_TexBill->generate();
 	}
 
 	CViewport viewport, viewportOLD;

@@ -123,7 +123,7 @@ class CTView : public CStatic
 public:
 	CTView();
 //owner functions
-	TileCtrl();
+	int TileCtrl();
 	void Init(int _land, int n);
 	void Delete();
 	void DrawTile(tilelist::iterator i,CDC *pDC,int clear,int n);

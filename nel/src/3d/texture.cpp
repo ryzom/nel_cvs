@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.17 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture.cpp,v 1.18 2001/06/26 10:09:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,6 +110,19 @@ ITextureDrvInfos::~ITextureDrvInfos()
 	// so there is no need to remove it from this map!!
 	if(_Driver)
 		_Driver->removeTextureDrvInfoPtr(_DriverIterator);
+}
+
+
+// ***************************************************************************
+void	ITexture::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	sint	ver= f.serialVersion(0);
+
+	f.serialEnum(_UploadFormat);
+	f.serialEnum(_WrapS);
+	f.serialEnum(_WrapT);
+	f.serialEnum(_MinFilter);
+	f.serialEnum(_MagFilter);
 }
 
 

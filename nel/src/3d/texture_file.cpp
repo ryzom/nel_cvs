@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.6 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture_file.cpp,v 1.7 2001/06/26 10:09:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,20 @@ void CTextureFile::doGenerate()
 		nldebug("Missing textureFile: %s", _FileName.c_str());
 	}
 	
+}
+
+
+// ***************************************************************************
+void	CTextureFile::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	sint	ver= f.serialVersion(0);
+
+	// serial the base part of ITexture.
+	ITexture::serial(f);
+
+	f.serial(_FileName);
+	if(f.isReading())
+		touch();
 }
 
 

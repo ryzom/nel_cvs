@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture_file.h,v 1.2 2001/06/26 10:09:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,12 +98,7 @@ public:
 	void doGenerate();
 
 	/// Save the texture file name.
-	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	{
-		f.serial(_FileName);
-		if(f.isReading())
-			touch();
-	}
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CTextureFile);
 
 };

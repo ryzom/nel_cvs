@@ -8,10 +8,10 @@ extends:Box
 	parameters pblock rollout:param
 	(
 		ps_file_name type:#String default:"dummy.ps"
-		userParam1 type:#float ui:userParam1_s
-		userParam2 type:#float ui:userParam2_s
-		userParam3 type:#float ui:userParam3_s
-		userParam4 type:#float ui:userParam4_s
+		PSParam0 type:#float animatable:true ui:userParam1_s
+		PSParam1 type:#float animatable:true ui:userParam2_s
+		PSParam2 type:#float animatable:true ui:userParam3_s
+		PSParam3 type:#float animatable:true ui:userParam4_s
 	)
 
 	rollout param "Parameters"

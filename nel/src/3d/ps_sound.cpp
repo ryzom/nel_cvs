@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.15 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_sound.cpp,v 1.16 2002/04/25 08:29:09 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -247,7 +247,10 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{		
 		f.serial(nbSounds); // we are very unlikely to save a system with sounds being played in it,
 							// but we need to keep datas coherency.
-		_Sounds.resize(_Owner->getMaxSize());		
+		if (_Owner)
+		{
+			_Sounds.resize(_Owner->getMaxSize());
+		}
 	}
 	else
 	{

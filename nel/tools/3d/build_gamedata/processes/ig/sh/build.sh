@@ -45,8 +45,8 @@ then
 	# Merge it with the IG_LAND exported from Max + elvated with heightmap
 	# *******************
 
-	# elevation of the heightmap
-	# ++++++++++++++++++++++++++
+	# elevation of the heightmap for land_max
+	# ++++++++++++++++++++++++++++++++++++++++++++
 
 	rm ig_elevation.cfg
 	echo "// ig_elevation.cfg" > ig_elevation.cfg
@@ -78,10 +78,42 @@ then
 
 	../../bin/ig_elevation elevation.cfg
 
+	# elevation of the heightmap for land_ligo
+	# ++++++++++++++++++++++++++++++++++++++++++++
 
-	# merge
+	rm ig_elevation.cfg
+	echo "// ig_elevation.cfg" > ig_elevation.cfg
+	echo "OutputIGDir = \"ig_land_ligo_elev\";" >> ig_elevation.cfg
+	echo "InputIGDir = \"ig_land_ligo\";" >> ig_elevation.cfg
+	echo "CellSize = 160.0;" >> ig_elevation.cfg
+
+	# HeightMapFile1 is the grayscale .tga file (127 is 0, 0 is -127*ZFactor and 255 is +128*ZFactor)
+	dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	dir_ligosrc=`cat ../../cfg/directories.cfg | grep "ligo_source_directory" | sed -e 's/ligo_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	hmf1=`cat ../../cfg/config.cfg | grep "ligo_export_heightmap1" | sed -e 's/ligo_export_heightmap1//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "HeightMapFile1 = \"$dir_database/$dir_ligosrc/$hmf1\";" >> ig_elevation.cfg
+
+	# ZFactor1 is the heightmap factor
+	zf1=`cat ../../cfg/config.cfg | grep "ligo_export_zfactor1" | sed -e 's/ligo_export_zfactor1//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "ZFactor1 = $zf1;" >> ig_elevation.cfg
+
+	# HeightMapFile2 is the grayscale .tga file (127 is 0, 0 is -127*ZFactor and 255 is +128*ZFactor)
+	hmf2=`cat ../../cfg/config.cfg | grep "ligo_export_heightmap2" | sed -e 's/ligo_export_heightmap2//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "HeightMapFile2 = \"$dir_database/$dir_ligosrc/$hmf2\";" >> ig_elevation.cfg
+
+	# ZFactor2 is the heightmap factor
+	zf2=`cat ../../cfg/config.cfg | grep "ligo_export_zfactor2" | sed -e 's/ligo_export_zfactor2//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "ZFactor2 = $zf2;" >> ig_elevation.cfg
+
+	land_name=`cat ../../cfg/config.cfg | grep "ligo_export_land" | sed -e 's/ligo_export_land//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "LandFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> ig_elevation.cfg
+
+
+	../../bin/ig_elevation elevation.cfg
+
+
+	# merge land_ld and land_max_elev
 	# +++++
-
 
 	dir_current=`pwd`
 	cd ig_land_ld
@@ -89,11 +121,27 @@ then
 	cd $dir_current
 	for filename in $list_ig ; do
 		if test -e ig_land_max_elev/$filename ; then
-			../../bin/ig_add ig_land/$filename ig_land_max_elev/$filename ig_land_ld/$filename ;
+			../../bin/ig_add ig_merge_tmp/$filename ig_land_max_elev/$filename ig_land_ld/$filename ;
 		else
-			cp ig_land_ld/$filename ig_land/$filename ;
+			cp ig_land_ld/$filename ig_merge_tmp/$filename ;
 		fi
 	done
+
+	# merge previous result and land_ligo_elev
+	# +++++
+
+	dir_current=`pwd`
+	cd ig_land_ligo_elev
+	list_ig=`ls -1 *.ig`
+	cd $dir_current
+	for filename in $list_ig ; do
+		if test -e ig_merge_tmp/$filename ; then
+			../../bin/ig_add ig_land/$filename ig_land_ligo_elev/$filename ig_merge_tmp/$filename ;
+		else
+			cp ig_land_lkigo_elev/$filename ig_land/$filename ;
+		fi
+	done
+
 else
 	echo [Prim IG] OFF
 	echo [Prim IG] OFF >> log.log

@@ -19,14 +19,27 @@ echo "// land_exporter.cfg" > land_exporter.cfg
 #dir_gamedata=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 #echo "OutZoneDir = \"$dir_gamedata/processes/ligo/output\";" >> land_exporter.cfg
 echo "OutZoneDir = \"output\";" >> land_exporter.cfg
+echo "OutIGDir = \"../ig/ig_land_ligo\";" >> land_exporter.cfg
+echo "AdditionnalIGOutDir = \"../ig/ig_other\";" >> land_exporter.cfg
 
 # RefZoneDir is Where the reference zones are
 
 dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 dir_ligosrc=`cat ../../cfg/directories.cfg | grep "ligo_source_directory" | sed -e 's/ligo_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 dir_ligobricks=`cat ../../cfg/directories.cfg | grep "ligo_bricks_directory" | sed -e 's/ligo_bricks_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+dir_dfn=`cat ../../cfg/site.cfg | grep "level_design_dfn_directory" | sed -e 's/level_design_dfn_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+continent_file=`cat ../../cfg/config.cfg | grep "continent_file" | sed -e 's/continent_file//' | sed -e 's/ //g' | sed -e 's/=//g'`
+dir_world=`cat ../../cfg/directories.cfg | grep "level_design_world_directory" | sed -e 's/level_design_world_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+
+
+
 
 echo "RefZoneDir = \"$dir_ligobricks/zones\";" >> land_exporter.cfg
+echo "RefIGDir = \"$dir_ligobricks/igs\";" >> land_exporter.cfg
+echo "AdditionnalIGInDir = \"$dir_ligobricks/igs\";" >> land_exporter.cfg
+
+
 
 # LigoBankDir is Where all .ligozone are (those used by the .land)
 
@@ -64,6 +77,24 @@ echo "ZoneLight = 0;" >> land_exporter.cfg
 # CellSize is the size of the cell (zone size) in meter
 
 echo "CellSize = 160;" >> land_exporter.cfg
+
+# Where to take dfn files
+echo "DFNDir = $dir_dfn;" >> land_exporter.cfg
+
+# CMB input directory
+echo "RefCMBDir = \"$dir_ligobricks/cmb\";" >> land_exporter.cfg
+
+# CMB output directory
+echo "OutCMBdir = ../rbank/cmb;" >> land_exporter.cfg
+
+#input .continent file
+echo "ContinentFile = $dir_world/$continent_file;" >> land_exporter.cfg
+
+# Force export of collisions and additionnal igs
+echo "ExportCollisions = 1;" >> land_exporter.cfg
+echo "ExportAdditionnalIGs = 1;" >> land_exporter.cfg
+
+
 
 # ZoneRegionFile is the .land to compute
 

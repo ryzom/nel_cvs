@@ -146,6 +146,24 @@ fn getIg node =
 )
 
 
+
+-- Export collisions from the current loaded zone
+fn exportCollisionsFromZone outputPath =
+(
+	Select all
+	max select all
+	-- Export the collision
+	if (NelExportCollision ($selection as array) outputPath) == false then
+	(
+			nlerror ("ERROR exporting collision "+files[i])
+	)
+	else
+	(
+		nlerror ("OK collision in folder "+output)
+	)
+)
+
+
 -- Export instance groups from the current loaded zone
 fn exportInstanceGroupFromZone inputFile outputPath = 
 (
@@ -337,6 +355,16 @@ try
 						(
 							nlerror("couldn't export ig for " + curFileName)
 						)
+						-- export collisions
+						try
+						(
+							exportCollisionsFromZone (ligo_export_path + "cmb\\")
+						)
+						catch
+						(
+							nlerror("couldn't export collision for " + curFileName)
+						)
+
 					)
 				)
 			)
@@ -518,6 +546,15 @@ try
 								(
 									nlerror("couldn't export ig for " + curFileName)
 								)
+								-- export collisions
+								try
+								(
+									exportCollisionsFromZone (ligo_export_path + "cmb\\")
+								)
+								catch
+								(
+									nlerror("couldn't export collision for " + curFileName)
+								)
 
 								-- Delete
 								delete c
@@ -600,6 +637,19 @@ try
 						(
 							nlerror("couldn't export ig for " + curFileName)
 						)
+	
+						-- export collisions
+						try
+						(
+							exportCollisionsFromZone (ligo_export_path + "cmb\\")
+						)
+						catch
+						(
+							nlerror("couldn't export collision for " + curFileName)
+						)
+
+
+
 					)
 				)
 			)

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.37 2002/05/27 16:50:50 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.38 2002/05/31 08:00:09 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1350,6 +1350,8 @@ static bool createMessage (CMessage &msgout, const vector<string> &args, CLog &l
 		else if (type == "u16")			{ uint16 v = atoi(value.c_str()); msgout.serial (v); }
 		else if (type == "u32")			{ uint32 v = atoi(value.c_str()); msgout.serial (v); }
 		else if (type == "u64")			{ uint64 v = atoi(value.c_str()); msgout.serial (v); }
+		else if (type == "float")		{ float  v = (float)atof(value.c_str()); msgout.serial (v); }
+		else if (type == "double")		{ double v = atof(value.c_str()); msgout.serial (v); }
 		else if (type == "b")			{ bool v = atoi(value.c_str()) == 1; msgout.serial (v); }
 		else if (type == "s")			{ msgout.serial (value); }
 		else { log.displayNL ("type '%s' is not a valid type", type.c_str()); return false; }

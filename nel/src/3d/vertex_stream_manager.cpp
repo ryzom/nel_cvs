@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.cpp
  * <File description>
  *
- * $Id: vertex_stream_manager.cpp,v 1.3 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: vertex_stream_manager.cpp,v 1.3.4.1 2004/09/14 17:12:27 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -39,11 +39,13 @@ namespace NL3D
 CVertexStreamManager::CVertexStreamManager()
 {
 	_InitOk= false;
+	_SupportVolatileVB = false;
 	_VertexFormat= 0;
 	_VertexSize= 0;
 	_MaxVertices= 0;
 	_CurentVB= 0;
 	_NumVB= 0;
+	_LockDone = false;
 }
 // ***************************************************************************
 CVertexStreamManager::~CVertexStreamManager()
@@ -52,7 +54,7 @@ CVertexStreamManager::~CVertexStreamManager()
 }
 
 // ***************************************************************************
-void			CVertexStreamManager::init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard, const std::string &vbName)
+void			CVertexStreamManager::init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard, const std::string &vbName, bool allowVolatileVertexBuffer /*= false*/)
 {
 	nlassert(driver);
 	// clean before.
@@ -90,6 +92,22 @@ void			CVertexStreamManager::init(IDriver *driver, uint vertexFormat, uint maxVe
 	_VertexSize= _VB[0].getVertexSize();
 	_MaxVertices= maxVertices;
 	_CurentVB= 0;
+	if (driver->supportVolatileVertexBuffer() && allowVolatileVertexBuffer)
+	{
+		_VBVolatile.setVertexFormat(vertexFormat);
+		// For the moment, all UV channel are routed to UV0
+		uint j;
+		for (j=0; j<CVertexBuffer::MaxStage; j++)
+			_VBVolatile.setUVRouting (j, 0);
+		_VBVolatile.setNumVertices (maxVertices);
+		_VBVolatile.setPreferredMemory (CVertexBuffer::AGPVolatile, false);
+		_VBVolatile.setName(vbName + "Volatile");
+		_SupportVolatileVB = true;
+	}
+	else
+	{
+		_SupportVolatileVB = false;
+	}
 }
 // ***************************************************************************
 void			CVertexStreamManager::release()
@@ -113,16 +131,25 @@ uint8			*CVertexStreamManager::lock()
 {
 	H_AUTO( NL3D_VertexStreamManager_lock )
 	nlassert(_InitOk);
-
-	_VB[_CurentVB].lock (_VBA);
-	return 	(uint8*)_VBA.getVertexCoordPointer();
+	nlassert(!_LockDone);
+	_LockDone = true;	
+	if (_SupportVolatileVB)
+	{	
+		_VBVolatile.lock (_VBA);
+		return (uint8*)_VBA.getVertexCoordPointer();
+	}
+	else
+	{
+		_VB[_CurentVB].lock (_VBA);
+		return 	(uint8*)_VBA.getVertexCoordPointer();		
+	}
 }
 // ***************************************************************************
 void			CVertexStreamManager::unlock(uint numVertices)
 {
 	H_AUTO( NL3D_VertexStreamManager_unlock )
 	nlassert(_InitOk);
-	
+	nlassert(_LockDone);	
 	_VBA.touchVertices (0, numVertices);
 	_VBA.unlock ();
 }
@@ -131,16 +158,25 @@ void			CVertexStreamManager::activate()
 {
 	H_AUTO( NL3D_VertexStreamManager_activate )
 	nlassert(_InitOk);
-	
-	_Driver->activeVertexBuffer(_VB[_CurentVB]);
+	if (_SupportVolatileVB)
+	{
+		_Driver->activeVertexBuffer(_VBVolatile);
+	}
+	else
+	{	
+		_Driver->activeVertexBuffer(_VB[_CurentVB]);
+	}
 }
 // ***************************************************************************
 void			CVertexStreamManager::swapVBHard()
 {
 	nlassert(_InitOk);
-	
+	_LockDone = false;
+	if (!_SupportVolatileVB)
+	{	
 	_CurentVB++;
 	_CurentVB= _CurentVB%_NumVB;
+}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.12 2001/07/12 10:03:50 lecroart Exp $
+ * $Id: client.cpp,v 1.13 2001/07/12 10:11:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,7 @@
 
 #include "commands.h"
 #include "landscape.h"
+#include "camera.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -68,10 +69,10 @@ CConfigFile ConfigFile;
 
 UDriver				*Driver = NULL;
 UScene				*Scene = NULL;
-UCamera				*Camera = NULL;
 U3dMouseListener	*MouseListener = NULL;
+UInstance			*Cube = NULL;
 
-UTextContext	*TextContext = NULL;
+UTextContext		*TextContext = NULL;
 
 //
 // Main
@@ -114,11 +115,15 @@ int main(int argc, char **argv)
 	// Create a scene
 	Scene = Driver->createScene();
 
+	// load a default cube shape
+	Cube = Scene->createInstance("Box.shape");
+//	Cube->setTransformMode (UTransformable::DirectMatrix);
+	Cube->setScale(1.0f, 1.0f, 1.0f);
+	Cube->setPivot(0.0f, 0.0f, 0.0f);
+	Cube->show();
+
 	// Camera
-	Camera = Scene->getCam();
-	Camera->setTransformMode (UTransformable::DirectMatrix);
-	Camera->setPerspective ((float)Pi/2.f, 1.33f, 0.1f, 1000);
-	Camera->lookAt (CVector(1000.0f, -1000.0f, 0.0f), CVectorD (0,0,0));
+	initCamera();
 
 	// Create a 3D mouse listener
 	MouseListener = Driver->create3dMouseListener ();
@@ -141,8 +146,15 @@ int main(int argc, char **argv)
 		// Update the landscape
 		updateLandscape ();
 
-		// set the matrix for this frame
-		Camera->setMatrix(MouseListener->getViewMatrix());
+		// Update the commands panel
+		updateCommands ();
+
+		// update the box
+		CMatrix		cmat = MouseListener->getViewMatrix();
+		Cube->setMatrix(cmat);
+
+		// setup the camera
+		updateCamera();
 		
 		// Render
 		Scene->render ();

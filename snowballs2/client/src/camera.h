@@ -1,7 +1,7 @@
-/** \file client.h
+/** \file camera.h
  * 
  *
- * $Id: client.h,v 1.3 2001/07/12 10:11:02 legros Exp $
+ * $Id: camera.h,v 1.1 2001/07/12 10:11:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,25 +23,17 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef CAMERA_H
+#define CAMERA_H
 
-#include "nel/misc/config_file.h"
+#include <nel/3d/u_camera.h>
 
-namespace NL3D
-{
-	class UDriver;
-	class UScene;
-	class UTextContext;
-}
+void	initCamera();
+void	updateCamera();
+void	releaseCamera();
 
-extern NLMISC::CConfigFile		ConfigFile;
+extern NL3D::UCamera	*Camera;
 
-extern NL3D::UDriver			*Driver;
-extern NL3D::UScene				*Scene;
-extern NL3D::UTextContext		*TextContext;
-extern NL3D::U3dMouseListener	*MouseListener;
+#endif // CAMERA_H
 
-#endif // CLIENT_H
-
-/* End of client.h */
+/* End of camera.h */

@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.9 2001/01/18 15:47:53 chafik Exp $
+ * $Id: actor_script.h,v 1.10 2001/01/24 13:42:40 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

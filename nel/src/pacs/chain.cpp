@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.21 2003/05/06 09:47:36 legros Exp $
+ * $Id: chain.cpp,v 1.22 2003/05/07 09:11:53 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,6 @@
 #include "stdpacs.h"
 
 #include "pacs/chain.h"
-
-#include <crtdbg.h>
 
 using namespace std;
 using namespace NLMISC;

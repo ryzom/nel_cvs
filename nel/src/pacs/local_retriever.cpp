@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.60 2003/05/07 09:05:58 legros Exp $
+ * $Id: local_retriever.cpp,v 1.61 2003/05/07 09:11:53 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,6 @@
 
 #include "nel/misc/hierarchical_timer.h"
 
-#include <crtdbg.h>
 
 using namespace std;
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file ligo/export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.5 2002/03/06 08:37:25 besson Exp $
+ * $Id: export.cpp,v 1.6 2002/03/13 12:41:03 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -821,9 +821,6 @@ void CExport::cutZone (NL3D::CZone &bigZone, NL3D::CZone &unitZone, sint32 nPosX
 						vector<bool> &PatchTransfered)
 {
 	string DstZoneFileName = getZoneNameFromXY (nPosX, nPosY);
-	//string DstZoneFileName = toString(-(nPosY)) + "_";
-	//DstZoneFileName += ('A' + ((nPosX)/26));
-	//DstZoneFileName += ('A' + ((nPosX)%26));
 
 	uint32 i, j, k, m;
 	vector<CPatchInfo>		SrcPI;

@@ -1,6 +1,6 @@
 /** \file zone.h
  *
- * $Id: zone.h,v 1.2 2001/03/23 09:58:05 chafik Exp $
+ * $Id: zone.h,v 1.3 2001/03/26 11:28:07 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,10 +41,7 @@ namespace NLAICHARACTER
 		IZone(const std::string &name);
 		virtual ~IZone();
 
-		virtual const IZone *isInZone(const IZone &) const = 0
-		{
-			throw;
-		}		
+		virtual const IZone *isInZone(const IZone &) const = 0;		
 
 		virtual const std::string &getName() const
 		{			

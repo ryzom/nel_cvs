@@ -1,6 +1,6 @@
 /** \file character.cpp
  *
- * $Id: character.cpp,v 1.1 2001/03/14 13:50:05 chafik Exp $
+ * $Id: character.cpp,v 1.2 2001/03/26 11:25:51 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,38 @@
 
 namespace NLAICHARACTER
 {
+
+/*
+##############################
+	ICharacter
+##############################
+*/
+
+	const std::string &ICharacter::getName() const
+	{
+		throw;
+	}
+
+	void setName(const std::string &)
+	{
+		throw;
+	}
+
+	const ICharacter *ICharacter::haveCharacter(const std::string &) const
+	{
+		throw;
+	}
+
+	bool ICharacter::canAddCharacter() const
+	{
+		throw;
+	}
+
+	bool ICharacter::addCharacter(const ICharacter &)
+	{
+		throw;
+	}
+
 
 /*
 ##############################

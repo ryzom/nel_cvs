@@ -1,6 +1,6 @@
 /** \file character.h
  *
- * $Id: character.h,v 1.1 2001/03/14 13:19:25 chafik Exp $
+ * $Id: character.h,v 1.2 2001/03/26 11:26:04 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,35 +36,20 @@ namespace NLAICHARACTER
 		ICharacter(const ICharacter &m):IRefrence(m){}
 		virtual ~ICharacter() {}
 
-		virtual const std::string &getName() const = 0
-		{
-			throw;
-		}
+		virtual const std::string &getName() const = 0;		
 
-		virtual void setName(const std::string &) = 0
-		{
-			throw;
-		}
+		virtual void setName(const std::string &) = 0;		
 
-		virtual const ICharacter *haveCharacter(const std::string &) const = 0
-		{
-			throw;
-		}
+		virtual const ICharacter *haveCharacter(const std::string &) const = 0;		
 
 		const ICharacter *haveCharacter(const ICharacter &c) const
 		{
 			return haveCharacter(c.getName());
 		}
 
-		virtual bool canAddCharacter() const = 0
-		{
-			throw;
-		}
+		virtual bool canAddCharacter() const = 0;		
 
-		virtual bool addCharacter(const ICharacter &) = 0
-		{
-			throw;
-		}
+		virtual bool addCharacter(const ICharacter &) = 0;		
 		
 	};
 

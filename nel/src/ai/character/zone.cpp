@@ -1,6 +1,6 @@
 /** \file zone.cpp
  *
- * $Id: zone.cpp,v 1.2 2001/03/23 09:57:48 chafik Exp $
+ * $Id: zone.cpp,v 1.3 2001/03/26 11:28:18 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,5 +57,10 @@ namespace NLAICHARACTER
 	NLAIAGENT::CIteratorContener IZone::getAttachement() const
 	{
 		return _Attachment->getIterator();
+	}
+
+	const IZone *IZone::isInZone(const IZone &) const
+	{
+		throw;
 	}
 }

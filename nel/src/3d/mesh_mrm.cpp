@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.73 2004/08/13 15:38:33 vizerie Exp $
+ * $Id: mesh_mrm.cpp,v 1.74 2004/09/02 17:03:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3261,6 +3261,7 @@ sint			CMeshMRMGeom::renderShadowSkinGeom(CMeshMRMInstance	*mi, uint remainingVe
 	return numVerts;
 }
 
+
 // ***************************************************************************
 void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial &castMat, IDriver *drv, uint baseVertex)
 {
@@ -3282,7 +3283,8 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 	if(shiftedTris.getNumIndexes()<_ShadowSkinTriangles.size())
 	{
 		shiftedTris.setNumIndexes(_ShadowSkinTriangles.size());
-	}
+	}	
+	shiftedTris.setPreferredMemory(CIndexBuffer::RAMVolatile, false);	
 	{
 		CIndexBufferReadWrite iba;
 		shiftedTris.lock(iba);

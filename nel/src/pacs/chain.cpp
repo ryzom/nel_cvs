@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.15 2001/08/10 12:09:44 legros Exp $
+ * $Id: chain.cpp,v 1.16 2001/08/21 09:50:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,14 +122,31 @@ void	NLPACS::COrderedChain::serial(IStream &f)
 	/*
 	Version 0:
 		- base version.
+	Version 1:
+		- added _Min and _Max vectors
 	*/
-	sint	ver= f.serialVersion(0);
+	sint	ver= f.serialVersion(1);
 
 	f.serialCont(_Vertices);
 	f.serial(_Forward);
 	f.serial(_ParentId);
 	f.serial(_IndexInParent);
 	f.serial(_Length);
+
+	if (ver >= 1)
+	{
+		f.serial(_Min, _Max);
+	}
+	else if (f.isReading() && !_Vertices.empty())
+	{
+		uint	i;
+		_Max = _Min = _Vertices[0];
+		for (i=1; i<_Vertices.size(); ++i)
+		{
+			_Min.minof(_Min, _Vertices[i]);
+			_Max.maxof(_Max, _Vertices[i]);
+		}
+	}
 }
 
 // end of COrderedChain methods implementation

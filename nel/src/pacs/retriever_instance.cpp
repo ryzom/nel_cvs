@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.23 2001/08/14 13:59:58 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.24 2001/08/21 09:50:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -266,7 +266,7 @@ void	NLPACS::CRetrieverInstance::unlink(vector<CRetrieverInstance> &instances)
 
 
 
-NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever) const
+NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
 {
 	CVector							localEstimated;
 	CLocalRetriever::CLocalPosition	retrieved;
@@ -277,7 +277,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	CRetrieverInstance::snapVector(localEstimated);
 
 	// fills _RetrieveTable by retrievingPosition.
-	retriever.retrievePosition(localEstimated, _RetrieveTable);
+	retriever.retrievePosition(localEstimated, _RetrieveTable, cst);
 
 	uint	surf;
 	sint	bestSurf = -1;
@@ -349,7 +349,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	return retrieved;
 }
 
-NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever) const
+NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
 {
 	CVector							localEstimated;
 	CLocalRetriever::CLocalPosition	retrieved;
@@ -360,7 +360,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	CRetrieverInstance::snapVector(localEstimated);
 
 	// fills _RetrieveTable by retrievingPosition.
-	retriever.retrievePosition(localEstimated, _RetrieveTable);
+	retriever.retrievePosition(localEstimated, _RetrieveTable, cst);
 
 	uint	surf;
 	sint	bestSurf = -1;

@@ -1,7 +1,7 @@
 /** \file vector_2s.h
  * <File description>
  *
- * $Id: vector_2s.h,v 1.5 2001/08/20 13:17:09 legros Exp $
+ * $Id: vector_2s.h,v 1.6 2001/08/21 09:50:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,21 @@ private:
 #endif
 	}
 
-	// pack a float into a sint16
+	// check the cast into fixed16
+	static bool		checkCastSint16(sint64 s)
+	{
+		return (s<=32767 && s>=-32768);
+	}
+
+	// check the cast into fixed16
+	static bool		checkCastSint16(float f)
+	{
+		sint64	s = (sint64)f;
+		return (s<=32767 && s>=-32768);
+	}
+
+
+	// pack a float into a fixed16
 	static sint16	pack(float f)
 	{
 		return safeCastSint16(f*Vector2sAccuracy);

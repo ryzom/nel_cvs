@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.26 2001/08/14 13:59:58 legros Exp $
+ * $Id: local_retriever.cpp,v 1.27 2001/08/21 09:50:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -716,61 +716,85 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 
 
 
-void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<uint8> &retrieveTable) const
+void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<uint8> &retrieveTable, CCollisionSurfaceTemp &cst) const
 {
-	uint	ochain;
+	CAABBox		box;
+	box.setMinMax(CVector(estimated.x, _BBox.getMin().y, 0.0f), CVector(estimated.x, _BBox.getMax().y, 0.0f));
+	uint	numEdges = _ChainQuad.selectEdges(box, cst);
 
+	uint	ochain, i;
 	CVector2s	estim = CVector2s(estimated);
 
 	// WARNING!!
 	// retrieveTable is assumed to be 0 filled !!
 
+	/*
 	// for each ordered chain, checks if the estimated position is between the min and max.
 	for (ochain=0; ochain<_OrderedChains.size(); ++ochain)
 	{
+*/
+	// for each ordered chain, checks if the estimated position is between the min and max.
+	for (i=0; i<numEdges; ++i)
+	{
+		ochain = cst.EdgeChainEntries[i].OChainId;
+		
 		const COrderedChain	&sub = _OrderedChains[ochain];
+		const CVector2s	&min = sub.getMin(),
+						&max = sub.getMax();
 
 		// checks the position against the min and max of the chain
-		if (estim.x < sub.getVertices().front().x || estim.x > sub.getVertices().back().x)
+		if (estim.x < min.x || estim.x > max.x)
 			continue;
 
-		const vector<CVector2s>	&vertices = sub.getVertices();
-		uint					start = 0, stop = vertices.size()-1;
-
-		/// \todo trivial up/down check using bbox.
-
-		// then finds the smallest segment of the chain that includes the estimated position.
-		while (stop-start > 1)
-		{
-			uint	mid = (start+stop)/2;
-
-			if (vertices[mid].x > estim.x)
-				stop = mid;
-			else
-				start = mid;
-		}
-
-		// and then checks if the estimated position is up or down the chain.
 		bool	isUpper;
-		
-		// first trivial case (up both tips)
-		if (estim.y > vertices[start].y && estim.y > vertices[stop].y)
-		{
-			isUpper = true;
-		}
-		// second trivial case (down both tips)
-		else if (estim.y < vertices[start].y && estim.y < vertices[stop].y)
+
+		if (estim.y < min.y)
 		{
 			isUpper = false;
 		}
-		// full test...
+		else if (estim.y > max.y)
+		{
+			isUpper = true;
+		}
 		else
 		{
-			const CVector2s	&vstart = vertices[start],
-							&vstop = vertices[stop];
-			sint16	intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.y-vstart.y);
+			const vector<CVector2s>	&vertices = sub.getVertices();
+			uint					start = 0, stop = vertices.size()-1;
 
-			isUpper = estim.y > intersect;
+			/// \todo trivial up/down check using bbox.
+
+			// then finds the smallest segment of the chain that includes the estimated position.
+			while (stop-start > 1)
+			{
+				uint	mid = (start+stop)/2;
+
+				if (vertices[mid].x > estim.x)
+					stop = mid;
+				else
+					start = mid;
+			}
+
+			// and then checks if the estimated position is up or down the chain.
+			
+			// first trivial case (up both tips)
+			if (estim.y > vertices[start].y && estim.y > vertices[stop].y)
+			{
+				isUpper = true;
+			}
+			// second trivial case (down both tips)
+			else if (estim.y < vertices[start].y && estim.y < vertices[stop].y)
+			{
+				isUpper = false;
+			}
+			// full test...
+			else
+			{
+				const CVector2s	&vstart = vertices[start],
+								&vstop = vertices[stop];
+				sint16	intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.y-vstart.y);
+
+				isUpper = estim.y > intersect;
+			}
 		}
 
 		sint32	left = _Chains[sub.getParentId()].getLeft(),

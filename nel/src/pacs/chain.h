@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.4 2001/08/06 12:12:16 valignat Exp $
+ * $Id: chain.h,v 1.5 2001/08/21 09:50:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,6 +120,9 @@ protected:
 	/// The length of the chain.
 	float								_Length;
 
+	/// The min and max vertices of the chain
+	CVector2s							_Min, _Max;
+
 public:
 	/// Returns the vertices of the chain
 	const std::vector<CVector2s>		&getVertices() const { return _Vertices; }
@@ -133,11 +136,18 @@ public:
 	/// Returns the index of the ochain within the parent chain.
 	uint16								getIndexInParent() const { return _IndexInParent; }
 
-	///
+	/// Returns the length of the chain
 	float								getLength() const { return _Length; }
 
 	///
 	const CVector2s						&operator[] (uint n) const { return _Vertices[n]; }
+
+	/// Returns the min vector of the chain
+	const CVector2s						&getMin() const { return _Min; };
+
+	/// Returns the max vector of the chain
+	const CVector2s						&getMax() const { return _Max; };
+
 
 	///
 	void								translate(const NLMISC::CVector &translation);
@@ -152,7 +162,11 @@ public:
 		_ParentId = chain.getParentId();
 		_IndexInParent = chain.getIndexInParent();
 		for (i=0; i<vertices.size(); ++i)
+		{
 			_Vertices[i] = CVector2s(vertices[i]);
+			_Min.minof(_Min, _Vertices[i]);
+			_Max.maxof(_Max, _Vertices[i]);
+		}
 	}
 
 	///

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.43 2001/08/20 13:18:39 legros Exp $
+ * $Id: global_retriever.cpp,v 1.44 2001/08/21 09:50:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -257,7 +257,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		uint32	id = _InternalCST.CollisionInstances[i];
 		// if the retrieved position is on a surface and it best match the estimated position
 		// remember it
-		CLocalRetriever::CLocalPosition	ret = _Instances[id].retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()));
+		CLocalRetriever::CLocalPosition	ret = _Instances[id].retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()), _InternalCST);
 		float	d = (float)fabs(estimated.z-ret.Estimation.z);
 		if (d < bestDist && ret.Surface != -1)
 		{
@@ -294,7 +294,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		uint32	id = _InternalCST.CollisionInstances[i];
 		// if the retrieved position is on a surface and it best match the estimated position
 		// remember it
-		CLocalRetriever::CLocalPosition	ret = _Instances[id].retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()));
+		CLocalRetriever::CLocalPosition	ret = _Instances[id].retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()), _InternalCST);
 		float	d = (float)fabs(estimated.z-ret.Estimation.z);
 		if (d < bestDist && ret.Surface != -1)
 		{

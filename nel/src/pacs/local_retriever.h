@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.10 2001/08/14 13:59:58 legros Exp $
+ * $Id: local_retriever.h,v 1.11 2001/08/21 09:50:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,8 @@
 
 namespace NLPACS
 {
+
+class CCollisionSurfaceTemp;
 
 /**
  * A surface retriever, located by its bounding box.
@@ -387,7 +389,7 @@ protected:
 */
 
 	/// Retrieves a position inside the retriever (from the local position.)
-	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable) const;
+	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable, CCollisionSurfaceTemp &cst) const;
 
 	/// Snaps on the ground
 	void								snapToInteriorGround(ULocalPosition &position) const;

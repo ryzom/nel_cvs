@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_tail_dot.cpp,v 1.7 2003/04/10 16:38:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,13 +158,13 @@ void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 //=======================================================	
-void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realET)
 {	
 	if (pass == PSMotion)
 	{	
 		if (!_Parametric)
 		{
-			updateGlobals();
+			updateGlobals(realET);
 		}
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.7 2003/04/10 16:38:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,13 +116,13 @@ void CPSRibbonLookAt::setTexture(CSmartPtr<ITexture> tex)
 
 
 //=======================================================	
-void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realET)
 {	
 	if (pass == PSMotion)
 	{		
 		if (!_Parametric)
 		{
-			updateGlobals();
+			updateGlobals(realET);			
 		}
 	}
 	else
@@ -228,10 +228,9 @@ static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uin
 		{
 			invTgNorm = 1.f;
 		}
-		// build orthogonals vectors to tangent
-		
+		// build orthogonals vectors to tangent		
 		*(NLMISC::CVector *) currVert = pos->Interp + ribSize * invTgNorm * (tangent.x * K - tangent.z * I);						
-		*(NLMISC::CVector *) (currVert + vertexSize) = pos->Interp + ribSize * invTgNorm * (- tangent.x * K + tangent.z * I);			
+		*(NLMISC::CVector *) (currVert + vertexSize) = pos->Interp + ribSize * invTgNorm * (- tangent.x * K + tangent.z * I);	
 	}
 	else if (prev->Proj.y > ZEpsilon) // second point cross the near plane
 	{

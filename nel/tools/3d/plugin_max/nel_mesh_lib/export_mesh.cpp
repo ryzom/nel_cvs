@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.59 2003/05/28 10:06:40 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.60 2003/05/28 12:57:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1634,8 +1634,7 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 	Mesh *pMesh = &tri->mesh;
 
 	// take all vertices, and build their convex hull to get correct ordering (though we only support convex shapes for now)
-	CPolygon   dest;
-
+	CPolygon   dest;	
 
 	// compute export matrix
 	// Get the invert node matrix
@@ -1655,6 +1654,7 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 
 	// Number of vertices
 	int numVerts = pMesh->getNumVerts();
+	dest.Vertices.reserve(numVerts);	
 	for (int vertex=0; vertex < numVerts; ++vertex)
 	{
 		// Transform the vertex in local coordinate
@@ -1889,13 +1889,12 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 			ws->setColorMap((ITexture *) colorMap);
 			uint i0, i1, i2;
 			projDest.getBestTriplet(i0, i1, i2);
-			nlinfo("i0 = %d, i1 =  %d, i2 = %d", i0, i1, i2);
-			Matrix3  m = node.GetNodeTM(0);
+			nlinfo("i0 = %d, i1 =  %d, i2 = %d", i0, i1, i2);			
 
 			NLMISC::CVector v0, v1, v2;
-			CExportNel::convertVector(v0, VectorTransform(pMesh->getVert(i0), m));
-			CExportNel::convertVector(v1, VectorTransform(pMesh->getVert(i1), m));
-			CExportNel::convertVector(v2, VectorTransform(pMesh->getVert(i2), m));
+			CExportNel::convertVector(v0, pMesh->getVert(i0));
+			CExportNel::convertVector(v1, pMesh->getVert(i1));
+			CExportNel::convertVector(v2, pMesh->getVert(i2));
 			
 			NLMISC::CMatrix A, B, C;
 			A.setRot(NLMISC::CVector(v0.x, v0.y, 1), NLMISC::CVector(v1.x, v1.y, 1), NLMISC::CVector(v2.x, v2.y, 1));

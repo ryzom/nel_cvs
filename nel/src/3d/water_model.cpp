@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.37 2003/05/28 10:06:07 vizerie Exp $
+ * $Id: water_model.cpp,v 1.38 2003/05/28 12:54:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -864,11 +864,9 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 
 
 		// setup 2x3 matrix for lookup in diffuse map
-		float px = obsPos.x - getWorldMatrix().getPos().x;
-		float py = obsPos.y - getWorldMatrix().getPos().y;
-
-		cst[13 - cstOffset].set(shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatColumn0.x * px + shape->_ColorMapMatColumn1.x * py + shape->_ColorMapMatPos.x); 
-		cst[14 - cstOffset].set(shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatColumn0.y * px + shape->_ColorMapMatColumn1.y * py + shape->_ColorMapMatPos.y);						
+		updateDiffuseMapMatrix();
+		cst[13 - cstOffset].set(_ColorMapMatColumn0.x, _ColorMapMatColumn1.x, 0, _ColorMapMatColumn0.x * obsPos.x + _ColorMapMatColumn1.x * obsPos.y + _ColorMapMatPos.x); 
+		cst[14 - cstOffset].set(_ColorMapMatColumn0.y, _ColorMapMatColumn1.y, 0, _ColorMapMatColumn0.y * obsPos.x + _ColorMapMatColumn1.y * obsPos.y + _ColorMapMatPos.y);						
 	}
 	else
 	{
@@ -1319,6 +1317,34 @@ void CWaterModel::doSimpleRender(IDriver *drv)
 	drv->setupMaterial(_SimpleWaterMat);
 	drv->renderSimpleTriangles(&indices[0], numVerts - 2);	
 }
+
+//***********************************************************************************************************
+void CWaterModel::updateDiffuseMapMatrix(bool force /* = false*/)
+{
+	if (compareMatrixDate(_MatrixUpdateDate) ||force)
+	{
+		CWaterShape	*shape = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
+		if (shape)
+		{		
+			_MatrixUpdateDate = getMatrixDate();
+			// update the uv matrix
+			CMatrix uvMat;
+			uvMat.setRot(CVector(shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn0.y, 0.f),
+						 CVector(shape->_ColorMapMatColumn1.x, shape->_ColorMapMatColumn1.y, 0.f),
+						 CVector(shape->_ColorMapMatPos.x, shape->_ColorMapMatPos.y, 1.f));
+			CMatrix xformMat;
+			CMatrix invMat = this->getWorldMatrix().inverted();
+			xformMat.setRot(CVector(invMat.getI().x, invMat.getI().y, 0.f),
+							CVector(invMat.getJ().x, invMat.getJ().y, 0.f),
+							CVector(invMat.getPos().x, invMat.getPos().y, 1.f));
+			uvMat = uvMat * xformMat;
+			_ColorMapMatColumn0.set(uvMat.getI().x, uvMat.getI().y);
+			_ColorMapMatColumn1.set(uvMat.getJ().x, uvMat.getJ().y);
+			_ColorMapMatPos.set(uvMat.getK().x, uvMat.getK().y);
+		}		
+	}
+}
+
 
 
 } // NL3D

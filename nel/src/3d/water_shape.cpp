@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.27 2003/03/31 10:31:39 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.28 2003/05/28 12:54:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -332,6 +332,8 @@ CTransformShape		*CWaterShape::createInstance(CScene &scene)
 	wm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
 	wm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
 	wm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
+	//
+	wm->init();
 	return wm;
 }
 

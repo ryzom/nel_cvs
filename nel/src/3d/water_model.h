@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.12 2003/04/01 15:44:34 vizerie Exp $
+ * $Id: water_model.h,v 1.13 2003/05/28 12:54:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -60,6 +60,12 @@ public:
 	/// ctor
 	CWaterModel();
 
+	// to call the first time after the shape & the matrix  has been set
+	void init()
+	{
+		updateDiffuseMapMatrix(true);
+	}
+
 	// register this model
 	static void registerBasic();
 	static CTransform *creator() { return new CWaterModel; }
@@ -99,6 +105,12 @@ private:
 	NLMISC::CPolygon _ClippedPoly;
 	NLMISC::CPolygon _EndClippedPoly;	
 	CSmartPtr<CTextureEmboss> _EmbossTexture;
+	// Matrix to compute uv of diffuse map
+	NLMISC::CVector2f   _ColorMapMatColumn0, _ColorMapMatColumn1, _ColorMapMatPos;	
+	uint64              _MatrixUpdateDate;
+
+	void updateDiffuseMapMatrix(bool force = false);
+
 	// vertex buffer for simple rendering
 	static CVertexBuffer _SimpleRenderVB;
 	static CMaterial _WaterMat;

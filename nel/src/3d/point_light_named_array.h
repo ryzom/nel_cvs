@@ -1,7 +1,7 @@
 /** \file point_light_named_array.h
  * <File description>
  *
- * $Id: point_light_named_array.h,v 1.3 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: point_light_named_array.h,v 1.4 2003/08/07 09:10:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,7 @@ public:
 	std::vector<CPointLightNamed>		&getPointLights() {return _PointLights;}
 
 	/// set the Light factor for all pointLights "lightGroupName".
-	void			setPointLightFactor(const CScene &scene);
+	void			setPointLightFactor(const CScene &scene, bool animated);
 
 	// serial
 	void			serial(NLMISC::IStream &f);

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.63 2003/08/04 13:28:37 boucher Exp $
+ * $Id: scene_group.cpp,v 1.64 2003/08/07 09:10:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1193,7 +1193,7 @@ void			CInstanceGroup::buildPointLightList(const std::vector<CPointLightNamed> &
 // ***************************************************************************
 void			CInstanceGroup::setPointLightFactor(const CScene &scene)
 {
-	_PointLightArray.setPointLightFactor(scene);
+	_PointLightArray.setPointLightFactor(scene, true);
 }
 
 

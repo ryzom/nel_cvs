@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.36 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.37 2003/08/07 09:10:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,9 +76,6 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	_Landscape->Landscape.TileFarBank.serial(farbankFile);
 	bankFile.close();
 	farbankFile.close();
-
-	// Init tiles
-	_Landscape->Landscape.initTileBank();
 }
 
 //****************************************************************************
@@ -136,6 +133,9 @@ void	CLandscapeUser::flushTiles (NLMISC::IProgressCallback &progress)
 			_Landscape->Landscape.flushTiles (_Scene->getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
 		}
 	}
+	
+	// Init tiles
+	_Landscape->Landscape.initTileBank();
 }
 
 //****************************************************************************

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.133 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: landscape.cpp,v 1.134 2003/08/07 09:10:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -403,7 +403,7 @@ bool			CLandscape::addZone(const CZone	&newZone)
 	{
 		CScene *scene = OwnerModel->getOwnerScene();
 		zone->_PointLightArray.initAnimatedLightIndex(*scene);
-		zone->_PointLightArray.setPointLightFactor(*scene);
+		zone->_PointLightArray.setPointLightFactor(*scene, false);
 	}
 
 	// apply the landscape heightField, modifying BBoxes.
@@ -3318,7 +3318,7 @@ void			CLandscape::setPointLightFactor(const CScene &scene)
 	// Affect currently added zones.
 	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 	{
-		(*it).second->_PointLightArray.setPointLightFactor(scene);
+		(*it).second->_PointLightArray.setPointLightFactor(scene, false);
 	}
 }
 
@@ -3630,6 +3630,17 @@ void			CLandscape::initTileBank()
 	TileInfos.clear();
 	TileInfos.resize(NL3D::NbTilesMax);
 	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
+
+	// Refresh each zone
+	std::map<uint16, CZone*>::iterator	it;
+	for(it= Zones.begin();it!=Zones.end();it++)
+	{
+		// Refresh each patch
+		uint numPatch = (uint)it->second->getNumPatchs();
+		uint i;
+		for (i=0; i<numPatch; i++)
+			it->second->changePatchTextureAndColor (i, NULL, NULL);
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file point_light_named_array.cpp
  * <File description>
  *
- * $Id: point_light_named_array.cpp,v 1.6 2003/04/14 10:14:55 corvazier Exp $
+ * $Id: point_light_named_array.cpp,v 1.7 2003/08/07 09:10:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,7 +132,7 @@ void			CPointLightNamedArray::build(const std::vector<CPointLightNamed> &pointLi
 }
 
 // ***************************************************************************
-void			CPointLightNamedArray::setPointLightFactor(const CScene &scene)
+void			CPointLightNamedArray::setPointLightFactor(const CScene &scene, bool animated)
 {
 	// Search in the map.
 	const uint count = _PointLightGroupMap.size ();
@@ -143,7 +143,11 @@ void			CPointLightNamedArray::setPointLightFactor(const CScene &scene)
 		CPointLightGroup &lightGroup = _PointLightGroupMap[i];
 		
 		// Get the factor
-		CRGBA factor = scene.getAnimatedLightFactor (lightGroup.AnimationLightIndex, lightGroup.LightGroup);
+		CRGBA factor;
+		if (animated)
+			factor = scene.getAnimatedLightFactor (lightGroup.AnimationLightIndex, lightGroup.LightGroup);
+		else
+			factor = scene.getLightmapGroupColor (lightGroup.LightGroup);
 
 		// Found the group. what entries in the array?
 		uint	startId= lightGroup.StartId;

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.46 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: scene.h,v 1.47 2003/08/07 09:10:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -579,8 +579,9 @@ private:
 	TGlobalAnimationTime  _CurrentTime ;
 	
 	// the real time
-	TGlobalAnimationTime  _RealTime ;
-
+	TGlobalAnimationTime  _RealTime;
+	TGlobalAnimationTime  _InitTime;
+	
 	// true when its the first call of animate
 	bool _FirstAnimateCall ;
 

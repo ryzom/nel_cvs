@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.107 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: scene.cpp,v 1.108 2003/08/07 09:10:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -521,22 +521,24 @@ void CScene::deleteInstance(CTransformShape *pTrfmShp)
 // ***************************************************************************
 void CScene::animate( TGlobalAnimationTime atTime )
 {
+	// todo hulud remove
 	if (_FirstAnimateCall)
 	{
-		_RealTime = atTime ;
+		_InitTime = atTime;
+		_RealTime = atTime;
 		// dummy value for first frame
 		_EllapsedTime = 0.01f ;
 		_FirstAnimateCall = false ;
 	}
 	else
 	{
-		_EllapsedTime = (float) (atTime - _RealTime) ;
+		_EllapsedTime = (float) (atTime - _RealTime);
 		//nlassert(_EllapsedTime >= 0);
 		if (_EllapsedTime < 0.0f)	// NT WorkStation PATCH (Yes you are not dreaming
 			_EllapsedTime = 0.01f;	// deltaTime can be less than zero!!)
 		_EllapsedTime = fabsf(_EllapsedTime);
 		_RealTime = atTime ;
-		_CurrentTime += _EllapsedTime ;
+		_CurrentTime += _EllapsedTime;
 	}
 	
 	_LMAnimsAuto.animate( atTime );

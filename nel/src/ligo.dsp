@@ -152,6 +152,10 @@ SOURCE=..\include\nel\ligo\primitive_configuration.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ligo\primitive_utils.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ligo\transition.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.9 2001/03/30 14:47:53 chafik Exp $
+ * $Id: identtype.h,v 1.10 2001/04/23 17:20:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,7 +170,7 @@ namespace NLAIAGENT
 			p >>= 8;
 			CreatorId = (uint64)(p & 0xff);
 			p >>= 8;
-			AgentNumber = (uint64)(p & ((uint64)1<<(uint64)48));
+			AgentNumber = (uint64)(p);
 
 			/*uint64 p;
 			is.serial(p);

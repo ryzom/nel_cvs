@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.3 2001/07/09 08:26:26 legros Exp $
+ * $Id: retriever_bank.h,v 1.4 2001/07/10 08:34:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ public:
 		NLMISC::CIFile	input;
 		_Retrievers.resize(_Retrievers.size()+1);
 		CLocalRetriever	&localRetriever = _Retrievers.back();
-		nlinfo("load retriever file %s", filename.c_str());
+		nldebug("load retriever file %s", filename.c_str());
 		input.open(filename);
 		localRetriever.serial(input);
 		input.close();

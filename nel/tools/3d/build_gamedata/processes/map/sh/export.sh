@@ -9,9 +9,6 @@ database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 
 # Get the maps directories
 map_source_directories=`cat ../../cfg/directories.cfg | grep "map_source_directory" | sed -e 's/map_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-# Get the panoply maps directories
-map_panoply_source_directories=`cat ../../cfg/directories.cfg | grep "map_panoply_source_directory" | sed -e 's/map_panoply_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
 
 # Log error
 echo ------- > log.log
@@ -43,26 +40,5 @@ for i in $map_source_directories; do
 	# Idle
 	../../idle.bat
 done
-
-
-for i in $map_panoply_source_directories; do
-	for j in $database_directory/$i/*.[tT][gG][aA]; do
-		if ( test -f $j )
-		then
-			# Get the dds version
-			dds=`echo $j | sed -e 's&.tga&.dds&g'`
-
-			# Copy the dds and the tga
-			cp -u -p $j panoply 2>> log.log
-			if ( test -f $dds )
-			then
-				cp -u -p $dds panoply 2>> log.log
-			fi
-		fi
-	done
-	# Idle
-	../../idle.bat
-done
-
 
 

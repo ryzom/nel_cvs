@@ -8,7 +8,7 @@
 '
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
-' $Id: nevrax_macros.dsm,v 1.15 2001/04/18 12:31:33 cado Exp $
+' $Id: nevrax_macros.dsm,v 1.16 2001/05/22 12:04:32 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -24,7 +24,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros.dsm,v 1.15 2001/04/18 12:31:33 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros.dsm,v 1.16 2001/05/22 12:04:32 cado Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/* Copyright, 2001 Nevrax Ltd." + vbLf + _
@@ -157,12 +157,16 @@ Sub NevraxNewClass()
 	else
 		IncDirectory = ""
 	end if
-	IncDirectory = InputBox( "Répertoire racine (existant) des include (.h)" + vbLf + "(ex: R:\code\nel\include\nel pout NeL ) :","Nouvelle classe (4)", IncDirectory )
-	if (IncDirectory<>"") and (right(IncDirectory,1)<>"\") then
-		IncDirectory = IncDirectory + "\"
+	IncDirectory = InputBox( "Répertoire racine (existant) des include (.h)" + vbLf + "(ex: R:\code\nel\include\nel pour NeL ; chaîne vide pour le même répertoire que les fichiers source ) :","Nouvelle classe (4)", IncDirectory )
+	if IncDirectory = "" then
+		IncDirectory = SrcDirectory
+	else
+		if (right(IncDirectory,1)<>"\") then
+			IncDirectory = IncDirectory + "\"
+		end if
 	end if
 	CurrentDirectoryName = InputBox( "Nom du répertoire de travail (ex: misc)" + vbLf + "(existant dans " + SrcDirectory + _
-		" et dans " + IncDirectory + ")" + vbLf + "Ce nom restera mémorisé" + vbLf + "(ne rien entrer pour pour un projet hors-NeL).", "Nouvelle classe (5)", CurrentDirectoryName )
+		" et dans " + IncDirectory + ")" + vbLf + "Ce nom restera mémorisé" + vbLf + "(chaîne vide pour pour un projet hors-NeL).", "Nouvelle classe (5)", CurrentDirectoryName )
 	if CurrentDirectoryName<>"" then
 		CurrentDirectoryDir = CurrentDirectoryName + "\"
 		Namesp = "NL" + ucase(CurrentDirectoryName)
@@ -311,8 +315,8 @@ End Sub
 
 ' NevraxToggleHCPP
 ' DESCRIPTION: Opens the .cpp or .h file (toggles) for the current document.
-' NOTE: Can be used in conjunction with NevraxNewClass (NevraxToggleHCPP uses the CurrentDirectoryName global variable)
 ' TIP: Bind this macro to Ctrl+<
+' Last modification : 22/05/2001
 ' Author : Olivier Cado
 Sub NevraxToggleHCPP()
 
@@ -330,37 +334,53 @@ Sub NevraxToggleHCPP()
 	end if
 	
 	' ** Build the alternative filename
-	NewFilename = ""
-	if InStr(ActFilename,"nel")<>0 then
-		if Ext = ".h" then
-			NewFilename = "R:\code\nel\src\"
-		else
-			NewFilename = "R:\code\nel\include\nel\"
-		end if
-		' Take the module name (the word between the two last backslashes)
-		DirectoryName = left( ActFilename, InstrRev(ActFilename,"\")-1 )
-		DirectoryName = mid( DirectoryName, InstrRev(DirectoryName, "\")+1 )
-		' Add the rest of the path
-		NewFilename = NewFilename + DirectoryName + "\" 
-		ShortFilenameDot = mid( ActFilename, InstrRev(ActFilename,"\")+1 )
-	else
-		ShortFilenameDot = ActFilename
-	end if
-	ShortFilenameDot = left( ShortFilenameDot, Instr(ShortFilenameDot,".") )
-	if Ext=".h" then
-		Ext = "cpp"
-	else
+
+	' The module name is the word between the two last backslashes of the path\filename
+	ModuleDir = left( ActFilename, InstrRev(ActFilename,"\")-1 )
+	ModuleDir = mid( ModuleDir, InstrRev(ModuleDir, "\")+1 ) + "\"
+
+	dim SearchDirs (4)
+	if ( Ext = ".cpp" ) then
+		SearchDirs(1) = "R:\code\nel\include\nel\" + ModuleDir
+		SearchDirs(2) = "R:\code\nel\include_private\nel\" + ModuleDir
+		SearchDirs(3) = left( ActFilename, InstrRev(ActFilename,"\") ) 'dir of the current file
+		NbDirs = 3
 		Ext = "h"
-	end if
-	NewFilename = NewFilename + ShortFilenameDot + Ext
- 
-	' ** Open the alternative file
-	dim fso
-	set fso = CreateObject("Scripting.FileSystemObject")
-	if fso.FileExists( NewFilename ) then
-		Documents.Open( NewFilename )
 	else
-		MsgBox "There is no file " + NewFilename
+		SearchDirs(1) = "R:\code\nel\src\" + ModuleDir
+		SearchDirs(2) = left( ActFilename, InstrRev(ActFilename,"\") ) 'dir of the current file
+		NbDirs = 2
+		Ext = "cpp"
+	end if
+	DirIndex = 1
+	FileFound = False
+	Dirs = ""
+	while (DirIndex <= NbDirs) and (FileFound = False)
+		' NeL directory scheme
+		if InStr(ActFilename,"nel")<>0 then
+			' Add the search path and the filename
+			NewFilename = SearchDirs(DirIndex)
+			ShortFilenameDot = mid( ActFilename, InstrRev(ActFilename,"\")+1 )
+		else
+			' The complete filename
+			ShortFilenameDot = ActFilename
+		end if
+		ShortFilenameDot = left( ShortFilenameDot, Instr(ShortFilenameDot,".") )
+		NewFilename = NewFilename + ShortFilenameDot + Ext
+ 
+		' ** Open the alternative file
+		dim fso
+		set fso = CreateObject("Scripting.FileSystemObject")
+		if fso.FileExists( NewFilename ) then
+			Documents.Open( NewFilename )
+			FileFound = True
+		else
+			Dirs = Dirs + SearchDirs(DirIndex) + vbLf
+			DirIndex = DirIndex + 1
+		end if
+	wend
+	if FileFound <> True then
+		MsgBox "There is no file " + ShortFilenameDot + Ext + " in " + vbLf + Dirs
 	end if
 End Sub
 

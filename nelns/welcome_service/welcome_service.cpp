@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.33 2004/06/30 15:39:58 legros Exp $
+ * $Id: welcome_service.cpp,v 1.34 2004/06/30 15:40:39 legros Exp $
  *
  */
 
@@ -74,7 +74,7 @@ void	cbShardOpenStateFile(IVariable &var);
  * ShardOpen
  * true if shard is open to public
  */
-CVariable<bool>		ShardOpen("ShardOpen", "Indicates if shard is open to public (that is no priviledged users)", false, 0, true);
+CVariable<bool>		ShardOpen("ShardOpen", "Indicates if shard is open to public (that is no priviledged users)", true, 0, true);
 
 /**
  * ShardOpen

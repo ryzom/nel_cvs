@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.7 2002/12/18 14:57:14 legros Exp $
+ * $Id: retriever_bank.h,v 1.8 2003/03/13 15:02:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,8 +79,8 @@ public:
 	const CLocalRetriever				&getRetriever(uint n) const
 	{
 		nlassert(n < _Retrievers.size());
-		if (!_Retrievers[n].isLoaded())
-			nlwarning("Trying to access rbank '%s', retriever %d not loaded", _NamePrefix.c_str(), n);
+		/* if (!_Retrievers[n].isLoaded())
+			nlwarning("Trying to access rbank '%s', retriever %d not loaded", _NamePrefix.c_str(), n); */
 		return _Retrievers[n];
 	}
 

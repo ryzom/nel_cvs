@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.24 2003/01/30 17:56:43 legros Exp $
+ * $Id: global_retriever.h,v 1.25 2003/03/13 15:02:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,8 @@ protected:
 		volatile bool		Idle;
 		/// Finished task
 		volatile bool		Finished;
+		/// Finished successfully
+		volatile bool		Successful;
 		/// Lr Id
 		uint				LrId;
 		/// Lr to load

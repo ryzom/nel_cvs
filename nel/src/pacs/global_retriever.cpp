@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.72 2003/02/04 11:11:56 coutelas Exp $
+ * $Id: global_retriever.cpp,v 1.73 2003/03/13 15:02:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "nel/misc/common.h"
 
 #include "nel/misc/hierarchical_timer.h"
+
+#include "nel/memory/memory_manager.h"
 
 #include "pacs/global_retriever.h"
 #include "pacs/retriever_bank.h"
@@ -2291,7 +2293,8 @@ bool NLPACS::CGlobalRetriever::testRaytrace (const CVectorD &v0, const CVectorD 
 }
 
 // ***************************************************************************
-
+// todo hulud remove
+extern bool totoDebug;
 void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float radius)
 {
 	// check if retriever bank is all loaded, and if yes don't refresh it
@@ -2301,9 +2304,9 @@ void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float ra
 	// finished loaded a lr, stream it into rbank
 	if (!_LrLoader.Idle)
 	{
-		if (!_LrLoader.Finished)
+		if (!_LrLoader.Finished || !_LrLoader.Successful)
 		{
-			nlSleep(0);
+//			nlSleep(0);
 			return;
 		}
 
@@ -2312,9 +2315,15 @@ void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float ra
 
 		_LrLoader.Buffer.resetBufPos();
 
+//		NLMEMORY::CheckHeap (true);
+
 		const_cast<CRetrieverBank*>(_RetrieverBank)->loadRetriever(_LrLoader.LrId, _LrLoader.Buffer);
 
+//		NLMEMORY::CheckHeap (true);
+
 		_LrLoader.Buffer.clear();
+
+//		NLMEMORY::CheckHeap (true);
 
 		nlinfo("Lr '%s' loading task complete", _LrLoader.LoadFile.c_str());
 		_LrLoader.Idle = true;
@@ -2423,16 +2432,23 @@ void	NLPACS::CGlobalRetriever::CLrLoader::run()
 {
 	CIFile		f;
 
+	Successful = false;
+
 	if (!f.open(CPath::lookup(LoadFile, false)))
 	{
 		nlwarning("Couldn't find file '%s' to load, retriever loading aborted", LoadFile.c_str());
+		Buffer.clear();
 		Finished = true;
 		return;
 	}
 
+	if (!Buffer.isReading())
+		Buffer.invert();
+
 	uint8	*buffer = Buffer.bufferToFill(f.getFileSize());
 	f.serialBuffer(buffer, f.getFileSize());
 
+	Successful = true;
 	Finished = true;
 }
 

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.54 2003/01/30 17:56:43 legros Exp $
+ * $Id: local_retriever.cpp,v 1.55 2003/03/13 15:02:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -872,6 +872,9 @@ void	NLPACS::CLocalRetriever::translate(const NLMISC::CVector &translation)
 		_Tips[i].translate(translation);
 }
 
+// todo hulud remove
+bool totoDebug = false;
+
 void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 {
 	/*
@@ -892,22 +895,47 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 		throw EOlderStream();
 
 	uint	i;
+	// todo hulud remove
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serialCont(_Chains);
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serialCont(_OrderedChains);
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serialCont(_FullOrderedChains);
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serialCont(_Surfaces);
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serialCont(_Tips);
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serialCont(_BorderChains);
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	if (ver < 4)
 	{
 		for (i=0; i<NumMaxCreatureModels; ++i)
 			f.serialCont(_Topologies[i]);
 	}
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serial(_ChainQuad);
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serial(_BBox);
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serialEnum(_Type);
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
 	f.serial(_ExteriorMesh);
-
+	if (totoDebug)
+		NLMEMORY::CheckHeap(true);
+	
 	// a fix for old versions (with wrong _Type value)
 	if (_Type != CLocalRetriever::Interior)	_Type = CLocalRetriever::Landscape;
 

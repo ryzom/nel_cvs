@@ -909,6 +909,22 @@ SOURCE=..\include\nel\3d\transformable_user.h
 
 SOURCE=.\3d\viewport.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\visual_collision_entity_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\visual_collision_entity_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\visual_collision_manager_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\visual_collision_manager_user.h
+# End Source File
 # End Group
 # Begin Group "User"
 
@@ -1000,6 +1016,14 @@ SOURCE=..\include\nel\3d\tmp\u_transform.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tmp\u_transformable.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_visual_collision_entity.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_visual_collision_manager.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.h
  * <File description>
  *
- * $Id: visual_collision_manager.h,v 1.1 2001/06/08 16:12:52 berenguier Exp $
+ * $Id: visual_collision_manager.h,v 1.2 2001/06/12 11:49:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/block_memory.h"
 #include "nel/3d/patch.h"
+#include "nel/3d/landscape.h"
 
 
 namespace NL3D 
@@ -37,7 +38,6 @@ namespace NL3D
 
 class CVisualCollisionEntity;
 class CLandscapeCollisionGrid;
-class CLandscape;
 
 
 // ***************************************************************************
@@ -81,16 +81,20 @@ public:
 	void						setLandscape(CLandscape *landscape);
 
 
-	/** create an entity. NB: CVisualCollisionManager do not owns this ptr, and you should delete it with delete.
+	/** create an entity. NB: CVisualCollisionManager do not owns this ptr for now, and you must delete it with deleteEntity().
 	 * NB: CVisualCollisionEntity are no more valid when this manager is deleted.
 	 */
 	CVisualCollisionEntity		*createEntity();
+
+	/** delete an entity.
+	 */
+	void						deleteEntity(CVisualCollisionEntity	*entity);
 
 
 // ***************************
 private:
 	/// The landscape used to generate tiles, and to snap position to tesselated ground.
-	CLandscape					*_Landscape;
+	NLMISC::CRefPtr<CLandscape>			_Landscape;
 
 	/// Allocators.
 	CBlockMemory<CVisualTileDescNode>	_TileDescNodeAllocator;

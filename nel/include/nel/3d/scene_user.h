@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.7 2001/06/11 09:24:22 besson Exp $
+ * $Id: scene_user.h,v 1.8 2001/06/12 11:49:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/3d/landscape_user.h"
 #include "nel/3d/instance_group_user.h"
 #include "nel/3d/skeleton_user.h"
+#include "nel/3d/visual_collision_manager_user.h"
 
 
 namespace NL3D {
@@ -60,9 +61,11 @@ protected:
 	typedef	CPtrSet<CTransformUser>		TTransformSet;
 	typedef	CPtrSet<CLandscapeUser>		TLandscapeSet;
 	typedef	CPtrSet<CInstanceGroupUser>	TInstanceGroupSet;
-	TTransformSet		_Transforms;
-	TLandscapeSet		_Landscapes;
-	TInstanceGroupSet	_InstanceGroups;
+	typedef	CPtrSet<CVisualCollisionManagerUser>	TVisualCollisionManagerSet;
+	TTransformSet				_Transforms;
+	TLandscapeSet				_Landscapes;
+	TInstanceGroupSet			_InstanceGroups;
+	TVisualCollisionManagerSet	_VisualCollisionManagers;
 
 	std::map<UInstance**,CTransformShape*> _WaitingInstances;
 
@@ -91,6 +94,7 @@ public:
 	}
 	virtual	~CSceneUser()
 	{
+		_VisualCollisionManagers.clear();
 		_Transforms.clear();
 		_Landscapes.clear();
 		_Scene.setDriver(NULL);
@@ -296,6 +300,20 @@ public:
 	}
 
 	//@}
+
+
+	/// \name Visual Collision manager.
+	//@{
+	virtual	UVisualCollisionManager		*createVisualCollisionManager()
+	{
+		return _VisualCollisionManagers.insert(new CVisualCollisionManagerUser);
+	}
+	virtual	void						deleteVisualCollisionManager(UVisualCollisionManager *mgr)
+	{
+		_VisualCollisionManagers.erase(dynamic_cast<CVisualCollisionManagerUser*>(mgr));
+	}
+	//@}
+
 
 public:
 	/// \name Accessor for CSeneUser.

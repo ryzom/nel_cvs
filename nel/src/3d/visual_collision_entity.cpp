@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.2 2001/06/11 13:35:01 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.3 2001/06/12 11:49:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,11 @@ CVisualCollisionEntity::~CVisualCollisionEntity()
 // ***************************************************************************
 void		CVisualCollisionEntity::snapToGround(CVector &pos)
 {
+	// verify if landscape (refptr) is here.
+	if(_Owner->_Landscape==NULL)
+		return;
+
+
 	// update the cahe of tile info near this position.
 	// =================
 	testComputeLandscape(pos);

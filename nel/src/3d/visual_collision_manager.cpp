@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * <File description>
  *
- * $Id: visual_collision_manager.cpp,v 1.1 2001/06/08 16:12:52 berenguier Exp $
+ * $Id: visual_collision_manager.cpp,v 1.2 2001/06/12 11:49:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,6 +63,13 @@ void					CVisualCollisionManager::setLandscape(CLandscape *landscape)
 CVisualCollisionEntity		*CVisualCollisionManager::createEntity()
 {
 	return new CVisualCollisionEntity(this);
+}
+
+
+// ***************************************************************************
+void						CVisualCollisionManager::deleteEntity(CVisualCollisionEntity	*entity)
+{
+	delete entity;
 }
 
 

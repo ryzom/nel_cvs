@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.3 2001/04/24 09:36:52 berenguier Exp $
+ * $Id: landscape_user.h,v 1.4 2001/06/12 11:49:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,6 +130,15 @@ public:
 	// @{
 	virtual	CVector		getHeightFieldDeltaZ(float x, float y) const;
 	virtual	void		setHeightField(const CHeightMap &hf);
+	// @}
+
+public:
+	/// \name Accessor for CLandscapeUser.
+	// @{
+	CLandscapeModel		*getLandscape()
+	{
+		return _Landscape;
+	}
 	// @}
 
 };

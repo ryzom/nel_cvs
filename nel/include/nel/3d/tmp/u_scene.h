@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.4 2001/04/23 09:14:27 besson Exp $
+ * $Id: u_scene.h,v 1.5 2001/06/12 11:49:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,8 @@ class ULandscape;
 class UInstanceGroup;
 class USkeleton;
 class UTransform;
+class UVisualCollisionManager;
+
 
 //****************************************************************************
 /**
@@ -136,6 +138,13 @@ public:
 	/// Delete an instance group from this scene.
 	virtual	void			deleteInstanceGroup(UInstanceGroup	*group) =0;
 
+	//@}
+
+
+	/// \name Visual Collision manager.
+	//@{
+	virtual	UVisualCollisionManager		*createVisualCollisionManager() =0;
+	virtual	void						deleteVisualCollisionManager(UVisualCollisionManager *mgr) =0;
 	//@}
 
 };

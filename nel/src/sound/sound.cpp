@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.2 2001/07/13 09:44:32 cado Exp $
+ * $Id: sound.cpp,v 1.3 2001/07/18 17:15:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,7 +179,7 @@ void				CSound::setProperties( const std::string& filename, float gain, bool det
 /*
  * Save (output stream only) (EDIT)
  */
-void				CSound::save( const std::vector<CSound>& container, NLMISC::IStream& s )
+void				CSound::save( const std::vector<CSound*>& container, NLMISC::IStream& s )
 {
 	nlassert( ! s.isReading() );
 
@@ -187,7 +187,7 @@ void				CSound::save( const std::vector<CSound>& container, NLMISC::IStream& s )
 	serialFileHeader( s, nb );
 	for ( i=0; i!=nb; i++ )
 	{
-		s.serial( const_cast<CSound&>(container[i]) );
+		s.serial( const_cast<CSound&>(*container[i]) );
 	}
 }
 

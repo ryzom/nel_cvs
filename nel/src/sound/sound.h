@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.2 2001/07/13 09:44:32 cado Exp $
+ * $Id: sound.h,v 1.3 2001/07/18 17:15:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,7 +87,7 @@ public:
 									   float innerangle=6.283185f, float outerangle=6.283185f, // 360°
 									   float outergain=1.0f );
 	/// Save (output stream only) (EDIT)
-	static void			save( const std::vector<CSound>& container, NLMISC::IStream& s );
+	static void			save( const std::vector<CSound*>& container, NLMISC::IStream& s );
 
 
 private:

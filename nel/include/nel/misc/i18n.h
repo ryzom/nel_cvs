@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.11 2003/03/11 12:50:55 boucher Exp $
+ * $Id: i18n.h,v 1.11.2.1 2003/04/24 13:55:57 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 
 #include <string>
 #include <map>
+#include <algorithm>
+
 
 namespace NLMISC {
 
@@ -75,6 +77,21 @@ class CI18N
 {
 public:
 
+	/** Proxy interface for loading string file.
+	 *	Implemente this interface in client code and set it inside I18N
+	 *	in order to be able to do any work on string file before they
+	 *	are read by CI18N.
+	 *	This is used by Ryzom to merge the working string file with
+	 *	the exploitation one when they are more recente.
+	 */
+	struct ILoadProxy
+	{
+		virtual void loadStringFile(const std::string &filename, ucstring &text) =0;
+	};
+
+	/// Set the load proxy class. Proxy can be NULL to unregister.
+	static void setLoadProxy(ILoadProxy *loadProxy);
+
 	/// Return a vector with all language available. The vector contains the name of the language.
 	/// The index in the vector is used in \c load() function
 	static const std::vector<ucstring> &getLanguageNames();
@@ -106,7 +123,7 @@ public:
 	 *	Optionnaly, you can force the reader to consider the file as
 	 *	UTF-8 encoded.
 	 */
-	static void readTextFile(const std::string &filename, ucstring &result, bool forceUtf8 = false);
+	static void readTextFile(const std::string &filename, ucstring &result, bool forceUtf8 = false, bool fileLookup = true);
 
 	/** Read the content of a buffer as a unicode text.
 	 *	This is to read preloaded unicode files.
@@ -125,9 +142,13 @@ public:
 	 */
 	static void remove_C_Comment(ucstring &commentedString);
 
-	/** Write a unicode text file using unicode 16 encoding.
+	/** Encode a unicode string into a string using UTF-8 encoding.
+	*/
+	static std::string CI18N::encodeUTF8(const ucstring &str);
+
+	/** Write a unicode text file using unicode 16 or UTF-8 encoding.
 	 */
-	static void writeTextFile(const std::string filename, const ucstring &content);
+	static void writeTextFile(const std::string filename, const ucstring &content, bool utf8 = true);
 
 	static ucstring makeMarkedString(ucchar openMark, ucchar closeMark, const ucstring &text);
 
@@ -146,10 +167,21 @@ public:
 	static bool		parseMarkedString	(ucchar openMark, ucchar closeMark, ucstring::const_iterator &it, ucstring::const_iterator &last, ucstring &result);
 	//@}
 
+	//@{
+	//\name Hash code tools. 
+	// Generate a hash value for a given string
+	static uint64	makeHash(const ucstring &str);
+	// convert a hash value to a readable string 
+	static std::string hashToString(uint64 hash);
+	// convert a readable string into a hash value.
+	static uint64 stringToHash(const std::string &str);
+	//@}
 
 private:
 
 	typedef std::map<std::string, ucstring>						StrMapContainer;
+
+	static ILoadProxy							*_LoadProxy;
 
 	static StrMapContainer										 _StrMap;
 	static bool													 _StrMapLoaded;
@@ -162,6 +194,8 @@ private:
 	static sint32												 _SelectedLanguage;
 	static const ucstring										_NotTranslatedValue;
 };
+
+
 
 
 } // NLMISC

@@ -1,6 +1,6 @@
 /** \file vertex_program_parse.cpp
  *
- * $Id: vertex_program_parse.cpp,v 1.1 2002/09/24 14:47:28 vizerie Exp $
+ * $Id: vertex_program_parse.cpp,v 1.2 2002/10/03 09:37:44 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -716,7 +716,8 @@ bool CVPParser::parseInstruction(CVPInstruction &instr, std::string &errorOutput
 	skipSpacesAndComments();
 	endEncountered = false;
 	uint32 instrStr = 0;
-	for(uint k = 0; k < 4; ++k)
+	uint k;
+	for(k = 0; k < 4; ++k)
 	{
 		if (!isalnum(*_CurrChar))
 		{

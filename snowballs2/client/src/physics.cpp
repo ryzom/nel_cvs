@@ -1,7 +1,7 @@
 /** \file physics.cpp
  * Snowballs trajectory computation
  *
- * $Id: physics.cpp,v 1.3 2001/07/24 17:29:23 lecroart Exp $
+ * $Id: physics.cpp,v 1.4 2001/07/27 09:07:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,8 @@ using namespace NLMISC;
 
 CVector	CTrajectory::eval(NLMISC::TTime t) const
 {
+	if (t < _StartTime) return _StartPosition;
+
 	float	ft = (float)(t-_StartTime)/(float)(_StopTime-_StartTime);
 	ft = min(ft, 1.0f);
 	CVector	res = _EndPosition*ft + _StartPosition*(1.0f-ft);
@@ -47,6 +49,8 @@ CVector	CTrajectory::eval(NLMISC::TTime t) const
 
 CVector	CTrajectory::evalSpeed(NLMISC::TTime t) const
 {
+	if (t < _StartTime) return _StartPosition;
+
 	float	ft = (float)(t-_StartTime)/(float)(_StopTime-_StartTime);
 	ft = min(ft, 1.0f);
 	CVector res = (_EndPosition-_StartPosition).normed()*_Speed;

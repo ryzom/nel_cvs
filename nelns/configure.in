@@ -1,18 +1,18 @@
 dnl
 dnl Configuration script for NeLNS
 dnl
-dnl $Id: configure.in,v 1.7 2001/08/16 12:42:26 valignat Exp $
+dnl $Id: configure.in,v 1.8 2001/10/29 14:00:28 valignat Exp $
 dnl 
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(log_service/log_service.h)
+AC_INIT(admin_service/admin_service.cpp)
 
 MAJOR_VERSION=0
 MINOR_VERSION=3
 PICO_VERSION=0
 
-AM_INIT_AUTOMAKE(netns, $MAJOR_VERSION.$MINOR_VERSION.$PICO_VERSION)
+AM_INIT_AUTOMAKE(nelns, $MAJOR_VERSION.$MINOR_VERSION.$PICO_VERSION)
 
 AM_CONFIG_HEADER(config.h)
 
@@ -246,9 +246,7 @@ dnl Output files to generate.
 
 AC_OUTPUT( Makefile                        \
            login_service/Makefile          \
-           log_service/Makefile            \
            naming_service/Makefile         \
-           time_service/Makefile           \
            admin_executor_service/Makefile \
            admin_service/Makefile          \
            welcome_service/Makefile        \

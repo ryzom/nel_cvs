@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.16 2001/07/25 13:06:06 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.17 2001/07/25 14:08:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,6 +144,10 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	nlassert(drv) ;
 
 	CParticleSystemModel *psm = (CParticleSystemModel *) trans ;
+
+
+	if (psm->_Invalidated) return ;
+
 	CParticleSystem *ps = psm->getPS() ;
 	nlassert(ps) ;
 	

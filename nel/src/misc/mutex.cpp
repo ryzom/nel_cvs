@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.30 2002/10/18 13:25:39 coutelas Exp $
+ * $Id: mutex.cpp,v 1.31 2002/10/18 13:59:52 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,7 +255,7 @@ CUnfairMutex::CUnfairMutex(const std::string &name)
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init( &attr );
 	// Fast mutex. Note: on Windows all mutexes are recursive
-	pthread_mutexattr_setkind_np( &attr, PTHREAD_MUTEX_ADAPTIVE_NP ); //PTHREAD_MUTEX_ERRORCHECK_NP );//PTHREAD_MUTEX_ADAPTIVE_NP );//PTHREAD_MUTEX_RECURSIVE_NP );
+	pthread_mutexattr_setkind_np( &attr, PTHREAD_MUTEX_RECURSIVE_NP ); //PTHREAD_MUTEX_ERRORCHECK_NP );//PTHREAD_MUTEX_ADAPTIVE_NP );
 	pthread_mutex_init( &mutex, &attr );
 	pthread_mutexattr_destroy( &attr );
 }
@@ -347,9 +347,10 @@ void CFairMutex::enter()
 	uint pid = getpid();
 	if ( pid != _OwnerPid )
 	{
-		_OwnerPid = pid;
+		_OwnerPid = pid; // pb with atomicity
 		sem_wait( const_cast<sem_t*>(&_Sem) );
 	}
+	++_ReentranceCount;
 }
 
 
@@ -360,8 +361,12 @@ void CFairMutex::leave()
 {
 	if ( getpid() == _OwnerPid )
 	{
-		sem_post( const_cast<sem_t*>(&_Sem) );
-		_OwnerPid = ~0;
+		--_ReentranceCount; // pb with atomicity
+		if ( _ReentranceCount==0 )
+		{
+			sem_post( const_cast<sem_t*>(&_Sem) );
+			_OwnerPid = ~0;
+		}
 	}
 }
 

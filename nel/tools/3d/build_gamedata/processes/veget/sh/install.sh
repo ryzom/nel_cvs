@@ -6,9 +6,6 @@ rm log.log 2> /dev/null
 # Get the veget install directory
 veget_install_directory=`cat ../../cfg/directories.cfg | grep "veget_install_directory" | sed -e 's/veget_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-# Get the maps install directory
-bitmap_install_directory=`cat ../../cfg/directories.cfg | grep "bitmap_install_directory" | sed -e 's/bitmap_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
 # Get the client directory
 client_directory=`cat ../../cfg/site.cfg | grep "client_directory" | sed -e 's/client_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 

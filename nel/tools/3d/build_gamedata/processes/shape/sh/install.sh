@@ -6,9 +6,6 @@ rm log.log 2> /dev/null
 # Get the shape install directory
 shape_install_directory=`cat ../../cfg/directories.cfg | grep "shape_install_directory" | sed -e 's/shape_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-# Get the maps install directory
-bitmap_install_directory=`cat ../../cfg/directories.cfg | grep "bitmap_install_directory" | sed -e 's/bitmap_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
 # Get the lightmaps install directory
 lightmap_install_directory=`cat ../../cfg/directories.cfg | grep "lightmap_install_directory" | sed -e 's/lightmap_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 

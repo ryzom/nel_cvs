@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.10 2001/11/27 14:03:13 lecroart Exp $
+ * $Id: time_nl.cpp,v 1.11 2001/11/27 14:04:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,9 +164,6 @@ double CTime::ticksToSecond (TTicks ticks)
 			TTicks tickDelta = tickAfter - tickBefore;
 
 			freq = 1000 * tickDelta / timeDelta;
-
-			LARGE_INTEGER ret;
-			QueryPerformanceFrequency(&ret);
 
 			benchFrequency = false;
 		}

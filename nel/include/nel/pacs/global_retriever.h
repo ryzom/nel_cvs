@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.5 2001/05/18 08:23:37 legros Exp $
+ * $Id: global_retriever.h,v 1.6 2001/05/21 08:51:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -268,11 +268,11 @@ public:
 	 * \param delta is the requested movement.
 	 * \param radius is the radius of the vertical cylinder.
 	 * \param cst is the CCollisionSurfaceTemp object used as temp copmputing (one per thread).
-	 * \return list of collision against surface, ordered by increasing time. NB: this array may modified by CGlobalRetriever on
-	 *	any collision call.
+	 * \return list of collision against surface, ordered by increasing time. this is a synonym for
+	 * cst.CollisionDescs. NB: this array may be modified by CGlobalRetriever on any collision call.
 	 */
-	const	std::vector<CCollisionSurfaceDesc>	
-		&testCylinderMove(const CGlobalPosition &start, const NLMISC::CVector &delta, float radius, CCollisionSurfaceTemp &cst) const;
+	const TCollisionSurfaceDescVector	&testCylinderMove(const CGlobalPosition &start, const NLMISC::CVector &delta, 
+		float radius, CCollisionSurfaceTemp &cst) const;
 	/** apply a movement of a point against surface world. This must be called after test???Move().
 	 * NB: It's up to you to give good t, relative to result of test???Move(). Else, undefined results...
 	 * NB: if you don't give same start/delta as in preceding call to testMove(), start is returned.
@@ -284,6 +284,9 @@ public:
 	 * \return new position of the entity.
 	 */
 	CGlobalPosition		doMove(const CGlobalPosition &start, const NLMISC::CVector &delta, float t, CCollisionSurfaceTemp &cst) const;
+	/** retrieve a surface by its Id. NULL if not found or if -1.
+	 */
+	const CRetrievableSurface	*getSurfaceById(const CSurfaceIdent &surfId);
 	// @}
 
 

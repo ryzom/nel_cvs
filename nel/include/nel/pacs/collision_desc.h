@@ -1,7 +1,7 @@
 /** \file collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: collision_desc.h,v 1.3 2001/05/16 15:17:12 berenguier Exp $
+ * $Id: collision_desc.h,v 1.4 2001/05/21 08:51:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include <vector>
 
 namespace NLPACS 
 {
@@ -97,6 +98,9 @@ public:
 	/// To which surface we have collided.
 	CSurfaceIdent		ContactSurface;
 };
+
+
+typedef	std::vector<CCollisionSurfaceDesc>	TCollisionSurfaceDescVector;
 
 
 

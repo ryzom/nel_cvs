@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.2 2001/05/16 15:17:12 berenguier Exp $
+ * $Id: collision_surface_temp.h,v 1.3 2001/05/21 08:51:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,7 +148,7 @@ public:
 
 
 	/// Result of collision tryMove().
-	std::vector<CCollisionSurfaceDesc>	CollisionDescs;
+	TCollisionSurfaceDescVector		CollisionDescs;
 
 
 	/// CGlobalRetriever instance possibly colliding movement.

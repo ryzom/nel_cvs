@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.3 2001/05/17 17:00:36 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.4 2001/05/21 08:51:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,12 +120,17 @@ static	inline float		testCirclePoint(const CVector2f &start, const CVector2f &de
 			swap(r0,r1);
 		// if r1 is negative, then we are out and go away from this point. OK.
 		if(r1<=0)
+		{
 			res= 1;
+		}
 		// if r0 is positive, then we may collide this point.
 		else if(r0>=0)
+		{
 			res= min(1.f, r0);
+		}
 		else	// r0<0 && r1>0. the point is already in the sphere!!
 		{
+			//nldebug("COL: Point problem: %.2f, %.2f", r0, r1);
 			// we allow the movement only if we go away from this point.
 			// this is true if the derivative at t=0 is >=0 (because a>0).
 			if(b>=0)
@@ -192,6 +197,22 @@ float		CEdgeCollide::testCircle(const CVector2f &start, const CVector2f &delta, 
 
 			// return time of collision.
 			return t;
+		}
+	}
+	// else, must test if circle collide segment at t=0. if yes, return 0.
+	// ===============================
+	else
+	{
+		// There is just need to test if projection of circle's center onto the line hit the segment.
+		// This is not a good test to know if a circle intersect a segment, but other cases are
+		// managed with test of endPoints of the segment after.
+		float		aProj= start*Dir;
+
+		// if on the interval of the edge.
+		if( aProj>=A0 && aProj<=A1)
+		{
+			// hit the interior of the edge, and sensPos!=sensSpeed. So must stop now!!
+			return 0;
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file edge_collide.h
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.h,v 1.2 2001/05/16 15:17:12 berenguier Exp $
+ * $Id: edge_collide.h,v 1.3 2001/05/21 08:51:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,11 @@ public:
 	 * It may be normal of edge (+-), or normal against a point of the edge.
 	 */
 	float		testCircle(const CVector2f &start, const CVector2f &delta, float radius, CVector2f &normal);
-	// TODO_BBOX: float		testBBox();
+	/** return 1 either if the bbox moves away from the line, or no collision occurs. Else return a [0,1[ interval.
+	 * If collision occurs (ie return<1), return in "normal" the normal of the collision.
+	 * It may be normal of edge (+-), or normal against a point of the edge.
+	 */
+	//float		testBBox(const CVector2f &start, const CVector2f &delta, float radius, CVector2f &normal);
 };
 
 

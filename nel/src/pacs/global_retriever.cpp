@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.8 2001/05/18 08:24:06 legros Exp $
+ * $Id: global_retriever.cpp,v 1.9 2001/05/21 08:51:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -366,6 +366,20 @@ void	NLPACS::CGlobalRetriever::getInstanceBounds(sint32 &x0, sint32 &y0, sint32 
 
 
 
+// ***************************************************************************
+const NLPACS::CRetrievableSurface	*NLPACS::CGlobalRetriever::getSurfaceById(const NLPACS::CSurfaceIdent &surfId)
+{
+	if(surfId.RetrieverInstanceId>=0 && surfId.SurfaceId>=0)
+	{
+		sint32	locRetId= this->getInstance(surfId.RetrieverInstanceId).getRetrieverId();
+		const CRetrievableSurface	&surf= _RetrieverBank->getRetriever(locRetId).getSurface(surfId.SurfaceId);
+		return &surf;
+	}
+	else
+		return NULL;
+}
+
+
 
 // ***************************************************************************
 void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector &origin) const
@@ -411,12 +425,16 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 		sint32	curInstance= cst.CollisionInstances[i];
 		const CRetrieverInstance	&retrieverInstance= getInstance(curInstance);
 
+		// Retrieve the localRetriever of this instance.
+		sint32	localRetrieverId= retrieverInstance.getRetrieverId();
+		// If invalid one (hole), continue.
+		if(localRetrieverId<0)
+			continue;
+		const CLocalRetriever		&localRetriever= _RetrieverBank->getRetriever(localRetrieverId);
+
 		// get delta between startPos.instance and curInstance.
 		CVector		deltaOrigin;
-		deltaOrigin= retrieverInstance.getOrigin()-origin;
-
-		// Retrieve the localRetriever of this instance.
-		const CLocalRetriever		&localRetriever= _RetrieverBank->getRetriever(retrieverInstance.getRetrieverId());
+		deltaOrigin= origin - retrieverInstance.getOrigin();
 
 		// compute movement relative to this localRetriever.
 		CAABBox		bboxMoveLocal= bboxMove;
@@ -425,7 +443,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 		// add possible collision chains with movement.
 		//================
 		sint		firstCollisionChain= cst.CollisionChains.size();
-		CVector2f	transBase(deltaOrigin.x, deltaOrigin.y);
+		CVector2f	transBase(-deltaOrigin.x, -deltaOrigin.y);
 		// Go! fill collision chains that this movement intersect.
 		localRetriever.testCollision(cst, bboxMoveLocal, transBase);
 		// how many collision chains added?  : nCollisionChain-firstCollisionChain.
@@ -537,6 +555,13 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 
 	// reset result.
 	cst.CollisionDescs.clear();
+	// reset all collisionChain to not tested.
+	for(i=0; i<(sint)cst.CollisionChains.size(); i++)
+	{
+		CCollisionChain		&colChain= cst.CollisionChains[i];
+		colChain.Tested= false;
+	}
+
 
 	/*
 		To manage recovery, we must use such an algorithm, so we are sure to trace the way across all surfaces really 
@@ -652,9 +677,20 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 			// so just continue with following surface.
 			currentSurface= cst.CollisionDescs[nextCollisionSurfaceTested].ContactSurface;
 
-			// If we touch a wall, this is the end of search.
-			// TODODO: mgt real walls too (ie those who are walkables walls).
+			// Do we touch a wall??
+			bool	isWall;
 			if(currentSurface.SurfaceId<0)
+				isWall= true;
+			else
+			{
+				// test if it is a walkable wall.
+				sint32	locRetId= this->getInstance(currentSurface.RetrieverInstanceId).getRetrieverId();
+				const CRetrievableSurface	&surf= _RetrieverBank->getRetriever(locRetId).getSurface(currentSurface.SurfaceId);
+				isWall= !(surf.isFloor() || surf.isCeiling());
+			}
+
+			// If we touch a wall, this is the end of search.
+			if(isWall)
 			{
 				// There can be no more collision after this one.
 				cst.CollisionDescs.resize(nextCollisionSurfaceTested+1);
@@ -810,10 +846,10 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 		// compute newPos, localy to the endSurface.
 		// get delta between startPos.instance and curInstance.
 		CVector		deltaOrigin;
-		deltaOrigin= getInstance(res.InstanceId).getOrigin()-origin;
+		deltaOrigin= origin - getInstance(res.InstanceId).getOrigin();
 
 		// NB: for float precision, it is important to compute deltaOrigin, and after compute newPos in local.
-		res.LocalPosition.Estimation= newPos - deltaOrigin;
+		res.LocalPosition.Estimation= newPos + deltaOrigin;
 	}
 
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.48 2003/08/08 16:58:46 vizerie Exp $
+ * $Id: object_viewer.h,v 1.49 2003/08/22 09:04:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,6 @@
 #include "main_dlg.h"
 #include "animation_set_dlg.h"
 #include "animation_dlg.h"
-#include "choose_frame_delay.h"
 
 #include <3d/animation_set.h>
 #include <3d/channel_mixer.h>
@@ -303,8 +302,10 @@ public:
 	const NL3D::CEvent3dMouseListener &getMouseListener(void) const { return _MouseListener ; }
 
 	// get the particle dialog
-	CParticleDlg *getParticleDialog(void) { return _ParticleDlg ; }
-	const CParticleDlg *getParticleDialog(void) const { return _ParticleDlg ; }
+	CParticleDlg *getParticleDialog(void) const { return _ParticleDlg ; }	
+
+	// get the frame delay dialog
+	CChooseFrameDelay *getFrameDelayDlg() const { return _ChooseFrameDelayDlg; }
 
 	// Load animation
 	void loadAnimation (const char* fileName, uint instance);

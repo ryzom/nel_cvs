@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.55 2003/08/19 15:04:12 ledorze Exp $
+ * $Id: debug.h,v 1.56 2003/09/09 15:26:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,9 @@ void nlError (const char *format, ...);
 
 // internal use only
 void createDebug (const char *logPath = NULL, bool logInFile = true);
+
+// call this if you want to change the dir of the log.log file
+void changeLogDirectory(const std::string &dir);
 
 // internal breakpoint window
 void enterBreakpoint (const char *message);

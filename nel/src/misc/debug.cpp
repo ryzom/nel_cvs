@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.80 2003/09/09 15:23:00 lecroart Exp $
+ * $Id: debug.cpp,v 1.81 2003/09/09 15:26:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -839,12 +839,11 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 #endif
 }
 
-void changeLogDirectory(const std::string &directory)
+void changeLogDirectory(const std::string &dir)
 {
-	if (fd == NULL)
-		return;
-
-	fd->setParam("", "");
+	if (fd == NULL)return;
+	string p = CPath::standardizePath(dir) + "log.log";
+	fd->setParam(p);
 }
 
 void createDebug (const char *logPath, bool logInFile)

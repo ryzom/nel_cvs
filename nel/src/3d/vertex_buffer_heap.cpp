@@ -1,7 +1,7 @@
 /** \file vertex_buffer_heap.cpp
  * <File description>
  *
- * $Id: vertex_buffer_heap.cpp,v 1.3 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: vertex_buffer_heap.cpp,v 1.4 2003/03/17 17:32:53 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -84,6 +84,8 @@ void			CVertexBufferHeap::init(IDriver *driver, uint vertexFormat, uint maxVerti
 		_HeapStart= (uint8*)_VBHard->lock();
 		// just a gestion lock, no vertices have changed.
 		_VBHard->unlock(0,0);
+		// In essence, the VBHeap is rarely modified (but on mesh loading). => set it static
+		_VBHard->lockHintStatic(true);
 	}
 	else
 	{

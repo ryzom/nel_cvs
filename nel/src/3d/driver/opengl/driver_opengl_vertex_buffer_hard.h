@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.3 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.4 2003/03/17 17:32:02 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -186,6 +186,7 @@ public:
 	virtual void		unlock(uint startVert, uint endVert);
 	virtual	void		enable();
 	virtual	void		disable();
+	virtual void		lockHintStatic(bool staticLock);
 	// @}
 
 
@@ -201,6 +202,8 @@ public:
 	void			finishFence();
 	// if fence is not set, no-op, else test nglTestFenceNV(), and update local _FenceSet flag.
 	void			testFence();
+
+	bool			getLockHintStatic() const {return _LockHintStatic;}
 
 public:
 	void				*getNVidiaValueEx (uint value)
@@ -219,6 +222,8 @@ private:
 	GLuint				_Fence;
 	// True if a setFence() has been done, without a finishFence().
 	bool				_FenceSet;
+
+	bool				_LockHintStatic;
 
 };
 
@@ -310,6 +315,7 @@ public:
 	virtual void		unlock(uint startVert, uint endVert);
 	virtual	void		enable();
 	virtual	void		disable();
+	virtual void		lockHintStatic(bool staticLock);
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.h
  * <File description>
  *
- * $Id: vertex_buffer_hard.h,v 1.5 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: vertex_buffer_hard.h,v 1.6 2003/03/17 17:32:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,6 +102,16 @@ public:
 	 *	Hence unlock() as the same effect as unlock(0, getNumVertices());
 	 */
 	virtual void			unlock(uint startVert, uint endVert) =0;
+
+	/** Indicate what kind of lock to be done on this VertexBuffer (whatever AGP or VRAM buffer)
+	 *	User should set to true if the VBHard is static: nevers change or very rarely.
+	 *	NVidia OpenGL implementation: "Static lock" are slower, but no fences are inserted after a render with this
+	 *	VVBHard, hence, no slowdown because 1/ of fence overhead insertion  2/ of NVidia swapBuffers() and fence 
+	 *	issues on GeForce2 cards.
+	 *	Default is false
+	 */
+	virtual void			lockHintStatic(bool staticLock) =0;
+
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.6 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.7 2003/03/17 17:32:02 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -267,6 +267,9 @@ CVertexBufferHardGLNVidia::CVertexBufferHardGLNVidia(CDriverGL *drv) : IVertexBu
 
 	// Flag our type
 	NVidiaVertexBufferHard= true;
+
+	// default: dynamic Loick
+	_LockHintStatic= false;
 }
 
 
@@ -304,7 +307,8 @@ void		*CVertexBufferHardGLNVidia::lock()
 	// sync the 3d card with the system.
 
 	// If the user lock an activated VBHard, after rendering some primitives, we must stall the CPU
-	if(GPURenderingAfterFence)
+	// Also always do this for Static Lock VBHard (because no setFence are inserted after rendering
+	if(GPURenderingAfterFence || _LockHintStatic)
 	{
 		// Set a new fence at the current position in the command stream, replacing the old one
 		setFence();
@@ -356,6 +360,12 @@ void			CVertexBufferHardGLNVidia::disable()
 	}
 }
 
+// ***************************************************************************
+void			CVertexBufferHardGLNVidia::lockHintStatic(bool staticLock)
+{
+	// Store the flag.
+	_LockHintStatic= staticLock;
+}
 
 // ***************************************************************************
 void			CVertexBufferHardGLNVidia::setFence()
@@ -665,6 +675,12 @@ void			CVertexBufferHardGLATI::disable()
 		_VertexArrayRange->disable();
 		_Driver->_CurrentVertexBufferHard= NULL;
 	}
+}
+
+// ***************************************************************************
+void			CVertexBufferHardGLATI::lockHintStatic(bool staticLock)
+{
+	// no op.
 }
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.35 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.36 2003/03/17 17:32:02 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1191,8 +1191,12 @@ void				CDriverGL::fenceOnCurVBHardIfNeeded(IVertexBufferHardGL *newVBHard)
 
 				NB: if the fence was previously set. NV_Fence Specification says that the new ONE replaces it.
 				This is EXACTLY what we wants, since the old one is no more interesting.
+
+				NB: never insert a fence for said "Static Lock" VBHard. Those VBHard are said to be "static"
+				therefore, user should never modify them (else lock() is much slower...)
 			*/
-			vbHardNV->setFence();
+			if( !vbHardNV->getLockHintStatic() )
+				vbHardNV->setFence();
 			// Since we have set a new Fence, we won't need to do it at next vbHardNV->lock()
 			vbHardNV->GPURenderingAfterFence= false;
 		}

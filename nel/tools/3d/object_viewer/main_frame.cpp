@@ -11,6 +11,7 @@
 #include "day_night_dlg.h"
 #include "water_pool_editor.h"
 #include "vegetable_dlg.h"
+#include "global_wind_dlg.h"
 #include <nel/misc/file.h>
 #include <3d/nelu.h>
 #include <3d/mesh.h>
@@ -96,12 +97,14 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	DayNightWindow=false;
 	WaterPoolWindow=false;
 	VegetableWindow=false;
+	GlobalWindWindow= false;
 	MoveElement=false;
 	MoveMode=true;
 	X=true;
 	Y=true;
 	Z=true;
 	Euler=false;
+	GlobalWindPower= 1.f;
 
 	_RightButtonMouseListener.ObjViewerDlg = ObjView ;
 	_RightButtonMouseListener.SceneDlg = this ;
@@ -157,9 +160,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
 	ON_COMMAND(IDM_SET_LAG, OnSetLag)
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
-	ON_COMMAND(ID_WINDOW_VEGETABLE, OnWindowVegetable)
 	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
+	ON_COMMAND(ID_WINDOW_VEGETABLE, OnWindowVegetable)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_VEGETABLE, OnUpdateWindowVegetable)
+	ON_COMMAND(ID_WINDOW_GLOBALWIND, OnWindowGlobalwind)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_GLOBALWIND, OnUpdateWindowGlobalwind)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -188,6 +193,7 @@ void CMainFrame::update ()
 	ObjView->_DayNightDlg->ShowWindow (DayNightWindow?SW_SHOW:SW_HIDE);
 	ObjView->_WaterPoolDlg->ShowWindow (WaterPoolWindow?SW_SHOW:SW_HIDE);
 	ObjView->_VegetableDlg->ShowWindow (VegetableWindow?SW_SHOW:SW_HIDE);
+	ObjView->_GlobalWindDlg->ShowWindow (GlobalWindWindow?SW_SHOW:SW_HIDE);
 }
 
 // ***************************************************************************
@@ -216,12 +222,16 @@ void CMainFrame::registerValue (bool read)
 			RegQueryValueEx (hKey, "ViewWaterPool", 0, &type, (LPBYTE)&WaterPoolWindow, &len);
 			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewVegetable", 0, &type, (LPBYTE)&VegetableWindow, &len);
+			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewGlobalWind", 0, &type, (LPBYTE)&GlobalWindWindow, &len);
 			len=sizeof (float);
 			RegQueryValueEx (hKey, "MoveSpeed", 0, &type, (LPBYTE)&MoveSpeed, &len);
 			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ObjectMode", 0, &type, (LPBYTE)&MoveMode, &len);
 			len=sizeof(NLMISC::CRGBA) ;
 			RegQueryValueEx (hKey, "BackGroundColor", 0, &type, (LPBYTE)&BgColor, &len);
+			len=sizeof (float);
+			RegQueryValueEx (hKey, "GlobalWindPower", 0, &type, (LPBYTE)&GlobalWindPower, &len);
 		}
 	}
 	else
@@ -237,9 +247,11 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "ViewWaterPool", 0, REG_BINARY, (LPBYTE)&WaterPoolWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewDayNight", 0, REG_BINARY, (LPBYTE)&DayNightWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewVegetable", 0, REG_BINARY, (LPBYTE)&VegetableWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewGlobalWind", 0, REG_BINARY, (LPBYTE)&GlobalWindWindow, sizeof(bool));
 			RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
 			RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&MoveMode, sizeof(BOOL));
 			RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&BgColor, sizeof(NLMISC::CRGBA));
+			RegSetValueEx(hKey, "GlobalWindPower", 0, REG_BINARY, (LPBYTE)&GlobalWindPower, sizeof(float));
 		}
 	}
 }
@@ -755,6 +767,13 @@ void CMainFrame::OnWindowWaterPool()
 }
 
 
+void CMainFrame::OnWindowGlobalwind() 
+{
+	GlobalWindWindow^= true;
+	update ();
+}
+
+
 static UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator
@@ -842,6 +861,12 @@ void CMainFrame::OnUpdateWindowVegetable(CCmdUI* pCmdUI)
 }
 
 
+void CMainFrame::OnUpdateWindowGlobalwind(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (GlobalWindWindow);
+}
+
+
 void CMainFrame::OnUpdateViewObjectmode(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (MoveMode);
@@ -915,4 +940,5 @@ void CMainFrame::OnActivateTextureSet(UINT nID)
 
 	ObjView->activateTextureSet(convIndex[nID - IDM_ACTIVATE_TEXTURE_SET_1]);	
 }
+
 

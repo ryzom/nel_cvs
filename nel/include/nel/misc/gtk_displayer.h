@@ -1,7 +1,7 @@
 /** \file gtk_displayer.h
  * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: gtk_displayer.h,v 1.2 2002/11/15 15:41:01 lecroart Exp $
+ * $Id: gtk_displayer.h,v 1.2.4.1 2003/05/13 16:27:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ private:
 	void	updateLabels ();
 
 	// called by DT only
-	void	open (std::string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww);
+	void	open (std::string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww, CLog *log);
 	// called by DT only
 	void	clear ();
 	// called by DT only

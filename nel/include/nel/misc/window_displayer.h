@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.14 2003/02/21 15:53:51 lecroart Exp $
+ * $Id: window_displayer.h,v 1.14.2.1 2003/05/13 16:27:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,7 @@ protected:
 	CSynchronized<std::vector<std::string> >						_CommandsToExecute;
 
 	// called by DT only
-	virtual void	open (std::string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww, CLog *log) = 0;
+	virtual void	open (std::string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww, CLog *log) = 0;
 	// called by DT only
 	virtual void	display_main () = 0;
 

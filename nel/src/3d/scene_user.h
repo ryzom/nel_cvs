@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.46 2003/09/25 12:13:12 corvazier Exp $
+ * $Id: scene_user.h,v 1.47 2003/10/13 13:50:36 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,8 @@ protected:
 		UInstanceGroup	**CallerPtr;
 		NLMISC::CVector Offset;
 		uint			SelectedTexture;
-		CWaitingIG(UInstanceGroup **callerPtr, const NLMISC::CVector &offset, uint selectedTexture)	: IGToLoad(NULL), CallerPtr(callerPtr), Offset(offset), SelectedTexture(selectedTexture)
+		IAsyncLoadCallback *Callback;
+		CWaitingIG(UInstanceGroup **callerPtr, const NLMISC::CVector &offset, uint selectedTexture, IAsyncLoadCallback *pCB)	: IGToLoad(NULL), CallerPtr(callerPtr), Offset(offset), SelectedTexture(selectedTexture), Callback(pCB)
 		{}
 	};	
 	//
@@ -144,7 +145,7 @@ public:
 	virtual	void			deleteInstance(UInstance *inst);
 
 	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset, 
-														uint selectedTexture);
+														uint selectedTexture, IAsyncLoadCallback *pCB = NULL);
 
 	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG);
 	virtual void deleteInstanceGroup(UInstanceGroup *pIG);

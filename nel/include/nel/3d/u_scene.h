@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.42 2003/09/25 12:13:13 corvazier Exp $
+ * $Id: u_scene.h,v 1.43 2003/10/13 13:51:02 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,16 @@ class UAnimationSet;
 class UPlayListManager;
 class UPointLight;
 
+
+//****************************************************************************
+// usefull callback for createInstanceGroupAndAddToSceneAsync
+class IAsyncLoadCallback
+{
+public:
+	/// Because the async loader set the pointer of the user after the whole loading (ig+shapes)
+	/// what is passed through this method is the value that will be affected
+	virtual void InstanceGroupCreated(UInstanceGroup *newVal) = 0;
+};
 
 //****************************************************************************
 /**
@@ -148,7 +158,8 @@ public:
 	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup,														
 													    UInstanceGroup **pIG,
 														const NLMISC::CVector &offset,
-														uint selectedTexture
+														uint selectedTexture,
+														IAsyncLoadCallback *pCB = NULL
 													   ) = 0;
 	
 	/**	If we are adding the ig : stop loading and adding it to the scene

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.50 2003/09/25 12:13:12 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.51 2003/10/13 13:50:36 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -412,13 +412,15 @@ void CSceneUser::updateWaitingIG()
 	{
 		bool	erased= false;
 		if (it->IGToLoad != NULL) // ig loaded ?
-		{			
+		{
 			if (it->IGToLoad != (UInstanceGroup *) -1)
-			{				
+			{
 				switch (it->IGToLoad->getAddToSceneState())
 				{
 					case UInstanceGroup::StateNotAdded:
-						// start loading										
+						// start loading
+						if (it->Callback != NULL)
+							it->Callback->InstanceGroupCreated(it->IGToLoad);
 						it->IGToLoad->addToSceneAsync(*this, _DriverUser, it->SelectedTexture);
 					break;
 					case UInstanceGroup::StateAdded:
@@ -729,12 +731,12 @@ void			CSceneUser::deleteInstance(UInstance *inst)
 
 
 void CSceneUser::createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset, 
-														uint selectedTexture)
+														uint selectedTexture, IAsyncLoadCallback *pCB)
 {
 	NL3D_MEM_IG
 	NL3D_HAUTO_ASYNC_IG;
 
-	_WaitingIGs.push_front(CWaitingIG(pIG, offset, selectedTexture));
+	_WaitingIGs.push_front(CWaitingIG(pIG, offset, selectedTexture, pCB));
 	UInstanceGroup::createInstanceGroupAsync(instanceGroup, &(_WaitingIGs.begin()->IGToLoad));
 	// this list updat will be performed at each render, see updateWaitingIG
 }

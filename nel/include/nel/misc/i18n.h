@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.13 2003/06/02 13:53:58 berenguier Exp $
+ * $Id: i18n.h,v 1.14 2003/06/02 14:44:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,11 +103,6 @@ public:
 	/// Load a language file depending of the language
 //	static void load (uint32 lid);
 	static void load (const std::string &languageCode);
-
-	/** Add manually an entry in the map. NB: should still be in correct language. No-Op if already present.
-	 *	Should be called after load().
-	 */
-	static void	appendSpecialEntry(const std::string &label, const ucstring &entry);
 
 	/// Returns the name of the language in english (french, english...)
 	static ucstring getCurrentLanguageName ();

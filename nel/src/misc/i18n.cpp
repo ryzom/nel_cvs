@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.36 2003/06/02 13:53:44 berenguier Exp $
+ * $Id: i18n.cpp,v 1.37 2003/06/02 14:44:40 berenguier Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -134,17 +134,6 @@ void CI18N::load (const std::string &languageCode)
 	if (it == _StrMap.end())
 	{
 		nlwarning("In file %s, missing LanguageName translation (should be first in file)", fileName.c_str());
-	}
-}
-
-void	CI18N::appendSpecialEntry(const std::string &label, const ucstring &entry)
-{
-	// ok, a line read.
-	std::pair<std::map<std::string, ucstring>::iterator, bool> ret;
-	ret = _StrMap.insert(std::make_pair(label, entry));
-	if (!ret.second)
-	{
-		nlwarning("Error in appendSpecialEntry(), the special label %s already exist !", label.c_str());
 	}
 }
 

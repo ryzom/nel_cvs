@@ -8,7 +8,7 @@ build_smallbank='../../bin/build_smallbank.exe'
 database_directory=`cat ../../cfg/config.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the swt directories
-bank_source_directory=`cat ../../cfg/config.cfg | grep "bank_source_directory" | sed -e 's/bank_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+tile_source_directories=`cat ../../cfg/config.cfg | grep "tile_source_directories" | sed -e 's/tile_source_directories//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error
 echo ------- > log.log
@@ -29,7 +29,7 @@ for i in $bank_list ; do
 	# Make the dependencies
 	if ( ! test -e $dest ) || ( test $i -nt $dest ) 
 	then
-		$build_smallbank $i $dest $database_directory/$bank_source_directory/
+		$build_smallbank $i $dest $database_directory/$tile_source_directories/
 		if ( test -e $dest )
 		then
 			echo OK $dest >> log.log

@@ -18,6 +18,9 @@ fn nlerror message =
 		format "%\n" message to:stream
 		close stream
 	)
+
+	-- To the console
+	print message
 )
 
 -- Clear log

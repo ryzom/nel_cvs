@@ -41,6 +41,9 @@ fn nlerror message =
 		format "%\n" message to:stream
 		close stream
 	)
+
+	-- To the console
+	print message
 )
 
 -- This node is n accelerator ?
@@ -142,7 +145,7 @@ fn haveCoarseMesh node =
 -- Clear log
 clearlog ()
 
---try
+try
 (
 	-- Get files in the shape_source_directory
 	files = getFiles "shape_source_directory/*.max" 
@@ -284,10 +287,10 @@ clearlog ()
 		nlerror ("WARNING no max file in folder shape_source_directory")
 	)
 )
---catch 
+catch 
 (
 	-- Error
---	nlerror ("ERROR fatal error exporting shape in folder shape_source_directory")
+	nlerror ("ERROR fatal error exporting shape in folder shape_source_directory")
 )
 
 -- Bye

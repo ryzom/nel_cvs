@@ -45,6 +45,9 @@ fn nlerror message =
 		format "%\n" message to:stream
 		close stream
 	)
+
+	-- To the console
+	print message
 )
 
 -- This node is n accelerator ?
@@ -70,7 +73,7 @@ fn getIg node =
 	return getappdata node NEL3D_APPDATA_IGNAME
 )
 
---try
+try
 (
 	-- Get files in the ig_source_directory
 	files = getFiles "ig_source_directory/*.max" 
@@ -240,10 +243,10 @@ fn getIg node =
 		nlerror ("WARNING no max file in folder ig_source_directory")
 	)
 )
---catch 
+catch 
 (
 	-- Error
---	nlerror ("ERROR fatal error exporting ig in folder ig_source_directory")
+	nlerror ("ERROR fatal error exporting ig in folder ig_source_directory")
 )
 
 -- Bye

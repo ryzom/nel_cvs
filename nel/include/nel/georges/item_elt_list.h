@@ -1,7 +1,7 @@
 /** \file item_elt_list.h
  * Georges system files
  *
- * $Id: item_elt_list.h,v 1.2 2002/02/20 15:26:34 besson Exp $
+ * $Id: item_elt_list.h,v 1.3 2002/03/12 09:23:28 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,13 +39,14 @@ class CItemEltList : public CItemElt
 protected:
 	CItemElt* piemodel;
 	std::vector< CItemElt* > vpie;
-	void Clear();
 
 public:
 	CItemEltList( CLoader* const _pl );
 	virtual ~CItemEltList();
 
 	void BuildItem( CItemElt* const _pie );
+
+	void Clear();
 
 	virtual CStringEx GetFormula() const;
 	virtual void FillParent( const CFormBodyElt* const _pfbe );

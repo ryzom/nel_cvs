@@ -1,7 +1,7 @@
 /** \file item.h
  * Georges system files
  *
- * $Id: item.h,v 1.1 2002/02/14 10:39:35 corvazier Exp $
+ * $Id: item.h,v 1.2 2002/03/12 09:23:28 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,8 +86,9 @@ public:
 	void DelListChild( const unsigned int _index ) const;
 	void VirtualSaveLoad();
 
-	void AddParent( const unsigned int _index );
+	void AddParent( const unsigned int _index = 0);
 	void DelParent( const unsigned int _index );
+	void ClearParents ();
 	CStringEx GetParent( const unsigned int _index ) const;
 	void SetParent( const unsigned int _index, const CStringEx _sx );
 	CStringEx GetActivity( const unsigned int _index ) const;

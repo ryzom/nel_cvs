@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.9 2001/03/05 18:16:32 valignat Exp $
+# $Id: Makefile.am,v 1.10 2001/03/26 09:17:22 valignat Exp $
 #
 
 install-exec-local:
@@ -10,6 +10,7 @@ install-exec-local:
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/agent
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/c
+	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/character
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/e
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/fuzzy
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/logic
@@ -27,6 +28,7 @@ install-exec-local:
 	$(INSTALL_DATA) -m a=r `echo nel/ai/*.h`          $(includedir)/nel/ai/
 	$(INSTALL_DATA) -m a=r `echo nel/ai/agent/*.h`    $(includedir)/nel/ai/agent
 	$(INSTALL_DATA) -m a=r `echo nel/ai/c/*.h`        $(includedir)/nel/ai/c
+	$(INSTALL_DATA) -m a=r `echo nel/ai/character/*.h` $(includedir)/nel/ai/character
 	$(INSTALL_DATA) -m a=r `echo nel/ai/e/*.h`        $(includedir)/nel/ai/e
 	$(INSTALL_DATA) -m a=r `echo nel/ai/fuzzy/*.h`    $(includedir)/nel/ai/fuzzy
 	$(INSTALL_DATA) -m a=r `echo nel/ai/logic/*.h`    $(includedir)/nel/ai/logic
@@ -50,6 +52,7 @@ dist-hook:
 	       $(distdir)/nel/ai/CVS            \
 	       $(distdir)/nel/ai/agent/CVS      \
 	       $(distdir)/nel/ai/c/CVS          \
+	       $(distdir)/nel/ai/character/CVS  \
 	       $(distdir)/nel/ai/e/CVS          \
 	       $(distdir)/nel/ai/fuzzy/CVS      \
 	       $(distdir)/nel/ai/logic/CVS      \

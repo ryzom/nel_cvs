@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.4 2001/03/27 16:09:43 chafik Exp $
+ * $Id: test_method.cpp,v 1.5 2001/03/27 16:11:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,10 +37,10 @@ namespace NLAISCRIPT
 																	NLAIC::CSelfClassFactory(test),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-	const char *IsNULL = "IsNotNull";
+	//const char *IsNULL = ;
 	CLibTest::CMethodCall CLibTest::StaticMethod[] = 
 	{
-		CLibTest::CMethodCall(	IsNULL, 
+		CLibTest::CMethodCall(	"IsNotNull", 
 								CLibTest::TIsNULL, NULL,
 								CLibTest::CheckCount,
 								1,

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.27 2002/09/16 14:51:07 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.28 2002/10/24 08:19:08 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@
 #include "nel/misc/command.h"
 #include "nel/misc/displayer.h"
 
+#include "nel/net/callback_server.h"
 #include "nel/net/service.h"
 
 //
@@ -98,6 +99,8 @@ const TServiceId	BaseSId = 128;			/// Allocated SIds begin at 128 (except for Ag
 
 const TTime			UnregisterTimeout = 10000;	/// After 10s we remove an unregister service if every server didn't ACK the message
 
+CCallbackServer		*CallbackServer = NULL;
+
 //
 // Functions
 //
@@ -141,13 +144,13 @@ void displayRegisteredServices (CLog *log = InfoLog)
 		TSockId id = (*it).SockId;
 		if (id == NULL)
 		{
-			log->displayNL ("> %s '%s' %s-%hu %s", "<NULL>", "<NULL>", (*it).Name.c_str(), (uint16)(*it).SId, (*it).WaitingUnregistration?"WaitUnreg":"");
+			log->displayNL ("> %s-%hu %s '%s' %s %d addr", (*it).Name.c_str(), (uint16)(*it).SId, "<NULL>", "<NULL>", (*it).WaitingUnregistration?"WaitUnreg":"", (*it).Addr.size());
 			for(uint i = 0; i < (*it).Addr.size(); i++)
 				log->displayNL ("              '%s'", (*it).Addr[i].asString().c_str());
 		}
 		else
 		{
-			log->displayNL ("> %s '%s' %s-%hu %s", (*it).SockId->asString().c_str(), CNetManager::getNetBase ("NS")->hostAddress((*it).SockId).asString().c_str(), (*it).Name.c_str(), (uint16)(*it).SId, (*it).WaitingUnregistration?"WaitUnreg":"");
+			log->displayNL ("> %s-%hu %s '%s' %s %d addr", (*it).Name.c_str(), (uint16)(*it).SId, (*it).SockId->asString().c_str(), CallbackServer->hostAddress((*it).SockId).asString().c_str(), (*it).WaitingUnregistration?"WaitUnreg":"", (*it).Addr.size());
 			for(uint i = 0; i < (*it).Addr.size(); i++)
 				log->displayNL ("              '%s'", (*it).Addr[i].asString().c_str());
 		}
@@ -183,7 +186,8 @@ list<CServiceEntry>::iterator doRemove (list<CServiceEntry>::iterator it)
 	{
 		if (canAccess((*it).Addr, (*it3), accessibleAddress))
 		{
-			CNetManager::send ("NS", msgout, (*it3).SockId);
+			CallbackServer->send (msgout, (*it3).SockId);
+			//CNetManager::send ("NS", msgout, (*it3).SockId);
 			nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), (uint16)(*it3).SId);
 		}
 	}
@@ -394,7 +398,8 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 					// send only services that can be accessed and not itself
 					if ((*it3).SId != sid && canAccess(addr, (*it3), accessibleAddress))
 					{
-						CNetManager::send ("NS", msgout, (*it3).SockId);
+						CallbackServer->send (msgout, (*it3).SockId);
+						//CNetManager::send ("NS", msgout, (*it3).SockId);
 						nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), (uint16)(*it3).SId);
 					}
 				}
@@ -626,7 +631,7 @@ static void cbQueryPort (CMessage& msgin, TSockId from, CCallbackNetBase &netbas
  * Note: this callback is called whenever someone disconnects from the NS.
  * May be there are too many calls if many clients perform many transactional lookups.
  */
-static void cbDisconnect (const string &serviceName, TSockId from, void *arg)
+static void cbDisconnect /*(const string &serviceName, TSockId from, void *arg)*/ ( TSockId from, void *arg )
 {
 	doUnregisterService (from);
 	//displayRegisteredServices ();
@@ -635,7 +640,7 @@ static void cbDisconnect (const string &serviceName, TSockId from, void *arg)
 /*
  * a service is connected, send him all services infos
  */
-static void cbConnect (const string &serviceName, TSockId from, void *arg)
+static void cbConnect /*(const string &serviceName, TSockId from, void *arg)*/ ( TSockId from, void *arg )
 {
 	// we have to wait the registred services message to send all services because it this points, we can't know which sub net
 	// the service can use
@@ -721,7 +726,7 @@ public:
 			MinBasePort = newBasePort;
 			MaxBasePort = MinBasePort + uint16 (delta);
 		}
-
+/*
 		// we don't try to associate message from client
 		CNetManager::getNetBase ("NS")->ignoreAllUnknownId (true);
 
@@ -730,7 +735,7 @@ public:
 		
 		// add the callback in case of disconnection
 		CNetManager::setDisconnectionCallback ("NS", cbDisconnect, NULL);
-
+*/
 		// DEBUG
 		// DebugLog->addDisplayer( new CStdDisplayer() );
 
@@ -740,11 +745,26 @@ public:
 		{
 			nlinfo (" %d - '%s'",i, v[i].asString().c_str());
 		}
+
+		uint16 nsport = 50000;
+		if ((var = ConfigFile.getVarPtr ("NSPort")) != NULL)
+		{
+			nsport = var->asInt ();
+		}
+
+		CallbackServer = new CCallbackServer;
+		CallbackServer->init(nsport);
+		CallbackServer->addCallbackArray(CallbackArray, sizeof(CallbackArray)/sizeof(CallbackArray[0]));
+		CallbackServer->setConnectionCallback(cbConnect, NULL);
+		CallbackServer->setDisconnectionCallback(cbDisconnect, NULL);
+		CallbackServer->ignoreAllUnknownId (true);
 	}
 
 	bool update ()
 	{
 		checkWaitingUnregistrationServices ();
+
+		CallbackServer->update ();
 
 		return true;
 	}
@@ -754,7 +774,7 @@ public:
 //
 /// Naming Service
 //
-NLNET_OLD_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray, NELNS_CONFIG, NELNS_LOGS)
+NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 0, EmptyCallbackArray, NELNS_CONFIG, NELNS_LOGS)
 
 
 //

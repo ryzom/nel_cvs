@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Simple example of NeL sound engine usage
  *
- * $Id: main.cpp,v 1.2 2001/08/27 09:16:22 cado Exp $
+ * $Id: main.cpp,v 1.3 2001/08/28 17:05:26 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ void Init()
 /*
  * Adding a source
  */
-USource *OnAddSource( const char *name, bool looping, float x, float y, float z )
+USource *OnAddSource( const char *name, float x, float y, float z )
 {
 	/*
 	 * Create a source with sound 'name', and set some of its initial properties, if successful
@@ -107,8 +107,12 @@ USource *OnAddSource( const char *name, bool looping, float x, float y, float z 
 	if ( source != NULL )
 	{
 		source->setPos( CVector(x,y,z) );
-		source->setLooping( looping );
-		source->play(); // start playing immediatly
+
+		/* The initial gain, pitch and looping state are stored
+		 * in the "source sounds file".
+		 */
+
+		source->play(); // start playing immediately
 	}
 	else
 	{
@@ -154,8 +158,8 @@ void main()
 	printf( "One is 20 meters ahead, on the right\n" );
 	printf( "The other is 5 meters ahead, on the left\n" );
 	getchar();
-	USource *src1 = OnAddSource( "Beep", true, 1.0f, 20.0f, 0.0f );  // Beep on the right, 20 meters ahead
-	USource *src2 = OnAddSource( "Tuut", true, -2.0f, 5.0f, 0.0f ); // Tuut on the left, 5 meters ahead
+	USource *src1 = OnAddSource( "Beep", 1.0f, 20.0f, 0.0f );  // Beep on the right, 20 meters ahead
+	USource *src2 = OnAddSource( "Tuut", -2.0f, 5.0f, 0.0f ); // Tuut on the left, 5 meters ahead
 
 	// Second step: we will move the listener ahead
 	printf( "Press ENTER again to start moving the listener\n" );

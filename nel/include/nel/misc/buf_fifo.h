@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Interface for CBufFIFO
  *
- * $Id: buf_fifo.h,v 1.4 2001/02/26 15:13:30 cado Exp $
+ * $Id: buf_fifo.h,v 1.5 2001/02/27 17:36:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,8 +69,14 @@ public:
 	/// Push 'buffer' in the head of the FIFO
 	void	 push (const std::vector<uint8> &buffer);
 
-	/// Pop the buffer in the tail of the FIFO and put it in 'buffer'
-	void	 pop (std::vector<uint8> &buffer);
+	/// Concate and push 'buffer1' and buffer2 in the head of the FIFO. The goal is to avoid a copy
+	void	 push (const std::vector<uint8> &buffer1, const std::vector<uint8> &buffer2);
+
+	/// Get the buffer in the tail of the FIFO and put it in 'buffer'
+	void	 front (std::vector<uint8> &buffer);
+
+	/// Pop the buffer in the tail of the FIFO
+	void	 pop ();
 
 	/// Set the size of the FIFO buffer in byte
 	void	 resize (uint32 size);
@@ -101,8 +107,7 @@ private:
 	uint8	*_Head;
 	// tail of the FIFO
 	uint8	*_Tail;
-
-	// pointer to the real end of the buffer
+	// pointer to the rewinder of the FIFO
 	uint8	*_Rewinder;
 
 	// return true if we can put size bytes on the buffer
@@ -116,10 +121,10 @@ private:
 	uint32 _BiggestBuffer;
 	uint32 _SmallestBuffer;
 	uint32 _Pushed ;
-	uint32 _Poped;
+	uint32 _Fronted;
 	uint32 _Resized;
 	TTicks _PushedTime;
-	TTicks _PopedTime;
+	TTicks _FrontedTime;
 	TTicks _ResizedTime;
 };
 

@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.19 2002/11/06 12:23:26 corvazier Exp $
+ * $Id: script.cpp,v 1.20 2003/02/20 14:38:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2045,7 +2045,37 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 			// Render the scene
 			CNELU::Scene.render();
 			CNELU::Scene.render();
-		
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+
 			// Snapshot
 			CNELU::Driver->getBuffer (snapshot);
 			snapshot.flipV ();

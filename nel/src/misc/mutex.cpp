@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.25 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: mutex.cpp,v 1.26 2002/01/08 15:56:36 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,7 +243,7 @@ CUnfairMutex::CUnfairMutex(const std::string &name)
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init( &attr );
 	// Fast mutex. Note: on Windows all mutexes are recursive
-	pthread_mutexattr_setkind_np( &attr, PTHREAD_MUTEX_FAST_NP ); //PTHREAD_MUTEX_ERRORCHECK_NP );//PTHREAD_MUTEX_ADAPTIVE_NP );//PTHREAD_MUTEX_RECURSIVE_NP );
+	pthread_mutexattr_setkind_np( &attr, PTHREAD_MUTEX_ADAPTIVE_NP ); //PTHREAD_MUTEX_ERRORCHECK_NP );//PTHREAD_MUTEX_ADAPTIVE_NP );//PTHREAD_MUTEX_RECURSIVE_NP );
 	pthread_mutex_init( &mutex, &attr );
 	pthread_mutexattr_destroy( &attr );
 }

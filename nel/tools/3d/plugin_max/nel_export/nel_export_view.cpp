@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.29 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: nel_export_view.cpp,v 1.30 2002/03/13 11:13:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,10 +37,10 @@
 #include "pacs/retriever_bank.h"
 #include "pacs/global_retriever.h"
 
-#include "r:/code/nel/tools/3d/object_viewer/object_viewer_interface.h"
+#include "../../object_viewer/object_viewer_interface.h"
 
 // For lighting ig with pacs.
-#include "r:/code/nel/tools/3d/ig_lighter_lib/ig_lighter_lib.h"
+#include "../../ig_lighter_lib/ig_lighter_lib.h"
 
 
 #include "../nel_mesh_lib/export_nel.h"

@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
- * <File description>
+ * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.4 2002/01/29 15:37:04 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.5 2002/02/15 17:10:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,10 +33,8 @@
 #include "3d/material.h"
 #include "3d/ps_attrib_maker.h"
 
-namespace NL3D {
-
-
-
+namespace NL3D 
+{
 
 
 ////////////////////////////////
@@ -48,7 +46,7 @@ class CTextureGrouped;
 /**
  * This is the base class for all particles.
  * A deriver must provide a drawing method for his particle.
- * Not sharable.
+ * Not sharable accross systems.
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001
@@ -60,10 +58,8 @@ public:
 	/// Constructor
 	CPSParticle();
 
-
 	/// return this bindable type
 	uint32 getType(void) const { return PSParticle; }
-
 
 	/// return priority
 	virtual uint32 getPriority(void) const { return 1000; }
@@ -104,16 +100,26 @@ public:
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
 	virtual uint32 getMaxNumFaces(void) const = 0;
-
-
-
 	
 	/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{ 		
-		f.serialVersion(1);
-		CPSLocatedBindable::serial(f);	
+		/// version 2 : auto-lod saved
+		sint ver = f.serialVersion(2);
+		CPSLocatedBindable::serial(f);
+		if (ver >= 2)
+		{
+			f.serial(_DisableAutoLOD);
+		}		
 	}
+
+
+	/// Force the Auto-LOD to be disbaled. When set to false, the default behaviour set in the system is used
+	void	disableAutoLOD(bool disable = true) { _DisableAutoLOD = disable; }
+
+	/// Test wether Auto-LOD is disabled.
+	bool    isAutoLODDisabled() const { return _DisableAutoLOD; }	
+
 protected:
 
 	/** Shortcut to notify that the max number of faces has changed
@@ -141,14 +147,22 @@ protected:
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
-	virtual void resize(uint32 size) = 0;	
+	virtual void resize(uint32 size) = 0;
+
+
+	/** System may have hand-tuned LOD, or auto LOD.
+	  * This compute the number of particles that must really be displayed, and the src step
+	  * that allow to go through the whole collection. The step in the source is in a fixed point 16:16 format
+	  */
+	 void computeSrcStep(uint32 &step, uint &numToProcess);
+
+private:
+	 /// Disable Auto-LOD flag
+	 bool	_DisableAutoLOD;
 };
 
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 /// this class adds tunable color to a particle. Can be added using public multiple inheritance
 class CPSColoredParticle
@@ -180,9 +194,7 @@ class CPSColoredParticle
 		~CPSColoredParticle();
 
 		/// serialization. 
-		void serialColorScheme(NLMISC::IStream &f) throw(NLMISC::EStream);
-
-		
+		void serialColorScheme(NLMISC::IStream &f) throw(NLMISC::EStream);		
 
 	protected:		
 
@@ -205,10 +217,13 @@ class CPSColoredParticle
 		}
 		void resizeColor(uint32 size)
 		{
+			nlassert(size < (1 << 16));
 			if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->resize(size, getColorOwner()->getSize());
 		}
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// this class adds tunable size to a particle. Can be added using public multiple inheritance
 class CPSSizedParticle
@@ -260,11 +275,14 @@ class CPSSizedParticle
 		}
 		void resizeSize(uint32 size)
 		{
+			nlassert(size < (1 << 16));
 			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->resize(size, getSizeOwner()->getSize());
 		}
 };
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// this class adds tunable 2D rotation to a particle, it can be used by public multiple inheritance
 class CPSRotated2DParticle
@@ -317,9 +335,7 @@ class CPSRotated2DParticle
 		}
 
 		/// init the rotation table
-
 		static void initRotTable(void);
-
 
 	protected:	
 		/// deriver must return their owner there
@@ -344,9 +360,14 @@ class CPSRotated2DParticle
 		}
 		void resizeAngle2D(uint32 size)
 		{
+			nlassert(size < (1 << 16));
 			if (_Angle2DScheme && _Angle2DScheme->hasMemory()) _Angle2DScheme->resize(size, getAngle2DOwner()->getSize());
 		}
 };
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// this class is an interface for particles that have unanimated textures
 struct CPSTexturedParticleNoAnim
@@ -358,6 +379,8 @@ struct CPSTexturedParticleNoAnim
 		virtual const ITexture				*getTexture(void) const = 0;
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /** this class adds a texture to a particle. The texture can be animated or not. it can be used by public multiple inheritance.
  *  The frame animation are all stored in the same texture for optimisation so it's not suited for large anim...
@@ -406,8 +429,6 @@ class CPSTexturedParticle
 		// get the texture (const version)
 		const ITexture *getTexture(void) const { return _Tex; }
 
-
-
 		/// ctor : default have no texture. You must set it, otherwise you'll get an assertion when it's drawn
 		CPSTexturedParticle();
 
@@ -416,10 +437,8 @@ class CPSTexturedParticle
 
 		/// serialization. We choose a different name because of multiple-inheritance
 		void serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream);		
-
 		
-	protected:	
-		
+	protected:			
 		/// deriver must return their owner there
 		virtual CPSLocated *getTextureIndexOwner(void) = 0;
 		
@@ -447,11 +466,13 @@ class CPSTexturedParticle
 		}
 		void resizeTextureIndex(uint32 size)
 		{
+			nlassert(size < (1 << 16));
 			if (_TextureIndexScheme && _TextureIndexScheme->hasMemory()) _TextureIndexScheme->resize(size, getTextureIndexOwner()->getSize() );
 		}
 };
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /** This class add multitexturing support to particles. It doesn't support texture animation however.
   * It adds a second texture that is combined with the main texture by using a given operation.
@@ -481,8 +502,7 @@ public:
 	/** Set the operation for the main texture. When EnvBumpMap is used, setTexture2 must be called with a bump map,
 	  * and the primary texture must be convertible to rgba. Convert the texture to / from a bumpmap if needed
 	  */
-	void						setMainTexOp(TOperator op);
-	
+	void						setMainTexOp(TOperator op);	
 
 	TOperator					getMainTexOp() const	   { return _MainOp; }
 
@@ -520,8 +540,6 @@ public:
 		return _TexScroll[stage];
 	}
 
-
-
 	/** set the scroll speed for tex 1 & 2 when the alternate op is used
 	  * \param stage can be set to 0 or one
 	  */
@@ -539,13 +557,11 @@ public:
 	/// serial this object
 	void serialMultiTex(NLMISC::IStream &f) throw(NLMISC::EStream);	
 
-
 	/** setup a material from this object and a primary texture
 	  * drv is used to check the device caps.
 	  * Must be called before display when multitextureing is used
 	  */
 	void setupMaterial(ITexture *primary, IDriver *drv, CMaterial &mat);
-
 
 	/** this act as if the system had the most basic caps supported (no EMBM for example...)
 	  * Should be used only in edition mode for test
@@ -562,6 +578,10 @@ public:
 	/// Use the particle age rather than the global time to compute textures coordinates. (when alternate texture is used)
 	void	setUseLocalDateAlt(bool use);
 	bool	getUseLocalDateAlt() { return (_MultiTexState & ScrollUseLocalDateAlternate) != 0; }
+
+	/// Set a bump factor (when embm is used)
+	void	setBumpFactor(float bumpFactor) { _BumpFactor = bumpFactor; touch(); }
+	float	getBumpFactor() const { return _BumpFactor; }
 
 protected:	
 	void						setupMultiTexEnv(TOperator op, ITexture *tex1, ITexture *tex2, CMaterial &mat);	
@@ -592,9 +612,13 @@ protected:
 		if (force) _MultiTexState |= BasicCapsForced;
 		else _MultiTexState &= ~BasicCapsForced;
 	}
+	float		_BumpFactor;
 	static bool _ForceBasicCaps;	
 };
  
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /** this class adds tunable 3D rotation to a PLANE particle, it can be used by public multiple inheritance
  *  It must just produce 2 vectors that give the x and y vector of the local basis.
@@ -631,9 +655,7 @@ class CPSRotated3DPlaneParticle
 		~CPSRotated3DPlaneParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
-
-		void serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream);		
-
+		void serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	protected:		
 		/// if this is false, constant size will be used instead of a scheme
@@ -655,10 +677,13 @@ class CPSRotated3DPlaneParticle
 		}
 		void resizePlaneBasis(uint32 size)
 		{
+			nlassert(size < (1 << 16));
 			if (_PlaneBasisScheme && _PlaneBasisScheme->hasMemory()) _PlaneBasisScheme->resize(size, getPlaneBasisOwner()->getSize());
 		}
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /** This add a hint to rotated particle : only a few one are rotated, and the other are duplcated
  * 
@@ -691,11 +716,11 @@ struct CPSHintParticleRotateTheSame
 	 *  \return 0 if the hint is disabled, the number of configurations else
 	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
 	 */
-
 	virtual uint32 checkHintRotateTheSame(float &minAngularVelocity, float &maxAngularVelocity) const = 0;
 };
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// base struct for particle that have a tail
 struct CPSTailParticle
@@ -721,13 +746,13 @@ struct CPSTailParticle
 	 *  The default is false. With that you can control if a rotation of the system will rotate the tail
 	 */
 	virtual void setSystemBasis(bool yes) = 0;
-
 		
 	/// return true if the tails are in the system basis
 	virtual bool isInSystemBasis(void) const = 0;
 };
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// base struct for particles that can have a shape (e.g mesh...)
 struct CPSShapeParticle
@@ -739,6 +764,8 @@ struct CPSShapeParticle
 	virtual std::string getShape(void) const = 0;
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /** this contains material of a particle, this doesn't initiliaze anything, this just give the abylity to 
   * change the blending mode
@@ -759,7 +786,14 @@ public:
 	void setBlendingMode(CPSMaterial::TBlendingMode mode);
 
 	/// return the blending mode currently used
-	CPSMaterial::TBlendingMode getBlendingMode(void) const;
+	CPSMaterial::TBlendingMode getBlendingMode(void) const;	
+
+
+	/** Force the material to have one texture that is modulated by diffuse, and a constant color
+	  * and its diffuse color. This is not compatible with multitextureing.
+	  * \param force true to force constant color modulation
+	  */
+	void forceModulateConstantColor(bool force, const NLMISC::CRGBA &col = NLMISC::CRGBA::White);
 	
 protected:
 	CMaterial _Mat;		
@@ -772,6 +806,6 @@ protected:
 } // NL3D
 
 
-#endif // NL_PS_PARTICLE_H
+#endif // NL_PS_PARTICLE_BASIC_H
 
 /* End of ps_particle.h */

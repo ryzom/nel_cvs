@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.81 2001/04/03 13:02:56 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.82 2001/04/03 14:21:28 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -468,8 +468,15 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
 	glDisable(GL_NORMALIZE);
-
 	_CurrentNormalize= false;
+
+
+	// Be always in EXTSeparateSpecularColor.
+	if(_Extensions.EXTSeparateSpecularColor)
+	{
+		glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL_EXT, GL_SEPARATE_SPECULAR_COLOR_EXT);
+	}
+
 
 
 	// Activate the default texture environnments for all stages.

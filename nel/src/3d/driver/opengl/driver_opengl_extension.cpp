@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.5 2001/03/06 18:16:59 corvazier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.6 2001/04/03 14:21:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,6 +238,16 @@ static bool	setupEXTVertexWeighting(const char	*glext)
 }
 
 
+// *********************************
+static bool	setupEXTSeparateSpecularColor(const char	*glext)
+{
+	if(strstr(glext, "GL_EXT_separate_specular_color")==NULL)
+		return false;
+
+	return true;
+}
+
+
 // ***************************************************************************
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
@@ -260,6 +270,9 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	// Check if NVidia GL_EXT_vertex_weighting is available.
 	ext.EXTVertexWeighting= setupEXTVertexWeighting(glext);
+
+	// Check EXTSeparateSpecularColor.
+	ext.EXTSeparateSpecularColor= setupEXTSeparateSpecularColor(glext);
 }
 
 

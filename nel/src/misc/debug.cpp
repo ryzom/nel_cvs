@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.104 2004/12/24 11:36:14 boucher Exp $
+ * $Id: debug.cpp,v 1.105 2004/12/29 19:10:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1144,7 +1144,7 @@ class CFoo
 // Commands
 //
 
-NLMISC_CATEGORISED_COMMAND(nel, displayInstanceCounter, "display the instance counters", "[<className>]")
+NLMISC_CATEGORISED_COMMAND(nel, displayInstanceCounter, "display the instance counters", "[<filter>]")
 {
 	string className;
 	if (args.size() == 1)
@@ -1162,7 +1162,7 @@ NLMISC_CATEGORISED_COMMAND(nel, displayInstanceCounter, "display the instance co
 	{
 		if (!className.empty())
 		{
-			if (lines[i].find(className) != 2)
+			if (lines[i].find(className) == string::npos)
 				continue;
 		}
 

@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.5 2001/01/24 09:08:36 portier Exp $
+ * $Id: message_script.h,v 1.6 2001/01/31 14:01:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,7 @@ namespace NLAIAGENT
 
 		public:
 			CMessageScript(const CMessageScript &);
-			CMessageScript();
+			CMessageScript(NLAISCRIPT::CMessageClass *b = NULL);
 			CMessageScript( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
 
 			virtual ~CMessageScript();			

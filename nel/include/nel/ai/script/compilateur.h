@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.17 2001/01/26 13:36:26 chafik Exp $
+ * $Id: compilateur.h,v 1.18 2001/01/31 14:02:06 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,6 +183,7 @@ namespace NLAISCRIPT
 		sint32 _LastFVarIndex;
 		sint32 _NbLogicParams;
 		bool   _InLineParse;
+		std::list<bool>   _FromStack;
 		tDicoStr *_Dictionary;
 		bool isRunMsg;
 		bool haveReturn;

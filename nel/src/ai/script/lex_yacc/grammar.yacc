@@ -457,7 +457,12 @@ using  namespace NLAIFUZZY;
 							EG_MATH
 							Expression
 							{
-								if(!affectation()) return false;
+								if(!affectation()) 
+								{
+									_FromStack.pop_back();
+									return false;
+								}
+								_FromStack.pop_back();
 							}
 						;
 	
@@ -500,7 +505,12 @@ using  namespace NLAIFUZZY;
 							{	
 								_ExpressionType = _ExpressionTypeTmp.back();
 								_ExpressionTypeTmp.pop_back();								
-								if(!callFunction()) return 0;	
+								if(!callFunction())
+								{
+									_FromStack.pop_back();
+									return 0;	
+								}
+								_FromStack.pop_back();
 							}
 						;
 	
@@ -851,7 +861,12 @@ using  namespace NLAIFUZZY;
 						|	Variable
 							{								
 								_IsFacteurIsExpression = false;
-								if(!processingVar()) return false;
+								if(!processingVar())
+								{
+									_FromStack.pop_back();
+									return false;
+								}
+								_FromStack.pop_back();
 							}	
 						|	AppelleDeFonction
 							{								
@@ -898,7 +913,8 @@ using  namespace NLAIFUZZY;
 								_LasVarStr.clear();
 								_LasVarStr.push_back(NLAISCRIPT::CStringType(LastyyText[1]));
 								_LastFact.VarType = varTypeUndef;
-								_IsFacteurIsExpression = false;								
+								_IsFacteurIsExpression = false;	
+								_FromStack.push_back(false);							
 							}
 
 						|	AppelleDeFonction LEPOINT IDENT
@@ -908,14 +924,17 @@ using  namespace NLAIFUZZY;
 								_LasVarStr.push_back(LastyyText[1]);
 								setMethodVar();
 								_TypeList.push_back(_FlotingExpressionType);
-								_FlotingExpressionType->incRef();								
+								_FlotingExpressionType->incRef();
+								_FromStack.push_back(true);
+
 							}
 
 						|	Facteur LEPOINT IDENT
 							{	
 								cleanTypeList();
 								_TypeList.push_back(_FlotingExpressionType);
-								_FlotingExpressionType->incRef();				
+								_FlotingExpressionType->incRef();
+								_FromStack.push_back(true);
 							}						
 
 						|	Variable
@@ -929,6 +948,7 @@ using  namespace NLAIFUZZY;
 									_TypeList.push_back(_FlotingExpressionType);
 									_FlotingExpressionType->incRef();
 									_LasVarStr.clear();
+									_FromStack.pop_back();
 								}
 								_LasVarStr.push_back(LastyyText[1]);
 							}						

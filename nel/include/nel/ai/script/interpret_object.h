@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: interpret_object.h,v 1.6 2001/01/31 14:02:06 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ namespace NLAISCRIPT
 		IClassInterpret();
 		IClassInterpret(NLAIC::CIdentType *idType);
 		virtual ~IClassInterpret();
-		const NLAIC::CIdentType &getType() const;
+		virtual const NLAIC::CIdentType &getType() const;
 		void setType(NLAIC::CIdentType *idType);
 		void setType(const NLAIAGENT::IVarName &, const IClassInterpret &);
 
@@ -186,7 +186,7 @@ namespace NLAISCRIPT
 		void getDebugString(char *text) const;
 		const NLAIC::IBasicType *clone() const;
 		const NLAIC::IBasicType *newInstance() const;
-		const NLAIC::CIdentType &getType() const;
+		virtual const NLAIC::CIdentType &getType() const;
 		const NLAIC::IBasicInterface *createInstance() const;
 		const NLAIC::IBasicInterface *getClass() const;
 		//@}

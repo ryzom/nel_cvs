@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.5 2001/01/17 10:32:29 chafik Exp $
+ * $Id: agent_object.h,v 1.6 2001/01/31 14:01:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -450,9 +450,9 @@ namespace NLAIAGENT
 		///Pop the front IObjectIA and return it.
 		virtual const IObjectIA *popFront() = 0;
 		///return the back IObjectIA.
-		virtual const IObjectIA *get() = 0;		
+		virtual const IObjectIA *get() const = 0;		
 		///return the front IObjectIA.
-		virtual const IObjectIA *getFront() = 0;
+		virtual const IObjectIA *getFront() const = 0;
 		///get the size of the list.
 		virtual sint32 size() const = 0;
 
@@ -525,9 +525,9 @@ namespace NLAIAGENT
 		void pushFront(const IObjectIA *o);
 		void cpy(const IObjectIA &o);
 		const IObjectIA *pop();
-		const IObjectIA *get();
+		const IObjectIA *get() const;
 		const IObjectIA *popFront();
-		const IObjectIA *getFront();
+		const IObjectIA *getFront() const;
 		sint32 size() const;
 		tListType findList(const IObjectIA &obj) const;
 		tListType::const_iterator getBegin() const;
@@ -609,9 +609,9 @@ namespace NLAIAGENT
 
 		void cpy(const IObjectIA &o);
 		const IObjectIA *pop();
-		const IObjectIA *get();
+		const IObjectIA *get() const;
 		const IObjectIA *popFront();
-		const IObjectIA *getFront();
+		const IObjectIA *getFront() const;
 		sint32 size() const;
 		tVectorType findList(const IObjectIA &obj) const;
 		tVectorType::const_iterator getBegin() const;

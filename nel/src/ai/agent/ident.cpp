@@ -1,6 +1,6 @@
 /** \file identifiant.cpp
  *
- * $Id: ident.cpp,v 1.4 2001/01/26 13:36:35 chafik Exp $
+ * $Id: ident.cpp,v 1.5 2001/01/31 14:01:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -229,6 +229,8 @@ namespace NLAIAGENT
 		}
 	}
 
+	
+
 	IVarName &CIndexedVarName::operator += (const IVarName &s)
 	{
 		char *n = (char *)addString(s);
@@ -307,6 +309,11 @@ namespace NLAIAGENT
 		return _TableName[_Index].Name->getString();
 	}	
 	
+
+	IRefrence *CLocWordNumRef::getRef(CNumericIndex &)
+	{
+		return NULL;
+	}
 
 	void releaseAgentLib()
 	{

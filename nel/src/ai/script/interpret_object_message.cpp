@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.5 2001/01/17 10:32:10 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.6 2001/01/31 14:01:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,9 @@
 
 namespace NLAISCRIPT
 {
+	//###############################
+	//CMessageClass
+	//###############################
 	CMessageClass::CMessageClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
 	{
 		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());		
@@ -90,4 +93,18 @@ namespace NLAISCRIPT
 	CMessageClass::~CMessageClass()
 	{
 	}
+
+//#########################################
+//		CMsgNotifyParentClass
+//#########################################
+	
+	const NLAIC::IBasicType *CMsgNotifyParentClass::clone() const
+	{
+		return new CMsgNotifyParentClass();
+	}
+	const NLAIC::IBasicType *CMsgNotifyParentClass::newInstance() const
+	{
+		return new CMsgNotifyParentClass();
+	}
+	
 }

@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.14 2001/01/24 15:35:58 chafik Exp $
+ * $Id: yacc.cpp,v 1.15 2001/01/31 14:01:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -822,7 +822,7 @@ namespace NLAISCRIPT
 		IConstraint *c;		
 		_LastPosHeap = 0;
 		_LastTypeCall = (sint32)CConstraintMethode::normalCall;
-		if(_TypeList.size()) 
+		if(_FromStack.back() && _TypeList.size()) 
 		{
 			_LastbaseClass = _TypeList.back();
 			_TypeList.pop_back();

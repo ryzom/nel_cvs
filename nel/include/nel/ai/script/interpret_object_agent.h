@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.10 2001/01/25 10:09:48 portier Exp $
+ * $Id: interpret_object_agent.h,v 1.11 2001/01/31 14:02:06 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -50,6 +50,9 @@ namespace NLAISCRIPT
 		///C++ Base class representative pointer. This pointer allow to get the offset of base method defined in it.
 		NLAIAGENT::IObjectIA *_BaseObjectInstance;
 	public:
+
+		//IAgentMultiClass(NLAIAGENT::IObjectIA *b);
+		
 
 		IAgentMultiClass()
 		{

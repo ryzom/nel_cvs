@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.7 2001/01/30 10:33:20 portier Exp $
+ * $Id: ident.h,v 1.8 2001/01/31 14:01:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,10 +40,11 @@ namespace NLAIAGENT
 #ifndef _MAX__INDEX_DEFINED
 		const sint32 maxIndex = 2;
 		#define _MAX__INDEX_DEFINED
-		const uint64 maxResolutionNumer = ((uint64)2 << (uint64)48) - (uint64)1;
+
+		const uint64 maxResolutionNumer = ((uint64)2 << 48) - (uint64)1;
 #else
 		extern const sint32 maxIndex;
-		external const uint64 maxResolutionNumer;
+		extern const uint64 maxResolutionNumer;
 #endif
 
 	/**	
@@ -630,6 +631,8 @@ namespace NLAIAGENT
 		Load the mapping objects in the word
 		*/
 		static bool loadMapping(NLMISC::IStream &);
+
+		static IRefrence *getRef(CNumericIndex &);		
 		//@}
 	};
 	

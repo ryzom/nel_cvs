@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: messagerie.h,v 1.12 2001/01/23 14:26:44 portier Exp $
+ * $Id: messagerie.h,v 1.13 2001/01/31 14:01:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,9 +263,9 @@ namespace NLAIAGENT
 		}
 		virtual void cpy(const IObjectIA &o);
 		virtual const IObjectIA *pop();
-		virtual const IObjectIA *get();
+		virtual const IObjectIA *get() const;
 		virtual const IObjectIA *popFront();
-		virtual const IObjectIA *getFront();
+		virtual const IObjectIA *getFront() const;
 		virtual sint32 size() const;
 		virtual const IObjectIA *find(const IObjectIA &obj) const;
 		virtual void eraseFirst(const IObjectIA &obj);

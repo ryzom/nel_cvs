@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.22 2001/01/29 11:11:42 chafik Exp $
+ * $Id: agent_script.cpp,v 1.23 2001/01/31 14:01:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,7 @@
  */
 #include "nel/ai/agent/agent_script.h"
 #include "nel/ai/agent/agent_manager.h"
+#include "nel/ai/agent/agent_mailer.h"
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/script/codage.h"
 #include "nel/ai/script/type_def.h"
@@ -83,11 +84,33 @@ namespace NLAIAGENT
 									NULL,CAgentScript::CheckCount,
 									2,
 									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType)))),
+
 		CAgentScript::CMethodCall(	_FATHER_, 
 									CAgentScript::TFather, 
-									NULL,CAgentScript::DoNotCheck,
-									2,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CAgentScript::IdAgentScript))))
+									NULL,CAgentScript::CheckCount,
+									0,
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CAgentScript::IdAgentScript)))),
+
+		CAgentScript::CMethodCall(	_SELF_, 
+									CAgentScript::TSelf, 
+									NULL,CAgentScript::CheckCount,
+									0,
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CAgentScript::IdAgentScript)))),
+
+		CAgentScript::CMethodCall(	_GETNAME_, 
+									CAgentScript::TGetName, 
+									NULL,CAgentScript::CheckCount,
+									1,
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CAgentScript::IdAgentScript)))),
+
+		CAgentScript::CMethodCall(	_REMOVECHILD_, 
+									CAgentScript::TRemoveChild, 
+									NULL,CAgentScript::CheckCount,
+									0,
+									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType))))
+/*
+
+*/
 	};
 
 	CAgentScript::CAgentScript(const CAgentScript &a): IAgentManager(a)
@@ -420,6 +443,48 @@ namespace NLAIAGENT
 		return r;
 	}
 
+	IObjectIA::CProcessResult CAgentScript::getDynamicName(NLAIAGENT::IBaseGroupType *g)
+	{	
+#ifdef NL_DEBUG
+	char txt[1024*8];
+	g->getDebugString(txt);
+#endif
+
+		IObjectIA::CProcessResult r;
+		const IObjectIA *o = ((CLocalAgentMail *)g->get())->getHost();
+		tmapDefNameAgent::iterator i = _DynamicAgentName.begin();
+
+		while(i != _DynamicAgentName.end())
+		{
+			if( o == ((IObjectIA *)*((*i).second)) )
+			{
+				CStringType *s = new CStringType((*i).first);				
+				r.Result = s;
+				return r;
+			}
+			i ++;
+		}
+		r.Result = new CStringType(CStringVarName("Unknown"));
+		return r;
+	}
+	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
+	{
+		CStringType *s = (CStringType *)g->get();
+		tmapDefNameAgent::iterator i = _DynamicAgentName.find(*s);
+		IObjectIA::CProcessResult r;
+		r.ResultState = IObjectIA::ProcessIdle;
+
+		if(i != _DynamicAgentName.end())
+		{			
+			removeChild((*i).second);
+			r.Result = new DigitalType(1.0);
+			return r;
+		}		
+		r.Result = &DigitalType::NullOperator;
+		r.Result->incRef();
+		return r;
+	}
+
 	IObjectIA::CProcessResult CAgentScript::sendMethod(IObjectIA *param)
 	{
 		INombreDefine *p = (INombreDefine *)((IBaseGroupType *)param)->popFront();
@@ -642,6 +707,21 @@ namespace NLAIAGENT
 		}		
 	}
 
+	IObjectIA::CProcessResult CAgentScript::runActivity()
+	{
+		
+		NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext();
+		context->Self = this;
+		runMethodeMember(_AgentClass->getRunMethod(), context);
+		
+		return ProcessRun;
+	}
+
+	bool CAgentScript::haveActivity() const
+	{
+		return (_AgentClass->getRunMethod() >= 0);
+	}
+
 	const IObjectIA::CProcessResult &CAgentScript::run()
 	{
 		setState(processBuzzy,NULL);
@@ -657,12 +737,7 @@ namespace NLAIAGENT
 		
 		processMessages();
 
-		if(_AgentClass->getRunMethod() >= 0) 
-		{
-			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext();
-			context->Self = this;
-			runMethodeMember(_AgentClass->getRunMethod(), context);
-		}
+		if(haveActivity()) runActivity();
 
 		setState(processIdle,NULL);
 		return getState();
@@ -728,6 +803,23 @@ namespace NLAIAGENT
 				a.Result->incRef();
 				return a;
 			}
+
+		case TSelf:
+			{
+				IObjectIA::CProcessResult a;
+				a.Result = new CLocalAgentMail(this);
+				return a;
+			}
+		case TGetName:
+			{				
+				return getDynamicName((IBaseGroupType *)o);
+			}
+
+		case TRemoveChild:
+			{
+				return removeDynamic((IBaseGroupType *)o);
+			}
+		
 		default:
 			return IAgent::runMethodeMember(heritance,index,o);
 		}
@@ -763,6 +855,17 @@ namespace NLAIAGENT
 				a.Result = (IObjectIA *)getParent();
 				a.Result->incRef();
 				return a;
+			}
+
+		case TSelf:
+			{
+				IObjectIA::CProcessResult a;
+				a.Result = new CLocalAgentMail(this);
+				return a;
+			}
+		case TGetName:
+			{				
+				return getDynamicName((IBaseGroupType *)o);
 			}
 		default:
 			return IAgent::runMethodeMember(index,o);
@@ -874,7 +977,7 @@ namespace NLAIAGENT
 			NLAISCRIPT::IOpCode &op = *opPtr;//getMethode(inheritance,i);
 			NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
 			int ip = (uint32)*context.Code;
-			context.Code = (NLAISCRIPT::CCodeBrancheRun *)opPtr;		
+			context.Code = (NLAISCRIPT::CCodeBrancheRun *)opPtr;
 			*context.Code = 0;
 
 			/*TProcessStatement k = IObjectIA::ProcessIdle;

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.10 2001/01/29 11:11:04 chafik Exp $
+ * $Id: agent_script.h,v 1.11 2001/01/31 14:01:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,10 @@ namespace NLAIAGENT
 			TSendContinuation, ///Index of the send with continuation method.
 			TGetChildTag, ///Index of the getChild method
 			TAddChildTag,///Index of the addChild method
-			TFather,
+			TRemoveChild,///Index of the removeDynamic method
+			TFather, ///Get the father of the agent.
+			TSelf, ///Get The self pointer.
+			TGetName, ///Get the name of the agent in the manager child list.
 			TLastM ///The count of export method.
 		};
 
@@ -155,6 +158,18 @@ namespace NLAIAGENT
 		Method have an IBaseGroupType argument where he must store an CStringType representative of the name of the agent.
 		*/
 		virtual IObjectIA::CProcessResult getDynamicAgent(NLAIAGENT::IBaseGroupType *g);
+
+		/**		
+		Get the instance name of the agent in its manager
+		*/
+		virtual IObjectIA::CProcessResult getDynamicName(NLAIAGENT::IBaseGroupType *g);
+
+		/**		
+		remove an agent from the manager. The rgument g must store an CStringType. This string is the name of the agent to remove.
+		The methode return the state of the operation, an digital at 1.0 if the remove is done an digital at 0.0 is the method did'nt find the agent.
+		*/
+		virtual IObjectIA::CProcessResult removeDynamic(NLAIAGENT::IBaseGroupType *g);
+
 		///get the closure correspondent of the method indexed by index in the base class inheritance.
 		NLAISCRIPT::IOpCode *getMethode(sint32 inheritance,sint32 index); 
 		///get the closure correspondent of the method indexed by index.
@@ -196,9 +211,11 @@ namespace NLAIAGENT
 
 		virtual void runChildren();				
 		virtual void onKill(IConnectIA *A);		
-		virtual void processMessages();		
+		virtual void processMessages();
 
+		virtual IObjectIA::CProcessResult runActivity();
 		virtual bool isEqual(const IBasicObjectIA &a) const;
+		virtual bool haveActivity() const;
 
 		IObjectIA::CProcessResult sendMethod(IObjectIA *);
 		IObjectIA::CProcessResult sendMethodContinuation(IObjectIA *);

@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: message.cpp,v 1.8 2001/01/23 16:39:20 chafik Exp $
+ * $Id: message.cpp,v 1.9 2001/01/31 14:01:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,7 +184,7 @@ namespace NLAIAGENT
 	{
 		return _Message->pop();
 	}
-	const IObjectIA *IMessageBase::get()
+	const IObjectIA *IMessageBase::get() const
 	{
 		return _Message->get();
 	}
@@ -192,7 +192,7 @@ namespace NLAIAGENT
 	{
 		return _Message->popFront();
 	}
-	const IObjectIA *IMessageBase::getFront()
+	const IObjectIA *IMessageBase::getFront() const
 	{
 		return _Message->getFront();
 	}

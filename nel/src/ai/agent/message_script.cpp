@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.10 2001/01/24 09:54:31 portier Exp $
+ * $Id: message_script.cpp,v 1.11 2001/01/31 14:01:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,9 +41,10 @@ namespace NLAIAGENT
 		//CVectorGroupType *x = new CVectorGroupType(m.size());
 	}
 	
-	CMessageScript::CMessageScript() : _MessageClass( NULL )
+	CMessageScript::CMessageScript(NLAISCRIPT::CMessageClass *b) : _MessageClass( b )
 	{
-
+		if ( _MessageClass )
+			_MessageClass->incRef();
 	}
 
 	CMessageScript::CMessageScript( std::list<IObjectIA *> &components, NLAISCRIPT::CMessageClass *message_class ): _MessageClass( message_class )

@@ -18,7 +18,7 @@
 #include "nel/ai/agent/performative.h"
 
 #include "nel/ai/c/registry_class.h"
-
+#include "nel/ai/agent/msg_notify.h"
 /*namespace NLAIC
 {
 	tRegistry *registry = new tRegistry;
@@ -243,6 +243,10 @@
 
 
 	const NLAIC::CIdentType CMessageScript::IdMessageScript("MessageScript", NLAIC::CSelfClassCFactory( CMessageScript() ),
+		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+		NLAIC::CTypeOfOperator::opEq );
+
+	const NLAIC::CIdentType CNotifyParentScript::IdNotifyParentScript("NotifyParentScript", NLAIC::CSelfClassCFactory( CNotifyParentScript() ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
@@ -503,6 +507,10 @@ namespace NLAISCRIPT
 
 	static CMessageClass messageClass;
 	const NLAIC::CIdentType CMessageClass::IdMessageClass("Message", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)messageClass),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	static CMsgNotifyParentClass msgNotifyParentClass;
+	const NLAIC::CIdentType CMsgNotifyParentClass::IdMsgNotifyParentClass("MsgNotifyParent", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)msgNotifyParentClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 

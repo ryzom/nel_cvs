@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.12 2001/01/26 13:36:35 chafik Exp $
+ * $Id: agents.cpp,v 1.13 2001/01/31 14:01:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,11 @@
 #include "nel/ai/agent/agent_mailer.h"
 #include "nel/ai/agent/agent_digital.h"
 #include "nel/ai/agent/agent_method_def.h"
+#include "nel/ai/script/interpret_object_message.h"
+#include "nel/ai/script/interpret_object_agent.h"
+#include "nel/ai/script/type_def.h"
+#include "nel/ai/agent/msg_notify.h"
+
 namespace NLAIAGENT
 {
 
@@ -132,6 +137,7 @@ namespace NLAIAGENT
 
 		processMessages();	// Traitement de ses propres messages
 
+		if(haveActivity()) runActivity();
 		setState(processIdle,NULL);
 		return getState();  
 	}
@@ -291,13 +297,19 @@ namespace NLAIAGENT
 
 	const static sint32 _GetMailer = 0;
 	const static sint32 _Father = 1;
-	const static sint32 _LastM = 2;
+	const static sint32 _RunTel = 2;
+	const static sint32 _RunAsk = 3;
+	const static sint32 _LastM = 4;
 
 	IBasicAgent::CMethodCall IBasicAgent::_Method[] = 
 	{
 		IBasicAgent::CMethodCall(_MAILER_,_GetMailer),
-		IBasicAgent::CMethodCall(_FATHER_,_Father)
+		IBasicAgent::CMethodCall(_FATHER_,_Father),
+		IBasicAgent::CMethodCall(_RUNTEL_,_RunTel),
+		IBasicAgent::CMethodCall(_RUNASK_,_RunAsk)
 	};
+
+	NLAISCRIPT::CParam paramMsg(1,new NLAISCRIPT::COperandSimple (new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass)));
 
 	sint32 IBasicAgent::getMethodIndexSize() const
 	{
@@ -313,6 +325,10 @@ namespace NLAIAGENT
 			{
 				if(*methodName == IBasicAgent::_Method[i].MethodName)
 				{					
+					if(i == _RunTel || i == _RunAsk)
+					{
+						if(paramMsg.eval((NLAISCRIPT::CParam &)p) < 0.0) continue;
+					}
 					CObjectType *c = new CObjectType(new NLAIC::CIdentType(CLocalAgentMail::LocalAgentMail));
 					a.push(CIdMethod(IBasicAgent::_Method[i].Index + IObjectIA::getMethodIndexSize(),0.0,NULL,c));					
 					break;
@@ -361,5 +377,33 @@ namespace NLAIAGENT
 
 		}
 		return IConnectIA::runMethodeMember(index,p);
+	}
+
+	IMessageBase *IBasicAgent::runAsk(const IMessageBase &m)
+	{
+		if(CNotifyParentScript::IdNotifyParentScript == m.getType())
+		{
+			if(getParent() != NULL)
+			{
+				CNotifyParentScript *msg = new CNotifyParentScript();
+				return msg;
+			}
+			else
+			{
+				CNotifyParentScript *msg = new CNotifyParentScript((IBasicAgent *)getParent());
+				return msg;
+			}
+		}
+		return (IMessageBase *)m.clone();
+	}
+		
+	IMessageBase *IBasicAgent::runTell(const IMessageBase &m)
+	{
+		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == m.getType())
+		{
+			const INombreDefine *n = (const INombreDefine *)m.getFront();
+			//if()
+		}
+		return (IMessageBase *)m.clone();
 	}
 }

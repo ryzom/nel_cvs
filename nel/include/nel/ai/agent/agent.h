@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.9 2001/01/26 13:36:26 chafik Exp $
+ * $Id: agent.h,v 1.10 2001/01/31 14:01:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,28 +104,12 @@ namespace NLAIAGENT
 		/**
 		runAsk is to processing reltative to PAsk Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
 		*/
-		virtual IMessageBase *runAsk(const IMessageBase &m)
-		{
-			char debugString[1024*4];
-			char text[2048*8];
-			getDebugString(debugString);
-			sprintf(text,"runAsk(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
-			return NULL;
-		}
+		virtual IMessageBase *runAsk(const IMessageBase &m);		
 
 		/**
 		runTell is to processing reltative to PTell Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
 		*/
-		virtual IMessageBase *runTell(const IMessageBase &m)
-		{
-			char debugString[1024*4];
-			char text[2048*8];
-			getDebugString(debugString);
-			sprintf(text,"runTell(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
-			return NULL;
-		}
+		virtual IMessageBase *runTell(const IMessageBase &m);		
 
 		/**
 		runBreak is to processing reltative to PBreak Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
@@ -172,6 +156,12 @@ namespace NLAIAGENT
 		///Send message to an receiver agent.
 		virtual IObjectIA::CProcessResult sendMessage(IMessageBase *msg, IBasicAgent &receiver);
 
+		///Run the activity process an agent.
+		virtual IObjectIA::CProcessResult runActivity() = 0;		
+
+		///allow to know if the agent have an activity process to run.
+		virtual bool haveActivity() const = 0;
+
 		///Get the mail box letter.
 		IMailBox *getMail() const;
 
@@ -198,6 +188,11 @@ namespace NLAIAGENT
 		Remove a child from the std::list<IBasicAgent *> child list.
 		*/
 		virtual void removeChild(const IBasicAgent *p) = 0;
+
+		/**
+		Remove a child from the std::list<IBasicAgent *> child list.
+		*/
+		virtual void removeChild(std::list<IBasicAgent *>::iterator &iter) = 0;
 
 		/**
 		Run all child.
@@ -257,6 +252,7 @@ namespace NLAIAGENT
 			void cpyChild(const IBasicAgent &p);
 			void removeChild(const IBasicAgent &p);		
 			virtual void removeChild(const IBasicAgent *p);
+			virtual void removeChild(std::list<IBasicAgent *>::iterator &iter);
 			//@}
 
 			/// \name Some IBasicInterface method.
@@ -303,6 +299,16 @@ namespace NLAIAGENT
 		/// Called by an agent who's destroyed te remove its references
 		virtual void onKill(IConnectIA *A);
 
+		virtual bool haveActivity() const
+		{
+			return false;
+		}
+
+		///Mailer do'nt have own activity.
+		virtual IObjectIA::CProcessResult runActivity()
+		{
+			return ProcessRun;
+		}		
 		/// \name Some IBasicAgent method.
 		//@{
 		virtual void processMessages();

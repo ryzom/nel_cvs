@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.5 2001/01/25 16:16:57 chafik Exp $
+ * $Id: baseai.h,v 1.6 2001/01/31 14:01:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,9 +111,13 @@ namespace NLAIAGENT
 	
 	struct CIdMethod
 	{
+		///Index of the method in the class.
 		sint32 Index;
+		///Hwo far the argument of method is nearest of the method argument that we need.
 		double Weight;
+		///The scrip op code of the method to run.
 		IObjectIA *Method;
+		///Return type of the method.
 		IObjectIA *ReturnType;
 
 		CIdMethod(const CIdMethod &a);		

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.7 2001/01/17 10:42:55 chafik Exp $
+ * $Id: group_type.cpp,v 1.8 2001/01/31 14:01:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -334,7 +334,7 @@ namespace NLAIAGENT
 		return Obj;
 	}
 
-	const IObjectIA *CGroupType::get() 
+	const IObjectIA *CGroupType::get() const
 	{
 		return _List.back();			
 	}
@@ -346,7 +346,7 @@ namespace NLAIAGENT
 		return Obj;
 	}
 
-	const IObjectIA *CGroupType::getFront() 
+	const IObjectIA *CGroupType::getFront() const
 	{
 		return _List.front();			
 	}	
@@ -699,7 +699,7 @@ namespace NLAIAGENT
 		return Obj;
 	}
 
-	const IObjectIA *CVectorGroupType::get() 
+	const IObjectIA *CVectorGroupType::get() const
 	{
 		return _Vector.back();			
 	}
@@ -711,7 +711,7 @@ namespace NLAIAGENT
 		return Obj;
 	}
 
-	const IObjectIA *CVectorGroupType::getFront() 
+	const IObjectIA *CVectorGroupType::getFront() const
 	{
 		return _Vector.front();			
 	}	

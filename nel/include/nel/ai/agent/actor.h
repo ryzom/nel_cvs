@@ -1,7 +1,7 @@
 /** \file actor.h
  *	
  *
- * $Id: actor.h,v 1.4 2001/01/19 14:34:46 chafik Exp $
+ * $Id: actor.h,v 1.5 2001/01/31 14:01:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,7 +103,7 @@ namespace NLAIAGENT
 			virtual const NLAIC::CIdentType &getType() const;
 
 			static const NLAIC::CIdentType IdActor;
-
+					
 			virtual void save(NLMISC::IStream &os);		
 			virtual void load(NLMISC::IStream &is);		
 

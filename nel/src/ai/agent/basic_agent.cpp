@@ -1,6 +1,6 @@
 /** \file basic_agent.cpp
  *
- * $Id: basic_agent.cpp,v 1.7 2001/01/17 10:42:55 chafik Exp $
+ * $Id: basic_agent.cpp,v 1.8 2001/01/31 14:01:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,11 @@ namespace NLAIAGENT
 	void IAgentComposite::cpyChild(const IBasicAgent &p)
 	{
 		_AgentList.push_front((IBasicAgent *)p.clone());
+	}
+	
+	void IAgentComposite::removeChild(std::list<IBasicAgent *>::iterator &iter)
+	{					
+		_AgentList.erase(iter);
 	}
 
 	void IAgentComposite::removeChild(const IBasicAgent &p)

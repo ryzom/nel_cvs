@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.50 2001/01/16 15:24:05 berenguier Exp $
+ * $Id: driver.h,v 1.51 2001/01/23 09:23:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,6 +156,9 @@ public:
 
 	/// Before rendering via a driver in a thread, must activate() (per thread).
 	virtual bool			activate(void)=0;
+
+	/// Get the number of texture stage avaliable, for multitexturing (Normal material shaders). Valid only after setDisplay().
+	virtual	sint			getNbTextureStages()=0;
 
 	virtual NLMISC::IEventEmitter*	getEventEmitter(void)=0;
 

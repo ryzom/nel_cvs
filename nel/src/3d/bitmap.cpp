@@ -1,7 +1,9 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.16 2001/01/11 13:53:29 lecroart Exp $
+ * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
+ *
+ * $Id: bitmap.cpp,v 1.17 2001/01/23 09:24:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,7 +156,7 @@ void	CBitmap::makeDummy()
 	};
 
 	PixelFormat = RGBA;
-	_MipMapCount = 0;
+	_MipMapCount = 1;
 	_Width= 16;
 	_Height= 16;
 	_Data[0].resize(256*sizeof(NLMISC::CRGBA));
@@ -209,6 +211,9 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 	_Height = _DDSSurfaceDesc[2];
 	_Width  = _DDSSurfaceDesc[3];
 	_MipMapCount= (uint8) _DDSSurfaceDesc[6];
+	// If no mipmap.
+	if(_MipMapCount==0)
+		_MipMapCount=1;
 	switch (_DDSSurfaceDesc[20])
 	{
 	case DXTC1HEADER:
@@ -224,7 +229,7 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 	
 	flags = _DDSSurfaceDesc[19]; //PixelFormat flags
 	
-	if(_DDSSurfaceDesc[21]>0) //AlphaBitDepth
+	if(PixelFormat==DXTC1 && _DDSSurfaceDesc[21]>0) //AlphaBitDepth
 	{
 		PixelFormat = DXTC1Alpha;
 	}
@@ -244,8 +249,7 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 	uint32 w = _Width;
 	uint32 h = _Height;
 
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		uint32 wtmp, htmp;
 		if(w<4)
@@ -262,14 +266,11 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 			mipMapSz = wtmp*htmp/2;
 		else
 			mipMapSz = wtmp*htmp;
-		_Data[m].reserve(mipMapSz);
-		
-		for(i=0; i<mipMapSz; i++)
-		{
-			uint8 tmp;
-			f.serial(tmp);
-			_Data[m].push_back(tmp);
-		}
+
+
+		_Data[m].resize(mipMapSz);
+		f.serialBuffer(&(*_Data[m].begin()), mipMapSz);
+
 	  	w = (w+1)/2;
 		h = (h+1)/2;
 	}
@@ -297,8 +298,7 @@ bool CBitmap::convertToDXTC5()
 
 	if(PixelFormat!=DXTC1) return false;
 
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(2*_Data[m].size());
@@ -334,8 +334,7 @@ bool CBitmap::luminanceToRGBA()
 
 	if(_Width*_Height == 0)  return false;
 	
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()*4);
@@ -362,8 +361,7 @@ bool CBitmap::alphaToRGBA()
 
 	if(_Width*_Height == 0)  return false;
 	
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()*4);
@@ -391,8 +389,7 @@ bool CBitmap::alphaLuminanceToRGBA()
 
 	if(_Width*_Height == 0)  return false;
 	
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()*2);
@@ -422,8 +419,7 @@ bool CBitmap::rgbaToAlphaLuminance()
 
 	if(_Width*_Height == 0)  return false;
 	
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()/2);
@@ -451,8 +447,7 @@ bool CBitmap::luminanceToAlphaLuminance()
 
 	if(_Width*_Height == 0)  return false;
 		
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()*2);
@@ -479,8 +474,7 @@ bool CBitmap::alphaToAlphaLuminance()
 
 	if(_Width*_Height == 0)  return false;
 		
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()*2);
@@ -507,8 +501,7 @@ bool CBitmap::rgbaToLuminance()
 
 	if(_Width*_Height == 0)  return false;
 		
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()/4);
@@ -536,8 +529,7 @@ bool CBitmap::alphaToLuminance()
 
 	if(_Width*_Height == 0)  return false;
 		
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size());
@@ -563,8 +555,7 @@ bool CBitmap::alphaLuminanceToLuminance()
 
 	if(_Width*_Height == 0)  return false;
 		
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()/2);
@@ -594,8 +585,7 @@ bool CBitmap::rgbaToAlpha()
 
 	if(_Width*_Height == 0)  return false;
 		
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()/4);
@@ -625,8 +615,7 @@ bool CBitmap::luminanceToAlpha()
 
 	if(_Width*_Height == 0)  return false;
 		
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size());
@@ -651,8 +640,7 @@ bool CBitmap::alphaLuminanceToAlpha()
 
 	if(_Width*_Height == 0)  return false;
 		
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		std::vector<uint8> dataTmp;
 		dataTmp.reserve(_Data[m].size()/2);
@@ -855,8 +843,7 @@ bool CBitmap::decompressDXT1(bool alpha)
 	uint32 width= _Width;
 	uint32 height= _Height;
 
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		uint32 wtmp, htmp;
 		if(width<4)
@@ -950,8 +937,7 @@ bool CBitmap::decompressDXT3()
 	uint32 width= _Width;
 	uint32 height= _Height;
 
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		uint32 wtmp, htmp;
 		if(width<4)
@@ -974,12 +960,14 @@ bool CBitmap::decompressDXT3()
 		for(i=0; i < _Data[m].size(); i+=16)
 		{
 			uint8 alpha[16];
-			sint64 alphatmp;
+			uint64 alphatmp;
 			memcpy(&alphatmp,&_Data[m][i],8);
 
 			for(j=0; j<16; j++)
 			{
-				alpha[j]= (uint8)(((float)(alphatmp&15) / 15)*256); 
+				uint8	a= (uint8)(alphatmp&15);
+				// expand to 0-255.
+				alpha[j]= a+(a<<4);
 				alphatmp>>=4;
 			}
 
@@ -1045,8 +1033,7 @@ bool CBitmap::decompressDXT5()
 	uint32 width= _Width;
 	uint32 height= _Height;
 
-	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
-	for(uint8 m= 0; m<mpmp; m++)
+	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
 		uint32 wtmp, htmp;
 		if(width<4)
@@ -1071,10 +1058,11 @@ bool CBitmap::decompressDXT5()
 		{
 			uint64 bitsAlpha;
 			memcpy(&bitsAlpha,&_Data[m][i],8);
+			bitsAlpha>>= 16;
 
 			uint32 alpha[8];
-			alpha[0]= (uint8)((bitsAlpha>>48)&255);	alpha[0]/=255;
-			alpha[1]= (uint8)((bitsAlpha>>56)&255);	alpha[1]/=255;
+			alpha[0]= _Data[m][i+0];
+			alpha[1]= _Data[m][i+1];
 			
 			if(alpha[0]>alpha[1])
 			{
@@ -1098,7 +1086,8 @@ bool CBitmap::decompressDXT5()
 			uint8 codeAlpha[16];
 			for(j=0; j<16; j++)
 			{
-				codeAlpha[j] = ((uint8)(bitsAlpha>>(48-3*(j+1)))) & 7;
+				codeAlpha[j] = (uint8)bitsAlpha & 7;
+				bitsAlpha>>=3;
 			}
 
 
@@ -1126,19 +1115,23 @@ bool CBitmap::decompressDXT5()
 			// computing the 16 RGBA of the block
 			
 			uint32 blockNum= i/16; //(128 bits)
-			// <previous blocks in above lines> * 4 (rows) * wtmp (columns) + 4pix*4rgba*<same line previous blocks>
-			uint32 pixelsCount= 4*(blockNum/wBlockCount)*wtmp*4 + 4*4*(blockNum%wBlockCount);
+
+			// <previous blocks in above lines> * 4 (rows) * wtmp (columns) + 4pix*<same line previous blocks>
+			uint32 pixelsCount= (blockNum/wBlockCount)*wtmp*4 + 4*(blockNum%wBlockCount);
+			// *sizeof(RGBA)
+			pixelsCount*=4;
 			for(j=0; j<4; j++)
 			{
 				for(k=0; k<4; k++)
 				{
-					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k]= c[bits&3].R;
-					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+1]= c[bits&3].G;
-					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+2]= c[bits&3].B;
-					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+3]= (uint8) alpha[codeAlpha[4*j+k]];
+					dataTmp[m][pixelsCount + (j*wtmp+k)*4 +0]= c[bits&3].R;
+					dataTmp[m][pixelsCount + (j*wtmp+k)*4 +1]= c[bits&3].G;
+					dataTmp[m][pixelsCount + (j*wtmp+k)*4 +2]= c[bits&3].B;
+					dataTmp[m][pixelsCount + (j*wtmp+k)*4 +3]= (uint8) alpha[codeAlpha[4*j+k]];
 					bits>>=2;
 				}
 			}
+
 		}
 		_Data[m]= dataTmp[m];
 		width = (width+1)/2;
@@ -1244,7 +1237,7 @@ void CBitmap::buildMipMaps()
 	uint32 i,j;
 
 	if(PixelFormat!=RGBA) return;
-	if(_MipMapCount>0) return;
+	if(_MipMapCount!=1) return;
 	if(!NLMISC::isPowerOf2(_Width)) return;
 	if(!NLMISC::isPowerOf2(_Height)) return;
 	
@@ -1260,7 +1253,6 @@ void CBitmap::buildMipMaps()
 		uint32	mulw= precw/w;
 		uint32	mulh= prech/h;
 
-		_MipMapCount++;
 		_Data[_MipMapCount].resize(w*h*4);
 		
 	
@@ -1302,19 +1294,21 @@ void CBitmap::buildMipMaps()
 									c3.A + 2 ) /4;
 			}
 		}
+
+		_MipMapCount++;
 	}
 }
 
 
 /*-------------------------------------------------------------------*\
-							buildMipMaps
+							releaseMipMaps
 \*-------------------------------------------------------------------*/
 void CBitmap::releaseMipMaps()
 {
-	if(_MipMapCount==0) return;
+	if(_MipMapCount<=1) return;
 
-	_MipMapCount=0;
-	for(sint i=0;i<MAX_MIPMAP;i++)
+	_MipMapCount=1;
+	for(sint i=1;i<MAX_MIPMAP;i++)
 	{
 		NLMISC::contReset(_Data[i]); 
 	}
@@ -1329,16 +1323,9 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 	bool needRebuild = false;
 
 	// Deleting mipmaps
-	if(_MipMapCount!=0)
-	{
-		for(uint32 i=1; i<_MipMapCount; i++)
-		{
-			NLMISC::contReset(_Data[i]); // free memory
-			_Data[i].resize(1);
-		}
-		_MipMapCount = 0;
+	if(_MipMapCount>1)
 		needRebuild = true;
-	}
+	releaseMipMaps();
 
 	if(nNewWidth==0 || nNewHeight==0)
 	{
@@ -1368,15 +1355,7 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight, TType newType)
 {
 	// Deleting mipmaps
-	if(_MipMapCount!=0)
-	{
-		for(uint32 i=1; i<_MipMapCount; i++)
-		{
-			NLMISC::contReset(_Data[i]); // free memory
-			_Data[i].resize(1);
-		}
-		_MipMapCount = 0;
-	}
+	releaseMipMaps();
 
 	// Change type of bitmap ?
 	if (newType!=DonTKnow)
@@ -1397,18 +1376,13 @@ void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight, TType newType)
 \*-------------------------------------------------------------------*/
 void CBitmap::reset(TType type)
 {
-	NLMISC::contReset(_Data[0]);
-	_Data[0].resize(0);
-
-	if(_MipMapCount!=0)
+	for(uint i=0; i<_MipMapCount; i++)
 	{
-		for(uint i=1; i<_MipMapCount; i++)
-		{
-			NLMISC::contReset(_Data[i]);
-			_Data[i].resize(0);
-		}
+		NLMISC::contReset(_Data[i]);
+		_Data[i].resize(0);
 	}
-	_Width = _Height = _MipMapCount = 0;
+	_Width = _Height = 0;
+	_MipMapCount= 1;
 	
 	// Change pixel format
 	PixelFormat=type;
@@ -1820,7 +1794,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 	}
 
 	PixelFormat = RGBA;
-	_MipMapCount = 0;
+	_MipMapCount = 1;
 	return(imageDepth);
 
 }

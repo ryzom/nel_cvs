@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.15 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: bitmap.h,v 1.16 2001/01/23 09:23:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ const uint32	DXT_ = NL_MAKEFOURCC('D','X', 'T', '\0');
 //---------------- END OF DDS STUFFS ------------------
 
 
-const uint8	MAX_MIPMAP = 12;
+const uint8	MAX_MIPMAP = 16;
 
 
 
@@ -82,6 +82,7 @@ class CBitmap
 protected :
 	std::vector<uint8> _Data[MAX_MIPMAP];
 
+	// The number of mipmaps. base image IS a mipmap. 1 means a base image with no mipmaping.
 	uint8 _MipMapCount;
 	uint32 _Width;
 	uint32 _Height;
@@ -101,8 +102,6 @@ private :
 	 * Read a DDS from an IStream. 
 	 * The bitmap is readen as a set of bytes and stocked compressed.
 	 * Width and Height are multiple of 4.
-	 * If there's no mipmap, _MipMapCount is equal to 0. If there are mipmaps
-	 * _MipMapCount include the initial image.
 	 * \param IStream The stream must be in reading mode.
 	 * \return image depth
 	 * \throw EDDSBadHeader : surface is header is not valid.
@@ -223,7 +222,7 @@ public:
 
 	CBitmap()
 	{
-		_MipMapCount = 0;
+		_MipMapCount = 1;
 		_Width = 0;
 		_Height = 0;
 		PixelFormat = RGBA;
@@ -313,11 +312,11 @@ public:
 
 	/** 
 	 * Return the number of mipmaps. Level0 is a mipmap...
-	 * \return number of mipmaps. 1 if no mipmap (for the base level).
+	 * \return number of mipmaps. 0 if no image at all. 1 if no mipmaping (for the base level).
 	 */	
 	uint32 getMipMapCount() const
 	{
-		return _MipMapCount+1; 
+		return _MipMapCount; 
 	}
 
 

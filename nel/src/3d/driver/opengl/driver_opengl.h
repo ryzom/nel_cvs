@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.43 2001/01/16 15:24:26 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.44 2001/01/23 09:26:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,6 +128,8 @@ public:
 
 	virtual bool			activate();
 
+	virtual	sint			getNbTextureStages() {return _Extensions.NbTextureStages;}
+
 	virtual NLMISC::IEventEmitter	*getEventEmitter() { return&_EventEmitter; };
 
 	virtual bool			clear2D(CRGBA rgba);
@@ -242,7 +244,6 @@ private:
 	bool					activateTexture(uint stage, ITexture *tex);
 	void					activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
 	void					activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
-	sint					getNbTextureStages() {return _Extensions.NbTextureStages;}
 
 	// According to extensions, retrieve GL tex format of the texture.
 	GLint					getGlTextureFormat(ITexture& tex, bool &compressed);

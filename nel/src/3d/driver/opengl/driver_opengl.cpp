@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.59 2001/01/22 17:30:19 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.60 2001/01/23 09:26:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -395,26 +395,14 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// Retrieve the extensions for the current context.
 	NL3D::registerGlExtensions(_Extensions);
 	// Check required extensions!!
+	// ARBMultiTexture is a opengl 1.2 required extension.
 	if(!_Extensions.ARBMultiTexture)
-	  {
-	    //TEMP
-	    nldebug("missing multitex");
-		throw EBadDisplay("Missing Required GL extension: GL_ARB_multitexture");
-	  }
-
+		throw EBadDisplay("Missing Required GL extension: GL_ARB_multitexture. update your driver.");
 	if(!_Extensions.EXTTextureEnvCombine)
-	  {
-	    //TEMP
-	    nldebug("missing env comvine");
-		throw EBadDisplay("Missing Required GL extension: GL_EXT_texture_env_combine");
-	  }
+	{
+		nlwarning("Missing Important GL extension: GL_EXT_texture_env_combine => All envcombine are setup to GL_MODULATE!!!");
+	}
 
-	if(getNbTextureStages()<2)
-	  {
-	    //TEMP
-	    nldebug("missing 2tex unit");
-		throw EBadDisplay("Missing Required GL feature: at least 2 texture untis.");
-	  }
 
 	// Init OpenGL/Driver defaults.
 	//=============================

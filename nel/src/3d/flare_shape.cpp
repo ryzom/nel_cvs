@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.3 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: flare_shape.cpp,v 1.4 2001/08/07 14:16:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,19 +35,24 @@ namespace NL3D {
  */
 CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White), _Persistence(1), _Spacing(1)
 							  ,_Attenuable(false), _AttenuationRange (1.0f), _FirstFlareKeepSize(false)
+							  ,_MaxViewDist(1000), _MaxViewDistRatio (0.9f), _InfiniteDist(false)
 {
+	// init default pos
 	for (uint k = 0 ; k < MaxFlareNum ; ++k)
 	{
 		_Tex [k]  = NULL ;
 		_Size[k] = 1.f ;
+		_Pos[k]  = k * (1.f / MaxFlareNum) ;
 	}
+
+	_DefaultPos.setValue(CVector::Null) ;
 }
 
 
 void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;
-	f.serial(_Color, _Persistence, _Spacing) ;
+	f.serial(_Color, _Persistence, _Spacing) ;	
 	f.serial(_Attenuable) ;
 	if (_Attenuable)
 	{
@@ -62,8 +67,19 @@ void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			_Tex[k] = tex ;
 		}
-		f.serial(_Size[k]) ;
+		f.serial(_Size[k], _Pos[k]) ;
 	}
+	f.serial(_InfiniteDist) ;
+	if (!_InfiniteDist)
+	{
+		f.serial(_MaxViewDist, _MaxViewDistRatio) ;
+	}
+	f.serial(_DazzleEnabled) ;
+	if (_DazzleEnabled)
+	{
+		f.serial(_DazzleColor, _DazzleAttenuationRange) ;
+	}
+	f.serial(_InfiniteDist) ;
 }
 
 	
@@ -72,12 +88,14 @@ CTransformShape		*CFlareShape::createInstance(CScene &scene)
 	CFlareModel *fm = NLMISC::safe_cast<CFlareModel *>(scene.createModel(FlareModelClassId) ) ;
 	fm->Shape = this ;	
 	fm->_Scene = &scene ;
+	// set default pos
+	fm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
 	return fm ;
 }
 
 float				CFlareShape::getNumTriangles (float distance)
 {
-	float count ;
+	float count = 0 ;
 	for (uint k = 0 ; k < MaxFlareNum ; ++k)
 	{
 	if (_Tex[k]) count += 2 ;
@@ -86,10 +104,12 @@ float				CFlareShape::getNumTriangles (float distance)
 }
 
 bool				CFlareShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
-{
+{		
+	// compute flare pos in world basis : 
+	const NLMISC::CVector pos = worldMatrix.getPos() ;
 	for (std::vector<NLMISC::CPlane>::const_iterator it = pyramid.begin() ; it != pyramid.end() ; ++it)
 	{
-		if (it->d > _Size[0]) return false ;
+		if ((*it) * pos > 0) return false ;
 	}
 	return true ;
 }
@@ -97,6 +117,7 @@ bool				CFlareShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &wor
 
 void				CFlareShape::getAABBox(NLMISC::CAABBox &bbox) const
 {
+	// the flare himself is a point
 	bbox.setCenter(CVector::Null) ;
 	bbox.setHalfSize(CVector::Null) ;
 }

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.42 2002/06/28 19:38:28 hanappe Exp $
+ * $Id: path.cpp,v 1.43 2002/07/01 09:26:58 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -962,7 +962,7 @@ string CFile::findNewFile (const string &filename)
 	return npath;
 }
 
-// \warning doesn't work with bif file
+// \warning doesn't work with big file
 uint32	CFile::getFileSize (const std::string &filename)
 {
 	FILE *fp = fopen (filename.c_str(), "rb");
@@ -975,12 +975,23 @@ uint32	CFile::getFileSize (const std::string &filename)
 
 uint32	CFile::getFileModificationDate(const std::string &filename)
 {
+	uint pos;
+	string fn;
+	if ((pos=filename.find('@')) != string::npos)
+	{
+		fn = filename.substr (0, pos);
+	}
+	else
+	{
+		fn = filename;
+	}
+
 #if defined (NL_OS_WINDOWS)
 	struct _stat buf;
-	int result = _stat (filename.c_str (), &buf);
+	int result = _stat (fn.c_str (), &buf);
 #elif defined (NL_OS_UNIX)
 	struct stat buf;
-	int result = stat (filename.c_str (), &buf);
+	int result = stat (fn.c_str (), &buf);
 #endif
 
 	if (result != 0) return 0;
@@ -990,18 +1001,71 @@ uint32	CFile::getFileModificationDate(const std::string &filename)
 
 uint32	CFile::getFileCreationDate(const std::string &filename)
 {
+	uint pos;
+	string fn;
+	if ((pos=filename.find('@')) != string::npos)
+	{
+		fn = filename.substr (0, pos);
+	}
+	else
+	{
+		fn = filename;
+	}
+
 #if defined (NL_OS_WINDOWS)
 	struct _stat buf;
-	int result = _stat (filename.c_str (), &buf);
+	int result = _stat (fn.c_str (), &buf);
 #elif defined (NL_OS_UNIX)
 	struct stat buf;
-	int result = stat (filename.c_str (), &buf);
+	int result = stat (fn.c_str (), &buf);
 #endif
 
 	if (result != 0) return 0;
 	else return buf.st_ctime;
 }
 
+struct CFileEntry
+{
+	CFileEntry (const string &filename, void (*callback)(const string &filename)) : FileName (filename), Callback (callback)
+	{
+		LastModified = CFile::getFileModificationDate(filename);
+	}
+	string FileName;
+	void (*Callback)(const string &filename);
+	uint32 LastModified;
+};
+
+static vector <CFileEntry> FileToCheck;
+
+
+void CFile::addFileChangeCallback (const std::string &filename, void (*cb)(const string &filename))
+{
+	FileToCheck.push_back(CFileEntry(filename, cb));
+}
+
+void CFile::checkFileChange (TTime frequency)
+{
+	static TTime lastChecked = CTime::getLocalTime();
+
+	if (CTime::getLocalTime() > lastChecked + frequency)
+	{
+		for (uint i = 0; i < FileToCheck.size(); i++)
+		{
+			uint32 t = CFile::getFileModificationDate(FileToCheck[i].FileName), t2 = FileToCheck[i].LastModified;
+			
+			if(CFile::getFileModificationDate(FileToCheck[i].FileName) != FileToCheck[i].LastModified)
+			{
+				// need to reload it
+				if(FileToCheck[i].Callback != NULL)
+					FileToCheck[i].Callback(FileToCheck[i].FileName);
+
+				FileToCheck[i].LastModified = CFile::getFileModificationDate(FileToCheck[i].FileName);
+			}
+		}
+
+		lastChecked = CTime::getLocalTime();
+	}
+}
 
 
 

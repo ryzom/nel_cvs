@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.23 2002/06/24 10:24:30 lecroart Exp $
+ * $Id: path.h,v 1.24 2002/07/01 09:27:07 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_PATH_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/time_nl.h"
 
 #include <map>
 #include <string>
@@ -253,20 +254,40 @@ struct CFile
 	static uint32	getFileSize (const std::string &filename);
 
 	/**
-	 *	Return Time of last modification of file. 0 if not found.
+	 * Return Time of last modification of file. 0 if not found.
 	 *
 	 * You have to provide the full path of the file (the function doesn't lookup) 
 	 */
 	static uint32	getFileModificationDate(const std::string &filename);
 
 	/**
-	 *	Return creation Time of the file. 0 if not found.
+	 * Return creation Time of the file. 0 if not found.
 	 *
 	 * You have to provide the full path of the file (the function doesn't lookup) 
 	 */
 	static uint32	getFileCreationDate(const std::string &filename);
 
+	/**
+	 * Add a callback that will be call when the content file, named filename, changed.
+	 * The system use the file modification date. To work, you need to call evenly the
+	 * function checkFileChange(), this function only checks every 1s by default (you can
+	 * change the default time)
+	 *
+	 * ie:
+	 * void cb (const std::string &filename) { nlinfo ("the file %s changed", filename.c_str()); }
+	 * CPath::addFileChangeCallback ("myfile.txt", cb);
+	 *
+	 */
+	static void addFileChangeCallback (const std::string &filename, void (*)(const std::string &filename));
 
+	/**
+	 * You have to call this function evenly (each frame for example) to enable the file change callback system.
+	 * If the file not exists and is created in the run time, the callback will be called.
+	 * If the file exists and is removed in the run time, the callback will be called.
+	 *
+	 * \param frequency the time in millisecond that we wait before check another time (1s by default).
+	 */
+	static void checkFileChange (TTime frequency = 1000);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.41 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.42 2001/07/02 13:37:23 berenguier Exp $
  *
  */
 
@@ -2259,11 +2259,13 @@ void		CTessFace::recreateTileUvs()
 void		CTessFace::heritTileMaterial()
 {
 	SonLeft->TileMaterial= TileMaterial;
+	SonLeft->TileId= TileId;
 	SonLeft->buildTileFaces();
 	SonLeft->copyTileUv(IdUvLeft, this, IdUvBase);
 	SonLeft->copyTileUv(IdUvRight, this, IdUvLeft);
 
 	SonRight->TileMaterial= TileMaterial;
+	SonRight->TileId= TileId;
 	SonRight->buildTileFaces();
 	SonRight->copyTileUv(IdUvLeft, this, IdUvRight);
 	SonRight->copyTileUv(IdUvRight, this, IdUvBase);

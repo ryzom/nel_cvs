@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.19 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: particle_system_model.h,v 1.20 2002/01/28 14:25:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,12 @@
 #define NL_PARTICLE_SYSTEM_MODEL_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/plane.h"
 #include "3d/transform_shape.h"
 #include "3d/particle_system.h"
+#include "3d/particle_system_manager.h"
 
+#include <vector>
 
 namespace NL3D {
 
@@ -244,27 +247,57 @@ class CParticleSystemModel : public CTransformShape
 			return new CParticleSystemModel;
 		}
 
-	protected:
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		// mark this system model as invalid, delete the attached system, and calls his observers
-		void invalidate(void);
+	protected:
 
 		friend class CParticleSystemShape;
 		friend class CParticleSystemDetailObs;
 		friend class CParticleSystemClipObs;
 		friend class CParticleSystemRenderObs;
+		friend class CParticleSystemManager;
 
 
+		/// Called when the resource (attached system) for this system must be reallocated
+		void reallocRsc();
+
+		/** Called by the particle system manager to see wether this model resources must be released
+		  * If this is the case, this releases the resource and return true.
+		  * IMPORTANT: the handle of the model in the p.s manager is automatically removed
+		  * when this returns true
+		  */
+		bool refreshRscDeletion(const std::vector<CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos);
+
+		// Release the resources (attached system) of this model, but doesn't 
+		void releaseRsc();
+
+		// Mark this system model as invalid, delete the attached system, and calls his observers
+		void releaseRscAndInvalidate();
+
+
+		/// Return true if the system is in the given world pyramid
+		bool checkAgainstPyramid(const std::vector<CPlane>	&worldFrustumPyramid) const;
+
+	protected:		
+		CParticleSystemManager::TModelHandle    _ModelHandle; /** a handle to say when the resources
+																* of the model (_ParticleSystem) are deleted
+																*/
+
+		CParticleSystemManager::TModelHandle    _AnimatedModelHandle; // handle for permanenlty animated models
+																
 		bool									_AutoGetEllapsedTime;		
 		CParticleSystem						   *_ParticleSystem;
 		CScene							  	   *_Scene;
 		TAnimationTime						    _EllapsedTime;
+
+		///\todo nico : may optimize this with a bitfield...
 		bool									_ToolDisplayEnabled;		
 		bool									_TransparencyStateTouched;
 		bool									_EditionMode;
-		bool									_Invalidated;
+		bool									_Invalidated; /// it false, system should be recreated
 		bool									_InsertedInVisibleList;
-		bool									_InCluster;
+		bool									_InClusterAndVisible;
 		std::vector<IPSModelObserver *>			_Observers;		
 
 		CAnimatedValueBool						_TriggerAnimatedValue;

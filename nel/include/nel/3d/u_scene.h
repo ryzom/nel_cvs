@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.21 2002/05/13 16:47:57 berenguier Exp $
+ * $Id: u_scene.h,v 1.22 2002/06/10 09:30:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,6 +128,9 @@ public:
 	 * You must poll to know if the instance if created by calling render()
 	 */
 	virtual	void			createInstanceAsync(const std::string &shapeName,UInstance**ppInstance)=0;
+	/** Delete an instance via his pointer.
+	 */
+	virtual	void			deleteInstance(UInstance *inst)=0;
 
 	/** create an instance group asynchronously, and add it to a scene asynchronously once it has been 
 	  * loaded. The instance groups that must be added to the scene are checked at each render.
@@ -146,9 +149,9 @@ public:
 	/** Create a dummy object
 	 */
 	virtual	UTransform		*createTransform()=0;
-	/** Delete an instance via his pointer.
+	/** Delete a dummy object
 	 */
-	virtual	void			deleteInstance(UInstance *inst)=0;
+	virtual	void			deleteTransform(UTransform *tr)=0;
 
 	/** Create a skeleton instance of the skeleton shape "shapename". If not present, try to load "shapename" via CPath.
 	 * If fails (file not found), return NULL.

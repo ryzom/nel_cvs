@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.71 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: debug.cpp,v 1.72 2003/06/30 18:46:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,8 @@ namespace NLMISC
 {
 
 bool DebugNeedAssert = false;
+bool NoAssert = false;
+bool GlobalAssertCall = false;
 
 CLog *ErrorLog = NULL;
 CLog *WarningLog = NULL;
@@ -94,6 +96,11 @@ CMsgBoxDisplayer *DefaultMsgBoxDisplayer = NULL;
 
 static CStdDisplayer *sd = NULL;
 static CFileDisplayer *fd = NULL;
+
+void setAssert (bool assert)
+{
+	NoAssert = !assert;
+}
 
 void nlFatalError (const char *format, ...)
 {
@@ -769,10 +776,26 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 		result += e.what();
 	}
 #else
+
+	// there s no stack on linux, only get the log without filters
+
 	result += "No callstack available";
+	result += "-------------------------------\n";
+	result += "\n";
+	if(DefaultMemDisplayer)
+	{
+		result += "Log with no filter:\n";
+		result += "-------------------------------\n";
+		DefaultMemDisplayer->write (result);
+	}
+	else
+	{
+		result += "No log\n";
+	}
+	result += "-------------------------------\n";
+
 #endif
 }
-
 
 void createDebug (const char *logPath, bool logInFile)
 {

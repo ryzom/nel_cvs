@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.179 2003/06/30 09:32:48 lecroart Exp $
+ * $Id: service.cpp,v 1.180 2003/06/30 18:46:51 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -747,6 +747,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		ConfigFile.load (_ConfigDir + _LongName + ".cfg");
+
+
+		//
+		// Set the assert mode
+		//
+
+		if (ConfigFile.exists ("Assert"))
+			setAssert (ConfigFile.getVar("Assert").asInt() == 1);
 
 
 		//

@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.39 2003/03/31 13:57:44 cado Exp $
+ * $Id: types_nl.h,v 1.40 2003/06/30 18:46:51 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -83,7 +83,8 @@
 #  pragma warning (disable : 4786)			// STL: too long identifier
 #  pragma warning (disable : 4290)			// throw() not implemented warning
 #  pragma warning (disable : 4250)			// inherits via dominance (informational warning).
-#endif // NL_OS_UNIX
+#  pragma warning (disable : 4390)			// don't warn in empty block "if(exp) ;"
+#endif // NL_OS_WINDOWS
 
 
 // Standard include

@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.2 2004/05/14 12:45:59 boucher Exp $
+ * $Id: primitive_utils.h,v 1.3 2004/06/03 08:43:51 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -298,6 +298,31 @@ inline bool loadXmlPrimitiveFile(CPrimitives &primDoc, const std::string &fileNa
 	catch(NLMISC::Exception e)
 	{
 		nlwarning("Error reading input file '%s': '%s'", fileName.c_str(), e.what());
+		return false;
+	}
+}
+
+/** Utility function that save a CPrimitives object into an xml file.
+ *	This function deal with file IO and XML parsing call.
+ *	Return false if the saving fail for some reason, true otherwise.
+ */
+inline bool saveXmlPrimitiveFile(CPrimitives &primDoc, const std::string &fileName)
+{
+	try
+	{
+		NLMISC::COFile	fileOut(fileName);
+		xmlDocPtr	xmlDoc = xmlNewDoc((xmlChar*)("1.0"));;
+//		NLMISC::CIXml xmlOut;
+//		xmlOut.init (fileOut);
+
+		// Read it
+		primDoc.write(xmlDoc, fileName.c_str());
+
+		return xmlSaveFile(fileName.c_str(), xmlDoc) != -1;
+	}
+	catch(NLMISC::Exception e)
+	{
+		nlwarning("Error writing output file '%s': '%s'", fileName.c_str(), e.what());
 		return false;
 	}
 }

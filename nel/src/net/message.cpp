@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.20 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: message.cpp,v 1.21 2002/07/10 17:08:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ CMessage::CMessage (NLMISC::CMemStream &memstr) :
 	_HeaderSize(0xFFFFFFFF)
 {
 	fill (memstr.buffer (), memstr.length ());
-	uint8 LongFormat;
+	uint8 LongFormat=2;
 	serial (LongFormat);
 
 	if (LongFormat)

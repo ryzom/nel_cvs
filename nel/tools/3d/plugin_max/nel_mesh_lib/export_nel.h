@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.56 2002/06/06 17:35:29 vizerie Exp $
+ * $Id: export_nel.h,v 1.57 2002/07/03 09:16:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,11 @@
 #define NEL_FLARE_CLASS_ID_B			0x3c2f2307
 #define NEL_WAVE_MAKER_CLASS_ID_A		0x77e24828
 #define NEL_WAVE_MAKER_CLASS_ID_B		0x329a1de5
+#define NEL_REMANENT_SEGMENT_CLASS_ID_A 0x72f3588b
+#define NEL_REMANENT_SEGMENT_CLASS_ID_B 0x6eda0a52
+
+
+
 #define MAX_MORPHER_CLASS_ID			Class_ID(0x17bb6854, 0xa5cba2a3)
 
 
@@ -797,7 +802,20 @@ private:
 	NL3D::IShape					*buildWaterShape(INode& node, TimeValue time);
 
 	// build a wave maker shape
-	NL3D::IShape					*CExportNel::buildWaveMakerShape(INode& node, TimeValue time);
+	NL3D::IShape					*buildWaveMakerShape(INode& node, TimeValue time);
+
+	
+
+	// *********************
+	// ***  Export FXs   ***
+	// *********************
+	// Build shape from a particle system node
+	NL3D::IShape					*buildParticleSystem(INode& node, TimeValue time);
+	// Build shape from a remanence node
+	NL3D::IShape					*buildRemanence(INode& node, TimeValue time);
+	// Build shape from a flare node
+	NL3D::IShape					*buildFlare(INode& node, TimeValue time);
+
 
 	// *********************
 	// *** Ëxport material

@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.10 2001/02/14 17:00:29 chafik Exp $
+ * $Id: codage.cpp,v 1.11 2001/02/27 17:08:48 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,6 +21,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/script/constraint.h"
 #ifdef NL_DEBUG 
@@ -120,9 +121,11 @@ namespace NLAISCRIPT
 		return _RunState;
 	}
 
-#ifdef NL_DEBUG
-	bool DEBUG_SERVER = 0;
+
+#ifdef NL_DEBUG 
+	bool NL_AI_DEBUG_SERVER = 0;
 #endif
+
 
 	const NLAIAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run(CCodeContext &p)
 	{		
@@ -142,7 +145,7 @@ namespace NLAISCRIPT
 		IOpCode &op = nextCode();
 
 #ifdef NL_DEBUG
-		if(DEBUG_SERVER)
+		if(NL_AI_DEBUG_SERVER)
 		{
 			char chaine[1024*8];
 			op.getDebugResult(chaine,p);

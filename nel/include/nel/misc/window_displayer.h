@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.16 2003/08/27 16:16:25 distrib Exp $
+ * $Id: window_displayer.h,v 1.17 2004/02/06 18:55:27 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #define NL_WINDOW_DISPLAYER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
+#include "nel/misc/debug.h"
 
 #include "nel/misc/displayer.h"
 #include "nel/misc/mutex.h"

@@ -1022,6 +1022,10 @@ SOURCE=..\include\nel\misc\class_id.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\historic.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\resource_ptr.h
 # End Source File
 # Begin Source File
@@ -1043,6 +1047,10 @@ SOURCE=..\include\nel\misc\smart_ptr.h
 # Begin Source File
 
 SOURCE=..\include\nel\misc\smart_ptr_inline.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\twin_map.h
 # End Source File
 # End Group
 # Begin Group "Misc"

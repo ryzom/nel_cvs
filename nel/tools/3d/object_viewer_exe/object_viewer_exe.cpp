@@ -60,5 +60,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		IObjectViewer::releaseInterface (objectViewer);
 	}
 
+
 	return 0;
 }

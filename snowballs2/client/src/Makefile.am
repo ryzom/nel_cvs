@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2001/07/27 14:11:18 valignat Exp $
+# $Id: Makefile.am,v 1.4 2001/07/27 14:33:06 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -37,7 +37,7 @@ snowballs_SOURCES    = animation.cpp                       \
                        sound.cpp                           \
                        sound.h
 
-snowballs_LDADD      = -lnelnet -lnelmisc -lnel3d @FREETYPE_LIBS@
+snowballs_LDADD      = -lnelnet -lnelmisc -lnel3d -lnelpacs @FREETYPE_LIBS@
 
 AM_CXXFLAGS          = @FREETYPE_CFLAGS@
 

@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.36 2001/09/26 17:43:01 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.37 2001/10/04 12:52:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -343,7 +343,7 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void CParticleSystem::attach(CParticleSystemProcess *ptr)
 {
 	nlassert(std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) == _ProcessVect.end() );
-	nlassert(ptr->getOwner() == NULL); // deja attache a un autre systeme
+	//nlassert(ptr->getOwner() == NULL); // deja attache a un autre systeme
 	_ProcessVect.push_back(ptr);
 	ptr->setOwner(this);
 	notifyMaxNumFacesChanged();
@@ -544,7 +544,7 @@ void CParticleSystem::merge(CParticleSystemShape *pss)
 	CParticleSystem *duplicate = pss->instanciatePS(*this->_Scene); // duplicate the p.s. to merge
 	// now we transfer the located of the duplicated ps to this object...
 	for (TProcessVect::iterator it = duplicate->_ProcessVect.begin(); it != duplicate->_ProcessVect.end(); ++it)
-	{
+	{		
 		attach(*it);		
 	}
 	duplicate->_ProcessVect.clear();

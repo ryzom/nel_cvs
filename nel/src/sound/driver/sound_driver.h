@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.8 2002/06/28 19:34:16 hanappe Exp $
+ * $Id: sound_driver.h,v 1.9 2002/07/23 08:05:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,13 +43,13 @@ class ISource;
 #if 0
 // must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
 #ifdef NL_DEBUG_FAST
-#define NLSOUND_DLL_NAME "nel_drv_openal_win_debug_fast.dll"
+#define NLSOUND_DLL_NAME "nel_drv_openal_win_df.dll"
 #elif defined (NL_DEBUG)
-#define NLSOUND_DLL_NAME "nel_drv_openal_win_debug.dll"
+#define NLSOUND_DLL_NAME "nel_drv_openal_win_d.dll"
 #elif defined (NL_RELEASE_DEBUG)
 #define NLSOUND_DLL_NAME "nel_drv_openal_win_rd.dll"
 #elif defined (NL_RELEASE)
-#define NLSOUND_DLL_NAME "nel_drv_openal_win.dll"
+#define NLSOUND_DLL_NAME "nel_drv_openal_win_r.dll"
 #else
 #error "Unknown dll name"
 #endif
@@ -58,13 +58,13 @@ class ISource;
 
 // must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
 #ifdef NL_DEBUG_FAST
-#define NLSOUND_DLL_NAME "nel_drv_dsound_win_debug_fast.dll"
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_df.dll"
 #elif defined (NL_DEBUG)
-#define NLSOUND_DLL_NAME "nel_drv_dsound_win_debug.dll"
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_d.dll"
 #elif defined (NL_RELEASE_DEBUG)
 #define NLSOUND_DLL_NAME "nel_drv_dsound_win_rd.dll"
 #elif defined (NL_RELEASE)
-#define NLSOUND_DLL_NAME "nel_drv_dsound_win.dll"
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_r.dll"
 #else
 #error "Unknown dll name"
 #endif

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.15 2001/09/04 13:45:41 vizerie Exp $
+ * $Id: audio_mixer_user.cpp,v 1.16 2001/09/05 14:09:27 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -563,7 +563,7 @@ void				CAudioMixerUser::selectEnvEffects( const char *tag )
 void				CAudioMixerUser::loadEnvEffects( const char *filename )
 {
 	nlassert( filename != NULL );
-	nldebug( "AM: Loading environmental effects..." );
+	nlinfo( "Loading environmental effects from %s...", filename );
 
 	// Unload previous env effects
 	vector<CEnvEffect*>::iterator ipe;
@@ -593,7 +593,7 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 uint32			CAudioMixerUser::loadSoundBuffers( const char *filename, std::vector<std::string> *notfoundfiles )
 {
 	nlassert( filename != NULL );
-	nldebug( "AM: Loading sound buffers..." );
+	nlinfo( "Loading sound buffers from %s...", filename );
 
 
 	CIFile file;
@@ -674,7 +674,7 @@ string			CAudioMixerUser::getSourcesStats() const
 void			CAudioMixerUser::loadEnvSounds( const char *filename, UEnvSound **treeRoot )
 {
 	nlassert( filename != NULL );
-	nldebug( "AM: Loading environment sounds..." );
+	nlinfo( "Loading environment sounds from %s...", filename );
 
 	CIFile file;
 	if ( file.open( CPath::lookup( filename ) ) )

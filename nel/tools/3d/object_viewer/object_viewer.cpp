@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.83 2002/11/25 14:12:59 boucher Exp $
+ * $Id: object_viewer.cpp,v 1.84 2002/11/26 15:18:04 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -259,17 +259,27 @@ CObjectViewer::CObjectViewer ()
 		CConfigFile cf;
 		cf.load (sModulePath);
 
-		// Add search pathes
-		CConfigFile::CVar &search_pathes = cf.getVar ("search_pathes");
-		for (uint i=0; i<(uint)search_pathes.size(); i++)
-			CPath::addSearchPath (search_pathes.asString(i));
+		try
+		{
+			// Add search pathes
+			CConfigFile::CVar &search_pathes = cf.getVar ("search_pathes");
+			for (uint i=0; i<(uint)search_pathes.size(); i++)
+				CPath::addSearchPath (search_pathes.asString(i));
+		}
+		catch(EUnknownVar &)
+		{}
 
-		// Add recusrive search pathes
-		CConfigFile::CVar &recursive_search_pathes = cf.getVar ("recursive_search_pathes");
-		for (i=0; i<(uint)recursive_search_pathes.size(); i++)
-			CPath::addSearchPath (recursive_search_pathes.asString(i), true, false);
+		try
+		{
+			// Add recusrive search pathes
+			CConfigFile::CVar &recursive_search_pathes = cf.getVar ("recursive_search_pathes");
+			for (uint i=0; i<(uint)recursive_search_pathes.size(); i++)
+				CPath::addSearchPath (recursive_search_pathes.asString(i), true, false);
+		}
+		catch(EUnknownVar &)
+		{}
 
-		// Add search pathes
+		// Add extension remapping
 		try
 		{
 			CConfigFile::CVar &extensions_remapping = cf.getVar ("extensions_remapping");
@@ -309,7 +319,7 @@ CObjectViewer::CObjectViewer ()
 			CSoundSystem::setSamplePath(samplePath);
 
 			var = cf.getVar("samplebanks");
-			for (i=0; i<(uint)var.size(); i++)
+			for (uint i=0; i<(uint)var.size(); i++)
 				CSoundSystem::addSampleBank(var.asString(i).c_str());
 		}
 		catch (EUnknownVar &)

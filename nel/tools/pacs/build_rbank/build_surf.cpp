@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.3 2002/02/20 17:13:09 legros Exp $
+ * $Id: build_surf.cpp,v 1.4 2002/03/14 17:01:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,8 +81,9 @@ string getZoneNameById(uint16 id)
 
 uint16 getZoneIdByName(string &name)
 {
+	string upperName = strupr (name);
 	sint		y = 0, x = 0;
-	const char	*str = name.c_str();
+	const char	*str = upperName.c_str();
 
 	while (*str != '_')
 		y = y*10 + *(str++)-'0';
@@ -1148,7 +1149,7 @@ void	NLPACS::CPatchTessellation::selectElevation(vector<CSurfElement *> &selecti
  *
  */
 
-void	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CVector &translation)
+bool	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CVector &translation)
 {
 	CentralZoneId = zoneId;
 	Refinement = refinement;
@@ -1226,32 +1227,40 @@ void	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 		CZone	zone;
 		zone.serial(file);
 		file.close();
-		nldebug("use zone %s %d", filename.c_str(), zone.getZoneId());
-		_Landscape.addZone(zone);
-		CPatchRetriever	&retriever = _Zones[i];
-		retriever.Zone = _Landscape.getZone(_Zones[i].ZoneId);
-		retriever.BBox = retriever.Zone->getZoneBB().getAABBox();
-		retriever.BBox.setCenter(retriever.BBox.getCenter()+Translation);
-		const_cast<CZone *>(retriever.Zone)->retrieve(retriever.PatchInfos, retriever.BorderVertices);
-
-
-		// compute number of vertex used by this zone.
-		retriever.MaxVertex= 0;
-		for(j=0;j<(sint)retriever.PatchInfos.size();j++)
+		if (zone.getZoneId() != _Zones[i].ZoneId)
 		{
-			const CPatchInfo	&pi= retriever.PatchInfos[j];
-
-			for(sint k=0;k<4;k++)
-			{
-				retriever.MaxVertex= max((uint32)pi.BaseVertices[k], retriever.MaxVertex);
-			}
+			nlwarning ("Zone %s ID is wrong. Abort.");
+			return false;
 		}
+		else
+		{
+			nldebug("use zone %s %d", filename.c_str(), zone.getZoneId());
+			_Landscape.addZone(zone);
+			CPatchRetriever	&retriever = _Zones[i];
+			retriever.Zone = _Landscape.getZone(_Zones[i].ZoneId);
+			retriever.BBox = retriever.Zone->getZoneBB().getAABBox();
+			retriever.BBox.setCenter(retriever.BBox.getCenter()+Translation);
+			const_cast<CZone *>(retriever.Zone)->retrieve(retriever.PatchInfos, retriever.BorderVertices);
 
-		// init the remap table
-		for (j=0; j<retriever.PatchInfos.size(); ++j)
-			retriever.PatchRemap.push_back(-1);
 
-		retriever.TotalNew = 0;
+			// compute number of vertex used by this zone.
+			retriever.MaxVertex= 0;
+			for(j=0;j<(sint)retriever.PatchInfos.size();j++)
+			{
+				const CPatchInfo	&pi= retriever.PatchInfos[j];
+
+				for(sint k=0;k<4;k++)
+				{
+					retriever.MaxVertex= max((uint32)pi.BaseVertices[k], retriever.MaxVertex);
+				}
+			}
+
+			// init the remap table
+			for (j=0; j<retriever.PatchInfos.size(); ++j)
+				retriever.PatchRemap.push_back(-1);
+
+			retriever.TotalNew = 0;
+		}
 	}
 
 	_Landscape.setNoiseMode(false);
@@ -1431,6 +1440,8 @@ void	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 			retriever.Patches[p].setup(patch, &retriever.PatchInfos[p], this, &retriever, p, retriever.ZoneId);
 		}
 	}
+
+	return true;
 }
 
 

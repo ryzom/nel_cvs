@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.4 2002/02/19 11:08:45 legros Exp $
+ * $Id: build_rbank.cpp,v 1.5 2002/03/14 17:01:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,15 +140,17 @@ void tessellateZone(string &zoneName)
 		CAABBox	box = getZoneBBoxById(zid);
 
 		CVector		translation = -box.getCenter();
-		tessellation.setup(zid, 4, translation);
-		tessellation.build();
+		if (tessellation.setup(zid, 4, translation))
+		{
+			tessellation.build();
 
-		COFile	tesselOutput;
-		name = changeExt(zoneName, string("tessel"));
-		filename = TessellationPath+name;
-		tesselOutput.open(filename);
-		tessellation.saveTessellation(tesselOutput);
-		tesselOutput.close();
+			COFile	tesselOutput;
+			name = changeExt(zoneName, string("tessel"));
+			filename = TessellationPath+name;
+			tesselOutput.open(filename);
+			tessellation.saveTessellation(tesselOutput);
+			tesselOutput.close();
+		}
 	}
 	catch(Exception &e)
 	{

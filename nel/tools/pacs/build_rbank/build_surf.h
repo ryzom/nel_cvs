@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.2 2002/01/07 11:46:16 lecroart Exp $
+ * $Id: build_surf.h,v 1.3 2002/03/14 17:01:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -659,7 +659,7 @@ public:
 	/**
 	 * Sets a zone tessellation up for building later.
 	 */
-	void	setup(uint16 zoneId, sint16 refinement, const NLMISC::CVector &translation);
+	bool	setup(uint16 zoneId, sint16 refinement, const NLMISC::CVector &translation);
 
 	/**
 	 * Adds a zone light tessellation to the quad tree container.

@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * implementation file
  *
- * $Id: animation_dlg.cpp,v 1.5 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: animation_dlg.cpp,v 1.6 2001/09/18 14:40:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,7 @@ CAnimationDlg::CAnimationDlg(class CObjectViewer* main, CWnd* pParent /*=NULL*/)
 	UICurrentFrame = 0;
 	CurrentFrame = 0.0f;
 	//}}AFX_DATA_INIT
+	LastFrame = 0;
 	Playing=false;
 	Main=main;
 }
@@ -99,6 +100,7 @@ void CAnimationDlg::OnEnd()
 {
 	UpdateData ();
 	CurrentFrame=End;
+	LastFrame=End;
 	UICurrentFrame=(int)CurrentFrame;
 	UpdateData (FALSE);
 	updateBar ();
@@ -144,6 +146,7 @@ void CAnimationDlg::OnChangeCurrentFrame()
 	// Clamp current frame
 	clamp (UICurrentFrame, (int)Start, (int)End);
 	CurrentFrame=(float)UICurrentFrame;
+	LastFrame=CurrentFrame;
 
 	// Update
 	updateBar ();
@@ -166,7 +169,10 @@ void CAnimationDlg::OnChangeEndEdit()
 	if (End<Start)
 		Start=End;
 	if (End<CurrentFrame)
+	{
 		CurrentFrame=End;
+		LastFrame=End;
+	}
 	UICurrentFrame=(int)CurrentFrame;
 
 	// Update
@@ -194,6 +200,7 @@ void CAnimationDlg::OnStart()
 {
 	UpdateData ();
 	CurrentFrame=Start;
+	LastFrame=Start;
 	UICurrentFrame=(int)CurrentFrame;
 	UpdateData (FALSE);
 	updateBar ();
@@ -213,7 +220,10 @@ void CAnimationDlg::OnChangeStartEdit()
 	if (End<Start)
 		End=Start;
 	if (CurrentFrame<Start)
+	{
 		CurrentFrame=Start;
+		LastFrame=Start;
+	}
 	UICurrentFrame=(int)CurrentFrame;
 
 	// Update
@@ -234,6 +244,7 @@ void CAnimationDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		// Setup current pos
 		CurrentFrame=(float)TimeLineCtrl.GetPos()*(End-Start)/65535.f+Start;
 		CurrentFrame=(float)floor(CurrentFrame+0.5f);
+		LastFrame=CurrentFrame;
 		UICurrentFrame=(int)CurrentFrame;
 
 		// Update values
@@ -252,6 +263,10 @@ void CAnimationDlg::handle ()
 	bool forward=(((CButton*)GetDlgItem (IDC_FFW))->GetState()&BST_PUSHED)!=0;
 	bool rewind=(((CButton*)GetDlgItem (IDC_FRW))->GetState()&BST_PUSHED)!=0;
 
+	// If play, back last frame
+	if (Playing)
+		LastFrame=CurrentFrame;
+
 	if (forward||rewind||Playing)
 	{
 		UpdateData ();
@@ -260,26 +275,38 @@ void CAnimationDlg::handle ()
 		uint deltaTime=(uint)(newTime-LastTime);
 
 		if (forward)
+		{
 			// Fast forward
 			CurrentFrame+=(float)((float)deltaTime*SPEED_FOREWARD*Speed/1000.0);
+		}
 		else if (rewind)
+		{
 			// Fast rewind
 			CurrentFrame-=(float)((float)deltaTime*SPEED_FOREWARD*Speed/1000.0);
+		}
 		else
 		{
 			// Compute new time
 			if (Playing)
+			{
 				CurrentFrame+=(float)((float)deltaTime*Speed/1000.0);
+			}
 		}
 
 		// Loop
 		if (Loop&&(!forward)&&(!rewind)&&Playing)
+		{
+			float backup = CurrentFrame;
 			CurrentFrame=(float)fmod ((CurrentFrame-Start), End-Start)+Start;
+			if (backup!=CurrentFrame)
+				LastFrame = CurrentFrame;
+		}
 
 		// Clamp time
 		if (CurrentFrame>End)
 		{
 			CurrentFrame=End;
+			LastFrame=CurrentFrame;
 			UpdateData (FALSE);
 
 			// Stop animation
@@ -288,6 +315,7 @@ void CAnimationDlg::handle ()
 		if (CurrentFrame<Start)
 		{
 			CurrentFrame=Start;
+			LastFrame=CurrentFrame;
 			UpdateData (FALSE);
 
 			// Stop animation
@@ -298,6 +326,10 @@ void CAnimationDlg::handle ()
 		UpdateData (FALSE);
 		updateBar ();
 	}
+
+	// If not play, copy current frame
+	if (!Playing)
+		LastFrame=CurrentFrame;
 
 	// Setup new time
 	LastTime=newTime;
@@ -353,6 +385,12 @@ NL3D::CAnimationTime CAnimationDlg::getTime ()
 {
 	// Return current time in second
 	return CurrentFrame/Speed;
+}
+
+NL3D::CAnimationTime CAnimationDlg::getLastTime ()
+{
+	// Return current time in second
+	return LastFrame/Speed;
 }
 
 void CAnimationDlg::OnDestroy() 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.20 2001/09/06 08:43:31 vizerie Exp $
+ * $Id: object_viewer.h,v 1.21 2001/09/18 14:40:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,6 +221,9 @@ public:
 	/// get the lag in milliseconds
 	uint32 getLag() const		  { return _Lag; }
 
+	/// eval sound tracks
+	void evalSoundTrack (float lastTime, float currentTime);
+
 private:
 
 	CMainFrame									*_MainFrame;
@@ -246,6 +249,7 @@ private:
 	std::vector<IMainLoopCallBack *>			_CallBackList;
 	uint32										_Lag; 
 	float										_CameraFocal;	
+	float										_LastTime;
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

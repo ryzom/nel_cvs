@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.40 2001/09/13 14:28:16 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.41 2001/09/18 14:40:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #undef OBJECT_VIEWER_EXPORT
 #define OBJECT_VIEWER_EXPORT __declspec( dllexport ) 
 
+#include <vector>
+
 #include "object_viewer.h"
 #include <3d/nelu.h>
 #include <3d/mesh.h>
@@ -41,6 +43,8 @@
 #include <3d/skeleton_model.h>
 #include <3d/init_3d.h>
 #include <3d/scene_group.h>
+#include <3d/animation_playlist.h>
+#include <3d/track_keyframer.h>
 
 #include <nel/misc/common.h>
 #include <nel/misc/file.h>
@@ -75,8 +79,10 @@ static char SDir[256];
 
 
 
+using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
+using namespace NLSOUND;
 
 //
 //	Note!
@@ -470,6 +476,9 @@ void CObjectViewer::go ()
 		// Setup the channel mixer
 		_SlotDlg->Playlist.setupMixer (_ChannelMixer, _AnimationDlg->getTime());
 
+		// Eval sound tracks
+		evalSoundTrack (_AnimationDlg->getLastTime(), _AnimationDlg->getTime());
+
 		// Animate the automatic animation in the scene
 		//CNELU::Scene.animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
 
@@ -607,6 +616,9 @@ void CObjectViewer::go ()
 			NLMISC::nlSleep(_Lag);
 		}
 
+
+		// Save last time
+		_LastTime=_AnimationDlg->getTime();
 	}
 	while (!CNELU::AsyncListener.isKeyPushed(KeyESCAPE)&&CNELU::Driver->isActive());
 }
@@ -1230,4 +1242,127 @@ void CObjectViewer::removeAllInstancesFromScene()
 	_ListShapeBaseName.clear();
 
 
+}
+
+// ***************************************************************************
+void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
+{
+	if (lastTime!=currentTime)
+	{
+		// For each channel of the mixer
+		for (uint slot=0; slot<CChannelMixer::NumAnimationSlot; slot++)
+		{
+			// Anim id
+			uint animId=_SlotDlg->Playlist.getAnimation (slot);
+
+			// Channel actif ?
+			if (_SlotDlg->Playlist.getAnimation (slot)!=CAnimationPlaylist::empty)
+			{
+				// Get the animation
+				CAnimation *anim=_AnimationSet.getAnimation (animId);
+				nlassert (anim);
+
+				// Get the sound track
+				uint trackId=anim->getIdTrackByName ("NoteTrack");
+				if (trackId!=CAnimation::NotFound)
+				{
+					// Get the track
+					ITrack *track=anim->getTrack (trackId);
+					nlassert (track);
+
+					// Dynamic cast
+					UTrackKeyframer *soundTrackKF = dynamic_cast<UTrackKeyframer *>(track);
+					if (soundTrackKF)
+					{
+						// Sound keys
+						std::vector<CAnimationTime> result;
+
+						// Get local begin and endTime
+						CAnimationTime localLastTime = _SlotDlg->Playlist.getLocalTime (slot, lastTime, _AnimationSet);
+						CAnimationTime localCurrentTime = _SlotDlg->Playlist.getLocalTime (slot, currentTime, _AnimationSet);
+
+						// Good interval
+						if (localLastTime<=localCurrentTime)
+						{
+							// Get keys in this interval
+							soundTrackKF->getKeysInRange(localLastTime, localCurrentTime, result);
+						}
+						else
+						{
+							// Get begin and last time
+							CAnimationTime beginTime=track->getBeginTime ();
+							CAnimationTime endTime=track->getEndTime ();
+
+							// Time must have been clamped
+							nlassert (localCurrentTime<=endTime);
+							nlassert (localLastTime>=beginTime);
+
+							// Get keys to the end
+							soundTrackKF->getKeysInRange(localCurrentTime, endTime, result);
+
+							// Get keys at the beginning
+							soundTrackKF->getKeysInRange(beginTime, localLastTime, result);
+						}
+
+						// Process sounds
+						NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer ();
+						if( audioMixer )
+						{	
+							vector<CAnimationTime>::iterator itResult;
+							for( itResult = result.begin(); itResult != result.end(); ++itResult ) 
+							{
+								string soundName;
+								double keyTime = *itResult;
+								nlinfo("keyTime = %f  result size : %d",*itResult,result.size());
+								
+								if( !track->interpolate( *itResult, soundName) )
+								{
+									nlwarning("The key at offset %f is not a string",*itResult);
+								}
+								else
+								{
+									// if there are step sounds
+									if( soundName == "step" )
+									{
+ 										// need to spawn a sound linked to the anim
+										string dummySound = "PAShommecourseappartdur1a";
+										USource *source = audioMixer->createSource (dummySound.c_str() , true );
+										if (source)
+										{
+											source->setPos (CVector::Null);
+											source->play ();
+ 											nlinfo ("launching dummy sound %s for the step event", dummySound.c_str());
+										}
+										else
+										{
+	 										nlwarning ("sound not found for the step event: '%s'", dummySound.c_str());
+										}
+									}
+ 									else if (soundName.find ("snd_") != string::npos)
+ 									{
+ 										// need to spawn a sound linked to the anim
+										USource *source = audioMixer->createSource ( soundName.c_str(), true );
+										if (source)
+										{
+											source->setPos (CVector::Null);
+											source->play ();
+ 											nlinfo ("launching sound for anim event from notetrack '%s'", soundName.c_str());
+										}
+										else
+										{
+	 										nlwarning ("sound not found: '%s'", soundName.c_str());
+										}
+ 									}
+ 									else
+ 									{
+ 										nlwarning ("unknown notetrack event: '%s'", soundName.c_str());
+ 									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }

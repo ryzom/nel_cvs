@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * <File description>
  *
- * $Id: animation_dlg.h,v 1.6 2001/07/24 09:07:24 vizerie Exp $
+ * $Id: animation_dlg.h,v 1.7 2001/09/18 14:40:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,11 +63,13 @@ public:
 	uint64					LastTime;
 	CObjectViewer*			Main;
 	float					CurrentFrame;
+	float					LastFrame;
 
 	void handle ();
 	void setAnimTime (float animStart, float animEnd);
 	void updateBar ();
 	NL3D::CAnimationTime getTime ();
+	NL3D::CAnimationTime getLastTime ();
 
 // Overrides
 	// ClassWizard generated virtual function overrides

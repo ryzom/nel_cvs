@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.7 2002/12/05 18:28:51 robert Exp $
+ * $Id: classifier.cpp,v 1.8 2002/12/26 14:46:37 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ CClassifierSystem::~CClassifierSystem()
 	}
 }
 
-void CClassifierSystem::addClassifier(const TSensorMap &conditionsMap, sint16 priority, const char* behavior)
+void CClassifierSystem::addClassifier(const TSensorMap &conditionsMap, double priority, const char* behavior)
 {
 	// We build a new classifier.
 	CClassifier* classifier = new CClassifier();
@@ -102,11 +102,11 @@ sint16 CClassifierSystem::selectBehavior( const TSensorMap &sensorMap)
 
 	// We select the activables classifiers
 	typedef	std::map<sint16, CClassifier*>::iterator  TitClassifiers;
-	std::map<sint16, TitClassifiers> mapCSweel;
+	std::map<double, TitClassifiers> mapCSweel;
 	std::map<sint16, CClassifier*>::iterator itClassifiers = _classifiers.begin();
 	std::list<CClassifierConditionCell*>::iterator itConditions;
 	bool activable;
-	int totalPriority = 0;
+	double totalPriority = 0;
 
 	while (itClassifiers != _classifiers.end())
 	{
@@ -140,8 +140,8 @@ sint16 CClassifierSystem::selectBehavior( const TSensorMap &sensorMap)
 	if(totalPriority>0)
 	{
 		// We select a classifier in the active classifier with a roullette wheel random.
-		sint16 randomeNumber = rand()%(totalPriority);
-		std::map<sint16, TitClassifiers>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
+		double randomeNumber = (rand()%(int(totalPriority*100)))/100.0;
+		std::map<double, TitClassifiers>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
 		CClassifier* pClassifierSelection = (*((*itMapCSweel).second)).second;
 		sint16 selectionNumber = (*((*itMapCSweel).second)).first;
 
@@ -175,7 +175,7 @@ void CClassifierSystem::getDebugString(std::string &t) const
 			dbg += " (" + condCell->getSensorName() + "=" + condCell->getValue() + ") +";
 		}
 		std::string actionName = (*itClassifiers).second->Behavior;
-		sint16		prio = (*itClassifiers).second->Priority;
+		double		prio = (*itClassifiers).second->Priority;
 		dbg += "> " + actionName + " [" + NLMISC::toString(prio) + "]\n";
 	}
 	t += dbg;
@@ -246,7 +246,7 @@ std::string CActionCS::getName() const
 }
 
 /// Ajout d'une nouvelle règle motivant cette action
-void CActionCS::addMotivationRule (std::string motivationName, const TSensorMap &conditionsMap, sint16 priority)
+void CActionCS::addMotivationRule (std::string motivationName, const TSensorMap &conditionsMap, double priority)
 {
 	CClassifierSystem* pCS;
 
@@ -285,24 +285,30 @@ CMotivationEnergy::~CMotivationEnergy()
 {
 }
 
-sint16 CMotivationEnergy::getSumValue() const
+double CMotivationEnergy::getSumValue() const
 {
 	return _SumValue;
 }
 
-void	CMotivationEnergy::removeProvider(std::string providerName)
+void CMotivationEnergy::removeProvider(std::string providerName)
 {
 	_MotivationProviders.erase(providerName);
 	computeMotivationValue();
 }
 
-void	CMotivationEnergy::addProvider(std::string providerName, const CMotivationEnergy& providerMotivation)
+void CMotivationEnergy::addProvider(std::string providerName, const CMotivationEnergy& providerMotivation)
 {
 	_MotivationProviders[providerName] = providerMotivation._EnergyByMotivation ;
 	computeMotivationValue();
 }
 
-void	CMotivationEnergy::computeMotivationValue()
+void CMotivationEnergy::updateProvider(std::string providerName, const CMotivationEnergy& providerMotivation)
+{
+	_MotivationProviders[providerName] = providerMotivation._EnergyByMotivation ;
+	computeMotivationValue();
+}
+
+void CMotivationEnergy::computeMotivationValue()
 {
 	_EnergyByMotivation.clear();
 	std::map<std::string, TEnergyByMotivation>::iterator itMotivationProviders;
@@ -314,12 +320,12 @@ void	CMotivationEnergy::computeMotivationValue()
 		for (itMotivation = motivation.begin(); itMotivation != motivation.end(); itMotivation++)
 		{
 			std::string motivSource = (*itMotivation).first;
-			sint16 motiveValue = (*itMotivation).second.Value;
-			sint16 motivePP = (*itMotivation).second.PP;
+			double motiveValue = (*itMotivation).second.Value;
+			double motivePP = (*itMotivation).second.PP;
 			itMyMotivation = _EnergyByMotivation.find(motivSource);
 			if (itMyMotivation != _EnergyByMotivation.end())
 			{
-				sint16 myMotiveValue = (*itMyMotivation).second.Value;
+				double myMotiveValue = (*itMyMotivation).second.Value;
 				if (motiveValue > myMotiveValue)
 				{
 					_EnergyByMotivation[motivSource].Value = motiveValue;
@@ -335,30 +341,33 @@ void	CMotivationEnergy::computeMotivationValue()
 	}
 
 	TEnergyByMotivation::const_iterator itEnergyByMotivation;
-	sint16 sum = 0;
+	double sum = 0;
 	for (itEnergyByMotivation = _EnergyByMotivation.begin(); itEnergyByMotivation != _EnergyByMotivation.end(); itEnergyByMotivation++)
 	{
 		sum += (*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP;
 	}
 	_SumValue = sum;
+	nlassert(_SumValue >= 0);
 }
 
 /// Donne la Puissance Propre d'une Motivation
-void CMotivationEnergy::setMotivationPP(std::string motivationName, sint16 PP)
+void CMotivationEnergy::setMotivationPP(std::string motivationName, double PP)
 {
 	_SumValue -= _EnergyByMotivation[motivationName].Value * _EnergyByMotivation[motivationName].PP;
 	_SumValue += _EnergyByMotivation[motivationName].Value * PP;
 	_EnergyByMotivation[motivationName].PP = PP;
 	_MotivationProviders[motivationName][motivationName].PP = PP;
+	nlassert(_SumValue >= 0);
 }
 
 /// Fixe la valeur d'une motivation
-void CMotivationEnergy::setMotivationValue(std::string motivationName, sint16 value)
+void CMotivationEnergy::setMotivationValue(std::string motivationName, double value)
 {
 	_SumValue -= _EnergyByMotivation[motivationName].Value * _EnergyByMotivation[motivationName].PP;
 	_SumValue += value * _EnergyByMotivation[motivationName].PP;
 	_EnergyByMotivation[motivationName].Value = value;
 	_MotivationProviders[motivationName][motivationName].Value = value;
+	nlassert(_SumValue >= 0);
 }
 
 /// Chaine de debug
@@ -369,7 +378,7 @@ void CMotivationEnergy::getDebugString(std::string &t) const
 	
 	for (itEnergyByMotivation = _EnergyByMotivation.begin(); itEnergyByMotivation!= _EnergyByMotivation.end(); itEnergyByMotivation++)
 	{
-		ret += " Motivation source : " + (*itEnergyByMotivation).first + " (" + NLMISC::toString((*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP) + ")\n";
+		ret += " " + (*itEnergyByMotivation).first + " (" + NLMISC::toString((*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP) + ") ";
 	}
 	t+=ret;
 }
@@ -392,37 +401,72 @@ CMHiCSagent::~CMHiCSagent()
 void CMHiCSagent::getDebugString(std::string &t) const
 {
 	std::string ret = "\n\n---------------------------";
+	ret += "\nMotivations :";
 	std::map<std::string, CMotivateCS>::const_iterator itClassifiersAndMotivationIntensity;
 	for (itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.begin();
 		 itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end();
 		 itClassifiersAndMotivationIntensity++)
 	{
-		ret += "\nMotivation name : " + (*itClassifiersAndMotivationIntensity).first;
-		ret += "\n";
+		ret += "\n " + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.NumberOfActivations) + "<" + (*itClassifiersAndMotivationIntensity).first + "> ";
+		ret += "[MI=" + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getSumValue()) + "] :";
 		(*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getDebugString(ret);
-		ret += "Rule number " + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.ClassifierNumber); 
-		//***G*** J'ai plus qu'à affiché la règle du classeur en plus du numéro.
+		ret += "\n  -> Classifier number " + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.ClassifierNumber); 
+		ret += "\n";
 	}
-	ret += "\nACTIONS :\n";
+	ret += "\nACTIONS :";
 	std::map<std::string, CMotivationEnergy>::const_iterator itActionsExecutionIntensity;
 	for (itActionsExecutionIntensity = _ActionsExecutionIntensity.begin(); itActionsExecutionIntensity != _ActionsExecutionIntensity.end(); itActionsExecutionIntensity++)
 	{
-		ret += (* itActionsExecutionIntensity).first + " :\n";
+		ret += "\n <" + (* itActionsExecutionIntensity).first + "> [EI=" + NLMISC::toString((*itActionsExecutionIntensity).second.getSumValue()) + "] : ";
 		(*itActionsExecutionIntensity).second.getDebugString(ret);
 	}
 	t+=ret;
 }
 
 /// Donne la Puissance Propre d'une Motivation
-void CMHiCSagent::setMotivationPP(std::string motivationName, sint16 PP)
+void CMHiCSagent::setMotivationPP(std::string motivationName, double PP)
 {
 	_ClassifiersAndMotivationIntensity[motivationName].MotivationIntensity.setMotivationPP(motivationName, PP);
+	spreadMotivationReckon(motivationName);
 }
 
 /// Fixe la valeur d'une motivation
-void CMHiCSagent::setMotivationValue(std::string motivationName, sint16 value)
+void CMHiCSagent::setMotivationValue(std::string motivationName, double value)
 {
 	_ClassifiersAndMotivationIntensity[motivationName].MotivationIntensity.setMotivationValue(motivationName, value);
+	spreadMotivationReckon(motivationName);
+}
+
+void CMHiCSagent::spreadMotivationReckon(std::string commonCS)
+{
+	std::map<std::string, CMotivateCS>::iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(commonCS);
+	nlassert(itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end());
+	sint16 lastClassifierNumber = (*itClassifiersAndMotivationIntensity).second.ClassifierNumber;
+	if (lastClassifierNumber >=0 )
+	{
+		std::string lastActionName = _pMHiCSbase->getActionPart(commonCS, lastClassifierNumber);
+		if (_pMHiCSbase->isAnAction(lastActionName))
+		{
+			_ActionsExecutionIntensity[lastActionName].updateProvider(commonCS, (*itClassifiersAndMotivationIntensity).second.MotivationIntensity);
+			// If the action doesn't receive motivation any more, we remove it.
+			double energy = _ActionsExecutionIntensity[lastActionName].getSumValue();
+			if (energy <= 0)
+			{
+				_ActionsExecutionIntensity.erase(lastActionName);
+			}
+		}
+		else
+		{
+			_ClassifiersAndMotivationIntensity[lastActionName].MotivationIntensity.updateProvider(commonCS, (*itClassifiersAndMotivationIntensity).second.MotivationIntensity);
+			spreadMotivationReckon(lastActionName);
+			// If the CS doesn't receive motivation any more, we remove it.
+			double energy = _ClassifiersAndMotivationIntensity[lastActionName].MotivationIntensity.getSumValue();
+			if (energy <= 0)
+			{
+				_ClassifiersAndMotivationIntensity.erase(lastActionName);
+			}
+		}
+	}
 }
 
 void CMHiCSagent::run()
@@ -431,9 +475,9 @@ void CMHiCSagent::run()
 	Je sélectionne par roulette weel le classeur que je vais gérer
 	Je met à jour l'énergie du vainqueur
 	*/
-	sint16 somme = 0;
+	double somme = 0;
 	typedef	std::map<std::string, CMotivateCS>::iterator TitNameAndMotivation;
-	std::map<sint16, TitNameAndMotivation > mapCSweel;
+	std::map<double, TitNameAndMotivation > mapCSweel;
 	std::map<std::string, CMotivateCS>::iterator itClassifiersAndMotivationIntensity;
 	// On calcule la somme
 	for (itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.begin();
@@ -441,7 +485,7 @@ void CMHiCSagent::run()
 		 itClassifiersAndMotivationIntensity++)
 	{
 		CMotivateCS* pCMotivateCS = &((*itClassifiersAndMotivationIntensity).second);
-		sint16 energy = pCMotivateCS->MotivationIntensity.getSumValue();
+		double energy = pCMotivateCS->MotivationIntensity.getSumValue();
 		if (energy > 0)
 		{
 			somme += energy;
@@ -451,29 +495,49 @@ void CMHiCSagent::run()
 	if (somme>0)
 	{
 		// on selectionne le classeur;
-		sint16 randomeNumber = rand()%(somme);
-		std::map<sint16, TitNameAndMotivation>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
+		double randomeNumber = (rand()%(int(somme*100)))/100.0;
+		std::map<double, TitNameAndMotivation>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
 		CMotivateCS* pCSselection = &((*((*itMapCSweel).second)).second);
 		std::string selectionName = (*((*itMapCSweel).second)).first;
 
+		// Updating the number of activation counter
+		pCSselection->NumberOfActivations++;
+
 		// On fait calculer le CS
 		sint16 selectedClassifierNumber = _pMHiCSbase->selectBehavior(selectionName,_SensorsValues);
+		if (selectedClassifierNumber < 0) return; // ***G*** Ici on décide de rien faire si on sait pas quoi faire. En fait il faudrait créer un règle.
 		std::string behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
 
 		// We check the last action selected by the current motivation to remove the motivation influence on this action.
 		sint16 lastClassifierNumber = _ClassifiersAndMotivationIntensity[selectionName].ClassifierNumber;
-		if (lastClassifierNumber >=0 )
+		if (lastClassifierNumber >= 0)
 		{
 			std::string lastActionName = _pMHiCSbase->getActionPart(selectionName, lastClassifierNumber);
-			if (_pMHiCSbase->isAnAction(lastActionName))
+
+			// We check if we have selected the same behavior.
+			if (lastActionName != behav)
 			{
-				_ActionsExecutionIntensity[lastActionName].removeProvider(selectionName);
-				// ***G*** Retirer l'action si l'energie est null
-			}
-			else
-			{
-				_ClassifiersAndMotivationIntensity[lastActionName].MotivationIntensity.removeProvider(selectionName);
-				// ***G*** Retirer l'action si l'energie est null
+				if (_pMHiCSbase->isAnAction(lastActionName))
+				{
+					_ActionsExecutionIntensity[lastActionName].removeProvider(selectionName);
+					// If the action doesn't receive motivation any more, we remove it.
+					double energy = _ActionsExecutionIntensity[lastActionName].getSumValue();
+					if (energy <= 0)
+					{
+						_ActionsExecutionIntensity.erase(lastActionName);
+					}
+				}
+				else
+				{
+					_ClassifiersAndMotivationIntensity[lastActionName].MotivationIntensity.removeProvider(selectionName);
+					spreadMotivationReckon(lastActionName);
+					// If the CS doesn't receive motivation any more, we remove it.
+					double energy = _ClassifiersAndMotivationIntensity[lastActionName].MotivationIntensity.getSumValue();
+					if (energy <= 0)
+					{
+						_ClassifiersAndMotivationIntensity.erase(lastActionName);
+					}
+				}
 			}
 		}
 
@@ -489,6 +553,7 @@ void CMHiCSagent::run()
 		{
 			// Else it must be a virtual action (common CS)
 			_ClassifiersAndMotivationIntensity[behav].MotivationIntensity.addProvider(selectionName, pCSselection->MotivationIntensity);
+			spreadMotivationReckon(behav);
 		}
 	}
 }
@@ -503,11 +568,11 @@ std::string CMHiCSagent::selectBehavior()
 {
 	// On prend le max
 	std::string ret = "";
-	sint16 executionIntensity = 0;
+	double executionIntensity = 0;
 	std::map<std::string, CMotivationEnergy>::iterator itActionsExecutionIntensity;
 	for (itActionsExecutionIntensity = _ActionsExecutionIntensity.begin(); itActionsExecutionIntensity != _ActionsExecutionIntensity.end(); itActionsExecutionIntensity++)
 	{
-		sint16 value = (*itActionsExecutionIntensity).second.getSumValue();
+		double value = (*itActionsExecutionIntensity).second.getSumValue();
 		if (value > executionIntensity)
 		{
 			executionIntensity = value;

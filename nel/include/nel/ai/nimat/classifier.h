@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.5 2002/12/05 18:28:37 robert Exp $
+ * $Id: classifier.h,v 1.6 2002/12/26 14:46:52 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ private :
 
 	public :
 		std::list<CClassifierConditionCell*>	Condition;
-		sint16									Priority;
+		double									Priority;
 		std::string								Behavior;
 	};
 
@@ -85,10 +85,10 @@ public :
 	/**
 	  * Add a new classifier in the classifier system.
 	  * \param conditionsMap is a map whose key is the sensor name and value the sensor value.
-	  * \param priority is the importance of this rule. The value should be between 0 an 100.
+	  * \param priority is the importance of this rule. The value should be between 0 an 1.
 	  * \param behavior is the action to execute if this classifier is selected.
 	  */
-	void addClassifier(const TSensorMap &conditionsMap, sint16 priority, const char* behavior);
+	void addClassifier(const TSensorMap &conditionsMap, double priority, const char* behavior);
 
 	/// Merge two CS
 	void addClassifierSystem(const CClassifierSystem &cs);
@@ -136,7 +136,7 @@ public :
 	std::string getName() const;
 
 	/// Ajout d'une nouvelle règle motivant cette action
-	void addMotivationRule (std::string motivationName, const TSensorMap &conditionsMap, sint16 priority);
+	void addMotivationRule (std::string motivationName, const TSensorMap &conditionsMap, double priority);
 
 	/// Chaine de debug
 	void getDebugString (std::string &t) const;
@@ -160,8 +160,8 @@ class CMotivationEnergy
 	class CMotivationValue
 	{
 	public :
-		sint16 Value;
-		sint16 PP;
+		double Value;
+		double PP;
 		CMotivationValue()
 		{
 			Value = 0;
@@ -175,23 +175,24 @@ public :
 	CMotivationEnergy();
 	virtual ~CMotivationEnergy();
 
-	sint16	getSumValue() const;
+	double	getSumValue() const;
 	void	removeProvider(std::string providerName);
 	void	addProvider(std::string providerName, const CMotivationEnergy& providerMotivation);
+	void	updateProvider(std::string providerName, const CMotivationEnergy& providerMotivation);
 
 	/// Donne la Puissance Propre d'une Motivation
-	void setMotivationPP(std::string motivationName, sint16 PP);
+	void setMotivationPP(std::string motivationName, double PP);
 
 	/// Fixe la valeur d'une motivation
-	void setMotivationValue(std::string motivationName, sint16 value);
+	void setMotivationValue(std::string motivationName, double value);
 
 	/// Chaine de debug
 	void getDebugString (std::string &t) const;
 
 private :
-	void	computeMotivationValue();
+	void computeMotivationValue();
 
-	sint16										_SumValue;
+	double										_SumValue;
 	std::map<std::string, TEnergyByMotivation>	_MotivationProviders;
 	TEnergyByMotivation							_EnergyByMotivation; // <MotivationSource, motivationValue>
 };
@@ -241,8 +242,8 @@ public :
 	void getDebugString(std::string &t) const;
 	
 private :
-	std::map<std::string, CClassifierSystem>	_ClassifierSystems;						// <motivationName, classeur> CS by motivation name.
-	std::set<std::string>						_ActionSet;							// Set of all executablle actions
+	std::map<std::string, CClassifierSystem>	_ClassifierSystems;	// <motivationName, classeur> CS by motivation name.
+	std::set<std::string>						_ActionSet;			// Set of all executablle actions
 };
 
 
@@ -261,10 +262,10 @@ public :
 	virtual ~CMHiCSagent();
 
 	/// Donne la Puissance Propre d'une Motivation
-	void setMotivationPP(std::string motivationName, sint16 PP);
+	void setMotivationPP(std::string motivationName, double PP);
 
 	/// Fixe la valeur d'une motivation
-	void setMotivationValue(std::string motivationName, sint16 value);
+	void setMotivationValue(std::string motivationName, double value);
 
 	/// Return the Behavior that must be active
 	std::string selectBehavior();
@@ -284,12 +285,18 @@ private :
 	public :
 		sint16				ClassifierNumber;
 		CMotivationEnergy	MotivationIntensity;
+		uint16				NumberOfActivations;
 	public :
 		CMotivateCS()
 		{
-			ClassifierNumber = -1;
+			ClassifierNumber	= -1;
+			NumberOfActivations	= 0;
 		}
 	};
+
+	// Will spread the reckon of the motivation value along a motivation branch.
+	void spreadMotivationReckon(std::string commonCS);
+
 	CMHiCSbase*									_pMHiCSbase;						// A pointer on the rules base.
 	std::map<std::string, CMotivateCS>			_ClassifiersAndMotivationIntensity;	// <motivationName, classeur> the motivationName is also the CS name.
 	TSensorMap									_SensorsValues;						// Valeurs des senseurs

@@ -100,6 +100,10 @@ SOURCE=.\ai\agent\agent_mailer.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\agent_nombre.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\agent_object.cpp
 # End Source File
 # Begin Source File

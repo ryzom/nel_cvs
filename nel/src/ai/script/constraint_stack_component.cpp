@@ -1,6 +1,6 @@
 /** \file constraint_stack_component.cpp
  *
- * $Id: constraint_stack_component.cpp,v 1.7 2001/03/14 13:19:34 chafik Exp $
+ * $Id: constraint_stack_component.cpp,v 1.8 2001/07/11 16:25:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,11 @@ namespace NLAISCRIPT
 		_Id = NULL;
 		_OpCodeType = opCodeType;
 		_StackPos = stackPos;
+
+#ifdef NL_DEBUG
+		static kkkkk = 0;
+		nlinfo("meme %4x, %d",this, kkkkk ++);
+#endif
 	}
 
 	CConstraintStackComp::~CConstraintStackComp()

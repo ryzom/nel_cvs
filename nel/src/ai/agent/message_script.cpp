@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.17 2001/06/28 15:47:54 chafik Exp $
+ * $Id: message_script.cpp,v 1.18 2001/07/11 16:25:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -350,10 +350,10 @@ namespace NLAIAGENT
 			t += NLAIC::stringGetBuild("<%s> (scripted)\n   -StaticComponents:\n",(const char *)_MessageClass->getType());
 		else
 			t += NLAIC::stringGetBuild("<undefined_class> (scripted)\n   -StaticComponents:\n");
-
-		std::string buf;
+		
 		for (sint32 i = 0; i < size(); i++ )
 		{
+			std::string buf;
 			t += "     ";
 			if ( _MessageClass->getComponent(i) )
 			{

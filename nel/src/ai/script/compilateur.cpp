@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.8 2001/04/12 08:26:41 chafik Exp $
+ * $Id: compilateur.cpp,v 1.9 2001/07/11 16:25:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -325,7 +325,7 @@ namespace NLAISCRIPT
 			yyLine = c->getLine();
 			yyColone = c->getColone();
 			yyerror(txt);
-			_ConstraintType.erase(j);
+			if(_ConstraintType.begin() != _ConstraintType.end()) _ConstraintType.erase(j);
 			c->release();
 		}
 	}

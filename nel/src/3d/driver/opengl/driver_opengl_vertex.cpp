@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.47 2004/04/08 16:12:42 corvazier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.48 2004/04/27 12:06:26 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -125,7 +125,7 @@ void CVBDrvInfosGL::unlock (uint first, uint last)
 
 // ***************************************************************************
 bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
-{
+{		
 	// 2. If necessary, do modifications.
 	//==================================
 	const bool touched = (VB.getTouchFlags() & (CVertexBuffer::TouchedReserve|CVertexBuffer::TouchedVertexFormat)) != 0;
@@ -255,6 +255,7 @@ bool CDriverGL::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 	if ( !setupMaterial(mat) || _LastIB._Values == NULL )
 		return false;
 
+	if (_CurrentVertexBufferHard && _CurrentVertexBufferHard->isInvalid()) return true;
 	// render primitives.
 	//==============================
 	// start multipass.
@@ -297,6 +298,7 @@ bool CDriverGL::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
 	if ( !setupMaterial(mat) || _LastIB._Values == NULL )
 		return false;
 
+	if (_CurrentVertexBufferHard && _CurrentVertexBufferHard->isInvalid()) return true;
 	// render primitives.
 	//==============================
 	// start multipass.
@@ -340,6 +342,7 @@ bool CDriverGL::renderSimpleTriangles(uint32 firstTri, uint32 ntris)
 	refreshRenderSetup();
 
 
+	if (_CurrentVertexBufferHard && _CurrentVertexBufferHard->isInvalid()) return true;
 	// Don't setup any material here.
 	
 	// render primitives.
@@ -369,6 +372,7 @@ bool CDriverGL::renderRawPoints(CMaterial& mat, uint32 startIndex, uint32 numPoi
 	if ( !setupMaterial(mat) )
 		return false;
 
+	if (_CurrentVertexBufferHard && _CurrentVertexBufferHard->isInvalid()) return true;
 	// render primitives.
 	//==============================
 	// start multipass.
@@ -409,6 +413,7 @@ bool CDriverGL::renderRawLines(CMaterial& mat, uint32 startIndex, uint32 numLine
 	if ( !setupMaterial(mat) )
 		return false;
 
+	if (_CurrentVertexBufferHard && _CurrentVertexBufferHard->isInvalid()) return true;
 	// render primitives.
 	//==============================
 	// start multipass.
@@ -448,6 +453,7 @@ bool CDriverGL::renderRawTriangles(CMaterial& mat, uint32 startIndex, uint32 num
 	if ( !setupMaterial(mat) )
 		return false;
 
+	if (_CurrentVertexBufferHard && _CurrentVertexBufferHard->isInvalid()) return true;
 	// render primitives.
 	//==============================
 	// start multipass.
@@ -490,6 +496,8 @@ bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuad
 	// setup material
 	if ( !setupMaterial(mat) )
 		return false;	
+
+	if (_CurrentVertexBufferHard && _CurrentVertexBufferHard->isInvalid()) return true;
 
 	const uint32 QUAD_BATCH_SIZE = 2048;
 	static GLshort defaultIndices[QUAD_BATCH_SIZE * 6];
@@ -971,10 +979,10 @@ void		CDriverGL::toggleGlArraysForARBVertexProgram()
 		
 		// Disable all VertexAttribs.
 		for (uint value=0; value<CVertexBuffer::NumValue; value++)
-		{			
+		{								
 			// Index
 			uint glIndex=GLVertexAttribIndex[value];
-			_DriverGLStates.enableVertexAttribArrayARB(glIndex, false);
+			_DriverGLStates.enableVertexAttribArrayARB(glIndex, false);			
 		}		
 		// no more a vertex program setup.
 		_LastSetupGLArrayVertexProgram= false;
@@ -988,7 +996,7 @@ void		CDriverGL::toggleGlArraysForARBVertexProgram()
 		_DriverGLStates.enableNormalArray(false);
 		_DriverGLStates.enableColorArray(false);
 		_DriverGLStates.enableSecondaryColorArray(false);
-		for(sint i=0; i<inlGetNumTextStages(); i++)
+		for(sint i=0; i<inlGetNumTextStages(); i++)		
 		{
 			_DriverGLStates.clientActiveTextureARB(i);
 			_DriverGLStates.enableTexCoordArray(false);
@@ -1152,7 +1160,7 @@ static const GLboolean ARBVertexProgramMustNormalizeAttrib[] =
 void		CDriverGL::setupGlArraysForARBVertexProgram(CVertexBufferInfo &vb)
 {			
 	uint32	flags= vb.VertexFormat;
-
+	
 	nlctassert(CVertexBuffer::NumValue == sizeof(ARBVertexProgramMustNormalizeAttrib) / sizeof(ARBVertexProgramMustNormalizeAttrib[0]));
 
 	if (vb.VBMode == CVertexBufferInfo::HwARB)
@@ -1160,32 +1168,67 @@ void		CDriverGL::setupGlArraysForARBVertexProgram(CVertexBufferInfo &vb)
 		_DriverGLStates.bindARBVertexBuffer(vb.VertexObjectId);
 	}
 
-	// For each value
-	for (uint value=0; value<CVertexBuffer::NumValue; value++)
+	// special case if the buffer is an ATI_vertex_array_object
+	if (vb.VBMode == CVertexBufferInfo::HwATI)
 	{
-		// Flag
-		uint16 flag=1<<value;
-
-		// Type
-		CVertexBuffer::TType type=vb.Type[value];
-
-		// Index
-		uint glIndex=GLVertexAttribIndex[value];
-
-		// Not setuped value and used
-		if (flags & flag)
+		// For each value
+		for (uint value=0; value<CVertexBuffer::NumValue; value++)
 		{
-			_DriverGLStates.enableVertexAttribArrayARB(glIndex, true);
-			GLboolean mustNormalize = GL_FALSE;
-			if (GLTypeIsIntegral[type])
-			{
-				mustNormalize = ARBVertexProgramMustNormalizeAttrib[value];
+			// Flag
+			uint16 flag=1<<value;
+			
+			// Type
+			CVertexBuffer::TType type=vb.Type[value];				
+			{	
+				// Index
+				uint glIndex=GLVertexAttribIndex[value];
+				// Not setuped value and used
+				if (flags & flag)
+				{				
+					_DriverGLStates.enableVertexAttribArrayARB(glIndex, true);
+					GLboolean mustNormalize = GL_FALSE;
+					if (GLTypeIsIntegral[type])
+					{
+						mustNormalize = ARBVertexProgramMustNormalizeAttrib[value];
+					}
+					nglVertexAttribArrayObjectATI(glIndex, NumCoordinatesType[type], GLType[type], mustNormalize, vb.VertexSize, vb.VertexObjectId, (GLuint) vb.ValuePtr[value]);
+				}
+				else
+				{
+					_DriverGLStates.enableVertexAttribArrayARB(glIndex, false);
+				}
 			}
-			nglVertexAttribPointerARB(glIndex, NumCoordinatesType[type], GLType[type], mustNormalize, vb.VertexSize, vb.ValuePtr[value]);
 		}
-		else
+	}
+	else
+	{	
+		// For each value
+		for (uint value=0; value<CVertexBuffer::NumValue; value++)
 		{
-			_DriverGLStates.enableVertexAttribArrayARB(glIndex, false);
+			// Flag
+			uint16 flag=1<<value;
+
+			// Type
+			CVertexBuffer::TType type=vb.Type[value];				
+			{	
+				// Index
+				uint glIndex=GLVertexAttribIndex[value];
+				// Not setuped value and used
+				if (flags & flag)
+				{				
+					_DriverGLStates.enableVertexAttribArrayARB(glIndex, true);
+					GLboolean mustNormalize = GL_FALSE;
+					if (GLTypeIsIntegral[type])
+					{
+						mustNormalize = ARBVertexProgramMustNormalizeAttrib[value];
+					}
+					nglVertexAttribPointerARB(glIndex, NumCoordinatesType[type], GLType[type], mustNormalize, vb.VertexSize, vb.ValuePtr[value]);
+				}
+				else
+				{
+					_DriverGLStates.enableVertexAttribArrayARB(glIndex, false);
+				}
+			}
 		}
 	}
 }

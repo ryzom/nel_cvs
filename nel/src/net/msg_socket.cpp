@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.27 2000/11/21 17:41:09 valignat Exp $
+ * $Id: msg_socket.cpp,v 1.28 2000/11/21 17:52:48 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,11 @@ using namespace std;
 #ifdef NL_OS_WINDOWS
 
 #include <winsock2.h>
+
 #define ERROR_NUM WSAGetLastError()
+
+typedef sint socklen_t;
+
 
 #elif defined NL_OS_UNIX
 
@@ -55,7 +59,6 @@ using namespace std;
 #define INVALID_SOCKET -1
 #define ERROR_NUM errno
 
-typedef sint socklen_t;
 typedef int SOCKET;
 
 #endif

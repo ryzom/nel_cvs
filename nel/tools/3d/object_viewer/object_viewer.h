@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.19 2001/09/05 15:43:33 vizerie Exp $
+ * $Id: object_viewer.h,v 1.20 2001/09/06 08:43:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,6 +138,9 @@ public:
 
 	// Add a skel
 	NL3D::CSkeletonModel	*addSkel (NL3D::IShape* pSkelShape, const char* skelName, const char *skelBaseName);
+
+	// remove all instances from the scene
+	void					 removeAllInstancesFromScene();
 
 	// Load a mesh
 	bool loadMesh (const char* meshFilename, const char* skeleton="");

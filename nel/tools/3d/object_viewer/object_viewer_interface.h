@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.9 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: object_viewer_interface.h,v 1.10 2001/09/06 08:45:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,9 @@ public:
 
 	// Add a skel
 	virtual NL3D::CSkeletonModel	*addSkel (NL3D::IShape* pSkelShape, const char* skelName, const char *skelBaseName) =0;
+
+	// remove all the instance from the scene
+	virtual void					 removeAllInstancesFromScene()=0;
 
 	// Load a mesh
 	virtual bool loadMesh (const char* meshFilename, const char* skeleton)=0;

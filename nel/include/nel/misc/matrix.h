@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.13 2001/03/05 16:28:46 berenguier Exp $
+ * $Id: matrix.h,v 1.14 2001/03/16 16:39:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,6 +230,9 @@ public:
 	 * \param ro the order of transformation applied. if ro==XYZ, then the transform is M=M*Rx*Ry*Rz
 	 */
 	void		rotate(const CVector &v, TRotOrder ro);
+	/** Apply a quaternion rotation.
+	 */
+	void		rotate(const CQuat &quat);
 	/// Apply a uniform scale to the matrix.
 	void		scale(float f);
 	/// Apply a non-uniform scale to the matrix.

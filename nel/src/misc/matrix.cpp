@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.22 2001/03/05 16:28:30 berenguier Exp $
+ * $Id: matrix.cpp,v 1.23 2001/03/16 16:39:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -624,6 +624,15 @@ void		CMatrix::rotate(const CVector &v, TRotOrder ro)
 
 	(*this)*= rot;
 }
+
+// ======================================================================================================
+void		CMatrix::rotate(const CQuat &quat)
+{
+	CMatrix		rot;
+	rot.setRot(quat);
+	(*this)*= rot;
+}
+
 // ======================================================================================================
 void		CMatrix::scale(float f)
 {

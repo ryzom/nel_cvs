@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.18 2001/11/21 13:57:32 berenguier Exp $
+ * $Id: patch.h,v 1.19 2002/01/28 14:26:57 vizerie Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -507,6 +507,22 @@ public:
 	  *  \see packShadowMap(), unpackShadowMap()
 	  */
 	void			clearUncompressedLumels ();
+
+	/** Debug purpose only : setup the colors of this patch so that it shows which tiles
+	  * have vegetable disabled, or are above, below water.
+	  * User provides a table with 4 colors for each state :
+	  * color 0 = above water
+	  * color 1 = underwater
+	  * color 2 = intersect water
+	  * color 3 = vegetable disabled
+	  */
+	void setupColorsFromTileFlags(const NLMISC::CRGBA colors[4]);
+
+	/** Set this patch flags from an other one.
+	  * The patchs must match
+	  */
+	void copyTileFlagsFromPatch(const CPatch *src);
+	
 private:
 
 	// Methods used internaly to compute shadowmaps

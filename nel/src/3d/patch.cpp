@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.73 2001/11/21 13:57:32 berenguier Exp $
+ * $Id: patch.cpp,v 1.74 2002/01/28 14:26:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3271,6 +3271,33 @@ void	CPatch::getBindNeighbor(uint edge, CBindInfo &neighborEdge) const
 		neighborEdge.Zone= NULL;
 		neighborEdge.NPatchs= 0;
 		neighborEdge.MultipleBindNum= 0;
+	}
+}
+
+// ***************************************************************************
+/// debug coloring
+void CPatch::setupColorsFromTileFlags(const NLMISC::CRGBA colors[4])
+{
+	for (uint s = 0; s <= OrderS; ++s)
+	{
+		for (uint t = 0; t <= OrderT; ++t)
+		{
+			uint index = std::min(t, (uint) (OrderT - 1)) * OrderS 
+				         + std::min(s, (uint) (OrderS - 1));
+			TileColors[s + t * (OrderS + 1)].Color565 = colors[(uint) (Tiles[index].getVegetableState())].get565();					
+		}
+	}
+}
+
+// ***************************************************************************
+void CPatch::copyTileFlagsFromPatch(const CPatch *src)
+{
+	nlassert(OrderS == src->OrderS
+			 && OrderT == src->OrderT);
+
+	for (uint k = 0; k  < Tiles.size(); ++k)
+	{
+		Tiles[k].copyFlagsFromOther(src->Tiles[k]);
 	}
 }
 

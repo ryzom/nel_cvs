@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.9 2001/06/01 13:57:09 cado Exp $
+ * $Id: buf_server.cpp,v 1.10 2001/06/12 15:40:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -725,11 +725,11 @@ void CServerReceiveTask::run()
 	// Time-out value for select (it can be long because we do not do any thing else in this thread)
 	timeval tv;
 #ifdef NL_OS_WINDOWS
-	tv.tv_sec = 10; // 10 seconds because the newly added connections can't be added to the select fd_set
-	tv.tv_usec = 0;
+	tv.tv_sec = 0;			// 10 seconds because the newly added connections can't be added to the select fd_set
+	tv.tv_usec = 500000;	// NEW: set to 500ms because otherwise new connections handling are too slow
 #elif defined NL_OS_UNIX
 	// POLL7
-	tv.tv_sec = 3600; // 1 hour (=> 1 select every 3.6 second for 1000 connections)
+	tv.tv_sec = 3600;		// 1 hour (=> 1 select every 3.6 second for 1000 connections)
 	tv.tv_usec = 0;
 	nice( 2 );
 #endif // NL_OS_WINDOWS

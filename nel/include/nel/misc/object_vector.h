@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.12 2004/03/23 14:55:50 cado Exp $
+ * $Id: object_vector.h,v 1.13 2004/04/07 09:58:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -343,17 +343,25 @@ private:
 		{
 			// Reallocate
 			char *newblock = new char[allocSize];
-			if (_Ptr)
+			// if success and need to copy
+			if (newblock && _Ptr)
 			{
 				memcpy (newblock, _Ptr, _Size*sizeof(T));
 				delete [] (char*)_Ptr;
 			}
 			newPtr = (T*)newblock;
 		}
-		else
+		else if(allocSize < _Size*sizeof(T))
 		{
-			// Old block is big enough
-			newPtr = _Ptr;
+			// Reallocate
+			char *newblock = new char[allocSize];
+			// if success and need to copy
+			if (newblock && _Ptr)
+			{
+				memcpy (newblock, _Ptr, s*sizeof(T));
+				delete [] (char*)_Ptr;
+			}
+			newPtr = (T*)newblock;
 		}
 #endif // NL_OV_USE_NEW_ALLOCATOR
 		// if realloc failure

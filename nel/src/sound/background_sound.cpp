@@ -1,6 +1,6 @@
 /** \file background_sound.cpp
  *
- * $Id: background_sound.cpp,v 1.5 2003/04/24 13:45:37 boucher Exp $
+ * $Id: background_sound.cpp,v 1.6 2003/07/03 15:16:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

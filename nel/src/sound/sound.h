@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.17 2003/04/24 13:45:37 boucher Exp $
+ * $Id: sound.h,v 1.18 2003/07/03 15:16:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

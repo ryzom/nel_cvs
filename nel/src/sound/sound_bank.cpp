@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.15 2003/06/05 15:46:34 boucher Exp $
+ * $Id: sound_bank.cpp,v 1.16 2003/07/03 15:16:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 
 #include "nel/georges/load_form.h"
 
+
 using namespace std;
 using namespace NLMISC;
 using namespace NLGEORGES;
@@ -52,6 +53,7 @@ CSoundBank		*CSoundBank::_Instance;
 
 CSoundBank	*CSoundBank::instance()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundBank);
 	if (_Instance == 0)
 		_Instance = new CSoundBank();
 	return _Instance;
@@ -190,6 +192,7 @@ public:
 	// load/save the values using the serial system (called by GEORGE::loadForm)
 	void serial (NLMISC::IStream &s)
 	{
+		NL_ALLOC_CONTEXT(NLSOUND_CSoundSerializer);
 		if (s.isReading())
 		{
 			// read the first item to find the type
@@ -275,7 +278,6 @@ void				CSoundBank::load()
 {
 	// this structure is fill by the loadForm() function and will contain all you need
 	std::map<std::string, CSoundSerializer> Container;
-
 	nlassert(!_Loaded);
 	// Just call the GEORGE::loadFrom method to read all available sounds
 	::loadForm("sound", CAudioMixerUser::instance()->getPackedSheetPath()+"sounds.packed_sheets", Container, CAudioMixerUser::instance()->getPackedSheetUpdate(), false);
@@ -299,7 +301,6 @@ void				CSoundBank::load()
 void				CSoundBank::unload()
 {
 	nlassert(_Loaded);
-	vector<CSound*> vec;
 
 	TSoundTable::iterator first(_Sounds.begin()), last(_Sounds.end());
 	for (; first != last; ++first)
@@ -310,7 +311,10 @@ void				CSoundBank::unload()
 	_Sounds.clear();
 	_Loaded = false;
 
-/*	TSoundTable::iterator map_iter;
+/*	vector<CSound*> vec;
+
+
+	TSoundTable::iterator map_iter;
 
 	for (map_iter = _Sounds.begin(); map_iter != _Sounds.end(); ++map_iter)
 	{

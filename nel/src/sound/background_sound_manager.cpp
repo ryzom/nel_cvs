@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.17 2003/06/05 15:45:34 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.18 2003/07/03 15:16:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -610,6 +610,7 @@ void CBackgroundSoundManager::loadSoundsFromRegion(const CPrimRegion &region)
 
 void CBackgroundSoundManager::load (const string &continent)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager);
 	// First, try to load from a .primitive file (contain everythink)
 	{
 		CIFile file;

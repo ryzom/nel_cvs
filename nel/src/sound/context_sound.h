@@ -1,6 +1,6 @@
 /** \file context_sound.h
  *
- * $Id: context_sound.h,v 1.5 2003/07/01 10:13:39 cado Exp $
+ * $Id: context_sound.h,v 1.6 2003/07/03 15:16:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,7 +142,7 @@ class CContextSoundContainer : public IContextSoundContainer
 		uint32		args[JOKER_ARRAY_SIZE];
 
 		_MaxDist = std::max(sound->getMaxDistance(), _MaxDist);
-	
+
 		// extract the context values
 		std::string::const_iterator	first(patternName.begin() + baseName.size()), last(patternName.end());
 //		std::string::const_iterator	first2(baseName.begin()), last2(baseName.end());

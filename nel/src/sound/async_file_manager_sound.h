@@ -1,7 +1,7 @@
 /** \file async_file_manager_sound.cpp
  * <File description>
  *
- * $Id: async_file_manager_sound.h,v 1.3 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: async_file_manager_sound.h,v 1.4 2003/07/03 15:16:12 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,6 @@ private:
 		
 		CLoadWavFile (IBuffer *pdestBuffer, const std::string &filename);
 		void run (void);
-		void getName (std::string &result) const;
 	};
 
 };

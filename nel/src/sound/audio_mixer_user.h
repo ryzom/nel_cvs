@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.38 2003/05/06 12:00:44 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.39 2003/07/03 15:16:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,7 +128,7 @@ public:
 	 * The sources will be auto-balanced every "balance_period" calls to update()
 	 * (set 0 for "never auto-balance")
 	 */
-	virtual void		init(uint maxTrack, bool useEax, bool useADPCM, NLMISC::IProgressCallback *progressCallBack);
+	virtual void		init(uint maxTrack, bool useEax, bool useADPCM, NLMISC::IProgressCallback *progressCallBack, bool autoLoadSample = false);
 
 	virtual void		initClusteredSound(NL3D::UScene *uscene, float minGain, float maxDistance, float portalInterpolate);
 	virtual void		initClusteredSound(NL3D::CScene *scene, float minGain, float maxDistance, float portalInterpolate);
@@ -359,6 +359,10 @@ public:
 
 private:
 
+	// utility function for automatic sample bank loading.
+	bool CAudioMixerUser::tryToLoadSoundBank(const std::string &sampleName);
+
+
 	typedef std::hash_set<CSourceCommon*, THashPtr<CSourceCommon*> >					TSourceContainer;
 	typedef std::hash_set<IMixerUpdate*, THashPtr<IMixerUpdate*> >						TMixerUpdateContainer;
 	typedef std::hash_map<IBuffer*, std::vector<class CSound*>, THashPtr<IBuffer*> >	TBufferToSourceContainer;
@@ -414,6 +418,8 @@ protected:
 	TUserVarControlsContainer	_UserVarControls;
 
 private:
+	/// flag for automatic sample bank loading.
+	bool						_AutoLoadSample;
 	/// flag for usage of ADPCM mixing
 	bool						_UseADPCM;
 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.53 2003/06/05 15:44:31 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.54 2003/07/03 15:16:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,6 +65,8 @@
 
 
 
+
+
 using namespace NLMISC;
 
 using namespace std;
@@ -107,6 +109,7 @@ const char *getPriorityStr( TSoundPriority p )
 
 UAudioMixer	*UAudioMixer::createAudioMixer()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	return new CAudioMixerUser();
 }
 
@@ -122,7 +125,8 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 									 _PlayingSources(0),
 									 _ClusteredSound(0),
 									_PackedSheetPath(""),
-									_UseADPCM(true)
+									_UseADPCM(true),
+									_AutoLoadSample(false)
 {
 	if ( _Instance == NULL )
 	{
@@ -205,6 +209,7 @@ void CAudioMixerUser::initClusteredSound(NL3D::UScene *uscene, float minGain, fl
 
 void CAudioMixerUser::initClusteredSound(NL3D::CScene *scene, float minGain, float maxDistance, float portalInterpolate = 20.0f)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	if (_ClusteredSound == 0)
 		_ClusteredSound = new CClusteredSound;
 
@@ -354,14 +359,16 @@ void CAudioMixerUser::setSamplePath(const std::string& path)
 
 // ******************************************************************
 
-void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgressCallback *progressCallBack)
+void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgressCallback *progressCallBack, bool autoLoadSample)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	nldebug( "AM: Init..." );
 
 	_profile(( "AM: ---------------------------------------------------------------" ));
 	_profile(( "AM: DRIVER: %s", NLSOUND_DLL_NAME ));
 
 	_UseADPCM = useADPCM;
+	_AutoLoadSample = autoLoadSample;
 	
 	// Init sound driver
 	try
@@ -408,9 +415,9 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 	}
 	catch ( ESoundDriver & )
 	{
-		// If the source generation failed, keep only the generated number of sources
 		delete _Tracks[i];
 		_Tracks[i] = 0;
+		// If the source generation failed, keep only the generated number of sources
 		_NbTracks = i;
 	}
 
@@ -540,11 +547,13 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 				setBackgroundFilterFades(fades);
 				setBackgroundFlags(flags);
 			}
+
+			NLGEORGES::UFormLoader::releaseLoader(formLoader);
 		}
 	}
 	catch(...)
 	{
-		delete formLoader;
+		NLGEORGES::UFormLoader::releaseLoader(formLoader);
 	}
 
 	// init the user var bindings
@@ -553,6 +562,7 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 
 void	CAudioMixerUser::buildSampleBankList()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	uint i;
 	// regenerate the sample banks list
 	const std::string &sp = _SamplePath;
@@ -649,9 +659,11 @@ void	CAudioMixerUser::buildSampleBankList()
 
 //			hdrAdpcm.addSample(CFile::getFilename(sampleList[j]), freq, nbSample, );
 				hdr.addSample(CFile::getFilename(sampleList[j]), freq, nbSample, mono16Buffers[j].size()*2, adpcmBuffers[j].size());
+				delete [] data;
 			}
 
-			// write the sample bank
+			// write the sample bank (if any sample available)
+			if (!hdr.Name.empty())
 			{
 				string filename = sp+bankname+".sample_bank";
 				COFile sbf(filename);
@@ -1499,10 +1511,52 @@ void				CAudioMixerUser::addSource( CSourceCommon *source )
 }
 
 
+static bool checkSound(CSound *sound, const vector<pair<string, CSound*> > &subsounds, vector<string> &missingFiles)
+{
+	vector<pair<string, CSound*> >::const_iterator first(subsounds.begin()), last(subsounds.end());
+
+	for (; first != last; ++first)
+	{
+		if (first->second == sound)
+			return false;
+
+		if (first->second == 0 && !first->first.empty())
+			missingFiles.push_back(first->first);
+		else if (first->second != 0)
+		{
+			vector<pair<string, CSound*> > v2;
+			first->second->getSubSoundList(v2);
+
+			if (!checkSound(sound, v2, missingFiles))
+				return false;
+		}
+	}
+	return true;
+}
+
+
+bool CAudioMixerUser::tryToLoadSoundBank(const std::string &sampleName)
+{
+	string path = CPath::lookup(sampleName, false, false, false);
+	if (!path.empty())
+	{
+		// extract samplebank name
+		path = NLMISC::CFile::getPath(path);
+		vector<string> rep;
+		explode(path, "/", rep, true);
+
+		loadSampleBank(false, rep.back());
+
+		return true;
+	}
+}
+
+
 // ******************************************************************
 
 USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb, void *userParam, NL3D::CCluster *cluster, CSoundContext *context )
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 #if NL_PROFILE_MIXER
 	TTicks start = CTime::getPerformanceTime();
 #endif
@@ -1519,6 +1573,53 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 	}
 
 	USource *ret = NULL;
+
+	if (_AutoLoadSample)
+	{
+		if (id->getSoundType() == CSound::SOUND_SIMPLE)
+		{
+			CSimpleSound *ss = (CSimpleSound*)id;
+			if (ss->getBuffer() == NULL)
+			{
+				const string sampleName = CStringMapper::unmap(ss->getBuffername()) + ".wav";
+
+				tryToLoadSoundBank(sampleName);
+			}
+		}
+		else
+		{
+			uint32 count = 0;
+retrySound:
+			++count;
+			vector<pair<string, CSound*> > subsounds;
+			id->getSubSoundList(subsounds);
+			vector<string> missingFiles;
+			// check the sound before anythink else
+			bool invalid = !checkSound(id, subsounds, missingFiles);
+
+			if (invalid)
+			{
+				nlwarning("The sound %s contain an infinite recursion !", CStringMapper::unmap(id->getName()).c_str());
+				return NULL;
+			}
+
+			if (!missingFiles.empty() && count <= missingFiles.size())
+			{
+				// try to load missing sample bank
+				for (uint i=0; i<missingFiles.size(); ++i)
+				{
+					if (missingFiles[i].find(" (sample)") != string::npos)
+					{
+						// try to find the sample bank
+						string sample = missingFiles[i].substr(0, missingFiles[i].find(" (sample)")) + ".wav";
+
+						if (tryToLoadSoundBank(sample))
+							goto retrySound;
+					}
+				}
+			}
+		}
+	}
 
 	if (id->getSoundType() == CSound::SOUND_SIMPLE)
 	{
@@ -1582,7 +1683,11 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 			ret = createSource(sound, spawn, cb, userParam, cluster);
 			// Set the volume of the source according to the context volume
 			if (ret != 0)
+			{
 				ret->setGain(ret->getGain() * ctxSound->getGain());
+				float pitch = ret->getPitch() * ctxSound->getPitch();
+				ret->setPitch(pitch);
+			}
 		}
 		else 
 			ret = 0;
@@ -1678,6 +1783,7 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 
 uint32			CAudioMixerUser::loadSampleBank(bool async, const std::string &name, std::vector<std::string> *notfoundfiles )
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 //	nlassert( filename != NULL );
 
 //	string path = _SamplePath;

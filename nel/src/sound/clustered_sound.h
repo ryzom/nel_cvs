@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.h,v 1.5 2003/04/24 13:45:37 boucher Exp $
+ * $Id: clustered_sound.h,v 1.6 2003/07/03 15:16:12 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.

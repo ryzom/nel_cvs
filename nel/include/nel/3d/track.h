@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.8 2001/03/08 15:51:29 corvazier Exp $
+ * $Id: track.h,v 1.9 2001/03/13 17:11:00 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,6 +75,20 @@ public:
 	  * \return the last value evaluated by ITrack::eval().
 	  */
 	virtual const IAnimatedValue& getValue () const=0;
+
+	/**
+	  * Get begin time of the track.
+	  *
+	  * \return the begin time.
+	  */
+	virtual CAnimationTime getBeginTime () const=0;
+
+	/**
+	  * Get end time of the track.
+	  *
+	  * \return the end time.
+	  */
+	virtual CAnimationTime getEndTime () const=0;
 };
 
 
@@ -101,13 +115,13 @@ class ITrackKeyFramer : public ITrack
 {
 public:
 	// Some types
-	typedef std::map <CAnimationTime, CKeyT*>	TMapTimeAPtrCKey;
+	typedef std::map <CAnimationTime, CKeyT*>	TMapTimeCKeyPtr;
 
 	/// Destructor
 	~ITrackKeyFramer ()
 	{
 		// Erase all pointers in the map
-		TMapTimeAPtrCKey::iterator ite=_MapKey.begin ();
+		TMapTimeCKeyPtr::iterator ite=_MapKey.begin ();
 		while (ite!=_MapKey.end())
 		{
 			// Erase it
@@ -116,6 +130,35 @@ public:
 			// Next element
 			ite++;
 		}
+	}
+
+	/**
+	  * Evaluate the keyframe interpolation. 
+	  *
+	  * i is the keyframe with the bigger time value that is inferior or equal than date.
+	  *
+	  * \param pPrevious is the i-1 key in the keyframe. NULL if no key.
+	  * \param previous is the i key in the keyframe. NULL if no key.
+	  * \param next is the i+1 key in the keyframe. NULL if no key.
+	  * \param nNext is the i+2 key in the keyframe. NULL if no key.
+	  */
+	virtual void evalKey   (const CKeyT* previous, const CKeyT* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext, 
+							CAnimationTime date ) =0;
+
+	/**
+	  * Add a key in the keyframer.
+	  *
+	  * The pointer pass to ITrackKeyFramer is then handled by the keyframer. You must allocate it
+	  * with the standard new operator.
+	  *
+	  * \param key is the pointer on the key to add in the keyframer.
+	  * \param time is the time of the key to add in the keyframer.
+	  */
+	void addKey (CKeyT* key, CAnimationTime time)
+	{
+		// Insert the key in the map
+		_MapKey.insert (TMapTimeCKeyPtr::value_type (time, key));
 	}
 
 	/// From ITrack. 
@@ -127,7 +170,7 @@ public:
 		CAnimationTime dateNext;
 
 		// Return upper key
-		TMapTimeAPtrCKey::iterator ite=_MapKey.upper_bound (date);
+		TMapTimeCKeyPtr::iterator ite=_MapKey.upper_bound (date);
 
 		// First next ?
 		if (ite!=_MapKey.end())
@@ -151,20 +194,25 @@ public:
 		// Call evalutation fonction
 		evalKey (previous, next, datePrevious, dateNext, date);
 	}
-
-	/**
-	  * Evaluate the keyframe interpolation. 
-	  *
-	  * i is the keyframe with the bigger time value that is inferior or equal than date.
-	  *
-	  * \param pPrevious is the i-1 key in the keyframe. NULL if no key.
-	  * \param previous is the i key in the keyframe. NULL if no key.
-	  * \param next is the i+1 key in the keyframe. NULL if no key.
-	  * \param nNext is the i+2 key in the keyframe. NULL if no key.
-	  */
-	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext, 
-							CAnimationTime date ) =0;
+	CAnimationTime getBeginTime () const
+	{
+		// Get first key
+		TMapTimeCKeyPtr::const_iterator ite=_MapKey.begin ();
+		if (ite==_MapKey.end())
+			return 0.f;
+		else
+			return ite->first;
+	}
+	CAnimationTime getEndTime () const
+	{
+		// Get first key
+		TMapTimeCKeyPtr::const_iterator ite=_MapKey.end ();
+		ite--;
+		if (ite==_MapKey.end())
+			return 0.f;
+		else
+			return ite->first;
+	}
 
 	/// Serial the template
 	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
@@ -193,7 +241,7 @@ public:
 				f.serialPolyPtr (keyPointer);
 
 				// Insert in the map
-				_MapKey.insert (TMapTimeAPtrCKey::value_type ( time, keyPointer));
+				_MapKey.insert (TMapTimeCKeyPtr::value_type ( time, keyPointer));
 			}
 		}
 		// Writing...
@@ -204,7 +252,7 @@ public:
 			f.serial (size);
 
 			// Write each element
-			TMapTimeAPtrCKey::iterator ite=_MapKey.begin();
+			TMapTimeCKeyPtr::iterator ite=_MapKey.begin();
 			while (ite!=_MapKey.end())
 			{
 				// Write the element
@@ -219,7 +267,7 @@ public:
 		}
 	}
 private:
-	TMapTimeAPtrCKey		_MapKey;
+	TMapTimeCKeyPtr		_MapKey;
 };
 
 
@@ -239,6 +287,14 @@ public:
 	/// From ITrack. Does nothing, no interpolation.
 	virtual void eval (const CAnimationTime& date) 
 	{}
+	CAnimationTime getBeginTime () const
+	{
+		return 0.f;
+	}
+	CAnimationTime getEndTime () const
+	{
+		return 0.f;
+	}
 };
 
 
@@ -346,6 +402,7 @@ public:
 			date-= datePrevious;
 			date/= (dateNext-datePrevious);
 			NLMISC::clamp(date, 0,1);
+			
 			_Value.Value= (T) (previous->Value*(1.f-date) + next->Value*date);
 		}
 		else
@@ -458,6 +515,106 @@ private:
 };
 
 
+// ***************************************************************************
+/**
+ * ITrack implementation for CQuat TCB keyframer.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CAngleAxis> : public ITrackKeyFramer<CKeyTCBQuat>
+{
+public:
+
+	/// From ITrack
+	virtual const IAnimatedValue& getValue () const
+	{
+		return _Value;
+	}
+	
+	/// From ITrackKeyFramer
+	virtual void evalKey (	const CKeyTCBQuat* previous, const CKeyTCBQuat* next, 
+							CAnimationTime datePrevious, CAnimationTime dateNext,
+							CAnimationTime date ) {};
+
+private:
+	CAnimatedValueBlendable<NLMISC::CQuat>	_Value;
+};
+
+
+// ***************************************************************************
+// ***************************************************************************
+// RGBA special implementation..
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+/**
+ * ITrack implementation for linear CRGBA keyframer.
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CTrackKeyFramerLinear<CKeyRGBA, NLMISC::CRGBA>: public ITrackKeyFramer<CKeyRGBA>
+{
+public:
+
+	/// From ITrack
+	virtual const IAnimatedValue& getValue () const
+	{
+		return _Value;
+	}
+	
+	/// From ITrackKeyFramer
+	virtual void evalKey (	const CKeyRGBA* previous, const CKeyRGBA* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext,
+							CAnimationTime date );
+
+private:
+	CAnimatedValueBlendable<NLMISC::CRGBA>	_Value;
+};
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Int special implementation..
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+/**
+ * ITrack implementation for linear int keyframer.
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CTrackKeyFramerLinear<CKeyInt, sint32>: public ITrackKeyFramer<CKeyInt>
+{
+public:
+
+	/// From ITrack
+	virtual const IAnimatedValue& getValue () const
+	{
+		return _Value;
+	}
+	
+	/// From ITrackKeyFramer
+	virtual void evalKey (	const CKeyInt* previous, const CKeyInt* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext,
+							CAnimationTime date );
+
+private:
+	CAnimatedValueBlendable<sint32>	_Value;
+};
+
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -497,6 +654,11 @@ class CTrackKeyFramerConstBool : public CTrackKeyFramerConstNotBlendable<CKeyBoo
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstBool);
 };
+class CTrackKeyFramerConstRGBA : public CTrackKeyFramerConstNotBlendable<CKeyRGBA, NLMISC::CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstRGBA);
+};
 
 
 // Linear tracks.
@@ -520,6 +682,11 @@ class CTrackKeyFramerLinearInt : public CTrackKeyFramerLinear<CKeyInt, sint32>
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearInt);
 };
+class CTrackKeyFramerLinearRGBA : public CTrackKeyFramerLinear<CKeyRGBA, NLMISC::CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearRGBA);
+};
 
 
 // TCB tracks.
@@ -533,7 +700,7 @@ class CTrackKeyFramerTCBVector : public CTrackKeyFramerTCB<CKeyTCBVector, NLMISC
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBVector);
 };
-class CTrackKeyFramerTCBQuat : public CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CQuat>
+class CTrackKeyFramerTCBQuat : public CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CAngleAxis>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBQuat);
@@ -542,6 +709,11 @@ class CTrackKeyFramerTCBInt : public CTrackKeyFramerTCB<CKeyTCBInt, sint32>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBInt);
+};
+class CTrackKeyFramerTCBRGBA : public CTrackKeyFramerTCB<CKeyTCBRGBA, NLMISC::CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBRGBA);
 };
 
 
@@ -565,6 +737,11 @@ class CTrackKeyFramerBezierInt : public CTrackKeyFramerBezier<CKeyBezierInt, sin
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierInt);
+};
+class CTrackKeyFramerBezierRGBA : public CTrackKeyFramerBezier<CKeyBezierRGBA, NLMISC::CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierRGBA);
 };
 
 
@@ -676,6 +853,11 @@ class CTrackDefaultBool : public CTrackDefaultNotBlendable<bool>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackDefaultBool);
+};
+class CTrackDefaultRGBA : public CTrackDefaultNotBlendable<NLMISC::CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackDefaultRGBA);
 };
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.6 2001/03/08 11:02:52 corvazier Exp $
+ * $Id: track.cpp,v 1.7 2001/03/13 17:11:00 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,18 +34,21 @@ CTrackKeyFramerTCBFloat ttoto0;
 CTrackKeyFramerTCBVector ttoto1;
 CTrackKeyFramerTCBQuat ttoto2;
 CTrackKeyFramerTCBInt ttoto3;
+CTrackKeyFramerTCBRGBA ttoto8;
 
 
 CTrackKeyFramerBezierFloat ttoto4;
 CTrackKeyFramerBezierVector ttoto5;
 CTrackKeyFramerBezierQuat ttoto6;
 CTrackKeyFramerBezierInt ttoto7;
+CTrackKeyFramerBezierRGBA ttoto9;
 
 
 CTrackKeyFramerLinearFloat	lattoto10;
 CTrackKeyFramerLinearVector	lattoto11;
 CTrackKeyFramerLinearQuat	lattoto12;
 CTrackKeyFramerLinearInt	lattoto13;
+CTrackKeyFramerLinearRGBA	lattoto14;
 
 
 CTrackKeyFramerConstFloat	attoto10;
@@ -54,6 +57,7 @@ CTrackKeyFramerConstQuat	attoto12;
 CTrackKeyFramerConstInt		attoto13;
 CTrackKeyFramerConstString	attoto14;
 CTrackKeyFramerConstBool	attoto15;
+CTrackKeyFramerConstRGBA	attoto16;
 
 
 CTrackDefaultFloat ttoto10;
@@ -62,6 +66,7 @@ CTrackDefaultQuat ttoto12;
 CTrackDefaultInt ttoto13;
 CTrackDefaultString ttoto14;
 CTrackDefaultBool ttoto15;
+CTrackDefaultRGBA ttoto16;
 
 
 // ***************************************************************************
@@ -94,10 +99,61 @@ void CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>::evalKey (
 			if (next)
 				_Value.Value=next->Value;
 	}
-
 }
 
 
+// ***************************************************************************
+void CTrackKeyFramerLinear<CKeyRGBA, NLMISC::CRGBA>::evalKey (	
+			const CKeyRGBA* previous, const CKeyRGBA* next,
+			CAnimationTime datePrevious, CAnimationTime dateNext,
+			CAnimationTime date )
+{
+	if(previous && next)
+	{
+		// lerp from previous to cur.
+		date-= datePrevious;
+		date/= (dateNext-datePrevious);
+		NLMISC::clamp(date, 0,1);
+		
+		// blend.
+		_Value.Value.blendFromui (previous->Value, next->Value, (uint)(255.f*date));
+	}
+	else
+	{
+		if (previous)
+			_Value.Value=previous->Value;
+		else
+			if (next)
+				_Value.Value=next->Value;
+	}
+}
+
+
+// ***************************************************************************
+void CTrackKeyFramerLinear<CKeyInt, sint32>::evalKey (	
+			const CKeyInt* previous, const CKeyInt* next,
+			CAnimationTime datePrevious, CAnimationTime dateNext,
+			CAnimationTime date )
+{
+	if(previous && next)
+	{
+		// lerp from previous to cur.
+		date-= datePrevious;
+		date/= (dateNext-datePrevious);
+		NLMISC::clamp(date, 0,1);
+		
+		// blend.
+		_Value.Value= (sint32) (0.5+floor (((float)previous->Value*(1.f-date) + (float)next->Value*date)));
+	}
+	else
+	{
+		if (previous)
+			_Value.Value=previous->Value;
+		else
+			if (next)
+				_Value.Value=next->Value;
+	}
+}
 
 
 } // NL3D

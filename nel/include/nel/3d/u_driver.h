@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.6 2001/08/23 10:09:02 berenguier Exp $
+ * $Id: u_driver.h,v 1.7 2001/08/30 09:22:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,7 +213,8 @@ public:
 	virtual		std::string getFontManagerCacheInformation() const =0;
 
 
-	/** Create a new texture file, searching in CPath.
+	/** Create a new texture file, searching in CPath. NB: by default a textureFile created with this
+	 *	method has a setAllowDegradation() at false.
 	 * \param file filename, local to CPath paths.
 	 */
 	virtual	UTextureFile	*createTextureFile(const std::string &file) =0;

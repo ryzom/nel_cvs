@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * <File description>
  *
- * $Id: u_texture.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: u_texture.h,v 1.3 2001/08/30 09:22:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,6 +175,11 @@ public:
 	 * \date 2000
 	 */	
 	virtual	std::string getFileName() const =0;
+
+	/// tells if this texture allow the driver to degrade it (default is false for UTextureFile).
+	virtual bool	allowDegradation() const =0;
+	/// Change the degradation mode. NB: this must be done before first render(), ie just after creation.
+	virtual void	setAllowDegradation(bool allow) =0;
 
 };
 

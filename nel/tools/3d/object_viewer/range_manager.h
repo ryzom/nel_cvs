@@ -1,7 +1,7 @@
 /** \file range_manager.h
  * the range manager helps to store user defined preference in an CEditableRange dialog
  *
- * $Id: range_manager.h,v 1.3 2001/06/25 12:58:01 vizerie Exp $
+ * $Id: range_manager.h,v 1.4 2001/07/04 17:15:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,9 +75,13 @@ public:
 		{
 			size = _RangeMap.size() ;
 			f.serial(size) ;
-			for (TRangeMap::const_iterator it = _RangeMap.begin(), it != _RangeMap.end() ; ++it)
-			{
-				f.serial(it->first, it->second) ; 
+			for (TRangeMap::const_iterator it = _RangeMap.begin() ; it != _RangeMap.end() ; ++it)
+			{	
+				std::string s = it->first ;
+				f.serial(s) ;
+				std::pair<T , T> value = it->second ;
+				f.serial(value.first) ;
+				f.serial(value.second) ;
 			}
 		}
 		else
@@ -87,8 +91,10 @@ public:
 			while (size --)
 			{
 				std::string id ;
-				T value ;
-				f.serial(id, value) ;
+				std::pair<T , T> value ;
+				f.serial(id) ;
+				f.serial(value.first) ;
+				f.serial(value.second) ;
 				_RangeMap[id] = value ;
 			}
 		}

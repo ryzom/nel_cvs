@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.82 2002/07/08 13:05:33 lecroart Exp $
+# $Id: Makefile.am,v 1.83 2002/07/12 13:52:55 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -191,6 +191,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        mesh_multi_lod.h \
                        mesh_multi_lod_instance.cpp \
                        mesh_multi_lod_instance.h \
+                       mesh_skin_manager.cpp \
+                       mesh_skin_manager.h \
                        mesh_vertex_program.cpp \
                        mesh_vertex_program.h \
                        meshvp_per_pixel_light.cpp \
@@ -207,6 +209,7 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        mrm_builder.h \
                        mrm_internal.cpp \
                        mrm_internal.h \
+                       mrm_level_detail.cpp \
                        mrm_mesh.cpp \
                        mrm_mesh.h \
                        mrm_parameters.cpp \

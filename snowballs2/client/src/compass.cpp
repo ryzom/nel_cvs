@@ -2,7 +2,7 @@
  * Snowballs 2 specific code for managing the compass.
  * This code was taken from Snowballs 1.
  *
- * $Id: compass.cpp,v 1.2 2001/07/18 17:15:04 lecroart Exp $
+ * $Id: compass.cpp,v 1.3 2001/07/27 09:06:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,7 +113,7 @@ void updateCompass ()
 	quad.V1.set ( radius, -radius, 0);
 	quad.V2.set ( radius,  radius, 0);
 	quad.V3.set (-radius,  radius, 0);
-	
+
 	Driver->setMatrixMode2D43 ();
 
 	CMatrix mtx;

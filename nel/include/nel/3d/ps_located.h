@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.1 2001/04/25 08:42:45 vizerie Exp $
+ * $Id: ps_located.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,10 +64,20 @@ struct CPSCollisionInfo
 	// new pos and speed, valid if a collision occured
 	CVector newPos, newSpeed ;
 
+	CPSCollisionInfo()
+	{
+		reset() ;
+	}
 	void reset(void)
 	{
 		dist = -1 ;
 	}
+
+	 void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	 {
+		f.serialVersion(1) ;
+		f.serial(dist, newPos, newSpeed) ;
+	 }
 } ;
 
 
@@ -102,8 +112,8 @@ public:
 	void bind(CSmartPtr<CPSLocatedBindable> lb) ;
 
 	/** remove a bound object from the located
-	 *  if the object doesnt exist -> nlassert
-	 */
+	*  if the object doesnt exist -> nlassert
+	*/
 
 	void unbind(const CSmartPtr<CPSLocatedBindable> &lb) ;
 
@@ -120,188 +130,217 @@ public:
 		nlassert(index < _LocatedBoundCont.size()) ;
 		return _LocatedBoundCont[index] ;
 	}
-	
+
 
 	/**
-	 * Generate one more instance in a located.
-	 * The coordinate are given in the chosen basis for the located.
-	 * If the emitterLocated ptr is not null, then the coordinate are taken from the emitterLocated basis 
-	 * and are expressed in this located basis. 
-	 * other attributes are generated according to other properties of this class
-	 * Will succeed only if it hasn't reach the max number of allowed instances
-	 * \param indexInEmitter The index of the emitter (in the emitterLocated object)
-	 */
+	* Generate one more instance in a located.
+	* The coordinate are given in the chosen basis for the located.
+	* If the emitterLocated ptr is not null, then the coordinate are taken from the emitterLocated basis 
+	* and are expressed in this located basis. 
+	* other attributes are generated according to other properties of this class
+	* Will succeed only if it hasn't reach the max number of allowed instances
+	* return will be -1 if call failed or an index to the created object.
+	* Index is only valid after creation. Any processing pass on the system will make it invalid.
+	* It can be used with any attribute modification method of located and located bindable
+	* \param indexInEmitter The index of the emitter (in the emitterLocated object)
+	*/
 
-	 bool newElement(const NLMISC::CVector &pos = CVector::Null					
-		, const CVector &speed = CVector::Null, CPSLocatedBindable *emitterLocated = NULL, uint32 indexInEmitter = 0) ;					
-		
+	sint32 newElement(const NLMISC::CVector &pos = CVector::Null					
+	, const CVector &speed = CVector::Null, CPSLocatedBindable *emitterLocated = NULL, uint32 indexInEmitter = 0) ;					
+
 
 	/**
-	 * Delete one located in the container
-	 * not present -> nlassert
-	 */
+	* Delete one located in the container
+	* not present -> nlassert
+	*/
 
-	 void deleteElement(uint32 index) ;
+	void deleteElement(uint32 index) ;
 
 
 	/**	 
-	 * Get the index of the new element that is created
-	 * Valid only when the newElement method (overridable) of a LocatedBindable is called 
-	 *: you get the index of the located being generated, if you need its pos, speed, or mass. 
-	 */
+	* Get the index of the new element that is created
+	* Valid only when the newElement method (overridable) of a LocatedBindable is called 
+	*: you get the index of the located being generated, if you need its pos, speed, or mass. 
+	*/
 
-	 uint32 getNewElementIndex(void) const { return _Size ; }
-
-
-	 /** Compute the aabbox of this located, (expressed in world basis
-	  *  \return true if there is any aabbox
-	  *  \param aabbox a ref to the result box
-	  */
-
-	 bool computeBBox(NLMISC::CAABBox &aabbox) const ;
-	
-	 /// Set the maximum mass of located to be generated
-	 void setMaxMass(float mass) { _MaxMass = mass ; }
-	 /// Get the maximum mass of located to be generated	 
-	 float getMaxMass(void) const { return _MaxMass ; }
-     /// Set the minimum mass of located to be generated
-	 void setMinMass(float mass) { _MinMass = mass ; }
-	 /// Get the minimum mass of located to be generated	 
-	 float getMinMass(void) const { return _MinMass ; }
-	 /// Set both min and max mass
-	 float setMass(float min, float max)
-	 {
-		 _MinMass = min ;
-		 _MaxMass = max ;
-	 }
+	uint32 getNewElementIndex(void) const { return _Size ; }
 
 
+	/** Compute the aabbox of this located, (expressed in world basis
+	*  \return true if there is any aabbox
+	*  \param aabbox a ref to the result box
+	*/
 
-	 /** Set the duration of locateds.
-	  *  They must not be immortal -> nlassert
-	  */
+	bool computeBBox(NLMISC::CAABBox &aabbox) const ;
 
-	 void setLifeTime(CAnimationTime min, CAnimationTime max)
-	 {
-		 nlassert(!_LastForever) ;
-		 _MaxLife = max ;
-		 _MinLife = min ;
-	 }
+	/// Set the maximum mass of located to be generated
+	void setMaxMass(float mass) { _MaxMass = mass ; }
+	/// Get the maximum mass of located to be generated	 
+	float getMaxMass(void) const { return _MaxMass ; }
+	/// Set the minimum mass of located to be generated
+	void setMinMass(float mass) { _MinMass = mass ; }
+	/// Get the minimum mass of located to be generated	 
+	float getMinMass(void) const { return _MinMass ; }
+	/// Set both min and max mass
+	float setMass(float min, float max)
+	{
+		_MinMass = min ;
+		_MaxMass = max ;
+	}
 
-	 /// Retrieve min duration of locateds. They must not be immortal -> nlassert
-	 CAnimationTime getMinLife(void) const 
-	 { 
-		 nlassert(!_LastForever) ;
-		 return _MinLife ; 	 
-	 }
-	 /// Retrieve max duration of locateds. They must not be immortal -> nlassert
-	 CAnimationTime getMaxLife(void) const 
-	 { 
-		 nlassert(!_LastForever) ;
-		 return _MaxLife ; 
-	 }
 
-	 /// set/unset immortality for located
-	 void setLastForever(bool isImmortal = true) { _LastForever = isImmortal ; }
-	 /// retrieve immortality for locateds
-	 bool getLastForever(void) const { return _LastForever ; }
 
-	 /// get mass inverse attrib ref
-	 TPSAttribFloat &getInvMass(void) { return _InvMass ; }
-	 /// get mass inverse attrib const ref
-	 const TPSAttribFloat &getInvMass(void) const { return _InvMass ; }
+	/** Set the duration of locateds.
+	*  They must not be immortal -> nlassert
+	*/
 
-	 /// get Pos attrib ref
-	 TPSAttribVector &getPos(void) { return _Pos ; }
-	 /// get Pos attrib const ref
-	 const TPSAttribVector &getPos(void) const { return _Pos ; }
-	 
-	 /// get Speed attrib ref
-	 TPSAttribVector &getSpeed(void) { return _Speed ; }
-	 /// get Speed attrib const ref
-	 const TPSAttribVector &getSpeed(void) const { return _Speed ; }
+	void setLifeTime(CAnimationTime min, CAnimationTime max)
+	{
+		nlassert(!_LastForever) ;
+		_MaxLife = max ;
+		_MinLife = min ;
+	}
 
-	 /// get Time attrib ref
-	 TPSAttribTime &getTime(void) { return _Time ; }
-	 /// get Time attrib const ref
-	 const TPSAttribTime &getTime(void) const { return _Time ; }
+	/// Retrieve min duration of locateds. They must not be immortal -> nlassert
+	CAnimationTime getMinLife(void) const 
+	{ 
+		nlassert(!_LastForever) ;
+		return _MinLife ; 	 
+	}
+	/// Retrieve max duration of locateds. They must not be immortal -> nlassert
+	CAnimationTime getMaxLife(void) const 
+	{ 
+		nlassert(!_LastForever) ;
+		return _MaxLife ; 
+	}
 
-	 /// get TotalTime attrib ref
-	 TPSAttribTime &getTimeIncrement(void) { return _TimeIncrement ; }
-	 /// get TotalTime attrib const ref
-	 const TPSAttribTime &getTimeIncrement(void) const { return _TimeIncrement ; }
-	 
+	/// set/unset immortality for located
+	void setLastForever(bool isImmortal = true) { _LastForever = isImmortal ; }
+	/// retrieve immortality for locateds
+	bool getLastForever(void) const { return _LastForever ; }
+
+	/// get mass inverse attrib ref
+	TPSAttribFloat &getInvMass(void) { return _InvMass ; }
+	/// get mass inverse attrib const ref
+	const TPSAttribFloat &getInvMass(void) const { return _InvMass ; }
+
+	/// get Pos attrib ref
+	TPSAttribVector &getPos(void) { return _Pos ; }
+	/// get Pos attrib const ref
+	const TPSAttribVector &getPos(void) const { return _Pos ; }
+
+	/// get Speed attrib ref
+	TPSAttribVector &getSpeed(void) { return _Speed ; }
+	/// get Speed attrib const ref
+	const TPSAttribVector &getSpeed(void) const { return _Speed ; }
+
+	/// get Time attrib ref
+	TPSAttribTime &getTime(void) { return _Time ; }
+	/// get Time attrib const ref
+	const TPSAttribTime &getTime(void) const { return _Time ; }
+
+	/// get TotalTime attrib ref
+	TPSAttribTime &getTimeIncrement(void) { return _TimeIncrement ; }
+	/// get TotalTime attrib const ref
+	const TPSAttribTime &getTimeIncrement(void) const { return _TimeIncrement ; }
+
 	/**
-	 * process the system
-	 */
+	* process the system
+	*/
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
 
-	
+
 
 	/// get the number of instance in this located container
 	uint32 getSize(void) const { return _Size ; }
 	/**
-	 * Resize the located container, in order to accept more instances
-	 */
-	 void resize(uint32 newSize) ;
+	* Resize the located container, in order to accept more instances
+	*/
+	void resize(uint32 newSize) ;
 
-	 /// serialization	 
-	 void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
-	 
-	 /// Shortcut to get an instance of the 3d driver
-	 IDriver *getDriver() const { return CNELU::Driver ;  }
+	/// serialization	 
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+	/// Shortcut to get an instance of the 3d driver
+	IDriver *getDriver() const { return CNELU::Driver ;  }
 
 
-	 /// inherited from IClassable
-	virtual std::string		getClassName() { return std::string("NL3D::CPSLocated") ; }
+
+	NLMISC_DECLARE_CLASS(CPSLocated) ; 
 
 	/// Setup the driver model matrix. It is set accrodingly to the basis of the located
 	void setupDriverModelMatrix(void)  ;
 
 	/** Compute a vector that will map to (1 0 0) after view and model transform.
-	 *  This allow to  have object that always faces the user, whatever basis they are in
-	 */
-	 inline CVector computeI(void) const  ;
-	 /** Compute a vector that will map to (0 0 1) after view and model transform.
-	 *  This allow to  have object that always faces the user, whatever basis they are in
-	 */
- 	 inline CVector computeK(void) const  ;
+	*  This allow to  have object that always faces the user, whatever basis they are in
+	*/
+	inline CVector computeI(void) const  ;
+	/** Compute a vector that will map to (0 0 1) after view and model transform.
+	*  This allow to  have object that always faces the user, whatever basis they are in
+	*/
+	inline CVector computeK(void) const  ;
 
-	 	 /** call this if you need collision infos.
-	  *  The collide info attribute is not included by default to save memory.
-	  *  The first call will create the attribute, and others will add references.
-	  *  You can then access the infos by calling getCollisioInfo
-	  *  You must call releaseCollideInfo after use.
-	  */
+	/** call this if you need collision infos.
+	*  The collide info attribute is not included by default to save memory.
+	*  The first call will create the attribute, and others will add references.
+	*  You can then access the infos by calling getCollisioInfo
+	*  You must call releaseCollideInfo after use.
+	*/
 
-	  void queryCollisionInfo(void) ;
-	 
-	  /// Release the collideInfos attribute
+	void queryCollisionInfo(void) ;
 
-	  void releaseCollisionInfo(void) ;
+	/// Release the collideInfos attribute
 
-
-	  /// get a ref to the collision infos
-	  TPSAttribCollisionInfo &getCollisionInfo(void)
-	  {
-		  nlassert(_CollisionInfo) ;
-		  return *_CollisionInfo ;
-	  }
-
-	  /// get a const ref to the collision infos
-	  const TPSAttribCollisionInfo &getCollisionInfo(void) const
-	  {
-		  nlassert(_CollisionInfo) ;
-		  return *_CollisionInfo ;
-	  }
+	void releaseCollisionInfo(void) ;
 
 
-	  /** A collider must call this when a collision occurs
-	   *  If the collider was nearer it will be taken in account
-	   *  \index the index of instance that collided
-	   */
+	/// get a ref to the collision infos
+	TPSAttribCollisionInfo &getCollisionInfo(void)
+	{
+		nlassert(_CollisionInfo) ;
+		return *_CollisionInfo ;
+	}
 
-	   inline void collisionOccured(const CPSCollisionInfo &ci, uint32 index) ;
+	/// get a const ref to the collision infos
+	const TPSAttribCollisionInfo &getCollisionInfo(void) const
+	{
+		nlassert(_CollisionInfo) ;
+		return *_CollisionInfo ;
+	}
+
+
+	/** A collider must call this when a collision occurs
+	*  If the collider was nearer it will be taken in account
+	*  \index the index of instance that collided
+	*/
+
+	inline void collisionOccured(const CPSCollisionInfo &ci, uint32 index) ;
+
+	/** get a matrix that helps to express located B coordinate in located A basis
+	*  A and B must belong to the same system
+	*/
+	static inline const CMatrix &getConversionMatrix(const CPSLocated *A, const CPSLocated *B) ;
+
+	/// objects that want to be dtor observer (see registerDtorObserver) must implement this interface
+/*	struct IDtorObserver
+	{
+		virtual targetDestroyed(CPSLocated *target) = 0 ;
+	} ;*/
+
+	/** Register a dtor observer
+	*  Each observer will be called when this object dtor is called
+	*  This allow for objects that hold this as a target to know when the located is suppressed
+	*  (example : forces hold located as targets)
+	*  When an observer is detroyed, it MUST call removeDtorObserver
+	*/
+
+//	void registerDtorObserver(IDtorObserver *anObserver) ;
+
+
+	/// remove a dtor observer (not present -> nlassert)
+//	void unregisterDtorObserver(IDtorObserver *anObserver) ;
+
+
 
 	  
 
@@ -355,7 +394,11 @@ protected:
 	{
 		CVector _Pos ;
 		CVector _Speed ;
-		CPostNewElementRequestInfo(const CVector &pos, const CVector &speed) : _Pos(pos), _Speed(speed) {}		
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+		{
+			f.serial(_Pos, _Speed) ;
+		}			
+		CPostNewElementRequestInfo(const CVector &pos = CVector::Null, const CVector &speed = CVector::Null) : _Pos(pos), _Speed(speed) {}		
 	} ;
 
 	typedef std::stack<CPostNewElementRequestInfo> TNewElementRequestStack ;
@@ -438,6 +481,30 @@ inline void CPSLocated::collisionOccured(const CPSCollisionInfo &ci, uint32 inde
 	}
 }
 
+/// get a matrix that helps to express located B coordinate in located A basis
+inline const CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *A, const CPSLocated *B)
+{
+	nlassert(A->_Owner == B->_Owner) ; // conversion must be made between entity of the same system
+	if (A->_SystemBasisEnabled == B->_SystemBasisEnabled)
+	{
+		return CMatrix::Identity ;
+	}
+	else
+	{
+		if (B->_SystemBasisEnabled)
+		{
+			return B->_Owner->getSysMat() ;
+		}
+		else
+		{
+			return A->_Owner->getInvertedSysMat() ;
+		}
+
+
+	}
+}
+
+
 
 
 //******************************************************************************************
@@ -480,24 +547,29 @@ public:
 	/// ctor
 	CPSLocatedBindable() : _Owner(NULL) {}
 
+
+	/// serialization
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
 	/// dtor
 
 	virtual ~CPSLocatedBindable() {}
-				
-	
+
 	/// process one pass for this bindable
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) = 0 ;
 
-
-
+	
 	/***
-	 * The following is used to complete an aabbox that was computed using the located positions
-	 * You may not need to do anything with that, unless your bindable has a space extents. For exAmple,
-	 * with a particle which has a radius of 2, you must enlarge the bbox to get the correct one.
-	 * The default behaviour does nothing
-	 * \return true if you modified the bbox
-	 */
+	* The following is used to complete an aabbox that was computed using the located positions
+	* You may not need to do anything with that, unless your bindable has a space extents. For exAmple,
+	* with a particle which has a radius of 2, you must enlarge the bbox to get the correct one.
+	* The default behaviour does nothing
+	* \return true if you modified the bbox
+	*/
 
+
+	
+	
 	virtual bool completeBBox(NLMISC::CAABBox &box) const  { return false  ;}
 
 	/***
@@ -624,6 +696,7 @@ public:
 
 	 /// get the located that owns this bindable (const version)
  	 const CPSLocated *getOwner(void) const { return _Owner ; }
+	
 
 
 protected:    
@@ -655,6 +728,9 @@ protected:
 	}
 
 	CPSLocated  *_Owner ;
+
+
+//	typedef 
 } ;
 
 

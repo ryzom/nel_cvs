@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.1 2001/04/25 08:46:19 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,8 +53,8 @@ CPSLocated::CPSLocated() : _MinMass(1), _MaxMass(1), _LastForever(true)
 
 CPSLocated::~CPSLocated()
 {
-	nlassert(_CollisionInfoNbref == 0) ; //If this is not null, then someone didnt call releaseCollisionInfo
-	nlassert(!_CollideInfo) ;
+	nlassert(_CollisionInfoNbRef == 0) ; //If this is not null, then someone didnt call releaseCollisionInfo
+	nlassert(!_CollisionInfo) ;
 }
 
 
@@ -91,7 +91,7 @@ void CPSLocated::unbind(const CSmartPtr<CPSLocatedBindable> &p)
  * new element generation
  */
 
-bool CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocatedBindable *emitter, uint32 indexInEmitter)
+sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocatedBindable *emitter, uint32 indexInEmitter)
 {	
 	if (_UpdateLock)
 	{
@@ -104,29 +104,23 @@ bool CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated
 		_CollisionInfo->insert() ;
 	}
 
+	sint32 creationIndex ;
+
+	// get the convertion matrix  from the emitter basis to the emittee basis
 	// if the emitter is null, we assume that the coordinate are given in the chosen basis for this particle type
 
-	if ((!emitter) || _SystemBasisEnabled == emitter->getOwner()->_SystemBasisEnabled)
-	{
-		_Pos.insert(pos) ;
-		_Speed.insert(speed) ;
-	}
-	else
-	{
-		if (emitter->getOwner()->_SystemBasisEnabled) // convert from system basis to world basis
-		{
-			_Pos.insert(_Owner->getSysMat() * pos) ;
-			_Speed.insert(_Owner->getSysMat().mulVector(speed)) ;
-		}
-		else  // convert from world basis to system basis
-		{
-			_Pos.insert(_Owner->getInvertedSysMat() * pos) ;
-			_Speed.insert(_Owner->getSysMat().mulVector(speed)) ;
-		}
-	}
+	
+	
+	if (_MaxSize == _Size) return -1 ;
 
-	if (_MaxSize == _Size) return false ;
+	const CMatrix &convMat = emitter ? CPSLocated::getConversionMatrix(this, emitter->getOwner()) 
+							:  CMatrix::Identity ;
+	
 
+	creationIndex  =_Pos.insert(convMat * pos) ;
+	nlassert(creationIndex != -1) ; // all attributs must contains the same number of elements
+	_Speed.insert(convMat.mulVector(speed)) ;
+	
 	float delta ;
 	
 	delta = (rand() % 32767) * (1.0f / 32767.0f) ;
@@ -153,7 +147,7 @@ bool CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated
 				// because that method give the index of the element being created for overrider of the newElement method
 				// of the CPSLocatedClass (which is called just above)
 
-	return true ;
+	return creationIndex ;
 }
 
 void CPSLocated::postNewElement(const CVector &pos, const CVector &speed)
@@ -212,6 +206,11 @@ void CPSLocated::resize(uint32 newSize)
 	_Time.resize(newSize) ;
 	_TimeIncrement.resize(newSize) ;
 
+	if (_CollisionInfo)
+	{
+		_CollisionInfo->resize(newSize) ;
+	}
+
 	// resize attributes for all bound objects
 	for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin() ; it != _LocatedBoundCont.end() ; ++it)
 	{
@@ -223,15 +222,66 @@ void CPSLocated::resize(uint32 newSize)
 void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	// TODO : update this
-
+	
+	CParticleSystemProcess::serial(f) ;
 
 	f.serialVersion(1) ;
 
+	
 	f.serial(_InvMass) ;
 	f.serial(_Pos) ;
 	f.serial(_Speed) ;
 	f.serial(_Time) ;
 	f.serial(_TimeIncrement) ;
+
+	f.serial(_Size) ; 
+	f.serial(_MaxSize) ;
+
+	f.serialPtr(_CollisionInfo) ;
+	f.serial(_CollisionInfoNbRef) ;
+	f.serial(_MinMass, _MaxMass) ;
+	f.serial(_MaxLife, _MinLife) ;
+
+	if (f.isReading())
+	{
+		while(!_RequestStack.empty())
+		{
+			_RequestStack.pop() ;
+		}
+		uint32 size ;
+		f.serial(size) ;
+		for (uint32 k = 0 ; k < size ; ++k)
+		{
+			TNewElementRequestStack::value_type t ;
+			f.serial(t) ;
+			_RequestStack.push(t) ;
+		}
+	}
+	else
+	{
+		// when writing the stack, we must make a copy because we can't access elements by their index
+		// so the stack must be destroyed
+		TNewElementRequestStack r2 ;
+		uint32 size = (uint32) _RequestStack.size() ;
+		f.serial(size) ;
+
+		while(!_RequestStack.empty())
+		{
+			r2.push(_RequestStack.top()) ;
+			_RequestStack.pop() ;
+		}
+		// now rebuild the stack while serializing it ;
+		while (!r2.empty())
+		{			
+			f.serial(r2.top()) ;
+			_RequestStack.push(r2.top()) ;
+			r2.pop() ;
+		}
+
+	}
+
+	
+	f.serial(_UpdateLock) ;
 
 	uint32 size ;	
 	if (f.isReading())
@@ -244,6 +294,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			f.serialPolyPtr(pt) ;
 			_LocatedBoundCont.push_back(CSmartPtr<CPSLocatedBindable>(pt)) ;
 		}
+		
 	}
 	else
 	{
@@ -275,20 +326,16 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 		// update the located creation requests that may have been posted
 		updateNewElementRequestStack() ;
 
-		TPSAttribVector::iterator itPos = _Pos.begin() ;
-		
-		TPSAttribFloat::const_iterator itm = _InvMass.begin() ;
-
-
+		TPSAttribVector::iterator itPos = _Pos.begin() ;			
 
 		// there are 2 integration steps : with and without collisions
 
 		if (!_CollisionInfo) // no collisionner are used
 		{
 			TPSAttribVector::const_iterator itSpeed = _Speed.begin() ;		
-			for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed, ++itm)
+			for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed)
 			{
-				(*itPos) += ellapsedTime * (*itm) * (*itSpeed) ;
+				(*itPos) += ellapsedTime * (*itSpeed) ;
 			}
 		}
 		else
@@ -297,7 +344,7 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 
 			TPSAttribCollisionInfo::const_iterator itc = _CollisionInfo->begin() ;
 			TPSAttribVector::iterator itSpeed = _Speed.begin() ;		
-			for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed, ++itm, ++itc)
+			for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed, ++itc)
 			{
 				if (itc->dist != -1)
 				{
@@ -306,7 +353,7 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 				}
 				else
 				{
-					(*itPos) += ellapsedTime * (*itm) * (*itSpeed) ;
+					(*itPos) += ellapsedTime * (*itSpeed) ;
 				}
 			}
 		}
@@ -435,6 +482,8 @@ void CPSLocated::queryCollisionInfo(void)
 	{
 		_CollisionInfo = new TPSAttribCollisionInfo ;
 		_CollisionInfoNbRef = 1 ;
+		_CollisionInfo->resize(_Size) ;
+		resetCollisionInfo() ;
 	}
 }
 
@@ -461,6 +510,13 @@ void CPSLocated::resetCollisionInfo(void)
 	{
 		it->reset() ;
 	}
+}
+
+
+void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1) ;
+	f.serialPtr(_Owner) ;
 }
 
 

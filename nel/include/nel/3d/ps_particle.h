@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.1 2001/04/25 08:43:08 vizerie Exp $
+ * $Id: ps_particle.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ public:
 	uint32 getType(void) const { return PSParticle ; }
 
 
-	/// return priority for forces
+	/// return priority
 	virtual uint32 getPriority(void) const { return 1000 ; }
 	
 	/**
@@ -68,13 +68,17 @@ public:
 	virtual bool newElement(void) = 0 ;
 	
 	/** Delete an element given its index
-	 *  Attributes of the located that hold this bindable are still accessible for of the index given
+	 *  Attributes of the located that hold this bindable are still accessible for the index given
 	 *  index out of range -> nl_assert
 	 */
 	virtual void deleteElement(uint32 index) = 0 ;
 
 	/// Resize the bindable attributes containers DERIVERS MUST CALL THEIR PARENT VERSION
 	virtual void resize(uint32 size) = 0 ;
+
+	/// serialisation. Derivers must override this
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) { CPSLocatedBindable::serial(f) ; }
+
 
 };
 
@@ -96,8 +100,8 @@ class CPSDot : public CPSParticle
 		bool newElement(void) { return true ; }
 		void deleteElement(uint32) {}
 	
-		/// inherited from IClassable
-		virtual std::string		getClassName() { return std::string("NL3D::CPSDot") ; }
+		
+		NLMISC_DECLARE_CLASS(CPSDot) ;
 		// ctor
 		CPSDot(const CRGBA &color = CRGBA(255, 255, 255)) ;
 
@@ -108,6 +112,7 @@ class CPSDot : public CPSParticle
 		///serialisation
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 	protected:
+		void init(void) ;
 		CRGBA _Color ;
 		CMaterial _Mat ;
 } ;
@@ -128,14 +133,19 @@ public:
 	CPSFaceLookAt(CSmartPtr<ITexture> tex, const CRGBA &c = CRGBA(255, 255, 255)) ;
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
-	virtual std::string		getClassName() { return std::string("NL3D::CPSFaceLookAt") ; }
+	
+	NLMISC_DECLARE_CLASS(CPSFaceLookAt) ;
 
 	virtual bool completeBBox(NLMISC::CAABBox &box) const  
 	{ 
 		CPSUtil::addRadiusToAABBox(box, FaceLookAtSize) ;
 		return true  ;	
 	}
+
+
+	CPSFaceLookAt() {}
 protected:
+	
 	CSmartPtr<ITexture> _Tex ;
 } ;
 

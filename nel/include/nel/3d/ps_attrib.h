@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.1 2001/04/25 08:40:08 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,9 +89,9 @@ public:
 
 	/**
 	 * create a new object in the tab 
-	 * \return true if there were enough room for it
+	 * \return the index if there were enough room for it or -1 else
 	 */
-	bool insert(const T &t = T() ) ;
+	sint32 insert(const T &t = T() ) ;
 
 
 	/// return the number of instance in the container
@@ -130,15 +130,15 @@ void CPSAttrib<T>::resize(uint32 nbInstances)
 
 
 template <typename T> 
-bool CPSAttrib<T>::insert(const T &t)
+sint32 CPSAttrib<T>::insert(const T &t)
 {
 	if (_Size == _MaxSize) 
 	{
-		return false ;
+		return -1 ;
 	}
 	++ _Size ;
 	_Tab.push_back(t) ;
-	return true ;
+	return _Size - 1 ;
 }
 
 
@@ -158,7 +158,7 @@ void CPSAttrib<T>::remove(uint32 index)
 
 template <typename T> 
 void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
+{	
 	f.serialVersion(1) ;
 	f.serial(_Size) ;
 	f.serial(_MaxSize) ;

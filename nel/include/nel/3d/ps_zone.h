@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.1 2001/04/25 08:44:43 vizerie Exp $
+ * $Id: ps_zone.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,15 +27,20 @@
 #define NL_PS_ZONE_H
 
 #include "nel/misc/types_nl.h"
-#include "ps_force.h"
+#include "nel/3d/ps_force.h"
+#include "nel/3d/ps_edit.h"
 
 
 
 namespace NL3D {
 
 
+/** This epsilon is in meter and give a thickness to surfaces for tests. It must be above above 0
+* for the system to work correctly
+*/
+const float PSCollideEpsilon = 10E-5f ;
 
-using NLMISC::CPlane ;
+
 
 /**
  * This class hold any entity that has an effect over located : a sink, a bouncing zone etc
@@ -83,6 +88,10 @@ public:
 	/// Detach a target. If not present -> assert
 	virtual void detachTarget(CSmartPtr<CPSLocated> ptr) ;
 
+	
+	/// serialisation, DERIVER must override this
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) { CPSLocatedBindable::serial(f) ; }
+
 protected:
 
 	/**
@@ -94,7 +103,7 @@ protected:
 	 * \ellapsedTime the time ellapsed
 	 */
 
-	void bounce(uint32 locatedIndex, const CVector &bouncePoint, const CVector &surfNormal, float elasticity, float ellapsedTime) ;
+//	void bounce(uint32 locatedIndex, const CVector &bouncePoint, const CVector &surfNormal, float elasticity, float ellapsedTime) ;
 
 
 
@@ -102,11 +111,11 @@ protected:
 };
 
 
-/** A plane over which particle bounce
- *
+/** A plane over which particles bounce
+ * It has an interface to move each plane individually
  */
 
-class CPSZonePlane : public CPSZone
+class CPSZonePlane : public CPSZone, public IPSMover
 {
 	public:
 		virtual void performMotion(CAnimationTime ellapsedTime) ;
@@ -114,9 +123,20 @@ class CPSZonePlane : public CPSZone
 		virtual void resize(uint32 size) ;
 		virtual bool newElement(void) ;
 		virtual void deleteElement(uint32 index) ;
-		virtual std::string getClassName(void) { return std::string("NL3D::CPSZonePlane") ; }
+
+		NLMISC_DECLARE_CLASS(CPSZonePlane) ;
+
+
+		// left multiply the current matrix by the given one. No valid index -> assert
+		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
+		// return a matrix of the system. No valid index -> assert
+		virtual CMatrix getMatrix(uint32 index) const ;
+
+		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
 	protected:
-		TPSAttribVector _Normal ;		
+		TPSAttribVector _Normal ;
+		CMatrix buildBasis(uint32 index) const ;
 } ;
 
 } // NL3D

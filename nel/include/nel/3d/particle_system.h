@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.1 2001/04/25 08:38:06 vizerie Exp $
+ * $Id: particle_system.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,8 +115,8 @@ class CParticleSystemProcess : public NLMISC::IStreamable, public NLMISC::CRefCo
 
 		void setSystemBasis(bool sysBasis = true) { _SystemBasisEnabled = sysBasis ; }
 
-	
-
+		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		
 		
 	protected:
 		CParticleSystem *_Owner ;
@@ -149,6 +149,9 @@ public:
 
 	/// ctor
 	CParticleSystem();
+
+	/// dtor
+	~CParticleSystem() ;
 
 	/** attach a process (such as a located : see particle_system_located.h) to the system
      *  if already present -> nl assert
@@ -228,7 +231,7 @@ public:
 	const CFontManager *getFontManager(void) const { return _FontManager ; }
 
 protected:
-	
+		
 	typedef std::vector<CSmartPtr<CParticleSystemProcess> > TProcessVect ;
 	TProcessVect _ProcessVect ;
 	CFontGenerator *_FontGenerator ;

@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.1 2001/04/25 08:40:41 vizerie Exp $
+ * $Id: ps_force.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,6 +115,8 @@ public:
 	/// Resize the bindable attributes containers DERIVERS SHOULD CALL THEIR PARENT VERSION
 	virtual void resize(uint32 size) = 0 ;
 
+	
+
 protected:
 	typedef std::vector<CSmartPtr<CPSLocated> > TTargetCont ;
 	TTargetCont _Targets ;
@@ -125,14 +127,15 @@ protected:
 // example of gravity class for test
 class CPSGravity : public CPSForce
 {
+public:
 	/// Compute the force on the targets
 	virtual void performMotion(CAnimationTime ellapsedTime)  ;
 
 	/// Show the force (edition mode)
 	virtual void show(CAnimationTime ellapsedTime)  ;
 
-	/// inherited from IClassable
-	virtual std::string		getClassName() { return std::string("NL3D::CPSGravity") ; }
+
+	NLMISC_DECLARE_CLASS(CPSGravity) ; 
 
 
 	virtual bool newElement(void) { return true ; } ;	

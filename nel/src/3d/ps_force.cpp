@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.1 2001/04/25 08:46:36 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@ CPSForce::CPSForce()
 
 void CPSForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	CPSLocatedBindable::serial(f) ;
 	uint32 size ;
 	f.serialVersion(1) ;	
 	if (f.isReading())
@@ -119,28 +120,15 @@ void CPSGravity::performMotion(CAnimationTime ellapsedTime)
 	{	
 		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
 		{
-			if (_Owner->isInSystemBasis() != (*it)->isInSystemBasis())
-			{
-				if (_Owner->isInSystemBasis())
-				{
-					toAdd = getSysMat().mulVector(toAddLocal) ;
-				}
-				else
-				{
-					toAdd = getInvertedSysMat().mulVector(toAddLocal) ;
-				}
-			}
-			else
-			{
-				toAdd = toAddLocal ;
-			}
+
+			toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(toAddLocal) ; // express this in the target basis			
 
 			uint32 size = (*it)->getSize() ;	
-			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin() ;
-			TPSAttribFloat::iterator itm = (*it)->getInvMass().begin() ;
-			for (uint32 k = 0 ; k < size ; ++ k, ++ it2, ++ itm)
+			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2end = (*it)->getSpeed().end() ;
+			
+			for (; it2 != it2end ; ++it2)
 			{
-				(*it2) += 1.0f / (*itm) * toAdd ;				
+				(*it2) += toAdd ;				
 				
 			}
 		}

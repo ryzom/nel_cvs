@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.1 2001/04/25 08:47:09 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,8 +69,18 @@ const CFontManager *CParticleSystemProcess::getFontManager(void) const
 
 
 
+void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1) ;
+	f.serialPtr(_Owner) ;
+	f.serial(_SystemBasisEnabled) ;
+}
+
+
+
+
 ///////////////////////////////////
-// CPaticleSystem implemantation //
+// CPaticleSystem implementation //
 ///////////////////////////////////
 
 
@@ -78,6 +88,12 @@ const CFontManager *CParticleSystemProcess::getFontManager(void) const
  * Constructor
  */
 CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
+{
+}
+
+
+/// dtor
+CParticleSystem::~CParticleSystem()
 {
 }
 
@@ -112,6 +128,11 @@ void CParticleSystem::serial(NLMISC::IStream &f)
 			f.serialPolyPtr(pt) ;
 			_ProcessVect.push_back(CSmartPtr<CParticleSystemProcess>(pt)) ;
 		}
+		f.serial(_ViewMat) ;
+		f.serial(_SysMat) ;
+		_InvSysMat = _SysMat.inverted() ;
+		_FontGenerator = NULL ;
+		_FontManager = NULL ;
 	}
 	else
 	{
@@ -122,7 +143,11 @@ void CParticleSystem::serial(NLMISC::IStream &f)
 			CParticleSystemProcess *pt = (*it) ;
 			f.serialPolyPtr(pt) ;
 		}
+		f.serial(_ViewMat) ;
+		f.serial(_SysMat) ;
 	}
+	
+	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.1 2001/04/25 08:46:52 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ if (pass != PSMotion) return ;
 
 bool CPSEmitter::newElement(void)
 {	
-	bool result = _Phase.insert(0) ;
+	bool result = ( (_Phase.insert(0) != - 1) ? true : false ) ;
 
 	if (_Freq._FreqType == CPSFrequency::once)
 	{
@@ -126,9 +126,11 @@ void CPSEmitter::resize(uint32 size)
 
 void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	CPSLocatedBindable::serial(f) ;
 	f.serialVersion(1) ;
 	f.serial(_Freq) ;
 	f.serial(_Phase) ;
+	f.serialPtr(_EmittedType) ;
 
 }
 

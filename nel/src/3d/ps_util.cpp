@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.1 2001/04/25 08:45:51 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,10 +38,32 @@
 #include "nel/misc/matrix.h"
 
 
+#include "nel/3d/ps_emitter.h"
+#include "nel/3d/ps_located.h"
+#include "nel/3d/ps_particle.h"
+#include "nel/3d/ps_force.h"
+#include "nel/3d/ps_zone.h"
+
+
+
+
 namespace NL3D {
 
 
 using NLMISC::CVector ;
+
+
+
+void CPSUtil::registerSerialParticleSystem(void)
+{
+		NLMISC_REGISTER_CLASS(CPSEmitterOmni) ;
+		NLMISC_REGISTER_CLASS(CPSGravity) ; 
+		NLMISC_REGISTER_CLASS(CPSLocated) ; 
+		NLMISC_REGISTER_CLASS(CPSDot) ;
+		NLMISC_REGISTER_CLASS(CPSFaceLookAt) ;
+		NLMISC_REGISTER_CLASS(CPSZonePlane) ;
+}
+
 
 void CPSUtil::displayBBox(const NLMISC::CAABBox &box)
 {	

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.1 2001/04/25 08:40:28 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,8 +143,8 @@ public:
 	/// serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
-	/// inherited from IClassable
-	virtual std::string		getClassName() { return std::string("NL3D::CPSEmitterOmni") ; }
+	
+	NLMISC_DECLARE_CLASS(CPSEmitterOmni) ;
 
 
 	/// emission of located

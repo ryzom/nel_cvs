@@ -1,7 +1,7 @@
 /** \file shared_memory.h
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.h,v 1.2 2002/08/08 12:44:46 cado Exp $
+ * $Id: shared_memory.h,v 1.3 2002/08/08 14:42:05 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -74,6 +74,18 @@ public:
 	 * or accessSharedMemory().
 	 */
 	static bool			closeSharedMemory( void * accessAddress );
+
+  /**
+   * Destroy a shared memory segment (must be call by the process that created the segment,
+   * not by the accessors).
+   *
+   * "Rescue feature": set "force" to true if a segment was created and left out of
+   * control (meaning a new createSharedMemory() with the same sharedMemId fails), but
+   * before, make sure the segment really belongs to you!
+   * 
+   * Note: this method does nothing under Windows, destroying is automatic.
+   */
+  static void destroySharedMemory( TSharedMemId sharedMemId, bool force=false );
 };
 
 

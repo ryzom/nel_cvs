@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.75 2004/08/23 18:05:18 lecroart Exp $
+# $Id: Makefile.am,v 1.75.6.1 2004/12/06 16:15:46 guignot Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -106,6 +106,7 @@ libnelmisc_la_SOURCES = \
 	time_nl.cpp \
 	triangle.cpp \
 	uv.cpp \
+	unicode.cpp \
 	value_smoother.cpp \
 	variable.cpp \
 	vector.cpp \

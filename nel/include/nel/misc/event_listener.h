@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * events listener
  *
- * $Id: event_listener.h,v 1.9 2000/12/06 12:50:05 corvazier Exp $
+ * $Id: event_listener.h,v 1.10 2000/12/13 15:00:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,19 +81,19 @@ public:
 	void removeFromServer (CEventServer& server);
 
 	/**
-	  * Get a key state.
+	  * Get a key down instant state.
 	  * \param key is the key to check.
 	  */
-	bool isKeyPush (TKey key) const;
+	bool isKeyDown(TKey key) const;
 
 	/**
-	  * Get if a the state of key has change from "released" to "pushed".
+	  * Get if a the state of key has pushed since the last call of isKeyPushed with release=true.
 	  * \param key is the key to check.
-	  * \param release if true, the Down state of the key is released (force to be false).
-	  *		It will return to true only if key is released, then re-pushed.
-	  * \see clearDownStates()
+	  * \param release if true, the pushed state of the key is released (force to be false).
+	  *		It will return to true next time only if key is released and then re-pushed.
+	  * \see reset()
 	  */
-	bool isKeyDown (TKey key, bool release=true);
+	bool isKeyPushed (TKey key, bool release=true);
 
 
 	/**
@@ -101,8 +101,8 @@ public:
 	  * e.g.: your app listen/test to the key 'A' and 'B' for a certain long period. Then, it test 'C' and 'D' later.
 	  * If the user has press (by error) the key 'C' during the first period, this API has record it, and then, at the
 	  * second period, isKeyDown(KeyC) will return true the first time the key is tested, unless if you do a 
-	  * clearDownStates() at the beggining of the second period.
-	  * Clear all the push states to false too.
+	  * reset() at the beggining of the second period.
+	  * Clear all the pushed states to false too.
 	  * \see isKeyDown()
 	  */
 	void reset ();

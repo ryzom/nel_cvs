@@ -10,6 +10,8 @@
 #include "attrib_dlg.h"
 #include "particle_dlg.h"
 
+using NL3D::CPSConstraintMesh;
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditMorphMeshDlg dialog
@@ -93,13 +95,17 @@ void CEditMorphMeshDlg::OnAdd()
 		std::vector<std::string> shapeNames;
 		shapeNames.resize(_CM->getNumShapes() + 1);
 		_CM->getShapesNames(&shapeNames[0]);
-		shapeNames[shapeNames.size() - 1] = shapeName;
+		uint index = shapeNames.size() - 1;
+		shapeNames[index] = shapeName;
 		_CM->setShapes(&shapeNames[0], shapeNames.size());
-		m_MeshList.AddString(shapeName.c_str());
+		std::vector<sint> numVerts;
+		_CM->getShapeNumVerts(numVerts);		
+		m_MeshList.AddString(getShapeDescStr(index, numVerts[index]).c_str());
 		GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);
 	}
 	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
 	_ParticleDlg->getCurrPSModel()->touchLightableState();
+	updateValidFlag();
 }
 
 //====================================================================
@@ -119,6 +125,7 @@ void CEditMorphMeshDlg::OnRemove()
 	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
 	_ParticleDlg->getCurrPSModel()->touchLightableState();
 	updateMeshList();
+	updateValidFlag();
 }
 
 //====================================================================
@@ -138,7 +145,8 @@ void CEditMorphMeshDlg::OnInsert()
 		_ParticleDlg->getCurrPSModel()->touchLightableState();
 		updateMeshList();
 		m_MeshList.SetCurSel(selItem);
-	}	
+	}
+	updateValidFlag();
 }
 
 //====================================================================
@@ -153,7 +161,8 @@ void CEditMorphMeshDlg::OnUp()
 	_CM->setShapes(&shapeNames[0], shapeNames.size());		
 	GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);		
 	updateMeshList();
-	m_MeshList.SetCurSel(selItem - 1);	
+	m_MeshList.SetCurSel(selItem - 1);
+	updateValidFlag();
 }
 
 //====================================================================
@@ -169,6 +178,7 @@ void CEditMorphMeshDlg::OnDown()
 	GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);		
 	updateMeshList();
 	m_MeshList.SetCurSel(selItem + 1);	
+	updateValidFlag();
 }
 
 //====================================================================
@@ -184,6 +194,7 @@ void CEditMorphMeshDlg::OnChange()
 		_ParticleDlg->getCurrPSModel()->touchTransparencyState();
 		_ParticleDlg->getCurrPSModel()->touchLightableState();
 	}
+	updateValidFlag();
 }
 
 //====================================================================
@@ -217,12 +228,16 @@ void CEditMorphMeshDlg::CMorphSchemeWrapper::setScheme(scheme_type *s)
 //====================================================================
 void CEditMorphMeshDlg::updateMeshList()
 {
+	nlassert(_CM);
+	std::vector<sint> numVerts;
+	_CM->getShapeNumVerts(numVerts);
 	m_MeshList.ResetContent();
 	for (uint k = 0; k < _CM->getNumShapes(); ++k)
-	{
-		m_MeshList.AddString(_CM->getShape(k).c_str());
+	{	
+		m_MeshList.AddString(getShapeDescStr(k, numVerts[k]).c_str());		
 	}
 	m_MeshList.SetCurSel(0);
+	updateValidFlag();
 	UpdateData(FALSE);
 }
 
@@ -248,6 +263,7 @@ BOOL CEditMorphMeshDlg::OnInitDialog()
 	{
 		GetDlgItem(IDC_REMOVE)->EnableWindow(FALSE);
 	}	
+	updateValidFlag();
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -260,3 +276,34 @@ void CEditMorphMeshDlg::OnClose()
 	if (_PN) _PN->childPopupClosed(this);	
 }
 
+//====================================================================
+void CEditMorphMeshDlg::updateValidFlag()
+{
+	nlassert(_CM);
+	int cmdShow = _CM->isValidBuild() ? SW_HIDE : SW_SHOW;
+	GetDlgItem(IDC_INVALID_BUILD)->ShowWindow(cmdShow);
+}
+
+//====================================================================
+std::string CEditMorphMeshDlg::getShapeDescStr(uint shapeIndex, sint numVerts) const
+{
+	if (numVerts >= 0)
+	{	
+		CString verts;
+		verts.LoadString(IDS_VERTICES);
+		std::string msg = _CM->getShape(shapeIndex) + " (" + NLMISC::toString(numVerts) + " " + (LPCTSTR) verts + ")";
+		return msg;
+	}
+	else
+	{
+		CString str;
+		switch(numVerts)
+		{
+			case CPSConstraintMesh::ShapeFileIsNotAMesh: str.LoadString(IDS_SHAPE_FILE_NOT_MESH); break;
+			case CPSConstraintMesh::ShapeFileNotLoaded: str.LoadString(IDS_SHAPE_NOT_LOADED); break;
+			case CPSConstraintMesh::ShapeHasTooMuchVertices: str.LoadString(IDS_TOO_MUCH_VERTICES); break;
+		};
+		std::string result =  _CM->getShape(shapeIndex) + " (" + (LPCTSTR) str + ")";
+		return result;
+	}
+}

@@ -57,6 +57,12 @@ protected:
 	/// fill the mesh list with the mesh names in the object being edited
 	void updateMeshList();
 
+	// update dialog msg to say that mesh are incompatibles
+	void updateValidFlag();
+	
+	std::string getShapeDescStr(uint shapeIndex, sint numVerts) const;
+	
+
 	// Generated message map functions
 	//{{AFX_MSG(CEditMorphMeshDlg)
 	afx_msg void OnAdd();

@@ -146,6 +146,10 @@ BEGIN
     ID_BUTTON32852          "First person"
     IDS_BAD_FD_VALUE        "Bad frame delay value, value must be numeric, and in the [0, 10000] scope."
     IDS_CAPTION_ERROR       "Error"
+    IDS_VERTICES            "vertices"
+    IDS_SHAPE_FILE_NOT_MESH "Not a mesh"
+    IDS_SHAPE_NOT_LOADED    "Shape not loaded"
+    IDS_TOO_MUCH_VERTICES   "Too much vertices"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1382,15 +1386,17 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LISTBOX         IDC_MESHS,2,3,86,94,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
+    LISTBOX         IDC_MESHS,2,3,140,94,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
                     WS_TABSTOP
-    PUSHBUTTON      "Add",IDC_ADD,89,3,42,13
-    PUSHBUTTON      "Remove",IDC_REMOVE,90,17,42,13
-    PUSHBUTTON      "Change",IDC_CHANGE,90,32,42,13
+    PUSHBUTTON      "Add",IDC_ADD,145,3,42,13
+    PUSHBUTTON      "Remove",IDC_REMOVE,145,17,42,13
+    PUSHBUTTON      "Change",IDC_CHANGE,145,32,42,13
     GROUPBOX        "",IDC_MORPH_SCHEME,2,102,346,71
-    PUSHBUTTON      "Insert",IDC_INSERT,90,47,42,13
-    PUSHBUTTON      "Up",IDC_UP,90,61,42,13
-    PUSHBUTTON      "Down",IDC_DOWN,90,75,42,13
+    PUSHBUTTON      "Insert",IDC_INSERT,145,47,42,13
+    PUSHBUTTON      "Up",IDC_UP,145,61,42,13
+    PUSHBUTTON      "Down",IDC_DOWN,145,75,42,13
+    LTEXT           "Warning  : Shapes not found or incompatibles !!",
+                    IDC_INVALID_BUILD,193,76,155,11
 END
 
 IDD_RIBBON_DLG DIALOG DISCARDABLE  0, 0, 285, 71

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.6 2001/07/11 15:20:47 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.7 2001/07/13 13:17:40 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -626,6 +626,9 @@ IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint32 vertexFormat, uint32
 void			CDriverGL::deleteVertexBufferHard(IVertexBufferHard *VB)
 {
 	// If one _CurrentVertexBufferHard enabled, first disable it.
+	// This is very important (disable() flush the vertex data), because after deletion, the space is free. 
+	// If the GPU has not finisehd his drawing, and if any allocation occurs on this free space, and if 
+	// the user locks to fill this space (feww!) Then some data crash may results....
 	if(_CurrentVertexBufferHard)
 	{
 		_CurrentVertexBufferHard->disable();

@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.8 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: tile_bank.h,v 1.9 2003/01/30 13:15:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -621,6 +621,9 @@ public:
 		return _AbsPath;
 	}
 
+	/// Posfix tile filename
+	void	posfixTileFilename (const char *filename);
+	
 	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 private:
 	sint	createTile ();

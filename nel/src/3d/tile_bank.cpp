@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.42 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: tile_bank.cpp,v 1.43 2003/01/30 13:15:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -676,6 +676,33 @@ void	CTileBank::initTileVegetableDescs(CVegetableManager *vegetableManager)
 	{
 		CTileVegetableDesc	&tvd= _TileSetVector[tileSet].getTileVegetableDesc();
 		tvd.registerToManager(vegetableManager);
+	}
+}
+
+
+// ***************************************************************************
+void	CTileBank::posfixTileFilename (const char *postfix)
+{
+	// For each tiles
+	uint tile;
+	for (tile=0; tile<_TileVector.size (); tile++)
+	{	
+		// For each bitmap
+		uint bitmap;
+		for (bitmap=0; bitmap<CTile::bitmapCount; bitmap++)
+		{
+			string &filename = _TileVector[tile]._BitmapName[bitmap];
+			if (!filename.empty())
+			{
+				string ext = CFile::getExtension(filename);
+				string name = CFile::getFilenameWithoutExtension(filename);
+				filename = CFile::getPath (filename);
+				filename += name;
+				filename += postfix;
+				filename += ".";
+				filename += ext;
+			}
+		}
 	}
 }
 

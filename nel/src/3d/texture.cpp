@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.10 2000/12/06 12:51:57 corvazier Exp $
+ * $Id: texture.cpp,v 1.11 2000/12/08 10:32:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ ITexture &ITexture::operator=(const ITexture &tex)
 ITexture::~ITexture()
 {
 	// Must kill the drv mirror of this texture.
-	DrvInfos.kill();
+	TextureDrvShare.kill();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.5 2000/12/06 10:31:32 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.6 2000/12/08 10:33:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,11 +29,20 @@
 #endif
 #include <gl/gl.h>
 #include "driver_opengl.h"
-
+using	namespace std;
 
 
 namespace NL3D
 {
+
+
+// Get the Id of an existing setuped texture.
+static	inline GLint	getTextureGlId(ITexture& tex)
+{
+	CTextureDrvInfosGL*	gltex;
+	gltex= (CTextureDrvInfosGL*)(ITextureDrvInfos*)(tex.TextureDrvShare->DrvTexture);
+	return gltex->ID;
+}
 
 
 bool CDriverGL::setupTexture(ITexture& tex)
@@ -42,48 +51,85 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 	// 0. Create/Retrieve the driver texture.
 	//=======================================
-	if ( !tex.DrvInfos )
+	if ( !tex.TextureDrvShare )
 	{
-		// Create auto a GL id (in constructor).
-		tex.DrvInfos= new CTextureDrvInfosGL;
+		// Create the shared texture.
+		tex.TextureDrvShare= new CTextureDrvShare;
+
 		// Insert into Driver list.
-		_TexDrvInfos.push_back(tex.DrvInfos);
+		_TexDrvShares.push_back(tex.TextureDrvShare);
 
 		// Must (re)-create the texture.
 		touched= true;
 	}
 
-	// 
-	// 1. If modified, load texture.
-	//==============================
+	// 1. If modified, (re)load texture.
+	//==================================
 	if ( touched )
 	{
-		glBindTexture(GL_TEXTURE_2D,((CTextureDrvInfosGL*)(ITextureDrvInfos*)tex.DrvInfos)->ID);
-
-		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-		//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-		//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-		glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-
-		// Create the texture.
-		tex.generate();
-
-		if(tex.getSize()>0)
+		bool	mustload= true;
+		// Share mgt.
+		//===========
+		if(tex.supportSharing())
 		{
-			tex.convertToType(CBitmap::RGBA);
-			void	*ptr= &(*tex.getPixels().begin());
-			GLint	texfmt=GL_RGBA8;
-			glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,tex.getWidth(),tex.getHeight(),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+			// Try to get the shared texture.
+			string	name= tex.getShareName();
+			// insert or get the texture.
+			ITextureDrvInfos	*gltext= _TexDrvInfos[name];
+			/* There is a trick here: this test both if:
+				- the textureptr was not in the map. (because CRefPtr() is inited to NULL)
+				- the texture was deleted (by smartptr) by TextureDrvShare. Hence the entry is not deleted even if
+					the ptr is.
+			*/
+			if(gltext==NULL)
+				_TexDrvInfos[name]= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL;
+			else
+			{
+				tex.TextureDrvShare->DrvTexture= gltext;
+				// Do not need to reload this texture.
+				mustload= false;
+			}
+		}
+		else
+		{
+			// Else must create it.
+			// Create auto a GL id (in constructor).
+			tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL;
+			// Do not insert into the map. This un-shared texture will be deleted at deletion of the texture.
 		}
 
-		tex.clearTouched();
-		// Release, if wanted.
-		if(tex.getReleasable())
-			tex.release();
+		// Setup texture.
+		//===============
+		if(mustload)
+		{
+			glBindTexture(GL_TEXTURE_2D, getTextureGlId(tex));
+
+			tex.generate();
+
+			if(tex.getSize()>0)
+			{
+				tex.convertToType(CBitmap::RGBA);
+				void	*ptr= &(*tex.getPixels().begin());
+				GLint	texfmt=GL_RGBA8;
+				glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,tex.getWidth(),tex.getHeight(),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+			}
+
+			tex.clearTouched();
+			// Release, if wanted.
+			if(tex.getReleasable())
+				tex.release();
+
+			// Basic parameters.
+			glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+			//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+			//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+			glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+		}
+
 	}
 	return(true);
 }
@@ -99,11 +145,7 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 		if(tex)
 		{
 			glEnable(GL_TEXTURE_2D);
-			ITextureDrvInfos*	iinfos;
-			CTextureDrvInfosGL*	cinfos;
-			iinfos=(ITextureDrvInfos*)tex->DrvInfos;
-			cinfos=(CTextureDrvInfosGL*)iinfos;
-			glBindTexture(GL_TEXTURE_2D,cinfos->ID);
+			glBindTexture(GL_TEXTURE_2D, getTextureGlId(*tex));
 		}
 		else
 		{

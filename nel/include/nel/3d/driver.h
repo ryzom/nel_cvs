@@ -2,9 +2,9 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvInfos and _VBDrvInfos entries.
+ * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.33 2000/12/05 17:04:48 berenguier Exp $
+ * $Id: driver.h,v 1.34 2000/12/08 10:32:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -394,16 +394,21 @@ private:
 	static IDriver*							_Current;
 
 protected:
-	typedef	std::list< CRefPtr<ITextureDrvInfos> >	TTexDrvInfoPtrList;
+	// The map of shared textures.
+	typedef	std::map< std::string, CRefPtr<ITextureDrvInfos> >	TTexDrvInfoPtrMap;
+	// The list of pointer on shared textures.
+	typedef	std::list< CRefPtr<CTextureDrvShare> >	TTexDrvSharePtrList;
 	typedef	std::list< CRefPtr<IShader> >			TShaderPtrList;
 	typedef	std::list< CRefPtr<IVBDrvInfos> >		TVBDrvInfoPtrList;
-	typedef	TTexDrvInfoPtrList::iterator			ItTexDrvInfoPtrList;
+	typedef	TTexDrvInfoPtrMap::iterator				ItTexDrvInfoPtrMap;
+	typedef	TTexDrvSharePtrList::iterator			ItTexDrvSharePtrList;
 	typedef	TShaderPtrList::iterator				ItShaderPtrList;
 	typedef	TVBDrvInfoPtrList::iterator				ItVBDrvInfoPtrList;
 
 
 protected:
-	TTexDrvInfoPtrList		_TexDrvInfos;
+	TTexDrvInfoPtrMap		_TexDrvInfos;
+	TTexDrvSharePtrList		_TexDrvShares;
 	TShaderPtrList			_Shaders;
 	TVBDrvInfoPtrList		_VBDrvInfos;
 

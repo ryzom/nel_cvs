@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.11 2000/12/06 12:50:47 corvazier Exp $
+ * $Id: texture.h,v 1.12 2000/12/08 10:32:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,8 @@ namespace NL3D
 
 
 //****************************************************************************
-
+// Class for interaction of textures with Driver.
+// ITextureDrvInfos represent the real data of the texture, stored into the driver (eg: just a GLint for opengl).
 class ITextureDrvInfos : public NLMISC::CRefCount
 {
 private:
@@ -48,9 +49,19 @@ public:
 			virtual ~ITextureDrvInfos(void){ };
 };
 
+// Many ITexture may point to the same ITextureDrvInfos, through CTextureDrvShare.
+class CTextureDrvShare : public NLMISC::CRefCount
+{
+public:
+	NLMISC::CSmartPtr<ITextureDrvInfos>		DrvTexture;
+};
 
+
+//****************************************************************************
 /**
  * Interface for textures
+ * Sharing System note: The deriver may implement sharing system by implement supportSharing() and getShareName().
+ * Such a texture may return a Unique Name for sharing. If the driver already has this texture, it will reuse it.
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000
@@ -66,7 +77,7 @@ protected:
 
 public:
 	// Private. For Driver Only.
-	NLMISC::CRefPtr<ITextureDrvInfos>	DrvInfos;
+	NLMISC::CRefPtr<CTextureDrvShare>	TextureDrvShare;
 
 public:
 
@@ -116,6 +127,28 @@ public:
 	 * \date 2000
 	 */	
 	void release() { reset(); }
+
+	/** 
+	 * Does this texture support sharing system.
+	 * \author Lionel Berenguier
+	 * \date 2000
+	 */	
+	virtual bool			supportSharing() const {return false;}
+
+	/** 
+	 * Return the Unique ident/name of the texture, used for Driver sharing caps.
+	 * Deriver should add a prefix for their texture type. eg "file::pipoland", "noise::4-4-2" etc....
+	 * \author Lionel Berenguier
+	 * \date 2000
+	 */	
+	virtual std::string		getShareName() const {return std::string();}
+
+	/** 
+	 * Tells if the texture has been setuped by the driver.
+	 * \author Lionel Berenguier
+	 * \date 2000
+	 */	
+	bool	loadedIntoDriver() const {return TextureDrvShare!=NULL;}
 
 };
 

@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.9 2000/12/05 16:10:51 lecroart Exp $
+ * $Id: driver.cpp,v 1.10 2000/12/08 10:32:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ IDriver::~IDriver()
 	// Must doing this in release(), so assert here if not done...
 
 	nlassert(_TexDrvInfos.size()==0);
+	nlassert(_TexDrvShares.size()==0);
 	nlassert(_Shaders.size()==0);
 	nlassert(_VBDrvInfos.size()==0);
 }
@@ -62,14 +63,28 @@ bool		IDriver::release(void)
 {
 	// Called by derived classes.
 
+	// DO THIS FIRST => to auto kill real textures (by smartptr).
+	// First, Because must not kill a pointer owned by a CSmartPtr.
 	// Release Textures drv.
-	ItTexDrvInfoPtrList		ittex = _TexDrvInfos.begin();
-	while( ittex!=_TexDrvInfos.end() )
+	ItTexDrvSharePtrList		ittex = _TexDrvShares.begin();
+	while( ittex!=_TexDrvShares.end() )
 	{
 		ittex->kill();
 		ittex++;
 	}
+	_TexDrvShares.clear();
+
+
+	// Release refptr of TextureDrvInfos. Should be all null (because of precedent pass).
+	ItTexDrvInfoPtrMap		ittexmap = _TexDrvInfos.begin();
+	while( ittexmap!=_TexDrvInfos.end() )
+	{
+		// Do not need to kill the pointer must be NULL.
+		nlassert((*ittexmap).second==NULL);
+		ittexmap++;
+	}
 	_TexDrvInfos.clear();
+
 
 	// Release Shader drv.
 	ItShaderPtrList		itshd = _Shaders.begin();

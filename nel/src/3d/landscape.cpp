@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.15 2000/12/04 16:58:43 berenguier Exp $
+ * $Id: landscape.cpp,v 1.16 2000/12/08 10:33:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,7 @@ CLandscape::CLandscape()
 	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
 
 	_TileDistNear=50.f;
+	_RefineMode=true;
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -190,6 +191,9 @@ void			CLandscape::clip(const CVector &refineCenter, const std::vector<CPlane>	&
 // ***************************************************************************
 void			CLandscape::refine(const CVector &refineCenter)
 {
+	if(!_RefineMode)
+		return;
+
 	// -1. Update globals
 	updateGlobals ();
 
@@ -602,10 +606,10 @@ void			CLandscape::flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles)
 	{
 		const CPatchRdrPass	&pass= *it;
 		// If present and not already setuped...
-		if(pass.TextureDiffuse && pass.TextureDiffuse->DrvInfos==NULL)
+		if(pass.TextureDiffuse && !pass.TextureDiffuse->loadedIntoDriver())
 			drv->setupTexture(*pass.TextureDiffuse);
 		// If present and not already setuped...
-		if(pass.TextureBump && pass.TextureBump->DrvInfos==NULL)
+		if(pass.TextureBump && !pass.TextureBump->loadedIntoDriver())
 			drv->setupTexture(*pass.TextureBump);
 	}
 }

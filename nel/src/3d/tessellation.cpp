@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.10 2000/11/14 13:23:21 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.11 2000/11/14 14:35:46 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -989,7 +989,8 @@ bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted)
 			nlassert(!isLeaf());
 			// The neigbor should link already to one of our son.
 			nlassert(SonLeft == edgeFace->FLeft || SonRight == edgeFace->FLeft ||
-				SonLeft == edgeFace->FLeft || SonRight == edgeFace->FLeft)
+				SonLeft == edgeFace->FRight || SonRight == edgeFace->FRight);
+			return true;
 		}
 	}
 

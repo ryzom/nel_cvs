@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.23 2002/04/12 15:59:56 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.24 2002/05/22 16:30:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,8 +126,11 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 		// For vegetable, set the animation Time.
 		landModel->Landscape.setVegetableTime(scene->getCurrentTime());
 
+		// For vegetable updateLighting, set the system Time.
+		landModel->Landscape.setVegetableUpdateLightingTime(scene->getCurrentSystemTime());
+
 		// updateLighting
-		landModel->Landscape.updateLighting(scene->getCurrentTime());
+		landModel->Landscape.updateLighting(scene->getCurrentSystemTime());
 
 		// if SceneLighting enabled
 		if(scene->isLightingSystemEnabled())

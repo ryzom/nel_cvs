@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.76 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: scene.cpp,v 1.77 2002/05/22 16:30:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -367,7 +367,7 @@ void	CScene::addTrav(ITrav *v)
 void	CScene::render(bool	doHrcPass)
 {
 	double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
-	_DeltaTimeBetweenRender = fNewGlobalSystemTime - _GlobalSystemTime;
+	_DeltaSystemTimeBetweenRender= fNewGlobalSystemTime - _GlobalSystemTime;
 	_GlobalSystemTime = fNewGlobalSystemTime;
 
 
@@ -429,7 +429,7 @@ void	CScene::render(bool	doHrcPass)
 
 	// Wainting Instance handling
 	// First set up max AGP upload
-	double fMaxBytesToUp = _DeltaTimeBetweenRender;
+	double fMaxBytesToUp = _DeltaSystemTimeBetweenRender;
 	clamp (fMaxBytesToUp, 0.01, 0.1);
 	fMaxBytesToUp *= 100*256*256;
 	_ShapeBank->setMaxBytesToUpload ((uint32)fMaxBytesToUp);

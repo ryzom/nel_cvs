@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.24 2002/05/22 14:00:26 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.25 2002/05/22 16:30:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,7 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	_ULCurrentIgInstance= 0;
 	_ULPrecTime= 0;
 	_ULPrecTimeInit= false;
-
+	_ULTime= 0;
 
 	// Misc.
 	_NumVegetableFaceRendered= 0;
@@ -2288,17 +2288,24 @@ void		CVegetableManager::setTime(double time)
 
 
 // ***************************************************************************
+void		CVegetableManager::setUpdateLightingTime(double time)
+{
+	_ULTime= time;
+}
+
+
+// ***************************************************************************
 void		CVegetableManager::updateLighting()
 {
 	// first time in this method??
 	if(!_ULPrecTimeInit)
 	{
 		_ULPrecTimeInit= true;
-		_ULPrecTime= _Time;
+		_ULPrecTime= _ULTime;
 	}
 	// compute delta time from last update.
-	float dt= float(_Time - _ULPrecTime);
-	_ULPrecTime= _Time;
+	float dt= float(_ULTime - _ULPrecTime);
+	_ULPrecTime= _ULTime;
 
 	// compute number of vertices to update.
 	_ULNVerticesToUpdate+= dt*_ULFrequency * _ULNTotalVertices;

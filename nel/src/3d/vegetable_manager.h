@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.17 2002/05/22 14:00:26 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.18 2002/05/22 16:30:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -237,7 +237,7 @@ public:
 	 */
 	void		setWind(const CVector &windDir, float windFreq, float windPower, float windBendMin);
 
-	/** set the current Time (in seconds). For Wind animation, and for lighting update.
+	/** set the current Time (in seconds). For Wind animation
 	 */
 	void		setTime(double time);
 
@@ -246,6 +246,11 @@ public:
 
 	/// \name UpdateLighting management
 	// @{
+
+	/** set the vegetable manager System Time (in seconds)
+	 *	This time is used for lighting update, and is independent of setTime()
+	 */
+	void		setUpdateLightingTime(double time);
 
 	/** update the lighting of Igs, within a certain amount of time.
 	 *	You MUST enclose calls to updateLighting() with lockBuffers() / unlockBuffers().
@@ -350,7 +355,7 @@ private:
 	float											_WindFrequency;
 	float											_WindPower;
 	float											_WindBendMin;
-	// nb: used for wind animation and for lighting update.
+	// nb: used for wind animation 
 	double											_Time;
 	double											_WindPrecRenderTime;
 	// updated at each render().
@@ -407,6 +412,7 @@ private:
 	// Last update time.
 	double					_ULPrecTime;
 	bool					_ULPrecTimeInit;
+	double					_ULTime;
 
 	/// Frequency of update.
 	float					_ULFrequency;

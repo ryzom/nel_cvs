@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.114 2002/04/24 16:32:07 berenguier Exp $
+ * $Id: landscape.cpp,v 1.115 2002/05/22 16:30:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3027,6 +3027,13 @@ void		CLandscape::setVegetableTime(double time)
 {
 	// setup vegetable manager
 	_VegetableManager->setTime(time);
+}
+
+// ***************************************************************************
+void		CLandscape::setVegetableUpdateLightingTime(double time)
+{
+	// setup vegetable manager
+	_VegetableManager->setUpdateLightingTime(time);
 }
 
 

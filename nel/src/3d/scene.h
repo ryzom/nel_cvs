@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.26 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: scene.h,v 1.27 2002/05/22 16:30:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -249,6 +249,13 @@ public:
 	/// get the ellapsed time (in second) between the last 2 calls of animate.
 	TAnimationTime getEllapsedTime(void) const { return _EllapsedTime ; }
 
+	/** System time is a time that always run (independent from the animation time that run only on animate()) 
+	 *	It is updated at beginning of render()
+	 */
+	double				getCurrentSystemTime() const {return _GlobalSystemTime;}
+
+	/// get the ellapsed time (in second) between the last 2 calls of render().
+	double				getEllapsedSystemTime() const { return _DeltaSystemTimeBetweenRender;}
 
 
 	/// \name LoadBalancing mgt.
@@ -455,7 +462,7 @@ private:
 	TAnimationTime  _EllapsedTime ;
 
 	// System time is a time that always run (independent from the animation time that run only on animate()) 
-	double	_DeltaTimeBetweenRender;
+	double	_DeltaSystemTimeBetweenRender;
 	double	_GlobalSystemTime;
 
 

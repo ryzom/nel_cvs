@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.39 2002/04/24 16:32:07 berenguier Exp $
+ * $Id: landscape.h,v 1.40 2002/05/22 16:30:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -427,6 +427,10 @@ public:
 	 */
 	void		setVegetableTime(double time);
 
+	/** set the vegetable manager System Time (in seconds) for update lighting
+	 *	NB: MOT stuff (called by CLandscapeModel), don't use it.
+	 */
+	void		setVegetableUpdateLightingTime(double time);
 
 
 	/** enable the vegetable management in landscape. Valid only if VertexShader is OK.

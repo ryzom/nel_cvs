@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.16 2002/02/28 12:59:49 besson Exp $
+ * $Id: font_generator.cpp,v 1.17 2002/08/23 08:04:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
+#include "nel/misc/path.h"
 
 #include "3d/font_generator.h"
 
@@ -107,13 +108,33 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 		nlerror ("FT_New_Face() failed with file 's%': %s", fontFileName.c_str(), getFT2Error(error));
 	}
 
-	if (fontExFileName != "")
+	string fontEx = fontExFileName;
+	if (fontEx == "")
 	{
-		error = FT_Attach_File (_Face, fontExFileName.c_str ());
+		// try to see if the ex filename exists based on the fontExFileName
+		string ex = CFile::getFilenameWithoutExtension (fontFileName);
+		try
+		{
+			fontEx = CPath::lookup(ex+".afm");
+		}
+		catch(Exception &)
+		{
+		}
+	}
+
+	if (fontEx != "")
+	{
+		error = FT_Attach_File (_Face, fontEx.c_str ());
 		if (error)
 		{
-			nlwarning ("FT_Attach_File() failed with file '%s': %s", fontExFileName.c_str(), getFT2Error(error));
+			nlwarning ("FT_Attach_File() failed with file '%s': %s", fontEx.c_str(), getFT2Error(error));
 		}
+	}
+
+	error = FT_Select_Charmap (_Face, ft_encoding_unicode);
+	if (error)
+	{
+		nlerror ("FT_Select_Charmap() failed with file 's%': %s", fontFileName.c_str(), getFT2Error(error));
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file sound_driver_al.h
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.h,v 1.11 2004/02/23 14:38:45 lecroart Exp $
+ * $Id: sound_driver_al.h,v 1.12 2004/05/10 14:43:09 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,7 +132,7 @@ public:
 	virtual void			commit3DChanges() {}
 
 	/// Write information about the driver to the output stream.
-	virtual void			writeProfile(std::ostream& out) {}
+	virtual void			writeProfile(std::string& out) {}
 
 	// Does not create a sound loader
 

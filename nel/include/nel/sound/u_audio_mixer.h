@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.32 2004/03/25 16:59:55 berenguier Exp $
+ * $Id: u_audio_mixer.h,v 1.33 2004/05/10 14:43:31 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -273,7 +273,7 @@ public:
 	/** Write profiling information about the mixer to the output stream.
 	 *  \param out The output stream to which to write the information
 	 */
-	virtual void		writeProfile(std::ostream& out) = 0;
+	virtual void		writeProfile(std::string& out) = 0;
 	//@}
 
 

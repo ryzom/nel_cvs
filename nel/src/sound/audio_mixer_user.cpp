@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.66 2004/04/30 17:10:48 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.67 2004/05/10 14:43:09 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,7 +223,7 @@ void CAudioMixerUser::setLowWaterMark(uint value)
 
 // ******************************************************************
 
-void				CAudioMixerUser::writeProfile(std::ostream& out)
+void				CAudioMixerUser::writeProfile(std::string& out)
 {
 	// compute number of muted source
 	uint nb = 0;	
@@ -248,28 +248,27 @@ void				CAudioMixerUser::writeProfile(std::ostream& out)
 		}
 	}
 */
-	out << "Mixer: \n";
-	out << "Playing sources: " << getPlayingSourcesCount() << " \n";
-	out << "Available tracks: " << getAvailableTracksCount() << " \n";
-	out << "Used tracks: " << getUsedTracksCount() << " \n";
-//	out << "Muted sources: " << nb << " \n";
-//	out << "Muted sources: " << max(0, sint(_PlayingSources.size())-sint(_NbTracks)) << " \n";
-//	out << "Muted sources: " << max(0, sint(_PlayingSources)-sint(_NbTracks)) << " \n";
-	out << "Muted sources: " << (int)_PlayingSourcesMuted << "\n";
-	out << "Sources waiting for play: " << _SourceWaitingForPlay.size() << " \n";
-	out << "HighestPri: " << (int)_ReserveUsage[HighestPri] << " / " << (int)_PriorityReserve[HighestPri] << " \n";
-	out << "HighPri:    " << (int)_ReserveUsage[HighPri] << " / " << (int)_PriorityReserve[HighPri] << "\n";
-	out << "MidPri:     " << (int)_ReserveUsage[MidPri] << " / " << (int)_PriorityReserve[MidPri] << " \n";
-	out << "LowPri:     " << (int)_ReserveUsage[LowPri] << " / " << (int)_PriorityReserve[LowPri] << " \n";
-	out << "FreeTracks: " << _FreeTracks.size() << " / " << _NbTracks << " \n";
-	out << "Average update time: " << std::setw(10) << (1000.0 * _UpdateTime / _UpdateCount) << " msec\n";
-	out << "Average create time: " << std::setw(10) <<(1000.0 * _CreateTime / _CreateCount) << " msec\n";
-	out << "Estimated CPU: " << std::setiosflags(ios::right) << std::setprecision(6) << std::setw(10) << (100.0 * 1000.0 * (_UpdateTime + _CreateTime) / curTime()) << "%\n";
+	out += "Sound mixer: \n";
+	out += "\tPlaying sources: " + toString (getPlayingSourcesCount()) + " \n";
+	out += "\tAvailable tracks: " + toString (getAvailableTracksCount()) + " \n";
+	out += "\tUsed tracks: " + toString (getUsedTracksCount()) + " \n";
+//	out << "\tMuted sources: " << nb << " \n";
+//	out << "\tMuted sources: " << max(0, sint(_PlayingSources.size())-sint(_NbTracks)) << " \n";
+//	out << "\tMuted sources: " << max(0, sint(_PlayingSources)-sint(_NbTracks)) << " \n";
+	out += "\tMuted sources: " + toString ((int)_PlayingSourcesMuted) + "\n";
+	out += "\tSources waiting for play: " + toString (_SourceWaitingForPlay.size()) + " \n";
+	out += "\tHighestPri: " + toString ((int)_ReserveUsage[HighestPri]) + " / " + toString ((int)_PriorityReserve[HighestPri]) + " \n";
+	out += "\tHighPri:    " + toString ((int)_ReserveUsage[HighPri]) + " / " + toString ((int)_PriorityReserve[HighPri]) + "\n";
+	out += "\tMidPri:     " + toString ((int)_ReserveUsage[MidPri]) + " / " + toString ((int)_PriorityReserve[MidPri]) + " \n";
+	out += "\tLowPri:     " + toString ((int)_ReserveUsage[LowPri]) + " / " + toString ((int)_PriorityReserve[LowPri]) + " \n";
+	out += "\tFreeTracks: " + toString (_FreeTracks.size()) + " / " + toString (_NbTracks) + " \n";
+	out += "\tAverage update time: " + toString (1000.0 * _UpdateTime / _UpdateCount) + " msec\n";
+	out += "\tAverage create time: " + toString (1000.0 * _CreateTime / _CreateCount) + " msec\n";
+	out += "\tEstimated CPU: " + toString ((100.0 * 1000.0 * (_UpdateTime + _CreateTime) / curTime())) + "%%\n";
 
 	if (_SoundDriver)
 	{
-		out << "\n";
-		out << "Driver: \n";
+		out += toString ("Sound driver: \n");
 		_SoundDriver->writeProfile(out);
 	}
 }

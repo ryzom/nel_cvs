@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.26 2004/01/15 19:18:52 lecroart Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.27 2004/05/10 14:43:09 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,7 +138,7 @@ __declspec(dllexport) uint32 NLSOUND_interfaceVersion()
 
 // ******************************************************************
 
-__declspec(dllexport) void NLSOUND_outputProfile(ostream &out)
+__declspec(dllexport) void NLSOUND_outputProfile(string &out)
 {
 	CSoundDriverDSound::instance()->writeProfile(out);
 }
@@ -632,46 +632,42 @@ uint CSoundDriverDSound::countMaxSources()
 
 // ******************************************************************
 
-void CSoundDriverDSound::writeProfile(ostream& out)
+void CSoundDriverDSound::writeProfile(string& out)
 {
     // Write the available sound devices
     CDeviceDescription* list = CDeviceDescription::_List;
     while (list) {
-		out << list->_Description << "\n";
+		out += "\t" + string(list->_Description) + "\n";
         list = list->_Next;
     }
 
-    out << "\n";
-
     // Write the buffers sizes
-    out << "buffer size: " << (int)CSourceDSound::_SecondaryBufferSize << "\n";
-    out << "copy size: " << (int)CSourceDSound::_UpdateCopySize << "\n";
-    out << "swap size: " << (int)CSourceDSound::_SwapCopySize << "\n";
-    out << "\n";
+    out += "\tBuffer size: " + toString ((int)CSourceDSound::_SecondaryBufferSize) + "\n";
+    out += "\tCopy size: " + toString ((int)CSourceDSound::_UpdateCopySize) + "\n";
+    out += "\tSwap size: " + toString ((int)CSourceDSound::_SwapCopySize) + "\n";
 
     // Write the number of hardware buffers 
     DSCAPS caps;
     caps.dwSize = sizeof(caps); 
     _DirectSound->GetCaps(&caps);  
 
-    cout << "3d hw buffers: " << caps.dwMaxHw3DAllBuffers << "\n";
-	cout << "2d hw buffers: " << caps.dwMaxHwMixingAllBuffers << "\n";
-    out << "\n";
+    out += "\t3d hw buffers: " + toString ((uint32)caps.dwMaxHw3DAllBuffers) + "\n";
+	out += "\t2d hw buffers: " + toString ((uint32)caps.dwMaxHwMixingAllBuffers) + "\n";
 
     // Write the number of hardware buffers 
 #if NLSOUND_PROFILE
-    out << "update time total --- " <<  getAverageUpdateTime()<< "\n";
-	out << "update time source --- " << CSourceDSound::getAverageUpdateTime() << "\n";
-	out << "update --- t: " << CSourceDSound::getAverageCumulTime();
-	out << " - p: " << CSourceDSound::getAveragePosTime();
-	out << " - l: " << CSourceDSound::getAverageLockTime();
-	out << " - c: " << CSourceDSound::getAverageCopyTime();
-	out << " - u: " << CSourceDSound::getAverageUnlockTime() << "\n";
-	out << "update percentage: --- " << getUpdatePercentage() << "\n";
-	out << "update num sources --- " << (int)getAverageUpdateSources() << "\n";
-	out << "update byte size --- " << CSourceDSound::getAverageUpdateSize() << "\n";
-	out << "swap time --- " << CSourceDSound::getTestAverage() << "\n";
-	out << "src --- " << countPlayingSources() << "\n";
+    out += "\tUpdate time total --- " + toString (getAverageUpdateTime()) + "\n";
+	out += "\tUpdate time source --- " + toString (CSourceDSound::getAverageUpdateTime()) + "\n";
+	out += "\tUpdate --- t: " + toString (CSourceDSound::getAverageCumulTime());
+	out += "\t - p: " + toString (CSourceDSound::getAveragePosTime());
+	out += "\t - l: " + toString (CSourceDSound::getAverageLockTime());
+	out += "\t - c: " + toString (CSourceDSound::getAverageCopyTime());
+	out += "\t - u: " + toString (CSourceDSound::getAverageUnlockTime()) + "\n";
+	out += "\tUpdate percentage: --- " + toString (getUpdatePercentage()) + "\n";
+	out += "\tUpdate num sources --- " + toString ((int)getAverageUpdateSources()) + "\n";
+	out += "\tUpdate byte size --- " + toString (CSourceDSound::getAverageUpdateSize()) + "\n";
+	out += "\tSwap time --- " + toString (CSourceDSound::getTestAverage()) + "\n";
+	out += "\tSrc --- " + toString (countPlayingSources()) + "\n";
 #endif
 }
 

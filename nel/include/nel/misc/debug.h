@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.64 2004/05/07 08:13:59 boucher Exp $
+ * $Id: debug.h,v 1.65 2004/05/10 14:43:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -628,6 +628,7 @@ void nlError (const char *format, ...);
 
 } // NLMISC
 
+#define NL_CRASH_DUMP_FILE "nel_debug.dmp"
 
 #endif // NL_DEBUG_H
 

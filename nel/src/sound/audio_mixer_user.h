@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.45 2004/04/30 17:10:48 berenguier Exp $
+ * $Id: audio_mixer_user.h,v 1.46 2004/05/10 14:43:09 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -279,7 +279,7 @@ public:
 
 	CBackgroundSoundManager		*getBackgroundSoundManager()				{ return _BackgroundSoundManager; }
 	/// Write profiling information about the mixer to the output stream.
-	virtual void				writeProfile(std::ostream& out);
+	virtual void				writeProfile(std::string& out);
 
 	virtual void				setBackgroundFlagName(uint flagIndex, const std::string &flagName);
 	virtual void				setBackgroundFlagShortName(uint flagIndex, const std::string &flagShortName);

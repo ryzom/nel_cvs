@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.12 2003/12/08 13:18:02 boucher Exp $
+ * $Id: sound_driver_dsound.h,v 1.13 2004/05/10 14:43:09 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ public:
 	void update();
 
 	/// Write information about the driver to the output stream.
-	void writeProfile(std::ostream& out);
+	void writeProfile(std::string& out);
 
 
     /** Set the gain (volume value inside [0 , 1]). (default: 1)

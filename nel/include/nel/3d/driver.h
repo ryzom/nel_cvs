@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.54 2001/02/20 11:02:47 berenguier Exp $
+ * $Id: driver.h,v 1.55 2001/02/23 09:05:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,6 +151,10 @@ public:
 	// first param is the associated window. 
 	// Must be a HWND for Windows (WIN32).
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode) throw(EBadDisplay)=0;
+
+	// Return is the associated window information. (Implementation dependant)
+	// Must be a HWND for Windows (WIN32).
+	virtual void*			getDisplay() =0;
 
 	/// Before rendering via a driver in a thread, must activate() (per thread).
 	virtual bool			activate(void)=0;

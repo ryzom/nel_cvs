@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.17 2000/12/13 10:25:22 berenguier Exp $
+ * $Id: landscape.h,v 1.18 2000/12/13 12:54:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,6 +95,8 @@ public:
 	bool			removeZone(uint16 zoneId);
 	/// Disconnect, and Delete all zones.
 	void			clear();
+	/// Verify the binding of patchs zones. assert if error.
+	void			checkBinds();
 	// @}
 
 	

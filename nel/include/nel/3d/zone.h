@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.12 2000/12/06 15:58:34 berenguier Exp $
+ * $Id: zone.h,v 1.13 2000/12/13 12:54:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,6 +161,20 @@ public:
 class CZone
 {
 public:
+	// The stored patch structure for compile() - ation.
+	struct	CPatchConnect
+	{
+		// NB: same meanings than in CPatchInfo.
+		uint8			OrderS, OrderT;
+		float			ErrorSize;
+		uint16			BaseVertices[4];
+		CPatchInfo::CBindInfo		BindEdges[4];
+
+	public:
+		void			serial(NLMISC::IStream &f);
+	};
+
+public:
 
 	/// Constructor
 	CZone();
@@ -284,6 +298,15 @@ public:
 	 */
 	const CPatch	*getPatch(sint patch) const {nlassert(patch>=0 && patch<(sint)Patchs.size()); return &(Patchs[patch]);}
 
+	/** 
+	 * Get a read only patch connect pointer.
+	 *
+	 * \param patch the index of patch to get.
+	 * \return A patch pointer in read only.
+	 */
+	const CPatchConnect	*getPatchConnect(sint patch) const 
+		{nlassert(patch>=0 && patch<(sint)Patchs.size()); return &(PatchConnects[patch]);}
+
 
 // Private part.
 private:
@@ -292,19 +315,6 @@ private:
 	struct	CTessBaseVertex : public NLMISC::CRefCount
 	{
 		CTessVertex		Vert;
-	};
-
-	// The stored patch structure for compile() - ation.
-	struct	CPatchConnect
-	{
-		// NB: same meanings than in CPatchInfo.
-		uint8			OrderS, OrderT;
-		float			ErrorSize;
-		uint16			BaseVertices[4];
-		CPatchInfo::CBindInfo		BindEdges[4];
-
-	public:
-		void			serial(NLMISC::IStream &f);
 	};
 
 	// Zone vertices.

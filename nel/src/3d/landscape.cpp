@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.20 2000/12/13 10:33:26 berenguier Exp $
+ * $Id: landscape.cpp,v 1.21 2000/12/13 12:53:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -681,6 +681,40 @@ const CZone*	CLandscape::getZone (sint zoneId) const
 		return (*it).second;
 	else
 		return NULL;
+}
+
+
+// ***************************************************************************
+void			CLandscape::checkBinds()
+{
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		CZone	&curZone= *(*it).second;
+		for(sint i=0;i<curZone.getNumPatchs();i++)
+		{
+			const CZone::CPatchConnect	&pa= *curZone.getPatchConnect(i);
+
+			// Check the bindInfos.
+			for(sint j=0;j<4;j++)
+			{
+				const CPatchInfo::CBindInfo	&bd=pa.BindEdges[j];
+				// Just 1/1 for now.
+				if(bd.NPatchs==1)
+				{
+					CZone	*oZone= getZone(bd.ZoneId);
+					// If loaded zone.
+					if(oZone)
+					{
+						const CZone::CPatchConnect	&po= *(oZone->getPatchConnect(bd.Next[0]));
+						const CPatchInfo::CBindInfo	&bo= po.BindEdges[bd.Edge[0]];
+						nlassert(bo.NPatchs==1);
+						nlassert(bo.Next[0]==i);
+						nlassert(bo.Edge[0]==j);
+					}
+				}
+			}
+		}
+	}
 }
 
 

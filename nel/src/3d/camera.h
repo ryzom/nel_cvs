@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.4 2003/04/18 15:15:04 corvazier Exp $
+ * $Id: camera.h,v 1.5 2003/05/13 09:57:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -212,6 +212,11 @@ public:
 
 	// @}
 
+	/// \name access default tracks.
+	// @{
+	CTrackDefaultVector*	getDefaultPos ()			{return &_DefaultPos;}
+	CTrackDefaultVector*	getDefaultTargetPos ()		{return &_DefaultTargetPos;}
+	// @}
 
 protected:
 	/// Constructor
@@ -241,10 +246,11 @@ private:
 	CAnimatedValueVector	_Target;
 	CAnimatedValueFloat		_Roll;
 
+	CTrackDefaultVector		_DefaultPos;
+	CTrackDefaultVector		_DefaultTargetPos;
 
 	// Default tracks.
 	static CTrackDefaultFloat		DefaultFov;		//( NLMISC::Pi/2 );
-	static CTrackDefaultVector		DefaultTarget;	//( CVector::NULL );
 	static CTrackDefaultFloat		DefaultRoll;	//( 0 );
 
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.94 2003/04/24 14:08:31 boucher Exp $
+ * $Id: object_viewer.cpp,v 1.95 2003/05/13 09:57:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -979,8 +979,8 @@ void CObjectViewer::setupPlaylist (float time)
 				}
 				if (_ListInstance[i]->Camera)
 				{
-					_ListInstance[i]->Camera->setPos (CVector::Null);
-					_ListInstance[i]->Camera->setRotQuat (CQuat::Identity);
+					_ListInstance[i]->Camera->setPos (((CAnimatedValueVector&)_ListInstance[i]->Camera->getDefaultPos ()->getValue ()).Value);
+					_ListInstance[i]->Camera->setTargetPos (((CAnimatedValueVector&)_ListInstance[i]->Camera->getDefaultTargetPos ()->getValue ()).Value);
 				}
 			}
 		}
@@ -1534,26 +1534,25 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 			// Merge
 			for (uint i=0; i<readed.size(); i++)
 			{
-				// Load the shape
-				CIFile input;
-				if (input.open (readed[i].ShapeFilename))
+				try
 				{
-					try
+					// Instance loaded
+					uint instance = 0xffffffff;
+
+					if (readed[i].Camera)
 					{
-						// Serial a shape
-						CShapeStream serialShape;
-						serialShape.serial (input);
-
-						// Instance loaded
-						uint instance = 0xffffffff;
-
-						// Is a camera ?
-						if (readed[i].Camera)
+						instance = addCamera (readed[i].CameraInfo, readed[i].ShapeFilename.c_str());
+					}
+					else
+					{
+						// Load the shape
+						CIFile input;
+						if (input.open (readed[i].ShapeFilename))
 						{
-							instance = addCamera (readed[i].CameraInfo, readed[i].ShapeFilename.c_str());
-						}
-						else
-						{
+							// Serial a shape
+							CShapeStream serialShape;
+							serialShape.serial (input);
+
 							// Is a skeleton ?
 							if (readed[i].IsSkeleton)
 							{
@@ -1570,41 +1569,41 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 									instance = addMesh (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str(), 0xffffffff, (readed[i].BindBoneName=="")?NULL:readed[i].BindBoneName.c_str());
 							}
 						}
+						else
+						{
+							// Error message
+							char message[512];
+							smprintf (message, 512, "File not found %s", readed[i].ShapeFilename.c_str());
+							_MainFrame->MessageBox (message, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 
-						// Check instance number
- 						nlassert (instance == (firstInstance+i));
-
-						// Load animations
-						for (uint anim=0; anim<readed[i].AnimationFileName.size(); anim++)
-							loadAnimation (readed[i].AnimationFileName[anim].c_str(), instance);
-
-						// Load SWT
-						for (uint swt=0; swt<readed[i].SWTFileName.size(); swt++)
-							loadSWT (readed[i].SWTFileName[swt].c_str(), instance);
-
-						// Set the playlist
-						_ListInstance[instance]->Saved.PlayList = readed[i].PlayList;
-
-						// Set the slot informations
-						for (uint slot=0; slot<NL3D::CChannelMixer::NumAnimationSlot; slot++)
-							_ListInstance[instance]->Saved.SlotInfo[slot] = readed[i].SlotInfo[slot];
+							// Stop loading
+							break;
+						}
 					}
-					catch (Exception &e)
-					{
-						// Error message
-						char message[512];
-						smprintf (message, 512, "Error loading shape %s: %s", readed[i].ShapeFilename.c_str(), e.what());
-						_MainFrame->MessageBox (message, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 
-						// Stop loading
-						break;
-					}
+					// Check instance number
+ 					nlassert (instance == (firstInstance+i));
+
+					// Load animations
+					for (uint anim=0; anim<readed[i].AnimationFileName.size(); anim++)
+						loadAnimation (readed[i].AnimationFileName[anim].c_str(), instance);
+
+					// Load SWT
+					for (uint swt=0; swt<readed[i].SWTFileName.size(); swt++)
+						loadSWT (readed[i].SWTFileName[swt].c_str(), instance);
+
+					// Set the playlist
+					_ListInstance[instance]->Saved.PlayList = readed[i].PlayList;
+
+					// Set the slot informations
+					for (uint slot=0; slot<NL3D::CChannelMixer::NumAnimationSlot; slot++)
+						_ListInstance[instance]->Saved.SlotInfo[slot] = readed[i].SlotInfo[slot];
 				}
-				else
+				catch (Exception &e)
 				{
 					// Error message
 					char message[512];
-					smprintf (message, 512, "File not found %s", readed[i].ShapeFilename.c_str());
+					smprintf (message, 512, "Error loading shape %s: %s", readed[i].ShapeFilename.c_str(), e.what());
 					_MainFrame->MessageBox (message, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 
 					// Stop loading
@@ -2028,6 +2027,7 @@ uint CObjectViewer::addCamera (const NL3D::CCameraInfo &cameraInfo, const char* 
 	iInfo->Saved.ShapeFilename = cameraName;
 	iInfo->Saved.SkeletonId = 0xffffffff;
 	iInfo->Saved.CameraInfo = cameraInfo;
+	iInfo->Saved.Camera = true;
 	_ListInstance.push_back (iInfo);
 	_Cameras.push_back (_ListInstance.size()-1);
 
@@ -3243,6 +3243,8 @@ void CInstanceSave::serial (NLMISC::IStream &f)
 		f.serial (Camera);
 		f.serial (CameraInfo);
 	}
+	else if (f.isReading ())
+		Camera = false;
 }
 
 // ***************************************************************************

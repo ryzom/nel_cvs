@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.15 2003/04/18 15:15:04 corvazier Exp $
+ * $Id: camera.cpp,v 1.16 2003/05/13 09:57:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,7 +131,6 @@ const char *CCamera::getValueName (uint valueId) const
 
 // ***************************************************************************
 CTrackDefaultFloat		CCamera::DefaultFov( (float)NLMISC::Pi/2 );
-CTrackDefaultVector		CCamera::DefaultTarget( CVector::Null );
 CTrackDefaultFloat		CCamera::DefaultRoll( 0 );
 
 
@@ -140,8 +139,9 @@ ITrack* CCamera::getDefaultTrack (uint valueId)
 	// what value ?
 	switch (valueId)
 	{
+	case PosValue:			return &_DefaultPos;
 	case FovValue:			return &DefaultFov;
-	case TargetValue:		return &DefaultTarget;
+	case TargetValue:		return &_DefaultTargetPos;
 	case RollValue:			return &DefaultRoll;
 	}
 
@@ -203,6 +203,7 @@ void CCamera::build (const CCameraInfo &cameraInfo)
 		// Set the rot model
 		setTransformMode (ITransformable::RotQuat);
 		setTargetPos (cameraInfo.TargetPos);
+		_DefaultTargetPos.setValue (cameraInfo.TargetPos);
 		setRoll (cameraInfo.Roll);
 	}
 	if (cameraInfo.UseFov)
@@ -210,6 +211,7 @@ void CCamera::build (const CCameraInfo &cameraInfo)
 		setFov (cameraInfo.Fov);
 	}
 	setPos (cameraInfo.Pos);
+	_DefaultPos.setValue (cameraInfo.Pos);
 }
 
 

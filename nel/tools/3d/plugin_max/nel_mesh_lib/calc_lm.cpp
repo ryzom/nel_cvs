@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.29 2002/01/03 13:12:56 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.30 2002/01/04 18:27:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2141,9 +2141,13 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	// Remove from exclude the node
 	lodListToExclude.erase (&ZeNode);
 
+	// List to include
+	std::set<INode*>	lodListToInclude;
+	lodListToInclude.insert (&ZeNode);
+
 	// Get all meshes that are influenced by the lights L
 	//buildWorldRT( WorldRT, AllLights, ip, true );
-	WorldRT.build (ip, AllLights, -vGlobalPos, gOptions.bExcludeNonSelected, lodListToExclude);
+	WorldRT.build (ip, AllLights, -vGlobalPos, gOptions.bExcludeNonSelected, lodListToExclude, lodListToInclude);
 
 	//for( nNode=0; nNode < nNbMesh; ++nNode )
 	{
@@ -2267,7 +2271,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 				AllPlanes.resize( AllPlanesPrevSize + FaceGroupByPlane.size() );
 
 				offsetPlane = offsetSmooth;
-				for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+				for( nPlaneNb = 0; nPlaneNb < (sint)FaceGroupByPlane.size(); ++nPlaneNb )
 				{
 					AllPlanes[AllPlanesPrevSize+nPlaneNb] = new SLMPlane;
 					for( nLight = 0; nLight < ((sint32)vvLights.size()-1); ++nLight )
@@ -2279,16 +2283,16 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					offsetPlane += FaceGroupByPlane[nPlaneNb];
 				}
 				// Make join between all planes (all planes must be created)
-				for( nLight = 0; nLight < vvLights.size(); ++nLight )
+				for( nLight = 0; nLight < (sint)vvLights.size(); ++nLight )
 				{
 					vector<SLMPlane*> TempPlanes;
 					TempPlanes.resize(FaceGroupByPlane.size());
-					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+					for( nPlaneNb = 0; nPlaneNb < (sint)FaceGroupByPlane.size(); ++nPlaneNb )
 					{
 						TempPlanes[nPlaneNb] = new SLMPlane;
 						TempPlanes[nPlaneNb]->createFromPlane (*AllPlanes[AllPlanesPrevSize+nPlaneNb]);
 					}
-					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+					for( nPlaneNb = 0; nPlaneNb < (sint)FaceGroupByPlane.size(); ++nPlaneNb )
 					{					
 						// Light the LightMap for the plane (interior only)
 						FirstLight( pMB, pMBB, *TempPlanes[nPlaneNb], 
@@ -2303,7 +2307,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					// Oversampling optimization
 					if( gOptions.nOverSampling > 1 )
 					{
-						for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+						for( nPlaneNb = 0; nPlaneNb < (sint)FaceGroupByPlane.size(); ++nPlaneNb )
 						{
 							// Detect which pixels need to be& oversampled						
 							TempPlanes[nPlaneNb]->contourDetect();
@@ -2313,7 +2317,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 							TempPlanes[nPlaneNb]->andRayWidthMask();
 						}
 
-						for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+						for( nPlaneNb = 0; nPlaneNb < (sint)FaceGroupByPlane.size(); ++nPlaneNb )
 							FirstLight( pMB, pMBB, *TempPlanes[nPlaneNb], 
 										AllVertices, MBMatrix, vvLights[nLight], AllLights,
 										0, WorldRT );
@@ -2321,16 +2325,16 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 									AllVertices, MBMatrix, vvLights[nLight],  AllLights,
 									0, WorldRT );
 
-						for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+						for( nPlaneNb = 0; nPlaneNb < (sint)FaceGroupByPlane.size(); ++nPlaneNb )
 							ModifyLMPlaneWithOverSampling( TempPlanes[nPlaneNb],
 															1.0/((double)gOptions.nOverSampling), false );
 					}
 
 
-					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+					for( nPlaneNb = 0; nPlaneNb < (sint)FaceGroupByPlane.size(); ++nPlaneNb )
 						TempPlanes[nPlaneNb]->copyFirstLayerTo(*AllPlanes[AllPlanesPrevSize+nPlaneNb],(uint8)nLight);
 
-					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
+					for( nPlaneNb = 0; nPlaneNb < (sint)FaceGroupByPlane.size(); ++nPlaneNb )
 						delete TempPlanes[nPlaneNb];
 				}
 

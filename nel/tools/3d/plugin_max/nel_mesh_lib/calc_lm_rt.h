@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.h
  * Raytrace module
  *
- * $Id: calc_lm_rt.h,v 1.2 2001/12/11 10:19:55 corvazier Exp $
+ * $Id: calc_lm_rt.h,v 1.3 2002/01/04 18:27:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,7 @@ public:
 	~CRTWorld();
 	// Build meshes from lights (if a mesh interact with at least one light except ambient)
 	void build	(Interface &ip, std::vector<SLightBuild> &AllLights, NLMISC::CVector &vGlobalTrans, 
-				bool bExcludeNonSelected, const std::set<INode*> &excludeNode);
+				bool bExcludeNonSelected, const std::set<INode*> &excludeNode, const std::set<INode*> &includeNode);
 
 	// Raytrace the vertex vVertex from light nLightNb
 	NLMISC::CRGBAF raytrace (NLMISC::CVector &vVertex, sint32 nLightNb, uint8& rtVal, bool bSoftShadow);
@@ -154,10 +154,15 @@ private:
 
 	// All we need for the build
 
+	void addNode (INode *pNode, std::vector< NL3D::CMesh::CMeshBuild* > &Meshes,  
+					std::vector< NL3D::CMeshBase::CMeshBaseBuild* > &MeshesBase,
+					std::vector< INode* > &INodes, std::vector<SLightBuild> &AllLights, 
+					const std::set<INode*> &excludeNode, TimeValue tvTime);
+
 	void getAllSelectedNode (std::vector<NL3D::CMesh::CMeshBuild*> &Meshes,  
 							std::vector<NL3D::CMeshBase::CMeshBaseBuild*> &MeshesBase,
 							std::vector<INode*> &INodes, Interface& ip, std::vector<SLightBuild> &AllLights, 
-							const std::set<INode*> &excludeNode);
+							const std::set<INode*> &excludeNode, const std::set<INode*> &includeNode);
 
 	void getAllNodeInScene	(std::vector<NL3D::CMesh::CMeshBuild*> &Meshes, 
 							std::vector<NL3D::CMeshBase::CMeshBaseBuild*> &BaseMeshes, 

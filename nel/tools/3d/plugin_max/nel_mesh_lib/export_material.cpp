@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.24 2001/12/14 17:55:48 corvazier Exp $
+ * $Id: export_material.cpp,v 1.25 2002/01/04 18:27:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -642,23 +642,16 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 			if (isClassIdCompatible(*pDifTexmap, Class_ID (BMTEX_CLASS_ID,0)))
 			{
 				// List of channels used by this texture
-				CMaterialDesc _3dsTexChannel;
+				CMaterialDesc materialDesc;
 				
 				// Ok export the texture in NeL format
-				pTexture=buildATexture (*pDifTexmap, _3dsTexChannel, time, absolutePath);
+				pTexture=buildATexture (*pDifTexmap, materialDesc, time, absolutePath);
 
 				// For this shader, only need a texture channel.
-				materialInfo.RemapChannel.resize (1);
-
-				// Need an explicit channel, not generated
-				if ( _3dsTexChannel._IndexInMaxMaterial < 0 )
-				{
-					materialInfo.RemapChannel[0]._IndexInMaxMaterial=UVGEN_MISSING;
-					materialInfo.RemapChannel[0]._UVMatrix.IdentityMatrix();
-				}
-				// Else copy it
-				else 
-					materialInfo.RemapChannel[0]=_3dsTexChannel;
+				materialInfo.RemapChannel.push_back (materialDesc);
+	
+				// Add flags if mapping coodinates are used..
+				materialInfo.MappingChannelUsed |= (materialDesc._IndexInMaxMaterial>=0)?1:0;
 
 				// Add the texture if it exist
 				material.setTexture(0, pTexture);

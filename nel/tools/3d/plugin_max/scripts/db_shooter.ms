@@ -48,7 +48,7 @@ rollout db_shooter_rollout "Database Picture Shooter"
 				-- Hide all not geometry
 				for i in objects do
 				(
-					if (superClassOf i) != GeometryClass then
+					if ((superClassOf i) != GeometryClass) or (matchPattern i.name pattern:"Bip01*") then
 						hide i
 					else
 						unhide i

@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.2 2001/12/11 10:19:55 corvazier Exp $
+ * $Id: calc_lm_rt.cpp,v 1.3 2002/01/04 18:27:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ CRTWorld::~CRTWorld()
 }
 
 // -----------------------------------------------------------------------------------------------
-void CRTWorld::build (Interface &ip, vector<SLightBuild> &AllLights, CVector &trans, bool bExcludeNonSelected, const set<INode*> &excludeNode)
+void CRTWorld::build (Interface &ip, vector<SLightBuild> &AllLights, CVector &trans, bool bExcludeNonSelected, const set<INode*> &excludeNode, const set<INode*> &includeNode)
 {
 	uint32 i, j, k;
 	TTicks ttTemp = CTime::getPerformanceTime();
@@ -66,7 +66,7 @@ void CRTWorld::build (Interface &ip, vector<SLightBuild> &AllLights, CVector &tr
 	GlobalTrans = trans;
 	// Get all the nodes in the scene
 	if( bExcludeNonSelected )
-		getAllSelectedNode (vMB, vMBB, vINode, ip, AllLights, excludeNode);
+		getAllSelectedNode (vMB, vMBB, vINode, ip, AllLights, excludeNode, includeNode);
 	else
 		getAllNodeInScene (vMB, vMBB, vINode, ip, AllLights, excludeNode);
 
@@ -344,13 +344,55 @@ void CRTWorld::testCell (CRGBAF &retValue, SGridCell &cell, CVector &vLightPos, 
 }
 
 // -----------------------------------------------------------------------------------------------
+void CRTWorld::addNode (INode *pNode, vector< CMesh::CMeshBuild* > &Meshes,  vector< CMeshBase::CMeshBaseBuild* > &MeshesBase,
+						vector< INode* > &INodes, vector<SLightBuild> &AllLights, const set<INode*> &excludeNode, TimeValue tvTime)
+{
+	if (! RPO::isZone (*pNode, tvTime) )
+	if (CExportNel::isMesh (*pNode, tvTime))
+	{
+		CMesh::CMeshBuild *pMB;
+		CMeshBase::CMeshBaseBuild *pMBB;
+		pMB = CExportNel::createMeshBuild ( *pNode, tvTime, true, pMBB);
+		// If the mesh has no interaction with one of the light selected we do not need it
+		bool bInteract = false;
+		if( pMBB->bCastShadows )
+		{
+			// Not an excluded node ?
+			if (excludeNode.find (pNode) == excludeNode.end())
+			{
+				for( uint32 i = 0; i < AllLights.size(); ++i )
+				{
+					if( isInteractionLightMesh (AllLights[i], *pMB, *pMBB))
+					{
+						bInteract = true;
+						break;
+					}
+				}
+			}
+		}
+		if( bInteract )
+		{
+			Meshes.push_back( pMB );
+			MeshesBase.push_back( pMBB );
+			INodes.push_back( pNode );
+		}
+		else
+		{
+			delete pMB; // No interaction so delete the mesh
+			delete pMBB; // No interaction so delete the mesh
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------------------------
 void CRTWorld::getAllSelectedNode	(vector< CMesh::CMeshBuild* > &Meshes,  
 									vector< CMeshBase::CMeshBaseBuild* > &MeshesBase,
 									vector< INode* > &INodes,
-									Interface& ip, vector<SLightBuild> &AllLights, const set<INode*> &excludeNode)
+									Interface& ip, vector<SLightBuild> &AllLights, const set<INode*> &excludeNode, const set<INode*> &includeNode)
 {
 	// Get time
 	TimeValue tvTime = ip.GetTime();
+
 	// Get node count
 	int nNumSelNode = ip.GetSelNodeCount();
 	// Save all selected objects
@@ -359,41 +401,23 @@ void CRTWorld::getAllSelectedNode	(vector< CMesh::CMeshBuild* > &Meshes,
 		// Get the node 
 		INode* pNode = ip.GetSelNode (nNode);
 
-		if (! RPO::isZone (*pNode, tvTime) )
-		if (CExportNel::isMesh (*pNode, tvTime))
+		// Already in the include list ?
+		if (includeNode.find (pNode) == includeNode.end())
 		{
-			CMesh::CMeshBuild *pMB;
-			CMeshBase::CMeshBaseBuild *pMBB;
-			pMB = CExportNel::createMeshBuild ( *pNode, tvTime, true, pMBB);
-			// If the mesh has no interaction with one of the light selected we do not need it
-			bool bInteract = false;
-			if( pMBB->bCastShadows )
-			{
-				// Not an excluded node ?
-				if (excludeNode.find (pNode) == excludeNode.end())
-				{
-					for( uint32 i = 0; i < AllLights.size(); ++i )
-					{
-						if( isInteractionLightMesh (AllLights[i], *pMB, *pMBB))
-						{
-							bInteract = true;
-							break;
-						}
-					}
-				}
-			}
-			if( bInteract )
-			{
-				Meshes.push_back( pMB );
-				MeshesBase.push_back( pMBB );
-				INodes.push_back( pNode );
-			}
-			else
-			{
-				delete pMB; // No interaction so delete the mesh
-				delete pMBB; // No interaction so delete the mesh
-			}
+			// Add the node
+			addNode (pNode, Meshes,  MeshesBase, INodes, AllLights, excludeNode, tvTime);
 		}
+	}
+
+	// Add the included 
+	set<INode*>::iterator ite = includeNode.begin();
+	while (ite != includeNode.end())
+	{
+		// Add the included object
+		addNode (*ite, Meshes, MeshesBase, INodes, AllLights, excludeNode, tvTime);
+
+		// Next node
+		ite++;
 	}
 }
 
@@ -410,41 +434,8 @@ void CRTWorld::getAllNodeInScene	(vector< CMesh::CMeshBuild* > &Meshes,
 	// Get a pointer on the object's node
 	TimeValue tvTime = ip.GetTime();
 
-	if( ! RPO::isZone( *pNode, tvTime ) )
-	if( CExportNel::isMesh( *pNode, tvTime ) )
-	{
-		CMesh::CMeshBuild *pMB;
-		CMeshBase::CMeshBaseBuild *pMBB;
-		pMB = CExportNel::createMeshBuild( *pNode, tvTime, true, pMBB);
-		// If the mesh has no interaction with one of the light selected we do not need it
-		bool bInteract = false;
-		if( pMBB->bCastShadows )
-		{
-			// Not an excluded node ?
-			if (excludeNode.find (pNode) == excludeNode.end())
-			{
-				for( uint32 i = 0; i < AllLights.size(); ++i )
-				{
-					if (isInteractionLightMesh (AllLights[i], *pMB, *pMBB))
-					{
-						bInteract = true;
-						break;
-					}
-				}
-			}
-		}
-		if( bInteract )
-		{
-			Meshes.push_back( pMB );
-			BaseMeshes.push_back( pMBB );
-			INodes.push_back( pNode );
-		}
-		else
-		{
-			delete pMB; // No interaction so delete the mesh
-			delete pMBB; // No interaction so delete the mesh
-		}
-	}
+	// Add the node
+	addNode (pNode, Meshes,  BaseMeshes, INodes, AllLights, excludeNode, tvTime);
 
 	for( sint32 i = 0; i < pNode->NumberOfChildren(); ++i )
 		getAllNodeInScene( Meshes, BaseMeshes, INodes, ip, AllLights, excludeNode, pNode->GetChildNode(i) );

@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.25 2001/12/12 10:36:43 vizerie Exp $
+ * $Id: export_anim.cpp,v 1.26 2002/01/04 18:27:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -380,11 +380,8 @@ void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const c
 
 	// No inplace mode
 	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceMode", false);
-	nlassert (res);
 	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceXMode", false);
-	nlassert (res);
 	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", false);
-	nlassert (res);
 
 	// Export animations for the biped except the root
 	std::set<TimeValue> keysSampled;
@@ -396,11 +393,8 @@ void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const c
 
 	// Set default mode
 	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", inPlaceYMode);
-	nlassert (res);
 	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceXMode", inPlaceXMode);
-	nlassert (res);
 	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceMode", inPlaceMode);
-	nlassert (res);
 }
 
 // --------------------------------------------------

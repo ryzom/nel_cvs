@@ -1,0 +1,19 @@
+/**
+ * \mainpage NeL (RYzom Kernel Object Library)
+ *
+ * \section intro Introduction
+ *
+ * NeL is Nevrax kernel library for his game called Ryzom. This library contains a framework,
+ * a 3d engine, a ia engine and a network engine.
+ *
+ * \section install Documentations
+ * Here there are link to different documentation parts:
+ * - \ref 3d
+ * - \ref network
+ * - \ref database
+ * - \ref ai
+ * - \ref misc
+ * - \ref network
+ * - \ref python
+ * - \ref system
+ */

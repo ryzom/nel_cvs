@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.14 2002/11/08 18:39:35 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.14.4.1 2003/05/23 21:25:31 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,9 +193,10 @@ public:
 	 *	for all computed bones, extend the bbox with their pos
 	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton was clipped, the bbox
 	 *	is not modified.
+	 *	\param computeInWorld true if want to get the bbox in world.
 	 *	\return true if the bbox is computed, false otherwise.
 	 */
-	virtual	bool		computeRenderedBBox(NLMISC::CAABBox &bbox) =0;
+	virtual	bool		computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld= false) =0;
 
 	/** same as computeRenderedBBox() but force animation and compute of all bones => don't need render(), but slower.
 	 *	for all used bones, extend the bbox with their pos
@@ -203,9 +204,10 @@ public:
 	 *	at all, bbox is not modified.
 	 *	\param playList set NULL if no one, else this playList will be played at the time playTime
 	 *  \param forceCompute force evaluation of bbox even if not skinned
+	 *	\param computeInWorld true if want to get the bbox in world.
 	 *	\return true if the bbox is computed, false otherwise.
 	 */
-	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0, bool forceCompute = false) =0;
+	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0, bool forceCompute = false, bool computeInWorld= false) =0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.41 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.41.2.1 2003/05/23 21:25:31 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1412,7 +1412,7 @@ void			CSkeletonModel::resetDefaultMRMDistanceSetup()
 
 
 // ***************************************************************************
-bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox)
+bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld)
 {
 	// reset bbox
 	CAABBox		tmpBBox;
@@ -1430,7 +1430,11 @@ bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox)
 	{
 		if(isBoneComputed(i))
 		{
-			const CVector	&pos= Bones[i].getLocalSkeletonMatrix().getPos();
+			CVector	pos;
+			if(computeInWorld)
+				pos= Bones[i].getWorldMatrix().getPos();
+			else
+				pos= Bones[i].getLocalSkeletonMatrix().getPos();
 			if(empty)
 			{
 				empty= false;
@@ -1453,7 +1457,7 @@ bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox)
 
 
 // ***************************************************************************
-bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompute /* = false*/)
+bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompute /* = false*/, bool computeInWorld)
 {
 	// animate all bones channels (detail only channels). don't bother cur lod state.
 	CChannelMixer	*chanmix= getChannelMixer();
@@ -1483,7 +1487,11 @@ bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompu
 		// If the bone is used.
 		if(mustCompute)
 		{
-			const CVector	&pos= Bones[i].getLocalSkeletonMatrix().getPos();
+			CVector	pos;
+			if(computeInWorld)
+				pos= Bones[i].getWorldMatrix().getPos();
+			else
+				pos= Bones[i].getLocalSkeletonMatrix().getPos();
 			if(empty)
 			{
 				empty= false;

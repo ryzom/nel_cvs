@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.29 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.29.2.1 2003/05/23 21:25:31 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,18 +184,20 @@ public:
 	 *	for all computed bones, extend the bbox with their pos
 	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton was clipped, the bbox
 	 *	is not modified.
+	 *	\param computeInWorld true if want to get the bbox in world.
 	 *	\return true if the bbox is computed, false otherwise.
 	 */
-	bool		computeRenderedBBox(NLMISC::CAABBox &bbox);
+	bool		computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld= false);
 
 	/** same as computeRenderedBBox() but force animation and compute of all bones => don't need render(), but slower.
 	 *	for all used bones, extend the bbox with their pos
 	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton is not skinned/sticked
 	 *	at all, bbox is not modified.
-	 * \param forceCompute force evalution even if not skinned
+	 *  \param forceCompute force evalution even if not skinned
+	 *	\param computeInWorld true if want to get the bbox in world.
 	 *	\return true if the bbox is computed, false otherwise.
 	 */
-	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompute = false);
+	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompute = false, bool computeInWorld= false);
 
 	// @}
 

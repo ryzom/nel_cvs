@@ -1,7 +1,7 @@
 /** \file command.h
  * <File description>
  *
- * $Id: command.h,v 1.6 2001/06/07 16:17:53 lecroart Exp $
+ * $Id: command.h,v 1.7 2001/06/18 16:08:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,10 +66,10 @@ namespace NLMISC {
 struct __name##class : public ICommand \
 { \
 	__name##class() : NLMISC::ICommand(#__name,__help,__args) { } \
-	virtual bool execute(const vector<std::string> &args, NLMISC::CLog &log); \
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log); \
 }; \
 __name##class __name##instance; \
-bool __name##class::execute(const vector<std::string> &args, NLMISC::CLog &log)
+bool __name##class::execute(const std::vector<std::string> &args, NLMISC::CLog &log)
 
 
 

@@ -1,6 +1,6 @@
 /** \file agentexport.h
  *
- * $Id: agentpack.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: agentpack.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -23,9 +23,9 @@
 #ifndef NL_AGENT_PACK_H
 #define NL_AGENT_PACK_H
 
-#include "agent.h"
-#include "agent_object.h"
-#include "agent_digital.h"
+#include "agent/agent.h"
+#include "agent/agent_object.h"
+#include "agent/agent_digital.h"
 
 
 #endif

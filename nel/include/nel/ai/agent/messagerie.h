@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: messagerie.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: messagerie.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,11 +25,11 @@
 #ifndef NL_MESSAGERIE_H
 #define NL_MESSAGERIE_H
 
-#include "agentexport.h"
+#include "agent/agentexport.h"
 #include "c/registry_class.h"
-#include "agent_object.h"
-#include "msg_group.h"
-#include "msg_container.h"
+#include "agent/agent_object.h"
+#include "agent/msg_group.h"
+#include "agent/msg_container.h"
 
 namespace NLIAAGENT
 {	

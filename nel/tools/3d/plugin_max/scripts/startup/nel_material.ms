@@ -87,6 +87,9 @@ ShaderUserColor = 3
 ShaderLightmap = 4
 ShaderSpecular = 5
 ShaderWater = 6
+ShaderPerPixelLighting = 7
+ShaderPerPixelLightingNoSpec = 7
+
 
 ----------------------------------------------------------------------------------------------------------------
 -- Nel BitmapTexture properties : this provide additionnal slots to create textures sets
@@ -552,6 +555,7 @@ plugin material NelMaterial
 		bUserColor		type:#boolean
 		bSpecular		type:#boolean
 		bNormalShader	type:#boolean
+		bPerPixelLightingShader type:#boolean
 		cUserColor		type:#color default:[255,0,255] ui:cpUserColor
 		
 		-- New in version 5		
@@ -648,7 +652,7 @@ plugin material NelMaterial
 		timer pWatch interval:450
 		local activeMaterial = undefined
 
-		dropdownlist dlShaderType "Shaders Type" items:#( "Normal", "Disable", "UserColor", "LightMap", "Specular", "Water" )
+		dropdownlist dlShaderType "Shaders Type" items:#( "Normal", "Disable", "UserColor", "LightMap", "Specular", "Water", "Per pixel lighting, require one texmap applied",  "Per pixel lighting, no specular, require one texmap applied")
 		group "Light"
 		(
 			CheckBox cbUnlighted "Unlighted"
@@ -732,12 +736,15 @@ plugin material NelMaterial
 
 				-- Setup boolean value
 				bNormalShader = false
+				bPerPixelLightingShader = false;
 				bUserColor = false
 				bLightmap = false
 				bSpecular = false
 				bWater = false
 				if iShaderType == ShaderNormal then
 					bNormalShader = true
+				else if iShaderType == ShaderPerPixelLighting or iShaderType == ShaderPerPixelLightingNoSpec then
+					bPerPixelLightingShader = true;
 				else if iShaderType == ShaderUserColor then
 					bUserColor = true
 				else if iShaderType == ShaderLightmap then
@@ -754,16 +761,16 @@ plugin material NelMaterial
 				ciLightMapChannel.enabled = (not bWater) and bLightmap
 				cbStainedGlassWindow.enabled = not bWater
 
-				cbAlphaBlend.enabled = (not bWater) and (not bAlphaTest)
-				btSetBlend.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
-				btSetAdd.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
-				btSetAlphaAdd.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
-				dlBlendSrcFunc.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
-				dlBlendDestFunc.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
+				cbAlphaBlend.enabled = ((not bWater) and (not bLightmap)) and (not bAlphaTest)
+				btSetBlend.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				btSetAdd.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				btSetAlphaAdd.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				dlBlendSrcFunc.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				dlBlendDestFunc.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
 				cbAlphaTest.enabled = (not bWater) and (not bAlphaBlend)
 
-				cbForceZWrite.enabled = (not bWater) and bAlphaBlend
-				cbForceNoZWrite.enabled = (not bWater) and (not bAlphaBlend)
+				cbForceZWrite.enabled = (not bWater) and (not bLightmap) and bAlphaBlend
+				cbForceNoZWrite.enabled = (not bWater) and (not bLightmap)  and (not bAlphaBlend)
 				cbAlphaVertex.enabled = (not bWater) and (not bLightmap) and (not bLightMap)
 				ciAlphaVertexChannel.enabled = (not bWater) and bAlphaVertex and (not bLightMap)
 				cbColorVertex.enabled = not bWater
@@ -808,15 +815,7 @@ plugin material NelMaterial
 
 		on dlShaderType selected newState do
 		(
-			precShaderType= iShaderType
-
 			globalUpdateUI false
-
-			-- Yoyo: if Normal shader applied, reload Normal Shader (sithik wants)
-			if ( (iShaderType == ShaderNormal) and (iShaderType != precShaderType) )then
-			(
-				loadShader iShader
-			)
 		)
 
 		on cbUnlighted changed bNewState do
@@ -923,31 +922,31 @@ plugin material NelMaterial
 			if (version >= 4) then
 			(
 				cbEnableSlot_1.enabled = true
-				cbEnableSlot_2.enabled = (not bLightmap)
-				cbEnableSlot_3.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbEnableSlot_4.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbEnableSlot_5.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbEnableSlot_6.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbEnableSlot_7.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbEnableSlot_8.enabled = (not bWater) and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbEnableSlot_2.enabled = (not bLightmap) and (not bPerPixelLightingShader)
+				cbEnableSlot_3.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbEnableSlot_4.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbEnableSlot_5.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbEnableSlot_6.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbEnableSlot_7.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbEnableSlot_8.enabled = (not bWater) and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
 
 				mbTexture_1.enabled = bEnableSlot_1
-				mbTexture_2.enabled = bEnableSlot_2 and (not bLightmap) and (not bUserColor)
-				mbTexture_3.enabled = bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				mbTexture_4.enabled = bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				mbTexture_5.enabled = bEnableSlot_5 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				mbTexture_6.enabled = bEnableSlot_6 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				mbTexture_7.enabled = bEnableSlot_7 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				mbTexture_8.enabled = bEnableSlot_8 and (not bWater) and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				mbTexture_2.enabled = bEnableSlot_2 and (not bLightmap) and (not bUserColor) and (not bPerPixelLightingShader)
+				mbTexture_3.enabled = bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				mbTexture_4.enabled = bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				mbTexture_5.enabled = bEnableSlot_5 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				mbTexture_6.enabled = bEnableSlot_6 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				mbTexture_7.enabled = bEnableSlot_7 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				mbTexture_8.enabled = bEnableSlot_8 and (not bWater) and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
 
 				cbTexGen_1.enabled = bNormalShader and bEnableSlot_1
-				cbTexGen_2.enabled = bNormalShader and bEnableSlot_2 and (not bLightmap) and (not bUserColor)
-				cbTexGen_3.enabled = bNormalShader and bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbTexGen_4.enabled = bNormalShader and bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbTexGen_5.enabled = bNormalShader and bEnableSlot_5 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbTexGen_6.enabled = bNormalShader and bEnableSlot_6 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbTexGen_7.enabled = bNormalShader and bEnableSlot_7 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-				cbTexGen_8.enabled = bNormalShader and bEnableSlot_8 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbTexGen_2.enabled = bNormalShader and bEnableSlot_2 and (not bLightmap) and (not bUserColor) and (not bPerPixelLightingShader)
+				cbTexGen_3.enabled = bNormalShader and bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbTexGen_4.enabled = bNormalShader and bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbTexGen_5.enabled = bNormalShader and bEnableSlot_5 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbTexGen_6.enabled = bNormalShader and bEnableSlot_6 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbTexGen_7.enabled = bNormalShader and bEnableSlot_7 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
+				cbTexGen_8.enabled = bNormalShader and bEnableSlot_8 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader) and (not bPerPixelLightingShader)
 
 				btLoadShader.enabled = bNormalShader
 				dlShader.enabled = bNormalShader
@@ -1853,4 +1852,5 @@ plugin material NelMaterial
 			NelTexture.mbTexture_8.text = "None"
 		)
 	)
+
 )

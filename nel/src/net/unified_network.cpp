@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.14 2001/11/20 16:36:55 legros Exp $
+ * $Id: unified_network.cpp,v 1.15 2001/11/22 10:40:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -252,9 +252,18 @@ void	CUnifiedNetwork::connect()
 
 		// don't connect to itself
 		for (its = services.begin(); its != services.end(); ++its)
+		{
 			if (_SId != (*its).SId)
+			{
 				// add service with name, address, ident, not external, service id, and autoretry (obsolete)
 				addService((*its).Name, (*its).Addr, true, false, (*its).SId, true);
+			}
+			else
+			{
+				// don't process services received after mine because they'll connect to me
+				break;
+			}
+		}
 	}
 }
 
@@ -409,11 +418,17 @@ void	CUnifiedNetwork::update(sint32 timeout)
 			if (CTime::getLocalTime() - newTime > timeout)
 				break;
 
-			nlSleep(1);
+			nlSleep(0);
 		}
 	}
 
 	updateConnectionTable();
+
+	// do nothing but here just for fun because the unifiednetwork doesn't need un/registration info from
+	// naming service (don't remove it anyway)
+	if (CNamingClient::connected ())
+		CNamingClient::update ();
+
 	leaveReentrant();
 //	nldebug("Out CUnifiedNetwork::update()");
 }

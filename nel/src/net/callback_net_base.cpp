@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.25 2001/10/16 09:22:26 legros Exp $
+ * $Id: callback_net_base.cpp,v 1.26 2001/11/22 10:40:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -423,8 +423,8 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		}
 		else
 		{
-			// enable multithreading on windows :-/ (take at leas 10ms)
-			nlSleep (1);
+			// enable multithreading on windows :-/
+			nlSleep (0);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * _CUniTime class
  *
- * $Id: unitime.cpp,v 1.29 2001/11/13 12:00:14 lecroart Exp $
+ * $Id: unitime.cpp,v 1.30 2001/11/22 10:40:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,7 +187,7 @@ void _CUniTime::syncUniTimeFromService (CCallbackNetBase::TRecordingState rec, c
 			
 		server.update ();
 
-		nlSleep( 1 );
+		nlSleep( 0 );
 	}
 
 	// after, before and delta is not used. It's only for information purpose.

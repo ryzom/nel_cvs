@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.21 2001/10/16 09:24:41 legros Exp $
+ * $Id: buf_server.cpp,v 1.22 2001/11/22 10:40:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -875,7 +875,7 @@ void CServerReceiveTask::run()
 		// Avoid select if there is no connection (Windows only)
 		if ( skip || alldisconnected )
 		{
-			nlSleep( 1 ); // nice
+			nlSleep( 0 ); // nice
 			continue;
 		}
 #endif

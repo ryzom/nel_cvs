@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.48 2004/03/23 10:27:12 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.49 2004/04/09 14:41:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2362,31 +2362,33 @@ void CBitmap::blit(const CBitmap &src, sint srcX, sint srcY, sint srcWidth, sint
 	// clip y
 	if (srcY < 0)
 	{
-		srcWidth += srcY;
-		if (srcWidth <= 0) return;
+		srcHeight += srcY;
+		if (srcHeight <= 0) return;
 		destY -= srcY;
 		srcY = 0;
 	}
-	if (srcY + srcWidth > (sint) src.getHeight())
+	if (srcY + srcHeight > (sint) src.getHeight())
 	{
-		srcWidth = src.getHeight() - srcY;
-		if (srcWidth <= 0) return;
+		srcHeight = src.getHeight() - srcY;
+		if (srcHeight <= 0) return;
 	}
 	if (destY < 0)
 	{
-		srcWidth += destY;
-		if (srcWidth <= 0) return;
+		srcHeight += destY;
+		if (srcHeight <= 0) return;
 		srcY -= destY;
 		destY = 0;
 	}
-	if (destY + srcWidth > (sint) getHeight())
+	if (destY + srcHeight > (sint) getHeight())
 	{
-		srcWidth = getWidth() - destY;
-		if (srcWidth <= 0) return;
-	}
-	uint32 *srcPtr = &(((uint32 *) src.getPixels()[0])[srcX + srcY * src.getWidth()]);
+		srcHeight = getHeight() - destY;
+		if (srcHeight <= 0) return;
+	}	
+	uint32 *srcPixels = (uint32 *) &src.getPixels()[0];
+	uint32 *srcPtr = &(srcPixels[srcX + srcY * src.getWidth()]);
 	uint32 *srcEndPtr = srcPtr + srcHeight * src.getWidth();
-	uint32 *destPtr = 	&(((uint32 *) getPixels()[0])[destX + destY * getWidth()]);
+	uint32 *destPixels = (uint32 *) &getPixels()[0];
+	uint32 *destPtr = 	&(destPixels[destX + destY * getWidth()]);
 	while (srcPtr != srcEndPtr)
 	{
 		memcpy(destPtr, srcPtr, sizeof(uint32) * srcWidth);
@@ -2935,7 +2937,11 @@ void CBitmap::blend(CBitmap &Bm0, CBitmap &Bm1, uint16 factor, bool inputBitmapI
 		nBm1 = &Bm1;
 	}
 
-	this->resize(Bm0._Width, Bm0._Height, RGBA);
+	if (this != nBm0 && this != nBm1)
+	{
+		// if source is the same than the dets, don't resize because this clear the bitmap
+		this->resize(Bm0._Width, Bm0._Height, RGBA);
+	}
 
 	uint numPix = _Width * _Height; // 4 component per pixels
 

@@ -2244,6 +2244,8 @@ BEGIN
     POPUP "MENU"
     BEGIN
         MENUITEM "Show",                        ID_MENU_SHOW
+        MENUITEM "Show Only",                   ID_MENU_SHOWONLY
+        MENUITEM "Show All",                    ID_MENU_SHOWALL
         MENUITEM SEPARATOR
         MENUITEM "Add",                         ID_MENU_ADD
         MENUITEM "Insert",                      ID_MENU_INSERT

@@ -64,6 +64,7 @@ public:
 	NL3D::CVegetable	*getVegetable(uint id) const;
 
 	// Change the hiden state of the id vegetable.
+	void				setShowHideVegetable (uint id, bool visible, bool refreshDisplay);
 	void				swapShowHideVegetable (uint id);
 	bool				isVegetableVisible (uint id);
 

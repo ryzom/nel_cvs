@@ -64,6 +64,7 @@ void CVegetableListBox::OnRButtonDown(UINT nFlags, CPoint point)
 	{
 		// Item not selected, enable only Add and Load.
 		menu.EnableMenuItem(ID_MENU_SHOW, MF_GRAYED);
+		menu.EnableMenuItem(ID_MENU_SHOWONLY, MF_GRAYED);
 		menu.EnableMenuItem(ID_MENU_INSERT, MF_GRAYED);
 		menu.EnableMenuItem(ID_MENU_REMOVE, MF_GRAYED);
 		menu.EnableMenuItem(ID_MENU_COPY, MF_GRAYED);
@@ -88,17 +89,18 @@ BOOL CVegetableListBox::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 	// must be setuped
 	nlassert(VegetableDlg);
+	uint	numVegets= VegetableDlg->getNumVegetables();
+	// get the vegetable edited, if any
+	sint	vegetId= GetCurSel();
 
 	// track 
 	switch(nID)
 	{
 	case	ID_MENU_SHOW:
 		{
-			// get the vegetable edited.
-			sint	id= GetCurSel();
-			if(id!=LB_ERR)
+			if(vegetId!=LB_ERR)
 			{
-				VegetableDlg->swapShowHideVegetable(id);
+				VegetableDlg->swapShowHideVegetable(vegetId);
 				Invalidate();
 			}
 			break;
@@ -120,6 +122,36 @@ BOOL CVegetableListBox::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		break;
 	case	ID_MENU_SAVEVEGETDESC:
 		VegetableDlg->OnButtonVegetableSaveDesc();
+		break;
+	case	ID_MENU_SHOWONLY:
+		{
+			// Hide all vegetables.
+			for(uint i=0; i<numVegets; i++)
+			{
+				VegetableDlg->setShowHideVegetable(i, false, false);
+			}
+
+			// show selected
+			if(vegetId!=LB_ERR)
+				VegetableDlg->setShowHideVegetable(vegetId, true, false);
+
+			// refresh display.
+			Invalidate();
+			VegetableDlg->refreshVegetableDisplay();
+		}
+		break;
+	case	ID_MENU_SHOWALL:
+		{
+			// show all vegetables.
+			for(uint i=0; i<numVegets; i++)
+			{
+				VegetableDlg->setShowHideVegetable(i, true, false);
+			}
+
+			// refresh display.
+			Invalidate();
+			VegetableDlg->refreshVegetableDisplay();
+		}
 		break;
 	};
 	

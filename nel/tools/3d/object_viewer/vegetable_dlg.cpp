@@ -928,6 +928,19 @@ void CVegetableDlg::swapShowHideVegetable (uint id)
 }
 
 // ***************************************************************************
+void CVegetableDlg::setShowHideVegetable (uint id, bool visible, bool refreshDisplay)
+{
+	if(id>=_Vegetables.size())
+		return;
+
+	_Vegetables[id].Visible= visible;
+
+	// update 3D view
+	if(refreshDisplay)
+		refreshVegetableDisplay();
+}
+
+// ***************************************************************************
 bool CVegetableDlg::isVegetableVisible (uint id)
 {
 	if(id>=_Vegetables.size())

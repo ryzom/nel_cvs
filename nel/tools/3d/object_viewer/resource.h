@@ -671,13 +671,15 @@
 #define ID_MENU_LOADVEGETDESC           32896
 #define ID_MENU_SAVEVEGETDESC           32897
 #define ID_MENU_SHOW                    32898
+#define ID_MENU_SHOWONLY                32899
+#define ID_MENU_SHOWALL                 32900
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1122
-#define _APS_NEXT_COMMAND_VALUE         32899
+#define _APS_NEXT_COMMAND_VALUE         32901
 #define _APS_NEXT_CONTROL_VALUE         1344
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

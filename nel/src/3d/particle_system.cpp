@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.85 2004/08/25 09:23:03 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.86 2004/09/17 15:02:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -665,7 +665,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSys
 						loc->updateLife();
 						// Spawn particles. Emitters date is updated only after so we check in CPSLocated::postNewElement 
 						// if the emitter was still alive at this date, otherwise we discard the post					
-						loc->computeSpawns(0);						
+						loc->computeSpawns(0, false);
 						if (loc->hasCollisionInfos()) loc->updateCollisions();						
 						// Remove too old particles, making room for new ones					
 						if (!_ParticleToRemove.empty())
@@ -689,7 +689,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSys
 								loc->resetCollisions(loc->getSize());
 								loc->computeNewParticleMotion(insertionIndex);
 							}							
-							loc->computeSpawns(insertionIndex);							
+							loc->computeSpawns(insertionIndex, true);							
 							if (loc->hasCollisionInfos()) loc->updateCollisions();							
 							// Remove too old particles among the newly created ones.
 							if (!_ParticleToRemove.empty())

@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.76 2004/08/25 09:23:03 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.77 2004/09/17 15:02:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3057,7 +3057,7 @@ void CPSLocated::computeCollisions(uint firstInstanceIndex, const NLMISC::CVecto
 }
 
 ///***************************************************************************************
-void CPSLocated::computeSpawns(uint firstInstanceIndex)
+void CPSLocated::computeSpawns(uint firstInstanceIndex, bool includeEmitOnce)
 {	
 	NL_PS_FUNC(CPSLocated_computeSpawns)
 	nlassert(CParticleSystem::InsideSimLoop);
@@ -3076,7 +3076,7 @@ void CPSLocated::computeSpawns(uint firstInstanceIndex)
 				case CPSEmitter::once:
 					// if we're at first frame, then do emit for each emitter
 					nlassert(_Owner);
-					if (_Owner->getSystemDate() == 0.f || firstInstanceIndex != 0.f)
+					if (_Owner->getSystemDate() == 0.f || includeEmitOnce)
 					{
 						// if first pass, then do the emit a single time
 						// if firstInstanceIndex != 0 then we're dealing with newly created particles, so do the spawn too

@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.37 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_located.h,v 1.38 2004/09/17 15:02:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -420,7 +420,7 @@ public:
 	bool hasCollisionInfos() const { return _CollisionNextPos != NULL; }
 
 	// Compute spawns. Should be called only inside the sim loop.
-	void computeSpawns(uint firstInstanceIndex);
+	void computeSpawns(uint firstInstanceIndex, bool includeEmitOnce);
 
 	// Compute forces that apply on that located. Should be called only inside the sim loop.
 	void computeForces();

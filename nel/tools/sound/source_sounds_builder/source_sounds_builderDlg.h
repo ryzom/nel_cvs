@@ -64,6 +64,7 @@ protected:
 	afx_msg void OnCancel();
 	afx_msg void OnImpDir();
 	afx_msg void OnKeydownTree1(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnSortView();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -77,6 +78,7 @@ protected:
 	CString				_Filename;
 
 	void				ResetTree();
+	void				UpdateTree();
 	HTREEITEM 			AddSound( const char *name );
 	HTREEITEM			FindInTree( const char *name );
 	uint				addSoundAndFile( const string& name );

@@ -22,6 +22,17 @@ using namespace NLMISC;
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+struct compare_sound_ptr : public binary_function<CSound*,CSound*,bool>
+{
+	bool operator()( CSound* a, CSound* b )
+	{
+		nlassert( a && b );
+		return *a < *b;
+	}
+};
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CSource_sounds_builderDlg dialog
 
@@ -58,6 +69,7 @@ BEGIN_MESSAGE_MAP(CSource_sounds_builderDlg, CDialog)
 	ON_NOTIFY(TVN_ENDLABELEDIT, IDC_TREE1, OnEndlabeleditTree1)
 	ON_BN_CLICKED(IDC_ImpDir, OnImpDir)
 	ON_NOTIFY(TVN_KEYDOWN, IDC_TREE1, OnKeydownTree1)
+	ON_BN_CLICKED(IDC_Sort, OnSortView)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -458,10 +470,8 @@ void CSource_sounds_builderDlg::OnLoad()
 	{
 		CWaitCursor waitcursor;
 
-		// Clear tree and sound vector
 		ResetTree();
 		_SoundPage->ShowWindow( SW_HIDE );
-		((CButton*)GetDlgItem( IDC_Save ))->EnableWindow( true );
 		_Sounds.clear();
 
 		// Load
@@ -478,6 +488,10 @@ void CSource_sounds_builderDlg::OnLoad()
 			{
 				_Sounds.push_back( (*ipsnds).second );
 			}
+
+			// Sort
+			sort( _Sounds.begin(), _Sounds.end(), compare_sound_ptr() );
+			
 		}
 		catch( EStream& )
 		{
@@ -487,21 +501,30 @@ void CSource_sounds_builderDlg::OnLoad()
 		file.close();
 
 		// Update tree
-		uint32 i;
-		for ( i=0; i!=_Sounds.size(); i++ )
-		{
-			CString s;
-			s.Format( "%s (%s)", _Sounds[i]->getName().c_str(), _Sounds[i]->getFilename().c_str() );
-			HTREEITEM item = m_Tree.InsertItem( s, m_Tree.GetRootItem(), TVI_LAST );
-			m_Tree.SetItemData( item, i );
-		}
-		m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
+		UpdateTree();
 
 		//_Modified = false;
 		_Filename = opendlg.GetFileName();
 
 		waitcursor.Restore();
 	}
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::UpdateTree()
+{
+	uint32 i;
+	for ( i=0; i!=_Sounds.size(); i++ )
+	{
+		CString s;
+		s.Format( "%s (%s)", _Sounds[i]->getName().c_str(), _Sounds[i]->getFilename().c_str() );
+		HTREEITEM item = m_Tree.InsertItem( s, m_Tree.GetRootItem(), TVI_LAST );
+		m_Tree.SetItemData( item, i );
+	}
+	m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
 }
 
 
@@ -714,4 +737,20 @@ void CSource_sounds_builderDlg::OnKeydownTree1(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 
 	*pResult = 0;
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnSortView() 
+{
+	_SoundPage->ShowWindow( SW_HIDE );
+
+	// Quick
+	vector<CSound*> soundscopy = _Sounds;
+	sort( soundscopy.begin(), soundscopy.end(), compare_sound_ptr() );
+	ResetTree();
+	_Sounds = soundscopy;
+	UpdateTree();
 }

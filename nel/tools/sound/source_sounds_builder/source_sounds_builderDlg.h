@@ -25,7 +25,7 @@ class CSource_sounds_builderDlg : public CDialog
 public:
 	CSource_sounds_builderDlg(CWnd* pParent = NULL);	// standard constructor
 
-	void	setModified() { _Modified = true; }
+	//void	setModified() { _Modified = true; }
 	CString SoundName( HTREEITEM hitem );
 	
 // Dialog Data
@@ -71,7 +71,8 @@ protected:
 
 	CSoundPage			*_SoundPage;
 
-	bool				_Modified;
+	//bool				_Modified;
+	bool				_EditingName;
 
 	void				ResetTree();
 	HTREEITEM 			AddSound( const char *name );

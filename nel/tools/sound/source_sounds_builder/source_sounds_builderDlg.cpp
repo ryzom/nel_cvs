@@ -74,7 +74,8 @@ BOOL CSource_sounds_builderDlg::OnInitDialog()
 	 * Init
 	 */
 
-	_Modified = false;
+	//_Modified = false;
+	_EditingName = false;
 
 	ResetTree();
 
@@ -176,6 +177,7 @@ void CSource_sounds_builderDlg::OnBeginlabeleditTree1(NMHDR* pNMHDR, LRESULT* pR
 		GetDlgItem( IDC_ImpDir )->EnableWindow( false );
 		GetDlgItem( IDC_AddSound )->EnableWindow( false );
 		*pResult = 0;
+		_EditingName = true;
 	}
 	else
 	{
@@ -208,6 +210,7 @@ void CSource_sounds_builderDlg::OnEndlabeleditTree1(NMHDR* pNMHDR, LRESULT* pRes
 			_SoundPage->rename( pTVDispInfo->item.pszText );
 			_SoundPage->apply();
 		}
+		//_Modified = true;
 	}
 	else
 	{
@@ -218,6 +221,7 @@ void CSource_sounds_builderDlg::OnEndlabeleditTree1(NMHDR* pNMHDR, LRESULT* pRes
 	GetDlgItem( IDC_Import )->EnableWindow( true );
 	GetDlgItem( IDC_ImpDir )->EnableWindow( true );
 	GetDlgItem( IDC_AddSound )->EnableWindow( true );
+	_EditingName = false;
 	*pResult = 0;
 }
 
@@ -280,7 +284,7 @@ void CSource_sounds_builderDlg::OnDeleteitemTree1(NMHDR* pNMHDR, LRESULT* pResul
 			hitem = m_Tree.GetNextItem( hitem, TVGN_NEXT );
 		}
 
-		_Modified = true;
+		//_Modified = true;
 	}
 
 	*pResult = 0;
@@ -307,7 +311,7 @@ void CSource_sounds_builderDlg::OnMoveUp()
 			hitem = m_Tree.GetPrevSiblingItem( hitem );
 			m_Tree.SetItemText( hitem, _Sounds[newindex]->getFilename().c_str() );
 			m_Tree.SelectItem( hitem );
-			_Modified = true;
+			//_Modified = true;
 		}
 	}
 }
@@ -332,7 +336,7 @@ void CSource_sounds_builderDlg::OnMoveDown()
 			hitem = m_Tree.GetNextSiblingItem( hitem );
 			m_Tree.SetItemText( hitem, _Sounds[newindex]->getFilename().c_str() );
 			m_Tree.SelectItem( hitem );
-			_Modified = true;
+			//_Modified = true;
 		}
 	}
 }
@@ -390,7 +394,7 @@ void CSource_sounds_builderDlg::OnSave()
 		CSound::save( _Sounds, file );
 		file.close();
 
-		_Modified = false;
+		//_Modified = false;
 
 		waitcursor.Restore();
 	}
@@ -447,7 +451,7 @@ void CSource_sounds_builderDlg::OnLoad()
 		}
 		m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
 
-		_Modified = false;
+		//_Modified = false;
 
 		waitcursor.Restore();
 	}
@@ -525,20 +529,23 @@ void CSource_sounds_builderDlg::OnOK()
 void CSource_sounds_builderDlg::OnCancel()
 {
 	// Called when exiting (Esc, Alt+F4, etc.)
-	
-	if ( ! _Modified )
+
+	if ( ! _EditingName )
 	{
-		CDialog::OnCancel();
-	}
-	else
-	{
-		switch ( AfxMessageBox( "Save before exiting ?", MB_YESNOCANCEL | MB_ICONQUESTION ) )
+		/*if ( ! _Modified )
 		{
-		// no break;
-		case IDYES:
-			OnSave();
-		case IDNO:
 			CDialog::OnCancel();
+		}
+		else*/
+		{
+			switch ( AfxMessageBox( "Save before exiting ?", MB_YESNOCANCEL | MB_ICONQUESTION ) )
+			{
+			// no break;
+			case IDYES:
+				OnSave();
+			case IDNO:
+				CDialog::OnCancel();
+			}
 		}
 	}
 }

@@ -386,7 +386,7 @@ void CSoundPage::apply()
 
 		UpdateCurrentSound();
 
-		(static_cast<CSource_sounds_builderDlg*>(GetOwner()))->setModified();
+		//(static_cast<CSource_sounds_builderDlg*>(GetOwner()))->setModified();
 
 		nlassert( _Tree );
 

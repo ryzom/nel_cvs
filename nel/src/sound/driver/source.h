@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.8 2002/02/20 18:09:25 lecroart Exp $
+ * $Id: source.h,v 1.9 2002/06/11 09:38:03 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,8 @@ public:
 	virtual bool					isStopped() const = 0;
 	/// Update the source (e.g. continue to stream the data in)
 	virtual void					update() = 0;
+	/// Returns the number of milliseconds the source has been playing
+	virtual uint32					getTime() { return 0; }
 	//@}
 
 
@@ -146,6 +148,8 @@ public:
 	virtual void					getCone( float& innerAngle, float& outerAngle, float& outerGain ) const = 0;
 	/// Set any EAX source property if EAX available
 	virtual void					setEAXProperty( uint prop, void *value, uint valuesize ) = 0;
+	/// Testing
+	virtual void					setAlpha(double a) {  }
 	//@}
 
 	

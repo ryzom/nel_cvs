@@ -64,8 +64,8 @@ LIB32=link.exe -lib
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/DebugFast/georges/georges"
-# PROP Intermediate_Dir "../obj/DebugFast/georges/georges"
+# PROP Output_Dir "../obj/DebugFast/georges"
+# PROP Intermediate_Dir "../obj/DebugFast/georges"
 # PROP Target_Dir ""
 # ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "NL_DEBUG_FAST" /Yu"stdgeorges.h" /FD /GZ /c
 # ADD BASE RSC /l 0x40c

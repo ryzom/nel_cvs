@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.22 2002/04/12 16:22:09 vizerie Exp $
+ * $Id: scene_user.h,v 1.23 2002/04/17 12:09:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,9 +109,9 @@ public:
 		_VisualCollisionManagers.clear();
 		_Transforms.clear();
 		_Landscapes.clear();
+		_Scene.release();
 		_Scene.setDriver(NULL);
 		_Scene.setCam(NULL);
-		_Scene.release();
 		_CurrentCamera= NULL;
 		_DriverUser= NULL;
 	}

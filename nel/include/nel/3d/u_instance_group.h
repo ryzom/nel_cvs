@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.13 2002/02/18 13:23:34 berenguier Exp $
+ * $Id: u_instance_group.h,v 1.14 2002/04/17 12:09:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,8 @@ class UInstanceGroup
 {
 public:
 
+	enum TState { StateNotAdded = 0, StateAdding, StateAdded };
+
 	/**
 	 * Instance group
 	 */
@@ -67,7 +69,9 @@ public:
 	 * the shapes will be preloaded in this driver. If the pointer is NULL (default), textures
 	 * will ve loaded when the shape will be used.
 	 */
-	virtual void addToScene(class UScene& scene, UDriver *driver=NULL)=0;
+	virtual void addToScene (class UScene& scene, UDriver *driver=NULL)=0;
+	virtual void addToSceneAsync (class UScene& scene, UDriver *driver=NULL)=0;
+	virtual TState getAddToSceneState ()=0;
 
 	/**
 	 *	remove this instance group from the given scene
@@ -78,6 +82,7 @@ public:
 	 *	This is the static function create a stand alone instance group.
 	 */
 	static	UInstanceGroup	*createInstanceGroup (const std::string &instanceGroup);
+	static	void createInstanceGroupAsync (const std::string &instanceGroup, UInstanceGroup	**pIG);
 
 	/**
 	 * Return the count of shape instance in this group.

@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.11 2002/04/16 16:22:07 vizerie Exp $
+ * $Id: scene_group.h,v 1.12 2002/04/17 12:09:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NL3D {
 
 class CScene;
 class CTransformShape;
-
+class IDriver;
 
 /**
   * A CInstanceGroup is a group of mesh instance and so composed by
@@ -69,6 +69,7 @@ public:
 
 	/// Should Never be changed
 	enum	{NumStaticLightPerInstance= 2};
+	enum TState { StateNotAdded = 0, StateAdding, StateAdded };
 
 public:
 
@@ -204,7 +205,13 @@ public:
 	  * will ve loaded when the shape will be used.
 	  */
 	bool addToScene (CScene& scene, IDriver *driver=NULL);
+	bool addToSceneAsync (CScene& scene, IDriver *driver=NULL);
+	TState getAddToSceneState ();
 
+private:
+	bool addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driver);
+
+public:
 	/// Remove all the instances from the scene
 	bool removeFromScene (CScene& scene);
 
@@ -352,7 +359,9 @@ private:
 	CIGSurfaceLight		_IGSurfaceLight;
 
 	// @}
-
+	TState				_AddToSceneState;
+	CScene				*_AddToSceneTempScene;
+	IDriver				*_AddToSceneTempDriver;
 };
 
 

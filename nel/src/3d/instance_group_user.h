@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.12 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: instance_group_user.h,v 1.13 2002/04/17 12:09:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ class CInstanceUser;
 class CInstanceGroupUser : public UInstanceGroup
 {
 public:
+	CInstanceGroupUser ();
 	// Init with a scene.
 	//bool load (const std::string &instanceGroup);
 
@@ -65,6 +66,10 @@ private:
 	// From UInstanceGroup
 	void addToScene (class UScene& scene, UDriver *driver);
 	void addToScene (class CScene& scene, IDriver *driver);
+
+	void addToSceneAsync (class UScene& scene, UDriver *driver);
+	TState getAddToSceneState ();
+
 	void removeFromScene (class UScene& scene);
 	uint getNumInstance () const;
 	const std::string& getShapeName (uint instanceNb) const;
@@ -98,7 +103,10 @@ private:
 	// The real instance group
 	CInstanceGroup	_InstanceGroup;
 	std::map<std::string,CInstanceUser*> _Instances;
-
+	// Async stuff
+	TState _AddToSceneState;
+	UScene *_AddToSceneTempScene;
+	UDriver *_AddToSceneTempDriver;
 
 	virtual void			freezeHRC();
 	virtual void			unfreezeHRC();

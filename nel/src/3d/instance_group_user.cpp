@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.16 2002/02/28 12:59:49 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.17 2002/04/17 12:09:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,13 @@ UInstanceGroup	*UInstanceGroup::createInstanceGroup (const std::string &instance
 
 // ***************************************************************************
 
+void UInstanceGroup::createInstanceGroupAsync (const std::string &instanceGroup, UInstanceGroup	**pIG)
+{
+	CAsyncFileManager::getInstance().loadIGUser(instanceGroup, pIG);
+}
+
+// ***************************************************************************
+
 /*bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
 {
 	// Create a file
@@ -98,6 +105,12 @@ UInstanceGroup	*UInstanceGroup::createInstanceGroup (const std::string &instance
 	// Ok
 	return true;
 }*/
+
+// ***************************************************************************
+CInstanceGroupUser::CInstanceGroupUser()
+{
+	_AddToSceneState = StateNotAdded;
+}
 
 // ***************************************************************************
 bool CInstanceGroupUser::init (const std::string &instanceGroup)
@@ -150,13 +163,47 @@ void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
 	{
 		CInstanceUser *pIU = NULL;
 		string stmp;
-		if (scene,_InstanceGroup._Instances[i] != NULL)
+		if (_InstanceGroup._Instances[i] != NULL)
 		{
-			pIU = new CInstanceUser (&scene,_InstanceGroup._Instances[i]);
+			pIU = new CInstanceUser (&scene, _InstanceGroup._Instances[i]);
 			stmp = _InstanceGroup.getInstanceName (i);
 			_Instances.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
 		}
-	}		
+	}
+}
+
+// ***************************************************************************
+void CInstanceGroupUser::addToSceneAsync (class UScene& scene, UDriver *driver)
+{
+	IDriver *cDriver= driver ? safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
+	// Add to the scene
+	_InstanceGroup.addToSceneAsync (((CSceneUser*)&scene)->getScene(), cDriver);
+	_AddToSceneState = StateAdding;
+	_AddToSceneTempScene = &scene;
+	_AddToSceneTempDriver = driver;
+}
+
+// ***************************************************************************
+UInstanceGroup::TState CInstanceGroupUser::getAddToSceneState ()
+{
+	UInstanceGroup::TState newState = (UInstanceGroup::TState)_InstanceGroup.getAddToSceneState ();
+	if ((_AddToSceneState == StateAdding) && (newState == StateAdded))
+	{
+		// Fill in the map accelerating search of instance by names
+		for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
+		{
+			CInstanceUser *pIU = NULL;
+			string stmp;
+			if (_InstanceGroup._Instances[i] != NULL)
+			{
+				pIU = new CInstanceUser (&((CSceneUser*)_AddToSceneTempScene)->getScene(), _InstanceGroup._Instances[i]);
+				stmp = _InstanceGroup.getInstanceName (i);
+				_Instances.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
+			}
+		}
+		_AddToSceneState = StateAdded;
+	}
+	return newState;
 }
 
 // ***************************************************************************

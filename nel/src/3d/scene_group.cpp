@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.26 2002/04/16 16:22:07 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.27 2002/04/17 12:09:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/scene.h"
 #include "3d/transform_shape.h"
 #include "3d/mesh_instance.h"
+#include "3d/shape_bank.h"
 
 using namespace NLMISC;
 using namespace std;
@@ -203,6 +204,7 @@ CInstanceGroup::CInstanceGroup()
 	_Root = NULL;
 	_ClusterSystem = NULL;
 	_RealTimeSunContribution= true;
+	_AddToSceneState = StateNotAdded;
 }
 
 // ***************************************************************************
@@ -431,9 +433,9 @@ void CInstanceGroup::createRoot (CScene& scene)
 // ***************************************************************************
 bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 {
-	uint32 i, j;
+	uint32 i;
 
-	_Instances.resize( _InstancesInfos.size() );
+	_Instances.resize (_InstancesInfos.size(), NULL);
 
 	// Creation and positionning of the new instance
 
@@ -441,10 +443,9 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
-		if (!_InstancesInfos[i].DontAddToScene)
+		CInstance &rInstanceInfo = *it;
+		if (!rInstanceInfo.DontAddToScene)
 		{
-			CInstance &rInstanceInfo = *it;
-
 			if (rInstanceInfo.Name.find('.') == std::string::npos)
 			{
 				_Instances[i] = scene.createInstance (rInstanceInfo.Name + ".shape");
@@ -461,7 +462,7 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 					nlstop;
 				#else // nico : added this to have an error msg in the viewer
 					// remove all the shapes we've created until now
-					for (j = 0; j < i; ++j)
+					for (uint32 j = 0; j < i; ++j)
 					{
 						scene.deleteInstance(_Instances[j]);
 						_Instances[j] = NULL;
@@ -469,7 +470,24 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 					throw NLMISC::Exception("CInstanceGroup::addToScene : unable to create %s shape file", rInstanceInfo.Name.c_str());
 				#endif
 			}
-		
+		}
+	}
+
+	return addToSceneWhenAllShapesLoaded (scene, driver);
+}
+
+// ***************************************************************************
+// Private method
+bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driver)
+{
+	uint32 i, j;
+	vector<CInstance>::iterator it = _InstancesInfos.begin();
+	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
+	{
+		CInstance &rInstanceInfo = *it;
+
+		if (!rInstanceInfo.DontAddToScene)
+		{
 			if (_Instances[i])
 			{
 				_Instances[i]->setPos (rInstanceInfo.Pos);
@@ -639,8 +657,68 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 	if(_PointLightArray.getPointLights().size() > 0)
 		scene.addInstanceGroupForLightAnimation(this);
 
+	_AddToSceneState = StateAdded;
+	return true;
+}
+
+// ***************************************************************************
+bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
+{
+	uint32 i;
+
+	_AddToSceneState = StateAdding;
+	_AddToSceneTempScene = &scene;
+	_AddToSceneTempDriver = driver;
+
+	_Instances.resize (_InstancesInfos.size(), NULL);
+
+	// Creation and positionning of the new instance
+
+	vector<CInstance>::iterator it = _InstancesInfos.begin();
+	set<string> allShapesToLoad;
+	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
+	{
+		CInstance &rInstanceInfo = *it;
+		if (!rInstanceInfo.DontAddToScene)
+		{
+			string shapeName;
+
+			if (rInstanceInfo.Name.find('.') == std::string::npos)
+			{
+				shapeName = rInstanceInfo.Name + ".shape";
+			}
+			else	// extension has already been added
+			{
+				shapeName  = rInstanceInfo.Name;
+			}
+
+			if (allShapesToLoad.find(shapeName) == allShapesToLoad.end())
+			{
+				allShapesToLoad.insert (shapeName);
+				if (!scene.getShapeBank()->isPresent(shapeName))
+				{
+					// Load it from file asynchronously
+					scene.getShapeBank()->loadAsync (shapeName, scene.getDriver());
+				}
+			}
+		}
+	}
 
 	return true;
+}
+
+// ***************************************************************************
+CInstanceGroup::TState CInstanceGroup::getAddToSceneState ()
+{
+	// If we are adding but we have finished loading shapes (all shapes are here)
+	if (_AddToSceneState == StateAdding)
+	{
+		// Just to schedule the textures
+		_AddToSceneTempScene->getShapeBank()->isPresent("");
+		if (_AddToSceneTempScene->getShapeBank()->isShapeWaiting() == false)
+			addToScene (*_AddToSceneTempScene, _AddToSceneTempDriver);
+	}
+	return _AddToSceneState;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.9 2002/02/28 12:59:51 besson Exp $
+ * $Id: shape_bank.cpp,v 1.10 2002/04/17 12:09:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,7 +207,17 @@ void CShapeBank::loadAsync(const std::string &shapeName,IDriver *pDriver)
 	_pDriver = pDriver; // Backup the pointer to the driver for later use
 	TWaitingShapesMMap::iterator wsmmIt;
 	wsmmIt = WaitingShapes.insert(TWaitingShapesMMap::value_type(shapeName,NULL));
-	asyncFileManager.loadMesh(shapeName, &(wsmmIt->second), pDriver);
+	CAsyncFileManager::getInstance().loadMesh(shapeName, &(wsmmIt->second), pDriver);
+}
+
+// ***************************************************************************
+
+bool CShapeBank::isShapeWaiting ()
+{
+	if (WaitingShapes.size() == 0)
+		return false;
+	else
+		return true;
 }
 
 // ***************************************************************************

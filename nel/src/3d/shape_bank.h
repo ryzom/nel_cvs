@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: shape_bank.h,v 1.2 2002/04/17 12:09:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,7 @@ public:
 	 * The driver passed to this function is used to know if we have to load the textures.
 	 */
 	void			loadAsync(const std::string &shapeName, IDriver *pDriver);
+	bool			isShapeWaiting ();
 
 	/// Add directly a shape to the bank. If the shape name is already used do nothing.
 	void			add(const std::string &shapeName, IShape* shape);
@@ -99,7 +100,7 @@ public:
 	/**
 	  * Remove all ShapeCache and suppress all links (even the link to the default cache are removed)
 	  */
-	void reset();
+	void			reset();
 	
 	/// Set the shapeCache shapeCacheName the new size.(delete shapes if maxsize<shapeCacheSize).
 	void			setShapeCacheSize(const std::string &shapeCacheName, sint32 maxSize);
@@ -118,7 +119,6 @@ private:
 	typedef		std::multimap<std::string,IShape*> TWaitingShapesMMap;
 	TWaitingShapesMMap	WaitingShapes;
 
-	CAsyncFileManager	asyncFileManager;
 	IDriver *_pDriver;
 	//@}
 

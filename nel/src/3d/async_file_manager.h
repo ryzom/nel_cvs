@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: async_file_manager.h,v 1.2 2002/04/17 12:09:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,29 +35,77 @@ namespace NL3D
 
 class IShape;
 class IDriver;
+class CInstanceGroup;
+class UInstanceGroup;
 
 /**
  * CAsyncFileManager is a class that manage file loading in a seperate thread
  * \author Matthieu Besson
  * \author Nevrax France
- * \date 2001 
+ * \date 2002 
  */
 class CAsyncFileManager : public NLMISC::CTaskManager
 {
+
 public:
-	void loadMesh(const std::string& meshName, IShape** ppShp, IDriver *pDriver);
-	//////// void LoadZone(std::string& zoneName);
 
-// All the tasks
+	static CAsyncFileManager &getInstance (); // Must be called instead of constructing the object
+	void terminate (); // End all tasks and terminate
 
+	void loadMesh (const std::string &meshName, IShape **ppShp, IDriver *pDriver);
+	void loadIG (const std::string &igName, CInstanceGroup **ppIG);
+	void loadIGUser (const std::string &igName, UInstanceGroup **ppIG);
+
+	void loadFile (const std::string &fileName, uint8 **pPtr);
+
+private:
+
+	CAsyncFileManager (); // Singleton mode -> access it with the getInstance function
+
+	static CAsyncFileManager *_Singleton;
+
+	// All the tasks
+	// -------------
+	
+	// Load a .shape
 	class CMeshLoad : public NLMISC::IRunnable
 	{
 		std::string _meshName;
 		IShape **_ppShp;
 		IDriver *_pDriver;
 	public:
-		CMeshLoad(const std::string& meshName, IShape** ppShp, IDriver *pDriver);
-		void run(void);
+		CMeshLoad (const std::string &meshName, IShape **ppShp, IDriver *pDriver);
+		void run (void);
+	};
+
+	// Load a .ig
+	class CIGLoad : public NLMISC::IRunnable
+	{
+		std::string _IGName;
+		CInstanceGroup **_ppIG;
+	public:
+		CIGLoad (const std::string& meshName, CInstanceGroup **ppIG);
+		void run (void);
+	};
+
+	// Load a .ig User Interface
+	class CIGLoadUser : public NLMISC::IRunnable
+	{
+		std::string _IGName;
+		UInstanceGroup **_ppIG;
+	public:
+		CIGLoadUser (const std::string& meshName, UInstanceGroup **ppIG);
+		void run (void);
+	};
+
+	// Load a file
+	class CFileLoad : public NLMISC::IRunnable
+	{
+		std::string _FileName;
+		uint8 **_ppFile;
+	public:
+		CFileLoad (const std::string& sFileName, uint8 **ppFile);
+		void run (void);
 	};
 
 };

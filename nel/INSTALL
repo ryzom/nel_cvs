@@ -5,8 +5,8 @@ Requirements
    The NeL library needs the following libraries :
 
       - STLPort 4.5    <URL:http://www.stlport.org/>            (Mandatory)
-      - LibXML 2.4.13  <URL:http://www.xmlsoft.org/>            (Mandatory)
-      - FreeType 2     <URL:http://freetype.sourceforge.net/>   (NeL 3D)
+      - LibXML2 2.4.26 <URL:http://www.xmlsoft.org/>            (Mandatory)
+      - FreeType 2.1.2 <URL:http://freetype.sourceforge.net/>   (NeL 3D)
       - OpenAL         <URL:http://www.openal.org/>             (NeL Sound)
       - Python 1.5     <URL:http://www.python.org/>             (NeL AI)
       - Direct Input 8 <URL:http://www.microsoft.com/directx>   (NeL MISC, Windows version)
@@ -82,23 +82,30 @@ Compilation
 
          - Execute `nmake clean all` followed by `nmake install`.
 
-      FreeType compilation, by using GNU Make :
+      FreeType compilation (tested with version 2.1.2) :
 
-         - You need to intall GNU make and to place it in the PATH.
+         - Open the workspace freetype-2.1.2\builds\win32\visualc\freetype.dsw
+           in Visual C++.
 
-           <URL:http://ftpsearch.lycos.com/swadv/AdvResults.asp?query=gnumake-win32>
+         - Go in the [Bulid -> Batch Build ] menu and compile all project version.
 
-         - Open a Dos window and go in the FreeType's directory.
+      libXML2 compilation (tested with version 2.4.26) :
 
-         - Execute `make setup visualc' followed by `make`.
+         - In the 2.4.26, the file wsockcompat.h is missing in libxml2-2.4.26/include.
+           As mentioned here, <URL:http://mail.gnome.org/archives/xml/2002-October/msg00188.html>
+           You have to create the file with the end of the mail.
 
-      FreeType compilation, by using an IDE :
+         - Open a DOS command, go in libxml2-2.4.26/win32 directory
 
-         - Compile every (base and optionnal) library components listed
-           at the end of the FreeType's INSTALL file.
+         - Execute: cscript configure.js ftp=no http=no html=no c14n=no
+                    catalog=no docb=no iconv=no regexps=no schemas=no
 
-      Set up Visual C++ to find the STLPort and FreeType libraries. This
-      is done in the [Tools -> Options -> Directories] menu :
+         - Execute: nmake
+
+         - Execute: nmake install
+
+      Set up Visual C++ to find libraries. This is done in the
+      [Tools -> Options -> Directories] menu :
 
          - Add the STLPort include directory to the "Library Files" category.
            The STLPort include *must* be inserted before the microsoft one or
@@ -110,10 +117,16 @@ Compilation
            ex: D:/stlport-4.5/lib
 
          - Add the FreeType include directory to the "Include Files" category.
-           ex: D:/freetype-2.0/include
+           ex: D:/freetype-2.1.2/include
 
          - Add the FreeType library directory to the "Library Files" category.
-           ex: D:/freetype-2.0/obj
+           ex: D:/freetype-2.1.2/objs
+
+         - Add the libXML2 include directory to the "Include Files" category.
+           ex: D:/libxml2-2.4.26/win32/include
+
+         - Add the libXML2 library directory to the "Library Files" category.
+           ex: D:/libxml2-2.4.26/win32/lib
 
 		
       Requirements for Nel Misc: Direct Input 8
@@ -121,7 +134,7 @@ Compilation
          - Install the DirectX8 SDK
          - Add mssdk/include to the "Include Files" category.
            Add mssdk/lib to the "Library Files" category.
-           Make sure these appear before visual c++ includes, as an older
+           Make sure these appear *before* visual c++ includes, as an older
            version of directX may be present in Visual C++ headers.
 
       Requirements for NeL Sound: OpenAL and EAX 2
@@ -145,13 +158,13 @@ Compilation
       Setup Visual C++ to find the NeL include and library files :
 
          - Add the NEL include directory to the "Include Files" category.
-           ex: D:/test/code/nel/include
+           ex: D:/code/nel/include
 
          - Add the NEL source directory to the "Include Files" category.
-           ex: D:/test/code/nel/src
+           ex: D:/code/nel/src
 
          - Add the NeL library directory to the "Library Files" category.
-           ex: D:/test/code/nel/lib
+           ex: D:/code/nel/lib
 
 
    2. GNU/Linux compilation
@@ -178,7 +191,7 @@ Compilation
          - misc
               default: Mandatory
          - net
-              default: Enables
+              default: Enable
               desativate with: --disable-net
          - 3d
               default: Enable
@@ -186,16 +199,19 @@ Compilation
          - pacs
               default: Enable
               desativate with: --disable-pacs
+         - ai
+              default: Enable
+              desativate with: --disable-ai 
          - sound
               default: Disable
               ativate with: --enable-sound
-         - ai
-              default: Disable
-              ativate with: --enable-ai 
 
       To pass additional arguments to the C++ compiler, use the command line :
 
-         % CXXFLAGS=-pipe ./configure --with-stlport=<STLPort_headers_path>
+         % CXXFLAGS=-pipe ./configure --with-stlport=<STLPort_path>
+
+          <STLPort_path> is for example /usr
+
 
       To get the complete list of arguments of the "configure" script use the
       following command :

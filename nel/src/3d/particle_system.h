@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.6 2001/07/12 15:58:57 vizerie Exp $
+ * $Id: particle_system.h,v 1.7 2001/07/12 16:34:08 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -337,7 +337,7 @@ public:
 
 	void setPrecomputedBBox(const NLMISC::CAABBox &precompBBox) 
 	{ 
-		nlassert(!_computeBBox) ;
+		nlassert(!_ComputeBBox) ;
 		_PreComputedBBox = precompBBox ;
 	}
 		

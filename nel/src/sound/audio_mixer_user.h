@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.29 2003/01/08 15:48:11 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.30 2003/02/06 09:17:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -259,6 +259,7 @@ public:
 	virtual void				loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region);
+	virtual void				loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot);
 	virtual void				loadBackgroundSound (const std::string &continent);
 	virtual void				playBackgroundSound ();
 	virtual void				stopBackgroundSound ();
@@ -349,7 +350,7 @@ protected:
 	/// Returns nb available tracks (or NULL)
 	void						getFreeTracks( uint nb, CTrack **tracks );
 	/// Fill a vector of position and mute flag for all playing sound source.
-	virtual void				getPlayingSoundsPos(std::vector<std::pair<bool, NLMISC::CVector> > &pos);
+	virtual void				getPlayingSoundsPos(bool virtualPos, std::vector<std::pair<bool, NLMISC::CVector> > &pos);
 
 private:
 	/// The vector of curently free tracks.

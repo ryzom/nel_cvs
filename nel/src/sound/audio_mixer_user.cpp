@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.38 2003/01/10 17:11:56 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.39 2003/02/06 09:17:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -746,7 +746,7 @@ void CAudioMixerUser::freeTrack(CTrack *track)
 }
 
 
-void CAudioMixerUser::getPlayingSoundsPos(std::vector<std::pair<bool, NLMISC::CVector> > &pos)
+void CAudioMixerUser::getPlayingSoundsPos(bool virtualPos, std::vector<std::pair<bool, NLMISC::CVector> > &pos)
 {
 	int nbplay = 0;
 	int	nbmute = 0;
@@ -763,7 +763,10 @@ void CAudioMixerUser::getPlayingSoundsPos(std::vector<std::pair<bool, NLMISC::CV
 
 			if (source->isPlaying())
 			{
-				pos.push_back(make_pair(source->getTrack() == 0, source->getPos()));
+				if (virtualPos)
+					pos.push_back(make_pair(source->getTrack() == 0, source->getVirtualPos()));
+				else
+					pos.push_back(make_pair(source->getTrack() == 0, source->getPos()));
 
 				if (source->getTrack() == 0)
 					nbmute++;
@@ -1573,6 +1576,10 @@ void CAudioMixerUser::loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion
 	_BackgroundSoundManager->loadSamplesFromRegion(region);
 }
 
+void CAudioMixerUser::loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot)
+{
+	_BackgroundSoundManager->loadAudioFromPrimitives(audioRoot);
+}
 
 void CAudioMixerUser::playBackgroundSound () 
 { 

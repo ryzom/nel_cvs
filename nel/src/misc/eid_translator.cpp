@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.15 2003/09/16 15:53:44 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.16 2003/09/20 09:02:19 distrib Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -199,7 +199,7 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName, CLog *l
 	{
 		if(testWildCard(en, InvalidEntityNames[i]))
 		{
-			log->displayNL("Bad entity name '%s' (match the invalid entity name pattern '%s')", entityName.toString().c_str(), InvalidEntityNames[i]);
+			log->displayNL("Bad entity name '%s' (match the invalid entity name pattern '%s')", entityName.toString().c_str(), InvalidEntityNames[i].c_str());
 			return false;
 		}
 	}
@@ -579,17 +579,17 @@ NLMISC_COMMAND(entityNameValid,"Tell if an entity name is valid or not using CEn
 
 	if(!CEntityIdTranslator::getInstance()->isValidEntityName(args[0], &log))
 	{
-		log.displayNL("Entity name '%s' is not valid", args[0]);
+		log.displayNL("Entity name '%s' is not valid", args[0].c_str());
 	}
 	else
 	{
 		if (CEntityIdTranslator::getInstance()->entityNameExists(args[0]))
 		{
-			log.displayNL("Entity name '%s' is already used by another player", args[0]);
+			log.displayNL("Entity name '%s' is already used by another player", args[0].c_str());
 		}
 		else
 		{
-			log.displayNL("Entity name '%s' is available", args[0]);
+			log.displayNL("Entity name '%s' is available", args[0].c_str());
 		}
 	}
 

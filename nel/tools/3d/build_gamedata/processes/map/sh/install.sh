@@ -8,6 +8,9 @@ bitmap_install_directory=`cat ../../cfg/directories.cfg | grep "bitmap_install_d
 # Get the client directory
 client_directory=`cat ../../cfg/site.cfg | grep "client_directory" | sed -e 's/client_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Get the database directory
+database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 # Log error
 echo ------- > log.log
 echo --- Install maps >> log.log

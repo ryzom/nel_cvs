@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="driver_opengl"
+	ProjectGUID="{1D9576F6-3321-4036-8C86-B5361CCCD4FB}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

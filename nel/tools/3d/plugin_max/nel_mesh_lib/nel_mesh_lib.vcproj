@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="nel_mesh_lib"
+	ProjectGUID="{76F225A9-306F-4B99-9606-6B98B680F5FB}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -130,9 +131,13 @@
 				AdditionalOptions="/Zm300 "
 				Optimization="0"
 				AdditionalIncludeDirectories="D:\3DSMAX3\Maxsdk\include"
-				PreprocessorDefinitions="_LIB;__STL_DEBUG;WIN32;_DEBUG"
+				PreprocessorDefinitions="__STL_DEBUG;WIN32;_DEBUG;_LIB"
+				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdafx.h"
@@ -140,11 +145,11 @@
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
-				BrowseInformation="1"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"
-				CompileAs="0"/>
+				DebugInformationFormat="4"
+				CompileAs="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool

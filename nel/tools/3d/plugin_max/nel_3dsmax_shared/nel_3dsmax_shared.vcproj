@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="nel_3dsmax_shared"
+	ProjectGUID="{CDFC60B0-9D01-4822-ACAD-B66F7130FCAD}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -87,9 +88,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				OptimizeForProcessor="2"
-				PreprocessorDefinitions="_WINDOWS;_USRDLL;NEL_3DSMAX_SHARED_EXPORTS;__STL_DEBUG;WIN32;_DEBUG"
+				PreprocessorDefinitions="__STL_DEBUG;WIN32;_DEBUG;_WINDOWS;_USRDLL;NEL_3DSMAX_SHARED_EXPORTS"
+				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdafx.h"
@@ -97,16 +102,18 @@
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="4"
+				CompileAs="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib maxscrpt.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib Maxscrpt.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1 debug\exe\nel_3dsmax_shared.dll"
-				LinkIncremental="1"
+				OutputFile="C:\3dsmax_debug\nel_3dsmax_shared.dll"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/nel_3dsmax_shared.pdb"
@@ -172,7 +179,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="freetype219.lib paramblk2.lib odbc32.lib odbccp32.lib maxscrpt.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib Maxscrpt.lib"
-				OutputFile="C:\3dsmax3_1\nel_3dsmax_shared.dll"
+				OutputFile="C:\3dsmax\nel_3dsmax_shared.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"

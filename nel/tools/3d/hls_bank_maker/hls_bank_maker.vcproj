@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="build_clodtex"
-	ProjectGUID="{D0E8697A-C92C-452E-8DBF-E8F212C6F9A8}"
+	Name="hls_bank_maker"
+	ProjectGUID="{BACF1238-7651-43DA-B0D9-0145701CBB7B}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -12,9 +12,9 @@
 	</Platforms>
 	<Configurations>
 		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			Name="DebugFast|Win32"
+			OutputDirectory=".\DebugFast"
+			IntermediateDirectory=".\DebugFast"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -22,39 +22,33 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="__STL_DEBUG;WIN32;_DEBUG;_CONSOLE;LIBXML_STATIC"
-				StringPooling="TRUE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;NL_DEBUG_FAST"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Debug/build_clodtex.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
-				BrowseInformation="0"
+				PrecompiledHeaderFile=".\DebugFast/hls_bank_maker.pch"
+				AssemblerListingLocation=".\DebugFast/"
+				ObjectFile=".\DebugFast/"
+				ProgramDataBaseFileName=".\DebugFast/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"
-				CompileAs="2"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype219MT_D.lib odbc32.lib odbccp32.lib"
-				OutputFile=".\Debug/build_clodtex.exe"
-				LinkIncremental="2"
+				AdditionalDependencies="s3tc.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\DebugFast/hls_bank_maker.exe"
+				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Debug/build_clodtex.pdb"
+				ProgramDatabaseFile=".\DebugFast/hls_bank_maker.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/build_clodtex.tlb"
+				TypeLibraryName=".\DebugFast/hls_bank_maker.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -89,13 +83,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_CONSOLE;LIBXML_STATIC;NL_RELEASE_DEBUG;WIN32;NDEBUG"
+				PreprocessorDefinitions="_CONSOLE;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\ReleaseDebug/build_clodtex.pch"
+				PrecompiledHeaderFile=".\ReleaseDebug/hls_bank_maker.pch"
 				AssemblerListingLocation=".\ReleaseDebug/"
 				ObjectFile=".\ReleaseDebug/"
 				ProgramDataBaseFileName=".\ReleaseDebug/"
@@ -106,17 +100,17 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype219MT.lib odbc32.lib odbccp32.lib"
-				OutputFile=".\ReleaseDebug/build_clodtex.exe"
+				AdditionalDependencies="s3tc.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\ReleaseDebug/hls_bank_maker.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\ReleaseDebug/build_clodtex.pdb"
+				ProgramDatabaseFile=".\ReleaseDebug/hls_bank_maker.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseDebug/build_clodtex.tlb"
+				TypeLibraryName=".\ReleaseDebug/hls_bank_maker.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -151,13 +145,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;LIBXML_STATIC"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Release/build_clodtex.pch"
+				PrecompiledHeaderFile=".\Release/hls_bank_maker.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -167,16 +161,16 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype219MT.lib odbc32.lib odbccp32.lib"
-				OutputFile=".\Release/build_clodtex.exe"
+				AdditionalDependencies="s3tc.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\Release/hls_bank_maker.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\Release/build_clodtex.pdb"
+				ProgramDatabaseFile=".\Release/hls_bank_maker.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/build_clodtex.tlb"
+				TypeLibraryName=".\Release/hls_bank_maker.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -200,9 +194,9 @@
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
-			Name="DebugFast|Win32"
-			OutputDirectory=".\DebugFast"
-			IntermediateDirectory=".\DebugFast"
+			Name="Debug|Win32"
+			OutputDirectory=".\Debug"
+			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -210,33 +204,39 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;NL_DEBUG_FAST;LIBXML_STATIC"
+				PreprocessorDefinitions="__STL_DEBUG;WIN32;_DEBUG;_CONSOLE"
+				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\DebugFast/build_clodtex.pch"
-				AssemblerListingLocation=".\DebugFast/"
-				ObjectFile=".\DebugFast/"
-				ProgramDataBaseFileName=".\DebugFast/"
+				PrecompiledHeaderFile=".\Debug/hls_bank_maker.pch"
+				AssemblerListingLocation=".\Debug/"
+				ObjectFile=".\Debug/"
+				ProgramDataBaseFileName=".\Debug/"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="4"
+				CompileAs="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype219MT_D.lib odbc32.lib odbccp32.lib"
-				OutputFile=".\DebugFast/build_clodtex.exe"
-				LinkIncremental="1"
+				AdditionalDependencies="s3tc.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\Debug/hls_bank_maker.exe"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\DebugFast/build_clodtex.pdb"
+				ProgramDatabaseFile=".\Debug/hls_bank_maker.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\DebugFast/build_clodtex.tlb"
+				TypeLibraryName=".\Debug/hls_bank_maker.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -264,9 +264,9 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="lod_texture_builder.cpp">
+			RelativePath="hls_bank_maker.cpp">
 			<FileConfiguration
-				Name="Debug|Win32">
+				Name="DebugFast|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
 					Optimization="0"
@@ -288,7 +288,7 @@
 					PreprocessorDefinitions=""/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="DebugFast|Win32">
+				Name="Debug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
 					Optimization="0"
@@ -297,12 +297,12 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="lod_texture_builder.h">
+			RelativePath="hls_bank_maker.h">
 		</File>
 		<File
-			RelativePath="main.cpp">
+			RelativePath="..\panoply_maker\hls_bank_texture_info.cpp">
 			<FileConfiguration
-				Name="Debug|Win32">
+				Name="DebugFast|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
 					Optimization="0"
@@ -324,13 +324,16 @@
 					PreprocessorDefinitions=""/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="DebugFast|Win32">
+				Name="Debug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					PreprocessorDefinitions=""
 					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\panoply_maker\hls_bank_texture_info.h">
 		</File>
 	</Files>
 	<Globals>

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="object_viewer"
-	ProjectGUID="{90FB4E9A-29B9-4F8B-9AF5-835273AB4F1A}"
+	ProjectGUID="{A10DFC7C-B9E1-47D3-B3D8-3EE15AEBDAEC}"
 	SccProjectName=""
 	SccLocalPath=""
 	Keyword="MFCProj">
@@ -23,14 +23,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm400 "
-				Optimization="3"
-				GlobalOptimizations="TRUE"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				EnableFiberSafeOptimizations="TRUE"
-				OptimizeForWindowsApplication="TRUE"
-				PreprocessorDefinitions="NL_RELEASE_DEBUG;NDEBUG;WIN32;_WINDOWS;_USRDLL;NL_NO_DEFINE_NEW;PLUGIN_UE_CATCH"
+				PreprocessorDefinitions="NL_RELEASE_DEBUG;NDEBUG;WIN32;_WINDOWS;_USRDLL;NL_NO_DEFINE_NEW"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -48,17 +43,13 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="nlligo_rd.lib nlgeorges_rd.lib libxml2_a.lib freetype219MT.lib shlwapi.lib version.lib libjpeg.lib"
+				AdditionalDependencies="nlligo_rd.lib nlgeorges_rd.lib libxml2_a.lib freetype219.lib shlwapi.lib version.lib libjpeg.lib"
 				OutputFile="../../../lib/object_viewer_rd.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				IgnoreDefaultLibraryNames="libcmt.lib;libcd.lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\ReleaseDebug/object_viewer_rd.pdb"
 				SubSystem="2"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
 				ImportLibrary=".\ReleaseDebug/object_viewer_rd.lib"
 				TargetMachine="1"/>
 			<Tool
@@ -101,13 +92,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm400 "
-				Optimization="3"
-				GlobalOptimizations="TRUE"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				EnableFiberSafeOptimizations="TRUE"
-				OptimizeForWindowsApplication="TRUE"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;NL_NO_DEFINE_NEW"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -131,9 +117,6 @@
 				SuppressStartupBanner="TRUE"
 				ProgramDatabaseFile=".\Release/object_viewer.pdb"
 				SubSystem="2"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
 				ImportLibrary=".\Release/object_viewer.lib"
 				TargetMachine="1"/>
 			<Tool
@@ -182,7 +165,9 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				AdditionalOptions="/D /Zm500 "
 				Optimization="0"
 				PreprocessorDefinitions="__STL_DEBUG;_DEBUG;WIN32;_WINDOWS;_USRDLL;NL_NO_DEFINE_NEW"
+				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
@@ -193,15 +178,16 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
-				BrowseInformation="1"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="4"
+				CompileAs="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libxml2_a.lib freetype219MT_D.lib shlwapi.lib version.lib libjpeg.lib"
+				AdditionalDependencies="nlligo_d.lib nlgeorges_d.lib libxml2_a.lib freetype.lib shlwapi.lib version.lib libjpeg.lib"
 				OutputFile="../../../lib/object_viewer_debug.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -253,10 +239,8 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				Optimization="0"
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_STLP_USE_DEBUG_LIB;WIN32;_WINDOWS;_USRDLL;NL_NO_DEFINE_NEW"
-				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="std_afx.h"
@@ -1347,7 +1331,38 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\tune_mrm_dlg.cpp">
+				RelativePath="tune_mrm_dlg.cpp">
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="water_pool_editor.cpp">
@@ -1484,7 +1499,7 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				RelativePath="std_afx.h">
 			</File>
 			<File
-				RelativePath=".\tune_mrm_dlg.h">
+				RelativePath="tune_mrm_dlg.h">
 			</File>
 			<File
 				RelativePath="water_pool_editor.h">

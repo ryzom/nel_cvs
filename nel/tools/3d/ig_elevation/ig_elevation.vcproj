@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="build_interface"
-	ProjectGUID="{42803A5F-628A-446F-A712-51BDC499EF81}"
+	Name="ig_elevation"
+	ProjectGUID="{4FB760E5-96C5-4481-909F-7C8CB84D19C8}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -29,27 +29,27 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\ReleaseDebug/build_interface.pch"
+				PrecompiledHeaderFile=".\ReleaseDebug/ig_elevation.pch"
 				AssemblerListingLocation=".\ReleaseDebug/"
 				ObjectFile=".\ReleaseDebug/"
 				ProgramDataBaseFileName=".\ReleaseDebug/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\ReleaseDebug/build_interface.exe"
+				AdditionalDependencies="freetype.lib libxml2_a.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\ReleaseDebug/ig_elevation.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\ReleaseDebug/build_interface.pdb"
+				ProgramDatabaseFile=".\ReleaseDebug/ig_elevation.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseDebug/build_interface.tlb"
+				TypeLibraryName=".\ReleaseDebug/ig_elevation.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -88,27 +88,28 @@
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\DebugFast/build_interface.pch"
+				PrecompiledHeaderFile=".\DebugFast/ig_elevation.pch"
 				AssemblerListingLocation=".\DebugFast/"
 				ObjectFile=".\DebugFast/"
 				ProgramDataBaseFileName=".\DebugFast/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\DebugFast/build_interface.exe"
+				AdditionalDependencies="freetype.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\DebugFast/ig_elevation.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\DebugFast/build_interface.pdb"
+				ProgramDatabaseFile=".\DebugFast/ig_elevation.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\DebugFast/build_interface.tlb"
+				TypeLibraryName=".\DebugFast/ig_elevation.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -151,7 +152,7 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Debug/build_interface.pch"
+				PrecompiledHeaderFile=".\Debug/ig_elevation.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
@@ -164,16 +165,17 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Debug/build_interface.exe"
+				AdditionalDependencies="libxml2_a.lib freetype.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\Debug/ig_elevation.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Debug/build_interface.pdb"
+				ProgramDatabaseFile=".\Debug/ig_elevation.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/build_interface.tlb"
+				TypeLibraryName=".\Debug/ig_elevation.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -210,11 +212,10 @@
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="TRUE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="4"
 				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Release/build_interface.pch"
+				PrecompiledHeaderFile=".\Release/ig_elevation.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -224,15 +225,16 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Release/build_interface.exe"
+				AdditionalDependencies="freetype.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\Release/ig_elevation.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\Release/build_interface.pdb"
+				ProgramDatabaseFile=".\Release/ig_elevation.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/build_interface.tlb"
+				TypeLibraryName=".\Release/ig_elevation.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>

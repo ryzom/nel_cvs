@@ -168,8 +168,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG"
+				PreprocessorDefinitions="__STL_DEBUG;WIN32;_DEBUG;_WINDOWS"
+				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
@@ -180,10 +182,11 @@
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
-				BrowseInformation="1"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="4"
+				CompileAs="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
@@ -718,7 +721,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -756,7 +760,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -794,7 +799,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -832,7 +838,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -870,7 +877,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -908,7 +916,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -946,7 +955,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -984,7 +994,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1022,7 +1033,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1060,7 +1072,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1098,7 +1111,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1136,7 +1150,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1174,7 +1189,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1212,7 +1228,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1250,7 +1267,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1288,7 +1306,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1326,7 +1345,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1364,7 +1384,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1402,7 +1423,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1440,7 +1462,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1478,7 +1501,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1516,7 +1540,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1554,7 +1579,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1592,7 +1618,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1630,7 +1657,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1668,7 +1696,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1706,7 +1735,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1744,7 +1774,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1782,7 +1813,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1820,7 +1852,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1858,7 +1891,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1896,7 +1930,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1934,7 +1969,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1972,7 +2008,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2010,7 +2047,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2048,7 +2086,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2086,7 +2125,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2124,7 +2164,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2162,7 +2203,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2200,7 +2242,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2238,7 +2281,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2276,7 +2320,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2314,7 +2359,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2352,7 +2398,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2390,7 +2437,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2428,7 +2476,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2466,7 +2515,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2504,7 +2554,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2542,7 +2593,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2580,7 +2632,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2618,7 +2671,8 @@
 							PreprocessorDefinitions=""
 							BasicRuntimeChecks="3"
 							UsePrecompiledHeader="0"
-							BrowseInformation="1"/>
+							BrowseInformation="1"
+							CompileAs="1"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32">

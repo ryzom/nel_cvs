@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="zone_dependencies"
+	ProjectGUID="{E5B0E053-4E3B-4342-8850-CEE9C34DA067}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -21,9 +22,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_CONSOLE;__STL_DEBUG;WIN32;_DEBUG"
+				PreprocessorDefinitions="__STL_DEBUG;_CONSOLE;WIN32;_DEBUG"
+				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdafx.h"
@@ -31,16 +36,18 @@
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="4"
+				CompileAs="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxml2_a.lib odbc32.lib odbccp32.lib freetype219MT_D.lib ws2_32.lib"
 				OutputFile=".\Debug/zone_dependencies.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/zone_dependencies.pdb"

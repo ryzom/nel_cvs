@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="ligo"
+	ProjectGUID="{005838BE-F505-4C8C-958A-5719BC0BD5E4}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -122,17 +123,23 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_LIB;__STL_DEBUG;_DEBUG;WIN32;LIBXML_STATIC"
+				PreprocessorDefinitions="__STL_DEBUG;_LIB;_DEBUG;WIN32;LIBXML_STATIC"
+				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				PrecompiledHeaderFile=".\../obj/Debug/ligo/ligo.pch"
 				AssemblerListingLocation=".\../obj/Debug/ligo/"
 				ObjectFile=".\../obj/Debug/ligo/"
 				ProgramDataBaseFileName=".\../obj/Debug/ligo/"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="4"
+				CompileAs="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool

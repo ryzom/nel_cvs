@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="tile_utility"
-	ProjectGUID="{7CD7BD0D-3CF0-4698-8F3A-B770B073713B}"
+	Name="ligoscape_utility"
+	ProjectGUID="{796E7156-7DE8-4F86-BF33-D7ACF4014204}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Hybrid|Win32"
-			OutputDirectory=".\Hybrid"
-			IntermediateDirectory=".\Hybrid"
+			OutputDirectory=".\plugin_max___Win32_Hybrid"
+			IntermediateDirectory=".\plugin_max___Win32_Hybrid"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -23,14 +23,14 @@
 				Optimization="0"
 				OptimizeForProcessor="2"
 				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Hybrid/tile_utility.pch"
-				AssemblerListingLocation=".\Hybrid/"
-				ObjectFile=".\Hybrid/"
-				ProgramDataBaseFileName=".\Hybrid/"
+				PrecompiledHeaderFile=".\plugin_max___Win32_Hybrid/ligoscape_utility.pch"
+				AssemblerListingLocation=".\plugin_max___Win32_Hybrid/"
+				ObjectFile=".\plugin_max___Win32_Hybrid/"
+				ProgramDataBaseFileName=".\plugin_max___Win32_Hybrid/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -39,17 +39,16 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\Plugins\tileutility.dlu"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype.lib"
+				OutputFile="C:\3dsmax3_1\plugins\nelligo.dlx"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
-				ModuleDefinitionFile=".\tile_utility.def"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Hybrid/tileutility.pdb"
+				ProgramDatabaseFile=".\plugin_max___Win32_Hybrid/nelligo.pdb"
 				SubSystem="2"
 				BaseAddress="0x105b0000"
-				ImportLibrary=".\Hybrid/tileutility.lib"
+				ImportLibrary=".\plugin_max___Win32_Hybrid/nelligo.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -57,7 +56,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Hybrid/tile_utility.tlb"
+				TypeLibraryName=".\plugin_max___Win32_Hybrid/ligoscape_utility.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -68,7 +67,146 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"/>
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="ReleaseDebug|Win32"
+			OutputDirectory=".\ReleaseDebug"
+			IntermediateDirectory=".\ReleaseDebug"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm200 "
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				OptimizeForProcessor="2"
+				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				PreprocessorDefinitions="NDEBUG;NL_RELEASE_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\ReleaseDebug/ligoscape_utility.pch"
+				AssemblerListingLocation=".\ReleaseDebug/"
+				ObjectFile=".\ReleaseDebug/"
+				ProgramDataBaseFileName=".\ReleaseDebug/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2_a.lib freetype219.lib"
+				OutputFile="C:\3dsmax\plugins\nelligo.dlx"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\ReleaseDebug/nelligo.pdb"
+				SubSystem="2"
+				SetChecksum="TRUE"
+				BaseAddress="0x105b0000"
+				ImportLibrary=".\ReleaseDebug/nelligo.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\ReleaseDebug/ligoscape_utility.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="DebugFast|Win32"
+			OutputDirectory=".\DebugFast"
+			IntermediateDirectory=".\DebugFast"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				OptimizeForProcessor="2"
+				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
+				RuntimeLibrary="3"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\DebugFast/ligoscape_utility.pch"
+				AssemblerListingLocation=".\DebugFast/"
+				ObjectFile=".\DebugFast/"
+				ProgramDataBaseFileName=".\DebugFast/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype.lib"
+				OutputFile="C:\3dsmax3_1\plugins\nelligo.dlx"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\DebugFast/nelligo.pdb"
+				SubSystem="2"
+				BaseAddress="0x105b0000"
+				ImportLibrary=".\DebugFast/nelligo.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\DebugFast/ligoscape_utility.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -93,13 +231,13 @@
 				InlineFunctionExpansion="1"
 				OptimizeForProcessor="2"
 				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="NDEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Release/tile_utility.pch"
+				PrecompiledHeaderFile=".\Release/ligoscape_utility.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -110,17 +248,16 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\Plugins\neltileutility.dlu"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype.lib"
+				OutputFile="C:\3dsmax3_1\plugins\nelligo.dlx"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
-				ModuleDefinitionFile=".\tile_utility.def"
-				ProgramDatabaseFile=".\Release/neltileutility.pdb"
+				ProgramDatabaseFile=".\Release/nelligo.pdb"
 				SubSystem="2"
 				SetChecksum="TRUE"
 				BaseAddress="0x105b0000"
-				ImportLibrary=".\Release/neltileutility.lib"
+				ImportLibrary=".\Release/nelligo.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -128,83 +265,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/tile_utility.tlb"
-				HeaderFileName=""/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"
-				Description="Change version number"
-				CommandLine="buildinc version.ver tile_utility.rc
-rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_utility.rc
-"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="DebugFast|Win32"
-			OutputDirectory=".\DebugFast"
-			IntermediateDirectory=".\DebugFast"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				InlineFunctionExpansion="1"
-				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;NL_DEBUG_FAST"
-				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\DebugFast/tile_utility.pch"
-				AssemblerListingLocation=".\DebugFast/"
-				ObjectFile=".\DebugFast/"
-				ProgramDataBaseFileName=".\DebugFast/"
-				BrowseInformation="1"
-				BrowseInformationFile=".\DebugFast/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"
-				CompileAs="0"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1 debug\exe\Plugins\neltileutility.dlu"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
-				ModuleDefinitionFile=".\tile_utility.def"
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\DebugFast/neltileutility.pdb"
-				SubSystem="2"
-				BaseAddress="0x105b0000"
-				ImportLibrary=".\DebugFast/neltileutility.lib"
-				TargetMachine="1"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\DebugFast/tile_utility.tlb"
+				TypeLibraryName=".\Release/ligoscape_utility.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -214,8 +275,8 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"/>
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -236,10 +297,11 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
-				PreprocessorDefinitions="__STL_DEBUG;WIN32;_DEBUG;_WINDOWS"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="__STL_DEBUG;_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="TRUE"
@@ -248,7 +310,7 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Debug/tile_utility.pch"
+				PrecompiledHeaderFile=".\Debug/ligoscape_utility.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
@@ -261,17 +323,15 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax_debug\plugins\neltileutility.dlu"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2_a.lib freetype.lib"
+				OutputFile="C:\3dsmax_debug\plugins\nelligo.dlx"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
-				ModuleDefinitionFile=".\tile_utility.def"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Debug/neltileutility.pdb"
+				ProgramDatabaseFile=".\Debug/nelligo.pdb"
 				SubSystem="2"
 				BaseAddress="0x105b0000"
-				ImportLibrary=".\Debug/neltileutility.lib"
+				ImportLibrary=".\Debug/nelligo.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -279,7 +339,7 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/tile_utility.tlb"
+				TypeLibraryName=".\Debug/ligoscape_utility.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
@@ -290,80 +350,7 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\ReleaseDebug"
-			IntermediateDirectory=".\ReleaseDebug"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\ReleaseDebug/tile_utility.pch"
-				AssemblerListingLocation=".\ReleaseDebug/"
-				ObjectFile=".\ReleaseDebug/"
-				ProgramDataBaseFileName=".\ReleaseDebug/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"
-				CompileAs="0"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype219.lib"
-				OutputFile="C:\3dsmax\plugins\neltileutility.dlu"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
-				ModuleDefinitionFile=".\tile_utility.def"
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\ReleaseDebug/neltileutility.pdb"
-				SubSystem="2"
-				SetChecksum="TRUE"
-				BaseAddress="0x105b0000"
-				ImportLibrary=".\ReleaseDebug/neltileutility.lib"
-				TargetMachine="1"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\ReleaseDebug/tile_utility.tlb"
-				HeaderFileName=""/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"/>
+				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -390,32 +377,7 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;NL_DEBUG_FAST;$(NoInherit)"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
@@ -423,43 +385,45 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;NL_RELEASE_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="__STL_DEBUG;_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="rgbadd.cpp">
+				RelativePath="ligoscape_utility.rc">
+			</File>
+			<File
+				RelativePath="max_to_ligo.cpp">
 				<FileConfiguration
 					Name="Hybrid|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;NL_DEBUG_FAST;$(NoInherit)"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
@@ -467,43 +431,42 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;NL_RELEASE_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="__STL_DEBUG;_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="tile_utility.cpp">
+				RelativePath="script.cpp">
 				<FileConfiguration
 					Name="Hybrid|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;NL_DEBUG_FAST;$(NoInherit)"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
@@ -511,24 +474,61 @@ rc /l 0x40c /fo&quot;Release/tile_utility.res&quot; /d &quot;NDEBUG&quot; tile_u
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;NL_RELEASE_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="tile_utility.def">
-			</File>
-			<File
-				RelativePath="tile_utility.rc">
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="__STL_DEBUG;_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="resource.h">
+				RelativePath="ligoscape_utility.h">
 			</File>
 			<File
-				RelativePath="tile_utility.h">
+				RelativePath="max_to_ligo.h">
+			</File>
+			<File
+				RelativePath="resource.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="Scripts Files"
+			Filter="ms">
+			<File
+				RelativePath="ligoscript.txt">
+			</File>
+			<File
+				RelativePath="scripts\nel_ligo_export.ms">
+			</File>
+			<File
+				RelativePath="macroscripts\nel_ligoscape.mcr">
+			</File>
+			<File
+				RelativePath="scripts\nel_ligoscape.ms">
 			</File>
 		</Filter>
 		<Filter

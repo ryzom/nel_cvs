@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.1 2000/12/15 14:51:53 lecroart Exp $
+ * $Id: mutex.cpp,v 1.2 2000/12/15 15:22:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ CMutex::CMutex()
 {
 	// Create a mutex with no initial owner.
 	Mutex = (void *) CreateMutex (NULL, FALSE, NULL);
-	nlassert (Mutex != NULL)
+	nlassert (Mutex != NULL);
 }
 
 void CMutex::enter ()

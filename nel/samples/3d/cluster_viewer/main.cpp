@@ -1,7 +1,7 @@
 /** \file main.cpp
  * viewer of cluster system
  *
- * $Id: main.cpp,v 1.2 2002/03/18 10:51:30 besson Exp $
+ * $Id: main.cpp,v 1.3 2003/08/18 10:12:33 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,7 +251,7 @@ int WINAPI WinMain(
 	CNELU::Camera->setClusterSystem ((CInstanceGroup*)-1); 
 
 
-	CClipTrav *pClipTrav = (CClipTrav*)CNELU::Scene.getTrav (ClipTravId);
+	CClipTrav *pClipTrav = (CClipTrav*)&(CNELU::Scene.getClipTrav());
 	dcsTemp.Name = "Root";
 	dcsTemp.pIG = NULL;
 	DispCS.push_back (dcsTemp);

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.4 2003/05/22 14:14:27 corvazier Exp $
+ * $Id: main.cpp,v 1.5 2003/07/04 13:34:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,6 +91,7 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 	bool ms = options.find ("-ms") != options.end();
 	bool vi = options.find ("-vi") != options.end();
 	bool vl = options.find ("-vl") != options.end();
+	bool veil = options.find ("-veil") != options.end();
 
 	// Special option.
 	if( ms )
@@ -170,7 +171,7 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 				uint k;
 				for(k = 0; k < ig._InstancesInfos.size(); ++k)
 				{
-					fprintf(logStream, "    Instance %s : x = %.1f, y = %.1f, z = %.1f, sx = %.1f, sy = %.1f, sz = %.1f\n", ig._InstancesInfos[k].Name.c_str(), ig._InstancesInfos[k].Pos.x + gpos.x, ig._InstancesInfos[k].Pos.y + gpos.y, ig._InstancesInfos[k].Pos.z + gpos.z, ig._InstancesInfos[k].Scale.x, ig._InstancesInfos[k].Scale.y, ig._InstancesInfos[k].Scale.z);
+					fprintf(logStream, "    Instance %3d: %s : x = %.1f, y = %.1f, z = %.1f, sx = %.1f, sy = %.1f, sz = %.1f\n", k, ig._InstancesInfos[k].Name.c_str(), ig._InstancesInfos[k].Pos.x + gpos.x, ig._InstancesInfos[k].Pos.y + gpos.y, ig._InstancesInfos[k].Pos.z + gpos.z, ig._InstancesInfos[k].Scale.x, ig._InstancesInfos[k].Scale.y, ig._InstancesInfos[k].Scale.z);
 				}
 			}
 			if (vl)
@@ -180,7 +181,52 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 				for(k = 0; k < ig.getNumPointLights(); ++k)
 				{
 					const CPointLightNamed &pl = ig.getPointLightNamed(k);
-					fprintf(logStream, "    Light group = %d, anim = \"%s\" x = %.1f, y = %.1f, z = %.1f\n", pl.LightGroup, pl.AnimatedLight.c_str(), pl.getPosition().x + gpos.x, pl.getPosition().y + gpos.y, pl.getPosition().z + gpos.z);
+					fprintf(logStream, "    Light %3d: Light group = %d, anim = \"%s\" x = %.1f, y = %.1f, z = %.1f\n", k, pl.LightGroup, pl.AnimatedLight.c_str(), pl.getPosition().x + gpos.x, pl.getPosition().y + gpos.y, pl.getPosition().z + gpos.z);
+				}
+			}
+			if (veil)
+			{
+				fprintf(logStream, "  Instances Bound To Lights:\n");
+				fprintf(logStream, "    WordList:\n");
+				fprintf(logStream, "    'StaticLight Not Computed' means the instance has a ASP flag or the ig is not yet lighted\n");
+				fprintf(logStream, "    If lighted, for each instance, the format is 'SunContribution(8Bit) - idLight0;idLight1 (or NOLIGHT) - LocalAmbientId (or GLOBAL_AMBIENT)' \n");
+				fprintf(logStream, "    DCS means the instance don't cast shadow (used in the lighter)\n");
+				fprintf(logStream, "    DCSIGL Same but very special for ig_lighter.exe only\n");
+				fprintf(logStream, "    ASP means the instance AvoidStaticLightPreCompute (used in the lighter.exe)\n");
+				uint k;
+				for(k = 0; k < ig._InstancesInfos.size(); ++k)
+				{
+					CInstanceGroup::CInstance	&instance= ig._InstancesInfos[k];
+					fprintf(logStream, "    Instance %3d: ", k);
+					if(!instance.StaticLightEnabled)
+						fprintf(logStream, " StaticLight Not Computed.");
+					else
+					{
+						fprintf(logStream, " %3d - ", instance.SunContribution);
+						if(instance.Light[0]==0xFF)
+							fprintf(logStream, "NOLIGHT - ");
+						else
+						{
+							fprintf(logStream, "%3d;", instance.Light[0]);
+							if(instance.Light[1]!=0xFF)
+								fprintf(logStream, "%3d", instance.Light[1]);
+							else
+								fprintf(logStream, "   ", instance.Light[1]);
+							fprintf(logStream, " - ");
+						}
+						if(instance.LocalAmbientId==0xFF)
+							fprintf(logStream, "GLOBAL_AMBIENT.  ");
+						else
+							fprintf(logStream, "%d.  ", instance.LocalAmbientId);
+					}
+					if(instance.DontCastShadow)
+						fprintf(logStream, "DCS,");
+					if(instance.DontCastShadowForIgLighter)
+						fprintf(logStream, "DCSIGL,");
+					if(instance.AvoidStaticLightPreCompute)
+						fprintf(logStream, "ASP,");
+
+					fprintf(logStream, "\n");
 				}
 			}
 		}
@@ -316,6 +362,7 @@ int		main(int argc, const char *argv[])
 		puts("    -ms display only a Warning if file is a .shape and is a Mesh, skinned, but without MRM");
 		puts("    -vi verbose instance informations");
 		puts("    -vl verbose light informations");
+		puts("    -veil verbose instances bound to light extra information");
 		puts("Press any key");
 		_getch();
 		return -1;

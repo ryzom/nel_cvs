@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.28 2001/04/06 16:08:39 lecroart Exp $
+ * $Id: debug.h,v 1.29 2001/04/17 15:33:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ extern CLog *AssertLog;
 /// Never use this function (internal use only)
 void nlFatalError (const char *format, ...);
 
-/// Never use this function but call the nlerror macro
+/// Never use this function but call the nlerror macro (internal use only)
 void nlError (const char *format, ...);
 
 /* Add standard displayer in all log in debug mode
@@ -94,8 +94,7 @@ NLMISC::createDebug (), NLMISC::MutexNLDebug->enter(), NLMISC::DebugLog->setPosi
  * \def nlinfo(exp)
  * Same as nldebug but it will be display in debug and in release mode.
  */
-#define nlinfo \
-/*NLMISC::InfoLog.setPosition( __LINE__, __FILE__ ),*/ NLMISC::createDebug (), NLMISC::InfoLog->displayNL
+#define nlinfo NLMISC::createDebug (), NLMISC::InfoLog->setPosition( __LINE__, __FILE__ ), NLMISC::InfoLog->displayNL
 
 /**
  * \def nlwarning(exp)
@@ -114,8 +113,7 @@ NLMISC::createDebug (), NLMISC::MutexNLDebug->enter(), NLMISC::DebugLog->setPosi
 	}
  *\endcode
  */
-#define nlwarning \
-NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog->displayNL
+#define nlwarning NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog->displayNL
 
 /**
  * \def nlerror(exp)
@@ -133,9 +131,14 @@ NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), N
 	}
  *\endcode
  */
-#define nlerror \
-NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
+#define nlerror NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 
+/**
+ * \def nlerrornoex(exp)
+ * Same as nlerror but it doesn't generate any exceptions. It's used only in very specific case, for example, when you
+ * call a nlerror in a catch block (look the service.cpp)
+ */
+#define nlerrornoex NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlError
 
 /**
  * \def nlassert(exp)
@@ -372,7 +375,7 @@ struct EFatalError : public Exception
 };
 
 
-// undef default assert to force people to use nlassert() instead of asser()
+// undef default assert to force people to use nlassert() instead of assert()
 #ifdef assert
 #undef assert
 #endif

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.69 2005/02/16 11:47:51 lancon Exp $
+ * $Id: admin_executor_service.cpp,v 1.70 2005/02/16 14:05:36 lancon Exp $
  *
  */
 
@@ -1701,6 +1701,10 @@ NLMISC_COMMAND( makeLogReport, "Build a report of logs produced on the machine",
 		if (!args.empty())
 		{
 			MakingLogTask.setLogPath(args[0]);
+		}
+		else
+		{
+			MakingLogTask.setLogPathToDefault();
 		}
 
 		if ( ! MakingLogTask.isRunning() )

@@ -1,7 +1,7 @@
 /** \file log_report.cpp
  * <File description>
  *
- * $Id: log_report.cpp,v 1.4 2005/02/16 11:47:51 lancon Exp $
+ * $Id: log_report.cpp,v 1.5 2005/02/16 14:05:35 lancon Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -90,7 +90,18 @@ void sortLogFiles( vector<std::string>& filenames )
 
 void	CMakeLogTask::setLogPath(const std::string & logPath)
 {
+	if (_DefaultLogPath.empty()) {  _DefaultLogPath = LogPath.get(); }
 	LogPath = logPath;
+}
+
+
+void	CMakeLogTask::setLogPathToDefault()
+{
+	if (!_DefaultLogPath.empty())
+	{
+		LogPath = _DefaultLogPath;
+		_DefaultLogPath = "";
+	}
 }
 
 

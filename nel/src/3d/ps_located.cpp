@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.45 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_located.cpp,v 1.46 2002/04/18 12:12:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1296,8 +1296,12 @@ void CPSLocated::queryCollisionInfo(void)
 	{
 		_CollisionInfo = new TPSAttribCollisionInfo;
 		_CollisionInfoNbRef = 1;
-		_CollisionInfo->resize(_MaxSize);
-		resetCollisionInfo();
+		_CollisionInfo->resize(_MaxSize);		
+
+		for(uint k = 0; k < _Size; ++k)
+		{
+			_CollisionInfo->insert();
+		}		
 	}
 }
 

@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.41 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: driver.h,v 1.42 2000/12/22 13:17:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,9 @@ public:
 typedef std::vector<GfxMode> ModeList;
 
 // --------------------------------------------------
-
+// *** IMPORTANT ********************
+// *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
+// **********************************
 class IDriver
 {
 public:

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.1 2000/12/21 13:40:59 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.2 2000/12/22 13:17:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,9 @@ class CUV;
 
 // --------------------------------------------------
 
+// *** IMPORTANT ********************
+// *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
+// **********************************
 class IVBDrvInfos : public CRefCount
 {
 private:
@@ -71,6 +74,10 @@ const uint32	IDRV_VF_UV[IDRV_VF_MAXSTAGES]	= { 0x00000100,0x00000200,0x00000400,
 
 /**
  * <Class description>
+ *
+ * *** IMPORTANT ********************
+ * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
+ * **********************************
  * \author Cyril Corvazier
  * \author Nevrax France
  * \date 2000

@@ -1,7 +1,7 @@
 /** \file primitive_block.h
  * <File description>
  *
- * $Id: primitive_block.h,v 1.1 2000/12/21 13:40:59 corvazier Exp $
+ * $Id: primitive_block.h,v 1.2 2000/12/22 13:17:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,10 @@ namespace NL3D {
 
 /**
  * <Class description>
+ *
+ * *** IMPORTANT ********************
+ * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
+ * **********************************
  * \author Cyril Corvazier
  * \author Nevrax France
  * \date 2000

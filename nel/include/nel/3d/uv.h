@@ -1,7 +1,7 @@
 /** \file uv.h
  * <File description>
  *
- * $Id: uv.h,v 1.2 2000/12/12 10:04:27 berenguier Exp $
+ * $Id: uv.h,v 1.3 2000/12/22 13:17:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,10 @@ namespace NL3D
 // ***************************************************************************
 /**
  * 2d UV.
+ *
+ * *** IMPORTANT ********************
+ * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
+ * **********************************
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000

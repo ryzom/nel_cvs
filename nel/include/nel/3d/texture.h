@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.16 2000/12/22 10:42:05 corvazier Exp $
+ * $Id: texture.h,v 1.17 2000/12/22 13:17:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,10 @@ public:
  * Interface for textures
  * Sharing System note: The deriver may implement sharing system by implement supportSharing() and getShareName().
  * Such a texture may return a Unique Name for sharing. If the driver already has this texture, it will reuse it.
+ *
+ * *** IMPORTANT ********************
+ * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
+ * **********************************
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000

@@ -1,6 +1,6 @@
 /** \file volatil_memory.h
  *
- * $Id: volatil_memory.h,v 1.3 2001/05/31 13:34:09 chafik Exp $
+ * $Id: volatil_memory.h,v 1.4 2001/05/31 14:59:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,7 +117,7 @@ namespace NLAIAGENT
 	public:
 		static const NLAIC::CIdentType *IdVolatilMemmory;
 
-	private:
+	protected:
 		uint _Time;
 		IBaseGroupType *_List;
 		std::list<IObjectIA *> _Connecter; 
@@ -145,9 +145,8 @@ namespace NLAIAGENT
 		void erase(CConstIteratorContener &);
 
 		void addAccount(IObjectIA *);
-		void releaseAccount(IObjectIA *);				
+		void releaseAccount(IObjectIA *);
 		void init();
-
 
 		/// \name IBasicInterface method.
 		//@{
@@ -203,6 +202,9 @@ namespace NLAIAGENT
 			return IObjectIA::ProcessRun;
 		}
 		//@}
+
+	protected:
+		virtual void sendUpdateMessage(IObjectIA *);
 
 	private:
 		void searchBest();

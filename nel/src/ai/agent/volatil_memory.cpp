@@ -1,6 +1,6 @@
 /** \file volatil_memory.cpp
  *
- * $Id: volatil_memory.cpp,v 1.2 2001/05/31 13:30:44 chafik Exp $
+ * $Id: volatil_memory.cpp,v 1.3 2001/05/31 15:00:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
 #include "nel/ai/nl_ai.h"
 #include "nel/ai/agent/volatil_memory.h"
 #include "nel/ai/agent/agent_digital.h"
+#include "nel/ai/agent/msg_on_change.h"
 namespace NLAIAGENT
 {
 	const NLAIC::CIdentType *CHashTimerManager::IdHashTimerManager = NULL;
@@ -161,8 +162,25 @@ namespace NLAIAGENT
 		if((const IObjetOp*)i == _PairToDelete) searchBest();		
 	}
 
-	void CVolatilMemmory::addAccount(IObjectIA *a)
+	void CVolatilMemmory::sendUpdateMessage(IObjectIA *o)
 	{
+		std::list<IObjectIA *>::iterator i = _Connecter.begin();
+
+		while(i != _Connecter.end())
+		{
+			IMessageBase *msg = new COnChangeMsg;
+			NLAIAGENT::CMessageGroup group(1);
+			msg->setGroup(group);
+			msg->setSender(this);
+			msg->setReceiver(*i);
+			o->incRef();
+			msg->push(o);
+			(*i)->sendMessage(msg);
+		}
+	}
+
+	void CVolatilMemmory::addAccount(IObjectIA *a)
+	{		
 		_Connecter.push_back(a);
 	}
 
@@ -178,7 +196,7 @@ namespace NLAIAGENT
 			}
 
 			i++;
-		}
+		}		
 	}
 	IObjectIA::CProcessResult CVolatilMemmory::sendMessage(IMessageBase *msg)
 	{

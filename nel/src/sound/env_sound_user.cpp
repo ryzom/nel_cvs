@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.9 2001/07/20 16:08:33 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.10 2001/08/24 12:40:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -189,7 +189,10 @@ void			CEnvSoundUser::selectEnv( const char *tag )
 void	CEnvSoundUser::serialFileHeader( NLMISC::IStream& s )
 {
 	s.serialCheck( (uint32)'SEN' ); // NeL Environment Sounds
-	s.serialVersion( 1 );
+	if ( s.serialVersion( 1 ) < 1 )
+	{
+		throw EOlderStream();
+	}
 }
 
 

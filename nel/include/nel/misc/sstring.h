@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.20 2004/12/03 11:11:22 barbier Exp $
+ * $Id: sstring.h,v 1.21 2004/12/30 17:44:54 miller Exp $
  */
 
 
@@ -17,6 +17,7 @@
 #include <stdio.h>
 
 #include "nel/misc/stream.h"
+#include "nel/misc/path.h"
 
 namespace	NLMISC
 {
@@ -146,9 +147,9 @@ public:
 	static bool isValidKeywordChar(char c); 
 
 	/// A handy utility routine for knowing if a character is a hex digit 0..9, a..f
-	static bool isHexChar(char c);
+	static bool isHexDigit(char c);
 	/// A handy utility routine for converting a hex digit to a numeric value 0..15
-	static char convertHexChar(char c);
+	static char convertHexDigit(char c);
 
 	// a handy routine that tests whether a given string is a valid file name or not
 	// "\"hello there\\bla\""	is valid 
@@ -240,7 +241,8 @@ public:
 	bool splitBySeparator(	char separator, CVectorSString& result,
 							bool useAngleBrace=false,				// treat '<' and '>' as brackets
 							bool useSlashStringEscape=true,			// treat '\' as escape char so "\"" == '"'
-							bool useRepeatQuoteStringEscape=true	// treat """" as '"'
+							bool useRepeatQuoteStringEscape=true,	// treat """" as '"'
+							bool skipBlankEntries=false				// dont add blank entries to the result vector
 						 ) const;
 
 	/// Append the separator-separated elements in the string to the result vector
@@ -249,7 +251,8 @@ public:
 									bool useAngleBrace=false,				// treat '<' and '>' as brackets
 									bool useSlashStringEscape=true,			// treat '\' as escape char so "\"" == '"'
 									bool useRepeatQuoteStringEscape=true,	// treat """" as '"'
-									bool retainSeparators=false				// have the separators turn up in the result vector
+									bool retainSeparators=false,			// have the separators turn up in the result vector
+									bool skipBlankEntries=false				// dont add blank entries to the result vector
 								 ) const;
 
 	/// join an array of strings to form a single string (appends to the existing content of this string)
@@ -385,6 +388,12 @@ public:
 
 	/// Serial
 	void serial( NLMISC::IStream& s );
+
+	/// Read a text file into a string
+	bool readFromFile(const CSString& fileName);
+
+	/// Write a string to a text file
+	bool writeToFile(const CSString& fileName);
 };
 
 
@@ -895,7 +904,7 @@ inline bool CSString::isValidKeywordChar(char c)
 	return false;
 }
 
-inline bool CSString::isHexChar(char c) 
+inline bool CSString::isHexDigit(char c) 
 {
 	if (c>='0' && c<='9') return true;
 	if (c>='A' && c<='F') return true;
@@ -903,11 +912,11 @@ inline bool CSString::isHexChar(char c)
 	return false;
 }
 
-inline char CSString::convertHexChar(char c) 
+inline char CSString::convertHexDigit(char c) 
 {
 	if (c>='0' && c<='9') return c-'0';
-	if (c>='A' && c<='F') return c-'A';
-	if (c>='a' && c<='f') return c-'a';
+	if (c>='A' && c<='F') return c-'A'+10;
+	if (c>='a' && c<='f') return c-'a'+10;
 	return 0;
 }
 
@@ -1255,9 +1264,10 @@ inline bool CSString::splitLines(CVectorSString& result) const
 }
 
 inline bool CSString::splitBySeparator(	char separator, CVectorSString& result,
-										bool useAngleBrace,				// treat '<' and '>' as brackets
-										bool useSlashStringEscape,		// treat '\' as escape char so "\"" == '"'
-										bool useRepeatQuoteStringEscape	// treat """" as '"'
+										bool useAngleBrace,					// treat '<' and '>' as brackets
+										bool useSlashStringEscape,			// treat '\' as escape char so "\"" == '"'
+										bool useRepeatQuoteStringEscape,	// treat """" as '"'
+										bool skipBlankEntries				// dont add blank entries to the result vector
 									 ) const
 {
 	CSString s=*this;
@@ -1266,6 +1276,8 @@ inline bool CSString::splitBySeparator(	char separator, CVectorSString& result,
 		uint32 pre=s.size();
 		result.push_back(s.splitToSeparator(separator,true,useAngleBrace,useSlashStringEscape,
 											useRepeatQuoteStringEscape,true));
+		if (skipBlankEntries && result.back().empty())
+			result.pop_back();
 		uint32 post=s.size();
 		if (post>=pre)
 			return false;
@@ -1277,7 +1289,8 @@ inline bool CSString::splitByOneOfSeparators(	const CSString& separators, CVecto
 												bool useAngleBrace,				// treat '<' and '>' as brackets
 												bool useSlashStringEscape,		// treat '\' as escape char so "\"" == '"'
 												bool useRepeatQuoteStringEscape,// treat """" as '"'
-												bool retainSeparators			// have the separators turn up in the result vector
+												bool retainSeparators,			// have the separators turn up in the result vector
+												bool skipBlankEntries				// dont add blank entries to the result vector
 											 ) const
 {
 	CSString s=*this;
@@ -1292,10 +1305,12 @@ inline bool CSString::splitByOneOfSeparators(	const CSString& separators, CVecto
 		{
 			if (!s.empty())
 			{
-				result.back()=s[0];
+				if (retainSeparators)
+					result.back()=s[0];
 				s=s.leftCrop(1);
 			}
-			else
+
+			if(skipBlankEntries && result.back().empty())
 				result.pop_back();
 		}
 
@@ -1534,13 +1549,13 @@ inline CSString CSString::unquote(bool useSlashStringEscape,bool useRepeatQuoteS
 					break;
 
 				case 'x':
-					if (i+1<result.size() && isHexChar(result[i+1]))
+					if (i+1<result.size() && isHexDigit(result[i+1]))
 					{
-						char hold=convertHexChar(result[i+1]);
+						char hold=convertHexDigit(result[i+1]);
 						i+=2;
-						if (i<result.size() && isHexChar(result[i]))
+						if (i<result.size() && isHexDigit(result[i]))
 						{
-							hold=8*hold+convertHexChar(result[i]);
+							hold=8*hold+convertHexDigit(result[i]);
 							++i;
 						}
 						result[j]=hold;
@@ -1625,23 +1640,32 @@ inline CSString CSString::decodeXML() const
 				if (substr(i+1,3)=="gt;")	{ i+=3; result+='>'; continue; }
 
 				// hex coding for extended characters
-				if ((size()-i)>=6)
+				if ((size()-i)>=5)
 				{
-					if ((*this)[i+5]!=';') break;
 					if ((*this)[i+1]!='#') break;
-					if ((*this)[i+2]!='x') break;
+					if (((*this)[i+2]|('a'-'A'))!='x') break;
+					// setup j to point at the first character following "&#x"[0-9|a-f]*
+					uint32 j; for (j=i+3;j<size();++j) if (!isHexDigit((*this)[j])) break;
+					// make sure that at least 1 hex character was found
+					if (j==i+3) break;
+					// make sure have the terminating ';' to complete the token: "&#x"[0-9|a-f]*";"
+					if (j>=size() || (*this)[j]!=';') break;
+					// make sure that the value we have is only one or 2 hex digits
+					if (j>=i+6) nlwarning("Truncating extended char code '%s",(substr(i,j-i+1)+"' => using "+substr(j-2,2)).c_str());
 
-					char c;
-					if ((*this)[i+3]>='0'&&(*this)[i+3]<='9')		c= char(16*((*this)[i+3]-'0'));
-					else if ((*this)[i+3]>='A'&&(*this)[i+3]<='F')	c= char(16*((*this)[i+3]-'A')+160);
-					else											break;
+					// convert the 1 or 2 last hex digits to a char value
+					char c=0;
+					if (j>=i+5)
+					{
+						// if we have 2 or more digits then grab the high digit
+						c+= convertHexDigit( (*this)[j-2] )*16;
+					}
+					c+= convertHexDigit( (*this)[j-1] );
 
-					if ((*this)[i+4]>='0'&&(*this)[i+4]<='9')		c+= char((*this)[i+4]-'0');
-					else if ((*this)[i+4]>='A'&&(*this)[i+4]<='F')	c+= char((*this)[i+4]-'A'+10);
-					else											break;
-
-					i+=5;
+					// append our new character to the result string
 					result+=c;
+					// move 'i' forward to point at the ';' .. the for(...) will increment i to point to next char
+					i=j;
 					continue;
 				}
 			}
@@ -1677,16 +1701,28 @@ inline bool CSString::isEncodedXML() const
 			if (i>=3 && substr(i-3,3)=="&gt")	{ foundToken= true; i-=3; break; }
 
 			// hex coding for extended characters
-			if (i>=5)
+			if (i>=3 && isHexDigit((*this)[i-1]))
 			{
-				if ((*this)[i-5]!='&') continue;
-				if ((*this)[i-4]!='#') continue;
-				if ((*this)[i-3]!='x') continue;
-				if (!((*this)[i-2]>='0'&&(*this)[i-2]<='9')&&!((*this)[i-2]>='A'&&(*this)[i-2]<='F')) continue;
-				if (!((*this)[i-1]>='0'&&(*this)[i-1]<='9')&&!((*this)[i-1]>='A'&&(*this)[i-1]<='F')) continue;
-				
-				i-=5;
+				uint32 j,k;
+				// locate the start of a potential hex string
+				for (j=i;j--;)
+					if ((*this)[j]=='&')
+						break;
+				// make sure that at least 5 chars were found for: &#x0;
+				if (i-j<4) continue;
+				// make sure we have '&#x' at the start
+				if ((*this)[j]!='&') continue;
+				if ((*this)[j+1]!='#') continue;
+				if ((*this)[j+2]!='x') continue;
+				// ensure that the remainder between the leading '&#x' and trailing ';' are hex digits
+				for (k=j+3;k<i;++k)
+					if (!isHexDigit((*this)[k]))
+						break;
+				if (k!=i) continue;
+				// skip the characters that were matched - i now refs the opening '&'
+				i=j;
 				foundToken= true;
+				break;
 			}
 		}
 	}
@@ -1715,15 +1751,26 @@ inline bool CSString::isXMLCompatible(bool isParameter) const
 			if (i>=3 && substr(i-3,3)=="&gt")	{ i-=3; continue; }
 
 			// hex coding for extended characters
-			if (i>=5)
+			if (i>=3 && isHexDigit((*this)[i-1]))
 			{
-				if ((*this)[i-5]!='&') continue;
-				if ((*this)[i-4]!='#') continue;
-				if ((*this)[i-3]!='x') continue;
-				if (!((*this)[i-2]>='0'&&(*this)[i-2]<='9')&&!((*this)[i-2]>='A'&&(*this)[i-2]<='F')) continue;
-				if (!((*this)[i-1]>='0'&&(*this)[i-1]<='9')&&!((*this)[i-1]>='A'&&(*this)[i-1]<='F')) continue;
-				
-				i-=5;
+				uint32 j,k;
+				// locate the start of a potential hex string
+				for (j=i;j--;)
+					if ((*this)[j]=='&')
+						break;
+				// make sure that at least 5 chars were found for: &#x0;
+				if (i-j<4) continue;
+				// make sure we have '&#x' at the start
+				if ((*this)[j]!='&') continue;
+				if ((*this)[j+1]!='#') continue;
+				if ((*this)[j+2]!='x') continue;
+				// ensure that the remainder between the leading '&#x' and trailing ';' are hex digits
+				for (k=j+3;k<i;++k)
+					if (!isHexDigit((*this)[k]))
+						break;
+				if (k!=i) continue;
+				// skip the characters that were matched - i now refs the opening '&'
+				i=j;
 				continue;
 			}
 
@@ -1951,7 +1998,7 @@ inline bool CSString::operator<(const char* other) const
 inline std::string::const_reference CSString::operator[](std::string::size_type idx) const
 {
 	static char zero=0;
-	if (idx > size())
+	if (idx >= size())
 		return zero;
 	return data()[idx];
 }
@@ -1959,7 +2006,7 @@ inline std::string::const_reference CSString::operator[](std::string::size_type 
 inline std::string::reference CSString::operator[](std::string::size_type idx)
 {
 	static char zero=0;
-	if (idx > size())
+	if (idx >= size())
 		return zero;
 	return const_cast<std::string::value_type&>(data()[idx]);
 }
@@ -1973,6 +2020,48 @@ inline void CSString::serial( NLMISC::IStream& s )
 {
 	s.serial( reinterpret_cast<std::string&>( *this ) );
 }
+
+inline bool CSString::readFromFile(const CSString& fileName)
+{
+	FILE* file;
+	file=fopen(fileName.c_str(),"rb");
+	if (file==NULL)
+	{
+		clear();
+		nlwarning("Failed to open file for reading: %s",fileName.c_str());
+		return false;
+	}
+	resize(NLMISC::CFile::getFileSize(file));
+	uint32 bytesRead=fread(const_cast<char*>(data()),1,size(),file);
+	fclose(file);
+	if (bytesRead!=size())
+	{
+		resize(bytesRead);
+		nlwarning("Failed to read file contents (requested %u bytes but fread returned %u) for file:%s",size(),bytesRead,fileName.c_str());
+		return false;
+	}
+	return true;
+}
+
+inline bool CSString::writeToFile(const CSString& fileName)
+{
+	FILE* file;
+	file=fopen(fileName.c_str(),"wb");
+	if (file==NULL)
+	{
+		nlwarning("Failed to open file for writing: %s",fileName.c_str());
+		return false;
+	}
+	uint32 bytesWritten=fwrite(const_cast<char*>(data()),1,size(),file);
+	fclose(file);
+	if (bytesWritten!=size())
+	{
+		nlwarning("Failed to write file contents (requested %u bytes but fwrite returned %u) for file:%s",size(),bytesWritten,fileName.c_str());
+		return false;
+	}
+	return true;
+}
+
 /*
 inline CSString operator+(const CSString& s0,char s1)
 {

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.171 2004/05/07 19:29:43 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.172 2004/05/14 15:00:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,6 +98,8 @@ void displayGLError(GLenum error);
 	}\
 }
 */
+
+
 
 
 namespace NL3D {
@@ -1156,9 +1158,24 @@ private:
 	uint32					_TextureTargetHeight;
 	bool					_TextureTargetUpdload;
 	// @}
+
+	// misc
+public:
+	static CMaterial::CTexEnv	_TexEnvReplace;
+protected:
+	// is the window active ,
+	bool					_WndActive;
 public:
 	void incrementResetCounter() { ++_ResetCounter; }
-	uint					SwapBufferCounter;
+	bool isWndActive() const { return _WndActive; }	
+	const IVertexBufferHardGL	*getCurrentVertexBufferHard() const { return _CurrentVertexBufferHard; }	
+	// For debug : dump list of mapped buffers
+	#ifdef NL_DEBUG
+		void dumpMappedBuffers();
+	#endif
+
+	// tmp for debug
+	void checkTextureOn() const;
 };
 
 

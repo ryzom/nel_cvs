@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.217 2004/05/11 17:36:29 boucher Exp $
+ * $Id: driver_opengl.cpp,v 1.218 2004/05/14 15:00:05 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -92,6 +92,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 namespace NL3D
 {
 
+CMaterial::CTexEnv CDriverGL::_TexEnvReplace;
+
+
 #ifdef NL_OS_WINDOWS
 uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
@@ -138,7 +141,19 @@ static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam,
 			driver->_WindowY = rect.top;
 		}
 	}
-	
+	else if (message == WM_ACTIVATE)
+	{
+		WORD fActive = LOWORD(wParam); 
+		if (fActive == WA_INACTIVE)
+		{
+			driver->_WndActive = false;
+		}
+		else
+		{
+			driver->_WndActive = true;
+		}
+	}
+
 	if (driver->_EventEmitter.getNumEmitters() > 0)
 	{
 		CWinEventEmitter *we = NLMISC::safe_cast<CWinEventEmitter *>(driver->_EventEmitter.getEmitter(0));
@@ -304,7 +319,13 @@ CDriverGL::CDriverGL()
 	_VBHardProfiling= false;
 	_CurVBHardLockCount= 0;
 	_NumVBHardProfileFrame= 0;
-	SwapBufferCounter = 0;
+	_Interval = 1;
+
+	_TexEnvReplace.setDefault();
+	_TexEnvReplace.Env.OpAlpha = CMaterial::Previous;
+	_TexEnvReplace.Env.OpRGB = CMaterial::Previous;
+
+	_WndActive = false;
 }
 
 
@@ -1106,7 +1127,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_SUM_EXT);
-	
+		
 		
 	_CurrViewport.init(0.f, 0.f, 1.f, 1.f);
 	_CurrScissor.initFullScreen();
@@ -1146,8 +1167,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		_SupportVBHard= true;
 		_MaxVerticesByVBHard= _Extensions.NVVertexArrayRangeMaxVertex;
 	}			
-	else if(_Extensions.ATITextureEnvCombine3 &&  !_Extensions.IsATI9500OrAbove && _Extensions.ATIVertexArrayObject)
-	{		
+	else if(_Extensions.ATITextureEnvCombine3 &&  !_Extensions.IsATI9500OrAbove && _Extensions.ATIVertexArrayObject)	
+	{	
 		// NB
 		// on Radeon 9200 and below : ATI_vertex_array_object is better (no direct access to AGP with ARB_vertex_buffer_object -> slow unlock)
 		// on Radeon 9500 and above : ARB_vertex_buffer_object is better 
@@ -1167,7 +1188,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		// _MaxVerticesByVBHard= 65535; // should always work with recent drivers.		
 		// tmp fix for ati
 		_MaxVerticesByVBHard= 16777216;
-	}
+	}		
 	// Else, try with ARB ext
 	else if (_Extensions.ARBVertexBufferObject)
 	{
@@ -1610,10 +1631,9 @@ void CDriverGL::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 
 // --------------------------------------------------
 bool CDriverGL::swapBuffers()
-{			
+{
 	// Reset texture shaders
 	//resetTextureShaders();
-
 	activeVertexProgram(NULL);
 
 	/* Yoyo: must do this (GeForce bug ??) esle weird results if end render with a VBHard.
@@ -1712,7 +1732,13 @@ bool CDriverGL::swapBuffers()
 		NLMISC::safe_cast<NLMISC::CDIEventEmitter *>(_EventEmitter.getEmitter(1))->poll();
 	}
 #endif
-
+	
+	if (!_WndActive)
+	{
+		if (_AGPVertexArrayRange) _AGPVertexArrayRange->updateLostBuffers();
+		if (_VRAMVertexArrayRange) _VRAMVertexArrayRange->updateLostBuffers();
+	}
+	
 
 #ifdef NL_OS_WINDOWS
 	SwapBuffers(_hDC);
@@ -1722,6 +1748,8 @@ bool CDriverGL::swapBuffers()
 		
 #endif // NL_OS_WINDOWS
 	
+	
+
 	// Activate the default texture environnments for all stages.
 	//===========================================================
 	// This is not a requirement, but it ensure a more stable state each frame.
@@ -1769,9 +1797,9 @@ bool CDriverGL::swapBuffers()
 		_CurVBHardLockCount= 0;
 		_NumVBHardProfileFrame++;
 	}	
-
-	++ SwapBufferCounter;
-
+	// on ati, if the window is inactive, check all vertex buffer to see which one are lost		
+	if (_AGPVertexArrayRange) _AGPVertexArrayRange->updateLostBuffers();
+	if (_VRAMVertexArrayRange) _VRAMVertexArrayRange->updateLostBuffers();			
 	return true;
 }
 
@@ -2240,6 +2268,7 @@ const char *CDriverGL::getVideocardInformation ()
 
 void CDriverGL::setCapture (bool b)
 {
+
 #ifdef NL_OS_WINDOWS
 
 	if (b)
@@ -2367,7 +2396,7 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 										 uint32 width,
 										 uint32 height														
 										)
-{	
+{
 	nlassert(!tex->isTextureCube());
 	bool compressed = false;
 	getGlTextureFormat(*tex, compressed);
@@ -2508,6 +2537,7 @@ uint32			CDriverGL::profileSetupedMaterials() const
 // ***************************************************************************
 uint32			CDriverGL::profileSetupedModelMatrix() const
 {
+	
 	return _NbSetupModelMatrixCall;
 }
 
@@ -2515,6 +2545,7 @@ uint32			CDriverGL::profileSetupedModelMatrix() const
 // ***************************************************************************
 void			CDriverGL::enableUsedTextureMemorySum (bool enable)
 {
+	
 	if (enable)
 		nlinfo ("PERFORMANCE INFO: enableUsedTextureMemorySum has been set to true in CDriverGL\n");
 	_SumTextureMemoryUsed=enable;
@@ -2524,6 +2555,7 @@ void			CDriverGL::enableUsedTextureMemorySum (bool enable)
 // ***************************************************************************
 uint32			CDriverGL::getUsedTextureMemory() const
 {
+	
 	// Sum memory used
 	uint32 memory=0;
 
@@ -2550,6 +2582,7 @@ uint32			CDriverGL::getUsedTextureMemory() const
 // ***************************************************************************
 bool CDriverGL::supportTextureShaders() const
 {
+	
 	// fully supported by NV_TEXTURE_SHADER	
 	return _Extensions.NVTextureShader;
 }
@@ -2557,6 +2590,7 @@ bool CDriverGL::supportTextureShaders() const
 // ***************************************************************************
 bool CDriverGL::isWaterShaderSupported() const
 {
+	
 	if (!_Extensions.EXTVertexShader && !_Extensions.NVVertexProgram && !_Extensions.ARBVertexProgram) return false; // should support vertex programms
 	if (!_Extensions.NVTextureShader && !_Extensions.ATIFragmentShader && !_Extensions.ARBFragmentProgram) return false;
 	return true;
@@ -2565,6 +2599,7 @@ bool CDriverGL::isWaterShaderSupported() const
 // ***************************************************************************
 bool CDriverGL::isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const
 {
+	
 	if (_Extensions.NVTextureShader)
 	{
 		// all the given addessing mode are supported with this extension
@@ -2579,6 +2614,7 @@ bool CDriverGL::isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) c
 // ***************************************************************************
 void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4])
 {
+	
 	if (!supportTextureShaders()) return;
 	//nlassert(supportTextureShaders());
 	nlassert(stage < (uint) inlGetNumTextStages() );
@@ -2592,6 +2628,7 @@ void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const uint stage, const floa
 // ***************************************************************************
 void      CDriverGL::enableNVTextureShader(bool enabled)
 {		
+	
 	if (enabled != _NVTextureShaderEnabled)
 	{
 
@@ -2612,6 +2649,7 @@ void      CDriverGL::enableNVTextureShader(bool enabled)
 // ***************************************************************************
 void CDriverGL::checkForPerPixelLightingSupport()
 {
+	
 	// we need at least 3 texture stages and cube map support + EnvCombine4 or 3 support	
 	// TODO : support for EnvCombine3
 	// TODO : support for less than 3 stages
@@ -2630,12 +2668,14 @@ void CDriverGL::checkForPerPixelLightingSupport()
 // ***************************************************************************
 bool CDriverGL::supportPerPixelLighting(bool specular) const
 {
+	
 	return specular ? _SupportPerPixelShader : _SupportPerPixelShaderNoSpec;	
 }
 
 // ***************************************************************************
 void	CDriverGL::setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float shininess)
 {
+	
 	_PPLExponent = shininess;
 	_PPLightDiffuseColor = diffuse;
 	_PPLightSpecularColor = specular;
@@ -2644,6 +2684,7 @@ void	CDriverGL::setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float sh
 // ***************************************************************************
 NLMISC::IMouseDevice	*CDriverGL::enableLowLevelMouse(bool enable, bool exclusive)
 {
+	
 #ifdef NL_OS_WINDOWS
 		if (_EventEmitter.getNumEmitters() < 2) return NULL;
 		NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<CDIEventEmitter *>(_EventEmitter.getEmitter(1));		
@@ -2700,6 +2741,7 @@ NLMISC::IKeyboardDevice		*CDriverGL::enableLowLevelKeyboard(bool enable)
 // ***************************************************************************
 NLMISC::IInputDeviceManager		*CDriverGL::getLowLevelInputDeviceManager()
 {
+	
 #ifdef NL_OS_WINDOWS
 		if (_EventEmitter.getNumEmitters() < 2) return NULL;
 		NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<NLMISC::CDIEventEmitter *>(_EventEmitter.getEmitter(1));
@@ -2712,6 +2754,7 @@ NLMISC::IInputDeviceManager		*CDriverGL::getLowLevelInputDeviceManager()
 // ***************************************************************************
 uint CDriverGL::getDoubleClickDelay(bool hardwareMouse)
 {
+	
 #ifdef NL_OS_WINDOWS
 		NLMISC::IMouseDevice *md = NULL;
 		if (_EventEmitter.getNumEmitters() >= 2)
@@ -2749,6 +2792,7 @@ bool			CDriverGL::supportBlendConstantColor() const
 // ***************************************************************************
 void			CDriverGL::setBlendConstantColor(NLMISC::CRGBA col)
 {
+	
 	// bkup
 	_CurrentBlendConstantColor= col;
 
@@ -2763,6 +2807,7 @@ void			CDriverGL::setBlendConstantColor(NLMISC::CRGBA col)
 // ***************************************************************************
 NLMISC::CRGBA	CDriverGL::getBlendConstantColor() const
 {
+	
 	return	_CurrentBlendConstantColor;
 }
 
@@ -2776,6 +2821,7 @@ sint			CDriverGL::getNbTextureStages() const
 // ***************************************************************************
 void CDriverGL::refreshProjMatrixFromGL()
 {
+	
 	if (!_ProjMatDirty) return;	
 	float mat[16];
 	glGetFloatv(GL_PROJECTION_MATRIX, mat);
@@ -2789,6 +2835,7 @@ void CDriverGL::refreshProjMatrixFromGL()
 // ***************************************************************************
 bool			CDriverGL::setMonitorColorProperties (const CMonitorColorProperties &properties)
 {
+	
 #ifdef NL_OS_WINDOWS
 	
 	// Get a DC
@@ -2846,6 +2893,7 @@ bool			CDriverGL::setMonitorColorProperties (const CMonitorColorProperties &prop
 // ***************************************************************************
 bool CDriverGL::supportEMBM() const
 {
+	
 	// For now, supported via ATI extension
 	return _Extensions.ATIEnvMapBumpMap;
 }
@@ -2853,6 +2901,7 @@ bool CDriverGL::supportEMBM() const
 // ***************************************************************************
 bool CDriverGL::isEMBMSupportedAtStage(uint stage) const
 {
+	
 	nlassert(supportEMBM());
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	return _StageSupportEMBM[stage];
@@ -2862,6 +2911,7 @@ bool CDriverGL::isEMBMSupportedAtStage(uint stage) const
 // ***************************************************************************
 void CDriverGL::setEMBMMatrix(const uint stage,const float mat[4])
 {
+	
 	nlassert(supportEMBM());
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	// 
@@ -2877,6 +2927,7 @@ void CDriverGL::setEMBMMatrix(const uint stage,const float mat[4])
 // ***************************************************************************
 void CDriverGL::initEMBM()
 {
+	
 	if (supportEMBM())
 	{			
 		std::fill(_StageSupportEMBM, _StageSupportEMBM + IDRV_MAT_MAXTEXTURES, false);
@@ -2905,14 +2956,14 @@ void CDriverGL::initEMBM()
 				}		
 			} 
 			// setup each stage to apply the bump map to the next stage (or previous if there's an unit at the last stage)
-			for(k = 0; k < _Extensions.NbTextureStages; ++k)
+			for(k = 0; k < (uint) _Extensions.NbTextureStages; ++k)
 			{
 				if (_StageSupportEMBM[k])
 				{	
 					// setup each stage so that it apply EMBM on the next stage
 					_DriverGLStates.activeTextureARB(k);
 					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);	  
-					if (k != (_Extensions.NbTextureStages - 1))
+					if (k != (uint) (_Extensions.NbTextureStages - 1))
 					{					
 						glTexEnvi(GL_TEXTURE_ENV, GL_BUMP_TARGET_ATI, GL_TEXTURE0_ARB + k + 1);
 					}
@@ -3128,6 +3179,7 @@ static void fetchPerturbedEnvMapR200()
 // ***************************************************************************
 void CDriverGL::initFragmentShaders()
 {		
+	
 	///////////////////
 	// WATER SHADERS //
 	///////////////////
@@ -3244,6 +3296,7 @@ void CDriverGL::initFragmentShaders()
 // ***************************************************************************
 void CDriverGL::deleteARBFragmentPrograms()
 {
+	
 	for(uint k = 0; k < 4; ++k)
 	{
 		if (ARBWaterShader[k])
@@ -3261,6 +3314,7 @@ void CDriverGL::deleteARBFragmentPrograms()
 // ***************************************************************************
 void CDriverGL::deleteFragmentShaders()
 {	
+	
 	deleteARBFragmentPrograms();
 	
 		
@@ -3287,6 +3341,7 @@ void CDriverGL::deleteFragmentShaders()
 // ***************************************************************************
 void CDriverGL::finish()
 {
+	
 	glFinish();
 	
 		
@@ -3325,6 +3380,7 @@ uint	CDriverGL::getSwapVBLInterval()
 // ***************************************************************************
 void	CDriverGL::enablePolygonSmoothing(bool smooth)
 {
+	
 	if(smooth)
 		glEnable(GL_POLYGON_SMOOTH);
 	else
@@ -3337,6 +3393,7 @@ void	CDriverGL::enablePolygonSmoothing(bool smooth)
 // ***************************************************************************
 bool	CDriverGL::isPolygonSmoothingEnabled() const
 {
+	
 	return _PolygonSmooth;
 }
 
@@ -3345,6 +3402,7 @@ bool	CDriverGL::isPolygonSmoothingEnabled() const
 // ***************************************************************************
 void	CDriverGL::startProfileVBHardLock()
 {
+	
 	if(_VBHardProfiling)
 		return;
 
@@ -3359,6 +3417,7 @@ void	CDriverGL::startProfileVBHardLock()
 // ***************************************************************************
 void	CDriverGL::endProfileVBHardLock(vector<std::string> &result)
 {
+	
 	if(!_VBHardProfiling)
 		return;
 
@@ -3397,6 +3456,7 @@ void	CDriverGL::endProfileVBHardLock(vector<std::string> &result)
 // ***************************************************************************
 void	CDriverGL::appendVBHardLockProfile(NLMISC::TTicks time, CVertexBuffer *vb)
 {
+	
 	// must allocate a new place?
 	if(_CurVBHardLockCount>=_VBHardProfiles.size())
 	{
@@ -3423,6 +3483,7 @@ void	CDriverGL::appendVBHardLockProfile(NLMISC::TTicks time, CVertexBuffer *vb)
 // ***************************************************************************
 void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
 {
+	
 	result.clear();
 	result.reserve(1000);
 	result.push_back(toString("Memory Allocated: %4d Ko in AGP / %4d Ko in VRAM", 
@@ -3459,6 +3520,7 @@ void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
 // ***************************************************************************
 bool CDriverGL::supportCloudRenderSinglePass() const
 {
+	
 	 //return _Extensions.NVTextureEnvCombine4 || (_Extensions.ATIXTextureEnvRoute && _Extensions.EXTTextureEnvCombine);
 	// there are slowdown for now with ati fragment shader... don't know why
 	return _Extensions.NVTextureEnvCombine4 || _Extensions.ATIFragmentShader;
@@ -3568,6 +3630,7 @@ void CDriverGL::retrieveATIDriverVersion()
 // ***************************************************************************
 bool CDriverGL::supportMADOperator() const
 {
+	
 	return _Extensions.NVTextureEnvCombine4 || _Extensions.ATITextureEnvCombine3;
 }
 
@@ -3575,6 +3638,7 @@ bool CDriverGL::supportMADOperator() const
 // ***************************************************************************
 uint CDriverGL::getNumAdapter() const
 {
+	
 	return 1;
 }
 
@@ -3582,6 +3646,7 @@ uint CDriverGL::getNumAdapter() const
 
 bool CDriverGL::getAdapter(uint adapter, CAdapter &desc) const
 {
+	
 	if (adapter == 0)
 	{
 		desc.DeviceName = (const char *) glGetString (GL_RENDERER);
@@ -3604,6 +3669,7 @@ bool CDriverGL::getAdapter(uint adapter, CAdapter &desc) const
 
 bool CDriverGL::setAdapter(uint adapter)
 {
+	
 	return adapter == 0;
 }
 
@@ -3611,6 +3677,7 @@ bool CDriverGL::setAdapter(uint adapter)
 
 CVertexBuffer::TVertexColorType CDriverGL::getVertexColorFormat() const
 {
+	
 	return CVertexBuffer::TRGBA;
 }
 
@@ -3618,6 +3685,7 @@ CVertexBuffer::TVertexColorType CDriverGL::getVertexColorFormat() const
 
 bool CDriverGL::activeShader(CShader *shd)
 {
+	
 	return false;
 }
 
@@ -3625,6 +3693,7 @@ bool CDriverGL::activeShader(CShader *shd)
 
 void CDriverGL::startBench (bool wantStandardDeviation, bool quick, bool reset)
 {
+	
 	CHTimer::startBench (wantStandardDeviation, quick, reset);
 }
 
@@ -3632,6 +3701,7 @@ void CDriverGL::startBench (bool wantStandardDeviation, bool quick, bool reset)
 
 void CDriverGL::endBench ()
 {
+	
 	CHTimer::endBench ();
 }
 
@@ -3639,6 +3709,7 @@ void CDriverGL::endBench ()
 
 void CDriverGL::displayBench (class NLMISC::CLog *log)
 {
+	
 	// diplay
 	CHTimer::displayHierarchicalByExecutionPathSorted(log, CHTimer::TotalTime, true, 48, 2);
 	CHTimer::displayHierarchical(log, true, 48, 2);
@@ -3646,7 +3717,45 @@ void CDriverGL::displayBench (class NLMISC::CLog *log)
 	CHTimer::display(log, CHTimer::TotalTime);
 }
 
+#ifdef NL_DEBUG
+	void CDriverGL::dumpMappedBuffers()
+	{
+		_AGPVertexArrayRange->dumpMappedBuffers();
+	}
+#endif
+
 // ***************************************************************************
+void CDriverGL::checkTextureOn() const
+{
+	// tmp for debug
+	CDriverGLStates &dgs = const_cast<CDriverGLStates &>(_DriverGLStates);
+	uint currTexStage = dgs.getActiveTextureARB();
+	for(sint k = 0; k < this->getNbTextureStages(); ++k)
+	{
+		dgs.activeTextureARB(k);
+		GLboolean flag2D;
+		GLboolean flagCM;
+		glGetBooleanv(GL_TEXTURE_2D, &flag2D);
+		glGetBooleanv(GL_TEXTURE_CUBE_MAP_ARB, &flagCM);
+		switch(dgs.getTextureMode())
+		{
+			case CDriverGLStates::TextureDisabled:
+				nlassert(!flag2D);
+				nlassert(!flagCM);
+			break;
+			case CDriverGLStates::Texture2D:
+				nlassert(flag2D);
+				nlassert(!flagCM);
+			break;
+			case CDriverGLStates::TextureCubeMap:
+				nlassert(!flag2D);
+				nlassert(flagCM);
+			break;			
+		}
+	}		
+	dgs.activeTextureARB(currTexStage);
+}
+
 
 
 } // NL3D

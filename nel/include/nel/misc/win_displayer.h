@@ -1,7 +1,7 @@
 /** \file win_displayer.h
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.h,v 1.9 2002/01/14 17:52:26 lecroart Exp $
+ * $Id: win_displayer.h,v 1.10 2002/05/27 16:48:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,11 +69,13 @@ private:
 	void	updateLabels ();
 
 	// called by DT only
-	void	open (std::string WindowNameEx, sint x, sint y, sint w, sint h, sint hs);
+	void	open (std::string WindowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs);
 	// called by DT only
 	void	clear ();
 	// called by DT only
 	void	display_main ();
+
+	virtual void	getWindowPos (uint32 &x, uint32 &y, uint32 &w, uint32 &h);
 
 	// all these variables above is used only by the DT
 

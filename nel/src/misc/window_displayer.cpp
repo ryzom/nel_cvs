@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: window_displayer.cpp,v 1.4 2002/05/27 16:48:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,15 +46,17 @@ class CUpdateThread : public IRunnable
 	CWindowDisplayer *Disp;
 	string WindowNameEx;
 	sint X, Y, W, H, HS;
+	bool Iconified;
+
 public:
-	CUpdateThread (CWindowDisplayer *disp, string windowNameEx, sint x, sint y, sint w, sint h, sint hs) :
-	  Disp(disp), WindowNameEx(windowNameEx), X(x), Y(y), W(w), H(h), HS(hs)
+	CUpdateThread (CWindowDisplayer *disp, string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs) :
+	  Disp(disp), WindowNameEx(windowNameEx), X(x), Y(y), W(w), H(h), HS(hs), Iconified(iconified)
 	{
 	}
 
 	void run()
 	{
-		Disp->open (WindowNameEx, X, Y, W, H, HS);
+		Disp->open (WindowNameEx, Iconified, X, Y, W, H, HS);
 		Disp->display_main ();
 	}
 };
@@ -106,10 +108,10 @@ void CWindowDisplayer::setLabel (uint label, const string &value)
 	}
 }
 
-void CWindowDisplayer::create (string windowNameEx, sint x, sint y, sint w, sint h, sint hs)
+void CWindowDisplayer::create (string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs)
 {
 	nlassert (_Thread == NULL);
-	_Thread = IThread::create (new CUpdateThread(this, windowNameEx, x, y, w, h, hs));
+	_Thread = IThread::create (new CUpdateThread(this, windowNameEx, iconified, x, y, w, h, hs));
 	
 	_Thread->start ();
 }

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.17 2002/04/11 16:03:18 cado Exp $
+ * $Id: win_displayer.cpp,v 1.18 2002/05/27 16:48:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,13 +54,6 @@ namespace NLMISC {
 
 CWinDisplayer::~CWinDisplayer ()
 {
-	if (_Init)
-	{
-		DeleteObject (_HFont);
-		DestroyWindow (_HWnd);
-		DestroyWindow (_HEdit);
-		FreeLibrary (_HLibModule);
-	}
 }
 
 LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -245,7 +238,7 @@ void CWinDisplayer::resizeLabels ()
 	}
 }
 
-void CWinDisplayer::open (string windowNameEx, sint x, sint y, sint w, sint h, sint hs)
+void CWinDisplayer::open (string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs)
 {
 	_HistorySize = hs;
 
@@ -330,7 +323,10 @@ void CWinDisplayer::open (string windowNameEx, sint x, sint y, sint w, sint h, s
 	SetWindowPos (_HWnd, NULL, x, y, w, h, flag);
 	SetWindowPos (_HWnd, NULL, x, y, rc.right - rc.left, rc.bottom - rc.top, flag);
 
-	ShowWindow(_HWnd,SW_SHOW);
+	if (iconified)
+		ShowWindow(_HWnd,SW_MINIMIZE);
+	else
+		ShowWindow(_HWnd,SW_SHOW);
 
 	
 	SetFocus(_HInputEdit);
@@ -355,6 +351,8 @@ void CWinDisplayer::clear ()
 
 void CWinDisplayer::display_main ()
 {
+	nlassert (_Init);
+
 	while (_Continue)
 	{
 		//
@@ -432,6 +430,31 @@ void CWinDisplayer::display_main ()
 		// http://support.microsoft.com/support/kb/articles/q173/2/60.asp
 		nlSleep (1);
 	}
+
+	nlinfo ("CWinDisplayer::display_main(): releasing...");
+
+	DeleteObject (_HFont);
+	_HFont = NULL;
+	DestroyWindow (_HWnd);
+	_HWnd = NULL;
+	DestroyWindow (_HEdit);
+	_HEdit = NULL;
+	FreeLibrary (_HLibModule);
+	_HLibModule = NULL;
+}
+
+void CWinDisplayer::getWindowPos (uint32 &x, uint32 &y, uint32 &w, uint32 &h)
+{
+	RECT rect;
+	// get the w and h of the client array
+	GetClientRect (_HWnd, &rect);
+	w = rect.right - rect.left;
+	h = rect.bottom - rect.top;
+
+	// get the x and y of the window (not the client array)
+	GetWindowRect (_HWnd, &rect);
+	x = rect.left;
+	y = rect.top;
 }
 
 

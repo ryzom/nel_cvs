@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.18 2001/10/12 14:05:06 lecroart Exp $
+ * $Id: message.cpp,v 1.19 2001/10/25 12:12:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,32 +25,57 @@
 
 #include "nel/net/message.h"
 
-#ifdef MESSAGES_PLAIN_TEXT
+/*#ifdef MESSAGES_PLAIN_TEXT
 #pragma message( "CMessage: compiling messages as plain text" )
 #else
 #pragma message( "CMessage: compiling messages as binary" )
-#endif
+#endif*/
 
 namespace NLNET
 {
 
-CMessage::CMessage (NLMISC::CStringIdArray &sida, const std::string &name, bool inputStream, uint32 defaultCapacity) :
-	USED_STREAM_FOR_MESSAGE (inputStream, defaultCapacity),
+bool CMessage::_DefaultStringMode = false;
+
+
+#define FormatLong 1
+#define FormatShort 0
+
+
+CMessage::CMessage (NLMISC::CStringIdArray &sida, const std::string &name, bool inputStream, TStreamFormat streamformat, uint32 defaultCapacity) :
+	NLMISC::CMemStream (inputStream, false, defaultCapacity),
 	_TypeSet (false), _SIDA (&sida), _HeaderSize(0xFFFFFFFF)
 {
-	if (!name.empty())
-		setType (name);
+	init( name, streamformat );
 }
 
-CMessage::CMessage (const std::string &name, bool inputStream, uint32 defaultCapacity) :
-	USED_STREAM_FOR_MESSAGE (inputStream, defaultCapacity),
+CMessage::CMessage (const std::string &name, bool inputStream, TStreamFormat streamformat, uint32 defaultCapacity) :
+	NLMISC::CMemStream (inputStream, false, defaultCapacity),
 	_TypeSet (false), _SIDA (NULL), _HeaderSize(0xFFFFFFFF)
 {
+	init( name, streamformat );
+}
+
+
+/*
+ * Utility method
+ */
+void CMessage::init( const std::string &name, TStreamFormat streamformat )
+{
+	if ( streamformat == UseDefault )
+	{
+		setStringMode( _DefaultStringMode );
+	}
+	else
+	{
+		setStringMode( streamformat == String );
+	}
+
 	if (!name.empty())
 		setType (name);
 }
 
-CMessage::CMessage (USED_STREAM_FOR_MESSAGE &memstr) :
+
+CMessage::CMessage (NLMISC::CMemStream &memstr) :
 	_HeaderSize(0xFFFFFFFF)
 {
 	fill (memstr.buffer (), memstr.length ());
@@ -113,15 +138,24 @@ void CMessage::setType (NLMISC::CStringIdArray::TStringId id)
 		// check if they don't already serial some stuffs
 		nlassert (length () == 0);
 
-		uint8 LongFormat = false;
+		uint8 format = FormatLong | (_StringMode << 1);
+		nlinfo( "OUT format = %hu", (uint16)format );
+
+		// Force binary mode for header
+		bool msgmode = _StringMode;
+		_StringMode = false;
 
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
 		// this value will be fill after in the callback function
-		uint32 zeroValue = 1234;
+		uint32 zeroValue = 123;
 		serial (zeroValue);
 
-		serial (LongFormat);
+		serial (format);
+
+		// End of binary header
+		_StringMode = msgmode;
+
 		serial (id);
 		_HeaderSize = getPos ();
 	}
@@ -161,22 +195,36 @@ void CMessage::setType (const std::string &name)
 		// PATCH: always send in full text
 		NLMISC::CStringIdArray::TStringId id = -1;
 
+		// Force binary mode for header
+		bool msgmode = _StringMode;
+		_StringMode = false;
+
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
 		// this value will be fill after in the callback function
-		uint32 zeroValue = 1234;
+		uint32 zeroValue = 123;
 		serial (zeroValue);
 
 		if (id == -1)
 		{
-			uint8 LongFormat = true;
-			serial (LongFormat);
+			uint8 format = FormatLong | (msgmode << 1);
+			//nldebug( "OUT format = %hu", (uint16)format );
+			serial (format);
+
+			// End of binary header
+			_StringMode = msgmode;
+
 			serial ((std::string&)name);
 		}
 		else
 		{
-			uint8 LongFormat = false;
-			serial (LongFormat);
+			uint8 format = FormatShort | (msgmode << 1);
+			//nldebug( "OUT format = %hu", (uint16)format );
+			serial (format);
+
+			// End of binary header
+			_StringMode = msgmode;
+
 			serial (id);
 
 			_Id = id;
@@ -205,13 +253,21 @@ void CMessage::readType ()
 	// \todo remove this debug feature when ok
 
 	// we remove the message from the message
-	seek (5, begin);
-
+	const uint HeaderSize = 4;
+	seek (HeaderSize, begin);
 //		uint32 zeroValue;
 //		serial (zeroValue);
 
-	uint8 LongFormat;
-	serial (LongFormat);
+	// Force binary mode for header
+	_StringMode = false;
+
+	uint8 format;
+	serial (format);
+	//nldebug( "IN format = %hu", (uint16)format );
+	bool LongFormat = (format & 1);
+
+	// Set mode for the following of the buffer
+	_StringMode = (format >> 1) & 1;
 	if (LongFormat)
 	{
 		std::string name;

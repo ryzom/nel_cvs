@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.93 2001/10/19 15:16:31 lecroart Exp $
+ * $Id: service.cpp,v 1.94 2001/10/25 12:12:03 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -519,6 +519,17 @@ sint IService::main (void *wd)
 		{
 			// Not found
 			_RecordingState = CCallbackNetBase::Off;
+		}
+
+		// Load the default stream format
+		try
+		{
+			CMessage::setDefaultStringMode( ConfigFile.getVar("StringFormat").asInt() == 1 );
+		}
+		catch ( EUnknownVar& )
+		{
+			// Not found => binary
+			CMessage::setDefaultStringMode( false );
 		}
 
 		//

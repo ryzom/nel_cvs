@@ -1,7 +1,7 @@
 /** \file message_recorder.cpp
  * Class CMessageRecorder (allows to record/replay message input/output)
  *
- * $Id: message_recorder.cpp,v 1.3 2001/06/27 08:31:20 lecroart Exp $
+ * $Id: message_recorder.cpp,v 1.4 2001/10/25 12:12:03 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,7 +144,7 @@ void CMessageRecorder::recordNext( sint64 updatecounter, TNetworkEvent event, TS
 	{
 		// Serial to stream
 		TMessageRecord rec ( event, sockid, message, updatecounter /*CTime::getLocalTime()*/ );
-		CStringStream stream ( false );
+		CMemStream stream ( false, true );
 		rec.serial( stream );
 		char c = '\0';      // end of cstring
 		stream.serial( c ); // added to the stream for _File << (char*)stream.buffer()
@@ -198,7 +198,7 @@ bool CMessageRecorder::loadNext( TMessageRecord& record )
 	nlassert( _File.is_open() );
 
 	// Dump from file
-	CStringStream stream ( true );
+	CMemStream stream ( true, true );
 	uint32 len;
 	char c;
 	_File >> c; // skip "* ";

@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.3 2001/10/19 15:16:31 lecroart Exp $
+ * $Id: service_5.cpp,v 1.4 2001/10/25 12:12:03 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -513,6 +513,18 @@ sint IService5::main (void *wd)
 			// Not found
 			_RecordingState = CCallbackNetBase::Off;
 		}
+
+		// Load the default stream format
+		try
+		{
+			CMessage::setDefaultStringMode( ConfigFile.getVar("StringFormat").asInt() == 1 );
+		}
+		catch ( EUnknownVar& )
+		{
+			// Not found => binary
+			CMessage::setDefaultStringMode( false );
+		}
+
 /*
 		//
 		// Layer4 Startup (Connect to the Naming Service (except for the NS itself and Login Service))

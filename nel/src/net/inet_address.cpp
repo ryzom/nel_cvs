@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.35 2001/09/28 12:53:48 cado Exp $
+ * $Id: inet_address.cpp,v 1.36 2001/10/25 12:12:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "nel/net/inet_address.h"
 #include "nel/net/sock.h"
 #include "nel/misc/stream.h"
-#include "nel/misc/string_stream.h"
+#include "nel/misc/mem_stream.h"
 #include "nel/misc/debug.h"
 #include <sstream>
 
@@ -362,41 +362,35 @@ std::string CInetAddress::asIPString() const
 
 
 /*
- * Serialize from/to string stream
- */
-void CInetAddress::serial( NLMISC::CStringStream& s )
-{
-	string addrs;
-	if ( s.isReading() )
-	{
-		s.serial( addrs );
-		setNameAndPort( addrs );
-	}
-	else
-	{
-		addrs = asIPString();
-		s.serial( addrs );
-	}
-	s.serial( _Valid );
-}
-
-
-/*
  * Serialize
  */
 void CInetAddress::serial( NLMISC::IStream& s )
 {
-	// If serial() is called by a method from IStream, the method called is serial( IStream& )
-	// even if the real type of s is CStringStream&.
-	if ( dynamic_cast< NLMISC::CStringStream*>(&s) )
+	NLMISC::CMemStream *ms = dynamic_cast<NLMISC::CMemStream*>(&s);
+	if ( ms && ms->stringMode() )
 	{
-		serial( static_cast< NLMISC::CStringStream&>(s) );
+		// String stream
+		string addrs;
+		if ( ms->isReading() )
+		{
+			ms->serial( addrs );
+			setNameAndPort( addrs );
+		}
+		else
+		{
+			addrs = asIPString();
+			ms->serial( addrs );
+		}
 	}
 	else
 	{
+		// Binary stream
 		s.serialBuffer( (uint8*)_SockAddr, sizeof(*_SockAddr) ); // this is possible only because the contents of _SockAddr is platform-independant !
 		s.serial( _Valid );
 	}
+
+	// Common
+	s.serial( _Valid );
 }
 
 

@@ -186,6 +186,7 @@
 #define IDC_SCHEME                      1073
 #define IDC_EDIT_SCHEME                 1074
 #define IDI_APP_ICON                    1074
+#define IDC_PAUSE_PICTURE               1074
 #define IDB_SOUND                       1075
 #define IDC_GET_SCHEME                  1075
 #define IDC_CLAMP_ATTRIB                1076
@@ -260,6 +261,7 @@
 #define IDC_UPDATE_YPOS                 1117
 #define IDD_GLOBAL_WIND                 1117
 #define IDC_UPDATE_ZPOS                 1118
+#define IDB_PAUSE_SYSTEM                1118
 #define IDC_SUB_COMPONENT               1119
 #define IDC_PSI_VALUE                   1121
 #define IDC_THETA_VALUE                 1122
@@ -366,6 +368,7 @@
 #define IDC_SLIDER_ANGLE_MIN            1198
 #define IDC_SLIDER_VEGETABLE_SCALE_NOISE 1198
 #define IDC_SLIDER_VEGETABLE_WIND_POWER 1198
+#define IDC_ANIM_SPEED                  1198
 #define IDC_SLIDER_ANGLE_MAX            1199
 #define IDC_SLIDER_VEGETABLE_WIND_BENDSTART 1199
 #define IDC_LIST_VEGETABLE              1200
@@ -660,7 +663,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1118
+#define _APS_NEXT_RESOURCE_VALUE        1119
 #define _APS_NEXT_COMMAND_VALUE         32890
 #define _APS_NEXT_CONTROL_VALUE         1343
 #define _APS_NEXT_SYMED_VALUE           1000

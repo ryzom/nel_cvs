@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.27 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.28 2004/08/04 14:02:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -325,26 +325,27 @@ void CPSZoneSphere::computeCollisions(CPSLocated &target, uint firstInstanceInde
 					const float b = 2.f * (pos * D - D * center), a = D * D
 								, c = (pos * pos) + (center * center) - 2.f * (pos * center) - radiusIt->R2;
 					float d = b * b - 4 * a * c;					
-					if (d <= 0.f) continue; // should never happen, but we never know ...					
-					d = sqrtf(d);
-					// roots of the equation, we take the smallest 
-					const float r1 = .5f * (-b + 2.f * d) * a,
-								r2 = .5f * (-b - 2.f * d) * a;
-					const float  r = std::min(r1, r2);
-					// collision point 
-					const CVector C = pos  + r * D;							
-					const float alpha = ((C - pos) * D) * a;
-					const CVector startEnd = alpha * (dest - pos);					
-					CVector normal = C - center;
-					normal = normal * (1.f / radiusIt->R);				
-					ci.Dist = startEnd.norm();
-					// we translate the particle from an epsilon so that it won't get hooked to the sphere
-					ci.NewPos = pos  + startEnd + PSCollideEpsilon * normal;				
-					const CVector &speed = target.getSpeed()[itPosBefore - posBefore];
-					ci.NewSpeed = _BounceFactor * (speed - 2.0f * (speed * normal) * normal);
-					ci.CollisionZone = this;						
-					CPSLocated::_Collisions[itPosBefore - posBefore].update(ci);
-					
+					if (d > 0.f)
+					{						
+						d = sqrtf(d);
+						// roots of the equation, we take the smallest 
+						const float r1 = .5f * (-b + 2.f * d) * a,
+									r2 = .5f * (-b - 2.f * d) * a;
+						const float  r = std::min(r1, r2);
+						// collision point 
+						const CVector C = pos  + r * D;							
+						const float alpha = ((C - pos) * D) * a;
+						const CVector startEnd = alpha * (dest - pos);					
+						CVector normal = C - center;
+						normal = normal * (1.f / radiusIt->R);				
+						ci.Dist = startEnd.norm();
+						// we translate the particle from an epsilon so that it won't get hooked to the sphere
+						ci.NewPos = pos  + startEnd + PSCollideEpsilon * normal;				
+						const CVector &speed = target.getSpeed()[itPosBefore - posBefore];
+						ci.NewSpeed = _BounceFactor * (speed - 2.0f * (speed * normal) * normal);
+						ci.CollisionZone = this;						
+						CPSLocated::_Collisions[itPosBefore - posBefore].update(ci);
+					}					
 				}					
 			}
 			++ itPosBefore;

@@ -1,7 +1,7 @@
 /** \file sound_system.h
  * This initilize the sound system
  *
- * $Id: sound_system.h,v 1.1 2001/08/23 14:18:51 vizerie Exp $
+ * $Id: sound_system.h,v 1.2 2001/08/24 16:58:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,9 @@ public:
 
 	/// poll sound. Must be called periodically
 	static void poll(void);
+
+	// get the audio mixer, or null if init failed
+	static NLSOUND::UAudioMixer *getAudioMixer(void) { return _AudioMixer; }	
 
 private:
 	static NLSOUND::UAudioMixer *_AudioMixer;

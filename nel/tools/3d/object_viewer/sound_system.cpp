@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.1 2001/08/23 14:18:51 vizerie Exp $
+ * $Id: sound_system.cpp,v 1.2 2001/08/24 16:58:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,25 +38,37 @@ std::string			 CSoundSystem::_SoundBankFileName;
 
 void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 {
-	nlassert(_AudioMixer);
-	NLSOUND::UListener *l = _AudioMixer->getListener();
-	l->setPos(m.getPos());	
-	NLMISC::CVector j = m.getJ(), k = m.getK();
-	l->setOrientation(NLMISC::CVector(j.x, -j.z, j.y), NLMISC::CVector(k.x, -k.z, k.y));
+	if (_AudioMixer)
+	{	
+		NLSOUND::UListener *l = _AudioMixer->getListener();
+		l->setPos(m.getPos());	
+		NLMISC::CVector j = m.getJ(), k = m.getK();
+		l->setOrientation(NLMISC::CVector(j.x, -j.z, j.y), NLMISC::CVector(k.x, -k.z, k.y));
+	}
 }
 
 
 void CSoundSystem::initSoundSystem(void)
 {		
+	
 	_AudioMixer = NLSOUND::UAudioMixer::createAudioMixer();
-	_AudioMixer->init();
+	try
+	{
+		_AudioMixer->init();
+	}
+	catch (NLMISC::Exception &)
+	{
+		::MessageBox(NULL, "unable to init sound", "Object viewer", MB_OK);
+		_AudioMixer = NULL;
+		return;
+	}
 	initPSSoundSystem(_AudioMixer);
 
 	if (_SoundBankFileName.size())
 	{
 		try
 		{
-			_AudioMixer->loadSoundBuffers(_SoundBankFileName.c_str());
+			_AudioMixer->loadSoundBuffers(NLMISC::CPath::lookup(_SoundBankFileName).c_str());
 		}
 		catch (NLMISC::Exception &e)
 		{
@@ -70,15 +82,17 @@ void CSoundSystem::initSoundSystem(void)
 
 void CSoundSystem::poll()
 {
-	nlassert(_AudioMixer);
-	_AudioMixer->update();
+	if (_AudioMixer)
+	{
+		_AudioMixer->update();
+	}
 }
 
 
 
 void CSoundSystem::releaseSoundSystem(void)
 {
-	//	delete _AudioMixer;
+	delete _AudioMixer;
 	_AudioMixer = NULL;
 }
 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.23 2002/06/28 19:32:25 hanappe Exp $
+ * $Id: audio_mixer_user.h,v 1.24 2002/07/16 13:16:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/time_nl.h"
 #include "driver/source.h"
 #include "listener_user.h"
+#include "background_sound_manager.h"
 #include "mixing_track.h"
 #include "sound.h"
 #include <vector>
@@ -144,6 +145,11 @@ public:
 	/// Release track
 	void						releaseTrack( CSourceUser *source );
 
+	/** Use this method to set the listener position instead of using getListener->setPos();
+	 * It's because we have to update the background sounds in this case.
+	 */
+	virtual void				setListenerPos (const NLMISC::CVector &pos);
+
 	/// Return the listener interface
 	virtual UListener			*getListener()	{ return &_Listener; }
 
@@ -190,6 +196,11 @@ public:
 	/// Write profiling information about the mixer to the output stream.
 	virtual void				writeProfile(std::ostream& out);
 
+	virtual void				loadBackgroundSound (const std::string &continent) { CBackgroundSoundManager::load (continent); }
+	virtual void				playBackgroundSound () { CBackgroundSoundManager::play (); }
+	virtual void				stopBackgroundSound () { CBackgroundSoundManager::stop (); }
+
+	virtual void				setBackgroundSoundDayNightRatio (float ratio) { CBackgroundSoundManager::setDayNightRatio(ratio); }
 
 protected:
 

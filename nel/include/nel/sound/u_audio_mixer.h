@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.15 2002/06/28 19:41:27 hanappe Exp $
+ * $Id: u_audio_mixer.h,v 1.16 2002/07/16 13:15:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,11 @@ public:
 	virtual void		removeSource( USource *source ) = 0;
 
 
+	/** Use this method to set the listener position instead of using getListener->setPos();
+	 * It's because we have to update the background sounds in this case.
+	 */
+	virtual void		setListenerPos (const NLMISC::CVector &pos) = 0;
+
 	/// Return the listener interface
 	virtual UListener	*getListener() = 0;
 
@@ -141,6 +146,12 @@ public:
 	 *  \param out The output stream to which to write the information
 	 */
 	virtual void		writeProfile(std::ostream& out) = 0;
+
+
+	virtual void		loadBackgroundSound (const std::string &continent) = 0;
+	virtual void		playBackgroundSound () = 0;
+	virtual void		stopBackgroundSound () = 0;
+	virtual void		setBackgroundSoundDayNightRatio (float ratio) = 0;
 
 	/// Destructor
 	virtual				~UAudioMixer() {}

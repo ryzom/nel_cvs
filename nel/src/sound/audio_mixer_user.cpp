@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.25 2002/07/10 17:08:56 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.26 2002/07/16 13:16:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "driver/buffer.h"
 #include "sample_bank.h"
 #include "sound_bank.h"
+#include "background_sound_manager.h"
 
 
 #include "nel/misc/file.h"
@@ -116,6 +117,8 @@ CAudioMixerUser::~CAudioMixerUser()
 	reset();
 
 	_Leaving = true;
+
+	CBackgroundSoundManager::release();
 
 	// EnvEffects
 	vector<CEnvEffect*>::iterator ipee;
@@ -237,6 +240,7 @@ void				CAudioMixerUser::init( uint32 balance_period )
 		CAmbiantSource::init();
 		CBoundingSphere::init();
 		CBoundingBox::init();
+		CBackgroundSoundManager::init (this);
 		initialized = true;
 	}
 
@@ -421,6 +425,8 @@ void				CAudioMixerUser::update()
 #if NL_PROFILE_MIXER
 	TTicks start = CTime::getPerformanceTime();
 #endif
+
+	CBackgroundSoundManager::update();
 
 	// Manage spawned sources
 	std::set<CSourceUser*>::iterator ips, ipOld;
@@ -953,5 +959,10 @@ void			CAudioMixerUser::redispatchSourcesToTrack()
 	}
 }
 
+void CAudioMixerUser::setListenerPos (const NLMISC::CVector &pos)
+{
+	_Listener.setPos(pos);
+	CBackgroundSoundManager::setListenerPosition(pos);
+}
 
 } // NLSOUND

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.11 2001/08/24 16:38:24 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.12 2001/12/20 16:54:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ void		CRenderTrav::traverse()
 			rPseudoZ2 = rPseudoZ * OrderTransparentList.getSize();
 			rPseudoZ2 = OrderTransparentList.getSize() - rPseudoZ2;
 			clamp( rPseudoZ2, 0.0f, OrderOpaqueList.getSize() - 1 );
-			OrderTransparentList.insert( (uint32)rPseudoZ2, pObs );
+			OrderTransparentList.insert( pTransform->getOrderingLayer(), pObs, (uint32)rPseudoZ2 );
 		}
 		++it;
 	}
@@ -132,7 +132,7 @@ void		CRenderTrav::traverse()
 
 	 // Render transparent materials
 	_CurrentPassOpaque = false;
-	OrderTransparentList.begin();
+	OrderTransparentList.begin(_LayersRenderingOrder);
 	while( OrderTransparentList.get() != NULL )
 	{
 		pBRO = OrderTransparentList.get();

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.17 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: scene_user.h,v 1.18 2001/12/20 16:54:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -361,7 +361,7 @@ public:
 
 	/// \name LoadBalancing mgt.
 	//@{
-	virtual	void				setPolygonBalancingMode(TPolygonBalancingMode polBalMode);
+	virtual	void					setPolygonBalancingMode(TPolygonBalancingMode polBalMode);
 	virtual	TPolygonBalancingMode	getPolygonBalancingMode() const;
 
 	virtual	void				setLoadMaxPolygon(uint nFaces);
@@ -379,8 +379,14 @@ public:
 	virtual void setDynamicCoarseMeshManagerColor (const CRGBA& color);
 	//@}
 
+	/// \name transparent Layers mgt
+	//@{
+	virtual void  setLayersRenderingOrder(bool directOrder = true) { _Scene.setLayersRenderingOrder(directOrder); }
+	virtual bool  getLayersRenderingOrder() const { return _Scene.getLayersRenderingOrder(); }
+	//@}
+
 public:
-	/// \name Accessor for CSeneUser.
+	/// \name Accessor for CSceneUser.
 	// @{
 	CScene		&getScene()
 	{

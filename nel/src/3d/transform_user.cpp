@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.5 2001/08/27 08:24:36 berenguier Exp $
+ * $Id: transform_user.cpp,v 1.6 2001/12/20 16:54:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,9 @@ void			CTransformUser::unfreezeHRC()
 	nlassert(_Transform) ; // object invalid now ...
 	_Transform->unfreezeHRC();
 }
+
+
+
 
 
 } // NL3D

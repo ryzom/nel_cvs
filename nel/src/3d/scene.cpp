@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.59 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: scene.cpp,v 1.60 2001/12/20 16:54:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -643,6 +643,19 @@ CScene::TPolygonBalancingMode	CScene::getPolygonBalancingMode() const
 	return (CScene::TPolygonBalancingMode)(uint)LoadBalancingTrav->PolygonBalancingMode;
 }
 
+// ***************************************************************************
+void  CScene::setLayersRenderingOrder(bool directOrder /*= true*/)
+{
+	nlassert(RenderTrav);
+	RenderTrav->setLayersRenderingOrder(directOrder);
+}
+
+// ***************************************************************************
+bool  CScene::getLayersRenderingOrder() const
+{
+	nlassert(RenderTrav);
+	return 	RenderTrav->getLayersRenderingOrder();
+}
 
 
 }

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.15 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: scene.h,v 1.16 2001/12/20 16:54:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,6 +274,19 @@ public:
 	{
 		return _DynamicCoarseMeshManager;
 	}
+	//@}
+
+
+	/// \name transparent Layer mgt
+	//@{
+		/** Set the order or rendering for transparent objects.
+		  * In real case, with direct order, we have:
+		  * - Underwater is rendered.
+		  * - Water is rendered.
+		  * - Objects above water are rendered.
+		  */
+		void  setLayersRenderingOrder(bool directOrder = true);
+		bool  getLayersRenderingOrder() const;
 	//@}
 
 private:

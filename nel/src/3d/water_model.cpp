@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.16 2001/12/18 18:32:29 vizerie Exp $
+ * $Id: water_model.cpp,v 1.17 2001/12/20 16:57:08 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@ CWaterModel::CWaterModel() : _Scene(NULL)
 {
 	setOpacity(false);
 	setTransparency(true);
+	setOrderingLayer(1);
 }
 
 //=======================================================================

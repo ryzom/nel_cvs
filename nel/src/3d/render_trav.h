@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.2 2001/07/05 09:38:49 besson Exp $
+ * $Id: render_trav.h,v 1.3 2001/12/20 16:54:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "3d/trav_scene.h"
 #include "3d/ordering_table.h"
+#include "3d/layered_ordering_table.h"
 #include "nel/3d/viewport.h"
 #include <vector>
 
@@ -114,19 +115,31 @@ public:
 
 	bool isCurrentPassOpaque() { return _CurrentPassOpaque; }
 
+	/** Set the order or rendering for transparent objects.
+	  * In real case, with direct order, we have:
+	  * - Underwater is rendered.
+	  * - Water is rendered.
+	  * - Objects above water are rendered.
+	  */
+	void  setLayersRenderingOrder(bool directOrder = true) { _LayersRenderingOrder = directOrder; }
+	bool  getLayersRenderingOrder() const { return _LayersRenderingOrder; }
+
+
+
 private:
 	
 	// A grow only list of observers to be rendered.
 	std::vector<IBaseRenderObs*>	RenderList;
 	// Ordering Table to sort transparent objects
-	COrderingTable<IBaseRenderObs>	OrderOpaqueList;
-	COrderingTable<IBaseRenderObs>	OrderTransparentList;
+	COrderingTable<IBaseRenderObs>			OrderOpaqueList;
+	CLayeredOrderingTable<IBaseRenderObs>	OrderTransparentList;
 
 	IDriver			*Driver;
 	CViewport		_Viewport;
 
 	// Temporary for the render
-	bool			_CurrentPassOpaque;
+	bool			_CurrentPassOpaque;	
+	bool			_LayersRenderingOrder;
 };
 
 

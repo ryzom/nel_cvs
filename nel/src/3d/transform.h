@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.10 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: transform.h,v 1.11 2001/12/20 16:54:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,19 @@ public:
 	void setOpacity(bool v) { _Opaque = v; }
 	bool isOpaque() { return _Opaque; }
 	bool isTransparent() { return _Transparent; }
+
+
+	/** Set the current layer for this transform.
+	  * Typically, this is used to sort transparent objects. Isn't used with solid objects.
+	  * For now :
+	  * Layer 0 is for underwater
+	  * Layer 1 is for water surfaces
+	  * Layer 2 is for object above water
+	  */
+	void  setOrderingLayer(uint layer) { _OrderingLayer = layer; }
+
+	/// Get the ordering layer
+	uint getOrderingLayer() const { return _OrderingLayer; }
 
 	/// Hide the object and his sons.
 	void		hide();
@@ -247,6 +260,8 @@ private:
 	CTransformHrcObs	*_HrcObs;
 	// shortcut to the ClipObs.
 	CTransformClipObs	*_ClipObs;
+
+	uint8				_OrderingLayer;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.28 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: transform.cpp,v 1.29 2001/12/20 16:54:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,8 @@ CTransform::CTransform()
 	_FreezeHRCState= FreezeHRCStateDisabled;
 
 	_QuadGridClipManagerEnabled= false;
+
+	_OrderingLayer = 0;
 }
 
 

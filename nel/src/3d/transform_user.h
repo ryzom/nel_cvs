@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.6 2001/08/27 08:24:36 berenguier Exp $
+ * $Id: transform_user.h,v 1.7 2001/12/20 16:54:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,6 +149,10 @@ public:
 	virtual	void			unfreezeHRC();
 	// @}
 
+	virtual void  setOrderingLayer(uint layer) { _Transform->setOrderingLayer(layer); }
+
+	/// Get the ordering layer
+	virtual uint getOrderingLayer() const { return _Transform->getOrderingLayer(); }
 
 public:
 	/// \name Accessor for CSeneUser / Other.

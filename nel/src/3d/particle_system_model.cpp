@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.19 2001/09/20 13:45:43 besson Exp $
+ * $Id: particle_system_model.cpp,v 1.20 2001/09/26 17:03:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NL3D {
 /// ctor
 CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedTime(0.01f), _ToolDisplayEnabled(false)
 						, _AutoGetEllapsedTime(true), _TransparencyStateTouched(true), _Scene(NULL), _EditionMode(false)
-						, _Invalidated(false)
+						, _Invalidated(false), _InsertedInVisibleList(false), _InCluster(false)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -203,16 +203,34 @@ float CParticleSystemModel::getNumTriangles (float distance)
 //////////////////////////////////////////////
 
 
-void	CParticleSystemDetailObs ::traverse(IObs *caller)
+void	CParticleSystemDetailObs::traverse(IObs *caller)
 {    
-	CTransformAnimDetailObs::traverse(caller);
-	
-
+	CTransformAnimDetailObs::traverse(caller);	
 	nlassert(dynamic_cast<CParticleSystemModel *>(Model));
 	CParticleSystemModel *psm= (CParticleSystemModel *)Model;
+	CParticleSystem *ps = psm->getPS();
 	if (psm->_Invalidated) return;
 
-	CParticleSystem *ps = psm->getPS();
+	if (!psm->_InCluster)
+	{
+		CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)psm->Shape);
+		if (pss->_DestroyWhenOutOfFrustum)
+		{
+			if (pss->_DestroyModelWhenOutOfRange)
+			{
+				psm->invalidate();			
+			}
+			else // remove rsc but do not invalidate the system
+			{
+				delete psm->_ParticleSystem;
+				psm->_ParticleSystem = NULL;
+			}
+			return;
+		}
+		if (!ps) return;
+	}
+
+	
 
 	
 
@@ -231,8 +249,6 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 		}
 	}
 
-
-
 	// the system or its center is in the view frustum, but it may not have been instanciated from its shape now
 	if (!ps)
 	{
@@ -241,45 +257,45 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 		ps = psm->_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape))->instanciatePS(*psm->_Scene);			
 	}
 
-	CClipTrav			*trav= (CClipTrav*) ClipObs->Trav;
-	const CMatrix		&mat= HrcObs->WorldMatrix;	 
-	ps->setSysMat(mat);
-	ps->setViewMat(trav->ViewMatrix);
-
-
-
-	if (psm->isAutoGetEllapsedTimeEnabled())
+	if (psm->_InCluster ||  ps->doesPerformMotionWhenOutOfFrustum())
 	{
-		psm->setEllapsedTime(ps->getScene()->getEllapsedTime());
-	}
-	CAnimationTime delay = psm->getEllapsedTime();
-
-	psm->updateOpacityInfos();
-
-	//ps->setSysMat(psm->getWorldMatrix());
-	nlassert(ps->getScene());	
-
-
-	// setup the number of faces we allow
-	ps->setNumTris((uint) psm->getNumTrianglesAfterLoadBalancing());
-
-	// setup system user parameters for parameters that have been touched
-	for (uint k = 0; k < MaxPSUserParam; ++k)
-	{
-		if (psm->isTouched((uint)CParticleSystemModel::PSParam0 + k))
+		CClipTrav			*trav= (CClipTrav*) ClipObs->Trav;
+		const CMatrix		&mat= HrcObs->WorldMatrix;	 
+		ps->setSysMat(mat);
+		ps->setViewMat(trav->ViewMatrix);
+		if (psm->isAutoGetEllapsedTimeEnabled())
 		{
-			ps->setUserParam(k, psm->_UserParam[k].Value);
-			psm->clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+			psm->setEllapsedTime(ps->getScene()->getEllapsedTime());
+		}
+		CAnimationTime delay = psm->getEllapsedTime();
+
+		psm->updateOpacityInfos();
+
+		//ps->setSysMat(psm->getWorldMatrix());
+		nlassert(ps->getScene());	
+
+
+		// setup the number of faces we allow
+		ps->setNumTris((uint) psm->getNumTrianglesAfterLoadBalancing());
+
+		// setup system user parameters for parameters that have been touched
+		for (uint k = 0; k < MaxPSUserParam; ++k)
+		{
+			if (psm->isTouched((uint)CParticleSystemModel::PSParam0 + k))
+			{
+				ps->setUserParam(k, psm->_UserParam[k].Value);
+				psm->clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+			}
+		}
+		// animate particles
+		ps->step(CParticleSystem::Anim, delay);
+
+		// add a render obs if in cluster
+		if (psm->_InCluster)
+		{
+			trav->RenderTrav->addRenderObs(ClipObs->RenderObs);
 		}
 	}
-	
-
-	
-
-	// animate particles
-	ps->step(PSCollision, delay);
-	ps->step(PSMotion, delay);	 
-	
 }
 
 
@@ -289,60 +305,42 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 //////////////////////////////////////////////
 void	CParticleSystemRenderObs::traverse(IObs *caller)
 {
-	const CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(Model);
 
-#ifdef NL_DEBUG
-	if (psm->NameForDebug == "FireWorkQ.shape")
-	{
-		int to;
-		to++;
-	}
-#endif
+	
 
+/*
 	if (!psm->_OutOfFrustum)
-	{
+	{*/
 		CTransformShapeRenderObs::traverse(caller);
-	}
+	//}
 }
 
 
-////////////////////////////////////////////
-// CParticleSystemClipObs implementation  //
-////////////////////////////////////////////
+/*
+ * CParticleSystemClipObs implementation              
+ * For p.s., the Visible attribute is interpreted as 'not to far'. The '_InCluster'
+ * flags tells us that the object is visible and not too far. We need this because we want
+ * to know when this object is clipped out. This can only be done in the next traversal
+ */
 	
 void	CParticleSystemClipObs::traverse(IObs *caller)
 {
 		nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
-		CClipTrav			*trav= (CClipTrav*)Trav;
 		CParticleSystemModel		*m= (CParticleSystemModel*)Model;	
+		if (m->_Invalidated) return;		
+		CClipTrav			*trav= (CClipTrav*)Trav;
 		
-#ifdef NL_DEBUG
-		if (m->NameForDebug == "FireWorkQ.shape")
+
+		if (Date != trav->CurrentDate) 
 		{
-			int to;
-			to++;
-
-			if(dynamic_cast<CClusterClipObs*>(caller))
-			{
-				CCluster *pCluster = static_cast<CCluster*>(caller->Model);
-				if (pCluster->Name == "RootCluster")
-				{
-					--to;
-				}
-			}
+			m->_InsertedInVisibleList = false;
+			m->_InCluster = false;
 		}
-#endif
-
-		// Test if already visited.
-		if ((Date == trav->CurrentDate) && !m->_OutOfFrustum)
-			return;
+		if (m->_InCluster) return; // already visible
 		Date = trav->CurrentDate;
 
 
-		const std::vector<CPlane>	&pyramid= trav->WorldPyramid;
-		
-
-
+		const std::vector<CPlane>	&pyramid= trav->WorldPyramid;	
 		/** traverse the sons
 		  * we must do this before us, because this object may delete himself from the scene
 		  */
@@ -351,7 +349,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		// now the pyramid is directly expressed in the world
 		const CMatrix		&mat= HrcObs->WorldMatrix;	 
 
-		if (m->_Invalidated) return;
+		
 
 		CParticleSystem *ps = m->_ParticleSystem;
 		// Transform the pyramid in Object space.
@@ -379,40 +377,30 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 				// check wether system not too far		
 				if (d * d > pss->_MaxViewDist * pss->_MaxViewDist) 
 				{
-					Visible = false;
-					m->_OutOfFrustum = true;
+					Visible = false;					
 					if (pss->_DestroyModelWhenOutOfRange)
 					{
 						m->invalidate();
-					}			
+					}							
 					return;
 				}		
-
-				m->_OutOfFrustum = false;
+				
 				/// frustum test		
 				for(sint i=0; i < (sint)pyramid.size(); i++)
 				{					
 					if ( (pyramid[i]   *  mat  ) * pos > 0.f ) 
-					{
-						m->_OutOfFrustum = true;
-						Visible = false;
-						if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
-						{							
-							// this system will never be instanciated, so we invalidate it
-							m->invalidate();
-							return;		
-						}
-						break;					
+
+					{						
+						Visible = true;
+						if (!m->_InsertedInVisibleList)
+						{
+							trav->addVisibleObs(this);
+							m->_InsertedInVisibleList = true;
+						}						
+						return;
 					}
 				}			
-
-				nlassert(dynamic_cast<CClipTrav*>(Trav));
-				static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
-
-				Visible = true;		
-				// add this observer to the visibility list.
-				trav->addVisibleObs(this);
-				return;
+				m->_InCluster = true;						
 			}
 			else
 			{
@@ -421,39 +409,29 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 				farPlane.make(trav->CamLook, trav->CamPos + pss->_MaxViewDist * trav->CamLook);
 				if (!pss->_PrecomputedBBox.clipBack(farPlane  * mat  ))				
 				{
-					Visible = false;
-					m->_OutOfFrustum = true;
+					Visible = false;				
 					if (pss->_DestroyModelWhenOutOfRange)
 					{
 						m->invalidate();
 					}			
 					return;
-				}		
-
-				m->_OutOfFrustum = false;
+				}					
 				/// frustum test		
 				for(sint i=0; i < (sint)pyramid.size(); i++)
 				{					
 					if ( !pss->_PrecomputedBBox.clipBack(pyramid[i]  * mat  ) ) 
 					{
-						m->_OutOfFrustum = true;
-						Visible = false;
-						if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
+						Visible = true;
+						if (!m->_InsertedInVisibleList)
 						{
-							// this system will never be instanciated, so we invalidate it
-							m->invalidate();
-							return;		
-						}
-						break;					
+							trav->addVisibleObs(this);
+							m->_InsertedInVisibleList = true;
+						}						
+						return;					
 					}
 				}			
 
-				nlassert(dynamic_cast<CClipTrav*>(Trav));
-				static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
-
-				Visible = true;		
-				// add this observer to the visibility list.
-				trav->addVisibleObs(this);
+				m->_InCluster = true;
 				return;
 				
 			}
@@ -512,7 +490,6 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					m->_ParticleSystem = NULL;	
 				}
 			}
-
 			Visible = false;
 			return;
 		}
@@ -523,53 +500,21 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 			// test wether the bbox is entirely in the neg side of the plane
 			if (!bbox.clipBack(pyramid[i]  * mat  )) 
 			{
-				if (!ps->doesDestroyWhenOutOfFrustum()
-					&& ps->doesPerformMotionWhenOutOfFrustum())
-				{
-					nlassert(dynamic_cast<CClipTrav*>(Trav));
-					static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
-					Visible = true;	       // we perform motion, but we don't show anything
-					m->_OutOfFrustum = true;
-					// add this observer to the visibility list.
-					trav->addVisibleObs(this);
-					return;
-				}
-
+				
 				if (!m->_EditionMode)
 				{
-					if (ps->doesDestroyWhenOutOfFrustum())
+					Visible = true; // not too far, but not in cluster
+					if (!m->_InsertedInVisibleList)
 					{
-						/// the system has gone out of the scope
-						/// for now, we just delete the system
-										
-						if (m->_ParticleSystem->getDestroyModelWhenOutOfRange())
-						{
-							m->invalidate();
-							return;
-						}
-						else
-						{							
-							delete ps;
-							m->_ParticleSystem = NULL;					
-						}
-					}				
-				}
-				Visible = false;
+						trav->addVisibleObs(this);
+						m->_InsertedInVisibleList = true;
+					}														
+				}				
 				return;			  			
 			}
 		}
 
-
-
-		// set this model to visible, so that the detail anim traversal will be performed
-		
-
-		nlassert(dynamic_cast<CClipTrav*>(Trav));
-		static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
-		Visible = true;
-		// add this observer to the visibility list.
-		trav->addVisibleObs(this);
-		m->_OutOfFrustum = false;
+		m->_InCluster = true;
 }
 
 

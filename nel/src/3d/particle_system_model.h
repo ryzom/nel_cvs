@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.17 2001/09/20 13:45:43 besson Exp $
+ * $Id: particle_system_model.h,v 1.18 2001/09/26 17:03:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,7 +263,8 @@ class CParticleSystemModel : public CTransformShape
 		bool									_TransparencyStateTouched;
 		bool									_EditionMode;
 		bool									_Invalidated;
-		bool									_OutOfFrustum;
+		bool									_InsertedInVisibleList;
+		bool									_InCluster;
 		std::vector<IPSModelObserver *>			_Observers;		
 
 		CAnimatedValueBool						_TriggerAnimatedValue;

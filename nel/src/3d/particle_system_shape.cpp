@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.5 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: particle_system_shape.cpp,v 1.6 2001/06/25 13:44:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,18 @@ namespace NL3D {
 
 using NLMISC::IStream ;
 using NLMISC::CIFile ;
+
+
+
+
+// private usage : macro to check the memory integrity
+#if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
+	#include <crtdbg.h>
+	#define PARTICLES_CHECK_MEM nlassert(_CrtCheckMemory()) ;
+#else
+	#define PARTICLES_CHECK_MEM
+#endif
+
 
 /////////////////////////////////////////
 // CParticleSystemShape implementation //
@@ -143,15 +155,18 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans)
 
     // TODO : do this during load balancing traversal or the like
 
-	// pass the driver to these method
+	ps->setDriver(drv) ;
 
 	// draw particle
+	PARTICLES_CHECK_MEM ;
 	ps->step(PSBlendRender, delay) ;
+	PARTICLES_CHECK_MEM ;
 
 
 	if (psm->isToolDisplayEnabled())
 	{
 		ps->step(PSToolRender, delay) ;
+		PARTICLES_CHECK_MEM ;
 	}
 }
 

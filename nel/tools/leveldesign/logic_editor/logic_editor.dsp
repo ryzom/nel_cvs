@@ -81,7 +81,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor.dll" /pdbtype:sept
+# ADD LINK32 libxml2.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor.dll" /pdbtype:sept
 # SUBTRACT LINK32 /incremental:no /force
 
 !ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"

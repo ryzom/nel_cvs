@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.7 2001/01/03 09:14:57 lecroart Exp $
+ * $Id: text_context.h,v 1.8 2001/01/05 13:39:36 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,9 @@ class CTextContext
 	/// computed strings stack
 	std::vector<CComputedString> _StringList;
 
+	/// max x coordinate of last string printed
+	float _XBound;
+
 
 public:
 
@@ -98,6 +101,8 @@ public:
 		_ScaleX = 1;
 		_ScaleZ = 1;
 		_RotateY = 0;
+
+		_XBound = 0;
 	}
 	
 	/**
@@ -265,6 +270,8 @@ public:
 								x,z,
 								_HotSpot,
 								_ScaleX,_ScaleZ);
+
+		_XBound = x + _StringList[i].StringWidth;
 	}
 
 	/**
@@ -279,6 +286,8 @@ public:
 							x,z,
 							_HotSpot,
 							_ScaleX,_ScaleZ);
+
+		_XBound = x + cptdstr.StringWidth;
 	}
 	
 	/**
@@ -298,6 +307,8 @@ public:
 		NL3D::CComputedString cptdstr;
 		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
 		cptdstr.render2D(*NL3D::CNELU::Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
+
+		_XBound = x + cptdstr.StringWidth;
 	}
 	
 	/**
@@ -349,6 +360,16 @@ public:
 	void computeString(const ucstring& s, CComputedString& output)
 	{
 		_FontManager.computeString(s,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,output);
+	}
+
+	/**
+	 * Return max x coordinate of last string printed. Useful to know if a string
+	 * goes out of the screen.
+	 *	\return x coordinate
+	 */
+	float getLastXBound() const
+	{
+		return _XBound;
 	}
 
 

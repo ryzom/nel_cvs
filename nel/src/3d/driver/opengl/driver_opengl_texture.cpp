@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.43 2001/11/21 16:11:52 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.44 2001/12/06 17:07:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,7 +131,7 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 		case ITexture::Luminance: return GL_LUMINANCE8;
 		case ITexture::Alpha: return GL_ALPHA8;
 		case ITexture::AlphaLuminance: return GL_LUMINANCE8_ALPHA8;
-		case ITexture::DsDt: return GL_DSDT_NV; 
+		case ITexture::DsDt: return GL_DSDT8_NV; 
 		default: return GL_RGBA8;
 	}
 }
@@ -151,9 +151,9 @@ static GLint	getGlSrcTextureFormat(ITexture &tex, GLint glfmt)
 		}
 	}
 
-	if (glfmt == GL_DSDT_NV)
+	if (glfmt == GL_DSDT8_NV)
 	{
-		return GL_DSDT_NV;
+		return GL_DSDT8_NV;
 	}
 
 	// Else, not a Src format for upload, or RGBA.
@@ -179,7 +179,7 @@ uint				CDriverGL::computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const
 	case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:	return w*h /2;
 	case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:	return w*h* 1;
 	case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:	return w*h* 1;
-	case GL_DSDT_NV:						return w*h* 2;
+	case GL_DSDT8_NV:						return w*h* 2;
 	};
 
 	// One format has not been coded.

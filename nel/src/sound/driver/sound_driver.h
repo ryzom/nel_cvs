@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.9 2002/07/23 08:05:52 lecroart Exp $
+ * $Id: sound_driver.h,v 1.10 2002/08/26 09:36:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,16 +40,16 @@ class ISource;
 
 #ifdef NL_OS_WINDOWS
 
-#if 0
+#if _MSC_VER >= 1300	// visual .NET, use different dll name
 // must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
 #ifdef NL_DEBUG_FAST
-#define NLSOUND_DLL_NAME "nel_drv_openal_win_df.dll"
+#define NLSOUND_DLL_NAME "nldriver_openal_df.dll"
 #elif defined (NL_DEBUG)
-#define NLSOUND_DLL_NAME "nel_drv_openal_win_d.dll"
+#define NLSOUND_DLL_NAME "nldriver_openal_d.dll"
 #elif defined (NL_RELEASE_DEBUG)
-#define NLSOUND_DLL_NAME "nel_drv_openal_win_rd.dll"
+#define NLSOUND_DLL_NAME "nldriver_openal_rd.dll"
 #elif defined (NL_RELEASE)
-#define NLSOUND_DLL_NAME "nel_drv_openal_win_r.dll"
+#define NLSOUND_DLL_NAME "nldriver_openal_r.dll"
 #else
 #error "Unknown dll name"
 #endif

@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.7 2002/07/10 17:08:43 lecroart Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.8 2002/08/26 09:36:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -337,7 +337,7 @@ bool CSoundDriverDSound::init(HWND wnd)
         throw ESoundDriver("Unsupported sample rate range");        
     }   
 
-    if (_Caps.dwFlags & DSCAPS_PRIMARY16BIT == 0) {
+    if ((_Caps.dwFlags & DSCAPS_PRIMARY16BIT) == 0) {
         throw ESoundDriver("Unsupported sample size [16bits]");        
     }   
 

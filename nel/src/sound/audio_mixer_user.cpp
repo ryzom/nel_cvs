@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.30 2002/08/21 09:42:29 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.31 2002/08/26 09:36:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,7 +143,8 @@ CAudioMixerUser::~CAudioMixerUser()
 	uint i;
 	for ( i=0; i!=_NbTracks; i++ )
 	{
-		delete _Tracks[i];
+		if ( _Tracks[i] )
+			delete _Tracks[i];
 	}
 
 	// Sound driver
@@ -185,13 +186,16 @@ void				CAudioMixerUser::reset()
 	// Stop tracks
 	uint i;
 	for ( i=0; i!=_NbTracks; i++ )
-	{
-		if ( ! _Tracks[i]->isAvailable() )
+		if ( _Tracks[i] )
 		{
-			_Tracks[i]->getUserSource()->stop();
+			CSourceUser* src = _Tracks[i]->getUserSource();
+
+			if ( ! _Tracks[i]->isAvailable() && src )
+			{
+				src->stop();
+			}
+			_Tracks[i]->DrvSource->setStaticBuffer( NULL );
 		}
-		_Tracks[i]->DrvSource->setStaticBuffer( NULL );
-	}
 
 	// Env. sounds tree
 	if ( _EnvSounds != NULL )
@@ -253,6 +257,10 @@ void				CAudioMixerUser::init( uint32 balance_period )
 	// Init tracks (physical sources)
 	_NbTracks = MAX_TRACKS; // could be chosen by the user, or according to the capabilities of the sound card
 	uint i;
+	for ( i=0; i<MAX_TRACKS; i++ )
+	{
+		_Tracks[i] = NULL;
+	}
 	try
 	{
 		for ( i=0; i!=_NbTracks; i++ )
@@ -269,13 +277,7 @@ void				CAudioMixerUser::init( uint32 balance_period )
 	}
 
 	_MaxNbTracks = _NbTracks;
-	
-	for ( i=_NbTracks+1; i<MAX_TRACKS; i++ )
-	{
-		_Tracks[i] = NULL;
-	}
 	_BalancePeriod = balance_period;
-
 	_StartTime = CTime::getLocalTime();
 
 	nlinfo( "Initialized audio mixer with %u voices", _NbTracks );
@@ -297,7 +299,7 @@ void				CAudioMixerUser::enable( bool b )
 		uint i;
 		for ( i=0; i!=_NbTracks; i++ )
 		{
-			if ( ! _Tracks[i]->isAvailable() )
+			if ( _Tracks[i] && ! _Tracks[i]->isAvailable() )
 			{
 				_Tracks[i]->getUserSource()->leaveTrack();
 			}
@@ -387,7 +389,7 @@ void				CAudioMixerUser::getFreeTracks( uint nb, CTrack **tracks )
 	{
 		for ( found=0, i=0; (found!=nb) && (i!=_NbTracks); i++ )
 		{
-			if ( _Tracks[i]->isAvailable() )
+			if ( _Tracks[i] && _Tracks[i]->isAvailable() )
 			{
 				tracks[found] = _Tracks[i];
 				found++;
@@ -788,7 +790,7 @@ uint			CAudioMixerUser::getNumberAvailableTracks() const
 	uint nb = 0;	
 	for ( uint i=0; i!=_NbTracks; i++ )
 	{
-		if ( _Tracks[i]->isAvailable() )
+		if ( _Tracks[i] && _Tracks[i]->isAvailable() )
 		{
 			++nb;
 		}
@@ -927,7 +929,7 @@ void			CAudioMixerUser::redispatchSourcesToTrack()
 	for ( i=0; i!=_NbTracks; i++ )
 	{
 		// FIXME: SWAPTEST
-		if ( ! _Tracks[i]->isAvailable() )
+		if ( _Tracks[i] && ! _Tracks[i]->isAvailable() )
 		{
 			// Optimization note: instead of searching the source in selected_sources, we could have
 			// set a boolean in the source object and tested it.

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.6 2001/05/02 09:15:02 vizerie Exp $
+ * $Id: particle_system.h,v 1.7 2001/05/02 09:21:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,7 +124,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		* Everything is saved, except for the fontManager and the fontGenerator
 		* They must be set again if the edition pass, that show forces and zone, is used
 		*/
-		virtual void serial(NLMISC::IStream &f) throw (NLMISC::EStream) ;
+		virtual void serial(NLMISC::IStream &f)
 		
 
 	

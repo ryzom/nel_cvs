@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: vector.h,v 1.1 2000/09/13 17:58:46 berenguier Exp $
+ * $Id: vector.h,v 1.2 2000/09/14 10:06:49 berenguier Exp $
  *
  * CVector class
  */
@@ -68,7 +68,6 @@ public:		// Methods.
 	CVector	operator*(float f) const;
 	CVector	operator/(float f) const;
 	CVector	operator-() const;
-	friend	CVector	operator*(float f, const CVector &v0);
 	//@}
 
 	/// @name Advanced Maths.
@@ -97,13 +96,15 @@ public:		// Methods.
 	void	serial(IStream &f);
 	//@}
 
+	// friends.
+	friend	CVector	operator*(float f, const CVector &v0);
 };
 
 
-#include "nel/misc/vector_inline.h"
-
-
 }
+
+
+#include "nel/misc/vector_inline.h"
 
 
 #endif // NL_VECTOR_H

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.9 2000/09/14 09:52:14 berenguier Exp $
+ * $Id: stream.h,v 1.10 2000/09/14 10:03:56 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -68,11 +68,11 @@ class	IStreamable;
  * \b Deriver \b Use:
  *
  * The deriver must:
- * \li construct object specifying his type, see IStream(). A stream may be setup Input or Output at construction, but cannot
+ * - construct object specifying his type, see IStream(). A stream may be setup Input or Output at construction, but cannot
  * change during his life.
- * \li specify serialBuffer(), to save or load pack of bytes.
- * \li specify serialBit(), to save() or load() a bit.
- * \li call resetPtrTable() when the stream reset itself (e.g.: CIFile::close() )
+ * - specify serialBuffer(), to save or load pack of bytes.
+ * - specify serialBit(), to save or load a bit.
+ * - call resetPtrTable() when the stream reset itself (e.g.: CIFile::close() )
  *
  * Sample of streams: COutMemoryStream, CInFileStream ...
  *
@@ -80,12 +80,12 @@ class	IStreamable;
  *
  * An object which can be serialized, must provide a "void serial(IStream &)" method. In this method, he can use
  * any of the IStream method to help himself like:
- * \li serial() with a base type (uint32, string, char...), or even with an object which provide "void serial(IStream &)"
- * \li template serial(T0&, T1&, ...) to serialize multiple object/variables in one call (up to 6).
- * \li serialCont() and serialMap() to serialize containers.
- * \li serialVersion() to check/store a version number of his class.
- * \li serialPtr() to use the ptr support of IStream (see serialPtr() for more information)
- * \li isReading() to know if he write in the stream, or if he read.
+ * - serial() with a base type (uint32, string, char...), or even with an object which provide "void serial(IStream &)"
+ * - template serial(T0&, T1&, ...) to serialize multiple object/variables in one call (up to 6).
+ * - serialCont() and serialMap() to serialize containers.
+ * - serialVersion() to check/store a version number of his class.
+ * - serialPtr() to use the ptr support of IStream (see serialPtr() for more information)
+ * - isReading() to know if he write in the stream, or if he read.
  *
  * The using is very simple as shown in this example:
  *
@@ -124,12 +124,12 @@ public:
 	 * If throwOnNewer==true, IStream throws a ENewerStream when needed. 
 	 *
 	 * By default, the behavior is throwOnOlder=false, throwOnNewer=true.
-	 * @see serialVersion() getVersionException()
+	 * \see serialVersion() getVersionException()
 	 */
 	static	void	setVersionException(bool throwOnOlder, bool throwOnNewer);
 	/**
 	 * Get the behavior of IStream regarding input stream that are older/newer than the class. 
-	 * @see serialVersion() setVersionException()
+	 * \see serialVersion() setVersionException()
 	 */
 	static	void	getVersionException(bool &throwOnOlder, bool &throwOnNewer);
 
@@ -141,8 +141,8 @@ public:
 	 * You must set needSwap only if your stream need it (a CMemoryStream may not need it).
 	 * IStream::IStream() force needSwap=false if \c NL_BIG_ENDIAN defined!
 	 * Notice that those behavior can be set at construction only.
-	 * @param inputStream is the stream an Input (read) stream?
-	 * @param needSwap is the stream need endian swapping?
+	 * \param inputStream is the stream an Input (read) stream?
+	 * \param needSwap is the stream need endian swapping?
 	 */
 	IStream(bool inputStream, bool needSwap);
 
@@ -155,14 +155,14 @@ public:
 
 	/**
 	 * Template Object serialisation.
-	 * @param obj any object providing a "void serial(IStream&)" method.
+	 * \param obj any object providing a "void serial(IStream&)" method.
 	 */
     template<class T>
 	void			serial(T &obj) throw(EStream)
 	{ obj.serial(*this);	}
 
 
-	/** @name Base type serialisation.
+	/** \name Base type serialisation.
 	 * Those method are a specialisation of template method "void serial(T&)".
 	 */
 	//@{
@@ -183,7 +183,7 @@ public:
 	void			serial(std::wstring &b) throw(EStream);
 	//@}
 
-	/** @name Multiple serialisation.
+	/** \name Multiple serialisation.
 	 * Template for easy multiple serialisation.
 	 */
 	//@{
@@ -219,7 +219,7 @@ public:
 	 *	\li iterator insert(iterator it, const value_type& x);
 	 *
 	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>.
-	 * @param cont a STL container (vector<>, set<> ...).
+	 * \param cont a STL container (vector<>, set<> ...).
 	 */
 	template<class T>
 	void			serialCont(T &cont) throw(EStream)
@@ -264,7 +264,7 @@ public:
 	 *	\li iterator insert(iterator it, const value_type& x);
 	 *
 	 * Known Supported containers: map<>, multimap<>.
-	 * @param cont a STL map<> or multimap<> container.
+	 * \param cont a STL map<> or multimap<> container.
 	 */
 	template<class T>
 	void			serialMap(T &cont) throw(EStream)
@@ -300,8 +300,8 @@ public:
 	 * Serialize Polymorphic Objet Ptr.
 	 * Works with NULL pointers. If the same object is found mutliple time in the stream, ONLY ONE instance is written!
 	 * NB: The ptr is serialised as a uint64 (64 bit compliant).
-	 * @param ptr a pointer on a IStreamable object.
-	 * @see resetPtrTable()
+	 * \param ptr a pointer on a IStreamable object.
+	 * \see resetPtrTable()
 	 */
 	template<class T>
 	void			serialPtr(T* &ptr) throw(ERegistry, EStream)
@@ -314,9 +314,9 @@ public:
 	 * Then he can use the streamVersion returned to see how he should serialise himself.
 	 *
 	 * NB: Version Number is read/store as a uint8, or uint32 if too bigger..
-	 * @param currentVersion the current version of the class, provided by user.
-	 * @return the version of the stream. If the stream is an Output stream, currentVersion is returned.
-	 * @see setVersionException() getVersionException()
+	 * \param currentVersion the current version of the class, provided by user.
+	 * \return the version of the stream. If the stream is an Output stream, currentVersion is returned.
+	 * \see setVersionException() getVersionException()
 	 */
 	uint			serialVersion(uint currentVersion) throw(EStream);
 
@@ -374,12 +374,11 @@ public:
 };
 
 
+}	// namespace NLMISC.
+
 
 // Inline Implementation.
 #include "nel/misc/stream_inline.h"
-
-
-}	// namespace NLMISC.
 
 
 #endif // NL_STREAM_H

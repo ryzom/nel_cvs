@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: vector_inline.h,v 1.1 2000/09/13 17:58:46 berenguier Exp $
+ * $Id: vector_inline.h,v 1.2 2000/09/14 10:06:49 berenguier Exp $
  *
  * CVector class inline definitions.
  */
@@ -16,6 +16,10 @@
 
 #ifndef NL_VECTOR_INLINE_H
 #define NL_VECTOR_INLINE_H
+
+
+namespace	NLMISC
+{
 
 
 // ============================================================================================
@@ -132,5 +136,9 @@ inline	void	CVector::serial(IStream &f)
 {
 	f.serial(x,y,z);
 }
+
+
+}
+
 
 #endif

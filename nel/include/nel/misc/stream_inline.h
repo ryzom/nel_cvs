@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream_inline.h,v 1.6 2000/09/14 09:52:13 berenguier Exp $
+ * $Id: stream_inline.h,v 1.7 2000/09/14 10:03:56 berenguier Exp $
  *
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  */
@@ -18,6 +18,9 @@
 
 #include "nel/misc/assert.h"
 
+
+namespace	NLMISC
+{
 
 
 // ======================================================================================================
@@ -343,6 +346,8 @@ inline	void		IStream::serial(std::wstring &b) throw(EStream)
 		serial(b[i]);
 }
 
+
+}
 
 
 #endif // NL_STREAM_INLINE_H

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.8 2004/07/09 13:02:26 berenguier Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.9 2004/08/03 16:32:52 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -41,6 +41,7 @@
 
 using namespace std;
 using namespace NLMISC;
+
 
 namespace NL3D 
 {
@@ -166,8 +167,8 @@ const D3DCUBEMAP_FACES RemapCubeFaceTypeNeL2D3D[6]=
 {
 	D3DCUBEMAP_FACE_POSITIVE_X,	// positive_x
 	D3DCUBEMAP_FACE_NEGATIVE_X,	// negative_x
-	D3DCUBEMAP_FACE_POSITIVE_Z,	// positive_y
-	D3DCUBEMAP_FACE_NEGATIVE_Z,	// negative_y
+	D3DCUBEMAP_FACE_NEGATIVE_Z,	// positive_y
+	D3DCUBEMAP_FACE_POSITIVE_Z,	// negative_y
 	D3DCUBEMAP_FACE_POSITIVE_Y,	// positive_z
 	D3DCUBEMAP_FACE_NEGATIVE_Y,	// negative_z
 };
@@ -625,7 +626,7 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 												const uint8 *src = &(texture->getPixels(i)[block*blockSize]);
 												uint8 *dest = ((uint8*)rect.pBits)+block*rect.Pitch;
 												if (destFormat == D3DFMT_A8R8G8B8)												
-													copyRGBA2BGRA ((uint32*)dest, (const uint32*)src, blockSize>>2);
+													copyRGBA2BGRA ((uint32*)dest, (const uint32*)src, blockSize>>2);												
 												else if (destFormat == D3DFMT_V8U8)
 												{
 													for(uint k = 0; k < blockSize; ++k)
@@ -633,7 +634,7 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 														*dest++ = (uint8) ((sint8) (*src++) + 128);
 													}
 													
-												}
+												}												
 												else
 													memcpy (dest, src, blockSize);
 											}
@@ -1109,7 +1110,16 @@ bool CDriverD3D::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 widt
 	
 	// Handle backside
 	if (!_DoubleSided)
-		setRenderState (D3DRS_CULLMODE, _InvertCullMode?D3DCULL_CCW:D3DCULL_CW);
+	{
+		if (_CullMode == CCW)
+		{		
+			setRenderState (D3DRS_CULLMODE, _InvertCullMode?D3DCULL_CCW:D3DCULL_CW);
+		}
+		else
+		{
+			setRenderState (D3DRS_CULLMODE, _InvertCullMode?D3DCULL_CW:D3DCULL_CCW);
+		}
+	}
 
 	return true;
 }

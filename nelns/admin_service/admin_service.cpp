@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.32.4.1 2003/08/21 16:54:02 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.32.4.2 2003/09/01 16:23:09 lecroart Exp $
  *
  */
 
@@ -1054,7 +1054,7 @@ void sendAESInformations (uint16 sid)
 
 	vector<string> informations;
 
-	CMessage msgout("INFORMATIONS");
+	CMessage msgout("AES_INFO");
 	
 	//
 	// send services that should be running on this AES
@@ -1064,6 +1064,7 @@ void sendAESInformations (uint16 sid)
 	while (row != NULL)
 	{
 		string service = row[0];
+		nlinfo ("Adding '%s' in registered services to AES-%hu", row[0], sid);
 		informations.push_back (service);
 		row = sqlNextRow ();
 	}
@@ -1076,6 +1077,7 @@ void sendAESInformations (uint16 sid)
 	row = sqlQuery ("select path, error_bound, alarm_order from variable where error_bound!=-1");
 	while (row != NULL)
 	{
+		nlinfo ("Adding '%s' '%s' '%s' in alarm to AES-%hu", row[0], row[1], row[2], sid);
 		informations.push_back (row[0]);
 		informations.push_back (row[1]);
 		informations.push_back (row[2]);
@@ -1104,6 +1106,7 @@ void sendAESInformations (uint16 sid)
 					string c  = varpath2.Destination[j].first, d = (*aesit).Name;
 					if(varpath2.Destination[j].first == "*" || varpath2.Destination[j].first == (*aesit).Name)
 					{
+						nlinfo ("Adding '%s' '%s' '%s' in graph to AES-%hu", row[0], row[1], sid);
 						informations.push_back (row[0]);
 						informations.push_back (row[1]);
 					}

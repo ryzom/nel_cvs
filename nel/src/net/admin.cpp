@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.8 2003/06/30 09:35:01 lecroart Exp $
+ * $Id: admin.cpp,v 1.8.4.1 2003/09/01 16:23:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ const uint32 AlarmCheckDelay = 5;
 // Callbacks
 //
 
-static void cbInformations (CMessage &msgin, const std::string &serviceName, uint16 sid)
+static void cbInfo (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	nlinfo ("Updating informations");
 
@@ -67,7 +67,7 @@ static void cbInformations (CMessage &msgin, const std::string &serviceName, uin
 
 static TUnifiedCallbackItem CallbackArray[] =
 {
-	{ "INFORMATIONS", cbInformations },
+	{ "INFO", cbInfo },
 };
 
 

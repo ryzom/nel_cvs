@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.153 2002/12/11 08:36:28 lecroart Exp $
+ * $Id: service.cpp,v 1.154 2002/12/16 16:38:49 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -66,6 +66,8 @@
 #include "nel/net/net_displayer.h"
 #include "nel/net/email.h"
 #include "nel/net/varpath.h"
+
+#include "nel/memory/memory_manager.h"
 
 #include "nel/misc/hierarchical_timer.h"
 
@@ -717,7 +719,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// Init window param if necessary
 			//
 
-			sint x=-1, y=-1, w=-1, h=-1, fs=10;
+			sint x=-1, y=-1, w=-1, h=-1, fs=10, history=-1;
 			bool iconified = false, ww = false;
 			string fn;
 
@@ -725,14 +727,15 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			if ((var = ConfigFile.getVarPtr("YWinParam")) != NULL) y = var->asInt();
 			if ((var = ConfigFile.getVarPtr("WWinParam")) != NULL) w = var->asInt();
 			if ((var = ConfigFile.getVarPtr("HWinParam")) != NULL) h = var->asInt();
-			if ((var = ConfigFile.getVarPtr("HWinParam")) != NULL) iconified = var->asInt() == 1;
+			if ((var = ConfigFile.getVarPtr("HistoryWinParam")) != NULL) history = var->asInt();
+			if ((var = ConfigFile.getVarPtr("IWinParam")) != NULL) iconified = var->asInt() == 1;
 			if ((var = ConfigFile.getVarPtr("FontSize")) != NULL) fs = var->asInt();
 			if ((var = ConfigFile.getVarPtr("FontName")) != NULL) fn = var->asString();
 			if ((var = ConfigFile.getVarPtr("WordWrap")) != NULL) ww = var->asInt() == 1;
 			
 			if (haveArg('I')) iconified = true;
 
-			WindowDisplayer->create (string("*INIT* ") + _ShortName + " " + _LongName, iconified, x, y, w, h, -1, fs, fn, ww);
+			WindowDisplayer->create (string("*INIT* ") + _ShortName + " " + _LongName, iconified, x, y, w, h, history, fs, fn, ww);
 
 			DebugLog->addDisplayer (WindowDisplayer);
 			InfoLog->addDisplayer (WindowDisplayer);
@@ -1406,6 +1409,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	CHTimer::displayHierarchicalByExecutionPathSorted (InfoLog, CHTimer::TotalTime, true, 64);
 
 	nlinfo ("Service ends");
+
+	string name = getServiceLongName () + ".memory_report";
+	NLMEMORY::StatisticsReport (name.c_str(), false);
 
 	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
 }

@@ -48,7 +48,7 @@ namespace NLAIAGENT
 	COperatorScript::~COperatorScript()
 	{
 #ifdef NL_DEBUG
-		const char *className = (const char *)getType();
+		//const char *className = (const char *)getType();
 #endif
 	}
 

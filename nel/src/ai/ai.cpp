@@ -51,7 +51,7 @@ namespace NLAILINK
 
 		NLAIAGENT::CIndexedVarName::releaseClass();
 		NLAIC::releaseRegistry();
-		NLAIAGENT::CLocWordNumRef::clear();
+		//NLAIAGENT::CLocWordNumRef::clear();
 		NLAIAGENT::CAgentScript::releaseAgentScript();
 		NLAIAGENT::CFsmScript::releaseClass();
 		

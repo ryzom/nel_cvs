@@ -1,6 +1,6 @@
 /** \file object.cpp
  *
- * $Id: interpret_object.cpp,v 1.10 2001/06/25 09:22:17 portier Exp $
+ * $Id: interpret_object.cpp,v 1.11 2001/12/04 12:53:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,6 +114,11 @@ namespace NLAISCRIPT
 
 	CClassInterpretFactory::CClassInterpretFactory(IClassInterpret *a) : _Inst(a)
 	{			
+
+/*#ifdef NL_DEBUG
+		static sint turc = 0;
+		nlinfo("%d CClassInterpretFactory(%0x)",turc++, _Inst);
+#endif*/
 		_Inst->incRef();
 	}
 

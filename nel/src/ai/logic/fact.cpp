@@ -109,6 +109,7 @@ namespace NLAILOGIC
 
 	CFact::~CFact()
 	{
+		if(_AssertName != NULL) _AssertName->release();
 /*		if ( _Assert != NULL )
 			_Assert->release();
 			*/

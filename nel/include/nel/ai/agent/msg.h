@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.17 2001/10/29 15:54:46 chafik Exp $
+ * $Id: msg.h,v 1.18 2001/12/04 12:53:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,10 +84,13 @@ namespace NLAIAGENT
 
 		///Who send the message.
 		IObjectIA *_Sender;
+		bool _SenderIsVolatile;
 		///witch Agent the message have to be achieve.
 		IObjectIA *_Receiver;
+		bool _ReceiverIsVolatile;
 		///This adresse is when receiver have to inform something at a third agent.
 		IObjectIA *_Continuation;
+		bool _ContinuationIsVolatile;
 		///Message is arranged by group.
 		IBasicMessageGroup *_MsgGroup;
 		/*
@@ -119,69 +122,13 @@ namespace NLAIAGENT
 		}
 
 	public:
-		IMessageBase():IListBasicManager(),_Sender(NULL),_MsgGroup(NULL)
-		{
-			_ReservedMethodIndexVar = -1;
-			_ReservedHeritanceIndexVar = 0;
-			_Receiver = NULL;
-			_Continuation = NULL;
-			_Performatif = PUndefine;
-			_comeFromC_PLUS = true;
-			_Dispatch = false;
-			_ProtectSender = false;
-		}
-		IMessageBase(IObjectIA *sender,IBaseGroupType *g):IListBasicManager(g),_Sender(sender),_MsgGroup(NULL)
-		{
-			_ReservedMethodIndexVar = -1;
-			_ReservedHeritanceIndexVar = 0;
-			_Receiver = NULL;
-			_Continuation = NULL;
-			_Performatif = PUndefine;
-			_comeFromC_PLUS = true;
-			_Dispatch = false;
-			_ProtectSender = false;
-		}
-		IMessageBase(IObjectIA *sender, IBasicMessageGroup &msg_group,IBaseGroupType *g):
-			IListBasicManager(g),_Sender(sender),_MsgGroup((IBasicMessageGroup *)msg_group.clone())
-		{
-			_ReservedMethodIndexVar = -1;
-			_ReservedHeritanceIndexVar = 0;
-			_Receiver = NULL;
-			_Continuation = NULL;
-			_Performatif = PUndefine;
-			_comeFromC_PLUS = true;
-			_Dispatch = false;
-			_ProtectSender = false;
-		}
+		IMessageBase();
+		IMessageBase(IObjectIA *sender,IBaseGroupType *g);
+		IMessageBase(IObjectIA *sender, IBasicMessageGroup &msg_group,IBaseGroupType *g);
 
-		IMessageBase(const IMessageBase &m):IListBasicManager(m._List != NULL ? (IBaseGroupType *)m._List->clone(): NULL)
-		{
-			_Sender = m._Sender;
-			//if(_Sender) _Sender->incRef();
-			_Receiver = m._Receiver;
-			//if(_Receiver) _Receiver->incRef();
-			_Continuation = m._Continuation;
-			//if(_Continuation) _Continuation->incRef();
+		IMessageBase(const IMessageBase &m);
 
-			if(m._MsgGroup) _MsgGroup = (IBasicMessageGroup *)m._MsgGroup->clone();
-			else _MsgGroup = NULL;
-			//_Message = (IBaseGroupType *)m._Message->clone();			
-			_ReservedMethodIndexVar = m._ReservedMethodIndexVar;
-			_ReservedHeritanceIndexVar = m._ReservedHeritanceIndexVar;			
-			_Performatif = m._Performatif;
-			_comeFromC_PLUS = m._comeFromC_PLUS;
-			_Dispatch = m._Dispatch;
-			_ProtectSender = m._ProtectSender;
-		}
-
-		virtual ~IMessageBase()
-		{
-			if(_MsgGroup != NULL) _MsgGroup->release();
-			//if(_Message != NULL) _Message->release();
-			//if(_Sender != NULL) _Sender->release();
-			//if(_Receiver != NULL) _Receiver->release();
-			//if(_Continuation != NULL) _Continuation->release();
-		}		
+		virtual ~IMessageBase();		
 				
 		const IBasicMessageGroup &getGroup() const
 		{
@@ -208,23 +155,9 @@ namespace NLAIAGENT
 
 		///\name Set and get agent sender reciver and third
 		//@{
-		void setSender(IObjectIA *s)
-		{			
-			//if(_Sender) _Sender->release();
-			_Sender = s;
-		}
-
-		void setReceiver(IObjectIA *r)
-		{	
-			//if(_Receiver) _Receiver->release();
-			_Receiver = r;
-		}
-
-		void setContinuation(IObjectIA *r)
-		{			
-			//if(_Continuation) _Continuation->release();
-			_Continuation = r;
-		}
+		void setSender(IObjectIA *s, bool v = false);
+		void setReceiver(IObjectIA *r, bool v = false);
+		void setContinuation(IObjectIA *r, bool v = false);		
 
 		void setDispatch(bool state = true)
 		{

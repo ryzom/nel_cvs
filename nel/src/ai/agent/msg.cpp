@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.15 2001/10/02 14:53:41 chafik Exp $
+ * $Id: msg.cpp,v 1.16 2001/12/04 12:53:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,19 +61,101 @@ namespace NLAIAGENT
 	IntegerType IMessageBase::IdTell = IntegerType(IMessageBase::PTell);
 	IntegerType IMessageBase::IdKill = IntegerType(IMessageBase::PKill);*/
 
+	IMessageBase::IMessageBase():IListBasicManager(),_Sender(NULL),_MsgGroup(NULL)
+	{
+		_ReservedMethodIndexVar = -1;
+		_ReservedHeritanceIndexVar = 0;
+		_Receiver = NULL;
+		_Continuation = NULL;
+		_Performatif = PUndefine;
+		_comeFromC_PLUS = true;
+		_Dispatch = false;
+		_ProtectSender = false;
+	}
+	IMessageBase::IMessageBase(IObjectIA *sender,IBaseGroupType *g):IListBasicManager(g),_Sender(sender),_MsgGroup(NULL)
+	{
+		_ReservedMethodIndexVar = -1;
+		_ReservedHeritanceIndexVar = 0;
+		_Receiver = NULL;
+		_Continuation = NULL;
+		_Performatif = PUndefine;
+		_comeFromC_PLUS = true;
+		_Dispatch = false;
+		_ProtectSender = false;
+	}
+
+	IMessageBase::IMessageBase(IObjectIA *sender, IBasicMessageGroup &msg_group,IBaseGroupType *g):
+							IListBasicManager(g),_Sender(sender),_MsgGroup((IBasicMessageGroup *)msg_group.clone())
+	{
+		_ReservedMethodIndexVar = -1;
+		_ReservedHeritanceIndexVar = 0;
+		_Receiver = NULL;
+		_Continuation = NULL;
+		_Performatif = PUndefine;
+		_comeFromC_PLUS = true;
+		_Dispatch = false;
+		_ProtectSender = false;
+	}
+
+	IMessageBase::IMessageBase(const IMessageBase &m):IListBasicManager(m._List != NULL ? (IBaseGroupType *)m._List->clone(): NULL)
+	{
+		_Sender = m._Sender;
+		if(_SenderIsVolatile && _Sender != NULL) _Sender->incRef();
+		_Receiver = m._Receiver;
+		if(_ReceiverIsVolatile && _Receiver != NULL) _Receiver->incRef();
+		_Continuation = m._Continuation;
+		if(_ContinuationIsVolatile && _Continuation != NULL) _Continuation->incRef();
+
+		if(m._MsgGroup) _MsgGroup = (IBasicMessageGroup *)m._MsgGroup->clone();
+		else _MsgGroup = NULL;
+		//_Message = (IBaseGroupType *)m._Message->clone();			
+		_ReservedMethodIndexVar = m._ReservedMethodIndexVar;
+		_ReservedHeritanceIndexVar = m._ReservedHeritanceIndexVar;			
+		_Performatif = m._Performatif;
+		_comeFromC_PLUS = m._comeFromC_PLUS;
+		_Dispatch = m._Dispatch;
+		_ProtectSender = m._ProtectSender;
+	}
+
+	IMessageBase::~IMessageBase()
+	{
+		if(_MsgGroup != NULL) _MsgGroup->release();
+		if(_SenderIsVolatile && _Sender != NULL) _Sender->release();
+		if(_ReceiverIsVolatile && _Receiver != NULL) _Receiver->release();
+	    if(_ContinuationIsVolatile && _Continuation != NULL) _Continuation->release();
+	}	
+
 
 	IObjectIA &IMessageBase::operator = (const IObjectIA &a)
 	{
 		IMessageBase &b = (IMessageBase &)a;
 		_Sender = b._Sender;
-		//if(_Sender) _Sender->incRef();
+		if(_SenderIsVolatile && _Sender != NULL) _Sender->incRef();
 		_Receiver = b._Receiver;
-		//if(_Receiver) _Receiver->incRef();
+		if(_ReceiverIsVolatile && _Receiver != NULL) _Receiver->incRef();
 		_Continuation = b._Continuation;
-		//if(_Continuation) _Continuation->incRef();
+		if(_ContinuationIsVolatile && _Continuation != NULL) _Continuation->incRef();
 		setGroup((IBasicMessageGroup &)b.getGroup());
 		*_List = *b._List;
 		return *this;
+	}
+
+	void IMessageBase::setSender(IObjectIA *s, bool v)
+	{					
+		_Sender = s;
+		_SenderIsVolatile = v;
+	}
+
+	void IMessageBase::setReceiver(IObjectIA *r, bool v)
+	{			
+		_Receiver = r;
+		_ReceiverIsVolatile = v;
+	}
+
+	void IMessageBase::setContinuation(IObjectIA *r, bool v)
+	{						
+		_Continuation = r;
+		_ContinuationIsVolatile = v;
 	}
 
 	bool IMessageBase::isEqual(const IBasicObjectIA &a) const
@@ -149,13 +231,12 @@ namespace NLAIAGENT
 			else
 			{
 				//if(_Sender) _Sender->release();
-				_Sender = new CProxyAgentMail(r.getId());
+				setSender(new CProxyAgentMail(r.getId()) , true);
 			}
 			
 		}
 		else
-		{
-			//if(_Sender) _Sender->release();
+		{			
 			_Sender = NULL;
 		}
 		
@@ -173,7 +254,7 @@ namespace NLAIAGENT
 			else
 			{
 				//if(_Receiver) _Receiver->release();
-				_Receiver = new CProxyAgentMail(r.getId());
+				setReceiver(new CProxyAgentMail(r.getId()) , true);
 			}
 			
 		}
@@ -196,7 +277,7 @@ namespace NLAIAGENT
 			else
 			{				
 				//if(_Continuation) _Continuation->release();
-				_Continuation = new CProxyAgentMail(r.getId());
+				setContinuation(new CProxyAgentMail(r.getId()) , true);
 			}
 			
 		}

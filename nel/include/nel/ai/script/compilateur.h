@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.25 2001/10/24 13:40:29 chafik Exp $
+ * $Id: compilateur.h,v 1.26 2001/12/04 12:53:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -487,6 +487,8 @@ namespace NLAISCRIPT
 		bool classIsAnOperator();
 		void CompileFactPattern();
 		void CompileOperator();
+
+		void newObject();
 	};
 }
 #endif

@@ -1398,7 +1398,7 @@ using  namespace NLAIFUZZY;
 							}
 							NewObjectName PAR_G
 							{
-								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
+								newObject();
 							}
 							PrametreNew
 						;

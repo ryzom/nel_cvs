@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.28 2001/10/24 16:37:04 chafik Exp $
+ * $Id: yacc.cpp,v 1.29 2001/12/04 12:53:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -436,7 +436,12 @@ namespace NLAISCRIPT
 			case varTypeImediate:
 				if(!_LastFact.IsUsed)
 				{
-					_LastBloc->addCode(new CLdbOpCode (*_LastFact.Value));
+					CLdbOpCode *x = new CLdbOpCode (*_LastFact.Value);
+#ifdef NL_DEBUG
+					static sint kaka = 0;
+					nlinfo ("UnTruc: %d at %0x",kaka ++, x);
+#endif
+					_LastBloc->addCode(x);
 					_LastFact.IsUsed = true;
 				}
 				if(op) _LastBloc->addCode(op);
@@ -545,7 +550,14 @@ namespace NLAISCRIPT
 		NLAIC::CIdentType id(className.getString(),(const NLAIC::IClassFactory &)CClassInterpretFactory(c), 
 							NLAIC::CTypeOfObject(c->getTypeClass()), NLAIC::CTypeOfOperator(0));
 
-		c->setType(new NLAIC::CIdentType(id));
+
+		NLAIC::CIdentType *x = new NLAIC::CIdentType(id);
+
+#ifdef NL_DEBUG
+		static sint kaka = 0;
+		nlinfo ("UnTruc: %d at %0x",kaka ++, x);
+#endif
+		c->setType(x);
 	}
 
 	bool CCompilateur::computContraint()

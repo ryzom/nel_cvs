@@ -1,6 +1,6 @@
 /** \file volatil_memory.cpp
  *
- * $Id: volatil_memory.cpp,v 1.4 2001/06/14 10:23:18 chafik Exp $
+ * $Id: volatil_memory.cpp,v 1.5 2001/12/04 12:53:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,10 +74,12 @@ namespace NLAIAGENT
 
 	CVolatilMemmory::CVolatilMemmory(const CVolatilMemmory &v): _Time (CHashTimerManager::Time ), _List((IBaseGroupType *)v._List->clone()),_PairToDelete (NULL)
 	{
+		_List->release();
 	}
 
 	CVolatilMemmory::~CVolatilMemmory()
 	{
+		_List->release();
 	}
 	
 	void CVolatilMemmory::init()

@@ -2494,7 +2494,7 @@ case 212:
 case 213:
 #line 1400 "grammar.yacc"
 {
-								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
+								newObject();
 							;
     break;}
 case 215:

@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: python_export.h,v 1.6 2001/02/21 11:07:39 chafik Exp $
+ * $Id: python_export.h,v 1.7 2001/12/04 12:53:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NLAIC
 		CPyTemplateDef(T *a)
 		{
 			Instance = a;
-			//Instance->incRef();
+			Instance->incRef();
 		}
 		operator T *() const
 		{

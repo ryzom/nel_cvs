@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.13 2001/05/22 16:08:15 chafik Exp $
+ * $Id: ident.cpp,v 1.14 2001/12/04 12:53:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,16 @@ namespace NLAIAGENT
 		str += std::string(b);
 	}
 
+	CLocWordNumRef::~CLocWordNumRef()
+	{
+		tMapRef::iterator Itr = CLocWordNumRef::_LocRefence->find(_Id);
+		if(Itr != CLocWordNumRef::_LocRefence->end())
+		{				
+			CLocWordNumRef::_LocRefence->erase(Itr);
+		}
+		else throw NLAIE::CExceptionIndexHandeledError();
+	}
+
 	const NLAIC::CIdentType &CLocWordNumRef::getType() const
 	{		
 		return *IdLocWordNumRef;
@@ -187,8 +197,8 @@ namespace NLAIAGENT
 
 	void releaseAgentLib()
 	{
-		CLocWordNumRef::clear();
-		CIndexedVarName::releaseClass();
+		//CLocWordNumRef::clear();
+		//CIndexedVarName::releaseClass();
 	}
 
 	void initAgentLib()

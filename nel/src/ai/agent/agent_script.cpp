@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.91 2001/11/12 17:44:22 chafik Exp $
+ * $Id: agent_script.cpp,v 1.92 2001/12/04 12:53:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -349,7 +349,7 @@ namespace NLAIAGENT
 				_Components[i]->release();
 			}
 			delete[] _Components;
-		}
+		}		
 	}
 
 	void CAgentScript::setAgentManager(IAgentManager *manager)
@@ -1103,8 +1103,16 @@ namespace NLAIAGENT
 			}
 			else 
 			{
-				IObjectIA *o = IBasicAgent::run( msg );
-				mail->popMessage();
+				try
+				{
+					IObjectIA *o = IBasicAgent::run( msg );
+					mail->popMessage();
+				}
+				catch(NLAIE::IException &e)
+				{
+					mail->popMessage();
+					throw throw NLAIE::CExceptionNotImplemented(e.what());
+				}								
 			}			
 		}
 	}

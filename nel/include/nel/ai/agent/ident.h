@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.18 2001/05/22 16:08:01 chafik Exp $
+ * $Id: ident.h,v 1.19 2001/12/04 12:53:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -604,9 +604,7 @@ namespace NLAIAGENT
 			return _Id;
 		}
 
-		virtual ~CLocWordNumRef()
-		{
-		}
+		virtual ~CLocWordNumRef();		
 
 	public:
 		

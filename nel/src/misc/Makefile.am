@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.20 2001/03/19 15:34:37 valignat Exp $
+# $Id: Makefile.am,v 1.21 2001/05/09 09:43:30 berenguier Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -18,7 +18,7 @@ libnelmisc_la_SOURCES = aabbox.cpp bit_set.cpp bitmap.cpp bsphere.cpp \
                         quad.cpp quat.cpp rect.cpp rgba.cpp smart_ptr.cpp \
                         stream.cpp string_id_array.cpp system_info.cpp \
                         task_manager.cpp time_nl.cpp triangle.cpp uv.cpp \
-                        vector.cpp vector_h.cpp vectord.cpp
+                        vector.cpp vector_h.cpp vectord.cpp vector_2f.cpp
 
 libnelmisc_la_LIBADD  = config_file/libconfig.la -lpthread
 

@@ -1,7 +1,7 @@
 /** \file ps_ribbon.h
  * Ribbons particles.
  *
- * $Id: ps_ribbon.h,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_ribbon.h,v 1.2 2002/02/20 11:19:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,7 +187,7 @@ public:
 	virtual uint32 getMaxNumFaces(void) const;
 
 protected:	
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
 	void draw(bool opaque);		
 	void init(void);		
 	/** used to describe ribbons
@@ -310,4 +310,4 @@ protected:
 
 #endif // NL_PS_RIBBON_H
 
-/* End of ps_particle.h */
+/* End of ps_ribbon.h */

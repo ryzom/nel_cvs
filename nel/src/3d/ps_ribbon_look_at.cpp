@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_a.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.2 2002/02/20 11:19:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,9 +114,9 @@ void CPSRibbonLookAt::setTexture(CSmartPtr<ITexture> tex)
 
 
 //=======================================================	
-void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 {	
-	if (pass == PSPostdynamic) // performs motion by using the speed obtained after forces integration
+	if (pass == PSMotion)
 	{		
 		updateGlobals();		
 	}

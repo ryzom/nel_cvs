@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.5 2002/02/15 17:10:03 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.6 2002/02/20 11:16:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ public:
 	/**
 	* process one pass for the particles. The default behaviour shows the particles
 	*/
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 	{
 		if (
 			(pass == PSBlendRender && hasTransparentFaces())
@@ -808,4 +808,4 @@ protected:
 
 #endif // NL_PS_PARTICLE_BASIC_H
 
-/* End of ps_particle.h */
+/* End of ps_particle_basic.h */

@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.h
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.h,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_tail_dot.h,v 1.2 2002/02/20 11:20:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,7 +92,7 @@ public:
 
 protected:
 	/// process one pass for the particle			
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);		
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);		
 
 	/// draw (but don't animate) particles
 	virtual void draw(bool opaque);		

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.h
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.h,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_ribbon_look_at.h,v 1.2 2002/02/20 11:20:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ public:
 	///@}
 
 	/// inherited from CPSParticle
-	virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime);
+	virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
 
 	/// return true if there are transparent faces in the object
 	virtual bool			hasTransparentFaces(void);

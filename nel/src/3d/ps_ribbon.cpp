@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.2 2002/02/20 11:19:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -555,7 +555,7 @@ void CPSRibbon::render(CRibbonsDesc &rb, const uint32 size)
 }
 
 ///==================================================================================================================
-void CPSRibbon::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+void CPSRibbon::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 {	
 	if (pass == PSMotion)
 	{

@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.8 2002/02/15 17:07:53 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.9 2002/02/20 11:15:46 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -127,7 +127,7 @@ protected:
 	 */
 	virtual void deleteElement(uint32 index);
 
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
 
 	/// in fact we don't draw the meshs, we just update their pos...
 	virtual void updatePos();
@@ -361,7 +361,7 @@ protected:
 	 */
 	virtual void		deleteElement(uint32 index);
 
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
 	/** called by the system when particles must be drawn
 	  * \param opaque true if we are dealing with the opaque pass, false for transparent faces
 	  */

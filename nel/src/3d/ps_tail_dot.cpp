@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.2 2002/02/20 11:20:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,7 @@ void CPSTailDot::init(void)
 }
 	
 ///==========================================================================================
-void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 {
 	if (
 			(pass == PSBlendRender && hasTransparentFaces())

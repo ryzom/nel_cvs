@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.5 2001/12/28 15:36:21 lecroart Exp $
+ * $Id: login_server.h,v 1.6 2002/01/02 14:52:58 lecroart Exp $
  * 
  */
 
@@ -64,7 +64,7 @@ public:
 	static void init (CUdpSock &server, TNewClientCallback ncl);
 
 	/// Used only in UDP, check if the cookie is valid. return empty string if valid, reason otherwise
-	static std::string CLoginServer::isValidCookie (CLoginCookie &lc);
+	static std::string CLoginServer::isValidCookie (const CLoginCookie &lc);
 
 	/// Call this method when a user is disconnected or the server disconnect the user.
 	/// This method will warn the login system that the user is not here anymore

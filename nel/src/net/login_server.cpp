@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.11 2001/12/28 15:36:14 lecroart Exp $
+ * $Id: login_server.cpp,v 1.12 2002/01/02 14:53:40 lecroart Exp $
  *
  */
 
@@ -128,6 +128,7 @@ void cbWSChooseShard5 (CMessage &msgin, const std::string &serviceName, uint16 s
 	if (it == PendingUsers.end ())
 	{
 		// add it to the awaiting client
+		nlinfo ("New cookie %s inserted in the pending user list (awaiting new client)", cookie.toString().c_str());
 		PendingUsers.push_back (CPendingUser (cookie));
 		reason = "";
 	}
@@ -265,7 +266,7 @@ void CLoginServer::init (CUdpSock &server, TNewClientCallback ncl)
 	nlinfo("Listen Addresss trapped %s", ListenAddr.c_str());
 }
 
-string CLoginServer::isValidCookie (CLoginCookie &lc)
+string CLoginServer::isValidCookie (const CLoginCookie &lc)
 {
 	// verify that the user was pending
 	list<CPendingUser>::iterator it;

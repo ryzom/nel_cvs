@@ -1,7 +1,7 @@
 /** \file login_cookie.h
  * container used by the login process to identify a user
  *
- * $Id: login_cookie.h,v 1.2 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: login_cookie.h,v 1.3 2002/01/02 14:52:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,9 +73,11 @@ public:
 			return "<InvalidCookie>";
 	}
 
-	uint32 getUserAddr () const { return _UserAddr; }
-	uint32 getUserKey () const { return _UserKey; }
-	uint32 getUserId () const { return _UserId; }
+	uint32	getUserAddr () const { nlassert (_Valid); return _UserAddr; }
+	uint32	getUserKey () const { nlassert (_Valid); return _UserKey; }
+	uint32	getUserId () const { nlassert (_Valid); return _UserId; }
+
+	void	set (uint32 ua, uint32 uk, uint32 ui) { _Valid = true; _UserAddr = ua; _UserKey = uk; _UserId = ui; }
 
 	bool	isValid() const { return _Valid; }
 	void	clear () { _Valid = false; }

@@ -1,7 +1,7 @@
 /** \file item_elt_atom.cpp
  * Georges system files
  *
- * $Id: item_elt_atom.cpp,v 1.1 2002/02/14 10:40:39 corvazier Exp $
+ * $Id: item_elt_atom.cpp,v 1.2 2002/02/20 15:26:06 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,13 +130,14 @@ CMoldEltType* CItemEltAtom::GetMoldType() const
 	return( pmet );
 }
 
-/*
-CItemElt* CItemEltAtom::GetElt( const unsigned int _index ) const
+unsigned int CItemEltAtom::GetNbChild ()
 {
-	if( !_index )
-		return( ( CItemElt* )( this ) );
-	return( 0 );
+	return 0;
 }
-*/
+
+CItemElt* CItemEltAtom::GetChild (unsigned int _index)
+{
+	return NULL;
+}
 
 }

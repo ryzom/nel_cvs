@@ -1,7 +1,7 @@
 /** \file item_elt_struct.cpp
  * Georges system files
  *
- * $Id: item_elt_struct.cpp,v 1.1 2002/02/14 10:40:39 corvazier Exp $
+ * $Id: item_elt_struct.cpp,v 1.2 2002/02/20 15:26:06 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -252,6 +252,26 @@ void CItemEltStruct::SetModified( const bool _b )
 	if( !_b )
 		for( std::vector< CItemElt* >::const_iterator it = vpie.begin(); it != vpie.end(); ++it )
 			(*it)->SetModified( _b );
+}
+
+unsigned int CItemEltStruct::GetNbChild ()
+{
+	return 0;
+}
+
+CItemElt* CItemEltStruct::GetChild (unsigned int _index)
+{
+	return NULL;
+}
+
+unsigned int CItemEltStruct::GetNbStructElt ()
+{
+	return vpie.size();
+}
+
+CItemElt* CItemEltStruct::GetStructElt (unsigned int _index)
+{
+	return vpie[_index];
 }
 
 }

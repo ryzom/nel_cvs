@@ -1,7 +1,7 @@
 /** \file item_elt_list.h
  * Georges system files
  *
- * $Id: item_elt_list.h,v 1.1 2002/02/14 10:39:35 corvazier Exp $
+ * $Id: item_elt_list.h,v 1.2 2002/02/20 15:26:34 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,8 @@ public:
 	virtual bool SetModified( const unsigned int _index );
 	virtual void SetModified( const bool _b );
 
+	virtual unsigned int GetNbChild ();
+	virtual CItemElt* GetChild (unsigned int _index);
 };
 
 } // NLGEORGES

@@ -1,7 +1,7 @@
 /** \file item_elt.cpp
  * Georges system files
  *
- * $Id: item_elt.cpp,v 1.1 2002/02/14 10:40:39 corvazier Exp $
+ * $Id: item_elt.cpp,v 1.2 2002/02/20 15:26:06 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -158,6 +158,16 @@ CItemElt* CItemElt::GetElt( const unsigned int _index ) const
 CItemElt* CItemElt::GetElt( const CStringEx _sxname ) const
 {
 	return( 0 );
+}
+
+unsigned int CItemElt::GetNbChild ()
+{
+	return 0;
+}
+
+CItemElt* CItemElt::GetChild (unsigned int _index)
+{
+	return NULL;
 }
 
 }

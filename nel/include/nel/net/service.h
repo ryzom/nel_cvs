@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.82 2005/02/22 10:14:13 besson Exp $
+ * $Id: service.h,v 1.83 2005/03/14 10:44:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -225,6 +225,9 @@ public:
 
 	/// Returns the status
 	sint							getStatus () const { return _Status; }
+
+	/// Returns the date of launch of the service. Unit: see CTime::getSecondsSince1970()
+	uint32							getLaunchingDate () const;
 
 	/// Returns arguments of the program pass from the user to the program using parameters (ie: "myprog param1 param2")
 	const std::vector<std::string>	&getArgs () const { return _Args; }

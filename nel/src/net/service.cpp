@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.223 2005/02/07 10:29:19 corvazier Exp $
+ * $Id: service.cpp,v 1.224 2005/03/14 10:44:36 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1492,6 +1492,9 @@ void IService::requireResetMeasures()
 }
 
 
+/*
+ *
+ */
 std::string IService::getServiceUnifiedName () const
 {
 	nlassert (!_ShortName.empty());
@@ -1507,6 +1510,15 @@ std::string IService::getServiceUnifiedName () const
 		res += toString (_SId);
 	}
 	return res;
+}
+
+
+/*
+ * Returns the date of launch of the service. Unit: see CTime::getSecondsSince1970()
+ */
+uint32		IService::getLaunchingDate () const
+{
+	return LaunchingDate;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.45 2004/12/16 13:59:14 corvazier Exp $
+ * $Id: inet_address.cpp,v 1.46 2005/03/14 10:44:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -482,7 +482,7 @@ std::vector<CInetAddress> CInetAddress::localAddresses()
 	do
 	{
 		hostent *phostent = gethostbyname( localhost );
-		if ( phostent == NULL )
+		if ( phostent == NULL ) // will come here if the local hostname (/etc/hostname in Linux) is not the real name
 			throw ESocket( (string("Hostname resolution failed for ")+string(localhost)).c_str() );
 
 		if (phostent->h_addr_list[i] == 0)

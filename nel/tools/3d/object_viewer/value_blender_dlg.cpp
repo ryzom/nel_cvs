@@ -1,7 +1,7 @@
 /** \file value_blender_dlg.cpp
  * a dialog to choose 2 values that are linearly blended in a particle system
  *
- * $Id: value_blender_dlg.cpp,v 1.4 2001/09/17 14:04:01 vizerie Exp $
+ * $Id: value_blender_dlg.cpp,v 1.5 2001/12/18 18:41:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,6 @@ BOOL CValueBlenderDlg::OnInitDialog()
 
 void CValueBlenderDlg::OnClose() 
 {	
-	if (_PN) _PN->childPopupDestroyed(this);
+	if (_PN) _PN->childPopupClosed(this);
 	//CDialog::OnClose();
 }

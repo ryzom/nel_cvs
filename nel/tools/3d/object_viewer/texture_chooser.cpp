@@ -1,6 +1,6 @@
 /** \file texture_chooser.cpp
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.cpp,v 1.7 2001/12/06 16:59:54 vizerie Exp $
+ * $Id: texture_chooser.cpp,v 1.8 2001/12/18 18:40:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,7 +243,7 @@ void CTextureChooser::OnRemoveTexture()
 	
 
 
-void CTextureChooser::childPopupDestroyed(CWnd *child)
+void CTextureChooser::childPopupClosed(CWnd *child)
 {
 	nlassert(child == _MultiTexDlg);
 	_MultiTexDlg->DestroyWindow();

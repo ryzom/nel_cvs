@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.cpp
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.cpp,v 1.6 2001/09/17 14:04:01 vizerie Exp $
+ * $Id: value_gradient_dlg.cpp,v 1.7 2001/12/18 18:41:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -244,5 +244,5 @@ void CValueGradientDlg::invalidateGrad(void)
 void CValueGradientDlg::OnClose() 
 {
 	CDialog::OnClose();
-	if (_PN) _PN->childPopupDestroyed(this);		
+	if (_PN) _PN->childPopupClosed(this);		
 }

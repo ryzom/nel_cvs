@@ -1,6 +1,6 @@
 /** \file texture_chooser.h
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.h,v 1.6 2001/12/06 16:59:54 vizerie Exp $
+ * $Id: texture_chooser.h,v 1.7 2001/12/18 18:40:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,7 +114,7 @@ protected:
 	DECLARE_MESSAGE_MAP() ;
 
 	/// inherited from IPopupNotify
-	void childPopupDestroyed(CWnd *child);
+	void childPopupClosed(CWnd *child);
 
 	void updateMultiTexCtrl();
 	

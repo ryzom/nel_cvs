@@ -1,7 +1,7 @@
 /** \file edit_spinner.cpp
  * a dialog to edit a spinner
  *
- * $Id: edit_spinner.cpp,v 1.2 2001/09/17 14:02:00 vizerie Exp $
+ * $Id: edit_spinner.cpp,v 1.3 2001/12/18 18:37:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,5 +102,5 @@ BOOL CEditSpinner::OnInitDialog()
 void CEditSpinner::OnClose() 
 {		
 	CDialog::OnClose();
-	if (_PN) _PN->childPopupDestroyed(this);
+	if (_PN) _PN->childPopupClosed(this);
 }

@@ -1,7 +1,7 @@
 /** \file popup_notify.h
  * an interface to now when popup windows are removed
  *
- * $Id: popup_notify.h,v 1.1 2001/09/17 14:03:22 vizerie Exp $
+ * $Id: popup_notify.h,v 1.2 2001/12/18 18:39:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@ class CWnd;
 struct IPopupNotify
 {
 	/// call when the window implementing this has been destroyed
-	virtual void childPopupDestroyed(CWnd *child) = 0;
+	virtual void childPopupClosed(CWnd *child) = 0;
 };
 
 

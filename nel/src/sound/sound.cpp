@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.10 2001/09/03 14:40:45 cado Exp $
+ * $Id: sound.cpp,v 1.11 2001/09/03 15:59:26 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,7 +223,7 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<st
 				sound = new CSound();
 				s.serial( *sound );
 				nlassert( ! sound->getName().empty() );
-				container[ sound->getName().c_str() ] = sound;
+				container[ sound->getName().c_str() ] = sound; // warning: no duplicates check
 			}
 			catch ( ESoundFileNotFound& e )
 			{

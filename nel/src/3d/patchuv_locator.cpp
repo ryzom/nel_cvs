@@ -1,7 +1,7 @@
 /** \file patchuv_locator.cpp
  * <File description>
  *
- * $Id: patchuv_locator.cpp,v 1.1 2001/07/23 14:40:21 berenguier Exp $
+ * $Id: patchuv_locator.cpp,v 1.2 2001/07/26 15:10:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,11 @@ void	CPatchUVLocator::build(const CPatch *patchCenter, sint edgeCenter, CPatch::
 	_CenterPatchEdge= edgeCenter;
 	_NPatchs= bindInfo.NPatchs;
 
+
+	// set it to true. false-d if one of the neighbor patch does not have same number of tile.
+	_SameEdgeOrder= true;
+
+
 	// For all patchs binded to me.
 	for(sint i=0; i<_NPatchs; i++)
 	{
@@ -74,6 +79,9 @@ void	CPatchUVLocator::build(const CPatch *patchCenter, sint edgeCenter, CPatch::
 				scY/= bindInfo.MultipleBindNum;
 			if(_NPatchs>1)
 				scY*= _NPatchs;
+			// same TileOrder on the edge??
+			if(scY!=1)
+				_SameEdgeOrder= false;
 		}
 		else
 		{
@@ -87,6 +95,9 @@ void	CPatchUVLocator::build(const CPatch *patchCenter, sint edgeCenter, CPatch::
 				scX/= bindInfo.MultipleBindNum;
 			if(_NPatchs>1)
 				scX*= _NPatchs;
+			// same TileOrder on the edge??
+			if(scX!=1)
+				_SameEdgeOrder= false;
 		}
 		// Find rotation to apply.
 		switch(rotation)
@@ -166,12 +177,14 @@ uint	CPatchUVLocator::selectPatch(const CVector2f &uvIn)
 	{
 		// Choice before on which patch we must go.
 		float	selection;
+		uint	os= _CenterPatch->getOrderS();
+		uint	ot= _CenterPatch->getOrderT();
 		switch(_CenterPatchEdge)
 		{
-		case 0: selection= uvIn.y / _CenterPatch->getOrderT(); break;
-		case 1: selection= uvIn.x / _CenterPatch->getOrderS(); break;
-		case 2: selection= (1-uvIn.y) / _CenterPatch->getOrderT(); break;
-		case 3: selection= (1-uvIn.x) / _CenterPatch->getOrderS(); break;
+		case 0: selection= uvIn.y / ot; break;
+		case 1: selection= uvIn.x / os; break;
+		case 2: selection= (ot-uvIn.y) / ot; break;
+		case 3: selection= (os-uvIn.x) / os; break;
 		}
 
 		sint	sel= (sint)floor(selection*_NPatchs);

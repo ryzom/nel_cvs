@@ -1,7 +1,7 @@
 /** \file patchuv_locator.h
  * <File description>
  *
- * $Id: patchuv_locator.h,v 1.1 2001/07/23 14:40:21 berenguier Exp $
+ * $Id: patchuv_locator.h,v 1.2 2001/07/26 15:10:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,13 @@ public:
 	void	locateUV(const CVector2f &uvIn, uint patch, const CPatch *&patchOut, CVector2f &uvOut);
 
 
+	/** return true only if the 2 edges have same number of tiles.
+	 *	bind 1/X case: return true only if ALL the adjacents patchs respect this rule. So you are sure that
+	 *	for all the src patch, one tile has exaclty one neighbor tile near him.
+	 */
+	bool	sameEdgeOrder() const {return _SameEdgeOrder;}
+
+
 private:
 
 	struct	CUVBasis
@@ -77,6 +84,7 @@ private:
 	sint				_NPatchs;
 	const CPatch		*_NeighborPatch[4];
 	CUVBasis			_NeighborBasis[4];
+	bool				_SameEdgeOrder;
 
 
 };

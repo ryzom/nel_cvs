@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.6 2002/04/15 15:17:04 vizerie Exp $
+ * $Id: di_keyboard_device.cpp,v 1.7 2003/02/14 14:11:35 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -467,7 +467,7 @@ uint	CDIKeyboard::getBufferSize() const
 TKey CDIKeyboard::DIKeyToNelKey(uint diKey, bool &extKey, bool &repeatable)
 {	
 	// some key are not handled by MapVirtualKeyEx so we need to convert them ourselves
-	static tableBuilt = false;
+	static bool tableBuilt = false;
 
 	if (!tableBuilt)
 	{

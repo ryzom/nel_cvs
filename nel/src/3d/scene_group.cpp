@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.31 2002/05/13 07:49:26 besson Exp $
+ * $Id: scene_group.cpp,v 1.32 2002/05/21 09:59:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -573,7 +573,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 	}
 	it = _InstancesInfos.begin();
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
-	if (!_InstancesInfos[i].DontAddToScene)
+	if (!_InstancesInfos[i].DontAddToScene && _Instances[i] != NULL)
 	{
 		CInstance &rInstanceInfo = *it;
 		if( rInstanceInfo.nParent != -1 ) // Is the instance get a parent
@@ -619,7 +619,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 
 	// Link shapes to clusters
 	for (i = 0; i < _Instances.size(); ++i)
-	if (!_InstancesInfos[i].DontAddToScene)
+	if (_Instances[i] != NULL && !_InstancesInfos[i].DontAddToScene)
 	{
 		if (_InstancesInfos[i].Clusters.size() > 0)
 		{
@@ -944,7 +944,7 @@ void CInstanceGroup::setClusterSystem(CInstanceGroup *pIG)
 {
 	_ClusterSystem = pIG;
 	for (uint32 i = 0; i < _Instances.size(); ++i)
-		if (_InstancesInfos[i].Clusters.size() == 0)
+		if (_Instances[i] && _InstancesInfos[i].Clusters.size() == 0)
 			_Instances[i]->setClusterSystem (_ClusterSystem);
 }
 

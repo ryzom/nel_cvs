@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.27 2002/12/24 10:50:05 lecroart Exp $
+ * $Id: login_service.cpp,v 1.28 2003/01/07 17:09:55 lecroart Exp $
  *
  * \todo check must say who are the master LS to know who set the shard online/offline etc... (USE an int instead of bool for Online)
  *
@@ -395,7 +395,7 @@ NLMISC_COMMAND (shards, "displays the list of all registered shards", "")
 	log.displayNL ("Display the %d registered shards :", Shards.size());
 	for (uint i = 0; i < Shards.size(); i++)
 	{
-		log.displayNL ("> ShardId: %d SId: %d NbPlayers: %d", Shards[i].ShardId, Shards[i].SId, Shards[i].NbPlayer);
+		log.displayNL ("> ShardId: %d SId: %d NbPlayers: %d", Shards[i].ShardId, Shards[i].SId, Shards[i].NbPlayers);
 	}
 	log.displayNL ("End of the list");
 

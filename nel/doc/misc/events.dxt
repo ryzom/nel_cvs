@@ -26,12 +26,29 @@ Existing events can be found in events.h.
 The interface provides a callback. A listener must implements this interface.
 Existing listeners can be found in event_listener.h.
 
+In the following example, the listener is supposed to have been added to an event server along
+with the event type EventCharId:
+\code
+CCallback cb;
+server.addListener (EventCharId, &cb); 
+\endcode
+When this callback is called whith such event it prints the char :
+\code
+class CCallback : public IEventListener
+{
+	virtual void operator ()(const CEvent& event)
+	{
+		CEventChar ec = (CEventChar &) event; // here we know that we receive a CEventChar event
+		printf("%c", ec.Char);
+	}
+};
+\endcode
 
 \subsection event_emitter IEventEmitter
 
-It's the interface which gets low-level events and posts them to the server as nel events.
+It's the interface which gets low-level events and posts them to the server as NEL events.
 An emitter must implements this interface.
-Existing emitters can be found in events.h.
+Existing emitters can be found in emitters.h.
 
 
 \subsection event_server CEventServer
@@ -44,11 +61,13 @@ A server is made of :
 When a call to the method pump is done, the server pumps its emitters for events. Events are stacked up 
 in the list. 
 
+
 \image html event_pump.gif
 
 Then, for each event, according to their id, the server applies the right callbacks stored in the multimap.
 
 \image html event_listener.gif
+
 
 As for emitters, both server and class know the IListener. The listener callback is the operator() 
 which takes an event in parameter. Thus, the user defines the listener/callback he needs and adds it to 
@@ -57,9 +76,9 @@ the server.
 \image html event_callback.gif
 
 
-\subsection event_listener Example :
+\subsection event_example Example :
 
-Here is an example of the use of the listener CEventListenerAsync (defined in event_listener.cpp). 
+Here is an example of the use of the special listener CEventListenerAsync (defined in event_listener.cpp). 
 
 Rq : This listener stores key states : if a key is pressed its value is on, else it's off.
 

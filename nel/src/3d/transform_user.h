@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: transform_user.h,v 1.2 2001/07/25 10:17:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,13 +72,16 @@ public:
 	}
 	virtual	~CTransformUser()
 	{
-		// Must test if _Transform is a CTransfromShape. If yes, must call deleteInstance().
-		CTransformShape	*pTrShp= dynamic_cast<CTransformShape*>(_Transform);
-		if(pTrShp)
-			_Scene->deleteInstance(pTrShp);
-		else
-			_Scene->deleteModel(_Transform);
-		_Transform= NULL;
+		if (_Transform)
+		{
+			// Must test if _Transform is a CTransfromShape. If yes, must call deleteInstance().
+			CTransformShape	*pTrShp= dynamic_cast<CTransformShape*>(_Transform);
+			if(pTrShp)
+				_Scene->deleteInstance(pTrShp);
+			else
+				_Scene->deleteModel(_Transform);
+			_Transform= NULL;
+		}
 	}
 	// @}
 
@@ -88,6 +91,7 @@ public:
 	/// unlink this from oldparent, and make this be a son of newFather.
 	virtual	void			parent(UTransform *newFather)
 	{
+		nlassert(_Transform) ; // object invalid now ...
 		if(newFather)
 		{
 			// link me to other.
@@ -110,21 +114,25 @@ public:
 	/// Hide the object and his sons.
 	virtual	void			hide()
 	{
+		nlassert(_Transform) ; // object invalid now ...
 		_Transform->hide();
 	}
 	/// Show the objet and his sons.
 	virtual	void			show()
 	{
+		nlassert(_Transform) ; // object invalid now ...
 		_Transform->show();
 	}
 	/// herit the visibility from his father. (default behavior).
 	virtual	void			heritVisibility()
 	{
+		nlassert(_Transform) ; // object invalid now ...
 		_Transform->heritVisibility();
 	}
 	/// Get the local visibility state.
 	virtual	TVisibility		getVisibility()
 	{
+		nlassert(_Transform) ; // object invalid now ...
 		return (UTransform::TVisibility)(uint32)_Transform->getVisibility();
 	}
 	// @}

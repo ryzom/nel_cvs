@@ -134,6 +134,7 @@
 #define IDC_TAIL_PERSIST_AFTER_DEATH    1055
 #define IDR_MOVE_ELEMENT                1055
 #define IDC_ACCURATE_INTEGRATION        1055
+#define IDC_DISPLAY_INTERPOLATION       1055
 #define IDR_LOCATED_INSTANCE_MENU       1056
 #define IDC_LIFE_MIN_VALUE              1057
 #define IDD_TEXTURE_ANIM                1057
@@ -272,10 +273,15 @@
 #define IDC_BUTTON1                     1170
 #define IDC_MUTE                        1171
 #define IDC_PLAY_SOUND                  1171
+#define IDC_ZOOM_IN                     1171
 #define IDC_LAG                         1172
+#define IDC_GO_UP                       1172
 #define IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS 1173
+#define IDC_GO_DOWN                     1173
 #define IDC_REMOVE                      1174
+#define IDC_CENTER_CURVE                1174
 #define IDC_SCHEME_LIST                 1175
+#define IDC_FIRST_EQUAL_LAST            1175
 #define IDC_NAME_CHOSEN                 1176
 #define IDC_RENAME                      1176
 #define IDC_SAVE_BANK                   1177
@@ -284,6 +290,12 @@
 #define IDC_SIZE_WIDTH                  1180
 #define IDC_SIZE_HEIGHT                 1181
 #define IDC_WIDTH_HEIGHT_BOX            1182
+#define IDC_ZOOM_OUT                    1183
+#define IDC_ADD_POINT                   1184
+#define IDC_REMOVE_POINT                1185
+#define IDC_MOVE_POINT                  1186
+#define IDC_SMOOTHING_ON                1187
+#define IDC_LAST_EQUAL_FIRST            1188
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -395,7 +407,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1089
 #define _APS_NEXT_COMMAND_VALUE         32865
-#define _APS_NEXT_CONTROL_VALUE         1183
+#define _APS_NEXT_CONTROL_VALUE         1189
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.7 2002/10/10 13:35:07 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.8 2002/11/14 17:38:16 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -82,19 +82,33 @@ public:
 	/// \name System parameters
 	//@{
 
-		/** Set a user param of the system. Each user param must be >= 0 and < 1		  
+		/** Set a user param of the system. Each user param must be >= 0 and <= 1		  
 		  * \param index the index of the user param to modify. For now it ranges from 0 to 3
 		  * \value the new value of the parameter
 		  * \see isSystemPresent()
 		  */
-		virtual void		setUserParam		(uint index, float value) = 0;
+		virtual void		setUserParam(uint index, float value) = 0;
+
+		/// Set a global user param value. User param in a system can mirror global values, which are identified by their name
+		static  void        setGlobalUserParamValue(const std::string &name, float value);
+		static  float       getGlobalUserParamValue(const std::string &name);
+		/** Set a global vector value in the system.
+		  * Some object in the system can bind their parameters to such a global value
+		  * Example : direction of wind could be stored in the global variable 'WIND'
+		  */
+		static  void			 setGlobalVectorValue(const std::string &name, const NLMISC::CVector &v);
+		static  NLMISC::CVector  getGlobalVectorValue(const std::string &name);
 
 		/** Get the value of a user param		  
 		  * \param index the index of the user param to get. For now it ranges from 0 to 3
-		  * \return the value of the user param (>= 0 and < 1)
+		  * \return the value of the user param (>= 0 and <= 1)
 		  * \see isSystemPresent()
 		  */
-		virtual float		getUserParam		(uint index) const = 0;
+		virtual float		getUserParam(uint index) const = 0;
+
+		// bypass the update of a user param from a global value if there is one
+		virtual void        bypassGlobalUserParamValue(uint userParamIndex, bool byPass = true) = 0;
+		virtual bool        isGlobalUserParamValueBypassed(uint userParamIndex) const = 0;
 	//@}
 
 	///\name System validity
@@ -174,7 +188,7 @@ public:
 	 //@}
 
 	 // Test if the system is shared
-			virtual bool   isShared() const = 0;
+	 virtual bool   isShared() const = 0;
 
 };
 

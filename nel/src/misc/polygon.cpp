@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.24 2004/06/17 10:11:57 vizerie Exp $
+ * $Id: polygon.cpp,v 1.25 2004/07/26 13:44:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1103,6 +1103,61 @@ static inline CPolygon2D::TVec2fVect::const_iterator Prev(const CPolygon2D::TVec
 	return (it - 1);
 }
 
+
+// *******************************************************************************
+bool CPolygon2D::isCCWOriented() const
+{	         
+	const TVec2fVect &V = Vertices;
+	nlassert(Vertices.size() >= 3);
+	// compute highest and lowest pos of the poly
+	float fHighest = V[0].y;	
+	// iterators to the highest and lowest vertex	
+	TVec2fVect::const_iterator it = V.begin() ;
+	const TVec2fVect::const_iterator endIt = V.end();
+	TVec2fVect::const_iterator pHighest = V.begin();
+	do
+	{		
+		if (it->y < fHighest)
+		{
+			fHighest = it->y;
+			pHighest = it;
+		}
+		++it;
+	}
+	while (it != endIt);			
+	// iterator to the first vertex that has an y different from the top vertex
+	TVec2fVect::const_iterator pHighestRight = pHighest; 
+	// we seek this vertex	
+	while (Next(pHighestRight, V)->y == fHighest)
+	{
+		pHighestRight = Next(pHighestRight, V);
+	}	
+
+	// iterator to the first vertex after pHighestRight, that has the same y than the highest vertex
+	TVec2fVect::const_iterator pHighestLeft = Next(pHighestRight, V);
+	// seek the vertex
+	while (pHighestLeft->y != fHighest)
+	{
+		pHighestLeft = Next(pHighestLeft, V);
+	}
+	TVec2fVect::const_iterator pPrevHighestLeft = Prev(pHighestLeft, V);  
+	// we need to get the orientation of the polygon
+	// There are 2 case : flat, and non-flat top
+	// check for flat top
+	if (pHighestLeft->x != pHighestRight->x)
+	{
+		// compare right and left side
+		return pHighestLeft->x > pHighestRight->x;		
+	}	
+	// The top of the poly is sharp
+	// We perform a cross product of the 2 highest vect to get its orientation
+	 float deltaXN = Next(pHighestRight, V)->x - pHighestRight->x;
+	 float deltaYN = Next(pHighestRight, V)->y - pHighestRight->y;
+	 float deltaXP = pPrevHighestLeft->x - pHighestLeft->x;
+	 float deltaYP = pPrevHighestLeft->y - pHighestLeft->y;
+	 return (deltaXN * deltaYP - deltaYN * deltaXP) < 0;	
+}
+
 // *******************************************************************************
 void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 {
@@ -1656,7 +1711,7 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 				++ currRaster;			
 			}			
 			// fill bottom of segment			
-			currRaster->first = std::max((sint) ceilf(x1), currRaster->first);			
+			currRaster->first = std::max((sint) ceilf(x2), currRaster->first);			
 		}										
 	}
 }
@@ -1711,6 +1766,7 @@ void CPolygon2D::computeInnerBorders(TRasterVect &borders,sint &minimumY)
 	lowest = (sint) ceilf(flowest);
 
 	polyHeight = lowest - highest;
+	minimumY = highest;	
 	if (polyHeight == 0) return;
 
 	// make room for rasters
@@ -1724,7 +1780,6 @@ void CPolygon2D::computeInnerBorders(TRasterVect &borders,sint &minimumY)
 		it->first = ileft;
 	}
 
-	minimumY = highest;
 	pHighestRight = phighest;
 	for (;;)
 	{	

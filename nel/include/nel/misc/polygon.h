@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.14 2004/03/10 11:15:49 vizerie Exp $
+ * $Id: polygon.h,v 1.15 2004/07/26 13:44:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,7 +164,7 @@ public:
 	  * This means that pixels are seen as points, not as surfaces.
 	  * The output is in a vector of sint pairs. minimumY is filled with the minimum y value of the poly.
 	  * Each pairs gives [xmin, xmax] for the current segment. if xmin > xmax, then no point is valid for this segment.
-	  * Otherwise, all points from x = xmin (included)  to x = xmax (included) are valids.
+	  * Otherwise, all points from x = xmin (included)  to x = xmax (included) are valid.
 	  */
 	void		computeBorders(TRasterVect &borders, sint &minimumY);
 	/** The same as compute borders, but pixel are seen as surfaces and not as points.
@@ -188,6 +188,9 @@ public:
 
 	/// Get a line equation of the seg starting at the given index
 	void  getLineEquation(uint index, float &a, float &b, float &c) const;
+
+	// Test if current poly is CCW oriented
+	bool  isCCWOriented() const;
 
 private:
 	/// Sum the dot product of this poly vertices against a line equation a*x + b*y + c

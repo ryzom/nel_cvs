@@ -156,11 +156,27 @@ SOURCE=..\include\nel\misc\file.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\i_xml.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\i_xml.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\mem_stream.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\misc\mem_stream.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\o_xml.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\o_xml.h
 # End Source File
 # Begin Source File
 

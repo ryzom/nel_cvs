@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.19 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: stream.cpp,v 1.20 2001/10/04 16:52:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,9 @@ void	IStream::getVersionException(bool &throwOnOlder, bool &throwOnNewer)
 IStream::IStream( const IStream& other )
 {
 	operator=( other );
+
+	// By default, mode _XML is off
+	_XML = false;
 }
 
 
@@ -110,11 +113,23 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 {
 	uint64	node=0;
 
+	// Open a node
+	xmlPushBegin ("POLYPTR");
+
 	if(isReading())
 	{
+		// First attribute name
+		xmlSetAttrib ("id");
+
 		serial(node);
+
 		if(node==0)
+		{
 			ptr=NULL;
+
+			// Close the node header
+			xmlPushEnd ();
+		}
 		else
 		{
 			ItIdMap	it;
@@ -125,7 +140,14 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 			{
 				// Read the class name.
 				string	className;
+
+				// Second attribute name
+				xmlSetAttrib ("class");
+
 				serial(className);
+
+				// Close the node header
+				xmlPushEnd ();
 
 				// Construct object.
 				ptr= dynamic_cast<IStreamable*> (CClassRegistry::create(className));
@@ -141,7 +163,12 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 				ptr->serial(*this);
 			}
 			else
+			{
 				ptr= static_cast<IStreamable*>(it->second);
+
+				// Close the node header
+				xmlPushEnd ();
+			}
 		}
 	}
 	else
@@ -149,13 +176,24 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 		if(ptr==NULL)
 		{
 			node= 0;
+
+			// First attribute name
+			xmlSetAttrib ("id");
+
 			serial(node);
+
+			// Close the node header
+			xmlPushEnd ();
 		}
 		else
 		{
 			// Assume that prt size is an int size
 			nlassert(sizeof(uint) == sizeof(void *));
 			node= (uint64)((uint)ptr);
+
+			// First attribute name
+			xmlSetAttrib ("id");
+
 			serial(node);
 
 			// Test if object already written.
@@ -166,14 +204,28 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 
 				// Write the class name.
 				string	className=ptr->getClassName();
+
+				// Second attribute name
+				xmlSetAttrib ("class");
+
 				serial(className);
+
+				// Close the node header
+				xmlPushEnd ();
 
 				// Write the object!
 				ptr->serial(*this);
 			}
+			else
+			{
+				// Close the node header
+				xmlPushEnd ();
+			}
 		}
 	}
 
+	// Close the node 
+	xmlPop ();
 }
 // ======================================================================================================
 void			IStream::resetPtrTable()
@@ -193,6 +245,9 @@ uint IStream::serialVersion(uint currentVersion)
 	uint8	b=0;
 	uint32	v=0;
 	uint	streamVersion;
+
+	// Open the node
+	xmlPush ("VERSION");
 
 	if(isReading())
 	{
@@ -224,6 +279,9 @@ uint IStream::serialVersion(uint currentVersion)
 			serial(b);
 		}
 	}
+
+	// Close the node
+	xmlPop ();
 
 	return streamVersion;
 }
@@ -331,6 +389,12 @@ string			IStream::getStreamName() const
 	return "";
 }
 
+
+// ======================================================================================================
+void			IStream::setXMLMode (bool on)
+{
+	_XML = on;
+}
 
 
 }

@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.47 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: stream.h,v 1.48 2001/10/04 16:52:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -380,9 +380,18 @@ public:
 	{
 		uint64	node;
 
+		// Open the node header
+		xmlPushBegin ("PTR");
+
+		xmlSetAttrib ("id");
+
 		if(isReading())
 		{
 			serial(node);
+
+			// Close the header
+			xmlPushEnd ();
+
 			if(node==0)
 				ptr=NULL;
 			else
@@ -403,7 +412,6 @@ public:
 
 					// Read the object!
 					serial(*ptr);
-					
 				}
 				else
 					ptr= static_cast<T*>(it->second);
@@ -415,11 +423,17 @@ public:
 			{
 				node= 0;
 				serial(node);
+
+				// Close the header
+				xmlPushEnd ();
 			}
 			else
 			{
 				node= (uint64)(uint)ptr;
 				serial(node);
+
+				// Close the header
+				xmlPushEnd ();
 
 				// Test if object already written.
 				// If the Id was not yet registered (ie insert works).
@@ -431,6 +445,8 @@ public:
 			}
 		}
 
+		// Close the node
+		xmlPop ();
 	}
 
 	
@@ -472,6 +488,9 @@ public:
 	template<class T>
 	void			serialCheck(const T& value) 
 	{
+		// Open a node
+		xmlPush ("CHECK");
+
 		if (isReading()) 
 		{ 
 			T read;
@@ -483,9 +502,12 @@ public:
 		{ 
 			serial (const_cast<T&>(value)); 
 		}
+
+		// Close the node 
+		xmlPop ();
 	}
 
-	/// Seek fonctionnality
+	/// \name Seek fonctionnality
 
 	/** 
 	 * Parameters for seek().
@@ -528,8 +550,219 @@ public:
 	 */
 	virtual std::string		getStreamName() const;
 
+	/** \name XML user interface
+	  * 
+	  * Those functions are used to add information in your stream to structure it like
+	  * a XML document. Exemple of a serial sequence : 
+	  \code
+		// Start the opening of a new node named Identity
+		stream.xmlPush ("Identity")
+
+			// Serial some infos
+			stream.serial (name);
+			stream.serial (pseudo);
+
+			// Open a new node header named Address
+			stream.xmlPushBegin ("Address");
+
+					// Set a property name
+					stream.xmlSetAttrib ("Street")
+
+					// Serial the property
+					stream.serial ("Street");
+
+				// Close the new node header
+				stream.xmlPushEnd ();
+
+				// Serial in this node
+				stream.serial (cityName);
+
+			// Close the address node
+			stream.xmlPop ();
+
+			// Add a comment
+			stream.xmlComment ("Hello");
+
+		// Close the identity node
+		stream.xmlPop ();
+      \endcode
+	  *
+	  * The result will be an xml document structured like this:
+	  *
+	  \code
+		<Identity>
+			Corvazier Hulud
+			<Address Street="rue du Faubourg Saint Antoine">
+				Paris
+			<\Address>
+			<!-- Hello -->
+		<\Identity>
+	  \endcode
+	  *
+	  * Node header serials are the serialisations done between xmlPushBegin() and xmlPushEnd() call. There is some restrictions on them:
+	  * Node header serials are only available for basic types (numbers and strings).
+	  * xmlSetAttrib() must be called before node header serial.
+	  *
+	  * Note that XML documents only have ONE root node, so all serialisation must be done between a xmlPush() and a xmlPop() call.
+	  *
+	  * When a xml input stream will try to open a node, it will scan all currrent child nodes to find the good one.
+	  * So input xml stream can skip unknown node.
+	  */
+
+	/**
+	  * xmlPush() open recurcively a new node. You must call xmlPop to close this node.
+	  *
+	  * \name is the name of the node to open
+	  * \return true if you can open the node, false if the stream is between a xmlPushBegin() and a xmlPushEnd() call.
+	  */
+	bool xmlPush (const char *name)
+	{
+		// XML Mode ?
+		if (_XML)
+		{
+			// Open the header
+			bool res=xmlPushBeginInternal (name);
+			if (res)
+				// close the header
+				xmlPushEndInternal ();
+			// Return the result
+			return res;
+		}
+
+		// Return ok
+		return true;
+	}
+
+	/**
+	  * xmlPushBegin() open recurcively a new node and open its header. You must call xmlPushEnd() to close the header and xmlPop() to close this node.
+	  *
+	  * \name is the name of the node to open
+	  * \return true if you can open the node header, false if the stream is between a xmlPushBegin() and a xmlPushEnd() call.
+	  */
+	bool xmlPushBegin (const char *name)
+	{
+		// XML Mode ?
+		if (_XML)
+		{
+			return xmlPushBeginInternal (name);
+		}
+
+		// Return ok
+		return true;
+	}
+
+	/**
+	  * xmlPushEnd() close the node header.
+	  *
+	  * \return true if you can close the node header, false if no node header have been opened with xmlPushBegin().
+	  */
+	bool xmlPushEnd ()
+	{
+		// XML Mode ?
+		if (_XML)
+		{
+			return xmlPushEndInternal ();
+		}
+
+		// Return ok
+		return true;
+	}
+
+	/**
+	  * xmlPop() close the node.
+	  *
+	  * \return true if you can close the node, false if the node can't be closed (its header is still opened) or if there is no node to close.
+	  */
+	bool xmlPop ()
+	{
+		// XML Mode ?
+		if (_XML)
+		{
+			return xmlPopInternal ();
+		}
+
+		// Return ok
+		return true;
+	}
+
+	/**
+	  * xmlSetAttrib() set the name of the next node header attribute serialised.
+	  *
+	  * \attribName is the name of the node header attribute serialised.
+	  * \return true if the attribute name have been set, false if the node header is not open (the call is not between xmlPushBegin and xmlPushEnd)
+	  */
+	bool xmlSetAttrib (const char *name)
+	{
+		// XML Mode ?
+		if (_XML)
+		{
+			return xmlSetAttribInternal (name);
+		}
+
+		// Return ok
+		return true;
+	}
+
+	/**
+	  * xmlBreakLine() insert a break line in the XML stream.
+	  *
+	  * \return true if the break line is added, return false if no node is opened.
+	  */
+	bool xmlBreakLine ()
+	{
+		// XML Mode ?
+		if (_XML)
+		{
+			return xmlBreakLineInternal ();
+		}
+
+		// Return ok
+		return true;
+	}
+
+	/**
+	  * xmlComment() insert a comment line in the XML stream.
+	  *
+	  * \return true if the comment is added, return false if no node is opened.
+	  */
+	bool xmlComment ()
+	{
+		// XML Mode ?
+		if (_XML)
+		{
+			return xmlCommentInternal ();
+		}
+
+		// Return ok
+		return true;
+	}
 
 protected:
+
+	/// \name XML implementation interface
+
+	/** Set the XML mode
+	  * \on is true to enable XML mode else false
+	  */
+	void setXMLMode (bool on);
+
+	/// xmlPushBegin implementation
+	virtual bool		xmlPushBeginInternal (const char *name) { return true; };
+
+	/// xmlPushEnd implementation
+	virtual bool		xmlPushEndInternal () { return true; };
+
+	/// xmlPop implementation
+	virtual bool		xmlPopInternal () { return true; };
+
+	/// xmlBreakLine implementation
+	virtual bool		xmlSetAttribInternal (const char *name) { return true; };
+
+	/// xmlBreakLine implementation
+	virtual bool		xmlBreakLineInternal () { return true; };
+
+	/// xmlComment implementation
+	virtual	bool		xmlCommentInternal () { return true; };
 
 	/** 
 	 * for Deriver: reset the PtrTable in the stream.
@@ -587,9 +820,13 @@ private:
 		{
 			for(sint i=0;i<len;i++)
 			{
+				xmlPush ("ELM");
+
 				__value_type v;
 				serial(v);
 				__iterator it = cont.insert(cont.end(), v);
+
+				xmlPop ();
 			}
 		}
 		else
@@ -597,7 +834,11 @@ private:
 			__iterator		it= cont.begin();
 			for(sint i=0;i<len;i++, it++)
 			{
+				xmlPush ("ELM");
+
 				serial(const_cast<__value_type&>(*it));
+
+				xmlPop ();
 			}
 		}
 	}
@@ -622,6 +863,12 @@ private:
 	template<class T>
 	void			serialSTLCont(T &cont) 
 	{
+		// Open a node header
+		xmlPushBegin ("CONTAINER");
+
+		// Attrib size
+		xmlSetAttrib ("size");
+
 		sint32	len=0;
 		if(isReading())
 		{
@@ -634,7 +881,13 @@ private:
 			serial(len);
 		}
 
+		// Close the header
+		xmlPushEnd ();
+
 		serialSTLContLen(cont, len);
+
+		// Close the node
+		xmlPop ();
 	}
 
 	
@@ -650,10 +903,20 @@ protected:
 		typedef typename T::value_type __value_type;
 		typedef typename T::iterator __iterator;
 
+		// Open a node header
+		xmlPushBegin ("VECTOR");
+
+		// Attrib size
+		xmlSetAttrib ("size");
+
 		sint32	len=0;
 		if(isReading())
 		{
 			serial(len);
+
+			// Open a node header
+			xmlPushEnd ();
+
 			// special version for vector: adjut good size.
 			contReset(cont);
 			cont.resize (len);
@@ -661,7 +924,11 @@ protected:
 			// Read the vector
 			for(sint i=0;i<len;i++)
 			{
+				xmlPush ("ELM");
+
 				serial(cont[i]);
+
+				xmlPop ();
 			}
 		}
 		else
@@ -669,13 +936,23 @@ protected:
 			len= cont.size();
 			serial(len);
 
+			// Close the node header
+			xmlPushEnd ();
+
 			// Write the vector
 			__iterator		it= cont.begin();
 			for(sint i=0;i<len;i++, it++)
 			{
+				xmlPush ("ELM");
+
 				serial(const_cast<__value_type&>(*it));
+
+				xmlPop ();
 			}
 		}
+
+		// Close the node
+		xmlPop ();
 	}
 
 
@@ -717,6 +994,12 @@ private:
 	template<class T>
 	void			serialSTLContPtr(T &cont) 
 	{
+		// Open a node header
+		xmlPushBegin ("CONTAINER");
+
+		// Attrib size
+		xmlSetAttrib ("size");
+
 		sint32	len=0;
 		if(isReading())
 		{
@@ -729,7 +1012,13 @@ private:
 			serial(len);
 		}
 
+		// Close the node header
+		xmlPushEnd ();
+
 		serialSTLContLenPtr(cont, len);
+
+		// Close the node
+		xmlPop ();
 	}
 
 
@@ -742,6 +1031,12 @@ private:
 	{
 		typedef typename T::value_type __value_type;
 		typedef typename T::iterator __iterator;
+
+		// Open a node header
+		xmlPushBegin ("VECTOR");
+
+		// Attrib size
+		xmlSetAttrib ("size");
 
 		sint32	len=0;
 		if(isReading())
@@ -757,7 +1052,13 @@ private:
 			serial(len);
 		}
 
+		// Close the node header
+		xmlPushEnd ();
+
 		serialSTLContLenPtr(cont, len);
+
+		// Close the node
+		xmlPop ();
 	}
 
 
@@ -825,6 +1126,12 @@ private:
 		typedef typename T::value_type __value_type;
 		typedef typename T::iterator __iterator;
 
+		// Open a node header
+		xmlPushBegin ("VECTOR");
+
+		// Attrib size
+		xmlSetAttrib ("size");
+
 		sint32	len=0;
 		if(isReading())
 		{
@@ -839,7 +1146,13 @@ private:
 			serial(len);
 		}
 
+		// Close the node header
+		xmlPushEnd ();
+
 		serialSTLContLenPolyPtr(cont, len);
+
+		// Close the node
+		xmlPushEnd ();
 	}
 
 
@@ -870,16 +1183,38 @@ private:
 		typedef typename T::key_type __key_type;
 		typedef typename T::iterator __iterator;
 
+		// Open a node header
+		xmlPushBegin ("MAP");
+
+		// Attrib size
+		xmlSetAttrib ("size");
+
 		sint32	len;
 		if(isReading())
 		{
 			cont.clear();
 			serial(len);
+
+			// Close the node header
+			xmlPushEnd ();
+
 			for(sint i=0;i<len;i++)
 			{
 				__value_type v;
+
+				xmlPush ("KEY");
+
 				serial ( const_cast<__key_type&>(v.first) );
+
+				xmlPop ();
+
+
+				xmlPush ("ELM");
+
 				serial (v.second);
+
+				xmlPop ();
+
 				cont.insert(cont.end(), v);
 			}
 		}
@@ -888,14 +1223,32 @@ private:
 			len= cont.size();
 			serial(len);
 			__iterator		it= cont.begin();
+
+			// Close the node header
+			xmlPushEnd ();
+
 			for(sint i=0;i<len;i++, it++)
 			{
+				xmlPush ("KEY");
+
 				serial( const_cast<__key_type&>((*it).first) );
+
+				xmlPop ();
+
+				xmlPush ("ELM");
+				
 				serial((*it).second);
+
+				xmlPop ();
 			}
 		}
+
+		// Close the node
+		xmlPop ();
 	}
 
+	// Mode XML
+	bool	_XML;
 };
 
 

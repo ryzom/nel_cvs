@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.53 2002/07/18 15:01:21 lecroart Exp $
+ * $Id: service.h,v 1.54 2002/07/26 08:48:01 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,7 +248,7 @@ public:
 	uint64							getEntityId (uint8 Type)
 	{
 		NLMISC::CEntityId id = _NextEntityId++;
-		id.Type = Type;
+		id.setType( Type );
 		return id.getRawId ();
 	}
 	

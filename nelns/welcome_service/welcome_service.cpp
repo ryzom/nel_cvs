@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.29 2004/04/01 09:44:23 cado Exp $
+ * $Id: welcome_service.cpp,v 1.30 2004/04/09 15:04:25 lecroart Exp $
  *
  */
 
@@ -581,22 +581,29 @@ public:
 		CUnifiedNetwork::getInstance()->setServiceUpCallback("*", cbServiceUp, NULL);
 		CUnifiedNetwork::getInstance()->setServiceDownCallback("*", cbServiceDown, NULL);
 
-		for (sint i = 0; i < ConfigFile.getVar("LSHost").size (); i++)
+		// add a connection to the LS
+		string LSAddr;
+		if (haveArg('T'))
 		{
-			// add a connection to the LS
-			string LSAddr = ConfigFile.getVar("LSHost").asString(i);
-
-			// the config file must have a valid address where the login service is
-			nlassert(!LSAddr.empty());
-
-			// add default port if not set by the config file
-			if (LSAddr.find (":") == string::npos)
-				LSAddr += ":49999";
-
-			CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
-			CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
-			CUnifiedNetwork::getInstance()->addService("LS", LSAddr);
+			// use the command line param if set
+			LSAddr = getArg('T');
 		}
+		else if (ConfigFile.exists ("LSHost"))
+		{
+			// use the config file param if set
+			LSAddr = ConfigFile.getVar("LSHost").asString();
+		}
+
+		// the config file must have a valid address where the login service is
+		nlassert(!LSAddr.empty());
+
+		// add default port if not set by the config file
+		if (LSAddr.find (":") == string::npos)
+			LSAddr += ":49999";
+
+		CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
+		CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
+		CUnifiedNetwork::getInstance()->addService("LS", LSAddr);
 
 		// List of expected service instances
 		ConfigFile.setCallback( "ExpectedServices", cbUpdateExpectedServices );
@@ -605,7 +612,7 @@ public:
 };
 
 
-// Service instanciation
+// Service instantiation
 NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArray, NELNS_CONFIG, NELNS_LOGS);
 
 

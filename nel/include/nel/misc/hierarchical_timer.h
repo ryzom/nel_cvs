@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.17 2002/06/11 09:34:04 berenguier Exp $
+ * $Id: hierarchical_timer.h,v 1.18 2002/06/12 16:50:35 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -221,16 +221,17 @@ public:
 	/// Starts a measuring session
 	void		before();
 	// Ends a measuring session
-	void		after(bool displayAfter = false);		
+	void		after(bool displayAfter = false);	
 	// Get this node name
 	const char	   *getName() const { return _Name; }
 	/** Starts a bench session
-	  * \param wantStandardDeviation When true, benchs will report the standard deviation of values. This require more memory, howeve, because each samples must be kept.	  
+	  * \param wantStandardDeviation When true, benchs will report the standard deviation of values. This require more memory, howeve, because each samples must be kept.
+	  * \param quick if true, quick compute the frequency of the processor
 	  */
-	static void		startBench(bool wantStandardDeviation = false);
+	static void		startBench(bool wantStandardDeviation = false, bool quick = false);
 	/** For backward compatibility
-	  */ 
-	static void		bench() { startBench(); }	
+	  */
+	static void		bench() { startBench(); }
 	/** For backward compatibility
 	  */ 
 	static void		adjust() {}
@@ -269,10 +270,11 @@ public:
 	static void		clear();		
 
 	/** Gives an evalutation of the processor frequency, in hertz
+	  * \param quick true to do quick frequency evaluation
 	  * \warning Supports only intel architectures for now. 
 	  */
 #ifdef NL_CPU_INTEL
-	static uint64   getProcessorFrequency();
+	static uint64   getProcessorFrequency(bool quick=false);
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////

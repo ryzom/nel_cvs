@@ -214,16 +214,16 @@
 #define IDC_BONE_LOD_DISTANCE           1527
 #define IDC_OCC_MODEL                   1528
 #define IDC_OPEN_OCC_MODEL              1529
-#define IDC_SOUND_GROUP                 1530
 #define IDC_ENV_FX                      1531
+#define IDC_SOUND_GROUP                 1532
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        125
+#define _APS_NEXT_RESOURCE_VALUE        126
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1531
+#define _APS_NEXT_CONTROL_VALUE         1533
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

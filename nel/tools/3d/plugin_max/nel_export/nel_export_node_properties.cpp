@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.45 2003/01/08 15:48:57 boucher Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.46 2003/01/27 13:31:17 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,7 @@ char *_MaterialNames[] =
 	NULL
 };
 
+std::set<std::string>	_KnownSoundGroups;
 // ***************************************************************************
 
 const std::set<INode*> *listNodeCallBack;
@@ -374,6 +375,20 @@ void InstanceStateChanged (HWND hwndDlg)
 
 // ***************************************************************************
 
+void exploreNode(INode *node)
+{
+	std::string soundGroup = CExportNel::getScriptAppData(node, NEL3D_APPDATA_SOUND_GROUP, "no sound");
+
+	if (soundGroup != "no sound")
+		_KnownSoundGroups.insert(soundGroup);
+	
+	for (uint i= 0; i<node->NumChildren(); ++i)
+	{
+		exploreNode(node->GetChildNode(i));
+	}
+}
+
+
 int CALLBACK AccelDialogCallback (
   HWND hwndDlg,  // handle to dialog box
   UINT uMsg,     // message
@@ -390,6 +405,17 @@ int CALLBACK AccelDialogCallback (
 			// Param pointers
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+			// Fill the known sound groups by parsing the max node tree.
+			{
+				INode *root = theCNelExport._Ip->GetRootNode();
+
+				for (uint i= 0; i<root->NumChildren(); ++i)
+				{
+					exploreNode(root->GetChildNode(i));
+				}
+			}
+			_KnownSoundGroups.insert(currentParam->SoundGroup);
 
 			if (currentParam->SkinReduction!=-1)
 				CheckRadioButton (hwndDlg, IDC_SKIN_REDUCTION_MIN, IDC_SKIN_REDUCTION_BEST, IDC_SKIN_REDUCTION_MIN+currentParam->SkinReduction);
@@ -474,6 +500,13 @@ int CALLBACK AccelDialogCallback (
 					SendMessage (GetDlgItem (hwndDlg, IDC_ENV_FX), CB_ADDSTRING, 0, (LONG)(_EnvironmentNames[i]));
 				}
 			}
+			{
+				std::set<std::string>::iterator first(_KnownSoundGroups.begin()), last(_KnownSoundGroups.end());
+				for (; first != last; ++first)
+				{
+					SendMessage (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), CB_ADDSTRING, 0, (LONG)(first->c_str()));
+				}
+			}
 			// set the combo and edit box
 			if (SendMessage (GetDlgItem (hwndDlg, IDC_OCC_MODEL), CB_SELECTSTRING, -1, (LONG)(currentParam->OcclusionModel.c_str())) == CB_ERR)
 			{
@@ -487,7 +520,11 @@ int CALLBACK AccelDialogCallback (
 			{
 //				nlassert(false);
 			}
-			SendMessage(GetDlgItem(hwndDlg, IDC_SOUND_GROUP), WM_SETTEXT, 0, (LONG)(currentParam->SoundGroup.c_str()));
+			if (SendMessage (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), CB_SELECTSTRING, -1, (LONG)(currentParam->SoundGroup.c_str())) == CB_ERR)
+			{
+//				nlassert(false);
+			}
+//			SendMessage(GetDlgItem(hwndDlg, IDC_SOUND_GROUP), WM_SETTEXT, 0, (LONG)(currentParam->SoundGroup.c_str()));
 		}
 		break;
 
@@ -526,6 +563,7 @@ int CALLBACK AccelDialogCallback (
 							currentParam->OpenOcclusionModel = tmp;
 							SendMessage (GetDlgItem(hwndDlg, IDC_SOUND_GROUP), WM_GETTEXT, 256, (LONG)tmp);
 							currentParam->SoundGroup = tmp;
+							_KnownSoundGroups.insert(tmp);
 							SendMessage (GetDlgItem(hwndDlg, IDC_ENV_FX), WM_GETTEXT, 256, (LONG)tmp);
 							currentParam->EnvironmentFX = tmp;
 

@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.43 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.44 2002/09/23 17:16:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,12 +127,14 @@ public:
 	// Bone Lod.
 	std::string				BoneLodDistance;
 
+	// Accelerator
+	int						AcceleratorType; // -1->undeterminate   0->Not  1->Portal  2->Cluster
+	int						ParentVisible;
+	int						VisibleFromParent;
+	int						DynamicPortal;
+	int						Clusterized;
 
-	int						AccelType; // -1->undeterminate   0->Not  1->Portal  2->Cluster
-										// 3rd bit -> Father visible
-										// 4th bit -> Visible from father
-										// 5th bit -> Dynamic Portal
-										// 6th bit -> Clusterize
+	// Instance Group
 	std::string				InstanceShape;
 	std::string				InstanceName;
 	std::string				InstanceGroupName;
@@ -341,18 +343,17 @@ int CALLBACK AccelDialogCallback (
 			if (currentParam->SkinReduction!=-1)
 				CheckRadioButton (hwndDlg, IDC_SKIN_REDUCTION_MIN, IDC_SKIN_REDUCTION_BEST, IDC_SKIN_REDUCTION_MIN+currentParam->SkinReduction);
 
-			if (currentParam->AccelType != -1)
+			// Enable / disable accelerator check box
+			if (currentParam->AcceleratorType != -1)
 			{
-				CheckRadioButton (hwndDlg, IDC_RADIOACCELNO, IDC_RADIOACCELCLUSTER, IDC_RADIOACCELNO+(currentParam->AccelType&3));
+				CheckRadioButton (hwndDlg, IDC_RADIOACCELNO, IDC_RADIOACCELCLUSTER, IDC_RADIOACCELNO+(currentParam->AcceleratorType&3));
 				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELNO), true);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELPORTAL), true);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELCLUSTER), true);
-				if ((currentParam->AccelType&3) == 2) // Cluster ?
+				if ((currentParam->AcceleratorType&3) == 2) // Cluster ?
 				{
 					EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), true);
-					SendMessage (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), BM_SETCHECK, currentParam->AccelType&4, 0);
 					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
-					SendMessage (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), BM_SETCHECK, currentParam->AccelType&8, 0);
 				}
 				else
 				{
@@ -360,33 +361,38 @@ int CALLBACK AccelDialogCallback (
 					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
 				}
 				
-				if ((currentParam->AccelType&3) == 1) // Portal ?
+				if ((currentParam->AcceleratorType&3) == 1) // Portal ?
 				{
 					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), true);
-					SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_SETCHECK, currentParam->AccelType&16, 0);
 				}
 				else
 					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
 
-				if ((currentParam->AccelType&3) == 0) // Not an accelerator
+				if ((currentParam->AcceleratorType&3) == 0) // Not an accelerator
 				{
 					EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), true);
-					SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_SETCHECK, currentParam->AccelType&32, 0);
 				}
 				else
 					EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), false);
-
 			}
 			else
 			{
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELNO), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELPORTAL), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELCLUSTER), false);
+				// No check box
+				CheckRadioButton (hwndDlg, IDC_RADIOACCELNO, IDC_RADIOACCELCLUSTER, 0);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELNO), true);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELPORTAL), true);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELCLUSTER), true);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), false);
 			}
+
+			// Check accelerator check box
+			SendMessage (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), BM_SETCHECK, currentParam->ParentVisible, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), BM_SETCHECK, currentParam->VisibleFromParent, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_SETCHECK, currentParam->DynamicPortal, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_SETCHECK, currentParam->Clusterized, 0);
 		}
 		break;
 
@@ -401,43 +407,52 @@ int CALLBACK AccelDialogCallback (
 					break;
 					case IDOK:
 						{
+							// Get the acceleration type
 							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELNO) == BST_CHECKED)
-								currentParam->AccelType = 0;
-							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELPORTAL) == BST_CHECKED)
-								currentParam->AccelType = 1;
-							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELCLUSTER) == BST_CHECKED)
-								currentParam->AccelType = 2;
+								currentParam->AcceleratorType = 0;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELPORTAL) == BST_CHECKED)
+								currentParam->AcceleratorType = 1;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELCLUSTER) == BST_CHECKED)
+								currentParam->AcceleratorType = 2;
+							else
+								currentParam->AcceleratorType = -1;
 
-							if (IsDlgButtonChecked (hwndDlg, IDC_FATHER_VISIBLE) == BST_CHECKED)
-								currentParam->AccelType |= 4;
-							if (IsDlgButtonChecked (hwndDlg, IDC_VISIBLE_FROM_FATHER) == BST_CHECKED)
-								currentParam->AccelType |= 8;
-							if (IsDlgButtonChecked (hwndDlg, IDC_DYNAMIC_PORTAL) == BST_CHECKED)
-								currentParam->AccelType |= 16;
-							if (IsDlgButtonChecked (hwndDlg, IDC_CLUSTERIZE) == BST_CHECKED)
-								currentParam->AccelType |= 32;
+							// Get the flags
+							currentParam->ParentVisible=SendMessage (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), BM_GETCHECK, 0, 0);
+							currentParam->VisibleFromParent=SendMessage (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), BM_GETCHECK, 0, 0);
+							currentParam->DynamicPortal=SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_GETCHECK, 0, 0);
+							currentParam->Clusterized=SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_GETCHECK, 0, 0);
 
 							// Quit
 							EndDialog(hwndDlg, IDOK);
 						}
 					break;
 					case IDC_RADIOACCELNO:
-						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), true);
+						if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELNO) == BST_CHECKED)
+						{
+							EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), true);
+						}
 						break;
 					case IDC_RADIOACCELPORTAL:
-						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), true);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
+						if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELPORTAL) == BST_CHECKED)
+						{
+							EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), true);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
+						}
 						break;
 					case IDC_RADIOACCELCLUSTER:
-						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), true);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
+						if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELCLUSTER) == BST_CHECKED)
+						{
+							EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), true);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
+						}
 						break;
 					case IDC_FATHER_VISIBLE:
 					case IDC_VISIBLE_FROM_FATHER:
@@ -1942,7 +1957,13 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ListLodName.push_back (nameLod);
 			}
 		}
-		param.AccelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
+
+		int accelFlag = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
+		param.AcceleratorType = accelFlag&3;
+		param.ParentVisible = (accelFlag&4) ? BST_CHECKED : BST_UNCHECKED;
+		param.VisibleFromParent = (accelFlag&8) ? BST_CHECKED : BST_UNCHECKED;
+		param.DynamicPortal = (accelFlag&16) ? BST_CHECKED : BST_UNCHECKED;
+		param.Clusterized = (accelFlag&32) ? BST_CHECKED : BST_UNCHECKED;
 
 		param.InstanceShape=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, "");
 		param.InstanceName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
@@ -2073,9 +2094,17 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, 0.f))!=param.BoneLodDistance)
 				param.BoneLodDistance="";
 
-
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32)!=param.AccelType)
-				param.AccelType = -1;
+			int accelFlag = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
+			if ( param.AcceleratorType != (accelFlag&3) )
+				param.AcceleratorType = -1;
+			if ( ((accelFlag&4) ? BST_CHECKED : BST_UNCHECKED) != param.ParentVisible)
+				param.ParentVisible = BST_INDETERMINATE;
+			if ( ((accelFlag&8) ? BST_CHECKED : BST_UNCHECKED) != param.VisibleFromParent)
+				param.VisibleFromParent = BST_INDETERMINATE;
+			if ( ((accelFlag&16) ? BST_CHECKED : BST_UNCHECKED) != param.DynamicPortal)
+				param.DynamicPortal = BST_INDETERMINATE;
+			if ( ((accelFlag&32) ? BST_CHECKED : BST_UNCHECKED) != param.Clusterized)
+				param.Clusterized = BST_INDETERMINATE;
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, "")!=param.InstanceShape)
 				param.InstanceShape = "...";
@@ -2280,8 +2309,33 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, f);
 				}
 
-				if (param.AccelType != -1)
-					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, param.AccelType);
+				int accelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
+				if (param.AcceleratorType != -1)
+				{
+					accelType &= ~3;
+					accelType |= param.AcceleratorType&3;
+				}
+				if (param.ParentVisible != BST_INDETERMINATE)
+				{
+					accelType &= ~4;
+					accelType |= (param.ParentVisible == BST_CHECKED) ? 4 : 0;
+				}
+				if (param.VisibleFromParent != BST_INDETERMINATE)
+				{
+					accelType &= ~8;
+					accelType |= (param.VisibleFromParent == BST_CHECKED) ? 8 : 0;
+				}
+				if (param.DynamicPortal != BST_INDETERMINATE)
+				{
+					accelType &= ~16;
+					accelType |= (param.DynamicPortal == BST_CHECKED) ? 16 : 0;
+				}
+				if (param.Clusterized != BST_INDETERMINATE)
+				{
+					accelType &= ~32;
+					accelType |= (param.Clusterized == BST_CHECKED) ? 32 : 0;
+				}
+				CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, accelType);
 
 				if ( (param.InstanceShape != "...") || (listNode.size()==1))
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, param.InstanceShape);				

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.47 2002/06/13 09:42:26 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.48 2002/07/18 15:00:43 lecroart Exp $
  *
  */
 
@@ -32,6 +32,7 @@
 
 #include "nel/net/naming_client.h"
 #include "nel/net/callback_client.h"
+#include "nel/net/service.h"
 
 
 //
@@ -55,6 +56,9 @@ static TBroadcastCallback _RegistrationBroadcastCallback = NULL;
 static TBroadcastCallback _UnregistrationBroadcastCallback = NULL;
 
 uint	CNamingClient::_ThreadId = 0xFFFFFFFF;
+
+TServiceId CNamingClient::_MySId = 0;
+
 
 std::list<CNamingClient::CServiceEntry>	CNamingClient::RegisteredServices;
 NLMISC::CMutex CNamingClient::RegisteredServicesMutex("CNamingClient::RegisteredServicesMutex");
@@ -193,6 +197,14 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	msgout.serial (sid);
 	CNamingClient::_Connection->send (msgout);
 
+	// oh my god, it s my sid! but i m alive, why this f*cking naming service want to kill me? ok, i leave it alone!
+	if(CNamingClient::_MySId == sid)
+	{
+		nlwarning ("Naming Service asked me to leave, I leave!");
+		IService::getInstance()->exit();
+		return;
+	}
+
 	if (_UnregistrationBroadcastCallback != NULL)
 		_UnregistrationBroadcastCallback (name, sid, addr);
 
@@ -297,6 +309,7 @@ TServiceId CNamingClient::registerService (const std::string &name, const CInetA
 
 	if (RegisteredSuccess)
 	{
+		_MySId = RegisteredSID;
 		_RegisteredServices.insert (make_pair (RegisteredSID, name));
 		nldebug ("NC: Registered service %s-%hu at %s", name.c_str(), (uint16)RegisteredSID, addr.asString().c_str());
 	}
@@ -329,6 +342,7 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const CInet
 
 	if (RegisteredSuccess)
 	{
+		_MySId = sid;
 		_RegisteredServices.insert (make_pair (RegisteredSID, name));
 		nldebug ("NC: Registered service with sid %s-%hu at %s", name.c_str(), (uint16)RegisteredSID, addr.asString().c_str());
 	}

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.27 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: debug.cpp,v 1.28 2001/02/14 18:35:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"

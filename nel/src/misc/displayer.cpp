@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.8 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: displayer.cpp,v 1.9 2001/02/14 18:35:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,6 +123,8 @@ void CStdDisplayer::display (time_t date, CLog::TLogType logType, const string &
 	ss << message;
 
 	cout << ss.str();
+
+	fflush(stdout);
 
 #ifdef NL_OS_WINDOWS
 	// display the string in the debugger is the application is started with the debugger

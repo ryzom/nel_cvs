@@ -1,6 +1,6 @@
 Mode d'emploi des macros Nevrax
 02/08/00 cado@nevrax.com
-$Id: nevrax_macros_howto.txt,v 1.1 2000/09/07 14:58:14 cado Exp $
+$Id: nevrax_macros_howto.txt,v 1.2 2000/09/07 15:05:51 cado Exp $
 ----------
 
 1. Nouveautés du 07/09/2000
@@ -20,7 +20,7 @@ base n'existe pas.
 
 a. Dans Visual Studio, menu Tools, Macros,
 Options>>, Loaded Files,
-Browse, R:\code\tools\VisualStudioMacros\nevrax_macros.dsm,
+Browse, R:\code\tool\VisualStudioMacros\nevrax_macros.dsm,
 Close
 
 b. (Facultatif) Raccourci clavier : Menu Tools, Macros, choisir

@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.19 2003/06/04 08:26:19 lecroart Exp $
+ * $Id: cluster.cpp,v 1.20 2003/08/04 13:28:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ namespace NL3D
 CCluster::CCluster ()
 {
 	FatherVisible = VisibleFromFather = false;
+	FatherAudible = AudibleFromFather = false;
 	Father = NULL;
 
 	// map a no fx string
@@ -247,7 +248,7 @@ void CCluster::unlink (CPortal* portal)
 // ***************************************************************************
 void CCluster::serial (IStream&f)
 {
-	sint version = f.serialVersion (2);
+	sint version = f.serialVersion (3);
 
 	if (version >= 1)
 		f.serial (Name);
@@ -290,6 +291,12 @@ void CCluster::serial (IStream&f)
 		}
 		
 //		nldebug("Cluster %s, sound group [%s]", Name.c_str(), CStringMapper::unmap(_SoundGroupId).c_str());
+	}
+
+	if (version >= 3)
+	{
+		f.serial(AudibleFromFather);
+		f.serial(FatherAudible);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.12 2003/04/14 09:31:43 berenguier Exp $
+ * $Id: cluster.h,v 1.13 2003/08/04 13:28:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,17 +117,6 @@ public:
 
 	void setWorldMatrix (const NLMISC::CMatrix &WM);
 
-	// Moving cluster
-	CQuadGrid<CCluster*>::CIterator AccelIt;
-
-	// Additionnal properties
-	std::string Name;
-	bool FatherVisible;
-	bool VisibleFromFather;
-	CCluster *Father;
-	std::vector<CCluster*> Children;
-	CInstanceGroup *Group;
-
 	bool isRoot() { return _LocalVolume.size() == 0; }
 
 	//\name Sound related.
@@ -161,6 +150,20 @@ private:
 
 	static CTransform *creator () {return new CCluster;}
 
+public:
+	// Moving cluster
+	CQuadGrid<CCluster*>::CIterator AccelIt;
+
+	// Additionnal properties
+	std::string				Name;
+	bool					FatherVisible;
+	bool					VisibleFromFather;
+	bool					FatherAudible;
+	bool					AudibleFromFather;
+	CCluster				*Father;
+	std::vector<CCluster*>	Children;
+	CInstanceGroup			*Group;
+
 private:
 
 	/// Portals list
@@ -179,12 +182,8 @@ private:
 	/// All planes are oriented to the exterior of the volume
 	std::vector<NLMISC::CPlane> _Volume;
 
-	/// Sound group
-//	std::string		_SoundGroup;
 	/// Sound group name id
 	NLMISC::TStringId	_SoundGroupId;
-	/// Environment Fx name
-///	std::string		_EnvironmentFx;
 	/// Environement Fx name Id (using CStringMapper)
 	NLMISC::TStringId	_EnvironmentFxId;
 

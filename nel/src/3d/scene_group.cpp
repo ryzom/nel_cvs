@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.62 2003/08/01 09:08:55 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.63 2003/08/04 13:28:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -667,6 +667,8 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 		_ClusterInstances[i]->_BBox = _ClusterInfos[i]._BBox;
 		_ClusterInstances[i]->FatherVisible = _ClusterInfos[i].FatherVisible;
 		_ClusterInstances[i]->VisibleFromFather = _ClusterInfos[i].VisibleFromFather;
+		_ClusterInstances[i]->FatherAudible = _ClusterInfos[i].FatherAudible;
+		_ClusterInstances[i]->AudibleFromFather = _ClusterInfos[i].AudibleFromFather;
 		_ClusterInstances[i]->Name = _ClusterInfos[i].Name;
 		_ClusterInstances[i]->setSoundGroup(_ClusterInfos[i].getSoundGroup());
 		_ClusterInstances[i]->setEnvironmentFx(_ClusterInfos[i].getEnvironmentFx());

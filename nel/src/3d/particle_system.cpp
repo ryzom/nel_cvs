@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.60 2003/08/04 13:04:38 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.61 2003/08/04 13:28:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -233,8 +233,10 @@ CParticleSystem::~CParticleSystem()
 	{
 		delete *it;
 	}
-	delete _ColorAttenuationScheme;
-	delete _UserParamGlobalValue;
+	if (_ColorAttenuationScheme)
+		delete _ColorAttenuationScheme;
+	if (_UserParamGlobalValue)
+		delete _UserParamGlobalValue;
 	#ifdef NL_DEBUG
 		--_NumInstances;
 	#endif
@@ -499,7 +501,8 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		_InvSysMat = _SysMat.inverted();
 		_FontGenerator = NULL;
 		_FontManager = NULL;
-		delete _UserParamGlobalValue;
+		if (_UserParamGlobalValue)
+			delete _UserParamGlobalValue;
 		_UserParamGlobalValue = NULL;
 		_BypassGlobalUserParam = 0;
 	}

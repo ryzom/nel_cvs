@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * <File description>
  *
- * $Id: string_id_array.h,v 1.7 2001/03/20 13:15:35 lecroart Exp $
+ * $Id: string_id_array.h,v 1.8 2001/03/29 09:35:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,6 +79,9 @@ public:
 
 	TStringId getId (const std::string &str)
 	{
+		// sorry for this bullshit but it's the simplest way ;)
+		if (this == NULL) return -1;
+
 		for (TStringId i = 0; i < (TStringId) _StringArray.size(); i++)
 		{
 			if (_StringArray[i] == str)
@@ -115,6 +118,9 @@ public:
 
 	std::string getString (TStringId id) const
 	{
+		// sorry for this bullshit but it's the simplest way ;)
+		if (this == NULL) return "<NoSIDA>";
+
 		nlassert (id >= 0 && id < (TStringId)_StringArray.size());
 
 		return _StringArray[id];

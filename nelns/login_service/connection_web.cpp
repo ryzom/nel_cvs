@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.4 2002/10/22 13:54:39 lecroart Exp $
+ * $Id: connection_web.cpp,v 1.5 2002/10/22 13:55:27 lecroart Exp $
  *
  */
 
@@ -251,7 +251,7 @@ void connectionWebUpdate ()
 				nlwarning ("Error during receiving: '%s'", e.what ());
 			}
 
-			if(messageType>=0 && messageType<sizeof(WebCallbackArray)/sizeof(WebCallbackArray[0]))
+			if(messageType<sizeof(WebCallbackArray)/sizeof(WebCallbackArray[0]))
 			{
 				WebCallbackArray[messageType](msgin, host);
 			}

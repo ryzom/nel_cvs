@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.19 2002/10/21 12:00:34 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.20 2002/10/22 13:57:06 lecroart Exp $
  *
  */
 
@@ -72,7 +72,7 @@ string FrontEndAddress;
 
 struct CFES
 {
-	CFES (TServiceId sid) : SId(sid), NbUser(0), NbEstimatedUser(0) { }
+	CFES (TServiceId sid) : SId(sid), NbEstimatedUser(0), NbUser(0) { }
 
 	TServiceId	SId;				// Connection to the front end
 	uint32		NbEstimatedUser;	// Number of user that already routed to this FES. This number could be different with the NbUser if

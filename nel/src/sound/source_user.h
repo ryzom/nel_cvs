@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.14 2002/07/25 13:35:10 lecroart Exp $
+ * $Id: source_user.h,v 1.15 2002/07/26 09:02:37 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ class CSourceUser : public USource, public IPlayable
 public:
 
 	/// Constructor
-	CSourceUser( TSoundId id=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, CSoundContext *context=0 );
+	CSourceUser( TSoundId id=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, CSoundContext *context=0, const std::string &buffername = "" );
 	/// Destructor
 	virtual ~CSourceUser();
 
@@ -64,7 +64,7 @@ public:
 
 	
 	/// Change the sound binded to the source
-	virtual void					setSound( TSoundId id, CSoundContext *context = 0 );
+	virtual void					setSound( TSoundId id, CSoundContext *context = 0, const std::string &buffername = "" );
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound()									{ return _Sound; }
 	/// Change the priority of the source

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.27 2002/07/25 13:35:10 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.28 2002/07/26 09:02:37 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -551,14 +551,14 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 
 	string bn;
 	id->getBuffername(bn, context);
-	if (id->getBuffer(&bn) == NULL)
+	if (bn.empty() || id->getBuffer(&bn) == NULL)
 	{
 		nlwarning ("Can't create the sound '%s'", bn.c_str());
 		return NULL;
 	}
 
 	// Create source
-	CSourceUser *source = new CSourceUser( id, spawn, cb, userParam, context );
+	CSourceUser *source = new CSourceUser( id, spawn, cb, userParam, context, bn );
 	addSource( source );
 
 	if (source->getBuffer() != 0)

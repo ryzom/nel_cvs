@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.20 2002/07/25 13:35:10 lecroart Exp $
+ * $Id: sound.cpp,v 1.21 2002/07/26 09:02:37 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,7 +86,6 @@ void		CSound::getBuffername(string &buffername, CSoundContext *context)
 		if (context == 0)
 		{
 			nlwarning ("Can't find the buffer name without a context for '%s'", _Buffername.c_str());
-			nlstop;	// temp debug
 			return;
 		}
 		for (uint i = 0; i < _Buffername.size(); i++)
@@ -107,7 +106,7 @@ void		CSound::getBuffername(string &buffername, CSoundContext *context)
 					if (value == -1)
 					{
 						nlwarning ("Can't find the buffer name '%s' because argument %d is not in the context", _Buffername.c_str(), value);
-						nlstop;	// temp debug
+						buffername = "";
 						return;
 					}
 					buffername += toString(value);
@@ -119,6 +118,7 @@ void		CSound::getBuffername(string &buffername, CSoundContext *context)
 					if (i == _Buffername.size())
 					{
 						nlwarning ("Can't find the buffer name '%s' contains a %%r at the end without the number", _Buffername.c_str());
+						buffername = "";
 						return;
 					}
 					if(isdigit(_Buffername[i]))
@@ -137,7 +137,7 @@ void		CSound::getBuffername(string &buffername, CSoundContext *context)
 				else
 				{
 					nlwarning ("Can't find the buffer name '%s' contains an unknown code %%%c", _Buffername.c_str(), _Buffername[i]);
-					nlstop;	// temp debug
+					buffername = "";
 					return;
 				}
 			}

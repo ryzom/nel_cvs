@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.52 2004/09/01 16:51:20 boucher Exp $
+ * $Id: i18n.cpp,v 1.53 2004/09/02 10:15:13 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -492,44 +492,95 @@ void CI18N::readTextFile(const std::string &filename,
 	{
 		if (lineFmt == LINE_FMT_LF)
 		{
+			// we only want \n
 			// easy, just remove or replace any \r code
 			string::size_type pos;
+			string::size_type lastPos = 0;
+			ucstring temp;
+			// reserve some place to reduce re-allocation
+			temp.reserve(result.size() +result.size()/10);
 
-			while ((pos = result.find('\r')) != string::npos)
+			// look for the first \r
+			pos = result.find('\r');
+			while (pos != string::npos)
 			{
 				if (pos < result.size()-1 && result[pos+1] == '\n')
-					result = result.substr(0, pos) + result.substr(pos+1);
+				{
+					temp.append(result.begin()+lastPos, result.begin()+pos);
+					pos += 1;
+				}
 				else
-					result[pos] = '\n';
+				{
+					temp.append(result.begin()+lastPos, result.begin()+pos);
+					temp[temp.size()-1] = '\n';
+				}
+
+				lastPos = pos;
+				// look for next \r
+				pos = result.find('\r', pos);
 			}
+
+			// copy the rest
+			temp.append(result.begin()+lastPos, result.end());
+
+			result.swap(temp);
 		}
 		else if (lineFmt == LINE_FMT_CRLF)
 		{
 			// need to replace simple '\n' or '\r' with a '\r\n' double
 			string::size_type pos = 0;
+			string::size_type lastPos = 0;
+
+			ucstring temp;
+			// reserve some place to reduce re-allocation
+			temp.reserve(result.size() +result.size()/10);
+
 
 			// first loop with the '\r'
-			while ((pos = result.find('\r', pos)) != string::npos)
+			pos = result.find('\r', pos);
+			while (pos != string::npos)
 			{
 				if (pos >= result.size()-1 || result[pos+1] != '\n')
-					result = result.substr(0, pos+1) + '\n' + result.substr(pos+1);
-				// skip this char
-				pos++;
-			}
-			// second loop with the '\n'
-			pos = 0;
-			while ((pos = result.find('\n', pos)) != string::npos)
-			{
-				if (pos == 0 || result[pos-1] != '\r')
 				{
-					ucstring toto = result.substr(0, pos) + '\r';
-					ucstring toto2 = result.substr(pos);
-					result = toto + toto2;
-					pos++;
+					temp.append(result.begin()+lastPos, result.begin()+pos+1);
+					temp += '\n';
 				}
 				// skip this char
 				pos++;
+				lastPos = pos;
+
+				// look the next '\r'
+				pos = result.find('\r', pos);
 			}
+
+			// copy the rest
+			temp.append(result.begin()+lastPos, result.end());
+			result.swap(temp);
+
+			temp = "";
+
+			// second loop with the '\n'
+			pos = 0;
+			lastPos = 0;
+			pos = result.find('\n', pos);
+			while (pos != string::npos)
+			{
+				if (pos == 0 || result[pos-1] != '\r')
+				{
+					temp.append(result.begin()+lastPos, result.begin()+pos);
+					temp += '\r';
+					temp += '\n';
+				}
+				// skip this char
+				pos++;
+				lastPos = pos;
+
+				pos = result.find('\n', pos);
+			}
+
+			// copy the rest
+			temp.append(result.begin()+lastPos, result.end());
+			result.swap(temp);
 		}
 	}
 

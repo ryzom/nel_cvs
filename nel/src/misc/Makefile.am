@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.57 2002/10/28 13:59:19 coutelas Exp $
+# $Id: Makefile.am,v 1.58 2002/10/28 14:39:14 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -55,6 +55,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         string_id_array.cpp                \
                         system_info.cpp                    \
                         task_manager.cpp                   \
+			tds.cpp				   \
                         time_nl.cpp                        \
                         triangle.cpp                       \
                         uv.cpp                             \

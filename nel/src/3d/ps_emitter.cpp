@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.25 2001/09/04 16:14:11 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.26 2001/09/05 15:39:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -651,7 +651,7 @@ void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 	// we choose a custom direction like with omnidirectionnal emitter
 	// then we force the direction vect to have the unit size
 
-	static double divRand = (2.f / RAND_MAX);
+	static const double divRand = (2.0 / RAND_MAX);
 
 	CVector dir((float) (rand() * divRand - 1)
 				, (float) (rand() * divRand - 1)
@@ -679,7 +679,7 @@ void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 
 void CPSSphericalEmitter::emit(uint32 index, CVector &pos, CVector &speed)
 {
-	static double divRand = (2.f / RAND_MAX);
+	static const double divRand = (2.0 / RAND_MAX);
 	CVector dir((float) (rand() * divRand - 1), (float) (rand() * divRand - 1) , (float) (rand() * divRand - 1) );
 	dir.normalize();
 	pos = _Radius[index] * dir;

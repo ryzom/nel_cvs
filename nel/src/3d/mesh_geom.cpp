@@ -1,7 +1,7 @@
 /** \file mesh_geom.cpp
  * <File description>
  *
- * $Id: mesh_geom.cpp,v 1.4 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: mesh_geom.cpp,v 1.5 2002/08/14 12:43:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/mesh_geom.h"
+#include "3d/mesh_block_manager.h"
 
 
 namespace NL3D 
@@ -36,6 +37,19 @@ namespace NL3D
 IMeshGeom::IMeshGeom()
 {
 	_RootInstanceId= -1;
+	_MeshBlockManager= NULL;
+	_MeshVBHeapId= 0;
+}
+
+// ***************************************************************************
+IMeshGeom::~IMeshGeom()
+{
+	// If still have a VBHeap data in the manager, must free it.
+	if(_MeshVBHeapId)
+	{
+		nlassert(_MeshBlockManager);
+		_MeshBlockManager->freeMeshVBHeap(this);
+	}
 }
 
 

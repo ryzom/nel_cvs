@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.30 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: mesh.h,v 1.31 2002/08/14 12:43:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -415,6 +415,9 @@ public:
 	virtual	void	renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, uint rdrPass) ;
 	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) ;
 
+	virtual	bool	getVBHeapInfo(uint &vertexFormat, uint &numVertices);
+	virtual	void	computeMeshVBHeap(void *dst, uint indexStart);
+
 	// @}
 
 
@@ -429,6 +432,9 @@ private:
 		uint32				MaterialId;
 		// The list of primitives.
 		CPrimitiveBlock		PBlock;
+
+		// The same, shifted for VBHeap rendering.
+		CPrimitiveBlock		VBHeapPBlock;
 
 
 		// Serialize a rdrpass.

@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.13 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: mesh_geom.h,v 1.14 2002/08/14 12:43:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,8 @@ public:
 	IDriver			*Driver;
 	CScene			*Scene;
 	CRenderTrav		*RenderTrav;
+	// true if the mesh is rendered through a VBHeap currently activated in driver.
+	bool			RenderThroughVBHeap;
 };
 
 
@@ -91,7 +93,7 @@ public:
 	/// Constructor
 	IMeshGeom();
 	/// dtor
-	virtual ~IMeshGeom() {}
+	virtual ~IMeshGeom();
 
 
 	/** store usefull information for this meshGeom in the instance. Used for IMeshVertexProgram as example
@@ -180,21 +182,39 @@ public:
 	 */
 	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) =0;
 
+	/** The framework call this method to know if the mesh can fit in VBHeap.
+	 *	if yes, deriver must return mesh vertexFormat and num of vertices.
+	 */
+	virtual	bool	getVBHeapInfo(uint &vertexFormat, uint &numVertices) {return false;}
+
+	/** When the framework succes to allocate a VBHeap space, it call this method to fill this space and compute
+	 *	shifted Primitive block.
+	 *	\param the dest VertexBuffer. NB: start to fill at dst[0]
+	 *	\param indexStart used to shift primitive block.
+	 */
+	virtual	void	computeMeshVBHeap(void *dst, uint indexStart)  {}
+
 	// @}
 
 
 // *****************
-protected:
+private:
 
-	/// \name Mesh Block Render methods.
+	/// \name Mesh Block Render access
 	// @{
 	friend class CMeshBlockManager;
 
 	/// This is the head of the list of instances to render in the CMeshBlockManager. -1 if NULL
-	sint32			_RootInstanceId;
+	sint32				_RootInstanceId;
+
+	/// The manager which owns our VBHeap data. NULL means manager must try to setup VBHeap
+	CMeshBlockManager	*_MeshBlockManager;
+	/// This is the Heap Id setuped in CMeshBlockManager::allocateMeshVBHeap()
+	uint				_MeshVBHeapId;
+	/// Delta of index for mesh into VBHeap.
+	uint				_MeshVBHeapIndexStart;
 
 	// @}
-
 
 };
 

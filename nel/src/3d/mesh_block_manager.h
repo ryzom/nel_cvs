@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.h
  * <File description>
  *
- * $Id: mesh_block_manager.h,v 1.1 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: mesh_block_manager.h,v 1.2 2002/08/14 12:43:35 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/mesh_geom.h"
+#include "3d/vertex_buffer_heap.h"
 
 
 namespace NL3D 
@@ -45,6 +46,9 @@ class	CRenderTrav;
  *	This allow optimisation because less renderState swapping are needed.
  *	WARNING: if you add MeshGeom to 2 different CMeshBlockManager at same times, it won't work, and will
  *	certainly crashes (not checked/assert).
+ *
+ *	NB VBHeap part works, even if no User interface use it. It don't give greate performance Add, but will may be used.
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
@@ -55,6 +59,7 @@ public:
 
 	/// Constructor
 	CMeshBlockManager();
+	~CMeshBlockManager();
 
 	/** Add an instance of a MeshGeom to render. Only CMeshBaseInstance can be added.
 	 *	For now, only CMeshGeom and CMeshMRMGeom are known to work.
@@ -65,6 +70,23 @@ public:
 	 */
 	void			flush(IDriver *drv, CScene *scene, CRenderTrav *renderTrav);
 
+
+	/// \name VBHeap part.
+	// @{
+
+	/// release all Heaps => clear memory of meshs registered.
+	void			releaseVBHeaps();
+
+	/** Add a Heap for a given vertexFormat. Any meshGeom added with addInstance() which has this vertex Format 
+	 *	may fit in this heap.
+	 *	return false and fail if the heap can't be allocated or if the heap with same vertexFormat still exist.
+	 */
+	bool			addVBHeap(IDriver *drv, uint vertexFormat, uint maxVertices);
+
+	/// Called by ~IMeshGeom()
+	void			freeMeshVBHeap(IMeshGeom *mesh);
+
+	// @}
 
 // ************************
 private:
@@ -79,14 +101,37 @@ private:
 		sint32				NextInstance;
 	};
 
-	/// List of instances. small realloc are performed, since same vector used each frame.
-	std::vector<CInstanceInfo>	_Instances;
+	// A VBHeap information.
+	struct	CVBHeapBlock
+	{
+		/// List of instances. small realloc are performed, since same vector used each frame.
+		std::vector<CInstanceInfo>	RdrInstances;
 
-	/// List of MeshGeom. small realloc are performed, since same vector used each frame.
-	std::vector<IMeshGeom*>		_MeshGeoms;
+		/// List of MeshGeom. small realloc are performed, since same vector used each frame.
+		std::vector<IMeshGeom*>		RdrMeshGeoms;
+
+		/// The actual VertexBufferHeap
+		CVertexBufferHeap			VBHeap;
+		/// List of MeshGeom to clear VBHeap info.
+		std::vector<IMeshGeom*>		AllocatedMeshGeoms;
+		/// List of Id free in AllocatedMeshGeoms
+		std::vector<uint>			FreeIds;
+	};
+
+	/// Heap Map from vertexFormat to VBHeap Id. NB: do not contains 0th.
+	typedef	std::map<uint, uint>	TVBHeapMap;
+	TVBHeapMap						_VBHeapMap;
+
+	/** List of Heaps.
+	 *	NB: 0th heap is special: contains all meshs which can't fit in any VBHeap.
+	 */
+	std::vector<CVBHeapBlock*>		_VBHeapBlocks;
+
+	/// Try to allocate a MeshGeom into a specific Heap.
+	void			allocateMeshVBHeap(IMeshGeom *mesh);
 
 	// render all instance of this meshGeoms, sorting by material, VP etc....
-	void			render(IMeshGeom *meshGeom);
+	void			render(IMeshGeom *meshGeom, std::vector<CInstanceInfo>	&rdrInstances);
 
 	// current flush setup
 	CMeshGeomRenderContext		_RenderCtx;

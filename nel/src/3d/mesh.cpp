@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.67 2002/08/07 16:43:37 berenguier Exp $
+ * $Id: mesh.cpp,v 1.68 2002/08/14 12:43:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1906,20 +1906,27 @@ uint	CMeshGeom::getNumRdrPasses() const
 // ***************************************************************************
 void	CMeshGeom::beginMesh(CMeshGeomRenderContext &rdrCtx) 
 {
-	// update the VBufferHard (create/delete), to maybe render in AGP memory.
-	updateVertexBufferHard ( rdrCtx.Driver );
-
-
-	// if VB Hard is here, use it.
-	if(_VertexBufferHard != NULL)
+	if(rdrCtx.RenderThroughVBHeap)
 	{
-		// active VB Hard.
-		rdrCtx.Driver->activeVertexBufferHard(_VertexBufferHard);
+		// Don't setup VB in this case, since use the VBHeap setuped one.
 	}
 	else
 	{
-		// active VB. SoftwareSkinning: reset flags for skinning.
-		rdrCtx.Driver->activeVertexBuffer(_VBuffer);
+		// update the VBufferHard (create/delete), to maybe render in AGP memory.
+		updateVertexBufferHard ( rdrCtx.Driver );
+
+
+		// if VB Hard is here, use it.
+		if(_VertexBufferHard != NULL)
+		{
+			// active VB Hard.
+			rdrCtx.Driver->activeVertexBufferHard(_VertexBufferHard);
+		}
+		else
+		{
+			// active VB. SoftwareSkinning: reset flags for skinning.
+			rdrCtx.Driver->activeVertexBuffer(_VBuffer);
+		}
 	}
 }
 // ***************************************************************************
@@ -1943,8 +1950,13 @@ void	CMeshGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi
 	if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) ) )
 	{
 		// \todo yoyo: MeshVertexProgram.
-		// render primitives
-		rdrCtx.Driver->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+
+		if(rdrCtx.RenderThroughVBHeap)
+			// render shifted primitives
+			rdrCtx.Driver->render(rdrPass.VBHeapPBlock, mi->Materials[rdrPass.MaterialId]);
+		else
+			// render primitives
+			rdrCtx.Driver->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
 	}
 }
 // ***************************************************************************
@@ -1954,6 +1966,58 @@ void	CMeshGeom::endMesh(CMeshGeomRenderContext &rdrCtx)
 	// \todo yoyo: MeshVertexProgram.
 }
 
+// ***************************************************************************
+bool	CMeshGeom::getVBHeapInfo(uint &vertexFormat, uint &numVertices)
+{
+	// CMeshGeom support VBHeap rendering, assuming _SupportMeshBlockRendering is true
+	vertexFormat= _VBuffer.getVertexFormat();
+	numVertices= _VBuffer.getNumVertices();
+	return _SupportMeshBlockRendering;
+}
+
+// ***************************************************************************
+void	CMeshGeom::computeMeshVBHeap(void *dst, uint indexStart)
+{
+	// Fill dst with Buffer content.
+	memcpy(dst, _VBuffer.getVertexCoordPointer(), _VBuffer.getNumVertices()*_VBuffer.getVertexSize() );
+
+	// NB: only 1 MB is possible ...
+	nlassert(_MatrixBlocks.size()==1);
+	CMatrixBlock	&mBlock= _MatrixBlocks[0];
+	// For all rdrPass.
+	for(uint i=0;i<mBlock.RdrPass.size();i++)
+	{
+		// shift the PB
+		CPrimitiveBlock	&srcPb= mBlock.RdrPass[i].PBlock;
+		CPrimitiveBlock	&dstPb= mBlock.RdrPass[i].VBHeapPBlock;
+		uint j;
+
+		// Lines.
+		dstPb.setNumLine(srcPb.getNumLine());
+		uint32			*srcLinePtr= srcPb.getLinePointer();
+		uint32			*dstLinePtr= dstPb.getLinePointer();
+		for(j=0; j<dstPb.getNumLine()*2;j++)
+		{
+			dstLinePtr[j]= srcLinePtr[j]+indexStart;
+		}
+		// Tris.
+		dstPb.setNumTri(srcPb.getNumTri());
+		uint32			*srcTriPtr= srcPb.getTriPointer();
+		uint32			*dstTriPtr= dstPb.getTriPointer();
+		for(j=0; j<dstPb.getNumTri()*3;j++)
+		{
+			dstTriPtr[j]= srcTriPtr[j]+indexStart;
+		}
+		// Quads.
+		dstPb.setNumQuad(srcPb.getNumQuad());
+		uint32			*srcQuadPtr= srcPb.getQuadPointer();
+		uint32			*dstQuadPtr= dstPb.getQuadPointer();
+		for(j=0; j<dstPb.getNumQuad()*4;j++)
+		{
+			dstQuadPtr[j]= srcQuadPtr[j]+indexStart;
+		}
+	}
+}
 
 
 // ***************************************************************************

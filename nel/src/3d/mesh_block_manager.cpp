@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.cpp
  * <File description>
  *
- * $Id: mesh_block_manager.cpp,v 1.1 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: mesh_block_manager.cpp,v 1.2 2002/08/14 12:43:35 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,9 +27,16 @@
 
 #include "3d/mesh_block_manager.h"
 
+using namespace NLMISC;
 
 namespace NL3D 
 {
+
+
+#define	NL3D_MBM_MAX_VBHEAP			255
+#define	NL3D_MBM_VBHEAP_MESH_SHIFT	8
+#define	NL3D_MBM_VBHEAP_MESH_MASK	0xFFFFFF00
+#define	NL3D_MBM_VBHEAP_HEAP_MASK	0x000000FF
 
 
 // ***************************************************************************
@@ -39,18 +46,52 @@ CMeshBlockManager::CMeshBlockManager()
 	_RenderCtx.Scene= NULL;
 	_RenderCtx.RenderTrav= NULL;
 
+	// Allocate at least the 0th heap
+	_VBHeapBlocks.resize(1);
+	_VBHeapBlocks[0]= new CVBHeapBlock;
 	// some reserve, avoiding first reallocation.
-	_Instances.reserve(500);
-	_MeshGeoms.reserve(200);
+	_VBHeapBlocks[0]->RdrInstances.reserve(100);
+	_VBHeapBlocks[0]->RdrMeshGeoms.reserve(100);
+}
+
+// ***************************************************************************
+CMeshBlockManager::~CMeshBlockManager()
+{
+	// must release any user heap.
+	releaseVBHeaps();
+	// Release the 0th one.
+	delete _VBHeapBlocks[0];
+	_VBHeapBlocks.clear();
 }
 
 // ***************************************************************************
 void			CMeshBlockManager::addInstance(IMeshGeom *meshGeom, CMeshBaseInstance *inst, float polygonCount)
 {
+	// If the meshGeom has never been added to the manager, may do some precalc
+	if(meshGeom->_MeshBlockManager==NULL)
+	{
+		// Fill 
+		meshGeom->_MeshBlockManager= this;
+		// try to fit the meshGeom in one of our VBHeap.
+		allocateMeshVBHeap(meshGeom);
+	}
+
+	// TestYoyo
+	/*extern uint	TEMP_Yoyo_NInstVBHeap;
+	extern uint	TEMP_Yoyo_NInstNoVBHeap;
+	if( meshGeom->_MeshVBHeapId & NL3D_MBM_VBHEAP_HEAP_MASK )
+		TEMP_Yoyo_NInstVBHeap++; 
+	else
+		TEMP_Yoyo_NInstNoVBHeap++;*/
+	// End TestYoyo
+
+	// Choose the HeapBlock to fit in.
+	CVBHeapBlock	*hb= _VBHeapBlocks[meshGeom->_MeshVBHeapId & NL3D_MBM_VBHEAP_HEAP_MASK];
+
 	// If the mesh geom is not added to this manager, add it.
 	if(meshGeom->_RootInstanceId==-1)
 	{
-		_MeshGeoms.push_back(meshGeom);
+		hb->RdrMeshGeoms.push_back(meshGeom);
 	}
 
 	// setup the instance.
@@ -61,53 +102,88 @@ void			CMeshBlockManager::addInstance(IMeshGeom *meshGeom, CMeshBaseInstance *in
 
 	// link to the head of the list.
 	instInfo.NextInstance= meshGeom->_RootInstanceId;
-	meshGeom->_RootInstanceId= _Instances.size();
+	meshGeom->_RootInstanceId= hb->RdrInstances.size();
 
 	// add this instance
-	_Instances.push_back(instInfo);
+	hb->RdrInstances.push_back(instInfo);
 
 }
 
 // ***************************************************************************
 void			CMeshBlockManager::flush(IDriver *drv, CScene *scene, CRenderTrav *renderTrav)
 {
-	uint	i;
+	uint	i,j;
 
 	// setup the manager
 	nlassert(drv && scene && renderTrav);
 	_RenderCtx.Driver= drv;
 	_RenderCtx.Scene= scene;
 	_RenderCtx.RenderTrav= renderTrav;
+	
 
 	// render
 	//==========
 
-	// Always sort by MeshGeom.
-	for(i=0; i<_MeshGeoms.size();i++)
+	// sort by Heap first => small setup of VBs.
+	for(j=0; j<_VBHeapBlocks.size();j++)
 	{
-		// render the meshGeom and his instances
-		render(_MeshGeoms[i]);
+		CVBHeapBlock	*hb= _VBHeapBlocks[j];
+		// if not the special 0th heap, must activate VB.
+		if(j==0)
+		{
+			_RenderCtx.RenderThroughVBHeap= false;
+		}
+		else
+		{
+			// set to true => avoid mesh to setup their own VB.
+			_RenderCtx.RenderThroughVBHeap= true;
+			// activate current VB in driver
+			hb->VBHeap.activate();
+		}
+
+
+		// Always sort by MeshGeom, in this heap
+		for(i=0; i<hb->RdrMeshGeoms.size();i++)
+		{
+			// render the meshGeom and his instances
+			render(hb->RdrMeshGeoms[i], hb->RdrInstances);
+		}
 	}
 
 
 	// reset.
 	//==========
 
-	// Parse all MehsGeoms, and flag them as Not Added to me
-	for(i=0; i<_MeshGeoms.size();i++)
+	// For all vb heaps
+	for(j=0; j<_VBHeapBlocks.size();j++)
 	{
-		_MeshGeoms[i]->_RootInstanceId= -1;
-	}
+		CVBHeapBlock	*hb= _VBHeapBlocks[j];
 
-	// clear arrays
-	_Instances.clear();
-	_MeshGeoms.clear();
+		// Parse all MehsGeoms, and flag them as Not Added to me
+		for(i=0; i<hb->RdrMeshGeoms.size();i++)
+		{
+			hb->RdrMeshGeoms[i]->_RootInstanceId= -1;
+		}
+
+		// clear rdr arrays
+		hb->RdrInstances.clear();
+		hb->RdrMeshGeoms.clear();
+	}
 }
 
 
 // ***************************************************************************
-void			CMeshBlockManager::render(IMeshGeom *meshGeom)
+void			CMeshBlockManager::render(IMeshGeom *meshGeom, std::vector<CInstanceInfo> &rdrInstances)
 {
+	// TestYoyo
+	/*extern uint TEMP_Yoyo_NMeshVBHeap;
+	extern uint TEMP_Yoyo_NMeshNoVBHeap;
+	if( _RenderCtx.RenderThroughVBHeap )
+		TEMP_Yoyo_NMeshVBHeap++;
+	else
+		TEMP_Yoyo_NMeshNoVBHeap++;*/
+	// End TestYoyo
+
 	// Start for this mesh.
 	meshGeom->beginMesh(_RenderCtx);
 
@@ -124,7 +200,7 @@ void			CMeshBlockManager::render(IMeshGeom *meshGeom)
 			sint32	instId= meshGeom->_RootInstanceId;
 			while( instId!=-1 )
 			{
-				CInstanceInfo		&instInfo= _Instances[instId];
+				CInstanceInfo		&instInfo= rdrInstances[instId];
 
 				// activate this instance
 				meshGeom->activeInstance(_RenderCtx, instInfo.MBI, instInfo.PolygonCount);
@@ -144,7 +220,7 @@ void			CMeshBlockManager::render(IMeshGeom *meshGeom)
 		sint32	instId= meshGeom->_RootInstanceId;
 		while( instId!=-1 )
 		{
-			CInstanceInfo		&instInfo= _Instances[instId];
+			CInstanceInfo		&instInfo= rdrInstances[instId];
 
 			// activate this instance
 			meshGeom->activeInstance(_RenderCtx, instInfo.MBI, instInfo.PolygonCount);
@@ -163,6 +239,153 @@ void			CMeshBlockManager::render(IMeshGeom *meshGeom)
 
 	// End for this mesh.
 	meshGeom->endMesh(_RenderCtx);
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// VBHeap mgt
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CMeshBlockManager::allocateMeshVBHeap(IMeshGeom *mesh)
+{
+	// Get info from mesh. 
+	uint vertexFormat, numVertices;
+	// if the mesh do not support VBHeap, quit.
+	if( !mesh->getVBHeapInfo(vertexFormat, numVertices) )
+		return;
+
+	// In case of ...
+	if( numVertices==0 )
+		return;
+
+	// try to find a VBHeap with this vertexFormat.
+	TVBHeapMap::iterator	it= _VBHeapMap.find(vertexFormat);
+	// if not found, abort
+	if(it==_VBHeapMap.end())
+		return;
+
+	// access to this VBHeap.
+	uint	vbHeapId= it->second;
+	CVBHeapBlock	*vbHeapBlock= _VBHeapBlocks[vbHeapId];
+	// try to allocate sapce into the heap. Fail=> abort.
+	uint	indexStart;
+	if( !vbHeapBlock->VBHeap.allocate(numVertices, indexStart) )
+		return;
+
+	// All is Ok here => setup infos.
+	//==================
+
+	// Keep track of the mesh => allocate.
+	uint	meshId;
+	// try to get a free id.
+	if( !vbHeapBlock->FreeIds.empty() )
+	{
+		meshId= vbHeapBlock->FreeIds.back();
+		vbHeapBlock->FreeIds.pop_back();
+		vbHeapBlock->AllocatedMeshGeoms[meshId]= mesh;
+	}
+	// else, must add to the array
+	else
+	{
+		meshId= vbHeapBlock->AllocatedMeshGeoms.size();
+		vbHeapBlock->AllocatedMeshGeoms.push_back(mesh);
+	}
+
+	// info for delete in mesh
+	mesh->_MeshVBHeapIndexStart= indexStart;
+	mesh->_MeshVBHeapId= vbHeapId + (meshId<<NL3D_MBM_VBHEAP_MESH_SHIFT);
+
+
+	// Fill VB.
+	//==================
+	uint8	*dst= vbHeapBlock->VBHeap.lock(indexStart);
+	mesh->computeMeshVBHeap(dst, indexStart);
+	vbHeapBlock->VBHeap.unlock();
+}
+
+// ***************************************************************************
+void			CMeshBlockManager::freeMeshVBHeap(IMeshGeom *mesh)
+{
+	nlassert(mesh->_MeshVBHeapId);
+
+	// unpack heap and mesh id.
+	uint	vbHeapId= mesh->_MeshVBHeapId & NL3D_MBM_VBHEAP_HEAP_MASK;
+	uint	meshId= (mesh->_MeshVBHeapId & NL3D_MBM_VBHEAP_MESH_MASK) >> NL3D_MBM_VBHEAP_MESH_SHIFT;
+
+	// access to this VBHeap.
+	CVBHeapBlock	*vbHeapBlock= _VBHeapBlocks[vbHeapId];
+
+	// free VB memory.
+	vbHeapBlock->VBHeap.free(mesh->_MeshVBHeapIndexStart);
+
+	// free this space
+	nlassert(meshId<vbHeapBlock->AllocatedMeshGeoms.size());
+	vbHeapBlock->AllocatedMeshGeoms[meshId]= NULL;
+	vbHeapBlock->FreeIds.push_back(meshId);
+
+	// reset mesh info.
+	mesh->_MeshVBHeapId= 0;
+	mesh->_MeshVBHeapIndexStart= 0;
+}
+
+// ***************************************************************************
+void			CMeshBlockManager::releaseVBHeaps()
+{
+	uint	i,j;
+
+	// For all blocks but the 0th
+	for(j=1; j<_VBHeapBlocks.size();j++)
+	{
+		CVBHeapBlock	*hb= _VBHeapBlocks[j];
+
+		// For all allocated mesh of this heap.
+		for(i=0;i<hb->AllocatedMeshGeoms.size();i++)
+		{
+			IMeshGeom	*mesh= hb->AllocatedMeshGeoms[i];
+			// if the mesh exist.
+			if(mesh)
+			{
+				// free his VBHeap Data.
+				freeMeshVBHeap(mesh);
+				nlassert( hb->AllocatedMeshGeoms[i] == NULL );
+			}
+		}
+
+		// delete the block. NB: VBHeap auto released
+		delete hb;
+	}
+
+	// erase all blocks but 0th
+	_VBHeapBlocks.resize(1);
+
+	// clear the map.
+	contReset(_VBHeapMap);
+}
+
+// ***************************************************************************
+bool			CMeshBlockManager::addVBHeap(IDriver *drv, uint vertexFormat, uint maxVertices)
+{
+	// if find an existing vertexFormat, abort.
+	TVBHeapMap::iterator	it= _VBHeapMap.find(vertexFormat);
+	// if found, abort
+	if( it!=_VBHeapMap.end() )
+		return false;
+
+	// create the block
+	CVBHeapBlock	*hb= new CVBHeapBlock;
+
+	// allocate vertex space
+	hb->VBHeap.init(drv, vertexFormat, maxVertices);
+
+	// add an entry to the array, and the map.
+	_VBHeapBlocks.push_back(hb);
+	_VBHeapMap[vertexFormat]= _VBHeapBlocks.size()-1;
+
+	return true;
 }
 
 

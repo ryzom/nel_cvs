@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.13 2000/11/10 09:51:17 berenguier Exp $
+ * $Id: driver.h,v 1.14 2000/11/10 13:39:55 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -363,7 +363,7 @@ public:
 	/// Before rendering via a driver in a thread, must activate() (per thread).
 	virtual bool			activate(void)=0;
 
-	virtual NLMISC::CEventEmitter*	getEventEmitter(void)=0;
+	virtual NLMISC::IEventEmitter*	getEventEmitter(void)=0;
 
 	virtual bool			clear2D(CRGBA& rgba)=0;
 

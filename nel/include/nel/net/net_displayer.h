@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.h,v 1.1 2000/09/25 11:14:23 cado Exp $
+ * $Id: net_displayer.h,v 1.2 2000/09/25 15:01:47 cado Exp $
  *
  * Interface for CNetDisplayer
  */
@@ -54,7 +54,10 @@ public:
 
 protected:
 
-	/// Handshake between us and the server. Returns true if the connected server is a logging server.
+	/** Handshake between us and the server. Returns true if the connected server is a logging server.
+	 * At the moment, it only sends "LOG" and returns true.
+	 * \todo Add: Check if the server is a logging server
+	 */
 	bool	handshake();
 
 private:

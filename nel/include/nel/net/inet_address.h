@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.h,v 1.5 2000/09/25 11:14:23 cado Exp $
+ * $Id: inet_address.h,v 1.6 2000/09/25 15:01:47 cado Exp $
  *
  * Interface for CInetAddress
  */
@@ -72,7 +72,7 @@ public:
 	void				setPort( uint16 port );
 
 	/** Sets internal socket address directly (contents is copied).
-	 * It also retrieve the host name if CInetAddress::RetrieveNames is true.
+	 * It also retrieves the host name if CInetAddress::RetrieveNames is true.
 	 */
 	void				setSockAddr( const sockaddr_in* saddr ) throw (ESocket);
 

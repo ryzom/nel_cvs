@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.5 2000/09/25 11:14:23 cado Exp $
+ * $Id: msg_socket.h,v 1.6 2000/09/25 15:01:47 cado Exp $
  *
  * Interface for CServerSocket
  */
@@ -45,6 +45,8 @@ class CMessage;
  * When the socket is closed, it will be deleted by the caller of the callback.
  *
  * The first argument is a pointer to the caller object.
+ *
+ * \sa For an example of usage: CLogService::run
  */
 
 typedef void (*TCbProcessReceivedMsg)( void*, CSocket&, CMessage*);
@@ -52,8 +54,9 @@ typedef void (*TCbProcessReceivedMsg)( void*, CSocket&, CMessage*);
 
 
 /**
- * A server socket object allows to listen on a port and to accept an incoming connection. It returns
+ * A server socket object allows to listen on a port and to accept incoming connections. It returns
  * then a CSocket object.
+ * \test /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

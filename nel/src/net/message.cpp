@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.cpp,v 1.6 2000/09/25 11:14:23 cado Exp $
+ * $Id: message.cpp,v 1.7 2000/09/25 15:01:47 cado Exp $
  *
  * Implementation of CMessage
  */
@@ -78,8 +78,8 @@ void CMessage::serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow)
 		// Check that we don't read more than there is to read
 		if ( lengthS()+len > lengthR() )
 		{
-			_asm int 3
-			//throw EStreamOverflow();
+			//_asm int 3
+			throw EStreamOverflow();
 		}
 		// Serialize in
 		memcpy( buf, &(*_BufPos), len );
@@ -251,7 +251,7 @@ void CMessage::setHeader( sint16 msgtype, const std::string& msgname )
 }
 
 
-/** EXPERIMENTAL: Returns a pointer to the message buffer for filling by an external function (use at your own risk,
+/* EXPERIMENTAL: Returns a pointer to the message buffer for filling by an external function (use at your own risk,
  * you MUST fill the number of bytes you specify in "msgsize").
  * This method prevents from doing one useless buffer copy, using fill().
  */

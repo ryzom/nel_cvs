@@ -18,13 +18,15 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.3 2000/09/25 11:14:23 cado Exp $
+ * $Id: base_socket.cpp,v 1.4 2000/09/25 15:01:47 cado Exp $
  *
  * Implementation of CBaseSocket
  */
 
 #include "nel/net/base_socket.h"
 #include "nel/misc/log.h"
+
+/// \todo Debug logging class instead
 extern NLMISC::CLog Log;
 
 #ifdef NL_OS_WINDOWS

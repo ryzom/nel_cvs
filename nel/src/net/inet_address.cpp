@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.6 2000/09/25 11:14:23 cado Exp $
+ * $Id: inet_address.cpp,v 1.7 2000/09/25 15:01:47 cado Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -44,8 +44,10 @@ using namespace std;
 namespace NLNET
 {
 
-
-bool CInetAddress::RetrieveNames = true; // may be suppressed
+/** \todo Choose to keep or suppress CInetAddress::RetrieveNames
+ * \sa setSockAddr
+ */
+bool CInetAddress::RetrieveNames = true;
 
 
 /*
@@ -162,7 +164,7 @@ void CInetAddress::setPort( uint16 port )
 
 
 /* Sets internal socket address directly (contents is copied).
- * It also retrieve the host name if CInetAddress::RetrieveNames is true.
+ * It also retrieves the host name if CInetAddress::RetrieveNames is true.
  */
 void CInetAddress::setSockAddr( const sockaddr_in* saddr ) throw (ESocket)
 {

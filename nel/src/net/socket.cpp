@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.8 2000/09/25 11:14:23 cado Exp $
+ * $Id: socket.cpp,v 1.9 2000/09/25 15:01:47 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -146,7 +146,9 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	int saddrlen = sizeof(saddr);
 	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
 	{
-		// log( "Network error: getsockname() failed (CSocket::connect)" );
+		if ( _Logging ) {
+			Log.display( "Network error: getsockname() failed (CSocket::connect)" );
+		}
 	}
 	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
 	if ( _Logging )

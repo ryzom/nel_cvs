@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.6 2000/09/25 11:14:23 cado Exp $
+ * $Id: msg_socket.cpp,v 1.7 2000/09/25 15:01:47 cado Exp $
  *
  * Implementation of CServerSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
@@ -55,7 +55,7 @@ using namespace std;
 namespace NLNET
 {
 
-
+/// \todo Choose a default value and how to use CServerSocket::NiceLevel
 long CServerSocket::NiceLevel = 1;
 
 
@@ -88,7 +88,7 @@ void CServerSocket::listen( uint16 port ) throw (ESocket)
 {
 	CInetAddress localaddr = CInetAddress::localHost();
 	localaddr.setPort( port );
-	listen( localaddr ); // throw ESocket
+	listen( localaddr ); // throw (ESocket)
 }
 
 
@@ -140,17 +140,17 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 }
 
 
-	/** Tests if a client requests/closes connection or a message is received from a connected client.
-	 *
-	 * \li If a new client requests a connection, the server calls accept() (i.e. it creates a new client socket, which
-	 * is added to the list of connections). It then calls the callback function. Its argument "message" is NULL.
-	 * \li If a connected client closes connection, it calls the callback function. Its argument "message" is NULL.
-	 * Then the client socket is removed from the list of connections and deleted.
-	 * \li If a message is received from a connected client, it puts it in the input message that is passed,
-	 * as a pointer, in argument of the callback function. The callback function needs not delete it.
-	 *
-	 * \param cbProcessReceivedMsg Callback function to provide. Example: see header file.
-	 */
+/* Tests if a client requests/closes connection or a message is received from a connected client.
+ *
+ * \li If a new client requests a connection, the server calls accept() (i.e. it creates a new client socket, which
+ * is added to the list of connections). It then calls the callback function. Its argument "message" is NULL.
+ * \li If a connected client closes connection, it calls the callback function. Its argument "message" is NULL.
+ * Then the client socket is removed from the list of connections and deleted.
+ * \li If a message is received from a connected client, it puts it in the input message that is passed,
+ * as a pointer, in argument of the callback function. The callback function needs not delete it.
+ *
+ * \param cbProcessReceivedMsg Callback function to provide. Example: see header file.
+ */
 void CServerSocket::receive( void* caller, TCbProcessReceivedMsg cbProcessReceivedMsg )
 {
 	// Check data available on all sockets, including the server socket
@@ -166,7 +166,6 @@ void CServerSocket::receive( void* caller, TCbProcessReceivedMsg cbProcessReceiv
 		}
 
 		// Iterate on the sockets where data are available
-		// PROBLEM: Erasing a member of the vector !
 		uint32 i; // an iterator is not preferable here
 		uint32 availsize = available.size();
 		for ( i=0; i!=availsize; i++ )

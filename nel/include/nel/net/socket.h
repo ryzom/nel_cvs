@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.7 2000/09/25 11:14:23 cado Exp $
+ * $Id: socket.h,v 1.8 2000/09/25 15:01:47 cado Exp $
  *
  * Interface for CSocket
  */
@@ -46,6 +46,7 @@ class CMessage;
  * we must prevent the socket used in CNetDisplayer from logging itself... otherwise we
  * would have an infinite recursion.
  *
+ * \test /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

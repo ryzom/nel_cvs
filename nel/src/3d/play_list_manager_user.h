@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.h
  * <File description>
  *
- * $Id: play_list_manager_user.h,v 1.3 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: play_list_manager_user.h,v 1.4 2002/06/10 16:00:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,39 +62,16 @@ public:
 
 	/** Create a playlist, instance of an animation set. nlerror if(animSet==NULL).
 	 */
-	virtual	UPlayList	*createPlayList(UAnimationSet	*animSet)
-	{
-		if(!animSet)
-			nlerror("createPlayList(): animSet==NULL");
-		
-		nlassert(dynamic_cast<CAnimationSetUser*>(animSet));
-		CPlayListUser	*pl= new CPlayListUser( ((CAnimationSetUser*)animSet)->_AnimationSet );
-		_PlayLists.insert(pl);
-
-		_PlayListManager.addPlaylist(&pl->_PlayList, &pl->_ChannelMixer);
-
-		return pl;
-	}
+	virtual	UPlayList	*createPlayList(UAnimationSet	*animSet);
 	/** Delete a playlist. nlerror if not found. no-op if playList==NULL.
 	 */
-	virtual	void		deletePlayList(UPlayList *playList)
-	{
-		nlassert(dynamic_cast<CPlayListUser*>(playList));
-		CPlayListUser	*pl= (CPlayListUser*)playList;
-
-		_PlayListManager.removePlaylist(&pl->_PlayList);
-		_PlayLists.erase(pl, "deletePlayList(): bad playList");
-	}
+	virtual	void		deletePlayList(UPlayList *playList);
 
 
 	/** Animate all the playlist. Only the globals channels are animated.
 	 * NB: all AnimationTime are in second.
 	 */
-	virtual	void		animate(TGlobalAnimationTime	time)
-	{
-		_PlayListManager.animate(time);
-	}
-
+	virtual	void		animate(TGlobalAnimationTime	time);
 
 };
 

@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.17 2002/02/28 12:59:52 besson Exp $
+ * $Id: track.cpp,v 1.18 2002/06/10 16:00:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,11 +28,17 @@
 #include "3d/track.h"
 
 #include "nel/misc/rgba.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;
 
 namespace NL3D 
 {
+
+H_AUTO_DECL( NL3D_UTrack_interpolate )
+
+#define	NL3D_HAUTO_UTRACK_INTERPOLATE			H_AUTO_USE( NL3D_UTrack_interpolate )
+
 
 // ***************************************************************************
 
@@ -51,6 +57,8 @@ CTrackDefaultBool ttoto15;
 
 bool ITrack::interpolate (TAnimationTime time, float& res)
 {
+	NL3D_HAUTO_UTRACK_INTERPOLATE;
+
 	// Evaluate it 
 	eval (time);
 
@@ -73,6 +81,8 @@ bool ITrack::interpolate (TAnimationTime time, float& res)
 
 bool ITrack::interpolate (TAnimationTime time, sint32& res)
 {
+	NL3D_HAUTO_UTRACK_INTERPOLATE;
+
 	// Evaluate it 
 	eval (time);
 
@@ -95,6 +105,8 @@ bool ITrack::interpolate (TAnimationTime time, sint32& res)
 
 bool ITrack::interpolate (TAnimationTime time, CRGBA& res)
 {
+	NL3D_HAUTO_UTRACK_INTERPOLATE;
+
 	// Evaluate it 
 	eval (time);
 
@@ -117,6 +129,8 @@ bool ITrack::interpolate (TAnimationTime time, CRGBA& res)
 
 bool ITrack::interpolate (TAnimationTime time, CVector& res)
 {
+	NL3D_HAUTO_UTRACK_INTERPOLATE;
+
 	// Evaluate it 
 	eval (time);
 
@@ -139,6 +153,8 @@ bool ITrack::interpolate (TAnimationTime time, CVector& res)
 
 bool ITrack::interpolate (TAnimationTime time, CQuat& res)
 {
+	NL3D_HAUTO_UTRACK_INTERPOLATE;
+
 	// Evaluate it 
 	eval (time);
 
@@ -161,6 +177,8 @@ bool ITrack::interpolate (TAnimationTime time, CQuat& res)
 
 bool ITrack::interpolate (TAnimationTime time, std::string& res)
 {
+	NL3D_HAUTO_UTRACK_INTERPOLATE;
+
 	// Evaluate it 
 	eval (time);
 
@@ -183,6 +201,8 @@ bool ITrack::interpolate (TAnimationTime time, std::string& res)
 
 bool ITrack::interpolate (TAnimationTime time, bool& res)
 {
+	NL3D_HAUTO_UTRACK_INTERPOLATE;
+
 	// Evaluate it 
 	eval (time);
 

@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.cpp
  * <File description>
  *
- * $Id: play_list_manager_user.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
+ * $Id: play_list_manager_user.cpp,v 1.4 2002/06/10 16:00:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,48 @@
 #include "std3d.h"
 
 #include "3d/play_list_manager_user.h"
+#include "nel/misc/hierarchical_timer.h"
 
+using namespace NLMISC;
 
 namespace NL3D 
 {
 
+
+// ***************************************************************************
+UPlayList	*CPlayListManagerUser::createPlayList(UAnimationSet	*animSet)
+{
+	if(!animSet)
+		nlerror("createPlayList(): animSet==NULL");
+	
+	nlassert(dynamic_cast<CAnimationSetUser*>(animSet));
+	CPlayListUser	*pl= new CPlayListUser( ((CAnimationSetUser*)animSet)->_AnimationSet );
+	_PlayLists.insert(pl);
+
+	_PlayListManager.addPlaylist(&pl->_PlayList, &pl->_ChannelMixer);
+
+	return pl;
+}
+
+
+// ***************************************************************************
+void		CPlayListManagerUser::deletePlayList(UPlayList *playList)
+{
+	nlassert(dynamic_cast<CPlayListUser*>(playList));
+	CPlayListUser	*pl= (CPlayListUser*)playList;
+
+	_PlayListManager.removePlaylist(&pl->_PlayList);
+	_PlayLists.erase(pl, "deletePlayList(): bad playList");
+}
+
+
+// ***************************************************************************
+void		CPlayListManagerUser::animate(TGlobalAnimationTime	time)
+{
+	H_AUTO( NL3D_Render_PlayListMgr_Animate );
+
+	_PlayListManager.animate(time);
+}
 
 
 

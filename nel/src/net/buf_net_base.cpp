@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: buf_net_base.cpp,v 1.2 2001/05/30 08:53:50 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,8 @@ namespace NLNET {
  * Constructor
  */
 CBufNetBase::CBufNetBase() :
-	_DisconnectionCallback( NULL )
+	_DisconnectionCallback( NULL ),
+	_DisconnectionCbArg( NULL )
 {
 	// Debug info for mutexes
 #ifdef MUTEX_DEBUG

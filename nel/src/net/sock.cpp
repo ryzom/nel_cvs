@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.2 2001/05/21 17:02:27 cado Exp $
+ * $Id: sock.cpp,v 1.3 2001/05/30 08:53:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,7 +197,8 @@ CSock::CSock( bool logging ) :
 	_Sock( INVALID_SOCKET ),
 	_Logging( logging ),
 	_BytesReceived( 0 ),
-	_BytesSent( 0 )
+	_BytesSent( 0 ),
+	_NonBlocking( false )
 {
 	nlassert( CSock::_Initialized );
 	{
@@ -215,7 +216,8 @@ CSock::CSock( SOCKET sock, const CInetAddress& remoteaddr ) :
 	_Logging( true ),
 	_BytesReceived( 0 ),
 	_BytesSent( 0 ),
-	_RemoteAddr( remoteaddr )
+	_RemoteAddr( remoteaddr ),
+	_NonBlocking( false )
 {
 	nlassert( CSock::_Initialized );
 	{

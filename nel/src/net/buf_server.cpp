@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.6 2001/05/24 14:17:51 cado Exp $
+ * $Id: buf_server.cpp,v 1.7 2001/05/30 08:53:50 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ CBufServer::CBufServer( TThreadStategy strategy,
 	_MaxThreads( max_threads ),
 	_MaxSocketsPerThread( max_sockets_per_thread ),
 	_ConnectionCallback( NULL ),
+	_ConnectionCbArg( NULL ),
 	_BytesPushedOut( 0 ),
 	_BytesPoppedIn( 0 ),
 	_PrevBytesPoppedIn( 0 ),

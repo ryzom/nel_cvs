@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.3 2001/06/25 16:09:53 vizerie Exp $
+ * $Id: ps_located.h,v 1.4 2001/07/04 12:30:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,11 +35,14 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/aabbox.h"
- 
+
+
+
 
 namespace NL3D 
 {
 
+template <class T> class CPSAttribMaker ;
 
 using NLMISC::CVector ;
 class CPSLocatedBindable ;
@@ -166,7 +169,7 @@ public:
 	*/
 
 	sint32 newElement(const NLMISC::CVector &pos = CVector::Null					
-	, const CVector &speed = CVector::Null, CPSLocatedBindable *emitterLocated = NULL, uint32 indexInEmitter = 0) ;					
+	, const CVector &speed = CVector::Null, CPSLocated *emitterLocated = NULL, uint32 indexInEmitter = 0) ;					
 
 
 	/**
@@ -193,45 +196,48 @@ public:
 
 	bool computeBBox(NLMISC::CAABBox &aabbox) const ;
 
-	/// Set the maximum mass of located to be generated
-	void setMaxMass(float mass) { _MaxMass = mass ; }
-	/// Get the maximum mass of located to be generated	 
-	float getMaxMass(void) const { return _MaxMass ; }
-	/// Set the minimum mass of located to be generated
-	void setMinMass(float mass) { _MinMass = mass ; }
-	/// Get the minimum mass of located to be generated	 
-	float getMinMass(void) const { return _MinMass ; }
-	/// Set both min and max mass
-	float setMass(float min, float max)
-	{
-		_MinMass = min ;
-		_MaxMass = max ;
-	}
-
 
 
 	/** Set the duration of locateds.
-	 *  Any previous call to setLastForever() is discraded
-	 *  They must not be immortal -> nlassert
+	 *  Any previous call to setLastForever() is discarded
+	 *  Any previous scheme for lifetime is dicarded	 
 	 */
+	void setInitialLife(CAnimationTime lifeTime) ;
 
-	void setLifeTime(CAnimationTime min, CAnimationTime max)
-	{
-		_LastForever = false ;
-		_MaxLife = max ;
-		_MinLife = min ;
-	}
+	/** Set a scheme (allocated by new, released by that object) that generate the duration of locateds.
+	 *  Such a scheme can't own its memory.
+	 *  Any previous call to setLastForever() is discarded
+	 *  Any previous scheme for lifetime is discarded	 
+	 */
+	void setLifeScheme(CPSAttribMaker<float> *scheme) ;
 
-	/// Retrieve min duration of locateds. They must not be immortal -> nlassert
-	CAnimationTime getMinLife(void) const 
-	{ 	
-		return _MinLife ; 	 
-	}
-	/// Retrieve max duration of locateds. They must not be immortal -> nlassert
-	CAnimationTime getMaxLife(void) const 
-	{ 	
-		return _MaxLife ; 
-	}
+	/// get the life of created particles (valid if they have a limited life time)
+	CAnimationTime getInitialLife(void) const { return _InitialLife ; }
+
+	/// get the life scheme of created particle, null if none (valid if they have a limited life time)
+	CPSAttribMaker<float> *getLifeScheme(void) { return _LifeScheme ; }
+	const CPSAttribMaker<float> *getLifeScheme(void) const { return _LifeScheme ; }
+
+
+	/** Set the mass of locateds.	 
+	 *  Any previous scheme for Mass is dicarded	 
+	 */
+	void setInitialMass(float mas) ;
+
+	/** Set a scheme (allocated by new, released by that object) that generate the mass of locateds.	 
+	 *  Such a scheme can't own its memory.
+	 *  Any previous scheme for Mass is discarded	 
+	 */
+	void setMassScheme(CPSAttribMaker<float> *scheme) ;
+
+	/// get the mass of created particle
+	CAnimationTime getInitialMass(void) const { return _InitialMass ; }
+
+	/// get the scheme that compute mass of created particles, null if none
+	CPSAttribMaker<float> *getMassScheme(void) { return _MassScheme ; }
+	const CPSAttribMaker<float> *getMassScheme(void) const { return _MassScheme ; }
+
+	
 
 	/// set immortality for located
 	void setLastForever(void) 
@@ -397,12 +403,6 @@ public:
 	void unregisterDtorObserver(CPSLocatedBindable *anObserver) ;
 
 
-
-	/** enum the types of attributes that any located has
-	 *  used by attribute maker for now ... (see ps_attrib_maker.h
-	 */
-
-	enum AttributeType { attrDate = 0, attrPosition = 1, attrInvMass = 2, attrSpeed = 3, attrLast } ;
 	 
 		 /// set the located bindable name (edition purpose)
 	void setName(const std::string &name) { _Name = name ; }
@@ -455,11 +455,18 @@ protected:
 	// nb of users of the _CollisionInfo field
 	uint32 _CollisionInfoNbRef ;
 
-	// the ratio _Time / _TimeIncrement give us the ability to retrieve a life percentage ;
-	// _Time won't increase in case of located with unlimited life time, so the ratio will always be 0
+		
+	// the life to use, or a scheme that generate it
+	// if the scheme if null, initial life is used instead
+	float _InitialLife ;
+	CPSAttribMaker<float> *_LifeScheme ;
 
-	float _MinMass, _MaxMass ;
-	float _MaxLife, _MinLife ;
+	// the mass to use, or a scheme that generate it
+	// if the scheme if null, initial mass is used instead
+	float _InitialMass ;
+	CPSAttribMaker<float> *_MassScheme ;
+
+	
 
 
 	/// used internally to record the request of creation of new posted located
@@ -834,7 +841,7 @@ protected:
 
 	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 	 */
-	virtual void newElement(void) = 0 ;
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) = 0 ;
 
 
 	/** Delete an element given its index

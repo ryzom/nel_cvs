@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.18 2001/06/28 07:56:17 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.19 2001/07/04 12:30:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,15 +44,49 @@ namespace NL3D {
 /**
  * Constructor
  */
-CPSLocated::CPSLocated() : _MinMass(1), _MaxMass(1), _LastForever(true)
-						 , _MaxLife(1.0f), _MinLife(1.0f), _Size(0)
-						 , _MaxSize(DefaultMaxLocatedInstance), _UpdateLock(false)
-						 , _CollisionInfo(NULL), _CollisionInfoNbRef(0)
+	CPSLocated::CPSLocated() : _LastForever(true)
+						 , _InitialLife(1.f), _LifeScheme(NULL)
+						 , _InitialMass(1.f), _MassScheme(NULL)
+						 , _Size(0), _MaxSize(DefaultMaxLocatedInstance)
+						 , _UpdateLock(false)
+						 , _CollisionInfo(NULL), _CollisionInfoNbRef(0)						 
 						 , _NbFramesToSkip(0)
 						 , _Name(std::string("located"))
 {		
 }
 
+
+
+void CPSLocated::setInitialLife(CAnimationTime lifeTime)
+{
+	_LastForever = false ;
+	_InitialLife = lifeTime ;
+	delete _LifeScheme ;
+	_LifeScheme = NULL ;	
+
+}
+void CPSLocated::setLifeScheme(CPSAttribMaker<float> *scheme)
+{
+	nlassert(scheme) ;
+	nlassert(!scheme->hasMemory()) ; // scheme with memory is invalid there !!
+	_LastForever = false ;
+	delete _LifeScheme ;
+	_LifeScheme = scheme ;
+}
+void CPSLocated::setInitialMass(float mass)
+{
+	_InitialMass = mass ;
+	delete _MassScheme ;
+	_MassScheme = NULL ;	
+}
+void CPSLocated::setMassScheme(CPSAttribMaker<float> *scheme)
+{
+	nlassert(scheme) ;
+	nlassert(!scheme->hasMemory()) ; // scheme with memory is invalid there !!
+	delete _MassScheme ;
+	_MassScheme = scheme ;	
+}
+	
 
 
 /// dtor
@@ -79,6 +113,10 @@ CPSLocated::~CPSLocated()
 	{
 		delete *it2 ;
 	}
+
+
+	delete _LifeScheme ;
+	delete _MassScheme ;
 }
 
 
@@ -105,7 +143,7 @@ void CPSLocated::bind(CPSLocatedBindable *lb)
 	for (uint32 k = 0 ; k < initialSize ; ++k)
 	{
 		_Size = k ;
-		lb->newElement() ;
+		lb->newElement(NULL, 0) ;
 	}
 	_Size = initialSize ;
 }
@@ -144,7 +182,7 @@ void CPSLocated::unregisterDtorObserver(CPSLocatedBindable *anObserver)
  * new element generation
  */
 
-sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocatedBindable *emitter, uint32 indexInEmitter)
+sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated *emitter, uint32 indexInEmitter)
 {	
 	if (_UpdateLock)
 	{
@@ -166,30 +204,27 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 	
 	if (_MaxSize == _Size) return -1 ;
 
-	const CMatrix &convMat = emitter ? CPSLocated::getConversionMatrix(this, emitter->getOwner()) 
+	const CMatrix &convMat = emitter ? CPSLocated::getConversionMatrix(this, emitter) 
 							:  CMatrix::Identity ;
 	
 
 	creationIndex  =_Pos.insert(convMat * pos) ;
 	nlassert(creationIndex != -1) ; // all attributs must contains the same number of elements
 	_Speed.insert(convMat.mulVector(speed)) ;
-	
-	float delta ;
-	
-	delta = (rand() % 32767) * (1.0f / 32767.0f) ;
-	_InvMass.insert((1.0f) / (delta * _MaxMass + (1.0f - delta) * _MinMass)) ;
-	_Time.insert(0.0f) ;
-	delta = (rand() % 32767) * (1.0f / 32767.0f) ;
-	_TimeIncrement.insert(1.0f / (delta * _MaxLife + (1.0f - delta) * _MinLife)) ;
+			
+	_InvMass.insert(1.f / (_MassScheme ? _MassScheme->get(emitter, indexInEmitter) : _InitialMass ) ) ;
+	_Time.insert(0.0f) ;	
+	_TimeIncrement.insert( 1.f / (_LifeScheme ? _LifeScheme->get(emitter, indexInEmitter) : _InitialLife ) ) ;
 
 	// generate datas for all bound objects
 	
 	
 	_UpdateLock = true ;	
 
+	
 	for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin() ; it != _LocatedBoundCont.end() ; ++it)
 	{
-		(*it)->newElement() ;
+		(*it)->newElement(emitter, indexInEmitter) ;
 	}
 
 	
@@ -308,8 +343,60 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	f.serialPtr(_CollisionInfo) ;
 	f.serial(_CollisionInfoNbRef) ;
-	f.serial(_MinMass, _MaxMass) ;
-	f.serial(_MaxLife, _MinLife) ;
+
+
+	if (f.isReading())
+	{
+		delete _LifeScheme ;
+		delete _MassScheme ;
+
+		bool useScheme ;
+		f.serial(useScheme) ;
+		if (useScheme)
+		{
+			f.serialPolyPtr(_LifeScheme) ;
+		}
+		else
+		{
+			f.serial(_InitialLife) ;
+			_LifeScheme = NULL ;
+		}
+
+		f.serial(useScheme) ;
+		if (useScheme)
+		{
+			f.serialPolyPtr(_MassScheme) ;
+		}
+		else
+		{
+			f.serial(_InitialMass) ;
+			_MassScheme = NULL ;
+		}
+	}
+	else
+	{
+		bool bFalse = false, bTrue = true ;
+		if (_LifeScheme)
+		{
+			f.serial(bTrue) ;
+			f.serialPolyPtr(_LifeScheme) ;
+		}
+		else
+		{
+			f.serial(bFalse) ;
+			f.serial(_InitialLife) ;
+		}
+		if (_MassScheme)
+		{
+			f.serial(bTrue) ;
+			f.serialPolyPtr(_MassScheme) ;
+		}
+		else
+		{
+			f.serial(bFalse) ;
+			f.serial(_InitialMass) ;
+		}
+	}
 
 	f.serial(_NbFramesToSkip) ;
 

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.12 2001/07/20 16:13:44 besson Exp $
+ * $Id: calc_lm.cpp,v 1.13 2001/08/02 12:18:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,9 @@ using namespace NLMISC;
 
 // TOOLS
 // *****
+
+// Substract to all to get more precision
+CVector vGlobalPos;
 
 
 // ***********************************************************************************************
@@ -187,7 +190,7 @@ struct SLightBuild
 		position.z=pos.z;
 
 		// Set the position
-		this->Position = position;
+		this->Position = position - vGlobalPos;
 
 		// Set the light direction
 		CVector direction;
@@ -1702,25 +1705,16 @@ void MapFace( CMesh::CFace *pFace, vector<CVector> &Vertices, float rRatio )
 // -----------------------------------------------------------------------------------------------
 CMatrix getObjectToWorldMatrix( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB )
 {
-	CMatrix m1, m2, m3, m4, m5;
+	CMatrix m1;
+
 	m1.identity();
-	m1.setPos( pMBB->DefaultPivot );
-	m1.invert();
+	// T*P
+	m1.translate (pMBB->DefaultPos + pMBB->DefaultPivot);
+	// R*S*P-1.
+	m1.rotate (pMBB->DefaultRotQuat);
+	m1.scale (pMBB->DefaultScale);
+	m1.translate (-pMBB->DefaultPivot);
 
-	m2.identity();
-	m2.scale( pMBB->DefaultScale );
-
-	m3.identity();
-	m3.setRot( pMBB->DefaultRotQuat );
-
-	m4.identity();
-	m4.setPos( pMBB->DefaultPivot );
-
-	m5.identity();
-	m5.setPos( pMBB->DefaultPos );
-
-	m1 = m5*m4*m3*m2*m1;
-	
 	return m1;
 }
 
@@ -1824,8 +1818,8 @@ bool PutFaceUV1InLumelCoord( double rRatioLightMap, vector<CVector> &Vertices,
 		// Next face
 		++ItParseI;
 	}
-	if( TextureSurf < 0.0001 )
-		return false;
+//	if( TextureSurf < 0.0001 )
+//		return false;
 	double LMTextRatio = sqrt(SpaceSurf / TextureSurf) * (1.0/rRatioLightMap);
 
 	ItParseI = ItFace;
@@ -2276,7 +2270,7 @@ void PlaceLMPlaneInLMPLane( SLMPlane &Dst, SLMPlane &Src )
 			else
 			{
 				// ERROR: we reached the maximum texture size
-				nlstop;
+				break;
 			}
 		}
 		else
@@ -2894,7 +2888,8 @@ CAABBox getMeshBBox( CMesh::CMeshBuild& rMB, CMeshBase::CMeshBaseBuild &rMBB, bo
 	CAABBox meshBox;
 	if( bNeedToTransform )
 	{
-		CMatrix MBMatrix = getObjectToWorldMatrix( &rMB, &rMBB );
+		CMatrix MBMatrix = getObjectToWorldMatrix (&rMB, &rMBB);
+		MBMatrix.movePos (-vGlobalPos);
 
 		for( uint32 j = 0; j < rMB.Vertices.size(); ++j )
 			if( j == 0 )
@@ -3102,7 +3097,8 @@ void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< CMeshBase:
 void convertToWorldCoordinate( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB )
 {
 	uint32 j, k;
-	CMatrix MBMatrix = getObjectToWorldMatrix( pMB, pMBB );
+	CMatrix MBMatrix = getObjectToWorldMatrix (pMB, pMBB);
+	MBMatrix.movePos (-vGlobalPos);
 	// Update vertices
 	for( j = 0; j < pMB->Vertices.size(); ++j )
 		pMB->Vertices[j] = MBMatrix * pMB->Vertices[j];
@@ -3330,7 +3326,6 @@ void CExportNel::deleteLM(INode& ZeNode, CExportNelOptions& opt)
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 // Caclulate the lightmap of the specified mesh build
-
 // absolutePath tell this code to put the name of the lightmap in absolute or relative path
 // this is very usefull for viewer inside MAX
 bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild, INode& ZeNode, 
@@ -3349,6 +3344,12 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	SWorldRT WorldRT; // The static world for raytrace
 	vector<SLightBuild> AllLights;
 
+	CMatrix mtmp = getObjectToWorldMatrix (pZeMeshBuild, pZeMeshBaseBuild);
+	vGlobalPos = mtmp.getPos();
+	vGlobalPos.x = (int)vGlobalPos.x;
+	vGlobalPos.y = (int)vGlobalPos.y;
+	vGlobalPos.z = (int)vGlobalPos.z;
+
 	// Select meshes to test for raytrace
 	// Get all lights from MAX
 	getLightBuilds( AllLights, tvTime, ip );
@@ -3364,7 +3365,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		CMesh::CMeshBuild *pMB = pZeMeshBuild;
 		CMeshBase::CMeshBaseBuild *pMBB = pZeMeshBaseBuild;
 		vector<CMesh::CFace*> AllFaces;
-		CMatrix MBMatrix = getObjectToWorldMatrix( pMB, pMBB );
+		CMatrix MBMatrix = getObjectToWorldMatrix (pMB, pMBB);
+		MBMatrix.movePos (-vGlobalPos);
 		vector<CVector> AllVertices; // All vertices in world space
 		vector<sint32> FaceGroupByMat; // Number of faces with the same properties
 		uint32 nNbFace = pMB->Faces.size(), nNbVertex = pMB->Vertices.size();
@@ -3592,6 +3594,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			for( i = 0; i < pMBB->Materials.size(); ++i )
 			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
+				////pLightMap->setFilterMode(ITexture::Nearest,ITexture::NearestMipMapOff);
 				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
 				//AllMeshBuilds[nNode].first->Materials[i].setLighting( false );
 				AddLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );

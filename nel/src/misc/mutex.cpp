@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.29 2002/10/18 10:02:21 coutelas Exp $
+ * $Id: mutex.cpp,v 1.30 2002/10/18 13:25:39 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -358,8 +358,11 @@ void CFairMutex::enter()
  */
 void CFairMutex::leave()
 {
-	sem_post( const_cast<sem_t*>(&_Sem) );
-	_OwnerPid = ~0;
+	if ( getpid() == _OwnerPid )
+	{
+		sem_post( const_cast<sem_t*>(&_Sem) );
+		_OwnerPid = ~0;
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.33 2002/02/18 12:58:05 lecroart Exp $
+ * $Id: message.h,v 1.34 2002/08/20 11:47:39 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,20 @@ public:
 
 	// Returns true if the message type was already set
 	bool typeIsSet () const;
+
+	// Transforms the message from input to output or from output to input
+	void invert()
+	{
+		CMemStream::invert();
+
+		if ( isReading() )
+		{
+			// Write -> Read: skip the header 
+			_TypeSet = false;
+			readType();
+		}
+		// For Read -> Write, please use clear()
+	}
 
 	// Clear the message. With this function, you can reuse a message to create another message
 	void clear ();

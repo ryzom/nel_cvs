@@ -4,9 +4,16 @@
 #include "stdafx.h"
 #include "data_mirror.h"
 #include "data_mirrorDlg.h"
+#include "progress_dialog.h"
+#include <sys/timeb.h>
 
 using namespace std;
 using namespace NLMISC;
+
+#define PATH_WIDTH 500
+#define SIZE_WIDTH 60
+#define DATE_WIDTH 100
+#define TYPE_WIDTH 80
 
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
@@ -17,6 +24,12 @@ using namespace NLMISC;
       INDEXTOSTATEIMAGEMASK((fCheck)+1), LVIS_STATEIMAGEMASK)
 #endif
 
+CString GetString (uint res)
+{
+	CString str;
+	str.LoadString (res);
+	return str;
+}
 
 class CAboutDlg : public CDialog
 {
@@ -67,25 +80,24 @@ CData_mirrorDlg::CData_mirrorDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CData_mirrorDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CData_mirrorDlg)
+	ModifiedFilter = 0;
 	//}}AFX_DATA_INIT
 	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	ButtonYFromBottom = 0;
+	ButtonXModifiedFromRight = 0;
+	SortOrder = true;
+	SortedColumn = 0;
 }
 
 void CData_mirrorDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CData_mirrorDlg)
-	DDX_Control(pDX, IDC_REMOVED_LABEL, RemovedLabelCtrl);
-	DDX_Control(pDX, IDC_MODIFIED_LABEL, ModifiedLabelCtrl);
-	DDX_Control(pDX, IDC_ADDED_LABEL, AddedLabelCtrl);
-	DDX_Control(pDX, IDCANCEL, CancelCtrl);
-	DDX_Control(pDX, IDIGNORE, IgnoreCtrl);
-	DDX_Control(pDX, IDOK, OkCtrl);
-	DDX_Control(pDX, IDC_REMOVED, RemovedList);
-	DDX_Control(pDX, IDC_ADDED, AddedList);
-	DDX_Control(pDX, IDC_MODIFIED, ModifiedList);
+	DDX_Control(pDX, IDC_MODIFIED_FILTERS, ModifiedFilterCtrl);
+	DDX_Control(pDX, IDC_ADDED_FILTERS, AddedFilterCtrl);
+	DDX_Control(pDX, IDC_REMOVED_FILTERS, RemovedFilterCtrl);
+	DDX_Control(pDX, IDC_LIST, List);
+	DDX_Radio(pDX, IDC_MODIFIED_FILTERS, ModifiedFilter);
 	//}}AFX_DATA_MAP
 }
 
@@ -96,12 +108,13 @@ BEGIN_MESSAGE_MAP(CData_mirrorDlg, CDialog)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDIGNORE, OnIgnore)
 	ON_WM_SIZE()
-	ON_NOTIFY(NM_CLICK, IDC_MODIFIED, OnClickModified)
-	ON_NOTIFY(NM_CLICK, IDC_REMOVED, OnClickRemoved)
-	ON_NOTIFY(NM_CLICK, IDC_ADDED, OnClickAdded)
-	ON_NOTIFY(NM_DBLCLK, IDC_MODIFIED, OnClickModified)
-	ON_NOTIFY(NM_DBLCLK, IDC_REMOVED, OnClickRemoved)
-	ON_NOTIFY(NM_DBLCLK, IDC_ADDED, OnClickAdded)
+	ON_NOTIFY(NM_CLICK, IDC_LIST, OnClickList)
+	ON_BN_CLICKED(IDUPDATE, OnUpdate)
+	ON_BN_CLICKED(IDC_ADDED_FILTERS, OnAddedFilters)
+	ON_BN_CLICKED(IDC_MODIFIED_FILTERS, OnModifiedFilters)
+	ON_BN_CLICKED(IDC_REMOVED_FILTERS, OnRemovedFilters)
+	ON_NOTIFY(NM_DBLCLK, IDC_LIST, OnClickList)
+	ON_NOTIFY(LVN_COLUMNCLICK, IDC_LIST, OnColumnclickList)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -138,38 +151,153 @@ BOOL CData_mirrorDlg::OnInitDialog()
 	// Init position remainder
 	RECT client;
 	RECT childClient;
-	RECT childClient2;
 	GetClientRect (&client);
-	OkCtrl.GetWindowRect (&childClient);
+	ModifiedFilterCtrl.GetWindowRect (&childClient);
 	ScreenToClient (&childClient);
-	ButtonYFromBottom = client.bottom - childClient.top;
-	OkButtonXFromRight = client.right - childClient.left;
-	CancelCtrl.GetWindowRect (&childClient);
+	ButtonXModifiedFromRight = client.right - childClient.left;
+	AddedFilterCtrl.GetWindowRect (&childClient);
 	ScreenToClient (&childClient);
-	CancelButtonXFromRight = client.right - childClient.left;
-	IgnoreCtrl.GetWindowRect (&childClient);
+	ButtonXAddedFromRight = client.right - childClient.left;
+	RemovedFilterCtrl.GetWindowRect (&childClient);
 	ScreenToClient (&childClient);
-	IgnorButtonXFromRight = client.right - childClient.left;
-	ModifiedList.GetWindowRect (&childClient);
+	ButtonXRemovedFromRight = client.right - childClient.left;
+	List.GetWindowRect (&childClient);
 	ScreenToClient (&childClient);
 	ListBottomFromBottom = client.bottom - childClient.bottom;
+	ListRightFromRight = client.right - childClient.right;
 	
-	ModifiedList.GetWindowRect (&childClient);
-	AddedList.GetWindowRect (&childClient2);
-	SpaceBetweenList = childClient2.left - childClient.right;
-		
 	// Init list
-	ListView_SetExtendedListViewStyle (ModifiedList, LVS_EX_CHECKBOXES);
-	ListView_SetExtendedListViewStyle (AddedList, LVS_EX_CHECKBOXES);
-	ListView_SetExtendedListViewStyle (RemovedList, LVS_EX_CHECKBOXES);
-	ModifiedList.InsertColumn (0, "");
-	AddedList.InsertColumn (0, "");
-	RemovedList.InsertColumn (0, "");
+	ListView_SetExtendedListViewStyle (List, LVS_EX_CHECKBOXES);
+	SHFILEINFO  sfi;
+	HIMAGELIST imageListSmall = (HIMAGELIST)SHGetFileInfo( TEXT("C:\\"), 0, &sfi, sizeof(SHFILEINFO), SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
+	CImageList *imageList = CImageList::FromHandle( imageListSmall );
+	List.SetImageList( imageList, LVSIL_SMALL);
 
 	resize ();
-	refresh ();
+	buildSourceFiles ();
+	updateList ();
+	updateSort ();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
+}
+
+void CData_mirrorDlg::updateList ()
+{
+	UpdateData ();
+
+	// Checks
+	nlassert ((ModifiedFilter>=Modified) && (ModifiedFilter<=Removed));
+
+	// Delete item data
+	uint count = List.GetItemCount ();
+	uint i;
+	for (i=0; i<count; i++)
+		delete (std::list<CEntryFile>::iterator*)List.GetItemData(i);
+
+	List.DeleteAllItems ();
+	List.DeleteColumn (5);
+	List.DeleteColumn (4);
+	List.DeleteColumn (3);
+	List.DeleteColumn (2);
+	List.DeleteColumn (1);
+	List.DeleteColumn (0);
+	switch (ModifiedFilter)
+	{
+	case Modified:
+		List.InsertColumn (0, GetString (IDS_NAME));
+		List.InsertColumn (1, GetString (IDS_NEW_SIZE));
+		List.InsertColumn (2, GetString (IDS_OLD_SIZE));
+		List.InsertColumn (3, GetString (IDS_NEW_DATE));
+		List.InsertColumn (4, GetString (IDS_OLD_DATE));
+		List.InsertColumn (5, GetString (IDS_TYPE));
+		break;
+	case Added:
+		List.InsertColumn (0, GetString (IDS_NAME));
+		List.InsertColumn (1, GetString (IDS_NEW_SIZE));
+		List.InsertColumn (2, GetString (IDS_NEW_DATE));
+		List.InsertColumn (3, GetString (IDS_TYPE));
+		break;
+	case Removed:
+		List.InsertColumn (0, GetString (IDS_NAME));
+		List.InsertColumn (1, GetString (IDS_OLD_SIZE));
+		List.InsertColumn (2, GetString (IDS_OLD_DATE));
+		List.InsertColumn (3, GetString (IDS_TYPE));
+		break;
+	}
+
+	// Add the items
+	List.SetColumnWidth (0, PATH_WIDTH);
+
+	// Sub string
+	uint subString = 1;
+
+	// Add the sizes
+	if (ModifiedFilter != Added)
+	{
+		List.SetColumnWidth (subString++, SIZE_WIDTH);
+	}
+	if (ModifiedFilter != Removed)
+	{
+		List.SetColumnWidth (subString++, SIZE_WIDTH);
+	}
+
+	// Add the dates
+	if (ModifiedFilter != Added)
+	{
+		List.SetColumnWidth (subString++, DATE_WIDTH);
+	}
+	if (ModifiedFilter != Removed)
+	{
+		List.SetColumnWidth (subString++, DATE_WIDTH);
+	}
+
+	// Add the type
+	List.SetColumnWidth (subString++, TYPE_WIDTH);
+
+	// Next item
+
+
+	// Add items
+	std::list<CEntryFile> &entries = Files[ModifiedFilter];
+	std::list<CEntryFile>::iterator ite = entries.begin ();
+	while (ite != entries.end ())
+	{
+		// Add the items
+		const CEntryFile &entry = *ite;
+		uint nItem = List.InsertItem (0, entry.Strings[CEntryFile::Path].c_str (), entry.Image);
+		List.SetItemData (nItem, DWORD(new std::list<CEntryFile>::iterator (ite)));
+
+		// Sub string
+		subString = 1;
+
+		// Add the sizes
+		if (ModifiedFilter != Added)
+		{
+			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::OldSize].c_str ());
+		}
+		if (ModifiedFilter != Removed)
+		{
+			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::NewSize].c_str ());
+		}
+
+		// Add the dates
+		if (ModifiedFilter != Added)
+		{
+			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::OldDate].c_str ());
+		}
+		if (ModifiedFilter != Removed)
+		{
+			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::NewDate].c_str ());
+		}
+
+		// Add the type
+		List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::Type].c_str ());
+
+		// Next item
+		ite++;
+	}
+
+	UpdateData (FALSE);
 }
 
 void CData_mirrorDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -223,29 +351,31 @@ HCURSOR CData_mirrorDlg::OnQueryDragIcon()
 
 void CData_mirrorDlg::OnIgnore() 
 {
-	ignore (ModifiedList);
-	ignore (AddedList);
-	ignore (RemovedList);
-}
+	UpdateData ();
 
-void CData_mirrorDlg::ignore (CListCtrl &_list)
-{
 	// Update files
-	uint count = _list.GetItemCount ();
+	uint count = List.GetItemCount ();
 	uint i;
+	std::list<CEntryFile> &entries = Files[ModifiedFilter];
 	for (i=0; i<count; i++)
 	{
 		// Checked ?
-		if (ListView_GetCheckState (_list, i))
+		if (ListView_GetCheckState (List, i))
 		{
 			// Get the file
-			CString itemText = _list.GetItemText (i, 0);
+			CString itemText = List.GetItemText (i, 0);
 
 			// Add to ignore list
 			IgnoreFiles.insert ((const char*)itemText);
 
+			// Remove from the file list
+			std::list<CEntryFile>::iterator *ite = (std::list<CEntryFile>::iterator *)List.GetItemData (i);
+			nlassert (ite);
+			entries.erase (*ite);
+			delete ite;
+
 			// Remove the item
-			_list.DeleteItem (i);
+			List.DeleteItem (i);
 			i--;
 			count--;
 		}
@@ -264,129 +394,114 @@ void createDirectory (const string &dir)
 
 void CData_mirrorDlg::OnOK() 
 {
+	// Update first
+	OnUpdate ();
+	
 	bool success = true;
+
+	// Update window
+	CProgressDialog progress;
+	progress.Create (CProgressDialog::IDD, this);
+	progress.ShowWindow (SW_SHOW);
+	progress.progress (0);
+
+	const uint totalCount = FilesToUpdate[Modified].size () + FilesToUpdate[Added].size () + FilesToUpdate[Removed].size ();
+	uint currentFile = 0;
+
 	// Update files
-	uint count = ModifiedList.GetItemCount ();
+	std::vector<string> &modifiedList = FilesToUpdate[Modified];
+	uint count = modifiedList.size ();
 	uint i;
 	for (i=0; i<count; i++)
 	{
-		// Checked ?
-		if (ListView_GetCheckState (ModifiedList, i))
+		// Copy it
+		const string &itemText = modifiedList[i];
+		string source = MainDirectory+itemText;
+		string dest = MirrorDirectory+itemText;
+	
+		progress.DisplayString = "Copy \"" + source + "\" to \"" + dest + "\"";
+		progress.progress (float(currentFile++)/(float(totalCount)));
+
+		string directory = NLMISC::CFile::getPath (dest);
+		createDirectory (directory.c_str ());
+		if (!CopyFile (source.c_str (), dest.c_str (), FALSE))
 		{
-			// Copy it
-			CString itemText = ModifiedList.GetItemText (i, 0);
-			string source = MainDirectory+(const char*)itemText;
-			string dest = MirrorDirectory+(const char*)itemText;
-			string directory = NLMISC::CFile::getPath (dest);
-			createDirectory (directory.c_str ());
-			if (!CopyFile (source.c_str (), dest.c_str (), FALSE))
-			{
-				MessageBox (("Can't copy file "+source+" in file "+dest).c_str (), "NeL Data Mirror", 
-					MB_OK|MB_ICONEXCLAMATION);
-				success = false;
-			}
+			MessageBox (("Can't copy file "+source+" in file "+dest).c_str (), "NeL Data Mirror", 
+				MB_OK|MB_ICONEXCLAMATION);
+			success = false;
 		}
 	}
 
-	count = AddedList.GetItemCount ();
+	std::vector<string> &addedList = FilesToUpdate[Added];
+	count = addedList.size ();
 	for (i=0; i<count; i++)
 	{
-		// Checked ?
-		if (ListView_GetCheckState (AddedList, i))
+		// Copy it
+		const string &itemText = addedList[i];
+		string source = MainDirectory+itemText;
+		string dest = MirrorDirectory+itemText;
+		string directory = NLMISC::CFile::getPath (dest);
+			
+		progress.DisplayString = "Copy \"" + source + "\" to \"" + dest + "\"";
+		progress.progress (float(currentFile++)/(float(totalCount)));
+		
+		createDirectory (directory.c_str ());
+		if (!CopyFile (source.c_str (), dest.c_str (), FALSE))
 		{
-			// Copy it
-			CString itemText = AddedList.GetItemText (i, 0);
-			string source = MainDirectory+(const char*)itemText;
-			string dest = MirrorDirectory+(const char*)itemText;
-			string directory = NLMISC::CFile::getPath (dest);
-			createDirectory (directory.c_str ());
-			if (!CopyFile (source.c_str (), dest.c_str (), FALSE))
-			{
-				MessageBox (("Can't copy file "+source+" in file "+dest).c_str (), "NeL Data Mirror", 
-					MB_OK|MB_ICONEXCLAMATION);
-				success = false;
-			}
+			MessageBox (("Can't copy file "+source+" in file "+dest).c_str (), "NeL Data Mirror", 
+				MB_OK|MB_ICONEXCLAMATION);
+			success = false;
 		}
 	}
 
-	count = RemovedList.GetItemCount ();
+	std::vector<string> &removedList = FilesToUpdate[Removed];
+	count = removedList.size ();
 	for (i=0; i<count; i++)
 	{
-		// Checked ?
-		if (ListView_GetCheckState (RemovedList, i))
+		// Copy it
+		const string &itemText = removedList[i];
+		string dest = MirrorDirectory+itemText;
+			
+		progress.DisplayString = "Delete \"" + dest + "\"";
+		progress.progress (float(currentFile++)/(float(totalCount)));
+
+		if (!DeleteFile (dest.c_str ()))
 		{
-			// Copy it
-			CString itemText = RemovedList.GetItemText (i, 0);
-			string dest = MirrorDirectory+(const char*)itemText;
-			if (!DeleteFile (dest.c_str ()))
-			{
-				MessageBox (("Can't delete the file "+dest).c_str (), "NeL Data Mirror", 
-					MB_OK|MB_ICONEXCLAMATION);
-				success = false;
-			}
+			MessageBox (("Can't delete the file "+dest).c_str (), "NeL Data Mirror", 
+				MB_OK|MB_ICONEXCLAMATION);
+			success = false;
 		}
 	}
 
-	if (success)
+	FILE *file = fopen ((MainDirectory+"ignore_list.txt").c_str (), "w");
+	if (file)
 	{
-		FILE *file = fopen ((MainDirectory+"ignore_list.txt").c_str (), "w");
-		if (file)
+		// Save ignore list
+		std::set<string>::iterator ite = IgnoreFiles.begin ();
+		while (ite != IgnoreFiles.end ())
 		{
-			// Save ignore list
-			std::set<string>::iterator ite = IgnoreFiles.begin ();
-			while (ite != IgnoreFiles.end ())
-			{
-				fputs ((*ite + "\n").c_str (), file);		
+			fputs ((*ite + "\n").c_str (), file);		
 
-				ite++;
-			}
+			ite++;
 		}
-
-		CDialog::OnOK();
 	}
+
+	CDialog::OnOK();
 }
 
 void CData_mirrorDlg::resize () 
 {
 	// Initialised ?
-	if (ButtonYFromBottom)
+	if (ButtonXModifiedFromRight)
 	{
 		RECT client;
 		RECT child;
 		GetClientRect (&client);
-		OkCtrl.SetWindowPos (NULL, client.right - OkButtonXFromRight, client.bottom - ButtonYFromBottom, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
-		CancelCtrl.SetWindowPos (NULL, client.right - CancelButtonXFromRight, client.bottom - ButtonYFromBottom, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
-		IgnoreCtrl.SetWindowPos (NULL, client.right - IgnorButtonXFromRight, client.bottom - ButtonYFromBottom, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
-
-		int labelHeight;
-		ModifiedLabelCtrl.GetWindowRect (&child);
-		ScreenToClient (&child);
-		labelHeight = child.bottom - child.top;
-		int posYLabel = child.top;
-
-		int listHeight = client.bottom - ListBottomFromBottom;
-		ModifiedList.GetWindowRect (&child);
-		ScreenToClient (&child);
-		int posY = child.top;
-		listHeight -= posY;
-		
-		sint border = (child.left - client.left);
-		sint listWidth = ((client.right - client.left) - border*2 - SpaceBetweenList * 2)/3;
-		ModifiedList.SetWindowPos (NULL, 0, 0, listWidth, listHeight, SWP_NOZORDER|SWP_NOMOVE);
-		ModifiedList.SetColumnWidth (0, listWidth);
-		ModifiedLabelCtrl.SetWindowPos (NULL, 0, 0, listWidth, labelHeight, SWP_NOZORDER|SWP_NOMOVE);
-		AddedList.GetWindowRect (&child);
-		ScreenToClient (&child);
-		AddedList.SetWindowPos (NULL, border+listWidth+SpaceBetweenList, posY, listWidth, listHeight,
-			SWP_NOZORDER);
-		AddedList.SetColumnWidth (0, listWidth);
-		AddedLabelCtrl.SetWindowPos (NULL, border+listWidth+SpaceBetweenList, posYLabel, listWidth, labelHeight,
-			SWP_NOZORDER);
-		RemovedList.SetWindowPos (NULL, border+2*listWidth+2*SpaceBetweenList, posY, listWidth, listHeight,
-			SWP_NOZORDER);
-		RemovedList.SetColumnWidth (0, listWidth);
-		RemovedLabelCtrl.SetWindowPos (NULL, border+2*listWidth+2*SpaceBetweenList, posYLabel, listWidth, labelHeight,
-			SWP_NOZORDER);
+		ModifiedFilterCtrl.GetClientRect (&child);
+		ModifiedFilterCtrl.SetWindowPos (NULL, client.right - ButtonXModifiedFromRight, child.top, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
+		AddedFilterCtrl.SetWindowPos (NULL, client.right - ButtonXAddedFromRight, child.top, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
+		RemovedFilterCtrl.SetWindowPos (NULL, client.right - ButtonXRemovedFromRight, child.top, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
+		List.SetWindowPos (NULL, 0, 0, client.right - ListRightFromRight, client.bottom - ListBottomFromBottom, SWP_NOMOVE|SWP_NOZORDER);
 
 		Invalidate ();
 	}
@@ -398,14 +513,28 @@ void CData_mirrorDlg::OnSize(UINT nType, int cx, int cy)
 	resize ();
 }
 
-void CData_mirrorDlg::refresh ()
+bool getFileTime (const char *filename, FILETIME &result)
+{
+	HANDLE handle = CreateFile (filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (handle)
+	{
+		FILETIME res0;
+		FILETIME res1;
+		GetFileTime (handle, &res0, &res1, &result);
+		CloseHandle (handle);
+		return true;
+	}
+	return false;
+}
+
+void CData_mirrorDlg::buildSourceFiles ()
 {
 	UpdateData (FALSE);
-	
-	ModifiedList.DeleteAllItems ();
-	AddedList.DeleteAllItems ();
-	RemovedList.DeleteAllItems ();
 
+	Files[Modified].clear ();
+	Files[Added].clear ();
+	Files[Removed].clear ();
+	
 	// List all files in database
 	vector<string> fileSource;
 	CPath::getPathContent (MainDirectory+CurrentDir, true, false, true, fileSource);
@@ -426,19 +555,20 @@ void CData_mirrorDlg::refresh ()
 			string mainFile = MainDirectory+str;
 			if (NLMISC::CFile::fileExists (mirrorFile))
 			{
-				uint time0 = NLMISC::CFile::getFileModificationDate (mirrorFile);
-				uint time1 = NLMISC::CFile::getFileModificationDate (mainFile);
-				if ( abs ((sint)time0 - (sint)time1) > 1 )
+				FILETIME time0;
+				FILETIME time1;
+				getFileTime (mirrorFile.c_str (), time0);
+				getFileTime (mainFile.c_str (), time1);
+				if (CompareFileTime (&time0, &time1) == -1)
 				{
-					ModifiedList.InsertItem (0, str.c_str ());
-				}
-				else
-				{
+					addEntry (Modified, str.c_str (), time1, time0);
 				}
 			}
 			else
 			{
-				AddedList.InsertItem (0, str.c_str ());
+				FILETIME time;
+				getFileTime (mainFile.c_str (), time);
+				addEntry (Added, str.c_str (), time, time);
 			}
 		}
 	}
@@ -462,7 +592,9 @@ void CData_mirrorDlg::refresh ()
 			string mainFile = MainDirectory+str;
 			if (!NLMISC::CFile::fileExists (mainFile))
 			{
-				RemovedList.InsertItem (0, str.c_str ());
+				FILETIME time;
+				getFileTime (mainFile.c_str (), time);
+				addEntry (Removed, str.c_str (), time, time);
 			}
 		}
 	}
@@ -475,46 +607,287 @@ void CData_mirrorDlg::refresh ()
 	UpdateData (TRUE);
 }
 
-void CData_mirrorDlg::OnClickModified(NMHDR* pNMHDR, LRESULT* pResult) 
+void timeToString (string &dest, FILETIME time)
 {
-	LPNMLISTVIEW lpnmlv = (LPNMLISTVIEW) pNMHDR;
-	onClickList (lpnmlv, ModifiedList);
-	*pResult = 0;
+	FILETIME localFileTime;
+	SYSTEMTIME systemTime;
+	if (FileTimeToLocalFileTime (&time, &localFileTime))
+	{
+		if (FileTimeToSystemTime (&localFileTime, &systemTime))
+		{
+			char date[512];
+			smprintf (date, 512, "%d/%d/%d %d:%02d", systemTime.wDay, systemTime.wMonth, systemTime.wYear, systemTime.wHour, systemTime.wMinute);
+			dest = date;
+		}
+	}
 }
 
-void CData_mirrorDlg::OnClickRemoved(NMHDR* pNMHDR, LRESULT* pResult) 
+void sizeToString (string &dest, uint size)
 {
-	LPNMLISTVIEW lpnmlv = (LPNMLISTVIEW) pNMHDR;
-	onClickList (lpnmlv, RemovedList);
-	*pResult = 0;
+	char sizeText[512];
+	smprintf (sizeText, 512, "%d KB", (size / 1024) + ((size%1024) ? 1 : 0));
+	dest = sizeText;
 }
 
-void CData_mirrorDlg::OnClickAdded(NMHDR* pNMHDR, LRESULT* pResult) 
+class CExtension
 {
-	LPNMLISTVIEW lpnmlv = (LPNMLISTVIEW) pNMHDR;
-	onClickList (lpnmlv, AddedList);
-	*pResult = 0;
+public:
+	string	Description;
+	uint	Icon;
+};
+
+std::map<string, CExtension> MapExtensions;
+
+void CData_mirrorDlg::addEntry (uint where, const char *filename, FILETIME &newDate, FILETIME &oldDate)
+{
+	// Add an entry first
+	Files[where].push_back (CEntryFile ());
+	CEntryFile &file = Files[where].back ();
+	file.Strings[CEntryFile::Path] = filename;
+	file.NewDateST = newDate;
+	file.OldDateST = oldDate;
+	const char *aFilename;
+
+	string mirrorFile = MirrorDirectory+filename;
+	string mainFile = MainDirectory+filename;
+
+	if (where != Added)
+	{
+		// Get file size
+		file.OldSizeUI = NLMISC::CFile::getFileSize (mirrorFile);
+		sizeToString (file.Strings[CEntryFile::OldSize], file.OldSizeUI);
+		
+		// Date
+		timeToString (file.Strings[CEntryFile::OldDate], oldDate);
+		aFilename = mirrorFile.c_str ();
+	}
+
+	if (where != Removed)
+	{
+		// Get file size
+		file.NewSizeUI = NLMISC::CFile::getFileSize (mainFile);
+		sizeToString (file.Strings[CEntryFile::NewSize], file.NewSizeUI);
+		
+		// Date
+		timeToString (file.Strings[CEntryFile::NewDate], newDate);
+		aFilename = mainFile.c_str ();
+	}
+
+	// Get the extension
+	string ext = NLMISC::CFile::getExtension (aFilename);
+	std::map<string, CExtension>::iterator ite = MapExtensions.find (ext);
+	if (ite == MapExtensions.end ())
+	{
+		// Get the image
+		SHFILEINFO     sfi;
+		char winName[512];
+		strcpy (winName, aFilename);
+		char *ptr = winName;
+		while (*ptr)
+		{
+			if (*ptr=='/')
+				*ptr = '\\';
+			ptr++;
+		}
+		SHGetFileInfo (winName, 0, &sfi, sizeof (SHFILEINFO), SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_LINKOVERLAY | SHGFI_TYPENAME );
+
+		CExtension extension;
+		extension.Description = sfi.szTypeName;
+		extension.Icon = sfi.iIcon;
+		ite = MapExtensions.insert (std::map<string, CExtension>::value_type (ext, extension)).first;
+	}
+
+	file.Strings[CEntryFile::Type] = ite->second.Description;
+	file.Image = ite->second.Icon;
 }
 
-void CData_mirrorDlg::onClickList (LPNMLISTVIEW lpnmlv, CListCtrl &_list) 
+void CData_mirrorDlg::OnClickList(NMHDR* pNMHDR, LRESULT* pResult) 
 {
+	LPNMLISTVIEW lpnmlv = (LPNMLISTVIEW) pNMHDR;
+
 	UpdateData (FALSE);
 	UINT flags;
-	_list.HitTest (lpnmlv->ptAction, &flags);
+	List.HitTest (lpnmlv->ptAction, &flags);
 
 	// Get check button state
-	BOOL state = ListView_GetCheckState (_list, lpnmlv->iItem);
-	if (_list.GetItemState (lpnmlv->iItem, LVIS_SELECTED) == LVIS_SELECTED)
+	BOOL state = ListView_GetCheckState (List, lpnmlv->iItem);
+	if (List.GetItemState (lpnmlv->iItem, LVIS_SELECTED) == LVIS_SELECTED)
 	if (flags & LVHT_ONITEMSTATEICON)
 	{
-		POSITION pos = _list.GetFirstSelectedItemPosition();
+		POSITION pos = List.GetFirstSelectedItemPosition();
 		while (pos)
 		{
-			int nItem = _list.GetNextSelectedItem(pos);
+			int nItem = List.GetNextSelectedItem(pos);
 			if (nItem != lpnmlv->iItem)
-				ListView_SetCheckState (_list, nItem, !state);
+			{
+				ListView_SetCheckState (List, nItem, !state);
+			}
 		}
 	}
 	UpdateData (TRUE);
+	
+	*pResult = 0;
 }
 
+void CData_mirrorDlg::OnUpdate() 
+{
+	UpdateData ();
+
+	// Checks
+	nlassert ((ModifiedFilter>=Modified) && (ModifiedFilter<=Removed));
+
+	// The vector to add into
+	std::vector<string> &entriesToUpdate = FilesToUpdate[ModifiedFilter];
+	std::list<CEntryFile> &entries = Files[ModifiedFilter];
+
+	// Update files
+	uint count = List.GetItemCount ();
+	uint i;
+	for (i=0; i<count; i++)
+	{
+		// Checked ?
+		if (ListView_GetCheckState (List, i))
+		{
+			// Get the file
+			CString itemText = List.GetItemText (i, 0);
+
+			// Add to ignore good list
+			entriesToUpdate.push_back ((const char*)itemText);
+
+			// Remove from the file list
+			std::list<CEntryFile>::iterator *ite = (std::list<CEntryFile>::iterator *)List.GetItemData (i);
+			nlassert (ite);
+			entries.erase (*ite);
+			delete ite;
+
+			// Remove the item
+			List.DeleteItem (i);
+			i--;
+			count--;
+		}
+	}
+
+	UpdateData (FALSE);
+}
+
+void CData_mirrorDlg::OnAddedFilters() 
+{
+	SortOrder = true;
+	SortedColumn = 0;
+	updateList ();
+	updateSort ();
+}
+
+void CData_mirrorDlg::OnModifiedFilters() 
+{
+	SortOrder = true;
+	SortedColumn = 0;
+	updateList ();
+	updateSort ();
+}
+
+void CData_mirrorDlg::OnRemovedFilters() 
+{
+	SortOrder = true;
+	SortedColumn = 0;
+	updateList ();
+	updateSort ();
+}
+
+void CData_mirrorDlg::OnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult) 
+{
+	NMLISTVIEW *phdr = (NMLISTVIEW*)pNMHDR;
+
+	if (SortedColumn == (uint)phdr->iSubItem)
+		SortOrder ^= true;
+	else
+		SortedColumn = phdr->iSubItem;
+
+	updateSort ();
+
+	*pResult = 0;
+}
+
+int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, 
+   LPARAM lParamSort)
+{
+	CData_mirrorDlg *dlg = (CData_mirrorDlg *)lParamSort;
+
+	// Get the value pointers
+	CEntryFile &entry1 = **(list<CEntryFile>::iterator*)lParam1;
+	CEntryFile &entry2 = **(list<CEntryFile>::iterator*)lParam2;
+
+	int result;
+	switch (dlg->ModifiedFilter)
+	{
+	case CData_mirrorDlg::Modified:
+		{
+			switch (dlg->SortedColumn)
+			{
+			case 0:
+				result = strcmp (entry1.Strings[CEntryFile::Path].c_str (), entry2.Strings[CEntryFile::Path].c_str ());
+				break;
+			case 1:
+				result = (entry1.NewSizeUI < entry2.NewSizeUI) ? -1 : (entry1.NewSizeUI == entry2.NewSizeUI) ? 0 : 1;
+				break;
+			case 2:
+				result = (entry1.OldSizeUI < entry2.OldSizeUI) ? -1 : (entry1.OldSizeUI == entry2.OldSizeUI) ? 0 : 1;
+				break;
+			case 3:
+				result = CompareFileTime (&entry1.NewDateST, &entry2.NewDateST);
+				break;
+			case 4:
+				result = CompareFileTime (&entry1.OldDateST, &entry2.OldDateST);
+				break;
+			case 5:
+				result = strcmp (entry1.Strings[CEntryFile::Type].c_str (), entry2.Strings[CEntryFile::Type].c_str ());
+				break;
+			}
+			break;
+		}
+	case CData_mirrorDlg::Added:
+		{
+			switch (dlg->SortedColumn)
+			{
+			case 0:
+				result = strcmp (entry1.Strings[CEntryFile::Path].c_str (), entry2.Strings[CEntryFile::Path].c_str ());
+				break;
+			case 1:
+				result = (entry1.NewSizeUI < entry2.NewSizeUI) ? -1 : (entry1.NewSizeUI == entry2.NewSizeUI) ? 0 : 1;
+				break;
+			case 2:
+				result = CompareFileTime (&entry1.NewDateST, &entry2.NewDateST);
+				break;
+			case 3:
+				result = strcmp (entry1.Strings[CEntryFile::Type].c_str (), entry2.Strings[CEntryFile::Type].c_str ());
+				break;
+			}
+			break;
+		}
+	case CData_mirrorDlg::Removed:
+		{
+			switch (dlg->SortedColumn)
+			{
+			case 0:
+				result = strcmp (entry1.Strings[CEntryFile::Path].c_str (), entry2.Strings[CEntryFile::Path].c_str ());
+				break;
+			case 1:
+				result = (entry1.OldSizeUI < entry2.OldSizeUI) ? -1 : (entry1.OldSizeUI == entry2.OldSizeUI) ? 0 : 1;
+				break;
+			case 2:
+				result = CompareFileTime (&entry1.OldDateST, &entry2.OldDateST);
+				break;
+			case 3:
+				result = strcmp (entry1.Strings[CEntryFile::Type].c_str (), entry2.Strings[CEntryFile::Type].c_str ());
+				break;
+			}
+			break;
+		}
+	}
+	return dlg->SortOrder ? result : -result;
+}
+
+void CData_mirrorDlg::updateSort ()
+{
+	List.SortItems ( CompareFunc, (LPARAM)this );
+}

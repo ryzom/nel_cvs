@@ -28,6 +28,7 @@
 #include <nel/misc/types_nl.h>
 #include <nel/misc/config_file.h>
 #include <nel/misc/path.h>
+#include <nel/misc/progress_callback.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

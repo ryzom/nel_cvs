@@ -131,6 +131,14 @@ SOURCE=.\data_mirrorDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\my_list_ctrl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\progress_dialog.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File
@@ -145,6 +153,14 @@ SOURCE=.\data_mirror.h
 # Begin Source File
 
 SOURCE=.\data_mirrorDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\my_list_ctrl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\progress_dialog.h
 # End Source File
 # Begin Source File
 

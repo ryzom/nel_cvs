@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.23 2004/06/30 16:03:41 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.24 2004/07/08 13:26:13 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -297,7 +297,7 @@ void	CFlareModel::traverseRender()
 					_Intensity[flareContext] = visibilityRatio;					
 				}
 			}
-			nlwarning("intensity update < of %x : %f", (int) this, _Intensity[flareContext]);
+			//nlwarning("intensity update < of %x : %f", (int) this, _Intensity[flareContext]);
 		}
 		else if (visibilityRatio > _Intensity[flareContext])
 		{
@@ -314,7 +314,7 @@ void	CFlareModel::traverseRender()
 					_Intensity[flareContext] = visibilityRatio;					
 				}
 			}											
-			nlwarning("intensity update > of %x : %f", (int) this, _Intensity[flareContext]);
+			//nlwarning("intensity update > of %x : %f", (int) this, _Intensity[flareContext]);
 		}		
 	}
 	if (_Intensity[flareContext] == 0.f) return;

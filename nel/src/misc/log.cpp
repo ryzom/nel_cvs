@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.43 2002/08/23 12:17:40 lecroart Exp $
+ * $Id: log.cpp,v 1.44 2002/08/23 12:30:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ namespace NLMISC
 
 string CLog::_ProcessName = "";
 
-CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL), _PosSet(false), _Mutex("LOG"+toString((uint)logType))
+CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL), _Mutex("LOG"+toString((uint)logType)), _PosSet(false)
 {
 #ifdef NL_OS_WINDOWS
 	if (_ProcessName.empty())

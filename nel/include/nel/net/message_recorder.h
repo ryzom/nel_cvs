@@ -1,7 +1,7 @@
 /** \file message_recorder.h
  * Class CMessageRecorder (allows to record/replay message input/output)
  *
- * $Id: message_recorder.h,v 1.4 2002/06/12 10:16:41 lecroart Exp $
+ * $Id: message_recorder.h,v 1.5 2002/08/23 12:33:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,7 @@ struct TMessageRecord
 
 	/// Alt. constructor
 	TMessageRecord( TNetworkEvent event, TSockId sockid, CMessage& msg, sint64 updatecounter ) :
-		Event(event), SockId(sockid), Message(msg), UpdateCounter(updatecounter) {}
+		UpdateCounter(updatecounter), Event(event), SockId(sockid), Message(msg) {}
 
 	/// Serial to string stream
 	void serial( NLMISC::CMemStream& stream )

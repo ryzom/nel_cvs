@@ -1,16 +1,16 @@
 #!/usr/bin/perl -n
 
 ###########################################################################
-# $Id: buildquiet,v 1.1 2002/04/26 15:37:19 valignat Exp $
+# $Id: buildquiet,v 1.2 2002/05/07 10:05:49 valignat Exp $
 ###########################################################################
 ###########################################################################
 ###########################################################################
-# SILENTBUILD:
+# BUILDQUIET:
 #
 #     This tool is aimed to "cleanup" the 'make' command output to only
 #     print the compiled file name instead of the compilation 'command'.
 #
-#     'silentbuild' is used by the 'build' script.
+#     'buildquiet' is used by the 'build' script.
 #
 ###########################################################################
 

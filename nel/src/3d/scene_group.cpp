@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.29 2002/05/02 12:24:19 besson Exp $
+ * $Id: scene_group.cpp,v 1.30 2002/05/07 15:07:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -475,18 +475,20 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 			_Instances[i] = scene.createInstance (shapeName);
 			if( _Instances[i] == NULL )
 			{
-				#ifdef NL_DEBUG
-					printf("Not found %s.shape file\n", rInstanceInfo.Name.c_str());
+				
+				nlwarning("Not found %s.shape file\n", rInstanceInfo.Name.c_str());
+				#if defined(NL_DEBUG) && defined(__STL_DEBUG)
 					nlstop;
-				#else // nico : added this to have an error msg in the viewer
-					// remove all the shapes we've created until now
+				#endif
+
+				/*
 					for (uint32 j = 0; j < i; ++j)
 					{
 						scene.deleteInstance(_Instances[j]);
 						_Instances[j] = NULL;
 					}
 					throw NLMISC::Exception("CInstanceGroup::addToScene : unable to create %s shape file", rInstanceInfo.Name.c_str());
-				#endif
+				*/
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.43.6.1 2003/08/21 15:14:36 lecroart Exp $
+ * $Id: config_file.cpp,v 1.43.6.2 2003/08/22 12:43:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -627,7 +627,7 @@ void CConfigFile::display (CLog *log) const
 void CConfigFile::setCallback (void (*cb)())
 {
 	_Callback = cb;
-	nlinfo ("Setting callback when the file '%s' is modified externaly", FileNames[0].c_str());
+	nlinfo ("Setting callback when the file '%s' is modified externaly", FileNames.empty()?"":FileNames[0].c_str());
 }
 
 void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CVar &var))

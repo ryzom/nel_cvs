@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.40 2004/03/03 17:49:14 vizerie Exp $
+ * $Id: export_material.cpp,v 1.41 2004/03/23 10:23:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -628,7 +628,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		// For each slot
 		uint stage;
 		for (stage=0; stage<std::min ((uint)MAT_SLOTS, (uint)IDRV_MAT_MAXTEXTURES); stage++)
-		{
+		{			
 			// Make a post fixe
 			char postfixC[10];
 			smprintf (postfixC, 10, "_%d", stage+1);
@@ -642,44 +642,71 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 				int opRGBBlend = 0;
 				int opRGBArg0 = 0;
 				int opRGBArg1 = 0;
+				int opRGBArg2 = 0;
 				int opRGBArg0Operand = 0;
 				int opRGBArg1Operand = 0;
+				int opRGBArg2Operand = 0;
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iRgbOperation"+postfix).c_str(), (ParamType2)TYPE_INT, &opRGB, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iRgbBlendSource"+postfix).c_str(), (ParamType2)TYPE_INT, &opRGBBlend, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iRgbArg0"+postfix).c_str(), (ParamType2)TYPE_INT, &opRGBArg0, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iRgbArg1"+postfix).c_str(), (ParamType2)TYPE_INT, &opRGBArg1, time);
+				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iRgbArg2"+postfix).c_str(), (ParamType2)TYPE_INT, &opRGBArg2, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iRgbArg0Operand"+postfix).c_str(), (ParamType2)TYPE_INT, &opRGBArg0Operand, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iRgbArg1Operand"+postfix).c_str(), (ParamType2)TYPE_INT, &opRGBArg1Operand, time);
-
+				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iRgbArg2Operand"+postfix).c_str(), (ParamType2)TYPE_INT, &opRGBArg2Operand, time);				
 				// Setup the value
 				if (opRGB<5)
 					material.texEnvOpRGB (stage, (CMaterial::TTexOperator)(opRGB-1));
 				else
-					material.texEnvOpRGB (stage, (CMaterial::TTexOperator)(opRGBBlend+3));
+				{
+					if (opRGB == 6)
+					{
+						material.texEnvOpRGB (stage, CMaterial::Mad);
+					}
+					else
+					{					
+						material.texEnvOpRGB (stage, (CMaterial::TTexOperator)(opRGBBlend+3));
+					}
+				}
 				material.texEnvArg0RGB (stage, (CMaterial::TTexSource)(opRGBArg0-1), (CMaterial::TTexOperand)(opRGBArg0Operand-1));
 				material.texEnvArg1RGB (stage, (CMaterial::TTexSource)(opRGBArg1), (CMaterial::TTexOperand)(opRGBArg1Operand-1));
+				material.texEnvArg2RGB (stage, (CMaterial::TTexSource)(opRGBArg2), (CMaterial::TTexOperand)(opRGBArg2Operand-1));
 
 				// Alpha, get the values
 				int opAlpha = 0;
 				int opAlphaBlend = 0;
 				int opAlphaArg0 = 0;
 				int opAlphaArg1 = 0;
+				int opAlphaArg2 = 0;
 				int opAlphaArg0Operand = 0;
 				int opAlphaArg1Operand = 0;
+				int opAlphaArg2Operand = 0;
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iAlphaOperation"+postfix).c_str(), (ParamType2)TYPE_INT, &opAlpha, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iAlphaBlendSource"+postfix).c_str(), (ParamType2)TYPE_INT, &opAlphaBlend, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iAlphaArg0"+postfix).c_str(), (ParamType2)TYPE_INT, &opAlphaArg0, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iAlphaArg1"+postfix).c_str(), (ParamType2)TYPE_INT, &opAlphaArg1, time);
+				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iAlphaArg2"+postfix).c_str(), (ParamType2)TYPE_INT, &opAlphaArg2, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iAlphaArg0Operand"+postfix).c_str(), (ParamType2)TYPE_INT, &opAlphaArg0Operand, time);
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iAlphaArg1Operand"+postfix).c_str(), (ParamType2)TYPE_INT, &opAlphaArg1Operand, time);
+				CExportNel::getValueByNameUsingParamBlock2 (mtl, ("iAlphaArg2Operand"+postfix).c_str(), (ParamType2)TYPE_INT, &opAlphaArg2Operand, time);
 
 				// Setup the value
 				if (opAlpha<5)
 					material.texEnvOpAlpha (stage, (CMaterial::TTexOperator)(opAlpha-1));
 				else
-					material.texEnvOpAlpha (stage, (CMaterial::TTexOperator)(opAlphaBlend+3));
+				{
+					if (opAlpha == 6)
+					{
+						material.texEnvOpAlpha(stage, CMaterial::Mad);
+					}
+					else
+					{
+						material.texEnvOpAlpha (stage, (CMaterial::TTexOperator)(opAlphaBlend+3));
+					}
+				}
 				material.texEnvArg0Alpha (stage, (CMaterial::TTexSource)(opAlphaArg0-1), (CMaterial::TTexOperand)(opAlphaArg0Operand-1));
 				material.texEnvArg1Alpha (stage, (CMaterial::TTexSource)(opAlphaArg1), (CMaterial::TTexOperand)(opAlphaArg1Operand-1));
+				material.texEnvArg2Alpha (stage, (CMaterial::TTexSource)(opAlphaArg2), (CMaterial::TTexOperand)(opAlphaArg2Operand-1));
 		
 				// Constant color
 				Point3 constantColor;

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.42 2004/03/19 17:49:35 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.43 2004/03/23 10:23:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ using namespace NLMISC;
 
 namespace NL3D 
 {
+
 
 H_AUTO_DECL( NL3D_UI_Driver )
 H_AUTO_DECL( NL3D_Render_DriverClearBuffer )
@@ -1552,6 +1553,15 @@ uint				CDriverUser::getSwapVBLInterval()
 	NL3D_HAUTO_UI_DRIVER
 
 	return _Driver->getSwapVBLInterval();
+}
+
+// ***************************************************************************
+bool CDriverUser::supportMADOperator() const
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+
+	return _Driver->supportMADOperator();
 }
 
 

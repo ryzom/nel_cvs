@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.36 2004/03/19 17:49:35 berenguier Exp $
+ * $Id: driver_user.h,v 1.37 2004/03/23 10:23:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -453,6 +453,7 @@ public:
 	virtual void				loadHLSBank(const std::string &fileName);
 	// @}
 
+	virtual	bool				supportMADOperator() const;
 
 public:
 	/// \name Accessor for CSeneUser.

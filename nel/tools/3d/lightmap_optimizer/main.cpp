@@ -619,8 +619,23 @@ int main(int nNbArg, char **ppArgs)
 									sint32 nNumSlot = pMeshML->getNumSlotMesh();
 									for (n = 0; n < nNumSlot; ++n)
 									{
+										// Get the mesh geom
 										CMeshGeom *pMG = const_cast<CMeshGeom*>(dynamic_cast<const CMeshGeom*>(&pMeshML->getMeshGeom(n)));
-										FlagVertices (*pMG, m, VerticesNeedRemap[n]);
+										if (pMG)
+										{
+											// Flag the vertices
+											FlagVertices (*pMG, m, VerticesNeedRemap[n]);
+										}
+										else
+										{
+											// Get the mesh MRM geom
+											CMeshMRMGeom *pMMRMG = const_cast<CMeshMRMGeom*>(dynamic_cast<const CMeshMRMGeom*>(&pMeshML->getMeshGeom(n)));
+											if (pMMRMG)
+											{
+												// Flag the vertices
+												FlagVerticesMRM (*pMMRMG, m, VerticesNeedRemap[n]);
+											}
+										}
 									}
 								}
 							}

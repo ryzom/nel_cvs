@@ -1,7 +1,7 @@
 /** \file misc/string_common.h
  * common algorithms on string like toString() and fromString()
  *
- * $Id: string_common.h,v 1.2 2003/12/30 09:27:17 distrib Exp $
+ * $Id: string_common.h,v 1.3 2003/12/30 11:14:09 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -32,6 +32,10 @@
 
 namespace	NLMISC
 {
+
+// get a string and add \r before \n if necessary
+std::string addSlashR (std::string str);
+std::string removeSlashR (std::string str);
 
 /**
  * \def MaxCStringSize

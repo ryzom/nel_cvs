@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.8 2001/06/08 08:52:19 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.9 2001/06/08 09:19:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,7 +138,7 @@ template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 	/** tells wether clamping is supported for the input (value can't go above MaxInputValue)
 	 *  The default is false
 	 */
-	bool isClampingSupported(void) const { return false ; }
+	virtual bool isClampingSupported(void) const { return false ; }
 
 
 	/** Enable, disable the clamping of input values.

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.6 2001/06/26 11:58:30 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.7 2001/07/04 12:33:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "3d/ps_attrib_maker.h"
 #include "3d/ps_edit.h"
 #include "3d/ps_plane_basis.h"
+#include "3d/ps_direction.h"
+
 
 namespace NL3D {
 
@@ -204,7 +206,7 @@ public:
 protected:
 
 	/// this will call emit, and will add additionnal features (speed addition and so on)
-	inline void processEmit(uint32 index, uint nbToGenerate) ;
+	inline void processEmit(uint32 index, sint nbToGenerate) ;
 
 
 	/** This method is called each time one (and only one) located must be emitted.
@@ -230,7 +232,7 @@ protected:
 
 	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 	 */
-	virtual void newElement(void) ;
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for of the index given
@@ -251,6 +253,9 @@ protected:
 	CPSAttribMaker<float> *_PeriodScheme ;			
 	uint32 _GenNb ;
 	CPSAttribMaker<uint32> *_GenNbScheme ;	
+
+
+
 };
 
 
@@ -259,7 +264,7 @@ protected:
 //////////////////////////////////////
 
 
-inline void CPSEmitter::processEmit(uint32 index, uint nbToGenerate)
+inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
 {
 	if (!_EmittedType) return ;
 
@@ -269,10 +274,11 @@ inline void CPSEmitter::processEmit(uint32 index, uint nbToGenerate)
 	{
 		if (_SpeedInheritanceFactor == 0.f)
 		{		
-			while (nbToGenerate --)
+			while (nbToGenerate > 0)
 			{
+				nbToGenerate -- ;
 				emit(index, pos, speed) ;
-				_EmittedType->newElement(pos, speed, this) ;
+				_EmittedType->newElement(pos, speed, this->_Owner) ;
 			}
 		}
 		else
@@ -280,7 +286,7 @@ inline void CPSEmitter::processEmit(uint32 index, uint nbToGenerate)
 			while (nbToGenerate --)
 			{
 				emit(index, pos, speed) ;
-				_EmittedType->newElement(pos, speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this) ;
+				_EmittedType->newElement(pos, speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner) ;
 			}
 		}
 	}
@@ -289,10 +295,11 @@ inline void CPSEmitter::processEmit(uint32 index, uint nbToGenerate)
 		CMatrix m = CPSUtil::buildSchmidtBasis(_Owner->getSpeed()[index]) ;
 		if (_SpeedInheritanceFactor == 0.f)
 		{		
-			while (nbToGenerate --)
+			while (nbToGenerate > 0)
 			{
+				nbToGenerate -- ;
 				emit(index, pos, speed) ;
-				_EmittedType->newElement(pos, m * speed, this) ;
+				_EmittedType->newElement(pos, m * speed, this->_Owner) ;
 			}
 		}
 		else
@@ -300,7 +307,7 @@ inline void CPSEmitter::processEmit(uint32 index, uint nbToGenerate)
 			while (nbToGenerate --)
 			{
 				emit(index, pos, speed) ;
-				_EmittedType->newElement(pos, m * speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this) ;
+				_EmittedType->newElement(pos, m * speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner) ;
 			}
 		}
 	}
@@ -333,6 +340,8 @@ class CPSModulatedEmitter
 		{
 			delete _EmitteeSpeedScheme ;
 			_EmitteeSpeedScheme = scheme ;
+			if (getModulatedEmitterOwner() && scheme->hasMemory()) 
+				scheme->resize(getModulatedEmitterOwner()->getMaxSize(), getModulatedEmitterOwner()->getSize()) ;
 		}
 
 		/// set a constant speed modulation for emittee
@@ -341,6 +350,7 @@ class CPSModulatedEmitter
 			delete _EmitteeSpeedScheme ;
 			_EmitteeSpeedScheme = NULL ;
 			_EmitteeSpeed = speed ;
+		
 		}
 
 		/// get the modulation speed (valid only if no scheme is used)
@@ -376,23 +386,38 @@ class CPSModulatedEmitter
 		}
 
 	protected:
+
+		// emitter must define this in order to allow this class to access the located owner
+		virtual CPSLocated *getModulatedEmitterOwner(void) = 0 ;
+
+		void newEmitteeSpeedElement(CPSLocated *emitter, uint32 emitterIndex)
+		{
+			if (_EmitteeSpeedScheme && _EmitteeSpeedScheme->hasMemory()) _EmitteeSpeedScheme->newElement(emitter, emitterIndex) ;
+		}
+
+		void deleteEmitteeSpeedElement(uint32 index)
+		{
+			if (_EmitteeSpeedScheme && _EmitteeSpeedScheme->hasMemory()) _EmitteeSpeedScheme->deleteElement(index) ;
+		}
+
+		void resizeEmitteeSpeed(uint32 capacity)
+		{
+			if (_EmitteeSpeedScheme && _EmitteeSpeedScheme->hasMemory()) _EmitteeSpeedScheme->resize(capacity, getModulatedEmitterOwner()->getSize()) ;
+		}
+	
+
 		float _EmitteeSpeed ;
 		CPSAttribMaker<float> *_EmitteeSpeedScheme ;
 } ; 
 
 
-/// this classgives an interface to tune the direction of emission
-class CPSEmitterDirection
-{
-public :	
-	virtual void setDir(const CVector &v) = 0 ;
-	virtual CVector getDir(void) const = 0 ;
-} ;
+
+
 
 
 /// emit in one direction. This can be the 0, 0, 0 vector
 class CPSEmitterDirectionnal : public CPSEmitter, public CPSModulatedEmitter
-							   ,public CPSEmitterDirection
+							   ,public CPSDirection
 {
 	
 public:
@@ -418,6 +443,10 @@ protected:
 
 	CVector _Dir ;
 
+	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner ; }
+	virtual void newElement(CPSLocated *emitter, uint32 emitterIndex) ;
+	virtual void deleteElement(uint32 index) ;
+	virtual void resize(uint32 capacity) ;
 } ; 
 
 
@@ -440,6 +469,12 @@ public:
 
 	/// emission of located
 	virtual void emit(uint32 index, CVector &pos, CVector &speed) ;
+protected:
+	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner ; }
+	virtual void newElement(CPSLocated *emitter, uint32 emitterIndex) ;
+	virtual void deleteElement(uint32 index) ;
+	virtual void resize(uint32 capacity) ;
+
 
 } ; 
 
@@ -447,7 +482,7 @@ public:
 /// emit directionnally in a rectangle (useful to produce snow, drop of water ...)
 
 class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, public IPSMover
-							, public CPSEmitterDirection
+							, public CPSDirection
 {
 	public:
 
@@ -492,6 +527,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 	protected:
 
+		virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner ; }
 		
 		CPSAttrib<CPlaneBasis> _Basis ;				
 
@@ -506,7 +542,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 		/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 		 */
-			virtual void newElement(void) ;
+		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 	
 		/** Delete an element given its index
 		 *  Attributes of the located that hold this bindable are still accessible for of the index given
@@ -556,6 +592,57 @@ protected:
 	// the radius for emission
 	float _Radius ;
  
+} ;
+
+
+// a spherical emitter
+class CPSSphericalEmitter : public CPSEmitter, public CPSModulatedEmitter, public IPSMover
+{
+public:
+	// ctor
+
+	CPSSphericalEmitter()
+	{
+		_Name = std::string("spherical emitter") ;
+	}
+
+	/// serialisation
+ 	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+	NLMISC_DECLARE_CLASS(CPSSphericalEmitter) ;
+
+
+	/// emission of located
+
+	virtual void emit(uint32 index, CVector &pos, CVector &speed) ;
+
+	
+
+	void showTool(void) ;
+
+
+
+	// inherited from IPSMover
+	virtual bool supportUniformScaling(void) const { return true ; }
+	virtual bool supportNonUniformScaling(void) const { return false ; }			
+	virtual void setMatrix(uint32 index, const CMatrix &m) ;	
+	virtual CMatrix getMatrix(uint32 index) const ;			
+	virtual void setScale(uint32 index, float scale) { _Radius[index] = scale ; }		
+	CVector getScale(uint32 index) const { return CVector(_Radius[index], _Radius[index], _Radius[index]) ; }
+
+
+
+
+
+protected:
+
+	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner ; }
+	
+	TPSAttribFloat _Radius ;
+	
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;	
+	virtual void deleteElement(uint32 index) ;
+	virtual void resize(uint32 size) ;
 } ;
 
 

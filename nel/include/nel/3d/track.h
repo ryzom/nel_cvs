@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.15 2001/03/19 09:30:40 berenguier Exp $
+ * $Id: track.h,v 1.16 2001/03/26 14:52:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,10 @@
 
 namespace NL3D 
 {
+
+
+using NLMISC::CQuat;
+using NLMISC::CVector;
 
 
 // ***************************************************************************
@@ -120,6 +124,8 @@ public:
 	ITrackKeyFramer ()
 	{
 		_Dirty= false;
+		_RangeLock= true;
+		_LoopMode= false;
 	}
 
 
@@ -145,20 +151,80 @@ public:
 		_Dirty= true;
 	}
 
-	/// From ITrack. 
-	virtual void eval (const CAnimationTime& date)
+	/// set an explicit animation range. (see getBeginTime() / setEndTime() ).
+	void	unlockRange(CAnimationTime begin, CAnimationTime end)
 	{
+		_RangeLock= false;
+		_RangeBegin= begin;
+		_RangeEnd= end;
+		_Dirty= true;
+	}
+
+	/// range is computed from frist and last key time (default).
+	void	lockRange()
+	{
+		_RangeLock= true;
+		_Dirty= true;
+	}
+
+	/// return true if Range is locked to first/last key. use getBeginTime and getEndTime to get the effective begin/end range times...
+	bool	isRangeLocked() const {return _RangeLock;}
+
+
+	/// rangeDelta is (length of effective Range) - (length of LastKey-FirstKey). NB: if RangeLock, rangeDelta==0.
+	CAnimationTime	getRangeDelta() const
+	{
+		// update track.
+		testAndClean();
+
+		return _RangeDelta;
+	}
+
+
+	/// set LoopMode. 2 mode only: "constant" (<=>false), and "loop" (<=> true). same mode for in and out...
+	void	setLoopMode(bool loop) {_LoopMode= loop; _Dirty= true;}
+
+	/// get LoopMode.
+	bool	getLoopMode() const {return _LoopMode;}
+
+
+	/// From ITrack. 
+	virtual void eval (const CAnimationTime& inDate)
+	{
+		float	date= inDate;
 		const CKeyT *previous=NULL;
 		const CKeyT *next=NULL;
 		CAnimationTime datePrevious;
 		CAnimationTime dateNext;
 
 		// must precalc ??
-		if(_Dirty)
+		testAndClean();
+
+		// No keys?
+		if(_MapKey.empty())
+			return;
+
+
+		// Loop gestion.
+		if(_LoopMode && _MapKey.size()>1 )
 		{
-			compile();
-			_Dirty= false;
+			nlassert(_LoopEnd > _LoopStart);
+
+			// force us to be in interval [_LoopStart, _LoopEnd[.
+			if( date<_LoopStart || date>=_LoopEnd )
+			{
+				double	d= (date-_LoopStart)*_OOTotalRange;
+
+				// floor(d) is the truncated number of loops.
+				d= date- floor(d)*_TotalRange;
+				date= (float)d;
+
+				// For precision problems, ensure correct range.
+				if(date<_LoopStart || date >= _LoopEnd)
+					date= _LoopStart;
+			}
 		}
+
 
 		// Return upper key
 		TMapTimeCKey::iterator ite=_MapKey.upper_bound (date);
@@ -170,6 +236,15 @@ public:
 			next= &(ite->second);
 			dateNext=ite->first;
 		}
+		// loop mgt.
+		else if	(_LoopMode && _MapKey.size()>1 )
+		{
+			// loop to first!!
+			next= &(_MapKey.begin()->second);
+			// must slerp from last to first, 
+			dateNext= _LoopEnd;
+		}
+
 
 		// Previous
 		ite--;
@@ -185,25 +260,23 @@ public:
 		// Call evalutation fonction
 		evalKey (previous, next, datePrevious, dateNext, date);
 	}
-	CAnimationTime getBeginTime () const
+
+
+	virtual CAnimationTime getBeginTime () const
 	{
-		// Get first key
-		TMapTimeCKey::const_iterator ite=_MapKey.begin ();
-		if (ite==_MapKey.end())
-			return 0.f;
-		else
-			return ite->first;
+		// must precalc ??
+		testAndClean();
+
+		return _RangeBegin;
 	}
-	CAnimationTime getEndTime () const
+	virtual CAnimationTime getEndTime () const
 	{
-		// Get first key
-		TMapTimeCKey::const_iterator ite=_MapKey.end ();
-		ite--;
-		if (ite==_MapKey.end())
-			return 0.f;
-		else
-			return ite->first;
+		// must precalc ??
+		testAndClean();
+
+		return _RangeEnd;
 	}
+
 
 	/// Serial the template
 	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
@@ -212,21 +285,101 @@ public:
 		sint version=f.serialVersion (0);
 
 		f.serialMap(_MapKey);
+		f.serial(_RangeLock, _RangeBegin, _RangeEnd);
+		f.serial(_LoopMode);
+
+		if(f.isReading())
+			_Dirty= true;
 	}
 
 private:
-	TMapTimeCKey		_MapKey;
-	bool				_Dirty;
+	mutable	bool		_Dirty;
+	bool				_LoopMode;
+	bool				_RangeLock;
+	float				_RangeBegin;	// if RangeLock==true, valid only when track cleaned.
+	float				_RangeEnd;		// if RangeLock==true, valid only when track cleaned.
+	// Valid only when cleaned.
+	float				_RangeDelta;
+	float				_LoopStart;
+	float				_LoopEnd;
+	float				_TotalRange;
+	float				_OOTotalRange;
+
+
+	// update track if necessary.
+	void		testAndClean() const
+	{
+		if(_Dirty)
+		{
+			ITrackKeyFramer<CKeyT>	*self= const_cast<ITrackKeyFramer<CKeyT>*>(this);
+			self->compile();
+			_Dirty= false;
+		}
+	}
 
 
 protected:
+	TMapTimeCKey		_MapKey;
+
 	/**
 	  * Precalc keyframe runtime infos for interpolation (OODTime...). All keys should be processed.
-	  * This is called by eval when necessary. Deriver should call ITrackKeyFramer::compile(), to compile basic
+	  * This is called by eval when necessary. Deriver should call ITrackKeyFramer::compile() first, to compile basic
 	  * Key runtime info.
 	  */
 	virtual void compile   ()
 	{
+		float	timeFirstKey;
+		float	timeLastKey;
+
+		// Compute time of first/last key.
+		if( !_MapKey.empty() )
+		{
+			TMapTimeCKey::const_iterator ite;
+
+			// Get first key
+			ite=_MapKey.begin ();
+			timeFirstKey= ite->first;
+
+			// Get last key
+			ite=_MapKey.end ();
+			ite--;
+			timeLastKey= ite->first;
+		}
+		else
+		{
+			timeFirstKey= 0.0f;
+			timeLastKey= 0.0f;
+		}
+
+
+		// Compute RangeBegin / RangeEnd. (if not user provided).
+		if(_RangeLock)
+		{
+			_RangeBegin= timeFirstKey;
+			_RangeEnd= timeLastKey;
+		}
+
+
+		// Compute _RangeDelta.
+		if(_RangeLock)
+		{
+			_RangeDelta= 0;
+		}
+		else
+		{
+			_RangeDelta= (_RangeEnd - _RangeBegin) - (timeLastKey - timeFirstKey);
+		}
+
+		// Misc range.
+		_TotalRange= _RangeEnd - _RangeBegin;
+		if(_TotalRange>0.0f)
+			_OOTotalRange= 1.0f/_TotalRange;
+		// start of loop / ned.
+		_LoopStart= timeFirstKey;
+		_LoopEnd= timeFirstKey + _TotalRange;
+
+
+		// After _RangeDelta computed, compute OO delta times.
 		TMapTimeCKey::iterator	it= _MapKey.begin();
 		for(;it!=_MapKey.end();it++)
 		{
@@ -234,9 +387,13 @@ protected:
 			next++;
 			if(next!=_MapKey.end())
 				it->second.OODeltaTime= 1.0f/(next->first - it->first);
+			else if(_RangeDelta>0.0f)
+				// after last key, must slerp to first key.
+				it->second.OODeltaTime= 1.0f/_RangeDelta;
 			else
 				it->second.OODeltaTime= 0.0f;
 		}
+
 	}
 
 	/**
@@ -282,6 +439,44 @@ public:
 
 
 // ***************************************************************************
+// Key Tools.
+// separated to just change this in RGBA and sint32 special implementation.
+
+// just copy the content of a value issued from key interpolation, into a value.
+template<class T, class TKeyVal> inline void	copyToValue(T &value, const TKeyVal &keyval)
+{
+	value = keyval;
+}
+
+
+// Vector to RGBA version.
+inline void	copyToValue(NLMISC::CRGBA &col, const CVector &v)
+{
+	sint	i;
+
+	i= (sint)(v.x*255); NLMISC::clamp(i,0,255); col.R= (uint8) i;
+	i= (sint)(v.y*255); NLMISC::clamp(i,0,255); col.G= (uint8) i;
+	i= (sint)(v.z*255); NLMISC::clamp(i,0,255); col.B= (uint8) i;
+	col.A=255;
+}
+
+
+// float to sint32 version.
+inline void	copyToValue(sint32 &value, const float &f)
+{
+	value= (sint32)floor(f+0.5f);
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Constant Keyframer.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
 /**
  * ITrack implementation for Constant keyframer.
  *
@@ -307,10 +502,10 @@ public:
 	{
 		// Const key.
 		if (previous)
-			_Value.Value=previous->Value;
+			copyToValue(_Value.Value, previous->Value);
 		else
 			if (next)
-				_Value.Value=next->Value;
+				copyToValue(_Value.Value, next->Value);
 	}
 
 private:
@@ -344,15 +539,22 @@ public:
 	{
 		// Const key.
 		if (previous)
-			_Value.Value=previous->Value;
+			copyToValue(_Value.Value, previous->Value);
 		else
 			if (next)
-				_Value.Value=next->Value;
+				copyToValue(_Value.Value, next->Value);
 	}
 
 private:
 	CAnimatedValueBlendable<T>		_Value;
 };
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Linear Keyframer.
+// ***************************************************************************
+// ***************************************************************************
 
 
 // ***************************************************************************
@@ -386,15 +588,16 @@ public:
 			date*= previous->OODeltaTime;
 			NLMISC::clamp(date, 0,1);
 			
-			_Value.Value= (T) (previous->Value*(1.f-date) + next->Value*date);
+			// NB: in case of <CKeyInt,sint32> important that second terme is a float, so copyToValue(sint32, float) is used.
+			copyToValue(_Value.Value, previous->Value*(1.f-(float)date) + next->Value*(float)date);
 		}
 		else
 		{
 			if (previous)
-				_Value.Value=previous->Value;
+				copyToValue(_Value.Value, previous->Value);
 			else
 				if (next)
-					_Value.Value=next->Value;
+					copyToValue(_Value.Value, next->Value);
 		}
 
 	}
@@ -404,81 +607,16 @@ private:
 };
 
 
-// ***************************************************************************
-/**
- * ITrack implementation for TCB keyframer.
- *
- * \author Cyril 'Hulud' Corvazier
- * \author Nevrax France
- * \date 2001
- */
-template<class CKeyT, class T>
-class CTrackKeyFramerTCB : public ITrackKeyFramer<CKeyT>
-{
-public:
-
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
-	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date ) {};
-
-private:
-	CAnimatedValueBlendable<T>	_Value;
-};
-
 
 // ***************************************************************************
 /**
- * ITrack implementation for Bezier keyframer.
- *
- * \author Cyril 'Hulud' Corvazier
- * \author Nevrax France
- * \date 2001
- */
-template<class CKeyT, class T>
-class CTrackKeyFramerBezier : public ITrackKeyFramer<CKeyT>
-{
-public:
-
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
-	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date ) {};
-private:
-	CAnimatedValueBlendable<T>	_Value;
-};
-
-
-
-// ***************************************************************************
-// ***************************************************************************
-// Quaternions special implementation..
-// ***************************************************************************
-// ***************************************************************************
-
-
-
-// ***************************************************************************
-/**
- * ITrack implementation for CQuat linear keyframer.
+ * Quaternions special implementation for linear keyframer.
  *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-class CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat> : public ITrackKeyFramer<CKeyQuat>
+class CTrackKeyFramerLinear<CKeyQuat, CQuat> : public ITrackKeyFramer<CKeyQuat>
 {
 public:
 
@@ -499,7 +637,7 @@ public:
 			date-= datePrevious;
 			date*= previous->OODeltaTime;
 			NLMISC::clamp(date, 0,1);
-			_Value.Value= NLMISC::CQuat::slerp(previous->Value, next->Value, date);
+			_Value.Value= CQuat::slerp(previous->Value, next->Value, date);
 		}
 		else
 		{
@@ -512,44 +650,8 @@ public:
 	}
 
 private:
-	CAnimatedValueBlendable<NLMISC::CQuat>	_Value;
+	CAnimatedValueBlendable<CQuat>	_Value;
 };
-
-
-// ***************************************************************************
-/**
- * ITrack implementation for CQuat TCB keyframer.
- *
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2001
- */
-class CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CAngleAxis> : public ITrackKeyFramer<CKeyTCBQuat>
-{
-public:
-
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
-	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyTCBQuat* previous, const CKeyTCBQuat* next, 
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date ) {};
-
-private:
-	CAnimatedValueBlendable<NLMISC::CQuat>	_Value;
-};
-
-
-// ***************************************************************************
-// ***************************************************************************
-// RGBA special implementation..
-// ***************************************************************************
-// ***************************************************************************
-
 
 
 // ***************************************************************************
@@ -583,15 +685,15 @@ public:
 			NLMISC::clamp(date, 0,1);
 			
 			// blend.
-			_Value.Value.blendFromui (previous->Value, next->Value, (uint)(255.f*date));
+			_Value.Value.blendFromui(previous->Value, next->Value, (uint)(date*255));
 		}
 		else
 		{
 			if (previous)
-				_Value.Value=previous->Value;
+				_Value.Value= previous->Value;
 			else
 				if (next)
-					_Value.Value=next->Value;
+					_Value.Value= next->Value;
 		}
 	}
 
@@ -603,57 +705,14 @@ private:
 
 // ***************************************************************************
 // ***************************************************************************
-// Int special implementation..
+// TCB / Bezier Keyframer.
 // ***************************************************************************
 // ***************************************************************************
 
 
-// ***************************************************************************
-/**
- * ITrack implementation for linear int keyframer.
- *
- * \author Cyril 'Hulud' Corvazier
- * \author Nevrax France
- * \date 2001
- */
-class CTrackKeyFramerLinear<CKeyInt, sint32>: public ITrackKeyFramer<CKeyInt>
-{
-public:
-
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
-	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyInt* previous, const CKeyInt* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
-	{
-		if(previous && next)
-		{
-			// lerp from previous to cur.
-			date-= datePrevious;
-			date*= previous->OODeltaTime;
-			NLMISC::clamp(date, 0,1);
-			
-			// blend.
-			_Value.Value= (sint32) floor ( 0.5+((float)previous->Value*(1.f-date) + (float)next->Value*date));
-		}
-		else
-		{
-			if (previous)
-				_Value.Value=previous->Value;
-			else
-				if (next)
-					_Value.Value=next->Value;
-		}
-	}
-
-private:
-	CAnimatedValueBlendable<sint32>	_Value;
-};
+// Template implementation for TCB and Bezier.
+#include "track_tcb.h"
+#include "track_bezier.h"
 
 
 
@@ -670,12 +729,12 @@ class CTrackKeyFramerConstFloat : public CTrackKeyFramerConstBlendable<CKeyFloat
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstFloat);
 };
-class CTrackKeyFramerConstVector : public CTrackKeyFramerConstBlendable<CKeyVector, NLMISC::CVector>
+class CTrackKeyFramerConstVector : public CTrackKeyFramerConstBlendable<CKeyVector, CVector>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstVector);
 };
-class CTrackKeyFramerConstQuat : public CTrackKeyFramerConstBlendable<CKeyQuat, NLMISC::CQuat>
+class CTrackKeyFramerConstQuat : public CTrackKeyFramerConstBlendable<CKeyQuat, CQuat>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstQuat);
@@ -685,6 +744,12 @@ class CTrackKeyFramerConstInt : public CTrackKeyFramerConstBlendable<CKeyInt, si
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstInt);
 };
+class CTrackKeyFramerConstRGBA : public CTrackKeyFramerConstBlendable<CKeyRGBA, NLMISC::CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstRGBA);
+};
+
 class CTrackKeyFramerConstString : public CTrackKeyFramerConstNotBlendable<CKeyString, std::string>
 {
 public:
@@ -695,11 +760,6 @@ class CTrackKeyFramerConstBool : public CTrackKeyFramerConstNotBlendable<CKeyBoo
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstBool);
 };
-class CTrackKeyFramerConstRGBA : public CTrackKeyFramerConstNotBlendable<CKeyRGBA, NLMISC::CRGBA>
-{
-public:
-	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstRGBA);
-};
 
 
 // Linear tracks.
@@ -708,12 +768,12 @@ class CTrackKeyFramerLinearFloat : public CTrackKeyFramerLinear<CKeyFloat, float
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearFloat);
 };
-class CTrackKeyFramerLinearVector : public CTrackKeyFramerLinear<CKeyVector, NLMISC::CVector>
+class CTrackKeyFramerLinearVector : public CTrackKeyFramerLinear<CKeyVector, CVector>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearVector);
 };
-class CTrackKeyFramerLinearQuat : public CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>
+class CTrackKeyFramerLinearQuat : public CTrackKeyFramerLinear<CKeyQuat, CQuat>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearQuat);
@@ -736,7 +796,7 @@ class CTrackKeyFramerTCBFloat : public CTrackKeyFramerTCB<CKeyTCBFloat, float>
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBFloat);
 };
-class CTrackKeyFramerTCBVector : public CTrackKeyFramerTCB<CKeyTCBVector, NLMISC::CVector>
+class CTrackKeyFramerTCBVector : public CTrackKeyFramerTCB<CKeyTCBVector, CVector>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBVector);
@@ -746,12 +806,12 @@ class CTrackKeyFramerTCBQuat : public CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CA
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBQuat);
 };
-class CTrackKeyFramerTCBInt : public CTrackKeyFramerTCB<CKeyTCBInt, sint32>
+class CTrackKeyFramerTCBInt : public CTrackKeyFramerTCB<CKeyTCBFloat, sint32>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBInt);
 };
-class CTrackKeyFramerTCBRGBA : public CTrackKeyFramerTCB<CKeyTCBRGBA, NLMISC::CRGBA>
+class CTrackKeyFramerTCBRGBA : public CTrackKeyFramerTCB<CKeyTCBVector, NLMISC::CRGBA>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBRGBA);
@@ -764,22 +824,22 @@ class CTrackKeyFramerBezierFloat : public CTrackKeyFramerBezier<CKeyBezierFloat,
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierFloat);
 };
-class CTrackKeyFramerBezierVector : public CTrackKeyFramerBezier<CKeyBezierVector, NLMISC::CVector>
+class CTrackKeyFramerBezierVector : public CTrackKeyFramerBezier<CKeyBezierVector, CVector>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierVector);
 };
-class CTrackKeyFramerBezierQuat : public CTrackKeyFramerBezier<CKeyBezierQuat, NLMISC::CQuat>
+class CTrackKeyFramerBezierQuat : public CTrackKeyFramerBezier<CKeyBezierQuat, CQuat>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierQuat);
 };
-class CTrackKeyFramerBezierInt : public CTrackKeyFramerBezier<CKeyBezierInt, sint32>
+class CTrackKeyFramerBezierInt : public CTrackKeyFramerBezier<CKeyBezierFloat, sint32>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierInt);
 };
-class CTrackKeyFramerBezierRGBA : public CTrackKeyFramerBezier<CKeyBezierRGBA, NLMISC::CRGBA>
+class CTrackKeyFramerBezierRGBA : public CTrackKeyFramerBezier<CKeyBezierVector, NLMISC::CRGBA>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierRGBA);
@@ -816,6 +876,13 @@ public:
 	{
 		_Value.Value= val;
 	}
+
+	/// set the default value.
+	void	setValue(const T &val)
+	{
+		_Value.Value= val;
+	}
+
 
 	/// From ITrack. Return a const value.
 	virtual const IAnimatedValue& getValue () const
@@ -861,6 +928,12 @@ public:
 		_Value.Value= val;
 	}
 
+	/// set the default value.
+	void	setValue(const T &val)
+	{
+		_Value.Value= val;
+	}
+
 
 	/// From ITrack. Return a const value.
 	virtual const IAnimatedValue& getValue () const
@@ -896,16 +969,16 @@ public:
 	NL3D_TRACKDEF_CTOR(CTrackDefaultFloat, CTrackDefaultBlendable, float);
 	NLMISC_DECLARE_CLASS (CTrackDefaultFloat);
 };
-class CTrackDefaultVector : public CTrackDefaultBlendable<NLMISC::CVector>
+class CTrackDefaultVector : public CTrackDefaultBlendable<CVector>
 {
 public:
-	NL3D_TRACKDEF_CTOR(CTrackDefaultVector, CTrackDefaultBlendable, NLMISC::CVector);
+	NL3D_TRACKDEF_CTOR(CTrackDefaultVector, CTrackDefaultBlendable, CVector);
 	NLMISC_DECLARE_CLASS (CTrackDefaultVector);
 };
-class CTrackDefaultQuat : public CTrackDefaultBlendable<NLMISC::CQuat>
+class CTrackDefaultQuat : public CTrackDefaultBlendable<CQuat>
 {
 public:
-	NL3D_TRACKDEF_CTOR(CTrackDefaultQuat, CTrackDefaultBlendable, NLMISC::CQuat);
+	NL3D_TRACKDEF_CTOR(CTrackDefaultQuat, CTrackDefaultBlendable, CQuat);
 	NLMISC_DECLARE_CLASS (CTrackDefaultQuat);
 };
 class CTrackDefaultInt : public CTrackDefaultBlendable<sint32>

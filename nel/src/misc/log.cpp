@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.50 2003/02/07 17:44:00 cado Exp $
+ * $Id: log.cpp,v 1.51 2003/02/10 09:55:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,10 @@ void CLog::setDefaultProcessName ()
 		(*_ProcessName) = CFile::getFilename(name);
 	}
 #else
-	*_ProcessName = "<Unknown>";
+	if ((*_ProcessName).empty())
+	{
+		*_ProcessName = "<Unknown>";
+	}
 #endif
 }
 

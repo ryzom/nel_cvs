@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.16 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_particle.h,v 1.17 2001/10/03 15:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -998,6 +998,12 @@ public:
 	/// return the max number of faces needed for display. This is needed for LOD balancing
 	virtual uint32 getMaxNumFaces(void) const;
 
+	/// set the U factor for textures
+	void			setUFactor(float value);
+
+	/// get the U factor for textures
+	float			getUFactor(void) const { return _UFactor; }
+
 protected:
 	/// initialisations
 	virtual void init(void);	
@@ -1046,6 +1052,9 @@ protected:
 
 	// an index buffer
 	CPrimitiveBlock _Pb;
+
+	// texture factor
+	float		 _UFactor;
 
 
 	virtual CPSLocated *getColorOwner(void) { return _Owner; }

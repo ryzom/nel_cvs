@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.50 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.51 2001/10/03 15:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -4195,8 +4195,11 @@ void CPSFace::resize(uint32 size)
 
 
 
-CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex) :  _NbSeg(nbSeg)
-																					  , _RadiusCut(radiusCut)						
+CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex) 
+		:  _NbSeg(nbSeg)
+		   , _RadiusCut(radiusCut)
+		   , _UFactor(1.f)
+
 {
 	nlassert(nbSeg > 2 && nbSeg <= 64);
 	setTexture(tex);
@@ -4247,10 +4250,17 @@ void CPSShockWave::setRadiusCut(float radiusCut)
 }
 
 
+void	CPSShockWave::setUFactor(float value)
+{
+	nlassert(_Owner); // must be attached to an owner before to call this method
+	_UFactor = value;
+	resize(_Owner->getSize()); // resize also recomputes the UVs..
+}
+
 void CPSShockWave::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	
-	f.serialVersion(1);
+	sint ver  = f.serialVersion(2);
 	CPSParticle::serial(f);
 	CPSColoredParticle::serialColorScheme(f);
 	CPSSizedParticle::serialSizeScheme(f);
@@ -4259,6 +4269,10 @@ void CPSShockWave::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	CPSRotated2DParticle::serialAngle2DScheme(f);
 	serialMaterial(f);
 	f.serial(_NbSeg, _RadiusCut);
+	if (ver > 1)
+	{
+		f.serial(_UFactor);
+	}
 	init();
 	
 }
@@ -4469,8 +4483,8 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size)
 			for (k = 0; k <= _NbSeg; ++k)
 			{
 				
-				*(CUV *) currUV = uvGroup.uv0 + CUV((float) k, 0);
-				*(CUV *) (currUV + stride) = uvGroup.uv3 + CUV((float) k, 0);				
+				*(CUV *) currUV = uvGroup.uv0 + CUV(k * _UFactor, 0);
+				*(CUV *) (currUV + stride) = uvGroup.uv3 + CUV(k * _UFactor, 0);				
 				// point the next quad
 				currUV += stride2;
 			}
@@ -4551,14 +4565,14 @@ void CPSShockWave::resize(uint32 aSize)
 			
 			_Pb.setQuad(l + (k * _NbSeg) , index , index + 2, index + 3, index + 1);
 			
-			_Vb.setTexCoord(index, 0, CUV((float) l, 0));
-			_Vb.setTexCoord(index + 1, 0, CUV((float) l, 1));			
+			_Vb.setTexCoord(index, 0, CUV(l * _UFactor, 0));
+			_Vb.setTexCoord(index + 1, 0, CUV(l * _UFactor, 1));			
 		}
 
 		const uint32 index = ((k * (_NbSeg + 1)) + _NbSeg) << 1;
 
-		_Vb.setTexCoord(index, 0, CUV((float) _NbSeg, 0));
-		_Vb.setTexCoord(index + 1, 0, CUV((float) _NbSeg, 1));			
+		_Vb.setTexCoord(index, 0, CUV(_NbSeg * _UFactor, 0));
+		_Vb.setTexCoord(index + 1, 0, CUV(_NbSeg * _UFactor, 1));			
 
 	}
 }

@@ -4033,7 +4033,7 @@ bool loadLigoConfigFile (CLigoConfig& config, Interface& it)
 			try
 			{
 				// Load the config file
-				config.read (sModulePath);
+				config.readConfigFile (sModulePath, false);
 
 				// ok
 				return true;

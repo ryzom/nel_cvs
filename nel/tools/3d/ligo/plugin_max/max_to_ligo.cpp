@@ -1,7 +1,7 @@
 /** \file max_to_ligo.cpp
  * Convert a 3dsmax nel patch mesh in ligo data
  *
- * $Id: max_to_ligo.cpp,v 1.8 2004/03/12 16:57:49 lecroart Exp $
+ * $Id: max_to_ligo.cpp,v 1.9 2004/10/08 10:20:05 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -146,7 +146,7 @@ bool CMaxToLigo::loadLigoConfigFile (CLigoConfig& config, Interface& it, bool di
 			try
 			{
 				// Load the config file
-				config.read (sModulePath);
+				config.readConfigFile (sModulePath, false);
 
 				// ok
 				return true;

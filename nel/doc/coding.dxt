@@ -164,3 +164,5 @@ principles:
   defined scope.
 - Include files paths, and all other file names should use the '/' character as the directory
   separator, for portability purposes.
+
+*/

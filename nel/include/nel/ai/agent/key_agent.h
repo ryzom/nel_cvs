@@ -1,7 +1,7 @@
 /** \file key_agent.h
  * key for the multi set in the CAgentScript class.
  *
- * $Id: key_agent.h,v 1.1 2001/03/01 13:44:05 chafik Exp $
+ * $Id: key_agent.h,v 1.2 2001/03/21 14:59:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_KEY_AGENT_H
 namespace NLAIAGENT
 {
+	class IObjectIA;
 
 	struct CKeyAgent
 	{
@@ -50,5 +51,42 @@ namespace NLAIAGENT
 			return (Name < k.Name);
 		}
 	};	
+
+	struct CKeyObject
+	{
+		CStringType Name;
+		IObjectIA *Obj;
+
+		CKeyObject(const CStringType &s, IObjectIA *i): Name(s), Obj(i)
+		{
+			Obj->incRef();
+		}
+
+		CKeyObject(const CKeyObject &k):Name(k.Name), Obj(k.Obj)
+		{
+			Obj->incRef();
+		}
+
+		CKeyObject(const CStringType &s): Name(s)
+		{
+		}
+
+		~CKeyObject()
+		{
+			Obj->release();
+		}
+
+		const CKeyObject operator = (const CKeyObject &a)
+		{
+			Obj->release();
+			Obj = a.Obj;
+			Obj->incRef();
+		}
+
+		bool operator < (const CKeyObject &k) const
+		{
+			return (Name < k.Name);
+		}
+	};
 }
 #endif

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.13 2001/03/08 13:42:34 portier Exp $
+ * $Id: group_type.cpp,v 1.14 2001/03/21 15:00:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,7 +219,7 @@ namespace NLAIAGENT
 			}
 		}
 
-		return IObjectIA::CProcessResult();
+		return IObjectIA::runMethodeMember(index,p);
 	}
 
 	sint32 IBaseGroupType::isClassInheritedFrom(const IVarName &) const

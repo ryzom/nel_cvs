@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.8 2001/03/07 15:25:28 chafik Exp $
+ * $Id: agent_object.h,v 1.9 2001/03/21 14:59:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -334,12 +334,17 @@ namespace NLAIAGENT
 	*/
 	class CIteratorContener: public IBasicIterator
 	{
-	private:
+	protected:
 		IBasicIterator *_I;
 	public:
+		CIteratorContener(const CIteratorContener &i):_I(i._I)
+		{
+		}
+
 		CIteratorContener(IBasicIterator *i):_I(i)
 		{
 		}
+
 		~CIteratorContener()
 		{
 			delete _I;

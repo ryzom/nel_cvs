@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.8 2001/02/21 11:07:39 chafik Exp $
+ * $Id: baseai.h,v 1.9 2001/03/21 14:59:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,8 +32,7 @@
 #include <queue>
 
 #include "nel/ai/agent/ident.h"
-
-
+#include "nel/ai/agent/identtype.h"
 
 /**
 this is the objects agents name scpace.
@@ -353,6 +352,9 @@ namespace NLAIAGENT
 		operator const IWordNumRef &() const;
 		///to get a word num ref pointer of the agents.
 		operator const IWordNumRef *() const ;
+
+		const CIdent getIdentType() const;
+
 		///to get the agent parents
 		IRefrence *getParent() const;
 
@@ -421,7 +423,7 @@ namespace NLAIAGENT
 		{
 			return sendMessage((IMessageBase *)m);
 		}
-		virtual IObjectIA::CProcessResult sendMessage(IMessageBase *msg) = 0;		
+		virtual IObjectIA::CProcessResult sendMessage(IMessageBase *msg) = 0;
 		
 		/// \name IBasicInterface method.
 		/**

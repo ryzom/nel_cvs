@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.38 2001/03/08 13:42:34 portier Exp $
+ * $Id: agent_script.cpp,v 1.39 2001/03/21 15:00:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -572,7 +572,7 @@ namespace NLAIAGENT
 			}						
 			r.Result = new DigitalType(1.0);
 			return r;
-			throw;
+			//throw;
 		}		
 		r.Result = &DigitalType::NullOperator;
 		r.Result->incRef();
@@ -581,7 +581,7 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::getDynamicAgent(IBaseGroupType *g)
 	{		
-		CStringType *s = (CStringType *)g->get();		
+		CStringType *s = (CStringType *)g->get();
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
 		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
@@ -933,7 +933,8 @@ namespace NLAIAGENT
 			}
 			else 
 			{
-				IAgent::processMessages();
+				IObjectIA *o = IBasicAgent::run( msg );
+				getMail()->popMessage();
 			}			
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.14 2001/02/21 11:07:39 chafik Exp $
+ * $Id: ident.h,v 1.15 2001/03/21 14:59:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,7 +353,14 @@ namespace NLAIAGENT
 		///fill from read stream.
 		CAgentNumber(NLMISC::IStream &is)
 		{
-			load(is);
+			uint8 p;
+			is.serial(p);
+			CreatorId = (uint64)p;
+			is.serial(p);
+			DynamicId = (uint64)p;
+			uint64 x;
+			is.serial(x);
+			AgentNumber = x;
 		}
 
 		CAgentNumber(const char *id);
@@ -412,7 +419,7 @@ namespace NLAIAGENT
 		}
 
 		///saving the nomber in an output stream.
-		void save(NLMISC::IStream &os)
+		virtual void save(NLMISC::IStream &os)
 		{			
 			uint8 p = (uint8)CreatorId;
 			os.serial(p);
@@ -423,7 +430,7 @@ namespace NLAIAGENT
 		}
 
 		///loading the nomber from an input stream.
-		void load(NLMISC::IStream &is)
+		virtual void load(NLMISC::IStream &is)
 		{
 			uint8 p;
 			is.serial(p);
@@ -459,7 +466,7 @@ namespace NLAIAGENT
 		}
 		//@}
 
-	};
+	};	
 
 	/**
 	Generator of unique ident for objects.

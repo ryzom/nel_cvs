@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.16 2001/03/08 13:42:34 portier Exp $
+ * $Id: baseai.cpp,v 1.17 2001/03/21 15:00:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -412,6 +412,9 @@ namespace NLAIAGENT
 		_NumRef = new CLocWordNumRef(this);
 	}		
 
+	const CIdent IRefrence::getIdentType() const
+	{
+	}
 
 
 /////////////////////////////////////////////////////////////////////////////

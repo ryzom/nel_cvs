@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.3 2000/11/17 14:58:12 coutelas Exp $
+ * $Id: font_manager.h,v 1.4 2000/11/21 14:55:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,15 @@ struct CComputedString;
 struct CFontDescriptor;
 
 
-typedef std::pair< std::list<NLMISC::CSmartPtr<CTextureFont> >::iterator,  uint32> pairRefPtrInt;
+typedef std::pair< std::list<NLMISC::CSmartPtr<CTextureFont> >::iterator,  uint32> pairRefPtrIntProut;
+struct pairRefPtrInt : public pairRefPtrIntProut
+{
+	pairRefPtrInt (std::list<NLMISC::CSmartPtr<CTextureFont> >::iterator ite,  uint32 intt)
+	{
+		first=ite;
+		second=intt;
+	}
+};
 typedef std::map< CFontDescriptor , pairRefPtrInt> mapFontDec;
 
 

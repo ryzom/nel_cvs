@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.55 2003/07/22 13:30:47 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.56 2003/07/28 11:54:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1573,7 +1573,7 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 	if ( id == NULL )
 	{
 		_profile(("AM: FAILED CREATESOURCE"));
-		nldebug( "AM: Sound not created: invalid sound id" );
+//		nldebug( "AM: Sound not created: invalid sound id" );
 		return NULL;
 	}
 

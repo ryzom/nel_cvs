@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: ps_attrib_maker.h,v 1.2 2001/06/28 07:56:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,6 +209,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 		/// serialisation of the object
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
+			f.serialVersion(1) ;
 			CPSAttribMaker<T>::serial(f) ;
 		    f.serial(_F) ;
 			f.serialEnum(_InputType) ;

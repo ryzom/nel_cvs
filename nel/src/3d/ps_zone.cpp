@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.11 2001/06/25 13:46:45 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.12 2001/06/28 07:56:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -292,9 +292,8 @@ void CPSZonePlane::setNormal(uint32 index, CVector n)
 
 void CPSZonePlane::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialCheck((uint32) 'PSPL') ;
-	CPSZone::serial(f) ;
-	f.serialVersion(1) ;
+	f.serialVersion(1) ;		
+	CPSZone::serial(f) ;	
 	f.serial(_Normal) ;
 }
 
@@ -478,9 +477,8 @@ CVector CPSZoneSphere::getScale(uint32 k) const
 
 void CPSZoneSphere::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialCheck((uint32) 'PSSP') ;
-	CPSZone::serial(f) ;
 	f.serialVersion(1) ;
+	CPSZone::serial(f) ;
 	f.serial(_Radius) ;	
 }
 
@@ -668,9 +666,8 @@ CVector CPSZoneDisc::getScale(uint32 k) const
 
 void CPSZoneDisc::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialCheck((uint32) 'PSSP') ;
+	f.serialVersion(1) ;	
 	CPSZone::serial(f) ;
-	f.serialVersion(1) ;
 	f.serial(_Normal) ;		
 	f.serial(_Radius) ;		
 }
@@ -1205,9 +1202,8 @@ void CPSZoneCylinder::setScale(uint32 index, const CVector &s)
 
 void CPSZoneCylinder::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialCheck((uint32) 'ZCYL') ;
-	CPSZone::serial(f) ;
 	f.serialVersion(1) ;
+	CPSZone::serial(f) ;
 	f.serial(_Basis) ;		
 	f.serial(_Dim)  ;
 }
@@ -1399,9 +1395,8 @@ CVector CPSZoneRectangle::getScale(uint32 index) const
 
 void CPSZoneRectangle::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialCheck((uint32) 'ZREC') ;
-	CPSZone::serial(f) ;
 	f.serialVersion(1) ;
+	CPSZone::serial(f) ;
 	f.serial(_Basis) ;	
 	f.serial(_Width) ;
 	f.serial(_Height) ;

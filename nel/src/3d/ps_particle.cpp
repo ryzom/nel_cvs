@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.24 2001/06/27 16:56:57 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.25 2001/06/28 07:56:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -190,6 +190,7 @@ CPSColoredParticle::~CPSColoredParticle()
 
 void CPSColoredParticle::serialColorScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
+	f.serialVersion(1) ;	
 	if (f.isReading())
 	{
 		if (_UseColorScheme)
@@ -261,6 +262,7 @@ CPSSizedParticle::~CPSSizedParticle()
 		/// serialization
 void CPSSizedParticle::serialSizeScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;	
 	if (f.isReading())
 	{
 		if (_UseSizeScheme)
@@ -338,6 +340,7 @@ CPSRotated2DParticle::~CPSRotated2DParticle()
 		
 void CPSRotated2DParticle::serialAngle2DScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;	
 	if (f.isReading())
 	{
 		if (_UseAngle2DScheme)
@@ -471,6 +474,7 @@ CPSTexturedParticle::~CPSTexturedParticle()
 
 void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;	
 	if (f.isReading())
 	{
 		if (_UseTextureIndexScheme)
@@ -598,6 +602,7 @@ CPSRotated3DPlaneParticle::~CPSRotated3DPlaneParticle()
 
 void CPSRotated3DPlaneParticle::serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;	
 
 	f.serialPolyPtr(_PlaneBasisScheme) ;
 	
@@ -729,7 +734,7 @@ void CPSDot::draw(void)
 void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;	
-	f.serialCheck((uint32) 'PSDO') ;
+
 
 	CPSParticle::serial(f) ;
 	CPSColoredParticle::serialColorScheme(f) ;
@@ -851,7 +856,7 @@ void CPSQuad::updateMatAndVbForColor(void)
 
 void CPSQuad::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialCheck((uint32) '_QUA') ;
+	f.serialVersion(1) ;		
 	CPSParticle::serial(f) ;
 	CPSSizedParticle::serialSizeScheme(f) ;
 	CPSColoredParticle::serialColorScheme(f) ;
@@ -1267,8 +1272,7 @@ void CPSFaceLookAt::draw(void)
 
 void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-
-	f.serialCheck((uint32) 'PFLA') ;					
+	f.serialVersion(1) ;		
 
 	CPSQuad::serial(f) ;
 	CPSRotated2DParticle::serialAngle2DScheme(f) ;
@@ -3025,7 +3029,7 @@ void CPSRibbon::copyElement(CRibbonsDesc &rbSrc, uint32 srcIndex, CRibbonsDesc &
 void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;
-	f.serialCheck((uint32) '_RIB') ;
+
 	CPSParticle::serial(f) ;
 	CPSColoredParticle::serialColorScheme(f) ;	
 	CPSSizedParticle::serialSizeScheme(f) ;
@@ -3993,6 +3997,7 @@ CMesh *CreateDummyShape(void)
 
 void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;	
 	CPSParticle::serial(f) ;
 	CPSSizedParticle::serialSizeScheme(f) ;
 	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f) ;

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.15 2001/06/27 16:57:29 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.16 2001/06/28 07:56:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -299,9 +299,8 @@ void CPSEmitter::bounceOccured(uint32 index)
 
 void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialCheck((uint32) 'EMIT') ;
-	CPSLocatedBindable::serial(f) ;
 	f.serialVersion(1) ;	
+	CPSLocatedBindable::serial(f) ;
 	f.serialPolyPtr(_EmittedType) ;
 	f.serial(_Phase) ;
 	f.serial(_SpeedInheritanceFactor) ;
@@ -398,6 +397,7 @@ void CPSEmitterOmni::emit(uint32 index, CVector &pos, CVector &speed)
 
 void CPSEmitterOmni::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;	
 	CPSEmitter::serial(f) ;
 	CPSModulatedEmitter::serialEmitteeSpeedScheme(f) ;
 }
@@ -418,6 +418,7 @@ void CPSEmitterDirectionnal::emit(uint32 index, CVector &pos, CVector &speed)
 
 void CPSEmitterDirectionnal::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;	
 	CPSEmitter::serial(f) ;
 	CPSModulatedEmitter::serialEmitteeSpeedScheme(f) ;
 	f.serial(_Dir) ;
@@ -430,6 +431,7 @@ void CPSEmitterDirectionnal::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSEmitterRectangle::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;	
 	CPSEmitter::serial(f) ;
 	CPSModulatedEmitter::serialEmitteeSpeedScheme(f) ;
 	f.serial(_Basis) ;	
@@ -557,6 +559,7 @@ void CPSEmitterRectangle::showTool(void)
 
 void CPSEmitterConic::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;	
 	CPSEmitterDirectionnal::serial(f) ;
 	f.serial(_Radius) ;
 	if (f.isReading())

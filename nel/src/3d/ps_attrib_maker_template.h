@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.5 2001/06/26 11:58:03 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.6 2001/06/28 07:56:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -458,7 +458,7 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 template <typename T> 
 void CPSValueGradientFunc<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialCheck((uint32) 'GVF_') ;
+	f.serialVersion(1) ;
 	f.serial(_NbStages) ;
 	if (f.isReading())
 	{

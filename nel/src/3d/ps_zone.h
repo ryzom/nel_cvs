@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.3 2001/06/25 13:46:45 vizerie Exp $
+ * $Id: ps_zone.h,v 1.4 2001/06/28 07:56:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,7 @@ public:
 	/// serialization, DERIVER must override this, and call the parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) 
 	{ 
+		f.serialVersion(1) ;
 		CPSTargetLocatedBindable::serial(f) ; 
 		f.serialEnum(_CollisionBehaviour) ;
 		f.serial(_BounceFactor) ;

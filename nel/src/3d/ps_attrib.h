@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.2 2001/06/25 13:58:25 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.3 2001/06/28 07:56:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,7 +212,6 @@ void CPSAttrib<T>::remove(uint32 index)
 template <typename T> 
 void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	f.serialCheck((uint32)'PASA') ;
 	f.serialVersion(1) ;
 	f.serial(_Size) ;
 	f.serial(_MaxSize) ;

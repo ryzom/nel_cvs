@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.4 2001/06/27 16:56:57 vizerie Exp $
+ * $Id: ps_particle.h,v 1.5 2001/06/28 07:56:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,7 @@ public:
 	/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{ 
+		f.serialVersion(1) ;
 		CPSLocatedBindable::serial(f) ; 
 	}
 protected:

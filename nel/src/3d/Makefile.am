@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.87 2002/08/20 15:53:01 coutelas Exp $
+# $Id: Makefile.am,v 1.88 2002/08/21 15:19:35 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -539,6 +539,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        zone_manager.h \
                        zone_search.cpp \
                        zone_search.h \
+		       zone_symmetrisation.cpp \
+		       zone_symmetrisation.h \
                        zone_smoother.cpp \
                        zone_smoother.h \
                        zone_tgt_smoother.cpp \

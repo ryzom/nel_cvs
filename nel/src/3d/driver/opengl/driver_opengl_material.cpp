@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.51 2001/12/14 16:54:02 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.52 2001/12/19 14:58:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,6 +384,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			{		
 				_DriverGLStates.activeTextureARB(k);
 				glLoadMatrixf(mat.getUserTexMat(k).get());
+				_UserTexMatEnabled |= shiftMask;
 			}
 			else
 			{
@@ -394,6 +395,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				{
 					_DriverGLStates.activeTextureARB(k);
 					glLoadIdentity();
+					_UserTexMatEnabled &= ~shiftMask;
 				}				
 			}
 			shiftMask <<= 1;

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: global_retriever.h,v 1.2 2001/05/25 14:27:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,11 @@ namespace NLPACS
 {
 
 class CRetrieverBank;
+
+
+/// Precision of Snap. 1/1024 meter. If you change this, CEdgeCollide::testPointMove() won't work.
+const	float	SnapPrecision= 1024;
+
 
 /**
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
@@ -325,7 +330,7 @@ private:
 
 	/// \name  Collisions part.
 	// @{
-	enum	TCollisionType { Circle, Point, BBox };
+	enum	TCollisionType { Circle, BBox };
 	/** reset and fill cst.CollisionChains with possible collisions in bboxMove+origin.
 	 * result: collisionChains, computed localy to origin.
 	 */
@@ -336,6 +341,32 @@ private:
 	 */
 	void	testCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
 		CSurfaceIdent startSurface, float radius, const CVector2f bbox[4], TCollisionType colType) const;
+	/** reset and fill cst.MoveDescs with effective collisions of a point movement against current cst.CollisionChains.
+	 * result: the surfaceIdent where we stop. -1 if we traverse a Wall, which should not happen because of collision test.
+	 * NB: for precision pb, startCol and deltaCol should be snapped on a grid of 1/1024 meters, using snapVector().
+	 */
+	CSurfaceIdent	testMovementWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
+		CSurfaceIdent startSurface) const;
+
+
+	/** Snap a vector at 1mm (1/1024). v must be a local position (ie range from -80 to +240).
+	 * Doing this, we are sure we have precision of 9+10 bits, which is enough for 24 bits float precision.
+	 * NB: z is not snapped.
+	 */
+	void	snapVector(CVector &v) const
+	{
+		v.x= (float)floor(v.x*SnapPrecision)/SnapPrecision;
+		v.y= (float)floor(v.y*SnapPrecision)/SnapPrecision;
+	}
+	/** Snap a vector at 1mm (1/1024). v must be a local position (ie range from -80 to +240).
+	 * Doing this, we are sure we have precision of 9+10 bits, which is enough for 24 bits float precision.
+	 */
+	void	snapVector(CVector2f &v) const
+	{
+		v.x= (float)floor(v.x*SnapPrecision)/SnapPrecision;
+		v.y= (float)floor(v.y*SnapPrecision)/SnapPrecision;
+	}
+
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.6 2001/05/22 07:36:02 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.7 2001/05/25 14:27:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,42 +57,125 @@ void		CEdgeCollide::make(const CVector2f &p0, const CVector2f &p1)
 
 
 // ***************************************************************************
-float		CEdgeCollide::testPointMove(const CVector2f &start, const CVector2f &delta, float borderEpsilon)
+CRational64	CEdgeCollide::testPointMove(const CVector2f &start, const CVector2f &end, TPointMoveProblem &moveBug)
 {
-	// distance from point to line.
-	float	dist= start*Norm + C;
-	// projection of speed on normal.
-	float	speed= delta*Norm;
+	/*
+		To have a correct test (with no float precision problem):
+			- test first if there is collision beetween the 2 edges:
+				- test if first edge collide the other line.
+				- test if second edge collide the other line.
+				- if both true, yes, there is a collision.
+			- compute time of collision.
+	*/
 
-	// test if the movement is against the line or not.
-	bool	sensPos= dist>0;
-	bool	sensSpeed= speed>0;
-	// if signs are equals, same side of the line.
-	if(sensPos==sensSpeed)
+
+	// *this must be a correct edge.
+	nlassert(P0!=P1);
+
+	// if no movement, no collision.
+	if(start==end)
 		return 1;
 
-	// Does the point intersect the line?
-	dist= (float)fabs(dist);
-	speed= (float)fabs(speed);
-	if( dist > speed )
-		return 1;
+	// NB those edges are snapped (1/256 for edgeCollide, and 1/1024 for start/end), so no float problem here.
+	// precision is 20 bits.
+	CVector2f	normEdge;
+	CVector2f	normMove;
+	CVector2f	deltaEdge;
+	CVector2f	deltaMove;
 
-	// Yes, at what time.
-	float	t= dist/speed;
+	// compute normal of the edge (not normalized, because no need, and for precision problem).
+	deltaEdge= P1-P0;
+	normEdge.x= -deltaEdge.y;
+	normEdge.y= deltaEdge.x;
 
-	// Compute the collision position.
-	CVector2f	proj= start + delta*t;
-	// compute projection on edge.
-	float		aProj= proj*Dir;
+	// compute normal of the movement (not normalized, because no need, and for precision problem).
+	deltaMove= end-start;
+	normMove.x= -deltaMove.y;
+	normMove.y= deltaMove.x;
 
-	// if not on the interval of the edge.
-	if( aProj<A0-borderEpsilon || aProj>A1+borderEpsilon)
-		return 1;
-	else
+	// distance from points of movment against edge line. Use double, because of multiplication.
+	// precision is now 43 bits.
+	double	moveD0= (double)normEdge.x*(double)(start.x-P0.x) + (double)normEdge.y*(double)(start.y-P0.y);
+	double	moveD1= (double)normEdge.x*(double)(end.x  -P0.x) + (double)normEdge.y*(double)(end.y  -P0.y);
+
+	// distance from points of edge against movement line. Use double, because of multiplication.
+	// precision is now 43 bits.
+	double	edgeD0= (double)normMove.x*(double)(P0.x-start.x) + (double)normMove.y*(double)(P0.y-start.y);
+	double	edgeD1= (double)normMove.x*(double)(P1.x-start.x) + (double)normMove.y*(double)(P1.y-start.y);
+
+
+	// If both edges intersect lines (including endpoints), there is a collision, else none.
+	sint	sgnMove0, sgnMove1;
+	sgnMove0= fsgn(moveD0);
+	sgnMove1= fsgn(moveD1);
+
+	// special case if the 2 edges lies on the same line.
+	if(sgnMove0==0 && sgnMove1==0)
 	{
-		// else return time of collision.
-		return t;
+		// must test if there is a collision. if yes, problem.
+		// project all the points on the line of the edge.
+		// Use double because of multiplication. precision is now 43 bits.
+		double	moveA0= (double)deltaEdge.x*(double)(start.x-P0.x) + (double)deltaEdge.y*(double)(start.y-P0.y);
+		double	moveA1= (double)deltaEdge.x*(double)(end.x  -P0.x) + (double)deltaEdge.y*(double)(end.y  -P0.y);
+		double	edgeA0= 0;
+		double	edgeA1= (double)deltaEdge.x*(double)deltaEdge.x + (double)deltaEdge.y*(double)deltaEdge.y;
+
+		// Test is there is intersection (endpoints included). if yes, return -1. else return 1 (no collision at all).
+		if(moveA1>=edgeA0 && edgeA1>=moveA0)
+		{
+			moveBug= ParallelEdges;
+			return -1;
+		}
+		else
+			return 1;
 	}
+
+	// if on same side of the line=> there is no collision.
+	if( sgnMove0==sgnMove1)
+		return 1;
+
+	// test edge against move line.
+	sint	sgnEdge0, sgnEdge1;
+	sgnEdge0= fsgn(edgeD0);
+	sgnEdge1= fsgn(edgeD1);
+
+	// should not have this case, because tested before with (sgnMove==0 && sgnMove1==0).
+	nlassert(sgnEdge0!=0 || sgnEdge1!=0);
+
+
+	// if on same side of the line, no collision against this edge.
+	if( sgnEdge0==sgnEdge1 )
+		return 1;
+
+	// Here the edges intersect, but ensure that there is no limit problem.
+	if(sgnEdge0==0 || sgnEdge1==0)
+	{
+		moveBug= TraverseEndPoint;
+		return -1;
+	}
+	else if(sgnMove1==0)
+	{
+		moveBug= StopOnEdge;
+		return -1;
+	}
+	else if(sgnMove0==0)
+	{
+		// this should not arrive.
+		moveBug= StartOnEdge;
+		return -1;
+	}
+
+
+	// Here, there is a normal collision, just compute it.
+	// Because of Division, there is a precision lost in double. So compute a CRational64.
+	// First, compute numerator and denominator in the highest precision. this is 1024*1024 because of prec multiplication.
+	double		numerator= (0-moveD0)*1024*1024;
+	double		denominator= (moveD1-moveD0)*1024*1024;
+	sint64		numeratorInt= (sint64)numerator;
+	sint64		denominatorInt= (sint64)denominator;
+	nlassert(numerator == numeratorInt);
+	nlassert(denominator == denominatorInt);
+	return CRational64(numeratorInt, denominatorInt);
 }
 
 
@@ -428,6 +511,13 @@ float		CEdgeCollide::testBBoxMove(const CVector2f &start, const CVector2f &delta
 	else
 		return 1;
 
+}
+
+
+// ***************************************************************************
+bool		CEdgeCollide::testBBoxCollide(const CVector2f bbox[4])
+{
+	return false;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.11 2001/05/22 07:36:02 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.12 2001/05/25 14:27:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -597,8 +597,6 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 						t= colEdge.testCircleMove(startCol, deltaCol, radius, normal);
 					else if(colType==CGlobalRetriever::BBox)
 						t= colEdge.testBBoxMove(startCol, deltaCol, bboxStart, normal);
-					else if(colType==CGlobalRetriever::Point)
-						t= colEdge.testPointMove(startCol, deltaCol);
 
 					// earlier collision??
 					if(t<tMin)
@@ -707,6 +705,121 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 		}
 	}
 
+}
+
+
+// ***************************************************************************
+NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &endCol,
+		CSurfaceIdent startSurface) const
+{
+	// start currentSurface with surface start.
+	CSurfaceIdent	currentSurface= startSurface;
+	uint			nextCollisionSurfaceTested=0;
+	sint			i;
+
+	// reset result.
+	cst.MoveDescs.clear();
+
+
+	/*
+		To manage recovery, we must use such an algorithm, so we are sure to trace the way across all surfaces really 
+		collided, and discard any other (such as other floor or ceiling).
+
+		This function is quite different from testCollisionWithCollisionChains() because she must detect all collisions
+		with all edges of any chains (and not the minimum collision with a chain).
+		This is done in 3 parts:
+			- detect collisions with all edges.
+			- sort.
+			- leave only real collisions.
+	*/
+	// run all collisionChain.
+	//========================
+	for(i=0; i<(sint)cst.CollisionChains.size(); i++)
+	{
+		CCollisionChain		&colChain= cst.CollisionChains[i];
+
+
+		// test all edges of this chain, and insert if necessary.
+		//========================
+		CRational64		t;
+		// run list of edge.
+		sint32		curEdge= colChain.FirstEdgeCollide;
+		while(curEdge!=0xFFFFFFFF)
+		{
+			// get the edge.
+			CEdgeCollideNode	&colEdge= cst.getEdgeCollideNode(curEdge);
+
+			// test collision with this edge.
+			CEdgeCollide::TPointMoveProblem		pmpb;
+			t= colEdge.testPointMove(startCol, endCol, pmpb);
+			/* TODO_PRECISION: manage multiple problems of precision:
+				- traverse on point.
+				- stop on a edge (dist==0).
+				- run // on a edge (NB: dist==0 too).
+				- start on a edge (dist==0).
+				- good order of collision even with precision problems: edges too near, and movement nearly // to an edge.
+			*/
+			// For now, just return an error, so that movement is disabled.
+			if(t== -1)
+			{
+				string	errs[CEdgeCollide::PointMoveProblemCount]= {
+					"ParallelEdges", "StartOnEdge", "StopOnEdge", "TraverseEndPoint"};
+				nlinfo("COL: Precision Problem: %s", errs[pmpb]);
+				// return a Wall ident. movement is invalid.
+				return	CSurfaceIdent(-1, -1);
+			}
+
+			// collision??
+			if(t<1)
+			{
+				// insert in list.
+				cst.MoveDescs.push_back(CMoveSurfaceDesc(t, colChain.LeftSurface, colChain.RightSurface));
+			}
+
+			// next edge.
+			curEdge= colEdge.Next;
+		}
+	}
+
+
+	// sort.
+	//================
+	// sort the collisions in ascending time order.
+	sort(cst.MoveDescs.begin(), cst.MoveDescs.end());
+
+
+	// Traverse the array of collisions.
+	//========================
+	for(i=0;i<(sint)cst.MoveDescs.size();i++)
+	{
+		// Do we collide with this chain??
+		if(cst.MoveDescs[i].hasSurface(currentSurface))
+		{
+			currentSurface= cst.MoveDescs[i].getOtherSurface(currentSurface);
+
+			// Do we touch a wall?? should not happens, but important for security.
+			bool	isWall;
+			if(currentSurface.SurfaceId<0)
+				isWall= true;
+			else
+			{
+				// test if it is a walkable wall.
+				sint32	locRetId= this->getInstance(currentSurface.RetrieverInstanceId).getRetrieverId();
+				const CRetrievableSurface	&surf= _RetrieverBank->getRetriever(locRetId).getSurface(currentSurface.SurfaceId);
+				isWall= !(surf.isFloor() || surf.isCeiling());
+			}
+
+			// If we touch a wall, this is the end of search.
+			if(isWall)
+			{
+				// return a Wall ident. movement is invalid.
+				return	CSurfaceIdent(-1, -1);
+			}
+		}
+	}
+
+
+	return currentSurface;
 }
 
 
@@ -876,61 +989,55 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 	// 2. test collisions with CollisionChains.
 	//===========
 	CVector		start= startPos.LocalPosition.Estimation;
+	// compute end with real delta position.
+	CVector		end= start + delta*t;
+
+	// must snap the end position.
+	snapVector(end);
+
+	// look where we arrive.
 	CVector2f	startCol(start.x, start.y);
-	CVector2f	deltaCol(delta.x, delta.y);
-	CVector2f	obbDummy[4];	// dummy OBB (not obb here so don't bother)
-	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, 0, obbDummy, CGlobalRetriever::Point);
-
-
-	// 3. run all possible collisions to get the new surface where we are now.
-	//===========
-	CGlobalPosition		res;
-	sint				idCol;
-	// search on which surface we are now.
-	for(idCol=0; idCol<(sint)cst.CollisionDescs.size(); idCol++)
+	CVector2f	endCol(end.x, end.y);
+	// If same 2D position, just return startPos (suppose no movement)
+	if(endCol==startCol)
 	{
-		// test with the next surface.
-		if( t<cst.CollisionDescs[idCol].ContactTime )
-		{
-			break;
-		}
-	}
-	idCol --;
-
-	// particular case: the user ask an impossible movement against a wall. clamp t so that it does not cross the wall.
-	if(idCol>=0 && cst.CollisionDescs[idCol].ContactSurface.SurfaceId<0)	// SurfaceId<0 <=> Wall.
-	{
-		clamp(t, 0, cst.CollisionDescs[idCol].ContactTime);
-		// so we are on precedent surface.
-		idCol--;
-	}
-
-	// if we are still on the same surface.
-	if(idCol<0)
-	{
+		CGlobalPosition		res;
 		res= startPos;
-		res.LocalPosition.Estimation+= delta*t;
+		// keep good z movement.
+		res.LocalPosition.Estimation.z= end.z;
+		return res;
 	}
+	CSurfaceIdent	endSurface= testMovementWithCollisionChains(cst, startCol, endCol, startSurface);
+
+
+	// 3. return result.
+	//===========
+	// Problem?? do not move.
+	if(endSurface.SurfaceId==-1)
+		return startPos;
 	else
 	{
-		// compute newPos, localy to the startSurface.
-		CVector		newPos= startPos.LocalPosition.Estimation+ delta*t;
+		// else must return good GlobalPosition.
+		CGlobalPosition		res;
 
-		res.InstanceId= cst.CollisionDescs[idCol].ContactSurface.RetrieverInstanceId;
-		res.LocalPosition.Surface= cst.CollisionDescs[idCol].ContactSurface.SurfaceId;
+		res.InstanceId= endSurface.RetrieverInstanceId;
+		res.LocalPosition.Surface= endSurface.SurfaceId;
 
 		// compute newPos, localy to the endSurface.
 		// get delta between startPos.instance and curInstance.
+		// NB: for float precision, it is important to compute deltaOrigin, and after compute newPos in local.
 		CVector		deltaOrigin;
 		deltaOrigin= origin - getInstance(res.InstanceId).getOrigin();
 
-		// NB: for float precision, it is important to compute deltaOrigin, and after compute newPos in local.
-		res.LocalPosition.Estimation= newPos + deltaOrigin;
+		// Because Origin precision is 1 meter, and end precision is 1/1024 meter, we have no precision problem.
+		// this is true because we cannot move more than 160 meters in one doMove() (one zone).
+		res.LocalPosition.Estimation= end + deltaOrigin;
+
+
+		// result.
+		return res;
 	}
 
-
-	// result.
-	return res;
 }
 
 

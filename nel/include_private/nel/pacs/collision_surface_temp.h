@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: collision_surface_temp.h,v 1.2 2001/05/25 14:27:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,6 +126,47 @@ public:
 };
 
 
+// ***************************************************************************
+/**
+ * Description of the contact of a collision against a chain.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CMoveSurfaceDesc
+{
+public:
+	/// This is the 128 bits rational float, when the movement reach this surface.
+	CRational64			ContactTime;
+
+	/// To which chain we have collided.
+	CSurfaceIdent		LeftSurface, RightSurface;
+
+public:
+	CMoveSurfaceDesc() {}
+	CMoveSurfaceDesc(CRational64 t, CSurfaceIdent left, CSurfaceIdent right) : ContactTime(t), LeftSurface(left), RightSurface(right) {}
+	bool	operator<(const CMoveSurfaceDesc &o) const
+	{
+		return ContactTime<o.ContactTime;
+	}
+
+	/// test if Left or Right == surf.
+	bool		hasSurface(const CSurfaceIdent &surf)
+	{
+		return LeftSurface==surf || RightSurface==surf;
+	}
+
+	/// Return Left if surf==Right, else return Right.
+	const CSurfaceIdent		&getOtherSurface(const CSurfaceIdent &surf)
+	{
+		if(RightSurface==surf)
+			return LeftSurface;
+		else
+			return RightSurface;
+	}
+};
+
 
 // ***************************************************************************
 /**
@@ -147,7 +188,11 @@ public:
 	std::vector<CCollisionChain>	CollisionChains;
 
 
-	/// Result of collision tryMove().
+	/// result of testMovementWithCollisionChains().
+	std::vector<CMoveSurfaceDesc>	MoveDescs;
+
+
+	/// Result of collision testMove().
 	TCollisionSurfaceDescVector		CollisionDescs;
 
 

@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.cpp
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.cpp,v 1.2 2001/05/16 15:17:12 berenguier Exp $
+ * $Id: collision_surface_temp.cpp,v 1.3 2001/05/25 14:27:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,7 @@ CCollisionSurfaceTemp::CCollisionSurfaceTemp()
 	CollisionChains.reserve(StartCollisionChainSize);
 	EdgeChainEntries.reserve(StartEdgeChainEntrySize);
 	CollisionDescs.reserve(StartCollisionDescSize);
+	MoveDescs.reserve(StartCollisionDescSize);
 	CollisionInstances.reserve(StartCollisionInstanceSize);
 }
 

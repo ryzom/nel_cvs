@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.9 2001/04/20 09:59:33 besson Exp $
+ * $Id: mutex.cpp,v 1.10 2001/04/20 13:21:22 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ namespace NLMISC {
 
 
 
-map<CMutex*,uint32>	*AcquireTime = NULL;
+map<CMutex*,TMutexLocks>	*AcquireTime = NULL;
 CMutex				*ATMutex = NULL;
 bool				InitAT = true;
 
@@ -66,26 +66,28 @@ void initAcquireTimeMap()
 	if ( InitAT )
 	{
 		ATMutex = new CMutex();
-		AcquireTime = new map<CMutex*,uint32>;
+		AcquireTime = new map<CMutex*,TMutexLocks>;
 		InitAT = false;
 	}
 }
 
 
 // Call it evenly (e.g. once per second)
-map<CMutex*,uint32>	getNewAcquireTimes()
+map<CMutex*,TMutexLocks>	getNewAcquireTimes()
 {
-	map<CMutex*,uint32>	m;
+	map<CMutex*,TMutexLocks>	m;
 	ATMutex->enter();
 
 	// Copy map
 	m = *AcquireTime;
 
 	// Reset map
-	map<CMutex*,uint32>::iterator im;
+	map<CMutex*,TMutexLocks>::iterator im;
 	for ( im=AcquireTime->begin(); im!=AcquireTime->end(); ++im )
 	{
-		(*im).second = 0;
+		(*im).second.Time = 0;
+		(*im).second.Nb = 0;
+		(*im).second.Locked = false;
 	}
 
 	ATMutex->leave();
@@ -162,10 +164,23 @@ CMutex::~CMutex()
  */
 void CMutex::enter ()
 {
-
 	// DEBUG
-	TTime before = CTime::getLocalTime();
-	
+	TTime before;
+	if ( this != ATMutex )
+	{
+		ATMutex->enter();
+		if ( AcquireTime->find( this ) == AcquireTime->end() )
+		{
+			AcquireTime->insert( make_pair( this, TMutexLocks(true) ) );
+		}
+		else
+		{
+			(*AcquireTime)[this].Locked = true;
+		}
+		ATMutex->leave();
+		before = CTime::getLocalTime();
+	}
+
 #ifdef NL_OS_WINDOWS
 
 #ifdef NL_DEBUG
@@ -211,7 +226,9 @@ void CMutex::enter ()
 	{
 		TTime diff = CTime::getLocalTime()-before;
 		ATMutex->enter();
-		(*AcquireTime)[this] += (uint32)diff;
+		(*AcquireTime)[this].Time += (uint32)diff;
+		(*AcquireTime)[this].Nb += 1;
+		(*AcquireTime)[this].Locked = false;
 		ATMutex->leave();
 	}
 }

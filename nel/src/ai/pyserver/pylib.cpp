@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.9 2001/12/05 10:00:24 portier Exp $
+ * $Id: pylib.cpp,v 1.10 2003/01/07 17:46:20 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -309,9 +309,10 @@ namespace NLAIPYSERVER
 		uint16 ui,uk;
 
 		f = fopen(FileName,"rb");
-		fseek(f,0,SEEK_END);
-		si = ftell(f);
-		rewind(f);
+		si=CFile::getFileSize (f);
+//		fseek(f,0,SEEK_END);
+//		si = ftell(f);
+//		rewind(f);
 		buf = new char [si + 1];
 		fread(buf, sizeof( char ), si, f);
 		fclose(f);

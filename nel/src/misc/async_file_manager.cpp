@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.1 2002/11/04 15:40:43 boucher Exp $
+ * $Id: async_file_manager.cpp,v 1.2 2003/01/07 17:46:20 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,10 +209,11 @@ void CAsyncFileManager::CFileLoad::run (void)
 	if (f != NULL)
 	{
 		uint8 *ptr;
-		fseek (f, 0, SEEK_END);
-		long filesize = ftell (f);
-		nlSleep(5);
-		fseek (f, 0, SEEK_SET);
+		long filesize=CFile::getFileSize (f);
+		//fseek (f, 0, SEEK_END);
+		//long filesize = ftell (f);
+		//nlSleep(5);
+		//fseek (f, 0, SEEK_SET);
 		ptr = new uint8[filesize];
 		fread (ptr, filesize, 1, f);
 		fclose (f);
@@ -247,10 +248,11 @@ void CAsyncFileManager::CMultipleFileLoad::run (void)
 		if (f != NULL)
 		{
 			uint8 *ptr;
-			fseek (f, 0, SEEK_END);
-			long filesize = ftell (f);
-			nlSleep(5);
-			fseek (f, 0, SEEK_SET);
+			long filesize=CFile::getFileSize (f);
+			//fseek (f, 0, SEEK_END);
+			//long filesize = ftell (f);
+			//nlSleep(5);
+			//fseek (f, 0, SEEK_SET);
 			ptr = new uint8[filesize];
 			fread (ptr, filesize, 1, f);
 			fclose (f);

@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.6 2002/11/18 10:03:06 berenguier Exp $
+ * $Id: big_file.cpp,v 1.7 2003/01/07 17:46:20 miller Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -102,8 +102,9 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	handle.File = fopen (sBigFileName.c_str(), "rb");
 	if (handle.File == NULL)
 		return false;
-	fseek (handle.File, 0, SEEK_END);
-	uint32 nFileSize = ftell (handle.File);
+	uint32 nFileSize=CFile::getFileSize (handle.File);
+	//fseek (handle.File, 0, SEEK_END);
+	//uint32 nFileSize = ftell (handle.File);
 	fseek (handle.File, nFileSize-4, SEEK_SET);
 	uint32 nOffsetFromBegining;
 	fread (&nOffsetFromBegining, sizeof(uint32), 1, handle.File);

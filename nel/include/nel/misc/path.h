@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.33 2002/12/17 11:20:41 corvazier Exp $
+ * $Id: path.h,v 1.34 2003/01/07 17:46:20 miller Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -281,6 +281,11 @@ struct CFile
 	 * You have to provide the full path of the file (the function doesn't lookup) 
 	 */
 	static uint32	getFileSize (const std::string &filename);
+
+	/**
+	 * Return the size of the file (in bytes).
+	 */
+	static uint32	getFileSize (FILE *f);
 
 	/**
 	 * Return Time of last modification of file. 0 if not found.

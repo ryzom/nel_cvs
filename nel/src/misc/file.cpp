@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.27 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: file.cpp,v 1.28 2003/01/07 17:46:20 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/big_file.h"
+#include "nel/misc/path.h"
 
 using namespace std;
 
@@ -169,9 +170,18 @@ bool		CIFile::open(const std::string &path, bool text)
 		_F = fopen (path.c_str(), mode);
 		if (_F != NULL)
 		{
+			/*
+			
+			THIS CODE REPLACED BY SADGE BECAUSE SOMETIMES
+			ftell() RETRUNS 0 FOR NO GOOD REASON - LEADING TO CLIEN CRASH
+
 			fseek (_F, 0, SEEK_END);
 			_FileSize = ftell(_F);
 			fseek (_F, 0, SEEK_SET);
+			nlassert(_FileSize==filelength(fileno(_F)));
+			*/
+			//_FileSize=filelength(fileno(_F));
+			_FileSize=CFile::getFileSize (_F);
 		}
 		else
 		{

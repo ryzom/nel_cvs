@@ -59,6 +59,7 @@ for i in $list_zone ; do
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
     echo -- Weld $i
+    echo -- Weld $i >> log.log
     $exec_timeout $weld_timeout $zone_welder $i $dest
 	echo 
   fi
@@ -86,6 +87,7 @@ for i in $list_zone_welded ; do
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
     echo -- Light $i
+    echo -- Light $i >> log.log
     $exec_timeout $light_timeout $zone_lighter $i $dest ../../cfg/properties.cfg $depend
 	echo 
 	echo 
@@ -115,6 +117,7 @@ for i in $list_zone_lighted ; do
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
     echo -- IgLight $i
+    echo -- IgLight $i >> log.log
     $exec_timeout $ig_light_timeout $zone_ig_lighter $i $dest ../../cfg/properties.cfg $depend
 	echo 
 	echo 

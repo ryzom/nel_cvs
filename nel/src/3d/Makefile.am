@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.28 2001/04/13 16:38:33 berenguier Exp $
+# $Id: Makefile.am,v 1.29 2001/04/18 10:53:46 berenguier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -34,7 +34,7 @@ libnel3d_la_SOURCES  = bezier_patch.cpp \
 					   animated_value.cpp animation.cpp animation_set.cpp animation_time.cpp \
 					   key.cpp track.cpp track_keyframer.cpp transformable.cpp mesh_instance.cpp \
 					   scene_group.cpp skeleton_model.cpp bone.cpp skeleton_shape.cpp instance_group_user.cpp \
-			transformable_user.cpp skeleton_user.cpp bone_user.cpp
+			transformable_user.cpp skeleton_user.cpp bone_user.cpp instance_material_user.cpp
 
 
 

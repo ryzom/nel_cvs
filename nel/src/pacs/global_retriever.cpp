@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.50 2001/09/06 08:54:27 legros Exp $
+ * $Id: global_retriever.cpp,v 1.51 2001/09/07 11:58:54 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -356,9 +356,11 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		uint32	id = _InternalCST.CollisionInstances[i];
 		// if the retrieved position is on a surface and it best match the estimated position
 		// remember it
-		CLocalRetriever::CLocalPosition	ret = _Instances[id].retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()), _InternalCST);
+		const CRetrieverInstance	&instance = _Instances[id];
+		CVector						lestim = instance.getLocalPosition(estimated);
+		CLocalRetriever::CLocalPosition	ret = instance.retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()), _InternalCST);
 		// go preferably on interior instances
-		float	d = (float)fabs(estimated.z-ret.Estimation.z) * (_Instances[id].getType() == CLocalRetriever::Interior ? 0.5f : 1.0f);
+		float	d = (float)fabs(lestim.z-ret.Estimation.z) * (_Instances[id].getType() == CLocalRetriever::Interior ? 0.5f : 1.0f);
 		if (ret.Surface != -1 && d < bestDist)
 		{
 			bestDist = d;

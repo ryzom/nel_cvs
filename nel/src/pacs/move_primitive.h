@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.6 2001/09/06 15:35:57 legros Exp $
+ * $Id: move_primitive.h,v 1.7 2001/09/07 11:58:54 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -382,7 +382,10 @@ public:
 		{
 			// Too many test this primitive ?
 			if (_IterationCount<=0)
+			{
+				nlwarning("in checkTestTime(): Get to the max iteration count");
 				return false;
+			}
 			else
 				_IterationCount--;
 		}

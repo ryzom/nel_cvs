@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Position Service.
  *
- * $Id: main.cpp,v 1.6 2001/07/27 10:13:53 valignat Exp $
+ * $Id: main.cpp,v 1.7 2001/08/01 15:46:37 valignat Exp $
  */
 
 /*
@@ -174,7 +174,7 @@ void cbPosition ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	msgin.serial( pos );
 	msgin.serial( angle );
 	msgin.serial( state );
-	nlinfo( "Received ENTITY_POS line." );
+	//nlinfo( "Received ENTITY_POS line." );
 
 	// Update position information in the player list
 	_pmap::iterator ItPlayer;
@@ -186,7 +186,7 @@ void cbPosition ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	else
 	{
 		((*ItPlayer).second).position = pos;
-		nlinfo( "Player position updated" );
+		//nlinfo( "Player position updated" );
 	}
 
 	// Prepare to send back the message.
@@ -202,7 +202,7 @@ void cbPosition ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	 */
 	CNetManager::send( "POS", msgout, 0 );
 
-	nlinfo( "Send back ENTITY_POS line." );
+	//nlinfo( "Send back ENTITY_POS line." );
 }
 
 

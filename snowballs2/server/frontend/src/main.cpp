@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.6 2001/07/27 10:13:53 valignat Exp $
+ * $Id: main.cpp,v 1.7 2001/08/01 15:46:37 valignat Exp $
  */
 
 /*
@@ -144,7 +144,7 @@ void cbPosClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 	 */
 	CNetManager::send( "POS", msgout );
 
-	nlinfo( "Received ENTITY_POS from the client");
+	//nlinfo( "Received ENTITY_POS from the client");
 }
 
 
@@ -177,7 +177,7 @@ void cbPosService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
 
-	nlinfo( "Sent ENTITY_POS message to all the connected clients");
+	//nlinfo( "Sent ENTITY_POS message to all the connected clients");
 }
 
 

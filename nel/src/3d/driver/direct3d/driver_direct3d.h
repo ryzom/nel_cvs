@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.13 2004/06/22 10:05:12 berenguier Exp $
+ * $Id: driver_direct3d.h,v 1.14 2004/06/28 14:12:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -335,6 +335,7 @@ public:
 	IDirect3DIndexBuffer9		*IndexBuffer;
 	uint						Size;
 	CIndexBuffer::TLocation		Location;
+	// current position in bytes!
 	uint						CurrentIndex;
 
 	/* size is in bytes */

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_index.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_index.cpp,v 1.5 2004/06/28 10:08:53 berenguier Exp $
+ * $Id: driver_direct3d_index.cpp,v 1.6 2004/06/28 14:12:38 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -57,7 +57,16 @@ extern uint indexCount=0;
 
 CIBDrvInfosD3D::~CIBDrvInfosD3D()
 {
-	if (IndexBuffer)
+	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
+	// Restaure non resident memory
+	if (IndexBufferPtr)
+	{
+		IndexBufferPtr->setLocation(CIndexBuffer::NotResident);
+		IndexBufferPtr= NULL;
+	}
+		
+	// release index buffer
+	if (IndexBuffer && !Volatile)
 	{
 		indexCount--;
 		IndexBuffer->Release();
@@ -69,17 +78,13 @@ CIBDrvInfosD3D::~CIBDrvInfosD3D()
 uint32 *CIBDrvInfosD3D::lock (uint first, uint last, bool readOnly)
 {
 	nlassert (first != last);
-
+	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
+	
 	if (Volatile)
 	{
-		CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 		// Lock the good buffer
-	/* todo hulud volatile
 		CVolatileIndexBuffer *buffer = VolatileRAM ? &(driver->_VolatileIndexBufferRAM[driver->_CurrentRenderPass&1]):
 			&(driver->_VolatileIndexBufferAGP[driver->_CurrentRenderPass&1]);
-			*/
-		CVolatileIndexBuffer *buffer = VolatileRAM ? &(driver->_VolatileIndexBufferRAM[0]):
-			&(driver->_VolatileIndexBufferAGP[0]);
 		uint32 *ptr = (uint32*)buffer->lock ((last-first)*sizeof(uint32), Offset);
 		IndexBuffer = buffer->IndexBuffer;
 		ptr -= first;
@@ -87,6 +92,9 @@ uint32 *CIBDrvInfosD3D::lock (uint first, uint last, bool readOnly)
 		// Current lock time
 		VolatileLockTime = driver->_CurrentRenderPass;
 
+		// Touch the index buffer
+		driver->touchRenderVariable (&driver->_IndexBufferCache);
+		
 		return ptr;
 	}
 	else
@@ -108,11 +116,8 @@ void	CIBDrvInfosD3D::unlock (uint first, uint last)
 	{
 		CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 		// Unlock the good buffer
-		/* todo hulud volatile
 		CVolatileIndexBuffer *buffer = VolatileRAM ? &(driver->_VolatileIndexBufferRAM[driver->_CurrentRenderPass&1]):
-			&(driver->_VolatileIndexBufferAGP[driver->_CurrentRenderPass&1]);*/
-		CVolatileIndexBuffer *buffer = VolatileRAM ? &(driver->_VolatileIndexBufferRAM[0]):
-			&(driver->_VolatileIndexBufferAGP[0]);
+			&(driver->_VolatileIndexBufferAGP[driver->_CurrentRenderPass&1]);
 		buffer->unlock ();
 	}
 	else
@@ -232,9 +237,10 @@ bool CDriverD3D::activeIndexBuffer(CIndexBuffer& IB)
 			while (preferredMemory--);
 			if (!sucess)
 				return false;
+
+			indexCount++;
 		}
 
-		indexCount++;
 
 		// Release the local index buffer
 		IB.DrvInfos = info;
@@ -326,7 +332,7 @@ void *CVolatileIndexBuffer::lock (uint size, uint &offset)
 	/* If not enough room to allocate this buffer, resise the buffer to Size+Size/2 but do not reset CurrentIndex
 	 * to be sure the buffer will be large enough next pass. */
 
-	// Enough room for this vertex ?
+	// Enough room for this index ?
 	if (CurrentIndex+size > Size)
 	{
 		// No, reallocate
@@ -335,10 +341,17 @@ void *CVolatileIndexBuffer::lock (uint size, uint &offset)
 
 	// Lock the buffer, noblocking lock here if not the first allocation since a reset
 	VOID *pbData;
-	nlverify (IndexBuffer->Lock (CurrentIndex, size, &pbData, (CurrentIndex!=0)?D3DLOCK_NOOVERWRITE:0) == D3D_OK);
+	if (CurrentIndex==0)
+	{
+		nlverify (IndexBuffer->Lock (0, size, &pbData, 0) == D3D_OK);
+	}
+	else
+	{
+		nlverify (IndexBuffer->Lock (CurrentIndex, size, &pbData, D3DLOCK_NOOVERWRITE) == D3D_OK);
+	}
 
 	// Old buffer position
-	offset = CurrentIndex;
+	offset = CurrentIndex/sizeof(uint32);
 
 	// New buffer position
 	CurrentIndex += size;

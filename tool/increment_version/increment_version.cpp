@@ -1,7 +1,7 @@
 /** \file increment_version.cpp
  *	Increment the version number
  *
- * $Id: increment_version.cpp,v 1.1 2002/09/05 12:41:44 coutelas Exp $
+ * $Id: increment_version.cpp,v 1.2 2002/09/09 13:25:14 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -102,7 +102,7 @@ sint main( sint argc, char ** argv )
 
 			// get old build version number
 			sint32 oldBuildVersionStartIdx = line.rfind(".") + 1;
-			sint32 oldBuildVersionEndIdx = line.find_first_of(" \t",oldBuildVersionStartIdx) - 1;
+			sint32 oldBuildVersionEndIdx = line.find_first_of(" \"\t",oldBuildVersionStartIdx) - 1;
 			if( oldBuildVersionEndIdx == -1) 
 			{
 				oldBuildVersionEndIdx = line.size() - 1;

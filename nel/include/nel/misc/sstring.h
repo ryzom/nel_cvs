@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.4 2004/01/13 18:32:11 cado Exp $
+ * $Id: sstring.h,v 1.5 2004/02/06 18:51:56 miller Exp $
  */
 
 
@@ -91,6 +91,12 @@ public:
 		if (empty())
 			return 0;
 		return (*this)[0];
+	}
+
+	/// Return the n right hand most characters of a string
+	char back() const
+	{
+		return (*this)[size()-1];
 	}
 
 	/// Return the n right hand most characters of a string
@@ -497,7 +503,7 @@ public:
 		const char *constStr = c_str();
 
 		// just bypass the problems that can cause a crash...
-		if (toFind==NULL || *toFind==0 || startLocation>size())
+		if (toFind==NULL || *toFind==0 || startLocation>=size())
 			return std::string::npos;
 
 		unsigned i,j;
@@ -505,10 +511,8 @@ public:
 		{
 			// string compare toFind against (*this)+i ...
 			for (j=0;toFind[j];++j)
-			{
-				if (tolower(constStr[i+j])!=tolower(toFind[j]))
+				if ((i+j>=size()) || (*this)[i+j]!=toFind[j])
 					break;
-			}
 			// if strings were identical then we're done
 			if (toFind[j]==0)
 				return i;
@@ -520,6 +524,16 @@ public:
 	bool contains(const char *toFind) const
 	{
 		return find(toFind)!=std::string::npos;
+	}
+
+	/// Return true if this contains given sub string
+	bool contains(int character) const
+	{
+		for (const_iterator it=begin();it!=end();++it)
+			if ((*it)==character)
+				return true;
+
+		return false;
 	}
 
 	/// A couple of handy atoi routines...
@@ -550,16 +564,76 @@ public:
 		return stricmp(c_str(),other.c_str())==0;
 	}
 
+	/// Case insensitive string compare
+	bool operator==(const char* other) const
+	{
+		return stricmp(c_str(),other)==0;
+	}
+
+	/// Case insensitive string compare
+	bool operator!=(const std::string &other) const
+	{
+		return stricmp(c_str(),other.c_str())!=0;
+	}
+
+	/// Case insensitive string compare
+	bool operator!=(const char* other) const
+	{
+		return stricmp(c_str(),other)!=0;
+	}
+
+	/// Case insensitive string compare
+	bool operator<=(const std::string &other) const
+	{
+		return stricmp(c_str(),other.c_str())<=0;
+	}
+
+	/// Case insensitive string compare
+	bool operator<=(const char* other) const
+	{
+		return stricmp(c_str(),other)<=0;
+	}
+
+	/// Case insensitive string compare
+	bool operator>=(const std::string &other) const
+	{
+		return stricmp(c_str(),other.c_str())>=0;
+	}
+
+	/// Case insensitive string compare
+	bool operator>=(const char* other) const
+	{
+		return stricmp(c_str(),other)>=0;
+	}
+
+	/// Case insensitive string compare
+	bool operator>(const std::string &other) const
+	{
+		return stricmp(c_str(),other.c_str())>0;
+	}
+
+	/// Case insensitive string compare
+	bool operator>(const char* other) const
+	{
+		return stricmp(c_str(),other)>0;
+	}
+
+	/// Case insensitive string compare
+	bool operator<(const std::string &other) const
+	{
+		return stricmp(c_str(),other.c_str())>0;
+	}
+
+	/// Case insensitive string compare
+	bool operator<(const char* other) const
+	{
+		return stricmp(c_str(),other)>0;
+	}
+
 	/// Case insensitive string compare (useful for use as map keys, see less<CSString> below)
 	bool icompare(const std::string &other) const
 	{
 		return stricmp(c_str(),other.c_str())<0;
-	}
-
-	/// Case insesnsitive string compare
-	bool operator!=(const std::string &other) const
-	{
-		return !(*this==other);
 	}
 	
 	/// Serial
@@ -584,20 +658,20 @@ public:
 } // NLMISC
 
 
-_STLP_BEGIN_NAMESPACE
+//_STLP_BEGIN_NAMESPACE
 //namespace std
 //{
 
 	/*
 	 * less<CSString> is case insensitive
 	 */
-	template <>
-	struct less<NLMISC::CSString> : public binary_function<NLMISC::CSString, NLMISC::CSString, bool>
-	{
-		bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); }
-	};
+//	template <>
+//	struct less<NLMISC::CSString> : public std::binary_function<NLMISC::CSString, NLMISC::CSString, bool>
+//	{
+//		bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); }
+//	};
 //} // std
-_STLP_END_NAMESPACE
+//_STLP_END_NAMESPACE
 
 
 #endif // NL_SSTRING_H

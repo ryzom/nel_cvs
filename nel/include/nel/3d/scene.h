@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.12 2000/12/15 15:10:35 berenguier Exp $
+ * $Id: scene.h,v 1.13 2001/01/11 08:55:55 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -178,7 +178,7 @@ public:
 	/// delete a shape from the scene. It will be really deleted when all instances which points to it will be deleted.
 	///  no-op if not exist.
 	void			delShape(const std::string &shapeName);
-	/// Create a model, instance of the shape "shapename". If not present, try to load it via the shapeServer.
+	/// Create a model, instance of the shape "shapename". If not present, try to load "shapename" via the CPath.
 	/// If fails, return NULL.
 	virtual	CTransformShape	*createInstance(const std::string &shapeName);
 	/** Delete an instance via his pointer. This is a synonym for deleteModel().

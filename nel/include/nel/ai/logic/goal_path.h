@@ -1,0 +1,64 @@
+/** \file fact.h
+ *	First order logic facts
+ *
+ * $Id: goal_path.h,v 1.1 2002/08/02 14:37:23 portier Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#ifndef NL_GOAL_PATH_H
+#define NL_GOAL_PATH_H
+
+#include "nel/ai/agent/actor_script.h"
+#include "nel/ai/logic/goal_stack.h"
+
+// A CGoalPath is a finite state machine wher each state corresponds to a goal.
+
+namespace NLAILOGIC
+{
+
+class CGoalPath : public NLAIAGENT::CActorScript
+{
+	private:
+		std::vector<CGoal *>		_Goals;
+		std::vector<int>			_OnSucces;
+		std::vector<int>			_OnFailure;
+		std::vector<bool>			_JmpNext;
+		int							_CurrentState;
+		NLAILOGIC::CGoalStack		*_GoalStack;
+
+	public:
+		CGoalPath(NLAIAGENT::IAgentManager *);
+
+		void setGoalStack(NLAILOGIC::CGoalStack * );
+		void addGoal(CGoal *, bool action = true, int on_succes = 0 , int on_failure = 0);
+
+		/// Own success and failure functions
+		/// These function tell other operators and goals that might be waiting for 
+		/// the execution of this one.
+		virtual void processSuccess(NLAIAGENT::IObjectIA *);
+		virtual void processFailure(NLAIAGENT::IObjectIA *);
+		virtual void success();
+		virtual void failure();
+};
+
+} // NLAILOGIC
+
+#endif // NL_GOAL_PATH

@@ -30,7 +30,7 @@ Any bug fix, added functionality, optimisation is not only possible, but
 welcome, and improvements will be integrated into the reference platform
 maintained by Nevrax.
 
-NeL is currently developped and tested under Linux and Windows environments.
+NeL is currently developped and tested under GNU/Linux and Windows environments.
 
 \section structure NeL Structure
 
@@ -60,7 +60,7 @@ networked systems, acting in close cooperation to run the world simulation
 for the players.
 
 A cluster will scale from a single high-end system that runs the server and
-client at the same time to a handful of basic Linux PCs for mid-size worlds
+client at the same time to a handful of basic GNU/Linux PCs for mid-size worlds
 and to large high-end multiprocessor racked systems for professional level
 service.
 

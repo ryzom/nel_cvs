@@ -153,6 +153,9 @@ IDB_ANIM_SEQUENCE       BITMAP  DISCARDABLE     "bmp00015.bmp"
 IDB_FORCE_INTENSITY     BITMAP  DISCARDABLE     "bmp00016.bmp"
 IDB_LIFE_TIME           BITMAP  DISCARDABLE     "bmp00017.bmp"
 IDB_WEIGHT              BITMAP  DISCARDABLE     "bmp00018.bmp"
+IDB_SOUND               BITMAP  DISCARDABLE     "bmp00019.bmp"
+IDB_SOUND_VOLUME        BITMAP  DISCARDABLE     "bmp00020.bmp"
+IDB_SOUND_FREQ          BITMAP  DISCARDABLE     "bmp00021.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -647,7 +650,7 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_EDIT_PARTICLE_SYSTEM DIALOG DISCARDABLE  0, 0, 307, 356
+IDD_EDIT_PARTICLE_SYSTEM DIALOG DISCARDABLE  0, 0, 307, 359
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -678,19 +681,22 @@ BEGIN
     PUSHBUTTON      "Update",IDC_UPDATE_BBOX,156,266,43,16
     PUSHBUTTON      "+ 10 %",IDC_INC_BBOX,201,266,31,16
     PUSHBUTTON      "- 10 %",IDC_DEC_BBOX,235,266,31,16
-    GROUPBOX        "System life",IDC_STATIC,4,299,295,45
+    GROUPBOX        "System life",IDC_STATIC,4,299,295,50
     CONTROL         "Model removed when out of range",
                     IDC_DIE_WHEN_OUT_OF_RANGE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,307,124,11
-    LTEXT           "Die on event :",IDC_STATIC,7,321,46,9
-    COMBOBOX        IDC_PS_DIE_ON_EVENT,55,319,106,45,CBS_DROPDOWNLIST | 
+    LTEXT           "Die on event :",IDC_STATIC,7,334,46,9
+    COMBOBOX        IDC_PS_DIE_ON_EVENT,55,332,106,45,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Apply after delay :",IDC_STATIC,169,320,58,11
-    EDITTEXT        IDC_APPLY_AFTRE_DELAY,231,318,29,13,ES_AUTOHSCROLL
-    LTEXT           "s",IDC_STATIC,265,320,8,9
-    CONTROL         "PS removed when out of frustrum",
+    LTEXT           "Apply after delay :",IDC_STATIC,169,333,58,11
+    EDITTEXT        IDC_APPLY_AFTRE_DELAY,231,331,29,13,ES_AUTOHSCROLL
+    LTEXT           "s",IDC_STATIC,265,333,8,9
+    CONTROL         "PS removed when out of frustum",
                     IDC_DIE_WHEN_OUT_OF_FRUSTRUM,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,134,307,123,10
+    CONTROL         "perform motion when out of frustum",
+                    IDC_PERFORM_MOTION_WHEN_OUT_OF_FRUSTUM,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,320,122,8
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -701,6 +707,16 @@ BEGIN
     COMBOBOX        IDC_BIN_OP,129,82,96,85,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "Operator :",IDC_STATIC,77,83,37,9
+END
+
+IDD_SOUND DIALOG DISCARDABLE  0, 0, 354, 203
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_SOUND_NAME,51,10,122,14,ES_AUTOHSCROLL
+    LTEXT           "Sound name:",IDC_STATIC,5,12,45,10
+    PUSHBUTTON      "Browse...",IDC_BROWSE_SOUND,178,9,64,16
+    GROUPBOX        "",IDC_STATIC,3,1,245,29
 END
 
 
@@ -965,7 +981,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 300
         TOPMARGIN, 7
-        BOTTOMMARGIN, 349
+        BOTTOMMARGIN, 352
     END
 
     IDD_BIN_OP, DIALOG
@@ -974,6 +990,14 @@ BEGIN
         RIGHTMARGIN, 383
         TOPMARGIN, 7
         BOTTOMMARGIN, 167
+    END
+
+    IDD_SOUND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 347
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 196
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1113,6 +1137,7 @@ BEGIN
             MENUITEM "Conic",                       IDM_CONIC_EMITTER
             MENUITEM "Spherical",                   IDM_SPHERICAL_EMITTER
         END
+        MENUITEM "Bind sound",                  IDM_SOUND
         MENUITEM SEPARATOR
         MENUITEM "Delete",                      IDM_DELETE_LOCATED
         MENUITEM SEPARATOR

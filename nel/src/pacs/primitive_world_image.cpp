@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.6 2001/08/01 15:44:27 berenguier Exp $
+ * $Id: primitive_world_image.cpp,v 1.7 2001/08/17 08:16:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include <float.h>
 
 #include "pacs/primitive_world_image.h"
 #include "pacs/move_primitive.h"

@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.8 2001/03/16 16:48:35 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.9 2001/04/03 13:19:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,9 @@ public:
 	/// Constructor
 	CHrcTrav()
 	{
-		CurrentDate=0;
+		// NB: Now, observers update is done before ALL traversals.
+		// Hence, we must inc the value before scene rendering. This is equivalent to start with 1, and inc at end of traverse().
+		CurrentDate= 1;
 	}
 
 
@@ -88,11 +90,14 @@ public:
 	sint				getRenderOrder() const {return 1000;}
 	void				traverse()
 	{
-		// Inc the date.
-		CurrentDate++;
 		// Traverse the graph.
 		if(Root)
 			Root->traverse(NULL);
+
+		// Inc the date.
+		// NB: Now, observers update is done before ALL traversals.
+		// Hence, we must inc the value before scene rendering. This is equivalent to start with 1, and inc at end of traverse().
+		CurrentDate++;
 	}
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file net_layer5/frontend_service.cpp
  * Layer 5 and IService5 example
  *
- * $Id: frontend_service.cpp,v 1.4 2002/05/28 18:15:13 lecroart Exp $
+ * $Id: frontend_service.cpp,v 1.5 2002/05/28 18:15:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -312,8 +312,6 @@ public:
 
 		instance->setServiceUpCallback("*", cbUpService, NULL);
 		instance->setServiceDownCallback("*", cbDownService, NULL);
-
-		nlinfo ("test");
 	}
 };
  

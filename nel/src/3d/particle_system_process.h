@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.1 2001/07/12 15:57:34 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.2 2001/07/17 15:57:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,6 +124,13 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		*/
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;		
 			
+
+		/// tells wether there are alive entities / particles in the system
+		virtual bool hasParticles(void) const { return false ; }
+
+		/// tells wether there are alive emitters / particles in the system
+		virtual bool hasEmitters(void) const { return false ; }
+
 
 	
 		

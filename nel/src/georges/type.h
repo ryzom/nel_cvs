@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.7 2002/09/25 09:38:05 corvazier Exp $
+ * $Id: type.h,v 1.8 2002/10/28 11:07:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include	"nel/misc/types_nl.h"
 #include	"nel/georges/u_type.h"
+#include	"nel/georges/u_form_elm.h"
 #include	"header.h"
 
 namespace NLGEORGES
@@ -87,7 +88,7 @@ public:
 
 	// Evaluate a node
 	bool				getValue (std::string &result, const class CForm *form, const class CFormElmAtom *node, const class CFormDfn &parentDfn, 
-									uint parentIndex, bool evaluate, uint32 *where, uint32 round, const char *formName) const;
+									uint parentIndex, UFormElm::TEval evaluate, uint32 *where, uint32 round, const char *formName) const;
 
 	// Definitions
 	class CDefinition

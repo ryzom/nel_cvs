@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.34 2002/10/21 13:25:50 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.35 2002/10/28 11:07:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,7 +91,7 @@ bool CFormElm::getArrayNodeName (std::string &result, uint arrayIndex) const
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (std::string &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayNode", "This node is not an array.");
 	return false;
@@ -99,7 +99,7 @@ bool CFormElm::getArrayValue (std::string &result, uint arrayIndex, bool evaluat
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (sint8 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -107,7 +107,7 @@ bool CFormElm::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWh
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (uint8 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -115,7 +115,7 @@ bool CFormElm::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWh
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (sint16 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -123,7 +123,7 @@ bool CFormElm::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TW
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (uint16 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -131,7 +131,7 @@ bool CFormElm::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TW
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (sint32 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -139,7 +139,7 @@ bool CFormElm::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TW
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (uint32 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -147,7 +147,7 @@ bool CFormElm::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TW
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (float &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -155,7 +155,7 @@ bool CFormElm::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWh
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (double &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -163,7 +163,7 @@ bool CFormElm::getArrayValue (double &result, uint arrayIndex, bool evaluate, TW
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (bool &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -171,7 +171,7 @@ bool CFormElm::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhe
 
 // ***************************************************************************
 
-bool CFormElm::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElm::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
@@ -239,7 +239,7 @@ bool CFormElm::isAtom () const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (string &result, bool evaluate) const 
+bool CFormElm::getValue (string &result, TEval evaluate) const 
 { 
 	warning (false, "getValue", "This node is not an atom.");
 	return false; 
@@ -247,7 +247,7 @@ bool CFormElm::getValue (string &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (sint8 &result, bool evaluate) const
+bool CFormElm::getValue (sint8 &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom.");
 	return false; 
@@ -255,7 +255,7 @@ bool CFormElm::getValue (sint8 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (uint8 &result, bool evaluate) const
+bool CFormElm::getValue (uint8 &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom.");
 	return false; 
@@ -263,7 +263,7 @@ bool CFormElm::getValue (uint8 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (sint16 &result, bool evaluate) const
+bool CFormElm::getValue (sint16 &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom.");
 	return false; 
@@ -271,7 +271,7 @@ bool CFormElm::getValue (sint16 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (uint16 &result, bool evaluate) const
+bool CFormElm::getValue (uint16 &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom.");
 	return false; 
@@ -279,7 +279,7 @@ bool CFormElm::getValue (uint16 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (sint32 &result, bool evaluate) const
+bool CFormElm::getValue (sint32 &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom.");
 	return false; 
@@ -287,7 +287,7 @@ bool CFormElm::getValue (sint32 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (uint32 &result, bool evaluate) const
+bool CFormElm::getValue (uint32 &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom.");
 	return false; 
@@ -295,7 +295,7 @@ bool CFormElm::getValue (uint32 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (float &result, bool evaluate) const
+bool CFormElm::getValue (float &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom.");
 	return false; 
@@ -303,7 +303,7 @@ bool CFormElm::getValue (float &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (double &result, bool evaluate) const
+bool CFormElm::getValue (double &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom."); 
 	return false; 
@@ -311,7 +311,7 @@ bool CFormElm::getValue (double &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (bool &result, bool evaluate) const
+bool CFormElm::getValue (bool &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom."); 
 	return false; 
@@ -319,7 +319,7 @@ bool CFormElm::getValue (bool &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElm::getValue (NLMISC::CRGBA &result, bool evaluate) const
+bool CFormElm::getValue (NLMISC::CRGBA &result, TEval evaluate) const
 {
 	warning (false, "getValue", "This node is not an atom."); 
 	return false; 
@@ -410,7 +410,7 @@ bool CFormElm::getNodeByName (const UFormElm **result, const char *name, TWhereI
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (string& result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (string& result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -456,7 +456,7 @@ bool CFormElm::getValueByName (string& result, const char *name, bool evaluate, 
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (sint8 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (sint8 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -473,7 +473,7 @@ bool CFormElm::getValueByName (sint8 &result,	const char *name, bool evaluate, T
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (uint8 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (uint8 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -490,7 +490,7 @@ bool CFormElm::getValueByName (uint8 &result,	const char *name, bool evaluate, T
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (sint16 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (sint16 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -507,7 +507,7 @@ bool CFormElm::getValueByName (sint16 &result,	const char *name, bool evaluate, 
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (uint16 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (uint16 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -524,7 +524,7 @@ bool CFormElm::getValueByName (uint16 &result,	const char *name, bool evaluate, 
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (sint32 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (sint32 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -541,7 +541,7 @@ bool CFormElm::getValueByName (sint32 &result,	const char *name, bool evaluate, 
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (uint32 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (uint32 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -558,7 +558,7 @@ bool CFormElm::getValueByName (uint32 &result,	const char *name, bool evaluate, 
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (float &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (float &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -575,7 +575,7 @@ bool CFormElm::getValueByName (float &result,	const char *name, bool evaluate, T
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (double &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -592,7 +592,7 @@ bool CFormElm::getValueByName (double &result, const char *name, bool evaluate, 
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (bool &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (bool &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -609,7 +609,7 @@ bool CFormElm::getValueByName (bool &result,	const char *name, bool evaluate, TW
 
 // ***************************************************************************
 
-bool CFormElm::getValueByName (NLMISC::CRGBA &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
+bool CFormElm::getValueByName (NLMISC::CRGBA &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
 	if (round == 0xffffffff)
 		round = LastRound++;
@@ -2360,7 +2360,7 @@ bool CFormElmArray::getArrayNode (UFormElm **result, uint arrayIndex)
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (std::string &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2376,7 +2376,7 @@ bool CFormElmArray::getArrayValue (std::string &result, uint arrayIndex, bool ev
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (sint8 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2396,7 +2396,7 @@ bool CFormElmArray::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (uint8 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2416,7 +2416,7 @@ bool CFormElmArray::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (sint16 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2436,7 +2436,7 @@ bool CFormElmArray::getArrayValue (sint16 &result, uint arrayIndex, bool evaluat
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (uint16 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2456,7 +2456,7 @@ bool CFormElmArray::getArrayValue (uint16 &result, uint arrayIndex, bool evaluat
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (sint32 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2476,7 +2476,7 @@ bool CFormElmArray::getArrayValue (sint32 &result, uint arrayIndex, bool evaluat
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (uint32 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2496,7 +2496,7 @@ bool CFormElmArray::getArrayValue (uint32 &result, uint arrayIndex, bool evaluat
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (float &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2516,7 +2516,7 @@ bool CFormElmArray::getArrayValue (float &result, uint arrayIndex, bool evaluate
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (double &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2536,7 +2536,7 @@ bool CFormElmArray::getArrayValue (double &result, uint arrayIndex, bool evaluat
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (bool &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2556,7 +2556,7 @@ bool CFormElmArray::getArrayValue (bool &result, uint arrayIndex, bool evaluate,
 
 // ***************************************************************************
 
-bool CFormElmArray::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+bool CFormElmArray::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const
 {
 	if (Type)
 	{
@@ -2802,7 +2802,7 @@ bool CFormElmAtom::isAtom () const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (string &result, bool evaluate) const
+bool CFormElmAtom::getValue (string &result, TEval evaluate) const
 {
 	nlassert (Type);
 
@@ -2812,7 +2812,7 @@ bool CFormElmAtom::getValue (string &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (sint8 &result, bool evaluate) const
+bool CFormElmAtom::getValue (sint8 &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;
@@ -2826,7 +2826,7 @@ bool CFormElmAtom::getValue (sint8 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (uint8 &result, bool evaluate) const
+bool CFormElmAtom::getValue (uint8 &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;
@@ -2840,7 +2840,7 @@ bool CFormElmAtom::getValue (uint8 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (sint16 &result, bool evaluate) const
+bool CFormElmAtom::getValue (sint16 &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;
@@ -2854,7 +2854,7 @@ bool CFormElmAtom::getValue (sint16 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (uint16 &result, bool evaluate) const
+bool CFormElmAtom::getValue (uint16 &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;
@@ -2868,7 +2868,7 @@ bool CFormElmAtom::getValue (uint16 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (sint32 &result, bool evaluate) const
+bool CFormElmAtom::getValue (sint32 &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;
@@ -2882,7 +2882,7 @@ bool CFormElmAtom::getValue (sint32 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (uint32 &result, bool evaluate) const
+bool CFormElmAtom::getValue (uint32 &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;
@@ -2896,7 +2896,7 @@ bool CFormElmAtom::getValue (uint32 &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (float &result, bool evaluate) const
+bool CFormElmAtom::getValue (float &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;
@@ -2910,7 +2910,7 @@ bool CFormElmAtom::getValue (float &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (double &result, bool evaluate) const
+bool CFormElmAtom::getValue (double &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;
@@ -2924,7 +2924,7 @@ bool CFormElmAtom::getValue (double &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (bool &result, bool evaluate) const
+bool CFormElmAtom::getValue (bool &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;
@@ -2938,7 +2938,7 @@ bool CFormElmAtom::getValue (bool &result, bool evaluate) const
 
 // ***************************************************************************
 
-bool CFormElmAtom::getValue (NLMISC::CRGBA &result, bool evaluate) const
+bool CFormElmAtom::getValue (NLMISC::CRGBA &result, TEval evaluate) const
 {
 	// Get the string value
 	string value;

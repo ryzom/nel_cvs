@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.13 2002/10/08 17:24:56 corvazier Exp $
+ * $Id: type.cpp,v 1.14 2002/10/28 11:07:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -393,7 +393,7 @@ public:
 						// Evale
 						nlassert (nodeType);
 						string res;
-						if (nodeType->getValue (res, Form, atom, *parentDfn, parentIndex, true, NULL, round, value))
+						if (nodeType->getValue (res, Form, atom, *parentDfn, parentIndex, UFormElm::Eval, NULL, round, value))
 						{
 							if (((const CFormElm&)Form->getRootNode ()).convertValue (result, res.c_str ()))
 							{
@@ -508,7 +508,7 @@ void buildError (char *msg, uint offset)
 
 // ***************************************************************************
 
-bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *node, const CFormDfn &parentDfn, uint parentIndex, bool evaluate, uint32 *where, uint32 round, const char *formName) const
+bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *node, const CFormDfn &parentDfn, uint parentIndex, UFormElm::TEval evaluate, uint32 *where, uint32 round, const char *formName) const
 {
 	// Node exist ?
 	if (node && !node->Value.empty())
@@ -536,7 +536,25 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 	}
 
 	// evaluate the value ?
-	if (evaluate)
+	if (evaluate == UFormElm::Formula)
+	{
+		// Evaluate predefinition
+		uint i;
+		uint predefCount = Definitions.size ();
+		for (i=0; i<predefCount; i++)
+		{
+			// Ref on the value
+			const CType::CDefinition &def = Definitions[i];
+
+			// This predefinition ?
+			if (def.Label == result)
+			{
+				result = def.Value;
+				break;
+			}
+		}
+	}
+	else if (evaluate == UFormElm::Eval)
 	{
 		// Evaluate numerical expression
 		if ((Type == Double) || (Type == SignedInt) || (Type == UnsignedInt) || (Type == UnsignedInt))
@@ -615,22 +633,6 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 						// try to get a Form value
 						string valueName = result.substr ( offset, nextEnd-offset );
 
-						// Evaluate predefinition
-						uint i;
-						uint predefCount = Definitions.size ();
-						for (i=0; i<predefCount; i++)
-						{
-							// Ref on the value
-							const CType::CDefinition &def = Definitions[i];
-
-							// This predefinition ?
-							if (def.Label == valueName)
-							{
-								valueName = def.Value;
-								break;
-							}
-						}
-
 						double value;
 						CMyEvalNumExpr expr (form);
 						int offsetExpr;
@@ -652,10 +654,10 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 							warning (false, formName, form->getFilename ().c_str (), "getValue", "Syntax error in expression: %s\n%s\n%s", expr.getErrorString (error), result.c_str (), msg);
 							return false;
 						}
-					}
 
-					// Next offset
-					offset = nextEnd + 1;
+						// Next offset
+						offset = nextEnd + 1;
+					}
 				}
 				else if (tokenType == NL_TOKEN_DOUBLE_QUOTE)
 				{
@@ -696,7 +698,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 								// Evale
 								nlassert (nodeType);
 								string result2;
-								if (nodeType->getValue (result2, form, atom, *parentDfn, parentIndex, true, NULL, round, valueName.c_str ()))
+								if (nodeType->getValue (result2, form, atom, *parentDfn, parentIndex, UFormElm::Eval, NULL, round, valueName.c_str ()))
 								{
 									dest += result2;
 								}

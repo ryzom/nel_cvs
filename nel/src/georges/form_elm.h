@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.14 2002/10/08 09:13:14 corvazier Exp $
+ * $Id: form_elm.h,v 1.15 2002/10/28 11:07:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,17 +67,17 @@ public:
 	// From UFormElm
 	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round=0xffffffff) const;
 	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round=0xffffffff);
-	virtual bool	getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (sint16 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (uint16 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (sint32 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (uint32 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
-	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (std::string &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (sint8 &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (uint8 &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (sint16 &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (uint16 &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (sint32 &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (uint32 &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (float &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (double &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (bool &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
 	virtual bool	setValueByName (const char *value, const char *name, bool *created);
 	virtual bool	setValueByName (sint8 value, const char *name, bool *created);
 	virtual bool	setValueByName (uint8 value, const char *name, bool *created);
@@ -95,17 +95,17 @@ public:
 	virtual bool	getArrayNode (const UFormElm **result, uint arrayIndex) const;
 	virtual bool	getArrayNode (UFormElm **result, uint arrayIndex);
 	virtual bool	getArrayNodeName (std::string &result, uint arrayIndex) const;
-	virtual bool	getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (std::string &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (sint8 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (uint8 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (sint16 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (uint16 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (sint32 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (uint32 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (float &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (double &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (bool &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
 	virtual bool	isStruct () const;
 	virtual bool	isVirtualStruct () const;
 	virtual bool	getDfnName (std::string &dfnName ) const;
@@ -114,17 +114,17 @@ public:
 	virtual bool	getStructNode (uint element, const UFormElm **result) const;
 	virtual bool	getStructNode (uint element, UFormElm **result);
 	virtual bool	isAtom () const;
-	virtual bool	getValue (std::string &result, bool evaluate) const;
-	virtual bool	getValue (sint8 &result, bool evaluate) const;
-	virtual bool	getValue (uint8 &result, bool evaluate) const;
-	virtual bool	getValue (sint16 &result, bool evaluate) const;
-	virtual bool	getValue (uint16 &result, bool evaluate) const;
-	virtual bool	getValue (sint32 &result, bool evaluate) const;
-	virtual bool	getValue (uint32 &result, bool evaluate) const;
-	virtual bool	getValue (float &result, bool evaluate) const;
-	virtual bool	getValue (double &result, bool evaluate) const;
-	virtual bool	getValue (bool &result, bool evaluate) const;
-	virtual bool	getValue (NLMISC::CRGBA &result, bool evaluate) const;
+	virtual bool	getValue (std::string &resultname, TEval evaluate) const;
+	virtual bool	getValue (sint8 &resultname, TEval evaluate) const;
+	virtual bool	getValue (uint8 &resultname, TEval evaluate) const;
+	virtual bool	getValue (sint16 &resultname, TEval evaluate) const;
+	virtual bool	getValue (uint16 &resultname, TEval evaluate) const;
+	virtual bool	getValue (sint32 &resultname, TEval evaluate) const;
+	virtual bool	getValue (uint32 &resultname, TEval evaluate) const;
+	virtual bool	getValue (float &resultname, TEval evaluate) const;
+	virtual bool	getValue (double &resultname, TEval evaluate) const;
+	virtual bool	getValue (bool &resultname, TEval evaluate) const;
+	virtual bool	getValue (NLMISC::CRGBA &resultname, TEval evaluate) const;
 
 	// ** Convert functions
 
@@ -363,17 +363,17 @@ public:
 	bool				getArrayNode (const UFormElm **result, uint arrayIndex) const;
 	bool				getArrayNode (UFormElm **result, uint arrayIndex);
 	bool				getArrayNodeName (std::string &result, uint arrayIndex) const;
-	bool				getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool				getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (std::string &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (sint8 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (uint8 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (sint16 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (uint16 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (sint32 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (uint32 &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (float &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (double &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (bool &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, TEval evaluate, TWhereIsValue *where) const;
 
 	// From CFormElm
 	xmlNodePtr			write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
@@ -435,17 +435,17 @@ public:
 
 	// From UFormElm
 	bool						isAtom () const;
-	bool						getValue (std::string &result, bool evaluate) const;
-	bool						getValue (sint8 &result, bool evaluate) const;
-	bool						getValue (uint8 &result, bool evaluate) const;
-	bool						getValue (sint16 &result, bool evaluate) const;
-	bool						getValue (uint16 &result, bool evaluate) const;
-	bool						getValue (sint32 &result, bool evaluate) const;
-	bool						getValue (uint32 &result, bool evaluate) const;
-	bool						getValue (float &result, bool evaluate) const;
-	bool						getValue (double &result, bool evaluate) const;
-	bool						getValue (bool &result, bool evaluate) const;
-	bool						getValue (NLMISC::CRGBA &result, bool evaluate) const;
+	bool						getValue (std::string &resultname, TEval evaluate) const;
+	bool						getValue (sint8 &resultname, TEval evaluate) const;
+	bool						getValue (uint8 &resultname, TEval evaluate) const;
+	bool						getValue (sint16 &resultname, TEval evaluate) const;
+	bool						getValue (uint16 &resultname, TEval evaluate) const;
+	bool						getValue (sint32 &resultname, TEval evaluate) const;
+	bool						getValue (uint32 &resultname, TEval evaluate) const;
+	bool						getValue (float &resultname, TEval evaluate) const;
+	bool						getValue (double &resultname, TEval evaluate) const;
+	bool						getValue (bool &resultname, TEval evaluate) const;
+	bool						getValue (NLMISC::CRGBA &resultname, TEval evaluate) const;
 
 	// Set the value, the elt been used
 	void						setValue (const char *value);

@@ -1,7 +1,7 @@
 /** \file quad_effect.cpp
  * <File description>
  *
- * $Id: quad_effect.cpp,v 1.1 2001/08/07 14:08:13 vizerie Exp $
+ * $Id: quad_effect.cpp,v 1.2 2001/10/26 08:17:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -56,15 +56,13 @@ bool operator<(const CEdge &e1, const CEdge &e2) { return e1.P1.y < e2.P1.y ; }
 typedef std::deque<CEdge> TEdgeList ;
 
 
-
-
-void CQuadEffect::processPoly(const TPoint2DVect &poly
-							, uint width, uint height, uint quadWidth, uint quadHeight
-							, TPoint2DVect &dest
+void CQuadEffect::makeRasters(const TPoint2DVect &poly
+							, float quadWidth, float quadHeight
+							, TRasters &dest, float &startY
 						   )
 {
 
-
+	dest.clear();
     const float epsilon = 10E-5f ;
 
 	sint size = poly.size() ;
@@ -100,6 +98,8 @@ void CQuadEffect::processPoly(const TPoint2DVect &poly
 	bool  borderFound ;
 	float left, right, inter, diff ;
 	float currY = highest ;
+	startY = highest;
+	
 	TEdgeList::iterator elIt ; 
 
 	do
@@ -126,7 +126,7 @@ void CQuadEffect::processPoly(const TPoint2DVect &poly
 				{
 					// edge has gone out of active edge list
 					elIt = ael.erase(elIt) ;
-					--aelSize ;
+					if (! --aelSize) return;
 					continue ;
 				}
 				else
@@ -217,30 +217,41 @@ void CQuadEffect::processPoly(const TPoint2DVect &poly
 					
 				}
 				++ elIt ;				
-			}
+			}		
 
-		//	left = std::max(0.f, left) ;
-		//	right = std::min((float) (width - 1), right) ;
-
-			// now, read a serie of texture quad
-			if (currY < height && (currY + quadHeight) > 0)
-			{
-				const sint nbQuad = (sint) ceilf( (right - left) / quadWidth) ;
-				uint currX = (uint) left ;
-				for (k = 0 ; k < nbQuad ; ++k)
-				{
-					dest.push_back(NLMISC::CVector2f((float) currX, (float) currY)) ;										  
-					currX += quadWidth ;
-				}
-			}
+			dest.push_back(std::make_pair(left, right));
 		}
 
 		currY += quadHeight ;
 
-	} while (size || aelSize) ;
+	} while (size || aelSize) ;	
+}
 
 
-	
+
+void CQuadEffect::processPoly(const TPoint2DVect &poly
+							, float quadWidth, float quadHeight
+							, TPoint2DVect &dest
+						   )
+{
+	static TRasters rDest;
+	float currY;
+	makeRasters(poly, quadWidth, quadHeight, rDest, currY);
+	if (dest.size())
+	{
+		TRasters::const_iterator it, endIt = rDest.end();
+		for (it = rDest.begin(); it != endIt; ++it)
+		{
+			const sint nbQuad = (sint) ceilf( (it->second - it->first) / quadWidth) ;
+			float currX = it->first;
+			for (sint k = 0 ; k < nbQuad ; ++k)
+			{
+				dest.push_back(NLMISC::CVector2f(currX, currY)) ;										  
+				currX += quadWidth ;
+			}
+			currY += quadHeight;
+		}
+	}
 }
 
 

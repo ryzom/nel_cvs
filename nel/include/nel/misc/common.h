@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.77 2004/12/24 13:18:45 vuarand Exp $
+ * $Id: common.h,v 1.78 2005/01/19 08:52:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,6 +83,9 @@ inline uint64 rdtsc()
  */
 const double Pi = 3.1415926535897932384626433832795;
 
+
+// retrieve size of a static array
+#define sizeofarray(v) (sizeof(v) / sizeof((v)[0]))
 
 /** Return a float random inside the interval [0,mod]
  */

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.26 2001/10/08 14:52:19 valignat Exp $
+# $Id: Makefile.am,v 1.27 2001/10/12 14:48:00 cado Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -9,6 +9,7 @@ SUBDIRS               = config_file .
 lib_LTLIBRARIES       = libnelmisc.la
 
 libnelmisc_la_SOURCES = aabbox.cpp                         \
+			bit_mem_stream.cpp		   \
                         bit_set.cpp                        \
                         bitmap.cpp                         \
                         block_memory.cpp                   \

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.142 2002/04/04 09:19:18 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.143 2002/06/13 08:45:05 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1988,5 +1988,27 @@ NLMISC::IInputDeviceManager		*CDriverGL::getLowLevelInputDeviceManager()
 	#endif
 }
 
+// ***************************************************************************
+bool			CDriverGL::supportBlendConstantColor() const
+{
+	return _Extensions.EXTBlendColor;
+}
+// ***************************************************************************
+void			CDriverGL::setBlendConstantColor(NLMISC::CRGBA col)
+{
+	// bkup
+	_CurrentBlendConstantColor= col;
+
+	// update GL
+	if(!_Extensions.EXTBlendColor)
+		return;
+	static const	float	OO255= 1.0f/255;
+	nglBlendColorEXT(col.R*OO255, col.G*OO255, col.B*OO255, col.A*OO255);
+}
+// ***************************************************************************
+NLMISC::CRGBA	CDriverGL::getBlendConstantColor() const
+{
+	return	_CurrentBlendConstantColor;
+}
 
 } // NL3D

@@ -846,6 +846,14 @@ SOURCE=.\3d\mesh_base.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_blender.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_blender.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mesh_geom.cpp
 # End Source File
 # Begin Source File

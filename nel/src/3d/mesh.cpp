@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.56 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: mesh.cpp,v 1.57 2002/06/13 08:44:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/stripifier.h"
 #include "3d/fast_floor.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/mesh_blender.h"
 
 
 using namespace std;
@@ -667,42 +668,9 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 					// CMaterial Ref
 					CMaterial &material=mi->Materials[rdrPass.MaterialId];
 
-					// Backup opacity
-					uint8 opacity=material.getOpacity ();
-
-					// New opacity
-					material.setOpacity (globalAlphaInt);
-
-					// Disable ZWrite??
-					bool zwrite;
-					if(gaDisableZWrite)
-					{
-						// Backup and set new the zwrite
-						zwrite=material.getZWrite ();
-						material.setZWrite (false);
-					}
-
-					// Backup blend
-					bool blend=material.getBlend ();
-					material.setBlend (true);
-
-					// if material is opaque, must ensure Std Blend.
-					CMaterial::TBlend	srcBlend, dstBlend;
-					if(!blend)
-					{
-						srcBlend= material.getSrcBlend();
-						dstBlend= material.getDstBlend();
-						material.setSrcBlend(CMaterial::srcalpha);
-						material.setDstBlend(CMaterial::invsrcalpha);
-					}
-
-					// if material is Alpha Test, must modulate AlphaTest limit to avoid Pop effects
-					float	bkupAlphaTestThreshold;
-					if(material.getAlphaTest())
-					{
-						bkupAlphaTestThreshold= material.getAlphaTestThreshold();
-						material.setAlphaTestThreshold(bkupAlphaTestThreshold * globalAlpha);
-					}
+					// Use a MeshBlender to modify material and driver.
+					CMeshBlender	blender;
+					blender.prepareRenderForGlobalAlpha(material, drv, globalAlpha, globalAlphaInt, gaDisableZWrite);
 
 					// Setup VP material
 					if (useMeshVP)
@@ -713,31 +681,8 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 					// Render
 					drv->render(rdrPass.PBlock, material);
 
-					// Resetup backuped opacity
-					material.setOpacity (opacity);
-
-					// Resetup backuped zwrite
-					if(gaDisableZWrite)
-					{
-						material.setZWrite (zwrite);
-					}
-
-					// Resetup backuped blend
-					material.setBlend (blend);
-
-					// Resetup backuped blend factors
-					if(!blend)
-					{
-						material.setSrcBlend(srcBlend);
-						material.setDstBlend(dstBlend);
-					}
-
-					// Resetup backuped AlphaTest threshold
-					if(material.getAlphaTest())
-					{
-						material.setAlphaTestThreshold(bkupAlphaTestThreshold);
-					}
-
+					// Resetup material/driver
+					blender.restoreRender(material, drv, gaDisableZWrite);
 				}
 			}
 		}

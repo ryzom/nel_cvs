@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.118 2002/05/13 07:49:26 besson Exp $
+ * $Id: driver_opengl.h,v 1.119 2002/06/13 08:45:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -566,6 +566,12 @@ public:
 	virtual bool supportPerPixelLighting(bool specular) const;
 
 
+	/// \name Misc
+	// @{
+	virtual	bool			supportBlendConstantColor() const;
+	virtual	void			setBlendConstantColor(NLMISC::CRGBA col);
+	virtual	NLMISC::CRGBA	getBlendConstantColor() const;
+	// @}
 
 private:
 	friend class					CTextureDrvInfosGL;
@@ -1005,6 +1011,9 @@ private:
 		NLMISC::CSmartPtr<CTextureCube>	_CausticCubeMap; // a cube map used for the rendering of caustics
 		static void initCausticCubeMap();
 	// @}
+
+
+	NLMISC::CRGBA					_CurrentBlendConstantColor;
 };
 
 } // NL3D

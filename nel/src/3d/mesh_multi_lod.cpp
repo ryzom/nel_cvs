@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.22 2002/05/06 16:52:54 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.23 2002/06/13 08:44:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/coarse_mesh_manager.h"
 #include "3d/skeleton_model.h"
 #include "3d/fast_floor.h"
+#include "3d/mesh_blender.h"
 
 #include "nel/misc/debug.h"
 
@@ -492,19 +493,11 @@ void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstan
 				// ----------
 				// get average sun color for this coarseMesh
 				CRGBA	newCol= trans->getCoarseMeshLighting();
-				// Set current Alpha blend transparency (in color becausematerial is unlit)
-				newCol.A= (uint8)OptFastFloor(255 * alpha);
-				// bkup and change color
-				CRGBA	bkupColor= material.getColor();
-				material.setColor ( newCol );
-				// Disable ZWrite??
-				if(gaDisableZWrite)
-					material.setZWrite (false);
-				// Enable blend
-				material.setBlend (true);
-				// must modulate AlphaTest limit to avoid Pop effects
-				material.setAlphaTestThreshold(0.5f * alpha);
 
+				// Use a CMeshBlender to modify material and driver.
+				CMeshBlender	blender;
+				blender.prepareRenderForGlobalAlphaCoarseMesh(material, drv, newCol, alpha, gaDisableZWrite);
+				
 
 				// render simple the coarseMesh
 				CMeshGeom *meshGeom= safe_cast<CMeshGeom*>(slotRef.MeshGeom);
@@ -513,14 +506,8 @@ void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstan
 
 				// resetup standard CoarseMeshMaterial material values
 				// ----------
-				material.setColor ( bkupColor );
-				// ReEnable ZWrite??
-				if(gaDisableZWrite)
-					material.setZWrite (true);
-				// Reset blend
-				material.setBlend (false);
-				// reset AlphaTest limit
-				material.setAlphaTestThreshold(0.5f);
+				// blender restore
+				blender.restoreRenderCoarseMesh(material, drv, gaDisableZWrite);
 			}
 		}
 		else

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.27 2002/02/11 10:45:57 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.28 2002/06/13 08:45:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,7 @@ struct	CGlExtensions
 	// true if NVVertexProgram and if we know that VP is emulated
 	bool	NVVertexProgramEmulated;
 	bool	EXTSecondaryColor;
+	bool	EXTBlendColor;
 
 	// WGL ARB extensions, true if supported
 	bool	WGLARBPBuffer;
@@ -123,6 +124,7 @@ public:
 		EXTSecondaryColor= false;
 		WGLARBPBuffer= false;
 		WGLARBPixelFormat= false;
+		EXTBlendColor= false;
 
 		/// \name Disable Hardware feature. False by default. setuped by IDriver
 		DisableHardwareVertexProgram= false;
@@ -323,6 +325,11 @@ extern NEL_PFNGLSECONDARYCOLOR3UIVEXTPROC		nglSecondaryColor3uivEXT;
 extern NEL_PFNGLSECONDARYCOLOR3USEXTPROC		nglSecondaryColor3usEXT;
 extern NEL_PFNGLSECONDARYCOLOR3USVEXTPROC		nglSecondaryColor3usvEXT;
 extern NEL_PFNGLSECONDARYCOLORPOINTEREXTPROC	nglSecondaryColorPointerEXT;
+
+
+// BlendColor extension
+//========================
+extern NEL_PFNGLBLENDCOLOREXTPROC				nglBlendColorEXT;
 
 
 #ifdef NL_OS_WINDOWS

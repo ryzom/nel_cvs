@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.33 2002/05/13 07:49:25 besson Exp $
+ * $Id: driver.h,v 1.34 2002/06/13 08:44:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -833,6 +833,24 @@ public:
 
 		// Does the driver support the per-pixel lighting shader ?
 		virtual bool supportPerPixelLighting(bool specular) const = 0;
+
+	/// \name Misc
+	// @{
+
+	/**	Does the driver support Blend Constant Color ??? If yes CMaterial::blendConstant* enum can be used
+	 *	for blend Src ord Dst factor. If no, using these enum will have undefined results.
+	 */
+	virtual	bool			supportBlendConstantColor() const =0;
+
+	/**	see supportBlendConstantColor(). Set the current Blend Constant Color.
+	 */
+	virtual	void			setBlendConstantColor(NLMISC::CRGBA col)=0;
+
+	/**	see supportBlendConstantColor(). Get the current Blend Constant Color.
+	 */
+	virtual	NLMISC::CRGBA	getBlendConstantColor() const =0;
+
+	// @}
 
 protected:
 	friend	class	IVBDrvInfos;

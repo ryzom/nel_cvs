@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.15 2002/03/14 18:07:24 vizerie Exp $
+ * $Id: material.h,v 1.16 2002/06/13 08:44:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,7 +117,14 @@ class CMaterial : public CRefCount
 public:
 
 	enum ZFunc				{ always=0,never,equal,notequal,less,lessequal,greater,greaterequal, zfuncCount };
-	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, blendCount };
+
+	/** Blend enums. see setSrcBlend()/setDstBlend()/setBlendFunc().
+	 *	blendConstant* enums are only valid if dirver->supportBlendConstantColor().
+	 *	\see IDriver::supportBlendConstantColor()
+	 */
+	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, 
+		blendConstantColor, blendConstantInvColor, blendConstantAlpha, blendConstantInvAlpha, blendCount };
+
 	/**
 	 * Normal shader:
 	 *	- use simple multitexturing. see texEnv*() methods.

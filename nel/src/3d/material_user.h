@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.2 2002/02/04 10:34:17 vizerie Exp $
+ * $Id: material_user.h,v 1.3 2002/06/13 08:44:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,8 +59,9 @@ public:
 	CMaterialUser()
 	{
 		_Material.initUnlit();
+		// Enum assertion. User have access only to 6 first blend modes. Other are internals.
+		nlassert((uint)UMaterial::blendCount==(uint)CMaterial::blendConstantColor);
 		// Enum assertion.
-		nlassert((uint)UMaterial::blendCount==(uint)CMaterial::blendCount);
 		nlassert((uint)UMaterial::zfuncCount==(uint)CMaterial::zfuncCount);
 	}
 	virtual ~CMaterialUser()

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.11 2002/05/02 08:13:19 berenguier Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.12 2002/06/13 08:45:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -621,6 +621,9 @@ typedef void (APIENTRY * NEL_PFNGLSECONDARYCOLOR3USVEXTPROC) (const GLushort *v)
 typedef void (APIENTRY * NEL_PFNGLSECONDARYCOLORPOINTEREXTPROC) (GLint size, GLenum type, GLsizei stride, GLvoid *pointer);
 
 
+// BlendColor extension
+//========================
+typedef void (APIENTRY * NEL_PFNGLBLENDCOLOREXTPROC) (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 
 
 #ifdef __cplusplus

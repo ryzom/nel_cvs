@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.33 2002/03/14 18:28:20 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.34 2002/06/13 08:45:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,6 +208,11 @@ NEL_PFNGLSECONDARYCOLOR3UIVEXTPROC		nglSecondaryColor3uivEXT;
 NEL_PFNGLSECONDARYCOLOR3USEXTPROC		nglSecondaryColor3usEXT;
 NEL_PFNGLSECONDARYCOLOR3USVEXTPROC		nglSecondaryColor3usvEXT;
 NEL_PFNGLSECONDARYCOLORPOINTEREXTPROC	nglSecondaryColorPointerEXT;
+
+
+// BlendColor extension
+//========================
+NEL_PFNGLBLENDCOLOREXTPROC				nglBlendColorEXT;
 
 
 // Pbuffer extension
@@ -568,6 +573,18 @@ static bool	setupNVTextureShader(const char	*glext)
 }
 
 
+// *********************************
+static bool	setupEXTBlendColor(const char	*glext)
+{
+	if(strstr(glext, "GL_EXT_blend_color")==NULL)
+		return false;
+
+	if(!(nglBlendColorEXT= (NEL_PFNGLBLENDCOLOREXTPROC)nelglGetProcAddress("glBlendColorEXT"))) return false;
+
+	return true;
+}
+
+
 // ***************************************************************************
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
@@ -645,6 +662,9 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	// Check EXTSecondaryColor
 	ext.EXTSecondaryColor= setupEXTSecondaryColor(glext);
+
+	// Check EXTBlendColor
+	ext.EXTBlendColor= setupEXTBlendColor(glext);
 }
 
 

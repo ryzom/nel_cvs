@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Enumeration of all objects in an instance group
  *
- * $Id: main.cpp,v 1.1 2002/03/19 14:56:13 besson Exp $
+ * $Id: main.cpp,v 1.2 2002/07/09 08:13:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,6 +107,7 @@ int main(int nNbArg, char**ppArgs)
 	if (pIG2 == NULL)
 	{
 		cerr << "File " << ppArgs[3] << " not found" << endl;
+		delete pIG1;
 		return -1;
 	}
 
@@ -165,8 +166,19 @@ int main(int nNbArg, char**ppArgs)
 	if (!SaveInstanceGroup (ppArgs[1], pIGout))
 	{
 		cerr << "Cannot save to file " << ppArgs[1] << endl;
+
+		// Delete the ig
+		delete pIG1;
+		delete pIG2;
+		delete pIGout;
+
 		return -1;
 	}
+
+	// Delete the ig
+	delete pIG1;
+	delete pIG2;
+	delete pIGout;
 
 	return 1;
 }

@@ -1,7 +1,8 @@
 /** \file unitime.cpp
  * _CUniTime class
+ * THIS CLASS IS DEPRECATED, DON'T USE IT
  *
- * $Id: unitime.cpp,v 1.32 2002/08/21 09:43:49 lecroart Exp $
+ * $Id: unitime.cpp,v 1.33 2003/02/07 16:07:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

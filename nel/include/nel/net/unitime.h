@@ -1,7 +1,8 @@
 /** \file unitime.h
  * Manage universal time (synchronized with a centralized time manager)
+ * THIS CLASS IS DEPRECATED, DON'T USE IT
  *
- * $Id: unitime.h,v 1.12 2001/10/16 09:19:15 legros Exp $
+ * $Id: unitime.h,v 1.13 2003/02/07 16:07:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +44,9 @@ class CCallbackClient;
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
+ *
+ * THIS CLASS IS DEPRECATED, DON'T USE IT
+ *
  */
 class _CUniTime : public NLMISC::CTime
 {

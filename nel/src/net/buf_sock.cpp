@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.34 2003/08/12 16:46:25 cado Exp $
+ * $Id: buf_sock.cpp,v 1.35 2003/08/14 17:09:38 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -404,7 +404,7 @@ bool CNonBlockingBufSock::receivePart( uint32 nbExtraBytes )
 				// Test size limit
 				if ( _Length > _MaxExpectedBlockSize )
 				{
-					nlwarning( "LNETL1: Socket %s received length %u exceeding max expected, in block header... Disconnecting", _Length, asString().c_str() );
+					nlwarning( "LNETL1: Socket %s received length %u exceeding max expected, in block header... Disconnecting", asString().c_str(), _Length );
 					throw ESocket( "Received length exceeding max expected", false );
 				}
 

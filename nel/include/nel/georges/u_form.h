@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form interface class
  *
- * $Id: u_form.h,v 1.3 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: u_form.h,v 1.4 2002/10/21 15:23:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,11 @@
 #include	"nel/misc/types_nl.h"
 #include	"nel/misc/smart_ptr.h"
 
+namespace NLMISC
+{
+class IStream;
+}
+
 namespace NLGEORGES
 {
 
@@ -52,6 +57,13 @@ public:
 
 	/// Get a const pointer on the root element of the form. It is a struct node.
 	virtual const UFormElm& getRootNode () const = 0;
+
+	/** Write the form in a stream.
+	  * 
+	  * \param stream is the stream used to write the form
+	  * \param georges4CVS should be true if you use Georges with CVS false else
+	  */
+	virtual void			write (NLMISC::IStream &stream, bool georges4CVS) = 0;
 
 	/**
 	  * Get the comment

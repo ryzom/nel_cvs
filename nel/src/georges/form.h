@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.10 2002/09/05 14:12:12 corvazier Exp $
+ * $Id: form.h,v 1.11 2002/10/21 15:22:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ public:
 	UFormElm&		getRootNode ();
 	const UFormElm& getRootNode () const;
 	const std::string &getComment () const;
-
+	void			write (class NLMISC::IStream &stream, bool georges4CVS);
 
 #pragma warning (disable : 4355)
 	CForm ();

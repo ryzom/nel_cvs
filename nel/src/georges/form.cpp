@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.11 2002/09/05 14:12:12 corvazier Exp $
+ * $Id: form.cpp,v 1.12 2002/10/21 15:22:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdgeorges.h"
 
 #include "nel/misc/i_xml.h"
+#include "nel/misc/o_xml.h"
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
 
@@ -113,7 +114,8 @@ CForm::~CForm ()
 void CForm::write (xmlDocPtr doc, const char *filename, bool georges4CVS)
 {
 	// Save the filename
-	_Filename = CFile::getFilename (filename);
+	if (filename)
+		_Filename = CFile::getFilename (filename);
 
 	// Create the first node
 	xmlNodePtr node = xmlNewDocNode (doc, NULL, (const xmlChar*)"FORM", NULL);
@@ -260,6 +262,18 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, const cha
 const std::string &CForm::getComment () const
 {
 	return Header.Comments;
+}
+
+// ***************************************************************************
+
+void CForm::write (class NLMISC::IStream &stream, bool georges4CVS)
+{
+	// Xml stream
+	COXml xmlStream;
+	xmlStream.init (&stream);
+
+	// Write the file
+	write (xmlStream.getDocument (), NULL, georges4CVS);
 }
 
 // ***************************************************************************

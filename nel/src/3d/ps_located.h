@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.4 2001/07/04 12:30:39 vizerie Exp $
+ * $Id: ps_located.h,v 1.5 2001/07/12 15:45:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,14 +27,21 @@
 #define NL_PARTICLE_SYSTEM_LOCATED_H
 
 #include <stack>
-#include <memory>
 
 #include "nel/misc/types_nl.h"
-#include "3d/particle_system.h"
-#include "3d/ps_attrib.h" // an attribute template container
 #include "nel/misc/vector.h"
+#include "3d/particle_system_process.h"
+#include "3d/ps_attrib.h" // an attribute template container
+#include "3d/ps_lod.h"
 #include "nel/misc/stream.h"
-#include "nel/misc/aabbox.h"
+
+namespace NLMISC
+{
+	class CAABBox ;
+	class CMatrix ;	
+}
+
+
 
 
 
@@ -42,15 +49,18 @@
 namespace NL3D 
 {
 
+
+
 template <class T> class CPSAttribMaker ;
 
-using NLMISC::CVector ;
+
 class CPSLocatedBindable ;
 class CPSTargetLocatedBindable ;
-class CParticleSystem ;
 class CPSZone ;
-
-
+class IDriver ;
+class CFontManager ;
+class CFontGenerator ;
+class CScene ;
 
 
 const uint32 DefaultMaxLocatedInstance = 1 ; // the default value for a located container
@@ -65,7 +75,7 @@ struct CPSCollisionInfo
 	// distance to the collisionner along the speed vector
 	float   dist ;	
 	// new pos and speed, valid if a collision occured
-	CVector newPos, newSpeed ;
+	NLMISC::CVector newPos, newSpeed ;
 
 	/** the zone on which the bounce occured...
 	 *  can be useful to check the behaviour in case of collision
@@ -168,8 +178,8 @@ public:
 	* \param indexInEmitter The index of the emitter (in the emitterLocated object)
 	*/
 
-	sint32 newElement(const NLMISC::CVector &pos = CVector::Null					
-	, const CVector &speed = CVector::Null, CPSLocated *emitterLocated = NULL, uint32 indexInEmitter = 0) ;					
+	sint32 newElement(const NLMISC::CVector &pos = NLMISC::CVector::Null					
+		, const NLMISC::CVector &speed = NLMISC::CVector::Null, CPSLocated *emitterLocated = NULL, uint32 indexInEmitter = 0) ;					
 
 
 	/**
@@ -178,6 +188,17 @@ public:
 	*/
 
 	void deleteElement(uint32 index) ;
+
+
+	/// shortcut to get the scene
+	CScene *getScene(void) ;
+
+	/// shortcut to the same method of the owning particle system
+	void getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis) ;
+
+
+	/// shorcut to increase the particle counter (number of particle drawn, for benchmark purpose )
+	void incrementNbDrawnParticles(uint num) ;
 
 
 	/**	 
@@ -313,12 +334,10 @@ public:
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	/// Shortcut to get an instance of the 3d driver
-	IDriver *getDriver() const 
-	{ 
-		nlassert(_Owner) ;
-		nlassert (_Owner->getDriver() ) ; // you haven't called setDriver on the system
-		return _Owner->getDriver() ;
-	}
+	IDriver *getDriver() const ;
+	
+	/// shorcut to get a user param that was set in the owner system
+	float getUserParam(uint numParam) const ;
 
 
 
@@ -330,17 +349,17 @@ public:
 	/** Compute a vector that will map to (1 0 0) after view and model transform.
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
-	inline CVector computeI(void) const  ;
+	NLMISC::CVector computeI(void) const  ;
 
 	/** Compute a vector that will map to (0 1 0) after view and model transform.
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
-	inline CVector computeJ(void) const  ;
+	NLMISC::CVector computeJ(void) const  ;
 
 	/** Compute a vector that will map to (0 0 1) after view and model transform.
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
-	inline CVector computeK(void) const  ;
+	NLMISC::CVector computeK(void) const  ;
 
 	/** call this if you need collision infos.
 	*  The collide info attribute is not included by default to save memory.
@@ -381,7 +400,7 @@ public:
 	/** get a matrix that helps to express located B coordinate in located A basis
 	*  A and B must belong to the same system
 	*/
-	static inline const CMatrix &getConversionMatrix(const CPSLocated *A, const CPSLocated *B) ;
+	static const NLMISC::CMatrix &getConversionMatrix(const CPSLocated *A, const CPSLocated *B) ;
 
 
 
@@ -410,9 +429,9 @@ public:
 	/// get the located bindable name (edition purpose)
 	std::string getName(void) const { return _Name ; }
 
-protected:	
 
-	
+
+protected:	
 
 	std::string _Name ;
 	
@@ -472,13 +491,13 @@ protected:
 	/// used internally to record the request of creation of new posted located
 	struct CPostNewElementRequestInfo
 	{
-		CVector _Pos ;
-		CVector _Speed ;
+		NLMISC::CVector _Pos ;
+		NLMISC::CVector _Speed ;
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			f.serial(_Pos, _Speed) ;
 		}			
-		CPostNewElementRequestInfo(const CVector &pos = CVector::Null, const CVector &speed = CVector::Null) : _Pos(pos), _Speed(speed) {}		
+		CPostNewElementRequestInfo(const NLMISC::CVector &pos = NLMISC::CVector::Null, const NLMISC::CVector &speed = NLMISC::CVector::Null) : _Pos(pos), _Speed(speed) {}		
 	} ;
 
 	typedef std::stack<CPostNewElementRequestInfo> TNewElementRequestStack ;
@@ -506,8 +525,8 @@ protected:
 	 * (when called during newElement or deleteElement)
 	 */
 
-	 void postNewElement(const NLMISC::CVector &pos = CVector::Null					
-		, const CVector &speed = CVector::Null) ;
+	 void postNewElement(const NLMISC::CVector &pos = NLMISC::CVector::Null					
+		, const NLMISC::CVector &speed = NLMISC::CVector::Null) ;
 
 
 	 /// this prepare the located ofr collision tests
@@ -524,50 +543,6 @@ protected:
 // IMPLEMENTATION OF INLINE METHODS  //
 ///////////////////////////////////////
 
-
-inline CVector CPSLocated::computeI(void) const 
-{
-	if (!_SystemBasisEnabled)
-	{
-		return _Owner->getInvertedViewMat().getI() ;
-	}
-	else
-	{
-		// we must express the I vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getI()) ;
-	}
-}
-
-
-inline CVector CPSLocated::computeJ(void) const 
-{
-	if (!_SystemBasisEnabled)
-	{
-		return _Owner->getInvertedViewMat().getJ() ;
-	}
-	else
-	{
-		// we must express the J vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getJ()) ;
-	}
-}
-
-
-
-inline CVector CPSLocated::computeK(void) const
-{
-	if (!_SystemBasisEnabled)
-	{
-		return _Owner->getInvertedViewMat().getK() ;
-	}
-	else
-	{
-		// we must express the K vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getK()) ;
-	}
-}
-
-
 inline void CPSLocated::collisionUpdate(const CPSCollisionInfo &ci, uint32 index)
 {
 	nlassert(_CollisionInfo) ;
@@ -575,29 +550,6 @@ inline void CPSLocated::collisionUpdate(const CPSCollisionInfo &ci, uint32 index
 	if (firstCi.dist == -1 || ci.dist < firstCi.dist)
 	{
 		firstCi = ci ;
-	}
-}
-
-/// get a matrix that helps to express located B coordinate in located A basis
-inline const CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *A, const CPSLocated *B)
-{
-	nlassert(A->_Owner == B->_Owner) ; // conversion must be made between entity of the same system
-	if (A->_SystemBasisEnabled == B->_SystemBasisEnabled)
-	{
-		return CMatrix::Identity ;
-	}
-	else
-	{
-		if (B->_SystemBasisEnabled)
-		{
-			return B->_Owner->getSysMat() ;
-		}
-		else
-		{
-			return A->_Owner->getInvertedSysMat() ;
-		}
-
-
 	}
 }
 
@@ -642,10 +594,7 @@ public:
 	virtual uint32 getPriority(void) const = 0 ;
 	
 	/// ctor	
-	CPSLocatedBindable() 
-	{
-		_Owner = NULL ;
-	}
+	CPSLocatedBindable() ;	
 
 	//  CPSLocatedBindable() : _Owner(NULL) {}
 
@@ -717,107 +666,51 @@ public:
 	 }
 
  	/// Shortcut to get the font manager if one was set
-	 CFontManager *getFontManager(void)
-	 {
-		nlassert(_Owner) ;
-		return _Owner->getFontManager() ;
-	 }
-
-	 /// Shortcut to get the font manager if one was set (const version)
-	 const CFontManager *getFontManager(void) const
-	 {
-		nlassert(_Owner) ;
-		return _Owner->getFontManager() ;
-	 }
-
-
-	/// Shortcut to get the matrix of the system	
+	CFontManager *getFontManager(void) ;
 	 
+	/// Shortcut to get the font manager if one was set (const version)
+	const CFontManager *getFontManager(void) const ;	 
 
-	const CMatrix &getSysMat(void) const 
-	{
-		nlassert(_Owner) ;		
-		return _Owner->getOwner()->getSysMat() ;
-	}
+	/// Shortcut to get the matrix of the system		 
+	const NLMISC::CMatrix &getSysMat(void) const ;	
 
-	/// shortcut to get the inverted matrix of the system
-	
-	const CMatrix &getInvertedSysMat(void) const 
-	{
-		nlassert(_Owner) ;
-			return _Owner->getOwner()->getInvertedSysMat() ;
-	
-	}
+	/// shortcut to get the inverted matrix of the system	
+	const NLMISC::CMatrix &getInvertedSysMat(void) const ;	
 
 	/** Get the matrix applied to this set of located bindable
 	 *  It may be the identity or the system matrix
 	 */
-	const CMatrix &getLocatedMat(void) const
-	{
-		nlassert(_Owner) ;
-		if (_Owner->isInSystemBasis())
-		{
-			return _Owner->getOwner()->getSysMat() ;
-		}
-		else
-		{
-			return CMatrix::Identity ;
-		}
-	}
+	const NLMISC::CMatrix &getLocatedMat(void) const ;
+	
 
 	/** Get the matrix applied to this set of located bindable
-	 *  It may be the identity or the inverted system matrix
+	 *  It may be the identity sor the inverted system matrix
 	 */
-	const CMatrix &getInvertedLocatedMat(void) const
-	{
-		nlassert(_Owner) ;
-		if (_Owner->isInSystemBasis())
-		{
-			return _Owner->getOwner()->getInvertedSysMat() ;
-		}
-		else
-		{
-			return CMatrix::Identity ;
-		}
-	}
-
-
+	const NLMISC::CMatrix &getInvertedLocatedMat(void) const ;
+	
 	/// shortcut to get the view matrix
-	const CMatrix &getViewMat(void) const 
-	{
-		nlassert(_Owner) ;
-		return _Owner->getOwner()->getViewMat() ;	
-	}	
+	const NLMISC::CMatrix &getViewMat(void) const ;	
 
 	/// shortcut to get the inverted view matrix
-	const CMatrix &getInvertedViewMat(void) const 
-	{
-		nlassert(_Owner) ;
-		return _Owner->getOwner()->getInvertedViewMat() ;	
-	}	
-
+	const NLMISC::CMatrix &getInvertedViewMat(void) const ;	
 
 	/// shortcut to setup the model matrix (system basis or world basis)
-	void setupDriverModelMatrix(void)  
-	{
-		nlassert(_Owner) ;
-		_Owner->setupDriverModelMatrix() ;
-	}
+	void setupDriverModelMatrix(void) ;	
 
 	/** Compute a vector that will map to (1 0 0) after view and model transform.
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
-	inline CVector computeI(void)  const { return _Owner->computeI() ; }
+	inline NLMISC::CVector computeI(void)  const { return _Owner->computeI() ; }
 
 	/** Compute a vector that will map to (0 1 0) after view and model transform.
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
-	inline CVector computeJ(void)  const { return _Owner->computeJ() ; }
+	inline NLMISC::CVector computeJ(void)  const { return _Owner->computeJ() ; }
 
 	 /** Compute a vector that will map to (0 0 1) after view and model transform.
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
- 	 inline CVector computeK(void)  const { return _Owner->computeK() ; }
+ 	 inline NLMISC::CVector computeK(void)  const { return _Owner->computeK() ; }
 
 
 	 /// get the located that owns this bindable
@@ -833,7 +726,21 @@ public:
 	/// get the located bindable name (edition purpose)
 	std::string getName(void) const { return _Name ; }
 
+	
+	/** set the LODs that apply to that object (warning : it is based on the position of the system, and don't act on a per instance basis ...)
+      * To have per instance precision, you must use an attribute maker that has LOD as its input
+	  */
+
+	void setLOD(TPSLod lod) { _LOD = lod ; }
+
+	/// get the valid lods for that object
+	TPSLod getLOD(void) const { return _LOD ; }
+
 protected:    
+
+	/// tells when this object must be dealt with
+	TPSLod _LOD ; 
+
 
 	std::string _Name ;
 
@@ -870,7 +777,7 @@ protected:
 	 *  \param scale  : the scale to use for drawing
 	 */
 
-	void displayIcon2d(const CVector tab[], uint nbSegs, float scale) ;
+	void displayIcon2d(const NLMISC::CVector tab[], uint nbSegs, float scale) ;
 
 
 	/// set the located that hold this located bindable

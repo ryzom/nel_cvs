@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.19 2001/07/04 12:30:39 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.20 2001/07/12 15:45:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,13 +26,15 @@
 
 
 #include <algorithm>
-#include "3d/ps_located.h"
 #include "nel/misc/aabbox.h"
+#include "nel/misc/matrix.h"
 #include "3d/ps_util.h"
+#include "3d/particle_system.h"
 #include "3d/ps_zone.h"
 #include "3d/driver.h"
 #include "3d/material.h"
 #include "3d/dru.h"
+#include "3d/ps_located.h"
 
 #include "nel/misc/line.h"
 
@@ -56,6 +58,32 @@ namespace NL3D {
 }
 
 
+
+void CPSLocated::getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis)
+{
+	nlassert(_Owner) ;
+	_Owner->getLODVect(v, offset, systemBasis) ;
+}
+
+
+
+float CPSLocated::getUserParam(uint numParam) const
+{
+	nlassert(_Owner) ;
+	return _Owner->getUserParam(numParam) ;
+}
+
+CScene *CPSLocated::getScene(void)
+{
+	nlassert(_Owner) ;
+	return _Owner->getScene() ;
+}
+
+
+void CPSLocated::incrementNbDrawnParticles(uint num)
+{
+	CParticleSystem::_NbParticlesDrawn += num ; // for benchmark purpose	
+}
 
 void CPSLocated::setInitialLife(CAnimationTime lifeTime)
 {
@@ -88,6 +116,81 @@ void CPSLocated::setMassScheme(CPSAttribMaker<float> *scheme)
 }
 	
 
+
+/// get a matrix that helps to express located B coordinate in located A basis
+const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *A, const CPSLocated *B)
+{
+	nlassert(A->_Owner == B->_Owner) ; // conversion must be made between entity of the same system
+	if (A->_SystemBasisEnabled == B->_SystemBasisEnabled)
+	{
+		return NLMISC::CMatrix::Identity ;
+	}
+	else
+	{
+		if (B->_SystemBasisEnabled)
+		{
+			return B->_Owner->getSysMat() ;
+		}
+		else
+		{
+			return A->_Owner->getInvertedSysMat() ;
+		}
+
+
+	}
+}
+
+
+NLMISC::CVector CPSLocated::computeI(void) const 
+{
+	if (!_SystemBasisEnabled)
+	{
+		return _Owner->getInvertedViewMat().getI() ;
+	}
+	else
+	{
+		// we must express the I vector in the system basis, so we need to multiply it by the inverted matrix of the system
+		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getI()) ;
+	}
+}
+
+
+NLMISC::CVector CPSLocated::computeJ(void) const 
+{
+	if (!_SystemBasisEnabled)
+	{
+		return _Owner->getInvertedViewMat().getJ() ;
+	}
+	else
+	{
+		// we must express the J vector in the system basis, so we need to multiply it by the inverted matrix of the system
+		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getJ()) ;
+	}
+}
+
+
+
+NLMISC::CVector CPSLocated::computeK(void) const
+{
+	if (!_SystemBasisEnabled)
+	{
+		return _Owner->getInvertedViewMat().getK() ;
+	}
+	else
+	{
+		// we must express the K vector in the system basis, so we need to multiply it by the inverted matrix of the system
+		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getK()) ;
+	}
+}
+
+
+
+IDriver *CPSLocated::getDriver() const 
+{ 
+	nlassert(_Owner) ;
+	nlassert (_Owner->getDriver() ) ; // you haven't called setDriver on the system
+	return _Owner->getDriver() ;
+}
 
 /// dtor
 
@@ -475,7 +578,7 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 
 
 				// unoptimized version for speed integration
-				 for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed)
+				for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed)
 				{				
 					// let's avoid a constructor call				
 					itPos->x += ellapsedTime * itSpeed->x ;
@@ -483,41 +586,7 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 					itPos->z += ellapsedTime * itSpeed->z ;
 				} 
 
-				/* optimized version (in fact it doesn't change speed at all ;( )
-				uint leftToDo = _Size ;
-
-				while (leftToDo)			
-				{	
-
-					// let's use an ugly macro to unroll this loop more easily
-					// note thta we perform the op directly to avoid a ctor call 
-					#define INTEGRATE_SPEED_ONCE \
-						itPos->x += ellapsedTime * itSpeed->x ; \
-						itPos->y += ellapsedTime * itSpeed->y ; \
-						itPos->z += ellapsedTime * itSpeed->z ; \
-						++itPos ; ++itSpeed ;
-
-					#define INTEGRATE_SPEED_FOUR INTEGRATE_SPEED_ONCE  INTEGRATE_SPEED_ONCE  INTEGRATE_SPEED_ONCE  INTEGRATE_SPEED_ONCE 
-					#define INTEGRATE_SPEED_SIXTEEN INTEGRATE_SPEED_FOUR INTEGRATE_SPEED_FOUR INTEGRATE_SPEED_FOUR INTEGRATE_SPEED_FOUR
-					#define INTEGRATE_SPEED_SIXTYFOUR INTEGRATE_SPEED_SIXTEEN INTEGRATE_SPEED_SIXTEEN INTEGRATE_SPEED_SIXTEEN INTEGRATE_SPEED_SIXTEEN
-							
-
-					if (leftToDo >= 64) // try to batch computations
-					{
-						INTEGRATE_SPEED_SIXTYFOUR ;
-						leftToDo -= 64 ;
-					}
-					else
-					{
-						do
-						{
-							INTEGRATE_SPEED_ONCE ;
-						}
-						while (-- leftToDo) ;
-						break ;
-					}				
-				}
-				*/
+			
 			}
 			else
 			{
@@ -603,7 +672,10 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	// apply the pass to all bound objects
 	for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 	{
-		(*it)->step(pass, ellapsedTime) ;
+		if ((*it)->getLOD() == PSLod1n2 || _Owner->getLOD() == (*it)->getLOD()) // has this object the right LOD ?
+		{
+			(*it)->step(pass, ellapsedTime) ;
+		}
 	}
 }
 
@@ -736,6 +808,26 @@ void CPSLocated::resetCollisionInfo(void)
 // CPSLocatedBindable implementation //
 ///////////////////////////////////////
 
+
+CPSLocatedBindable::CPSLocatedBindable() : _Owner(NULL), _LOD(PSLod1n2)
+{
+	_Owner = NULL ;
+}
+
+const NLMISC::CMatrix &CPSLocatedBindable::getLocatedMat(void) const
+{
+	nlassert(_Owner) ;
+	if (_Owner->isInSystemBasis())
+	{
+		return _Owner->getOwner()->getSysMat() ;
+	}
+	else
+	{
+		return NLMISC::CMatrix::Identity ;
+	}
+}
+
+
 void CPSLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
 {
 	ptr->unregisterDtorObserver(this) ;
@@ -743,8 +835,9 @@ void CPSLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
 
 void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;
+	sint ver = f.serialVersion(2) ;
 	f.serialPtr(_Owner) ;
+	if (ver > 1) f.serialEnum(_LOD) ;
 }
 
 void CPSLocatedBindable::displayIcon2d(const CVector tab[], uint nbSegs, float scale)
@@ -799,6 +892,70 @@ void CPSLocatedBindable::displayIcon2d(const CVector tab[], uint nbSegs, float s
 
 }
 
+CFontManager *CPSLocatedBindable::getFontManager(void)
+{
+	nlassert(_Owner) ;
+	return _Owner->getFontManager() ;
+}
+
+ /// Shortcut to get the font manager if one was set (const version)
+const CFontManager *CPSLocatedBindable::getFontManager(void) const
+{
+	nlassert(_Owner) ;
+	return _Owner->getFontManager() ;
+}
+
+
+// Shortcut to get the matrix of the system	
+ const NLMISC::CMatrix &CPSLocatedBindable::getSysMat(void) const 
+{
+	nlassert(_Owner) ;		
+	return _Owner->getOwner()->getSysMat() ;
+}
+
+/// shortcut to get the inverted matrix of the system
+
+const NLMISC::CMatrix &CPSLocatedBindable::getInvertedSysMat(void) const 
+{
+	nlassert(_Owner) ;
+		return _Owner->getOwner()->getInvertedSysMat() ;
+
+}
+
+const NLMISC::CMatrix &CPSLocatedBindable::getInvertedLocatedMat(void) const
+{
+	nlassert(_Owner) ;
+	if (_Owner->isInSystemBasis())
+	{
+		return _Owner->getOwner()->getInvertedSysMat() ;
+	}
+	else
+	{
+		return NLMISC::CMatrix::Identity ;
+	}
+}
+
+
+/// shortcut to get the view matrix
+const NLMISC::CMatrix &CPSLocatedBindable::getViewMat(void) const 
+{
+	nlassert(_Owner) ;
+	return _Owner->getOwner()->getViewMat() ;	
+}	
+
+/// shortcut to get the inverted view matrix
+const NLMISC::CMatrix &CPSLocatedBindable::getInvertedViewMat(void) const 
+{
+	nlassert(_Owner) ;
+	return _Owner->getOwner()->getInvertedViewMat() ;	
+}	
+
+/// shortcut to setup the model matrix (system basis or world basis)
+void CPSLocatedBindable::setupDriverModelMatrix(void)  
+{
+	nlassert(_Owner) ;
+	_Owner->setupDriverModelMatrix() ;
+}
 
 
 /////////////////////////////////////////////

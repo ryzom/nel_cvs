@@ -1,7 +1,7 @@
 /** \file light_contribution.cpp
  * <File description>
  *
- * $Id: light_contribution.cpp,v 1.3 2002/02/28 12:59:49 besson Exp $
+ * $Id: light_contribution.cpp,v 1.4 2003/05/22 12:51:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,8 @@ CLightContribution::CLightContribution()
 	SunContribution= 255;
 
 	FrozenAmbientLight= NULL;
+
+	UseMergedPointLight= false;
 }
 
 

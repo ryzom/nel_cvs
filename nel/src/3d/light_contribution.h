@@ -1,7 +1,7 @@
 /** \file light_contribution.h
  * <File description>
  *
- * $Id: light_contribution.h,v 1.3 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: light_contribution.h,v 1.4 2003/05/22 12:51:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,11 +84,16 @@ public:
 	uint8				NumFrozenStaticLight;
 	// The contribution of the sun (directionnal light) on this model. This not apply to ambient part of the sun
 	uint8				SunContribution;
+	// True if this contribution use the MergedPointLight.
+	bool				UseMergedPointLight;
 	/** if FrozenStaticLightSetup, this is the frozen AmbientLight in ig. 
 	 *	can't be stored as RGBA, because the ambient color may change. 
 	 *	NULL means take full Sun ambient
 	 */
 	CPointLight			*FrozenAmbientLight;
+
+	// This is the Merged Ambient which simulate lot of pointLights.
+	CRGBA				MergedPointLight;
 
 public:
 

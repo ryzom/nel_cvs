@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.37 2003/05/06 15:33:48 berenguier Exp $
+ * $Id: transform.h,v 1.38 2003/05/22 12:51:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -349,6 +349,10 @@ public:
 	 *	Default behavior is false. Deriver must call setIsBigLightable() at initialisation to change it.
 	 */
 	uint32				isBigLightable() const {return getStateFlag(IsBigLightable);}
+
+	/** return true if the current light contribution of this model use a MergedPointLight
+	 */
+	bool				useMergedPointLight() const {return _LightContribution.UseMergedPointLight;}
 
 	// @}
 

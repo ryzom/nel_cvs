@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.8 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: lighting_manager.cpp,v 1.9 2003/05/22 12:51:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/fast_floor.h"
 #include "nel/3d/logic_info.h"
 #include "nel/misc/aabbox.h"
+#include "nel/misc/algo.h"
 
 
 using namespace NLMISC;
@@ -368,6 +369,11 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 	// sort the light by influence
 	sort(lightList.begin(), lightList.end());
 
+	// prepare Light Merging.
+	static std::vector<float>	lightToMergeWeight;
+	lightToMergeWeight.clear();
+	lightToMergeWeight.resize(lightList.size(), 1);
+
 
 	// and choose only max light.
 	uint	startId= 0;
@@ -376,23 +382,32 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 	if(lightContrib.FrozenStaticLightSetup)
 		startId= lightContrib.NumFrozenStaticLight;
 
-	// If there is still place for Dynamic lights.
+	// If there is still place for unFrozen static lights or dynamic lights.
 	if(startId < _MaxLightContribution)
 	{
 		// setup the transition.
 		float	deltaMinInfluence= _LightTransitionThreshold;
 		float	minInfluence= 0;
-		// If there is more light that we can accept, 
-		if(lightList.size() > _MaxLightContribution-startId)
+		sint	doMerge= 0;
+		sint	firstLightToMergeFull= _MaxLightContribution-startId;
+		// If there is more light than we can accept in not merged mode, Must merge
+		if((sint)lightList.size() > firstLightToMergeFull)
 		{
+			doMerge= 1;
 			// the minInfluence is the influence of the first light not taken.
-			minInfluence= lightList[_MaxLightContribution-startId].Influence;
+			minInfluence= lightList[firstLightToMergeFull].Influence;
 			// but must still be >=0.
 			minInfluence= max(minInfluence, 0.f);
 		}
 		// Any light under this minInfluence+deltaMinInfluence will be smoothly darken.
 		float	minInfluenceStart = minInfluence + deltaMinInfluence;
-		float	OOdeltaMinInfluencex255= 255.f / deltaMinInfluence;
+		float	OOdeltaMinInfluence= 1.0f / deltaMinInfluence;
+		/* NB: this is not an error if we have only 3 light for example (assuming _MaxLightContribution=3), 
+			and still have minInfluenceStart>0.
+			It's to have a continuity in the case of for example we have 3 lights in lightLists at frame T0, 
+			resulting in "doMerge=0"  and at frame T1 we have 4 lights, the farthest having an influence of 0 
+			or nearly 0.
+		*/
 
 		// fill maxLight at max.
 		for(i=startId;i<(sint)_MaxLightContribution; i++)
@@ -415,16 +430,19 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 					// For Static LightSetup BiLinear to work correctly, modulate with BkupInfluence
 					// don't worry about the precision of floor, because of *255.
 					lightContrib.Factor[i]= (uint8)OptFastFloor(bkupInf*255);
+					// Indicate that this light don't need to be merged at all!
+					lightToMergeWeight[i]= 0;
 				}
 				else
 				{
-					float	f= (inf-minInfluence) * OOdeltaMinInfluencex255;
-					sint	fi;
+					float	f= (inf-minInfluence) * OOdeltaMinInfluence;
 					// For Static LightSetup BiLinear to work correctly, modulate with BkupInfluence
 					// don't worry about the precision of floor, because of *255.
-					fi= OptFastFloor( bkupInf*f );
+					sint	fi= OptFastFloor( bkupInf*f*255 );
 					clamp(fi, 0, 255);
 					lightContrib.Factor[i]= fi;
+					// The rest of the light contribution is to be merged.
+					lightToMergeWeight[i]= 1-f;
 				}
 
 				// Compute the Final Att factor for models using Global Attenuation. NB: modulate with Factor
@@ -439,6 +457,62 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 				// next light.
 				ligthSrcId++;
 			}
+		}
+
+		// Compute LightToMerge.
+		if(doMerge)
+		{
+			CRGBAF		mergedAmbient(0,0,0);
+			uint		j;
+
+			// For all lights in the lightList, merge Diffuse and Ambient term to mergedAmbient.
+			for(j=0;j<lightToMergeWeight.size();j++)
+			{
+				if(lightToMergeWeight[j] && lightList[j].Influence>0)
+				{
+					CPointLight	*pl= lightList[j].PointLight;
+
+					// Get the original influence (ie for static PLs, biLinear influence)
+					float		bkupInf= lightList[j].BkupInfluence;
+					// Get the attenuation of the pointLight to the model
+					float		distToModel= lightList[j].DistanceToModel;
+					float		attInf= pl->computeLinearAttenuation(modelPos, distToModel);
+					// Attenuate the color of the light by biLinear and distance/spot attenuation.
+					float		lightInf= attInf * bkupInf;
+					// Modulate also by the percentage to merge 
+					lightInf*= lightToMergeWeight[j];
+					// Add the full ambient term of the light, attenuated by light attenuation and WeightMerge
+					mergedAmbient.R+= pl->getAmbient().R * lightInf;
+					mergedAmbient.G+= pl->getAmbient().G * lightInf;
+					mergedAmbient.B+= pl->getAmbient().B * lightInf;
+					// Add 0.25f of the diffuse term of the light, attenuated by light attenuation and WeightMerge
+					// mul by 0.25f, because this is the averaged contribution of the diffuse part of a 
+					// light to a sphere (do the maths...).
+					float	f= lightInf*0.25f;
+					mergedAmbient.R+= pl->getDiffuse().R * f;
+					mergedAmbient.G+= pl->getDiffuse().G * f;
+					mergedAmbient.B+= pl->getDiffuse().B * f;
+				}
+			}
+
+
+			// Setup the merged Light
+			CRGBA	amb;
+			sint	v;
+			// Because of floating point error, it appears that sometime result may be slightly below 0. 
+			// => clamp necessary
+			v= OptFastFloor(mergedAmbient.R);	fastClamp8(v);	amb.R= v;
+			v= OptFastFloor(mergedAmbient.G);	fastClamp8(v);	amb.G= v;
+			v= OptFastFloor(mergedAmbient.B);	fastClamp8(v);	amb.B= v;
+			lightContrib.MergedPointLight= amb;
+
+			// Indicate we use the merged pointLight => the model must recompute lighting each frame
+			lightContrib.UseMergedPointLight= true;
+		}
+		else
+		{
+			// If the model is freezeHRC(), need to test each frame only if MergedPointLight is used.
+			lightContrib.UseMergedPointLight= false;
 		}
 	}
 	else

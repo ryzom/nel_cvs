@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.44 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.45 2003/05/22 12:51:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -324,7 +324,7 @@ void		CRenderTrav::resetLightSetup()
 		// setup the precise cache, and setup lights according to this cache?
 		// setup blackSun (factor==0).
 		_LastSunFactor= 0;
-		_LastSunAmbient.set(0,0,0,255);
+		_LastFinalAmbient.set(0,0,0,255);
 		_DriverLight[0].setupDirectional(CRGBA::Black, CRGBA::Black, CRGBA::Black, _SunDirection);
 		Driver->setLight(0, _DriverLight[0]);
 		// setup NULL point lights (=> cache will fail), so no need to setup other lights in Driver.
@@ -333,20 +333,6 @@ void		CRenderTrav::resetLightSetup()
 			_LastPointLight[i]= NULL;
 		}
 
-
-		// setup the precise cache, and setup lights according to this cache?
-		// setup blackSun (factor==0).
-		_LastSunFactor= 0;
-		_LastSunAmbient.set(0,0,0,255);
-		CLight		light;
-		light.setupDirectional(CRGBA::Black, CRGBA::Black, CRGBA::Black, _SunDirection);
-		_DriverLight[0].setupDirectional(CRGBA::Black, CRGBA::Black, CRGBA::Black, _SunDirection);
-		Driver->setLight(0, light);
-		// setup NULL point lights (=> cache will fail), so no need to setup other lights in Driver.
-		for(i=0; i<NL3D_MAX_LIGHT_CONTRIBUTION; i++)
-		{
-			_LastPointLight[i]= NULL;
-		}
 
 		// Set the global ambientColor
 		Driver->setAmbientColor(AmbientGlobal);
@@ -404,6 +390,9 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 				finalAmbient.modulateFromuiRGBOnly(SunAmbient, 256 - uAmbFactor);
 				finalAmbient.addRGBOnly(finalAmbient, lightContribution->LocalAmbient);
 			}
+			// If use the mergedPointLight, add it to final Ambient
+			if(lightContribution->UseMergedPointLight)
+				finalAmbient.addRGBOnly(finalAmbient, lightContribution->MergedPointLight);
 			// Force Alpha to 255 for good cache test.
 			finalAmbient.A= 255;
 
@@ -414,12 +403,12 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 			uint	ufactor= lightContribution->SunContribution;
 			//	different SunLight as in cache ??
 			//	NB: sunSetup can't change during renderPass, so need only to test factor.
-			if(ufactor != _LastSunFactor || finalAmbient != _LastSunAmbient)
+			if(ufactor != _LastSunFactor || finalAmbient != _LastFinalAmbient)
 			{
 				// cache (before expanding!!)
 				_LastSunFactor= ufactor;
 				// Cache final ambient light
-				_LastSunAmbient= finalAmbient;
+				_LastFinalAmbient= finalAmbient;
 
 				// expand to 0..256.
 				ufactor+= ufactor>>7;	// add 0 or 1.

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.72 2002/03/19 17:42:48 valignat Exp $
+# $Id: Makefile.am,v 1.73 2002/03/20 10:55:51 berenguier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -208,6 +208,7 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        patch.h                                         \
                        patchuv_locator.cpp                             \
                        patchuv_locator.h                               \
+                       patch_lightmap.cpp                              \
                        patch_noise.cpp                                 \
                        patch_rdr_pass.cpp                              \
                        patch_rdr_pass.h                                \
@@ -439,6 +440,8 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        vegetable_def.h                                 \
                        vegetable_instance_group.cpp                    \
                        vegetable_instance_group.h                      \
+                       vegetable_light_ex.cpp                          \
+                       vegetable_light_ex.h                            \
                        vegetable_manager.cpp                           \
                        vegetable_manager.h                             \
                        vegetable_quadrant.cpp                          \

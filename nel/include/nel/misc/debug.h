@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.75 2004/12/24 11:36:15 boucher Exp $
+ * $Id: debug.h,v 1.75.6.1 2005/01/21 10:19:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,6 +77,10 @@ typedef std::string (*TCrashCallback)();
 
 // this function enables user application to add information in the log when a crash occurs
 void setCrashCallback(TCrashCallback crashCallback);
+
+// For Crash report window. allow to know if a crash has alredy raised in the application
+bool	isCrashAlreadyReported();
+void	setCrashAlreadyReported(bool state);
 
 
 // This very amazing macro __FUNCTION__ doesn't exist on VC6, map it to NULL

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * TODO: File description
  *
- * $Id: scene_user.cpp,v 1.67 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: scene_user.cpp,v 1.67.2.1 2005/01/21 10:20:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,9 +63,16 @@ H_AUTO_DECL( NL3D_Load_AsyncIG )
 // Render/Animate.
 H_AUTO_DECL( NL3D_Render_Scene )
 H_AUTO_DECL( NL3D_Render_Animate_Scene )
+H_AUTO_DECL( NL3D_Render_Scene_Begin )
+H_AUTO_DECL( NL3D_Render_Scene_Part )
+H_AUTO_DECL( NL3D_Render_Scene_End )
 
 #define	NL3D_HAUTO_RENDER_SCENE					H_AUTO_USE( NL3D_Render_Scene )
 #define	NL3D_HAUTO_RENDER_SCENE_ANIMATE			H_AUTO_USE( NL3D_Render_Animate_Scene )
+#define	NL3D_HAUTO_RENDER_SCENE_BEGIN			H_AUTO_USE( NL3D_Render_Scene_Begin )
+#define	NL3D_HAUTO_RENDER_SCENE_PART			H_AUTO_USE( NL3D_Render_Scene_Part )
+#define	NL3D_HAUTO_RENDER_SCENE_END				H_AUTO_USE( NL3D_Render_Scene_End )
+
 
 #define NL3D_MEM_LIGHT						NL_ALLOC_CONTEXT( 3dLight )
 #define NL3D_MEM_IG							NL_ALLOC_CONTEXT( 3dIg )
@@ -536,7 +543,7 @@ sint32				CSceneUser::getCLodAnimIdByName(uint32 shapeId, const std::string &nam
 
 
 // ***************************************************************************
-void			CSceneUser::render(TRenderPart renderPart /*= RenderAll*/, bool updateWaitingInstancesFlag /*= true*/, bool restoreMatrixContextAfterRender /*= true*/)
+void			CSceneUser::render(bool updateWaitingInstancesFlag /*= true*/, bool restoreMatrixContextAfterRender /*= true*/)
 {	
 	NL3D_MEM_SCENE_RENDER
 
@@ -546,11 +553,55 @@ void			CSceneUser::render(TRenderPart renderPart /*= RenderAll*/, bool updateWai
 
 		if(_Scene.getCam() == NULL)
 			nlerror("render(): try to render with no camera linked (may have been deleted)");
-		_Scene.render(true, renderPart);
+		_Scene.render(true);
 	}
 
 	if (updateWaitingInstancesFlag) updateWaitingInstances();
 
+	// Must restore the matrix context, so 2D/3D interface not disturbed.
+	if (restoreMatrixContextAfterRender) _DriverUser->restoreMatrixContext();
+}
+
+// ***************************************************************************
+void			CSceneUser::beginPartRender()
+{
+	NL3D_MEM_SCENE_RENDER
+		
+	// render the scene.
+	{
+		NL3D_HAUTO_RENDER_SCENE_BEGIN
+		_Scene.beginPartRender();
+	}
+}
+
+// ***************************************************************************
+void			CSceneUser::renderPart(TRenderPart rp)
+{
+	NL3D_MEM_SCENE_RENDER
+		
+	// render the scene.
+	{
+		NL3D_HAUTO_RENDER_SCENE_PART
+			
+		if(_Scene.getCam() == NULL)
+			nlerror("render(): try to render with no camera linked (may have been deleted)");
+		_Scene.renderPart(rp, true);
+	}
+}
+
+// ***************************************************************************
+void			CSceneUser::endPartRender(bool updateWaitingInstancesFlag, bool restoreMatrixContextAfterRender)
+{
+	NL3D_MEM_SCENE_RENDER
+		
+	// render the scene.
+	{
+		NL3D_HAUTO_RENDER_SCENE_END
+		_Scene.endPartRender();
+	}
+
+	if (updateWaitingInstancesFlag) updateWaitingInstances();
+	
 	// Must restore the matrix context, so 2D/3D interface not disturbed.
 	if (restoreMatrixContextAfterRender) _DriverUser->restoreMatrixContext();
 }

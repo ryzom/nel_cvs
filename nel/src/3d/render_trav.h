@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * TODO: File description
  *
- * $Id: render_trav.h,v 1.28 2005/01/18 15:11:05 berenguier Exp $
+ * $Id: render_trav.h,v 1.28.2.1 2005/01/21 10:20:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,6 +218,13 @@ public:
 	// add a landscape. Special for CLandscapeModel::traverseRender();
 	void			addRenderLandscape(CLandscapeModel *model);
 
+
+	/// \name Temp Debug
+	//@{
+	// Test Memory of water model render list (because someone crash it...)
+	void			debugWaterModelMemory(const char *tag, bool dumpList= false);
+	//@}
+	
 // ******************
 public:
 
@@ -432,6 +439,18 @@ private:
 	std::vector<CLandscapeModel*>	_LandscapeRenderList;
 
 	// @}
+
+	/// \name Temp Debug
+	//@{
+	struct CWaterModelDump
+	{
+		void		*Address;
+		void		*ClippedPolyBegin;
+		void		*ClippedPolyEnd;
+	};
+	std::vector<CWaterModelDump>	_DebugWaterModelList;
+	//@}
+	
 public:
 	CWaterModel *_FirstWaterModel;		
 };

@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.16 2005/01/10 15:03:37 vizerie Exp $
+ * $Id: water_model.h,v 1.16.2.1 2005/01/21 10:20:27 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -111,6 +111,10 @@ public:
 
 	// setup vertex buffer before render
 	static void setupVertexBuffer(CVertexBuffer &vb, uint numWantedVertices, IDriver *drv);
+
+	// For Debug purpose
+	void	debugDumpMem(void* &clippedPolyBegin, void* &clippedPolyEnd);
+	void	debugClearClippedPoly();
 
 protected:
 	friend class CWaterShape;	

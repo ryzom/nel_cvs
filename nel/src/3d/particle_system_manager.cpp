@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * TODO: File description
  *
- * $Id: particle_system_manager.cpp,v 1.18 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system_manager.cpp,v 1.18.12.1 2005/01/21 10:20:27 berenguier Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -80,6 +80,7 @@ void	CParticleSystemManager::refreshModels(const std::vector<NLMISC::CPlane>	&wo
 		if (_CurrListIterator == _ModelList.end())
 		{
 			_CurrListIterator = _ModelList.begin();
+			nlassert(_CurrListIterator!=_ModelList.end());
 		}
 		nextIt = _CurrListIterator;
 		++ nextIt;

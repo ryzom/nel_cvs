@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.49 2005/01/18 15:11:05 berenguier Exp $
+ * $Id: water_model.cpp,v 1.49.2.1 2005/01/21 10:20:27 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1960,6 +1960,19 @@ void CWaterModel::updateDiffuseMapMatrix(bool force /* = false*/)
 			_ColorMapMatPos.set(uvMat.getK().x, uvMat.getK().y);
 		}		
 	}
+}
+
+// ***************************************************************************
+void CWaterModel::debugDumpMem(void* &clippedPolyBegin, void* &clippedPolyEnd)
+{
+	clippedPolyBegin= (void*)(_ClippedPoly.Vertices.begin());
+	clippedPolyEnd= (void*)(_ClippedPoly.Vertices.end());
+}
+
+// ***************************************************************************
+void CWaterModel::debugClearClippedPoly()
+{
+	_ClippedPoly.Vertices.clear();
 }
 
 //=======================================================================================

@@ -54,7 +54,6 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/Debug/misc"
 # PROP Target_Dir ""
 # ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "__STL_DEBUG" /D "_DEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdmisc.h" /FD /GZ /c
-# SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -346,7 +345,7 @@ SOURCE=.\misc\config_file\cf_lexical.lxx
 # Begin Source File
 
 SOURCE=.\misc\config_file\config_file.cpp
-# ADD CPP /Yu"..\stdmisc.h"
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -600,6 +599,17 @@ SOURCE=..\include\nel\misc\gtk_displayer.h
 # Begin Source File
 
 SOURCE=.\misc\log.cpp
+
+!IF  "$(CFG)" == "misc - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.41 2002/12/02 18:13:09 lecroart Exp $
+ * $Id: config_file.cpp,v 1.42 2003/02/14 14:08:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "../stdmisc.h"
+//#include "../stdmisc.h"
 
 #include <time.h>
 #include <sys/types.h>
@@ -570,6 +570,7 @@ void CConfigFile::print (CLog *log) const
 void CConfigFile::setCallback (void (*cb)())
 {
 	_Callback = cb;
+	nlinfo ("Setting callback when the file '%s' is modified externaly", _FileName.c_str());
 }
 
 void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CVar &var))
@@ -579,15 +580,17 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 		if (VarName == (*it).Name)
 		{
 			(*it).Callback = cb;
+			nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly", VarName.c_str(), _FileName.c_str());
 			return;
 		}
 	}
-	// VarName doesn't exist, add it now for the futur
+	// VarName doesn't exist, add it now for the future
 	CVar Var;
 	Var.Name = VarName;
 	Var.Callback = cb;
 	Var.Type = CVar::T_UNKNOWN;
 	_Vars.push_back (Var);
+	nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), _FileName.c_str());
 }
 
 void CConfigFile::setLastModifiedNow ()
@@ -655,7 +658,6 @@ void CConfigFile::checkConfigFiles ()
 
 void CConfigFile::setTimeout (uint32 timeout)
 {
-	nlassert (timeout>=0);
 	_Timeout = timeout;
 }
 

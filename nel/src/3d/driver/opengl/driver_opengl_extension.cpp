@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.43 2004/04/01 19:10:24 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.44 2004/04/06 18:27:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1212,8 +1212,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// Check ATIEnvMapBumpMap
 	ext.ATIEnvMapBumpMap = setupATIEnvMapBumpMap(glext);
 	// Check ATIFragmentShader
-	ext.ATIFragmentShader = setupATIFragmentShader(glext);
-	ext.ATIFragmentShader = false;
+	ext.ATIFragmentShader = setupATIFragmentShader(glext);	
 
 	// ARB extensions
 	// -------------
@@ -1221,7 +1220,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 	if(!ext.DisableHardwareVertexArrayAGP)
 	{
 		ext.ARBVertexBufferObject = setupARBVertexBufferObject(glext);
-	}
+	}	
 }
 
 

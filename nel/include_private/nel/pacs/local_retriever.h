@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.2 2001/05/22 16:41:12 legros Exp $
+ * $Id: local_retriever.h,v 1.3 2001/05/23 11:57:19 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -299,10 +299,10 @@ public:
 	/// Sorts chains references inside the tips. NOT IMPLEMENTED YET.
 	void								sortTips();
 
-/*
+
 	/// Translates the local retriever by the translation vector.
 	void								translate(const NLMISC::CVector &translation);
-*/
+
 
 	/// Serialises the CLocalRetriever.
 	void								serial(NLMISC::IStream &f);

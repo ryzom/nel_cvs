@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.10 2001/05/22 16:41:41 legros Exp $
+ * $Id: local_retriever.cpp,v 1.11 2001/05/23 11:57:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -319,7 +319,6 @@ void	NLPACS::CLocalRetriever::computeTopologies()
 	}
 }
 
-/*
 void	NLPACS::CLocalRetriever::translate(const NLMISC::CVector &translation)
 {
 	uint	i;
@@ -332,7 +331,6 @@ void	NLPACS::CLocalRetriever::translate(const NLMISC::CVector &translation)
 
 //	_BBox.setCenter(_BBox.getCenter()+translation);
 }
-*/
 
 void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 {

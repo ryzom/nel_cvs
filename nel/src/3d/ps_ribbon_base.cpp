@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.3 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.4 2002/04/25 08:28:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,10 +118,12 @@ void	CPSRibbonBase::setInterpolationMode(TInterpolationMode mode)
 void	CPSRibbonBase::setTailNbSeg(uint32 nbSegs)
 {
 	nlassert(nbSegs >= 1);	
-	_NbSegs = nbSegs;
-	nlassert(_Owner);
+	_NbSegs = nbSegs;	
 	_RibbonIndex = 0;
-	resize(_Owner->getMaxSize());	
+	if (_Owner)
+	{	
+		resize(_Owner->getMaxSize());
+	}
 	initDateVect();
 }
 
@@ -578,10 +580,12 @@ void CPSRibbonBase::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (f.isReading())
 	{
-		nlassert(_Owner);
-		resize(_Owner->getMaxSize());
-		initDateVect();		
-		resetFromOwner();
+		if (_Owner)
+		{				
+			resize(_Owner->getMaxSize());
+			initDateVect();		
+			resetFromOwner();
+		}
 	}
 
 	if (ver >= 1)

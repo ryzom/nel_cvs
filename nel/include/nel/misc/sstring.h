@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.25 2005/02/22 10:14:12 besson Exp $
+ * $Id: sstring.h,v 1.26 2005/03/07 10:20:57 miller Exp $
  */
 
 
@@ -395,7 +395,7 @@ public:
 	bool readFromFile(const CSString& fileName);
 
 	/// Write a string to a text file
-	bool writeToFile(const CSString& fileName);
+	bool writeToFile(const CSString& fileName) const;
 };
 
 
@@ -1264,7 +1264,7 @@ inline CSString CSString::stripBlockDelimiters(	bool useAngleBrace,				// treat 
 
 inline bool CSString::splitWords(CVectorSString& result) const
 {
-	CSString s=*this;
+	CSString s=strip();
 	while(!s.empty())
 	{
 		uint32 pre=s.size();
@@ -2089,7 +2089,7 @@ inline bool CSString::readFromFile(const CSString& fileName)
 	return true;
 }
 
-inline bool CSString::writeToFile(const CSString& fileName)
+inline bool CSString::writeToFile(const CSString& fileName) const
 {
 	FILE* file;
 	file=fopen(fileName.c_str(),"wb");

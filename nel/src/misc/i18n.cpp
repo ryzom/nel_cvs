@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.54 2004/09/03 08:43:24 boucher Exp $
+ * $Id: i18n.cpp,v 1.55 2004/10/06 06:37:42 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -46,8 +46,8 @@ const std::string		CI18N::_LanguageCodes[] =
 	std::string("en"),		// english
 	std::string("de"),		// german
 	std::string("fr"),		// french
-//	std::string("zh-TW"),	// traditionnal chinese
-//	std::string("zh-CN")	// simplified chinese
+//	std::string("zh-TW"),	// traditional Chinese
+//	std::string("zh-CN")	// simplified Chinese
 };
 
 const uint				CI18N::_NbLanguages = sizeof(CI18N::_LanguageCodes) / sizeof(std::string);
@@ -79,7 +79,7 @@ void CI18N::load (const std::string &languageCode)
 
 	if (i == _NbLanguages)
 	{
-		nlwarning("I18N: Unknow language code : %s, defaulting to %s", _LanguageCodes[0].c_str());
+		nlwarning("I18N: Unknown language code : %s, defaulting to %s", _LanguageCodes[0].c_str());
 		i = 0;
 	}
 
@@ -154,7 +154,15 @@ const ucstring &CI18N::get (const std::string &label)
 	static hash_set<string>	missingStrings;
 	if (missingStrings.find(label) == missingStrings.end())
 	{
-		nlwarning("I18N: The string %s did not exist in language %s (display once)", label.c_str(), _LanguageCodes[_SelectedLanguage].c_str());
+		sint32 nblang = sizeof(_LanguageCodes)/sizeof(_LanguageCodes[0]);
+		if(_SelectedLanguage < 0 || _SelectedLanguage >= nblang)
+		{
+			nlwarning("I18N: _SelectedLanguage %d is not a valid language ID, out of array of size %d, can't display the message '%s'", _SelectedLanguage, nblang, label.c_str());
+		}
+		else
+		{
+			nlwarning("I18N: The string %s did not exist in language %s (display once)", label.c_str(), _LanguageCodes[_SelectedLanguage].c_str());
+		}
 		missingStrings.insert(label);
 	}
 

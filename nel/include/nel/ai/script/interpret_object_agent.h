@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.19 2001/06/14 14:45:02 portier Exp $
+ * $Id: interpret_object_agent.h,v 1.20 2001/09/06 13:46:33 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -259,6 +259,7 @@ namespace NLAISCRIPT
 		// Static components 
 		virtual void initStatics();
 		virtual void setStaticMember(sint32, NLAIAGENT::IObjectIA *);
+		virtual void updateStaticMember(sint32, NLAIAGENT::IObjectIA *);
 		virtual NLAIAGENT::IObjectIA *getStaticComponentValue(std::string &);
 	};
 }

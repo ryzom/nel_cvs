@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.40 2001/07/12 08:40:45 portier Exp $
+ * $Id: agent_script.h,v 1.41 2001/09/06 13:46:33 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,12 +78,7 @@ namespace NLAIAGENT
 			TRunAskCompoment, ///transmit Message to an compoment.
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
 			TRunTellParentNotify, ///the offest of the runTellParentNotify method.			
-			/////////////////////////////////////////////////////////////////////
-			/*TGoal,			// Message to receive goals
-			TCancelGoal,	// Message to cancel goals
-			TFact,			// Message to receive facts*/
-			
-			/////////////////////////////////////////////////////////////////////
+			TSetStatic,	/// Method to assign a new value to a static component
 			TLastM ///The count of export method.
 		};
 
@@ -131,6 +126,7 @@ namespace NLAIAGENT
 		static NLAISCRIPT::COperandSimpleListOr *msgType;
 		static NLAISCRIPT::COperandSimpleListOr *msgPerf;
 		static NLAISCRIPT::CParam *SendParamMessageScript;
+		static NLAISCRIPT::CParam *ParamSetStatic;
 		static NLAISCRIPT::CParam *SendCompParamMessageScript;
 		static NLAISCRIPT::COperandSimple *IdMsgNotifyParentClass;
 		static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent;

@@ -1,4 +1,10 @@
 
+March 23 2002
+=============
+
+*  NLNET: IService5 and IService are now merged in IService class in service.cpp and service.h.
+          Take a look in the header to see differences.
+
 March 20 2002
 =============
 
@@ -9,10 +15,10 @@ March 20 2002
 March 15 2002
 =============
 
-* NLMISC: CCommand now manages spaces within parameters, putting "" around parameters
+* NLMISC: CCommand now manages spaces within parameters, putting "" around parameters.
 
 * NLMISC: CHTimer: Hierarchical time that allows to measure accurately the performance of routines,
-          and displays results hierarchically. To time a piece of code, just declare a static
+          and displays results hierarchically. To time a piece of code, just declare a static.
           CHTimer object and encapsulate code between calls to before() and after() methods.
 
 *  NLNET: New msgin and msgout commands in services to simulate incoming
@@ -22,5 +28,5 @@ March 8 2002
 ============
 
 *  NLNET: Add CTransportClass class that enables sending classes between
-          services with different class parameters
+          services with different class parameters.
 

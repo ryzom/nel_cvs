@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.14 2001/05/22 16:08:16 chafik Exp $
+ * $Id: opcode.cpp,v 1.15 2001/07/26 13:17:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -402,7 +402,8 @@ namespace NLAISCRIPT
 		if(a->size() == 3) i++;
 		NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)i ++;
 		//((NLAIAGENT::IObjectIA *)context.Self)->incRef();
-		msg->setSender((NLAIAGENT::IObjectIA *)context.Self);
+		if(!msg->getProtcetSender()) msg->setSender((NLAIAGENT::IObjectIA *)context.Self);
+		else msg->UnsetProtcetSender();
 
 		
 		return NLAIAGENT::processIdle;

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.29 2001/07/12 14:07:44 chafik Exp $
+ * $Id: baseai.cpp,v 1.30 2001/07/26 13:17:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -628,8 +628,8 @@ namespace NLAIAGENT
 			_Connected.pop_front();
 			if(a != NULL)
 			{
-				a->onKill(this);
 				a->removeInConnectionList(this);
+				a->onKill(this);				
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.13 2001/06/07 15:35:00 portier Exp $
+ * $Id: interpret_object.h,v 1.14 2001/07/26 13:16:47 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,6 +165,11 @@ namespace NLAISCRIPT
 		const NLAIAGENT::IVarName *getName() const
 		{
 			return _Name;
+		}
+
+		NLAIC::CTypeOfObject getTypeClass() const
+		{
+			return NLAIC::CTypeOfObject::tAgentInterpret;
 		}
 
 		virtual void initStatics()

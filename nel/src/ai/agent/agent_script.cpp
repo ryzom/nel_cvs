@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.78 2001/07/10 09:06:29 portier Exp $
+ * $Id: agent_script.cpp,v 1.79 2001/07/26 13:17:00 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -368,7 +368,7 @@ namespace NLAIAGENT
 #endif
 		IObjectIA *old_comp = _Components[ index ];
 		_Components[ index ] = op;
-		op->incRef();
+		//op->incRef();
 		old_comp->release();
 
 
@@ -868,6 +868,8 @@ namespace NLAIAGENT
 		}
 
 		IObjectIA::CProcessResult r = IAgent::sendMessage(msg);
+
+	
 
 #ifdef PROFILE
 		time = NLMISC::CTime::getPerformanceTime() - time;

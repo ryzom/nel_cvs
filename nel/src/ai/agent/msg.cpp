@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.10 2001/07/25 07:37:01 chafik Exp $
+ * $Id: msg.cpp,v 1.11 2001/07/26 13:17:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,16 +33,22 @@ namespace NLAIAGENT
 {
 	const static sint32 _TSender = 0;
 	const static sint32 _TReceiver = 1;
-	const static sint32 _TContinuation = 2;	
-	const static sint32 _TSetContinuation = 3;
-	const static sint32 _MLastM = 4;
+	const static sint32 _TXchgReceiverIsSender = 2;
+	const static sint32 _TContinuation = 3;	
+	const static sint32 _TSetContinuation = 4;
+	const static sint32 _TInitProtocol = 5;	
+	const static sint32 _TProtcetSender = 6;	
+	const static sint32 _MLastM = 7;
 
 	IMessageBase::CMethodCall IMessageBase::_Method[] = 
 	{
 		IMessageBase::CMethodCall(_SENDER_,_TSender),		
 		IMessageBase::CMethodCall(_RECEIVER_,_TReceiver),		
 		IMessageBase::CMethodCall(_CONTINUATION_,_TContinuation),
-		IMessageBase::CMethodCall(_SETCONTINUATION_,_TSetContinuation)
+		IMessageBase::CMethodCall(_SETCONTINUATION_,_TSetContinuation),
+		IMessageBase::CMethodCall("XChangeReceiverSender",_TXchgReceiverIsSender),
+		IMessageBase::CMethodCall("ProtcetSender",_TProtcetSender),
+		IMessageBase::CMethodCall("InitProtocol",_TInitProtocol)
 		
 	};
 
@@ -289,7 +295,7 @@ namespace NLAIAGENT
 				}			
 				break;
 
-			case _TReceiver		:
+			case _TReceiver	:
 				{
 					IObjectIA::CProcessResult a;				
 					if ( _Receiver != NULL )
@@ -316,12 +322,36 @@ namespace NLAIAGENT
 					return a;
 				}			
 				break;
+			
+			case _TXchgReceiverIsSender	:
+				{
+					IObjectIA *t = _Sender;
+					_Sender = _Receiver;
+					_Receiver = t;
+					return IObjectIA::CProcessResult();
+				}
 			case _TSetContinuation:
 				{
 					IObjectIA *o = (IObjectIA *)((IBaseGroupType *)p)->get();
 					//o->incRef();
 					setContinuation(o);
+					return IObjectIA::CProcessResult();
 				}
+
+			case _TInitProtocol:
+				{
+					_ReservedMethodIndexVar = -1;
+					_ReservedHeritanceIndexVar = 0;					
+					return IObjectIA::CProcessResult();				
+				}
+				
+			case _TProtcetSender:
+				{
+					setProtcetSender();					
+					return IObjectIA::CProcessResult();				
+				}
+
+				
 			}
 		return IBaseGroupType::runMethodeMember(index,p);
 	}

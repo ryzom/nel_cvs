@@ -168,6 +168,7 @@ namespace NLAIAGENT
 			{
 				unActivate();
 			}
+			processMessages();
 			return IObjectIA::ProcessRun;
 		}
 		return IObjectIA::ProcessRun;

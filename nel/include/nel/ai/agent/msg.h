@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.14 2001/07/25 07:36:36 chafik Exp $
+ * $Id: msg.h,v 1.15 2001/07/26 13:16:47 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,7 @@ namespace NLAIAGENT
 		bool _comeFromC_PLUS;
 		///Is true if agent want to dispatch it to its child;
 		bool _Dispatch;
+		bool _ProtectSender;
 
 	public:
 		void setMessageGroup(IBaseGroupType *g)
@@ -127,6 +128,7 @@ namespace NLAIAGENT
 			_Performatif = PUndefine;
 			_comeFromC_PLUS = true;
 			_Dispatch = false;
+			_ProtectSender = false;
 		}
 		IMessageBase(IObjectIA *sender,IBaseGroupType *g):IListBasicManager(g),_Sender(sender),_MsgGroup(NULL)
 		{
@@ -137,6 +139,7 @@ namespace NLAIAGENT
 			_Performatif = PUndefine;
 			_comeFromC_PLUS = true;
 			_Dispatch = false;
+			_ProtectSender = false;
 		}
 		IMessageBase(IObjectIA *sender, IBasicMessageGroup &msg_group,IBaseGroupType *g):
 			IListBasicManager(g),_Sender(sender),_MsgGroup((IBasicMessageGroup *)msg_group.clone())
@@ -148,6 +151,7 @@ namespace NLAIAGENT
 			_Performatif = PUndefine;
 			_comeFromC_PLUS = true;
 			_Dispatch = false;
+			_ProtectSender = false;
 		}
 
 		IMessageBase(const IMessageBase &m):IListBasicManager(m._List != NULL ? (IBaseGroupType *)m._List->clone(): NULL)
@@ -167,6 +171,7 @@ namespace NLAIAGENT
 			_Performatif = m._Performatif;
 			_comeFromC_PLUS = m._comeFromC_PLUS;
 			_Dispatch = m._Dispatch;
+			_ProtectSender = m._ProtectSender;
 		}
 
 		virtual ~IMessageBase()
@@ -265,6 +270,21 @@ namespace NLAIAGENT
 		{
 			return _ReservedHeritanceIndexVar;
 		}
+
+		void setProtcetSender()
+		{
+			_ProtectSender = true;
+		}
+		void UnsetProtcetSender()
+		{
+			_ProtectSender = false;
+		}
+
+		bool getProtcetSender() const
+		{
+			return _ProtectSender;
+		}
+
 		//@}		
 
 	public:

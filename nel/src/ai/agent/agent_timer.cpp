@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.18 2001/07/18 12:50:29 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.19 2001/07/26 13:17:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -327,7 +327,7 @@ namespace NLAIAGENT
 		msg->setMethodIndex(0,index);
 
 		std::pair<IMessageBase *, sint32> p (msg,index);		
-		_Call.push_back(std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > (c,p));
+		_Call.push_front(std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > (c,p));
 		
 	}
 
@@ -439,11 +439,15 @@ namespace NLAIAGENT
 		case CAgentWatchTimer::TAttach:
 			{				
 				CIteratorContener i = param->getIterator();
-				IConnectIA *call = (IConnectIA *)i++;
-				call->incRef();
-				IMessageBase *msg = (IMessageBase *)i++;
-				msg->incRef();
-				addAttrib(call,msg);
+
+				if(param->size())
+				{
+					IConnectIA *call = (IConnectIA *)i++;
+					call->incRef();
+					IMessageBase *msg = (IMessageBase *)i++;
+					msg->incRef();
+					addAttrib(call,msg);
+				}
 				attach();
 				IObjectIA::CProcessResult a;				
 				
@@ -534,7 +538,7 @@ namespace NLAIAGENT
 		CAgentWatchTimer::StaticMethod[CAgentWatchTimer::TAttach] = 
 							new NLAIAGENT::CAgentScript::CMethodCall(_ATTACH_,
 																	CAgentWatchTimer::TAttach,
-																	NULL,NLAIAGENT::CAgentScript::CheckCount,
+																	NULL,NLAIAGENT::CAgentScript::DoNotCheck,
 																	2,	new NLAISCRIPT::CObjectUnknown(	new NLAISCRIPT::COperandSimple(
 																		new NLAIC::CIdentType(*CAgentTimerHandle::IdAgentTimerHandle))));
 
@@ -731,12 +735,28 @@ namespace NLAIAGENT
 
 	sint32 CAgentTimerHandle::getMethodIndexSize() const
 	{
-		return _Timer->getMethodIndexSize();
+		if(_Timer != NULL)
+		{
+			return _Timer->getMethodIndexSize();
+		}
+		else
+		{
+			CAgentWatchTimer a;
+			return a.getMethodIndexSize();
+		}
 	}
 
 	tQueue CAgentTimerHandle::isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const
 	{
-		return _Timer->isMember(h,m,p);
+		if(_Timer != NULL)
+		{
+			return _Timer->isMember(h,m,p);
+		}
+		else
+		{
+			CAgentWatchTimer a;
+			return a.isMember(h,m,p);
+		}
 	}
 
 	IObjectIA::CProcessResult CAgentTimerHandle::runMethodeMember(sint32 h, sint32 m, IObjectIA *p)
@@ -755,7 +775,7 @@ namespace NLAIAGENT
 	{
 		CAgentTimerHandle h(new CAgentWatchTimer());
 		CAgentTimerHandle::IdAgentTimerHandle = new NLAIC::CIdentType ("AgentTimerHandle", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)h), 
-																	  NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
+																	  NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 																	  NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	}
 

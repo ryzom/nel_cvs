@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.9 2001/04/03 14:21:28 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.10 2001/04/23 17:12:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,9 @@ namespace	NL3D
 /// The extensions used by NL3D.
 struct	CGlExtensions
 {
+	// Is this driver a correct OpenGL 1.2 driver?
+	bool	Version1_2;
+
 	// Required Extensions.
 	bool	ARBMultiTexture;
 	sint	NbTextureStages;
@@ -77,6 +80,7 @@ public:
 	CGlExtensions()
 	{
 		// Fill all false by default.
+		Version1_2= false;
 		ARBMultiTexture= false;
 		NbTextureStages= 1;
 		EXTTextureEnvCombine= false;

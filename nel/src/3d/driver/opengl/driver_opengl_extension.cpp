@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.6 2001/04/03 14:21:28 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.7 2001/04/23 17:12:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -252,6 +252,15 @@ static bool	setupEXTSeparateSpecularColor(const char	*glext)
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
 {
+	// OpenGL 1.2 ??
+	const char	*glVersion= (const char *) glGetString (GL_VERSION);
+	sint	a=0, b=0;
+	// 1.2***  ???
+	sscanf(glVersion, "%d.%d", &a, &b);
+	ext.Version1_2= a>=1 && b>=2;
+
+
+	// Extensions.
 	const char	*glext= (const char*)glGetString(GL_EXTENSIONS);
 	GLint	ntext;
 

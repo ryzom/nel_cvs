@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.23 2001/04/23 09:14:27 besson Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.24 2001/04/23 17:12:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,12 +123,17 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 
 // ***************************************************************************
 // Translation of Wrap mode.
-static inline GLenum	translateWrapToGl(ITexture::TWrapMode mode)
+static inline GLenum	translateWrapToGl(ITexture::TWrapMode mode, const CGlExtensions	&extensions)
 {
 	if(mode== ITexture::Repeat)
 		return GL_REPEAT;
 	else
-		return GL_CLAMP;
+	{
+		if(extensions.Version1_2)
+			return GL_CLAMP_TO_EDGE;
+		else
+			return GL_CLAMP;
+	}
 }
 
 
@@ -427,8 +432,8 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			gltext->WrapT= tex.getWrapT();
 			gltext->MagFilter= tex.getMagFilter();
 			gltext->MinFilter= tex.getMinFilter();
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS));
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT));
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
 
@@ -466,12 +471,12 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 			if(gltext->WrapS!= tex->getWrapS())
 			{
 				gltext->WrapS= tex->getWrapS();
-				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS));
+				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
 			}
 			if(gltext->WrapT!= tex->getWrapT())
 			{
 				gltext->WrapT= tex->getWrapT();
-				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT));
+				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
 			}
 			if(gltext->MagFilter!= tex->getMagFilter())
 			{

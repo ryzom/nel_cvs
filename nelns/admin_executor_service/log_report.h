@@ -1,7 +1,7 @@
 /** \file log_report.h
  * <File description>
  *
- * $Id: log_report.h,v 1.1 2004/03/01 19:38:50 cado Exp $
+ * $Id: log_report.h,v 1.2 2004/03/03 09:57:37 distrib Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -119,6 +119,8 @@ public:
 	virtual uint getNbDistinctLines() const = 0;
 
 	virtual uint getNbTotalLines() const = 0;
+
+	virtual ~ILogReport() {}
 };
 
 

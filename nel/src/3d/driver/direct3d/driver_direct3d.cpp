@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.8 2004/04/26 13:48:23 corvazier Exp $
+ * $Id: driver_direct3d.cpp,v 1.9 2004/05/07 12:24:46 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1504,8 +1504,7 @@ bool CDriverD3D::getCurrentScreenMode(GfxMode &gfxMode)
 	gfxMode.Windowed=false;
 	gfxMode.Width=(uint16)mode.Width;
 	gfxMode.Height=(uint16)mode.Height;
-	// \todo yoyo may be false, but don't care
-	gfxMode.Depth= mode.Format==D3DFMT_A8R8G8B8?32:16;
+	gfxMode.Depth= ((mode.Format==D3DFMT_A8R8G8B8)||(mode.Format==D3DFMT_X8R8G8B8))?32:16;
 	gfxMode.Frequency=(uint8)mode.RefreshRate;
 
 	return true;

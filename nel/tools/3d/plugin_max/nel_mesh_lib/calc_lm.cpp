@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.40 2002/04/24 08:15:11 besson Exp $
+ * $Id: calc_lm.cpp,v 1.41 2002/07/12 08:43:41 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2449,8 +2449,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		// Update UV coords to Texture space
 		PutFaceUV1InTextureCoord( LightMap.w, LightMap.h, AllFaces.begin(), AllFaces.size() );
 		uint32 nLightMapNb = 0;
-		for( j = 0; j < LightMap.nNbLayerUsed; ++j )
-		if( (j == 0) || (!LightMap.isAllBlack( (uint8)j )) )
+		for (j = 0; j < LightMap.nNbLayerUsed; ++j)
+		if ((j == 0) || (!LightMap.isAllBlack((uint8)j)))
 		{
 			CTextureFile *pLightMap = new CTextureFile();
 			//string sSaveName = AllMeshBuilds[nNode].second->GetName();
@@ -2477,17 +2477,33 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					sSaveName[i] = '_';
 			}
 
-			pLightMap->setFileName( sSaveName );
+			pLightMap->setFileName (sSaveName);
 			sSaveName = gOptions.sExportLighting;
-			if( sSaveName[sSaveName.size()-1] != '\\' ) sSaveName += "\\";
+			if (sSaveName[sSaveName.size()-1] != '\\') sSaveName += "\\";
 			sSaveName += pLightMap->getFileName();
-			if( _AbsolutePath )
-				pLightMap->setFileName( sSaveName );
-			LightMap.copyColToBitmap32( pLightMap, j );
+			if (_AbsolutePath)
+				pLightMap->setFileName (sSaveName);
+			// if first time Remove all lightmaps of the same name over all layers
+			if (j == 0)
+			{
+				string sBaseName = sSaveName.substr(0, 1+sSaveName.rfind('_'));
+				for (i = 0; i < 256; ++i)
+				{
+					string sLMName = sBaseName + NLMISC::toString(i) + ".tga";
+					CIFile ifi;
+					if (ifi.open(sLMName))
+					{
+						ifi.close ();
+						DeleteFile (sLMName.c_str());
+					}
+				}
+			}
+			// Convert and write
+			LightMap.copyColToBitmap32 (pLightMap, j);
 			COFile f( sSaveName );
 			try
 			{
-				pLightMap->writeTGA( f, 32 );
+				pLightMap->writeTGA (f, 32);
 			}
 			catch(Exception &e)
 			{
@@ -2495,7 +2511,6 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 				{
 					char message[512];
 					sprintf (message, "Can't write the file %s : %s", sSaveName, e.what());
-					//MessageBox(NULL, message, "NeL Export", MB_ICONERROR|MB_OK);
 					mprintf (message);
 				}
 			}
@@ -2512,7 +2527,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 				addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );				
 			}
 			++nLightMapNb;
-		}		
+		}
 		// Next mesh
 	}
 

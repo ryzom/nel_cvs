@@ -204,10 +204,23 @@ namespace NLAIAGENT
 		return result;
 	}
 */
+
+	void COperatorScript::instanciateGoalArgs(NLAILOGIC::CGoal *goal)
+	{
+		const std::vector<IObjectIA *> &args = goal->getArgs();
+		std::vector<IObjectIA *>::const_iterator it_arg = args.begin();
+		while ( it_arg != args.end() )
+		{
+#ifdef NL_DEBUG
+			char buffer[1024 * 4];
+			(*it_arg)->getDebugString( buffer );
+#endif
+			it_arg++;
+		}
+	}
+
 	const IObjectIA::CProcessResult &COperatorScript::run()
 	{
-
-
 #ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
 #endif
@@ -238,7 +251,6 @@ namespace NLAIAGENT
 				if ( (*(goals[i])) == *( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() )
 					activated_goals.push_back( goals[i] );
 			}
-
 		
 			// If a goal is posted corresponding to this operator's one
 			if ( activated_goals.size() )
@@ -271,6 +283,7 @@ namespace NLAIAGENT
 			{
 				// Registers with the goal and gets the args
 				NLAILOGIC::CGoal *current_goal = activated_goals.front();
+				instanciateGoalArgs(current_goal);
 				current_goal->addSuccessor( (IBasicAgent *) this );
 
 

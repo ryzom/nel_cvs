@@ -39,6 +39,9 @@ namespace NLAILOGIC
 			_Name = NULL;
 		_Sender = NULL;
 		_Receiver = NULL;
+
+		for ( int i = 0; i < (int) c._Args.size(); i++ )
+			_Args.push_back( (NLAIAGENT::IObjectIA *) c._Args[i]->clone() );
 	}
 
 	CGoal::~CGoal()
@@ -99,14 +102,23 @@ namespace NLAILOGIC
 
 	void CGoal::getDebugString(char *text) const
 	{
-		strcpy( text ,"<CGoal> ");
+		strcpy( text ,"<CGoal> (");
 		if ( _Name ) 
 			strcat( text, _Name->getString() );
 		char buf[1024];
+		int i;
+		for ( i = 0; i < (int) _Args.size(); i++ )
+		{
+			_Args[i]->getDebugString(buf);
+			strcat(text," ");
+			strcat(text, buf);
+		}
+		strcat(text,") - ");
+
 		sprintf(buf," PRI = %f", priority() );
 		strcat(text, buf);
 		strcat(text," PRE = ");
-		int i;
+
 		for ( i = 0; i < (int) _Predecessors.size(); i++ )
 		{
 			_Predecessors[i]->getDebugString( buf );
@@ -145,9 +157,9 @@ namespace NLAILOGIC
 		return false;//( ((CGoal &)a)._Value == _Value );
 	}
 
-	std::vector<IBaseVar *> *CGoal::getVars()
+	const std::vector<NLAIAGENT::IObjectIA *> &CGoal::getArgs()
 	{
-		return NULL;
+		return _Args;
 	}
 
 	const NLAIC::CIdentType &CGoal::getType() const
@@ -155,12 +167,12 @@ namespace NLAILOGIC
 		return IdGoal;
 	}
 
-	void CGoal::setVars(std::list<IBaseVar *> &vars)
+	void CGoal::setArgs(std::list<NLAIAGENT::IObjectIA *> &args)
 	{
-		std::list<IBaseVar *>::iterator it_var = vars.begin();
-		while ( it_var != vars.end() )
+		std::list<NLAIAGENT::IObjectIA *>::iterator it_var = args.begin();
+		while ( it_var != args.end() )
 		{
-			_Args.push_back( (IBaseVar *) (*it_var)->clone() );
+			_Args.push_back( (NLAIAGENT::IObjectIA *) (*it_var)->clone() );
 			it_var++;
 		}
 	}

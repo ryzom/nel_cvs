@@ -625,10 +625,6 @@ namespace NLAISCRIPT
 
 	void COperatorClass::setGoal(const NLAIAGENT::CStringVarName &g)
 	{
-		if ( _Goal != NULL )
-		{
-			_Goal->release();
-		}
 
 		_Goal = new NLAILOGIC::CGoal( *(NLAIAGENT::CStringVarName *) g.clone());
 	}
@@ -638,7 +634,22 @@ namespace NLAISCRIPT
 		_GoalAssert = (const NLAIAGENT::IVarName *) assert->clone();
 		_GoalVars = args;
 
-		setGoal( *(const NLAIAGENT::CStringVarName *)_GoalAssert );
+		if ( _Goal != NULL )
+		{
+			_Goal->release();
+		}
+	
+		_Goal = new NLAILOGIC::CGoal( *(NLAIAGENT::CStringVarName *) assert->clone() );
+
+		std::list<NLAIAGENT::IObjectIA *> arg_list;
+		while ( !args.empty() )
+		{
+			arg_list.push_back( (NLAIAGENT::IObjectIA *) args.front()->clone() );
+			( (NLAIAGENT::IObjectIA *)args.front() )->release();
+			args.pop_front();
+		}
+
+		_Goal->setArgs( arg_list );
 	}
 
 	bool COperatorClass::isValidFonc(NLAIAGENT::IObjectIA *c)

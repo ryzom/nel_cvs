@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.10 2001/04/24 08:28:21 portier Exp $
+ * $Id: goal.h,v 1.11 2001/05/11 14:11:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,8 @@ namespace NLAILOGIC
 			CGoal(const CGoal &);
 			virtual ~CGoal();
 
-			void setVars(std::list<IBaseVar *> &);
+			void setArgs(std::list<NLAIAGENT::IObjectIA *> &);
+			const std::vector<NLAIAGENT::IObjectIA *> &getArgs();
 
 			static const NLAIC::CIdentType IdGoal;
 
@@ -78,7 +79,6 @@ namespace NLAILOGIC
 			const IObjectIA::CProcessResult &run();
 			bool isEqual(const CGoal &a) const;
 			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
-			std::vector<IBaseVar *> *getVars();
 			const NLAIC::CIdentType &getType() const;
 
 			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;

@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.13 2001/01/11 15:29:28 berenguier Exp $
+ * $Id: nelu.cpp,v 1.14 2001/01/12 10:14:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ CEventListenerAsync	CNELU::AsyncListener;
 void			CNELU::initDriver(uint w, uint h, uint bpp, bool windowed ) throw(EDru)
 {
 	// Init debug system
-	NLMISC::InitDebug();
+//	NLMISC::InitDebug();
 
 	// Init driver.
 	CNELU::Driver= CDRU::createGlDriver();

@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * <File description>
  *
- * $Id: lod_character_shape.cpp,v 1.7 2002/11/28 14:11:02 berenguier Exp $
+ * $Id: lod_character_shape.cpp,v 1.8 2003/07/30 16:00:02 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "3d/lod_character_shape.h"
 #include "nel/misc/vectord.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/lod_character_texture.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/polygon.h"
@@ -679,9 +679,9 @@ void			CLodCharacterShape::endBoneColor(const std::vector<NLMISC::CRGBAF> &tmpCo
 			float	G= tmpColors[i].G / tmpColors[i].A;
 			float	B= tmpColors[i].B / tmpColors[i].A;
 			// store.
-			dstColors[i].R= (uint8)OptFastFloor(R);
-			dstColors[i].G= (uint8)OptFastFloor(G);
-			dstColors[i].B= (uint8)OptFastFloor(B);
+			dstColors[i].R= (uint8)NLMISC::OptFastFloor(R);
+			dstColors[i].G= (uint8)NLMISC::OptFastFloor(G);
+			dstColors[i].B= (uint8)NLMISC::OptFastFloor(B);
 			dstColors[i].A= 255;
 		}
 	}

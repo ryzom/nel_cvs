@@ -2265,14 +2265,6 @@ SOURCE=.\3d\stripifier.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\3d\noise_value.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\noise_value.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\vegetable.cpp
 # End Source File
 # Begin Source File
@@ -2371,14 +2363,6 @@ SOURCE=.\3d\vegetablevb_allocator.h
 # Begin Group "Util"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\3d\fast_floor.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\fast_floor.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\3d\matrix_3x4.cpp

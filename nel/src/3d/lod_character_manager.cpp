@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.8 2003/03/13 13:40:58 corvazier Exp $
+ * $Id: lod_character_manager.cpp,v 1.9 2003/07/30 15:59:49 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "3d/lod_character_shape_bank.h"
 #include "3d/lod_character_instance.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/lod_character_texture.h"
 #include "nel/misc/file.h"
 
@@ -372,7 +372,7 @@ static inline CRGBA	computeLodLighting(const CVector &lightObjectSpace, const CV
 	// \todo yoyo: TODO_OPTIMIZE
 	float	f= lightObjectSpace * normalPtr;
 	f= max(0.f,f);
-	sint	f8= OptFastFloor(f*255);
+	sint	f8= NLMISC::OptFastFloor(f*255);
 	CRGBA	lightRes;
 	lightRes.modulateFromuiRGBOnly(diffuse, f8);
 	lightRes.addRGBOnly(lightRes, ambient);

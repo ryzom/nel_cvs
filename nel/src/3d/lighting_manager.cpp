@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.11 2003/06/24 13:45:55 berenguier Exp $
+ * $Id: lighting_manager.cpp,v 1.12 2003/07/30 15:59:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "3d/lighting_manager.h"
 #include "3d/point_light.h"
 #include "3d/transform.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "nel/3d/logic_info.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/algo.h"
@@ -414,7 +414,7 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 				{
 					// For Static LightSetup BiLinear to work correctly, modulate with BkupInfluence
 					// don't worry about the precision of floor, because of *255.
-					lightContrib.Factor[i]= (uint8)OptFastFloor(bkupInf*255);
+					lightContrib.Factor[i]= (uint8)NLMISC::OptFastFloor(bkupInf*255);
 					// Indicate that this light don't need to be merged at all!
 					lightToMergeWeight[ligthSrcId]= 0;
 				}
@@ -423,7 +423,7 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 					float	f= (inf-minInfluence) * OOdeltaMinInfluence;
 					// For Static LightSetup BiLinear to work correctly, modulate with BkupInfluence
 					// don't worry about the precision of floor, because of *255.
-					sint	fi= OptFastFloor( bkupInf*f*255 );
+					sint	fi= NLMISC::OptFastFloor( bkupInf*f*255 );
 					clamp(fi, 0, 255);
 					lightContrib.Factor[i]= fi;
 					// The rest of the light contribution is to be merged.
@@ -433,7 +433,7 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 				// Compute the Final Att factor for models using Global Attenuation. NB: modulate with Factor
 				// don't worry about the precision of floor, because of *255.
 				// NB: compute att on the center of the model => modelRadius==0
-				sint	attFactor= OptFastFloor( lightContrib.Factor[i] * pl->computeLinearAttenuation(modelPos, distToModel) );
+				sint	attFactor= NLMISC::OptFastFloor( lightContrib.Factor[i] * pl->computeLinearAttenuation(modelPos, distToModel) );
 				lightContrib.AttFactor[i]= (uint8)attFactor;
 
 				// must append this lightedModel to the list in the light.
@@ -486,9 +486,9 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 			sint	v;
 			// Because of floating point error, it appears that sometime result may be slightly below 0. 
 			// => clamp necessary
-			v= OptFastFloor(mergedAmbient.R);	fastClamp8(v);	amb.R= v;
-			v= OptFastFloor(mergedAmbient.G);	fastClamp8(v);	amb.G= v;
-			v= OptFastFloor(mergedAmbient.B);	fastClamp8(v);	amb.B= v;
+			v= NLMISC::OptFastFloor(mergedAmbient.R);	fastClamp8(v);	amb.R= v;
+			v= NLMISC::OptFastFloor(mergedAmbient.G);	fastClamp8(v);	amb.G= v;
+			v= NLMISC::OptFastFloor(mergedAmbient.B);	fastClamp8(v);	amb.B= v;
 			lightContrib.MergedPointLight= amb;
 
 			// Indicate we use the merged pointLight => the model must recompute lighting each frame

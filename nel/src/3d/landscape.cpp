@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.130 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: landscape.cpp,v 1.131 2003/07/30 15:59:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@
 #include "3d/vegetable_manager.h"
 #include "3d/vegetable.h"
 #include "3d/landscape_vegetable_block.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/tile_vegetable_desc.h"
 #include "3d/texture_dlm.h"
 #include "3d/patchdlm_context.h"
@@ -653,7 +653,7 @@ void			CLandscape::refine(const CVector &refineCenter)
 	CLandscapeGlobals::CurrentDate++;
 
 	// Because CTessFacePriorityList::insert use it.
-	OptFastFloorBegin();
+	NLMISC::OptFastFloorBegin();
 
 	/* While there is still face in list, update them
 		NB: updateRefine() always insert the face in _***PriorityList, so face is removed from 
@@ -700,7 +700,7 @@ void			CLandscape::refine(const CVector &refineCenter)
 	while( _RootNewLeaves.nextInPList() != &_RootNewLeaves );
 
 	// Because CTessFacePriorityList::insert use it.
-	OptFastFloorEnd();
+	NLMISC::OptFastFloorEnd();
 
 
 	// Before unlockBuffers, test for vegetable IG creation.
@@ -708,7 +708,7 @@ void			CLandscape::refine(const CVector &refineCenter)
 		H_AUTO( NL3D_Vegetable_Update );
 
 		// Because CLandscapeVegetableBlock::update() use OptFastFloor..
-		OptFastFloorBegin();
+		NLMISC::OptFastFloorBegin();
 
 		// For each vegetableBlock, test IG creation
 		CLandscapeVegetableBlock	*vegetBlock= _VegetableBlockList.begin();
@@ -721,7 +721,7 @@ void			CLandscape::refine(const CVector &refineCenter)
 		_VegetableManager->updateLighting();
 
 		// Stop fastFloor optim.
-		OptFastFloorEnd();
+		NLMISC::OptFastFloorEnd();
 	}
 
 
@@ -3369,13 +3369,13 @@ void			CLandscape::updateLightingAll()
 	updateGlobalsAndLockBuffers (CVector::Null);
 
 	// Because updateLighting() may use OptFastFloor..
-	OptFastFloorBegin();
+	NLMISC::OptFastFloorBegin();
 
 	// update ALL lighting for vegetables
 	_VegetableManager->updateLightingAll();
 
 	// Stop fastFloor optim.
-	OptFastFloorEnd();
+	NLMISC::OptFastFloorEnd();
 
 	// Must realase VB Buffers
 	unlockBuffers();

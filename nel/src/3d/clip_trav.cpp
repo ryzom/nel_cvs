@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.36 2003/06/27 12:48:47 besson Exp $
+ * $Id: clip_trav.cpp,v 1.37 2003/07/30 15:57:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@
 #include "nel/misc/hierarchical_timer.h"
 #include "3d/scene.h"
 #include "3d/skeleton_model.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 
 using namespace std;
 using namespace NLMISC;

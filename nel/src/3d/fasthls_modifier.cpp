@@ -1,7 +1,7 @@
 /** \file fasthls_modifier.cpp
  * <File description>
  *
- * $Id: fasthls_modifier.cpp,v 1.2 2003/06/16 16:23:40 lecroart Exp $
+ * $Id: fasthls_modifier.cpp,v 1.3 2003/07/30 15:58:33 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 
 #include "std3d.h"
 #include "3d/fasthls_modifier.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "nel/misc/bitmap.h"
 #include "nel/misc/system_info.h"
 #include "nel/misc/algo.h"
@@ -437,9 +437,9 @@ void		CFastHLSModifier::convertRGBABitmap(CBitmap &dst, const CBitmap &src, uint
 		clamp(H, 0, 255);
 		clamp(L, 0, 255);
 		clamp(S, 0, 255);
-		uint8	H8= (uint8)OptFastFloor(H);
-		uint8	L8= (uint8)OptFastFloor(L);
-		uint8	S8= (uint8)OptFastFloor(S);
+		uint8	H8= (uint8)NLMISC::OptFastFloor(H);
+		uint8	L8= (uint8)NLMISC::OptFastFloor(L);
+		uint8	S8= (uint8)NLMISC::OptFastFloor(S);
 		*dstPix= convert(H8, L8, S8);
 		srcPix++;
 		dstPix++;

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.7 2001/03/08 11:04:58 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.8 2001/03/21 17:59:27 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -285,6 +285,8 @@ void			CDriverUser::setMatrixMode2D(const CFrustum &frust)
 	_CurrentMatrixContext.ViewMatrix.identity();
 	_CurrentMatrixContext.ViewMatrix.setRot(I,J,K, true);
 	_CurrentMatrixContext.ModelMatrix.identity();
+
+	setupMatrixContext();
 }
 // ***************************************************************************
 void			CDriverUser::setMatrixMode3D(UCamera &camera) 

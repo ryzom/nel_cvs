@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.3 2001/03/02 09:28:11 berenguier Exp $
+ * $Id: text_context_user.h,v 1.4 2001/03/21 17:59:04 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/tmp/u_text_context.h"
 #include "nel/3d/text_context.h"
+#include "nel/3d/driver_user.h"
 
 
 namespace NL3D
@@ -45,18 +46,22 @@ class CTextContextUser : public UTextContext
 {
 private:
 	CTextContext	_TextContext;
+	CDriverUser		*_DriverUser;
 	IDriver			*_Driver;
 
 public:
 
 	/// Constructor
-	CTextContextUser(const std::string fontFileName, const std::string fontExFileName, IDriver *drv, CFontManager *fmg)
+	CTextContextUser(const std::string fontFileName, const std::string fontExFileName, CDriverUser *drv, CFontManager *fmg)
 	{
+		nlassert(drv);
+		_DriverUser= drv;
+
 		// The enum of CComputedString and UTextContext MUST be the same!!!
 		nlassert((uint)UTextContext::HotSpotCount== (uint)CComputedString::HotSpotCount);
 
-		_Driver= drv;
-		_TextContext.init(drv, fmg);
+		_Driver= drv->getDriver();
+		_TextContext.init(_Driver, fmg);
 		_TextContext.setFontGenerator(fontFileName, fontExFileName);
 	}
 	virtual ~CTextContextUser() {}
@@ -142,10 +147,12 @@ public:
 	void printAt(float x, float y, uint32 i) 
 	{
 		_TextContext.printAt(x, y, i);
+		_DriverUser->restoreMatrixContext();
 	}
 	void printAt(float x, float y, ucstring ucstr) 
 	{
 		_TextContext.printAt(x, y, ucstr);
+		_DriverUser->restoreMatrixContext();
 	}
 	void printfAt(float x, float y, const char * format, ...) 
 	{
@@ -153,6 +160,7 @@ public:
 		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
 		_TextContext.printAt(x, y, ucstring(str)) ;
+		_DriverUser->restoreMatrixContext();
 	}
 
 	void render3D(const CMatrix &mat, ucstring ucstr) 

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.2 2001/03/13 17:13:57 corvazier Exp $
+ * $Id: driver_user2.cpp,v 1.3 2001/03/21 17:59:27 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ void			CDriverUser::deleteScene(UScene	*scene)
 // ***************************************************************************
 UTextContext	*CDriverUser::createTextContext(const std::string fontFileName, const std::string fontExFileName) 
 {
-	return _TextContexts.insert(new CTextContextUser(fontFileName, fontExFileName, _Driver, &_FontManager));
+	return _TextContexts.insert(new CTextContextUser(fontFileName, fontExFileName, this, &_FontManager));
 }
 // ***************************************************************************
 void			CDriverUser::deleteTextContext(UTextContext	*textContext) 

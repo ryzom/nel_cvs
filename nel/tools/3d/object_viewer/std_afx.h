@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.12 2003/02/05 17:45:20 corvazier Exp $
+ * $Id: std_afx.h,v 1.13 2003/02/06 09:55:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,6 @@
 
 #if !defined(AFX_STDAFX_H__9B22CB86_1929_11D5_9CD4_0050DAC3A412__INCLUDED_)
 #define AFX_STDAFX_H__9B22CB86_1929_11D5_9CD4_0050DAC3A412__INCLUDED_
-
-#define USE_JPEG
 
 #if _MSC_VER > 1000
 #pragma once

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.86 2003/02/05 17:45:20 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.87 2003/02/06 09:55:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,9 +27,10 @@
 
 
 
+#define USE_JPEG
 
 #include "std_afx.h"
-#define USE_JPEG
+
 #undef OBJECT_VIEWER_EXPORT
 #define OBJECT_VIEWER_EXPORT __declspec( dllexport ) 
 

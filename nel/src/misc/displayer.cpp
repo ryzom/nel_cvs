@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.4 2000/11/08 14:59:33 lecroart Exp $
+ * $Id: displayer.cpp,v 1.5 2000/11/21 17:16:36 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,9 @@ void CFileDisplayer::display (const std::string& str)
 
 void CMsgBoxDisplayer::display (const std::string& str)
 {
+#ifdef NL_OS_WINDOWS
 	MessageBox (NULL, str.c_str (), "", MB_OK | MB_ICONEXCLAMATION);
+#endif
 }
 
 

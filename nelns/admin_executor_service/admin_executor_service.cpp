@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.65 2004/07/13 11:17:51 coutelas Exp $
+ * $Id: admin_executor_service.cpp,v 1.66 2004/09/03 09:04:46 legros Exp $
  *
  */
 
@@ -1746,21 +1746,21 @@ NLMISC_COMMAND( displayLogReport, "Display summary of a part of the log report b
 /*
  * Command to allow AES to create a file with content
  */
-NLMISC_COMMAND( createFile, "Create a file and fill it with given content", "<filename> <content>" )
+NLMISC_COMMAND( createFile, "Create a file and fill it with given content", "<filename> [<content>]" )
 {
 	// check args
-	if (args.size() != 2)
+	if (args.size() < 1 || args.size() > 2)
 		return false;
 
 	COFile	f;
 	if (!f.open(args[0]))
 	{
-		log.displayNL("Failed to open file '%s' in write mode", args[1].c_str());
+		log.displayNL("Failed to open file '%s' in write mode", args[0].c_str());
 		return false;
 	}
 
 	// check something to write, in case serialBuffer() doesn't accept empty buffer
-	if (!args[1].empty())
+	if (args.size() == 2)
 	{
 		// dirty const cast, but COFile won't erase buffer content
 		char*	buffer = const_cast<char*>(args[1].c_str());

@@ -1,7 +1,7 @@
 /** \file export_light.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_light.cpp,v 1.3 2001/07/11 08:26:53 besson Exp $
+ * $Id: export_light.cpp,v 1.4 2001/12/18 11:23:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,7 +149,12 @@ bool CExportNel::buildLight (GenLight &maxLight, NL3D::CLight& nelLight, INode& 
 		// *** Set attenuation
 
 		if (maxLight.GetUseAtten())
-			nelLight.setupAttenuation (maxLight.GetAtten (time, ATTEN_START), maxLight.GetAtten (time, ATTEN_END));
+		{
+			float nearAtten = maxLight.GetAtten (time, ATTEN_START);
+			if (nearAtten == 0)
+				nearAtten = 0.1f;
+			nelLight.setupAttenuation (nearAtten, maxLight.GetAtten (time, ATTEN_END));
+		}
 		else
 			nelLight.setNoAttenuation ();
 

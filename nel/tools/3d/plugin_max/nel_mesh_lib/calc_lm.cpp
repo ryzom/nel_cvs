@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.27 2001/12/11 10:19:55 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.28 2001/12/18 11:23:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -347,7 +347,8 @@ struct SGradient
 
 		double GradDen = ( (u3-u1)*(v2-v1) - (u2-u1)*(v3-v1) );
 
-		if (GradDen != 0.0)
+		/// \todo Trap : is normal to have a lot of GradDen == 0 ?           // if (GradDen != 0.0)
+		if ( fabs (GradDen) > 0.000001 )
 			GradDen = 1.0 / GradDen;
 
 		this->InitU = u1;

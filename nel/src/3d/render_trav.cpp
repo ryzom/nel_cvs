@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * TODO: File description
  *
- * $Id: render_trav.cpp,v 1.61 2005/01/10 15:04:15 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.62 2005/01/18 15:11:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -338,10 +338,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 				nlassert(tri * 3 == numWantedVertices);
 			}
 			// Unlink all water model
-			while (_FirstWaterModel)
-			{
-				_FirstWaterModel->unlink();
-			}
+			clearWaterModelList();
 		}		
 	}
 
@@ -1268,6 +1265,15 @@ void CRenderTrav::setupTransparencySorting(uint8 maxPriority /*=0*/,uint NbDista
 		if (k != 0) _OrderTransparentListByPriority[k].shareAllocator(_OrderTransparentListByPriority[0]); // node allocator is shared between all layers
 	}
 	_MaxTransparencyPriority = maxPriority;	
+}
+
+// ***************************************************************************
+void CRenderTrav::clearWaterModelList()
+{
+	while (_FirstWaterModel)
+	{
+		_FirstWaterModel->unlink();
+	}
 }
 
 

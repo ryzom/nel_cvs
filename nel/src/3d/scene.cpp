@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.130 2004/10/22 15:06:52 berenguier Exp $
+ * $Id: scene.cpp,v 1.131 2005/01/18 15:11:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -362,7 +362,7 @@ void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::
 
 	if (_RenderedPart == UScene::RenderNothing)
 	{			
-		RenderTrav._FirstWaterModel = NULL;
+		RenderTrav.clearWaterModelList();
 		_FirstFlare = NULL;
 
 		double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());

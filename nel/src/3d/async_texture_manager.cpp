@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * <File description>
  *
- * $Id: async_texture_manager.cpp,v 1.5 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: async_texture_manager.cpp,v 1.6 2002/11/13 17:53:20 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -148,10 +148,15 @@ void			CAsyncTextureManager::setupMaxTotalTextureSize(uint maxText)
 
 
 // ***************************************************************************
-uint			CAsyncTextureManager::addTextureRef(const string &textName, CMeshBaseInstance *instance)
+uint			CAsyncTextureManager::addTextureRef(const string &textNameNotLwr, CMeshBaseInstance *instance)
 {
 	uint	ret;
 
+	// strlwr name
+	string	textName= textNameNotLwr;
+	strlwr(textName);
+
+	// find the texture in map
 	ItTextureEntryMap	it;
 	it= _TextureEntryMap.find(textName);
 
@@ -159,15 +164,18 @@ uint			CAsyncTextureManager::addTextureRef(const string &textName, CMeshBaseInst
 	if(it==_TextureEntryMap.end())
 	{
 		// search a free id.
-		uint	i;
-		for(i=0;i<_TextureEntries.size();i++)
+		uint	i= _TextureEntries.size();
+		if(!_FreeTextureIds.empty())
 		{
-			if(_TextureEntries[i]==NULL)
-				break;
+			i= _FreeTextureIds.back();
+			_FreeTextureIds.pop_back();
 		}
 		// resize if needed.
 		if(i>=_TextureEntries.size())
+		{
 			_TextureEntries.push_back(NULL);
+			_FreeTextureIds.reserve(_TextureEntries.capacity());
+		}
 
 		// alloc new.
 		CTextureEntry	*text= new CTextureEntry();
@@ -285,6 +293,8 @@ void			CAsyncTextureManager::deleteTexture(uint id)
 	// At last delete texture entry.
 	delete text;
 	_TextureEntries[id]= NULL;
+	// add a new free id.
+	_FreeTextureIds.push_back(id);
 }
 
 

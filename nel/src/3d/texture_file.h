@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.8 2002/10/10 12:56:56 berenguier Exp $
+ * $Id: texture_file.h,v 1.9 2002/11/13 17:53:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	std::string getFileName() const { return _FileName; } 
+	const std::string		&getFileName() const { return _FileName; } 
 
 
 	/// texture file may allow the driver to degrade (default is true).
@@ -101,7 +101,8 @@ public:
 	 * \date 2000
 	 */	
 	virtual bool			supportSharing() const {return _SupportSharing;}
-	virtual std::string		getShareName() const {return getFileName();}
+	// return strlwr(getFileName())
+	virtual std::string		getShareName() const;
 	// User can disable the sharing system. Default is to be enabled. Not serialized
 	void					enableSharing(bool enable);
 

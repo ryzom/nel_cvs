@@ -1,7 +1,7 @@
 /** \file async_texture_manager.h
  * <File description>
  *
- * $Id: async_texture_manager.h,v 1.3 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: async_texture_manager.h,v 1.4 2002/11/13 17:53:20 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -218,6 +218,7 @@ private:
 
 	// Textures Entries.
 	std::vector<CTextureEntry*>			_TextureEntries;
+	std::vector<uint>					_FreeTextureIds;
 	TTextureEntryMap					_TextureEntryMap;
 	std::vector<uint>					_WaitingTextures;
 

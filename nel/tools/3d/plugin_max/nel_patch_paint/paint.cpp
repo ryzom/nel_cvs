@@ -1573,13 +1573,23 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 					{
 						if (nCorner[v]!=pVoisinCorner[(edge+1)&3])
 						{
-							if (nCorner[v]<pVoisinCorner[(edge+1)&3])
+							// Check if it is a valid corner
+							int delta=(pVoisinCorner[(edge+1)&3].Rotate-nCorner[v].Rotate)&3;
+							if (delta != 2)
 							{
-								nCorner[v]=pVoisinCorner[(edge+1)&3];
-								extraOrdinarySmallEdge[v]=(v-1)&3;
+								if (nCorner[v]<pVoisinCorner[(edge+1)&3])
+								{
+									nCorner[v]=pVoisinCorner[(edge+1)&3];
+									extraOrdinarySmallEdge[v]=(v-1)&3;
+								}
+								else
+									extraOrdinarySmallEdge[v]=v;
 							}
 							else
-								extraOrdinarySmallEdge[v]=v;
+							{
+								// Bad corner
+								return false;
+							}
 							extraOrdinary[v]++;
 							bDiff=true;
 						}					
@@ -1599,13 +1609,23 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 					{
 						if (nCorner[nNextCorner]!=pVoisinCorner[edge])
 						{
-							if (nCorner[nNextCorner]<pVoisinCorner[edge])
+							// Check if it is a valid corner
+							int delta=(pVoisinCorner[edge].Rotate-nCorner[nNextCorner].Rotate)&3;
+							if (delta != 2)
 							{
-								nCorner[nNextCorner]=pVoisinCorner[edge];
-								extraOrdinarySmallEdge[nNextCorner]=nNextCorner;
+								if (nCorner[nNextCorner]<pVoisinCorner[edge])
+								{
+									nCorner[nNextCorner]=pVoisinCorner[edge];
+									extraOrdinarySmallEdge[nNextCorner]=nNextCorner;
+								}
+								else
+									extraOrdinarySmallEdge[nNextCorner]=v;
 							}
 							else
-								extraOrdinarySmallEdge[nNextCorner]=v;
+							{
+								// Bad corner
+								return false;
+							}
 							extraOrdinary[nNextCorner]++;
 							bDiff=true;
 						}

@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.15 2001/05/28 11:39:34 chafik Exp $
+ * $Id: displayer.cpp,v 1.16 2001/05/28 12:45:06 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -158,7 +158,7 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 
 	ss << message;
 
-	cout << ss.str();
+	//cout << ss.str();
 
 	fflush(stdout);
 

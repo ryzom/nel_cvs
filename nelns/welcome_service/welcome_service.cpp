@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.35 2004/07/08 08:41:17 legros Exp $
+ * $Id: welcome_service.cpp,v 1.36 2004/07/08 08:55:25 distrib Exp $
  *
  */
 
@@ -690,7 +690,7 @@ void	updateShardOpenFromFile(const std::string& filename)
 		f.getline(readBuffer, 256);
 		ShardOpen = atoi(readBuffer);
 
-		nlinfo("Updated ShardOpen state to '%d' from file '%s'", ShardOpen, filename.c_str());
+		nlinfo("Updated ShardOpen state to '%u' from file '%s'", ShardOpen.get(), filename.c_str());
 	}
 	catch (Exception& e)
 	{

@@ -1,7 +1,7 @@
 /** \file cpu_time_stat.cpp
  * Timing utilities (only support for unixes)
  *
- * $Id: cpu_time_stat.cpp,v 1.2 2004/12/27 10:06:37 guignot Exp $
+ * $Id: cpu_time_stat.cpp,v 1.3 2004/12/28 12:46:07 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -77,7 +77,7 @@ bool	CCPUTimeStat::getPIDTicks(uint64& utime, uint64& stime, uint64& cutime, uin
 {
 #ifdef NL_OS_UNIX
 
-	string	statfile = NLMISC::toString("/proc/%u/stat", pid);
+	std::string	statfile = NLMISC::toString("/proc/%u/stat", pid);
 	FILE*	f = fopen(statfile.c_str(), "r");
 
 	if (f == NULL)

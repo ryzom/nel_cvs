@@ -1,7 +1,7 @@
 /** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.11 2004/12/08 15:51:26 berenguier Exp $
+ * $Id: quad_grid.h,v 1.12 2004/12/28 12:43:55 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -474,8 +474,8 @@ template<class T>	CQuadGrid<T> &CQuadGrid<T>::operator=(const CQuadGrid<T> &o)
 	_ChangeBasis= o._ChangeBasis;
 
 	// Fill with copy of elements of other grid. Complex copy...
-	map<const CNode*, CNode *>	srcNodeToDestNode;
-	map<const CNode*, uint>		srcNodeToIndexInQuadNodes;
+	std::map<const CNode*, CNode *>	srcNodeToDestNode;
+	std::map<const CNode*, uint>		srcNodeToIndexInQuadNodes;
 	// NB: the order of nodes in CNode::QuadNodes is not important (may be different from src to dst)
 	for(uint i=0;i<_Grid.size();i++)
 	{
@@ -490,7 +490,7 @@ template<class T>	CQuadGrid<T> &CQuadGrid<T>::operator=(const CQuadGrid<T> &o)
 
 			// get the dest node created for this src node
 			CNode	*dstNode= NULL;
-			map<const CNode*, CNode *>::iterator	it= srcNodeToDestNode.find(srcNode);
+			std::map<const CNode*, CNode *>::iterator	it= srcNodeToDestNode.find(srcNode);
 			if(it!=srcNodeToDestNode.end())
 			{
 				dstNode= it->second;

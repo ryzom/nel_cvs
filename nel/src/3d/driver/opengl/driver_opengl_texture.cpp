@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.72 2004/04/01 09:24:49 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.73 2004/04/01 19:09:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1388,12 +1388,9 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 	if(_Extensions.EXTTextureEnvCombine)
 	{
 		// if Mad operator is used, special setup
-		if (env.Env.OpAlpha == CMaterial::Mad || env.Env.OpRGB == CMaterial::Mad)
-		{
-			if (_Extensions.NVTextureEnvCombine4)
-			{
-				forceActivateTexEnvModeEnvCombine4(env);
-			}			
+		if ((env.Env.OpAlpha == CMaterial::Mad || env.Env.OpRGB == CMaterial::Mad) && _Extensions.NVTextureEnvCombine4)
+		{			
+			forceActivateTexEnvModeEnvCombine4(env);		
 		}
 		else
 		{		
@@ -1403,9 +1400,9 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 			if (env.Env.OpRGB == CMaterial::Mad)
 			{				
 				//
-				if (_Extensions.ATIXTextureEnvCombine3)
+				if (_Extensions.ATITextureEnvCombine3)
 				{
-					glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);
+					glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATI);
 					// Arg0.
 					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, SourceLUT[env.Env.SrcArg0RGB] );
 					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, OperandLUT[env.Env.OpArg0RGB]);
@@ -1454,9 +1451,9 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 			if (env.Env.OpAlpha == CMaterial::Mad)
 			{
 								
-				if (_Extensions.ATIXTextureEnvCombine3)
+				if (_Extensions.ATITextureEnvCombine3)
 				{
-					glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);
+					glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATI);
 					// Arg0.
 					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, SourceLUT[env.Env.SrcArg0Alpha] );
 					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, OperandLUT[env.Env.OpArg0Alpha]);
@@ -1468,8 +1465,7 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, OperandLUT[env.Env.OpArg2Alpha]);
 				}
 				else
-				{
-					// fallback to modulate ..
+				{					
 					// fallback to modulate ..
 					glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE);
 					//

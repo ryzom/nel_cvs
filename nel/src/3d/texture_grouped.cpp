@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture_grouped.cpp,v 1.5 2001/08/28 13:09:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,9 +33,9 @@ namespace NL3D {
 /*
  * Constructor
  */
-	CTextureGrouped::CTextureGrouped() : _NbTex(0)
+CTextureGrouped::CTextureGrouped() : _NbTex(0)
 {
-
+	setFilterMode(Linear, LinearMipMapOff);
 }
 
 

@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.7 2001/01/17 16:53:23 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.8 2001/01/23 15:47:09 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,21 +42,22 @@ namespace NLAISCRIPT
 
 	CCodeBrancheRunDebug::CCodeBrancheRunDebug(sint32 N,const IOpCode &op):
 	CCodeBrancheRun(N, op),
-	_SourceFileName("")
+	_SourceCode(NULL)
 	{
 		initCBRD();
 	}
 
-	CCodeBrancheRunDebug::CCodeBrancheRunDebug(sint32 N, const char* sourceCodeFileName):
+	CCodeBrancheRunDebug::CCodeBrancheRunDebug(sint32 N, IScriptDebugSource* sourceCode):
 	CCodeBrancheRun(N),
-	_SourceFileName(sourceCodeFileName)
+	_SourceCode(sourceCode)
 	{
+		_SourceCode->incRef();
 		initCBRD();
 	}
 
 	CCodeBrancheRunDebug::CCodeBrancheRunDebug(const tListCode &l):
 	CCodeBrancheRun(l),
-	_SourceFileName("")
+	_SourceCode(NULL)
 	{
 		initCBRD();
 	}	
@@ -64,8 +65,9 @@ namespace NLAISCRIPT
 	CCodeBrancheRunDebug::CCodeBrancheRunDebug(const CCodeBrancheRunDebug &l):
 	CCodeBrancheRun(l),
 	_LineInSourceCodeArray(NULL),
-	_SourceFileName(l._SourceFileName)
+	_SourceCode(l._SourceCode)
 	{
+		_SourceCode->incRef();
 		initCBRD();
 		for(sint32 i = 0 ;i < _Count; i ++) 
 		{
@@ -76,6 +78,7 @@ namespace NLAISCRIPT
 	CCodeBrancheRunDebug::~CCodeBrancheRunDebug()
 	{
 		delete []_LineInSourceCodeArray;
+		if (_SourceCode) _SourceCode->decRef();
 	}
 
 	const NLAIC::IBasicType* CCodeBrancheRunDebug::clone() const 
@@ -99,8 +102,7 @@ namespace NLAISCRIPT
 			sint32 n = _LineInSourceCodeArray[i];
 			os.serial( n );
 		}
-		std::string x( _SourceFileName );
-		os.serial(x );
+		_SourceCode->save(os);
 		
 	}
 
@@ -116,7 +118,7 @@ namespace NLAISCRIPT
 			is.serial( n );
 			_LineInSourceCodeArray[i] = (int)n;
 		}
-		is.serial(_SourceFileName );		
+		_SourceCode->load(is);
 	}
 
 	const NLAIAGENT::IObjectIA::CProcessResult& CCodeBrancheRunDebug::run(NLAIAGENT::IObjectIA &self)
@@ -240,15 +242,15 @@ namespace NLAISCRIPT
 		_LineInSourceCodeArray[index] = ligne;
 	}
 
-	const char* CCodeBrancheRunDebug::getSourceFileName() const
+	std::string CCodeBrancheRunDebug::getSourceFileName() const
 	{
-		return _SourceFileName.c_str();
+		return _SourceCode->getSourceName().c_str();
 	}
 
 	void CCodeBrancheRunDebug::fixContextDebugMode(CCodeContext &P) const
 	{
 		// We are in step by step mode on the current CCodeBrancheRun :
-		if (   P.ContextDebug.getBreakPointValue(_LineInSourceCodeArray[_Ip-1],getSourceFileName()) // After a BreakPoint.
+		if (   P.ContextDebug.getBreakPointValue(_LineInSourceCodeArray[_Ip-1],getSourceFileName().c_str()) // After a BreakPoint.
 			|| P.ContextDebug.getDebugMode() == stepInMode	// After a stepInMode.
 			|| P.ContextDebug.getDebugMode() == stepOutMode && (P.ContextDebug.getCallStackTopIndex() < P.ContextDebug.getStepIndex()) // After leaving a branche in stepOutMode.
 			|| P.ContextDebug.getDebugMode() == stepByStepMode && P.ContextDebug.getCallStackTopIndex() < P.ContextDebug.getStepIndex()) // If we reach a higer level branch in stepBySteplMode.
@@ -260,32 +262,16 @@ namespace NLAISCRIPT
 
 	void CCodeBrancheRunDebug::printSourceCodeLine(int first, int last) const
 	{
-		FILE* f;
 		sint32 i, j, k, size, lineNumber;
-		char* buf;
+		const char* buf;
 		char* lineTxt;
+		std::string code;
 
 		lineNumber = this->getCurrentSourceCodeLineNumber();
-		// Read the file
-		f = fopen(getSourceFileName(),"rb");
-		if(f)
-		{
-			fseek(f,0,SEEK_END);
-			size = ftell(f);
-			rewind(f);
-			buf = new char [size + 3];
-			fread(buf+1, sizeof( char ), size, f);
-			fclose(f);
-		}		
-		else
-		{
-			size = 1;
-			buf = new char [size + 3];
-		}
-
-		buf[0] = ' ';
-		buf[size] = '\n';
-		buf[size+1] = 0;
+		code = " ";
+		code += _SourceCode->getSourceBuffer();
+		size = code.size();
+		buf = code.c_str();
 
 		// first should be lowest than last.
 		if (first > last) last = first;
@@ -332,7 +318,6 @@ namespace NLAISCRIPT
 			}
 			k++;
 		}
-		delete[] buf;
 		delete[] lineTxt;
 	}
 
@@ -535,12 +520,12 @@ namespace NLAISCRIPT
 			{
 				if (sourceFileName[0])
 				{
-					sint32 h = strcmp(sourceFileName, getSourceFileName());
+					sint32 h = strcmp(sourceFileName, getSourceFileName().c_str());
 					P.ContextDebug.addBreakPoint(lineNumber,sourceFileName);
 				}
 				else
 				{
-					P.ContextDebug.addBreakPoint(lineNumber,getSourceFileName());
+					P.ContextDebug.addBreakPoint(lineNumber,getSourceFileName().c_str());
 				}
 			}
 			delete[] sourceFileName;
@@ -552,12 +537,12 @@ namespace NLAISCRIPT
 			sscanf(buf+1,"%d %s",&lineNumber,sourceFileName);
 			if (sourceFileName[0])
 			{
-				sint32 h = strcmp(sourceFileName, getSourceFileName());
+				sint32 h = strcmp(sourceFileName, getSourceFileName().c_str());
 				P.ContextDebug.eraseBreakPoint(lineNumber,sourceFileName);
 			}
 			else
 			{
-				P.ContextDebug.eraseBreakPoint(lineNumber,getSourceFileName());
+				P.ContextDebug.eraseBreakPoint(lineNumber,getSourceFileName().c_str());
 			}
 			delete[] sourceFileName;
 			break;

@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.13 2001/01/23 09:15:44 chafik Exp $
+ * $Id: compilateur.h,v 1.14 2001/01/23 15:46:31 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,6 +118,7 @@ namespace NLAISCRIPT
 	/**
 	This class define compilation of a source code. He is heritage come from the lex parser.
 	* \author Chafik sameh	
+	* \author Robert Gabriel
 	* \author Nevrax France
 	* \date 2000	
 	*/
@@ -170,8 +171,8 @@ namespace NLAISCRIPT
 		sint32							_LastTypeCall;
 		IConstraint						*_LastbaseClass;
 		bool							_Debug;
-		const char						*_SourceFileName;
-		NLAIAGENT::IObjectIA					*_ResultCompile;
+		IScriptDebugSource				*_SourceFileName;
+		NLAIAGENT::IObjectIA			*_ResultCompile;
 
 		// Logique
 		std::list<const NLAIAGENT::CStringVarName *> _LastLogicParam;
@@ -192,16 +193,17 @@ namespace NLAISCRIPT
 		The perser need an IO interface, an  source code here defined by const char *str and sint32 size.
 		Remark that the const char* fileName variable is necessary for the debug code version.
 		*/
-		CCompilateur(NLAIC::IIO &Iterface,const char *str, sint32 size, const char* fileName):
+		CCompilateur(NLAIC::IIO &Iterface,const char *str, sint32 size, IScriptDebugSource* fileName):
 			_StreamBuffer(NULL),
 			_Iterface(Iterface),						
 			_LastBloc((IBlock*)NULL),			
 			_LastString("_"),
 			_LastBaseObjectDef("_"),
 			_Debug(false),
-			_SourceFileName(fileName),
 			_LastAssert("")
 		{
+			_SourceFileName = fileName;
+			_SourceFileName->incRef();
 			LastyyText[0][0] = 0;
 			LastyyText[1][0] = 0;
 			//_VarState = NULL;
@@ -225,16 +227,17 @@ namespace NLAISCRIPT
 		The perser need an IO interface, an  source code here defined by const char *str which it define a file name.
 		Remark that the const char* fileName variable is necessary for the debug code version.
 		*/
-		CCompilateur(NLAIC::IIO &Iterface,const char *str, const char* fileName):
+		CCompilateur(NLAIC::IIO &Iterface,const char *str, IScriptDebugSource* fileName):
 			_StreamBuffer(NULL),
 			_Iterface(Iterface),			
 			_LastBloc((IBlock*)NULL),			
 			_LastString("_"),
 			_LastBaseObjectDef("_"),
 			_Debug(false),
-			_SourceFileName(fileName),
 			_LastAssert("")
 		{					
+			_SourceFileName = fileName;
+			_SourceFileName->incRef();
 			//_VarState = NULL;
 			InitFromFile(str);
 			yyLine = yyColone = 1;
@@ -303,6 +306,7 @@ namespace NLAISCRIPT
 			cleanMethodConstraint();
 			cleanTypeConstraint();			
 			//_Heap -= (sint32)_Heap;
+			_SourceFileName->decRef();
 		}
 		
 		///This function is needed by the lex parser for initializ the read stream (see lex documment).

@@ -1,7 +1,7 @@
 /** \file code_branche_run_debug.h
  * A debug version of CCodeBrancheRun. It keep a trace between original source code and OpCode.
  *
- * $Id: code_branche_run_debug.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: code_branche_run_debug.h,v 1.5 2001/01/23 15:46:23 robert Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -14,6 +14,7 @@
 #include "nel/ai/agent/agent_script.h"
 
 #include "nel/ai/script/codage.h"
+#include "nel/ai/script/script_debug_source.h"
 
 namespace NLAISCRIPT
 {
@@ -33,7 +34,7 @@ namespace NLAISCRIPT
 
 	private :
 		int			*_LineInSourceCodeArray;
-		std::string	_SourceFileName;
+		IScriptDebugSource *_SourceCode;
 
 	 public:
 
@@ -46,7 +47,7 @@ namespace NLAISCRIPT
 		/** Constructor
 		 *	param N Size of the CodeBranche
 		 */
-		CCodeBrancheRunDebug(sint32 N, const char* sourceCodeFileName);
+		CCodeBrancheRunDebug(sint32 N, IScriptDebugSource* sourceCode);
 
 		/** Constructor
 		 *	param l CBagOfCode list
@@ -82,7 +83,7 @@ namespace NLAISCRIPT
 		void setLineCode(int ligne, int index);
 
 		/// Return the name (& path) of the source code file.
-		const char* getSourceFileName() const;
+		std::string getSourceFileName() const;
 
 		/// Return the line number in source code of the actual opCode.
 		uint16	getCurrentSourceCodeLineNumber() const;

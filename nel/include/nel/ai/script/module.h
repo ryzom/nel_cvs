@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.7 2001/01/23 09:15:44 chafik Exp $
+ * $Id: module.h,v 1.8 2001/01/23 15:46:50 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,13 +175,14 @@ namespace NLAISCRIPT
 		}
 
 		/// Build a CCodeBrancheRunDebug
-		CCodeBrancheRunDebug* getCodeDebug(const char* sourceCodeFileName)
+		CCodeBrancheRunDebug* getCodeDebug(IScriptDebugSource* sourceCode)
 		{
 			if(/*_Cbr == NULL && */_ListCode.size())
 			{
 				sint32 k = _ListCode.size();
 				CCodeBrancheRunDebug *cbr;
-				cbr = new CCodeBrancheRunDebug(k, sourceCodeFileName);		
+				cbr = new CCodeBrancheRunDebug(k, sourceCode);
+
 				for(sint32 i = 0; i < k; i++)
 				{
 					CBagOfCode *x = _ListCode.front();

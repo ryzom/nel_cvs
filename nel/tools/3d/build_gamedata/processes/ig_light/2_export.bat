@@ -1,1 +1,1 @@
-echo > log.log
+echo ***** > log.log

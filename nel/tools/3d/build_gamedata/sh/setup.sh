@@ -9,12 +9,9 @@ process_to_complete=`cat cfg/config.cfg | grep "process_to_complete" | sed -e 's
 update_directory=`cat cfg/config.cfg | grep "update_directory" | sed -e 's/update_directory//' | sed -e 's/ //g' | sed -e 's/=//g' | sed -e 's/,/ /g'`
 
 # Log error
-echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\* > log.log
-echo \*\*\*\*\*\*\* SETUP >> log.log
-echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\* >> log.log
-echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
-echo \*\*\*\*\*\*\* SETUP
-echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
+echo  > log.log
+date >> log.log
+date
 
 # Create a bin dir
 mkdir bin

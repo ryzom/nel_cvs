@@ -16,6 +16,9 @@ fn clearlog =
 	createFile filename
 )
 
+-- Allocate 20 Me for the script
+heapSize += 15000000
+
 -- Clear log
 clearlog ()
 
@@ -80,6 +83,12 @@ try
 
 				-- Ok ?
 				ok = false
+
+				-- Free memory and file handles
+				gc ()
+
+				-- Reset 3dsmax
+				resetMAXFile #noprompt
 
 				-- Open the max project
 				if loadMaxFile files[i] == true then

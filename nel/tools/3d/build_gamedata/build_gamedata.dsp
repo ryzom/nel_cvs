@@ -86,6 +86,10 @@ SOURCE=.\cfg\panoply.cfg
 
 SOURCE=.\cfg\properties.cfg
 # End Source File
+# Begin Source File
+
+SOURCE=.\cfg\site.cfg
+# End Source File
 # End Group
 # Begin Group "Skel Files"
 

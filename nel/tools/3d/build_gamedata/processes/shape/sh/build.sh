@@ -18,13 +18,16 @@ echo -------
 
 for i in lightmap/*.tga ; do
 
-	# Destination file
-	dest=`echo $i | sed -e 's/lightmap/lightmap_16_bits/g'`
-
-	# Convert the lightmap in 16 bits mode
-	if ( ! test -e $dest ) || ( test $i -nt $dest )
+	if ( test -f $i )
 	then
-		$tga_2_dds $i -o $dest -a tga16 2>> log.log
+		# Destination file
+		dest=`echo $i | sed -e 's/lightmap/lightmap_16_bits/g'`
+
+		# Convert the lightmap in 16 bits mode
+		if ( ! test -e $dest ) || ( test $i -nt $dest )
+		then
+			$tga_2_dds $i -o $dest -a tga16 2>> log.log
+		fi
 	fi
 done
 
@@ -37,10 +40,10 @@ echo --- Build shape : build coarse meshes
 echo ------- 
 
 # Get the build gamedata directory
-build_gamedata_directory=`cat ../../cfg/config.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the database directory
-database_directory=`cat ../../cfg/config.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get texture pathes
 map_source_directories=`cat ../../cfg/directories.cfg | grep "map_source_directory" | sed -e 's/map_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -71,12 +74,18 @@ echo '{' >> cfg/config_generated.cfg
 # For each shape with coarse mesh
 for i in shape_with_coarse_mesh/*.shape; do
 	
-	# Destination file
-	src=`echo $i | sed -e 's&shape_with_coarse_mesh/&&g'`
-	dest=`echo $i | sed -e 's&shape_with_coarse_mesh&shape_with_coarse_mesh_builded&g'`
+	if ( test -f $i )
+	then
+		# Destination file
+		src=`echo $i | sed -e 's&shape_with_coarse_mesh/&&g'`
+		dest=`echo $i | sed -e 's&shape_with_coarse_mesh&shape_with_coarse_mesh_builded&g'`
 
-	# Add the shape
-	echo '	"'$src'", "'$dest'",' >> cfg/config_generated.cfg
+		# Add the shape
+		echo '	"'$src'", "'$dest'",' >> cfg/config_generated.cfg
+
+		# Destination file
+		dest=`echo $i | sed -e 's/lightmap/lightmap_16_bits/g'`
+	fi
 
 done
 
@@ -94,5 +103,8 @@ echo -------
 echo --- Build shape : convert coarse texture to dds 
 echo ------- 
 
-# Convert the corase texture to dds
-$tga_2_dds shape_with_coarse_mesh/nel_coarse_texture.tga -o shape_with_coarse_mesh_builded/nel_coarse_texture_builded.dds -a 5 2>> log.log
+if ( test -f shape_with_coarse_mesh/nel_coarse_texture.tga )
+then
+	# Convert the corase texture to dds
+	$tga_2_dds shape_with_coarse_mesh/nel_coarse_texture.tga -o shape_with_coarse_mesh_builded/nel_coarse_texture_builded.dds -a 5 2>> log.log
+fi

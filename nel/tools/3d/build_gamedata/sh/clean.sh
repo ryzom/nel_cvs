@@ -6,12 +6,7 @@
 process_to_complete=`cat cfg/config.cfg | grep "process_to_complete" | sed -e 's/process_to_complete//' | sed -e 's/ //g' | sed -e 's/=//g' | sed -e 's/,/ /g'`
 
 # Log error
-echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\* > log.log
-echo \*\*\*\*\*\*\* CLEAN >> log.log
-echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\* >> log.log
-echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
-echo \*\*\*\*\*\*\* CLEAN
-echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
+echo  > log.log
 
 # For each process
 for i in $process_to_complete ; do

@@ -1,3 +1,5 @@
+@echo off
+
 mkdir shape
 mkdir shape_with_coarse_mesh
 mkdir lightmap

@@ -21,6 +21,7 @@ NEL3D_APPDATA_LOD_BLEND_IN			= NEL3D_APPDATA_LOD_NAME+NEL3D_APPDATA_LOD_NAME_COU
 NEL3D_APPDATA_LOD_BLEND_OUT			= NEL3D_APPDATA_LOD_BLEND_IN+1
 NEL3D_APPDATA_LOD_COARSE_MESH		= NEL3D_APPDATA_LOD_BLEND_OUT+1
 
+
 -- Clear the log
 fn clearlog =
 (
@@ -28,6 +29,9 @@ fn clearlog =
 	deleteFile filename
 	createFile filename
 )
+
+-- Allocate 20 Me for the script
+heapSize += 15000000
 
 -- Clear log
 clearlog ()
@@ -169,6 +173,12 @@ try
 				-- Ok ?
 				ok = false
 
+				-- Free memory and file handles
+				gc ()
+
+				-- Reset 3dsmax
+				resetMAXFile #noprompt
+
 				-- Open the max project
 				if loadMaxFile files[i] == true then
 				(
@@ -274,7 +284,7 @@ try
 											catch 
 											(
 												-- Error
-												nlerror ("ERROR fata error exporting shape "+node.name+" in file "+files[i])
+												nlerror ("ERROR fatal error exporting shape "+node.name+" in file "+files[i])
 											)
 										)
 										else

@@ -1,3 +1,5 @@
+@echo off
+
 mkdir zone_exported
 mkdir zone_lighted
 mkdir zone_welded

@@ -6,7 +6,7 @@
 ps_install_directory=`cat ../../cfg/directories.cfg | grep "ps_install_directory" | sed -e 's/ps_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the client directory
-client_directory=`cat ../../cfg/config.cfg | grep "client_directory" | sed -e 's/client_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+client_directory=`cat ../../cfg/site.cfg | grep "client_directory" | sed -e 's/client_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error
 echo ------- > log.log

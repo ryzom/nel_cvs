@@ -6,6 +6,9 @@ fn clearlog =
 	createFile filename
 )
 
+-- Allocate 20 Me for the script
+heapSize += 15000000
+
 -- Clear log
 clearlog ()
 
@@ -31,9 +34,11 @@ try
 (
 	-- Get files in the anim_source_directory
 	files = getFiles "anim_source_directory/*.max" 
+	gc ()
 
 	-- Sort files
 	sort files
+	gc ()
 
 	-- No file ?
 	if files.count != 0 then
@@ -49,6 +54,13 @@ try
 				-- Compare file date
 				if (NeLTestFileDate output files[i]) == true then
 				(
+					-- Free memory and file handles
+					gc ()
+					heapfree
+
+					-- Reset 3dsmax
+					resetMAXFile #noprompt
+
 					-- Open the max project
 					if loadMaxFile files[i] == true then
 					(

@@ -11,7 +11,7 @@ echo --- Build map >> log.log
 echo ------- >> log.log
 echo ------- 
 echo --- Build map 
-.log
+echo -------
 
 
 
@@ -26,7 +26,7 @@ echo --- Build panoply >> log.log
 echo ------- >> log.log
 echo ------- 
 echo --- Build panoply
-.log
+echo -------
 
 #make the panoplies. This will copy the results in the tga file
 $panoply_maker ../../cfg/panoply.cfg

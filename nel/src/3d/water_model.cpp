@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.52.2.1 2005/02/21 17:48:39 corvazier Exp $
+ * $Id: water_model.cpp,v 1.52.2.2 2005/02/23 17:56:45 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1300,17 +1300,16 @@ uint CWaterModel::getNumWantedVertices()
 	projPoly.computeOuterBorders(border, minYBorder);
 	// border - inside -> gives grid cells that must be clipped to fit the shape boundaries
 	// Make sure that rasters  array for inside has the same size that raster array for borders (by inserting NULL rasters)
-	sint bottomYBorder = minYBorder + border.size();
-	sint bottomYInside = _MinYInside + _Inside.size();
-	sint height = border.size();				
+
+	sint height = border.size();			
 	if (_Inside.empty())
 	{
 		_MinYInside = minYBorder;
 	}
+	sint bottomGap = border.size() - _Inside.size();	
 	_Inside.resize(height);
-	nlassert(minYBorder == _MinYInside);
-	
-	sint bottomGap = bottomYBorder - bottomYInside;	
+	nlassert(minYBorder == _MinYInside);	
+	nlassert(bottomGap >= 0);
 	if (bottomGap)
 	{	
 		for(sint y = height - bottomGap; y < height; ++y)

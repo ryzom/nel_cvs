@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.8 2001/09/18 14:35:19 corvazier Exp $
+ * $Id: animation_set_user.h,v 1.9 2002/04/12 16:17:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ class CAnimationSetUser : public UAnimationSet
 private:
 	NLMISC::CSmartPtr<CAnimationSet>		_AnimationSet;
 	friend class CPlayListManagerUser;
-
+	friend class CSceneUser;
 
 public:
 

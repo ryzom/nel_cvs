@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: i_xml.cpp,v 1.7 2002/01/22 14:11:49 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "stdmisc.h"
 
-#ifndef NL_DONT_USE_EXTERNAL_CODE
-
 #include "nel/misc/i_xml.h"
+
+#ifndef NL_DONT_USE_EXTERNAL_CODE
 
 // Include from libxml2
 #include <libxml/xmlerror.h>

@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: o_xml.cpp,v 1.4 2002/01/22 14:11:49 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "stdmisc.h"
 
-#ifndef NL_DONT_USE_EXTERNAL_CODE
-
 #include "nel/misc/o_xml.h"
+
+#ifndef NL_DONT_USE_EXTERNAL_CODE
 
 using namespace std;
 

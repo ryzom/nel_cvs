@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.8 2002/01/14 17:48:06 lecroart Exp $
+ * $Id: login_service.cpp,v 1.9 2002/01/17 10:49:27 lecroart Exp $
  *
  */
 
@@ -71,6 +71,8 @@ uint32 CUser::NextUserId = 1;	// 0 is reserved
 
 vector<CUser>	Users;
 vector<CShard>	Shards;
+
+IService *ServiceInstance = NULL;
 
 // config file name that load and save the universal time
 const char		*PlayerDatabaseName = "login_service_database.cfg";
@@ -389,6 +391,27 @@ void writePlayerDatabase ()
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+void bell ()
+{
+#ifdef NL_OS_WINDOWS
+	if (ServiceInstance == NULL)
+		return;
+
+	try
+	{
+		if (ServiceInstance->ConfigFile.getVar ("Beep").asInt() == 1)
+		{
+			Beep (400, 100);
+			nlSleep (100);
+			Beep (400, 100);
+		}
+	}
+	catch (Exception &)
+	{
+	}
+#endif // NL_OS_WINDOWS
+}
+
 class CLoginService : public NLNET::IService
 {
 	bool Init;
@@ -400,6 +423,10 @@ public:
 	/// Init the service, load the universal time.
 	void init ()
 	{
+		ServiceInstance = this;
+
+		bell ();
+
 		FILE *fp = fopen (PlayerDatabaseName, "rt");
 		if (fp == NULL)
 		{

@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.4 2002/01/14 17:48:06 lecroart Exp $
+ * $Id: login_service.h,v 1.5 2002/01/17 10:49:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,6 +142,7 @@ void displayShards ();
 void displayUsers ();
 void disconnectClient (CUser &user, bool disconnectClient, bool disconnectShard);
 sint findUser (uint32 Id);
+void bell ();
 
 
 #endif // NL_LOGIN_SERVICE_H

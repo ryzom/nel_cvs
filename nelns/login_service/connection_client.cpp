@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_client.cpp,v 1.6 2002/01/14 17:48:05 lecroart Exp $
+ * $Id: connection_client.cpp,v 1.7 2002/01/17 10:49:27 lecroart Exp $
  *
  */
 
@@ -415,6 +415,8 @@ static void cbClientConnection (const string &serviceName, TSockId from, void *a
 	const CInetAddress &ia = cnb->hostAddress (from);
 
 	nldebug("new client connection: %s", ia.asString ().c_str ());
+
+	bell ();
 
 	cnb->authorizeOnly ("VLP", from);
 }

@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.9 2001/11/27 11:15:31 lecroart Exp $
+ * $Id: time_nl.cpp,v 1.10 2001/11/27 14:03:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,10 +140,39 @@ double CTime::ticksToSecond (TTicks ticks)
 		return (double)(sint64)ticks/(double)ret.QuadPart;
 	}
 	else
-		return double(ticks);
-#else // NL_OS_WINDOWS
-	return double(ticks);
 #endif // NL_OS_WINDOWS
+	{
+		static bool benchFrequency = true;
+		static sint64 freq = 0;
+		if (benchFrequency)
+		{
+			// try to have an estimation of the cpu frequency
+
+			TTicks tickBefore = getPerformanceTime ();
+			TTicks tickAfter = tickBefore;
+			TTime timeBefore = getLocalTime ();
+			TTime timeAfter = timeBefore;
+			while (true)
+			{
+				if (timeAfter - timeBefore > 1000)
+					break;
+				timeAfter = getLocalTime ();
+				tickAfter = getPerformanceTime ();
+			}
+
+			TTime timeDelta = timeAfter - timeBefore;
+			TTicks tickDelta = tickAfter - tickBefore;
+
+			freq = 1000 * tickDelta / timeDelta;
+
+			LARGE_INTEGER ret;
+			QueryPerformanceFrequency(&ret);
+
+			benchFrequency = false;
+		}
+
+		return (double)(sint64)ticks/(double)freq;
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.18 2001/05/02 10:32:46 cado Exp $
+ * $Id: log.h,v 1.19 2001/05/03 13:15:11 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,8 @@ protected:
 	CDisplayers                       _Displayers;
 
 	CMutex							  _Mutex;
+
+	bool							  _PosSet;
 };
 
 

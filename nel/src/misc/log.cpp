@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.25 2001/05/02 10:32:46 cado Exp $
+ * $Id: log.cpp,v 1.26 2001/05/03 13:15:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NLMISC
 
 string CLog::_ProcessName = "";
 
-CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL)
+CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL), _PosSet(false)
 {
 }
 
@@ -65,7 +65,7 @@ void CLog::setPosition (sint line, char *filename)
 	if ( ! DebugLog->noDisplayer() )
 	{
 		_Mutex.enter();
-
+		_PosSet = true;
 	    _Line = line;
 		_FileName = filename;
 	}
@@ -76,10 +76,13 @@ void CLog::unsetPosition()
 {
 	nlassert( !noDisplayer() );
 
-	_Line = -1;
-	_FileName = NULL;
-
-	_Mutex.leave(); // needs setPosition() to have been called
+	if ( _PosSet )
+	{
+		_FileName = NULL;
+		_Line = -1;
+		_PosSet = false;
+		_Mutex.leave(); // needs setPosition() to have been called
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.173 2003/05/13 13:57:25 lecroart Exp $
+ * $Id: service.cpp,v 1.174 2003/05/14 10:03:22 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -211,7 +211,7 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 					vala.clear ();
 				}
 				
-				vala.push_back ("----- Result from command: "+cmd+"\n");
+				vala.push_back ("----- Result from "+IService::getInstance()->getServiceUnifiedName()+" of command '"+cmd+"'\n");
 				for (uint k = 0; k < strs.size(); k++)
 				{
 					vala.push_back (strs[k]);

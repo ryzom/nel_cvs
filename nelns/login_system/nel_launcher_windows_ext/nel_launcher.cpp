@@ -6,6 +6,9 @@
 #include <WinReg.h>
 #include "MsgDlg.h"
 
+#include "nel/misc/debug.h"
+#include "nel/misc/path.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -15,6 +18,8 @@ static char THIS_FILE[] = __FILE__;
 #define	KEY_ROOT		_T("SOFTWARE\\Ryzom")
 #define	KEY_MAX_LENGTH	1024
 #define LOGFILE			"nel_launcher.log"
+
+using namespace std;
 
 /////////////////////////////////////////////////////////////////////////////
 // CNel_launcherApp
@@ -71,6 +76,42 @@ BOOL CNel_launcherApp::InitInstance()
 	m_pMainWnd = &dlg;
 
 	m_hcPointer	= LoadCursor(IDC_POINTER);
+
+
+	// ace: clear the cookies
+
+    HKEY	hkey;
+    TCHAR	*szKey = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
+	CString	csRet;
+	
+	if(RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_READ, &hkey) == ERROR_SUCCESS)
+	{
+		csRet	= ReadInfoFromRegistry("Cookies", hkey);
+		RegCloseKey(hkey);
+
+		string path = csRet.GetBuffer(0);
+
+		nlinfo("Cookies are in directory '%s'", path.c_str());
+		if(!path.empty())
+		{
+			vector<string> res;
+			NLMISC::CPath::getPathContent(path, false, false, true, res);
+			for(uint i = 0; i < res.size(); i++)
+			{
+				if(NLMISC::strlwr(res[i]).find("www_test") != string::npos)
+				{
+					nlinfo("Deleting cookie '%s'", res[i].c_str());
+					NLMISC::CFile::deleteFile(res[i]);
+				}
+			}
+		}
+	}
+	else
+	{
+		nlwarning("Can't find the cookies directory");
+	}
+	
+
 
 	int nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

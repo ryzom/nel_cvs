@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.7 2004/05/26 08:36:30 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.8 2004/05/28 15:49:47 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -238,8 +238,8 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 	}
 }
 
-// ***************************************************************************
 
+// ***************************************************************************
 bool CDriverD3D::setupMaterial (CMaterial& mat)
 {
 	CMaterialDrvInfosD3D*	pShader;
@@ -322,10 +322,10 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 				pShader->UnlightedColor = NL_D3DCOLOR_RGBA(mat.getColor());
 			}
 			if (touched & IDRV_TOUCHED_ALPHA_TEST_THRE)
-			{
+			{								
 				float alphaRef = (float)floor(mat.getAlphaTestThreshold() * 255.f + 0.5f);
 				clamp (alphaRef, 0.f, 255.f);
-				pShader->AlphaRef = (DWORD)alphaRef;
+				pShader->AlphaRef = (DWORD)alphaRef;				
 			}
 			if (touched & IDRV_TOUCHED_SHADER)
 			{
@@ -545,8 +545,20 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 			// Need user matrix ?
 			bool needUserMtx = mat.isUserTexMatEnabled(stage);
 			D3DXMATRIX userMtx;
-			if (needUserMtx)
-				NL_D3D_MATRIX (userMtx, mat.getUserTexMat(stage));
+			if (needUserMtx)	
+			{
+				// If tex gen mode is used, or a cube texture is used, then us the matrix 'as it'. 
+				// Must build a 3x3 matrix for 2D texture coordinates in D3D (which is kind of weird ...)
+				if (pShader->TexGen[stage] != D3DTSS_TCI_PASSTHRU || (mat.getTexture(stage) && mat.getTexture(stage)->isTextureCube()))
+				{
+					NL_D3D_MATRIX(userMtx, mat.getUserTexMat(stage));
+				}
+				else
+				{
+					CMatrix m = mat.getUserTexMat(stage);
+					NL_D3D_TEX2D_MATRIX(userMtx, m);					
+				}
+			}
 
 			// Need cubic texture coord generator ?
 			if (pShader->ActivateSpecularWorldTexMT[stage])
@@ -602,79 +614,77 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 		// Handle backside
 		setRenderState (D3DRS_CULLMODE, _DoubleSided?D3DCULL_NONE:_InvertCullMode?D3DCULL_CCW:D3DCULL_CW);
 
-		if (matShader == CMaterial::Normal || matShader == CMaterial::Specular || matShader == CMaterial::Cloud)
+		
+		// Active states
+		bool blend = (flags&IDRV_MAT_BLEND) != 0;
+		if (blend)
 		{
-			// Active states
-			bool blend = (flags&IDRV_MAT_BLEND) != 0;
-			if (blend)
+			setRenderState (D3DRS_ALPHABLENDENABLE, TRUE);
+			setRenderState (D3DRS_SRCBLEND, pShader->SrcBlend);
+			setRenderState (D3DRS_DESTBLEND, pShader->DstBlend);
+		}
+		else
+			setRenderState (D3DRS_ALPHABLENDENABLE, FALSE);
+
+		// Alpha test						
+		if (flags&IDRV_MAT_ALPHA_TEST)
+		{
+			setRenderState (D3DRS_ALPHATESTENABLE, TRUE);
+			setRenderState (D3DRS_ALPHAREF, pShader->AlphaRef);
+			setRenderState (D3DRS_ALPHAFUNC, D3DCMP_GREATER);
+		}
+		else
+			setRenderState (D3DRS_ALPHATESTENABLE, FALSE);
+
+		// Z buffer
+		setRenderState (D3DRS_ZWRITEENABLE, (flags&IDRV_MAT_ZWRITE)?TRUE:FALSE);
+		setRenderState (D3DRS_ZFUNC, pShader->ZComp);
+		float flt = mat.getZBias () * _OODeltaZ;
+		setRenderState (D3DRS_DEPTHBIAS, FTODW(flt));
+
+		// Active lighting
+		if (mat.isLighted())
+		{
+			setRenderState (D3DRS_LIGHTING, TRUE);
+			_DeviceInterface->SetMaterial( &(pShader->Material) );
+		}
+		else
+		{
+			setRenderState (D3DRS_LIGHTING, FALSE);
+
+			// Set pixel shader unlighted color ?
+			if (pShader->PixelShader)
 			{
-				setRenderState (D3DRS_ALPHABLENDENABLE, TRUE);
-				setRenderState (D3DRS_SRCBLEND, pShader->SrcBlend);
-				setRenderState (D3DRS_DESTBLEND, pShader->DstBlend);
-			}
-			else
-				setRenderState (D3DRS_ALPHABLENDENABLE, FALSE);
-
-			// Alpha test
-			if (flags&IDRV_MAT_ALPHA_TEST)
-			{
-				setRenderState (D3DRS_ALPHATESTENABLE, TRUE);
-				setRenderState (D3DRS_ALPHAREF, pShader->AlphaRef);
-				setRenderState (D3DRS_ALPHAFUNC, D3DCMP_GREATER);
-			}
-			else
-				setRenderState (D3DRS_ALPHATESTENABLE, FALSE);
-
-			// Z buffer
-			setRenderState (D3DRS_ZWRITEENABLE, (flags&IDRV_MAT_ZWRITE)?TRUE:FALSE);
-			setRenderState (D3DRS_ZFUNC, pShader->ZComp);
-			float flt = mat.getZBias () * _OODeltaZ;
-			setRenderState (D3DRS_DEPTHBIAS, FTODW(flt));
-
-			// Active lighting
-			if (mat.isLighted())
-			{
-				setRenderState (D3DRS_LIGHTING, TRUE);
-				_DeviceInterface->SetMaterial( &(pShader->Material) );
-			}
-			else
-			{
-				setRenderState (D3DRS_LIGHTING, FALSE);
-
-				// Set pixel shader unlighted color ?
-				if (pShader->PixelShader)
-				{
-					float colors[4];
-					D3DCOLOR_FLOATS(colors,pShader->UnlightedColor);
-					setPixelShaderConstant (5, colors);
-				}
-				else
-				{
-					if (pShader->NeedsConstantForDiffuse)
-						setRenderState (D3DRS_TEXTUREFACTOR, pShader->UnlightedColor);
-				}
-			}
-
-			setRenderState (D3DRS_SPECULARENABLE, pShader->SpecularEnabled);
-
-			// Active vertex color if not lighted or vertex color forced
-			if (mat.isLightedVertexColor ())
-			{
-				setRenderState (D3DRS_COLORVERTEX, TRUE);
-				setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
+				float colors[4];
+				D3DCOLOR_FLOATS(colors,pShader->UnlightedColor);
+				setPixelShaderConstant (5, colors);
 			}
 			else
 			{
-				setRenderState (D3DRS_COLORVERTEX, FALSE);
-				setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
-			}
-
-			// Disable fog if dest blend is ONE
-			if (blend && (pShader->DstBlend == D3DBLEND_ONE))
-			{
-				setRenderState (D3DRS_FOGENABLE, FALSE);
+				if (pShader->NeedsConstantForDiffuse)
+					setRenderState (D3DRS_TEXTUREFACTOR, pShader->UnlightedColor);
 			}
 		}
+
+		setRenderState (D3DRS_SPECULARENABLE, pShader->SpecularEnabled);
+
+		// Active vertex color if not lighted or vertex color forced
+		if (mat.isLightedVertexColor ())
+		{
+			setRenderState (D3DRS_COLORVERTEX, TRUE);
+			setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
+		}
+		else
+		{
+			setRenderState (D3DRS_COLORVERTEX, FALSE);
+			setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+		}
+
+		// Disable fog if dest blend is ONE
+		if (blend && (pShader->DstBlend == D3DBLEND_ONE))
+		{
+			setRenderState (D3DRS_FOGENABLE, FALSE);
+		}		
 
 		// Set the good shader
 		switch (matShader)
@@ -690,7 +700,8 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 			}
 			break;
 		case CMaterial::LightMap:
-			{
+			{				
+				setPixelShader (NULL);				
 				static const uint32 RGBMaskPacked = CRGBA(255,255,255,0).getPacked();			
 
 				// Count the lightmaps

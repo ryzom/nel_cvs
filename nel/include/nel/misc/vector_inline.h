@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: vector_inline.h,v 1.2 2000/09/14 10:06:49 berenguier Exp $
+ * $Id: vector_inline.h,v 1.3 2000/09/14 16:29:16 berenguier Exp $
  *
  * CVector class inline definitions.
  */
@@ -131,6 +131,34 @@ inline	bool	CVector::operator==(const CVector &v) const
 inline	bool	CVector::operator!=(const CVector &v) const 
 {
 	return !(*this==v);
+}
+inline	bool	CVector::isNull() const
+{
+	return *this==CVector::Null;
+}
+inline	void	CVector::cartesianToSpheric(float &r, float &theta,float &phi) const
+{
+	CVector v;
+
+	r= norm();
+	v= normed();
+
+	// phi E [-PI/2 et PI/2]
+	phi=asin(v.z);
+
+	// theta [-PI,PI]
+	theta=atan2(v.x,v.y);
+}
+inline	void	CVector::sphericToCartesian(float r, float theta,float phi)
+{
+	float	ct= cos(theta);
+	float	st= sin(theta);
+	float	cp= cos(phi);
+	float	sp= sin(phi);
+
+	x= r*cos(theta)*cos(phi);
+	y= r*sin(theta)*cos(phi);
+	z= r*sin(phi);
 }
 inline	void	CVector::serial(IStream &f)
 {

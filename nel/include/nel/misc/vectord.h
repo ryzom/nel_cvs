@@ -1,4 +1,4 @@
-/* vector.h
+/* vectord.h
  *
  * Copyright (C) 2000 Nevrax. All rights reserved.
  *
@@ -8,16 +8,16 @@
  */
 
 /*
- * $Id: vector.h,v 1.3 2000/09/14 16:29:16 berenguier Exp $
+ * $Id: vectord.h,v 1.1 2000/09/14 16:29:44 berenguier Exp $
  *
- * CVector class
+ * CVectorD class
  */
 
-#ifndef NL_VECTOR_H
-#define NL_VECTOR_H
+#ifndef NL_VECTORD_H
+#define NL_VECTORD_H
 
 #include	<math.h>
-#include	"nel/misc/stream.h"
+#include	"nel/misc/vector.h"
 
 
 namespace	NLMISC
@@ -26,73 +26,75 @@ namespace	NLMISC
 
 // ======================================================================================================
 /**
- * A 3D vector of float.
+ * A 3D vector of double.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class CVector
+class CVectorD
 {
 public:		// Attributes.
-	float	x,y,z;
+	double	x,y,z;
 
 public:		// const.
 	/// Null vector (0,0,0).
-	static const	CVector		Null;
+	static const	CVectorD		Null;
 	/// I vector (1,0,0).
-	static const	CVector		I;
+	static const	CVectorD		I;
 	/// J vector (0,1,0).
-	static const	CVector		J;
+	static const	CVectorD		J;
 	/// K vector (0,0,1).
-	static const	CVector		K;
+	static const	CVectorD		K;
 
 public:		// Methods.
 	/// @name Object.
 	//@{
 	/// Constructor wich do nothing.
-	CVector() {}
+	CVectorD() {}
 	/// Constructor .
-	CVector(float	_x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+	CVectorD(double	_x, double _y, double _z) : x(_x), y(_y), z(_z) {}
+	/// Constructor with a CVector.
+	CVectorD(const CVector &v) : x(v.x), y(v.y), z(v.z) {}
 	/// Copy Constructor.
-	CVector(const CVector &v) : x(v.x), y(v.y), z(v.z) {}
+	CVectorD(const CVectorD &v) : x(v.x), y(v.y), z(v.z) {}
 	//@}
 
 	/// @name Base Maths.
 	//@{
-	CVector	&operator+=(const CVector &v);
-	CVector	&operator-=(const CVector &v);
-	CVector	&operator*=(float f);
-	CVector	&operator/=(float f);
-	CVector	operator+(const CVector &v) const;
-	CVector	operator-(const CVector &v) const;
-	CVector	operator*(float f) const;
-	CVector	operator/(float f) const;
-	CVector	operator-() const;
+	CVectorD	&operator+=(const CVectorD &v);
+	CVectorD	&operator-=(const CVectorD &v);
+	CVectorD	&operator*=(double f);
+	CVectorD	&operator/=(double f);
+	CVectorD	operator+(const CVectorD &v) const;
+	CVectorD	operator-(const CVectorD &v) const;
+	CVectorD	operator*(double f) const;
+	CVectorD	operator/(double f) const;
+	CVectorD	operator-() const;
 	//@}
 
 	/// @name Advanced Maths.
 	//@{
 	/// Dot product.
-	float	operator*(const CVector &v) const;
+	double	operator*(const CVectorD &v) const;
 	/** Cross product.
 	 * compute the cross product *this ^ v.
 	 */
-	CVector	operator^(const CVector &v) const;
+	CVectorD	operator^(const CVectorD &v) const;
 	/// Return the norm of the vector.
-	float	norm() const;
+	double	norm() const;
 	/// Return the square of the norm of the vector.
-	float	sqrnorm() const;
+	double	sqrnorm() const;
 	/// Normalize the vector.
 	void	normalize();
 	/// Return the vector normalized.
-	CVector	normed() const;
+	CVectorD	normed() const;
 	//@}
 
 	/// @name Misc.
 	//@{
-	void	set(float _x, float _y, float _z);
-	bool	operator==(const CVector &v) const;
-	bool	operator!=(const CVector &v) const;
+	void	set(double _x, double _y, double _z);
+	bool	operator==(const CVectorD &v) const;
+	bool	operator!=(const CVectorD &v) const;
 	bool	isNull() const;
 	/** 
 	 * Setup the vector with spheric coordinates.
@@ -102,25 +104,27 @@ public:		// Methods.
 	 * z= r*sin(phi) \n
 	 * \sa cartesianToSpheric()
 	 */
-	void	sphericToCartesian(float r, float theta,float phi);
+	void	sphericToCartesian(double r, double theta,double phi);
 	/**
 	 * Get the sphreic coordinates of the vector.
 	 * See sphericToCartesian() to know coordinates conventions.
 	 * \sa sphericToCartesian()
 	 */
-	void	cartesianToSpheric(float &theta,float &phi, float &r) const;
+	void	cartesianToSpheric(double &theta,double &phi, double &r) const;
 	void	serial(IStream &f);
+	CVectorD &operator=(const CVector &v);
+	operator CVector() const;
 	//@}
 
 	// friends.
-	friend	CVector	operator*(float f, const CVector &v0);
+	friend	CVectorD	operator*(double f, const CVectorD &v0);
 };
 
 
 }
 
 
-#include "nel/misc/vector_inline.h"
+#include "nel/misc/vectord_inline.h"
 
 
 #endif // NL_VECTOR_H

@@ -8,12 +8,12 @@ CFG=ia - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "ia.mak".
+!MESSAGE NMAKE /f "ai.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "ia.mak" CFG="ia - Win32 Debug"
+!MESSAGE NMAKE /f "ai.mak" CFG="ia - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -116,7 +116,7 @@ SOURCE=.\ai\agent\agents.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\agent\baseia.cpp
+SOURCE=.\ai\agent\baseai.cpp
 # End Source File
 # Begin Source File
 
@@ -132,7 +132,7 @@ SOURCE=.\ai\agent\group_type.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\agent\identifiant.cpp
+SOURCE=.\ai\agent\ident.cpp
 # End Source File
 # Begin Source File
 
@@ -228,11 +228,11 @@ SOURCE=..\include\nel\ai\agent\agentpack.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\ai\agent\baseia.h
+SOURCE=..\include\nel\ai\agent\baseai.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\ai\agent\identifiant.h
+SOURCE=..\include\nel\ai\agent\ident.h
 # End Source File
 # Begin Source File
 
@@ -408,11 +408,11 @@ SOURCE=..\include\nel\ai\fuzzy\interpret_fuzzy_controler.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\ai\link\ia.cpp
+SOURCE=.\ai\ai.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\link\static_def_init.cpp
+SOURCE=.\ai\static_def_init.cpp
 # End Source File
 # End Group
 # Begin Group "link_h"
@@ -420,7 +420,7 @@ SOURCE=.\ai\link\static_def_init.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\include\nel\ai\link\nl_ia.h
+SOURCE=..\include\nel\ai\nl_ai.h
 # End Source File
 # End Group
 # End Group
@@ -430,6 +430,10 @@ SOURCE=..\include\nel\ai\link\nl_ia.h
 # Begin Group "l_cpp"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\ai\logic\ai_assert.cpp
+# End Source File
 # Begin Source File
 
 SOURCE=.\ai\logic\bool_assert.cpp
@@ -465,10 +469,6 @@ SOURCE=.\ai\logic\fo_assert.cpp
 # Begin Source File
 
 SOURCE=.\ai\logic\fo_operator.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ai\logic\ia_assert.cpp
 # End Source File
 # Begin Source File
 

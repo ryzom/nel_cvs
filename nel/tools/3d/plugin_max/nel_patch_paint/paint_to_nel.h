@@ -35,10 +35,10 @@ public:
 	void clear ();
 
 	// Get a patch tile array
-	std::vector<CTileElement>* getTileArray (const CNeLZoneIndex &mesh, int patch);
+	std::vector<CTileElement>* getTileArray (int mesh, int patch);
 
 	// Get a patch tile array
-	std::vector<CTileColor>* getColorArray (const CNeLZoneIndex &mesh, int patch);
+	std::vector<CTileColor>* getColorArray (int mesh, int patch);
 
 	// Apply changes
 	void applyChanges (bool displace);

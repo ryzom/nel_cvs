@@ -1,7 +1,7 @@
 /** \file transition.cpp
  * A transition template implementation
  *
- * $Id: transition.cpp,v 1.2 2001/11/14 15:16:00 corvazier Exp $
+ * $Id: transition.cpp,v 1.3 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -220,6 +220,46 @@ void CTransition::serial (NLMISC::IStream &s)
 
 	// Close the main node
 	s.xmlPop ();
+}
+
+// ***************************************************************************
+
+bool CTransition::check (const CZoneTemplate &zoneTemplate, uint transitionNumber, const CLigoConfig &config, CLigoError &errors) const
+{
+	// Return value
+	bool ok = true;
+
+	// For each edge
+	for (uint j=0; j<4; j++)
+	{
+		// Get the edge number
+		sint32 edge=TransitionZoneEdges[transitionNumber][j];
+
+		// Compare the edge
+		if (edge<0)
+		{
+			// Invert the edge
+			CZoneEdge invertedEdges = _EdgeZone[-edge-1];
+			invertedEdges.invert(config);
+
+			// The same edge ?
+			if (!invertedEdges.isTheSame (zoneTemplate.getEdges()[j], config, errors))
+			{
+				ok=false;
+			}
+		}
+		else
+		{
+			// The same edge ?
+			if (!_EdgeZone[edge-1].isTheSame (zoneTemplate.getEdges()[j], config, errors))
+			{
+				ok=false;
+			}
+		}
+	}
+
+	// Return status
+	return ok;
 }
 
 // ***************************************************************************

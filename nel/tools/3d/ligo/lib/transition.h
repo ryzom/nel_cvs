@@ -1,7 +1,7 @@
 /** \file transition.h
  * A transition template definition
  *
- * $Id: transition.h,v 1.1 2001/10/29 09:35:15 corvazier Exp $
+ * $Id: transition.h,v 1.2 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -180,6 +180,18 @@ public:
 	  */
 	bool build (const CMaterial &mat0, const CMaterial &mat1, const std::vector<const CZoneTemplate*> &arrayTemplate, 
 				const CLigoConfig &config, CLigoError *errors, CLigoError &mainErrors);
+
+	/**
+	  * Check if a transition zone template match with this transition template.
+	  *
+	  * \param zoneTemplate is a zone template.
+	  * \param transition number is the number of the transition to test (0 ~ 8)
+	  * \param config is the current lingo config file
+	  * \param errors is an error handler filled with error code and message if the method return false.
+	  *
+	  * \return true if check success false if problem detected. Errors are reported in the the error[0].
+	  */
+	bool check (const CZoneTemplate &zoneTemplate, uint transitionNumber, const CLigoConfig &config, CLigoError &errors) const;
 
 	/// Serial
 	void serial (NLMISC::IStream &s);

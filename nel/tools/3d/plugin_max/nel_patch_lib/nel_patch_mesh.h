@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.7 2001/12/14 15:04:53 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.8 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,7 +168,7 @@ public:
 	{
 		return _MatIDTab[num];
 	}
-	int getNumLayer ()
+	int getNumLayer () const
 	{
 		return _Num;
 	}
@@ -779,6 +779,10 @@ public:
 		// Store the color
 		getUIPatch (patch).setColor (t*((1<<getUIPatch (patch).NbTilesU)+1)+s, encodedColor);
 	}
+
+	// Transform tile and 256 case with rotation and symmetry parameters
+	static bool transformTile (const NL3D::CTileBank &bank, uint &tile, uint &tileRotation, bool symmetry, uint rotate);
+	static void transform256Case (const NL3D::CTileBank &bank, uint &case256, uint tileRotation, bool symmetry, uint rotate);
 };
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 
 #include "resource.h"
 #include <algorithm>
+#include <maxscrpt.h>
 #include "namesel.h"
 #include "nsclip.h"
 #include "sbmtlapi.h"
@@ -60,9 +61,26 @@ class CNelPatchChanger;
 
 #define BRUSH_COUNT 3
 
+inline int getScriptAppDataPatchMesh (Animatable *node, uint32 id, int def)
+{
+	// Get the chunk
+	AppDataChunk *ap=node->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id);
+
+	// Not found ? return default
+	if (ap==NULL)
+		return def;
+
+	// String to int
+	int value;
+	if (sscanf ((const char*)ap->data, "%d", &value)==1)
+		return value;
+	else
+		return def;
+}
+
 struct EPM_Mesh
 {
-	EPM_Mesh (PatchMesh *pmesh, RPatchMesh *rmesh, class PaintPatchData *patchData, INode* node, ModContext *mod, int mcListIndex)
+	EPM_Mesh (PatchMesh *pmesh, RPatchMesh *rmesh, class PaintPatchData *patchData, INode* node, ModContext *mod, int mcListIndex, bool original)
 	{
 		PMesh=pmesh;
 		RMesh=rmesh;
@@ -70,12 +88,19 @@ struct EPM_Mesh
 		Node=node;
 		Mod=mod;
 		McListIndex=mcListIndex;
+		Original = original;
+
+		Rotate = getScriptAppDataPatchMesh (node, NEL3D_APPDATA_ZONE_ROTATE, 0);
+		Symmetry = getScriptAppDataPatchMesh (node, NEL3D_APPDATA_ZONE_SYMMETRY, 0) != 0;
 	}
-	PatchMesh *PMesh;
-	RPatchMesh *RMesh;
-	INode *Node;
-	ModContext *Mod;
-	int		McListIndex;
+	PatchMesh	*PMesh;
+	RPatchMesh	*RMesh;
+	INode		*Node;
+	ModContext	*Mod;
+	uint		Rotate;
+	bool		Symmetry;
+	bool		Original;
+	int			McListIndex;
 	class PaintPatchData *PatchData;
 };
 
@@ -208,28 +233,6 @@ public:
 
 /*-------------------------------------------------------------------*/
 
-class CNeLZoneIndex
-{
-public:
-	CNeLZoneIndex (uint index, uint rotate, bool symmetry, INode *node)
-	{
-		Index = index;
-		Rotate = rotate;
-		Symmetry = symmetry;
-		Node = node;
-	}
-	uint	Index;
-	uint	Rotate;
-	bool	Symmetry;
-	INode	*Node;
-};
-
-/*-------------------------------------------------------------------*/
-
-extern std::vector< std::vector<CNeLZoneIndex> > maxZoneToNeLZoneArray;
-
-/*-------------------------------------------------------------------*/
-
 class EPM_PaintMouseProc : public MouseCallBack 
 {
 	friend class EPM_PaintCMode;
@@ -274,7 +277,8 @@ protected:
 
 	int	selectTile (uint tileSet, bool selectCycle, bool _256, uint group, const CTileBank& bank);
 	bool GetBorderDesc (EPM_PaintTile* tile, tileSetIndex *pVoisinCorner, NL3D::CTileSet::TFlagBorder pBorder[4][3],
-						tileDesc *pVoisinIndex, const NL3D::CTileBank& bank, std::vector<EPM_Mesh>& vectMesh, CNelPatchChanger& nelPatchChg);
+						tileDesc *pVoisinIndex, const NL3D::CTileBank& bank, std::vector<EPM_Mesh>& vectMesh, CNelPatchChanger& nelPatchChg, 
+						CLandscape *land);
 
 	const NL3D::CTileSetTransition* FindTransition (int nTileSet, int nRotate, const NL3D::CTileSet::TFlagBorder *border, 
 		const NL3D::CTileBank& bank);
@@ -299,6 +303,7 @@ protected:
 	{ 
 		return vpt->NumSubObjHits(); 
 	}
+	int getLayer (EPM_PaintTile* tile, int border, int tileSet, int rotate, std::vector<EPM_Mesh>& vectMesh, NL3D::CLandscape *land);
 
 public:
 	EPM_PaintMouseProc(PaintPatchMod* spl, IObjParam *i) 

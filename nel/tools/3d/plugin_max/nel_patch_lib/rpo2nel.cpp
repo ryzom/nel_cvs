@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.10 2001/11/14 15:17:21 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.11 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,8 @@ using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
 
+// ***************************************************************************
+
 static int getCommonEdge(PatchMesh* pPM, int edge, Patch& patch2)
 {
 	for(int e=0 ; e<4 ; e++)
@@ -47,6 +49,8 @@ static int getCommonEdge(PatchMesh* pPM, int edge, Patch& patch2)
 	nlassert (0);		// no!
 	return(-1);
 }
+
+// ***************************************************************************
 
 static int getCommonVertex(PatchMesh* pPM, int ipatch1, int ipatch2, int* pordervtx=NULL)
 {
@@ -86,6 +90,8 @@ static int getCommonVertex(PatchMesh* pPM, int ipatch1, int ipatch2, int* porder
 	return(patch1->v[i]);
 }
 
+// ***************************************************************************
+
 static int getOtherBindedVertex(RPatchMesh*	pRPM, PatchMesh* pPM, int ipatch1, int ipatch2, int iOtherVertex)
 {
 	Patch*		patch1;
@@ -108,6 +114,8 @@ static int getOtherBindedVertex(RPatchMesh*	pRPM, PatchMesh* pPM, int ipatch1, i
 	return(-1);
 }
 
+// ***************************************************************************
+
 static int getEdge(PatchMesh* pPM, Patch* patch, int iv1, int iv2)
 {
 	for(int i=0 ; i<4 ; i++)
@@ -126,6 +134,123 @@ static int getEdge(PatchMesh* pPM, Patch* patch, int iv1, int iv2)
 	return(-1);
 }
 
+// ***************************************************************************
+
+int getScriptAppData (Animatable *node, uint32 id, int def)
+{
+	// Get the chunk
+	AppDataChunk *ap=node->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id);
+
+	// Not found ? return default
+	if (ap==NULL)
+		return def;
+
+	// String to int
+	int value;
+	if (sscanf ((const char*)ap->data, "%d", &value)==1)
+		return value;
+	else
+		return def;
+}
+
+// ***************************************************************************
+
+bool RPatchMesh::transformTile (const CTileBank &bank, uint &tile, uint &tileRotation, bool symmetry, uint rotate)
+{
+	// Tile exist ?
+	if ( (rotate!=0) || symmetry )
+	{
+		if (tile < (uint)bank.getTileCount())
+		{
+			// Get xref
+			int tileSet;
+			int number;
+			CTileBank::TTileType type;
+
+			// Get tile xref
+			bank.getTileXRef ((int)tile, tileSet, number, type);
+
+			// Transition ?
+			if (type == CTileBank::transition)
+			{
+				// Number should be ok
+				nlassert (number>=0);
+				nlassert (number<CTileSet::count);
+
+				// Tlie set number
+				const CTileSet *pTileSet = bank.getTileSet (tileSet);
+
+				// Get border desc
+				CTileSet::TFlagBorder oriented[4] = 
+				{	
+					pTileSet->getOrientedBorder (CTileSet::left, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::left)),
+					pTileSet->getOrientedBorder (CTileSet::bottom, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::bottom)),
+					pTileSet->getOrientedBorder (CTileSet::right, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::right)),
+					pTileSet->getOrientedBorder (CTileSet::top, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::top))
+				};
+
+				// Symmetry ?
+				if (symmetry)
+				{
+					CTileSet::TFlagBorder tmp = oriented[0];
+					oriented[0] = CTileSet::getInvertBorder (oriented[2]);
+					oriented[2] = CTileSet::getInvertBorder (tmp);
+					oriented[1] = CTileSet::getInvertBorder (oriented[1]);
+					oriented[3] = CTileSet::getInvertBorder (oriented[3]);
+				}
+
+				// Rotation
+				CTileSet::TFlagBorder edges[4];
+				edges[0] = pTileSet->getOrientedBorder (CTileSet::left, oriented[(0 + rotate)&3]);
+				edges[1] = pTileSet->getOrientedBorder (CTileSet::bottom, oriented[(1 + rotate)&3]);
+				edges[2] = pTileSet->getOrientedBorder (CTileSet::right, oriented[(2 + rotate)&3]);
+				edges[3] = pTileSet->getOrientedBorder (CTileSet::top, oriented[(3 + rotate)&3]);
+
+				// Get the good tile number
+				CTileSet::TTransition transition = pTileSet->getTransitionTile (edges[3], edges[1], edges[0], edges[2]);
+				nlassert ((CTileSet::TTransition)transition != CTileSet::notfound);
+				tile = (uint)(pTileSet->getTransition (transition)->getTile ());
+			}
+
+			// Transform rotation
+			tileRotation += rotate;
+			tileRotation &= 3;
+		}
+		else
+			return false;
+	}
+
+	// Ok
+	return true;
+}
+
+// ***************************************************************************
+
+void RPatchMesh::transform256Case (const CTileBank &bank, uint &case256, uint tileRotation, bool symmetry, uint rotate)
+{
+	// Tile exist ?
+	if ( (rotate!=0) || symmetry )
+	{
+		// Remove its rotation
+		case256 += tileRotation;
+		case256 &= 3;
+
+		// Symmetry ?
+		if (symmetry)
+		{
+			// Take the symmetry
+			uint symArray[4] = {3, 2, 1, 0};
+			case256 = symArray[case256];
+		}
+
+		// Rotation ?
+		case256 -= rotate + tileRotation;
+		case256 &= 3;
+	}
+}
+
+// ***************************************************************************
+
 bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int zoneId)
 {
 	Matrix3					TM;
@@ -136,6 +261,51 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 	Patch*					pPatch;
 	
 	TM=pNode->GetObjectTM(0);
+
+	// ---
+	// --- Get the rotation value and symmetry flags
+	// ---
+	bool symmetry = getScriptAppData (pNode, NEL3D_APPDATA_ZONE_SYMMETRY, 0) != 0;
+	int rotate = getScriptAppData (pNode, NEL3D_APPDATA_ZONE_ROTATE, 0);
+
+	// Need a tile bank ?
+	if (symmetry || rotate)
+	{
+		// Bank loaded
+		bool loaded = false;
+
+		// Get the bank name
+		std::string sName=GetBankPathName ();
+		if (sName!="")
+		{
+			// Open the bank
+			CIFile file;
+			if (file.open (sName))
+			{
+				try
+				{
+					// Read it
+					bank.clear();
+					bank.serial (file);
+					bank.computeXRef ();
+
+					// Ok
+					loaded = true;
+				}
+				catch (EStream& stream)
+				{
+					MessageBox (NULL, stream.what(), "Error", MB_OK|MB_ICONEXCLAMATION);
+				}
+			}
+		}
+
+		// Not loaded ?
+		if (loaded == false)
+		{
+			nlwarning ("Can't load any tile bank. Select on with the tile_utility plug-in");
+			return false;
+		}
+	}
 
 	// ---
 	// --- Basic checks
@@ -251,34 +421,90 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 		pi.BaseVertices[3]=pPatch->v[3];
 		pi.Tiles.resize(pi.OrderS*pi.OrderT);
 
+		// Symmetry ?
+		if (symmetry)
+		{
+			// Vertices
+			CVector tmp = pi.Patch.Vertices[0];
+			pi.Patch.Vertices[0] = pi.Patch.Vertices[3];
+			pi.Patch.Vertices[3] = tmp;
+			tmp = pi.Patch.Vertices[1];
+			pi.Patch.Vertices[1] = pi.Patch.Vertices[2];
+			pi.Patch.Vertices[2] = tmp;
+
+			// Tangents
+			tmp = pi.Patch.Tangents[0];
+			pi.Patch.Tangents[0] = pi.Patch.Tangents[5];
+			pi.Patch.Tangents[5] = tmp;
+			tmp = pi.Patch.Tangents[1];
+			pi.Patch.Tangents[1] = pi.Patch.Tangents[4];
+			pi.Patch.Tangents[4] = tmp;
+			tmp = pi.Patch.Tangents[2];
+			pi.Patch.Tangents[2] = pi.Patch.Tangents[3];
+			pi.Patch.Tangents[3] = tmp;
+			tmp = pi.Patch.Tangents[6];
+			pi.Patch.Tangents[6] = pi.Patch.Tangents[7];
+			pi.Patch.Tangents[7] = tmp;
+
+			// Interior
+			tmp = pi.Patch.Interiors[0];
+			pi.Patch.Interiors[0] = pi.Patch.Interiors[3];
+			pi.Patch.Interiors[3] = tmp;
+			tmp = pi.Patch.Interiors[1];
+			pi.Patch.Interiors[1] = pi.Patch.Interiors[2];
+			pi.Patch.Interiors[2] = tmp;
+		}
+
 		// Tile infos
 		int u,v;
 		for (v=0; v<pi.OrderT; v++)
 		for (u=0; u<pi.OrderS; u++)
 		{
+			// U tile
+			int uSymmetry = symmetry ? (pi.OrderS-u-1) : u;
+
 			tileDesc &desc=getUIPatch (i).getTileDesc (u+v*pi.OrderS);
 			for (int l=0; l<3; l++)
 			{
 				if (l>=desc.getNumLayer ())
 				{
-					pi.Tiles[u+v*pi.OrderS].Tile[l]=0xffff;
+					pi.Tiles[uSymmetry+v*pi.OrderS].Tile[l]=0xffff;
 				}
 				else
 				{
-					pi.Tiles[u+v*pi.OrderS].Tile[l]=desc.getLayer (l).Tile;
-					pi.Tiles[u+v*pi.OrderS].setTileOrient (l, desc.getLayer (l).Rotate);
+					// Get the tile index
+					uint tile = desc.getLayer (l).Tile;
+					uint tileRotation = desc.getLayer (l).Rotate;
+
+					// Transform the tile
+					if (!transformTile (bank, tile, tileRotation, symmetry, (-rotate)&3))
+					{
+						// Info
+						nlwarning ("Error getting symmetrical / rotated zone tile.");
+						return false;
+					}
+
+					// Set the tile
+					pi.Tiles[uSymmetry+v*pi.OrderS].Tile[l] = tile;
+					pi.Tiles[uSymmetry+v*pi.OrderS].setTileOrient (l, (uint8)tileRotation);
 				}
 			}
-			if (pi.Tiles[u+v*pi.OrderS].Tile[0]==0xffff)
-				pi.Tiles[u+v*pi.OrderS].setTile256Info (false, 0);
+			if (pi.Tiles[uSymmetry+v*pi.OrderS].Tile[0]==0xffff)
+				pi.Tiles[uSymmetry+v*pi.OrderS].setTile256Info (false, 0);
 			else
 			{
 				if (desc.getCase()==0)
-					pi.Tiles[u+v*pi.OrderS].setTile256Info (false, 0);
+					pi.Tiles[uSymmetry+v*pi.OrderS].setTile256Info (false, 0);
 				else
-					pi.Tiles[u+v*pi.OrderS].setTile256Info (true, desc.getCase()-1);
+				{
+					// Transform 256 case
+					uint case256 = desc.getCase()-1;
+					transform256Case (bank, case256, 0 /*desc.getLayer (l).Rotate*/, symmetry, (-rotate)&3);
+
+					pi.Tiles[uSymmetry+v*pi.OrderS].setTile256Info (true, case256);
+				}
 			}
-			pi.Tiles[u+v*pi.OrderS].setTileSubNoise (desc.getDisplace());
+			pi.Tiles[uSymmetry+v*pi.OrderS].setTileSubNoise (desc.getDisplace());
 		}
 
 		// ** Export tile colors
@@ -290,6 +516,9 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 		for (v=0; v<pi.OrderT+1; v++)
 		for (u=0; u<pi.OrderS+1; u++)
 		{
+			// U tile
+			int uSymmetry = symmetry ? (pi.OrderS-u) : u;
+
 			// Get rgb value at this vertex
 			uint color=getUIPatch (i).getColor (u+v*(pi.OrderS+1));
 
@@ -297,7 +526,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 			CRGBA rgba ( (color&0xff0000)>>16, (color&0x00ff00)>>8, color&0xff );
 
 			// Store it in the tile info
-			pi.TileColors[u+v*(pi.OrderS+1)].Color565=rgba.get565();
+			pi.TileColors[uSymmetry+v*(pi.OrderS+1)].Color565=rgba.get565();
 		}
 
 		// ** Export tile shading
@@ -468,9 +697,65 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 		}
 	}
 
+	// ---
+	// --- Pass 3 :
+	// --- Symmetry of the bind info.
+	// --- Parse each patch and each edge
+	// ---
+	if (symmetry)
+	{
+		// For each patches
+		for(i=0 ; i<pPM->numPatches ; i++)
+		{
+			// Xchg left and right
+			CPatchInfo::CBindInfo tmp = patchinfo[i].BindEdges[0];
+			patchinfo[i].BindEdges[0] = patchinfo[i].BindEdges[2];
+			patchinfo[i].BindEdges[2] = tmp;
+			uint16 tmpVrt= patchinfo[i].BaseVertices[0];
+			patchinfo[i].BaseVertices[0] = patchinfo[i].BaseVertices[3];
+			patchinfo[i].BaseVertices[3] = tmpVrt;
+			tmpVrt= patchinfo[i].BaseVertices[1];
+			patchinfo[i].BaseVertices[1] = patchinfo[i].BaseVertices[2];
+			patchinfo[i].BaseVertices[2] = tmpVrt;
+
+			// Flip edges
+			for (uint edge=0; edge<4; edge++)
+			{
+				uint next;
+				// Look if it is a bind ?
+				if ( (patchinfo[i].BindEdges[edge].NPatchs>1) && (patchinfo[i].BindEdges[edge].NPatchs!=5) )
+				{
+					for (next=0; next<(uint)patchinfo[i].BindEdges[edge].NPatchs/2; next++)
+					{
+						uint16	tmpPtr = patchinfo[i].BindEdges[edge].Next[patchinfo[i].BindEdges[edge].NPatchs - next - 1];
+						uint8	tmpEdge = patchinfo[i].BindEdges[edge].Edge[patchinfo[i].BindEdges[edge].NPatchs - next - 1];
+						patchinfo[i].BindEdges[edge].Next[patchinfo[i].BindEdges[edge].NPatchs - next - 1] = patchinfo[i].BindEdges[edge].Next[next];
+						patchinfo[i].BindEdges[edge].Edge[patchinfo[i].BindEdges[edge].NPatchs - next - 1] = patchinfo[i].BindEdges[edge].Edge[next];
+						patchinfo[i].BindEdges[edge].Next[next] = tmpPtr;
+						patchinfo[i].BindEdges[edge].Edge[next] = tmpEdge;
+					}
+				}
+
+				// Look if we are binded on a reversed edge
+				for (next=0; next<patchinfo[i].BindEdges[edge].NPatchs; next++)
+				{
+					// Left or right ?
+					if ( (patchinfo[i].BindEdges[edge].Edge[next] & 1) == 0)
+					{
+						// Invert
+						patchinfo[i].BindEdges[edge].Edge[next] += 2;
+						patchinfo[i].BindEdges[edge].Edge[next] &= 3;
+					}
+				}
+			}
+		}
+	}
+
 	zone.build(zoneId, patchinfo, std::vector<CBorderVertex>());
 	return true;
 }
+
+// ***************************************************************************
 
 void RPatchMesh::importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId)
 {
@@ -572,7 +857,11 @@ void RPatchMesh::importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId)
 
 			// Get the tile des
 			tileDesc& desc = uiRef.getTileDesc (tileindex);
-			int numLayer = (patchs[patch].Tiles[tileindex].Tile[1]==NL_TILE_ELM_LAYER_EMPTY)?1:(patchs[patch].Tiles[tileindex].Tile[2]==NL_TILE_ELM_LAYER_EMPTY)?2:3;
+			int numLayer = 
+				(patchs[patch].Tiles[tileindex].Tile[0]==NL_TILE_ELM_LAYER_EMPTY)?0:
+				(patchs[patch].Tiles[tileindex].Tile[1]==NL_TILE_ELM_LAYER_EMPTY)?1:
+				(patchs[patch].Tiles[tileindex].Tile[2]==NL_TILE_ELM_LAYER_EMPTY)?2:
+				3;
 
 			// Case info
 			bool is256x256;
@@ -606,3 +895,5 @@ void RPatchMesh::importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId)
 	// Rebuild the patch mesh
 	nlverify (pPM->buildLinkages ()==TRUE);
 }
+
+// ***************************************************************************

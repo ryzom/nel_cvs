@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.2 2001/08/09 08:08:07 vizerie Exp $
+ * $Id: std_afx.h,v 1.3 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include <windows.h>
+#include <locale.h>
 #include <windowsx.h>
 #include <commctrl.h>
 #include <max.h>

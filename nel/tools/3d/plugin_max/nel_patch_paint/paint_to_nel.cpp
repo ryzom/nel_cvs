@@ -7,20 +7,20 @@
 /*-------------------------------------------------------------------*/
 
 // Get a patch tile array
-std::vector<CTileElement>* CNelPatchChanger::getTileArray (const CNeLZoneIndex &mesh, int patch)
+std::vector<CTileElement>* CNelPatchChanger::getTileArray (int mesh, int patch)
 {
 	// Find an entry
-	CNelPatchMap::iterator ite=_MapNeLPatchInfo.find (CNelPatchKey (mesh.Index, patch));
+	CNelPatchMap::iterator ite=_MapNeLPatchInfo.find (CNelPatchKey (mesh, patch));
 
 	// If no entry, add one
 	if (ite==_MapNeLPatchInfo.end())
-		ite=(_MapNeLPatchInfo.insert (CNelPatchMap::value_type (CNelPatchKey (mesh.Index, patch), CNelPatchValue()))).first;
+		ite=(_MapNeLPatchInfo.insert (CNelPatchMap::value_type (CNelPatchKey (mesh, patch), CNelPatchValue()))).first;
 
 	// Array doesn't exist ?
 	if (ite->second.Tiles.get()==NULL)
 	{
 		// Get the zone for this mesh
-		CZone* zone=_Landscape->getZone (mesh.Index);
+		CZone* zone=_Landscape->getZone (mesh);
 		nlassert (zone);
 
 		// Create a new one
@@ -37,20 +37,20 @@ std::vector<CTileElement>* CNelPatchChanger::getTileArray (const CNeLZoneIndex &
 /*-------------------------------------------------------------------*/
 
 // Get a patch tile array
-std::vector<CTileColor>* CNelPatchChanger::getColorArray (const CNeLZoneIndex &mesh, int patch)
+std::vector<CTileColor>* CNelPatchChanger::getColorArray (int mesh, int patch)
 {
 	// Find an entry
-	CNelPatchMap::iterator ite=_MapNeLPatchInfo.find (CNelPatchKey (mesh.Index, patch));
+	CNelPatchMap::iterator ite=_MapNeLPatchInfo.find (CNelPatchKey (mesh, patch));
 
 	// If no entry, add one
 	if (ite==_MapNeLPatchInfo.end())
-		ite=(_MapNeLPatchInfo.insert (CNelPatchMap::value_type (CNelPatchKey (mesh.Index, patch), CNelPatchValue()))).first;
+		ite=(_MapNeLPatchInfo.insert (CNelPatchMap::value_type (CNelPatchKey (mesh, patch), CNelPatchValue()))).first;
 
 	// Array doesn't exist ?
 	if (ite->second.TileColors.get()==NULL)
 	{
 		// Get the zone for this mesh
-		CZone* zone=_Landscape->getZone (mesh.Index);
+		CZone* zone=_Landscape->getZone (mesh);
 		nlassert (zone);
 
 		// Create a new one

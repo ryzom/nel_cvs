@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.15 2001/12/12 10:35:26 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.16 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std_afx.h"
 #include "nel_export.h"
 #include "../nel_mesh_lib/export_lod.h"
+#include "../nel_patch_lib/nel_patch_mesh.h"
 
 using namespace NLMISC;
 
@@ -139,6 +140,10 @@ public:
 	int						VegetableAlphaBlendOffDoubleSided;
 	int						VegetableBendCenter;
 	std::string				VegetableBendFactor;
+
+	// Ligoscape
+	int						LigoSymmetry;
+	std::string				LigoRotate;
 
 	// Dialog
 	HWND					SubDlg[TAB_COUNT];
@@ -896,6 +901,10 @@ int CALLBACK MiscDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_SETCHECK, currentParam->ExportNoteTrack, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_FLOATING_OBJECT), BM_SETCHECK, currentParam->FloatingObject, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_SETCHECK, currentParam->ExportAnimatedMaterials, 0);
+
+			// Ligoscape
+			SendMessage (GetDlgItem (hwndDlg, IDC_LIGO_SYMMETRY), BM_SETCHECK, currentParam->LigoSymmetry, 0);
+			SetWindowText (GetDlgItem (hwndDlg, IDC_LIGO_ROTATE), currentParam->LigoRotate.c_str());
 		}
 		break;
 
@@ -913,6 +922,12 @@ int CALLBACK MiscDialogCallback (
 							currentParam->ExportNoteTrack=SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);
 							currentParam->FloatingObject=SendMessage (GetDlgItem (hwndDlg, IDC_FLOATING_OBJECT), BM_GETCHECK, 0, 0);
 							currentParam->ExportAnimatedMaterials = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_GETCHECK, 0, 0);
+
+							// Ligoscape
+							currentParam->LigoSymmetry = SendMessage (GetDlgItem (hwndDlg, IDC_LIGO_SYMMETRY), BM_GETCHECK, 0, 0);
+							char tmp[512];
+							GetWindowText (GetDlgItem (hwndDlg, IDC_LIGO_ROTATE), tmp, 512);
+							currentParam->LigoRotate = tmp;
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
@@ -1532,6 +1547,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.VegetableBendCenter = CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, 0);
 		param.VegetableBendFactor = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT));
 
+		// Ligoscape
+		param.LigoSymmetry = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, BST_UNCHECKED);
+		param.LigoRotate = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0));
+
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
 		ite++;
@@ -1624,6 +1643,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					tmplist.push_back (nameLod);
 				}
 			}
+
 			// Compare with original list
 			if (tmplist!=param.ListLodName)
 			{
@@ -1631,6 +1651,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ListLodName.clear();
 				param.ListActived=false;
 			}
+
+			// Ligoscape
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, BST_UNCHECKED) != param.LigoSymmetry)
+				param.LigoSymmetry = BST_INDETERMINATE;
+			if (toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0)) != param.LigoRotate)
+				param.LigoRotate = "";
 
 			// Next sel
 			ite++;
@@ -1734,6 +1760,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 						ite++;
 					}
 				}
+
+				// Ligoscape
+				if (param.LigoSymmetry != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, param.LigoSymmetry);
+				if (param.LigoRotate != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, param.LigoRotate);
 
 				// Next node
 				ite++;

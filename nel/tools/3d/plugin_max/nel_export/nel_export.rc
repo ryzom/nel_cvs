@@ -205,8 +205,13 @@ BEGIN
     CONTROL         "Floating Object",IDC_FLOATING_OBJECT,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,5,5,65,12
     CONTROL         "Export animated materials",
-                    IDC_EXPORT_ANIMATED_MATERIALS,"Button",BS_AUTOCHECKBOX | 
+                    IDC_EXPORT_ANIMATED_MATERIALS,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,5,32,98,12
+    GROUPBOX        "Ligoscape",IDC_STATIC,180,5,115,45
+    CONTROL         "Symmetry",IDC_LIGO_SYMMETRY,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,185,15,60,12
+    LTEXT           "Rotation:",IDC_STATIC,185,35,30,8
+    EDITTEXT        IDC_LIGO_ROTATE,251,30,40,14,ES_AUTOHSCROLL
 END
 
 IDD_VEGETABLE DIALOG DISCARDABLE  0, 0, 360, 200

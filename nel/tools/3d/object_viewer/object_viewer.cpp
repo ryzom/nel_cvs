@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.52 2001/12/26 16:09:47 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.53 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@
 #include <3d/scene_group.h>
 #include <3d/animation_playlist.h>
 #include <3d/track_keyframer.h>
+#include <3d/font_generator.h>
 
 
 

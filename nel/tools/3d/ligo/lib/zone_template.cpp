@@ -1,7 +1,7 @@
 /** \file zone_template.cpp
  * Ligo zone template implementation
  *
- * $Id: zone_template.cpp,v 1.3 2001/11/14 15:16:00 corvazier Exp $
+ * $Id: zone_template.cpp,v 1.4 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ inline bool CZoneTemplate::snapOnGrid (float& value, float resolution, float sna
 
 	// Calc the remainder
 	float remainder = value - _floor;
-	nlassert ( (remainder>=0) && (remainder<resolution) );
+	//nlassert ( (remainder>=0) && (remainder<resolution) );
 
 	// Check the snape
 	if ( remainder <= snap )

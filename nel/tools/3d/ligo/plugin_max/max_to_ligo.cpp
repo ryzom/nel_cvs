@@ -1,7 +1,7 @@
 /** \file max_to_ligo.cpp
  * Convert a 3dsmax nel patch mesh in ligo data
  *
- * $Id: max_to_ligo.cpp,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ * $Id: max_to_ligo.cpp,v 1.2 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -39,8 +39,29 @@
 using namespace std;
 using namespace NLMISC;
 
+#define NEL3D_APPDATA_ZONE_SYMMETRY		1266703979
+
 namespace NLLIGO
 {
+
+// ***************************************************************************
+
+int getScriptAppDataPatchMesh (Animatable *node, uint32 id, int def)
+{
+	// Get the chunk
+	AppDataChunk *ap=node->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id);
+
+	// Not found ? return default
+	if (ap==NULL)
+		return def;
+
+	// String to int
+	int value;
+	if (sscanf ((const char*)ap->data, "%d", &value)==1)
+		return value;
+	else
+		return def;
+}
 
 // ***************************************************************************
 
@@ -68,6 +89,9 @@ bool CMaxToLigo::buildZoneTemplate (INode* pNode, const PatchMesh &patchMesh, CZ
 		vertices[vert].z = v.z;
 	}
 
+	// Symetric ?
+	bool sym = getScriptAppDataPatchMesh (pNode, NEL3D_APPDATA_ZONE_SYMMETRY, 0) != 0;
+
 	// For each edges
 	for (uint edge=0; edge<(uint)patchMesh.numEdges; edge++)
 	{
@@ -75,7 +99,10 @@ bool CMaxToLigo::buildZoneTemplate (INode* pNode, const PatchMesh &patchMesh, CZ
 		if (patchMesh.edges[edge].patch2<0)
 		{
 			// Add this edge
-			indexes.push_back (pair<uint, uint> (patchMesh.edges[edge].v1, patchMesh.edges[edge].v2));
+			if (sym)
+				indexes.push_back (pair<uint, uint> (patchMesh.edges[edge].v2, patchMesh.edges[edge].v1));
+			else
+				indexes.push_back (pair<uint, uint> (patchMesh.edges[edge].v1, patchMesh.edges[edge].v2));
 		}
 	}
 

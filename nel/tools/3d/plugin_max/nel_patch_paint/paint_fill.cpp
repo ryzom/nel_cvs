@@ -96,7 +96,8 @@ void CFillPatch::fillTile (int mesh, int patch, std::vector<EPM_Mesh> &vectMesh,
 							bool compatible=false;
 
 							// Neigborhood not compatible ?
-							tileDesc& descNei=vectMesh[pTile->voisins[n]->Mesh].RMesh->getTileDesc(pTile->voisins[n]->tile);
+							tileDesc descNei;
+							_MouseProc->GetTile (pTile->voisins[n]->Mesh, pTile->voisins[n]->tile, descNei, vectMesh, _Landscape);
 
 							// If empty continue
 							if (descNei.getNumLayer()==0)

@@ -42,10 +42,22 @@ NeighborDeltaRot		= #( 180, 270, 0, 90 )
 NeighborDeltaPos		= #( [-1,0,0], [0,-1,0], [1,0,0], [0,1,0] )
 NeighborName			= #( "[NELLIGO] Left help zone", "[NELLIGO] Bottom help zone", "[NELLIGO] Right help zone", "[NELLIGO] Top help zone" )
 
+-- Transition transform
+
+TransitionScale			= #( false,		false,		false,			false,			true,		false,		false,			false,			false)
+TransitionRot			= #( 2,			1,			3,				0,				1,			3,			0,				0,				0)
+TransitionPos			= #( [0, 0, 0], [-1, 0, 0], [-1, -1, 0],	[-1, -2, 0],	[0, -2, 0], [0, -3, 0], [-1, -3, 0],	[-2, -3, 0],	[-3, -3, 0])
+TransitionType			= #( "CornerA", "CornerA",	"Flat",			"CornerA",		"CornerB",	"CornerB",	"Flat",			"Flat",			"CornerB")
+TransitionNum			= #( 22,		12,			22,				11,				12,			11,			11,				12,				22)
+TransitionNumBis		= #( 5,			4,			2,				3,				7,			6,			0,				1,				8)
+
 -- Some appdata
 
 ligo					= 1304892483
 ligo_passable_app		= ligo
+ligo_rotate_app			= 1266703978
+ligo_scale_app			= 1266703979
+ligo_instance_app		= 1266703980
 
 -- Project file list
 project_file_list		= #()
@@ -53,10 +65,10 @@ project_file_list		= #()
 -- Functions
 
 -- Add properties
-fn addProperties propsArray =
+fn addProperties node propsArray =
 (
 	-- The passable properties
-	if (getappdata $ ligo_passable_app) != undefined then
+	if (getappdata node ligo_passable_app) != undefined then
 		append propsArray #( "passable", "yes")
 	else
 		append propsArray #( "passable", "no")
@@ -118,6 +130,35 @@ fn DeleteDebugMarkersFn =
 		-- Node id
 		delete arrayToDelete[i]
 	)
+)
+
+-- Add a painter modifier to visible objects
+fn AddPainterModToVisible =
+(
+	-- Unselect non NeL patch mesh
+	max select none
+
+	-- For each error names
+	for node in geometry do
+	(
+		-- Is a NeL zone ?
+		if (classof node) == RklPatch then
+		(
+			-- Is visible ?
+			if node.isHidden == false then
+			(
+				-- Is not an instance ?
+				if (getappdata node ligo_instance_app) == undefined then
+				(
+					-- Select it
+					selectmore node
+				)
+			)
+		)
+	)
+
+	-- For each node to delete
+	modPanel.addModToSelection (NeL_Painter ())
 )
 
 -- Get the material names in a transition file name
@@ -364,6 +405,9 @@ fn export_and_check_and_debug_material checkOnly debug =
 -- Get the transition zone coordinate
 fn getTransitionZoneCoordinates node x y = 
 (
+	-- Get nelsize
+	cellSize = NeLLigoGetCellSize ()
+
 	-- Object center
 	center = node.center
 
@@ -391,8 +435,11 @@ fn getTransitionZoneCoordinates node x y =
 )
 
 -- Export a ligo transition
-fn export_and_check_and_debug_transition checkOnly debug = 
+fn export_and_check_and_debug_transition_template checkOnly debug = 
 ( 
+	-- Get nelsize
+	cellSize = NeLLigoGetCellSize ()
+
 	-- Select a file ?
 	if $ == undefined then
 	(
@@ -584,10 +631,10 @@ fn export_and_check_and_debug_zone checkOnly debug =
 						filename = ligo_root_path+ligo_zone_path+zonename+ligo_zone_ext
 						
 						-- Make an array of properties
-						props = #( #("name", zonename), #("material", result[1]) ) 
+						props = #( #("zone", zonename), #("material", result[1]) ) 
 
 						-- Add the properties
-						addProperties props
+						addProperties $ props
 
 						-- Export the files ( The ligozone (*.ligozone), the NeL zone (*.zone), and the snap shot (*.tga) )
 						if (NeLLigoExportZone $ filename props true) == true then
@@ -595,6 +642,194 @@ fn export_and_check_and_debug_zone checkOnly debug =
 							-- Success message
 							messageBox (filename+" export success") title:title_msgbox
 
+							return true
+						)
+					)
+				)
+			)
+		)
+	)
+
+	-- Error
+	return false
+)
+
+-- Export a ligo transition
+fn export_and_check_and_debug_transition_zone checkOnly debug = 
+( 
+	-- Get nelsize
+	cellSize = NeLLigoGetCellSize ()
+
+	-- Select a file ?
+	if $ == undefined then
+	(
+		messageBox "Please select one or several 3ds NeL patch mesh object" title:title_msgbox beep:true
+	)
+	else
+	(
+		-- Array of selection
+		nodeArray = #()
+		if $ == $selection then
+		(
+			nodeArray = $selection as array
+		)
+		else
+		(
+			append nodeArray $
+		)
+
+		-- Ok flag
+		ok = true
+		findOne = false
+
+		-- Cell Size
+		if cellSize != undefined then
+		(
+			-- Array of transitions zones
+			transitionZone = #()
+			for zone = 1 to 9 do
+				append transitionZone undefined
+			for zone = 1 to nodeArray.count do
+			(
+				-- Not a debug object ?
+				if (isDebugMarker nodeArray[zone]) == false then
+				(
+					-- Find one
+					findOne = true;
+
+					-- Get the zone coordinates
+					x = #()
+					y = #()
+					ok = getTransitionZoneCoordinates nodeArray[zone] x y
+
+					-- No error ?
+					if ok == true then
+					(
+						-- Transition number
+						id = TransitionIds[y[1]+1][x[1]+1]
+
+						-- Store it
+						transitionZone[id] = nodeArray[zone]
+					)
+				)
+			)
+
+			-- Continue ?
+			if (findOne == true) then
+			(
+				if (ok == true) then
+				(
+					-- Select the two materials
+					names = #()
+					ok = get_transition_and_zone_name_in_zone_project_name maxFileName names
+
+					-- Two material selected ?
+					if ok == true then
+					(
+						-- Make transition file with them
+						transitionName = ligo_root_path+ligo_transition_path+names[1]+"-"+names[2]+ligo_transition_ext
+
+						-- Export success
+						result = true
+
+						-- For each zone selected
+						for zone = 1 to 9 do
+						(
+							-- Defined ?
+							if transitionZone[zone] != undefined then
+							(
+								-- Check the zone
+								if (NeLLigoCheckZoneWithTransition transitionZone[zone] transitionName (zone-1) true) == true then
+								(
+									-- Not check only ?
+									if checkOnly == false then
+									(
+										-- Zone name
+										zoneBaseName = names[3]+"-"+((zone-1) as string)
+
+										-- Get the destination filename for export
+										filename = ligo_root_path+ligo_zone_path+zoneBaseName+ligo_zone_ext
+
+										-- Make an array of properties
+										props = #( #("zone", zoneBaseName), #("transname", (names[1]+"-"+names[2]) ), #("transtype", TransitionType[zone] ), #("transtype", TransitionType[zone] ), #("transnum", (TransitionNumBis[zone] as string) ) ) 
+
+										-- Add the properties
+										addProperties transitionZone[zone] props
+
+										-- Transform the zone
+										c = instance transitionZone[zone]
+
+										-- Change the name
+										c.name = "[NELLIGO] tmp export"
+
+										-- The matrix
+										mt = transitionZone[zone].transform
+										backupPos = mt.pos
+										mt.pos = [0,0,0]
+
+										-- Scale ?
+										if TransitionScale[zone] == true then
+										(
+											mt = scale mt [-1,1,1]
+											setappdata c ligo_scale_app "1"
+										)
+
+										-- Rotate
+										if TransitionRot[zone] != 0 then
+										(
+											mt = rotateZ mt (90*TransitionRot[zone])
+											setappdata c ligo_rotate_app (TransitionRot[zone] as string)
+										)
+
+										-- Translation
+										mt = translate mt ( (TransitionPos[zone] * cellSize) + backupPos)
+
+										-- Transform the node
+										c.transform = mt
+
+										-- Export the zone
+										if (NeLLigoExportZone c filename props true) == true then
+										(
+										)
+										else
+										(
+											result = false
+										)
+
+										-- Delete
+										delete c
+									)
+								)
+								else
+								(
+									-- Backup selection
+									backupSelect = $selection as array
+
+									res = show_errors transitionZone[zone] debug 1
+
+									-- Restaure
+									select backupSelect
+
+									result = false
+								)
+							)
+						)
+
+						-- Success message
+						if (result == true) then
+						(
+							if checkOnly == true then
+							(
+								-- Success
+								messageBox "No error" title:title_msgbox beep:true
+							)
+							else
+							(
+								-- Success message
+								messageBox ("Export success") title:title_msgbox
+							)
+
+							-- Success
 							return true
 						)
 					)
@@ -665,6 +900,9 @@ group "Projects management"
 
 	on ShowHelpZones pressed do
 	(
+		-- Get nelsize
+		cellSize = NeLLigoGetCellSize ()
+
 		-- Select a zone
 		if ($ == undefined) or ($ == $selection) then
 		(
@@ -673,18 +911,26 @@ group "Projects management"
 		else
 		(
 			-- Make a refenrence
-			r = reference $
+			r = instance $
+			setappdata r ligo_instance_app "1"
 			r.transform = translate (rotateZ (translate r.transform -r.pos) 0) r.pos
 			r.pos += [cellSize,0,0]
-			l = reference $
+			setappdata r ligo_rotate_app "0"
+			l = instance $
+			setappdata l ligo_instance_app "1"
 			l.pos += [-cellSize,0,0]
 			l.transform = translate (rotateZ (translate l.transform -l.pos) 180) l.pos
-			t = reference $
+			setappdata l ligo_rotate_app "2"
+			t = instance $
+			setappdata t ligo_instance_app "1"
 			t.pos += [0,cellSize,0]
 			t.transform = translate (rotateZ (translate t.transform -t.pos) 90) t.pos
-			b = reference $
+			setappdata t ligo_rotate_app "1"
+			b = instance $
+			setappdata b ligo_instance_app "1"
 			b.pos += [0,-cellSize,0]
 			b.transform = translate (rotateZ (translate b.transform -b.pos) -90) b.pos
+			setappdata b ligo_rotate_app "3"
 
 			r.name = "[NELLIGO] Right help zone"
 			l.name = "[NELLIGO] Left help zone"
@@ -724,6 +970,9 @@ group "Projects management"
 
 	on AddMaterial pressed do
 	(
+		-- Get nelsize
+		cellSize = NeLLigoGetCellSize ()
+
 		-- Valid name ?
 		if (NewMaterialName.text == "") then
 		(
@@ -789,6 +1038,7 @@ group "Check, debug and export"
 	Button		UnhideOtherZones		"Unhide other zones"			width:140 align:#center
 	Button		ShowHelpZones			"Show help zones"				width:140 align:#center
 	Button		DeleteDebugMarkers		"Delete debug markers"			width:140 align:#center
+	Button		AddPaintMod				"Add paint mod to visible"		width:140 align:#center
 	Checkbox	CheckOnly				"Check only"					checked:false enabled:true
 	Checkbox	Debug					"Debug"							checked:false enabled:true
 
@@ -808,7 +1058,7 @@ group "Projects management"
 
 	on ExportTransition pressed do 
 	(
-		export_and_check_and_debug_transition CheckOnly.checked Debug.checked
+		export_and_check_and_debug_transition_template CheckOnly.checked Debug.checked
 	)
 
 	on HideOtherZones pressed do
@@ -857,6 +1107,9 @@ group "Projects management"
 
 	on ShowHelpZones pressed do
 	(
+		-- Get nelsize
+		cellSize = NeLLigoGetCellSize ()
+
 		-- Select a file ?
 		if $ == undefined then
 		(
@@ -906,19 +1159,27 @@ group "Projects management"
 							-- Symmetry to do
 							sym = 0
 
+							-- Reference painter ?
+							refPainter = false
+
 							-- Translation to do
 							trans= point3 0 0 0
+
+							-- This is an instance
+							instan = false
 
 							-- What kind of edge
 							if (EdgeType[id][edge]==1) or (EdgeType[id][edge]==-1) then
 							(
 								-- Load material one
 								ref = NeLImportzone ((getFilenamePath materialName[1])+(getFilenameFile materialName[1])+nel_zone_ext) true
+								refPainter = true
 							)
 							else if (EdgeType[id][edge]==2) or (EdgeType[id][edge]==-2) then
 							(
 								-- Load material two
 								ref = NeLImportzone ((getFilenamePath materialName[2])+(getFilenameFile materialName[2])+nel_zone_ext) true
+								refPainter = true
 							)
 							else if (EdgeType[id][edge]==3) or (EdgeType[id][edge]==-3) then
 							(
@@ -933,6 +1194,10 @@ group "Projects management"
 
 								-- Translation
 								trans = [-cellSize,0,0]
+
+								-- The same ?
+								if id == 2 then
+									instan = true
 							)
 							else if (EdgeType[id][edge]==4) or (EdgeType[id][edge]==-4) then
 							(
@@ -944,13 +1209,19 @@ group "Projects management"
 
 								-- Symemtry
 								sym = true
+
+								-- The same ?
+								if id == 1 then
+									instan = true
 							)
 
 							-- Defined ?
 							if zone != undefined then
 							(
 								-- Reference it
-								ref = reference zone
+								ref = instance zone
+								if instan == true then
+									setappdata ref ligo_instance_app "1"
 							)
 							if ref != undefined then
 							(
@@ -970,15 +1241,39 @@ group "Projects management"
 								mt = translate mt ([-cellSize/2,-cellSize/2,0] + trans)
 								mt = rotateZ mt (90*rot)
 
+								-- Scale
+								scaled = false
+
 								if sym == true then
 								(
 									mt = scale mt [1,-1,1] true
+									if scaled == true then
+										scaled = false
+									else 
+										scaled = true
 								)
 
 								if EdgeType[id][edge] >= 3 then
 								(
 									mt = scale mt [1,-1,1] true
+									if scaled == true then
+										scaled = false
+									else 
+										scaled = true
 								)
+
+								if scaled == true then
+									scaled = 1
+								else
+									scaled = 0
+								
+								setappdata ref ligo_scale_app (scaled as string)
+
+								-- Compute finale rotation
+								if scaled == 1 then
+									rot = 4-rot;
+								rot = mod (rot + NeighborDeltaRot[edge] / 90) 4
+								setappdata ref ligo_rotate_app (rot as string)
 
 								mt = rotateZ mt NeighborDeltaRot[edge]
 								pos = (NeighborDeltaPos[edge] + [posX,posY,0]) * cellSize
@@ -997,6 +1292,11 @@ group "Projects management"
 	on DeleteDebugMarkers pressed do 
 	(
 		DeleteDebugMarkersFn ()
+	)
+
+	on AddPaintMod pressed do 
+	(
+		AddPainterModToVisible ()
 	)
 
 	fn refresh_list =
@@ -1026,6 +1326,9 @@ group "Projects management"
 
 	on AddTransition pressed do
 	(
+		-- Get nelsize
+		cellSize = NeLLigoGetCellSize ()
+
 		-- Valid name ?
 		if (NewTransitionName0.text == "") or (NewTransitionName1.text == "") then		
 		(
@@ -1095,6 +1398,7 @@ group "Check, debug and export"
 	Button		ExportZone				"Export zone"					width:140 align:#center
 	Button		ShowHelpZones			"Show help zones"				width:140 align:#center
 	Button		DeleteDebugMarkers		"Delete debug markers"			width:140 align:#center
+	Button		AddPaintMod				"Add paint mod to visible"		width:140 align:#center
 	Checkbox	CheckOnly				"Check only"					checked:false enabled:true
 	Checkbox	Debug					"Debug"							checked:false enabled:true
 
@@ -1121,8 +1425,16 @@ group "Projects management"
 		DeleteDebugMarkersFn ()
 	)
 
+	on AddPaintMod pressed do 
+	(
+		AddPainterModToVisible ()
+	)
+
 	on ShowHelpZones pressed do
 	(
+		-- Get nelsize
+		cellSize = NeLLigoGetCellSize ()
+
 		-- Select a zone
 		if ($ == undefined) or ($ == $selection) then
 		(
@@ -1135,15 +1447,16 @@ group "Projects management"
 			zoneFilled = #()
 
 			-- Get the mask
-			resMinX = #()
-			resMinY = #()
+			-- resMinX = #()
+			-- resMinY = #()
 			resWidth = #()
 			resHeight = #()
-			if (NeLLigoGetZoneMask $ zoneUsed resMinX resMinY resWidth resHeight true) == true then
+			-- if (NeLLigoGetZoneMask $ zoneUsed resMinX resMinY resWidth resHeight true) == true then
+			if (NeLLigoGetZoneMask $ zoneUsed resWidth resHeight true) == true then
 			(
 				-- Width and height
-				minx = resMinX[1]
-				miny = resMinY[1]
+				-- minx = resMinX[1]
+				-- miny = resMinY[1]
 				width = resWidth[1]
 				height = resHeight[1]
 
@@ -1235,7 +1548,8 @@ group "Projects management"
 							)
 							else
 							(
-								importedRef = reference imported
+								importedRef = instance imported
+								setappdata importedRef ligo_instance_app "1"
 							)
 
 							-- Ok ?
@@ -1346,6 +1660,7 @@ group "Check, debug and export"
 	Button		UnhideOtherZones		"Unhide other zones"			width:140 align:#center
 	Button		ShowHelpZones			"Show help zones"				width:140 align:#center
 	Button		DeleteDebugMarkers		"Delete debug markers"			width:140 align:#center
+	Button		AddPaintMod				"Add paint mod to visible"		width:140 align:#center
 	Checkbox	CheckOnly				"Check only"					checked:false enabled:true
 	Checkbox	Debug					"Debug"							checked:false enabled:true
 
@@ -1372,8 +1687,16 @@ group "Projects management"
 		DeleteDebugMarkersFn ()
 	)
 
+	on AddPaintMod pressed do 
+	(
+		AddPainterModToVisible ()
+	)
+
 	on ShowHelpZones pressed do
 	(
+		-- Get nelsize
+		cellSize = NeLLigoGetCellSize ()
+
 		-- Select a file ?
 		if $ == undefined then
 		(
@@ -1480,15 +1803,40 @@ group "Projects management"
 								mt = translate mt ([-cellSize/2,-cellSize/2,0] + trans)
 								mt = rotateZ mt (90*rot)
 
+								-- Scale
+								scaled = false
+
 								if sym == true then
 								(
 									mt = scale mt [1,-1,1] true
+									if scaled == true then
+										scaled = false
+									else 
+										scaled = true
 								)
 
 								if EdgeType[id][edge] >= 3 then
 								(
 									mt = scale mt [1,-1,1] true
+									if scaled == true then
+										scaled = false
+									else 
+										scaled = true
 								)
+
+								-- Set the scale app data
+								if scaled == true then
+									scaled = 1
+								else
+									scaled = 0
+
+								setappdata ref ligo_scale_app (scaled as string)
+
+								-- Compute finale rotation
+								if scaled == 1 then
+									rot = 4-rot;
+								rot = mod (rot + NeighborDeltaRot[edge] / 90) 4
+								setappdata ref ligo_rotate_app (rot as string)
 
 								mt = rotateZ mt NeighborDeltaRot[edge]
 								pos = (NeighborDeltaPos[edge] + [posX,posY,0]) * cellSize
@@ -1797,9 +2145,6 @@ group "Ligo root directory"
 )
 
 -- Main entry
-
--- Get nelsize
-cellSize = NeLLigoGetCellSize ()
 
 if ligoscape_tools_floater != undefined do
 (

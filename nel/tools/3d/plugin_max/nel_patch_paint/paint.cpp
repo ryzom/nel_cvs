@@ -31,8 +31,6 @@ using namespace NL3D;
 using namespace NLMISC;
 
 
-int getLayer (EPM_PaintTile* tile, int border, int tileSet, int rotate, std::vector<EPM_Mesh>& vectMesh);
-
 // Paint mouse proc
 
 #define MAIN_Width 800
@@ -52,9 +50,6 @@ CBankCont*	bankCont;
 
 // Tileset land
 CTileSetSelection	tileSetSelector;
-
-// The remap table
-std::vector< std::vector<CNeLZoneIndex> > maxZoneToNeLZoneArray;
 
 bool bWarningInvalidTileSet;
 
@@ -388,26 +383,21 @@ void drawInterface (TModeMouse select, TModePaint mode, PaintPatchMod *pobj, IDr
 
 /*-------------------------------------------------------------------*/
 
-#define WELD_THRESOLD 0.1f
+#define WELD_THRESOLD 1.f
 
 /*-------------------------------------------------------------------*/
 
-void addNeLZone ( Object *object, INode *current, std::vector<CNeLZoneIndex> &nelRef, uint &nelIndex)
+void addNeLZone ( Object *object, INode *current, std::vector<EPM_Mesh> &vectMesh, PatchMesh *patch, RPatchMesh *rpatch, PaintPatchData *patchData, ModContext *mod, INode *original, uint &nelIndex)
 {
 	// Not the same
-	if (current->GetObjectRef() == object)
+	if ((current->GetObjectRef() == object) && (!current->IsHidden()))
 	{
-		// Get app data
-		uint rotate = CExportNel::getScriptAppData (current, NEL3D_APPDATA_ZONE_ROTATE, 0);
-		bool symmetry = CExportNel::getScriptAppData (current, NEL3D_APPDATA_ZONE_SYMMETRY, 0) != 0;
-
-		// Add to nel zone
-		nelRef.push_back ( CNeLZoneIndex (nelIndex++, rotate, symmetry, current) );
+		vectMesh.push_back (EPM_Mesh (patch, rpatch, patchData, current, mod, nelIndex++, original == current));
 	}
 
 	// Call to child
 	for (uint child=0; child<(uint)current->NumberOfChildren(); child++)
-		addNeLZone ( object, current->GetChildNode(child), nelRef, nelIndex);
+		addNeLZone ( object, current->GetChildNode(child), vectMesh, patch, rpatch, patchData, mod, original, nelIndex);
 }
 
 // Tile painting algorithm. watch "doc/3d/tile_algorithm.doc" for details
@@ -416,10 +406,6 @@ void makeVectMesh (std::vector<EPM_Mesh>& vectMesh, INodeTab& nodes, ModContextL
 {
 	// Clear the mesh vector
 	vectMesh.clear ();
-
-	// Reset the max to nel map
-	maxZoneToNeLZoneArray.clear ();
-	maxZoneToNeLZoneArray.resize (mcList.Count ());
 
 	// Nel zone indexies
 	uint nelIndex = 0;
@@ -439,13 +425,42 @@ void makeVectMesh (std::vector<EPM_Mesh>& vectMesh, INodeTab& nodes, ModContextL
 		if (!patch)
 			continue;
 
-		vectMesh.push_back (EPM_Mesh (patch, rpatch, patchData, nodes[i], mcList[i], i));
-
 		// Look for another node
-		addNeLZone ( nodes[i]->GetObjectRef(), pobj->ip->GetRootNode(), maxZoneToNeLZoneArray[i], nelIndex );
+		addNeLZone ( nodes[i]->GetObjectRef(), pobj->ip->GetRootNode(), vectMesh, patch, rpatch, patchData, mcList[i], nodes[i], nelIndex );
 	}
 }
 
+void transformDesc (tileDesc &desc, bool symmetry, uint rotate)
+{
+	// 256 ?
+	if (desc.getCase()!=0)
+	{
+		// Transform the case
+		uint case256 = desc.getCase()-1;
+		RPatchMesh::transform256Case (bank, case256, 0 /*desc.getLayer (0).Rotate*/ , symmetry, rotate);
+		desc.setCase (case256+1);
+	}
+
+	for (int l=0; l<desc.getNumLayer (); l++)
+	{
+		// Tile and rot
+		uint tile = desc.getLayer (l).Tile;
+		uint tileRotation = desc.getLayer (l).Rotate;
+
+		// Transform it
+		if (RPatchMesh::transformTile (bank, tile, tileRotation, symmetry, rotate))
+		{
+			desc.getLayer (l).Tile = tile;
+			desc.getLayer (l).Rotate = tileRotation;
+		}
+	}
+}
+
+void transformInvDesc (tileDesc &desc, bool symmetry, uint rotate)
+{
+	transformDesc (desc, false, 4-rotate);
+	transformDesc (desc, symmetry, 0);
+}
 
 void EPM_PaintMouseProc::SetTile (int mesh, int tile, const tileDesc& desc, std::vector<EPM_Mesh>& vectMesh, CLandscape* land, 
 								  CNelPatchChanger& nelPatchChg, std::vector<CBackupValue>* backupStack, bool undo, bool updateDisplace)
@@ -455,71 +470,91 @@ void EPM_PaintMouseProc::SetTile (int mesh, int tile, const tileDesc& desc, std:
 	GetTile (mesh, tile, oldDesc, vectMesh, land);
 
 	// New desc
-	tileDesc newDesc=desc;
-
-	// Update displace ?
-	if (!updateDisplace)
-	{
-		// Copy old displacement map
-		newDesc.setDisplace (oldDesc.getDisplace());
-	}
+	tileDesc maxDesc=desc;
 
 	// Backup if error
 	if (backupStack)
 		backupStack->push_back (CBackupValue (oldDesc, mesh, tile));
 
+	// Update displace ?
+	if (!updateDisplace)
+	{
+		// Copy old displacement map
+		maxDesc.setDisplace (oldDesc.getDisplace());
+	}
+
+	// Transform tile 
+	tileDesc copyDesc=maxDesc;
+	transformInvDesc (maxDesc, vectMesh[mesh].Symmetry, 4-vectMesh[mesh].Rotate);
+	transformInvDesc (copyDesc, vectMesh[mesh].Symmetry, 0);
+
 	// 3dsmax update
-	vectMesh[mesh].RMesh->setTileDesc (tile, newDesc);
+	vectMesh[mesh].RMesh->setTileDesc (tile, maxDesc);
 
 	// NeL update
 	if (land)
 	{
-		// For each nel zone
-		for (uint i=0; i<maxZoneToNeLZoneArray[mesh].size(); i++)
+		// For each mesh
+		for (uint i=0; i<vectMesh.size(); i++)
 		{
-			int patch=tile/NUM_TILE_SEL;
-			int ttile=tile%NUM_TILE_SEL;
-			int v=ttile/MAX_TILE_IN_PATCH;
-			int u=ttile%MAX_TILE_IN_PATCH;
-
-			// Get the patch
-			std::vector<CTileElement>& copyZone = *nelPatchChg.getTileArray (maxZoneToNeLZoneArray[mesh][i], patch);
-			RPatchMesh *pMesh=vectMesh[mesh].RMesh;
-			int OrderS=(1<<pMesh->getUIPatch (patch).NbTilesU);
-			
-			for (int l=0; l<3; l++)
+			// Same mesh ?
+			if (vectMesh[i].RMesh == vectMesh[mesh].RMesh)
 			{
-				if (l>=pMesh->getUIPatch (patch).getTileDesc (u+v*OrderS).getNumLayer ())
-				{
-					copyZone[u+v*OrderS].Tile[l]=0xffff;
-				}
-				else
-				{
-					int toto=copyZone[u+v*OrderS].Tile[l];
-					copyZone[u+v*OrderS].Tile[l]=newDesc.getLayer (l).Tile;
-					copyZone[u+v*OrderS].setTileOrient (l, newDesc.getLayer (l).Rotate);
+				// Get a desc for this tile
+				tileDesc nelDesc=copyDesc;
+				transformInvDesc (nelDesc, vectMesh[mesh].Symmetry, 4-vectMesh[mesh].Rotate);
+				transformDesc (nelDesc, vectMesh[i].Symmetry, 4-vectMesh[i].Rotate);
 
+				int patch=tile/NUM_TILE_SEL;
+				int ttile=tile%NUM_TILE_SEL;
+				int v=ttile/MAX_TILE_IN_PATCH;
+				int u=ttile%MAX_TILE_IN_PATCH;
+
+				// Get the patch
+				std::vector<CTileElement>& copyZone = *nelPatchChg.getTileArray (i, patch);
+				RPatchMesh *pMesh=vectMesh[i].RMesh;
+				int OrderS=(1<<pMesh->getUIPatch (patch).NbTilesU);
+
+				// Symmetry ?
+				if (vectMesh[i].Symmetry)
+				{
+					u = OrderS - u - 1;
 				}
-			}
-			if (copyZone[u+v*OrderS].Tile[0]==0xffff)
-				copyZone[u+v*OrderS].setTile256Info (false, 0);
-			else
-			{
-				if (newDesc.getCase()==0)
+
+				for (int l=0; l<3; l++)
+				{
+					if (l>=nelDesc.getNumLayer ())
+					{
+						copyZone[u+v*OrderS].Tile[l]=0xffff;
+					}
+					else
+					{
+						int toto=copyZone[u+v*OrderS].Tile[l];
+						copyZone[u+v*OrderS].Tile[l]=nelDesc.getLayer (l).Tile;
+						copyZone[u+v*OrderS].setTileOrient (l, nelDesc.getLayer (l).Rotate);
+
+					}
+				}
+				if (copyZone[u+v*OrderS].Tile[0]==0xffff)
 					copyZone[u+v*OrderS].setTile256Info (false, 0);
 				else
-					copyZone[u+v*OrderS].setTile256Info (true, newDesc.getCase()-1);
+				{
+					if (nelDesc.getCase()==0)
+						copyZone[u+v*OrderS].setTile256Info (false, 0);
+					else
+						copyZone[u+v*OrderS].setTile256Info (true, nelDesc.getCase()-1);
+				}
+
+				// Displace tile
+				copyZone[u+v*OrderS].setTileSubNoise (nelDesc.getDisplace());
+
+				// Undo: push new value
+				if (undo)
+				{
+					CUndoElement undoEmlt (i, tile, CUndoStruct (oldDesc), CUndoStruct (desc));
+					bankCont->Undo.toUndo (undoEmlt);
+				}
 			}
-
-			// Displace tile
-			copyZone[u+v*OrderS].setTileSubNoise (newDesc.getDisplace());
-		}
-
-		// Undo: push new value
-		if (undo)
-		{
-			CUndoElement undoEmlt (mesh, tile, CUndoStruct (oldDesc), CUndoStruct (newDesc));
-			bankCont->Undo.toUndo (undoEmlt);
 		}
 	}
 }
@@ -534,6 +569,9 @@ void EPM_PaintMouseProc::GetTile (int mesh, int tile, tileDesc& desc, std::vecto
 
 		// Get tile desc
 		desc=pMesh->getTileDesc (tile);
+
+		// Transform it
+		transformDesc (desc, vectMesh[mesh].Symmetry, 4-vectMesh[mesh].Rotate);
 	}
 }
 
@@ -632,7 +670,8 @@ bool EPM_PaintMouseProc::PutATile ( EPM_PaintTile* pTile, int tileSet, int curRo
 		return false;
 
 	// ** 1) Backup of the tile
-	tileDesc backup=vectMesh[pTile->Mesh].RMesh->getTileDesc (pTile->tile);
+	tileDesc backup;
+	GetTile (pTile->Mesh, pTile->tile, backup, vectMesh, land);
 	tileDesc backupRight, backupBottom, backupCorner;
 
 	// Backup stack
@@ -646,18 +685,19 @@ bool EPM_PaintMouseProc::PutATile ( EPM_PaintTile* pTile, int tileSet, int curRo
 		int nRot;
 		EPM_PaintTile* other=pTile->getRight256 (0, nRot);
 		nlassert (other);
-		backupRight=vectMesh[other->Mesh].RMesh->getTileDesc (other->tile);
+		backupRight;
+		GetTile (other->Mesh, other->tile, backupRight, vectMesh, land);
 
 		// get bottom
 		other=pTile->getBottom256 (0, nRot);
 		nlassert (other);
-		backupBottom=vectMesh[other->Mesh].RMesh->getTileDesc (other->tile);
+		GetTile (other->Mesh, other->tile, backupBottom, vectMesh, land);
 
 		// get corner
 		other=pTile->getRightBottom256 (0, nRot);
 		nlassert (other);
 		nlassert (other==pTile->getBottomRight256 (0, nRot));
-		backupCorner=vectMesh[other->Mesh].RMesh->getTileDesc (other->tile);
+		GetTile (other->Mesh, other->tile, backupCorner, vectMesh, land);
 	}
 
 	// ** 2) Add to visited tile set
@@ -915,7 +955,7 @@ zap:;
 					tileDesc pVoisinIndex;
 
 					// Tile is filled ?
-					if (GetBorderDesc (pTile->voisins[edge], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg))
+					if (GetBorderDesc (pTile->voisins[edge], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg, land))
 					{
 						// Neighbor edge
 						int neigborEdge = (2+edge+pTile->rotate[edge])&3;
@@ -934,7 +974,7 @@ zap:;
 						for (uint subTile=0; subTile<2; subTile++)
 						{
 							// Tileset
-							int slot=getLayer (pTile, edge, pVoisinCorner[(neigborEdge+subTile)&3].TileSet, (pVoisinCorner[(neigborEdge+subTile)&3].Rotate - pTile->rotate[edge])&3, vectMesh);
+							int slot=getLayer (pTile, edge, pVoisinCorner[(neigborEdge+subTile)&3].TileSet, (pVoisinCorner[(neigborEdge+subTile)&3].Rotate - pTile->rotate[edge])&3, vectMesh, land);
 
 							// Should be found
 							nlassert (slot>=0);
@@ -1067,13 +1107,13 @@ zap:;
 								tileDesc pVoisinIndex;
 
 								// Tile is filled ?
-								if (GetBorderDesc (pTile->voisins[e], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg))
+								if (GetBorderDesc (pTile->voisins[e], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg, land))
 								{
 									// Neighbor edge
 									int neigborEdge = (2+e+pTile->rotate[e])&3;
 
 									// Get the slot
-									int slot=getLayer (pTile, e, setIndex[l].TileSet, setIndex[l].Rotate, vectMesh);
+									int slot=getLayer (pTile, e, setIndex[l].TileSet, setIndex[l].Rotate, vectMesh, land);
 
 									if ((slot != -1) && (pBorder[neigborEdge][slot] != CTileSet::dontcare))
 									{
@@ -1172,10 +1212,11 @@ void EPM_PaintMouseProc::PutADisplacetile ( EPM_PaintTile* pTile, const CTileBan
 
 bool EPM_PaintMouseProc::GetBorderDesc (EPM_PaintTile* tile, tileSetIndex *pVoisinCorner, CTileSet::TFlagBorder pBorder[4][3], 
 										tileDesc *pVoisinIndex, const CTileBank& bank, std::vector<EPM_Mesh>& vectMesh, 
-										CNelPatchChanger& nelPatchChg)
+										CNelPatchChanger& nelPatchChg, CLandscape *land)
 {
 	// Tile info
-	tileDesc backup=vectMesh[tile->Mesh].RMesh->getTileDesc (tile->tile);
+	tileDesc backup;
+	GetTile (tile->Mesh, tile->tile, backup, vectMesh, land);
 	if (backup.isEmpty())
 		return false;
 
@@ -1265,12 +1306,14 @@ const CTileSetTransition* EPM_PaintMouseProc::FindTransition (int nTileSet, int 
 
 /*-------------------------------------------------------------------*/
 
-int getLayer (EPM_PaintTile* tile, int border, int tileSet, int rotate, std::vector<EPM_Mesh>& vectMesh)
+int EPM_PaintMouseProc::getLayer (EPM_PaintTile* tile, int border, int tileSet, int rotate, std::vector<EPM_Mesh>& vectMesh, CLandscape *land)
 {
 	int nLayer=-1;
-	for (int o=0; o<vectMesh[tile->voisins[border]->Mesh].RMesh->getTileDesc (tile->voisins[border]->tile).getNumLayer(); o++)
+	tileDesc desc;
+	GetTile (tile->voisins[border]->Mesh, tile->voisins[border]->tile, desc, vectMesh, land);
+	for (int o=0; o<desc.getNumLayer(); o++)
 	{
-		tileIndex index=vectMesh[tile->voisins[border]->Mesh].RMesh->getTileDesc (tile->voisins[border]->tile).getLayer(o);
+		tileIndex index=desc.getLayer(o);
 		index.Rotate-=tile->rotate[border];
 		index.Rotate&=3;
 		
@@ -1307,7 +1350,8 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 		return true;
 
 	// 3) Backup tile
-	tileDesc backup=vectMesh[tile->Mesh].RMesh->getTileDesc (tile->tile);
+	tileDesc backup;
+	GetTile (tile->Mesh, tile->tile, backup, vectMesh, land);
 
 	// 2) Tile empty
 	if (backup.isEmpty())
@@ -1376,7 +1420,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 		nCorner[i].TileSet=-1;
 	CTileSet::TFlagBorder nBorder[4][3];
 	tileDesc pIndex;
-	bool bFill=GetBorderDesc (tile, nCorner, nBorder, &pIndex, bank, vectMesh, nelPatchChg);
+	bool bFill=GetBorderDesc (tile, nCorner, nBorder, &pIndex, bank, vectMesh, nelPatchChg, land);
 	//nlassert (bFill);	// Problem in tile info. Wrong tileSet ?
 	if (!bFill)
 	{
@@ -1395,7 +1439,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 			tileSetIndex pVoisinCorner[4];
 			CTileSet::TFlagBorder pBorder[4][3];
 			tileDesc pVoisinIndex;
-			bFill=GetBorderDesc (tile->voisins[v], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg);
+			bFill=GetBorderDesc (tile->voisins[v], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg, land);
 			if (bFill)
 			{
 				int edge=(2+v+tile->rotate[v])&3;
@@ -1465,7 +1509,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 	}
 
 	// Force to visite tile in the same 256 in 256 mode..
-	if (_256)
+	if (_256 && !vectMesh[tile->Mesh].Node->IsFrozen())
 	{
 		// Case number
 		int nCase=backup.getCase()-1;
@@ -1475,26 +1519,40 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 
 		// Flag the voisin to force the visite
 		EPM_PaintTile* other=tile->voisins[(1+nCase+nRotate)&3];
-		int	rot=tile->rotate[(1+nCase+nRotate)&3];
-		tileDesc desc1=vectMesh[other->Mesh].RMesh->getTileDesc (other->tile);
-		if (
-			(desc1.isEmpty())||
-			(desc1.getCase()!=(1+((nCase+1)&3)))||
-			(desc1.getLayer(0).Tile!=backup.getLayer(0).Tile)||
-			(desc1.getLayer(0).Rotate!=((backup.getLayer(0).Rotate-rot)&3))
-			)
-			bDiff=true;
+		if (other)
+		{
+			int	rot=tile->rotate[(1+nCase+nRotate)&3];
+			tileDesc desc1;
+			GetTile (other->Mesh, other->tile, desc1, vectMesh, land);
+			if (!desc1.isEmpty())
+			{
+				if (
+					(desc1.isEmpty())||
+					(desc1.getCase()!=(1+((nCase+1)&3)))||
+					(desc1.getLayer(0).Tile!=backup.getLayer(0).Tile)||
+					(desc1.getLayer(0).Rotate!=((backup.getLayer(0).Rotate-rot)&3))
+					)
+					bDiff=true;
+			}
+		}
 		
 		other=tile->voisins[(2+nCase+nRotate)&3];
-		rot=tile->rotate[(2+nCase+nRotate)&3];
-		desc1=vectMesh[other->Mesh].RMesh->getTileDesc (other->tile);
-		if (
-			(desc1.isEmpty())||
-			(desc1.getCase()!=(1+((nCase+3)&3)))||
-			(desc1.getLayer(0).Tile!=backup.getLayer(0).Tile)||
-			(desc1.getLayer(0).Rotate!=((backup.getLayer(0).Rotate-rot)&3))
-			)
-			bDiff=true;
+		if (other)
+		{
+			int rot=tile->rotate[(2+nCase+nRotate)&3];
+			tileDesc desc1;
+			GetTile (other->Mesh, other->tile, desc1, vectMesh, land);
+			if (!desc1.isEmpty())
+			{
+				if (
+					(desc1.isEmpty())||
+					(desc1.getCase()!=(1+((nCase+3)&3)))||
+					(desc1.getLayer(0).Tile!=backup.getLayer(0).Tile)||
+					(desc1.getLayer(0).Rotate!=((backup.getLayer(0).Rotate-rot)&3))
+					)
+					bDiff=true;
+			}
+		}
 	}
 
 	// C) Invalide tile (same tile and rotation only on the diagonal)
@@ -1515,9 +1573,11 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 			bSameEdge[v]=false;
 		else
 		{
+			tileDesc desc;
+			GetTile (tile->voisins[v]->Mesh, tile->voisins[v]->tile, desc, vectMesh, land);
 			if (bModified[v]||
 				bModified[(v+1)&3]||
-				(vectMesh[tile->voisins[v]->Mesh].RMesh->getTileDesc (tile->voisins[v]->tile).isEmpty()))
+				(desc.isEmpty()))
 				bSameEdge[v]=false;
 		}
 	}
@@ -1682,10 +1742,10 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 								tileSetIndex pVoisinCorner[4];
 								CTileSet::TFlagBorder pBorder[4][3];
 								tileDesc pVoisinIndex;
-								if (GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg))
+								if (GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg, land))
 								{
 									// Find the good layer in the dest tileDesc
-									int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh);
+									int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh, land);
 
 									if (nLayer!=-1)
 									{
@@ -1706,6 +1766,11 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 												return false;
 											}
 											pVoisinIndex.getLayer(nLayer).Tile=pTile->getTile();
+
+											// Is frozen ?
+											if (vectMesh[tile->voisins[c]->Mesh].Node->IsFrozen())
+												// Yes, can't change it!
+												return false;
 
 											// Set the tile..
 											SetTile (tile->voisins[c]->Mesh, tile->voisins[c]->tile, pVoisinIndex, vectMesh, 
@@ -1730,14 +1795,14 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 								tileSetIndex pVoisinCorner[4];
 								CTileSet::TFlagBorder pBorder[4][3];
 								tileDesc pVoisinIndex;
-								bool bOk=GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg);
+								bool bOk=GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg, land);
 								
 								// Should not be empty
 								nlassert (bOk);
 								int edge=(2+c+tile->rotate[c])&3;
 
 								// Should have one of the following transition
-								int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh);
+								int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh, land);
 								if (nLayer!=-1)
 								{
 									nlassert ((pBorder[edge][nLayer]==CTileSet::_0111)||(pBorder[edge][nLayer]==CTileSet::_0001));
@@ -1759,7 +1824,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 									tileSetIndex pVoisinCorner[4];
 									CTileSet::TFlagBorder pBorder[4][3];
 									tileDesc pVoisinIndex;
-									bool bOk=GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg);
+									bool bOk=GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg, land);
 								
 									// ok voisin is here ?
 									if (bOk)
@@ -1768,7 +1833,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 										int edge=(2+c+tile->rotate[c])&3;
 
 										// layer where to find transition in the voisin
-										int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh);
+										int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh, land);
 
 										// transition ok?
 										if ((pBorder[edge][nLayer]==CTileSet::_0111)||(pBorder[edge][nLayer]==CTileSet::_0001))
@@ -1832,10 +1897,10 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 								tileSetIndex pVoisinCorner[4];
 								CTileSet::TFlagBorder pBorder[4][3];
 								tileDesc pVoisinIndex;
-								if (GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg))
+								if (GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg, land))
 								{
 									// Find the good layer in the dest tileDesc
-									int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh);
+									int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh, land);
 
 									if (nLayer!=-1)
 									{
@@ -1856,6 +1921,11 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 												return false;
 											}
 											pVoisinIndex.getLayer(nLayer).Tile=pTile->getTile();
+
+											// Is frozen ?
+											if (vectMesh[tile->voisins[c]->Mesh].Node->IsFrozen())
+												// Yes, can't change it!
+												return false;
 
 											// Set the tile..
 											SetTile (tile->voisins[c]->Mesh, tile->voisins[c]->tile, pVoisinIndex, vectMesh, 
@@ -1880,7 +1950,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 								tileSetIndex pVoisinCorner[4];
 								CTileSet::TFlagBorder pBorder[4][3];
 								tileDesc pVoisinIndex;
-								bool bOk=GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg);
+								bool bOk=GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg, land);
 								
 								// Should not be empty
 								nlassert (bOk);
@@ -1888,7 +1958,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 
 								// Should have one of the following transition
 								// Find the layer of the tile..
-								int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh);
+								int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh, land);
 								if (nLayer!=-1)
 								{
 									nlassert ((pBorder[edge][nLayer]==CTileSet::_1110)||(pBorder[edge][nLayer]==CTileSet::_1000));
@@ -1910,7 +1980,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 									tileSetIndex pVoisinCorner[4];
 									CTileSet::TFlagBorder pBorder[4][3];
 									tileDesc pVoisinIndex;
-									bool bOk=GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg);
+									bool bOk=GetBorderDesc (tile->voisins[c], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg, land);
 								
 									// ok voisin is here ?
 									if (bOk)
@@ -1919,7 +1989,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 										int edge=(2+c+tile->rotate[c])&3;
 
 										// layer where to find transition in the voisin
-										int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh);
+										int nLayer=getLayer (tile, c, ite->TileSet, ite->Rotate, vectMesh, land);
 
 										// transition ok?
 										if ((pBorder[edge][nLayer]==CTileSet::_1110)||(pBorder[edge][nLayer]==CTileSet::_1000))
@@ -2146,20 +2216,22 @@ BOOL EPM_PaintMouseProc::PutTile (int tile, int mesh, bool first, const CTileBan
 	alreadyRecursed.insert (pTile);
 	if (first)
 	{
-		if (vectMesh[pTile->Mesh].RMesh->getTileDesc (pTile->tile).isEmpty ())
+		tileDesc desc;
+		GetTile (pTile->Mesh, pTile->tile, desc, vectMesh, land);
+		if (desc.isEmpty ())
 			EPM_PaintMouseProc::Rotation=0;
 		else
 		{
-			for (int i=0; i<vectMesh[pTile->Mesh].RMesh->getTileDesc (tile).getNumLayer(); i++)
+			for (int i=0; i<desc.getNumLayer(); i++)
 			{
-				if ((sint)vectMesh[pTile->Mesh].RMesh->getTileDesc (tile).getLayer (i).Tile==tile)
+				if ((sint)desc.getLayer (i).Tile==tile)
 				{
-					EPM_PaintMouseProc::Rotation=vectMesh[pTile->Mesh].RMesh->getTileDesc (tile).getLayer (i).Rotate;
+					EPM_PaintMouseProc::Rotation=desc.getLayer (i).Rotate;
 					break;
 				}
 			}
-			if (i==vectMesh[pTile->Mesh].RMesh->getTileDesc (tile).getNumLayer())
-				EPM_PaintMouseProc::Rotation=vectMesh[pTile->Mesh].RMesh->getTileDesc (tile).getLayer (0).Rotate;
+			if (i==desc.getNumLayer())
+				EPM_PaintMouseProc::Rotation=desc.getLayer (0).Rotate;
 		}
 	}
 	else
@@ -2197,9 +2269,9 @@ BOOL EPM_PaintMouseProc::PutTile (int tile, int mesh, bool first, const CTileBan
 
 /*-------------------------------------------------------------------*/
 
-int getOffset (int edge, int nU, int nV)
+int getOffset (int edge, int nU, int nV, bool symmetry)
 {
-	switch (edge)
+	switch ((edge+(symmetry?1:0))&3)
 	{
 	case 0:
 		return 0;
@@ -3036,6 +3108,12 @@ void EPM_PaintCMode::EnterMode ()
 
 void EPM_PaintCMode::DoPaint ()
 {
+	// Toremove
+	static float best = 10000.f;
+
+	// Set local to english
+	setlocale (LC_NUMERIC, "English");
+
 	if (pobj->hOpsPanel)
 	{
 		bWarningInvalidTileSet=false;
@@ -3090,7 +3168,7 @@ void EPM_PaintCMode::DoPaint ()
 				for (int v=0; v<=nV; v++)
 				{					
 					Point3 pos=patch->patches[p].interp (patch, (float)u/(float)(nU), (float)v/(float)(nV));
-					pos=pos*(nodes[i]->GetObjectTM (t));
+					pos=pos*(vectMesh[i].Node->GetObjectTM (t));
 					if (fMaxX<pos.x)
 						fMaxX=pos.x;
 					if (fMinX>pos.x)
@@ -3164,13 +3242,13 @@ void EPM_PaintCMode::DoPaint ()
 					// Compute the 4 corners of the tile
 					Point3 pos[4];
 					pos[0]=patch->patches[p].interp (patch, (float)u/(float)(nU), (float)v/(float)(nV));
-					pos[0]=pos[0]*(nodes[i]->GetObjectTM (t));
+					pos[0]=pos[0]*(vectMesh[i].Node->GetObjectTM (t));
 					pos[1]=patch->patches[p].interp (patch, (float)(u+1)/(float)(nU), (float)v/(float)(nV));
-					pos[1]=pos[1]*(nodes[i]->GetObjectTM (t));
+					pos[1]=pos[1]*(vectMesh[i].Node->GetObjectTM (t));
 					pos[2]=patch->patches[p].interp (patch, (float)(u+1)/(float)(nU), (float)(v+1)/(float)(nV));
-					pos[2]=pos[2]*(nodes[i]->GetObjectTM (t));
+					pos[2]=pos[2]*(vectMesh[i].Node->GetObjectTM (t));
 					pos[3]=patch->patches[p].interp (patch, (float)u/(float)(nU), (float)(v+1)/(float)(nV));
-					pos[3]=pos[3]*(nodes[i]->GetObjectTM (t));
+					pos[3]=pos[3]*(vectMesh[i].Node->GetObjectTM (t));
 
 					// Store its center
 					pTile->Center=(maxToNel (pos[0])+maxToNel (pos[1])+maxToNel (pos[2])+maxToNel (pos[3]))/4.f;
@@ -3294,9 +3372,18 @@ void EPM_PaintCMode::DoPaint ()
 						{
 							// Vertex Number
 							//Matrix3 m1=*mcList[i]->tm;
-							Matrix3 m1=nodes[i]->GetObjectTM(t);
+							Matrix3 m1=vectMesh[i].Node->GetObjectTM(t);
 							Point3 vA1=patch->verts[patch->patches[p].v[e]].p * m1;
 							Point3 vB1=patch->verts[patch->patches[p].v[(e+1)&3]].p * m1;
+
+							// If symmetry, invert
+							if (vectMesh[i].Symmetry)
+							{
+								Point3 tmp = vA1;
+								vA1 = vB1;
+								vB1 = tmp;
+							}
+
 							// Look for in other patchMesh
 							for (int ii = 0; ii < (int)vectMesh.size(); ii++)
 							{
@@ -3328,11 +3415,30 @@ void EPM_PaintCMode::DoPaint ()
 											// Edge number
 											int edge=WhereIsTheEdge (pp, ee, *patch2);
 											//Matrix3 m2=*mcList[ii]->tm;
-											Matrix3 m2=nodes[ii]->GetObjectTM(t);
+											Matrix3 m2=vectMesh[ii].Node->GetObjectTM(t);
 											Point3 vA2=patch2->verts[patch2->patches[pp].v[edge]].p * m2;
 											Point3 vB2=patch2->verts[patch2->patches[pp].v[(edge+1)&3]].p * m2;
 
+											// If symmetry, invert
+											if (vectMesh[ii].Symmetry)
+											{
+												Point3 tmp = vA2;
+												vA2 = vB2;
+												vB2 = tmp;
+											}
+
 											// The same ?
+
+											// Toremove
+											if ((vA1-vB2).Length () < best)
+											{
+												best = (vA1-vB2).Length ();
+											}
+											if ((vA2-vB1).Length () < best)
+											{
+												best = (vA2-vB1).Length ();
+											}
+
 											if (((vA1-vB2).Length ()<WELD_THRESOLD)&&((vA2-vB1).Length ()<WELD_THRESOLD))
 											{
 												// The same!!
@@ -3350,7 +3456,9 @@ void EPM_PaintCMode::DoPaint ()
 					}
 					if (patchVoisin.patch!=-1)
 					{
-						int rot=(edgeVoisin-e+2)&3;
+						std::string first = vectMesh[i].Node->GetName();
+						std::string second = vectMesh[patchVoisin.Mesh].Node->GetName();
+						int rot = (2-((vectMesh[i].Symmetry)?(2-e):e)+((vectMesh[patchVoisin.Mesh].Symmetry)?(2-edgeVoisin):edgeVoisin))&3;
 						int nU = 1 << rpatch->getUIPatch (p).NbTilesU;
 						int nV = 1 << rpatch->getUIPatch (p).NbTilesV;
 						int nUOther = 1 << vectMesh[patchVoisin.Mesh].RMesh->getUIPatch (patchVoisin.patch).NbTilesU;
@@ -3359,14 +3467,17 @@ void EPM_PaintCMode::DoPaint ()
 						int nTile2= (edgeVoisin&1) ? nUOther : nVOther;
 						if (nTile==(nTile2>>dividEdge))
 						{
-							int offset=getOffset (e, nU, nV);
-							int offsetOther=getOffset (edgeVoisin, nUOther, nVOther);
-							static int delta[4]={ MAX_TILE_IN_PATCH, 1, -MAX_TILE_IN_PATCH, -1 };
+							int offset=getOffset (e, nU, nV, vectMesh[i].Symmetry);
+							int offsetOther=getOffset (edgeVoisin, nUOther, nVOther, vectMesh[patchVoisin.Mesh].Symmetry);
+							static int delta[4] = { MAX_TILE_IN_PATCH, 1, -MAX_TILE_IN_PATCH, -1 };
+
+							int symIndex = vectMesh[i].Symmetry?-1:1;
+							int symIndexOther = vectMesh[patchVoisin.Mesh].Symmetry?-1:1;
 
 							EPM_PaintTile *pTile1=&eproc.metaTile[i][p*NUM_TILE_SEL+offset];
 							EPM_PaintTile *pTile2=&eproc.metaTile[nMeshIndex][patchVoisin.patch*NUM_TILE_SEL+offsetOther];
-							pTile2+=(nTile2-1)*delta[edgeVoisin];
-							pTile2-=(delta[edgeVoisin]*nTile2*offsetEdge)>>2;
+							pTile2+=(nTile2-1)*delta[edgeVoisin]*symIndexOther;
+							pTile2-=(delta[edgeVoisin]*symIndexOther*nTile2*offsetEdge)>>2;
 
 							for (int end=0; end<nTile; end++)
 							{
@@ -3379,8 +3490,8 @@ void EPM_PaintCMode::DoPaint ()
 								pTile2->voisins[edgeVoisin]=pTile1;
 								pTile2->rotate[edgeVoisin]=(-rot)&3;
 
-								pTile1+=delta[e];
-								pTile2-=delta[edgeVoisin];
+								pTile1+=delta[e]*symIndex;
+								pTile2-=delta[edgeVoisin]*symIndexOther;
 							}
 						}
 						patch->edgeSel.Clear (mYedge);
@@ -3460,6 +3571,9 @@ void EPM_PaintCMode::DoPaint ()
 		// Exit painter mode
 		exitPainter ();
 	}
+
+	// Set locale to current
+	setlocale (LC_NUMERIC, "");
 }
 
  
@@ -3623,13 +3737,10 @@ DWORD WINAPI myThread (LPVOID vData)
 				if ((!patchData)||(!patch)||(!rpatch))
 					continue;
 
-				// For each NeL zone
-				for (uint nelZone=0; nelZone<maxZoneToNeLZoneArray[i].size(); nelZone++)
+				// Create the zone..
+				CZone	zone;
+				if (rpatch->exportZone (pData->VectMesh[i].Node, patch, zone, i))
 				{
-					// Create the zone..
-					CZone	zone;
-					rpatch->exportZone (maxZoneToNeLZoneArray[i][nelZone].Node, patch, zone, maxZoneToNeLZoneArray[i][nelZone].Index);
-
 					// Smooth corner
 					CZoneCornerSmoother cornerSmoother;
 					std::vector<CZone*> emptyVector;
@@ -3637,9 +3748,12 @@ DWORD WINAPI myThread (LPVOID vData)
 
 					// Add the zone
 					TheLand->Landscape.addZone (zone);
-
-					// Return bb
-					//CAABBoxExt bb=zone.getZoneBB();
+				}
+				else
+				{
+					char message[512];
+					smprintf (message, 512, "Can't bulid the zone named %s", pData->VectMesh[i].Node->GetName());
+					MessageBox (pData->eproc->ip->GetMAXHWnd(), message, "NeL Painter", MB_OK|MB_ICONEXCLAMATION);
 				}
 			}
 
@@ -3919,6 +4033,17 @@ bool EPM_PaintTile::intersect (const Ray& ray, std::vector<EPM_Mesh>& vectMesh, 
 	pos[2]=pos[2]*(node->GetObjectTM (t));
 	pos[3]=patchPtr->patches[patch].interp (patchPtr, (float)(u+1)/(float)(nU), (float)v/(float)(nV));
 	pos[3]=pos[3]*(node->GetObjectTM (t));
+
+	// Symmetry ?
+	if (vectMesh[Mesh].Symmetry)
+	{
+		Point3 tmp = pos[0];
+		pos[0] = pos[3];
+		pos[3] = tmp;
+		tmp = pos[1];
+		pos[1] = pos[2];
+		pos[2] = tmp;
+	}
 
 	// Get the normal
 	Point3 up = (pos[1]-pos[0]) ^ (pos[2]-pos[0]);

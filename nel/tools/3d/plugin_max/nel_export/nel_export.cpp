@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.20 2001/12/06 14:31:46 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.21 2002/01/03 13:12:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -193,6 +193,10 @@ int CALLBACK OptionsDialogCallback (
 
 static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	// Set locale to english
+	setlocale (LC_NUMERIC, "English");
+
+	BOOL ret = TRUE;
 	switch (msg) 
 	{
 		case WM_INITDIALOG:
@@ -618,9 +622,13 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			break;
 
 		default:
-			return FALSE;
+			ret = FALSE;
 	}
-	return TRUE;
+
+	// Set locale to current
+	setlocale (LC_NUMERIC, "");
+
+	return ret;
 }
 
 

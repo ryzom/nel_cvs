@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.12 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: driver_opengl_states.cpp,v 1.13 2002/02/11 10:01:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,7 +117,7 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	for(stage=0;stage<nbStages; stage++)
 	{
 		// disable texturing.
-		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		nglActiveTextureARB(GL_TEXTURE0_ARB+stage);
 		glDisable(GL_TEXTURE_2D);
 		if(_TextureCubeMapSupported)
 			glDisable(GL_TEXTURE_CUBE_MAP_ARB);
@@ -135,9 +135,9 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	}
 
 	// ActiveTexture current texture to 0.
-	glActiveTextureARB(GL_TEXTURE0_ARB);
+	nglActiveTextureARB(GL_TEXTURE0_ARB);
 	_CurrentActiveTextureARB= 0;
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	nglClientActiveTextureARB(GL_TEXTURE0_ARB);
 	_CurrentClientActiveTextureARB= 0;
 
 	// Depth range
@@ -486,7 +486,7 @@ void			CDriverGLStates::activeTextureARB(uint stage)
 {
 	if( _CurrentActiveTextureARB != stage )
 	{
-		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		nglActiveTextureARB(GL_TEXTURE0_ARB+stage);
 		_CurrentActiveTextureARB= stage;
 	}
 }
@@ -494,7 +494,7 @@ void			CDriverGLStates::activeTextureARB(uint stage)
 // ***************************************************************************
 void			CDriverGLStates::forceActiveTextureARB(uint stage)
 {	
-	glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+	nglActiveTextureARB(GL_TEXTURE0_ARB+stage);
 	_CurrentActiveTextureARB= stage;	
 }
 
@@ -567,7 +567,7 @@ void			CDriverGLStates::clientActiveTextureARB(uint stage)
 {
 	if( _CurrentClientActiveTextureARB != stage )
 	{
-		glClientActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		nglClientActiveTextureARB(GL_TEXTURE0_ARB+stage);
 		_CurrentClientActiveTextureARB= stage;
 	}
 }

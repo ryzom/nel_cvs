@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.20 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.21 2002/02/11 10:01:34 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -807,7 +807,7 @@ bool	CVertexBufferHardGL::init(CDriverGL *drv, uint16 vertexFormat, const uint8 
 	else
 	{
 		// Ok, we can allocate the fence.
-		glGenFencesNV(1, &_Fence);
+		nglGenFencesNV(1, &_Fence);
 		return true;
 	}
 }
@@ -822,7 +822,7 @@ CVertexBufferHardGL::~CVertexBufferHardGL()
 		// First wait for completion.
 		finishFence();
 		// then delete.
-		glDeleteFencesNV(1, &_Fence);
+		nglDeleteFencesNV(1, &_Fence);
 
 		// Then free the VAR.
 		_VertexArrayRange->freeVB(_VertexPtr);
@@ -891,7 +891,7 @@ void			CVertexBufferHardGL::setFence()
 {
 	if(!isFenceSet())
 	{
-		glSetFenceNV(_Fence, GL_ALL_COMPLETED_NV);
+		nglSetFenceNV(_Fence, GL_ALL_COMPLETED_NV);
 		_FenceSet= true;
 	}
 }
@@ -902,7 +902,7 @@ void			CVertexBufferHardGL::finishFence()
 	if(isFenceSet())
 	{
 		// Stall CPU while the fence command is not reached in the GPU command stream.
-		glFinishFenceNV(_Fence);
+		nglFinishFenceNV(_Fence);
 		_FenceSet= false;
 	}
 }
@@ -969,7 +969,7 @@ void			CVertexArrayRange::enable()
 	// if not already enabled.
 	if(_Driver->_CurrentVertexArrayRange!=this)
 	{
-		glVertexArrayRangeNV(_VertexArraySize, _VertexArrayPtr);
+		nglVertexArrayRangeNV(_VertexArraySize, _VertexArrayPtr);
 		glEnableClientState(GL_VERTEX_ARRAY_RANGE_NV);
 		_Driver->_CurrentVertexArrayRange= this;
 	}
@@ -983,7 +983,7 @@ void			CVertexArrayRange::disable()
 	if(_Driver->_CurrentVertexArrayRange!=NULL)
 	{
 		glDisableClientState(GL_VERTEX_ARRAY_RANGE_NV);
-		glVertexArrayRangeNV(0, 0);
+		nglVertexArrayRangeNV(0, 0);
 		_Driver->_CurrentVertexArrayRange= NULL;
 	}
 }
@@ -1342,7 +1342,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 
 					// Setup
 					_DriverGLStates.enableWeightArray(true);
-					glVertexWeightPointerEXT(1, GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Weight]);
+					nglVertexWeightPointerEXT(1, GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Weight]);
 				}
 				else
 				{
@@ -1421,7 +1421,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 						{
 							// Secondary color
 							_DriverGLStates.enableSecondaryColorArray(true);
-							glSecondaryColorPointerEXT(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[value]);
+							nglSecondaryColorPointerEXT(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[value]);
 						}
 					}
 					else
@@ -1435,7 +1435,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 
 						// Active this value
 						_DriverGLStates.enableVertexAttribArray(glIndex, true);
-						glVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+						nglVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
 					}
 				}
 				// Else normal case, can't do anything for other values with UChar4....
@@ -1443,7 +1443,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 				{
 					// Active this value
 					_DriverGLStates.enableVertexAttribArray(glIndex, true);
-					glVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+					nglVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
 				}
 			}
 			else

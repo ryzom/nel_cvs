@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.28 2002/02/07 19:32:56 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.29 2002/02/11 10:01:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,63 +42,59 @@
 
 // ARB_multitexture
 //=================
-#ifndef NEL_GL_VERSION_1_2_IN_GL_H
+PFNGLACTIVETEXTUREARBPROC nglActiveTextureARB;
+PFNGLCLIENTACTIVETEXTUREARBPROC nglClientActiveTextureARB;
 
-PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
-PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
+PFNGLMULTITEXCOORD1SARBPROC nglMultiTexCoord1sARB;
+PFNGLMULTITEXCOORD1IARBPROC nglMultiTexCoord1iARB;
+PFNGLMULTITEXCOORD1FARBPROC nglMultiTexCoord1fARB;
+PFNGLMULTITEXCOORD1DARBPROC nglMultiTexCoord1dARB;
+PFNGLMULTITEXCOORD2SARBPROC nglMultiTexCoord2sARB;
+PFNGLMULTITEXCOORD2IARBPROC nglMultiTexCoord2iARB;
+PFNGLMULTITEXCOORD2FARBPROC nglMultiTexCoord2fARB;
+PFNGLMULTITEXCOORD2DARBPROC nglMultiTexCoord2dARB;
+PFNGLMULTITEXCOORD3SARBPROC nglMultiTexCoord3sARB;
+PFNGLMULTITEXCOORD3IARBPROC nglMultiTexCoord3iARB;
+PFNGLMULTITEXCOORD3FARBPROC nglMultiTexCoord3fARB;
+PFNGLMULTITEXCOORD3DARBPROC nglMultiTexCoord3dARB;
+PFNGLMULTITEXCOORD4SARBPROC nglMultiTexCoord4sARB;
+PFNGLMULTITEXCOORD4IARBPROC nglMultiTexCoord4iARB;
+PFNGLMULTITEXCOORD4FARBPROC nglMultiTexCoord4fARB;
+PFNGLMULTITEXCOORD4DARBPROC nglMultiTexCoord4dARB;
 
-PFNGLMULTITEXCOORD1SARBPROC glMultiTexCoord1sARB;
-PFNGLMULTITEXCOORD1IARBPROC glMultiTexCoord1iARB;
-PFNGLMULTITEXCOORD1FARBPROC glMultiTexCoord1fARB;
-PFNGLMULTITEXCOORD1DARBPROC glMultiTexCoord1dARB;
-PFNGLMULTITEXCOORD2SARBPROC glMultiTexCoord2sARB;
-PFNGLMULTITEXCOORD2IARBPROC glMultiTexCoord2iARB;
-PFNGLMULTITEXCOORD2FARBPROC glMultiTexCoord2fARB;
-PFNGLMULTITEXCOORD2DARBPROC glMultiTexCoord2dARB;
-PFNGLMULTITEXCOORD3SARBPROC glMultiTexCoord3sARB;
-PFNGLMULTITEXCOORD3IARBPROC glMultiTexCoord3iARB;
-PFNGLMULTITEXCOORD3FARBPROC glMultiTexCoord3fARB;
-PFNGLMULTITEXCOORD3DARBPROC glMultiTexCoord3dARB;
-PFNGLMULTITEXCOORD4SARBPROC glMultiTexCoord4sARB;
-PFNGLMULTITEXCOORD4IARBPROC glMultiTexCoord4iARB;
-PFNGLMULTITEXCOORD4FARBPROC glMultiTexCoord4fARB;
-PFNGLMULTITEXCOORD4DARBPROC glMultiTexCoord4dARB;
-
-PFNGLMULTITEXCOORD1SVARBPROC glMultiTexCoord1svARB;
-PFNGLMULTITEXCOORD1IVARBPROC glMultiTexCoord1ivARB;
-PFNGLMULTITEXCOORD1FVARBPROC glMultiTexCoord1fvARB;
-PFNGLMULTITEXCOORD1DVARBPROC glMultiTexCoord1dvARB;
-PFNGLMULTITEXCOORD2SVARBPROC glMultiTexCoord2svARB;
-PFNGLMULTITEXCOORD2IVARBPROC glMultiTexCoord2ivARB;
-PFNGLMULTITEXCOORD2FVARBPROC glMultiTexCoord2fvARB;
-PFNGLMULTITEXCOORD2DVARBPROC glMultiTexCoord2dvARB;
-PFNGLMULTITEXCOORD3SVARBPROC glMultiTexCoord3svARB;
-PFNGLMULTITEXCOORD3IVARBPROC glMultiTexCoord3ivARB;
-PFNGLMULTITEXCOORD3FVARBPROC glMultiTexCoord3fvARB;
-PFNGLMULTITEXCOORD3DVARBPROC glMultiTexCoord3dvARB;
-PFNGLMULTITEXCOORD4SVARBPROC glMultiTexCoord4svARB;
-PFNGLMULTITEXCOORD4IVARBPROC glMultiTexCoord4ivARB;
-PFNGLMULTITEXCOORD4FVARBPROC glMultiTexCoord4fvARB;
-PFNGLMULTITEXCOORD4DVARBPROC glMultiTexCoord4dvARB;
-
-#endif // GL_VERSION_1_2
+PFNGLMULTITEXCOORD1SVARBPROC nglMultiTexCoord1svARB;
+PFNGLMULTITEXCOORD1IVARBPROC nglMultiTexCoord1ivARB;
+PFNGLMULTITEXCOORD1FVARBPROC nglMultiTexCoord1fvARB;
+PFNGLMULTITEXCOORD1DVARBPROC nglMultiTexCoord1dvARB;
+PFNGLMULTITEXCOORD2SVARBPROC nglMultiTexCoord2svARB;
+PFNGLMULTITEXCOORD2IVARBPROC nglMultiTexCoord2ivARB;
+PFNGLMULTITEXCOORD2FVARBPROC nglMultiTexCoord2fvARB;
+PFNGLMULTITEXCOORD2DVARBPROC nglMultiTexCoord2dvARB;
+PFNGLMULTITEXCOORD3SVARBPROC nglMultiTexCoord3svARB;
+PFNGLMULTITEXCOORD3IVARBPROC nglMultiTexCoord3ivARB;
+PFNGLMULTITEXCOORD3FVARBPROC nglMultiTexCoord3fvARB;
+PFNGLMULTITEXCOORD3DVARBPROC nglMultiTexCoord3dvARB;
+PFNGLMULTITEXCOORD4SVARBPROC nglMultiTexCoord4svARB;
+PFNGLMULTITEXCOORD4IVARBPROC nglMultiTexCoord4ivARB;
+PFNGLMULTITEXCOORD4FVARBPROC nglMultiTexCoord4fvARB;
+PFNGLMULTITEXCOORD4DVARBPROC nglMultiTexCoord4dvARB;
 
 
 // ARB_TextureCompression.
 //========================
-PFNGLCOMPRESSEDTEXIMAGE3DARBPROC	glCompressedTexImage3DARB;
-PFNGLCOMPRESSEDTEXIMAGE2DARBPROC	glCompressedTexImage2DARB;
-PFNGLCOMPRESSEDTEXIMAGE1DARBPROC	glCompressedTexImage1DARB;
-PFNGLCOMPRESSEDTEXSUBIMAGE3DARBPROC	glCompressedTexSubImage3DARB;
-PFNGLCOMPRESSEDTEXSUBIMAGE2DARBPROC	glCompressedTexSubImage2DARB;
-PFNGLCOMPRESSEDTEXSUBIMAGE1DARBPROC	glCompressedTexSubImage1DARB;
-PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	glGetCompressedTexImageARB;
+PFNGLCOMPRESSEDTEXIMAGE3DARBPROC	nglCompressedTexImage3DARB;
+PFNGLCOMPRESSEDTEXIMAGE2DARBPROC	nglCompressedTexImage2DARB;
+PFNGLCOMPRESSEDTEXIMAGE1DARBPROC	nglCompressedTexImage1DARB;
+PFNGLCOMPRESSEDTEXSUBIMAGE3DARBPROC	nglCompressedTexSubImage3DARB;
+PFNGLCOMPRESSEDTEXSUBIMAGE2DARBPROC	nglCompressedTexSubImage2DARB;
+PFNGLCOMPRESSEDTEXSUBIMAGE1DARBPROC	nglCompressedTexSubImage1DARB;
+PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	nglGetCompressedTexImageARB;
 
 
 // VertexArrayRangeNV.
 //====================
-PFNGLFLUSHVERTEXARRAYRANGENVPROC	glFlushVertexArrayRangeNV;
-PFNGLVERTEXARRAYRANGENVPROC			glVertexArrayRangeNV;
+PFNGLFLUSHVERTEXARRAYRANGENVPROC	nglFlushVertexArrayRangeNV;
+PFNGLVERTEXARRAYRANGENVPROC			nglVertexArrayRangeNV;
 #ifdef NL_OS_WINDOWS
 PFNWGLALLOCATEMEMORYNVPROC			wglAllocateMemoryNV;
 PFNWGLFREEMEMORYNVPROC				wglFreeMemoryNV;
@@ -107,108 +103,108 @@ PFNWGLFREEMEMORYNVPROC				wglFreeMemoryNV;
 
 // FenceNV.
 //====================
-PFNGLDELETEFENCESNVPROC				glDeleteFencesNV;
-PFNGLGENFENCESNVPROC				glGenFencesNV;
-PFNGLISFENCENVPROC					glIsFenceNV;
-PFNGLTESTFENCENVPROC				glTestFenceNV;
-PFNGLGETFENCEIVNVPROC				glGetFenceivNV;
-PFNGLFINISHFENCENVPROC				glFinishFenceNV;
-PFNGLSETFENCENVPROC					glSetFenceNV;
+PFNGLDELETEFENCESNVPROC				nglDeleteFencesNV;
+PFNGLGENFENCESNVPROC				nglGenFencesNV;
+PFNGLISFENCENVPROC					nglIsFenceNV;
+PFNGLTESTFENCENVPROC				nglTestFenceNV;
+PFNGLGETFENCEIVNVPROC				nglGetFenceivNV;
+PFNGLFINISHFENCENVPROC				nglFinishFenceNV;
+PFNGLSETFENCENVPROC					nglSetFenceNV;
 
 
 // VertexWeighting.
 //====================
-PFNGLVERTEXWEIGHTFEXTPROC			glVertexWeightfEXT;
-PFNGLVERTEXWEIGHTFVEXTPROC			glVertexWeightfvEXT;
-PFNGLVERTEXWEIGHTPOINTEREXTPROC		glVertexWeightPointerEXT;
+PFNGLVERTEXWEIGHTFEXTPROC			nglVertexWeightfEXT;
+PFNGLVERTEXWEIGHTFVEXTPROC			nglVertexWeightfvEXT;
+PFNGLVERTEXWEIGHTPOINTEREXTPROC		nglVertexWeightPointerEXT;
 
 
 // VertexProgramExtension.
 //========================
-PFNGLAREPROGRAMSRESIDENTNVPROC		glAreProgramsResidentNV;
-PFNGLBINDPROGRAMNVPROC				glBindProgramNV;
-PFNGLDELETEPROGRAMSNVPROC			glDeleteProgramsNV;
-PFNGLEXECUTEPROGRAMNVPROC			glExecuteProgramNV;
-PFNGLGENPROGRAMSNVPROC				glGenProgramsNV;
-PFNGLGETPROGRAMPARAMETERDVNVPROC	glGetProgramParameterdvNV;
-PFNGLGETPROGRAMPARAMETERFVNVPROC	glGetProgramParameterfvNV;
-PFNGLGETPROGRAMIVNVPROC				glGetProgramivNV;
-PFNGLGETPROGRAMSTRINGNVPROC			glGetProgramStringNV;
-PFNGLGETTRACKMATRIXIVNVPROC			glGetTrackMatrixivNV;
-PFNGLGETVERTEXATTRIBDVNVPROC		glGetVertexAttribdvNV;
-PFNGLGETVERTEXATTRIBFVNVPROC		glGetVertexAttribfvNV;
-PFNGLGETVERTEXATTRIBIVNVPROC		glGetVertexAttribivNV;
-PFNGLGETVERTEXATTRIBPOINTERVNVPROC	glGetVertexAttribPointervNV;
-PFNGLISPROGRAMNVPROC				glIsProgramNV;
-PFNGLLOADPROGRAMNVPROC				glLoadProgramNV;
-PFNGLPROGRAMPARAMETER4DNVPROC		glProgramParameter4dNV;
-PFNGLPROGRAMPARAMETER4DVNVPROC		glProgramParameter4dvNV;
-PFNGLPROGRAMPARAMETER4FNVPROC		glProgramParameter4fNV;
-PFNGLPROGRAMPARAMETER4FVNVPROC		glProgramParameter4fvNV;
-PFNGLPROGRAMPARAMETERS4DVNVPROC		glProgramParameters4dvNV;
-PFNGLPROGRAMPARAMETERS4FVNVPROC		glProgramParameters4fvNV;
-PFNGLREQUESTRESIDENTPROGRAMSNVPROC	glRequestResidentProgramsNV;
-PFNGLTRACKMATRIXNVPROC				glTrackMatrixNV;
-PFNGLVERTEXATTRIBPOINTERNVPROC		glVertexAttribPointerNV;
-PFNGLVERTEXATTRIB1DNVPROC			glVertexAttrib1dNV;
-PFNGLVERTEXATTRIB1DVNVPROC			glVertexAttrib1dvNV;
-PFNGLVERTEXATTRIB1FNVPROC			glVertexAttrib1fNV;
-PFNGLVERTEXATTRIB1FVNVPROC			glVertexAttrib1fvNV;
-PFNGLVERTEXATTRIB1SNVPROC			glVertexAttrib1sNV;
-PFNGLVERTEXATTRIB1SVNVPROC			glVertexAttrib1svNV;
-PFNGLVERTEXATTRIB2DNVPROC			glVertexAttrib2dNV;
-PFNGLVERTEXATTRIB2DVNVPROC			glVertexAttrib2dvNV;
-PFNGLVERTEXATTRIB2FNVPROC			glVertexAttrib2fNV;
-PFNGLVERTEXATTRIB2FVNVPROC			glVertexAttrib2fvNV;
-PFNGLVERTEXATTRIB2SNVPROC			glVertexAttrib2sNV;
-PFNGLVERTEXATTRIB2SVNVPROC			glVertexAttrib2svNV;
-PFNGLVERTEXATTRIB3DNVPROC			glVertexAttrib3dNV;
-PFNGLVERTEXATTRIB3DVNVPROC			glVertexAttrib3dvNV;
-PFNGLVERTEXATTRIB3FNVPROC			glVertexAttrib3fNV;
-PFNGLVERTEXATTRIB3FVNVPROC			glVertexAttrib3fvNV;
-PFNGLVERTEXATTRIB3SNVPROC			glVertexAttrib3sNV;
-PFNGLVERTEXATTRIB3SVNVPROC			glVertexAttrib3svNV;
-PFNGLVERTEXATTRIB4DNVPROC			glVertexAttrib4dNV;
-PFNGLVERTEXATTRIB4DVNVPROC			glVertexAttrib4dvNV;
-PFNGLVERTEXATTRIB4FNVPROC			glVertexAttrib4fNV;
-PFNGLVERTEXATTRIB4FVNVPROC			glVertexAttrib4fvNV;
-PFNGLVERTEXATTRIB4SNVPROC			glVertexAttrib4sNV;
-PFNGLVERTEXATTRIB4SVNVPROC			glVertexAttrib4svNV;
-PFNGLVERTEXATTRIB4UBVNVPROC			glVertexAttrib4ubvNV;
-PFNGLVERTEXATTRIBS1DVNVPROC			glVertexAttribs1dvNV;
-PFNGLVERTEXATTRIBS1FVNVPROC			glVertexAttribs1fvNV;
-PFNGLVERTEXATTRIBS1SVNVPROC			glVertexAttribs1svNV;
-PFNGLVERTEXATTRIBS2DVNVPROC			glVertexAttribs2dvNV;
-PFNGLVERTEXATTRIBS2FVNVPROC			glVertexAttribs2fvNV;
-PFNGLVERTEXATTRIBS2SVNVPROC			glVertexAttribs2svNV;
-PFNGLVERTEXATTRIBS3DVNVPROC			glVertexAttribs3dvNV;
-PFNGLVERTEXATTRIBS3FVNVPROC			glVertexAttribs3fvNV;
-PFNGLVERTEXATTRIBS3SVNVPROC			glVertexAttribs3svNV;
-PFNGLVERTEXATTRIBS4DVNVPROC			glVertexAttribs4dvNV;
-PFNGLVERTEXATTRIBS4FVNVPROC			glVertexAttribs4fvNV;
-PFNGLVERTEXATTRIBS4SVNVPROC			glVertexAttribs4svNV;
-PFNGLVERTEXATTRIBS4UBVNVPROC		glVertexAttribs4ubvNV;
+PFNGLAREPROGRAMSRESIDENTNVPROC		nglAreProgramsResidentNV;
+PFNGLBINDPROGRAMNVPROC				nglBindProgramNV;
+PFNGLDELETEPROGRAMSNVPROC			nglDeleteProgramsNV;
+PFNGLEXECUTEPROGRAMNVPROC			nglExecuteProgramNV;
+PFNGLGENPROGRAMSNVPROC				nglGenProgramsNV;
+PFNGLGETPROGRAMPARAMETERDVNVPROC	nglGetProgramParameterdvNV;
+PFNGLGETPROGRAMPARAMETERFVNVPROC	nglGetProgramParameterfvNV;
+PFNGLGETPROGRAMIVNVPROC				nglGetProgramivNV;
+PFNGLGETPROGRAMSTRINGNVPROC			nglGetProgramStringNV;
+PFNGLGETTRACKMATRIXIVNVPROC			nglGetTrackMatrixivNV;
+PFNGLGETVERTEXATTRIBDVNVPROC		nglGetVertexAttribdvNV;
+PFNGLGETVERTEXATTRIBFVNVPROC		nglGetVertexAttribfvNV;
+PFNGLGETVERTEXATTRIBIVNVPROC		nglGetVertexAttribivNV;
+PFNGLGETVERTEXATTRIBPOINTERVNVPROC	nglGetVertexAttribPointervNV;
+PFNGLISPROGRAMNVPROC				nglIsProgramNV;
+PFNGLLOADPROGRAMNVPROC				nglLoadProgramNV;
+PFNGLPROGRAMPARAMETER4DNVPROC		nglProgramParameter4dNV;
+PFNGLPROGRAMPARAMETER4DVNVPROC		nglProgramParameter4dvNV;
+PFNGLPROGRAMPARAMETER4FNVPROC		nglProgramParameter4fNV;
+PFNGLPROGRAMPARAMETER4FVNVPROC		nglProgramParameter4fvNV;
+PFNGLPROGRAMPARAMETERS4DVNVPROC		nglProgramParameters4dvNV;
+PFNGLPROGRAMPARAMETERS4FVNVPROC		nglProgramParameters4fvNV;
+PFNGLREQUESTRESIDENTPROGRAMSNVPROC	nglRequestResidentProgramsNV;
+PFNGLTRACKMATRIXNVPROC				nglTrackMatrixNV;
+PFNGLVERTEXATTRIBPOINTERNVPROC		nglVertexAttribPointerNV;
+PFNGLVERTEXATTRIB1DNVPROC			nglVertexAttrib1dNV;
+PFNGLVERTEXATTRIB1DVNVPROC			nglVertexAttrib1dvNV;
+PFNGLVERTEXATTRIB1FNVPROC			nglVertexAttrib1fNV;
+PFNGLVERTEXATTRIB1FVNVPROC			nglVertexAttrib1fvNV;
+PFNGLVERTEXATTRIB1SNVPROC			nglVertexAttrib1sNV;
+PFNGLVERTEXATTRIB1SVNVPROC			nglVertexAttrib1svNV;
+PFNGLVERTEXATTRIB2DNVPROC			nglVertexAttrib2dNV;
+PFNGLVERTEXATTRIB2DVNVPROC			nglVertexAttrib2dvNV;
+PFNGLVERTEXATTRIB2FNVPROC			nglVertexAttrib2fNV;
+PFNGLVERTEXATTRIB2FVNVPROC			nglVertexAttrib2fvNV;
+PFNGLVERTEXATTRIB2SNVPROC			nglVertexAttrib2sNV;
+PFNGLVERTEXATTRIB2SVNVPROC			nglVertexAttrib2svNV;
+PFNGLVERTEXATTRIB3DNVPROC			nglVertexAttrib3dNV;
+PFNGLVERTEXATTRIB3DVNVPROC			nglVertexAttrib3dvNV;
+PFNGLVERTEXATTRIB3FNVPROC			nglVertexAttrib3fNV;
+PFNGLVERTEXATTRIB3FVNVPROC			nglVertexAttrib3fvNV;
+PFNGLVERTEXATTRIB3SNVPROC			nglVertexAttrib3sNV;
+PFNGLVERTEXATTRIB3SVNVPROC			nglVertexAttrib3svNV;
+PFNGLVERTEXATTRIB4DNVPROC			nglVertexAttrib4dNV;
+PFNGLVERTEXATTRIB4DVNVPROC			nglVertexAttrib4dvNV;
+PFNGLVERTEXATTRIB4FNVPROC			nglVertexAttrib4fNV;
+PFNGLVERTEXATTRIB4FVNVPROC			nglVertexAttrib4fvNV;
+PFNGLVERTEXATTRIB4SNVPROC			nglVertexAttrib4sNV;
+PFNGLVERTEXATTRIB4SVNVPROC			nglVertexAttrib4svNV;
+PFNGLVERTEXATTRIB4UBVNVPROC			nglVertexAttrib4ubvNV;
+PFNGLVERTEXATTRIBS1DVNVPROC			nglVertexAttribs1dvNV;
+PFNGLVERTEXATTRIBS1FVNVPROC			nglVertexAttribs1fvNV;
+PFNGLVERTEXATTRIBS1SVNVPROC			nglVertexAttribs1svNV;
+PFNGLVERTEXATTRIBS2DVNVPROC			nglVertexAttribs2dvNV;
+PFNGLVERTEXATTRIBS2FVNVPROC			nglVertexAttribs2fvNV;
+PFNGLVERTEXATTRIBS2SVNVPROC			nglVertexAttribs2svNV;
+PFNGLVERTEXATTRIBS3DVNVPROC			nglVertexAttribs3dvNV;
+PFNGLVERTEXATTRIBS3FVNVPROC			nglVertexAttribs3fvNV;
+PFNGLVERTEXATTRIBS3SVNVPROC			nglVertexAttribs3svNV;
+PFNGLVERTEXATTRIBS4DVNVPROC			nglVertexAttribs4dvNV;
+PFNGLVERTEXATTRIBS4FVNVPROC			nglVertexAttribs4fvNV;
+PFNGLVERTEXATTRIBS4SVNVPROC			nglVertexAttribs4svNV;
+PFNGLVERTEXATTRIBS4UBVNVPROC		nglVertexAttribs4ubvNV;
 
 
 // SecondaryColor extension
 //========================
-PFNGLSECONDARYCOLOR3BEXTPROC		glSecondaryColor3bEXT;
-PFNGLSECONDARYCOLOR3BVEXTPROC		glSecondaryColor3bvEXT;
-PFNGLSECONDARYCOLOR3DEXTPROC		glSecondaryColor3dEXT;
-PFNGLSECONDARYCOLOR3DVEXTPROC		glSecondaryColor3dvEXT;
-PFNGLSECONDARYCOLOR3FEXTPROC		glSecondaryColor3fEXT;
-PFNGLSECONDARYCOLOR3FVEXTPROC		glSecondaryColor3fvEXT;
-PFNGLSECONDARYCOLOR3IEXTPROC		glSecondaryColor3iEXT;
-PFNGLSECONDARYCOLOR3IVEXTPROC		glSecondaryColor3ivEXT;
-PFNGLSECONDARYCOLOR3SEXTPROC		glSecondaryColor3sEXT;
-PFNGLSECONDARYCOLOR3SVEXTPROC		glSecondaryColor3svEXT;
-PFNGLSECONDARYCOLOR3UBEXTPROC		glSecondaryColor3ubEXT;
-PFNGLSECONDARYCOLOR3UBVEXTPROC		glSecondaryColor3ubvEXT;
-PFNGLSECONDARYCOLOR3UIEXTPROC		glSecondaryColor3uiEXT;
-PFNGLSECONDARYCOLOR3UIVEXTPROC		glSecondaryColor3uivEXT;
-PFNGLSECONDARYCOLOR3USEXTPROC		glSecondaryColor3usEXT;
-PFNGLSECONDARYCOLOR3USVEXTPROC		glSecondaryColor3usvEXT;
-PFNGLSECONDARYCOLORPOINTEREXTPROC	glSecondaryColorPointerEXT;
+PFNGLSECONDARYCOLOR3BEXTPROC		nglSecondaryColor3bEXT;
+PFNGLSECONDARYCOLOR3BVEXTPROC		nglSecondaryColor3bvEXT;
+PFNGLSECONDARYCOLOR3DEXTPROC		nglSecondaryColor3dEXT;
+PFNGLSECONDARYCOLOR3DVEXTPROC		nglSecondaryColor3dvEXT;
+PFNGLSECONDARYCOLOR3FEXTPROC		nglSecondaryColor3fEXT;
+PFNGLSECONDARYCOLOR3FVEXTPROC		nglSecondaryColor3fvEXT;
+PFNGLSECONDARYCOLOR3IEXTPROC		nglSecondaryColor3iEXT;
+PFNGLSECONDARYCOLOR3IVEXTPROC		nglSecondaryColor3ivEXT;
+PFNGLSECONDARYCOLOR3SEXTPROC		nglSecondaryColor3sEXT;
+PFNGLSECONDARYCOLOR3SVEXTPROC		nglSecondaryColor3svEXT;
+PFNGLSECONDARYCOLOR3UBEXTPROC		nglSecondaryColor3ubEXT;
+PFNGLSECONDARYCOLOR3UBVEXTPROC		nglSecondaryColor3ubvEXT;
+PFNGLSECONDARYCOLOR3UIEXTPROC		nglSecondaryColor3uiEXT;
+PFNGLSECONDARYCOLOR3UIVEXTPROC		nglSecondaryColor3uivEXT;
+PFNGLSECONDARYCOLOR3USEXTPROC		nglSecondaryColor3usEXT;
+PFNGLSECONDARYCOLOR3USVEXTPROC		nglSecondaryColor3usvEXT;
+PFNGLSECONDARYCOLORPOINTEREXTPROC	nglSecondaryColorPointerEXT;
 
 
 // Pbuffer extension
@@ -260,44 +256,42 @@ static bool setupARBMultiTexture(const char	*glext)
 	if(strstr(glext, "GL_ARB_multitexture")==NULL)
 		return false;
 
-#ifndef NEL_GL_VERSION_1_2_IN_GL_H
-	if(!(glActiveTextureARB=(PFNGLACTIVETEXTUREARBPROC)nelglGetProcAddress("glActiveTextureARB")))return false;
-	if(!(glClientActiveTextureARB=(PFNGLCLIENTACTIVETEXTUREARBPROC)nelglGetProcAddress("glClientActiveTextureARB")))return false;
+	if(!(nglActiveTextureARB=(PFNGLACTIVETEXTUREARBPROC)nelglGetProcAddress("glActiveTextureARB")))return false;
+	if(!(nglClientActiveTextureARB=(PFNGLCLIENTACTIVETEXTUREARBPROC)nelglGetProcAddress("glClientActiveTextureARB")))return false;
 
-	if(!(glMultiTexCoord1sARB=(PFNGLMULTITEXCOORD1SARBPROC)nelglGetProcAddress("glMultiTexCoord1sARB")))return false;
-	if(!(glMultiTexCoord1iARB=(PFNGLMULTITEXCOORD1IARBPROC)nelglGetProcAddress("glMultiTexCoord1iARB")))return false;
-	if(!(glMultiTexCoord1fARB=(PFNGLMULTITEXCOORD1FARBPROC)nelglGetProcAddress("glMultiTexCoord1fARB")))return false;
-	if(!(glMultiTexCoord1dARB=(PFNGLMULTITEXCOORD1DARBPROC)nelglGetProcAddress("glMultiTexCoord1dARB")))return false;
-	if(!(glMultiTexCoord2sARB=(PFNGLMULTITEXCOORD2SARBPROC)nelglGetProcAddress("glMultiTexCoord2sARB")))return false;
-	if(!(glMultiTexCoord2iARB=(PFNGLMULTITEXCOORD2IARBPROC)nelglGetProcAddress("glMultiTexCoord2iARB")))return false;
-	if(!(glMultiTexCoord2fARB=(PFNGLMULTITEXCOORD2FARBPROC)nelglGetProcAddress("glMultiTexCoord2fARB")))return false;
-	if(!(glMultiTexCoord2dARB=(PFNGLMULTITEXCOORD2DARBPROC)nelglGetProcAddress("glMultiTexCoord2dARB")))return false;
-	if(!(glMultiTexCoord3sARB=(PFNGLMULTITEXCOORD3SARBPROC)nelglGetProcAddress("glMultiTexCoord3sARB")))return false;
-	if(!(glMultiTexCoord3iARB=(PFNGLMULTITEXCOORD3IARBPROC)nelglGetProcAddress("glMultiTexCoord3iARB")))return false;
-	if(!(glMultiTexCoord3fARB=(PFNGLMULTITEXCOORD3FARBPROC)nelglGetProcAddress("glMultiTexCoord3fARB")))return false;
-	if(!(glMultiTexCoord3dARB=(PFNGLMULTITEXCOORD3DARBPROC)nelglGetProcAddress("glMultiTexCoord3dARB")))return false;
-	if(!(glMultiTexCoord4sARB=(PFNGLMULTITEXCOORD4SARBPROC)nelglGetProcAddress("glMultiTexCoord4sARB")))return false;
-	if(!(glMultiTexCoord4iARB=(PFNGLMULTITEXCOORD4IARBPROC)nelglGetProcAddress("glMultiTexCoord4iARB")))return false;
-	if(!(glMultiTexCoord4fARB=(PFNGLMULTITEXCOORD4FARBPROC)nelglGetProcAddress("glMultiTexCoord4fARB")))return false;
-	if(!(glMultiTexCoord4dARB=(PFNGLMULTITEXCOORD4DARBPROC)nelglGetProcAddress("glMultiTexCoord4dARB")))return false;
+	if(!(nglMultiTexCoord1sARB=(PFNGLMULTITEXCOORD1SARBPROC)nelglGetProcAddress("glMultiTexCoord1sARB")))return false;
+	if(!(nglMultiTexCoord1iARB=(PFNGLMULTITEXCOORD1IARBPROC)nelglGetProcAddress("glMultiTexCoord1iARB")))return false;
+	if(!(nglMultiTexCoord1fARB=(PFNGLMULTITEXCOORD1FARBPROC)nelglGetProcAddress("glMultiTexCoord1fARB")))return false;
+	if(!(nglMultiTexCoord1dARB=(PFNGLMULTITEXCOORD1DARBPROC)nelglGetProcAddress("glMultiTexCoord1dARB")))return false;
+	if(!(nglMultiTexCoord2sARB=(PFNGLMULTITEXCOORD2SARBPROC)nelglGetProcAddress("glMultiTexCoord2sARB")))return false;
+	if(!(nglMultiTexCoord2iARB=(PFNGLMULTITEXCOORD2IARBPROC)nelglGetProcAddress("glMultiTexCoord2iARB")))return false;
+	if(!(nglMultiTexCoord2fARB=(PFNGLMULTITEXCOORD2FARBPROC)nelglGetProcAddress("glMultiTexCoord2fARB")))return false;
+	if(!(nglMultiTexCoord2dARB=(PFNGLMULTITEXCOORD2DARBPROC)nelglGetProcAddress("glMultiTexCoord2dARB")))return false;
+	if(!(nglMultiTexCoord3sARB=(PFNGLMULTITEXCOORD3SARBPROC)nelglGetProcAddress("glMultiTexCoord3sARB")))return false;
+	if(!(nglMultiTexCoord3iARB=(PFNGLMULTITEXCOORD3IARBPROC)nelglGetProcAddress("glMultiTexCoord3iARB")))return false;
+	if(!(nglMultiTexCoord3fARB=(PFNGLMULTITEXCOORD3FARBPROC)nelglGetProcAddress("glMultiTexCoord3fARB")))return false;
+	if(!(nglMultiTexCoord3dARB=(PFNGLMULTITEXCOORD3DARBPROC)nelglGetProcAddress("glMultiTexCoord3dARB")))return false;
+	if(!(nglMultiTexCoord4sARB=(PFNGLMULTITEXCOORD4SARBPROC)nelglGetProcAddress("glMultiTexCoord4sARB")))return false;
+	if(!(nglMultiTexCoord4iARB=(PFNGLMULTITEXCOORD4IARBPROC)nelglGetProcAddress("glMultiTexCoord4iARB")))return false;
+	if(!(nglMultiTexCoord4fARB=(PFNGLMULTITEXCOORD4FARBPROC)nelglGetProcAddress("glMultiTexCoord4fARB")))return false;
+	if(!(nglMultiTexCoord4dARB=(PFNGLMULTITEXCOORD4DARBPROC)nelglGetProcAddress("glMultiTexCoord4dARB")))return false;
 
-	if(!(glMultiTexCoord1svARB=(PFNGLMULTITEXCOORD1SVARBPROC)nelglGetProcAddress("glMultiTexCoord1svARB")))return false;
-	if(!(glMultiTexCoord1ivARB=(PFNGLMULTITEXCOORD1IVARBPROC)nelglGetProcAddress("glMultiTexCoord1ivARB")))return false;
-	if(!(glMultiTexCoord1fvARB=(PFNGLMULTITEXCOORD1FVARBPROC)nelglGetProcAddress("glMultiTexCoord1fvARB")))return false;
-	if(!(glMultiTexCoord1dvARB=(PFNGLMULTITEXCOORD1DVARBPROC)nelglGetProcAddress("glMultiTexCoord1dvARB")))return false;
-	if(!(glMultiTexCoord2svARB=(PFNGLMULTITEXCOORD2SVARBPROC)nelglGetProcAddress("glMultiTexCoord2svARB")))return false;
-	if(!(glMultiTexCoord2ivARB=(PFNGLMULTITEXCOORD2IVARBPROC)nelglGetProcAddress("glMultiTexCoord2ivARB")))return false;
-	if(!(glMultiTexCoord2fvARB=(PFNGLMULTITEXCOORD2FVARBPROC)nelglGetProcAddress("glMultiTexCoord2fvARB")))return false;
-	if(!(glMultiTexCoord2dvARB=(PFNGLMULTITEXCOORD2DVARBPROC)nelglGetProcAddress("glMultiTexCoord2dvARB")))return false;
-	if(!(glMultiTexCoord3svARB=(PFNGLMULTITEXCOORD3SVARBPROC)nelglGetProcAddress("glMultiTexCoord3svARB")))return false;
-	if(!(glMultiTexCoord3ivARB=(PFNGLMULTITEXCOORD3IVARBPROC)nelglGetProcAddress("glMultiTexCoord3ivARB")))return false;
-	if(!(glMultiTexCoord3fvARB=(PFNGLMULTITEXCOORD3FVARBPROC)nelglGetProcAddress("glMultiTexCoord3fvARB")))return false;
-	if(!(glMultiTexCoord3dvARB=(PFNGLMULTITEXCOORD3DVARBPROC)nelglGetProcAddress("glMultiTexCoord3dvARB")))return false;
-	if(!(glMultiTexCoord4svARB=(PFNGLMULTITEXCOORD4SVARBPROC)nelglGetProcAddress("glMultiTexCoord4svARB")))return false;
-	if(!(glMultiTexCoord4ivARB=(PFNGLMULTITEXCOORD4IVARBPROC)nelglGetProcAddress("glMultiTexCoord4ivARB")))return false;
-	if(!(glMultiTexCoord4fvARB=(PFNGLMULTITEXCOORD4FVARBPROC)nelglGetProcAddress("glMultiTexCoord4fvARB")))return false;
-	if(!(glMultiTexCoord4dvARB=(PFNGLMULTITEXCOORD4DVARBPROC)nelglGetProcAddress("glMultiTexCoord4dvARB")))return false;
-#endif // GL_VERSION_1_2
+	if(!(nglMultiTexCoord1svARB=(PFNGLMULTITEXCOORD1SVARBPROC)nelglGetProcAddress("glMultiTexCoord1svARB")))return false;
+	if(!(nglMultiTexCoord1ivARB=(PFNGLMULTITEXCOORD1IVARBPROC)nelglGetProcAddress("glMultiTexCoord1ivARB")))return false;
+	if(!(nglMultiTexCoord1fvARB=(PFNGLMULTITEXCOORD1FVARBPROC)nelglGetProcAddress("glMultiTexCoord1fvARB")))return false;
+	if(!(nglMultiTexCoord1dvARB=(PFNGLMULTITEXCOORD1DVARBPROC)nelglGetProcAddress("glMultiTexCoord1dvARB")))return false;
+	if(!(nglMultiTexCoord2svARB=(PFNGLMULTITEXCOORD2SVARBPROC)nelglGetProcAddress("glMultiTexCoord2svARB")))return false;
+	if(!(nglMultiTexCoord2ivARB=(PFNGLMULTITEXCOORD2IVARBPROC)nelglGetProcAddress("glMultiTexCoord2ivARB")))return false;
+	if(!(nglMultiTexCoord2fvARB=(PFNGLMULTITEXCOORD2FVARBPROC)nelglGetProcAddress("glMultiTexCoord2fvARB")))return false;
+	if(!(nglMultiTexCoord2dvARB=(PFNGLMULTITEXCOORD2DVARBPROC)nelglGetProcAddress("glMultiTexCoord2dvARB")))return false;
+	if(!(nglMultiTexCoord3svARB=(PFNGLMULTITEXCOORD3SVARBPROC)nelglGetProcAddress("glMultiTexCoord3svARB")))return false;
+	if(!(nglMultiTexCoord3ivARB=(PFNGLMULTITEXCOORD3IVARBPROC)nelglGetProcAddress("glMultiTexCoord3ivARB")))return false;
+	if(!(nglMultiTexCoord3fvARB=(PFNGLMULTITEXCOORD3FVARBPROC)nelglGetProcAddress("glMultiTexCoord3fvARB")))return false;
+	if(!(nglMultiTexCoord3dvARB=(PFNGLMULTITEXCOORD3DVARBPROC)nelglGetProcAddress("glMultiTexCoord3dvARB")))return false;
+	if(!(nglMultiTexCoord4svARB=(PFNGLMULTITEXCOORD4SVARBPROC)nelglGetProcAddress("glMultiTexCoord4svARB")))return false;
+	if(!(nglMultiTexCoord4ivARB=(PFNGLMULTITEXCOORD4IVARBPROC)nelglGetProcAddress("glMultiTexCoord4ivARB")))return false;
+	if(!(nglMultiTexCoord4fvARB=(PFNGLMULTITEXCOORD4FVARBPROC)nelglGetProcAddress("glMultiTexCoord4fvARB")))return false;
+	if(!(nglMultiTexCoord4dvARB=(PFNGLMULTITEXCOORD4DVARBPROC)nelglGetProcAddress("glMultiTexCoord4dvARB")))return false;
 
 	return true;
 }
@@ -319,13 +313,13 @@ static bool	setupARBTextureCompression(const char	*glext)
 	if(strstr(glext, "GL_ARB_texture_compression")==NULL)
 	  return false;
 
-	if(!(glCompressedTexImage3DARB=(PFNGLCOMPRESSEDTEXIMAGE3DARBPROC)nelglGetProcAddress("glCompressedTexImage3DARB")))return false;
-	if(!(glCompressedTexImage2DARB=(PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)nelglGetProcAddress("glCompressedTexImage2DARB")))return false;
-	if(!(glCompressedTexImage1DARB=(PFNGLCOMPRESSEDTEXIMAGE1DARBPROC)nelglGetProcAddress("glCompressedTexImage1DARB")))return false;
-	if(!(glCompressedTexSubImage3DARB=(PFNGLCOMPRESSEDTEXSUBIMAGE3DARBPROC)nelglGetProcAddress("glCompressedTexSubImage3DARB")))return false;
-	if(!(glCompressedTexSubImage2DARB=(PFNGLCOMPRESSEDTEXSUBIMAGE2DARBPROC)nelglGetProcAddress("glCompressedTexSubImage2DARB")))return false;
-	if(!(glCompressedTexSubImage1DARB=(PFNGLCOMPRESSEDTEXSUBIMAGE1DARBPROC)nelglGetProcAddress("glCompressedTexSubImage1DARB")))return false;
-	if(!(glGetCompressedTexImageARB=(PFNGLGETCOMPRESSEDTEXIMAGEARBPROC)nelglGetProcAddress("glGetCompressedTexImageARB")))return false;
+	if(!(nglCompressedTexImage3DARB=(PFNGLCOMPRESSEDTEXIMAGE3DARBPROC)nelglGetProcAddress("glCompressedTexImage3DARB")))return false;
+	if(!(nglCompressedTexImage2DARB=(PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)nelglGetProcAddress("glCompressedTexImage2DARB")))return false;
+	if(!(nglCompressedTexImage1DARB=(PFNGLCOMPRESSEDTEXIMAGE1DARBPROC)nelglGetProcAddress("glCompressedTexImage1DARB")))return false;
+	if(!(nglCompressedTexSubImage3DARB=(PFNGLCOMPRESSEDTEXSUBIMAGE3DARBPROC)nelglGetProcAddress("glCompressedTexSubImage3DARB")))return false;
+	if(!(nglCompressedTexSubImage2DARB=(PFNGLCOMPRESSEDTEXSUBIMAGE2DARBPROC)nelglGetProcAddress("glCompressedTexSubImage2DARB")))return false;
+	if(!(nglCompressedTexSubImage1DARB=(PFNGLCOMPRESSEDTEXSUBIMAGE1DARBPROC)nelglGetProcAddress("glCompressedTexSubImage1DARB")))return false;
+	if(!(nglGetCompressedTexImageARB=(PFNGLGETCOMPRESSEDTEXIMAGEARBPROC)nelglGetProcAddress("glGetCompressedTexImageARB")))return false;
 
 	return true;
 }
@@ -349,21 +343,21 @@ static bool	setupNVVertexArrayRange(const char	*glext)
 
 
 	// Get VAR adress.
-	if(!(glFlushVertexArrayRangeNV=(PFNGLFLUSHVERTEXARRAYRANGENVPROC)nelglGetProcAddress("glFlushVertexArrayRangeNV")))return false;
-	if(!(glVertexArrayRangeNV=(PFNGLVERTEXARRAYRANGENVPROC)nelglGetProcAddress("glVertexArrayRangeNV")))return false;
+	if(!(nglFlushVertexArrayRangeNV=(PFNGLFLUSHVERTEXARRAYRANGENVPROC)nelglGetProcAddress("glFlushVertexArrayRangeNV")))return false;
+	if(!(nglVertexArrayRangeNV=(PFNGLVERTEXARRAYRANGENVPROC)nelglGetProcAddress("glVertexArrayRangeNV")))return false;
 #ifdef NL_OS_WINDOWS
 	if(!(wglAllocateMemoryNV= (PFNWGLALLOCATEMEMORYNVPROC)nelglGetProcAddress("wglAllocateMemoryNV")))return false;
 	if(!(wglFreeMemoryNV= (PFNWGLFREEMEMORYNVPROC)nelglGetProcAddress("wglFreeMemoryNV")))return false;
 #endif
 
 	// Get fence adress.
-	if(!(glDeleteFencesNV= (PFNGLDELETEFENCESNVPROC)nelglGetProcAddress("glDeleteFencesNV")))return false;
-	if(!(glGenFencesNV= (PFNGLGENFENCESNVPROC)nelglGetProcAddress("glGenFencesNV")))return false;
-	if(!(glIsFenceNV= (PFNGLISFENCENVPROC)nelglGetProcAddress("glIsFenceNV")))return false;
-	if(!(glTestFenceNV= (PFNGLTESTFENCENVPROC)nelglGetProcAddress("glTestFenceNV")))return false;
-	if(!(glGetFenceivNV= (PFNGLGETFENCEIVNVPROC)nelglGetProcAddress("glGetFenceivNV")))return false;
-	if(!(glFinishFenceNV= (PFNGLFINISHFENCENVPROC)nelglGetProcAddress("glFinishFenceNV")))return false;
-	if(!(glSetFenceNV= (PFNGLSETFENCENVPROC)nelglGetProcAddress("glSetFenceNV")))return false;
+	if(!(nglDeleteFencesNV= (PFNGLDELETEFENCESNVPROC)nelglGetProcAddress("glDeleteFencesNV")))return false;
+	if(!(nglGenFencesNV= (PFNGLGENFENCESNVPROC)nelglGetProcAddress("glGenFencesNV")))return false;
+	if(!(nglIsFenceNV= (PFNGLISFENCENVPROC)nelglGetProcAddress("glIsFenceNV")))return false;
+	if(!(nglTestFenceNV= (PFNGLTESTFENCENVPROC)nelglGetProcAddress("glTestFenceNV")))return false;
+	if(!(nglGetFenceivNV= (PFNGLGETFENCEIVNVPROC)nelglGetProcAddress("glGetFenceivNV")))return false;
+	if(!(nglFinishFenceNV= (PFNGLFINISHFENCENVPROC)nelglGetProcAddress("glFinishFenceNV")))return false;
+	if(!(nglSetFenceNV= (PFNGLSETFENCENVPROC)nelglGetProcAddress("glSetFenceNV")))return false;
 
 
 	return true;
@@ -387,9 +381,9 @@ static bool	setupEXTVertexWeighting(const char	*glext)
 		return false;
 
 
-	if(!(glVertexWeightfEXT=(PFNGLVERTEXWEIGHTFEXTPROC)nelglGetProcAddress("glVertexWeightfEXT")))return false;
-	if(!(glVertexWeightfvEXT=(PFNGLVERTEXWEIGHTFVEXTPROC)nelglGetProcAddress("glVertexWeightfvEXT")))return false;
-	if(!(glVertexWeightPointerEXT=(PFNGLVERTEXWEIGHTPOINTEREXTPROC)nelglGetProcAddress("glVertexWeightPointerEXT")))return false;
+	if(!(nglVertexWeightfEXT=(PFNGLVERTEXWEIGHTFEXTPROC)nelglGetProcAddress("glVertexWeightfEXT")))return false;
+	if(!(nglVertexWeightfvEXT=(PFNGLVERTEXWEIGHTFVEXTPROC)nelglGetProcAddress("glVertexWeightfvEXT")))return false;
+	if(!(nglVertexWeightPointerEXT=(PFNGLVERTEXWEIGHTPOINTEREXTPROC)nelglGetProcAddress("glVertexWeightPointerEXT")))return false;
 
 	return true;
 }
@@ -431,69 +425,69 @@ static bool	setupNVVertexProgram(const char	*glext)
 		return false;
 
 
-	if(!(glAreProgramsResidentNV= (PFNGLAREPROGRAMSRESIDENTNVPROC)nelglGetProcAddress("glAreProgramsResidentNV"))) return false;
-	if(!(glBindProgramNV= (PFNGLBINDPROGRAMNVPROC)nelglGetProcAddress("glBindProgramNV"))) return false;
-	if(!(glDeleteProgramsNV= (PFNGLDELETEPROGRAMSNVPROC)nelglGetProcAddress("glDeleteProgramsNV"))) return false;
-	if(!(glExecuteProgramNV= (PFNGLEXECUTEPROGRAMNVPROC)nelglGetProcAddress("glExecuteProgramNV"))) return false;
-	if(!(glGenProgramsNV= (PFNGLGENPROGRAMSNVPROC)nelglGetProcAddress("glGenProgramsNV"))) return false;
-	if(!(glGetProgramParameterdvNV= (PFNGLGETPROGRAMPARAMETERDVNVPROC)nelglGetProcAddress("glGetProgramParameterdvNV"))) return false;
-	if(!(glGetProgramParameterfvNV= (PFNGLGETPROGRAMPARAMETERFVNVPROC)nelglGetProcAddress("glGetProgramParameterfvNV"))) return false;
-	if(!(glGetProgramivNV= (PFNGLGETPROGRAMIVNVPROC)nelglGetProcAddress("glGetProgramivNV"))) return false;
-	if(!(glGetProgramStringNV= (PFNGLGETPROGRAMSTRINGNVPROC)nelglGetProcAddress("glGetProgramStringNV"))) return false;
-	if(!(glGetTrackMatrixivNV= (PFNGLGETTRACKMATRIXIVNVPROC)nelglGetProcAddress("glGetTrackMatrixivNV"))) return false;
-	if(!(glGetVertexAttribdvNV= (PFNGLGETVERTEXATTRIBDVNVPROC)nelglGetProcAddress("glGetVertexAttribdvNV"))) return false;
-	if(!(glGetVertexAttribfvNV= (PFNGLGETVERTEXATTRIBFVNVPROC)nelglGetProcAddress("glGetVertexAttribfvNV"))) return false;
-	if(!(glGetVertexAttribivNV= (PFNGLGETVERTEXATTRIBIVNVPROC)nelglGetProcAddress("glGetVertexAttribivNV"))) return false;
-	if(!(glGetVertexAttribPointervNV= (PFNGLGETVERTEXATTRIBPOINTERVNVPROC)nelglGetProcAddress("glGetVertexAttribPointervNV"))) return false;
-	if(!(glIsProgramNV= (PFNGLISPROGRAMNVPROC)nelglGetProcAddress("glIsProgramNV"))) return false;
-	if(!(glLoadProgramNV= (PFNGLLOADPROGRAMNVPROC)nelglGetProcAddress("glLoadProgramNV"))) return false;
-	if(!(glProgramParameter4dNV= (PFNGLPROGRAMPARAMETER4DNVPROC)nelglGetProcAddress("glProgramParameter4dNV"))) return false;
-	if(!(glProgramParameter4dvNV= (PFNGLPROGRAMPARAMETER4DVNVPROC)nelglGetProcAddress("glProgramParameter4dvNV"))) return false;
-	if(!(glProgramParameter4fNV= (PFNGLPROGRAMPARAMETER4FNVPROC)nelglGetProcAddress("glProgramParameter4fNV"))) return false;
-	if(!(glProgramParameter4fvNV= (PFNGLPROGRAMPARAMETER4FVNVPROC)nelglGetProcAddress("glProgramParameter4fvNV"))) return false;
-	if(!(glProgramParameters4dvNV= (PFNGLPROGRAMPARAMETERS4DVNVPROC)nelglGetProcAddress("glProgramParameters4dvNV"))) return false;
-	if(!(glProgramParameters4fvNV= (PFNGLPROGRAMPARAMETERS4FVNVPROC)nelglGetProcAddress("glProgramParameters4fvNV"))) return false;
-	if(!(glRequestResidentProgramsNV= (PFNGLREQUESTRESIDENTPROGRAMSNVPROC)nelglGetProcAddress("glRequestResidentProgramsNV"))) return false;
-	if(!(glTrackMatrixNV= (PFNGLTRACKMATRIXNVPROC)nelglGetProcAddress("glTrackMatrixNV"))) return false;
-	if(!(glVertexAttribPointerNV= (PFNGLVERTEXATTRIBPOINTERNVPROC)nelglGetProcAddress("glVertexAttribPointerNV"))) return false;
-	if(!(glVertexAttrib1dNV= (PFNGLVERTEXATTRIB1DNVPROC)nelglGetProcAddress("glVertexAttrib1dNV"))) return false;
-	if(!(glVertexAttrib1dvNV= (PFNGLVERTEXATTRIB1DVNVPROC)nelglGetProcAddress("glVertexAttrib1dvNV"))) return false;
-	if(!(glVertexAttrib1fNV= (PFNGLVERTEXATTRIB1FNVPROC)nelglGetProcAddress("glVertexAttrib1fNV"))) return false;
-	if(!(glVertexAttrib1fvNV= (PFNGLVERTEXATTRIB1FVNVPROC)nelglGetProcAddress("glVertexAttrib1fvNV"))) return false;
-	if(!(glVertexAttrib1sNV= (PFNGLVERTEXATTRIB1SNVPROC)nelglGetProcAddress("glVertexAttrib1sNV"))) return false;
-	if(!(glVertexAttrib1svNV= (PFNGLVERTEXATTRIB1SVNVPROC)nelglGetProcAddress("glVertexAttrib1svNV"))) return false;
-	if(!(glVertexAttrib2dNV= (PFNGLVERTEXATTRIB2DNVPROC)nelglGetProcAddress("glVertexAttrib2dNV"))) return false;
-	if(!(glVertexAttrib2dvNV= (PFNGLVERTEXATTRIB2DVNVPROC)nelglGetProcAddress("glVertexAttrib2dvNV"))) return false;
-	if(!(glVertexAttrib2fNV= (PFNGLVERTEXATTRIB2FNVPROC)nelglGetProcAddress("glVertexAttrib2fNV"))) return false;
-	if(!(glVertexAttrib2fvNV= (PFNGLVERTEXATTRIB2FVNVPROC)nelglGetProcAddress("glVertexAttrib2fvNV"))) return false;
-	if(!(glVertexAttrib2sNV= (PFNGLVERTEXATTRIB2SNVPROC)nelglGetProcAddress("glVertexAttrib2sNV"))) return false;
-	if(!(glVertexAttrib2svNV= (PFNGLVERTEXATTRIB2SVNVPROC)nelglGetProcAddress("glVertexAttrib2svNV"))) return false;
-	if(!(glVertexAttrib3dNV= (PFNGLVERTEXATTRIB3DNVPROC)nelglGetProcAddress("glVertexAttrib3dNV"))) return false;
-	if(!(glVertexAttrib3dvNV= (PFNGLVERTEXATTRIB3DVNVPROC)nelglGetProcAddress("glVertexAttrib3dvNV"))) return false;
-	if(!(glVertexAttrib3fNV= (PFNGLVERTEXATTRIB3FNVPROC)nelglGetProcAddress("glVertexAttrib3fNV"))) return false;
-	if(!(glVertexAttrib3fvNV= (PFNGLVERTEXATTRIB3FVNVPROC)nelglGetProcAddress("glVertexAttrib3fvNV"))) return false;
-	if(!(glVertexAttrib3sNV= (PFNGLVERTEXATTRIB3SNVPROC)nelglGetProcAddress("glVertexAttrib3sNV"))) return false;
-	if(!(glVertexAttrib3svNV= (PFNGLVERTEXATTRIB3SVNVPROC)nelglGetProcAddress("glVertexAttrib3svNV"))) return false;
-	if(!(glVertexAttrib4dNV= (PFNGLVERTEXATTRIB4DNVPROC)nelglGetProcAddress("glVertexAttrib4dNV"))) return false;
-	if(!(glVertexAttrib4dvNV= (PFNGLVERTEXATTRIB4DVNVPROC)nelglGetProcAddress("glVertexAttrib4dvNV"))) return false;
-	if(!(glVertexAttrib4fNV= (PFNGLVERTEXATTRIB4FNVPROC)nelglGetProcAddress("glVertexAttrib4fNV"))) return false;
-	if(!(glVertexAttrib4fvNV= (PFNGLVERTEXATTRIB4FVNVPROC)nelglGetProcAddress("glVertexAttrib4fvNV"))) return false;
-	if(!(glVertexAttrib4sNV= (PFNGLVERTEXATTRIB4SNVPROC)nelglGetProcAddress("glVertexAttrib4sNV"))) return false;
-	if(!(glVertexAttrib4svNV= (PFNGLVERTEXATTRIB4SVNVPROC)nelglGetProcAddress("glVertexAttrib4svNV"))) return false;
-	if(!(glVertexAttrib4ubvNV= (PFNGLVERTEXATTRIB4UBVNVPROC)nelglGetProcAddress("glVertexAttrib4ubvNV"))) return false;
-	if(!(glVertexAttribs1dvNV= (PFNGLVERTEXATTRIBS1DVNVPROC)nelglGetProcAddress("glVertexAttribs1dvNV"))) return false;
-	if(!(glVertexAttribs1fvNV= (PFNGLVERTEXATTRIBS1FVNVPROC)nelglGetProcAddress("glVertexAttribs1fvNV"))) return false;
-	if(!(glVertexAttribs1svNV= (PFNGLVERTEXATTRIBS1SVNVPROC)nelglGetProcAddress("glVertexAttribs1svNV"))) return false;
-	if(!(glVertexAttribs2dvNV= (PFNGLVERTEXATTRIBS2DVNVPROC)nelglGetProcAddress("glVertexAttribs2dvNV"))) return false;
-	if(!(glVertexAttribs2fvNV= (PFNGLVERTEXATTRIBS2FVNVPROC)nelglGetProcAddress("glVertexAttribs2fvNV"))) return false;
-	if(!(glVertexAttribs2svNV= (PFNGLVERTEXATTRIBS2SVNVPROC)nelglGetProcAddress("glVertexAttribs2svNV"))) return false;
-	if(!(glVertexAttribs3dvNV= (PFNGLVERTEXATTRIBS3DVNVPROC)nelglGetProcAddress("glVertexAttribs3dvNV"))) return false;
-	if(!(glVertexAttribs3fvNV= (PFNGLVERTEXATTRIBS3FVNVPROC)nelglGetProcAddress("glVertexAttribs3fvNV"))) return false;
-	if(!(glVertexAttribs3svNV= (PFNGLVERTEXATTRIBS3SVNVPROC)nelglGetProcAddress("glVertexAttribs3svNV"))) return false;
-	if(!(glVertexAttribs4dvNV= (PFNGLVERTEXATTRIBS4DVNVPROC)nelglGetProcAddress("glVertexAttribs4dvNV"))) return false;
-	if(!(glVertexAttribs4fvNV= (PFNGLVERTEXATTRIBS4FVNVPROC)nelglGetProcAddress("glVertexAttribs4fvNV"))) return false;
-	if(!(glVertexAttribs4svNV= (PFNGLVERTEXATTRIBS4SVNVPROC)nelglGetProcAddress("glVertexAttribs4svNV"))) return false;
-	if(!(glVertexAttribs4ubvNV= (PFNGLVERTEXATTRIBS4UBVNVPROC)nelglGetProcAddress("glVertexAttribs4ubvNV"))) return false;
+	if(!(nglAreProgramsResidentNV= (PFNGLAREPROGRAMSRESIDENTNVPROC)nelglGetProcAddress("glAreProgramsResidentNV"))) return false;
+	if(!(nglBindProgramNV= (PFNGLBINDPROGRAMNVPROC)nelglGetProcAddress("glBindProgramNV"))) return false;
+	if(!(nglDeleteProgramsNV= (PFNGLDELETEPROGRAMSNVPROC)nelglGetProcAddress("glDeleteProgramsNV"))) return false;
+	if(!(nglExecuteProgramNV= (PFNGLEXECUTEPROGRAMNVPROC)nelglGetProcAddress("glExecuteProgramNV"))) return false;
+	if(!(nglGenProgramsNV= (PFNGLGENPROGRAMSNVPROC)nelglGetProcAddress("glGenProgramsNV"))) return false;
+	if(!(nglGetProgramParameterdvNV= (PFNGLGETPROGRAMPARAMETERDVNVPROC)nelglGetProcAddress("glGetProgramParameterdvNV"))) return false;
+	if(!(nglGetProgramParameterfvNV= (PFNGLGETPROGRAMPARAMETERFVNVPROC)nelglGetProcAddress("glGetProgramParameterfvNV"))) return false;
+	if(!(nglGetProgramivNV= (PFNGLGETPROGRAMIVNVPROC)nelglGetProcAddress("glGetProgramivNV"))) return false;
+	if(!(nglGetProgramStringNV= (PFNGLGETPROGRAMSTRINGNVPROC)nelglGetProcAddress("glGetProgramStringNV"))) return false;
+	if(!(nglGetTrackMatrixivNV= (PFNGLGETTRACKMATRIXIVNVPROC)nelglGetProcAddress("glGetTrackMatrixivNV"))) return false;
+	if(!(nglGetVertexAttribdvNV= (PFNGLGETVERTEXATTRIBDVNVPROC)nelglGetProcAddress("glGetVertexAttribdvNV"))) return false;
+	if(!(nglGetVertexAttribfvNV= (PFNGLGETVERTEXATTRIBFVNVPROC)nelglGetProcAddress("glGetVertexAttribfvNV"))) return false;
+	if(!(nglGetVertexAttribivNV= (PFNGLGETVERTEXATTRIBIVNVPROC)nelglGetProcAddress("glGetVertexAttribivNV"))) return false;
+	if(!(nglGetVertexAttribPointervNV= (PFNGLGETVERTEXATTRIBPOINTERVNVPROC)nelglGetProcAddress("glGetVertexAttribPointervNV"))) return false;
+	if(!(nglIsProgramNV= (PFNGLISPROGRAMNVPROC)nelglGetProcAddress("glIsProgramNV"))) return false;
+	if(!(nglLoadProgramNV= (PFNGLLOADPROGRAMNVPROC)nelglGetProcAddress("glLoadProgramNV"))) return false;
+	if(!(nglProgramParameter4dNV= (PFNGLPROGRAMPARAMETER4DNVPROC)nelglGetProcAddress("glProgramParameter4dNV"))) return false;
+	if(!(nglProgramParameter4dvNV= (PFNGLPROGRAMPARAMETER4DVNVPROC)nelglGetProcAddress("glProgramParameter4dvNV"))) return false;
+	if(!(nglProgramParameter4fNV= (PFNGLPROGRAMPARAMETER4FNVPROC)nelglGetProcAddress("glProgramParameter4fNV"))) return false;
+	if(!(nglProgramParameter4fvNV= (PFNGLPROGRAMPARAMETER4FVNVPROC)nelglGetProcAddress("glProgramParameter4fvNV"))) return false;
+	if(!(nglProgramParameters4dvNV= (PFNGLPROGRAMPARAMETERS4DVNVPROC)nelglGetProcAddress("glProgramParameters4dvNV"))) return false;
+	if(!(nglProgramParameters4fvNV= (PFNGLPROGRAMPARAMETERS4FVNVPROC)nelglGetProcAddress("glProgramParameters4fvNV"))) return false;
+	if(!(nglRequestResidentProgramsNV= (PFNGLREQUESTRESIDENTPROGRAMSNVPROC)nelglGetProcAddress("glRequestResidentProgramsNV"))) return false;
+	if(!(nglTrackMatrixNV= (PFNGLTRACKMATRIXNVPROC)nelglGetProcAddress("glTrackMatrixNV"))) return false;
+	if(!(nglVertexAttribPointerNV= (PFNGLVERTEXATTRIBPOINTERNVPROC)nelglGetProcAddress("glVertexAttribPointerNV"))) return false;
+	if(!(nglVertexAttrib1dNV= (PFNGLVERTEXATTRIB1DNVPROC)nelglGetProcAddress("glVertexAttrib1dNV"))) return false;
+	if(!(nglVertexAttrib1dvNV= (PFNGLVERTEXATTRIB1DVNVPROC)nelglGetProcAddress("glVertexAttrib1dvNV"))) return false;
+	if(!(nglVertexAttrib1fNV= (PFNGLVERTEXATTRIB1FNVPROC)nelglGetProcAddress("glVertexAttrib1fNV"))) return false;
+	if(!(nglVertexAttrib1fvNV= (PFNGLVERTEXATTRIB1FVNVPROC)nelglGetProcAddress("glVertexAttrib1fvNV"))) return false;
+	if(!(nglVertexAttrib1sNV= (PFNGLVERTEXATTRIB1SNVPROC)nelglGetProcAddress("glVertexAttrib1sNV"))) return false;
+	if(!(nglVertexAttrib1svNV= (PFNGLVERTEXATTRIB1SVNVPROC)nelglGetProcAddress("glVertexAttrib1svNV"))) return false;
+	if(!(nglVertexAttrib2dNV= (PFNGLVERTEXATTRIB2DNVPROC)nelglGetProcAddress("glVertexAttrib2dNV"))) return false;
+	if(!(nglVertexAttrib2dvNV= (PFNGLVERTEXATTRIB2DVNVPROC)nelglGetProcAddress("glVertexAttrib2dvNV"))) return false;
+	if(!(nglVertexAttrib2fNV= (PFNGLVERTEXATTRIB2FNVPROC)nelglGetProcAddress("glVertexAttrib2fNV"))) return false;
+	if(!(nglVertexAttrib2fvNV= (PFNGLVERTEXATTRIB2FVNVPROC)nelglGetProcAddress("glVertexAttrib2fvNV"))) return false;
+	if(!(nglVertexAttrib2sNV= (PFNGLVERTEXATTRIB2SNVPROC)nelglGetProcAddress("glVertexAttrib2sNV"))) return false;
+	if(!(nglVertexAttrib2svNV= (PFNGLVERTEXATTRIB2SVNVPROC)nelglGetProcAddress("glVertexAttrib2svNV"))) return false;
+	if(!(nglVertexAttrib3dNV= (PFNGLVERTEXATTRIB3DNVPROC)nelglGetProcAddress("glVertexAttrib3dNV"))) return false;
+	if(!(nglVertexAttrib3dvNV= (PFNGLVERTEXATTRIB3DVNVPROC)nelglGetProcAddress("glVertexAttrib3dvNV"))) return false;
+	if(!(nglVertexAttrib3fNV= (PFNGLVERTEXATTRIB3FNVPROC)nelglGetProcAddress("glVertexAttrib3fNV"))) return false;
+	if(!(nglVertexAttrib3fvNV= (PFNGLVERTEXATTRIB3FVNVPROC)nelglGetProcAddress("glVertexAttrib3fvNV"))) return false;
+	if(!(nglVertexAttrib3sNV= (PFNGLVERTEXATTRIB3SNVPROC)nelglGetProcAddress("glVertexAttrib3sNV"))) return false;
+	if(!(nglVertexAttrib3svNV= (PFNGLVERTEXATTRIB3SVNVPROC)nelglGetProcAddress("glVertexAttrib3svNV"))) return false;
+	if(!(nglVertexAttrib4dNV= (PFNGLVERTEXATTRIB4DNVPROC)nelglGetProcAddress("glVertexAttrib4dNV"))) return false;
+	if(!(nglVertexAttrib4dvNV= (PFNGLVERTEXATTRIB4DVNVPROC)nelglGetProcAddress("glVertexAttrib4dvNV"))) return false;
+	if(!(nglVertexAttrib4fNV= (PFNGLVERTEXATTRIB4FNVPROC)nelglGetProcAddress("glVertexAttrib4fNV"))) return false;
+	if(!(nglVertexAttrib4fvNV= (PFNGLVERTEXATTRIB4FVNVPROC)nelglGetProcAddress("glVertexAttrib4fvNV"))) return false;
+	if(!(nglVertexAttrib4sNV= (PFNGLVERTEXATTRIB4SNVPROC)nelglGetProcAddress("glVertexAttrib4sNV"))) return false;
+	if(!(nglVertexAttrib4svNV= (PFNGLVERTEXATTRIB4SVNVPROC)nelglGetProcAddress("glVertexAttrib4svNV"))) return false;
+	if(!(nglVertexAttrib4ubvNV= (PFNGLVERTEXATTRIB4UBVNVPROC)nelglGetProcAddress("glVertexAttrib4ubvNV"))) return false;
+	if(!(nglVertexAttribs1dvNV= (PFNGLVERTEXATTRIBS1DVNVPROC)nelglGetProcAddress("glVertexAttribs1dvNV"))) return false;
+	if(!(nglVertexAttribs1fvNV= (PFNGLVERTEXATTRIBS1FVNVPROC)nelglGetProcAddress("glVertexAttribs1fvNV"))) return false;
+	if(!(nglVertexAttribs1svNV= (PFNGLVERTEXATTRIBS1SVNVPROC)nelglGetProcAddress("glVertexAttribs1svNV"))) return false;
+	if(!(nglVertexAttribs2dvNV= (PFNGLVERTEXATTRIBS2DVNVPROC)nelglGetProcAddress("glVertexAttribs2dvNV"))) return false;
+	if(!(nglVertexAttribs2fvNV= (PFNGLVERTEXATTRIBS2FVNVPROC)nelglGetProcAddress("glVertexAttribs2fvNV"))) return false;
+	if(!(nglVertexAttribs2svNV= (PFNGLVERTEXATTRIBS2SVNVPROC)nelglGetProcAddress("glVertexAttribs2svNV"))) return false;
+	if(!(nglVertexAttribs3dvNV= (PFNGLVERTEXATTRIBS3DVNVPROC)nelglGetProcAddress("glVertexAttribs3dvNV"))) return false;
+	if(!(nglVertexAttribs3fvNV= (PFNGLVERTEXATTRIBS3FVNVPROC)nelglGetProcAddress("glVertexAttribs3fvNV"))) return false;
+	if(!(nglVertexAttribs3svNV= (PFNGLVERTEXATTRIBS3SVNVPROC)nelglGetProcAddress("glVertexAttribs3svNV"))) return false;
+	if(!(nglVertexAttribs4dvNV= (PFNGLVERTEXATTRIBS4DVNVPROC)nelglGetProcAddress("glVertexAttribs4dvNV"))) return false;
+	if(!(nglVertexAttribs4fvNV= (PFNGLVERTEXATTRIBS4FVNVPROC)nelglGetProcAddress("glVertexAttribs4fvNV"))) return false;
+	if(!(nglVertexAttribs4svNV= (PFNGLVERTEXATTRIBS4SVNVPROC)nelglGetProcAddress("glVertexAttribs4svNV"))) return false;
+	if(!(nglVertexAttribs4ubvNV= (PFNGLVERTEXATTRIBS4UBVNVPROC)nelglGetProcAddress("glVertexAttribs4ubvNV"))) return false;
 
 
 	return true;
@@ -507,23 +501,23 @@ static bool	setupEXTSecondaryColor(const char	*glext)
 		return false;
 
 
-	if(!(glSecondaryColor3bEXT= (PFNGLSECONDARYCOLOR3BEXTPROC)nelglGetProcAddress("glSecondaryColor3bEXT"))) return false;
-	if(!(glSecondaryColor3bvEXT= (PFNGLSECONDARYCOLOR3BVEXTPROC)nelglGetProcAddress("glSecondaryColor3bvEXT"))) return false;
-	if(!(glSecondaryColor3dEXT= (PFNGLSECONDARYCOLOR3DEXTPROC)nelglGetProcAddress("glSecondaryColor3dEXT"))) return false;
-	if(!(glSecondaryColor3dvEXT= (PFNGLSECONDARYCOLOR3DVEXTPROC)nelglGetProcAddress("glSecondaryColor3dvEXT"))) return false;
-	if(!(glSecondaryColor3fEXT= (PFNGLSECONDARYCOLOR3FEXTPROC)nelglGetProcAddress("glSecondaryColor3fEXT"))) return false;
-	if(!(glSecondaryColor3fvEXT= (PFNGLSECONDARYCOLOR3FVEXTPROC)nelglGetProcAddress("glSecondaryColor3fvEXT"))) return false;
-	if(!(glSecondaryColor3iEXT= (PFNGLSECONDARYCOLOR3IEXTPROC)nelglGetProcAddress("glSecondaryColor3iEXT"))) return false;
-	if(!(glSecondaryColor3ivEXT= (PFNGLSECONDARYCOLOR3IVEXTPROC)nelglGetProcAddress("glSecondaryColor3ivEXT"))) return false;
-	if(!(glSecondaryColor3sEXT= (PFNGLSECONDARYCOLOR3SEXTPROC)nelglGetProcAddress("glSecondaryColor3sEXT"))) return false;
-	if(!(glSecondaryColor3svEXT= (PFNGLSECONDARYCOLOR3SVEXTPROC)nelglGetProcAddress("glSecondaryColor3svEXT"))) return false;
-	if(!(glSecondaryColor3ubEXT= (PFNGLSECONDARYCOLOR3UBEXTPROC)nelglGetProcAddress("glSecondaryColor3ubEXT"))) return false;
-	if(!(glSecondaryColor3ubvEXT= (PFNGLSECONDARYCOLOR3UBVEXTPROC)nelglGetProcAddress("glSecondaryColor3ubvEXT"))) return false;
-	if(!(glSecondaryColor3uiEXT= (PFNGLSECONDARYCOLOR3UIEXTPROC)nelglGetProcAddress("glSecondaryColor3uiEXT"))) return false;
-	if(!(glSecondaryColor3uivEXT= (PFNGLSECONDARYCOLOR3UIVEXTPROC)nelglGetProcAddress("glSecondaryColor3uivEXT"))) return false;
-	if(!(glSecondaryColor3usEXT= (PFNGLSECONDARYCOLOR3USEXTPROC)nelglGetProcAddress("glSecondaryColor3usEXT"))) return false;
-	if(!(glSecondaryColor3usvEXT= (PFNGLSECONDARYCOLOR3USVEXTPROC)nelglGetProcAddress("glSecondaryColor3usvEXT"))) return false;
-	if(!(glSecondaryColorPointerEXT= (PFNGLSECONDARYCOLORPOINTEREXTPROC)nelglGetProcAddress("glSecondaryColorPointerEXT"))) return false;
+	if(!(nglSecondaryColor3bEXT= (PFNGLSECONDARYCOLOR3BEXTPROC)nelglGetProcAddress("glSecondaryColor3bEXT"))) return false;
+	if(!(nglSecondaryColor3bvEXT= (PFNGLSECONDARYCOLOR3BVEXTPROC)nelglGetProcAddress("glSecondaryColor3bvEXT"))) return false;
+	if(!(nglSecondaryColor3dEXT= (PFNGLSECONDARYCOLOR3DEXTPROC)nelglGetProcAddress("glSecondaryColor3dEXT"))) return false;
+	if(!(nglSecondaryColor3dvEXT= (PFNGLSECONDARYCOLOR3DVEXTPROC)nelglGetProcAddress("glSecondaryColor3dvEXT"))) return false;
+	if(!(nglSecondaryColor3fEXT= (PFNGLSECONDARYCOLOR3FEXTPROC)nelglGetProcAddress("glSecondaryColor3fEXT"))) return false;
+	if(!(nglSecondaryColor3fvEXT= (PFNGLSECONDARYCOLOR3FVEXTPROC)nelglGetProcAddress("glSecondaryColor3fvEXT"))) return false;
+	if(!(nglSecondaryColor3iEXT= (PFNGLSECONDARYCOLOR3IEXTPROC)nelglGetProcAddress("glSecondaryColor3iEXT"))) return false;
+	if(!(nglSecondaryColor3ivEXT= (PFNGLSECONDARYCOLOR3IVEXTPROC)nelglGetProcAddress("glSecondaryColor3ivEXT"))) return false;
+	if(!(nglSecondaryColor3sEXT= (PFNGLSECONDARYCOLOR3SEXTPROC)nelglGetProcAddress("glSecondaryColor3sEXT"))) return false;
+	if(!(nglSecondaryColor3svEXT= (PFNGLSECONDARYCOLOR3SVEXTPROC)nelglGetProcAddress("glSecondaryColor3svEXT"))) return false;
+	if(!(nglSecondaryColor3ubEXT= (PFNGLSECONDARYCOLOR3UBEXTPROC)nelglGetProcAddress("glSecondaryColor3ubEXT"))) return false;
+	if(!(nglSecondaryColor3ubvEXT= (PFNGLSECONDARYCOLOR3UBVEXTPROC)nelglGetProcAddress("glSecondaryColor3ubvEXT"))) return false;
+	if(!(nglSecondaryColor3uiEXT= (PFNGLSECONDARYCOLOR3UIEXTPROC)nelglGetProcAddress("glSecondaryColor3uiEXT"))) return false;
+	if(!(nglSecondaryColor3uivEXT= (PFNGLSECONDARYCOLOR3UIVEXTPROC)nelglGetProcAddress("glSecondaryColor3uivEXT"))) return false;
+	if(!(nglSecondaryColor3usEXT= (PFNGLSECONDARYCOLOR3USEXTPROC)nelglGetProcAddress("glSecondaryColor3usEXT"))) return false;
+	if(!(nglSecondaryColor3usvEXT= (PFNGLSECONDARYCOLOR3USVEXTPROC)nelglGetProcAddress("glSecondaryColor3usvEXT"))) return false;
+	if(!(nglSecondaryColorPointerEXT= (PFNGLSECONDARYCOLORPOINTEREXTPROC)nelglGetProcAddress("glSecondaryColorPointerEXT"))) return false;
 
 
 	return true;

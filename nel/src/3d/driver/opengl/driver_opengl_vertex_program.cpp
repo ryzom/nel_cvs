@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertx_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.8 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.9 2002/02/11 10:01:34 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -57,7 +57,7 @@ CVertexProgamDrvInfosGL::CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInf
 	nlassert (drv->_Extensions.NVVertexProgram);
 
 	// Generate a program
-	glGenProgramsNV (1, &ID);
+	nglGenProgramsNV (1, &ID);
 }
 
 
@@ -102,7 +102,7 @@ bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 				program->_DrvInfo=drvInfo;
 
 				// Compile the program
-				glLoadProgramNV (GL_VERTEX_PROGRAM_NV, drvInfo->ID, program->getProgram().length(), (const GLubyte*)program->getProgram().c_str());
+				nglLoadProgramNV (GL_VERTEX_PROGRAM_NV, drvInfo->ID, program->getProgram().length(), (const GLubyte*)program->getProgram().c_str());
 
 				// Get loading error code
 				GLint errorOff;
@@ -155,7 +155,7 @@ bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 			}
 
 			// Setup this program
-			glBindProgramNV (GL_VERTEX_PROGRAM_NV, drvInfo->ID);
+			nglBindProgramNV (GL_VERTEX_PROGRAM_NV, drvInfo->ID);
 
 			// Ok
 			return true;
@@ -183,7 +183,7 @@ void CDriverGL::setConstant (uint index, float f0, float f1, float f2, float f3)
 	if (_Extensions.NVVertexProgram)
 	{
 		// Setup constant
-		glProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, f0, f1, f2, f3);
+		nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, f0, f1, f2, f3);
 	}
 }
 
@@ -196,7 +196,7 @@ void CDriverGL::setConstant (uint index, double d0, double d1, double d2, double
 	if (_Extensions.NVVertexProgram)
 	{
 		// Setup constant
-		glProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, d0, d1, d2, d3);
+		nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, d0, d1, d2, d3);
 	}
 }
 
@@ -209,7 +209,7 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVector* value)
 	if (_Extensions.NVVertexProgram)
 	{
 		// Setup constant
-		glProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, value->x, value->y, value->z, 0);
+		nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, value->x, value->y, value->z, 0);
 	}
 }
 
@@ -222,7 +222,7 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVectorD* value)
 	if (_Extensions.NVVertexProgram)
 	{
 		// Setup constant
-		glProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, value->x, value->y, value->z, 0);
+		nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, value->x, value->y, value->z, 0);
 	}
 }
 
@@ -233,7 +233,7 @@ void	CDriverGL::setConstant (uint index, uint num, const float *src)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
-		glProgramParameters4fvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
+		nglProgramParameters4fvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
 	}
 }
 
@@ -243,7 +243,7 @@ void	CDriverGL::setConstant (uint index, uint num, const double *src)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
-		glProgramParameters4dvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
+		nglProgramParameters4dvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
 	}
 }
 
@@ -284,9 +284,9 @@ void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver:
 		}
 
 		// Track the matrix
-		glTrackMatrixNV (GL_VERTEX_PROGRAM_NV, index, GLMatrix[matrix], GLTransform[transform]);
+		nglTrackMatrixNV (GL_VERTEX_PROGRAM_NV, index, GLMatrix[matrix], GLTransform[transform]);
 		// Release Track => matrix data is copied.
-		glTrackMatrixNV (GL_VERTEX_PROGRAM_NV, index, GL_NONE, GL_IDENTITY_NV);
+		nglTrackMatrixNV (GL_VERTEX_PROGRAM_NV, index, GL_NONE, GL_IDENTITY_NV);
 	}
 }
 

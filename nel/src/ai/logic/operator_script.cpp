@@ -36,6 +36,9 @@ namespace NLAIAGENT
 
 	COperatorScript::~COperatorScript()
 	{
+#ifdef NL_DEBUG
+		const char *className = (const char *)getType();
+#endif
 	}
 
 	const NLAIC::IBasicType *COperatorScript::clone() const
@@ -323,7 +326,7 @@ namespace NLAIAGENT
 #endif
 
 		double class_pri = ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getPriority();
-		return (float) pri * class_pri;
+		return (float) pri * (float)class_pri;
 	}
 
 	NLAILOGIC::CFact *COperatorScript::buildFromVars(NLAILOGIC::IBaseAssert *assert, std::vector<sint32> &pl, NLAILOGIC::CValueSet *vars)

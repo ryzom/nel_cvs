@@ -56,6 +56,9 @@ namespace NLAILOGIC
 				old_top->unSelect();
 			}
 		}
+		else
+		if ( _Goals.size() == 1 )
+			_Goals.front()->select();
 		return NLAIAGENT::IObjectIA::CProcessResult();
 	}
 

@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.9 2001/07/12 09:47:35 chafik Exp $
+ * $Id: test_method.cpp,v 1.10 2001/07/12 14:07:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -292,9 +292,13 @@ namespace NLAISCRIPT
 		time_t t;
 		time(&t);
 		srand((sint)(t & 0xffffffffffff) );
-		double r = (double)::rand()/(double)RAND_MAX;		
+		sint ra = ::rand();
+		sint d = (d2 - d1);
+		if(d < 0) d = -d;
+		if(!d) d = 1;
+		sint r = d1 + (ra%d);
 
-		return d1 + (sint)(r*(double)(d2 - d1));
+		return r;
 
 	}
 

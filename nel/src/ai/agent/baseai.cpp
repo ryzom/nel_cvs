@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.28 2001/07/02 10:06:58 chafik Exp $
+ * $Id: baseai.cpp,v 1.29 2001/07/12 14:07:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,6 +207,7 @@ namespace NLAIAGENT
 		static CStringVarName send(_SEND_);
 		static CStringVarName constructor(_CONSTRUCTOR_);
 		static CStringVarName run(_RUN_);
+		static CStringVarName statM("GetStaticMember");
 
 		if(*methodName == send)
 		{
@@ -231,6 +232,13 @@ namespace NLAIAGENT
 			r.push(CIdMethod(2,0.0,NULL,c));
 			return r;			
 		}
+		if(*methodName == statM && ((const NLAISCRIPT::CParam &)param).size())
+		{
+			tQueue r;
+			CObjectType *c = new CObjectType(new NLAIC::CIdentType(*IAgent::IdAgent));
+			r.push(CIdMethod(3,0.0,NULL,c));
+			return r;			
+		}
 		return tQueue();
 	}
 
@@ -241,7 +249,7 @@ namespace NLAIAGENT
 
 	sint32 IObjectIA::getMethodIndexSize() const
 	{
-		return 3;
+		return 4;
 	}
 
 	// Executes a method from its index i and with its parameters
@@ -284,6 +292,15 @@ namespace NLAIAGENT
 		case 2:
 			return run();
 			break;
+
+		case 3:
+			{
+				CProcessResult r;
+				NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)a;
+				r.Result =	(IObjectIA *)getStaticMember((sint)((NLAIAGENT::INombreDefine *)param->get())->getNumber());
+				r.Result->incRef();
+				return r;
+			}
 		}
 		return CProcessResult();
 	}

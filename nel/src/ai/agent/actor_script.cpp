@@ -109,6 +109,9 @@ namespace NLAIAGENT
 			tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
 			if ( !r.empty() )
 				_OnActivateIndex = r.top().Index;
+			else
+				onActivate();
+
 			_IsActivated = true;
 		}
 	}
@@ -261,8 +264,6 @@ namespace NLAIAGENT
 					_OnActivateIndex = -1;
 				}
 			}
-			else
-				onActivate();
 			return CAgentScript::run();
 		}
 		else

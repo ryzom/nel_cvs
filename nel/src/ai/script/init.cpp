@@ -1,6 +1,6 @@
 /** \file init.cpp
  *
- * $Id: init.cpp,v 1.3 2001/03/28 12:15:14 portier Exp $
+ * $Id: init.cpp,v 1.4 2001/04/03 10:05:04 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,7 @@ namespace NLAISCRIPT
 		reinitClass(CMessageClass(CMessageClass::IdMessageClass),CMessageClass::IdMessageClass);
 		reinitClass(CMsgNotifyParentClass(CMsgNotifyParentClass::IdMsgNotifyParentClass),CMsgNotifyParentClass::IdMsgNotifyParentClass);
 		reinitClass(CGoalMsgClass(CGoalMsgClass::IdGoalMsgClass),CGoalMsgClass::IdGoalMsgClass);
+		reinitClass(CCancelGoalMsgClass(CCancelGoalMsgClass::IdCancelGoalMsgClass),CCancelGoalMsgClass::IdCancelGoalMsgClass);
 		reinitClass(CSuccessMsgClass(CSuccessMsgClass::IdSuccessMsgClass),CSuccessMsgClass::IdSuccessMsgClass);
 		reinitClass(CFailureMsgClass(CFailureMsgClass::IdFailureMsgClass),CFailureMsgClass::IdFailureMsgClass);
 		reinitClass(CDebugMsgClass(CDebugMsgClass::IdDebugMsgClass),CDebugMsgClass::IdDebugMsgClass);
@@ -68,46 +69,5 @@ namespace NLAISCRIPT
 		reinitClass(COnChangeMsgClass(COnChangeMsgClass::IdOnChangeMsgClass),COnChangeMsgClass::IdOnChangeMsgClass);
 
 		NLAIAGENT::DigitalType::NullOperator.incRef();
-
-		/*NLAIC::CSelfClassFactory &f = (NLAIC::CSelfClassFactory&)*((CAgentClass::IdAgentClass).getFactory());
-		f = NLAISCRIPT::CAgentClass(CAgentClass::IdAgentClass);
-		((CAgentClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CAgentClass::IdAgentClass));*/
-
-		/*NLAIC::CSelfClassFactory &fgda = (NLAIC::CSelfClassFactory&)*((CGDAgentClass::IdGDAgentClass).getFactory());
-		fgda = NLAISCRIPT::CGDAgentClass(CGDAgentClass::IdGDAgentClass);
-		((CGDAgentClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CGDAgentClass::IdGDAgentClass));
-
-		NLAIC::CSelfClassFactory &fop = (NLAIC::CSelfClassFactory&)*((COperatorClass::IdOperatorClass).getFactory());
-		fop = NLAISCRIPT::COperatorClass(COperatorClass::IdOperatorClass);
-		((COperatorClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)COperatorClass::IdOperatorClass));
-
-		NLAIC::CSelfClassFactory &fc = (NLAIC::CSelfClassFactory&)*((CActorClass::IdActorClass).getFactory());
-		fc = NLAISCRIPT::CActorClass(CActorClass::IdActorClass);
-		((CActorClass *)fc.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CActorClass::IdActorClass));
-
-		NLAIC::CSelfClassFactory &fi = (NLAIC::CSelfClassFactory&)*((CMessageClass::IdMessageClass).getFactory());
-		fi = CMessageClass(CMessageClass::IdMessageClass);
-		((CMessageClass *)fi.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CMessageClass::IdMessageClass));
-
-		NLAIC::CSelfClassFactory &fh = (NLAIC::CSelfClassFactory&)*((CMsgNotifyParentClass::IdMsgNotifyParentClass).getFactory());
-		fh = CMsgNotifyParentClass(CMsgNotifyParentClass::IdMsgNotifyParentClass);
-		((CMsgNotifyParentClass *)fh.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CMsgNotifyParentClass::IdMsgNotifyParentClass));
-
-		NLAIC::CSelfClassFactory &fg = (NLAIC::CSelfClassFactory&)*((CGoalMsgClass::IdGoalMsgClass).getFactory());
-		fg = CGoalMsgClass(CGoalMsgClass::IdGoalMsgClass);
-		((CGoalMsgClass *)fh.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CGoalMsgClass::IdGoalMsgClass));
-
-		NLAIC::CSelfClassFactory &fj = (NLAIC::CSelfClassFactory&)*((CDebugMsgClass::IdDebugMsgClass).getFactory());
-		fj = CDebugMsgClass(CDebugMsgClass::IdDebugMsgClass);
-		((CDebugMsgClass *)fj.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CDebugMsgClass::IdDebugMsgClass));
-
-		NLAIC::CSelfClassFactory &fa = (NLAIC::CSelfClassFactory&)*((CManagerClass::IdManagerClass).getFactory());
-		fa = CManagerClass(CManagerClass::IdManagerClass);
-		((CManagerClass *)fa.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CManagerClass::IdManagerClass));
-
-		NLAIC::CSelfClassFactory &fl = (NLAIC::CSelfClassFactory&)*((COnChangeMsgClass::IdOnChangeMsgClass).getFactory());
-		fl = COnChangeMsgClass(COnChangeMsgClass::IdOnChangeMsgClass);
-		((COnChangeMsgClass *)fa.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)COnChangeMsgClass::IdOnChangeMsgClass));
-		NLAIAGENT::DigitalType::NullOperator.incRef();*/
 	}
 }

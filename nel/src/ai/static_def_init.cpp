@@ -594,6 +594,11 @@ namespace NLAISCRIPT
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
+	static CCancelGoalMsgClass cancelGoalMsgClass(NLAIAGENT::CStringVarName("XXX_CancelGoalMsg"));
+	const NLAIC::CIdentType CCancelGoalMsgClass::IdCancelGoalMsgClass("CancelGoalMsg", CClassInterpretFactory((const IClassInterpret &)cancelGoalMsgClass),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
 	static CFactMsgClass factMsgClass(NLAIAGENT::CStringVarName("XXX_MsgFact"));
 	const NLAIC::CIdentType CFactMsgClass::IdFactMsgClass("FactMsg", CClassInterpretFactory((const IClassInterpret &)factMsgClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
@@ -622,7 +627,7 @@ namespace NLAISCRIPT
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	static COperatorClass operatorClass(NLAIAGENT::CStringVarName("Operator"));
+	static COperatorClass operatorClass(NLAIAGENT::CStringVarName("XXX_Operator"));
 	const NLAIC::CIdentType COperatorClass::IdOperatorClass("Operator", CClassInterpretFactory((const IClassInterpret &)operatorClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
@@ -652,6 +657,10 @@ namespace NLAISCRIPT
 			NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CGoalMsg::IdGoalMsg("GoalMsgScript", NLAIC::CSelfClassFactory( CGoalMsg(&NLAISCRIPT::goalMsgClass) ),
+																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+																NLAIC::CTypeOfOperator::opEq );
+
+	const NLAIC::CIdentType CCancelGoalMsg::IdCancelGoalMsg("CancelGoalMsgScript", NLAIC::CSelfClassFactory( CCancelGoalMsg(&NLAISCRIPT::cancelGoalMsgClass) ),
 																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 																NLAIC::CTypeOfOperator::opEq );
 

@@ -89,7 +89,7 @@ namespace NLAISCRIPT
 
 	COperatorClass::~COperatorClass()
 	{
-		/*
+		
 		int i;
 		for ( i = 0; i < (int) _CondCode.size(); i++ )
 		{
@@ -100,7 +100,7 @@ namespace NLAISCRIPT
 		{
 			( (NLAIAGENT::IVarName *)_ConcCode[i] )->release();
 		}
-
+/*
 		for ( i = 0; i < (int) _CondAsserts.size(); i++ )
 		{
 			( (NLAIAGENT::IVarName *) _CondAsserts[i] )->release();
@@ -519,13 +519,13 @@ namespace NLAISCRIPT
 	/// PreConditions code must be any piece of code that returns an object that is true or false using the isTrue() function.
 	void COperatorClass::addCodeCond(IOpCode *code)
 	{
-		_CondCode.push_back( code );
+		_CondCode.push_back( (IOpCode *) code->clone() );
 	}
 
 	/// PostConditions code is code that will be executed upon completion of the execution of the operator
 	void COperatorClass::addCodeConc(IOpCode *code)
 	{
-		_ConcCode.push_back( code );
+		_ConcCode.push_back( (IOpCode *) code->clone() );
 	}
 
 	/// Compiles the conds and concs internaly

@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.5 2001/04/03 08:45:28 chafik Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.6 2001/04/03 10:05:04 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,6 @@
 
 namespace NLAISCRIPT
 {
-
 	NLAIAGENT::TProcessStatement CLibMemberMethod::runOpCode(CCodeContext &context)
 	{
 		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];

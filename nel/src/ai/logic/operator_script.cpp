@@ -12,6 +12,7 @@ namespace NLAIAGENT
 	COperatorScript::COperatorScript(const COperatorScript &a) : CAgentScript(a)
 	{
 		_Activated = a._Activated;
+		_CurrentGoal = a._CurrentGoal;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -21,11 +22,13 @@ namespace NLAIAGENT
 	: CAgentScript(manager, father, components, actor_class )
 	{	
 		_Activated = false;
+		_CurrentGoal = NULL;
 	}	
 
 	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
 	{
 		_Activated = false;
+		_CurrentGoal = NULL;
 	}
 
 	COperatorScript::~COperatorScript()
@@ -195,6 +198,11 @@ namespace NLAIAGENT
 		if ( activated_goals.size() )
 		{
 			is_activated = true;
+			// Registers with the goal and gets the args
+			NLAILOGIC::CGoal *current_goal = activated_goals.front();
+			current_goal->addSuccessor( (IBasicAgent *) this );
+
+
 			// Checks the boolean funcs conditions
 			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
 			context->Self = this;
@@ -205,8 +213,6 @@ namespace NLAIAGENT
 		}
 		else
 			is_activated = false;
-
-
 
 		// Runs the operator if every precondition is validated	
 		if ( is_activated )
@@ -232,5 +238,9 @@ namespace NLAIAGENT
 			setState(processIdle,NULL);			
 			return IObjectIA::ProcessRun;
 		}
+	}
+
+	void COperatorScript::cancel()
+	{
 	}
 }

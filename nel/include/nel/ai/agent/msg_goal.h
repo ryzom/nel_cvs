@@ -1,6 +1,6 @@
 /** \file msg_goal.h
  *
- * $Id: msg_goal.h,v 1.4 2001/03/08 13:42:56 portier Exp $
+ * $Id: msg_goal.h,v 1.5 2001/04/03 10:04:58 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,39 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *newInstance() const
 		{
 			return new CGoalMsg();
+		}
+		const NLAIC::CIdentType &getType() const;
+		void getDebugString(char *t) const;
+
+
+		tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+		IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
+		IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
+
+		virtual sint32 getBaseMethodCount() const;
+
+		//@}			
+
+	};
+
+	class CCancelGoalMsg : public CMessageScript 
+	{
+	public:
+		static const NLAIC::CIdentType IdCancelGoalMsg;
+	public:
+		CCancelGoalMsg(const CCancelGoalMsg &);
+		CCancelGoalMsg( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
+		CCancelGoalMsg(NLAISCRIPT::CMessageClass *b = NULL);
+		CCancelGoalMsg(IBasicAgent *);
+		~CCancelGoalMsg();
+
+
+		/// \name NLAIC::IBasicInterface member class. 
+		//@{		
+		virtual const NLAIC::IBasicType *clone() const;		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return new CCancelGoalMsg();
 		}
 		const NLAIC::CIdentType &getType() const;
 		void getDebugString(char *t) const;

@@ -1,7 +1,7 @@
 /** \file interpret_object_message.h
  * Class for define an message class in the interpreter.
  *
- * $Id: interpret_object_message.h,v 1.15 2001/03/14 13:19:25 chafik Exp $
+ * $Id: interpret_object_message.h,v 1.16 2001/04/03 10:04:58 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -88,6 +88,28 @@ namespace NLAISCRIPT
 		virtual const NLAIC::CIdentType &getType() const
 		{
 			return IdGoalMsgClass;
+		}
+		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
+		//@}
+	};
+
+	class CCancelGoalMsgClass : public CMessageClass
+	{
+	public:
+		static const NLAIC::CIdentType IdCancelGoalMsgClass;
+	public:
+		CCancelGoalMsgClass(const NLAIAGENT::IVarName &);
+		CCancelGoalMsgClass(const NLAIC::CIdentType &);
+		CCancelGoalMsgClass();
+		~CCancelGoalMsgClass(){}
+
+		/// \name CAgentClass method.
+		//@{
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
+		virtual const NLAIC::CIdentType &getType() const
+		{
+			return IdCancelGoalMsgClass;
 		}
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
 		//@}

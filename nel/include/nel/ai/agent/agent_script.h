@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.22 2001/03/28 12:15:26 portier Exp $
+ * $Id: agent_script.h,v 1.23 2001/04/03 10:04:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,8 @@ namespace NLAIAGENT
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
 			TRunTellParentNotify, ///the offest of the runTellParentNotify method.
 			/////////////////////////////////////////////////////////////////////
-			TGoal,	// Message to receive goals
+			TGoal,			// Message to receive goals
+			TCancelGoal,	// Message to cancel goals
 			TFact,	// Message to receive facts
 			/////////////////////////////////////////////////////////////////////
 			TLastM ///The count of export method.
@@ -293,6 +294,7 @@ namespace NLAIAGENT
 	public:
 		virtual NLAILOGIC::CFactBase &getFactBase();
 		IObjectIA::CProcessResult runGoalMsg(IBaseGroupType *);
+		IObjectIA::CProcessResult runCancelGoalMsg(IBaseGroupType *);
 		IObjectIA::CProcessResult runFactMsg(IBaseGroupType *);
 
 		std::vector<NLAILOGIC::CGoal *>	&getGoalStack()

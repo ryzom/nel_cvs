@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.44 2001/04/03 08:45:28 chafik Exp $
+ * $Id: agent_script.cpp,v 1.45 2001/04/03 10:05:04 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,9 @@ namespace NLAIAGENT
 	static NLAISCRIPT::COperandSimpleListOr *ParamIdGoalMsg;
 	static NLAISCRIPT::CParam *ParamGoalMsg;
 
+	static NLAISCRIPT::COperandSimpleListOr *ParamIdCancelGoalMsg;
+	static NLAISCRIPT::CParam *ParamCancelGoalMsg;
+
 	static NLAISCRIPT::COperandSimpleListOr *ParamIdFactMsg;
 	static NLAISCRIPT::CParam *ParamFactMsg;
 
@@ -111,7 +114,15 @@ namespace NLAIAGENT
 															  new NLAIC::CIdentType(NLAIAGENT::CGoalMsg::IdGoalMsg),
 															  new NLAIC::CIdentType(NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass)	);
 
+
 		ParamGoalMsg = new NLAISCRIPT::CParam(1,ParamIdGoalMsg);
+
+		ParamIdCancelGoalMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+															  new NLAIC::CIdentType(NLAIAGENT::CCancelGoalMsg::IdCancelGoalMsg),
+															  new NLAIC::CIdentType(NLAISCRIPT::CCancelGoalMsgClass::IdCancelGoalMsgClass)	);
+
+		ParamCancelGoalMsg = new NLAISCRIPT::CParam(1,ParamIdCancelGoalMsg);
+
 
 		ParamIdFactMsg = new NLAISCRIPT::COperandSimpleListOr(2,
 														new NLAIC::CIdentType(NLAIAGENT::CFactMsg::IdFactMsg),
@@ -184,6 +195,12 @@ namespace NLAIAGENT
 																			1,
 																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
 
+		StaticMethod[CAgentScript::TCancelGoal] = new CAgentScript::CMethodCall(	_RUNACHIEVE_, 
+																			CAgentScript::TGoal, ParamCancelGoalMsg,
+																			CAgentScript::CheckAll,
+																			1,
+																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
+
 
 		StaticMethod[CAgentScript::TFact] = new CAgentScript::CMethodCall(	_RUNTEL_, 
 																			CAgentScript::TFact, ParamFactMsg,
@@ -230,6 +247,7 @@ namespace NLAIAGENT
 	// IdGoalMsgClass->release();
 	// IdGoalMsg->release();
 		ParamGoalMsg->release();
+		ParamCancelGoalMsg->release();
 	////////////////////////////////////////////////////////////////////////
 
 		ParamRunParentNotify->release();
@@ -249,18 +267,23 @@ namespace NLAIAGENT
 		}
 
 		_NbComponents = a._NbComponents;
-		_Components = new IObjectIA *[ _NbComponents ];
-		//sint32 nb_scripted = 0;
-		for ( int i = 0; i < _NbComponents; i++ )
+		if ( _NbComponents != 0 )
 		{
-			_Components[i] = (IObjectIA *)a._Components[i]->clone();		
-
-			if(((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+			_Components = new IObjectIA *[ _NbComponents ];
+			//sint32 nb_scripted = 0;
+			for ( int i = 0; i < _NbComponents; i++ )
 			{
-				///incRef();
-				((CAgentScript *)_Components[i])->setParent( (const IWordNumRef *) *this);
+				_Components[i] = (IObjectIA *)a._Components[i]->clone();		
+
+				if(((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+				{
+					///incRef();
+					((CAgentScript *)_Components[i])->setParent( (const IWordNumRef *) *this);
+				}
 			}
 		}
+		else
+			_Components = NULL;
 
 		_AgentManager = a._AgentManager;
 		//if(_AgentManager) _AgentManager->incRef();
@@ -291,24 +314,29 @@ namespace NLAIAGENT
 
 		// Creates the static components array
 		_NbComponents = components.size();
-		_Components = new IObjectIA *[ _NbComponents ];
-		std::list<IObjectIA *>::iterator it_c = components.begin();
-		int id_c = 0;
-		//sint32 nb_scripted = 0;
-		_AgentManager = manager;
-		while ( it_c != components.end() )
+		if ( _NbComponents )
 		{
-			IObjectIA *o = (IObjectIA *)*it_c;
-			_Components[id_c] = o;
-
-			if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+			_Components = new IObjectIA *[ _NbComponents ];
+			std::list<IObjectIA *>::iterator it_c = components.begin();
+			int id_c = 0;
+			//sint32 nb_scripted = 0;
+			_AgentManager = manager;
+			while ( it_c != components.end() )
 			{
-				((CAgentScript *)o)->setParent( (const IWordNumRef *) *this);
-			}
+				IObjectIA *o = (IObjectIA *)*it_c;
+				_Components[id_c] = o;
 
-			it_c++;
-			id_c++;
-		}		
+				if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+				{
+					((CAgentScript *)o)->setParent( (const IWordNumRef *) *this);
+				}
+
+				it_c++;
+				id_c++;
+			}		
+		}
+		else
+			_Components =NULL;
 	}	
 
 	CAgentScript::~CAgentScript()
@@ -1085,6 +1113,12 @@ namespace NLAIAGENT
 				return runGoalMsg((IBaseGroupType *)o);
 			}
 
+		case TCancelGoal:
+			{				
+				return runCancelGoalMsg((IBaseGroupType *)o);
+			}
+
+
 		case TFact:
 			{				
 				return runFactMsg((IBaseGroupType *)o);
@@ -1160,6 +1194,12 @@ namespace NLAIAGENT
 			{				
 				return runGoalMsg((IBaseGroupType *)o);
 			}
+
+		case TCancelGoal:
+			{				
+				return runCancelGoalMsg((IBaseGroupType *)o);
+			}
+
 	////////////////////////////////////////////////////////////////////////
 
 		default:
@@ -1435,6 +1475,7 @@ namespace NLAIAGENT
 		char buffer[1024 * 2];
 		goal->getDebugString( buffer );
 #endif
+		goal->setReceiver( (IBasicAgent *) this );
 		_GoalStack.push_back( goal );
 
 		IObjectIA::CProcessResult r;
@@ -1445,6 +1486,27 @@ namespace NLAIAGENT
 		context.Stack[(int)context.Stack] = new CGoalMsg();
 		return r;
 	}
+
+	IObjectIA::CProcessResult CAgentScript::runCancelGoalMsg(IBaseGroupType *g)
+	{
+		CGoalMsg *goal_msg = (CGoalMsg *) g->get();
+		NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) goal_msg->get()->clone();
+#ifdef NL_DEBUG
+		char buffer[1024 * 2];
+		goal->getDebugString( buffer );
+#endif
+/*		goal->setReceiver( (IBasicAgent *) this );
+		_GoalStack.push_back( goal );
+*/
+		IObjectIA::CProcessResult r;
+		r.Result = NULL;
+
+		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
+		context.Stack++;
+		context.Stack[(int)context.Stack] = new CGoalMsg();
+		return r;
+	}
+
 
 	IObjectIA::CProcessResult CAgentScript::runFactMsg(IBaseGroupType *g)
 	{

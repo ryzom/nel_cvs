@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.5 2001/03/30 15:09:15 portier Exp $
+ * $Id: msg_goal.cpp,v 1.6 2001/04/03 10:05:04 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,6 +141,123 @@ namespace NLAIAGENT
 	}
 
 	sint32 CGoalMsg::getBaseMethodCount() const
+	{
+		return CMessageScript::getBaseMethodCount() + 1;
+	}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	CCancelGoalMsg::CCancelGoalMsg( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
+	{
+		set(0, new NLAILOGIC::CGoal());
+	}
+
+	CCancelGoalMsg::CCancelGoalMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
+	{		
+		CVectorGroupType *x = new CVectorGroupType(1);		
+		setMessageGroup(x);
+		setGroup(CMessageGroup::msgScriptingGroup);		
+		set(0, new NLAILOGIC::CGoal());
+	}
+
+	CCancelGoalMsg::CCancelGoalMsg(IBasicAgent *agent):
+			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CCancelGoalMsgClass::IdCancelGoalMsgClass.getFactory()->getClass())
+	{		
+		CVectorGroupType *x = new CVectorGroupType(1);
+		setMessageGroup(x);
+		setGroup(CMessageGroup::msgScriptingGroup);
+		set(0, new NLAILOGIC::CGoal());
+ 	}
+
+	CCancelGoalMsg::CCancelGoalMsg(const CCancelGoalMsg &m): CMessageScript(m)
+	{
+	}
+
+	CCancelGoalMsg::~CCancelGoalMsg()
+	{
+		
+	}
+
+	const NLAIC::IBasicType *CCancelGoalMsg::clone() const
+	{
+		const NLAIC::IBasicType *x;
+		x = new CCancelGoalMsg(*this);
+		return x;
+	}
+
+	const NLAIC::CIdentType &CCancelGoalMsg::getType() const
+	{
+		if ( getCreatorClass() ) 
+			return getCreatorClass()->getType();
+		else
+			return IdCancelGoalMsg;
+	}	
+
+	void CCancelGoalMsg::getDebugString(char *t) const
+	{
+/*		double i = ((const INombreDefine *)getFront())->getNumber();
+		if(i != 0.0)
+		{
+			char txt[1024*4];
+			get()->getDebugString(txt);
+			sprintf(t,"CCancelGoalMsg<true,%s>",txt);
+		}
+		else
+		{*/
+			sprintf(t,"CCancelGoalMsg<false,NULL>");
+//		}
+	}
+
+
+	tQueue CCancelGoalMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
+	{
+
+		tQueue r;
+
+		if(className == NULL)
+		{
+			if( (*funcName) == CStringVarName( "Constructor" ) )
+			{					
+				r.push( CIdMethod( IMessageBase::getMethodIndexSize(), 0.0, NULL, new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) ) );			
+			}
+		}
+
+		if ( r.empty() )
+			return CMessageScript::isMember(className, funcName, params);
+		else
+			return r;
+	}
+
+	NLAIAGENT::IObjectIA::CProcessResult CCancelGoalMsg::runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *)
+	{
+		return IObjectIA::CProcessResult();
+	}
+
+	IObjectIA::CProcessResult CCancelGoalMsg::runMethodeMember(sint32 index, IObjectIA *context)
+	{
+		IBaseGroupType *param = (IBaseGroupType *) ( (NLAISCRIPT::CCodeContext *)context )->Param.back();
+
+		switch(index - IMessageBase::getMethodIndexSize())
+		{
+		case 0:
+			{					
+				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->get()->clone();
+				param->popFront();
+#ifdef NL_DEBUG
+				char buffer[1024 * 2];
+				goal->getDebugString( buffer );
+#endif
+				set(0, goal);
+			}
+			break;
+		}
+		return IObjectIA::CProcessResult();
+	}
+
+	sint32 CCancelGoalMsg::getBaseMethodCount() const
 	{
 		return CMessageScript::getBaseMethodCount() + 1;
 	}

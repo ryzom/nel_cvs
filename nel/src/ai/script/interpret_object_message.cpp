@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.18 2001/03/28 12:15:14 portier Exp $
+ * $Id: interpret_object_message.cpp,v 1.19 2001/04/03 10:05:04 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,6 +190,53 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CGoalMsg( components,  (CMessageClass *) this );		
 		return x;
 	}	
+
+
+//#########################################
+//		CCancelGoalMsgClass
+//#########################################
+
+	CCancelGoalMsgClass::CCancelGoalMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CCancelGoalMsg::IdCancelGoalMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("GoalObject"),NLAIAGENT::CStringVarName("Goal"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+	CCancelGoalMsgClass::CCancelGoalMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CCancelGoalMsg::IdCancelGoalMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("GoalObject"),NLAIAGENT::CStringVarName("Goal"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+
+	CCancelGoalMsgClass::CCancelGoalMsgClass()
+	{		
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CCancelGoalMsg::IdCancelGoalMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("GoalObject"),NLAIAGENT::CStringVarName("Goal"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+	
+	const NLAIC::IBasicType *CCancelGoalMsgClass::clone() const
+	{
+		return new CCancelGoalMsgClass();
+	}
+
+	const NLAIC::IBasicType *CCancelGoalMsgClass::newInstance() const
+	{
+		return new CCancelGoalMsgClass();
+	}
+
+	NLAIAGENT::IObjectIA *CCancelGoalMsgClass::buildNewInstance() const
+	{
+//		return new NLAIAGENT::CGoalMsg( (CMessageClass *) this );
+		std::list<NLAIAGENT::IObjectIA *> components;
+		createBaseClassComponents( components );
+
+		// Création du message
+		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CCancelGoalMsg( components,  (CMessageClass *) this );
+		return x;
+	}	
+
 
 
 //#########################################

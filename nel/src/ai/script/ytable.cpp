@@ -1384,7 +1384,7 @@ case 48:
 
 									while ( _LastCodeBranche.size() )
 									{
-										op_class->addCodeCond( _LastCodeBranche.front() );
+										op_class->addCodeConc( _LastCodeBranche.front() );
 										_LastCodeBranche.pop_front();
 									}
 								}

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.7 2001/03/08 13:42:56 portier Exp $
+ * $Id: goal.h,v 1.8 2001/04/03 10:04:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_GOAL_
 
 #include "nel/ai/logic/boolval.h"
-//#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent.h"
 
 namespace NLAILOGIC 
 {
@@ -38,8 +38,13 @@ namespace NLAILOGIC
 		private:
 			NLAIAGENT::IVarName *_Name;
 			std::vector<NLAIAGENT::IObjectIA *>	_Args;
-			std::vector<IBaseOperator *>		_Successors;
-			std::vector<IBaseOperator *>		_Predecessors;
+			std::vector<NLAIAGENT::IBasicAgent *>	_Predecessors;
+			std::vector<NLAIAGENT::IBasicAgent *>	_Successors;
+
+			NLAIAGENT::IBasicAgent *_Sender;
+			NLAIAGENT::IBasicAgent *_Receiver;
+
+
 		public:
 
 			CGoal();
@@ -52,14 +57,14 @@ namespace NLAILOGIC
 
 			static const NLAIC::CIdentType IdGoal;
 
-			void addSuccessor(IBaseOperator *);
-			void addPredecessor(IBaseOperator *);
+			void addSuccessor(NLAIAGENT::IBasicAgent *);
+			void addPredecessor(NLAIAGENT::IBasicAgent *);
 
 			virtual void failure();
 			virtual void success();
 
-			virtual void operatorSucces(IBaseOperator *);
-			virtual void operatorFailure(IBaseOperator *);
+			virtual void operatorSucces(NLAIAGENT::IBasicAgent *);
+			virtual void operatorFailure(NLAIAGENT::IBasicAgent *);
 
 			const std::vector<IBaseOperator *> getOperators();
 
@@ -87,6 +92,14 @@ namespace NLAILOGIC
 			}
 
 			virtual bool operator==(const CGoal &);
+
+			void setSender(NLAIAGENT::IBasicAgent *);
+			void setReceiver(NLAIAGENT::IBasicAgent *);
+
+			NLAIAGENT::IBasicAgent *getSender();
+			NLAIAGENT::IBasicAgent *getReceiver();
+
+			virtual void cancel();
 	};
 }
 

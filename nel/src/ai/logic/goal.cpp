@@ -1,17 +1,22 @@
 #include "nel/ai/logic/goal.h"
 #include "nel/ai/logic/var.h"
 #include "nel/ai/agent/object_type.h"
+#include "nel/ai/logic/operator_script.h"
 
 namespace NLAILOGIC
 {
 	CGoal::CGoal() : IBaseBoolType()
 	{
 		_Name = NULL;
+		_Sender = NULL;
+		_Receiver = NULL;
 	}
 		
 	CGoal::CGoal(const NLAIAGENT::IVarName &name) : IBaseBoolType()
 	{
 		_Name = (NLAIAGENT::IVarName *) name.clone();
+		_Sender = NULL;
+		_Receiver = NULL;
 	}
 
 	CGoal::CGoal(const NLAIAGENT::IVarName &name, std::list<const NLAIAGENT::IObjectIA *> &args)
@@ -22,6 +27,8 @@ namespace NLAILOGIC
 			_Args.push_back( (NLAIAGENT::IObjectIA *) args.front() );
 			args.pop_front();
 		}
+		_Sender = NULL;
+		_Receiver = NULL;
 	}
 
 	CGoal::CGoal(const CGoal &c) : IBaseBoolType()
@@ -30,6 +37,8 @@ namespace NLAILOGIC
 			_Name = (NLAIAGENT::IVarName *) c._Name->clone();
 		else
 			_Name = NULL;
+		_Sender = NULL;
+		_Receiver = NULL;
 	}
 
 	CGoal::~CGoal()
@@ -37,8 +46,7 @@ namespace NLAILOGIC
 		if ( _Name )
 			_Name->release();
 
-		int i;
-		for ( i = 0; i < (int) _Args.size(); i++ )
+		int i;		for ( i = 0; i < (int) _Args.size(); i++ )
 			_Args[i]->release();
 	}
 
@@ -58,12 +66,12 @@ namespace NLAILOGIC
 		}
 	}
 
-	void CGoal::operatorSucces(IBaseOperator *)
+	void CGoal::operatorSucces(NLAIAGENT::IBasicAgent *)
 	{
 
 	}
 
-	void CGoal::operatorFailure(IBaseOperator *)
+	void CGoal::operatorFailure(NLAIAGENT::IBasicAgent *)
 	{
 
 	}
@@ -184,7 +192,7 @@ namespace NLAILOGIC
 		case 0:
 			{					
 
-				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->get()->clone();
+				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->getFront()->clone();
 				param->popFront();
 #ifdef NL_DEBUG
 				const char *dbg_name = name->getStr().getString();
@@ -215,12 +223,14 @@ namespace NLAILOGIC
 	}
 	//@}
 
-	void CGoal::addSuccessor(IBaseOperator *succ)
+	void CGoal::addSuccessor(NLAIAGENT::IBasicAgent *s)
 	{
+		_Successors.push_back(s);
 	}
 
-	void CGoal::addPredecessor(IBaseOperator *pred)
+	void CGoal::addPredecessor(NLAIAGENT::IBasicAgent *p)
 	{
+		_Predecessors.push_back(p);
 	}
 
 	bool CGoal::operator==(const CGoal &g)
@@ -229,5 +239,33 @@ namespace NLAILOGIC
 			return true;
 
 		return false;
+	}
+
+	void CGoal::setSender(NLAIAGENT::IBasicAgent *s)
+	{
+		_Sender = s;
+	}
+
+	void CGoal::setReceiver(NLAIAGENT::IBasicAgent *r)
+	{
+		_Receiver = r;
+	}
+
+	NLAIAGENT::IBasicAgent *CGoal::getSender()
+	{
+		return _Sender;
+	}
+
+	NLAIAGENT::IBasicAgent *CGoal::getReceiver()
+	{
+		return _Receiver;
+	}
+
+	void CGoal::cancel()
+	{
+		for ( int i = 0; i < (int) _Successors.size(); i++ )
+		{
+			( (NLAIAGENT::COperatorScript *)_Successors[i] )->cancel();
+		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.94 2001/10/24 09:59:34 besson Exp $
+ * $Id: driver_opengl.h,v 1.95 2001/10/26 08:27:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -505,6 +505,15 @@ public:
 	virtual	void			setupFog(float start, float end, CRGBA color);
 	// @}
 
+	/// \name texture addressing modes
+	// @{
+	virtual bool supportTextureShaders() const;
+
+	virtual bool isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const;
+
+	virtual void setMatrix2DForTextureOffsetAddrMode(const float mat[4]);
+	// @}
+
 
 private:
 	friend class					CTextureDrvInfosGL;
@@ -580,7 +589,7 @@ private:
 	// OpenGL extensions Extensions.
 	CGlExtensions			_Extensions;
 	// Say if palette skinning can be done in Hardware
-	bool					_PaletteSkinHard;
+	bool					_PaletteSkinHard;	
 	// @}
 
 
@@ -659,6 +668,8 @@ private:
 	CMaterial::CTexEnv		_CurrentTexEnv[IDRV_MAT_MAXTEXTURES];
 	// Special Texture Environnement.
 	CTexEnvSpecial			_CurrentTexEnvSpecial[IDRV_MAT_MAXTEXTURES];
+	// Texture addressing mode
+	GLenum					_CurrentTexAddrMode[IDRV_MAT_MAXTEXTURES];
 
 	// Prec settings for material.
 	CDriverGLStates			_DriverGLStates;

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.12 2001/07/12 15:56:40 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.13 2001/07/13 17:04:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,6 +96,12 @@ void CParticleSystemShape::buildFromPS(const CParticleSystem &ps)
 }
 
 
+void	CParticleSystemShape::getAABBox(NLMISC::CAABBox &bbox) const
+{
+	bbox.setCenter(NLMISC::CVector::Null) ;
+	bbox.setHalfSize(NLMISC::CVector(1, 1, 1)) ;
+}
+
 CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 {
 	CTransformShape		*ps = (CTransformShape		*) scene.createModel(NL3D::ParticleSystemModelId);
@@ -111,6 +117,8 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 		_ParticleSystemProto.invert() ;
 	}
 
+	_ParticleSystemProto.resetPtrTable() ;
+	_ParticleSystemProto.seek(0, IStream::begin) ;
 	_ParticleSystemProto.serialPtr(myInstance) ; // instanciate the system
 	
 	nlassert(dynamic_cast<CParticleSystemModel *>(ps)) ;
@@ -120,13 +128,6 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 	return ps ;
 }
 
-
-
-bool CParticleSystemShape::clip(const std::vector<CPlane>	&pyramid)
-{
-	// TODO
-	return true ;
-}
 
 
 void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool passOpaque)

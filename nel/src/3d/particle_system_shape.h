@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.4 2001/07/12 15:55:45 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.5 2001/07/13 17:04:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,12 +81,6 @@ public:
 	/// \name From IShape
 	// @{
 
-	/** clip this system with a pyramid.
-	 * the pyramid is given in object space so the shape do not need to know the matrix of the object.
-	 * \param pyramid the clipping polytope, planes MUST be normalized.
-	 * \return true if the object is visible, false otherwise. The default behavior is to return true (never clipped).
-	 */
-	virtual bool				clip(const std::vector<CPlane>	&pyramid) ;
 
 	/** render() a particle system in a driver, with the specified TransformShape information.
 	 * CTransfromShape call this method in the render traversal.
@@ -115,6 +109,10 @@ public:
 		nlassert(numTrack < 4) ;
 		return &_UserParamDefaultTrack[numTrack] ;
 	}
+
+
+	/// always return a unit bounding box. Only a model of particle system can compute his bounding box
+	virtual	void	getAABBox(NLMISC::CAABBox &bbox) const ;
 
 protected:
 

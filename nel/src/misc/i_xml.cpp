@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.2 2001/10/09 16:20:26 corvazier Exp $
+ * $Id: i_xml.cpp,v 1.3 2001/10/25 08:17:25 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -205,7 +205,7 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 	if ( _Parser )
 	{
 		// Current node presents ?
-		if (_CurrentNode)
+		if (_CurrentElement)
 		{
 			// Write a push attribute ?
 			if (_PushBegin)
@@ -228,7 +228,7 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 					else
 					{
 						// Node name must not be NULL
-						nlassert (_CurrentNode->name);
+						nlassert (_CurrentElement->name);
 
 						// Make an error message
 						char tmp[512];
@@ -600,9 +600,6 @@ bool CIXml::xmlPushBeginInternal (const char *nodeName)
 					// Save current element
 					_CurrentElement = _CurrentNode;
 
-					// Get first child
-					_CurrentNode = _CurrentNode->children;
-
 					// Stop searching
 					break;
 				}
@@ -622,6 +619,9 @@ bool CIXml::xmlPushBeginInternal (const char *nodeName)
 				throw EXmlParsingError (tmp);
 			}
 			
+			// Get first child
+			_CurrentNode = _CurrentNode->children;
+
 			// Push begun
 			_PushBegin = true;
 

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.33 2002/03/14 09:47:57 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.34 2002/03/21 13:30:51 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,7 +117,6 @@ void	cbDisconnection(TSockId from, void *arg)
 		{
 			// remove it from the table
 			instance->_ConnectionStack.erase (instance->_ConnectionStack.begin()+i);
-//			nlinfo ("**************************************************************************** OKAY CNX->DCNX in the same loop");
 		}
 		else
 		{
@@ -1041,6 +1040,15 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 	
 	if (count <= 0)
 	{
+		// service might not be in table yet, look in _ConnectionStack
+		uint	i;
+		for (i=0; i<_ConnectionStack.size(); ++i)
+			if (_ConnectionStack[i].SName == name)
+			{
+				host = _ConnectionStack[i].SHost;
+				return _CbServer;
+			}
+
 		nlwarning("HNETL5: couldn't access the service %s", name.c_str());
 		return NULL;
 	}
@@ -1071,6 +1079,15 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
 
 	if (sid>=idAccess.value().size() || !idAccess.value()[sid].EntryUsed || !idAccess.value()[sid].EntryUsed)
 	{
+		// service might not be in table yet, look in _ConnectionStack
+		uint	i;
+		for (i=0; i<_ConnectionStack.size(); ++i)
+			if (_ConnectionStack[i].SId == sid)
+			{
+				host = _ConnectionStack[i].SHost;
+				return _CbServer;
+			}
+
 		nlwarning("HNETL5: incorrect service id %d to get netbase", sid);
 		return NULL;
 	}

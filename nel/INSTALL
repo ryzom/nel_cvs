@@ -4,10 +4,10 @@ Requirements
 
    The NeL library need the following libraries :
 
-      - STLPort  4.0   <URL:http://www.stlport.org/>
-      - FreeType 2     <URL:http://freetype.sourceforge.net/>
-      - Python   1.5   <URL:http://www.python.org/>
-      - OpenAL         <URL:http://www.openal.org/>
+      - STLPort 4.0    <URL:http://www.stlport.org/>            (Mandatory)
+      - FreeType 2     <URL:http://freetype.sourceforge.net/>   (NeL 3D)
+      - OpenAL         <URL:http://www.openal.org/>             (NeL Sound)
+      - Python 1.5     <URL:http://www.python.org/>             (NeL AI)
 
    STLPort need to be compiled. NeL is using the SGI iostreams and it require
    the STLPort compilation and a linking of NeL with the STLPort library.
@@ -20,7 +20,8 @@ Requirements
       - Libtool        <URL:http://www.gnu.org/software/libtool/libtool.html>
       - Lex / Flex     <URL:http://www.gnu.org/software/flex/flex.html>
       - Yacc / Bison   <URL:http://www.gnu.org/software/bison/bison.html>
-      - Mesa     3.3   <URL:http://www.mesa3d.org/>
+
+      - Mesa  3.3      <URL:http://www.mesa3d.org/>             (NeL 3D)
 
    On some OpenGL implementations, you migth have some troubles, coming from
    the <GL/glext.h> file, to get NeL to compile. This file could be missing
@@ -129,10 +130,9 @@ Compilation
       The "configure" script must be call with the "--with-stlport".
       The option "--with-stlport" allow to override the default STL headers
 
-      You migth need to specify the FreeType 2 installation prefix by using
-      the "--with-freetype" argument (ex: "/usr/local" will look for the
-      header files in "/usr/local/include" and the library files in the
-      "/usr/local/lid/ directory).
+      It is possible to compile and install only the needed part of NeL.
+      So you may, by using --disable-<net|3d|pacs> and --enable-<sound|ai>.
+      NeL Misc is mandatory and cannot be disabled.
 
       To pass additional arguments to the C++ compiler, use the command line :
 

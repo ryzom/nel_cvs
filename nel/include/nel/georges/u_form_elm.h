@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.8 2002/10/08 09:13:14 corvazier Exp $
+ * $Id: u_form_elm.h,v 1.9 2002/10/28 11:08:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,13 @@ public:
 
 	// ** Common methods
 
+	/// Value evalution
+	enum TEval
+	{		
+		NoEval,				/// The value will not be evaluated at all, the litteral value will be returned		
+		Formula,			/// Eval the enumeration value, but don't evaluate the formula nor the value references
+		Eval,				/// Full evaluation of the value
+	};
 
 	/// Where a node has been found
 	enum TWhereIsNode
@@ -105,19 +112,19 @@ public:
 	  * \return true if the result has been filled, false if the value has not been found or the cast has failed or the evaluation has failed.
 	  * \see getNodeByName ()
 	  */
-	virtual bool	getValueByName (std::string &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (sint8 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (uint8 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (sint16 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (uint16 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (sint32 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (uint32 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (float &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (double &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (bool &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (std::string &result, const char *namename, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (sint8 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (uint8 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (sint16 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (uint16 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (sint32 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (uint32 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (float &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (double &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (bool &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
 
 	/// Warning, only R, G and B members are filled, not A.
-	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
 
 	/**
 	  * Set a form value with its name. If the node doesn't exist, it is created.
@@ -177,19 +184,19 @@ public:
 	  * the position where the value has been found.
 	  * \return true if the result has been filled, false if the value has not been found or the cast has failed or the evaluation has failed.
 	  */
-	virtual bool	getArrayValue (std::string &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
-	virtual bool	getArrayValue (sint8 &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
-	virtual bool	getArrayValue (uint8 &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
-	virtual bool	getArrayValue (sint16 &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
-	virtual bool	getArrayValue (uint16 &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
-	virtual bool	getArrayValue (sint32 &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
-	virtual bool	getArrayValue (uint32 &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
-	virtual bool	getArrayValue (float &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
-	virtual bool	getArrayValue (double &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
-	virtual bool	getArrayValue (bool &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (std::string &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (sint8 &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (uint8 &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (sint16 &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (uint16 &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (sint32 &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (uint32 &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (float &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (double &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (bool &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
 
 	/// Warning, only R, G and B members are filled, not A.
-	virtual bool	getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
+	virtual bool	getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, TEval evaluate = Eval, TWhereIsValue *where = NULL) const = 0;
 
 	/// Return the name of a table element.
 	virtual bool	getArrayNodeName (std::string &result, uint arrayIndex) const = 0;
@@ -233,19 +240,19 @@ public:
 	  * \param result is the reference on the value to fill with result
 	  * \param evaluate must be true if you want to have an evaluated value, false if you want the formula value.
 	  */
-	virtual bool	getValue (std::string &result, bool evaluate = true) const = 0;
-	virtual bool	getValue (sint8 &result, bool evaluate = true) const = 0;
-	virtual bool	getValue (uint8 &result, bool evaluate = true) const = 0;
-	virtual bool	getValue (sint16 &result, bool evaluate = true) const = 0;
-	virtual bool	getValue (uint16 &result, bool evaluate = true) const = 0;
-	virtual bool	getValue (sint32 &result, bool evaluate = true) const = 0;
-	virtual bool	getValue (uint32 &result, bool evaluate = true) const = 0;
-	virtual bool	getValue (float &result, bool evaluate = true) const = 0;
-	virtual bool	getValue (double &result, bool evaluate = true) const = 0;
-	virtual bool	getValue (bool &result, bool evaluate = true) const = 0;
+	virtual bool	getValue (std::string &result, TEval evaluate = Eval) const = 0;
+	virtual bool	getValue (sint8 &result, TEval evaluate = Eval) const = 0;
+	virtual bool	getValue (uint8 &result, TEval evaluate = Eval) const = 0;
+	virtual bool	getValue (sint16 &result, TEval evaluate = Eval) const = 0;
+	virtual bool	getValue (uint16 &result, TEval evaluate = Eval) const = 0;
+	virtual bool	getValue (sint32 &result, TEval evaluate = Eval) const = 0;
+	virtual bool	getValue (uint32 &result, TEval evaluate = Eval) const = 0;
+	virtual bool	getValue (float &result, TEval evaluate = Eval) const = 0;
+	virtual bool	getValue (double &result, TEval evaluate = Eval) const = 0;
+	virtual bool	getValue (bool &result, TEval evaluate = Eval) const = 0;
 
 	/// Warning, only R, G and B members are filled, not A.
-	virtual bool	getValue (NLMISC::CRGBA &result, bool evaluate = true) const = 0;
+	virtual bool	getValue (NLMISC::CRGBA &result, TEval evaluate = Eval) const = 0;
 };
 
 } // NLGEORGES

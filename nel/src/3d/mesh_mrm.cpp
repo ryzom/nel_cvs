@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.6 2001/06/20 11:54:46 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.7 2001/06/21 12:58:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/mrm_parameters.h"
 #include "3d/mesh_mrm_instance.h"
 #include "3d/scene.h"
+#include "3d/skeleton_model.h"
 #include "nel/misc/common.h"
 
 
@@ -55,6 +56,7 @@ static	NLMISC::CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
 // ***************************************************************************
 CMeshMRM::CMeshMRM()
 {
+	_Skinned= false;
 }
 
 
@@ -96,7 +98,14 @@ void			CMeshMRM::build(CMesh::CMeshBuild &m)
 	// Then just copy result!
 	_VBuffer= meshBuildMRM.VBuffer;
 	_Lods= meshBuildMRM.Lods;
+	_Skinned= meshBuildMRM.Skinned;
 
+	
+	// For skinning.
+	if( _Skinned )
+	{
+		bkupOriginalSkinVertices();
+	}
 
 }
 
@@ -314,10 +323,10 @@ void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 	nlassert(dynamic_cast<CMeshMRMInstance*>(trans));
 	CMeshMRMInstance	*mi= (CMeshMRMInstance*)trans;
 
-
 	// TempYoyo.
+	// TODODO.
 	static	float	testTime= 0;
-	testTime+= 0.001f;
+	testTime+= 0.003f;
 	float	testAlpha= (1+(float)sin(testTime))/2;
 
 
@@ -344,12 +353,41 @@ void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 	if(lod.RdrPass.size()==0)
 		return;
 
+
+	// Skinning.
+	//===========
+	// get the skeleton model to which I am binded (else NULL).
+	CSkeletonModel		*skeleton;
+	skeleton= mi->_FatherSkeletonModel;
+	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
+	bool	skinOk= _Skinned && mi->isSkinApply() && skeleton;
+
+	// if ready to skin.
+	if(skinOk)
+	{
+		// apply skin for this Lod only.
+		applySkin(lod, skeleton->Bones);
+	}
+	// if instance skin is invalid but mesh is skinned , we must copy vertices/normals from original vertices.
+	else if(!skinOk && _Skinned)
+	{
+		// do it for this Lod only, and if cache say it is necessary.
+		if(!lod.OriginalSkinRestored)
+			restoreOriginalSkinPart(lod);
+	}
+
+
+	// Geomorph.
+	//===========
 	// Geomorph the choosen Lod (if not the coarser mesh).
 	if(numLod>0)
 	{
 		applyGeomorph(lod.Geomorphs, alphaLod);
 	}
 
+
+	// Render the lod.
+	//===========
 
 	// force normalisation of normals..
 	bool	bkupNorm= drv->isForceNormalize();
@@ -385,11 +423,251 @@ void	CMeshMRM::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// serial Materials infos contained in CMeshBase.
 	CMeshBase::serialMeshBase(f);
 
+
+	// must have good original Skinned Vertex before writing.
+	if( !f.isReading() && _Skinned )
+	{
+		restoreOriginalSkinVertices();
+	}
+
+
 	// serial geometry.
+	f.serial(_Skinned);
 	f.serial(_VBuffer);
 	f.serialCont(_Lods);
 	f.serial(_BBox);
 
+
+	// serial.
+	if( f.isReading() && _Skinned )
+	{
+		bkupOriginalSkinVertices();
+	}
+
+}
+
+
+// ***************************************************************************
+void	CMeshMRM::bkupOriginalSkinVertices()
+{
+	nlassert(_Skinned);
+
+	// Copy VBuffer content into Original vertices normals.
+	if(_VBuffer.getVertexFormat() & IDRV_VF_XYZ)
+	{
+		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
+		_OriginalSkinVertices.resize(_VBuffer.getNumVertices());
+		for(uint i=0; i<_VBuffer.getNumVertices();i++)
+		{
+			_OriginalSkinVertices[i]= *(CVector*)_VBuffer.getVertexCoordPointer(i);
+		}
+	}
+	if(_VBuffer.getVertexFormat() & IDRV_VF_NORMAL)
+	{
+		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
+		_OriginalSkinNormals.resize(_VBuffer.getNumVertices());
+		for(uint i=0; i<_VBuffer.getNumVertices();i++)
+		{
+			_OriginalSkinNormals[i]= *(CVector*)_VBuffer.getNormalCoordPointer(i);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshMRM::restoreOriginalSkinVertices()
+{
+	nlassert(_Skinned);
+
+	// Copy VBuffer content into Original vertices normals.
+	if(_VBuffer.getVertexFormat() & IDRV_VF_XYZ)
+	{
+		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
+		for(uint i=0; i<_VBuffer.getNumVertices();i++)
+		{
+			*(CVector*)_VBuffer.getVertexCoordPointer(i)= _OriginalSkinVertices[i];
+		}
+	}
+	if(_VBuffer.getVertexFormat() & IDRV_VF_NORMAL)
+	{
+		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
+		for(uint i=0; i<_VBuffer.getNumVertices();i++)
+		{
+			*(CVector*)_VBuffer.getNormalCoordPointer(i)= _OriginalSkinNormals[i];
+		}
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshMRM::restoreOriginalSkinPart(CLod &lod)
+{
+	nlassert(_Skinned);
+	if( lod.InfluencedVertices.size()==0 )
+		return;
+
+
+	// get vertexPtr / normalOff.
+	//===========================
+	uint8		*vertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
+	uint		flags= _VBuffer.getVertexFormat();
+	sint32		vertexSize= _VBuffer.getVertexSize();
+	// must have XYZ.
+	nlassert(flags & IDRV_VF_XYZ);
+
+	// Compute offset of each component of the VB.
+	sint32		normalOff;
+	if(flags & IDRV_VF_NORMAL)
+		normalOff= _VBuffer.getNormalOff();
+	else
+		normalOff= 0;
+
+
+	// copy skinning.
+	//===========================
+	uint		nInf= lod.InfluencedVertices.size();
+	uint32		*infPtr= &(lod.InfluencedVertices[0]);
+	//  for all InfluencedVertices only.
+	for(;nInf>0;nInf--, infPtr++)
+	{
+		uint	index= *infPtr;
+		uint8	*dstVertex= vertexPtr + index * vertexSize;
+		// Vertex.
+		*(CVector*)dstVertex= _OriginalSkinVertices[index];
+		// Normal.
+		if(normalOff)
+			*(CVector*)(dstVertex+normalOff)= _OriginalSkinNormals[index];
+	}
+
+
+	// clean this lod part. (NB: this is not optimal, but sufficient :) ).
+	lod.OriginalSkinRestored= true;
+}
+
+
+
+// ***************************************************************************
+// For fast vector/point multiplication.
+struct	CMatrix3x4
+{
+	// Order them in memory line first, for faster memory access.
+	float	a11, a12, a13, a14;
+	float	a21, a22, a23, a24;
+	float	a31, a32, a33, a34;
+
+	// Copy from a matrix.
+	void	set(const CMatrix &mat)
+	{
+		const float	*m =mat.get();
+		a11= m[0]; a12= m[4]; a13= m[8] ; a14= m[12]; 
+		a21= m[1]; a22= m[5]; a23= m[9] ; a24= m[13]; 
+		a31= m[2]; a32= m[6]; a33= m[10]; a34= m[14]; 
+	}
+	// mulAddvector. NB: in should be different as v!! (else don't work).
+	void	mulAddVector(const CVector &in, float scale, CVector &out)
+	{
+		out.x+= (a11*in.x + a12*in.y + a13*in.z) * scale;
+		out.y+= (a21*in.x + a22*in.y + a23*in.z) * scale;
+		out.z+= (a31*in.x + a32*in.y + a33*in.z) * scale;
+	}
+	// mulAddpoint. NB: in should be different as v!! (else don't work).
+	void	mulAddPoint(const CVector &in, float scale, CVector &out)
+	{
+		out.x+= (a11*in.x + a12*in.y + a13*in.z + a14) * scale;
+		out.y+= (a21*in.x + a22*in.y + a23*in.z + a24) * scale;
+		out.z+= (a31*in.x + a32*in.y + a33*in.z + a34) * scale;
+	}
+};
+
+
+// ***************************************************************************
+void	CMeshMRM::applySkin(CLod &lod, const std::vector<CBone> &bones)
+{
+	nlassert(_Skinned);
+	if( lod.InfluencedVertices.size()==0 )
+		return;
+
+	// get vertexPtr / normalOff.
+	//===========================
+	uint8		*vertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
+	uint		flags= _VBuffer.getVertexFormat();
+	sint32		vertexSize= _VBuffer.getVertexSize();
+	// must have XYZ.
+	nlassert(flags & IDRV_VF_XYZ);
+
+	// Compute offset of each component of the VB.
+	sint32		normalOff;
+	if(flags & IDRV_VF_NORMAL)
+		normalOff= _VBuffer.getNormalOff();
+	else
+		normalOff= 0;
+
+
+	// reset skinning.
+	//===========================
+	uint		nInf= lod.InfluencedVertices.size();
+	uint32		*infPtr= &(lod.InfluencedVertices[0]);
+	//  for all InfluencedVertices only.
+	for(;nInf>0;nInf--, infPtr++)
+	{
+		uint	index= *infPtr;
+		uint8	*dstVertex= vertexPtr + index * vertexSize;
+		// Vertex.
+		*(CVector*)dstVertex= CVector::Null;
+		// Normal.
+		if(normalOff)
+			*(CVector*)(dstVertex+normalOff)= CVector::Null;
+	}
+
+
+	// add skinning influence for all Matrix.
+	//===========================
+	for(uint i= 0; i<lod.MatrixInfluences.size(); i++)
+	{
+		// Get Matrix info.
+		CMatrixInfluence	&matInf= lod.MatrixInfluences[i];
+		const CMatrix		&boneMat= bones[matInf.MatrixId].getBoneSkinMatrix();
+		CMatrix				boneMatNormal;
+
+		// build the good boneMatNormal (with good scale inf).
+		// copy only the rot matrix.
+		boneMatNormal.setRot(boneMat);
+		// If matrix has scale...
+		if(boneMatNormal.hasScalePart())
+		{
+			// Must compute the transpose of the invert matrix. (10 times slower if not uniform scale!!)
+			boneMatNormal.invert();
+			boneMatNormal.transpose3x3();
+		}
+
+		// compute "fast" matrix 3x4.
+		CMatrix3x4			boneMat3x4;
+		CMatrix3x4			boneMatNormal3x4;
+		boneMat3x4.set(boneMat);
+		boneMatNormal3x4.set(boneMatNormal);
+
+		// for all vertices influenced by this matrix, apply the modification.
+		uint			nInf= matInf.VertexWeights.size();
+		CVertexWeight	*infPtr= &(matInf.VertexWeights[0]);
+		for(;nInf>0; nInf--, infPtr++)
+		{
+			// What vertex we must inf.
+			uint	index= infPtr->Vertex;
+			// with what weight.
+			float	w= infPtr->Weight;
+			// the dest vertex Data.
+			uint8	*dstVertex= vertexPtr + index * vertexSize;
+			// Vertex.
+			boneMat3x4.mulAddPoint(_OriginalSkinVertices[index], w, *(CVector*)dstVertex);
+			// Normal.
+			if(normalOff)
+				boneMat3x4.mulAddVector(_OriginalSkinNormals[index], w, *(CVector*)(dstVertex + normalOff));
+		}
+	}
+
+
+	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
+	lod.OriginalSkinRestored= false;
 }
 
 

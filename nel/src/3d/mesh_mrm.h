@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.2 2001/06/20 09:36:42 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.3 2001/06/21 12:58:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/mesh_base.h"
 #include "3d/mesh.h"
 #include "3d/mrm_mesh.h"
+#include "3d/bone.h"
 #include <set>
 #include <vector>
 
@@ -172,6 +173,39 @@ private:
 	};
 
 
+	/// Skinning: a single influence of a matrix on a vertex. NB: Vertex is the index in the _VBuffer.
+	struct	CVertexWeight
+	{
+		uint32		Vertex;
+		float		Weight;
+
+		void	serial(NLMISC::IStream &f)
+		{
+			f.serial(Vertex);
+			f.serial(Weight);
+		}
+	};
+
+
+	/// Skinning: The influence of a matrix on the vertices.
+	class	CMatrixInfluence
+	{
+	public:
+		/// The id of the bone in the skeleton.
+		uint32							MatrixId;
+		/// The list of influenced vertices.
+		std::vector<CVertexWeight>		VertexWeights;
+
+		void	serial(NLMISC::IStream &f)
+		{
+			sint	ver= f.serialVersion(0);
+
+			f.serial(MatrixId);
+			f.serialCont(VertexWeights);
+		}
+	};
+
+
 	/// A LOD of the MRM.
 	class	CLod
 	{
@@ -183,6 +217,19 @@ private:
 		/// List of rdr pass, for this LOD.
 		std::vector<CRdrPass>		RdrPass;
 
+		/// Skinning: list of influenced vertices (for reset), for this lod only.
+		std::vector<uint32>				InfluencedVertices;
+		/// Skinning: list of MatrixInfluence, for this lod only.
+		std::vector<CMatrixInfluence>	MatrixInfluences;
+		/// Skinning: does the VBuffer part of this Lod contains original skin vertices.
+		bool						OriginalSkinRestored;
+
+		CLod()
+		{
+			// By default, this is supposed false.
+			OriginalSkinRestored= false;
+		}
+
 		// Serialize a Lod.
 		void	serial(NLMISC::IStream &f)
 		{
@@ -191,6 +238,8 @@ private:
 			f.serial(NWedges);
 			f.serialCont(RdrPass);
 			f.serialCont(Geomorphs);
+			f.serialCont(InfluencedVertices);
+			f.serialCont(MatrixInfluences);
 		}
 	};
 
@@ -200,14 +249,14 @@ private:
 	 */
 	struct	CMeshBuildMRM
 	{
+		// This tells if the mesh is correctly skinned.
+		bool					Skinned;
+
 		// This VB is computed with CMRMBuilder and is ready to used
 		CVertexBuffer			VBuffer;
 
 		// Lod array, computed with CMRMBuilder and ready to used
 		std::vector<CLod>		Lods;
-
-		// Serialization
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	};
 	//@}
@@ -215,6 +264,11 @@ private:
 
 private:
 
+	/// Skinning: This tells if the mesh is correctly skinned (suuport skinning).
+	bool						_Skinned;
+	/// Skinning: this is the list of vertices (mirror of VBuffer), at the bind Pos.
+	std::vector<CVector>		_OriginalSkinVertices;
+	std::vector<CVector>		_OriginalSkinNormals;
 	/// The only one VBuffer of the mesh.
 	CVertexBuffer				_VBuffer;
 	/// List of Lods.
@@ -223,9 +277,19 @@ private:
 	NLMISC::CAABBoxExt			_BBox;
 
 
+
 	/// Apply the geomorph to the _VBuffer.
 	void	applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod);
 
+	/// Skinning: bkup Vertex/Normal into _OriginalSkin* from VBuffer.
+	void	bkupOriginalSkinVertices();
+	/// Skinning: restore Vertex/Normal from _OriginalSkin* to VBuffer.
+	void	restoreOriginalSkinVertices();
+
+	/// Skinning: Apply skinning to the _VBuffer (before geomorph).
+	void	applySkin(CLod &lod, const std::vector<CBone> &bones);
+	/// Skinning: same as restoreOriginalSkinVertices(), but for one Lod only.
+	void	restoreOriginalSkinPart(CLod &lod);
 
 };
 

@@ -1,7 +1,7 @@
 /** \file mrm_internal.h
  * Internal Classes for CMRMBuilder.
  *
- * $Id: mrm_internal.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mrm_internal.h,v 1.2 2001/06/21 12:58:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,10 @@ namespace NL3D
 struct	CMRMVertex
 {
 public:
+	// Original / Dest position.
 	CVector				Current,Original;
+	// For Skinning.
+	CMesh::CSkinWeight	CurrentSW, OriginalSW;
 	std::vector<sint>	SharedFaces;
 	sint				CollapsedTo;
 	// Final index in the coarser mesh.

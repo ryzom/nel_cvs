@@ -1,7 +1,7 @@
 /** \file mrm_parameters.h
- * <File description>
+ * parameters of MRM build process.
  *
- * $Id: mrm_parameters.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mrm_parameters.h,v 1.2 2001/06/21 12:58:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,17 +42,31 @@ namespace NL3D {
 class CMRMParameters
 {
 public:
+	/** For skinning, how vertex skinning is degraded, When 2 SkinWeights are blended.
+	 * SkinReductionMin is the fastest, and SkinReductionBest is the slowest (but the best).
+	 * Default is SkinReductionMax.
+	 */
+	enum	TSkinReduction
+	{
+		SkinReductionMin=0,		// NbMatrixOut= min(NbMatrixIn1, NbMatrixIn2).
+		SkinReductionMax, 		// NbMatrixOut= max(NbMatrixIn1, NbMatrixIn2).
+		SkinReductionBest, 		// NbMatrixOut= min(NbMatrixIn1 "+" NbMatrixIn2, NL3D_MESH_SKINNING_MAX_MATRIX).
+	};
+
+public:
 	/// numbers of LODs wanted (11 by default).
 	uint32			NLods;
-	/// minimum faces wanted (a divisor of number of faces in baseMesh, 50 by default)
+	/// minimum faces wanted (a divisor of number of faces in baseMesh, 20 by default)
 	uint32			Divisor;
-
+	/// If mesh is skinned, control the quality of the skinning redcution.
+	TSkinReduction	SkinReduction;
 
 	/// Constructor
 	CMRMParameters()
 	{
 		NLods= 11;
-		Divisor= 50;
+		Divisor= 20;
+		SkinReduction= SkinReductionMax;
 	}
 
 };

@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.2 2001/06/19 16:58:13 berenguier Exp $
+ * $Id: mrm_builder.h,v 1.3 2001/06/21 12:58:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "3d/mrm_mesh.h"
 #include "3d/mrm_internal.h"
+#include "3d/mrm_parameters.h"
 #include "3d/mesh.h"
 #include "3d/mesh_mrm.h"
 #include <map>
@@ -37,8 +38,6 @@
 namespace NL3D 
 {
 
-
-class	CMRMParameters;
 
 
 // ***************************************************************************
@@ -82,6 +81,12 @@ private:
 	std::vector<CMRMFaceBuild>	TmpFaces;
 	// Ordered list of Edge collapse.
 	TEdgeMap					EdgeCollapses;
+
+	// Say if the current build must compute skinning information.
+	bool						_Skinned;
+	/// If the current build is skinned, control the quality of the skinning redcution.
+	CMRMParameters::TSkinReduction	_SkinReduction;
+
 	// @}
 
 
@@ -106,6 +111,7 @@ private:
 	sint	collapseEdge(const CMRMEdge &edge);	// return num of deleted faces.
 	sint	followVertex(sint i);
 	sint	followWedge(sint attribId, sint i);
+	CMesh::CSkinWeight	collapseSkinWeight(const CMesh::CSkinWeight &sw1, const CMesh::CSkinWeight &sw2, float InterValue) const;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file mrm_mesh.cpp
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.cpp,v 1.4 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mrm_mesh.cpp,v 1.5 2001/06/21 12:58:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@ namespace NL3D
 
 // ***************************************************************************
 uint CMRMMeshFinal::CWedge::NumAttributesToCompare= 0;
+bool CMRMMeshFinal::CWedge::CompareSkinning= false;
 
 
 // ***************************************************************************

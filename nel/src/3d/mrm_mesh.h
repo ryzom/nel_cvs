@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.3 2001/06/19 16:58:13 berenguier Exp $
+ * $Id: mrm_mesh.h,v 1.4 2001/06/21 12:58:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/vector_h.h"
 #include "nel/misc/vector.h"
+#include "3d/mesh.h"
 #include <vector>
 
 
@@ -96,6 +97,8 @@ class CMRMMesh
 public:
 	// The vertices of the MRMMesh.
 	std::vector<CVector>		Vertices;
+	// The skinWeights of the MRMMesh. same size than Vertices.
+	std::vector<CMesh::CSkinWeight>		SkinWeights;
 	// The attributes of the MRMMesh.
 	std::vector<CVectorH>		Attributes[NL3D_MRM_MAX_ATTRIB];
 	// The number of used attributes of the MRMMesh.
@@ -177,9 +180,11 @@ public:
 	// An wedge value (vertex + all attribs).
 	struct	CWedge
 	{
+		CMesh::CSkinWeight		VertexSkin;
 		CVector		Vertex;
 		CVectorH	Attributes[NL3D_MRM_MAX_ATTRIB];
-		static		uint NumAttributesToCompare;
+		static		uint	NumAttributesToCompare;
+		static		bool	CompareSkinning;
 
 		bool	operator<(const CWedge &o) const
 		{
@@ -194,7 +199,20 @@ public:
 						return Attributes[i]<o.Attributes[i];
 				}
 			}
-			// they are equal.
+
+			// They may be different by their skin Weight.
+			if(CompareSkinning)
+			{
+				for(uint i=0; i<NL3D_MESH_SKINNING_MAX_MATRIX; i++)
+				{
+					if( VertexSkin.MatrixId[i] != o.VertexSkin.MatrixId[i] )
+						return VertexSkin.MatrixId[i] < o.VertexSkin.MatrixId[i];
+					if( VertexSkin.Weights[i] != o.VertexSkin.Weights[i] )
+						return VertexSkin.Weights[i] < o.VertexSkin.Weights[i];
+				}
+			}
+
+			// else they are equal.
 			return false;
 		}
 	};
@@ -226,8 +244,12 @@ public:
 	 * with additional empty wedges, for geomorph.
 	 */
 	std::vector<CWedge>			Wedges;
+	/// This tells the number of empty wedges, for geomorph.
+	sint						NGeomSpace;
 	/// The number of used attributes of the MRMMesh.
 	sint						NumAttributes;
+	/// If the Mesh is skinned.
+	bool						Skinned;
 	/// the finals Lods of the MRM.
 	std::vector<CLod>			Lods;
 

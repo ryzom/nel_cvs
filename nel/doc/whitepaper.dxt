@@ -146,16 +146,72 @@ or external compiled code.
 
 \subsection componentdb Database & File
 
+[to be completed]
+
 \subsection componentnet Network
+
+The network library serves a twofold purpose. It provides inter-process communication,
+and services.
+
+In purely network terms, the library offers 4 layers:
+
+- An abstraction of the network API and links (IPC may be across a network, or local
+  messaging)
+- A buffering and structuring of messages
+- Handling of asynchronous message passing, and callbacks
+- An abstraction of destination (you address a service, not an IP/Port)
+
+These network layers are reused to build distributed services. The network library
+presents both a generic service skeleton, which includes the base functions of the
+distributed service:
+
+- Initialisation
+- Creation and registration of callbacks for network layer 3
+- Registration to the naming service
+
+The library will also provide pre-existing services:
+
+- Naming service (1 per logical cluster)
+  - This service handles the association between a service and the process or processes
+    that execute code to provide the service
+  - Handles load balancing
+  - Handles connection aging
+- Logging service (1 per logical cluster)
+- Administrator service (1 per physical computer)
+- Administrator interface (1 per logical cluster)
+
+Finally, the network library also proposes some basic function that are required to
+build a service able to "run" a 3D Universe, such as:
+
+- Fast communication across unreliable long-delay networks
+- Dead reckoning
+
+The purely network library is typically self-contained, and not much subject to
+modification, unless one wants to change the entire paradigm around which the platform
+runs. Addition of a specific and non-standard network or network API would be the only
+reason one would change layer 1.
+
+The structure of distributed services is the point that requires the most attention,
+as these define the logical structure of a cluster.
+
+Fine-tuning the basic network services is probably the place where most modifications can
+be made.
 
 \subsection componentpython Python scripting
 
+Python is currently considered as the tool that will bind all the components from NeL
+and the client or server together.
+
 \subsection componentsys System
+
+[to be completed]
 
 \subsection componentmisc Miscellaneous
 
 This contains all the various utility functions, classes and objects that are not
 complex and large enough to warrant their own separate component.
+
+[to be completed]
 
 \section externals External components
 

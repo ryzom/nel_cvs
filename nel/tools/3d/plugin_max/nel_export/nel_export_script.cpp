@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.27 2004/06/09 16:42:48 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.28 2004/06/09 16:56:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -856,6 +856,7 @@ Value* set_file_modification_date_cf (Value** arg_list, int count)
 		{
 			if (SetFileTime(file, NULL, NULL, &lastWriteTime))
 			{
+				CloseHandle (file);
 				return &true_value;
 			}
 		}

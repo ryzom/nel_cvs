@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.3 2001/01/17 10:32:29 chafik Exp $
+ * $Id: ident.h,v 1.4 2001/01/25 09:39:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #ifndef NL_IDENTIFIANT_H
 #define NL_IDENTIFIANT_H
 #include <stdlib.h>
+#include "nel/misc/file.h"
 #include "nel/ai/e/ai_exception.h" 
 #include "nel/ai/agent/agent_string.h"
 
@@ -253,7 +254,7 @@ namespace NLAIAGENT
 	* \author Nevrax France
 	* \date 2000
 	*/
-	class CNumericIndex
+	class CNumericIndex : public NLMISC::IStreamable
 	{
 	public:		
 		///_I is a static IndexVariant were he have 0 at the initial time.
@@ -310,6 +311,27 @@ namespace NLAIAGENT
 		{
 			_Id.getDebugString(str);
 		}
+
+		/// \name NLMISC::IStreamable method.
+		//@{
+		virtual std::string	getClassName()
+		{
+			return std::string("<CNumericIndex>");
+		}
+
+		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		{
+			if(!f.isReading())
+			{
+				save(f);
+			}
+			else
+			{
+				load(f);
+			}
+
+		}
+		//@}
 
 	};
 

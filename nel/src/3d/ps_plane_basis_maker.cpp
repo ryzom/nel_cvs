@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.5 2001/09/07 12:01:08 vizerie Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.6 2001/10/03 15:50:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,7 +145,7 @@ void CSpinnerFunctor::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void CSpinnerFunctor::updateSamples(void)
 {
 	// compute step between each angle
-	const float angInc = (float) (NLMISC::Pi / _NbSamples);
+	const float angInc = (float) (2.f * NLMISC::Pi / _NbSamples);
 	_PBTab.resize(_NbSamples);
 	NLMISC::CMatrix mat;
 	// compute each sample

@@ -94,6 +94,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	X=true;
 	Y=true;
 	Z=true;
+	Euler=false;
 
 	_RightButtonMouseListener.ObjViewerDlg = ObjView ;
 	_RightButtonMouseListener.SceneDlg = this ;

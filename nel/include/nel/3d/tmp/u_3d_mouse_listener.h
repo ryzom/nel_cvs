@@ -1,10 +1,10 @@
-/** \file event_mouse_listener.h
- * <File description>
+/** \file u_3d_mouse_listener.h
+ * 3d mouse listener
  *
- * $Id: event_mouse_listener.h,v 1.6 2001/05/22 08:34:38 corvazier Exp $
+ * $Id: u_3d_mouse_listener.h,v 1.1 2001/05/22 08:33:42 corvazier Exp $
  */
 
-/* Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2001 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify
@@ -23,32 +23,24 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_EVENT_MOUSE_LISTENER_H
-#define NL_EVENT_MOUSE_LISTENER_H
+#ifndef NL_U_3D_MOUSE_LISTENER_H
+#define NL_U_3D_MOUSE_LISTENER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/misc/event_listener.h"
-#include "nel/misc/matrix.h"
-#include "nel/3d/tmp/viewport.h"
-#include "nel/3d/tmp/frustum.h"
-#include "nel/3d/tmp/u_3d_mouse_listener.h"
 
 
 namespace NL3D 
 {
 
 
-using NLMISC::CVector;
-using NLMISC::CMatrix;
-
-
 /**
- * CEvent3dMouseListener is a listener that handle a 3d matrix with mouse events.
- * \author Cyril Corvazier
+ * 3d mouse listener
+ *
+ * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
- * \date 2000
+ * \date 2001
  */
-class CEvent3dMouseListener : public NLMISC::IEventListener, public U3dMouseListener
+class U3dMouseListener
 {
 public:
 	/**
@@ -75,15 +67,7 @@ public:
 	  * PageUp:						MOVE UP
 	  * PageDown:					MOVE DOWN
 	  */
-	//enum TMouseMode { nelStyle, edit3d, firstPerson };
-
-	/** 
-	  * Constructor. 
-	  * You should call setMatrix, setFrustrum, setViewport, setHotStop and setMouseMode to initialize
-	  * the whole object. By default, the viewmatrix is identity, the frustrum is (-1,1,-1,1,1,-1), the hot spot is (0,0,0) 
-	  * and the viewport is fullscreen. The mouse mode is set to the NelStyle.
-	  */
-	CEvent3dMouseListener();
+	enum TMouseMode { nelStyle, edit3d, firstPerson };
 
 	/// \name Setup
 
@@ -92,28 +76,19 @@ public:
 	  * \param matrix is the matrix to set.
 	  * \see getViewMatrix()
 	  */
-	void setMatrix (const NLMISC::CMatrix& matrix)
-	{
-		_Matrix=matrix;
-	}
+	virtual void setMatrix (const NLMISC::CMatrix& matrix) =0;
 
 	/** 
 	  * Set the current frustrum to use.
 	  * \param frustrum is the frustrum.
 	  */
-	void setFrustrum (const CFrustum& frustrum)
-	{
-		_Frustrum=frustrum;
-	}
+	virtual void setFrustrum (const CFrustum& frustrum) =0;
 
 	/** 
 	  * Set the viewport in use in the window. By default, the viewport is fullwindow.
 	  * \param viewport is the viewport to use. All events outside the viewport are ignored.
 	  */
-	void setViewport (const NL3D::CViewport& viewport)
-	{
-		_Viewport=viewport;
-	}
+	virtual void setViewport (const NL3D::CViewport& viewport) =0;
 
 	/** 
 	  * Set the current hot spot.
@@ -121,30 +96,21 @@ public:
 	  * of the selected object. The hotspot is not modified by mouse events.
 	  * \see getViewMatrix()
 	  */
-	void setHotSpot (const CVector& hotSpot)
-	{
-		_HotSpot=hotSpot;
-	}
+	virtual void setHotSpot (const CVector& hotSpot) =0;
 
 	/** 
 	  * Set the mouse mode.
 	  * \param mouseMode is the mode you want to use.
 	  * \see TMouseMode
 	  */
-	void setMouseMode(TMouseMode mouseMode)
-	{
-		_MouseMode=mouseMode;
-	}
+	virtual void setMouseMode(TMouseMode mouseMode) =0;
 
 	/** 
 	  * Set the speed for first person mode. Default 10.f;
 	  * \param speed is in unit per second.
 	  * \see TMouseMode
 	  */
-	void setSpeed (float speed)
-	{
-		_Speed=speed;
-	}
+	virtual void setSpeed (float speed) =0;
 
 	/// \name Get
 
@@ -153,7 +119,7 @@ public:
 	  * \return The current view matrix.
 	  * \see setMatrix()
 	  */
-	const NLMISC::CMatrix& getViewMatrix ();
+	virtual const NLMISC::CMatrix& getViewMatrix () =0;
 
 	/** 
 	  * Get the current hot spot.
@@ -161,42 +127,13 @@ public:
 	  * of the selected object. The hotspot is not modified by mouse events.
 	  * \see getViewMatrix()
 	  */
-	CVector getHotSpot () const
-	{
-		return _HotSpot;
-	}
+	virtual CVector getHotSpot () const =0;
+};
 
-	/** 
-	  * Register the listener to the server.
-	  */
-	void addToServer (NLMISC::CEventServer& server);
 
-	/** 
-	  * Unregister the listener to the server.
-	  */
-	void removeFromServer (NLMISC::CEventServer& server);
+} // NL3D
 
-private:
-	/// Internal use
-	virtual void operator ()(const NLMISC::CEvent& event);
 
-	CMatrix				_Matrix;
-	CFrustum			_Frustrum;
-	CVector				_HotSpot;
-	NL3D::CViewport		_Viewport;
-	bool				_LeftPushed;
-	bool				_MiddlePushed;
-	bool				_RightPushed;
-	float				_X;
-	float				_Y;
-	float				_Speed;
-	uint64				_LastTime;
-	TMouseMode			_MouseMode;
-	NLMISC::CEventListenerAsync	_AsyncListener;
-}; // NL3D
+#endif // NL_U_3D_MOUSE_LISTENER_H
 
-}
-
-#endif // NL_EVENT_MOUSE_LISTENER_H
-
-/* End of event_mouse_listener.h */
+/* End of u_3d_mouse_listener.h */

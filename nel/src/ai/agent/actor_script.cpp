@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.62 2002/08/08 13:09:27 chafik Exp $
+ * $Id: actor_script.cpp,v 1.63 2002/08/09 08:41:27 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,45 +182,48 @@ namespace NLAIAGENT
 	/// Pauses the actor
 	void CActorScript::pause()
 	{
-
-		if ( !_IsPaused )
+		if ( _IsActivated )
 		{
-			CAgentScript *father = (CAgentScript *) getParent();
 
-			// Looks for the function to call when the actor is paused
-			static CStringVarName activate_func_name("OnPause");
-			tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
-			if ( !r.empty() )
+			if ( !_IsPaused )
 			{
-				if ( getAgentManager() != NULL )
+				CAgentScript *father = (CAgentScript *) getParent();
+
+				// Looks for the function to call when the actor is paused
+				static CStringVarName activate_func_name("OnPause");
+				tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
+				if ( !r.empty() )
 				{
-					_OnPauseIndex = r.top().Index;
-					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
-					context->Self = this;
-					runMethodeMember( _OnPauseIndex ,context);
-					_OnPauseIndex = -1;
+					if ( getAgentManager() != NULL )
+					{
+						_OnPauseIndex = r.top().Index;
+						NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+						context->Self = this;
+						runMethodeMember( _OnPauseIndex ,context);
+						_OnPauseIndex = -1;
+					}
 				}
+				else
+					onPause();
+				_IsPaused = true;
 			}
-			else
-				onPause();
-			_IsPaused = true;
-		}
 
-		// Calls the launched actors Pause callbacks
-		std::list<IBasicAgent *>::iterator it_l = _Launched.begin();
-		while ( it_l != _Launched.end() )
-		{
-			CActorScript *launched = (CActorScript *) *it_l;
-			launched->pause();
-			it_l++;
-		}
-	
-		int i;
-		for ( i = 0; i < _NbComponents; i++ )
-		{
-			if ( ((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tActor )
+			// Calls the launched actors Pause callbacks
+			std::list<IBasicAgent *>::iterator it_l = _Launched.begin();
+			while ( it_l != _Launched.end() )
 			{
-				( (CActorScript *) _Components[i] )->pause();
+				CActorScript *launched = (CActorScript *) *it_l;
+				launched->pause();
+				it_l++;
+			}
+		
+			int i;
+			for ( i = 0; i < _NbComponents; i++ )
+			{
+				if ( ((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tActor )
+				{
+					( (CActorScript *) _Components[i] )->pause();
+				}
 			}
 		}
 	}
@@ -233,48 +236,49 @@ namespace NLAIAGENT
 	/// Restarts the actor
 	void CActorScript::restart()
 	{
-
-		if ( _IsPaused )
+		if ( _IsActivated )
 		{
-			CAgentScript *father = (CAgentScript *) getParent();
-
-			// Looks for the function to call when the actor is restarted
-			static CStringVarName activate_func_name("OnRestart");
-			tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
-			if ( !r.empty() )
+			if ( _IsPaused )
 			{
-				if ( getAgentManager() != NULL )
+				CAgentScript *father = (CAgentScript *) getParent();
+
+				// Looks for the function to call when the actor is restarted
+				static CStringVarName activate_func_name("OnRestart");
+				tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
+				if ( !r.empty() )
 				{
-					_OnRestartIndex = r.top().Index;
-					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
-					context->Self = this;
-					runMethodeMember( _OnRestartIndex ,context);
-					_OnRestartIndex = -1;
+					if ( getAgentManager() != NULL )
+					{
+						_OnRestartIndex = r.top().Index;
+						NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+						context->Self = this;
+						runMethodeMember( _OnRestartIndex ,context);
+						_OnRestartIndex = -1;
+					}
+				}
+				else
+					onRestart();
+				_IsPaused = false;
+			}
+
+			// Calls the launched actors Restart callbacks
+			std::list<IBasicAgent *>::iterator it_l = _Launched.begin();
+			while ( it_l != _Launched.end() )
+			{
+				CActorScript *launched = (CActorScript *) *it_l;
+				launched->restart();
+				it_l++;
+			}
+
+			int i;
+			for ( i = 0; i < _NbComponents; i++ )
+			{
+				if ( ((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tActor )
+				{
+					( (CActorScript *) _Components[i] )->restart();
 				}
 			}
-			else
-				onRestart();
-			_IsPaused = false;
 		}
-
-		// Calls the launched actors Restart callbacks
-		std::list<IBasicAgent *>::iterator it_l = _Launched.begin();
-		while ( it_l != _Launched.end() )
-		{
-			CActorScript *launched = (CActorScript *) *it_l;
-			launched->restart();
-			it_l++;
-		}
-
-		int i;
-		for ( i = 0; i < _NbComponents; i++ )
-		{
-			if ( ((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tActor )
-			{
-				( (CActorScript *) _Components[i] )->restart();
-			}
-		}
-
 	}
 
 	void CActorScript::onRestart()
@@ -502,6 +506,7 @@ namespace NLAIAGENT
 				{
 					IObjectIA *child = (IObjectIA *)((NLAIAGENT::IBaseGroupType *)params)->get();
 					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
+					child->incRef();
 					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
 					{
 						if ( _TopLevel )

@@ -289,7 +289,7 @@ bool  CStringEx::operator < ( const CStringEx& s ) const
 	return( is != s.end() );
 }
 
-unsigned int CStringEx::reverse_find( const char _c ) const
+int CStringEx::reverse_find( const char _c ) const
 {
 	unsigned int i = length();
 	const_iterator it = end();

@@ -76,7 +76,7 @@ void CItem::Load( const CStringEx& _sxfullname )
 	}
 
 	// Find the name of the dfn file
-	unsigned int ipos = _sxfullname.reverse_find('.');
+	int ipos = _sxfullname.reverse_find('.');
 	if( ipos == -1 )
 		return;
 	moldfilename = _sxfullname.get_right(_sxfullname.length()-ipos-1);

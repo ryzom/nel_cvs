@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.30 2003/03/13 13:40:58 corvazier Exp $
+ * $Id: mrm_builder.cpp,v 1.31 2003/04/22 17:30:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,30 +273,45 @@ float	CMRMBuilder::computeEdgeCost(const CMRMEdge &edge)
 	// **** Interface Sewing cost
 	if(_HasMeshInterfaces)
 	{
-		// if the 2 vertices comes from the same Sewing Interface mesh (must be a real interface id)
+		// if the 2 vertices comes from a Sewing Interface mesh (must be a real interface id)
 		sint	meshSewingId= TmpVertices[v1].InterfaceLink.InterfaceId;
-		if( meshSewingId>=0 && meshSewingId == TmpVertices[v2].InterfaceLink.InterfaceId)
+		if( meshSewingId>=0 && TmpVertices[v2].InterfaceLink.InterfaceId>=0 )
 		{
-			// Then the edge is one of the sewing interface mesh. must do special things for it
-			CMRMSewingMesh	&sewingMesh= _SewingMeshes[meshSewingId];
-			uint	dummy;
-
-			// get the sewing edge id
-			CMRMEdge	sewingEdge;
-			sewingEdge.v0= TmpVertices[v1].InterfaceLink.InterfaceVertexId;
-			sewingEdge.v1= TmpVertices[v2].InterfaceLink.InterfaceVertexId;
-			// if the current sewing lod want to collapse this edge
-			sint collapseId= sewingMesh.mustCollapseEdge(_CurrentLodComputed, sewingEdge, dummy);
-			if(collapseId>=0)
+			// if the 2 vertices comes from the same Sewing Interface mesh
+			if( meshSewingId == TmpVertices[v2].InterfaceLink.InterfaceId )
 			{
-				// Then set a negative priority (ie will collapse as soon as possible). from -N to -1.
-				// NB: sort them according to collapseId
-				cost= (float)(-sewingMesh.getNumCollapseEdge(_CurrentLodComputed) + collapseId);
+				// Then the edge is one of the sewing interface mesh. must do special things for it
+				CMRMSewingMesh	&sewingMesh= _SewingMeshes[meshSewingId];
+				uint	dummy;
+
+				// get the sewing edge id
+				CMRMEdge	sewingEdge;
+				sewingEdge.v0= TmpVertices[v1].InterfaceLink.InterfaceVertexId;
+				sewingEdge.v1= TmpVertices[v2].InterfaceLink.InterfaceVertexId;
+				// if the current sewing lod want to collapse this edge
+				sint collapseId= sewingMesh.mustCollapseEdge(_CurrentLodComputed, sewingEdge, dummy);
+				if(collapseId>=0)
+				{
+					// Then set a negative priority (ie will collapse as soon as possible). from -N to -1.
+					// NB: sort them according to collapseId
+					cost= (float)(-sewingMesh.getNumCollapseEdge(_CurrentLodComputed) + collapseId);
+				}
+				else
+				{
+					// This edge must not collapse at this Lod, set an infinite priority (hope will never collapse).
+					cost= FLT_MAX;
+				}
 			}
 			else
 			{
-				// This edge must not collapse at this Lod, set an infinite priority (hope will never collapse).
-				cost= FLT_MAX;
+				/* The edge is between 2 interfaces but not the same. If we collide it we'll have holes!
+					This problem arise if space beetween interfaces is small. eg: if we setup an interface beetween 
+					hair and head, and an other one beetween head and torso, then we'll have this problem in the
+					back of the neck.
+					The solution is to make a big big cost to hope we'll never collide them (else Holes...)!!
+					Don't use FLT_MAX to still have a correct order if we don't have choice...
+				*/
+				cost*= 10000;
 			}
 		}
 	}

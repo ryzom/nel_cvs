@@ -1,7 +1,7 @@
 /** \file particle_system_process.cpp
  * <File description>
  *
- * $Id: particle_system_process.cpp,v 1.6 2004/05/14 15:38:53 vizerie Exp $
+ * $Id: particle_system_process.cpp,v 1.7 2004/07/21 13:28:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,7 @@ void CParticleSystemProcess::setOwner(CParticleSystem *ps)
 	{
 		releaseAllRef();		
 	}	
-	_Owner->releaseRefForUserSysCoordInfo(getUserMatrixUsageCount());		
+	if (_Owner) _Owner->releaseRefForUserSysCoordInfo(getUserMatrixUsageCount());		
 	_Owner = ps; 
 	if (_Owner) _Owner->addRefForUserSysCoordInfo(getUserMatrixUsageCount());
 }

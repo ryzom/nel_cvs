@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.63 2001/06/06 13:09:03 lecroart Exp $
+ * $Id: service.cpp,v 1.64 2001/06/07 16:17:31 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -231,9 +231,16 @@ CNetDisplayer commandDisplayer(false);
 void AESConnection (const string &serviceName, TSockId from, void *arg)
 {
 	// established a connection to the AES, identify myself
-		
+
+	//
+	// Sends the identification message with the name of the service and all commands available on this service
+	//
+
 	CMessage msgout (CNetManager::getSIDA ("AES"), "SID");
 	msgout.serial (IService::_AliasName, IService::_ShortName, IService::_LongName);
+	vector<string> commands;
+	ICommand::getCommands (commands);
+	msgout.serialCont (commands);
 	CNetManager::send ("AES", msgout);
 
 	if (IService::Instance->_Initialized)

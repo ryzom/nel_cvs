@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.25 2001/06/05 15:36:09 lecroart Exp $
+ * $Id: service.h,v 1.26 2001/06/07 16:17:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,7 @@ typedef uint8 TServiceId;
 	// Create the main() function that create a foo service instance and execute it.
 	// "NS" is the short service name and "namgin_service" is the long one.
 	// The name of the config file is based on the long name!
-	NLNET_SERVICE_MAIN(CFooService, "NS", "naming_service", 50000);
+	NLNET_SERVICE_MAIN(CFooService, "NS", "naming_service", 50000, EmptyCallbackArray);
  *\endcode
  *
  * If you want the port to be auto-assigned by the naming service, set the port to 0. 
@@ -91,8 +91,7 @@ static TCallbackItem EmptyCallbackArray[] = { { "", NULL } };
  * \ref service_howto
  *
  * Temporary command line arguments :
- * \li Arg 1 : port number for listening
- * \li Arg 2 : (optional) timeout for select in millisecond
+ * \li -n<alias_name>
  * \author Vianney Lecroart
  * \author Olivier Cado
  * \author Nevrax France

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.34 2003/07/10 16:51:02 vizerie Exp $
+ * $Id: particle_system.h,v 1.35 2003/08/04 13:04:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -495,14 +495,16 @@ public:
 		
 		/** Test if the system can finish (e.g it doesn't loop, doesn't have emitter with illimited lifetime)
 		  * NB : we assume that all emitters in the system are accessible, e.g that the located graph is connex
+		  * \param lastingForeverObj, if not NULL, the pointer will be filled with the first object that last or emit forever, or create a loop.		  
 		  */
 
-		bool canFinish() const;
+		bool canFinish(CPSLocatedBindable **lastingForeverObj = NULL) const;
 
 		/** Test if there are loops in the system. E.g A emit B emit A
 		  * NB : we assume that all emitters in the system are accessible, e.g that the located graph is connex
+		  * \param loopingObj, if not NULL, will be filled with the first object that creates a loop.
 		  */
-		bool hasLoop() const;
+		bool hasLoop(CPSLocatedBindable **loopingObj = NULL) const;
 
 		
 	// @}
@@ -809,7 +811,8 @@ public:
 			LoopingSpellFX,
 			MinorFX,
 			UserBehaviour,
-			MovingLoopingFX,	
+			MovingLoopingFX,
+			SpawnedEnvironmentFX,
 			PresetLast
 		};
 

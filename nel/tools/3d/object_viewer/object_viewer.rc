@@ -150,6 +150,10 @@ BEGIN
     IDS_SHAPE_FILE_NOT_MESH "Not a mesh"
     IDS_SHAPE_NOT_LOADED    "Shape not loaded"
     IDS_TOO_MUCH_VERTICES   "Too much vertices"
+    IDS_NO_FINITE_DURATION  "The system must have a finite duration for this setting! Please check that."
+    IDS_NO_FINITE_DURATION_FOR_OBJ 
+                            "The system must have a finite duration for this setting! Please check that the following object doesn't live forever or doesn't create a loop in the system :"
+    IDS_ERROR               "Error"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -827,8 +831,8 @@ BEGIN
     COMBOBOX        IDC_ANIM_TYPE_CTRL,48,341,98,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "",IDC_STATIC,7,322,287,51
-    LTEXT           "Life mgt presets :",IDC_STATIC,7,313,57,10
-    COMBOBOX        IDC_LIFE_MGT_PRESETS,67,310,92,77,CBS_DROPDOWNLIST | 
+    LTEXT           "Life mgt presets :",IDC_STATIC,7,312,56,10
+    COMBOBOX        IDC_LIFE_MGT_PRESETS,63,310,96,94,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Sharable",IDC_SHARABLE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,162,311,46,11
@@ -2537,6 +2541,9 @@ BEGIN
     IDC_LIFE_MGT_PRESETS, 0x403, 18, 0
 0x6f4d, 0x6976, 0x676e, 0x4c20, 0x6f6f, 0x6970, 0x676e, 0x4620, 0x0058, 
 
+    IDC_LIFE_MGT_PRESETS, 0x403, 23, 0
+0x7053, 0x7761, 0x656e, 0x2064, 0x6e45, 0x6976, 0x6f72, 0x6d6e, 0x6e65, 
+0x2074, 0x5846, "\000" 
     0
 END
 

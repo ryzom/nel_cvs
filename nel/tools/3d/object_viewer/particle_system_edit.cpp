@@ -1,7 +1,7 @@
  /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.16 2003/07/02 17:26:31 distrib Exp $
+ * $Id: particle_system_edit.cpp,v 1.17 2003/08/04 13:07:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -384,12 +384,27 @@ void CParticleSystemEdit::OnChangeApplyAfterDelay()
 void CParticleSystemEdit::OnSelchangeLifeMgtPresets() 
 {
 	UpdateData(TRUE);
-	if (m_PresetCtrl.GetCurSel() == NL3D::CParticleSystem::SpellFX)
+	if (m_PresetCtrl.GetCurSel() == NL3D::CParticleSystem::SpellFX ||
+		m_PresetCtrl.GetCurSel() == NL3D::CParticleSystem::SpawnedEnvironmentFX)
 	{
-		if (!_PS->canFinish())
+		NL3D::CPSLocatedBindable *lb;
+		if (!_PS->canFinish(&lb))
 		{
 			m_PresetCtrl.SetCurSel((int) _PS->getBehaviourType());
-			MessageBox("The system must have a finite duration for this setting! Please check that.", "Error", MB_ICONEXCLAMATION);
+			CString mess;
+			CString err;
+			err.LoadString(IDS_ERROR);
+			if (!lb)
+			{			
+				mess.LoadString(IDS_NO_FINITE_DURATION);
+				MessageBox((LPCTSTR) mess, (LPCTSTR) err, MB_ICONEXCLAMATION);
+			}
+			else
+			{
+				mess.LoadString(IDS_NO_FINITE_DURATION_FOR_OBJ);
+				mess += lb->getName().c_str();
+				MessageBox((LPCTSTR) mess, (LPCTSTR) err, MB_ICONEXCLAMATION);
+			}
 			return;
 		}
 	}

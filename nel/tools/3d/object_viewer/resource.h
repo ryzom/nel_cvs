@@ -693,7 +693,10 @@
 #define ID_HELP_ABOUTOBJECTVIEWER       32858
 #define IDS_TOO_MUCH_VERTICES           32858
 #define IDM_LB_EXTERN_ID                32859
+#define IDS_NO_FINITE_DURATION          32859
+#define IDS_NO_FINITE_DURATION_FOR_OBJ  32860
 #define ID_FILE_BINDSCENEANIMATION      32861
+#define IDS_ERROR                       32861
 #define IDM_SET_FRAME_DELAY             32862
 #define IDM_REMOVE_ALL_INSTANCES_FROM_SCENE 32863
 #define IDM_MERGE_PS                    32864

@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.59 2003/07/10 16:51:02 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.60 2003/08/04 13:04:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -989,6 +989,14 @@ void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 			setBypassMaxNumIntegrationSteps(false);
 			_KeepEllapsedTimeForLifeUpdate = true;
 		break;
+		case SpawnedEnvironmentFX:
+			setDestroyModelWhenOutOfRange(false);
+			setDestroyCondition(noMoreParticles);
+			destroyWhenOutOfFrustum(false);
+			setAnimType(AnimInCluster);
+			setBypassMaxNumIntegrationSteps(false);
+			_KeepEllapsedTimeForLifeUpdate = false;
+		break;
 		default: break;
 	}
 	_PresetBehaviour = behaviour;
@@ -1174,9 +1182,9 @@ void CParticleSystem::setMaxDistLODBias(float lodBias)
 }
 
 ///=======================================================================================
-bool CParticleSystem::canFinish() const
+bool CParticleSystem::canFinish(CPSLocatedBindable **lastingForeverObj /*= NULL*/) const
 {
-	if (hasLoop()) return false;
+	if (hasLoop(lastingForeverObj)) return false;	
 	for(uint k = 0; k < _ProcessVect.size(); ++k)
 	{
 		if (_ProcessVect[k]->isLocated())
@@ -1189,11 +1197,13 @@ bool CParticleSystem::canFinish() const
 					CPSEmitter *em = dynamic_cast<CPSEmitter *>(loc->getBoundObject(l));
 					if (em && em->testEmitForever())
 					{
+						if (lastingForeverObj) *lastingForeverObj = em;
 						return false;
 					}
 					CPSParticle *p = dynamic_cast<CPSParticle *>(loc->getBoundObject(l));
 					if (p)
 					{
+						if (lastingForeverObj) *lastingForeverObj = p;
 						return false; // particles shouldn't live forever, too
 					}
 				}
@@ -1204,7 +1214,7 @@ bool CParticleSystem::canFinish() const
 }
 
 ///=======================================================================================
-bool CParticleSystem::hasLoop() const
+bool CParticleSystem::hasLoop(CPSLocatedBindable **loopingObj /*= NULL*/) const
 {	
 	// we want to check for loop like A emit B emit A
 	// NB : there's room for a smarter algo here, but should not be useful for now 
@@ -1218,7 +1228,11 @@ bool CParticleSystem::hasLoop() const
 				CPSEmitter *em = dynamic_cast<CPSEmitter *>(loc->getBoundObject(l));
 				if (em)
 				{
-					if (em->checkLoop()) return true;
+					if (em->checkLoop()) 
+					{
+						if (loopingObj) *loopingObj = em;
+						return true;
+					}
 				}
 			}
 		}

@@ -19,8 +19,9 @@ echo -------
 echo --- Install Ig 
 echo ------- 
 
-cp -u ig_land/*.ig $client_directory/$ig_install_directory  2>> log.log
 cp -u landscape_ig.txt $client_directory  2>> log.log
 
+# Do not copy ig_land, because zone process will copy zone ig lighted versions into client directory.
+#cp -u ig_land/*.ig $client_directory/$ig_install_directory  2>> log.log
 # Do not copy ig_other, because ig_light process will copy ig lighted versions into client directory.
 #cp -u ig_other/*.ig $client_directory/$ig_install_directory  2>> log.log

@@ -19,7 +19,8 @@ echo -------
 
 cp ../shape/shape/*.shape shapes 2> log.log
 cp ../shape/shape_with_coarse_mesh/*.shape shapes 2> log.log
-cp ../ig/ig/*.ig ig 2> log.log
+cp ../ig/ig_land/*.ig ig 2> log.log
+cp ../ig/ig_other/*.ig ig 2> log.log
 
 # **** Build dependencies
 
@@ -109,7 +110,7 @@ list_zone_lighted=`ls -1 zone_lighted/*.zonel`
 
 # Light zones
 for i in $list_zone_lighted ; do
-  dest=`echo $i | sed -e 's/zone_lighted/ig_lighted/g' | sed -e 's/.zonel/.ig/g'`
+  dest=`echo $i | sed -e 's/zone_lighted/ig_land_lighted/g' | sed -e 's/.zonel/.ig/g'`
   depend=`echo $i | sed -e 's/zone_lighted/zone_depend/g' | sed -e 's/.zonel/.depend/g'`
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then

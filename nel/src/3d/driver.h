@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.62 2003/11/25 16:16:19 berenguier Exp $
+ * $Id: driver.h,v 1.63 2004/02/06 18:06:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -889,6 +889,8 @@ public:
 	/// Check if the driver support double sided colors vertex programs
 	virtual bool		    supportVertexProgramDoubleSidedColor() const = 0;
 	  
+	// test if support for cloud render in a single pass
+	virtual	bool			supportCloudRenderSinglePass() const = 0;
 
 	/**
 	  * Activate VertexProgram 2Sided Color mode. In 2Sided mode, the BackFace (if material 2Sided enabled) read the 

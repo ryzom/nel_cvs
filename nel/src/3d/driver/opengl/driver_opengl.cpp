@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.200 2003/12/08 08:24:23 besson Exp $
+ * $Id: driver_opengl.cpp,v 1.201 2004/02/06 18:06:57 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1146,7 +1146,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			_VRAMVertexArrayRange= new CVertexArrayRangeMapObjectATI(this);			
 		}
 		_SupportVBHard= true;
-		_MaxVerticesByVBHard= 65535; // should always work with recent drivers.		
+		// _MaxVerticesByVBHard= 65535; // should always work with recent drivers.		
+		// tmp fix for ati
+		_MaxVerticesByVBHard= 32267;
 	}
 
 	// Reset VertexArrayRange.
@@ -3161,6 +3163,11 @@ void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
 	}
 }
 
+// ***************************************************************************
+bool CDriverGL::supportCloudRenderSinglePass() const
+{
+	return _Extensions.NVTextureEnvCombine4 || (_Extensions.ATIXTextureEnvRoute && _Extensions.EXTTextureEnvCombine);
+}
 
 // ***************************************************************************
 void CDriverGL::retrieveATIDriverVersion()

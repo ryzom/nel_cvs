@@ -1,7 +1,7 @@
 /** \file noise_3d.cpp
  * cloud_scape implementation
  *
- * $Id: noise_3d.cpp,v 1.4 2003/07/30 16:02:34 vizerie Exp $
+ * $Id: noise_3d.cpp,v 1.5 2004/02/06 18:06:56 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -40,7 +40,7 @@ CNoise3d::CNoise3d (IDriver *pDriver)
 	_OffS = NULL;
 	_Driver = pDriver;
 	_NbVertices = 0;
-	_IsDriverSupportEnvCombine4 = true;
+	_IsDriverSupportCloudSinglePass = pDriver->supportCloudRenderSinglePass();
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void CNoise3d::init (uint32 w, uint32 h, uint32 d)
 	_Tex->touch();
 	_Tex->generate();
 
-	if (_IsDriverSupportEnvCombine4)
+	if (_IsDriverSupportCloudSinglePass)
 	{
 		_Mat = new CMaterial();
 		_Mat->initUnlit();
@@ -208,7 +208,7 @@ void CNoise3d::render (CQuadUV &qc, float wpos, float intensity)
 {
 	// [ At0*wpos+At1*(1-wpos) ] * alpha
 
-	if (!_IsDriverSupportEnvCombine4)
+	if (!_IsDriverSupportCloudSinglePass)
 	{
 		render2passes (qc, wpos, intensity);
 		return;
@@ -272,7 +272,7 @@ void CNoise3d::renderGrid (uint32 nbw, uint32 nbh, uint32 w, uint32 h,
 					float UStart, float VStart, float WStart, float dU, float dV, float dW, float intensity)
 {
 
-	if (!_IsDriverSupportEnvCombine4)
+	if (!_IsDriverSupportCloudSinglePass)
 	{
 		renderGrid2passes (nbw, nbh, w, h, UStart, VStart, WStart, dU, dV, dW, intensity);
 		return;
@@ -420,7 +420,7 @@ void CNoise3d::renderGrid2passes (uint32 nbw, uint32 nbh, uint32 w, uint32 h,
 // ------------------------------------------------------------------------------------------------
 void CNoise3d::flush ()
 {
-	if (!_IsDriverSupportEnvCombine4)
+	if (!_IsDriverSupportCloudSinglePass)
 	{
 		flush2passes ();
 		return;

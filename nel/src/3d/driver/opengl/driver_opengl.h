@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.156 2003/12/02 11:22:44 besson Exp $
+ * $Id: driver_opengl.h,v 1.157 2004/02/06 18:06:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -310,6 +310,9 @@ public:
 
 
 	virtual	bool			supportVertexBufferHard() const;
+
+	virtual	bool			supportCloudRenderSinglePass() const;
+	
 
 	virtual	bool			slowUnlockVertexBufferHard() const;
 

@@ -1,7 +1,7 @@
 /** \file cloud.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: noise_3d.h,v 1.2 2002/11/04 14:08:58 coutelas Exp $
+ * $Id: noise_3d.h,v 1.3 2004/02/06 18:06:56 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -86,7 +86,7 @@ private:
 	NL3D::CMaterial *_Mat;
 
 	NL3D::IDriver *_Driver;
-	bool			_IsDriverSupportEnvCombine4;
+	bool			_IsDriverSupportCloudSinglePass;
 };
 // ------------------------------------------------------------------------------------------------
 

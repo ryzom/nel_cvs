@@ -1,7 +1,7 @@
-/** \file o_xml.h
+	/** \file o_xml.h
  * Output xml stream
  *
- * $Id: o_xml.h,v 1.6 2003/03/10 18:13:33 corvazier Exp $
+ * $Id: o_xml.h,v 1.7 2003/03/13 13:41:16 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.19 2002/10/25 16:11:18 berenguier Exp $
+ * $Id: u_driver.h,v 1.20 2002/11/14 17:37:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -442,9 +442,7 @@ public:
 		  */
 		virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable) = 0;
 
-		/** Enable / disable  a low level keyboard.
-		  * Such a keyboard can only send KeyDown and KeyUp events. It just consider the keyboard as a
-		  * gamepad with lots of buttons...		  
+		/** Enable / disable  a low level keyboard.		  
 		  * This returns a interface to some parameters when it is supported, or NULL otherwise.
 		  * The interface pointer is valid as long as the low level keyboard is enabled.
 		  * A call to disable the keyboard returns NULL, and restore the default keyboard behaviour.	  

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.52 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.53 2003/11/18 15:42:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2622,7 +2622,7 @@ void CPSEmitter::updatePSRefCountForFatherSkelMatrixUsage(bool matrixIsNeededNow
 		{
 			_Owner->getOwner()->addRefForSkeletonSysCoordInfo();
 		}
-		else if (matrixIsNeededNow && !matrixWasNeededBefore)
+		else if (!matrixIsNeededNow && matrixWasNeededBefore)
 		{
 			_Owner->getOwner()->releaseRefForSkeletonSysCoordInfo();
 		}

@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.13 2002/08/22 12:10:04 lecroart Exp $
+ * $Id: transport_class.h,v 1.14 2003/03/11 10:47:37 miller Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -223,7 +223,7 @@ public:
 	/// Display with nlinfo the content of the class (debug purpose)
 	void display ();
 
-private:
+protected:
 
 	//
 	// Structures

@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.7 2004/09/13 16:54:50 boucher Exp $
+ * $Id: primitive_utils.h,v 1.8 2004/09/14 09:28:40 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -343,7 +343,7 @@ inline bool saveXmlPrimitiveFile(CPrimitives &primDoc, const std::string &fileNa
  *	you must use filterPrimitiveChilds to do this.
  */
 template <class Pred>
-IPrimitive *getPrimitiveChild(const IPrimitive *parent, Pred &predicate)
+IPrimitive *getPrimitiveChild(IPrimitive *parent, Pred &predicate)
 {
 	for (uint i=0; i<parent->getNumChildren(); ++i)
 	{

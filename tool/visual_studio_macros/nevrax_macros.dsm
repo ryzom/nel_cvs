@@ -8,7 +8,7 @@
 '
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
-' $Id: nevrax_macros.dsm,v 1.10 2000/11/08 18:02:27 lecroart Exp $
+' $Id: nevrax_macros.dsm,v 1.11 2000/12/14 10:53:02 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -24,7 +24,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros.dsm,v 1.10 2000/11/08 18:02:27 lecroart Exp $" + vbLf + _
+		" * $Id: nevrax_macros.dsm,v 1.11 2000/12/14 10:53:02 cado Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/* Copyright, 2000 Nevrax Ltd." + vbLf + _
@@ -132,9 +132,24 @@ Sub NevraxNewClass()
 	HFilename = Filename + ".h"
 	CppFilename = Filename + ".cpp"
 
+	' Load configuration
+	dim fso
+	set fso = CreateObject("Scripting.FileSystemObject")
+	ConfigFileName = "R:\code\tool\visual_studio_macros\nevrax_new_class.cfg"
+	if fso.FileExists( ConfigFileName ) then
+		set f = fso.OpenTextFile( ConfigFileName, 1 ) ' 1 = ForReading
+		if CurrentProgrammerName = "" then
+			CurrentProgrammerName = f.ReadLine
+		else
+			CurrentProgrammerName = "Richard Stallman"
+		end if
+		SrcDirectory = f.ReadLine
+		IncDirectory = f.ReadLine
+		f.Close
+	end if
+
 	' ** Directories (NB: input boxes cannot be canceled in this part)
-	SrcDirectory = "R:\code\nel\src"
-	SrcDirectory = InputBox( "Répertoire racine (existant) des sources (.cpp)" + vbLf + "(entrer . pour un projet hors-NeL) :","Nouvelle classe (3)", SrcDirectory )
+	SrcDirectory = InputBox( "Répertoire racine (existant) des sources (.cpp)" + vbLf + "(ex: R:\code\nel\src pour NeL) :","Nouvelle classe (3)", SrcDirectory )
 	if SrcDirectory <> "" then
 		if right(SrcDirectory,1)<>"\" then
 			SrcDirectory = SrcDirectory + "\"
@@ -142,8 +157,7 @@ Sub NevraxNewClass()
 	else
 		IncDirectory = ""
 	end if
-	IncDirectory = "R:\code\nel\include\nel"
-	IncDirectory = InputBox( "Répertoire racine (existant) des include (.h)" + vbLf + "(entrer . pour un projet hors-NeL) :","Nouvelle classe (4)", IncDirectory )
+	IncDirectory = InputBox( "Répertoire racine (existant) des include (.h)" + vbLf + "(ex: R:\code\nel\include\nel pout NeL ) :","Nouvelle classe (4)", IncDirectory )
 	if (IncDirectory<>"") and (right(IncDirectory,1)<>"\") then
 		IncDirectory = IncDirectory + "\"
 	end if
@@ -161,8 +175,6 @@ Sub NevraxNewClass()
 	end if
 
 	' ** Check for file existence
-	dim fso
-	set fso = CreateObject("Scripting.FileSystemObject")
 	FinalCPPdir = SrcDirectory + CurrentDirectoryDir
 	FinalHdir = IncDirectory + CurrentDirectoryDir
 	if not fso.FolderExists( FinalHdir ) then
@@ -192,22 +204,16 @@ Sub NevraxNewClass()
 	end if
 
 	' ** Programmer's name
-	ConfigFileName = "R:\code\tool\visual_studio_macros\nevrax_new_class.cfg"
-	if CurrentProgrammerName = "" then
-		if fso.FileExists( ConfigFileName ) then
-			set f = fso.OpenTextFile( ConfigFileName, 1 ) ' 1 = ForReading
-			CurrentProgrammerName = f.ReadLine
-			f.Close
-		else
-			CurrentProgrammerName = "Richard Stallman"
-		end if
-	end if
 	CurrentProgrammerName = InputBox( "Votre prénom et votre nom (qui restera mémorisé dans un fichier) :", "Nouvelle classe (6)", CurrentProgrammerName )
 	if CurrentProgrammerName = "" then
 		Exit Sub
 	end if
+
+	' Save configuration
 	set f = fso.OpenTextFile( ConfigFileName, 2, true ) ' 2 = ForWriting
 	f.WriteLine CurrentProgrammerName
+	f.WriteLine SrcDirectory
+	f.WriteLine IncDirectory
 	f.Close
 
 	' ** Input ancestor class name and file name

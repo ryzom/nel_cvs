@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.7 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.8 2004/02/12 16:54:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -342,6 +342,7 @@ void CPSTexturedParticle::setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> tex
 		_Tex = NULL;
 	}
 	_TexGroup = texGroup;
+	updateMatAndVbForTexture();
 }
 
 ///===================================================================================

@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.7 2002/04/26 15:05:10 berenguier Exp $
+ * $Id: u_instance.h,v 1.8 2002/07/03 09:12:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,6 +110,14 @@ public:
 	/// see setShapeDistMax()
 	virtual float		getShapeDistMax() const =0;
 
+	/// Test if there is a start/stop caps in the objects (some fxs such as remanence)
+	virtual bool		canStartStop() = 0;
+	// For instance that have a start/stop caps
+	virtual void		start() = 0;
+	// For instance that have a start/stop caps
+	virtual void		stop()  = 0;
+	// For instance that have a start/stop caps
+	virtual bool		isStarted() const = 0;
 };
 
 

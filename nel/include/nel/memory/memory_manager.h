@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.5 2002/12/17 10:46:16 coutelas Exp $
+ * $Id: memory_manager.h,v 1.6 2002/12/17 10:53:55 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,13 +30,13 @@
 #ifdef MEMORY_EXPORTS
  #ifdef NL_OS_WINDOWS
   #define MEMORY_API __declspec(dllexport)
- #else NL_OS_WINDOWS
+ #else 
   #define MEMORY_API
  #endif // NL_OS_WINDOWS
 #else
  #ifdef NL_OS_WINDOWS
   #define MEMORY_API __declspec(dllimport)
- #else NL_OS_WINDOWS
+ #else 
   #define MEMORY_API
  #endif // NL_OS_WINDOWS
 #endif

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.25 2000/12/05 10:40:24 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.26 2000/12/05 16:11:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <windowsx.h>
 #endif
 #include <gl/gl.h>
 #include "driver_opengl.h"
@@ -204,6 +205,13 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 			return(false);
 		}
 		SetWindowLong (_hWnd, GWL_USERDATA, (LONG)this);
+
+		// resize the window
+		RECT rc;
+		SetRect (&rc, 0, 0, mode.Width, mode.Height);
+		AdjustWindowRectEx (&rc, GetWindowStyle (_hWnd), GetMenu (_hWnd) != NULL, GetWindowExStyle (_hWnd));
+		SetWindowPos (_hWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
+
 		ShowWindow(_hWnd,SW_SHOW);
 	}
 	_EventEmitter.setHWnd((uint32)_hWnd);
@@ -479,9 +487,18 @@ void CDriverGL::showCursor(bool b)
 
 // --------------------------------------------------
 
-void CDriverGL::setMousePos(uint32 x, uint32 y)
+void CDriverGL::setMousePos(float x, float y)
 {
-	SetCursorPos(x,y);
+	// NeL window coordinate to MSWindows coordinates
+	RECT client;
+	GetClientRect (_hWnd, &client);
+	POINT pt;
+	pt.x = (int)((float)(client.right-client.left)*x);
+	pt.y = (int)((float)(client.bottom-client.top)*(1.0f-y));
+
+	ClientToScreen (_hWnd, &pt);
+	
+	SetCursorPos(pt.x, pt.y);
 }
 
 

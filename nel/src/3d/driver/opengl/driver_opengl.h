@@ -151,7 +151,8 @@ public:
 
 	virtual void showCursor(bool b);
 
-	virtual void setMousePos(uint32 x, uint32 y);
+	// between 0 and 1
+	virtual void setMousePos(float x, float y);
 };
 
 // --------------------------------------------------

@@ -96,13 +96,13 @@ public:
 	afx_msg void OnWindowAnimation();
 	afx_msg void OnWindowAnimationset();
 	afx_msg void OnWindowMixersslots();
-	afx_msg void OnWindowPaticles();
+	afx_msg void OnWindowParticles();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnUpdateWindowAnimation(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowAnimationset(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowMixersslots(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateWindowPaticles(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowParticles(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewObjectmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewFirstpersonmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditX(CCmdUI* pCmdUI);
@@ -111,6 +111,7 @@ public:
 	afx_msg void OnUpdateEditMoveelement(CCmdUI* pCmdUI);
 	afx_msg void OnHelpAboutobjectviewer();
 	afx_msg void OnSetLag();
+	afx_msg void OnRemoveAllInstancesFromScene();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

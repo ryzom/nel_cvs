@@ -133,13 +133,13 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_ANIMATION, OnWindowAnimation)
 	ON_COMMAND(ID_WINDOW_ANIMATIONSET, OnWindowAnimationset)
 	ON_COMMAND(ID_WINDOW_MIXERSSLOTS, OnWindowMixersslots)
-	ON_COMMAND(ID_WINDOW_PATICLES, OnWindowPaticles)
+	ON_COMMAND(ID_WINDOW_PARTICLES, OnWindowParticles)
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATION, OnUpdateWindowAnimation)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATIONSET, OnUpdateWindowAnimationset)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_MIXERSSLOTS, OnUpdateWindowMixersslots)
-	ON_UPDATE_COMMAND_UI(ID_WINDOW_PATICLES, OnUpdateWindowPaticles)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_PARTICLES, OnUpdateWindowParticles)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_OBJECTMODE, OnUpdateViewObjectmode)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPERSONMODE, OnUpdateViewFirstpersonmode)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_X, OnUpdateEditX)
@@ -148,6 +148,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVEELEMENT, OnUpdateEditMoveelement)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
 	ON_COMMAND(IDM_SET_LAG, OnSetLag)
+	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -479,12 +480,12 @@ void CMainFrame::OnFileOpen()
 	update ();
 
 	// Create a dialog
-	static char BASED_CODE szFilter[] = "NeL Shape Files (*.shape)|*.shape|Instances Groups (*.ig)|*.ig|All Files (*.*)|*.*||";
-	CFileDialog fileDlg( TRUE, ".shape", "*.shape", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
+	static char BASED_CODE szFilter[] = "NeL Shape Files & IG (*.shape;*.ig;*.ps)|*.shape; *.ig; *.ps||";
+	CFileDialog fileDlg( TRUE, ".shape", "*.shape;*.ig;*.ps", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
 	if (fileDlg.DoModal()==IDOK)
 	{		
 		// test wether it is a single shape or an intance group
-		if ( fileDlg.GetPathName().Find(".ig")) // we load an instance group
+		if ( fileDlg.GetPathName().Find(".ig") != -1) // we load an instance group
 		{
 			// Load the instance group
 			if (ObjView->loadInstanceGroup (fileDlg.GetPathName()))
@@ -632,7 +633,7 @@ void CMainFrame::OnWindowMixersslots()
 	update ();
 }
 
-void CMainFrame::OnWindowPaticles() 
+void CMainFrame::OnWindowParticles() 
 {
 	ParticlesWindow^=true;
 	update ();
@@ -702,7 +703,7 @@ void CMainFrame::OnUpdateWindowMixersslots(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck (MixerSlotsWindow);
 }
 
-void CMainFrame::OnUpdateWindowPaticles(CCmdUI* pCmdUI) 
+void CMainFrame::OnUpdateWindowParticles(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (ParticlesWindow);
 }
@@ -752,5 +753,20 @@ if (cl.DoModal() == IDOK)
 {
 	ObjView->setLag(cl.m_LagTime);
 }
+}
+
+
+void CMainFrame::OnRemoveAllInstancesFromScene()
+{
+	if (MessageBox("Delete all instances from scene ?", "Object Viewer", MB_YESNO) == IDYES)
+	{
+		ObjView->removeAllInstancesFromScene();
+		
+		// Reset the camera
+		OnResetCamera();
+
+		// Touch the channel mixer
+		ObjView->reinitChannels ();
+	}
 }
 

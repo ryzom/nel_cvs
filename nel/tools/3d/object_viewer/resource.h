@@ -323,7 +323,7 @@
 #define ID_VIEW_SETMOVESPEED            32832
 #define ID_WINDOW_ANIMATIONSET          32836
 #define ID_WINDOW_MIXERSSLOTS           32837
-#define ID_WINDOW_PATICLES              32838
+#define ID_WINDOW_PARTICLES              32838
 #define ID_EDIT_MOVEELEMENT             32839
 #define ID_EDIT_X                       32840
 #define ID_EDIT_Y                       32841
@@ -339,13 +339,14 @@
 #define IDM_LB_EXTERN_ID                32859
 #define ID_FILE_BINDSCENEANIMATION      32861
 #define IDM_SET_LAG                     32862
+#define IDM_REMOVE_ALL_INSTANCES_FROM_SCENE 32863
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1083
-#define _APS_NEXT_COMMAND_VALUE         32863
+#define _APS_NEXT_COMMAND_VALUE         32864
 #define _APS_NEXT_CONTROL_VALUE         1173
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

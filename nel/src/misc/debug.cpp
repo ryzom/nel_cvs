@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.67 2003/03/21 16:16:20 lecroart Exp $
+ * $Id: debug.cpp,v 1.68 2003/04/16 13:44:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,6 @@ static const bool TrapCrashInDebugger = false;
 namespace NLMISC 
 {
 
-// Need an assert in the macro
 bool DebugNeedAssert = false;
 
 CLog *ErrorLog = NULL;
@@ -127,7 +126,8 @@ void nlError (const char *format, ...)
 		NLMISC_BREAKPOINT;
 
 #ifndef NL_OS_WINDOWS
-	exit(EXIT_FAILURE);
+//	exit(EXIT_FAILURE);
+	abort ();
 #endif
 }
 
@@ -799,10 +799,14 @@ void createDebug (const char *logPath, bool logInFile)
 		AssertLog = new CLog (CLog::LOG_ASSERT);
 
 		sd = new CStdDisplayer ("DEFAULT_SD");
+
+#ifdef NL_OS_WINDOWS
 		if (TrapCrashInDebugger || !IsDebuggerPresent ())
 		{
 			DefaultMsgBoxDisplayer = new CMsgBoxDisplayer ("DEFAULT_MBD");
 		}
+#endif
+
 #if LOG_IN_FILE
 		if (logInFile)
 		{

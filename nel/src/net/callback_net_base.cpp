@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.17 2001/06/13 12:11:14 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.18 2001/06/14 13:55:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -391,10 +391,12 @@ void	CCallbackNetBase::authorizeOnly (const char *callbackName, TSockId hostid)
 
 void CCallbackNetBase::checkThreadId () const
 {
+/*	some people use this class in different thread but with a mutex to be sure to have
+	no concurent access
 	if (getThreadId () != _ThreadId)
 	{
 		nlerror ("You try to access to the same CCallbackClient or CCallbackServer with 2 differents thread (%d and %d)", _ThreadId, getThreadId());
 	}
-}
+*/}
 
 } // NLNET

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.38 2003/10/23 16:12:05 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.39 2004/05/27 13:00:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,6 @@
 #include "3d/zone_symmetrisation.h"
 #include "3d/particle_system_shape.h"
 #include "3d/particle_system.h"
-
 
 
 #include <vector>
@@ -539,10 +538,9 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 	vector<CPointLightNamed>	pointLights;
 	pointLights.resize(vectNode.size());
 	// For all nodes
-	it = vectNode.begin();
-	for (i = 0; i < (sint)vectNode.size(); ++i, ++it)
+	for (i = 0; i < (sint)vectNode.size(); ++i)
 	{
-		INode *pNode = *it;
+		INode *pNode = vectNode[i];
 
 		SLightBuild		sLightBuild;
 

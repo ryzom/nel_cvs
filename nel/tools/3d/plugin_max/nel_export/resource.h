@@ -28,6 +28,7 @@
 #define IDD_VP_WINDTREE                 123
 #define IDD_ANIM                        124
 #define IDD_LIGHTMAP2                   126
+#define IDD_LMC_CHOOSE_FROM             127
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define ID_SAVEAS                       1001
@@ -231,10 +232,15 @@
 #define IDC_LM_ALWAYS_AMBIENT           1538
 #define IDC_LM_ALWAYS_DIFFUSE           1539
 #define IDC_LM_DAY_AMBIENT              1540
+#define IDC_LMC_COPY_ALWAYS_AMBIENT     1540
 #define IDC_LM_DAY_DIFFUSE              1541
+#define IDC_LMC_COPY_SUN_AMBIENT        1541
 #define IDC_LM_NIGHT_AMBIENT            1542
+#define IDC_LMC_COPY_SUN_DIFFUSE        1542
 #define IDC_LM_NIGHT_DIFFUSE            1543
+#define IDC_LMC_COPY_NIGHT_DIFFUSE      1543
 #define IDC_LM_COMPRESS_8BIT            1544
+#define IDC_LMC_COPY_NIGHT_AMBIENT      1544
 #define IDC_LMC_STATIC0                 1545
 #define IDC_LMC_STATIC1                 1546
 #define IDC_LMC_STATIC2                 1547
@@ -249,14 +255,25 @@
 #define IDC_CAMERA_COL_RADIO1           1555
 #define IDC_CAMERA_COL_RADIO2           1556
 #define IDC_CAMERA_COL_RADIO3           1557
+#define IDC_LMC_COPY_FROM               1558
+#define IDC_LMC_COPY_ALWAYS_AMBIENT_FILTER 1559
+#define IDC_LMC_COPY_ALWAYS_DIFFUSE_FILTER 1560
+#define IDC_LMC_COPY_SUN_DIFFUSE_FILTER 1561
+#define IDC_LMC_COPY_SUN_AMBIENT_FILTER 1562
+#define IDC_LMC_COPY_NIGHT_AMBIENT_FILTER 1563
+#define IDC_LMC_COPY_NIGHT_DIFFUSE_FILTER 1564
+#define IDC_LMC_COPY_CLEAR              1565
+#define IDC_LMC_COPY_GET_ALL            1566
+#define IDC_LMC_COPY_ALWAYS_DIFFUSE     1567
+#define IDC_LMC_COPY_LIST               1568
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        127
+#define _APS_NEXT_RESOURCE_VALUE        128
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1558
+#define _APS_NEXT_CONTROL_VALUE         1569
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

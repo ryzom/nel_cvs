@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.55 2004/05/24 16:03:13 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.56 2004/05/27 12:59:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1171,6 +1171,7 @@ void	Lightmap2StateChanged (HWND hwndDlg, CLodDialogBoxParam *currentParam)
 
 	EnableWindow (GetDlgItem(hwndDlg, IDC_LMC_AUTO_SETUP), enabled);
 	EnableWindow (GetDlgItem(hwndDlg, IDC_LMC_AUTO_SETUP_VISIBLEONLY), enabled);
+	EnableWindow (GetDlgItem(hwndDlg, IDC_LMC_COPY_FROM), enabled);
 	
 	// MAX enable/disable
 	uint i;
@@ -1258,6 +1259,259 @@ void	lmcAutoSetup(CLodDialogBoxParam *currentParam, bool visibleOnly)
 	}
 }
 
+
+// ***************************************************************************
+struct CLMCParamFrom 
+{
+	bool		AmbFilter[CLodDialogBoxParam::NumLightGroup];
+	bool		DiffFilter[CLodDialogBoxParam::NumLightGroup];
+	CRGBAProp	AmbValue[CLodDialogBoxParam::NumLightGroup];
+	CRGBAProp	DiffValue[CLodDialogBoxParam::NumLightGroup];
+	std::vector<INode*>		Nodes;
+	// true if the user has clicked at least one item
+	bool		SelectionDone;
+	
+	CLMCParamFrom()
+	{
+		SelectionDone= false;
+		for(uint i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+		{
+			AmbFilter[i]= true;
+			DiffFilter[i]= true;
+		}
+	}
+
+	// to call before each call to the dialog box
+	void	reset()
+	{
+		SelectionDone= false;
+		for(uint i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+		{
+			AmbValue[i].setDifferentValuesMode();
+			DiffValue[i].setDifferentValuesMode();
+		}
+	}
+};
+
+// ***************************************************************************
+int CALLBACK LMCCopyFromDialogCallback(
+	HWND hwndDlg,  // handle to dialog box
+	UINT uMsg,     // message
+	WPARAM wParam, // first message parameter
+	LPARAM lParam  // second message parameter
+	)
+{
+	CLMCParamFrom *lmcParam=(CLMCParamFrom *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	uint	i;
+	
+	switch (uMsg) 
+	{
+	case WM_INITDIALOG:
+		{
+			// Param pointers
+			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
+			lmcParam=(CLMCParamFrom *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+			// init the colors
+			nlctassert(CLodDialogBoxParam::NumLightGroup==3);
+			nlverify(lmcParam->AmbValue[0].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LMC_COPY_ALWAYS_AMBIENT)));
+			nlverify(lmcParam->AmbValue[1].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LMC_COPY_SUN_AMBIENT)));
+			nlverify(lmcParam->AmbValue[2].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LMC_COPY_NIGHT_AMBIENT)));
+			nlverify(lmcParam->DiffValue[0].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LMC_COPY_ALWAYS_DIFFUSE)));
+			nlverify(lmcParam->DiffValue[1].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LMC_COPY_SUN_DIFFUSE)));
+			nlverify(lmcParam->DiffValue[2].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LMC_COPY_NIGHT_DIFFUSE)));
+			// set color, and color state
+			for(i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+			{
+				CRGBA	a= lmcParam->AmbValue[i];
+				CRGBA	d= lmcParam->DiffValue[i];
+				lmcParam->AmbValue[i].Ctrl->SetColor(RGB(a.R, a.G, a.B));
+				lmcParam->DiffValue[i].Ctrl->SetColor(RGB(d.R, d.G, d.B));
+			}
+			
+			// init the filters.
+			nlctassert(CLodDialogBoxParam::NumLightGroup==3);
+			SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_ALWAYS_AMBIENT_FILTER), BM_SETCHECK, lmcParam->AmbFilter[0]?BST_CHECKED:BST_UNCHECKED, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_SUN_AMBIENT_FILTER), BM_SETCHECK, lmcParam->AmbFilter[1]?BST_CHECKED:BST_UNCHECKED, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_NIGHT_AMBIENT_FILTER), BM_SETCHECK, lmcParam->AmbFilter[2]?BST_CHECKED:BST_UNCHECKED, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_ALWAYS_DIFFUSE_FILTER), BM_SETCHECK, lmcParam->DiffFilter[0]?BST_CHECKED:BST_UNCHECKED, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_SUN_DIFFUSE_FILTER), BM_SETCHECK, lmcParam->DiffFilter[1]?BST_CHECKED:BST_UNCHECKED, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_NIGHT_DIFFUSE_FILTER), BM_SETCHECK, lmcParam->DiffFilter[2]?BST_CHECKED:BST_UNCHECKED, 0);
+			
+			// init the list
+			HWND hwndList=GetDlgItem (hwndDlg, IDC_LMC_COPY_LIST);
+			for(i=0;i<lmcParam->Nodes.size();i++)
+			{
+				// get the node name
+				std::string	str= CExportNel::getName(*lmcParam->Nodes[i]);
+				// Insert string
+				SendMessage (hwndList, LB_ADDSTRING, 0, (LPARAM) str.c_str());
+			}
+		
+			// gray the OK button
+			EnableWindow( GetDlgItem(hwndDlg, IDOK), FALSE);
+		}
+		break;
+
+	case WM_COMMAND:
+		if( HIWORD(wParam) == BN_CLICKED )
+		{
+			HWND hwndButton = (HWND) lParam;
+			switch (LOWORD(wParam)) 
+			{
+			case IDCANCEL:
+				EndDialog(hwndDlg, IDCANCEL);
+				break;
+			case IDOK:
+				{
+					// get filter states
+					nlctassert(CLodDialogBoxParam::NumLightGroup==3);
+					lmcParam->AmbFilter[0]= SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_ALWAYS_AMBIENT_FILTER), BM_GETCHECK, 0, 0) == BST_CHECKED;
+					lmcParam->AmbFilter[1]= SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_SUN_AMBIENT_FILTER), BM_GETCHECK, 0, 0) == BST_CHECKED;
+					lmcParam->AmbFilter[2]= SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_NIGHT_AMBIENT_FILTER), BM_GETCHECK, 0, 0) == BST_CHECKED;
+					lmcParam->DiffFilter[0]= SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_ALWAYS_DIFFUSE_FILTER), BM_GETCHECK, 0, 0) == BST_CHECKED;
+					lmcParam->DiffFilter[1]= SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_SUN_DIFFUSE_FILTER), BM_GETCHECK, 0, 0) == BST_CHECKED;
+					lmcParam->DiffFilter[2]= SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_NIGHT_DIFFUSE_FILTER), BM_GETCHECK, 0, 0) == BST_CHECKED;
+					
+					// get colors
+					for(i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+					{
+						COLORREF	a= lmcParam->AmbValue[i].Ctrl->GetColor();
+						COLORREF	d= lmcParam->DiffValue[i].Ctrl->GetColor();
+						lmcParam->AmbValue[i].R= GetRValue(a);
+						lmcParam->AmbValue[i].G= GetGValue(a);
+						lmcParam->AmbValue[i].B= GetBValue(a);
+						lmcParam->DiffValue[i].R= GetRValue(d);
+						lmcParam->DiffValue[i].G= GetGValue(d);
+						lmcParam->DiffValue[i].B= GetBValue(d);
+					}
+
+					EndDialog(hwndDlg, IDOK);
+				}
+				break;
+			case IDC_LMC_COPY_CLEAR:
+				{
+					// init the filters.
+					nlctassert(CLodDialogBoxParam::NumLightGroup==3);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_ALWAYS_AMBIENT_FILTER), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_SUN_AMBIENT_FILTER), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_NIGHT_AMBIENT_FILTER), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_ALWAYS_DIFFUSE_FILTER), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_SUN_DIFFUSE_FILTER), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_NIGHT_DIFFUSE_FILTER), BM_SETCHECK, BST_UNCHECKED, 0);
+				}
+				break;
+			case IDC_LMC_COPY_GET_ALL:
+				{
+					// init the filters.
+					nlctassert(CLodDialogBoxParam::NumLightGroup==3);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_ALWAYS_AMBIENT_FILTER), BM_SETCHECK, BST_CHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_SUN_AMBIENT_FILTER), BM_SETCHECK, BST_CHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_NIGHT_AMBIENT_FILTER), BM_SETCHECK, BST_CHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_ALWAYS_DIFFUSE_FILTER), BM_SETCHECK, BST_CHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_SUN_DIFFUSE_FILTER), BM_SETCHECK, BST_CHECKED, 0);
+					SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_NIGHT_DIFFUSE_FILTER), BM_SETCHECK, BST_CHECKED, 0);
+				}
+				break;
+			}
+		}
+		else if( HIWORD(wParam) == LBN_SELCHANGE && LOWORD(wParam)== IDC_LMC_COPY_LIST )
+		{
+			// List item clicked
+			uint wID = SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_LIST), LB_GETCURSEL, 0, 0);
+			if (wID!=LB_ERR)
+			{
+				lmcParam->SelectionDone= true;
+
+				// Get the node name
+				char name[512];
+				SendMessage (GetDlgItem (hwndDlg, IDC_LMC_COPY_LIST), LB_GETTEXT, wID, (LPARAM) (LPCTSTR) name);
+				
+				// Find the node
+				INode *nodeClk=theCNelExport._Ip->GetINodeByName(name);
+				if (nodeClk)
+				{
+					// Get the color of this node, and assign to the color swatch
+					for(i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+					{
+						CRGBA	a= CExportNel::getScriptAppData (nodeClk, NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START+i, CRGBA::Black);
+						CRGBA	d= CExportNel::getScriptAppData (nodeClk, NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START+i, CRGBA::White);
+						lmcParam->AmbValue[i].Ctrl->SetColor(RGB(a.R, a.G, a.B));
+						lmcParam->DiffValue[i].Ctrl->SetColor(RGB(d.R, d.G, d.B));
+						lmcParam->AmbValue[i].DifferentValues= false;
+						lmcParam->DiffValue[i].DifferentValues= false;
+					}
+				}
+
+				// ungray the OK button
+				EnableWindow( GetDlgItem(hwndDlg, IDOK), TRUE);
+			}
+					
+		}
+		break;
+		
+	case WM_CLOSE:
+		EndDialog(hwndDlg,IDCANCEL);
+		break;
+		
+	case WM_DESTROY:						
+		break;
+		
+	default:
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+// ***************************************************************************
+void	lmcCopyFrom(CLodDialogBoxParam *currentParam)
+{
+	uint	i;
+
+	// static to save filter between calls
+	static CLMCParamFrom		paramLMCFrom;
+	
+	// **** get all nodes
+	// get all nodes
+	std::vector<INode*>	nodes;
+	theCNelExport._ExportNel->getObjectNodes(nodes, theCNelExport._Ip->GetTime());
+	paramLMCFrom.Nodes.clear();
+	// retrieve only ones that have a lmc 8 bits setup....
+	for(i=0;i<nodes.size();i++)
+	{
+		if(CExportNel::getScriptAppData (nodes[i], NEL3D_APPDATA_EXPORT_LMC_ENABLED, BST_UNCHECKED)==BST_CHECKED)
+		{
+			paramLMCFrom.Nodes.push_back(nodes[i]);
+		}
+	}
+
+
+	// **** launch the choosing dialog
+	paramLMCFrom.reset();
+	if (DialogBoxParam (hInstance, MAKEINTRESOURCE(IDD_LMC_CHOOSE_FROM), theCNelExport._Ip->GetMAXHWnd(), LMCCopyFromDialogCallback, (long)&paramLMCFrom)==IDOK
+		&& paramLMCFrom.SelectionDone)
+	{
+		// **** Apply to the current setup
+		for(i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+		{
+			CRGBA	amb= paramLMCFrom.AmbValue[i];
+			CRGBA	diff= paramLMCFrom.DiffValue[i];
+			// change the control and value
+			if(paramLMCFrom.AmbFilter[i])
+			{
+				currentParam->LMCAmbient[i]= amb;
+				currentParam->LMCAmbient[i].Ctrl->SetColor(RGB(amb.R, amb.G, amb.B));
+			}
+			if(paramLMCFrom.DiffFilter[i])
+			{
+				currentParam->LMCDiffuse[i]= diff;
+				currentParam->LMCDiffuse[i].Ctrl->SetColor(RGB(diff.R, diff.G, diff.B));
+			}
+		}
+	}
+}
+
 // ***************************************************************************
 int CALLBACK Lightmap2DialogCallback (
   HWND hwndDlg,  // handle to dialog box
@@ -1340,6 +1594,9 @@ int CALLBACK Lightmap2DialogCallback (
 					break;
 					case IDC_LMC_AUTO_SETUP_VISIBLEONLY:
 						lmcAutoSetup(currentParam, true);
+					break;
+					case IDC_LMC_COPY_FROM:
+						lmcCopyFrom(currentParam);
 					break;
 				}
 			}
@@ -3048,9 +3305,19 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				for(uint i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
 				{
 					if(!param.LMCAmbient[i].DifferentValues)
-						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START+i, param.LMCAmbient[i]);
+					{
+						// force 255 to avoid dummy differences
+						CRGBA	col= param.LMCAmbient[i];
+						col.A= 255;
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START+i, col);
+					}
 					if(!param.LMCDiffuse[i].DifferentValues)
-						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START+i, param.LMCDiffuse[i]);
+					{
+						// force 255 to avoid dummy differences
+						CRGBA	col= param.LMCDiffuse[i];
+						col.A= 255;
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START+i, col);
+					}
 				}
 				
 				// CollisionMeshGeneration

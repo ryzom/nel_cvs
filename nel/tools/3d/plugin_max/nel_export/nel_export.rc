@@ -767,10 +767,50 @@ BEGIN
                     160,165,30,15
     CONTROL         "Use 8Bits lightmaps",IDC_LM_COMPRESS_8BIT,"Button",
                     BS_AUTO3STATE | BS_TOP | BS_MULTILINE | WS_TABSTOP,10,20,
-                    100,10
+                    90,10
     PUSHBUTTON      "Auto Setup All",IDC_LMC_AUTO_SETUP,15,45,65,15
     PUSHBUTTON      "Auto Setup Visible",IDC_LMC_AUTO_SETUP_VISIBLEONLY,95,
-                    45,80,15
+                    45,90,15
+    PUSHBUTTON      "Copy From",IDC_LMC_COPY_FROM,120,20,65,15
+END
+
+IDD_LMC_CHOOSE_FROM DIALOG DISCARDABLE  0, 0, 217, 290
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Choose LMC setup from object"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,160,240,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,160,265,50,14
+    LISTBOX         IDC_LMC_COPY_LIST,5,20,120,260,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "List of objects in LMC mode.",IDC_STATIC,5,10,120,10
+    CONTROL         "Custom1",IDC_LMC_COPY_ALWAYS_DIFFUSE,"ColorSwatch",
+                    WS_TABSTOP,180,45,30,15
+    CONTROL         "Custom1",IDC_LMC_COPY_ALWAYS_AMBIENT,"ColorSwatch",
+                    WS_TABSTOP,140,45,30,15
+    CONTROL         "Custom1",IDC_LMC_COPY_SUN_AMBIENT,"ColorSwatch",
+                    WS_TABSTOP,140,90,30,15
+    CONTROL         "Custom1",IDC_LMC_COPY_SUN_DIFFUSE,"ColorSwatch",
+                    WS_TABSTOP,180,90,30,15
+    CONTROL         "Custom1",IDC_LMC_COPY_NIGHT_DIFFUSE,"ColorSwatch",
+                    WS_TABSTOP,180,135,30,15
+    CONTROL         "Custom1",IDC_LMC_COPY_NIGHT_AMBIENT,"ColorSwatch",
+                    WS_TABSTOP,140,135,30,15
+    LTEXT           "Colors for this node:",IDC_STATIC,140,25,70,10
+    CONTROL         "Get",IDC_LMC_COPY_ALWAYS_AMBIENT_FILTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,140,65,30,10
+    CONTROL         "Get",IDC_LMC_COPY_ALWAYS_DIFFUSE_FILTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,180,65,30,10
+    CONTROL         "Get",IDC_LMC_COPY_SUN_DIFFUSE_FILTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,180,110,30,10
+    CONTROL         "Get",IDC_LMC_COPY_SUN_AMBIENT_FILTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,140,110,30,10
+    CONTROL         "Get",IDC_LMC_COPY_NIGHT_AMBIENT_FILTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,140,155,30,10
+    CONTROL         "Get",IDC_LMC_COPY_NIGHT_DIFFUSE_FILTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,180,155,30,10
+    PUSHBUTTON      "Clear All",IDC_LMC_COPY_CLEAR,140,175,70,15
+    PUSHBUTTON      "Get All",IDC_LMC_COPY_GET_ALL,140,195,70,15
 END
 
 
@@ -812,6 +852,14 @@ BEGIN
         RIGHTMARGIN, 354
         TOPMARGIN, 7
         BOTTOMMARGIN, 204
+    END
+
+    IDD_LMC_CHOOSE_FROM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 283
     END
 END
 #endif    // APSTUDIO_INVOKED

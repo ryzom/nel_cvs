@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.24 2001/10/04 14:11:37 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.25 2001/11/12 17:44:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,7 @@ namespace NLAIAGENT
 
 	CMainAgentScript::~CMainAgentScript()
 	{
+		Kill();
 		_CodeContext->release();
 		delete _Stack;
 		delete _Heap;

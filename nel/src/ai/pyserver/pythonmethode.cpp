@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.16 2001/11/12 15:35:26 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.17 2001/11/12 17:44:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,7 +211,7 @@ namespace NLAIPYSERVER
 		PySys_SetPath((char *)PathPython.c_str());
 
 #ifdef NL_DEBUG
-		NLAIC::Out((char *)Py_GetPath());
+		NLAIC::Out("%s\n",(char *)Py_GetPath());
 		k = (char *)Py_GetPath();
 #endif 
 		

@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.15 2001/05/17 14:11:37 chafik Exp $
+ * $Id: main_agent_script.h,v 1.16 2001/11/12 17:44:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,7 @@ namespace NLAIAGENT
 		IMainAgent():CAgentScript(NULL){}
 		virtual ~IMainAgent()
 		{
+			Kill();
 		}
 
 

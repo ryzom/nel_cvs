@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.90 2001/10/30 15:34:44 portier Exp $
+ * $Id: agent_script.cpp,v 1.91 2001/11/12 17:44:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -334,8 +334,9 @@ namespace NLAIAGENT
 
 	CAgentScript::~CAgentScript()
 	{
+		Kill();
 		if ( _AgentClass )
-			_AgentClass->release();
+			_AgentClass->release();		
 
 		// destruction of static components
 		if(_Components != NULL)

@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.7 2001/07/19 13:45:53 lecroart Exp $
+ * $Id: network.cpp,v 1.8 2001/07/19 14:58:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,6 +88,7 @@ static void cbSBHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 static void cbChat (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string line;
+	msgin.serial (line);
 	addLine (line);
 }
 

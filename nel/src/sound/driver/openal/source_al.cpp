@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.2 2001/07/04 13:10:33 cado Exp $
+ * $Id: source_al.cpp,v 1.3 2001/07/10 16:49:29 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,7 +107,7 @@ void					CSourceAL::play()
 	else
 	{
 		// Streaming mode
-		nlerror( "Streaming not implemented" );
+		nlerror( "AM: Cannot play null buffer; streaming not implemented" );
 	}
 }
 
@@ -126,7 +126,7 @@ void					CSourceAL::stop()
 	else
 	{
 		// Streaming mode
-		nlerror( "Streaming not implemented" );
+		nlerror( "AM: Cannot stop null buffer; streaming not implemented" );
 	}
 }
 
@@ -216,6 +216,7 @@ void					CSourceAL::getDirection( NLMISC::CVector& dir ) const
  */
 void					CSourceAL::setGain( float gain )
 {
+	nlassert( (gain >= 0.0f) && (gain <= 1.0f ) );
 	alSourcef( _SourceName, AL_GAIN, gain );
 	TestALError();
 }
@@ -260,6 +261,7 @@ bool					CSourceAL::getSourceRelativeMode() const
  */
 void					CSourceAL::setMinMaxDistances( float mindist, float maxdist )
 {
+	nlassert( (mindist >= 0.0f) && (maxdist >= 0.0f) );
 	alSourcef( _SourceName, AL_REFERENCE_DISTANCE, mindist );
 	alSourcef( _SourceName, AL_MAX_DISTANCE, maxdist );
 	TestALError();
@@ -282,6 +284,7 @@ void					CSourceAL::getMinMaxDistances( float& mindist, float& maxdist ) const
  */
 void					CSourceAL::setCone( float innerAngle, float outerAngle, float outerGain )
 {
+	nlassert( (outerGain >= 0.0f) && (outerGain <= 1.0f ) );
 	alSourcef( _SourceName, AL_CONE_INNER_ANGLE, radToDeg(innerAngle) );
 	alSourcef( _SourceName, AL_CONE_OUTER_ANGLE, radToDeg(outerAngle) );
 	alSourcef( _SourceName, AL_CONE_OUTER_GAIN, outerGain );

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.12 2001/07/12 16:22:42 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.13 2001/07/26 17:18:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include <3d/mesh_multi_lod.h>
 #include <3d/particle_system_model.h>
 #include <3d/coarse_mesh_manager.h>
+#include <3d/flare_shape.h>
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -151,6 +152,80 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 				}				
 			}
 		}
+
+		// is the object a flare ?
+		if (clid.PartA() == NEL_FLARE_CLASS_ID_A /*&& clid.PartB() == NEL_FLARE_CLASS_ID_B*/)
+		{
+			// build the shape
+			CFlareShape *fs = new CFlareShape ;
+
+			Point3 col ;
+			float persistence, size, spacing, attenuationRange  ;
+			int   attenuable ;
+			int	  firstFlareKeepSize ;
+
+
+			// retrieve the color of the flare from the node
+			CExportNel::getValueByNameUsingParamBlock2(node, "ColorParam", (ParamType2)TYPE_RGBA, &col, 0) ;
+			fs->setColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z))) ;
+			// retrieve the persistence of the flare
+			CExportNel::getValueByNameUsingParamBlock2(node, "PersistenceParam", (ParamType2)TYPE_FLOAT, &persistence, 0) ;
+			fs->setPersistence(persistence) ;
+			// retrieve spacing of the flare
+			CExportNel::getValueByNameUsingParamBlock2(node, "Spacing", (ParamType2)TYPE_FLOAT, &spacing, 0) ;
+			fs->setFlareSpacing(spacing) ;
+			// retrieve use of radial attenuation
+			CExportNel::getValueByNameUsingParamBlock2(node, "Attenuable", (ParamType2) TYPE_BOOL, &attenuable, 0) ;			
+			if (attenuable)
+			{
+				fs->setAttenuable() ;
+				CExportNel::getValueByNameUsingParamBlock2(node, "AttenuationRange", (ParamType2) TYPE_FLOAT, &attenuationRange, 0) ;			
+				fs->setAttenuationRange(attenuationRange) ;
+			}			
+			CExportNel::getValueByNameUsingParamBlock2(node, "FirstFlareKeepSize", (ParamType2) TYPE_BOOL, &firstFlareKeepSize, 0) ;			
+			fs->setFirstFlareKeepSize(firstFlareKeepSize ? true : false) ; // avoid VC++ warning
+
+			// retrieve sizes & tex
+			for (uint k = 0 ; k < MaxFlareNum ; ++k)
+			{
+				char out[16] ; sprintf(out, "size%d", k) ;
+				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2)TYPE_FLOAT, &size, 0) ;
+				fs->setSize(k, size) ;
+				// check wether the flare is used
+				int texUsed ;
+				sprintf(out, "flareUsed%d", k) ;
+				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2) TYPE_BOOL, &texUsed, 0) ;			
+				if (texUsed)
+				{
+					sprintf(out, "texFileName%d", k) ;
+					// retrieve the texture name
+					std::string fileName ;
+					CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2) TYPE_STRING, &fileName, 0) ;
+					if (absolutePath)
+					{
+						fs->setTexture(k, new NL3D::CTextureFile(fileName.c_str())) ;
+					}
+					else
+					{
+						char fName[_MAX_FNAME];
+						// get file name only
+						::_splitpath(NULL, NULL, NULL, fName, NULL) ;
+						fs->setTexture(k, new NL3D::CTextureFile(fName)) ;
+					}
+				}
+				else
+				{
+					fs->setTexture(k, NULL) ;
+				}	
+			}
+
+			
+			
+
+			return fs ;
+		}
+
+
 		
 
 		// Object can be converted in triObject ?

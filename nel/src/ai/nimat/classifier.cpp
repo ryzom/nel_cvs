@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.3 2002/10/10 08:35:18 coutelas Exp $
+ * $Id: classifier.cpp,v 1.4 2002/10/11 13:25:53 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -275,6 +275,7 @@ void CActionCS::getDebugString(std::string &t) const
 ///////////////////////////
 CMotivationEnergy::CMotivationEnergy()
 {
+	_SumValue = 0;
 }
 
 CMotivationEnergy::~CMotivationEnergy()
@@ -283,31 +284,92 @@ CMotivationEnergy::~CMotivationEnergy()
 
 sint16 CMotivationEnergy::getSumValue() const
 {
-	std::map<std::string, sint16>::const_iterator itEnergyByMotivation;
-	sint16 sum = 0;
-	for (itEnergyByMotivation = _EnergyByMotivation.begin(); itEnergyByMotivation != _EnergyByMotivation.end(); itEnergyByMotivation)
-	{
-		sum += (*itEnergyByMotivation).second;
-	}
-	return sum;
+	return _SumValue;
 }
 
-uint64 CMotivationEnergy::getID() const
+void	CMotivationEnergy::removeProvider(std::string providerName)
 {
-	return _ID;
+	_MotivationProviders.erase(providerName);
+	computeMotivationValue();
 }
 
-void CMotivationEnergy::setID(uint64 id)
+void	CMotivationEnergy::addProvider(std::string providerName, const CMotivationEnergy& providerMotivation)
 {
-	_ID = id;
+	_MotivationProviders[providerName] = providerMotivation._EnergyByMotivation ;
+	computeMotivationValue();
 }
 
-void CMotivationEnergy::raz()
+void	CMotivationEnergy::computeMotivationValue()
 {
-	_ID = 0;
 	_EnergyByMotivation.clear();
+	std::map<std::string, TEnergyByMotivation>::iterator itMotivationProviders;
+
+	for (itMotivationProviders = _MotivationProviders.begin(); itMotivationProviders != _MotivationProviders.end(); itMotivationProviders++)
+	{
+		TEnergyByMotivation &motivation = (*itMotivationProviders).second;
+		TEnergyByMotivation::iterator itMotivation, itMyMotivation;
+		for (itMotivation = motivation.begin(); itMotivation != motivation.end(); itMotivation++)
+		{
+			std::string motivSource = (*itMotivation).first;
+			sint16 motiveValue = (*itMotivation).second.Value;
+			sint16 motivePP = (*itMotivation).second.PP;
+			itMyMotivation = _EnergyByMotivation.find(motivSource);
+			if (itMyMotivation != _EnergyByMotivation.end())
+			{
+				sint16 myMotiveValue = (*itMyMotivation).second.Value;
+				if (motiveValue > myMotiveValue)
+				{
+					_EnergyByMotivation[motivSource].Value = motiveValue;
+					_EnergyByMotivation[motivSource].PP = motivePP;
+				}
+			}
+			else
+			{
+				_EnergyByMotivation[motivSource].Value = motiveValue;
+				_EnergyByMotivation[motivSource].PP = motivePP;
+			}
+		}
+	}
+
+	TEnergyByMotivation::const_iterator itEnergyByMotivation;
+	sint16 sum = 0;
+	for (itEnergyByMotivation = _EnergyByMotivation.begin(); itEnergyByMotivation != _EnergyByMotivation.end(); itEnergyByMotivation++)
+	{
+		sum += (*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP;
+	}
+	_SumValue = sum;
 }
 
+/// Donne la Puissance Propre d'une Motivation
+void CMotivationEnergy::setMotivationPP(std::string motivationName, sint16 PP)
+{
+	_SumValue -= _EnergyByMotivation[motivationName].Value * _EnergyByMotivation[motivationName].PP;
+	_SumValue += _EnergyByMotivation[motivationName].Value * PP;
+	_EnergyByMotivation[motivationName].PP = PP;
+}
+
+/// Fixe la valeur d'une motivation
+void CMotivationEnergy::setMotivationValue(std::string motivationName, sint16 value)
+{
+	_SumValue -= _EnergyByMotivation[motivationName].Value * _EnergyByMotivation[motivationName].PP;
+	_SumValue += value * _EnergyByMotivation[motivationName].PP;
+	_EnergyByMotivation[motivationName].Value = value;
+}
+
+/// Chaine de debug
+void CMotivationEnergy::getDebugString(std::string &t) const
+{
+	std::string ret;
+	TEnergyByMotivation::const_iterator itEnergyByMotivation;
+	
+	for (itEnergyByMotivation = _EnergyByMotivation.begin(); itEnergyByMotivation!= _EnergyByMotivation.end(); itEnergyByMotivation++)
+	{
+		char v[8];
+		ret += " Motivation source : " + (*itEnergyByMotivation).first + " (" + itoa((*itEnergyByMotivation).second.Value * (*itEnergyByMotivation).second.PP,v,10) + ")\n";
+//		ret = ret + " Motivation value  : " + itoa((*itEnergyByMotivation).second.Value,v,10) + "\n";
+	}
+	t+=ret;
+}
 
 ///////////////////////////
 // CNetCS
@@ -347,27 +409,34 @@ void CNetCS::addActionCS(const CActionCS& action)
 /// Chaine de debug
 void CNetCS::getDebugString(std::string &t) const
 {
-	std::string ret;
+	std::string ret = "\n---------------------------";
 	std::map<std::string, CMotivateCS>::const_iterator itClassifiers;
 	for (itClassifiers = _ClassifiersAndMotivationIntensity.begin(); itClassifiers!= _ClassifiersAndMotivationIntensity.end(); itClassifiers++)
 	{
-		ret += "\nMotivation : " + (*itClassifiers).first + "\n";
+		ret += "\nMotivation : " + (*itClassifiers).first;
 		(*itClassifiers).second.CS.getDebugString(ret);
+		(*itClassifiers).second.MotivationIntensity.getDebugString(ret);
+	}
+	ret += "\nACTIONS :\n";
+	std::map<std::string, CMotivationEnergy>::const_iterator itActionsExecutionIntensity;
+	for (itActionsExecutionIntensity = _ActionsExecutionIntensity.begin(); itActionsExecutionIntensity != _ActionsExecutionIntensity.end(); itActionsExecutionIntensity++)
+	{
+		ret += (* itActionsExecutionIntensity).first + " :\n";
+		(*itActionsExecutionIntensity).second.getDebugString(ret);
 	}
 	t+=ret;
 }
 
 /// Donne la Puissance Propre d'une Motivation
-void CNetCS::setMotivationPP(std::string motivationName, uint16 PP)
+void CNetCS::setMotivationPP(std::string motivationName, sint16 PP)
 {
-	_MotivationsValues[motivationName].PP = PP;
+	_ClassifiersAndMotivationIntensity[motivationName].MotivationIntensity.setMotivationPP(motivationName, PP);
 }
 
 /// Fixe la valeur d'une motivation
-void CNetCS::setMotivationValue(std::string motivationName, uint16 value)
+void CNetCS::setMotivationValue(std::string motivationName, sint16 value)
 {
-	_MotivationsValues[motivationName].Value = value;
-	//***G*** Rajouter le calcul de valeur du systeme de classeur
+	_ClassifiersAndMotivationIntensity[motivationName].MotivationIntensity.setMotivationValue(motivationName, value);
 }
 
 void CNetCS::run()
@@ -376,8 +445,9 @@ void CNetCS::run()
 	Je sélectionne par roulette weel le classeur que je vais gérer
 	Je met à jour l'énergie du vainqueur
 	*/
-	sint16 somme;
-	std::map<sint16, CMotivateCS*> mapCSweel;
+	sint16 somme = 0;
+	typedef	std::map<std::string, CMotivateCS>::iterator TitNameAndMotivation;
+	std::map<sint16, TitNameAndMotivation > mapCSweel;
 	std::map<std::string, CMotivateCS>::iterator itClassifiers;
 	// On calcule la somme
 	for (itClassifiers = _ClassifiersAndMotivationIntensity.begin(); itClassifiers != _ClassifiersAndMotivationIntensity.end(); itClassifiers++)
@@ -387,37 +457,23 @@ void CNetCS::run()
 		if (energy > 0)
 		{
 			somme += energy;
-			mapCSweel[somme] = pCMotivateCS;
+			mapCSweel[somme] = itClassifiers;
 		}
 	}
 	if (somme>0)
 	{
 		// on selectionne le classeur;
 		sint16 randomeNumber = rand()%(somme);
-		std::map<sint16, CMotivateCS*>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
-		CMotivateCS* pCSselection = (*itMapCSweel).second;
-
-		// On vérifie que l'ID est toujours valide
-		/*
-		 ***G*** PROBLEME :
-		 Les Motivation initial ont une énergie indépendament des ID.
-		 Elles n'ont donc pas d'ID associé initiallement.
-		 */
-		uint64 id = pCSselection->MotivationIntensity.getID();
-		std::map<uint64, TSensorMap>::iterator itSensorsValues = _SensorsValues.find(id);
-		if (itSensorsValues == _SensorsValues.end())
-		{
-			// Sinon on remet l'énergie à 0.
-			pCSselection->MotivationIntensity.raz();
-			return;
-		}
+		std::map<sint16, TitNameAndMotivation>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
+		CMotivateCS* pCSselection = &((*((*itMapCSweel).second)).second);
+		std::string selectionName = (*((*itMapCSweel).second)).first;
 
 		// On fait calculer le CS
-		TSensorMap* pSensorMap = &((*itSensorsValues).second);
-		std::string behav = pCSselection->CS.selectBehavior(*pSensorMap);
+		std::string behav = pCSselection->CS.selectBehavior(_SensorsValues);
 
 		// On récupère le pointeur sur le modul auquel on va transmettre la motivation
 		CMotivationEnergy* pEnergy2Evolve;
+		CMotivationEnergy& refMyEnergy = pCSselection->MotivationIntensity;
 		std::map<std::string, CMotivationEnergy>::iterator itActionsExecutionIntensity;
 		itActionsExecutionIntensity = _ActionsExecutionIntensity.find(behav);
 		if (itActionsExecutionIntensity != _ActionsExecutionIntensity.end())
@@ -434,30 +490,36 @@ void CNetCS::run()
 		nlassert(pEnergy2Evolve);
 
 		// On change la valeur de motivation de la cible.
+		// 1) on retire son énergie au précédent truc
+		_ClassifiersAndMotivationIntensity[pCSselection->LastMotivedAction].MotivationIntensity.removeProvider(selectionName);
+
+		// 2) on rajoute notre énergie au nouveau.
+		pEnergy2Evolve->addProvider(selectionName, refMyEnergy);
 		
-		/*
-		on regarde quel ID apporte le plus d'énergie
-		 */
 	}
 }
 
-std::string CNetCS::selectBehavior(const TSensorMap &sensorMap)
+void CNetCS::setSensors(const TSensorMap &sensorMap)
 {
-	/*
-		Il va falloir gérer :
-		- les energies
-		- les valeurs des senseurs des différents systèmes de classeur ?
+	_SensorsValues = sensorMap;
+}
 
-  Je pense que les senseurs devraient être mis à jour de façon indépendante de la requete de selection.
 
-  Pour le select :
-  Je regarde la valeur d'IE de chacune de mes action. [Il faut une map <nomAction,IE>]
-  S'il n'y a pas d'action courante [Il faut une fonction pour dire qu'une action est terminée] on donne une IEactioncourante de 0.
-  On fait la liste de toute les actions dont l'IE est > à IEactioncourante.
-  On fait une roullette weel et on retourne le vainqueur. [Il faut noter l'action courante]
-  [Il faut donner à l'action courante une IE plus élevée]
-	*/
-	return "";
+std::string CNetCS::selectBehavior()
+{
+	// On prend le max
+	std::string ret = "";
+	sint16 executionIntensity = 0;
+	std::map<std::string, CMotivationEnergy>::iterator itActionsExecutionIntensity;
+	for (itActionsExecutionIntensity = _ActionsExecutionIntensity.begin(); itActionsExecutionIntensity != _ActionsExecutionIntensity.end(); itActionsExecutionIntensity++)
+	{
+		sint16 value = (*itActionsExecutionIntensity).second.getSumValue();
+		if (value > executionIntensity)
+		{
+			ret = (*itActionsExecutionIntensity).first;
+		}
+	}
+	return ret;
 }
 
 

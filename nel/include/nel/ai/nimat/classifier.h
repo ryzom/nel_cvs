@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.2 2002/10/08 09:30:13 robert Exp $
+ * $Id: classifier.h,v 1.3 2002/10/11 13:25:53 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,18 +148,43 @@ private :
   */
 class CMotivationEnergy
 {
+	class CMotivationValue
+	{
+	public :
+		sint16 Value;
+		sint16 PP;
+		CMotivationValue()
+		{
+			Value = 0;
+			PP = 0;
+		}
+	};
+
+	typedef	std::map< std::string , CMotivationValue>	TEnergyByMotivation;
+
 public :
 	CMotivationEnergy();
 	virtual ~CMotivationEnergy();
 
 	sint16	getSumValue() const;
-	uint64	getID() const;
-	void	setID(uint64 id);
-	void	raz(); // Remise à 0. ID=0 et map vide
+	void	removeProvider(std::string providerName);
+	void	addProvider(std::string providerName, const CMotivationEnergy& providerMotivation);
+
+	/// Donne la Puissance Propre d'une Motivation
+	void setMotivationPP(std::string motivationName, sint16 PP);
+
+	/// Fixe la valeur d'une motivation
+	void setMotivationValue(std::string motivationName, sint16 value);
+
+	/// Chaine de debug
+	void getDebugString (std::string &t) const;
 
 private :
-	std::map<std::string, sint16>	_EnergyByMotivation;
-	uint64							_ID;
+	void	computeMotivationValue();
+
+	sint16										_SumValue;
+	std::map<std::string, TEnergyByMotivation>	_MotivationProviders;
+	TEnergyByMotivation							_EnergyByMotivation; // <MotivationSource, motivationValue>
 };
 
 /**
@@ -184,38 +209,34 @@ public :
 	void addVirtualActionCS(const CActionCS &action);
 
 	/// Donne la Puissance Propre d'une Motivation
-	void setMotivationPP(std::string motivationName, uint16 PP);
+	void setMotivationPP(std::string motivationName, sint16 PP);
 
 	/// Fixe la valeur d'une motivation
-	void setMotivationValue(std::string motivationName, uint16 value);
+	void setMotivationValue(std::string motivationName, sint16 value);
 
 	/// Return the Behavior that must be active
-	std::string selectBehavior(const TSensorMap &sensorMap);
+	std::string selectBehavior();
 
 	/// Update the values in the NetCS
 	void run();
+
+	/// Updtae the sensors value
+	void setSensors(const TSensorMap &sensorMap);
 
 	/// Chaine de debug
 	void getDebugString(std::string &t) const;
 
 private :
-	struct CMotivationValue
-	{
-		uint16 Value;
-		uint16 PP;
-	};
 	struct CMotivateCS
 	{
 		CClassifierSystem	CS;
 		CMotivationEnergy	MotivationIntensity;
+		std::string			LastMotivedAction;
 	};
 	std::map<std::string, CMotivateCS>			_ClassifiersAndMotivationIntensity;	// <motivationName, classeur> the motivationName is also the CS name.
 //	std::map<std::string, CClassifierSystem>	_Classifiers;						// <motivationName, classeur> Ensemble de mes règles
-	std::map<std::string, CMotivationValue>		_MotivationsValues;					// <motivationName, motivationValue> Les valeurs et PP des classeurs de motivation
-	std::map<uint64, TSensorMap>				_SensorsValues;						// <entity id, map de senseurs> Valeurs des senseurs pour chaque entité.
-
-	std::map<std::string, CMotivationEnergy>	_ActionsExecutionIntensity;			// <actionName, ExecutionIntensity> //***G*** C'est plus bon ça, il ...
-	// ... faudrait pour chaque action avoir l'ID de la personne sur laquel on veut le faire en plus des energies.
+	TSensorMap									_SensorsValues;						// Valeurs des senseurs
+	std::map<std::string, CMotivationEnergy>	_ActionsExecutionIntensity;			// <actionName, ExecutionIntensity>
 };
 
 /****

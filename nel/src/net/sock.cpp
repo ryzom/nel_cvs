@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.24 2002/08/22 15:25:04 lecroart Exp $
+ * $Id: sock.cpp,v 1.25 2002/10/02 13:37:06 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ ESocket::ESocket( const char *reason, bool systemerror, CInetAddress *addr )
 	}
 	_Reason = ss.str();
   */
-	_Reason = "Socket error: ";
+  /*	_Reason = "Socket error: ";
 	uint errornum = CSock::getLastError();
 	char str[256];
 	if ( addr != NULL )
@@ -116,6 +116,7 @@ ESocket::ESocket( const char *reason, bool systemerror, CInetAddress *addr )
 		_Reason += ")";
 	}
 	nlwarning( "Exception will be launched: %s", _Reason.c_str() );
+*/
 }
 
 
@@ -590,5 +591,24 @@ void CSock::setNonBlockingMode ( bool bm )
 	}
 }
 
+
+/*
+ * Sets the send buffer size
+ */
+void CSock::setSendBufferSize( sint32 size )
+{
+  setsockopt( _Sock, SOL_SOCKET, SO_SNDBUF, (char*)(&size), (socklen_t)sizeof(size) );
+}
+
+/*
+ * Gets the send buffer size
+ */
+sint32 CSock::getSendBufferSize()
+{
+  int size = -1;
+  socklen_t bufsize;
+  getsockopt( _Sock, SOL_SOCKET, SO_SNDBUF, (char*)(&size), &bufsize );
+  return size;
+}
 
 } // NLNET

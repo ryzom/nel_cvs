@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.16 2002/08/22 14:43:55 corvazier Exp $
+ * $Id: polygon.cpp,v 1.17 2002/11/05 11:32:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1163,8 +1163,7 @@ void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 	else
 	{
 		// The top of the poly is sharp
-		// We perform a cross product of the 2 highest vect to get its orientation		
-		// l'orientation
+		// We perform a cross product of the 2 highest vect to get its orientation
 
 		 const float deltaXN = Next(pHighestRight, V)->x - pHighestRight->x;
 		 const float deltaYN = Next(pHighestRight, V)->y - pHighestRight->y;
@@ -1212,10 +1211,7 @@ void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 		do
 		{
 			nextV = Next(currV, V);
-			ScanEdge(borders, iHighest, *currV
-						   , *nextV
-						   , false
-					) ;
+			ScanEdge(borders, iHighest, *currV, *nextV, false) ;
 			currV = nextV;
 		}
 		while (currV != pLowest) ;
@@ -1224,10 +1220,7 @@ void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 		do
 		{
 			nextV = Next(currV, V);
-			ScanEdge(borders, iHighest, *nextV
-						   , *currV
-						   , true
-					);
+			ScanEdge(borders, iHighest, *nextV, *currV, true);
 			currV = nextV;
 		}
 		while (currV != pHighestRight)  ;

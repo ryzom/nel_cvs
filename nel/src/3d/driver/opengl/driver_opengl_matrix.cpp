@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.2 2000/11/07 15:32:46 berenguier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.3 2000/12/18 08:57:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,19 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-#include <gl/gl.h>
 #include "driver_opengl.h"
 
-// --------------------------------------------------
-
-namespace NL3D
-{
-
-// --------------------------------------------------
+namespace NL3D {
 
 void CDriverGL::setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective)
 {
@@ -91,6 +81,4 @@ void CDriverGL::setupModelMatrix(const CMatrix& mtx, uint8 n)
 	glLoadMatrixf( tmp.get() );
 }
 
-// --------------------------------------------------
-
-}
+} // NL3D

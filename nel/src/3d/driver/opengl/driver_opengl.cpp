@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.29 2000/12/11 15:54:22 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.30 2000/12/18 08:57:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,69 +23,61 @@
  * MA 02111-1307, USA.
  */
 
-#ifdef WIN32
+#include "nel/misc/types_nl.h"
+
+#ifdef NL_OS_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
-#endif
-#include <gl/gl.h>
+#endif // NL_OS_WINDOWS
+
+#include <GL/gl.h>
 #include "driver_opengl.h"
 #include "nel/3d/viewport.h"
-
-#ifndef NL_OS_WINDOWS
-#include <stdio.h>
-#endif // NL_OS_WINDOWS
-// --------------------------------------------------
 
 using namespace NLMISC;
 
 namespace NL3D
 {
 
-	uint CDriverGL::_Registered=0;
+uint CDriverGL::_Registered=0;
 
-// --------------------------------------------------
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 const uint32		CDriverGL::ReleaseVersion = 0x0;
 
-// --------------------------------------------------
-
-__declspec(dllexport) IDriver* NL3D_createIDriverInstance (void)
+#ifdef NL_OS_WINDOWS
+__declspec(dllexport) IDriver* NL3D_createIDriverInstance ()
 {
-	return( new CDriverGL );
+	return new CDriverGL;
 }
 
-// --------------------------------------------------
-
-__declspec(dllexport) uint32 NL3D_interfaceVersion (void)
+__declspec(dllexport) uint32 NL3D_interfaceVersion ()
 {
-	return( IDriver::InterfaceVersion );
+	return IDriver::InterfaceVersion;
 }
 
-// --------------------------------------------------
-
-#ifdef WIN32
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	// Get the driver pointer..
 	CDriverGL *pDriver=(CDriverGL*)GetWindowLong (hWnd, GWL_USERDATA);
-	if (pDriver)
+	if (pDriver != NULL)
 	{
 		// Process the message by the emitter
 		pDriver->_EventEmitter.processMessage ((uint32)hWnd, message, wParam, lParam);
 	}
 
-	return( DefWindowProc(hWnd, message, wParam, lParam) );
+	return DefWindowProc(hWnd, message, wParam, lParam);
 }
-#endif
+#endif // NL_OS_WINDOWS
 
-// --------------------------------------------------
 CDriverGL::CDriverGL()
 {
+#ifdef NL_OS_WINDOWS
 	_FullScreen= false;
 	_hWnd = NULL;
 	_hRC = NULL;
 	_hDC = NULL;
+#endif // NL_OS_WINDOWS
 
 	_CurrentMaterial=NULL;
 	_CurrentTexture[0]= NULL;
@@ -97,7 +89,7 @@ CDriverGL::CDriverGL()
 
 // --------------------------------------------------
 
-bool CDriverGL::init(void)
+bool CDriverGL::init()
 {
 #ifdef WIN32
 	WNDCLASS		wc;
@@ -117,12 +109,12 @@ bool CDriverGL::init(void)
 		wc.lpszMenuName		= NULL;
 		if ( !RegisterClass(&wc) ) 
 		{
-			return(false);
+			return false;
 		}
 		_Registered=1;
 	}
 #endif
-	return(true);
+	return true;
 }
 
 // --------------------------------------------------
@@ -144,15 +136,15 @@ ModeList CDriverGL::enumModes()
 		ML.push_back(Mode);
 		n++;	
 	}
-	return(ML);
+	return ML;
 }
 
 // --------------------------------------------------
 
 bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 {
+#ifdef NL_OS_WINDOWS
 	uint8					Depth;
-#ifdef WIN32
 	int						pf;
 
 	if (wnd)
@@ -202,7 +194,7 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 								NULL);
 		if (!_hWnd) 
 		{
-			return(false);
+			return false;
 		}
 		SetWindowLong (_hWnd, GWL_USERDATA, (LONG)this);
 
@@ -229,15 +221,15 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 	pf=ChoosePixelFormat(_hDC,&_pfd);
 	if (!pf) 
 	{
-		return(false);
+		return false;
 	} 
 	if ( !SetPixelFormat(_hDC,pf,&_pfd) ) 
 	{
-		return(false);
+		return false;
 	} 
     _hRC=wglCreateContext(_hDC);
     wglMakeCurrent(_hDC,_hRC);
-#endif
+#endif // NL_OS_WINDOWS
 	glViewport(0,0,mode.Width,mode.Height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -257,19 +249,21 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
-	return(true);
+	return true;
 }
 
 // --------------------------------------------------
 
-bool CDriverGL::activate(void)
+bool CDriverGL::activate()
 {
+#ifdef NL_OS_WINDOWS
 	HGLRC hglrc=wglGetCurrentContext();
 	if (hglrc!=_hRC)
 	{
 		wglMakeCurrent(_hDC,_hRC);
 	}
-	return(true);
+#endif // NL_OS_WINDOWS
+	return true;
 }
 
 // --------------------------------------------------
@@ -278,7 +272,7 @@ bool CDriverGL::clear2D(CRGBA rgba)
 {
 	glClearColor((float)rgba.R/255.0f,(float)rgba.G/255.0f,(float)rgba.B/255.0f,(float)rgba.A/255.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	return(true);
+	return true;
 }
 
 // --------------------------------------------------
@@ -287,7 +281,7 @@ bool CDriverGL::clearZBuffer(float zval)
 {
 	glClearDepth(zval);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	return(true);
+	return true;
 }
 
 
@@ -296,20 +290,15 @@ bool CDriverGL::clearZBuffer(float zval)
 bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 {
 	// Do not create any drv infos for now...
-	return(true);
+	return true;
 }
 
 bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 {
 	uint32	flags;
 
-	if (VB.DrvInfos==NULL)
-	{
-		if ( !setupVertexBuffer(VB) )
-		{
-			return(false);
-		}
-	}
+	if (VB.DrvInfos==NULL && !setupVertexBuffer(VB))
+		return false;
 
 	glEnable(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT,VB.getVertexSize(),VB.getVertexCoordPointer());
@@ -340,7 +329,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	else
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	return(true);
+	return true;
 }
 
 // --------------------------------------------------
@@ -348,9 +337,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 {
 	if ( !setupMaterial(Mat) )
-	{
-		return(false);
-	}
+		return false;
 	
 	if(PB.getNumTri()!=0)
 		glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
@@ -359,28 +346,27 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 	if(PB.getNumLine()!=0)
 		glDrawElements(GL_LINES,2*PB.getNumLine(),GL_UNSIGNED_INT,PB.getLinePointer());
 
-	return(true);
+	return true;
 }
 
 
 // --------------------------------------------------
 
-bool CDriverGL::swapBuffers(void)
+bool CDriverGL::swapBuffers()
 {
-	if ( !SwapBuffers(_hDC) )	
-	{
-		return(false);
-	}
-	return(true);
+#ifdef NL_OS_WINDOWS
+	return SwapBuffers(_hDC) == TRUE;
+#endif // NL_OS_WINDOWS
 }
 
 // --------------------------------------------------
 
-bool CDriverGL::release(void)
+bool CDriverGL::release()
 {
 	// Call IDriver::release() before, to destroy textures, shaders and VBs...
 	IDriver::release();
 
+#ifdef NL_OS_WINDOWS
 	// Then delete.
 	wglMakeCurrent(NULL,NULL);
 	if (_hRC)
@@ -400,8 +386,9 @@ bool CDriverGL::release(void)
 	_hRC=NULL;
 	_hDC=NULL;
 	_hWnd=NULL;
-	
-	return(true);
+#endif // NL_OS_WINDOWS
+
+	return true;
 }
 
 // --------------------------------------------------
@@ -424,26 +411,26 @@ IDriver::TMessageBoxId	CDriverGL::systemMessageBox (const char* message, const c
 										(icon==informationIcon)?MB_ICONINFORMATION:
 										(icon==stopIcon)?MB_ICONSTOP:0)))
 										{
-	case IDOK:
-		return okId;
-	case IDCANCEL:
-		return cancelId;
-	case IDABORT:
-		return abortId;
-	case IDRETRY:
-		return retryId;
-	case IDIGNORE:
-		return ignoreId;
-	case IDYES:
-		return yesId;
-	case IDNO:
-		return noId;
+											case IDOK:
+												return okId;
+											case IDCANCEL:
+												return cancelId;
+											case IDABORT:
+												return abortId;
+											case IDRETRY:
+												return retryId;
+											case IDIGNORE:
+												return ignoreId;
+											case IDYES:
+												return yesId;
+											case IDNO:
+												return noId;
 										}
-	nlassert (0);		// no!
-#else
+	nlstop;
+#else // NL_OS_WINDOWS
 	// Call the console version!
 	IDriver::systemMessageBox (message, title, type, icon);
-#endif
+#endif // NL_OS_WINDOWS
 	return okId;
 }
 
@@ -451,6 +438,7 @@ IDriver::TMessageBoxId	CDriverGL::systemMessageBox (const char* message, const c
 
 void CDriverGL::setupViewport (const class CViewport& viewport)
 {
+#ifdef NL_OS_WINDOWS
 	if (_hWnd)
 	{
 		// Get window rect
@@ -477,6 +465,7 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 		clamp (iheight, 0, clientHeight-iy);
 		glViewport (ix, iy, iwidth, iheight);
 	}
+#endif // NL_OS_WINDOWS
 }
 
 
@@ -484,7 +473,9 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 
 void CDriverGL::showCursor(bool b)
 {
+#ifdef NL_OS_WINDOWS
 	ShowCursor(b);
+#endif // NL_OS_WINDOWS
 }
 
 
@@ -492,6 +483,7 @@ void CDriverGL::showCursor(bool b)
 
 void CDriverGL::setMousePos(float x, float y)
 {
+#ifdef NL_OS_WINDOWS
 	// NeL window coordinate to MSWindows coordinates
 	RECT client;
 	GetClientRect (_hWnd, &client);
@@ -502,8 +494,7 @@ void CDriverGL::setMousePos(float x, float y)
 	ClientToScreen (_hWnd, &pt);
 	
 	SetCursorPos(pt.x, pt.y);
+#endif // NL_OS_WINDOWS
 }
-
-
 
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.13 2000/12/13 14:52:36 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.14 2000/12/18 08:57:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,19 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-#include <gl/gl.h>
+
 #include "driver_opengl.h"
 
-// --------------------------------------------------
-
-namespace NL3D
-{
-
-// --------------------------------------------------
+namespace NL3D {
 
 static bool convBlend(CMaterial::TBlend blend, GLenum& glenum)
 {
@@ -43,20 +34,20 @@ static bool convBlend(CMaterial::TBlend blend, GLenum& glenum)
 	{
 	case CMaterial::one:
 		glenum=GL_ONE;
-		return(true);
+		return true;
 	case CMaterial::zero:
 		glenum=GL_ZERO;
-		return(true);
+		return true;
 	case CMaterial::srcalpha:
 		glenum=GL_SRC_ALPHA;
-		return(true);
+		return true;
 	case CMaterial::invsrcalpha:
 		glenum=GL_ONE_MINUS_SRC_ALPHA;
-		return(true);
+		return true;
 	default:
 		break;
 	}
-	return(false);
+	return false;
 }
 
 static bool convZFunction(CMaterial::ZFunc zfunc, GLenum& glenum)
@@ -65,32 +56,32 @@ static bool convZFunction(CMaterial::ZFunc zfunc, GLenum& glenum)
 	{
 	case CMaterial::always:
 		glenum=GL_ALWAYS;
-		return(true);
+		return true;
 	case CMaterial::never:
 		glenum=GL_NEVER;
-		return(true);
+		return true;
 	case CMaterial::equal:
 		glenum=GL_EQUAL;
-		return(true);
+		return true;
 	case CMaterial::notequal:
 		glenum=GL_NOTEQUAL;
-		return(true);
+		return true;
 	case CMaterial::less:
 		glenum=GL_LESS;
-		return(true);
+		return true;
 	case CMaterial::lessequal:
 		glenum=GL_LEQUAL;
-		return(true);
+		return true;
 	case CMaterial::greater:
 		glenum=GL_GREATER;
-		return(true);
+		return true;
 	case CMaterial::greaterequal:
 		glenum=GL_GEQUAL;
-		return(true);
+		return true;
 	default:
-		return(false);
+		return false;
 	}
-	return(false);
+	return false;
 }
 
 // --------------------------------------------------
@@ -109,13 +100,8 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	for(i=0 ; i<IDRV_MAT_MAXTEXTURES ; i++)
 	{
 		ITexture	*text= mat.getTexture(i);
-		if ( text )
-		{
-			if ( !setupTexture(*text) )
-			{
-				return(false);
-			}
-		}
+		if (text != NULL && !setupTexture(*text))
+			return(false);
 		activateTexture(i,text);
 	}
 
@@ -202,10 +188,8 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	// TempYoyo.
     //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 	
-	return(true);
+	return true;
 }
 
 
-// --------------------------------------------------
-
-}
+} // NL3D

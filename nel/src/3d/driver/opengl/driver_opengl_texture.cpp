@@ -1,7 +1,7 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.8 2000/12/15 15:32:08 corvazier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.9 2000/12/18 08:57:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,13 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-#include <gl/gl.h>
+#include <string>
+
 #include "driver_opengl.h"
-using	namespace std;
 
 
 namespace NL3D
@@ -73,7 +69,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 		if(tex.supportSharing())
 		{
 			// Try to get the shared texture.
-			string	name= tex.getShareName();
+			std::string	name= tex.getShareName();
 			// insert or get the texture.
 			ITextureDrvInfos	*gltext= _TexDrvInfos[name];
 			/* There is a trick here: this test both if:
@@ -137,7 +133,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 		}
 
 	}
-	return(true);
+	return true;
 }
 
 // --------------------------------------------------
@@ -160,8 +156,8 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 
 		this->_CurrentTexture[stage]= tex;
 	}
-	return(true);
+	return true;
 }
 
 
-}
+} // NL3D

@@ -1,7 +1,7 @@
 /** \file geom_ext.h
  * Set of extension of triangles (triangle with uv, color, uvcolor etc...)
  *
- * $Id: geom_ext.h,v 1.2 2002/02/20 18:05:44 lecroart Exp $
+ * $Id: geom_ext.h,v 1.3 2003/01/22 11:15:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -293,6 +293,20 @@ public:
 		return *this;
 	}
 
+};
+
+
+// ***************************************************************************
+/**
+ * A quad with 4 color and 8 uvs.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class CQuadColorUV2 : public CQuadColorUV
+{
+public:
+	CUV		Uv02, Uv12, Uv22, Uv32;
 };
 
 

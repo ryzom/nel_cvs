@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.23 2003/12/04 17:50:25 cado Exp $
+ * $Id: primitive.cpp,v 1.24 2003/12/08 13:18:24 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/hierarchical_timer.h"
 #include "nel/ligo/primitive.h"
 #include "nel/ligo/ligo_config.h"
 #include "nel/ligo/primitive_class.h"
@@ -647,6 +648,7 @@ void CPrimZone::write (xmlNodePtr xmlNode, const char *filename) const
 
 bool CPrimZone::contains (const NLMISC::CVector &v, const std::vector<CPrimVector> &points, float &distance, NLMISC::CVector &nearPos, bool isPath)
 {
+	H_AUTO(NLLIGO_Contains1)
 	uint32 i;
 	CVector vMin, vMax;
 	float nearest = FLT_MAX;
@@ -745,6 +747,7 @@ bool CPrimZone::contains (const NLMISC::CVector &v, const std::vector<CPrimVecto
 
 bool CPrimZone::contains (const NLMISC::CVector &v, const std::vector<CVector> &points, float &distance, NLMISC::CVector &nearPos, bool isPath)
 {
+	H_AUTO(NLLIGO_Contains2)
 	uint32 i;
 	CVector vMin, vMax;
 	float nearest = FLT_MAX;

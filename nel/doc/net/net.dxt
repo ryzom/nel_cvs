@@ -1,5 +1,5 @@
 /**
-\page network Network
+\page network Network engine
 
 \author Olivier Cado
 
@@ -26,7 +26,7 @@ Here is the implementation point of view :
 Example : I want to ask the "family service" (FMLS) the age of Toto. Let's say the family service
 understands a message of type "AGEREQ" and answers back a message of type "AGE" :
 
--# How to send a synchronous request to a host, using CSocket (layer 2) ?
+- How to send a synchronous request to a host, using CSocket (layer 2) ?
 
 \code
   uint16 validitytime;
@@ -49,26 +49,27 @@ understands a message of type "AGEREQ" and answers back a message of type "AGE" 
 
 \endcode
 
--# How can I send an asynchronous request to a host, using CMsgSocket, the message handling system (layer 3) ?
+- How to send an asynchronous request to a host, using CMsgSocket, the message handling system (layer 3) ?
 
 \code
   // Callback to process the answer
   void cbProcessAge( CMessage& msgin, TSenderId idfrom )
   {
     uint16 age;
+    msgin.serial( age );
     Toto.setAge( age );
   }
 
   // Callback array
   TCallbackItem ClientCallbacks [] =
   {
-    { "AGE", cbProcessEntityStateG }
+    { "AGE", cbProcessAge }
   };
 
   void main()
   {
     // Connect to the family service
-    CMsgSocket client ( ClientCallbacks, sizeof(ClientCallbacks)/sizeof(TCallbackItem), "FAMS" );
+    CMsgSocket client ( ClientCallbacks, sizeof(ClientCallbacks)/sizeof(TCallbackItem), "FMLS" );
 
     // Send request
     CMessage msgout ( "AGEREQ" ); // The server should have a callback associated to "AGEREQ"
@@ -78,11 +79,12 @@ understands a message of type "AGEREQ" and answers back a message of type "AGE" 
     while ( true )
     {
       client.update(); // tests if a message has been received, and if the associated callback is called back
+      // Same as CMsgSocket::update()
     }
   }
 \endcode
 
-- How can I send a container or an object ?
+- How to send a container or an object ?
 
 Symply serialize your container or your object in a message.
 
@@ -94,6 +96,6 @@ Example :
   client.send( msgout );
 \endcode
 This code serializes all objects contained in \e myvector. For this to work, you need to provide a method serial()
-in your class MyClass. This is explained in NLMISC::IStream.
+in your class CMyClass. This is explained in NLMISC::IStream.
 
 */

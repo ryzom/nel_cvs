@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.54 2003/12/05 13:51:00 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.55 2003/12/08 10:17:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -390,8 +390,7 @@ struct CForceComputeBoneInfo
 // ***************************************************************************
 bool CSkeletonModel::forceComputeBone(uint boneId)
 {
-	if(boneId >= _BoneUsage.size()) return false;	
-	if (!_BoneUsage[boneId].MustCompute) return false;	
+	if(boneId >= _BoneUsage.size()) return false;		
 	// build list of ancestor, then must build
 	std::vector<CForceComputeBoneInfo> ancestors;
 	// count the number of ancestors (to avoid unwanted alloc with vector)

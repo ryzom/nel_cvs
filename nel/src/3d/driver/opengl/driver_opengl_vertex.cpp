@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.13 2001/09/14 17:27:22 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.14 2001/10/02 08:41:34 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1193,6 +1193,45 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 {
 	uint32	flags= vb.VertexFormat;
 
+	// If change of setup type, must disable olds.
+	//=======================
+
+	// If last was a VertexProgram setup, and now it is a standard GL array setup.
+	if( _LastSetupGLArrayVertexProgram && !isVertexProgramEnabled () )
+	{
+		// Disable all VertexAttribs.
+		for (uint value=0; value<CVertexBuffer::NumValue; value++)
+		{
+			// Index
+			uint glIndex=GLVertexAttribIndex[value];
+			glDisableClientState (glIndex+GL_VERTEX_ATTRIB_ARRAY0_NV);
+		}
+
+		// no more a vertex program setup.
+		_LastSetupGLArrayVertexProgram= false;
+	}
+
+	// If last was a standard GL array setup, and now it is a VertexProgram setup.
+	if( !_LastSetupGLArrayVertexProgram && isVertexProgramEnabled () )
+	{
+		// Disable all standards ptrs.
+		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableClientState(GL_NORMAL_ARRAY);
+		if(_Extensions.EXTVertexWeighting)
+			glDisable (GL_VERTEX_WEIGHTING_EXT);
+		glDisableClientState(GL_COLOR_ARRAY);
+		for(sint i=0; i<getNbTextureStages(); i++)
+		{
+			glClientActiveTextureARB(GL_TEXTURE0_ARB+i);
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		}
+
+
+		// now, vertex program setup.
+		_LastSetupGLArrayVertexProgram= true;
+	}
+
+
 	// Setup Vertex / Normal.
 	//=======================
 
@@ -1210,7 +1249,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 			nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
 
 			// Must point on computed Vertex array.
-			glEnable(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_VERTEX_ARRAY);
 
 			// array is compacted.
 			glVertexPointer(3,GL_FLOAT,0,&(*vbInf->SoftSkinVertices.begin()));
@@ -1240,7 +1279,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 			// Check type
 			nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
 
-			glEnable(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_VERTEX_ARRAY);
 			glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Position]);
 
 			// Check for normal param in vertex buffer

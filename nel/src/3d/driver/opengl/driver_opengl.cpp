@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.121 2001/09/26 16:49:47 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.122 2001/10/02 08:41:34 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -627,6 +627,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL_EXT, GL_SEPARATE_SPECULAR_COLOR_EXT);
 	}
 
+	_LastSetupGLArrayVertexProgram= false;
 
 	// Reset VertexArrayRange.
 	_CurrentVertexArrayRange= NULL;

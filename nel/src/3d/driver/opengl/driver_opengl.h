@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.89 2001/09/21 10:00:48 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.90 2001/10/02 08:41:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -806,6 +806,9 @@ private:
 		GLboolean actived=glIsEnabled (GL_VERTEX_PROGRAM_NV);
 		return actived!=GL_FALSE;
 	}
+	// Say if last setupGlArrays() was a VertexProgram setup.
+	bool							_LastSetupGLArrayVertexProgram;
+
 
 	bool							_ForceDXTCCompression;
 

@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.16 2000/11/30 18:13:07 berenguier Exp $
+ * $Id: matrix.cpp,v 1.17 2000/12/01 10:13:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -905,9 +905,6 @@ CMatrix		CMatrix::inverted() const
 bool		CMatrix::normalize(TRotOrder ro)
 {
 	CHECK_VALID();
-
-	if( (StateBit & (MAT_SCALEUNI|MAT_SCALEANY))==0 )
-		return true;	// Matrix is already an orthonormal basis.
 
 	CVector	ti,tj,tk;
 	ti= getI();

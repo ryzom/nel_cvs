@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.8 2002/02/11 10:24:54 lecroart Exp $
+ * $Id: main.cpp,v 1.9 2002/03/18 14:05:04 lecroart Exp $
  */
 
 /*
@@ -84,7 +84,7 @@ void cbChatClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 	 */
 	CNetManager::send( "CHAT", msgout );
 
-	nlinfo( "Received CHAT message \"%s\" from client \"%s\"",
+	nldebug( "SB: Received CHAT message \"%s\" from client \"%s\"",
 			message.c_str(),
 			clientcb.hostAddress(from).asString().c_str() );
 }
@@ -109,7 +109,7 @@ void cbChatService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
 
-	nlinfo( "Sent chat message \"%s\" to all clients", message.c_str());
+	nldebug( "SB: Sent chat message \"%s\" to all clients", message.c_str());
 }
 
 
@@ -144,7 +144,7 @@ void cbPosClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 	 */
 	CNetManager::send( "POS", msgout );
 
-	//nlinfo( "Received ENTITY_POS from the client");
+	//nldebug( "SB: Received ENTITY_POS from the client");
 }
 
 
@@ -177,7 +177,7 @@ void cbPosService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
 
-	//nlinfo( "Sent ENTITY_POS message to all the connected clients");
+	//nldebug( "SB: Sent ENTITY_POS message to all the connected clients");
 }
 
 
@@ -213,7 +213,7 @@ void cbAddClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 	 */
 	CNetManager::send( "POS", msgout );
 
-	nlinfo( "Received ADD_ENTITY from the client");
+	nldebug( "SB: Received ADD_ENTITY from the client");
 }
 
 
@@ -252,7 +252,7 @@ void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 		// Send the message to all connected clients
 		CNetManager::send( "FS", msgout, 0 );
 
-		nlinfo( "Sent ADD_ENTITY message to all the connected clients");
+		nldebug( "SB: Sent ADD_ENTITY message to all the connected clients");
 	}
 	else
 	{
@@ -261,14 +261,14 @@ void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 		ItPlayer = localPlayers.find(to);
 		if ( ItPlayer == localPlayers.end() )
 		{
-			nlinfo( "New player id %u not found !", to );
+			nlwarning( "New player id %u not found !", to );
 		}
 		else
 		{
 			TSockId conToClient = ((*ItPlayer).second).con;
 			CNetManager::send( "FS", msgout, conToClient );
 
-			nlinfo( "Sent ADD_ENTITY about all the connected clients to the new client.");
+			nldebug( "SB: Sent ADD_ENTITY about all the connected clients to the new client.");
 		}
 	}
 
@@ -298,7 +298,7 @@ void cbRemoveClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb 
 	 */
 	CNetManager::send( "POS", msgout );
 
-	nlinfo( "Received REMOVE_ENTITY from the client");
+	nldebug( "SB: Received REMOVE_ENTITY from the client");
 }
 
 
@@ -322,7 +322,7 @@ void cbRemoveService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb
 	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
 
-	nlinfo( "Sent REMOVE_ENTITY message to all the connected clients");
+	nldebug( "SB: Sent REMOVE_ENTITY message to all the connected clients");
 }
 
 
@@ -361,7 +361,7 @@ void cbSnowballService ( CMessage& msgin, TSockId from, CCallbackNetBase& server
 	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
 
-	nlinfo( "Sent SNOWBALL message to all the connected clients");
+	nldebug( "SB: Sent SNOWBALL message to all the connected clients");
 }
 
 
@@ -400,7 +400,7 @@ void cbSnowballClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientc
 	 */
 	CNetManager::send( "POS", msgout );
 
-	nlinfo( "Received SNOWBALL from the client");
+	nldebug( "SB: Received SNOWBALL from the client");
 }
 
 
@@ -430,7 +430,7 @@ void cbHitService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
 
-	nlinfo( "Sent HIT message to all the connected clients");
+	nldebug( "SB: Sent HIT message to all the connected clients");
 }
 
 
@@ -483,7 +483,7 @@ TCallbackItem PosCallbackArray[] =
  ****************************************************************************/
 void onReconnectChat ( const std::string &serviceName, TSockId from, void *arg )
 {
-	nlinfo( "Chat Service reconnected" );
+	nldebug( "SB: Chat Service reconnected" );
 }
 
 
@@ -499,7 +499,7 @@ void onDisconnectChat ( const std::string &serviceName, TSockId from, void *arg 
 	 * the same message twice. This is partially handled in cbChatService.
 	 */
 
-	nlinfo( "Chat Service disconnecting: messages will be delayed until reconnection" );
+	nldebug( "SB: Chat Service disconnecting: messages will be delayed until reconnection" );
 }
 
 
@@ -508,7 +508,7 @@ void onDisconnectChat ( const std::string &serviceName, TSockId from, void *arg 
  ****************************************************************************/
 void onReconnectPosition ( const std::string &serviceName, TSockId from, void *arg )
 {
-	nlinfo( "Position Service reconnected" );
+	nldebug( "SB: Position Service reconnected" );
 }
 
 
@@ -524,7 +524,7 @@ void onDisconnectPosition ( const std::string &serviceName, TSockId from, void *
 	 * the same message twice. This is partially handled in cbPositionService.
 	 */
 
-	nlinfo( "Position Service disconnecting: messages will be delayed until reconnection" );
+	nldebug( "SB: Position Service disconnecting: messages will be delayed until reconnection" );
 }
 
 
@@ -558,7 +558,7 @@ void onConnectionClient (TSockId from, const CLoginCookie &cookie)
 	// Send the message to connected client "from"
 	CNetManager::send( "FS", msgout, from );
 
-	nlinfo( "Sent IDENTIFICATION message to the new client");
+	nldebug( "SB: Sent IDENTIFICATION message to the new client");
 }
 
 
@@ -573,7 +573,7 @@ void onDisconnectClient (const std::string &serviceName, TSockId from, void *arg
 	_player *p = (_player *)(uint)i;
 	id = p->id;
 
-	nlinfo ("A client with uniq Id %u has disconnected", id );
+	nlinfo( "A client with uniq Id %u has disconnected", id );
 
 	// tell the login system that this client is disconnected
 	CLoginServer::clientDisconnected ( id );
@@ -588,7 +588,7 @@ void onDisconnectClient (const std::string &serviceName, TSockId from, void *arg
 	// Send the message to the position manager
 	CNetManager::send( "POS", msgout);
 
-	nlinfo( "Sent REMOVE_ENTITY message to the position manager.");
+	nldebug( "SB: Sent REMOVE_ENTITY message to the position manager.");
 }
 
 
@@ -603,6 +603,7 @@ public:
 	void init()
 	{
 		DebugLog->addNegativeFilter ("NETL");
+		DebugLog->addNegativeFilter ("SB:");
 
 		// Connect the frontend to the login system
 		CLoginServer::init( *getServer(), onConnectionClient, &ConfigFile); 

@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Chat Service.
  *
- * $Id: main.cpp,v 1.3 2001/11/06 15:08:15 lecroart Exp $
+ * $Id: main.cpp,v 1.4 2002/03/18 14:05:00 lecroart Exp $
  */
 
 /*
@@ -28,21 +28,23 @@
 
 // This include is mandatory to use NeL. It include NeL types.
 #include <nel/misc/types_nl.h>
+#include <nel/misc/debug.h>
 
 // We're using the NeL Service framework, and layer 4
 #include <nel/net/service.h>
 #include <nel/net/net_manager.h>
 
 
-using namespace NLNET;
 using namespace std;
+using namespace NLMISC;
+using namespace NLNET;
 
 /****************************************************************************
  * Function:   cbChat
  *             Callback function called when the Chat Service receive a "CHAT"
  *             message
  * Arguments:
- *             - msgin:  the incomming message
+ *             - msgin:  the incoming message
  *             - from:   the "sockid" of the sender (usually useless for a
  *                       CCallbackClient)
  *             - server: the CCallbackNetBase object (which really is a
@@ -54,7 +56,7 @@ void cbChat ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 
 	// Extract the incomming message content from the Frontend and print it
 	msgin.serial( message );
-	nlinfo( "Received CHAT line: \"%s\"", message.c_str() );
+	nldebug( "SB: Received CHAT line: \"%s\"", message.c_str() );
 
 	// Prepare to send back the message.
 	CMessage msgout( CNetManager::getSIDA( "CHAT" ), "CHAT" );
@@ -66,7 +68,7 @@ void cbChat ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	 */
 	CNetManager::send( "CHAT", msgout, 0 );
 
-	nlinfo( "Send CHAT line: \"%s\"", message.c_str() );
+	nldebug( "SB: Send CHAT line: \"%s\"", message.c_str() );
 }
 
 
@@ -78,6 +80,21 @@ void cbChat ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 TCallbackItem CallbackArray[] =
 {
 	{ "CHAT", cbChat }
+};
+
+/****************************************************************************
+ * CChatService
+ ****************************************************************************/
+class CChatService : public IService
+{
+public:
+
+	// Initialisation
+	void init()
+	{
+		DebugLog->addNegativeFilter ("NETL");
+		DebugLog->addNegativeFilter ("SB:");
+	}
 };
 
 
@@ -93,7 +110,7 @@ TCallbackItem CallbackArray[] =
  *    - and callback actions set to "CallbackArray"
  *
  ****************************************************************************/
-NLNET_SERVICE_MAIN( IService,
+NLNET_SERVICE_MAIN( CChatService,
 					"CHAT",
 					"chat_service",
 					0,

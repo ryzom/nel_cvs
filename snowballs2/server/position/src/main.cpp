@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Position Service.
  *
- * $Id: main.cpp,v 1.8 2002/02/11 10:25:00 lecroart Exp $
+ * $Id: main.cpp,v 1.9 2002/03/18 14:05:08 lecroart Exp $
  */
 
 /*
@@ -107,7 +107,7 @@ void cbAddEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	msgin.serial( name );
 	msgin.serial( race );
 	msgin.serial( startPoint );
-	nlinfo( "Received ADD_ENTITY line." );
+	nldebug( "SB: Received ADD_ENTITY line." );
 
 	// Prepare to send back the message.
 	all = true;
@@ -125,7 +125,7 @@ void cbAddEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	 */
 	CNetManager::send( "POS", msgout, 0 );
 
-	nlinfo( "Send back ADD_ENTITY line." );
+	nldebug( "SB: Send back ADD_ENTITY line." );
 
 	// Send ADD_ENTITY message about all already connected client to the new one.
 	all = false;
@@ -143,7 +143,7 @@ void cbAddEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 		CNetManager::send( "POS", msgout, from );
 	}
 
-	nlinfo( "Send ADD_ENTITY line about all already connected clients to the new one." );
+	nldebug( "SB: Send ADD_ENTITY line about all already connected clients to the new one." );
 
 	// ADD the current added entity in the player list.
 	playerList.insert( _pmap::value_type( id,
@@ -174,19 +174,19 @@ void cbPosition ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	msgin.serial( pos );
 	msgin.serial( angle );
 	msgin.serial( state );
-	//nlinfo( "Received ENTITY_POS line." );
+	//nldebug( "SB: Received ENTITY_POS line." );
 
 	// Update position information in the player list
 	_pmap::iterator ItPlayer;
 	ItPlayer = playerList.find( id );
 	if ( ItPlayer == playerList.end() )
 	{
-		nlinfo( "Player id %u not found !", id );
+		nlwarning( "Player id %u not found !", id );
 	}
 	else
 	{
 		((*ItPlayer).second).position = pos;
-		//nlinfo( "Player position updated" );
+		//nldebug( "SB: Player position updated" );
 	}
 
 	// Prepare to send back the message.
@@ -202,7 +202,7 @@ void cbPosition ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	 */
 	CNetManager::send( "POS", msgout, 0 );
 
-	//nlinfo( "Send back ENTITY_POS line." );
+	//nldebug( "SB: Send back ENTITY_POS line." );
 }
 
 
@@ -223,7 +223,7 @@ void cbRemoveEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 
 	// Extract the incomming message content from the Frontend and print it
 	msgin.serial( id );
-	nlinfo( "Received REMOVE_ENTITY line." );
+	nldebug( "SB: Received REMOVE_ENTITY line." );
 
 	// Prepare to send back the message.
 	CMessage msgout( CNetManager::getSIDA( "POS" ), "REMOVE_ENTITY" );
@@ -238,7 +238,7 @@ void cbRemoveEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	// Remove player form the player list.
 	playerList.erase( id );	
 
-	nlinfo( "Send back REMOVE_ENTITY line. %d players left ...",
+	nldebug( "SB: Send back REMOVE_ENTITY line. %d players left ...",
 			playerList.size() );
 }
 
@@ -270,7 +270,7 @@ void cbSnowball ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	msgin.serial( target );
 	msgin.serial( speed );
 	msgin.serial( explosionRadius );
-	nlinfo( "Received SNOWBALL line." );
+	nldebug( "SB: Received SNOWBALL line." );
 
 	// Store new snowballs informations
 	CTrajectory traj;
@@ -295,7 +295,7 @@ void cbSnowball ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	 */
 	CNetManager::send( "POS", msgout, 0 );
 
-	nlinfo( "Send back SNOWBALL line." );
+	nldebug( "SB: Send back SNOWBALL line." );
 }
 
 
@@ -346,6 +346,7 @@ public:
 	void init()
 	{
 		DebugLog->addNegativeFilter ("NETL");
+		DebugLog->addNegativeFilter ("SB:");
 	}
 
 	// Update fonction, called at every frames
@@ -391,7 +392,7 @@ public:
 				distance = (player.position - snoPos).norm();
 				if ( distance < ( PLAYER_RADIUS + SNOWBALL_RADIUS ) )
 				{
-					nlinfo( "HIT on player %u by player %u.",
+					nldebug( "SB: HIT on player %u by player %u.",
 							player.id, snowball.owner );
 
 					// Send HIT message
@@ -408,7 +409,7 @@ public:
 					distance = (player.position - snoPos).norm();
 					if ( distance < ( PLAYER_RADIUS + snowball.explosionRadius ) )
 					{
-						nlinfo( "Explosion hit on player %u by player %u.",
+						nldebug( "SB: Explosion hit on player %u by player %u.",
 								player.id, snowball.owner );
 
 						// Send HIT message
@@ -425,7 +426,7 @@ public:
 			if ( removeSnowball == true )
 			{
 				snoList.erase( ItSb );
-				nlinfo( "Removed outdated SNOWBALL id %u.", snowball.id );
+				nldebug( "SB: Removed outdated SNOWBALL id %u.", snowball.id );
 			}
 
 		}

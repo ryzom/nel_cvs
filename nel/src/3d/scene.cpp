@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.103 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: scene.cpp,v 1.104 2003/07/11 12:47:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,6 +207,9 @@ void	CScene::release()
 		delete _CoarseMeshManager;
 		_CoarseMeshManager= NULL;
 	}
+
+	// delete the play list
+	_LMAnimsAuto.deleteAll();
 }
 // ***************************************************************************
 CScene::~CScene()
@@ -508,67 +511,8 @@ void CScene::deleteInstance(CTransformShape *pTrfmShp)
 }
 
 // ***************************************************************************
-// ANIMATION FOR LIGHT MAPS
-void CScene::setAutoAnim( CAnimation *pAnim )
-{
-	uint nAnimNb;
-	// Reset the automatic animation if no animation wanted
-	if( pAnim == NULL )
-	{
-		_AnimatedLight.clear();
-		_AnimatedLightPtr.clear();
-		_AnimatedLightNameToIndex.clear();
-		nAnimNb = _LightmapAnimations.getAnimationIdByName("Automatic");
-		if( nAnimNb != CAnimationSet::NotFound )
-		{
-			CAnimation *anim = _LightmapAnimations.getAnimation( nAnimNb );
-			delete anim;
-		}
-		_LightmapAnimations.reset();
-		_LMAnimsAuto.deleteAll();
-		return;
-	}
-
-
-	set<string> setTrackNames;
-	pAnim->getTrackNames( setTrackNames );
-
-	nAnimNb = _LightmapAnimations.addAnimation( "Automatic", pAnim );
-	_LightmapAnimations.build();
-	CChannelMixer *cm = new CChannelMixer();
-	cm->setAnimationSet( &_LightmapAnimations );
-
-	set<string>::iterator itSel = setTrackNames.begin();
-	while ( itSel != setTrackNames.end() )
-	{
-		string ate = *itSel;
-		if( strncmp( itSel->c_str(), "LightmapController.", 19 ) == 0 )
-		{
-			// The light name
-			const char *lightName = strrchr ((*itSel).c_str (), '.')+1;
-
-			// Add an automatic animation
-			_AnimatedLight.push_back ( CAnimatedLightmap (_LightGroupColor.size ()) );
-			_AnimatedLightPtr.push_back ( &_AnimatedLight.back () );
-			_AnimatedLightNameToIndex.insert ( std::map<std::string, uint>::value_type (lightName, _AnimatedLightPtr.size ()-1 ) );
-			CAnimatedLightmap &animLM = _AnimatedLight.back ();
-			animLM.setName( *itSel );
-
-			cm->addChannel( animLM.getName(), &animLM, animLM.getValue(CAnimatedLightmap::FactorValue),
-				animLM.getDefaultTrack(CAnimatedLightmap::FactorValue), CAnimatedLightmap::FactorValue, 
-				CAnimatedLightmap::OwnerBit, false);
-		}
-		++itSel;
-	}
-
-	CAnimationPlaylist *pl = new CAnimationPlaylist();
-	pl->setAnimation( 0, nAnimNb );
-	pl->setWrapMode( 0, CAnimationPlaylist::Repeat );
-	_LMAnimsAuto.addPlaylist(pl,cm);
-}
-
-// ***************************************************************************
-
+// todo hulud remove
+/*
 void CScene::loadLightmapAutoAnim( const std::string &filename )
 {
 	try
@@ -584,7 +528,7 @@ void CScene::loadLightmapAutoAnim( const std::string &filename )
 		return;
 	}
 }
-
+*/
 // ***************************************************************************
 void CScene::animate( TGlobalAnimationTime atTime )
 {
@@ -999,5 +943,88 @@ sint CScene::getAnimatedLightNameToIndex (const std::string &name) const
 	else
 		return -1;
 }
+
+
+// ***************************************************************************
+void CScene::setAutomaticAnimationSet(CAnimationSet *as) 
+{ 
+	// Backup the animation set
+	_AutomaticAnimationSet = as; 
+
+	// Delete all auto lightmap animations
+	_LMAnimsAuto.deleteAll();
+	
+	// Register each animation as lightmap
+	const uint count = _AutomaticAnimationSet->getNumAnimation();
+	uint i;
+	for (i=0; i<count; i++)
+	{
+		// Pointer on the animation
+		CAnimation *pAnim = _AutomaticAnimationSet->getAnimation(i);
+
+/*		uint nAnimNb;
+		// Reset the automatic animation if no animation wanted
+		if( pAnim == NULL )
+		{
+			_AnimatedLight.clear();
+			_AnimatedLightPtr.clear();
+			_AnimatedLightNameToIndex.clear();
+			nAnimNb = _LightmapAnimations.getAnimationIdByName("Automatic");
+			if( nAnimNb != CAnimationSet::NotFound )
+			{
+				CAnimation *anim = _LightmapAnimations.getAnimation( nAnimNb );
+				delete anim;
+			}
+			_LightmapAnimations.reset(); 
+			_LMAnimsAuto.deleteAll();
+			return;
+		}
+		*/
+
+		set<string> setTrackNames;
+		pAnim->getTrackNames( setTrackNames );
+
+		// nAnimNb = _LightmapAnimations.addAnimation( "Automatic", pAnim );
+		// _LightmapAnimations.build();
+		
+		set<string>::iterator itSel = setTrackNames.begin();
+		while ( itSel != setTrackNames.end() )
+		{
+			string ate = *itSel;
+			if( strncmp( itSel->c_str(), "LightmapController.", 19 ) == 0 )
+			{
+				// The light name
+				const char *lightName = strrchr ((*itSel).c_str (), '.')+1;
+				
+				// Light animation doesn't exist ?
+				if (_AnimatedLightNameToIndex.find (lightName) == _AnimatedLightNameToIndex.end())
+				{
+					// Channel mixer for light anim
+					CChannelMixer *cm = new CChannelMixer();
+					cm->setAnimationSet( _AutomaticAnimationSet );
+
+					// Add an automatic animation
+					_AnimatedLight.push_back ( CAnimatedLightmap (_LightGroupColor.size ()) );
+					_AnimatedLightPtr.push_back ( &_AnimatedLight.back () );
+					_AnimatedLightNameToIndex.insert ( std::map<std::string, uint>::value_type (lightName, _AnimatedLightPtr.size ()-1 ) );
+					CAnimatedLightmap &animLM = _AnimatedLight.back ();
+					animLM.setName( *itSel );
+					
+					cm->addChannel( animLM.getName(), &animLM, animLM.getValue(CAnimatedLightmap::FactorValue),
+						animLM.getDefaultTrack(CAnimatedLightmap::FactorValue), CAnimatedLightmap::FactorValue, 
+						CAnimatedLightmap::OwnerBit, false);
+					
+					// Animated lightmap playlist
+					CAnimationPlaylist *pl = new CAnimationPlaylist();
+					pl->setAnimation( 0, i );
+					pl->setWrapMode( 0, CAnimationPlaylist::Repeat );
+					_LMAnimsAuto.addPlaylist(pl,cm);
+				}
+			}
+			++itSel;
+		}
+	}
+}
+
 
 } // NL3D

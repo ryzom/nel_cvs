@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.43 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: scene.h,v 1.44 2003/07/11 12:47:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -245,8 +245,6 @@ public:
 
 	/// \name Light Mgt.
 	//@{
-	void	loadLightmapAutoAnim (const std::string &);
-	void	setAutoAnim (CAnimation *pAnim);
 	void	animate (TGlobalAnimationTime atTime);
 	/// Add an IG for auto PointLight Factor animation. called by CInstanceGroup::addToScene()
 	void	addInstanceGroupForLightAnimation(CInstanceGroup *ig);
@@ -485,7 +483,7 @@ public:
 
 
 	/// set the automatic animation set used by this scene. It is stored as a smart pointer
-	void				setAutomaticAnimationSet(CAnimationSet *as) { _AutomaticAnimationSet = as; }
+	void				setAutomaticAnimationSet(CAnimationSet *as);
 
 	/// Get a reference to the set of automatic animations
 	CAnimationSet		*getAutomaticAnimationSet() const { return _AutomaticAnimationSet; }	
@@ -593,7 +591,9 @@ private:
 
 
 	// The Ligths automatic movements
-	CAnimationSet	_LightmapAnimations;
+	
+	// todo hulud remove
+	// CAnimationSet	_LightmapAnimations;
 	std::map<std::string, uint>					_AnimatedLightNameToIndex;
 	std::list<CAnimatedLightmap>				_AnimatedLight;
 	std::vector<CAnimatedLightmap*>				_AnimatedLightPtr;

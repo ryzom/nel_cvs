@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.24 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: mesh_base_instance.h,v 1.25 2003/07/11 12:47:33 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,6 +196,11 @@ public:
 
 	/// \name CTransform traverse specialisation
 	// @{
+	/** this do :
+	 *	- animate channel mixer for pos, rot, scale etc..
+	 *	- call standard CTransform::traverseHrc()
+	 */
+	virtual void	traverseHrc();
 	/** this do :
 	 *  - call CTransformShape::traverseAnimDetail()
 	 *  - update animated materials.

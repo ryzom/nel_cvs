@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.61 2003/04/08 23:10:59 corvazier Exp $
+ * $Id: transform.cpp,v 1.62 2003/07/11 12:47:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ CTransform::CTransform()
 
 	// Hrc/Graph hierarchy
 	_HrcParent= NULL;
+	_HrcParentUnfreeze= NULL;
 
 	_PrecModelToUpdate= NULL;
 	_NextModelToUpdate= NULL;
@@ -376,8 +377,16 @@ void		CTransform::unfreezeHRC()
 		// if model correctly frozen.
 		if(_FreezeHRCState == CTransform::FreezeHRCStateEnabled )
 		{
-			// if not linked in Hrc, link this model to root of HRC.
-			if( !hrcGetParent() )
+			// Should not be linked : can't link after a freezeHRC
+			nlassert (_HrcParent == NULL);
+
+			// Set as unfreeze else, hrcLinkSon doesn't work
+			_FreezeHRCState= FreezeHRCStateDisabled;
+
+			// Link this model to the previous HRC parent.
+			if (_HrcParentUnfreeze)
+				_HrcParentUnfreeze->hrcLinkSon( this );
+			else
 				getOwnerScene()->getRoot()->hrcLinkSon( this );
 
 			// Link this object to the validateList.
@@ -393,8 +402,8 @@ void		CTransform::unfreezeHRC()
 			}
 
 		}
-
-		_FreezeHRCState= FreezeHRCStateDisabled;
+		else
+			_FreezeHRCState= FreezeHRCStateDisabled;
 
 		// unlink me from any QuadCluster, and disable QuadCluster
 		unlinkFromQuadCluster();
@@ -426,9 +435,8 @@ void		CTransform::update()
 		// if the model is ready to be frozen in HRC, then do it!!
 		else if( _FreezeHRCState == CTransform::FreezeHRCStateReady )
 		{
-			// if linked to root of HRC, unlink this model.
-			if( hrcGetParent() == getOwnerScene()->getRoot() )
-				hrcUnlink();
+			// Unlink this model.
+			hrcUnlink();
 
 			// unLink this object from the validateList. NB: the list will still be correclty parsed.
 			unlinkFromUpdateList();
@@ -1117,6 +1125,10 @@ void			CTransform::hrcLinkSon(CTransform *son)
 	if(!son)
 		return;
 
+	// If not unfrozen, can't link
+	if (son->_FreezeHRCState != CTransform::FreezeHRCStateDisabled)
+		return;
+
 	// no-op if already me.
 	if(son->_HrcParent==this)
 		return;
@@ -1126,10 +1138,13 @@ void			CTransform::hrcLinkSon(CTransform *son)
 
 	// link son to me
 	_HrcSons.insert(son, &son->_HrcNode);
-
+	
 	// link me to son
 	son->_HrcParent= this;
-
+	
+	// Backup parent
+	son->_HrcParentUnfreeze= this;
+	
 	// my son should recompute his worldMatrix!
 	son->_WorldDate= -1;
 }
@@ -1146,6 +1161,7 @@ void			CTransform::hrcUnlink()
 
 	// unlink me from parent
 	_HrcParent= NULL;
+	_HrcParentUnfreeze= NULL;
 
 	// I should recompute my worldMatrix (well not usefull since not linked, but still do it...)
 	_WorldDate= -1;

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.40 2003/06/20 14:53:02 puzin Exp $
+ * $Id: transform.h,v 1.41 2003/07/11 12:47:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,9 +204,11 @@ public:
 
 	/// \name Hierarchy linking
 	// @{
-	/// link son to this in Hierarchy traversal
+	/** link son to this in Hierarchy traversal
+	  * NB: link does nothing if the son node is HRC frozen */
 	void			hrcLinkSon(CTransform *son);
-	/// unlink this from any Father in Hrc. No-op if no parent
+	/** unlink this from any Father in Hrc. No-op if no parent
+	  * NB: unlink does nothing if the node is HRC frozen */
 	void			hrcUnlink();
 	// get the Hrc parent if any (else NULL)
 	CTransform		*hrcGetParent() const {return _HrcParent;}
@@ -267,10 +269,9 @@ public:
 	 *	The model won't either be validated. It is suposed to not change at all. Also, if it is not a son of a CCluster,
 	 *	it may be accelerated during Cliping (with CQuadGridClipManager).
 	 *
-	 *	NB: the model won't be tested in HRC only if this model is a "root", ie 
-	 *	 HrcTrav->getFirstParent()==HrcTrav->getRoot().
+	 *	NB: the model won't be tested in HRC anymore.
 	 *	calling freezeHRC() on a model in a hierarchy without calling it to the root of the hierarchy 
-	 *	will result in that the model won't be validated, but still HRC traversed.
+	 *	will result in that the model won't be validated nor be HRC traversed.
 	 *	To be simplier, you should freezeHRC() all the models of a hierarchy, from base root to leaves.
 	 *
 	 *	NB: if the hierarchy of this object must change, or if the object must moves, you must call unfreezeHRC() first,
@@ -581,6 +582,7 @@ private:
 	CFastPtrListNode			_HrcNode;
 	CFastPtrList<CTransform>	_HrcSons;
 	CTransform					*_HrcParent;
+	NLMISC::CRefPtr<CTransform>	_HrcParentUnfreeze;
 
 	/* Clip Graph. DAG (Direct Acyclic Graph)
 	 *	NB: implementation optmized for Low number of parent. clipAddChild() and clipDelChild() is in O(numParents).

@@ -1,7 +1,7 @@
 /** \file play_list_manager.cpp
  * <File description>
  *
- * $Id: play_list_manager.cpp,v 1.7 2003/04/08 23:11:22 corvazier Exp $
+ * $Id: play_list_manager.cpp,v 1.8 2003/07/11 12:47:33 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,6 +116,7 @@ void CPlayListManager::deleteAll()
 		delete node->PlayList;
 		_List.erase(itDel);
 	}
+	_List.clear();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.21 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.22 2003/07/11 12:47:33 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,12 +160,63 @@ void CMeshBaseInstance::setBlendShapeFactor (const std::string &BlendShapeName, 
 		}
 }
 
+// ***************************************************************************
+void CMeshBaseInstance::traverseHrc()
+{
+	CMeshBase			*mb = NLMISC::safe_cast<CMeshBase *>((IShape *) Shape);
+
+	// if the base instance uses automatic animations, we must also setup the date of the channel mixer controlling this object
+	if (mb->getAutoAnim())
+	{
+		// Unfreeze HRC for those models
+		CTransform *node = this;
+		while (node)
+		{
+			node->unfreezeHRC();
+			node = node->hrcGetParent();
+		}
+
+		// setup the channel mixer date
+		CChannelMixer *chanMix = getChannelMixer();
+		if (chanMix)
+		{
+			const CAnimation *anim = chanMix->getSlotAnimation(0);
+			/** We perform wrapping ourselves.
+			  * We avoid using a playlist, to not create one more obj.
+			  */
+			if (anim)
+			{
+				// Animation offset are setuped before clipping, they will be used for detail too.
+				float animLenght = anim->getEndTime() - anim->getBeginTime();
+				if (animLenght > 0)
+				{
+					float currTime = (TAnimationTime) getOwnerScene()->getCurrentTime();
+					float startTime = (uint) (currTime / animLenght) * animLenght;
+					// Set the channel mixer date using the global date of the scene
+					chanMix->setSlotTime(0, anim->getBeginTime() + currTime - startTime);
+				}
+				else
+				{
+					chanMix->setSlotTime(0, anim->getBeginTime());
+				}
+
+				/** Eval non detail animation 
+				  */
+				chanMix->eval(false);
+			}
+		}
+	}
+
+	CTransformShape::traverseHrc();
+}
 
 // ***************************************************************************
 void CMeshBaseInstance::traverseAnimDetail()
 {
 	CMeshBase			*mb = NLMISC::safe_cast<CMeshBase *>((IShape *) Shape);
 
+	// todo hulud remove
+#if 0
 	// if the base instance uses automatic animations, we must also setup the date of the channel mixer controlling this object
 	if (mb->getAutoAnim())
 	{
@@ -192,6 +243,7 @@ void CMeshBaseInstance::traverseAnimDetail()
 					chanMix->setSlotTime(0, anim->getBeginTime());
 				}
 
+				// todo hulud remove
 				/** temp: eval non detail animation 
 				  * The issue here is that this evaluation is performed after clipping.
 				  * This means that rotation will be ok, but translation may not work
@@ -200,6 +252,7 @@ void CMeshBaseInstance::traverseAnimDetail()
 			}
 		}
 	}
+#endif
 
 	CTransformShape::traverseAnimDetail();
 

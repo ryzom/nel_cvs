@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.74 2001/06/29 08:33:15 lecroart Exp $
+ * $Id: service.cpp,v 1.75 2001/06/29 08:47:27 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -32,17 +32,22 @@
 
 // these defines is for IsDebuggerPresent(). it'll not compile on windows 95
 // just comment this and the IsDebuggerPresent to compile on windows 95
-#define _WIN32_WINDOWS	0x0410
-#define WINVER			0x0400
-#include <windows.h>
+#	define _WIN32_WINDOWS	0x0410
+#	define WINVER			0x0400
+#	include <windows.h>
 
-#include "nel/misc/win_displayer.h"
+#	include "nel/misc/win_displayer.h"
 
 #elif defined NL_OS_UNIX
 
-#include <unistd.h>
+#	include <unistd.h>
 
 #endif
+
+#include <stdlib.h>
+#include <signal.h>
+
+#include <sstream>
 
 #include "nel/misc/common.h"
 #include "nel/misc/command.h"
@@ -55,14 +60,8 @@
 #include "nel/net/net_displayer.h"
 #include "nel/net/net_log.h"
 #include "nel/net/unitime.h"
-
 #include "nel/net/callback_server.h"
 #include "nel/net/net_manager.h"
-
-#include <stdlib.h>
-#include <signal.h>
-
-#include <sstream>
 
 using namespace std;
 using namespace NLMISC;
@@ -70,18 +69,6 @@ using namespace NLMISC;
 
 namespace NLNET
 {
-
-string IService::_ShortName = "";
-string IService::_LongName = "";
-string IService::_AliasName= "";
-uint16 IService::_DefaultPort = 0;
-
-sint32 IService::_UpdateTimeout = 0;
-
-
-CConfigFile IService::ConfigFile;
-
-IService	 *IService::Instance = NULL;
 
 //
 // Constants
@@ -127,13 +114,13 @@ static void sigHandler (int Sig);
 // Functions
 //
 
-  // this is the thread that initialized the signal redirection
-  // we ll ignore other thread signals
+// this is the thread that initialized the signal redirection
+// we ll ignore other thread signals
 static uint SignalisedThread;
 
 static void initSignal()
 {
-  SignalisedThread = getThreadId ();
+	SignalisedThread = getThreadId ();
 #ifdef NL_DEBUG
 	// in debug mode, we only trap the SIGINT signal
 	signal(Signal[3], sigHandler);
@@ -161,23 +148,23 @@ static void sigHandler(int Sig)
 	{
 		if (Sig == Signal[i])
 		{
-		  if (getThreadId () != SignalisedThread)
-		    {
-		      nldebug ("Not the main thread send me the signal (%s, %d), ignore it", SignalName[i],Sig);
-		      return;
-		    }
-		  else
-		    {
-			nlinfo ("Signal %s (%d) received", SignalName[i], Sig);
-			switch (Sig)
+			if (getThreadId () != SignalisedThread)
 			{
-			case SIGABRT :
-			case SIGILL  :
-			case SIGINT  :
-			case SIGSEGV :
-			case SIGTERM :
-			// you should not call a function and system function like printf in a SigHandle because
-			// signal-handler routines are usually called asynchronously when an interrupt occurs.
+				nldebug ("Not the main thread received the signal (%s, %d), ignore it", SignalName[i],Sig);
+				return;
+			}
+			else
+			{
+				nlinfo ("Signal %s (%d) received", SignalName[i], Sig);
+				switch (Sig)
+				{
+				case SIGABRT :
+				case SIGILL  :
+				case SIGINT  :
+				case SIGSEGV :
+				case SIGTERM :
+				// you should not call a function and system function like printf in a SigHandle because
+				// signal-handler routines are usually called asynchronously when an interrupt occurs.
 				if (ExitSignalAsked == 0)
 				{
 					ExitSignalAsked = Sig;
@@ -186,11 +173,12 @@ static void sigHandler(int Sig)
 				else
 				{
 					nlinfo ("Signal already received, launch the brutal exit");
-					//exit (EXIT_FAILURE);
+					exit (EXIT_FAILURE);
 				}
 				break;
+				}
 			}
-		    }}
+		}
 	}
 	nlinfo ("Unknown signal received (%d)", Sig);
 }

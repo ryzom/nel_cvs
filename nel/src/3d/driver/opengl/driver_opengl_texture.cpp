@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.34 2001/09/21 10:00:48 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.35 2001/09/26 16:00:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,13 +135,17 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 
 
 // ***************************************************************************
-static GLint	getGlSrcTextureFormat(ITexture &tex)
+static GLint	getGlSrcTextureFormat(ITexture &tex, GLint glfmt)
 {
-	switch(tex.getPixelFormat())
+	// Is destination format is alpha or lumiance ?
+	if ((glfmt==CBitmap::Alpha)||(glfmt==CBitmap::AlphaLuminance)||(glfmt==CBitmap::Luminance))
 	{
-	case CBitmap::Alpha:	return GL_ALPHA;
-	case CBitmap::AlphaLuminance:	return GL_LUMINANCE_ALPHA;
-	case CBitmap::Luminance:	return GL_LUMINANCE;
+		switch(tex.getPixelFormat())
+		{
+		case CBitmap::Alpha:	return GL_ALPHA;
+		case CBitmap::AlphaLuminance:	return GL_LUMINANCE_ALPHA;
+		case CBitmap::Luminance:	return GL_LUMINANCE;
+		}
 	}
 
 	// Else, not a Src format for upload, or RGBA.
@@ -407,7 +411,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 						ITexture *pTInTC = pTC->getTexture((CTextureCube::TFace)nText);
 						// Get the correct texture format from texture...
 						GLint	glfmt= getGlTextureFormat(*pTInTC, gltext->Compressed);
-						GLint	glSrcFmt= getGlSrcTextureFormat(*pTInTC);
+						GLint	glSrcFmt= getGlSrcTextureFormat(*pTInTC, glfmt);
 
 						sint	nMipMaps;
 						if(glSrcFmt==GL_RGBA && pTInTC->getPixelFormat()!=CBitmap::RGBA )
@@ -442,7 +446,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 					{
 						// Get the correct texture format from texture...
 						GLint	glfmt= getGlTextureFormat(tex, gltext->Compressed);
-						GLint	glSrcFmt= getGlSrcTextureFormat(tex);
+						GLint	glSrcFmt= getGlSrcTextureFormat(tex, glfmt);
 
 						// DXTC: if same format, and same mipmapOn/Off, use glTexCompressedImage*.
 						// We cannot build the mipmaps if they are not here.
@@ -515,7 +519,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 					//===============================================
 					bool	dummy;
 					GLint	glfmt= getGlTextureFormat(tex, dummy);
-					GLint	glSrcFmt= getGlSrcTextureFormat(tex);
+					GLint	glSrcFmt= getGlSrcTextureFormat(tex, glfmt);
 
 					sint	nMipMaps;
 					if(glSrcFmt==GL_RGBA && tex.getPixelFormat()!=CBitmap::RGBA )

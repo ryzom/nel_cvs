@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.3 2001/04/24 09:06:56 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.4 2001/04/25 10:06:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -297,19 +297,7 @@ namespace NLAIAGENT
 	{
 		if(_Call == a)
 		{
-			_Call = NULL;
-			if(_MSG != NULL) _MSG->release();
-			_MSG = NULL;
-			CVectorGroupType g(1);
-			char t[256*4];
-			((const IWordNumRef &)*this).getNumIdent().getDebugString(t);		
-			g.set(0,new CStringType(CStringVarName(t)));
-			IObjectIA::CProcessResult r;
-			{
-				NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
-				r = accessor.value()->removeDynamic(&g);
-			}
-			if(r.Result != NULL) r.Result->release();
+			detach();		
 			release();
 		}		
 		else CAgentScript::onKill(a);
@@ -320,6 +308,23 @@ namespace NLAIAGENT
 		char s[256*4];
 		((const IWordNumRef &)*this).getNumIdent().getDebugString(s);
 		sprintf(t,"timer: %s",s);
+	}
+
+	void CAgentWatchTimer::detach()
+	{
+		_Call = NULL;
+		if(_MSG != NULL) _MSG->release();
+		_MSG = NULL;
+		CVectorGroupType g(1);
+		char t[256*4];
+		((const IWordNumRef &)*this).getNumIdent().getDebugString(t);		
+		g.set(0,new CStringType(CStringVarName(t)));
+		IObjectIA::CProcessResult r;
+		{
+			NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
+			r = accessor.value()->removeDynamic(&g);
+		}
+		if(r.Result != NULL) r.Result->release();
 	}
 
 	void CAgentWatchTimer::attach()

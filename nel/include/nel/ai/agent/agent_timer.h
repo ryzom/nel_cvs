@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.3 2001/04/23 17:20:02 chafik Exp $
+ * $Id: agent_timer.h,v 1.4 2001/04/25 10:06:20 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -193,6 +193,7 @@ namespace NLAIAGENT
 
 		void setAttrib(IConnectIA *,IMessageBase *);
 		void attach();
+		void detach();
 		void tellBroker();
 
 		virtual IObjectIA::CProcessResult runActivity();

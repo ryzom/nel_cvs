@@ -99,116 +99,147 @@ try
 				-- Reset 3dsmax
 				resetMAXFile #noprompt
 
-				-- Open the max project
-				if loadMaxFile files[i] == true then
+				-- Get the tag file name
+				tag = ("output_directory_tag/"+(getFilenameFile files[i])+(getFilenameType files[i])+".tag")
+
+				-- Compare date with the tag file
+				if (NeLTestFileDate tag files[i]) == true then
 				(
-					-- Unhide
-					max unhide all
-
-					-- unselect
-					max select none
-
-					-- Exported object count
-					exported = 0
-
-					-- Ig array
-					ig_array = #()
-
-					-- Scan all the ig in this project
-					for node in geometry do
+					-- Open the max project
+					if loadMaxFile files[i] == true then
 					(
-						ig = getIg node
-						if (ig != undefined) then
+						tagThisFile = true
+
+						-- Unhide
+						max unhide all
+
+						-- unselect
+						max select none
+
+						-- Exported object count
+						exported = 0
+
+						-- Ig array
+						ig_array = #()
+
+						-- Scan all the ig in this project
+						for node in geometry do
 						(
-							-- Found ?
-							found = false
-
-							-- Already found ?
-							for j = 1 to ig_array.count do
+							ig = getIg node
+							if (ig != undefined) then
 							(
-								if (ig_array[j]==ig) then
-								(								
-									found = true
-									exit
+								-- Found ?
+								found = false
+
+								-- Already found ?
+								for j = 1 to ig_array.count do
+								(
+									if (ig_array[j]==ig) then
+									(								
+										found = true
+										exit
+									)
 								)
-							)
 
-							-- Found ?
-							if (found == false) then
-							(
-								append ig_array ig
+								-- Found ?
+								if (found == false) then
+								(
+									append ig_array ig
+								)
 							)
 						)
-					)
-		
-					-- Have some ig ?
-					if (ig_array.count != 0) then
-					(
-						-- For each ig
-						for ig = 1 to ig_array.count do
+			
+						-- Have some ig ?
+						if (ig_array.count != 0) then
 						(
-							-- Output filename
-							output = ("output_directory/"+ig_array[ig]+".ig")
-
-							-- Check date
-							if (NeLTestFileDate output files[i]) == true then
+							-- For each ig
+							for ig = 1 to ig_array.count do
 							(
-								-- Select none
-								max select none
+								-- Output filename
+								output = ("output_directory_ig/"+ig_array[ig]+".ig")
 
-								-- Select all node in this ig
-								for node in geometry do
+								-- Check date
+								if (NeLTestFileDate output files[i]) == true then
 								(
-									-- Select it if in the ig
-									if ( (getIg node) == ig_array[ig]) then
-										selectmore node
-								)
-								-- Select all lights in this ig
-								for node in lights do
-								(
-									-- Select it if in the ig
-									if ( (getIg node) == ig_array[ig]) then
-										selectmore node
-								)
+									-- Select none
+									max select none
 
-								-- Check export
-								try
-								(
-									-- Export the ig
-									instancegroup2export = $selection as array
-									if (NelExportInstanceGroup instancegroup2export output) == true then
+									-- Select all node in this ig
+									for node in geometry do
 									(
-										nlerror ("OK "+output)
+										-- Select it if in the ig
+										if ( (getIg node) == ig_array[ig]) then
+											selectmore node
 									)
-									else
+									-- Select all lights in this ig
+									for node in lights do
+									(
+										-- Select it if in the ig
+										if ( (getIg node) == ig_array[ig]) then
+											selectmore node
+									)
+
+									-- Check export
+									try
+									(
+										-- Export the ig
+										instancegroup2export = $selection as array
+										if (NelExportInstanceGroup instancegroup2export output) == true then
+										(
+											nlerror ("OK "+output)
+										)
+										else
+										(
+											-- Error
+											nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+files[i])
+											tagThisFile = false
+										)
+									)
+									catch
 									(
 										-- Error
-										nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+files[i])
+										nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+files[i])
+										tagThisFile = false
 									)
 								)
-								catch
+								else
 								(
-									-- Error
-									nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+files[i])
+									nlerror ("SKIPPED "+output)
 								)
+							)
+						)
+						else
+						(
+							-- Error
+							nlerror ("WARNING nothing exported from ig max file "+files[i])
+						)
+
+						-- Write a tag file
+						if tagThisFile == true then
+						(
+							tagFile = createFile tag
+							if tagFile == undefined then
+							(
+								nlerror ("WARNING can't create tag file "+tag)
 							)
 							else
 							(
-								nlerror ("SKIPPED "+output)
+								print "toto" to: tagFile
+								close tagFile
 							)
 						)
 					)
 					else
 					(
 						-- Error
-						nlerror ("WARNING nothing exported from ig max file "+files[i])
+						nlerror ("ERROR exporting ig: can't open the file "+files[i])
 					)
 				)
 				else
 				(
 					-- Error
-					nlerror ("ERROR exporting ig: can't open the file "+files[i])
-				)
+					nlerror ("SKIPPED BY TAG "+files[i])
+				)				
 			)
 			catch 
 			(

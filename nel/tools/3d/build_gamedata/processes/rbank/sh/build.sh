@@ -15,6 +15,9 @@ proclocal_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_proclocal_timeou
 procglobal_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_procglobal_timeout" | sed -e 's/rbank_build_procglobal_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 indoor_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_indoor_timeout" | sed -e 's/rbank_build_indoor_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Get the quality option to choose the goor properties.cfg file
+quality_flag=`cat ../../cfg/site.cfg | grep "build_quality" | grep "1"`
+
 # **** Copy ig and shapes
 
 # Log error
@@ -109,8 +112,15 @@ $build_ig_boxes
 
 # ***** Build the rbank, gr files
 
-# Copy template
-`cat cfg/template.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_temp_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
+# Copy the good template file
+if ( test "$quality_flag" )
+then
+	# We are in BEST mode
+	`cat cfg/template_final.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_temp_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
+else
+	# We are in DRAFT mode
+	`cat cfg/template_draft.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_temp_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
+fi
 
 # List the zones to add
 cd ../zone/zone_welded

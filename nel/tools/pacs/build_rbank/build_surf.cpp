@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.4 2002/03/14 17:01:08 corvazier Exp $
+ * $Id: build_surf.cpp,v 1.5 2002/06/17 14:25:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1467,7 +1467,7 @@ void	NLPACS::CZoneTessellation::build()
 
 		nldebug("   - tessellate landscape");
 		_Landscape.setThreshold(0.0f);
-		_Landscape.setTileMaxSubdivision(3);
+		_Landscape.setTileMaxSubdivision(TessellateLevel);
 		_Landscape.refineAll(CVector::Null);
 		_Landscape.averageTesselationVertices();
 

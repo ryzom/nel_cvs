@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.6 2002/04/02 08:59:16 corvazier Exp $
+ * $Id: main.cpp,v 1.7 2002/06/17 14:25:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,7 @@ string												OutputDirectory;
 string												OutputPath;
 string												TessellationPath;
 string												IGBoxes;
+uint												TessellateLevel;
 bool												ReduceSurfaces;
 bool												SmoothBorders;
 bool												ComputeElevation;
@@ -121,6 +122,9 @@ void	initMoulinette()
 		}
 
 		OutputRootPath = getString(cf, "OutputRootPath");
+
+		TessellateLevel = getInt(cf, "TessellateLevel");
+
 		ReduceSurfaces = getInt(cf, "ReduceSurfaces") ? true : false;
 		SmoothBorders = getInt(cf, "SmoothBorders") ? true : false;
 

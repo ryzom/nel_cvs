@@ -1,3 +1,7 @@
+NEL3D_APPDATA_COLLISION					= 1423062613
+NEL3D_APPDATA_COLLISION_EXTERIOR		= 1423062614
+
+
 -- Clear the log
 fn clearlog =
 (
@@ -30,6 +34,26 @@ fn nlerror message =
 	print message
 )
 
+-- Must export this node ?
+fn isToBeExported node =
+(
+	doNotExport = getappdata node NEL3D_APPDATA_COLLISION
+	if (doNotExport != undefined) then
+	(
+		if (doNotExport == "1") then
+			return true
+	)
+
+	doNotExport = getappdata node NEL3D_APPDATA_COLLISION_EXTERIOR
+	if (doNotExport != undefined) then
+	(
+		if (doNotExport == "1") then
+			return true
+	)
+
+	return false
+)
+
 try
 (
 	-- Get files in the collision_source_directory
@@ -49,10 +73,13 @@ try
 			try
 			(
 				-- Output file
-				output = "output_directory"
+				output = "output_directory_rbank"
 
-				-- todo: compare file date
-				-- if (NeLTestFileDate output files[i]) == true then
+				-- Get the tag file name
+				tag = ("output_directory_tag/"+(getFilenameFile files[i])+(getFilenameType files[i])+".tag")
+
+				-- Compare date with the tag file
+				if (NeLTestFileDate tag files[i]) == true then
 				(
 					-- Free memory and file handles
 					gc ()
@@ -64,17 +91,41 @@ try
 					-- Open the max project
 					if loadMaxFile files[i] == true then
 					(
-						-- Select all
-						max select all
+						-- Tag this file ?
+						tagThisFile = true
+
+						-- Select all collision mesh
+						max select none
+						for m in geometry do
+						(
+							if (isToBeExported m) == true then
+								selectmore m
+						)
 
 						-- Export the collision
 						if (NelExportCollision ($selection as array) output) == false then
 						(
 							nlerror ("ERROR exporting collision "+files[i])
+							tagThisFile = false
 						)
 						else
 						(
 							nlerror ("OK collision in folder "+output)
+						)
+
+						-- Write a tag file
+						if tagThisFile == true then
+						(
+							tagFile = createFile tag
+							if tagFile == undefined then
+							(
+								nlerror ("WARNING can't create tag file "+tag)
+							)
+							else
+							(
+								print "toto" to: tagFile
+								close tagFile
+							)
 						)
 					)
 					else
@@ -83,11 +134,10 @@ try
 						nlerror ("ERROR exporting collision: can't open the file "+files[i])
 					)
 				)
-				-- todo: compare file date
-				-- else
+				else
 				(
-					-- todo: compare file date
-					-- nlerror ("SKIPPED "+files[i])
+					-- Error
+					nlerror ("SKIPPED BY TAG "+files[i])
 				)
 			)
 			catch 

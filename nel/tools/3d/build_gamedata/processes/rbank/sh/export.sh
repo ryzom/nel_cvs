@@ -33,7 +33,7 @@ date
 
 for i in $collision_source_directories ; do
 	# Copy the script
-	cat maxscript/rbank_export.ms | sed -e "s&collision_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/rbank/cmb&g" > $max_directory/scripts/rbank_export.ms
+	cat maxscript/rbank_export.ms | sed -e "s&collision_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_rbank&$build_gamedata_directory/processes/rbank/cmb&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/rbank/tag&g" > $max_directory/scripts/rbank_export.ms
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript rbank_export.ms -q -mi -vn

@@ -10,29 +10,38 @@ exec_timeout='../../bin/exec_timeout.exe'
 depend_timeout=`cat ../../cfg/config.cfg | grep "zone_build_depend_timeout" | sed -e 's/zone_build_depend_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 weld_timeout=`cat ../../cfg/config.cfg | grep "zone_build_weld_timeout" | sed -e 's/zone_build_weld_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Get the quality option to choose the goor properties.cfg file
+quality_flag=`cat ../../cfg/site.cfg | grep "build_quality" | grep "1"`
+
 # **** Build dependencies
 
-# Log error
-echo ------- >> log.log
-echo --- Build zone : dependencies >> log.log
-echo ------- >> log.log
-echo ------- 
-echo --- Build zone : dependencies 
-echo ------- 
-date >> log.log
-date
+if ( test "$quality_flag" )
+then
+	# We are in BEST mode
 
-# list all the dependencies regions
-zone_regions=`cat ../../cfg/config.cfg | grep "zone_region" | sed -e 's/zone_region//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	# Log error
+	echo ------- >> log.log
+	echo --- Build zone : dependencies >> log.log
+	echo ------- >> log.log
+	echo ------- 
+	echo --- Build zone : dependencies 
+	echo ------- 
+	date >> log.log
+	date
 
-# For each dependencies region
-for i in $zone_regions ; do
-	# Extract the name
-	arg=`echo zone_exported/$zone_regions | sed -e 's&,&.zone zone_exported/&g'`
+	# list all the dependencies regions
+	zone_regions=`cat ../../cfg/config.cfg | grep "zone_region" | sed -e 's/zone_region//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-	# Make the dependencies
-	$exec_timeout $depend_timeout $zone_dependencies ../../cfg/properties.cfg $arg.zone zone_depend/doomy.depend
-done
+	# For each dependencies region
+	for i in $zone_regions ; do
+		# Extract the name
+		arg=`echo zone_exported/$zone_regions | sed -e 's&,&.zone zone_exported/&g'`
+
+		# Make the dependencies
+		$exec_timeout $depend_timeout $zone_dependencies ../../cfg/properties.cfg $arg.zone zone_depend/doomy.depend
+	done
+
+fi		# if ( test "$quality_flag" )
 
 # **** Weld
 

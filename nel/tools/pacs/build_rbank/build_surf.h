@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.3 2002/03/14 17:01:08 corvazier Exp $
+ * $Id: build_surf.h,v 1.4 2002/06/17 14:25:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,7 @@ extern std::string				OutputDirectory;
 extern std::string				OutputPath;
 extern std::string				TessellationPath;
 extern std::string				IGBoxes;
+extern uint						TessellateLevel;
 extern bool						ReduceSurfaces;
 extern bool						SmoothBorders;
 extern bool						ComputeElevation;

@@ -1,5 +1,6 @@
 @echo off
 
+mkdir tag
 mkdir ig_land
 mkdir ig_land_ld
 mkdir ig_land_max

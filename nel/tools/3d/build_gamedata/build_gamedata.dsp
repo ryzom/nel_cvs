@@ -84,7 +84,11 @@ SOURCE=.\cfg\panoply.cfg
 # End Source File
 # Begin Source File
 
-SOURCE=.\cfg\properties.cfg
+SOURCE=.\cfg\properties_draft.cfg
+# End Source File
+# Begin Source File
+
+SOURCE=.\cfg\properties_final.cfg
 # End Source File
 # Begin Source File
 
@@ -880,7 +884,11 @@ SOURCE=.\processes\rbank\maxscript\rbank_export.ms
 # End Source File
 # Begin Source File
 
-SOURCE=.\processes\rbank\cfg\template.cfg
+SOURCE=.\processes\rbank\cfg\template_draft.cfg
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\cfg\template_final.cfg
 # End Source File
 # End Group
 # Begin Group "Veget Files"
@@ -1007,46 +1015,6 @@ SOURCE=.\processes\ligo\export_build_data.bat
 SOURCE=.\processes\ligo\maxscript\nel_ligo_export.ms
 # End Source File
 # End Group
-# Begin Group "Font"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\processes\font\0_setup.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\font\1_clean.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\font\2_export.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\font\3_build.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\font\4_install.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\font\sh\export.sh
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\font\export_build_all_data.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\font\export_build_data.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\font\sh\install.sh
-# End Source File
-# End Group
 # Begin Group "Pacs_prim"
 
 # PROP Default_Filter ""
@@ -1089,50 +1057,6 @@ SOURCE=.\processes\pacs_prim\sh\install.sh
 # Begin Source File
 
 SOURCE=.\processes\pacs_prim\maxscript\pacs_prim_export.ms
-# End Source File
-# End Group
-# Begin Group "Zone_light"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\processes\zone_light\0_setup.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\zone_light\1_clean.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\zone_light\2_export.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\zone_light\3_build.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\zone_light\4_install.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\zone_light\sh\build.sh
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\zone_light\sh\export.sh
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\zone_light\export_build_all_data.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\zone_light\export_build_data.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\processes\zone_light\sh\install.sh
 # End Source File
 # End Group
 # Begin Group "CLodBank Files"
@@ -1189,6 +1113,90 @@ SOURCE=.\processes\clodbank\cfg\local_path.cfg
 # Begin Source File
 
 SOURCE=.\processes\clodbank\process_doc.txt
+# End Source File
+# End Group
+# Begin Group "Zone_light"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\zone_light\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\sh\build.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\sh\install.sh
+# End Source File
+# End Group
+# Begin Group "Font"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\font\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\sh\install.sh
 # End Source File
 # End Group
 # End Target

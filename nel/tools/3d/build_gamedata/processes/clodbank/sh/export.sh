@@ -34,7 +34,7 @@ date
 
 for i in $clod_source_directories ; do
 	# Copy the script
-	cat maxscript/clod_export.ms | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/clodbank/clod&g" > $max_directory/scripts/clod_export.ms
+	cat maxscript/clod_export.ms | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_clod&$build_gamedata_directory/processes/clodbank/clod&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/clodbank/tag&g" > $max_directory/scripts/clod_export.ms
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn

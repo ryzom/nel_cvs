@@ -1,5 +1,6 @@
 @echo off
 
+del tag\*.* /Q
 del output\*.* /Q
 del cmb\*.* /Q
 

@@ -29,5 +29,20 @@ for i in $process_to_complete ; do
 
 	# Concat log.log files
 	# cat processes/$i/log.log >> log.log
+
 done
 
+# Get the quality option to choose the goor properties.cfg file
+quality_flag=`cat cfg/site.cfg | grep "build_quality" | grep "1"`
+
+# Copy the good properties.cfg file
+if ( test "$quality_flag" )
+then
+	# We are in BEST mode
+	echo [Quality] BEST
+	cp cfg/properties_final.cfg cfg/properties.cfg
+else
+	# We are not DRAFT mode
+	echo [Quality] DRAFT
+	cp cfg/properties_draft.cfg cfg/properties.cfg
+fi

@@ -1,5 +1,6 @@
 @echo off
 
+del tag\*.* /Q
 del ig_land_ld\*.* /Q
 del ig_land\*.* /Q
 del ig_land_max\*.* /Q

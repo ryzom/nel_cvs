@@ -90,78 +90,109 @@ try
 				-- Reset 3dsmax
 				resetMAXFile #noprompt
 
-				-- Open the max project
-				if loadMaxFile files[i] == true then
+				-- Get the tag file name
+				tag = ("output_directory_tag/"+(getFilenameFile files[i])+(getFilenameType files[i])+".tag")
+
+				-- Compare date with the tag file
+				if (NeLTestFileDate tag files[i]) == true then
 				(
-					-- Unhide
-					max unhide all
-
-					-- unselect
-					max select none
-
-					-- Exported object count
-					exported = 0
-
-					-- For each node
-					for node in geometry do
+					-- Open the max project
+					if loadMaxFile files[i] == true then
 					(
-						-- It is root ?
-						if (node.parent == undefined) then
-						(
-							-- Is not a skeleton ?
-							if (node.name != "Bip01") then
-							(
-								-- Can be exported ?
-								if (isToBeExported node == true) then
-								(
-									-- Output directory
-									output = ("output_directory/"+(node.name)+".veget")
+						tagThisFile = true
 
-									-- Compare file date
-									if (NeLTestFileDate output files[i]) == true then
+						-- Unhide
+						max unhide all
+
+						-- unselect
+						max select none
+
+						-- Exported object count
+						exported = 0
+
+						-- For each node
+						for node in geometry do
+						(
+							-- It is root ?
+							if (node.parent == undefined) then
+							(
+								-- Is not a skeleton ?
+								if (node.name != "Bip01") then
+								(
+									-- Can be exported ?
+									if (isToBeExported node == true) then
 									(
-										try
+										-- Output directory
+										output = ("output_directory_veget/"+(node.name)+".veget")
+
+										-- Compare file date
+										if (NeLTestFileDate output files[i]) == true then
 										(
-											-- Export the veget
-											if (NelExportVegetable node output false) == true then
+											try
 											(
-												nlerror ("OK "+output)
-												exported = exported+1
+												-- Export the veget
+												if (NelExportVegetable node output false) == true then
+												(
+													nlerror ("OK "+output)
+													exported = exported+1
+												)
+												else
+												(
+													-- Error
+													nlerror ("ERROR exporting veget "+node.name+" in file "+files[i])
+													tagThisFile = false
+												)
 											)
-											else
+											catch 
 											(
 												-- Error
-												nlerror ("ERROR exporting veget "+node.name+" in file "+files[i])
+												nlerror ("ERROR fata error exporting veget "+node.name+" in file "+files[i])
+												tagThisFile = false
 											)
 										)
-										catch 
+										else
 										(
 											-- Error
-											nlerror ("ERROR fata error exporting veget "+node.name+" in file "+files[i])
+											nlerror ("SKIPPED "+output)
+											exported = exported+1
 										)
-									)
-									else
-									(
-										-- Error
-										nlerror ("SKIPPED "+output)
-										exported = exported+1
 									)
 								)
 							)
 						)
-					)
 
-					-- Something exported
-					if exported == 0 then
+						-- Something exported
+						if exported == 0 then
+						(
+							-- Error
+							nlerror ("WARNING no veget exported from the file "+files[i])
+						)
+
+						-- Write a tag file
+						if tagThisFile == true then
+						(
+							tagFile = createFile tag
+							if tagFile == undefined then
+							(
+								nlerror ("WARNING can't create tag file "+tag)
+							)
+							else
+							(
+								print "toto" to: tagFile
+								close tagFile
+							)
+						)
+					)
+					else
 					(
 						-- Error
-						nlerror ("WARNING no veget exported from the file "+files[i])
+						nlerror ("ERROR exporting veget: can't open the file "+files[i])
 					)
 				)
 				else
 				(
 					-- Error
-					nlerror ("ERROR exporting veget: can't open the file "+files[i])
+					nlerror ("SKIPPED BY TAG "+files[i])
 				)
 			)
 			catch 

@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.16 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.17 2001/07/02 11:40:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -661,7 +661,7 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 		// release edges from list.
 		removeFaceFromEdgeList(TmpFaces[numFace]);
 		// ivalid all it!!
-		TmpFaces[numFace].invalidAllIts();
+		TmpFaces[numFace].invalidAllIts(EdgeCollapses);
 
 
 		// delete from vertex1 and 2 the deleted faces.
@@ -835,7 +835,7 @@ void	CMRMBuilder::collapseEdges(sint nWantedFaces)
 			// \todo yoyo: TODO_BUG: potential bug here...
 			CMRMFaceBuild		&f= *(EdgeIt->second.Face);
 			nlassert(f.validEdgeIt(EdgeIt->second));
-			f.invalidEdgeIt(EdgeIt->second);
+			f.invalidEdgeIt(EdgeIt->second, EdgeCollapses);
 			EdgeCollapses.erase(EdgeIt);
 			bug2++;
 			continue;
@@ -846,7 +846,7 @@ void	CMRMBuilder::collapseEdges(sint nWantedFaces)
 		{
 			CMRMFaceBuild		&f= *(EdgeIt->second.Face);
 			nlassert(f.validEdgeIt(EdgeIt->second));
-			f.invalidEdgeIt(EdgeIt->second);
+			f.invalidEdgeIt(EdgeIt->second, EdgeCollapses);
 			EdgeCollapses.erase(EdgeIt);
 			bug3++;
 			continue;

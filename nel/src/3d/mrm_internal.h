@@ -1,7 +1,7 @@
 /** \file mrm_internal.h
  * Internal Classes for CMRMBuilder.
  *
- * $Id: mrm_internal.h,v 1.2 2001/06/21 12:58:53 berenguier Exp $
+ * $Id: mrm_internal.h,v 1.3 2001/07/02 11:40:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,15 +213,21 @@ public:
 		nlstop;
 		return CMRMEdge(-1,-1);
 	}
-	void	invalidAllIts()
+	void	invalidAllIts(TEdgeMap &edgeMap)
 	{
 		ValidIt0= ValidIt1= ValidIt2= false;
+		It0= edgeMap.end();
+		It1= edgeMap.end();
+		It2= edgeMap.end();
 	}
-	void	invalidEdgeIt(const CMRMEdge &e)
+	void	invalidEdgeIt(const CMRMEdge &e, TEdgeMap &edgeMap)
 	{
-		if(e== getEdge(0)) ValidIt0= false;
-		else if(e== getEdge(1)) ValidIt1= false;
-		else if(e== getEdge(2)) ValidIt2= false;
+		if(e== getEdge(0))
+			It0= edgeMap.end(), ValidIt0= false;
+		else if(e== getEdge(1))
+			It1= edgeMap.end(), ValidIt1= false;
+		else if(e== getEdge(2))
+			It2= edgeMap.end(), ValidIt2= false;
 		else nlstop;
 	}
 	bool	validEdgeIt(const CMRMEdge &e)

@@ -1,7 +1,7 @@
 /** \file ps_sound_impl.h
  * <File description>
  *
- * $Id: ps_sound_impl.h,v 1.1 2001/08/07 14:20:52 vizerie Exp $
+ * $Id: ps_sound_impl.h,v 1.2 2001/08/09 08:03:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_PS_SOUND_IMPL_H
 #define NL_PS_SOUND_IMPL_H
 
+#include "nel/sound/u_audio_mixer.h"
 #include "nel/misc/types_nl.h"
 
 
@@ -33,17 +34,19 @@ namespace NL3D {
 
 
 /**
- * <Class description>
+ * This class implements PS sound server. It warps the calls to NEL sound. Everything is in a .h file to avoid dependency
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001
  */
-class CPSSoundServImpl
+class CPSSoundServImpl : public IPSSoundServer
 {
-public:
-
-	/// Constructor
-	CPSSoundServImpl();
+public:	
+	IPSSoundInstance *createSound(const std::string &soundName)
+	{
+		// for now, we just load a .wav
+		USoucre *source = createSource(
+	}
 
 };
 

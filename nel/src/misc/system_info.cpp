@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.18 2003/03/20 15:40:55 corvazier Exp $
+ * $Id: system_info.cpp,v 1.19 2003/04/03 13:01:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,37 +226,58 @@ string CSystemInfo::getProc ()
 	return ProcString;
 }
 
-uint32 CSystemInfo::getProcFrequency ()
+uint64 CSystemInfo::getProcessorFrequency(bool quick)
 {
-	uint32 freq = 0;
-
-#ifdef NL_OS_WINDOWS
-
-	LONG result;
-	char value[1024];
-	DWORD valueSize;
-	HKEY hKey;
-
-	result = ::RegOpenKeyEx (HKEY_LOCAL_MACHINE, "Hardware\\Description\\System\\CentralProcessor\\0", 0, KEY_QUERY_VALUE, &hKey);
-	if (result == ERROR_SUCCESS)
+	static uint64 freq = 0;
+#ifdef	NL_CPU_INTEL
+	static bool freqComputed = false;	
+	if (freqComputed) return freq;
+	
+	if (!quick)
 	{
-		// get processor frequence
-		result = ::RegQueryValueEx (hKey, _T("~MHz"), NULL, NULL, (LPBYTE)&value, &valueSize);
-		if (result == ERROR_SUCCESS)
-		{
-			freq = *(int *)value;
+		TTicks bestNumTicks   = 0;
+		uint64 bestNumCycles;
+		uint64 numCycles;
+		const uint numSamples = 5;
+		const uint numLoops   = 50000000;
+		
+		volatile uint k; // prevent optimisation for the loop
+		for(uint l = 0; l < numSamples; ++l)
+		{	
+			TTicks startTick = NLMISC::CTime::getPerformanceTime();
+			uint64 startCycle = rdtsc();
+			volatile uint dummy = 0;
+			for(k = 0; k < numLoops; ++k)
+			{		
+				++ dummy;
+			}		
+			numCycles = rdtsc() - startCycle;
+			TTicks numTicks = NLMISC::CTime::getPerformanceTime() - startTick;
+			if (numTicks > bestNumTicks)
+			{		
+				bestNumTicks  = numTicks;
+				bestNumCycles = numCycles;
+			}
 		}
+		freq = (uint64) ((double) bestNumCycles * 1 / CTime::ticksToSecond(bestNumTicks));
 	}
-
-	// Make sure to close the reg key
-
-	RegCloseKey (hKey);
-
-#elif defined NL_OS_UNIX
-
-
-#endif
-
+	else
+	{
+		TTicks timeBefore = NLMISC::CTime::getPerformanceTime();
+		uint64 tickBefore = rdtsc();
+		nlSleep (100);
+		TTicks timeAfter = NLMISC::CTime::getPerformanceTime();
+		TTicks tickAfter = rdtsc();
+		
+		double timeDelta = CTime::ticksToSecond(timeAfter - timeBefore);
+		TTicks tickDelta = tickAfter - tickBefore;
+		
+		freq = (uint64) ((double)tickDelta / timeDelta);
+	}
+	
+	nlinfo ("CSystemInfo: Processor frequency is %.0f MHz", (float)freq/1000000.0);
+	freqComputed = true;
+#endif // NL_CPU_INTEL
 	return freq;
 }
 

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.35 2003/01/30 17:55:22 legros Exp $
+ * $Id: move_container.cpp,v 1.36 2003/04/03 13:01:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,9 @@ using namespace NLMISC;
 
 #define NELPACS_ALLOC_DYNAMIC_INFO 100
 #define NELPACS_ALLOC_STATIC_INFO 100
+
+H_AUTO_DECL ( NLPACS_Eval_Collision )
+#define	NLPACS_HAUTO_EVAL_COLLISION	H_AUTO_USE ( NLPACS_Eval_Collision )
 
 namespace NLPACS 
 {
@@ -158,6 +161,7 @@ void CMoveContainer::init (CGlobalRetriever* retriever, uint widthCellCount, uin
 void  CMoveContainer::evalCollision (double deltaTime, uint8 worldImage)
 {
 	NL_ALLOC_CONTEXT( Pacs )
+	NLPACS_HAUTO_EVAL_COLLISION
 
 //	H_AUTO(PACS_MC_evalCollision);
 

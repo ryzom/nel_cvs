@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.74 2003/03/24 16:39:49 legros Exp $
+ * $Id: global_retriever.cpp,v 1.75 2003/04/03 13:01:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,12 @@ using namespace std;
 using namespace NLMISC;
 
 const float		InsureSurfaceThreshold = 0.5f;	// the threshold distance between 2 surfaces below which we insure the retrieved position to be inside the surface
+
+H_AUTO_DECL ( NLPACS_Refresh_LR_Around )
+H_AUTO_DECL ( NLPACS_Retrieve_Position )
+
+#define	NLPACS_HAUTO_REFRESH_LR_AROUND	H_AUTO_USE ( NLPACS_Refresh_LR_Around )
+#define	NLPACS_HAUTO_RETRIEVE_POSITION	H_AUTO_USE ( NLPACS_Retrieve_Position )
 
 // CGlobalRetriever methods implementation
 
@@ -461,6 +467,8 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 */
 NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated, float threshold) const
 {
+	NLPACS_HAUTO_RETRIEVE_POSITION
+
 	return retrievePosition(CVectorD(estimated), (double)threshold);
 }
 
@@ -2318,6 +2326,8 @@ bool NLPACS::CGlobalRetriever::testRaytrace (const CVectorD &v0, const CVectorD 
 extern bool totoDebug;
 void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float radius)
 {
+	NLPACS_HAUTO_REFRESH_LR_AROUND
+
 	// check if retriever bank is all loaded, and if yes don't refresh it
 	if (_RetrieverBank->allLoaded())
 		return;

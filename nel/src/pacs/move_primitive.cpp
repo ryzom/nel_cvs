@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.15 2003/01/15 15:26:25 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.16 2003/04/03 13:01:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,12 @@
 #include "pacs/move_primitive.h"
 #include "pacs/collision_desc.h"
 #include "pacs/move_element.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;
+
+H_AUTO_DECL ( NLPACS_Get_Global_Position )
+#define	NLPACS_HAUTO_GET_GLOBAL_POSITION	H_AUTO_USE ( NLPACS_Get_Global_Position )
 
 namespace NLPACS 
 {
@@ -353,6 +357,8 @@ double CMovePrimitive::getOrientation (uint8 worldImage) const
 
 void CMovePrimitive::getGlobalPosition (UGlobalPosition& pos, uint8 worldImage) const
 {
+	NLPACS_HAUTO_GET_GLOBAL_POSITION
+
 	if (isNonCollisionable())
 		pos=getWorldImage (0)->getGlobalPosition();
 	else

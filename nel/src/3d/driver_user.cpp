@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.31 2003/03/06 10:05:13 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.32 2003/04/03 13:01:18 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,11 +52,13 @@ H_AUTO_DECL( NL3D_UI_Driver )
 H_AUTO_DECL( NL3D_Render_DriverClearBuffer )
 H_AUTO_DECL( NL3D_Render_DriverSwapBuffer )
 H_AUTO_DECL( NL3D_Render_DriverDrawELT )
+H_AUTO_DECL( NL3D_Texture_Driver )
 
 #define	NL3D_HAUTO_UI_DRIVER				H_AUTO_USE( NL3D_UI_Driver )
 #define	NL3D_HAUTO_CLEAR_DRIVER				H_AUTO_USE( NL3D_Render_DriverClearBuffer )
 #define	NL3D_HAUTO_SWAP_DRIVER				H_AUTO_USE( NL3D_Render_DriverSwapBuffer )
 #define	NL3D_HAUTO_DRAW_DRIVER				H_AUTO_USE( NL3D_Render_DriverDrawELT )
+#define	NL3D_HAUTO_TEX_DRIVER				H_AUTO_USE( NL3D_Texture_Driver )
 
 // ***************************************************************************
 // ***************************************************************************
@@ -318,7 +320,8 @@ void			*CDriverUser::getDisplay ()
 void			CDriverUser::setupMatrixContext()
 {
 	NL3D_MEM_DRIVER
-
+	NL3D_HAUTO_UI_DRIVER;
+	
 	_Driver->setupScissor(_CurrentMatrixContext.Scissor);
 	_Driver->setupViewport(_CurrentMatrixContext.Viewport);
 	CFrustum	&f= _CurrentMatrixContext.Frustum;
@@ -692,7 +695,8 @@ void			CDriverUser::drawQuad(const NLMISC::CQuadColorUV &shp, UMaterial &mat)
 void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV> &q, UMaterial &mat)
 {
 	NL3D_MEM_DRIVER
-
+	NL3D_HAUTO_DRAW_DRIVER;
+	
 	const CQuadColorUV *qptr = &(q[0]);
 	drawQuads(qptr , q.size(), mat);
 }
@@ -701,7 +705,8 @@ void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV> &q, UMater
 void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV2> &q, UMaterial &mat)
 {
 	NL3D_MEM_DRIVER
-
+	NL3D_HAUTO_DRAW_DRIVER;
+	
 	const CQuadColorUV2 *qptr = &(q[0]);
 	drawQuads(qptr , q.size(), mat);
 }
@@ -859,6 +864,7 @@ void			CDriverUser::drawQuad (float x0, float y0, float x1, float y1, CRGBA col)
 void			CDriverUser::drawQuad (float xcenter, float ycenter, float radius, CRGBA col) 
 {
 	NL3D_MEM_DRIVER
+	NL3D_HAUTO_DRAW_DRIVER;
 
 	drawQuad(xcenter-radius, ycenter-radius, xcenter+radius, ycenter+radius, col);
 }
@@ -866,7 +872,8 @@ void			CDriverUser::drawQuad (float xcenter, float ycenter, float radius, CRGBA 
 void			CDriverUser::drawWiredQuad (float x0, float y0, float x1, float y1, CRGBA col) 
 {
 	NL3D_MEM_DRIVER
-
+	NL3D_HAUTO_DRAW_DRIVER;
+	
 	// v-left
 	drawLine(x0,y0,x0,y1,col);	
 	// v-right
@@ -880,7 +887,8 @@ void			CDriverUser::drawWiredQuad (float x0, float y0, float x1, float y1, CRGBA
 void			CDriverUser::drawWiredQuad (float xcenter, float ycenter, float radius, CRGBA col) 
 {
 	NL3D_MEM_DRIVER
-
+	NL3D_HAUTO_DRAW_DRIVER;
+	
 	drawWiredQuad(xcenter-radius, ycenter-radius, xcenter+radius, ycenter+radius, col);
 }
 
@@ -1256,16 +1264,25 @@ void			CDriverUser::setCapture (bool b)
 // ***************************************************************************
 void				CDriverUser::setupAsyncTextureLod(uint baseLevel, uint maxLevel)
 {
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_TEX_DRIVER;
+
 	_AsyncTextureManager.setupLod(baseLevel, maxLevel);
 }
 // ***************************************************************************
 void				CDriverUser::setupAsyncTextureMaxUploadPerFrame(uint maxup)
 {
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_TEX_DRIVER;
+	
 	_AsyncTextureManager.setupMaxUploadPerFrame(maxup);
 }
 // ***************************************************************************
 void				CDriverUser::updateAsyncTexture()
 {
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_TEX_DRIVER;
+	
 	_AsyncTextureManager.update(getDriver());
 }
 
@@ -1273,28 +1290,43 @@ void				CDriverUser::updateAsyncTexture()
 // ***************************************************************************
 void				CDriverUser::setupMaxTotalAsyncTextureSize(uint maxText)
 {
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_TEX_DRIVER;
+	
 	_AsyncTextureManager.setupMaxTotalTextureSize(maxText);
 }
 // ***************************************************************************
 uint				CDriverUser::getTotalAsyncTextureSizeAsked() const
 {
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_TEX_DRIVER;
+	
 	return _AsyncTextureManager.getTotalTextureSizeAsked();
 }
 // ***************************************************************************
 uint				CDriverUser::getLastAsyncTextureSizeGot() const
 {
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_TEX_DRIVER;
+	
 	return _AsyncTextureManager.getLastTextureSizeGot();
 }
 
 // ***************************************************************************
 void				CDriverUser::setupMaxHLSColoringPerFrame(uint maxCol)
 {
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_TEX_DRIVER;
+	
 	_AsyncTextureManager.setupMaxHLSColoringPerFrame(maxCol);
 }
 
 // ***************************************************************************
 void				CDriverUser::loadHLSBank(const std::string &fileName)
 {
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_TEX_DRIVER;
+	
 	// load it.
 	CHLSTextureBank			*hlsBank= new CHLSTextureBank;
 	try

@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.13 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: transform_user.cpp,v 1.14 2003/04/03 13:01:18 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,12 @@
 
 #include "3d/transform_user.h"
 #include "3d/instance_group_user.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "scene_group.h"
 
+H_AUTO_DECL( NL3D_Transform_Set_Cluster_System )
+
+#define	NL3D_HAUTO_SET_CLUSTER_SYSTEM		H_AUTO_USE( NL3D_Transform_Set_Cluster_System )
 
 namespace NL3D
 {
@@ -36,6 +40,8 @@ namespace NL3D
 // ***************************************************************************
 void CTransformUser::setClusterSystem (UInstanceGroup *pIG)
 {
+	NL3D_HAUTO_SET_CLUSTER_SYSTEM
+
 	nlassert(_Transform) ; // object invalid now ...
 	if ((pIG == NULL) || (pIG == (UInstanceGroup*)-1))
 	{

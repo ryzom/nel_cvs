@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.11 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: landscapeig_manager.cpp,v 1.12 2003/04/03 13:01:18 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
+#include "nel/misc/hierarchical_timer.h"
 
 // std.
 #include <fstream>
@@ -40,6 +41,11 @@
 using namespace NLMISC;
 using namespace std;
 
+H_AUTO_DECL ( NL3D_Load_Zone_IG )
+H_AUTO_DECL ( NL3D_Unload_Zone_IG )
+
+#define	NL3D_HAUTO_LAND_MNGR_LOAD_ZONEIG	H_AUTO_USE( NL3D_Load_Zone_IG )
+#define	NL3D_HAUTO_LAND_MNGR_UNLOAD_ZONEIG	H_AUTO_USE( NL3D_Unload_Zone_IG )
 
 namespace NL3D 
 {
@@ -141,6 +147,8 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 UInstanceGroup *CLandscapeIGManager::loadZoneIG(const std::string &name)
 {
 	NL3D_MEM_LANDSCAPE_IG
+	NL3D_HAUTO_LAND_MNGR_LOAD_ZONEIG
+
 	if(name=="") 
 		return NULL;
 
@@ -201,6 +209,7 @@ void	CLandscapeIGManager::unloadArrayZoneIG(const std::vector<std::string> &name
 void	CLandscapeIGManager::unloadZoneIG(const std::string &name)
 {
 	NL3D_MEM_LANDSCAPE_IG
+	NL3D_HAUTO_LAND_MNGR_UNLOAD_ZONEIG
 	if(name=="")
 		return;
 

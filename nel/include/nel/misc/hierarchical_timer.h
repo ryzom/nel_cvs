@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.21 2003/02/21 15:53:31 lecroart Exp $
+ * $Id: hierarchical_timer.h,v 1.22 2003/04/03 13:01:18 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,7 +35,9 @@
 
 #include <algorithm>
 
-#define ALLOW_TIMING_MEASURES
+#ifndef NL_RELEASE
+#	define ALLOW_TIMING_MEASURES
+#endif // NL_RELEASE
 
 
 #ifdef ALLOW_TIMING_MEASURES
@@ -81,26 +83,6 @@ namespace NLMISC
 // Vicual C++ warning : ebp maybe modified
 #	pragma warning(disable:4731)
 #endif
-
-
-/** Read the time stamp counter. Supports only intel architectures for now  
-  */ 
-#ifdef NL_CPU_INTEL
-
-inline uint64 rdtsc()
-{
-	uint64 ticks;
-#	ifndef NL_OS_WINDOWS		
-		__asm__ volatile(".byte 0x0f, 0x31" : "=a" (ticks.low), "=d" (ticks.high));				
-#	else 		
-		__asm	rdtsc
-		__asm	mov		DWORD PTR [ticks], eax
-		__asm	mov		DWORD PTR [ticks + 4], edx		
-#	endif
-	return ticks;	
-}
-
-#endif	
 
 
 /**  A simple clock to measure ticks.
@@ -272,13 +254,6 @@ public:
 	/// Clears stats, and reinits all timer structure
 	static void		clear();		
 
-	/** Gives an evalutation of the processor frequency, in hertz
-	  * \param quick true to do quick frequency evaluation
-	  * \warning Supports only intel architectures for now. 
-	  */
-#ifdef NL_CPU_INTEL
-	static uint64   getProcessorFrequency(bool quick=false);
-#endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 private:

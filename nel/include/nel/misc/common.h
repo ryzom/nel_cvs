@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.56 2003/03/06 14:37:42 miller Exp $
+ * $Id: common.h,v 1.57 2003/04/03 13:01:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,25 @@ namespace	NLMISC
 #define vsnprintf _vsnprintf
 #endif // NL_OS_WINDOWS
 
+
+/** Read the time stamp counter. Supports only intel architectures for now  
+  */ 
+#ifdef NL_CPU_INTEL
+
+inline uint64 rdtsc()
+{
+	uint64 ticks;
+#	ifndef NL_OS_WINDOWS		
+		__asm__ volatile(".byte 0x0f, 0x31" : "=a" (ticks.low), "=d" (ticks.high));				
+#	else 		
+		__asm	rdtsc
+		__asm	mov		DWORD PTR [ticks], eax
+		__asm	mov		DWORD PTR [ticks + 4], edx		
+#	endif
+	return ticks;	
+}
+
+#endif	// NL_CPU_INTEL
 
 
 /**

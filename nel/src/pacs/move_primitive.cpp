@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * <File description>
  *
- * $Id: move_primitive.cpp,v 1.1 2001/05/04 14:36:36 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.2 2001/05/04 15:20:33 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -361,7 +361,7 @@ bool CMovePrimitive::evalCollisionSSoverMP (CMovePrimitive& other, CCollisionDes
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionMSoverSP (CMovePrimitive& other, CCollisionDesc& desc, uint numSeg, uint numPoint)
+/*bool CMovePrimitive::evalCollisionMSoverSP (CMovePrimitive& other, CCollisionDesc& desc, uint numSeg, uint numPoint)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==Movable2DOrientedBox);
@@ -431,11 +431,11 @@ bool CMovePrimitive::evalCollisionMSoverSP (CMovePrimitive& other, CCollisionDes
 
 	// Not implemented
 	return false;
-}
+}*/
 
 // ***************************************************************************
 
-void CMovePrimitive::precalcPos ()
+/*void CMovePrimitive::precalcPos ()
 {
 	// Type of the primitive
 	uint type=((uint32)_Flags)&PrimitiveMask;
@@ -495,7 +495,7 @@ void CMovePrimitive::precalcPos ()
 			EdgeDirectionY[i]=(PointPosY[next]-PointPosY[i])*oneOver;
 		}
 	}
-}
+}*/
 
 // ***************************************************************************
 

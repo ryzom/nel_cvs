@@ -80,6 +80,9 @@ LIB32=link.exe -lib
 
 # Name "pacs - Win32 Release"
 # Name "pacs - Win32 Debug"
+# Begin Group "Pathfinding"
+
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=.\pacs\chain.cpp
@@ -90,27 +93,11 @@ SOURCE=..\include\nel\pacs\chain.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\pacs\collision_desc.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\pacs\collision_desc.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\pacs\local_retriever.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\pacs\local_retriever.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\pacs\move_container.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\pacs\move_container.h
 # End Source File
 # Begin Source File
 
@@ -136,5 +123,34 @@ SOURCE=.\pacs\surface_quad.cpp
 
 SOURCE=..\include\nel\pacs\surface_quad.h
 # End Source File
+# End Group
+# Begin Group "Collisions"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\pacs\collision_desc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\collision_desc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\move_container.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\move_container.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\move_primitive.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\move_primitive.h
+# End Source File
+# End Group
 # End Target
 # End Project

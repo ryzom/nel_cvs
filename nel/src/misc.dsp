@@ -356,7 +356,7 @@ SOURCE=.\misc\config_file\config_file.cpp
 
 !ELSEIF  "$(CFG)" == "misc - Win32 Debug"
 
-# ADD CPP /D "NL_DONT_USE_EXTERNAL_CODE" /Yu"../stdmisc.h"
+# ADD CPP /Yu"../stdmisc.h"
 
 !ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
 

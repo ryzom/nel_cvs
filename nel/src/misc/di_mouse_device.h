@@ -1,7 +1,7 @@
 /** \file di_mouse_device.h
  * <File description>
  *
- * $Id: di_mouse_device.h,v 1.1 2002/03/28 10:30:15 vizerie Exp $
+ * $Id: di_mouse_device.h,v 1.2 2002/03/29 16:22:39 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "nel/misc/di_event_emitter.h"
 #include "nel/misc/input_device_server.h"
 #include "nel/misc/mouse_device.h"
-#include <DX8/dinput.h>
+#include <dinput.h>
 
 
 namespace NLMISC

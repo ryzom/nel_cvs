@@ -1,7 +1,7 @@
 /** \file water_pool_manager.cpp
  * <File description>
  *
- * $Id: water_pool_manager.cpp,v 1.1 2001/10/26 08:21:57 vizerie Exp $
+ * $Id: water_pool_manager.cpp,v 1.2 2001/10/26 09:21:21 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ CWaterPoolManager &GetWaterPoolManager()
 
 
 
-CWaterHeightMap &CWaterPoolManager::getPoolByID(uint ID, uint32 size)
+CWaterHeightMap &CWaterPoolManager::getPoolByID(uint ID)
 {
 	if(_PoolMap.count(ID))
 	{
@@ -47,7 +47,6 @@ CWaterHeightMap &CWaterPoolManager::getPoolByID(uint ID, uint32 size)
 	else
 	{
 		CWaterHeightMap *whm = new CWaterHeightMap;
-		whm->setSize(size);
 		_PoolMap[ID] = whm;
 		return *whm;
 	}

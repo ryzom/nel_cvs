@@ -290,7 +290,7 @@ void		CWaterHeightMap::filter()
 }
 
 
-void	CWaterHeightMap::filterNStoreGradient(float blurCoeff)
+void	CWaterHeightMap::filterNStoreGradient()
 {	
 	const float blurCoeff = _FilterWeight;
 	nlassert(_Size != 0);

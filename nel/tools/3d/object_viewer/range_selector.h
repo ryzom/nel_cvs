@@ -1,7 +1,7 @@
 /** \file range_selector.h
- * <File description>
+ * Helps to select a range for numeric values in a CEditableRange dialog
  *
- * $Id: range_selector.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: range_selector.h,v 1.2 2001/06/25 12:57:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,9 +39,8 @@
 class CRangeSelector : public CDialog
 {
 // Construction
-public:
-	typedef bool (*TValidationFunction)(const CString &lowerBound, const CString &upperBound) ;
-	CRangeSelector(const CString &lowerBound, const CString &upperBound, TValidationFunction vf, CWnd* pParent = NULL);   // standard constructor
+public:	
+	CRangeSelector(const CString &lowerBound, const CString &upperBound, class CEditableRange *er, CWnd* pParent = NULL);   // standard constructor
 
 
 	const CString &getUpperBound(void) const { return m_UpperBound ; }
@@ -66,7 +65,7 @@ public:
 
 // Implementation
 protected:
-	TValidationFunction _ValidationFunction ;	
+	class CEditableRange *_EditableRange ;	
 
 	// Generated message map functions
 	//{{AFX_MSG(CRangeSelector)

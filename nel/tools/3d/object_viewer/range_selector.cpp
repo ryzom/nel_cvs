@@ -1,7 +1,7 @@
 /** \file range_selector.cpp
- * <File description>
+ * Helps to select a range for numeric values in a CEditableRange dialog
  *
- * $Id: range_selector.cpp,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: range_selector.cpp,v 1.2 2001/06/25 12:57:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "range_selector.h"
+#include "editable_range.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,8 +42,8 @@ static char THIS_FILE[] = __FILE__;
 // CRangeSelector dialog
 
 
-CRangeSelector::CRangeSelector(const CString &lowerBound, const CString &upperBound, TValidationFunction vf, CWnd* pParent)
-	: CDialog(CRangeSelector::IDD, pParent), _ValidationFunction(vf)
+CRangeSelector::CRangeSelector(const CString &lowerBound, const CString &upperBound, CEditableRange *er, CWnd* pParent)
+	: CDialog(CRangeSelector::IDD, pParent), _EditableRange(er)
 {
 	//{{AFX_DATA_INIT(CRangeSelector)
 	m_LowerBound = _T(lowerBound);
@@ -76,7 +77,7 @@ END_MESSAGE_MAP()
 void CRangeSelector::OnOK() 
 {
 	UpdateData() ;
-	if (_ValidationFunction(m_LowerBound, m_UpperBound))
+	if (_EditableRange->editableRangeValueValidator(m_LowerBound, m_UpperBound))
 	{
 		CDialog::OnOK();
 	}

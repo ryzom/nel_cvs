@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.39 2003/05/26 09:04:01 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.40 2003/05/26 13:10:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,6 +315,7 @@ void	CTransformShape::traverseLoadBalancingPass1()
 // ***************************************************************************
 void	CTransformShape::getLightHotSpotInWorld(CVector &modelPos, float &modelRadius) const
 {
+	/*
 	// get the untransformed bbox from the model.
 	CAABBox		bbox;
 	getAABBox(bbox);
@@ -331,6 +332,28 @@ void	CTransformShape::getLightHotSpotInWorld(CVector &modelPos, float &modelRadi
 		// Assume 0 radius => faster computeLinearAttenuation()
 		modelRadius= 0;
 	}
+	*/
+
+	// This method works well for Big Trees.
+	// TODO: generalize, saving a LightHotSpot per shape.
+
+	// get pos of object. Ie the hotSpot is the pivot.
+	modelPos= getWorldMatrix().getPos();
+	// If the model is a big lightable, must take radius from aabbox, else suppose 0 radius.
+	if(isBigLightable())
+	{
+		// get the untransformed bbox from the model.
+		CAABBox		bbox;
+		getAABBox(bbox);
+		// get size of the bbox (bounding sphere)
+		modelRadius= bbox.getRadius();
+	}
+	else
+	{
+		// Assume 0 radius => faster computeLinearAttenuation()
+		modelRadius= 0;
+	}
+
 }
 
 

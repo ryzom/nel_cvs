@@ -94,20 +94,20 @@ Beside the working core of the NeL developpers, everyone may improve the NeL
 platform. There is a supported community for the development of NeL hosted by
 Nevrax in the nevrax.org domain. Various tools are available there to participate:
 
-- A CVS server (cvs.nevrax.org) which allows anonymous CVS checkout to stay in
+- A CVS server \c (cvs.nevrax.org) which allows anonymous CVS checkout to stay in
   sync with the reference platform.
-- A WWW site (www.nevrax.org) which allows you to browse documentation, check the
+- A WWW site \c (www.nevrax.org) which allows you to browse documentation, check the
   CVS tree in a visual manner, and register for participation in the evolution of
   NeL.
-- A mailing list (nel@nevrax.org), dedicated to the communication between all
+- A mailing list \c (nel@nevrax.org), dedicated to the communication between all
   people interested in the NeL platform, regardless of their involvment or
   amount of contributions. This is an unmoderated, open mailing list. You may
-  subscribe thru the WWW side, or by mailing directly to nel-request@nevrax.org
-  with "subscribe" in the subject.
+  subscribe thru the WWW side, or by mailing directly to \c nel-request@nevrax.org
+  with \c "subscribe" in the subject.
 - A WWW bug tracker that allows you to submit bugs, get notified of their state,
   and their eventual resolution. All you need is a valid email address to
   register in the bug database.
-- A submission address (code@nevrax.org) for user-contributed code and patches,
+- A submission address \c (code@nevrax.org) for user-contributed code and patches,
   where your code is evaluated, and usually integrated directly in the reference
   platform.
 

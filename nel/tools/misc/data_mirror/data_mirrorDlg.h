@@ -71,6 +71,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CData_mirrorDlg)
 	enum { IDD = IDD_DATA_MIRROR_DIALOG };
+	CButton	IgnoreCtrl;
 	CButton	ModifiedFilterCtrl;
 	CButton	AddedFilterCtrl;
 	CButton	RemovedFilterCtrl;

@@ -93,6 +93,7 @@ void CData_mirrorDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CData_mirrorDlg)
+	DDX_Control(pDX, IDIGNORE, IgnoreCtrl);
 	DDX_Control(pDX, IDC_MODIFIED_FILTERS, ModifiedFilterCtrl);
 	DDX_Control(pDX, IDC_ADDED_FILTERS, AddedFilterCtrl);
 	DDX_Control(pDX, IDC_REMOVED_FILTERS, RemovedFilterCtrl);
@@ -772,26 +773,35 @@ void CData_mirrorDlg::OnUpdate()
 
 void CData_mirrorDlg::OnAddedFilters() 
 {
+	UpdateData ();
 	SortOrder = true;
 	SortedColumn = 0;
 	updateList ();
 	updateSort ();
+	IgnoreCtrl.EnableWindow (TRUE);
+	UpdateData (FALSE);
 }
 
 void CData_mirrorDlg::OnModifiedFilters() 
 {
+	UpdateData ();
 	SortOrder = true;
 	SortedColumn = 0;
 	updateList ();
 	updateSort ();
+	IgnoreCtrl.EnableWindow (TRUE);
+	UpdateData (FALSE);
 }
 
 void CData_mirrorDlg::OnRemovedFilters() 
 {
+	UpdateData ();
 	SortOrder = true;
 	SortedColumn = 0;
 	updateList ();
 	updateSort ();
+	IgnoreCtrl.EnableWindow (FALSE);
+	UpdateData (FALSE);
 }
 
 void CData_mirrorDlg::OnColumnclickList(NMHDR* pNMHDR, LRESULT* pResult) 

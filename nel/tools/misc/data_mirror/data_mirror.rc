@@ -49,7 +49,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,50,0,50,14
     PUSHBUTTON      "Ignore files",IDIGNORE,150,0,50,14
     CONTROL         "List1",IDC_LIST,"SysListView32",LVS_REPORT | 
-                    LVS_AUTOARRANGE | WS_TABSTOP,0,15,615,392,
+                    LVS_AUTOARRANGE | WS_TABSTOP,0,15,615,376,
                     WS_EX_CLIENTEDGE
     CONTROL         "Modified files",IDC_MODIFIED_FILTERS,"Button",
                     BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP | WS_TABSTOP,

@@ -1,7 +1,7 @@
 #ifndef _GAME_PYTHON_LIB_H_
 #define _GAME_PYTHON_LIB_H_
 
-#include <python.h>
+#include <Python.h>
 #include "nel/ai/pyserver/pythonsupport.h"
 #include "nel/ai/c/abstract_interface.h"
 

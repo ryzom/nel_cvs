@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.35 2002/08/22 14:21:54 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.36 2002/08/22 14:24:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -423,7 +423,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		}
 
 		// need to exit?
-		if (timeout == 0 || (sint32)(CTime::getLocalTime() - t0) > timeout)
+		if (timeout != -1 && (timeout == 0 || (sint32)(CTime::getLocalTime() - t0) > timeout))
 		{
 			exit = true;
 		}

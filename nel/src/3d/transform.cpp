@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.54 2003/03/12 15:03:13 berenguier Exp $
+ * $Id: transform.cpp,v 1.55 2003/03/13 15:25:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ CTransform::CTransform()
 
 	_FreezeHRCState= FreezeHRCStateDisabled;
 
-	_OrderingLayer = 0;
+	_OrderingLayer = 2;
 
 	
 	// No logicInfo by default

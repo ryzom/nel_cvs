@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.54 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.55 2003/03/13 15:25:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -925,54 +925,11 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 
 
 			// *** ************
-			// *** Export Color
-			// *** ************
-
-			// Export colors ?
-			if (buildMesh.VertexFlags&CVertexBuffer::PrimaryColorFlag)
-			{
-				// Get a pointer on Mappingvertex for this channel. Channel 0 is the color channel.
-				TVFace *pMapVert=pMesh->mapFaces(0);
-
-				// Get the index of the mapping vertex
-				DWORD nMapVert=pMapVert[face].getTVert (corner);
-
-				// Pointer on the Color vertex. Channel 0 is the color channel.
-				UVVert *pColorVert=&pMesh->mapVerts(0)[nMapVert];
-
-				// Store the color
-				float fR=(pColorVert->x*255.f+0.5f);
-				float fG=(pColorVert->y*255.f+0.5f);
-				float fB=(pColorVert->z*255.f+0.5f);
-				clamp (fR, 0.f, 255.f);
-				clamp (fG, 0.f, 255.f);
-				clamp (fB, 0.f, 255.f);
-				pCorner->Color.R=(uint8)fR;
-				pCorner->Color.G=(uint8)fG;
-				pCorner->Color.B=(uint8)fB;
-				pCorner->Color.A=255;
-			}
-			else
-			{
-				// Default value used by corse meshes
-				pCorner->Color.R=255;
-				pCorner->Color.G=255;
-				pCorner->Color.B=255;
-				pCorner->Color.A=255;
-			}
-
-			// The material is lighted ?
-			if (isLighted)
-			{
-				// Modulate the color
-				pCorner->Color.modulateFromColor (pCorner->Color, diffuse);
-			}
-
-			// *** ************
 			// *** Export Alpha
 			// *** ************
 
 			// Export alpha vertex ?
+			pCorner->Color.A = 255;
 			if ( (maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].AlphaVertex) &&
 				(buildMesh.VertexFlags&CVertexBuffer::PrimaryColorFlag) )
 			{
@@ -1011,12 +968,44 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 				}
 			}
 
-			/// TODO : export Specular ? I'm not sure it's realy useful.
-			// *** ***************
-			// *** Export Specular
-			// *** ***************
+			// *** ************
+			// *** Export Color
+			// *** ************
 
+			// Export colors ?
+			pCorner->Color.R=255;
+			pCorner->Color.G=255;
+			pCorner->Color.B=255;
+			if ( (maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].ColorVertex) &&
+				(buildMesh.VertexFlags&CVertexBuffer::PrimaryColorFlag) )
+			{
+				// Get a pointer on Mappingvertex for this channel. Channel 0 is the color channel.
+				TVFace *pMapVert=pMesh->mapFaces(0);
 
+				// Get the index of the mapping vertex
+				DWORD nMapVert=pMapVert[face].getTVert (corner);
+
+				// Pointer on the Color vertex. Channel 0 is the color channel.
+				UVVert *pColorVert=&pMesh->mapVerts(0)[nMapVert];
+
+				// Store the color
+				float fR=(pColorVert->x*255.f+0.5f);
+				float fG=(pColorVert->y*255.f+0.5f);
+				float fB=(pColorVert->z*255.f+0.5f);
+				clamp (fR, 0.f, 255.f);
+				clamp (fG, 0.f, 255.f);
+				clamp (fB, 0.f, 255.f);
+				pCorner->Color.R=(uint8)fR;
+				pCorner->Color.G=(uint8)fG;
+				pCorner->Color.B=(uint8)fB;
+			}
+
+			// The material is lighted ?
+			if (isLighted)
+			{
+				// Modulate the color
+				pCorner->Color.modulateFromColor (pCorner->Color, diffuse);
+			}
 		}
 	}
 

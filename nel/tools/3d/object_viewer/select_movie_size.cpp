@@ -5,12 +5,6 @@
 #include "object_viewer.h"
 #include "select_movie_size.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // CSelectMovieSize dialog
 

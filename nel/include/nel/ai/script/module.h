@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.10 2003/01/21 11:24:25 chafik Exp $
+ * $Id: module.h,v 1.11 2003/02/04 14:21:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,7 +174,7 @@ namespace NLAISCRIPT
 			return NULL;
 		}
 
-		/// Build a CCodeBrancheRunDebug
+		///Build a CCodeBrancheRunDebug
 		CCodeBrancheRunDebug* getCodeDebug(IScriptDebugSource* sourceCode)
 		{
 			if(/*_Cbr == NULL && */_ListCode.size())

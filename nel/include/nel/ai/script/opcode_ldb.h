@@ -1,7 +1,7 @@
 /** \file opcode_ldb.h
  * Sevral op-code for loading object to the stack.
  *
- * $Id: opcode_ldb.h,v 1.8 2001/12/04 16:54:43 chafik Exp $
+ * $Id: opcode_ldb.h,v 1.9 2003/02/04 14:21:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,12 +27,16 @@
 
 namespace NLAISCRIPT
 {			
+	/**
+	This class is an op-code, it inc the stack ref and add the content of a variable to the curent stack.
+	*/
 	class CLdbOpCode : public IOpRunCode
 	{
 	public:
 		static const NLAIC::CIdentType IdLdbOpCode;
 
 	private:
+		///Var that it add to the stack.
 		NLAIAGENT::IObjectIA *_B;
 	public:
 		CLdbOpCode(const NLAIAGENT::IObjectIA &b);		
@@ -80,6 +84,10 @@ namespace NLAISCRIPT
 		}
 	};
 
+	/**
+	This class is an op-code, it inc the stack ref and add the content of a member attribut to the curent stack. 
+	The member is extrat by clone from the attibute Self of the structur CCodeContext.
+	*/
 	class CLdbMemberOpCode : public IOpRunCode
 	{
 	public:
@@ -132,13 +140,74 @@ namespace NLAISCRIPT
 		{			
 		}
 	};
+	/**
+	This class is an op-code, it inc the stack ref and add the content of a sub member attribut to the curent stack. 
+	The member is extrat by clone from the attibute Self of the structur CCodeContext. This op code is called when it is necessary
+	to load a member as x1.x2...xn
+	*/
+	class CLdbMemberiOpCode : public IOpRunCode
+	{
+	public:
+		static const NLAIC::CIdentType IdLdbMemberiOpCode;
+	private:
+		std::list<sint32> _I;
+	public:
+		CLdbMemberiOpCode(std::list<sint32> b):
+		_I(b)
+		{
+		}
 
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
+
+		const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicType *x = new CLdbMemberiOpCode(_I);
+			return x;
+		}
+
+		const NLAIC::IBasicType *newInstance() const 
+		{
+			return clone();
+		}
+
+		const NLAIC::CIdentType &getType() const
+		{
+			return IdLdbMemberiOpCode;
+		}
+
+		void getDebugString(std::string &) const{ }
+
+		void save(NLMISC::IStream &os)
+		{			
+			std::list<sint32> &i = (std::list<sint32> &)_I;
+			os.serialCont(i);
+		}
+
+		void load(NLMISC::IStream &is) 
+		{	
+			is.serialCont(_I);
+		}
+		
+		virtual ~CLdbMemberiOpCode()
+		{			
+		}
+	};
+
+	/**
+	This class is an op-code, it inc the stack ref and add the content of a sub member attribut to the curent stack. 
+	The member is extrat by clone from the current position on the stack. This op code is called when it is necessary
+	to load a member as x1.x2...xn
+	*/
 	class CLdbStackMemberiOpCode : public IOpRunCode
 	{
 	public:
 		static const NLAIC::CIdentType IdLdbStackMemberiOpCode;
-	private:		
-		 std::list<sint32> _I;
+	private:
+
+		///Range of attibut.
+		std::list<sint32> _I;
 	public:
 		CLdbStackMemberiOpCode(std::list<sint32> b):
 		_I(b)
@@ -183,6 +252,12 @@ namespace NLAISCRIPT
 		}
 	};
 
+
+	/**
+	This class is an op-code, it inc the stack ref and add the content of a sub member attribut to the curent stack. 
+	The member is extrat by clone from an arbitrary position on the heap. This op code is called when it is necessary
+	to load a member as x1.x2...xn
+	*/
 	class CLdbHeapMemberiOpCode : public IOpRunCode
 	{
 	public:
@@ -237,56 +312,11 @@ namespace NLAISCRIPT
 		}
 	};
 
-	class CLdbMemberiOpCode : public IOpRunCode
-	{
-	public:
-		static const NLAIC::CIdentType IdLdbMemberiOpCode;
-	private:
-		std::list<sint32> _I;
-	public:
-		CLdbMemberiOpCode(std::list<sint32> b):
-		_I(b)
-		{
-		}
-
-		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
-
-		void getDebugResult(std::string &str,CCodeContext &context) const;		
-
-		const NLAIC::IBasicType *clone() const
-		{
-			NLAIC::IBasicType *x = new CLdbMemberiOpCode(_I);
-			return x;
-		}
-
-		const NLAIC::IBasicType *newInstance() const 
-		{
-			return clone();
-		}
-
-		const NLAIC::CIdentType &getType() const
-		{
-			return IdLdbMemberiOpCode;
-		}
-
-		void getDebugString(std::string &) const{ }
-
-		void save(NLMISC::IStream &os)
-		{			
-			std::list<sint32> &i = (std::list<sint32> &)_I;
-			os.serialCont(i);
-		}
-
-		void load(NLMISC::IStream &is) 
-		{	
-			is.serialCont(_I);
-		}
-		
-		virtual ~CLdbMemberiOpCode()
-		{			
-		}
-	};
-
+	/**
+	This class is an op-code, it inc the stack ref and add the content of a sub member attribut to the curent stack. 
+	The member is extrat from an arbitrary position on the heap. This op code is called when it is necessary
+	to load a member without making clone.
+	*/
 	class CLdbRefOpCode : public IOpRunCode
 	{
 	public:
@@ -339,5 +369,4 @@ namespace NLAISCRIPT
 		
 	};
 }
-
 #endif

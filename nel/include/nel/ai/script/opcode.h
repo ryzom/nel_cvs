@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.12 2002/08/21 13:58:17 lecroart Exp $
+ * $Id: opcode.h,v 1.13 2003/02/04 14:23:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,6 @@
 #include <math.h>
 #include "nel/ai/logic/varset.h"
 #include "nel/ai/script/opcode_ldb.h"
-#include "nel/ai/script/opcode_lpt.h"
 #include "nel/ai/script/interpret_methodes.h"
 #include "nel/ai/script/constraint.h"
 

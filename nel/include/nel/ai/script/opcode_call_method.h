@@ -1,7 +1,7 @@
 /** \file opcode_call_method.h
  * Sevral call op-code fonctionality.
  *
- * $Id: opcode_call_method.h,v 1.8 2003/01/31 14:59:43 chafik Exp $
+ * $Id: opcode_call_method.h,v 1.9 2003/02/04 14:21:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,7 @@ namespace NLAISCRIPT
 	};
 
 	/**
+	This class is a op-code that allow to call method under the scrpting engine. This op-code is running for all call under the class scoop.
 	*/
 	class CCallMethod: public ICallMethod
 	{
@@ -120,7 +121,10 @@ namespace NLAISCRIPT
 		static const NLAIC::CIdentType IdCallMethode;
 		
 	private:
+		///Range of inheritance 0 is the local, 1 is the firt derivation, ....
 		sint32 _Inheritance;
+
+		///Range of the method stored in the IClassInterpret that define the scripted class.
 		sint32 _I;
 
 	public:
@@ -175,17 +179,26 @@ namespace NLAISCRIPT
 		{
 		}
 
-	};	
+	};
 	
+
+	/**
+	This class is a op-code that allow to call method under the scrpting engine. This op-code is running for all dynamic call like x.call() 
+	wherre x is a dynamic variable.
+	*/
 	class CCallHeapMethodi: public ICallMethod
 	{
 	public:
 		static const NLAIC::CIdentType IdCallHeapMethodei;
 		
 	private:
+		///Range of inheritance 0 is the local, 1 is the firt derivation, ....
 		sint32 _Inheritance;
+		///Range of the method stored in the IClassInterpret that define the scripted class.
 		sint32 _I;
+		///Range of the instance of the class in the heap.
 		sint32 _HeapPos;
+		///Range of attibut that have to call the method. Ex: x.c1.c2.call().
 		std::list<sint32> _N;
 
 	public:			
@@ -245,14 +258,21 @@ namespace NLAISCRIPT
 	};
 	
 
+	/**
+	This class is a op-code that allow to call method under the scrpting engine. This op-code is running for all dynamic call like x.call() 
+	wherre x is a dynamic variable stored in the stack.
+	*/
 	class CCallStackMethodi: public ICallMethod
 	{
 	public:
 		static const NLAIC::CIdentType IdCallStackMethodei;
 
 	protected:
+		///Range of inheritance 0 is the local, 1 is the firt derivation, ....
 		sint32 _Inheritance;
+		///Range of the method stored in the IClassInterpret that define the scripted class.
 		sint32 _I;
+		///Range of attibut that have to call the method. Ex: x.c1.c2.call().
 		std::list<sint32> _N;
 		
 	public:			
@@ -308,6 +328,10 @@ namespace NLAISCRIPT
 
 	};
 
+
+	/**
+	This class is a op-code that allow to call the constructor of class under the scrpting engine.	
+	*/
 	class CCallStackNewMethodi: public CCallStackMethodi
 	{
 	public:
@@ -355,14 +379,21 @@ namespace NLAISCRIPT
 	};
 	
 
+	/**
+	This class is a op-code that allow to call method of an attribut under the scrpting engine. 
+	This op-code is running for all attribut under the class scoop. Ex: X.C1.C2.Call().
+	*/
 	class CCallMethodi: public ICallMethod
 	{
 	public:
 		static const NLAIC::CIdentType IdCallMethodei;
 		
 	private:
+		///Range of inheritance 0 is the local, 1 is the firt derivation, ....
 		sint32 _Inheritance;
+		///Range of the method stored in the IClassInterpret that define the scripted class.
 		sint32 _I;
+		///Range of attibut that have to call the method. Ex: x.c1.c2.call().
 		std::list<sint32> _N;
 		
 	public:

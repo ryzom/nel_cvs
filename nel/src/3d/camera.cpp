@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.7 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: camera.cpp,v 1.8 2001/03/26 14:56:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,15 @@ void	CCamera::registerBasic()
 CCamera::CCamera()
 {
 	setFrustum(1.0f, 1.0f, 0.01f, 1.0f);
+
+	_FovAnimationEnabled= false;
+	_TargetAnimationEnabled= false;
+	_FovAnimationAspectRatio= 4.0f/3.0f;
+
+	// Default Anims.
+	_Fov.Value= (float)NLMISC::Pi/2;
+	_Target.Value= CVector::Null;
+	_Roll.Value= 0;
 }
 // ***************************************************************************
 void		CCamera::setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective)
@@ -76,6 +85,115 @@ bool		CCamera::isOrtho() const
 bool		CCamera::isPerspective() const
 {
 	return _Frustum.Perspective;
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Anims.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+IAnimatedValue* CCamera::getValue (uint valueId)
+{
+	// what value ?
+	switch (valueId)
+	{
+	case FovValue:			return &_Fov;
+	case TargetValue:		return &_Target;
+	case RollValue:			return &_Roll;
+	}
+
+	return CTransform::getValue(valueId);
+}
+// ***************************************************************************
+const char *CCamera::getValueName (uint valueId) const
+{
+	// what value ?
+	switch (valueId)
+	{
+	case FovValue:			return getFovValueName();
+	case TargetValue:		return getTargetValueName();
+	case RollValue:			return getRollValueName();
+	}
+
+	return CTransform::getValueName(valueId);
+}
+
+// ***************************************************************************
+CTrackDefaultFloat		CCamera::DefaultFov( (float)NLMISC::Pi/2 );
+CTrackDefaultVector		CCamera::DefaultTarget( CVector::Null );
+CTrackDefaultFloat		CCamera::DefaultRoll( 0 );
+
+
+ITrack* CCamera::getDefaultTrack (uint valueId)
+{
+	// what value ?
+	switch (valueId)
+	{
+	case FovValue:			return &DefaultFov;
+	case TargetValue:		return &DefaultTarget;
+	case RollValue:			return &DefaultRoll;
+	}
+
+	return CTransform::getDefaultTrack(valueId);
+}
+// ***************************************************************************
+void	CCamera::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
+{
+	// For CCamera, channels are not detailled.
+	addValue(chanMixer, FovValue, prefix, false);
+	addValue(chanMixer, TargetValue, prefix, false);
+	addValue(chanMixer, RollValue, prefix, false);
+
+	CTransform::registerToChannelMixer(chanMixer, prefix);
+}
+
+
+
+// ***************************************************************************
+void	CCamera::update()
+{
+	CTransform::update();
+	
+	// test animations
+	if(IAnimatable::isTouched())
+	{
+		// FOV.
+		if( _FovAnimationEnabled && IAnimatable::isTouched(FovValue))
+		{
+			// keep the same near/far.
+			setPerspective(_Fov.Value, _FovAnimationAspectRatio, _Frustum.Near, _Frustum.Far);
+		}
+
+		// Target / Roll.
+		// If target/Roll is animated, compute our own quaternion.
+		if( _TargetAnimationEnabled && (IAnimatable::isTouched(TargetValue) || IAnimatable::isTouched(RollValue)) )
+		{
+			CQuat	q0, q1;
+
+			// compute rotation of target.
+			CMatrix	mat;
+			mat.setRot(CVector::I, _Target.Value, CVector::K);
+			mat.normalize(CMatrix::YZX);
+			q0= mat.getRot();
+
+			// compute roll rotation.
+			q1.setAngleAxis(CVector::J, _Roll.Value);
+
+
+			// combine and set rotquat!!
+			setRotQuat(q0*q1);
+		}
+
+
+		IAnimatable::clearFlag(FovValue);
+		IAnimatable::clearFlag(TargetValue);
+		IAnimatable::clearFlag(RollValue);
+	}
 }
 
 

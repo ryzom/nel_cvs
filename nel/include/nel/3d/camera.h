@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.12 2001/03/13 17:06:34 corvazier Exp $
+ * $Id: camera.h,v 1.13 2001/03/26 14:56:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,10 +84,62 @@ public:
 	 */
 	void		setPerspective(float fov, float aspectRatio, float znear, float zfar);
 
-	/// \name Get some track name
 
-	/// Return the name of the pos track
+	/** enable FOV animation. (default is false). see setPerspective(). znear and zfar are kept from previous setup.
+	 * NB: as setPerspective(), fov is the full horizontal angle of camera (in radians).
+	 */
+	bool		enableFovAnimation(bool en, float aspectRatio= 4.0f / 3.0f)
+	{
+		_FovAnimationEnabled= en;
+		if(en)
+			_FovAnimationAspectRatio= aspectRatio;
+	}
+	/** enable Target/Roll animation. (default is false). TTransform mode is forced to RotQuatMode. Roll is forced to 0.
+	 * The camera builds the rot matrix from the animated target/roll.
+	 */
+	bool		enableTargetAnimation(bool en)
+	{
+		setTransformMode(ITransformable::RotQuat);
+		_TargetAnimationEnabled= en;
+		_Roll.Value= 0;
+	}
+
+
+	/// \name Get some track name
+	// @{
+	/** Return the name of the fov track.
+	 * NB: as setPerspective(), fov is the full horizontal angle of camera (in radians).
+	 */
+	static const char *getFovValueName() {return "fov";}
+	/// Return the name of the target track. This target is in the parent space of camera.
+	static const char *getTargetValueName() {return "target";}
+	/// Return the name of the roll track
 	static const char *getRollValueName() {return "roll";}
+	// @}
+
+
+	/// \name From Ianimatable.
+	// @{
+	enum	TAnimValues
+	{
+		FovValue= CTransform::AnimValueLast,
+		TargetValue,
+		RollValue,			// Roll is the roll angle in radians.
+
+		AnimValueLast,
+	};
+
+	/// From IAnimatable
+	virtual IAnimatedValue* getValue (uint valueId);
+	/// From IAnimatable
+	virtual const char *getValueName (uint valueId) const;
+	/// Default Track Values for are identity (roll= 0, target= CVector::Null, fov=Pi/2).
+	virtual ITrack* getDefaultTrack (uint valueId);
+	/// register camera channels (in global anim mode).
+	virtual void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix);
+
+	// @}
+
 
 protected:
 	/// Constructor
@@ -98,8 +150,31 @@ protected:
 	// NB: znear and zfar are be >0 (if perspective).
 	CFrustum	_Frustum;
 
+
+	/// Implement the update method.
+	virtual void	update();
+
+
 private:
 	static IModel	*creator() {return new CCamera;}
+
+
+private:
+	bool					_FovAnimationEnabled;
+	bool					_TargetAnimationEnabled;
+	float					_FovAnimationAspectRatio;
+
+	// AnimValues.
+	CAnimatedValueFloat		_Fov;
+	CAnimatedValueVector	_Target;
+	CAnimatedValueFloat		_Roll;
+
+
+	// Default tracks.
+	static CTrackDefaultFloat		DefaultFov;		//( NLMISC::Pi/2 );
+	static CTrackDefaultVector		DefaultTarget;	//( CVector::NULL );
+	static CTrackDefaultFloat		DefaultRoll;	//( 0 );
+
 
 };
 

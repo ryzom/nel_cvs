@@ -87,6 +87,7 @@ public:
 	afx_msg void OnFileExit();
 	afx_msg void OnFileLoadconfig();
 	afx_msg void OnFileOpen();
+	afx_msg void OnLoadInstanceGroup();
 	afx_msg void OnFileSaveconfig();
 	afx_msg void OnInstanciateLocated();
 	afx_msg void OnMenuDelete();

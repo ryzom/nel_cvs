@@ -124,6 +124,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_LOADCONFIG, OnFileLoadconfig)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	ON_COMMAND(ID_FILE_SAVECONFIG, OnFileSaveconfig)
+	ON_COMMAND(ID_FILE_LOADINSTANCEGROUP, OnLoadInstanceGroup)
 	ON_COMMAND(ID_INSTANCIATE_LOCATED, OnInstanciateLocated)
 	ON_COMMAND(ID_MENU_DELETE, OnMenuDelete)
 	ON_COMMAND(ID_MENU_LOAD_PS, OnMenuLoadPs)
@@ -758,4 +759,10 @@ void CMainFrame::OnHelpAboutobjectviewer()
 {
 	CAboutDialog about;
 	about.DoModal();
+}
+
+
+void CMainFrame::OnLoadInstanceGroup()
+{
+
 }

@@ -335,13 +335,15 @@
 #define IDM_SOUND                       32857
 #define ID_HELP_ABOUTOBJECTVIEWER       32858
 #define IDM_LB_EXTERN_ID                32859
+#define ID_FILE_LOADINSTANCEGROUP       32860
+#define ID_FILE_BINDSCENEANIMATION      32861
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1082
-#define _APS_NEXT_COMMAND_VALUE         32860
+#define _APS_NEXT_COMMAND_VALUE         32862
 #define _APS_NEXT_CONTROL_VALUE         1172
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.11 2001/04/23 09:34:04 besson Exp $
+ * $Id: mutex.cpp,v 1.12 2001/04/27 15:48:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,11 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/mutex.h"
 #include "nel/misc/time_nl.h"
+
+#ifdef MUTEX_DEBUG
 #include <iostream>
+#endif
+
 using namespace std;
 
 #ifdef NL_OS_WINDOWS
@@ -43,38 +47,36 @@ using namespace std;
 
 #elif defined NL_OS_UNIX
 
-
 #include <pthread.h>
 #include <errno.h>
-//TEST
-//#include <unistd.h>
+
 #endif // NL_OS_WINDOWS/NL_OS_UNIX
 
 
 namespace NLMISC {
 
 
+#ifdef MUTEX_DEBUG
 
-map<CMutex*,TMutexLocks>	*AcquireTime = NULL;
-CMutex				*ATMutex = NULL;
-bool				InitAT = true;
+  map<CMutex*,TMutexLocks>	*AcquireTime = NULL;
+  uint32                          NbMutexes = 0;
+  CMutex				*ATMutex = NULL;
+  bool				InitAT = true;
 
-
-//
-void initAcquireTimeMap()
-{
+  /// Inits the "mutex debugging info system"
+  void initAcquireTimeMap()
+  {
 	if ( InitAT )
 	{
 		ATMutex = new CMutex();
 		AcquireTime = new map<CMutex*,TMutexLocks>;
 		InitAT = false;
 	}
-}
+  }
 
-
-// Call it evenly (e.g. once per second)
-map<CMutex*,TMutexLocks>	getNewAcquireTimes()
-{
+  /// Gets the debugging info for all mutexes (call it evenly, e.g. once per second)
+  map<CMutex*,TMutexLocks>	getNewAcquireTimes()
+  {
 	map<CMutex*,TMutexLocks>	m;
 	ATMutex->enter();
 
@@ -92,8 +94,9 @@ map<CMutex*,TMutexLocks>	getNewAcquireTimes()
 
 	ATMutex->leave();
 	return m;
-}
+  }
 
+#endif // MUTEX_DEBUG
 
 
 #ifdef NL_OS_UNIX
@@ -125,26 +128,30 @@ CMutex::CMutex()
 
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init( &attr );
+	// Fast mutex. Note: on Windows all mutexes are recursive
 	pthread_mutexattr_setkind_np( &attr, PTHREAD_MUTEX_FAST_NP ); //PTHREAD_MUTEX_ERRORCHECK_NP );//PTHREAD_MUTEX_ADAPTIVE_NP );//PTHREAD_MUTEX_RECURSIVE_NP );
 	pthread_mutex_init( &mutex, &attr );
 	pthread_mutexattr_destroy( &attr );
 
 #endif // NL_OS_WINDOWS
 
-	// DEBUG
+	// Debug Info
+#ifdef MUTEX_DEBUG
 	if ( ! InitAT )
 	{
 		ATMutex->enter();
-		(*AcquireTime)[this] = 0;
+		AcquireTime->insert( make_pair( this, TMutexLocks(false,NbMutexes) ) );
+		NbMutexes++;
 		ATMutex->leave();
 		char dbgstr [256];
-		smprintf( dbgstr, 256, "MUTEX: Creating mutex %p\n", this );
+		smprintf( dbgstr, 256, "MUTEX: Creating mutex %p (number %u)\n", this, NbMutexes-1 );
 #ifdef NL_OS_WINDOWS
 		if ( IsDebuggerPresent() )
 			OutputDebugString( dbgstr );
 #endif
 		cout << dbgstr << endl;
 	}
+#endif // MUTEX_DEBUG
 }
 
 
@@ -156,6 +163,8 @@ CMutex::~CMutex()
 #ifdef NL_OS_UNIX
 	pthread_mutex_destroy( &mutex );
 #endif // NL_OS_UNIX
+
+	// Nothing on Windows ?
 }
 
 
@@ -164,23 +173,18 @@ CMutex::~CMutex()
  */
 void CMutex::enter ()
 {
-	// DEBUG
+	// Debug Info
+#ifdef MUTEX_DEBUG
 	TTime before;
 	
 	if ( ( this != ATMutex ) && ( ATMutex != NULL ) )
 	{
 		ATMutex->enter();
-		if ( AcquireTime->find( this ) == AcquireTime->end() )
-		{
-			AcquireTime->insert( make_pair( this, TMutexLocks(true) ) );
-		}
-		else
-		{
-			(*AcquireTime)[this].Locked = true;
-		}
+		(*AcquireTime)[this].Locked = true;
 		ATMutex->leave();
 		before = CTime::getLocalTime();
 	}
+#endif // MUTEX_DEBUG
 
 #ifdef NL_OS_WINDOWS
 
@@ -196,7 +200,7 @@ void CMutex::enter ()
 #else
     // Request ownership of mutex during 10s
 	DWORD dwWaitResult = WaitForSingleObject (Mutex, 10000);
-#endif
+#endif // NL_DEBUG
 	switch (dwWaitResult)
 	{
 	// The thread got mutex ownership.
@@ -212,7 +216,7 @@ void CMutex::enter ()
 	//cout << getpid() << ": Locking " << &mutex << endl;
 	if ( pthread_mutex_lock( &mutex ) != 0 )
 	{
-	  cout << "Error locking a mutex " << endl;
+	  //cout << "Error locking a mutex " << endl;
 		nlerror( "Error locking a mutex" );
 	}
 	/*else
@@ -222,7 +226,8 @@ void CMutex::enter ()
 
 #endif // NL_OS_WINDOWS
 
-	// DEBUG
+	// Debug Info
+#ifdef MUTEX_DEBUG
 	if ( ( this != ATMutex ) && ( ATMutex != NULL ) )
 	{
 		TTime diff = CTime::getLocalTime()-before;
@@ -232,6 +237,7 @@ void CMutex::enter ()
 		(*AcquireTime)[this].Locked = false;
 		ATMutex->leave();
 	}
+#endif // MUTEX_DEBUG
 }
 
 /*
@@ -256,7 +262,7 @@ void CMutex::leave ()
 	    default: cout << "OTHER" << endl;
 	    }
 	  */
-	  cout << "Error unlocking a mutex " /*<< &mutex*/ << endl;
+	  //cout << "Error unlocking a mutex " /*<< &mutex*/ << endl;
 		nlerror( "Error unlocking a mutex" );
 	}
 	/*else

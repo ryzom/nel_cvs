@@ -1,7 +1,7 @@
 /** \file mutex.h
  * class CMutex
  *
- * $Id: mutex.h,v 1.5 2001/04/20 13:36:21 cado Exp $
+ * $Id: mutex.h,v 1.6 2001/04/27 15:48:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,21 +31,28 @@
 
 #ifdef NL_OS_UNIX
 #include <pthread.h>
+#include <semaphore.h>
 #endif
 
+//#define MUTEX_DEBUG
 
 namespace NLMISC {
 
 
 /**
- * classic mutex implementation
+ * Classic mutex implementation
+ * Don't assume the mutex are recursive (ie don't call enter() several times
+ * on the same mutex from the same thread without having called leave()) ;
+ * and don't assume either the threads are woken-up in the same order as they
+ * were put to sleep !
+ *
  *\code
  CMutex m;
  m.enter ();
  // do critical stuffs
  m.leave ();
  *\endcode
- * \author Vianney Lecroart
+ * \author Vianney Lecroart, Olivier Cado
  * \author Nevrax France
  * \date 2000
  */
@@ -73,23 +80,40 @@ private:
 };
 
 
-// DEBUG
+// Debug info
+#ifdef MUTEX_DEBUG
+
 struct TMutexLocks
 {
-	TMutexLocks( bool locked=false ) : Time(0), Nb(0), Locked(locked) {}
+	TMutexLocks( bool locked=false, uint32 m=0 ) : Time(0), Nb(0), Locked(locked), MutexNum(m) {}
 	
-	uint32	Time;
-	uint32	Nb;
-	bool	Locked;
+	uint32	Time;     // cumulated time blocking on enter
+	uint32	Nb;       // number of calls of enter
+	bool	Locked;   // thread is still locked
+        uint32  MutexNum; // identifying a mutex
 };
+
+/// Inits the "mutex debugging info system"
 void initAcquireTimeMap();
+
+/// Gets the debugging info for all mutexes (call it evenly)
 std::map<CMutex*,TMutexLocks>	getNewAcquireTimes();
+
+/// The number of created mutexes (does not take in account the destroyed mutexes)
+extern uint32 NbMutexes;
+
+#endif // MUTEX_DEBUG
+
+
+#ifdef NL_OS_WINDOWS
 
 
 /**
- * This class ensure that the Value is access by only one thread. First you have to create a CSynchronized class with you type.
+ * This class ensure that the Value is accessed by only one thread. First you have to create a CSynchronized class with you type.
  * Then, if a thread want to modify or do anything on it, you create a CAccessor in a \b sub \b scope. You can modify the value
  * of the CSynchronized using the value() function \b until the end of the scope. So you have to put the smaller scope as you can.
+ *
+ * Internally, this class uses a CMutex object (see CMutex for programming considerations).
  *
  *\code
  // the value that you want to be thread safe.
@@ -105,12 +129,13 @@ std::map<CMutex*,TMutexLocks>	getNewAcquireTimes();
  * \author Nevrax France
  * \date 2000
  */
-template <class T> class CSynchronized
+template <class T>
+class CSynchronized
 {
 public:
 
 	/**
-	 * This class give you a thread safe access to the CSynchronized Value. Look the example in the CSynchronized.
+	 * This class give you a thread safe access to the CSynchronized Value. Look at the example in the CSynchronized.
 	 */
 	class CAccessor
 	{
@@ -138,11 +163,77 @@ public:
 	};
 
 	/// The mutex of the synchronized value. \warning Don't access to the Mutex directly.
-	volatile	CMutex	Mutex;
+	volatile	CMutex	Mutex; // not to be optimized by the compiler
 	/// The synchronized value. \warning Don't access to the Value directly.
-	volatile	T		Value;
+	volatile	T		Value; // not to be optimized by the compiler
 };
 
+#endif
+
+#ifdef NL_OS_UNIX
+
+/**
+ * This class is similar to CSynchronized, but it ensures that the threads
+ * are woken-up in the same order as they were put to sleep.
+ * Internally, it uses a semaphore instead of a CMutex object.
+ * \author Olivier Cado
+ * \author Nevrax France
+ * \date 2001
+ */
+template <class T>
+class CFairlySynchronized
+{
+public:
+
+	/**
+	 * This class give you a thread safe access to the CFairlySynchronized Value. Look at the example in CSynchronized.
+	 */
+	class CAccessor
+	{
+		CFairlySynchronized<T> *Synchronized;
+	public:
+
+		/// get the mutex or wait
+		CAccessor(CFairlySynchronized<T> *cs)
+		{
+		  Synchronized = cs;
+		  sem_wait ( const_cast<sem_t*>(&Synchronized->Sem) );
+		}
+
+		/// release the mutex
+		~CAccessor()
+		{
+		  sem_post( const_cast<sem_t*>(&Synchronized->Sem) );
+		}
+
+		/// access to the Value
+		T &value()
+		{
+		  return const_cast<T&>(Synchronized->Value);
+		}
+	};
+
+	/// Constructor
+	CFairlySynchronized<T>()
+	  {
+	    sem_init( const_cast<sem_t*>(&Sem), 0, 1 );
+	  }
+
+	/// Destructor
+	~CFairlySynchronized<T>()
+	  {
+	    sem_destroy( const_cast<sem_t*>(&Sem) ); // needs that no thread is waiting on the semaphore
+	  }
+
+	/// The mutex of the synchronized value. \warning Don't access to the Mutex directly.
+	volatile        sem_t           Sem; // not to be optimized by the compiler
+	/// The synchronized value. \warning Don't access to the Value directly.
+	volatile	T		Value; // not to be optimized by the compiler
+};
+
+#define CSynchronized CFairlySynchronized
+
+#endif // NL_OS_UNIX
 
 
 } // NLMISC

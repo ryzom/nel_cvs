@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.34 2001/04/19 12:07:31 cado Exp $
+ * $Id: debug.cpp,v 1.35 2001/04/27 15:48:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,8 +130,10 @@ void createDebug ()
 	static bool alreadyCreate = false;
 	if (!alreadyCreate)
 	{
-		// DEBUG
+		// Debug Info for mutexes
+#ifdef MUTEX_DEBUG
 		initAcquireTimeMap();
+#endif
 
 		ErrorLog = new CLog (CLog::LOG_ERROR);
 		WarningLog = new CLog (CLog::LOG_WARNING);

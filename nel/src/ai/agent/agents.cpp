@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.9 2001/01/23 16:39:20 chafik Exp $
+ * $Id: agents.cpp,v 1.10 2001/01/24 09:54:31 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -331,6 +331,7 @@ namespace NLAIAGENT
 				a.Result = new CLocalAgentMail(this);				
 				return a;
 			}			
+			break;
 
 		case _Father:
 			{
@@ -344,7 +345,8 @@ namespace NLAIAGENT
 					a.Result->incRef();
 				}
 				return a;
-			}			
+			}	
+			break;
 
 		}
 		return IConnectIA::runMethodeMember(index,p);

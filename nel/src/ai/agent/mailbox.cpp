@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.8 2001/01/22 15:08:00 portier Exp $
+ * $Id: mailbox.cpp,v 1.9 2001/01/24 09:54:31 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -538,7 +538,7 @@ namespace NLAIAGENT
 #endif
 
 
-				if( ((const NLAIC::CTypeOfObject &) f_type) & NLAIC::CTypeOfObject::tAgentInterpret )	// Le père ets il un agent scripté?
+				if( ((const NLAIC::CTypeOfObject &) f_type) & NLAIC::CTypeOfObject::tAgentInterpret )	// Le père est il un agent scripté?
 				{
 					const CScriptMailBox *father_mail = (const CScriptMailBox *) ( (NLAIAGENT::CAgentScript *) father )->getLocalMailBox();
 

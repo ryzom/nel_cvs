@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.18 2001/01/23 09:15:48 chafik Exp $
+ * $Id: agent_script.cpp,v 1.19 2001/01/24 09:54:31 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,6 @@ namespace NLAIAGENT
 			addOperator( *it_o );
 			it_o++;
 		}
-			
 	}
 	
 	CAgentScript::CAgentScript(IAgentManager *manager) : IAgentManager( NULL ), _AgentClass( NULL )
@@ -247,7 +246,7 @@ namespace NLAIAGENT
 		return _Components[ index ];
 	}
 
-	NLAISCRIPT::IOpCode &CAgentScript::getMethode(sint32 inheritance,sint32 index)
+	NLAISCRIPT::IOpCode *CAgentScript::getMethode(sint32 inheritance,sint32 index)
 	{
 #ifdef NL_DEBUG
 		if ( index >= _AgentClass->getMethodIndexSize())
@@ -260,10 +259,10 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionIndexError();
 		}
 #endif
-		return (NLAISCRIPT::IOpCode &)_AgentClass->getBrancheCode(inheritance,index).getCode();
+		return (NLAISCRIPT::IOpCode *)_AgentClass->getBrancheCode(inheritance,index).getCode();
 	}
 
-	NLAISCRIPT::IOpCode &CAgentScript::getMethode(sint32 index)
+	NLAISCRIPT::IOpCode *CAgentScript::getMethode(sint32 index)
 	{
 #ifdef NL_DEBUG
 		if ( index >= _AgentClass->getMethodIndexSize())
@@ -271,7 +270,7 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionIndexError();
 		}
 #endif
-		return (NLAISCRIPT::IOpCode &)_AgentClass->getBrancheCode(index).getCode();
+		return (NLAISCRIPT::IOpCode *)_AgentClass->getBrancheCode(index).getCode();
 	}
 
 	void CAgentScript::save(NLMISC::IStream &os)
@@ -507,7 +506,16 @@ namespace NLAIAGENT
 			context.Stack[(int)context.Stack] = param;
 			if(msg.getMethodIndex() >= 0)
 			{
-				//IObjectIA::CProcessResult r;
+				int indexM = msg.getMethodIndex() - getBaseMethodCount();
+				if(indexM >= 0)
+				{
+					IObjectIA *code = getMethode(indexM);
+					if(code == NULL)
+					{
+						_ScriptMail->popMessage();
+						continue;
+					}
+				}
 
 				NLAISCRIPT::IMethodContext *methodContex;				
 
@@ -761,30 +769,34 @@ namespace NLAIAGENT
 		}
 		else
 		{
-			opPtr = &getMethode(inheritance,i);
+			opPtr = getMethode(inheritance,i);
 		}
 		
-		NLAISCRIPT::IOpCode &op = *opPtr;
-		NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
-		int ip = (uint32)*context.Code;
-		context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
-		*context.Code = 0;
-
-		/*TProcessStatement k = IObjectIA::ProcessIdle;
-
-		while(k != IObjectIA::ProcessEnd)
+		IObjectIA::CProcessResult r;
+		if(opPtr != NULL)
 		{
-			k = op.run(context);
-		}*/
+			NLAISCRIPT::IOpCode &op = *opPtr;
+			NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
+			int ip = (uint32)*context.Code;
+			context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
+			*context.Code = 0;
 
-		IObjectIA::CProcessResult r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
-		// If we are in Debug Mode
-		if (context.ContextDebug.Active)
-		{
-			context.ContextDebug.callStackPop();
+			/*TProcessStatement k = IObjectIA::ProcessIdle;
+
+			while(k != IObjectIA::ProcessEnd)
+			{
+				k = op.run(context);
+			}*/
+
+			r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
+			// If we are in Debug Mode
+			if (context.ContextDebug.Active)
+			{
+				context.ContextDebug.callStackPop();
+			}
+			*context.Code = ip;
+			context.Code = opTmp;		
 		}
-		*context.Code = ip;
-		context.Code = opTmp;		
 		return r;
 	}
 
@@ -818,31 +830,34 @@ namespace NLAIAGENT
 		}
 		else
 		{
-			opPtr = &getMethode(i);
+			opPtr = getMethode(i);
 		}
-		
-		NLAISCRIPT::IOpCode &op = *opPtr;//getMethode(inheritance,i);
-		NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
-		int ip = (uint32)*context.Code;
-		context.Code = (NLAISCRIPT::CCodeBrancheRun *)opPtr;		
-		*context.Code = 0;
-
-		/*TProcessStatement k = IObjectIA::ProcessIdle;
-
-		while(k != IObjectIA::ProcessEnd)
+		IObjectIA::CProcessResult r;
+		if(opPtr != NULL)
 		{
-			k = op.run(context);	
-		}*/		
-		IObjectIA::CProcessResult r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
+			NLAISCRIPT::IOpCode &op = *opPtr;//getMethode(inheritance,i);
+			NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
+			int ip = (uint32)*context.Code;
+			context.Code = (NLAISCRIPT::CCodeBrancheRun *)opPtr;		
+			*context.Code = 0;
 
-		// If we are in Debug Mode
-		if (context.ContextDebug.Active)
-		{
-			context.ContextDebug.callStackPop();
+			/*TProcessStatement k = IObjectIA::ProcessIdle;
+
+			while(k != IObjectIA::ProcessEnd)
+			{
+				k = op.run(context);	
+			}*/		
+			r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
+
+			// If we are in Debug Mode
+			if (context.ContextDebug.Active)
+			{
+				context.ContextDebug.callStackPop();
+			}
+
+			*context.Code = ip;
+			context.Code = opTmp;		
 		}
-
-		*context.Code = ip;
-		context.Code = opTmp;		
 		return r;
 	}
 
@@ -886,7 +901,7 @@ namespace NLAIAGENT
 								r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
 													0.0,
 													NULL,
-													CAgentScript::StaticMethod[i].ReturnValue));
+													CAgentScript::StaticMethod[i].ReturnValue ));
 								return r;
 							}
 						}

@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.9 2001/01/23 16:39:20 chafik Exp $
+ * $Id: message_script.cpp,v 1.10 2001/01/24 09:54:31 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
 #include "nel/ai/agent/messagerie.h"
+#include "nel/ai/e/ai_exception.h"
 
 namespace NLAIAGENT
 {
@@ -81,7 +82,7 @@ namespace NLAIAGENT
 	}
 
 
-	NLAISCRIPT::IOpCode &CMessageScript::getMethode(sint32 inheritance,sint32 index)
+	NLAISCRIPT::IOpCode *CMessageScript::getMethode(sint32 inheritance,sint32 index)
 	{
 #ifdef NL_DEBUG
 		if ( index >= _MessageClass->getMethodIndexSize())
@@ -94,10 +95,10 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionIndexError();
 		}
 #endif
-		return (NLAISCRIPT::IOpCode &)_MessageClass->getBrancheCode(inheritance,index).getCode();
+		return (NLAISCRIPT::IOpCode *)_MessageClass->getBrancheCode(inheritance,index).getCode();
 	}
 
-	NLAISCRIPT::IOpCode &CMessageScript::getMethode(sint32 index)
+	NLAISCRIPT::IOpCode *CMessageScript::getMethode(sint32 index)
 	{
 #ifdef NL_DEBUG
 		if ( index >= _MessageClass->getMethodIndexSize())
@@ -105,7 +106,7 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionIndexError();
 		}
 #endif
-		return (NLAISCRIPT::IOpCode &)_MessageClass->getBrancheCode(index).getCode();
+		return (NLAISCRIPT::IOpCode *)_MessageClass->getBrancheCode(index).getCode();
 	}
 
 
@@ -139,32 +140,41 @@ namespace NLAIAGENT
 		}
 		else
 		{
-			opPtr = &getMethode(inheritance,i);
+			opPtr = getMethode( inheritance, i);
 		}
 		
-		NLAISCRIPT::IOpCode &op = *opPtr;
-		NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
-		sint32 ip = (uint32)*context.Code;
-		context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
-		*context.Code = 0;
+		IObjectIA::CProcessResult r;
 
-		/*TProcessStatement k = IObjectIA::ProcessIdle;
-
-		while(k != IObjectIA::ProcessEnd)
+		if(opPtr)
 		{
-			k = op.run(context);	
-		}*/
-		
-		IObjectIA::CProcessResult r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
+			NLAISCRIPT::IOpCode &op = *opPtr;
+			NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
+			sint32 ip = (uint32)*context.Code;
+			context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
+			*context.Code = 0;
 
-		// If we are in Debug Mode
-		if (context.ContextDebug.Active)
-		{
-			context.ContextDebug.callStackPop();
+			/*TProcessStatement k = IObjectIA::ProcessIdle;
+
+			while(k != IObjectIA::ProcessEnd)
+			{
+				k = op.run(context);	
+			}*/
+			
+			r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
+
+			// If we are in Debug Mode
+			if (context.ContextDebug.Active)
+			{
+				context.ContextDebug.callStackPop();
+			}
+			
+			*context.Code = ip;
+			context.Code = opTmp;
 		}
-		
-		*context.Code = ip;
-		context.Code = opTmp;
+		else
+		{
+			throw NLAIE::CExceptionUnReference("CMessageScript::runMethodeMember(sint32 , sint32, IObjectIA *) because code is null");
+		}
 		/*IObjectIA::CProcessResult r;
 		r.Result = NULL;
 		r.ResultState = k;*/
@@ -201,32 +211,41 @@ namespace NLAIAGENT
 		}
 		else
 		{
-			opPtr = &getMethode(i);
-		}
-		
-		NLAISCRIPT::IOpCode &op = *opPtr;
-		NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
-		sint32 ip = (uint32)*context.Code;
-		context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
-		*context.Code = 0;
-
-		/*:TProcessStatement k = IObjectIA::ProcessIdle;
-
-		while(k != IObjectIA::ProcessEnd)
-		{
-			k = op.run(context);	
-		}*/		
-
-		IObjectIA::CProcessResult r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
-
-		// If we are in Debug Mode
-		if (context.ContextDebug.Active)
-		{
-			context.ContextDebug.callStackPop();
+			opPtr = getMethode(i);
 		}
 
-		*context.Code = ip;
-		context.Code = opTmp;
+		IObjectIA::CProcessResult r;
+
+		if(opPtr)
+		{
+			NLAISCRIPT::IOpCode &op = *opPtr;
+			NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
+			sint32 ip = (uint32)*context.Code;
+			context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
+			*context.Code = 0;
+
+			/*:TProcessStatement k = IObjectIA::ProcessIdle;
+
+			while(k != IObjectIA::ProcessEnd)
+			{
+				k = op.run(context);	
+			}*/		
+
+			r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
+
+			// If we are in Debug Mode
+			if (context.ContextDebug.Active)
+			{
+				context.ContextDebug.callStackPop();
+			}
+
+			*context.Code = ip;
+			context.Code = opTmp;
+		}
+		else
+		{
+			throw NLAIE::CExceptionUnReference("CMessageScript::runMethodeMember(sint32, IObjectIA *) because code is null");
+		}
 		/*IObjectIA::CProcessResult r;
 		r.Result = NULL;
 		r.ResultState = k;*/

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.48 2004/07/09 12:43:56 miller Exp $
+ * $Id: path.h,v 1.49 2004/07/12 14:06:18 miller Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -430,6 +430,17 @@ struct CFile
 	  */
 	static bool copyFile(const char *dest, const char *src, bool failIfExists = false);
 
+	/** Compare 2 files
+	  * \return true if both files exist and the files have same timestamp and size
+	  */
+	static bool quickFileCompare(const std::string &fileName0, const std::string &fileName1);
+
+	/** Compare 2 files
+	  * \param maxBufSize fixes max memory space to use for the pair buffers used for data comparison (eg 16 would allow 8 bytes per buffer for the 2 buffers)
+	  * \return true if both files exist and the files have same contents (timestamp is ignored)
+	  */
+	static bool thoroughFileCompare(const std::string &fileName0, const std::string &fileName1,uint32 maxBufSize=1024*1024*2);
+
 	/** Move a file
 	  * NB this keeps file attributes
 	  */
@@ -462,9 +473,6 @@ struct CFile
 	*/
 	static void getTemporaryOutputFilename (const std::string &originalFilename, std::string &tempFilename);
 };
-
-
-
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.107 2004/07/09 12:43:55 miller Exp $
+ * $Id: path.cpp,v 1.108 2004/07/12 14:05:50 miller Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1717,11 +1717,74 @@ bool CFile::copyFile(const char *dest, const char *src, bool failIfExists /*=fal
 	return CopyMoveFile(dest, src, true, failIfExists);
 }
 
+bool CFile::quickFileCompare(const std::string &fileName0, const std::string &fileName1)
+{
+	// make sure the files both exist
+	if (!fileExists(fileName0.c_str()) || !fileExists(fileName1.c_str()))
+		return false;
+
+	// compare time stamps
+	if (getFileModificationDate(fileName0.c_str()) != getFileModificationDate(fileName1.c_str()))
+		return false;
+
+	// compare file sizes
+	if (getFileSize(fileName0.c_str()) != getFileSize(fileName1.c_str()))
+		return false;
+
+	// everything matched so return true
+	return true;
+}
+
+bool CFile::thoroughFileCompare(const std::string &fileName0, const std::string &fileName1,uint32 maxBufSize)
+{
+	// make sure the files both exist
+	if (!fileExists(fileName0.c_str()) || !fileExists(fileName1.c_str()))
+		return false;
+
+	// setup the size variable from file length of first file
+	uint32 fileSize=getFileSize(fileName0.c_str());
+
+	// compare file sizes
+	if (fileSize != getFileSize(fileName1.c_str()))
+		return false;
+
+	// allocate a couple of data buffers for our 2 files
+	uint32 bufSize= maxBufSize/2;
+	nlassert(sint32(bufSize)>0);
+	std::vector<uint8> buf0(bufSize);
+	std::vector<uint8> buf1(bufSize);
+
+	// open the two files for input
+	CIFile file0(fileName0);
+	CIFile file1(fileName1);
+
+	for (uint32 i=0;i<fileSize;i+=bufSize)
+	{
+		// for the last block in the file reduce buf size to represent the amount of data left in file
+		if (i+bufSize>fileSize)
+		{
+			bufSize= fileSize-i;
+			buf0.resize(bufSize);
+			buf1.resize(bufSize);
+		}
+
+		// read in the next data block from disk
+		file0.serialBuffer(&buf0[0], bufSize);
+		file1.serialBuffer(&buf1[0], bufSize);
+
+		// compare the contents of hte 2 data buffers
+		if (buf0!=buf1)
+			return false;
+	}
+
+	// everything matched so return true
+	return true;
+}
+
 bool CFile::moveFile(const char *dest,const char *src)
 {
 	return CopyMoveFile(dest, src, false);
 }
-
 
 bool CFile::createDirectory(const std::string &filename)
 {

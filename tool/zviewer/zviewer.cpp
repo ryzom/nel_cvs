@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.3 2001/01/23 15:10:54 coutelas Exp $
+ * $Id: zviewer.cpp,v 1.4 2001/01/24 16:52:56 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,7 +122,7 @@ string getZoneNameByCoord(float x, float y)
 	const float zoneDim = 160.0f;
 
 	float xcount = x/zoneDim;
-	float ycount = -y/zoneDim;
+	float ycount = -y/zoneDim + 1;
 
 	string zoneName;
 	char ych[32];

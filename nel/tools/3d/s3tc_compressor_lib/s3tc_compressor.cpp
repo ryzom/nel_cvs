@@ -1,7 +1,7 @@
 /** \file s3tc_compressor.cpp
  * <File description>
  *
- * $Id: s3tc_compressor.cpp,v 1.1 2002/10/25 16:17:26 berenguier Exp $
+ * $Id: s3tc_compressor.cpp,v 1.2 2003/04/02 13:34:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "s3tc_compressor.h"
 #include "s3_intrf.h"
 #include "ddraw.h"
+#include "3d/hls_color_texture.h"
 
 
 using namespace std;
@@ -106,6 +107,69 @@ static void		compressMipMap(uint8 *pixSrc, sint width, sint height, vector<uint8
 			dest.ddpfPixelFormat.dwFourCC = MAKEFOURCC('D','X', 'T', '5');
 			break;
 	}
+
+	// TestYoyo
+	/*if( algo==DXT5 )
+	{
+		NLMISC::CRGBA	*rgbaSrc= (NLMISC::CRGBA*)pixSrc;
+		for(uint y=0;y<height/4;y++)
+		{
+			for(uint x=0;x<width/4;x++)
+			{
+				// copy color block
+				NLMISC::CRGBA	col[16];
+				uint	x0, y0;
+				for(y0=0;y0<4;y0++)
+				{
+					for(x0=0;x0<4;x0++)
+					{
+						col[y0*4+x0]= rgbaSrc[(y*4+y0)*width + x*4+x0];
+					}
+				}
+
+				// get comp dest
+				uint8	*pixDst= compdata.begin() + (y*(width/4) + x) * 16;
+				uint16	rgb0= *(uint16*)(pixDst+8);
+				uint16	rgb1= *(uint16*)(pixDst+10);
+				if(rgb0<=rgb1)
+				{
+					NL3D::CHLSColorTexture::compressBlockRGB(col, pixDst);
+					// get correct image under photoshop
+					rgb0= *(uint16*)(pixDst+8);
+					rgb1= *(uint16*)(pixDst+10);
+					if(rgb0<=rgb1)
+					{
+						*(uint16*)(pixDst+8)= rgb1;
+						*(uint16*)(pixDst+10)= rgb0;
+						uint32	&bits= *(uint32*)(pixDst+12);
+						for(uint i=0;i<16; i++)
+						{
+							static uint8	invertTable[]= {1,0,3,2};
+							uint	pixVal= (bits>>(i*2))&3;
+							pixVal= invertTable[pixVal];
+							bits&= ~(3<<(i*2));
+							bits|= (pixVal<<(i*2));
+						}
+					}
+
+					// Test: 05 to 1323
+					/--
+					uint32	&bits= *(uint32*)(pixDst+12);
+					for(uint i=0;i<16; i++)
+					{
+						uint	pixVal= (bits>>(i*2))&3;
+						if(pixVal==2)
+						{
+							uint r= (rand()&0xFF)>>7;
+							pixVal= r+2;
+							bits&= ~(3<<(i*2));
+							bits|= (pixVal<<(i*2));
+						}
+					}--/
+				}
+			}
+		}
+	}*/
 
 }
 

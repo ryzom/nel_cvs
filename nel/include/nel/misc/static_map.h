@@ -1,7 +1,7 @@
 /** \file static_map.h
  * a map that do not change over time. (lighter in memory consumption)
  *
- * $Id: static_map.h,v 1.1 2003/11/06 12:50:03 besson Exp $
+ * $Id: static_map.h,v 1.2 2003/11/17 10:38:26 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -221,14 +221,22 @@ public:
 	{
 		endAdd();
 		value_type __v(__x, Typ());
-		return lower_bound((iterator)_Data.begin(), (iterator)_Data.end(), __v, value_comp());
+		iterator it = lower_bound((iterator)_Data.begin(), (iterator)_Data.end(), __v, value_comp());
+		if ((it != end()) && (!value_comp()(*it,__v) && !value_comp()(__v,*it)))
+			return it;
+		else
+			return end();
 	}
 
 	const_iterator find(const key_type& __x) const
 	{
 		endAdd();
 		value_type __v(__x, Typ());
-		return lower_bound((const_iterator)_Data.begin(), (const_iterator)_Data.end(), __v, value_comp());
+		iterator it = lower_bound((const_iterator)_Data.begin(), (const_iterator)_Data.end(), __v, value_comp());
+		if ((it != end()) && (!value_comp()(*it,__v) && !value_comp()(__v,*it)))
+			return it;
+		else
+			return end();
 	}
 
 	size_type count(const key_type& __x) const 

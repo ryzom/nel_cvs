@@ -1,7 +1,7 @@
 /** \file tcp_sock.h
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.h,v 1.3 2001/06/21 08:44:56 cado Exp $
+ * $Id: tcp_sock.h,v 1.4 2001/08/22 15:51:30 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,6 +71,16 @@ public:
 	 * - If connect() fails for another reason, an exception ESocketConnectionFailed is thrown
 	 */
 	virtual void		connect( const CInetAddress& addr );
+
+	/** Sets a custom TCP Window size (SO_RCVBUF and SO_SNDBUF).
+	 * You must close the socket is necessary, before calling this method.
+	 *
+	 * See http://www.ncsa.uiuc.edu/People/vwelch/net_perf/tcp_windows.html
+	 */
+	void				connectWithCustomWindowSize( const CInetAddress& addr, int windowsize );
+
+	/// Returns the TCP Window Size for the current socket
+	uint32				getWindowSize();
 
 	/** Sets/unsets TCP_NODELAY (by default, it is off, i.e. the Nagle buffering algorithm is enabled).
 	 * You must call this method *after* connect().

@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: tcp_sock.cpp,v 1.2 2001/08/22 15:50:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,8 +71,11 @@ CTcpSock::CTcpSock( SOCKET sock, const CInetAddress& remoteaddr ) :
 {}
 
 
-/*
- * Connection
+/* Connection. You can reconnect a socket after being disconnected.
+ * This method does not return a boolean, otherwise a programmer could ignore the result and no
+ * exception would be thrown if connection fails :
+ * - If addr is not valid, an exception ESocket is thrown
+ * - If connect() fails for another reason, an exception ESocketConnectionFailed is thrown
  */
 void CTcpSock::connect( const CInetAddress& addr )
 {
@@ -141,10 +144,56 @@ void CTcpSock::shutdownSending()
  */
 void CTcpSock::setNoDelay( bool value )
 {
-  int b = value?1:0;
+	int b = value?1:0;
 	if ( setsockopt( _Sock, IPPROTO_TCP, TCP_NODELAY, (char*)&b, sizeof(b) ) != 0 )
 	{
 		throw ESocket( "setNoDelay failed" );
+	}
+}
+
+
+/* Sets a custom TCP Window size (SO_RCVBUF and SO_SNDBUF).
+ * You must close the socket is necessary, before calling this method.
+ *
+ * See http://www.ncsa.uiuc.edu/People/vwelch/net_perf/tcp_windows.html
+ */
+void CTcpSock::connectWithCustomWindowSize( const CInetAddress& addr, int windowsize )
+{
+	// Create socket
+	if ( _Sock != INVALID_SOCKET )
+	{
+		nlerror( "Cannot connect with custom window size when already connected" );
+	}
+	createSocket( SOCK_STREAM, IPPROTO_TCP );
+
+	// Change window size
+	if ( setsockopt( _Sock, SOL_SOCKET, SO_SNDBUF, (char*)&windowsize, sizeof(windowsize) ) != 0
+	  || setsockopt( _Sock, SOL_SOCKET, SO_RCVBUF, (char*)&windowsize, sizeof(windowsize) ) != 0 )
+	{
+		throw ESocket( "setWindowSize failed" );
+	}
+	
+	// Connection
+	CSock::connect( addr );
+}
+
+
+/*
+ * Returns the TCP Window Size for the current socket
+ */
+uint32 CTcpSock::getWindowSize()
+{
+	int windowsize = 0;
+	int len	= sizeof( windowsize );
+
+	/* send buffer -- query for buffer size */
+	if ( getsockopt( _Sock, SOL_SOCKET, SO_SNDBUF, (char*) &windowsize, &len ) == 0 )
+	{
+		return windowsize;
+	}
+	else
+	{
+		return 0;
 	}
 }
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.1 2001/06/13 18:05:00 valignat Exp $
+# $Id: Makefile.am,v 1.2 2002/01/07 16:09:52 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -12,3 +12,4 @@ include_HEADERS      = $(wildcard *.h)
 
 
 # End of Makefile.am
+

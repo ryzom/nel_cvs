@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.6 2001/05/02 17:11:33 valignat Exp $
+# $Id: Makefile.am,v 1.7 2002/01/07 16:09:52 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in configure libtool config.guess \
@@ -17,7 +17,10 @@ bin_SCRIPTS          = nel-config
 EXTRA_DIST           = nel.dsw
 
 dist-hook:
-	cp -pr $(srcdir)/bootstrap $(distdir)
+	cp -p  $(srcdir)/bootstrap $(distdir)
+	cp -pR $(srcdir)/doc       $(distdir)
+	cp -pR $(srcdir)/samples   $(distdir)
+	cp -pR $(srcdir)/tools     $(distdir)
 
 
 # End of Makefile.am

@@ -5,22 +5,17 @@
 #include "stdafx.h"
 #include "TypeUnitDouble.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CTypeUnitDouble::CTypeUnitDouble( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv ) : CTypeUnit( _sxll, _sxhl, _sxdv )
+CTypeUnitDouble::CTypeUnitDouble( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv, const CStringEx _sxf ) : CTypeUnit( _sxll, _sxhl, _sxdv, _sxf )
 {
 	dlowlimit = atof( sxlowlimit.c_str() ); 
 	dhighlimit = atof( sxhighlimit.c_str() ); 
 	ddefaultvalue = atof( sxdefaultvalue.c_str() ); 
-	sxformula.format( "double(%s,%s)", FormatDouble( dlowlimit ).c_str(), FormatDouble( dhighlimit ).c_str() );
+	if( sxformula.empty() )
+		sxformula.format( "double(%s,%s)", FormatDouble( dlowlimit ).c_str(), FormatDouble( dhighlimit ).c_str() );
 }
 
 CTypeUnitDouble::~CTypeUnitDouble()
@@ -67,7 +62,6 @@ CStringEx CTypeUnitDouble::Format( const CStringEx _sxvalue ) const
 		dvalue = dlowlimit;
 	if( dvalue > dhighlimit )
 		dvalue = dhighlimit;
-
 	return( FormatDouble( dvalue ) );
 }
 									
@@ -76,11 +70,5 @@ CStringEx CTypeUnitDouble::CalculateResult( const CStringEx _sxbasevalue, const 
 	nlassert( !_sxbasevalue.empty() );
 	if( _sxvalue.empty() )
 		return( _sxbasevalue );
-	
-//	double dbasevalue = atof( _sxbasevalue.c_str() );
-	double dvalue = atof( _sxvalue.c_str() );
-
-	CStringEx sx;
-	sx.format( "%f", dvalue );
-	return( Format( sx ) );
+	return( Format( _sxvalue ) );
 }

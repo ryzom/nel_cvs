@@ -5,12 +5,6 @@
 #include "stdafx.h"
 #include "FormBodyEltList.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -48,12 +42,6 @@ void CFormBodyEltList::serial( NLMISC::IStream& s)
 	s.xmlPushEnd();
 		s.serialContPolyPtr( vpbodyelt );
 	s.xmlPop();
-/*
-	s.xmlPush( "List" );
-		s.serial( sxname );
-		s.serialContPolyPtr( vpbodyelt );
-	s.xmlPop();
-*/
 }
 
 std::vector< CFormBodyElt* >::iterator CFormBodyEltList::Find( const CStringEx _sxname ) 

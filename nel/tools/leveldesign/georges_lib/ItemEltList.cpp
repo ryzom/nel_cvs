@@ -9,12 +9,6 @@
 #include "FormBodyElt.h"
 #include "FormBodyEltList.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -124,5 +118,13 @@ CItemElt* CItemEltList::GetElt( const unsigned int _index ) const
 			return( (*it)->GetElt( _index-isum ) );
 		isum += nb;
 	}
+	return( 0 );
+}
+
+CItemElt* CItemEltList::GetElt( const CStringEx _sxname ) const
+{
+	for( std::vector< CItemElt* >::const_iterator it = vpie.begin(); it != vpie.end(); ++it )
+		if( (*it)->GetName() == _sxname )
+			return( *it );
 	return( 0 );
 }

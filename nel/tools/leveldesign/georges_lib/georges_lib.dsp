@@ -229,6 +229,10 @@ SOURCE=.\TypeUnitDouble.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\TypeUnitFileName.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\TypeUnitIntSigned.cpp
 # End Source File
 # Begin Source File
@@ -338,6 +342,10 @@ SOURCE=.\TypeUnit.h
 # Begin Source File
 
 SOURCE=.\TypeUnitDouble.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TypeUnitFileName.h
 # End Source File
 # Begin Source File
 

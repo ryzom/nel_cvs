@@ -4,14 +4,7 @@
 
 #include "stdafx.h"
 #include "Form.h"
-//#include "FormBodyEltStruct.h"
 #include "FormBodyElt.h"
-
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -103,7 +96,6 @@ CForm& CForm::operator +=( const CForm& _f )
 
 CForm& CForm::operator -=( const CForm& _f )
 {
-//	head = _f.head;												// TODO: vérify
 	body -= _f.body;
 	bmodified = true;
 	return( *this );

@@ -27,7 +27,6 @@ public:
 	virtual ~CItemEltStruct();
 	
 	void BuildItem( CMoldElt* const _pme );
-	CItemElt* PruneElt( const CStringEx _sxname );
 	
 	virtual CStringEx GetFormula() const;
 	virtual void FillParent( const CFormBodyElt* const _pfbe );
@@ -37,6 +36,7 @@ public:
 	void BuildForm( CFormBodyEltStruct* pfbes );
 	virtual unsigned int GetNbElt() const;
 	virtual CItemElt* GetElt( const unsigned int _index ) const;
+	virtual CItemElt* GetElt( const CStringEx sxname ) const;
 };
 
 #endif // !defined(AFX_ITEMELTSTRUCT_H__22F905D3_A344_4622_8161_A9DC849AD70D__INCLUDED_)

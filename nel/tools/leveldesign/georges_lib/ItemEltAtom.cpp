@@ -8,12 +8,6 @@
 #include "FormBodyElt.h"
 #include "FormBodyEltAtom.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -48,42 +42,22 @@ CStringEx CItemEltAtom::GetFormula() const
 
 void CItemEltAtom::SetParentValue( const CStringEx _sxparentvalue )
 {
-	if( _sxparentvalue.empty() )
-		return;
 	nlassert( pmet );
-	CStringEx sxsubstitute = pmet->GetPredefSubstitute( _sxparentvalue );
-	if( sxsubstitute.empty() )
-	{
-		sxparentvalue = pmet->Format( _sxparentvalue );
-		sxparentresult = pmet->CalculateResult( pmet->GetDefaultValue(), sxparentvalue );
-	}
-	else
-	{
-		sxparentvalue = _sxparentvalue;
-		sxparentresult = pmet->CalculateResult( pmet->GetDefaultValue(), sxsubstitute );
-	}
+	sxparentvalue = pmet->Format( _sxparentvalue );
+	sxparentresult = pmet->CalculateResult( pmet->GetDefaultValue(), sxparentvalue );
+	if( sxparentvalue.empty() )
+		sxparentresult = pmet->GetDefaultValue();
 }
 
 void CItemEltAtom::SetCurrentValue( const CStringEx _sxcurrentvalue )
 {
-	if( _sxcurrentvalue.empty() )
-	{
-		sxcurrentvalue.clear();
-		sxcurrentresult = sxparentresult;
-		return;
-	}
 	nlassert( pmet );
-	CStringEx sxsubstitute = pmet->GetPredefSubstitute( _sxcurrentvalue );
-	if( sxsubstitute.empty() )
-	{
-		sxcurrentvalue = pmet->Format( _sxcurrentvalue );
-		sxcurrentresult = pmet->CalculateResult( sxparentresult, _sxcurrentvalue );
-	}
-	else
-	{
-		sxcurrentvalue = _sxcurrentvalue;
-		sxcurrentresult = pmet->CalculateResult( sxparentresult, sxsubstitute );
-	}
+	sxcurrentvalue = pmet->Format( _sxcurrentvalue );
+	sxcurrentresult = pmet->CalculateResult( sxparentresult, sxcurrentvalue );
+	if( !sxcurrentvalue.empty() )
+		return;
+	sxcurrentvalue.clear();
+	sxcurrentresult = sxparentresult;
 }
 
 void CItemEltAtom::FillParent( const CFormBodyElt* const _pfbe )
@@ -120,11 +94,12 @@ unsigned int CItemEltAtom::GetNbElt() const
 	return( 1 );
 }
 
+/*
 CItemElt* CItemEltAtom::GetElt( const unsigned int _index ) const
 {
 	if( !_index )
 		return( ( CItemElt* )( this ) );
 	return( 0 );
 }
-
+*/
 

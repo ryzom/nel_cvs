@@ -7,12 +7,6 @@
 #include "MoldEltDefine.h"
 #include "FormBodyEltStruct.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -34,7 +28,7 @@ void CMoldEltDefine::Load( const CStringEx _sxfilename )
 {
 	CForm f;
 	sxname = CStringEx( _sxfilename );
-	pl->LoadForm( f, _sxfilename );
+	pl->LoadForm( f, pl->WhereIs( pl->GetDfnTypDirectory(), _sxfilename ) );
 	CFormBodyElt* pbody = f.GetBody();
 
 	unsigned int i = 0;

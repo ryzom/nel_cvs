@@ -5,12 +5,6 @@
 #include "stdafx.h"
 #include "ItemElt.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -103,6 +97,13 @@ unsigned int CItemElt::GetNbElt() const
 
 CItemElt* CItemElt::GetElt( const unsigned int _index ) const
 {
-	return( ( CItemElt* )( this ) );
+	if( !_index )
+		return( ( CItemElt* )( this ) );
+	return( 0 );
+}
+
+CItemElt* CItemElt::GetElt( const CStringEx _sxname ) const
+{
+	return( 0 );
 }
 

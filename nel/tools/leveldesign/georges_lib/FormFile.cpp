@@ -8,12 +8,6 @@
 #include "nel/misc/o_xml.h"
 #include "FormFile.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -35,19 +29,19 @@ void CFormFile::serial( NLMISC::IStream& s )
 	s.xmlPop();
 }
 
-void CFormFile::Load( const CStringEx _sxfilename )
+void CFormFile::Load( const CStringEx _sxfullname )
 {
 	NLMISC::CIFile fileIn;
-	fileIn.open( CStringEx( _sxfilename ) );
+	fileIn.open( CStringEx( _sxfullname ) );
 	NLMISC::CIXml input;											
 	input.init( fileIn );
 	serial( input );
 }																	// Exception if fileIn.close();
 
-void CFormFile::Save( const CStringEx _sxfilename )
+void CFormFile::Save( const CStringEx _sxfullname )
 {
 	NLMISC::COFile fileOut;
-	fileOut.open( CStringEx( _sxfilename ) );
+	fileOut.open( CStringEx( _sxfullname ) );
 	NLMISC::COXml output;											
 	output.init( &fileOut );
 	serial( output );

@@ -17,7 +17,7 @@ protected:
 	unsigned short int	usihighlimit;
 
 public:
-	CTypeUnitString( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv );
+	CTypeUnitString( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv, const CStringEx _sxf );
 	virtual ~CTypeUnitString();
 
 	virtual	CStringEx Format( const CStringEx _sxvalue ) const;									

@@ -19,7 +19,7 @@ protected:
 	signed __int64	idefaultvalue;
 
 public:
-	CTypeUnitIntSigned( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv );
+	CTypeUnitIntSigned( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv, const CStringEx _sxf );
 	virtual ~CTypeUnitIntSigned();
 
 	virtual	CStringEx Format( const CStringEx _sxvalue ) const;									

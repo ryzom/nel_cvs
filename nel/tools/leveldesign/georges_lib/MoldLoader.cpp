@@ -8,12 +8,6 @@
 #include "MoldEltDefine.h"
 #include "MoldEltType.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -60,7 +54,7 @@ CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename )
 	{
 		CMoldEltDefine* pmed = new CMoldEltDefine( pl );
 		pmed->SetList( blst );
-		pmed->Load( CStringEx( "D:\\" +sxfn ) );
+		pmed->Load( sxfn );
 		return( pmed );
 	}
 
@@ -69,7 +63,7 @@ CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename )
 	{
 		CMoldEltType* pmet = new CMoldEltType( pl );
 		pmet->SetList( blst );
-		pmet->Load( CStringEx( "D:\\" +sxfn ) );
+		pmet->Load( sxfn );
 		return( pmet );
 	}
 	
@@ -78,5 +72,5 @@ CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename )
 
 CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename, const CStringEx _sxdate )
 {
-	return( new CMoldElt(0) );
+	return( new CMoldElt( 0 ) );
 }

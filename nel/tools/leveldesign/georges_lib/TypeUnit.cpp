@@ -5,21 +5,16 @@
 #include "stdafx.h"
 #include "TypeUnit.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CTypeUnit::CTypeUnit( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv )
+CTypeUnit::CTypeUnit( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv, const CStringEx _sxf )
 {
 	sxlowlimit = _sxll;
 	sxhighlimit = _sxhl;
 	sxdefaultvalue = _sxdv;
+	sxformula = _sxf;
 }
 
 CTypeUnit::~CTypeUnit()
@@ -43,6 +38,6 @@ CStringEx CTypeUnit::Format( const CStringEx _sxvalue ) const
 									
 CStringEx CTypeUnit::CalculateResult( const CStringEx _sxbasevalue, const CStringEx _sxvalue ) const	
 {
-	return( _sxvalue );
+	return( _sxbasevalue );
 }
 

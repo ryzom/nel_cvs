@@ -20,7 +20,7 @@ protected:
 	CStringEx	sxdefaultvalue;
 
 public:
-	CTypeUnit( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv );
+	CTypeUnit( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv, const CStringEx _sxf );
 	virtual ~CTypeUnit();
 
 	CStringEx GetFormula() const;													

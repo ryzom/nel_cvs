@@ -20,7 +20,7 @@ protected:
 	CStringEx FormatDouble( const double dvalue ) const;
 
 public:
-	CTypeUnitDouble( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv );
+	CTypeUnitDouble( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv, const CStringEx _sxf );
 	virtual ~CTypeUnitDouble();
 
 	virtual	CStringEx Format( const CStringEx _sxvalue ) const;									

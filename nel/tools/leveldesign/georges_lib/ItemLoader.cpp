@@ -3,14 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-//#include "Georges.h"
 #include "ItemLoader.h"
-
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -18,12 +11,10 @@ static char THIS_FILE[]=__FILE__;
 
 CItemLoader::CItemLoader()
 {
-
 }
 
 CItemLoader::~CItemLoader()
 {
-
 }
 
 void CItemLoader::LoadItem( CItem& _item, const CStringEx& _sxfilename )

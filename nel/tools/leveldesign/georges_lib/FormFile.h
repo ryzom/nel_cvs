@@ -24,8 +24,8 @@ public:
 	virtual ~CFormFile();
 	void serial( NLMISC::IStream& s );
 
-	void Load( const CStringEx _sxfilename );
-	void Save( const CStringEx _sxfilename );
+	void Load( const CStringEx _sxfullname );
+	void Save( const CStringEx _sxfullname );
 	void GetForm( CForm& _f ) const;
 	void GetForm( CForm& _f, const CStringEx& _sxdate ) const; 
 	void SetForm( CForm& _f );

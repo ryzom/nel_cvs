@@ -24,7 +24,6 @@ protected:
 	CItemEltStruct* pitemes;
 	CItemEltList* pitemelparents;
 	CItemEltAtom* pitemeacomments;
-	CItemElt* GetElt( const unsigned int _index ) const;
 
 public:
 	CItem();
@@ -32,6 +31,7 @@ public:
 
 	void Clear();
 	void SetLoader( CLoader* const _pl );
+	void New( const CStringEx& _sxdfnfilename );
 	void Load( const CStringEx& _sxfilename );
 	void Load( const CStringEx& _sxfilename, const CStringEx _sxdate ); 
 	void Save( const CStringEx& _sxfilename );
@@ -43,6 +43,9 @@ public:
 	CStringEx GetCurrentResult( const unsigned int _index ) const;
 	CStringEx GetCurrentValue( const unsigned int _index ) const;
 	CStringEx GetFormula( const unsigned int _index ) const;
+
+	CItemElt* GetElt( const unsigned int _index ) const;
+	CItemElt* GetElt( const CStringEx _sxname ) const;
 };
 
 #endif // !defined(AFX_ITEM_H__74DCC45F_FA98_4428_8C37_BA81F6B53601__INCLUDED_)

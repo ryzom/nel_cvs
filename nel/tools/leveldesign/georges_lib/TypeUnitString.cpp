@@ -5,17 +5,11 @@
 #include "stdafx.h"
 #include "TypeUnitString.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CTypeUnitString::CTypeUnitString( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv ) : CTypeUnit( _sxhl, _sxll, _sxdv )
+CTypeUnitString::CTypeUnitString( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv, const CStringEx _sxf ) : CTypeUnit( _sxhl, _sxll, _sxdv, _sxf )
 {
 	if( sxhighlimit.empty() )
 	{
@@ -25,7 +19,7 @@ CTypeUnitString::CTypeUnitString( const CStringEx _sxll, const CStringEx _sxhl, 
 	else
 	{
 		usihighlimit = atoi( sxhighlimit.c_str() ); 
-		sxformula.format( "string(%d)", usihighlimit );
+		sxformula.format( "string[%d]", usihighlimit );
 	}
 }
 

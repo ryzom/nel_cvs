@@ -11,13 +11,6 @@
 #include "ItemEltList.h"
 #include "common.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -53,29 +46,28 @@ void CItem::SetLoader( CLoader* const _pl )
 	pl = _pl;
 }
 
-
-void CItem::Load( const CStringEx& _sxfilename )
+void CItem::Load( const CStringEx& _sxfullname )
 {
 	// Load the form
 	CForm form, formcurrent, formparent;
-	pl->LoadForm( formcurrent, _sxfilename );
+	pl->LoadForm( formcurrent, _sxfullname );
 	
 	// Load Parents
 	unsigned int i = 0;
 	CStringEx sxparent = formcurrent.GetParent( 0 );
-	while( !sxparent.empty() )
+	while( !sxparent.empty() )								
 	{
-		pl->LoadForm( form, _sxfilename );
+		pl->LoadSearchForm( form, sxparent );			
 		formparent += form;
 		i++;
 		sxparent = formcurrent.GetParent( i );
 	}
 
 	// Find the name of the dfn file
-	unsigned int ipos = _sxfilename.reverse_find('.');
+	unsigned int ipos = _sxfullname.reverse_find('.');
 	if( ipos == -1 )
 		return;
-	CStringEx moldfilename = _sxfilename.get_right(_sxfilename.length()-ipos-1);
+	CStringEx moldfilename = _sxfullname.get_right(_sxfullname.length()-ipos-1);
 	moldfilename += ".dfn";
 
 	// Load the mold and build the item's tree
@@ -85,16 +77,20 @@ void CItem::Load( const CStringEx& _sxfilename )
 	pitemes = new CItemEltStruct( pl );
 	pitemes->BuildItem( pmed );
 
-	// Remove Reserved Fields
-//	pitemelparents = dynamic_cast< CItemEltList* >( pitemes->PruneElt( RESERVEDKEYWORD_PARENTS ) );      
-//	pitemeacomments = dynamic_cast< CItemEltAtom* >( pitemes->PruneElt( RESERVEDKEYWORD_COMMENTS ) );      
-	
 	// Fill the tree with parents' form fields 
 	pitemes->FillParent( formparent.GetBody() );
 
 	// Fill the tree with current's form
 	pitemes->FillCurrent( formcurrent.GetBody() );
+}
 
+void CItem::New( const CStringEx& _sxdfnfilename )
+{
+	CMoldElt* pme = pl->LoadMold( _sxdfnfilename );
+	CMoldEltDefine* pmed = dynamic_cast< CMoldEltDefine* >( pme );
+	nlassert( pmed );
+	pitemes = new CItemEltStruct( pl );
+	pitemes->BuildItem( pmed );
 }
 
 void CItem::Load( const CStringEx& _sxfilename, const CStringEx _sxdate ) 
@@ -116,6 +112,14 @@ CItemElt* CItem::GetElt( const unsigned int _index ) const
 		return( pitemes->GetElt( _index ) );
 	return( 0 );
 }
+
+CItemElt* CItem::GetElt( const CStringEx _sxname ) const
+{
+	if( pitemes )
+		return( pitemes->GetElt( _sxname ) );
+	return( 0 );
+}
+
 
 void CItem::SetCurrentValue( const unsigned int _index, const CStringEx s )
 {

@@ -5,12 +5,6 @@
 #include "stdafx.h"
 #include "FormHead.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -19,7 +13,7 @@ CFormHead::CFormHead()
 {
 	sxuser = "Anonymous";
 	sxversion = "0.0";
-//	sxdate = "unknow";
+	sxdate = "unknow";
 }
 
 CFormHead::CFormHead( const CFormHead& _fh )
@@ -60,13 +54,6 @@ void CFormHead::serial( NLMISC::IStream& s )
 			s.serial( sxdate );
 	s.xmlPushEnd();
 	s.xmlPop();
-/*
-	s.xmlPush( "Head" );
-		s.serial( sxuser );
-		s.serial( sxversion );
-		s.serial( sxdate );
-	s.xmlPop();
-*/
 }
 
 CFormHead&	CFormHead::operator =( const CFormHead& _fh )

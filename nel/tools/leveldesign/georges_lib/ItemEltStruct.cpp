@@ -10,12 +10,6 @@
 #include "FormBodyElt.h"
 #include "FormBodyEltStruct.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -163,16 +157,11 @@ CItemElt* CItemEltStruct::GetElt( const unsigned int _index ) const
 	return( 0 );
 }
 
-CItemElt* CItemEltStruct::PruneElt( const CStringEx _sxname )
+CItemElt* CItemEltStruct::GetElt( const CStringEx _sxname ) const
 {
-	if( _sxname.empty() )
-		return( 0 );
-	for( std::vector< CItemElt* >::iterator it = vpie.begin(); it != vpie.end(); ++it )
+	for( std::vector< CItemElt* >::const_iterator it = vpie.begin(); it != vpie.end(); ++it )
 		if( (*it)->GetName() == _sxname )
-		{
-			CItemElt* pie = (*it);
-			vpie.erase( it );
-			return( pie );
-		}
+			return( *it );
 	return( 0 );
 }
+

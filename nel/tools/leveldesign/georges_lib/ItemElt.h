@@ -53,6 +53,7 @@ public:
 
 	virtual unsigned int GetNbElt() const;
 	virtual CItemElt* GetElt( const unsigned int _index ) const;
+	virtual CItemElt* GetElt( const CStringEx sxname ) const;
 };
 
 #endif // !defined(AFX_ITEMELT_H__5AC5A067_71CC_4D98_904F_4877F99F4D9A__INCLUDED_)

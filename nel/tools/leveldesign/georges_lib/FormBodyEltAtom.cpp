@@ -5,12 +5,6 @@
 #include "stdafx.h"
 #include "FormBodyEltAtom.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -39,12 +33,6 @@ void CFormBodyEltAtom::serial( NLMISC::IStream& s)
 			s.serial( sxvalue );
 	s.xmlPushEnd();
 	s.xmlPop();
-/*
-	s.xmlPush( "Atom" );
-		s.serial( sxname );
-		s.serial( sxvalue );
-	s.xmlPop();
-*/
 }
 
 CFormBodyElt& CFormBodyEltAtom::operator =( const CFormBodyElt& _fbe )

@@ -7,12 +7,6 @@
 #include "FormBodyEltList.h"
 #include "FormBodyEltAtom.h"
 
-/*#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif*/
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -49,12 +43,6 @@ void CFormBodyEltStruct::serial( NLMISC::IStream& s)
 	s.xmlPushEnd();
 		s.serialContPolyPtr( vpbodyelt );
 	s.xmlPop();
-/*
-	s.xmlPush( "Struct" );
-		s.serial( sxname );
-		s.serialContPolyPtr( vpbodyelt );
-	s.xmlPop();
-*/
 }
 
 std::vector< CFormBodyElt* >::iterator CFormBodyEltStruct::Find( const CStringEx _sxname ) 
@@ -188,7 +176,16 @@ CStringEx CFormBodyEltStruct::GetParent( unsigned int _index ) const
 	const CFormBodyEltList* pfbel = dynamic_cast< CFormBodyEltList* >( *it );      
 	if( !pfbel )
 		return( CStringEx() );
-	const CFormBodyEltAtom* pfbea = dynamic_cast< CFormBodyEltAtom* >( pfbel->GetElt( _index ) );      
+	const CFormBodyEltStruct* pfbes = dynamic_cast< CFormBodyEltStruct* >( pfbel->GetElt( _index ) );      
+	if( !pfbes )
+		return( CStringEx() );
+	const CFormBodyEltAtom* pfbea = dynamic_cast< CFormBodyEltAtom* >( pfbes->GetElt( "Activity" ) );      
+	if( !pfbea )
+		return( CStringEx() );
+	CStringEx sxactivity = pfbea->GetValue();
+	if( sxactivity != "true" )
+		return( CStringEx(" ") );
+	pfbea = dynamic_cast< CFormBodyEltAtom* >( pfbes->GetElt( "Filename" ) );
 	if( !pfbea )
 		return( CStringEx() );
 	return pfbea->GetValue();

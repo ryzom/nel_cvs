@@ -25,8 +25,6 @@ public:
 	void LoadForm( CForm& _f, const CStringEx& _sxfilename );
 	void LoadForm( CForm& _f, const CStringEx& _sxfilename, const CStringEx& _sxdate ); 
 	void SaveForm( CForm& _f, const CStringEx& _sxfilename );
-	// Vérifie si le fichier formfile ne serait pas déja chargé...
-	// Plus tard, lock le fichier, ect... (gestion multiutilisateurs) 
 };
 
 #endif // !defined(AFX_FORMLOADER_H__8E718C2F_7CBC_4CB5_AD3E_741A59DCABF6__INCLUDED_)

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.91 2004/05/10 14:44:43 corvazier Exp $
+ * $Id: debug.cpp,v 1.92 2004/05/12 12:51:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -878,7 +878,8 @@ void force_exception_frame(...) {std::cout.flush();}
 
 static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 {
-	_set_se_translator(NULL);
+	if (pexp->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT)
+		return;
 #ifdef FINAL_VERSION
 	// In final version, throw EDebug to display a smart dialog box with callstack & log when crashing
 #pragma message ( "Smart crash enabled" )
@@ -902,7 +903,6 @@ static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 			throw EDebug (pexp);
 	}*/
 #endif
-	_set_se_translator(exceptionTranslator);
 }
 
 #endif // NL_OS_WINDOWS

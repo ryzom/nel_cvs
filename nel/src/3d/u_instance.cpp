@@ -1,7 +1,7 @@
 /** \file u_instance.cpp
  * Interface for instance objects.
  *
- * $Id: u_instance.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_instance.cpp,v 1.2 2004/05/12 12:51:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,6 @@ namespace NL3D
 void UInstance::getShapeAABBox(NLMISC::CAABBox &bbox) const
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	object->getAABBox(bbox);
 }
@@ -54,7 +53,6 @@ void UInstance::getShapeAABBox(NLMISC::CAABBox &bbox) const
 void UInstance::setBlendShapeFactor (const std::string &blendShapeName, float factor, bool dynamic)
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(object);
 
@@ -69,7 +67,6 @@ void UInstance::setBlendShapeFactor (const std::string &blendShapeName, float fa
 void		UInstance::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(object);
 
@@ -110,7 +107,6 @@ float		UInstance::getShapeDistMax() const
 void		UInstance::selectTextureSet(uint id)
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	CMeshBaseInstance *mbi  = dynamic_cast<CMeshBaseInstance *>(object);
 	if (mbi)
@@ -122,7 +118,6 @@ void		UInstance::selectTextureSet(uint id)
 void		UInstance::enableAsyncTextureMode(bool enable) 
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	nlassert(object->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
@@ -132,7 +127,6 @@ void		UInstance::enableAsyncTextureMode(bool enable)
 bool		UInstance::getAsyncTextureMode() const 
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	nlassert(object->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
@@ -142,7 +136,6 @@ bool		UInstance::getAsyncTextureMode() const
 void		UInstance::startAsyncTextureLoading() 
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	nlassert(object->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
@@ -152,7 +145,6 @@ void		UInstance::startAsyncTextureLoading()
 bool		UInstance::isAsyncTextureReady() 
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	nlassert(object->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
@@ -162,7 +154,6 @@ bool		UInstance::isAsyncTextureReady()
 void		UInstance::setAsyncTextureDistance(float dist)
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	nlassert(object->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
@@ -172,7 +163,6 @@ void		UInstance::setAsyncTextureDistance(float dist)
 float		UInstance::getAsyncTextureDistance() const
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	nlassert(object->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
@@ -182,7 +172,6 @@ float		UInstance::getAsyncTextureDistance() const
 void		UInstance::setAsyncTextureDirty(bool flag)
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	nlassert(object->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
@@ -192,7 +181,6 @@ void		UInstance::setAsyncTextureDirty(bool flag)
 bool		UInstance::isAsyncTextureDirty() const
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	nlassert(object->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
@@ -202,7 +190,6 @@ bool		UInstance::isAsyncTextureDirty() const
 // ***************************************************************************
 void UInstance::setCoarseMeshDist(float dist)
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	CMeshMultiLodInstance *mmli = dynamic_cast<CMeshMultiLodInstance *>(object);
 	if (mmli) mmli->setCoarseMeshDist(dist);
@@ -211,7 +198,6 @@ void UInstance::setCoarseMeshDist(float dist)
 // ***************************************************************************
 float UInstance::getCoarseMeshDist() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	CMeshMultiLodInstance *mmli = dynamic_cast<CMeshMultiLodInstance *>(object);
 	return mmli ? mmli->getCoarseMeshDist() : -1.f;
@@ -220,7 +206,6 @@ float UInstance::getCoarseMeshDist() const
 // ***************************************************************************
 void UInstance::setSliceTime(float duration)
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	CSegRemanence *sr = dynamic_cast<CSegRemanence *>(object);
 	if (!sr) return;
@@ -230,7 +215,6 @@ void UInstance::setSliceTime(float duration)
 // ***************************************************************************
 float UInstance::getSliceTime() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	CSegRemanence *sr = dynamic_cast<CSegRemanence *>(object);
 	if (!sr) return 0.f;
@@ -240,7 +224,6 @@ float UInstance::getSliceTime() const
 // ***************************************************************************
 bool UInstance::supportMaterialRendering(UDriver &drv, bool forceBaseCaps)
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	IDriver *driver = static_cast<CDriverUser*>(&drv)->getDriver ();
 	const uint count = object->getNumMaterial ();
@@ -257,7 +240,6 @@ bool UInstance::supportMaterialRendering(UDriver &drv, bool forceBaseCaps)
 
 uint UInstance::getNumMaterials() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(_Object);
 	if(mi)
 		return mi->Materials.size();
@@ -270,7 +252,6 @@ uint UInstance::getNumMaterials() const
 UInstanceMaterial UInstance::getMaterial(uint materialId)
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(_Object);
 	nlassertex (mi, ("Should be a CMeshBaseInstance object. Call getNumMaterials() first."));
 
@@ -283,7 +264,6 @@ UInstanceMaterial UInstance::getMaterial(uint materialId)
 bool UInstance::canStartStop() 
 { 
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	return object->canStartStop(); 
 }	
@@ -293,7 +273,6 @@ bool UInstance::canStartStop()
 void UInstance::start() 
 { 
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	object->start(); 
 }	
@@ -303,7 +282,6 @@ void UInstance::start()
 void UInstance::stop()  
 { 
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	object->stop(); 
 }	
@@ -313,7 +291,6 @@ void UInstance::stop()
 bool UInstance::isStarted() const 
 { 
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	return object->isStarted(); 
 }	
@@ -323,7 +300,6 @@ bool UInstance::isStarted() const
 float UInstance::getDistMax() const
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	return object->getDistMax();
 }	
@@ -333,7 +309,6 @@ float UInstance::getDistMax() const
 void UInstance::setDistMax(float distMax)
 {
 	NL3D_MEM_INSTANCE
-	nlassert(_Object) ; // object invalid now ...
 	CTransformShape	*object = getObjectPtr();
 	object->setDistMax(distMax);
 }

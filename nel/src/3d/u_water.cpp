@@ -1,7 +1,7 @@
 /** \file water_user.cpp
  * User interface for water manipulation
  *
- * $Id: u_water.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_water.cpp,v 1.2 2004/05/12 12:51:50 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -63,7 +63,6 @@ void UWaterHeightMapManager::releaseBlendTextures()
 uint32	UWaterInstance::getWaterHeightMapID() const
 {
 	NL3D_MEM_WATER
-	nlassert(_Object) ; // object invalid now ...
 	CWaterModel	*object = getObjectPtr();
 	return object ->getWaterHeightMapID();
 }
@@ -73,7 +72,6 @@ uint32	UWaterInstance::getWaterHeightMapID() const
 float	UWaterInstance::getHeightFactor() const
 {
 	NL3D_MEM_WATER
-	nlassert(_Object) ; // object invalid now ...
 	CWaterModel	*object = getObjectPtr();
 	return object->getHeightFactor();
 }
@@ -82,7 +80,6 @@ float	UWaterInstance::getHeightFactor() const
 float   UWaterInstance::getHeight(const NLMISC::CVector2f &pos)
 {
 	NL3D_MEM_WATER
-	nlassert(_Object) ; // object invalid now ...
 	CWaterModel	*object = getObjectPtr();
 	return object->getHeight(pos);
 }
@@ -91,7 +88,6 @@ float   UWaterInstance::getHeight(const NLMISC::CVector2f &pos)
 float   UWaterInstance::getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer)
 {
 	NL3D_MEM_WATER
-	nlassert(_Object) ; // object invalid now ...
 	CWaterModel	*object = getObjectPtr();
 	return object->getAttenuatedHeight(pos, viewer);
 }

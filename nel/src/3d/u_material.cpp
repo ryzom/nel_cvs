@@ -1,7 +1,7 @@
 /** \file uobject->cpp
  * User interface for material.
  *
- * $Id: u_material.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_material.cpp,v 1.2 2004/05/12 12:51:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,6 @@ namespace NL3D
 bool UMaterial::isSupportedByDriver(UDriver &drv, bool forceBaseCaps)
 {
 	NL3D_MEM_MATERIAL		
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return object->isSupportedByDriver(*(NLMISC::safe_cast<CDriverUser *>(&drv)->getDriver()), forceBaseCaps);
 }
@@ -50,7 +49,6 @@ bool UMaterial::isSupportedByDriver(UDriver &drv, bool forceBaseCaps)
 
 void UMaterial::setAlphaTest(bool active)
 {
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setAlphaTest(active);
 }
@@ -59,7 +57,6 @@ void UMaterial::setAlphaTest(bool active)
 
 bool UMaterial::getAlphaTest() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return object->getAlphaTest();
 }
@@ -68,7 +65,6 @@ bool UMaterial::getAlphaTest() const
 
 void UMaterial::setAlphaTestThreshold(float threshold)
 {
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setAlphaTestThreshold(threshold);
 }
@@ -77,7 +73,6 @@ void UMaterial::setAlphaTestThreshold(float threshold)
 
 float UMaterial::getAlphaTestThreshold() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return object->getAlphaTestThreshold();
 }
@@ -94,7 +89,6 @@ void UMaterial::setTexture(UTexture* ptex)
 void UMaterial::setTexture(uint stage, UTexture* ptex) 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	CTextureUser	*text= dynamic_cast<CTextureUser*>(ptex);
 	if (text != NULL)
@@ -120,7 +114,6 @@ bool UMaterial::texturePresent()
 bool UMaterial::texturePresent (uint stage) 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return object->texturePresent (stage);
 }
@@ -130,7 +123,6 @@ bool UMaterial::texturePresent (uint stage)
 void UMaterial::selectTextureSet(uint id)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->selectTextureSet(id);
 }
@@ -140,7 +132,6 @@ void UMaterial::selectTextureSet(uint id)
 void UMaterial::setBlend(bool active) 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setBlend(active);
 }
@@ -150,7 +141,6 @@ void UMaterial::setBlend(bool active)
 void UMaterial::setBlendFunc(TBlend src, TBlend dst) 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setBlendFunc((CMaterial::TBlend)(uint32)src, (CMaterial::TBlend)(uint32)dst);
 }
@@ -160,7 +150,6 @@ void UMaterial::setBlendFunc(TBlend src, TBlend dst)
 void UMaterial::setSrcBlend(TBlend val) 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setSrcBlend((CMaterial::TBlend)(uint32)val);
 }
@@ -170,7 +159,6 @@ void UMaterial::setSrcBlend(TBlend val)
 void UMaterial::setDstBlend(TBlend val) 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setDstBlend((CMaterial::TBlend)(uint32)val);
 }
@@ -180,7 +168,6 @@ void UMaterial::setDstBlend(TBlend val)
 bool UMaterial::getBlend() const 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return object->getBlend();
 }
@@ -190,7 +177,6 @@ bool UMaterial::getBlend() const
 UMaterial::TBlend UMaterial::getSrcBlend(void)  const 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return (UMaterial::TBlend)(uint32)object->getSrcBlend();
 }
@@ -200,7 +186,6 @@ UMaterial::TBlend UMaterial::getSrcBlend(void)  const
 UMaterial::TBlend UMaterial::getDstBlend(void)  const 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return (UMaterial::TBlend)(uint32)object->getDstBlend();
 }
@@ -210,7 +195,6 @@ UMaterial::TBlend UMaterial::getDstBlend(void)  const
 void UMaterial::texEnvOpRGB(uint stage, TTexOperator ope)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->texEnvOpRGB(stage, (CMaterial::TTexOperator)(uint32)ope);
 }
@@ -220,7 +204,6 @@ void UMaterial::texEnvOpRGB(uint stage, TTexOperator ope)
 void UMaterial::texEnvArg0RGB (uint stage, TTexSource src, TTexOperand oper)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->texEnvArg0RGB (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
 }
@@ -230,7 +213,6 @@ void UMaterial::texEnvArg0RGB (uint stage, TTexSource src, TTexOperand oper)
 void UMaterial::texEnvArg1RGB (uint stage, TTexSource src, TTexOperand oper)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->texEnvArg1RGB (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
 }
@@ -240,7 +222,6 @@ void UMaterial::texEnvArg1RGB (uint stage, TTexSource src, TTexOperand oper)
 void UMaterial::texEnvArg2RGB (uint stage, TTexSource src, TTexOperand oper)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->texEnvArg2RGB (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
 }
@@ -250,7 +231,6 @@ void UMaterial::texEnvArg2RGB (uint stage, TTexSource src, TTexOperand oper)
 void UMaterial::texEnvOpAlpha(uint stage, TTexOperator ope)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->texEnvOpAlpha (stage, (CMaterial::TTexOperator)(uint32)ope);
 }
@@ -260,7 +240,6 @@ void UMaterial::texEnvOpAlpha(uint stage, TTexOperator ope)
 void UMaterial::texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->texEnvArg0Alpha (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
 }
@@ -270,7 +249,6 @@ void UMaterial::texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper)
 void UMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->texEnvArg1Alpha (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
 }
@@ -280,7 +258,6 @@ void UMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper)
 void UMaterial::texEnvArg2Alpha(uint stage, TTexSource src, TTexOperand oper)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->texEnvArg2Alpha (stage, (CMaterial::TTexSource)(uint32)src, (CMaterial::TTexOperand)(uint32)oper);
 }
@@ -290,7 +267,6 @@ void UMaterial::texEnvArg2Alpha(uint stage, TTexSource src, TTexOperand oper)
 void			UMaterial::setZFunc(ZFunc val) 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setZFunc((CMaterial::ZFunc)(uint32) val);
 }
@@ -300,7 +276,6 @@ void			UMaterial::setZFunc(ZFunc val)
 void			UMaterial::setZWrite(bool active) 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setZWrite(active);
 }
@@ -309,7 +284,6 @@ void			UMaterial::setZWrite(bool active)
 
 void			UMaterial::setZBias(float val) 
 {
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setZBias(val);
 }
@@ -319,7 +293,6 @@ void			UMaterial::setZBias(float val)
 UMaterial::ZFunc			UMaterial::getZFunc(void)  const  
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return (UMaterial::ZFunc)(uint32)object->getZFunc();
 }
@@ -329,7 +302,6 @@ UMaterial::ZFunc			UMaterial::getZFunc(void)  const
 bool			UMaterial::getZWrite(void)  const 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return object->getZWrite();
 }
@@ -339,7 +311,6 @@ bool			UMaterial::getZWrite(void)  const
 float			UMaterial::getZBias(void)  const  
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return object->getZBias();
 }
@@ -349,7 +320,6 @@ float			UMaterial::getZBias(void)  const
 void			UMaterial::setColor(CRGBA rgba) 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setColor(rgba);
 }
@@ -359,7 +329,6 @@ void			UMaterial::setColor(CRGBA rgba)
 CRGBA			UMaterial::getColor(void) const 
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return object->getColor();
 }
@@ -369,7 +338,6 @@ CRGBA			UMaterial::getColor(void) const
 void			UMaterial::setDoubleSided(bool doubleSided)
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->setDoubleSided(doubleSided);
 }
@@ -379,7 +347,6 @@ void			UMaterial::setDoubleSided(bool doubleSided)
 bool			UMaterial::getDoubleSided() const
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	return object->getDoubleSided();
 }
@@ -389,7 +356,6 @@ bool			UMaterial::getDoubleSided() const
 void			UMaterial::initUnlit()
 {
 	NL3D_MEM_MATERIAL
-	nlassert(_Object) ; // object invalid now ...
 	CMaterial *object = getObjectPtr();
 	object->initUnlit();
 }

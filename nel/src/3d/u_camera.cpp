@@ -1,7 +1,7 @@
 /** \file camera_user.cpp
  * User interface for camera.
  *
- * $Id: u_camera.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_camera.cpp,v 1.2 2004/05/12 12:51:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,6 @@ const float		UCamera::DefLzFar=1000.0f;
 void UCamera::setFrustum(const CFrustum &f)
 {
 	NL3D_MEM_CAMERA
-	nlassert(_Object) ; // object invalid now ...
 	CCamera	*object = getObjectPtr();
 	object->setFrustum(f);
 }
@@ -53,7 +52,6 @@ void UCamera::setFrustum(const CFrustum &f)
 const CFrustum &UCamera::getFrustum() const 
 {
 	NL3D_MEM_CAMERA
-	nlassert(_Object) ; // object invalid now ...
 	CCamera	*object = getObjectPtr();
 	return object->getFrustum();
 }
@@ -63,7 +61,6 @@ const CFrustum &UCamera::getFrustum() const
 void UCamera::setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective)
 {
 	NL3D_MEM_CAMERA
-	nlassert(_Object) ; // object invalid now ...
 	CCamera	*object = getObjectPtr();
 	object->setFrustum(left, right, bottom, top, znear, zfar, perspective);
 }
@@ -73,7 +70,6 @@ void UCamera::setFrustum(float left, float right, float bottom, float top, float
 void UCamera::setFrustum(float width, float height, float znear, float zfar, bool perspective)
 {
 	NL3D_MEM_CAMERA
-	nlassert(_Object) ; // object invalid now ...
 	CCamera	*object = getObjectPtr();
 	object->setFrustum(width, height, znear, zfar, perspective);
 }
@@ -83,7 +79,6 @@ void UCamera::setFrustum(float width, float height, float znear, float zfar, boo
 void UCamera::getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const 
 {
 	NL3D_MEM_CAMERA
-	nlassert(_Object) ; // object invalid now ...
 	CCamera	*object = getObjectPtr();
 	object->getFrustum(left, right, bottom, top, znear, zfar);
 }
@@ -93,7 +88,6 @@ void UCamera::getFrustum(float &left, float &right, float &bottom, float &top, f
 bool UCamera::isOrtho() const 
 {
 	NL3D_MEM_CAMERA
-	nlassert(_Object) ; // object invalid now ...
 	CCamera	*object = getObjectPtr();
 	return object->isOrtho();
 }
@@ -103,7 +97,6 @@ bool UCamera::isOrtho() const
 bool UCamera::isPerspective() const 
 {
 	NL3D_MEM_CAMERA
-	nlassert(_Object) ; // object invalid now ...
 	CCamera	*object = getObjectPtr();
 	return object->isPerspective();
 }
@@ -113,7 +106,6 @@ bool UCamera::isPerspective() const
 void UCamera::setPerspective(float fov, float aspectRatio, float znear, float zfar) 
 {
 	NL3D_MEM_CAMERA
-	nlassert(_Object) ; // object invalid now ...
 	CCamera	*object = getObjectPtr();
 	object->setPerspective(fov, aspectRatio, znear, zfar);
 }
@@ -123,7 +115,6 @@ void UCamera::setPerspective(float fov, float aspectRatio, float znear, float zf
 void UCamera::buildCameraPyramid(std::vector<NLMISC::CPlane>	&pyramid, bool useWorldMatrix)
 {
 	NL3D_MEM_CAMERA
-	nlassert(_Object) ; // object invalid now ...
 	CCamera	*object = getObjectPtr();
 	object->buildCameraPyramid(pyramid, useWorldMatrix);
 }

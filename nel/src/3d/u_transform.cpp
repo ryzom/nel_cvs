@@ -1,7 +1,7 @@
 /** \file u_transform.cpp
  * Interface for transform objects.
  *
- * $Id: u_transform.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_transform.cpp,v 1.2 2004/05/12 12:51:50 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,6 @@ void UTransform::setClusterSystem (UInstanceGroup *pIG)
 {
 	NL3D_HAUTO_SET_CLUSTER_SYSTEM
 
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	if (object->getForceClipRoot())
 	{
@@ -69,7 +68,6 @@ void UTransform::setClusterSystem (UInstanceGroup *pIG)
 // ***************************************************************************
 UInstanceGroup *UTransform::getClusterSystem () const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	CInstanceGroup	*ig= object->getClusterSystem();
 	if(ig==((CInstanceGroup*)-1))
@@ -109,7 +107,6 @@ void			UTransform::getLastParentClusters(std::vector<CCluster*> &clusters) const
 // ***************************************************************************
 void			UTransform::freezeHRC()
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->freezeHRC();
 }
@@ -117,7 +114,6 @@ void			UTransform::freezeHRC()
 // ***************************************************************************
 void			UTransform::unfreezeHRC()
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	while (object)
 	{
@@ -130,14 +126,12 @@ void			UTransform::unfreezeHRC()
 // ***************************************************************************
 void			UTransform::setLoadBalancingGroup(const std::string &group)
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setLoadBalancingGroup(group);
 }
 // ***************************************************************************
 const std::string	&UTransform::getLoadBalancingGroup() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->getLoadBalancingGroup();
 }
@@ -145,14 +139,12 @@ const std::string	&UTransform::getLoadBalancingGroup() const
 // ***************************************************************************
 void			UTransform::setMeanColor(NLMISC::CRGBA color)
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setMeanColor(color);
 }
 // ***************************************************************************
 NLMISC::CRGBA	UTransform::getMeanColor() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->getMeanColor();
 }
@@ -160,7 +152,6 @@ NLMISC::CRGBA	UTransform::getMeanColor() const
 // ***************************************************************************
 const CMatrix	&UTransform::getLastWorldMatrixComputed() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->getWorldMatrix();
 }
@@ -168,7 +159,6 @@ const CMatrix	&UTransform::getLastWorldMatrixComputed() const
 // ***************************************************************************
 void			UTransform::enableCastShadowMap(bool state)
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->enableCastShadowMap(state);
 }
@@ -176,7 +166,6 @@ void			UTransform::enableCastShadowMap(bool state)
 // ***************************************************************************
 bool			UTransform::canCastShadowMap() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->canCastShadowMap();
 }
@@ -184,7 +173,6 @@ bool			UTransform::canCastShadowMap() const
 // ***************************************************************************
 void			UTransform::enableReceiveShadowMap(bool state)
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->enableReceiveShadowMap(state);
 }
@@ -192,7 +180,6 @@ void			UTransform::enableReceiveShadowMap(bool state)
 // ***************************************************************************
 bool			UTransform::canReceiveShadowMap() const
 {
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->canReceiveShadowMap();
 }
@@ -201,7 +188,6 @@ bool			UTransform::canReceiveShadowMap() const
 void			UTransform::parent(UTransform newFather)
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	if (object->getForceClipRoot())
 	{
@@ -227,9 +213,7 @@ void			UTransform::parent(UTransform newFather)
 void UTransform::hide()
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
-	nlassert(_Object) ; // object invalid now ...
 	object->hide();
 }
 
@@ -238,7 +222,6 @@ void UTransform::hide()
 void UTransform::show()
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->show();
 }
@@ -248,7 +231,6 @@ void UTransform::show()
 void UTransform::setUserClipping(bool enable)
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setUserClipping(enable);
 }
@@ -258,7 +240,6 @@ void UTransform::setUserClipping(bool enable)
 bool UTransform::getUserClipping() const
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->getUserClipping();
 }
@@ -268,7 +249,6 @@ bool UTransform::getUserClipping() const
 void UTransform::heritVisibility()
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->heritVisibility();
 }
@@ -278,7 +258,6 @@ void UTransform::heritVisibility()
 UTransform::TVisibility UTransform::getVisibility()
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return (UTransform::TVisibility)(uint32)object->getVisibility();
 }
@@ -288,7 +267,6 @@ UTransform::TVisibility UTransform::getVisibility()
 void UTransform::setOrderingLayer(uint layer) 
 { 
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setOrderingLayer(layer); 
 }
@@ -298,7 +276,6 @@ void UTransform::setOrderingLayer(uint layer)
 uint UTransform::getOrderingLayer() const 
 { 
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->getOrderingLayer(); 
 }
@@ -308,7 +285,6 @@ uint UTransform::getOrderingLayer() const
 void UTransform::setUserLightable(bool enable) 
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setUserLightable(enable);
 }
@@ -318,7 +294,6 @@ void UTransform::setUserLightable(bool enable)
 bool UTransform::getUserLightable() const  
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return  object->getUserLightable();
 }
@@ -328,7 +303,6 @@ bool UTransform::getUserLightable() const
 void UTransform::setLogicInfo(ILogicInfo *logicInfo) 
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setLogicInfo(logicInfo);
 }
@@ -338,7 +312,6 @@ void UTransform::setLogicInfo(ILogicInfo *logicInfo)
 bool UTransform::getLastWorldVisState() const
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->isHrcVisible();
 }
@@ -348,7 +321,6 @@ bool UTransform::getLastWorldVisState() const
 bool UTransform::getLastClippedState() const 
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->isClipVisible();
 }
@@ -358,7 +330,6 @@ bool UTransform::getLastClippedState() const
 void UTransform::setTransparency(bool v)
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setTransparency(v);
 }
@@ -368,7 +339,6 @@ void UTransform::setTransparency(bool v)
 void UTransform::setOpacity(bool v)
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setOpacity(true);
 }
@@ -378,7 +348,6 @@ void UTransform::setOpacity(bool v)
 uint32 UTransform::isOpaque()
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->isOpaque();
 }
@@ -388,7 +357,6 @@ uint32 UTransform::isOpaque()
 uint32 UTransform::isTransparent()
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->isTransparent();
 }
@@ -398,7 +366,6 @@ uint32 UTransform::isTransparent()
 void UTransform::setForceClipRoot(bool forceClipRoot)
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setForceClipRoot(forceClipRoot);
 }
@@ -408,7 +375,6 @@ void UTransform::setForceClipRoot(bool forceClipRoot)
 bool UTransform::getForceClipRoot() const
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	return object->getForceClipRoot();
 }
@@ -418,7 +384,6 @@ bool UTransform::getForceClipRoot() const
 void UTransform::setTransparencyPriority(uint8 priority)
 {
 	NL3D_MEM_TRANSFORM
-	nlassert(_Object) ; // object invalid now ...
 	CTransform	*object = getObjectPtr();
 	object->setTransparencyPriority(priority);
 }

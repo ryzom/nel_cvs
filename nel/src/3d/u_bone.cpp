@@ -1,7 +1,7 @@
 /** \file bone_user.cpp
  * User interface for bones.
  *
- * $Id: u_bone.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_bone.cpp,v 1.2 2004/05/12 12:51:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,6 @@ namespace NL3D
 const CMatrix	&UBone::getLastWorldMatrixComputed() const
 {
 	NL3D_MEM_BONES
-	nlassert(_Object) ; // object invalid now ...
 	CBone *object = getObjectPtr();
 	return object->getWorldMatrix();
 }

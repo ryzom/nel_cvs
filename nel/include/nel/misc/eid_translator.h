@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.16 2004/09/23 15:18:43 lecroart Exp $
+ * $Id: eid_translator.h,v 1.17 2005/01/12 15:02:09 legros Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -78,12 +78,10 @@ public:
 	// get entity name using the eid
 	ucstring			getByEntity (const NLMISC::CEntityId &eid);
 
-	void				getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, std::string &userName, bool &online);
+	void				getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, std::string &userName, bool &online, std::string* additional = NULL);
 
 	// transform a username ucstring into a string that can be compared with registered string
 	std::string getRegisterableString( const ucstring & entityName);
-
-	
 
 	/// return a vector of invalid names
 	const std::vector<std::string> & getInvalidNames(){ return InvalidEntityNames; }
@@ -116,6 +114,15 @@ public:
 
 	uint FileVersion;
 
+	/**
+	 * Callback called when getEntityIdInfo called, so service may add additional info
+	 * Format MUST be [InfoName InfoValue]* (e.g. a list of 2 strings, first being name for
+	 * the retrieved info, and second being the value of the info
+	 */
+	typedef std::string	(*TAdditionalInfoCb)(const CEntityId &eid);
+
+	TAdditionalInfoCb	EntityInfoCallback;
+
 private:
 	// get all eid for a user using the user name or the user id
 	void				getByUser (uint32 uid, std::vector<NLMISC::CEntityId> &res);
@@ -136,7 +143,7 @@ private:
 	std::map<NLMISC::CEntityId, CEntity>	RegisteredEntities;
 
 	// Singleton, no ctor access
-	CEntityIdTranslator() { }
+	CEntityIdTranslator() { EntityInfoCallback = NULL; }
 
 	// Singleton instance
 	static CEntityIdTranslator *Instance;

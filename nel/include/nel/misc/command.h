@@ -1,7 +1,7 @@
 /** \file command.h
  * <File description>
  *
- * $Id: command.h,v 1.1 2001/02/13 16:49:45 lecroart Exp $
+ * $Id: command.h,v 1.2 2001/02/14 13:22:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,7 +125,7 @@ public: \
 	{ \
 		if (args.size() == 1) \
 		{ \
-			stringstream s2 = args[0]; \
+			std::stringstream s2 = args[0]; \
 			__type p; \
 			s2 >> p; \
 			pointer (&p, false, log); \
@@ -133,7 +133,7 @@ public: \
 		} \
 		if (args.size() >= 0) \
 		{ \
-			stringstream s; \
+			std::stringstream s; \
 			__type p; \
 			pointer (&p, true, log); \
 			s << _CommandName << " = " << p; \
@@ -210,13 +210,13 @@ public:
 	{
 		if (args.size() == 1)
 		{
-			stringstream s2 = args[0];
+			std::stringstream s2 = args[0];
 			s2 >> *_Pointer;
 			log.display("Set ");
 		}
 		if (args.size() >= 0)
 		{
-			stringstream s;
+			std::stringstream s;
 			s << _CommandName << " = " << *_Pointer;
 			log.displayNL(s.str().c_str());
 		}
@@ -302,7 +302,7 @@ template <class _CharT, class _Traits>
 std::basic_ostream<_CharT, _Traits>& __STL_CALL
 operator<<(std::basic_ostream<_CharT, _Traits>& __os, const uint64& __z)
 {
-	std::basic_ostringstream<_CharT, _Traits, allocator<_CharT> > __tmp;
+	std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __tmp;
 
 	uint64	__z2 = __z;
 	uint64	__reverse = 0;
@@ -371,7 +371,7 @@ template <class _CharT, class _Traits>
 std::basic_ostream<_CharT, _Traits>& __STL_CALL
 operator<<(std::basic_ostream<_CharT, _Traits>& __os, const sint64& __z)
 {
-	std::basic_ostringstream<_CharT, _Traits, allocator<_CharT> > __tmp;
+	std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __tmp;
 
 	sint64 __z2 = __z;
 

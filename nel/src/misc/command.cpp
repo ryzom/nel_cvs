@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.1 2001/02/13 16:49:45 lecroart Exp $
+ * $Id: command.cpp,v 1.2 2001/02/14 13:22:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -137,14 +137,14 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 	if (comm == (*_Commands).end ())
 	{
 		// the command doesn't exist
-		log.displayNL("Command '%s' not found", commandWithArgs.c_str());
+		log.displayNL("Command '%s' not found, try 'help'", commandWithArgs.c_str());
 	}
 	else
 	{
 		printf("execute command\n");
 		if (!(*comm).second->execute (args, log))
 		{
-			log.displayNL("Bad command usage, try 'help %s'", commandWithArgs);
+			log.displayNL("Bad command usage, try 'help %s'", commandWithArgs.c_str());
 		}
 	}
 }

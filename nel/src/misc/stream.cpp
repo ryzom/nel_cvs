@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.cpp,v 1.2 2000/09/12 08:16:20 berenguier Exp $
+ * $Id: stream.cpp,v 1.3 2000/09/12 17:18:06 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -66,11 +66,11 @@ void			IStream::serialPtr(IStreamable* &ptr) throw(ERegistry, EStream)
 			ptr=NULL;
 		else
 		{
-			ptr= (IStreamable*)(void*)node;
+			ItIdMap	it;
+			it= _IdMap.find(node);
 
 			// Test if object already created/read.
-			// If the Id was not yet registered (ie insert works).
-			if( _IdSet.insert(node).second==true )
+			if( it==_IdMap.end() )
 			{
 				// Read the class name.
 				string	className;
@@ -85,7 +85,12 @@ void			IStream::serialPtr(IStreamable* &ptr) throw(ERegistry, EStream)
 
 				// Read the object!
 				ptr->serial(*this);
+
+				// Insert the node.
+				_IdMap.insert( ValueIdMap(node, ptr) );
 			}
+			else
+				ptr= it->second;
 		}
 	}
 	else
@@ -100,9 +105,11 @@ void			IStream::serialPtr(IStreamable* &ptr) throw(ERegistry, EStream)
 			node= (uint64)ptr;
 			serial(node);
 
+			ValueIdMap	nd(node, ptr);
+
 			// Test if object already written.
 			// If the Id was not yet registered (ie insert works).
-			if( _IdSet.insert(node).second==true )
+			if( _IdMap.insert( ValueIdMap(node, ptr) ).second==true )
 			{
 				assert(CClassRegistry::checkObject(ptr));
 
@@ -120,7 +127,7 @@ void			IStream::serialPtr(IStreamable* &ptr) throw(ERegistry, EStream)
 // ======================================================================================================
 void			IStream::resetPtrTable()
 {
-	_IdSet.clear();
+	_IdMap.clear();
 }
 
 

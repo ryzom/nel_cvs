@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.5 2000/09/12 15:15:56 berenguier Exp $
+ * $Id: stream.h,v 1.6 2000/09/12 17:17:57 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -21,7 +21,7 @@
 #include	"nel/misc/class_registry.h"
 #include	<utility>
 #include	<string>
-#include	<set>
+#include	<map>
 
 
 namespace	NLMISC
@@ -165,6 +165,9 @@ public:
 
 
 	/// Serialize Polymorphic Objet Ptr. Works with NULL pointers.
+	template<class T>
+	void			serialPtr(T* &ptr) throw(ERegistry, EStream)
+	{ IStreamable *p=ptr; serialPtr(p); ptr= static_cast<T*>(p);}
 	void			serialPtr(IStreamable* &ptr) throw(ERegistry, EStream);
 
 
@@ -189,8 +192,9 @@ private:
 	static	bool	_ThrowOnNewer;
 
 	// Ptr registry. We store 64 bit Id, to be compatible with futur 64+ bits pointers.
-	std::set<uint64>	_IdSet;
-	std::set<uint64>::iterator	ItIdSet;
+	std::map<uint64, IStreamable*>				_IdMap;
+	typedef std::map<uint64, IStreamable*>::iterator	ItIdMap;
+	typedef std::map<uint64, IStreamable*>::value_type	ValueIdMap;
 };
 
 

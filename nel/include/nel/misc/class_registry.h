@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: class_registry.h,v 1.2 2000/09/12 15:15:56 berenguier Exp $
+ * $Id: class_registry.h,v 1.3 2000/09/12 17:17:57 berenguier Exp $
  *
  * This File handles CClassRegistry.
  */
@@ -100,8 +100,8 @@ private:
 /// Usefull Macros.
 #define	NLMISC_DECLARE_CLASS(_class_)					\
 	virtual std::string	getClassName() {return #_class_;}		\
-	static	void IClassable	*creator() {return new _class_;}
-#define	NLMISC_REGISTER_CLASS(_class_) NLMISC::CRegistry::registerClass(#_class_, _class_::creator, typeid(_class_).name());
+	static	IClassable	*creator() {return new _class_;}
+#define	NLMISC_REGISTER_CLASS(_class_) NLMISC::CClassRegistry::registerClass(#_class_, _class_::creator, typeid(_class_).name());
 
 
 

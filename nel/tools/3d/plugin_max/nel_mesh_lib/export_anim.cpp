@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.26 2002/01/04 18:27:30 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.27 2002/02/27 10:45:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -596,33 +596,27 @@ void CExportNel::addLightTracks (NL3D::CAnimation& animation, INode& node, const
 	if( ! (obj->SuperClassID()==LIGHT_CLASS_ID) )
 		return;
 
-	// Get the Lightmap controller
-	int bDynamic = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_DYNAMIC, 0);
+	// Create a track name
 
-	if( bDynamic )
+	std::string name = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
+	name = "LightmapController." + name;
+
+	int bAnimated = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_ANIMATED, 0);
+	if( bAnimated )
 	{
-		// Create a track name
-
-		std::string name = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_GROUPNAME, "Default");
-		name = "LightmapController." + name;
-
-		int bAnimated = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_LM_ANIMATED, 0);
-		if( bAnimated )
+		Control *c = getControlerByName(node,"Color");
+		if( c )
 		{
-			Control *c = getControlerByName(node,"Color");
-			if( c )
+			ITrack *pTrack=buildATrack (animation, *c, typeColor, node, desc, ip, NULL, NULL);
+			if (pTrack)
 			{
-				ITrack *pTrack=buildATrack (animation, *c, typeColor, node, desc, ip, NULL, NULL);
-				if (pTrack)
+				if (animation.getTrackByName (name.c_str()))
 				{
-					if (animation.getTrackByName (name.c_str()))
-					{
-						delete pTrack;
-					}
-					else
-					{
-						animation.addTrack (name.c_str(), pTrack);
-					}
+					delete pTrack;
+				}
+				else
+				{
+					animation.addTrack (name.c_str(), pTrack);
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.14 2002/02/26 13:58:38 berenguier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.15 2002/02/27 10:45:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -386,10 +386,10 @@ void			CDriverGLStates::setVertexColorLighted(bool enable)
 			glDisable (GL_COLOR_MATERIAL);
 			// Since we leave glColorMaterial mode, GL diffuse is now scracth. reset him to current value.
 			CRGBA	diffCol;
-			diffCol.R= (_CurDiffuse >> 24) & 255;
-			diffCol.G= (_CurDiffuse >> 16) & 255;
-			diffCol.B= (_CurDiffuse >>  8) & 255;
-			diffCol.A= (_CurDiffuse      ) & 255;
+			diffCol.R= (uint8)((_CurDiffuse >> 24) & 255);
+			diffCol.G= (uint8)((_CurDiffuse >> 16) & 255);
+			diffCol.B= (uint8)((_CurDiffuse >>  8) & 255);
+			diffCol.A= (uint8)((_CurDiffuse      ) & 255);
 			GLfloat	glColor[4];
 			convColor(diffCol, glColor);
 			glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, glColor);

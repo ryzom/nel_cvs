@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.28 2002/02/07 14:36:07 vizerie Exp $
+ * $Id: export_material.cpp,v 1.29 2002/02/27 10:45:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -688,6 +688,8 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 					}
 				}
 				
+				// Add flags if mapping coodinates are used..
+				materialInfo.MappingChannelUsed |= (_3dsTexChannel._IndexInMaxMaterial>=0)?1:0;
 
 				// Export mapping channel 2 if lightmap asked.
 				if( bLightMap ) // lightmap enabled ?
@@ -697,6 +699,9 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 					materialInfo.RemapChannel[1] = materialInfo.RemapChannel[0];
 					materialInfo.RemapChannel[1]._IndexInMaxMaterial = 2;
 					materialInfo.RemapChannel[1]._IndexInMaxMaterialAlternative = materialInfo.RemapChannel[0]._IndexInMaxMaterial;
+
+					// Add flags if mapping coodinates are used..
+					materialInfo.MappingChannelUsed |= 2;
 				}
 			}
 		}

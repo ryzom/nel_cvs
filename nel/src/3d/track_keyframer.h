@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.3 2001/08/28 15:57:58 vizerie Exp $
+ * $Id: track_keyframer.h,v 1.4 2001/08/29 11:39:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -241,7 +241,7 @@ public:
 	void getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result)
 	{
 		nlassert(t1 <= t2);
-		TMapTimeCKey::const_iterator it = _MapKey.lower_bound(t1);
+		TMapTimeCKey::const_iterator it = _MapKey.lower_bound(t1)
 									, ub = _MapKer.upper_bound(t2);
 		result.clear;
 		while (it != ub)

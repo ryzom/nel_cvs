@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.6 2000/09/12 17:17:57 berenguier Exp $
+ * $Id: stream.h,v 1.7 2000/09/13 08:56:17 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -43,7 +43,7 @@ namespace	NLMISC
  * \author Nevrax France
  * \date 2000
  */
-struct EStream
+struct EStream : public Exception
 {
 	virtual const char	*what() const throw() {return "Stream Error";}
 };

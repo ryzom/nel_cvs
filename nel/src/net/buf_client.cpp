@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.31 2004/12/22 19:46:16 cado Exp $
+ * $Id: buf_client.cpp,v 1.32 2005/01/04 18:26:37 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,6 +223,10 @@ bool CBufClient::dataAvailable()
  */
 void	CBufClient::sleepUntilDataAvailable( uint usecMax )
 {
+	// Prevent looping infinitely if the system time was changed
+	if ( usecMax > 999999 ) // limit not told in Linux man but here: http://docs.hp.com/en/B9106-90009/select.2.html
+		usecMax = 999999;
+
 	fd_set readers;
 	timeval tv;
 	do

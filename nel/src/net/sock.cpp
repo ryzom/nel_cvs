@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.38 2004/12/22 19:46:16 cado Exp $
+ * $Id: sock.cpp,v 1.39 2005/01/04 18:26:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,7 +204,7 @@ CSock::CSock( bool logging ) :
 	_BytesReceived( 0 ),
 	_BytesSent( 0 ),
 	_TimeoutS( 0 ),
-	_TimeoutMs( 0 ),
+	_TimeoutUs( 0 ),
 	_MaxReceiveTime( 0 ),
 	_MaxSendTime( 0 )
 	{
@@ -406,7 +406,7 @@ bool CSock::dataAvailable()
 	FD_SET( _Sock, &fdset );
 	timeval tv;
 	tv.tv_sec = _TimeoutS;
-	tv.tv_usec = _TimeoutMs;
+	tv.tv_usec = _TimeoutUs;
 
 	// Test for message received.
 	int res = select( _Sock+1, &fdset, NULL, NULL, &tv );

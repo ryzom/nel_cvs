@@ -1,7 +1,7 @@
 /** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.16 2004/12/22 19:46:16 cado Exp $
+ * $Id: sock.h,v 1.17 2005/01/04 18:26:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,7 +143,9 @@ public:
 	void				setTimeOutValue( long sec, long ms )
 	{
 		_TimeoutS = sec;
-		_TimeoutMs = ms;
+		if ( ms > 999 )
+			ms = 999;
+		_TimeoutUs = ms * 1000;
 	}
 
 	/// @name Socket setup
@@ -241,7 +243,7 @@ public:
 	SOCKET				descriptor() const { return _Sock; }
 
 	/// Returns the time out value in millisecond
-	uint32				timeOutValue() const { return _TimeoutS*1000 + _TimeoutMs; }
+	uint32				timeOutValue() const { return _TimeoutS*1000 + _TimeoutUs/1000; }
 
 	//@}
 
@@ -305,8 +307,8 @@ protected:
 	/// Main time out value (sec) for select in dataAvailable()
 	long			_TimeoutS;
 
-	/// Secondary time out value (ms) for select in dataAvailable()
-	long			_TimeoutMs;
+	/// Secondary time out value (microsec) for select in dataAvailable()
+	long			_TimeoutUs;
 
 private:
 

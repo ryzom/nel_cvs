@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.25 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: particle_system_model.cpp,v 1.26 2001/11/26 13:13:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,6 +221,7 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 	CParticleSystemModel *psm= (CParticleSystemModel *)Model;
 	CParticleSystem *ps = psm->getPS();
 	if (psm->_Invalidated) return;
+
 
 	
 	if (!psm->_EditionMode && !psm->_InCluster)

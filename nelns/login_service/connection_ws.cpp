@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.11 2002/09/18 12:42:26 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.12 2002/09/18 12:46:55 lecroart Exp $
  *
  */
 
@@ -389,16 +389,16 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 	}
 
 	// row[4] = State
-	if (con == 1 && row[4] != "Offline")
+	if (con == 1 && string(row[4]) != string("Offline"))
 	{
 		nlwarning ("Id %d is not offline", Id);
-		Output.displayNL ("###: %3d User isn't offline", Id);
+		Output.displayNL ("###: %3d User isn't offline, his state is '%s'", Id, row[4]);
 		return;
 	}
-	else if (con == 0 && row[4] != "Online")
+	else if (con == 0 && string(row[4]) != string ("Online"))
 	{
 		nlwarning ("Id %d wasn't connected on a shard", Id);
-		Output.displayNL ("###: %3d User wasn't connected on a shard", Id);
+		Output.displayNL ("###: %3d User wasn't connected on a shard, his state is '%s'", Id, row[4]);
 		return;
 	}
 

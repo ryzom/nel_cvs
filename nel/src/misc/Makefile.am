@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.75 2004/08/23 18:05:18 lecroart Exp $
+# $Id: Makefile.am,v 1.74 2004/03/19 16:31:28 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -16,7 +16,6 @@ libnelmisc_la_SOURCES = \
 	bit_mem_stream.cpp \
 	bit_set.cpp \
 	bitmap.cpp \
-	bitmap_png.cpp \
 	block_memory.cpp \
 	bsphere.cpp \
 	buf_fifo.cpp \

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.179 2004/08/23 11:59:45 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.178 2004/08/13 15:31:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,13 +29,6 @@
 
 #include "nel/misc/types_nl.h"
 
-//#define NL_PROFILE_DRIVER_OGL
-#ifdef NL_PROFILE_DRIVER_OGL
-#define H_AUTO_OGL(label) H_AUTO(label)
-#else
-#define H_AUTO_OGL(label)
-#endif
-
 #ifdef NL_OS_WINDOWS
 
 #define WIN32_LEAN_AND_MEAN
@@ -46,6 +39,14 @@
 #  ifdef max
 #    undef max
 #  endif
+
+//#define NL_PROFILE_DRIVER_OGL
+#ifdef NL_PROFILE_DRIVER_OGL
+#define H_AUTO_OGL(label) H_AUTO(label)
+#else
+#define H_AUTO_OGL(label)
+#endif
+
 
 #else // NL_OS_UNIX
 

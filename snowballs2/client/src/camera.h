@@ -1,7 +1,7 @@
 /** \file camera.h
  * Animation interface between the game and NeL
  *
- * $Id: camera.h,v 1.10 2004/07/29 09:06:07 lecroart Exp $
+ * $Id: camera.h,v 1.9 2002/11/05 09:47:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,17 +27,12 @@
 #define CAMERA_H
 
 //
-// Includes
-//
-
-#include <nel/3d/u_camera.h>
-
-//
 // External definitions
 //
 
 namespace NL3D
 {
+	class UCamera;
 	class UVisualCollisionEntity;
 };
 
@@ -46,7 +41,7 @@ namespace NL3D
 // External variables
 //
 
-extern NL3D::UCamera				Camera;
+extern NL3D::UCamera				*Camera;
 extern NL3D::UVisualCollisionEntity	*CamCollisionEntity;
 
 //

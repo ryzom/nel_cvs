@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.22 2004/07/12 09:03:08 cado Exp $
+ * $Id: network.cpp,v 1.21 2003/09/15 11:21:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -250,7 +250,7 @@ void	sendAddEntity (uint32 id, string &name, uint8 race, CVector &startPosition)
 {
 	if (!isOnline ()) return;
 
-	CMessage msgout ("ADD_ENTITY");
+	CMessage msgout (Connection->getSIDA(), "ADD_ENTITY");
 	msgout.serial (id, name, race, startPosition);
 	Connection->send (msgout);
 }
@@ -259,7 +259,7 @@ void	sendChatLine (string Line)
 {
 	if (!isOnline ()) return;
 
-	CMessage msgout ("CHAT");
+	CMessage msgout (Connection->getSIDA(), "CHAT");
 	string s;
 	if (Self != NULL)
 	{
@@ -283,7 +283,7 @@ void	sendEntityPos (CEntity &entity)
 	uint32 state = 0;
 	state |= (entity.IsAiming?1:0);
 
-	CMessage msgout ("ENTITY_POS");
+	CMessage msgout (Connection->getSIDA(), "ENTITY_POS");
 	msgout.serial (entity.Id, entity.Position, entity.Angle, state);
 
 	Connection->send (msgout);
@@ -295,7 +295,7 @@ void	sendSnowBall (uint32 eid, const NLMISC::CVector &position, const NLMISC::CV
 {
 	if (!isOnline ()) return;
 
-	CMessage msgout ("SNOWBALL");
+	CMessage msgout (Connection->getSIDA(), "SNOWBALL");
 	msgout.serial (eid, const_cast<CVector &>(position), const_cast<CVector &>(target), speed, deflagRadius);
 	Connection->send (msgout);
 

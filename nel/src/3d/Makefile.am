@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.110 2004/08/23 18:05:17 lecroart Exp $
+# $Id: Makefile.am,v 1.109 2004/05/24 08:30:51 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -401,8 +401,6 @@ libnel3d_la_SOURCES  = \
 	skeleton_model.h \
 	skeleton_shape.cpp \
 	skeleton_shape.h \
-	skeleton_spawn_script.cpp \
-	skeleton_spawn_script.h \
 	skeleton_weight.cpp \
 	skeleton_weight.h \
 	static_quad_grid.cpp \
@@ -552,10 +550,6 @@ libnel3d_la_SOURCES  = \
 	visual_collision_manager_user.h \
 	visual_collision_mesh.cpp \
 	visual_collision_mesh.h \
-	water_env_map.cpp \
-	water_env_map.h \
-	water_env_map_user.cpp \
-	water_env_map_user.h \
 	water_height_map.cpp \
 	water_height_map.h \
 	water_model.cpp \

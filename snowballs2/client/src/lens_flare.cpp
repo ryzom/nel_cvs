@@ -2,7 +2,7 @@
  * Snowballs 2 specific code for managing the lens flare.
  * This code was taken from Snowballs 1.
  *
- * $Id: lens_flare.cpp,v 1.6 2004/07/29 09:06:07 lecroart Exp $
+ * $Id: lens_flare.cpp,v 1.5 2001/07/23 16:42:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ class CLensFlare
 	/// flare
 	struct _CFlare
 	{
-		NL3D::UMaterial Material;
+		NL3D::UMaterial *Material;
 
 		float Width;
 		float Height;
@@ -83,12 +83,12 @@ class CLensFlare
 		_CFlare(NL3D::UTexture *texture, float width, float height, float location, float scale)
 		{
 			Material = Driver->createMaterial ();
-			Material.initUnlit ();
-			Material.setTexture (texture);
-			Material.setBlendFunc (UMaterial::srcalpha, UMaterial::one);
-			Material.setBlend(true);
-			Material.setZFunc (UMaterial::always);
-			Material.setZWrite (false);
+			Material->initUnlit ();
+			Material->setTexture (texture);
+			Material->setBlendFunc (UMaterial::srcalpha, UMaterial::one);
+			Material->setBlend(true);
+			Material->setZFunc (UMaterial::always);
+			Material->setZWrite (false);
 
 			// quad dimension
 			Width = width;
@@ -143,16 +143,16 @@ void CLensFlare::show()
 	CMatrix mtx;
 	mtx.identity();
 
-	nlassert(Driver!=NULL && !Camera.empty());
+	nlassert(Driver!=NULL && Camera!=NULL);
 
 	Driver->setMatrixMode2D11 ();
 
 	// Determining axis "screen center - light" vector
-	CMatrix cameraMatrix = Camera.getMatrix();
+	CMatrix cameraMatrix = Camera->getMatrix();
 	cameraMatrix.invert();
 	CVector light = (-100000 * SunDirection);
 	light = cameraMatrix * light;
-	light = Camera.getFrustum().project(light);
+	light = Camera->getFrustum().project(light);
 	
 	CVector screenCenter(0.5f,0.5f,0);
 	CVector axis = light - screenCenter;
@@ -166,7 +166,7 @@ void CLensFlare::show()
 	vector<_CFlare *>::iterator itflr;
 	for(itflr = _Flares.begin(); itflr!=_Flares.end(); itflr++)
 	{
-		(*itflr)->Material.setColor(CRGBA(255,255,255,(uint8)(_AlphaCoef*255)));
+		(*itflr)->Material->setColor(CRGBA(255,255,255,(uint8)(_AlphaCoef*255)));
 			
 		CQuadUV quad;
 		
@@ -197,7 +197,7 @@ void CLensFlare::show()
 		quad.Uv2.U = 1.0f; quad.Uv2.V = 0.0f;
 		quad.Uv3.U = 0.0f; quad.Uv3.V = 0.0f;
 
-		Driver->drawQuad (quad, (*itflr)->Material);
+		Driver->drawQuad (quad, *(*itflr)->Material);
 	}
 }
 
@@ -259,11 +259,11 @@ void updateLensFlare ()
 	// landscape's masking sun ?
 	//==========================
 	CMatrix camMatrix;
-	camMatrix = Camera.getMatrix();
+	camMatrix = Camera->getMatrix();
 	camMatrix.setPos(CVector::Null);
 	camMatrix.invert();
 	CVector tmp = camMatrix * sunDirection;
-	tmp = Camera.getFrustum().project(tmp);
+	tmp = Camera->getFrustum().project(tmp);
 	uint32	w,h;
 	Driver->getWindowSize(w,h);
 	float sunRadius = 24;

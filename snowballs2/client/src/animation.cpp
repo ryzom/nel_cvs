@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.19 2004/07/29 09:06:07 lecroart Exp $
+ * $Id: animation.cpp,v 1.18 2003/09/15 11:21:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,17 +36,16 @@
 #include <nel/misc/displayer.h>
 #include <nel/misc/aabbox.h>
 
-#include <nel/3d/u_driver.h>
-#include <nel/3d/u_scene.h>
-#include <nel/3d/u_skeleton.h>
-#include <nel/3d/u_play_list.h>
-#include <nel/3d/u_animation_set.h>
-#include <nel/3d/u_animation.h>
-#include <nel/3d/u_play_list_manager.h>
-#include <nel/3d/u_play_list.h>
-#include <nel/3d/u_transform.h>
-#include <nel/3d/u_instance.h>
-#include <nel/3d/u_text_context.h>
+#include "nel/3d/u_scene.h"
+#include "nel/3d/u_skeleton.h"
+#include "nel/3d/u_play_list.h"
+#include "nel/3d/u_animation_set.h"
+#include "nel/3d/u_animation.h"
+#include "nel/3d/u_play_list_manager.h"
+#include "nel/3d/u_play_list.h"
+#include "nel/3d/u_transform.h"
+#include "nel/3d/u_instance.h"
+#include "nel/3d/u_text_context.h"
 
 #include "animation.h"
 #include "entities.h"
@@ -162,7 +161,7 @@ void	playAnimation (CEntity &entity, EAnim anim, bool force)
 	CAnimationTime currentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
 
 	// Can't do animation without skeleton
-	if (!entity.Skeleton.empty())
+	if (entity.Skeleton == NULL)
 		return;
 
 	// If the first time we play an animation, creates the animation class
@@ -186,7 +185,7 @@ void	playAnimation (CEntity &entity, EAnim anim, bool force)
 
 void	createAnimation (CEntity &entity)
 {
-	nlassert (!entity.Instance.empty() && !entity.Skeleton.empty() && AnimationSet != NULL);
+	nlassert (entity.Instance != NULL && entity.Skeleton != NULL && AnimationSet != NULL);
 
 	entity.PlayList = PlayListManager->createPlayList (AnimationSet);
 	entity.PlayList->registerTransform (entity.Instance);
@@ -205,7 +204,7 @@ void	deleteAnimation (CEntity &entity)
 
 void	initAnimation()
 {
-	AnimationSet = Driver->createAnimationSet ();
+	AnimationSet = Scene->createAnimationSet ();
 	
 	// Add all animations in the animation set
 	for (uint i = 0; i < sizeof (AnimIdArray) / sizeof (AnimIdArray[0]); i++)

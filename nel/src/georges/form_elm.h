@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.11 2002/08/21 11:39:06 coutelas Exp $
+ * $Id: form_elm.h,v 1.12 2002/09/02 08:42:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,19 +65,19 @@ public:
 	virtual void	getFormName (std::string &result, const CFormElm *child=NULL) const = 0;
 
 	// From UFormElm
-	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true) const;
-	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true);
-	virtual bool	getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (sint16 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (uint16 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (sint32 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (uint32 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round=UFormElm::LastRound++);
+	virtual bool	getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (sint16 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (uint16 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (sint32 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (uint32 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
 	virtual bool	setValueByName (const char *value, const char *name, bool *created);
 	virtual bool	setValueByName (sint8 value, const char *name, bool *created);
 	virtual bool	setValueByName (uint8 value, const char *name, bool *created);
@@ -160,7 +160,7 @@ public:
 	bool	getNodeByName (const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
 										CFormElm **node, UFormDfn::TEntryType &type, 
-										bool &array, bool &parentVDfnArray, bool verbose) const;
+										bool &array, bool &parentVDfnArray, bool verbose, uint32 round) const;
 
 	/** 
 	  * Insert an array node by name
@@ -200,7 +200,7 @@ protected:
 	static bool	getIternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
 										CFormElm **node, UFormDfn::TEntryType &type, 
-										bool &array, TNodeAction action, bool &created, bool &parentVDfnArray, bool verbose);
+										bool &array, TNodeAction action, bool &created, bool &parentVDfnArray, bool verbose, uint32 round);
 
 	/**
 	  * Unlink a child
@@ -228,6 +228,9 @@ protected:
 
 	// The index in the parent DFN for this node
 	uint				ParentIndex;
+
+	// Recurce Tag
+	uint32				Round;
 
 private:
 	// Tokens

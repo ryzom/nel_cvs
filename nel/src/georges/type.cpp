@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.5 2002/08/02 13:47:03 corvazier Exp $
+ * $Id: type.cpp,v 1.6 2002/09/02 08:42:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -337,7 +337,7 @@ public:
 	{
 		Form = form;
 	}
-	CEvalNumExpr::TReturnState evalValue (const char *value, double &result)
+	CEvalNumExpr::TReturnState evalValue (const char *value, double &result, uint32 round)
 	{
 		// If a form is available
 		if (Form)
@@ -373,7 +373,7 @@ public:
 			else
 			{
 				// try to get a Form value
-				if (Form->getRootNode ().getValueByName (result, value))
+				if (Form->getRootNode ().getValueByName (result, value, true, NULL, round))
 					return CEvalNumExpr::NoError;
 			}
 		}
@@ -386,7 +386,7 @@ public:
 
 // ***************************************************************************
 
-bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *node, const CFormDfn &parentDfn, uint parentIndex, bool evaluate, uint32 *where) const
+bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *node, const CFormDfn &parentDfn, uint parentIndex, bool evaluate, uint32 *where, uint32 round) const
 {
 	// Node exist ?
 	if (node && !node->Value.empty())
@@ -484,7 +484,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 					string valueName = result.substr (1, i-1);
 
 					// try to get a Form value
-					if ((form) && (form->getRootNode ().getValueByName (result, valueName.c_str ())))
+					if ((form) && (form->getRootNode ().getValueByName (result, valueName.c_str (), true, NULL, round)))
 						return true;
 					else
 						return false;

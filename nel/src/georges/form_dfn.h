@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.9 2002/06/11 17:38:58 corvazier Exp $
+ * $Id: form_dfn.h,v 1.10 2002/09/02 08:42:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,12 @@ class CFormDfn : public UFormDfn
 	friend class CFormElmStruct;
 	friend bool convertDfnFile (const char *oldFileName, const char *newFileName);
 public:
+
+	// Default cstr
+	CFormDfn ()
+	{
+		Round = 0xffffffff;
+	}
 
 	// A form defnition entry
 	class CEntry
@@ -165,13 +171,13 @@ public:
 	void							write (xmlDocPtr root) const;
 
 	// Count parent DFN
-	uint							countParentDfn () const;
+	uint							countParentDfn (uint32 round=UFormElm::LastRound++) const;
 
 	// Get parent DFN
-	void							getParentDfn (std::vector<CFormDfn*> &array);
+	void							getParentDfn (std::vector<CFormDfn*> &array, uint32 round=UFormElm::LastRound++);
 
 	// Get parent DFN
-	void							getParentDfn (std::vector<const CFormDfn*> &array) const;
+	void							getParentDfn (std::vector<const CFormDfn*> &array, uint32 round=UFormElm::LastRound++) const;
 
 	// Get num parent
 	uint							getNumParent () const;
@@ -200,55 +206,6 @@ public:
 	// Get an entry
 	CEntry							&getEntry (uint entry);
 
-	/* Deprecated
-	// From UFormElm
-	bool							getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true) const;
-	bool							getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true);
-	bool							getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (sint16 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (uint16 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (sint32 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (uint32 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where) const;
-	bool							isArray () const;
-	bool							getArraySize (uint &size) const;
-	bool							getArrayNode (const UFormElm **result, uint arrayIndex) const;
-	bool							getArrayNode (UFormElm **result, uint arrayIndex);
-	bool							getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
-	bool							isStruct () const;
-	bool							isVirtualStruct () const;
-	bool							getStructSize (uint &size) const;
-	bool							getStructNodeName (uint element, std::string &result) const;
-	bool							getStructNode (uint element, const UFormElm **result) const;
-	bool							getStructNode (uint element, UFormElm **result);
-	bool							isAtom () const;
-	bool							getValue (std::string &result, bool evaluate) const;
-	bool							getValue (sint8 &result, bool evaluate) const;
-	bool							getValue (uint8 &result, bool evaluate) const;
-	bool							getValue (sint16 &result, bool evaluate) const;
-	bool							getValue (uint16 &result, bool evaluate) const;
-	bool							getValue (sint32 &result, bool evaluate) const;
-	bool							getValue (uint32 &result, bool evaluate) const;
-	bool							getValue (float &result, bool evaluate) const;
-	bool							getValue (double &result, bool evaluate) const;
-	bool							getValue (bool &result, bool evaluate) const;
-	bool							getValue (NLMISC::CRGBA &result, bool evaluate) const;
-*/
 	// Form UFormDfn
 	bool							getEntryType (uint entry, TEntryType &type, bool &array) const;
 	bool							getEntryName (uint entry, std::string &name) const;
@@ -273,6 +230,9 @@ private:
 
 	// A vector of entries
 	std::vector<CEntry>				Entries;
+
+	// Recurcive call count
+	mutable uint32					Round;
 
 private:
 	// Read method called by the form loader

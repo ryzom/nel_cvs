@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.3 2002/06/11 17:38:58 corvazier Exp $
+ * $Id: type.h,v 1.4 2002/09/02 08:42:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,7 +93,7 @@ public:
 
 	// Evaluate a node
 	bool				getValue (std::string &result, const class CForm *form, const class CFormElmAtom *node, const class CFormDfn &parentDfn, 
-									uint parentIndex, bool evaluate, uint32 *where) const;
+									uint parentIndex, bool evaluate, uint32 *where, uint32 round) const;
 
 	// Definitions
 	class CDefinition

@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.1 2001/05/09 09:39:46 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.2 2001/05/16 15:17:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,7 +145,7 @@ static	inline float		testCirclePoint(const CVector2f &start, const CVector2f &de
 
 
 // ***************************************************************************
-float		CEdgeCollide::testCircle(const CVector2f &start, const CVector2f &delta, float radius)
+float		CEdgeCollide::testCircle(const CVector2f &start, const CVector2f &delta, float radius, CVector2f &normal)
 {
 	// distance from point to line.
 	float	dist= start*Norm - C;
@@ -184,6 +184,12 @@ float		CEdgeCollide::testCircle(const CVector2f &start, const CVector2f &delta, 
 		// if on the interval of the edge.
 		if( aProj>=A0 && aProj<=A1)
 		{
+			// collision occurs on interior of the edge. the normal to return is +- Norm.
+			if(sensPos)	// if algebric distance of start position was >0.
+				normal= Norm;
+			else
+				normal= -Norm;
+
 			// return time of collision.
 			return t;
 		}
@@ -198,6 +204,19 @@ float		CEdgeCollide::testCircle(const CVector2f &start, const CVector2f &delta, 
 	// second point.
 	ttmp= testCirclePoint(start, delta, radius, P1);
 	tmin= min(tmin, ttmp);
+
+	// if collision occurs, compute normal of collision.
+	if(tmin<1)
+	{
+		// to which point we collide?
+		CVector2f	colPoint= tmin==ttmp? P1 : P0;
+		// compute position of the entity at collision.
+		CVector2f	colPos= start + delta*tmin;
+
+		// and so we have this normal (the perpendicular of the tangent at this point).
+		normal= colPos - colPoint;
+		normal.normalize();
+	}
 
 	return tmin;
 }

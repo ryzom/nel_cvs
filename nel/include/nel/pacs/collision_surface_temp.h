@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.1 2001/05/15 13:36:58 berenguier Exp $
+ * $Id: collision_surface_temp.h,v 1.2 2001/05/16 15:17:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,6 +81,29 @@ public:
 		FirstEdgeCollide= 0xFFFFFFFF;
 		Tested= false;
 	}
+
+
+	/// test if 2 CCollisionChain have same surface neighbors.
+	bool		sameSurfacesThan(const CCollisionChain &o) const
+	{
+		return (LeftSurface==o.LeftSurface  && RightSurface==o.RightSurface) 
+			|| (LeftSurface==o.RightSurface && LeftSurface ==o.RightSurface);
+	}
+
+	/// test if Left or Right == surf.
+	bool		hasSurface(const CSurfaceIdent &surf)
+	{
+		return LeftSurface==surf || RightSurface==surf;
+	}
+
+	/// Return Left if surf==Right, else return Right.
+	const CSurfaceIdent		&getOtherSurface(const CSurfaceIdent &surf)
+	{
+		if(RightSurface==surf)
+			return LeftSurface;
+		else
+			return RightSurface;
+	}
 };
 
 
@@ -127,6 +150,15 @@ public:
 	/// Result of collision tryMove().
 	std::vector<CCollisionSurfaceDesc>	CollisionDescs;
 
+
+	/// CGlobalRetriever instance possibly colliding movement.
+	std::vector<sint32>				CollisionInstances;
+
+
+	/// For testMove/doMove, prec settings.
+	CSurfaceIdent					PrecStartSurface;
+	NLMISC::CVector					PrecStartPos;
+	NLMISC::CVector					PrecDeltaPos;
 
 public:
 

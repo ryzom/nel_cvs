@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.6 2001/05/15 13:36:58 berenguier Exp $
+ * $Id: local_retriever.cpp,v 1.7 2001/05/16 15:17:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -408,7 +408,7 @@ void	NLPACS::CLocalRetriever::computeCollisionChainQuad()
 
 
 // ***************************************************************************
-void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CAABBox &bboxMove, const CVector2f &transBase)
+void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CAABBox &bboxMove, const CVector2f &transBase) const
 {
 	sint	i;
 
@@ -452,7 +452,7 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 			// Fill Left right info.
 			cst.CollisionChains[ccId].LeftSurface.SurfaceId= this->getChains()[chainId].getLeft();
 			cst.CollisionChains[ccId].RightSurface.SurfaceId= this->getChains()[chainId].getRight();
-			// NB: cst.CollisionChains[ccId].*Surface.RetrieverInstance is not filled here because we don't have
+			// NB: cst.CollisionChains[ccId].*Surface.RetrieverInstanceId is not filled here because we don't have
 			// this info at this level.
 
 			// store this Id in the LUT of chains.
@@ -504,60 +504,4 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 
 }
 
-
-
-/*
-
-  // TODODO: ds CWorldCollisionMachin
-- // try a movement against this local retriever. All coordinate in local space of the retriever.
-//void			tryMove(CVector &start, CVector &end, float radius, const CAABBox &bboxMove, ???);
-
-Après tous les surfaces meshes.:
-- doit remplir Left/Right_Surface.RetrieverInstance de toutes les CollisionChains après testCollision().
-- doit remplir Left/Right_Surface.SurfaceId sur les Bords de toutes les CollisionChains après testCollision().
-- doit niker les doublons Left/Right.
-
-*/
-
-
-
-// ***************************************************************************
-// TODODO: à foutre dans CCollisionWorld machin....
-const	std::vector<NLPACS::CCollisionSurfaceDesc>	&tryMove(CVector &start, CVector &end, float radius, NLPACS::CCollisionSurfaceTemp &cst)
-{
-	// 0. reset.
-	//===========
-	// reset result.
-	cst.CollisionDescs.clear();
-
-	// reset possible chains.
-	cst.CollisionChains.clear();
-	cst.resetEdgeCollideNodes();
-
-	// 1. compute bboxmove.
-	//===========
-	CAABBox		bboxMove;
-	// bounds the movement in a bbox.
-	bboxMove.setCenter(start-CVector(radius, radius, 0));
-	bboxMove.extend(start+CVector(radius, radius, 0));
-	bboxMove.extend(end-CVector(radius, radius, 0));
-	bboxMove.extend(end+CVector(radius, radius, 0));
-
-
-	// 2. Fill CollisionChains.
-	//===========
-	// TODODO.
-	// For each possible surface mesh, test.
-	uint32	retrieverInstance;
-
-
-	// 3. test collisions with CollisionChains.
-	//===========
-	// TODODO.
-
-
-
-	// result.
-	return cst.CollisionDescs;
-}
 

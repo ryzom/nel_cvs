@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.2 2001/05/15 08:03:09 legros Exp $
+ * $Id: global_retriever.h,v 1.3 2001/05/16 15:17:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,6 +128,10 @@ public:
 	}
 
 
+	/// get instances which intersect the bbox. result: any instance(x,y), with  x0<=x<x1  &&  y0<=y<y1.
+	void							getInstanceBounds(sint32 &x0, sint32 &y0, sint32 &x1, sint32 &y1, const NLMISC::CAABBox &bbox) const;
+
+
 	// Mutators
 
 	void							setWidth(uint16 width) { _Width = width; _Instances.resize(_Width*_Height); }
@@ -158,6 +162,32 @@ public:
 	void							serial(NLMISC::IStream &f);
 
 
+	/// \name  Collisions part.
+	// @{
+	/** Test a movement of a cylinder against surface world.
+	 * \param start is the start position of the movement.
+	 * \param delta is the requested movement.
+	 * \param radius is the radius of the vertical cylinder.
+	 * \param cst is the CCollisionSurfaceTemp object used as temp copmputing (one per thread).
+	 * \return list of collision against surface, ordered by increasing time. NB: this array may modified by CGlobalRetriever on
+	 *	any collision call.
+	 */
+	const	std::vector<CCollisionSurfaceDesc>	
+		&testCylinderMove(const CGlobalPosition &start, const NLMISC::CVector &delta, float radius, CCollisionSurfaceTemp &cst) const;
+	/** apply a movement of a point against surface world. This must be called after test???Move().
+	 * NB: It's up to you to give good t, relative to result of test???Move(). Else, undefined results...
+	 * NB: if you don't give same start/delta as in preceding call to testMove(), start is returned.
+	 *
+	 * \param start is the start position of the movement. (must be same as passed in test???Move()).
+	 * \param delta is the requested movement (must be same as passed in test???Move()).
+	 * \param t must be in [0,1]. t*delta is the actual requested movement.
+	 * \param cst is the CCollisionSurfaceTemp object used as temp computing (one per thread). (must be same as passed in test???Move()).
+	 * \return new position of the entity.
+	 */
+	CGlobalPosition		doMove(const CGlobalPosition &start, const NLMISC::CVector &delta, float t, CCollisionSurfaceTemp &cst) const;
+	// @}
+
+
 
 	// A* methods
 public:
@@ -169,6 +199,23 @@ private:
 	{
 		return _Instances[access.InstanceId]._NodesInformation[access.NodeId];
 	}
+
+
+	/// \name  Collisions part.
+	// @{
+	// TODO_BBOX.
+	enum	TCollisionType { Circle, Point };
+	/** reset and fill cst.CollisionChains with possible collisions in bboxMove+origin.
+	 * result: collisionChains, computed localy to origin.
+	 */
+	void	findCollisionChains(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector &origin) const;
+	/** reset and fill cst.CollisionDescs with effective collisions against current cst.CollisionChains.
+	 * result: new collisionDescs in cst.
+	 * NB: with colType==Point, normal in cst.CollisionDescs are undefined.
+	 */
+	void	testCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
+		CSurfaceIdent startSurface, float radius, TCollisionType colType) const;
+	// @}
 
 
 };

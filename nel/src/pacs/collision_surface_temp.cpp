@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.cpp
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.cpp,v 1.1 2001/05/15 13:36:58 berenguier Exp $
+ * $Id: collision_surface_temp.cpp,v 1.2 2001/05/16 15:17:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@ const	uint32	StartEdgeCollideNodeSize= 128;		// mem: 48*128= 6144
 const	uint32	StartCollisionChainSize= 128;		// mem: 24*128= 3072
 const	uint32	StartEdgeChainEntrySize= 1024;		// mem: 6*1024= 6144
 const	uint32	StartCollisionDescSize= 64;			// mem: 36*64= 2304
+const	uint32	StartCollisionInstanceSize= 64;		// mem: 4*64= 256
 // Total default memory cost by CCollisionSurfaceTemp: 18Ko + 128Ko  (OChainLUT).
 
 
@@ -46,6 +47,7 @@ CCollisionSurfaceTemp::CCollisionSurfaceTemp()
 	CollisionChains.reserve(StartCollisionChainSize);
 	EdgeChainEntries.reserve(StartEdgeChainEntrySize);
 	CollisionDescs.reserve(StartCollisionDescSize);
+	CollisionInstances.reserve(StartCollisionInstanceSize);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.7 2001/05/15 13:36:58 berenguier Exp $
+ * $Id: local_retriever.h,v 1.8 2001/05/16 15:17:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -230,7 +230,7 @@ public:
 	 * \param bboxMove the bbox which bounds the movement of the entity.
 	 * \param transBase the vector we use to translate local position of edge.
 	 */
-	void			testCollision(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector2f &transBase);
+	void			testCollision(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector2f &transBase) const;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: collision_desc.h,v 1.2 2001/05/15 13:36:58 berenguier Exp $
+ * $Id: collision_desc.h,v 1.3 2001/05/16 15:17:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,11 +59,25 @@ public:
 class CSurfaceIdent
 {
 public:
-
-	// the surface mesh instance Id.
-	sint32				RetrieverInstance;
-	// the surface Id of this surface mesh instance. -1 if Wall/impossible to walk through.
+	/// the surface mesh instance Id.
+	sint32				RetrieverInstanceId;
+	/// the surface Id of this surface mesh instance. -1 if Wall/impossible to walk through.
 	sint32				SurfaceId;
+
+	bool operator==(const CSurfaceIdent &o) const
+	{
+		return RetrieverInstanceId==o.RetrieverInstanceId && SurfaceId==o.SurfaceId;
+	}
+
+	bool operator!=(const CSurfaceIdent &o) const
+	{
+		return !(*this==o);
+	}
+
+
+public:
+	CSurfaceIdent() {}
+	CSurfaceIdent(sint32 retInstance, sint32 surfId) : RetrieverInstanceId(retInstance), SurfaceId(surfId) {}
 };
 
 
@@ -77,7 +91,6 @@ public:
 class CCollisionSurfaceDesc
 {
 public:
-	NLMISC::CVector		ContactPosition;
 	NLMISC::CVector		ContactNormal;
 	float				ContactTime;
 

@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.5 2001/09/12 13:19:07 vizerie Exp $
+ * $Id: ps_color.h,v 1.6 2002/01/28 14:27:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,9 +52,9 @@ const char *CPSAttribMaker<NLMISC::CRGBA>::getType() { return "CRGBA"; }
 
 
 
-/// these are some attribute makers for int
+/// these are some attribute makers for colors
 
-/// This is a int blender class. It just blend between 2 values. The blending is exact, ands thus slow...
+/// This is a int blender class. It just blend between 2 values. The blending is exact, and thus slow...
 class CPSColorBlenderExact : public CPSValueBlender<NLMISC::CRGBA>
 {
 public:
@@ -69,7 +69,7 @@ public:
 
 
 
-// an int blender class that perform 64 color sample between colors, it is faster
+// an int blender class that perform 64 color sample between colors, it is faster than CPSColorBlenderExact
 class CPSColorBlender : public CPSValueBlenderSample<NLMISC::CRGBA, 64>
 {
 public:

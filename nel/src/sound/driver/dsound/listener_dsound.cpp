@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.15 2003/03/03 13:45:29 boucher Exp $
+ * $Id: listener_dsound.cpp,v 1.15.10.1 2004/09/09 14:51:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,11 @@ CListenerDSound::CListenerDSound(LPDIRECTSOUND3DLISTENER8 dsoundListener) //: IL
 		_Instance = this;
         _Listener = dsoundListener;
 #if MANUAL_ROLLOFF == 1
-		setRolloffFactor(DS3D_MINROLLOFFFACTOR);
+		// Manual RollOff => disable API rollOff
+		if ( !_Listener || FAILED(_Listener->SetRolloffFactor(DS3D_MINROLLOFFFACTOR, DS3D_DEFERRED)))
+		{
+			nlwarning("SetRolloffFactor failed");
+		}
 #endif
 	}
 	else
@@ -285,16 +289,11 @@ void CListenerDSound::setDopplerFactor( float f )
  */
 void CListenerDSound::setRolloffFactor( float f )
 {
-#if MANUAL_ROLLOFF == 1
+	// Works only in API rolloff mode
+#if MANUAL_ROLLOFF == 0
     if (_Listener != NULL)
     {
-		//clamp(f, DS3D_MINROLLOFFFACTOR, DS3D_MAXROLLOFFFACTOR);
-
-		// VOLUMETEST: Don't use the rolloff factor. We manage the
-		// volumes ourselves
-		f = DS3D_MINROLLOFFFACTOR;
-
-        
+		clamp(f, DS3D_MINROLLOFFFACTOR, DS3D_MAXROLLOFFFACTOR);
 		if (FAILED(_Listener->SetRolloffFactor(f, DS3D_DEFERRED)))
 		{
 			nlwarning("SetRolloffFactor failed");
@@ -306,16 +305,17 @@ void CListenerDSound::setRolloffFactor( float f )
 
 float CListenerDSound::getRolloffFactor()
 {   
+	// Works only in API rolloff mode
+#if MANUAL_ROLLOFF == 0
 	if (_Listener != NULL)
     {
 		float f;
 		_Listener->GetRolloffFactor(&f);
 		return f;
     }
-	else
-	{
-		return 1.0;
-	}
+#endif
+
+	return 1.f;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.10 2003/07/03 15:17:25 boucher Exp $
+ * $Id: buffer_dsound.cpp,v 1.10.8.1 2004/09/09 14:51:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,7 +192,6 @@ float CBufferDSound::getDuration() const
 }
 
 
-//bool CBufferDSound::loadWavFile(const char* file) 
 bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint dataSize)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_CBufferDSound);
@@ -230,7 +229,6 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
 
     if (hmmio == NULL) 
     {
-		delete [] buffer;
         throw ESoundDriver("Failed to open the file");
     }
 
@@ -243,7 +241,6 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
     if ((error != 0) || (riff_chunk.ckid != FOURCC_RIFF) || (riff_chunk.fccType != mmioFOURCC('W', 'A', 'V', 'E'))) 
     {
         mmioClose(hmmio, 0);
-		delete buffer;
         throw ESoundDriver("Not a WAVE file");
     }
 
@@ -256,15 +253,12 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
     if (error != 0) 
     {
         mmioClose(hmmio, 0);
-
-		delete [] buffer;
         throw ESoundDriver("Couldn't find the format chunk");
     }
 
     if (chunk.cksize < (long) sizeof(PCMWAVEFORMAT)) 
     {
         mmioClose(hmmio, 0);
-		delete [] buffer;
         throw ESoundDriver("Invalid format chunk size");
     }
 
@@ -275,7 +269,6 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
     if (num != (long) sizeof(format)) 
     {
         mmioClose(hmmio, 0);
-		delete [] buffer;
         throw ESoundDriver("Read failed");
     }
 
@@ -286,7 +279,6 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
     if (mmioAscend(hmmio, &chunk, 0) != 0) 
     {
         mmioClose(hmmio, 0);
-		delete [] buffer;
         throw ESoundDriver("Read failed");
     }
 
@@ -296,7 +288,6 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
     if (format.wFormatTag != WAVE_FORMAT_PCM) 
     {
         mmioClose(hmmio, 0);
-		delete [] buffer;
         throw ESoundDriver("Unsupported sample format");
     }
 
@@ -315,7 +306,6 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
         else
         {
             mmioClose(hmmio, 0);
-			delete [] buffer;
             throw ESoundDriver("Unsupported sample size");
         }
     }
@@ -332,14 +322,12 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
         else
         {
             mmioClose(hmmio, 0);
-			delete [] buffer;
             throw ESoundDriver("Unsupported sample size");
         }
     }
     else // Shouldn't normally happen
     {
         mmioClose(hmmio, 0);
-		delete [] buffer;
         throw ESoundDriver("Unsupported number of channels");
     }
 
@@ -351,7 +339,6 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
     if (pos < 0) 
     {
         mmioClose(hmmio, 0);
-		delete [] buffer;
         throw ESoundDriver("Read to set the read position");
     }
 
@@ -360,7 +347,6 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
     if (mmioDescend(hmmio, &data_chunk, &riff_chunk, MMIO_FINDCHUNK) != 0) 
     {
         mmioClose(hmmio, 0);
-		delete [] buffer;
         throw ESoundDriver("Read to set the read position");
     }
 
@@ -373,7 +359,6 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
     if (_Data == NULL)
     {
         mmioClose(hmmio, 0);
-		delete [] buffer;
         throw ESoundDriver("Out of memory");
     }
 
@@ -384,7 +369,8 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
 
     if (num < 0) 
     {
-		delete [] buffer;
+		delete [] _Data;
+		_Data= NULL;
         throw ESoundDriver("Failed to read the samples");
     }
     else if ((uint32) num < _Size)
@@ -397,10 +383,7 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
 
     mmioClose(hmmio, 0);
 
-//	delete [] buffer;
-
 	static NLMISC::TStringId	empty(CSoundDriverDSound::instance()->getStringMapper()->map(""));
-//	NLMISC::TStringId name = CSoundDriverDSound::instance()->getStringMapper()->map(CFile::getFilenameWithoutExtension(file));
 	NLMISC::TStringId nameId = CSoundDriverDSound::instance()->getStringMapper()->map(CFile::getFilenameWithoutExtension(name));
 	// if name is preseted, the name must match.
 	if (_Name != empty)
@@ -419,7 +402,7 @@ bool CBufferDSound::readRawBuffer(const std::string &name, uint8 *rawData, uint 
 	// free any existing data
     if (_Data != NULL)
     {
-        free(_Data);
+        delete [] _Data;
         _Data = NULL;
     }
 

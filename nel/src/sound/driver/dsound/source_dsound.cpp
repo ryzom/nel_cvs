@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.28 2004/07/09 09:44:33 lecroart Exp $
+ * $Id: source_dsound.cpp,v 1.28.4.1 2004/09/09 14:51:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,6 +124,7 @@ CSourceDSound::CSourceDSound( uint sourcename )
 	_State = source_stoped;
 	_PlayOffset = 0;
 	_LastPlayPos = 0;
+	_PosRelative= false;
 
 //	_BufferSize = 0;
 //	_SwapBuffer = 0;
@@ -251,6 +252,8 @@ void CSourceDSound::init(LPDIRECTSOUND8 directSound, bool useEax)
 	} 
 	else
 	{
+		nldebug("Failed to create a 3D Hardware DirectX secondary buffer. Try 3D software one");
+		
 		if (useEax)
 		{
 			throw ESoundDriver("No 3d hardware sound buffer, but EAX support requested");
@@ -1517,10 +1520,11 @@ void CSourceDSound::setSourceRelativeMode( bool mode )
 			hr = _3DBuffer->SetMode(DS3DMODE_NORMAL, DS3D_IMMEDIATE);
 		}
 
-		if (hr != DS_OK)
-		{
+		// cache
+		if (hr == DS_OK)
+			_PosRelative= mode;
+		else
 			nlwarning("SetMode failed");
-		}
 	}
 	else
 	{
@@ -1533,28 +1537,11 @@ void CSourceDSound::setSourceRelativeMode( bool mode )
 
 bool CSourceDSound::getSourceRelativeMode() const
 {
-	if (_3DBuffer != 0)
-	{
-		DWORD mode;
-
-		if (_3DBuffer->GetMode(&mode) != DS_OK)
-		{
-			nlwarning("GetMode failed");
-			return false;
-		}
-
-		return (mode == DS3DMODE_HEADRELATIVE);
-	}
-	else
-	{
-		nlwarning("Requested setSourceRelativeMode on a non-3D source");
-		return false;
-	}
+	return _PosRelative;
 }
 
 
 // ******************************************************************
-
 void CSourceDSound::setMinMaxDistances( float mindist, float maxdist, bool deferred )
 {
 	if (_3DBuffer != 0)
@@ -1607,63 +1594,25 @@ void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
 // ******************************************************************
 void CSourceDSound::updateVolume( const NLMISC::CVector& listener )
 {
-#if MANUAL_ROLLOFF == 1
+#if MANUAL_ROLLOFF == 0
+	// API controlled rolloff => return (just set the volume)
 	_SecondaryBuffer->SetVolume(_Volume);
-	return;
-#endif
+
+#else
 
 	CVector pos = getPos();
-	pos -= listener;
-
+	// make relative to listener (if not already!)
+	if(!_PosRelative)
+		pos -= listener;
 	float sqrdist = pos.sqrnorm();
-	float min, max;
 
-	getMinMaxDistances(min, max);
+	// attenuate the volume according to distance and alpha
+	sint32 volumeDB= ISource::computeManualRollOff(_Volume, DSBVOLUME_MIN, DSBVOLUME_MAX, _Alpha, sqrdist);
+	
+	// set attenuated volume
+	_SecondaryBuffer->SetVolume(volumeDB);
 
-	if (sqrdist < min * min) 
-	{
-		_SecondaryBuffer->SetVolume(_Volume);
-		//nlwarning("VOLUME = %ddB, rolloff = %0.2f", _Volume/100, CListenerDSound::instance()->getRolloffFactor());
-	}
-	else if (sqrdist > max * max)
-	{
-		_SecondaryBuffer->SetVolume(DSBVOLUME_MIN);
-		//nlwarning("VOLUME = %ddB, rolloff = %0.2f", DSBVOLUME_MIN/100, CListenerDSound::instance()->getRolloffFactor());
-	}
-	else
-	{
-		sint32 db = _Volume;
-
-		double dist = (double) sqrt(sqrdist);
-
-		// linearly descending volume on a dB scale
-		double db1 = DSBVOLUME_MIN * (dist - min) / (max - min);
-
-		if (_Alpha == 0.0) {
-			db += (sint32) db1;
-
-		} else if (_Alpha > 0.0) {
-			double amp2 = 0.0001 + 0.9999 * (max - dist) / (max - min); // linear amp between 0.00001 and 1.0
-			double db2 = 2000.0 * log10(amp2); // covert to 1/100th decibels
-			db += (sint32) ((1.0 - _Alpha) * db1 + _Alpha * db2);
-
-		} else if (_Alpha < 0.0) {
-			double amp3 = min / dist; // linear amplitude is 1/distance
-			double db3 = 2000.0 * log10(amp3); // covert to 1/100th decibels
-			db += (sint32) ((1.0 + _Alpha) * db1 - _Alpha * db3);
-		}
-
-		clamp(db, DSBVOLUME_MIN, DSBVOLUME_MAX);
-
-		_SecondaryBuffer->SetVolume(db);
-
-/*		LONG tmp;
-		_SecondaryBuffer->GetVolume(&tmp);
-*/
-		
-		//nlwarning("VOLUME = %d dB, rolloff = %0.2f", db/100, CListenerDSound::instance()->getRolloffFactor());
-	}
-
+#endif
 }
 
 // ******************************************************************

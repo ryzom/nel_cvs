@@ -1,7 +1,7 @@
 /** \file buffer_dsound.h
  * DSound buffer
  *
- * $Id: buffer_dsound.h,v 1.9 2003/07/03 15:17:25 boucher Exp $
+ * $Id: buffer_dsound.h,v 1.9.8.1 2004/09/09 14:51:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,12 +88,9 @@ public:
 	//virtual bool		fillMore( void *src, uint32 srcsize )	{ throw ESoundDriverNotSupp(); }
 
 	
-    /// Load a sound file in the buffer. Throws an exception is an error occurs.
-//	virtual bool			loadWavFile(const char* filename);
+	bool					readWavBuffer(const std::string &name, uint8 *wavData, uint dataSize);
 
-	virtual bool			readWavBuffer(const std::string &name, uint8 *wavData, uint dataSize);
-
-	virtual bool			readRawBuffer(const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency);
+	bool					readRawBuffer(const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency);
 
 	virtual uint32			getBufferADPCMEncoded(std::vector<uint8> &result);
 	virtual uint32			getBufferMono16(std::vector<sint16> &result);

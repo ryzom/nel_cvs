@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.20 2000/11/27 10:07:07 cado Exp $
+ * $Id: inet_address.cpp,v 1.21 2000/11/27 10:43:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,9 +228,12 @@ void CInetAddress::setSockAddr( const sockaddr_in* saddr )
 		hostent *phostent = gethostbyaddr( (char*)&saddr->sin_addr.s_addr, 4,  AF_INET );
 		if ( phostent == NULL )
 		{
-			throw ESocket("Could not resolve host name from address",WSAGetLastError());
+			_HostName = ipAddress();
 		}
-		_HostName = string( phostent->h_name );
+		else
+		{
+			_HostName = string( phostent->h_name );
+		}
 	}
 	_Valid = true;
 }

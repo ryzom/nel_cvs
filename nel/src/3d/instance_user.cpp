@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.20 2003/12/18 18:03:47 vizerie Exp $
+ * $Id: instance_user.cpp,v 1.21 2004/03/23 10:21:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,6 +221,18 @@ float CInstanceUser::getSliceTime() const
 	if (!sr) return 0.f;
 	return sr->getSliceTime();
 }
+
+// ***************************************************************************
+bool CInstanceUser::supportMaterialRendering(UDriver &drv)
+{
+	for(uint k = 0; k < _Materials.size(); ++k)
+	{
+		if (!_Materials[k].isSupportedByDriver(drv)) return false;
+	}
+	return true;
+}
+
+
 
 
 } // NL3D

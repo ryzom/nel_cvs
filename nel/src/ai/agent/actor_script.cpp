@@ -144,6 +144,7 @@ namespace NLAIAGENT
 			cancel();
 			onUnActivate();
 			_IsActivated = false;
+			_IsPaused = false;
 		}
 	}
 

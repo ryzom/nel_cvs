@@ -16,6 +16,7 @@ namespace NLAIAGENT
 	{
 		_CurrentGoal = a._CurrentGoal;
 		_CyclesBeforeUpdate = a._CyclesBeforeUpdate;
+		_IsActivable = false;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -26,12 +27,14 @@ namespace NLAIAGENT
 	{	
 		_CurrentGoal = NULL;
 		_CyclesBeforeUpdate = 0;
+		_IsActivable = false;
 	}	
 
 	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CActorScript( manager )
 	{
 		_CurrentGoal = NULL;
 		_CyclesBeforeUpdate = 0;
+		_IsActivable = false;
 	}
 
 	COperatorScript::~COperatorScript()
@@ -112,18 +115,14 @@ namespace NLAIAGENT
 		const char *dbg_class_name = (const char *) getType();
 #endif
 
-		bool is_activated = false;
-
 		if ( _CyclesBeforeUpdate == 0 )
 		{
 			_IsActivable = checkActivation();
 			_CyclesBeforeUpdate = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getUpdateEvery();
 		}
 		else
-		{
 			_CyclesBeforeUpdate--;
-			_IsActivable = _IsActivated;
-		}
+
 
 		// Runs the operator if every precondition is validated	
 		if ( _IsActivable )
@@ -157,19 +156,20 @@ namespace NLAIAGENT
 					else
 						onActivate();
 				}
-				else
-				if ( (_CurrentGoal != NULL) && (_IsActivated == true) )
+			}
+			else
+				if ( (_CurrentGoal != NULL) )
 				{
-					if ( (_IsPaused == false) && _CurrentGoal->isSelected() )
+					if ( (_IsPaused == false) && !_CurrentGoal->isSelected() )
 						pause();
-					if ( (_IsPaused == true)  && !_CurrentGoal->isSelected() )
+					if ( (_IsPaused == true)  && _CurrentGoal->isSelected() )
 						restart();
 				}
-			}
 
 			if ( _CurrentGoal != NULL)
 			{
-				if(_CurrentGoal->isSelected()) return CAgentScript::run();
+				if(_CurrentGoal->isSelected()) 
+					return CAgentScript::run();
 				else
 				{
 					processMessages();
@@ -183,7 +183,7 @@ namespace NLAIAGENT
 			if ( _IsActivated == true )
 			{
 				unActivate();			
-				_TopLevel = false;
+//				_IsPaused = false;
 			}
 			return IObjectIA::ProcessRun;
 		}

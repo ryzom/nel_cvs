@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.28 2002/02/28 15:16:40 lecroart Exp $
+ * $Id: config_file.cpp,v 1.29 2002/04/15 12:58:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -239,6 +239,7 @@ void CConfigFile::reparse ()
 	else
 	{
 		nlwarning ("ConfigFile '%s' not found", _FileName.c_str());
+		throw EFileNotFound (_FileName);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.34 2001/01/12 13:26:32 berenguier Exp $
+ * $Id: patch.cpp,v 1.35 2001/01/12 18:15:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1223,11 +1223,13 @@ void		CPatch::computeTileLightmapPixelAroundCorner(const CVector2f &stIn, CRGBA 
 		/*CBezierPatch	*pa= unpackIntoCache();
 		float	t= (float)(tt+(i>>1))/OrderT;
 		float	s= (float)(ts+(i&1))/OrderS;
-		CVector	norm, light(0, -1, 0);
+		CVector	norm, light(0, 1, -0.75);
 		norm= pa->evalNormal(s,t);
 		light.normalize();
+		float	f= -norm*light;
+		clamp(f, 0, 1);
 		col.R= 0;
-		col.G= (norm*light+1)*127;
+		col.G= f*255;
 		col.B= 0;*/
 	sint	u, v;
 		lightText[lut[i]]= col;

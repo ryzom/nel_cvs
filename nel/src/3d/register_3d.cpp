@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.22 2001/11/27 16:28:42 vizerie Exp $
+ * $Id: register_3d.cpp,v 1.23 2002/02/04 10:35:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,8 @@
 #include "3d/water_shape.h"
 #include "3d/texture_bump.h"
 #include "3d/texture_blend.h"
+#include "3d/texture_multi_file.h"
+
 
 
 
@@ -64,6 +66,7 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTextureCube);
 		NLMISC_REGISTER_CLASS(CTextureBump);
 		NLMISC_REGISTER_CLASS(CTextureBlend);
+		NLMISC_REGISTER_CLASS(CTextureMultiFile);
 
 
 

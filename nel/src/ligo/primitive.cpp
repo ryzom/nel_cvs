@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.8 2002/12/05 14:33:11 corvazier Exp $
+ * $Id: primitive.cpp,v 1.9 2002/12/10 14:47:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -957,6 +957,8 @@ IPrimitive*	IPrimitive::copy () const
 		}
 	}
 
+	// Copy the flags
+	theCopy->Expanded = Expanded;
 
 	// Copy children
 	theCopy->_Children.resize (_Children.size ());
@@ -1017,6 +1019,9 @@ void IPrimitive::operator= (const IPrimitive &node)
 	// Clean dest
 	removeChildren ();
 	removeProperties ();
+
+	// Copy the flags
+	Expanded = node.Expanded;
 
 	// Copy children
 	_Children.resize (node._Children.size ());
@@ -1407,6 +1412,12 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version)
 	// Erase old properties
 	_Properties.clear ();
 
+	// Read the expanded flag
+	string expanded;
+	Expanded = true;
+	if (GetPropertyString (expanded, filename, xmlNode, "EXPANDED"))
+		Expanded = (expanded != "false");
+
 	// Read the properties
 	xmlNodePtr propNode;
 	propNode = CIXml::getFirstChildNode (xmlNode, "PROPERTY");
@@ -1581,6 +1592,10 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version)
 
 void IPrimitive::write (xmlNodePtr xmlNode, const char *filename) const
 {
+	// Save the expanded flag
+	if (!Expanded)
+		xmlSetProp (xmlNode, (const xmlChar*)"EXPANDED", (const xmlChar*)"false");
+
 	// Save the properties
 	std::map<std::string, IProperty*>::const_iterator ite =	_Properties.begin ();
 	while (ite != _Properties.end ())
@@ -1683,6 +1698,10 @@ uint IPrimitive::getNumProperty () const
 bool CPrimitives::read (xmlNodePtr xmlNode, const char *filename)
 {
 	nlassert (xmlNode);
+
+	// Clear the primitives
+	RootNode.removeChildren ();
+	RootNode.removeProperties ();
 
 	// Get the name
 	if (strcmp ((const char*)xmlNode->name, "PRIMITIVES") == 0)

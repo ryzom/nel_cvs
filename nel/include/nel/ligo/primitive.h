@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.10 2002/12/06 16:19:11 coutelas Exp $
+ * $Id: primitive.h,v 1.11 2002/12/10 14:47:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,6 +135,9 @@ public:
 	// Deprecated
 	std::string						Layer;
 	std::string						Name;
+
+	// Expended in the tree view
+	bool							Expanded;
 	
 	enum 
 	{

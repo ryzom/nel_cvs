@@ -258,8 +258,6 @@ extracting the NeL source tree, while others are kept separate, and require you 
 obtain them separately prior to building NeL.
 
 - Autoconfig & Automake : The GNU standard configuration tools for Open Source development.
-- Clanlib : A portable system interface
 - STL Ports
-- CLAP
 
  */

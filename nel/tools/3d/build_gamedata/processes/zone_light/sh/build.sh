@@ -76,7 +76,8 @@ list_zone_lighted=`ls -1 zone_lighted/*.zonel`
 for i in $list_zone_lighted ; do
   dest=`echo $i | sed -e 's/zone_lighted/ig_land_lighted/g' | sed -e 's/.zonel/.ig/g'`
   depend=`echo $i | sed -e 's&zone_lighted&../zone/zone_depend&g' | sed -e 's/.zonel/.depend/g'`
-  if ( ! test -e $dest ) || ( test $i -nt $dest )
+  igsrc=`echo $i | sed -e 's&zone_lighted&../ig/ig_land&g' | sed -e 's/.zonel/.ig/g'`
+  if ( ! test -e $dest ) || ( test $i -nt $dest ) || ( test $igsrc -nt $dest )
   then
     echo -- IgLight $i
     echo -- IgLight $i >> log.log

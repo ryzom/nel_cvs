@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.19 2002/04/25 15:25:55 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.20 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/scene.h"
 #include "3d/coarse_mesh_manager.h"
 #include "3d/skeleton_model.h"
+#include "3d/fast_floor.h"
 
 #include "nel/misc/debug.h"
 
@@ -237,21 +238,46 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 	// Render good meshes
 	CMeshMultiLodInstance *instance=safe_cast<CMeshMultiLodInstance*>(trans);
 
+	// Static or dynamic coarse mesh ?
+	CCoarseMeshManager *manager;
+	if (_StaticLod)
+	{
+		// Get the static coarse mesh manager
+		manager=instance->getScene()->getStaticCoarseMeshManager();
+	}
+	else
+	{
+		// Get the dynamic coarse mesh manager
+		manager=instance->getScene()->getDynamicCoarseMeshManager();
+	}
+
+	// *** Render Lods
+
 	// Second lod ?
 	if ( (instance->Lod1!=0xffffffff) && (passOpaque==false) )
 	{
 		// Render second lod in blend mode. Render and disable ZWrite for Lod1
 		// NB: very important to render Lod1 first, because Lod0 is still rendered with ZWrite enabled.
-		render (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, _StaticLod, true, true);
-		render (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, _StaticLod, false, true);
+		renderMeshGeom (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, true, true, manager);
+		renderMeshGeom (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, false, true, manager);
 	}
 
 
 	// Have an opaque pass ?
 	if ( (instance->Flags&CMeshMultiLodInstance::Lod0Blend) == 0)
 	{
-		// Only render the normal way the first lod
-		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, 1, _StaticLod, passOpaque, false);
+		// Is this slot a CoarseMesh?
+		if ( _MeshVector[instance->Lod0].Flags&CMeshSlot::CoarseMesh )
+		{
+			// render as a CoarseMesh the lod 0, only in opaque pass
+			if(passOpaque)
+				renderCoarseMesh (instance->Lod0, drv, instance, manager);
+		}
+		else
+		{
+			// Only render the normal way the first lod
+			renderMeshGeom (instance->Lod0, drv, instance, instance->PolygonCountLod0, 1, passOpaque, false, manager);
+		}
 	}
 	else
 	{
@@ -259,49 +285,43 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 		nlassert (passOpaque==false);
 
 		// Render first lod in blend mode. Don't disable ZWrite for Lod0
-		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, _StaticLod, true, false);
+		renderMeshGeom (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, true, false, manager);
 
 		// Then render transparent. Don't disable ZWrite for Lod0
-		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, _StaticLod, false, false);
+		renderMeshGeom (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, false, false, manager);
 	}
 
-	// *** Remove unused coarse meshes
-	uint meshCount=_MeshVector.size();
-	for (uint j=0; j<meshCount; j++)
+	// *** Remove unused coarse meshes.
+	// Manager must exist beacuse a mesh has been loaded...
+	if (manager)
 	{
-		// Not a slot used and coarse mesh loaded ?
-		if ( (j!=instance->Lod0)&&(j!=instance->Lod1)&&(_MeshVector[j].Flags&CMeshSlot::CoarseMesh) )
+		uint meshCount=_MeshVector.size();
+		for (uint j=0; j<meshCount; j++)
 		{
-			// Get coarse id
-			uint coarseId=(_MeshVector[j].Flags&CMeshSlot::CoarseMeshId)?1:0;
-			uint flag=CMeshMultiLodInstance::Coarse0Loaded<<coarseId;
-			
-			// Coarse mesh loaded ?
-			if ( instance->Flags&flag )
+			// Is this slot a CoarseMesh?
+			if ( _MeshVector[j].Flags&CMeshSlot::CoarseMesh )
 			{
-				// Yes, remove it..
-
-				// Static or dynamic coarse mesh ?
-				CCoarseMeshManager *manager;
-				if (_StaticLod)
+				// Are we in Alpha Blend Transition?
+				bool	alphaTrans= instance->Flags&CMeshMultiLodInstance::Lod0Blend;
+				// we must remove coarse if the slot is not used, or if we are in Alpha Transition.
+				// NB: only Lod0 can use CoarseMesh (see code before)
+				if ( alphaTrans || (j!=instance->Lod0) )
 				{
-					// Get the static coarse mesh manager
-					manager=instance->getScene()->getStaticCoarseMeshManager();
-				}
-				else
-				{
-					// Get the dynamic coarse mesh manager
-					manager=instance->getScene()->getDynamicCoarseMeshManager();
-				}
+					// Get coarse id
+					uint coarseId=(_MeshVector[j].Flags&CMeshSlot::CoarseMeshId)?1:0;
+					uint flag=CMeshMultiLodInstance::Coarse0Loaded<<coarseId;
+					
+					// Coarse mesh loaded ?
+					if ( instance->Flags&flag )
+					{
+						// Yes, remove it..
 
-				// Manager must exist beacuse a mesh has been loaded...
-				if (manager)
-				{
-					// Remove the lod
-					manager->removeMesh (instance->CoarseMeshId[coarseId]);
+						// Remove the lod
+						manager->removeMesh (instance->CoarseMeshId[coarseId]);
 
-					// Clear the flag
-					instance->Flags&=~flag;
+						// Clear the flag
+						instance->Flags&=~flag;
+					}
 				}
 			}
 		}
@@ -450,81 +470,111 @@ CMeshMultiLod::CMeshSlot::~CMeshSlot ()
 
 // ***************************************************************************
 
-void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod, bool passOpaque, bool gaDisableZWrite)
+void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool passOpaque, bool gaDisableZWrite, CCoarseMeshManager *manager)
 {
 	// Ref
 	CMeshSlot &slotRef=_MeshVector[slot];
 
-	// Coarse mesh ?
-	if (slotRef.Flags&CMeshSlot::CoarseMesh)
+	// MeshGeom exist?
+	if (slotRef.MeshGeom)
 	{
-		// Mask
-		uint coarseId=(slotRef.Flags&CMeshSlot::CoarseMeshId)?1:0;
-		uint maskFlag = CMeshMultiLodInstance::Coarse0Loaded<<coarseId;
-
-		// Only in opaque pass
-		if (passOpaque)
+		// NB Here, the meshGeom may still be a coarseMesh, but rendered through CMeshGeom
+		if(slotRef.Flags&CMeshSlot::CoarseMesh)
 		{
-			// Static or dynamic coarse mesh ?
-			CCoarseMeshManager *manager;
-			if (staticLod)
+			if(manager)
 			{
-				// Get the static coarse mesh manager
-				manager=trans->getScene()->getStaticCoarseMeshManager();
-			}
-			else
-			{
-				// Get the dynamic coarse mesh manager
-				manager=trans->getScene()->getDynamicCoarseMeshManager();
-			}
+				// Render the CoarseMesh with the manager material
+				CMaterial	&material= manager->getMaterial();
 
-			// Manager  exist?
-			if (manager)
-			{
-				// Get a pointer on the geom mesh
-				nlassert (dynamic_cast<CMeshGeom*>(slotRef.MeshGeom));
-				CMeshGeom *meshGeom=(CMeshGeom*)slotRef.MeshGeom;
+				// modulate material for alphaBlend transition
+				// ----------
+				// New opacity (in color becausematerial is unlit)
+				CRGBA	bkupColor= material.getColor();
+				CRGBA	newCol= bkupColor;
+				newCol.A= (uint8)OptFastFloor(255 * alpha);
+				material.setColor ( newCol );
+				// Disable ZWrite??
+				if(gaDisableZWrite)
+					material.setZWrite (false);
+				// Enable blend
+				material.setBlend (true);
+				// must modulate AlphaTest limit to avoid Pop effects
+				material.setAlphaTestThreshold(0.5f * alpha);
 
-				// Added in the manager ?
-				
-				if ( (trans->Flags&maskFlag) == 0)
-				{
-					// Add to the manager
-					trans->CoarseMeshId[coarseId]=manager->addMesh (*meshGeom);
-						
-					// Added ?
-					if (trans->CoarseMeshId[coarseId]!=CCoarseMeshManager::CantAddCoarseMesh)
-						// Flag it
-						trans->Flags|=maskFlag;
 
-					// Dirt the matrix
-					trans->_LastLodMatrixDate=0;
-				}
+				// render simple the coarseMesh
+				CMeshGeom *meshGeom= safe_cast<CMeshGeom*>(slotRef.MeshGeom);
+				meshGeom->renderSimpleWithMaterial(drv, trans->getWorldMatrix(), material);
 
-				// Finally loaded ?
-				if (trans->Flags&maskFlag)
-				{
-					// Matrix has changed ?
-					if ( trans->ITransformable::compareMatrixDate (trans->_LastLodMatrixDate) )
-					{
-						// Get date
-						trans->_LastLodMatrixDate = trans->ITransformable::getMatrixDate();
 
-						// Set matrix
-						manager->setMatrixMesh ( trans->CoarseMeshId[coarseId], *meshGeom, trans->getMatrix() );
-					}
-				}
+				// resetup standard CoarseMeshMaterial material values
+				// ----------
+				material.setColor ( bkupColor );
+				// ReEnable ZWrite??
+				if(gaDisableZWrite)
+					material.setZWrite (true);
+				// Reset blend
+				material.setBlend (false);
+				// reset AlphaTest limit
+				material.setAlphaTestThreshold(0.5f);
 			}
 		}
-	}
-	else
-	{
-		// Here
-		if (slotRef.MeshGeom)
+		else
 		{
 			// Render the geom mesh
 			// Disable ZWrite only if in transition and for rendering Lod1
 			slotRef.MeshGeom->render (drv, trans, passOpaque, numPoylgons, alpha, gaDisableZWrite);
+		}
+	}
+}
+// ***************************************************************************
+
+void CMeshMultiLod::renderCoarseMesh (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, CCoarseMeshManager *manager)
+{
+	// if the manager is NULL, quit.
+	if(manager==NULL)
+		return;
+
+	// Ref
+	CMeshSlot &slotRef=_MeshVector[slot];
+
+	// the slot must be a Coarse mesh
+	nlassert(slotRef.Flags&CMeshSlot::CoarseMesh);
+
+	// Mask
+	uint coarseId=(slotRef.Flags&CMeshSlot::CoarseMeshId)?1:0;
+	uint maskFlag = CMeshMultiLodInstance::Coarse0Loaded<<coarseId;
+
+	// Get a pointer on the geom mesh
+	nlassert (dynamic_cast<CMeshGeom*>(slotRef.MeshGeom));
+	CMeshGeom *meshGeom=(CMeshGeom*)slotRef.MeshGeom;
+
+	// Added in the manager ?
+	if ( (trans->Flags&maskFlag) == 0)
+	{
+		// Add to the manager
+		trans->CoarseMeshId[coarseId]=manager->addMesh (*meshGeom);
+			
+		// Added ?
+		if (trans->CoarseMeshId[coarseId]!=CCoarseMeshManager::CantAddCoarseMesh)
+			// Flag it
+			trans->Flags|=maskFlag;
+
+		// Dirt the matrix
+		trans->_LastLodMatrixDate=0;
+	}
+
+	// Finally loaded ?
+	if (trans->Flags&maskFlag)
+	{
+		// Matrix has changed ?
+		if ( trans->ITransformable::compareMatrixDate (trans->_LastLodMatrixDate) )
+		{
+			// Get date
+			trans->_LastLodMatrixDate = trans->ITransformable::getMatrixDate();
+
+			// Set matrix
+			manager->setMatrixMesh ( trans->CoarseMeshId[coarseId], *meshGeom, trans->getMatrix() );
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.51 2002/04/25 15:25:55 berenguier Exp $
+ * $Id: mesh.cpp,v 1.52 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/mesh_morpher.h"
 #include "nel/misc/bsphere.h"
 #include "3d/stripifier.h"
+#include "3d/fast_floor.h"
 
 
 using namespace std;
@@ -586,7 +587,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 
 	// Global alpha used ?
 	bool globalAlphaUsed=globalAlpha!=1;
-	uint8 globalAlphaInt=(uint8)(globalAlpha*255);
+	uint8 globalAlphaInt=(uint8)OptFastFloor(globalAlpha*255);
 
 	// For all _MatrixBlocks
 	for(uint mb=0;mb<_MatrixBlocks.size();mb++)
@@ -760,6 +761,37 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 	if(skinOk)
 	{
 		drv->setupVertexMode(NL3D_VERTEX_MODE_NORMAL);
+	}
+
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::renderSimpleWithMaterial(IDriver *drv, const CMatrix &worldMatrix, CMaterial &mat)
+{
+	nlassert(drv);
+
+	// setup matrix
+	drv->setupModelMatrix(worldMatrix);
+
+	// active VB.
+	drv->activeVertexBuffer(_VBuffer);
+
+	// For all _MatrixBlocks
+	for(uint mb=0;mb<_MatrixBlocks.size();mb++)
+	{
+		CMatrixBlock	&mBlock= _MatrixBlocks[mb];
+		if(mBlock.RdrPass.size()==0)
+			continue;
+
+		// Render all pass.
+		for(uint i=0;i<mBlock.RdrPass.size();i++)
+		{
+			CRdrPass	&rdrPass= mBlock.RdrPass[i];
+
+			// render primitives
+			drv->render(rdrPass.PBlock, mat);
+		}
 	}
 
 }

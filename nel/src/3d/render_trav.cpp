@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.21 2002/03/18 14:45:29 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.22 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include "3d/driver.h"
 #include "3d/light.h"
 #include "3d/skeleton_model.h"
+#include "3d/scene.h"
+#include "3d/coarse_mesh_manager.h"
 
 #include "3d/transform.h"
 
@@ -160,6 +162,17 @@ void		CRenderTrav::traverse()
 		pBRO->traverse(NULL);
 		OrderOpaqueList.next();
 	}
+
+
+	/* Render Scene CoarseMeshManager. 
+		Important to render them at end of Opaque rendering, because coarses instances are created/removed during
+		this model opaque rendering pass.
+	*/
+	// Render dynamic one.
+	Scene->getDynamicCoarseMeshManager()->render(Driver);
+	// Render static one.
+	Scene->getStaticCoarseMeshManager()->render(Driver);
+
 
 	 // Render transparent materials
 	_CurrentPassOpaque = false;

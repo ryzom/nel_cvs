@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.8 2002/04/25 15:25:55 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.9 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,32 +49,10 @@ CMeshMultiLodInstance::CMeshMultiLodInstance ()
 
 CMeshMultiLodInstance::~CMeshMultiLodInstance ()
 {
-	// Cast shape
-	CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)Shape);
-
-	// Manager pointer
-	CCoarseMeshManager *manager;
-
-	// Get the manager
-	if (shape->isStatic ())
-		manager=getScene()->getStaticCoarseMeshManager ();
-	else
-		manager=getScene()->getDynamicCoarseMeshManager ();
-
-	// Manager ok ?
-	if (manager)
-	{
-		// Coarse mesh loaded ?
-		if (Flags&Coarse0Loaded)
-		{
-			manager->removeMesh (CoarseMeshId[0]);
-		}
-		if (Flags&Coarse1Loaded)
-		{
-			manager->removeMesh (CoarseMeshId[1]);
-		}
-	}
+	// delete instances from manager
+	deleteCoarseInstances();
 }
+
 
 // ***************************************************************************
 
@@ -82,7 +60,68 @@ void		CMeshMultiLodInstance::registerBasic()
 {
 	CMOT::registerModel (MeshMultiLodInstanceId, MeshBaseInstanceId, CMeshMultiLodInstance::creator);
 	CMOT::registerObs (LoadBalancingTravId, MeshMultiLodInstanceId, CMeshMultiLodBalancingObs::creator);
+	CMOT::registerObs (ClipTravId, MeshMultiLodInstanceId, CMeshMultiLodClipObs::creator);
 }
+
+
+// ***************************************************************************
+void		CMeshMultiLodInstance::deleteCoarseInstances()
+{
+	// If at least one coarse instance is created
+	if( Flags & (Coarse0Loaded|Coarse1Loaded) )
+	{
+		// Cast shape
+		CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)Shape);
+
+		// Manager pointer
+		CCoarseMeshManager *manager;
+
+		// Get the manager
+		if (shape->isStatic ())
+			manager=getScene()->getStaticCoarseMeshManager ();
+		else
+			manager=getScene()->getDynamicCoarseMeshManager ();
+
+		// Manager ok ?
+		if (manager)
+		{
+			// Coarse mesh loaded ?
+			if (Flags&Coarse0Loaded)
+			{
+				manager->removeMesh (CoarseMeshId[0]);
+				Flags&= ~Coarse0Loaded;
+			}
+			if (Flags&Coarse1Loaded)
+			{
+				manager->removeMesh (CoarseMeshId[1]);
+				Flags&= ~Coarse1Loaded;
+			}
+		}
+	}
+}
+
+
+// ***************************************************************************
+bool		CMeshMultiLodClipObs::clip(IBaseClipObs *caller)
+{
+	// Call Base method. If clipped
+	if( !CTransformShapeClipObs::clip(caller) )
+	{
+		// If the clip is due to a DistMax reason, must delete Coarses instances.
+		if(CTransformShapeClipObs::isLastClipDueToDistMax())
+		{
+			CMeshMultiLodInstance	*inst= (CMeshMultiLodInstance*)Model;
+			inst->deleteCoarseInstances();
+		}
+
+		// return result of clip
+		return false;
+	}
+	else
+		// return result of clip
+		return true;
+}
+
 
 // ***************************************************************************
 

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.8 2002/02/28 12:59:49 besson Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.9 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,6 @@ namespace NL3D
 void	CCoarseMeshManager::registerBasic()
 {
 	CMOT::registerModel (CoarseMeshManagerId, TransformId, CCoarseMeshManager::creator);
-	CMOT::registerObs (RenderTravId, CoarseMeshManagerId, CCoarseMeshManagerRenderObs::creator);
 	CMOT::registerObs (ClipTravId, CoarseMeshManagerId, CCoarseMeshClipObs::creator);
 }
 
@@ -61,6 +60,9 @@ CCoarseMeshManager::CCoarseMeshManager()
 	_Material.setDoubleSided (true);
 	_Material.setAlphaTest (true);
 	_Material.setColor (CRGBA (255, 255, 255));
+	// Init blend Factors, for possible Alpha transition
+	_Material.setSrcBlend(CMaterial::srcalpha);
+	_Material.setDstBlend(CMaterial::invsrcalpha);
 
 	// Texture
 	_Material.setTexture (0, _Texture);
@@ -540,28 +542,16 @@ void CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::init (uint size)
 
 // ***************************************************************************
 
-void	CCoarseMeshManagerRenderObs::traverse(IObs *caller)
-{
-	CRenderTrav			*trav= (CRenderTrav*)Trav;
-	CCoarseMeshManager	*model= (CCoarseMeshManager*)Model;
-	IDriver				*drv= trav->getDriver();
-
-	// render the container.
-	model->render (drv);
-}
-
-// ***************************************************************************
-
 bool	CCoarseMeshClipObs::isRenderable() const
 {
-	return true;
+	return false;
 }
 
 // ***************************************************************************
 
 bool	CCoarseMeshClipObs::clip(IBaseClipObs *caller)
 {
-	return true;
+	return false;
 }
 
 // ***************************************************************************

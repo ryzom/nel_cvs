@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.23 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.24 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,9 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 	CClipTrav			*trav= (CClipTrav*)Trav;
 	CTransformShape		*m= (CTransformShape*)Model;
 
+	// reset
+	_ClipDueToDistMax= false;
+
 	if(m->Shape)
 	{
 		// first test DistMax (faster).
@@ -97,8 +100,12 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 			
 			// if dist > maxDist, skip
 			if (sqrDist > maxDist)
+			{
+				// flag this state
+				_ClipDueToDistMax= true;
 				// Ok, not shown
 				return false;
+			}
 		}
 
 		// Else finer clip with pyramid.

@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.11 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: transform_shape.h,v 1.12 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,12 +148,15 @@ private:
  */
 class	CTransformShapeClipObs : public CTransformClipObs
 {
+	bool	_ClipDueToDistMax;
 public:
 
 	/// clip the shape, and set renderable.
 	virtual	bool	clip(IBaseClipObs *caller);
 	virtual	bool	isRenderable() const {return true;}
 
+	/// if last call to clip() return false, and if clip reason was a "DistMax clip", return true
+	bool			isLastClipDueToDistMax() const {return _ClipDueToDistMax;}
 
 	static IObs	*creator() {return new CTransformShapeClipObs;}
 };

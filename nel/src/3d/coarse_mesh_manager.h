@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.8 2002/04/12 12:04:58 lecroart Exp $
+ * $Id: coarse_mesh_manager.h,v 1.9 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,12 @@ public:
 	  * Register class id.
 	  */
 	static void		registerBasic();
+
+	/**
+	  *	Get material of the container. For rendering purpose only.
+	  */
+	CMaterial		&getMaterial() {return _Material;}
+
 private:
 
 	/**
@@ -300,23 +306,10 @@ private:
 
 /**
  * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the traverse() method.
- */
-class	CCoarseMeshManagerRenderObs : public CTransformRenderObs
-{
-public:
-
-	/// render the instance and Don't traverseSons().
-	virtual	void	traverse(IObs *caller);
-	
-	static IObs	*creator() {return new CCoarseMeshManagerRenderObs;}
-};
-
-/**
- * This observer:
- * - return true at isRenderable.
- * - return true at clip.
+ * - return false at isRenderable.
+ * - return false at clip.
+ *	Important because CoarseMeshManager must be rendered at end of frame, after coarse mesh instances added/removed in
+ *	MeshMultiLod rendering
  */
 class	CCoarseMeshClipObs : public CTransformClipObs
 {

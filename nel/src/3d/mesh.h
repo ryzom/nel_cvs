@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.22 2002/04/25 15:25:55 berenguier Exp $
+ * $Id: mesh.h,v 1.23 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -365,6 +365,15 @@ public:
 	{
 		return _Skinned;
 	}
+
+	/** render the mesh geometry with a single material. Render is said "Simple" because no special features are used:
+	 *		- mesh is rendered without VertexProgram (if it has one).
+	 *		- mesh is rendered without Skinning.
+	 *		- mesh is rendered without use of VertexBufferHard.
+	 *		- mesh is rendered without MeshMorpher.
+	 *		- .....
+	 */
+	void			renderSimpleWithMaterial(IDriver *drv, const CMatrix &worldMatrix, CMaterial &mat);
 
 // ************************
 private:

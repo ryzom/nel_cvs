@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.9 2002/03/29 14:19:55 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.10 2002/04/26 15:06:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,6 +63,11 @@ public:
 	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 
 
+	/** erase Coarses instances from coarseMesh Manager (if instances exist)
+	 */
+	void				deleteCoarseInstances();
+
+
 	enum
 	{
 		Lod0Blend		=	0x1,
@@ -98,6 +103,29 @@ private:
 	static IModel	*creator() {return new CMeshMultiLodInstance;}
 	friend	class CMeshMultiLod;
 	friend	class CMeshMultiLodBalancingObs;
+};
+
+
+// ***************************************************************************
+/**
+ * This observer:
+ * - leave the notification system to DO NOTHING.
+ * - extend clip() method to update CoarseMeshManager
+ *
+ * \sa CClipTrav CTransformClipObs
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CMeshMultiLodClipObs : public CTransformShapeClipObs
+{
+public:
+
+	/// clip the shape, and set renderable.
+	virtual	bool	clip(IBaseClipObs *caller);
+
+
+	static IObs	*creator() {return new CMeshMultiLodClipObs;}
 };
 
 

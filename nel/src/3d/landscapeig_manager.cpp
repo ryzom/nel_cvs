@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.1 2001/08/28 14:21:48 berenguier Exp $
+ * $Id: landscapeig_manager.cpp,v 1.2 2002/01/02 16:19:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,14 @@ using namespace std;
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+void	CLandscapeIGManager::CInstanceGroupElement::release()
+{
+	delete Ig;
+	Ig= NULL;
+}
 
 
 // ***************************************************************************
@@ -88,7 +96,7 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 					// add it to the map.
 					string	tokId= token;
 					strupr(tokId);
-					_ZoneInstanceGroupMap[tokId]= CInstanceGroupElement(ig);
+					_ZoneInstanceGroupMap[tokId]= CInstanceGroupElement(ig, token);
 				}
 			}
 		}
@@ -205,10 +213,53 @@ void	CLandscapeIGManager::reset()
 		unloadZoneIG( name.substr(0, name.find('.')) );
 
 		// then delete this entry.
+		_ZoneInstanceGroupMap.begin()->second.release();
 		_ZoneInstanceGroupMap.erase(_ZoneInstanceGroupMap.begin());
 	}
 
 	_Scene=NULL;
+}
+
+
+// ***************************************************************************
+void	CLandscapeIGManager::reloadAllIgs()
+{
+	vector<std::string>		bkupIgFileNameList;
+	vector<bool>			bkupIgAddedToScene;
+
+	// First, erase all igs.
+	while( _ZoneInstanceGroupMap.begin() != _ZoneInstanceGroupMap.end() )
+	{
+		string	name= _ZoneInstanceGroupMap.begin()->first;
+
+		// bkup the state of this ig.
+		bkupIgFileNameList.push_back(_ZoneInstanceGroupMap.begin()->second.FileName);
+		bkupIgAddedToScene.push_back(_ZoneInstanceGroupMap.begin()->second.AddedToScene);
+
+		// first remove from scene
+		unloadZoneIG( name.substr(0, name.find('.')) );
+
+		// then delete this entry.
+		_ZoneInstanceGroupMap.begin()->second.release();
+		_ZoneInstanceGroupMap.erase(_ZoneInstanceGroupMap.begin());
+	}
+
+	// Then reload all Igs.
+	for(uint i=0; i<bkupIgFileNameList.size(); i++)
+	{
+		const	char	*token= bkupIgFileNameList[i].c_str();
+		UInstanceGroup	*ig = UInstanceGroup::createInstanceGroup(token);
+		// add it to the map.
+		string	tokId= token;
+		strupr(tokId);
+		_ZoneInstanceGroupMap[tokId]= CInstanceGroupElement(ig, token);
+
+		// If was addedToScene before, re-add to scene now.
+		if(bkupIgAddedToScene[i])
+		{
+			loadZoneIG( tokId.substr(0, tokId.find('.')) );
+		}
+	}
 }
 
 

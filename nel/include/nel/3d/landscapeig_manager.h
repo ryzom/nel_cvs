@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.h
  * <File description>
  *
- * $Id: landscapeig_manager.h,v 1.1 2001/08/28 14:21:48 berenguier Exp $
+ * $Id: landscapeig_manager.h,v 1.2 2002/01/02 16:19:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,18 +87,27 @@ public:
 	void	reset();
 
 
+	/// reload all the Igs and re-add to scene.
+	void	reloadAllIgs();
+
+
 private:
 	UScene			*_Scene;
 	struct			CInstanceGroupElement
 	{
 		UInstanceGroup	*Ig;
 		bool			AddedToScene;
+		std::string		FileName;
 
-		CInstanceGroupElement(UInstanceGroup	*ig= NULL)
+		CInstanceGroupElement(UInstanceGroup	*ig= NULL, const char *fileName= NULL)
 		{
 			Ig= ig;
 			AddedToScene= false;
+			FileName= fileName;
 		}
+
+		// delete the ig.
+		void	release();
 	};
 	typedef	std::map<std::string, CInstanceGroupElement>	TZoneInstanceGroupMap;
 	typedef	TZoneInstanceGroupMap::iterator					ItZoneInstanceGroupMap;

@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.27 2002/03/13 11:12:29 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.28 2002/03/14 18:22:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,6 +141,7 @@ public:
 
 	// VertexProgram.
 	int						VertexProgramId;
+	bool					VertexProgramBypassed;	
 	// WindTree VertexProgram.
 	CVPWindTreeAppData		VertexProgramWindTree;
 
@@ -231,6 +232,8 @@ void LightingStateChanged (HWND hwndDlg, CLodDialogBoxParam *currentParam)
 	lightmapLight |= (SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_GETCHECK, 0, 0)!=BST_UNCHECKED);
 	lightmapLight |= (SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_ANIMATED), BM_GETCHECK, 0, 0)!=BST_UNCHECKED);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), lightmapLight);
+	EnableWindow(GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), currentParam->VertexProgramBypassed ? FALSE : TRUE);
+
 }
 
 // ***************************************************************************
@@ -1008,18 +1011,29 @@ int CALLBACK VertexProgramDialogCallBack (
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-			if(currentParam->VertexProgramId>=0)
+			// test wether v.p are bypassed for that object (this may happen when a v.p is needed by a material of this mesh)
+			if (!currentParam->VertexProgramBypassed)
 			{
-				// Init DropList.
-				SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_ADDSTRING, 0, (LPARAM)"Disable");
-				SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_ADDSTRING, 0, (LPARAM)"Wind Tree");
-				SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_SETCURSEL, currentParam->VertexProgramId, 0);
-				EnableWindow( GetDlgItem(hwndDlg, IDC_COMBO_VP), TRUE);
+				if(currentParam->VertexProgramId>=0)
+				{
+					// Init DropList.
+					SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_ADDSTRING, 0, (LPARAM)"Disable");
+					SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_ADDSTRING, 0, (LPARAM)"Wind Tree");
+					SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_SETCURSEL, currentParam->VertexProgramId, 0);
+					EnableWindow( GetDlgItem(hwndDlg, IDC_COMBO_VP), TRUE);
+				}
+				else
+				{
+					SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_SETCURSEL, -1, 0);
+					EnableWindow( GetDlgItem(hwndDlg, IDC_COMBO_VP), FALSE);
+				}
+				ShowWindow( GetDlgItem(hwndDlg, IDC_BYPASS_VP), SW_HIDE);
 			}
-			else
+			else // no vertex program available
 			{
-				SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_SETCURSEL, -1, 0);
 				EnableWindow( GetDlgItem(hwndDlg, IDC_COMBO_VP), FALSE);
+				EnableWindow( GetDlgItem(hwndDlg, IDC_VP_TEXT), FALSE);
+				ShowWindow( GetDlgItem(hwndDlg, IDC_BYPASS_VP), SW_SHOW);
 			}
 
 			// Get the tab client rect in screen
@@ -2190,6 +2204,15 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 		// VertexProgram
 		param.VertexProgramId= CExportNel::getScriptAppData (node, NEL3D_APPDATA_VERTEXPROGRAM_ID, 0);
+
+		// Test wether Vertex program not bypass by material v.p
+		NL3D::CMaterial::TShader dummyShader;
+		param.VertexProgramBypassed = CExportNel::hasMaterialWithShaderForVP(*node, 0, dummyShader);
+		if (param.VertexProgramBypassed)
+		{
+			param.UseLightingLocalAttenuation = false;
+		}
+
 		// VertexProgramWindTree
 		CExportNel::getScriptAppDataVPWT(node, param.VertexProgramWindTree);
 

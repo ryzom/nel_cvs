@@ -207,10 +207,10 @@ BEGIN
     EDITTEXT        IDC_EDIT_SOFTSHADOW_CONELENGTH,96,55,40,14,
                     ES_AUTOHSCROLL
     GROUPBOX        "Properties for objects without lightmaps",IDC_STATIC,5,
-                    80,150,50
-    CONTROL         "If checked, use per vertex lighting attenuation else use global lighting attenuation for the object",
+                    80,150,60
+    CONTROL         "If checked, use per vertex lighting attenuation else use global lighting attenuation for the object. Doesn't work with per pixel lighting shader.",
                     IDC_USE_LIGHT_LOCAL_ATTENUATION,"Button",BS_AUTO3STATE | 
-                    BS_TOP | BS_MULTILINE | WS_TABSTOP,15,95,120,25
+                    BS_TOP | BS_MULTILINE | WS_TABSTOP,15,95,120,41
     GROUPBOX        "Properties for lights",IDC_STATIC,160,5,185,100
     CONTROL         "RealTime Light",IDC_EXPORT_REALTIME_LIGHT,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,170,20,65,10
@@ -522,8 +522,10 @@ IDD_VERTEX_PROGRAM DIALOG DISCARDABLE  0, 0, 361, 211
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "VertexProgram :",IDC_STATIC,5,5,70,10
+    LTEXT           "VertexProgram :",IDC_VP_TEXT,5,5,70,10
     COMBOBOX        IDC_COMBO_VP,80,0,105,55,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Can't use vp (needed by material shader)",IDC_BYPASS_VP,
+                    196,3,132,9
 END
 
 IDD_VP_WINDTREE DIALOG DISCARDABLE  0, 0, 356, 191

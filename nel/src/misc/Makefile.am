@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.43 2002/03/19 17:42:48 valignat Exp $
+# $Id: Makefile.am,v 1.44 2002/03/19 17:49:14 cado Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -36,6 +36,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         matrix.cpp                         \
                         mem_stream.cpp                     \
                         mutex.cpp                          \
+                        o_xml.cpp                          \
                         p_thread.cpp                       \
                         path.cpp                           \
                         plane.cpp                          \

@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.25 2001/07/27 13:42:28 chafik Exp $
+ * $Id: yacc.cpp,v 1.26 2001/10/24 10:24:17 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,7 +227,8 @@ namespace NLAISCRIPT
 					else
 					{											
 						_ExpressionType->incRef();
-						i = new CObjectUnknown(_ExpressionType);							
+						i = new CObjectUnknown(_ExpressionType);
+						_ExpressionType->incRef();
 						_ConstraintType.push_back(_ExpressionType);
 						_ExpressionType = NULL;
 					}

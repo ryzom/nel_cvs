@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.11 2001/10/09 13:15:44 portier Exp $
+ * $Id: compilateur.cpp,v 1.12 2001/10/24 10:24:17 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,7 +417,8 @@ namespace NLAISCRIPT
 	{
 		while(_MethodConstraint.size())
 		{	
-			_MethodConstraint.back()->release();
+			IConstraint *c = _MethodConstraint.back();
+			//c->release();
 			_MethodConstraint.pop_back();
 		}
 	}

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.16 2000/10/17 14:58:46 cado Exp $
+ * $Id: debug.cpp,v 1.17 2000/10/23 09:29:17 cado Exp $
  *
  * Debug
  */
@@ -31,7 +31,8 @@
  * \page log_howto How to log information ?
  * \author Olivier Cado
  *
- * This document explains how to log some information (into the screen, into a file or to a logging server) , e.g. in order to debug your code.
+ * This document explains how to log some information (into the screen, into a file or to a logging server), e.g. in order to debug your code.
+ * You need to include the following header files : "nel/misc/debug.h" "nel/misc/log.h".
  *
  * \subsection init_log Initialization
  * In the initialization of your service, attach some displayers to the global NLMISC::CLog objects
@@ -43,8 +44,11 @@
  *
  * Example :
  * \code
- * NLNET::CNetDisplayer nd ( NLNET::CInetAddress( "log_service_machine", log_port ) )
- * NLMISC::DebugLog.addDisplayer( &nd );
+ * NLNET::CNetDisplayer nd; // the address of the Logging Server is automatically retrieved using the Naming Service
+ * if ( nd.connected() ) // this line is optional: here we don't want the displayer to attempt other connections if the first one failed
+ * {
+ *     NLMISC::DebugLog.addDisplayer( &nd );
+ * }
  * \endcode
  *
  * \subsection use_log Logging information

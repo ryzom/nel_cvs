@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.17 2000/12/18 15:30:11 lecroart Exp $
+ * $Id: dru.cpp,v 1.18 2000/12/19 14:35:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,14 +88,16 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 
 	if (handle == NULL)
 	{
-		throw EDruOpenglDriverNotFound();
+	  nlerror ("toto1: %s", dlerror());
+	  //		throw EDruOpenglDriverNotFound();
 	}
 
 	/* Not ANSI. Might produce a warning */
 	createDriver = (IDRV_CREATE_PROC) dlsym (handle, IDRV_CREATE_PROC_NAME);
 	if (createDriver == NULL)
 	{
-		throw EDruOpenglDriverCorrupted();
+	  nlerror ("toto2: %s", dlerror());
+	  //throw EDruOpenglDriverCorrupted();
 	}
 
 	versionDriver = (IDRV_VERSION_PROC) dlsym (handle, IDRV_VERSION_PROC_NAME);

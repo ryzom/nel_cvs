@@ -1,7 +1,7 @@
 /** \file unitime.h
  * CUniTime class
  *
- * $Id: unitime.h,v 1.4 2000/12/11 11:46:58 lecroart Exp $
+ * $Id: unitime.h,v 1.5 2000/12/19 14:35:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"
+#include "nel/misc/debug.h"
 
 namespace NLNET
 {
@@ -59,7 +60,7 @@ public:
 
 
 	/// \internal used by the time service to set the universal time the first time
-	static void				setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime) { Sync = true; _SyncUniTime = uTime; _SyncLocalTime = lTime; }
+	static void				setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime) { Sync = true; _SyncUniTime = uTime; _SyncLocalTime = lTime; nldebug ("CUniTime::setUniTime(%"NL_I64"d, %"NL_I64"d)",uTime,lTime); }
 	/// \internal
 	static void				setUniTime (NLMISC::TTime uTime) { setUniTime (uTime, getLocalTime ()); }
 

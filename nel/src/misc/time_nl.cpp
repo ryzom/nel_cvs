@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.4 2000/12/13 15:01:58 corvazier Exp $
+ * $Id: time_nl.cpp,v 1.5 2000/12/19 14:35:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,8 +53,7 @@ TTime CTime::getLocalTime ()
 	{
 		nlerror ("Cannot get time of day.");
 	}
-
-	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+	return (TTime)tv.tv_sec * (TTime)1000 + (TTime)tv.tv_usec / (TTime)1000;
 
 #endif
 }

@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.h
  * <File description>
  *
- * $Id: unix_event_emitter.h,v 1.1 2000/12/19 09:55:14 lecroart Exp $
+ * $Id: unix_event_emitter.h,v 1.2 2000/12/19 14:35:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,9 @@
 
 #ifdef NL_OS_UNIX
 
+#include <GL/gl.h>
+#include <GL/glx.h>
+
 namespace NLMISC {
 
 
@@ -40,12 +43,14 @@ namespace NLMISC {
  * \author Nevrax France
  * \date 2000
  */
-class CUnixEventEmitter : public CEventEmitter
+class CUnixEventEmitter : public IEventEmitter
 {
 public:
 
-	/// Constructor
-	CUnixEventEmitter()
+  /// Constructor
+  CUnixEventEmitter();
+
+  void init (Display *dpy, Window win);
 
 	/** 
 	 * sends all events to server
@@ -55,13 +60,11 @@ public:
 	virtual void submitEvents(CEventServer & server);
 
 public:
-	/** Process a win32 message.
-	  */
-	void processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server=NULL);
-private:
-	CWinEventServer _InternalServer;
-	uint32 _HWnd;
+	void processMessage (XEvent &event, CEventServer &server);
 
+ private:
+	Display *_dpy;
+	Window   _win;
 };
 
 

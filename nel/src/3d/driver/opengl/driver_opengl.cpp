@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.36 2000/12/19 09:55:14 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.37 2000/12/19 14:35:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,7 @@ uint32 NL3D_interfaceVersion ()
 	return IDriver::InterfaceVersion;
 }
 }
-
+/*
 static Bool WndProc(Display *d, XEvent *e, char *arg)
 {
   nlinfo("glop %d %d", e->type, e->xmap.window);
@@ -105,7 +105,7 @@ static Bool WndProc(Display *d, XEvent *e, char *arg)
   // TODO i'don t know what to return exactly
   return (e->type == MapNotify) && (e->xmap.window == (Window) arg);
 }
-
+*/
 #endif // NL_OS_UNIX
 
 CDriverGL::CDriverGL()
@@ -337,7 +337,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 		      );
 
 	XMapWindow(dpy, win);
-   
+
+	_EventEmitter.init (dpy, win);
+
 //	XEvent event;
 //	XIfEvent(dpy, &event, WaitForNotify, (char *)this);
 

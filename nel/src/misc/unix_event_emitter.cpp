@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.1 2000/12/19 09:55:14 lecroart Exp $
+ * $Id: unix_event_emitter.cpp,v 1.2 2000/12/19 14:35:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,16 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/events.h"
 #include "nel/misc/unix_event_emitter.h"
 
 #ifdef NL_OS_UNIX
+
+#include "nel/misc/debug.h"
+
+#include <X11/keysym.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
 
 namespace NLMISC {
 
@@ -33,30 +40,237 @@ CUnixEventEmitter::CUnixEventEmitter ()
 {
 }
 
+void CUnixEventEmitter::init (Display *dpy, Window win)
+{
+  _dpy = dpy;
+  _win = win;
+}
+
 void CUnixEventEmitter::submitEvents(CEventServer & server)
 {
-	// Window Mode cool.
-	// On va empecher de bouger la fenetre.
-	while (XPending(dpy))
+	while (XPending(_dpy))
 	{
-		XEvent	Event;
-		XNextEvent(dpy, &Event);
-		if(Event.xany.window==win && Event.type==ConfigureNotify)
+	  XEvent	Event;
+		XNextEvent(_dpy, &Event);
+		if(Event.xany.window==_win)
 		{
-			XConfigureEvent	Conf;
-			Conf=Event.xconfigure;
-			if(Conf.x!=GLX_WinX || Conf.y!=GLX_WinY)
-			{
-				;
-			}
+		  //		  nlinfo("event: %d", Event.type);
+		  processMessage (Event, server);
 		}
 	}
 }
 
-void CUnixEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server)
+
+TMouseButton getMouseButton (uint32 state)
+{
+	TMouseButton button=noButton;
+	if (state&ControlMask)
+		(int&)button|=ctrlButton;
+	if (state&Button1Mask)
+		(int&)button|=leftButton;
+	if (state&Button3Mask)
+		(int&)button|=rightButton;
+	if (state&Button2Mask)
+		(int&)button|=middleButton;
+	if (state&ShiftMask)
+		(int&)button|=shiftButton;
+	// TODO manage ALT key
+	//	if (GetAsyncKeyState(VK_MENU)&(1<<15))
+	//	(int&)button|=altButton;
+ 
+	return button;
+}
+
+TKey getKey (KeySym keysym)
+{
+	switch (keysym)
+	{
+	case XK_BackSpace: return KeyBACK;
+	case XK_Tab: return KeyTAB;
+//	case XK_Clear: return Key;
+	case XK_Return: return KeyRETURN;
+	case XK_Pause: return KeyPAUSE;
+//	case XK_Scroll_Lock: return Key;
+	case XK_Escape: return KeyESCAPE;
+	case XK_Delete: return KeyDELETE;
+//	case XK_Kanji: return Key;
+	case XK_Home: return KeyHOME;
+	case XK_Left: return KeyLEFT;
+	case XK_Up: return KeyUP;
+	case XK_Right: return KeyRIGHT;
+	case XK_Down: return KeyDOWN;
+	case XK_Page_Up: return KeyPRIOR;
+	case XK_Page_Down: return KeyNEXT;
+	case XK_End: return KeyEND;
+	case XK_Print: return KeyPRINT;
+	case XK_Insert: return KeyINSERT;
+	case XK_Num_Lock: return KeyNUMLOCK;
+//	case XK_KP_0: return Key;
+//	case XK_KP_1: return Key;
+//	case XK_KP_2: return Key;
+//	case XK_KP_3: return Key;
+//	case XK_KP_4: return Key;
+//	case XK_KP_5: return Key;
+//	case XK_KP_6: return Key;
+//	case XK_KP_7: return Key;
+//	case XK_KP_8: return Key;
+//	case XK_KP_9: return Key;
+	case XK_F1: return KeyF1;
+	case XK_F2: return KeyF2;
+	case XK_F3: return KeyF3;
+	case XK_F4: return KeyF4;
+	case XK_F5: return KeyF5;
+	case XK_F6: return KeyF6;
+	case XK_F7: return KeyF7;
+	case XK_F8: return KeyF8;
+	case XK_F9: return KeyF9;
+	case XK_F10: return KeyF10;
+	case XK_F11: return KeyF11;
+	case XK_F12: return KeyF12;
+	case XK_Shift_L: return KeySHIFT;
+	case XK_Shift_R: return KeySHIFT;
+	case XK_Control_L: return KeyCONTROL;
+	case XK_Control_R: return KeyCONTROL;
+///	case XK_Caps_Lock: return Key;
+///	case XK_Meta_L: return Key;
+///	case XK_Meta_R: return Key;
+///	case XK_Alt_L: return Key;
+///	case XK_Alt_R: return Key;
+
+	case XK_space: return KeySPACE;
+//	case XK_comma: return Key;
+//	case XK_minus: return Key;
+//	case XK_period: return Key;
+//	case XK_slash: return Key;
+	case XK_0: return Key0;
+	case XK_1: return Key1;
+	case XK_2: return Key2;
+	case XK_3: return Key3;
+	case XK_4: return Key4;
+	case XK_5: return Key5;
+	case XK_6: return Key6;
+	case XK_7: return Key7;
+	case XK_8: return Key8;
+	case XK_9: return Key9;
+//	case XK_semicolon: return Key;
+//	case XK_equal: return Key;
+//	case XK_bracketleft: return Key;
+//	case XK_backslash: return Key;
+//	case XK_bracketright: return Key;
+	case XK_a: return KeyA;
+	case XK_b: return KeyB;
+	case XK_c: return KeyC;
+	case XK_d: return KeyD;
+	case XK_e: return KeyE;
+	case XK_f: return KeyF;
+	case XK_g: return KeyG;
+	case XK_h: return KeyH;
+	case XK_i: return KeyI;
+	case XK_j: return KeyJ;
+	case XK_k: return KeyK;
+	case XK_l: return KeyL;
+	case XK_m: return KeyM;
+	case XK_n: return KeyN;
+	case XK_o: return KeyO;
+	case XK_p: return KeyP;
+	case XK_q: return KeyQ;
+	case XK_r: return KeyR;
+	case XK_s: return KeyS;
+	case XK_t: return KeyT;
+	case XK_u: return KeyU;
+	case XK_v: return KeyV;
+	case XK_w: return KeyW;
+	case XK_x: return KeyX;
+	case XK_y: return KeyY;
+	case XK_z: return KeyZ;
+	}
+///	return Key;
+}
+
+
+#define Case(a) case(a): // nlinfo("event: "#a);
+
+void CUnixEventEmitter::processMessage (XEvent &event, CEventServer &server)
 {
 	// switch d evenement
-}
+  switch (event.type)
+    {
+    Case(ReparentNotify)
+    Case(UnmapNotify)
+    Case(VisibilityNotify)
+      break;
+    Case(ButtonPress)
+      //nlinfo("%d %d %d", event.xbutton.button, event.xbutton.x, event.xbutton.y);
+    break;
+    Case(ButtonRelease)
+      //nlinfo("%d %d %d", event.xbutton.button, event.xbutton.x, event.xbutton.y);
+    break;
+    Case(MotionNotify)
+      {
+	XWindowAttributes xwa;
+	XGetWindowAttributes (_dpy, _win, &xwa);
+	float fX = (float) event.xbutton.x / (float) xwa.width;
+	float fY = (float) event.xbutton.y / (float) xwa.height;
+	//	nlinfo("%f %f", fX, fY);
+	TMouseButton button=getMouseButton (event.xbutton.state);
+	server.postEvent (new CEventMouseMove (fX, fY, button, this));
+	break;
+      }
+    Case(KeyPress)
+      {
+	char Text[1024];
+	KeySym k;
+	int c;
+	c = XLookupString(&event.xkey, Text, 1024-1, &k, NULL);
+     
+	TKey key = getKey (k);
+	// TODO manage the bool (first time pressed)
+	server.postEvent (new CEventKeyDown (key, true, this));
+
+	Text[c] = '\0';
+	if(c>0)
+	  {
+	    for (uint32 i = 0; i < c; i++)
+		server.postEvent (new CEventChar (Text[i], this));
+	  }
+	break;
+      }
+    Case (KeyRelease)
+      {
+	char Text[1024];
+	KeySym k;
+	int c;
+	c = XLookupString(&event.xkey, Text, 1024-1, &k, NULL);
+     
+	TKey key = getKey (k);
+	// TODO manage the bool (first time pressed)
+	server.postEvent (new CEventKeyDown (key, true, this));
+	break;
+      }
+    Case(FocusIn)
+      return;
+    Case(FocusOut)
+      return;
+    Case(Expose)
+      break;
+    Case(MappingNotify)
+      XRefreshKeyboardMapping((XMappingEvent *)&event);
+    break;
+    Case(DestroyNotify)
+      break;
+    Case(ConfigureNotify)
+      /*      if (event.xconfigure.width==gmaxx && event.xconfigure.height==gmaxy) {
+	UpdateGWin();
+      } else {
+	XResizeWindow(display, gwindow, gmaxx, gmaxy);
+	}*/
+    break;
+  default:
+   nlinfo("UnknownEvent");
+    //    XtDispatchEvent(&event);
+    break;
+  }
+    }
 
 } // NLMISC
 

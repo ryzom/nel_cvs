@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.6 2000/12/18 15:30:11 lecroart Exp $
+# $Id: Makefile.am,v 1.7 2000/12/19 14:35:31 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -14,7 +14,7 @@ libnelmisc_la_SOURCES = bit_set.cpp class_id.cpp class_registry.cpp \
                         file.cpp i18n.cpp log.cpp matrix.cpp mem_stream.cpp \
                         plane.cpp quat.cpp rgba.cpp smart_ptr.cpp stream.cpp \
                         time_nl.cpp vector.cpp vector_h.cpp vectord.cpp \
-                        path.cpp
+                        path.cpp unix_event_emitter.cpp
 
 libnelmisc_la_LIBADD  = config_file/libconfig.la
 

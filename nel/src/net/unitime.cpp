@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.15 2000/12/14 17:43:04 lecroart Exp $
+ * $Id: unitime.cpp,v 1.16 2000/12/19 14:35:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,7 @@ void CUniTime::syncUniTimeFromService (CInetAddress *addr)
 
 			TTime after = CTime::getLocalTime (), delta = after - before;
 
-			nldebug ("*****  delta: %I64dms (best is %I64dms)", delta, bestdelta);
+			nldebug ("*****  delta: %"NL_I64"dms (best is %"NL_I64"dms)", delta, bestdelta);
 
 			if (delta < 10 || delta < bestdelta)
 			{

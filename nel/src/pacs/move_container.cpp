@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.2 2001/05/22 08:35:19 corvazier Exp $
+ * $Id: move_container.cpp,v 1.3 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,17 +25,17 @@
 
 #include "nel/pacs/move_primitive.h"
 #include "nel/pacs/move_element.h"
-#include "nel/pacs/collision_callback.h"
 
 using namespace NLMISC;
+//#define EPSILON_TIME (0.01f)
 
 namespace NLPACS 
 {
 
 // ***************************************************************************
 
-CMoveContainer::CMoveContainer (float xmin, float ymin, float xmax, float ymax, uint widthCellCount, uint heightCellCount, 
-								float primitiveMaxSize, uint otSize) : _AllocOTInfo (100)
+CMoveContainer::CMoveContainer (double xmin, double ymin, double xmax, double ymax, uint widthCellCount, uint heightCellCount, 
+								double primitiveMaxSize, uint otSize) : _AllocOTInfo (100)
 {
 	init (xmin, ymin, xmax, ymax, widthCellCount, heightCellCount, primitiveMaxSize, otSize);
 }
@@ -68,8 +68,8 @@ void CMoveContainer::clear ()
 
 // ***************************************************************************
 
-void CMoveContainer::init (float xmin, float ymin, float xmax, float ymax, uint widthCellCount, uint heightCellCount, 
-						   float primitiveMaxSize, uint otSize)
+void CMoveContainer::init (double xmin, double ymin, double xmax, double ymax, uint widthCellCount, uint heightCellCount, 
+						   double primitiveMaxSize, uint otSize)
 {
 	// Clear arrays
 	clear ();
@@ -92,8 +92,8 @@ void CMoveContainer::init (float xmin, float ymin, float xmax, float ymax, uint 
 	_CellCountHeight=heightCellCount;
 
 	// Cells size
-	_CellWidth=(_Xmax - _Xmin)/(float)_CellCountWidth;
-	_CellHeight=(_Ymax - _Ymin)/(float)_CellCountHeight;
+	_CellWidth=(_Xmax - _Xmin)/(double)_CellCountWidth;
+	_CellHeight=(_Ymax - _Ymin)/(double)_CellCountHeight;
 
 	// Cell array
 	_VectorCell.resize (_CellCountWidth * _CellCountHeight);
@@ -101,26 +101,29 @@ void CMoveContainer::init (float xmin, float ymin, float xmax, float ymax, uint 
 	// resize OT
 	_OtSize=otSize;
 	_TimeOT.resize (otSize);
+
+	// Clear the OT
+	clearOT ();
+
+	// Clear test time
+	_TestTime=0xffffffff;
 }
 
 // ***************************************************************************
 
-void CMoveContainer::evalBegin (float deltaTime, ICollisionCallback& callBack)
+void CMoveContainer::evalBegin (double deltaTime)
 {
 	// Check begin / end 
 	nlassert (!_Begin);
+
+	// New test time
+	_TestTime++;
 
 	// Delta time
 	_DeltaTime=deltaTime;
 
 	// Update the bounding box and position of modified primitives
 	updatePrimitives (0.f);
-
-	// Clear the OT
-	clearOT ();
-
-	// Clear modified primitive's collision list
-	clearModifiedPrimitiveCollisionList ();
 
 #ifdef NL_DEBUG
 	// Check list integrity
@@ -134,10 +137,10 @@ void CMoveContainer::evalBegin (float deltaTime, ICollisionCallback& callBack)
 	clearModifiedList ();
 
 	// Get first collision
-	_NextCollision = _TimeOT[0].getNextInfo ();
+	_PreviousCollisionNode = &_TimeOT[0];
 
 	// Begin
-	_Begin=false;
+	_Begin=true;
 }
 
 // ***************************************************************************
@@ -147,21 +150,36 @@ bool CMoveContainer::evalCollision ()
 	// Check begin / end 
 	nlassert (_Begin);
 
+	// Modified list is empty at this point
+	nlassert (_ChangedRoot==NULL);
+
+	// Previous node is a 'hard' OT node
+	nlassert (!_PreviousCollisionNode->isInfo());
+
+	// Get next collision
+	CCollisionOTInfo	*nextCollision=_PreviousCollisionNode->getNextInfo ();
+
 	// Collision ?
-	if (_NextCollision)
+	if (nextCollision)
 	{
+		// Get new previous OT hard node
+		_PreviousCollisionNode=nextCollision->getPrevious ();
+
+		// Previous node is a 'hard' OT node
+		nlassert (!_PreviousCollisionNode->isInfo());
+
 		// Keep this collision
-		if ( _Callback->reaction (*_NextCollision->getFirstPrimitive(), *_NextCollision->getSecondPrimitive(), _NextCollision->getCollisionDesc()) )
+		if ( reaction (*nextCollision->getFirstPrimitive(), *nextCollision->getSecondPrimitive(), nextCollision->getCollisionDesc()) )
 		{
 			// Last time
-			float newTime=_NextCollision->getCollisionDesc ().ContactTime;
-
-			// Get next collision
-			nlassert (_NextCollision!=NULL);
-			_NextCollision = _NextCollision->getNextInfo ();
+			double newTime=nextCollision->getCollisionDesc ().ContactTime;
 
 			// Remove modified objects from the OT
-			removeModifiedFromOT (newTime);
+			removeModifiedFromOT ();
+
+			// Must have been removed
+			nlassert (nextCollision->getPrevious ()==NULL);
+			nlassert (nextCollision->CCollisionOT::getNext ()==NULL);
 
 			// Update the bounding box and position of modified primitives
 			updatePrimitives (newTime);
@@ -172,17 +190,32 @@ bool CMoveContainer::evalCollision ()
 			// Clear modified list
 			clearModifiedList ();
 		}
+		else
+		{
+			// Remove this collision info from OT
+			nextCollision->unlink ();
+
+			// Remove this collision from the primitives
+			nextCollision->getFirstPrimitive()->removeCollisionOTInfo (nextCollision);
+			nextCollision->getSecondPrimitive()->removeCollisionOTInfo (nextCollision);
+		}
 
 		// Return ok
 		return true;
 	}
 	else
 	{
+		// OT must be cleared
+		checkOT ();
+
+		// TODO remove clearOT.
+		//clearOT ();
+
 		// Free ordered table info
 		freeAllOTInfo ();
 
 		// Some init
-		_NextCollision=NULL;
+		_PreviousCollisionNode=NULL;
 
 		// End
 		_Begin=false;
@@ -193,7 +226,7 @@ bool CMoveContainer::evalCollision ()
 
 // ***************************************************************************
 
-void CMoveContainer::updatePrimitives (float beginTime)
+void CMoveContainer::updatePrimitives (double beginTime)
 {
 	// For each changed primitives
 	CMovePrimitive *changed=_ChangedRoot;
@@ -215,22 +248,27 @@ void CMoveContainer::updatePrimitives (float beginTime)
 void CMoveContainer::updateCells (CMovePrimitive *primitive)
 {
 	// Check BB width not too large
-	nlassert (primitive->getBBXMax() - primitive->getBBXMin() < _CellWidth);
+	nlassertonce (primitive->getBBXMax() - primitive->getBBXMin() < _CellWidth);
 
 	// Check BB height not too large
-	nlassert (primitive->getBBYMax() - primitive->getBBYMin() < _CellHeight);
+	nlassertonce (primitive->getBBYMax() - primitive->getBBYMin() < _CellHeight);
 
 	// Get coordinate in the cell array
 	int minx=(int)floor ((primitive->getBBXMin() - _Xmin) / _CellWidth);
 	int miny=(int)floor ((primitive->getBBYMin() - _Ymin) / _CellHeight);
-	int maxx=(int)floor ((primitive->getBBXMax() - _Ymin) / _CellWidth);
+	int maxx=(int)floor ((primitive->getBBXMax() - _Xmin) / _CellWidth);
 	int maxy=(int)floor ((primitive->getBBYMax() - _Ymin) / _CellHeight);
 
 	// Born
-	clamp (minx, 0, (int)(_CellCountWidth-1));
-	clamp (miny, 0, (int)(_CellCountHeight-1));
-	clamp (maxx, 0, (int)(_CellCountWidth-1));
-	clamp (maxy, 0, (int)(_CellCountHeight-1));
+	if (minx<0)
+		minx=0;
+	if (miny<0)
+		miny=0;
+	if (maxx>=(int)_CellCountWidth)
+		maxx=(int)_CellCountWidth-1;
+	if (maxy>=(int)_CellCountHeight)
+		maxy=(int)_CellCountHeight-1;
+
 	maxx=std::min (minx+1, maxx);
 	maxy=std::min (miny+1, maxy);
 
@@ -247,35 +285,53 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive)
 		// Old element in this cell ?
 		if ( elm )
 		{
+			// Check
+			nlassert (elm->X>=0);
+			nlassert (elm->X<_CellCountWidth);
+			nlassert (elm->Y>=0);
+			nlassert (elm->Y<_CellCountHeight);
+
 			// Must remove it ?
-			if ( (elm->X < minx) && (elm->X > maxx) && (elm->Y < miny) && (elm->Y > maxy) )
+			if ( (elm->X < minx) || (elm->X > maxx) || (elm->Y < miny) || (elm->Y > maxy) )
 			{
 				// Yes remove it
 				primitive->removeMoveElement (i);
 			}
 			else
 			{
+				// Checks
+				nlassert (((elm->X - minx)==0)||((elm->X - minx)==1));
+				nlassert (((elm->Y - miny)==0)||((elm->Y - miny)==1));
+
+				// Update position
+#ifndef TEST_CELL
+				_VectorCell[elm->X+elm->Y*_CellCountWidth].updateSortedLists (elm);
+#endif TEST_CELL
+
 				// Check found cells
-				found[elm->X - minx + ((elm->Y - miny) << (maxx-minx)) ]=true;
+				found[ elm->X - minx + ((elm->Y - miny) << (maxx-minx)) ]=true;
 			}
 		}
 	}
 
 	// For each case selected
-	int x, y;
+	uint x, y;
 	i=0;
-	for (y=miny; y<maxy; y++)
-	for (x=minx; x<maxx; x++)
+	for (y=miny; y<=(uint)maxy; y++)
+	for (x=minx; x<=(uint)maxx; x++)
 	{
+		// Check the formula
+		nlassert (i == (x - minx + ((y - miny) << (maxx-minx)) ));
+
 		// If the cell is not found
 		if (!found[i])
 		{
 			// Center of the cell
-			float cx=((float)x)*_CellWidth+_Xmin;
-			float cy=((float)y)*_CellHeight+_Ymin;
+			double cx=((double)x+0.5f)*_CellWidth+_Xmin;
+			double cy=((double)y+0.5f)*_CellHeight+_Ymin;
 
 			// Add it in the list
-			primitive->addMoveElement (_VectorCell[x+y*_CellCountWidth], cx, cy);
+			primitive->addMoveElement (_VectorCell[x+y*_CellCountWidth], (uint16)x, (uint16)y, cx, cy);
 		}
 
 		// Next cell
@@ -298,7 +354,7 @@ void CMoveContainer::clearModifiedList ()
 		changed=changed->getNextModified ();
 
 		// Remove it from the list
-		primitive->clearInModifiedListFlag ();
+		primitive->setInModifiedListFlag (false);
 	}
 
 	// Empty list
@@ -322,7 +378,7 @@ void CMoveContainer::checkSortedList ()
 
 // ***************************************************************************
 
-void CMoveContainer::evalAllCollisions (float beginTime)
+void CMoveContainer::evalAllCollisions (double beginTime)
 {
 	// First primitive
 	CMovePrimitive	*primitive=_ChangedRoot;
@@ -343,28 +399,67 @@ void CMoveContainer::evalAllCollisions (float beginTime)
 			{
 				// Check
 				nlassert (elm->Primitive==primitive);
+				// Primitive to the left
+#ifdef TEST_CELL
+				// Lookup in X sorted list on the left
+				CMoveElement	*other=_VectorCell[elm->X+elm->Y*_CellCountWidth].getRootX ();
+
+				while (other)
+				{
+					CMovePrimitive	*otherP=other->Primitive;
+					if ( (!otherP->isInModifiedListFlag ()) || (primitive<otherP) )
+					{
+						if ((primitive->getBBXMin()<otherP->getBBXMax())&&(otherP->getBBXMin()<primitive->getBBXMax())&&
+							(primitive->getBBYMin()<otherP->getBBYMax())&&(otherP->getBBYMin()<primitive->getBBYMax()))
+						{
+							// Test the primitive
+							CCollisionDesc desc;
+							if (primitive->evalCollision (*otherP, desc, beginTime, _DeltaTime, _TestTime))
+							{
+								// Check time interval
+								nlassert (beginTime<=desc.ContactTime);
+								nlassert (desc.ContactTime<_DeltaTime);
+
+								// OK, collision
+								newCollision (primitive, otherP, desc);
+							}
+						}
+					}
+					// Next primitive to the left
+					other = other->NextX;
+				}
+#else // TEST_CELL
 
 				// Lookup in X sorted list on the left
 				CMoveElement	*other=elm->PreviousX;
+				nlassert (other!=elm);
 
-				// Primitive to the left
 				while (other && (primitive->getBBXMin() - other->Primitive->getBBXMin() < _PrimitiveMaxSize) )
 				{
 					// Other primitive
 					CMovePrimitive	*otherPrimitive=other->Primitive;
+					nlassert (otherPrimitive!=primitive);
 
-					// Look if valid in X
-					if (primitive->getBBXMin() < otherPrimitive->getBBXMax())
+					// Continue the check if the other primitive is not int the modified list or if its pointer is higher than primitive
+					if ( (!otherPrimitive->isInModifiedListFlag ()) || (primitive<otherPrimitive) )
 					{
-						// Look if valid in Y
-						if ( (primitive->getBBYMin() < otherPrimitive->getBBYMax()) && (otherPrimitive->getBBYMin() < primitive->getBBYMax()) )
+						// Look if valid in X
+						if (primitive->getBBXMin() < otherPrimitive->getBBXMax())
 						{
-							// Test the primitive
-							CCollisionDesc desc;
-							if (primitive->evalCollision (*otherPrimitive, desc, beginTime, _DeltaTime))
+							// Look if valid in Y
+							if ( (primitive->getBBYMin() < otherPrimitive->getBBYMax()) && (otherPrimitive->getBBYMin() < primitive->getBBYMax()) )
 							{
-								// OK, collision
-								newCollision (primitive, otherPrimitive, desc);
+								// Test the primitive
+								CCollisionDesc desc;
+								if (primitive->evalCollision (*otherPrimitive, desc, beginTime, _DeltaTime, _TestTime))
+								{
+									// Check time interval
+									nlassert (beginTime<=desc.ContactTime);
+									nlassert (desc.ContactTime<_DeltaTime);
+
+									// OK, collision
+									newCollision (primitive, otherPrimitive, desc);
+								}
 							}
 						}
 					}
@@ -381,22 +476,28 @@ void CMoveContainer::evalAllCollisions (float beginTime)
 				{
 					// Other primitive
 					CMovePrimitive	*otherPrimitive=other->Primitive;
+					nlassert (otherPrimitive!=primitive);
 
-					// Look if valid in Y
-					if ( (primitive->getBBYMin() < otherPrimitive->getBBYMax()) && (otherPrimitive->getBBYMin() < primitive->getBBYMax()) )
+					// Continue the check if the other primitive is not in the modified list or if its pointer is higher than primitive
+					if ( (!otherPrimitive->isInModifiedListFlag ()) || (primitive<otherPrimitive) )
 					{
-						// Test the primitive
-						CCollisionDesc desc;
-						if (primitive->evalCollision (*otherPrimitive, desc, beginTime, _DeltaTime))
+						// Look if valid in Y
+						if ( (primitive->getBBYMin() < otherPrimitive->getBBYMax()) && (otherPrimitive->getBBYMin() < primitive->getBBYMax()) )
 						{
-							// OK, collision
-							newCollision (primitive, otherPrimitive, desc);
+							// Test the primitive
+							CCollisionDesc desc;
+							if (primitive->evalCollision (*otherPrimitive, desc, beginTime, _DeltaTime, _TestTime))
+							{
+								// OK, collision
+								newCollision (primitive, otherPrimitive, desc);
+							}
 						}
 					}
 
 					// Next primitive to the left
 					other = other->NextX;
 				}
+#endif // TEST_CELL
 			}
 		}
 
@@ -410,7 +511,7 @@ void CMoveContainer::evalAllCollisions (float beginTime)
 void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc)
 {
 	// Get an ordered time index. Always round to the future.
-	int index=(int)(ceil (desc.ContactTime*(float)_OtSize/_DeltaTime) );
+	int index=(int)(ceil (desc.ContactTime*(double)_OtSize/_DeltaTime) );
 
 	// Clamp left.
 	if (index<0)
@@ -420,7 +521,7 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 	if (index<(int)_OtSize)
 	{
 		// Rounded time
-		float finalTime=(float)index * _DeltaTime / (float)_OtSize;
+		double finalTime=(double)index * _DeltaTime / (double)_OtSize;
 
 		// Build info
 		CCollisionOTInfo *info = allocateOTInfo ();
@@ -433,7 +534,30 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 		// Insert in the time ordered table
 		nlassert (index<(int)_TimeOT.size());
 		_TimeOT[index].link (info);
+
+		// Check it is after the last hard collision
+		nlassert (_PreviousCollisionNode<=&_TimeOT[index]);
 	}
+}
+
+// ***************************************************************************
+
+void CMoveContainer::checkOT ()
+{
+	// Check
+	nlassert (_OtSize==_TimeOT.size());
+
+	// Check linked list
+	for (uint i=0; i<_OtSize-1; i++)
+	{
+		// Check link
+		nlassert ( _TimeOT[i].getNext() == (&(_TimeOT[i+1])) );
+		nlassert ( _TimeOT[i+1].getPrevious() == (&(_TimeOT[i])) );
+	}
+
+	// Check first and last
+	nlassert ( _TimeOT[0].getPrevious() == NULL );
+	nlassert ( _TimeOT[_OtSize-1].getNext() == NULL );
 }
 
 // ***************************************************************************
@@ -456,30 +580,14 @@ void CMoveContainer::clearOT ()
 
 // ***************************************************************************
 
-void CMoveContainer::removeModifiedFromOT (float beginTime)
+void CMoveContainer::removeModifiedFromOT ()
 {
 	// For each changed primitives
 	CMovePrimitive *changed=_ChangedRoot;
 	while (changed)
 	{
 		// Remove from ot list
-		changed->removeCollisionOTInfo (beginTime);
-		
-		// Next primitive
-		changed=changed->getNextModified ();
-	}
-}
-
-// ***************************************************************************
-
-void CMoveContainer::clearModifiedPrimitiveCollisionList ()
-{
-	// For each changed primitives
-	CMovePrimitive *changed=_ChangedRoot;
-	while (changed)
-	{
-		// Remove from ot list
-		changed->clearCollisionList ();
+		changed->removeCollisionOTInfo ();
 		
 		// Next primitive
 		changed=changed->getNextModified ();
@@ -506,7 +614,7 @@ void CMoveContainer::freeAllOTInfo ()
 CMovePrimitive *CMoveContainer::allocatePrimitive ()
 {
 	// Simply allocate
-	return new CMovePrimitive;
+	return new CMovePrimitive (this);
 }
 
 // ***************************************************************************
@@ -531,6 +639,113 @@ void CMoveContainer::freeMoveElement (CMoveElement *element)
 {
 	// Simply deallocate
 	delete element;
+}
+
+// ***************************************************************************
+
+UMoveContainer *UMoveContainer::createMoveContainer (double xmin, double ymin, double xmax, double ymax, 
+		uint widthCellCount, uint heightCellCount, double primitiveMaxSize, uint otSize)
+{
+	// Create a CMoveContainer
+	return new CMoveContainer (xmin, ymin, xmax, ymax, widthCellCount, heightCellCount, primitiveMaxSize, otSize);
+}
+
+// ***************************************************************************
+
+void	UMoveContainer::deleteMoveContainer (UMoveContainer	*container)
+{
+	delete (CMoveContainer*)container;
+}
+
+// ***************************************************************************
+
+UMovePrimitive *CMoveContainer::addPrimitive ()
+{
+	// Allocate primitive
+	CMovePrimitive *primitive=allocatePrimitive ();
+
+	// Add into the set
+	_PrimitiveSet.insert (primitive);
+
+	// Flag it
+	changed (primitive);
+
+	// Return it
+	return primitive;
+}
+
+// ***************************************************************************
+
+void CMoveContainer::removePrimitive (UMovePrimitive* primitive)
+{
+	// CMovePrimitive pointer
+	CMovePrimitive *prim=(CMovePrimitive*)primitive;
+
+	// In modified list ?
+	if (prim->isInModifiedListFlag ())
+		// Remove from modified list
+		removeFromModifiedList (prim);
+
+	// Remove from the set
+	_PrimitiveSet.erase (prim);
+
+	// Erase it
+	delete prim;
+}
+
+// ***************************************************************************
+
+void CMoveContainer::removeFromModifiedList (CMovePrimitive* primitive)
+{
+	// For each changed primitives
+	CMovePrimitive *changed=_ChangedRoot;
+	CMovePrimitive *previous=NULL;
+
+	while (changed)
+	{
+		// Remove from ot list
+		if (changed==primitive)
+		{
+			// There is a previous primitive ?
+			if (previous)
+				previous->linkInModifiedList (primitive->getNextModified ());
+			else
+				_ChangedRoot=primitive->getNextModified ();
+
+			// Unlink
+			primitive->linkInModifiedList (NULL);
+			primitive->setInModifiedListFlag (false);
+			break;
+		}
+		
+		// Next primitive
+		previous=changed;
+		changed=changed->getNextModified ();
+	}
+}
+
+// ***************************************************************************
+
+void CMoveContainer::unlinkMoveElement  (CMoveElement *element)
+{
+	// Some checks
+	nlassert (element->X>=0);
+	nlassert (element->X<_CellCountWidth);
+	nlassert (element->Y>=0);
+	nlassert (element->Y<_CellCountHeight);
+
+	// Unlink it
+	CMoveCell &cell=_VectorCell[element->X+element->Y*_CellCountWidth];
+	cell.unlinkX (element);
+	cell.unlinkY (element);
+}
+
+// ***************************************************************************
+
+bool CMoveContainer::reaction (CMovePrimitive& first, CMovePrimitive& second, const CCollisionDesc& desc)
+{
+	// Reaction
+	return first.reaction (second, desc);
 }
 
 // ***************************************************************************

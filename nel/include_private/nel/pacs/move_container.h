@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: move_container.h,v 1.2 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/pool_memory.h"
 #include "nel/pacs/move_cell.h"
 #include "nel/pacs/collision_ot.h"
+#include "nel/pacs/u_move_container.h"
 
 namespace NLPACS 
 {
@@ -47,28 +48,27 @@ class CMoveElement;
  * \date 2001
  */
 
-class CMoveContainer
+class CMoveContainer: public UMoveContainer
 {
 	friend class CMovePrimitive;
-	friend class ICollisionCallback;
 public:
 	/// Constructor
-	CMoveContainer (float xmin, float ymin, float xmax, float ymax, uint widthCellCount, uint heightCellCount, float primitiveMaxSize, uint otSize=100);
+	CMoveContainer (double xmin, double ymin, double xmax, double ymax, uint widthCellCount, uint heightCellCount, double primitiveMaxSize, uint otSize=100);
 
 	/// Destructor
 	~CMoveContainer ();
 
 	/// Init the container
-	void init (float xmin, float ymin, float xmax, float ymax, uint widthCellCount, uint heightCellCount, float primitiveMaxSize, uint otSize=100);
+	void init (double xmin, double ymin, double xmax, double ymax, uint widthCellCount, uint heightCellCount, double primitiveMaxSize, uint otSize=100);
 
 	/// Add a primitive in the container. Return the pointer on the primitive.
-	CMovePrimitive*				addPrimitive ();
+	UMovePrimitive*				addPrimitive ();
 
 	/// Remove a primitive from the container.
-	void						removePrimitive (CMovePrimitive* primitive);
+	void						removePrimitive (UMovePrimitive* primitive);
 
 	/// Begin evaluation of collisions
-	void						evalBegin (float deltaTime, ICollisionCallback& callBack);
+	void						evalBegin (double deltaTime);
 
 	/* 
 	 * Evaluation of a collision
@@ -86,6 +86,9 @@ public:
 	void						freeMoveElement (CMoveElement *element);
 
 private:
+	// Current test time
+	uint32						_TestTime;
+
 	// Set of primitives
 	std::set<CMovePrimitive*>	_PrimitiveSet;
 
@@ -95,23 +98,21 @@ private:
 	// The time ordered table
 	uint						_OtSize;
 	std::vector<CCollisionOT>	_TimeOT;
-	CCollisionOTInfo			*_NextCollision;
+	CCollisionOT				*_PreviousCollisionNode;
 
-	float						_DeltaTime;
+	double						_DeltaTime;
 
 	bool						_Begin;
 
-	ICollisionCallback			*_Callback;
-
 	// Max primitive size
-	float						_PrimitiveMaxSize;
+	double						_PrimitiveMaxSize;
 
-	float						_Xmin;
-	float						_Ymin;
-	float						_Xmax;
-	float						_Ymax;
-	float						_CellWidth;
-	float						_CellHeight;
+	double						_Xmin;
+	double						_Ymin;
+	double						_Xmax;
+	double						_Ymax;
+	double						_CellWidth;
+	double						_CellHeight;
 	uint						_CellCountWidth;
 	uint						_CellCountHeight;
 	std::vector<CMoveCell>		_VectorCell;
@@ -125,7 +126,7 @@ private:
 	void						clear ();
 
 	// Update modified primitives bounding box
-	void						updatePrimitives (float deltaTime);
+	void						updatePrimitives (double deltaTime);
 
 	// Update cells list for this primitive
 	void						updateCells (CMovePrimitive *primitive);
@@ -133,11 +134,11 @@ private:
 	// Clear the time ordered table
 	void						clearOT ();
 
-	// Clear modified primitive collision list
-	void						clearModifiedPrimitiveCollisionList ();
+	// Check the OT is cleared and linked
+	void						checkOT ();
 
 	// Eval all collision for modified primitives
-	void						evalAllCollisions (float beginTime);
+	void						evalAllCollisions (double beginTime);
 
 	// Add a collision in the time ordered table
 	void						newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc);
@@ -147,7 +148,7 @@ private:
 	void						clearModifiedList ();
 
 	// Remove modified primitive from time ordered table
-	void						removeModifiedFromOT (float beginTime);
+	void						removeModifiedFromOT ();
 
 	// Check sorted list
 	void						checkSortedList ();
@@ -166,6 +167,15 @@ private:
 
 	// Called by CMovePrimitive when a change occured on the primitive BB
 	void						changed (CMovePrimitive* primitive);
+
+	// Remove the primitive from the modified list
+	void						removeFromModifiedList (CMovePrimitive* primitive);
+
+	// Unlink this move element
+	void						unlinkMoveElement  (CMoveElement *element);
+
+	// Reaction of the collision between two primitives. Return true if one object has been modified.
+	bool						reaction (CMovePrimitive& first, CMovePrimitive& second, const CCollisionDesc& desc);
 };
 
 

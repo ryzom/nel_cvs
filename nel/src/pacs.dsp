@@ -19,6 +19,7 @@ CFG=pacs - Win32 Debug
 !MESSAGE 
 !MESSAGE "pacs - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "pacs - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "pacs - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -74,12 +75,36 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
+!ELSEIF  "$(CFG)" == "pacs - Win32 ReleaseDebug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "pacs___Win32_ReleaseDebug"
+# PROP BASE Intermediate_Dir "pacs___Win32_ReleaseDebug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "TEST_CELL" /YX /FD /c
+# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD RSC /l 0x40c /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo
+
 !ENDIF 
 
 # Begin Target
 
 # Name "pacs - Win32 Release"
 # Name "pacs - Win32 Debug"
+# Name "pacs - Win32 ReleaseDebug"
 # Begin Group "Static Collisions"
 
 # PROP Default_Filter ""
@@ -111,18 +136,6 @@ SOURCE=..\include_private\nel\pacs\edge_collide.h
 # Begin Group "Dynamic Collisions"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\pacs\collision_callback.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include_private\nel\pacs\collision_callback.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\pacs\collision_desc.cpp
-# End Source File
 # Begin Source File
 
 SOURCE=..\include_private\nel\pacs\collision_desc.h
@@ -157,15 +170,7 @@ SOURCE=..\include_private\nel\pacs\move_container_inline.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\pacs\move_element.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\include_private\nel\pacs\move_element.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include_private\nel\pacs\move_element_inline.h
 # End Source File
 # Begin Source File
 
@@ -231,22 +236,34 @@ SOURCE=.\pacs\surface_quad.cpp
 
 SOURCE=..\include_private\nel\pacs\surface_quad.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\pacs\vector_2s.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include_private\nel\pacs\vector_2s.h
-# End Source File
 # End Group
 # Begin Group "User"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\u_collision_desc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\u_move_container.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\u_move_primitive.h
+# End Source File
 # End Group
 # Begin Group "UserImp"
 
 # PROP Default_Filter ""
 # End Group
+# Begin Source File
+
+SOURCE=..\include_private\nel\pacs\vector_2s.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\vector_2s.cpp
+# End Source File
 # End Target
 # End Project

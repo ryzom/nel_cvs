@@ -1,7 +1,7 @@
 /** \file move_container_inline.h
  * Inline functions for movable object
  *
- * $Id: move_container_inline.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: move_container_inline.h,v 1.2 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,13 +36,13 @@ namespace NLPACS
 inline void CMoveContainer::changed (CMovePrimitive* primitive)
 {
 	// Not yet in the list ?
-	if ((primitive->_Flags&CMovePrimitive::InModifiedListFlag)==0)
+	if (!primitive->isInModifiedListFlag ())
 	{
 		// Flag it
-		primitive->_Flags|=CMovePrimitive::InModifiedListFlag;
+		primitive->setInModifiedListFlag (true);
 		
 		// Link it
-		primitive->_NextModified=_ChangedRoot;
+		primitive->linkInModifiedList (_ChangedRoot);
 
 		// Change root list
 		_ChangedRoot=primitive;

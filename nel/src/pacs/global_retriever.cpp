@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.14 2001/05/31 12:30:18 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.15 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1007,7 +1007,6 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 		return res;
 	}
 	CSurfaceIdent	endSurface= testMovementWithCollisionChains(cst, startCol, endCol, startSurface);
-
 
 	// 3. return result.
 	//===========

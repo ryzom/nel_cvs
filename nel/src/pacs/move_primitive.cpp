@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.4 2001/05/22 08:47:21 berenguier Exp $
+ * $Id: move_primitive.cpp,v 1.5 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,21 +26,27 @@
 #include "nel/pacs/move_primitive.h"
 #include "nel/pacs/collision_desc.h"
 #include "nel/pacs/move_element.h"
+#include "nel/misc/common.h"
 
+using namespace NLMISC;
 
 namespace NLPACS 
 {
 
 // ***************************************************************************
 
-CMovePrimitive::CMovePrimitive ()
+CMovePrimitive::CMovePrimitive (CMoveContainer* container)
 {
+	_CollisionMask=0xffffffff;
+	_Attenuation=1;
+	_Container=container;
 	_Flags=0;
 	_BBXMin=-FLT_MAX;
 	_BBXMax=-FLT_MAX;
 	_BBYMin=-FLT_MAX;
 	_BBYMax=-FLT_MAX;
 	_RootOTInfo=NULL;
+	_LastTestTime=0xffffffff;
 	for (uint i=0; i<4; i++)
 		_MoveElement[i]=NULL;
 }
@@ -56,10 +62,15 @@ CMovePrimitive::~CMovePrimitive ()
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollision (CMovePrimitive& other, CCollisionDesc& desc, float timeMin, float timeMax)
+bool CMovePrimitive::evalCollision (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax, uint32 testTime)
 {
+	// Test time
+	if ( (!checkTestTime (testTime)) || (!other.checkTestTime (testTime)) )
+		return false;
+
 	// Bounding box test
-	if (evalCollisionBB (other))
+	// TODO: remove evalCollisionBB
+	//if (evalCollisionBB (other))
 	{
 		// Switch the good test
 		switch (((uint32)_Flags)&PrimitiveMask)
@@ -127,7 +138,7 @@ bool CMovePrimitive::evalCollision (CMovePrimitive& other, CCollisionDesc& desc,
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDesc& desc, float timeMin, float timeMax)
+bool CMovePrimitive::evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
@@ -140,7 +151,7 @@ bool CMovePrimitive::evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDes
 	desc.ContactTime=FLT_MAX;
 
 	// Timemin
-	float _timeMin=-FLT_MAX;
+	double _timeMax=-FLT_MAX;
 
 	// Check movable points over the edge
 	uint pt;
@@ -150,19 +161,23 @@ bool CMovePrimitive::evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDes
 	{
 		// Get collision time of the point over the segment
 		CCollisionDesc d;
-		if (evalCollisionPoverS (other, d, pt, seg, _timeMin, timeMax))
+		if ( evalCollisionPoverS (other, d, pt, seg) )
 		{
+			// Find
+			find=true;
+
 			// Best time ?
 			if (d.ContactTime<desc.ContactTime)
 			{
 				// This is the new descriptor
 				desc=d;
+			}
 
-				// New time min
-				_timeMin=desc.ContactTime;
-
-				// Find
-				find=true;
+			// Best max time ?
+			if (d.ContactTime>_timeMax)
+			{
+				// This is the new max time
+				_timeMax=d.ContactTime;
 			}
 		}
 	}
@@ -173,35 +188,56 @@ bool CMovePrimitive::evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDes
 	{
 		// Get collision time of the point over the segment
 		CCollisionDesc d;
-		if (other.evalCollisionPoverS (*this, d, pt, seg, _timeMin, timeMax))
+		if (other.evalCollisionPoverS (*this, d, pt, seg))
 		{
+			// Find
+			find=true;
+
 			// Best time ?
 			if (d.ContactTime<desc.ContactTime)
 			{
 				// This is the new descriptor
 				desc=d;
-				desc.XChgContactNormals ();
+			}
 
-				// New time min
-				_timeMin=desc.ContactTime;
-
-				// Find
-				find=true;
+			// Best max time ?
+			if (d.ContactTime>_timeMax)
+			{
+				// This is the new max time
+				_timeMax=d.ContactTime;
 			}
 		}
 	}
 
-	// Clip min
-	if (_timeMin<timeMin)
-		find=false;
+	if (find)
+	{
+		// Half time
+		double halfTime = (_timeMax+desc.ContactTime)/2.0;
 
-	// Return if we have found a collision
-	return find;
+		// Collision in the past ?
+		if (timeMin > halfTime)
+			// yes, abort
+			return false;
+
+		// Collision not in the future ?
+		if (timeMax>desc.ContactTime)
+		{
+			// Clamp time
+			if (desc.ContactTime<timeMin)
+				desc.ContactTime=timeMin;
+
+			// yes, found it
+			return true;
+		}
+	}
+
+	// No collision found
+	return false;
 }
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDesc& desc, float timeMin, float timeMax)
+bool CMovePrimitive::evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
@@ -214,7 +250,7 @@ bool CMovePrimitive::evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDes
 	desc.ContactTime=FLT_MAX;
 
 	// time min clip
-	float _timeMin=-FLT_MAX;
+	double _timeMax = -FLT_MAX;
 
 	// Check movable points over the cylinder
 	uint pt;
@@ -222,19 +258,23 @@ bool CMovePrimitive::evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDes
 	{
 		// Get collision time of the point over the segment
 		CCollisionDesc d;
-		if (evalCollisionPoverOC (other, d, pt, _timeMin, timeMax))
+		if (evalCollisionPoverOC (other, d, pt))
 		{
+			// Found
+			find=true;
+
 			// Best time ?
 			if (d.ContactTime<desc.ContactTime)
 			{
 				// This is the new descriptor
 				desc=d;
+			}
 
-				// New time min
-				_timeMin=desc.ContactTime;
-
-				// Found
-				find=true;
+			// Best max time ?
+			if (d.ContactTime>_timeMax)
+			{
+				// New max time
+				_timeMax=d.ContactTime;
 			}
 		}
 	}
@@ -245,114 +285,129 @@ bool CMovePrimitive::evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDes
 	{
 		// Get collision time of the point over the segment
 		CCollisionDesc d;
-		if (evalCollisionSoverOC (other, d, seg, _timeMin, timeMax))
+		if (evalCollisionSoverOC (other, d, seg))
 		{
+			// Found
+			find=true;
+
 			// Best time ?
 			if (d.ContactTime<desc.ContactTime)
 			{
 				// This is the new descriptor
 				desc=d;
+			}
 
-				// New time min
-				_timeMin=desc.ContactTime;
-
-				// Found
-				find=true;
+			// Best max time ?
+			if (d.ContactTime>_timeMax)
+			{
+				// New max time
+				_timeMax=d.ContactTime;
 			}
 		}
 	}
 
-	// Clip min
-	if (_timeMin<timeMin)
-		find=false;
+	if (find)
+	{
+		// Half time
+		double halfTime = (_timeMax+desc.ContactTime)/2.0;
 
-	// Return if we have found a collision
-	return find;
+		// Collision in the past ?
+		if (timeMin > halfTime)
+			// yes, abort
+			return false;
+
+		// Collision not in the future ?
+		if (timeMax>desc.ContactTime)
+		{
+			// Clamp time
+			if (desc.ContactTime<timeMin)
+				desc.ContactTime=timeMin;
+
+			// yes, found it
+			return true;
+		}
+	}
+
+	// No collision found
+	return false;
 }
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionPoverS (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, uint numSeg, float timeMin, float timeMax)
+bool CMovePrimitive::evalCollisionPoverS (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, uint numSeg)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
 	nlassert ((((uint32)other._Flags)&PrimitiveMask)==_2DOrientedBox);
 
 	// Some constants
-	const float normalSegX=other._OBData.EdgeDirectionY[numSeg];
-	const float normalSegY=-other._OBData.EdgeDirectionX[numSeg];
+	const double normalSegX=other._OBData.EdgeDirectionY[numSeg];
+	const double normalSegY=-other._OBData.EdgeDirectionX[numSeg];
 
-	// Relative speed
-	const float speedX=other._Speed.x-_Speed.x;
-	const float speedY=other._Speed.y-_Speed.y;
+  	// Relative speed
+	const double speedX=other._Speed.x-_Speed.x;
+	const double speedY=other._Speed.y-_Speed.y;
 
 	// Dot product with the plan tangeante
-	float dotProd= speedX*normalSegX + speedY*normalSegY;
-	if ( dotProd > 0 )
+	double dotProd= speedX*normalSegX + speedY*normalSegY;
+	//if ( dotProd > 0 )
+	if ( dotProd != 0 )
 	{
 		// Time of the collision
-		float time= (normalSegX*(other._OBData.PointPosX[numPoint] - other._OBData.PointPosX[numSeg]) + 
-			normalSegY*(other._OBData.PointPosY[numPoint] - other._OBData.PointPosY[numSeg])) / dotProd;
+		double time= (normalSegX*(_OBData.PointPosX[numPoint] - other._OBData.PointPosX[numSeg]) + 
+			normalSegY*(_OBData.PointPosY[numPoint] - other._OBData.PointPosY[numSeg])) / dotProd;
 
-		// Clip time
-		if ((timeMin<time)&&(time<timeMax))
+		// Position of segment point at collision time
+		const double segPosX= other._OBData.PointPosX[numSeg] + other._Speed.x*time;
+		const double segPosY= other._OBData.PointPosY[numSeg] + other._Speed.y*time;
+
+		// Position of the point at collision time
+		const double ptPosX= _OBData.PointPosX[numPoint] + _Speed.x*time;
+		const double ptPosY= _OBData.PointPosY[numPoint] + _Speed.y*time;
+
+		// Direction of the collision on the segment
+		const double dirX= ptPosX - segPosX;
+		const double dirY= ptPosY - segPosY;
+
+		// Length of this vector
+		const double length= dirY*normalSegX - dirX*normalSegY;
+
+		// Included ?
+		if ( ( length >= 0 ) && ( length <= other._OBData.Length[numSeg&1] ) )
 		{
-			// Position of segment point at collision time
-			const float segPosX= other._OBData.PointPosX[numSeg] + other._Speed.x*time;
-			const float segPosY= other._OBData.PointPosY[numSeg] + other._Speed.y*time;
+			// 2d Collid checked... Now check height
+			
+			// Pos Z
+			const double pointSegZ=other._Position.z;
+			const double segPosZ= pointSegZ + other._Speed.z*time;
 
-			// Position of the point at collision time
-			const float ptPosX= _OBData.PointPosX[numPoint] + _Speed.x*time;
-			const float ptPosY= _OBData.PointPosY[numPoint] + _Speed.y*time;
-
-			// Direction of the collision on the segment
-			const float dirX= ptPosX - segPosX;
-			const float dirY= ptPosY - segPosY;
-
-			// Length of this vector
-			const float length= dirY*normalSegX - dirX*normalSegY;
+			// Some constants
+			const double pointZ=_Position.z;
+			const double ptPosZ= pointZ + _Speed.z*time;
 
 			// Included ?
-			if ( ( length >= 0 ) && ( length <= other._OBData.Length[numSeg&1] ) )
+			if ( (ptPosZ <= segPosZ + other._Height) && (ptPosZ + _Height >= segPosZ) )
 			{
-				// 2d Collid checked... Now check height
+				// Ok Collision, fill the result
 				
-				// Pos Z
-				const float pointSegZ=other._Position.z;
-				const float segPosZ= pointSegZ + other._Speed.z*time;
+				// Time
+				desc.ContactTime=time;
 
-				// Some constants
-				const float pointZ=_Position.z;
-				const float ptPosZ= pointZ + _Speed.z*time;
+				// Position
+				desc.ContactPosition.x=ptPosX;
+				desc.ContactPosition.y=ptPosY;
+				desc.ContactPosition.z=std::max (segPosZ, ptPosZ);
 
-				// Included ?
-				if ( (ptPosZ <= segPosZ + other._Height) && (ptPosZ + _Height >= segPosZ) )
-				{
-					// Ok Collision, fill the result
-					
-					// Time
-					desc.ContactTime=time;
+				// Seg box normal
+				desc.ContactNormal1.x=normalSegX;
+				desc.ContactNormal1.y=normalSegY;
+				desc.ContactNormal1.z=0;
+				desc.ContactNormal0.x=-desc.ContactNormal1.x;
+				desc.ContactNormal0.y=-desc.ContactNormal1.y;
+				desc.ContactNormal0.z=0;
 
-					// Position
-					desc.ContactPosition.x=ptPosX;
-					desc.ContactPosition.y=ptPosY;
-					desc.ContactPosition.z=std::max (segPosZ, ptPosZ);
-
-					// Point box normal
-					uint previous=(numPoint+3)&3;
-					desc.ContactNormal0.x=_OBData.EdgeDirectionY[numPoint] + _OBData.EdgeDirectionY[previous];
-					desc.ContactNormal0.y=-_OBData.EdgeDirectionX[numPoint] - _OBData.EdgeDirectionX[previous];
-					desc.ContactNormal0.z=0;
-					desc.ContactNormal0.normalize ();
-
-					// Seg box normal
-					desc.ContactNormal1.x=normalSegX;
-					desc.ContactNormal1.y=normalSegY;
-					desc.ContactNormal1.z=0;
-
-					// End
-					return true;
-				}
+				// End
+				return true;
 			}
 		}
 	}
@@ -363,13 +418,13 @@ bool CMovePrimitive::evalCollisionPoverS (CMovePrimitive& other, CCollisionDesc&
 
 // ***************************************************************************
 
-inline uint secondDegree (float a, float b, float c, float& s0, float& s1)
+inline uint secondDegree (double a, double b, double c, double& s0, double& s1)
 {
-	float d=b*b-4.f*a*c;
+	double d=b*b-4.f*a*c;
 	if (d>0)
 	{
 		// sqrt d
-		d=(float)sqrt (d);
+		d=(double)sqrt (d);
 
 		// 1 / 2a
 		a=0.5f/a;
@@ -396,7 +451,7 @@ inline uint secondDegree (float a, float b, float c, float& s0, float& s1)
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, float timeMin, float timeMax)
+bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
@@ -425,18 +480,19 @@ bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc
 	 */
 
 	// Let's go
-	const float _Ax = _OBData.PointPosX[numPoint] - other._Position.x;
-	const float _Ay = _OBData.PointPosY[numPoint] - other._Position.y;
-	const float _Bx = _Speed.x - other._Speed.x;
-	const float _By = _Speed.y - other._Speed.y;
+	const double _Ax = _OBData.PointPosX[numPoint] - other._Position.x;
+	const double _Ay = _OBData.PointPosY[numPoint] - other._Position.y;
+	const double _Bx = _Speed.x - other._Speed.x;
+	const double _By = _Speed.y - other._Speed.y;
 
 	// Eval system
-	float s0, s1;
-	uint numSolution=secondDegree (_Bx*_Bx+_By*_By, 2.f*(_Ax*_Bx+_Ay*_By), _Ax*_Ax+_Ay*_Ay-other._OCData.SquareRadius, s0, s1);
+	double s0, s1;
+	double squareRadius=other._OCData.Radius*other._OCData.Radius;
+	uint numSolution=secondDegree (_Bx*_Bx+_By*_By, 2.f*(_Ax*_Bx+_Ay*_By), _Ax*_Ax+_Ay*_Ay-squareRadius, s0, s1);
 	if (numSolution!=0)
 	{
 		// time
-		float time;
+		double time;
 
 		// Collision time
 		if (numSolution==1)
@@ -444,48 +500,129 @@ bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc
 		else
 			time=std::min (s0, s1);
 
-		// Clip time
-		if ((timeMin<time)&&(time<timeMax))
+		// Pos Z
+		const double pointCylZ=other._Position.z;
+		const double cylPosZ= pointCylZ + other._Speed.z*time;
+
+		// Some constants
+		const double pointZ=_Position.z;
+		const double ptPosZ= pointZ + _Speed.z*time;
+
+		// Z Included ?
+		if ( (ptPosZ <= cylPosZ + other._Height) && (ptPosZ + _Height >= cylPosZ) )
 		{
+			// Ok Collision, fill the result
+			
+			// Time
+			desc.ContactTime=time;
+
+			// Point position
+			const double ptPosX= _OBData.PointPosX[numPoint] + _Speed.x*time;
+			const double ptPosY= _OBData.PointPosY[numPoint] + _Speed.y*time;
+
+			// Cylinder position
+			const double cylPosX= other._Position.x + other._Speed.x*time;
+			const double cylPosY= other._Position.y + other._Speed.y*time;
+
+			// Position
+			desc.ContactPosition.x=ptPosX;
+			desc.ContactPosition.y=ptPosY;
+			desc.ContactPosition.z=std::max (cylPosZ, ptPosZ);
+
+			// Cylinder normal
+			desc.ContactNormal1.x=ptPosX-cylPosX;
+			desc.ContactNormal1.y=ptPosY-cylPosY;
+			desc.ContactNormal1.z=0;
+			desc.ContactNormal1.normalize ();
+			desc.ContactNormal0.x=-desc.ContactNormal1.x;
+			desc.ContactNormal0.y=-desc.ContactNormal1.y;
+			desc.ContactNormal0.z=0;
+
+			// End
+			return true;
+		}
+	}
+
+	// No collision
+	return false;
+}
+
+// ***************************************************************************
+
+bool CMovePrimitive::evalCollisionSoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numSeg)
+{
+	// Checks
+	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
+	nlassert ((((uint32)other._Flags)&PrimitiveMask)==_2DOrientedCylinder);
+
+	// Some constants
+	const double normalSegX=_OBData.EdgeDirectionY[numSeg];
+	const double normalSegY=-_OBData.EdgeDirectionX[numSeg];
+
+	// Relative speed
+	const double speedX=other._Speed.x-_Speed.x;
+	const double speedY=other._Speed.y-_Speed.y;
+
+	// Dot product with the plan tangeante
+	double dotProd= speedX*normalSegX + speedY*normalSegY;
+	//if ( dotProd < 0 )
+	if ( dotProd !=0 )
+	{
+		// Time of the collision
+		double time= (other._OCData.Radius + normalSegX*(_OBData.PointPosX[numSeg] - other._Position.x ) + 
+			normalSegY*(_OBData.PointPosY[numSeg] - other._Position.y ) ) / dotProd;
+
+		// Position of segment point at collision time
+		const double segPosX= _OBData.PointPosX[numSeg] + _Speed.x*time;
+		const double segPosY= _OBData.PointPosY[numSeg] + _Speed.y*time;
+
+		// Position of the cylinder at collision time
+		const double cylPosX= other._Position.x + _Speed.x*time;
+		const double cylPosY= other._Position.y + _Speed.y*time;
+
+		// Position de contact
+		const double contactX= cylPosX - normalSegX*other._OCData.Radius;
+		const double contactY= cylPosY - normalSegY*other._OCData.Radius;
+
+		// Direction of the collision on the segment
+		const double dirX= contactX - segPosX;
+		const double dirY= contactY - segPosY;
+
+		// Length of this vector
+		const double length= dirY*normalSegX - dirX*normalSegY;
+
+		// Included ?
+		if ( ( length >= 0 ) && ( length <= _OBData.Length[numSeg&1] ) )
+		{
+			// 2d Collid checked... Now check height
+			
 			// Pos Z
-			const float pointCylZ=other._Position.z;
-			const float cylPosZ= pointCylZ + other._Speed.z*time;
+			const double segPosZ= _Position.z + _Speed.z*time;
 
 			// Some constants
-			const float pointZ=_Position.z;
-			const float ptPosZ= pointZ + _Speed.z*time;
+			const double cylPosZ= other._Position.z + other._Speed.z*time;
 
-			// Z Included ?
-			if ( (ptPosZ <= cylPosZ + other._Height) && (ptPosZ + _Height >= cylPosZ) )
+			// Included ?
+			if ( (cylPosZ <= segPosZ + _Height) && (cylPosZ + other._Height >= segPosZ) )
 			{
 				// Ok Collision, fill the result
 				
 				// Time
 				desc.ContactTime=time;
 
-				// Point position
-				const float ptPosX= _OBData.PointPosX[numPoint] + _Speed.x*time;
-				const float ptPosY= _OBData.PointPosY[numPoint] + _Speed.y*time;
-
-				// Cylinder position
-				const float cylPosX= other._Position.x + other._Speed.x*time;
-				const float cylPosY= other._Position.y + other._Speed.y*time;
-
 				// Position
-				desc.ContactPosition.x=ptPosX;
-				desc.ContactPosition.y=ptPosY;
-				desc.ContactPosition.z=std::max (cylPosZ, ptPosZ);
+				desc.ContactPosition.x=contactX;
+				desc.ContactPosition.y=contactY;
+				desc.ContactPosition.z=std::max (segPosZ, cylPosZ);
 
-				// Box normal
-				uint previous=(numPoint+3)&3;
-				desc.ContactNormal0.x=_OBData.EdgeDirectionY[numPoint] + _OBData.EdgeDirectionY[previous];
-				desc.ContactNormal0.y=-_OBData.EdgeDirectionX[numPoint] - _OBData.EdgeDirectionX[previous];
+				// Segment normal
+				desc.ContactNormal0.x=normalSegX;
+				desc.ContactNormal0.y=normalSegY;
 				desc.ContactNormal0.z=0;
-				desc.ContactNormal0.normalize ();
 
-				// Cylinder normal
-				desc.ContactNormal1.x=ptPosX-cylPosX;
-				desc.ContactNormal1.y=ptPosY-cylPosY;
+				// Seg box normal
+				desc.ContactNormal1.x=contactX-cylPosX;
+				desc.ContactNormal1.y=contactY-cylPosY;
 				desc.ContactNormal1.z=0;
 				desc.ContactNormal1.normalize ();
 
@@ -499,102 +636,10 @@ bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc
 	return false;
 }
 
-// ***************************************************************************
-
-bool CMovePrimitive::evalCollisionSoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numSeg, float timeMin, float timeMax)
-{
-	// Checks
-	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
-	nlassert ((((uint32)other._Flags)&PrimitiveMask)==_2DOrientedCylinder);
-
-	// Some constants
-	const float normalSegX=_OBData.EdgeDirectionY[numSeg];
-	const float normalSegY=-_OBData.EdgeDirectionX[numSeg];
-
-	// Relative speed
-	const float speedX=other._Speed.x-_Speed.x;
-	const float speedY=other._Speed.y-_Speed.y;
-
-	// Dot product with the plan tangeante
-	float dotProd= speedX*normalSegX + speedY*normalSegY;
-	if ( dotProd < 0 )
-	{
-		// Time of the collision
-		float time= (other._OCData.Radius + normalSegX*(_OBData.PointPosX[numSeg] - other._Position.x ) + 
-			normalSegY*(_OBData.PointPosY[numSeg] - other._Position.y ) ) / dotProd;
-
-		// Clip time
-		if ((timeMin<time)&&(time<timeMax))
-		{
-			// Position of segment point at collision time
-			const float segPosX= _OBData.PointPosX[numSeg] + _Speed.x*time;
-			const float segPosY= _OBData.PointPosY[numSeg] + _Speed.y*time;
-
-			// Position of the cylinder at collision time
-			const float cylPosX= other._Position.x + _Speed.x*time;
-			const float cylPosY= other._Position.y + _Speed.y*time;
-
-			// Position de contact
-			const float contactX= cylPosX - normalSegX*other._OCData.Radius;
-			const float contactY= cylPosY - normalSegY*other._OCData.Radius;
-
-			// Direction of the collision on the segment
-			const float dirX= contactX - segPosX;
-			const float dirY= contactY - segPosY;
-
-			// Length of this vector
-			const float length= dirY*normalSegX - dirX*normalSegY;
-
-			// Included ?
-			if ( ( length >= 0 ) && ( length <= _OBData.Length[numSeg&1] ) )
-			{
-				// 2d Collid checked... Now check height
-				
-				// Pos Z
-				const float segPosZ= _Position.z + _Speed.z*time;
-
-				// Some constants
-				const float cylPosZ= other._Position.z + other._Speed.z*time;
-
-				// Included ?
-				if ( (cylPosZ <= segPosZ + _Height) && (cylPosZ + other._Height >= segPosZ) )
-				{
-					// Ok Collision, fill the result
-					
-					// Time
-					desc.ContactTime=time;
-
-					// Position
-					desc.ContactPosition.x=contactX;
-					desc.ContactPosition.y=contactY;
-					desc.ContactPosition.z=std::max (segPosZ, cylPosZ);
-
-					// Segment normal
-					desc.ContactNormal0.x=normalSegX;
-					desc.ContactNormal0.y=normalSegY;
-					desc.ContactNormal0.z=0;
-
-					// Seg box normal
-					desc.ContactNormal1.x=contactX-cylPosX;
-					desc.ContactNormal1.y=contactY-cylPosY;
-					desc.ContactNormal1.z=0;
-					desc.ContactNormal1.normalize ();
-
-					// End
-					return true;
-				}
-			}
-		}
-	}
-
-	// No collision
-	return false;
-}
-
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDesc& desc, float timeMin, float timeMax)
+bool CMovePrimitive::evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedCylinder);
@@ -623,36 +668,57 @@ bool CMovePrimitive::evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDes
 	 */
 
 	// Let's go
-	const float _Ax = _Position.x - other._Position.x;
-	const float _Ay = _Position.y - other._Position.y;
-	const float _Bx = _Speed.x - other._Speed.x;
-	const float _By = _Speed.y - other._Speed.y;
+	const double _Ax = _Position.x - other._Position.x;
+	const double _Ay = _Position.y - other._Position.y;
+	const double _Bx = _Speed.x - other._Speed.x;
+	const double _By = _Speed.y - other._Speed.y;
 
 	// Eval system
-	float s0, s1;
-	uint numSolution=secondDegree (_Bx*_Bx+_By*_By, 2.f*(_Ax*_Bx+_Ay*_By), _Ax*_Ax+_Ay*_Ay-other._OCData.SquareRadius, s0, s1);
+	double s0, s1;
+	double radiusSquare=_OCData.Radius+other._OCData.Radius;
+	radiusSquare*=radiusSquare;
+	uint numSolution=secondDegree (_Bx*_Bx+_By*_By, 2.f*(_Ax*_Bx+_Ay*_By), _Ax*_Ax+_Ay*_Ay-radiusSquare, s0, s1);
 	if (numSolution!=0)
 	{
 		// time
-		float time;
+		double _timeMin, _timeMax;
+
 		// Collision time
 		if (numSolution==1)
-			time=s0;
+		{
+			_timeMin=s0;
+			_timeMax=s0;
+		}
 		else
-			time=std::min (s0, s1);
+		{
+			// Time min and max
+			if (s0>s1)
+			{
+				_timeMin=s1;
+				_timeMax=s0;
+			}
+			else
+			{
+				_timeMin=s0;
+				_timeMax=s1;
+			}
+		}
+
+		// half time
+		const double halfTime=(_timeMin+_timeMax)/2.0;
 
 		// Clip time
-		if ((timeMin<time)&&(time<timeMax))
+		if ((timeMin<halfTime)&&(_timeMin<timeMax))
 		{
 			// Some constants
-			const float cyl0Time= time;
-			const float pointCyl0Z=_Position.z;
-			const float cyl0PosZ= pointCyl0Z + _Speed.z*cyl0Time;
+			const double cyl0Time= _timeMin;
+			const double pointCyl0Z=_Position.z;
+			const double cyl0PosZ= pointCyl0Z + _Speed.z*cyl0Time;
 
 			// Pos Z
-			const float cyl1Time= time;
-			const float pointCyl1Z=other._Position.z;
-			const float cyl1PosZ= pointCyl1Z + other._Speed.z * cyl1Time;
+			const double cyl1Time= _timeMin;
+			const double pointCyl1Z=other._Position.z;
+			const double cyl1PosZ= pointCyl1Z + other._Speed.z * cyl1Time;
 
 			// Z Included ?
 			if ( (cyl0PosZ <= cyl1PosZ + other._Height) && (cyl0PosZ + _Height >= cyl1PosZ) )
@@ -660,21 +726,21 @@ bool CMovePrimitive::evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDes
 				// Ok Collision, fill the result
 				
 				// Time
-				desc.ContactTime=time;
+				desc.ContactTime=std::max (_timeMin, timeMin);
 
 				// Cylinder 0 position
-				const float cyl0PosX= _Position.x + _Speed.x*cyl0Time;
-				const float cyl0PosY= _Position.y + _Speed.y*cyl0Time;
+				const double cyl0PosX= _Position.x + _Speed.x*cyl0Time;
+				const double cyl0PosY= _Position.y + _Speed.y*cyl0Time;
 
 				// Cylinder 1 position
-				const float cyl1PosX= other._Position.x + other._Speed.x*cyl1Time;
-				const float cyl1PosY= other._Position.y + other._Speed.y*cyl1Time;
+				const double cyl1PosX= other._Position.x + other._Speed.x*cyl1Time;
+				const double cyl1PosY= other._Position.y + other._Speed.y*cyl1Time;
 
 				// First cylinder normal
 				desc.ContactNormal0.x= cyl1PosX - cyl0PosX;
 				desc.ContactNormal0.y= cyl1PosY - cyl0PosY;
-				desc.ContactNormal0.y= 0;
-				desc.ContactPosition.normalize ();
+				desc.ContactNormal0.z= 0;
+				desc.ContactNormal0.normalize ();
 
 				// Contact position
 				desc.ContactPosition.x= desc.ContactNormal0.x*_OCData.Radius + cyl0PosX;
@@ -707,12 +773,12 @@ void CMovePrimitive::precalcPos ()
 	if (type==_2DOrientedBox)
 	{
 		// Calc cosinus and sinus
-		float cosinus=(float)cos(_OBData.Orientation);
-		float sinus=(float)sin(_OBData.Orientation);
+		double cosinus=(double)cos(_OBData.Orientation);
+		double sinus=(double)sin(_OBData.Orientation);
 
 		// Size
-		float halfWidth=_OBData.Length[0]/2;
-		float halfDepth=_OBData.Length[1]/2;
+		double halfWidth=_OBData.Length[0]/2;
+		double halfDepth=_OBData.Length[1]/2;
 
 		// First point
 		_OBData.PointPosX[0]=cosinus*(-halfWidth)-sinus*(-halfDepth)+_Position.x;
@@ -731,7 +797,7 @@ void CMovePrimitive::precalcPos ()
 		_OBData.PointPosY[3]=sinus*(-halfWidth)+cosinus*halfDepth+_Position.y;
 
 		// Direction
-		float oneOverLength[2]= { 1 / _OBData.Length[0], 1 / _OBData.Length[1] };
+		double oneOverLength[2]= { 1 / _OBData.Length[0], 1 / _OBData.Length[1] };
 
 		// Direction
 		uint i;
@@ -739,7 +805,7 @@ void CMovePrimitive::precalcPos ()
 		{
 			// Next index
 			uint next=(i+1)&3;
-			float oneOver=oneOverLength[i&1];
+			double oneOver=oneOverLength[i&1];
 
 			// New direction
 			_OBData.EdgeDirectionX[i]=(_OBData.PointPosX[next] - _OBData.PointPosX[i])*oneOver;
@@ -750,15 +816,12 @@ void CMovePrimitive::precalcPos ()
 	{
 		// Should be a cylinder
 		nlassert (type==_2DOrientedCylinder);
-
-		// Square radius
-		_OCData.SquareRadius= _OCData.Radius * _OCData.Radius;
 	}
 }
 
 // ***************************************************************************
 
-void CMovePrimitive::precalcBB (float beginTime, float endTime)
+void CMovePrimitive::precalcBB (double beginTime, double endTime)
 {
 	// Type of the primitive
 	uint type=((uint32)_Flags)&PrimitiveMask;
@@ -777,10 +840,31 @@ void CMovePrimitive::precalcBB (float beginTime, float endTime)
 		orient&=0xff;
 		orient>>=6;
 		nlassert (orient>=0);
-		nlassert (orient<2);
+		nlassert (orient<4);
 
 		// Compute coordinates
-		_BBXMin= _OBData.PointPosX[minX[orient]] + _Speed.x*beginTime;
+		_BBXMin=FLT_MAX;
+		_BBYMin=FLT_MAX;
+		_BBXMax=-FLT_MAX;
+		_BBYMax=-FLT_MAX;
+
+		for (uint i=0; i<4; i++)
+		{
+			if (_OBData.PointPosX[i]<_BBXMin)
+				_BBXMin=_OBData.PointPosX[i];
+			if (_OBData.PointPosX[i]>_BBXMax)
+				_BBXMax=_OBData.PointPosX[i];
+			if (_OBData.PointPosY[i]<_BBYMin)
+				_BBYMin=_OBData.PointPosY[i];
+			if (_OBData.PointPosY[i]>_BBYMax)
+				_BBYMax=_OBData.PointPosY[i];
+		}
+		_BBXMin=std::min (std::min (_BBXMin, _BBXMin+endTime*_Speed.x), _BBXMin+beginTime*_Speed.x);
+		_BBXMax=std::max (std::max (_BBXMax, _BBXMax+endTime*_Speed.x), _BBXMax+beginTime*_Speed.x);
+		_BBYMin=std::min (std::min (_BBYMin, _BBYMin+endTime*_Speed.y), _BBYMin+beginTime*_Speed.y);
+		_BBYMax=std::max (std::max (_BBYMax, _BBYMax+endTime*_Speed.y), _BBYMax+beginTime*_Speed.y);
+
+		/*_BBXMin= _OBData.PointPosX[minX[orient]] + _Speed.x*beginTime;
 		_BBXMin= std::min (_BBXMin, _OBData.PointPosX[minX[orient]] + _Speed.x*endTime);
 
 		_BBYMin= _OBData.PointPosY[minY[orient]] + _Speed.y*beginTime;
@@ -790,7 +874,7 @@ void CMovePrimitive::precalcBB (float beginTime, float endTime)
 		_BBXMax= std::max (_BBXMax, _OBData.PointPosX[maxX[orient]] + _Speed.x*endTime);
 
 		_BBYMax= _OBData.PointPosY[maxY[orient]] + _Speed.y*beginTime;
-		_BBYMax= std::max (_BBYMax, _OBData.PointPosY[maxY[orient]] + _Speed.y*endTime);
+		_BBYMax= std::max (_BBYMax, _OBData.PointPosY[maxY[orient]] + _Speed.y*endTime);*/
 	}
 	else
 	{
@@ -802,9 +886,9 @@ void CMovePrimitive::precalcBB (float beginTime, float endTime)
 		_BBXMax= _Position.x + _Speed.x*endTime;
 		if (_BBXMin>_BBXMax)
 		{
-			float tmp=_BBXMin;
+			double tmp=_BBXMin;
 			_BBXMin=_BBXMax;
-			_BBXMax=_BBXMin;
+			_BBXMax=tmp;
 		}
 		_BBXMin-=_OCData.Radius;
 		_BBXMax+=_OCData.Radius;
@@ -814,9 +898,9 @@ void CMovePrimitive::precalcBB (float beginTime, float endTime)
 		_BBYMax= _Position.y + _Speed.y*endTime;
 		if (_BBYMin>_BBYMax)
 		{
-			float tmp=_BBYMin;
+			double tmp=_BBYMin;
 			_BBYMin=_BBYMax;
-			_BBYMax=_BBYMin;
+			_BBYMax=tmp;
 		}
 		_BBYMin-=_OCData.Radius;
 		_BBYMax+=_OCData.Radius;
@@ -825,7 +909,7 @@ void CMovePrimitive::precalcBB (float beginTime, float endTime)
 
 // ***************************************************************************
 
-void CMovePrimitive::addMoveElement (CMoveCell& cell, float centerX, float centerY)
+void CMovePrimitive::addMoveElement (CMoveCell& cell, uint16 x, uint16 y, double centerX, double centerY)
 {
 	// Find a free place
 	uint slot;
@@ -835,11 +919,14 @@ void CMovePrimitive::addMoveElement (CMoveCell& cell, float centerX, float cente
 		if (_MoveElement[slot]==NULL)
 		{
 			// Primitive center
-			float cx=(_BBXMin+_BBXMax)/2.f;
-			float cy=(_BBYMin+_BBYMax)/2.f;
+			double cx=(_BBXMin+_BBXMax)/2.f;
+			double cy=(_BBYMin+_BBYMax)/2.f;
 
 			// Allocate move element
 			_MoveElement[slot]=_Container->allocateMoveElement ();
+			_MoveElement[slot]->Primitive=this;
+			_MoveElement[slot]->X=x;
+			_MoveElement[slot]->Y=y;
 
 			// Insert in left or right ?
 			if (cx<centerX)
@@ -858,7 +945,12 @@ void CMovePrimitive::addMoveElement (CMoveCell& cell, float centerX, float cente
 				cell.linkLastY (_MoveElement[slot]);
 
 			// Move it
-			cell.updateSortedLists (_MoveElement[slot]);
+#ifndef TEST_CELL
+			 cell.updateSortedLists (_MoveElement[slot]);
+#endif // TEST_CELL
+
+			// End
+			break;
 		}
 	}
 }
@@ -871,6 +963,9 @@ void CMovePrimitive::removeMoveElement (uint i)
 	nlassert ((i>=0)||(i<4));
 	nlassert (_MoveElement[i]!=NULL);
 
+	// Unlink the element
+	_Container->unlinkMoveElement (_MoveElement[i]);
+
 	// Free the move element
 	_Container->freeMoveElement (_MoveElement[i]);
 
@@ -880,55 +975,64 @@ void CMovePrimitive::removeMoveElement (uint i)
 
 // ***************************************************************************
 
-void CMovePrimitive::removeCollisionOTInfo (float beginTime)
+void CMovePrimitive::removeCollisionOTInfo (CCollisionOTInfo *toRemove)
 {
-	// Protected
-	if ((_Flags&(uint32)BeingRemovedFromTOTFlag) == 0)
+	// Should be ok
+	CCollisionOTInfo	*previousElement=NULL;
+	CCollisionOTInfo	*element=_RootOTInfo;
+	nlassert (element);
+
+	// Look for it
+	while (element)
 	{
-		// Put a flag to say we are removing the list
-		_Flags|=(uint32)BeingRemovedFromTOTFlag;
-
-		// For each element in the list
-		CCollisionOTInfo	*element=_RootOTInfo;
-		CCollisionOTInfo	*previousPointer=NULL;
-		while (element)
+		// Good one ?
+		if (element==toRemove)
 		{
-			// Contact time
-			float contactTime=element->getCollisionDesc ().ContactTime;
-
-			// Time to remove ?
-			if (contactTime >= beginTime)
-			{
-				// Remove the other primitive
-				if (element->getFirstPrimitive ()==this)
-					// Remove in the others
-					element->getSecondPrimitive ()->removeCollisionOTInfo ( std::max (contactTime, beginTime) );
-				else
-				{
-					// Check
-					nlassert (element->getSecondPrimitive ()==this);
-
-					// Remove in the others
-					element->getFirstPrimitive ()->removeCollisionOTInfo ( std::max (contactTime, beginTime) );
-				}
-			}
+			// If previous element, just link
+			if (previousElement)
+				previousElement->primitiveLink (this, element->getNext (this));
 			else
-			{
-				// Relink element because we keep it
-				if (previousPointer)
-					previousPointer->primitiveLink (this, element);
+				_RootOTInfo=element->getNext (this);
 
-				// New previous pointer
-				previousPointer=element;
-			}
-
-			// Next element
-			element=element->getNext (this);
+			// End
+			break;
 		}
-
-		// Clear the flag
-		_Flags&=~(uint32)BeingRemovedFromTOTFlag;
+		
+		// Look for next
+		previousElement=element;
+		element=element->getNext (this);
 	}
+
+	// Should be found
+	nlassert (element);
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::removeCollisionOTInfo ()
+{
+	// For each element in the list
+	CCollisionOTInfo	*element=_RootOTInfo;
+	while (element)
+	{
+		// Unlink from ot
+		element->unlink ();
+
+		// Remove collision ot info from other primitive
+		CMovePrimitive *other=element->getFirstPrimitive();
+		if (other==this)
+			other=element->getSecondPrimitive();
+		nlassert (other!=this);
+
+		// Remove it in the other element
+		other->removeCollisionOTInfo (element);
+
+		// Next element
+		element=element->getNext (this);
+	}
+
+	// Relink element because we keep it
+	_RootOTInfo=NULL;
 }
 
 // ***************************************************************************
@@ -942,15 +1046,106 @@ void CMovePrimitive::checkSortedList ()
 		if (_MoveElement[i])
 		{
 			if (_MoveElement[i]->PreviousX)
-				nlassert (_MoveElement[i]->PreviousX->Primitive->_BBXMin <= _BBXMin);
+				nlassertonce (_MoveElement[i]->PreviousX->Primitive->_BBXMin <= _BBXMin);
 			if (_MoveElement[i]->NextX)
-				nlassert (_BBXMin <= _MoveElement[i]->NextX->Primitive->_BBXMin);
-			if (_MoveElement[i]->PreviousY)
-				nlassert (_MoveElement[i]->PreviousY->Primitive->_BBYMin <= _BBYMin);
-			if (_MoveElement[i]->NextY)
-				nlassert (_BBYMin <= _MoveElement[i]->NextY->Primitive->_BBYMin);
+				nlassertonce (_BBXMin <= _MoveElement[i]->NextX->Primitive->_BBXMin);
 		}
 	}
+}
+
+// ***************************************************************************
+
+bool CMovePrimitive::reaction (CMovePrimitive& second, const CCollisionDesc& desc)
+{
+	// Mask test
+	if ( (_CollisionMask & second._CollisionMask)  == 0)
+		return false;
+
+	// One is not an obstacle ?
+	if ( (!isObstacle ()) || (!second.isObstacle ()) )
+		// No reaction
+		return false;
+
+	// Get the two reaction codes
+	TReaction firstReaction=(TReaction)(_Flags&ReactionMask);
+	TReaction secondReaction=(TReaction)(second._Flags&ReactionMask);
+
+	// If two does nothing, do nothing
+	if ( ( firstReaction == DoNothing) && (secondReaction == DoNothing) )
+		// No reaction
+		return false;
+
+	// Get the two mass
+	float mass0 = getMass ();
+	float mass1 = second.getMass ();
+
+	// Energy sum
+	double projSpeed0 = desc.ContactNormal1 * _Speed;
+	double projSpeed1 = desc.ContactNormal0 * second._Speed;
+	double energySum = (- mass0 * projSpeed0 - mass1 * projSpeed1 ) / 2.0;
+
+	// Not do nothing ?
+	if (firstReaction!=DoNothing)
+	{
+		// Old position
+		CVectorD collisionPosition=_Position;
+		collisionPosition+=_Speed*desc.ContactTime;
+
+		// Calc new speed
+		CVectorD newSpeed;
+		
+		// Stop ?
+		if (firstReaction==Stop)
+			newSpeed.set (0,0,0);
+		else
+		{
+			// Remove projected speed
+			newSpeed=_Speed - projSpeed0 * desc.ContactNormal1;
+
+			// Reflexion speed
+			if (firstReaction==Reflexion)
+				newSpeed+=( _Attenuation*energySum / mass0 ) * desc.ContactNormal1;
+		}
+
+		// Set new speed
+		setSpeed (newSpeed);
+
+		// New position at t=0
+		setPosition (collisionPosition - newSpeed * desc.ContactTime);
+	}
+
+	// Not do nothing ?
+	if (secondReaction!=DoNothing)
+	{
+		// Old position
+		CVectorD collisionPosition=second._Position;
+		collisionPosition+=second._Speed * desc.ContactTime;
+
+		// Calc new speed
+		CVectorD newSpeed;
+		
+		// Stop ?
+		if (secondReaction==Stop)
+			newSpeed.set (0,0,0);
+		else
+		{
+			// Remove projected speed
+			newSpeed=second._Speed - projSpeed1 * desc.ContactNormal0;
+
+			// Reflexion speed
+			if (secondReaction==Reflexion)
+				newSpeed+=( second._Attenuation*energySum / mass1 ) * desc.ContactNormal0;
+		}
+
+		// Set new speed
+		second.setSpeed (newSpeed);
+
+		// New position at t=0
+		second.setPosition (collisionPosition - newSpeed * desc.ContactTime);
+	}
+
+	// One object has been modified
+	return true;
 }
 
 // ***************************************************************************

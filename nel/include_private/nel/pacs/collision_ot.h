@@ -1,7 +1,7 @@
 /** \file collision_ot.h
  * Collision descriptor for time odered table
  *
- * $Id: collision_ot.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: collision_ot.h,v 1.2 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,10 +72,33 @@ public:
 		_Next=newElement;
 	}
 
+	/// Remove from OT
+	void			unlink ()
+	{
+		if (_Previous)
+			_Previous->_Next=_Next;
+		if (_Next)
+			_Next->_Previous=_Previous;
+		_Next=NULL;
+		_Previous=NULL;
+	}
+
 	/// Return true if it an info collision else false;
 	bool			isInfo () const
 	{
 		return _Info;
+	}
+
+	/// Get next element in the ot
+	CCollisionOT		*getPrevious () const
+	{
+		return _Previous;
+	}
+
+	/// Get next element in the ot
+	CCollisionOT		*getNext () const
+	{
+		return _Next;
 	}
 
 	/// Get next element in the ot

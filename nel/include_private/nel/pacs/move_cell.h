@@ -1,7 +1,7 @@
 /** \file move_cell.h
  * <File description>
  *
- * $Id: move_cell.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: move_cell.h,v 1.2 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,12 +75,18 @@ public:
 	/// Update sorted lists for an element
 	void updateSortedLists (CMoveElement *element);
 
-private:
 	// Link / unlink method
 	void unlinkX (CMoveElement *element);
 
 	// Link / unlink method
 	void unlinkY (CMoveElement *element);
+
+	// Get root X
+	CMoveElement		*getRootX ()
+	{
+		return _FirstX;
+	}
+private:
 
 	// Link / unlink method
 	void linkX (CMoveElement *previous, CMoveElement *element, CMoveElement *next);

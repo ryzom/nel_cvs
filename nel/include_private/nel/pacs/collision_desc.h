@@ -1,7 +1,7 @@
 /** \file collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: collision_desc.h,v 1.2 2001/05/22 08:35:19 corvazier Exp $
+ * $Id: collision_desc.h,v 1.3 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/pacs/u_collision_desc.h"
 #include <vector>
 
 namespace NLPACS 
@@ -40,18 +41,13 @@ namespace NLPACS
  * \author Nevrax France
  * \date 2001
  */
-class CCollisionDesc
+class CCollisionDesc: public UCollisionDesc
 {
 public:
-	NLMISC::CVector		ContactPosition;
-	NLMISC::CVector		ContactNormal0;
-	NLMISC::CVector		ContactNormal1;
-	float				ContactTime;
-
 	// XChg contact normal 0 and 1
 	void XChgContactNormals ()
 	{
-		NLMISC::CVector tmp=ContactNormal0;
+		NLMISC::CVectorD tmp=ContactNormal0;
 		ContactNormal0=ContactNormal1;
 		ContactNormal1=tmp;
 	}
@@ -100,8 +96,8 @@ public:
 class CCollisionSurfaceDesc
 {
 public:
-	NLMISC::CVector		ContactNormal;
-	float				ContactTime;
+	NLMISC::CVectorD	ContactNormal;
+	double				ContactTime;
 
 	/// To which surface we have collided.
 	CSurfaceIdent		ContactSurface;

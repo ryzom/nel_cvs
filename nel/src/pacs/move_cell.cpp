@@ -1,7 +1,7 @@
 /** \file move_cell.cpp
  * <File description>
  *
- * $Id: move_cell.cpp,v 1.1 2001/05/22 08:32:53 corvazier Exp $
+ * $Id: move_cell.cpp,v 1.2 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,21 +44,17 @@ CMoveCell::CMoveCell()
 
 void CMoveCell::unlinkX (CMoveElement *element)
 {
-	// Linked in list ?
-	if (element->Primitive->isLinkedInList ())
-	{
-		// Check first last
-		if (_FirstX==element)
-			_FirstX=element->NextX;
-		if (_LastX==element)
-			_LastX=element->PreviousX;
+	// Check first last
+	if (_FirstX==element)
+		_FirstX=element->NextX;
+	if (_LastX==element)
+		_LastX=element->PreviousX;
 
-		// Relink to others
-		if (element->NextX)
-			element->NextX->PreviousX=element->PreviousX;
-		if (element->PreviousX)
-			element->PreviousX->NextX=element->NextX;
-	}
+	// Relink to others
+	if (element->NextX)
+		element->NextX->PreviousX=element->PreviousX;
+	if (element->PreviousX)
+		element->PreviousX->NextX=element->NextX;
 }
 
 // ***************************************************************************
@@ -66,20 +62,17 @@ void CMoveCell::unlinkX (CMoveElement *element)
 void CMoveCell::unlinkY (CMoveElement *element)
 {
 	// Linked in list ?
-	if (element->Primitive->isLinkedInList ())
-	{
-		// Check first / last
-		if (_FirstY==element)
-			_FirstY=element->NextY;
-		if (_LastY==element)
-			_LastY=element->PreviousY;
+	// Check first / last
+	if (_FirstY==element)
+		_FirstY=element->NextY;
+	if (_LastY==element)
+		_LastY=element->PreviousY;
 
-		// Relink to others
-		if (element->NextY)
-			element->NextY->PreviousY=element->PreviousY;
-		if (element->PreviousY)
-			element->PreviousY->NextY=element->NextY;
-	}
+	// Relink to others
+	if (element->NextY)
+		element->NextY->PreviousY=element->PreviousY;
+	if (element->PreviousY)
+		element->PreviousY->NextY=element->NextY;
 }
 
 // ***************************************************************************
@@ -90,21 +83,17 @@ void CMoveCell::linkX (CMoveElement *previous, CMoveElement *element, CMoveEleme
 	element->NextX=next;
 	element->PreviousX=previous;
 
-	// Linked in list ?
-	if (element->Primitive->isLinkedInList ())
-	{
-		// Check first / last
-		if (previous==NULL)
-			_FirstX=element;
-		if (next==NULL)
-			_LastX=element;
+	// Link to others
+	if (previous)
+		previous->NextX=element;
+	if (next)
+		next->PreviousX=element;
 
-		// Link to others
-		if (previous)
-			previous->NextX=element;
-		if (next)
-			next->PreviousX=element;
-	}
+	// Check first / last
+	if (previous==NULL)
+		_FirstX=element;
+	if (next==NULL)
+		_LastX=element;
 }
 
 // ***************************************************************************
@@ -115,21 +104,17 @@ void CMoveCell::linkY (CMoveElement *previous, CMoveElement *element, CMoveEleme
 	element->NextY=next;
 	element->PreviousY=previous;
 
-	// Linked in list ?
-	if (element->Primitive->isLinkedInList ())
-	{
-		// Check first / last
-		if (previous==NULL)
-			_FirstY=element;
-		if (next==NULL)
-			_LastY=element;
+	// Link to others
+	if (previous)
+		previous->NextY=element;
+	if (next)
+		next->PreviousY=element;
 
-		// Link to others
-		if (previous)
-			previous->NextY=element;
-		if (next)
-			next->PreviousY=element;
-	}
+	// Check first / last
+	if (previous==NULL)
+		_FirstY=element;
+	if (next==NULL)
+		_LastY=element;
 }
 
 // ***************************************************************************
@@ -149,7 +134,7 @@ void CMoveCell::updateSortedLists (CMoveElement *element)
 		unlinkX (element);
 
 		// Adjust the list localisation
-		while (ptr->NextX && (primitive->getBBXMin() > ptr->Primitive->getBBXMin()) );
+		while (ptr->NextX && (primitive->getBBXMin() > ptr->NextX->Primitive->getBBXMin()) )
 		{
 			// Next ptr
 			ptr=ptr->NextX;
@@ -168,7 +153,7 @@ void CMoveCell::updateSortedLists (CMoveElement *element)
 			unlinkX (element);
 
 			// Adjust the list localisation
-			while (ptr->PreviousX && (ptr->Primitive->getBBXMin() > primitive->getBBXMin()) );
+			while (ptr->PreviousX && (ptr->PreviousX->Primitive->getBBXMin() > primitive->getBBXMin()) )
 			{
 				// Next ptr
 				ptr=ptr->PreviousX;
@@ -179,7 +164,7 @@ void CMoveCell::updateSortedLists (CMoveElement *element)
 		}
 	}
 
-	// ** Update sorted list on Y
+/*	// ** Update sorted list on Y
 
 	// Test if we will go to the right
 	ptr=element->NextY;
@@ -189,7 +174,7 @@ void CMoveCell::updateSortedLists (CMoveElement *element)
 		unlinkY (element);
 
 		// Adjust the list localisation
-		while (ptr->NextY && (primitive->getBBYMin() > ptr->Primitive->getBBYMin()) );
+		while (ptr->NextY && (primitive->getBBYMin() > ptr->NextY->Primitive->getBBYMin()) )
 		{
 			// Next ptr
 			ptr=ptr->NextY;
@@ -208,7 +193,7 @@ void CMoveCell::updateSortedLists (CMoveElement *element)
 			unlinkY (element);
 
 			// Adjust the list localisation
-			while (ptr->PreviousY && (ptr->Primitive->getBBYMin() > primitive->getBBYMin()) );
+			while (ptr->PreviousY && (ptr->PreviousY->Primitive->getBBYMin() > primitive->getBBYMin()) )
 			{
 				// Next ptr
 				ptr=ptr->PreviousY;
@@ -217,7 +202,7 @@ void CMoveCell::updateSortedLists (CMoveElement *element)
 			// Here we go
 			linkY (ptr->PreviousY, element, ptr);
 		}
-	}
+	}*/
 }
 
 // ***************************************************************************

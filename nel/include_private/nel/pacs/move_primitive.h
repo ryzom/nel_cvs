@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: move_primitive.h,v 1.2 2001/05/31 13:36:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,10 +29,9 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/pacs/move_container.h"
+#include "nel/pacs/u_move_primitive.h"
 
-namespace NLMISC
-{
-}
+#define NELPACS_MAX_PRIMITIVE_TEST 100
 
 namespace NLPACS 
 {
@@ -46,34 +45,18 @@ namespace NLPACS
  * \author Nevrax France
  * \date 2001
  */
-class CMovePrimitive
+class CMovePrimitive: public UMovePrimitive
 {
-	/*friend class CMoveContainer;
-	friend class CMoveElement;*/
-public:
-	/// Primitive mode
-	enum TMode
-	{
-		/**
-		  * This is a static 2d oriented bounding box. It can be oriented only on the Z axis.
-		  * It has a height. Collision can be performed only no its sides but not on its top and bottom
-		  * planes. It doesn't mode.
-		  */
-		_2DOrientedBox=0,
-
-		/** 
-		  * This is a movable 2d oriented cylinder. It can be oriented only on the Z axis.
-		  * It has a height. Collision can be performed only no its sides but not on its top and bottom
-		  * planes. It can move only with 3d translations.
-          */
-		_2DOrientedCylinder=1,
-	};
+private:
 
 	// Some flags
 	enum TFlags
 	{
 		// Mask for the primitive type
-		PrimitiveMask=0xff,
+		PrimitiveMask=0x0f,
+
+		// Mask for the primitive type
+		ReactionMask=0xf0,
 
 		// The dirt flag. Precalculated data for the position must be recomputed.
 		DirtPosFlag=0x100,
@@ -84,33 +67,27 @@ public:
 		// In modified list.
 		InModifiedListFlag=0x400,
 
-		// Obstacle flag. This flag tells that this object is an obstacle for athers objects.
+		// Obstacle flag. This flag tells that this object is an obstacle for others objects.
 		ObstacleFlag=0x800,
-
-		/* Primitive in the linked list. This flag is set when the primitive is in a linked list.
-		   _NextX and _PreviousX pointers are valid or NULL at the queues of the list.
-		   If this flag is not set, _PreviousX and _NextX points on an entry of the list but this
-		   primitive is not linked in the list. */
-		InLinkedListFlag=0x1000,
-
-		// Primitive is being removed from the time ordered table.
-		BeingRemovedFromTOTFlag=0x2000,
 
 		// Force the size to uint32.
 		ForceSize=0xffffffff
 	};
 
+public:
+
 	/// Constructor
-	CMovePrimitive ();
+	CMovePrimitive (CMoveContainer* container);
 
 	/// Destructor
 	~CMovePrimitive ();
+
 	/**
 	  * Set the primitive type.
 	  *
 	  * \param type is the new primitive type.
 	  */
-	void	setType (TMode type)
+	void	setPrimitiveType (TType type)
 	{
 		// New position
 		_Flags&=~(uint32)PrimitiveMask;
@@ -118,6 +95,18 @@ public:
 
 		// Something has changed
 		dirtPos ();
+	}
+
+	/**
+	  * Set the reaction type.
+	  *
+	  * \param type is the new reaction type.
+	  */
+	void	setReactionType (TReaction type)
+	{
+		// New position
+		_Flags&=~(uint32)ReactionMask;
+		_Flags|=type;
 	}
 
 	/**
@@ -143,7 +132,7 @@ public:
 	  *
 	  * \param pos is the new position of the primitive.
 	  */
-	void	setPosition (const NLMISC::CVector& pos)
+	void	setPosition (const NLMISC::CVectorD& pos)
 	{
 		// New position
 		_Position=pos;
@@ -153,11 +142,22 @@ public:
 	}
 
 	/**
+	  * Get the position of the move primitive. For movable primitives, this is
+	  * the position for time = 0.
+	  *
+	  * \return the new position of the primitive.
+	  */
+	const NLMISC::CVectorD&	getPosition () const
+	{
+		return _Position;
+	}
+
+	/**
 	  * Set the new orientation of the move primitive. Only for the box primitives.
 	  *
 	  * \param rot is the new OZ rotation in radian.
 	  */
-	void	setOrientation (float rot)
+	void	setOrientation (double rot)
 	{
 		// Checks
 		nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
@@ -167,6 +167,30 @@ public:
 
 		// Position has changed
 		dirtPos ();
+	}
+
+
+	/**
+	  * Set the collision mask for this primitive. Default mask is 0xffffffff.
+	  *
+	  * \param mask is the new collision mask.
+	  */
+	void	setCollisionMask (TCollisionMask mask)
+	{
+		_CollisionMask=mask;
+	}
+
+	/**
+	  * Set the attenuation of collision for this object. Default value is 1. Should be between 0~1.
+	  * 0, all the enrgy is attenuated by the collision. 1, all the energy stay in the object.
+	  * Used only with the flag Reflexion.
+	  *
+	  * \param attenuation is the new attenuation for the primitive.
+	  */
+	void	setAbsorbtion (float attenuation)
+	{
+		// New flag
+		_Attenuation=attenuation;
 	}
 
 	/**
@@ -189,6 +213,20 @@ public:
 	}
 
 	/**
+	  * Set the height. For boxes or cylinder.
+	  *
+	  * \param height is the new height size of the box. It the size of the sides aligned on OZ.
+	  */
+	void	setHeight (float height)
+	{
+		// New size
+		_Height=height;
+
+		// Position has changed
+		dirtPos ();
+	}
+
+	/**
 	  * Set the cylinder size. Only for cylinder.
 	  *
 	  * \param radius is the new radius size of the cylinder.
@@ -196,7 +234,7 @@ public:
 	void	setRadius (float radius)
 	{
 		// Checks
-		nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
+		nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedCylinder);
 
 		// New position
 		_OCData.Radius=radius;
@@ -206,17 +244,28 @@ public:
 	}
 
 	/**
-	  * Set the speed vector for this primitive. Only for movable primitives.
+	  * Set the speed vector for this primitive.
 	  *
 	  * \param speed is the new speed vector.
 	  */
-	void	setSpeed (const NLMISC::CVector& speed)
+	void	setSpeed (const NLMISC::CVectorD& speed)
 	{
 		// New time
 		_Speed=speed;
 
 		// Speed has changed
 		dirtPos ();
+	}
+
+	/**
+	  * Get the speed vector for this primitive.
+	  *
+	  * \Return the new speed vector.
+	  */
+	const NLMISC::CVectorD&	getSpeed () const
+	{
+		// New time
+		return _Speed;
 	}
 
 	/**
@@ -227,24 +276,37 @@ public:
 		return ((_Flags&(uint32)ObstacleFlag)!=0);
 	}
 
-	/**
-	  * Return true if this primitive is an obstacle else false.
-	  */
-	bool	isLinkedInList () const
+	/// Is in modified list ?
+	bool	isInModifiedListFlag ()
 	{
-		return ((_Flags&(uint32)InLinkedListFlag)!=0);
+		return (_Flags&InModifiedListFlag) != 0;
 	}
 
 	/// Clear the inModifiedList flag.
-	void	clearInModifiedListFlag ()
+	void	setInModifiedListFlag (bool itis)
 	{
-		_Flags&=~InModifiedListFlag;
+		if (itis)
+			_Flags|=InModifiedListFlag;
+		else
+			_Flags&=~InModifiedListFlag;
+	}
+
+	// Link into modified list
+	void	linkInModifiedList (CMovePrimitive* next)
+	{
+		_NextModified=next;
+	}
+
+	/// Get next modified primitive
+	CMovePrimitive	*getNextModified () const
+	{
+		return _NextModified;
 	}
 
 	/**
 	  * Return min of the bounding box in X.
 	  */
-	float	getBBXMin () const
+	double	getBBXMin () const
 	{
 		return _BBXMin;
 	}
@@ -252,7 +314,7 @@ public:
 	/**
 	  * Return min of the bounding box in Y.
 	  */
-	float	getBBYMin () const
+	double	getBBYMin () const
 	{
 		return _BBYMin;
 	}
@@ -260,7 +322,7 @@ public:
 	/**
 	  * Return max of the bounding box in X.
 	  */
-	float	getBBXMax () const
+	double	getBBXMax () const
 	{
 		return _BBXMax;
 	}
@@ -268,7 +330,7 @@ public:
 	/**
 	  * Return max of the bounding box in Y.
 	  */
-	float	getBBYMax () const
+	double	getBBYMax () const
 	{
 		return _BBYMax;
 	}
@@ -284,7 +346,7 @@ public:
 	  *
 	  * \return true if a collision has been detected in the time range, else false.
 	  */
-	bool	evalCollision (CMovePrimitive& other, class CCollisionDesc& desc, float timeMin, float timeMax);
+	bool	evalCollision (CMovePrimitive& other, class CCollisionDesc& desc, double timeMin, double timeMax, uint32 testTime);
 
 	/// Return the nieme MoveElement. The primitive can have 4 move elements. Can be NULL if the ineme elment is not in a list
 	CMoveElement	*getMoveElement (uint i)
@@ -296,33 +358,24 @@ public:
 	void removeMoveElement (uint i);
 
 	/// Add the primitive in the cell
-	void addMoveElement (CMoveCell& cell, float centerX, float centerY);
-
-	/// Get next modified primitive
-	CMovePrimitive	*getNextModified () const
-	{
-		return _NextModified;
-	}
+	void addMoveElement (CMoveCell& cell, uint16 x, uint16 y, double centerX, double centerY);
 
 	/// Add a collision time ordered table element
 	void addCollisionOTInfo (CCollisionOTInfo *info)
 	{
 		// Link to the list
-		info->link (_RootOTInfo);
+		info->primitiveLink (this, _RootOTInfo);
 		_RootOTInfo=info;
 	}
 
-	/// Remove all collision time ordered table element higher than beginTime.
-	void removeCollisionOTInfo (float beginTime);
+	/// Remove one collision time ordered table element.
+	void removeCollisionOTInfo (CCollisionOTInfo *toRemove);
 
-	/// Clear the collision list.
-	void clearCollisionList ()
-	{
-		_RootOTInfo=NULL;
-	}
+	/// Remove all collision time ordered table element.
+	void removeCollisionOTInfo ();
 
 	/// Update precalculated data
-	void update (float beginTime, float endTime)
+	void update (double beginTime, double endTime)
 	{
 		// Pos dirt ?
 		if (_Flags&DirtPosFlag)
@@ -348,13 +401,10 @@ public:
 	/// Check sorted lists
 	void checkSortedList ();
 
-private:
+	// Reaction between two primitives. Return true if one object has been modified.
+	bool reaction (CMovePrimitive& second, const CCollisionDesc& desc);
 
-	// Unique constructor
-	CMovePrimitive (CMoveContainer* container)
-	{
-		_Container=container;
-	}
+private:
 
 	// Dirt the position flag. Position has changed.
 	void	dirtPos ()
@@ -379,10 +429,7 @@ private:
 	void precalcSpeed ();
 
 	// Compute precalculated bounding box
-	void precalcBB (float beginTime, float endTime);
-
-	// Update sorted lists in X and Y
-	void updateSortedLists ();
+	void precalcBB (double beginTime, double endTime);
 
 	// *** Some methods to eval collisions
 	/* * NOTES:		BB for bounding box
@@ -402,48 +449,99 @@ private:
 					(_BBYMax>=other._BBYMin)	);
 	}
 
+	// *** Get mass
+	
+	float getMass () const
+	{
+		// Box ?
+		if ( (_Flags&PrimitiveMask) == _2DOrientedBox )
+			return _OBData.Length[0]*_OBData.Length[1]*_Height;
+		// Cylinder ?
+		else
+		{
+			nlassert ( (_Flags&PrimitiveMask) == _2DOrientedCylinder );
+			return _OCData.Radius*(float)NLMISC::Pi*_Height;
+		}
+	}
+
+	// Test time. Return true if tetst can be perform, false if too many test have been computed for this primitive
+	bool checkTestTime (uint32 testTime)
+	{
+		// Already checked for this test time ?
+		if (testTime!=_LastTestTime)
+		{
+			// First time this primitive is visited at this test
+			_LastTestTime=testTime;
+
+			// Test counter
+			_IterationCount=NELPACS_MAX_PRIMITIVE_TEST;
+		}
+		else
+		{
+			// Too many test this primitive ?
+			if (_IterationCount<=0)
+				return false;
+			else
+				_IterationCount--;
+		}
+		// Ok, test can be performed
+		return true;
+	}
+
+
 	// *** Primitive over primitive
 
 	// Box over box
-	bool	evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDesc& desc, float timeMin, float timeMax);
+	bool	evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax);
 
 	// Box over cylinder
-	bool	evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDesc& desc, float timeMin, float timeMax);
+	bool	evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax);
 
 	// Cylinder over cylinder
-	bool	evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDesc& desc, float timeMin, float timeMax);
+	bool	evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax);
 
 	// *** Subprimitive over subprimitive
 
 	// Point over segment in OB/OB test
-	bool	evalCollisionPoverS (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, uint numSeg, float timeMin, float timeMax);
+	bool	evalCollisionPoverS (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, uint numSeg);
 
 	// Point over cylinder
-	bool	evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, float timeMin, float timeMax);
+	bool	evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint);
 
 	// Segment over cylinder
-	bool	evalCollisionSoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, float timeMin, float timeMax);
+	bool	evalCollisionSoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint);
 	
 private:
+	// Last primitive test time
+	uint32				_LastTestTime;
+
+	// Iteration count
+	sint32				_IterationCount;
+
+	// Collision mask
+	TCollisionMask		_CollisionMask;
 
 	// Container of this primitive
 	CMoveContainer		*_Container;
 
 	// This position is the central bottom position for the box or for the cylinder
-	NLMISC::CVector		_Position;
-	NLMISC::CVector		_Speed;
+	NLMISC::CVectorD	_Position;
+	NLMISC::CVectorD	_Speed;
 
 	// This is the height of the box or of the cylinder.
 	float				_Height;
+
+	// Attenuation 
+	float				_Attenuation;
 
 	// Flags
 	uint32				_Flags;
 
 	// Movable bounding box
-	float				_BBXMin;
-	float				_BBYMin;
-	float				_BBXMax;
-	float				_BBYMax;
+	double				_BBXMin;
+	double				_BBYMin;
+	double				_BBXMax;
+	double				_BBYMax;
 
 	// Pointer into the 4 possibles sorted lists of movable primitives. Can be NULL if not in the list
 	CMoveElement		*_MoveElement[4];
@@ -461,18 +559,18 @@ private:
 		struct
 		{
 			// 2d position of the 4 points of the box at initial time.
-			float PointPosX[4];
-			float PointPosY[4];
+			double PointPosX[4];
+			double PointPosY[4];
 
 			// The normalized direction vector of the 4 edges of the box.
-			float EdgeDirectionX[4];
-			float EdgeDirectionY[4];
+			double EdgeDirectionX[4];
+			double EdgeDirectionY[4];
 
 			// The length of the 4 edges. The first is the width, the second is the depth
 			float Length[2];
 
 			// The box orientation
-			float Orientation;
+			double Orientation;
 		} _OBData;
 
 		// Data for Cylinders
@@ -480,15 +578,13 @@ private:
 		{
 			// Radius of the cylinder
 			float Radius;
-
-			// Square radius
-			float SquareRadius;
 		} _OCData;
 	};
 };
 
 } // NLPACS
 
+#include "nel/pacs/move_container_inline.h"
 
 #endif // NL_MOVE_PRIMITIVE_H
 

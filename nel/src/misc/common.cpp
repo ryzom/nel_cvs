@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.60 2004/06/23 14:59:54 lecroart Exp $
+ * $Id: common.cpp,v 1.61 2004/06/28 11:55:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #  include <string.h>
 #  include <errno.h>
 #  include <signal.h>
+#  include <pthread.h>
 #endif
 
 #include "nel/misc/command.h"
@@ -113,7 +114,8 @@ uint getThreadId()
 #ifdef NL_OS_WINDOWS
 	return GetCurrentThreadId();
 #elif defined NL_OS_UNIX
-	return getpid();
+	return pthread_self();
+	// doesnt work on linux kernel 2.6	return getpid();
 #endif
 
 }

@@ -1,7 +1,7 @@
 /** \file naming_service.h
  * Naming Service (NS)
  *
- * $Id: naming_service.h,v 1.5 2001/09/20 08:53:48 lecroart Exp $
+ * $Id: naming_service.h,v 1.6 2001/11/27 17:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,8 +106,8 @@ public:
 	static const NLNET::TServiceId	BaseSId;
 	
 	/// Base port number for port number allocation
-	/// Ports begin at 51000 (note: in this implementation there can be no more than 14536 services)
-	static uint16					BasePort;
+	/// Ports begin at 51000 and finnish to 52000 (note: in this implementation there can be no more than 1000 services)
+	static uint16					MinBasePort, MaxBasePort;
 
 	void init ();
 	

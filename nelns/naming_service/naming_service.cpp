@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.16 2001/11/13 12:02:54 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.17 2001/11/27 17:31:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1047,9 +1047,37 @@ static void cbUnregisterSId (CMessage& msgin, TSockId from, CCallbackNetBase &ne
 
 /*
  * Helper function for cbQueryPort
+ *
+ * \warning QueryPort + Registration is not atomic so more than one service could ask a port before register
  */
 uint16 doAllocatePort (const CInetAddress &addr)
 {
+	static uint16 nextAvailablePort = CNamingService::MinBasePort;
+
+	// check if nextavailableport is free
+
+	if (nextAvailablePort >= CNamingService::MaxBasePort) nextAvailablePort = CNamingService::MinBasePort;
+
+	bool ok;
+	do
+	{
+		ok = true;
+		list<CServiceEntry>::iterator it;
+		for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+		{
+			if ((*it).Addr.port () == nextAvailablePort)
+			{
+				nextAvailablePort++;
+				ok = false;
+				break;
+			}
+		}
+	}
+	while (!ok);
+
+	return nextAvailablePort++;
+
+	/*
 	uint16 port = CNamingService::BasePort;
 	bool found = false;
 	while (!found)
@@ -1059,6 +1087,7 @@ uint16 doAllocatePort (const CInetAddress &addr)
 		{
 			if ((*it).Addr.port () == port)
 			{
+				nlinfo ("%s %hu", (*it).Addr.asString().c_str(), port);
 				break;
 			}
 		}
@@ -1066,9 +1095,11 @@ uint16 doAllocatePort (const CInetAddress &addr)
 		{
 			// ok, we have an empty sid
 			found = true;
+			nlinfo ("********found %hu", port);
 		}
 		else
 		{
+			nlinfo ("%hu already used by %s", port, (*it).Name.c_str());
 			port++;
 			if (port == 0) // round the clock
 			{
@@ -1078,6 +1109,7 @@ uint16 doAllocatePort (const CInetAddress &addr)
 		}
 	}
 
+  */
 /*	nldebug( "Searching %s in :", addr2.asString().c_str() );
 	for ( CAddressSet::iterator it=AddressSet.begin(); it!=AddressSet.end(); ++it )
 	{
@@ -1100,7 +1132,7 @@ uint16 doAllocatePort (const CInetAddress &addr)
 	// Insert address in AddressSet
 	AddressSet.insert( addr2 );
 */	
-	return port;
+	//return port;
 }
 
 
@@ -1251,8 +1283,11 @@ void CNamingService::init()
 	try
 	{
 		uint16 newBasePort = ConfigFile.getVar ("BasePort").asInt ();
-		nlinfo ("Changing the BasePort number from %hu to %hu", BasePort, newBasePort);
-		BasePort = newBasePort;
+		nlinfo ("Changing the MinBasePort number from %hu to %hu", MinBasePort, newBasePort);
+		sint32 delta = MaxBasePort - MinBasePort;
+		nlassert (delta > 0);
+		MinBasePort = newBasePort;
+		MaxBasePort = MinBasePort + uint16 (delta);
 	}
 	catch (EUnknownVar &)
 	{
@@ -1289,7 +1324,8 @@ bool CNamingService::update ()
 const uint16		CNamingService::ValidTime = 120;
 
 /// Ports begin at 51000 (note: in this implementation there can be no more than 14536 services)
-uint16				CNamingService::BasePort = 51000;
+uint16				CNamingService::MinBasePort = 51000;
+uint16				CNamingService::MaxBasePort = 52000;
 
 /// Allocated SIds begin at 128 (except for Agent Service)
 const TServiceId	CNamingService::BaseSId = 128;

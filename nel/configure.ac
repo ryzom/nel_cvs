@@ -2,7 +2,7 @@
 # Configuration script for NeL
 # ====================================================================
 #
-# $Id: configure.ac,v 1.3 2004/01/28 14:59:48 distrib Exp $
+# $Id: configure.ac,v 1.4 2004/02/16 11:18:12 lecroart Exp $
 # 
 
 # ====================================================================
@@ -257,8 +257,8 @@ fi
 # Add some common define
 if test "X$CC" = "Xgcc";
 then
-    CFLAGS="$CFLAGS -D_REENTRANT -Wall -ansi -W -Wshadow -Wpointer-arith -Wsign-compare -Wno-deprecated-declarations -Winline -Wno-multichar -Wno-long-long -Wno-unused"
-    CXXFLAGS="$CXXFLAGS -D_REENTRANT -Wall -ansi -W -Wshadow -Wpointer-arith -Wsign-compare -Wno-deprecated-declarations -Winline -Wno-multichar -Wno-long-long -Wno-unused"
+    CFLAGS="$CFLAGS -D_REENTRANT -Wall -ansi -W -Wpointer-arith -Wsign-compare -Wno-deprecated-declarations -Wno-multichar -Wno-long-long -Wno-unused"
+    CXXFLAGS="$CXXFLAGS -D_REENTRANT -Wall -ansi -W -Wpointer-arith -Wsign-compare -Wno-deprecated-declarations -Wno-multichar -Wno-long-long -Wno-unused"
 #    CFLAGS="$CFLAGS -D_REENTRANT -Wno-multichar -Wno-long-long"
 #    CXXFLAGS="$CXXFLAGS -D_REENTRANT -Wno-multichar -Wno-long-long"
 fi

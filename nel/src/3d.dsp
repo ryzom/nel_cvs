@@ -234,6 +234,14 @@ SOURCE=..\include\nel\3d\texture_far.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\texture_near.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\texture_near.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\tile_color.cpp
 # End Source File
 # Begin Source File

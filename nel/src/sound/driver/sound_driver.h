@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.4 2001/07/19 12:47:57 cado Exp $
+ * $Id: sound_driver.h,v 1.5 2001/07/23 10:08:24 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,7 +129,7 @@ public:
 class ESoundDriverNotFound : public ESoundDriver
 {
 public:
-	ESoundDriverNotFound() : ESoundDriver( NLSOUND_DLL_NAME " not found" ) {}
+	ESoundDriverNotFound() : ESoundDriver( NLSOUND_DLL_NAME " or third-party library not found" ) {}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.6 2000/12/04 16:58:43 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.7 2000/12/04 17:07:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,16 @@ CVertexBuffer::CVertexBuffer()
 	_Capacity=0;
 	_NbVerts=0;
 }
+
+
+CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb)
+{
+	_Flags=0;
+	_Capacity=0;
+	_NbVerts=0;
+	operator=(vb);
+}
+
 
 CVertexBuffer::~CVertexBuffer()
 {

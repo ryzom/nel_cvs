@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvInfos and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.29 2000/12/04 16:58:20 berenguier Exp $
+ * $Id: driver.h,v 1.30 2000/12/04 17:08:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,8 +125,10 @@ public:
 
 public:
 	// Object.
-							CMaterial() {_Touched= 0;_Flags=0;}
-							~CMaterial();
+	CMaterial() {_Touched= 0;_Flags=0;}
+	// see operator=.
+	CMaterial(const CMaterial &mat) {_Touched= 0;_Flags=0; operator=(mat);}
+	~CMaterial();
 	// Do not copy DrvInfos, copy all infos and set IDRV_TOUCHED_ALL.
 	CMaterial				&operator=(const CMaterial &mat);
 
@@ -221,8 +223,10 @@ public:
 
 
 public:
-							CVertexBuffer(void);
-							~CVertexBuffer(void);
+	CVertexBuffer(void);
+	// see operator=.
+	CVertexBuffer(const CVertexBuffer &vb);
+	~CVertexBuffer(void);
 	// Do not copy DrvInfos, copy all infos and set IDRV_TOUCHED_ALL.
 	CVertexBuffer			&operator=(const CVertexBuffer &vb);
 

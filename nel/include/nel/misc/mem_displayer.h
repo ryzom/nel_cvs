@@ -1,7 +1,7 @@
 /** \file mem_displayer.h
  * <File description>
  *
- * $Id: mem_displayer.h,v 1.3 2002/08/23 12:18:13 lecroart Exp $
+ * $Id: mem_displayer.h,v 1.4 2002/09/16 14:58:59 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -67,12 +67,13 @@ protected:
 
 private:
 
-	bool						_CanUseStrings;
 	bool						_NeedHeader;
 
-	std::deque<std::string>		_Strings;
-
 	uint32						_MaxStrings;	// number of string in the _Strings queue (default is 50)
+	
+	bool						_CanUseStrings;
+
+	std::deque<std::string>		_Strings;
 
 };
 

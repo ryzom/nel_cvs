@@ -10,6 +10,9 @@
 
 #include "NumEdit.h"
 
+class CLogic_editorDoc;
+class CCounter;
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CCounterPage dialog
@@ -22,6 +25,8 @@ class CCounterPage : public CPropertyPage
 public:
 	CCounterPage();
 	~CCounterPage();
+
+	void addCounter( CLogic_editorDoc *pDoc, CCounter * pCounter );
 
 // Dialog Data
 	//{{AFX_DATA(CCounterPage)
@@ -39,6 +44,8 @@ public:
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CCounterPage)
+	public:
+	virtual BOOL OnSetActive();
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL

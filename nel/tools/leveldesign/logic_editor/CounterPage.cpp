@@ -9,6 +9,7 @@
 #include "MainFrm.h"
 #include "ChildFrm.h"
 #include "logic_editorDoc.h"
+#include "EditorFormView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -76,6 +77,36 @@ BOOL CCounterPage::OnInitDialog()
 }
 
 
+//---------------------------------------------------------
+//	addCounter
+//
+//---------------------------------------------------------
+void CCounterPage::addCounter( CLogic_editorDoc *pDoc, CCounter * pCounter )
+{
+	// check if a var or a counter with the same name already exist in the page
+	if( m_counters.FindString(0,pCounter->m_sName) == LB_ERR )
+	{
+		m_counters.AddString( pCounter->m_sName );
+	}
+
+	// if the doc has not been loaded from file, the counter is not yet in doc
+	void * pointer;
+	if( (pDoc->m_variables.Find(pCounter->m_sName) == NULL) || (pDoc->m_counters.Lookup(pCounter->m_sName, pointer) == FALSE) )
+	{
+		pDoc->m_counters.SetAt( pCounter->m_sName, pCounter );
+	}
+
+	// update page
+	UpdateData(FALSE);
+
+} // addCounter //
+
+
+
+//---------------------------------------------------------
+//	OnButtonAddCounter
+//
+//---------------------------------------------------------
 void CCounterPage::OnButtonAddCounter() 
 {
 	UpdateData();
@@ -94,22 +125,15 @@ void CCounterPage::OnButtonAddCounter()
 	CLogic_editorDoc *pDoc = static_cast<CLogic_editorDoc *> (pChild->GetActiveDocument());
 	ASSERT_VALID(pDoc);	
 
-	void *p;
-	if (pDoc->m_counters.Lookup( m_sCounterName, p) || ( pDoc->m_variables.Find(m_sCounterName) != NULL) )
-	{
-		return;
-	}
-
 	CCounter *pCounter = new CCounter( m_sCounterName );
 	pCounter->mode( m_sMode );
 	pCounter->way( m_sWay );
 	pCounter->lowerLimit( m_nLowerLimit );
 	pCounter->upperLimit( m_nUpperLimit );
 
-	m_counters.AddString( m_sCounterName );
+	addCounter( pDoc, pCounter );
 
-	pDoc->m_counters.SetAt( m_sCounterName, pCounter );
-}
+} // OnButtonAddCounter //
 
 
 
@@ -216,3 +240,41 @@ void CCounterPage::OnButtonCounterApply()
 		AfxMessageBox( "No counter selected ! Choose a counter first");
 	}
 }
+
+
+
+
+//---------------------------------------------------------
+//	OnSetActive
+//
+//---------------------------------------------------------
+BOOL CCounterPage::OnSetActive() 
+{
+	// get the child frame
+	CMainFrame *pFrame = (CMainFrame*)AfxGetApp()->m_pMainWnd;
+	CChildFrame *pChild = (CChildFrame *) pFrame->MDIGetActive();
+
+	// get the form view
+	CEditorFormView *pFormView = static_cast<CEditorFormView *> ( pChild->m_wndSplitter.GetPane(0,1) );
+	ASSERT_VALID(pFormView);	
+	
+	// get the document
+	CLogic_editorDoc * pDoc = (CLogic_editorDoc*)pFormView->GetDocument();
+
+	if( pDoc->InitConditionPage )
+	{
+		// init the counters
+		POSITION pos;
+		CString eltName;
+		for( pos = pDoc->m_counters.GetStartPosition(); pos != NULL; )
+		{
+			CCounter * pCounter = new CCounter();
+			pDoc->m_counters.GetNextAssoc( pos, eltName, (void*&)pCounter );
+			addCounter( pDoc, pCounter );
+		}
+	}
+	pDoc->InitConditionPage = FALSE;
+
+	return CPropertyPage::OnSetActive();
+
+} // OnSetActive //

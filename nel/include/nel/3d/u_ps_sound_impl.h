@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.14 2004/04/30 16:42:08 berenguier Exp $
+ * $Id: u_ps_sound_impl.h,v 1.15 2004/05/24 09:32:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -127,6 +127,12 @@ public:
 	{
 		NL3D_MEM_PS_SOUND
 		if (_Source) _Source->setLooping(looping);
+	}
+
+	virtual bool isLooping() const
+	{
+		NL3D_MEM_PS_SOUND
+			return _Source ? _Source->getLooping() : false;
 	}
 
 

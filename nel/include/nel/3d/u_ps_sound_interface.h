@@ -1,7 +1,7 @@
 /** \file u_ps_sound_interface.h
  * <File description>
  *
- * $Id: u_ps_sound_interface.h,v 1.6 2004/02/11 14:08:13 vizerie Exp $
+ * $Id: u_ps_sound_interface.h,v 1.7 2004/05/24 09:32:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -94,6 +94,9 @@ struct UPSSoundInstance
 
 	// set sound looping
 	virtual void setLooping(bool looping) = 0;
+
+	// test if sound is looping
+	virtual bool isLooping() const = 0;
 };
 
 

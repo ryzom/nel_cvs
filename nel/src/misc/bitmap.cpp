@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.4 2001/05/09 08:21:26 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.5 2001/05/21 16:59:58 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,17 +40,17 @@ namespace NLMISC
 
 struct EDDSBadHeader : public NLMISC::EStream
 {
-	virtual const char	*what() const throw() { return "Bad or unrecognized DDS file header"; }
+	EDDSBadHeader() : EStream( "Bad or unrecognized DDS file header" ) {}
 };
 
 struct ESeekFailed : public NLMISC::EStream
 {
-	virtual const char	*what() const throw() { return "Seek failed"; }
+	ESeekFailed() : EStream( "Seek failed" ) {}
 };
 
 struct EAllocationFailure : public Exception
 {
-	virtual const char	*what() const throw() { return "Can't allocate memory"; }
+	EAllocationFailure() : Exception( "Can't allocate memory" ) {}
 };
 
 void blendFromui(NLMISC::CRGBA &c0, NLMISC::CRGBA &c1, uint coef);

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.6 2001/05/02 08:44:44 lecroart Exp $
+ * $Id: common.cpp,v 1.7 2001/05/21 16:59:58 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,18 +100,18 @@ string stringFromVector( const vector<uint8>& v )
 
 Exception::Exception() : _Reason("Unknown Exception")
 {
-	nlwarning("Exception will be launch: %s", _Reason.c_str());
+//	nlwarning("Exception will be launched: %s", _Reason.c_str());
 }
 
 Exception::Exception(const std::string &reason) : _Reason(reason)
 {
-	nlwarning("Exception will be launch: %s", _Reason.c_str());
+	nlwarning("Exception will be launched: %s", _Reason.c_str());
 }
 
 Exception::Exception(const char *format, ...)
 {
 	NLMISC_CONVERT_VARGS (_Reason, format, NLMISC::MaxCStringSize);
-	nlwarning("Exception will be launch: %s", _Reason.c_str());
+	nlwarning("Exception will be launched: %s", _Reason.c_str());
 }
 
 const char	*Exception::what() const throw()

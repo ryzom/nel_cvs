@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: sock.cpp,v 1.2 2001/05/21 17:02:27 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,10 +104,14 @@ ESocket::ESocket( const char *reason, bool systemerror, CInetAddress *addr )
 		_Reason += " (";
 		smprintf( str, 256, "%d", errornum );
 		_Reason += str;
-		_Reason += ": ";
-		_Reason += CSock::errorString( errornum );
+		if ( errornum != 0 )
+		{
+			_Reason += ": ";
+			_Reason += CSock::errorString( errornum );
+		}
 		_Reason += ")";
 	}
+	nlwarning( "Exception will be launched: %s", _Reason.c_str() );
 }
 
 
@@ -160,8 +164,10 @@ std::string CSock::errorString( uint errorcode )
 #ifdef NL_OS_WINDOWS
 	switch( errorcode )
 	{
+	case WSAEINTR		 /*10004*/: return "Blocking operation interrupted";
 	case WSAEINVAL		 /*10022*/: return "Invalid socket (maybe not bound) or argument";
 	case WSAEMFILE		 /*10024*/: return "Too many open sockets";
+	case WSAENOTSOCK	 /*10038*/: return "Socket operation on nonsocket (maybe invalid select descriptor)";
 	case WSAEMSGSIZE	 /*10040*/: return "Message too long";
 	case WSAEADDRINUSE   /*10048*/: return "Address already in use";
 	case WSAEADDRNOTAVAIL/*10049*/: return "Address not available";
@@ -173,7 +179,7 @@ std::string CSock::errorString( uint errorcode )
 	case WSAETIMEDOUT	 /*10060*/: return "Connection timed-out";
 	case WSAECONNREFUSED /*10061*/:	return "Connection refused, the server may be offline";
 	case WSAEHOSTUNREACH /*10065*/: return "Remote host is unreachable";
-	case WSANOTINITIALISED /*093*/: return "Windows Sockets not initialized";
+	case WSANOTINITIALISED /*093*/: return "'Windows Sockets' not initialized";
 	default:						return "";
 	}
 #elif defined NL_OS_UNIX

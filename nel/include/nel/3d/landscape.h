@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.39 2001/04/24 14:57:32 corvazier Exp $
+ * $Id: landscape.h,v 1.40 2001/05/21 17:03:54 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,8 +88,7 @@ public:
 	std::list<CBindError>	BindErrors;
 
 public:
-	EBadBind() { _Reason = "Landscape Bind Error in (3DSMax indices!! (+1) ): "; }
-	virtual const char	*what() const throw();
+	EBadBind() : Exception( "Landscape Bind Error in (3DSMax indices!! (+1) ): " ) {}
 
 };
 

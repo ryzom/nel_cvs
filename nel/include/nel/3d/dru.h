@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.19 2001/02/28 16:24:23 berenguier Exp $
+ * $Id: dru.h,v 1.20 2001/05/21 17:03:54 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,31 +56,32 @@ namespace NL3D
 /// Exception thrown by CDru::createGlDriver.
 struct EDru : public NLMISC::Exception
 {
+	EDru(const std::string &reason) : Exception(reason) {}
 };
 
 struct EDruOpenglDriverNotFound : public EDru
 {
-	virtual const char	*what() const throw() { return NL3D_DLL_NAME " not found"; }
+	EDruOpenglDriverNotFound() : EDru( NL3D_DLL_NAME " not found" ) {}
 };
 
 struct EDruOpenglDriverCorrupted : public EDru
 {
-	virtual const char	*what() const throw() { return "Can't get NL3D_createIDriverInstance from " NL3D_DLL_NAME " (Bad dll?)"; }
+	EDruOpenglDriverCorrupted() : EDru( "Can't get NL3D_createIDriverInstance from " NL3D_DLL_NAME " (Bad dll?)" ) {}
 };
 
 struct EDruOpenglDriverOldVersion : public EDru
 {
-	virtual const char	*what() const throw() { return NL3D_DLL_NAME " is a too old version. Ask for a more recent file"; }
+	EDruOpenglDriverOldVersion() : EDru( NL3D_DLL_NAME " is a too old version. Ask for a more recent file" ) {}
 };
 
 struct EDruOpenglDriverUnknownVersion : public EDru
 {
-	virtual const char	*what() const throw() { return NL3D_DLL_NAME " is more recent than the application"; }
+	EDruOpenglDriverUnknownVersion() : EDru( NL3D_DLL_NAME " is more recent than the application" ) {}
 };
 
 struct EDruOpenglDriverCantCreateDriver : public EDru
 {
-	virtual const char	*what() const throw() { return NL3D_DLL_NAME " can't create driver"; }
+	EDruOpenglDriverCantCreateDriver() : EDru( NL3D_DLL_NAME " can't create driver" ) {}
 };
 
 /// The driver Utilities class of static.

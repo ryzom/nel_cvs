@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.7 2000/11/14 13:23:21 berenguier Exp $
+ * $Id: zone.cpp,v 1.8 2000/11/14 14:54:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 // Temp YOYO.
 #include "nel/misc/events.h"
-extern	bool	getKey(NLMISC::TKey key);
+//extern	bool	getKey(NLMISC::TKey key);
 
 using namespace NLMISC;
 using namespace std;
@@ -517,7 +517,7 @@ void			CZone::refine()
 {
 	nlassert(Compiled);
 
-
+/*
 	// Temp YOYO.
 	if(getKey(NLMISC::KeyU))
 	{
@@ -529,7 +529,7 @@ void			CZone::refine()
 		pipoMap[ZoneId]= this;
 		bindPatch(pipoMap, Patchs[0], PatchConnects[0]);
 	}
-
+*/
 
 	// Force refine of invisible zones only every 8 times.
 	if(ClipResult==ClipOut && (CTessFace::CurrentDate&7)!=(ZoneId&7))

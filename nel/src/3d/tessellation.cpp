@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.11 2000/11/14 14:35:46 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.12 2000/11/14 14:54:56 lecroart Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -239,7 +239,7 @@ ITileUv		*CTessFace::allocTileUv(uint8 fmt)
 		case TileUvFmtBump4: return new CTileUvBump4; break;
 		case TileUvFmtBump5: return new CTileUvBump5; break;
 		case TileUvFmtBump6: return new CTileUvBump6; break;
-		default: nlassert(false);
+		default: nlstop;
 	}
 }
 
@@ -615,7 +615,7 @@ void		CTessFace::split()
 				case TileUvFmtBump4: tuv= new CTileUvBump4((CTileUvBump4*)TileUvLeft, (CTileUvBump4*)TileUvRight); break;
 				case TileUvFmtBump5: tuv= new CTileUvBump5((CTileUvBump5*)TileUvLeft, (CTileUvBump5*)TileUvRight); break;
 				case TileUvFmtBump6: tuv= new CTileUvBump6((CTileUvBump6*)TileUvLeft, (CTileUvBump6*)TileUvRight); break;
-				default: nlassert(false);
+				default: nlstop;
 			};
 		}
 		

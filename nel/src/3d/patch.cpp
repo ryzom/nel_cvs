@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.9 2000/11/14 13:23:21 berenguier Exp $
+ * $Id: patch.cpp,v 1.10 2000/11/14 14:54:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -376,7 +376,7 @@ void			CPatch::preRender()
 				case 1: farDist= CTessFace::TileDistNear; break;
 				case 2: farDist= CTessFace::Far0Dist; break;
 				case 3: farDist= CTessFace::Far1Dist; break;
-				default: nlassert(false);
+				default: nlstop;
 			};
 			TransitionSqrMin= sqr(farDist-CTessFace::FarTransition);
 			OOTransitionSqrDelta= 1.0f/(sqr(farDist)-TransitionSqrMin);

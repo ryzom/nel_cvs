@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.23 2002/09/24 15:04:37 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.24 2002/11/07 16:35:44 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -345,12 +345,19 @@ float CWaterShape::getNumTriangles (float distance)
 
 void CWaterShape::flushTextures (IDriver &driver)
 {
-	for (uint k = 0; k < 2; ++k)
+	// Test if bump maps are supported by driver before to flush them.	
+	if (
+		(driver.supportTextureShaders() && driver.isTextureAddrModeSupported(CMaterial::OffsetTexture))
+		|| driver.supportEMBM()
+	   )
 	{
-		if (_BumpMap[k] != NULL)
-			driver.setupTexture(*_BumpMap[k]);
-		if (_EnvMap[k] != NULL)
-			driver.setupTexture(*_EnvMap[k]);		
+		for (uint k = 0; k < 2; ++k)
+		{
+			if (_BumpMap[k] != NULL)
+				driver.setupTexture(*_BumpMap[k]);
+			if (_EnvMap[k] != NULL)
+				driver.setupTexture(*_EnvMap[k]);		
+		}
 	}
 	if (_ColorMap != NULL)
 		driver.setupTexture(*_ColorMap);

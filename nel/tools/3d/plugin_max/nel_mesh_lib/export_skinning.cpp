@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.17 2002/06/05 15:46:04 berenguier Exp $
+ * $Id: export_skinning.cpp,v 1.18 2002/06/06 11:54:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -229,8 +229,24 @@ void CExportNel::getNELBoneLocalScale(INode &node, TimeValue time, NLMISC::CVect
 	// get the scale from std way.
 	else
 	{
-		// Get the scale from localMatrix.
-		nelScale= maxScale;
+		// We are a normal node here, not biped.
+
+		/* If this node do not inherit scale (ie must unherit), then we must not take the localScale computed 
+			with getLocalMatrix. In this case, the local Scale is simply the NodeTM scale.
+		*/
+		if( getNELUnHeritFatherScale(node) )
+		{
+			Matrix3	nodeTM;
+			nodeTM = node.GetNodeTM (time);
+			decompMatrix (maxScale, maxRot, maxPos, nodeTM);
+			// Get the scale from worldMatrix.
+			nelScale= maxScale;
+		}
+		else
+		{
+			// Get the scale from localMatrix.
+			nelScale= maxScale;
+		}
 	}
 
 }

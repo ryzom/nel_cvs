@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.29 2004/05/14 10:13:12 cado Exp $
+ * $Id: stream.cpp,v 1.30 2004/05/24 17:10:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -330,6 +330,16 @@ void			IStream::serialCont(vector<uint8> &cont)
 	if(isReading())
 	{
 		serial(len);
+
+		// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
+		uint32	ssize= getDbgStreamSize();
+		if(ssize)
+		{
+			// NB: suppose the serial of the element serialize at least one byte
+			nlassert(ssize >= len);
+		}
+		
+		// one block serial
 		cont.resize(len);
 		if (len != 0)
 			serialBuffer( (uint8*)&(*cont.begin()) , len);
@@ -349,6 +359,16 @@ void			IStream::serialCont(vector<sint8> &cont)
 	if(isReading())
 	{
 		serial(len);
+
+		// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
+		uint32	ssize= getDbgStreamSize();
+		if(ssize)
+		{
+			// NB: suppose the serial of the element serialize at least one byte
+			nlassert(ssize >= len);
+		}
+
+		// one block serial
 		cont.resize(len);
 		if (len != 0)
 			serialBuffer( (uint8*)&(*cont.begin()) , len);
@@ -370,6 +390,16 @@ void			IStream::serialCont(vector<bool> &cont)
 	if(isReading())
 	{
 		serial(len);
+
+		// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
+		uint32	ssize= getDbgStreamSize();
+		if(ssize)
+		{
+			// NB: bit serialisation.
+			nlassert(ssize >= len/8);
+		}
+		
+		// One Block Serial
 		cont.resize(len);
 
 		if (len != 0)

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.95 2002/11/15 16:01:37 coutelas Exp $
+# $Id: Makefile.am,v 1.96 2003/03/26 13:41:17 berenguier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -39,14 +39,6 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        async_texture_block.h \
                        async_texture_manager.cpp \
                        async_texture_manager.h \
-                       base_anim_detail_obs.cpp \
-                       base_anim_detail_obs.h \
-                       base_clip_obs.cpp \
-                       base_clip_obs.h \
-                       base_light_obs.cpp \
-                       base_light_obs.h \
-                       base_render_obs.cpp \
-                       base_render_obs.h \
                        bezier_patch.cpp \
                        bezier_patch.h \
                        bone.cpp \
@@ -223,8 +215,6 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        meshvp_wind_tree.h \
                        mini_col.cpp \
                        mini_col.h \
-                       mot.cpp \
-                       mot.h \
                        motion_blur.cpp \
                        motion_blur.h \
                        mrm_builder.cpp \
@@ -410,8 +400,6 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        skeleton_user.h \
                        skeleton_weight.cpp \
                        skeleton_weight.h \
-                       skip_model.cpp \
-                       skip_model.h \
                        static_quad_grid.cpp \
                        static_quad_grid.h \
                        std3d.cpp \

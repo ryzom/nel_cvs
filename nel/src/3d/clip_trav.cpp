@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.39 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.40 2003/09/01 09:19:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -382,25 +382,6 @@ void CClipTrav::traverse()
 	if (Scene->SonsOfAncestorSkeletonModelGroup)
 		Scene->SonsOfAncestorSkeletonModelGroup->traverseClip();
 
-	// Update Here the Skin render Lists of All visible Skeletons
-	// =========================
-	/*
-		Done here, because AnimDetail and Render need correct lists. NB: important to do it 
-		before Render Traversal, because updateSkinRenderLists() may change the transparency flag!!
-		NB: can't do it in the traverseClip() of the skeleton since _DisplayLodCharacterFlag must be updated for this frame.
-	*/
-	CScene::ItSkeletonModelList		itSkel;
-	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
-	{
-		CSkeletonModel	*sm= *itSkel;
-		// if visible
-		if(sm->isClipVisible())
-			sm->updateSkinRenderLists();
-	}
-
-	H_AFTER( NL3D_TravClip_SkeletonClip);
-
-
 	// For All Skeletons, clip their ShadowMap possible projection against the frustum only.
 	// =========================
 	/*
@@ -409,6 +390,25 @@ void CClipTrav::traverse()
 	*/
 	clipSkeletonShadowMaps();
 
+	// Update Here the Skin render Lists of All visible Skeletons
+	// =========================
+	/*
+		Done here, because AnimDetail and Render need correct lists. NB: important to do it 
+		before Render Traversal, because updateSkinRenderLists() may change the transparency flag!!
+		NB: can't do it in any traverse() because must be sure that it is done 
+		(traverseHRC not called if SonOfAncestorSkeletonModel, and traverseClip not called if in a cluster).
+		NB: must do even if clipped because:
+			1/ maybe used for generateShadow() (through the ancestorSkeletonModel)
+			2/ the cost of method is 0 all the time (but when true changes)
+	*/
+	CScene::ItSkeletonModelList		itSkel;
+	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
+	{
+		CSkeletonModel	*sm= *itSkel;
+		sm->updateSkinRenderLists();
+	}
+
+	H_AFTER( NL3D_TravClip_SkeletonClip);
 }
 
 

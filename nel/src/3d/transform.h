@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.44 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: transform.h,v 1.45 2003/09/01 09:19:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -562,9 +562,16 @@ protected:
 	virtual	void			setApplySkin(bool state);
 	/** Deriver must change this method if isSkinnable(). It return the list of bone (correct skeleton index)
 	 *	used by the skins (NB: without the parents of the bone).
+	 *	NB: if an index is -1, it means that the skin bone has not been found in the skeleton (skip it)
 	 *	default is to return NULL.
 	 */
-	virtual const std::vector<sint32>	*getSkinBoneUsage() const {return NULL;}
+	virtual const std::vector<sint32>			*getSkinBoneUsage() const {return NULL;}
+	/** Deriver must change this method if isSkinnable(). It return a list of sphere relative to each bone
+	 *	of the father skeleton. Use with getSkinBoneUsage() to know to wich bone this sphere apply
+	 *	NB: if a sphere radius is -1, it means that the bone is not used (for any reason...)
+	 *	default is to return NULL.
+	 */
+	virtual const std::vector<NLMISC::CBSphere>	*getSkinBoneSphere() const {return NULL;}
 	/** Deriver must change this method if isSkinnable(). It renders the skin with current ctx of the skeletonModel
 	 *	SkeletonModel has already setuped the Light and the modelMatrix in the driver.
 	 *	If the skin is a MRM, it is the skeleton which drives the MRM level with alphaMRM: [0,1]

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.16 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.17 2003/09/01 09:19:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,16 +119,30 @@ void		CMeshMRMInstance::changeMRMDistanceSetup(float distanceFinest, float dista
 
 
 // ***************************************************************************
-const std::vector<sint32>	*CMeshMRMInstance::getSkinBoneUsage() const
+const std::vector<sint32>			*CMeshMRMInstance::getSkinBoneUsage() const
 {
 	// Get a pointer on the shape
 	CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
 
-	// Recompute the id
+	// Recompute the id, if needed
 	pMesh->computeBonesId (_FatherSkeletonModel);
 
 	// get ids.
 	return &pMesh->getMeshGeom().getSkinBoneUsage();
+}
+
+
+// ***************************************************************************
+const std::vector<NLMISC::CBSphere>	*CMeshMRMInstance::getSkinBoneSphere() const
+{
+	// Get a pointer on the shape
+	CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+
+	// Recompute the id, and skin spheres, if needed
+	pMesh->computeBonesId (_FatherSkeletonModel);
+
+	// get it.
+	return &pMesh->getMeshGeom().getSkinBoneSphere();
 }
 
 

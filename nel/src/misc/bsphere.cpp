@@ -1,7 +1,7 @@
 /** \file bsphere.cpp
  * <File description>
  *
- * $Id: bsphere.cpp,v 1.4 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: bsphere.cpp,v 1.5 2003/09/01 09:21:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,6 +114,51 @@ void	CBSphere::applyTransform(const CMatrix &mat, CBSphere &res)
 			// result.
 			res.Radius= Radius * (float)sqrt(mx);
 		}
+	}
+}
+
+
+// ***************************************************************************
+void	CBSphere::setUnion(const CBSphere &sa, const CBSphere &sb)
+{
+	float	r2= (sb.Center-sa.Center).norm();
+
+	// Name Sphere 0 the biggest one, and Sphere 1 the other
+	const CBSphere	*s0;
+	const CBSphere	*s1;
+	if(sa.Radius>sb.Radius)
+	{
+		s0= &sa;
+		s1= &sb;
+	}
+	else
+	{
+		s0= &sb;
+		s1= &sa;
+	}
+	float	r0= s0->Radius;
+	float	r1= s1->Radius;
+
+	// If Sphere1 is included into Sphere0, then the union is simply Sphere0
+	if(r2<=(r0-r1))
+	{
+		*this= *s0;
+	}
+	else
+	{
+		/* Compute the Union sphere Diameter. It is D= r0 + r2 + r1 
+			do the draw, works for intersect and don't intersect case, 
+			acknowledge that Sphere1 not included inton Sphere0
+		*/
+		float	diameter= r0 + r2 + r1;
+
+		// compute dir from big center to small one.
+		CVector	dir= s1->Center - s0->Center;
+		dir.normalize();
+
+		// Then finally set Radius and center
+		Center= s0->Center + dir * (diameter/2 - r0);
+		Radius= diameter/2;
 	}
 }
 

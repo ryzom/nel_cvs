@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.47 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.48 2003/09/01 09:19:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1026,6 +1026,8 @@ void			CSkeletonModel::updateSkinRenderLists()
 	// If need to update array of skins to compute
 	if(_SkinToRenderDirty)
 	{
+		uint	i;
+
 		_SkinToRenderDirty= false;
 
 		// Reset the LevelDetail.
@@ -1039,7 +1041,18 @@ void			CSkeletonModel::updateSkinRenderLists()
 			_LevelDetail.DistanceFinest= 0;
 		}
 
-		// Parse to count new size of the arrays, and to build MRM info
+		// reset Bone Sphere of skeleton.
+		static	std::vector<bool>	sphereEmpty;
+		sphereEmpty.clear();
+		sphereEmpty.resize(Bones.size(), true);
+		for(i=0;i<Bones.size();i++)
+		{
+			// Default sphere is centered on the bone pos, and has 0 radius.
+			Bones[i]._MaxSphere.Center= CVector::Null;
+			Bones[i]._MaxSphere.Radius= 0;
+		}
+
+		// Parse to count new size of the arrays, and to build MRM info, and bone Max sphere
 		uint	opaqueSize= 0;
 		uint	transparentSize= 0;
 		uint	animDetailSize= 0;
@@ -1081,6 +1094,33 @@ void			CSkeletonModel::updateSkinRenderLists()
 						_LevelDetail.DistanceCoarsest= max(_LevelDetail.DistanceCoarsest, skinLevelDetail->DistanceCoarsest);
 						_LevelDetail.DistanceMiddle= max(_LevelDetail.DistanceMiddle, skinLevelDetail->DistanceMiddle);
 						_LevelDetail.DistanceFinest= max(_LevelDetail.DistanceFinest, skinLevelDetail->DistanceFinest);
+					}
+				}
+			}
+
+			// Enlarge Bone BBox
+			const std::vector<sint32>			*boneUsage= skin->getSkinBoneUsage();
+			const std::vector<NLMISC::CBSphere>	*boneSphere= skin->getSkinBoneSphere();
+			if(boneUsage && boneSphere)
+			{
+				nlassert(boneUsage->size()==boneSphere->size());
+				for(i=0;i<boneUsage->size();i++)
+				{
+					const CBSphere	&sphere= (*boneSphere)[i];
+					sint			boneId= (*boneUsage)[i];
+					nlassert(boneId<(sint)Bones.size());
+					// if valid boneId, and sphere not empty (ie not -1 radius)
+					if(boneId>-1 && sphere.Radius>=0)
+					{
+						if(sphereEmpty[boneId])
+						{
+							sphereEmpty[boneId]= false;
+							Bones[boneId]._MaxSphere= sphere;
+						}
+						else
+						{
+							Bones[boneId]._MaxSphere.setUnion(Bones[boneId]._MaxSphere, sphere);
+						}
 					}
 				}
 			}
@@ -1854,17 +1894,51 @@ bool		CSkeletonModel::computeWorldBBoxForShadow(NLMISC::CAABBox &worldBB)
 		return false;
 
 	// **** Compute The BBox with Bones of the skeleton
-	// TODODO: hack here.
+	CVector		minBB, maxBB;
 	for(i=0;i<_BoneToCompute.size();i++)
 	{
-		CBone	*bone= _BoneToCompute[i].Bone;
+		CBone			*bone= _BoneToCompute[i].Bone;
+		// compute the world sphere
+		const	CMatrix	&worldMat= bone->getWorldMatrix();
+		CBSphere		worldSphere;
+		bone->_MaxSphere.applyTransform(worldMat, worldSphere);
+		// compute bone min max bounding cube.
+		CVector		minBone, maxBone;
+		minBone= maxBone= worldSphere.Center;
+		float	r= worldSphere.Radius;
+		minBone.x-= r;
+		minBone.y-= r;
+		minBone.z-= r;
+		maxBone.x+= r;
+		maxBone.y+= r;
+		maxBone.z+= r;
+		// set or extend
 		if(i==0)
-			worldBB.setCenter(bone->getWorldMatrix().getPos());
+		{
+			minBB= minBone;
+			maxBB= maxBone;
+		}
 		else
-			worldBB.extend(bone->getWorldMatrix().getPos());
+		{
+			minBB.minof(minBB, minBone);
+			maxBB.maxof(maxBB, maxBone);
+		}
 	}
-	// Hack.
-	worldBB.setHalfSize(worldBB.getHalfSize()*1.5f);
+	// build the bbox
+	worldBB.setMinMax(minBB, maxBB);
+	/*
+	// Fake Version. Faster (-0.2 ms for 8 compute each frame) but false.
+	for(i=0;i<_BoneToCompute.size();i++)
+	{
+		CBone			*bone= _BoneToCompute[i].Bone;
+		const	CMatrix	&worldMat= bone->getWorldMatrix();
+		if(i==0)
+			worldBB.setCenter(worldMat.getPos());
+		else
+			worldBB.extend(worldMat.getPos());
+	}
+	worldBB.setHalfSize(worldBB.getHalfSize() *1.5f);
+	*/
 
 
 	// **** Add to this bbox the ones of the Sticked objects.

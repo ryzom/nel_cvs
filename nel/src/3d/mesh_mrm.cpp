@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.65 2003/08/14 08:52:27 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.66 2003/09/01 09:19:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2370,7 +2370,7 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 			// Remap bones id table
 			std::vector<uint> remap (_BonesName.size());
 
-			// For each bones
+			// **** For each bones, compute remap
 			uint bone;
 			for (bone=0; bone<remap.size(); bone++)
 			{
@@ -2396,10 +2396,33 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 				}
 			}
 
-			// Remap the vertex
-			uint vert;
-			for (vert=0; vert<_SkinWeights.size(); vert++)
+			// **** Remap the vertices, and compute Bone Spheres.
+
+			// Find the Geomorph space: to process only real vertices, not geomorphed ones.
+			uint	nGeomSpace= 0;
+			uint	lod;
+			for (lod=0; lod<_Lods.size(); lod++)
 			{
+				nGeomSpace= max(nGeomSpace, _Lods[lod].Geomorphs.size());
+			}
+
+			// Prepare Sphere compute
+			nlassert(_OriginalSkinVertices.size() == _SkinWeights.size());
+			static std::vector<CAABBox>		boneBBoxes;
+			static std::vector<bool>		boneBBEmpty;
+			boneBBoxes.clear();
+			boneBBEmpty.clear();
+			boneBBoxes.resize(_BonesId.size());
+			boneBBEmpty.resize(_BonesId.size(), true);
+
+			// Remap the vertex, and compute the bone spheres. see CTransform::getSkinBoneSphere() doc.
+			// for true vertices
+			uint vert;
+			for (vert=nGeomSpace; vert<_SkinWeights.size(); vert++)
+			{
+				// get the vertex position.
+				CVector		vertex= _OriginalSkinVertices[vert];
+
 				// For each weight
 				uint weight;
 				for (weight=0; weight<NL3D_MESH_SKINNING_MAX_MATRIX; weight++)
@@ -2408,14 +2431,50 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 					if ((_SkinWeights[vert].Weights[weight]>0)||(weight==0))
 					{
 						// Check id
-						nlassert (_SkinWeights[vert].MatrixId[weight] < remap.size());
-						_SkinWeights[vert].MatrixId[weight] = remap[_SkinWeights[vert].MatrixId[weight]];
+						uint	srcId= _SkinWeights[vert].MatrixId[weight];
+						nlassert (srcId < remap.size());
+						// remap
+						_SkinWeights[vert].MatrixId[weight] = remap[srcId];
+
+						// if the boneId is valid (ie found)
+						if(_BonesId[srcId]>=0)
+						{
+							// transform the vertex pos in BoneSpace
+							CVector		p= skeleton->Bones[_BonesId[srcId]].getBoneBase().InvBindPos * vertex;
+							// extend the bone bbox.
+							if(boneBBEmpty[srcId])
+							{
+								boneBBoxes[srcId].setCenter(p);
+								boneBBEmpty[srcId]= false;
+							}
+							else
+							{
+								boneBBoxes[srcId].extend(p);
+							}
+						}
 					}
+					else
+						break;
 				}				
 			}
 
-			// Remap the vertex influence by lods
-			uint lod;
+			// Compile spheres
+			_BonesSphere.resize(_BonesId.size());
+			for(bone=0;bone<_BonesSphere.size();bone++)
+			{
+				// If the bone is empty, mark with -1 in the radius.
+				if(boneBBEmpty[bone])
+				{
+					_BonesSphere[bone].Radius= -1;
+				}
+				else
+				{
+					_BonesSphere[bone].Center= boneBBoxes[bone].getCenter();
+					_BonesSphere[bone].Radius= boneBBoxes[bone].getRadius();
+				}
+			}
+
+			// **** Remap the vertex influence by lods
 			for (lod=0; lod<_Lods.size(); lod++)
 			{
 				// For each matrix used
@@ -2430,7 +2489,7 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 				}
 			}
 
-			// Remap Shadow Vertices.
+			// **** Remap Shadow Vertices.
 			for(vert=0;vert<_ShadowSkinVertices.size();vert++)
 			{
 				CShadowVertex	&v= _ShadowSkinVertices[vert];

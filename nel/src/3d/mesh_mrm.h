@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.45 2003/08/14 08:52:27 corvazier Exp $
+ * $Id: mesh_mrm.h,v 1.46 2003/09/01 09:19:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -238,7 +238,10 @@ public:
 	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
 
 	/// return array of bones used by the skin. computeBonesId must has been called before.
-	const std::vector<sint32>	&getSkinBoneUsage() const {return _BonesId;}
+	const std::vector<sint32>			&getSkinBoneUsage() const {return _BonesId;}
+
+	/// see CTransform::getSkinBoneSphere() doc for the meaning of this value. computeBonesId must has been called before.
+	const std::vector<NLMISC::CBSphere>	&getSkinBoneSphere() const {return _BonesSphere;}
 
 	// @}
 
@@ -501,6 +504,8 @@ private:
 	std::vector<sint32>			_BonesId;
 	/// Same as _BonesId but with parent of bones added. (used for bone usage)
 	std::vector<sint32>			_BonesIdExt;
+	/// see CTransform::getSkinBoneSphere() doc for the meaning of this value
+	std::vector<NLMISC::CBSphere>	_BonesSphere;
 
 	/// List of Lods.
 	std::vector<CLod>			_Lods;

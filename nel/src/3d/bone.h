@@ -1,7 +1,7 @@
 /** \file bone.h
  * <File description>
  *
- * $Id: bone.h,v 1.6 2003/07/09 16:32:30 berenguier Exp $
+ * $Id: bone.h,v 1.7 2003/09/01 09:19:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "3d/transformable.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/misc/bsphere.h"
 
 
 namespace NL3D
@@ -157,6 +158,9 @@ public:
 	// Private to SkeletonModel. You should not set this ptr directly. see CSkeletonModel::setBoneAnimCtrl()
 	// The extra controller (IK...) on this bone
 	IAnimCtrl					*_AnimCtrl;
+
+	// Private to SkeletonModel. This represent the max sphere for all skins around this bone
+	NLMISC::CBSphere			_MaxSphere;
 
 private:
 	// the boneBase of the skeletonShape which create this bone..

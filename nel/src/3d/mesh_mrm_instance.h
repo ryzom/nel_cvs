@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.14 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.15 2003/09/01 09:19:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,10 @@ protected:
 	virtual	void	setApplySkin(bool state);
 
 	/// Called for lod character coloring.
-	virtual const std::vector<sint32>	*getSkinBoneUsage() const;
+	virtual const std::vector<sint32>			*getSkinBoneUsage() const;
+
+	/// Called for more precise clipping.
+	virtual const std::vector<NLMISC::CBSphere>	*getSkinBoneSphere() const;
 
 	/// Implementation of the renderSkin
 	virtual void	renderSkin(float alphaMRM);

@@ -1,7 +1,7 @@
 /** \file bsphere.h
  * <File description>
  *
- * $Id: bsphere.h,v 1.3 2003/02/14 14:14:43 lecroart Exp $
+ * $Id: bsphere.h,v 1.4 2003/09/01 09:21:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,6 +79,8 @@ public:
 	/// Does the sphere intersect the other?
 	bool	intersect(const CBSphere &s) const;
 
+	/// Build the union of the 2 sphere ans set to *this. work if this==s1 || this==s2.
+	void	setUnion(const CBSphere &sa, const CBSphere &sb);
 };
 
 

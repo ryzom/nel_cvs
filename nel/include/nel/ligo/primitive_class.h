@@ -1,7 +1,7 @@
 /** \file primitive_class.h
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.h,v 1.3 2003/08/20 15:51:34 corvazier Exp $
+ * $Id: primitive_class.h,v 1.4 2003/11/04 14:55:26 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -163,6 +163,9 @@ public:
 
 		// Folder
 		std::string	Folder;
+
+		// Size of multi line view
+		uint		WidgetHeight;
 
 		// Combobox value
 		class CConstStringValue

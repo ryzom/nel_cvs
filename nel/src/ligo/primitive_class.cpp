@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.4 2003/10/13 08:48:40 corvazier Exp $
+ * $Id: primitive_class.cpp,v 1.5 2003/11/04 14:55:50 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -47,6 +47,19 @@ bool ReadFloat (const char *propName, float &result, xmlNodePtr xmlNode)
 	if (CIXml::getPropertyString (value, xmlNode, propName))
 	{
 		result = (float)atof (value.c_str ());
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool ReadInt (const char *propName, int &result, xmlNodePtr xmlNode)
+{
+	string value;
+	if (CIXml::getPropertyString (value, xmlNode, propName))
+	{
+		result = atoi (value.c_str ());
 		return true;
 	}
 	return false;
@@ -276,6 +289,12 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 						// Lookup
 						parameter.ReadOnly = false;
 						ReadBool ("READ_ONLY", parameter.ReadOnly, paramNode, filename, config);
+
+						// Lookup
+						parameter.WidgetHeight = 100;
+						int temp;
+						if (ReadInt ("WIDGET_HEIGHT", temp, paramNode))
+							parameter.WidgetHeight = (uint)temp;
 
 						// Read the file extension
 						parameter.FileExtension = "";

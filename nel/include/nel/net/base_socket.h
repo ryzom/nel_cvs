@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.h,v 1.7 2000/10/03 13:27:11 cado Exp $
+ * $Id: base_socket.h,v 1.8 2000/10/06 15:27:27 cado Exp $
  *
  * Interface of CBaseSocket
  */
@@ -35,8 +35,7 @@ namespace NLNET {
 
 
 /**
- * Network exceptions. Note: this exception class is called ESocket and not EBaseSocket
- * but it is used by CSocket, CDatagramSocket and CMsgSocket.
+ * Network exceptions.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -62,12 +61,24 @@ public:
 		return _ErrNum;
 	}
 
-private:
+protected:
 
 	std::string	_Reason;
 	uint		_ErrNum;
 };
 
+
+/// Exception raised when a connection was closed
+class ESocketConnectionClosed : public ESocket
+{
+public:
+	/// Constructor
+	ESocketConnectionClosed()
+	{
+		_Reason = "Connection closed";
+		_ErrNum = 0;
+	}
+};
 
 
 //typedef SOCKET;
@@ -80,8 +91,15 @@ private:
 
 
 /**
- * Base class for CSocket (TCP) and CDatagramSocket (UDP).
- * Not made to be instanciated.
+ * CBaseSocket allows to send/receive data on a network. An object can be a stream-oriented socket which
+ * can connect to a host and use TCP, or a datagram-oriented socket using UDP.
+ * This class implements layer 1 of the NeL Network communication subsystem.
+ *
+ * The "logging" boolean value is necessary because in this implementation we always log
+ * to one single global CLog object : there is not one CLog object per socket. Therefore
+ * we must prevent the socket used in CNetDisplayer from logging itself... otherwise we
+ * would have an infinite recursion.
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -95,41 +113,117 @@ public:
 	 */
 	static void init() throw (ESocket);
 
-	/// Constructor. Disable logging if the server socket object is used by the logging system.
-	CBaseSocket( bool logging = true );
+	
+	/// @name Socket setup
+	//@{
 
-	/// Construct a CSocket object using an already connected socket descriptor 
-	CBaseSocket( SOCKET sock ) throw (ESocket);
+	/**
+	 * Constructor.
+	 * \param reliable If true, creates a connected socket using TCP, otherwise an unconnected socket using UDP
+	 * \param logging Disable logging if the server socket object is used by the logging system, to avoid infinite recursion
+	 */
+	CBaseSocket( bool reliable = true, bool logging = true );
 
-	/// Destructor
-	~CBaseSocket();
+	/// Construct a CSocket object using an already connected socket descriptor and its associated remote address
+	CBaseSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket);
+
+	/** Connection (reliable sockets only).
+	 * If the socket is unreliable, it does not connect but saves the remote address so that next calls to
+	 * send() do the same as sendTo with addr as an argument.
+	 */
+	void				connect( const CInetAddress& addr ) throw (ESocket);
+
+	/** Binds the socket to the specified port. Call bind() for an unreliable socket if the host acts as a server and expects to receive
+	 * messages. If the host acts as a client, call directly sendTo(), in this case you need not bind the socket.
+	 */
+	void				bind( uint16 port ) throw (ESocket);
+
+	/// Sets/unsets TCP_NODELAY (reliable sockets only)
+	void				setNoDelay( bool value ) throw (ESocket);
 
 	/// Closure
 	void				close();
 
+	/// Destructor
+	~CBaseSocket();
+
+	//@}
+
+	
+	/// @name Receiving data
+	//@{
+
 	/// Checks if there are some data to receive
 	bool				dataAvailable() throw (ESocket);
 
+	/// Receives data, or blocks if !dataAvailable()). Returns false if !connected().
+	bool				receive( uint8 *buffer, uint len ) throw (ESocket);
+
+	/// Receives data (returns false if !dataAvailable() and does not block).
+	bool				received( uint8 *buffer, uint len ) throw (ESocket);
+
+	/** Receives data (returns false if !dataAvailable()) (unreliable sockets only).
+	 * The socket must have been bound before, by calling either bind() or sendTo().
+	 * \param [in] buffer Address of buffer
+	 * \param [in] len Length of buffer
+	 * \param [out] addr Address of sender
+	 */
+	bool				receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) throw (ESocket);
+
+	//@}
+
+	
+	/// @name Sending data
+	//@{
+
+	/** Sends data to the specified host (unreliable sockets only)
+	 * \todo cado Update it
+	 */
+	void				sendTo( const uint8 *buffer, uint len, const CInetAddress& addr ) throw (ESocket);
+
+	/// Sends a message
+	void				send( const uint8 *buffer, uint len ) throw (ESocket);
+
+	//@}
+
+	
+	/// @name Properties
+	//@{
+
+	/// Returns if the socket is reliable
+	bool				reliable() const { return _Reliable; }
+
+	/// Returns if the socket is connected
+	bool				connected() const {	return _Connected; }
+
 	/// Returns a const reference on the local address
-	const CInetAddress&	localAddr() const
-	{
-		return _LocalAddr;
-	}
+	const CInetAddress&	localAddr() const {	return _LocalAddr; }
+
+	/// Returns the address of the remote host
+	const CInetAddress&	remoteAddr() const { return _RemoteAddr; }
 
 	/// Returns the socket descriptor
-	SOCKET				descriptor()
-	{
-		return _Sock;
-	}
+	SOCKET				descriptor() const { return _Sock; }
+
+	//@}
 
 protected:
 
 	/// Sets the local address
-	void	setLocalAddress();
+	void			setLocalAddress();
+
+	/// Receives data
+	void			doReceive( uint8 *buffer, uint len );
 
 	SOCKET			_Sock;
+
 	CInetAddress	_LocalAddr;
+	CInetAddress	_RemoteAddr;
+
+	bool			_Reliable;
 	bool			_Logging;
+	bool			_Bound;
+	bool			_Connected;
 
 
 private:

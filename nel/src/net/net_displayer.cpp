@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.cpp,v 1.4 2000/10/04 14:34:10 cado Exp $
+ * $Id: net_displayer.cpp,v 1.5 2000/10/06 15:27:27 cado Exp $
  *
  * Implementation of CNetDisplayer
  */
@@ -37,7 +37,7 @@ namespace NLNET {
  */
 CNetDisplayer::CNetDisplayer( const CInetAddress& logServerAddr ) :
 	_ServerAddr( logServerAddr ),
-	_Server( false ) // disable logging otherwise an infinite recursion may occur
+	_Server( true, false ) // disable logging otherwise an infinite recursion may occur
 {
 	try
 	{

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.13 2000/10/04 14:34:10 cado Exp $
+ * $Id: socket.cpp,v 1.14 2000/10/06 15:27:27 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -60,11 +60,10 @@ namespace NLNET
 /*
  * Constructor
  */
-CSocket::CSocket( bool logging ) :
-	CBaseSocket( logging ),
-	_Connected( false ),
+CSocket::CSocket( bool reliable, bool logging ) :
+	CBaseSocket( reliable, logging ),
 	_DataAvailable( false ),
-	_SenderId( true ),
+	_SenderId( 0 ),
 	_IsListening( false )
 {
 }
@@ -74,22 +73,11 @@ CSocket::CSocket( bool logging ) :
  * Construct a CSocket object using an already connected socket and its associated address
  */
 CSocket::CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket) :
-	CBaseSocket( sock ),
-	_Connected( false ),
+	CBaseSocket( sock, remoteaddr ),
 	_DataAvailable( false ),
-	_RemoteAddr( remoteaddr ),
+	_SenderId( 0 ),
 	_IsListening( false )
 {
-	// Check remote address
-	if ( ! _RemoteAddr.isValid() )
-	{
-		throw ESocket( "Could not init a socket object with an invalid address" );
-	}
-
-	// Get local socket name
-	setLocalAddress();
-
-	_Connected = true;
 }
 
 
@@ -104,90 +92,23 @@ void CSocket::close()
 
 
 /*
- * Sets/unsets TCP_NODELAY
- */
-void CSocket::setNoDelay( bool value ) throw (ESocket)
-{
-	if ( setsockopt( _Sock, IPPROTO_TCP, TCP_NODELAY, (char*)&value, sizeof(value) ) != 0 )
-	{
-		throw ESocket( "Setsockopt(TCP_NODELAY) failed. " );
-	}
-}
-
-
-/*
- * Connection
- */
-void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
-{
-	// Check address
-	if ( ! addr.isValid() )
-	{
-		throw ESocket("Unable to connect to invalid address");
-	}
-
-	// Socket creation
-	_Sock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ); // IPPROTO_TCP or IPPROTO_IP (=0) ?
-	if ( _Sock == INVALID_SOCKET )
-	{
-		throw ESocket("Socket creation failed");
-	}
-	if ( _Logging )
-	{
-		nldebug( "Socket %d open", _Sock );
-	}
-
-	// Connection
-	// log( "Trying TCP connection on " + addr.ipAddress() );
-	if ( ::connect( _Sock, (const sockaddr *)(addr.sockAddr()), sizeof(sockaddr_in) ) != 0 )
-	{
-		throw ESocket("Connection failed");
-	}
-	if ( _Logging )
-	{
-		nldebug( "Socket %d connected to %s", _Sock, addr.asIPString() );
-	}
-
-	// Get local socket name
-	sockaddr saddr;
-	int saddrlen = sizeof(saddr);
-	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
-	{
-		if ( _Logging ) {
-			nldebug( "Network error: getsockname() failed (CSocket::connect)" );
-		}
-	}
-	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
-	if ( _Logging )
-	{
-		nldebug( "Socket %d is at %s", _Sock, _LocalAddr.asIPString().c_str() );
-	}
-	_RemoteAddr = addr;
-	_Connected = true;
-}
-
-
-/*
  * Sends a message
  */
 void CSocket::send( CMessage& message ) throw(ESocket)
 {
 	CMessage alldata = encode( message );
 
-	if ( ::send( _Sock, (const char*)alldata.buffer(), alldata.length(), 0) == SOCKET_ERROR )
-	{
-		throw ESocket("Unable to send message");
-	}
+	CBaseSocket::send( alldata.buffer(), alldata.length() );
 	if ( _Logging )
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "Socket %d sent message %hd (%s) of %d bytes",
+			nldebug( "Socket %d sent message %hd (%s) (%d bytes)",
 				_Sock, message.typeAsNumber(), message.typeAsString().c_str(), alldata.length() );
 		}
 		else
 		{
-			nldebug( "Socket %d sent message %s of %d bytes",
+			nldebug( "Socket %d sent message %s (%d bytes)",
 				_Sock, message.typeAsString().c_str(), alldata.length() );
 		}
 	}
@@ -199,10 +120,6 @@ void CSocket::send( CMessage& message ) throw(ESocket)
  */
 bool CSocket::dataAvailable() throw (ESocket)
 {
-	if ( ! _Connected )
-	{
-		return false;
-	}
 	if ( _DataAvailable ) // true if a CMsgSocket object has just tested positively the socket
 	{
 		return true;
@@ -211,38 +128,6 @@ bool CSocket::dataAvailable() throw (ESocket)
 }
 
 
-/*
- * Receives data, or blocks if !dataAvailable()). Returns false if !connected().
- */
-bool CSocket::receive( CMessage& message ) throw (ESocket)
-{
-	if ( ! _Connected )
-	{
-		return false;
-	}
-
-	// Receive incoming message
-	doReceive( message );
-
-	return true;
-}
-
-
-/*
- * Receives data (returns false if !dataAvailable() and does not block).
- */
-bool CSocket::received( CMessage& message ) throw (ESocket)
-{
-	if ( ! dataAvailable() )
-	{
-		return false;
-	}
-
-	// Receive incoming message
-	doReceive( message );
-
-	return true;
-}
 
 
 /*
@@ -281,7 +166,7 @@ void CSocket::packMessage( CMessage& message )
 /*
  * Returns an output message with header encoded in the payload buffer
  */
-CMessage CSocket::encode( CMessage& msg )
+CMessage CSocket::encode( CMessage& msg ) throw (ESocket)
 {
 	CMessage alldata( false, msg.length()+CMessage::maxHeaderLength() );
 
@@ -319,19 +204,91 @@ CMessage CSocket::encode( CMessage& msg )
 
 
 /*
+ * Returns an input message with header extracted from the payload buffer
+ */
+CMessage CSocket::decode( CMessage& alldata ) throw (ESocket)
+{
+	// 1. Read message type
+	TTypeNum msgtype;
+	alldata.serial( msgtype );
+
+	// 2. Read message name (optional)
+	TTypeNum msgnamelen = 0;
+	char *msgname = NULL;
+	if ( msgtype < 0 )
+	{
+		msgnamelen = msgtype & 0x7FFF;
+		msgname = new char[msgnamelen+1];
+		alldata.serialBuffer( (uint8*)msgname, msgnamelen );
+		msgname[msgnamelen] = '\0';
+	}
+	// 3. Read message payload size
+	uint32 msgsize;
+	alldata.serial( msgsize );
+
+	// Set message type
+	CMessage msg( true );
+	if ( msgtype < 0 )
+	{
+		msg.setType( std::string(msgname) );
+	}
+	else
+	{
+		msg.setType( msgtype );
+	}
+	if ( msgname != NULL )
+	{
+		delete [] msgname;
+	}
+	// Read buffer
+	alldata.serialBuffer( msg.bufferToFill(msgsize), msgsize );
+
+	return msg;
+}
+
+
+/*
+ * Receives data, or blocks if !dataAvailable()). Returns false if !connected().
+ */
+bool CSocket::receive( CMessage& message ) throw (ESocket)
+{
+	if ( (! _Connected) && _Reliable )
+	{
+		return false;
+	}
+
+	// Receive incoming message
+	doReceive( message );
+
+	return true;
+}
+
+
+/*
+ * Receives data (returns false if !dataAvailable() and does not block).
+ */
+bool CSocket::received( CMessage& message ) throw (ESocket)
+{
+	if ( ( (! _Connected) && _Reliable ) && (! dataAvailable()) )
+	{
+		return false;
+	}
+
+	// Receive incoming message
+	doReceive( message );
+
+	return true;
+}
+
+
+/*
  * Helper method for receive() and received()
  */
 void CSocket::doReceive( CMessage& message ) throw (ESocket)
 {
 	// 1. Read message type
 	TTypeNum msgtype;
-	uint32 brecvd;
-	brecvd = ::recv( _Sock, (char*)&msgtype, sizeof(msgtype), 0 );
-	switch ( brecvd )
-	{
-		case 0 :			throw ESocket("Connection closed"); // could be return false if function returned a boolean
-		case SOCKET_ERROR :	throw ESocket("Cannot receive msgtype");
-	}
+	CBaseSocket::doReceive( (uint8*)&msgtype, sizeof(msgtype) );
 	NLMISC_BSWAP16(msgtype);
 	//cout << msgtype << " ";
 
@@ -342,18 +299,12 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	{
 		msgnamelen = msgtype & 0x7FFF;
 		msgname = new char[msgnamelen+1];
-		if ( ::recv( _Sock, msgname, msgnamelen, 0 ) == SOCKET_ERROR )
-		{
-			throw ESocket("Cannot receive msgname");
-		}
+		CBaseSocket::doReceive( (uint8*)msgname, msgnamelen );
 		msgname[msgnamelen] = '\0';
 	}
 	// 3. Read message payload size
 	uint32 msgsize;
-	if ( ::recv( _Sock, (char*)&msgsize, sizeof(msgsize), 0 ) == SOCKET_ERROR )
-	{
-		throw ESocket("Cannot receive msgsize");
-	}
+	CBaseSocket::doReceive( (uint8*)&msgsize, sizeof(msgsize) );
 	NLMISC_BSWAP32(msgsize);
 	//cout << (int)msgsize << endl;
 
@@ -371,24 +322,75 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 		delete [] msgname;
 	}
 	// 4. Read all buffer and dismiss
-	if ( ::recv( _Sock, (char*)(message.bufferToFill(msgsize)), msgsize, 0 ) == SOCKET_ERROR )
-	{
-		throw ESocket("Cannot receive message");
-	}
+	CBaseSocket::doReceive( message.bufferToFill(msgsize), msgsize );
 	if ( _Logging )
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "Socket %d received message %hd of %d bytes",
+			nldebug( "Socket %d received message %hd (%d bytes)",
 				_Sock, message.typeAsNumber(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
 		}
 		else
 		{
-			nldebug( "Socket %d received message %s of %d bytes",
+			nldebug( "Socket %d received message %s (%d bytes)",
 				_Sock, message.typeAsString().c_str(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
 		}
 	}
 }
 
 
+/*
+ * Sends a message
+ */
+void CSocket::sendTo( CMessage& message, const CInetAddress& addr ) throw (ESocket)
+{
+	CMessage alldata = encode( message );
+	CBaseSocket::sendTo( alldata.buffer(), alldata.length(), addr );
+	if ( _Logging )
+	{
+		if ( message.typeIsNumber() )
+		{
+			nldebug( "Socket %d sent message %hd (%s)",
+				_Sock, message.typeAsNumber(), message.typeAsString().c_str() );
+		}
+		else
+		{
+			nldebug( "Socket %d sent message %s of %d bytes",
+				_Sock, message.typeAsString().c_str() );
+		}
+	}
+
 }
+
+
+/*
+ * Receives data (returns false if !dataAvailable()).
+ */
+bool CSocket::receivedFrom( CMessage& message, CInetAddress& addr ) throw (ESocket)
+{
+	// Receive incoming message
+	uint32 msgtotalsize = CMessage::maxLength();
+	CMessage alldata( true, msgtotalsize );
+	if ( CBaseSocket::receivedFrom( alldata.bufferToFill( msgtotalsize ), msgtotalsize, addr ) )
+	{
+		message = decode( alldata );
+		if ( _Logging )
+		{
+			if ( message.typeIsNumber() )
+			{
+				nldebug( "Socket %d received message %hd",
+					_Sock, message.typeAsNumber() );
+			}
+			else
+			{
+				nldebug( "Socket %d received message %s",
+					_Sock, message.typeAsString().c_str() );
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
+
+} // NLNET

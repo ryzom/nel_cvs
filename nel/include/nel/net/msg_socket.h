@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.10 2000/10/04 14:34:10 cado Exp $
+ * $Id: msg_socket.h,v 1.11 2000/10/06 15:27:27 cado Exp $
  *
  * Interface for CMsgSocket
  */
@@ -99,9 +99,9 @@ public:
 	 * When a message with a name (as a string) is received, a binding message is replied to the sender, so that
 	 * next time it sends this type of message, the type is represented by a message type code.
 	 *
-	 * At present, receive() processes only 1 received message at a time by connection.
+	 * At present, update() processes only 1 received message at a time by connection.
 	 */
-	static void		receive();
+	static void		update();
 
 	/// Sets timeout for receive() in milliseconds
 	static void		setTimeout( uint32 ms );

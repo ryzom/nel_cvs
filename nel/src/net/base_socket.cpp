@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.8 2000/10/04 14:34:10 cado Exp $
+ * $Id: base_socket.cpp,v 1.9 2000/10/06 15:27:27 cado Exp $
  *
  * Implementation of CBaseSocket
  */
@@ -30,6 +30,7 @@
 #ifdef NL_OS_WINDOWS
 
 #include <winsock2.h>
+#define ERROR_NUM WSAGetLastError()
 
 #elif defined NL_OS_LINUX
 
@@ -43,6 +44,7 @@
 #include <fcntl.h>
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
+#define ERROR_NUM errno
 typedef int SOCKET;
 
 #endif
@@ -67,7 +69,7 @@ void CBaseSocket::init() throw (ESocket)
 		int err = WSAStartup(winsock_version, &wsaData);
 		if ( err != 0 )
 		{
-			throw ESocket("Winsock initialization failed");
+			throw ESocket( "Winsock initialization failed", ERROR_NUM );
 		}
 #endif
 		CBaseSocket::_Initialized = true;
@@ -79,23 +81,55 @@ void CBaseSocket::init() throw (ESocket)
 /*
  * Constructor
  */
-CBaseSocket::CBaseSocket( bool logging ) :
+CBaseSocket::CBaseSocket( bool reliable, bool logging ) :
 	_Sock( INVALID_SOCKET ),
-	_Logging( logging )
+	_Reliable( reliable ),
+	_Logging( logging ),
+	_Connected( false )
+
 {
 	CBaseSocket::init();
+
+	// Socket creation
+	if ( reliable )
+	{
+		_Sock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ); // or IPPROTO_IP (=0) ?
+	}
+	else
+	{
+		_Sock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ); // or IPPROTO_IP (=0) ?
+	}
+	if ( _Sock == INVALID_SOCKET )
+	{
+		throw ESocket("socket creation failed");
+	}
+	if ( _Logging )
+	{
+		nldebug( "Socket %d open", _Sock );
+	}
 }
 
 
 /*
- * Construct a CSocket object using an already connected socket 
+ * Construct a CSocket object using an already connected reliable socket 
  */
-CBaseSocket::CBaseSocket( SOCKET sock ) throw (ESocket) :
-	_Sock( sock )
+CBaseSocket::CBaseSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket) :
+	_Sock( sock ),
+	_Reliable( true ),
+	_Connected( true ),
+	_Logging( true ),
+	_RemoteAddr( remoteaddr )
 {
 	CBaseSocket::init();
-}
 
+	// Check remote address
+	if ( ! _RemoteAddr.isValid() )
+	{
+		throw ESocket( "Could not init a socket object with an invalid address" );
+	}
+	// Get local socket name
+	setLocalAddress();
+}
 
 /*
  * Destructor
@@ -120,12 +154,79 @@ void CBaseSocket::close()
 		shutdown( _Sock, SHUT_RDWR ):
 		::close( _Sock );
 #endif
+		if ( _Logging )
+		{
+			nldebug( "Socket %d closed at %s", _Sock, _LocalAddr.asIPString().c_str() );
+		}
+		_Sock = INVALID_SOCKET;
+		_Bound = false;
+	}
+}
+
+
+
+/*
+ * Sets/unsets TCP_NODELAY
+ */
+void CBaseSocket::setNoDelay( bool value ) throw (ESocket)
+{
+	if ( ! _Reliable )
+	{
+		throw ESocket("Cannot setNoDelay on an unreliable socket");
+	}
+		
+	if ( setsockopt( _Sock, IPPROTO_TCP, TCP_NODELAY, (char*)&value, sizeof(value) ) != 0 )
+	{
+		throw ESocket( "setNoDelay failed. ", ERROR_NUM );
+	}
+}
+
+
+/*
+ * Connection
+ */
+void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocket)
+{
+	if ( ! _Reliable )
+	{
+		// When using an unreliable socket, send() does the same as sendTo(_RemoteAddr).
+		_RemoteAddr = addr;
+		return;
+	}
+
+	// Check address
+	if ( ! addr.isValid() )
+	{
+		throw ESocket( "Unable to connect to invalid address" );
+	}
+
+	// Connection
+	// log( "Trying TCP connection on " + addr.ipAddress() );
+	if ( ::connect( _Sock, (const sockaddr *)(addr.sockAddr()), sizeof(sockaddr_in) ) != 0 )
+	{
+		throw ESocket( "Connection failed", ERROR_NUM );
+	}
 	if ( _Logging )
 	{
-		nldebug( "Socket %d closed at %s", _Sock, _LocalAddr.asIPString().c_str() );
+		nldebug( "Socket %d connected to %s", _Sock, addr.asIPString() );
 	}
-	_Sock = INVALID_SOCKET;
+
+	// Get local socket name
+	sockaddr saddr;
+	int saddrlen = sizeof(saddr);
+	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
+	{
+		if ( _Logging ) {
+			nldebug( "Network error: getsockname() failed " );
+		}
 	}
+	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
+	if ( _Logging )
+	{
+		nldebug( "Socket %d is at %s", _Sock, _LocalAddr.asIPString().c_str() );
+	}
+	_RemoteAddr = addr;
+	_Connected = true;
 }
 
 
@@ -146,7 +247,7 @@ bool CBaseSocket::dataAvailable() throw (ESocket)
 	switch ( res  )
 	{
 		case  0 : return false;
-		case -1 : throw ESocket("dataAvailable(): select failed"); return false;
+		case -1 : throw ESocket( "dataAvailable(): select failed", ERROR_NUM ); return false;
 	}
 	return true;
 }
@@ -161,10 +262,181 @@ void CBaseSocket::setLocalAddress()
 	int saddrlen = sizeof(saddr);
 	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
 	{
-		ESocket( "Unable to find local address" );
+		ESocket( "Unable to find local address", ERROR_NUM );
 	}
 	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
 }
+
+
+/** Binds the socket to the specified port. Call bind() if the host acts as a server and waits for
+ * messages. If the host acts as a client, call sendTo(), there is no need to bind the socket.
+ */
+void CBaseSocket::bind( uint16 port ) throw (ESocket)
+{
+	// Get local socket name
+	const uint MAXLENGTH = 80;
+	char localhost [MAXLENGTH];
+	if ( gethostname( localhost, MAXLENGTH ) != 0 )
+	{
+		throw ESocket("Unabled to get local hostname");
+	}
+	_LocalAddr.setByName( localhost );
+	_LocalAddr.setPort( port );
+
+	// Bind the socket
+	if ( ::bind( _Sock, (sockaddr*)(_LocalAddr.sockAddr()), sizeof(sockaddr) ) == SOCKET_ERROR )
+	{
+#ifdef NL_OS_WINDOWS
+		switch ( WSAGetLastError() ) {
+			case WSAEADDRINUSE : throw ESocket("Bind failed : address in use");
+			case WSAEADDRNOTAVAIL : throw ESocket("Bind failed : address not available");
+			default : throw ESocket("Bind failed");
+		}
+#elif defined NL_OS_LINUX
+		throw ESocket(strerror(errno));
+#endif
+	}
+	_Bound = true;
+	if ( _Logging )
+	{
+		nldebug( "Socket %d bound at %s", _Sock, _LocalAddr.asIPString().c_str() );
+	}
+}
+
+
+/*
+ * Sends a message
+ */
+void CBaseSocket::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr ) throw (ESocket)
+{
+	//  Send
+	if ( ::sendto( _Sock, (const char*)buffer, len, 0, (sockaddr*)(addr.sockAddr()), sizeof(sockaddr) ) != (sint32)len )
+	{
+		throw ESocket( "Unable to send datagram", ERROR_NUM );
+	}
+	if ( _Logging )
+	{
+		nldebug( "Socket %d sent %d bytes to %s", _Sock, len, addr.asIPString().c_str() );
+	}
+
+	// If socket is unbound, retrieve local address
+	if ( ! _Bound )
+	{
+		setLocalAddress();
+		_Bound = true;
+	}
+}
+
+
+/*
+ * Receives data (returns false if !dataAvailable()).
+ */
+bool CBaseSocket::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) throw (ESocket)
+{
+	if ( ! ( _Bound && dataAvailable() ) )
+	{
+		return false;
+	}
+
+	// Receive incoming message
+	sockaddr_in saddr;
+	int saddrlen = sizeof(saddr);
+	int brecvd = ::recvfrom( _Sock, (char*)buffer, len , 0, (sockaddr*)&saddr, &saddrlen );
+	if ( brecvd == SOCKET_ERROR )
+	{
+		throw ESocket( "Cannot receive data", ERROR_NUM );
+	}
+
+	// Get sender's address
+	addr.setSockAddr( &saddr );
+
+	if ( _Logging )
+	{
+		nldebug( "Socket %d received %d bytes from %s", _Sock, len, addr.asIPString().c_str() );
+	}
+
+	return true;
+}
+
+
+/*
+ * Sends a message
+ */
+void CBaseSocket::send( const uint8* buffer, uint len ) throw (ESocket)
+{
+	if ( _Connected )
+	{
+		if ( ::send( _Sock, (const char*)buffer, len, 0 ) == SOCKET_ERROR )
+		{
+			throw ESocket( "Unable to send data", ERROR_NUM );
+		}
+		if ( _Logging )
+		{
+			nldebug( "Socket %d sent %d bytes", _Sock, len );
+		}
+	}
+	else
+	{
+		sendTo( buffer, len, _RemoteAddr );
+	}
+	
+}
+
+
+
+
+/*
+ * Receives data, or blocks if !dataAvailable()). Returns false if !connected().
+ */
+bool CBaseSocket::receive( uint8 *buffer, uint len ) throw (ESocket)
+{
+	if ( (! _Connected) && _Reliable )
+	{
+		return false;
+	}
+
+	// Receive incoming message
+	doReceive( buffer, len );
+
+	return true;
+}
+
+
+/*
+ * Receives data (returns false if !dataAvailable() and does not block).
+ */
+bool CBaseSocket::received( uint8 *buffer, uint len ) throw (ESocket)
+{
+	if ( ( (! _Connected) && _Reliable ) && (! dataAvailable()) )
+	{
+		return false;
+	}
+
+	// Receive incoming message
+	doReceive( buffer, len );
+
+	return true;
+}
+
+
+/*
+ * Receives data
+ */
+void CBaseSocket::doReceive( uint8 *buffer, uint len )
+{
+	int brecvd = ::recv( _Sock, (char*)buffer, len, 0 );
+	switch ( brecvd )
+	{
+		case 0 :			throw ESocketConnectionClosed();
+		case SOCKET_ERROR :	throw ESocket( "Unable to receive data", ERROR_NUM );
+	}
+	if ( _Logging )
+	{
+		nldebug( "Socket %d received %d bytes", _Sock, len );
+	}
+
+}
+
 
 
 

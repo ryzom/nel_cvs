@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.11 2000/10/05 13:36:20 cado Exp $
+ * $Id: msg_socket.cpp,v 1.12 2000/10/06 15:27:27 cado Exp $
  *
  * Implementation of CMsgSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
@@ -215,7 +215,7 @@ void CMsgSocket::send( CMessage& outmsg, TSenderId id )
 /*
  * See header file
  */
-void CMsgSocket::receive()
+void CMsgSocket::update()
 {
 	// Check data available on all sockets, including the server socket
 	if ( getDataAvailableStatus() )
@@ -259,8 +259,8 @@ void CMsgSocket::receive()
 					}
 					catch ( ESocket& )
 					{
-						// Handle a connection closure (gracefull or not), when
-						// receive() has thrown an exception. Note: this could be done by boolean result
+						// Handle a connection closure (gracefull (if ESocketConnectionClosed) or not), when
+						// receive() has thrown an exception.
 						(*ilps)->close();
 						CMessage msg;
 						msg.setType( "D" );

@@ -90,14 +90,6 @@ SOURCE=..\include\nel\net\base_socket.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\datagram_socket.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\datagram_socket.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\net\inet_address.cpp
 # End Source File
 # Begin Source File

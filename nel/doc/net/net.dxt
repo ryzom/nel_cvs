@@ -3,23 +3,24 @@
 
 \subsection networkintro Introduction
 
-Conceptually, the network subsystem is divided into two layers and two more concepts :
--# Layer 1 is the socket layer : it allows to send/receive any data using a network.
--# Layer 2 is the message layer : it allows to send/receive messages and to call
-event-driven callback functions
--# The recipient of a connection need not be an Internet address. It can be pointed to
-as a specific service using a Naming Service.
--# Any object can be serialized to/from a message, using a stream interface.
+Conceptually, the network subsystem is divided into layers :
+-# Layer 1 is the socket layer : it allows to send/receive any data synchronously using a network, either reliably or not.
+-# Layer 2 is the message transfer layer : it allows to send/receive messages synchronously.
+-# Layer 3 is the message handling layer : it allows to listen for messages and to call event-driven callback functions.
+-# The recipient of a connection need not be an Internet address. It can be pointed to as a specific service using a Naming Service.
+-# Any object can be serialized to/from a message.
 
 Here is the implementation point of view :
--# Layer 1 is implemented by NLNET::CSocket. It could be more abstract than it is at present.
--# Layer 2 is implemented by NLNET::CMsgSocket.
+-# Layer 1 is implemented by NLNET::CBaseSocket.
+-# Layer 2 is implemented by NLNET::CSocket.
+-# Layer 3 is implemented by NLNET::CMsgSocket.
 -# The addresses are implemented by NLNET::CInetAddress.
 -# The NLNET::CMessage class inherits from NLMISC::IStream.
 
 \subsection networkusing Using the network engine
 
 - How can I send a message to another host ?
+
 Example : I want to send the string "toto" to the host "server.nevrax.net" on port 40000 :
 \code
   // Create a client "message socket" with no callback (because we don't expect to receive messages)
@@ -38,13 +39,24 @@ If we plan to send some more messages, we should receive any incoming messages b
   CMessage msgouts ( false ) [10]; // here I don't reuse the same message
   for ( int i=0; i<10; i++ )
   {
-    client.receive(); // tests if a message has been received, and if so it is processed
+    client.update(); // tests if a message has been received, and if so it is processed
     msgouts[i].serial( i ); // send an integer
     client.send( msgouts[i] );
   }
 \endcode
 
 - How can I send a container or an object ?
-See NLMISC::IStream. 
+
+Symply serialize your container or your object in a message.
+
+Example :
+\code
+  vector<CMyClass> myvector;
+  CMessage msgout ( false );
+  msgout.serial( myvector );
+  client.send( msgout );
+\endcode
+This code serializes all objects contained in \e myvector. For this to work, you need to provide a method serial()
+in your class MyClass. This is explained in NLMISC::IStream.
 
 */

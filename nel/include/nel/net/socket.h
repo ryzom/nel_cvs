@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.12 2000/10/04 14:34:10 cado Exp $
+ * $Id: socket.h,v 1.13 2000/10/06 15:27:27 cado Exp $
  *
  * Interface for CSocket
  */
@@ -49,7 +49,7 @@ typedef std::pair<std::string,TTypeNum> TMsgMapItem;
 
 
 /**
- * Client socket (for TCP connected streams). Allows to send/receive CMessage objects.
+ * Socket for message transfer. Allows to send/receive CMessage objects.
  * Note: there are two methods for receiving : receive() which is blocking, and
  * received() which is non-blocking.
  *
@@ -72,8 +72,15 @@ class CSocket : public CBaseSocket
 {
 public:
 
-	/// Constructor. Disable logging if the server socket object is used by the logging system.
-	CSocket( bool logging = true );
+	/// @name Socket setup
+	//@{
+
+	/**
+	 * Constructor.
+	 * \param reliable If true, creates a connected socket using TCP, otherwise an unconnected socket using UDP
+	 * \param logging Disable logging if the server socket object is used by the logging system, to avoid infinite recursion
+	 */
+	CSocket( bool reliable = true, bool logging = true );
 
 	/// Construct a CSocket object using an already connected socket and its associated address
 	CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket);
@@ -81,20 +88,11 @@ public:
 	/// Closure
 	void	close();
 
-	/// Sets/unsets TCP_NODELAY
-	void	setNoDelay( bool value ) throw (ESocket);
+	//@}
 
-	/// Connection
-	void	connect( const CInetAddress& addr ) throw (ESocket);
 
-	/// Returns if the socket is connected
-	bool	connected() const
-	{
-		return _Connected;
-	}
-
-	/// Sends a message
-	void	send( CMessage& message ) throw(ESocket);
+	/// @name Receiving a message
+	//@{
 
 	/// Checks if there are some data to receive
 	bool	dataAvailable() throw (ESocket);
@@ -105,34 +103,49 @@ public:
 	/// Receives data (returns false if !dataAvailable() and does not block).
 	bool	received( CMessage& message ) throw (ESocket);
 
+	/** Receives a message (returns false if !dataAvailable()) (unreliable sockets only).
+	 * The socket must have been bound before, by calling either bind() or sendTo().
+	 * \param [in] buffer Address of buffer
+	 * \param [in] len Length of buffer
+	 * \param [out] addr Address of sender
+	 */
+	 bool	receivedFrom( CMessage& message, CInetAddress& addr );
 
-	/// Returns the address of the remote host
-	const CInetAddress& remoteAddr() const
-	{
-		return _RemoteAddr;
-	}
+	//@}
 
-	/// Process an incoming bind message
-	void	processBindMessage( CMessage& message );
 
-	/// Transforms a message replacing its string type by the corresponding num type if it is bound
-	void	packMessage( CMessage& message );
+	/// @name Sending a message
+	//@{
 
-	/// CMsgSocket handle _DataAvailable, _SenderId, _IsListening
+	/// Sends a message
+	void	send( CMessage& message ) throw (ESocket);
+
+	/// Sends a message to the specified host (unreliable sockets only)
+	void	sendTo( CMessage& message, const CInetAddress& addr ) throw (ESocket);
+
+	//@}
+
+	/// CMsgSocket handles _DataAvailable, _SenderId, _IsListening
 	friend class CMsgSocket;
 
 protected:
 
 	/// Returns an output message with header encoded in the payload buffer
-	CMessage	encode( CMessage& msg );
+	CMessage	encode( CMessage& msg ) throw (ESocket);
+
+	/// Returns an input message with header extracted from the payload buffer
+	CMessage	decode( CMessage& alldata ) throw (ESocket);
 
 	/// Helper method for receive() and received()
 	void		doReceive( CMessage& message ) throw (ESocket);
 
-private:
+	/// Process an incoming bind message
+	void		processBindMessage( CMessage& message );
 
-	CInetAddress	_RemoteAddr;
-	bool			_Connected;
+	/// Transforms a message replacing its string type by the corresponding num type if it is bound
+	void		packMessage( CMessage& message );
+
+private:
 
 	CMsgMap			_MsgMap;
 

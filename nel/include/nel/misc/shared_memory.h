@@ -1,7 +1,7 @@
 /** \file shared_memory.h
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.h,v 1.6 2003/02/24 10:32:00 cado Exp $
+ * $Id: shared_memory.h,v 1.7 2003/06/03 10:05:26 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -47,7 +47,7 @@ typedef key_t TSharedMemId;
  * NL_SMID: format type used for printf syntax. Ex: nldebug( "Segment %"NL_SMID" was created", sharedMemId );
  */
 #ifdef NL_OS_WINDOWS
-#define toSharedMemId( id ) toString( "%d", id ).c_str()
+#define toSharedMemId( id ) toString( "NeLSM_%d", id ).c_str()
 #define NL_SMID "s"
 #else
 #define toSharedMemId( id ) (id)

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.33 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.34 2002/05/07 14:09:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -391,7 +391,10 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 						}
 						
 						// Add to the view, but don't create the instance (created in ig).
-						view->addMesh (pShape, nelObjectName.c_str(), 0xffffffff, NULL, false);
+						// Since IG use strlwr version of the name, must strlwr it here.
+						std::string	nelObjectNameLwr= nelObjectName;
+						strlwr(nelObjectNameLwr);
+						view->addMesh (pShape, nelObjectNameLwr.c_str(), 0xffffffff, NULL, false);
 
 
 						// If the shape is not destroyed in addMesh() (with smarPtr), then add it to the shape map.

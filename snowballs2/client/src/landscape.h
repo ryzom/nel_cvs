@@ -1,7 +1,7 @@
 /** \file landscape.h
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.h,v 1.6 2001/07/18 17:30:17 lecroart Exp $
+ * $Id: landscape.h,v 1.7 2001/07/19 17:30:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,8 @@
 // Includes
 //
 
+#include <nel/misc/vector.h>
+
 #include <nel/3d/u_landscape.h>
 
 //
@@ -37,6 +39,8 @@
 //
 
 extern NL3D::ULandscape		*Landscape;
+
+extern NLMISC::CVector		 SunDirection;
 
 //
 // External functions

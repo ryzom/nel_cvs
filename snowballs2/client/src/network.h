@@ -1,7 +1,7 @@
 /** \file network.h
  * Network interface between the game and NeL
  *
- * $Id: network.h,v 1.6 2001/07/18 17:30:17 lecroart Exp $
+ * $Id: network.h,v 1.7 2001/07/19 17:30:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ bool	isOnline ();
 void	sendChatLine (std::string Line);
 
 // Send the user entity position to the server
-void	sendEntityPos (const CEntity &entity);
+void	sendEntityPos (CEntity &entity);
 
 void	initNetwork ();
 void	updateNetwork ();

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.11 2001/07/19 13:45:53 lecroart Exp $
+ * $Id: landscape.cpp,v 1.12 2001/07/19 17:30:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
 #include <nel/3d/u_instance_group.h>
+#include <nel/3d/u_light.h>
 
 #include <nel/3d/u_visual_collision_entity.h>
 #include <nel/3d/u_visual_collision_manager.h>
@@ -70,6 +71,10 @@ using namespace NL3D;
 ULandscape				*Landscape = NULL;
 UVisualCollisionEntity	*AimingEntity = NULL;
 
+ULight					*Sun = NULL;
+
+NLMISC::CVector			 SunDirection;
+
 //
 // Functions
 //
@@ -85,6 +90,27 @@ void cbUpdateLandscape (CConfigFile::CVar &var)
 	{
 		Driver->enableFog (var.asInt () == 1);
 		Driver->setupFog (ConfigFile.getVar ("FogStart").asFloat (), ConfigFile.getVar ("FogStart").asFloat (), CRGBA(ConfigFile.getVar ("FogColor").asInt (0), ConfigFile.getVar ("FogColor").asInt (1), ConfigFile.getVar ("FogColor").asInt (2)));
+	}
+	else if (var.Name == "SunAmbientColor")
+	{
+		Sun->setAmbiant (CRGBA (var.asInt(0), var.asInt(1), var.asInt(2)));
+		Driver->setLight (0, *Sun);
+	}
+	else if (var.Name == "SunDiffuseColor")
+	{
+		Sun->setDiffuse (CRGBA (var.asInt(0), var.asInt(1), var.asInt(2)));
+		Driver->setLight (0, *Sun);
+	}
+	else if (var.Name == "SunSpecularColor")
+	{
+		Sun->setSpecular (CRGBA (var.asInt(0), var.asInt(1), var.asInt(2)));
+		Driver->setLight (0, *Sun);
+	}
+	else if (var.Name == "SunDirection")
+	{
+		SunDirection.set (var.asFloat(0), var.asFloat(1), var.asFloat(2));
+		Sun->setDirection (SunDirection);
+		Driver->setLight (0, *Sun);
 	}
 	else nlwarning ("Unknown variable update %s", var.Name.c_str());
 }
@@ -118,6 +144,13 @@ void	initLandscape()
 	nlassert (pIG != NULL);
 	pIG->addToScene (*Scene);
 
+	Sun = ULight::createLight ();
+	nlassert (Sun != NULL);
+	Sun->setMode (ULight::DirectionalLight);
+//	Sun->setupDirectional (CRGBA(255,0,0), CRGBA(0,255,0), CRGBA(0,0,255), CVector(1,0,0));
+	Driver->setLight (0, *Sun);
+	Driver->enableLight (0);
+
 	ConfigFile.setCallback ("LandscapeTileNear", cbUpdateLandscape);
 	ConfigFile.setCallback ("LandscapeThresold", cbUpdateLandscape);
 	ConfigFile.setCallback ("FogStart", cbUpdateLandscape);
@@ -125,12 +158,22 @@ void	initLandscape()
 	ConfigFile.setCallback ("FogColor", cbUpdateLandscape);
 	ConfigFile.setCallback ("FogEnable", cbUpdateLandscape);
 
+	ConfigFile.setCallback ("SunAmbientColor", cbUpdateLandscape);
+	ConfigFile.setCallback ("SunDiffuseColor", cbUpdateLandscape);
+	ConfigFile.setCallback ("SunSpecularColor", cbUpdateLandscape);
+	ConfigFile.setCallback ("SunDirection", cbUpdateLandscape);
+
 	cbUpdateLandscape (ConfigFile.getVar ("LandscapeTileNear"));
 	cbUpdateLandscape (ConfigFile.getVar ("LandscapeThresold"));
 	cbUpdateLandscape (ConfigFile.getVar ("FogStart"));
 	cbUpdateLandscape (ConfigFile.getVar ("FogEnd"));
 	cbUpdateLandscape (ConfigFile.getVar ("FogColor"));
 	cbUpdateLandscape (ConfigFile.getVar ("FogEnable"));
+
+	cbUpdateLandscape (ConfigFile.getVar ("SunAmbientColor"));
+	cbUpdateLandscape (ConfigFile.getVar ("SunDiffuseColor"));
+	cbUpdateLandscape (ConfigFile.getVar ("SunSpecularColor"));
+	cbUpdateLandscape (ConfigFile.getVar ("SunDirection"));
 }
 
 void	updateLandscape()

@@ -2,7 +2,7 @@
  * Snowballs 2 specific code for managing the lens flare.
  * This code was taken from Snowballs 1.
  *
- * $Id: lens_flare.cpp,v 1.3 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: lens_flare.cpp,v 1.4 2001/07/19 17:30:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include <nel/3d/u_texture.h>
 
 #include "camera.h"
+#include "landscape.h"
 #include "client.h"
 #include "mouse_listener.h"
 
@@ -65,9 +66,6 @@ static const float _MaxLensFlareLenght = 0.4f;
  */
 class CLensFlare
 {
-	/// sunDirection from world's origin
-	NLMISC::CVector _SunDirection;
-
 	float _AlphaCoef;
 
 	/// flare
@@ -108,9 +106,8 @@ class CLensFlare
 public:
 
 	/// constructor
-	CLensFlare(NLMISC::CVector sunDirection)
+	CLensFlare()
 	{
-		_SunDirection = sunDirection;
 		_AlphaCoef = 1.0f;
 	}
 
@@ -151,7 +148,8 @@ void CLensFlare::show()
 	// Determining axis "screen center - light" vector
 	CMatrix cameraMatrix = Camera->getMatrix();
 	cameraMatrix.invert();
-	CVector light = cameraMatrix * _SunDirection;
+	CVector light = (-100000 * SunDirection);
+	light = cameraMatrix * light;
 	light = Camera->getFrustum().project(light);
 	
 	CVector screenCenter(0.5f,0.5f,0);
@@ -205,8 +203,7 @@ static CLensFlare	*LensFlare = NULL;
 
 void initLensFlare ()
 {
-	CVector sunVector = 100000*CVector(0.075f, -1.0f, 0.25f);
-	LensFlare = new CLensFlare (sunVector);
+	LensFlare = new CLensFlare ();
 
 	UTexture *flareTexture1 = Driver->createTextureFile ("flare01.tga");
 	UTexture *flareTexture3 = Driver->createTextureFile ("flare03.tga");
@@ -221,28 +218,29 @@ void initLensFlare ()
 	// shine
 	LensFlare->addFlare (flareTexture3, w, h, 1.f, 16.f);
 
-	LensFlare->addFlare (flareTexture1, w, h, 1.f, 6.f );
-	LensFlare->addFlare (flareTexture6, w, h, 1.3f, 1.2f );
-	LensFlare->addFlare (flareTexture7, w, h, 1.0f, 3.f );
-	LensFlare->addFlare (flareTexture6, w, h, 0.5f, 4.f );
-	LensFlare->addFlare (flareTexture5, w, h, 0.2f, 2.f );
-	LensFlare->addFlare (flareTexture7, w, h, 0.0f, 0.8f );
-	LensFlare->addFlare (flareTexture7, w, h, -0.25f, 2.f );
-	LensFlare->addFlare (flareTexture1, w, h, -0.4f, 1.f );
-	LensFlare->addFlare (flareTexture4, w, h, -1.0f, 12.f );
-	LensFlare->addFlare (flareTexture5, w, h, -0.6f, 6.f );
+	LensFlare->addFlare (flareTexture1, w, h, 1.f, 6.f);
+	LensFlare->addFlare (flareTexture6, w, h, 1.3f, 1.2f);
+	LensFlare->addFlare (flareTexture7, w, h, 1.0f, 3.f);
+	LensFlare->addFlare (flareTexture6, w, h, 0.5f, 4.f);
+	LensFlare->addFlare (flareTexture5, w, h, 0.2f, 2.f);
+	LensFlare->addFlare (flareTexture7, w, h, 0.0f, 0.8f);
+	LensFlare->addFlare (flareTexture7, w, h, -0.25f, 2.f);
+	LensFlare->addFlare (flareTexture1, w, h, -0.4f, 1.f);
+	LensFlare->addFlare (flareTexture4, w, h, -1.0f, 12.f);
+	LensFlare->addFlare (flareTexture5, w, h, -0.6f, 6.f);
 }
 
 void updateLensFlare ()
 {
 	// vector to sun
 	//==============
-	CVector sunVector = CVector(0.075f, -1.0f, 0.25f);
 	CVector userLook = MouseListener->getViewDirection ();
+
+	CVector sunDirection = (-100000 * SunDirection);
 
 	// cosinus between the two previous vectors
 	//=========================================
-	float cosAngle = sunVector*userLook/sunVector.norm();	
+	float cosAngle = sunDirection*userLook/sunDirection.norm();	
 
 	// alpha
 	//======
@@ -262,7 +260,7 @@ void updateLensFlare ()
 	camMatrix = Camera->getMatrix();
 	camMatrix.setPos(CVector::Null);
 	camMatrix.invert();
-	CVector tmp = camMatrix * sunVector;
+	CVector tmp = camMatrix * sunDirection;
 	tmp = Camera->getFrustum().project(tmp);
 	uint32	w,h;
 	Driver->getWindowSize(w,h);

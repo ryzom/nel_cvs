@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.8 2001/07/19 14:58:40 lecroart Exp $
+ * $Id: network.cpp,v 1.9 2001/07/19 17:30:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "client.h"
 #include "commands.h"
 #include "network.h"
+#include "entities.h"
 
 //
 // Namespaces
@@ -122,23 +123,28 @@ void	sendChatLine (string Line)
 	Connection->send (msgout);
 }
 
-void	sendEntityPos (const CEntity &entity)
+void	sendEntityPos (CEntity &entity)
 {
 	if (!isOnline ()) return;
 
-	/// \todo ace: send the message
-
-//	CMessage msgout (Connection.getSIDA(), "ENTITY_POS");
-//	msgout.serial ();
-//	Connection.send (msgout);
+	CMessage msgout (Connection->getSIDA(), "ENTITY_POS");
+	msgout.serial (entity.Position);
+	msgout.serial (entity.Angle);
+	Connection->send (msgout);
+	
+	nlinfo("sending pos to network (%f,%f,%f,%f)", entity.Position.x, entity.Position.y, entity.Position.z, entity.Angle);
 }
 
+
+TTime LastPosSended;
 
 void	initNetwork()
 {
 	Connection = new CCallbackClient;
 	Connection->addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
 	Connection->setDisconnectionCallback (cbClientDisconnected, NULL);
+
+	LastPosSended = 0;
 }
 
 void	updateNetwork()
@@ -154,6 +160,17 @@ void	updateNetwork()
 			Connection->newBytesUploaded (), Connection->newBytesDownloaded ());
 
 		Connection->update ();
+
+
+		if (isOnline () && Self != NULL)
+		{
+			if (CTime::getLocalTime () > LastPosSended + 1000)
+			{
+				sendEntityPos (*Self);
+
+				LastPosSended = CTime::getLocalTime ();
+			}
+		}
 	}
 }
 

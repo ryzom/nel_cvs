@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.41 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.42 2001/01/02 16:21:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -422,6 +422,9 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 	if (VB.DrvInfos==NULL && !setupVertexBuffer(VB))
 		return false;
+
+	if (VB.getNumVertices()==0)
+		return true;
 
 	glEnable(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT,VB.getVertexSize(),VB.getVertexCoordPointer());

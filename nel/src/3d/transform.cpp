@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.57 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: transform.cpp,v 1.58 2003/03/26 16:46:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -459,6 +459,9 @@ void		CTransform::update()
 
 		// The transform has been modified. Hence, it is no more frozen.
 		_Frozen= false;
+
+		// ok!
+		_TransformDirty= false;
 	}
 }
 

@@ -88,7 +88,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "ReleaseDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "TEST_CELL" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -246,6 +246,14 @@ SOURCE=..\include\nel\pacs\u_collision_desc.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\pacs\u_global_retriever.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\u_global_retriever.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\pacs\u_move_container.h
 # End Source File
 # Begin Source File
@@ -259,11 +267,11 @@ SOURCE=..\include\nel\pacs\u_move_primitive.h
 # End Group
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\vector_2s.h
+SOURCE=.\pacs\vector_2s.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\pacs\vector_2s.cpp
+SOURCE=..\include_private\nel\pacs\vector_2s.h
 # End Source File
 # End Target
 # End Project

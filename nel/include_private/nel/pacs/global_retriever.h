@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.7 2001/06/05 13:50:24 berenguier Exp $
+ * $Id: global_retriever.h,v 1.8 2001/06/06 09:34:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 
 #include "nel/pacs/local_retriever.h"
 #include "nel/pacs/retriever_instance.h"
+#include "nel/pacs/u_global_retriever.h"
 
 
 namespace NLPACS
@@ -53,7 +54,7 @@ class CRetrieverBank;
  * \author Nevrax France
  * \date 2001
  */
-class CGlobalRetriever
+class CGlobalRetriever : public UGlobalRetriever
 {
 public:
 

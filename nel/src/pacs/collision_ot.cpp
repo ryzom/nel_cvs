@@ -1,7 +1,7 @@
 /** \file collision_ot.cpp
  * <File description>
  *
- * $Id: collision_ot.cpp,v 1.1 2001/05/22 08:32:53 corvazier Exp $
+ * $Id: collision_ot.cpp,v 1.2 2001/06/06 09:34:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,8 +24,29 @@
  */
 
 #include "nel/pacs/collision_ot.h"
+#include "nel/pacs/move_primitive.h"
 
 
 namespace NLPACS 
 {
+
+// ***************************************************************************
+
+// Remove the collision from the primitives
+void CCollisionOTDynamicInfo::removeFromPrimitives ()
+{
+	_FirstPrimitive->removeCollisionOTInfo (this);
+	_SecondPrimitive->removeCollisionOTInfo (this);
+}
+
+// ***************************************************************************
+
+// Remove the collision from the primitives
+void CCollisionOTStaticInfo::removeFromPrimitives ()
+{
+	_Primitive->removeCollisionOTInfo (this);
+}
+
+// ***************************************************************************
+
 } // NLPACS

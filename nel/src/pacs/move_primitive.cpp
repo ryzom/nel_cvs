@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.5 2001/05/31 13:36:42 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.6 2001/06/06 09:34:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NLPACS
 CMovePrimitive::CMovePrimitive (CMoveContainer* container)
 {
 	_CollisionMask=0xffffffff;
+	_OcclusionMask=0xffffffff;
 	_Attenuation=1;
 	_Container=container;
 	_Flags=0;
@@ -62,83 +63,148 @@ CMovePrimitive::~CMovePrimitive ()
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollision (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax, uint32 testTime)
+bool CMovePrimitive::evalCollision (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax, uint32 testTime, 
+									uint32 maxTestIteration, double &firstContactTime, double &lastContactTime)
 {
-	// Test time
-	if ( (!checkTestTime (testTime)) || (!other.checkTestTime (testTime)) )
+	// Mask test
+	if (( (_CollisionMask & other._OcclusionMask)  == 0) && ( (_OcclusionMask & other._CollisionMask)  == 0))
 		return false;
 
-	// Bounding box test
-	// TODO: remove evalCollisionBB
-	//if (evalCollisionBB (other))
+	// Test time
+	if ( (!checkTestTime (testTime, maxTestIteration)) || (!other.checkTestTime (testTime, maxTestIteration)) )
+		return false;
+
+	// Clear time min time max
+	firstContactTime=FLT_MAX;
+	lastContactTime=-FLT_MAX;
+
+	// Switch the good test
+	switch (((uint32)_Flags)&PrimitiveMask)
 	{
-		// Switch the good test
-		switch (((uint32)_Flags)&PrimitiveMask)
+
+	// Static box over...
+	case _2DOrientedBox:
 		{
-
-		// Static box over...
-		case _2DOrientedBox:
+			// Switch second type
+			switch (((uint32)other._Flags)&PrimitiveMask)
 			{
-				// Switch second type
-				switch (((uint32)other._Flags)&PrimitiveMask)
-				{
-				
-				// Static box over movable box
-				case _2DOrientedBox:
-					// Make the test
-					return evalCollisionOBoverOB (other, desc, timeMin, timeMax);
+			
+			// Static box over movable box
+			case _2DOrientedBox:
+				// Make the test
+				return evalCollisionOBoverOB (other, desc, timeMin, timeMax, firstContactTime, lastContactTime);
 
-				// Static box over movable cylinder
-				case _2DOrientedCylinder:
-					// Make the test
-					return evalCollisionOBoverOC (other, desc, timeMin, timeMax);
+			// Static box over movable cylinder
+			case _2DOrientedCylinder:
+				// Make the test
+				return evalCollisionOBoverOC (other, desc, timeMin, timeMax, firstContactTime, lastContactTime);
 
-				default:
-				// Should not go here
-				nlstop;
-				}
-			}
-
-		// Static box over...
-		case _2DOrientedCylinder:
-			{
-				// Switch second type
-				switch (((uint32)other._Flags)&PrimitiveMask)
-				{
-				
-				// Static box over movable box
-				case _2DOrientedBox:
-					{
-						// Make the test
-						bool collid=other.evalCollisionOBoverOC (*this, desc, timeMin, timeMax);
-						if (collid)
-							desc.XChgContactNormals ();
-						return collid;
-					}
-
-				// Static box over movable cylinder
-				case _2DOrientedCylinder:
-					// Make the test
-					return evalCollisionOCoverOC (other, desc, timeMin, timeMax);
-
-				default:
-				// Should not go here
-				nlstop;
-				}
-			}
-
-		default:
+			default:
 			// Should not go here
 			nlstop;
-		}	
-	}
+			}
+		}
+
+	// Static box over...
+	case _2DOrientedCylinder:
+		{
+			// Switch second type
+			switch (((uint32)other._Flags)&PrimitiveMask)
+			{
+			
+			// Static box over movable box
+			case _2DOrientedBox:
+				{
+					// Make the test
+					bool collid=other.evalCollisionOBoverOC (*this, desc, timeMin, timeMax, firstContactTime, lastContactTime);
+					if (collid)
+						desc.XChgContactNormals ();
+					return collid;
+				}
+
+			// Static box over movable cylinder
+			case _2DOrientedCylinder:
+				// Make the test
+				return evalCollisionOCoverOC (other, desc, timeMin, timeMax, firstContactTime, lastContactTime);
+
+			default:
+			// Should not go here
+			nlstop;
+			}
+		}
+
+	default:
+		// Should not go here
+		nlstop;
+	}	
 
 	return false;
 }
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax)
+const TCollisionSurfaceDescVector *CMovePrimitive::evalCollision (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, 
+																  const CVector& delta, uint32 testTime, uint32 maxTestIteration)
+{
+	// Test time
+	if (!checkTestTime (testTime, maxTestIteration))
+		return NULL;
+
+	// Switch the good test
+	if ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox)
+	{
+		// Local I
+		CVector locI ((float)(_OBData.EdgeDirectionX[0]*_OBData.Length[0]/2.0), (float)(_OBData.EdgeDirectionY[0]*_OBData.Length[1]/2.0), 0);
+
+		// Local J
+		CVector locJ ((float)(_OBData.EdgeDirectionX[1]*_OBData.Length[0]/2.0), (float)(_OBData.EdgeDirectionY[1]*_OBData.Length[1]/2.0), 0);
+
+		// Test
+		return &retriever.testBBoxMove (_Position.getGlobalPos (), delta, locI, locJ, surfaceTemp);
+	}
+	else
+	{
+		// Check
+		nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedCylinder);
+
+		// Test
+		return &retriever.testCylinderMove (_Position.getGlobalPos (), delta, _OCData.Radius, surfaceTemp);
+	}
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double timeMax)
+{
+	// Delta time
+	float deltaTime=(float)(timeMax-_InitTime);
+	
+	// Delta pos..
+	CVector delta=_Speed;
+	delta*=deltaTime;
+
+	// Make the move
+	_Position.setGlobalPos (retriever.doMove(_Position.getGlobalPos(), delta, 1, surfaceTemp, false), retriever);
+
+	// Final position
+	_InitTime=timeMax;
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::doMove (double timeMax)
+{
+	// Make the move
+	_Position.setPos (_Position.getPos ()+_Speed*(timeMax-_InitTime));
+
+	// Final position
+	_InitTime=timeMax;
+}
+
+// ***************************************************************************
+
+bool CMovePrimitive::evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax, 
+											double &firstContactTime, double &lastContactTime)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
@@ -211,11 +277,16 @@ bool CMovePrimitive::evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDes
 
 	if (find)
 	{
+		// First last contact time
+		firstContactTime=desc.ContactTime;
+		lastContactTime=_timeMax;
+
 		// Half time
-		double halfTime = (_timeMax+desc.ContactTime)/2.0;
+		//double halfTime = (_timeMax+desc.ContactTime)/2.0;
 
 		// Collision in the past ?
-		if (timeMin > halfTime)
+		//if (timeMin > halfTime)
+		if (timeMin > _timeMax)
 			// yes, abort
 			return false;
 
@@ -237,7 +308,8 @@ bool CMovePrimitive::evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDes
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax)
+bool CMovePrimitive::evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax, 
+											double &firstContactTime, double &lastContactTime)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
@@ -258,23 +330,25 @@ bool CMovePrimitive::evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDes
 	{
 		// Get collision time of the point over the segment
 		CCollisionDesc d;
-		if (evalCollisionPoverOC (other, d, pt))
+		double firstContactTime;
+		double lastContactTime;
+		if (evalCollisionPoverOC (other, d, pt, firstContactTime, lastContactTime))
 		{
 			// Found
 			find=true;
 
 			// Best time ?
-			if (d.ContactTime<desc.ContactTime)
+			if (firstContactTime<desc.ContactTime)
 			{
 				// This is the new descriptor
 				desc=d;
 			}
 
 			// Best max time ?
-			if (d.ContactTime>_timeMax)
+			if (lastContactTime>_timeMax)
 			{
 				// New max time
-				_timeMax=d.ContactTime;
+				_timeMax=lastContactTime;
 			}
 		}
 	}
@@ -308,11 +382,16 @@ bool CMovePrimitive::evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDes
 
 	if (find)
 	{
+		// First last contact time
+		firstContactTime=desc.ContactTime;
+		lastContactTime=_timeMax;
+
 		// Half time
-		double halfTime = (_timeMax+desc.ContactTime)/2.0;
+		//double halfTime = (_timeMax+desc.ContactTime)/2.0;
 
 		// Collision in the past ?
-		if (timeMin > halfTime)
+		//if (timeMin > halfTime)
+		if (timeMin > _timeMax)
 			// yes, abort
 			return false;
 
@@ -378,11 +457,11 @@ bool CMovePrimitive::evalCollisionPoverS (CMovePrimitive& other, CCollisionDesc&
 			// 2d Collid checked... Now check height
 			
 			// Pos Z
-			const double pointSegZ=other._Position.z;
+			const double pointSegZ=other._3dInitPosition.z;
 			const double segPosZ= pointSegZ + other._Speed.z*time;
 
 			// Some constants
-			const double pointZ=_Position.z;
+			const double pointZ=_3dInitPosition.z;
 			const double ptPosZ= pointZ + _Speed.z*time;
 
 			// Included ?
@@ -451,7 +530,8 @@ inline uint secondDegree (double a, double b, double c, double& s0, double& s1)
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint)
+bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, 
+										   double &firstContactTime, double &lastContactTime)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
@@ -480,8 +560,8 @@ bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc
 	 */
 
 	// Let's go
-	const double _Ax = _OBData.PointPosX[numPoint] - other._Position.x;
-	const double _Ay = _OBData.PointPosY[numPoint] - other._Position.y;
+	const double _Ax = _OBData.PointPosX[numPoint] - other._3dInitPosition.x;
+	const double _Ay = _OBData.PointPosY[numPoint] - other._3dInitPosition.y;
 	const double _Bx = _Speed.x - other._Speed.x;
 	const double _By = _Speed.y - other._Speed.y;
 
@@ -496,16 +576,32 @@ bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc
 
 		// Collision time
 		if (numSolution==1)
-			time=s0;
+		{
+			firstContactTime=s0;
+			lastContactTime=s0;
+		}
 		else
-			time=std::min (s0, s1);
+		{
+			// First and last time
+			if (s0<s1)
+			{
+				firstContactTime=s0;
+				lastContactTime=s1;
+			}
+			else
+			{
+				firstContactTime=s1;
+				lastContactTime=s0;
+			}
+		}
+		time=firstContactTime;
 
 		// Pos Z
-		const double pointCylZ=other._Position.z;
+		const double pointCylZ=other._3dInitPosition.z;
 		const double cylPosZ= pointCylZ + other._Speed.z*time;
 
 		// Some constants
-		const double pointZ=_Position.z;
+		const double pointZ=_3dInitPosition.z;
 		const double ptPosZ= pointZ + _Speed.z*time;
 
 		// Z Included ?
@@ -521,8 +617,8 @@ bool CMovePrimitive::evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc
 			const double ptPosY= _OBData.PointPosY[numPoint] + _Speed.y*time;
 
 			// Cylinder position
-			const double cylPosX= other._Position.x + other._Speed.x*time;
-			const double cylPosY= other._Position.y + other._Speed.y*time;
+			const double cylPosX= other._3dInitPosition.x + other._Speed.x*time;
+			const double cylPosY= other._3dInitPosition.y + other._Speed.y*time;
 
 			// Position
 			desc.ContactPosition.x=ptPosX;
@@ -569,16 +665,16 @@ bool CMovePrimitive::evalCollisionSoverOC (CMovePrimitive& other, CCollisionDesc
 	if ( dotProd !=0 )
 	{
 		// Time of the collision
-		double time= (other._OCData.Radius + normalSegX*(_OBData.PointPosX[numSeg] - other._Position.x ) + 
-			normalSegY*(_OBData.PointPosY[numSeg] - other._Position.y ) ) / dotProd;
+		double time= (other._OCData.Radius + normalSegX*(_OBData.PointPosX[numSeg] - other._3dInitPosition.x ) + 
+			normalSegY*(_OBData.PointPosY[numSeg] - other._3dInitPosition.y ) ) / dotProd;
 
 		// Position of segment point at collision time
 		const double segPosX= _OBData.PointPosX[numSeg] + _Speed.x*time;
 		const double segPosY= _OBData.PointPosY[numSeg] + _Speed.y*time;
 
 		// Position of the cylinder at collision time
-		const double cylPosX= other._Position.x + _Speed.x*time;
-		const double cylPosY= other._Position.y + _Speed.y*time;
+		const double cylPosX= other._3dInitPosition.x + _Speed.x*time;
+		const double cylPosY= other._3dInitPosition.y + _Speed.y*time;
 
 		// Position de contact
 		const double contactX= cylPosX - normalSegX*other._OCData.Radius;
@@ -597,10 +693,10 @@ bool CMovePrimitive::evalCollisionSoverOC (CMovePrimitive& other, CCollisionDesc
 			// 2d Collid checked... Now check height
 			
 			// Pos Z
-			const double segPosZ= _Position.z + _Speed.z*time;
+			const double segPosZ= _3dInitPosition.z + _Speed.z*time;
 
 			// Some constants
-			const double cylPosZ= other._Position.z + other._Speed.z*time;
+			const double cylPosZ= other._3dInitPosition.z + other._Speed.z*time;
 
 			// Included ?
 			if ( (cylPosZ <= segPosZ + _Height) && (cylPosZ + other._Height >= segPosZ) )
@@ -639,7 +735,8 @@ bool CMovePrimitive::evalCollisionSoverOC (CMovePrimitive& other, CCollisionDesc
 
 // ***************************************************************************
 
-bool CMovePrimitive::evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax)
+bool CMovePrimitive::evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, double timeMax, 
+											double &firstContactTime, double &lastContactTime)
 {
 	// Checks
 	nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedCylinder);
@@ -668,8 +765,8 @@ bool CMovePrimitive::evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDes
 	 */
 
 	// Let's go
-	const double _Ax = _Position.x - other._Position.x;
-	const double _Ay = _Position.y - other._Position.y;
+	const double _Ax = _3dInitPosition.x - other._3dInitPosition.x;
+	const double _Ay = _3dInitPosition.y - other._3dInitPosition.y;
 	const double _Bx = _Speed.x - other._Speed.x;
 	const double _By = _Speed.y - other._Speed.y;
 
@@ -705,19 +802,23 @@ bool CMovePrimitive::evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDes
 		}
 
 		// half time
-		const double halfTime=(_timeMin+_timeMax)/2.0;
+		//const double halfTime=(_timeMin+_timeMax)/2.0;
+
+		// Conatct time
+		firstContactTime=_timeMin;
+		lastContactTime=_timeMax;
 
 		// Clip time
-		if ((timeMin<halfTime)&&(_timeMin<timeMax))
+		if ((timeMin<_timeMax)&&(_timeMin<timeMax))
 		{
 			// Some constants
 			const double cyl0Time= _timeMin;
-			const double pointCyl0Z=_Position.z;
+			const double pointCyl0Z=_3dInitPosition.z;
 			const double cyl0PosZ= pointCyl0Z + _Speed.z*cyl0Time;
 
 			// Pos Z
 			const double cyl1Time= _timeMin;
-			const double pointCyl1Z=other._Position.z;
+			const double pointCyl1Z=other._3dInitPosition.z;
 			const double cyl1PosZ= pointCyl1Z + other._Speed.z * cyl1Time;
 
 			// Z Included ?
@@ -729,12 +830,12 @@ bool CMovePrimitive::evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDes
 				desc.ContactTime=std::max (_timeMin, timeMin);
 
 				// Cylinder 0 position
-				const double cyl0PosX= _Position.x + _Speed.x*cyl0Time;
-				const double cyl0PosY= _Position.y + _Speed.y*cyl0Time;
+				const double cyl0PosX= _3dInitPosition.x + _Speed.x*cyl0Time;
+				const double cyl0PosY= _3dInitPosition.y + _Speed.y*cyl0Time;
 
 				// Cylinder 1 position
-				const double cyl1PosX= other._Position.x + other._Speed.x*cyl1Time;
-				const double cyl1PosY= other._Position.y + other._Speed.y*cyl1Time;
+				const double cyl1PosX= other._3dInitPosition.x + other._Speed.x*cyl1Time;
+				const double cyl1PosY= other._3dInitPosition.y + other._Speed.y*cyl1Time;
 
 				// First cylinder normal
 				desc.ContactNormal0.x= cyl1PosX - cyl0PosX;
@@ -781,20 +882,20 @@ void CMovePrimitive::precalcPos ()
 		double halfDepth=_OBData.Length[1]/2;
 
 		// First point
-		_OBData.PointPosX[0]=cosinus*(-halfWidth)-sinus*(-halfDepth)+_Position.x;
-		_OBData.PointPosY[0]=sinus*(-halfWidth)+cosinus*(-halfDepth)+_Position.y;
+		_OBData.PointPosX[0]=cosinus*(-halfWidth)-sinus*(-halfDepth)+_3dInitPosition.x;
+		_OBData.PointPosY[0]=sinus*(-halfWidth)+cosinus*(-halfDepth)+_3dInitPosition.y;
 
 		// Second point
-		_OBData.PointPosX[1]=cosinus*halfWidth-sinus*(-halfDepth)+_Position.x;
-		_OBData.PointPosY[1]=sinus*halfWidth+cosinus*(-halfDepth)+_Position.y;
+		_OBData.PointPosX[1]=cosinus*halfWidth-sinus*(-halfDepth)+_3dInitPosition.x;
+		_OBData.PointPosY[1]=sinus*halfWidth+cosinus*(-halfDepth)+_3dInitPosition.y;
 		
 		// Third point
-		_OBData.PointPosX[2]=cosinus*halfWidth-sinus*halfDepth+_Position.x;
-		_OBData.PointPosY[2]=sinus*halfWidth+cosinus*halfDepth+_Position.y;
+		_OBData.PointPosX[2]=cosinus*halfWidth-sinus*halfDepth+_3dInitPosition.x;
+		_OBData.PointPosY[2]=sinus*halfWidth+cosinus*halfDepth+_3dInitPosition.y;
 		
 		// Fourth point
-		_OBData.PointPosX[3]=cosinus*(-halfWidth)-sinus*halfDepth+_Position.x;
-		_OBData.PointPosY[3]=sinus*(-halfWidth)+cosinus*halfDepth+_Position.y;
+		_OBData.PointPosX[3]=cosinus*(-halfWidth)-sinus*halfDepth+_3dInitPosition.x;
+		_OBData.PointPosY[3]=sinus*(-halfWidth)+cosinus*halfDepth+_3dInitPosition.y;
 
 		// Direction
 		double oneOverLength[2]= { 1 / _OBData.Length[0], 1 / _OBData.Length[1] };
@@ -864,7 +965,9 @@ void CMovePrimitive::precalcBB (double beginTime, double endTime)
 		_BBYMin=std::min (std::min (_BBYMin, _BBYMin+endTime*_Speed.y), _BBYMin+beginTime*_Speed.y);
 		_BBYMax=std::max (std::max (_BBYMax, _BBYMax+endTime*_Speed.y), _BBYMax+beginTime*_Speed.y);
 
-		/*_BBXMin= _OBData.PointPosX[minX[orient]] + _Speed.x*beginTime;
+/*		
+		// This code is faster but buggy.. 
+		_BBXMin= _OBData.PointPosX[minX[orient]] + _Speed.x*beginTime;
 		_BBXMin= std::min (_BBXMin, _OBData.PointPosX[minX[orient]] + _Speed.x*endTime);
 
 		_BBYMin= _OBData.PointPosY[minY[orient]] + _Speed.y*beginTime;
@@ -882,8 +985,8 @@ void CMovePrimitive::precalcBB (double beginTime, double endTime)
 		nlassert (type==_2DOrientedCylinder);
 
 		// Compute X coordinates
-		_BBXMin= _Position.x + _Speed.x*beginTime;
-		_BBXMax= _Position.x + _Speed.x*endTime;
+		_BBXMin= _3dInitPosition.x + _Speed.x*beginTime;
+		_BBXMax= _3dInitPosition.x + _Speed.x*endTime;
 		if (_BBXMin>_BBXMax)
 		{
 			double tmp=_BBXMin;
@@ -894,8 +997,8 @@ void CMovePrimitive::precalcBB (double beginTime, double endTime)
 		_BBXMax+=_OCData.Radius;
 
 		// Compute Y coordinates
-		_BBYMin= _Position.y + _Speed.y*beginTime;
-		_BBYMax= _Position.y + _Speed.y*endTime;
+		_BBYMin= _3dInitPosition.y + _Speed.y*beginTime;
+		_BBYMax= _3dInitPosition.y + _Speed.y*endTime;
 		if (_BBYMin>_BBYMax)
 		{
 			double tmp=_BBYMin;
@@ -1019,13 +1122,12 @@ void CMovePrimitive::removeCollisionOTInfo ()
 		element->unlink ();
 
 		// Remove collision ot info from other primitive
-		CMovePrimitive *other=element->getFirstPrimitive();
-		if (other==this)
-			other=element->getSecondPrimitive();
-		nlassert (other!=this);
-
-		// Remove it in the other element
-		other->removeCollisionOTInfo (element);
+		CMovePrimitive *other=element->getOtherPrimitive (this);
+		if (other)
+		{
+			// Remove it in the other element
+			other->removeCollisionOTInfo (element);
+		}
 
 		// Next element
 		element=element->getNext (this);
@@ -1055,25 +1157,42 @@ void CMovePrimitive::checkSortedList ()
 
 // ***************************************************************************
 
-bool CMovePrimitive::reaction (CMovePrimitive& second, const CCollisionDesc& desc)
+bool CMovePrimitive::isTriggered (CMovePrimitive& second, bool enter, bool exit)
 {
-	// Mask test
-	if ( (_CollisionMask & second._CollisionMask)  == 0)
+	// Generate a trigger ?
+
+	// Is the two are not triggers ?
+	if ( ( (_Flags&TriggerMask) == NotATrigger ) && ( (second._Flags&TriggerMask) == NotATrigger ) )
 		return false;
 
-	// One is not an obstacle ?
-	if ( (!isObstacle ()) || (!second.isObstacle ()) )
-		// No reaction
-		return false;
+	// Is one of them is an enter trigger ?
+	if ( enter && ( (_Flags&EnterTrigger) || (second._Flags&EnterTrigger) ) )
+		return true;
+
+	// Is one of them is an exit trigger ?
+	if ( exit && ( (_Flags&ExitTrigger) || (second._Flags&ExitTrigger) ) )
+		return true;
+
+	// Is one of them is a trigger ?
+	if ( (_Flags&OverlapTrigger) || (second._Flags&OverlapTrigger) )
+		return true;
+
+	return false;
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::reaction (CMovePrimitive& second, const CCollisionDesc& desc, CGlobalRetriever* retriever,
+							   CCollisionSurfaceTemp& surfaceTemp, bool collision)
+{
+	// TODO: reaction for no collision must be made on the full deltaTime not only to CollisionTime
 
 	// Get the two reaction codes
 	TReaction firstReaction=(TReaction)(_Flags&ReactionMask);
 	TReaction secondReaction=(TReaction)(second._Flags&ReactionMask);
 
-	// If two does nothing, do nothing
-	if ( ( firstReaction == DoNothing) && (secondReaction == DoNothing) )
-		// No reaction
-		return false;
+	// Overide collsion 
+	collision = collision && (isObstacle ()) && (second.isObstacle ());
 
 	// Get the two mass
 	float mass0 = getMass ();
@@ -1084,68 +1203,239 @@ bool CMovePrimitive::reaction (CMovePrimitive& second, const CCollisionDesc& des
 	double projSpeed1 = desc.ContactNormal0 * second._Speed;
 	double energySum = (- mass0 * projSpeed0 - mass1 * projSpeed1 ) / 2.0;
 
-	// Not do nothing ?
-	if (firstReaction!=DoNothing)
-	{
-		// Old position
-		CVectorD collisionPosition=_Position;
-		collisionPosition+=_Speed*desc.ContactTime;
+	// Old position
+	CVectorD collisionPosition=_3dInitPosition;
+	collisionPosition+=_Speed*desc.ContactTime;
 
-		// Calc new speed
-		CVectorD newSpeed;
-		
-		// Stop ?
-		if (firstReaction==Stop)
-			newSpeed.set (0,0,0);
-		else
+	// Calc new speed
+	CVectorD newSpeed;
+	
+	// Obstacle ?
+	if ( (!collision) || (firstReaction==DoNothing) )
+		newSpeed=_Speed;
+	else
+	{
+		switch (firstReaction)
 		{
+		case Slide:
 			// Remove projected speed
 			newSpeed=_Speed - projSpeed0 * desc.ContactNormal1;
 
 			// Reflexion speed
-			if (firstReaction==Reflexion)
-				newSpeed+=( _Attenuation*energySum / mass0 ) * desc.ContactNormal1;
+			newSpeed+=( _Attenuation*energySum / mass0 ) * desc.ContactNormal1;
+			break;
+		case Reflexion:
+			// Remove projected speed
+			newSpeed=_Speed - projSpeed0 * desc.ContactNormal1;
+
+			// Reflexion speed
+			newSpeed+=( _Attenuation*energySum / mass0 ) * desc.ContactNormal1;
+			break;
+		case Stop:
+			newSpeed.set (0,0,0);
+			break;
 		}
-
-		// Set new speed
-		setSpeed (newSpeed);
-
-		// New position at t=0
-		setPosition (collisionPosition - newSpeed * desc.ContactTime);
 	}
 
-	// Not do nothing ?
-	if (secondReaction!=DoNothing)
-	{
-		// Old position
-		CVectorD collisionPosition=second._Position;
-		collisionPosition+=second._Speed * desc.ContactTime;
+	// Set new speed
+	setSpeed (newSpeed);
 
-		// Calc new speed
-		CVectorD newSpeed;
-		
-		// Stop ?
-		if (secondReaction==Stop)
-			newSpeed.set (0,0,0);
-		else
+	// New position at t=0
+	if (retriever)
+	{
+		// Make a domove in the Ben data
+		CGlobalRetriever::CGlobalPosition newPosition = retriever->doMove (_Position.getGlobalPos (), 
+			collisionPosition-_Position.getPos (), 1, surfaceTemp, true);
+
+		// Set the new position
+		_Position.setGlobalPos (newPosition, *retriever);
+
+		// Position at t=0
+		_3dInitPosition = _Position.getPos() - newSpeed * desc.ContactTime;
+
+		// New init time
+		_InitTime = desc.ContactTime;
+	}
+	else
+	{
+		// No retriever used
+		_Position.setPos (collisionPosition);
+
+		// Position at t=0
+		_3dInitPosition = collisionPosition - newSpeed * desc.ContactTime;
+
+		// New init time
+		_InitTime = desc.ContactTime;
+	}
+
+	// Dirt pos
+	dirtPos ();
+
+	// ****** Second object
+
+	// Old position
+	collisionPosition=second._3dInitPosition;
+	collisionPosition+=second._Speed * desc.ContactTime;
+	
+	// Obstacle ?
+	if ( (!collision) || (secondReaction==DoNothing) )
+		newSpeed=second._Speed;
+	else
+	{
+		switch (secondReaction)
 		{
+		case Slide:
 			// Remove projected speed
 			newSpeed=second._Speed - projSpeed1 * desc.ContactNormal0;
 
 			// Reflexion speed
-			if (secondReaction==Reflexion)
-				newSpeed+=( second._Attenuation*energySum / mass1 ) * desc.ContactNormal0;
+			newSpeed+=( second._Attenuation*energySum / mass1 ) * desc.ContactNormal1;
+			break;
+		case Reflexion:
+			// Remove projected speed
+			newSpeed=second._Speed - projSpeed1 * desc.ContactNormal0;
+
+			// Reflexion speed
+			newSpeed+=( second._Attenuation*energySum / mass1 ) * desc.ContactNormal0;
+			break;
+		case Stop:
+			newSpeed.set (0,0,0);
+			break;
 		}
-
-		// Set new speed
-		second.setSpeed (newSpeed);
-
-		// New position at t=0
-		second.setPosition (collisionPosition - newSpeed * desc.ContactTime);
 	}
 
-	// One object has been modified
-	return true;
+	// Set new speed
+	second.setSpeed (newSpeed);
+
+	// New position at t=0
+	if (retriever)
+	{
+		// Make a domove in the Ben data
+		CGlobalRetriever::CGlobalPosition newPosition = retriever->doMove (second._Position.getGlobalPos (), 
+			collisionPosition-second._Position.getPos (), 1, surfaceTemp, true);
+
+		// Set the new position
+		second._Position.setGlobalPos (newPosition, *retriever);
+
+		// Position at t=0
+		second._3dInitPosition = second._Position.getPos() - newSpeed * desc.ContactTime;
+
+		// New init time
+		second._InitTime = desc.ContactTime;
+	}
+	else
+	{
+		// No retriever used
+		second._Position.setPos (collisionPosition);
+
+		// Position at t=0
+		second._3dInitPosition = collisionPosition - newSpeed * desc.ContactTime;
+
+		// New init time
+		second._InitTime = desc.ContactTime;
+	}
+
+	// Dirt pos
+	second.dirtPos ();
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::reaction (const CCollisionSurfaceDesc&	surfaceDesc, const CGlobalRetriever::CGlobalPosition& globalPosition,
+							   const CGlobalRetriever& retriever, double deltaTime)
+{
+	// Reaction type
+	uint32 type=_Flags&ReactionMask;
+
+	// Reaction to the collision: copy the CGlobalRetriever::CGlobalPosition
+	_Position.setGlobalPos (globalPosition, retriever);
+	
+	// Relfexion or slide ?
+	if ((type==Reflexion)||(type==Slide))
+	{
+		// Cut last delta from distance to the wall.
+		_Speed*=(1.0-deltaTime);
+
+		// Slide ?
+		if (type==Slide)
+		{
+			// Project last delta on plane of collision.
+			_Speed-= surfaceDesc.ContactNormal*(surfaceDesc.ContactNormal*_Speed-NELPACS_DIST_BACK);
+		}
+
+		// Reflexion ?
+		if (type==Reflexion)
+		{
+			// Project last delta on plane of collision.
+			double speedProj=surfaceDesc.ContactNormal*_Speed;
+			_Speed-=surfaceDesc.ContactNormal*(speedProj+speedProj*_Attenuation-NELPACS_DIST_BACK);
+		}
+	}
+	else
+	{
+		// Stop ?
+		if (type==Stop)
+		{
+			_Speed.set (0,0,0);
+		}
+	}
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::setGlobalPosition (const NLMISC::CVectorD& pos, const UMoveContainer& container)
+{
+	// Cast type
+	nlassert (dynamic_cast<const CMoveContainer*>(&container));
+	const CMoveContainer *cont=(const CMoveContainer*)&container;
+
+	// Get the retriever
+	CGlobalRetriever *retriever=cont->getGlobalRetriever();
+
+	// Use a global retriever
+	if (retriever)
+	{
+		// Get a cvector
+		CVector vect=pos;
+
+		// Get global position
+		CGlobalRetriever::CGlobalPosition globalPosition=retriever->retrievePosition (vect);
+
+		// Set global position
+		_Position.setGlobalPos (globalPosition, *retriever);
+	}
+	else
+	{
+		// Set the position
+		_Position.setPos (pos);
+	}
+
+	// Precalc some values
+	_3dInitPosition = _Position.getPos ();
+	_InitTime = 0;
+
+	// Speed NULL
+	_Speed=CVector::Null;
+
+	// Dirt BB
+	dirtPos ();
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::move (const NLMISC::CVectorD& speed)
+{
+	// New speed
+	setSpeed (speed);
+
+	// Set initial position
+	_3dInitPosition = _Position.getPos ();
+
+	// Set initial time
+	_InitTime = 0;
+
+	// Dirt BB
+	dirtPos ();
 }
 
 // ***************************************************************************

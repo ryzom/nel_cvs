@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.1 2001/05/31 14:21:39 corvazier Exp $
+ * $Id: u_move_container.h,v 1.2 2001/06/06 09:34:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,11 @@ namespace NLPACS
 {
 
 class UMovePrimitive;
+class UTriggerInfo;
+class UGlobalRetriever;
+
+#define NELPACS_DEFAULT_OT_SIZE 100
+#define NELPACS_DEFAULT_MAX_TEST_ITERATION 100
 
 /**
  * A container for movable objects
@@ -47,27 +52,41 @@ class UMoveContainer
 {
 public:
 
+	/// \name Manage primitives.
+
 	/// Add a primitive in the container. Return the pointer on the primitive.
 	virtual UMovePrimitive		*addPrimitive () =0;
 
 	/// Remove a primitive from the container.
 	virtual void				removePrimitive (UMovePrimitive* primitive) =0;
 
-	/// Begin evaluation of collisions
-	virtual void				evalBegin (double deltaTime) =0;
+	/// \name System functions.
 
-	/* 
-	 * Evaluation of a collision
-	 *
-	 * You must call evalBegin first.
-	 * If it returns true, tehh system has found a collision, call the callback and then resolve the collision.
-	 * Recall evalCollision () still it returns false.
-	 */
-	virtual bool				evalCollision () =0;
+	/// Evaluation of the collision system
+	virtual void				evalCollision (double deltaTime) =0;
+
+	/// Make a move test
+	virtual bool				testMove (UMovePrimitive* primitive, const NLMISC::CVectorD& speed, double deltaTime) =0;
+
+	/// \name Triggers info.
+
+	/// Get number of trigger informations
+	virtual uint				getNumTriggerInfo() const=0;
+
+	/// Get the n-th trigger informations
+	virtual const UTriggerInfo &getTriggerInfo (uint id) const=0;
+
+	/// \name Create methods.
 
 	// Create method
 	static 	UMoveContainer		*createMoveContainer (double xmin, double ymin, double xmax, double ymax, 
-		uint widthCellCount, uint heightCellCount, double primitiveMaxSize, uint otSize=100);
+		uint widthCellCount, uint heightCellCount, double primitiveMaxSize, uint maxIteration=NELPACS_DEFAULT_MAX_TEST_ITERATION, 
+		uint otSize=NELPACS_DEFAULT_OT_SIZE);
+
+	// Create method
+	static 	UMoveContainer		*createMoveContainer (UGlobalRetriever* retriever, uint widthCellCount, 
+		uint heightCellCount, double primitiveMaxSize, uint maxIteration=NELPACS_DEFAULT_MAX_TEST_ITERATION, 
+		uint otSize=NELPACS_DEFAULT_OT_SIZE);
 
 	// Delete method
 	static 	void				deleteMoveContainer (UMoveContainer	*container);

@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.1 2001/05/31 14:21:39 corvazier Exp $
+ * $Id: u_move_primitive.h,v 1.2 2001/06/06 09:34:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@ namespace NLMISC
 
 namespace NLPACS 
 {
+
+class UMoveContainer;
 
 /**
  * Description of movables primitives.
@@ -95,10 +97,36 @@ public:
 		Stop=0x40,
 	};
 
+	/// Reaction mode
+	enum TTrigger
+	{
+		/**
+		  * Not a trigger.
+		  */
+		NotATrigger=0x0,
+
+		/**
+		  * This is a one time trigger. This trigger is actived only when an object enter in its volume.
+		  */
+		EnterTrigger=0x100,
+
+		/**
+		  * This is a one time trigger. This trigger is actived only when an object exit from its volume.
+		  */
+		ExitTrigger=0x200,
+
+		/**
+		  * This is an overlap trigger. This trigger is actived each time the object overlap the trigger.
+		  */
+		OverlapTrigger=0x400,
+	};
+
 	/**
 	  * User data.
 	  */
 	void			*UserPointer;
+
+	/// \name Setup the primitive.
 
 	/**
 	  * Set the primitive type.
@@ -115,6 +143,13 @@ public:
 	virtual void	setReactionType (TReaction type) =0;
 
 	/**
+	  * Set the trigger type. Default type is NotATrigger.
+	  *
+	  * \param type is the new trigger type.
+	  */
+	virtual void	setTriggerType (TTrigger type) =0;
+
+	/**
 	  * Set the collision mask for this primitive. Default mask is 0xffffffff.
 	  *
 	  * \param mask is the new collision mask.
@@ -127,22 +162,6 @@ public:
 	  * \param obstacle is true if this primitive is an obstacle, else false.
 	  */
 	virtual void	setObstacle (bool obstacle) =0;
-
-	/**
-	  * Set the position of the move primitive. For movable primitives, this is
-	  * the position for time = 0.
-	  *
-	  * \param pos is the new position of the primitive.
-	  */
-	virtual void	setPosition (const NLMISC::CVectorD& pos) =0;
-
-	/**
-	  * Get the position of the move primitive. For movable primitives, this is
-	  * the position for time = 0.
-	  *
-	  * \return the new position of the primitive.
-	  */
-	virtual const NLMISC::CVectorD&	getPosition ()  const=0;
 
 	/**
 	  * Set the new orientation of the move primitive. Only for the box primitives.
@@ -182,12 +201,34 @@ public:
 	  */
 	virtual void	setRadius (float radius) =0;
 
+	/// \name Move the primitive.
+
 	/**
-	  * Set the speed vector for this primitive. Only for movable primitives.
+	  * Set the global position of the move primitive. Setting the global position 
+	  * can take a long time if you use a UGlobalRetriever. Set the position with
+	  * this method only the first time or for teleporting.
 	  *
-	  * \param speed is the new speed vector.
+	  * \param pos is the new global position of the primitive.
 	  */
-	virtual void	setSpeed (const NLMISC::CVectorD& speed) =0;
+	virtual void	setGlobalPosition (const NLMISC::CVectorD& pos, const UMoveContainer& container) =0;
+
+	/**
+	  * Move the primitive.
+	  * This method is fast. Use it to move primitives.
+	  *
+	  * \param speed is the speed of the primitive.
+	  */
+	virtual void	move (const NLMISC::CVectorD& speed) =0;
+
+	/// \name Access the primitive.
+
+	/**
+	  * Get the position of the move primitive at the end of the movement.
+	  * This method is slow. Just for initilisation and teleportation.
+	  *
+	  * \return the new position of the primitive.
+	  */
+	virtual NLMISC::CVectorD	getFinalPosition ()  const=0;
 
 	/**
 	  * Get the speed vector for this primitive.

@@ -1,7 +1,7 @@
 /** \file collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: u_collision_desc.h,v 1.1 2001/05/31 14:21:39 corvazier Exp $
+ * $Id: u_collision_desc.h,v 1.2 2001/06/06 09:34:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,21 @@ public:
 	NLMISC::CVectorD		ContactNormal0;
 	NLMISC::CVectorD		ContactNormal1;
 	double					ContactTime;
+};
+
+/**
+ * Description of the contact of a collision
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class UTriggerInfo
+{
+public:
+	void					*Object0;
+	void					*Object1;
+	UCollisionDesc			CollisionDesc;
 };
 
 } // NLPACS

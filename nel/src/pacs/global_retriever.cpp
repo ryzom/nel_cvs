@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.19 2001/06/05 13:50:24 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.20 2001/06/06 09:34:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1262,8 +1262,29 @@ void	NLPACS::CGlobalRetriever::testRotCollisionWithCollisionChains(CCollisionSur
 
 }
 
+// ***************************************************************************
+
+NLPACS::UGlobalRetriever *NLPACS::UGlobalRetriever::createGlobalRetriever (const char *globalRetriver, const char *retriverBank)
+{
+	// TODO: create a global retriever
+	// return new CGlobalRetriever (...);
+	return NULL;
+}
 
 // ***************************************************************************
+
+void NLPACS::UGlobalRetriever::deleteRetriever (UGlobalRetriever *retriever)
+{
+	// Cast
+	nlassert (dynamic_cast<NLPACS::CGlobalRetriever*>(retriever));
+	NLPACS::CGlobalRetriever* r=static_cast<NLPACS::CGlobalRetriever*>(retriever);
+
+	// Delete
+	delete r;
+}
+
+// ***************************************************************************
+
 float			NLPACS::CGlobalRetriever::getMeanHeight(const CGlobalPosition &pos)
 {
 	// get instance/localretriever.

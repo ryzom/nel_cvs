@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.10 2003/12/29 13:36:25 lecroart Exp $
+ * $Id: mem_displayer.cpp,v 1.11 2003/12/30 11:14:58 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -378,7 +378,7 @@ void CMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 	if (args.Line != -1)
 	{
 		if (needSpace) { str + " "; needSpace = false; }
-		str += args.Line;
+		str += NLMISC::toString(args.Line);
 		needSpace = true;
 	}
 	

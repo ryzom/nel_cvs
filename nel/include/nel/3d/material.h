@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.13 2001/03/26 14:55:39 berenguier Exp $
+ * $Id: material.h,v 1.14 2001/04/06 14:55:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,16 +43,16 @@ using NLMISC::CRefPtr;
 
 const uint32 IDRV_MAT_MAXTEXTURES	=	4;
 
-const uint32 IDRV_TOUCHED_BLENDFUNC	=	0x00000001;
-const uint32 IDRV_TOUCHED_BLEND		=	0x00000002;
-const uint32 IDRV_TOUCHED_SHADER	=	0x00000004;
-const uint32 IDRV_TOUCHED_ZFUNC		=	0x00000008;
-const uint32 IDRV_TOUCHED_ZBIAS		=	0x00000010;
-const uint32 IDRV_TOUCHED_COLOR		=	0x00000020;
-const uint32 IDRV_TOUCHED_LIGHTING	=	0x00000040;
-const uint32 IDRV_TOUCHED_DEFMAT	=	0x00000080;
-const uint32 IDRV_TOUCHED_ZWRITE	=	0x00000100;
-
+const uint32 IDRV_TOUCHED_BLENDFUNC	=		0x00000001;
+const uint32 IDRV_TOUCHED_BLEND			=	0x00000002;
+const uint32 IDRV_TOUCHED_SHADER		=	0x00000004;
+const uint32 IDRV_TOUCHED_ZFUNC			=	0x00000008;
+const uint32 IDRV_TOUCHED_ZBIAS			=	0x00000010;
+const uint32 IDRV_TOUCHED_COLOR			=	0x00000020;
+const uint32 IDRV_TOUCHED_LIGHTING		=	0x00000040;
+const uint32 IDRV_TOUCHED_DEFMAT		=	0x00000080;
+const uint32 IDRV_TOUCHED_ZWRITE		=	0x00000100;
+const uint32 IDRV_TOUCHED_DOUBLE_SIDED	=	0x00000200;
 
 // Start texture touch at 0x10000.
 const uint32 IDRV_TOUCHED_TEX[IDRV_MAT_MAXTEXTURES]		=
@@ -68,6 +68,7 @@ const uint32 IDRV_MAT_LIGHTING		=	0x00000010;
 const uint32 IDRV_MAT_SPECULAR		=	0x00000020;
 const uint32 IDRV_MAT_DEFMAT		=	0x00000040;
 const uint32 IDRV_MAT_BLEND			=	0x00000080;
+const uint32 IDRV_MAT_DOUBLE_SIDED	=	0x00000100;
 
 // ***************************************************************************
 /**
@@ -124,7 +125,7 @@ public:
 	// @{
 	/** ctor.
 	 * By default, shader is normal, SrcBlend is srcalpha, dstblend is invsrcalpha, ZFunction is lessequal, ZBias is 0,
-	 * Color is White: (255,255,255,255).
+	 * Color is White: (255,255,255,255), not double sided.
 	 */
 	CMaterial();
 	/// see operator=.
@@ -159,6 +160,14 @@ public:
 	bool					getBlend() const { return (_Flags&IDRV_MAT_BLEND)!=0; }
 	TBlend					getSrcBlend(void)  const { return(_SrcBlend); }
 	TBlend					getDstBlend(void)  const { return(_DstBlend); }
+	// @}
+
+
+	/// \name Double sided.
+	// @{
+	void					setDoubleSided(bool active);
+
+	bool					detDoubleSided() const { return (_Flags&IDRV_MAT_DOUBLE_SIDED)!=0; }
 	// @}
 
 

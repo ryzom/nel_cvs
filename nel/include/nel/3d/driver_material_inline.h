@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.14 2001/03/26 14:55:39 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.15 2001/04/06 14:55:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,6 +79,13 @@ inline void CMaterial::setBlend(bool active)
 	if (active)	_Flags|=IDRV_MAT_BLEND;
 	else		_Flags&=~IDRV_MAT_BLEND;
 	_Touched|=IDRV_TOUCHED_BLEND;
+}
+
+inline void CMaterial::setDoubleSided(bool active)
+{
+	if (active)	_Flags|=IDRV_MAT_DOUBLE_SIDED;
+	else		_Flags&=~IDRV_MAT_DOUBLE_SIDED;
+	_Touched|=IDRV_TOUCHED_DOUBLE_SIDED;
 }
 
 inline void	CMaterial::setBlendFunc(TBlend src, TBlend dst)

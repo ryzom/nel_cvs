@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.11 2001/06/18 09:06:18 cado Exp $
+ * $Id: callback_server.cpp,v 1.12 2001/06/21 12:33:00 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,6 +119,7 @@ void CCallbackServer::sendAllMyAssociations (TSockId to)
  */
 void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 	nlassert (connected ());
 	nlassert (buffer.length() != 0);
@@ -227,6 +228,7 @@ void CCallbackServer::receive (CMessage &buffer, TSockId *hostid)
  */
 void CCallbackServer::disconnect( TSockId hostid )
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 
 #ifdef USE_MESSAGE_RECORDER
@@ -249,6 +251,7 @@ void CCallbackServer::disconnect( TSockId hostid )
  */
 TSockId CCallbackServer::getSockId (TSockId hostid)
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 	nlassert (connected ());
 	nlassert (hostid != NULL);
@@ -371,6 +374,7 @@ bool CCallbackServer::replaySystemCallbacks()
  */
 void CCallbackServer::noticeConnection( TSockId hostid )
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	if ( _MR_RecordingState != Replay )
 	{
 		if ( _MR_RecordingState == Record )

@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.8 2001/06/18 09:06:02 cado Exp $
+ * $Id: callback_server.h,v 1.9 2001/06/21 12:33:00 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ public:
 	void	disconnect (TSockId hostid);
 
 	/// Returns the address of the specified host
-	const CInetAddress& hostAddress (TSockId hostid) { checkThreadId (); return CStreamServer::hostAddress (hostid); }
+	const CInetAddress& hostAddress (TSockId hostid) { nlassert(hostid!=InvalidSockId); checkThreadId(); return CStreamServer::hostAddress (hostid); }
 
 	/// Returns the sockid (cf. CCallbackClient)
 	virtual TSockId	getSockId (TSockId hostid = 0);

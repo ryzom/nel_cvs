@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.19 2001/06/18 09:06:18 cado Exp $
+ * $Id: callback_net_base.cpp,v 1.20 2001/06/21 12:33:00 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -436,6 +436,7 @@ void	CCallbackNetBase::displayAllMyAssociations ()
 
 void	CCallbackNetBase::authorizeOnly (const char *callbackName, TSockId hostid)
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 
 	nldebug ("L3NB: authorizeOnly (%s, %s)", callbackName, hostid->asString().c_str());
@@ -474,6 +475,7 @@ bool CCallbackNetBase::replayDataAvailable()
  */
 void CCallbackNetBase::noticeDisconnection( TSockId hostid )
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	if ( _MR_RecordingState != Replay )
 	{
 		if ( _MR_RecordingState == Record )

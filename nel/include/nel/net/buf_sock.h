@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.8 2001/06/18 09:03:35 cado Exp $
+ * $Id: buf_sock.h,v 1.9 2001/06/21 12:33:00 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,6 +129,7 @@ protected:
 	bool advertiseSystemEvent(
 		CBufNetBase *bnb, TSockId sockid, bool& flag, bool condition, CBufNetBase::TEventType event )
 	{
+		nlassert (this != InvalidSockId);	// invalid bufsock
 		// Test flag
 		if ( flag==condition )
 		{
@@ -165,6 +166,7 @@ protected:
 	 */
 	bool pushBuffer( const std::vector<uint8>& buffer )
 	{
+		nlassert (this != InvalidSockId);	// invalid bufsock
 		nldebug( "Pushing buffer to %s", asString().c_str() );
 		if ( Sock->connected() )
 		{

@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.10 2001/06/18 09:06:26 cado Exp $
+ * $Id: net_manager.cpp,v 1.11 2001/06/21 12:33:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -422,6 +422,8 @@ void CNetManager::update (sint32 timeout)
 
 void CNetManager::send (const std::string &serviceName, const CMessage &buffer, TSockId hostid)
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
+
 	nldebug ("L4: send for service '%s' message %s to %s", serviceName.c_str(), buffer.toString().c_str(), hostid->asString().c_str());
 	ItBaseMap itbm = find (serviceName);
 	for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)

@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.11 2001/06/18 09:03:17 cado Exp $
+ * $Id: buf_sock.cpp,v 1.12 2001/06/21 12:33:00 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,10 +76,23 @@ CBufSock::CBufSock( CTcpSock *sock ) :
  */
 CBufSock::~CBufSock()
 {
-	nlnettrace( "CBufSock::~CBufSock" );
-	delete Sock; // the socket disconnects automatically if needed
-	_AppId = 627;
+	nlassert (this != InvalidSockId);	// invalid bufsock
 
+	nlnettrace( "CBufSock::~CBufSock" );
+	
+	delete Sock; // the socket disconnects automatically if needed
+	
+	// destroy the structur to be sure that other people will not access to this anymore
+	AuthorizedCallback = "";
+	Sock = NULL;
+	_KnowConnected = false;
+	_LastFlushTime = 0;
+	_TriggerTime = 0;
+	_TriggerSize = 0;
+	_ReadyToSendBuffer.clear ();
+	_RTSBIndex = 0;
+	_AppId = 0;
+	_ConnectedState = false;
 }
 
 
@@ -120,6 +133,7 @@ string stringFromVectorPart( const vector<uint8>& v, uint32 pos, uint32 len )
  */
 bool CBufSock::flush()
 {
+	nlassert (this != InvalidSockId);	// invalid bufsock
 	//nlnettrace( "CBufSock::flush" );
 
 	// Copy data from the send queue to _ReadyToSendBuffer
@@ -199,6 +213,7 @@ bool CBufSock::flush()
  */
 void CBufSock::setTimeFlushTrigger( sint32 ms )
 {
+	nlassert (this != InvalidSockId);	// invalid bufsock
 	_TriggerTime = ms;
 	_LastFlushTime = CTime::getLocalTime();
 }
@@ -209,6 +224,7 @@ void CBufSock::setTimeFlushTrigger( sint32 ms )
  */
 bool CBufSock::update()
 {
+	nlassert (this != InvalidSockId);	// invalid bufsock
 //	nlnettrace( "CBufSock::update-BEGIN" );
 	// Time trigger
 	if ( _TriggerTime != -1 )
@@ -255,6 +271,7 @@ bool CBufSock::update()
  */
 void CBufSock::connect( const CInetAddress& addr, bool nodelay, bool connectedstate )
 {
+	nlassert (this != InvalidSockId);	// invalid bufsock
 	nlassert( ! Sock->connected() );
 	Sock->connect( addr );
 	_ConnectedState = connectedstate;
@@ -271,6 +288,7 @@ void CBufSock::connect( const CInetAddress& addr, bool nodelay, bool connectedst
  */
 void CBufSock::disconnect( bool connectedstate )
 {
+	nlassert (this != InvalidSockId);	// invalid bufsock
 	Sock->disconnect();
 	_ConnectedState = connectedstate;
 	_KnowConnected = connectedstate;
@@ -282,11 +300,14 @@ void CBufSock::disconnect( bool connectedstate )
  */
 string CBufSock::asString() const
 {
+	nlassert (this != InvalidSockId);	// invalid bufsock
 	stringstream ss;
 	if (this == NULL) // tricky
 		ss << "<Null>";
 	else
-	{ 
+	{
+		// if it crashs here, it means that the CBufSock was deleted and you try to access to the virtual table that is empty
+		// because the object is destroyed.
 		ss << typeStr();
 		ss << hex << this << dec << " (socket ";
 		
@@ -312,6 +333,7 @@ CServerBufSock::CServerBufSock( CTcpSock *sock ) :
 	_Advertised( false ),
 	_OwnerTask( NULL )
 {
+	nlassert (this != InvalidSockId);	// invalid bufsock
 	nlnettrace( "CServerBufSock::CServerBufSock" );
 }
 
@@ -324,6 +346,7 @@ CServerBufSock::CServerBufSock( CTcpSock *sock ) :
  */
 bool CServerBufSock::receivePart()
 {
+	nlassert (this != InvalidSockId);	// invalid bufsock
 	nlnettrace( "CServerBufSock::receivePart" );
 
 	TBlockSize actuallen;

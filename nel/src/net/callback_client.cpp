@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.9 2001/06/18 09:06:18 cado Exp $
+ * $Id: callback_client.cpp,v 1.10 2001/06/21 12:33:00 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,7 @@ CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfil
  */
 void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 	nlassert (connected ());
 	nlassert (buffer.length() != 0);
@@ -117,6 +118,7 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
  */
 bool CCallbackClient::flush (TSockId hostid) 
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 
 #ifdef USE_MESSAGE_RECORDER
@@ -234,6 +236,7 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
  */
 TSockId	CCallbackClient::getSockId (TSockId hostid)
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 	nlassert (connected ());
 
@@ -315,6 +318,7 @@ void CCallbackClient::connect( const CInetAddress& addr )
  */
 void CCallbackClient::disconnect( TSockId hostid )
 {
+	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 
 	// Disconnect only if connected (same as physically connected for the client)

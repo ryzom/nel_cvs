@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.9 2003/04/14 15:25:53 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.10 2004/01/30 13:28:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -259,18 +259,17 @@ void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint 
 	if (nextNextIt == endIt) nextNextIt = startIt;	
 	float *date = &_SamplingDate[0];				
 
-	uint leftToDo = _NbSegs + 1;
+	uint leftToDo = _UsedNbSegs + 1;
 
 	float lambda = 0.f;
 	float lambdaStep = 1.f;
-
+	
 	for (;;)
 	{		
 		float dt = date[0] - date[1];
 
 		if (dt < 10E-6f) // we reached the start of ribbon
 		{
-
 			do
 			{
 				*dest = *currIt;
@@ -279,7 +278,8 @@ void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint 
 			while (--leftToDo);			
 			return;
 		}
-
+		
+		
 		float newLambdaStep = _UsedSegDuration / dt;
 		// readapt lambda
 		lambda *= newLambdaStep / lambdaStep;
@@ -297,7 +297,7 @@ void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint 
 			lambda += lambdaStep;
 			oneMinusLambda -= lambdaStep;
 		}
-
+		
 		++date;
 		lambda -= 1.f;
 		
@@ -305,6 +305,7 @@ void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint 
 		nextIt = nextNextIt;
 		++nextNextIt;
 		if (nextNextIt == endIt) nextNextIt = startIt;		
+		
 	}
 }
 
@@ -458,27 +459,29 @@ void CPSRibbonBase::computeRibbon(uint index, NLMISC::CVector *dest, uint stride
 		case Linear:
 			if (_RibbonMode == VariableSize)
 			{
-				computeLinearRibbon(index, dest, stride);
+				computeLinearRibbon(index, dest, stride);				
 			}
 			else
 			{
-				computeLinearCstSizeRibbon(index, dest, stride);
+				computeLinearCstSizeRibbon(index, dest, stride);				
 			}
 		break;
 		case Hermitte:
 			if (_RibbonMode == VariableSize)
 			{
-				computeHermitteRibbon(index, dest, stride);	
+				computeHermitteRibbon(index, dest, stride);					
+				
 			}
 			else
 			{
-				computeHermitteCstSizeRibbon(index, dest, stride);	
+				computeHermitteCstSizeRibbon(index, dest, stride);					
 			}
 		break;
 		default:
 			nlassert(0);
 		break;
 	}
+	
 }
 
 

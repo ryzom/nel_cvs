@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.4 2001/05/18 08:23:37 legros Exp $
+ * $Id: retriever_bank.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.3 2001/05/21 08:51:50 berenguier Exp $
+ * $Id: collision_surface_temp.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

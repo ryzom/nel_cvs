@@ -1,7 +1,7 @@
-/** \file move_container.h
- * Container for movable object
+/** \file move_element_inline.h
+ * Element to insert in sorted lists
  *
- * $Id: move_container.h,v 1.1 2001/05/04 14:36:59 corvazier Exp $
+ * $Id: move_element_inline.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,47 +23,22 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_MOVE_CONTAINER_H
-#define NL_MOVE_CONTAINER_H
+#ifndef NL_MOVE_ELEMENT_INLINE_H
+#define NL_MOVE_ELEMENT_INLINE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
+#include "nel/pacs/move_primitive.h"
 
 
 namespace NLPACS 
 {
 
-
-/**
- * A container for movable objects
- * 
- * \author Cyril 'Hulud' Corvazier
- * \author Nevrax France
- * \date 2001
- */
-class CMoveContainer
-{
-public:
-
-	/// Iterator
-	class Iterator
-	{
-	public:
-		void remove ();
-		void change ();
-	};
-
-	/// Constructor
-	CMoveContainer();
-
-	/// Initialisation
-	void init ();
-
-};
-
+// ***************************************************************************
 
 } // NLPACS
 
 
-#endif // NL_MOVE_CONTAINER_H
+#endif // NL_MOVE_ELEMENT_INLINE_H
 
-/* End of move_container.h */
+/* End of move_element.h */

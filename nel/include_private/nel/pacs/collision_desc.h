@@ -1,7 +1,7 @@
 /** \file collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: collision_desc.h,v 1.4 2001/05/21 08:51:50 berenguier Exp $
+ * $Id: collision_desc.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,8 +44,22 @@ class CCollisionDesc
 {
 public:
 	NLMISC::CVector		ContactPosition;
-	NLMISC::CVector		ContactNormal;
+	NLMISC::CVector		ContactNormal0;
+	NLMISC::CVector		ContactNormal1;
 	float				ContactTime;
+<<<<<<< collision_desc.h
+
+	// XChg contact normal 0 and 1
+	void XChgContactNormals ()
+	{
+		NLMISC::CVector tmp=ContactNormal0;
+		ContactNormal0=ContactNormal1;
+		ContactNormal1=tmp;
+	}
+};
+
+
+=======
 };
 
 
@@ -104,6 +118,7 @@ typedef	std::vector<CCollisionSurfaceDesc>	TCollisionSurfaceDescVector;
 
 
 
+>>>>>>> 1.4
 } // NLPACS
 
 

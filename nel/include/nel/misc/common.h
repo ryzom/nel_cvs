@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.44 2002/10/02 13:42:43 coutelas Exp $
+ * $Id: common.h,v 1.45 2002/10/24 14:43:37 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <math.h>
 #include <algorithm>
 #include <string>
 #include <vector>

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.182 2003/07/22 16:25:57 coutelas Exp $
+ * $Id: service.cpp,v 1.182.2.1 2003/08/21 15:14:36 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1738,7 +1738,7 @@ NLMISC_COMMAND(getWinDisplayerInfo, "display the info about the pos and size of 
 
 NLMISC_COMMAND(displayConfigFile, "display the variables of the default configfile", "")
 {
-	IService::getInstance()->ConfigFile.print(&log);
+	IService::getInstance()->ConfigFile.display (&log);
 	return true;
 }
 

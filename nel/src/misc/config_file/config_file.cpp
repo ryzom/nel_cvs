@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.43 2003/03/20 15:40:55 corvazier Exp $
+ * $Id: config_file.cpp,v 1.43.6.1 2003/08/21 15:14:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -239,7 +239,18 @@ void CConfigFile::load (const string &fileName)
 		return;
 	}
 
- 	_FileName = fileName;
+	FileNames.clear ();
+	FileNames.push_back (fileName);
+
+	if (_ConfigFiles == NULL)
+	{
+		_ConfigFiles = new std::vector<CConfigFile *>;
+	}
+	(*CConfigFile::_ConfigFiles).push_back (this);
+	reparse ();
+
+/* 	_FileName.clear ();
+	_FileName.push_back (fileName);
 
 	if (_ConfigFiles == NULL)
 	{
@@ -264,26 +275,83 @@ void CConfigFile::load (const string &fileName)
 
 		reparse (path.c_str());
 	}
-
+*/
 //	print ();
 }
 
-
 bool CConfigFile::loaded()
 {
-	return !CConfigFile::_FileName.empty();
+	return !CConfigFile::FileNames.empty();
 }
 
-
-void CConfigFile::reparse (const char *filename, bool callingCallback)
+void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 {
-	if (filename == NULL)
+	if (FileNames.empty())
+	{
+		nlwarning ("Can't reparse config file because file name is empty");
+		return;
+	}
+
+	string fn = FileNames[0];
+
+	FileNames.clear ();
+	LastModified.clear ();
+
+//	clearVars ();
+
+	while (!fn.empty())
+	{
+		nldebug ("Adding config file '%s' in the configfile", fn.c_str());
+		FileNames.push_back (fn);
+		LastModified.push_back (CFile::getFileModificationDate(fn));
+		
+		if (cf_ifile.open (fn))
+		{
+			cfrestart (NULL);
+			cf_OverwriteExistingVariable = (FileNames.size()==1);
+			LoadRoot = (FileNames.size()>1);
+			bool parsingOK = (cfparse (&(_Vars)) == 0);
+			cf_ifile.close();
+			if (!parsingOK)
+			{
+				nlwarning ("Parsing error in file %s line %d", fn.c_str(), cf_CurrentLine);
+				throw EParseError (fn, cf_CurrentLine);
+			}
+		}
+		else
+		{
+			nlwarning ("Config file '%s' not found in the path '%s'", fn.c_str(), CPath::getCurrentPath().c_str());
+			throw EFileNotFound (fn);
+		}
+		cf_ifile.close ();
+
+		// If we find a linked config file, load it but don't overload already existant variable
+		CVar *var = getVarPtr ("RootConfigFilename");
+		if (var)
+		{
+			string RootConfigFilename = var->asString();
+			if (RootConfigFilename != fn)
+			{
+				nlinfo ("RootConfigFilename variable found in the '%s' config file, parse the root config file '%s'", fn.c_str(), RootConfigFilename.c_str());
+				fn = RootConfigFilename;
+			}
+			else
+				fn.clear ();
+		}
+		else
+			fn.clear ();	
+	}
+
+	if (_Callback != NULL) 
+		_Callback();
+
+/*	if (filename == NULL)
 	{
 		_LastModified = getLastModified ();
 
 		nlassert (!_FileName.empty());
 
-		if (cf_ifile.open (_FileName))
+		if (cf_ifile.open (_FileName[0]))
 		{
 			// if we clear all the array, we'll lost the callback on variable and all information
 			//		_Vars.clear();
@@ -303,25 +371,6 @@ void CConfigFile::reparse (const char *filename, bool callingCallback)
 			nlwarning ("ConfigFile '%s' not found in the path '%s'", _FileName.c_str(), CPath::getCurrentPath().c_str());
 			throw EFileNotFound (_FileName);
 		}
-
-		/*
-		cfin = fopen (_FileName.c_str (), "r");
-		if (cfin != NULL)
-		{
-	// if we clear all the array, we'll lost the callback on variable and all information
-	//		_Vars.clear();
-			cfrestart (cfin);
-			cf_OverwriteExistingVariable = true;
-			bool parsingOK = (cfparse (&(_Vars)) == 0);
-			fclose (cfin);
-			if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);
-		}
-		else
-		{
-			nlwarning ("ConfigFile '%s' not found in the path '%s'", _FileName.c_str(), CPath::getCurrentPath().c_str());
-			throw EFileNotFound (_FileName);
-		}
-		*/
 	}
 	else
 	{
@@ -345,28 +394,15 @@ void CConfigFile::reparse (const char *filename, bool callingCallback)
 		{
 			nlwarning ("RootConfigFilename '%s' not found", _FileName.c_str());
 		}
-
-/*		cfin = fopen (filename, "r");
-		if (cfin != NULL)
-		{
-			cfrestart (cfin);
-			cf_OverwriteExistingVariable = false;
-			bool parsingOK = (cfparse (&(_Vars)) == 0);
-			fclose (cfin);
-			if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);
-		}
-		else
-		{
-			nlwarning ("RootConfigFilename '%s' not found", _FileName.c_str());
-		}
-*/	}
+	}
 
 	if (callingCallback)
 	{
-//		nlwarning("Callback ptr : %p", _Callback);
 		if (_Callback != NULL) 
 			_Callback();
 	}
+*/
+
 }
 
 
@@ -391,7 +427,7 @@ CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 	if (i == UnknownVariables.size())
 		UnknownVariables.push_back(varName);
 
-	throw EUnknownVar (_FileName, varName);
+	throw EUnknownVar (FileNames[0], varName);
 }
 
 
@@ -432,7 +468,7 @@ bool CConfigFile::exists (const std::string &varName)
 
 void CConfigFile::save () const
 {
-	FILE *fp = fopen (_FileName.c_str (), "w");
+	/*FILE *fp = fopen (_FileName.c_str (), "w");
 	if (fp == NULL)
 	{
 		nlwarning ("Couldn't create %s file", _FileName.c_str ());
@@ -495,24 +531,30 @@ void CConfigFile::save () const
 			}
 		}
 	}
-	fclose (fp);
+	fclose (fp);*/
 }
 
-void CConfigFile::print () const
+void CConfigFile::display () const
 {
-	print(InfoLog);
+	display (InfoLog);
 }
 
-void CConfigFile::print (CLog *log) const
+void CConfigFile::display (CLog *log) const
 {
 	createDebug ();
 
-	log->displayRawNL ("ConfigFile %s have %d variables:", _FileName.c_str(), _Vars.size());
+	log->displayRawNL ("Config file %s have %d variables and %d root config file:", FileNames[0].c_str(), _Vars.size(), FileNames.size()-1);
+	log->displayRaw ("Root config files: ");
+	for(int i = 1; i < (int)FileNames.size(); i++)
+	{
+		log->displayRaw (FileNames[i].c_str());
+	}
+	log->displayRawNL ("");
 	log->displayRawNL ("------------------------------------------------------");
 	for(int i = 0; i < (int)_Vars.size(); i++)
 	{
 		log->displayRaw ((_Vars[i].Callback==NULL)?"   ":"CB ");
-		log->displayRaw ((_Vars[i].Root)?"Root ":"   ");
+		log->displayRaw ((_Vars[i].Root)?"Root ":"     ");
 		if (_Vars[i].Comp)
 		{
 			switch (_Vars[i].Type)
@@ -554,7 +596,7 @@ void CConfigFile::print (CLog *log) const
 			}
 			default:
 			{
-				log->displayRawNL ("%-20s <default case>" , _Vars[i].Name.c_str());
+				log->displayRawNL ("%-20s <default case comp> (%d)" , _Vars[i].Name.c_str(), _Vars[i].Type);
 				break;
 			}
 			}
@@ -574,7 +616,7 @@ void CConfigFile::print (CLog *log) const
 				break;
 			default:
 			{
-				log->displayRawNL ("%-20s <default case>" , _Vars[i].Name.c_str());
+				log->displayRawNL ("%-20s <default case> (%d)" , _Vars[i].Name.c_str(), _Vars[i].Type);
 				break;
 			}
 			}
@@ -585,7 +627,7 @@ void CConfigFile::print (CLog *log) const
 void CConfigFile::setCallback (void (*cb)())
 {
 	_Callback = cb;
-	nlinfo ("Setting callback when the file '%s' is modified externaly", _FileName.c_str());
+	nlinfo ("Setting callback when the file '%s' is modified externaly", FileNames[0].c_str());
 }
 
 void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CVar &var))
@@ -595,7 +637,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 		if (VarName == (*it).Name)
 		{
 			(*it).Callback = cb;
-			nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly", VarName.c_str(), _FileName.c_str());
+			nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly", VarName.c_str(), FileNames[0].c_str());
 			return;
 		}
 	}
@@ -605,14 +647,8 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 	Var.Callback = cb;
 	Var.Type = CVar::T_UNKNOWN;
 	_Vars.push_back (Var);
-	nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), _FileName.c_str());
+	nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), FileNames[0].c_str());
 }
-
-void CConfigFile::setLastModifiedNow ()
-{
-	_LastModified = getLastModified ();
-}
-
 
 // ***************************************************************************
 
@@ -620,31 +656,6 @@ void CConfigFile::setLastModifiedNow ()
 vector<CConfigFile *> *CConfigFile::_ConfigFiles = NULL;
 
 uint32	CConfigFile::_Timeout = 1000;
-
-uint32 CConfigFile::getLastModified ()
-{
-	uint pos;
-	string fn;
-	if ((pos=_FileName.find('@')) != string::npos)
-	{
-		fn = _FileName.substr (0, pos);
-	}
-	else
-	{
-		fn = _FileName;
-	}
-#if defined (NL_OS_WINDOWS)
-	struct _stat buf;
-	int result = _stat (fn.c_str (), &buf);
-#elif defined (NL_OS_UNIX)
-	struct stat buf;
-	int result = stat (fn.c_str (), &buf);
-#endif
-
-	if (result != 0) return 0;
-	else return buf.st_mtime;
-}
-
 
 void CConfigFile::checkConfigFiles ()
 {
@@ -655,9 +666,20 @@ void CConfigFile::checkConfigFiles ()
 
 	LastCheckTime = time (NULL);
 
+	bool needReparse;
 	for (vector<CConfigFile *>::iterator it = (*_ConfigFiles).begin (); it != (*_ConfigFiles).end (); it++)
 	{
-		if ((*it)->_LastModified != (*it)->getLastModified ())
+		needReparse = false;
+		nlassert ((*it)->FileNames.size() == (*it)->LastModified.size());
+		for (uint i = 0; i < (*it)->FileNames.size(); i++)
+		{
+			if ((*it)->LastModified[i] != CFile::getFileModificationDate((*it)->FileNames[i]))
+			{
+				needReparse = true;
+				(*it)->LastModified[i] = CFile::getFileModificationDate((*it)->FileNames[i]);
+			}
+		}
+		if (needReparse)
 		{
 			try
 			{
@@ -665,7 +687,7 @@ void CConfigFile::checkConfigFiles ()
 			}
 			catch (EConfigFile &e)
 			{
-				nlwarning ("Exception will rereading modified config file: %s", e.what ());
+				nlwarning ("Exception will re-reading modified config file '%s': %s", e.what ());
 			}
 		}
 	}
@@ -679,6 +701,14 @@ void CConfigFile::setTimeout (uint32 timeout)
 void CConfigFile::clear()
 {
 	_Vars.clear ();
+}
+
+void CConfigFile::clearVars ()
+{
+	for (vector<CVar>::iterator it = _Vars.begin (); it != _Vars.end (); it++)
+	{
+		(*it).Type = CVar::T_UNKNOWN;
+	}
 }
 
 uint CConfigFile::getNumVar () const

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.49 2001/01/09 17:05:29 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.50 2001/01/10 11:29:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,8 +275,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 #elif defined(NL_OS_UNIX)
 
 	dpy = XOpenDisplay(NULL);
-	nlassert (dpy != NULL);
-
+	if (dpy == NULL) nlerror ("XOpenDisplay failed on '%s'",getenv("DISPLAY"));
+	/*
 	int sAttribList[] =
 	{
 	  GLX_RGBA,
@@ -289,7 +289,19 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	  //GLX_ALPHA_SIZE, 8,
 	  None
 	};
-
+	*/
+	int sAttribList[] =
+	{
+	  GLX_RGBA,
+	  GLX_DOUBLEBUFFER,
+	  // GLX_BUFFER_SIZE, 32,
+	  GLX_DEPTH_SIZE, 24,
+	  GLX_RED_SIZE, 8,
+	  GLX_GREEN_SIZE, 8,
+	  GLX_BLUE_SIZE, 8,
+	  // GLX_ALPHA_SIZE, 8,
+	  None
+	};
 	XVisualInfo *visual_info = glXChooseVisual (dpy, DefaultScreen(dpy), sAttribList);
 
 	nlassert(visual_info != NULL);

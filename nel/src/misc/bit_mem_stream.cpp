@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.10 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.11 2002/01/30 14:51:06 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -321,6 +321,32 @@ void	CBitMemStream::serial(std::string &b)
 	}
 }
 
+/*
+ * Serial string
+ */
+void	CBitMemStream::serial(CBitMemStream &b)
+{
+	uint32 length=0;
+
+	// Serialize length
+	if ( isReading() )
+	{
+		// fill b with data from this
+		serial (length);
+
+		serialBuffer (b.bufferToFill (length), length);
+		b.resetBufPos ();
+	}
+	else
+	{
+		// fill this with data from b
+		length = b.length();
+
+		serial( length );
+		serialBuffer( (uint8*) b.buffer (), length );
+	}
+
+}
 
 /*
  * Specialisation of serialCont() for vector<bool>

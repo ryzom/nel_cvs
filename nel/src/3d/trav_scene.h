@@ -1,7 +1,7 @@
 /** \file trav_scene.h
  * <File description>
  *
- * $Id: trav_scene.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: trav_scene.h,v 1.2 2002/04/12 16:25:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,13 +27,15 @@
 #define NL_TRAV_SCENE_H
 
 
-#include "3d/mot.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/smart_ptr.h"
+
 
 
 namespace	NL3D
 {
 
+class CScene;
 
 using NLMISC::CVector;
 using NLMISC::CPlane;
@@ -57,8 +59,12 @@ using NLMISC::CMatrix;
  * \date 2000
  */
 class ITravScene : public ITrav
-{
+{	
 public:
+	CScene	*Scene; // the scene owning this traversal (if any)
+public:
+	/// ctor
+	ITravScene() : Scene(NULL) {}
 	/** Return the order of the traversal.
 	 * This is usefull for CScene::render() method. It indicate when the traversal is called.
 	 * Order for basic traversal are:
@@ -73,6 +79,11 @@ public:
 	 * CScene::render() will call this method, to execute the traversal.
 	 */
 	virtual	void	traverse() =0;
+
+protected:
+	/** From ITrav : called when this trav is added in a CMOT instance
+	  */
+	virtual		void addedToMOT(CMOT *mot);	
 };
 
 

@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.5 2002/07/03 13:24:08 corvazier Exp $
+ * $Id: export_mesh_interface.cpp,v 1.6 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@
 #include "nel/misc/polygon.h"
 #include "nel/misc/path.h"
 #include "3d/quad_grid.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 
 
 

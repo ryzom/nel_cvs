@@ -1,7 +1,7 @@
-/** \file export_lod.h
- * LOD define
+/** \file export_appdata.h
+ * Define NeL appdata for 3dsmax
  *
- * $Id: export_lod.h,v 1.29 2002/07/23 17:09:59 corvazier Exp $
+ * $Id: export_appdata.h,v 1.1 2002/08/27 12:40:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_EXPORT_LOD_H
-#define NL_EXPORT_LOD_H
+#ifndef NL_EXPORT_APPDATA_H
+#define NL_EXPORT_APPDATA_H
 
 // ***************************************************************************
 
@@ -52,6 +52,7 @@
 // Last APPDATA_LOD value is						1423062560
 
 #define NEL3D_APPDATA_ACCEL							(1423062561)
+#define NEL3D_APPDATA_INSTANCE_SHAPE				(1970)
 #define NEL3D_APPDATA_INSTANCE_NAME					(1423062562)
 #define NEL3D_APPDATA_DONT_ADD_TO_SCENE				(1423062563)
 #define NEL3D_APPDATA_IGNAME						(1423062564)
@@ -62,7 +63,6 @@
 
 
 #define NEL3D_APPDATA_DONTEXPORT					(1423062565)
-#define NEL3D_APPDATA_EXPORT_NOTE_TRACK				(1423062566)
 
 #define NEL3D_APPDATA_LUMELSIZEMUL					(1423062567)
 #define NEL3D_APPDATA_SOFTSHADOW_RADIUS				(1423062568)
@@ -79,8 +79,12 @@
 #define NEL3D_APPDATA_BEND_CENTER					(1423062585)
 #define NEL3D_APPDATA_BEND_FACTOR					(1423062586)
 
-/// animated materials
+/// Animations
+#define NEL3D_APPDATA_AUTOMATIC_ANIMATION			(1423062617)
 #define NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS		(1423062587)
+#define NEL3D_APPDATA_EXPORT_NOTE_TRACK				(1423062566)
+#define NEL3D_APPDATA_EXPORT_NODE_ANIMATION			(1423062800)
+#define NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME (1423062801)
 
 /// Export RealTime light
 #define NEL3D_APPDATA_EXPORT_REALTIME_LIGHT			(1423062588)
@@ -124,8 +128,6 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 
 #define NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING	(1423062616)
 
-
-#define NEL3D_APPDATA_AUTOMATIC_ANIMATION			(1423062617)
 
 
 /// Lod for skeleton / Character shape
@@ -176,6 +178,6 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 
 // ***************************************************************************
 
-#endif // NL_EXPORT_LOD_H
+#endif // NL_EXPORT_APPDATA_H
 
-/* End of export_lod.h */
+/* End of export_appdata.h */

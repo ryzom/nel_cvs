@@ -1,7 +1,7 @@
 /** \file export_lod_character.cpp
  * Export from 3dsmax a NeL lod character
  *
- * $Id: export_lod_character.cpp,v 1.1 2002/05/13 16:49:00 berenguier Exp $
+ * $Id: export_lod_character.cpp,v 1.2 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 
 #include "../nel_export/std_afx.h"
 #include "../nel_export/nel_export.h"

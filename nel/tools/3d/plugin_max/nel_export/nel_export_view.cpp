@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.36 2002/07/16 12:08:10 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.37 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_patch_lib/rpo.h"
 #include "../nel_mesh_lib/calc_lm.h"
-#include "../nel_mesh_lib/export_lod.h"
+#include "../nel_mesh_lib/export_appdata.h"
 
 #include "nel/misc/time_nl.h"
 

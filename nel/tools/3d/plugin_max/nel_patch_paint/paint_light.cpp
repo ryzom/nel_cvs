@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "paint_light.h"
 #include "../nel_mesh_lib/export_nel.h"
-#include "../nel_mesh_lib/export_lod.h"
+#include "../nel_mesh_lib/export_appdata.h"
 #include <3d/scene.h>
 #include <3d/landscape.h>
 #include <3d/point_light_model.h>

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.47 2002/07/26 16:06:07 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.48 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 #include "export_radial_normal.h"
 
 #include "../nel_export/std_afx.h"
@@ -51,9 +51,6 @@
 
 using namespace NLMISC;
 using namespace NL3D;
-
-#define NEL_OBJET_NAME_DATA 1970
-
 
 // ***************************************************************************
 

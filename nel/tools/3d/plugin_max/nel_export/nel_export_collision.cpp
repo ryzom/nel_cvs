@@ -1,7 +1,7 @@
 /** \file nel_export_collision.cpp
  * 
  *
- * $Id: nel_export_collision.cpp,v 1.6 2002/06/06 14:40:40 vizerie Exp $
+ * $Id: nel_export_collision.cpp,v 1.7 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "pacs/primitive_block.h"
 
 #include "../nel_mesh_lib/export_nel.h"
-#include "../nel_mesh_lib/export_lod.h"
+#include "../nel_mesh_lib/export_appdata.h"
 
 using namespace NLMISC;
 using namespace NLPACS;

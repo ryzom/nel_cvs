@@ -1,3 +1,6 @@
+NEL3D_APPDATA_EXPORT_NODE_ANIMATION	= 1423062800
+
+
 -- Clear the log
 fn clearlog =
 (
@@ -64,16 +67,22 @@ try
 					-- Open the max project
 					if loadMaxFile files[i] == true then
 					(
-						-- Select Bip01
-						select $Bip01
+						-- Select Bip01, not very smart
+						if $Bip01 != undefined then
+							select $Bip01
 
-						-- Select the lights
-						for li in lights do
+						-- For each node
+						for node in objects do
 						(
-							selectmore li
+							exportNodeAnmation = getappdata node NEL3D_APPDATA_EXPORT_NODE_ANIMATION
+							if (exportNodeAnmation != undefined) then
+							(
+								if (exportNodeAnmation == "1") then
+									selectmore node
+							)
 						)
 
-						if ($ != undefined) then
+						if ((selection as array).count != 0) then
 						(
 							-- Export the animation
 							if (NelExportAnimation (selection as array) output false) == false then
@@ -88,7 +97,7 @@ try
 						else
 						(
 							-- Error
-							nlerror ("ERROR exporting animation: no Bip01 node in file "+files[i])
+							nlerror ("ERROR exporting animation: no node animated to export in file "+files[i])
 						)
 					)
 					else

@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.18 2002/06/06 11:54:57 berenguier Exp $
+ * $Id: export_skinning.cpp,v 1.19 2002/08/27 12:40:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 #include "3d/skeleton_shape.h"
 
 using namespace NLMISC;

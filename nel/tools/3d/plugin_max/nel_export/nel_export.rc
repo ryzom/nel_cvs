@@ -238,13 +238,8 @@ IDD_MISC DIALOG DISCARDABLE  0, 0, 360, 221
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "Export Note Track",IDC_EXPORT_NOTE_TRACK,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,5,20,95,9
     CONTROL         "Floating Object",IDC_FLOATING_OBJECT,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,5,5,65,12
-    CONTROL         "Export animated materials",
-                    IDC_EXPORT_ANIMATED_MATERIALS,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,5,32,98,12
     GROUPBOX        "Ligoscape",IDC_STATIC,5,100,120,45
     CONTROL         "Symmetry",IDC_LIGO_SYMMETRY,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,11,110,44,12
@@ -366,11 +361,26 @@ BEGIN
                     BS_AUTO3STATE | WS_TABSTOP,10,152,110,10
     CONTROL         "Collision Mesh Exterior",IDC_CHECK_COLLISION_EXTERIOR,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,10,168,110,10
-    CONTROL         "Allow automatic animation.",IDC_AUTOMATIC_ANIM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,101,96,9
-    LTEXT           "If the shape is ""obj.shape"", then it will bind ""obj.anim"" automatically.",
-                    IDC_STATIC,17,111,88,24
     LTEXT           "Enter ... to erase all.",IDC_STATIC,195,15,108,10
+END
+
+IDD_ANIM DIALOG DISCARDABLE  0, 0, 360, 221
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Export note track",IDC_EXPORT_NOTE_TRACK,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,5,50,75,10
+    CONTROL         "Export animated materials",
+                    IDC_EXPORT_ANIMATED_MATERIALS,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,5,35,98,10
+    CONTROL         "Export node animation",IDC_EXPORT_NODE_ANIMATION,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,5,5,98,10
+    CONTROL         "Prefixe tracks with node name (Instance name or, if emtpy, node name)",
+                    IDC_EXPORT_ANIMATION_PREFIXE_NAME,"Button",BS_AUTO3STATE | 
+                    BS_MULTILINE | WS_TABSTOP,5,20,245,10
+    CONTROL         "Allow automatic animation. If the shape is ""obj.shape"", then it will bind ""obj.anim"" automatically.",
+                    IDC_AUTOMATIC_ANIM,"Button",BS_AUTO3STATE | BS_MULTILINE | 
+                    WS_TABSTOP,5,65,315,10
 END
 
 
@@ -460,6 +470,14 @@ BEGIN
         RIGHTMARGIN, 353
         TOPMARGIN, 7
         BOTTOMMARGIN, 188
+    END
+
+    IDD_ANIM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 353
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 214
     END
 END
 #endif    // APSTUDIO_INVOKED

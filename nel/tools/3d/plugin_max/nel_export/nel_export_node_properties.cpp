@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.42 2002/07/04 14:51:45 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.43 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,20 +25,15 @@
 
 #include "std_afx.h"
 #include "nel_export.h"
-#include "../nel_mesh_lib/export_lod.h"
+#include "../nel_mesh_lib/export_appdata.h"
 #include "../nel_mesh_lib/calc_lm.h"
 #include "../nel_patch_lib/nel_patch_mesh.h"
 
 using namespace NLMISC;
 
-#define NEL_OBJET_NAME_DATA 1970
-
-
-
-
 // ***************************************************************************
 
-#define TAB_COUNT	7
+#define TAB_COUNT	8
 #define VP_COUNT	1
 // Which dialog tab is the VerytexProgram one?
 #define TAB_VP_ID	5
@@ -160,7 +155,7 @@ public:
 	CVPWindTreeAppData		VertexProgramWindTree;
 
 
-	// misc
+	// Lighting
 	int						ExportRealTimeLight;
 	int						ExportLightMapLight;
 	int						ExportAsSunLight;
@@ -168,10 +163,8 @@ public:
 	int						ExportLightMapAnimated;
 	std::string				ExportLightMapName;
 
-	// misc
+	// Misc
 	int						FloatingObject;
-	int						ExportNoteTrack;
-	int						ExportAnimatedMaterials;
 	int						SWT;
 	std::string				SWTWeight;
 	int						LigoSymmetry;
@@ -182,6 +175,13 @@ public:
 	float					RemanenceSamplingPeriod;
 	float                   RemanenceRollupRatio;
 
+	// Animation
+	int						ExportNodeAnimation;
+	int						PrefixeTracksNodeName;
+	int						ExportNoteTrack;
+	int						ExportAnimatedMaterials;
+	int						AutomaticAnimation;
+
 	// Vegetable
 	int						Vegetable;
 	int						VegetableAlphaBlend;
@@ -191,9 +191,6 @@ public:
 	int						VegetableForceBestSidedLighting;
 	int						VegetableBendCenter;
 	std::string				VegetableBendFactor;
-
-	// automatic animation
-	int						AutomaticAnimation;
 
 	// Collision
 	int						Collision;
@@ -218,12 +215,13 @@ int CALLBACK AccelDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 int CALLBACK InstanceDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK LightmapDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK VegetableDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK MiscDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK VertexProgramDialogCallBack (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK MiscDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK AnimationDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-const char				*SubText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lighting", "Vegetable", "VertexProgram", "Misc"};
-const int				SubTab[TAB_COUNT]	= {IDD_LOD, IDD_ACCEL, IDD_INSTANCE, IDD_LIGHTMAP, IDD_VEGETABLE, IDD_VERTEX_PROGRAM, IDD_MISC};
-DLGPROC					SubProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, InstanceDialogCallback, LightmapDialogCallback, VegetableDialogCallback, VertexProgramDialogCallBack, MiscDialogCallback};
+const char				*SubText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lighting", "Vegetable", "VertexProgram", "Misc", "Animation"};
+const int				SubTab[TAB_COUNT]	= {IDD_LOD, IDD_ACCEL, IDD_INSTANCE, IDD_LIGHTMAP, IDD_VEGETABLE, IDD_VERTEX_PROGRAM, IDD_MISC, IDD_ANIM};
+DLGPROC					SubProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, InstanceDialogCallback, LightmapDialogCallback, VegetableDialogCallback, VertexProgramDialogCallBack, MiscDialogCallback, AnimationDialogCallback};
 
 // VertexPrograms.
 int CALLBACK VPWindTreeCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -751,7 +749,6 @@ int CALLBACK InstanceDialogCallback (
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), currentParam->InstanceName.c_str());
 
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_AUTOMATIC_ANIM), BM_SETCHECK, currentParam->AutomaticAnimation, 0);
 
 			
 
@@ -785,7 +782,6 @@ int CALLBACK InstanceDialogCallback (
 							currentParam->InstanceName=tmp;
 							
 							currentParam->DontAddToScene=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_GETCHECK, 0, 0);
-							currentParam->AutomaticAnimation=SendMessage (GetDlgItem (hwndDlg, IDC_AUTOMATIC_ANIM), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), tmp, 512);
 							currentParam->InstanceGroupName=tmp;							
 
@@ -1580,9 +1576,7 @@ int CALLBACK MiscDialogCallback (
 			// Param pointers
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
-			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_SETCHECK, currentParam->ExportNoteTrack, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_FLOATING_OBJECT), BM_SETCHECK, currentParam->FloatingObject, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_SETCHECK, currentParam->ExportAnimatedMaterials, 0);
 
 			// Ligoscape
 			SendMessage (GetDlgItem (hwndDlg, IDC_LIGO_SYMMETRY), BM_SETCHECK, currentParam->LigoSymmetry, 0);
@@ -1628,9 +1622,7 @@ int CALLBACK MiscDialogCallback (
 					break;
 					case IDOK:
 						{
-							currentParam->ExportNoteTrack=SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);
 							currentParam->FloatingObject=SendMessage (GetDlgItem (hwndDlg, IDC_FLOATING_OBJECT), BM_GETCHECK, 0, 0);
-							currentParam->ExportAnimatedMaterials = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_GETCHECK, 0, 0);
 
 							// Ligoscape
 							currentParam->LigoSymmetry = SendMessage (GetDlgItem (hwndDlg, IDC_LIGO_SYMMETRY), BM_GETCHECK, 0, 0);
@@ -1681,11 +1673,73 @@ int CALLBACK MiscDialogCallback (
 							toFloatMax(tmp, currentParam->RemanenceRollupRatio);
 						}
 					break;
-					case IDC_EXPORT_NOTE_TRACK:
 					case IDC_FLOATING_OBJECT:
-					case IDC_EXPORT_ANIMATED_MATERIALS:
 					case IDC_SWT:
 					case IDC_EXPORT_BONE_SCALE:
+						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
+							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+						break;
+				}
+			}
+		break;
+
+		default:
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+
+
+// ***************************************************************************
+int CALLBACK AnimationDialogCallback (
+  HWND hwndDlg,  // handle to dialog box
+  UINT uMsg,     // message
+  WPARAM wParam, // first message parameter
+  LPARAM lParam  // second message parameter
+)
+{
+	CLodDialogBoxParam *currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+	switch (uMsg) 
+	{
+		case WM_INITDIALOG:
+		{ 			
+			// Param pointers
+			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
+			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_SETCHECK, currentParam->ExportNoteTrack, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_SETCHECK, currentParam->ExportAnimatedMaterials, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NODE_ANIMATION), BM_SETCHECK, currentParam->ExportNodeAnimation, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATION_PREFIXE_NAME), BM_SETCHECK, currentParam->PrefixeTracksNodeName, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_AUTOMATIC_ANIM), BM_SETCHECK, currentParam->AutomaticAnimation, 0);
+		}
+		break;
+
+		case WM_COMMAND:
+			if( HIWORD(wParam) == BN_CLICKED )
+			{
+				HWND hwndButton = (HWND) lParam;
+				switch (LOWORD(wParam)) 
+				{
+					case IDCANCEL:
+						EndDialog(hwndDlg, IDCANCEL);
+					break;
+					case IDOK:
+						{
+							currentParam->ExportNoteTrack = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);
+							currentParam->ExportAnimatedMaterials = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATED_MATERIALS), BM_GETCHECK, 0, 0);
+							currentParam->ExportNodeAnimation = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NODE_ANIMATION), BM_GETCHECK, 0, 0);
+							currentParam->PrefixeTracksNodeName = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_ANIMATION_PREFIXE_NAME), BM_GETCHECK, 0, 0);
+							currentParam->AutomaticAnimation = SendMessage (GetDlgItem (hwndDlg, IDC_AUTOMATIC_ANIM), BM_GETCHECK, 0, 0);
+						}
+					break;
+					case IDC_EXPORT_NOTE_TRACK:
+					case IDC_EXPORT_ANIMATED_MATERIALS:
+					case IDC_EXPORT_ANIMATION_PREFIXE_NAME:
+					case IDC_EXPORT_NODE_ANIMATION:
+					case IDC_AUTOMATIC_ANIM:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						break;
@@ -1831,405 +1885,6 @@ int CALLBACK LodDialogCallback (
 		return FALSE;
 	}
 	return TRUE;
-/*	CLodDialogBoxParam *currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
-	switch (uMsg) 
-	{
-		case WM_INITDIALOG:
-		{
-			// Param pointers
-			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
-			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
-			// Window text
-			std::string winName=(*(currentParam->ListNode->begin()))->GetName();
-			winName="Node properties ("+winName+((currentParam->ListNode->size()>1)?" ...)":")");
-			SetWindowText (hwndDlg, winName.c_str());
-
-			// Set default state
-			SendMessage (GetDlgItem (hwndDlg, IDC_BLEND_IN), BM_SETCHECK, currentParam->BlendIn, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_BLEND_OUT), BM_SETCHECK, currentParam->BlendOut, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_COARSE_MESH), BM_SETCHECK, currentParam->CoarseMesh, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_MESH), BM_SETCHECK, currentParam->DynamicMesh, 0);
-
-
-			EnableWindow (GetDlgItem (hwndDlg, IDC_LIST1), currentParam->ListActived);
-			EnableWindow (GetDlgItem (hwndDlg, IDC_ADD), currentParam->ListActived);
-			EnableWindow (GetDlgItem (hwndDlg, IDC_REMOVE), currentParam->ListActived);
-			EnableWindow (GetDlgItem (hwndDlg, IDC_UP), currentParam->ListActived);
-			EnableWindow (GetDlgItem (hwndDlg, IDC_DOWN), currentParam->ListActived);
-			
-			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MAX), currentParam->DistMax.c_str());
-			SetWindowText (GetDlgItem (hwndDlg, IDC_BLEND_LENGTH), currentParam->BlendLength.c_str());
-
-			SendMessage (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), BM_SETCHECK, currentParam->MRM, 0);
-			CoarseStateChanged (hwndDlg);
-
-			if (currentParam->SkinReduction!=-1)
-				CheckRadioButton (hwndDlg, IDC_SKIN_REDUCTION_MIN, IDC_SKIN_REDUCTION_BEST, IDC_SKIN_REDUCTION_MIN+currentParam->SkinReduction);
-
-			SetWindowText (GetDlgItem (hwndDlg, IDC_NB_LOD), currentParam->NbLod.c_str());
-			SetWindowText (GetDlgItem (hwndDlg, IDC_DIVISOR), currentParam->Divisor.c_str());
-			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_FINEST), currentParam->DistanceFinest.c_str());
-			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MIDDLE), currentParam->DistanceMiddle.c_str());
-			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_COARSEST), currentParam->DistanceCoarsest.c_str());
-
-			// Iterate list
-			HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
-			std::list<std::string>::iterator ite=currentParam->ListLodName.begin();
-			while (ite!=currentParam->ListLodName.end())
-			{
-				// Insert string
-				SendMessage (hwndList, LB_ADDSTRING, 0, (LPARAM) ite->c_str());
-				ite++;
-			}
-
-			if (currentParam->AccelType != -1)
-			{
-				CheckRadioButton (hwndDlg, IDC_RADIOACCELNO, IDC_RADIOACCELCLUSTER, IDC_RADIOACCELNO+(currentParam->AccelType&3));
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELNO), true);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELPORTAL), true);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELCLUSTER), true);
-				if ((currentParam->AccelType&3) == 2) // Cluster ?
-				{
-					EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), true);
-					SendMessage (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), BM_SETCHECK, currentParam->AccelType&4, 0);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
-					SendMessage (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), BM_SETCHECK, currentParam->AccelType&8, 0);
-				}
-				else
-				{
-					EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-				}
-				
-				if ((currentParam->AccelType&3) == 1) // Portal ?
-				{
-					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), true);
-					SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_SETCHECK, currentParam->AccelType&16, 0);
-				}
-				else
-					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
-
-				if ((currentParam->AccelType&3) == 0) // Not an accelerator
-				{
-					EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), true);
-					SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_SETCHECK, currentParam->AccelType&32, 0);
-				}
-				else
-					EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), false);
-
-			}
-			else
-			{
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELNO), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELPORTAL), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELCLUSTER), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), false);
-			}
-
-			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), currentParam->InstanceName.c_str());
-			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
-
-			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
-
-			EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), true);
-			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_SETCHECK, currentParam->DontExport, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_SETCHECK, currentParam->ExportNoteTrack, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_FLOATING_OBJECT), BM_SETCHECK, currentParam->FloatingObject, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE), BM_SETCHECK, currentParam->Vegetable, 0);
-
-			if (currentParam->DontExport == BST_UNCHECKED)
-				EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), true);
-			else
-				EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), false);
-
-			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_LUMELSIZEMUL), currentParam->LumelSizeMul.c_str());
-			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_RADIUS), currentParam->SoftShadowRadius.c_str());
-			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_CONELENGTH), currentParam->SoftShadowConeLength.c_str());
-			
-			// Move dialog
-			RECT windowRect, desktopRect;
-			GetWindowRect (hwndDlg, &windowRect);
-			HWND desktop=GetDesktopWindow ();
-			GetClientRect (desktop, &desktopRect);
-			SetWindowPos (hwndDlg, NULL, (desktopRect.right-desktopRect.left-(windowRect.right-windowRect.left))/2,
-				(desktopRect.bottom-desktopRect.top-(windowRect.bottom-windowRect.top))/2, 0, 0, SWP_NOOWNERZORDER|SWP_NOREPOSITION|SWP_NOSIZE|SWP_NOZORDER);
-		}
-		break;
-
-		case WM_COMMAND:
-			if( HIWORD(wParam) == BN_CLICKED )
-			{
-				HWND hwndButton = (HWND) lParam;
-				switch (LOWORD(wParam)) 
-				{
-					case IDCANCEL:
-						EndDialog(hwndDlg, IDCANCEL);
-					break;
-					case IDOK:
-						{
-							// Set default state
-							currentParam->BlendIn=SendMessage (GetDlgItem (hwndDlg, IDC_BLEND_IN), BM_GETCHECK, 0, 0);
-							currentParam->BlendOut=SendMessage (GetDlgItem (hwndDlg, IDC_BLEND_OUT), BM_GETCHECK, 0, 0);
-							currentParam->CoarseMesh=SendMessage (GetDlgItem (hwndDlg, IDC_COARSE_MESH), BM_GETCHECK, 0, 0);
-							currentParam->DynamicMesh=SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_MESH), BM_GETCHECK, 0, 0);
-							
-							char tmp[512];
-							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MAX), tmp, 512);
-							currentParam->DistMax=tmp;
-							GetWindowText (GetDlgItem (hwndDlg, IDC_BLEND_LENGTH), tmp, 512);
-							currentParam->BlendLength=tmp;
-
-							currentParam->MRM=SendMessage (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), BM_GETCHECK, 0, 0);
-
-							currentParam->SkinReduction=-1;
-							if (IsDlgButtonChecked (hwndDlg, IDC_SKIN_REDUCTION_MIN)==BST_CHECKED)
-								currentParam->SkinReduction=0;
-							if (IsDlgButtonChecked (hwndDlg, IDC_SKIN_REDUCTION_MAX)==BST_CHECKED)
-								currentParam->SkinReduction=1;
-							if (IsDlgButtonChecked (hwndDlg, IDC_SKIN_REDUCTION_BEST)==BST_CHECKED)
-								currentParam->SkinReduction=2;
-
-							GetWindowText (GetDlgItem (hwndDlg, IDC_NB_LOD), tmp, 512);
-							currentParam->NbLod=tmp;
-							GetWindowText (GetDlgItem (hwndDlg, IDC_DIVISOR), tmp, 512);
-							currentParam->Divisor=tmp;
-							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_FINEST), tmp, 512);
-							currentParam->DistanceFinest=tmp;
-							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MIDDLE), tmp, 512);
-							currentParam->DistanceMiddle=tmp;
-							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_COARSEST), tmp, 512);
-							currentParam->DistanceCoarsest=tmp;
-
-							// Iterate list
-							HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
-							currentParam->ListLodName.clear ();
-
-							// Insert item in the list
-							uint itemCount=SendMessage (hwndList, LB_GETCOUNT, 0, 0);
-							for (uint item=0; item<itemCount; item++)
-							{
-								// Get the string
-								SendMessage (hwndList, LB_GETTEXT, item, (LPARAM) tmp);
-
-								// Push it back
-								currentParam->ListLodName.push_back (tmp);
-							}
-
-							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELNO) == BST_CHECKED)
-								currentParam->AccelType = 0;
-							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELPORTAL) == BST_CHECKED)
-								currentParam->AccelType = 1;
-							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELCLUSTER) == BST_CHECKED)
-								currentParam->AccelType = 2;
-
-							if (IsDlgButtonChecked (hwndDlg, IDC_FATHER_VISIBLE) == BST_CHECKED)
-								currentParam->AccelType |= 4;
-							if (IsDlgButtonChecked (hwndDlg, IDC_VISIBLE_FROM_FATHER) == BST_CHECKED)
-								currentParam->AccelType |= 8;
-							if (IsDlgButtonChecked (hwndDlg, IDC_DYNAMIC_PORTAL) == BST_CHECKED)
-								currentParam->AccelType |= 16;
-							if (IsDlgButtonChecked (hwndDlg, IDC_CLUSTERIZE) == BST_CHECKED)
-								currentParam->AccelType |= 32;
-
-							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), tmp, 512);
-							currentParam->InstanceName=tmp;
-							currentParam->DontAddToScene=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_GETCHECK, 0, 0);
-							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), tmp, 512);
-							currentParam->InstanceGroupName=tmp;
-							currentParam->DontExport=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_GETCHECK, 0, 0);
-							currentParam->ExportNoteTrack=SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);
-							currentParam->FloatingObject=SendMessage (GetDlgItem (hwndDlg, IDC_FLOATING_OBJECT), BM_GETCHECK, 0, 0);
-							currentParam->Vegetable=SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE), BM_GETCHECK, 0, 0);
-
-							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_LUMELSIZEMUL), tmp, 512);
-							currentParam->LumelSizeMul = tmp;
-							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_RADIUS), tmp, 512);
-							currentParam->SoftShadowRadius = tmp;
-							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_CONELENGTH), tmp, 512);
-							currentParam->SoftShadowConeLength = tmp;
-
-							// Quit
-							EndDialog(hwndDlg, IDOK);
-						}
-					break;
-					case IDC_ADD:
-						{
-							// Callback for the select node dialog
-							addSubLodNodeHitCallBack callBack;
-							listNodeCallBack=currentParam->ListNode;
-							if (theCNelExport._Ip->DoHitByNameDialog(&callBack))
-							{
-								// Add the selected object in the list
-								HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
-								for (uint i=0; i<(uint)callBack.NodeTab.Count(); i++)
-									SendMessage (hwndList, LB_ADDSTRING, 0, (LPARAM) callBack.NodeTab[i]->GetName());
-							}
-						}
-						break;
-					case IDC_REMOVE:
-						{
-							// List handle
-							HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
-
-							// Delete selected string
-							int sel=SendMessage (hwndList, LB_GETCURSEL, 0, 0);
-							if (sel!=LB_ERR)
-							{
-								SendMessage (hwndList, LB_DELETESTRING, sel, 0);
-
-								// New selection
-								if (sel==SendMessage (hwndList, LB_GETCOUNT, 0, 0))
-									sel--;
-								if (sel>=0)
-									SendMessage (hwndList, LB_SETCURSEL, sel, 0);
-							}
-						}
-					break;
-					case IDC_UP:
-						{
-							// List handle
-							HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
-
-							// Delete selected string
-							int sel=SendMessage (hwndList, LB_GETCURSEL, 0, 0);
-							if ((sel!=LB_ERR)&&(sel>0))
-							{
-								// Get the text
-								char text[512];
-								SendMessage (hwndList, LB_GETTEXT, sel, (LPARAM) (LPCTSTR) text);
-
-								// Move up the item
-								SendMessage (hwndList, LB_INSERTSTRING, sel-1, (LPARAM) text);
-								SendMessage (hwndList, LB_DELETESTRING, sel+1, 0);
-
-								// New selection
-								SendMessage (hwndList, LB_SETCURSEL, sel-1, 0);
-							}
-						}
-					break;
-					case IDC_DOWN:
-						{
-							// List handle
-							HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
-
-							// Delete selected string
-							int sel=SendMessage (hwndList, LB_GETCURSEL, 0, 0);
-							if ( (sel!=LB_ERR) && (sel<SendMessage (hwndList, LB_GETCOUNT, 0, 0)-1 ) )
-							{
-								// Get the text
-								char text[512];
-								SendMessage (hwndList, LB_GETTEXT, sel, (LPARAM) (LPCTSTR) text);
-
-								// Move down the item
-								SendMessage (hwndList, LB_INSERTSTRING, sel+2, (LPARAM) text);
-								SendMessage (hwndList, LB_DELETESTRING, sel, 0);
-
-								// New selection
-								SendMessage (hwndList, LB_SETCURSEL, sel+1, 0);
-							}
-						}
-					break;
-					// 3 states management
-					case IDC_COARSE_MESH:
-						{
-							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
-								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
-							CoarseStateChanged (hwndDlg);
-						}
-						break;
-					case IDC_ACTIVE_MRM:
-						{
-							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
-								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
-							MRMStateChanged (hwndDlg);
-						}
-						break;
-					case IDC_BLEND_IN:
-					case IDC_BLEND_OUT:
-					case IDC_DYNAMIC_MESH:
-						{
-							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
-								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
-						}
-						break;
-					case IDC_RADIOACCELNO:
-						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), true);
-						break;
-					case IDC_RADIOACCELPORTAL:
-						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), true);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
-						break;
-					case IDC_RADIOACCELCLUSTER:
-						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), true);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
-						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
-						break;
-					case IDC_DONT_ADD_TO_SCENE:
-						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
-							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
-						break;
-					case IDC_DONT_EXPORT:
-						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
-							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
-
-						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_UNCHECKED)
-							EnableWindow (GetDlgItem(hwndDlg, IDC_EXPORT_NOTE_TRACK), true);
-						else
-							EnableWindow (GetDlgItem(hwndDlg, IDC_EXPORT_NOTE_TRACK), false);
-						break;
-					case IDC_EXPORT_NOTE_TRACK:
-						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
-							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
-						break;
-				}
-			}
-			else if (HIWORD(wParam)==LBN_DBLCLK)
-			{
-				// List item double clicked
-				uint wID = SendMessage (GetDlgItem (hwndDlg, IDC_LIST1), LB_GETCURSEL, 0, 0);
-				if (wID!=LB_ERR)
-				{
-					// Get the node name
-					char name[512];
-					SendMessage (GetDlgItem (hwndDlg, IDC_LIST1), LB_GETTEXT, wID, (LPARAM) (LPCTSTR) name);
-
-					// Find the node
-					INode *nodeDblClk=theCNelExport._Ip->GetINodeByName(name);
-					if (nodeDblClk)
-					{
-						// Build a set
-						std::set<INode*> listNode;
-						listNode.insert (nodeDblClk);
-
-						// Call editor for this node
-						theCNelExport.OnNodeProperties (listNode);
-					}
-				}
-			}
-		break;
-
-		case WM_CLOSE:
-			EndDialog(hwndDlg,1);
-		break;
-
-		case WM_DESTROY:						
-		break;
-	
-		default:
-		return FALSE;
-	}
-	return TRUE;*/
 }
 
 // ***************************************************************************
@@ -2289,7 +1944,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		}
 		param.AccelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
 
-		param.InstanceShape=CExportNel::getScriptAppData (node, NEL_OBJET_NAME_DATA, "");
+		param.InstanceShape=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, "");
 		param.InstanceName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
 		param.DontAddToScene=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED);
 		param.AutomaticAnimation=CExportNel::getScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, BST_UNCHECKED);
@@ -2300,6 +1955,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.DontExport=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED);
 		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED);
 		param.ExportAnimatedMaterials=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, BST_UNCHECKED);
+		param.ExportNodeAnimation=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NODE_ANIMATION, BST_UNCHECKED);
+		param.PrefixeTracksNodeName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME, BST_UNCHECKED);
 		param.FloatingObject=CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED);
 		param.LumelSizeMul=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
 		param.SoftShadowRadius=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toStringMax(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
@@ -2309,9 +1966,6 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.RemanenceSliceNumber=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, 16);
 		param.RemanenceSamplingPeriod=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD, 0.02f);
 		param.RemanenceRollupRatio=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_ROLLUP_RATIO, 1.f);
-
-
-
 
 		// Radial normals
 		for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
@@ -2423,7 +2077,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32)!=param.AccelType)
 				param.AccelType = -1;
 
-			if (CExportNel::getScriptAppData (node, NEL_OBJET_NAME_DATA, "")!=param.InstanceShape)
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, "")!=param.InstanceShape)
 				param.InstanceShape = "...";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "")!=param.InstanceName)
 				param.InstanceName = "...";
@@ -2445,6 +2099,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ExportNoteTrack = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, BST_UNCHECKED)!=param.ExportAnimatedMaterials)
 				param.ExportAnimatedMaterials = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NODE_ANIMATION, BST_UNCHECKED)!=param.ExportNodeAnimation)
+				param.ExportNodeAnimation = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, IDC_EXPORT_ANIMATION_PREFIXE_NAME, BST_UNCHECKED)!=param.PrefixeTracksNodeName)
+				param.PrefixeTracksNodeName = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED)!=param.FloatingObject)
 				param.FloatingObject = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_REMANENCE, BST_UNCHECKED)!=param.UseRemanence)
@@ -2626,7 +2284,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, param.AccelType);
 
 				if ( (param.InstanceShape != "...") || (listNode.size()==1))
-					CExportNel::setScriptAppData (node, NEL_OBJET_NAME_DATA, param.InstanceShape);				
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, param.InstanceShape);				
 				if (param.InstanceName != "...")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);				
 				if (param.DontAddToScene != BST_INDETERMINATE)
@@ -2651,6 +2309,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, param.ExportNoteTrack);
 					if (param.ExportAnimatedMaterials != BST_INDETERMINATE)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, param.ExportAnimatedMaterials);
+					if (param.ExportNodeAnimation != BST_INDETERMINATE)
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_NODE_ANIMATION, param.ExportNodeAnimation);
+					if (param.PrefixeTracksNodeName != BST_INDETERMINATE)
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME, param.PrefixeTracksNodeName);
 				}
 
 				// Radial normals

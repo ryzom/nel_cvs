@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.17 2002/07/16 12:08:10 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.18 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "3d/vegetable_shape.h"
 #include "3d/lod_character_shape.h"
 #include "../nel_mesh_lib/export_nel.h"
-#include "../nel_mesh_lib/export_lod.h"
+#include "../nel_mesh_lib/export_appdata.h"
 
 
 using namespace NL3D;
@@ -166,8 +166,11 @@ bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, T
 		// Get name
 		std::string nodeName="";
 
+		// Get NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME
+		int prefixe = CExportNel::getScriptAppData (vectNode[n], NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME, 0);
+		
 		// Set the name only if it is a scene animation
-		if (scene)
+		if (scene || prefixe)
 		{
 			// try to get the prefix from the appData if present. If not, takes it from the node name
 			nodeName = CExportNel::getScriptAppData (vectNode[n], NEL3D_APPDATA_INSTANCE_NAME, "");
@@ -176,7 +179,7 @@ bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, T
 				nodeName=CExportNel::getName (*vectNode[n]);
 			}
 			nodeName+=".";
-		}	
+		}
 
 		// Is a root ?
 		bool root = vectNode[n]->GetParentNode () == _Ip->GetRootNode();

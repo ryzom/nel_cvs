@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.41 2002/07/12 08:43:41 besson Exp $
+ * $Id: calc_lm.cpp,v 1.42 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 #include "../nel_patch_lib/rpo.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/file.h"

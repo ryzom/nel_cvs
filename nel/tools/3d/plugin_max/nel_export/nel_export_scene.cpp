@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * <File description>
  *
- * $Id: nel_export_scene.cpp,v 1.9 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: nel_export_scene.cpp,v 1.10 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,8 +43,6 @@
 using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
-
-#define NEL_OBJET_NAME_DATA 1970
 
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.32 2002/07/16 12:08:10 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.33 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/file.h"
 #include "../nel_mesh_lib/export_nel.h"
-#include "../nel_mesh_lib/export_lod.h"
+#include "../nel_mesh_lib/export_appdata.h"
 #include "../nel_patch_lib/rpo.h"
 #include "nel_export_scene.h"
 

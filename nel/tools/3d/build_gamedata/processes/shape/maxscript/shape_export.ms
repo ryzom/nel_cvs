@@ -276,8 +276,19 @@ try
 						-- Tag this file ?
 						tagThisFile = true
 
-						-- For each node
+						-- Array of node to export
+						array_node = #()
+
+						-- Add geometry
 						for node in geometry do
+							append array_node node
+
+						-- Add shapes
+						for node in shapes do
+							append array_node node
+
+						-- For each node
+						for node in array_node do
 						(
 							-- It is root ?
 							if (node.parent == undefined) then

@@ -26,6 +26,7 @@
 #define IDD_INSTANCE                    121
 #define IDD_VERTEX_PROGRAM              122
 #define IDD_VP_WINDTREE                 123
+#define IDD_ANIM                        124
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define ID_SAVEAS                       1001
@@ -90,7 +91,6 @@
 #define IDC_RADIOACCELNO                1046
 #define IDC_BONE_LOD_DISTANCE           1046
 #define IDC_RADIOACCELPORTAL            1047
-#define IDC_DIST_MAX2                   1047
 #define IDC_RADIOACCELCLUSTER           1048
 #define IDC_FATHER_VISIBLE              1049
 #define IDC_VISIBLE_FROM_FATHER         1050
@@ -138,8 +138,10 @@
 #define IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED_ONESIDED 1078
 #define IDC_VEGETABLE_FORCE_BEST_SIDED_LIGHTING 1078
 #define IDC_LIGO_SYMMETRY               1079
+#define IDC_EXPORT_NODE_ANIMATION       1079
 #define IDC_LIGO_ROTATE                 1080
 #define IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED_ONESIDED 1080
+#define IDC_EXPORT_ANIMATION_PREFIXE_NAME 1080
 #define IDC_EXPORT_REALTIME_LIGHT       1081
 #define IDC_RADIAL_NORMAL_29            1081
 #define IDC_USE_LIGHT_LOCAL_ATTENUATION 1082
@@ -217,7 +219,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        124
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1142
+#define _APS_NEXT_CONTROL_VALUE         1143
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

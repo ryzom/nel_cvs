@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.27 2002/08/22 14:46:19 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.28 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 #include "calc_lm.h"
 #include <3d/texture_file.h>
 #include <modstack.h> // class IDerivedObject
@@ -36,8 +36,6 @@ using namespace NLMISC;
 using namespace NL3D;
 
 // ***************************************************************************
-
-#define NEL_OBJET_NAME_DATA 1970
 
 // --------------------------------------------------
 
@@ -491,7 +489,7 @@ std::string	CExportNel::getName (INode& mtl)
 std::string		CExportNel::getNelObjectName (INode& node)
 {
 	// Try to get an APPDATA for the name of the object			
-	AppDataChunk *ad = node.GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA);
+	AppDataChunk *ad = node.GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL3D_APPDATA_INSTANCE_SHAPE);
 	if (ad&&ad->data)
 	{
 		if (::strlen((const char *) ad->data) != 0)
@@ -509,7 +507,7 @@ std::string		CExportNel::getNelObjectName (INode& node)
 		Object *obj = node.EvalWorldState(0).obj;
 		if (obj)
 		{
-			ad = obj->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA);
+			ad = obj->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL3D_APPDATA_INSTANCE_SHAPE);
 			if (ad&&ad->data)
 			{
 				if (::strlen((const char *) ad->data) != 0)

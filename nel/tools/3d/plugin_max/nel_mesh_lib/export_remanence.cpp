@@ -1,6 +1,6 @@
 /** \file export_remanence.cpp
  *
- * $Id: export_remanence.cpp,v 1.3 2002/07/04 14:51:32 vizerie Exp $
+ * $Id: export_remanence.cpp,v 1.4 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "export_nel.h"
 #include "3d/seg_remanence_shape.h"
 #include "nel/misc/common.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 
 #include <memory>
 

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.22 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.23 2002/08/27 12:40:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "../nel_export/std_afx.h"
 #include "../nel_export/nel_export.h"
 #include "../nel_export/nel_export_scene.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 #include "../nel_patch_lib/rpo.h"
 #include "../../ig_lighter_lib/ig_lighter_lib.h"
 

@@ -1,7 +1,7 @@
 /** \file nel_export_swt.cpp
  * <File description>
  *
- * $Id: nel_export_swt.cpp,v 1.6 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: nel_export_swt.cpp,v 1.7 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "3d/skeleton_weight.h"
 #include "nel/misc/file.h"
 #include "../nel_mesh_lib/export_nel.h"
-#include "../nel_mesh_lib/export_lod.h"
+#include "../nel_mesh_lib/export_appdata.h"
 
 using namespace NL3D;
 using namespace NLMISC;

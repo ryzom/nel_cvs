@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.19 2002/07/23 17:09:59 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.20 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std_afx.h"
 #include "nel_export.h"
 #include "../nel_mesh_lib/export_nel.h"
-#include "../nel_mesh_lib/export_lod.h"
+#include "../nel_mesh_lib/export_appdata.h"
 
 // From max
 #include <notify.h>

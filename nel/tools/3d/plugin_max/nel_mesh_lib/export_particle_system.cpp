@@ -1,6 +1,6 @@
 /** \file export_particle_system.cpp
  *
- * $Id: export_particle_system.cpp,v 1.1 2002/07/03 09:16:44 vizerie Exp $
+ * $Id: export_particle_system.cpp,v 1.2 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -25,11 +25,9 @@
 #include "StdAfx.h"
 #include <3d/particle_system_model.h>
 #include <3d/particle_system_shape.h>
-#include "export_lod.h"
+#include "export_appdata.h"
 #include "export_nel.h"
 
-
-#define NEL_OBJET_NAME_DATA 1970
 
 using namespace NL3D;
 
@@ -38,7 +36,7 @@ IShape* CExportNel::buildParticleSystem(INode& node, TimeValue time)
 	Object *obj = node.EvalWorldState(time).obj;
 	nlassert(obj);
 	// build the shape from the file name
- 	AppDataChunk *ad = obj->GetAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA );
+ 	AppDataChunk *ad = obj->GetAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL3D_APPDATA_INSTANCE_SHAPE );
 	if (ad&&ad->data)
 	{											
 		NL3D::CShapeStream ss;

@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.8 2002/08/22 14:46:19 corvazier Exp $
+ * $Id: export_collision.cpp,v 1.9 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 
 #include "../nel_export/std_afx.h"
 #include "../nel_export/nel_export.h"
@@ -46,8 +46,6 @@ using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 using namespace NLPACS;
-
-#define NEL_OBJET_NAME_DATA 1970
 
 // ***************************************************************************
 

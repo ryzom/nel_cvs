@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.32 2002/06/05 15:46:04 berenguier Exp $
+ * $Id: export_anim.cpp,v 1.33 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include <notetrck.h>
 
 #include "calc_lm.h"
-#include "export_lod.h"
+#include "export_appdata.h"
 
 using namespace NLMISC;
 using namespace NL3D;

@@ -1,7 +1,7 @@
 /** \file export_radial_normal.h
  * Compute radial normales
  *
- * $Id: export_radial_normal.h,v 1.1 2002/04/02 09:38:04 corvazier Exp $
+ * $Id: export_radial_normal.h,v 1.2 2002/08/27 12:40:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_EXPORT_RADIAL_NORMAL_H
 #define NL_EXPORT_RADIAL_NORMAL_H
 
-#include "export_lod.h"
+#include "export_appdata.h"
 
 class CExportNel;
 

@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.10 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: script.cpp,v 1.11 2002/08/27 12:40:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "PO2RPO.h"
 #include "..\nel_patch_lib\rpo.h"
 #include "..\nel_mesh_lib\export_nel.h"
-#include "..\nel_mesh_lib\export_lod.h"
+#include "..\nel_mesh_lib\export_appdata.h"
 
 #include "3d/zone.h"
 #include "3d/zone_symmetrisation.h"

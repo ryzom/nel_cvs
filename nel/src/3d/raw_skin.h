@@ -1,7 +1,7 @@
 /** \file raw_skin.h
  * Packed struct used for faster Software skinning
  *
- * $Id: raw_skin.h,v 1.2 2003/05/13 15:25:12 berenguier Exp $
+ * $Id: raw_skin.h,v 1.3 2003/12/10 12:47:33 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -41,16 +41,22 @@ namespace NL3D
 using	NLMISC::CVector;
 using	NLMISC::CUV;
 
+/// A simple Vertex Pos/Normal/Uv
+class	CRawSkinVertex
+{
+public:
+	CVector		Pos;
+	CVector		Normal;
+	CUV			UV;
+};
 
 /// Vertices influenced by 1 matrix only.
 class	CRawVertexNormalSkin1
 {
 public:
 	// The id of the matrix to use.
-	uint32		MatrixId[1];
-	CVector		Vertex;
-	CVector		Normal;
-	CUV			UV;
+	uint32			MatrixId[1];
+	CRawSkinVertex	Vertex;
 };
 
 /// Vertices influenced by 2 matrix only.
@@ -58,33 +64,27 @@ class	CRawVertexNormalSkin2
 {
 public:
 	// The id of the matrix to use.
-	uint32		MatrixId[2];
-	float		Weights[2];
-	CVector		Vertex;
-	CVector		Normal;
-	CUV			UV;
+	uint32			MatrixId[2];
+	float			Weights[2];
+	CRawSkinVertex	Vertex;
 };
 
 /// Vertices influenced by 3 matrix only.
 class	CRawVertexNormalSkin3
 {
 public:
-	uint32		MatrixId[3];
-	float		Weights[3];
-	CVector		Vertex;
-	CVector		Normal;
-	CUV			UV;
+	uint32			MatrixId[3];
+	float			Weights[3];
+	CRawSkinVertex	Vertex;
 };
 
 /// Vertices influenced by 4 matrix only.
 class	CRawVertexNormalSkin4
 {
 public:
-	uint32		MatrixId[4];
-	float		Weights[4];
-	CVector		Vertex;
-	CVector		Normal;
-	CUV			UV;
+	uint32			MatrixId[4];
+	float			Weights[4];
+	CRawSkinVertex	Vertex;
 };
 
 /// The array per lod.
@@ -117,6 +117,11 @@ public:
 	/// To see if same Data than in the CMeshMRMGeom
 	uint					MeshDataId;
 
+
+	// Used only in case of Morphing. Same Size as the original VB. Remap the original VB to the RawSkin.
+	NLMISC::CObjectVector<CRawSkinVertex*, false>		VertexRemap;
+
+public:
 	// free up the memory
 	void				clearArrays();
 };

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.38 2003/04/01 15:36:10 vizerie Exp $
+ * $Id: mesh.h,v 1.39 2003/12/10 12:47:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -415,6 +415,9 @@ public:
 		return _MatrixBlocks[matrixBlockIndex].RdrPass[renderingPassIndex].MaterialId ;
 	}
 
+	/// get the number of BlendShapes
+	uint getNbBlendShapes() const { if(_MeshMorpher) return _MeshMorpher->BlendShapes.size(); }
+	
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.47 2003/11/28 15:07:48 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.48 2003/12/10 12:47:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -218,6 +218,9 @@ public:
 		return _Lods[lodId].Geomorphs;
 	}
 
+	/// get the number of BlendShapes
+	uint getNbBlendShapes() const { return _MeshMorpher.BlendShapes.size(); }
+	
 	// @}
 
 
@@ -639,7 +642,7 @@ private:
 	void		updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint curLodId);
 	/// Increment the refCount, so instances RawSkins are no longer valid
 	void		dirtMeshDataId();
-
+	
 	// ApplySkin method
 	void		applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
 		CMatrix3x4 *boneMat3x4, uint nInf);

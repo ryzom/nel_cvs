@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.68 2003/11/28 15:07:48 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.69 2003/12/10 12:47:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -501,13 +501,9 @@ void	CMeshMRMGeom::applyGeomorphWithVBHardPtr(std::vector<CMRMWedgeGeom>  &geoms
 	if(geoms.size()==0)
 		return;
 
-	uint		i;
 	clamp(alphaLod, 0.f, 1.f);
 	float		a= alphaLod;
 	float		a1= 1 - alphaLod;
-	uint		ua= (uint)(a*256);
-	clamp(ua, (uint)0, (uint)256);
-	uint		ua1= 256 - ua;
 
 
 	// info from VBuffer.
@@ -537,6 +533,12 @@ void	CMeshMRMGeom::applyGeomorphWithVBHardPtr(std::vector<CMRMWedgeGeom>  &geoms
 	}
 	else
 	{
+		// for color interp
+		uint		i;
+		uint		ua= (uint)(a*256);
+		clamp(ua, (uint)0, (uint)256);
+		uint		ua1= 256 - ua;
+		
 		// if an offset is 0, it means that the component is not in the VBuffer.
 		sint32		normalOff;
 		sint32		colorOff;
@@ -1360,37 +1362,31 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 
 	// Morphing
 	// ========
+
+	// Use RawSkin?. compute before morphing, cause of updateRawSkin
+	updateRawSkinNormal(true, mi, numLod);
+	nlassert(mi->_RawSkinCache);
+	
+	// Apply morph
 	if (bMorphApplied)
 	{
-		// Since Skinned we must update original skin vertices and normals because skinning use it
-		// NB: no need to setup vertexBufferHard, because not update in SkinningMode, but if the skin is not applied,
-		// which is not the case here
-		_MeshMorpher.initSkinned(&_VBufferOriginal,
-							 &_VBufferFinal,
-							 NULL,
-							 false,
-							 &_OriginalSkinVertices,
-							 &_OriginalSkinNormals,
-							 NULL,
-							 true );
-		_MeshMorpher.updateSkinned (mi->getBlendShapeFactors());
+		// No need to manage lod.OriginalSkinRestored, since in case of SkinGroupGeom, the VBuffer final is not modified.
+		
+		// copy directly from the original VB, and apply BlendShapes. Dest is directly the RawSkin
+		_MeshMorpher.updateRawSkin(&_VBufferFinal, 
+									mi->_RawSkinCache->VertexRemap, 
+									mi->getBlendShapeFactors());
 	}
 
 	// Skinning.
 	//===========
 
-	// Use RawSkin if possible: only if no morph, and only Vertex/Normal
-	updateRawSkinNormal(!bMorphApplied, mi, numLod);
-
 	// NB: the skeleton matrix has already been setuped by CSkeletonModel
 	// NB: the normalize flag has already been setuped by CSkeletonModel
 
-	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
-	lod.OriginalSkinRestored= false;
-
 	// applySkin with RawSkin.
 	//--------
-	if(mi->_RawSkinCache)
+	// always RawSkin now in SkinGrouping, even with MeshMorpher
 	{
 		H_AUTO( NL3D_RawSkinning );
 		
@@ -1403,31 +1399,6 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 		return	mi->_RawSkinCache->Geomorphs.size() + 
 				mi->_RawSkinCache->TotalSoftVertices + 
 				mi->_RawSkinCache->TotalHardVertices;
-	}
-	// applySkin STD.
-	//--------
-	else
-	{
-		H_AUTO( NL3D_StdSkinning );
-	
-		// skinning with normal, but no tangent space
-		applySkinWithNormal (lod, skeleton);
-
-		// endSkin.
-		//--------
-		// Fill the usefull AGP memory (if any one loaded/Used).
-		fillAGPSkinPartWithVBHardPtr(lod, vbDest);
-
-		// Geomorph.
-		//===========
-		// Geomorph the choosen Lod (if not the coarser mesh).
-		if(numLod>0)
-		{
-			applyGeomorphWithVBHardPtr(lod.Geomorphs, alphaLod, vbDest);
-		}
-
-		// How many vertices are added to the VBuffer ???
-		return lod.NWedges;
 	}
 }
 
@@ -3198,6 +3169,12 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 			skinLod.Vertices3.resize(lod.InfluencedVertices[2].size());
 			skinLod.Vertices4.resize(lod.InfluencedVertices[3].size());
 
+			// Remap for BlendShape. Lasts 2 bits tells what RawSkin Array to seek (1 to 4), 
+			// low Bits indicate the number in them. 0xFFFFFFFF is a special value indicating "NotUsed in this lod"
+			static	vector<uint32>	vertexFinalRemap;
+			vertexFinalRemap.clear();
+			vertexFinalRemap.resize(vertexRemap.size(), 0xFFFFFFFF);
+
 			// 1 Matrix skinning.
 			//========
 			for(i=0;i<skinLod.Vertices1.size();i++)
@@ -3210,11 +3187,13 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 					rawIdx-= softStart[0];
 				else
 					rawIdx+= softSize[0]-hardStart[0];
+				// for BlendShapes remapping
+				vertexFinalRemap[vid]= (0<<30) + rawIdx;
 				// fill raw struct
 				skinLod.Vertices1[rawIdx].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
-				skinLod.Vertices1[rawIdx].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices1[rawIdx].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices1[rawIdx].UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
+				skinLod.Vertices1[rawIdx].Vertex.Pos= _OriginalSkinVertices[vid];
+				skinLod.Vertices1[rawIdx].Vertex.Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices1[rawIdx].Vertex.UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
 			}
 
 			// 2 Matrix skinning.
@@ -3229,14 +3208,16 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 					rawIdx-= softStart[1];
 				else
 					rawIdx+= softSize[1]-hardStart[1];
+				// for BlendShapes remapping
+				vertexFinalRemap[vid]= (1<<30) + rawIdx;
 				// fill raw struct
 				skinLod.Vertices2[rawIdx].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
 				skinLod.Vertices2[rawIdx].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
 				skinLod.Vertices2[rawIdx].Weights[0]= _SkinWeights[vid].Weights[0];
 				skinLod.Vertices2[rawIdx].Weights[1]= _SkinWeights[vid].Weights[1];
-				skinLod.Vertices2[rawIdx].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices2[rawIdx].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices2[rawIdx].UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
+				skinLod.Vertices2[rawIdx].Vertex.Pos= _OriginalSkinVertices[vid];
+				skinLod.Vertices2[rawIdx].Vertex.Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices2[rawIdx].Vertex.UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
 			}
 
 			// 3 Matrix skinning.
@@ -3251,6 +3232,8 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 					rawIdx-= softStart[2];
 				else
 					rawIdx+= softSize[2]-hardStart[2];
+				// for BlendShapes remapping
+				vertexFinalRemap[vid]= (2<<30) + rawIdx;
 				// fill raw struct
 				skinLod.Vertices3[rawIdx].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
 				skinLod.Vertices3[rawIdx].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
@@ -3258,9 +3241,9 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 				skinLod.Vertices3[rawIdx].Weights[0]= _SkinWeights[vid].Weights[0];
 				skinLod.Vertices3[rawIdx].Weights[1]= _SkinWeights[vid].Weights[1];
 				skinLod.Vertices3[rawIdx].Weights[2]= _SkinWeights[vid].Weights[2];
-				skinLod.Vertices3[rawIdx].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices3[rawIdx].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices3[rawIdx].UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
+				skinLod.Vertices3[rawIdx].Vertex.Pos= _OriginalSkinVertices[vid];
+				skinLod.Vertices3[rawIdx].Vertex.Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices3[rawIdx].Vertex.UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
 			}
 
 			// 4 Matrix skinning.
@@ -3275,6 +3258,8 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 					rawIdx-= softStart[3];
 				else
 					rawIdx+= softSize[3]-hardStart[3];
+				// for BlendShapes remapping
+				vertexFinalRemap[vid]= (3<<30) + rawIdx;
 				// fill raw struct
 				skinLod.Vertices4[rawIdx].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
 				skinLod.Vertices4[rawIdx].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
@@ -3284,9 +3269,9 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 				skinLod.Vertices4[rawIdx].Weights[1]= _SkinWeights[vid].Weights[1];
 				skinLod.Vertices4[rawIdx].Weights[2]= _SkinWeights[vid].Weights[2];
 				skinLod.Vertices4[rawIdx].Weights[3]= _SkinWeights[vid].Weights[3];
-				skinLod.Vertices4[rawIdx].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices4[rawIdx].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices4[rawIdx].UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
+				skinLod.Vertices4[rawIdx].Vertex.Pos= _OriginalSkinVertices[vid];
+				skinLod.Vertices4[rawIdx].Vertex.Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices4[rawIdx].Vertex.UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
 			}
 
 			// Remap Geomorphs.
@@ -3322,6 +3307,40 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 						*dstTriPtr= vid;
 					else
 						*dstTriPtr= vertexRemap[vid] + numGeoms;
+				}
+			}
+
+			// Case of MeshMorpher
+			//========
+			if(_MeshMorpher.BlendShapes.size()>0)
+			{
+				skinLod.VertexRemap.resize(vertexFinalRemap.size());
+
+				for(i=0;i<vertexFinalRemap.size();i++)
+				{
+					uint	vfr= vertexFinalRemap[i];
+					if(vfr!=0xFFFFFFFF)
+					{
+						uint	rsArrayId= vfr >> 30;
+						uint	rsIndex= vfr & ((1<<30)-1);
+						switch(rsArrayId)
+						{
+						case 0:
+							skinLod.VertexRemap[i]= &skinLod.Vertices1[rsIndex].Vertex;
+							break;
+						case 1:
+							skinLod.VertexRemap[i]= &skinLod.Vertices2[rsIndex].Vertex;
+							break;
+						case 2:
+							skinLod.VertexRemap[i]= &skinLod.Vertices3[rsIndex].Vertex;
+							break;
+						case 3:
+							skinLod.VertexRemap[i]= &skinLod.Vertices4[rsIndex].Vertex;
+							break;
+						};
+					}
+					else
+						skinLod.VertexRemap[i]= NULL;
 				}
 			}
 		}

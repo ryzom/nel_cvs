@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.8 2003/11/28 15:07:48 berenguier Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.9 2003/12/10 12:47:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -533,11 +533,11 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *
 
 			// For 1 matrix, can write directly to AGP (if destVertexPtr is AGP...)
 			// Vertex.
-			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *(CVector*)(destVertexPtr) );
+			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex.Pos, *(CVector*)(destVertexPtr) );
 			// Normal.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
+			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Vertex.Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
 			// UV copy.
-			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
+			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->Vertex.UV;
 		}
 #else
 		// ASM harcoded for 36
@@ -554,7 +554,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *
 			mov		edx, boneMat3x4
 		theLoop:
 			// Vertex.
-			// **** boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *(CVector*)(destVertexPtr) );
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex.Pos, *(CVector*)(destVertexPtr) );
 
 			// eax= matrix
 			mov		eax, [esi]src.MatrixId				// uop: 0/1
@@ -563,9 +563,9 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *
 			add		eax, edx							// uop: 1/0
 
 			// load x y z
-			fld		[esi]src.Vertex.x					// uop: 0/1
-			fld		[esi]src.Vertex.y					// uop: 0/1
-			fld		[esi]src.Vertex.z					// uop: 0/1
+			fld		[esi]src.Vertex.Pos.x					// uop: 0/1
+			fld		[esi]src.Vertex.Pos.y					// uop: 0/1
+			fld		[esi]src.Vertex.Pos.z					// uop: 0/1
 			// vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
 			fld		[eax]CMatrix3x4.a11				// uop: 0/1
 			fmul	st, st(3)							// uop: 1/0 (5)
@@ -609,12 +609,12 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *
 			
 
 			// Normal
-			// **** boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Vertex.Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
 
 			// load x y z
-			fld		[esi]src.Normal.x
-			fld		[esi]src.Normal.y
-			fld		[esi]src.Normal.z
+			fld		[esi]src.Vertex.Normal.x
+			fld		[esi]src.Vertex.Normal.y
+			fld		[esi]src.Vertex.Normal.z
 			// vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
 			fld		[eax]CMatrix3x4.a11				// uop: 0/1
 			fmul	st, st(3)							// uop: 1/0 (5)
@@ -652,10 +652,10 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *
 
 
 			// UV copy.
-			// **** *(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
-			mov		eax, [esi]src.UV.U					// uop: 0/1
+			// **** *(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->Vertex.UV;
+			mov		eax, [esi]src.Vertex.UV.U					// uop: 0/1
 			mov		dword ptr[edi+24], eax				// uop: 0/0/1/1
-			mov		eax, [esi]src.UV.V					// uop: 0/1
+			mov		eax, [esi]src.Vertex.UV.V					// uop: 0/1
 			mov		dword ptr[edi+28], eax				// uop: 0/0/1/1
 			
 			
@@ -711,15 +711,15 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *
 		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
 		{
 			// Vertex.
-			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, src->Weights[0], tmpVert);
-			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex.Pos, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex.Pos, src->Weights[1], tmpVert);
 			*(CVector*)(destVertexPtr)= tmpVert;
 			// Normal.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, src->Weights[0], tmpVert);
-			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Normal, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Vertex.Normal, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Vertex.Normal, src->Weights[1], tmpVert);
 			*(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF)= tmpVert;
 			// UV copy.
-			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
+			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->Vertex.UV;
 		}
 #else
 		// ASM harcoded for 48
@@ -736,7 +736,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *
 			mov		edx, boneMat3x4
 		theLoop:
 			// Vertex.
-			// **** boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *(CVector*)(destVertexPtr) );
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex.Pos, *(CVector*)(destVertexPtr) );
 
 			// eax= matrix0
 			mov		eax, [esi+0]src.MatrixId			// uop: 0/1
@@ -750,9 +750,9 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *
 			add		ebx, edx							// uop: 1/0
 				
 			// load x y z
-			fld		[esi]src.Vertex.x					// uop: 0/1
-			fld		[esi]src.Vertex.y					// uop: 0/1
-			fld		[esi]src.Vertex.z					// uop: 0/1
+			fld		[esi]src.Vertex.Pos.x					// uop: 0/1
+			fld		[esi]src.Vertex.Pos.y					// uop: 0/1
+			fld		[esi]src.Vertex.Pos.z					// uop: 0/1
 
 			// **** vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
 			// 1st Matrix
@@ -858,12 +858,12 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *
 			
 
 			// Normal
-			// **** boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Vertex.Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
 
 			// load x y z
-			fld		[esi]src.Normal.x
-			fld		[esi]src.Normal.y
-			fld		[esi]src.Normal.z
+			fld		[esi]src.Vertex.Normal.x
+			fld		[esi]src.Vertex.Normal.y
+			fld		[esi]src.Vertex.Normal.z
 
 			// **** vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
 			fld		[eax]CMatrix3x4.a11				// uop: 0/1
@@ -956,10 +956,10 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *
 
 
 			// UV copy.
-			// **** *(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
-			mov		eax, [esi]src.UV.U					// uop: 0/1
+			// **** *(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->Vertex.UV;
+			mov		eax, [esi]src.Vertex.UV.U					// uop: 0/1
 			mov		dword ptr[edi+24], eax				// uop: 0/0/1/1
-			mov		eax, [esi]src.UV.V					// uop: 0/1
+			mov		eax, [esi]src.Vertex.UV.V					// uop: 0/1
 			mov		dword ptr[edi+28], eax				// uop: 0/0/1/1
 			
 			
@@ -1014,17 +1014,17 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *
 		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
 		{
 			// Vertex.
-			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, src->Weights[0], tmpVert);
-			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex, src->Weights[1], tmpVert);
-			boneMat3x4[ src->MatrixId[2] ].mulAddPoint( src->Vertex, src->Weights[2], tmpVert);
+			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex.Pos, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex.Pos, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[2] ].mulAddPoint( src->Vertex.Pos, src->Weights[2], tmpVert);
 			*(CVector*)(destVertexPtr)= tmpVert;
 			// Normal.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, src->Weights[0], tmpVert);
-			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Normal, src->Weights[1], tmpVert);
-			boneMat3x4[ src->MatrixId[2] ].mulAddVector( src->Normal, src->Weights[2], tmpVert);
+			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Vertex.Normal, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Vertex.Normal, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[2] ].mulAddVector( src->Vertex.Normal, src->Weights[2], tmpVert);
 			*(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF)= tmpVert;
 			// UV copy.
-			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
+			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->Vertex.UV;
 		}
 #else
 		// ASM harcoded for 56
@@ -1042,7 +1042,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *
 			mov		edi, destVertexPtr
 		theLoop:
 			// Vertex.
-			// **** boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *(CVector*)(destVertexPtr) );
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex.Pos, *(CVector*)(destVertexPtr) );
 
 			// eax= matrix0
 			mov		eax, [esi+0]src.MatrixId			// uop: 0/1
@@ -1061,9 +1061,9 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *
 			add		edx, boneMat3x4						// uop: 1/0
 			
 			// load x y z
-			fld		[esi]src.Vertex.x					// uop: 0/1
-			fld		[esi]src.Vertex.y					// uop: 0/1
-			fld		[esi]src.Vertex.z					// uop: 0/1
+			fld		[esi]src.Vertex.Pos.x					// uop: 0/1
+			fld		[esi]src.Vertex.Pos.y					// uop: 0/1
+			fld		[esi]src.Vertex.Pos.z					// uop: 0/1
 
 			// **** vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
 			// 1st Matrix
@@ -1214,12 +1214,12 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *
 			
 
 			// Normal
-			// **** boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Vertex.Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
 
 			// load x y z
-			fld		[esi]src.Normal.x
-			fld		[esi]src.Normal.y
-			fld		[esi]src.Normal.z
+			fld		[esi]src.Vertex.Normal.x
+			fld		[esi]src.Vertex.Normal.y
+			fld		[esi]src.Vertex.Normal.z
 			// **** vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
 			fld		[eax]CMatrix3x4.a11				// uop: 0/1
 			fmul	st, st(3)							// uop: 1/0 (5)
@@ -1350,10 +1350,10 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *
 
 
 			// UV copy.
-			// **** *(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
-			mov		eax, [esi]src.UV.U					// uop: 0/1
+			// **** *(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->Vertex.UV;
+			mov		eax, [esi]src.Vertex.UV.U					// uop: 0/1
 			mov		dword ptr[edi+24], eax				// uop: 0/0/1/1
-			mov		eax, [esi]src.UV.V					// uop: 0/1
+			mov		eax, [esi]src.Vertex.UV.V					// uop: 0/1
 			mov		dword ptr[edi+28], eax				// uop: 0/0/1/1
 			
 			
@@ -1406,19 +1406,19 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *
 		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
 		{
 			// Vertex.
-			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, src->Weights[0], tmpVert);
-			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex, src->Weights[1], tmpVert);
-			boneMat3x4[ src->MatrixId[2] ].mulAddPoint( src->Vertex, src->Weights[2], tmpVert);
-			boneMat3x4[ src->MatrixId[3] ].mulAddPoint( src->Vertex, src->Weights[3], tmpVert);
+			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex.Pos, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex.Pos, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[2] ].mulAddPoint( src->Vertex.Pos, src->Weights[2], tmpVert);
+			boneMat3x4[ src->MatrixId[3] ].mulAddPoint( src->Vertex.Pos, src->Weights[3], tmpVert);
 			*(CVector*)(destVertexPtr)= tmpVert;
 			// Normal.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, src->Weights[0], tmpVert);
-			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Normal, src->Weights[1], tmpVert);
-			boneMat3x4[ src->MatrixId[2] ].mulAddVector( src->Normal, src->Weights[2], tmpVert);
-			boneMat3x4[ src->MatrixId[3] ].mulAddVector( src->Normal, src->Weights[3], tmpVert);
+			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Vertex.Normal, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Vertex.Normal, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[2] ].mulAddVector( src->Vertex.Normal, src->Weights[2], tmpVert);
+			boneMat3x4[ src->MatrixId[3] ].mulAddVector( src->Vertex.Normal, src->Weights[3], tmpVert);
 			*(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF)= tmpVert;
 			// UV copy.
-			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
+			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->Vertex.UV;
 		}
 
 		// NB: ASM not done for 4 vertices, cause very rare and negligeable ...

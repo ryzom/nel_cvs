@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * <File description>
  *
- * $Id: mesh_morpher.cpp,v 1.6 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: mesh_morpher.cpp,v 1.7 2003/12/10 12:47:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/mesh_morpher.h"
 #include "3d/vertex_buffer.h"
 #include "3d/vertex_buffer_hard.h"
+#include "3d/raw_skin.h"
 
 
 using namespace std;
@@ -385,6 +386,84 @@ void CMeshMorpher::serial (NLMISC::IStream &f) throw(NLMISC::EStream)
 	(void)f.serialVersion (0);
 
 	f.serialCont (BlendShapes);
+}
+
+
+// ***************************************************************************
+#define	NL3D_RAWSKIN_NORMAL_OFF		12
+#define	NL3D_RAWSKIN_UV_OFF			24
+#define	NL3D_RAWSKIN_VERTEX_SIZE	32
+
+void CMeshMorpher::updateRawSkin (CVertexBuffer *vbOri,
+					const NLMISC::CObjectVector<CRawSkinVertex*, false>	&vertexRemap, 
+					std::vector<CAnimatedMorph> *pBSFactor)
+{
+	uint32 i, j;
+
+	if (vbOri == NULL)
+		return;
+	if (BlendShapes.size() == 0)
+		return;
+
+	nlassert(vbOri->getVertexFormat() == (CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag |CVertexBuffer::TexCoord0Flag) );
+	nlassert(NL3D_RAWSKIN_VERTEX_SIZE == vbOri->getVertexSize());
+	nlassert(NL3D_RAWSKIN_NORMAL_OFF == vbOri->getNormalOff());
+	nlassert(NL3D_RAWSKIN_UV_OFF == vbOri->getTexCoordOff(0));
+	
+	// Cleaning with original vertex buffer
+	uint8			*pOri = (uint8*)vbOri->getVertexCoordPointer ();
+	CRawSkinVertex	**vRemap= vertexRemap.getPtr();
+	uint			numVertices= vbOri->getNumVertices();
+	
+	// Update only the vertices of this lod
+	for (i= 0; i < numVertices; ++i)
+	{
+		if(*vRemap)
+		{
+			(*vRemap)->Pos= *(CVector*)(pOri);
+			(*vRemap)->Normal= *(CVector*)(pOri + NL3D_RAWSKIN_NORMAL_OFF);
+			(*vRemap)->UV= *(CUV*)(pOri + NL3D_RAWSKIN_UV_OFF);
+		}
+		pOri+= NL3D_RAWSKIN_VERTEX_SIZE;
+		vRemap++;
+	}
+
+	// Blending with blendshape
+	for (i = 0; i < BlendShapes.size(); ++i)
+	{
+		CBlendShape		&rBS = BlendShapes[i];
+		float			rFactor = pBSFactor->operator[](i).getFactor();
+
+		if (rFactor > 0.0f)
+		{
+			rFactor*= 0.01f;
+			uint32		numVertices= rBS.VertRefs.size();
+			// don't know why, but cases happen where deltaNorm not empty while deltaPos is 
+			bool		hasPos= rBS.deltaPos.size()>0;
+			bool		hasNorm= rBS.deltaNorm.size()>0;
+			bool		hasUV= rBS.deltaUV.size()>0;
+			for (j = 0; j < numVertices; ++j)
+			{
+				// Get the vertex Index in the VBufferFinal
+				uint	vid= rBS.VertRefs[j];
+				// Then get the RawSkin vertex to modify 
+				CRawSkinVertex	*rsVert= vertexRemap[vid];
+
+				// If exist in this Lod RawSkin, apply
+				if(rsVert)
+				{
+					if(hasPos)
+						rsVert->Pos+= rBS.deltaPos[j] * rFactor;
+					if(hasNorm)
+						rsVert->Normal+= rBS.deltaNorm[j] * rFactor;
+					if(hasUV)
+						rsVert->UV+= rBS.deltaUV[j] * rFactor;
+				}
+			}
+		}
+
+	}
+
 }
 
 

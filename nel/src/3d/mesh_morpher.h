@@ -1,7 +1,7 @@
 /** \file mesh_morpher.h
  * <File description>
  *
- * $Id: mesh_morpher.h,v 1.4 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: mesh_morpher.h,v 1.5 2003/12/10 12:47:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/animated_morph.h"
 #include "nel/misc/types_nl.h"
 #include "nel/misc/uv.h"
+#include "nel/misc/object_vector.h"
 #include <vector>
 
 namespace NL3D 
@@ -36,6 +37,7 @@ namespace NL3D
 
 class CVertexBuffer;
 class IVertexBufferHard;
+class CRawSkinVertex;
 
 // ***************************************************************************
 class CBlendShape
@@ -89,6 +91,11 @@ public:
 	void update (std::vector<CAnimatedMorph> *pBSFactor);
 	void updateSkinned (std::vector<CAnimatedMorph> *pBSFactor);
 	
+	// For RawSkin case.
+	void updateRawSkin (CVertexBuffer *vbOri,
+						const NLMISC::CObjectVector<CRawSkinVertex*, false>	&vertexRemap, 
+						std::vector<CAnimatedMorph> *pBSFactor);
+
 	void serial (NLMISC::IStream &f) throw(NLMISC::EStream);
 
 private:

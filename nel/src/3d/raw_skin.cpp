@@ -1,7 +1,7 @@
 /** \file raw_skin.cpp
  * Packed struct used for faster Software skinning
  *
- * $Id: raw_skin.cpp,v 1.2 2003/05/13 15:25:12 berenguier Exp $
+ * $Id: raw_skin.cpp,v 1.3 2003/12/10 12:47:33 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -42,6 +42,7 @@ void		CRawSkinNormalCache::clearArrays()
 	Vertices4.clear();
 	contReset(Geomorphs);
 	contReset(RdrPass);
+	contReset(VertexRemap);
 }
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file vegetable_def.h
  * Some global definitions for CVegetable*
  *
- * $Id: vegetable_def.h,v 1.4 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: vegetable_def.h,v 1.5 2001/12/03 09:29:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,8 @@ namespace NL3D
 /// For Landscape Vegetable: Distance Types are: 10m, 20m, 30m, 40m, 50m.
 #define	NL3D_VEGETABLE_BLOCK_NUMDIST	5
 #define	NL3D_VEGETABLE_BLOCK_ELTDIST	10.0f
+/// Blend apperance transition
+#define	NL3D_VEGETABLE_BLOCK_BLEND_TRANSITION_DIST	10.0f
 
 
 /// The number of Quadrant for vegetable sorting.

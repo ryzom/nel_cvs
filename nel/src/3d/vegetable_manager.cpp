@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.6 2001/11/30 13:17:54 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.7 2001/12/03 09:29:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,15 +164,16 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 	v[3]  == Color (if unlit) or DiffuseColor (if lighted)
 	v[4]  == SecondaryColor (==ambient if Lighted or backFace color if Unlit)
 	v[8]  == Tex0 (xy) 
-	v[9]  == BendInfo (xy) = {BendWeight/2, BendPhase}
+	v[9]  == BendInfo (xy) = {BendWeight/2, BendPhase} (no blendDist if Lighted)
 		NB: /2 because compute a quaternion
 
 	Changes: If unlit, then small changes:
 	v[0]  == Pos to center, with v[0].w == BendWeight * v[0].norm()
-	v[9]  == BendInfo (xy) = {v[0].norm(), BendPhase}
+	v[9]  == BendInfo/BlendInfo (xyz) = {v[0].norm(), BendPhase, BlendDist}
 
-	NB: if Ujlit and Not 2Sided, v[4] is present, but not used (prefer do this for gestion purpose:
+	NB: if Unlit and Not 2Sided, v[4] is present, but not used (prefer do this for gestion purpose:
 		to have only one VBAllocator for both modes).
+		same reasoning for v[9].z. Used only in Unlit+2Sided+AlphaBlend
 
 	Constant:
 	--------
@@ -181,6 +182,8 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 	c[4..7]= ModelView Matrix (for Fog).
 	c[8]= {0, 1, 0.5, 2}
 	c[9]= unit world space Directionnal light.
+	c[10]= camera pos in world space.
+	c[11]= {1/DistBlendTransition}
 	NB: DiffuseColor and AmbientColor of vertex must have been pre-multiplied by lightColor
 
 	// Bend:
@@ -448,6 +451,24 @@ const char* NL3D_UnlitMiddle2SidedVegetableProgram=
 ";
 
 
+//	2Sided "lighting" + AlphaBlend.
+const char* NL3D_UnlitMiddle2SidedAlphaBlendVegetableProgram=
+"	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
+	MOV o[BFC0].xyz, v[4];			# bfc0.RGBA= bcf color								\n\
+																						\n\
+	#Blend transition																	\n\
+	ADD	R1, R5, -c[10];																	\n\
+	DP3	R0.x, R1, R1;				# R0.x= sqr(dist to viewer).						\n\
+	RSQ R0.y, R0.x;																		\n\
+	MUL R0.x, R0.x, R0.y;			# R0.x= dist to viewer								\n\
+	# setup alpha Blending. Distance of appartition is encoded in the vertex.			\n\
+	MAD o[COL0].w, R0.x, c[11].x, v[9].z;												\n\
+	MAD o[BFC0].w, R0.x, c[11].x, v[9].z;												\n\
+";
+
+
+
+
 // ***********************
 /*
 	Common end of program: project, texture. Take pos from R5
@@ -511,7 +532,7 @@ void					CVegetableManager::initVertexProgram(uint vpType)
 		break;
 	case NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT:		
 		vpgram+= string(NL3D_UnlitStartVegetableProgram);
-		vpgram+= string(NL3D_UnlitMiddle2SidedVegetableProgram);
+		vpgram+= string(NL3D_UnlitMiddle2SidedAlphaBlendVegetableProgram);
 		break;
 	}
 
@@ -703,7 +724,7 @@ CVegetableShape				*CVegetableManager::getVegetableShape(const std::string &shap
 void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
-		float	bendFactor, float bendPhase)
+		float	bendFactor, float bendPhase, float blendDistMax)
 {
 	sint	i;
 
@@ -981,6 +1002,15 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		else
 			// the VP need the norm of relPos in v[9].x
 			dstBendPtr->U= deltaPosNorm;
+		/// If AlphaBlend / ZSort rdrPass, then setup AlphaBlend computing.
+		if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
+		{
+			// get ptr on v[9]. NB: in Unlit mode, it has 3 components.
+			CVector		*dstBendPtr= (CVector*)(dstPtr + dstBendOff);
+			// setup the constant of linear formula:
+			// Alpha= -1/blendTransDist * dist + blendDistMax/blendTransDist
+			dstBendPtr->z= blendDistMax/NL3D_VEGETABLE_BLOCK_BLEND_TRANSITION_DIST;
+		}
 
 
 		// fill the vertex in AGP.
@@ -1308,6 +1338,12 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	driver->setConstant(8, 0, 1, 0.5f, 2);
 	// c[9] take normalized directional light
 	driver->setConstant(9, &_DirectionalLight);
+	// c[10] take pos of camera
+	driver->setConstant(10, &viewCenter);
+	// c[11] take factor for Blend formula
+	driver->setConstant(11, -1.f/NL3D_VEGETABLE_BLOCK_BLEND_TRANSITION_DIST, 0, 0, 0);
+
+
 
 	// Bend.
 	// c[16]= quaternion axis. w==1, and z must be 0

@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.7 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.8 2001/12/03 09:29:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,7 +157,8 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 
 			// generate the instance of the vegetable
 			veget.generateInstance(vegetIg, matInstance, ambientF, 
-				diffuseColorF[ (lumelT<<NL_LUMEL_BY_TILE_SHIFT) + lumelS ]);
+				diffuseColorF[ (lumelT<<NL_LUMEL_BY_TILE_SHIFT) + lumelS ],
+				(distType+1) * NL3D_VEGETABLE_BLOCK_ELTDIST);
 		}
 	}
 }

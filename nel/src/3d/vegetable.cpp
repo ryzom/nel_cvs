@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.7 2001/11/21 13:57:32 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.8 2001/12/03 09:29:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -291,7 +291,7 @@ void	CVegetable::generateGroupBiLinear(const CVector &posInWorld, const CVector 
 
 // ***************************************************************************
 void	CVegetable::generateInstance(CVegetableInstanceGroup *ig, const NLMISC::CMatrix &posInWorld, 
-		const NLMISC::CRGBAF &modulateAmbientColor, const NLMISC::CRGBAF &modulateDiffuseColor) const
+		const NLMISC::CRGBAF &modulateAmbientColor, const NLMISC::CRGBAF &modulateDiffuseColor, float blendDistMax) const
 {
 	nlassert(_Manager);
 
@@ -339,7 +339,7 @@ void	CVegetable::generateInstance(CVegetableInstanceGroup *ig, const NLMISC::CMa
 
 	// Append to the vegetableManager
 	// ===============
-	_Manager->addInstance(ig, _VegetableShape, finalMatrix, ambient, diffuse, bendFactor, bendPhase);
+	_Manager->addInstance(ig, _VegetableShape, finalMatrix, ambient, diffuse, bendFactor, bendPhase, blendDistMax);
 }
 
 

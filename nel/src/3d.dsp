@@ -167,6 +167,35 @@ SOURCE=.\3d\tessellation.cpp
 
 SOURCE=..\include\nel\3d\tessellation.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\zone.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\zone.h
+# End Source File
+# End Group
+# Begin Group "Maths"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\aabbox.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+# ADD CPP /ZI
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\aabbox.h
+# End Source File
 # End Group
 # Begin Source File
 

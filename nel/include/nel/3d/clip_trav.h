@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.4 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: clip_trav.h,v 1.5 2000/10/27 14:29:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ public:
  * This observer:
  * - leave the notification system to DO NOTHING.
  * - implement a default traverse() method. See traverse() for more information.
- * - implement the init() method, to set shortcut to neighboor observers.
+ * - implement the init() method, to set shortcut to neighbor observers.
  *
  * \b DERIVER \b RULES:
  * - implement the notification system (see IObs and IObs() for details).

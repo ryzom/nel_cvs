@@ -1,7 +1,13 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.4 2000/10/24 14:18:28 lecroart Exp $
+ * $Id: patch.h,v 1.5 2000/10/27 14:29:42 berenguier Exp $
+ * \todo yoyo:
+		- "UV correction" infos.
+		- displacement map (ptr/index).
+		- bind with multiple patchs.
+		- rectangular subdivsion.
+ *
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +34,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/3d/tessellation.h"
+#include "nel/3d/aabbox.h"
 
 
 namespace NL3D {
@@ -37,7 +45,6 @@ using NLMISC::CVector;
 
 
 class	CZone;
-class	CTessFace;
 class	CBezierPatch;
 
 
@@ -53,7 +60,7 @@ public:
 		y= (sint16)(v.y/scale - bias);
 		z= (sint16)(v.z/scale - bias);
 	}
-	void	unpack(CVector &v, float bias, float scale)
+	void	unpack(CVector &v, float bias, float scale) const
 	{
 		v.x= x*scale + bias;
 		v.y= y*scale + bias;
@@ -65,6 +72,31 @@ public:
 // ***************************************************************************
 /**
  * A landscape patch.
+ * QuadPatch layout (same notations as Max).
+ * 
+ *   A---> ad ----- da <---D
+ *   |                     |
+ *   |                     |
+ *   v                     v
+ *   ab    ia       id     dc
+ *
+ *   |                     |
+ *   |                     |
+ *
+ *   ba    ib       ic     cd
+ *   ^                     ^
+ *   |                     |
+ *   |                     |
+ *   B---> bc ----- cb <---C
+ *
+ * NB: Patch 1x1 or 1xX are illegal: lot of problem: rectangular geomoprh, Son0 and Son1 must be setup as tile at beginning ...
+ *
+ * NB: Edges number are:
+ *	- 0: AB.
+ *	- 1: BC.
+ *	- 2: CD.
+ *	- 3: DA.
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -72,58 +104,135 @@ public:
 class CPatch
 {
 public:
-	CZone		*Zone;
+
+	struct	CBindInfo
+	{
+		sint			NPatchs;	// The number of patchs on this edge. 0,1, 2 or 4.
+		CPatch			*Next0;		// The neighbor patch.
+		sint			Edge0;		// On which edge of Next0 we are binded.
+
+		// only usefull for Bind One/Two
+		CPatch			*Next1;		// ....
+		sint			Edge1;
+
+		// only usefull for Bind One/Four
+		CPatch			*Next2;		// ....
+		sint			Edge2;
+		CPatch			*Next3;
+		sint			Edge3;
+	};
+
+public:
 	/// The patch coordinates (see CBezierPatch).
-	CVector3s	Vertices[4];
-	CVector3s	Tangents[8];
-	CVector3s	Interiors[4];
-	// Tile Order for the patch.
-	uint8		OrderS, OrderT;
-	// The Base Size*bumpiness of the patch (/2 at each subdivide).
-	// May be setup to surface of patch, modulated by tangents and dispalcement map.
-	float		ErrorSize;
-	// The tesselation.
-	CTessFace	*Son0, *Son1;
+	CVector3s		Vertices[4];
+	CVector3s		Tangents[8];
+	CVector3s		Interiors[4];
 	/*
 		TODO:
 		- "UV correction" infos.
 		- displacement map (ptr/index).
 	*/
 
-	// Local info for tile. CPatch must setup them at the begining at refine()/render().
-	// Should we compute the error metric part for tile??
-	bool		ComputeTileErrorMetric;
-	// For this patch, which level is required to be a valid Tile??
-	sint		TileLimitLevel;
-
 
 public:
 
 	/// Constructor
 	CPatch();
+	/// dtor
+	~CPatch();
+
+	/** compile a valid patch. (init)
+	 * Call this method before any other. Zone and Control points must be valid before calling compile(). \n
+	 * This is an \b ERROR to call compile() two times. \n
+	 * NB: zone loading must call compile() too, using the order and the errorSize saved.
+	 * \param z zone where the patch must be binded.
+	 * \param orderS the Tile order in S direction: 2,4,8,16.
+	 * \param orderT the Tile order in T direction: 2,4,8,16.
+	 * \param errorSize if 0, setup() compute himself the errormetric of the patch. May be setup to surface of patch, 
+	 *  modulated by tangents and displacement map.
+	 */
+	void			compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVertices[4], float errorSize=0);
+
+
+	CZone			*getZone() const {return Zone;}
+	uint8			getOrderS() const {return OrderS;}
+	uint8			getOrderT() const {return OrderT;}
+	float			getErrorSize() const {return ErrorSize;}
+
+	/// Build the bbox of the patch, according to ctrl points, and displacement map max value.
+	CAABBox			buildBBox() const;
 
 	/** Compute a vertex.
 	 * Compute a vertex according to:
 	 *	- s,t
+	 *	- patch control points uncompressed with zone Bias/Scale.
 	 *  - Patch UV geometric correction.
-	 *	- Patch noise (and noise of Patch neighboor).
+	 *	- Patch noise (and noise of Patch neighbor).
 	 */
-	CVector	computeVertex(float s, float t);
+	CVector			computeVertex(float s, float t);
 
 
+	/// unbind the patch from neighbors.
+	void			unbind();
+
+	/// bind the patch to 4 neighbors, given in this patch edge order (0,1,2,3). Tesselation is reseted (patch unbound first).
+	void			bind(CBindInfo	Edges[4]);
+
+
+	/// Refine / geomorph this patch.
+	void			refine();
+	/// Render this patch (append to VertexBuffers / materials primitive block).
+	void			render();
+
+
+
+// Private part.
+private:
+/*********************************/
+
+	friend	class CTessFace;
+
+	CZone			*Zone;
+	// Tile Order for the patch.
+	uint8			OrderS, OrderT;
+	// For this patch, which level is required to be a valid Tile??
+	sint			TileLimitLevel;
+	// The Base Size*bumpiness of the patch (/2 at each subdivide).
+	float			ErrorSize;
+	// The root for tesselation.
+	CTessFace		*Son0, *Son1;
+	// The base vertices.
+	CTessVertex		*BaseVertices[4];
+
+
+	// Local info for CTessFace tiles. CPatch must setup them at the begining at refine()/render().
+	// For Far Texture coordinates.
+	float			Far0UVScale, Far0UBias, Far0VBias;
+	float			Far1UVScale, Far1UBias, Far1VBias;
+	// TODOR: add the texture (material) pointers of texture fars.
 
 
 private:
-	// unpack the patch into a floating point one.
-	CBezierPatch	*unpackIntoCache();
-	// unpack the patch into a floating point one.
-	void			unpack(CBezierPatch	&p);
+	// Guess.
+	void			computeDefaultErrorSize();
+	// based on BaseVertices, recompute positions, and Make Face roots Son0 and Son1.
+	void			makeRoots();
+	// Guess. For bind() reasons.
+	CTessFace		*getRootFaceForEdge(sint edge) const;
+	void			changeEdgeNeighbor(sint edge, CTessFace *to);
+
 
 private:
-	// The cache (may be a short list/vector later...).
+	// The Patch cache (may be a short list/vector later...).
 	static	CBezierPatch	CachePatch;
 	// For cahcing.
-	static	CPatch			*LastPatch;
+	static	const CPatch	*LastPatch;
+
+	// unpack the patch into a floating point one.
+	CBezierPatch	*unpackIntoCache() const;
+	// unpack the patch into a floating point one.
+	void			unpack(CBezierPatch	&p) const;
+
 };
 
 

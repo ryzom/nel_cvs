@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.4 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: render_trav.h,v 1.5 2000/10/27 14:29:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,7 @@ private:
  * This observer:
  * - leave the notification system to DO NOTHING.
  * - leave traverse() to undefined.
- * - implement the init() method, to set shortcut to neighboor observers.
+ * - implement the init() method, to set shortcut to neighbor observers.
  *
  * \b DERIVER \b RULES:
  * - implement the notification system (see IObs and IObs() for details).

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.3 2000/10/24 14:18:28 lecroart Exp $
+ * $Id: tessellation.h,v 1.4 2000/10/27 14:29:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,7 @@ class	CTileMaterial;
 
 
 // ***************************************************************************
-const	float	OO16384= 1.0f/0x8000;
+const	float	OO32768= 1.0f/0x8000;
 
 
 // ***************************************************************************
@@ -59,10 +59,16 @@ class	CTessVertex
 {
 public:
 	// The current position, + geomorph.
-	CVector	Pos;
-	CVector	StartPos, EndPos;
+	CVector			Pos;
+	CVector			StartPos, EndPos;
 	// The index of current far vertex.
 	uint32			FarIndex;
+
+	CTessVertex()
+	{
+		// Must init to 0.
+		FarIndex= 0;
+	}
 };
 
 
@@ -113,6 +119,9 @@ class	ITileUv
 {
 public:
 	// The dtor should be virtual (if any), but since dtor is a no-op, don't add it.
+
+	// The vertex index for the tile.
+	uint32			TileIndex;
 };
 
 
@@ -250,8 +259,11 @@ public:
 		CParamCoord	operator+(const CParamCoord &v) const	{return CParamCoord(S+v.S, T+v.T);}
 		CParamCoord	operator-(const CParamCoord &v) const	{return CParamCoord(S-v.S, T-v.T);}
 		CParamCoord	shifted() const	{return CParamCoord(S>>1, T>>1);}
-		float	getS() const {return S*OO16384;}
-		float	getT() const {return T*OO16384;}
+		// Get s,t as floats. returned s,t E [0,1].
+		float	getS() const {return S*OO32768;}
+		float	getT() const {return T*OO32768;}
+		// Set s,t as float. s,t E [0,1].
+		void	setST(float s, float t) {S= (sint16)(s*32768);T= (sint16)(t*32768);}
 		// vertex on the border?
 		bool	onBorder() const {return (S==0 || S==0x8000 || T==0 || T==0x8000);}
 	};
@@ -304,13 +316,13 @@ public:
 public:
 	CTessFace();
 	// do nothing dtor.
-	~CTessFace() {}
+	~CTessFace();
 
 	// Utilities.
-	bool	isLeaf() const {return SonLeft==NULL;}
-	bool	hasVertex(CTessVertex *v) const {return VBase==v || VLeft==v || VRight==v;}
-	bool	hasEdge(CTessVertex *v0, CTessVertex *v1) const {return hasVertex(v0) && hasVertex(v1);}
-	void	changeNeighboor(CTessFace *from, CTessFace *to)
+	bool			isLeaf() const {return SonLeft==NULL;}
+	bool			hasVertex(CTessVertex *v) const {return VBase==v || VLeft==v || VRight==v;}
+	bool			hasEdge(CTessVertex *v0, CTessVertex *v1) const {return hasVertex(v0) && hasVertex(v1);}
+	void			changeNeighbor(CTessFace *from, CTessFace *to)
 	{
 		if(FBase==from) FBase=to;
 		if(FLeft==from) FLeft=to;
@@ -318,18 +330,28 @@ public:
 	}
 
 	// Fill all Tile Material infos (id, type...), according to CPatch tilemap, and CTessFace paramcoord.
-	void	computeTileMaterial();
+	void			computeTileMaterial();
 	// Release Tile Uvs.
-	void	releaseTileMaterial();
+	void			releaseTileMaterial();
 
 	// update the error metric (even if !NeedCompute).
-	float	updateErrorMetric();
+	float			updateErrorMetric();
 	// can split leaf only.
-	void	split();
+	void			split();
 	// can merge "short roots" only (roots which have leafs).
-	bool	merge();
+	bool			merge();
 	// if NeedCompute, refine the node, and his sons.
-	void	refine();
+	void			refine();
+
+
+	// Used by CPatch::unbind(). isolate the tesselation from other patchs.
+	void			unbind();
+	// Used by CPatch::unbind(). force the merging of face.
+	void			forceMerge();
+	// Used by CPatch::bind(). Split if necessary, according to neighbors.
+	bool			updateBindEdge(CTessFace	*&edgeFace);
+	void			updateBind();
+
 
 
 public:
@@ -365,10 +387,15 @@ public:
 
 private:
 	// Faces have the same tile???
-	static bool			sameTile(const CTessFace *a, const CTessFace *b) 
+	static bool		sameTile(const CTessFace *a, const CTessFace *b) 
 		{return (a->Patch==b->Patch && a->TileId==b->TileId);}
 	// Alloc a tile.
-	static ITileUv		*allocTileUv(uint8 fmt);
+	static ITileUv	*allocTileUv(uint8 fmt);
+
+private:
+	// The fake face which indicates a "can't merge". Usefull for bind 2/4 or 1/4.
+	// The fake face is the only one which has a NULL patch ptr.
+	static	CTessFace	CantMergeFace;
 };
 
 

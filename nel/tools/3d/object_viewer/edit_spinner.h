@@ -1,7 +1,7 @@
 /** \file edit_spinner.h
  * a dialog to edit a spinner
  *
- * $Id: edit_spinner.h,v 1.2 2001/09/17 14:02:00 vizerie Exp $
+ * $Id: edit_spinner.h,v 1.3 2002/08/08 11:00:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,11 +35,9 @@ struct IPopupNotify;
 
 #include "ps_wrapper.h"
 #include "3d/ps_plane_basis_maker.h"
+#include "editable_range.h"
 
 class CDirectionAttr;
-template <typename T>
-class CEditableRangeT;
-typedef CEditableRangeT<uint32> CEditableRangeUInt;
 
 class CEditSpinner : public CDialog
 {

@@ -12,9 +12,7 @@ namespace NL3D
 	class CPSRibbonBase;
 }
 
-template <class T> class CEditableRangeT;
-typedef CEditableRangeT<float> CEditableRangeFloat;
-
+#include "editable_range.h"
 
 
 class CRibbonDlg : public CDialog

@@ -1,7 +1,7 @@
 /** \file water_pool_editor.h
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: water_pool_editor.h,v 1.1 2001/11/26 13:15:16 vizerie Exp $
+ * $Id: water_pool_editor.h,v 1.2 2002/08/08 11:00:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,11 +40,7 @@ namespace NL3D
 
 #include "3d/water_height_map.h"
 #include "ps_wrapper.h"
-
-template <class T> class CEditableRangeT;
-typedef CEditableRangeT<float> CEditableRangeFloat;
-typedef CEditableRangeT<uint32> CEditableRangeUInt;
-
+#include "editable_range.h"
 
 
 class CWaterPoolEditor : public CDialog

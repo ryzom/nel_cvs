@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.h
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.h,v 1.8 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: ps_mover_dlg.h,v 1.9 2002/08/08 11:00:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,10 +42,8 @@ namespace NLMISC
 
 #include "3d/ps_edit.h"
 #include "ps_wrapper.h"
+#include "editable_range.h"
 
-
-template <class T> class CEditableRangeT ;
-typedef CEditableRangeT<float> CEditableRangeFloat ;
 
 class CDirectionAttr ;
 class CParticleDlg;

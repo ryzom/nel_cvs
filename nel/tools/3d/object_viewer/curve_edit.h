@@ -1,7 +1,7 @@
 /** \file curve_edit.h
  * A dialog for editing a curve
  *
- * $Id: curve_edit.h,v 1.3 2001/12/18 18:36:12 vizerie Exp $
+ * $Id: curve_edit.h,v 1.4 2002/08/08 11:00:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,10 +34,8 @@
 #include <3d/ps_float.h>
 #include "ps_wrapper.h"
 #include "popup_notify.h"
+#include "editable_range.h"
 
-
-template <class T> class CEditableRangeT;
-typedef CEditableRangeT<uint32> CEditableRangeUInt;
 
 class CurveEdit : public CDialog
 {

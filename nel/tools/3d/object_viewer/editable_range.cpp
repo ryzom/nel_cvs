@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.10 2002/04/25 10:34:34 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.11 2002/08/08 11:00:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,97 +220,3 @@ void CEditableRange::OnChangeValue()
 		updateValueFromText();		
 	}
 }
-
-
-///////////////////////////////////////////////////////
-// IMPLEMENTATION OF TEMPLATE METHOD SPECIALIZATIONS //
-///////////////////////////////////////////////////////
-
-
-	//////////////////////////
-	// float editable range //
-	//////////////////////////
-
-CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin, float defaultMax ) 
-			: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
-		{
-		}
-
-		void CEditableRangeT<float>::value2CString(float value, CString &dest)
-		{
-			dest.Format("%g", (double) value);
-		}
-		const char *CEditableRangeT<float>::string2value(const CString &value, float &result)
-		{			
-			if (sscanf((LPCTSTR) value, "%f", &result) == 1)
-			{			
-				return NULL;
-			}
-			else
-			{
-				return "invalid value";
-			}	
-		}
-
-	///////////////////////////
-	// uint32 editable range //
-	///////////////////////////
-
-		CEditableRangeT<uint32>::CEditableRangeT(const std::string &id, uint32 defaultMin , uint32 defaultMax )
-		: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
-		{
-		}
-
-		void CEditableRangeT<uint32>::value2CString(uint32 value, CString &dest)
-		{
-			dest.Format("%d", value);
-		}
-		const char *CEditableRangeT<uint32>::string2value(const CString &value, uint32 &result)
-		{			
-			uint32 tmp;
-			if (sscanf((LPCTSTR) value, "%d", &tmp) == 1)
-			{
-				if (strchr((LPCTSTR) value, '-'))
-				{
-					return "negative values not allowed";
-				}
-				else
-				{
-					result = tmp;
-					return NULL;
-				}
-			}
-			else
-			{
-				return "invalid value";
-			}	
-		}
-
-	///////////////////////////
-	// sint32 editable range //
-	///////////////////////////
-
-		CEditableRangeT<sint32>::CEditableRangeT(const std::string &id, sint32 defaultMin , sint32 defaultMax )
-		: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
-		{
-		}
-
-		void CEditableRangeT<sint32>::value2CString(sint32 value, CString &dest)
-		{
-			dest.Format("%d", value);
-		}
-		const char *CEditableRangeT<sint32>::string2value(const CString &value, sint32 &result)
-		{			
-			uint32 tmp;
-			if (sscanf((LPCTSTR) value, "%d", &tmp) == 1)
-			{				
-				result = tmp;
-				return NULL;				
-			}
-			else
-			{
-				return "invalid value";
-			}	
-		}
-
-

@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.h
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.h,v 1.5 2001/12/18 18:37:05 vizerie Exp $
+ * $Id: edit_ps_sound.h,v 1.6 2002/08/08 11:00:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "ps_wrapper.h"
 #include "3d/ps_sound.h"
+#include "editable_range.h"
 
 namespace NLSOUND
 {
@@ -41,9 +42,6 @@ namespace NLSOUND
 
 
 class CAttribDlgFloat;
-template <typename T>
-class CEditableRangeT;
-typedef CEditableRangeT<float> CEditableRangeFloat;
 
 
 /// particle system sound system initialisation

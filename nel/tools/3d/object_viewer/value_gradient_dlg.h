@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.h
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.h,v 1.6 2001/12/19 15:50:15 vizerie Exp $
+ * $Id: value_gradient_dlg.h,v 1.7 2002/08/08 11:00:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,13 +38,12 @@
 // CValueGradientDlg dialog
 
 struct IPopupNotify;
-class CEditAttribDlg;
-template <class T> class CEditableRangeT;
-typedef CEditableRangeT<uint32> CEditableRangeUInt;
 
 #include "ps_wrapper.h"
 #include "attrib_list_box.h"
+#include "editable_range.h"
 
+class CEditAttribDlg;
 
 
 /** This struct serves as an interface to manage the gradient.

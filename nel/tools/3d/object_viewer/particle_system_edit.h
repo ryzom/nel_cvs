@@ -1,7 +1,7 @@
 /** \file particle_system_edit.h
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.h,v 1.7 2002/02/15 17:20:17 vizerie Exp $
+ * $Id: particle_system_edit.h,v 1.8 2002/08/08 11:00:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "ps_wrapper.h"
 #include "dialog_stack.h"
 #include "popup_notify.h"
+#include "editable_range.h"
 
 namespace NL3D
 {
@@ -41,13 +42,7 @@ namespace NL3D
 }
 
 
-
 class CAutoLODDlg;
-
-template <class T> class CEditableRangeT;
-typedef CEditableRangeT<float> CEditableRangeFloat;
-typedef CEditableRangeT<uint32> CEditableRangeUInt;
-
 
 class CUserParamWrapper : public IPSWrapperFloat
 {

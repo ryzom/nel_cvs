@@ -1,7 +1,7 @@
 /** \file udp_sock.h
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.h,v 1.4 2001/09/28 12:39:15 cado Exp $
+ * $Id: udp_sock.h,v 1.5 2001/10/09 09:34:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,13 +64,18 @@ public:
 	/// @name Receiving data
 	//@{
 
+	/**  Receives data from the peer. (blocking function)
+	 * The socket must be pseudo-connected.
+	 */
+	void				receive( uint8 *buffer, uint32& len );
+
 	/** Receives data and say who the sender is. (blocking function)
 	 * The socket must have been bound before, by calling either bind() or sendTo().
 	 * \param buffer [in] Address of buffer
-	 * \param len [in] Length of buffer
+	 * \param len [in/out] Requested length of buffer, and actual number of bytes received
 	 * \param addr [out] Address of sender
 	 */
-	void				receivedFrom( uint8 *buffer, uint len, CInetAddress& addr );
+	void				receivedFrom( uint8 *buffer, uint& len, CInetAddress& addr );
 
 	//@}
 	

@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.6 2001/09/28 12:39:49 cado Exp $
+ * $Id: udp_sock.cpp,v 1.7 2001/10/09 09:34:25 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,27 +151,53 @@ void CUdpSock::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr )
 
 
 /*
+ * Receives data from the peer. (blocking function)
+ */
+void CUdpSock::receive( uint8 *buffer, uint32& len )
+{
+	nlassert( _Connected && (buffer!=NULL) );
+
+	// Receive incoming message
+	len = ::recv( _Sock, (char*)buffer, len , 0 );
+
+	// Check for errors (after setting the address)
+	if ( len == SOCKET_ERROR )
+	{
+		throw ESocket( "Cannot receive data" );
+	}
+
+	_BytesReceived += len;
+	if ( _Logging )
+	{
+		nldebug( "L0: Socket %d received %d bytes from peer %s", _Sock, len, _RemoteAddr.asString().c_str() );
+	}
+}
+
+
+/*
  * Receives data and say who the sender is. (blocking function)
  */
-void CUdpSock::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr )
+void CUdpSock::receivedFrom( uint8 *buffer, uint& len, CInetAddress& addr )
 {
 	// Receive incoming message
 	sockaddr_in saddr;
 	socklen_t saddrlen = sizeof(saddr);
 
-	int brecvd = ::recvfrom( _Sock, (char*)buffer, len , 0, (sockaddr*)&saddr, &saddrlen );
-	if ( brecvd == SOCKET_ERROR )
-	{
-		throw ESocket( "Cannot receive data" );
-	}
+	len = ::recvfrom( _Sock, (char*)buffer, len , 0, (sockaddr*)&saddr, &saddrlen );
 
 	// Get sender's address
 	addr.setSockAddr( &saddr );
 
-	_BytesReceived += brecvd;
+	// Check for errors (after setting the address)
+	if ( len == SOCKET_ERROR )
+	{
+		throw ESocket( "Cannot receive data" );
+	}
+
+	_BytesReceived += len;
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d received %d bytes from %s", _Sock, brecvd, addr.asString().c_str() );
+		nldebug( "L0: Socket %d received %d bytes from %s", _Sock, len, addr.asString().c_str() );
 	}
 }
 

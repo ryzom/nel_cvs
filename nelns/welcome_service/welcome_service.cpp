@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.22 2003/01/07 17:09:34 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.23 2003/03/06 10:58:11 lecroart Exp $
  *
  */
 
@@ -48,6 +48,7 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/displayer.h"
 #include "nel/misc/command.h"
+#include "nel/misc/variable.h"
 #include "nel/misc/log.h"
 
 #include "nel/net/service.h"
@@ -266,6 +267,8 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 
 	CLoginCookie cookie;
 	msgin.serial (cookie);
+	string userName;
+	msgin.serial (userName);
 
 	CFES *best = findBestFES();
 	if (best == NULL)
@@ -281,6 +284,7 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 
 	CMessage msgout ("CS");
 	msgout.serial (cookie);
+	msgout.serial (userName);
 	CUnifiedNetwork::getInstance()->send (best->SId, msgout);
 	best->NbEstimatedUser++;
 }

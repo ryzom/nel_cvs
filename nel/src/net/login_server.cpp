@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.25 2003/01/15 16:06:11 lecroart Exp $
+ * $Id: login_server.cpp,v 1.26 2003/03/06 10:59:35 lecroart Exp $
  *
  */
 
@@ -41,8 +41,9 @@ namespace NLNET {
 
 struct CPendingUser
 {
-	CPendingUser (const CLoginCookie &cookie) : Cookie (cookie) { Time = CTime::getSecondsSince1970(); }
+	CPendingUser (const CLoginCookie &cookie, const string &un) : Cookie (cookie), UserName(un) { Time = CTime::getSecondsSince1970(); }
 	CLoginCookie Cookie;
+	string UserName;
 	uint32 Time;	// when the cookie is inserted in pending list
 };
 
@@ -93,7 +94,7 @@ void refreshPendingList ()
 void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the WS call me that a new client want to come in my shard
-	string reason;
+	string reason, userName;
 	CLoginCookie cookie;
 
 	refreshPendingList ();
@@ -103,7 +104,8 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	//
 
 	msgin.serial (cookie);
-
+	msgin.serial (userName);
+	
 	list<CPendingUser>::iterator it;
 	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)
 	{
@@ -119,8 +121,8 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	if (it == PendingUsers.end ())
 	{
 		// add it to the awaiting client
-		nlinfo ("New cookie %s inserted in the pending user list (awaiting new client)", cookie.toString().c_str());
-		PendingUsers.push_back (CPendingUser (cookie));
+		nlinfo ("New cookie %s (user %s) inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str());
+		PendingUsers.push_back (CPendingUser (cookie, userName));
 		reason = "";
 	}
 
@@ -178,8 +180,9 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	string reason;
 	msgin.serial (cookie);
 
+	string userName;
 	// verify that the user was pending
-	reason = CLoginServer::isValidCookie (cookie);
+	reason = CLoginServer::isValidCookie (cookie, userName);
 
 	// if the cookie is not valid and we accept them, clear the error
 	if(AcceptInvalidCookie && !reason.empty())
@@ -312,12 +315,9 @@ void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 	DisconnectClientCallback = dc;
 }
 
-string CLoginServer::isValidCookie (const CLoginCookie &lc)
+string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName)
 {
-	if (AcceptInvalidCookie)
-		return "";
-
-	if (!lc.isValid())
+	if (!AcceptInvalidCookie && !lc.isValid())
 		return "The cookie is invalid";
 
 	// verify that the user was pending
@@ -326,10 +326,7 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc)
 	{
 		if ((*it).Cookie == lc)
 		{
-			// ok, it was validate, remove it
-			PendingUsers.erase (it);
-
-			nlinfo ("Cookie '%s' is valid and pending, send the client connection to the WS", lc.toString ().c_str ());
+			nlinfo ("Cookie '%s' is valid and pending (user %s), send the client connection to the WS", lc.toString ().c_str (), (*it).UserName.c_str());
 
 			// warn the WS that the client effectively connected
 			uint8 con = 1;
@@ -340,10 +337,23 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc)
 
 			CUnifiedNetwork::getInstance()->send("WS", msgout);
 
+			userName = (*it).UserName;
+			
+			// ok, it was validate, remove it
+			PendingUsers.erase (it);
+			
 			return "";
 		}
 	}
 
+	// we accept invalid cookie and it is one, fake
+	if (AcceptInvalidCookie)
+	{
+		userName = "InvalidUserName";
+		return "";
+	}
+
+	// problem
 	return "I didn't receive the cookie from WS";
 }
 
@@ -390,7 +400,7 @@ NLMISC_COMMAND (lsPending, "displays the list of all pending users", "")
 	log.displayNL ("Display the %d pending users :", PendingUsers.size());
 	for (list<CPendingUser>::iterator it = PendingUsers.begin(); it != PendingUsers.end (); it++)
 	{
-		log.displayNL ("> %s", (*it).Cookie.toString().c_str());
+		log.displayNL ("> %s %s", (*it).Cookie.toString().c_str(), (*it).UserName.c_str());
 	}
 	log.displayNL ("End of the list");
 

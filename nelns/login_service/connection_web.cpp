@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.3 2002/10/21 12:00:52 lecroart Exp $
+ * $Id: connection_web.cpp,v 1.4 2002/10/22 13:54:39 lecroart Exp $
  *
  */
 
@@ -236,7 +236,7 @@ void connectionWebUpdate ()
 			// create a string mem stream to easily communicate with web server
 			NLMISC::CMemStream msgin (true);
 			TSockId host;
-			sint8 messageType = 0;
+			uint8 messageType = 0;
 
 			try
 			{

@@ -1,7 +1,7 @@
 /** \file ps_dot.cpp
  * Dot particles
  *
- * $Id: ps_dot.cpp,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_dot.cpp,v 1.2 2002/02/27 13:52:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,17 +143,18 @@ void CPSDot::draw(bool opaque)
 			_Mat.setColor(_Color);
 		}
 		else
-		{
-			/// not supported
-
-			/* NLMISC::CRGBA col;
+		{			
+			NLMISC::CRGBA col;
 			col.modulateFromColor(ps.getGlobalColor(), _Color);
-			_Mat.setColor(col); */
+			_Mat.setColor(col);
 		}
+		forceTexturedMaterialStages(0);
 	}
 	else
 	{			
-		_Mat.setColor(ps.getGlobalColor());				
+		forceTexturedMaterialStages(1);
+		_Mat.texConstantColor(0, ps.getGlobalColor());
+		SetupModulatedStage(_Mat, 0, CMaterial::Diffuse, CMaterial::Constant);
 	}
 	//////
 

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.4 2001/03/06 10:15:12 berenguier Exp $
+ * $Id: u_driver.h,v 1.5 2001/03/06 11:19:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,8 +121,8 @@ public:
 
 	/// \name Object
 	// @{
-	UDriver() {}
-	virtual	~UDriver() {}
+	UDriver();
+	virtual	~UDriver();
 	// @}
 
 
@@ -239,15 +239,9 @@ public:
 	 */
 	virtual	void			setMatrixMode2D(const CFrustum &frust) =0;
 	/// Tool function: same as setMatrixMode2D(), using a CFrustum(0,1,0,1,-1,1,false).
-	void					setMatrixMode2D11()
-	{
-		setMatrixMode2D(CFrustum(0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f,false));
-	}
+	void					setMatrixMode2D11();
 	/// Tool function: same as setMatrixMode2D(), using a CFrustum(0,4/3,0,1,-1,1,false).
-	void					setMatrixMode2D43()
-	{
-		setMatrixMode2D(CFrustum(0.0f,4.0f/3.0f,0.0f,1.0f,-1.0f,1.0f,false));
-	}
+	void					setMatrixMode2D43();
 	/** Tool function: Setup frustum/viewmatrix/modelmatrix for 3D, using parameters of a UCamera.
 	 * ModelMatrix setuped to identity. ViewMatrix setuped to the inverse of camera 's LocalMatrix.
 	 * Frustum setuped to UCamera frustum.

@@ -1,7 +1,7 @@
 /** \file vector_2d.cpp
  * <File description>
  *
- * $Id: vector_2d.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: vector_2d.cpp,v 1.3 2004/10/29 18:08:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,11 @@
 
 #include "nel/misc/vector_2d.h"
 
+
+// leave not static else this workaround don't work
+void	dummyToAvoidStupidCompilerWarning_misc_vector_2d_cpp()
+{
+}
 
 namespace NLMISC 
 {

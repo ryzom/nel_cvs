@@ -1,7 +1,7 @@
 /** \file stdgeorges.cpp
  * Georges system files
  *
- * $Id: stdgeorges.cpp,v 1.1 2002/02/14 10:40:40 corvazier Exp $
+ * $Id: stdgeorges.cpp,v 1.2 2004/10/29 18:08:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,4 +24,10 @@
  */
 
 #include "stdgeorges.h"
+
+
+// leave not static else this workaround don't work
+void	dummyToAvoidStupidCompilerWarning_std_georges_cpp()
+{
+}
 

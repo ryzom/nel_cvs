@@ -1,7 +1,7 @@
 /** \file object_vector.cpp
  * <File description>
  *
- * $Id: object_vector.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: object_vector.cpp,v 1.3 2004/10/29 18:08:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,11 @@
 #include "stdmisc.h"
 
 #include "nel/misc/object_vector.h"
+
+// leave not static else this workaround don't work
+void	dummyToAvoidStupidCompilerWarning_misc_object_vector_cpp()
+{
+}
 
 
 namespace NLMISC {

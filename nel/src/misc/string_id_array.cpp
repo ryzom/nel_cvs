@@ -1,7 +1,7 @@
 /** \file string_id_array.cpp
  * <File description>
  *
- * $Id: string_id_array.cpp,v 1.4 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: string_id_array.cpp,v 1.5 2004/10/29 18:08:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,11 @@
 
 #include "nel/misc/string_id_array.h"
 
+
+// leave not static else this workaround don't work
+void	dummyToAvoidStupidCompilerWarning_misc_string_id_array_cpp()
+{
+}
 
 namespace NLMISC {
 

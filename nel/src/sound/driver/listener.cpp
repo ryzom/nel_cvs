@@ -1,7 +1,7 @@
 /** \file listener.cpp
  * <File description>
  *
- * $Id: listener.cpp,v 1.2 2001/07/04 13:06:36 cado Exp $
+ * $Id: listener.cpp,v 1.3 2004/10/29 18:08:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,12 @@
  */
 
 #include "sound/driver/listener.h"
+
+
+// leave not static else this workaround don't work
+void	dummyToAvoidStupidCompilerWarning_sound_listener_cpp()
+{
+}
 
 
 namespace NLSOUND {

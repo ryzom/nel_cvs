@@ -1,7 +1,7 @@
 /** \file uv.cpp
  * <File description>
  *
- * $Id: uv.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: uv.cpp,v 1.3 2004/10/29 18:08:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,11 @@
 
 #include "nel/misc/uv.h"
 
+
+// leave not static else this workaround don't work
+void	dummyToAvoidStupidCompilerWarning_misc_uv_cpp()
+{
+}
 
 namespace NLMISC 
 {

@@ -1,7 +1,7 @@
 /** \file geom_ext.cpp
  * Set of extension of triangles (triangle with uv, color, uvcolor etc...)
  *
- * $Id: geom_ext.cpp,v 1.3 2002/02/20 18:09:13 lecroart Exp $
+ * $Id: geom_ext.cpp,v 1.4 2004/10/29 18:08:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,11 @@
 
 #include "nel/misc/geom_ext.h"
 
+
+// leave not static else this workaround don't work
+void	dummyToAvoidStupidCompilerWarning_misc_geom_ext_cpp()
+{
+}
 
 namespace NLMISC 
 {

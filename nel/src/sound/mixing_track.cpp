@@ -1,7 +1,7 @@
 /** \file mixing_track.cpp
  * CTrack: a source selected for playing
  *
- * $Id: mixing_track.cpp,v 1.4 2002/02/20 18:09:25 lecroart Exp $
+ * $Id: mixing_track.cpp,v 1.5 2004/10/29 18:08:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,11 @@
 
 #include "mixing_track.h"
 
+
+// leave not static else this workaround don't work
+void	dummyToAvoidStupidCompilerWarning_sound_mixing_track_cpp()
+{
+}
 
 namespace NLSOUND {
 

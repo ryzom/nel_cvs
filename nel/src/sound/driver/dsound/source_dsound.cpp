@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.21.2.1 2003/04/24 16:19:45 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.21.2.2 2003/04/24 16:55:23 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -558,7 +558,7 @@ void CSourceDSound::xfade(const TLockedBufferInfo &lbi, sint16 *src)
 {
 	// do the XFade in integer fixed point arithmetic
 
-	nlassert((_XFadeSize & 0x1) == 0)
+	nlassert((_XFadeSize & 0x1) == 0);
 	uint	fade = _XFadeSize;
 	sint16	*ptr = lbi.Ptr1;
 	uint	count = lbi.Size1 /2;
@@ -592,7 +592,7 @@ void CSourceDSound::xfade(const TLockedBufferInfo &lbi, sint16 *src)
 
 void CSourceDSound::fadeOut(const TLockedBufferInfo &lbi)
 {
-	nlassert((_XFadeSize & 0x1) == 0)
+	nlassert((_XFadeSize & 0x1) == 0);
 	uint	fade = _XFadeSize;
 	sint16	*ptr = lbi.Ptr1;
 	uint	count = lbi.Size1/2;
@@ -623,7 +623,7 @@ void CSourceDSound::fadeIn(const TLockedBufferInfo &lbi)
 {
 	// do the XFade in integer fixed point arithmetic
 
-	nlassert((_XFadeSize & 0x1) == 0)
+	nlassert((_XFadeSize & 0x1) == 0);
 	uint	fade = _XFadeSize;
 	sint16	*ptr = lbi.Ptr1;
 	uint	count = lbi.Size1 /2;

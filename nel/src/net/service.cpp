@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.24 2000/11/30 17:02:50 cado Exp $
+ * $Id: service.cpp,v 1.25 2000/12/01 16:45:49 nevrax Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -97,11 +97,13 @@ void InitSignal()
 #ifdef NL_DEBUG
 	// in debug mode, we only trap the SIGINT signal
 	signal(Signal[3], SigHandler);
+	nldebug("Signal : %s (%d) trapped", SignalName[3], 3);
 #else
 	// in release, redirect all signals
 	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
 	{
 		signal(Signal[i], SigHandler);
+		nldebug("Signal %s (%d) trapped", SignalName[i], i);
 	}
 #endif
 }
@@ -117,7 +119,7 @@ static void SigHandler(int Sig)
 	{
 		if (Sig == Signal[i])
 		{
-			nlinfo ("%s received (%d)", SignalName[i], Sig);
+			nlinfo ("Signal %s (%d) received", SignalName[i], Sig);
 			switch (Sig)
 			{
 			case SIGABRT :
@@ -133,7 +135,7 @@ static void SigHandler(int Sig)
 			}
 		}
 	}
-	nlinfo ("unknown signal received (%d)", Sig);
+	nlinfo ("Unknown signal received (%d)", Sig);
 }
 
 
@@ -215,6 +217,8 @@ sint IService::main (int argc, char **argv)
 			InitSignal();
 		}
 #endif
+#else // NL_OS_UNIX
+		InitSignal();
 #endif
 
 		// Initialize server parameters

@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * <File description>
  *
- * $Id: u_texture.h,v 1.4 2001/10/29 14:23:56 vizerie Exp $
+ * $Id: u_texture.h,v 1.5 2003/04/23 10:29:18 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,7 +143,8 @@ public:
 	virtual	bool			mipMapOn() const =0;
 	// @}
 
-
+	virtual	void			setReleasable(bool bReleasable) =0;
+	virtual	NLMISC::CRGBA	getPixelColor(sint32 x, sint32 y) const =0;
 };
 
 

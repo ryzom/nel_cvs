@@ -1,7 +1,7 @@
 /** \file texture_user.h
  * <File description>
  *
- * $Id: texture_user.h,v 1.5 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: texture_user.h,v 1.6 2003/04/23 10:29:26 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,7 +132,16 @@ public:
 		NL3D_MEM_TEXTURE
 		return _Texture->mipMapOn();
 	}
-
+	virtual	NLMISC::CRGBA	getPixelColor(sint32 x, sint32 y) const
+	{
+		NL3D_MEM_TEXTURE
+		return _Texture->getPixelColor(x,y);
+	}
+	virtual	void setReleasable(bool bReleasable)
+	{
+		NL3D_MEM_TEXTURE
+		_Texture->setReleasable(bReleasable);
+	}
 
 	/// Accessor for UMaterial imp.
 	ITexture*				getITexture() 

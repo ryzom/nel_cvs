@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.15 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: animation.cpp,v 1.16 2002/07/23 17:09:59 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ H_AUTO_DECL( NL3D_UI_Animation )
 
 CAnimation::CAnimation() : _BeginTimeTouched(true), _EndTimeTouched(true), _AnimLoopTouched(true)
 {	
+	_MinEndTime = -FLT_MAX;
 }
 
 // ***************************************************************************
@@ -80,7 +81,7 @@ void CAnimation::serial (NLMISC::IStream& f)
 	f.serialCheck ((uint32)'MINA');
 
 	// Serial a version
-	sint version=f.serialVersion (0);
+	sint version=f.serialVersion (1);
 
 	// Serial the name
 	f.serial (_Name);
@@ -91,6 +92,11 @@ void CAnimation::serial (NLMISC::IStream& f)
 	// Serial the vector
 	f.serialContPolyPtr (_TrackVector);
 
+	// Serial the min end time
+	if (version>=1)
+	{
+		f.serial (_MinEndTime);
+	}
 }
 
 // ***************************************************************************
@@ -164,6 +170,11 @@ TAnimationTime CAnimation::getEndTime () const
 			if (_TrackVector[t]->getEndTime ()>_EndTime)
 				_EndTime=_TrackVector[t]->getEndTime ();
 		}
+		
+		// Check min end time
+		if (_EndTime < _MinEndTime)
+			_EndTime = _MinEndTime;
+
 		_EndTimeTouched = false;
 	}
 
@@ -223,6 +234,13 @@ void CAnimation::releaseTrack (UTrack* track)
 	NL3D_HAUTO_UI_ANIMATION;
 
 	// Nothing to do
+}
+
+// ***************************************************************************
+
+void CAnimation::setMinEndTime (TAnimationTime minEndTime)
+{
+	_MinEndTime = minEndTime;
 }
 
 // ***************************************************************************

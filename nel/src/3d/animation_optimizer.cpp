@@ -1,7 +1,7 @@
 /** \file animation_optimizer.cpp
  * <File description>
  *
- * $Id: animation_optimizer.cpp,v 1.3 2002/06/19 09:02:36 berenguier Exp $
+ * $Id: animation_optimizer.cpp,v 1.4 2002/07/23 17:09:59 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -92,6 +92,7 @@ void		CAnimationOptimizer::optimize(const CAnimation &animIn, CAnimation &animOu
 	set<string>		setString;
 	animIn.getTrackNames (setString);
 	set<string>::iterator	it;
+
 	for(it=setString.begin();it!=setString.end();it++)
 	{
 		const string	&trackName= *it;
@@ -128,7 +129,9 @@ void		CAnimationOptimizer::optimize(const CAnimation &animIn, CAnimation &animOu
 		animOut.addTrack(trackName, newTrack);
 	}
 
-
+	// Set min animation length
+	animOut.setMinEndTime (animIn.getEndTime ());
+	nlassert (animOut.getEndTime() == animIn.getEndTime());
 }
 
 // ***************************************************************************

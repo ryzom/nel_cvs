@@ -90,6 +90,7 @@
 #define IDC_RADIOACCELNO                1046
 #define IDC_BONE_LOD_DISTANCE           1046
 #define IDC_RADIOACCELPORTAL            1047
+#define IDC_DIST_MAX2                   1047
 #define IDC_RADIOACCELCLUSTER           1048
 #define IDC_FATHER_VISIBLE              1049
 #define IDC_VISIBLE_FROM_FATHER         1050

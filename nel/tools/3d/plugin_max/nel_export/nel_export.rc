@@ -135,7 +135,7 @@ BEGIN
     PUSHBUTTON      "Remove",IDC_REMOVE,131,39,40,14
     PUSHBUTTON      "Up",IDC_UP,131,54,40,14
     PUSHBUTTON      "Down",IDC_DOWN,131,68,40,14
-    GROUPBOX        "LOD Properties",IDC_STATIC,5,105,172,60
+    GROUPBOX        "LOD Properties",IDC_STATIC,5,105,172,50
     CONTROL         "Blend in",IDC_BLEND_IN,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,15,121,40,10
     CONTROL         "Blend out",IDC_BLEND_OUT,"Button",BS_AUTO3STATE | 
@@ -143,9 +143,9 @@ BEGIN
     CONTROL         "Coarse mesh",IDC_COARSE_MESH,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,15,140,55,10
     CONTROL         "Dynamic mesh",IDC_DYNAMIC_MESH,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,15,151,60,10
-    LTEXT           "Dist Max:",IDC_STATIC,80,121,45,13,SS_CENTERIMAGE
-    EDITTEXT        IDC_DIST_MAX,125,121,45,12,ES_AUTOHSCROLL | ES_NUMBER
+                    WS_TABSTOP,80,120,60,10
+    LTEXT           "Dist Max:",IDC_STATIC,5,160,45,13,SS_CENTERIMAGE
+    EDITTEXT        IDC_DIST_MAX,51,160,45,12,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Blend length:",IDC_STATIC,80,135,45,13,SS_CENTERIMAGE
     EDITTEXT        IDC_BLEND_LENGTH,125,135,45,12,ES_AUTOHSCROLL | 
                     ES_NUMBER

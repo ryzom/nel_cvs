@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.45 2002/07/16 12:08:10 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.46 2002/07/23 17:09:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,7 +131,10 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, CM
 // Export a mesh
 IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, CExportNelOptions &opt, bool buildLods)
 {
-	
+
+	// Is this a multi lod object ?
+	bool multiLodObject = false;
+
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
 	IShape *retShape=NULL;
@@ -214,6 +217,9 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 				uint lodCount=getScriptAppData (&node, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
 				if (lodCount && buildLods)
 				{
+					// This is a multilod object
+					multiLodObject = true;
+
 					// Listy of material names
 					std::vector<std::string> listMaterialName;
 
@@ -412,6 +418,14 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 	// If skinning, renable skin modifier
 	if (nodeMap)
 		enableSkinModifier (node, true);
+
+	// Set the dist max for this shape
+	if (retShape && !multiLodObject)
+	{
+		// Get the dist max for this node
+		float distmax = getScriptAppData (&node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
+		retShape->setDistMax (distmax);
+	}
 
 	// Return the shape pointer or NULL if an error occured.
 	return retShape;

@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.6 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: animation.h,v 1.7 2002/07/23 17:09:59 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,6 +124,9 @@ public:
 	/// Serial the template
 	void serial (NLMISC::IStream& f);
 
+	/// Set animation min end time
+	void setMinEndTime (TAnimationTime minEndTime);
+
 	/// \name From UAnimation
 	// @{
 
@@ -149,7 +152,10 @@ private:
 
 	// Vector of channel pointer.
 	TVectAPtrTrack		_TrackVector;
-	
+
+	// Force animation min end time
+	TAnimationTime		_MinEndTime;
+
 	/// \name Anim time caching
 	// @{
 		mutable TAnimationTime		_BeginTime;	

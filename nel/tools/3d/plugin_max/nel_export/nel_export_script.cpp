@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.18 2002/05/13 16:49:21 berenguier Exp $
+ * $Id: nel_export_script.cpp,v 1.19 2002/07/23 17:09:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,7 @@ def_visible_primitive ( reload_texture,		"NelReloadTexture" );
 def_visible_primitive ( export_collision,	"NelExportCollision" );
 def_visible_primitive ( export_pacs_primitives,	"NelExportPACSPrimitives" );
 def_visible_primitive ( export_lod_character,	"NelExportLodCharacter" );
+def_visible_primitive ( node_properties,	"NelNodeProperties" );
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
 char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel]";
@@ -720,6 +721,60 @@ Value* export_lod_character_cf (Value** arg_list, int count)
 		ret = &true_value;
 
 	return ret;
+}
+
+
+Value* node_properties_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (3)
+	check_arg_count(export_lod_character, 2, count);
+
+	// Check to see if the arguments match up to what we expect
+	char *message = "NelNodeProperties [node_array] [dialog error]";
+
+	//type_check (arg_list[0], MAXNode, message);
+	type_check (arg_list[0], Array, message);
+	type_check (arg_list[1], Boolean, message);
+
+	// Get array
+	Array* array=(Array*)arg_list[0];
+
+	// Array of INode *
+	std::set<INode *> nodes;
+
+	// Check each value in the array
+	uint i;
+	for (i=0; i<(uint)array->size; i++)
+	{
+		type_check (array->get (i+1), MAXNode, "NelNodeProperties [node_array] [dialog error]");
+
+		// Add to the array of nodes
+		nodes.insert (array->get (i+1)->to_node());
+	}
+
+	// Message in dialog
+	bool dialogMessage = arg_list[1]->to_bool() != FALSE;
+
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (false, dialogMessage, ip);
+	
+	// Build a seleted set
+	std::set<INode*> listNode;
+
+	// Get the sel node count
+	uint selNodeCount=ip->GetSelNodeCount();
+	for (i=0; i<selNodeCount; i++)
+	{
+		// insert the node
+		listNode.insert (ip->GetSelNode(i));
+	}
+
+	// Call the dialog
+	theCNelExport.OnNodeProperties (listNode);
+
+	return &true_value;
 }
 
 

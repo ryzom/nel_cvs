@@ -1,10 +1,7 @@
 <?php 
 
-// Warning: This script is not safety, It doesn't check if a user is already online and other possibility
-
-	include_once('service_connection2.inc');
-
-	include_once('config.inc');
+	include_once('../config.php');
+	include_once('service_connection2.php');
 
 // ---------------------------------------------------------------------------------------- 
 // Functions

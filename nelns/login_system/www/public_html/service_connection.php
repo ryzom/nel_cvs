@@ -1,6 +1,6 @@
 <?php
 
-	include_once('config.inc');
+	include_once('../config.php');
 
 	// Functions
 
@@ -107,7 +107,7 @@
 		$fp = fsockopen ($LSHost, $LSPort, $errno, $errstr, 30);
 		if (!$fp)
 		{
-			$res = "Can't connect to the login service '$LSHost:$LSPort' ($errno: $errstr)";
+			$res = "Can't connect to the login service '$LSHost:$LSPort' ($errno: $errstr) (error code 41)";
 		}
 		else
 		{
@@ -164,7 +164,7 @@
 		return true;
 	}
 
-	function askClientConnection ($shardid, $uid, $name, $priv, &$res)
+	function askClientConnection ($shardid, $uid, $name, $priv, $extended, &$res, &$patchURLS)
 	{
 		$ok = false;
 
@@ -182,22 +182,23 @@
 		$msgout->serialuint32 ($uid);
 		$msgout->serialstring ($name);
 		$msgout->serialstring ($priv);
+		$msgout->serialstring ($extended);
 
 		if (!sendMessage ($fp, $msgout))
 		{
-			$res = "Can't send message connection to the Login Service";
+			$res = "Can't send message connection to the Login Service (error code 42)";
 			return $ok;
 		}
 
 		if (!waitMessage ($fp, $msgin))
 		{
-			$res = "Can't receive the answer from the Login Service";
+			$res = "Can't receive the answer from the Login Service (error code 43)";
 			return $ok;
 		}
 
 		if (!$msgin->serialstring($reason))
 		{
-			$res = "Can't read the reason";
+			$res = "Can't read the reason (error code 44)";
 			return $ok;
 		}
 		//printf("reason size %d", strlen($reason));
@@ -207,17 +208,26 @@
 			// it s ok, let's connect
 			if (!$msgin->serialstring($cookie))
 			{
-				$res = "Can't read the cookie";
+				$res = "Can't read the cookie (error code 45)";
 				return $ok;
 			}
 
 			if (!$msgin->serialstring($addr))
 			{
-				$res = "Can't read the addr";
+				$res = "Can't read the addr (error code 46)";
 				return $ok;
 			}
 
-			$res = '<!--nel="launch" nelArgs="'.$cookie.' '.$addr.'"-->';
+			$patchURLS = '';
+			/*
+			if (!$msgin->serialstring($patchURLS))
+			{
+				$patchURLS = '';
+			}
+			*/
+
+			$res = $cookie.' '.$addr;
+
 			$ok = true;
 		}
 		else
@@ -256,19 +266,19 @@
 
 		if (!sendMessage ($fp, $msgout))
 		{
-			$res = "Can't send message disconnect to the Login Service";
+			$res = "Can't send message disconnect to the Login Service (error code 47)";
 			return $ok;
 		}
 
 		if (!waitMessage ($fp, $msgin))
 		{
-			$res = "Can't receive the answer from the Login Service";
+			$res = "Can't receive the answer from the Login Service (error code 48)";
 			return $ok;
 		}
 
 		if (!$msgin->serialstring($res))
 		{
-			$res = "Can't read the string";
+			$res = "Can't read the string (error code 49)";
 			return $ok;
 		}
 		//printf("reason size %d", strlen($res));

@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.4 2001/05/02 11:49:50 vizerie Exp $
+ * $Id: ps_force.h,v 1.5 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,10 +79,10 @@ public:
 	virtual void show(CAnimationTime ellapsedTime)  = 0 ;
 
 	/// Serial the force definition. MUST be called by deriver during their serialisation
-	virtual void serial(NLMISC::IStream &f) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 
-	virtual bool newElement(void) = 0 ;
+	virtual void newElement(void) = 0 ;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for of the index given
@@ -90,7 +90,9 @@ public:
 	 */
 	virtual void deleteElement(uint32 index) = 0 ;
 
-	/// Resize the bindable attributes containers DERIVERS SHOULD CALL THEIR PARENT VERSION
+	/** Resize the bindable attributes containers DERIVERS SHOULD CALL THEIR PARENT VERSION
+	 * should not be called directly. Call CPSLOcated::resize instead
+	 */
 	virtual void resize(uint32 size) = 0 ;
 
 	
@@ -119,19 +121,21 @@ public:
 	{}
 
 	/// serialization
-	virtual void serial(NLMISC::IStream &f) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 
 	NLMISC_DECLARE_CLASS(CPSGravity) ; 
 
 
 	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
-	virtual bool newElement(void) { return true ; } ;	
+	virtual void newElement(void) { } ;	
 
 	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
 	virtual void deleteElement(uint32 index) {} ;	
 
-	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
+	/** Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
 	virtual void resize(uint32 size) {} ;
 
 protected:
@@ -161,7 +165,7 @@ public:
 
 
 	/// serialization
-	virtual void serial(NLMISC::IStream &f) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 
 	/// Compute the force on the targets
@@ -175,12 +179,14 @@ public:
 
 
 	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
-	virtual bool newElement(void) { return true ; } ;	
+	virtual void newElement(void) { } ;	
 
 	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
 	virtual void deleteElement(uint32 index) {} ;	
 
-	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
+	/** Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
 	virtual void resize(uint32 size) {} ;
 
 protected:

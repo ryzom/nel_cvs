@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.6 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.7 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include "nel/3d/ps_attrib_maker.h"
 #include "nel/3d/texture_grouped.h"
 #include "nel/misc/common.h"
+
+#include <algorithm>
 
 
 namespace NL3D {
@@ -98,7 +100,7 @@ CPSColoredParticle::~CPSColoredParticle()
 
 /// serialization
 
-void CPSColoredParticle::serialColorScheme(NLMISC::IStream &f)
+void CPSColoredParticle::serialColorScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
 	if (f.isReading())
 	{
@@ -168,7 +170,7 @@ CPSSizedParticle::~CPSSizedParticle()
 
 
 		/// serialization
-void CPSSizedParticle::serialSizeScheme(NLMISC::IStream &f)
+void CPSSizedParticle::serialSizeScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	if (f.isReading())
 	{
@@ -244,7 +246,7 @@ CPSRotated2DParticle::~CPSRotated2DParticle()
 }
 
 		
-void CPSRotated2DParticle::serialAngle2DScheme(NLMISC::IStream &f)
+void CPSRotated2DParticle::serialAngle2DScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	if (f.isReading())
 	{
@@ -353,7 +355,7 @@ CPSTexturedParticle::~CPSTexturedParticle()
 
 		/// serialization. We choose a different name because of multiple-inheritance
 
-void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f)
+void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	if (f.isReading())
 	{
@@ -425,7 +427,7 @@ void CPSDot::updateMatAndVbForColor(void)
 	else
 	{
 		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR) ;
-		_Mat.setColor(CRGBA(255, 255, 255)) ;
+		_Mat.setColor(CRGBA::White) ;
 	}
 
 	if (_Owner)
@@ -482,7 +484,7 @@ void CPSDot::draw(void)
 
 
 
-void CPSDot::serial(NLMISC::IStream &f)
+void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;	
 	f.serialCheck((uint32) 'PSDO') ;
@@ -574,7 +576,7 @@ void CPSFaceLookAt::updateMatAndVbForColor(void)
 	else
 	{
 		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]) ;
-		_Mat.setColor(CRGBA(255, 255, 255)) ;
+		_Mat.setColor(CRGBA::White) ;
 	}
 
 	if (_Owner)
@@ -909,7 +911,7 @@ void CPSFaceLookAt::draw(void)
 }
 
 
-void CPSFaceLookAt::serial(NLMISC::IStream &f)
+void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 
 	f.serialCheck((uint32) 'PFLA') ;	
@@ -1146,7 +1148,7 @@ void CPSFanLight::draw(void)
 	driver->renderTriangles(_Mat, _IndexBuffer, size * _NbFans) ;
 }
 
-void CPSFanLight::serial(NLMISC::IStream &f)
+void CPSFanLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;
 	CPSParticle::serial(f) ;
@@ -1270,6 +1272,372 @@ void CPSFanLight::updateMatAndVbForColor(void)
 	}	
 	
 }
+
+
+///////////////////////////////
+// CPSTailDot implementation //
+///////////////////////////////
+
+// ctor
+CPSTailDot::CPSTailDot(uint32 nbSegmentInTail) : _TailNbSeg(nbSegmentInTail), _ColorFading(true)
+												 ,_SystemBasisEnabled(false)
+{
+	init() ;
+}
+
+
+void CPSTailDot::init(void)
+{
+	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
+	_Mat.setZWrite(false) ;
+	_Mat.setLighting(false) ;
+	_Mat.setBlend(true) ;
+	_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR ) ;	
+}
+	
+
+void CPSTailDot::draw(void)
+{
+	// the number of particles
+	const uint32 size = _Owner->getSize() ;
+
+	if (!size) return ;	
+
+	// size of the vertices
+	const uint32 vSize = _Vb.getVertexSize() ;
+
+	// size of all the vertices for a tail
+	const uint32 tailVSize = vSize * (_TailNbSeg + 1) ;
+	
+	// offset of the color in vertices
+	const uint32 colorOff = _Vb.getColorOff() ;
+
+	// offset for the head in a tail (the last vertex)
+	const uint32 headOffset = vSize * _TailNbSeg ;
+
+	// address of the firstVertex
+
+	uint8 *firstVertex = (uint8 *) _Vb.getVertexCoordPointer() ;
+
+	// loop counters
+	uint32 k, l ;
+
+	// pointer to the current vertex
+	uint8 *currVertex ;
+
+
+	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
+
+	TPSAttribVector::const_iterator posIt, endPosIt = _Owner->getPos().end() ;
+		
+	// decal the whole vertex buffer (but not the last vertex)
+	
+	// TODO : cache optimization
+
+	if (_ColorFading)
+	{
+		if (_UseColorScheme)
+		{
+			// the first color is set to black
+			// other are modulated by the ratio of the intensity n and the intensity n + 1
+			
+			// the brightness increase between each segment in the tail
+			float lumiStep = 1.f / _TailNbSeg ;
+			float lumi = lumiStep ;
+
+			// set the first vertex to black				
+			currVertex = firstVertex ;
+			for (k = 0 ; k < size ; ++k)
+			{
+				*(CRGBA *) (currVertex + colorOff) = CRGBA::Black ;
+				// copy the next vertex pos
+				*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;
+				currVertex += tailVSize  ;			
+			}
+
+			for (l = 1 ; l < _TailNbSeg ; ++l)
+			{
+				currVertex = firstVertex + l * vSize ;
+				uint8 ratio = (uint8) (255.0f * lumi / (lumi +  lumiStep)) ;
+				lumi += lumiStep ;			
+				for (k = 0 ; k < size ; ++k)
+				{
+					// get the color of the next vertex and modulate
+					((CRGBA *) (currVertex + colorOff))->modulateFromui(*(CRGBA *) (currVertex + vSize + colorOff), ratio) ;
+					// copy the next vertex pos
+					*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;
+					currVertex += tailVSize  ;			
+				}
+				
+			}			
+		}
+		else
+		{
+			// we just decal the pos
+			// we copy some extra pos, but we avoid 2 nested loops
+			const uint32 nbVerts = (size * (_TailNbSeg + 1)) - 1 ;
+			const uint8 *lastVert = firstVertex + nbVerts * vSize ;
+
+			for (currVertex = firstVertex ; currVertex != lastVert ; currVertex += vSize)
+			{
+				*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;			
+			}
+		}
+	}
+	else
+	{
+		if (_ColorScheme)
+		{
+			// we just copy the colors and the position
+			// memcpy will copy some extra bytes, but it should remains fasters that 2 nested loops
+			memcpy(firstVertex, firstVertex + vSize, size * tailVSize  - vSize) ; 
+		}
+	}
+
+
+
+
+	// we fill the head of particles with the right color
+	// With constant color, the setup was done in setupColor
+	if (_UseColorScheme)
+	{
+		_ColorScheme->make(_Owner, 0,  firstVertex + headOffset + colorOff
+							, tailVSize, _Owner->getSize()) ;		
+	}
+
+	// now, copy the positions from the particle
+		currVertex = firstVertex + headOffset ;
+		for (posIt = _Owner->getPos().begin() ; posIt != endPosIt ; ++posIt)
+		{
+			*(CVector *) currVertex = *posIt ;
+			currVertex += tailVSize ;
+		}
+
+
+	setupDriverModelMatrix() ;
+
+	IDriver *driver = getDriver() ;
+	driver->activeVertexBuffer(_Vb) ;		
+	_Pb.setNumLine(size * _TailNbSeg) ;
+	driver->render(_Pb, _Mat) ;
+}
+
+
+void CPSTailDot::resize(uint32 size)
+{	
+	resizeVb(_TailNbSeg, size) ;	
+}
+
+void CPSTailDot::resizeVb(uint32 oldTailSize, uint32 size)
+{
+	
+	if (!_Owner) return ; // no attachement occured yet ...
+
+	// calculate the primitive block : we got lines
+		
+	uint32 k, l ;
+
+	_Pb.reserveLine(_TailNbSeg * size) ;
+
+	uint32 currIndex = 0 ;
+
+	for (k = 0 ; k < size ; ++k)
+	{
+		for (l = 0 ; l < _TailNbSeg - 1 ; ++l)
+		{
+			_Pb.addLine(currIndex + l , currIndex + l + 1) ;		
+		}
+
+		currIndex += _TailNbSeg + 1 ;		
+	}
+
+	const uint32 oldSize = _Owner->getSize() ; // number of used particles
+	
+
+	_Vb.setVertexFormat(IDRV_VF_COLOR | IDRV_VF_XYZ) ;
+	_Vb.setNumVertices(size * (_TailNbSeg + 1)) ;
+
+	// fill the vertex buffer
+
+	// particle that were present before
+	// their old positions are copied
+
+	const TPSAttribVector &oldPos = _Owner->getPos() ;
+	currIndex = 0 ;
+
+	for (k = 0 ; k < std::min(oldSize, size) ; ++k)
+	{
+		for (l = 0 ; l <= _TailNbSeg ; ++l)
+		{
+			_Vb.setVertexCoord( currIndex + l , oldPos[k]) ;			
+		}
+		currIndex += _TailNbSeg + 1 ;		
+	}	
+	// we don't need to setup the following vertices coordinates, they will be filled with newElement
+
+	setupColor() ;
+	
+}
+
+void CPSTailDot::setupColor(void)
+{
+	// we setup the WHOLE vb so, we need to get the max number of particles
+	const uint32 size = _Owner->getMaxSize() ;	
+
+	// size of the vertices
+	const uint32 vSize = _Vb.getVertexSize() ;
+
+	// offset of the color in vertices
+	const uint32 colorOff = _Vb.getColorOff() ;
+
+	// first vertex
+	uint8 *firstVertex = (uint8 *) _Vb.getVertexCoordPointer() ;
+	
+	// point the current vertex color
+	uint8 *currVertex =  firstVertex + colorOff ;
+
+	// loop counters
+	uint k, l ;
+
+
+	if (_UseColorScheme || !_ColorFading)
+	{
+		// we can't precompute the colors, so at first, we fill all with black
+		const CRGBA &color = _UseColorScheme ? CRGBA::Black : _Color ;
+		for (k = 0 ; k < size * (_TailNbSeg + 1) ; ++k)
+		{
+				*(CRGBA *) currVertex = color ;
+				currVertex += vSize ;
+		}
+	}
+	else // constant color with color fading
+	{
+		const float lumiStep = 255.0f / _TailNbSeg ;
+		const  uint32 tailVSize = vSize * (_TailNbSeg + 1) ; // size of a whole tail in the vertex buffer
+		float lumi = 0.f ;
+		for (l = 0 ; l <= _TailNbSeg ; ++l)
+		{
+			currVertex = firstVertex + l * vSize + colorOff ;
+			CRGBA col ;
+			col.modulateFromui(_Color, (uint8) lumi) ;
+			lumi += lumiStep ;			
+			for (k = 0 ; k < size ; ++k)
+			{				
+				*(CRGBA *)currVertex = col ;				
+				currVertex += tailVSize  ;			
+			}
+			
+		}
+
+	}
+
+
+	
+
+}
+
+
+void CPSTailDot::newElement(void)
+{
+	nlassert(_Owner->getSize() != _Owner->getMaxSize()) ;
+
+
+	// if we got a constant color, everything has been setupped before
+
+	
+		const uint32 index = _Owner->getNewElementIndex() ; // the index of the element to be created
+
+		const uint32 vSize =_Vb.getVertexSize() ;	// vertex size
+		uint8 *currVert = (uint8 *) _Vb.getVertexCoordPointer() + (index * (_TailNbSeg + 1)) * vSize ; // 
+
+		const CVector &pos = _Owner->getPos()[index] ;	
+		if (_UseColorScheme)
+		{
+			for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
+			{
+				*(CVector *) currVert = pos ;
+				*(CRGBA *) (currVert + _Vb.getColorOff()) = CRGBA::Black ;
+
+				currVert += vSize ; // go to next vertex
+			}
+		}
+		else
+		{
+			// color setup was done during setup color
+			for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
+			{
+				*(CVector *) currVert = pos ;			
+				currVert += vSize ; // go to next vertex
+			}
+		}
+}
+		
+
+
+void CPSTailDot::deleteElement(uint32 index)
+{
+	// we copy the last element datas to this one data
+	
+	// vertex size
+	const uint32 vSize =_Vb.getVertexSize() ;
+
+
+	// source
+	const uint8 *currSrcVert = (uint8 *) _Vb.getVertexCoordPointer() + ((_Owner->getSize() - 1) * (_TailNbSeg + 1)) * vSize ;
+
+	// destination
+	uint8 *currDestVert = (uint8 *) _Vb.getVertexCoordPointer() + (index * (_TailNbSeg + 1)) * vSize ;
+
+
+	// copy the vertices
+	memcpy(currDestVert, currSrcVert, vSize * (_TailNbSeg + 1) ) ;	
+}
+
+
+
+			
+	
+	
+void CPSTailDot::setTailNbSeg(uint32 nbSeg)
+{
+	uint32 oldTailSize = _TailNbSeg ;
+	_TailNbSeg = nbSeg ;
+
+	if (_Owner)
+	{
+		resizeVb(nbSeg, _Owner->getMaxSize()) ;
+	}
+}
+
+	
+
+
+void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	const uint oldTailNbSeg = _TailNbSeg ;
+
+	f.serialVersion(1) ;
+	CPSParticle::serial(f) ;
+	CPSColoredParticle::serialColorScheme(f) ;	
+	f.serial(_TailNbSeg, _ColorFading) ;
+
+	// In this version we don't save the vb state, as we probably won't need it
+	// we just rebuild the vb
+	
+	if (f.isReading())
+	{
+		resizeVb(oldTailNbSeg, _Owner->getMaxSize()) ;
+		// init() ;		
+	}		
+
+}
+
+void CPSTailDot::updateMatAndVbForColor(void)
+{
+	setupColor() ;
+}
+
+
 
 
 } // NL3D

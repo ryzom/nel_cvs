@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
+ * $Id: ps_zone.h,v 1.4 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,7 +92,10 @@ public:
 
 	
 	/// serialisation, DERIVER must override this
-	virtual void serial(NLMISC::IStream &f) { CPSTargetLocatedBindable::serial(f) ; }
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) 
+	{ 
+		CPSTargetLocatedBindable::serial(f) ; 
+	}
 
 
 	/** Inherited from CPSTargetLocatedBindable. Its called when one of the targets has been detroyed or detached
@@ -131,7 +134,7 @@ class CPSZonePlane : public CPSZone, public IPSMover
 		virtual void performMotion(CAnimationTime ellapsedTime) ;
 		virtual void show(CAnimationTime ellapsedTime)  ;
 		virtual void resize(uint32 size) ;
-		virtual bool newElement(void) ;
+		virtual void newElement(void) ;
 		virtual void deleteElement(uint32 index) ;
 
 		NLMISC_DECLARE_CLASS(CPSZonePlane) ;
@@ -142,7 +145,7 @@ class CPSZonePlane : public CPSZone, public IPSMover
 		// return a matrix of the system. No valid index -> assert
 		virtual CMatrix getMatrix(uint32 index) const ;
 
-		virtual void serial(NLMISC::IStream &f) ;
+		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	protected:
 		TPSAttribVector _Normal ;

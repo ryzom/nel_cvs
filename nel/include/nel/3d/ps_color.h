@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.2 2001/05/08 13:37:08 vizerie Exp $
+ * $Id: ps_color.h,v 1.3 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ public:
 	
 
 	/// serialization
-	virtual void serial(NLMISC::IStream &f) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 protected:	
 	// a precomputed color tab
@@ -123,7 +123,7 @@ public:
 	
 
 	/// serialization
-	virtual void serial(NLMISC::IStream &f) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	// ctor
 	CPSColorGradientFunc() ;

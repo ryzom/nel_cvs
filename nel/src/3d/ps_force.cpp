@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.4 2001/05/02 11:48:46 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.5 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,7 @@ CPSForce::CPSForce()
 {
 }
 
-void CPSForce::serial(NLMISC::IStream &f)
+void CPSForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSTargetLocatedBindable::serial(f) ;
 	f.serialCheck((uint32) 'FORC') ;
@@ -176,7 +176,7 @@ void CPSGravity::show(CAnimationTime ellapsedTime)
 	
 }
 
-void CPSGravity::serial(NLMISC::IStream &f)
+void CPSGravity::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSForce::serial(f) ;
 	f.serialVersion(1) ;
@@ -225,7 +225,7 @@ void CPSSpring::performMotion(CAnimationTime ellapsedTime)
 }
 
 
-void CPSSpring::serial(NLMISC::IStream &f)
+void CPSSpring::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSForce::serial(f) ;
 	f.serialVersion(1) ;

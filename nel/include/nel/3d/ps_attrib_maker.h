@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.2 2001/05/08 13:37:08 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.3 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 	//  virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const = 0 ;
 
 	/// serialisation of the object. Derivers MUST call this
-	virtual void serial(NLMISC::IStream &f) 
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_NbCycles) ;	
 	}
@@ -150,7 +150,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 
 
 	/// serialisation of the object
-	virtual void serial(NLMISC::IStream &f)
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		CPSAttribMaker<T>::serial(f) ;
 	   f.serial(_F) ;

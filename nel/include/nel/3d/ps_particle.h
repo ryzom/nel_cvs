@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.6 2001/05/08 13:37:08 vizerie Exp $
+ * $Id: ps_particle.h,v 1.7 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/3d/material.h"
 #include "nel/3d/ps_util.h"
 #include "nel/3d/vertex_buffer.h"
+#include "nel/3d/primitive_block.h"
 
 
 
@@ -81,7 +82,7 @@ public:
 	/**	Generate a new element for this bindable. They are generated according to the propertie of the class	
 	 * \return true if it could be added
 	 */
-	virtual bool newElement(void) = 0 ;
+	virtual void newElement(void) = 0 ;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for the index given
@@ -89,11 +90,16 @@ public:
 	 */
 	virtual void deleteElement(uint32 index) = 0 ;
 
-	/// Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
+	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
 	virtual void resize(uint32 size) = 0 ;
 
 	/// serialisation. Derivers must override this, and call their parent version
-	virtual void serial(NLMISC::IStream &f) { CPSLocatedBindable::serial(f) ; }
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{ 
+		CPSLocatedBindable::serial(f) ; 
+	}
 	
 };
 
@@ -123,7 +129,7 @@ class CPSColoredParticle
 		~CPSColoredParticle() ;
 
 		/// serialization. 
-		void serialColorScheme(NLMISC::IStream &f) ;
+		void serialColorScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	protected:		
 		/// if this is false, constant color will be used instead of a scheme
@@ -161,7 +167,7 @@ class CPSSizedParticle
 		~CPSSizedParticle() ;
 
 		/// serialization. We choose a different name because of multiple-inheritance
-		void serialSizeScheme(NLMISC::IStream &f) ;
+		void serialSizeScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	protected:		
 		/// if this is false, constant size will be used instead of a scheme
@@ -198,7 +204,7 @@ class CPSRotated2DParticle
 		~CPSRotated2DParticle() ;
 
 		/// serialization. We choose a different name because of multiple-inheritance
-		void serialAngle2DScheme(NLMISC::IStream &f) ;
+		void serialAngle2DScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 
 
@@ -261,7 +267,7 @@ class CPSTexturedParticle
 
 		/// serialization. We choose a different name because of multiple-inheritance
 
-		void serialTextureScheme(NLMISC::IStream &f) ;		
+		void serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;		
 
 
 	protected:		
@@ -298,10 +304,13 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
 		*/
 		virtual void draw(void) ;
 
+		/** Set the nax number of dot
+		* should not be called directly. Call CPSLocated::resize instead
+	    */
 		void resize(uint32 size) { _Vb.setNumVertices(size) ;}
 
 		/// we don't save datas so it does nothing for now
-		bool newElement(void) { return true ; }
+		void newElement(void) {}
 
 		/// we don't save datas so it does nothing for now
 		void deleteElement(uint32) {}
@@ -314,7 +323,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
 		NLMISC_DECLARE_CLASS(CPSDot) ;
 
 		///serialisation
-		void serial(NLMISC::IStream &f) ;
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 	protected:
 		
 		void init(void) ;		
@@ -339,16 +348,19 @@ public:
 	/// create the face look at by giving a texture and an optionnal color
 	CPSFaceLookAt(CSmartPtr<ITexture> tex = NULL) ;
 	virtual void draw(void) ;
-	void serial(NLMISC::IStream &f) ;
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 	
 	NLMISC_DECLARE_CLASS(CPSFaceLookAt) ;
 
 	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
 
+	/** Set the max number of faceLookAt. 
+	* should not be called directly. Call CPSLocated::resize instead
+	*/
 	virtual void resize(uint32 size) ; 
 		
 	/// we don't save datas so it does nothing for now
-	bool newElement(void) { return true ; }
+	void newElement(void) {}
 
 	/// we don't save datas so it does nothing for now
 	void deleteElement(uint32) {}
@@ -388,16 +400,19 @@ class CPSFanLight : public CPSParticle, public CPSColoredParticle, public CPSSiz
 public:
 	virtual void draw(void) ;
 
-	void serial(NLMISC::IStream &f) ;
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	NLMISC_DECLARE_CLASS(CPSFanLight) ;
 
 	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
 
+	/** Set the max number of fanlights
+	* should not be called directly. Call CPSLocated::resize instead
+	*/
 	virtual void resize(uint32 size) ; 
 	
 	/// we don't save datas so it does nothing for now
-	bool newElement(void) { return true ; }
+	void newElement(void) {}
 
 	/// we don't save datas so it does nothing for now
 	void deleteElement(uint32) {}
@@ -447,7 +462,99 @@ protected:
 	#ifdef NL_DEBUG		
 		static bool _RandomPhaseTabInitialized ;
 	#endif
+} ;
 
+
+/**
+ *  These particle are like dot, but a tail is following them. The number of line in the tails can be tuned
+ */
+
+class CPSTailDot : public CPSParticle, public CPSColoredParticle
+{
+	public:
+		/// process one pass for the particle	
+		
+		virtual void draw(void) ;
+
+		/** Set the max number of TailDot
+		* should not be called directly. Call CPSLocated::resize instead
+		*/
+		void resize(uint32 size) ;
+		
+		void newElement(void) ;
+		
+		void deleteElement(uint32 index) ;
+	
+		/** (de)activate color fading
+		 * when its done, colors fades to black along the tail
+		 */
+		void setColorFading(bool onOff = true) 
+		{ 
+			_ColorFading = onOff ; 
+			setupColor() ;
+		}
+
+		/// test wether color fading is activated
+		bool getColorFading(void) const { return _ColorFading ; }
+		
+		/// ctor. It tells how many segments there are in the tail
+		CPSTailDot(uint32 nbSegmentInTail = 4) ;
+
+		// set the number of segments in the tail		
+		void setTailNbSeg(uint32 nbSeg) ;
+
+		// get the number of segments in the tail
+		uint getTailNbSeg(uint32 getNbSeg) const { return _TailNbSeg ; }
+
+		NLMISC_DECLARE_CLASS(CPSTailDot) ;
+
+		///serialisation
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		
+		/** tells in which basis is the tail
+		 *  It requires one transform per particle if it is not the same as the located that hold that particle
+		 *  The default is false. With that you can control if a rotation of the system will rotate the tail
+		 */
+		void setSystemBasis(bool yes) ;
+
+		
+		/// return true if the tails are in the system basis
+		bool isInSystemBasis(void) const { return _SystemBasisEnabled ; }
+
+
+	protected:
+		
+		void init(void) ;		
+		CMaterial _Mat ;
+		CVertexBuffer _Vb ;	
+		// a set of lines to draw
+		CPrimitiveBlock _Pb ; 
+
+		// number of segments in the tail
+		uint32 _TailNbSeg ;
+
+		
+		// true if the rail is in the system basis, false otherwise
+		bool _SystemBasisEnabled ;
+
+
+
+		
+		/// on if the tail color must fade to black
+		bool _ColorFading ;
+							
+		
+		// resize the vertex buffer to keep old datas
+		void CPSTailDot::resizeVb(uint32 oldTailNbSeg, uint32 size) ;
+
+		// setup the initial colors in the whole vb : black or a precomputed gradient for constant color
+		void setupColor(void) ;
+
+
+
+		/// update the material and the vb so that they match the color scheme
+
+		virtual void updateMatAndVbForColor(void) ;
 } ;
 
 

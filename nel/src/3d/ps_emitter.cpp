@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.4 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.5 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D {
 /////////////////////////////////
 // CPSFrequency implementation //
 /////////////////////////////////
-void CPSFrequency::serial(NLMISC::IStream &f)
+void CPSFrequency::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialCheck((uint32)'NLPS') ;
 	f.serialVersion(1) ;
@@ -96,9 +96,11 @@ if (pass != PSMotion) return ;
 }
 
 
-bool CPSEmitter::newElement(void)
+void CPSEmitter::newElement(void)
 {	
-	bool result = ( (_Phase.insert(0) != - 1) ? true : false ) ;
+	nlassert(_Phase.getSize() != _Phase.getMaxSize()) ;	
+
+	_Phase.insert(0.f) ;
 
 	if (_Freq._FreqType == CPSFrequency::once)
 	{
@@ -106,8 +108,7 @@ bool CPSEmitter::newElement(void)
 		{
 			emit(_Owner->getNewElementIndex()) ;
 		}
-	}	
-	return result ;
+	}		
 }
 
 void CPSEmitter::deleteElement(uint32 index)
@@ -128,7 +129,7 @@ void CPSEmitter::resize(uint32 size)
 }
 
 
-void CPSEmitter::serial(NLMISC::IStream &f)
+void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialCheck((uint32) 'EMIT') ;
 	CPSLocatedBindable::serial(f) ;
@@ -161,7 +162,7 @@ void CPSEmitterOmni::emit(uint32 index)
 
 
 
-void CPSEmitterOmni::serial(NLMISC::IStream &f)
+void CPSEmitterOmni::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSEmitter::serial(f) ;
 }

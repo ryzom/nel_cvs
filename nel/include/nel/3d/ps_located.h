@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.6 2001/05/08 13:37:08 vizerie Exp $
+ * $Id: ps_located.h,v 1.7 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ struct CPSCollisionInfo
 		dist = -1 ;
 	}
 
-	 void serial(NLMISC::IStream &f)
+	 void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	 {
 		f.serialVersion(1) ;
 		f.serial(dist, newPos, newSpeed) ;
@@ -279,7 +279,7 @@ public:
 	void resize(uint32 newSize) ;
 
 	/// serialization	 
-	void serial(NLMISC::IStream &f) ;
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	/// Shortcut to get an instance of the 3d driver
 	IDriver *getDriver() const { return CNELU::Driver ;  }
@@ -413,7 +413,7 @@ protected:
 	{
 		CVector _Pos ;
 		CVector _Speed ;
-		void serial(NLMISC::IStream &f)
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			f.serial(_Pos, _Speed) ;
 		}			
@@ -570,7 +570,7 @@ public:
 
 
 	/// serialization
-	virtual void serial(NLMISC::IStream &f) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	/// dtor
 
@@ -724,10 +724,9 @@ protected:
 
 	friend class CPSLocated ;
 
-	/**	Generate a new element for this bindable. They are generated according to the propertie of the class	
-	 * \return true if it could be added
+	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 	 */
-	virtual bool newElement(void) = 0 ;
+	virtual void newElement(void) = 0 ;
 
 
 	/** Delete an element given its index
@@ -738,7 +737,9 @@ protected:
 
 	virtual void deleteElement(uint32 index) = 0 ;
 
-	/// Resize the bindable attributes containers
+	/** Resize the bindable attributes containers
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
 	virtual void resize(uint32 size) = 0 ;
 
 
@@ -821,7 +822,7 @@ class CPSTargetLocatedBindable : public CPSLocatedBindable
 
 
 		/// Seralization, must be called by derivers
-		void serial(NLMISC::IStream &f) ;
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 
 		virtual ~CPSTargetLocatedBindable() ;

@@ -1,7 +1,7 @@
 /** \file ps_color.cpp
  * <File description>
  *
- * $Id: ps_color.cpp,v 1.2 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_color.cpp,v 1.3 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D {
 
 
 
-void CPSColorFaderFunc::serial(NLMISC::IStream &f)
+void CPSColorFaderFunc::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialCheck((uint32) 'FFUN') ;
 	f.serial(_Tab[0], _Tab[63]) ; 
@@ -101,7 +101,7 @@ void CPSColorGradientFunc::setColors(const CRGBA *colorTab, uint32 numCol)
 
 
 /// serialization
-void CPSColorGradientFunc::serial(NLMISC::IStream &f)
+void CPSColorGradientFunc::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialCheck((uint32) 'GCF_') ;
 	if (f.isReading())
@@ -154,7 +154,7 @@ CPSColorGradientFunc::~CPSColorGradientFunc()
 }
 
 
-CRGBA CPSColorGradient::_DefaultGradient[2] = { CRGBA(255, 255, 255), CRGBA(0, 0, 0) } ;
+CRGBA CPSColorGradient::_DefaultGradient[2] = { CRGBA::White, CRGBA::Black } ;
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.5 2001/05/08 13:37:08 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.6 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,7 +107,7 @@ public:
 	void remove(uint32 index) ; 
 
 	//// Serialization method
-	void serial(NLMISC::IStream &f) ;
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 protected:		
 	TContType _Tab ; 
@@ -181,7 +181,7 @@ void CPSAttrib<T>::remove(uint32 index)
 }
 
 template <typename T> 
-void CPSAttrib<T>::serial(NLMISC::IStream &f)
+void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
 	f.serialCheck((uint32)'PASA') ;
 	f.serialVersion(1) ;
@@ -198,6 +198,7 @@ void CPSAttrib<T>::serial(NLMISC::IStream &f)
 typedef CPSAttrib<NLMISC::CVector> TPSAttribVector ;
 typedef CPSAttrib<NLMISC::CRGBA>   TPSAttribRGBA   ;
 typedef CPSAttrib<float>		   TPSAttribFloat  ;	
+typedef CPSAttrib<uint32>		   TPSAttribUInt  ;	
 typedef CPSAttrib<CAnimationTime>  TPSAttribTime   ;
 
 

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.5 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.6 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSIntGradient) ;
 		NLMISC_REGISTER_CLASS(CPSSpring) ;
 		NLMISC_REGISTER_CLASS(CPSFanLight) ;
+		NLMISC_REGISTER_CLASS(CPSTailDot) ;
 		// while we are here, we perform some important inits
 		CPSRotated2DParticle::initRotTable() ; // init the precalc rot table for face lookat
 		initFastCosNSinTable() ; // init fast cosine lookup table

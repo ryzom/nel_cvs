@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.4 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,9 +167,10 @@ void CPSZonePlane::resize(uint32 size)
 }
 
 
-bool CPSZonePlane::newElement(void)
+void CPSZonePlane::newElement(void)
 {
-	return (_Normal.insert(CVector(0, 0, 1)) != -1) ? true : false  ;
+	nlassert(_Normal.getSize() != _Normal.getMaxSize()) ;
+	_Normal.insert(CVector(0, 0, 1)) ;
 }
 
 
@@ -266,7 +267,7 @@ CMatrix CPSZonePlane::getMatrix(uint32 index) const
 }
 
 
-void CPSZonePlane::serial(NLMISC::IStream &f)
+void CPSZonePlane::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialCheck((uint32) 'PSPL') ;
 	CPSZone::serial(f) ;

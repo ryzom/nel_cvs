@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.1 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.2 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ public:
 	CPSValueBlendFunc() {}
 
 	/// serialization
-	void serial(NLMISC::IStream &f)
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_CstValue, _ValueRatio) ;
 	}
@@ -162,7 +162,7 @@ public:
 	
 
 	/// serialization
-	virtual void serial(NLMISC::IStream &f) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 
 	T getMaxValue(void) const
@@ -335,7 +335,7 @@ inline void CPSValueGradientFunc<sint32>::setValues(const sint32 *valueTab, uint
 
 	
 template <typename T> 
-void CPSValueGradientFunc<T>::serial(NLMISC::IStream &f)
+void CPSValueGradientFunc<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialCheck((uint32) 'GVF_') ;
 	f.serial(_NbStages) ;

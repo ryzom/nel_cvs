@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.4 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ struct CPSFrequency
 	CPSFrequency() : _FreqType(regular), _Period(0.0f), _GenNb(1)
 	{
 	}
-	void serial(NLMISC::IStream &f) ;
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 } ;
 
 
@@ -85,10 +85,9 @@ public:
 	*/
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
 
-	/**	Generate a new element for this bindable. They are generated according to the propertie of the class	
-	 * \return true if it could be added
+	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 	 */
-	virtual bool newElement(void) ;
+	virtual void newElement(void) ;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for of the index given
@@ -96,7 +95,9 @@ public:
 	 */
 	virtual void deleteElement(uint32 index) ;
 
-	/// Resize the bindable attributes containers. DERIVERS SHOULD CALL THEIR PARENT VERSION
+	/** Resize the bindable attributes containers. DERIVERS SHOULD CALL THEIR PARENT VERSION
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
 	virtual void resize(uint32 size) ;
 
 
@@ -114,7 +115,7 @@ public:
 
 
 	/// Serialization
-	virtual void serial(NLMISC::IStream &f) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 protected:
 
@@ -141,7 +142,7 @@ public:
 
 
 	/// serialisation
- 	virtual	void serial(NLMISC::IStream &f) ;
+ 	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	
 	NLMISC_DECLARE_CLASS(CPSEmitterOmni) ;

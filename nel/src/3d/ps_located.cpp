@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.6 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.7 2001/05/09 14:31:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -262,7 +262,7 @@ void CPSLocated::resize(uint32 newSize)
 }
 
 
-void CPSLocated::serial(NLMISC::IStream &f)
+void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	// TODO : update this
 
@@ -561,7 +561,7 @@ void CPSLocated::resetCollisionInfo(void)
 }
 
 
-void CPSLocatedBindable::serial(NLMISC::IStream &f)
+void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialCheck((uint32) 'BIND') ;
 	f.serialVersion(1) ;
@@ -570,7 +570,7 @@ void CPSLocatedBindable::serial(NLMISC::IStream &f)
 
 
 
-void CPSTargetLocatedBindable::serial(NLMISC::IStream &f)
+void CPSTargetLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	uint32 size ;
 	f.serialVersion(1) ;	

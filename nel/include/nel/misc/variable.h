@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.11 2004/06/03 17:14:41 lecroart Exp $
+ * $Id: variable.h,v 1.12 2004/06/03 17:15:59 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -34,7 +34,7 @@
 namespace NLMISC {
 
 /** WARNING:
- *   This is standard Unix linker behavior: object files
+ *   This is POSIX C/C++ linker behavior: object files
  *   that are not referenced from outside are discarded. The
  *   file in which you run your constructor is thus simply
  *   thrown away by the linker, which explains why the constructor

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.4 2001/06/25 13:55:05 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.5 2001/06/26 11:58:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,7 +59,7 @@ template <>
 inline CRGBA PSValueBlend(const CRGBA &t1, const CRGBA &t2, float alpha)
 {
 	CRGBA result ;
-	result.blendFromui(t1, t2, (uint) (256.0f * alpha)) ;
+	result.blendFromui(t1, t2, (uint) (255.0f * alpha)) ;
 	return result ;
 }
 
@@ -72,6 +72,14 @@ inline CPlaneBasis PSValueBlend(const CPlaneBasis &t1, const CPlaneBasis &t2, fl
 }
 
 
+/// base struct for blending function (exact or sampled)
+  
+template <typename T> struct CPSValueBlendFuncBase
+{
+	virtual void getValues(T &startValue, T &endValue) const = 0 ;
+	virtual void setValues(T startValue, T endValue) = 0 ;
+} ;
+
 
 
 /**
@@ -83,7 +91,7 @@ inline CPlaneBasis PSValueBlend(const CPlaneBasis &t1, const CPlaneBasis &t2, fl
  * \date 2001
  * \see PSValueBlend
  */
-template <typename T> class CPSValueBlendFunc
+template <typename T> class CPSValueBlendFunc : public CPSValueBlendFuncBase<T>
 {
 public:
 	/// this produce Values
@@ -96,7 +104,7 @@ public:
 
 	/// restrieve the start and end Value
 
-	void getValues(T &startValue, T &endValue) const
+	virtual void getValues(T &startValue, T &endValue) const
 	{
 		startValue = (*this)(0) ;
 		endValue = (*this)(1) ;
@@ -104,7 +112,7 @@ public:
 
 	/// set the Values
 
-	void setValues(T startValue, T endValue)
+	virtual void setValues(T startValue, T endValue)
 	{
 		_StartValue = startValue ;
 		_EndValue = endValue ;
@@ -171,7 +179,7 @@ public:
  * \see PSValueBlend
  */
 
-template <typename T, const uint n> class CPSValueBlendSampleFunc
+template <typename T, const uint n> class CPSValueBlendSampleFunc : public CPSValueBlendFuncBase<T>
 {
 public:
 	/// this produce Values
@@ -183,7 +191,7 @@ public:
 
 	/// restrieve the start and end Value
 
-	void getValues(T &startValue, T &endValue) const
+	virtual void getValues(T &startValue, T &endValue) const
 	{
 		startValue = _Values[0] ;
 		endValue = _Values[n] ;
@@ -191,7 +199,7 @@ public:
 
 	/// set the Values
 
-	void setValues(T startValue, T endValue)
+	virtual void setValues(T startValue, T endValue)
 	{
 		float step = 1.f / n ;
 		float alpha = 0.0f ;

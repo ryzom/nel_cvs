@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * <File description>
  *
- * $Id: animation_playlist.cpp,v 1.11 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: animation_playlist.cpp,v 1.11.8.1 2003/05/19 08:11:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,9 @@ void CAnimationPlaylist::emptyPlayList ()
 		_SpeedFactor[i]=1.f;
 		_StartWeight[i]=1.f;
 		_EndWeight[i]=1.f;
+		_StartWeightTime[i]= 0.f;
+		_EndWeightTime[i]= 0.f;
+		_Smoothness[i]= 0.f;
 	}
 }
 

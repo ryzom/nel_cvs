@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.29 2004/09/23 15:18:57 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.30 2004/10/06 13:05:11 guignot Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -191,9 +191,9 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 		return false;
 	}
 
-	if (entityName.size() > 13)
+	if (entityName.size() > 15)
 	{
-		log->displayNL("Bad entity name '%s' (more than 13 char)", entityName.toString().c_str());
+		log->displayNL("Bad entity name '%s' (more than 15 char)", entityName.toString().c_str());
 		return false;
 	}
 

@@ -13,6 +13,8 @@ TransitionIds			= #( #( 1, 2 ), #( undefinded, 3 ), #( 5, 4 ), #( 6, 7, 8, 9 ) )
 TransitionType			= #( "CornerA", "CornerA",	"Flat",			"CornerA",		"CornerB",	"CornerB",	"Flat",			"Flat",			"CornerB")
 TransitionNumBis		= #( 5,			4,			2,				3,				7,			6,			0,				1,				8)
 
+NEL3D_APPDATA_IGNAME = 1423062564			-- string : name of the Instance Group
+
 -- Clear the log
 fn clearlog =
 (
@@ -136,6 +138,121 @@ fn selectAllPatch =
 	)
 )
 
+
+-- Get the ig name of this object
+fn getIg node =
+(
+	return (getappdata node NEL3D_APPDATA_IGNAME)
+)
+
+
+-- Export instance groups from the current loaded zone
+fn exportInstanceGroupFromZone inputFile outputPath = 
+(
+	-- Unhide
+	max unhide all
+
+	-- unselect
+	max select none
+
+	-- Exported object count
+	exported = 0
+
+	-- Ig array
+	ig_array = #()
+
+	-- Scan all the ig in this project
+	for node in geometry do
+	(
+		ig = getIg node
+		if (ig != undefined) then
+		(
+			-- Found ?
+			found = false
+
+			-- Already found ?
+			for j = 1 to ig_array.count do
+			(
+				if (ig_array[j]==ig) then
+				(								
+					found = true
+					exit
+				)
+			)
+
+			-- Found ?
+			if (found == false) then
+			(
+				append ig_array ig
+			)
+		)
+	)
+
+	-- Have some ig ?
+	if (ig_array.count != 0) then
+	(
+		-- For each ig
+		for ig = 1 to ig_array.count do
+		(
+			-- Output filename
+			output = (outputPath + ig_array[ig] + ".ig")
+
+			-- Check date
+			if (NeLTestFileDate output inputFile) == true then
+			(
+				-- Select none
+				max select none
+
+				-- Select all node in this ig
+				for node in geometry do
+				(
+					-- Select it if in the ig
+					if ( (getIg node) == ig_array[ig]) then
+						selectmore node
+				)
+				-- Select all lights in this ig
+				for node in lights do
+				(
+					-- Select it if in the ig
+					if ( (getIg node) == ig_array[ig]) then
+						selectmore node
+				)
+
+				-- Check export
+				try
+				(
+					-- Export the ig
+					instancegroup2export = $selection as array
+					if (NelExportInstanceGroup instancegroup2export output) == true then
+					(
+						nlerror ("OK "+output)
+					)
+					else
+					(
+						-- Error
+						nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+inputFile)
+					)
+				)
+				catch
+				(
+					-- Error
+					nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+inputFile)
+				)
+			)
+			else
+			(
+				nlerror ("SKIPPED "+output)
+			)
+		)
+	)
+	else
+	(
+		-- Error
+		nlerror ("WARNING nothing exported from ig max file "+inputFile)
+	)
+)
+
+------------------------------------------------------------------------------------------------------------------
 -- ENTRY POINT
 -- ***********
 
@@ -152,20 +269,22 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 try
 (
 	for curFileName in MaxFilesList do
-	(
+	(		
 		-- Free memory and file handles
 		gc ()
 		resetMAXFile #noprompt
+		
 
 		tokenArray = filterString (getFilenameFile curFileName) "-"
 		if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial")  then
-		(
+		(			
+
 			-- INCREMENTAL : do we have to export ?
 			dstFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
 
 			-- compare the date of curFileName and dstFileName files
 			if (nelTestFileDate dstFileName curFileName) == true then
-			(
+			(				
 				loadMaxFile curFileName
 				DeleteDebugMarkersFn ()
 				selectAllPatch ()
@@ -191,7 +310,8 @@ try
 
 						-- Error catching
 						try
-						(
+						(							
+							-- export ligo zone
 							if (NeLLigoExportZone $ dstFileName props false false) then
 							(
 								nlerror ("OK "+ (getFilenameFile curFileName))
@@ -199,12 +319,23 @@ try
 							else
 							(
 								nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile curFileName))
-							)
+							)							
+							
 						)
 						catch
 						(
 							-- Error
 							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+						)
+
+						-- export matching igs
+						try
+						(
+							exportInstanceGroupFromZone curFileName (ligo_export_path + "zoneLigos\\")
+						)
+						catch
+						(
+							nlerror("couldn't export ig for " + curFileName)
 						)
 					)
 				)
@@ -378,6 +509,16 @@ try
 									nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 								)
 
+								-- export igs
+								try
+								(
+									exportInstanceGroupFromZone curFileName (ligo_export_path + "zoneLigos\\")
+								)
+								catch
+								(
+									nlerror("couldn't export ig for " + curFileName)
+								)
+
 								-- Delete
 								delete c
 							)
@@ -449,6 +590,16 @@ try
 							-- Error
 							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 						)
+
+						-- export matching igs
+						try
+						(
+							exportInstanceGroupFromZone curFileName (ligo_export_path + "zoneLigos\\")
+						)
+						catch
+						(
+							nlerror("couldn't export ig for " + curFileName)
+						)
 					)
 				)
 			)
@@ -467,6 +618,6 @@ catch
 
 
 
-quitMAX #noPrompt
-quitMAX () #noPrompt
+--quitMAX #noPrompt
+--quitMAX () #noPrompt
 

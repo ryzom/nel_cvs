@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.3 2000/11/09 16:17:16 coutelas Exp $
+ * $Id: bitmap.cpp,v 1.4 2000/11/10 15:19:37 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ uint32 blend(uint32 &n0, uint32 &n1, uint32 coef0);
 /*-------------------------------------------------------------------*\
 							isPowerOf2
 \*-------------------------------------------------------------------*/
-bool CBitmap::isPowerOf2(sint32 v)
+bool isPowerOf2(sint32 v)
 {
 	while(v)
 	{
@@ -72,6 +72,29 @@ bool CBitmap::isPowerOf2(sint32 v)
 
 	return true;
 }
+
+
+
+/*-------------------------------------------------------------------*\
+							getNextPowerOf2
+\*-------------------------------------------------------------------*/
+uint32 getNextPowerOf2(uint32 v)
+{
+	if(v==0) return v;
+	
+	uint32 p = 2;
+	while(p<v)
+	{
+		p*=2;
+	}
+	return p;
+}
+
+
+
+
+
+
 
 
 
@@ -1281,14 +1304,11 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 
 
 /*-------------------------------------------------------------------*\
-							resize
+							reset
 \*-------------------------------------------------------------------*/
-void CBitmap::resize(uint32 size)
+void CBitmap::reset()
 {
-	if(size<_Width*_Height)
-	{
-		NLMISC::contReset(_Data[0]);
-	}
+	NLMISC::contReset(_Data[0]);
 	_Data[0].resize(0);
 
 	if(_MipMapCount!=0)

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.2 2000/11/09 16:16:42 coutelas Exp $
+ * $Id: texture.h,v 1.3 2000/11/10 15:20:23 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/3d/bitmap.h"
+#include "nel/3d/font_generator.h"
 #include <string>
 
 
@@ -79,7 +80,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void release() { resize(0); }
+	void release() { reset(); }
 
 };
 
@@ -154,23 +155,36 @@ public:
  */
 class CTextureFont : public ITexture, public NLMISC::CRefCount
 {
-	uint32 _TrueWidth, _TrueHeight;
+	ucchar _Char;
+	uint32 _CharWidth;
+	uint32 _CharHeight;
+	uint32 _Size;
+	std::string _FontFileName;
 
 public:
 
-	/** 
-	 * Default constructor
-	 * \author Stephane Coutelas
-	 * \date 2000
+	/** Default constructor
+	 * 
 	 */	
-	CTextureFont() { }
+	CTextureFont(CFontDescriptor desc) 
+	{ 
+		_Char = desc.C;
+		_Size = desc.Size;
+		_CharWidth = 0;
+		_CharHeight = 0;
+		_FontFileName = desc.FontFileName;
+	}
 
-	
-	/** 
-	 * Generate the texture
-	 * \return name of the file
-	 * \author Stephane Coutelas
-	 * \date 2000
+	/** return the descriptor of this letter
+	 * /return CFontDescriptor letter descriptor
+	 */
+	CFontDescriptor getDescriptor() const
+	{
+		return CFontDescriptor(_FontFileName, _Char, _Size);
+	}
+
+	/** Generate the texture
+	 * 
 	 */	
 	void generate();
 

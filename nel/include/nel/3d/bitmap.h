@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.3 2000/11/07 17:16:07 coutelas Exp $
+ * $Id: bitmap.h,v 1.4 2000/11/10 15:20:08 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/debug.h"
 #include <vector>
 
 namespace NLMISC 
@@ -63,6 +64,23 @@ const uint8	MAX_MIPMAP = 12;
 
 
 
+/** 
+ * To know if the value is a power of two.
+ * \param v an integer.
+ * \return true if value is a power of 2, else return false.
+ */
+bool isPowerOf2(sint32 v);
+
+
+/** return the power of 2 higher than the value
+ * \param v an integer.
+ * \return the power of 2.
+ */
+uint32 getNextPowerOf2(uint32 v);
+
+
+
+
 /**
  * Class Bitmap
  * \author Stephane Coutelas
@@ -71,21 +89,15 @@ const uint8	MAX_MIPMAP = 12;
  */
 class CBitmap
 {
+protected :
 	std::vector<uint8> _Data[MAX_MIPMAP];
-	
+
 	uint8 _MipMapCount;
 	uint32 _Width;
 	uint32 _Height;
 
-	/** 
-	 * To know if the value is a power of two.
-	 * \param v an integer.
-	 * \return true if value is a power of 2, else return false.
-	 * \author Stephane Coutelas
-	 * \date 2000
-	 */
-	bool isPowerOf2(sint32 v);
-
+private :
+	
 
 	/** 
 	 * blend 2 integers between 0 and 255 .
@@ -229,6 +241,16 @@ public:
 				 ALPHA_LUMINANCE 
 	} PixelFormat;
 
+
+	CBitmap()
+	{
+		_MipMapCount = 0;
+		_Width = 0;
+		_Height = 0;
+	}
+
+
+
 	/** 
 	 * Read a bitmap(TGA or DDS) from an IStream. 
 	 * Bitmap supported are DDS (DXTC1, DXTC1 with Alpha, DXTC3, DXTC5, and
@@ -252,6 +274,7 @@ public:
 	std::vector<uint8>& getPixels(uint32 numMipMap = 0) 
 	{ 
 		//nlassert (numMipMap<=_MipMapCount);
+		nlinfo("%d %d %d %d",_Data[0][0],_Data[0][1],_Data[0][2],_Data[0][3]);
 		return _Data[numMipMap];
 	}
 	const std::vector<uint8>& getPixels(uint32 numMipMap = 0) const
@@ -326,13 +349,11 @@ public:
 
 
 	/** 
-	 * Resize the buffer. Mipmaps are deleted and bitmap is not valid anymore.
-	 * \param nNewWidth width after resample
-	 * \param nNewHeight height after resample
+	 * Reset the buffer. Mipmaps are deleted and bitmap is not valid anymore.
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void CBitmap::resize(uint32 size);
+	void reset();
 	
 		
 	/** 

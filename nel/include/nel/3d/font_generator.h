@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.1 2000/11/09 17:42:12 lecroart Exp $
+ * $Id: font_generator.h,v 1.2 2000/11/10 15:20:13 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,8 +29,33 @@
 #include <freetype/freetype.h>
 
 #include "nel/misc/types_nl.h"
+#include <string>
 
 namespace NL3D {
+
+
+struct CFontDescriptor 
+{
+	std::string FontFileName;
+	ucchar C;
+	uint32 Size;
+	
+	CFontDescriptor(std::string s, ucchar c, uint32 sz): FontFileName(s),C(c),Size(sz) { }
+	bool operator< (const CFontDescriptor& desc) const
+	{
+		if (FontFileName<desc.FontFileName)
+			return true;
+		if (FontFileName>desc.FontFileName)
+			return false;
+		if (C<desc.C)
+			return true;
+		if (C>desc.C)
+			return false;
+		return Size<desc.Size;
+	}
+};
+
+
 
 /**
  * Generate bitmap based on a true type font (using freetype2)

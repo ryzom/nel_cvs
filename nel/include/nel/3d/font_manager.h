@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.1 2000/11/09 16:16:21 coutelas Exp $
+ * $Id: font_manager.h,v 1.2 2000/11/10 15:20:17 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/texture.h"
 #include <map>
 #include <list>
+#include <functional>
 
 namespace NLMISC {
 
@@ -42,9 +43,14 @@ template <class T> class CRefPtr;
 namespace NL3D {
 
 class CTextureFont;
+struct CFontDescriptor;
+
+
 
 typedef std::pair< std::list<NLMISC::CRefPtr<CTextureFont> >::iterator,  uint32> pairRefPtrInt;
-typedef std::map< char , pairRefPtrInt> mapFontDec;
+typedef std::map< CFontDescriptor , pairRefPtrInt> mapFontDec;
+
+
 
 /**
  * Font manager
@@ -52,7 +58,7 @@ typedef std::map< char , pairRefPtrInt> mapFontDec;
  * \author Nevrax France
  * \date 2000
  */
-class CFontManager : public CTextureFont
+class CFontManager 
 {
 	uint32 _MemSize;
 	uint32 _MaxMemory;
@@ -68,7 +74,8 @@ public:
 	 */	
 	CFontManager()
 	{
-		_MemSize=0;
+		_MemSize = 0;
+		_MaxMemory = 0;
 	}
 
 
@@ -96,7 +103,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void getFontTexture(char desc);
+	void getFontTexture(CFontDescriptor desc);
 
 
 };

@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.2 2000/11/09 16:17:16 coutelas Exp $
+ * $Id: texture.cpp,v 1.3 2000/11/10 15:19:47 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,9 @@
  */
 
 #include "nel/3d/texture.h"
+#include "nel/3d/font_generator.h"
 #include "nel/misc/file.h"
+#include <vector>
 
 
 namespace NL3D {
@@ -62,7 +64,53 @@ void CTextureFile::generate()
 \*------------------------------------------------------------------*/
 void CTextureFont::generate()
 {
+	// constructing generator
+	CFontGenerator generator(_FontFileName.c_str());
 	
+	// getting bitmap infos
+	uint32 pitch;
+	uint8 * bitmap = generator.getBitmap(_Char, _Size, _CharWidth, _CharHeight, pitch);
+
+	// computing new width and height as powers of 2
+	if(!isPowerOf2(_CharWidth))
+		_Width = getNextPowerOf2(_CharWidth);
+	else
+		_Width = _CharWidth;
+	if(!isPowerOf2(_CharHeight))
+		_Height = getNextPowerOf2(_CharHeight);
+	else
+		_Height = _CharHeight;
+	
+
+	// calculating memory size taken by the bitmap
+	uint32 bitmapSize = _Width*_Height*4;
+	_Data[0].resize(bitmapSize);
+
+	// filling CBitmap buffer
+	for(uint i=0; i<_Height; i++)
+	{
+		for(uint j=0; j<_Width; j++)
+		{
+			if(j<_CharWidth && i<_CharHeight)
+			{
+				_Data[0][(i*_Width + j)*4] = bitmap[i*pitch + j];
+				_Data[0][(i*_Width + j)*4 + 1] = bitmap[i*pitch + j];
+				_Data[0][(i*_Width + j)*4 + 2] = bitmap[i*pitch + j];
+				_Data[0][(i*_Width + j)*4 + 3] = 255;
+			}
+			else
+			{
+				_Data[0][(i*_Width + j)*4] = 0;
+				_Data[0][(i*_Width + j)*4 + 1] = 0;
+				_Data[0][(i*_Width + j)*4 + 2] = 0;
+				_Data[0][(i*_Width + j)*4 + 3] = 255;
+
+			}
+			
+		}
+	}
+
+
 }
 
 

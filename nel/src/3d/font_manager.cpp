@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.1 2000/11/09 16:17:16 coutelas Exp $
+ * $Id: font_manager.cpp,v 1.2 2000/11/10 15:19:41 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/font_manager.h"
+#include "nel/3d/font_generator.h"
 #include "nel/3d/texture.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/debug.h"
@@ -37,8 +38,9 @@ namespace NL3D {
 /*------------------------------------------------------------------*\
 							getFontTexture()
 \*------------------------------------------------------------------*/
-void CFontManager::getFontTexture(char desc)
+void CFontManager::getFontTexture(CFontDescriptor desc)
 {
+	
 	mapFontDec::iterator ifont = _Letters.find(desc);
 	
 	if (ifont != _Letters.end())
@@ -61,11 +63,12 @@ void CFontManager::getFontTexture(char desc)
 
 		// creating new CTextureFont and adding it at the begining of the list
 		NLMISC::CRefPtr<CTextureFont> pTexFont;
-		pTexFont = new CTextureFont();
+		pTexFont = new CTextureFont(desc);
 		
-		//....
 		// Eval mem Size
-		int nMemSize=0;		// ...
+		int nMemSize = pTexFont->getWidth()*pTexFont->getHeight()*4; // accurate/sufficiant ??
+			
+		// adding TexTure to list
 		_TextureFontList.push_front(pTexFont);
 
 		// Add to global mem size
@@ -75,20 +78,12 @@ void CFontManager::getFontTexture(char desc)
 		_Letters.insert ( mapFontDec::value_type (desc, pairRefPtrInt(_TextureFontList.begin(), nMemSize)));
 	}
 
-	/*// computing amount of memory currently used
-	uint32 mem = 0;
-	std::list<NLMISC::CRefPtr<CTextureFont> >::const_iterator itcst = _TextureFontList.begin();
-	while(itcst!=_TextureFontList.end())
-	{
-		mem += sizeof(*itcst);
-		itcst++;
-	}*/
 
 	// while memory used is too high, we pop the back of the list
 	while(_MemSize>_MaxMemory && _TextureFontList.size()!=0)
 	{
 		NLMISC::CRefPtr<CTextureFont> pTexFontBack = _TextureFontList.back();
-		char descBack = 0; //pTexFontBack->getDescriptor();
+		CFontDescriptor descBack = pTexFontBack->getDescriptor();
 		
 		// Find the desc to kill in the map
 		mapFontDec::iterator ite=_Letters.find (descBack);
@@ -105,6 +100,7 @@ void CFontManager::getFontTexture(char desc)
 		// Unstack
 		_TextureFontList.pop_back();
 	}
+	
 }
 
 

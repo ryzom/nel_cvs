@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.22 2000/12/22 15:51:46 berenguier Exp $
+ * $Id: zone.cpp,v 1.23 2000/12/22 17:25:59 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -836,20 +836,29 @@ void			CZone::debugBinds(FILE *f)
 {
 	fprintf(f, "*****************************\n");
 	fprintf(f, "ZoneId: %d. NPatchs:%d\n", ZoneId, PatchConnects.size());
-	for(sint i=0;i<(sint)PatchConnects.size();i++)
+	sint i;
+	for(i=0;i<(sint)PatchConnects.size();i++)
 	{
 		CPatchConnect	&pc= PatchConnects[i];
 		fprintf(f, "patch%d:\n", i);
 		for(sint j=0;j<4;j++)
 		{
 			CPatchInfo::CBindInfo	&bd= pc.BindEdges[j];
-			fprintf(f, "    edge%d: Zone:%d. NPatchs:%d. ", i, bd.ZoneId, bd.NPatchs);
+			fprintf(f, "    edge%d: Zone:%d. NPatchs:%d. ", j, bd.ZoneId, bd.NPatchs);
 			for(sint k=0;k<bd.NPatchs;k++)
 			{
 				fprintf(f, "p%de%d - ", bd.Next[k], bd.Edge[k]);
 			}
 			fprintf(f, "\n");
 		}
+	}
+
+	fprintf(f,"Vertices :\n");
+	for(i=0;i<(sint)BorderVertices.size();i++)
+	{
+		fprintf(f,"current : %d -> (zone %d) vertex %d\n",BorderVertices[i].CurrentVertex,
+											BorderVertices[i].NeighborZoneId,
+											BorderVertices[i].NeighborVertex);
 	}
 }
 

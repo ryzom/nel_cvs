@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.36 2001/01/16 11:23:03 cado Exp $
+ * $Id: local_area.cpp,v 1.37 2001/01/16 15:16:51 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ void NLNET::createRemoteEntity( const IMovingEntity& es )
 	{
 		CLocalArea::Instance->_NewEntityCallback( new_entity );
 	}
-	nlinfo( "New remote entity %s created at %f , %f", new_entity->name().c_str(), new_entity->pos().x, new_entity->pos().y );
+	nldebug( "New remote entity %s created at %f , %f", new_entity->name().c_str(), new_entity->pos().x, new_entity->pos().y );
 }
 
 

@@ -1,7 +1,7 @@
 /** \file u_3d_mouse_listener.h
  * 3d mouse listener
  *
- * $Id: u_3d_mouse_listener.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_3d_mouse_listener.h,v 1.2 2004/04/09 14:16:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,11 @@
 #define NL_U_3D_MOUSE_LISTENER_H
 
 #include "nel/misc/types_nl.h"
+
+namespace NLMISC
+{
+	class IEventListener;
+}
 
 
 namespace NL3D 
@@ -128,6 +133,10 @@ public:
 	  * \see getViewMatrix()
 	  */
 	virtual CVector getHotSpot () const =0;
+
+	// Obtain a NLMISC::IEventListener interface on that listener
+	virtual NLMISC::IEventListener &getEventListenerInterface() = 0;
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.6 2002/01/11 10:01:14 legros Exp $
+ * $Id: collision_surface_temp.h,v 1.7 2002/01/21 13:48:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -280,6 +280,7 @@ public:
 	/// Array of possible near surfaces
 //	TSurfaceLUTEntry				SurfaceLUT[65536];
 	CSurfaceLUTEntry				SurfaceLUT[65536];
+	uint8							OutCounter;
 	std::vector<uint16>				PossibleSurfaces;
 	std::vector<CDistanceSurface>	SortedSurfaces;
 
@@ -333,6 +334,10 @@ public:
 			SurfaceLUT[surf].IsPossible = true;
 			++SurfaceLUT[surf].Counter;
 		}
+		else
+		{
+			++OutCounter;
+		}
 	}
 
 	//
@@ -344,6 +349,10 @@ public:
 				PossibleSurfaces.push_back((uint16)surf);
 			SurfaceLUT[surf].IsPossible = true;
 			--SurfaceLUT[surf].Counter;
+		}
+		else
+		{
+			--OutCounter;
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.54 2002/01/11 10:01:14 legros Exp $
+ * $Id: global_retriever.cpp,v 1.55 2002/01/21 13:48:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -341,14 +341,7 @@ const NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint32 
 	const CLocalRetriever	&retriever = getRetriever(retrieverId);
 
 	if (_RetrieveTable.size() < retriever.getSurfaces().size())
-	{
-		uint	oldSize = _RetrieveTable.size(),
-				newSize = retriever.getSurfaces().size();
-
-		_RetrieveTable.resize(newSize);
-		for (; oldSize<newSize; ++oldSize)
-			_RetrieveTable[oldSize] = 0;
-	}
+		_RetrieveTable.resize(retriever.getSurfaces().size(), 0);
 
 	instance.make(id, retrieverId, retriever, orientation, origin);
 
@@ -537,6 +530,11 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 			{
 				moved = retriever.insurePosition(result.LocalPosition);
 				++numMove;
+
+				if (moved)
+				{
+					nlinfo("PACS: insured position inside surface (%d,%d)", result.InstanceId, result.LocalPosition.Surface);
+				}
 			}
 			while (moved && numMove < 100);
 			// the algo won't loop infinitely
@@ -552,8 +550,8 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	}
 	else
 	{
-		nlwarning("PACS: unable to retrieve correct position (%f,%f,%f)", estimated.x, estimated.y, estimated.z);
-		nlSleep(1);
+//		nlwarning("PACS: unable to retrieve correct position (%f,%f,%f)", estimated.x, estimated.y, estimated.z);
+//		nlSleep(1);
 	}
 
 	return result;

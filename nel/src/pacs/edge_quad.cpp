@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.8 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: edge_quad.cpp,v 1.9 2002/01/21 13:48:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,141 +163,162 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 	// run all chains.
 	for (i=0; i<(sint)edges.size()-1; i++)
 	{
-		CVector		p0 = edges[i].Start+origin,
-					p1 = edges[i+1].Start+origin;
-		CVector		op0 = edges[i].Start,
-					op1 = edges[i+1].Start;
-		CVector		s0, s1,
-					mins, maxs;
+		float		dnorm = (edges[i+1].Start-edges[i].Start).norm();
+		uint		numStep = (uint)(dnorm/0.1f)+1;
+		uint		step;
 
-		uint		prevEdge = (i-1)%(edges.size()-1), 
-					nextEdge = (i+1)%(edges.size()-1);
-		bool		prio0 = (edges[i].Link!=-1) || (edges[prevEdge].Link!=-1), 
-					prio1 = (edges[i].Link!=-1) || (edges[nextEdge].Link!=-1);
+		CVector		pbegin = edges[i].Start+origin,
+					pend = edges[i+1].Start+origin;
 
-		UGlobalPosition	gp0 = global.retrievePosition(p0);
-		global.updateHeight(gp0);
-		UGlobalPosition	gp1 = global.retrievePosition(p1);
-		global.updateHeight(gp1);
+		CVector		opbegin = edges[i].Start,
+					opend = edges[i+1].Start;
 
-		if (!prio0)
+		for (step=0; step<numStep; ++step)
 		{
-			swap(p0, p1);
-			swap(op0, op1);
-			swap(gp0, gp1);
-		}
+			float		lambda0 = (float)(step)/(float)(numStep);
+			float		lambda1 = (float)(step+1)/(float)(numStep);
+			CVector		p0 = pbegin*(1.0f-lambda0)+pend*(lambda0),
+						p1 = pbegin*(1.0f-lambda1)+pend*(lambda1);
+			CVector		op0 = opbegin*(1.0f-lambda0)+opend*(lambda0),
+						op1 = opbegin*(1.0f-lambda1)+opend*(lambda1);
+			CVector		s0, s1,
+						mins, maxs;
 
-		if (gp0.InstanceId == -1)
-		{
-			swap(p0, p1);
-			swap(op0, op1);
-			swap(gp0, gp1);
-		}
-		
-		const TCollisionSurfaceDescVector	*pcd = global.testCylinderMove(gp0, p1-p0, 0.01f, cst);
+			uint		prevEdge = (i-1)%(edges.size()-1), 
+						nextEdge = (i+1)%(edges.size()-1);
+			bool		prio0 = (edges[i].Link!=-1) || (edges[prevEdge].Link!=-1), 
+						prio1 = (edges[i].Link!=-1) || (edges[nextEdge].Link!=-1);
 
-		if (pcd == NULL)
-		{
-			nlwarning("in CEdgeQuad::build(): testCylinderMove() returned NULL");
-			continue;
-		}
+			UGlobalPosition	gp0 = global.retrievePosition(p0);
+			global.updateHeight(gp0);
+			UGlobalPosition	gp1 = global.retrievePosition(p1);
+			global.updateHeight(gp1);
 
-		TCollisionSurfaceDescVector	cd = (*pcd);
-
-		if (edges[i].Link != -1 && cd.size() > 0)
-		{
-			nlwarning("In NLPACS::CEdgeQuad::build()");
-			nlerror("exterior edge %d with interior link crosses some surfaces", i);
-		}
-
-		// add start surface to the collision description
-		CCollisionSurfaceDesc	stcd;
-		stcd.ContactTime = 0.0f;
-		stcd.ContactSurface.RetrieverInstanceId = gp0.InstanceId;
-		stcd.ContactSurface.SurfaceId = gp0.LocalPosition.Surface;
-		cd.insert(cd.begin(), stcd);
-
-		// get the surface, chain ...
-		sint	edgeId = i;
-		uint16	chainId;
-
-		CSurfaceIdent	interior;
-		if (edges[i].Link == -1)
-		{
-			interior.RetrieverInstanceId = -1;
-			interior.SurfaceId = -1;
-			chainId = 0xFFFF;
-		}
-		else
-		{
-			interior.RetrieverInstanceId = thisInstance;
-			interior.SurfaceId = em.getLink(edges[i].Link).SurfaceId;
-			chainId = em.getLink(edges[i].Link).ChainId;
-		}
-
-
-		// add end point to the collision description
-		stcd = cd.back();
-		stcd.ContactTime = 1.0f;
-		cd.push_back(stcd);
-
-		for (j=0; j<(sint)cd.size()-1; ++j)
-		{
-			s0 = op0*(float)(1.0-cd[j].ContactTime) + op1*(float)(cd[j].ContactTime);
-			s1 = op0*(float)(1.0-cd[j+1].ContactTime) + op1*(float)(cd[j+1].ContactTime);
-
-			mins.minof(s0, s1);
-			maxs.maxof(s0, s1);
-
-			// PrecisionPb: extend a little this edge. This is important for special case like borders on zones.
-			if(mins.x-maxs.x==0)
-				mins.x-=0.001f, maxs.x+=0.001f;
-			if(mins.y-maxs.y==0)
-				mins.y-=0.001f, maxs.y+=0.001f;
-
-			// get bounding coordinate of this edge in the quadgrid.
-			sint32	x0, y0, x1, y1;
-			sint	x, y;
-			getGridBounds(x0, y0, x1, y1, mins, maxs);
-
-			CSurfaceIdent	exterior = cd[j].ContactSurface;
-
-			uint	entry;
-			for (entry=0; entry<_EdgeEntries.size(); ++entry)
+			if (!prio0)
 			{
-				if (_EdgeEntries[entry].EdgeId == edgeId &&
-					_EdgeEntries[entry].Exterior == exterior)
+				swap(p0, p1);
+				swap(op0, op1);
+				swap(gp0, gp1);
+			}
+
+			if (gp0.InstanceId == -1)
+			{
+				swap(p0, p1);
+				swap(op0, op1);
+				swap(gp0, gp1);
+			}
+			
+			const TCollisionSurfaceDescVector	*pcd = global.testCylinderMove(gp0, p1-p0, 0.01f, cst);
+
+			if (pcd == NULL)
+			{
+//				nlwarning("in CEdgeQuad::build(): testCylinderMove() returned NULL");
+				continue;
+			}
+
+			TCollisionSurfaceDescVector	cd = (*pcd);
+
+			if (edges[i].Link != -1 && cd.size() > 0)
+			{
+				nlwarning("In NLPACS::CEdgeQuad::build()");
+				nlerror("exterior edge %d with interior link crosses some surfaces", i);
+			}
+
+			// add start surface to the collision description
+			CCollisionSurfaceDesc	stcd;
+			stcd.ContactTime = 0.0f;
+			stcd.ContactSurface.RetrieverInstanceId = gp0.InstanceId;
+			stcd.ContactSurface.SurfaceId = gp0.LocalPosition.Surface;
+			cd.insert(cd.begin(), stcd);
+
+			// get the surface, chain ...
+			sint	edgeId = i;
+			uint16	chainId;
+
+			CSurfaceIdent	interior;
+			if (edges[i].Link == -1)
+			{
+				interior.RetrieverInstanceId = -1;
+				interior.SurfaceId = -1;
+				chainId = 0xFFFF;
+			}
+			else
+			{
+				interior.RetrieverInstanceId = thisInstance;
+				interior.SurfaceId = em.getLink(edges[i].Link).SurfaceId;
+				chainId = em.getLink(edges[i].Link).ChainId;
+			}
+
+
+			// add end point to the collision description
+			stcd = cd.back();
+			stcd.ContactTime = 1.0f;
+			cd.push_back(stcd);
+
+			for (j=0; j<(sint)cd.size()-1; ++j)
+			{
+				s0 = op0*(float)(1.0-cd[j].ContactTime) + op1*(float)(cd[j].ContactTime);
+				s1 = op0*(float)(1.0-cd[j+1].ContactTime) + op1*(float)(cd[j+1].ContactTime);
+
+				mins.minof(s0, s1);
+				maxs.maxof(s0, s1);
+
+				// PrecisionPb: extend a little this edge. This is important for special case like borders on zones.
+				if(mins.x-maxs.x==0)
+					mins.x-=0.001f, maxs.x+=0.001f;
+				if(mins.y-maxs.y==0)
+					mins.y-=0.001f, maxs.y+=0.001f;
+
+				// get bounding coordinate of this edge in the quadgrid.
+				sint32	x0, y0, x1, y1;
+				sint	x, y;
+				getGridBounds(x0, y0, x1, y1, mins, maxs);
+
+				CSurfaceIdent	exterior = cd[j].ContactSurface;
+
+				uint	entry;
+				for (entry=0; entry<_EdgeEntries.size(); ++entry)
 				{
-					if (_EdgeEntries[entry].ChainId != chainId ||
-						_EdgeEntries[entry].Interior != interior)
+					if (_EdgeEntries[entry].EdgeId == edgeId &&
+						_EdgeEntries[entry].Exterior == exterior)
 					{
-						nlwarning("In NLPACS::CEdgeQuad::build()");
-						nlerror("exterior edge %d has different interior linkage", edgeId);
+						if (_EdgeEntries[entry].ChainId != chainId ||
+							_EdgeEntries[entry].Interior != interior)
+						{
+							nlwarning("In NLPACS::CEdgeQuad::build()");
+							nlerror("exterior edge %d has different interior linkage", edgeId);
+						}
+
+						break;
 					}
-
-					break;
 				}
-			}
 
-			// if this entry didn't exist before create a new one...
-			if (entry == _EdgeEntries.size())
-			{
-				_EdgeEntries.resize(_EdgeEntries.size()+1);
-				_EdgeEntries.back().EdgeId = edgeId;
-				_EdgeEntries.back().ChainId = chainId;
-				_EdgeEntries.back().Interior = interior;
-				_EdgeEntries.back().Exterior = exterior;
-			}
-
-			// add this edge to all the quadnode it touches.
-			for(y=y0; y<y1; y++)
-			{
-				for(x=x0; x<x1; x++)
+				// if this entry didn't exist before create a new one...
+				if (entry == _EdgeEntries.size())
 				{
-					tempQuad[y*_Width+x].push_back(entry);
+					_EdgeEntries.push_back();
+					_EdgeEntries.back().EdgeId = edgeId;
+					_EdgeEntries.back().ChainId = chainId;
+					_EdgeEntries.back().Interior = interior;
+					_EdgeEntries.back().Exterior = exterior;
+				}
+
+				// add this edge to all the quadnode it touches.
+				for(y=y0; y<y1; y++)
+				{
+					for(x=x0; x<x1; x++)
+					{
+						// check we don't push this entry twice
+						list<uint16>::iterator	it;
+						for (it=tempQuad[y*_Width+x].begin(); it!=tempQuad[y*_Width+x].end(); ++it)
+							if (entry == *it)
+								break;
+						if (it == tempQuad[y*_Width+x].end())
+							tempQuad[y*_Width+x].push_back(entry);
+					}
 				}
 			}
-		}
+			}
 	}
 
 	// 2. Mem optimisation: Use only 1 block for ALL quads of the grid.

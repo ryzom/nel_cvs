@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.32 2002/01/11 10:01:14 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.33 2002/01/21 13:48:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -358,6 +358,8 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 	CVector							localEstimated;
 	CLocalRetriever::CLocalPosition	retrieved;
 
+//	nldebug("PACS: retrievePosition in instance %d (retriever %d)", _InstanceId, _RetrieverId);
+
 	// get local coordinates
 	localEstimated = getLocalPosition(estimated);
 	// Yoyo: must snap vector.
@@ -371,75 +373,7 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 	sint	lastSurf = -1;
 	float	bestDistance = 1.0e10f;
 	float	bestHeight;*/
-	bool	lfound;
-/*
-	// for each surface in the retriever
-	for (i=0; i<cst.PossibleSurfaces.size(); ++i)
-	{
-		surf = cst.PossibleSurfaces[i];
-		cst.SurfaceLUT[surf].first = false;
-		// if the surface contains the estimated position.
-		if (cst.SurfaceLUT[surf].second == 2)
-		{
-			cst.SurfaceLUT[surf].second = 0;
-			float			meanHeight;
-			const CQuadLeaf	*leaf;
-			ULocalPosition	lp;
-			lfound = false;
-
-			switch (_Type)
-			{
-			case CLocalRetriever::Landscape:
-				// for landscape
-				// search in the surface's quad tree for the actual height
-				leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(localEstimated);
-				// if there is no acceptable leaf, just give up
-				if (leaf == NULL)
-					continue;
-				meanHeight = leaf->getMaxHeight();
-				lfound = true;
-				break;
-			case CLocalRetriever::Interior:
-				// for interior
-				// get the exact position
-				lp.Surface = surf;
-				lp.Estimation = localEstimated;
-				meanHeight = localEstimated.z;
-				retriever.snapToInteriorGround(lp, lfound);
-				if (lfound)
-					meanHeight = lp.Estimation.z;
-				break;
-			default:
-				// hu?
-				continue;
-			}
-
-			// if it is closer to the estimation than the previous remembered...
-			float	distance = (float)fabs(localEstimated.z-meanHeight);
-			if (distance < bestDistance && lfound)
-			{
-				bestDistance = distance;
-				bestHeight = meanHeight;
-				bestSurf = surf;
-			}
-		}
-
-		cst.SurfaceLUT[surf].second = 0;
-	}
-
-	if (bestSurf != -1)
-	{
-		// if there is a best surface, returns it
-		retrieved.Surface = bestSurf;
-		retrieved.Estimation = CVector(localEstimated.x, localEstimated.y, bestHeight);
-	}
-	else
-	{
-		// else return the last remembered...
-		retrieved.Surface = lastSurf;
-		retrieved.Estimation = localEstimated;
-	}
-*/
+	bool	found = false;
 
 	switch (_Type)
 	{
@@ -448,6 +382,9 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 		for (i=0; i<cst.PossibleSurfaces.size(); ++i)
 		{
 			surf = cst.PossibleSurfaces[i];
+
+//			nldebug("PACS: surface %d: count %d", surf, cst.SurfaceLUT[surf].Counter);
+
 			// if the surface contains the estimated position.
 			if (cst.SurfaceLUT[surf].Counter == 2)
 			{
@@ -462,13 +399,19 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 					meanHeight = leaf->getMaxHeight();
 
 					// if it is closer to the estimation than the previous remembered...
+					found = true;
 					float	distance = (float)fabs(localEstimated.z-meanHeight);
 					cst.SortedSurfaces.push_back(CCollisionSurfaceTemp::CDistanceSurface(distance, (uint16)surf, (uint16)_InstanceId, cst.SurfaceLUT[surf].FoundCloseEdge));
 				}
 			}
+			else if (cst.SurfaceLUT[surf].Counter != 0)
+			{
+				nlwarning("PACS: unexpected surface (%d) count (%d) at instance %d (pos=(%f,%f,%f))", surf, cst.SurfaceLUT[surf].Counter, _InstanceId, estimated.x, estimated.y, estimated.z);
+			}
 
 			cst.SurfaceLUT[surf].reset();
 		}
+
 		break;
 
 	case CLocalRetriever::Interior:
@@ -480,18 +423,23 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 			if (cst.SurfaceLUT[surf].Counter == 2)
 			{
 				ULocalPosition	lp;
+				bool			lfound = false;
 
 				// get the exact position
 				lp.Surface = surf;
 				lp.Estimation = localEstimated;
-				lfound = false;
 				retriever.snapToInteriorGround(lp, lfound);
 				if (lfound)
 				{
 					// if it is closer to the estimation than the previous remembered...
+					found = true;
 					float	distance = (float)fabs(localEstimated.z-lp.Estimation.z);
 					cst.SortedSurfaces.push_back(CCollisionSurfaceTemp::CDistanceSurface(distance, (uint16)surf, (uint16)_InstanceId, cst.SurfaceLUT[surf].FoundCloseEdge));
 				}
+			}
+			else if (cst.SurfaceLUT[surf].Counter != 0)
+			{
+				nlwarning("PACS: unexpected surface (%d) count (%d) at instance %d (pos=(%f,%f,%f))", surf, cst.SurfaceLUT[surf].Counter, _InstanceId, estimated.x, estimated.y, estimated.z);
 			}
 
 			cst.SurfaceLUT[surf].reset();
@@ -502,6 +450,8 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 		nlerror("Unknown instance type %d !!", _Type);
 		break;
 	}
+
+	cst.OutCounter = 0;
 }
 
 

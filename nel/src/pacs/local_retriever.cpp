@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.40 2002/01/11 14:35:44 legros Exp $
+ * $Id: local_retriever.cpp,v 1.41 2002/01/21 13:48:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -237,9 +237,10 @@ void	NLPACS::CLocalRetriever::dumpSurface(uint surf, const CVector &vect) const
 		for (j=0; j<chain.getSubChains().size(); ++j)
 		{
 			const COrderedChain3f	&ochain = _FullOrderedChains[chain.getSubChain(j)];
+			const COrderedChain		&ochains = _OrderedChains[chain.getSubChain(j)];
 			nlinfo("     subchain %d[%d]: fwd=%d parent=%d idx=%d", j, chain.getSubChain(j), ochain.isForward(), ochain.getParentId(), ochain.getIndexInParent());
 			for (k=0; k<ochain.getVertices().size(); ++k)
-				nlinfo("       v[%d]=(%.3f,%.3f,%.3f)", k, ochain.getVertices()[k].x+vect.x, ochain.getVertices()[k].y+vect.y, ochain.getVertices()[k].z+vect.z);
+				nlinfo("       v[%d]=(%.3f,%.3f,%.3f) (%d,%d)", k, ochain.getVertices()[k].x+vect.x, ochain.getVertices()[k].y+vect.y, ochain.getVertices()[k].z+vect.z, ochains.getVertices()[k].x, ochains.getVertices()[k].y);
 		}
 
 	}
@@ -850,6 +851,16 @@ bool	NLPACS::CLocalRetriever::insurePosition(NLPACS::ULocalPosition &local) cons
 	local.Estimation.x = M.x;
 	local.Estimation.y = M.y;
 
+	{
+		float	fx1024 = local.Estimation.x * 1024.0f;
+		float	fy1024 = local.Estimation.x * 1024.0f;
+		sint32	ix1024 = (sint32)floor(fx1024);
+		sint32	iy1024 = (sint32)floor(fy1024);
+
+		nlassert ((float)ix1024 == fx1024);
+		nlassert ((float)iy1024 == fy1024);
+	}
+
 	return moved;
 }
 
@@ -857,17 +868,19 @@ bool	NLPACS::CLocalRetriever::insurePosition(NLPACS::ULocalPosition &local) cons
 void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<uint8> &retrieveTable,*/ CCollisionSurfaceTemp &cst) const
 {
 	CAABBox			box;
-	box.setMinMax(CVector(estimated.x, _BBox.getMin().y, 0.0f), CVector(estimated.x, _BBox.getMax().y, 0.0f));
+	const double	BorderThreshold = 2.0e-2f;
+	box.setMinMax(CVector(estimated.x-BorderThreshold, _BBox.getMin().y, 0.0f), CVector(estimated.x+BorderThreshold, _BBox.getMax().y, 0.0f));
 	uint			numEdges = _ChainQuad.selectEdges(box, cst);
 
 	uint			ochain, i;
 	CVector2s		estim = CVector2s(estimated);
-	const double	BorderThreshold = 2.0e-2f;
 
 	cst.PossibleSurfaces.clear();
 
 	// WARNING!!
 	// cst.SurfaceLUT is assumed to be 0 filled !!
+
+//	nldebug("estim=(%d,%d)", estim.x, estim.y);
 
 	// for each ordered chain, checks if the estimated position is between the min and max.
 	for (i=0; i<numEdges; ++i)
@@ -879,19 +892,28 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<
 						&max = sub.getMax();
 
 		// checks the position against the min and max of the chain
-		if (estim.x <= min.x || estim.x > max.x)
+		if (estim.x < min.x || estim.x > max.x)
 			continue;
 
 		bool	isUpper;
 		bool	isOnBorder = false;
 
+		sint32	left = _Chains[sub.getParentId()].getLeft(),
+				right = _Chains[sub.getParentId()].getRight();
+
 		if (estim.y < min.y)
 		{
+			if (estim.x == max.x)
+				continue;
 			isUpper = false;
+//			nlinfo("Box: min(%d,%d) max(%d,%d) forward=%d left=%d right=%d upper=false", min.x, min.y, max.x, max.y, sub.isForward(), left, right);
 		}
 		else if (estim.y > max.y)
 		{
+			if (estim.x == max.x)
+				continue;
 			isUpper = true;
+//			nlinfo("Box: min(%d,%d) max(%d,%d) forward=%d left=%d right=%d upper=true", min.x, min.y, max.x, max.y, sub.isForward(), left, right);
 		}
 		else
 		{
@@ -911,17 +933,43 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<
 					start = mid;
 			}
 
+			// if a vertical edge
+			if (vertices[start].x == vertices[stop].x)
+			{
+				// look for maximal bounds
+				while (start > 0 && vertices[start].x == vertices[start-1].x)
+					--start;
+
+				while (stop < vertices.size()-1 && vertices[stop].x == vertices[stop+1].x)
+					++stop;
+
+				// if upper or lower the bounds, do nothing
+				if (estim.y > vertices[start].y && estim.y > vertices[stop].y ||
+					estim.y < vertices[start].y && estim.y < vertices[stop].y)
+					continue;
+
+				isOnBorder = true;
+//				nlinfo("Edge: start(%d,%d) stop(%d,%d) forward=%d left=%d right=%d border=true", vertices[start].x, vertices[start].y, vertices[stop].x, vertices[stop].y, sub.isForward(), left, right);
+			}
+			else if (vertices[stop].x == estim.x)
+			{
+				// if 
+				continue;
+			}
+
 			// and then checks if the estimated position is up or down the chain.
-			
+
 			// first trivial case (up both tips)
 			if (estim.y > vertices[start].y && estim.y > vertices[stop].y)
 			{
 				isUpper = true;
+//				nlinfo("Edge: start(%d,%d) stop(%d,%d) forward=%d left=%d right=%d upper=true", vertices[start].x, vertices[start].y, vertices[stop].x, vertices[stop].y, sub.isForward(), left, right);
 			}
 			// second trivial case (down both tips)
 			else if (estim.y < vertices[start].y && estim.y < vertices[stop].y)
 			{
 				isUpper = false;
+//				nlinfo("Edge: start(%d,%d) stop(%d,%d) forward=%d left=%d right=%d upper=false", vertices[start].x, vertices[start].y, vertices[stop].x, vertices[stop].y, sub.isForward(), left, right);
 			}
 			// full test...
 			else
@@ -929,23 +977,13 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<
 				const CVector2s	&vstart = vertices[start],
 								&vstop = vertices[stop];
 
-				if (vstart.x == vstop.x)
-				{
-					// the very rare case the edge is vertical, and the
-					// retrieved position is exactly on the edge...
-					isOnBorder = true;
-				}
-				else
-				{
-					sint16	intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.x-vstart.x);
-					isUpper = estim.y > intersect;
-					isOnBorder = (fabs(estim.y - intersect)<BorderThreshold*Vector2sAccuracy);
-				}
+				sint16			intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.x-vstart.x);
+
+				isUpper = estim.y > intersect;
+				isOnBorder = (fabs(estim.y - intersect)<BorderThreshold*Vector2sAccuracy);
+//				nlinfo("Edge: start(%d,%d) stop(%d,%d) forward=%d left=%d right=%d upper=%s border=%s", vertices[start].x, vertices[start].y, vertices[stop].x, vertices[stop].y, sub.isForward(), left, right, isUpper ? "true":"false", isOnBorder ? "true":"false");
 			}
 		}
-
-		sint32	left = _Chains[sub.getParentId()].getLeft(),
-				right = _Chains[sub.getParentId()].getRight();
 
 		if (isOnBorder)
 		{

@@ -1,11 +1,11 @@
 /**
-\page new_service_howto How to create a new service ?
+\page service_howto How to create a service ?
 
-\author Olivier Cado
+\author Olivier Cado, Vianney Lecroart
 
-\date Updated May 4, 2001
+\date Updated June 7, 2001
 
-\subsection new_service_intro Introduction
+\subsection service_intro Introduction
 
 A service is set of functionnalities provided by a server.
 The class NLNET::IService is the base class of all services.
@@ -17,7 +17,7 @@ to the Naming Service, server start-up and shutdown.
 NLNET::IService is located in NeL, but user-defined services
 are located in /code/nelns.
 
-\subsection new_service How to create a user-defined service ?
+\subsection service How to create a user-defined service ?
 
 -# Create a class inherited from NLNET::IService (optional).
 -# Create an array of callbacks, called \e CallbackArray. Example :
@@ -69,7 +69,18 @@ NSHost = "itsalive.nevrax.org";
 NSPort = 50000;
 \endcode
 
-\subsection new_services_examples Examples
+\subsection services_examples Update rule
+
+Use the \c setUpdateTimeout() to set the quantum of time use for the network update. You are absolutely certain that your \c update()
+function will \b not be called \b before this amount of time.
+
+If you set the update timeout value higher than 0, all messages in queues will be process until the time greater than the timeout user \c update() .
+
+If you set the update timeout value to 0, all messages in queues will be process one time before calling the user \c update() .
+
+If you set the update timeout value to -1, only one message will be process one time before calling the user \c update() .
+
+\subsection services_examples Examples
 
 See the nelns services source code for examples on how to create a class inherited from
 IService.

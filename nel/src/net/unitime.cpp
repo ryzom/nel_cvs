@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.24 2001/05/31 15:26:53 lecroart Exp $
+ * $Id: unitime.cpp,v 1.25 2001/06/13 10:19:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,7 +183,7 @@ void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 
 	nlinfo ("CUniTime::syncUniTimeFromService(): ping:%"NL_I64"dms, time:%ds, unitime:%"NL_I64"dms", delta, GetUniversalTimeSecondsSince1970, GetUniversalTimeUniTime);
 
-	// <-- from here to the "-->" comment, the block must be executed in less than one second or an infinite loop occurs
+// <-- from here to the "-->" comment, the block must be executed in less than one second or an infinite loop occurs
 
 	// get the second
 	firstsecond = CTime::getSecondsSince1970 ();
@@ -193,7 +193,7 @@ void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 	while (nextsecond != CTime::getSecondsSince1970 ())
 		nlassert (CTime::getSecondsSince1970 () <= nextsecond);
 
-	// -->
+// -->
 
 	// get the local time of the beginning of the next second
 	lt = CTime::getLocalTime ();

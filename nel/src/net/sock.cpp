@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.5 2001/06/01 13:38:06 cado Exp $
+ * $Id: sock.cpp,v 1.6 2001/06/13 10:19:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,7 +169,7 @@ std::string CSock::errorString( uint errorcode )
 	case WSAEMFILE		 /*10024*/: return "Too many open sockets";
 	case WSAENOTSOCK	 /*10038*/: return "Socket operation on nonsocket (maybe invalid select descriptor)";
 	case WSAEMSGSIZE	 /*10040*/: return "Message too long";
-	case WSAEADDRINUSE   /*10048*/: return "Address already in use";
+	case WSAEADDRINUSE   /*10048*/: return "Address already in use (is this service already running in this computer?)";
 	case WSAEADDRNOTAVAIL/*10049*/: return "Address not available";
 	case WSAENETDOWN	 /*10050*/: return "Network is down";
 	case WSAENETUNREACH  /*10051*/: return "Network is unreachable";

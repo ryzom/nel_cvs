@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.12 2004/06/07 16:38:03 boucher Exp $
+ * $Id: sstring.h,v 1.13 2004/06/08 17:14:33 distrib Exp $
  */
 
 
@@ -1524,22 +1524,22 @@ inline void CSString::serial( NLMISC::IStream& s )
 
 inline CSString operator+(const CSString& s0,char s1)
 {
-	return reinterpret_cast<const CSString&>( reinterpret_cast<const std::string&>(s0)+s1 );
+	return CSString(s0)+s1;
 }
 
 inline CSString operator+(const CSString& s0,const char* s1)
 {
-	return reinterpret_cast<CSString&>( reinterpret_cast<const std::string&>(s0)+s1 );
+	return CSString(s0)+s1;
 }
 
 inline CSString operator+(const CSString& s0,const std::string& s1)
 {
-	return reinterpret_cast<CSString&>( reinterpret_cast<const std::string&>(s0)+s1 );
+	return CSString(s0)+s1;
 }
 
 inline CSString operator+(const CSString& s0,const CSString& s1)
 {
-	return reinterpret_cast<CSString&>( reinterpret_cast<const std::string&>(s0)+reinterpret_cast<const std::string&>(s1) );
+	return CSString(s0)+s1;
 }
 
 inline CSString operator+(char s0,const CSString& s1)
@@ -1554,16 +1554,16 @@ inline CSString operator+(const char* s0,const CSString& s1)
 
 inline CSString operator+(const std::string& s0,const CSString& s1)
 {
-	return reinterpret_cast<const CSString&>(s0+reinterpret_cast<const std::string&>(s1));
+	return CSString(s0)+s1;
 }
 
 } // NLMISC
 
 // *** The following was commented out by Sadge because there were strange compilation/ link issues ***
 // *** The '<' operator was implemented instead ***
-//_STLP_BEGIN_NAMESPACE
-namespace std
-{
+_STLP_BEGIN_NAMESPACE
+//namespace std
+//{
 
 	/*
 	 * less<CSString> is case insensitive
@@ -1573,8 +1573,8 @@ namespace std
 	{
 		bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); }
 	};
-} // std
-//_STLP_END_NAMESPACE
+//} // std
+_STLP_END_NAMESPACE
 
 /** 
   * Instead of overriding std::less, please use the following predicate. 

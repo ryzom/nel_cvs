@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.14 2000/11/24 14:06:04 berenguier Exp $
+ * $Id: patch.h,v 1.15 2000/11/30 10:57:13 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -36,6 +36,7 @@
 #include "nel/3d/tessellation.h"
 #include "nel/3d/aabbox.h"
 #include "nel/3d/bsphere.h"
+#include "nel/3d/tile_element.h"
 
 
 namespace NL3D {
@@ -135,6 +136,8 @@ public:
 		TODO_UVCORRECT: - "UV correction" infos.
 		
 	*/
+	// There is OrderS*OrderT tiles. CZone build it at build() time.
+	std::vector<CTileElement>	Tiles;
 
 
 public:
@@ -261,6 +264,9 @@ private:
 	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
 	// desired pass. NULL may be returned if the pass is not present (eg: no alpha for this tile...).
 	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);
+	// For CTessFace::computeMaterial(). Return the orient/scalebias for the tile in the patchtexture, and the
+	// desired pass.
+	void			getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvScaleBias);
 	// For Render
 	sint			getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc);
 	sint			getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc);

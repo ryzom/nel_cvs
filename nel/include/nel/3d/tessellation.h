@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.15 2000/11/28 11:14:55 berenguier Exp $
+ * $Id: tessellation.h,v 1.16 2000/11/30 10:57:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,6 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
-#include "nel/misc/debug.h"
-#include "nel/3d/driver.h"
-#include <vector>
 
 
 namespace	NL3D
@@ -47,55 +44,12 @@ using NLMISC::CMatrix;
 
 
 class	CPatch;
+class	CPatchRdrPass;
+class	CVertexBuffer;
 
 
 // ***************************************************************************
 const	float	OO32768= 1.0f/0x8000;
-
-
-// ***************************************************************************
-/**
- * A render pass for a landscape material (tile or texture far).
- * A Primitive Block is not used, for speed improvement: must not realloc at each face or at each patch...
- *
- * How does it work: class CPatchRdrPass maintain a GlobalTriList array, where tri indices are stored.
- * Since Tris may be added in a interleaved fashion (33 tris indices for material 0, then 12 tris indices for material 1, 
- * then 60 tris indices for material 0 etc...), this GlobalTriList is so interleaved (with some indices used for interleaving).
- *
- * NB: GlobalTriList is a "grow only" vector, even across frames.... So reallocation never happens, but at begin of program.
- */
-class	CPatchRdrPass
-{
-public:
-	CMaterial		*Mat;
-	// The current number of tris for this rdrpass.
-	sint			NTris;
-	// Where this RdrPass begin, in the GlobalTriList.
-	sint			StartIndex;
-	// The current/end index for this RdrPass GlobalTriList.
-	sint			CurIndex;
-	// The BlockLen index, to know what is the length of a block (in Triangles).
-	sint			BlockLenIndex;
-
-	// Format of a single block:
-	// |LEN|ID0|ID1|ID2|ID0|ID1|ID2....|JMP|
-
-public:
-	CPatchRdrPass();
-	void			addTri(uint32 idx0, uint32 idx1, uint32 idx2);
-	void			resetTriList();
-	void			buildPBlock(CPrimitiveBlock &pb);
-
-
-public:
-	// Must resetTriList() of all material using the GlobalTriList, before calling resetGlobalTriList.
-	static void		resetGlobalTriList();
-
-private:
-	static sint					CurGlobalIndex;
-	static std::vector<uint32>	GlobalTriList;
-
-};
 
 
 // ***************************************************************************
@@ -484,6 +438,8 @@ private:
 	void	splitRectangular(bool propagateSplit);
 	void	doMerge();
 
+	// see computeTileMaterial().
+	void	initTileUv(sint pass, CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
 
 private:
 	// Fake face are the only ones which have a NULL patch ptr (with mult face).

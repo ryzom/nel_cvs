@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.7 2000/11/22 13:14:39 berenguier Exp $
+ * $Id: landscape.h,v 1.8 2000/11/30 10:57:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,9 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_id.h"
 #include "nel/3d/zone.h"
+#include "nel/3d/tile_bank.h"
+#include "nel/3d/patch_rdr_pass.h"
+#include <map>
 
 
 namespace NL3D 
@@ -55,6 +58,10 @@ namespace NL3D
  */
 class CLandscape
 {
+public:
+	// The bank of tiles information.
+	CTileBank		TileBank;
+
 public:
 
 	/// Constructor
@@ -96,14 +103,27 @@ public:
 	// Store it by landscape, and not only globally in CTessFace statics.
 
 
+	/** Update and refresh a patch texture.
+	 * Usefull for Tile edition. Even if patch is in tile mode, it is refreshed...
+	 * \param zoneId the zone of the update.
+	 * \param numPatch the index of patch in zoneId which will receive his new texture. assert if bad id.
+	 * \param tiles the patch texture. assert if not of good size (OrderS*OrderT).
+	 * \return false if zone not loaded in landscape.
+	 */
+	bool			changePatchTexture(sint zoneId, sint numPatch, const std::vector<CTileElement> &tiles);
+
+
 private:
 	// Private part used by CPatch.
 	friend class	CPatch;
 
 	// TODO_TEXTURE.
-	// dummy texture here.
+	// dummy Far texture here.
 	CPatchRdrPass	*getFarRenderPass() {return &FarRdrPass;}
-	CPatchRdrPass	*getTileRenderPass() {return &TileRdrPass;}
+	// Return the render pass for a tile Id.
+	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass);
+	// Return the UvScaleBias for a tile Id. uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
+	void			getTileUvScaleBias(sint tileId, bool additiveRdrPass, CVector &uvScaleBias);
 
 
 private:
@@ -115,14 +135,52 @@ private:
 	// The temp prim block, for each rdrpass. re-allocation rarely occurs.
 	CPrimitiveBlock	PBlock;
 
+
+	// The map of tile texture.
+	typedef	NLMISC::CSmartPtr<ITexture>	PTexture;
+	typedef	std::map<std::string, PTexture>	TTileTextureMap;
+	typedef	TTileTextureMap::iterator	ItTileTextureMap;
+	TTileTextureMap		TileTextureMap;
+
+
+	struct	CTileInfo
+	{
+		// Is this tile correctly loaded?
+		bool			TileOk;
+		// Should be a pointer, when/if tiles will be grouped in a multiple big square textures.
+		CPatchRdrPass	RdrPass;
+		// The scale/Bias to access this tile in those big texture.
+		// uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
+		// Manages the demi-texel on tile border too.
+		CVector			UvScaleBias;
+	};
+	struct	CTileKey
+	{
+		uint16	TileId;
+		bool	Additive;
+		bool	operator<(const CTileKey &k) const
+		{
+			if(Additive!=k.Additive)
+				return !Additive;
+			else
+				return TileId<k.TileId;
+		}
+	};
+
+
+	// The map of tile Rdr Pass.
+	typedef	std::map<CTileKey, CTileInfo>	TTileRdrPassMap;
+	typedef	TTileRdrPassMap::iterator	ItTileRdrPassMap;
+	TTileRdrPassMap		TileRdrPassMap;
+
 	// TODO_TEXTURE.
-	// For test only. The only two material (far and tile).
+	// For test only. The only one Far material.
 	CPatchRdrPass	FarRdrPass;
-	CPatchRdrPass	TileRdrPass;
-	CMaterial		FarMat;
-	CMaterial		TileMat;
-	CSmartPtr<ITexture>		FarText;
-	CSmartPtr<ITexture>		TileText;
+
+
+private:
+	// Internal only. Force the insert in TileRdrPassMap of the tile (with TileBank).
+	void			loadTile(const CTileKey &key);
 
 };
 

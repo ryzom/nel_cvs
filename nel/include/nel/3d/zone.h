@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.8 2000/11/22 13:14:50 berenguier Exp $
+ * $Id: zone.h,v 1.9 2000/11/30 10:57:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/debug.h"
 #include "nel/3d/tessellation.h"
 #include "nel/3d/patch.h"
 #include "nel/3d/bezier_patch.h"
@@ -117,6 +118,15 @@ public:
 	float			ErrorSize;
 	/// The base corner vertices indices in the current zone. Used for patch connectivity.
 	uint16			BaseVertices[4];
+	// @}
+
+
+	/// \name Patch texture.
+	// @{
+	/** The Tiles for this patch. There must be OrderS*OrderT tiles.
+	 * They are stored in line first order, from S=0 to 1, and T=0 to 1.
+	 */
+	std::vector<CTileElement>	Tiles;
 	// @}
 
 
@@ -215,6 +225,10 @@ public:
 	void			serial(NLMISC::IStream &f);
 
 
+	/// Change a texture of a patch. See CLandscape::changePatchTexture() for more information.
+	void			changePatchTexture(TZoneMap &loadedZones, sint numPatch, const std::vector<CTileElement> &tiles);
+
+
 	// NB: for all those function, CTessFace static rendering context must be setup.
 	/// Clip a zone. To know if must be rendered etc... A zone is IN if in BACK of at least one plane of the pyramid.
 	void			clip(const std::vector<CPlane>	&pyramid);
@@ -233,6 +247,7 @@ public:
 	float			getPatchScale() const {return PatchScale;}
 	bool			compiled() const {return Compiled;}
 	uint16			getZoneId() const {return ZoneId;}
+	sint			getNumPatchs() const {return Patchs.size();}
 
 
 // Private part.

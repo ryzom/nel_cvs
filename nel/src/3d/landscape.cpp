@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.7 2000/11/22 13:15:24 berenguier Exp $
+ * $Id: landscape.cpp,v 1.8 2000/11/30 10:54:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,12 @@ namespace NL3D
 
 
 // ***************************************************************************
+// TODO: may change this.
+// The size of a tile, in pixel. UseFull for HalfPixel Scale/Bias.
+const	float TileSize= 128;
+
+
+// ***************************************************************************
 CLandscape::CLandscape()
 {
 }
@@ -62,22 +68,12 @@ void			CLandscape::init(bool bumpTiles)
 	// TODO_TEXTURE.
 	// For TEST only here, create 2 rdrPass with random texture.
 
-	FarText= new CTextureFile("maps/slash.tga");
-	TileText= new CTextureFile("maps/xray.tga");
-
-
 	// Fill mat and rdr pass.
 	// Must init their BlendFunction here!!! becaus they switch between blend on/off during rendering.
-	FarMat.initUnlit();
-	FarMat.setSrcBlend(CMaterial::srcalpha);
-	FarMat.setDstBlend(CMaterial::invsrcalpha);
-	FarMat.setTexture(FarText);
-	TileMat.initUnlit();
-	TileMat.setSrcBlend(CMaterial::srcalpha);
-	TileMat.setDstBlend(CMaterial::invsrcalpha);
-	TileMat.setTexture(TileText);
-	FarRdrPass.Mat= &FarMat;
-	TileRdrPass.Mat= &TileMat;
+	FarRdrPass.Mat.initUnlit();
+	FarRdrPass.Mat.setSrcBlend(CMaterial::srcalpha);
+	FarRdrPass.Mat.setDstBlend(CMaterial::invsrcalpha);
+	FarRdrPass.Mat.setTexture(new CTextureFile("maps/slash.tga"));
 }
 
 
@@ -183,15 +179,24 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		driver->activeVertexBuffer(*CTessFace::CurrentVB);
 
 		// Render All material RdrPass.
-		// TODO_TEXTURE. For TEST only here. Do it on TileRdrPass.
-		TileRdrPass.buildPBlock(PBlock);
-		// must resetTriList at each end of each material process.
-		TileRdrPass.resetTriList();
-		if(i==0)
-			TileRdrPass.Mat->setBlend(false);
-		else
-			TileRdrPass.Mat->setBlend(true);
-		driver->render(PBlock, *TileRdrPass.Mat);
+		ItTileRdrPassMap	itTile;
+		for(itTile= TileRdrPassMap.begin(); itTile!= TileRdrPassMap.end(); itTile++)
+		{
+			CPatchRdrPass	&pass= (*itTile).second.RdrPass;
+			if(pass.NTris==0)
+				continue;
+
+			// Build the PBlock.
+			pass.buildPBlock(PBlock);
+			// must resetTriList at each end of each material process.
+			pass.resetTriList();
+			if(i==0)
+				pass.Mat.setBlend(false);
+			else
+				pass.Mat.setBlend(true);
+			// Render!
+			driver->render(PBlock, pass.Mat);
+		}
 	}
 
 
@@ -217,8 +222,8 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	FarRdrPass.buildPBlock(PBlock);
 	// must resetTriList at each end of each material process.
 	FarRdrPass.resetTriList();
-	FarRdrPass.Mat->setBlend(false);
-	driver->render(PBlock, *FarRdrPass.Mat);
+	FarRdrPass.Mat.setBlend(false);
+	driver->render(PBlock, FarRdrPass.Mat);
 
 
 	// 3. Far1Render pass.
@@ -243,12 +248,161 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	FarRdrPass.buildPBlock(PBlock);
 	// must resetTriList at each end of each material process.
 	FarRdrPass.resetTriList();
-	FarRdrPass.Mat->setBlend(true);
-	driver->render(PBlock, *FarRdrPass.Mat);
+	FarRdrPass.Mat.setBlend(true);
+	driver->render(PBlock, FarRdrPass.Mat);
 
 
 }
 
+
+
+// ***************************************************************************
+void			CLandscape::loadTile(const CTileKey &key)
+{
+	CTile		*tile;
+	bool		tileOk= true;
+
+	// Retrieve or create texture.
+	// ===========================
+	if(key.TileId>=TileBank.getTileCount())
+		tile= NULL;
+	else
+		tile= TileBank.getTile(key.TileId);
+	string		textName;
+	if(!key.Additive)
+	{
+		// Diffuse part, Must be here, so always return some texture, dummy texture if necessary.
+		if(tile==NULL)
+			textName= "YourMotherInShort";		// To have the dummy texture "?"  :)
+		else
+			textName= tile->getFileName(CTile::diffuse);
+	}
+	else
+	{
+		// If no additive pass for this tile, return NULL.
+		if(tile==NULL)
+			tileOk= false;
+		else
+		{
+			textName= tile->getFileName(CTile::additive);
+			if(textName=="")
+				tileOk= false;
+		}
+	}
+	ITexture	*text;
+	if(tileOk)
+	{
+		text= TileTextureMap[textName];
+		// If just inserted, SmartPtr is NULL!!  :)
+		if(!text)
+		{
+			TileTextureMap[textName]= text= new CTextureFile(textName);
+		}
+	}
+
+	// Insert/fill the render pass.
+	//=============================
+	ItTileRdrPassMap	it;
+	it= TileRdrPassMap.insert(TTileRdrPassMap::value_type(key, CTileInfo())).first;
+	if(tileOk)
+	{
+		(*it).second.TileOk= true;
+		// Fill rdr pass info.
+		CMaterial	&mat= ((*it).second).RdrPass.Mat;
+		mat.initUnlit();
+		// Must init their BlendFunction here!!! becaus they switch between blend on/off during rendering.
+		mat.setSrcBlend(CMaterial::srcalpha);
+		mat.setDstBlend(CMaterial::invsrcalpha);
+		mat.setTexture(text);
+		// Fill UV Info.
+		// NB: for now, One Tile== One Texture, so UVScaleBias is simple.
+		(*it).second.UvScaleBias.x= 1/(2*NL3D::TileSize);
+		(*it).second.UvScaleBias.y= 1/(2*NL3D::TileSize);
+		(*it).second.UvScaleBias.z= 1-1/NL3D::TileSize;
+	}
+	else
+	{
+		(*it).second.TileOk= false;
+	}
+}
+
+
+// ***************************************************************************
+CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass)
+{
+	/*
+	// TODO_TEXTURE and TODO_BUMP.
+		Actually, there should be more than One RdrPass per tile.
+		The correct thing is: One per tuple  "tile - NearLightMapTexture".
+		Optimisations could be done by:
+			- have NearLightMapTexture of all patchs sticked together in multiple as big as possible texture.
+				(maybe only one??)
+
+		NB: a tile is himself a tuple of: diffuseTexture/bumpTexture/additiveTexture.
+	*/
+
+	ItTileRdrPassMap	it;
+	CTileKey			key;
+	key.TileId= tileId;
+	key.Additive= additiveRdrPass;
+	it= TileRdrPassMap.find(key);
+
+	// If not here, create it.
+	if(it== TileRdrPassMap.end())
+	{
+		// Force loading of tile.
+		loadTile(key);
+
+		it= TileRdrPassMap.find(key);
+		nlassert(it!=TileRdrPassMap.end());
+	}
+
+	// Retrieve.
+	CTileInfo	&tileInfo= (*it).second;
+	if(tileInfo.TileOk)
+		return &(tileInfo.RdrPass);
+	else
+		return NULL;
+}
+
+
+// ***************************************************************************
+void			CLandscape::getTileUvScaleBias(sint tileId, bool additiveRdrPass, CVector &uvScaleBias)
+{
+	ItTileRdrPassMap	it;
+	CTileKey			key;
+	key.TileId= tileId;
+	key.Additive= additiveRdrPass;
+	it= TileRdrPassMap.find(key);
+
+	if(it== TileRdrPassMap.end())
+	{
+		// WE SHOULD NOT BE HERE!!
+		// Because insertion of tiles are always done in getTileRenderPass(), and this insertion 
+		// always succeed (or return NULL => no tile...)
+		nlstop;
+	}
+	else
+	{
+		uvScaleBias= (*it).second.UvScaleBias;
+	}
+}
+
+
+// ***************************************************************************
+bool			CLandscape::changePatchTexture(sint zoneId, sint numPatch, const std::vector<CTileElement> &tiles)
+{
+	ItZoneMap	it;
+
+	it= Zones.find(zoneId);
+	if(it==Zones.end())
+		return false;
+	nlassert(numPatch>=0);
+	nlassert(numPatch<(*it).second->getNumPatchs());
+	(*it).second->changePatchTexture(Zones, numPatch, tiles);
+
+	return true;
+}
 
 
 } // NL3D

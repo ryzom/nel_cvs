@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.19 2000/11/28 15:23:00 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.20 2000/11/30 10:54:58 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -33,7 +33,8 @@ using namespace NLMISC;
 using namespace std;
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
 
 // ***************************************************************************
@@ -52,120 +53,6 @@ const	uint8	TileUvFmtBump4= 16+3;
 const	uint8	TileUvFmtBump5= 16+4;
 const	uint8	TileUvFmtBump6= 16+5;
 
-
-
-
-// ***************************************************************************
-// ***************************************************************************
-// CPatchRdrPass
-// ***************************************************************************
-// ***************************************************************************
-
-
-
-// ***************************************************************************
-// Primitives Indices reallocation. must be >16 (see below..)
-static sint		GlobalTriListBlockRealloc= 1024;
-
-
-// ***************************************************************************
-sint			CPatchRdrPass::CurGlobalIndex=0;
-std::vector<uint32>	CPatchRdrPass::GlobalTriList;
-
-	
-// ***************************************************************************
-CPatchRdrPass::CPatchRdrPass()
-{
-	resetTriList();
-}
-
-// ***************************************************************************
-void			CPatchRdrPass::resetTriList()
-{
-	NTris=0;
-	StartIndex=0;
-	CurIndex=0;
-	BlockLenIndex=0;
-}
-
-// ***************************************************************************
-void			CPatchRdrPass::addTri(uint32 idx0, uint32 idx1, uint32 idx2)
-{
-	// An error may occurs if resetGlobalTriList() called, but not resetTriList().
-	nlassert(CurIndex<=CurGlobalIndex);
-
-	// Realloc if necessary.
-	// Keep a security of 16 spaces (think that 5/6 only is needed).
-	// Nb: 6, because we need one more space for the last JMP of the last block of the last material...
-	// Don't bother, 16 is cool....
-	if((sint)GlobalTriList.size() < CurGlobalIndex+16)
-	{
-		GlobalTriList.resize(GlobalTriList.size() + NL3D::GlobalTriListBlockRealloc);
-	}
-
-	// First, if current material interleaved, jump.
-	if(CurIndex!=CurGlobalIndex)
-	{
-		// Leave a "jump" space for old material.
-		CurGlobalIndex++;
-		// This material "jump" to current index.
-		if(NTris!=0)	// Only if the list is not empty.
-		{
-			// Old block (with CurIndex which points to the jump space) must point to cur.
-			// Mark this index so we know it is a Jump index.
-			GlobalTriList[CurIndex]= CurGlobalIndex | 0x80000000;
-			// Start of a new block!!
-			BlockLenIndex= CurGlobalIndex++;
-			GlobalTriList[BlockLenIndex]=0;
-		}
-	}
-
-	// insert!!
-	if(NTris==0)
-	{
-		// Start of a new block!!
-		StartIndex= BlockLenIndex= CurGlobalIndex++;
-		GlobalTriList[BlockLenIndex]=0;
-	}
-	GlobalTriList[CurGlobalIndex++]= idx0;
-	GlobalTriList[CurGlobalIndex++]= idx1;
-	GlobalTriList[CurGlobalIndex++]= idx2;
-
-	// CurIndex point to the next global index...
-	CurIndex= CurGlobalIndex;
-	NTris++;
-	GlobalTriList[BlockLenIndex]++;
-}
-
-// ***************************************************************************
-void			CPatchRdrPass::buildPBlock(CPrimitiveBlock &pb)
-{
-	sint	idx, n, blocklen;
-
-	pb.setNumTri(NTris);
-	uint32	*pi= pb.getTriPointer();
-
-	// Run the list of block.
-	n= NTris;
-	idx= StartIndex;
-	while(n>0)
-	{
-		// size of block (in tris).
-		blocklen= GlobalTriList[idx];
-		// Copy the indices (jump the BlockLenIndex).
-		memcpy(pi, &GlobalTriList[idx+1], blocklen*3*sizeof(uint32));
-		// Jump to the next block!! (not valid if last block, but doesn't matter...)
-		idx= GlobalTriList[1+blocklen*3];
-		pi+= blocklen*3;
-		n-= blocklen;
-	}
-}
-
-// ***************************************************************************
-void			CPatchRdrPass::resetGlobalTriList()
-{
-	CurGlobalIndex= 0;
-}
 
 
 
@@ -207,7 +94,7 @@ float		CTessFace::TileDistFar= CTessFace::TileDistNear+40;
 float		CTessFace::TileDistNearSqr= sqr(CTessFace::TileDistNear);
 float		CTessFace::TileDistFarSqr= sqr(CTessFace::TileDistFar);
 float		CTessFace::OOTileDistDeltaSqr= 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
-sint		CTessFace::TileMaxSubdivision=4;
+sint		CTessFace::TileMaxSubdivision=0;
 
 float		CTessFace::Far0Dist= 200;		// 200m.
 float		CTessFace::Far1Dist= 400;		// 400m.
@@ -389,6 +276,51 @@ float		CTessFace::updateErrorMetric()
 
 
 // ***************************************************************************
+void		CTessFace::initTileUv(sint pass, CParamCoord pointCoord, CParamCoord middle, CUV &uv)
+{
+	// Get good coordinate according to patch orientation.
+	uv.U= pointCoord.S<=middle.S? 0.0f: 1.0f;
+	uv.V= pointCoord.T<=middle.T? 0.0f: 1.0f;
+	
+	// Get Tile Uv info: orientation and scale.
+	uint8		orient;
+	CVector		uvScaleBias;
+	Patch->getTileUvInfo(TileId, pass, orient, uvScaleBias);
+
+	// Orient the UV.
+	float	u= uv.U;
+	float	v= uv.V;
+	// Speed rotation.
+	switch(orient)
+	{
+		case 0: 
+			uv.U= u;
+			uv.V= v;
+			break;
+		case 1: 
+			uv.U= v;
+			uv.V= 1-u;
+			break;
+		case 2: 
+			uv.U= 1-u;
+			uv.V= 1-v;
+			break;
+		case 3: 
+			uv.U= 1-v;
+			uv.V= u;
+			break;
+	}
+
+
+	// Scale the UV.
+	uv.U*= uvScaleBias.z;
+	uv.V*= uvScaleBias.z;
+	uv.U+= uvScaleBias.x;
+	uv.V+= uvScaleBias.y;
+}
+
+
+// ***************************************************************************
 void		CTessFace::computeTileMaterial()
 {
 	// 0. Compute TileId.
@@ -428,13 +360,16 @@ void		CTessFace::computeTileMaterial()
 	}
 	else
 	{
-		// TODO_TEXTURE: work with patch to create the good vertex format (TileMaterial), link Pass to the good materials etc...
-		// for test only here....
+		sint	i;
 		TileMaterial= new CTileMaterial;
-		TileMaterial->Pass[0]= Patch->getTileRenderPass(TileId, 0);
+		// Fill pass of multi pass material.
+		for(i=0;i<NL3D_MAX_TILE_PASS;i++)
+		{
+			TileMaterial->Pass[i]= Patch->getTileRenderPass(TileId, i);
+		}
 		// Use NULL in TileMaterial->TilePass to know the format and bind PassToUv.
 		sint	uvcount=0;
-		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		for(i=0;i<NL3D_MAX_TILE_PASS;i++)
 		{
 			if(TileMaterial->Pass[i])
 			{
@@ -451,10 +386,18 @@ void		CTessFace::computeTileMaterial()
 	//----------------
 	// Must allocate the base uv.
 	TileUvBase= allocTileUv(TileMaterial->TileUvFmt);
-	// TODO_TEXTURE: work with Patch, to create the good texcoordinates.
-	// for test only here....
-	((CTileUvNormal1*)TileUvBase)->UvPasses[0].PUv0.U= PVBase.S<=middle.S? 0.0f: 1.0f;
-	((CTileUvNormal1*)TileUvBase)->UvPasses[0].PUv0.V= PVBase.T<=middle.T? 0.0f: 1.0f;
+	// Init UV!
+	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+	{
+		// TileId is already setup.
+		// If pass is valid.
+		if(TileMaterial->Pass[i])
+		{
+			sint	uvpass= TileMaterial->PassToUv[i];
+			initTileUv(i, PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv0);
+		}
+		// TODO_BUMP....
+	}
 
 	// if base neighbor is already at TileLimitLevel just ptr-copy, else create the left/right TileUvs...
 	if(copyFromBase)
@@ -467,12 +410,19 @@ void		CTessFace::computeTileMaterial()
 	{
 		TileUvLeft= allocTileUv(TileMaterial->TileUvFmt);
 		TileUvRight= allocTileUv(TileMaterial->TileUvFmt);
-		// TODO_TEXTURE: work with Patch, to create the good texcoordinates.
-		// for test only here....
-		((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
-		((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.V= PVLeft.T<=middle.T? 0.0f: 1.0f;
-		((CTileUvNormal1*)TileUvRight)->UvPasses[0].PUv0.U= PVRight.S<=middle.S? 0.0f: 1.0f;
-		((CTileUvNormal1*)TileUvRight)->UvPasses[0].PUv0.V= PVRight.T<=middle.T? 0.0f: 1.0f;
+		// Init UV!
+		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		{
+			// TileId is already setup.
+			// If pass is valid.
+			if(TileMaterial->Pass[i])
+			{
+				sint	uvpass= TileMaterial->PassToUv[i];
+				initTileUv(i, PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv0);
+				initTileUv(i, PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv0);
+			}
+			// TODO_BUMP....
+		}
 	}
 
 }
@@ -1172,7 +1122,7 @@ void		CTessFace::refine()
 		// 0. Test split/merge.
 		//---------------------
 		// If wanted, not already done, and limit not reached, split().
-		if(ps>1.0f && isLeaf() && Level<= (Patch->TileLimitLevel+TileMaxSubdivision) )
+		if(ps>1.0f && isLeaf() && Level< (Patch->TileLimitLevel+TileMaxSubdivision) )
 		{
 			split();
 		}

@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.13 2000/11/28 15:23:00 berenguier Exp $
+ * $Id: zone.cpp,v 1.14 2000/11/30 10:54:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,10 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 			pa.Tangents[i].pack(p.Tangents[i], PatchBias, PatchScale);
 		for(i=0;i<4;i++)
 			pa.Interiors[i].pack(p.Interiors[i], PatchBias, PatchScale);
+		pa.Tiles= pi.Tiles;
+		nlassert(pa.Tiles.size()== (uint)pi.OrderS*pi.OrderT);
+
+
 
 		// Build the patchConnect.
 		pc.OrderS= pi.OrderS;
@@ -610,15 +614,15 @@ static	void	checkTess()
 
 // ***************************************************************************
 // TempYoyo.
-volatile sint pipo1;
-volatile sint pipo2;
+//volatile sint pipo1;
+//volatile sint pipo2;
 void			CZone::refine()
 {
 	nlassert(Compiled);
 
 	// TempYoyo.
 	// For the monkey bind test.
-	extern sint numFrames;
+	/*extern sint numFrames;
 	pipo1=(rand()>>12)&1;
 	pipo2=(rand()>>12)&1;
 	//if(pipo1 && numFrames>1360)
@@ -627,7 +631,7 @@ void			CZone::refine()
 		TZoneMap	pipoMap;
 		pipoMap[ZoneId]= this;
 		bindPatch(pipoMap, Patchs[0], PatchConnects[0]);
-	}
+	}*/
 
 	
 	// Force refine of invisible zones only every 8 times.
@@ -719,6 +723,29 @@ void			CZone::renderTile(sint pass)
 	}
 }
 
+
+// ***************************************************************************
+// ***************************************************************************
+// Misc part.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CZone::changePatchTexture(TZoneMap &loadedZones, sint numPatch, const std::vector<CTileElement> &tiles)
+{
+	nlassert(numPatch>=0);
+	nlassert(numPatch<getNumPatchs());
+	// unbind => forceMerge() the patch. Hence, tiles are reseted.
+	unbindPatch(loadedZones, Patchs[numPatch], PatchConnects[numPatch]);
+
+	// Update the patch texture.
+	nlassert(Patchs[numPatch].Tiles.size() ==tiles.size() );
+	Patchs[numPatch].Tiles= tiles;
+
+	// rebind. At next refine(), tesselation will be updated and tiles created.
+	bindPatch(loadedZones, Patchs[numPatch], PatchConnects[numPatch]);
+}
 
 
 } // NL3D

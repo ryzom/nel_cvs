@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.17 2000/11/28 15:23:00 berenguier Exp $
+ * $Id: patch.cpp,v 1.18 2000/11/30 10:54:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -799,6 +799,7 @@ void			CPatch::serial(NLMISC::IStream &f)
 	f.serial(Tangents[0], Tangents[1], Tangents[2], Tangents[3]);
 	f.serial(Tangents[4], Tangents[5], Tangents[6], Tangents[7]);
 	f.serial(Interiors[0], Interiors[1], Interiors[2], Interiors[3]);
+	f.serialCont(Tiles);
 }
 
 
@@ -817,14 +818,50 @@ CPatchRdrPass	*CPatch::getFarRenderPass(sint farLevel, float &farUVScale, float 
 // ***************************************************************************
 CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass)
 {
-	// TODO_TEXTURE.
-	// dummy texture.
-	if(pass==0)
-		return Zone->Landscape->getTileRenderPass();
-	else
+	nlassert(pass>=0 && pass<6);
+
+	bool	additive= (pass&1)!=0;
+	sint	passNum= pass>>1;
+
+	sint	tileNumber= Tiles[tileId].Tile[passNum];
+	if(tileNumber==0xFFFF)
+	{
+		// Diffuse tile 0 should never be NULL.
+		nlassert(pass!=0);
+		// In release, display a "fake".
+		if(pass==0)
+			return Zone->Landscape->getTileRenderPass(0, false);
 		return NULL;
+	}
+	else
+	{
+		// return still may be NULL, in additive case.
+		return Zone->Landscape->getTileRenderPass(tileNumber, additive);
+	}
 }
 
+// ***************************************************************************
+void			CPatch::getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvScaleBias)
+{
+	bool	additive= (pass&1)!=0;
+	sint	passNum= pass>>1;
+
+	sint	tileNumber= Tiles[tileId].Tile[passNum];
+	if(tileNumber==0xFFFF)
+	{
+		// dummy... Should not be called here.
+		orient= 0;
+		uvScaleBias.x=0;
+		uvScaleBias.y=0;
+		uvScaleBias.z=1;
+	}
+	else
+	{
+		orient= Tiles[tileId].getTileOrient(passNum);
+		Zone->Landscape->getTileUvScaleBias(tileNumber, additive, uvScaleBias);
+	}
+
+}
 	}
 }
 

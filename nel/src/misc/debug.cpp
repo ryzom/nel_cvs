@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.49 2002/04/17 07:22:27 lecroart Exp $
+ * $Id: debug.cpp,v 1.50 2002/04/17 16:46:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -322,10 +322,26 @@ NLMISC_COMMAND(removeFilterInfo, "remove a filter on InfoLog", "[<filterstr>]")
 	return true;
 }
 
-NLMISC_COMMAND(displayFilterInfo, "display filter on InfoLog", "")
+NLMISC_COMMAND(displayFilterInfo, "display filter on InfoLog", "[d|i|w|e]")
 {
-	if(args.size() != 0) return false;
-	InfoLog->displayFilter(log);
+	if(args.size() > 1) return false;
+	if ( args.size() == 1 )
+	{
+		if ( strcmp( args[0].c_str(), "d" ) == 0 )
+			InfoLog->displayFilter(*DebugLog);
+		else if ( strcmp( args[0].c_str(), "i" ) == 0 )
+			InfoLog->displayFilter(*InfoLog);
+		else if ( strcmp( args[0].c_str(), "w" ) == 0 )
+			InfoLog->displayFilter(*WarningLog);
+		else if ( strcmp( args[0].c_str(), "e" ) == 0 )
+			InfoLog->displayFilter(*ErrorLog);
+		else
+			return false;
+	}
+	else
+	{
+		InfoLog->displayFilter(log);
+	}
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file mini_col.h
  * <File description>
  *
- * $Id: mini_col.h,v 1.3 2001/01/02 10:21:43 berenguier Exp $
+ * $Id: mini_col.h,v 1.4 2001/01/03 15:25:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,9 +30,10 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/plane.h"
-#include "nel/3d/quad_tree.h"
+#include "nel/3d/quad_grid.h"
 #include "nel/3d/triangle.h"
 #include "nel/3d/landscape.h"
+#include <set>
 
 
 namespace NL3D 
@@ -57,14 +58,17 @@ public:
 	/// Constructor
 	CMiniCol();
 
-	/** Init the size of the collision system, and init it with the landscape.
-	 * \param size the radius of the area.
-	 */
-	void			init(CLandscape *land, float radius= 100);
 
+	/// Init the size of the collision system, and init it with the landscape.
+	void			init(CLandscape *land, float radMin=100, float radDelta=50);
 
-	/** Reset the center of interset of the collision system.
-	 */
+	/// Add a zone to the collision system. Zone must be loaded into the landscape before.
+	void			addZone(uint16 zoneId);
+
+	/// Remove a zone from the collision system. Zone do not have to be loaded into the landscape.
+	void			removeZone(uint16 zoneId);
+
+	/// Reset the center of interset of the collision zone.
 	void			setCenter(const CVector& center);
 
 
@@ -72,7 +76,6 @@ public:
 	 * If !OK, cur is set to prec, and false is returned.
 	 */
 	bool			testMove(const CVector &prec, CVector &cur);
-
 
 	/** This function snap a position on the current set of faces.
 	 * hbot and hup are the margin where pos.z can't change. (the pos can't move higher than +hup and lower than -hbot)
@@ -82,25 +85,57 @@ public:
 
 // *****************************
 private:
-	struct	CNode
+	struct	CFace
 	{
 		CTriangle	Face;
 		CPlane		Plane;
+		uint16		ZoneId;		// From which zone this face come from...
+		uint16		PatchId;	// From which patch this face come from...
+
+		bool		isFromPatch(sint zoneId, sint patchId) const
+		{
+			return ZoneId==zoneId && PatchId==patchId;
+		}
 	};
-	CQuadTree<CNode>	_QuadTree;
 
-	float				_Radius;
+	struct	CPatchIdent
+	{
+		CBSphere	Sphere;
+		bool		Inserted;
+
+		CPatchIdent() {Inserted= false;}
+	};
+
+	struct	CZoneIdent
+	{
+		sint		ZoneId;
+		CBSphere	Sphere;
+		sint		NPatchInserted;		// number of patch inserted.
+		std::vector<CPatchIdent>		Patchs;
+
+		CZoneIdent() {NPatchInserted= 0;}
+		bool		operator<(const CZoneIdent &z) const {return ZoneId<z.ZoneId;}
+	};
+
+
+
+	typedef	CQuadGrid<CFace>		TGrid;
+	typedef	std::set<CZoneIdent>	TZoneSet;
+
+private:
 	CRefPtr<CLandscape>	_Landscape;
-	bool				_Inited;
-	CVector				_Center;
+	float				_RadMin, _RadMax;
+	TGrid				_Grid;
+	TZoneSet			_Zones;
 
-	/// add faces to the collision system.
-	void			addFaces(const std::vector<CTriangle> &faces);
+	//bool				_Inited;
 
-	/** add landscape/patch faces to the collision system. 
-	 * \param size the diameter (2*radius) of the area.
-	 */
-	void			addLandscapePart(CLandscape &land, float size);
+private:
+	void			addFaces(const std::vector<CTriangle> &faces, uint16 zoneId, uint16 patchId);
+	void			addLandscapePart(uint16 zoneId, uint16 patchId);
+	void			removeLandScapePart(uint16 zoneId, uint16 patchId, const CBSphere &sphere);
+
+
 };
 
 

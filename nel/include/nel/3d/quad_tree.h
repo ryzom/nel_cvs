@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.13 2001/01/02 15:32:09 lecroart Exp $
+ * $Id: quad_tree.h,v 1.14 2001/01/03 15:25:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,7 +109,7 @@ public:
 	/// Default constructor, use axes XZ
 	CQuadTree();
 
-	/// Default constructor, use axes XZ
+	/// dtor.
 	~CQuadTree();
 
 	/// \name Initialization

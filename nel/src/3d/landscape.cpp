@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.26 2000/12/22 13:24:48 berenguier Exp $
+ * $Id: landscape.cpp,v 1.27 2001/01/03 15:25:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -800,6 +800,46 @@ void			CLandscape::buildCollideFaces(const CAABBoxExt &bbox, vector<CTriangle>	&
 						faces.insert(faces.end(), tmpFaces.begin(), tmpFaces.end());
 					}
 				}
+			}
+		}
+	}
+}
+
+
+// ***************************************************************************
+void			CLandscape::buildCollideFaces(sint zoneId, sint patch, std::vector<CTriangle> &faces)
+{
+	faces.clear();
+
+	ItZoneMap it= Zones.find(zoneId);
+	if(it!=Zones.end())
+	{
+		// Then trace all patch.
+		sint	N= (*it).second->getNumPatchs();
+		nlassert(patch>=0);
+		nlassert(patch<N);
+		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patch);
+
+		// Build the faces.
+		//=================
+		sint	ordS= pa->getOrderS();
+		sint	ordT= pa->getOrderT();
+		sint	x,y;
+		float	OOS= 1.0f/ordS;
+		float	OOT= 1.0f/ordT;
+		for(y=0;y<ordT;y++)
+		{
+			for(x=0;x<ordS;x++)
+			{
+				CTriangle	f;
+				f.V0= pa->computeVertex(x*OOS, y*OOT);
+				f.V1= pa->computeVertex(x*OOS, (y+1)*OOT);
+				f.V2= pa->computeVertex((x+1)*OOS, (y+1)*OOT);
+				faces.push_back(f);
+				f.V0= pa->computeVertex(x*OOS, y*OOT);
+				f.V1= pa->computeVertex((x+1)*OOS, (y+1)*OOT);
+				f.V2= pa->computeVertex((x+1)*OOS, y*OOT);
+				faces.push_back(f);
 			}
 		}
 	}

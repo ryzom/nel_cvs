@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.6 2001/01/02 10:22:02 berenguier Exp $
+ * $Id: mini_col.cpp,v 1.7 2001/01/03 15:25:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "nel/3d/mini_col.h"
 #include "nel/3d/aabbox.h"
+#include "nel/3d/quad_grid.h"
 using namespace NLMISC;
 using namespace std;
 
@@ -36,90 +37,193 @@ namespace NL3D
 static const	sint	QuadDepth= 10;
 
 
+// Element for grid lookup.
+static const sint	GridSize=256;
+static const float	GridEltSize=3;
+
+
 // ***************************************************************************
 CMiniCol::CMiniCol()
 {
-	CMatrix		tmp;
-	CVector		I(1,0,0);
-	CVector		J(0,0,-1);
-	CVector		K(0,1,0);
-
-	tmp.identity();
-	tmp.setRot(I,J,K, true);
-	_QuadTree.changeBase (tmp);
-	_Radius= 100;
-	_Inited= false;
+	_RadMin= 100;
+	_RadMax= 125;
+	_Grid.create(GridSize, GridEltSize);
 }
 
 
 // ***************************************************************************
-void			CMiniCol::addFaces(const std::vector<CTriangle> &faces)
+void			CMiniCol::addFaces(const std::vector<CTriangle> &faces, uint16 zoneId, uint16 patchId)
 {
 	for(sint i=0;i<(sint)faces.size();i++)
 	{
 		const CTriangle	&f= faces[i];
 		CAABBox	box;
-		// Add, relative to center.
-		box.setCenter(f.V0-_Center);
-		box.extend(f.V1-_Center);
-		box.extend(f.V2-_Center);
-		CNode	node;
+		box.setCenter(f.V0);
+		box.extend(f.V1);
+		box.extend(f.V2);
+		CFace	node;
 		node.Face= f;
 		node.Plane.make(f.V0, f.V1, f.V2);
-		_QuadTree.insert(box.getMin(), box.getMax(), node);
+		node.ZoneId= zoneId;
+		node.PatchId=patchId;
+		_Grid.insert(box.getMin(), box.getMax(), node);
 	}
 }
 
 
 // ***************************************************************************
-void			CMiniCol::addLandscapePart(CLandscape &land, float size)
+void			CMiniCol::addLandscapePart(uint16 zoneId, uint16 patchId)
 {
 	vector<CTriangle> faces;
-	CAABBoxExt	bb;
-	bb.setCenter(_Center);
-	bb.setSize(CVector(size, size, size));
-	land.buildCollideFaces(bb,faces, false);
-	addFaces(faces);
+	_Landscape->buildCollideFaces(zoneId, patchId, faces);
+	addFaces(faces, zoneId, patchId);
 }
 
 
 // ***************************************************************************
-void			CMiniCol::init(CLandscape *land, float radius)
+void			CMiniCol::removeLandScapePart(uint16 zoneId, uint16 patchId, const CBSphere &sphere)
+{
+	// Build the AAbox which englobe the bsphere of the patch.
+	CAABBox		bb;
+	bb.setCenter(sphere.Center);
+	float	l= sphere.Radius;
+	bb.setHalfSize(CVector(l,l,l));
+
+	// For optimisation, select only faces which are IN the bbox of the patch.
+	_Grid.select(bb.getMin(), bb.getMax());
+	CQuadGrid<CFace>::CIterator	iFace;
+	for(iFace= _Grid.begin();iFace!=_Grid.end();)
+	{
+		if((*iFace).isFromPatch(zoneId, patchId))
+			iFace= _Grid.erase(iFace);
+		else
+			iFace++;
+	}
+}
+
+
+// ***************************************************************************
+void			CMiniCol::init(CLandscape *land, float radMin, float radDelta)
 {
 	_Landscape= land;
-	_Radius= radius;
-	float	size= 2* _Radius;
-	_QuadTree.clear();
-	// For security, add a delta (2*50: 2*maxsize of a patch).
-	_QuadTree.create(QuadDepth, CVector::Null, 2*size+100);
+	_RadMin= radMin;
+	_RadMax= radMin+radDelta;
+}
+
+
+// ***************************************************************************
+void			CMiniCol::addZone(uint16 zoneId)
+{
+	CZoneIdent	newZone;
+
+	// landscape must have been inited.
+	nlassert(_Landscape);
+	const CZone	*zone= _Landscape->getZone(zoneId);
+	// zone must be loaded into landscape.
+	nlassert(zone);
+
+	// Fill the newzone.
+	newZone.ZoneId= zoneId;
+	newZone.Sphere.Center= zone->getZoneBB().getCenter();
+	newZone.Sphere.Radius= zone->getZoneBB().getRadius();
+	newZone.Patchs.resize(zone->getNumPatchs());
+	for(sint i=0;i<zone->getNumPatchs();i++)
+	{
+		const	CPatch	&pa= *zone->getPatch(i);
+		newZone.Patchs[i].Sphere= pa.getBSphere();
+	}
+
+	// Add it to the set (if not already done...).
+	_Zones.insert(newZone);
+}
+
+
+// ***************************************************************************
+void			CMiniCol::removeZone(uint16 zoneId)
+{
+	CZoneIdent	delZone;
+
+
+	// First, delete all patch from the grid.
+	//=======================================
+	// Fill the key part only.
+	delZone.ZoneId= zoneId;
+	// Find the zone (or quit).
+	TZoneSet::iterator	itZone;
+	itZone= _Zones.find(delZone);
+	if(itZone==_Zones.end())
+		return;
+
+	CZoneIdent	&zone= const_cast<CZoneIdent&>(*itZone);
+	for(sint i=0;i<(sint)zone.Patchs.size();i++)
+	{
+		CPatchIdent	&pa= zone.Patchs[i];
+		if(pa.Inserted)
+		{
+			// Reject the patch.
+			removeLandScapePart(zone.ZoneId, i, pa.Sphere);
+			pa.Inserted= false;
+			zone.NPatchInserted--;
+		}
+	}
+
+	// Then, delete it.
+	//=================
+	_Zones.erase(delZone);
+	
 }
 
 
 // ***************************************************************************
 void			CMiniCol::setCenter(const CVector& center)
 {
-	bool	reset= false;
-	if(!_Inited)
-	{
-		_Inited= true;
-		reset= true;
-	}
-	else
-	{
-		if((center-_Center).norm()>_Radius)
-			reset= true;
-	}
+	CBSphere	BMin(center, _RadMin), BMax(center, _RadMax);
 
-	if(reset)
+	// For all zones, test if must insert patchs..
+	TZoneSet::iterator	itZone;
+	for(itZone= _Zones.begin();itZone!=_Zones.end();itZone++)
 	{
-		_Center= center;
-		// delete all elements, but not the quadtree.
-		_QuadTree.eraseAll();
-		if(_Landscape)
+		CZoneIdent	&zone= const_cast<CZoneIdent&>(*itZone);
+
+		// Must test first if the zone is IN the area.
+		//=============================================
+		bool	zoneIn= false;
+		if(zone.NPatchInserted==0)
 		{
-			float	size= 2* _Radius;
-			// init the col landscape of 2*size, so we can go on sphere limit, and still have good collision around us.
-			addLandscapePart(*_Landscape, 2*size);
+			if(BMin.intersect(zone.Sphere))
+				zoneIn= true;
+		}
+		else
+			zoneIn= true;
+
+		// Then for all patchs, must test if the patch must be inserted, or rejected.
+		//=============================================
+		if(zoneIn)
+		{
+			for(sint i=0;i<(sint)zone.Patchs.size();i++)
+			{
+				CPatchIdent	&pa= zone.Patchs[i];
+				if(pa.Inserted)
+				{
+					// Reject the patch, if entirely OUT the max radius.
+					if(!BMax.intersect(pa.Sphere))
+					{
+						removeLandScapePart(zone.ZoneId, i, pa.Sphere);
+						pa.Inserted= false;
+						zone.NPatchInserted--;
+					}
+				}
+				else
+				{
+					// Insert the pacth, if only partially IN the min radius.
+					if(BMin.intersect(pa.Sphere))
+					{
+						addLandscapePart(zone.ZoneId, i);
+						pa.Inserted= true;
+						zone.NPatchInserted++;
+					}
+				}
+			}
 		}
 	}
 }
@@ -137,12 +241,12 @@ bool			CMiniCol::snapToGround(CVector &pos, float hup, float hbot)
 	b1=b2=pos;
 	b1.z-= hbot;
 	b2.z+= hup;
-	// Select, relative to center.
-	_QuadTree.select(b1-_Center,b2-_Center);
+	// Select.
+	_Grid.select(b1,b2);
 
 	// For each face, test if it is under pos, then test if height is correct.
-	CQuadTree<CNode>::CIterator	iFace;
-	for(iFace= _QuadTree.begin();iFace!=_QuadTree.end();iFace++)
+	CQuadGrid<CFace>::CIterator	iFace;
+	for(iFace= _Grid.begin();iFace!=_Grid.end();iFace++)
 	{
 		CTriangle	&pFace= (*iFace).Face;
 		CPlane		&pPlane= (*iFace).Plane;

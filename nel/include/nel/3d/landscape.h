@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.22 2000/12/22 09:55:37 berenguier Exp $
+ * $Id: landscape.h,v 1.23 2001/01/03 15:25:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,6 +140,9 @@ public:
 	 * on patch level. Worst, but faster.
 	 */
 	void			buildCollideFaces(const CAABBoxExt &bbox, std::vector<CTriangle> &faces, bool faceSplit);
+	/** Build the set of faces of landscape, from a certain patch. Usefull for collisions.
+	 */
+	void			buildCollideFaces(sint zoneId, sint patch, std::vector<CTriangle> &faces);
 	// @}
 
 

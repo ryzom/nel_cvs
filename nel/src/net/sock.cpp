@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.19 2002/05/21 16:37:38 lecroart Exp $
+ * $Id: sock.cpp,v 1.20 2002/05/22 14:29:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -414,6 +414,8 @@ CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exc
 	len = ::send( _Sock, (const char*)buffer, len, 0 );
 	_MaxSendTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxSendTime );
 
+//	nlinfo ("CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+
 	if ( _Logging )
 	{
 //		nldebug ("LNETL0: CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
@@ -452,6 +454,8 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 
 		TTicks before = CTime::getPerformanceTime();
 		len = ::recv( _Sock, (char*)buffer, len, 0 );
+
+		//nlinfo ("CSock::receive(): NBM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
 
 		if ( _Logging )
 		{
@@ -502,18 +506,16 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 		// Receive incoming message, waiting until a complete message has arrived
 		uint total = 0;
 		uint brecvd;
-		
-		uint32 realLen = len;
-		
+
 		while ( total < len )
 		{
 			TTicks before = CTime::getPerformanceTime();
 			brecvd = ::recv( _Sock, (char*)(buffer+total), len-total, 0 );
 
-//			nldebug ("LNETL0: CSock::receive(): BM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+//			nlinfo ("CSock::receive(): BM Received %d bytes to %d res: %d (%d) total %d", len, _Sock, brecvd, ERROR_NUM, total);
 
 			_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
-			
+
 			switch ( brecvd )
 			{
 				// Graceful disconnection

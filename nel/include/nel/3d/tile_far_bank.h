@@ -1,7 +1,7 @@
 /** \file tile_far_bank.h
  * <File description>
  *
- * $Id: tile_far_bank.h,v 1.2 2000/12/19 15:17:12 corvazier Exp $
+ * $Id: tile_far_bank.h,v 1.3 2000/12/20 15:32:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,8 +100,20 @@ public:
 		return (sint)_TileVector.size();
 	}
 
+	/// Resize the tile bank
+	void					setNumTile (sint numTile)
+	{
+		_TileVector.resize(numTile);
+	}
+
 	/// Get a read only far tile pointer.
 	const CTileFar*			getTile (sint tile) const
+	{
+		return &_TileVector[tile];
+	}
+
+	/// Get a far tile pointer.
+	CTileFar*				getTile (sint tile)
 	{
 		return &_TileVector[tile];
 	}

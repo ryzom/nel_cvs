@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.7 2001/02/05 16:51:42 corvazier Exp $
+ * $Id: transform.h,v 1.8 2001/02/12 14:20:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,9 @@
 #include "nel/3d/mot.h"
 #include "nel/3d/hrc_trav.h"
 #include "nel/3d/clip_trav.h"
+#include "nel/3d/track.h"
 #include "nel/3d/animatable.h"
+#include "nel/3d/animated_value.h"
 #include "nel/misc/matrix.h"
 
 
@@ -86,6 +88,20 @@ public:
 	/// Get the local visibility state.
 	CHrcTrav::TVisibility	getVisibility() {return Visibility;}
 
+public:
+	/// \name Herited from IAnimatable
+
+	/// From IAnimatable
+	virtual uint getValueCount () const;
+
+	/// From IAnimatable
+	virtual IAnimatedValue* getValue (uint valueId);
+
+	/// From IAnimatable
+	virtual const std::string& getValueName (uint valueId) const;
+
+	/// From IAnimatable
+	virtual ITrack* getDefaultTrack (uint valueId);
 
 // ********
 private:
@@ -123,9 +139,24 @@ protected:
 
 private:
 	static IModel	*creator() {return new CTransform;}
+	static const std::string CTransform::valueNames [];
 	friend class	CTransformHrcObs;
 	friend class	CTransformClipObs;
 
+	// For animation, Pos, rot scale pivot animated values
+	CAnimatedValueVector	_Pos;
+	CAnimatedValueVector	_RotEuler;
+	CAnimatedValueQuat		_RotQuat;
+	CAnimatedValueVector	_Scale;
+	CAnimatedValueVector	_Pivot;
+
+protected:
+	// For animation, default tracks pointers, must be set by the derived model.
+	CTrackDefaultVector		*_PosDefault;
+	CTrackDefaultVector		*_RotEulerDefault;
+	CTrackDefaultQuat		*_RotQuatDefault;
+	CTrackDefaultVector		*_ScaleDefault;
+	CTrackDefaultVector		*_PivotDefault;
 };
 
 

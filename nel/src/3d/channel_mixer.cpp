@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.1 2001/02/05 16:52:22 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.2 2001/02/12 14:18:40 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,34 +24,52 @@
  */
 
 #include "nel/3d/channel_mixer.h"
-#include "nel/3d/channel.h"
 #include "nel/3d/track.h"
+#include "nel/3d/animatable.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 
 using namespace NLMISC;
+using namespace std;
 
 namespace NL3D 
 {
 
 // NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
 // ***************************************************************************
-void CChannelMixer::addChannel (IChannel* channel)
+void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultTrack, uint32 valueId)
 {
 	// Check the animationSet has been set
 	nlassert (_AnimationSet);
 
+	// Check args
+	nlassert (animatable);
+	nlassert (value);
+	nlassert (defaultTrack);
+
 	// Get the channel Id having the same name than the tracks in this animation set.
-	uint iD=_AnimationSet->getChannelIdByName (channel->getName());
+	uint iDInAnimationSet=_AnimationSet->getChannelIdByName (channelName);
 
 	// Tracks exist in this animation set?
-	if (iD!=CAnimationSet::NotFound)
+	if (iDInAnimationSet!=CAnimationSet::NotFound)
 	{
 		// The channel entry
-		CChannelEntry &entry=_Channels[iD];
+		CChannel &entry=_Channels[iDInAnimationSet];
 
-		// Set the channel pointer
-		entry._Channel=channel;
+		// Set the channel name
+		entry._ChannelName=channelName;
+
+		// Set the object pointer
+		entry._Object=animatable;
+
+		// Set the pointer on the value in the object
+		entry._Value=value;
+
+		// Set the default track pointer
+		entry._DefaultTracks=defaultTrack;
+
+		// Set the value ID in the object
+		entry._ValueId=valueId;
 
 		// Erase all slot values for this channel
 		for (uint slot=0; slot<NumAnimationSlot; slot++)
@@ -65,11 +83,16 @@ void CChannelMixer::addChannel (IChannel* channel)
 			if (_SlotArray[slot]._Animation)
 			{
 				// Track id in the animation
-				uint iDTrack=_SlotArray[slot]._Animation->getIdTrackByName (channel->getName());
+				uint iDTrack=_SlotArray[slot]._Animation->getIdTrackByName (channelName);
 				if (iDTrack!=CAnimation::NotFound)
 				{
 					// Ok, get the track pointer for this animation for this channel
 					entry._Tracks[slot]=&_SlotArray[slot]._Animation->getTrack (iDTrack);
+				}
+				else
+				{
+					// Set the default track
+					entry._Tracks[slot]=entry._DefaultTracks;
 				}
 			}
 		}
@@ -90,7 +113,7 @@ void CChannelMixer::eval ()
 		bool bFirst=true;
 
 		// The channel
-		CChannelEntry& entry=_Channels[channel];
+		CChannel& entry=_Channels[channel];
 
 		// Last blend factor
 		float lastBlend;
@@ -104,61 +127,32 @@ void CChannelMixer::eval ()
 				// Current blend factor
 				float blend=entry._Weights[slot]*_SlotArray[slot]._Weight;
 
-				// Is there is a track for this channel (no blend with 0.f) ?
-				if (entry._Tracks[slot])
+				// Eval the track at this time
+				entry._Tracks[slot]->eval (_SlotArray[slot]._Date);
+
+				// First track to be eval ?
+				if (bFirst)
 				{
-					if (blend>0.00001f)
-					{
-						// Eval the track at this time
-						entry._Tracks[slot]->eval (_SlotArray[slot]._Date);
+					// Copy the interpolated value
+					entry._Value->affect (entry._Tracks[slot]->getValue());
 
-						// First track to be eval ?
-						if (bFirst)
-						{
-							// Copy the interpolated value
-							entry._Channel->getValue()=entry._Tracks[slot]->getValue();
+					// First blend factor
+					lastBlend=blend;
 
-							// First blend factor
-							lastBlend=blend;
-
-							// Not first anymore
-							bFirst=false;
-						}
-						else
-						{
-							// Blend with this value and the previous sum
-							entry._Channel->getValue().blend (entry._Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
-
-							// last blend update
-							lastBlend+=blend;
-						}
-					}
+					// Not first anymore
+					bFirst=false;
 				}
 				else
 				{
-					// no track for this animation, take the default channel value
+					// Blend with this value and the previous sum
+					entry._Value->blend (entry._Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
 
-					// First track to be eval ?
-					if (bFirst)
-					{
-						// Copy the interpolated value
-						entry._Channel->getValue()=entry._Channel->getDefaultValue ();
-
-						// First blend factor
-						lastBlend=blend;
-
-						// Not first anymore
-						bFirst=false;
-					}
-					else
-					{
-						// Blend with this value and the previous sum
-						entry._Channel->getValue().blend (entry._Channel->getDefaultValue (), lastBlend/(lastBlend+blend));
-
-						// last blend update
-						lastBlend+=blend;
-					}
+					// last blend update
+					lastBlend+=blend;
 				}
+
+				// Touch the animated value and its owner to recompute them later.
+				entry._Object->touch (entry._ValueId);
 			}
 		}
 	}

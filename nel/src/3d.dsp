@@ -602,19 +602,19 @@ SOURCE=..\include\nel\3d\animation.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\animation_set.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\animation_set.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\animation_time.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\3d\animation_time.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\channel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\channel.h
 # End Source File
 # Begin Source File
 
@@ -641,14 +641,6 @@ SOURCE=.\3d\track.cpp
 SOURCE=..\include\nel\3d\track.h
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\3d\animation_set.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\animation_set.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.cpp

@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.3 2001/02/06 10:18:05 lecroart Exp $
+ * $Id: animated_value.h,v 1.4 2001/02/12 14:20:24 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,11 +31,13 @@
 #include "nel/misc/quat.h"
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
 
 /**
  * A value handled by the animation system.
+ * This value must be managed by a IAnimatable object.
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
@@ -44,14 +46,22 @@ namespace NL3D {
 class IAnimatedValue
 {
 public:
-	/** A blend method. This method blend two the animated values and store the result
+	/** 
+	  * The blend method. This method blend two the animated values and store the result
 	  * in the object. The two first args can be reference on the object itself.
 	  * Idealy, it performs the operation this->value=(this->value*blendFactor + value*(1.f-blendFactor))
 	  *
 	  * \param value is the first value in the blend operation.
 	  * \param blendFactor must be in the range [0..1].
 	  */
-	virtual void blend (const IAnimatedValue& value, float blendFactor)=0;
+	virtual void blend (const IAnimatedValue& value, float blendFactor) =0;
+
+	/** 
+	  * An assignation method. This method assign a values in the object. 
+	  *
+	  * \param value is the new value.
+	  */
+	virtual void affect (const IAnimatedValue& value) =0;
 };
 
 
@@ -77,18 +87,28 @@ public:
 		CAnimatedValueBlendable<T>	*pValue=(CAnimatedValueBlendable<T>*)&value;
 
 		// Blend
-		_Value=_Value*blendFactor+pValue->_Value*(1.f-blendFactor);
+		Value=Value*blendFactor+pValue->Value*(1.f-blendFactor);
 	}
 	
-	/// Access to the value
-	const T& getValue() const
+	/** 
+	  * An assignation method. This method assign a values in the object. 
+	  *
+	  * \param value is the new value.
+	  */
+	virtual void affect (const IAnimatedValue& value)
 	{
-		return _Value;
+		// Check types of value
+		nlassert (typeid (value)==typeid(*this));
+
+		// Cast
+		CAnimatedValueBlendable<T>	*pValue=(CAnimatedValueBlendable<T>*)&value;
+
+		// Blend
+		Value=pValue->Value;
 	}
 
-private:
-	// The value
-	T	_Value;
+	// The value read and write
+	T	Value;
 };
 
 
@@ -113,17 +133,28 @@ public:
 		CAnimatedValueBlendable<int>	*pValue=(CAnimatedValueBlendable<int>*)&value;
 
 		// Blend
-		_Value=(int)(((float)_Value)*blendFactor+((float)pValue->_Value)*(1.f-blendFactor));
+		Value=(int)(((float)Value)*blendFactor+((float)pValue->Value)*(1.f-blendFactor));
 	}
 	
-	/// Access to the value
-	const int& getValue() const
+	/** 
+	  * An assignation method. This method assign a values in the object. 
+	  *
+	  * \param value is the new value.
+	  */
+	virtual void affect (const IAnimatedValue& value)
 	{
-		return _Value;
+		// Check types of value
+		nlassert (typeid (value)==typeid(*this));
+
+		// Cast
+		CAnimatedValueBlendable<int>	*pValue=(CAnimatedValueBlendable<int>*)&value;
+
+		// Blend
+		Value=pValue->Value;
 	}
 
-private:
-	int		_Value;
+	/// The value
+	int		Value;
 };
 
 
@@ -147,14 +178,25 @@ public:
 		nlstop;
 	}
 
-	/// Access to the value
-	const NLMISC::CQuat& getValue() const
+	/** 
+	  * An assignation method. This method assign a values in the object. 
+	  *
+	  * \param value is the new value.
+	  */
+	virtual void affect (const IAnimatedValue& value)
 	{
-		return _Value;
+		// Check types of value
+		nlassert (typeid (value)==typeid(*this));
+
+		// Cast
+		CAnimatedValueBlendable<NLMISC::CQuat>	*pValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&value;
+
+		// Blend
+		Value=pValue->Value;
 	}
 
-private:
-	NLMISC::CQuat	_Value;
+	// The value
+	NLMISC::CQuat	Value;
 };
 
 
@@ -180,33 +222,37 @@ public:
 
 		// Boolean blend
 		if (blendFactor<0.5f)
-			_Value=pValue->_Value;
+			Value=pValue->Value;
 	}
 	
-	/// Access to the value read only.
-	const T& getValue() const
+	/** 
+	  * An assignation method. This method assign a values in the object. 
+	  *
+	  * \param value is the new value.
+	  */
+	virtual void affect (const IAnimatedValue& value)
 	{
-		return _Value;
+		// Check types of value
+		nlassert (typeid (value)==typeid(*this));
+
+		// Cast
+		CAnimatedValueNotBlendable<T>	*pValue=(CAnimatedValueNotBlendable<T>*)&value;
+
+		// Blend
+		Value=pValue->Value;
 	}
 
-	/// Access to the value writable.
-	void setValue(const T& value)
-	{
-		_Value=value;
-	}
-
-private:
 	// The value
-	T	_Value;
+	T	Value;
 };
 
 
-typedef CAnimatedValueNotBlendable<bool> CAnimatedValueBool;
-typedef CAnimatedValueBlendable<int> CAnimatedValueInt;
-typedef CAnimatedValueBlendable<float> CAnimatedValueFloat;
-typedef CAnimatedValueBlendable<NLMISC::CVector> CAnimatedValueVector;
-typedef CAnimatedValueNotBlendable<std::string> CAnimatedValueString;
-typedef CAnimatedValueBlendable<NLMISC::CQuat> CAnimatedValueQuad;
+typedef CAnimatedValueNotBlendable<bool>			CAnimatedValueBool;
+typedef CAnimatedValueBlendable<int>				CAnimatedValueInt;
+typedef CAnimatedValueBlendable<float>				CAnimatedValueFloat;
+typedef CAnimatedValueBlendable<NLMISC::CVector>	CAnimatedValueVector;
+typedef CAnimatedValueNotBlendable<std::string>		CAnimatedValueString;
+typedef CAnimatedValueBlendable<NLMISC::CQuat>		CAnimatedValueQuat;
 
 
 } // NL3D

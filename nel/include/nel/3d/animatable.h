@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.1 2001/02/05 16:52:44 corvazier Exp $
+ * $Id: animatable.h,v 1.2 2001/02/12 14:20:24 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_ANIMATABLE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/bit_set.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -35,15 +36,24 @@
 namespace NL3D 
 {
 
-class IChannel;
+class ITrack;
 
 /**
- * An animatable object. This object can have a set of animation channels. 
- * Each channels handle a value. Channels are animated by a CChannelMixer.
- * Each channel have a name.
+ * An animatable object. 
  *
- * When a class derives from IAnimatable, it must add all its channels by
- * calling IAnimatable::addChannel(name, channelPointer).
+ * This object can have a set of animated values.
+ * Animated values are animated by a CChannelMixer object.
+ * Each value have a name and a default track.
+ *
+ * When a class derives from IAnimatable, it must implement all the 
+ * interface's methods:
+ *
+ *	virtual uint getValueCount () const;
+ *	virtual IAnimatedValue* getValue (uint valueId);
+ *	virtual const std::string& getValueName (uint valueId) const;
+ *	virtual ITrack* getDefaultTrack (uint valueId);
+ *
+ * Watch NL3D::CTransform for exemple.
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
@@ -51,49 +61,107 @@ class IChannel;
  */
 class IAnimatable
 {
+	friend class IAnimatedValue;
 public:
 
-	/// \name Public interface.
-
-	enum { NotFound=0xffffffff };
-
-	/** Get channel with its name.
+	/**
+	  * Default Constructor.
 	  *
-	  * \param name is the name of the desired channel.
-	  * \return IAnimatable::NotFound if the channel doesn't exist else the the id of the channel.
+	  * \param valueCount is the number of animated value in this object.
+	  * 
 	  */
-	uint getIdChannelByName (const std::string& name) const;
-
-	/** Get a read only channel
-	  *
-	  * \param channelId is the id of the desired channel.
-	  */
-	const IChannel& getChannel (uint channelId) const
+	IAnimatable ()
 	{
-		return *_ChannelVector[channelId];
+		// The first bit is the "something is touched" flag
+		// Bit are reseted after resize (doc)
+		bitSet.resize (getValueCount ()+1);
 	}
 
-	/** Add a channel at the end of the channel list.
-	  * 
-	  * This method is used by the derived IAnimatable classes to insert
-	  * there channel's pointers in the name/channel map and in the vector
-	  * of channel when they are created.
+	/// \name Interface
+
+	/**
+	  * Get animated value count.
+	  *
+	  * \return number of animated value in this object.
 	  */
-	void addChannel (const std::string& name, IChannel* pChannel);
+	virtual uint getValueCount () const =0;
+
+	/** 
+	  * Get a value pointer.
+	  *
+	  * \param valueId is the animated value ID in the object.
+	  * \return The pointer on the animated value.
+	  */
+	virtual IAnimatedValue* getValue (uint valueId) =0;
+
+	/**
+	  * Get animated value name.
+	  *
+	  * \param valueId is the animated value ID in the object we want the name.
+	  * \return the name of the animated value.
+	  */
+	virtual const std::string& getValueName (uint valueId) const =0;
+
+	/** 
+	  * Get default track pointer.
+	  *
+	  * \param valueId is the animated value ID in the object we want the default track.
+	  * \return The pointer on the default track of the value.
+	  */
+	virtual ITrack* getDefaultTrack (uint valueId) =0;
+
+	/// \name Touch flags management
+
+	/**
+	  * Touch a value because it has been modified.
+	  *
+	  * \param valueId is the animated value ID in the object we want to touch.
+	  */
+	void touch (uint valueId)
+	{
+		// Set the bit
+		bitSet.set (valueId+1);
+
+		// The first bit is the "something is touched" flag. touch it.
+		bitSet.set (0);
+	}
+
+	/**
+	  * Return true if at least one value of this object as been touched else false.
+	  */
+	bool isTouched () const
+	{
+		// The first bit is the "something is touched" flag
+		return bitSet[0];
+	}
+
+	/**
+	  * Return true if the value as been touched else false.
+	  *
+	  * \param valueId is the animated value ID in the object we want to test the touch flag.
+	  */
+	bool isTouched (uint valueId) const
+	{
+		return bitSet[valueId+1];
+	}
+
+	/**
+	  * Clear the touch flags.
+	  */
+	void clearFlags ()
+	{
+		// Clear all flags
+		bitSet.clearAll ();
+	}
 
 private:
-	/// \name Members
 
-	// Map to get a channel id with a name.
-	std::map<std::string, uint>	_IdByName;
-
-	// Vector of channel pointer.
-	std::vector<IChannel*>		_ChannelVector;
+	// Use a CBitSet to manage the flags
+	NLMISC::CBitSet bitSet;
 };
 
 
 } // NL3D
-
 
 #endif // NL_ANIMATABLE_H
 

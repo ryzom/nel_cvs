@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.1 2001/02/05 16:52:44 corvazier Exp $
+ * $Id: track.h,v 1.2 2001/02/12 14:20:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,11 +40,10 @@ namespace NL3D
 template<class T> class CKey;
 
 /**
- * The track store an animation of a IChannel. This animation can be interpolated
+ * The track store an animation of an animated value. This animation can be interpolated
  * by several ways.
  *
- * The ITrack and IChannel types
- * MUST match else assertions will be raised.
+ * The ITrack and animated value types MUST match else assertions will be raised.
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
@@ -72,8 +71,7 @@ public:
 /**
  * ITrack interface for keyframer.
  *
- * The ITrack and IChannel types
- * MUST match else assertions will be raised.
+ * The ITrack and animated value types MUST match else assertions will be raised.
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
@@ -162,6 +160,24 @@ private:
 
 
 /**
+ * ITrack interface for default tracks.
+ *
+ * The ITrack and animated value types MUST match else assertions will be raised.
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class ITrackDefault : public ITrack
+{
+public:
+	/// From ITrack. Does nothing, no interpolation.
+	virtual void eval (const CAnimationTime& date) 
+	{}
+};
+
+
+/**
  * ITrack implementation for Constant keyframer.
  *
  * \author Cyril 'Hulud' Corvazier
@@ -187,10 +203,10 @@ public:
 	{
 		// Const key.
 		if (previous)
-			_Value.setValue (previous->Value);
+			_Value.Value=previous->Value;
 		else
 			if (next)
-				_Value.setValue (next->Value);
+				_Value.Value=next->Value;
 	}
 
 private:
@@ -285,18 +301,78 @@ private:
 };
 
 // Predefined types
-typedef CTrackKeyFramerTCB<float> CTrackKeyFramerTCBFloat;
-typedef CTrackKeyFramerTCB<NLMISC::CVector> CTrackKeyFramerTCBVector;
-typedef CTrackKeyFramerTCB<NLMISC::CQuat> CTrackKeyFramerTCBQuat;
-typedef CTrackKeyFramerTCB<int> CTrackKeyFramerTCBInt;
+typedef CTrackKeyFramerTCB<float>				CTrackKeyFramerTCBFloat;
+typedef CTrackKeyFramerTCB<NLMISC::CVector>		CTrackKeyFramerTCBVector;
+typedef CTrackKeyFramerTCB<NLMISC::CQuat>		CTrackKeyFramerTCBQuat;
+typedef CTrackKeyFramerTCB<int>					CTrackKeyFramerTCBInt;
 
-typedef CTrackKeyFramerBezier<float> CTrackKeyFramerBezierFloat;
-typedef CTrackKeyFramerBezier<NLMISC::CVector> CTrackKeyFramerBezierVector;
-typedef CTrackKeyFramerBezier<NLMISC::CQuat> CTrackKeyFramerBezierQuat;
-typedef CTrackKeyFramerBezier<int> CTrackKeyFramerBezierInt;
+typedef CTrackKeyFramerBezier<float>			CTrackKeyFramerBezierFloat;
+typedef CTrackKeyFramerBezier<NLMISC::CVector>	CTrackKeyFramerBezierVector;
+typedef CTrackKeyFramerBezier<NLMISC::CQuat>	CTrackKeyFramerBezierQuat;
+typedef CTrackKeyFramerBezier<int>				CTrackKeyFramerBezierInt;
 
-typedef CTrackKeyFramerConst<std::string> CTrackKeyFramerConstString;
-typedef CTrackKeyFramerConst<bool> CTrackKeyFramerConstBool;
+typedef CTrackKeyFramerConst<std::string>		CTrackKeyFramerConstString;
+typedef CTrackKeyFramerConst<bool>				CTrackKeyFramerConstBool;
+
+
+/**
+ * ITrackDefault implementation for blendable values.
+ *
+ * The ITrack and animated value types MUST match else assertions will be raised.
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+template<class T>
+class CTrackDefaultBlendable : public ITrackDefault
+{
+public:
+	/// From ITrack. Return a const value.
+	virtual const IAnimatedValue& getValue () const
+	{
+		return _Value;
+	}
+
+private:
+
+	// The default value
+	CAnimatedValueBlendable<T>	_Value;
+};
+
+
+/**
+ * ITrackDefault implementation for blendable values.
+ *
+ * The ITrack and animated value types MUST match else assertions will be raised.
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+template<class T>
+class CTrackDefaultNotBlendable : public ITrackDefault
+{
+public:
+	/// From ITrack. Return a const value.
+	virtual const IAnimatedValue& getValue () const
+	{
+		return _Value;
+	}
+
+private:
+
+	// The default value
+	CAnimatedValueNotBlendable<T>	_Value;
+};
+
+// Predefined types
+typedef CTrackDefaultBlendable<float>				CTrackDefaultFloat;
+typedef CTrackDefaultBlendable<NLMISC::CVector>		CTrackDefaultVector;
+typedef CTrackDefaultBlendable<NLMISC::CQuat>		CTrackDefaultQuat;
+typedef CTrackDefaultBlendable<int>					CTrackDefaultInt;
+typedef CTrackDefaultNotBlendable<std::string>		CTrackDefaultString;
+typedef CTrackDefaultNotBlendable<bool>				CTrackDefaultBool;
 
 } // NL3D
 

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.6 2000/12/06 14:32:39 berenguier Exp $
+ * $Id: transform.cpp,v 1.7 2001/02/12 14:18:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,8 @@
 namespace	NL3D
 {
 
+#define NL3D_CTRANSFORM_VALUE_COUNT 5
+
 // ***************************************************************************
 static	IObs	*creatorHrcObs() {return new CTransformHrcObs;}
 static	IObs	*creatorClipObs() {return new CTransformClipObs;}
@@ -48,17 +50,20 @@ CTransform::CTransform()
 
 	LocalMatrix.identity();
 	Visibility= CHrcTrav::Herit;
+
+	// Set default animation tracks to NULL
+	_PosDefault=NULL;
+	_RotEulerDefault=NULL;
+	_RotQuatDefault=NULL;
+	_ScaleDefault=NULL;
+	_PivotDefault=NULL;
 }
-
-
 // ***************************************************************************
 void		CTransform::setMatrix(const CMatrix &mat)
 {
 	LocalMatrix= mat;
 	foul();
 }
-
-
 // ***************************************************************************
 void		CTransform::hide()
 {
@@ -89,7 +94,89 @@ void		CTransform::heritVisibility()
 		Visibility= CHrcTrav::Herit;
 	}
 }
+// ***************************************************************************
+uint		CTransform::getValueCount () const
+{
+	/* 
+	 * 4 values,
+	 0: translation
+	 1: rotation euler
+	 2: rotation quaternion
+	 3: scale
+	 4: pivot
+	 */
+	return NL3D_CTRANSFORM_VALUE_COUNT;
+}
+// ***************************************************************************
+IAnimatedValue*		CTransform::getValue (uint valueId)
+{
+	// Only value of the transform
+	nlassert (valueId<NL3D_CTRANSFORM_VALUE_COUNT);
 
+	// what value ?
+	switch (valueId)
+	{
+	case 0:
+		return &_Pos;
+	case 1:
+		return &_RotEuler;
+	case 2:
+		return &_RotQuat;
+	case 3:
+		return &_Scale;
+	case 4:
+		return &_Pivot;
+	}
+
+	// No, only NL3D_CTRANSFORM_VALUE_COUNT values!
+	nlassert (0);
+
+	return NULL;
+}
+// ***************************************************************************
+const std::string CTransform::valueNames [NL3D_CTRANSFORM_VALUE_COUNT]=
+{
+	std::string ("POS"),
+	std::string ("ROTEULER"),
+	std::string ("ROTQUAT"),
+	std::string ("SCALE"),
+	std::string ("PIVOT")
+};
+// ***************************************************************************
+const std::string&	CTransform::getValueName (uint valueId) const
+{
+	// Only value of the transform
+	nlassert (valueId<NL3D_CTRANSFORM_VALUE_COUNT);
+
+	// Return the value
+	return valueNames[valueId];
+}
+// ***************************************************************************
+ITrack*		CTransform::getDefaultTrack (uint valueId)
+{
+	// Only value of the transform
+	nlassert (valueId<NL3D_CTRANSFORM_VALUE_COUNT);
+
+	// what value ?
+	switch (valueId)
+	{
+	case 0:
+		return _PosDefault;
+	case 1:
+		return _RotEulerDefault;
+	case 2:
+		return _RotQuatDefault;
+	case 3:
+		return _ScaleDefault;
+	case 4:
+		return _PivotDefault;
+	}
+
+	// No, only NL3D_CTRANSFORM_VALUE_COUNT values!
+	nlassert (0);
+
+	return NULL;
+}
 
 
 }

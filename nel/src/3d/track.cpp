@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.2 2001/02/06 10:24:08 lecroart Exp $
+ * $Id: track.cpp,v 1.3 2001/02/12 14:18:29 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,5 +42,12 @@ CTrackKeyFramerBezierInt ttoto7;
 
 CTrackKeyFramerConstString ttoto8;
 CTrackKeyFramerConstBool ttoto9;
+
+CTrackDefaultFloat ttoto10;
+CTrackDefaultVector ttoto11;
+CTrackDefaultQuat ttoto12;
+CTrackDefaultInt ttoto13;
+CTrackDefaultString ttoto14;
+CTrackDefaultBool ttoto15;
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file animatable.cpp
  * Class IAnimatable
  *
- * $Id: animatable.cpp,v 1.1 2001/02/05 16:52:22 corvazier Exp $
+ * $Id: animatable.cpp,v 1.2 2001/02/12 14:18:40 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,33 +24,9 @@
  */
 
 #include "nel/3d/animatable.h"
-#include "nel/3d/channel.h"
 
 
 namespace NL3D 
 {
-
-
-// ***************************************************************************
-void IAnimatable::addChannel (const std::string& name, IChannel* pChannel)
-{
-	// Insert in the channel vector
-	_ChannelVector.push_back (pChannel);
-
-	// Insert the index in the map
-	_IdByName.insert (std::map<std::string, uint>::value_type (name, _ChannelVector.size()-1));
-}
-
-
-// ***************************************************************************
-uint IAnimatable::getIdChannelByName (const std::string& name) const
-{
-	// Look for the name
-	std::map<std::string, uint>::const_iterator ite=_IdByName.find (name);
-	if (ite!=_IdByName.end())
-		return ite->second;
-	else
-		return NotFound;
-}
 
 } // NL3D

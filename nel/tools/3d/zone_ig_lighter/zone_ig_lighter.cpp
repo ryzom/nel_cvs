@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.13 2003/07/07 10:28:40 berenguier Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.14 2004/02/17 17:05:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -422,61 +422,64 @@ int main(int argc, char* argv[])
 							continue;
 
 						// Add a .shape at the end ?
-						if (name.find('.') == std::string::npos)
-							name += ".shape";
-
-						// Find the file
-						string nameLookup = CPath::lookup (name, false, false);
-						if (!nameLookup.empty())
-							name = nameLookup;
-
-						// Find the shape in the bank
-						std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);
-						if (iteMap==shapeMap.end())
+						if (!name.empty())
 						{
-							// Input file
-							CIFile inputFile;
+							if (name.find('.') == std::string::npos)
+								name += ".shape";
 
-							if (inputFile.open (name))
+							// Find the file
+							string nameLookup = CPath::lookup (name, false, false);
+							if (!nameLookup.empty())
+								name = nameLookup;
+
+							// Find the shape in the bank
+							std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);
+							if (iteMap==shapeMap.end())
 							{
-								// Load it
-								CShapeStream stream;
-								stream.serial (inputFile);
+								// Input file
+								CIFile inputFile;
 
-								// Get the pointer
-								iteMap=shapeMap.insert (std::map<string, IShape*>::value_type (name, stream.getShapePointer ())).first;
+								if (inputFile.open (name))
+								{
+									// Load it
+									CShapeStream stream;
+									stream.serial (inputFile);
+
+									// Get the pointer
+									iteMap=shapeMap.insert (std::map<string, IShape*>::value_type (name, stream.getShapePointer ())).first;
+								}
+								else
+								{
+									// Error
+									nlwarning ("WARNING can't load shape %s\n", name.c_str());
+								}
 							}
-							else
+							
+							// Loaded ?
+							if (iteMap!=shapeMap.end())
 							{
-								// Error
-								nlwarning ("WARNING can't load shape %s\n", name.c_str());
+								// Build the matrix
+								CMatrix scale;
+								scale.identity ();
+								scale.scale (group->getInstanceScale (instance));
+								CMatrix rot;
+								rot.identity ();
+								rot.setRot (group->getInstanceRot (instance));
+								CMatrix pos;
+								pos.identity ();
+								pos.setPos (group->getInstancePos (instance));
+								CMatrix mt=pos*rot*scale;
+
+								// If centerInstanceGroup, take good instanceId, to avoid selfShadowing
+								sint	instanceId;
+								if(group == centerInstanceGroup)
+									instanceId= instance;
+								else
+									instanceId= -1;
+
+								// Add triangles
+								lighter.addTriangles (*iteMap->second, mt, vectorTriangle, instanceId);
 							}
-						}
-						
-						// Loaded ?
-						if (iteMap!=shapeMap.end())
-						{
-							// Build the matrix
-							CMatrix scale;
-							scale.identity ();
-							scale.scale (group->getInstanceScale (instance));
-							CMatrix rot;
-							rot.identity ();
-							rot.setRot (group->getInstanceRot (instance));
-							CMatrix pos;
-							pos.identity ();
-							pos.setPos (group->getInstancePos (instance));
-							CMatrix mt=pos*rot*scale;
-
-							// If centerInstanceGroup, take good instanceId, to avoid selfShadowing
-							sint	instanceId;
-							if(group == centerInstanceGroup)
-								instanceId= instance;
-							else
-								instanceId= -1;
-
-							// Add triangles
-							lighter.addTriangles (*iteMap->second, mt, vectorTriangle, instanceId);
 						}
 					}
 

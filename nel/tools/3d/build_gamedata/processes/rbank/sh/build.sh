@@ -142,10 +142,26 @@ echo \}\; >> build_rbank.cfg
 echo " " >> build_rbank.cfg
 
 
+# Log error
+echo >> log.log
+echo ------- >> log.log
+echo --- Build RBank : Check pacs primitives consistency >> log.log
+echo ------- >> log.log
+echo >> log.log
+echo 
+echo ------- 
+echo --- Build RBank : Check pacs primitives consistency
+echo ------- 
+echo 
+date >> log.log
+date
+
 # ******* PASS 1 Generate smooth lr
 
 # For each ../zone/zone_welded/*.[zZ][oO][nN][eE][wW] files, checks if the associated scratch/tesselation/*.[tT][eE][sS][sS][eE][lL] file
 # are up to date with the .zonew and the 8 neighbor .zonew file. If note, tesselate it.
+
+$exec_timeout $tessel_timeout $build_rbank -C -p -g
 
 # Log error
 echo >> log.log
@@ -191,26 +207,8 @@ for i in $list_zone ; do
 	# Build it only if the file exist
 	if ( test "$zone_to_build" )
 	then
-		# Tesselation filename
-		tessel=`echo "tesselation/"$zone".tessel"`
-
-		# Lr filename
-		lr0=`echo "smooth/preproc/"$zone".lr"`
-
-		# Tesselate
-		$exec_timeout $tessel_timeout $build_rbank -T -m -l -g $i
-
-		# Build lr0
-		$exec_timeout $smooth_timeout $build_rbank -t -M -l -g $i
-
-		# Remove tessel
-		rm $tessel
-
-		# Remove lr0
-		rm lr0
-
-		# Build lr1
-		$exec_timeout $proclocal_timeout $build_rbank -t -m -L -g $i
+		# Build lr
+		$exec_timeout $tessel_timeout $build_rbank -c -P -g $i
 
 		echo
 		echo >> log.log
@@ -243,7 +241,7 @@ date >> log.log
 date
 
 # Procglobal
-$exec_timeout $procglobal_timeout $build_rbank -t -m -l -G
+$exec_timeout $procglobal_timeout $build_rbank -c -p -G
 
 
 

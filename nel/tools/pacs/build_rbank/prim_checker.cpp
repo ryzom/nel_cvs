@@ -1,7 +1,7 @@
 /** \file prim_checker.cpp
  * <File description>
  *
- * $Id: prim_checker.cpp,v 1.1 2003/08/27 09:23:07 legros Exp $
+ * $Id: prim_checker.cpp,v 1.2 2004/01/13 16:36:59 legros Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -44,6 +44,7 @@ using namespace NLLIGO;
 using namespace std;
 
 NLLIGO::CLigoConfig LigoConfig;
+extern bool						Verbose;
 
 /*
  * Constructor
@@ -59,7 +60,8 @@ CPrimChecker::CPrimChecker()
  */
 bool	CPrimChecker::init(const string &primitivesPath, const string &outputDirectory, bool forceRebuild)
 {
-	nlinfo("Checking pacs.packed_prims consistency");
+	if (Verbose)
+		nlinfo("Checking pacs.packed_prims consistency");
 
 	NLLIGO::Register();
 
@@ -89,7 +91,8 @@ bool	CPrimChecker::init(const string &primitivesPath, const string &outputDirect
 
 	if (forceRebuild)
 	{
-		nlinfo("Building file pacs.packed_prims (%d files changed)", numPrims);
+		if (Verbose)
+			nlinfo("Building file pacs.packed_prims (%d files changed)", numPrims);
 
 		for (i=0; i<files.size(); ++i)
 		{
@@ -99,7 +102,8 @@ bool	CPrimChecker::init(const string &primitivesPath, const string &outputDirect
 			}
 		}
 
-		nlinfo("pacs.packed_prims built!");
+		if (Verbose)
+			nlinfo("pacs.packed_prims built!");
 
 		COFile	f;
 		if (f.open(outputfname))
@@ -150,7 +154,8 @@ void	CPrimChecker::readFile(const string &filename)
 
 	// load xml file
 	xml.init(f);
-	nlinfo("Loaded prim file '%s'", filename.c_str());
+	if (Verbose)
+		nlinfo("Loaded prim file '%s'", filename.c_str());
 
 	// read nodes
 	if (!prims.read(xml.getRootNode(), filename.c_str(), LigoConfig))
@@ -207,7 +212,7 @@ void	CPrimChecker::render(CPrimZone *zone, uint8 bits)
 		return;
 
 	string	name;
-	if (zone->getPropertyByName("name", name))
+	if (zone->getPropertyByName("name", name) && Verbose)
 		nlinfo("Rendering CPrimZone '%s'", name.c_str());
 
 	// get the bouding box of the CPrimZone

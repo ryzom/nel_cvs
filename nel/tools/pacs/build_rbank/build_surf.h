@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.10 2004/01/07 10:16:06 legros Exp $
+ * $Id: build_surf.h,v 1.11 2004/01/13 16:36:59 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,8 +63,11 @@ extern bool						ComputeElevation;
 extern bool						ComputeLevels;
 extern std::vector<std::string>	ZoneNames;
 extern std::string				ZoneExt;
+extern std::string				ZoneNHExt;
 extern std::string				ZoneLookUpPath;
 
+extern bool						ProcessAllPasses;
+extern bool						CheckPrims;
 extern bool						TessellateZones;
 extern bool						MoulineZones;
 extern bool						TessellateAndMoulineZones;
@@ -80,6 +83,7 @@ extern std::string				RetrieverBank;
 extern std::string				GlobalUL;
 extern std::string				GlobalDR;
 extern bool						ProcessGlobal;
+extern bool						Verbose;
 
 extern CPrimChecker				PrimChecker;
 
@@ -99,72 +103,6 @@ class CPatchTessellation;
 class CZoneTessellation;
 
 
-/**
- * CStats. Used for statistics...
- * \author Benjamin Legros
- * \author Nevrax France
- * \date 2001
- */
-class CStats
-{
-public:
-	class CHisto : public std::vector< std::pair<float, uint> >
-	{
-	public:
-		double	Total;
-
-	public:
-		CHisto() : Total(0.0) {}
-
-		void	add(float val)
-		{
-			uint	i;
-			for (i=0; i<size(); ++i)
-			{
-				if (val < operator[](i).first)
-				{
-					operator[](i).second++;
-					break;
-				}
-			}
-
-			Total += val;
-		}
-
-		void	dump(char *msg)
-		{
-			uint	i, t = 0;
-
-			nlinfo(msg);
-
-			for (i=1; i<size(); ++i)
-				if (operator[](i).second != 0)
-					nlinfo("[%.4f,%.4f]: %d elements", operator[](i-1).first, operator[](i).first, operator[](i).second);
-
-			for (i=0; i<size(); ++i)
-				t += operator[](i).second;
-
-			nlinfo("number of elements: %d", t);
-			nlinfo("mean: %f", Total/(double)t);
-		}
-	};
-
-public:
-	CHisto		XBBSpanList;
-	CHisto		YBBSpanList;
-	CHisto		XBBSpan;
-	CHisto		YBBSpan;
-
-	uint		TotalSpanList;
-	uint		TotalSpan;
-
-public:
-
-	void init();
-
-};
-
-extern	CStats	StatsSurfaces;
 
 /**/
 
@@ -212,9 +150,9 @@ public:
 	float							Area;
 
 	/**
-	 * The root tessellation patch
+	 * The zone id
 	 */
-	CPatchTessellation				*Root;
+	uint16							ZoneId;
 
 	/**
 	 * The tessellation vertices
@@ -224,14 +162,12 @@ public:
 
 	/* Here the surface criteria.
 	   Probably some normal quantization, material, flags ... */
-//	uint8							NormalQuanta;
 	uint8							WaterShape;
 	uint8							QuantHeight;
 
 	uint32							ForceMerge;
 	
 	bool							IsBorder;
-//	bool							IsHorizontal;
 	bool							IsValid;
 	bool							IsMergable;
 	bool							ClusterHint;
@@ -247,11 +183,6 @@ public:
 	 * The links to the neighboring elements.
 	 * Each edge is related to the opposite vertex in the triangle */
 	CSurfElement		*EdgeLinks[3];
-
-	/**
-	 * The id of the zone linked to each edge (-1 if none).
-	 */
-	sint32				ZoneLinks[3];
 
 	/**
 	 * A flag for each edge, set if the edge has already been evaluated (in
@@ -272,13 +203,9 @@ public:
 	CSurfElement()
 	{
 		ElemId = 0;
-		Root = NULL;
 		EdgeLinks[0] = NULL;
 		EdgeLinks[1] = NULL;
 		EdgeLinks[2] = NULL;
-		ZoneLinks[0] = -1;
-		ZoneLinks[1] = -1;
-		ZoneLinks[2] = -1;
 		EdgeFlag[0] = false;
 		EdgeFlag[1] = false;
 		EdgeFlag[2] = false;
@@ -290,6 +217,7 @@ public:
 		WaterShape = 255;
 		QuantHeight = 0;
 		ForceMerge = 0;
+		ZoneId = 0;
 	}
 
 	/// Computes the bbox of the surface element.
@@ -299,7 +227,7 @@ public:
 	/**
 	 * Computes the various criteria values (associated to quantas)
 	 */
-	void	computeQuantas();
+	void	computeQuantas(CZoneTessellation *zoneTessel);
 
 	/**
 	 * Removes properly all links to the CSurfElement.
@@ -318,8 +246,42 @@ public:
 
 	}
 
-private:
-	//void	computeElevation(std::vector<NLMISC::CPlane> &elevation, float radius, float height, float floorThreshold);
+	/**
+	 * Get zone Id on edge
+	 */
+	sint32	getZoneIdOnEdge(uint edge) const
+	{
+		return (EdgeLinks[edge] != NULL ? EdgeLinks[edge]->ZoneId : -1);
+	}
+
+	void	serial(NLMISC::IStream &f, std::vector<CSurfElement> &tessellation)
+	{
+		f.serial(ElemId);
+		f.serial(Tri[0], Tri[1], Tri[2]);
+		f.serial(Normal);
+		f.serial(ZoneId);
+
+		if (f.isReading())
+		{
+			sint32	s;
+			uint	i;
+			for (i=0; i<3; ++i)
+			{
+				f.serial(s);
+				EdgeLinks[i] = (s >= 0 ? &tessellation[s] : NULL);
+			}
+		}
+		else
+		{
+			sint32	s;
+			uint	i;
+			for (i=0; i<3; ++i)
+			{
+				s = (EdgeLinks[i] != NULL ? EdgeLinks[i]->ElemId : -1);
+				f.serial(s);
+			}
+		}
+	}
 };
 
 
@@ -428,7 +390,7 @@ public:
 	 * are marked and recursively called.
 	 */
 	template<class A>
-	void	floodFill(CSurfElement *first, sint32 surfId, const A &cmp)
+	void	floodFill(CSurfElement *first, sint32 surfId, const A &cmp, CZoneTessellation *zoneTessel)
 	{
 		nldebug("flood fill surface %d", surfId);
 
@@ -444,10 +406,10 @@ public:
 		uint	waterShape = first->WaterShape;
 
 		IsUnderWater = (first->WaterShape != 255);
-		WaterHeight = IsUnderWater ? first->Root->RootZoneTessellation->WaterShapes[first->WaterShape].Vertices[0].z : 123456.0f;
+		WaterHeight = IsUnderWater ? zoneTessel->WaterShapes[first->WaterShape].Vertices[0].z : 123456.0f;
 
 
-		uint32	currentZoneId = first->Root->ZoneId;
+		uint32	currentZoneId = first->ZoneId;
 
 		Area = 0.0;
 
@@ -465,19 +427,6 @@ public:
 					pop->EdgeLinks[i]->SurfaceId = SurfaceId;
 					stack.push_back(pop->EdgeLinks[i]);
 				}
-/*
-				if (pop->EdgeLinks[i] != NULL && cmp.equal(first, pop->EdgeLinks[i]))
-					pop->EdgeLinks[i]->IsValid &&
-					pop->EdgeLinks[i]->ClusterHint == ClusterHint &&
-					pop->EdgeLinks[i]->SurfaceId == UnaffectedSurfaceId &&
-					pop->EdgeLinks[i]->Root->ZoneId == currentZoneId &&
-					pop->EdgeLinks[i]->WaterShape == waterShape &&
-					pop->EdgeLinks[i]->QuantHeight == QuantHeight)
-				{
-					pop->EdgeLinks[i]->SurfaceId = SurfaceId;
-					stack.push_back(pop->EdgeLinks[i]);
-				}
-*/
 			}
 		}
 
@@ -496,104 +445,12 @@ public:
 	/// Builds the border of the CComputableSurface.
 	void	buildBorders();
 
-	///
-	//void	computeHeightQuad();
-
 private:
 	void	followBorder(CSurfElement *first, uint edge, uint sens, std::vector<NLMISC::CVector> &vstore, bool &loop);
 };
 
 
 
-
-
-
-
-
-
-/**
- * CPatchRetriever.
- * \author Benjamin Legros
- * \author Nevrax France
- * \date 2001
- */
-struct CPatchRetriever
-{
-	const NL3D::CZone					*Zone;
-	uint16								ZoneId;
-	NLMISC::CAABBox						BBox;
-	std::vector<NL3D::CPatchInfo>		PatchInfos;
-	std::vector<NL3D::CBorderVertex>	BorderVertices;
-	uint32								MaxVertex;
-	std::vector<CPatchTessellation>		Patches;
-
-	std::vector<sint32>					PatchRemap;
-	uint32								TotalNew;
-
-	CPatchRetriever(uint16 zoneId) : ZoneId(zoneId) {}
-};
-
-struct CRetrieverSort
-{
-	bool	operator() (const CPatchRetriever &a, const CPatchRetriever &b) const
-	{
-		return a.ZoneId < b.ZoneId;
-	}
-};
-
-
-
-
-
-
-
-
-
-/**
- * CPatchTessellation contains information related to the tessellation of a single patch.
- * Used to link surface elements together.
- * \author Benjamin Legros
- * \author Nevrax France
- * \date 2001
- */
-class CPatchTessellation
-{
-private:
-	uint16							_NT, _NS;
-
-public:
-	const NL3D::CPatch				*RootPatch;
-	const NL3D::CPatchInfo			*RootPatchInfo;
-	CZoneTessellation				*RootZoneTessellation;
-	CPatchRetriever					*RootRetriever;
-	std::vector<CSurfElement>		Elements;
-	uint16							PatchId;
-	uint16							ZoneId;
-	bool							Valid;
-
-	std::vector<NLMISC::CVector>	Vertices;
-	std::vector<uint8>				BorderSnapped;
-	NLMISC::CAABBox					BBox;
-	NLMISC::CAABBox					OriginalBBox;
-
-public:
-	/**
-	 * Constructor.
-	 * Creates an empty patch tessellation, with no patch nor zone information.
-	 * The tessellation will be built using build().
-	 */
-	CPatchTessellation() : RootPatch(NULL), RootPatchInfo(NULL), RootZoneTessellation(NULL), PatchId(0), _NT(0), _NS(0), Valid(false) {}
-
-	/**
-	 * Sets patch and zone values up.
-	 */
-	void	setup(const NL3D::CPatch *rootPatch, 
-				  const NL3D::CPatchInfo *rootPatchInfo,
-				  CZoneTessellation *rootZone,
-				  CPatchRetriever *rootRetriever,
-				  uint16 patchId,
-				  uint16 zoneId);
-};
 
 
 
@@ -614,23 +471,14 @@ public:
 class CZoneTessellation
 {
 private:
-	NL3D::CLandscape						_Landscape;
 	std::vector<CSurfElement>				_Tessellation;
 	std::vector<NLMISC::CVector>			_Vertices;
 
 protected:
-	friend class CPatchTessellation;
 
-	std::vector<CPatchRetriever>			_Zones;
-	
-	CPatchRetriever	*retrieveZone(uint16 id)
-	{
-		uint	i;
-		for (i=0; i<_Zones.size(); ++i)
-			if (_Zones[i].ZoneId == id)
-				return &(_Zones[i]);
-		return NULL;
-	}
+	std::vector<uint16>						_ZoneIds;
+	std::vector<const NL3D::CZone*>			_ZonePtrs;
+
 public:
 	class CMergeForceBox
 	{
@@ -674,12 +522,6 @@ public:
 	 * The borders for the whole CZone.
 	 */
 	std::vector<CComputableSurfaceBorder>	Borders;
-
-	/**
-	 * The tessellation container/selector
-	 */
-	NL3D::CQuadTree<CSurfElement *>			Container;
-	NLMISC::CAABBox							ContBBox;
 
 	/**
 	 * The box that force merge into surface
@@ -744,11 +586,6 @@ public:
 	NLMISC::CAABBox	computeBBox() const;
 
 	/**
-	 * Generates Stats...
-	 */
-	//void	generateStats();
-
-	/**
 	 * Save tessellation
 	 */
 	void	saveTessellation(NLMISC::COFile &output);
@@ -779,7 +616,7 @@ public:
 	{
 		return	b->IsValid &&
 				a->ClusterHint == b->ClusterHint &&
-				a->Root->ZoneId == b->Root->ZoneId &&
+				a->ZoneId == b->ZoneId &&
 				a->WaterShape == b->WaterShape &&
 				a->QuantHeight == b->QuantHeight;
 	}

@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.14 2004/01/07 10:16:06 legros Exp $
+ * $Id: build_rbank.cpp,v 1.15 2004/01/13 16:36:59 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,41 +128,7 @@ string	changeExt(string name, string &ext)
 
 
 
-
-
-
-void tessellateZone(string &zoneName)
-{
-	NLPACS::CZoneTessellation		tessellation;
-	vector<NLPACS::COrderedChain3f>	fullChains;
-	string							name;
-	string							filename;
-
-	try
-	{
-		uint16	zid = getZoneIdByName(zoneName);
-		CAABBox	box = getZoneBBoxById(zid);
-
-		CVector		translation = -box.getCenter();
-		if (tessellation.setup(zid, 4, translation))
-		{
-			tessellation.build();
-
-			COFile	tesselOutput;
-			name = changeExt(zoneName, string("tessel"));
-			filename = TessellationPath+name;
-			tesselOutput.open(filename);
-			tessellation.saveTessellation(tesselOutput);
-			tesselOutput.close();
-		}
-	}
-	catch(Exception &e)
-	{
-		printf(e.what ());
-	}
-}
-
-void moulineZone(string &zoneName)
+void processAllPasses(string &zoneName)
 {
 	uint	i, j;
 
@@ -177,16 +143,9 @@ void moulineZone(string &zoneName)
 		CAABBox	box = getZoneBBoxById(zid);
 
 		CVector		translation = -box.getCenter();
-
-		// if can't setup tessellation, don't mouline zone (no .lr created)
 		if (tessellation.setup(zid, 4, translation))
 		{
-			CIFile	tesselInput;
-			name = changeExt(zoneName, string("tessel"));
-			filename = TessellationPath+name;
-			tesselInput.open(filename);
-			tessellation.loadTessellation(tesselInput);
-			tesselInput.close();
+			tessellation.build();
 
 			CAABBox	tbox = tessellation.computeBBox();
 
@@ -257,21 +216,6 @@ void moulineZone(string &zoneName)
 									nlwarning ("Can't load shape %s", shapeNameLookup.c_str());
 								}
 							}
-/*
-							// c'est degueulasse, mais c'est les coders a la 3D, y savent pas coder
-							CIFile			monfile(CPath::lookup(ig._InstancesInfos[j].Name+".shape"));
-							CShapeStream	shape;
-							shape.serial(monfile);
-
-							CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
-							if (wshape == NULL)
-								continue;
-
-							CPolygon			wpoly;
-							wshape->getShapeInWorldSpace(wpoly);
-
-							tessellation.addWaterShape(wpoly);
-*/
 						}
 					}
 					catch (Exception &e)
@@ -325,23 +269,25 @@ void moulineZone(string &zoneName)
 				}
 			}
 
-			fullChains = retriever.getFullOrderedChains();
+			retriever.computeLoopsAndTips();
 
-			// save raw retriever
+			retriever.findBorderChains();
+			retriever.updateChainIds();
+			retriever.computeTopologies();
+
+			retriever.computeCollisionChainQuad();
+
+			retriever.setType(NLPACS::CLocalRetriever::Landscape);
+
+			// and save it...
+
 			COFile	outputRetriever;
 			name = changeExt(zoneName, string("lr"));
-			filename = OutputPath+PreprocessDirectory+name;
-			nldebug("save file %s", filename.c_str());
+			filename = OutputPath+name;
+			if (Verbose)
+				nlinfo("save file %s", filename.c_str());
 			outputRetriever.open(filename);
 			retriever.serial(outputRetriever);
-
-			// save raw chains
-			COFile	outputChains;
-			name = changeExt(zoneName, string("ochain"));
-			filename = OutputPath+name;
-			nldebug("save file %s", filename.c_str());
-			outputChains.open(filename);
-			outputChains.serialCont(fullChains);
 		}
 	}
 	catch(Exception &e)
@@ -351,8 +297,14 @@ void moulineZone(string &zoneName)
 }
 
 
+//
+//
+//
+//
+//
+//
 
-
+/*
 void tessellateAndMoulineZone(string &zoneName)
 {
 	uint	i, j;
@@ -372,20 +324,6 @@ void tessellateAndMoulineZone(string &zoneName)
 		{
 			tessellation.build();
 
-			COFile	tesselOutput;
-			name = changeExt(zoneName, string("tessel"));
-			filename = TessellationPath+name;
-			tesselOutput.open(filename);
-			tessellation.saveTessellation(tesselOutput);
-			tesselOutput.close();
-
-			CIFile	tesselInput;
-			name = changeExt(zoneName, string("tessel"));
-			filename = TessellationPath+name;
-			tesselInput.open(filename);
-			tessellation.loadTessellation(tesselInput);
-			tesselInput.close();
-
 			CAABBox	tbox = tessellation.computeBBox();
 
 			vector<CIGBox>				boxes;
@@ -455,21 +393,6 @@ void tessellateAndMoulineZone(string &zoneName)
 									nlwarning ("Can't load shape %s", shapeNameLookup.c_str());
 								}
 							}
-/*
-							// c'est degueulasse, mais c'est les coders a la 3D, y savent pas coder
-							CIFile			monfile(CPath::lookup(ig._InstancesInfos[j].Name+".shape"));
-							CShapeStream	shape;
-							shape.serial(monfile);
-
-							CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
-							if (wshape == NULL)
-								continue;
-
-							CPolygon			wpoly;
-							wshape->getShapeInWorldSpace(wpoly);
-
-							tessellation.addWaterShape(wpoly);
-*/
 						}
 					}
 					catch (Exception &e)
@@ -529,7 +452,8 @@ void tessellateAndMoulineZone(string &zoneName)
 			COFile	outputRetriever;
 			name = changeExt(zoneName, string("lr"));
 			filename = OutputPath+PreprocessDirectory+name;
-			nldebug("save file %s", filename.c_str());
+			if (Verbose)
+				nlinfo("save file %s", filename.c_str());
 			outputRetriever.open(filename);
 			retriever.serial(outputRetriever);
 
@@ -537,7 +461,8 @@ void tessellateAndMoulineZone(string &zoneName)
 			COFile	outputChains;
 			name = changeExt(zoneName, string("ochain"));
 			filename = OutputPath+name;
-			nldebug("save file %s", filename.c_str());
+			if (Verbose)
+				nlinfo("save file %s", filename.c_str());
 			outputChains.open(filename);
 			outputChains.serialCont(fullChains);
 		}
@@ -567,7 +492,8 @@ void processRetriever(string &zoneName)
 		CIFile	inputRetriever;
 		name = changeExt(zoneName, string("lr"));
 		filename = OutputPath+PreprocessDirectory+name;
-		nlinfo("load file %s", filename.c_str());
+		if (Verbose)
+			nlinfo("load file %s", filename.c_str());
 
 		if (CFile::fileExists(filename))
 		{
@@ -595,7 +521,8 @@ void processRetriever(string &zoneName)
 			COFile	outputRetriever;
 			name = changeExt(zoneName, string("lr"));
 			filename = OutputPath+name;
-			nlinfo("save file %s", filename.c_str());
+			if (Verbose)
+				nlinfo("save file %s", filename.c_str());
 			outputRetriever.open(filename);
 			retriever.serial(outputRetriever);
 		}
@@ -605,7 +532,7 @@ void processRetriever(string &zoneName)
 		printf(e.what ());
 	}
 }
-
+*/
 
 
 
@@ -1022,7 +949,8 @@ void	fixFaultyLinks(map<uint, CFaultyInstance> &faultyInstances,
 																									 fci.Chains[l].Chain,
 																									 retriever.getChain(fci.Chains[l].Chain).getLeft());
 
-							nlinfo("Fixed: link between %d/%d and %d/%d => %d/%d - %d/%d", fci.Instance, fci.Chains[l].Previous, fcn.Instance, fcn.Chains[m].Previous, fci.Instance, fci.Chains[l].Chain, fcn.Instance, fcn.Chains[m].Chain);
+							if (Verbose)
+								nlinfo("Fixed: link between %d/%d and %d/%d => %d/%d - %d/%d", fci.Instance, fci.Chains[l].Previous, fcn.Instance, fcn.Chains[m].Previous, fci.Instance, fci.Chains[l].Chain, fcn.Instance, fcn.Chains[m].Chain);
 						}
 
 						break;
@@ -1064,7 +992,8 @@ void	processGlobalRetriever()
 
 	uint						x, y;
 
-	nlinfo("make all instances");
+	if (Verbose)
+		nlinfo("make all instances");
 
 	for (y=y0; y<=y1; ++y)
 	{
@@ -1086,10 +1015,12 @@ void	processGlobalRetriever()
 		}
 	}
 
-	nlinfo("make all links");
+	if (Verbose)
+		nlinfo("make all links");
 	globalRetriever.makeAllLinks();
 
-	nlinfo("clean retriever bank up");
+//	if (Verbose)
+//		nlinfo("clean retriever bank up");
 //	retrieverBank.clean();
 
 	map<uint, CFaultyInstance>				faultyInstances;
@@ -1132,17 +1063,20 @@ void	processGlobalRetriever()
 		}
 		if (unlinkerr)
 		{
-			nlinfo("unlink: %s", unlinkstr.c_str());
+			if (Verbose)
+				nlinfo("unlink: %s", unlinkstr.c_str());
 			faultyInstances.insert(make_pair<uint, CFaultyInstance>(i, fi));
 		}
 	}
 
-	nlinfo("%d are still unlinked (%d links total)", totalUnlinked, totalLink);
+	if (Verbose)
+		nlinfo("%d are still unlinked (%d links total)", totalUnlinked, totalLink);
 
 	// rebuild full chains
 	if (totalUnlinked > 0)
 	{
-		nlinfo("Fixing faulty links...");
+		if (Verbose)
+			nlinfo("Fixing faulty links...");
 		fixFaultyLinks(faultyInstances, instances, retrievers);
 
 		// recheck
@@ -1185,26 +1119,30 @@ void	processGlobalRetriever()
 			}
 			if (unlinkerr)
 			{
-				nlinfo("after fix: unlink: %s", unlinkstr.c_str());
+				if (Verbose)
+					nlinfo("after fix: unlink: %s", unlinkstr.c_str());
 				faultyInstances.insert(make_pair<uint, CFaultyInstance>(i, fi));
 			}
 		}
 	}
 
-	nlinfo("init the quad grid");
+	if (Verbose)
+		nlinfo("init the quad grid");
 	globalRetriever.initQuadGrid();
 
 	string	filename;
 
 	COFile	outputRetriever;
 	filename = OutputPath+GlobalRetriever;
-	nlinfo("save file %s", filename.c_str());
+	if (Verbose)
+		nlinfo("save file %s", filename.c_str());
 	outputRetriever.open(filename);
 	globalRetriever.serial(outputRetriever);
 
 	COFile	outputBank;
 	filename = OutputPath+RetrieverBank;
-	nlinfo("save file %s", filename.c_str());
+	if (Verbose)
+		nlinfo("save file %s", filename.c_str());
 	outputBank.open(filename);
 	retrieverBank.serial(outputBank);
 
@@ -1221,13 +1159,15 @@ void	updateRetrieverBank()
 	filename = OutputPath+RetrieverBank;
 
 	CIFile	inputBank;
-	nlinfo("load file %s", filename.c_str());
+	if (Verbose)
+		nlinfo("load file %s", filename.c_str());
 	inputBank.open(filename);
 	retrieverBank.serial(inputBank);
 	inputBank.close();
 
 	COFile	outputBank;
-	nlinfo("save file %s", filename.c_str());
+	if (Verbose)
+		nlinfo("save file %s", filename.c_str());
 	outputBank.open(filename);
 	retrieverBank.serial(outputBank);
 	outputBank.close();

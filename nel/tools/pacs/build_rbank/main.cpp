@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.13 2004/01/07 10:16:07 legros Exp $
+ * $Id: main.cpp,v 1.14 2004/01/13 16:36:59 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,10 @@ bool												ComputeElevation;
 bool												ComputeLevels;
 vector<string>										ZoneNames;
 string												ZoneExt;
+string												ZoneNHExt;
 string												ZoneLookUpPath;
+bool												ProcessAllPasses;
+bool												CheckPrims;
 bool												TessellateZones;
 bool												MoulineZones;
 bool												TessellateAndMoulineZones;
@@ -83,6 +86,7 @@ string												GlobalUL;
 string												GlobalDR;
 bool												ProcessGlobal;
 string												LevelDesignWorldPath;
+bool												Verbose = false;
 
 CPrimChecker										PrimChecker;
 
@@ -92,30 +96,39 @@ CPrimChecker										PrimChecker;
 int		getInt(CConfigFile &cf, const string &varName, int defaultValue=0)
 {
 	CConfigFile::CVar *var = cf.getVarPtr(varName);
-	if (var)
-		nlinfo("Read %s = %d", varName.c_str(), var->asInt());
-	else
-		nlinfo("Couldn't read %s, using default = %d", varName.c_str(), defaultValue);
+	if (Verbose)
+	{
+		if (var)
+			nlinfo("Read %s = %d", varName.c_str(), var->asInt());
+		else
+			nlinfo("Couldn't read %s, using default = %d", varName.c_str(), defaultValue);
+	}
 	return var ? var->asInt() : defaultValue;
 }
 
 string	getString(CConfigFile &cf, const string &varName, const string &defaultValue="")
 {
 	CConfigFile::CVar *var = cf.getVarPtr(varName);
-	if (var)
-		nlinfo("Read %s = '%s'", varName.c_str(), var->asString().c_str());
-	else
-		nlinfo("Couldn't read %s, using default = '%s'", varName.c_str(), defaultValue.c_str());
+	if (Verbose)
+	{
+		if (var)
+			nlinfo("Read %s = '%s'", varName.c_str(), var->asString().c_str());
+		else
+			nlinfo("Couldn't read %s, using default = '%s'", varName.c_str(), defaultValue.c_str());
+	}
 	return var ? var->asString() : defaultValue;
 }
 
 bool	getBool(CConfigFile &cf, const string &varName, bool defaultValue=false)
 {
 	CConfigFile::CVar *var = cf.getVarPtr(varName);
-	if (var)
-		nlinfo("Read %s = %s", varName.c_str(), (var->asInt()!=0 ? "true" : "false"));
-	else
-		nlinfo("Couldn't read %s, using default = '%s'", varName.c_str(), (defaultValue ? "true" : "false"));
+	if (Verbose)
+	{
+		if (var)
+			nlinfo("Read %s = %s", varName.c_str(), (var->asInt()!=0 ? "true" : "false"));
+		else
+			nlinfo("Couldn't read %s, using default = '%s'", varName.c_str(), (defaultValue ? "true" : "false"));
+	}
 	return var ? (var->asInt() != 0) : defaultValue;
 }
 
@@ -132,11 +145,18 @@ void	initMoulinette()
 
 		cf.load("build_rbank.cfg");
 
+		CConfigFile::CVar *verboseVar = cf.getVarPtr("Verbose");
+		if (verboseVar && verboseVar->asInt() != 0)
+			Verbose = true;
+
+
 		// Read paths
 		CConfigFile::CVar *cvPathes = cf.getVarPtr("Pathes");
 		for (i=0; cvPathes != NULL && i<cvPathes->size(); ++i)
 			CPath::addSearchPath(cvPathes->asString(i));
 
+		ProcessAllPasses = getBool(cf, "ProcessAllPasses", false);
+		CheckPrims = getBool(cf, "CheckPrims", false);
 		TessellateZones = getBool(cf, "TessellateZones", false);
 		MoulineZones = getBool(cf, "MoulineZones", false);
 		TessellateAndMoulineZones = getBool(cf, "TessellateAndMoulineZones", false);
@@ -149,6 +169,7 @@ void	initMoulinette()
 		//if (TessellateZones || MoulineZones)
 		{
 			ZoneExt = getString(cf, "ZoneExt", ".zonew");
+			ZoneNHExt = getString(cf, "ZoneNHExt", ".zonenhw");
 			ZoneLookUpPath = getString(cf, "ZonePath", "./");
 			CPath::addSearchPath(ZoneLookUpPath);
 
@@ -224,48 +245,20 @@ void	moulineZones(vector<string> &zoneNames)
 {
 	uint	i;
 
-	NLPACS::StatsSurfaces.init();
-
-	if (TessellateAndMoulineZones)
+	if (CheckPrims)
 	{
 		PrimChecker.init(LevelDesignWorldPath);
+	}
+
+	if (ProcessAllPasses)
+	{
 
 		for (i=0; i<zoneNames.size(); ++i)
 		{
-			nlinfo("Tessellate/Preprocess .lr for zone %s", zoneNames[i].c_str());
-			tessellateAndMoulineZone(zoneNames[i]);
-		}
-	}
-	else
-	{
-		if (TessellateZones)
-		{
-			for (i=0; i<zoneNames.size(); ++i)
-			{
-				nlinfo("Build .tessel for zone %s", zoneNames[i].c_str());
-				tessellateZone(zoneNames[i]);
-			}
+			nlinfo("Generate final .lr for zone %s", zoneNames[i].c_str());
+			processAllPasses(zoneNames[i]);
 		}
 
-		if (MoulineZones)
-		{
-			PrimChecker.init(LevelDesignWorldPath);
-
-			for (i=0; i<zoneNames.size(); ++i)
-			{
-				nlinfo("Preprocess .lr for zone %s", zoneNames[i].c_str());
-				moulineZone(zoneNames[i]);
-			}
-		}
-	}
-
-	if (ProcessRetrievers)
-	{
-		for (i=0; i<zoneNames.size(); ++i)
-		{
-			nlinfo("Process .lr for zone %s", zoneNames[i].c_str());
-			processRetriever(zoneNames[i]);
-		}
 	}
 
 	if (ProcessGlobal)
@@ -273,9 +266,6 @@ void	moulineZones(vector<string> &zoneNames)
 		nlinfo("Process .gr and .rbank");
 		processGlobalRetriever();
 	}
-
-//	updateRetrieverBank();
-
 }
 
 /****************************************************************\
@@ -322,29 +312,31 @@ int main(int argc, char **argv)
 				{
 					switch (argv[i][1])
 					{
-					case 'T':
-						TessellateZones = true;
+					case 'C':
+						CheckPrims = true;
 						break;
-					case 't':
-						TessellateZones = false;
+					case 'c':
+						CheckPrims = false;
 						break;
-					case 'M':
-						MoulineZones = true;
+					case 'P':
+						ProcessAllPasses = true;
 						break;
-					case 'm':
-						MoulineZones = false;
-						break;
-					case 'L':
-						ProcessRetrievers = true;
-						break;
-					case 'l':
-						ProcessRetrievers = false;
+					case 'p':
+						ProcessAllPasses = false;
 						break;
 					case 'G':
 						ProcessGlobal = true;
 						break;
 					case 'g':
 						ProcessGlobal = false;
+						break;
+					case 'T':
+					case 't':
+					case 'M':
+					case 'm':
+					case 'L':
+					case 'l':
+						nlwarning("Option %c is not more valid", argv[i][1]);
 						break;
 					}
 				}
@@ -360,7 +352,8 @@ int main(int argc, char **argv)
 				workHour = (totalSeconds-86400*workDay)/3600,
 				workMinute = (totalSeconds-86400*workDay-3600*workHour)/60,
 				workSecond = (totalSeconds-86400*workDay-3600*workHour-60*workMinute);
-		nldebug("total computation time: %d days, %d hours, %d minutes and %d seconds", workDay, workHour, workMinute, workSecond);
+		if (Verbose)
+			nlinfo("total computation time: %d days, %d hours, %d minutes and %d seconds", workDay, workHour, workMinute, workSecond);
 	}
 	catch (Exception &e)
 	{

@@ -1,7 +1,7 @@
 /** \file moulinette.h
  * 
  *
- * $Id: build_rbank.h,v 1.3 2004/01/07 10:16:06 legros Exp $
+ * $Id: build_rbank.h,v 1.4 2004/01/13 16:36:59 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,10 +28,11 @@
 
 #include <string>
 
-void		tessellateZone(std::string &zoneName);
-void		moulineZone(std::string &zoneName);
+void		processAllPasses(std::string &zoneName);
+/*
 void		tessellateAndMoulineZone(std::string &zoneName);
 void		processRetriever(std::string &zoneName);
+*/
 void		processGlobalRetriever();
 void		updateRetrieverBank();
 

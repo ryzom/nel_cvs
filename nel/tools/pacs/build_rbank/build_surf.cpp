@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.16 2004/01/07 10:16:06 legros Exp $
+ * $Id: build_surf.cpp,v 1.17 2004/01/13 16:36:59 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,12 +49,6 @@
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
-
-
-
-NLPACS::CStats	NLPACS::StatsSurfaces;
-
-
 
 
 // Misc functions...
@@ -192,137 +186,6 @@ static CAABBox	getSnappedBBox(CVector v0, CVector v1, CVector v2, const CAABBox 
 	return box;
 }
 
-/*
-bool	isInside(vector<CPlane> &top, NLPACS::CSurfElement &element)
-{
-	static CVector	t1[32], t2[32];
-
-	CVector	*a, *b;
-	uint	na, nb;
-	uint	i;
-
-	a = t1;
-	b = t2;
-
-	a[0] = (*element.Vertices)[element.Tri[0]];
-	a[1] = (*element.Vertices)[element.Tri[1]];
-	a[2] = (*element.Vertices)[element.Tri[2]];
-	na = 3;
-
-	for (i=0; i<top.size(); ++i)
-	{
-		nb = top[i].clipPolygonBack(a, b, na);
-		if (nb < 3)
-			return false;
-
-		swap(a, b);
-		swap(na, nb);
-	}
-	return true;
-}
-
-void	cut(vector<CPlane> &top, NLPACS::CSurfElement &element, vector<CVector> &res)
-{
-	static CVector	t1[32], t2[32];
-
-	CVector	*a, *b;
-	uint	na, nb;
-	uint	i;
-
-	a = t1;
-	b = t2;
-
-	a[0] = (*element.Vertices)[element.Tri[0]];
-	a[1] = (*element.Vertices)[element.Tri[1]];
-	a[2] = (*element.Vertices)[element.Tri[2]];
-	na = 3;
-
-	for (i=0; i<top.size(); ++i)
-	{
-		nb = top[i].clipPolygonBack(a, b, na);
-		swap(a, b);
-		swap(na, nb);
-	}
-
-	res.clear();
-	for (i=0; i<na; ++i)
-		res.push_back(a[i]);
-}
-
-void	cut(CPlane &plane, const vector<CVector> &source, vector<CVector> &destination)
-{
-	destination.clear();
-	if (source.empty())
-		return;
-
-	bool	lastInside = (plane*source[0] <= 0.0f);
-	bool	thisInside;
-
-	if (lastInside)
-		destination.push_back(source[0]);
-
-	uint	i;
-
-	for (i=1; i<source.size(); ++i)
-	{
-		thisInside = (plane*source[i] <= 0.0f);
-
-		if (thisInside && !lastInside || !thisInside && lastInside)
-		{
-			destination.push_back(plane.intersect(source[i-1], source[i]));
-			float	d = ((destination.back()-source[i-1])*(source[i]-source[i-1]))/(source[i]-source[i-1]).sqrnorm();
-			nlassert(d>=0.0f);
-			nlassert(d<=1.0f);
-		}
-
-		if (thisInside)
-			destination.push_back(source[i]);
-
-		lastInside = thisInside;
-	}
-}
-
-bool	cut(CPlane &plane, const vector<CVector> &source, vector<vector<CVector> > &destination)
-{
-	if (source.empty())
-		return true;
-
-	bool	lastInside = (plane*source[0] <= 0.0f);
-	bool	thisInside;
-	bool	cutFlag= false;
-
-	if (lastInside)
-	{
-		destination.resize(destination.size()+1);
-		destination.back().push_back(source[0]);
-	}
-
-	uint	i;
-
-	for (i=1; i<source.size(); ++i)
-	{
-		thisInside = (plane*source[i] <= 0.0f);
-
-		if (thisInside && !lastInside || !thisInside && lastInside)
-		{
-			if (thisInside && !lastInside)
-				destination.resize(destination.size()+1);
-			destination.back().push_back(plane.intersect(source[i-1], source[i]));
-			float	d = ((destination.back().back()-source[i-1])*(source[i]-source[i-1]))/(source[i]-source[i-1]).sqrnorm();
-			nlassert(d>=0.0f);
-			nlassert(d<=1.0f);
-			cutFlag = true;
-		}
-
-		if (thisInside)
-			destination.back().push_back(source[i]);
-
-		lastInside = thisInside;
-	}
-
-	return cutFlag;
-}
-*/
 template<class A>
 class CHashPtr
 {
@@ -379,37 +242,6 @@ public:
 	}
 };
 
-/*
- * CStats methods...
- */
-
-void NLPACS::CStats::init()
-{
-	uint	i;
-
-	for (i=0; i<255; ++i)
-	{
-		XBBSpanList.push_back(pair<float,uint>((float)pow(1.04,(double)i)-1.0f,0));
-		YBBSpanList.push_back(pair<float,uint>((float)pow(1.04,(double)i)-1.0f,0));
-		XBBSpan.push_back(pair<float,uint>((float)pow(1.04,(double)i)-1.0f,0));
-		YBBSpan.push_back(pair<float,uint>((float)pow(1.04,(double)i)-1.0f,0));
-	}
-
-	XBBSpanList.push_back(pair<float,uint>(FLT_MAX,0));
-	YBBSpanList.push_back(pair<float,uint>(FLT_MAX,0));
-	XBBSpan.push_back(pair<float,uint>(FLT_MAX,0));
-	YBBSpan.push_back(pair<float,uint>(FLT_MAX,0));
-
-	TotalSpanList = 0;
-	TotalSpan = 0;
-}
-
-
-
-
-
-
-
 
 
 
@@ -430,17 +262,18 @@ void NLPACS::CStats::init()
  */
 
 
-void	NLPACS::CSurfElement::computeQuantas()
+void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 {
 	CVector		v0 = (*Vertices)[Tri[0]],
 				v1 = (*Vertices)[Tri[1]],
 				v2 = (*Vertices)[Tri[2]];
 	
 	CVector	n = (v1-v0) ^ (v2-v0);
-	Normal = n.normed();
 
+/*
 	CAABBox		zbbox = Root->RootZoneTessellation->OriginalBBox;
 	zbbox.setHalfSize(zbbox.getHalfSize()-CVector(1.0e-2f, 1.0e-2f, 0.0f));
+*/
 
 	double	hmin = std::min(v0.z, std::min(v1.z, v2.z));
 	//QuantHeight = ((uint8)(floor((v0.z+v1.z+v2.z)/6.0f)))%255;
@@ -477,15 +310,15 @@ void	NLPACS::CSurfElement::computeQuantas()
 	vmax.maxof((*Vertices)[Tri[0]], (*Vertices)[Tri[1]]);
 	vmax.maxof(vmax, (*Vertices)[Tri[2]]);
 
-	Root->RootZoneTessellation->WaterGrid.select(vmin, vmax);
+	zoneTessel->WaterGrid.select(vmin, vmax);
 
-	CQuadGrid<uint32>::CIterator	it = Root->RootZoneTessellation->WaterGrid.begin();
+	CQuadGrid<uint32>::CIterator	it = zoneTessel->WaterGrid.begin();
 	bool	inWater = false;
 
-	for (; it!=Root->RootZoneTessellation->WaterGrid.end(); ++it)
+	for (; it!=zoneTessel->WaterGrid.end(); ++it)
 	{
 		uint	shape = (*it);
-		CPolygon	&poly = Root->RootZoneTessellation->WaterShapes[shape];
+		CPolygon	&poly = zoneTessel->WaterShapes[shape];
 		if (isInside(poly, *this) &&
 			((*Vertices)[Tri[0]].z < poly.Vertices[0].z || (*Vertices)[Tri[1]].z < poly.Vertices[0].z || (*Vertices)[Tri[2]].z < poly.Vertices[0].z))
 		{
@@ -584,7 +417,8 @@ void	NLPACS::CComputableSurfaceBorder::smooth(float val)
 	}
 	after = Vertices.size();
 
-	nldebug("smoothed border %d-%d: %d -> %d", Left, Right, before, after);
+	if (Verbose)
+		nlinfo("smoothed border %d-%d: %d -> %d", Left, Right, before, after);
 }
 
 
@@ -624,7 +458,7 @@ void	NLPACS::CComputableSurface::followBorder(CSurfElement *first, uint edge, ui
 
 	const sint32	currentSurfId = current->SurfaceId;
 	const sint32	oppositeSurfId = (next != NULL) ? next->SurfaceId : UnaffectedSurfaceId;
-	const sint32	oppositeZid = current->ZoneLinks[edge];
+	const sint32	oppositeZid = current->getZoneIdOnEdge(edge);
 	sint			oedge;
 
 	sint			pivot = (edge+sens)%3;
@@ -644,7 +478,7 @@ void	NLPACS::CComputableSurface::followBorder(CSurfElement *first, uint edge, ui
 		current->IsBorder = true;
 
 		if ((oppositeSurfId != UnaffectedSurfaceId && (next == NULL || (next->SurfaceId != oppositeSurfId && next->SurfaceId != currentSurfId))) ||
-			(oppositeSurfId == UnaffectedSurfaceId && (next != NULL && next->SurfaceId != currentSurfId || next == NULL && current->ZoneLinks[nextEdge] != oppositeZid)) ||
+			(oppositeSurfId == UnaffectedSurfaceId && (next != NULL && next->SurfaceId != currentSurfId || next == NULL && current->getZoneIdOnEdge(nextEdge) != oppositeZid)) ||
 			(current->EdgeFlag[nextEdge] && !allowThis))
 		{
 			// if reaches the end of the border, then quits.
@@ -691,7 +525,8 @@ void	NLPACS::CComputableSurface::buildBorders()
 {
 	sint	elem, edge;
 
-	nldebug("generate borders for the surface %d", SurfaceId);
+	if (Verbose)
+		nlinfo("generate borders for the surface %d", SurfaceId);
 
 	for (elem=0; elem<(sint)Elements.size(); ++elem)
 	{
@@ -714,7 +549,7 @@ void	NLPACS::CComputableSurface::buildBorders()
 				// ????
 				//border.DontSmooth = (Elements[elem]->EdgeLinks[edge] != NULL && Elements[elem]->NoLevelSurfaceId == Elements[elem]->EdgeLinks[edge]->SurfaceId);
 
-				if (Elements[elem]->EdgeLinks[edge] != NULL && Elements[elem]->EdgeLinks[edge]->Root->ZoneId != Elements[elem]->Root->ZoneId)
+				if (Elements[elem]->EdgeLinks[edge] != NULL && Elements[elem]->EdgeLinks[edge]->ZoneId != Elements[elem]->ZoneId)
 				{
 					// link on a neighbor zone
 					border.Right = -2;
@@ -729,7 +564,8 @@ void	NLPACS::CComputableSurface::buildBorders()
 					border.Right = Elements[elem]->EdgeLinks[edge]->SurfaceId;
 				}
 
-				nldebug("generate border %d (%d-%d)", BorderKeeper->size()-1, border.Left, border.Right);
+				if (Verbose)
+					nlinfo("generate border %d (%d-%d)", BorderKeeper->size()-1, border.Left, border.Right);
 
 				bool				loop;
 				vector<CVector>		bwdVerts;
@@ -761,76 +597,6 @@ void	NLPACS::CComputableSurface::buildBorders()
 	}
 }
 
-/*
-void	NLPACS::CComputableSurface::computeHeightQuad()
-{
-	nldebug("generate height quad for surface %d", SurfaceId);
-	HeightQuad.clear();
-	HeightQuad.init(4.0f, 6, BBox.getCenter(), std::max(BBox.getHalfSize().x, BBox.getHalfSize().y));
-	
-	uint	i;
-	for (i=0; i<Elements.size(); ++i)
-	{
-		CSurfElement	&element = *(Elements[i]);
-		HeightQuad.addVertex((*element.Vertices)[element.Tri[0]]);
-		HeightQuad.addVertex((*element.Vertices)[element.Tri[1]]);
-		HeightQuad.addVertex((*element.Vertices)[element.Tri[2]]);
-	}
-
-	HeightQuad.compile();
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
- * CPatchTessellation constructors and methods implementation
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-void	NLPACS::CPatchTessellation::setup(const NL3D::CPatch *rootPatch, 
-										const NL3D::CPatchInfo *rootPatchInfo,
-										CZoneTessellation *rootZone,
-										CPatchRetriever *rootRetriever,
-										uint16 patchId,
-										uint16 zoneId)
-{
-	RootPatch = rootPatch;
-	RootPatchInfo = rootPatchInfo;
-	RootZoneTessellation = rootZone;
-	RootRetriever = rootRetriever;
-	PatchId = patchId;
-	ZoneId = zoneId;
-	_NS = RootZoneTessellation->Refinement*RootPatch->getOrderS();
-	_NT = RootZoneTessellation->Refinement*RootPatch->getOrderT();
-	Valid = false;
-	OriginalBBox = RootPatch->buildBBox();
-	BBox = OriginalBBox;
-	BBox.setCenter(BBox.getCenter()+rootZone->Translation);
-}
 
 
 
@@ -873,21 +639,6 @@ bool	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 	BBox.setCenter(CVector::Null);
 	BBox.setHalfSize(CVector(80.0f, 80.0f, BBox.getHalfSize().z));
 
-	_Landscape.init();
-
-	CMatrix		tmp;
-	CVector		I(1,0,0);
-	CVector		J(0,0,-1);
-	CVector		K(0,1,0);
-	tmp.identity();
-	tmp.setRot(I,J,K, true);
-	Container.changeBase (tmp);
-
-	float		sz = std::max(OriginalBBox.getSize().x, OriginalBBox.getSize().y)+20.0f;
-	ContBBox.setCenter(OriginalBBox.getCenter());
-	ContBBox.setSize(CVector(sz, sz, OriginalBBox.getSize().z));
-	Container.create(7, OriginalBBox.getCenter(), sz);
-
 	// if zone doesn't exist, don't even setup tessellation
 	try
 	{
@@ -899,155 +650,31 @@ bool	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 		return false;
 	}
 
-
-	uint	i, j;
 	// setup the square of 9 zones...
-	nldebug("setup zone tessellation %d %s", zoneId, getZoneNameById(zoneId).c_str());
+	if (Verbose)
+		nlinfo("setup zone tessellation %d %s", zoneId, getZoneNameById(zoneId).c_str());
 	{
-		uint	zx = zoneId%256, zy = zoneId/256;
-		if (zx>0 && zy>0)		_Zones.push_back(CPatchRetriever(zoneId-257));
-		if (zy>0)				_Zones.push_back(CPatchRetriever(zoneId-256));
-		if (zx<255 && zy>0)		_Zones.push_back(CPatchRetriever(zoneId-255));
-		if (zx>0)				_Zones.push_back(CPatchRetriever(zoneId-1));
-		_Zones.push_back(CPatchRetriever(zoneId));
-		if (zx<255)				_Zones.push_back(CPatchRetriever(zoneId+1));
-		if (zx>0 && zy<255)		_Zones.push_back(CPatchRetriever(zoneId+255));
-		if (zy<255)				_Zones.push_back(CPatchRetriever(zoneId+256));
-		if (zx<255 && zy<255)	_Zones.push_back(CPatchRetriever(zoneId+257));
+		sint	zx = zoneId%256, zy = zoneId/256;
 
-		// remove zones that don't exist
-		vector<CPatchRetriever>::iterator	rit;
-		for (rit=_Zones.begin(); rit!=_Zones.end(); )
+		for (zy=(zoneId/256)-1; zy<=(zoneId/256)+1; ++zy)
 		{
-			string	filename = getZoneNameById(rit->ZoneId)+ZoneExt;
-			try
+			for (zx=(zoneId%256)-1; zx<=(zoneId%256)+1; ++zx)
 			{
-				if (CPath::lookup(filename, false, false) == "")
-					rit = _Zones.erase(rit);
-				else
-					++rit;
-			}
-			catch (EPathNotFound &)
-			{
-				rit = _Zones.erase(rit);
+				if (zx >= 0 && zx <= 255 && zy >= 0 && zy <= 255)
+				{
+					uint	zid = (zy<<8) + (zx);
+					string	filename = getZoneNameById(zid)+ZoneExt;
+					if (CPath::lookup(filename, false, false) != "")
+					{
+						_ZoneIds.push_back(zid);
+					}
+				}
 			}
 		}
 	}
 	
 	// sort zones
-	sort(_Zones.begin(), _Zones.end(), CRetrieverSort());
-
-	// load the zones and select patchs that are inside the extended bbox
-	for (i=0; i<_Zones.size(); ++i)
-	{
-		string	filename = getZoneNameById(_Zones[i].ZoneId)+ZoneExt;
-		CIFile	file(CPath::lookup(filename));
-		CZone	zone;
-		zone.serial(file);
-		file.close();
-		if (zone.getZoneId() != _Zones[i].ZoneId)
-		{
-			nlwarning ("Zone %s ID is wrong. Abort.");
-			return false;
-		}
-		else
-		{
-			nldebug("use zone %s %d", filename.c_str(), zone.getZoneId());
-			_Landscape.addZone(zone);
-			CPatchRetriever	&retriever = _Zones[i];
-			retriever.Zone = _Landscape.getZone(_Zones[i].ZoneId);
-			retriever.BBox = retriever.Zone->getZoneBB().getAABBox();
-			retriever.BBox.setCenter(retriever.BBox.getCenter()+Translation);
-			const_cast<CZone *>(retriever.Zone)->retrieve(retriever.PatchInfos, retriever.BorderVertices);
-
-
-			// compute number of vertex used by this zone.
-			retriever.MaxVertex= 0;
-			for(j=0;j<(sint)retriever.PatchInfos.size();j++)
-			{
-				const CPatchInfo	&pi= retriever.PatchInfos[j];
-
-				for(sint k=0;k<4;k++)
-				{
-					retriever.MaxVertex= max((uint32)pi.BaseVertices[k], retriever.MaxVertex);
-				}
-			}
-
-			// init the remap table
-			for (j=0; j<retriever.PatchInfos.size(); ++j)
-				retriever.PatchRemap.push_back(-1);
-
-			retriever.TotalNew = 0;
-		}
-	}
-
-	_Landscape.setNoiseMode(false);
-
-	_Landscape.checkBinds();
-
-	BestFittingBBox.setCenter(CVector::Null);
-	BestFittingBBox.setHalfSize(CVector::Null);
-
-	// Compute best fitting bbox
-	for (i=0; i<_Zones.size(); ++i)
-		if (_Zones[i].ZoneId == CentralZoneId)
-			BestFittingBBox = _Zones[i].Zone->getZoneBB().getAABBox();
-
-	// Add neighbor patch
-	for (i=0; i<_Zones.size(); ++i)
-	{
-		CPatchRetriever	&retriever = _Zones[i];
-/*
-		CAABBox	selectBBox;
-
-		selectBBox.setCenter(CVector(17442, -24484, 4));
-		selectBBox.setHalfSize(CVector(16, 16, 80));
-*/
-		if (_Zones[i].ZoneId == CentralZoneId)
-		{
-			for (j=0; j<retriever.PatchInfos.size(); ++j)
-			{
-				retriever.PatchRemap[j] = retriever.TotalNew++;
-				_Landscape.excludePatchFromRefineAll(_Zones[i].ZoneId, j, false);
-			}
-		}
-		else
-		{
-			CAABBox	enlBBox = BestFittingBBox;
-			enlBBox.setHalfSize(enlBBox.getHalfSize()+CVector(8.0f, 8.0f, 0.0f));
-			for (j=0; j<retriever.PatchInfos.size(); ++j)
-			{
-				CAABBox	pbox = retriever.Zone->getPatch(j)->buildBBox();
-				if (enlBBox.intersect(pbox) && retriever.PatchRemap[j] == -1)
-				{
-					retriever.PatchRemap[j] = retriever.TotalNew++;
-					_Landscape.excludePatchFromRefineAll(_Zones[i].ZoneId, j, false);
-				}
-				else
-				{
-					_Landscape.excludePatchFromRefineAll(_Zones[i].ZoneId, j, true);
-				}
-			}
-		}
-	}
-
-
-
-	// setup patches
-	uint	zone;
-	for (zone=0; zone<_Zones.size(); ++zone)
-	{
-		CPatchRetriever	&retriever = _Zones[zone];
-		sint	p;
-
-		retriever.Patches.resize(retriever.Zone->getNumPatchs());
-
-		for (p=0; p<(sint)retriever.Patches.size(); ++p)
-		{
-			const CPatch	*patch = retriever.Zone->getPatch(p);
-			retriever.Patches[p].setup(patch, &retriever.PatchInfos[p], this, &retriever, p, retriever.ZoneId);
-		}
-	}
+	sort(_ZoneIds.begin(), _ZoneIds.end());
 
 	return true;
 }
@@ -1058,140 +685,302 @@ bool	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 
 void	NLPACS::CZoneTessellation::build()
 {
-	uint	zone;
 	sint	el;
+	uint	i, j;
 
-	// tessellate the landscape, get the leaves (the tessellation faces), and convert them
-	// into surf elements
+	NL3D::CLandscape	landscape;
+	landscape.init();
+
+	vector<CVector>				normals;
+
+	vector<CVector>				vectorCheck;
+	bool						useNoHmZones = true;
+
 	{
-		sint												i, j;
-		nldebug("Compute landscape tessellation");
+		NL3D::CLandscape	landscapeNoHm;
+		landscapeNoHm.init();
 
-		nldebug("   - tessellate landscape");
-		_Landscape.setThreshold(0.0f);
-		_Landscape.setTileMaxSubdivision(TessellateLevel);
-		_Landscape.refineAll(CVector::Null);
-		_Landscape.averageTesselationVertices();
-
-		// get the faces
-		vector<const CTessFace *>	leaves;
-		_Landscape.getTessellationLeaves(leaves);
-		nldebug("      - generated %d leaves", leaves.size());
-
-		// remap zone links and patch links
-		map<const CPatch *, CPatchTessellation *>			premap;
-		map<const CPatch *, CPatchTessellation *>::iterator	premapit;
-
-		// setup the map to find the patch references
-		for (zone=0; zone<(sint)_Zones.size(); ++zone)
+		//
+		// load the 9 landscape zones
+		//
+		for (i=0; i<_ZoneIds.size(); ++i)
 		{
-			CPatchRetriever	&retriever = _Zones[zone];
-			for (j=0; j<retriever.Zone->getNumPatchs(); ++j)
-				premap.insert(make_pair(retriever.Zone->getPatch(j), &retriever.Patches[j]));
+			string	filename = getZoneNameById(_ZoneIds[i])+ZoneExt;
+			CIFile	file(CPath::lookup(filename));
+			CZone	zone;
+			zone.serial(file);
+			file.close();
+
+			if (Verbose)
+				nlinfo("use zone %s %d", filename.c_str(), zone.getZoneId());
+
+			if (zone.getZoneId() != _ZoneIds[i])
+			{
+				nlwarning ("Zone %s ID is wrong. Abort.", filename.c_str());
+				return;
+			}
+			landscape.addZone(zone);
+
+			if (useNoHmZones)
+			{
+				string	filenameNH = getZoneNameById(_ZoneIds[i])+ZoneNHExt;
+				string	loadZ = CPath::lookup(filenameNH, false, false);
+				if (!loadZ.empty())
+				{
+					CIFile	fileNH(loadZ);
+					CZone	zoneNH;
+					zoneNH.serial(fileNH);
+					fileNH.close();
+					if (zoneNH.getZoneId() != _ZoneIds[i])
+					{
+						nlwarning ("Zone %s ID is wrong. Abort.", filenameNH.c_str());
+						return;
+					}
+					landscapeNoHm.addZone(zoneNH);
+				}
+				else
+				{
+					useNoHmZones = false;
+				}
+			}
+
+			_ZonePtrs.push_back(landscape.getZone(_ZoneIds[i]));
 		}
 
-		// generate a vector of vertices and of surf element
-		hash_map<const CVector *, uint32, CHashPtr<const CVector> >				vremap;
-		hash_map<const CVector *, uint32, CHashPtr<const CVector> >::iterator	vremapit;
-		hash_map<const CTessFace *, CSurfElement *, CHashPtr<const CTessFace> >	fremap;
-		hash_map<const CTessFace *, CSurfElement *, CHashPtr<const CTessFace> >::iterator	fremapit;
-		_Vertices.clear();
-		_Tessellation.resize(leaves.size());
+		landscape.setNoiseMode(false);
+		landscape.checkBinds();
 
-		nldebug("   - make and remap surface elements");
+		if (useNoHmZones)
+		{
+			landscapeNoHm.setNoiseMode(false);
+			landscapeNoHm.checkBinds();
+		}
 
+		BestFittingBBox.setCenter(CVector::Null);
+		BestFittingBBox.setHalfSize(CVector::Null);
+
+		// Compute best fitting bbox
+		for (i=0; i<_ZoneIds.size(); ++i)
+			if (_ZoneIds[i] == CentralZoneId)
+				BestFittingBBox = _ZonePtrs[i]->getZoneBB().getAABBox();
+
+		CAABBox	enlBBox = BestFittingBBox;
+		enlBBox.setHalfSize(enlBBox.getHalfSize()+CVector(8.0f, 8.0f, 1000.0f));
+
+		// Add neighbor patch
+		for (i=0; i<_ZoneIds.size(); ++i)
+		{
+			if (_ZoneIds[i] == CentralZoneId)
+			{
+				for (j=0; (sint)j<_ZonePtrs[i]->getNumPatchs(); ++j)
+				{
+					landscape.excludePatchFromRefineAll(_ZoneIds[i], j, false);
+					if (useNoHmZones)
+						landscapeNoHm.excludePatchFromRefineAll(_ZoneIds[i], j, false);
+				}
+				if (Verbose)
+					nlinfo(" - selected %d/%d patches for zone %d", _ZonePtrs[i]->getNumPatchs(), _ZonePtrs[i]->getNumPatchs(), _ZoneIds[i]);
+			}
+			else
+			{
+				uint	nump = 0;
+				for (j=0; (sint)j<_ZonePtrs[i]->getNumPatchs(); ++j)
+				{
+					CAABBox	pbox = _ZonePtrs[i]->getPatch(j)->buildBBox();
+					bool	inters = enlBBox.intersect(pbox);
+
+					if (inters)
+					{
+						landscape.excludePatchFromRefineAll(_ZoneIds[i], j, false);
+						if (useNoHmZones)
+							landscapeNoHm.excludePatchFromRefineAll(_ZoneIds[i], j, false);
+						++nump;
+					}
+					else
+					{
+						landscape.excludePatchFromRefineAll(_ZoneIds[i], j, true);
+						if (useNoHmZones)
+							landscapeNoHm.excludePatchFromRefineAll(_ZoneIds[i], j, true);
+					}
+				}
+				if (Verbose)
+					nlinfo(" - selected %d/%d patches for zone %d", nump, _ZonePtrs[i]->getNumPatchs(), _ZoneIds[i]);
+			}
+		}
+
+		// tessellate the landscape, get the leaves (the tessellation faces), and convert them
+		// into surf elements
+		if (Verbose)
+			nlinfo("Compute landscape tessellation");
+
+		if (Verbose)
+			nlinfo("   - tessellate landscape");
+
+		if (useNoHmZones)
+		{
+			landscapeNoHm.setThreshold(0.0f);
+			landscapeNoHm.setTileMaxSubdivision(TessellateLevel);
+			landscapeNoHm.refineAll(CVector::Null);
+			landscapeNoHm.averageTesselationVertices();
+
+			// get the faces
+			vector<const CTessFace *>	leavesNoHm;
+			landscapeNoHm.getTessellationLeaves(leavesNoHm);
+
+			for (el=0; el<(sint)leavesNoHm.size(); ++el)
+			{
+				const CTessFace	*face = leavesNoHm[el];
+				const CVector	*v[3];
+
+				// get the vertices of the face
+				v[0] = &(face->VBase->EndPos);
+				v[1] = &(face->VLeft->EndPos);
+				v[2] = &(face->VRight->EndPos);
+
+				normals.push_back( ((*(v[1])-*(v[0])) ^ (*(v[2])-*(v[0]))).normed() );
+
+				vectorCheck.push_back(*(v[0]));
+				vectorCheck.push_back(*(v[1]));
+				vectorCheck.push_back(*(v[2]));
+			}
+		}
+	}
+
+	landscape.setThreshold(0.0f);
+	landscape.setTileMaxSubdivision(TessellateLevel);
+	landscape.refineAll(CVector::Null);
+	landscape.averageTesselationVertices();
+
+	vector<const CTessFace *>	leaves;
+	landscape.getTessellationLeaves(leaves);
+	if (Verbose)
+	{
+		if (useNoHmZones)
+			nlinfo("      - used no height map zones");
+		nlinfo("      - generated %d leaves", leaves.size());
+	}
+
+	if (!useNoHmZones)
+	{
 		for (el=0; el<(sint)leaves.size(); ++el)
 		{
 			const CTessFace	*face = leaves[el];
 			const CVector	*v[3];
-
-			CSurfElement	&element = _Tessellation[el];
-
-			// add a new face in the map
-			fremap.insert(make_pair(face, &element));
 
 			// get the vertices of the face
 			v[0] = &(face->VBase->EndPos);
 			v[1] = &(face->VLeft->EndPos);
 			v[2] = &(face->VRight->EndPos);
 
-			element.Normal = ((*(v[1])-*(v[0])) ^ (*(v[2])-*(v[0]))).normed();
+			normals.push_back( ((*(v[1])-*(v[0])) ^ (*(v[2])-*(v[0]))).normed() );
 
-			// set the root patch
-			premapit = premap.find(face->Patch);
-			if (premapit != premap.end())
+			vectorCheck.push_back(*(v[0]));
+			vectorCheck.push_back(*(v[1]));
+			vectorCheck.push_back(*(v[2]));
+		}
+	}
+
+	nlassert(normals.size() == leaves.size());
+
+	// generate a vector of vertices and of surf element
+	hash_map<const CVector *, uint32, CHashPtr<const CVector> >				vremap;
+	hash_map<const CVector *, uint32, CHashPtr<const CVector> >::iterator	vremapit;
+	hash_map<const CTessFace *, CSurfElement *, CHashPtr<const CTessFace> >	fremap;
+	hash_map<const CTessFace *, CSurfElement *, CHashPtr<const CTessFace> >::iterator	fremapit;
+	_Vertices.clear();
+	_Tessellation.resize(leaves.size());
+
+	if (Verbose)
+		nlinfo("   - make and remap surface elements");
+
+	for (el=0; el<(sint)leaves.size(); ++el)
+		fremap[leaves[el]] = &(_Tessellation[el]);
+
+	uint	check = 0;
+
+	float	dist, maxdist = 0.0f;
+
+	for (el=0; el<(sint)leaves.size(); ++el)
+	{
+		const CTessFace	*face = leaves[el];
+		const CVector	*v[3];
+
+		CSurfElement	&element = _Tessellation[el];
+
+		// setup zone id
+		element.ZoneId = face->Patch->getZone()->getZoneId();
+
+		// get the vertices of the face
+		v[0] = &(face->VBase->EndPos);
+		v[1] = &(face->VLeft->EndPos);
+		v[2] = &(face->VRight->EndPos);
+
+		{
+			CVector	vcheck;
+
+			vcheck = vectorCheck[check++] - *(v[0]);
+			vcheck.z = 0;
+			dist = vcheck.norm();
+			if (dist > maxdist)	maxdist = dist;
+			//nlassert(vcheck.norm() < 0.1f);
+
+			vcheck = vectorCheck[check++] - *(v[1]);
+			vcheck.z = 0;
+			dist = vcheck.norm();
+			if (dist > maxdist)	maxdist = dist;
+			//nlassert(vcheck.norm() < 0.1f);
+
+			vcheck = vectorCheck[check++] - *(v[2]);
+			vcheck.z = 0;
+			dist = vcheck.norm();
+			if (dist > maxdist)	maxdist = dist;
+			//nlassert(vcheck.norm() < 0.1f);
+		}
+
+		//element.Normal = ((*(v[1])-*(v[0])) ^ (*(v[2])-*(v[0]))).normed();
+		element.Normal = normals[el];
+
+
+		// search the vertices in the map
+		for (i=0; i<3; ++i)
+		{
+			// if doesn't exist, create a new vertex
+			if ((vremapit = vremap.find(v[i])) == vremap.end())
 			{
-				element.Root = premapit->second;
+				element.Tri[i] = _Vertices.size();
+				_Vertices.push_back(*(v[i]));
+				vremap.insert(make_pair(v[i], element.Tri[i]));
 			}
+			// else use previous
 			else
 			{
-				nlwarning("Couldn't remap root patch in CSurElement");
-				element.Root = NULL;
-			}
-
-			// search the vertices in the map
-			for (i=0; i<3; ++i)
-			{
-				// if doesn't exist, create a new vertex
-				if ((vremapit = vremap.find(v[i])) == vremap.end())
-				{
-					element.Tri[i] = _Vertices.size();
-					_Vertices.push_back(*(v[i]));
-					vremap.insert(make_pair(v[i], element.Tri[i]));
-				}
-				// else use previous
-				else
-				{
-					element.Tri[i] = vremapit->second;
-				}
-			}
-
-			// setup the vertices pointer
-			element.Vertices = &_Vertices;
-
-			for (i=0; i<3; ++i)
-			{
-				element.EdgeLinks[i] = NULL;
-				element.ZoneLinks[i] = -1;
+				element.Tri[i] = vremapit->second;
 			}
 		}
 
-		// remap links to zone and neighbor elements
-		nldebug("   - remap surface elements links");
-		for (el=0; el<(sint)_Tessellation.size(); ++el)
+		// setup the vertices pointer
+		element.Vertices = &_Vertices;
+
+		CTessFace		*edge[3];
+
+		edge[0] = face->FBase;
+		edge[1] = face->FRight;
+		edge[2] = face->FLeft;
+
+		for (i=0; i<3; ++i)
 		{
-			CSurfElement	&element = _Tessellation[el];
-			const CTessFace	*face = leaves[el];
-			CTessFace		*edge[3];
-
-			edge[0] = face->FBase;
-			edge[1] = face->FRight;
-			edge[2] = face->FLeft;
-
-			for (i=0; i<3; ++i)
-			{
-				fremapit = fremap.find(edge[i]);
-				if (fremapit != fremap.end())
-				{
-					element.EdgeLinks[i] = fremapit->second;
-					element.ZoneLinks[i] = element.EdgeLinks[i]->Root->ZoneId;
-				}
-				else
-				{
-					element.EdgeLinks[i] = NULL;
-				}
-			}
+			fremapit = fremap.find(edge[i]);
+			element.EdgeLinks[i] = (fremapit != fremap.end() ? fremapit->second : NULL);
 		}
 	}
 
 	for (el=0; el<(sint)_Tessellation.size(); ++el)
 	{
 		// add the element to the list of valid elements
-		CSurfElement	&element = _Tessellation[el];
-		Elements.push_back(&element);
+		Elements.push_back(&(_Tessellation[el]));
 	}
 
-	_Landscape.clear();
+	landscape.clear();
 }
 
 
@@ -1202,61 +991,39 @@ void	NLPACS::CZoneTessellation::compile()
 {
 	uint	zone;
 	sint	el;
+	uint	i, j;
 
-	nldebug("prepare elevation selection");
-	for (zone=0; zone<_Zones.size(); ++zone)
-	{
-		CPatchRetriever	&retriever = _Zones[zone];
-		sint	p;
-
-		for (p=0; p<(sint)retriever.Patches.size(); ++p)
-		{
-			const CPatch	*patch = retriever.Zone->getPatch(p);
-			retriever.Patches[p].setup(patch, &retriever.PatchInfos[p], this, &retriever, p, retriever.ZoneId);
-			//retriever.Patches[p].selectElevation(retriever.Patches[p].Selected);
-			retriever.Patches[p].Valid = true;
-		}
-	}
-
-	_Landscape.clear();
-
-	for (el=0; el<(sint)_Tessellation.size(); ++el)
-	{
-		CSurfElement	&element = _Tessellation[el];
-		const CVector	*v[3];
-
-		// get the vertices of the face
-		v[0] = &_Vertices[element.Tri[0]];
-		v[1] = &_Vertices[element.Tri[1]];
-		v[2] = &_Vertices[element.Tri[2]];
-
-		// if the element is in the container, add it to the quadtree for later selection
-		if (ContBBox.intersect(*v[0], *v[1], *v[2]))
-			Container.insert(vmin(*v[0], *v[1], *v[2]), vmax(*v[0], *v[1], *v[2]), &element);
-	}
+	CAABBox	tbox = computeBBox();
 
 	// setup water quad grid
-	WaterGrid.create(512, 0.5f);
-	uint	i, j;
+	WaterGrid.create(128, 4.0f);
 	for (i=0; i<WaterShapes.size(); ++i)
 	{
-		CVector	vmin = WaterShapes[i].Vertices[0];
-		CVector	vmax = vmin;
+		CVector	vvmin = WaterShapes[i].Vertices[0];
+		CVector	vvmax = vvmin;
+
 		for (j=1; j<WaterShapes[i].Vertices.size(); ++j)
 		{
-			vmin.minof(vmin, WaterShapes[i].Vertices[j]);
-			vmax.maxof(vmax, WaterShapes[i].Vertices[j]);
+			vvmin.minof(vvmin, WaterShapes[i].Vertices[j]);
+			vvmax.maxof(vvmax, WaterShapes[i].Vertices[j]);
 		}
 
-		WaterGrid.insert(vmin, vmax, i);
+		vvmin = vmax(vvmin, tbox.getMin());
+		vvmax = vmin(vvmax, tbox.getMax());
+
+		if (vvmin.x >= vvmax.x || vvmin.y >= vvmax.y)
+			continue;
+
+		WaterGrid.insert(vvmin, vvmax, i);
 	}
 
 	// compute elements features
-	nldebug("compute elements quantas");
+	if (Verbose)
+		nlinfo("compute elements quantas");
 	for (el=0; el<(sint)Elements.size(); ++el)
 	{
 		CSurfElement	&element = *(Elements[el]);
-		element.computeQuantas();
+		element.computeQuantas(this);
 		element.ElemId = el;
 	}
 
@@ -1266,7 +1033,8 @@ void	NLPACS::CZoneTessellation::compile()
 		// it also smoothes a bit the surface border
 		// it seems that 3 consecutive passes are optimal to reduce
 		// nasty granularity
-		nldebug("reduce surfaces");
+		if (Verbose)
+			nlinfo("reduce surfaces");
 		uint	i;
 		sint	p;
 
@@ -1280,9 +1048,9 @@ void	NLPACS::CZoneTessellation::compile()
 								&e2 = *e.EdgeLinks[2];
 
 				if (e.IsMergable && &e0 != NULL && &e1 != NULL && &e2 != NULL &&
-					e.Root->ZoneId == e0.Root->ZoneId &&
-					e.Root->ZoneId == e1.Root->ZoneId &&
-					e.Root->ZoneId == e2.Root->ZoneId)
+					e.ZoneId == e0.ZoneId &&
+					e.ZoneId == e1.ZoneId &&
+					e.ZoneId == e2.ZoneId)
 				{
 					// Strong optimization
 					// merge the element quantas to the neighbors' quantas which are the most numerous
@@ -1325,7 +1093,8 @@ void	NLPACS::CZoneTessellation::compile()
 		// allow detecting landscape irregularities
 		//
 
-		nldebug("build and flood fill surfaces -- pass 1");
+		if (Verbose)
+			nlinfo("build and flood fill surfaces -- pass 1");
 		uint32	surfId = 0; // + (ZoneId<<16);
 
 		for (p=0; p<(sint)Elements.size(); ++p)
@@ -1336,7 +1105,7 @@ void	NLPACS::CZoneTessellation::compile()
 				CComputableSurface	&surf = Surfaces.back();
 
 				surf.BorderKeeper = &Borders;
-				surf.floodFill(Elements[p], surfId++, CSurfElemCompareSimple());
+				surf.floodFill(Elements[p], surfId++, CSurfElemCompareSimple(), this);
 				surf.BBox = BestFittingBBox;
 
 				bool	force = false;
@@ -1362,7 +1131,8 @@ void	NLPACS::CZoneTessellation::compile()
 						{
 							surf.Elements[i]->IsValid = !surf.Elements[i]->IsValid;
 						}
-						nlinfo("Reverted surface %d", surfId-1);
+						if (Verbose)
+							nlinfo("Reverted surface %d", surfId-1);
 					}
 				}
 			}
@@ -1391,7 +1161,8 @@ void	NLPACS::CZoneTessellation::compile()
 
 	//
 	{
-		nldebug("build and flood fill surfaces");
+		if (Verbose)
+			nlinfo("build and flood fill surfaces");
 		uint32	surfId = 0; // + (ZoneId<<16);
 		uint	totalSurf = 0;
 		sint32	extSurf = -1024;
@@ -1400,7 +1171,7 @@ void	NLPACS::CZoneTessellation::compile()
 		{
 			if (Elements[p]->SurfaceId == UnaffectedSurfaceId)
 			{
-				bool	elInCentral = (Elements[p]->Root->ZoneId == CentralZoneId);
+				bool	elInCentral = (Elements[p]->ZoneId == CentralZoneId);
 
 				++totalSurf;
 				sint32	thisSurfId = (elInCentral) ? surfId++ : extSurf--;
@@ -1412,12 +1183,13 @@ void	NLPACS::CZoneTessellation::compile()
 				CComputableSurface	&surf = (elInCentral) ? Surfaces.back() : ExtSurfaces.back();
 
 				surf.BorderKeeper = &Borders;
-				surf.floodFill(Elements[p], thisSurfId, CSurfElemCompareNormal());
+				surf.floodFill(Elements[p], thisSurfId, CSurfElemCompareNormal(), this);
 				surf.BBox = BestFittingBBox;
 			}
 		}
 
-		nldebug("%d surfaces generated", totalSurf);
+		if (Verbose)
+			nlinfo("%d surfaces generated", totalSurf);
 	}
 }
 
@@ -1428,13 +1200,15 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 {
 	sint	surf;
 
-	nldebug("generate tessellation borders");
+	if (Verbose)
+		nlinfo("generate tessellation borders");
 	// for each surface, build its border
 	for (surf=0; surf<(sint)Surfaces.size(); ++surf)
 		Surfaces[surf].buildBorders();
 
 	// then, for each border, link the related surfaces...
-	nldebug("smooth borders");
+	if (Verbose)
+		nlinfo("smooth borders");
 	sint	border;
 	sint	totalBefore = 0,
 			totalAfter = 0;
@@ -1451,90 +1225,29 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 		totalBefore += before;
 		totalAfter += after;
 	}
-	nldebug("smooth process: %d -> %d (%.1f percent reduction)", totalBefore, totalAfter, 100.0*(1.0-(double)totalAfter/(double)totalBefore));
+	if (Verbose)
+		nlinfo("smooth process: %d -> %d (%.1f percent reduction)", totalBefore, totalAfter, 100.0*(1.0-(double)totalAfter/(double)totalBefore));
 }
 
 
 
 
-/*
-void	NLPACS::CZoneTessellation::generateStats()
-{
-	uint	border, span;
-	for (border=0; border<Borders.size(); ++border)
-	{
-		CComputableSurfaceBorder	&spanList = Borders[border];
-
-		CAABBox	listBBox;
-		bool	listSet = false;
-
-		for (span=0; span<spanList.Vertices.size()-1; ++span)
-		{
-			CAABBox	spanBBox;
-
-			spanBBox.setCenter(spanList.Vertices[span]);
-			spanBBox.extend(spanList.Vertices[span+1]);
-
-			StatsSurfaces.XBBSpan.add(spanBBox.getSize().x);
-			StatsSurfaces.YBBSpan.add(spanBBox.getSize().y);
-
-			if (!listSet)
-				listBBox.setCenter(spanList.Vertices[span]);
-			else
-				listBBox.extend(spanList.Vertices[span]);
-
-			listBBox.extend(spanList.Vertices[span+1]);
-			listSet = true;
-		}
-
-		StatsSurfaces.XBBSpanList.add(listBBox.getSize().x);
-		StatsSurfaces.YBBSpanList.add(listBBox.getSize().y);
-
-		StatsSurfaces.TotalSpan += spanList.Vertices.size()-1;
-	}
-
-	StatsSurfaces.TotalSpanList += Borders.size();
-}
-*/
 
 void	NLPACS::CZoneTessellation::saveTessellation(COFile &output)
 {
 	output.serialCont(_Vertices);
 
-	hash_map<const CSurfElement*, sint32, CHashPtr<const CSurfElement> >							elementRemap;
-	hash_map<const CPatchTessellation*, pair<sint32,sint32>, CHashPtr<const CPatchTessellation> >	patchRemap;
+	uint	i;
 
-	uint	i, j;
-
-	elementRemap[NULL] = -1;
 	for (i=0; i<_Tessellation.size(); ++i)
-		elementRemap[&_Tessellation[i]] = i;
-
-	patchRemap[NULL] = make_pair(-1, -1);
-	for (i=0; i<_Zones.size(); ++i)
-		for (j=0; j<_Zones[i].Patches.size(); ++j)
-			patchRemap[&_Zones[i].Patches[j]] = make_pair(_Zones[i].Patches[j].ZoneId, _Zones[i].Patches[j].PatchId);
+		_Tessellation[i].ElemId = i;
 
 	uint32	numTessel = _Tessellation.size();
 	output.serial(numTessel);
 
 	for (i=0; i<_Tessellation.size(); ++i)
 	{
-		pair<sint32, sint32>	p;
-
-		p = patchRemap[_Tessellation[i].Root];
-		output.serial(p.first);
-		output.serial(p.second);
-
-		sint32	s;
-
-		s = elementRemap[_Tessellation[i].EdgeLinks[0]]; output.serial(s);
-		s = elementRemap[_Tessellation[i].EdgeLinks[1]]; output.serial(s);
-		s = elementRemap[_Tessellation[i].EdgeLinks[2]]; output.serial(s);
-
-		output.serial(_Tessellation[i].Tri[0]);
-		output.serial(_Tessellation[i].Tri[1]);
-		output.serial(_Tessellation[i].Tri[2]);
+		_Tessellation[i].serial(output, _Tessellation);
 	}
 }
 
@@ -1545,7 +1258,7 @@ void	NLPACS::CZoneTessellation::loadTessellation(CIFile &input)
 {
 	input.serialCont(_Vertices);
 
-	uint	i, j;
+	uint	i;
 
 	uint32	numTessel;
 	input.serial(numTessel);
@@ -1553,56 +1266,25 @@ void	NLPACS::CZoneTessellation::loadTessellation(CIFile &input)
 
 	for (i=0; i<_Tessellation.size(); ++i)
 	{
-		sint32	s;
-
-		input.serial(s);
-		if (s == -1)
-		{
-			_Tessellation[i].Root = NULL;
-			input.serial(s);
-		}
-		else
-		{
-			CPatchRetriever	*retriever = retrieveZone((uint16)s);
-
-			input.serial(s);
-			_Tessellation[i].Root = (s == -1) ? NULL : &(retriever->Patches[s]);
-		}
-
-		input.serial(s); _Tessellation[i].EdgeLinks[0] = (s == -1) ? NULL : &_Tessellation[s];
-		input.serial(s); _Tessellation[i].EdgeLinks[1] = (s == -1) ? NULL : &_Tessellation[s];
-		input.serial(s); _Tessellation[i].EdgeLinks[2] = (s == -1) ? NULL : &_Tessellation[s];
-
-		input.serial(_Tessellation[i].Tri[0]);
-		input.serial(_Tessellation[i].Tri[1]);
-		input.serial(_Tessellation[i].Tri[2]);
-
-		_Tessellation[i].Vertices = &_Vertices;
+		_Tessellation[i].serial(input, _Tessellation);
 	}
 
 	Elements.resize(_Tessellation.size());
 	for (i=0; i<(sint)_Tessellation.size(); ++i)
 	{
-		CSurfElement	&element = _Tessellation[i];
-
-		Elements[i] = &element;
-
-		for (j=0; j<3; ++j)
-			if (element.EdgeLinks[j] != NULL)
-				element.ZoneLinks[j] = element.EdgeLinks[j]->Root->ZoneId;
+		Elements[i] = &_Tessellation[i];
 	}
 }
 
 void	NLPACS::CZoneTessellation::clear()
 {
-	_Zones.clear();
-	_Landscape.clear();
+	_ZoneIds.clear();
+	_ZonePtrs.clear();
 	_Tessellation.clear();
 	_Vertices.clear();
 	Elements.clear();
 	Surfaces.clear();
 	Borders.clear();
-	Container.clear();
 }
 
 CAABBox	NLPACS::CZoneTessellation::computeBBox() const

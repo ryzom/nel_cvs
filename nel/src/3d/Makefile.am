@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.62 2002/01/28 14:53:18 vizerie Exp $
+# $Id: Makefile.am,v 1.63 2002/02/04 10:33:30 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -55,6 +55,8 @@ libnel3d_la_SOURCES  = animatable.cpp                      \
                        coarse_mesh_manager.h               \
                        computed_string.cpp                 \
                        computed_string.h                   \
+                       cube_map_builder.cpp                \
+                       cube_map_builder.h                  \
                        deform_2d.cpp                       \
                        deform_2d.h                         \
                        driver.cpp                          \
@@ -314,6 +316,8 @@ libnel3d_la_SOURCES  = animatable.cpp                      \
                        texture.h                           \
                        texture_mem.cpp                     \
                        texture_mem.h                       \
+                       texture_multi_file.cpp              \
+                       texture_multi_file.h                \
                        texture_near.cpp                    \
                        texture_near.h                      \
                        texture_user.cpp                    \

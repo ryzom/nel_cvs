@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.6 2001/11/21 17:50:27 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.7 2002/02/04 10:34:42 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ public:
 	// @{						
 		virtual	uint				getNumMaterials() const;	
 		virtual	UInstanceMaterial	&getMaterial(uint materialId);
+		virtual void selectTextureSet(uint id) { nlassert(0); /* not supported for particle systems */ }
 		virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const;
 	// @}
 

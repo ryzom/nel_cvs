@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.4 2001/10/10 15:38:09 besson Exp $
+ * $Id: mesh_base_instance.cpp,v 1.5 2002/02/04 10:34:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,6 +147,15 @@ void CMeshBaseInstance::setBlendShapeFactor (const std::string &BlendShapeName, 
 
 
 // ***************************************************************************
+void CMeshBaseInstance::selectTextureSet(uint index)
+{
+	for (std::vector<CMaterial>::iterator it = Materials.begin(); it != Materials.end(); ++it)
+	{
+		it->selectTextureSet(index);
+	}
+}
+
+// ***************************************************************************
 // ***************************************************************************
 
 void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
@@ -177,6 +186,7 @@ void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
 								mi->_AnimatedLightmap[i]->getFactor() );
 	}
 }
+
 
 // ***************************************************************************
 

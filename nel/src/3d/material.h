@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.12 2002/01/10 13:19:39 berenguier Exp $
+ * $Id: material.h,v 1.13 2002/02/04 10:33:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,8 +135,10 @@ public:
 	 * Specular:
 	 *  - Texture of stage 0 is added to the multiplication of Texture Alpha of stage 0 and Texture of stage 1
 	 *  - This is done in 2 passes
+	 * Caustics: NOT IMPLEMENTED	 
+	 *    
 	 */
-	enum TShader			{ Normal=0, Bump, UserColor, LightMap, Specular, shaderCount};
+	enum TShader			{ Normal=0, Bump, UserColor, LightMap, Specular, Caustics, shaderCount};
 
 	/// \name Texture Env Modes.
 	// @{
@@ -438,6 +440,13 @@ public:
 
 	void		serial(NLMISC::IStream &f);
 
+	// \name Multiple texture set managment
+	// @{
+		/** Select one texture set for all the textures of this material.
+		  * This is useful only if textures of this material support selection of course (such as CTextureMultiFile)
+		  */
+		void		selectTextureSet(uint index);
+	// @}
 
 // **********************************
 // Private part.

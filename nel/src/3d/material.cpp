@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.31 2001/12/12 14:03:13 vizerie Exp $
+ * $Id: material.cpp,v 1.32 2002/02/04 10:33:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -461,7 +461,16 @@ void					CMaterial::decompUserTexMat(uint stage, float &uTrans, float &vTrans, f
 	}
 	wRot   = angle;	
 	uScale = normI;
-	vScale = normI;
+	vScale = normJ;
+}
+
+// ***************************************************************************
+void		CMaterial::selectTextureSet(uint index)
+{
+	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+	{
+		if (_Textures[k] != NULL) _Textures[k]->selectTexture(index);
+	}
 }
 
 }

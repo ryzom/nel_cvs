@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.5 2001/12/27 15:12:25 besson Exp $
+ * $Id: instance_user.h,v 1.6 2002/02/04 10:31:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,6 +89,11 @@ public:
 		return dynamic_cast<UInstanceMaterial&>(_Materials[materialId]);
 	}
 
+	virtual void selectTextureSet(uint id)
+	{
+		CMeshBaseInstance *mbi  = NLMISC::safe_cast<CMeshBaseInstance *>(_Instance);
+		mbi->selectTextureSet(id);
+	}
 	// @}
 
 };

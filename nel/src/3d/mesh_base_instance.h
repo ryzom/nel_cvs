@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.7 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.8 2002/02/04 10:34:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,6 +127,9 @@ public:
 	{
 		return _ApplySkinOk;
 	}
+
+	/// Select a texture set for this mesh (if available)
+	void selectTextureSet(uint index);
 
 protected:
 	/// Constructor

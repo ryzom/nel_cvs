@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.12 2002/04/03 17:00:39 berenguier Exp $
+ * $Id: landscape_user.h,v 1.13 2002/04/09 15:32:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,6 +139,9 @@ public:
 	{
 		_Landscape->hide();
 	}
+
+	virtual	void		enableAdditive (bool enable);
+	virtual	bool		isAdditiveEnabled () const;
 
 	// @}
 

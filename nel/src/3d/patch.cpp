@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.81 2002/04/03 17:00:40 berenguier Exp $
+ * $Id: patch.cpp,v 1.82 2002/04/09 15:32:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1825,9 +1825,20 @@ CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass)
 
 	bool	additive= (pass==NL3D_TILE_PASS_ADD);
 	sint	passNum= pass-NL3D_TILE_PASS_RGB0;
-	// If additive, take the additve tile of pass0.
+	// If additive, take the additve tile of bigger existing pass.
 	if(additive)
+	{
+		// Default: take addtive of pass 0.
 		passNum= 0;
+		// If the pass1 is not empty, may take its tile.
+		if(Tiles[tileId].Tile[1]!=0xFFFF)
+		{
+			passNum= 1;
+			// If the pass2 is not empty, take its tile.
+			if(Tiles[tileId].Tile[2]!=0xFFFF)
+				passNum= 2;
+		}
+	}
 
 	sint	tileNumber= Tiles[tileId].Tile[passNum];
 	if(tileNumber==0xFFFF)
@@ -1854,9 +1865,20 @@ void			CPatch::getTileUvInfo(sint tileId, sint pass, bool alpha, uint8 &orient, 
 
 	bool	additive= (pass==NL3D_TILE_PASS_ADD);
 	sint	passNum= pass-NL3D_TILE_PASS_RGB0;
-	// If additive, take the additve tile of pass0.
+	// If additive, take the additve tile of bigger existing pass.
 	if(additive)
+	{
+		// Default: take addtive of pass 0.
 		passNum= 0;
+		// If the pass1 is not empty, may take its tile.
+		if(Tiles[tileId].Tile[1]!=0xFFFF)
+		{
+			passNum= 1;
+			// If the pass2 is not empty, take its tile.
+			if(Tiles[tileId].Tile[2]!=0xFFFF)
+				passNum= 2;
+		}
+	}
 
 	sint	tileNumber= Tiles[tileId].Tile[passNum];
 	if(tileNumber==0xFFFF)
@@ -1874,12 +1896,13 @@ void			CPatch::getTileUvInfo(sint tileId, sint pass, bool alpha, uint8 &orient, 
 		orient= Tiles[tileId].getTileOrient(passNum);
 		Tiles[tileId].getTile256Info(is256x256, uvOff);
 		CTile::TBitmap type;
-		if(additive)
-			type= CTile::additive;
+		// If alpha wanted, return its UV info (works either for Alpha in Diffuse Pass and Alpha in Additive Pass)
+		if(alpha)
+			type= CTile::alpha;
 		else
 		{
-			if(alpha)
-				type= CTile::alpha;
+			if(additive)
+				type= CTile::additive;
 			else
 				type= CTile::diffuse;
 		}

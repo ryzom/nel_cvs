@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.13 2002/04/03 17:00:52 berenguier Exp $
+ * $Id: u_landscape.h,v 1.14 2002/04/09 15:32:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,6 +114,18 @@ public:
 	 *	If you set 0, no update will be done at all (this is the default setup!!).
 	 */
 	virtual	void	setUpdateLightingFrequency(float freq) =0;
+
+
+	/** Set additive Lighting. Disabled by default.
+	  * \param enable is true to activbe additive, false to disactive it.
+	  */
+	virtual	void	enableAdditive (bool enable) =0;
+
+	/** Get additive Lighting
+	  * \return true to if additive is actived, else false.
+	  */
+	virtual	bool	isAdditiveEnabled () const =0;
+
 
 	// @}
 

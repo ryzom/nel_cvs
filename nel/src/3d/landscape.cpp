@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.106 2002/04/03 17:00:39 berenguier Exp $
+ * $Id: landscape.cpp,v 1.107 2002/04/09 15:32:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1077,9 +1077,20 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 					TileMaterial.setBlendFunc(CMaterial::zero, CMaterial::srccolor);
 					break;
 				case NL3D_TILE_PASS_ADD: 
-					// Use srcalpha for src (and not ONE), since additive are blended with alpha gouraud 
-					// (for smooth night transition).
+					// Use srcalpha for src (and not ONE), since additive are blended with alpha gouraud/AlphaTexture
+					// (and for MAYBE LATER smooth night transition).
 					TileMaterial.setBlendFunc(CMaterial::srcalpha, CMaterial::one);
+
+					// Must use a special envmode for stage1: "separateAlpha"!!.
+					// NB: it still works if The RdrPass has no texture.
+					// keep the color from previous stage.
+					TileMaterial.texEnvOpRGB(1, CMaterial::Replace);
+					TileMaterial.texEnvArg0RGB(1, CMaterial::Previous, CMaterial::SrcColor);
+					// modulate the alpha of current stage with diffuse (for MAYBE LATER smooth night transition).
+					TileMaterial.texEnvOpAlpha(1, CMaterial::Modulate);
+					TileMaterial.texEnvArg0Alpha(1, CMaterial::Texture, CMaterial::SrcAlpha);
+					TileMaterial.texEnvArg1Alpha(1, CMaterial::Diffuse, CMaterial::SrcAlpha);
+
 					break;
 				default: 
 					nlstop;
@@ -1149,7 +1160,6 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 			// RGB1, RGB2, and ADD pass.
 
 			// Render Base, Transitions or Additives.
-			bool	alphaStage= (passOrder==NL3D_TILE_PASS_RGB1) || (passOrder==NL3D_TILE_PASS_RGB2);
 
 			ItTileRdrPassSet	itTile;
 			for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
@@ -1175,14 +1185,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 					TileMaterial.setTexture(0, pass.TextureDiffuse);
 					
 					// If transition tile, must enable the alpha for this pass.
-					if(alphaStage)
-					{
-						if (pass.TextureAlpha==NULL)
-							int oto=0;
-						else
-							int toto1=0;
-						TileMaterial.setTexture(1, pass.TextureAlpha);
-					}
+					// NB: Additive pass may have pass.TextureAlpha==NULL
+					TileMaterial.setTexture(1, pass.TextureAlpha);
 				}
 
 				// Render triangles.
@@ -1394,7 +1398,11 @@ void			CLandscape::loadTile(uint16 tileId)
 		// Fill rdrpass.
 		CPatchRdrPass	pass;
 		pass.TextureDiffuse= findTileTexture(TileBank.getAbsPath()+textName);
-		// No alpha part for additive.
+
+		// We may have an alpha part for additive.
+		textName= tile->getRelativeFileName (CTile::alpha);
+		if(textName!="")
+			pass.TextureAlpha= findTileTexture(TileBank.getAbsPath()+textName);
 
 		// Fill tileInfo.
 		tileInfo->AdditiveRdrPass= findTileRdrPass(pass);

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.21 2002/04/03 17:00:39 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.22 2002/04/09 15:32:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -296,6 +296,19 @@ void		CLandscapeUser::setUpdateLightingFrequency(float freq)
 {
 	_Landscape->Landscape.setUpdateLightingFrequency(freq);
 }
+
+
+//****************************************************************************
+void		CLandscapeUser::enableAdditive (bool enable)
+{
+	_Landscape->enableAdditive(enable);
+}
+//****************************************************************************
+bool		CLandscapeUser::isAdditiveEnabled () const
+{
+	return _Landscape->isAdditive ();
+}
+
 
 
 } // NL3D

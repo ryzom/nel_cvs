@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.59 2002/03/07 15:39:08 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.60 2002/04/09 15:32:11 berenguier Exp $
  *
  */
 
@@ -739,8 +739,9 @@ void		CTessFace::computeTileMaterial()
 			nlassert(TileFaces[i]);
 			// Compute RGB UV in UV0.
 			initTileUvRGBA(i, false, PVBase, middle, TileFaces[i]->VBase->PUv0);
-			// If transition tile, compute alpha UV in UV1.
-			if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2)
+			// If transition tile, compute alpha UV in UV1. 
+			// Do it also for Additive, because may have Transition
+			if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2 || i==NL3D_TILE_PASS_ADD)
 				initTileUvRGBA(i, true, PVBase, middle, TileFaces[i]->VBase->PUv1);
 		}
 	}
@@ -782,7 +783,8 @@ void		CTessFace::computeTileMaterial()
 				initTileUvRGBA(i, false, PVLeft, middle, TileFaces[i]->VLeft->PUv0);
 				initTileUvRGBA(i, false, PVRight, middle, TileFaces[i]->VRight->PUv0);
 				// If transition tile, compute alpha UV in UV1.
-				if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2)
+				// Do it also for Additive, because may have Transition
+				if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2 || i==NL3D_TILE_PASS_ADD)
 				{
 					initTileUvRGBA(i, true, PVLeft, middle, TileFaces[i]->VLeft->PUv1);
 					initTileUvRGBA(i, true, PVRight, middle, TileFaces[i]->VRight->PUv1);

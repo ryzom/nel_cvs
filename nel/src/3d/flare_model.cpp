@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.26 2004/08/13 15:35:09 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.27 2004/08/16 13:21:05 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -542,7 +542,6 @@ void CFlareModel::updateOcclusionQueryBegin(IDriver *drv)
 	drv->setupModelMatrix(CMatrix::Identity);	
 	initStatics();
 	drv->setColorMask(false, false, false, false); // don't write any pixel during the test		
-	drv->activeVertexBuffer(_OcclusionQueryVB);
 }
 
 //********************************************************************************************************************
@@ -573,6 +572,7 @@ void CFlareModel::updateOcclusionQuery(IDriver *drv)
 	}	
 	oq->begin();
 	// draw a single point	
+	drv->activeVertexBuffer(_OcclusionQueryVB);	
 	drv->renderRawPoints(_OcclusionQueryMaterial, 0, 1);
 	oq->end();
 }

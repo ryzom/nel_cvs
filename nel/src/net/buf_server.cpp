@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.36 2002/09/16 14:58:42 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.37 2002/10/24 08:47:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -785,7 +785,7 @@ void CListenTask::run()
 				continue;
 			}
 #endif
-			nldebug( "LNETL1: Incoming connection..." );
+			nldebug( "LNETL1: Waiting incoming connection..." );
 			CServerBufSock *bufsock = new CServerBufSock( _ListenSock.accept() );
 			nldebug( "New connection : %s", bufsock->asString().c_str() );
 			bufsock->Sock->setNonBlockingMode( true );

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.169 2003/02/21 15:52:35 lecroart Exp $
+ * $Id: service.cpp,v 1.170 2003/03/20 16:19:26 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -64,7 +64,7 @@
 #include "nel/net/net_displayer.h"
 #include "nel/net/email.h"
 #include "nel/net/varpath.h"
-#include "nel/net/alarms.h"
+#include "nel/net/admin.h"
 
 #include "nel/memory/memory_manager.h"
 
@@ -1203,7 +1203,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		CUnifiedNetwork::getInstance()->connect();
 
-		initAlarms ();
+		initAdmin ();
 
 		//
 		// Say to the AES that the service is ready
@@ -1287,7 +1287,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	
 			CConfigFile::checkConfigFiles ();
 	
-			updateAlarms ();
+			updateAdmin ();
 
 			CFile::checkFileChange();
 

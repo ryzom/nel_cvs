@@ -1,7 +1,7 @@
-/** \file email.h
- * send email
+/** \file admin.h
+ * manage services admin
  *
- * $Id: alarms.h,v 1.1 2003/01/08 18:06:40 lecroart Exp $
+ * $Id: admin.h,v 1.1 2003/03/20 16:19:10 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_ALARMS_H
-#define NL_ALARMS_H
+#ifndef NL_ADMIN_H
+#define NL_ADMIN_H
 
 #include <string>
 #include <vector>
@@ -35,7 +35,7 @@ namespace NLNET {
 
 struct CAlarm
 {
-	CAlarm (std::string &n, sint l, bool gt) : Name(n), Limit(l), GT(gt), Activated(false) { }
+	CAlarm (const std::string &n, sint l, bool gt) : Name(n), Limit(l), GT(gt), Activated(false) { }
 	
 	std::string Name;		// variable name
 	int	 Limit;				// limit value where the alarm is setted
@@ -46,10 +46,23 @@ struct CAlarm
 
 extern std::vector<CAlarm> Alarms;
 	
-void initAlarms ();
-void updateAlarms ();
 
-void setAlarms (const std::vector<std::string> &alarms);
+struct CGraphUpdate
+{
+	CGraphUpdate (const std::string &n, sint u) : Name(n), Update(u), LastUpdate(0) { }
+	
+	std::string Name;		// variable name
+	int	 Update;			// delta time in second when we have to check variable
+
+	uint32	LastUpdate;		// in second
+};
+
+extern std::vector<CGraphUpdate> GraphUpdates;
+
+void initAdmin ();
+void updateAdmin ();
+
+void setInformations (const std::vector<std::string> &alarms, const std::vector<std::string> &graphupdate);
 
 } // NLNET
 

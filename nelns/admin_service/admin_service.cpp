@@ -1,9 +1,7 @@
-// todo kan un AES quitte, il faut virer les request en attende le consernant
-
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.26 2003/02/21 15:50:49 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.27 2003/03/20 16:17:29 lecroart Exp $
  *
  */
 
@@ -47,6 +45,7 @@
 
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
+#include "nel/misc/path.h"
 #include "nel/misc/command.h"
 
 #include "nel/net/service.h"
@@ -134,7 +133,7 @@ struct CRequest
 	}
 };
 
-
+/*
 struct CService
 {
 	CService () : Ready(false), Connected(false), InConfig(false) { }
@@ -158,14 +157,15 @@ struct CService
 		//InConfig = t.InConfig; never change the inconfig value
 	}
 };
-
-typedef list<CService> TServices;
-typedef list<CService>::iterator SIT;
+*/
+//typedef list<CService> TServices;
+//typedef list<CService>::iterator SIT;
 
 struct CAdminExecutorService
 {
-	CAdminExecutorService (const string &name, uint16 sid) : SId(sid), Name(name) { }
+	CAdminExecutorService (const string &shard, const string &name, uint16 sid) : Shard(shard), SId(sid), Name(name) { }
 
+	string  Shard;			/// Name of the shard
 	uint16	SId;			/// uniq number to identify the AES
 	string	Name;			/// name of the admin executor service
 
@@ -210,6 +210,86 @@ MYSQL *DatabaseConnection = NULL;
 vector<CRequest> Requests;
 
 sint32 AdminEmailAccumlationTime = 5;
+
+//
+// Functions
+//
+
+AESIT findAES (uint16 sid, bool asrt = true)
+{
+	AESIT aesit;
+	for (aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
+		if ((*aesit).SId == sid)
+			break;
+		
+		if (asrt)
+			nlassert (aesit != AdminExecutorServices.end());
+		return aesit;
+}
+
+AESIT findAES (const string &name, bool asrt = true)
+{
+	AESIT aesit;
+	for (aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
+		if ((*aesit).Name == name)
+			break;
+		
+		if (asrt)
+			nlassert (aesit != AdminExecutorServices.end());
+		
+		return aesit;
+}
+
+
+//
+// SQL helpers
+//
+
+MYSQL_RES *sqlCurrentQueryResult = NULL;
+
+MYSQL_ROW sqlQuery (const char *format, ...)
+{
+	char *query;
+	NLMISC_CONVERT_VARGS (query, format, 1024);
+	
+	if (DatabaseConnection == 0)
+	{
+		nlwarning ("mysql_query (%s) failed: DatabaseConnection is 0", query);
+		return NULL;
+	}
+	
+	int ret = mysql_query (DatabaseConnection, query);
+	if (ret != 0)
+	{
+		nlwarning ("mysql_query () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
+		return 0;
+	}
+	
+	sqlCurrentQueryResult = mysql_store_result(DatabaseConnection);
+	if (sqlCurrentQueryResult == 0)
+	{
+		nlwarning ("mysql_store_result () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
+		return 0;
+	}
+	
+	MYSQL_ROW row = mysql_fetch_row(sqlCurrentQueryResult);
+	if (row == 0)
+	{
+		nlwarning ("mysql_fetch_row () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
+	}
+	
+	nldebug ("sqlQuery(%s) returns %d rows", query, mysql_num_rows(sqlCurrentQueryResult));
+	
+	return row;	
+}
+
+MYSQL_ROW sqlNextRow ()
+{
+	if (sqlCurrentQueryResult == 0)
+		return 0;
+	
+	return mysql_fetch_row(sqlCurrentQueryResult);
+}
 
 //
 // Admin functions
@@ -290,7 +370,71 @@ static void cbAdminEmail (CMessage &msgin, const std::string &serviceName, uint1
 	msgin.serial(str);
 	sendAdminEmail (str.c_str());
 }
-	
+
+static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint32 CurrentTime;
+	msgin.serial (CurrentTime);
+
+	while (msgin.getPos() < (sint32)msgin.length())
+	{
+		string var, service, val;
+		msgin.serial (service, var, val);
+
+		AESIT aesit = findAES (sid);
+		
+		string shard, server;
+		
+		if (service == "AES")
+		{
+			shard = (*aesit).Shard;
+			server = (*aesit).Name;
+		}
+		else
+		{
+			MYSQL_ROW row = sqlQuery ("select shard, server from service where name='%s'", service.c_str());
+			if (row != NULL)
+			{
+				shard = row[0];
+				server = row[1];
+			}
+			else
+			{
+				nlwarning ("GraphUpdate from unknown service '%s", service.c_str());
+			}
+		}
+
+		if (!shard.empty() && !server.empty() && !service.empty() && !var.empty() && !val.empty())
+		{
+			string rrdfilename = shard+"."+server+"."+service+"."+var+".rrd";
+
+			string arg;
+			
+			if (!NLMISC::CFile::fileExists(rrdfilename))
+			{
+				MYSQL_ROW row = sqlQuery ("select graph_update from variable where path like '%%%s' and graph_update!=0", var.c_str());
+				if (row != NULL)
+				{
+					uint32 freq = atoi(row[0]);
+					arg = "create "+rrdfilename+" --step "+toString(freq)+" DS:var:GAUGE:"+toString(freq*2)+":U:U RRA:AVERAGE:0.5:1:1000 RRA:AVERAGE:0.5:10:1000 RRA:AVERAGE:0.5:100:1000";
+					launchProgram(IService::getInstance()->ConfigFile.getVar("RRDToolPath").asString(), arg);
+				}
+				else
+				{
+					nlwarning ("Can't create the rrd because no graph_update in database");
+				}
+			}
+
+			arg = "update " + rrdfilename + " " + toString (CurrentTime) + ":" + val;
+			launchProgram(IService::getInstance()->ConfigFile.getVar("RRDToolPath").asString(), arg);
+		}
+		else
+		{
+			nlwarning ("shard server service var val is empty");
+		}
+	}
+}
+
 //
 // Request functions
 //
@@ -466,81 +610,10 @@ void sqlInit ()
 	}
 }
 
-MYSQL_RES *sqlCurrentQueryResult = NULL;
-
-MYSQL_ROW sqlQuery (const char *format, ...)
-{
-	char *query;
-	NLMISC_CONVERT_VARGS (query, format, 1024);
-	
-	if (DatabaseConnection == 0)
-	{
-		nlwarning ("mysql_query (%s) failed: DatabaseConnection is 0", query);
-		return NULL;
-	}
-
-	int ret = mysql_query (DatabaseConnection, query);
-	if (ret != 0)
-	{
-		nlwarning ("mysql_query () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
-		return 0;
-	}
-
-	sqlCurrentQueryResult = mysql_store_result(DatabaseConnection);
-	if (sqlCurrentQueryResult == 0)
-	{
-		nlwarning ("mysql_store_result () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
-		return 0;
-	}
-
-	MYSQL_ROW row = mysql_fetch_row(sqlCurrentQueryResult);
-	if (row == 0)
-	{
-		nlwarning ("mysql_fetch_row () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
-	}
-
-	nldebug ("sqlQuery(%s) returns %d rows", query, mysql_num_rows(sqlCurrentQueryResult));
-	
-	return row;	
-}
-
-MYSQL_ROW sqlNextRow ()
-{
-	if (sqlCurrentQueryResult == 0)
-		return 0;
-
-	return mysql_fetch_row(sqlCurrentQueryResult);
-}
-
 
 //
 // Functions
 //
-
-AESIT findAES (uint16 sid, bool asrt = true)
-{
-	AESIT aesit;
-	for (aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
-		if ((*aesit).SId == sid)
-			break;
-
-	if (asrt)
-		nlassert (aesit != AdminExecutorServices.end());
-	return aesit;
-}
-
-AESIT findAES (const string &name, bool asrt = true)
-{
-	AESIT aesit;
-	for (aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
-		if ((*aesit).Name == name)
-			break;
-
-	if (asrt)
-		nlassert (aesit != AdminExecutorServices.end());
-	
-	return aesit;
-}
 
 void displayServices ()
 {
@@ -937,51 +1010,57 @@ static void cbServiceAliasList (CMessage& msgin, TSockId from, CCallbackNetBase 
 	displayServices ();
 }*/
 
-// send services that should be running on this AES
-void sendHostedServices (uint16 sid)
+void sendAESInformations (uint16 sid)
 {
 	AESIT aesit = findAES (sid);
 
-	vector<string> registeredServices;
-	MYSQL_ROW row = sqlQuery ("select name from service where server='%s'", (*aesit).Name.c_str());
+	vector<string> informations;
 
+	CMessage msgout("INFORMATIONS");
+	
+	//
+	// send services that should be running on this AES
+	//
+	informations.clear ();
+	MYSQL_ROW row = sqlQuery ("select name from service where server='%s'", (*aesit).Name.c_str());
 	while (row != NULL)
 	{
 		string service = row[0];
-		registeredServices.push_back (service);
+		informations.push_back (service);
 		row = sqlNextRow ();
 	}
+	msgout.serialCont (informations);
 
-	nlinfo ("Sending the new list of services that is managed by %s AES-%hu", (*aesit).Name.c_str(), (*aesit).SId);
-	CMessage msgout("REGISTERED_SERVICES");
-	msgout.serialCont (registeredServices);
-	CUnifiedNetwork::getInstance ()->send (sid, msgout);
-}
-
-// send alarms for this service
-void sendAlarms (uint16 sid)
-{
-	AESIT aesit = findAES (sid);
-	
-	vector<string> alarms;
-	MYSQL_ROW row = sqlQuery ("select path, error_bound, alarm_order from variable where error_bound!=-1");
-
-	alarms.clear ();
-
+	//
+	// send variable alarms for services that should running on this AES
+	//
+	informations.clear ();
+	row = sqlQuery ("select path, error_bound, alarm_order from variable where error_bound!=-1");
 	while (row != NULL)
 	{
-		alarms.push_back (row[0]);
-		alarms.push_back (row[1]);
-		alarms.push_back (row[2]);
+		informations.push_back (row[0]);
+		informations.push_back (row[1]);
+		informations.push_back (row[2]);
 		row = sqlNextRow ();
 	}
-
-	nlinfo ("Sending the new list of alarms to %s AES-%hu", (*aesit).Name.c_str(), (*aesit).SId);
-	CMessage msgout("ALARMS");
-	msgout.serialCont (alarms);
+	msgout.serialCont (informations);
+	
+	//
+	// send graph update for services that should running on this AES
+	//
+	informations.clear ();
+	row = sqlQuery ("select path, graph_update from variable where graph_update!=0");
+	while (row != NULL)
+	{
+		informations.push_back (row[0]);
+		informations.push_back (row[1]);
+		row = sqlNextRow ();
+	}
+	msgout.serialCont (informations);
+	
+	nlinfo ("Sending all informations about %s AES-%hu (hostedservices, alarms,grapupdate)", (*aesit).Name.c_str(), (*aesit).SId);
 	CUnifiedNetwork::getInstance ()->send (sid, msgout);
 }
-
 
 void rejectAES(uint16 sid, const string &res)
 {
@@ -1017,13 +1096,27 @@ void cbAESConnection /*(const string &serviceName, TSockId from, void *arg)*/(co
 
 	string server = row[0];
 
-	AdminExecutorServices.push_back (CAdminExecutorService(server, sid));
+	row = sqlQuery ("select shard from service where server='%s'", server.c_str());
+	
+	if (row == NULL)
+	{
+		nlwarning ("Connection of an AES that is not in database server list (%s)", ia.asString ().c_str ());
+		rejectAES (sid, "This AES is not registered in the database");
+		return;
+	}
+	
+	string shard = row[0];
+	
+	
+	AdminExecutorServices.push_back (CAdminExecutorService(shard, server, sid));
 
-	nlinfo ("%s-%hu, server name %s, connected and added in the list", serviceName.c_str(), sid, server.c_str());
+	nlinfo ("%s-%hu, server name %s, for shard %s connected and added in the list", serviceName.c_str(), sid, server.c_str(), shard.c_str());
 	
 	// send him services that should run on this server
-	sendHostedServices(sid);
-	sendAlarms (sid);
+	sendAESInformations (sid);
+	//sendHostedServices(sid);
+	//sendAlarms (sid);
+	//sendGraphUpdate (sid);
 
 /*
 	// broadcast the message that an admin exec is connected to all admin client
@@ -1204,7 +1297,8 @@ TUnifiedCallbackItem CallbackArray[] =
 {
 	{ "VIEW", cbView },
 	{ "ADMIN_EMAIL", cbAdminEmail },
-
+	{ "GRAPH_UPDATE", cbGraphUpdate },
+	
 /*	{ "ESCR", cbExecuteSystemCommandResult },
 
 	{ "SL", cbServiceList },
@@ -1493,8 +1587,10 @@ void addRequest (const string &rawvarpath, TSockId from)
 		// it means the we have to resend the list of services managed by AES from the mysql tables
 		for (AESIT aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
 		{
-			sendHostedServices ((*aesit).SId);
-			sendAlarms((*aesit).SId);
+			sendAESInformations ((*aesit).SId);
+			//sendHostedServices ((*aesit).SId);
+			//sendAlarms((*aesit).SId);
+			//sendGraphUpdate (sid);
 		}
 
 		// send an empty string to say to php that there's nothing

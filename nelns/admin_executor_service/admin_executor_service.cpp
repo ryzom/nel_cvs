@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.42 2003/03/10 16:57:22 coutelas Exp $
+ * $Id: admin_executor_service.cpp,v 1.43 2003/03/20 16:17:15 lecroart Exp $
  *
  */
 
@@ -62,12 +62,13 @@
 #include "nel/misc/variable.h"
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
+#include "nel/misc/value_smoother.h"
 
 #include "nel/net/service.h"
 #include "nel/net/unified_network.h"
 #include "nel/net/varpath.h"
 #include "nel/net/email.h"
-#include "nel/net/alarms.h"
+#include "nel/net/admin.h"
 
 //
 // Namespaces
@@ -200,16 +201,115 @@ vector<pair<uint32, string> > WaitingToLaunchServices;	// date and alias name
 
 vector<string> AdminAlarms;	// contains *all* alarms
 
+vector<string> GraphUpdate;	// contains *all* the graph update
+
+
+//
+//
+//
+
+template <class T>
+class CVariable2 : public ICommand
+{
+public:
+	CVariable2 (const char *commandName, const char *commandHelp, uint nbMeanValue = 0, bool useConfigFile = false) :
+	  NLMISC::ICommand(commandName, commandHelp, "[<value>|stat]"),
+	  _Mean(nbMeanValue), UseConfigFile(useConfigFile)
+	{
+		Type = Variable;
+	}
+
+	bool UseConfigFile;
+
+	
+
+
+
+	
+	  
+
+	void set(const T &val)
+	{
+		_Value = val;
+		_Mean.addValue(val);
+	}
+
+	const T &get() const
+	{
+		return _Value;
+	}
+
+	string getStat() const
+	{
+		std::stringstream s;
+		s << _CommandName << "=" << _Value;
+		if (_Mean.getNumFrame()>0)
+		{
+			s << " Mean=" << _Mean.getSmoothValue();
+			s << " LastValues=";
+			for (uint i = 0; i < _Mean.getNumFrame(); i++)
+			{
+				s << _Mean.getLastFrames()[i];
+				if (i < _Mean.getNumFrame()-1)
+					s << ",";
+			}
+		}
+		return s.str();
+	}
+
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet)
+	{
+		if (args.size() > 1)
+			return false;
+
+		if (args.size() == 1)
+		{
+			if (args[0] == "stat")
+			{
+				log.displayNL(getStat().c_str());
+				return true;
+			}
+			else
+			{
+				// set the value
+				std::stringstream s2 (args[0]);
+				s2 >> _Value;
+				_Mean.addValue(_Value);
+			}
+		}
+		if (quiet)
+		{
+			log.displayNL(toString(_Value).c_str());
+		}
+		else
+		{
+			// display the value
+			std::stringstream s;
+			s << "Variable " << _CommandName << " = " << _Value;
+			log.displayNL(s.str().c_str());
+		}
+		return true;
+	}
+
+private:
+	T _Value;
+	CValueSmootherTemplate<T> _Mean;
+};
+
+
+CVariable2<int> Toto("Toto", "help", 10);
+
+
 
 //
 // Alarms
 //
 
-void sendAlarms (uint16 sid)
+void sendInformations (uint16 sid)
 {
-	// now send alarms to all services
-	CMessage msgout ("ALARMS");
+	CMessage msgout ("INFORMATIONS");
 	msgout.serialCont(AdminAlarms);
+	msgout.serialCont(GraphUpdate);
 	for (uint j = 0; j < Services.size(); j++)
 	{
 		if (Services[j].ServiceId == sid && Services[j].Connected)
@@ -244,6 +344,22 @@ static void cbAdminEmail (CMessage &msgin, const std::string &serviceName, uint1
 	sendAdminEmail (str.c_str());
 }
 
+static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	CMessage msgout ("GRAPH_UPDATE");
+	uint32 CurrentTime;
+	msgin.serial (CurrentTime);
+	msgout.serial (CurrentTime);
+	while (msgin.getPos() < (sint32)msgin.length())
+	{
+		string str;
+		msgin.serial (str);
+		msgout.serial(str);
+	}
+	CUnifiedNetwork::getInstance ()->send ("AS", msgout);
+
+	nlinfo ("Forwarded graph update to AS");
+}
 
 // decode a service in a form 'alias/shortname-sid'
 void decodeService (const string &name, string &alias, string &shortName, uint16 &sid)
@@ -1165,30 +1281,33 @@ static void cbLog /*(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)*/
 	CNetManager::send ("AESAS", msgout);*/
 }
 
-static void cbRegisteredServices (CMessage &msgin, const std::string &serviceName, uint16 sid)
+static void cbInformations (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
+	nlinfo ("Updating all informations for AES and hosted service");
+
+	//
 	// receive the list of all registered services
+	//
 	msgin.serialCont (RegisteredServices);
-}
 
-static void cbAlarms (CMessage &msgin, const std::string &serviceName, uint16 sid)
-{
-	// receive the list of all alarms
+	//
+	// receive the list of all alarms and graph update
+	//
 	msgin.serialCont (AdminAlarms);
-	nlinfo ("Updating alarms and send to all services");
-
+	msgin.serialCont (GraphUpdate);
+	
 	// set our own alarms for this service
-	setAlarms (AdminAlarms);
+	setInformations (AdminAlarms, GraphUpdate);
 
 	// now send alarms to all services
 	for (uint j = 0; j < Services.size(); j++)
 	{
 		if (Services[j].Connected)
 		{
-			sendAlarms (Services[j].ServiceId);
+			sendInformations (Services[j].ServiceId);
 		}
 	}
-}	
+}
 
 static void cbRejected (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
@@ -1275,7 +1394,7 @@ void serviceConnection (const std::string &serviceName, uint16 sid, void *arg)
 
 	Services[sid].init (serviceName, sid);
 
-	sendAlarms (sid);
+	sendInformations (sid);
 
 	nlinfo ("%s-%hu connected", Services[sid].ShortName.c_str (), Services[sid].ServiceId);
 
@@ -1346,17 +1465,18 @@ static TUnifiedCallbackItem CallbackArray[] =
 
 	{ "AES_GET_VIEW", cbGetView },
 	{ "VIEW", cbView },
+	
+	{ "ADMIN_EMAIL", cbAdminEmail },
 
-	{ "REGISTERED_SERVICES", cbRegisteredServices },
+	{ "GRAPH_UPDATE", cbGraphUpdate },
 	
 	{ "REJECTED", cbRejected },
-	{ "ADMIN_EMAIL", cbAdminEmail },
 };
 
 // don't mix because we have to add this callbackarray IN the init()
-static TUnifiedCallbackItem AlarmCallbackArray[] =
+static TUnifiedCallbackItem InformationCallbackArray[] =
 {
-	{ "ALARMS", cbAlarms },
+	{ "INFORMATIONS", cbInformations },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1538,8 +1658,9 @@ public:
 		// add connection to the admin service
 		CUnifiedNetwork::getInstance()->setServiceUpCallback ("AS", ASConnection, NULL);
 		CUnifiedNetwork::getInstance()->setServiceDownCallback ("AS", ASDisconnection, NULL);
-		
-		CUnifiedNetwork::getInstance()->addCallbackArray (AlarmCallbackArray, sizeof(AlarmCallbackArray)/sizeof(AlarmCallbackArray[0]));
+
+		// we must set after others to be sure that it will erase the old one on admin.cpp in net module
+		CUnifiedNetwork::getInstance()->addCallbackArray (InformationCallbackArray, sizeof(InformationCallbackArray)/sizeof(InformationCallbackArray[0]));
 
 		string ASHost = ConfigFile.getVar ("ASHost").asString ();
 		if (ASHost.find (":") == string::npos)
@@ -1552,7 +1673,6 @@ public:
 	{
 		cleanRequest ();
 		checkWaitingServices ();
-
 		return true;
 	}
 };

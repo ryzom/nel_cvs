@@ -690,6 +690,14 @@ SOURCE=..\include\nel\misc\async_file_manager.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\md5.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\md5.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\path.cpp
 # End Source File
 # Begin Source File

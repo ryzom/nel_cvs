@@ -114,6 +114,10 @@ LINK32=link.exe
 # Name "welcome_service - Win32 ReleaseDebug"
 # Begin Source File
 
+SOURCE=.\welcome_service.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\welcome_service.cpp
 # End Source File
 # End Target

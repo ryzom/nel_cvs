@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.2 2001/05/04 09:54:49 coutelas Exp $
+ * $Id: welcome_service.cpp,v 1.3 2001/06/13 14:35:07 lecroart Exp $
  *
  */
 
@@ -307,7 +307,8 @@ public:
 		CNetManager::setDisconnectionCallback ("WS", cbFESDisconnection, NULL);
 
 		// add a connection to the LS
-		CNetManager::addClient ("LS", "localhost:49998");
+		string LSAddr = ConfigFile.getVar("LSHost").asString() + ":49998";
+		CNetManager::addClient ("LS", LSAddr);
 		CNetManager::addCallbackArray ("LS", LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
 	}
 };

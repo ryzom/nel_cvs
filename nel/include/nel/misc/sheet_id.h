@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.6 2002/06/24 17:14:50 vizerie Exp $
+ * $Id: sheet_id.h,v 1.7 2002/07/03 09:56:15 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -174,7 +174,10 @@ private :
 	static std::map<uint32,std::string> _SheetIdToName;
 	static std::map<std::string,uint32> _SheetNameToId;
 	static std::vector<std::string> _FileExtensions;
-	static bool _initialised;
+	static bool _Initialised;
+
+	static void loadSheetId ();
+	static void cbFileChange (const std::string &filename);
 };
 
 inline std::stringstream &operator << (std::stringstream &__os, const CSheetId &__t)

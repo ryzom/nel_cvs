@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.7 2002/06/24 17:18:25 vizerie Exp $
+ * $Id: sheet_id.cpp,v 1.8 2002/07/03 09:55:14 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -37,11 +37,16 @@ namespace NLMISC {
 map<uint32,std::string> CSheetId::_SheetIdToName;
 map<std::string,uint32> CSheetId::_SheetNameToId;
 vector<std::string> CSheetId::_FileExtensions;
-bool CSheetId::_initialised=false;
+bool CSheetId::_Initialised=false;
 
 const CSheetId CSheetId::Unknown(0);
 
+void CSheetId::cbFileChange (const std::string &filename)
+{
+	nlinfo ("%s changed, reload it", filename.c_str());
 
+	loadSheetId();
+}
 
 //-----------------------------------------------
 //	CSheetId
@@ -64,7 +69,7 @@ CSheetId::CSheetId( const string& sheetName )
 //-----------------------------------------------
 bool CSheetId::build(const std::string& sheetName)
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	map<string,uint32>::const_iterator itId = _SheetNameToId.find( sheetName );
 	if( itId != _SheetNameToId.end() )
@@ -78,24 +83,20 @@ bool CSheetId::build(const std::string& sheetName)
 	}
 }
 
-
-//-----------------------------------------------
-//	init
-//
-//-----------------------------------------------
-void CSheetId::init()
+void CSheetId::loadSheetId ()
 {
-	// allow multiple calls to init in case libraries depending on sheetid call this init from their own
-	if (_initialised)
-		return;
-
-	// reserve space for the vector of file extensions
-	_FileExtensions.resize(256);
-
 	// Open the sheet id to sheet file name association
 	CIFile file;
 	if(file.open(CPath::lookup("sheet_id.bin", false, false)))
 	{
+		// clear entries
+		_FileExtensions.clear ();
+		_SheetIdToName.clear ();
+		_SheetNameToId.clear ();
+
+		// reserve space for the vector of file extensions
+		_FileExtensions.resize(256);
+
 		// Get the map.
 		file.serialCont(_SheetIdToName);
 
@@ -131,8 +132,23 @@ void CSheetId::init()
 	{
 		nlerror("<CSheetId::init> Can't open the file sheet_id.bin");
 	}
+}
 
-	_initialised=true;
+//-----------------------------------------------
+//	init
+//
+//-----------------------------------------------
+void CSheetId::init()
+{
+	// allow multiple calls to init in case libraries depending on sheetid call this init from their own
+	if (_Initialised)
+		return;
+
+	CFile::addFileChangeCallback ("sheet_id.bin", cbFileChange);
+
+	loadSheetId ();
+
+	_Initialised=true;
 } // init //
 
 
@@ -144,7 +160,7 @@ void CSheetId::init()
 //-----------------------------------------------
 CSheetId& CSheetId::operator=( const CSheetId& sheetId )
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	if(this == &sheetId)
 	{
@@ -165,7 +181,7 @@ CSheetId& CSheetId::operator=( const CSheetId& sheetId )
 //-----------------------------------------------
 CSheetId& CSheetId::operator=( const string& sheetName )
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	map<string,uint32>::const_iterator itId = _SheetNameToId.find( sheetName );
 	if( itId != _SheetNameToId.end() )
@@ -188,7 +204,7 @@ CSheetId& CSheetId::operator=( const string& sheetName )
 //-----------------------------------------------
 CSheetId& CSheetId::operator=( uint32 sheetRef )
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	_Id.Id = sheetRef;
 	
@@ -204,7 +220,7 @@ CSheetId& CSheetId::operator=( uint32 sheetRef )
 //-----------------------------------------------
 bool CSheetId::operator < (const CSheetId& sheetRef ) const
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	if (_Id.Id < sheetRef.asInt())
 	{
@@ -223,7 +239,7 @@ bool CSheetId::operator < (const CSheetId& sheetRef ) const
 //-----------------------------------------------
 string CSheetId::toString() const
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	map<uint32,string>::const_iterator itStr = _SheetIdToName.find( _Id.Id );
 	if( itStr != _SheetIdToName.end() )
@@ -246,7 +262,7 @@ string CSheetId::toString() const
 //-----------------------------------------------
 void CSheetId::display()
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	map<uint32,string>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -265,7 +281,7 @@ void CSheetId::display()
 //-----------------------------------------------
 void CSheetId::display(uint8 type)
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	map<uint32,string>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -292,7 +308,7 @@ void CSheetId::display(uint8 type)
 //-----------------------------------------------
 void CSheetId::buildIdVector(std::vector <CSheetId> &result)
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	map<uint32,string>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -309,7 +325,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result)
 //-----------------------------------------------
 void CSheetId::buildIdVector(std::vector <CSheetId> &result,uint8 type)
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	map<uint32,string>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -333,7 +349,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result,uint8 type)
 //-----------------------------------------------
 void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames,uint8 type)
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	map<uint32,string>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -383,7 +399,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::s
 //-----------------------------------------------
 uint32 CSheetId::typeFromFileExtension(const std::string &fileExtension)
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 
 	unsigned i;
 	for (i=0;i<_FileExtensions.size();i++)
@@ -400,7 +416,7 @@ uint32 CSheetId::typeFromFileExtension(const std::string &fileExtension)
 //-----------------------------------------------
 const std::string &CSheetId::fileExtensionFromType(uint8 type)
 {
-	nlassert(_initialised);
+	nlassert(_Initialised);
 	nlassert(type<256);
 
 	return _FileExtensions[type];

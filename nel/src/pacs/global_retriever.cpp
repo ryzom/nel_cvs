@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.55 2002/01/21 13:48:36 legros Exp $
+ * $Id: global_retriever.cpp,v 1.56 2002/02/01 18:17:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ void	NLPACS::CGlobalRetriever::selectInstances(const NLMISC::CAABBox &bbox, CCol
 	_InstanceGrid.select(bbox.getMin(), bbox.getMax());
 	cst.CollisionInstances.clear();
 
-	NL3D::CQuadGrid<uint32>::CIterator	it;
+	NLPACS::CQuadGrid<uint32>::CIterator	it;
 	for (it=_InstanceGrid.begin(); it!=_InstanceGrid.end(); ++it)
 		if (_Instances[*it].getBBox().intersect(bbox))
 			cst.CollisionInstances.push_back(*it);

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.18 2002/02/01 10:59:52 berenguier Exp $
+ * $Id: global_retriever.h,v 1.19 2002/02/01 18:17:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,7 +114,7 @@ protected:
 	mutable std::vector<CRetrieverInstance>	_Instances;
 
 	/// The grid of instances
-	mutable NL3D::CQuadGrid<uint32>			_InstanceGrid;
+	mutable CQuadGrid<uint32>				_InstanceGrid;
 
 	/// The axis aligned bounding box of the global retriever.
 	NLMISC::CAABBox							_BBox;

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.44 2002/02/01 14:52:01 berenguier Exp $
+ * $Id: local_retriever.cpp,v 1.45 2002/02/01 18:17:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1543,6 +1543,8 @@ void	NLPACS::CLocalRetriever::buildInteriorSurfaceBBoxes(std::vector<NLMISC::CAA
 		// Extend the surface of this face with her 3 points.
 
 		// check good id.
+		if(intFace.Surface==-1)
+			continue;
 		nlassert(intFace.Surface<_Surfaces.size());
 
 		// If first time we extend the bbox of this surface

@@ -1,7 +1,7 @@
 /** \file quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.1 2001/08/07 14:14:32 legros Exp $
+ * $Id: quad_grid.h,v 1.2 2002/02/01 18:17:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_QUAD_GRID_H
-#define NL_QUAD_GRID_H
+#ifndef NL_QUAD_GRID_PACS_H
+#define NL_QUAD_GRID_PACS_H
 
 #include "nel/misc/debug.h"
 #include "nel/misc/vector.h"
@@ -34,7 +34,7 @@
 #include <vector>
 
 
-namespace NL3D 
+namespace NLPACS
 {
 
 
@@ -549,7 +549,7 @@ template<class T>	CQuadGrid<T>::CIterator		CQuadGrid<T>::end()
 }
 
 
-} // NL3D
+} // NLPACS
 
 
 #endif // NL_QUAD_GRID_H

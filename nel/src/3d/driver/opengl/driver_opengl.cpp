@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.95 2001/04/23 09:14:27 besson Exp $
+ * $Id: driver_opengl.cpp,v 1.96 2001/04/24 14:36:54 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -742,6 +742,9 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	if (VB.DrvInfos==NULL && !setupVertexBuffer(VB))
 		return false;
 
+	// Just to inform render*() that Matrix mode is OK.
+	_MatrixSetupDirty= false;
+
 	if (VB.getNumVertices()==0)
 		return true;
 
@@ -772,9 +775,6 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 
 	// Check view matrix is good
 	nlassert (_ViewMatrixSetupDirty==false);
-
-	// Just to inform render*() that Matrix mode is OK.
-	_MatrixSetupDirty= false;
 
 	// General case: no software skinning.
 	_CurrentSoftSkinFlags= NULL;

@@ -162,6 +162,7 @@
 #define IDC_COLLISION_BEHAVIOUR         1070
 #define IDC_USER_PARAM_INDEX            1070
 #define IDC_BIN_OP                      1070
+#define IDC_PS_DIE_ON_EVENT             1070
 #define IDC_START_PICTURE               1071
 #define IDD_SET_VALUE                   1071
 #define IDC_STOP_PICTURE                1072
@@ -232,12 +233,18 @@
 #define IDC_BG_COLOR                    1144
 #define IDC_EDIT_INPUT                  1147
 #define IDC_ENABLE_SLOW_DOWN            1148
-#define IDC_CHECK1                      1152
-#define IDC_EDIT1                       1153
-#define IDC_EDIT2                       1154
-#define IDC_EDIT3                       1155
-#define IDC_BUTTON2                     1156
+#define IDC_DISPLAY_BBOX                1152
+#define IDC_BB_X                        1153
+#define IDC_BB_Y                        1154
+#define IDC_BB_Z                        1155
+#define IDC_UPDATE_BBOX                 1156
 #define IDC_PRECOMPUTE_BBOX             1157
+#define IDC_INC_BBOX                    1158
+#define IDC_DEC_BBOX                    1159
+#define IDC_DIE_WHEN_OUT_OF_RANGE       1160
+#define IDC_APPLY_AFTRE_DELAY           1161
+#define IDC_DIE_WHEN_OUT_OF_FRUSTRUM    1162
+#define IDC_DISGRADE_WITH_LOD           1163
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -312,9 +319,17 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
+
+/*
+#define _APS_NEXT_RESOURCE_VALUE        1070
+#define _APS_NEXT_COMMAND_VALUE         32826
+#define _APS_NEXT_CONTROL_VALUE         1164
+*/
+
 #define _APS_NEXT_RESOURCE_VALUE        1075
 #define _APS_NEXT_COMMAND_VALUE         32857
 #define _APS_NEXT_CONTROL_VALUE         1158
+
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

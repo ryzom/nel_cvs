@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.55.4.1 2004/09/14 17:16:23 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.55.4.2 2004/09/20 07:45:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,7 +94,6 @@ CRenderTrav::CRenderTrav()
 void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 {
 	H_AUTO( NL3D_TravRender );		
-	if (getDriver()->isLost()) return; // device is lost so no need to render anything	
 	CTravCameraScene::update();
 	// Bind to Driver.
 	setupDriverCamera();

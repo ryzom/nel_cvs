@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.23 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: log.cpp,v 1.24 2001/03/07 14:56:23 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,11 +231,7 @@ string *CLog::_LocalHostAndService = NULL;
 void CLog::setLocalHostAndService( const std::string& hostname, const std::string& servicename )
 {
 	stringstream ss;
-#ifdef NL_OS_WINDOWS
-	ss << servicename.c_str() << "/" << hostname.c_str() << "/" << _getpid()/*GetCurrentProcessId()*/;
-#else
 	ss << servicename.c_str() << "/" << hostname.c_str() << "/" << getpid();
-#endif
 	if (_LocalHostAndService == NULL)
 		_LocalHostAndService = new string;
 

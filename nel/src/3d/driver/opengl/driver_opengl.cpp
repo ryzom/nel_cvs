@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.57 2001/01/16 15:24:26 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.58 2001/01/17 16:14:44 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -222,7 +222,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 			devMode.dmPelsWidth= mode.Width;
 			devMode.dmPelsHeight= mode.Height;
 			devMode.dmBitsPerPel= mode.Depth;
-			ChangeDisplaySettings(&devMode, 0);
+			ChangeDisplaySettings(&devMode, CDS_FULLSCREEN);
 		}
 		WndRect.left=0;
 		WndRect.top=0;

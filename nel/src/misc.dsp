@@ -346,11 +346,7 @@ SOURCE=.\misc\config_file\cf_lexical.lxx
 # Begin Source File
 
 SOURCE=.\misc\config_file\config_file.cpp
-# ADD CPP /Yu"../stdmisc.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\config_file.h
+# ADD CPP /Yu"..\stdmisc.h"
 # End Source File
 # End Group
 # Begin Group "Events"
@@ -523,14 +519,6 @@ SOURCE=..\include\nel\misc\object_vector.h
 # Begin Source File
 
 SOURCE=..\include\nel\misc\pool_memory.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\shared_memory.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\shared_memory.h
 # End Source File
 # Begin Source File
 
@@ -752,6 +740,14 @@ SOURCE=.\misc\reader_writer.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\reader_writer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\report.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\report.h
 # End Source File
 # Begin Source File
 

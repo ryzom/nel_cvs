@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.cpp,v 1.9 2002/08/23 12:30:41 lecroart Exp $
+ * $Id: buf_net_base.cpp,v 1.10 2002/08/23 12:35:46 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,11 +44,11 @@ namespace NLNET {
  */
 CBufNetBase::CBufNetBase() :
 	_RecvFifo("CBufNetBase::_RecvFifo"),
-	_DataAvailable( false )
+	_DataAvailable( false ),
 	_DisconnectionCallback( NULL ),
 	_DisconnectionCbArg( NULL ),
 	_MaxExpectedBlockSize( 0x7FFFFFF ),
-	_MaxSentBlockSize( 0x7FFFFFF ),
+	_MaxSentBlockSize( 0x7FFFFFF )
 {
 	// Debug info for mutexes
 #ifdef MUTEX_DEBUG

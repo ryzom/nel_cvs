@@ -38,7 +38,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "../obj/Release/net"
 # PROP Target_Dir ""
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdnet.h" /FD /c
-# SUBTRACT CPP /Fr
+# SUBTRACT CPP /Z<none> /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -232,17 +232,6 @@ SOURCE=..\include\nel\net\message_recorder.h
 # Begin Source File
 
 SOURCE=.\net\net_manager.cpp
-
-!IF  "$(CFG)" == "net - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "net - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "net - Win32 ReleaseDebug"
-
-!ELSEIF  "$(CFG)" == "net - Win32 DebugFast"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -261,6 +250,14 @@ SOURCE=.\net\unified_network.cpp
 SOURCE=..\include\nel\net\unified_network.h
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\net\email.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\email.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\net\login_client.cpp

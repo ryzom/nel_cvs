@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.52 2003/04/02 16:20:17 berenguier Exp $
+ * $Id: driver.h,v 1.53 2003/04/15 15:57:45 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -557,6 +557,10 @@ public:
 	  * \param viewport is a viewport to setup as current viewport.
 	  */
 	virtual void			setupViewport (const class CViewport& viewport)=0;
+
+	/** Get the current viewport
+	  */
+	virtual	void			getViewport(CViewport &viewport) = 0;
 
 
 	/** Set the current Scissor.

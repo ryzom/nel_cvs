@@ -287,9 +287,12 @@ BOOL SendTextToClipboard(CString source)
 }
 
 
-void CBranch_patcherDlg::displayMessage( const CString& msg )
+void CBranch_patcherDlg::displayMessage( const CString& msg, bool insertAtTop )
 {
-	m_Display->SetSel( 0, -1 );
+	if ( insertAtTop )
+		m_Display->SetSel( 0, 0 );
+	else
+		m_Display->SetSel( 0, -1 );
 	m_Display->ReplaceSel( msg );
 	SaveDiff = false;
 }
@@ -318,7 +321,8 @@ void CBranch_patcherDlg::OnButtonPatch()
 			if ( (m_Display->GetLineCount() == 0) ||
 				 (m_Display->GetLineCount() == 1 && m_Display->LineLength(0)<2) )
 			{
-				displayMessage( "Diff is empty.\r\nIf this is not the expected result:\r\n- check if the source directory is part of a CVS tree\r\n- check if cvs.exe is in your PATH\r\n- check if you are logged to the cvs server with 'cvs login' (set your home cvs directory in the HOME environment variable if needed)\r\n- check if C:\\ has enough free space and access rights to write a file." );
+				displayFile( DIFF_ERRORS );
+				displayMessage( "Diff is empty.\r\nIf this is not the expected result:\r\n- check if the source directory is part of a CVS tree\r\n- check if cvs.exe is in your PATH\r\n- check if you are logged to the cvs server with 'cvs login' (set your home cvs directory in the HOME environment variable if needed)\r\n- check if C:\\ has enough free space and access rights to write a file.\n\nHere is the log:\n\n", true );
 			}
 			else
 			{

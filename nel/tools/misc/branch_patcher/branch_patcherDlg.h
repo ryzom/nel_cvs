@@ -44,7 +44,7 @@ public:
 	void	setSrcDirectory( const CString& s );
 	void	setDestDirectory( const CString& s );
 	void	displayFile( const CString& filename );
-	void	displayMessage( const CString& msg );
+	void	displayMessage( const CString& msg, bool insertAtTop=false );
 	void	saveFile( const CString& filename );
 	void	colorizeDiff();
 	void	guessDestDirectory();

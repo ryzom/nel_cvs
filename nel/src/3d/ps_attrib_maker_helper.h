@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * TODO: File description
  *
- * $Id: ps_attrib_maker_helper.h,v 1.22 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.23 2005/02/17 17:14:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,8 +62,9 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 		{
 			NLMISC::OptFastFloorBegin();
 			nlassert(input >= 0.f && input <= 1.f);
-			return _F(input);
+			T tmp=  _F(input);
 			NLMISC::OptFastFloorEnd();
+			return tmp;
 		}
 		
 		/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes, and use it to get the

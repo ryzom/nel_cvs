@@ -1,7 +1,7 @@
 /** \file cube_map_builder.h
  * a function that helps to build cube maps
  *
- * $Id: cube_map_builder.h,v 1.2 2002/02/18 12:54:42 lecroart Exp $
+ * $Id: cube_map_builder.h,v 1.3 2002/02/18 16:23:37 valignat Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -58,3 +58,4 @@ CTextureCube *BuildCubeMap(sint mapSize, ICubeMapFunctor &f);
 
 
 #endif
+

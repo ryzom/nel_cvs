@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.18 2002/04/26 16:07:45 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.19 2002/04/30 14:00:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,7 +92,8 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup)
 {
 	// Create a file
 	CIFile file;
-	if (file.open (CPath::lookup (instanceGroup) ))
+	std::string path = CPath::lookup (instanceGroup, false);
+	if (!path.empty() && file.open (path))
 	{
 		// Serialize this class
 		try

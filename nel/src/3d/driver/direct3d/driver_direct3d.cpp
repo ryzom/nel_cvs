@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.9 2004/05/07 12:24:46 corvazier Exp $
+ * $Id: driver_direct3d.cpp,v 1.10 2004/06/02 16:35:05 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -969,12 +969,14 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_TextureCubeSupported = (caps.TextureCaps & D3DPTEXTURECAPS_CUBEMAP) != 0;
 		_NbNeLTextureStages = (caps.MaxSimultaneousTextures<IDRV_MAT_MAXTEXTURES)?caps.MaxSimultaneousTextures:IDRV_MAT_MAXTEXTURES;
 		_MADOperatorSupported = (caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0;
+		_EMBMSupported = (caps.TextureOpCaps &  D3DTOP_BUMPENVMAP) != 0;
 	}
 	else
 	{
 		_TextureCubeSupported = false;
 		_NbNeLTextureStages = 1;
 		_MADOperatorSupported = false;
+		_EMBMSupported = false;
 	}
 #ifdef NL_FORCE_TEXTURE_STAGE_COUNT
 	_NbNeLTextureStages = min ((uint)NL_FORCE_TEXTURE_STAGE_COUNT, (uint)IDRV_MAT_MAXTEXTURES);
@@ -2080,7 +2082,30 @@ bool CDriverD3D::setMonitorColorProperties (const CMonitorColorProperties &prope
 	_DeviceInterface->SetGammaRamp (0, D3DSGR_NO_CALIBRATION, &ramp);
 	return true;
 }
-
 // ***************************************************************************
+
+//****************************************************************************
+bool CDriverD3D::supportEMBM() const
+{
+	return _EMBMSupported;
+}
+
+//****************************************************************************
+bool CDriverD3D::isEMBMSupportedAtStage(uint stage) const
+{
+	// we assume EMBM is supported at all stages except the last one
+	return stage < (uint) _NbNeLTextureStages - 1;
+}
+
+//****************************************************************************
+void CDriverD3D::setEMBMMatrix(const uint stage, const float mat[4])
+{
+	nlassert(stage < (uint) _NbNeLTextureStages - 1);
+	SetTextureStageState(stage, D3DTSS_BUMPENVMAT00, (DWORD &) mat[0]);
+	SetTextureStageState(stage, D3DTSS_BUMPENVMAT01, (DWORD &) mat[1]);
+	SetTextureStageState(stage, D3DTSS_BUMPENVMAT10, (DWORD &) mat[2]);
+	SetTextureStageState(stage, D3DTSS_BUMPENVMAT11, (DWORD &) mat[3]);
+}
+
 
 } // NL3D

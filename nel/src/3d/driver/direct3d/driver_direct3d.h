@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.11 2004/05/28 15:50:29 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.12 2004/06/02 16:35:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -551,11 +551,11 @@ public:
 
 	// EMBM support
 	// todo hulud d3d EMBM
-	virtual bool			supportEMBM() const	 {return false;};
+	virtual bool			supportEMBM() const;
 	// todo hulud d3d EMBM
-	virtual bool			isEMBMSupportedAtStage(uint stage) const {return false;};
+	virtual bool			isEMBMSupportedAtStage(uint stage) const;
 	// todo hulud d3d EMBM
-	virtual void			setEMBMMatrix(const uint stage, const float mat[4]) {};
+	virtual void			setEMBMMatrix(const uint stage, const float mat[4]);
 	// todo hulud d3d EMBM
 	virtual bool			supportPerPixelLighting(bool specular) const {return false;};
 
@@ -1465,6 +1465,7 @@ private:
 	bool					_DisableHardwareIndexArrayAGP;
 	bool					_DisableHardwarePixelShader;
 	bool					_MADOperatorSupported;
+	bool					_EMBMSupported;
 	sint					_NbNeLTextureStages;			// Number of texture stage for NeL (max IDRV_MAT_MAXTEXTURES)
 	uint					_MaxVerticesByVertexBufferHard;
 	uint					_MaxLight;

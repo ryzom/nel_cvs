@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.37 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vegetable_manager.cpp,v 1.38 2004/03/22 17:40:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,8 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	_SortBlockMemory(NL3D_VEGETABLE_SORT_BLOCK_BLOCKSIZE),
 	_InstanceGroupMemory(NL3D_VEGETABLE_INSTANCE_GROUP_BLOCKSIZE),
 	_NumZSortBlendLayers(nbBlendLayers), _ZSortLayerDistMax(blendLayerDistMax),
-	_ZSortScene(NULL)
+	_ZSortScene(NULL),
+	_GlobalDensity(1.f)
 {
 	uint	i;
 
@@ -1564,6 +1565,14 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 
 	// Since change is made, flag the IG rdrpass
 	vegetRdrPass.HardMode= !vegetRdrPass.HardMode;
+}
+
+
+// ***************************************************************************
+void		CVegetableManager::setGlobalDensity(float density)
+{
+	clamp(density, 0.f, 1.f);
+	_GlobalDensity= density;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.54 2004/03/19 17:49:35 berenguier Exp $
+ * $Id: landscape.h,v 1.55 2004/03/22 17:40:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -515,6 +515,14 @@ public:
 	  * color 3 = vegetable disabled
 	  */
 	void		setupColorsFromTileFlags(const NLMISC::CRGBA colors[4]);
+
+	/** Set a density ratio [0, 1] to possibly reduce the amount of micro vegetable drawn. Default to 1
+	 */
+	void		setVegetableDensity(float density);
+
+	/** Get the density ratio [0, 1] of micro vegetable drawn. Default to 1
+	 */
+	float		getVegetableDensity() const;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.12 2004/02/06 14:35:57 besson Exp $
+ * $Id: zone_manager.h,v 1.13 2004/03/22 17:40:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,8 @@ private:
 	std::vector<uint16> _LoadedZones;
 
 	std::vector<uint16> _ZoneList; // Zone set at a given position
-	uint32 _LastX, _LastY;
+	uint32	_LastX, _LastY;
+	uint32	_LastArea;
 
 	// Object for a zone loading process
 	class CLoadingZone

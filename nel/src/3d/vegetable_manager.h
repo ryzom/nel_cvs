@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.19 2002/09/24 15:02:29 vizerie Exp $
+ * $Id: vegetable_manager.h,v 1.20 2004/03/22 17:40:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -190,6 +190,14 @@ public:
 		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax,
 		TVegetableWater vegetWaterState, CVegetableUV8 dlmUV);
 
+	/** Setup a density multiplicator [0,1], for performance reason for instance
+	 */
+	void			setGlobalDensity(float density);
+
+	/** Get density multiplicator [0,1], for performance reason for instance
+	 */
+	float			getGlobalDensity() const {return _GlobalDensity;}
+	
 	// @}
 
 
@@ -317,6 +325,8 @@ private:
 	NLMISC::CRGBA									_GlobalAmbient;
 	NLMISC::CRGBA									_GlobalDiffuse;
 
+	/// Global Vegetable Density
+	float											_GlobalDensity;
 
 	/// profile
 	uint											_NumVegetableFaceRendered;

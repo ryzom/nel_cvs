@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.16 2003/07/30 16:07:59 vizerie Exp $
+ * $Id: vegetable.h,v 1.17 2004/03/22 17:40:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,7 +111,7 @@ public:
 	// @}
 
 
-	/** register the vegetable to the vegetable manager. do it first. used by generateInstance().
+	/** register the vegetable to the vegetable manager. do it first. used by generateInstance() and generateGroup*()
 	 *	Manager will load the shape needed for this vegetable.
 	 */
 	void	registerToManager(CVegetableManager *manager);

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.28 2004/02/06 14:34:23 besson Exp $
+ * $Id: u_landscape.h,v 1.29 2004/03/22 17:38:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,6 +256,14 @@ public:
 	 *	If you set 0, no update will be done at all (this is the default setup!!).
 	 */
 	virtual	void		setVegetableUpdateLightingFrequency(float freq) =0;
+
+	/** Set a density ratio [0, 1] to possibly reduce the amount of micro vegetable drawn. Default to 1
+	 */
+	virtual	void		setVegetableDensity(float density) =0;
+
+	/** Get the density ratio [0, 1] of micro vegetable drawn. Default to 1
+	 */
+	virtual	float		getVegetableDensity() const =0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.41 2004/02/06 14:35:14 besson Exp $
+ * $Id: landscape_user.cpp,v 1.42 2004/03/22 17:40:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -592,6 +592,21 @@ ULandscapeTileCallback *CLandscapeUser::getTileCallback() const
 	return _Landscape->Landscape.getTileCallback(); 
 }
 
+// ***************************************************************************
+void		CLandscapeUser::setVegetableDensity(float density)
+{
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_UI_LANDSCAPE;
+	_Landscape->Landscape.setVegetableDensity(density);
+}
+
+// ***************************************************************************
+float		CLandscapeUser::getVegetableDensity() const
+{
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_UI_LANDSCAPE;
+	return _Landscape->Landscape.getVegetableDensity();
+}
 
 
 } // NL3D

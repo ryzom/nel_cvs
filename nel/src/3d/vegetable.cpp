@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.19 2003/07/30 16:07:39 vizerie Exp $
+ * $Id: vegetable.cpp,v 1.20 2004/03/22 17:40:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,6 +131,7 @@ void	CVegetable::registerToManager(CVegetableManager *manager)
 // ***************************************************************************
 void	CVegetable::generateGroupEx(float nbInst, const CVector &posInWorld, const CVector &surfaceNormal, uint vegetSeed, std::vector<CVector2f> &instances) const
 {
+	nlassert(_Manager);
 
 	// Density modulation.
 	//===================
@@ -142,6 +143,9 @@ void	CVegetable::generateGroupEx(float nbInst, const CVector &posInWorld, const 
 	angleFact= max(0.f, angleFact);
 	// modulate density with angleFactor.
 	nbInst*= angleFact;
+
+	// modulate result by Global Manager density
+	nbInst*= _Manager->getGlobalDensity();
 
 	// Now, 0<=nbInst<+oo. If we have 0.1, it means that we have 10% chance to spawn an instance.
 	// So add a "random" value (with help of a noise with High frequency)

@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.17 2004/02/06 14:35:57 besson Exp $
+ * $Id: zone_manager.cpp,v 1.18 2004/03/22 17:40:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,8 @@ CZoneManager::CZoneManager()
 	_RemovingZone= false;
 	_ZoneTileColorMono = true;
 	_ZoneTileColorFactor = 1.0f;
+	_LastArea= 0;
+	_LastX= _LastY= -1;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -82,10 +84,11 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 	if (_RemovingZone) return;
 
 	// Obtain the new set of zones around
-	if ((x != _LastX) || (y != _LastY))
+	if ( (x != _LastX) || (y != _LastY) || (area != _LastArea) )
 		getListZoneId (x, y, area, _ZoneList);
 	_LastX = x;
 	_LastY = y;
+	_LastArea = area;
 
 	// Look if we have zone loaded that is not needed anymore
 	uint32 i, j;

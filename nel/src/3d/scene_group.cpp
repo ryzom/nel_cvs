@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.12 2001/08/14 13:29:48 besson Exp $
+ * $Id: scene_group.cpp,v 1.13 2001/08/15 12:09:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -290,7 +290,14 @@ bool CInstanceGroup::addToScene (CScene& scene)
 		{
 			CInstance &rInstanceInfo = *it;
 
-			_Instances[i] = scene.createInstance (rInstanceInfo.Name + ".shape");
+			if (rInstanceInfo.Name.find('.') == std::string::npos)
+			{
+				_Instances[i] = scene.createInstance (rInstanceInfo.Name + ".shape");
+			}
+			else	// extension has already been added
+			{
+				_Instances[i] = scene.createInstance (rInstanceInfo.Name);
+			}
 
 			if( _Instances[i] == NULL )
 			{

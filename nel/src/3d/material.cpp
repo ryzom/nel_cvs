@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.48 2004/05/14 14:57:55 berenguier Exp $
+ * $Id: material.cpp,v 1.49 2004/10/05 17:04:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -599,6 +599,9 @@ uint CMaterial::getNumUsedTextureStages() const
 bool CMaterial::isSupportedByDriver(IDriver &drv, bool forceBaseCaps) const
 {
 	uint numTexStages = drv.getNbTextureStages();
+	// special case for radeon : though 3 stages are supported, do as if there were only 2, because of the texEnvColor feature
+	// not managed in Direct3D : emulation is provided, but for no more than 2 constants (and if diffuse is not used)
+	if (numTexStages == 3) numTexStages = 2;
 	if (forceBaseCaps) numTexStages = std::min(numTexStages, (uint) 2);
 	switch(getShader())
 	{
@@ -621,7 +624,7 @@ bool CMaterial::isSupportedByDriver(IDriver &drv, bool forceBaseCaps) const
 						case InterpolateConstant: if (!drv.supportBlendConstantColor()) return false;
 						case EMBM:				  if (forceBaseCaps || !drv.supportEMBM() || !drv.isEMBMSupportedAtStage(k)) return false;
 						case Mad:				  if (!drv.supportMADOperator()) return false;
-					}
+					}					
 				}
 			}
 			return true;

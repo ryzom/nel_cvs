@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.39 2001/07/24 08:49:50 vizerie Exp $
+# $Id: Makefile.am,v 1.40 2001/07/27 15:40:25 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -8,49 +8,304 @@ SUBDIRS              = driver .
 
 lib_LTLIBRARIES      = libnel3d.la
 
-libnel3d_la_SOURCES  = bezier_patch.cpp \
-                       camera.cpp clip_trav.cpp computed_string.cpp \
-                       driver.cpp dru.cpp event_mouse_listener.cpp \
-                       font_generator.cpp font_manager.cpp frustum.cpp \
-                       hrc_trav.cpp landscape.cpp landscape_model.cpp \
-                       light_trav.cpp material.cpp mesh.cpp mini_col.cpp \
-                       mot.cpp nelu.cpp patch.cpp patch_rdr_pass.cpp \
-                       primitive_block.cpp register_3d.cpp \
-                       render_trav.cpp scene.cpp shape.cpp tessellation.cpp \
-                       text_context.cpp texture.cpp texture_file.cpp \
-                       texture_font.cpp texture_mem.cpp texture_grouped.cpp tile_bank.cpp \
-                       tile_element.cpp tile_far_bank.cpp transform.cpp \
-                       transform_shape.cpp \
-                       vertex_buffer.cpp viewport.cpp zone.cpp \
-                       texture_far.cpp shader.cpp mrm_builder.cpp \
-                       mrm_mesh.cpp tile_lumel.cpp texture_near.cpp \
-                       zone_smoother.cpp zone_tgt_smoother.cpp \
-                       landscape_profile.cpp tess_block.cpp tess_list.cpp \
-                       zone_manager.cpp zone_search.cpp \
-                       camera_user.cpp driver_user.cpp instance_user.cpp \
-                       landscape_user.cpp material_user.cpp scene_user.cpp \
-                       text_context_user.cpp texture_user.cpp \
-                       transform_user.cpp driver_user2.cpp \
-                       skeleton_weight.cpp animated_material.cpp \
-                       animation_playlist.cpp play_list_manager.cpp \
-                       anim_detail_trav.cpp channel_mixer.cpp \
-                       animatable.cpp animated_value.cpp animation.cpp \
-                       animation_set.cpp animation_time.cpp \
-                       key.cpp track.cpp track_keyframer.cpp \
-                       transformable.cpp mesh_instance.cpp \
-                       scene_group.cpp skeleton_model.cpp bone.cpp \
-                       skeleton_shape.cpp instance_group_user.cpp \
-                       transformable_user.cpp skeleton_user.cpp \
-                       bone_user.cpp instance_material_user.cpp \
-                       shape_bank_user.cpp shape_bank.cpp height_map.cpp\
-                       particle_system.cpp ps_color.cpp ps_emitter.cpp \
-					   ps_float.cpp ps_force.cpp ps_int.cpp ps_located.cpp \
-					   ps_particle.cpp ps_plane_basis_maker.cpp ps_util.cpp ps_zone.cpp \
-					   ps_attrib_maker_bin_op.cpp particle_system_process.cpp\
-					   particle_system_shape.cpp particle_system_model.cpp\
-                       async_file_manager.cpp fast_floor.cpp\
-					   flare_shape.cpp flare_model.cpp
-
+libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
+                       anim_detail_trav.h                  \
+                       animatable.cpp                      \
+                       animatable.h                        \
+                       animated_lightmap.cpp               \
+                       animated_lightmap.h                 \
+                       animated_material.cpp               \
+                       animated_material.h                 \
+                       animated_value.cpp                  \
+                       animated_value.h                    \
+                       animation.cpp                       \
+                       animation.h                         \
+                       animation_playlist.cpp              \
+                       animation_playlist.h                \
+                       animation_set.cpp                   \
+                       animation_set.h                     \
+                       animation_set_user.cpp              \
+                       animation_set_user.h                \
+                       animation_time.cpp                  \
+                       async_file_manager.cpp              \
+                       async_file_manager.h                \
+                       bezier_patch.cpp                    \
+                       bezier_patch.h                      \
+                       bone.cpp                            \
+                       bone.h                              \
+                       bone_user.cpp                       \
+                       bone_user.h                         \
+                       bsp_tree.h                          \
+                       camera.cpp                          \
+                       camera.h                            \
+                       camera_user.cpp                     \
+                       camera_user.h                       \
+                       channel.h                           \
+                       channel_mixer.cpp                   \
+                       channel_mixer.h                     \
+                       clip_trav.cpp                       \
+                       clip_trav.h                         \
+                       coarse_mesh_build.cpp               \
+                       coarse_mesh_build.h                 \
+                       coarse_mesh_manager.cpp             \
+                       coarse_mesh_manager.h               \
+                       computed_string.cpp                 \
+                       computed_string.h                   \
+                       driver.cpp                          \
+                       driver.h                            \
+                       driver_material_inline.h            \
+                       driver_user.cpp                     \
+                       driver_user.h                       \
+                       driver_user2.cpp                    \
+                       dru.cpp                             \
+                       dru.h                               \
+                       event_mouse_listener.cpp            \
+                       event_mouse_listener.h              \
+                       fast_floor.cpp                      \
+                       fast_floor.h                        \
+                       flare_model.cpp                     \
+                       flare_model.h                       \
+                       flare_shape.cpp                     \
+                       flare_shape.h                       \
+                       font_generator.cpp                  \
+                       font_generator.h                    \
+                       font_manager.cpp                    \
+                       font_manager.h                      \
+                       frustum.cpp                         \
+                       height_map.cpp                      \
+                       hrc_trav.cpp                        \
+                       hrc_trav.h                          \
+                       instance_group_user.cpp             \
+                       instance_group_user.h               \
+                       instance_material_user.cpp          \
+                       instance_material_user.h            \
+                       instance_user.cpp                   \
+                       instance_user.h                     \
+                       key.cpp                             \
+                       key.h                               \
+                       landscape.cpp                       \
+                       landscape.h                         \
+                       landscape_collision_grid.cpp        \
+                       landscape_collision_grid.h          \
+                       landscape_model.cpp                 \
+                       landscape_model.h                   \
+                       landscape_profile.cpp               \
+                       landscape_profile.h                 \
+                       landscape_user.cpp                  \
+                       landscape_user.h                    \
+                       light.cpp                           \
+                       light.h                             \
+                       light_trav.cpp                      \
+                       light_trav.h                        \
+                       light_user.cpp                      \
+                       light_user.h                        \
+                       load_balancing_trav.cpp             \
+                       load_balancing_trav.h               \
+                       material.cpp                        \
+                       material.h                          \
+                       material_user.cpp                   \
+                       material_user.h                     \
+                       mesh.cpp                            \
+                       mesh.h                              \
+                       mesh_base.cpp                       \
+                       mesh_base.h                         \
+                       mesh_base_instance.cpp              \
+                       mesh_base_instance.h                \
+                       mesh_geom.cpp                       \
+                       mesh_geom.h                         \
+                       mesh_instance.cpp                   \
+                       mesh_instance.h                     \
+                       mesh_mrm.cpp                        \
+                       mesh_mrm.h                          \
+                       mesh_mrm_instance.cpp               \
+                       mesh_mrm_instance.h                 \
+                       mesh_multi_lod.cpp                  \
+                       mesh_multi_lod.h                    \
+                       mesh_multi_lod_instance.cpp         \
+                       mesh_multi_lod_instance.h           \
+                       mini_col.cpp                        \
+                       mini_col.h                          \
+                       mot.cpp                             \
+                       mot.h                               \
+                       mrm_builder.cpp                     \
+                       mrm_builder.h                       \
+                       mrm_internal.cpp                    \
+                       mrm_internal.h                      \
+                       mrm_mesh.cpp                        \
+                       mrm_mesh.h                          \
+                       mrm_parameters.cpp                  \
+                       mrm_parameters.h                    \
+                       nelu.cpp                            \
+                       nelu.h                              \
+                       ordering_table.h                    \
+                       particle_system.cpp                 \
+                       particle_system.h                   \
+                       particle_system_instance_user.cpp   \
+                       particle_system_instance_user.h     \
+                       particle_system_model.cpp           \
+                       particle_system_model.h             \
+                       particle_system_process.cpp         \
+                       particle_system_process.h           \
+                       particle_system_shape.cpp           \
+                       particle_system_shape.h             \
+                       patch.cpp                           \
+                       patch.h                             \
+                       patch_noise.cpp                     \
+                       patch_rdr_pass.cpp                  \
+                       patch_rdr_pass.h                    \
+                       patch_render.cpp                    \
+                       patchuv_locator.cpp                 \
+                       patchuv_locator.h                   \
+                       plane_basis_maker.h                 \
+                       play_list_manager.cpp               \
+                       play_list_manager.h                 \
+                       play_list_manager_user.cpp          \
+                       play_list_manager_user.h            \
+                       play_list_user.cpp                  \
+                       play_list_user.h                    \
+                       primitive_block.cpp                 \
+                       primitive_block.h                   \
+                       primitive_profile.cpp               \
+                       ps_attrib.h                         \
+                       ps_attrib_maker.h                   \
+                       ps_attrib_maker_bin_op.cpp          \
+                       ps_attrib_maker_bin_op.h            \
+                       ps_attrib_maker_helper.h            \
+                       ps_attrib_maker_template.h          \
+                       ps_color.cpp                        \
+                       ps_color.h                          \
+                       ps_direction.h                      \
+                       ps_edit.h                           \
+                       ps_emitter.cpp                      \
+                       ps_emitter.h                        \
+                       ps_float.cpp                        \
+                       ps_float.h                          \
+                       ps_force.cpp                        \
+                       ps_force.h                          \
+                       ps_int.cpp                          \
+                       ps_int.h                            \
+                       ps_located.cpp                      \
+                       ps_located.h                        \
+                       ps_lod.h                            \
+                       ps_particle.cpp                     \
+                       ps_particle.h                       \
+                       ps_plane_basis.h                    \
+                       ps_plane_basis_maker.cpp            \
+                       ps_plane_basis_maker.h              \
+                       ps_util.cpp                         \
+                       ps_util.h                           \
+                       ps_zone.cpp                         \
+                       ps_zone.h                           \
+                       ptr_set.cpp                         \
+                       ptr_set.h                           \
+                       quad_grid.h                         \
+                       register_3d.cpp                     \
+                       register_3d.h                       \
+                       render_trav.cpp                     \
+                       render_trav.h                       \
+                       scene.cpp                           \
+                       scene.h                             \
+                       scene_group.cpp                     \
+                       scene_group.h                       \
+                       scene_user.cpp                      \
+                       scene_user.h                        \
+                       scissor.cpp                         \
+                       shader.cpp                          \
+                       shader.h                            \
+                       shape.cpp                           \
+                       shape.h                             \
+                       shape_bank.cpp                      \
+                       shape_bank.h                        \
+                       shape_bank_user.cpp                 \
+                       shape_bank_user.h                   \
+                       skeleton_model.cpp                  \
+                       skeleton_model.h                    \
+                       skeleton_shape.cpp                  \
+                       skeleton_shape.h                    \
+                       skeleton_user.cpp                   \
+                       skeleton_user.h                     \
+                       skeleton_weight.cpp                 \
+                       skeleton_weight.h                   \
+                       tess_block.cpp                      \
+                       tess_block.h                        \
+                       tess_list.cpp                       \
+                       tess_list.h                         \
+                       tessellation.cpp                    \
+                       tessellation.h                      \
+                       text_context.cpp                    \
+                       text_context.h                      \
+                       text_context_user.cpp               \
+                       text_context_user.h                 \
+                       texture.cpp                         \
+                       texture.h                           \
+                       texture_cube.cpp                    \
+                       texture_cube.h                      \
+                       texture_far.cpp                     \
+                       texture_far.h                       \
+                       texture_file.cpp                    \
+                       texture_file.h                      \
+                       texture_font.cpp                    \
+                       texture_font.h                      \
+                       texture_grouped.cpp                 \
+                       texture_grouped.h                   \
+                       texture_mem.cpp                     \
+                       texture_mem.h                       \
+                       texture_near.cpp                    \
+                       texture_near.h                      \
+                       texture_user.cpp                    \
+                       texture_user.h                      \
+                       tile_bank.cpp                       \
+                       tile_bank.h                         \
+                       tile_color.cpp                      \
+                       tile_color.h                        \
+                       tile_element.cpp                    \
+                       tile_element.h                      \
+                       tile_far_bank.cpp                   \
+                       tile_far_bank.h                     \
+                       tile_lumel.cpp                      \
+                       tile_lumel.h                        \
+                       tile_noise_map.cpp                  \
+                       tile_noise_map.h                    \
+                       track.cpp                           \
+                       track.h                             \
+                       track_bezier.h                      \
+                       track_keyframer.cpp                 \
+                       track_keyframer.h                   \
+                       track_tcb.h                         \
+                       transform.cpp                       \
+                       transform.h                         \
+                       transform_shape.cpp                 \
+                       transform_shape.h                   \
+                       transform_user.cpp                  \
+                       transform_user.h                    \
+                       transformable.cpp                   \
+                       transformable.h                     \
+                       transformable_user.cpp              \
+                       transformable_user.h                \
+                       trav_scene.h                        \
+                       vertex_buffer.cpp                   \
+                       vertex_buffer.h                     \
+                       vertex_buffer_hard.cpp              \
+                       vertex_buffer_hard.h                \
+                       viewport.cpp                        \
+                       visual_collision_entity.cpp         \
+                       visual_collision_entity.h           \
+                       visual_collision_entity_user.cpp    \
+                       visual_collision_entity_user.h      \
+                       visual_collision_manager.cpp        \
+                       visual_collision_manager.h          \
+                       visual_collision_manager_user.cpp   \
+                       visual_collision_manager_user.h     \
+                       zone.cpp                            \
+                       zone.h                              \
+                       zone_manager.cpp                    \
+                       zone_manager.h                      \
+                       zone_search.cpp                     \
+                       zone_search.h                       \
+                       zone_smoother.cpp                   \
+                       zone_smoother.h                     \
+                       zone_tgt_smoother.cpp               \
+                       zone_tgt_smoother.h
 
 AM_CXXFLAGS          = @FREETYPE_CFLAGS@
 

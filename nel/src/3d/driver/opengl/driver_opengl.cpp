@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.48 2001/01/09 15:23:32 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.49 2001/01/09 17:05:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,7 +182,7 @@ ModeList CDriverGL::enumModes()
 
 // --------------------------------------------------
 
-bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
+bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 {
 #ifdef NL_OS_WINDOWS
 	uint8					Depth;

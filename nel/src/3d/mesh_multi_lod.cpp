@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.9 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.10 2001/08/09 12:08:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/mesh_mrm.h"
 #include "3d/scene.h"
 #include "3d/coarse_mesh_manager.h"
+#include "3d/skeleton_model.h"
 
 #include "nel/misc/debug.h"
 
@@ -219,6 +220,13 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 {
 	// Render good meshes
 	CMeshMultiLodInstance *instance=safe_cast<CMeshMultiLodInstance*>(trans);
+
+	// If skin apply, setup root skin as current matrix
+	if (instance->isSkinApply ())
+	{
+		// Setup the matrix with the root skeleton matrix
+		drv->setupModelMatrix(instance->getSkeletonModel()->getMatrix ());
+	}
 
 	// Second lod ?
 	if ( (instance->Lod1!=0xffffffff) && (passOpaque==false) )

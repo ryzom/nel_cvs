@@ -80,10 +80,7 @@
 														NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CLocalMailBox(NULL)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
-	
-	const NLAIC::CIdentType CPaireType::IdPaireType("Pair",	NLAIC::CSelfClassFactory(CPaireType(NULL,NULL)),
-																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
-																NLAIC::CTypeOfOperator::opEq );
+		
 	const NLAIC::CIdentType CStringType::IdStringType("String",	NLAIC::CSelfClassFactory(CStringType(CStringVarName("XX"))),
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
@@ -192,7 +189,11 @@
 															NLAIC::CTypeOfOperator::opInfEq | 
 															NLAIC::CTypeOfOperator::opSupEq |
 															NLAIC::CTypeOfOperator::opNot |
-															NLAIC::CTypeOfOperator::opDiff));	
+															NLAIC::CTypeOfOperator::opDiff));
+
+	const NLAIC::CIdentType CPaireType::IdPaireType("Pair",	NLAIC::CSelfClassFactory(CPaireType(new CharType,new CharType)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
+																NLAIC::CTypeOfOperator::opEq );
 	
 	const NLAIC::CIdentType CVectorGroupManager::IdVectorGroupManager("VectorGroupManager",NLAIC::CSelfClassFactory(CVectorGroupManager()),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),

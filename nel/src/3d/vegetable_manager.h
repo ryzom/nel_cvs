@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.2 2001/11/07 13:11:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/matrix.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/block_memory.h"
+#include "nel/misc/vector_2f.h"
 #include "3d/vegetable_clip_block.h"
 #include "3d/vegetable_instance_group.h"
 #include "3d/vegetable_shape.h"
@@ -85,6 +86,7 @@ public:
 
 	/** add an instance to an ig, enlarging the associated clipBlock
 	 *	If the shape is not lighted, then only diffuseColor is used, to setup color per vertex.
+	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
 	 */
 	void						addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
@@ -179,6 +181,13 @@ private:
 	double											_WindPrecRenderTime;
 	// updated at each render().
 	double											_WindAnimTime;
+
+	// Constant LUT.
+	float											_CosTable[NL3D_VEGETABLE_VP_LUT_SIZE];
+	// computed at each render().
+	NLMISC::CVector2f								_WindTable[NL3D_VEGETABLE_VP_LUT_SIZE];
+
+
 	// @}
 
 };

@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.3 2001/11/07 13:11:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,10 +47,6 @@ namespace NL3D
 
 
 #define	NL3D_VEGETABLE_VERTEX_FREE_MEMORY_RESERVE	1024
-
-
-// 65000 is a maximum because of GeForce limitations.
-#define	NL3D_VEGETABLE_VERTEX_MAX_VERTEX_VBHARD		60000
 
 
 // ***************************************************************************
@@ -332,6 +328,7 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 		}
 	}
 
+	//nlinfo("VEGET: Alloc %d verts. %s", numVertices, _VBHardOk?"VBHard":"VBSoft");
 }
 
 
@@ -354,8 +351,13 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 	v[3]  == Color (if unlit) or DiffuseColor (if lighted)
 	v[4]  == SecondaryColor (==ambient if lighted or backFace color if Unlit 2Sided)
 	v[8]  == Tex0 (xy) 
-	v[9]  == BendInfo (xy) = {BendWeight*2, BendPhase}
-		NB: *2 because compute a quaternion
+	v[9]  == BendInfo (xy) = {BendWeight/2, BendPhase}
+		NB: /2 because compute a quaternion
+
+	Changes: If unlit, then small changes:
+	v[0]  == Pos to center, with v[0].w == BendWeight * v[0].norm()
+	v[9]  == BendInfo (xy) = {v[0].norm(), BendPhase}
+
 
 	Constant:
 	--------
@@ -368,29 +370,112 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 
 	// Bend:
 	c[16]= quaternion axis. w==1, and z must be 0
-	c[17]=	{ timeAnim (angle), WindPower, 0, 0 }
+	c[17]=	{ timeAnim , WindPower, 0, 0 }
 	c[18]=	High order Taylor cos coefficient: { -1/2, 1/24, -1/720, 1/40320 }
 	c[19]=	Low order Taylor cos coefficient: { 1, -1/2, 1/24, -1/720 }
 	c[20]=	Low order Taylor sin coefficient: { 1, -1/6, 1/120, -1/5040 }
 	c[21]=	Special constant vector for quatToMatrix: { 0, 1, -1, 0 }
 	c[22]=	{0.5, Pi, 2*Pi, 1/(2*Pi)}
+	c[23]=	{64, 0, 0, 0}  (size of the LUT)
+
+	// Bend Lut:
+	c[32..95] 64 Lut entries for cos-like animation
+
 
 	Fog Note:
 	-----------
-	Fog is computed on position R5.
-	R5.w==1, and suppose that ModelViewMatrix has no Projection Part.
-	Then Homogenous-coordinate == Non-Homogenous-coordinate.
-	Hence we need only (ModelView*R1).z to get the FogC value.
-	=> computed in just on instruction.
+	Fog should be disabled, because not computed (for speed consideration and becasue micro-vegetation should never
+	be in Fog).
+
+
+	Speed Note:
+	-----------
+	Max program length (lighted/2Sided) is:
+		28 (bend-quaternion) + 
+		16 (rotNormal + bend + lit 2Sided) + 
+		5  (proj + tex)
+		49
+
+	Normal program length (unlit/2Sided) is:
+		11 (bend-delta) + 
+		2  (unlit 2Sided) + 
+		5  (proj + tex)
+		18
+
 */
+
+
+// ***********************
+/*
+	Fast (but less accurate) Bend program:
+		Result: bend pos into R5, 
+*/
+// ***********************
+const char* NL3D_FastBendProgram=
+"!!VP1.0																				\n\
+	# compute time of animation: time + phase.											\n\
+	ADD	R0.x, c[17].x, v[9].y;		# R0.x= time of animation							\n\
+																						\n\
+	# animation: use the 64 LUT entries													\n\
+	EXP	R0.y, R0.x;						# fract part=> R0.y= [0,1[						\n\
+	MUL	R0.x, R0.y, c[23].x;			# R0.x= [0,64[									\n\
+	ARL	A0.x, R0.x;						# A0.x= index in the LUT						\n\
+	EXP	R0.y, R0.x;						# R0.y= R0.x-A0.x= fp (fract part)				\n\
+	# lookup and lerp in one it: R1= value + fp * dv.									\n\
+	MAD	R1.xy, R0.y, c[A0.x+32].zwww, c[A0.x+32].xyww;									\n\
+																						\n\
+	# The direction and power of the wind is encoded in the LUT.						\n\
+	# Scale now by vertex BendFactor (stored in v[0].w)									\n\
+	MAD	R5.xyz, R1, v[0].w, v[0].xyzw;													\n\
+	# compute 1/norm, and multiply by original norm stored in v[9].x					\n\
+	DP3	R0.x, R5, R5;																	\n\
+	RSQ	R0.x, R0.x;																		\n\
+	MUL	R0.x, R0.x, v[9].x;																\n\
+	# mul by this factor, and add to center												\n\
+	MAD	R5, R0.x, R5, v[10];															\n\
+																						\n\
+";
+
+
+// Test
+/*const char* NL3D_FastBendProgram=
+"!!VP1.0																				\n\
+	# compute time of animation: time + phase.											\n\
+	ADD	R0.x, c[17].x, v[9].y;		# R0.x= time of animation							\n\
+																						\n\
+	# animation: f(x)= cos(x). compute a high precision cosinus							\n\
+	EXP	R0.y, R0.x;						# fract part=> R0.y= [0,1] <=> [-Pi, Pi]		\n\
+	MAD	R0.x, R0.y, c[22].z, -c[22].y;	# R0.x= a= [-Pi, Pi]							\n\
+	# R0 must get a2, a4, a6, a8														\n\
+	MUL	R0.x, R0.x, R0.x;				# R0.x= a2										\n\
+	MUL	R0.y, R0.x, R0.x;				# R0= a2, a4									\n\
+	MUL	R0.zw, R0.y, R0.xxxy;			# R0= a2, a4, a6, a8							\n\
+	# Taylor serie: cos(x)= 1 - (1/2) a2 + (1/24) a4 - (1/720) a6 + (1/40320) a8.		\n\
+	DP4	R0.x, R0, c[18];				# R0.x= cos(x) - 1.								\n\
+																						\n\
+																						\n\
+	# original	norm																	\n\
+	DP3	R2.x, v[0], v[0];																\n\
+	RSQ	R2.y, R2.x;																		\n\
+	MUL	R2.x, R2.x, R2.y;																\n\
+	# norm, mul by factor, and add to relpos											\n\
+	ADD	R1.x, R0.x, c[8].w;																	\n\
+	MUL	R0.x, v[9].x, R2.x;															\n\
+	MUL	R1, R1, R0.x;																	\n\
+	ADD	R5.xyz, R1, v[0];																\n\
+	# mod norm																			\n\
+	DP3	R0.x, R5, R5;																	\n\
+	RSQ	R0.x, R0.x;																		\n\
+	MUL	R0.x, R0.x, R2.x;																\n\
+	MAD	R5, R0.x, R5, v[10];															\n\
+";*/
+
 
 
 // ***********************
 /*
 	Bend start program:
 		Result: bend pos into R5, and R7,R8,R9 is the rotation matrix for possible normal lighting.
-
-	TODO_VEGET_OPTIM: lot of ways to optimize this. And may not need rotation scheme if vegetables are not lighted...
 */
 // ***********************
 // Splitted in 2 parts because of the 2048 char limit
@@ -400,7 +485,6 @@ const char* NL3D_BendProgramP0=
 	ADD	R0.x, c[17].x, v[9].y;		# R0.x= time of animation							\n\
 																						\n\
 	# animation: f(x)= cos(x). compute a high precision cosinus							\n\
-	MAD	R0.x, R0.x, c[22].w, c[22].x;	# transform to [-Pi, Pi]						\n\
 	EXP	R0.y, R0.x;						# fract part=> R0.y= [0,1] <=> [-Pi, Pi]		\n\
 	MAD	R0.x, R0.y, c[22].z, -c[22].y;	# R0.x= a= [-Pi, Pi]							\n\
 	# R0 must get a2, a4, a6, a8														\n\
@@ -416,7 +500,7 @@ const char* NL3D_BendProgramP0=
 	MUL	R0.x, R0.x, c[17].y;			# R0.x= angle [0, WindPower*BendWeight/2]		\n\
 																						\n\
 	# compute good precision sinus and cosinus, in R0.xy.								\n\
-	# suppose that BendWeightMax*2== 2Pi/3 => do not need to fmod() nor					\n\
+	# suppose that BendWeightMax/2== 2Pi/3 => do not need to fmod() nor					\n\
 	# to have high order taylor serie													\n\
 	DST	R1.xy, R0.x, R0.x;				# R1= 1, a2										\n\
 	MUL	R1.z, R1.y, R1.y;				# R1= 1, a2, a4									\n\
@@ -460,11 +544,10 @@ const char* NL3D_BendProgramP1=
 	DP3	R5.x, R7, v[0];																	\n\
 	DP3	R5.y, R8, v[0];																	\n\
 	DP3	R5.z, R9, v[0];				# R5= bended relative pos to center.				\n\
-	MOV	R5.w, c[8].y;				# R5.w= 1.											\n\
 																						\n\
 																						\n\
 	# add pos to center pos.															\n\
-	ADD	R5.xyz, R5, v[10];			# R5= world pos. R5.w=1								\n\
+	ADD	R5, R5, v[10];				# R5= world pos. R5.w= R5.w+v[10].w= 0+1= 1			\n\
 																						\n\
 ";
 
@@ -553,7 +636,7 @@ const char* NL3D_UnlitMiddle2SidedVegetableProgram=
 
 // ***********************
 /*
-	Common end of program: project, texture, and Fog. Take pos from R5
+	Common end of program: project, texture. Take pos from R5
 */
 // ***********************
 const char* NL3D_CommonEndVegetableProgram=
@@ -563,7 +646,6 @@ const char* NL3D_CommonEndVegetableProgram=
 	DP4 o[HPOS].z, c[2], R5;															\n\
 	DP4 o[HPOS].w, c[3], R5;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
-	DP4	o[FOGC].x, c[6], -R5;		# fogc>0 => fogc= - (ModelView*R5).z				\n\
 	END																					\n\
 ";
 
@@ -588,17 +670,23 @@ void				CVegetableVBAllocator::setupVBFormatAndVertexProgram()
 {
 	// Build the Vertex Format.
 	_VB.clearValueEx();
-	_VB.addValueEx(NL3D_VEGETABLE_VPPOS_POS,		CVertexBuffer::Float3);		// v[0]
 	// if lighted, need world space normal and AmbientColor for each vertex.
 	if( _Type == NL3D_VEGETABLE_RDRPASS_LIGHTED || _Type == NL3D_VEGETABLE_RDRPASS_LIGHTED_2SIDED )
 	{
+		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_POS,	CVertexBuffer::Float3);		// v[0]
 		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_NORMAL, CVertexBuffer::Float3);		// v[2]
 		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR1, CVertexBuffer::UChar4);	// v[4]
 	}
-	// If 2Sided unlit, secondary color == backface color.
-	else if( _Type == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED )
+	// If unlit
+	else
 	{
-		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR1, CVertexBuffer::UChar4);	// v[4]
+		// slightly different VertexProgram, v[0].w== BendWeight, and v[9].x== v[0].norm()
+		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_POS,		CVertexBuffer::Float4);		// v[0]
+		// If 2Sided unlit, secondary color == backface color.
+		if( _Type == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED )
+		{
+			_VB.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR1, CVertexBuffer::UChar4);	// v[4]
+		}
 	}
 	_VB.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR0,		CVertexBuffer::UChar4);		// v[3]
 	_VB.addValueEx(NL3D_VEGETABLE_VPPOS_TEX0,		CVertexBuffer::Float2);		// v[8]
@@ -610,7 +698,10 @@ void				CVegetableVBAllocator::setupVBFormatAndVertexProgram()
 	// Init the Vertex Program.
 	string	vpgram;
 	// start always with Bend.
-	vpgram= NL3D_BendProgram;
+	if( _Type==NL3D_VEGETABLE_RDRPASS_LIGHTED || _Type==NL3D_VEGETABLE_RDRPASS_LIGHTED_2SIDED )
+		vpgram= NL3D_BendProgram;
+	else
+		vpgram= NL3D_FastBendProgram;
 	// combine the VP according to Type
 	switch(_Type)
 	{

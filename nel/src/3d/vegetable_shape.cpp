@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * <File description>
  *
- * $Id: vegetable_shape.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: vegetable_shape.cpp,v 1.3 2001/11/07 13:11:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ CVegetableShape::CVegetableShape()
 {
 	Lighted= false;
 	DoubleSided= false;
+	PreComputeLighting= false;
 }
 
 // ***************************************************************************
@@ -60,6 +61,9 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 
 	// DoubleSided
 	DoubleSided= vbuild.DoubleSided;
+
+	// PreComputeLighting.
+	PreComputeLighting= Lighted && vbuild.PreComputeLighting;
 
 	// BendCenterMode
 	BendCenterMode= vbuild.BendCenterMode;
@@ -180,6 +184,7 @@ void		CVegetableShape::serial(NLMISC::IStream &f)
 
 	f.serial(Lighted);
 	f.serial(DoubleSided);
+	f.serial(PreComputeLighting);
 	f.serialEnum(BendCenterMode);
 	f.serial(VB);
 	f.serialCont(TriangleIndices);

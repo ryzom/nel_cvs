@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.20 2001/11/05 16:26:44 berenguier Exp $
+ * $Id: landscape.h,v 1.21 2001/11/07 13:11:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -692,6 +692,8 @@ private:
 
 	/// Tells if the Vegetable Managemnt is enabled.
 	bool						_VegetableManagerEnabled;
+	/// Tells if the current dirver support vegetable.
+	bool						_DriverOkForVegetable;
 
 	/// Vegetagble Lighting
 	CRGBA						_VegetableAmbient;

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.88 2001/11/05 16:26:44 berenguier Exp $
+ * $Id: landscape.cpp,v 1.89 2001/11/07 13:11:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,6 +216,7 @@ CLandscape::CLandscape() :
 
 	// Init vegetable  setup.
 	_VegetableManagerEnabled= false;
+	_DriverOkForVegetable= false;
 	_VegetableAmbient.set(64, 64, 64, 255);
 	_VegetableDiffuse.set(150, 150, 150, 255);
 
@@ -448,6 +449,12 @@ void			CLandscape::setDriver(IDriver *drv)
 		// Does the driver support VertexShader???
 		// only if VP supported by GPU.
 		_VertexShaderOk= (_Driver->isVertexProgramSupported() && !_Driver->isVertexProgramEmulated());
+
+
+		// Does the driver has sufficient requirements for Vegetable???
+		// only if VP supported by GPU, and Only if max vertices allowed.
+		_DriverOkForVegetable= _VertexShaderOk && (_Driver->getMaxVerticesByVertexBufferHard()>=NL3D_VEGETABLE_VERTEX_MAX_VERTEX_VBHARD);
+
 	}
 }
 
@@ -698,7 +705,7 @@ void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 		_TileVB.updateDriver(_Driver);
 
 		// must do the same for _VegetableManager.
-		if(_VertexShaderOk)
+		if(_DriverOkForVegetable)
 			_VegetableManager->updateDriver(_Driver);
 
 		lockBuffers ();
@@ -1237,7 +1244,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	// 5. Vegetable Management.
 	//================================
 	// render all vegetables, only if driver support VertexProgram.
-	if(_VertexShaderOk)
+	if(isVegetableActive())
 	{
 		// Use same plane as TessBlock for faster clipping.
 		vector<CPlane>		vegetablePyramid;
@@ -2609,7 +2616,7 @@ void		CLandscape::enableVegetable(bool enable)
 // ***************************************************************************
 bool		CLandscape::isVegetableActive() const
 {
-	return _VegetableManagerEnabled && _VertexShaderOk;
+	return _VegetableManagerEnabled && _DriverOkForVegetable;
 }
 
 // ***************************************************************************
@@ -2662,9 +2669,11 @@ const std::vector<CVegetable*>	&CLandscape::getTileVegetableList(uint16 tileId, 
 
 
 		// init the grass vegetable.
-		grass0.ShapeName= "grass.veget";
-		grass0.Density.Abs= -3;
-		grass0.Density.Rand= 5;
+		grass0.ShapeName= "grassUnlit.veget";
+		//grass0.ShapeName= "grass.veget";
+		grass0.Density.Abs= -5;
+		grass0.Density.Rand= 10;
+
 		grass0.Density.Frequency= 0.08f;
 		grass0.setAngleGround(0.7f);
 
@@ -2696,7 +2705,7 @@ const std::vector<CVegetable*>	&CLandscape::getTileVegetableList(uint16 tileId, 
 
 
 		grass0.BendPhase.Abs= 0;
-		grass0.BendPhase.Rand= (float)(4*Pi);
+		grass0.BendPhase.Rand= 2.f;
 		grass0.BendPhase.Frequency= 0.1f;
 		grass0.BendPhase.Frequency= 0.1f;
 		grass0.BendFactor.Abs= 0.5;

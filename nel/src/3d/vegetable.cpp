@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.3 2001/11/07 13:11:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,9 +125,11 @@ void	CVegetable::generateGroup(const CVector &posInWorld, const CVector &surface
 	// modulate density with angleFactor.
 	nbInst*= angleFact;
 
-	// Now, 0<nbInst<+oo. If we have 0.1, it means that we have 10% chance to spawn an instance.
+	// Now, 0<=nbInst<+oo. If we have 0.1, it means that we have 10% chance to spawn an instance.
 	// So add a "random" value (with help of a noise with High frequency)
-	nbInst+= RandomGenerator.evalOneLevelRandom(posInWorld);
+	// if nbInst==0, we should never have any instance (which may arise if evalOneLevelRandom()==1).
+	// hence the 0.99f* which ensure that we do nbInst+= [0..1[.
+	nbInst+= 0.99f * RandomGenerator.evalOneLevelRandom(posInWorld);
 
 	// and then get only the integral part.
 	sint	nbInstances= OptFastFloor(nbInst);

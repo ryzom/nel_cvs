@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.3 2001/11/07 13:11:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "3d/vegetable_manager.h"
 #include "3d/driver.h"
 #include "3d/texture_file.h"
+#include "3d/fast_floor.h"
 
 
 using namespace std;
@@ -46,8 +47,10 @@ CVegetableManager::CVegetableManager() :
 	_ClipBlockMemory(NL3D_VEGETABLE_CLIP_BLOCK_BLOCKSIZE),
 	_InstanceGroupMemory(NL3D_VEGETABLE_INSTANCE_GROUP_BLOCKSIZE)
 {
+	uint	i;
+
 	// Init all the allocators with the appropriate pass.
-	for(uint i=0; i <NL3D_VEGETABLE_NRDRPASS; i++)
+	for(i=0; i <NL3D_VEGETABLE_NRDRPASS; i++)
 	{
 		_VBAllocator[i].init(i);
 	}
@@ -66,6 +69,12 @@ CVegetableManager::CVegetableManager() :
 	_WindTime= 0;
 	_WindPrecRenderTime= 0;
 	_WindAnimTime= 0;
+
+	// Init CosTable.
+	for(i=0; i<NL3D_VEGETABLE_VP_LUT_SIZE; i++)
+	{
+		_CosTable[i]= (float)cos( i*2*Pi / NL3D_VEGETABLE_VP_LUT_SIZE );
+	}
 }
 
 
@@ -199,11 +208,13 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	//--------------------
 	bool	instanceLighted= shape->Lighted;
 	bool	instanceDoubleSided= shape->DoubleSided;
+	bool	destLighted= instanceLighted && !shape->PreComputeLighting;
+	bool	precomputeLighting= instanceLighted && shape->PreComputeLighting;
 
 	// get correct rdrPass / allocator where we insert vertices/faces
 	uint	rdrPass;
 	// get according to lighted / doubleSided state
-	if(instanceLighted)
+	if(destLighted)
 	{
 		if(instanceDoubleSided)
 			rdrPass= NL3D_VEGETABLE_RDRPASS_LIGHTED_2SIDED;
@@ -268,14 +279,19 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 	// dst info
 	uint	dstVertexSize= dstVBInfo.getVertexSize();
-	uint	dstNormalOff= (instanceLighted? dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_NORMAL) : 0);
-	// got 2nd color if lighted (for ambient) or if 2Sided.
-	uint	dstColor1Off= ( (instanceLighted||instanceDoubleSided)? 
+	uint	dstNormalOff= (destLighted? dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_NORMAL) : 0);
+	// got 2nd color if really lighted (for ambient) or if 2Sided.
+	uint	dstColor1Off= ( (destLighted||instanceDoubleSided)? 
 		dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1) : 0);
 	uint	dstColor0Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR0);
 	uint	dstTex0Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_TEX0);
 	uint	dstBendOff= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_BENDINFO);
 	uint	dstCenterOff= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_CENTER);
+
+
+	// Usefull For !destLighted only.
+	CVector		deltaPos;
+	float		deltaPosNorm;
 
 
 	// For all vertices of shape, transform and store manager indices in temp shape.
@@ -289,6 +305,9 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		// Fill this vertex.
 		uint8	*srcPtr= (uint8*)shape->VB.getVertexCoordPointer(i);
 		uint8	*dstPtr= (uint8*)allocator->getVertexPointer(vid);
+
+		// Get bendWeight for this vertex.
+		float	vertexBendWeight= ((CUV*)(srcPtr + srcTex1Off))->U * bendFactor;
 
 		// Pos.
 		//-------
@@ -305,41 +324,93 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			bendCenterPos= mat.mulVector(v);				// mulVector, because translation in v[center]
 		}
 		// copy
-		*(CVector*)dstPtr= relPos-bendCenterPos;
+		deltaPos= relPos-bendCenterPos;
+		*(CVector*)dstPtr= deltaPos;
 		*(CVector*)(dstPtr + dstCenterOff)= instancePos + bendCenterPos;
+		// if !destLighted, then VP is different
+		if(!destLighted)
+		{
+			deltaPosNorm= deltaPos.norm();
+			// copy bendWeight in v.w
+			CVectorH	*vh= (CVectorH*)dstPtr;
+			// Mul by deltaPosNorm, to draw an arc circle.
+			vh->w= vertexBendWeight * deltaPosNorm;
+		}
 
 		// Enlarge the clipBlock of the IG.
 		// Since small shape, enlarge with each vertices. simpler and maybe faster.
 		// TODO_VEGET: bend and clipping ...
 		ig->_Owner->extendBBoxOnly(instancePos + relPos);
 
-		// If ligthed
+
+		// Color-ligthing.
 		//-------
-		if(instanceLighted)
+		if(!precomputeLighting)
 		{
-			// normal and ambient
-			*(CVector*)(dstPtr + dstNormalOff)= normalMat.mulVector( *(CVector*)(srcPtr + srcNormalOff) );
-			*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
+			// just copy the primary color (means diffuse part if lighted)
+			*(CRGBA*)(dstPtr + dstColor0Off)= primaryRGBA;
+			// normal and secondary color
+			if(destLighted)
+			{
+				// normal and ambient
+				*(CVector*)(dstPtr + dstNormalOff)= normalMat.mulVector( *(CVector*)(srcPtr + srcNormalOff) );
+				*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
+			}
+			else if(instanceDoubleSided)
+			{
+				// secondary color computed.
+				*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
+			}
 		}
-		else if(instanceDoubleSided)
+		else
 		{
-			// secondary color computed.
-			*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
+			nlassert(!destLighted);
+
+			// compute dot product.
+			CVector		rotNormal= normalMat.mulVector( *(CVector*)(srcPtr + srcNormalOff) );
+			// must normalize() because scale is possible.
+			rotNormal.normalize();
+			// compute dot product with current light
+			float	dp= rotNormal*_DirectionalLight;
+
+			// compute front-facing coloring.
+			float	f= max(0.f, -dp);
+			CRGBA	resColor;
+			resColor.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+			resColor.addRGBOnly(resColor, secondaryRGBA);
+			// copy to dest
+			*(CRGBA*)(dstPtr + dstColor0Off)= resColor;
+
+			// If 2Sided
+			if(instanceDoubleSided)
+			{
+				// compute back-facing coloring.
+				float	f= max(0.f, dp);
+				CRGBA	resColor;
+				resColor.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+				resColor.addRGBOnly(resColor, secondaryRGBA);
+				// copy to dest
+				*(CRGBA*)(dstPtr + dstColor1Off)= resColor;
+			}
 		}
 
 
-		// Color / Texture.
+		// Texture.
 		//-------
-		*(CRGBA*)(dstPtr + dstColor0Off)= primaryRGBA;
 		*(CUV*)(dstPtr + dstTex0Off)= *(CUV*)(srcPtr + srcTex0Off);
 
 		// Bend.
 		//-------
 		CUV		*dstBendPtr= (CUV*)(dstPtr + dstBendOff);
-		// setup bend Weight.
-		dstBendPtr->U= ((CUV*)(srcPtr + srcTex1Off))->U * bendFactor;
 		// setup bend Phase.
 		dstBendPtr->V= bendPhase;
+		// setup bend Weight.
+		// if !destLighted, then VP is different, vertexBendWeight is stored in v[0].w
+		if(destLighted)
+			dstBendPtr->U= vertexBendWeight;
+		else
+			// the VP need the norm of relPos in v[9].x
+			dstBendPtr->U= deltaPosNorm;
 
 
 		// fill the vertex in AGP.
@@ -480,6 +551,12 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 	//--------------------
 
 
+	// Disable Fog.
+	bool	bkupFog;
+	bkupFog= driver->fogEnabled();
+	driver->enableFog(false);
+
+
 	// set model matrix to identity.
 	driver->setupModelMatrix(CMatrix::Identity);
 
@@ -494,13 +571,11 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 	// Doing it incrementaly allow change of of frequency each frame with good results.
 	_WindAnimTime+= (_WindTime - _WindPrecRenderTime)*_WindFrequency;
 	_WindAnimTime= fmod(_WindAnimTime, 1.0f);
+	// NB: Leave timeBend as a time (ie [0..1]), because VP do a "EXP time".
 	timeBend= _WindAnimTime;
 	// For incremental computing.
 	_WindPrecRenderTime= _WindTime;
 
-	// Freq to Angle.
-	timeBend*= 2*Pi;
-	timeBend-= Pi;
 
 	// compute the angleAxis corresponding to direction
 	CVector	angleAxis;
@@ -534,7 +609,31 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 	driver->setConstant( 21, 0.f, 1.f, -1.f, 0.f);
 	// c[22]=	{0.5f, Pi, 2*Pi, 1/(2*Pi)}
 	driver->setConstant( 22, 0.5f, (float)Pi, (float)(2*Pi), (float)(1/(2*Pi)) );
+	// c[23]=	{NL3D_VEGETABLE_VP_LUT_SIZE, 0, 0, 0}. NL3D_VEGETABLE_VP_LUT_SIZE==64.
+	driver->setConstant( 23, NL3D_VEGETABLE_VP_LUT_SIZE, 0.f, 0.f, 0.f );
 
+
+	// Fill LUT WindTable.
+	uint	i;
+	for(i=0; i<NL3D_VEGETABLE_VP_LUT_SIZE; i++)
+	{
+		/* NB: this formula works quite well, because vertex BendFactor is expressed in Radian/2.
+			And since animFactor==(_CosTable[i] + 1) E [0..2], we have here an arc-cirle computing:
+			dmove= Radius * AngleRadian/2 *  animFactor. So at max of animFactor, we have:
+			dmove= Radius * AngleRadian, which is by definition an arc-cirle computing...
+			And so this approximate the Bend-quaternion Vertex Program.
+		*/
+		// Compute direction of the wind, and multiply by WindPower.
+		_WindTable[i]= CVector2f(_WindDirection.x, _WindDirection.y) * _WindPower *
+			(_CosTable[(i+32)%64] + 1);
+	}
+	// Fill constant. Start at 32.
+	for(i=0; i<NL3D_VEGETABLE_VP_LUT_SIZE; i++)
+	{
+		CVector2f		cur= _WindTable[i];
+		CVector2f		delta= _WindTable[ (i+1)%NL3D_VEGETABLE_VP_LUT_SIZE ] - cur;
+		driver->setConstant( 32+i, cur.x, cur.y, delta.x, delta.y );
+	}
 
 
 	// For all renderPass.
@@ -588,6 +687,9 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 	// reset state to default.
 	driver->enableVertexProgramDoubleSidedColor(false);
 
+
+	// restore Fog.
+	driver->enableFog(bkupFog);
 
 }
 

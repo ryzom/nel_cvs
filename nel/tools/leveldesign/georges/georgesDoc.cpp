@@ -141,13 +141,21 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 	lpsx.push_back( std::make_pair( CStringEx( "Enum" ),						CStringEx( "ENUM_boolean.typ" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Predef" ),						CStringEx( "list< predef.dfn >" ) ) );
 	papp->GetLoader()->MakeDfn( "U:/dfn/typ.dfn", &lpsx );
+*/
 
-/*
+	// Definition des proprietes d'un vegetable
 	lpsx.push_back( std::make_pair( CStringEx( "Include_patats" ),						CStringEx( "list< patat_name.typ >" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Exclude_patats" ),						CStringEx( "list< patat_name.typ >" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Plants" ),								CStringEx( "list< plant_instance.dfn >" ) ) );
-	papp->GetLoader()->MakeDfn( "U:/dfn/vegetable.dfn", &lpsx );
+	lpsx.push_back( std::make_pair( CStringEx( "Jitter_Pos" ),							CStringEx( "float.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Scale_Min" ),							CStringEx( "float.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Scale_Max" ),							CStringEx( "float.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Put_On_Water" ),						CStringEx( "boolean.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Water_Height" ),						CStringEx( "float.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Random_Seed" ),							CStringEx( "uint32.typ" ) ) );
+	papp->GetLoader()->MakeDfn( "c:/vegetable.dfn", &lpsx );
 
+/*
 	// définition des propriétés possibles d'une plante
 	lpsx.clear();
 	lpsx.push_back( std::make_pair( CStringEx( "File name" ),							CStringEx( "plant_name.typ" ) ) );
@@ -173,7 +181,7 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 	lpsx.push_back( std::make_pair( CStringEx( "PatatFrite" ),							CStringEx( "PatatFrite" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "PatatVapeur" ),							CStringEx( "PatatVapeur" ) ) );
 	papp->GetLoader()->MakeTyp( "U:/dfn/patat_name.typ", "string", "PATAT", "true", "", "", "PatatFrite", &lpsx, &lpsx2 );
-*/
+
 	std::vector< CStringEx > lsx;
 	lsx.push_back( "fPatateFrite" );
 	lsx.push_back( "fPatatePuree" );
@@ -181,6 +189,8 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 	lsx.push_back( "fPatateSautee" );
 	papp->GetLoader()->SetTypPredef( "U:/dfn/patat_name.typ", lsx );
 	papp->UpdateAllDocument();
+*/
+
 #else
 
 	papp->SetRootDirectory( sxrootdirectory );

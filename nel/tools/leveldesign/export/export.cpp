@@ -1,7 +1,7 @@
 /** \file export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.2 2002/01/09 10:40:15 besson Exp $
+ * $Id: export.cpp,v 1.3 2002/01/16 15:26:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,8 +133,6 @@ bool CExport::export (SExportOptions &opt, IExportCB *expCB)
 
 	_Options = &opt;
 	_ExportCB = expCB;
-
-	srand (654861);
 
 	if (_Options->GenerateLandscape)
 	{
@@ -419,8 +417,8 @@ bool CExport::generateVegetable (const std::string &SrcFile)
 	}
 
 	// Generating
-	////////////// float jitter = 1.0f; // \todo trap -> Put it in a georges file
-	float jitter = 0.0f;
+	float jitter = formVegetable.JitterPos;
+	srand (formVegetable.RandomSeed);
 	for (i = 0; i < formVegetable.IncludePatats.size(); ++i)
 	{
 		uint32 nCurPlant = 0;
@@ -482,7 +480,7 @@ bool CExport::generateVegetable (const std::string &SrcFile)
 
 				bool bExists = false;
 				CVector pos;
-				for (m = 0; m < 8; ++m)
+				for (m = 0; m < 32; ++m)
 				{
 					pos.x = vMin.x + squareLength * k + (frand(2.0f)-1.0f) * jitter * 0.5f * squareLength;
 					pos.y = vMin.y + squareLength * l + (frand(2.0f)-1.0f) * jitter * 0.5f * squareLength;
@@ -502,8 +500,16 @@ bool CExport::generateVegetable (const std::string &SrcFile)
 
 				SVegInst vi;
 				vi.Name = rFormPlant.Shape;
+				vi.Scale = (formVegetable.ScaleMax-formVegetable.ScaleMin)*frand(1.0)+formVegetable.ScaleMin;
+				vi.Radius = rFormPlant.BundingRadius * vi.Scale;
+				vi.Rot = (float)Pi * frand (1.0);
+				
+				if (formVegetable.PutOnWater)
+				{
+					if (pos.z < formVegetable.WaterHeight)
+						pos.z = formVegetable.WaterHeight;
+				}
 				vi.Pos = pos;
-				vi.Radius = rFormPlant.BundingRadius;
 				_VegInsts.push_back (vi);
 			}
 		}
@@ -593,11 +599,11 @@ bool CExport::isWellPlaced (CVector &pos, SPlantInstance &rPI, SFormPlant &rFP)
 	for (i = 0; i < nNbSamples; ++i)
 	{
 		base[i] = pos;
-		base[i].x += rFP.BundingRadius * cosf((2.0f*(float)Pi*i)/(float)nNbSamples);
-		base[i].y += rFP.BundingRadius * sinf((2.0f*(float)Pi*i)/(float)nNbSamples);
+		base[i].x += rFP.CollisionRadius * cosf((2.0f*(float)Pi*i)/(float)nNbSamples);
+		base[i].y += rFP.CollisionRadius * sinf((2.0f*(float)Pi*i)/(float)nNbSamples);
 		base[i].z = getZFromXY (base[i].x, base[i].y);
 
-		if (fabs(base[i].z-pos.z) > 0.5f)
+		if (fabs(base[i].z-pos.z) > 0.8f)
 			return false;
 	}
 
@@ -654,8 +660,8 @@ void CExport::writeVegetable (const string &LandFile)
 		{
 //vGlobalPos += _VegInsts[vegZone[k]].Pos;
 			Instances[k].Pos = _VegInsts[vegZone[k]].Pos;
-			Instances[k].Rot = CQuat(CVector::K, (float)Pi * frand(1.0));
-			Instances[k].Scale = CVector(1.0f, 1.0f, 1.0f);
+			Instances[k].Rot = CQuat(CVector::K, _VegInsts[vegZone[k]].Rot);
+			Instances[k].Scale = CVector(_VegInsts[vegZone[k]].Scale, _VegInsts[vegZone[k]].Scale, _VegInsts[vegZone[k]].Scale);
 			Instances[k].nParent = -1;
 			Instances[k].Name = _VegInsts[vegZone[k]].Name;
 			Instances[k].InstanceName = "vegetable_"; // see if it works

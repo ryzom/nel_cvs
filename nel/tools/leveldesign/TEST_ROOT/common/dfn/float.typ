@@ -17,7 +17,7 @@
             <Atom Name="Formula" Value="float"/>
           </POLYPTR>
           <POLYPTR id="3122392" class="CFormBodyEltAtom">
-            <Atom Name="Lowlimit" Value="0.0"/>
+            <Atom Name="Lowlimit" Value="-3.402823466e+38"/>
           </POLYPTR>
           <POLYPTR id="3122512" class="CFormBodyEltAtom">
             <Atom Name="Highlimit" Value="3.402823466e+38F"/>

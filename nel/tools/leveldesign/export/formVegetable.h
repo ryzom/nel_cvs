@@ -1,7 +1,7 @@
 /** \file formVegetable.h
  * The structure of a .vegetable in memory
  *
- * $Id: formVegetable.h,v 1.1 2001/12/28 14:47:59 besson Exp $
+ * $Id: formVegetable.h,v 1.2 2002/01/16 15:26:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 // ---------------------------------------------------------------------------
 
+#include "nel/misc/types_nl.h"
+
 #include <vector>
 #include <string>
 
@@ -47,6 +49,12 @@ struct SFormVegetable
 	std::vector<std::string>	IncludePatats;
 	std::vector<std::string>	ExcludePatats;
 	std::vector<SPlantInstance>	PlantInstances;
+	float	JitterPos;
+	float	ScaleMin;
+	float	ScaleMax;
+	bool	PutOnWater;
+	float	WaterHeight;
+	uint32	RandomSeed;
 
 	void build (CItem &item);
 };

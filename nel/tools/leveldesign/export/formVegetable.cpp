@@ -1,7 +1,7 @@
 /** \file formVegetable.cpp
  * Construction with a CItem
  *
- * $Id: formVegetable.cpp,v 1.1 2001/12/28 14:47:59 besson Exp $
+ * $Id: formVegetable.cpp,v 1.2 2002/01/16 15:26:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,4 +98,29 @@ void SFormVegetable::build (CItem &item)
 			pTmpElt = pElt->GetElt (diese);
 		}
 	}
+
+	pElt = item.GetElt ("Jitter_Pos");
+	if (pElt != NULL)
+		JitterPos = (float)atof(pElt->GetCurrentResult().c_str());
+
+	pElt = item.GetElt ("Scale_Min");
+	if (pElt != NULL)
+		ScaleMin  = (float)atof(pElt->GetCurrentResult().c_str());
+
+	pElt = item.GetElt ("Scale_Max");
+	if (pElt != NULL)
+		ScaleMax = (float)atof(pElt->GetCurrentResult().c_str());
+
+	pElt = item.GetElt ("Put_On_Water");
+	if (pElt != NULL)
+		PutOnWater = (pElt->GetCurrentResult() == "true") ? 1 : 0;
+
+	pElt = item.GetElt ("Water_Height");
+	if (pElt != NULL)
+		WaterHeight = (float)atof(pElt->GetCurrentResult().c_str());
+
+	pElt = item.GetElt ("Random_Seed");
+	if (pElt != NULL)
+		RandomSeed = (uint32)atoi(pElt->GetCurrentResult().c_str());
+
 }

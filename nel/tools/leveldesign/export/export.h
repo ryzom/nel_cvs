@@ -1,7 +1,7 @@
 /** \file export.h
  * Export from leveldesign data to client data
  *
- * $Id: export.h,v 1.2 2002/01/09 10:40:15 besson Exp $
+ * $Id: export.h,v 1.3 2002/01/16 15:26:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,9 @@ public:
 struct SVegInst
 {
 	NLMISC::CVector Pos;
+	float			Rot;
+	float			Scale;
+
 	float			Radius;
 	std::string		Name;
 };

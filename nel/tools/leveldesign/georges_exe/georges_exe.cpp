@@ -19,7 +19,10 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	{
 		// Init ui
 		pGeorges->initUI();
-		//logicEditor->initUILight(0,0,800,800);
+		char sCurDir[MAX_PATH];
+		GetCurrentDirectory (MAX_PATH,sCurDir);
+		pGeorges->SetRootDirectory (sCurDir);
+		pGeorges->SetWorkDirectory (sCurDir);
 
 		// Go
 		pGeorges->go();

@@ -7,6 +7,24 @@ This tools regroup the 3 other tools in a workspace way.
 - LogicEditor : Condition and trigger tools
 - Georges : Edit the monsters, the primitives description and so on
 
+With the master tool you can export vegetable through the landscape.
+Simply create a new form herited from a vegetable.dfn and edit it.
+The fields are
+ + Include_patats A set of patats in which we will plant the "Plants"
+ + Exclude_patats A set of patats in which the "Plants" will never appear
+ + Plants         A structure of plants
+    + Name            The name of the plant
+    + Shape           The .shape associated
+    + Shadow          The shape that will generate the shadows on the landscape 
+    + CollisionRadius The radius of the base of the plant (serve to plant it on the ground)
+    + BundingRadius   The minimum radius that between the center of the plant and another plant
+ + Jitter_Pos     The "randomness" of the position of the plants in the patat (from 0.0 (order) to 1.0 (random))
+ + Scale_Min      Minimum scaling for all plants ( normal scale is 1.0)
+ + Scale_Max      Maximum scale for all plants
+ + Put_On_Water   Do we have to put the plant on the water ?
+ + Water_Height   If we put the plant on water at which height is the water.
+ + Random_Seed    Number between 0 and 4,294,967,295 that initialize the random generation
+
 
 
 WorldEditor
@@ -30,6 +48,7 @@ Georges
 
 Georges needs a root directory which is :
 DFN (This directory regroups the .DFN definition of a type class)
+
 
 
 RESTRICTIONS

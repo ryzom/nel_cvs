@@ -112,6 +112,7 @@ then
 	../../bin/ig_elevation ig_elevation.cfg
 
 
+
 	# merge land_ld and land_max_elev
 	# +++++
 
@@ -135,13 +136,13 @@ then
 	list_ig=`ls -1 *.ig`
 	cd $dir_current
 	for filename in $list_ig ; do
-		if test -e ig_land_ligo_elev/$filename ; then
+		if test -e ig_merge_tmp/$filename ; then
 			../../bin/ig_add ig_land/$filename ig_land_ligo_elev/$filename ig_merge_tmp/$filename ;
 		else
-			cp ig_merge_tmp/$filename ig_land/$filename ;
+			cp ig_land_ligo_elev/$filename ig_land/$filename ;
 		fi
 	done
-
+	
 else
 	echo [Prim IG] OFF
 	echo [Prim IG] OFF >> log.log

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.40 2001/07/27 13:42:28 chafik Exp $
+ * $Id: agents.cpp,v 1.41 2001/07/27 15:13:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -372,9 +372,8 @@ namespace NLAIAGENT
 	const static sint32 _Father = 1;
 	const static sint32 _RunTel = 2;
 	const static sint32 _RunAsk = 3;
-	const static sint32 _GetNumId = 4;
-	const static sint32 _Self = 5;
-	const static sint32 _LastM = 6;
+	const static sint32 _GetNumId = 4;	
+	const static sint32 _LastM = 5;
 
 	IBasicAgent::CMethodCall IBasicAgent::_Method[] = 
 	{

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.146 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: landscape.cpp,v 1.147 2004/05/17 12:01:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1185,6 +1185,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// Before any render call. Set the global driver used to render.
 	CLandscapeGlobals::PatchCurrentDriver= driver;
 
+	// bkup the original fog color
+	CRGBA	fogColor= driver->getFogColor();
+
 	// Render Order. Must "invert", since initial order is NOT the render order. This is done because the lightmap pass
 	// DO NOT have to do any renderTile(), since it is computed in RGB0 pass.
 	nlassert(NL3D_MAX_TILE_PASS==5);
@@ -1300,6 +1303,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		// Special code for Lightmap and RGB0, for faster render.
 		if(passOrder==NL3D_TILE_PASS_RGB0)
 		{
+			// for RGB0 pass, setup the normal fogColor
+			driver->setupFog(driver->getFogStart(), driver->getFogEnd(), fogColor);
+
 			// RGB0 pass.
 			ItTileRdrPassSet	itTile;
 			for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
@@ -1329,6 +1335,10 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		}
 		else if(passOrder==NL3D_TILE_PASS_LIGHTMAP)
 		{
+			// for Lightmap pass (modulate blend), setup a White fogColor. This is not 
+			// mathematically correct but works fine
+			driver->setupFog(driver->getFogStart(), driver->getFogEnd(), CRGBA::White);
+			
 			// Lightmap Pass.
 			/* \todo yoyo: TODO_CLOUD: setup stage2, and setup texcoord generation. COMPLEX because of interaction
 			 with Dynamic LightMap
@@ -1380,9 +1390,14 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		else
 		{
 			// RGB1, RGB2, and ADD pass.
-
+			// for ADD pass (additive blend), setup a Black fogColor
+			if(passOrder==NL3D_TILE_PASS_ADD)
+				driver->setupFog(driver->getFogStart(), driver->getFogEnd(), CRGBA::Black);
+			// else setup the standard color (std blend)
+			else
+				driver->setupFog(driver->getFogStart(), driver->getFogEnd(), fogColor);
+			
 			// Render Base, Transitions or Additives.
-
 			ItTileRdrPassSet	itTile;
 			for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
 			{
@@ -1419,6 +1434,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 			}
 		}
 	}
+
+	// restore old fog color
+	driver->setupFog(driver->getFogStart(), driver->getFogEnd(), fogColor);
 
 	// Yoyo: profile
 	NL3D_PROFILE_LAND_SET(ProfNTileSetupMaterial, driver->profileSetupedMaterials()-ProfNTileSetupMaterial );
@@ -1910,7 +1928,7 @@ void			CLandscape::flushTiles(IDriver *drv, uint32 tileStart, uint32 nbTiles)
 	nlassert(tileStart+nbTiles<=65536);
 	
 	// Load tile rdrpass, force setup the texture.
-	for(sint tileId= tileStart; tileId<tileStart+nbTiles; tileId++)
+	for(sint tileId= tileStart; tileId<(sint)(tileStart+nbTiles); tileId++)
 	{
 		CTileInfo	*tile= TileInfos[tileId];
 		if(tile==NULL)
@@ -1950,7 +1968,7 @@ void			CLandscape::releaseTiles(uint32 tileStart, uint32 nbTiles)
 	nlassert(tileStart+nbTiles<=65536);
 	
 	// release tiles.
-	for(sint tileId= tileStart; tileId<tileStart+nbTiles; tileId++)
+	for(sint tileId= tileStart; tileId<(sint)(tileStart+nbTiles); tileId++)
 	{
 		CTileInfo	*tile= TileInfos[tileId];
 		if(tile!=NULL)

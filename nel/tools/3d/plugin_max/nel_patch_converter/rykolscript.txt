@@ -196,8 +196,9 @@ NelLoadBank
 Load the bank file selected with tile_utility. Return true if successful, else false.
 
 **********************************************
-NelGetTileSet
+NelGetTileSet tilenumber
 
+Return the tileset of this tile number.
 
 **********************************************
 NelViewShape ()
@@ -205,6 +206,18 @@ NelViewShape ()
 View the selected shapes with the NeL engine.
 
 **********************************************
-NelExportScene ObjectArray Filename.ig
+NelExportScene ObjectArray "Filename.ig"
 
 Export reference of the objects in the array in an instance group file.
+
+ObjectArray is an array of node
+Filename is the file name to export
+
+**********************************************
+NelExportAnimation ObjectArray "Filename.anim" boolean_scene
+
+Export an animation file.
+
+ObjectArray is an array of node
+Filename is the file name to export
+boolean_scene is false to export a model animation, true to export a scene animation.

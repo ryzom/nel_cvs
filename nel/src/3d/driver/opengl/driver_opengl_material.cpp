@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.42 2001/10/26 08:28:17 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.43 2001/11/07 10:50:53 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,6 +107,7 @@ static inline void convTexAddr(ITexture *tex, CMaterial::TTexAddressingMode mode
 
 bool CDriverGL::setupMaterial(CMaterial& mat)
 {
+
 	CShaderGL*	pShader;
 	GLenum		glenum;
 	uint32		touched=mat.getTouched();
@@ -115,6 +116,9 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 
 	// profile.
 	_NbSetupMaterialCall++;
+
+
+
 
 
 	// 0. Setup / Bind Textures.
@@ -138,6 +142,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				return(false);
 		}
 	}
+
 
 
 	// Activate the textures.
@@ -298,38 +303,46 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			glColor4ub(col.R, col.G, col.B, col.A);
 		}
 
-		// Texture addressing modes (support only via NVTextureShader for now)
-		//===================================================================
-
+			// Texture addressing modes (support only via NVTextureShader for now)
+		//===================================================================				
 		if (_Extensions.NVTextureShader)
 		{
 			if ( // supported only with normal shader
 				mat.getShader() == CMaterial::Normal 
 				&& (mat.getFlags() & IDRV_MAT_TEX_ADDR)
 			   )
-			{
-				_DriverGLStates.enableNVTextureShader(true);
+			{	
+				
+				_DriverGLStates.enableNVTextureShader(true);				
+				
+				
 				GLenum glAddrMode;
 				for (stage = 0; stage < getNbTextureStages(); ++stage)
 				{
+										
 					convTexAddr(mat.getTexture(stage), (CMaterial::TTexAddressingMode) (mat._TexAddrMode[stage]), glAddrMode);
+
+
 					if (glAddrMode != _CurrentTexAddrMode[stage]) // addressing mode different from the one in the device?
 					{
-						glActiveTextureARB(GL_TEXTURE0_ARB + stage);
-						glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, glAddrMode);					
+						_DriverGLStates.activeTextureARB(stage);
+						glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, glAddrMode);				
 						_CurrentTexAddrMode[stage] = glAddrMode;					
 					}
 				}
+								
 			}
 			else
-			{
-				_DriverGLStates.enableNVTextureShader(false);
+			{								
+				_DriverGLStates.enableNVTextureShader(false);								
 			}
 		}
 
 
+
 		_CurrentMaterial=&mat;
 	}
+
 
 	return true;
 }

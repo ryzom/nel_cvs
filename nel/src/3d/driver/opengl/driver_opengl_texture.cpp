@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.41 2001/10/29 16:09:01 lecroart Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.42 2001/11/07 10:52:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -439,8 +439,8 @@ bool CDriverGL::setupTexture(ITexture& tex)
 							void	*ptr= &(*pTInTC->getPixels(i).begin());
 							uint	w= pTInTC->getWidth(i);
 							uint	h= pTInTC->getHeight(i);
-							glTexImage2D(face_map[nText],i,glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr );
 
+							glTexImage2D(face_map[nText],i,glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr );
 
 							// profiling: count TextureMemory usage.
 							gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
@@ -500,9 +500,8 @@ bool CDriverGL::setupTexture(ITexture& tex)
 								void	*ptr= &(*tex.getPixels(i).begin());
 								uint	w= tex.getWidth(i);
 								uint	h= tex.getHeight(i);
-								glGetError();
+
 								glTexImage2D(GL_TEXTURE_2D,i,glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr );								
-								nlassert(glGetError() == GL_NO_ERROR);
 								// profiling: count TextureMemory usage.
 								gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
 							}
@@ -678,6 +677,8 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 				//======================
 				CTextureDrvInfosGL*	gltext;
 				gltext= getTextureGl(*tex);
+
+
 				glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);
 
 				// Change parameters of texture, if necessary.

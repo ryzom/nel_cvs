@@ -1,7 +1,7 @@
 /** \file plane.h
  * class CPlane
  *
- * $Id: plane.h,v 1.4 2000/10/25 10:09:57 berenguier Exp $
+ * $Id: plane.h,v 1.5 2001/11/14 15:46:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,15 @@ public:
 	 * \return number of vertices of out. 0 is returned if In polygon entirely back, or if nIn<=2.
 	 */
 	sint	clipPolygonFront(CVector in[], CVector out[], sint nIn) const;
+	//@}
+
+	/// \name normal inversion
+	//@{
+		/// get the inverted version of this plane (same position, but inverted normal)
+		CPlane  inverted() const;
+
+		/// invert this plane (same position, but inverted normal)
+		void	invert();
 	//@}
 
 	/// \name Misc

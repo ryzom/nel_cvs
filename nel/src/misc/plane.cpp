@@ -1,7 +1,7 @@
 /** \file plane.cpp
  * class CPlane
  *
- * $Id: plane.cpp,v 1.4 2000/11/21 17:17:29 valignat Exp $
+ * $Id: plane.cpp,v 1.5 2001/11/14 15:50:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,6 +118,8 @@ sint	CPlane::clipPolygonBack(CVector in[], CVector out[], sint nIn) const
 
 	return nOut;
 }
+
+//============================================================
 sint	CPlane::clipPolygonFront(CVector in[], CVector out[], sint nIn) const
 {
 	sint nOut=0,s,p,i;
@@ -144,6 +146,23 @@ sint	CPlane::clipPolygonFront(CVector in[], CVector out[], sint nIn) const
 
 	return nOut;
 }
+
+
+//============================================================
+CPlane  CPlane::inverted() const
+{
+	return CPlane(-a, -b, -c, -d);
+}
+		
+//============================================================
+void	CPlane::invert()
+{
+	a = -a;
+	b = -b;
+	c = -c;
+	d = -d;
+}
+
 
 
 

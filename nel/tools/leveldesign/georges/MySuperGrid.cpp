@@ -426,6 +426,22 @@ void CMySuperGrid::OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO
 }
 
 
+void CMySuperGrid::ExpandAllItems() 
+{
+	CWaitCursor wait; 
+	SetRedraw(0);
+	CTreeItem *pParent = GetTreeItem(0);
+	int nScroll=0;
+	if(OnVKMultiply(pParent, 0))
+	{	
+		ExpandAll(pParent, nScroll);
+	}		
+	SetRedraw(1);
+	RedrawItems(0, nScroll);
+	EnsureVisible(nScroll, TRUE);
+}
+
+
 
 void CMySuperGrid::OnListNewitem() 
 {
@@ -440,7 +456,9 @@ void CMySuperGrid::OnListNewitem()
 	pdoc->AddListParent( currentitem );
 //	LoadSubItem( currenttreeitem, currentitem );
 	LoadItem();
-	SetRedraw(1);
+
+	ExpandAllItems();
+
 	InvalidateRect(NULL);
 	UpdateWindow();
 }
@@ -481,7 +499,9 @@ void CMySuperGrid::OnListchildAdditem()
 		return;
 	pdoc->AddListChild( currentitem );
 	LoadItem();
-	SetRedraw(1);
+
+	ExpandAllItems();
+
 	InvalidateRect(NULL);
 	UpdateWindow();
 }
@@ -498,19 +518,12 @@ void CMySuperGrid::OnListchildDelitem()
 		return;
 	pdoc->DelListChild( currentitem );
 	LoadItem();
-	SetRedraw(1);
+
+	ExpandAllItems();
+
 	InvalidateRect(NULL);
 	UpdateWindow();
 }
-
-
-
-
-
-
-
-
-
 
 BOOL CMySuperGrid::OnVkReturn()
 {

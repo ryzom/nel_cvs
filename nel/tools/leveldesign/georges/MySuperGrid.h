@@ -20,6 +20,7 @@ protected:
 	CTreeItem* pitemroot;
 	CGeorgesDoc* pdoc;
 	CTreeItem* currenttreeitem;
+	void ExpandAllItems() ;
 	// Construction
 public:
 	CMySuperGrid();

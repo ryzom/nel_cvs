@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.50 2001/01/10 11:29:18 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.51 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,12 +39,15 @@
 
 #endif // NL_OS_WINDOWS
 
+#include <vector>
 #include <GL/gl.h>
+
 #include "driver_opengl.h"
 #include "nel/3d/viewport.h"
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/primitive_block.h"
 
+using namespace std;
 using namespace NLMISC;
 
 namespace NL3D
@@ -55,7 +58,7 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0x3;
+const uint32		CDriverGL::ReleaseVersion = 0x4;
 
 #ifdef NL_OS_WINDOWS
 
@@ -756,6 +759,17 @@ void CDriverGL::setCapture (bool b)
 
 #endif // NL_OS_UNIX
 }
+
+void CDriverGL::getBuffer (CBitmap &bitmap)
+{
+	bitmap.reset();
+	uint32 width, height;
+	getWindowSize(width, height);
+	bitmap.resize(width, height, CBitmap::TType::RGBA);
+	vector<uint8> &d = bitmap.getPixels ();
+	glReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, &(d[0]));
+}
+
 
 
 } // NL3D

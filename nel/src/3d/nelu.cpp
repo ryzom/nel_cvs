@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.11 2000/12/12 10:04:48 berenguier Exp $
+ * $Id: nelu.cpp,v 1.12 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,9 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "nel/misc/path.h"
+#include "nel/misc/file.h"
 
 #include "nel/3d/nelu.h"
 #include "nel/3d/dru.h"
@@ -133,6 +136,20 @@ void			CNELU::release()
 	releaseScene();
 	releaseDriver();
 }
+
+void			CNELU::screenshot()
+{
+	if (AsyncListener.isKeyPushed(KeyF12))
+	{
+		CBitmap btm;
+		CNELU::Driver->getBuffer(btm);
+		string filename = CPath::findNewFile ("screenshot.tga");
+		COFile fs(filename);
+		btm.writeTGA (fs,24,true);
+		nlinfo("Screenshot '%s' saved", filename.c_str());
+	}
+}
+
 
 
 } // NL3D

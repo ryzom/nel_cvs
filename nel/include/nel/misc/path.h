@@ -1,7 +1,7 @@
 /** \file path.h
  * CPath
  *
- * $Id: path.h,v 1.1 2000/12/11 17:49:08 cado Exp $
+ * $Id: path.h,v 1.2 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,12 @@ public:
 	 * If no path is found where path/file exists, an exception EPathNotFound is raised.
 	 */
 	static std::string	lookup( const std::string& filename );
+
+	/** return a new filename that doesn't exists, used for screenshot filename for example
+	* example: findNewFile("foobar.tga");
+	* will try foobar001.tga, if the file exists, try foobar002.tga and so on until it finds an unexistant file
+	*/
+	static std::string	findNewFile (const std::string &path);
 
 private:
 

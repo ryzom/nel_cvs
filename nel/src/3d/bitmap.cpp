@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.15 2001/01/05 15:57:19 corvazier Exp $
+ * $Id: bitmap.cpp,v 1.16 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1830,11 +1830,11 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 /*-------------------------------------------------------------------*\
 							writeTGA
 \*-------------------------------------------------------------------*/
-uint32 CBitmap::writeTGA( NLMISC::IStream &f, uint32 d)
+bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 {
-	if(f.isReading()) return 0;
-	if(d!=24 && d!=32) return 0;
-	if(PixelFormat != RGBA) return 0;
+	if(f.isReading()) return false;
+	if(d!=24 && d!=32) return false;
+	if(PixelFormat != RGBA) return false;
 
 	sint32	i,j,x,y;
 	sint32	slsize;
@@ -1853,6 +1853,8 @@ uint32 CBitmap::writeTGA( NLMISC::IStream &f, uint32 d)
 	uint16	height = (uint16)_Height;
 	uint8	imageDepth = (uint8)d;
 	uint8	desc = 0;
+	if (upsideDown)
+		desc |= 1<<5;
 		
 	f.serial(lengthID);
 	f.serial(cMapType);
@@ -1919,9 +1921,8 @@ uint32 CBitmap::writeTGA( NLMISC::IStream &f, uint32 d)
 			f.serial(scanline[i]);
 		}		
 	}
-
-	delete(scanline);
-	return(1);
+	delete scanline;
+	return true;
 }
 
 

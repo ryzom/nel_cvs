@@ -1,8 +1,7 @@
 /** \file driver_material_inline.h
- * 
- * 
+ * <File description>
  *
- * $Id: driver_material_inline.h,v 1.11 2001/01/09 14:55:06 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.12 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

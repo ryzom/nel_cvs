@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.9 2000/12/12 10:04:27 berenguier Exp $
+ * $Id: nelu.h,v 1.10 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,9 @@ public:
 	 */
 	static void		releaseEventServer();
 
+	/** Check if you press F12 and if yes, take a screenshot
+	 */
+	static void		screenshot();
 
 public:
 

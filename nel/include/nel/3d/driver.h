@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.47 2001/01/09 15:23:32 lecroart Exp $
+ * $Id: driver.h,v 1.48 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,6 +227,12 @@ public:
 
 	/// If true, capture the mouse to force it to stay under the window.
 	virtual void			setCapture (bool b) = 0;
+
+	/** get the front buffer
+	  *
+	  * \param bitmap the buffer will be written in this bitmap
+	  */
+	virtual void			getBuffer (CBitmap &bitmap) = 0;
 
 };
 

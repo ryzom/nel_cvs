@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.38 2001/01/09 17:02:17 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.39 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,6 +176,8 @@ public:
 
 	virtual void			getWindowSize (uint32 &width, uint32 &height);
 
+	virtual void			getBuffer (CBitmap &bitmap);
+
 private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 	static const uint32		ReleaseVersion;
@@ -188,17 +190,19 @@ private:
 	HDC							_hDC;
 	PIXELFORMATDESCRIPTOR		_pfd;
     HGLRC						_hRC;
-	NLMISC::CWinEventEmitter	_EventEmitter;
 	static uint					_Registered;
 	DEVMODE						_OldScreenMode;
 	bool						_FullScreen;
+	NLMISC::CWinEventEmitter	_EventEmitter;
 
 #elif defined (NL_OS_UNIX)
-	Display *dpy;
-	GLXContext ctx;
-	Window win;
-	Cursor cursor;
+
+	Display						*dpy;
+	GLXContext					ctx;
+	Window						win;
+	Cursor						cursor;
 	NLMISC::CUnixEventEmitter	_EventEmitter;
+
 #endif // NL_OS_UNIX
 
 	bool					_Initialized;

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.14 2001/01/05 15:56:48 corvazier Exp $
+ * $Id: bitmap.h,v 1.15 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -368,9 +368,10 @@ public:
 	 * If the current pixel format is not rgba then the method does nothing
 	 * \param f IStream (must be a reading stream)
 	 * \param d depth : 24 or 32
-	 * \return 1 if succeed, 0 else
+	 * \param upsideDown if true, the bitmap will be saved with the upside down
+	 * \return true if succeed, false else
 	 */	
-	uint32 writeTGA(NLMISC::IStream &f, uint32 d);
+	bool writeTGA(NLMISC::IStream &f, uint32 d, bool upsideDown = false);
 
 };
 

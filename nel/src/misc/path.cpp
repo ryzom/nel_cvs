@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.3 2000/12/22 11:47:18 cado Exp $
+ * $Id: path.cpp,v 1.4 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,5 +102,30 @@ string CPath::lookup( const string& filename )
 	return "";
 }
 
+string CPath::findNewFile (const string &path)
+{
+	string start="", end="";
+	char *dotpos = strrchr (path.c_str(), '.');
+	if (dotpos == NULL) return path;
+	uint pos= dotpos-path.c_str();
+
+	uint i;
+	for (i=0; i<pos; i++) start += path[i];
+	for (i=0; i<path.size()-pos; i++) end += path[pos+i];
+
+	uint num = 0;
+	char numchar[4];
+	string npath;
+	do
+	{
+		npath = start;
+		sprintf(numchar,"%03d",num++);
+		npath += numchar;
+		npath += end;
+		if (!fileExists(npath)) return npath;
+	}
+	while (num<999);
+	return npath;
+}
 
 } // NLMISC

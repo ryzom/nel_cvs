@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.12 2000/12/21 14:49:04 lecroart Exp $
+ * $Id: file.cpp,v 1.13 2001/01/11 13:53:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,8 +248,6 @@ sint32		COFile::getpos () throw(EStream)
 	}
 	return 0;
 }
-
-
 
 
 }

@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.32 2004/07/30 15:37:30 boucher Exp $
+ * $Id: sheet_id.cpp,v 1.33 2004/10/15 13:42:16 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -65,13 +65,22 @@ CSheetId::CSheetId( uint32 sheetRef)
 { 
 	_Id.Id = sheetRef; 
 #ifdef NL_DEBUG_SHEET_ID
-	CStaticMap<uint32, CChar>::iterator it(_SheetIdToName.find(sheetRef));
-	if (it != _SheetIdToName.end())
+	// Yoyo: don't access the static map, because of order of static ctor call.
+	// For now, all static CSheetId are 0 (eg: CSheetId::Unknown)
+	if(sheetRef)
 	{
-		_DebugSheetName = it->second.Ptr;
+		CStaticMap<uint32, CChar>::iterator it(_SheetIdToName.find(sheetRef));
+		if (it != _SheetIdToName.end())
+		{
+			_DebugSheetName = it->second.Ptr;
+		}
+		else
+			_DebugSheetName = NULL;
 	}
 	else
+	{
 		_DebugSheetName = NULL;
+	}
 #endif
 }
 

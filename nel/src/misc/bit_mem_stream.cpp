@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.31 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.32 2004/04/19 09:45:49 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -265,6 +265,17 @@ void	CBitMemStream::internalSerial( uint32& value, uint nbits, bool resetvalue )
 			}
 		}
 	}
+}
+
+
+/*
+ * Same as CMemStream::reserve()
+ */
+sint32	CBitMemStream::reserve( uint byteLen )
+{
+	sint32 p = getPos();
+	reserveBits( byteLen * 8 );
+	return p;
 }
 
 
@@ -542,6 +553,21 @@ inline	void		CBitMemStream::serial(ucstring &b)
 		nldebug( "TRAFFIC/%p/%s: Ucstring at bitpos %d", this, isReading()?"I":"O", bitpos );
 #endif
 
+}
+
+
+/*
+ * Append the contents of a bitmemstream at the end of our bitmemstream
+ */
+void	CBitMemStream::append( const CBitMemStream& newBits )
+{
+	nlassert ( !isReading() );
+	serialBuffer( const_cast<uint8*>(newBits.buffer()), newBits.getPos() );
+
+	uint nbRemainingBits = 8 - newBits._FreeBits;
+	_DbgInfo.addSerial( getPosInBit(), nbRemainingBits, TBMSSerialInfo::Buffer );
+	uint32 lastByte = (uint32)(*(newBits.buffer() + newBits.getPos())) >> newBits._FreeBits;
+	internalSerial( lastByte, nbRemainingBits );
 }
 
 

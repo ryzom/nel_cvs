@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.26 2003/07/10 16:23:55 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.27 2004/04/19 09:45:49 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -464,6 +464,9 @@ public:
 		return CMemStream::bufferToFill( msgsize );
 	}
 
+	/// Append the contents of a bitmemstream at the end of our bitmemstream (precondition: !isReading())
+	void			append( const CBitMemStream& newBits );
+
 	/// Serialize a buffer
 	virtual void	serialBuffer(uint8 *buf, uint len);
 
@@ -496,6 +499,12 @@ public:
 	}
 
 	/**
+	 * Same as CMemStream::reserve(). Warning, the return value is a byte pos (not bitpos)!
+	 * Consider using reserveBits() instead.
+	 */
+	sint32			reserve( uint byteLen );
+
+	/**
 	 * In a output bit stream, serialize nbits bits (no matter their value).
 	 * Works even if the number of bits to add is larger than 64. See also poke() and pokeBits().
 	 */
@@ -506,7 +515,7 @@ public:
 	 *
 	 * Preconditions:
 	 * - bitpos+nbbits <= the current length in bit of the stream.
-	 * - The bits poked must have been reserved by reserve() (i.e. set to 0)
+	 * - The bits poked must have been reserved by reserveBits() (i.e. set to 0)
 	 */
 	void			poke( uint32 value, uint bitpos, uint nbits );
 

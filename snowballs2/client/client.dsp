@@ -68,7 +68,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "__STL_DEBUG" /FR /YX /FD /GZ /Zm200 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "__STL_DEBUG" /FR /YX /FD /GZ /Zm200 /c
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -131,6 +131,14 @@ SOURCE=.\src\commands.cpp
 # Begin Source File
 
 SOURCE=.\src\commands.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\entities.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\entities.h
 # End Source File
 # Begin Source File
 

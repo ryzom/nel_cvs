@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: commands.cpp,v 1.5 2001/07/12 10:03:50 lecroart Exp $
+ * $Id: commands.cpp,v 1.6 2001/07/12 12:54:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
-
 #include <list>
+
+#include <nel/misc/types_nl.h>
+#include <nel/misc/event_listener.h>
+#include <nel/misc/command.h>
+#include <nel/misc/log.h>
+#include <nel/misc/displayer.h>
 
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_driver.h>
@@ -36,11 +40,6 @@
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
 
-#include <nel/misc/event_listener.h>
-#include <nel/misc/command.h>
-#include <nel/misc/log.h>
-#include <nel/misc/displayer.h>
-
 #include "client.h"
 
 using namespace std;
@@ -49,6 +48,19 @@ using namespace NL3D;
 
 list <string> StoredLines;
 uint32 NbStoredLines = 100;
+
+CLog CommandsLog;
+
+
+
+// these variables are set with the config file
+
+float CommandsBoxX, CommandsBoxY, CommandsBoxWidth;
+float CommandsBoxBorder;
+int CommandsNbLines;
+float CommandsLineHeight;
+int CommandsFontSize;
+CRGBA CommandsBackColor, CommandsFrontColor;
 
 void addLine (const string &line)
 {
@@ -93,9 +105,6 @@ class CCommandsDisplayer : public IDisplayer
 
 CCommandsDisplayer CommandsDisplayer;
 
-CLog CommandExecutionLog;
-
-
 bool commandLine (const string &str)
 {
 	string command = "";
@@ -107,7 +116,7 @@ bool commandLine (const string &str)
 		// add the string in to the chat
 		addLine (string ("command> ") + str);
 
-		ICommand::execute (command, CommandExecutionLog);
+		ICommand::execute (command, CommandsLog);
 	}
 	else
 		return false;
@@ -186,13 +195,7 @@ private:
 	bool			_MaxWidthReached;
 };
 
-
 CCommandsListener CommandsListener;
-
-float CommandsBoxX, CommandsBoxY, CommandsBoxWidth;
-float CommandsBoxBorder;
-int CommandsNbLines;
-float CommandsLineHeight;
 
 void cbUpdateCommands (CConfigFile::CVar &var)
 {
@@ -202,6 +205,9 @@ void cbUpdateCommands (CConfigFile::CVar &var)
 	else if (var.Name == "CommandsBoxBorder") CommandsBoxBorder = var.asFloat ();
 	else if (var.Name == "CommandsNbLines") CommandsNbLines = var.asInt ();
 	else if (var.Name == "CommandsLineHeight") CommandsLineHeight = var.asFloat ();
+	else if (var.Name == "CommandsBackColor") CommandsBackColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
+	else if (var.Name == "CommandsFrontColor") CommandsFrontColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
+	else if (var.Name == "CommandsFontSize") CommandsFontSize = var.asInt ();
 	else nlwarning ("Unknown variable update %s", var.Name.c_str());
 }
 
@@ -209,7 +215,8 @@ void	initCommands()
 {
 	Driver->EventServer.addListener (EventCharId, &CommandsListener);
 
-	CommandExecutionLog.addDisplayer (&CommandsDisplayer);
+	CommandsLog.addDisplayer (&CommandsDisplayer);
+	InfoLog->addDisplayer (&CommandsDisplayer);
 
 	ConfigFile.setCallback ("CommandsBoxX", cbUpdateCommands);
 	ConfigFile.setCallback ("CommandsBoxY", cbUpdateCommands);
@@ -217,30 +224,39 @@ void	initCommands()
 	ConfigFile.setCallback ("CommandsBoxBorder", cbUpdateCommands);
 	ConfigFile.setCallback ("CommandsNbLines", cbUpdateCommands);
 	ConfigFile.setCallback ("CommandsLineHeight", cbUpdateCommands);
-
+	ConfigFile.setCallback ("CommandsBackColor", cbUpdateCommands);
+	ConfigFile.setCallback ("CommandsFrontColor", cbUpdateCommands);
+	ConfigFile.setCallback ("CommandsFontSize", cbUpdateCommands);
+  
 	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxX"));
 	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxY"));
 	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxWidth"));
 	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxBorder"));
 	cbUpdateCommands (ConfigFile.getVar ("CommandsNbLines"));
 	cbUpdateCommands (ConfigFile.getVar ("CommandsLineHeight"));
+	cbUpdateCommands (ConfigFile.getVar ("CommandsBackColor"));
+	cbUpdateCommands (ConfigFile.getVar ("CommandsFrontColor"));
+	cbUpdateCommands (ConfigFile.getVar ("CommandsFontSize"));
 }
 
 void	updateCommands()
 {
 	// Display
 	Driver->setMatrixMode2D11 ();
-	Driver->drawQuad (CommandsBoxX-CommandsBoxBorder, CommandsBoxY-CommandsBoxBorder, CommandsBoxX+CommandsBoxWidth+CommandsBoxBorder, CommandsBoxY + (CommandsNbLines+1) * CommandsLineHeight + CommandsBoxBorder, CRGBA (128, 255, 128, 128));
+	Driver->drawQuad (CommandsBoxX-CommandsBoxBorder, CommandsBoxY-CommandsBoxBorder, CommandsBoxX+CommandsBoxWidth+CommandsBoxBorder, CommandsBoxY + (CommandsNbLines+1) * CommandsLineHeight + CommandsBoxBorder, CommandsBackColor);
+
+	// Set the text context
+	TextContext->setHotSpot (UTextContext::BottomLeft);
+	TextContext->setColor (CommandsFrontColor);
+	TextContext->setFontSize (CommandsFontSize);
 
 	// Output text
-	TextContext->setHotSpot (UTextContext::BottomLeft);
 	string line = string("> ")+CommandsListener.line() + string ("_");
 	TextContext->printfAt (CommandsBoxX, CommandsBoxY + CommandsBoxBorder, line.c_str());
 	CommandsListener.setMaxWidthReached (TextContext->getLastXBound() > CommandsBoxWidth*1.33f); // max is 1.33=4/3
 
-	float yPos = CommandsBoxY + CommandsBoxBorder;
-
 	// display stored lines
+	float yPos = CommandsBoxY + CommandsBoxBorder;
 	list<string>::reverse_iterator rit = StoredLines.rbegin();
 	for (sint i = 0; i < CommandsNbLines; i++)
 	{
@@ -249,6 +265,11 @@ void	updateCommands()
 		TextContext->printfAt (CommandsBoxX, yPos, (*rit).c_str());
 		rit++;
 	}
+}
+
+void	clearCommands ()
+{
+	StoredLines.clear ();
 }
 
 void	releaseCommands()

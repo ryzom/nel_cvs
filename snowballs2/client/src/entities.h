@@ -1,7 +1,7 @@
-/** \file commands.h
+/** \file entities.h
  * 
  *
- * $Id: commands.h,v 1.4 2001/07/12 12:54:15 lecroart Exp $
+ * $Id: entities.h,v 1.1 2001/07/12 12:54:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,19 +23,38 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef COMMANDS_H
-#define COMMANDS_H
+#ifndef ENTITIES_H
+#define ENTITIES_H
 
-#include <nel/misc/log.h>
+#include <string>
 
-extern NLMISC::CLog CommandsLog;
+class CEntity
+{
+public:
+	
+	uint32 Id;
 
-void	initCommands ();
-void	updateCommands ();
-void	releaseCommands ();
+	std::string Name;
 
-void	clearCommands ();
+	float x, y, z, speed, angle;
 
-#endif // COMMANDS_H
+	enum TType { Self, Other, Snowball };
+	
+	TType Type;
+};
 
-/* End of commands.h */
+
+
+void addEntity (uint32 eid);
+void removeEntity (uint32 eid);
+
+void updateEntities ();
+
+
+void initRadar ();
+void updateRadar ();
+
+
+#endif // ENTITIES_H
+
+/* End of entities.h */

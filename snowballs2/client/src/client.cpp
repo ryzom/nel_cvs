@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.13 2001/07/12 10:11:02 legros Exp $
+ * $Id: client.cpp,v 1.14 2001/07/12 12:54:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,7 @@
 
 #include "commands.h"
 #include "landscape.h"
+#include "entities.h"
 #include "camera.h"
 
 using namespace std;
@@ -74,6 +75,15 @@ UInstance			*Cube = NULL;
 
 UTextContext		*TextContext = NULL;
 
+// true if you want to exit the main loop
+bool				 NeedExit = false;
+
+bool				 ShowRadar;
+bool				 ShowCommands;
+
+// true if the client is in online mode
+bool				 Online = false;
+
 //
 // Main
 //
@@ -89,6 +99,9 @@ int main(int argc, char **argv)
 	// Load config file
 
 	ConfigFile.load ("client.cfg");
+
+	ShowCommands = ConfigFile.getVar("ShowCommands").asInt () == 1;
+	ShowRadar = ConfigFile.getVar("ShowRadar").asInt () == 1;
 
 	// Manage paths
 
@@ -108,9 +121,6 @@ int main(int argc, char **argv)
 	Driver->setFontManagerMaxMemory (2000000);
 
 	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
-	TextContext->setHotSpot (UTextContext::TopLeft);
-	TextContext->setColor (CRGBA (255,255,255));
-	TextContext->setFontSize (16);
 
 	// Create a scene
 	Scene = Driver->createScene();
@@ -132,13 +142,19 @@ int main(int argc, char **argv)
 	MouseListener->setMatrix (Camera->getMatrix());
 	MouseListener->setMouseMode (U3dMouseListener::firstPerson);
 
-	// Init the landscape using the previously created UScene
-	initLandscape();
-
 	// Init the command control
 	initCommands ();
 
-	while (Driver->isActive() && (!Driver->AsyncListener.isKeyPushed (KeyESCAPE)))
+	// Init the radar
+	initRadar ();
+
+	// Init the landscape using the previously created UScene
+	initLandscape();
+
+	// Display the firsts line
+	nlinfo ("Welcome to Snowballs 2");
+
+	while ((!NeedExit) && Driver->isActive())
 	{
 		// Clear
 		Driver->clearBuffers (CRGBA (64,64,64,0));
@@ -160,7 +176,16 @@ int main(int argc, char **argv)
 		Scene->render ();
 
 		// Update the commands panel
-		updateCommands ();
+		if (ShowCommands) updateCommands ();
+
+		// Update the radar
+		if (ShowRadar) updateRadar ();
+
+		TextContext->setHotSpot (UTextContext::TopRight);
+		TextContext->setColor (CRGBA(255, 0, 0));
+		TextContext->setFontSize (20);
+		TextContext->printfAt (1.0f, 1.0f, Online?"Online":"Offline");
+
 
 		// Swap
 		Driver->swapBuffers ();
@@ -168,6 +193,25 @@ int main(int argc, char **argv)
 		// Pump messages
 		Driver->EventServer.pump();
 
+		// Manage the keyboard
+		if (Driver->AsyncListener.isKeyPushed (KeyESCAPE))
+		{
+			NeedExit = true;
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF5))
+		{
+			ShowCommands = !ShowCommands;
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF6))
+		{
+			ShowRadar = !ShowRadar;
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF12))
+		{
+			clearCommands ();
+		}
+
+		// Check if the config file was modified by another program
 		CConfigFile::checkConfigFiles ();
 	}
 
@@ -176,4 +220,16 @@ int main(int argc, char **argv)
 	delete Driver;
 
 	return EXIT_SUCCESS;
+}
+
+NLMISC_COMMAND(quit,"quit the client","")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if(args.size() != 0) return false;
+
+	log.displayNL("Exit requested");
+
+	NeedExit = true;
+
+	return true;
 }

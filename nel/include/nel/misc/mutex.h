@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.16 2002/10/18 17:32:37 cado Exp $
+ * $Id: mutex.h,v 1.17 2002/10/21 13:47:17 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,11 +52,7 @@ namespace NLMISC {
 
 
 // By default, all mutex use the CFairMutex class to avoid freeze problem.
-#ifdef NL_OS_WINDOWS
 #define CMutex CFairMutex
-#else
-#define CMutex CUnfairMutex
-#endif
 
 
 /**

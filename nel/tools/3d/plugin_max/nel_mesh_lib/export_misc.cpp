@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.22 2002/05/13 16:49:00 berenguier Exp $
+ * $Id: export_misc.cpp,v 1.23 2002/06/06 14:42:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include <3d/texture_file.h>
 #include <modstack.h> // class IDerivedObject
 #include <decomp.h> // class IDerivedObject
+#include <locale.h>
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -808,6 +809,13 @@ void CExportNel::getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, 
 		getObjectNodes (vectNode, time, node->GetChildNode(i));
 }
 
+// --------------------------------------------------
+INode *CExportNel::getRootNode() const
+{
+	return _Ip->GetRootNode();
+}
+
+
 
 // --------------------------------------------------
 std::string		CExportNel::getLightGroupName (INode *node)
@@ -846,6 +854,8 @@ std::string		CExportNel::getLightGroupName (INode *node)
 
 
 
+
+
 // a segment (used by maxPolygonMeshToOrderedPoly)
 struct CMaxMeshSeg
 {
@@ -881,17 +891,35 @@ struct CPredNextSegOf
 	bool operator()(const CMaxMeshSeg &value) const { return value.V0 == Prev || value.V1 == Prev; }		
 };
 
+/// Get normal of a max triangle in nel format
+static NLMISC::CVector getMaxFaceNormal(const Mesh &m, uint faceIndex)
+{
+	Point3 corner[3];
+	for(uint k = 0; k < 3; ++k)
+		corner[k] = m.verts[m.faces[faceIndex].v[k]];
+	Point3 normal = (corner[1] - corner[0]) ^ (corner[2] - corner[1]);
+	normal.Unify();
+	CVector result;
+	CExportNel::convertVector(result, normal);
+	return result;
+}
+  
+
 
 
 // --------------------------------------------------
 // This convert a polygon expressed as a max mesh into a list of ordered vectors
-void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest)
+void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest, NLMISC::CVector *avgNormal /*= NULL*/)
 {
 	/// We use a very simple (but slow) algo : examine for each segment how many tris share it. If it is one then it is a border seg	 
 	/// Then, just order segments
 	
 	typedef std::map<CMaxMeshSeg, uint> TSegMap;		
 		
+	if (avgNormal)
+	{
+		avgNormal->set(0, 0, 0);
+	}
 
 	/////////////////////////////////////////////////////////////
 	// count the number of ref by a triangle for each segment  //
@@ -901,6 +929,10 @@ void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVe
 	uint k;
 	for(k = 0; k < (uint) mesh.getNumFaces(); ++k)
 	{
+		if (avgNormal)
+		{
+			*avgNormal += getMaxFaceNormal(mesh, k);
+		}
 		for(uint l = 0; l < 3; ++l)
 		{
 			CMaxMeshSeg seg(mesh.faces[k].v[l], mesh.faces[k].v[(l + 1) % 3]);
@@ -916,6 +948,8 @@ void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVe
 			}
 		}
 	}
+
+	avgNormal->normalize();
 
 
 	////////////////////////////////////////
@@ -956,4 +990,140 @@ void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVe
 
 
 }
+
+
+
+static std::string OldDecimalSeparatorLocale;
+
+static void setDecimalSeparatorAsPoint()
+{				
+	OldDecimalSeparatorLocale = ::setlocale(LC_NUMERIC, NULL);
+	::setlocale(LC_NUMERIC, "English");	
+}
+
+static void restoreDecimalSeparator()
+{	
+	::setlocale(LC_NUMERIC, OldDecimalSeparatorLocale.c_str());		
+}
+
+
+///=======================================================================
+float toFloatMax(const char *src)
+{
+	float result = 0.f;
+	if (toFloatMax(src, result)) return result;
+	return 0.f;
+}
+
+
+bool		toFloatMax(const char *src, float &dest)
+{	
+	setDecimalSeparatorAsPoint();
+	std::string str(src);
+	std::string::size_type pointPos = str.find_first_of(",");
+	if (pointPos != std::string::npos)
+	{
+		str[pointPos] ='.';
+	}
+	if (::sscanf(str.c_str(), "%g", &dest) == 1)
+	{
+		restoreDecimalSeparator();
+		return true;
+	}
+	restoreDecimalSeparator();
+	return false;
+
+/*	if (!src || *src == '\0') return false;
+	float result = 0.f;
+	float sgn = 1.f;
+	while (*src == ' ') ++src;
+	if (*src == '-') { sgn = -1.f; ++src; }
+	while (*src == ' ') ++src;
+	bool numberFound = false;
+	while (::isdigit(*src))
+	{
+		numberFound = true;
+		result *= 10.f;
+		result += (float) (*src - '0');
+		++src;
+	}
+	if (!(*src == '.' || *src == ',')) 
+	{	
+		if (numberFound)
+		{		
+			dest = sgn * result;
+			return true;
+		}
+		else
+			return false;
+	}
+	++src;		
+	if (!::isdigit(*src))
+	{
+		if (!numberFound)
+		{
+			return false;
+		}
+	}
+	float addValue = 0.1f;	
+	while (::isdigit(*src))
+	{	
+		result += addValue * (float) (*src - '0');
+		addValue *= 0.1f;
+		++ src;
+	}
+	dest = sgn * result;
+	return true;*/
+}
+
+
+///=======================================================================
+std::string toStringMax(float value)
+{
+	char result[256];
+	setDecimalSeparatorAsPoint();
+	::sprintf(result, "%g", value);
+	restoreDecimalSeparator();
+	return result;
+
+/*	char result[256];
+	sprintf(result, "%g", value);
+	char *point = strchr(result, ',');
+	if (point)
+	{
+		*point = '.';
+	}
+	return std::string(result); */
+/*	double intPart;
+	value = (float) ::modf(value, &intPart);
+	bool positive = value >= 0.f && intPart >= 0.f;
+	value = ::fabsf(value);
+	intPart = ::fabs(intPart);
+	std::string result = toString(intPart);
+	if (value == 0.f) return positive ? result : "-" + result;
+	result += ".";
+	float frac;
+	do
+	{
+		value *= 10.f;
+		frac = (float) ::modf((double) value, &intPart);		
+		result += toString((int) intPart % 10);		
+	}
+	while (frac != 0.f);
+	return positive ? result : "-" + result;*/
+}
+///=======================================================================
+std::string toStringMax(int value)
+{	
+	char result[256];
+	setDecimalSeparatorAsPoint();
+	::sprintf(result, "%d", value);
+	restoreDecimalSeparator();
+	return result;
+
+	/*char str[256];
+	::sprintf(str, "%d", value);	
+	return str;*/
+}
+
 

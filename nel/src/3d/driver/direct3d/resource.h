@@ -23,12 +23,14 @@
 #define lightmap4blend_x2               120
 #define lightmap0_x2                    121
 #define lightmap0blend_x2               122
+#define water_no_diffuse                128
+#define water_diffuse                   129
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        123
+#define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101

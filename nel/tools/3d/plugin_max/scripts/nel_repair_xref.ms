@@ -69,14 +69,21 @@ rollout repair_xref_rollout "Properties"
 				max unhide all
 
 				-- For each xref
+				xrefFound = false
 				for node in objects do
 				(
 					if (classof node) == XRefObject then
 					(
 						addString node.filename
+						xrefFound = true
 					)
 				)
-				
+
+				-- XRef found
+				if xrefFound == true then
+				(
+					addString i;
+				)
 			)
 			else
 			(

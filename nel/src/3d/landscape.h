@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.55 2004/03/22 17:40:38 berenguier Exp $
+ * $Id: landscape.h,v 1.56 2004/04/07 17:03:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,7 +141,7 @@ struct ULandscapeTileCallback;
 class CLandscape : public NLMISC::CRefCount
 {
 public:
-	// The bank of tiles information. Each time you change the bank, you should call CLandscape::initTileBank();
+	// The bank of tiles information. Each time you change the bank, you should call CLandscape::initTileBanks();
 	CTileBank		TileBank;
 	CTileFarBank	TileFarBank;
 	class CLandscapeModel	*OwnerModel;
@@ -158,9 +158,6 @@ public:
 	// @{
 	/// init the landscape VBuffers, texture cache etc...
 	void			init();
-
-	/// Reinit the tile bank if the bank change
-	void			initTileBank();
 
 	/** Add a zone which should be builded (or loaded), but not compiled. CLandscape compile it.
 	 * The contents of newZone are copied into the landscape.
@@ -351,9 +348,13 @@ public:
 	/// \name Tile mgt.
 	// @{
 	/// Force a range of tiles to be loaded in the driver...
-	void			flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles);
-	/// Force a range of tiles to be loaded in the driver...
-	void			releaseTiles(uint16 tileStart, uint16 nbTiles);
+	void			flushTiles(IDriver *drv, uint32 tileStart, uint32 nbTiles);
+	/** Force a range of tiles to be unloaded. You should call changePatchTextureAndColor() on all patch 
+	 *	or ensure that all zones are deleted.
+	 */
+	void			releaseTiles(uint32 tileStart, uint32 nbTiles);
+	/// Delete All tiles. All zones must be deleted before (nlassert)
+	void			releaseAllTiles();
 
 	/// Return the texture for a tile Id. UseFull for Tile edition.
 	NLMISC::CSmartPtr<ITexture>		getTileTexture(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.143 2004/03/22 17:40:38 berenguier Exp $
+ * $Id: landscape.cpp,v 1.144 2004/04/07 17:03:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,7 +188,8 @@ CLandscape::CLandscape() :
 {
 	OwnerModel = NULL;
 
-	initTileBank();
+	// Init the Tile Infos with Max TileId
+	TileInfos.resize(NL3D::NbTilesMax, NULL);
 
 	// Far texture not initialized till initTileBanks is not called
 	_FarInitialized=false;
@@ -1892,8 +1893,11 @@ CTileElement *CLandscape::getTileElement(const CPatchIdent &patchId, const CUV &
 
 
 // ***************************************************************************
-void			CLandscape::flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles)
+void			CLandscape::flushTiles(IDriver *drv, uint32 tileStart, uint32 nbTiles)
 {
+	nlassert(nbTiles<=65536);
+	nlassert(tileStart+nbTiles<=65536);
+	
 	// Load tile rdrpass, force setup the texture.
 	for(sint tileId= tileStart; tileId<tileStart+nbTiles; tileId++)
 	{
@@ -1901,27 +1905,39 @@ void			CLandscape::flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles)
 		if(tile==NULL)
 		{
 			loadTile(tileId);
+			CTileInfo	*tile= TileInfos[tileId];
+			nlassert(tile);
+			if(tile->DiffuseRdrPass)
+			{
+				const CPatchRdrPass	&pass= *tile->DiffuseRdrPass;
+				// If present and not already setuped...
+				if(pass.TextureDiffuse && !pass.TextureDiffuse->setupedIntoDriver())
+					drv->setupTexture(*pass.TextureDiffuse);
+				// If present and not already setuped...
+				if(pass.TextureAlpha && !pass.TextureAlpha->setupedIntoDriver())
+					drv->setupTexture(*pass.TextureAlpha);
+			}
+			if(tile->AdditiveRdrPass)
+			{
+				const CPatchRdrPass	&pass= *tile->AdditiveRdrPass;
+				// If present and not already setuped...
+				if(pass.TextureDiffuse && !pass.TextureDiffuse->setupedIntoDriver())
+					drv->setupTexture(*pass.TextureDiffuse);
+				// If present and not already setuped...
+				if(pass.TextureAlpha && !pass.TextureAlpha->setupedIntoDriver())
+					drv->setupTexture(*pass.TextureAlpha);
+			}
 		}
-	}
-
-	// For all rdrpass, force setup the texture.
-	ItTileRdrPassSet	it;
-	for(it= TileRdrPassSet.begin(); it!=TileRdrPassSet.end(); it++)
-	{
-		const CPatchRdrPass	&pass= *it;
-		// If present and not already setuped...
-		if(pass.TextureDiffuse && !pass.TextureDiffuse->setupedIntoDriver())
-			drv->setupTexture(*pass.TextureDiffuse);
-		// If present and not already setuped...
-		if(pass.TextureAlpha && !pass.TextureAlpha->setupedIntoDriver())
-			drv->setupTexture(*pass.TextureAlpha);
 	}
 }
 
 
 // ***************************************************************************
-void			CLandscape::releaseTiles(uint16 tileStart, uint16 nbTiles)
+void			CLandscape::releaseTiles(uint32 tileStart, uint32 nbTiles)
 {
+	nlassert(nbTiles<=65536);
+	nlassert(tileStart+nbTiles<=65536);
+	
 	// release tiles.
 	for(sint tileId= tileStart; tileId<tileStart+nbTiles; tileId++)
 	{
@@ -3670,24 +3686,10 @@ void			CLandscape::initAnimatedLightIndex(const CScene &scene)
 }
 
 // ***************************************************************************
-void			CLandscape::initTileBank()
+void			CLandscape::releaseAllTiles()
 {
-	// Release the tiles
+	nlassert(Zones.empty());
 	releaseTiles (0, TileInfos.size());
-	TileInfos.clear();
-	TileInfos.resize(NL3D::NbTilesMax);
-	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
-
-	// Refresh each zone
-	std::map<uint16, CZone*>::iterator	it;
-	for(it= Zones.begin();it!=Zones.end();it++)
-	{
-		// Refresh each patch
-		uint numPatch = (uint)it->second->getNumPatchs();
-		uint i;
-		for (i=0; i<numPatch; i++)
-			it->second->changePatchTextureAndColor (i, NULL, NULL);
-	}
 }
 
 

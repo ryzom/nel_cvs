@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.42 2004/03/22 17:40:38 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.43 2004/04/07 17:03:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,9 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	NL3D_MEM_LANDSCAPE
 	NL3D_HAUTO_LOAD_LANDSCAPE;
 
+	// Release all OLD tiles
+	_Landscape->Landscape.releaseAllTiles();
+	
 	// Clear the bank
 	_Landscape->Landscape.TileBank.clear ();
 
@@ -93,6 +96,7 @@ void	CLandscapeUser::flushTiles (NLMISC::IProgressCallback &progress)
 	// After loading the TileBank, and before initTileBanks(), must load the vegetables descritpor
 	_Landscape->Landscape.TileBank.loadTileVegetableDescs();
 
+	// init the TileBanks descriptors
 	if ( ! _Landscape->Landscape.initTileBanks() )
 	{
 		nlwarning( "You need to recompute bank.farbank for the far textures" );
@@ -141,9 +145,6 @@ void	CLandscapeUser::flushTiles (NLMISC::IProgressCallback &progress)
 			_Landscape->Landscape.flushTiles (_Scene->getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
 		}
 	}
-	
-	// Init tiles
-	_Landscape->Landscape.initTileBank();
 }
 
 //****************************************************************************

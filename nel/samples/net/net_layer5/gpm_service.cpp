@@ -1,7 +1,7 @@
 /** \file net_layer5/gpm_service.cpp
  * Layer 5 and IService example
  *
- * $Id: gpm_service.cpp,v 1.1 2002/04/17 08:08:32 lecroart Exp $
+ * $Id: gpm_service.cpp,v 1.2 2002/05/22 13:23:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,12 +39,13 @@
 #include "nel/net/service.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/displayer.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace std;
 using namespace NLNET;
 using namespace NLMISC;
 
-uint32 NbId;
+uint32 NbId = 0;
 
 //
 TTime	pingDate;
@@ -96,6 +97,49 @@ void cbPos(CMessage &msgin, const std::string &serviceName, uint16 sid)
 	nlinfo( "Received POS, Sending POS to FS (serial %.2fs, send %.2fs)", CTime::ticksToSecond (v2-v1), CTime::ticksToSecond (v3-v2));
 }
 
+void cbAskVision(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint32 Value = '0ACE';
+
+//	H_BEFORE (Vision);
+
+	TCPUCycle v1 = CTime::getPerformanceTime ();
+
+//	H_BEFORE (CMessage);
+	CMessage msgout("VISION", false, CMessage::UseDefault, 10000000);
+//	H_AFTER (CMessage);
+//	H_BEFORE (serial);
+	msgout.serial(NbId);
+//	H_AFTER (serial);
+//	H_BEFORE (serials);
+	for (uint i = 0; i < NbId; i++)
+		msgout.serial( Value );
+//	H_AFTER(serials);
+//	H_BEFORE (send);
+	CUnifiedNetwork::getInstance()->send("FS", msgout);
+//	H_AFTER (send);
+
+	/*
+	CMessage msgout("VISION");
+	uint32 Nb = 10;
+
+	for (uint j = 0; j < 1000; j++)
+	{
+		msgout.clear();
+		msgout.setType("VISION");
+		msgout.serial(Nb);
+		for (uint i = 0; i < Nb; i++)
+			msgout.serial( Value );
+		CUnifiedNetwork::getInstance()->send("FS", msgout);
+	}
+	*/
+	TCPUCycle v2 = CTime::getPerformanceTime ();
+
+//	H_AFTER (Vision);
+
+	// ca prend bcp de cpu un info...
+	nlinfo("Sent Vision with %d values in %.2fms", NbId, CTime::ticksToSecond (v2-v1)*1000.0f);
+}
 
 //
 void cbUpPS( const std::string &serviceName, uint16 sid, void *arg )
@@ -127,7 +171,8 @@ void cbDownService( const std::string &serviceName, uint16 sid, void *arg )
 TUnifiedCallbackItem CallbackArray[] =
 {
 	{ "PONG", cbPong },
-	{ "POS", cbPos }
+	{ "POS", cbPos },
+	{ "ASK_VISION", cbAskVision }
 };
 
 void cbVar (CConfigFile::CVar &var)
@@ -146,13 +191,14 @@ public:
 		static TTime	lastPing = CTime::getLocalTime();
 
 		TTime	ctime = CTime::getLocalTime();
-
+/*
 		// check ping every 15 seconds
 		if (ctime - lastPing > 15000)
 		{
 			sendPing();
 			lastPing = ctime;
 		}
+*/
 
 		return true;
 	}

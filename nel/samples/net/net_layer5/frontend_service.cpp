@@ -1,7 +1,7 @@
 /** \file net_layer5/frontend_service.cpp
  * Layer 5 and IService5 example
  *
- * $Id: frontend_service.cpp,v 1.1 2002/04/17 08:08:32 lecroart Exp $
+ * $Id: frontend_service.cpp,v 1.2 2002/05/22 13:23:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@
 #include "nel/net/service.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/displayer.h"
+#include "nel/misc/hierarchical_timer.h"
 
 #include <deque>
 
@@ -111,12 +112,56 @@ void cbPos( CMessage& msgin, const string &name, uint16 sid )
 	nlinfo("Received POS from %s (serial: %.2fs)", name.c_str(), CTime::ticksToSecond (v2-v1));
 }
 
+TTime t = 0;
+
+void sendRequestVision ()
+{
+	CMessage msgout("ASK_VISION");
+	CUnifiedNetwork::getInstance()->send("GPMS", msgout);
+	nlinfo ("ask a new vision");
+	t = CTime::getLocalTime ();
+}
+
+void cbVision( CMessage& msgin, const string &name, uint16 sid )
+{
+	uint32 NbValue;
+	uint32 Value;
+	
+	t = CTime::getLocalTime() - t;
+
+	//H_BEFORE (Vision);
+
+	TCPUCycle v1 = CTime::getPerformanceTime ();
+	//H_BEFORE (serial);
+	msgin.serial (NbValue);
+	//H_AFTER (serial);
+	//H_BEFORE (serials);
+	for (uint i = 0; i < NbValue; i++)
+		msgin.serial( Value );
+	//H_AFTER (serials);
+	TCPUCycle v2 = CTime::getPerformanceTime ();
+
+	nlinfo("%dms of lag, Received Vision with %d values in %.2fms", (uint32) t, NbValue, CTime::ticksToSecond (v2-v1)*1000.0f);
+	sendRequestVision();
+
+	//H_AFTER (Vision);
+}
+
+
 void	sendPos()
 {
 	nlinfo("Simulate receive pos from client, send POS to GPMS");
 	CMessage msgout("POS");
 	CUnifiedNetwork::getInstance()->send("GPMS", msgout);
 }
+
+//
+void cbUpGPMS( const std::string &serviceName, uint16 sid, void *arg )
+{
+	nlinfo( "GPMS connecting.");
+	sendRequestVision ();
+}
+
 
 //
 void cbUpPS( const std::string &serviceName, uint16 sid, void *arg )
@@ -149,7 +194,8 @@ void cbDownService( const std::string &serviceName, uint16 sid, void *arg )
 NLNET::TUnifiedCallbackItem CallbackArray[] =
 {
 	{ "POS", cbPos },
-	{ "PONG", cbPong }
+	{ "PONG", cbPong },
+	{ "VISION", cbVision }
 };
 
 
@@ -166,7 +212,7 @@ public:
 		static TTime	lastGetPos = CTime::getLocalTime();
 
 		TTime	ctime = CTime::getLocalTime();
-
+/*
 		// check ping every 15 seconds
 		if (ctime - lastPing> 15000)
 		{
@@ -180,7 +226,7 @@ public:
 			sendPos();
 			lastGetPos = ctime;
 		}
-
+*/
 		return true;
 	}
 
@@ -194,6 +240,8 @@ public:
 
 		instance->setServiceUpCallback("PS", cbUpPS, NULL);
 		instance->setServiceDownCallback("PS", cbDownPS, NULL);
+
+		instance->setServiceUpCallback("GPMS", cbUpGPMS, NULL);
 
 		instance->setServiceUpCallback("*", cbUpService, NULL);
 		instance->setServiceDownCallback("*", cbDownService, NULL);

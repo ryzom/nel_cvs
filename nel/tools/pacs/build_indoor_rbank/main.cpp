@@ -1,7 +1,7 @@
 /** \file main.cpp
  * 
  *
- * $Id: main.cpp,v 1.1 2002/01/07 11:17:03 lecroart Exp $
+ * $Id: main.cpp,v 1.2 2002/01/07 11:23:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,7 +125,7 @@ void	initConfig()
 	{
 		CConfigFile cf;
 	
-		cf.load("moulinette.cfg");
+		cf.load("build_indoor_rbank.cfg");
 	
 		Merge = getInt(cf, "Merge") != 0;
 		MergePath = getString(cf, "MergePath");

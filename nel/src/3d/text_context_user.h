@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.4 2001/09/17 14:25:12 besson Exp $
+ * $Id: text_context_user.h,v 1.5 2001/09/21 14:24:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,7 @@ public:
 
 		return _TextContext.textPush(ucstring(str)) ;
 	}
-	uint32 textPush(ucstring str)  
+	uint32 textPush(const ucstring &str)  
 	{
 		return _TextContext.textPush(str) ;
 	}

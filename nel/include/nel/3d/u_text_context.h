@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.2 2001/09/17 14:25:12 besson Exp $
+ * $Id: u_text_context.h,v 1.3 2001/09/21 14:24:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,7 +176,7 @@ public:
 	 * \param an ucstring
 	 * \return the index where computed string has been inserted
 	 */
-	virtual	uint32			textPush(ucstring str)  =0;
+	virtual	uint32			textPush(const ucstring &str)  =0;
 	/**
 	 * remove a string from the list
 	 */

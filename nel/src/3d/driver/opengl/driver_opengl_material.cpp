@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.39 2001/09/21 10:00:48 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.40 2001/09/21 14:24:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -458,8 +458,6 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 						_CurrentTexEnvSpecial[stage] = TexEnvSpecialLightMapNV4;
 
 						// Setup env for texture stage.
-						// TODODO: test if bug without this line. it should (didn't bug before because
-						// of activateTexture() which always must setup the texture.
 						glActiveTextureARB(GL_TEXTURE0_ARB+stage);
 
 						// What we want to setup is  Texture*Constant + Previous*1.
@@ -486,6 +484,9 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 				// setup UV, with UV1.
 				setupUVPtr(stage, _LastVB, 1);
 			}
+
+			// Next lightmap.
+			lmapId++;
 		}
 		else if(stage<nstages)
 		{

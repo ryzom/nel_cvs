@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.3 2001/09/17 14:25:12 besson Exp $
+ * $Id: text_context.h,v 1.4 2001/09/21 14:24:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -252,35 +252,14 @@ public:
 	 * \param a string
 	 * \return the index where string has been inserted
 	 */
-	uint32 textPush(const char *format, ...) 
-	{ 
-		nlassert(_FontGen);
-
-		char *str;
-		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
-
-		NL3D::CComputedString cptdstr;
-		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr, _Keep800x600Ratio);
-		_MaxIndex++;
-		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
-		return _MaxIndex;
-	}
+	uint32 textPush(const char *format, ...);
 
 	/**
 	 * computes an ucstring and adds the result to the stack
 	 * \param an ucstring
 	 * \return the index where computed string has been inserted
 	 */
-	uint32 textPush(ucstring str) 
-	{ 
-		nlassert(_FontGen);
-
-		NL3D::CComputedString cptdstr;
-		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr, _Keep800x600Ratio);
-		_MaxIndex++;
-		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
-		return _MaxIndex;
-	}
+	uint32 textPush(const ucstring &str);
 	
 	/**
 	 * remove a string from the list

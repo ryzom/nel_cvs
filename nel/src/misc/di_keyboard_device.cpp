@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.4 2002/04/12 13:49:25 lecroart Exp $
+ * $Id: di_keyboard_device.cpp,v 1.5 2002/04/12 16:15:51 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 
 
-#include "stdmiSc.h"
+#include "stdmisc.h"
 #include "misc/di_keyboard_device.h"
 
 #ifdef NL_OS_WINDOWS
@@ -42,7 +42,7 @@
 #undef min
 #endif
 
-#ifdef
+#ifdef max
 #undef max
 #endif
 

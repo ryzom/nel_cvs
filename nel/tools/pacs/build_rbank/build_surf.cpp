@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.21 2004/02/13 16:16:39 legros Exp $
+ * $Id: build_surf.cpp,v 1.22 2004/02/18 17:08:41 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1055,6 +1055,8 @@ void	NLPACS::CZoneTessellation::compile()
 
 	CAABBox	tbox = computeBBox();
 
+	bool	HasInvertedUnderWater = false;
+
 	// setup cliffs
 	for (el=0; el<(sint)Elements.size(); ++el)
 	{
@@ -1106,9 +1108,16 @@ void	NLPACS::CZoneTessellation::compile()
 				{
 					CPolygon	p(v0, v1, v2);
 					PrimChecker.renderBits(p, CPrimChecker::Cliff);
+
+					HasInvertedUnderWater = true;
 				}
 			}
 		}
+	}
+
+	if (HasInvertedUnderWater)
+	{
+		nlwarning("zone '%s' has reversed landscape under water", (getZoneNameById(CentralZoneId)+ZoneExt).c_str());
 	}
 
 

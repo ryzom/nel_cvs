@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.92 2001/10/18 11:51:28 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.93 2001/10/18 13:17:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -810,7 +810,7 @@ private:
 	bool			isVertexProgramEnabled () const
 	{
 		// Extension actived ?
-		GLboolean actived=glIsEnabled (GL_VERTEX_PROGRAM_NV);
+		GLboolean actived=glIsEnabled ((GLenum)GL_VERTEX_PROGRAM_NV);
 		return actived!=GL_FALSE;
 	}
 	// Say if last setupGlArrays() was a VertexProgram setup.

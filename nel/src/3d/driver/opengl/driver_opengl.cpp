@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.123 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.124 2001/10/18 13:17:43 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -626,7 +626,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// Be always in EXTSeparateSpecularColor.
 	if(_Extensions.EXTSeparateSpecularColor)
 	{
-		glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL_EXT, GL_SEPARATE_SPECULAR_COLOR_EXT);
+		glLightModeli((GLenum)GL_LIGHT_MODEL_COLOR_CONTROL_EXT, GL_SEPARATE_SPECULAR_COLOR_EXT);
 	}
 
 	_LastSetupGLArrayVertexProgram= false;
@@ -1390,7 +1390,7 @@ void				CDriverGL::cleanViewMatrix ()
 				vectorGL[3]=0.f;
 	
 				// Set it
-				glLightfv (GL_LIGHT0+i, GL_POSITION, vectorGL);
+				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_POSITION, vectorGL);
 			}
 
 			// Spotlight ?
@@ -1405,7 +1405,7 @@ void				CDriverGL::cleanViewMatrix ()
 				vectorGL[2]=_WorldLightDirection[i].z;
 	
 				// Set it
-				glLightfv (GL_LIGHT0+i, GL_SPOT_DIRECTION, vectorGL);
+				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_SPOT_DIRECTION, vectorGL);
 			}
 
 			// Position 
@@ -1421,7 +1421,7 @@ void				CDriverGL::cleanViewMatrix ()
 				vectorGL[3]=1.f;
 	
 				// Set it
-				glLightfv (GL_LIGHT0+i, GL_POSITION, vectorGL);
+				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_POSITION, vectorGL);
 			}
 		}
 	}

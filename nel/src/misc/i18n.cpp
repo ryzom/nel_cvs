@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.7 2000/11/23 17:01:58 lecroart Exp $
+ * $Id: i18n.cpp,v 1.8 2000/11/24 15:02:20 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -177,16 +177,18 @@ void CI18N::createLanguageEntry (const string &lval, const string &rval)
 	sint i;
 	for (i = 0; i < (sint)lval.size () ; i++)
 	{
-		if (lval[i]>0x7F)
+		unsigned char c = (unsigned char) lval[i];
+		if (c>0x7F)
 		{
-			nlerror ("CI18N::createLanguageEntry(\"%s\"): your string must be ASCII 7bits ('%c' isn't ASCII 7bits)", lval, lval[i]);
+			nlerror ("CI18N::createLanguageEntry(\"%s\"): your string must be ASCII 7bits ('%c' isn't ASCII 7bits)", lval.c_str(), c);
 		}
 	}
 	for (i = 0; i < (sint)rval.size () ; i++)
 	{
-		if (rval[i]>0x7F)
+		unsigned char c = (unsigned char) rval[i];
+		if (c>0x7F)
 		{
-			nlerror ("CI18N::createLanguageEntry(\"%s\"): your string must be ASCII 7bits ('%c' isn't ASCII 7bits)", rval, rval[i]);
+			nlerror ("CI18N::createLanguageEntry(\"%s\"): your string must be ASCII 7bits ('%c' isn't ASCII 7bits)", rval.c_str(), c);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.10 2002/01/23 10:55:13 lecroart Exp $
+ * $Id: login_service.cpp,v 1.11 2002/01/23 11:08:05 lecroart Exp $
  *
  */
 
@@ -484,7 +484,7 @@ NLMISC_COMMAND (shards, "displays the list of all registered shards", "")
 	log.displayNL ("Display the %d registered shards :", Shards.size());
 	for (uint i = 0; i < Shards.size(); i++)
 	{
-		log.displayNL ("> %s %d %d %s '%s' '%s'", Shards[i].Name.c_str(), Shards[i].Online, Shards[i].NbPlayers, Shards[i].SockId->asString().c_str(), Shards[i].WSAddr.c_str(), Shards[i].ShardName);
+		log.displayNL ("> %s %d %d %s '%s' '%s'", Shards[i].Name.c_str(), Shards[i].Online, Shards[i].NbPlayers, Shards[i].SockId->asString().c_str(), Shards[i].WSAddr.c_str(), Shards[i].ShardName.c_str());
 	}
 	log.displayNL ("End ot the list");
 

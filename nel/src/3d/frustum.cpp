@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.12 2003/09/15 12:01:16 corvazier Exp $
+ * $Id: frustum.cpp,v 1.13 2003/09/25 16:09:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -276,10 +276,12 @@ CVector			CFrustum::unProjectZ(const CVector &vec) const
 	else
 	{
 		// NOT DONE YET.
-		nlstop;
+		//nlstop;
 		/*ret.x= (pt.x*w+decalX)/2;
 		ret.y= (pt.y*h+decalY)/2;
 		*/
+		// Yoyo: crash avoid for lem
+		ret= vec;
 	}
 
 	// Fast transform from openGL like axis.

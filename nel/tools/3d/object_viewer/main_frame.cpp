@@ -12,12 +12,14 @@
 #include "water_pool_editor.h"
 #include "vegetable_dlg.h"
 #include "global_wind_dlg.h"
+#include "fog_dlg.h"
 #include <nel/misc/file.h>
 #include <3d/nelu.h>
 #include <3d/mesh.h>
 #include <3d/transform_shape.h>
 #include <3d/mesh_instance.h>
 #include <3d/skeleton_model.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -106,6 +108,9 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	Z=true;
 	Euler=false;
 	GlobalWindPower= 1.f;
+	FogActive = false;
+	FogStart  = 0.f;
+	FogEnd    = 100.f;
 
 	_RightButtonMouseListener.ObjViewerDlg = ObjView ;
 	_RightButtonMouseListener.SceneDlg = this ;
@@ -138,6 +143,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_RESET_CAMERA, OnResetCamera)
 	ON_COMMAND(ID_VIEW_SETBACKGROUND, OnViewSetbackground)
 	ON_COMMAND(ID_VIEW_SETMOVESPEED, OnViewSetmovespeed)
+	ON_COMMAND(IDM_ACTIVATE_FOG, OnActivateFog)
+	ON_COMMAND(IDM_SETUP_FOG, OnSetupFog)
 	ON_COMMAND(ID_WINDOW_ANIMATION, OnWindowAnimation)
 	ON_COMMAND(ID_WINDOW_ANIMATIONSET, OnWindowAnimationset)
 	ON_COMMAND(ID_WINDOW_MIXERSSLOTS, OnWindowMixersslots)
@@ -726,6 +733,38 @@ void CMainFrame::OnViewSetmovespeed()
 	{
 		// Get deflaut value
 		sscanf ((const char*)valueDlg.Value, "%f", &MoveSpeed);
+	}
+}
+
+void CMainFrame::OnActivateFog() 
+{	
+	FogActive = !FogActive;
+	if (FogActive)
+	{			
+		CNELU::Driver->setupFog(FogStart, FogEnd, ObjView->getBackGroundColor());
+		CNELU::Driver->enableFog(true);
+	}
+	else
+	{
+		CNELU::Driver->enableFog(false);
+	}
+	CMenu *menu = GetMenu();
+	menu->CheckMenuItem(IDM_ACTIVATE_FOG, MF_BYCOMMAND | (FogActive ? MF_CHECKED : MF_UNCHECKED));
+}
+
+void CMainFrame::OnSetupFog() 
+{	
+	CFogDlg fogDlg;
+	fogDlg.setFogStart(FogStart);
+	fogDlg.setFogEnd(FogEnd);
+
+	if (fogDlg.DoModal() == IDOK)
+	{
+		FogStart = fogDlg.getFogStart();
+		FogEnd = fogDlg.getFogEnd();
+		NLMISC::clamp(FogStart, 0.f, 1000.f);
+		NLMISC::clamp(FogEnd, 0.f, 1000.f);
+		CNELU::Driver->setupFog(FogStart, FogEnd, ObjView->getBackGroundColor());
 	}
 }
 

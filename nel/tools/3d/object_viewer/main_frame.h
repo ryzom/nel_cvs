@@ -63,6 +63,9 @@ public:
 	NLMISC::CRGBA	BgColor;
 	bool			Euler;
 	float			GlobalWindPower;
+	bool			FogActive;
+	float			FogStart;
+	float			FogEnd;
 	
 	void update ();
 	void registerValue (bool update=true);
@@ -99,6 +102,8 @@ public:
 	afx_msg void OnResetCamera();
 	afx_msg void OnViewSetbackground();
 	afx_msg void OnViewSetmovespeed();
+	afx_msg void OnActivateFog();
+	afx_msg void OnSetupFog();
 	afx_msg void OnWindowAnimation();
 	afx_msg void OnWindowAnimationset();
 	afx_msg void OnWindowMixersslots();

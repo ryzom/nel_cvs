@@ -109,75 +109,86 @@ coarse_mesh_texture_names=`cat ../../cfg/config.cfg | grep "coarse_mesh_texture_
 # Copy the config file header
 cat cfg/config_header.cfg | sed -e "s/texture_mul_size_value/$texture_mul_size_value/g" > cfg/config_generated.cfg
 
-# Add the shape directory
-echo '	"'shape_with_coarse_mesh'"', >> cfg/config_generated.cfg
+# Corse meshes for this process ?
+if ( test "$coarse_mesh_texture_names" ) then
 
-# For each texture path
-for i in $map_source_directories ; do
-	
-	# Add the path
-	echo '	"'$database_directory/$i'"', >> cfg/config_generated.cfg
+	# Add the shape directory
+	echo '	"'shape_with_coarse_mesh'"', >> cfg/config_generated.cfg
 
-	# Idle
-	../../idle.bat
-done
+	# For each texture path
+	for i in $map_source_directories ; do
+		
+		# Add the path
+		echo '	"'$database_directory/$i'"', >> cfg/config_generated.cfg
 
-# Add the shape list header
-echo '};' >> cfg/config_generated.cfg
-echo ' ' >> cfg/config_generated.cfg
-echo 'list_mesh =' >> cfg/config_generated.cfg
-echo '{' >> cfg/config_generated.cfg
+		# Idle
+		../../idle.bat
+	done
 
-# For each shape with coarse mesh
-for i in shape_with_coarse_mesh/*.[sS][hH][aA][pP][eE]; do
-	
-	if ( test -f $i )
-	then
-		# Destination file
-		src=`echo $i | sed -e 's&shape_with_coarse_mesh/&&g'`
-		dest=`echo $i | sed -e 's&shape_with_coarse_mesh&shape_with_coarse_mesh_builded&g'`
+	# Add the shape list header
+	echo '};' >> cfg/config_generated.cfg
+	echo ' ' >> cfg/config_generated.cfg
+	echo 'list_mesh =' >> cfg/config_generated.cfg
+	echo '{' >> cfg/config_generated.cfg
 
-		# Add the shape
-		echo '	"'$src'", "'$dest'",' >> cfg/config_generated.cfg
+	# For each shape with coarse mesh
+	for i in shape_with_coarse_mesh/*.[sS][hH][aA][pP][eE]; do
+		
+		if ( test -f $i )
+		then
+			# Destination file
+			src=`echo $i | sed -e 's&shape_with_coarse_mesh/&&g'`
+			dest=`echo $i | sed -e 's&shape_with_coarse_mesh&shape_with_coarse_mesh_builded&g'`
 
-		# Destination file
-		dest=`echo $i | sed -e 's/lightmap/lightmap_16_bits/g'`
-	fi
+			# Add the shape
+			echo '	"'$src'", "'$dest'",' >> cfg/config_generated.cfg
 
-	# Idle
-	../../idle.bat
-done
-echo '};' >> cfg/config_generated.cfg
+			# Destination file
+			dest=`echo $i | sed -e 's/lightmap/lightmap_16_bits/g'`
+		fi
 
-# Add output bitmap list
-echo ' ' >> cfg/config_generated.cfg
-echo 'output_textures = {' >> cfg/config_generated.cfg
-# For each shape with coarse mesh
-for i in $coarse_mesh_texture_names ; do
-	# Add the path
-	echo '	"shape_with_coarse_mesh/'$i'.tga"', >> cfg/config_generated.cfg
-done
+		# Idle
+		../../idle.bat
+	done
+	echo '};' >> cfg/config_generated.cfg
 
-# Close the config file
-echo '};' >> cfg/config_generated.cfg
+	# Add output bitmap list
+	echo ' ' >> cfg/config_generated.cfg
+	echo 'output_textures = {' >> cfg/config_generated.cfg
+	# For each shape with coarse mesh
+	for i in $coarse_mesh_texture_names ; do
+		# Add the path
+		echo '	"shape_with_coarse_mesh/'$i'.tga"', >> cfg/config_generated.cfg
+	done
 
-# Execute the build
-$build_coarse_mesh cfg/config_generated.cfg 
+	# Close the config file
+	echo '};' >> cfg/config_generated.cfg
 
-# Log error
-echo ------- >> log.log
-echo --- Build shape : convert coarse texture to dds without mipmaps >> log.log
-echo ------- >> log.log
-echo ------- 
-echo --- Build shape : convert coarse texture to dds without mipmaps 
-echo ------- 
-date >> log.log
-date
+	# Execute the build
+	$build_coarse_mesh cfg/config_generated.cfg 
 
-# Convert the coarse texture to dds
-for i in $coarse_mesh_texture_names ; do
-	if ( test -f shape_with_coarse_mesh/$i.tga )
-	then
-		$tga_2_dds shape_with_coarse_mesh/$i.tga -o shape_with_coarse_mesh_builded/$i.dds -a 5 2>> log.log
-	fi
-done
+	# Log error
+	echo ------- >> log.log
+	echo --- Build shape : convert coarse texture to dds without mipmaps >> log.log
+	echo ------- >> log.log
+	echo ------- 
+	echo --- Build shape : convert coarse texture to dds without mipmaps 
+	echo ------- 
+	date >> log.log
+	date
+
+	# Convert the coarse texture to dds
+	for i in $coarse_mesh_texture_names ; do
+		if ( test -f shape_with_coarse_mesh/$i.tga )
+		then
+			$tga_2_dds shape_with_coarse_mesh/$i.tga -o shape_with_coarse_mesh_builded/$i.dds -a 5 2>> log.log
+		fi
+	done
+
+else
+
+	echo --- No coarse meshes texture defined >> log.log
+	echo --- No coarse meshes texture defined 
+
+fi
+

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.64 2001/05/15 13:35:15 chafik Exp $
+ * $Id: agent_script.cpp,v 1.65 2001/05/17 14:11:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -692,13 +692,22 @@ namespace NLAIAGENT
 	
 	IObjectIA::CProcessResult CAgentScript::sendMessageToDynmaicChild(const IVarName &compName,IObjectIA *msg)
 	{
-		tsetDefNameAgent::iterator  p = _DynamicAgentName.find(CKeyAgent(CStringType(compName)));
+		//tsetDefNameAgent::iterator  p = _DynamicAgentName.find(CKeyAgent(CStringType(compName)));
+		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(CStringType(compName)));
 
-		while(p != _DynamicAgentName.end())
+#ifdef NL_DEBUG
+	const char *txt = (const char *)msg->getType();
+#endif
+
+		while(p.first != p.second)
 		{
-			CAgentScript *o = (CAgentScript *)*((*p++).Itr);
+			CAgentScript *o = (CAgentScript *)*((*(p.first)).Itr);
+#ifdef NL_DEBUG	
+	const char *compNameDb = (const char *)o->getType();
+#endif
 			o->sendMessage(msg);
-			if(p != _DynamicAgentName.end()) msg = (IObjectIA *)msg->clone();
+			p.first ++;
+			if(p.first != p.second) msg = (IObjectIA *)msg->clone();
 		}
 
 		return IObjectIA::CProcessResult();
@@ -706,6 +715,10 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::sendMessage(const IVarName &compName,IObjectIA *msg)
 	{
+#ifdef NL_DEBUG
+	const char *txt = (const char *)msg->getType();
+	const char *compNameDb = (const char *)compName.getString();
+#endif
 		if(_AgentClass != NULL)
 		{
 			int i = getStaticMemberIndex(compName);
@@ -961,6 +974,9 @@ namespace NLAIAGENT
 		while(getMail()->getMessageCount())
 		{
 			IMessageBase &msg = (IMessageBase &)getMail()->getMessage();
+#ifdef NL_DEBUG
+		const char *dbg_msg = (const char *) msg.getType();		
+#endif
 			if(msg.getMethodIndex() >= 0 && c != NULL)
 			{
 				processMessages(&msg,c);

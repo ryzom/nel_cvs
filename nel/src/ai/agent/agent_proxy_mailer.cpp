@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.9 2001/05/02 13:25:01 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.10 2001/05/17 14:11:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,11 @@ namespace NLAIAGENT
 	}
 	void CProxyAgentMail::processMessages()
 	{
+	}
+
+	IObjectIA::CProcessResult CProxyAgentMail::sendMessage(const IVarName &compName,IObjectIA *msg)
+	{
+		return MainAgent->sendMessage(*_AgentRef,compName,msg);
 	}
 
 	IObjectIA::CProcessResult CProxyAgentMail::sendMessage(IObjectIA *m)

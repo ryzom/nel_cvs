@@ -1,7 +1,7 @@
 /** \file noise_3d.cpp
  * cloud_scape implementation
  *
- * $Id: noise_3d.cpp,v 1.2 2002/11/05 12:55:28 coutelas Exp $
+ * $Id: noise_3d.cpp,v 1.3 2003/02/27 15:42:50 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NL3D
 CNoise3d::CNoise3d (IDriver *pDriver)
 {
 	_Mat = NULL;
+	_OffS = NULL;
 	_Driver = pDriver;
 	_NbVertices = 0;
 	_IsDriverSupportEnvCombine4 = true;

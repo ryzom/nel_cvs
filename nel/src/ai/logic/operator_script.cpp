@@ -33,7 +33,7 @@ namespace NLAIAGENT
 		_IsActivable = false;
 		_Maintain = false;
 		_Priority = 0;
-		_Exclusive = false;
+		_Exclusive = true;
 	}	
 
 	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CActorScript( manager )
@@ -43,7 +43,7 @@ namespace NLAIAGENT
 		_IsActivable = false;
 		_Maintain = false;
 		_Priority = 0;
-		_Exclusive = false;
+		_Exclusive = true;
 	}
 
 	COperatorScript::~COperatorScript()

@@ -28,12 +28,11 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 
-// georges
-#include "nel/georges/u_form_elm.h"
-
 // std
 #include <string>
 #include <map>
+
+namespace NLMISC {
 
 /**
  * CSheetId
@@ -168,6 +167,8 @@ inline std::stringstream &operator << (std::stringstream &__os, const CSheetId &
 	__os << __t.toString ();
 	return __os;
 }
+
+} // NLMISC
 
 #endif // NL_SHEET_ID_H
 

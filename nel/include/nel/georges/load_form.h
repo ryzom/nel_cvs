@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.1 2002/06/03 10:00:15 lecroart Exp $
+ * $Id: load_form.h,v 1.2 2002/06/03 14:52:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include "nel/misc/file.h"
 
 #include "nel/georges/u_form_loader.h"
-#include "nel/georges/sheet_id.h"
+#include "nel/misc/sheet_id.h"
 
 /** This function is used to load values from georges sheet in a quick way.
  * The first time it loads the sheet and parse it with the readGeorges function
@@ -60,7 +60,7 @@
 		float WalkSpeed, RunSpeed;
 
 		// load the values using the george sheet
-		void readGeorges (const NLMISC::CSmartPtr<NLGEORGES::UForm> &form, const CSheetId &sheetId)
+		void readGeorges (const NLMISC::CSmartPtr<NLGEORGES::UForm> &form, const NLMISC::CSheetId &sheetId)
 		{
 			// the form was found so read the true values from George
 			form->getRootNode ().getValueByName (WalkSpeed, "Basics.MovementSpeeds.WalkSpeed");
@@ -78,7 +78,7 @@
 	};
 
 	// this structure is fill by the loadForm() function and will contain all you need
-	std::map<CSheetId,CContainerEntry> Container;
+	std::map<NLMISC::CSheetId,CContainerEntry> Container;
 
 	void init ()
 	{
@@ -97,7 +97,7 @@
  * \param container the map that will be filled by this function
  */
 template <class T>
-void loadForm (const std::string &sheetFilter, const std::string &packedFilename, std::map<CSheetId, T> &container)
+void loadForm (const std::string &sheetFilter, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container)
 {
 	std::vector<std::string> vs;
 	vs.push_back(sheetFilter);
@@ -110,19 +110,19 @@ void loadForm (const std::string &sheetFilter, const std::string &packedFilename
  * \param container the map that will be filled by this function
  */
 template <class T>
-void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<CSheetId, T> &container)
+void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container)
 {
 	// check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
 	nlassert (packedFilename.find (".packed_sheets") != string::npos);
 
 	// make sure the CSheetId singleton has been properly initialised
-	CSheetId::init();
+	NLMISC::CSheetId::init();
 
 	// build a vector of the sheetFilters sheet ids (".item")
-	std::vector<CSheetId> sheetIds;
+	std::vector<NLMISC::CSheetId> sheetIds;
 	std::vector<std::string> filenames;
 	for (uint i = 0; i < sheetFilters.size(); i++)
-		CSheetId::buildIdVector(sheetIds, filenames, sheetFilters[i]);
+		NLMISC::CSheetId::buildIdVector(sheetIds, filenames, sheetFilters[i]);
 
 	// check if we need to create a new .pitems or just read it
 	uint32 packedFiledate = NLMISC::CFile::getFileModificationDate(packedFilename);
@@ -150,14 +150,14 @@ NeedRebuild:
 		NLGEORGES::UFormLoader *formLoader = NLGEORGES::UFormLoader::createLoader ();
 
 		// iterate through the vector of sheet ids
-		for(std::vector<CSheetId>::iterator it = sheetIds.begin(); it != sheetIds.end(); ++it)
+		for(std::vector<NLMISC::CSheetId>::iterator it = sheetIds.begin(); it != sheetIds.end(); ++it)
 		{
 			// Load the form with given sheet id
 			NLMISC::CSmartPtr<NLGEORGES::UForm> form = formLoader->loadForm ((*it).toString().c_str ());
 			if (form)
 			{
 				// add the new creature
-				std::pair<std::map<CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(*it,T()));
+				std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(*it,T()));
 
 				if (!res.second)
 				{

@@ -22,20 +22,16 @@
  * MA 02111-1307, USA.
  */
 
-#include "stdgeorges.h"
+#include "stdmisc.h"
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 
-#include "nel/georges/u_form.h"
-#include "nel/georges/u_form_loader.h"
-#include "nel/georges/sheet_id.h"
+#include "nel/misc/sheet_id.h"
 
-using namespace NLMISC;
-using namespace NLGEORGES;
 using namespace std;
 
-
+namespace NLMISC {
 
 map<uint32,std::string> CSheetId::_SheetIdToName;
 map<std::string,uint32> CSheetId::_SheetNameToId;
@@ -392,3 +388,4 @@ const std::string &CSheetId::fileExtensionFromType(uint8 type)
 
 } // fileExtensionFromType //
 
+} // NLMISC

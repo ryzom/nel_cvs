@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.19 2002/06/27 16:26:14 berenguier Exp $
+ * $Id: matrix.h,v 1.20 2002/07/09 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,8 +253,32 @@ public:
 
 	/// \name Matrix Operations.
 	//@{
-	CMatrix	operator*(const CMatrix &) const;
-	CMatrix	&operator*=(const CMatrix &);
+	/** Matrix multiplication. Because of copy avoidance, this is the fastest method
+	 *	Equivalent to *this= m1 * m2
+	 *	\warning *this MUST NOT be the same as m1 or m2, else it doesn't work (not checked/nlasserted)
+	 */
+	void		setMulMatrix(const CMatrix &m1, const CMatrix &m2);
+	/// Matrix multiplication
+	CMatrix		operator*(const CMatrix &in) const
+	{
+		CMatrix		ret;
+		ret.setMulMatrix(*this, in);
+		return ret;
+	}
+	/// equivalent to M=M*in
+	CMatrix		&operator*=(const CMatrix &in)
+	{
+		CMatrix		ret;
+		ret.setMulMatrix(*this, in);
+		*this= ret;
+		return *this;
+	}
+	/** Matrix multiplication assuming no projection at all in m1/m2 and Hence this. Even Faster than setMulMatrix()
+	 *	Equivalent to *this= m1 * m2
+	 *	NB: Also always suppose m1 has a translation, for optim consideration
+	 *	\warning *this MUST NOT be the same as m1 or m2, else it doesn't work (not checked/nlasserted)
+	 */
+	void		setMulMatrixNoProj(const CMatrix &m1, const CMatrix &m2);
 	/** transpose the rotation part only of the matrix (swap columns/lines).
 	 */
 	void		transpose3x3();

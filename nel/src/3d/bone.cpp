@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.9 2002/03/21 16:07:51 berenguier Exp $
+ * $Id: bone.cpp,v 1.10 2002/07/09 13:14:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,23 +184,33 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix)
 			// with UnheritScale, formula per bone should be  T*Sf-1*P*R*S*P-1.
 			// But getMatrix() return T*P*R*S*P-1.
 			// So we must compute T*Sf-1*T-1, in order to get wanted result.
-			invScaleComp.translate(trans);
 			invScaleComp.scale(fatherScale);
-			invScaleComp.translate(-trans);
+			// Faster compute of the translation part: just "trans + fatherScale MUL -trans" where MUL is comp mul
+			trans.x-= fatherScale.x * trans.x;
+			trans.y-= fatherScale.y * trans.y;
+			trans.z-= fatherScale.z * trans.z;
+			invScaleComp.setPos(trans);
+
 
 			// And finally, we got ParentWM * T*Sf-1*P*R*S*P-1.
-			_LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * invScaleComp * getMatrix();
+			// Do: _LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * invScaleComp * getMatrix()
+			static	CMatrix	tmp;
+			tmp.setMulMatrixNoProj( parent->_LocalSkeletonMatrix, invScaleComp );
+			_LocalSkeletonMatrix.setMulMatrixNoProj( tmp, getMatrix() );
 		}
 		// Normal case.
 		else
-			_LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * getMatrix();
+		{
+			// Do: _LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * getMatrix()
+			_LocalSkeletonMatrix.setMulMatrixNoProj( parent->_LocalSkeletonMatrix, getMatrix() );
+		}
 	}
 
-	// Compute WorldMatrix.
-	_WorldMatrix= rootMatrix * _LocalSkeletonMatrix;
+	// Compute WorldMatrix. Do: _WorldMatrix= rootMatrix * _LocalSkeletonMatrix
+	_WorldMatrix.setMulMatrixNoProj( rootMatrix, _LocalSkeletonMatrix );
 
-	// Compute BoneSkinMatrix.
-	_BoneSkinMatrix= _LocalSkeletonMatrix * _BoneBase->InvBindPos;
+	// Compute BoneSkinMatrix. Do: _BoneSkinMatrix= _LocalSkeletonMatrix * _BoneBase->InvBindPos
+	_BoneSkinMatrix.setMulMatrixNoProj( _LocalSkeletonMatrix, _BoneBase->InvBindPos );
 }
 
 

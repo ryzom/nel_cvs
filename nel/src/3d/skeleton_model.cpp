@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.24 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.25 2002/07/09 13:16:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,9 +158,10 @@ void		CSkeletonModel::initBoneUsages()
 		_BoneUsage[i].MustCompute= 0;
 		_BoneUsage[i].ValidBoneSkinMatrix= 0;
 	}
+	// reserve space for bone to compute
+	_BoneToCompute.reserve(Bones.size());
 
 	_BoneToComputeDirty= false;
-	_NumBoneComputed= 0;
 	_CurLod= 0;
 	_CurLodInterp= 1.f;
 	// Default is 0.5 meters.
@@ -270,10 +271,11 @@ void		CSkeletonModel::updateBoneToCompute()
 	CChannelMixer	*chanMixer= getChannelMixer();
 
 	// Get Lod infos from skeletonShape
-	const CSkeletonShape::CLod	&lod= ((CSkeletonShape*)(IShape*)Shape)->getLod(_CurLod);
+	CSkeletonShape		*skeShape= (CSkeletonShape*)(IShape*)Shape;
+	const CSkeletonShape::CLod	&lod= skeShape->getLod(_CurLod);
 
-	// recompute _NumBoneComputed
-	_NumBoneComputed= 0;
+	// reset _BoneToCompute
+	_BoneToCompute.clear();
 
 	// For all bones
 	for(uint i=0; i<_BoneUsage.size(); i++)
@@ -293,14 +295,40 @@ void		CSkeletonModel::updateBoneToCompute()
 		// If the bone must be computed (if !0)
 		if(_BoneUsage[i].MustCompute)
 		{
-			// Inc _NumBoneComputed.
-			_NumBoneComputed++;
 			// lodEnable the channels of this bone
 			if(chanMixer)
 				Bones[i].lodEnableChannels(chanMixer, true);
 
 			// This bone is computed => take his valid boneSkinMatrix.
 			_BoneUsage[i].ValidBoneSkinMatrix= i;
+
+			// Append to the list to compute.
+			//-------
+			CBoneCompute	bc;
+			bc.Bone= &Bones[i];
+			sint	fatherId= Bones[i].getFatherId();
+			// if a root bone...
+			if(fatherId==-1)
+				bc.Father= NULL;
+			else
+				bc.Father= &Bones[fatherId];
+			// MustInterpolate??
+			bc.MustInterpolate= false;
+			const CSkeletonShape::CLod	*lodNext= NULL;
+			// if a lod exist after current lod, and if lod interpolation enabled
+			if( _CurLod < skeShape->getNumLods()-1 && _LodInterpMultiplier>0 )
+			{
+				// get next lod.
+				lodNext= &skeShape->getLod(_CurLod+1);
+				// Lod interpolation on this bone ?? only if at next lod, the bone is disabled.
+				// And only if it is not enabed because of a "Forced reason"
+				// Must also have a father, esle can't interpolate.
+				if(lodNext->ActiveBones[i]==0 && _BoneUsage[i].ForcedUsage==0 && _BoneUsage[i].CLodForcedUsage==0 
+					&& bc.Father)
+					bc.MustInterpolate= true;
+			}
+			// append
+			_BoneToCompute.push_back(bc);
 		}
 		else
 		{
@@ -318,6 +346,8 @@ void		CSkeletonModel::updateBoneToCompute()
 				_BoneUsage[i].ValidBoneSkinMatrix= _BoneUsage[fatherId].ValidBoneSkinMatrix;
 		}
 	}
+
+	// For 
 
 	// computed
 	_BoneToComputeDirty= false;
@@ -586,31 +616,20 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 
 		// must test / update the hierarchy of Bones.
 		// Since they are orderd in depth-first order, we are sure that parent are computed before sons.
-		for(uint i=0;i<sm->Bones.size();i++)
+		uint							numBoneToCompute= sm->_BoneToCompute.size();
+		CSkeletonModel::CBoneCompute	*pBoneCompute= numBoneToCompute? &sm->_BoneToCompute[0] : NULL;
+		// traverse only bones which need to be computed
+		for(;numBoneToCompute>0;numBoneToCompute--, pBoneCompute++)
 		{
-			// Do nothing if the bone doesn't need to be computed (not used, lods ...)
-			if(sm->_BoneUsage[i].MustCompute)
-			{
-				sint	fatherId= sm->Bones[i].getFatherId();
-				// if a root bone...
-				if(fatherId==-1)
-					// Compute root bone worldMatrix.
-					sm->Bones[i].compute( NULL, modelWorldMatrix);
-				else
-				{
-					// Compute bone worldMatrix.
-					sm->Bones[i].compute( &sm->Bones[fatherId], modelWorldMatrix);
+			// compute the bone with his father, if any
+			pBoneCompute->Bone->compute( pBoneCompute->Father, modelWorldMatrix);
 
-					// Lod interpolation on this bone ?? only if at next lod, the bone is disabled.
-					// And only if it is not enabed because of a "Forced reason"
-					if(lodNext && lodNext->ActiveBones[i]==0 && 
-						sm->_BoneUsage[i].ForcedUsage==0 && sm->_BoneUsage[i].CLodForcedUsage==0)
-					{
-						// interpolate with my father matrix.
-						const CMatrix		&fatherMatrix= sm->Bones[fatherId].getBoneSkinMatrix();
-						sm->Bones[i].interpolateBoneSkinMatrix(fatherMatrix, lodBoneInterp);
-					}
-				}
+			// Lod interpolation on this bone .. only if interp is enabled now, and if bone wants it
+			if(lodNext && pBoneCompute->MustInterpolate)
+			{
+				// interpolate with my father matrix.
+				const CMatrix		&fatherMatrix= pBoneCompute->Father->getBoneSkinMatrix();
+				pBoneCompute->Bone->interpolateBoneSkinMatrix(fatherMatrix, lodBoneInterp);
 			}
 		}
 

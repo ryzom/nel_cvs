@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.6 2002/05/13 15:53:49 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.7 2002/07/09 13:16:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/3d/animation_time.h"
 #include "3d/animation_set.h"
 #include <map>
+#include <vector>
 
 namespace NL3D 
 {
@@ -433,6 +434,18 @@ private:
 
 	// The channels list is dirty if true.
 	bool							_Dirt;
+
+	// true if must update animateList. (set in refreshList())
+	bool							_ListToEvalDirt;
+
+	// Raw lists of channels to animate, acording to _EnableFlags
+	std::vector<CChannel*>			_GlobalListToEval;
+	std::vector<CChannel*>			_DetailListToEval;
+
+	/// Reshresh animate list
+	void							refreshListToEval ();
+
+
 };
 
 

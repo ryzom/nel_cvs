@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.20 2002/04/12 16:18:17 vizerie Exp $
+ * $Id: channel_mixer.cpp,v 1.21 2002/07/09 13:16:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,7 @@ CChannelMixer::CChannelMixer()
 
 	// Mixer no dirty
 	_Dirt=false;
+	_ListToEvalDirt= false;
 
 	// never evaluated.
 	_LastEvalDetailDate= -1;
@@ -86,110 +87,120 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 	if(detail && (sint64)evalDetailDate== _LastEvalDetailDate)
 		return;
 
+	// clean list according to anim setup
 	if(_Dirt)
 	{
 		refreshList();
 		cleanAll();
 	}
 
+	// clean eval list, according to channels enabled.
+	if(_ListToEvalDirt)
+	{
+		refreshListToEval();
+		nlassert(!_ListToEvalDirt);
+	}
+
 	// Setup it up
 	for (uint s=0; s<NumAnimationSlot; s++)
 	{
-		// Dirt and not empty ? (add)
-		if (!_SlotArray[s].isEmpty())
+		// Dirt, not empty and has an influence? (add)
+		if (!_SlotArray[s].isEmpty() && _SlotArray[s]._Weight>0)
 			// Add a dirt slot
 			activeSlot[numActive++]=s;
 	}
 
+	// no slot enabled at all?? skip
+	if(numActive==0)
+		return;
+
 	// For each selected channel
-	CChannel* pChannel;
+	CChannel	**channelArrayPtr;
+	uint		numChans;
 	if(detail)
 	{
-		pChannel=_FirstChannelDetail;
+		numChans= _DetailListToEval.size();
+		if(numChans)
+			channelArrayPtr= &_DetailListToEval[0];
 		// eval the animation only one time per scene traversal.
 		_LastEvalDetailDate= evalDetailDate;
 	}
 	else
-		pChannel=_FirstChannelGlobal;
-
-
-	while (pChannel)
 	{
-		// if the channel is enabled (both user and lod), eval all active slot.
-		if(pChannel->_EnableFlags == CChannel::EnableAllFlag)
+		numChans= _GlobalListToEval.size();
+		if(numChans)
+			channelArrayPtr= &_GlobalListToEval[0];
+	}
+
+
+	for(;numChans>0; numChans--, channelArrayPtr++)
+	{
+		CChannel	*pChannel= *channelArrayPtr;
+
+		// For Quat animated value only.
+		CQuat	firstQuat;
+
+		// First slot found
+		bool bFirst=true;
+
+		// Last blend factor
+		float lastBlend;
+
+		// Eval each slot
+		for (uint a=0; a<numActive; a++)
 		{
-			// For Quat animated value only.
-			CQuat	firstQuat;
+			// Slot number
+			uint slot=activeSlot[a];
 
-			// First slot found
-			bool bFirst=true;
+			// Current blend factor
+			float blend=pChannel->_Weights[slot]*_SlotArray[slot]._Weight;
 
-			// Last blend factor
-			float lastBlend;
-
-			// Eval each slot
-			for (uint a=0; a<numActive; a++)
+			if(blend!=0.0f)
 			{
-				// Slot number
-				uint slot=activeSlot[a];
+				// Eval the track at this time
+				((ITrack*)pChannel->_Tracks[slot])->eval (_SlotArray[slot]._Time);
 
-				// Is this an active slot ?
-				if (_SlotArray[slot]._Animation!=NULL)
+				// First track to be eval ?
+				if (bFirst)
 				{
-					// Current blend factor
-					float blend=pChannel->_Weights[slot]*_SlotArray[slot]._Weight;
-
-					if(blend!=0.0f)
+					// If channel is a Quaternion animated Value, must store the first Quat.
+					if (pChannel->_IsQuat)
 					{
-						// Eval the track at this time
-						((ITrack*)pChannel->_Tracks[slot])->eval (_SlotArray[slot]._Time);
-
-						// First track to be eval ?
-						if (bFirst)
-						{
-							// If channel is a Quaternion animated Value, must store the first Quat.
-							if (pChannel->_IsQuat)
-							{
-								CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
-								firstQuat=pQuatValue->Value;
-							}
-
-							// Copy the interpolated value
-							pChannel->_Value->affect (pChannel->_Tracks[slot]->getValue());
-
-							// First blend factor
-							lastBlend=blend;
-
-							// Not first anymore
-							bFirst=false;
-						}
-						else
-						{
-							// If channel is a Quaternion animated Value, must makeClosest the ith result of the track, from firstQuat.
-							if (pChannel->_IsQuat)
-							{
-								CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
-								pQuatValue->Value.makeClosest (firstQuat);
-							}
-
-							// Blend with this value and the previous sum
-							pChannel->_Value->blend (pChannel->_Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
-
-							// last blend update
-							lastBlend+=blend;
-						}
+						CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
+						firstQuat=pQuatValue->Value;
 					}
 
-					// NB: if all weights are 0, the AnimatedValue is not modified...
+					// Copy the interpolated value
+					pChannel->_Value->affect (pChannel->_Tracks[slot]->getValue());
 
-					// Touch the animated value and its owner to recompute them later.
-					pChannel->_Object->touch (pChannel->_ValueId, pChannel->_OwnerValueId);
+					// First blend factor
+					lastBlend=blend;
+
+					// Not first anymore
+					bFirst=false;
+				}
+				else
+				{
+					// If channel is a Quaternion animated Value, must makeClosest the ith result of the track, from firstQuat.
+					if (pChannel->_IsQuat)
+					{
+						CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
+						pQuatValue->Value.makeClosest (firstQuat);
+					}
+
+					// Blend with this value and the previous sum
+					pChannel->_Value->blend (pChannel->_Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
+
+					// last blend update
+					lastBlend+=blend;
 				}
 			}
+
+			// NB: if all weights are 0, the AnimatedValue is not modified...
 		}
 
-		// Next channel
-		pChannel=pChannel->_Next;
+		// Touch the animated value and its owner to recompute them later.
+		pChannel->_Object->touch (pChannel->_ValueId, pChannel->_OwnerValueId);
 	}
 }
 
@@ -286,6 +297,9 @@ void CChannelMixer::enableChannel (uint channelId, bool enable)
 		it->second._EnableFlags &= ~CChannel::EnableUserFlag;
 		if(enable)
 			it->second._EnableFlags |= CChannel::EnableUserFlag;
+
+		// Must recompute the channels to animate.
+		_ListToEvalDirt= true;
 	}
 }
 
@@ -312,6 +326,9 @@ void CChannelMixer::lodEnableChannel (uint channelId, bool enable)
 		it->second._EnableFlags &= ~CChannel::EnableLodFlag;
 		if(enable)
 			it->second._EnableFlags |= CChannel::EnableLodFlag;
+
+		// Must recompute the channels to animate.
+		_ListToEvalDirt= true;
 	}
 }
 
@@ -629,8 +646,49 @@ void CChannelMixer::refreshList ()
 	// End of the list
 	*lastPointerGlobal=NULL;
 	*lastPointerDetail=NULL;
+
+	// Must recompute the channels to animate.
+	_ListToEvalDirt= true;
 }
 
+
 // ***************************************************************************
+void CChannelMixer::refreshListToEval ()
+{
+	CChannel* pChannel;
+
+	/* NB: this save if(), especially when Used with Skeleton, and CLod mode
+	*/
+
+	// Global list.
+	_GlobalListToEval.clear();
+	_GlobalListToEval.reserve(_Channels.size());
+	pChannel=_FirstChannelGlobal;
+	while(pChannel)
+	{
+		// if the channel is enabled (both user and lod), must eval all active slot.
+		if(pChannel->_EnableFlags == CChannel::EnableAllFlag)
+			_GlobalListToEval.push_back(pChannel);
+		// next
+		pChannel= pChannel->_Next;
+	}
+
+	// Global list.
+	_DetailListToEval.clear();
+	_DetailListToEval.reserve(_Channels.size());
+	pChannel=_FirstChannelDetail;
+	while(pChannel)
+	{
+		// if the channel is enabled (both user and lod), must eval all active slot.
+		if(pChannel->_EnableFlags == CChannel::EnableAllFlag)
+			_DetailListToEval.push_back(pChannel);
+		// next
+		pChannel= pChannel->_Next;
+	}
+
+	// done
+	_ListToEvalDirt= false;
+}
+
 
 } // NL3D

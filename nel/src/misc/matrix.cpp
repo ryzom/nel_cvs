@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.30 2002/06/27 16:26:32 berenguier Exp $
+ * $Id: matrix.cpp,v 1.31 2002/07/09 13:13:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -698,138 +698,259 @@ void		CMatrix::scale(const CVector &v)
 // ======================================================================================================
 
 
-// ======================================================================================================
-CMatrix		CMatrix::operator*(const CMatrix &m) const
+// ***************************************************************************
+void		CMatrix::setMulMatrixNoProj(const CMatrix &m1, const CMatrix &m2)
 {
-	CMatrix		ret;
-	// Do ret= M1*M2, where M1=*this and M2=m.
-	ret.identity();
-	ret.StateBit= StateBit | m.StateBit;
-	ret.StateBit&= ~MAT_VALIDALL;
-
-	// \todo yoyo: TODO_OPTIMIZE it...
-	testExpandRot();
-	testExpandProj();
-	m.testExpandRot();
-	m.testExpandProj();
-	ret.testExpandRot();
-	ret.testExpandProj();
+	// Do *this= m1*m2
+	identity();
+	StateBit= (m1.StateBit | m2.StateBit) & (~MAT_PROJ);
+	StateBit&= ~MAT_VALIDALL;
 
 
 	// Build Rot part.
 	//===============
-	bool	M1Identity= ! hasRot();
-	bool	M2Identity= ! (m.hasRot());
-	bool	M1ScaleOnly= ! (StateBit & MAT_ROT);
-	bool	M2ScaleOnly= ! (m.StateBit & MAT_ROT);
+	bool	M1Identity= ! m1.hasRot();
+	bool	M2Identity= ! m2.hasRot();
+	bool	M1ScaleOnly= ! (m1.StateBit & MAT_ROT);
+	bool	M2ScaleOnly= ! (m2.StateBit & MAT_ROT);
+	bool	MGeneralCase= !M1Identity && !M2Identity && !M1ScaleOnly && !M2ScaleOnly;
 
-	// If one of the 3x3 matrix is an identity, just do a copy
-	if( M1Identity || M2Identity )
+
+	// Manage the most common general case first (optim the if ): blending of two rotations.
+	if( MGeneralCase )
 	{
-		// Copy the non identity matrix.
-		const CMatrix	*c= M2Identity? this : &m;
-		ret.a11= c->a11; ret.a12= c->a12; ret.a13= c->a13;
-		ret.a21= c->a21; ret.a22= c->a22; ret.a23= c->a23;
-		ret.a31= c->a31; ret.a32= c->a32; ret.a33= c->a33;
+		a11= m1.a11*m2.a11 + m1.a12*m2.a21 + m1.a13*m2.a31;
+		a12= m1.a11*m2.a12 + m1.a12*m2.a22 + m1.a13*m2.a32;
+		a13= m1.a11*m2.a13 + m1.a12*m2.a23 + m1.a13*m2.a33;
+
+		a21= m1.a21*m2.a11 + m1.a22*m2.a21 + m1.a23*m2.a31;
+		a22= m1.a21*m2.a12 + m1.a22*m2.a22 + m1.a23*m2.a32;
+		a23= m1.a21*m2.a13 + m1.a22*m2.a23 + m1.a23*m2.a33;
+
+		a31= m1.a31*m2.a11 + m1.a32*m2.a21 + m1.a33*m2.a31;
+		a32= m1.a31*m2.a12 + m1.a32*m2.a22 + m1.a33*m2.a32;
+		a33= m1.a31*m2.a13 + m1.a32*m2.a23 + m1.a33*m2.a33;
+	}
+	// If one of the 3x3 matrix is an identity, just do a copy
+	else if( M1Identity || M2Identity )
+	{
+		// If both identity, then me too.
+		if( M1Identity && M2Identity )
+		{
+			// just expand me (important because validated below)
+			testExpandRot();
+		}
+		else
+		{
+			// Copy the non identity matrix.
+			const CMatrix	*c= M2Identity? &m1 : &m2;
+			a11= c->a11; a12= c->a12; a13= c->a13;
+			a21= c->a21; a22= c->a22; a23= c->a23;
+			a31= c->a31; a32= c->a32; a33= c->a33;
+		}
 	}
 	// If two 3x3 matrix are just scaleOnly matrix, do a scaleFact.
 	else if( M1ScaleOnly && M2ScaleOnly )
 	{
 		// same process for scaleUni or scaleAny.
-		ret.a11= a11*m.a11; ret.a12= 0; ret.a13= 0; 
-		ret.a21= 0; ret.a22= a22*m.a22; ret.a23= 0; 
-		ret.a31= 0; ret.a32= 0; ret.a33= a33*m.a33;
+		a11= m1.a11*m2.a11; a12= 0; a13= 0; 
+		a21= 0; a22= m1.a22*m2.a22; a23= 0; 
+		a31= 0; a32= 0; a33= m1.a33*m2.a33;
 	}
 	// If one of the matrix is a scaleOnly matrix, do a scale*Rot.
 	else if( M1ScaleOnly && !M2ScaleOnly )
 	{
-		ret.a11= a11*m.a11; ret.a12= a11*m.a12; ret.a13= a11*m.a13;
-		ret.a21= a22*m.a21; ret.a22= a22*m.a22; ret.a23= a22*m.a23;
-		ret.a31= a33*m.a31; ret.a32= a33*m.a32; ret.a33= a33*m.a33;
+		a11= m1.a11*m2.a11; a12= m1.a11*m2.a12; a13= m1.a11*m2.a13;
+		a21= m1.a22*m2.a21; a22= m1.a22*m2.a22; a23= m1.a22*m2.a23;
+		a31= m1.a33*m2.a31; a32= m1.a33*m2.a32; a33= m1.a33*m2.a33;
 	}
-	else if( !M1ScaleOnly && M2ScaleOnly )
-	{
-		ret.a11= a11*m.a11; ret.a12= a12*m.a22; ret.a13= a13*m.a33;
-		ret.a21= a21*m.a11; ret.a22= a22*m.a22; ret.a23= a23*m.a33;
-		ret.a31= a31*m.a11; ret.a32= a32*m.a22; ret.a33= a33*m.a33;
-	}
-	// Else, general case: blending of two rotations.
 	else
 	{
-		ret.a11= a11*m.a11 + a12*m.a21 + a13*m.a31;
-		ret.a12= a11*m.a12 + a12*m.a22 + a13*m.a32;
-		ret.a13= a11*m.a13 + a12*m.a23 + a13*m.a33;
-
-		ret.a21= a21*m.a11 + a22*m.a21 + a23*m.a31;
-		ret.a22= a21*m.a12 + a22*m.a22 + a23*m.a32;
-		ret.a23= a21*m.a13 + a22*m.a23 + a23*m.a33;
-
-		ret.a31= a31*m.a11 + a32*m.a21 + a33*m.a31;
-		ret.a32= a31*m.a12 + a32*m.a22 + a33*m.a32;
-		ret.a33= a31*m.a13 + a32*m.a23 + a33*m.a33;
+		// This must be this case
+		nlassert(!M1ScaleOnly && M2ScaleOnly);
+		a11= m1.a11*m2.a11; a12= m1.a12*m2.a22; a13= m1.a13*m2.a33;
+		a21= m1.a21*m2.a11; a22= m1.a22*m2.a22; a23= m1.a23*m2.a33;
+		a31= m1.a31*m2.a11; a32= m1.a32*m2.a22; a33= m1.a33*m2.a33;
 	}
 
-	// If M1 has translate and M2 has projective, rotation is modified.
-	if( hasTrans() && m.hasProj())
-	{
-		ret.StateBit|= MAT_ROT|MAT_SCALEANY;
-
-		ret.a11+= a14*m.a41;
-		ret.a12+= a14*m.a42;
-		ret.a13+= a14*m.a43;
-
-		ret.a21+= a24*m.a41;
-		ret.a22+= a24*m.a42;
-		ret.a23+= a24*m.a43;
-
-		ret.a31+= a34*m.a41;
-		ret.a32+= a34*m.a42;
-		ret.a33+= a34*m.a43;
-	}
 	// Modify Scale.
-	if( (ret.StateBit & MAT_SCALEUNI) && !(ret.StateBit & MAT_SCALEANY) )
-		ret.Scale33= Scale33*m.Scale33;
+	if( (StateBit & MAT_SCALEUNI) && !(StateBit & MAT_SCALEANY) )
+		Scale33= m1.Scale33*m2.Scale33;
 	else
-		ret.Scale33=1;
+		Scale33=1;
+
+	// In every case, I am valid now!
+	StateBit|=MAT_VALIDROT;
 
 
 	// Build Trans part.
 	//=================
-	if( ret.StateBit & MAT_TRANS )
+	if( StateBit & MAT_TRANS )
+	{
+		// Compose M2 part. NB: always suppose MAT_TRANS, for optim consideration.
+		// NB: the translation part is always valid, even if identity()
+		if( M1Identity )
+		{
+			a14= m2.a14 + m1.a14;
+			a24= m2.a24 + m1.a24;
+			a34= m2.a34 + m1.a34;
+		}
+		else if (M1ScaleOnly )
+		{
+			a14= m1.a11*m2.a14 + m1.a14;
+			a24= m1.a22*m2.a24 + m1.a24;
+			a34= m1.a33*m2.a34 + m1.a34;
+		}
+		else
+		{
+			a14= m1.a11*m2.a14 + m1.a12*m2.a24 + m1.a13*m2.a34 + m1.a14;
+			a24= m1.a21*m2.a14 + m1.a22*m2.a24 + m1.a23*m2.a34 + m1.a24;
+			a34= m1.a31*m2.a14 + m1.a32*m2.a24 + m1.a33*m2.a34 + m1.a34;
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+void		CMatrix::setMulMatrix(const CMatrix &m1, const CMatrix &m2)
+{
+	// Do *this= m1*m2
+	identity();
+	StateBit= m1.StateBit | m2.StateBit;
+	StateBit&= ~MAT_VALIDALL;
+
+
+	// Build Rot part.
+	//===============
+	bool	M1Identity= ! m1.hasRot();
+	bool	M2Identity= ! m2.hasRot();
+	bool	M1ScaleOnly= ! (m1.StateBit & MAT_ROT);
+	bool	M2ScaleOnly= ! (m2.StateBit & MAT_ROT);
+	bool	MGeneralCase= !M1Identity && !M2Identity && !M1ScaleOnly && !M2ScaleOnly;
+
+
+	// Manage the most common general case first (optim the if ): blending of two rotations.
+	if( MGeneralCase )
+	{
+		a11= m1.a11*m2.a11 + m1.a12*m2.a21 + m1.a13*m2.a31;
+		a12= m1.a11*m2.a12 + m1.a12*m2.a22 + m1.a13*m2.a32;
+		a13= m1.a11*m2.a13 + m1.a12*m2.a23 + m1.a13*m2.a33;
+
+		a21= m1.a21*m2.a11 + m1.a22*m2.a21 + m1.a23*m2.a31;
+		a22= m1.a21*m2.a12 + m1.a22*m2.a22 + m1.a23*m2.a32;
+		a23= m1.a21*m2.a13 + m1.a22*m2.a23 + m1.a23*m2.a33;
+
+		a31= m1.a31*m2.a11 + m1.a32*m2.a21 + m1.a33*m2.a31;
+		a32= m1.a31*m2.a12 + m1.a32*m2.a22 + m1.a33*m2.a32;
+		a33= m1.a31*m2.a13 + m1.a32*m2.a23 + m1.a33*m2.a33;
+	}
+	// If one of the 3x3 matrix is an identity, just do a copy
+	else if( M1Identity || M2Identity )
+	{
+		// If both identity, then me too.
+		if( M1Identity && M2Identity )
+		{
+			// just expand me (important because validated below)
+			testExpandRot();
+		}
+		else
+		{
+			// Copy the non identity matrix.
+			const CMatrix	*c= M2Identity? &m1 : &m2;
+			a11= c->a11; a12= c->a12; a13= c->a13;
+			a21= c->a21; a22= c->a22; a23= c->a23;
+			a31= c->a31; a32= c->a32; a33= c->a33;
+		}
+	}
+	// If two 3x3 matrix are just scaleOnly matrix, do a scaleFact.
+	else if( M1ScaleOnly && M2ScaleOnly )
+	{
+		// same process for scaleUni or scaleAny.
+		a11= m1.a11*m2.a11; a12= 0; a13= 0; 
+		a21= 0; a22= m1.a22*m2.a22; a23= 0; 
+		a31= 0; a32= 0; a33= m1.a33*m2.a33;
+	}
+	// If one of the matrix is a scaleOnly matrix, do a scale*Rot.
+	else if( M1ScaleOnly && !M2ScaleOnly )
+	{
+		a11= m1.a11*m2.a11; a12= m1.a11*m2.a12; a13= m1.a11*m2.a13;
+		a21= m1.a22*m2.a21; a22= m1.a22*m2.a22; a23= m1.a22*m2.a23;
+		a31= m1.a33*m2.a31; a32= m1.a33*m2.a32; a33= m1.a33*m2.a33;
+	}
+	else
+	{
+		// This must be this case
+		nlassert(!M1ScaleOnly && M2ScaleOnly);
+		a11= m1.a11*m2.a11; a12= m1.a12*m2.a22; a13= m1.a13*m2.a33;
+		a21= m1.a21*m2.a11; a22= m1.a22*m2.a22; a23= m1.a23*m2.a33;
+		a31= m1.a31*m2.a11; a32= m1.a32*m2.a22; a33= m1.a33*m2.a33;
+	}
+
+	// If M1 has translate and M2 has projective, rotation is modified.
+	if( m1.hasTrans() && m2.hasProj())
+	{
+		StateBit|= MAT_ROT|MAT_SCALEANY;
+
+		a11+= m1.a14*m2.a41;
+		a12+= m1.a14*m2.a42;
+		a13+= m1.a14*m2.a43;
+
+		a21+= m1.a24*m2.a41;
+		a22+= m1.a24*m2.a42;
+		a23+= m1.a24*m2.a43;
+
+		a31+= m1.a34*m2.a41;
+		a32+= m1.a34*m2.a42;
+		a33+= m1.a34*m2.a43;
+	}
+	// Modify Scale.
+	if( (StateBit & MAT_SCALEUNI) && !(StateBit & MAT_SCALEANY) )
+		Scale33= m1.Scale33*m2.Scale33;
+	else
+		Scale33=1;
+
+	// In every case, I am valid now!
+	StateBit|=MAT_VALIDROT;
+
+
+	// Build Trans part.
+	//=================
+	if( StateBit & MAT_TRANS )
 	{
 		// Compose M2 part.
 		if( M1Identity )
 		{
-			ret.a14= m.a14;
-			ret.a24= m.a24;
-			ret.a34= m.a34;
+			a14= m2.a14;
+			a24= m2.a24;
+			a34= m2.a34;
 		}
 		else if (M1ScaleOnly )
 		{
-			ret.a14= a11*m.a14;
-			ret.a24= a22*m.a24;
-			ret.a34= a33*m.a34;
+			a14= m1.a11*m2.a14;
+			a24= m1.a22*m2.a24;
+			a34= m1.a33*m2.a34;
 		}
 		else
 		{
-			ret.a14= a11*m.a14 + a12*m.a24 + a13*m.a34;
-			ret.a24= a21*m.a14 + a22*m.a24 + a23*m.a34;
-			ret.a34= a31*m.a14 + a32*m.a24 + a33*m.a34;
+			a14= m1.a11*m2.a14 + m1.a12*m2.a24 + m1.a13*m2.a34;
+			a24= m1.a21*m2.a14 + m1.a22*m2.a24 + m1.a23*m2.a34;
+			a34= m1.a31*m2.a14 + m1.a32*m2.a24 + m1.a33*m2.a34;
 		}
 		// Compose M1 part.
-		if(StateBit & MAT_TRANS)
+		if(m1.StateBit & MAT_TRANS)
 		{
-			if(m.StateBit & MAT_PROJ)
+			if(m2.StateBit & MAT_PROJ)
 			{
-				ret.a14+= a14*m.a44;
-				ret.a24+= a24*m.a44;
-				ret.a34+= a34*m.a44;
+				a14+= m1.a14*m2.a44;
+				a24+= m1.a24*m2.a44;
+				a34+= m1.a34*m2.a44;
 			}
 			else
 			{
-				ret.a14+= a14;
-				ret.a24+= a24;
-				ret.a34+= a34;
+				a14+= m1.a14;
+				a24+= m1.a24;
+				a34+= m1.a34;
 			}
 		}
 	}
@@ -837,32 +958,24 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 
 	// Build Proj part.
 	//=================
-	if( ret.StateBit & MAT_PROJ )
+	if( StateBit & MAT_PROJ )
 	{
 		// optimise nothing... (projection matrix are rare).
-		ret.a41= a41*m.a11 + a42*m.a21 + a43*m.a31 + a44*m.a41;
-		ret.a42= a41*m.a12 + a42*m.a22 + a43*m.a32 + a44*m.a42;
-		ret.a43= a41*m.a13 + a42*m.a23 + a43*m.a33 + a44*m.a43;
-		ret.a44= a41*m.a14 + a42*m.a24 + a43*m.a34 + a44*m.a44;
+		m1.testExpandRot();
+		m1.testExpandProj();
+		m2.testExpandRot();
+		m2.testExpandProj();
+		a41= m1.a41*m2.a11 + m1.a42*m2.a21 + m1.a43*m2.a31 + m1.a44*m2.a41;
+		a42= m1.a41*m2.a12 + m1.a42*m2.a22 + m1.a43*m2.a32 + m1.a44*m2.a42;
+		a43= m1.a41*m2.a13 + m1.a42*m2.a23 + m1.a43*m2.a33 + m1.a44*m2.a43;
+		a44= m1.a41*m2.a14 + m1.a42*m2.a24 + m1.a43*m2.a34 + m1.a44*m2.a44;
+		// The proj is valid now
+		StateBit|= MAT_VALIDPROJ;
 	}
 	else
 	{
-		ret.a41= 0;
-		ret.a42= 0;
-		ret.a43= 0;
-		ret.a44= 1;
+		// Don't copy proj part, and leave MAT_VALIDPROJ not set
 	}
-
-
-	return ret;
-}
-// ======================================================================================================
-CMatrix		&CMatrix::operator*=(const CMatrix &m)
-{
-
-	*this= *this*m;
-
-	return *this;
 }
 // ======================================================================================================
 void		CMatrix::invert()

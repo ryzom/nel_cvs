@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.18 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.19 2002/07/09 13:16:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,7 +151,7 @@ public:
 	sint32		getBoneIdByName(const std::string &name) const;
 
 	/// return the number of bones currently animated/computed (because of bindSkin()/stickObject() / Lod system).
-	uint		getNumBoneComputed() const {return _NumBoneComputed;}
+	uint		getNumBoneComputed() const {return _BoneToCompute.size();}
 
 	/** change the Lod Bone interpolation distance (in meters). If 0, interpolation is disabled.
 	 *	The smaller this value is, the more Lod skeleton system will "pop". Default is 0.5 meters.
@@ -311,12 +311,23 @@ private:
 		uint			ValidBoneSkinMatrix;
 	};
 
+	// A bone to compute information
+	struct CBoneCompute
+	{
+		// The bone
+		CBone			*Bone;
+		// Father of the bone. May be NULL
+		CBone			*Father;
+		// true if must interpolate this bone with next lod
+		bool			MustInterpolate;
+	};
+
 	/// The list of BoneUsage. Updated by Meshes, stickObject(), and lod changes.
 	std::vector<CBoneUsage>		_BoneUsage;
+	/// List of bones to compute.
+	std::vector<CBoneCompute>	_BoneToCompute;
 	/// Flag set if the MRSkeleton lod change, or if a new bone Usage change (only if was 0 or become 0).
 	bool						_BoneToComputeDirty;
-	/// Number of bones computed, ie number of entries in _BoneToCompute which are not 0.
-	uint						_NumBoneComputed;
 	/// The current lod activated for this skeleton
 	uint						_CurLod;
 	/// The current lod Interpolation Value for this skeleton

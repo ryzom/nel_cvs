@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.12 2001/08/06 10:22:03 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.13 2001/08/07 14:12:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,11 +38,11 @@ namespace NL3D {
 // SEE also CParticleSystemshape, CParticleSystem	   //	
 /////////////////////////////////////////////////////////
 
-class CParticleSystem ;
-class CParticleSystemClipObs ;
-class CParticleSystemDetailObs ;
-class CScene ;
-class CParticleSystemShape ;
+class CParticleSystem;
+class CParticleSystemClipObs;
+class CParticleSystemDetailObs;
+class CScene;
+class CParticleSystemShape;
 
 
 /** A particle system model : it is build using a CParticleSystemShape.
@@ -57,9 +57,9 @@ class CParticleSystemModel : public CTransformShape
 		///\name Object
 			//@{
 			/// ctor
-			CParticleSystemModel() ;
+			CParticleSystemModel();
 			/// dtor
-			~CParticleSystemModel() ;
+			~CParticleSystemModel();
 
 			/// register the basic models and observers
 			static	void				registerBasic();
@@ -74,7 +74,7 @@ class CParticleSystemModel : public CTransformShape
 			  */
 			CParticleSystem				*getPS(void)
 			{
-				return _ParticleSystem ;
+				return _ParticleSystem;
 			}
 
 			/** Get the particle system contained in this transform shape. this may be null if the model
@@ -82,7 +82,7 @@ class CParticleSystemModel : public CTransformShape
 			  */
 			const CParticleSystem		*getPS(void) const
 			{		
-				return _ParticleSystem ;
+				return _ParticleSystem;
 			}
 
 			
@@ -91,9 +91,9 @@ class CParticleSystemModel : public CTransformShape
 			 */
 			void						setParticleSystem(CParticleSystem *ps)
 			{
-				nlassert(!_ParticleSystem) ;
-				_ParticleSystem = ps ;	
-				updateOpacityInfos() ;
+				nlassert(!_ParticleSystem);
+				_ParticleSystem = ps;	
+				updateOpacityInfos();
 			}
 			//@}
 
@@ -103,25 +103,25 @@ class CParticleSystemModel : public CTransformShape
 			 * test wether the system has become invalid. The condition for a system to be invalid
 			 * are encoded in the system itself (no more particles for example). When a system has become invalid, you may want to remove it most of the time
 			 */
-			bool isInvalid(void) const { return _Invalidated ; }
+			bool isInvalid(void) const { return _Invalidated; }
 
 			/// interface for object that observe this model. They will be notified when it becomes invalid
 			struct IPSModelObserver
 			{
 				/// called when a system has been invalidated
-				virtual void invalidPS(CParticleSystemModel *psm) = 0 ;
-			} ;
+				virtual void invalidPS(CParticleSystemModel *psm) = 0;
+			};
 							
 			/// register an observer that will be notified when this model becomes invalid
-			void registerPSModelObserver(IPSModelObserver *obs) ;
+			void registerPSModelObserver(IPSModelObserver *obs);
  
 			/** remove an observer
 			  * \see registerPSModelObserver
 			  */
-			void removePSModelObserver(IPSModelObserver *obs) ;
+			void removePSModelObserver(IPSModelObserver *obs);
 			
 			/// test wether obs observe this model
-			bool isPSModelObserver(IPSModelObserver *obs) ;
+			bool isPSModelObserver(IPSModelObserver *obs);
 
 			//@}
 						
@@ -134,25 +134,25 @@ class CParticleSystemModel : public CTransformShape
 			  */
 			void						enableAutoGetEllapsedTime(bool enable = true) 
 			{ 
-				_AutoGetEllapsedTime = enable ; 
+				_AutoGetEllapsedTime = enable; 
 			}
 
 			/// tells wether the model will querry himself for the ellapsed time
 			bool						isAutoGetEllapsedTimeEnabled(void) const 
 			{ 
-				return _AutoGetEllapsedTime ; 
+				return _AutoGetEllapsedTime; 
 			}
 
 			/// set the ellapsed time (in second) used for animation. 		  
 			void						setEllapsedTime(CAnimationTime ellapsedTime) 
 			{ 
-				_EllapsedTime = ellapsedTime ; 
+				_EllapsedTime = ellapsedTime; 
 			}
 			
 			/// get the ellapsed time used for animation
 			CAnimationTime				getEllapsedTime(void) const 
 			{ 
-				return _EllapsedTime ; 
+				return _EllapsedTime; 
 			}
 
 			//@}
@@ -162,13 +162,13 @@ class CParticleSystemModel : public CTransformShape
 			/// activate the display of tool (for edition purpose)
 			void						enableDisplayTools(bool enable = true) 
 			{ 
-				_ToolDisplayEnabled = enable ; touchTransparencyState() ; 
+				_ToolDisplayEnabled = enable; touchTransparencyState(); 
 			}
 
 			// check wether the display of tools is enabled
 			bool						isToolDisplayEnabled(void) const 
 			{ 
-				return _ToolDisplayEnabled ; 
+				return _ToolDisplayEnabled; 
 			}			
 
 			/** force the edition mode : this will prevent the system from being removed when it is out of range
@@ -177,18 +177,18 @@ class CParticleSystemModel : public CTransformShape
 			 */
 			void						setEditionMode(bool enable = true) 
 			{ 
-				_EditionMode = true ; 
+				_EditionMode = true; 
 			}
 
 			/// test if edition mode is activated
 			bool						getEditionMode(void) const 
 			{ 
-				return _EditionMode ; 
+				return _EditionMode; 
 			}
 			/// edition purpose : touch the system to tell that the transparency state of the system has changed (added/removes opaque/tansparent faces )
 			void						touchTransparencyState(void) 
 			{ 
-				_TransparencyStateTouched = true ; 
+				_TransparencyStateTouched = true; 
 			}
 			//@}
 	
@@ -206,19 +206,19 @@ class CParticleSystemModel : public CTransformShape
 			};
 
 	
-			virtual IAnimatedValue		*getValue (uint valueId) ;
-			virtual const char			*getValueName (uint valueId) const ; 
-			static const char			*getPSParamName (uint valueId) ;
-			virtual ITrack				*getDefaultTrack (uint valueId) ;		
+			virtual IAnimatedValue		*getValue (uint valueId);
+			virtual const char			*getValueName (uint valueId) const; 
+			static const char			*getPSParamName (uint valueId);
+			virtual ITrack				*getDefaultTrack (uint valueId);		
 			virtual	void				registerToChannelMixer(CChannelMixer *chanMixer
-															   , const std::string &prefix=std::string()) ;
+															   , const std::string &prefix=std::string());
 			//@}
 
 
 		/** This update the infos about opacity (e.g are there solid faces and / or transparent faces in the system).
 		  * This must be called when the system is instanciated, or when attributes have changed, such as the blending mode
 		  */
-		void						updateOpacityInfos(void) ;
+		void						updateOpacityInfos(void);
 
 		/// get the world matrix
 		const CMatrix				&getWorldMatrix(void)
@@ -234,30 +234,32 @@ class CParticleSystemModel : public CTransformShape
 		/// to instanciate that model from a scene
 		static IModel				*creator() 
 		{
-			return new CParticleSystemModel ;
+			return new CParticleSystemModel;
 		}
 
 	protected:
 
-		// mark this system model as invalid, delete theattached system, and calls his observers
-		void invalidate(void) ;
+		// mark this system model as invalid, delete the attached system, and calls his observers
+		void invalidate(void);
 
-		friend class CParticleSystemShape ;
-		friend class CParticleSystemDetailObs ;
-		friend class CParticleSystemClipObs ;
+		friend class CParticleSystemShape;
+		friend class CParticleSystemDetailObs;
+		friend class CParticleSystemClipObs;
+		friend class CParticleSystemRenderObs;
 
 
-		bool									_AutoGetEllapsedTime ;		
-		CParticleSystem						   *_ParticleSystem ;
-		CScene							  	   *_Scene ;
-		CAnimationTime						    _EllapsedTime ;
-		bool									_ToolDisplayEnabled ;		
-		bool									_TransparencyStateTouched ;
-		bool									_EditionMode ;
-		bool									_Invalidated ;
-		std::vector<IPSModelObserver *>			_Observers ;
-		float									_MaxViewDist ;
-} ;
+		bool									_AutoGetEllapsedTime;		
+		CParticleSystem						   *_ParticleSystem;
+		CScene							  	   *_Scene;
+		CAnimationTime						    _EllapsedTime;
+		bool									_ToolDisplayEnabled;		
+		bool									_TransparencyStateTouched;
+		bool									_EditionMode;
+		bool									_Invalidated;
+		bool									_OutOfFrustum;
+		std::vector<IPSModelObserver *>			_Observers;
+		float									_MaxViewDist;		
+};
 
 
 /** Detail animation observer for a particle system. It perform motion of the particles
@@ -271,7 +273,7 @@ public:
 	 *  - call CTransformAnimDetailObs::traverse() => traverseSons.
 	 *  - update particles.
 	 */
-	virtual	void	traverse(IObs *caller) ;	
+	virtual	void	traverse(IObs *caller);	
 
 
 public:
@@ -287,12 +289,20 @@ class CParticleSystemClipObs : public CTransformClipObs
 {
 public:
 	virtual	bool		isRenderable() const {return true;}
-	void				traverse(IObs *caller) ;
-	static IObs			*creator() {return new CParticleSystemClipObs ;}
+	void				traverse(IObs *caller);
+	static IObs			*creator() {return new CParticleSystemClipObs;}
 	
 };
 
+/// a render observer for a particle system
 
+class CParticleSystemRenderObs : public CTransformShapeRenderObs
+{
+public:
+	/// render the instance and Don't traverseSons().
+	virtual	void	traverse(IObs *caller);	
+	static IObs	*creator() {return new CParticleSystemRenderObs;}
+};
 
 
 

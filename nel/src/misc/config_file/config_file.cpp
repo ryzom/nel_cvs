@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.13 2000/12/05 16:12:13 lecroart Exp $
+ * $Id: config_file.cpp,v 1.14 2000/12/22 17:42:01 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,7 +145,7 @@ CConfigFile::~CConfigFile ()
 
 void CConfigFile::load (const string &fileName)
 {
-	_FileName = fileName;
+ 	_FileName = fileName;
 	_Callback = NULL;
 	CConfigFile::_ConfigFiles.push_back (this);
 	reparse ();

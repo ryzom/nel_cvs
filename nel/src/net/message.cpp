@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.26 2004/05/07 12:56:22 cado Exp $
+ * $Id: message.cpp,v 1.27 2004/05/27 17:41:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,7 @@ void CMessage::assignFromSubMessage( const CMessage& msgin )
 	{
 		fill( msgin.buffer() + msgin._SubMessagePosR, msgin._LengthR-msgin._SubMessagePosR );
 		readType();
+		seek( msgin.getPos() - msgin._SubMessagePosR, IStream::begin );
 	}
 	else
 	{

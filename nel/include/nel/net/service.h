@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.63 2003/06/30 09:32:48 lecroart Exp $
+ * $Id: service.h,v 1.64 2003/07/22 16:25:58 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,6 +101,7 @@ class CCallbackServer;
  * -P followed by the listen port (ListenAddress)
  * -S followed by the shard Id (sint32) for WS only
  * -W followed by the directory where to save all shard data (SaveFilesDirectory)
+ * -Q to make the service quit immediately after the first update
  *
  */
 

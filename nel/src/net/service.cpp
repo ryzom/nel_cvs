@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.181 2003/07/09 15:19:33 cado Exp $
+ * $Id: service.cpp,v 1.182 2003/07/22 16:25:57 coutelas Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1296,6 +1296,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				H_AFTER(NLNETServiceUpdate);
 				CHTimer::endBench();
 				break;
+			}
+			// if the launching mode is 'quit after the first update' we set the exit signal
+			if (haveArg('Q'))
+			{
+				ExitSignalAsked = 1;
 			}
 			NbUserUpdate++;
 			H_AFTER(NLNETServiceUpdate);

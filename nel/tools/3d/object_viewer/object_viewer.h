@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.6 2001/04/30 16:58:31 corvazier Exp $
+ * $Id: object_viewer.h,v 1.7 2001/06/12 08:39:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,8 @@
 #define REGKEY_OBJ_VIEW_ANIMATION_DLG "Software\\Nevrax\\nel\\object_viewer\\animation_dlg"
 #define REGKEY_OBJ_VIEW_ANIMATION_SET_DLG "Software\\Nevrax\\nel\\object_viewer\\animation_set_dlg"
 #define REGKEY_OBJ_VIEW_SLOT_DLG "Software\\Nevrax\\nel\\object_viewer\\slot_dlg"
+#define REGKEY_OBJ_PARTICLE_DLG "Software\\Nevrax\\nel\\object_viewer\\particle_dlg"
+
 
 #include "resource.h"
 #include "object_viewer_interface.h"
@@ -47,6 +49,7 @@
 #include "animation_set_dlg.h"
 #include "animation_dlg.h"
 #include "scene_dlg.h"
+#include "particle_dlg.h"
 #include <nel/3d/animation_set.h>
 #include <nel/3d/channel_mixer.h>
 #include <nel/3d/shape.h>
@@ -157,6 +160,7 @@ private:
 	CMainDlg									*_SlotDlg;
 	CAnimationSetDlg							*_AnimationSetDlg;
 	CSceneDlg									*_SceneDlg;
+	CParticleDlg								*_ParticleDlg ;
 	std::vector<std::string>					_ListShapeBaseName;
 	std::vector<CMeshDesc>						_ListMeshes;
 	std::vector<class NL3D::CTransformShape*>	_ListTransformShape;

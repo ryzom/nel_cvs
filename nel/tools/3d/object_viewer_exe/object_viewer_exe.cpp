@@ -1,7 +1,9 @@
 // object_viewer_exe.cpp : Defines the entry point for the application.
 //
 
-#include "../object_viewer/std_afx.h"
+#include "std_afx.h"
+
+
 #include <nel/3d/register_3d.h>
 #include <nel/3d/scene.h>
 #include "../object_viewer/object_viewer_interface.h"

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.8 2001/05/04 13:30:35 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.9 2001/06/12 08:39:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,10 @@
 #include <nel/3d/skeleton_model.h>
 #include <nel/misc/file.h>
 #include <nel/misc/path.h>
+
+#include "editable_range.h"
+#include "located_properties.h"
+#include "color_button.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -105,6 +109,7 @@ CObjectViewer::CObjectViewer ()
 	_AnimationSetDlg=NULL;
 	_AnimationDlg=NULL;
 	_SceneDlg=NULL;
+	_ParticleDlg = NULL ;
 
 	// Setup animation set
 	_ChannelMixer.setAnimationSet (&_AnimationSet);
@@ -132,6 +137,8 @@ CObjectViewer::~CObjectViewer ()
 		delete _AnimationDlg;
 	if (_SceneDlg)
 		delete _SceneDlg;
+	if (_ParticleDlg)
+		delete _ParticleDlg ;
 }
 
 // ***************************************************************************
@@ -181,6 +188,12 @@ void CObjectViewer::initUI ()
 	_SceneDlg->Create (IDD_SCENE);
 	_SceneDlg->ShowWindow (TRUE);
 	getRegisterWindowState (_SceneDlg, REGKEY_OBJ_VIEW_SCENE_DLG, false);
+
+	// Create particle dialog
+	_ParticleDlg=new CParticleDlg (&driverWnd);
+	_ParticleDlg->Create (IDD_PARTICLE);
+	getRegisterWindowState (_ParticleDlg, REGKEY_OBJ_PARTICLE_DLG, false);	
+
 
 	// Show the windows
 	//driverWnd.ShowWindow (SW_SHOW);
@@ -768,5 +781,3 @@ void CObjectViewer::setLight (unsigned char id, const NL3D::CLight& light)
 }
 
 // ***************************************************************************
-
-

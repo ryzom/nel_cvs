@@ -1,7 +1,7 @@
-/** \file scene_dlg.h
+/** \file start_stop_particle_system.h
  * <File description>
  *
- * $Id: scene_dlg.h,v 1.5 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -20,47 +20,38 @@
  * You should have received a copy of the GNU General Public License
  * along with NEVRAX NEL; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
- * MA 02111-1307, USA.
- */
+ * MA 02
+*/
 
-#if !defined(AFX_SCENE_DLG_H__A9ECE124_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_)
-#define AFX_SCENE_DLG_H__A9ECE124_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_
+#if !defined(AFX_STAR_STOP_PARTICLE_SYSTEM_H__291E2631_42A1_4598_86AB_D6CE30C64DAF__INCLUDED_)
+#define AFX_STAR_STOP_PARTICLE_SYSTEM_H__291E2631_42A1_4598_86AB_D6CE30C64DAF__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-// scene_dlg.h : header file
+// star_stop_particle_system.h : header file
 //
 
 /////////////////////////////////////////////////////////////////////////////
-// CSceneDlg dialog
+// CStartStopParticleSystem dialog
 
-class CSceneDlg : public CDialog
+class CStartStopParticleSystem : public CDialog
 {
 // Construction
-	friend class CObjectViewer;
 public:
-	CSceneDlg(class CObjectViewer *objView, CWnd* pParent = NULL);   // standard constructor
-	~CSceneDlg();
+	CStartStopParticleSystem(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
-	//{{AFX_DATA(CSceneDlg)
-	enum { IDD = IDD_SCENE };
-	CEdit	MoveSpeedCtrl;
-	BOOL	ViewAnimation;
-	BOOL	ViewAnimationSet;
-	BOOL	ViewSlots;
-	BOOL	Euler;
-	BOOL	ObjectMode;
-	float	MoveSpeed;
-	BOOL	ViewParticle;
+	//{{AFX_DATA(CStartStopParticleSystem)
+	enum { IDD = IDD_PARTICLE_SYSTEM_START_STOP };
+	CButton	m_StopPicture;
+	CButton	m_StartPicture;
 	//}}AFX_DATA
 
-	class CObjectViewer	*ObjView;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CSceneDlg)
+	//{{AFX_VIRTUAL(CStartStopParticleSystem)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -69,19 +60,8 @@ public:
 protected:
 
 	// Generated message map functions
-	//{{AFX_MSG(CSceneDlg)
-	afx_msg void OnClearScene();
-	afx_msg void OnLoadMesh();
-	afx_msg void OnLoadPlaylist();
-	afx_msg void OnLoadScene();
-	afx_msg void OnSavePlaylist();
-	afx_msg void OnViewAnimation();
-	afx_msg void OnViewAnimationset();
-	afx_msg void OnViewSlots();
+	//{{AFX_MSG(CStartStopParticleSystem)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnResetCamera();
-	afx_msg void OnDestroy();
-	afx_msg void OnViewParticles();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -89,4 +69,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_SCENE_DLG_H__A9ECE124_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_)
+#endif // !defined(AFX_STAR_STOP_PARTICLE_SYSTEM_H__291E2631_42A1_4598_86AB_D6CE30C64DAF__INCLUDED_)

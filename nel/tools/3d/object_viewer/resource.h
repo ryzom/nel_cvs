@@ -1,73 +1,85 @@
-/** \file resource.h
- * <File description>
- *
- * $Id: resource.h,v 1.4 2001/04/26 17:57:41 corvazier Exp $
- */
-
-/* Copyright, 2000 Nevrax Ltd.
- *
- * This file is part of NEVRAX NEL.
- * NEVRAX NEL is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
-
- * NEVRAX NEL is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with NEVRAX NEL; see the file COPYING. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
- * MA 02111-1307, USA.
- */
-
+//{{NO_DEPENDENCIES}}
+// Microsoft Developer Studio generated include file.
+// Used by object_viewer.rc
+//
 #define IDEMPTY                         3
 #define IDD_SLOT                        1000
 #define IDD_MAIN_DLG                    1001
 #define IDC_SCROLLBAR1                  1002
 #define IDD_ANIMATION_SET               1002
 #define IDC_SCROLLBAR                   1002
+#define IDC_RED_AMOUNT                  1002
 #define IDC_SLOT_NAME                   1003
 #define IDD_SELECT_STRING               1003
+#define IDC_GREEN_AMOUNT                1003
 #define IDD_ANIMATION                   1004
+#define IDC_BLUE_AMOUNT                 1004
 #define IDC_BLEND                       1005
 #define IDD_SCENE                       1005
+#define IDD_PARTICLE                    1006
 #define IDC_DOOMY_BLEND                 1007
+#define IDD_EDITABLE_RANGE              1007
 #define IDC_START_BLEND                 1008
+#define IDD_LOCATED_PROPERTIES          1008
 #define IDC_START_BLEND_SPIN            1009
+#define IDB_PARTICLE_SYSTEM             1009
 #define IDC_END_BLEND                   1010
+#define IDB_LOCATED                     1010
 #define IDC_END_BLEND_SPIN              1011
+#define IDB_PARTICLE                    1011
 #define IDC_START_TIME                  1012
+#define IDB_EMITTER                     1012
 #define IDC_START_TIME_SPIN             1013
+#define IDB_FORCE                       1013
 #define IDC_END_TIME                    1014
+#define IDB_COLLISION_ZONE              1014
 #define IDC_END_TIME_SPIN               1015
+#define IDB_LIGHT                       1015
 #define IDC_SPEED_FACTOR                1016
+#define IDD_SELECT_RANGE                1016
 #define IDC_SPEED_FACTOR_SPIN           1017
+#define IDR_PARTICLE_MENU               1017
+#define IDR_LOCATED_MENU                1017
 #define IDC_SMOOTHNESS                  1018
+#define IDR_MENU1                       1018
 #define IDC_SMOOTHNESS_SPIN             1019
+#define IDD_PARTICLE_SYSTEM_START_STOP  1019
 #define IDC_SET_ANIMATION               1020
+#define IDB_START_SYSTEM                1020
 #define IDC_SET_SKELETON                1021
 #define IDC_TREE                        1021
+#define IDB_STOP_SYSTEM                 1021
 #define IDC_ADD_ANIMATION               1022
 #define IDC_ALIGN_BLEND                 1022
+#define IDD_SIZEDPARTICLE               1022
+#define IDD_ATTRIB_DLG                  1022
 #define IDC_RESET                       1023
 #define IDC_LIST                        1023
 #define IDC_OFFSET                      1023
 #define IDC_TREE2                       1024
 #define IDC_OFFSET_SPIN                 1024
+#define IDR_MENU2                       1024
 #define IDC_ADD_SKEL_WT                 1025
 #define IDC_TIME_LINE                   1025
+#define IDR_LOCATED_BINDABLE_MENU       1025
 #define IDC_FRW                         1026
+#define IDR_PARTICLE_SYSTEM_MENU        1026
 #define IDC_FFW                         1027
+#define IDD_LOCATED_BINDABLE            1027
+#define IDB_PARTICLE_SIZE               1028
 #define IDC_START                       1029
+#define IDB_PARTICLE_COLOR              1029
 #define IDC_END                         1030
+#define IDB_PARTICLE_ANGLE              1030
 #define IDC_START_EDIT                  1031
+#define IDD_COLOR_EDIT                  1031
 #define IDC_END_EDIT                    1032
 #define IDC_CLAMP                       1032
+#define IDD_GRADIENT_EDIT               1032
 #define IDC_REPEAT                      1033
+#define IDD_VALUE_BLENDER               1033
 #define IDC_DISABLE                     1034
+#define IDD_GRADIENT_DLG                1034
 #define IDC_CURRENT_FRAME               1035
 #define IDC_INVERT_SKELETON_WEIGHT      1035
 #define IDC_SPEED                       1036
@@ -87,14 +99,85 @@
 #define IDC_EULER                       1045
 #define IDC_OBJECT_MODE                 1046
 #define IDC_MOVE_SPEED                  1047
+#define IDC_VIEW_PARTICLE               1048
+#define IDC_SLIDER                      1050
+#define IDC_SELECT_RANGE                1051
+#define IDC_MAX_RANGE                   1052
+#define IDC_UPDATE_VALUE                1053
+#define IDC_VALUE                       1054
+#define IDC_LIMITED_LIFE_TIME           1054
+#define IDC_MIN_RANGE                   1055
+#define IDC_CHECK2                      1055
+#define IDC_SYSTEM_BASIS                1055
+#define IDC_LIFE_MIN_VALUE              1057
+#define IDC_LIFE_MAX_VALUE              1058
+#define IDC_PARTICLE_NUMBER_POS         1059
+#define IDC_MASS_MIN_VALUE              1061
+#define IDC_MASS_MAX_VALUE              1062
+#define IDC_LIFETIME_MIN_STATIC         1063
+#define IDC_LOWER_BOUND                 1064
+#define IDC_UPPER_BOUND                 1065
+#define IDC_COMBO1                      1070
+#define IDC_USE_SCHEME                  1070
+#define IDC_START_PICTURE               1071
+#define IDC_STOP_PICTURE                1072
+#define IDC_SCHEME                      1073
+#define IDC_EDIT_SCHEME                 1074
+#define IDC_CLAMP_ATTRIB                1076
+#define IDC_SCHEME_INPUT                1077
+#define IDC_ATTRIB_NB_CYCLES            1078
+#define IDC_ATTR_BITMAP                 1081
+#define IDC_CONSTANT_VALUE_POS          1082
+#define IDC_LIST1                       1085
+#define IDC_PARTICLE_COLOR              1087
+#define IDC_BINDABLE_TYPE               1088
+#define IDC_BROWSE_COLOR                1089
+#define IDC_VALUE1                      1090
+#define IDC_VALUE2                      1091
+#define IDC_EDITED_VALUE                1092
+#define IDC_INSERT_VALUE                1093
+#define IDC_ADD_VALUE                   1094
+#define IDC_VALUE_UP                    1095
+#define IDC_VALUE_DOWN                  1096
+#define IDC_REMOVE_VALUE                1097
+#define IDC_GRADIENT_LIST               1098
+#define IDM_DOT                         32773
+#define IDM_LOOKAT                      32774
+#define IDM_FANLIGHT                    32775
+#define IDM_RIBBON                      32776
+#define IDM_TAILDOT                     32777
+#define IDM_MESH                        32778
+#define IDM_CONSTRAINT_MESH             32779
+#define IDM_FACE                        32780
+#define IDM_DIRECTIONNAL_EMITTER        32781
+#define IDM_OMNIDIRECTIONNAL_EMITTER    32782
+#define IDM_RECTANGLE_EMITTER           32783
+#define IDM_CONIC_EMITTER               32784
+#define IDM_GRAVITY_FORCE               32786
+#define IDM_SPRING_FORCE                32787
+#define IDM_ZONE_PLANE                  32788
+#define IDM_ZONE_SPHERE                 32789
+#define IDM_ZONE_RECTANGLE              32790
+#define IDM_ZONE_DISC                   32791
+#define IDM_ZONE_CYLINDER               32792
+#define IDM_DELETE_PARTICLE             32793
+#define IDM_DELETE_LOCATED              32793
+#define ID_ESSAI1_ESSAI2                32797
+#define ID_A_ESSAI                      32798
+#define ID_BINDPARTICLE_PONT            32800
+#define ID__A                           32801
+#define ID__B                           32802
+#define ID_MENU_DELETE                  32803
+#define ID_MENU_NEWLOCATED              32804
+#define IDM_DELETE_LOCATED_BINDABLE     32806
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1006
-#define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1048
+#define _APS_NEXT_RESOURCE_VALUE        1035
+#define _APS_NEXT_COMMAND_VALUE         32807
+#define _APS_NEXT_CONTROL_VALUE         1099
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

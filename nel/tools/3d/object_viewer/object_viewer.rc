@@ -80,8 +80,9 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040C04B0"
+        BLOCK "040c04b0"
         BEGIN
+            VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
@@ -89,8 +90,10 @@ BEGIN
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "object_viewer.DLL\0"
+            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Bibliothèque de liaison dynamique object_viewer\0"
             VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -164,7 +167,7 @@ IDD_MAIN_DLG DIALOGEX 0, 0, 502, 313
 STYLE WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Slot manager"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
 END
 
@@ -172,7 +175,7 @@ IDD_ANIMATION_SET DIALOGEX 0, 0, 237, 233
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Animation set manager"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Tree1",IDC_TREE,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
@@ -204,7 +207,7 @@ IDD_ANIMATION DIALOGEX 0, 0, 366, 49
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Animation"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Slider1",IDC_TIME_LINE,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,0,20,365,15
@@ -228,11 +231,11 @@ BEGIN
                     190,0,35,10
 END
 
-IDD_SCENE DIALOGEX 0, 0, 61, 233
+IDD_SCENE DIALOGEX 0, 0, 69, 250
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Scene manager"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Load meshes",IDC_LOAD_MESH,5,25,50,15
     PUSHBUTTON      "Load config",IDC_LOAD_PLAYLIST,5,65,50,15
@@ -251,8 +254,170 @@ BEGIN
                     WS_TABSTOP,5,145,46,10
     CONTROL         "Object Mode",IDC_OBJECT_MODE,"Button",BS_AUTOCHECKBOX | 
                     BS_PUSHLIKE | WS_TABSTOP,5,125,50,15
-    EDITTEXT        IDC_MOVE_SPEED,5,215,50,12,ES_AUTOHSCROLL
-    LTEXT           "Move speed:",IDC_STATIC,5,205,45,10
+    EDITTEXT        IDC_MOVE_SPEED,5,229,57,12,ES_AUTOHSCROLL
+    LTEXT           "Move speed:",IDC_STATIC,5,215,45,10
+    CONTROL         "Particles",IDC_VIEW_PARTICLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,5,200,43,10
+END
+
+IDD_PARTICLE DIALOGEX 0, 0, 302, 241
+STYLE WS_POPUP | WS_CAPTION | WS_THICKFRAME
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Particle systems editor"
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+IDD_EDITABLE_RANGE DIALOGEX 0, 0, 226, 24
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "Slider1",IDC_SLIDER,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,34,6,59,12
+    PUSHBUTTON      "range...",IDC_SELECT_RANGE,192,6,30,13
+    EDITTEXT        IDC_MAX_RANGE,95,6,29,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_VALUE,128,6,29,12,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_MIN_RANGE,4,6,27,12,ES_AUTOHSCROLL | WS_DISABLED
+    PUSHBUTTON      "update",IDC_UPDATE_VALUE,162,6,26,13
+    GROUPBOX        "",IDC_STATIC,0,0,225,21
+END
+
+IDD_LOCATED_PROPERTIES DIALOG DISCARDABLE  0, 0, 308, 254
+STYLE DS_CONTROL | WS_CHILD | WS_CAPTION
+CAPTION "Located properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Lifetime Min :",IDC_LIFETIME_MIN_STATIC,19,74,46,10
+    LTEXT           "Lifetime Max :",IDC_STATIC,17,96,47,10
+    CONTROL         "Limited life time",IDC_LIMITED_LIFE_TIME,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,48,111,12
+    GROUPBOX        "",IDC_STATIC,11,61,289,56
+    CONTROL         "Use system basis",IDC_SYSTEM_BASIS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,29,69,13
+    LTEXT           "Max number of particles",IDC_STATIC,16,7,52,19
+    LTEXT           "motion every n frames",IDC_STATIC,13,210,74,12
+    CONTROL         "",IDC_LIFE_MIN_VALUE,"Static",SS_BLACKFRAME,66,69,225,
+                    21
+    CONTROL         "",IDC_LIFE_MAX_VALUE,"Static",SS_BLACKFRAME,66,91,225,
+                    21
+    LTEXT           "Mass Min :",IDC_STATIC,19,138,46,10
+    LTEXT           "Mass Max :",IDC_STATIC,17,160,47,10
+    GROUPBOX        "",IDC_STATIC,11,125,289,56
+    CONTROL         "",IDC_MASS_MIN_VALUE,"Static",SS_BLACKFRAME,66,133,225,
+                    21
+    CONTROL         "",IDC_MASS_MAX_VALUE,"Static",SS_BLACKFRAME,66,155,225,
+                    21
+    CONTROL         "",IDC_PARTICLE_NUMBER_POS,"Static",SS_BLACKFRAME,70,7,
+                    225,21
+END
+
+IDD_SELECT_RANGE DIALOG DISCARDABLE  0, 0, 119, 66
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Select range"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,42,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,61,42,50,14
+    EDITTEXT        IDC_LOWER_BOUND,61,7,43,13,ES_AUTOHSCROLL
+    LTEXT           "Lower bound",IDC_STATIC,13,9,45,14
+    EDITTEXT        IDC_UPPER_BOUND,61,25,43,13,ES_AUTOHSCROLL
+    LTEXT           "Upper bound",IDC_STATIC,13,27,44,14
+END
+
+IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 69, 33
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Particle system start/stop"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Button1",IDC_START_PICTURE,7,7,27,20,BS_BITMAP
+    PUSHBUTTON      "Button1",IDC_STOP_PICTURE,38,7,27,20,BS_BITMAP
+END
+
+IDD_ATTRIB_DLG DIALOG DISCARDABLE  0, 0, 340, 55
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_USE_SCHEME,56,8,54,49,CBS_DROPDOWNLIST | WS_TABSTOP
+    GROUPBOX        "",IDC_STATIC,4,0,335,54
+    COMBOBOX        IDC_SCHEME,116,8,77,57,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Edit...",IDC_EDIT_SCHEME,195,8,35,13
+    CONTROL         "",IDC_CONSTANT_VALUE_POS,"Static",SS_ETCHEDFRAME,113,5,
+                    224,21
+    CONTROL         "Clamp",IDC_CLAMP_ATTRIB,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,9,33,41,11
+    CONTROL         "",IDC_ATTRIB_NB_CYCLES,"Static",SS_ETCHEDFRAME,113,27,
+                    224,21
+    LTEXT           "Input mutliplier :",IDC_STATIC,61,34,61,11
+    LTEXT           "Source :",IDC_STATIC,234,10,29,11
+    COMBOBOX        IDC_SCHEME_INPUT,264,8,67,77,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Button2",IDC_ATTR_BITMAP,7,7,34,26,BS_BITMAP | BS_FLAT
+END
+
+IDD_LOCATED_BINDABLE DIALOG DISCARDABLE  0, 0, 160, 125
+STYLE WS_CHILD
+FONT 18, "MS Serif"
+BEGIN
+    LTEXT           "Type of bindable",IDC_BINDABLE_TYPE,3,2,56,9
+END
+
+IDD_COLOR_EDIT DIALOG DISCARDABLE  0, 0, 226, 24
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    SCROLLBAR       IDC_RED_AMOUNT,47,0,64,8
+    SCROLLBAR       IDC_GREEN_AMOUNT,47,8,64,8
+    SCROLLBAR       IDC_BLUE_AMOUNT,47,16,64,8
+    LTEXT           "R    0",IDC_STATIC,28,0,19,8
+    LTEXT           "G    0",IDC_STATIC,27,8,20,8
+    LTEXT           "B    0",IDC_STATIC,28,16,20,8
+    LTEXT           "255",IDC_STATIC,114,0,17,8
+    LTEXT           "255",IDC_STATIC,114,8,15,8
+    LTEXT           "255",IDC_STATIC,114,16,13,8
+    CONTROL         "Button1",IDC_PARTICLE_COLOR,"Button",BS_OWNERDRAW | 
+                    WS_TABSTOP,3,2,20,20
+    PUSHBUTTON      "Browse...",IDC_BROWSE_COLOR,136,5,38,12
+END
+
+IDD_GRADIENT_EDIT DIALOG DISCARDABLE  0, 0, 217, 186
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,160,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,160,24,50,14
+    LISTBOX         IDC_LIST1,7,7,80,163,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_VALUE_BLENDER DIALOGEX 0, 0, 271, 65
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "",IDC_VALUE1,"Static",SS_BLACKFRAME,40,7,226,24
+    CONTROL         "",IDC_VALUE2,"Static",SS_BLACKFRAME,40,34,226,24
+    LTEXT           "StartValue:",IDC_STATIC,0,14,63,10
+    LTEXT           "EndValue:",IDC_STATIC,1,42,63,10
+END
+
+IDD_GRADIENT_DLG DIALOG DISCARDABLE  0, 0, 300, 116
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_GRADIENT_LIST,3,4,64,110,LBS_SORT | 
+                    LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_EDITED_VALUE,"Static",SS_BLACKFRAME,73,90,225,24
+    PUSHBUTTON      "Insert",IDC_INSERT_VALUE,75,6,49,15
+    PUSHBUTTON      "Add",IDC_ADD_VALUE,130,7,51,14
+    PUSHBUTTON      "Up",IDC_VALUE_UP,75,25,49,15
+    PUSHBUTTON      "Down",IDC_VALUE_DOWN,75,46,49,15
+    PUSHBUTTON      "Remove",IDC_REMOVE_VALUE,186,7,51,14
 END
 
 
@@ -307,12 +472,206 @@ BEGIN
     IDD_SCENE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 54
+        RIGHTMARGIN, 62
         TOPMARGIN, 7
-        BOTTOMMARGIN, 226
+        BOTTOMMARGIN, 243
+    END
+
+    IDD_PARTICLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 295
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 234
+    END
+
+    IDD_EDITABLE_RANGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 219
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 17
+    END
+
+    IDD_LOCATED_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 301
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 247
+    END
+
+    IDD_SELECT_RANGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 112
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 59
+    END
+
+    IDD_PARTICLE_SYSTEM_START_STOP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 62
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 26
+    END
+
+    IDD_ATTRIB_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 333
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_LOCATED_BINDABLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 153
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 118
+    END
+
+    IDD_COLOR_EDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 219
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 17
+    END
+
+    IDD_GRADIENT_EDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
+    END
+
+    IDD_VALUE_BLENDER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 264
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 58
+    END
+
+    IDD_GRADIENT_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 293
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 109
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_PARTICLE_SYSTEM     BITMAP  DISCARDABLE     "particle.bmp"
+IDB_LOCATED             BITMAP  DISCARDABLE     "bmp00001.bmp"
+IDB_PARTICLE            BITMAP  DISCARDABLE     "bmp00002.bmp"
+IDB_EMITTER             BITMAP  DISCARDABLE     "bitmap1.bmp"
+IDB_FORCE               BITMAP  DISCARDABLE     "bmp00003.bmp"
+IDB_COLLISION_ZONE      BITMAP  DISCARDABLE     "bmp00004.bmp"
+IDB_LIGHT               BITMAP  DISCARDABLE     "bmp00005.bmp"
+IDB_START_SYSTEM        BITMAP  DISCARDABLE     "bmp00006.bmp"
+IDB_STOP_SYSTEM         BITMAP  DISCARDABLE     "bmp00007.bmp"
+IDB_PARTICLE_SIZE       BITMAP  DISCARDABLE     "bmp00008.bmp"
+IDB_PARTICLE_COLOR      BITMAP  DISCARDABLE     "bmp00009.bmp"
+IDB_PARTICLE_ANGLE      BITMAP  DISCARDABLE     "bitmap2.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_LOCATED_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "MENU"
+    BEGIN
+        POPUP "Bind particle..."
+        BEGIN
+            MENUITEM "Pont",                        ID_BINDPARTICLE_PONT
+            MENUITEM "LookAt",                      IDM_LOOKAT
+            MENUITEM "FanLight",                    IDM_FANLIGHT
+            MENUITEM "Ribbon",                      IDM_RIBBON
+            MENUITEM "TailDot",                     IDM_TAILDOT
+            MENUITEM "Mesh",                        IDM_MESH
+            MENUITEM "ConstraintMesh",              IDM_CONSTRAINT_MESH
+            MENUITEM "Face",                        IDM_FACE
+        END
+        POPUP "Bind force..."
+        BEGIN
+            MENUITEM "Gravity",                     IDM_GRAVITY_FORCE
+            MENUITEM "Spring",                      IDM_SPRING_FORCE
+        END
+        POPUP "Bind zone..."
+        BEGIN
+            MENUITEM "Plane",                       IDM_ZONE_PLANE
+            MENUITEM "Sphere",                      IDM_ZONE_SPHERE
+            MENUITEM "Rectangle",                   IDM_ZONE_RECTANGLE
+            MENUITEM "Disc",                        IDM_ZONE_DISC
+            MENUITEM "Cylinder",                    IDM_ZONE_CYLINDER
+        END
+        POPUP "Bind emitter..."
+        BEGIN
+            MENUITEM "Directionnal",                IDM_DIRECTIONNAL_EMITTER
+            MENUITEM "Omnidirectionnal",            IDM_OMNIDIRECTIONNAL_EMITTER
+
+            MENUITEM "Rectangle",                   IDM_RECTANGLE_EMITTER
+            MENUITEM "Conic",                       IDM_CONIC_EMITTER
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Delete",                      IDM_DELETE_LOCATED
+    END
+END
+
+IDR_LOCATED_BINDABLE_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "MENU"
+    BEGIN
+        MENUITEM "Delete",                      IDM_DELETE_LOCATED_BINDABLE
+    END
+END
+
+IDR_PARTICLE_SYSTEM_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "MENU"
+    BEGIN
+        MENUITEM "New located",                 ID_MENU_NEWLOCATED
+        MENUITEM SEPARATOR
+        MENUITEM "Delete",                      ID_MENU_DELETE
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_ATTRIB_DLG DLGINIT
+BEGIN
+    IDC_USE_SCHEME, 0x403, 9, 0
+0x6f43, 0x736e, 0x6174, 0x746e, "\000" 
+    IDC_USE_SCHEME, 0x403, 7, 0
+0x6353, 0x6568, 0x656d, "\000" 
+    IDC_SCHEME_INPUT, 0x403, 5, 0
+0x6144, 0x6574, "\000" 
+    IDC_SCHEME_INPUT, 0x403, 9, 0
+0x6f50, 0x6973, 0x6974, 0x6e6f, "\000" 
+    IDC_SCHEME_INPUT, 0x403, 13, 0
+0x6e49, 0x6576, 0x7372, 0x2065, 0x614d, 0x7373, "\000" 
+    IDC_SCHEME_INPUT, 0x403, 6, 0
+0x7053, 0x6565, 0x0064, 
+    0
+END
 
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////

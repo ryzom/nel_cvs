@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.3 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: std_afx2.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,8 +24,8 @@
  */
 
 
-#if !defined(AFX_STDAFX_H__9B22CB86_1929_11D5_9CD4_0050DAC3A412__INCLUDED_)
-#define AFX_STDAFX_H__9B22CB86_1929_11D5_9CD4_0050DAC3A412__INCLUDED_
+#if !defined(AFX_STDAFX2_H__9B22CB86_1929_11D5_9CD4_0050DAC3A412__INCLUDED_)
+#define AFX_STDAFX2_H__9B22CB86_1929_11D5_9CD4_0050DAC3A412__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -76,11 +76,11 @@
 #include <map>
 #include <algorithm>
 
-#include "resource.h"
-
 #include "animation_dlg.h"
 #include "animation_set_dlg.h"
 #include "main_dlg.h"
+#include "object_viewer.h"
+#include "object_viewer_interface.h"
 #include "scene_dlg.h"
 #include "select_string.h"
 
@@ -91,3 +91,4 @@
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(AFX_STDAFX_H__9B22CB86_1929_11D5_9CD4_0050DAC3A412__INCLUDED_)
+

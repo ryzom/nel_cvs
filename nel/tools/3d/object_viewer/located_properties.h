@@ -1,7 +1,7 @@
-/** \file scene_dlg.h
+/** \file located_properties.h
  * <File description>
  *
- * $Id: scene_dlg.h,v 1.5 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: located_properties.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,44 +23,54 @@
  * MA 02111-1307, USA.
  */
 
-#if !defined(AFX_SCENE_DLG_H__A9ECE124_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_)
-#define AFX_SCENE_DLG_H__A9ECE124_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_
+
+#if !defined(AFX_LOCATED_PROPERTIES_H__772D6C3B_6CFD_47B5_A132_A8D2352EACF9__INCLUDED_)
+#define AFX_LOCATED_PROPERTIES_H__772D6C3B_6CFD_47B5_A132_A8D2352EACF9__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-// scene_dlg.h : header file
+// located_properties.h : header file
 //
 
-/////////////////////////////////////////////////////////////////////////////
-// CSceneDlg dialog
 
-class CSceneDlg : public CDialog
+
+#include "editable_range.h"
+
+namespace  NL3D
+{
+	class CPSLocated ;
+} ; 
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CLocatedProperties dialog
+
+class CLocatedProperties : public CDialog
 {
 // Construction
-	friend class CObjectViewer;
 public:
-	CSceneDlg(class CObjectViewer *objView, CWnd* pParent = NULL);   // standard constructor
-	~CSceneDlg();
+	CLocatedProperties(NL3D::CPSLocated *loc, CWnd* pParent = NULL);   // standard constructor
 
+	~CLocatedProperties() ;
+
+	void init(uint32 x, uint32 y, CWnd *pParent) ;
 // Dialog Data
-	//{{AFX_DATA(CSceneDlg)
-	enum { IDD = IDD_SCENE };
-	CEdit	MoveSpeedCtrl;
-	BOOL	ViewAnimation;
-	BOOL	ViewAnimationSet;
-	BOOL	ViewSlots;
-	BOOL	Euler;
-	BOOL	ObjectMode;
-	float	MoveSpeed;
-	BOOL	ViewParticle;
+	//{{AFX_DATA(CLocatedProperties)
+	enum { IDD = IDD_LOCATED_PROPERTIES };
+	CStatic	m_ParticleNumberPos;
+	CStatic	m_MassMaxPos;
+	CStatic	m_MassMinPos;
+	CStatic	m_LifeMaxPos;
+	CStatic	m_LifeMinPos;
+	BOOL	m_LimitedLifeTime;
+	BOOL	m_SystemBasis;
 	//}}AFX_DATA
 
-	class CObjectViewer	*ObjView;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CSceneDlg)
+	//{{AFX_VIRTUAL(CLocatedProperties)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -68,20 +78,18 @@ public:
 // Implementation
 protected:
 
+	CEditableRangeFloat *_MinMass, *_MaxMass ;
+	CEditableRangeFloat *_MinLife, *_MaxLife ;
+	 
+
+
+	NL3D::CPSLocated *_Located ;
+
 	// Generated message map functions
-	//{{AFX_MSG(CSceneDlg)
-	afx_msg void OnClearScene();
-	afx_msg void OnLoadMesh();
-	afx_msg void OnLoadPlaylist();
-	afx_msg void OnLoadScene();
-	afx_msg void OnSavePlaylist();
-	afx_msg void OnViewAnimation();
-	afx_msg void OnViewAnimationset();
-	afx_msg void OnViewSlots();
+	//{{AFX_MSG(CLocatedProperties)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnResetCamera();
-	afx_msg void OnDestroy();
-	afx_msg void OnViewParticles();
+	afx_msg void OnLimitedLifeTime();
+	afx_msg void OnSystemBasis();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -89,4 +97,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_SCENE_DLG_H__A9ECE124_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_)
+#endif // !defined(AFX_LOCATED_PROPERTIES_H__772D6C3B_6CFD_47B5_A132_A8D2352EACF9__INCLUDED_)

@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.7 2001/04/30 16:58:31 corvazier Exp $
+ * $Id: scene_dlg.cpp,v 1.8 2001/06/12 08:39:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ CSceneDlg::CSceneDlg(CObjectViewer *objView, CWnd* pParent /*=NULL*/)
 	Euler = FALSE;
 	ObjectMode = TRUE;
 	MoveSpeed = 10.0f;
+	ViewParticle = FALSE;
 	//}}AFX_DATA_INIT
 	ObjView=objView;
 
@@ -101,6 +102,7 @@ void CSceneDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_EULER, Euler);
 	DDX_Check(pDX, IDC_OBJECT_MODE, ObjectMode);
 	DDX_Text(pDX, IDC_MOVE_SPEED, MoveSpeed);
+	DDX_Check(pDX, IDC_VIEW_PARTICLE, ViewParticle);
 	//}}AFX_DATA_MAP
 }
 
@@ -117,6 +119,7 @@ BEGIN_MESSAGE_MAP(CSceneDlg, CDialog)
 	ON_BN_CLICKED(IDC_VIEW_SLOTS, OnViewSlots)
 	ON_BN_CLICKED(IDC_RESET_CAMERA, OnResetCamera)
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_VIEW_PARTICLE, OnViewParticles)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -276,6 +279,14 @@ void CSceneDlg::OnViewSlots()
 		ObjView->_SlotDlg->ShowWindow (ViewSlots?SW_SHOW:SW_HIDE);
 }
 
+void CSceneDlg::OnViewParticles() 
+{
+	UpdateData ();
+	if (ObjView->_ParticleDlg)
+		ObjView->_ParticleDlg->ShowWindow (ViewParticle?SW_SHOW:SW_HIDE);
+}
+
+
 BOOL CSceneDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
@@ -284,6 +295,7 @@ BOOL CSceneDlg::OnInitDialog()
 	OnViewAnimation();
 	OnViewAnimationset();
 	OnViewSlots();
+
 	OnResetCamera();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -433,3 +445,4 @@ void CSceneDlg::OnDestroy()
 
 	CDialog::OnDestroy();
 }
+

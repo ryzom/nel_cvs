@@ -1,7 +1,7 @@
-/** \file scene_dlg.h
+/** \file range_selector.h
  * <File description>
  *
- * $Id: scene_dlg.h,v 1.5 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: range_selector.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,65 +23,57 @@
  * MA 02111-1307, USA.
  */
 
-#if !defined(AFX_SCENE_DLG_H__A9ECE124_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_)
-#define AFX_SCENE_DLG_H__A9ECE124_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_
+
+#if !defined(AFX_RANGE_SELECTOR_H__BF9974E6_D43D_447D_8BC5_625620BDBD8F__INCLUDED_)
+#define AFX_RANGE_SELECTOR_H__BF9974E6_D43D_447D_8BC5_625620BDBD8F__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-// scene_dlg.h : header file
+// range_selector.h : header file
 //
 
 /////////////////////////////////////////////////////////////////////////////
-// CSceneDlg dialog
+// CRangeSelector dialog
 
-class CSceneDlg : public CDialog
+class CRangeSelector : public CDialog
 {
 // Construction
-	friend class CObjectViewer;
 public:
-	CSceneDlg(class CObjectViewer *objView, CWnd* pParent = NULL);   // standard constructor
-	~CSceneDlg();
+	typedef bool (*TValidationFunction)(const CString &lowerBound, const CString &upperBound) ;
+	CRangeSelector(const CString &lowerBound, const CString &upperBound, TValidationFunction vf, CWnd* pParent = NULL);   // standard constructor
+
+
+	const CString &getUpperBound(void) const { return m_UpperBound ; }
+	const CString &getLowerBound(void) const { return m_LowerBound ; }
 
 // Dialog Data
-	//{{AFX_DATA(CSceneDlg)
-	enum { IDD = IDD_SCENE };
-	CEdit	MoveSpeedCtrl;
-	BOOL	ViewAnimation;
-	BOOL	ViewAnimationSet;
-	BOOL	ViewSlots;
-	BOOL	Euler;
-	BOOL	ObjectMode;
-	float	MoveSpeed;
-	BOOL	ViewParticle;
+	//{{AFX_DATA(CRangeSelector)
+	enum { IDD = IDD_SELECT_RANGE };
+	CEdit	m_UpperBoundCtrl;
+	CEdit	m_LowerBoundCtrl;
+	CString	m_LowerBound;
+	CString	m_UpperBound;
 	//}}AFX_DATA
 
-	class CObjectViewer	*ObjView;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CSceneDlg)
+	//{{AFX_VIRTUAL(CRangeSelector)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
 protected:
+	TValidationFunction _ValidationFunction ;	
 
 	// Generated message map functions
-	//{{AFX_MSG(CSceneDlg)
-	afx_msg void OnClearScene();
-	afx_msg void OnLoadMesh();
-	afx_msg void OnLoadPlaylist();
-	afx_msg void OnLoadScene();
-	afx_msg void OnSavePlaylist();
-	afx_msg void OnViewAnimation();
-	afx_msg void OnViewAnimationset();
-	afx_msg void OnViewSlots();
+	//{{AFX_MSG(CRangeSelector)
+	virtual void OnOK();
+	afx_msg void OnSetfocusLowerBound();
+	afx_msg void OnSetfocusUpperBound();
 	virtual BOOL OnInitDialog();
-	afx_msg void OnResetCamera();
-	afx_msg void OnDestroy();
-	afx_msg void OnViewParticles();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -89,4 +81,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_SCENE_DLG_H__A9ECE124_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_)
+#endif // !defined(AFX_RANGE_SELECTOR_H__BF9974E6_D43D_447D_8BC5_625620BDBD8F__INCLUDED_)

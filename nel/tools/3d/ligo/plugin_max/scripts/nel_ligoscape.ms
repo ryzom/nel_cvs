@@ -2820,7 +2820,7 @@ group "Directories"
 		lastChar = ligo_root_path[ligo_root_path.count]
 		if (lastChar != '\') and (lastChar != '/') then
 			ligo_root_path += "\\"
-		setINISetting ((GetDir #plugcfg)+"\\ligo.ini") "LigoConfig" "LigoPath" ligo_root_path
+		setINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoPath" ligo_root_path
 	)
 
 	on LigoExportPath changed newPath do
@@ -2829,7 +2829,7 @@ group "Directories"
 		lastChar = ligo_export_path[ligo_export_path.count]
 		if (lastChar != '\') and (lastChar != '/') then
 			ligo_export_path += "\\"
-		setINISetting ((GetDir #plugcfg)+"\\ligo.ini") "LigoConfig" "LigoExportPath" ligo_export_path
+		setINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoExportPath" ligo_export_path
 	)
 
 	on options_rollout open do
@@ -2990,9 +2990,9 @@ if ligoscape_tools_floater != undefined do
 )
 
 -- Get the ligo path
-ligopath = getINISetting ((GetDir #plugcfg)+"\\ligo.ini") "LigoConfig" "LigoPath" 
+ligopath = getINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoPath" 
 if ligopath != "" then ligo_root_path = ligopath
-ligopath = getINISetting ((GetDir #plugcfg)+"\\ligo.ini") "LigoConfig" "LigoExportPath" 
+ligopath = getINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoExportPath" 
 if ligopath != "" then ligo_export_path = ligopath
 
 ligoscape_tools_floater = newRolloutFloater "NeL Ligoscape" 225 600

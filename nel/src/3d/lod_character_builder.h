@@ -1,7 +1,7 @@
 /** \file lod_character_builder.h
  * <File description>
  *
- * $Id: lod_character_builder.h,v 1.2 2002/05/13 16:45:55 berenguier Exp $
+ * $Id: lod_character_builder.h,v 1.3 2002/05/15 11:42:41 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D
 
 
 class	CSkeletonShape;
-class	CMeshGeom;
+class	CAnimation;
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.17 2001/09/13 14:26:50 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.18 2001/09/17 14:01:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@
 #include "scheme_bank_dlg.h"
 #include "scheme_manager.h"
 #include "choose_name.h"
+#include "curve_edit.h"
 
 
 #include "3d/ps_attrib_maker.h"
@@ -241,6 +242,7 @@ protected:
 
 CAttribDlg::CAttribDlg(const std::string &valueID, bool enableConstantValue /* = true*/)
 	 : _CstValueDlg(NULL), _FirstDrawing(true), _EnableConstantValue(enableConstantValue), _DisableMemoryScheme(false)
+	   , _SchemeEditionDlg(NULL)
 {
 	//{{AFX_DATA_INIT(CAttribDlg)
 	m_AttribName = _T("");
@@ -285,8 +287,7 @@ CAttribDlg::~CAttribDlg()
 	delete _NbCyclesDlg;
 	if (_CstValueDlg)
 	{
-		_CstValueDlg->DestroyWindow();
-		_CstValueDlg->DestroyWindow();
+		_CstValueDlg->DestroyWindow();		
 		delete _CstValueDlg;	
 	}
 }
@@ -493,7 +494,21 @@ void CAttribDlg::OnSelchangeScheme()
 
 void CAttribDlg::OnEditScheme() 
 {
-	editScheme();
+	_SchemeEditionDlg  = editScheme();
+	if (_SchemeEditionDlg)
+	{
+		EnableWindow(FALSE);
+	}
+}
+
+
+void CAttribDlg::childPopupDestroyed(CWnd *child)
+{
+	EnableWindow(TRUE);
+	if (!_SchemeEditionDlg) return;
+	_SchemeEditionDlg->DestroyWindow();
+	delete _SchemeEditionDlg;
+	_SchemeEditionDlg = NULL;	
 }
 
 
@@ -571,6 +586,8 @@ BEGIN_MESSAGE_MAP(CAttribDlg, CDialog)
 	ON_BN_CLICKED(IDC_EDIT_INPUT, OnEditInput)
 	ON_BN_CLICKED(IDC_GET_SCHEME, OnGetScheme)
 	ON_BN_CLICKED(IDC_PUT_SCHEME, OnPutScheme)
+	ON_WM_DESTROY()
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -648,49 +665,54 @@ END_MESSAGE_MAP()
 	}
 	std::string CAttribDlgFloat::getSchemeName(uint index) const
 	{
-		const char *types[] = { "value blender", "values gradient", "lagrange curve", "value computed from emitter", "binary operator"};
+		const char *types[] = { "value blender", "values gradient", "curve", "value computed from emitter", "binary operator"};
 		nlassert(index < 5);
 		return std::string(types[index]);		
 	}
-	void CAttribDlgFloat::editScheme(void)
+	CWnd *CAttribDlgFloat::editScheme(void)
 	{
-		const NL3D::CPSAttribMaker<float> *scheme = _SchemeWrapper->getScheme();	
+		NL3D::CPSAttribMaker<float> *scheme = _SchemeWrapper->getScheme();	
 
-		if (dynamic_cast<const NL3D::CPSFloatBlender *>(scheme)) 
+		if (dynamic_cast<NL3D::CPSFloatBlender *>(scheme)) 
 		{				
-			CFloatBlenderDlgClient myInterface;
-			this->duplicateBoundChecker(myInterface.BoundChecker);
-			myInterface.MinRange = _MinRange;
-			myInterface.MaxRange = _MaxRange;
-			myInterface.Id = _CstValueId+ std::string("%%FLOAT_BLENDER");
-			myInterface.SchemeFunc = & ((NL3D::CPSValueBlenderSample<float, 64> *) scheme)->_F;
-			
-			CValueBlenderDlg bd(&myInterface, this);
-			bd.DoModal();
-		
+			CFloatBlenderDlgClient *myInterface = new CFloatBlenderDlgClient;
+			this->duplicateBoundChecker(myInterface->BoundChecker);
+			myInterface->MinRange = _MinRange;
+			myInterface->MaxRange = _MaxRange;
+			myInterface->Id = _CstValueId+ std::string("%%FLOAT_BLENDER");
+			myInterface->SchemeFunc = & ((NL3D::CPSValueBlenderSample<float, 64> *) scheme)->_F;			
+			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this);
+			vb->init(this);
+			return vb;
+					
 		}
-		if (dynamic_cast<const NL3D::CPSFloatGradient *>(scheme)) 
+		if (dynamic_cast<NL3D::CPSFloatGradient *>(scheme)) 
 		{
-			CFloatGradientDlgWrapper wrapper;
-			this->duplicateBoundChecker(wrapper.BoundChecker);
-			wrapper.MinRange = _MinRange;
-			wrapper.MaxRange = _MaxRange;
-			wrapper.Scheme = &(((NL3D::CPSFloatGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg gd(&wrapper, this);		
-			wrapper.GradDlg = &gd;
-			wrapper.DefaultValue = 0.f;
-			wrapper.Id = _CstValueId+ std::string("%%FLOAT GRADIENT");
-
-			gd.DoModal();			
+			CFloatGradientDlgWrapper *wrapper = new CFloatGradientDlgWrapper;
+			this->duplicateBoundChecker(wrapper->BoundChecker);
+			wrapper->MinRange = _MinRange;
+			wrapper->MaxRange = _MaxRange;
+			wrapper->Scheme = &(((NL3D::CPSFloatGradient *) (_SchemeWrapper->getScheme()) )->_F);
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);
+			wrapper->GradDlg = gd;
+			wrapper->DefaultValue = 0.f;
+			wrapper->Id = _CstValueId+ std::string("%%FLOAT GRADIENT");			
+			gd->init(this);
+			return gd;
 		}
-		if (dynamic_cast<const NL3D::CPSFloatMemory *>(scheme)) 
+		if (dynamic_cast<NL3D::CPSFloatMemory *>(scheme)) 
 		{
 			CAttribDlgFloat *adf = new CAttribDlgFloat(_CstValueId, _MinRange, _MaxRange);
 			this->duplicateBoundChecker(*adf);
-			CValueFromEmitterDlgT<float> vfe( (NL3D::CPSFloatMemory *)(scheme), adf,  m_AttrBitmap.GetBitmap());			
-			vfe.DoModal();
+			CValueFromEmitterDlgT<float> *vfe = new CValueFromEmitterDlgT<float>( (NL3D::CPSFloatMemory *)(scheme),
+																				  adf,
+																				  this,
+																				  m_AttrBitmap.GetBitmap()
+																				 );			
+			vfe->init(this);
+			return vfe;
 		}
-		if (dynamic_cast<const NL3D::CPSFloatBinOp *>(scheme)) 
+		if (dynamic_cast<NL3D::CPSFloatBinOp *>(scheme)) 
 		{
 			CAttribDlgFloat *ad[2] = { NULL, NULL};
 			for (uint k = 0; k <2; ++k)
@@ -698,13 +720,22 @@ END_MESSAGE_MAP()
 				ad[k] = new CAttribDlgFloat(_CstValueId, _MinRange, _MaxRange);
 				this->duplicateBoundChecker(*ad[k]);
 			}
-			CBinOpDlgT<float> bod( (NL3D::CPSFloatBinOp *)(scheme), (CAttribDlgT<float> **) ad, m_AttrBitmap.GetBitmap());	
-			bod.DoModal();
+			CBinOpDlgT<float> *bod = new CBinOpDlgT<float>( (NL3D::CPSFloatBinOp *)(scheme),
+															(CAttribDlgT<float> **) ad,
+															this,
+															m_AttrBitmap.GetBitmap());	
+			bod->init(this);
+			return bod;
 		}
 
-		if (dynamic_cast<const NL3D::CPSFloatLagrange *>(scheme)) 
+		if (dynamic_cast<NL3D::CPSFloatCurve *>(scheme)) 
 		{
+			CurveEdit *ce = new CurveEdit(&(dynamic_cast<NL3D::CPSFloatCurve *>(scheme)->_F), this, this);
+			ce->init(this);
+			return ce;			
 		}
+
+		return NULL;
 	}
 
 	sint CAttribDlgFloat::getCurrentScheme(void) const
@@ -713,7 +744,7 @@ END_MESSAGE_MAP()
 		const NL3D::CPSAttribMaker<float> *scheme = _SchemeWrapper->getScheme();		
 		if (dynamic_cast<const NL3D::CPSFloatBlender *>(scheme))  return 0;		
 		if (dynamic_cast<const NL3D::CPSFloatGradient *>(scheme)) return 1;		
-		if (dynamic_cast<const NL3D::CPSFloatLagrange *>(scheme)) return 2;
+		if (dynamic_cast<const NL3D::CPSFloatCurve *>(scheme)) return 2;
 		if (dynamic_cast<const NL3D::CPSFloatMemory *>(scheme)) return 3;		
 		if (dynamic_cast<const NL3D::CPSFloatBinOp *>(scheme)) return 4;
 		
@@ -737,7 +768,7 @@ END_MESSAGE_MAP()
 				scheme = new NL3D::CPSFloatGradient;
 			break;
 			case 2:
-				scheme = new NL3D::CPSFloatLagrange;
+				scheme = new NL3D::CPSFloatCurve;
 			break;
 			case 3:
 				scheme = new NL3D::CPSFloatMemory;
@@ -833,44 +864,48 @@ END_MESSAGE_MAP()
 		nlassert(index < 4);
 		return std::string(types[index]);		
 	}
-	void CAttribDlgUInt::editScheme(void)
+	CWnd *CAttribDlgUInt::editScheme(void)
 	{
 		const NL3D::CPSAttribMaker<uint32> *scheme = _SchemeWrapper->getScheme();	
 
 		if (dynamic_cast<const NL3D::CPSUIntBlender *>(scheme)) 
 		{				
-			CUIntBlenderDlgClient myInterface;
-			this->duplicateBoundChecker(myInterface.BoundChecker);
-			myInterface.MinRange = _MinRange;
-			myInterface.MaxRange = _MaxRange;
-			myInterface.Id = _CstValueId+ std::string("%%UINT_BLENDER");
-			myInterface.SchemeFunc = & ((NL3D::CPSValueBlenderSample<uint32, 64> *) scheme)->_F;
+			CUIntBlenderDlgClient *myInterface = new CUIntBlenderDlgClient ;
+			duplicateBoundChecker(myInterface->BoundChecker);
+			myInterface->MinRange = _MinRange;
+			myInterface->MaxRange = _MaxRange;
+			myInterface->Id = _CstValueId+ std::string("%%UINT_BLENDER");
+			myInterface->SchemeFunc = & ((NL3D::CPSValueBlenderSample<uint32, 64> *) scheme)->_F;
 			
-			CValueBlenderDlg bd(&myInterface, this);
-			bd.DoModal();
-		
+			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this);
+			vb->init(this);
+			return vb;
 		}
 		if (dynamic_cast<const NL3D::CPSUIntGradient *>(scheme)) 
 		{
-			CUIntGradientDlgWrapper wrapper;
-			this->duplicateBoundChecker(wrapper.BoundChecker);
-			wrapper.MinRange = _MinRange;
-			wrapper.MaxRange = _MaxRange;
-			wrapper.Scheme = &(((NL3D::CPSUIntGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg gd(&wrapper, this);		
-			wrapper.GradDlg = &gd;
-			wrapper.DefaultValue = 0;
-			wrapper.Id = _CstValueId+ std::string("%%UINT GRADIENT");
-
-			gd.DoModal();			
+			CUIntGradientDlgWrapper *wrapper = new CUIntGradientDlgWrapper;
+			this->duplicateBoundChecker(wrapper->BoundChecker);
+			wrapper->MinRange = _MinRange;
+			wrapper->MaxRange = _MaxRange;
+			wrapper->Scheme = &(((NL3D::CPSUIntGradient *) (_SchemeWrapper->getScheme()) )->_F);
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);
+			wrapper->GradDlg = gd;
+			wrapper->DefaultValue = 0;
+			wrapper->Id = _CstValueId+ std::string("%%UINT GRADIENT");
+			gd->init(this);
+			return gd;
 		}
 		if (dynamic_cast<const NL3D::CPSUIntMemory *>(scheme)) 
 		{
 
 			CAttribDlgUInt *adu = new CAttribDlgUInt(_CstValueId, _MinRange, _MaxRange);
 			this->duplicateBoundChecker(*adu);
-			CValueFromEmitterDlgT<uint32> vfe( (NL3D::CPSUIntMemory *)(scheme), adu,  m_AttrBitmap.GetBitmap());			
-			vfe.DoModal();
+			CValueFromEmitterDlgT<uint32> *vfe = new CValueFromEmitterDlgT<uint32>( (NL3D::CPSUIntMemory *)(scheme),
+																					adu,
+																					this,
+																					m_AttrBitmap.GetBitmap());			
+			vfe->init(this);
+			return vfe;
 		}
 		if (dynamic_cast<const NL3D::CPSUIntBinOp *>(scheme)) 
 		{
@@ -880,10 +915,14 @@ END_MESSAGE_MAP()
 				ad[k] = new CAttribDlgUInt(_CstValueId, _MinRange, _MaxRange);
 				this->duplicateBoundChecker(*ad[k]);
 			}
-			CBinOpDlgT<uint32> bod( (NL3D::CPSUIntBinOp *)(scheme), (CAttribDlgT<uint32> **) ad, m_AttrBitmap.GetBitmap());	
-			bod.DoModal();
+			CBinOpDlgT<uint32> *bod = new CBinOpDlgT<uint32>( (NL3D::CPSUIntBinOp *)(scheme),
+																(CAttribDlgT<uint32> **) ad,
+																this,
+																m_AttrBitmap.GetBitmap());	
+			bod->init(this);
+			return bod;
 		}
-		
+		return NULL;
 	}
 
 	sint CAttribDlgUInt::getCurrentScheme(void) const
@@ -1006,43 +1045,47 @@ END_MESSAGE_MAP()
 		nlassert(index < 4);
 		return std::string(types[index]);
 	}
-	void CAttribDlgInt::editScheme(void)
+	CWnd *CAttribDlgInt::editScheme(void)
 	{
 		const NL3D::CPSAttribMaker<sint32> *scheme = _SchemeWrapper->getScheme();	
 
 		if (dynamic_cast<const NL3D::CPSIntBlender *>(scheme)) 
 		{				
-			CIntBlenderDlgClient myInterface;
-			this->duplicateBoundChecker(myInterface.BoundChecker);
-			myInterface.MinRange = _MinRange;
-			myInterface.MaxRange = _MaxRange;
-			myInterface.Id = _CstValueId+ std::string("%%INT_BLENDER");
-			myInterface.SchemeFunc = & ((NL3D::CPSValueBlenderSample<sint32, 64> *) scheme)->_F;
+			CIntBlenderDlgClient *myInterface = new CIntBlenderDlgClient;
+			this->duplicateBoundChecker(myInterface->BoundChecker);
+			myInterface->MinRange = _MinRange;
+			myInterface->MaxRange = _MaxRange;
+			myInterface->Id = _CstValueId+ std::string("%%INT_BLENDER");
+			myInterface->SchemeFunc = & ((NL3D::CPSValueBlenderSample<sint32, 64> *) scheme)->_F;
 			
-			CValueBlenderDlg bd(&myInterface, this);
-			bd.DoModal();
-		
+			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this);
+			vb->init(this);
+			return vb;
 		}
 		if (dynamic_cast<const NL3D::CPSIntGradient *>(scheme)) 
 		{
-			CIntGradientDlgWrapper wrapper;
-			this->duplicateBoundChecker(wrapper.BoundChecker);
-			wrapper.MinRange = _MinRange;
-			wrapper.MaxRange = _MaxRange;
-			wrapper.Scheme = &(((NL3D::CPSIntGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg gd(&wrapper, this);		
-			wrapper.GradDlg = &gd;
-			wrapper.DefaultValue = 0;
-			wrapper.Id = _CstValueId+ std::string("%%INT GRADIENT");
-
-			gd.DoModal();			
+			CIntGradientDlgWrapper *wrapper = new CIntGradientDlgWrapper;
+			this->duplicateBoundChecker(wrapper->BoundChecker);
+			wrapper->MinRange = _MinRange;
+			wrapper->MaxRange = _MaxRange;
+			wrapper->Scheme = &(((NL3D::CPSIntGradient *) (_SchemeWrapper->getScheme()) )->_F);
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);		
+			wrapper->GradDlg = gd;
+			wrapper->DefaultValue = 0;
+			wrapper->Id = _CstValueId+ std::string("%%INT GRADIENT");
+			gd->init(this);
+			return gd;						
 		}
 		if (dynamic_cast<const NL3D::CPSIntMemory *>(scheme)) 
 		{
 			CAttribDlgInt *adi = new CAttribDlgInt(_CstValueId, _MinRange, _MaxRange);
 			this->duplicateBoundChecker(*adi);
-			CValueFromEmitterDlgT<sint32> vfe((NL3D::CPSIntMemory *) _SchemeWrapper->getScheme(), adi, m_AttrBitmap.GetBitmap() );			
-			vfe.DoModal();
+			CValueFromEmitterDlgT<sint32> *vfe = new CValueFromEmitterDlgT<sint32>((NL3D::CPSIntMemory *) _SchemeWrapper->getScheme(),
+																			adi, 
+																			this,
+																			m_AttrBitmap.GetBitmap() );			
+			vfe->init(this);
+			return vfe;
 		}
 	/*	if (dynamic_cast<const NL3D::CPSIntMemory *>(scheme)) 
 		{
@@ -1057,9 +1100,14 @@ END_MESSAGE_MAP()
 				ad[k] = new CAttribDlgInt(_CstValueId, _MinRange, _MaxRange);
 				this->duplicateBoundChecker(*ad[k]);
 			}
-			CBinOpDlgT<sint32> bod( (NL3D::CPSIntBinOp *)(scheme), (CAttribDlgT<sint32> **) ad, m_AttrBitmap.GetBitmap());	
-			bod.DoModal();
+			CBinOpDlgT<sint32> *bod = new CBinOpDlgT<sint32>( (NL3D::CPSIntBinOp *)(scheme),
+															  (CAttribDlgT<sint32> **) ad,
+															  this,
+															  m_AttrBitmap.GetBitmap());	
+			bod->init(this);
+			return bod;
 		}
+		return NULL;
 	}
 
 	sint CAttribDlgInt::getCurrentScheme(void) const
@@ -1190,41 +1238,44 @@ END_MESSAGE_MAP()
 
 
 
-	void CAttribDlgRGBA::editScheme(void)
+	CWnd *CAttribDlgRGBA::editScheme(void)
 	{	
 		const NL3D::CPSAttribMaker<CRGBA> *scheme = _SchemeWrapper->getScheme();	
 
 		if (dynamic_cast<const NL3D::CPSColorBlender *>(scheme)) 
 		{			
-			CRGBABlenderDlgClient myInterface;
-			myInterface.Id = std::string("RGBA_BLENDER");
-			myInterface.SchemeFunc = & ((NL3D::CPSValueBlenderSample<CRGBA, 64> *) scheme)->_F;
-			
-			CValueBlenderDlg bd(&myInterface, this);
-			bd.DoModal();
-		
+			CRGBABlenderDlgClient *myInterface = new CRGBABlenderDlgClient;
+			myInterface->Id = std::string("RGBA_BLENDER");
+			myInterface->SchemeFunc = & ((NL3D::CPSValueBlenderSample<CRGBA, 64> *) scheme)->_F;			
+			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this);
+			vb->init(this);
+			return vb;
 		}
 		if (dynamic_cast<const NL3D::CPSColorGradient *>(scheme)) 
 		{
-			CColorGradientDlgWrapper wrapper;
-			wrapper.Scheme = &(((NL3D::CPSColorGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg gd(&wrapper, this);		
-			wrapper.GradDlg = &gd;
-			wrapper.DefaultValue = CRGBA::White;
-			wrapper.Id = std::string("RGBA_GRADIENT");
-
-			gd.DoModal();
+			CColorGradientDlgWrapper *wrapper = new CColorGradientDlgWrapper;
+			wrapper->Scheme = &(((NL3D::CPSColorGradient *) (_SchemeWrapper->getScheme()) )->_F);
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);		
+			wrapper->GradDlg = gd;
+			wrapper->DefaultValue = CRGBA::White;
+			wrapper->Id = std::string("RGBA_GRADIENT");
+			gd->init(this);
+			return gd;			
 		}
 		if (dynamic_cast<const NL3D::CPSColorBlenderExact *>(scheme)) 
 		{
-			
+			return NULL;
 		}
 
 		if (dynamic_cast<const NL3D::CPSColorMemory *>(scheme)) 
 		{
 			CAttribDlgRGBA *ad = new CAttribDlgRGBA(_CstValueId);			
-			CValueFromEmitterDlgT<CRGBA> vfe( (NL3D::CPSColorMemory *)(scheme), ad, m_AttrBitmap.GetBitmap());			
-			vfe.DoModal();
+			CValueFromEmitterDlgT<CRGBA> *vfe = new CValueFromEmitterDlgT<CRGBA>( (NL3D::CPSColorMemory *)(scheme),
+																					ad,
+																					this,
+																					m_AttrBitmap.GetBitmap());			
+			vfe->init(this);
+			return vfe;
 		}
 
 		if (dynamic_cast<const NL3D::CPSColorBinOp *>(scheme)) 
@@ -1234,11 +1285,14 @@ END_MESSAGE_MAP()
 			{
 				ad[k] = new CAttribDlgRGBA(_CstValueId);				
 			}
-			CBinOpDlgT<CRGBA> bod( (NL3D::CPSColorBinOp *)(scheme), (CAttribDlgT<CRGBA> **) ad, m_AttrBitmap.GetBitmap());	
-			bod.DoModal();
+			CBinOpDlgT<CRGBA> *bod = new CBinOpDlgT<CRGBA>( (NL3D::CPSColorBinOp *)(scheme),
+															(CAttribDlgT<CRGBA> **) ad,
+															this,
+															m_AttrBitmap.GetBitmap());	
+			bod->init(this);
+			return bod;
 		}		
-
-
+		return NULL;
 	}
 
 	void CAttribDlgRGBA::setCurrentScheme(uint index)
@@ -1360,30 +1414,37 @@ END_MESSAGE_MAP()
 
 
 
-	void CAttribDlgPlaneBasis::editScheme(void)
+	CWnd *CAttribDlgPlaneBasis::editScheme(void)
 	{	
 		NL3D::CPSAttribMaker<NL3D::CPlaneBasis> *scheme = _SchemeWrapper->getScheme();	
 		if (dynamic_cast<NL3D::CPSPlaneBasisGradient *>(scheme)) 
 		{
-			CPlaneBasisGradientDlgWrapper wrapper;
-			wrapper.Scheme = &(((NL3D::CPSPlaneBasisGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg gd(&wrapper, this);		
-			wrapper.GradDlg = &gd;
-			wrapper.DefaultValue = NL3D::CPlaneBasis(NLMISC::CVector::K);
-			wrapper.Id = std::string("PLANE_BASIS_GRADIENT");
-			gd.DoModal();
+			CPlaneBasisGradientDlgWrapper *wrapper = new CPlaneBasisGradientDlgWrapper;
+			wrapper->Scheme = &(((NL3D::CPSPlaneBasisGradient *) (_SchemeWrapper->getScheme()) )->_F);
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);		
+			wrapper->GradDlg = gd;
+			wrapper->DefaultValue = NL3D::CPlaneBasis(NLMISC::CVector::K);
+			wrapper->Id = std::string("PLANE_BASIS_GRADIENT");
+			gd->init(this);
+			return gd;			
 		}
 
 		if (dynamic_cast<NL3D::CPSPlaneBasisFollowSpeed *>(scheme)) 
 		{
 			MessageBox("NO properties available", "edition", MB_OK);
+			return NULL;
 		}
 
 		if (dynamic_cast<NL3D::CPSPlaneBasisMemory *>(scheme)) 
 		{
 			CAttribDlgPlaneBasis *ad = new CAttribDlgPlaneBasis(_CstValueId);			
-			CValueFromEmitterDlgT<NL3D::CPlaneBasis> vfe( (NL3D::CPSPlaneBasisMemory *)(scheme), ad, m_AttrBitmap.GetBitmap());			
-			vfe.DoModal();
+			CValueFromEmitterDlgT<NL3D::CPlaneBasis> *vfe = new CValueFromEmitterDlgT<NL3D::CPlaneBasis>
+															( (NL3D::CPSPlaneBasisMemory *)(scheme),
+															  ad,
+															  this,
+															  m_AttrBitmap.GetBitmap());			
+			vfe->init(this);
+			return vfe;
 		}
 
 		if (dynamic_cast<NL3D::CPSPlaneBasisBinOp *>(scheme)) 
@@ -1393,15 +1454,21 @@ END_MESSAGE_MAP()
 			{
 				ad[k] = new CAttribDlgPlaneBasis(_CstValueId);				
 			}
-			CBinOpDlgT<NL3D::CPlaneBasis> bod( (NL3D::CPSPlaneBasisBinOp *)(scheme), (CAttribDlgT<NL3D::CPlaneBasis> **) ad, m_AttrBitmap.GetBitmap());	
-			bod.DoModal();
+			CBinOpDlgT<NL3D::CPlaneBasis> *bod = new CBinOpDlgT<NL3D::CPlaneBasis>( (NL3D::CPSPlaneBasisBinOp *)(scheme),
+																					(CAttribDlgT<NL3D::CPlaneBasis> **) ad,
+																					this,
+																					m_AttrBitmap.GetBitmap());	
+			bod->init(this);
+			return bod;
 		}
 		
 		if (dynamic_cast<NL3D::CPSBasisSpinner *>(scheme)) 
 		{
-			CEditSpinner es(static_cast<NL3D::CPSBasisSpinner *>(scheme), this);
-			es.DoModal();
+			CEditSpinner *es = new CEditSpinner(static_cast<NL3D::CPSBasisSpinner *>(scheme), this, this);
+			es->init(this);
+			return es;
 		}
+		return NULL;
 	}
 
 	void CAttribDlgPlaneBasis::setCurrentScheme(uint index)
@@ -1460,3 +1527,21 @@ END_MESSAGE_MAP()
 		return ce;
 	}
 
+
+void CAttribDlg::OnDestroy() 
+{
+	if (_SchemeEditionDlg)
+	{
+		CWnd *wnd = _SchemeEditionDlg;
+		_SchemeEditionDlg = NULL;
+		wnd ->DestroyWindow();
+		delete wnd ;		
+	}
+	CDialog::OnDestroy();
+		
+}
+
+void CAttribDlg::OnClose() 
+{	
+	CDialog::OnClose();
+}

@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.9 2001/09/12 13:23:21 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.10 2001/09/17 14:01:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/ps_plane_basis.h"
 #include "3d/ps_attrib_maker.h"
 #include "editable_range.h"
+#include "popup_notify.h"
 
 
 namespace NL3D
@@ -52,7 +53,7 @@ class CEditAttribDlg;
 /////////////////////////////////////////////////////////////////////////////
 // CAttribDlg dialog
 
-class CAttribDlg : public CDialog
+class CAttribDlg : public CDialog, public IPopupNotify
 {
 // Construction
 public:
@@ -146,8 +147,8 @@ protected:
 	// get the text associated with an attribute maker
 	virtual std::string getSchemeName(uint index) const = 0;
 
-	// edit the current scheme
-	virtual void editScheme(void) = 0;
+	// edit the current scheme. And return a window on it
+	virtual CWnd *editScheme(void) = 0;
 
 	// set the current scheme
 	virtual void setCurrentScheme(uint index) = 0;
@@ -180,6 +181,9 @@ protected:
 	// return true if clamping is supported
 	virtual bool isClampingSupported(void) const = 0;
 
+	/// inherited from IPopupNotify
+	virtual void childPopupDestroyed(CWnd *child);
+
 
 	// the dialog used to tune the nb cycles param (when available)
 	CEditableRangeFloat *_NbCyclesDlg;	
@@ -204,6 +208,8 @@ protected:
 	// the dialog used to tune a constant value
 	CEditAttribDlg *_CstValueDlg;
 
+	// the current dialog for scheme edition
+	CWnd		   *_SchemeEditionDlg;
 
 	// Generated message map functions
 	//{{AFX_MSG(CAttribDlg)
@@ -215,6 +221,8 @@ protected:
 	afx_msg void OnEditInput();
 	afx_msg void OnGetScheme();
 	afx_msg void OnPutScheme();
+	afx_msg void OnDestroy();
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -245,7 +253,7 @@ public:
 	// inherited from CAttribDlg
 	virtual uint getNumScheme(void) const = 0;	
 	virtual std::string getSchemeName(uint index) const = 0;	
-	virtual void editScheme(void) = 0;	
+	virtual CWnd *editScheme(void) = 0;	
 	virtual void setCurrentScheme(uint index) = 0;
 	virtual sint getCurrentScheme(void) const  = 0;
 
@@ -310,7 +318,7 @@ public:
 	// inherited from CAttribDlg
 	virtual uint getNumScheme(void) const;	
 	virtual std::string getSchemeName(uint index) const;	
-	virtual void editScheme(void);	
+	virtual CWnd *editScheme(void);	
 	virtual void setCurrentScheme(uint index);
 	virtual sint getCurrentScheme(void) const;
 
@@ -342,7 +350,7 @@ public:
 	// inherited from CAttribDlg
 	virtual uint getNumScheme(void) const;	
 	virtual std::string getSchemeName(uint index) const;	
-	virtual void editScheme(void);	
+	virtual CWnd *editScheme(void);	
 	virtual void setCurrentScheme(uint index);
 	virtual sint getCurrentScheme(void) const;
 
@@ -375,7 +383,7 @@ public:
 	// inherited from CAttribDlg
 	virtual uint getNumScheme(void) const;	
 	virtual std::string getSchemeName(uint index) const;	
-	virtual void editScheme(void);	
+	virtual CWnd *editScheme(void);	
 	virtual void setCurrentScheme(uint index);
 	virtual sint getCurrentScheme(void) const;
 
@@ -407,7 +415,7 @@ public:
 	// inherited from CAttribDlg
 	virtual uint getNumScheme(void) const;	
 	virtual std::string getSchemeName(uint index) const;	
-	virtual void editScheme(void);	
+	virtual CWnd *editScheme(void);	
 	virtual void setCurrentScheme(uint index);
 	virtual sint getCurrentScheme(void) const;
 
@@ -436,7 +444,7 @@ public:
 	// inherited from CAttribDlg
 	virtual uint getNumScheme(void) const;	
 	virtual std::string getSchemeName(uint index) const;	
-	virtual void editScheme(void);	
+	virtual CWnd *editScheme(void);	
 	virtual void setCurrentScheme(uint index);
 	virtual sint getCurrentScheme(void) const;
 

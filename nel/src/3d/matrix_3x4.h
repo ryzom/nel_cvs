@@ -1,7 +1,7 @@
 /** \file matrix_3x4.h
  *	For fast vector/point multiplication.
  *
- * $Id: matrix_3x4.h,v 1.1 2002/06/20 09:44:54 berenguier Exp $
+ * $Id: matrix_3x4.h,v 1.2 2002/09/09 12:27:02 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -127,7 +127,8 @@ public:
 // ***************************************************************************
 #ifdef NL_OS_WINDOWS
 
-//#define NL_DebugSSE
+// \todo yoyo: re-enable SSE when Pentium4 SlowDonw bug removed.
+#define NL_DisableSSESkin
 //#define NL_DebugSSENoSkin
 
 
@@ -156,7 +157,7 @@ public:
 	// mulSetvector. NB: in should be different as v!! (else don't work).
 	void	mulSetVector(const CVector &vin, CVector &vout)
 	{
-	#ifndef NL_DebugSSE
+	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		eax, vin
@@ -196,7 +197,7 @@ public:
 	// mulSetpoint. NB: in should be different as v!! (else don't work).
 	void	mulSetPoint(const CVector &vin, CVector &vout)
 	{
-	#ifndef NL_DebugSSE
+	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		eax, vin
@@ -240,7 +241,7 @@ public:
 	// mulSetvector. NB: vin should be different as v!! (else don't work).
 	void	mulSetVector(const CVector &vin, float scale, CVector &vout)
 	{
-	#ifndef NL_DebugSSE
+	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		eax, vin
@@ -286,7 +287,7 @@ public:
 	// mulSetpoint. NB: vin should be different as v!! (else don't work).
 	void	mulSetPoint(const CVector &vin, float scale, CVector &vout)
 	{
-	#ifndef NL_DebugSSE
+	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		eax, vin
@@ -336,7 +337,7 @@ public:
 	// mulAddvector. NB: vin should be different as v!! (else don't work).
 	void	mulAddVector(const CVector &vin, float scale, CVector &vout)
 	{
-	#ifndef NL_DebugSSE
+	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		ebx, this
@@ -384,7 +385,7 @@ public:
 	// mulAddpoint. NB: vin should be different as v!! (else don't work).
 	void	mulAddPoint(const CVector &vin, float scale, CVector &vout)
 	{
-	#ifndef NL_DebugSSE
+	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		ebx, this

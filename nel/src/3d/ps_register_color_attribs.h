@@ -1,7 +1,7 @@
 /** \file ps_register_color_attribs.h
  * 
  *
- * $Id: ps_register_color_attribs.h,v 1.1 2002/02/15 17:10:46 vizerie Exp $
+ * $Id: ps_register_color_attribs.h,v 1.2 2002/02/20 11:17:35 vizerie Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -24,8 +24,15 @@
 
 
 
+#ifndef NL_REGISTER_COLOR_ATTRIB_H
+#define NL_REGISTER_COLOR_ATTRIB_H
+
+
 namespace NL3D
 {
 	/// Register attribute makers based on colors (used in particle systems)
 	void PSRegisterColorAttribs();
 } // NL3D
+
+#endif
+

@@ -1,7 +1,7 @@
 /** \file ps_register_float_attribs.h
  * 
  *
- * $Id: ps_register_float_attribs.h,v 1.1 2002/02/15 17:10:46 vizerie Exp $
+ * $Id: ps_register_float_attribs.h,v 1.2 2002/02/20 11:17:50 vizerie Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -23,9 +23,13 @@
  */
 
 
+#ifndef NL_REGISTER_FLOAT_ATTRIB_H
+#define NL_REGISTER_FLOAT_ATTRIB_H
 
 namespace NL3D
 {
 	/// Register attribute makers based on floats (used in particle systems)
 	void PSRegisterFloatAttribs();
 } // NL3D
+
+#endif

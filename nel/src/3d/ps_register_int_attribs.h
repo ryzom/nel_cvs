@@ -1,7 +1,7 @@
 /** \file ps_register_int_attribs.h
  * 
  *
- * $Id: ps_register_int_attribs.h,v 1.1 2002/02/15 17:10:46 vizerie Exp $
+ * $Id: ps_register_int_attribs.h,v 1.2 2002/02/20 11:18:10 vizerie Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -22,10 +22,15 @@
  * MA 02111-1307, USA.
  */
 
-
+#ifndef NL_REGISTER_INT_ATTRIB_H
+#define NL_REGISTER_INT_ATTRIB_H
 
 namespace NL3D
 {
 	/// Register attribute makers based on int (used in particle systems)
 	void PSRegisterIntAttribs();
 } // NL3D
+
+
+#endif
+

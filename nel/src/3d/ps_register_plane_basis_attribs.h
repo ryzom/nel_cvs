@@ -1,7 +1,7 @@
 /** \file ps_register_plane_basis_attribs.h
  * 
  *
- * $Id: ps_register_plane_basis_attribs.h,v 1.1 2002/02/15 17:10:46 vizerie Exp $
+ * $Id: ps_register_plane_basis_attribs.h,v 1.2 2002/02/20 11:18:49 vizerie Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -22,6 +22,9 @@
  * MA 02111-1307, USA.
  */
 
+#ifndef NL_REGISTER_PLANE_BASIS_H
+#define NL_REGISTER_PLANE_BASIS_H
+
 
 
 namespace NL3D
@@ -29,3 +32,6 @@ namespace NL3D
 	/// Register attribute makers based on colors (used in particle systems)
 	void PSRegisterPlaneBasisAttribs();
 } // NL3D
+
+
+#endif

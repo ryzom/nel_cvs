@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.12 2000/11/28 11:14:33 berenguier Exp $
+ * $Id: zone.cpp,v 1.13 2000/11/28 15:23:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -610,24 +610,24 @@ static	void	checkTess()
 
 // ***************************************************************************
 // TempYoyo.
-//volatile sint pipo1;
-//volatile sint pipo2;
+volatile sint pipo1;
+volatile sint pipo2;
 void			CZone::refine()
 {
 	nlassert(Compiled);
 
 	// TempYoyo.
-	/*
 	// For the monkey bind test.
 	extern sint numFrames;
 	pipo1=(rand()>>12)&1;
 	pipo2=(rand()>>12)&1;
-	if(pipo1 && numFrames>1360)
+	//if(pipo1 && numFrames>1360)
+	if(true)
 	{
 		TZoneMap	pipoMap;
 		pipoMap[ZoneId]= this;
 		bindPatch(pipoMap, Patchs[0], PatchConnects[0]);
-	}*/
+	}
 
 	
 	// Force refine of invisible zones only every 8 times.

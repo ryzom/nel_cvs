@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.16 2000/11/28 11:14:34 berenguier Exp $
+ * $Id: patch.cpp,v 1.17 2000/11/28 15:23:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,7 +171,7 @@ void			CPatch::makeRoots()
 
 	// Make Roots.
 	/*
-		Tesselation layout.
+		Tesselation layout. For Square Face, and if OrderS>=OrderT.
 
 		A-------D
 		|\ Son1 |
@@ -179,6 +179,16 @@ void			CPatch::makeRoots()
 		|    \  |
 		| Son0 \|
 		B-------C
+
+		For rectangles whith OrderT>OrderS. It is VERY IMPORTANT, for splitRectangular() reasons.
+
+		A-------D
+		| Son0 /|
+		|    /  |
+		|  /    |
+		|/ Son1 |
+		B-------C
+
 	*/
 	nlassert(Son0==NULL);
 	nlassert(Son1==NULL);
@@ -190,12 +200,24 @@ void			CPatch::makeRoots()
 	Son0->Level= 0;
 	// Roots always need to be computed, unless if their sons say "NO!"
 	Son0->NeedCompute= true;
-	Son0->VBase= b;
-	Son0->VLeft= c;
-	Son0->VRight= a;
-	Son0->PVBase.setST(0, 1);
-	Son0->PVLeft.setST(1, 1);
-	Son0->PVRight.setST(0, 0);
+	if(OrderS>=OrderT)
+	{
+		Son0->VBase= b;
+		Son0->VLeft= c;
+		Son0->VRight= a;
+		Son0->PVBase.setST(0, 1);
+		Son0->PVLeft.setST(1, 1);
+		Son0->PVRight.setST(0, 0);
+	}
+	else
+	{
+		Son0->VBase= a;
+		Son0->VLeft= b;
+		Son0->VRight= d;
+		Son0->PVBase.setST(0, 0);
+		Son0->PVLeft.setST(0, 1);
+		Son0->PVRight.setST(1, 0);
+	}
 	Son0->FBase= Son1;
 	Son0->FLeft= NULL;
 	Son0->FRight= NULL;
@@ -208,12 +230,24 @@ void			CPatch::makeRoots()
 	Son1->Level= 0;
 	// Roots always need to be computed, unless if their sons say "NO!"
 	Son1->NeedCompute= true;
-	Son1->VBase= d;
-	Son1->VLeft= a;
-	Son1->VRight= c;
-	Son1->PVBase.setST(1, 0);
-	Son1->PVLeft.setST(0, 0);
-	Son1->PVRight.setST(1, 1);
+	if(OrderS>=OrderT)
+	{
+		Son1->VBase= d;
+		Son1->VLeft= a;
+		Son1->VRight= c;
+		Son1->PVBase.setST(1, 0);
+		Son1->PVLeft.setST(0, 0);
+		Son1->PVRight.setST(1, 1);
+	}
+	else
+	{
+		Son1->VBase= c;
+		Son1->VLeft= d;
+		Son1->VRight= b;
+		Son1->PVBase.setST(1, 1);
+		Son1->PVLeft.setST(1, 0);
+		Son1->PVRight.setST(0, 1);
+	}
 	Son1->FBase= Son0;
 	Son1->FLeft= NULL;
 	Son1->FRight= NULL;
@@ -236,7 +270,6 @@ void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVe
 
 	nlassert(orderS==2 || orderS==4 || orderS==8 || orderS==16);
 	nlassert(orderT==2 || orderT==4 || orderT==8 || orderT==16);
-	nlassert(orderS>=orderT);
 	OrderS= orderS;
 	OrderT= orderT;
 
@@ -586,10 +619,20 @@ CTessFace		*CPatch::getRootFaceForEdge(sint edge) const
 	nlassert(edge>=0 && edge<=3);
 
 	// See tessellation rules.
-	if(edge==0 || edge==1)
-		return Son0;
+	if(OrderS>=OrderT)
+	{
+		if(edge==0 || edge==1)
+			return Son0;
+		else
+			return Son1;
+	}
 	else
-		return Son1;
+	{
+		if(edge==0 || edge==3)
+			return Son0;
+		else
+			return Son1;
+	}
 }
 
 // ***************************************************************************
@@ -599,13 +642,27 @@ CTessVertex		*CPatch::getRootVertexForEdge(sint edge) const
 	nlassert(edge>=0 && edge<=3);
 
 	// See tessellation rules.
-	switch(edge)
+	if(OrderS>=OrderT)
 	{
-		case 0: return Son0->VRight;
-		case 1: return Son0->VBase;
-		case 2: return Son0->VLeft;
-		case 3: return Son1->VBase;
-		default: return NULL;
+		switch(edge)
+		{
+			case 0: return Son0->VRight;
+			case 1: return Son0->VBase;
+			case 2: return Son0->VLeft;
+			case 3: return Son1->VBase;
+			default: return NULL;
+		}
+	}
+	else
+	{
+		switch(edge)
+		{
+			case 0: return Son0->VBase;
+			case 1: return Son0->VLeft;
+			case 2: return Son1->VBase;
+			case 3: return Son0->VRight;
+			default: return NULL;
+		}
 	}
 }
 
@@ -615,12 +672,26 @@ void			CPatch::changeEdgeNeighbor(sint edge, CTessFace *to)
 {
 	nlassert(edge>=0 && edge<=3);
 
-	switch(edge)
+	// See tessellation rules.
+	if(OrderS>=OrderT)
 	{
-		case 0: Son0->FRight= to; break;
-		case 1: Son0->FLeft= to; break;
-		case 2: Son1->FRight= to; break;
-		case 3: Son1->FLeft= to; break;
+		switch(edge)
+		{
+			case 0: Son0->FRight= to; break;
+			case 1: Son0->FLeft= to; break;
+			case 2: Son1->FRight= to; break;
+			case 3: Son1->FLeft= to; break;
+		}
+	}
+	else
+	{
+		switch(edge)
+		{
+			case 0: Son0->FLeft= to; break;
+			case 1: Son1->FRight= to; break;
+			case 2: Son1->FLeft= to; break;
+			case 3: Son0->FRight= to; break;
+		}
 	}
 }
 

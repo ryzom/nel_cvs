@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.18 2000/11/28 11:14:34 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.19 2000/11/28 15:23:00 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -1540,8 +1540,8 @@ void		CTessFace::updateBindAndSplit()
 		nlassert(FBase->isLeaf());
 		// Doesn't need to update FBase->FBase, since it's me!
 		// FLeft and FRight pointers are only valid in Leaves nodes.
-		while(!updateBindEdge(FBase->FLeft, splitWanted));
-		while(!updateBindEdge(FBase->FRight, splitWanted));
+		while(!FBase->updateBindEdge(FBase->FLeft, splitWanted));
+		while(!FBase->updateBindEdge(FBase->FRight, splitWanted));
 	}
 
 

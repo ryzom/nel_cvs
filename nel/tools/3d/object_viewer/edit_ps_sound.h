@@ -21,7 +21,7 @@ typedef CEditableRangeT<float> CEditableRangeFloat;
 
 
 /// particle system sound system initialisation
-extern void initPSSoundSystem(NLSOUND::UAudioMixer *am);
+extern void setPSSoundSystem(NLSOUND::UAudioMixer *am);
 
 /// release the particle system sound system
 extern void releasePSSoundSystem(void);

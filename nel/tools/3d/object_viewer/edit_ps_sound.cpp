@@ -21,7 +21,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 /// particle system sound system initialisation
-void initPSSoundSystem(NLSOUND::UAudioMixer *am)
+void setPSSoundSystem(NLSOUND::UAudioMixer *am)
 {
 	NL3D::UParticleSystemSound::setPSSound(am);	
 }

@@ -106,7 +106,7 @@ LIB32=link.exe -lib
 # Name "misc - Win32 Release"
 # Name "misc - Win32 Debug"
 # Name "misc - Win32 ReleaseDebug"
-# Begin Group "stream"
+# Begin Group "Stream"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -154,7 +154,7 @@ SOURCE=.\misc\string_stream.cpp
 SOURCE=..\include\nel\misc\string_stream.h
 # End Source File
 # End Group
-# Begin Group "math"
+# Begin Group "Math"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -290,7 +290,7 @@ SOURCE=..\include\nel\misc\vectord.h
 SOURCE=..\include\nel\misc\vectord_inline.h
 # End Source File
 # End Group
-# Begin Group "config_file"
+# Begin Group "Config_file"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -380,6 +380,14 @@ SOURCE=.\misc\win_event_emitter.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\win_event_emitter.h
+# End Source File
+# End Group
+# Begin Group "Memory"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\misc\pool_memory.h
 # End Source File
 # End Group
 # Begin Group "Makefile"

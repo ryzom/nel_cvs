@@ -927,6 +927,10 @@ SOURCE=..\include\nel\3d\tmp\height_map.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\u_3d_mouse_listener.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\3d\tmp\u_animation_set.h
 # End Source File
 # Begin Source File
@@ -1010,7 +1014,7 @@ SOURCE=..\include\nel\3d\tmp\viewport.h
 SOURCE=.\3d\Makefile.am
 # End Source File
 # End Group
-# Begin Group "sfx"
+# Begin Group "Sfx"
 
 # PROP Default_Filter ""
 # Begin Source File

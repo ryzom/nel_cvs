@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.6 2001/01/12 09:52:56 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.7 2001/01/12 11:49:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -492,8 +492,18 @@ namespace NLAISCRIPT
 			if(thisName == NULL) 
 			{
 				//thisName = 
-				const NLAIC::CIdentType &id = _VTable[i]->getType();
-				if(strcmp((const char *)id , className.getString()) == 0)
+				const NLAIC::CIdentType *id = &_VTable[i]->getType();
+				if(id == NULL)
+				{
+					if(getClassName() != NULL)
+					{
+						if(*getClassName() == className) return i;
+						else return -1;
+					}
+					else return -1;
+				}
+				else
+				if(strcmp((const char *)*id , className.getString()) == 0)
 				{
 					return i;
 				}

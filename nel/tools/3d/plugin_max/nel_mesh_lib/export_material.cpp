@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.11 2001/07/05 09:40:20 besson Exp $
+ * $Id: export_material.cpp,v 1.12 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,10 +50,12 @@ using namespace std;
 // maxBaseBuild.RemapChannel[mat].size() is the final count of NeL vertexMap channels used for the material n° mat.
 // For each NeL channel of a material, copy the 3ds channel maxBaseBuild.RemapChannel[nelChannel]._IndexInMaxMaterial using the transformation matrix
 // maxBaseBuild.RemapChannel[nelChannel]._UVMatrix.
-int CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
+// This method append the node material to the vector passed.
+void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
 								TimeValue time, bool absolutePath)
 {
 	// Material count
+	maxBaseBuild.FirstMaterial=materials.size();
 	int nMaterialCount=0;
 
 	// Get primary material pointer of the node
@@ -69,7 +71,7 @@ int CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMes
 		if (nMaterialCount>0)
 		{
 			// Resize the destination array
-			materials.resize (nMaterialCount);
+			materials.resize (materials.size()+nMaterialCount);
 
 			// Resize the vertMap remap table
 			maxBaseBuild.RemapChannel.resize (nMaterialCount);
@@ -84,7 +86,7 @@ int CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMes
 				nlassert (pSub);
 
 				// Export it
-				maxBaseBuild.MaterialNames.push_back (buildAMaterial (materials[nSub], maxBaseBuild.RemapChannel[nSub], *pSub, time, absolutePath));
+				maxBaseBuild.MaterialNames.push_back (buildAMaterial (materials[maxBaseBuild.FirstMaterial+nSub], maxBaseBuild.RemapChannel[nSub], *pSub, time, absolutePath));
 			}
 		}
 		// Else export only this material, so, count is 1
@@ -94,13 +96,13 @@ int CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMes
 			nMaterialCount=1;
 
 			// Resize the destination array
-			materials.resize (1);
+			materials.resize (materials.size()+1);
 
 			// Resize the vertMap remap table
 			maxBaseBuild.RemapChannel.resize (1);
 
 			// Export the main material
-			maxBaseBuild.MaterialNames.push_back (buildAMaterial (materials[0], maxBaseBuild.RemapChannel[0], *pNodeMat, time, absolutePath));
+			maxBaseBuild.MaterialNames.push_back (buildAMaterial (materials[maxBaseBuild.FirstMaterial], maxBaseBuild.RemapChannel[0], *pNodeMat, time, absolutePath));
 		}
 	}
 
@@ -108,21 +110,21 @@ int CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMes
 	if (nMaterialCount==0)
 	{
 		// Insert at least a material
-		materials.resize (1);
+		materials.resize (materials.size()+1);
 		nMaterialCount=1;
 
 		// Resize the vertMap remap table
 		maxBaseBuild.RemapChannel.resize (1);
 
 		// Init the first material
-		materials[0].initLighted();
+		materials[maxBaseBuild.FirstMaterial].initLighted();
 
 		// Export the main material
 		maxBaseBuild.MaterialNames.push_back ("Default");
 	}
 
 	// Return the count of material
-	return nMaterialCount;
+	maxBaseBuild.NumMaterials=nMaterialCount;
 }
 
 // Build a NeL material corresponding with a max material.

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.7 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.8 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,15 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include <3d/texture_file.h>
+#include "export_lod.h"
+
 #include "../nel_export/std_afx.h"
 #include "../nel_export/nel_export.h"
 #include "../nel_export/nel_export_scene.h"
+
+#include <3d/texture_file.h>
+#include <3d/mesh_mrm.h>
+#include <3d/mesh_multi_lod.h>
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -63,6 +68,10 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 			CMaxMeshBaseBuild maxBaseBuild;
 
 			// Fill the build interface of CMesh
+
+			// Reset the material array of the buildMesh because it will be rebuild by the exporter
+			baseBuild->Materials.clear();
+
 			buildBaseMeshInterface (*baseBuild, maxBaseBuild, node, tvTime, bAbsPath);
 			buildMeshInterface (*tri, *pMeshBuild, maxBaseBuild, node, tvTime, NULL, bAbsPath);
 
@@ -110,33 +119,136 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 			if (obj != tri) 
 				deleteIt = true;
 
-			// Array of name for the material
-			CMaxMeshBaseBuild maxBaseBuild;
-
-			// Fill the build interface of CMesh
-			CMeshBase::CMeshBaseBuild buildBaseMesh;
-			CMesh::CMeshBuild buildMesh;
-
-			buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, absolutePath);
-			buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, skeletonShape, absolutePath);
-
-			if( hasLightMap( node, time ) && opt.bExportLighting )
-				calculateLM(&buildMesh, &buildBaseMesh, node, ip, time, absolutePath, opt);
-			// Make a CMesh object
-			CMesh* mesh=new CMesh;
-
-			// Build the mesh with the build interface
-			mesh->build (buildBaseMesh, buildMesh);
-
-			// *** TMP : force material to be animatable
-			// TODO: check if material are animated
-			for (uint i=0; i<buildBaseMesh.Materials.size(); i++)
+			/// \toto hulud: here, check if it is another kind of shape than mesh, multi lod mesh or mrm mesh. (particule system for exemple)
 			{
-				mesh->setAnimatedMaterial (i, maxBaseBuild.MaterialNames[i]);
-			}
+				// Mesh base ?
+				CMeshBase *meshBase;
 
-			// Return this pointer
-			retShape=mesh;
+				// Is a multi lod object ?
+				uint lodCount=getScriptAppData (&node, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
+				if (lodCount)
+				{
+					// Listy of material names
+					std::vector<std::string> listMaterialName;
+
+					// Make the root mesh
+					CMeshMultiLod::CMeshMultiLodBuild multiLodBuild;
+					multiLodBuild.LodMeshes.reserve (lodCount+1);
+
+					// Resize to one
+					multiLodBuild.LodMeshes.resize (1);
+					multiLodBuild.LodMeshes[0].MeshGeom=buildMeshGeom (node, ip, time, skeletonShape, absolutePath, opt, multiLodBuild.BaseMesh, listMaterialName);
+					multiLodBuild.LodMeshes[0].DistMax=getScriptAppData (&node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
+					multiLodBuild.LodMeshes[0].BlendLength=getScriptAppData (&node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
+					multiLodBuild.LodMeshes[0].Flags=0;
+					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_BLEND_IN, NEL3D_APPDATA_LOD_BLEND_IN_DEFAULT))
+						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendIn;
+					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_BLEND_OUT, NEL3D_APPDATA_LOD_BLEND_OUT_DEFAULT))
+						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendOut;
+					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT))
+						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::CoarseMesh;
+					multiLodBuild.StaticLod=getScriptAppData (&node, NEL3D_APPDATA_LOD_DYNAMIC_MESH, NEL3D_APPDATA_LOD_DYNAMIC_MESH_DEFAULT)==0;
+
+					// For all the other lods
+					for (uint lod=0; lod<lodCount; lod++)
+					{
+						// Get the name
+						std::string nodeName=getScriptAppData (&node, NEL3D_APPDATA_LOD_NAME+lod, "");
+
+						// Get the node
+						INode *lodNode=ip.GetINodeByName(nodeName.c_str());
+						if (lodNode)
+						{
+							// Index of the lod in the build structure
+							uint index=multiLodBuild.LodMeshes.size();
+
+							// Resize the build structure
+							multiLodBuild.LodMeshes.resize (index+1);
+
+							// Fill the structure
+							multiLodBuild.LodMeshes[index].MeshGeom=buildMeshGeom (*lodNode, ip, time, skeletonShape, absolutePath, opt, multiLodBuild.BaseMesh, listMaterialName);
+							multiLodBuild.LodMeshes[index].DistMax=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
+							multiLodBuild.LodMeshes[index].BlendLength=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
+							multiLodBuild.LodMeshes[index].Flags=0;
+							if (getScriptAppData (lodNode, NEL3D_APPDATA_LOD_BLEND_IN, NEL3D_APPDATA_LOD_BLEND_IN_DEFAULT))
+								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendIn;
+							if (getScriptAppData (lodNode, NEL3D_APPDATA_LOD_BLEND_OUT, NEL3D_APPDATA_LOD_BLEND_OUT_DEFAULT))
+								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendOut;
+							if (getScriptAppData (lodNode, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT))
+								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::CoarseMesh;
+						}
+					}
+
+					// Make a CMeshMultiLod mesh object
+					CMeshMultiLod* multiMesh=new CMeshMultiLod;
+
+					// Build it
+					multiMesh->build (multiLodBuild);
+
+					// Return this pointer
+					meshBase=multiMesh;
+
+					// ** force material to be animatable
+					/// todo hulud: check if material are animated before
+					for (uint i=0; i<listMaterialName.size(); i++)
+					{
+						meshBase->setAnimatedMaterial (i, listMaterialName[i]);
+					}
+				}
+				else
+				{
+					// Array of name for the material
+					CMaxMeshBaseBuild maxBaseBuild;
+
+					// Fill the build interface of CMesh
+					CMeshBase::CMeshBaseBuild buildBaseMesh;
+					buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, absolutePath);
+
+					CMesh::CMeshBuild buildMesh;
+					buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, skeletonShape, absolutePath);
+
+					if( hasLightMap( node, time ) && opt.bExportLighting )
+						calculateLM(&buildMesh, &buildBaseMesh, node, ip, time, absolutePath, opt);
+
+					// MRM mesh ?
+					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_MRM, 0))
+					{
+						// Build a MRM parameters block
+						CMRMParameters	parameters;
+						buildMRMParameters (node, parameters);
+
+						// Make a CMesh object
+						CMeshMRM* meshMRM=new CMeshMRM;
+
+						// Build the mesh with the build interface
+						meshMRM->build (buildBaseMesh, buildMesh, parameters);
+
+						// Return this pointer
+						meshBase=meshMRM;
+					}
+					else
+					{
+						// Make a CMesh object
+						CMesh* mesh=new CMesh;
+
+						// Build the mesh with the build interface
+						mesh->build (buildBaseMesh, buildMesh);
+
+						// Return this pointer
+						meshBase=mesh;
+					}
+
+					// ** force material to be animatable
+					/// todo hulud: check if material are animated before
+					for (uint i=0; i<maxBaseBuild.NumMaterials; i++)
+					{
+						meshBase->setAnimatedMaterial (i, maxBaseBuild.MaterialNames[i]);
+					}
+				}
+
+				// Return the mesh base
+				retShape=meshBase;
+			}
 
 			// Delete the triObject if we should...
 			if (deleteIt)
@@ -217,11 +329,8 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 	// *** Export materials
 	// *** ****************
 
-	// Reset the material array of the buildMesh because it will be rebuild by the exporter
-	buildMesh.Materials.clear();
-
 	// Build materials in NeL format and get the number of materials exported in NeL format
-	maxBaseBuild.NumMaterials=buildMaterials (buildMesh.Materials, maxBaseBuild, node, time, absolutePath);
+	buildMaterials (buildMesh.Materials, maxBaseBuild, node, time, absolutePath);
 
 	// Some check. should have one rempa vertMap channel table by material
 	nlassert (maxBaseBuild.RemapChannel.size()==maxBaseBuild.NumMaterials);
@@ -422,12 +531,15 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		else
 			nMaterialID=0;
 
+		// Material offset 
+		nMaterialID+=maxBaseBuild.FirstMaterial;
+
 		// Get the material ID
 		buildMesh.Faces[face].MaterialId=nMaterialID;
 
 		// Check the matId is valid
 		nlassert (buildMesh.Faces[face].MaterialId>=0);
-		nlassert (buildMesh.Faces[face].MaterialId<(sint)maxBaseBuild.NumMaterials);
+		nlassert (buildMesh.Faces[face].MaterialId<(sint)(maxBaseBuild.FirstMaterial+maxBaseBuild.NumMaterials));
 
 		//if( buildMesh.Materials[buildMesh.Faces[face].MaterialId].getShader() == CMaterial::Specular )
 		//	buildMesh.VertexFlags |= IDRV_VF_UV[1];
@@ -473,27 +585,27 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			// *** **********
 
 			// Num of channels used in this material
-			int nNumChannelUsed=maxBaseBuild.RemapChannel[nMaterialID].size();
+			int nNumChannelUsed=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial].size();
 
 			// For each mapping channels used by this material
 			for (int uv=0; uv<nNumChannelUsed; uv++)
 			{
 				// Corresponding max channel
-				int nMaxChan=maxBaseBuild.RemapChannel[nMaterialID][uv]._IndexInMaxMaterial;
+				int nMaxChan=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._IndexInMaxMaterial;
 
 				if( ! pMesh->mapSupport(nMaxChan) )
 				{
-					nMaxChan = maxBaseBuild.RemapChannel[nMaterialID][uv]._IndexInMaxMaterialAlternative;
+					nMaxChan = maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._IndexInMaxMaterialAlternative;
 				}
 
 				// UVs matrix
-				const Matrix3 &uvMatrix=maxBaseBuild.RemapChannel[nMaterialID][uv]._UVMatrix;
+				const Matrix3 &uvMatrix=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._UVMatrix;
 
 				// Crop values
-				float fCropU=maxBaseBuild.RemapChannel[nMaterialID][uv]._CropU;
-				float fCropV=maxBaseBuild.RemapChannel[nMaterialID][uv]._CropV;
-				float fCropW=maxBaseBuild.RemapChannel[nMaterialID][uv]._CropW;
-				float fCropH=maxBaseBuild.RemapChannel[nMaterialID][uv]._CropH;
+				float fCropU=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._CropU;
+				float fCropV=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._CropV;
+				float fCropW=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._CropW;
+				float fCropH=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._CropH;
 
 				// Check kind of channel and if channel is supported
 				if ((nMaxChan>=0)&&(nMaxChan<MAX_MESHMAPS)&&pMesh->mapSupport(nMaxChan))
@@ -609,4 +721,132 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 
 // ***************************************************************************
 
+void CExportNel::buildMRMParameters (Animatable& node, CMRMParameters& params)
+{
+	// Lods count
+	params.NLods=getScriptAppData (&node, NEL3D_APPDATA_LOD_NB_LOD, NEL3D_APPDATA_LOD_NB_LOD_DEFAULT);
+	
+	// Divisor
+	params.Divisor=getScriptAppData (&node, NEL3D_APPDATA_LOD_DIVISOR, NEL3D_APPDATA_LOD_DIVISOR_DEFAULT);
+
+	// Get skin reduction parmaters
+	switch (getScriptAppData (&node, NEL3D_APPDATA_LOD_SKIN_REDUCTION, NEL3D_APPDATA_LOD_SKIN_REDUCTION_DEFAULT))
+	{
+	case 0:
+		params.SkinReduction=CMRMParameters::SkinReductionMin;
+		break;
+	case 1:
+		params.SkinReduction=CMRMParameters::SkinReductionMax;
+		break;
+	case 2:
+		params.SkinReduction=CMRMParameters::SkinReductionBest;
+		break;
+	default:
+		nlassert (0);	// no!
+	}
+
+	// Distance finest
+	params.DistanceFinest=getScriptAppData (&node, NEL3D_APPDATA_LOD_DISTANCE_FINEST, NEL3D_APPDATA_LOD_DISTANCE_FINEST_DEFAULT);
+
+	// Distance middle
+	params.DistanceMiddle=getScriptAppData (&node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE_DEFAULT);
+
+	// Distance coarsest
+	params.DistanceCoarsest=getScriptAppData (&node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT);
+}
+
+// ***************************************************************************
+
+IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time, 
+								const CSkeletonShape* skeletonShape, bool absolutePath,
+								CExportNelOptions &opt, CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName)
+{
+	// Here, we must check what kind of node we can build with this mesh.
+	// For the time, just Triobj is supported.
+	IMeshGeom *meshGeom=NULL;
+
+
+	// If skinning, disable skin modifier
+	if (skeletonShape)
+		enableSkinModifier (node, false);
+
+	// Get a pointer on the object's node
+    Object *obj = node.EvalWorldState(time).obj;
+
+	// Check if there is an object
+	if (obj)
+	{
+		// Object can be converted in triObject ?
+		if (obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) 
+		{ 
+			// Get a triobject from the node
+			TriObject *tri = (TriObject *) obj->ConvertToType(time, Class_ID(TRIOBJ_CLASS_ID, 0));
+
+			// Note that the TriObject should only be deleted
+			// if the pointer to it is not equal to the object
+			// pointer that called ConvertToType()
+			bool deleteIt=false;
+			if (obj != tri) 
+				deleteIt = true;
+
+			// Array of name for the material
+			CMaxMeshBaseBuild maxBaseBuild;
+
+			// Append material to the base
+			buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, absolutePath);
+
+			// Fill the build interface of CMesh
+			CMesh::CMeshBuild buildMesh;
+			buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, skeletonShape, absolutePath);
+
+			// Append material names
+			for (uint i=0; i<maxBaseBuild.MaterialNames.size(); i++)
+				listMaterialName.push_back (maxBaseBuild.MaterialNames[i]);
+
+			if( hasLightMap( node, time ) && opt.bExportLighting )
+				calculateLM(&buildMesh, &buildBaseMesh, node, ip, time, absolutePath, opt);
+
+			// MRM mesh ?
+			if (getScriptAppData (&node, NEL3D_APPDATA_LOD_MRM, 0))
+			{
+				// Build a MRM parameters block
+				CMRMParameters	parameters;
+				buildMRMParameters (node, parameters);
+
+				// Make a CMesh object
+				CMeshMRMGeom* meshMRMGeom=new CMeshMRMGeom;
+
+				// Build the mesh with the build interface
+				meshMRMGeom->build (buildMesh, buildBaseMesh.Materials.size(), parameters);
+
+				// Return this pointer
+				meshGeom=meshMRMGeom;
+			}
+			else
+			{
+				// Make a CMesh object
+				CMeshGeom* mGeom=new CMeshGeom;
+
+				// Build the mesh with the build interface
+				mGeom->build (buildMesh, buildBaseMesh.Materials.size());
+
+				// Return this pointer
+				meshGeom=mGeom;
+			}
+
+			// Delete the triObject if we should...
+			if (deleteIt)
+				delete tri;
+		}
+	}
+
+	// If skinning, renable skin modifier
+	if (skeletonShape)
+		enableSkinModifier (node, true);
+
+	// Return the shape pointer or NULL if an error occured.
+	return meshGeom;
+}
+
+// ***************************************************************************
 

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.4 2001/07/05 09:38:49 besson Exp $
+ * $Id: mesh_multi_lod.h,v 1.5 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,22 +153,32 @@ private:
 	class CMeshSlot
 	{
 	public:
+		CMeshSlot ();
 		~CMeshSlot ();
 
 		/// The mesh base. Can be NULL if the geom mesh has not been loaded.
 		IMeshGeom	*MeshGeom;
 
+		/// Factor of distance to polycount function. polyCount = A * distance + B
+		float		A;
+
+		/// Constant of distance to polycount function. polyCount = A * distance + B
+		float		B;
+
 		/// Dist max to show this mesh
 		float		DistMax;
 
-		/// Polygon count at the begining of the slot interval
+		/// Polygon count at dist max for this slot
+		float		EndPolygonCount;
+
+		/*/// Polygon count at the begining of the slot interval
 		float		BeginPolygonCount;
 
 		/// Polygon count at the end of the slot interval
 		float		EndPolygonCount;
 
 		/// Length of the blend used to show this mesh
-		float		StartBlendPolygonCount;
+		float		StartBlendPolygonCount;*/
 
 		/// Length of the blend used to show this mesh
 		float		BlendLength;

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.10 2001/07/04 16:38:39 corvazier Exp $
+ * $Id: export_nel.h,v 1.11 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,6 +71,8 @@ namespace NL3D
 	class CAnimation;
 	class ITrack;
 	class CSkeletonShape;
+	class CMRMParameters;
+	class IMeshGeom;
 };
 
 // ***************************************************************************
@@ -385,6 +387,9 @@ private:
 	class CMaxMeshBaseBuild
 	{
 	public:
+		// First material in the array
+		uint										FirstMaterial;
+
 		// Num of materials
 		uint										NumMaterials;
 		
@@ -422,6 +427,17 @@ private:
 	static void						buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild,
 														INode& node, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath);
 
+	/**
+	  * Build a NeL mrm parameters block
+	  */
+	static void						buildMRMParameters (Animatable& node, NL3D::CMRMParameters& params);
+
+	/**
+	  * Build a mesh geom with a node
+	  */
+	static NL3D::IMeshGeom			*buildMeshGeom (INode& node, Interface& ip, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath,
+													CExportNelOptions &opt, NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName);
+
 	// Get the normal of a face for a given corner in localSpace
 	static Point3					getLocalNormal (int face, int corner, Mesh& mesh);
 
@@ -429,8 +445,8 @@ private:
 	// *** Ëxport material
 	// *********************
 
-	// Build an array of NeL material corresponding with max material at this node. Return the number of material exported.
-	static int						buildMaterials (std::vector<NL3D::CMaterial>& Materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
+	// Build an array of NeL material corresponding with max material at this node.
+	static void						buildMaterials (std::vector<NL3D::CMaterial>& Materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
 													TimeValue time, bool absolutePath);
 
 	// Build a NeL material corresponding with a max material.

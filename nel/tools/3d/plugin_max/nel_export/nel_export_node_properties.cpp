@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.1 2001/07/04 16:38:39 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.2 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,10 @@ using namespace NLMISC;
 
 // ***************************************************************************
 
+const std::set<INode*> *listNodeCallBack;
+
+// ***************************************************************************
+
 class addSubLodNodeHitCallBack : public HitByNameDlgCallback 
 {
 public:
@@ -54,7 +58,7 @@ private:
 	}
 	virtual int filter(INode *node)
 	{
-		return !node->Selected();
+		return (int)(listNodeCallBack->find (node)==listNodeCallBack->end());
 	}
 	virtual BOOL useProc()
 	{
@@ -79,19 +83,39 @@ private:
 class CLodDialogBoxParam
 {
 public:
-	int				BlendIn;
-	int				BlendOut;
-	int				CoarseMesh;
-	int				DynamicMesh;
-	std::string		DistMax;
-	std::string		BlendLength;
-	bool			ListActived;
+	bool					ListActived;
 	std::list<std::string>	ListLodName;
+	int						BlendIn;
+	int						BlendOut;
+	int						CoarseMesh;
+	int						DynamicMesh;
+	std::string				DistMax;
+	std::string				BlendLength;
+	int						MRM;
+	int						SkinReduction;
+	std::string				NbLod;
+	std::string				Divisor;
+	std::string				DistanceFinest;
+	std::string				DistanceMiddle;
+	std::string				DistanceCoarsest;
+
+	const std::set<INode*> *ListNode;
 };
 
 // ***************************************************************************
 
-CLodDialogBoxParam *currentParam;
+void MRMStateChanged (HWND hwndDlg)
+{
+	bool enable=SendMessage (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), BM_GETCHECK, 0, 0)!=BST_UNCHECKED;
+	EnableWindow (GetDlgItem (hwndDlg, IDC_SKIN_REDUCTION_MIN), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_SKIN_REDUCTION_MAX), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_SKIN_REDUCTION_BEST), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_NB_LOD), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_DIVISOR), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_DIST_FINEST), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_DIST_MIDDLE), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_DIST_COARSEST), enable);
+}
 
 // ***************************************************************************
 
@@ -102,19 +126,28 @@ int CALLBACK LodDialogCallback (
   LPARAM lParam  // second message parameter
 )
 {
+	CLodDialogBoxParam *currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
 	switch (uMsg) 
 	{
 		case WM_INITDIALOG:
 		{
 			// Param pointers
-			currentParam=(CLodDialogBoxParam *)lParam;
+			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
+			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+			// Window text
+			std::string winName=(*(currentParam->ListNode->begin()))->GetName();
+			winName="Node properties ("+winName+((currentParam->ListNode->size()>1)?" ...)":")");
+			SetWindowText (hwndDlg, winName.c_str());
 
 			// Set default state
 			SendMessage (GetDlgItem (hwndDlg, IDC_BLEND_IN), BM_SETCHECK, currentParam->BlendIn, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_BLEND_OUT), BM_SETCHECK, currentParam->BlendOut, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_COARSE_MESH), BM_SETCHECK, currentParam->CoarseMesh, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_MESH), BM_SETCHECK, currentParam->DynamicMesh, 0);
-			
+
+
 			EnableWindow (GetDlgItem (hwndDlg, IDC_LIST1), currentParam->ListActived);
 			EnableWindow (GetDlgItem (hwndDlg, IDC_ADD), currentParam->ListActived);
 			EnableWindow (GetDlgItem (hwndDlg, IDC_REMOVE), currentParam->ListActived);
@@ -123,6 +156,18 @@ int CALLBACK LodDialogCallback (
 			
 			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MAX), currentParam->DistMax.c_str());
 			SetWindowText (GetDlgItem (hwndDlg, IDC_BLEND_LENGTH), currentParam->BlendLength.c_str());
+
+			SendMessage (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), BM_SETCHECK, currentParam->MRM, 0);
+			MRMStateChanged (hwndDlg);
+
+			if (currentParam->SkinReduction!=-1)
+				CheckRadioButton (hwndDlg, IDC_SKIN_REDUCTION_MIN, IDC_SKIN_REDUCTION_BEST, IDC_SKIN_REDUCTION_MIN+currentParam->SkinReduction);
+
+			SetWindowText (GetDlgItem (hwndDlg, IDC_NB_LOD), currentParam->NbLod.c_str());
+			SetWindowText (GetDlgItem (hwndDlg, IDC_DIVISOR), currentParam->Divisor.c_str());
+			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_FINEST), currentParam->DistanceFinest.c_str());
+			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MIDDLE), currentParam->DistanceMiddle.c_str());
+			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_COARSEST), currentParam->DistanceCoarsest.c_str());
 
 			// Iterate list
 			HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
@@ -160,11 +205,33 @@ int CALLBACK LodDialogCallback (
 							currentParam->BlendOut=SendMessage (GetDlgItem (hwndDlg, IDC_BLEND_OUT), BM_GETCHECK, 0, 0);
 							currentParam->CoarseMesh=SendMessage (GetDlgItem (hwndDlg, IDC_COARSE_MESH), BM_GETCHECK, 0, 0);
 							currentParam->DynamicMesh=SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_MESH), BM_GETCHECK, 0, 0);
+
 							char tmp[512];
 							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MAX), tmp, 512);
 							currentParam->DistMax=tmp;
 							GetWindowText (GetDlgItem (hwndDlg, IDC_BLEND_LENGTH), tmp, 512);
 							currentParam->BlendLength=tmp;
+
+							currentParam->MRM=SendMessage (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), BM_GETCHECK, 0, 0);
+
+							currentParam->SkinReduction=-1;
+							if (IsDlgButtonChecked (hwndDlg, IDC_SKIN_REDUCTION_MIN)==BST_CHECKED)
+								currentParam->SkinReduction=0;
+							if (IsDlgButtonChecked (hwndDlg, IDC_SKIN_REDUCTION_MAX)==BST_CHECKED)
+								currentParam->SkinReduction=1;
+							if (IsDlgButtonChecked (hwndDlg, IDC_SKIN_REDUCTION_BEST)==BST_CHECKED)
+								currentParam->SkinReduction=2;
+
+							GetWindowText (GetDlgItem (hwndDlg, IDC_NB_LOD), tmp, 512);
+							currentParam->NbLod=tmp;
+							GetWindowText (GetDlgItem (hwndDlg, IDC_DIVISOR), tmp, 512);
+							currentParam->Divisor=tmp;
+							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_FINEST), tmp, 512);
+							currentParam->DistanceFinest=tmp;
+							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MIDDLE), tmp, 512);
+							currentParam->DistanceMiddle=tmp;
+							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_COARSEST), tmp, 512);
+							currentParam->DistanceCoarsest=tmp;
 
 							// Iterate list
 							HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
@@ -189,6 +256,7 @@ int CALLBACK LodDialogCallback (
 						{
 							// Callback for the select node dialog
 							addSubLodNodeHitCallBack callBack;
+							listNodeCallBack=currentParam->ListNode;
 							if (theCNelExport.ip->DoHitByNameDialog(&callBack))
 							{
 								// Add the selected object in the list
@@ -262,6 +330,13 @@ int CALLBACK LodDialogCallback (
 						}
 					break;
 					// 3 states management
+					case IDC_ACTIVE_MRM:
+						{
+							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
+								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+							MRMStateChanged (hwndDlg);
+						}
+						break;
 					case IDC_BLEND_IN:
 					case IDC_BLEND_OUT:
 					case IDC_COARSE_MESH:
@@ -271,6 +346,29 @@ int CALLBACK LodDialogCallback (
 								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						}
 						break;
+				}
+			}
+			else if (HIWORD(wParam)==LBN_DBLCLK)
+			{
+				// List item double clicked
+				uint wID = SendMessage (GetDlgItem (hwndDlg, IDC_LIST1), LB_GETCURSEL, 0, 0);
+				if (wID!=LB_ERR)
+				{
+					// Get the node name
+					char name[512];
+					SendMessage (GetDlgItem (hwndDlg, IDC_LIST1), LB_GETTEXT, wID, (LPARAM) (LPCTSTR) name);
+
+					// Find the node
+					INode *nodeDblClk=theCNelExport.ip->GetINodeByName(name);
+					if (nodeDblClk)
+					{
+						// Build a set
+						std::set<INode*> listNode;
+						listNode.insert (nodeDblClk);
+
+						// Call editor for this node
+						theCNelExport.OnNodeProperties (listNode);
+					}
 				}
 			}
 		break;
@@ -290,30 +388,43 @@ int CALLBACK LodDialogCallback (
 
 // ***************************************************************************
 
-void CNelExport::OnNodeProperties ()
+void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 {
 	// Get 
-	uint nNumSelNode=ip->GetSelNodeCount();
+	uint nNumSelNode=listNode.size();
 
-	// Something selected ?
 	if (nNumSelNode)
 	{
 		// Get the selected node
-		INode* node=ip->GetSelNode (0);
+		INode* node=*listNode.begin();
 
 		// Dialog box param
 		CLodDialogBoxParam param;
 
 		// Value of the properties
+		param.ListNode=&listNode;
+		param.ListActived=true;
 		param.BlendIn=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_IN, BST_UNCHECKED);
 		param.BlendOut=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_OUT, BST_UNCHECKED);
 		param.CoarseMesh=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_COARSE_MESH, BST_UNCHECKED);
 		param.DynamicMesh=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DYNAMIC_MESH, BST_UNCHECKED);
-		float distMax=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
-		float blendLength=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
-		param.DistMax=toString (distMax);
-		param.BlendLength=toString (blendLength);
-		param.ListActived=true;
+		float floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
+		param.DistMax=toString (floatTmp);
+		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
+		param.BlendLength=toString (floatTmp);
+		param.MRM=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_MRM, BST_UNCHECKED);
+		param.SkinReduction=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_SKIN_REDUCTION, NEL3D_APPDATA_LOD_SKIN_REDUCTION_DEFAULT);
+
+		int intTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_NB_LOD, NEL3D_APPDATA_LOD_NB_LOD_DEFAULT);
+		param.NbLod=toString (intTmp);
+		intTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIVISOR, NEL3D_APPDATA_LOD_DIVISOR_DEFAULT);
+		param.Divisor=toString(intTmp);
+		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_FINEST, NEL3D_APPDATA_LOD_DISTANCE_FINEST_DEFAULT);
+		param.DistanceFinest=toString(floatTmp);
+		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE_DEFAULT);
+		param.DistanceMiddle=toString(floatTmp);
+		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT);
+		param.DistanceCoarsest=toString(floatTmp);
 
 		// Lod names
 		int nameCount=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
@@ -328,11 +439,13 @@ void CNelExport::OnNodeProperties ()
 			}
 		}
 
-		// Next node
-		for (uint sel=1; sel<nNumSelNode; sel++)
+		// Something selected ?
+		std::set<INode*>::const_iterator ite=listNode.begin();
+		ite++;
+		while (ite!=listNode.end())
 		{
 			// Get the selected node
-			node=ip->GetSelNode (sel);
+			node=*ite;
 
 			// Get the properties
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_IN, BST_UNCHECKED)!=param.BlendIn)
@@ -347,6 +460,21 @@ void CNelExport::OnNodeProperties ()
 				param.DistMax="";
 			if (param.BlendLength!=toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT)))
 				param.BlendLength="";
+
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_MRM, BST_UNCHECKED)!=param.MRM)
+				param.MRM=BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_SKIN_REDUCTION, NEL3D_APPDATA_LOD_SKIN_REDUCTION_DEFAULT)!=param.SkinReduction)
+				param.SkinReduction=-1;
+			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_NB_LOD, NEL3D_APPDATA_LOD_NB_LOD_DEFAULT))!=param.NbLod)
+				param.NbLod="";
+			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIVISOR, NEL3D_APPDATA_LOD_DIVISOR_DEFAULT))!=param.Divisor)
+				param.Divisor="";
+			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_FINEST, NEL3D_APPDATA_LOD_DISTANCE_FINEST_DEFAULT))!=param.DistanceFinest)
+				param.DistanceFinest="";
+			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE_DEFAULT))!=param.DistanceMiddle)
+				param.DistanceMiddle="";
+			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT))!=param.DistanceCoarsest)
+				param.DistanceCoarsest="";
 
 			// Get name count for this node
 			std::list<std::string> tmplist;
@@ -367,15 +495,19 @@ void CNelExport::OnNodeProperties ()
 				param.ListLodName.clear();
 				param.ListActived=false;
 			}
+
+			// Next sel
+			ite++;
 		}
 
 		if (DialogBoxParam (hInstance, MAKEINTRESOURCE(IDD_NODE_PROPERTIES), ip->GetMAXHWnd(), LodDialogCallback, (long)&param)==IDOK)
 		{
 			// Next node
-			for (uint sel=0; sel<nNumSelNode; sel++)
+			ite=listNode.begin();
+			while (ite!=listNode.end())
 			{
 				// Get the selected node
-				node=ip->GetSelNode (sel);
+				node=*ite;
 
 				// Ok pushed, copy returned params
 				if (param.BlendIn!=BST_INDETERMINATE)
@@ -391,6 +523,22 @@ void CNelExport::OnNodeProperties ()
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DIST_MAX, param.DistMax);
 				if (param.BlendLength!="")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_LENGTH, param.BlendLength);
+
+				if (param.MRM!=BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_MRM, param.MRM);
+				if (param.SkinReduction!=-1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_SKIN_REDUCTION, param.SkinReduction);
+				if (param.NbLod!="")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_NB_LOD, param.NbLod);
+				if (param.Divisor!="")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DIVISOR, param.Divisor);
+				if (param.DistanceFinest!="")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_FINEST, param.DistanceFinest);
+				if (param.DistanceMiddle!="")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, param.DistanceMiddle);
+				if (param.DistanceCoarsest!="")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, param.DistanceCoarsest);
+				
 				if (param.ListActived)
 				{
 					// Write size of the list
@@ -408,6 +556,9 @@ void CNelExport::OnNodeProperties ()
 						ite++;
 					}
 				}
+
+				// Next node
+				ite++;
 			}
 		}
 	}

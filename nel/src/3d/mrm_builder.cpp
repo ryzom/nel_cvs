@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.18 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: mrm_builder.cpp,v 1.19 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1316,16 +1316,19 @@ void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFin
 	// process all wedges, and compute NSkinMatUsed, skipping geomorphs.
 	// ===============
 	// NB: this works because weights are sorted from biggest to lowest.
-	for(i=finalMRM.NGeomSpace; i<(sint)finalMRM.Wedges.size();i++)
+	if(_Skinned)
 	{
-		CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[i];
-		for(j=0; j<NL3D_MESH_SKINNING_MAX_MATRIX; j++)
+		for(i=finalMRM.NGeomSpace; i<(sint)finalMRM.Wedges.size();i++)
 		{
-			if(wedge.VertexSkin.Weights[j]==0)
-				break;
+			CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[i];
+			for(j=0; j<NL3D_MESH_SKINNING_MAX_MATRIX; j++)
+			{
+				if(wedge.VertexSkin.Weights[j]==0)
+					break;
+			}
+			nlassert(j>0);
+			wedge.NSkinMatUsed= j;
 		}
-		nlassert(j>0);
-		wedge.NSkinMatUsed= j;
 	}
 
 }

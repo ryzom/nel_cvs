@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.2 2001/07/04 16:24:41 corvazier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.3 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_id.h"
 
-#include "3d/mesh_base_instance.h"
+#include "3d/mesh_instance.h"
 
 
 namespace NL3D 
@@ -48,7 +48,7 @@ const NLMISC::CClassId		MeshMultiLodInstanceId=NLMISC::CClassId(0x1ade6ef8, 0x75
  * \author Nevrax France
  * \date 2001
  */
-class CMeshMultiLodInstance : public CMeshBaseInstance
+class CMeshMultiLodInstance : public CMeshInstance
 {
 public:
 	/// Call at the begining of the program, to register the model, and the basic observers.

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.5 2001/07/05 09:38:49 besson Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.6 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,9 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 {
 	// Clear the mesh
 	clear ();
+
+	// Build the base mesh
+	CMeshBase::buildMeshBase (mbuild.BaseMesh);
 
 	// Static flag
 	_StaticLod=mbuild.StaticLod;
@@ -98,8 +101,8 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 	}
 
 	// Sort the slot by the distance...
-	for (uint i=mbuild.LodMeshes.size()-1; i>0; i++)
-	for (uint j=0; j<i; j++)
+	for (int i=mbuild.LodMeshes.size()-2; i>0; i--)
+	for (int j=0; j<i; j++)
 	{
 		// Bad sort ?
 		if (_MeshVector[i].DistMax>_MeshVector[i+1].DistMax)
@@ -114,14 +117,31 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 	// Calc start and end polygon count
 	for (uint k=0; k<mbuild.LodMeshes.size(); k++)
 	{
-		// Get polygon count at the begining of the slot interval
-		if (k==0)
-			_MeshVector[k].BeginPolygonCount=_MeshVector[k].MeshGeom->getNumTriangles (0);
-		else 
-			_MeshVector[k].BeginPolygonCount=_MeshVector[k].MeshGeom->getNumTriangles (_MeshVector[k-1].DistMax);
+		// Get end distance
+		float endDist=_MeshVector[k].DistMax;
 
-		// Get polygon count at the end of the slot interval
-		_MeshVector[k].EndPolygonCount=_MeshVector[k].MeshGeom->getNumTriangles (_MeshVector[k].DistMax);
+		// Get end poly count
+		if (k==mbuild.LodMeshes.size()-1)
+			_MeshVector[k].EndPolygonCount=_MeshVector[k].MeshGeom->getNumTriangles (endDist);
+		else 
+			_MeshVector[k].EndPolygonCount=_MeshVector[k+1].MeshGeom->getNumTriangles (endDist);
+
+		// Get start distance
+		float startDist;
+		if (k==0)
+			startDist=0;
+		else 
+			startDist=_MeshVector[k-1].DistMax;
+
+		// Get start poly count
+		float startPolyCount;
+		startPolyCount=_MeshVector[0].MeshGeom->getNumTriangles (startDist);
+
+		// Calc A
+		_MeshVector[k].A=(_MeshVector[k].EndPolygonCount-startPolyCount)/(endDist-startDist);
+
+		// Calc A
+		_MeshVector[k].B=_MeshVector[k].EndPolygonCount-_MeshVector[k].A*endDist;
 	}
 }
 
@@ -184,7 +204,7 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 		if (meshCount>1)
 		{
 			// Look for good i
-			while ( _MeshVector[i+1].BeginPolygonCount < polygonCount )
+			while ( polygonCount < _MeshVector[i].EndPolygonCount )
 			{
 				i++;
 				if (i==meshCount-1)
@@ -195,37 +215,24 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 		// The slot
 		CMeshSlot	&slot=_MeshVector[i];
 
-		// Get the next slot perfect polygon count
-		float realEndPolyCount;
+		// Get the distance with polygon count
+		float distance=(polygonCount-slot.B)/slot.A;
 
-		// Last slot ?
-		if ( (i<meshCount-1) && _MeshVector[i+1].MeshGeom )
-		{
-			// Take end number polygon count in the next slot
-			realEndPolyCount = _MeshVector[i+1].MeshGeom->getNumTriangles (slot.DistMax);
-		}
-		else
-		{
-			// Take end number polygon count in the this slot
-			realEndPolyCount = slot.EndPolygonCount;
-		}
-
-		// Final polygon count
-		float goodPolyCount = (polygonCount-slot.BeginPolygonCount) * (slot.EndPolygonCount-slot.BeginPolygonCount) / 
-			(realEndPolyCount-slot.BeginPolygonCount) + slot.BeginPolygonCount;
+		// Get the final polygon count
+		float goodPolyCount = getNumTriangles (distance);
 
 		// Check count interval
-		nlassert (slot.BeginPolygonCount>=goodPolyCount);
+/*		nlassert (slot.BeginPolygonCount>=goodPolyCount);
 		nlassert (goodPolyCount>=slot.EndPolygonCount);
 		nlassert (slot.BeginPolygonCount>=slot.StartBlendPolygonCount);
-		nlassert (slot.StartBlendPolygonCount>=slot.EndPolygonCount);
+		nlassert (slot.StartBlendPolygonCount>=slot.EndPolygonCount);*/
 
 		// Slot in use...
 		uint slot0=i;
 		uint slot1=0xffffffff;
 
 		// Blend with other ?
-		float blendFactor = (slot.EndPolygonCount-goodPolyCount) / (slot.EndPolygonCount-slot.StartBlendPolygonCount);
+/*		float blendFactor = (slot.EndPolygonCount-goodPolyCount) / (slot.EndPolygonCount-slot.StartBlendPolygonCount);
 		if ( ( goodPolyCount <= slot.StartBlendPolygonCount ) && ( goodPolyCount >= slot.EndPolygonCount ) )
 		{
 			// Render next mesh
@@ -253,7 +260,7 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 					render (i, drv, instance, goodPolyCount, 1, _StaticLod);
 			}
 		}
-		else
+		else*/
 		{
 			// Render without blend with goodPolyCount
 			render (i, drv, instance, goodPolyCount, 1, _StaticLod);
@@ -334,7 +341,10 @@ float CMeshMultiLod::getNumTriangles (float distance)
 		// Is mesh present ?
 		if (slot.MeshGeom)
 		{
-			// Get the perfect polygon count in this slot for the asked distance
+			// Get the polygon count with the distance
+			float polyCount=slot.A * distance + slot.B;
+
+			/*// Get the perfect polygon count in this slot for the asked distance
 			float goodPolyCount=slot.MeshGeom->getNumTriangles (distance);
 
 			// Get the next slot perfect polygon count
@@ -350,7 +360,8 @@ float CMeshMultiLod::getNumTriangles (float distance)
 
 			// Return blended polygon count to have a continous decreasing function
 			return (goodPolyCount-slot.BeginPolygonCount) * (realEndPolyCount-slot.BeginPolygonCount) / 
-				(slot.EndPolygonCount-slot.BeginPolygonCount) + slot.BeginPolygonCount;
+				(slot.EndPolygonCount-slot.BeginPolygonCount) + slot.BeginPolygonCount;*/
+			return polyCount;
 		}
 	}
 
@@ -375,6 +386,13 @@ void CMeshMultiLod::CMeshSlot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial (DistMax);
 	f.serial (BlendLength);
 	f.serial (Flags);
+}
+
+// ***************************************************************************
+
+CMeshMultiLod::CMeshSlot::CMeshSlot ()
+{
+	MeshGeom=NULL;
 }
 
 // ***************************************************************************

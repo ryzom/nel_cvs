@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.17 2001/07/05 16:00:11 vizerie Exp $
+ * $Id: scene_dlg.cpp,v 1.18 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -418,20 +418,23 @@ void CSceneDlg::OnResetCamera()
 	uint m;
 	for (m=0; m<ObjView->_ListTransformShape.size(); m++)
 	{
-		CMeshInstance *pTransform=dynamic_cast<CMeshInstance*>(ObjView->_ListTransformShape[m]);
+		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListTransformShape[m]);
 		if (pTransform)
 		{
 			IShape *pShape=pTransform->Shape;
-			CMesh *pMesh=(CMesh*)pShape;
 			CSkeletonModel *pSkelModel=pTransform->getSkeletonModel ();
 
+			// Get bounding box
+			CAABBox boundingBox;
+			pShape->getAABBox(boundingBox);
+			
 			if (!pSkelModel)
 			{
 				// Reset the hotspot
-				hotSpot=pTransform->getMatrix()*pMesh->getBoundingBox().getCenter();
+				hotSpot=pTransform->getMatrix()*boundingBox.getCenter();
 
 				// Reset the radius
-				radius=pMesh->getBoundingBox().getRadius();
+				radius=boundingBox.getRadius();
 				radius=pTransform->getMatrix().mulVector (CVector (radius, 0, 0)).norm();
 				found=true;
 				m++;
@@ -443,10 +446,10 @@ void CSceneDlg::OnResetCamera()
 				if (pSkelModel->Bones.size())
 				{
 					// Ok, it is the root.
-					hotSpot=pSkelModel->Bones[0].getMatrix()*pMesh->getBoundingBox().getCenter();
+					hotSpot=pSkelModel->Bones[0].getMatrix()*boundingBox.getCenter();
 
 					// Reset the radius
-					radius=pMesh->getBoundingBox().getRadius();
+					radius=boundingBox.getRadius();
 					radius=pSkelModel->Bones[0].getMatrix().mulVector (CVector (radius, 0, 0)).norm();
 					found=true;
 					m++;
@@ -459,12 +462,11 @@ void CSceneDlg::OnResetCamera()
 	// For each model in the list
 	for (; m<ObjView->_ListTransformShape.size(); m++)
 	{
-		// Pointer on the CMesh;
-		CMeshInstance *pTransform=dynamic_cast<CMeshInstance*>(ObjView->_ListTransformShape[m]);
+		// Pointer on the CTransformShape;
+		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListTransformShape[m]);
 		if (pTransform)
 		{
 			IShape *pShape=pTransform->Shape;
-			CMesh *pMesh=(CMesh*)pShape;
 			CSkeletonModel *pSkelModel=pTransform->getSkeletonModel ();
 
 			// New radius and hotSpot
@@ -472,13 +474,17 @@ void CSceneDlg::OnResetCamera()
 			float radius2;
 			bool setuped=false;
 
+			// Get the bounding box
+			CAABBox boundingBox;
+			pShape->getAABBox(boundingBox);
+
 			if (!pSkelModel)
 			{
 				// Get the hotspot
-				hotSpot2=pTransform->getMatrix()*pMesh->getBoundingBox().getCenter();
+				hotSpot2=pTransform->getMatrix()*boundingBox.getCenter();
 
 				// Get the radius
-				radius2=pMesh->getBoundingBox().getRadius();
+				radius2=boundingBox.getRadius();
 				radius2=pTransform->getMatrix().mulVector (CVector (radius2, 0, 0)).norm();
 
 				// Ok found it
@@ -490,10 +496,10 @@ void CSceneDlg::OnResetCamera()
 				if (pSkelModel->Bones.size())
 				{
 					// Get the hotspot
-					hotSpot2=pSkelModel->Bones[0].getMatrix()*pMesh->getBoundingBox().getCenter();
+					hotSpot2=pSkelModel->Bones[0].getMatrix()*boundingBox.getCenter();
 
 					// Get the radius
-					radius2=pMesh->getBoundingBox().getRadius();
+					radius2=boundingBox.getRadius();
 					radius2=pSkelModel->Bones[0].getMatrix().mulVector (CVector (radius2, 0, 0)).norm();
 
 					// Ok found it

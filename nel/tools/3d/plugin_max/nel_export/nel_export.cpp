@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.7 2001/07/04 16:38:39 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.8 2001/07/06 12:51:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -395,7 +395,19 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				// ---
 				case ID_NODE_PROPERTIES:
 				{
-					theCNelExport.OnNodeProperties ();
+					// Build a seleted set
+					std::set<INode*> listNode;
+
+					// Get the sel node count
+					uint selNodeCount=theCNelExport.ip->GetSelNodeCount();
+					for (uint i=0; i<selNodeCount; i++)
+					{
+						// insert the node
+						listNode.insert (theCNelExport.ip->GetSelNode(i));
+					}
+
+					// Call the dialog
+					theCNelExport.OnNodeProperties (listNode);
 					break;
 				}
 				break;

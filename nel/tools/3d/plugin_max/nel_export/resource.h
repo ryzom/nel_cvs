@@ -64,6 +64,17 @@
 #define IDC_DIST_MAX                    1034
 #define IDC_DYNAMIC_MESH                1035
 #define IDC_BLEND_LENGTH                1036
+#define IDC_SKIN_REDUCTION_MIN          1037
+#define IDC_SKIN_REDUCTION_MAX          1038
+#define IDC_SKIN_REDUCTION_BEST         1039
+#define IDC_NB_LOD                      1040
+#define IDC_DIVISOR                     1041
+#define IDC_DIST_FINEST                 1042
+#define IDC_DIST_MIDDLE                 1043
+#define IDC_DIRT_COARSEST               1044
+#define IDC_DIST_COARSEST               1044
+#define IDC_ACTIVE_MRM                  1045
+#define IDC_ACTIVE_MRM2                 1046
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -74,7 +85,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1035
+#define _APS_NEXT_CONTROL_VALUE         1038
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

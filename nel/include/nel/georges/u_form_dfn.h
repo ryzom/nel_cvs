@@ -1,7 +1,7 @@
 /** \file u_form_dfn.h
  * Georges form element interface
  *
- * $Id: u_form_dfn.h,v 1.6 2003/08/27 16:16:25 distrib Exp $
+ * $Id: u_form_dfn.h,v 1.7 2003/10/13 15:53:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,6 +95,16 @@ public:
 	  * \return true if successed, false if the entry doesn't exist or is a virtual DFN.
 	  */
 	virtual bool getEntryFilename (uint entry, std::string &name) const = 0;
+
+	/**
+	  * Return the filename extension used by the DFN entry.
+	  * Doesn't look in parents DFN.
+	  *
+	  * \param entry is the entry id to get the dfn pointer.
+	  * \param name will be filled with the entry filename.
+	  * \return true if successed, false if the entry doesn't exist or is a virtual DFN.
+	  */
+	virtual bool getEntryFilenameExt (uint entry, std::string &name) const = 0;
 
 	/**
 	  * Return the entry DFN pointer

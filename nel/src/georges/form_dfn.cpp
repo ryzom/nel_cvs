@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.20 2003/10/13 08:35:15 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.21 2003/10/13 15:53:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -666,6 +666,19 @@ bool CFormDfn::getEntryFilename (uint entry, std::string& filename) const
 		return false;
 	}
 	warning (false, "getEntryFilename", "Wrong entry ID.");
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getEntryFilenameExt (uint entry, std::string& filename) const
+{
+	if (entry < Entries.size ())
+	{
+		filename = Entries[entry].FilenameExt;
+		return true;
+	}
+	warning (false, "getEntryFilenameExt", "Wrong entry ID.");
 	return false;
 }
 

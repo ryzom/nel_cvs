@@ -1,7 +1,7 @@
 /** \file layered_ordering_table.h
  * <File description>
  *
- * $Id: layered_ordering_table.h,v 1.4 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: layered_ordering_table.h,v 1.5 2004/03/23 10:20:24 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -71,6 +71,12 @@ public:
 	 */
 	void insert( uint layer, T *pValue, uint32 nEntryPos = 0 );
 
+	/** Share allocator between 2 or more layered ordering tables. So that calling reset will give the max number of insert
+      * for both tables. This is useful if several table are used for sorting (example : sort by priority with one table per possible priority)
+	  * NB : the table of "source table" becomes the used allocator
+	  */
+	void shareAllocator(CLayeredOrderingTable<T> &sourceTable);
+
 	/**
 	 * Traversal operations
 	 * 
@@ -116,8 +122,10 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 template <class T>
-CLayeredOrderingTable<T>::CLayeredOrderingTable()  : _IndexInLayer1(0), _CurrLayer(0), _ForwardTraversal(true){
-
+CLayeredOrderingTable<T>::CLayeredOrderingTable()  : _IndexInLayer1(0), _CurrLayer(0), _ForwardTraversal(true)
+{
+	// share allocator between layer 0 and 2
+	_Layer2.shareAllocator(_Layer0);
 }
 
 //==================================================================
@@ -136,13 +144,22 @@ uint32 CLayeredOrderingTable<T>::getSize()
 	return _Layer0.getSize();
 }
 
+
+//==================================================================
+template <class T>
+void CLayeredOrderingTable<T>::shareAllocator(CLayeredOrderingTable<T> &sourceTable)
+{
+	_Layer0.shareAllocator(sourceTable._Layer0);
+	_Layer2.shareAllocator(sourceTable._Layer0);
+}
+
 //==================================================================
 template <class T>
 void CLayeredOrderingTable<T>::reset(uint maxElementToInsert)
 {
 	_Layer0.reset(maxElementToInsert);
-	_Layer2.reset(maxElementToInsert);
 	_Layer1.clear();
+	_Layer2.reset(maxElementToInsert);
 }
 
 //==================================================================

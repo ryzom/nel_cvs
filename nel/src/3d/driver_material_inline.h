@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.12 2004/03/23 10:25:48 vizerie Exp $
+ * $Id: driver_material_inline.h,v 1.13 2004/04/09 14:40:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -240,8 +240,7 @@ inline void					CMaterial::texEnvArg0RGB(uint stage, TTexSource src, TTexOperand
 inline void					CMaterial::texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage<IDRV_MAT_MAXTEXTURES);
-	nlassert(src!=Texture);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);	
 	_TexEnvs[stage].Env.SrcArg1RGB= src;
 	_TexEnvs[stage].Env.OpArg1RGB= oper;
 	_Touched|=IDRV_TOUCHED_TEXENV;
@@ -250,8 +249,7 @@ inline void					CMaterial::texEnvArg1RGB(uint stage, TTexSource src, TTexOperand
 inline void					CMaterial::texEnvArg2RGB(uint stage, TTexSource src, TTexOperand oper)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage<IDRV_MAT_MAXTEXTURES);
-	nlassert(src!=Texture);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);	
 	_TexEnvs[stage].Env.SrcArg2RGB= src;
 	_TexEnvs[stage].Env.OpArg2RGB= oper;
 }
@@ -288,8 +286,7 @@ inline void					CMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOpera
 {
 	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage<IDRV_MAT_MAXTEXTURES);
-	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);
-	nlassert(src!=Texture);
+	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);	
 	_TexEnvs[stage].Env.SrcArg1Alpha= src;
 	_TexEnvs[stage].Env.OpArg1Alpha= oper;
 	_Touched|=IDRV_TOUCHED_TEXENV;
@@ -299,8 +296,7 @@ inline void					CMaterial::texEnvArg2Alpha(uint stage, TTexSource src, TTexOpera
 {
 	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage<IDRV_MAT_MAXTEXTURES);
-	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);
-	nlassert(src!=Texture);
+	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);	
 	_TexEnvs[stage].Env.SrcArg2Alpha= src;
 	_TexEnvs[stage].Env.OpArg2Alpha= oper;
 }

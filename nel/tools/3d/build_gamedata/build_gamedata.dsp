@@ -616,6 +616,14 @@ SOURCE=.\sh\build.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\build_data.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\sh\clean.sh
 # End Source File
 # Begin Source File

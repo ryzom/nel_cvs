@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.39 2003/08/22 08:57:05 vizerie Exp $
+ * $Id: particle_system.h,v 1.40 2003/10/23 09:21:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,7 +146,7 @@ public:
 		void setScene(CScene *scene) { _Scene = scene; }
 
 		//// get the scene set by setScene()
-		CScene *getScene(void) { return _Scene; }
+		CScene *getScene() const { return _Scene; }
 		//@}
 
 	//*****************************************************************************************************
@@ -620,8 +620,16 @@ public:
 		  CPSAttribMaker<NLMISC::CRGBA> *getColorAttenuationScheme() { return _ColorAttenuationScheme; }
 		  const CPSAttribMaker<NLMISC::CRGBA> *getColorAttenuationScheme() const { return _ColorAttenuationScheme; }
 
+		  /** Set the user color of the system
+		    * Final color is the color due to attenuationByDistance (\see getColorAttenuationScheme() modulated
+			* by the user color
+			* NB : that state is not serialized
+            */
+		  void				setUserColor(NLMISC::CRGBA userColor) { _UserColor = userColor; } 
+		  NLMISC::CRGBA		getUserColor() const { return _UserColor; }		  
+			
 		  /** Get the current global color of the system. (It is updated just before drawing...). It there's
-		    * no color attenuation scheme it can be assumed to be white
+		    * no color attenuation scheme it can be assumed to be the same than the user color
 			*/
 		  NLMISC::CRGBA		getGlobalColor() const { return _GlobalColor; }
 		  /** Get the current global color of the system with lighting included.
@@ -1079,6 +1087,7 @@ private:
 	NLMISC::CRGBA								_GlobalColor;
 	NLMISC::CRGBA								_GlobalColorLighted;
 	NLMISC::CRGBA								_LightingColor;
+	NLMISC::CRGBA								_UserColor;
 
 	/// \TODO nico replace this with a bitfield (and change serialisation accordingly)	
 	bool										_ComputeBBox                         : 1;	/// when set to true, the system will compute his BBox every time computeBBox is called

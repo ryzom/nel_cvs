@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.65 2003/08/22 08:57:13 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.66 2003/10/23 09:21:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _GlobalColor(NLMISC::CRGBA::White),
 									 _GlobalColorLighted(NLMISC::CRGBA::White),
 									 _LightingColor(NLMISC::CRGBA::White),
+									 _UserColor(NLMISC::CRGBA::White),
 									 _ComputeBBox(true),
 									 _BBoxTouched(true),
 									 _AccurateIntegration(true),
@@ -308,6 +309,7 @@ inline void CParticleSystem::updateColor()
 	{
 		_GlobalColor = NLMISC::CRGBA::White;
 	}
+	_GlobalColor.modulateFromColor(_GlobalColor, _UserColor);
 	_GlobalColorLighted.modulateFromColor(_GlobalColor, _LightingColor);
 }
 
@@ -1044,7 +1046,7 @@ void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 			setDestroyModelWhenOutOfRange(true);
 			setDestroyCondition(noMoreParticles);
 			destroyWhenOutOfFrustum(false);
-			setAnimType(AnimInCluster);
+			setAnimType(AnimInCluster); // TODO : AnimAlways could be better
 			setBypassMaxNumIntegrationSteps(false);
 			_KeepEllapsedTimeForLifeUpdate = false;
 		break;

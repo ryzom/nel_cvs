@@ -232,8 +232,9 @@ void CGeorgesApp::CloseAllDocument()
 
 void CGeorgesApp::UpdateAllDocument()
 {
-	if( !_MultiDocTemplate )
+	if (_MultiDocTemplate == NULL)
 		return;
+
 	POSITION pos = _MultiDocTemplate->GetFirstDocPosition();
 	if( !pos )
 		return;

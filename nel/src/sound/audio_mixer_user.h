@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.2 2001/07/13 09:47:42 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "listener_user.h"
 #include "track.h"
 #include <vector>
+#include <set>
 
 
 namespace NLSOUND {
@@ -50,9 +51,19 @@ class CEnvEffect;
  * Implementation of UAudioMixer
  *
  * The logical sources (_Sources) are the sources representing all entities in the world, from
- * the client's point of vue.
+ * the client's point of view.
  * The tracks (_Tracks) are the physical sources played by the sound driver. Their number
  * is small.
+ *
+ * When there are more sources than tracks, the process of choosing which sources go into
+ * the tracks is called "balancing". The source are auto-balanced according to the
+ * argument passed to init(). The sources are also balanced when
+ * - Adding a new source
+ * - Removing a new source
+ * - Entering/Exiting from an envsound area
+ *
+ * Removing does not mean deleting. The user is responsible for deleting the sources.
+ * that have been allocated by createSource().
  *
  * \author Olivier Cado
  * \author Nevrax France
@@ -70,8 +81,11 @@ public:
 	virtual						~CAudioMixerUser();
 
 	
-	/// Initialization
-	virtual void				init();
+	/** Initialization
+	 * The sources will be auto-balanced every "balance_period" calls to update()
+	 * (set 0 for "never auto-balance")
+	 */
+	virtual void				init( uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD );
 	/// Load environmental effects
 	virtual void				loadEnvEffects( const char *filename );
 	/// Load buffers
@@ -84,8 +98,6 @@ public:
 	virtual USource				*createSource( TSoundId id );
 	/// Remove logical sound source
 	virtual void				removeSource( USource *source );
-	// Remove environment sound
-	//virtual void				removeEnvSound( UEnvSound *envsound );
 	/// Return the listener interface
 	virtual UListener			*getListener()	{ return &_Listener; }
 
@@ -96,12 +108,16 @@ public:
 	virtual void				update(); 
 
 
+	/// Add a source which was created by an EnvSound
+	void						addSource( CSourceUser *source )		{ _Sources.insert( source ); }
 	/// Put source into a track
-	bool						giveTrack( CSourceUser *source );
+	void						giveTrack( CSourceUser *source );
 	/// Release track
 	void						releaseTrack( CSourceUser *source );
 	/// Take a listener's move into account
 	void						applyListenerMove( const NLMISC::CVector& listenerpos );
+	/// Redispatch the sources into tracks if needed
+	void						balanceSources()						{ if ( moreSourcesThanTracks() ) redispatchSourcesToTrack(); }
 
 protected:
 
@@ -109,6 +125,10 @@ protected:
 	void						getFreeTracks( uint nb, CTrack **tracks );
 	/// Select the appropriate environmental effect
 	void						computeEnvEffect( const NLMISC::CVector& listenerpos, bool force=false );
+	/// Return true if the number of user sources is higher than the number of tracks
+	bool						moreSourcesThanTracks() const			{ return _NbTracks < _Sources.size(); }
+	/// Redispatch the sources (call only if moreSourcesThanTracks() returns true)
+	void						redispatchSourcesToTrack();
 
 private:
 
@@ -124,13 +144,16 @@ private:
 	/// The listener instance
 	CListenerUser				_Listener;
 
-	/// Logical 3d sources
-	std::vector<CSourceUser*>	_Sources;
-
 	/// Environment sounds
 	std::vector<CEnvSoundUser*>	_EnvSounds;
 
+	/// Auto-Balance period
+	uint32						_BalancePeriod;
+
 public: // Temp (EDIT)
+
+	/// All Logical sources
+	std::set<CSourceUser*>		_Sources;
 
 	/// Environment effects
 	std::vector<CEnvEffect*>	_EnvEffects;
@@ -140,6 +163,8 @@ private:
 	/// Current effect
 	CEnvEffect					*_CurEnvEffect;
 
+public: // Temp (EDIT)
+	
 	/// Physical sources array
 	CTrack						*_Tracks [MAX_TRACKS];
 

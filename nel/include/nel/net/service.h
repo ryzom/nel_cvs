@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.52 2002/06/12 10:16:41 lecroart Exp $
+ * $Id: service.h,v 1.53 2002/07/18 15:01:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,6 +274,10 @@ public:
 	 * want to know the return value of the application to do the appropriate things.
 	 */
 	void					setStatus (sint status) { _Status = status; }
+
+	/** Call this function if you want the service quits next loop. The code will be returned outside of the application.
+	 * \warning If you set the code to 0, it ll NOT exit the service */
+	void					exit (sint code = 0x10);
 
 	/** Selects timeout value in seconds for each update. You are absolutely certain that your update()
 	 * function will not be called before this amount of time you set.

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.135 2002/07/03 09:55:37 lecroart Exp $
+ * $Id: service.cpp,v 1.136 2002/07/18 15:01:14 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1269,6 +1269,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
 }
 
+void IService::exit (sint code)
+{
+	ExitSignalAsked = code;
+}
 
 /*
  * Require to reset the hierarchical timer
@@ -1440,5 +1444,18 @@ NLMISC_COMMAND(getUnknownConfigFileVariables, "display the variables from config
 	}
 	return true;
 }
+
+NLMISC_COMMAND (freeze, "Freeze the service for N seconds (for debug purpose)", "<N>")
+{
+	if(args.size() != 1) return false;
+
+	sint32 n = atoi (args[0].c_str());
+
+	log.displayNL ("Freezing %d seconds", n);
+
+	nlSleep(n * 1000);	
+	return true;
+}
+
 
 } //NLNET

@@ -1,7 +1,7 @@
 /** \file quad.h
  * <File description>
  *
- * $Id: quad.h,v 1.1 2001/02/28 14:31:21 berenguier Exp $
+ * $Id: quad.h,v 1.2 2001/05/16 12:21:46 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,14 @@ public:
 	/// Constructor
 	CQuad() {}
 
+	const CQuad &operator = ( const CQuad& q)
+	{ 
+		V0 = q.V0;
+		V1 = q.V1;
+		V2 = q.V2;
+		V3 = q.V3;
+		return *this;
+	}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.20 2003/08/18 12:56:07 robert Exp $
+ * $Id: classifier.cpp,v 1.21 2003/08/21 15:41:43 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,47 @@ namespace NLAINIMAT
 	static const TTargetId NullTargetId = 0;
 				
 ///////////////////////////
+// CClassifierPriority
+///////////////////////////
+
+CClassifierPriority::CClassifierPriority()
+{
+	_PriorityTimer = 0;
+	_ClassifierTimer = 0;
+}
+
+TClassifierPriorityValue CClassifierPriority::getPriority() const
+{
+	return (_PriorityTimer  + _ClassifierTimer);
+}
+
+TClassifierPriorityValue CClassifierPriority::getPriorityTimer() const
+{
+	return _PriorityTimer;
+}
+
+TClassifierPriorityValue CClassifierPriority::getClassifierTimer() const
+{
+	return _ClassifierTimer;
+}
+
+void CClassifierPriority::setPriorityTimer(uint32 time)
+{
+	_PriorityTimer = time;
+}
+
+void CClassifierPriority::SetClassifierTimer(uint32 time)
+{
+	_ClassifierTimer = time;
+}
+
+bool CClassifierPriority::operator<(const CClassifierPriority& x) const
+{
+	return (getPriority() < x.getPriority());
+}
+
+	
+///////////////////////////
 // CClassifierSystem
 ///////////////////////////
 
@@ -50,7 +91,7 @@ CClassifierSystem::~CClassifierSystem()
 	}
 }
 
-void CClassifierSystem::addClassifier(const CConditionMap &conditionsMap, TClassifierPriority priority, TAction behavior)
+void CClassifierSystem::addClassifier(const CConditionMap &conditionsMap, CClassifierPriority priority, TAction behavior)
 {
 	// We build a new classifier.
 	CClassifier* classifier = new CClassifier();
@@ -182,141 +223,139 @@ void	CClassifierSystem::RAZNoTargetSensors()
 }
 
 // Function used in selectBehavior
-TClassifierPriority	CClassifierSystem::computeMaxPriorityDoingTheSameAction(const CCSPerception* psensorMap,
-																TClassifierNumber lastClassifierNumber, 
-																TTargetId lastTarget, 
-																TClassifierPriority lastSelectionMaxPriority,
-																std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS)
-{
-	TClassifierPriority maxPriorityDoingTheSameAction = 0;
-	if (lastClassifierNumber != -1)
-	{
-		std::map<TClassifierNumber, CClassifier*>::iterator itClassifiers = _Classifiers.find(lastClassifierNumber);
-		nlassert ( itClassifiers != _Classifiers.end() );
-		TAction lastAction = (*itClassifiers).second->Behavior;
+//TClassifierPriority	CClassifierSystem::computeMaxPriorityDoingTheSameAction(const CCSPerception* psensorMap,
+//																TClassifierNumber lastClassifierNumber, 
+//																TTargetId lastTarget, 
+//																TClassifierPriority lastSelectionMaxPriority,
+//																std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS)
+//{
+//	TClassifierPriority maxPriorityDoingTheSameAction = 0;
+//	if (lastClassifierNumber != -1)
+//	{
+//		std::map<TClassifierNumber, CClassifier*>::iterator itClassifiers = _Classifiers.find(lastClassifierNumber);
+//		nlassert ( itClassifiers != _Classifiers.end() );
+//		TAction lastAction = (*itClassifiers).second->Behavior;
+//		// We search for a classfier doing the same action on the same target
+//		if (lastTarget != NullTargetId)
+//		{
+//			// It was an action with a target so we update the internal sensor values for the target sensors
+//			std::map<TTargetId, TSensorMap>::const_iterator itTargetSensorMap = psensorMap->TargetSensors.find(lastTarget);
+//			if ( itTargetSensorMap != psensorMap->TargetSensors.end() )
+//			{
+//				updateTargetSensors(psensorMap, lastTarget);
+//			}
+//			else
+//			{
+//				// The target didn't exist anymore in my perception, so the maxPriority is set to 0.
+//				return 0;
+//			}
+//		}
+//		// We select the activables classifiers
+//		for (itClassifiers = _Classifiers.begin(); itClassifiers != _Classifiers.end(); itClassifiers++)
+//		{
+//			if ( (*itClassifiers).second->Behavior == lastAction)
+//				if ( (*itClassifiers).second->isActivable())
+//				{
+//					TClassifierPriority thePriority = (*itClassifiers).second->Priority;
+//					/*	If it's the same classifier than the last time, we give it the same priority than the last Time.
+//					 *	It's to allow a classifier that has been selected with a low priority by luck to continue to express
+//					 *	himself more than just for one update.
+//					 */
+//					if ((*itClassifiers).first == lastClassifierNumber )
+//					{
+//						nlassert (thePriority <= lastSelectionMaxPriority);
+//						thePriority = lastSelectionMaxPriority;
+//					}
+//					maxPriorityDoingTheSameAction = std::max(thePriority, maxPriorityDoingTheSameAction);
+//					mapActivableCS.insert(std::make_pair((*itClassifiers).second->Priority, std::make_pair(itClassifiers, lastTarget)));
+//				}
+//		}		
+//	}
+//	RAZTargetSensors();
+//	return maxPriorityDoingTheSameAction;
+//}
+//
+// Function used in selectBehavior
+//TClassifierPriority	CClassifierSystem::computeHigherPriority(const CCSPerception* psensorMap,
+//												 TClassifierPriority maxPriorityDoingTheSameAction,
+//												 std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS)
+//{
+//	TitClassifiers itClassifiers;
+//	TClassifierPriority higherPriority = maxPriorityDoingTheSameAction;
+//	
+//	for (itClassifiers = _Classifiers.begin();
+//	itClassifiers != _Classifiers.end();
+//	itClassifiers++)
+//	{
+//		// We first check if the classifier priority is higher than maxPriorityDoingTheSameAction
+//		if ((*itClassifiers).second->Priority > maxPriorityDoingTheSameAction)
+//			// S'il y a des conditions dépendantes d'une cible, ce n'est pas activable.
+//			if ((*itClassifiers).second->ConditionWithTarget.begin() == (*itClassifiers).second->ConditionWithTarget.end())
+//				if ( (*itClassifiers).second->isActivable())
+//				{
+//					higherPriority = std::max((*itClassifiers).second->Priority, higherPriority);
+//					mapActivableCS.insert(std::make_pair((*itClassifiers).second->Priority, std::make_pair(itClassifiers, NullTargetId)));
+//				}
+//	}
+//	
+//	// We now do the same, but with target sensors.
+//	std::map<TTargetId, TSensorMap>::const_iterator itTargetSensorMap;
+//	for (itTargetSensorMap = psensorMap->TargetSensors.begin(); itTargetSensorMap != psensorMap->TargetSensors.end(); itTargetSensorMap++)
+//	{
+//		TTargetId myTarget = (*itTargetSensorMap).first;
+//		// We update the internal sensor values for the target sensors
+//		updateTargetSensors(psensorMap, myTarget);
+//		
+//		// We select the activables classifiers
+//		for (itClassifiers = _Classifiers.begin();
+//		itClassifiers != _Classifiers.end();
+//		itClassifiers++)
+//		{
+//			// We first check if the classifier priority is higher than maxPriorityDoingTheSameAction
+//			if ((*itClassifiers).second->Priority > maxPriorityDoingTheSameAction)
+//				if ( (*itClassifiers).second->isActivable())
+//				{
+//					higherPriority = std::max((*itClassifiers).second->Priority, higherPriority);
+//					mapActivableCS.insert(std::make_pair((*itClassifiers).second->Priority, std::make_pair(itClassifiers, myTarget)));
+//				}
+//		}
+//		RAZTargetSensors();
+//	}
+//	
+//	return higherPriority;
+//}
 
-		// We search for a classfier doing the same action on the same target
-		if (lastTarget != NullTargetId)
-		{
-			// It was an action with a target so we update the internal sensor values for the target sensors
-			std::map<TTargetId, TSensorMap>::const_iterator itTargetSensorMap = psensorMap->TargetSensors.find(lastTarget);
-			if ( itTargetSensorMap != psensorMap->TargetSensors.end() )
-			{
-				updateTargetSensors(psensorMap, lastTarget);
-			}
-			else
-			{
-				// The target didn't exist anymore in my perception, so the maxPriority is set to 0.
-				return 0;
-			}
-		}
-
-		// We select the activables classifiers
-		for (itClassifiers = _Classifiers.begin(); itClassifiers != _Classifiers.end(); itClassifiers++)
-		{
-			if ( (*itClassifiers).second->Behavior == lastAction)
-				if ( (*itClassifiers).second->isActivable())
-				{
-					TClassifierPriority thePriority = (*itClassifiers).second->Priority;
-					/*	If it's the same classifier than the last time, we give it the same priority than the last Time.
-					 *	It's to allow a classifier that has been selected with a low priority by luck to continue to express
-					 *	himself more than just for one update.
-					 */
-					if ((*itClassifiers).first == lastClassifierNumber )
-					{
-						nlassert (thePriority <= lastSelectionMaxPriority);
-						thePriority = lastSelectionMaxPriority;
-					}
-					maxPriorityDoingTheSameAction = std::max(thePriority, maxPriorityDoingTheSameAction);
-
-					mapActivableCS.insert(std::make_pair((*itClassifiers).second->Priority, std::make_pair(itClassifiers, lastTarget)));
-				}
-		}		
-	}
-	RAZTargetSensors();
-	return maxPriorityDoingTheSameAction;
-}
 
 // Function used in selectBehavior
-TClassifierPriority	CClassifierSystem::computeHigherPriority(const CCSPerception* psensorMap,
-												 TClassifierPriority maxPriorityDoingTheSameAction,
-												 std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS)
-{
-	TitClassifiers itClassifiers;
-	TClassifierPriority higherPriority = maxPriorityDoingTheSameAction;
-	
-	for (itClassifiers = _Classifiers.begin();
-	itClassifiers != _Classifiers.end();
-	itClassifiers++)
-	{
-		// We first check if the classifier priority is higher than maxPriorityDoingTheSameAction
-		if ((*itClassifiers).second->Priority > maxPriorityDoingTheSameAction)
-			// S'il y a des conditions dépendantes d'une cible, ce n'est pas activable.
-			if ((*itClassifiers).second->ConditionWithTarget.begin() == (*itClassifiers).second->ConditionWithTarget.end())
-				if ( (*itClassifiers).second->isActivable())
-				{
-					higherPriority = std::max((*itClassifiers).second->Priority, higherPriority);
-					mapActivableCS.insert(std::make_pair((*itClassifiers).second->Priority, std::make_pair(itClassifiers, NullTargetId)));
-				}
-	}
-	
-	// We now do the same, but with target sensors.
-	std::map<TTargetId, TSensorMap>::const_iterator itTargetSensorMap;
-	for (itTargetSensorMap = psensorMap->TargetSensors.begin(); itTargetSensorMap != psensorMap->TargetSensors.end(); itTargetSensorMap++)
-	{
-		TTargetId myTarget = (*itTargetSensorMap).first;
-		// We update the internal sensor values for the target sensors
-		updateTargetSensors(psensorMap, myTarget);
-		
-		// We select the activables classifiers
-		for (itClassifiers = _Classifiers.begin();
-		itClassifiers != _Classifiers.end();
-		itClassifiers++)
-		{
-			// We first check if the classifier priority is higher than maxPriorityDoingTheSameAction
-			if ((*itClassifiers).second->Priority > maxPriorityDoingTheSameAction)
-				if ( (*itClassifiers).second->isActivable())
-				{
-					higherPriority = std::max((*itClassifiers).second->Priority, higherPriority);
-					mapActivableCS.insert(std::make_pair((*itClassifiers).second->Priority, std::make_pair(itClassifiers, myTarget)));
-				}
-		}
-		RAZTargetSensors();
-	}
-	
-	return higherPriority;
-}
-
-// Function used in selectBehavior
-std::multimap<TClassifierPriority, std::pair<CClassifierSystem::TitClassifiers, TTargetId> >::iterator 
-	CClassifierSystem::roulletteWheelVariation(std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS,
-											   std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> >::iterator itMapActivableCS)
-{
-	if (itMapActivableCS == mapActivableCS.begin())
-	{
-		return itMapActivableCS;
-	}
-	
-	TClassifierPriority bestPrio = (*itMapActivableCS).first;
-	std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> >::iterator itMapActivableCSMinus = itMapActivableCS;
-	itMapActivableCSMinus--;
-	TClassifierPriority lowPrio = (*itMapActivableCSMinus).first;
-	TClassifierPriority laSomme = bestPrio + lowPrio;
-	nlassert (laSomme > 0.0001);
-	TClassifierPriority randomeNumber = (rand()%(int(laSomme*1000.0)))/1000.0;
-	if (randomeNumber > bestPrio )
-	{
-		return roulletteWheelVariation(mapActivableCS, itMapActivableCSMinus);
-	}
-	else
-	{
-		return itMapActivableCS;
-	}
-	
-}
+//std::multimap<TClassifierPriority, std::pair<CClassifierSystem::TitClassifiers, TTargetId> >::iterator 
+//	CClassifierSystem::roulletteWheelVariation(std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS,
+//											   std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> >::iterator itMapActivableCS)
+//{
+//	if (itMapActivableCS == mapActivableCS.begin())
+//	{
+//		return itMapActivableCS;
+//	}
+//	
+//	TClassifierPriority bestPrio = (*itMapActivableCS).first;
+//	std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> >::iterator itMapActivableCSMinus = itMapActivableCS;
+//	itMapActivableCSMinus--;
+//	TClassifierPriority lowPrio = (*itMapActivableCSMinus).first;
+//	TClassifierPriority laSomme = bestPrio + lowPrio;
+//	nlassert (laSomme > 0.0001);
+//	TClassifierPriority randomeNumber = (rand()%(int(laSomme*1000.0)))/1000.0;
+//	if (randomeNumber > bestPrio )
+//	{
+//		return roulletteWheelVariation(mapActivableCS, itMapActivableCSMinus);
+//	}
+//	else
+//	{
+//		return itMapActivableCS;
+//	}
+//	
+//}
 
 void CClassifierSystem::selectBehavior( const CCSPerception* psensorMap,
-										std::multimap<TClassifierPriority, std::pair<TClassifierNumber, TTargetId> > &mapActivableCS)
+										std::multimap<CClassifierPriority, std::pair<TClassifierNumber, TTargetId> > &mapActivableCS)
 {
 	// We update the internal sensor values for the no target sensors
 	updateNoTargetSensors(psensorMap);
@@ -378,44 +417,44 @@ TAction CClassifierSystem::getActionPart(TClassifierNumber classifierNumber) con
 	return (*itClassifiers).second->Behavior;
 }
 
-TClassifierPriority CClassifierSystem::getPriorityPart(TClassifierNumber classifierNumber) const
+CClassifierPriority CClassifierSystem::getPriorityPart(TClassifierNumber classifierNumber) const
 {
 	std::map<TClassifierNumber, CClassifier*>::const_iterator itClassifiers = _Classifiers.find(classifierNumber);
 	nlassert(itClassifiers != _Classifiers.end());
 	return (*itClassifiers).second->Priority;
 }
 
-void CClassifierSystem::setPriorityPart(TClassifierNumber classifierNumber, TClassifierPriority priority)
+void CClassifierSystem::setPriorityPart(TClassifierNumber classifierNumber, CClassifierPriority priority)
 {
 	std::map<TClassifierNumber, CClassifier*>::iterator itClassifiers = _Classifiers.find(classifierNumber);
 	nlassert(itClassifiers != _Classifiers.end());
 	(*itClassifiers).second->Priority = priority;
 }
 
-void CClassifierSystem::dividePriorityByTheMinPriorityPart()
-{
-	TClassifierPriority minPrio = 10; // Normalement ça ne peut pas excéder 1 une prio, mais je met 10 pour le plaisir :-)
-	std::map<TClassifierNumber, CClassifier*>::iterator itClassifiers; // = _Classifiers.find(classifierNumber);
-	for(itClassifiers  = _Classifiers.begin();
-		itClassifiers != _Classifiers.end();
-		itClassifiers++)
-	{
-		TClassifierPriority prio = (*itClassifiers).second->Priority;
-		minPrio = std::min(minPrio, prio);
-	}
-	nlassert(minPrio < 1.0);
-
-	for(itClassifiers  = _Classifiers.begin();
-		itClassifiers != _Classifiers.end();
-		itClassifiers++)
-	{
-		TClassifierPriority prio = (*itClassifiers).second->Priority;
-		TClassifierPriority newPrio = (prio - minPrio) / (1.0 - minPrio);
-
-		nlassert (newPrio <= 1.0);
-		(*itClassifiers).second->Priority = newPrio;
-	}
-}
+//void CClassifierSystem::dividePriorityByTheMinPriorityPart()
+//{
+//	TClassifierPriority minPrio = 10; // Normalement ça ne peut pas excéder 1 une prio, mais je met 10 pour le plaisir :-)
+//	std::map<TClassifierNumber, CClassifier*>::iterator itClassifiers; // = _Classifiers.find(classifierNumber);
+//	for(itClassifiers  = _Classifiers.begin();
+//		itClassifiers != _Classifiers.end();
+//		itClassifiers++)
+//	{
+//		TClassifierPriority prio = (*itClassifiers).second->Priority;
+//		minPrio = std::min(minPrio, prio);
+//	}
+//	nlassert(minPrio < 1.0);
+//
+//	for(itClassifiers  = _Classifiers.begin();
+//		itClassifiers != _Classifiers.end();
+//		itClassifiers++)
+//	{
+//		TClassifierPriority prio = (*itClassifiers).second->Priority;
+//		TClassifierPriority newPrio = (prio - minPrio) / (1.0 - minPrio);
+//
+//		nlassert (newPrio <= 1.0);
+//		(*itClassifiers).second->Priority = newPrio;
+//	}
+//}
 
 void CClassifierSystem::getDebugString(std::string &t) const
 {
@@ -457,8 +496,8 @@ void CClassifierSystem::getDebugString(std::string &t) const
 			}
 		}
 		std::string actionName = conversionAction.toString((*itClassifiers).second->Behavior);
-		TClassifierPriority		prio = (*itClassifiers).second->Priority;
-		dbg += "> " + actionName + " [" + NLMISC::toString(prio) + "]\n";
+		CClassifierPriority		prio = (*itClassifiers).second->Priority;
+		dbg += "> " + actionName + " [" + NLMISC::toString(prio.getPriority()) + "]\n";
 	}
 	t += dbg;
 }
@@ -502,8 +541,8 @@ void CClassifierSystem::getDebugString(TClassifierNumber classifierNumber, std::
 		}
 	}
 	std::string actionName = conversionAction.toString((*itClassifiers).second->Behavior);
-	TClassifierPriority		prio = (*itClassifiers).second->Priority;
-	dbg += "> " + actionName + " [" + NLMISC::toString(prio) + "]";
+	CClassifierPriority		prio = (*itClassifiers).second->Priority;
+	dbg += "> " + actionName + " [" + NLMISC::toString(prio.getPriority()) + "]";
 	t += dbg;
 }
 
@@ -657,7 +696,7 @@ TAction CActionClassifiers::getName() const
 	return _Name;
 }
 
-void CActionClassifiers::addMotivationRule (TMotivation motivationName, const CConditionMap &conditionsMap, TClassifierPriority priority)
+void CActionClassifiers::addMotivationRule (TMotivation motivationName, const CConditionMap &conditionsMap, CClassifierPriority priority)
 {
 	CClassifierSystem* pCS;
 
@@ -665,7 +704,7 @@ void CActionClassifiers::addMotivationRule (TMotivation motivationName, const CC
 	pCS->addClassifier(conditionsMap, priority, _Name);
 }
 
-void CActionClassifiers::addVirtualActionRule (TAction virtualActionName, const CConditionMap &conditionsMap, TClassifierPriority priority)
+void CActionClassifiers::addVirtualActionRule (TAction virtualActionName, const CConditionMap &conditionsMap, CClassifierPriority priority)
 {
 	CClassifierSystem* pCS;
 

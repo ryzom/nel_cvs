@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.8 2002/03/26 17:09:37 corvazier Exp $
+ * $Id: move_container.h,v 1.9 2002/04/23 07:48:40 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -275,8 +275,11 @@ private:
 	// Called by CMovePrimitive when a change occured on the primitive BB
 	void						changed (CMovePrimitive* primitive, uint8 worldImage);
 
-	// Remove the primitive from the modified list
+	// Remove the collisionable primitive from the modified list
 	void						removeFromModifiedList (CMovePrimitive* primitive, uint8 worldImage);
+
+	// Remove the non collisionable primitive from the modified lists
+	void						removeNCFromModifiedList (CMovePrimitive* primitive, uint8 worldImage);
 
 	// Unlink this move element
 	void						unlinkMoveElement  (CMoveElement *element, uint8 worldImage);

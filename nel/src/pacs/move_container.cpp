@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.20 2002/03/26 17:09:37 corvazier Exp $
+ * $Id: move_container.cpp,v 1.21 2002/04/23 07:48:40 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1197,8 +1197,19 @@ void CMoveContainer::removePrimitive (UMovePrimitive* primitive)
 
 		// In modified list ?
 		if (wI->isInModifiedListFlag ())
-			// Remove from modified list
-			removeFromModifiedList (prim, worldImage);
+		{
+			// Non collisionable primitive ?
+			if (prim->isNonCollisionable())
+			{
+				// Remove from all world image
+				removeNCFromModifiedList (prim, worldImage);
+			}
+			else
+			{
+				// Remove from modified list
+				removeFromModifiedList (prim, worldImage);
+			}
+		}
 	}
 
 	// Remove from the set
@@ -1210,6 +1221,51 @@ void CMoveContainer::removePrimitive (UMovePrimitive* primitive)
 
 // ***************************************************************************
 
+void CMoveContainer::removeNCFromModifiedList (CMovePrimitive* primitive, uint8 worldImage)
+{
+	// For each world image
+	uint i;
+	uint worldImageCount = _ChangedRoot.size();
+	for (i=0; i<worldImageCount; i++)
+	{
+		// For each changed primitives
+		CMovePrimitive *changed=_ChangedRoot[i];
+		CPrimitiveWorldImage *previous=NULL;
+		CPrimitiveWorldImage *wI=primitive->getWorldImage (worldImage);
+
+		while (changed)
+		{
+			// Get the primitive world image
+			CPrimitiveWorldImage *changedWI=changed->getWorldImage (worldImage);
+
+			// Remove from ot list
+			if (changed==primitive)
+			{
+				// There is a previous primitive ?
+				if (previous)
+					previous->linkInModifiedList (wI->getNextModified ());
+				else
+					_ChangedRoot[i]=wI->getNextModified ();
+
+				// Unlink
+				wI->linkInModifiedList (NULL);
+				wI->setInModifiedListFlag (false);
+				break;
+			}
+			
+			// Next primitive
+			previous=changedWI;
+			changed=changedWI->getNextModified ();
+		}
+
+		// Breaked ?
+		if (changed==primitive)
+			break;
+	}
+}
+
+// ***************************************************************************
+ 
 void CMoveContainer::removeFromModifiedList (CMovePrimitive* primitive, uint8 worldImage)
 {
 	// For each changed primitives

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.102 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.103 2001/06/19 16:57:41 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -182,7 +182,8 @@ CDriverGL::CDriverGL()
 	
 
 	_PaletteSkinHard= false;
-	_CurrentNormalize= false;
+	_CurrentGlNormalize= false;
+	_ForceNormalize= false;
 
 	_VertexMode= NL3D_VERTEX_MODE_NORMAL;
 
@@ -593,8 +594,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
 	glDisable(GL_NORMALIZE);
-	_CurrentNormalize= false;
-
+	_CurrentGlNormalize= false;
+	_ForceNormalize= false;
 
 	// Be always in EXTSeparateSpecularColor.
 	if(_Extensions.EXTSeparateSpecularColor)
@@ -905,23 +906,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	// 1. Special Normalize.
 	//======================
 	// NB: must enable GL_NORMALIZE when skinning is enabled or when ModelView has scale.
-	if(skinning || _ModelViewMatrix[0].hasScalePart())
-	{
-		if(!_CurrentNormalize)
-		{
-			_CurrentNormalize= true;
-			glEnable(GL_NORMALIZE);
-		}
-	}
-	else
-	{
-		if(_CurrentNormalize)
-		{
-			_CurrentNormalize= false;
-			glDisable(GL_NORMALIZE);
-		}
-	}
-
+	enableGlNormalize( skinning || _ModelViewMatrix[0].hasScalePart() || _ForceNormalize );
 
 
 	// 2. Setup Arrays.

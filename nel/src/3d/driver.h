@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: driver.h,v 1.2 2001/06/19 16:57:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,6 +207,18 @@ public:
 	 */
 	virtual	void			setupVertexMode(uint vmode)=0;
 
+
+	/** Force input normal to be normalized by the driver. default is false.
+	 * NB: driver force the normalisation himself if:
+	 *		- current VB has hardware skinning.
+	 *		- current Model matrix has a scale.
+	 */
+	virtual	void			forceNormalize(bool normalize)=0;
+
+
+	/** return the forceNormalize() state.
+	 */
+	virtual	bool			isForceNormalize() const =0;
 
 
 	/** active a current VB, for future render().

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.67 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.68 2001/06/19 16:57:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,6 +191,21 @@ public:
 		_VertexMode= vmode;
 	}
 
+
+	virtual	void			forceNormalize(bool normalize)
+	{
+		_ForceNormalize= normalize;
+		// if ForceNormalize, must enable GLNormalize now.
+		if(normalize)
+			enableGlNormalize(true);
+	}
+
+	virtual	bool			isForceNormalize() const
+	{
+		return _ForceNormalize;
+	}
+
+
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB);
 
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end);
@@ -338,6 +353,10 @@ private:
 	// @}
 
 
+	// The forceNormalize() state.
+	bool					_ForceNormalize;
+
+
 	// The vertex transform mode.
 	uint					_VertexMode;
 
@@ -390,7 +409,7 @@ private:
 	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
 	CMaterial*				_CurrentMaterial;
 	CMaterial::CTexEnv		_CurrentTexEnv[IDRV_MAT_MAXTEXTURES];
-	bool					_CurrentNormalize;
+	bool					_CurrentGlNormalize;
 
 private:
 	bool					setupVertexBuffer(CVertexBuffer& VB);
@@ -440,6 +459,21 @@ private:
 	void			setupLightMapPass(const CMaterial &mat, uint pass);
 	void			endLightMapMultiPass(const CMaterial &mat);
 	// @}
+
+
+	/// Test/activate normalisation of normal.
+	void			enableGlNormalize(bool normalize)
+	{
+		if(_CurrentGlNormalize!=normalize)
+		{
+			_CurrentGlNormalize= normalize;
+			if(normalize)
+				glEnable(GL_NORMALIZE);
+			else
+				glDisable(GL_NORMALIZE);
+		}
+	}
+
 };
 
 } // NL3D

@@ -328,7 +328,7 @@ plugin material NelMaterial
     classID:#(0x64c75fec, 0x222b9eb9)
     extends:standard 
 	replaceUI:false 
-	version:9.0
+	version:10.0
 (
 	local loadShader
 	local globalUpdateUI
@@ -363,6 +363,9 @@ plugin material NelMaterial
 
 		-- new in version 7
 		bCalcWaterLightmap         	type:#boolean default:false ui:cbCalcWaterLightmap
+
+		-- new in version 10
+		bEnableWaterSplash         	type:#boolean default:true ui:cbEnableWaterSplash
 		
 	
 		-- New in version 3
@@ -583,6 +586,8 @@ plugin material NelMaterial
 			Spinner   cfDisplaceMapVSpeed      ""  range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
 
 			CheckBox cbCalcWaterLightmap "Compute water lightmap"
+
+			CheckBox cbEnableWaterSplash "Enable water splash"
 		)
 		group "Extended"
 		(

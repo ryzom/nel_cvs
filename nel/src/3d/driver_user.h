@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.14 2002/08/22 13:38:45 besson Exp $
+ * $Id: driver_user.h,v 1.15 2002/08/23 12:26:32 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -292,6 +292,7 @@ public:
 	virtual	void			drawQuad(const NLMISC::CQuadColorUV &tri, UMaterial &mat) ;
 
 	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV> &tri, UMaterial &mat) ;
+	virtual	void			drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads, UMaterial &mat) ;
 	
 	// @}
 

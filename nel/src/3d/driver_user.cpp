@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.21 2002/08/22 13:38:45 besson Exp $
+ * $Id: driver_user.cpp,v 1.22 2002/08/23 12:26:32 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -632,15 +632,22 @@ void			CDriverUser::drawQuad(const NLMISC::CQuadColorUV &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV> &q, UMaterial &mat)
 {
+	const CQuadColorUV *qptr = &(q[0]);
+	drawQuads(qptr , q.size(), mat);
+}
+
+// ***************************************************************************
+void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads, UMaterial &mat)
+{
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb = _VBQuadsColUv;
 
-	vb.setNumVertices (4*q.size());
+	vb.setNumVertices (4*nbQuads);
 
-	for (uint32 i = 0; i < q.size(); ++i)
+	for (uint32 i = 0; i < nbQuads; ++i)
 	{
-		const NLMISC::CQuadColorUV &qcuv = q[i];
+		const NLMISC::CQuadColorUV &qcuv = quads[i];
 		vb.setVertexCoord (i*4+0, qcuv.V0);
 		vb.setVertexCoord (i*4+1, qcuv.V1);
 		vb.setVertexCoord (i*4+2, qcuv.V2);
@@ -656,8 +663,9 @@ void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV> &q, UMater
 	}
 	
 	_Driver->activeVertexBuffer(vb);
-	_Driver->renderQuads(convMat(mat), 0, q.size());
+	_Driver->renderQuads(convMat(mat), 0, nbQuads);
 }
+
 
 // ***************************************************************************
 // ***************************************************************************

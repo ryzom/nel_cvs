@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.22 2002/08/22 13:38:45 besson Exp $
+ * $Id: computed_string.cpp,v 1.23 2002/08/23 12:26:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,25 +136,12 @@ void CComputedString::render2DClip (IDriver& driver,
 
 	driver.setFrustum(0, 4.0f/3.0f, 0, 1, -1, 1, false);  // resX/resY
 
-	// Computing hotspot translation vector
-/*	CVector hotspotVector = getHotSpotVector(hotspot);
-
-	x += hotspotVector.x;
-	z += hotspotVector.z;
-*/	
 	// tansformation matrix initialized to identity
 	CMatrix matrix;
 	matrix.identity();
 		
 	// view matrix <-> identity
 	driver.setupViewMatrix (matrix);
-
-	// model matrix :
-	// centering to hotspot, then scaling, rotating, and translating.
-	/*matrix.translate(CVector(x,0,z));
-	matrix.rotateY(rotateY);
-	matrix.scale(CVector(scaleX,1,scaleZ));
-	matrix.translate(hotspotVector);*/
 	driver.setupModelMatrix (matrix);
 	
 	// rendering each primitives 
@@ -165,77 +152,85 @@ void CComputedString::render2DClip (IDriver& driver,
 	// clipping
 	VerticesClipped.setNumVertices (Vertices.getNumVertices());
 	uint32 nNumQuad = 0;
-	for (uint32 i = 0; i < (Vertices.getNumVertices()/4); ++i)
+	CVector *pIniPos0 = (CVector*)Vertices.getVertexCoordPointer (0);
+	CVector *pIniPos2 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*2);
+	CVector *pClipPos0 = (CVector*)VerticesClipped.getVertexCoordPointer (0);
+	CVector *pClipPos1 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize());
+	CVector *pClipPos2 = (CVector*)(((char*)pClipPos1) + Vertices.getVertexSize());
+	CVector *pClipPos3 = (CVector*)(((char*)pClipPos2) + Vertices.getVertexSize());
+	CUV *pClipUV0 = (CUV*)VerticesClipped.getTexCoordPointer (0, 0);
+	CUV *pClipUV1 = (CUV*)(((char*)pClipUV0) + Vertices.getVertexSize());
+	CUV *pClipUV2 = (CUV*)(((char*)pClipUV1) + Vertices.getVertexSize());
+	CUV *pClipUV3 = (CUV*)(((char*)pClipUV2) + Vertices.getVertexSize());
+	float ratio;
+	for (uint32 i = 0; i < Vertices.getNumVertices(); i+=4)
 	{
-		CVector *pPos0 = (CVector*)Vertices.getVertexCoordPointer (i*4+0);
-		CVector *pPos2 = (CVector*)Vertices.getVertexCoordPointer (i*4+2);
-
-		if (((x+pPos0->x) > xmax) || ((x+pPos2->x) < xmin) ||
-			((z+pPos0->z) > zmax) || ((z+pPos2->z) < zmin))
+		if (((x+pIniPos0->x) > xmax) || ((x+pIniPos2->x) < xmin) ||
+			((z+pIniPos0->z) > zmax) || ((z+pIniPos2->z) < zmin))
 		{
 			// Totally clipped do nothing
 		}
 		else
 		{
-			NLMISC::CFastMem::memcpy (	VerticesClipped.getVertexCoordPointer (nNumQuad*4), 
-								Vertices.getVertexCoordPointer (i*4), 
-								Vertices.getVertexSize()*4 );
-			CVector *pCPos0 = (CVector*)VerticesClipped.getVertexCoordPointer (nNumQuad*4+0);
-			CVector *pCPos1 = (CVector*)VerticesClipped.getVertexCoordPointer (nNumQuad*4+1);
-			CVector *pCPos2 = (CVector*)VerticesClipped.getVertexCoordPointer (nNumQuad*4+2);
-			CVector *pCPos3 = (CVector*)VerticesClipped.getVertexCoordPointer (nNumQuad*4+3);
-			pCPos0->x += x; pCPos1->x += x; pCPos2->x += x; pCPos3->x += x;
-			pCPos0->z += z; pCPos1->z += z; pCPos2->z += z; pCPos3->z += z;
-			if ((pCPos0->x >= xmin) && (pCPos0->z >= zmin) && (pCPos2->x <= xmax) && (pCPos2->z <= zmax))
+			memcpy (pClipPos0, pIniPos0, Vertices.getVertexSize()*4);
+
+			pClipPos0->x += x; pClipPos1->x += x; pClipPos2->x += x; pClipPos3->x += x;
+			pClipPos0->z += z; pClipPos1->z += z; pClipPos2->z += z; pClipPos3->z += z;
+			if ((pClipPos0->x >= xmin) && (pClipPos0->z >= zmin) && (pClipPos2->x <= xmax) && (pClipPos2->z <= zmax))
 			{
 				// Not clipped
 			}
 			else
 			{
 				// Partially clipped
-				CUV *pCuv0 = (CUV*)VerticesClipped.getTexCoordPointer (nNumQuad*4+0, 0);
-				CUV *pCuv1 = (CUV*)VerticesClipped.getTexCoordPointer (nNumQuad*4+1, 0);
-				CUV *pCuv2 = (CUV*)VerticesClipped.getTexCoordPointer (nNumQuad*4+2, 0);
-				CUV *pCuv3 = (CUV*)VerticesClipped.getTexCoordPointer (nNumQuad*4+3, 0);
-				float ratio;
 
-				if (pCPos0->x < xmin)
+				if (pClipPos0->x < xmin)
 				{
-					ratio = ((float)(xmin - pCPos0->x))/((float)(pCPos1->x - pCPos0->x));
-					pCPos3->x = pCPos0->x = xmin;
-					pCuv0->U += ratio*(pCuv1->U - pCuv0->U);
-					pCuv3->U += ratio*(pCuv2->U - pCuv3->U);
+					ratio = ((float)(xmin - pClipPos0->x))/((float)(pClipPos1->x - pClipPos0->x));
+					pClipPos3->x = pClipPos0->x = xmin;
+					pClipUV0->U += ratio*(pClipUV1->U - pClipUV0->U);
+					pClipUV3->U += ratio*(pClipUV2->U - pClipUV3->U);
 				}
 
-				if (pCPos0->z < zmin)
+				if (pClipPos0->z < zmin)
 				{
-					ratio = ((float)(zmin - pCPos0->z))/((float)(pCPos3->z - pCPos0->z));
-					pCPos1->z = pCPos0->z = zmin;
-					pCuv0->V += ratio*(pCuv3->V - pCuv0->V);
-					pCuv1->V += ratio*(pCuv2->V - pCuv1->V);
+					ratio = ((float)(zmin - pClipPos0->z))/((float)(pClipPos3->z - pClipPos0->z));
+					pClipPos1->z = pClipPos0->z = zmin;
+					pClipUV0->V += ratio*(pClipUV3->V - pClipUV0->V);
+					pClipUV1->V += ratio*(pClipUV2->V - pClipUV1->V);
 				}
 
-				if (pCPos2->x > xmax)
+				if (pClipPos2->x > xmax)
 				{
-					ratio = ((float)(xmax - pCPos2->x))/((float)(pCPos3->x - pCPos2->x));
-					pCPos2->x = pCPos1->x = xmax;
-					pCuv2->U += ratio*(pCuv3->U - pCuv2->U);
-					pCuv1->U += ratio*(pCuv0->U - pCuv1->U);
+					ratio = ((float)(xmax - pClipPos2->x))/((float)(pClipPos3->x - pClipPos2->x));
+					pClipPos2->x = pClipPos1->x = xmax;
+					pClipUV2->U += ratio*(pClipUV3->U - pClipUV2->U);
+					pClipUV1->U += ratio*(pClipUV0->U - pClipUV1->U);
 				}
 
-				if (pCPos2->z > zmax)
+				if (pClipPos2->z > zmax)
 				{
-					ratio = ((float)(zmax - pCPos2->z))/((float)(pCPos1->z - pCPos2->z));
-					pCPos2->z = pCPos3->z = zmax;
-					pCuv2->V += ratio*(pCuv1->V - pCuv2->V);
-					pCuv3->V += ratio*(pCuv0->V - pCuv3->V);
+					ratio = ((float)(zmax - pClipPos2->z))/((float)(pClipPos1->z - pClipPos2->z));
+					pClipPos2->z = pClipPos3->z = zmax;
+					pClipUV2->V += ratio*(pClipUV1->V - pClipUV2->V);
+					pClipUV3->V += ratio*(pClipUV0->V - pClipUV3->V);
 				}
 			}
 			++nNumQuad;
+			pClipPos0 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize()*4);
+			pClipPos1 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize());
+			pClipPos2 = (CVector*)(((char*)pClipPos1) + Vertices.getVertexSize());
+			pClipPos3 = (CVector*)(((char*)pClipPos2) + Vertices.getVertexSize());
+			pClipUV0 = (CUV*)( ((char*)pClipUV0) + Vertices.getVertexSize()*4 );
+			pClipUV1 = (CUV*)(((char*)pClipUV0) + Vertices.getVertexSize());
+			pClipUV2 = (CUV*)(((char*)pClipUV1) + Vertices.getVertexSize());
+			pClipUV3 = (CUV*)(((char*)pClipUV2) + Vertices.getVertexSize());
 		}
+		pIniPos0 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*4);
+		pIniPos2 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*2);
 	}
-
-	driver.activeVertexBuffer(VerticesClipped);
+	//VerticesClipped.setNumVertices (4*nNumQuad);
+	driver.activeVertexBuffer (VerticesClipped);
 	driver.renderQuads (*Material, 0, nNumQuad);
 }
 

@@ -14,7 +14,7 @@
 
 
 class	CDirectEditableRangeFloat;
-namespace NL3D
+namespace NLMISC
 {
 	class	CNoiseValue;
 };
@@ -64,7 +64,7 @@ public:
 
 
 	/// setup the NoiseValue to edit, and update view.
-	void			setNoiseValue(NL3D::CNoiseValue	*nv, IVegetableRefresh *vegetRefresh);
+	void			setNoiseValue(NLMISC::CNoiseValue	*nv, IVegetableRefresh *vegetRefresh);
 
 
 // Implementation
@@ -80,7 +80,7 @@ protected:
 
 	std::string					_TitleName;
 	// The noise value setuped.
-	NL3D::CNoiseValue			*_NoiseValue;
+	NLMISC::CNoiseValue			*_NoiseValue;
 	IVegetableRefresh			*_VegetableRefresh;
 
 	// ScaleSlider mgt.

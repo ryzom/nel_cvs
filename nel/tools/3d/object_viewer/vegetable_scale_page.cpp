@@ -7,7 +7,7 @@
 #include "vegetable_edit_tools.h"
 #include "vegetable_noise_value_dlg.h"
 #include "vegetable_dlg.h"
-#include "3d/noise_value.h"
+#include "nel/misc/noise_value.h"
 #include "3d/vegetable.h"
 
 

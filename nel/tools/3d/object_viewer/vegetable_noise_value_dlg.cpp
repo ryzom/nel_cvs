@@ -5,7 +5,7 @@
 #include "object_viewer.h"
 #include "vegetable_noise_value_dlg.h"
 #include "vegetable_edit_tools.h"
-#include "3d/noise_value.h"
+#include "nel/misc/noise_value.h"
 
 
 
@@ -159,7 +159,7 @@ CVegetableNoiseValueDlg::~CVegetableNoiseValueDlg()
 }
 
 
-void			CVegetableNoiseValueDlg::setNoiseValue(NL3D::CNoiseValue	*nv, IVegetableRefresh *vegetRefresh)
+void			CVegetableNoiseValueDlg::setNoiseValue(NLMISC::CNoiseValue	*nv, IVegetableRefresh *vegetRefresh)
 {
 	_NoiseValue= nv;
 	_VegetableRefresh= vegetRefresh;

@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.4 2000/11/23 15:51:12 berenguier Exp $
+ * $Id: camera.cpp,v 1.5 2000/12/01 10:07:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ void		CCamera::setPerspective(float fov, float aspectRatio, float znear, float z
 	setFrustum(w,h,znear,zfar,true);
 }
 // ***************************************************************************
-void		CCamera::getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar)
+void		CCamera::getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const
 {
 	left= Left;
 	right= Right;
@@ -78,16 +78,46 @@ void		CCamera::getFrustum(float &left, float &right, float &bottom, float &top, 
 	zfar= Far;
 }
 // ***************************************************************************
-bool		CCamera::isOrtho()
+bool		CCamera::isOrtho() const
 {
 	return !Perspective;
 }
 // ***************************************************************************
-bool		CCamera::isPerspective()
+bool		CCamera::isPerspective() const
 {
 	return Perspective;
 }
+// ***************************************************************************
+void		CCamera::lookAt (const CVector& eye, const CVector& target, float roll)
+{
+	// Roll matrix
+	CMatrix rollMT;
+	rollMT.identity();
+	if (roll!=0.f)
+		rollMT.rotateY (roll);
 
+	// Make the target base
+	CVector j=target;
+	j-=eye;
+	j.normalize();
+	CVector i=j^CVector (0,0,1.f);
+	CVector k=i^j;
+	k.normalize();
+	i=j^k;
+	i.normalize();
+
+	// Make the target matrix
+	CMatrix targetMT;
+	targetMT.identity();
+	targetMT.setRot (i, j, k);
+	targetMT.setPos (eye);
+
+	// Compose matrix
+	targetMT*=rollMT;
+
+	// Set the matrix
+	setMatrix (targetMT);
+}
 
 }
 

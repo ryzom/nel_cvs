@@ -1,7 +1,7 @@
 /** \file camera.h
  * 
  *
- * $Id: camera.h,v 1.5 2000/11/23 15:51:22 berenguier Exp $
+ * $Id: camera.h,v 1.6 2000/12/01 10:07:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,12 +69,20 @@ public:
 	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	void		setFrustum(float width, float height, float znear, float zfar, bool perspective= true);
 	/// Get the camera frustum.
-	void		getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar);
+	void		getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const;
 	/// Is a ortho camera?
-	bool		isOrtho();
+	bool		isOrtho() const;
 	/// Is a perspective camera?
-	bool		isPerspective();
+	bool		isPerspective() const;
 
+	/** 
+	  * Setup camera by the lookAt method. Yes Lionel, it's really usefull!!
+	  * 
+	  * \param eye is the coordinate of the camera.
+	  * \param target is the point the camera look at.
+	  * \param roll is the roll angle in radian along the camera's Y axis.
+	  */
+	void		lookAt (const CVector& eye, const CVector& target, float roll=0.f);
 
 	/** Setup a perspective camera, giving a fov in radians.
 	 * \param fov the horizontal angle of view, in radians. (Pi/2 as example)

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.102 2002/01/17 12:16:08 chafik Exp $
+ * $Id: agent_script.cpp,v 1.103 2002/01/28 10:24:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -844,7 +844,8 @@ namespace NLAIAGENT
 			while(i != _DynamicAgentName.end())
 			{
 				m->incRef();
-				((IObjectIA *)(*(*(i)).Itr))->sendMessage(m);
+				IObjectIA *o = ((IObjectIA *)(*(*(i)).Itr));
+				o->sendMessage(m);
 				i++;
 			}
 		}

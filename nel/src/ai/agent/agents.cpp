@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.47 2002/01/24 10:59:45 chafik Exp $
+ * $Id: agents.cpp,v 1.48 2002/01/28 10:24:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,6 +185,7 @@ namespace NLAIAGENT
 					i_agl ++;
 					c->incRef();
 					removeChild(c);
+					onKill(c);
 				}
 				break;
 			default:

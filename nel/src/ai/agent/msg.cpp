@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.19 2002/01/03 15:06:14 chafik Exp $
+ * $Id: msg.cpp,v 1.20 2002/01/28 10:24:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -454,10 +454,13 @@ namespace NLAIAGENT
 
 			case _TSetSender:
 				{
-					CLocalAgentMail *o = (CLocalAgentMail *)((IBaseGroupType *)p)->get();					
-					setSender((IObjectIA *)o->getHost());
-					/*setSender((IObjectIA *)((IBaseGroupType *)p)->get());
-					_Sender->incRef();*/
+					IObjectIA *obj = (IObjectIA *) ((IBaseGroupType *)p)->get();					
+					CLocalAgentMail *o = dynamic_cast<CLocalAgentMail *>(obj);
+					if(o != NULL)
+						setSender((IObjectIA *)o->getHost());
+					else
+						setSender((IObjectIA *)obj);
+
 					return IObjectIA::CProcessResult();
 				}
 

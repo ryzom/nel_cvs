@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.4 2001/08/22 15:50:34 cado Exp $
+ * $Id: udp_sock.cpp,v 1.5 2001/08/23 14:31:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,9 +147,9 @@ void CUdpSock::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr )
 
 
 /*
- * Receives data (returns false if !dataAvailable()).
+ * Receives data and say who the sender is. (blocking function)
  */
-bool CUdpSock::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr )
+void CUdpSock::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr )
 {
 	// Receive incoming message
 	sockaddr_in saddr;
@@ -169,8 +169,6 @@ bool CUdpSock::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr )
 	{
 		nldebug( "L0: Socket %d received %d bytes from %s", _Sock, brecvd, addr.asString().c_str() );
 	}
-
-	return true;
 }
 
 

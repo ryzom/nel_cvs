@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.43 2003/12/04 16:59:42 corvazier Exp $
+ * $Id: path.h,v 1.44 2003/12/31 16:08:41 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -210,6 +210,8 @@ public:
 	static void memoryCompress();
 
 	static void memoryUncompress();
+
+	static bool isMemoryCompressed()	{ return getInstance()->_MemoryCompressed; }
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.16 2003/07/03 11:59:06 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.17 2003/07/03 13:03:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -204,44 +204,57 @@ static	inline float		testCirclePoint(const CVector2f &start, const CVector2f &de
 	// compute quadratic..
 	relC= start-point;
 	relV= delta;
-	a= relV.x*relV.x + relV.y*relV.y;		// a>0.
-	b= 2* (relC.x*relV.x + relC.y*relV.y);
-	c= relC.x*relC.x + relC.y*relC.y - radius*radius;
-	// compute delta of the quadratic.
-	dta= b*b - 4*a*c;	// b²-4ac
-	if(dta>=0)
+	a= relV.x*relV.x + relV.y*relV.y;		
+	// a should be >0. BUT BECAUSE OF PRECISION PROBLEM, it may be ==0, and then cause 
+	// divide by zero (because b may be near 0, but not 0)
+	if(a==0)
 	{
-		dta= (float)sqrt(dta);
-		r0= (-b -dta)/(2*a);
-		r1= (-b +dta)/(2*a);
-		// since a>0, r0<=r1.
-		if(r0>r1)
-			swap(r0,r1);
-		// if r1 is negative, then we are out and go away from this point. OK.
-		if(r1<=0)
-		{
-			res= 1;
-		}
-		// if r0 is positive, then we may collide this point.
-		else if(r0>=0)
-		{
-			res= min(1.f, r0);
-		}
-		else	// r0<0 && r1>0. the point is already in the sphere!!
-		{
-			//nlinfo("COL: Point problem: %.2f, %.2f.  b=%.2f", r0, r1, b);
-			// we allow the movement only if we go away from this point.
-			// this is true if the derivative at t=0 is >=0 (because a>0).
-			if(b>0)
-				res= 1;	// go out.
-			else
-				res=0;
-		}
+		// in this case the move is very small. return 0 if the point is in the circle and if we go toward the point
+		if(relC.norm()<radius && relC*delta<0)
+			return 0;
+		else
+			return 1;
 	}
 	else
 	{
-		// never hit this point along this movement.
-		res= 1;
+		b= 2* (relC.x*relV.x + relC.y*relV.y);
+		c= relC.x*relC.x + relC.y*relC.y - radius*radius;
+		// compute delta of the quadratic.
+		dta= b*b - 4*a*c;	// b²-4ac
+		if(dta>=0)
+		{
+			dta= (float)sqrt(dta);
+			r0= (-b -dta)/(2*a);
+			r1= (-b +dta)/(2*a);
+			// since a>0, r0<=r1.
+			if(r0>r1)
+				swap(r0,r1);
+			// if r1 is negative, then we are out and go away from this point. OK.
+			if(r1<=0)
+			{
+				res= 1;
+			}
+			// if r0 is positive, then we may collide this point.
+			else if(r0>=0)
+			{
+				res= min(1.f, r0);
+			}
+			else	// r0<0 && r1>0. the point is already in the sphere!!
+			{
+				//nlinfo("COL: Point problem: %.2f, %.2f.  b=%.2f", r0, r1, b);
+				// we allow the movement only if we go away from this point.
+				// this is true if the derivative at t=0 is >=0 (because a>0).
+				if(b>0)
+					res= 1;	// go out.
+				else
+					res=0;
+			}
+		}
+		else
+		{
+			// never hit this point along this movement.
+			res= 1;
+		}
 	}
 
 	return res;

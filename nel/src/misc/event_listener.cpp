@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.2 2000/11/10 11:04:55 corvazier Exp $
+ * $Id: event_listener.cpp,v 1.3 2000/11/10 11:22:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,34 +40,34 @@ CEventListener::CEventListener()
 
 // ***************************************************************************
 // ***************************************************************************
-// CEventListenerAsynch
+// CEventListenerAsync
 // ***************************************************************************
 // ***************************************************************************
 
 // ***************************************************************************
-CEventListenerAsynch::CEventListenerAsynch()
+CEventListenerAsync::CEventListenerAsync()
 {
 	_KeyArray.resize (KeyCount);
 }
 // ***************************************************************************
-void CEventListenerAsynch::addToServer (CEventServer& server)
+void CEventListenerAsync::addToServer (CEventServer& server)
 {
 	server.addListener (EventKeyUpId, this);
 	server.addListener (EventKeyDownId, this);
 }
 // ***************************************************************************
-void CEventListenerAsynch::removeFromServer (CEventServer& server)
+void CEventListenerAsync::removeFromServer (CEventServer& server)
 {
 	server.removeListener (EventKeyUpId, this);
 	server.removeListener (EventKeyDownId, this);
 }
 // ***************************************************************************
-bool CEventListenerAsynch::isKeyPush (TKey key) const
+bool CEventListenerAsync::isKeyPush (TKey key) const
 {
 	return _KeyArray.get(key);
 }
 // ***************************************************************************
-void CEventListenerAsynch::operator ()(const CEvent& event)
+void CEventListenerAsync::operator ()(const CEvent& event)
 {
 	// Key down ?
 	if (event==EventKeyDownId)

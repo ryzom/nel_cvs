@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * <File description>
  *
- * $Id: event_server.cpp,v 1.2 2000/11/10 11:04:55 corvazier Exp $
+ * $Id: event_server.cpp,v 1.3 2000/11/10 11:22:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,7 @@ void CEventServer::pumpEvent(const CEvent& event)
 	while(it!=_Listeners.end() && (uint64)(*it).first == id)
 	{
 		(*((*it).second)) (event);
+		it++;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.28 2002/10/16 16:58:21 besson Exp $
+ * $Id: landscape_user.cpp,v 1.29 2002/10/18 15:16:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,12 +113,19 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::v
 			nlassert(!Work.ZoneRemoved);
 			if (Work.ZoneAdded)
 			{
-				_Landscape->Landscape.addZone (*Work.Zone);
+				if (Work.Zone == (CZone*)-1)
+				{
+					nlwarning ("Can't load zone %s", Work.NameZoneAdded.c_str ());
+				}
+				else
+				{
+					_Landscape->Landscape.addZone (*Work.Zone);
 
-				delete Work.Zone;
-				std::string zoneadd = Work.NameZoneAdded;
-				zoneadd = zoneadd.substr(0, zoneadd.find('.'));
-				zonesAdded.push_back(zoneadd);
+					delete Work.Zone;
+					std::string zoneadd = Work.NameZoneAdded;
+					zoneadd = zoneadd.substr(0, zoneadd.find('.'));
+					zonesAdded.push_back(zoneadd);
+				}
 			}
 		}
 		else
@@ -202,8 +209,7 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius, std::s
 		{
 			if (Work.Zone == (CZone*)-1)
 			{
-				std::string warn = std::string("Cant load zone ") + Work.NameZoneAdded;
-				nlwarning (warn.c_str());
+				nlwarning ("Can't load zone %s", Work.NameZoneAdded.c_str ());
 			}
 			else
 			{

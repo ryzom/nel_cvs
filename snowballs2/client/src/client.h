@@ -1,7 +1,7 @@
 /** \file client.h
  * 
  *
- * $Id: client.h,v 1.1 2001/07/11 16:09:03 legros Exp $
+ * $Id: client.h,v 1.2 2001/07/11 16:39:07 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,10 +28,18 @@
 
 #include "nel/misc/config_file.h"
 
+namespace NL3D
+{
+	class UDriver;
+	class UScene;
+	class UTextContext;
+}
+
 extern NLMISC::CConfigFile		ConfigFile;
 
 extern NL3D::UDriver			*Driver;
 extern NL3D::UScene				*Scene;
+extern NL3D::UTextContext		*TextContext;
 
 #endif // CLIENT_H
 

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.7 2001/07/11 16:15:06 lecroart Exp $
+ * $Id: client.cpp,v 1.8 2001/07/11 16:39:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,7 @@
 #include <nel/3d/u_landscape.h>
 
 
+#include "commands.h"
 #include "landscape.h"
 
 using namespace std;
@@ -64,8 +65,9 @@ using namespace NL3D;
 
 CConfigFile ConfigFile;
 
-UDriver		*Driver = NULL;
-UScene		*Scene = NULL;
+UDriver			*Driver = NULL;
+UScene			*Scene = NULL;
+UTextContext	*TextContext = NULL;
 
 //
 // Main
@@ -97,10 +99,10 @@ int main(int argc, char **argv)
 	Driver->setDisplay (UDriver::CMode(640, 480, 0));
 	Driver->setFontManagerMaxMemory (2000000);
 
-	UTextContext *textContext=Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
-	textContext->setHotSpot (UTextContext::TopLeft);
-	textContext->setColor (CRGBA (255,255,255));
-	textContext->setFontSize (12);
+	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
+	TextContext->setHotSpot (UTextContext::TopLeft);
+	TextContext->setColor (CRGBA (255,255,255));
+	TextContext->setFontSize (12);
 
 	// Create a scene
 	Scene = Driver->createScene();
@@ -110,9 +112,6 @@ int main(int argc, char **argv)
 
 	// Init the command control
 	initCommands ();
-
-	pDriver->setMatrixMode2D11 ();
-	pDriver->drawQuad (0.1, 0.1, 0.9, 0.3, CRGBA (128, 255, 128, 128));
 
 	while (Driver->isActive() && (!Driver->AsyncListener.isKeyPushed (KeyESCAPE)))
 	{
@@ -127,9 +126,6 @@ int main(int argc, char **argv)
 
 		// Render
 		Scene->render ();
-
-		// Output text
-		textContext->printfAt (0,1,"flub");
 
 		// Swap
 		Driver->swapBuffers ();

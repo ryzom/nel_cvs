@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: commands.cpp,v 1.2 2001/07/11 16:15:06 lecroart Exp $
+ * $Id: commands.cpp,v 1.3 2001/07/11 16:39:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,16 @@
 
 #include "nel/misc/types_nl.h"
 
+#include <nel/3d/u_camera.h>
+#include <nel/3d/u_driver.h>
+#include <nel/3d/u_text_context.h>
+#include <nel/3d/u_instance.h>
+#include <nel/3d/u_scene.h>
+#include <nel/3d/u_3d_mouse_listener.h>
+#include <nel/3d/u_material.h>
+#include <nel/3d/u_landscape.h>
+
+
 #include "client.h"
 
 using namespace std;
@@ -37,6 +47,13 @@ void	initCommands()
 
 void	updateCommands()
 {
+	// Display
+	Driver->setMatrixMode2D11 ();
+	Driver->drawQuad (0.1, 0.1, 0.9, 0.3, CRGBA (128, 255, 128, 128));
+
+	// Output text
+	TextContext->setHotSpot (UTextContext::BottomLeft);
+	TextContext->printfAt (0.1, 0.1, "chat>");
 }
 
 void	releaseCommands()

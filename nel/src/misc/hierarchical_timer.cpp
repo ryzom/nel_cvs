@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.21 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.22 2002/11/14 17:42:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -63,6 +63,7 @@ CHTimer		   *CHTimer::_CurrTimer = &_RootTimer;
 //=================================================================
 void CSimpleClock::init()
 {	
+	if (_InitDone) return;
 	const uint numSamples = 10000;
 
 	CSimpleClock observedClock;

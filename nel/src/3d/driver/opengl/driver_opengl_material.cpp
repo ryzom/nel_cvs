@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.85 2004/04/06 13:41:12 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.86 2004/04/09 14:36:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1744,11 +1744,11 @@ void		CDriverGL::setupCloudPass (uint pass)
 
 	if (_CurrentTexEnvSpecial[0] != TexEnvSpecialCloudStage0)
 	{
-		_CurrentTexEnvSpecial[0] = TexEnvSpecialCloudStage0;
-		_CurrentTexEnvSpecial[1] = TexEnvSpecialCloudStage1;
-
 		if (_Extensions.NVTextureEnvCombine4)
 		{
+			_CurrentTexEnvSpecial[0] = TexEnvSpecialCloudStage0;
+			_CurrentTexEnvSpecial[1] = TexEnvSpecialCloudStage1;
+			
 			// Setup 1st Stage
 			_DriverGLStates.activeTextureARB(0);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);		
@@ -1814,10 +1814,18 @@ void		CDriverGL::setupCloudPass (uint pass)
 			// Arg3 = 0
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO);
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA);
-
+			//
+			activateTexEnvColor (1, mat.getColor());			
 		}
 		else
-		{			
+		{	
+			// TODO : for now the state is not cached in _CurrentTexEnvSpecial
+			nglBindFragmentShaderATI(ATICloudShaderHandle);
+			glEnable(GL_FRAGMENT_SHADER_ATI);
+			float cst[4] = { 0.f, 0.f, 0.f, mat.getColor().A / 255.f };
+			nglSetFragmentShaderConstantATI(GL_CON_0_ATI, cst);
+
+			/*
 			_DriverGLStates.activeTextureARB(0);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 			// Operator.
@@ -1853,15 +1861,19 @@ void		CDriverGL::setupCloudPass (uint pass)
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_CONSTANT_EXT );
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_SRC_ALPHA);			
+			*/
 		}
 	}
-	activateTexEnvColor (1, mat.getColor());
 }
 
 // ***************************************************************************
 void		CDriverGL::endCloudMultiPass()
 {
 	nlassert(_CurrentMaterial->getShader() == CMaterial::Cloud);
+	if (ATICloudShaderHandle)	
+	{
+		glDisable(GL_FRAGMENT_SHADER_ATI);						
+	}
 }
 
 

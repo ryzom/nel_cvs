@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * <File description>
  *
- * $Id: ps_mesh.h,v 1.3 2001/12/17 13:19:54 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.4 2001/12/18 18:31:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -158,7 +158,7 @@ protected:
  *  They got a hint for constant rotation scheme. With little meshs, this is the best to draw a maximum of them
  */
 
-class CPSConstraintMesh : public  CPSParticle,
+class CPSConstraintMesh : public CPSParticle,
 						  public CPSSizedParticle,
 						  public CPSRotated3DPlaneParticle,
 						  public CPSHintParticleRotateTheSame,
@@ -173,12 +173,11 @@ public:
 
 	/** Construct the mesh by using the given mesh shape file.
 	  * No morphing is applied. The mesh is used 'as it'.
-	  * Any previous call to setShapes (for morphing) is discarded.
 	  */
 	void				setShape(const std::string &meshFileName);
 
-	/// get the shape used for those particles	
-	std::string			getShape(void) const { return _MeshShapeFileName; }
+	/// Get the shape used for those particles. (must use no morphing or an assertion is raised)
+	std::string			getShape(void) const;
 
 
 
@@ -186,12 +185,19 @@ public:
 	  * - All meshs must have the same number of vertices
 	  * - All meshes must have the same vertex format
 	  * If these conditions are not met, a 'dummy' mesh will be used instead.
-	  * If there's only one mesh, no morphing is performed.	  
+	  * If there's only one mesh, no morphing is performed.
+	  * NB : Morphing not supported with precomputed rotations. First mesh is used instead
 	  * \param shapesNames A tab of string containing the names of the shapes
 	  * \param numShapes 
 	  */
-///	void						setShapes(const std::string *shapesNames, uint numShapes);
+	void						setShapes(const std::string *shapesNames, uint numShapes);
 
+
+	/// Set a shape by its index
+	void						setShape(uint index, const std::string &shapeName);
+
+	/// Get a shape name by its index
+	const std::string          &getShape(uint index) const;
 
 	/// Get the number of shapes used
 	uint						getNumShapes() const;
@@ -199,22 +205,22 @@ public:
 	/** Retrieve the names of the shapes
 	  * \param shapesNames :A tab of shapes with enough spaces to store the names
 	  */
-///	void						getShapesNames(std::string *shapesNames) const;
+	void						getShapesNames(std::string *shapesNames) const;
 
-	/// Use a constant value for morphing. This discard any scheme for the morph value. The value must range from 0 to 1
-////	void						setMorphValue(float value);
+	/// Use a constant value for morphing. This discard any scheme for the morph value. The value must range from 0 to numberOfShapes
+	void						setMorphValue(float value);
 
 	/// Get the value used for morphing
-///	float						getMorphValue() const;
+	float						getMorphValue() const;
 
 	/// Set a morphing scheme. The scheme is then owned by this object
-///	void						setMorphScheme(CPSAttribMaker<float> *scheme);
+	void						setMorphScheme(CPSAttribMaker<float> *scheme);
 
 	/// Get the current morphing scheme or NULL if no one was set
-///	CPSAttribMaker<float>		*getMorphScheme();
+	CPSAttribMaker<float>		*getMorphScheme();
 
 	/// Get the current morphing scheme or NULL if no one was set. Const version
-///	const CPSAttribMaker<float>	*getMorphScheme() const;
+	const CPSAttribMaker<float>	*getMorphScheme() const;
 	  
 
 	
@@ -363,6 +369,9 @@ protected:
 	/// draw for non pre-rotated meshs
 	void				drawMeshs(bool opaque);
 
+	/// release the shapes used by this particle
+	void				releaseShapes();
+
 
 	/** Compute (optionnal) mesh colors.
 	  * \param outVB		The destination VB.
@@ -414,23 +423,19 @@ protected:
 	void				doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet &rdrPasses, bool opaque);	
 
 	
-/*	typedef std::vector<std::string> TShapeNameVect;
+	typedef IShape					  *PShape;
+	typedef std::vector<std::string>  TShapeNameVect;
+	typedef std::vector<PShape>		  TShapeVect;	
 
 	// name of the shapes
-	TShapeNameVect std::string _MeshShapeFileName;*/
-
-	std::string _MeshShapeFileName;
-	
+	TShapeNameVect _MeshShapeFileName;
+	TShapeVect	   _Shapes;
 
 	// caches the number of faces (for load balacing)
 	uint _NumFaces;
 
 	// the shape bank containing the shape
-	CShapeBank  *_ModelBank;
-
-	//  the shape we're using
-	IShape  *_ModelShape;
-	
+	CShapeBank  *_ModelBank;	
 
 	
 	/** This class manage sharing between several mesh displays.
@@ -539,8 +544,8 @@ protected:
 
 	/// \name morphing
 	//@{
-	///	float					_MorphValue;
-	///	CPSAttribMaker<float>	*_MorphScheme;
+		float					_MorphValue;
+		CPSAttribMaker<float>	*_MorphScheme;
 	//@}
 private:
 	CPSConstraintMesh(const CPSConstraintMesh &) { nlassert(0); /* not supported */ }

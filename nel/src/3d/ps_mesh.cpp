@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.4 2001/12/17 13:19:54 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.5 2001/12/18 18:31:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -96,6 +96,11 @@ static CVector MakeRandomUnitVect(void)
 
 
 //====================================================================================
+
+
+
+
+const std::string DummyShapeName("dummy mesh shape");
 
 /** a private function that create a dummy mesh :a cube with dummy textures
  */ 
@@ -228,11 +233,11 @@ void CPSMesh::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 
 	if (!instance)
 	{
-		const std::string dummyShapeName("dummy mesh shape");
+		
 		// mesh not found ...
 		IShape *is = CreateDummyShape();
-		scene->getShapeBank()->add(dummyShapeName, is);
-		instance = scene->createInstance(dummyShapeName);
+		scene->getShapeBank()->add(DummyShapeName, is);
+		instance = scene->createInstance(DummyShapeName);
 		nlassert(instance);
 	}
 
@@ -354,16 +359,11 @@ void CPSMesh::draw(bool opaque)
 			ptBasis = &_PlaneBasis;
 		}
 
-		endPosIt = posIt + toProcess;
-
-
-		
-		CMatrix mat, tmat;
-		
+		endPosIt = posIt + toProcess;		
+		CMatrix mat, tmat;		
 
 		// the matrix used to get in the right basis
 		const CMatrix &transfo = _Owner->isInSystemBasis() ? /*_Owner->getOwner()->*/getSysMat() : CMatrix::Identity;
-
 		do
 		{
 			(*instanceIt)->show();
@@ -391,9 +391,6 @@ void CPSMesh::draw(bool opaque)
 			ptBasis += ptCurrPlaneBasisIncrement;
 		}
 		while (posIt != endPosIt);
-
-
-
 		leftToDo -= toProcess;
 	}
 	while (leftToDo);
@@ -470,14 +467,13 @@ static void CheckForOpaqueAndTransparentFacesInMesh(const CMesh &m, bool &hasTra
 }
 
 
-CPSConstraintMesh::CPSConstraintMesh() : _ModelShape(NULL), 
-						  _ModelBank(NULL),
-						  _Touched(1),
-						  _ReinitGlobalAnimTimeOnNewElement(0),						  
-						  _ModulatedStages(0),
-						  _VertexColorLightingForced(false) /*,
-						  _MorphScheme(NULL),
-						  _MorphValue(0)*/
+CPSConstraintMesh::CPSConstraintMesh() : _ModelBank(NULL),
+										 _Touched(1),
+										 _ReinitGlobalAnimTimeOnNewElement(0),						  
+										 _ModulatedStages(0),
+										 _VertexColorLightingForced(false),
+										 _MorphScheme(NULL),
+										 _MorphValue(0)
 {		
 	_Name = std::string("ConstraintMesh");
 }
@@ -510,62 +506,94 @@ bool CPSConstraintMesh::hasOpaqueFaces(void)
 
 //====================================================================================
 void CPSConstraintMesh::setShape(const std::string &meshFileName)
-{
-	_MeshShapeFileName = meshFileName;
+{	
+	_MeshShapeFileName.resize(1);	
+	_MeshShapeFileName[0] = meshFileName;
 	_Touched = 1;
 }
 
-/*
+
+//===========================================================================
+std::string			CPSConstraintMesh::getShape(void) const
+{
+	nlassert(_MeshShapeFileName.size() == 1);
+	return _MeshShapeFileName[0];
+}
+
 //====================================================================================
 void		CPSConstraintMesh::setShapes(const std::string *shapesNames, uint numShapes)
 {
-	
-
+	_MeshShapeFileName.resize(numShapes);
+	std::copy(shapesNames, shapesNames + numShapes, _MeshShapeFileName.begin());
+	_Touched = 1;
 }
 
 //====================================================================================
 uint	    CPSConstraintMesh::getNumShapes() const
 {
-
-
+	return _MeshShapeFileName.size();
 }
 
 //====================================================================================
 void	CPSConstraintMesh::getShapesNames(std::string *shapesNames) const
 {
-
-
+	std::copy(_MeshShapeFileName.begin(), _MeshShapeFileName.end(), shapesNames);
 }
+
+
+
+//====================================================================================
+void		CPSConstraintMesh::setShape(uint index, const std::string &shapeName)
+{
+	nlassert(index < _MeshShapeFileName.size());
+	_MeshShapeFileName[index] = shapeName;
+	_Touched = 1;
+}
+
+	
+//====================================================================================
+const std::string          &CPSConstraintMesh::getShape(uint index) const
+{
+	nlassert(index < _MeshShapeFileName.size());
+	return _MeshShapeFileName[index];
+}
+
 
 
 //====================================================================================
 void	CPSConstraintMesh::setMorphValue(float value)
 {
-
+	delete _MorphScheme;
+	_MorphScheme = NULL;
+	_MorphValue = value;
 }
 
 
 //====================================================================================
 float	CPSConstraintMesh::getMorphValue() const
 {
-
+	return _MorphValue;
 }
 
 //====================================================================================
 void	CPSConstraintMesh::setMorphScheme(CPSAttribMaker<float> *scheme)
 {
-
+	delete _MorphScheme;
+	_MorphScheme = scheme;
 }
 
 //====================================================================================
 CPSAttribMaker<float>		*CPSConstraintMesh::getMorphScheme()
 {
-
+	return _MorphScheme;
 }
 
 //====================================================================================
-const CPSAttribMaker<float>	*getMorphScheme() const;
-*/
+const CPSAttribMaker<float>	*CPSConstraintMesh::getMorphScheme() const
+{
+	return _MorphScheme;
+}
+
 
 //====================================================================================
 static IShape *GetDummyShapeFromBank(CShapeBank &sb)
@@ -596,55 +624,111 @@ bool CPSConstraintMesh::update(void)
 
 	CScene *scene = _Owner->getScene();
 	CShapeBank *sb = scene->getShapeBank();
-
 	IShape *is;
-	if (sb->isPresent(_MeshShapeFileName))
-	{
-		is = sb->addRef(_MeshShapeFileName);
-	}
-	else
-	{
-		try
-		{
-			sb->load(_MeshShapeFileName);
-		}	
-		catch (NLMISC::EPathNotFound &)
-		{
-			nlwarning("mesh not found : %s; used as a constraint mesh particle", _MeshShapeFileName.c_str());
-			// shape not found, so not present in the shape bank -> we create a dummy shape
-		}
 
-		if (!sb->isPresent(_MeshShapeFileName))
-		{	
-			is = GetDummyShapeFromBank(*sb);
-			ok = false;
-		}
-		else
+
+	uint32 vFormat;
+	uint   numVerts;	
+
+	if (_MeshShapeFileName.size() == 0)
+	{
+		_MeshShapeFileName.resize(1);
+		_MeshShapeFileName[0] = DummyShapeName;		
+	}
+	
+
+	_Shapes.resize(_MeshShapeFileName.size());	
+	for (uint k = 0; k < _MeshShapeFileName.size(); ++k)
+	{
+		if (sb->isPresent(_MeshShapeFileName[k]))
 		{
-			is = sb->addRef(_MeshShapeFileName);
-			if (!dynamic_cast<CMesh *>(is)) // is it a mesh
-			{
-				nlwarning("Tried to bind a shape that is not a mesh to a mesh particle : %s", _MeshShapeFileName.c_str());
-				sb->release(is);
-				is = GetDummyShapeFromBank(*sb);
-				ok = false;
+			_Shapes[k] = sb->addRef(_MeshShapeFileName[k]);
+
+			/// get  the mesh format, or check that is was the same that previous shapes ' one
+			const CMesh &m  = * NLMISC::safe_cast<CMesh *>(_Shapes[k]); // only mesh shape's can be used with this class!
+			if (k == 0)
+			{			
+				vFormat = m.getVertexBuffer().getVertexFormat();
+				numVerts =  m.getVertexBuffer().getNumVertices();
 			}
 			else
 			{
-				const CMesh &m  = * NLMISC::safe_cast<CMesh *>(is);
-				/// make sure there are not too many vertices
-				if (m.getVertexBuffer().getNumVertices() > ConstraintMeshMaxNumVerts)
+				if (vFormat != m.getVertexBuffer().getVertexFormat()
+					|| numVerts != m.getVertexBuffer().getNumVertices())
 				{
-					nlwarning("Tried to bind a mesh that has more than %d vertices to a particle mesh: %s", (int) ConstraintMeshMaxNumVerts, _MeshShapeFileName.c_str());
-					sb->release(is);
-					is = GetDummyShapeFromBank(*sb);
 					ok = false;
 				}
 			}
 		}
+		else
+		{
+			try
+			{
+				sb->load(_MeshShapeFileName[k]);
+			}	
+			catch (NLMISC::EPathNotFound &)
+			{
+				nlwarning("mesh not found : %s; used as a constraint mesh particle", _MeshShapeFileName[k].c_str());
+				// shape not found, so not present in the shape bank -> we create a dummy shape
+			}
 
-	}	
-	const CMesh &m  = * NLMISC::safe_cast<CMesh *>(is); // only mesh shape's can be used with this class!
+			if (!sb->isPresent(_MeshShapeFileName[k]))
+			{					
+				ok = false;
+			}
+			else
+			{
+				is = sb->addRef(_MeshShapeFileName[k]);
+				if (!dynamic_cast<CMesh *>(is)) // is it a mesh
+				{
+					nlwarning("Tried to bind a shape that is not a mesh to a mesh particle : %s", _MeshShapeFileName[k].c_str());
+					sb->release(is);					
+					ok = false;
+				}
+				else
+				{
+					const CMesh &m  = * NLMISC::safe_cast<CMesh *>(is);
+					/// make sure there are not too many vertices
+					if (m.getVertexBuffer().getNumVertices() > ConstraintMeshMaxNumVerts)
+					{
+						nlwarning("Tried to bind a mesh that has more than %d vertices to a particle mesh: %s", (int) ConstraintMeshMaxNumVerts, _MeshShapeFileName[k].c_str());
+						sb->release(is);						
+						ok = false;
+					}
+					else
+					{
+						_Shapes[k] = is;
+						/// get  the mesh format, or check that is was the same that previous shapes ' one
+						const CMesh &m  = * NLMISC::safe_cast<CMesh *>(_Shapes[k]); // only mesh shape's can be used with this class!
+						if (k == 0)
+						{			
+							vFormat = m.getVertexBuffer().getVertexFormat();
+							numVerts =  m.getVertexBuffer().getNumVertices();
+						}
+						else
+						{
+							if (vFormat != m.getVertexBuffer().getVertexFormat()
+								|| numVerts != m.getVertexBuffer().getNumVertices())
+							{
+								ok = false;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (!ok)
+		{
+			releaseShapes();
+			_Shapes.resize(1);
+			_Shapes[0] = GetDummyShapeFromBank(*sb);
+			break;
+		}
+	}
+
+
+	const CMesh &m  = * NLMISC::safe_cast<CMesh *>(_Shapes[0]); // only mesh shape's can be used with this class!
 
 	/// update the number of faces
 	_NumFaces = getMeshNumTri(m);
@@ -653,18 +737,11 @@ bool CPSConstraintMesh::update(void)
 	/// update opacity / transparency state
 	bool hasTransparentFaces, hasOpaqueFaces;
 	CheckForOpaqueAndTransparentFacesInMesh(m, hasTransparentFaces, hasOpaqueFaces);
-
 	_HasTransparentFaces = hasTransparentFaces;	
 	_HasOpaqueFaces = hasOpaqueFaces;
-
-	_ModelBank = sb;
-	_ModelShape = is;
-
-
+	_ModelBank = sb;	
 	_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
-
 	_Touched = 0;
-
 	return ok;
 	
 }
@@ -726,7 +803,7 @@ void CPSConstraintMesh::fillIndexesInPrecompBasis(void)
 void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 
-	sint ver = f.serialVersion(3);
+	sint ver = f.serialVersion(4);
 	if (f.isReading())
 	{
 		clean();
@@ -760,21 +837,26 @@ void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// saves the model file name, or an empty string if nothing has been set	
 	static std::string emptyStr;
-	if (!f.isReading())
+
+	if (ver < 4) // early version : no morphing support
 	{
-		if (_ModelShape)
+		if (!f.isReading())
 		{
-			f.serial(_MeshShapeFileName);			
+			if (_MeshShapeFileName.size() > 0)
+			{
+				f.serial(_MeshShapeFileName[0]);			
+			}
+			else
+			{
+				f.serial(emptyStr); 
+			}
 		}
 		else
-		{
-			f.serial(emptyStr); 
+		{	
+			_MeshShapeFileName.resize(1);				
+			f.serial(_MeshShapeFileName[0]);
+			_Touched = true;			
 		}
-	}
-	else
-	{	
-		f.serial(_MeshShapeFileName);		
-		_Touched = true;			
 	}
 
 	if (ver > 1)
@@ -794,7 +876,7 @@ void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}						
 	}
 
-	if (ver > 2)
+	if (ver > 2) // texture animation
 	{
 		if (f.isReading())
 		{
@@ -825,12 +907,51 @@ void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			f.serial(rgt);			
 		}
 	}
+
+	if (ver > 3) // mesh morphing
+	{
+		f.serialCont(_MeshShapeFileName);
+		bool useScheme;
+		if (f.isReading())
+		{		
+			delete _MorphScheme;
+		}
+		else
+		{
+			useScheme = _MorphScheme != NULL;
+		}
+		f.serial(useScheme);
+		if (useScheme)
+		{				
+			f.serialPolyPtr(_MorphScheme);
+		}
+		else
+		{
+			f.serial(_MorphValue);
+		}		
+	}
 }
 
 //====================================================================================
 CPSConstraintMesh::~CPSConstraintMesh() 
 {
 	clean();
+	delete _MorphScheme;
+}
+
+
+
+//====================================================================================
+void CPSConstraintMesh::releaseShapes()
+{
+	for (TShapeVect::iterator it = _Shapes.begin(); it != _Shapes.end(); ++it)
+	{
+		if (*it)
+		{
+			_ModelBank->release(*it);
+		}
+	}
+	_Shapes.clear();
 }
 
 //====================================================================================
@@ -838,12 +959,7 @@ void CPSConstraintMesh::clean(void)
 {	
 	if (_ModelBank)
 	{	
-		if (_ModelShape)
-		{
-			_ModelBank->release(_ModelShape);
-		}
-		_ModelBank = NULL;
-		_ModelShape = NULL;
+		releaseShapes();		
 	}
 	_GlobalAnimationEnabled = 0;
 	_ReinitGlobalAnimTimeOnNewElement = 0;
@@ -940,8 +1056,7 @@ void CPSConstraintMesh::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM;
 	nlassert(_Owner);	
-
-	nlassert (_ModelShape); // no mesh has been set for now
+	
 	const uint32 size = _Owner->getSize();
 	if (!size) return;
 	update(); // update mesh datas if needed
@@ -964,8 +1079,10 @@ static inline void ForceMaterialModulation(CMaterial &destMat, CMaterial &srcMat
 	{		
 		if (modulatedStages & (1 << k))
 		{
-			destMat.texEnvArg1RGB(k, CMaterial::Diffuse, CMaterial::SrcColor);
-			destMat.texEnvArg1Alpha(k, CMaterial::Diffuse, CMaterial::SrcAlpha);
+			destMat.texEnvArg0RGB(k, CMaterial::Previous, CMaterial::SrcColor);
+			destMat.texEnvArg0Alpha(k, CMaterial::Previous, CMaterial::SrcAlpha);
+			destMat.texEnvArg1RGB(k, CMaterial::Constant, CMaterial::SrcColor);
+			destMat.texEnvArg1Alpha(k, CMaterial::Constant, CMaterial::SrcAlpha);
 			destMat.texEnvOpRGB(k, CMaterial::Modulate);
 			destMat.texEnvOpAlpha(k, CMaterial::Modulate);			
 		}
@@ -1088,7 +1205,7 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 {
 	// get the vb from the original mesh
-	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_ModelShape);
+	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_Shapes[0]);
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
 
 	/// precompute rotation in a VB from the src mesh
@@ -1123,7 +1240,7 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 	const uint prerotatedModelSize = prerotVb.getVertexSize() * modelVb.getNumVertices();
 
 	/// get a mesh display struct on this shape, with eventually a primary color added.
-	CMeshDisplay  &md    = _MeshDisplayShare.getMeshDisplay(_ModelShape, modelVb.getVertexFormat() 
+	CMeshDisplay  &md    = _MeshDisplayShare.getMeshDisplay(_Shapes[0], modelVb.getVertexFormat() 
 															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 
 
@@ -1225,7 +1342,7 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 {
 	
 	// get the vb from the original mesh
-	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_ModelShape);
+	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_Shapes[0]);
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
 
 	// size for model vertices
@@ -1239,11 +1356,8 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 	IDriver *driver = getDriver();
 	setupDriverModelMatrix();	
 
-
 	// buffer to compute sizes
 	float			sizes[ConstraintMeshBufSize];
-
-
 	
 	float *ptCurrSize;
 	uint ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0;
@@ -1252,7 +1366,7 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 	uint leftToDo = size, toProcess;			
 	
 	/// get a vb in which to write. It has the same format than the input mesh, but can also have a color flag added
-	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_ModelShape, modelVb.getVertexFormat() 
+	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_Shapes[0], modelVb.getVertexFormat() 
 															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 
 	setupRenderPasses((float) _Owner->getOwner()->getSystemDate() - _GlobalAnimDate, md.RdrPasses, opaque);
@@ -1312,66 +1426,175 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 		// transfo matrix & scaled transfo matrix;
 		CMatrix  M, sM;
 
-		do
+	
+		if (_Shapes.size() == 1)
 		{
-
-			uint8 *inVertex = (uint8 *) modelVb.getVertexCoordPointer();
-			uint k = nbVerticesInSource;
-
-			// do we need a normal ?
-			if (modelVb.getVertexFormat() & CVertexBuffer::NormalFlag)
+			/// unmorphed case
+			do
 			{
-				M.identity();
-				M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
-				sM = M;
-				sM.scale(*ptCurrSize);
 
-				// offset of normals in the prerotated mesh				
-				do
+				uint8 *inVertex = (uint8 *) modelVb.getVertexCoordPointer();
+				uint k = nbVerticesInSource;
+
+				// do we need a normal ?
+				if (modelVb.getVertexFormat() & CVertexBuffer::NormalFlag)
 				{
-					CHECK_VERTEX_BUFFER(modelVb, inVertex);	
-					CHECK_VERTEX_BUFFER(outVb,	  outVertex);	
-					CHECK_VERTEX_BUFFER(modelVb, inVertex + inNormalOff);	
-					CHECK_VERTEX_BUFFER(outVb,	  outVertex + outNormalOff);	
+					M.identity();
+					M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
+					sM = M;
+					sM.scale(*ptCurrSize);
 
-					// translate and resize the vertex (relatively to the mesh origin)
-					*(CVector *) outVertex = *posIt + sM * *(CVector *) inVertex;										
-					// copy the normal
-					*(CVector *) (outVertex + outNormalOff) = M * *(CVector *) (inVertex + inNormalOff);
-					
+					// offset of normals in the prerotated mesh				
+					do
+					{
+						CHECK_VERTEX_BUFFER(modelVb, inVertex);	
+						CHECK_VERTEX_BUFFER(outVb,	  outVertex);	
+						CHECK_VERTEX_BUFFER(modelVb, inVertex + inNormalOff);	
+						CHECK_VERTEX_BUFFER(outVb,	  outVertex + outNormalOff);	
 
-					inVertex  += inVSize;
-					outVertex += outVSize;
+						// translate and resize the vertex (relatively to the mesh origin)
+						*(CVector *) outVertex = *posIt + sM * *(CVector *) inVertex;										
+						// copy the normal
+						*(CVector *) (outVertex + outNormalOff) = M * *(CVector *) (inVertex + inNormalOff);
+						
+
+						inVertex  += inVSize;
+						outVertex += outVSize;
+					}
+					while (--k);
 				}
-				while (--k);
-			}
-			else
-			{
-				// no normal to transform
-				sM.identity();
-				sM.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
-				sM.scale(*ptCurrSize);
-
-				do
+				else
 				{
-					CHECK_VERTEX_BUFFER(modelVb, inVertex);
-					CHECK_VERTEX_BUFFER(outVb, outVertex);
+					// no normal to transform
+					sM.identity();
+					sM.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
+					sM.scale(*ptCurrSize);
 
-					// translate and resize the vertex (relatively to the mesh origin)
-					*(CVector *) outVertex = *posIt + sM * *(CVector *) inVertex;				
+					do
+					{
+						CHECK_VERTEX_BUFFER(modelVb, inVertex);
+						CHECK_VERTEX_BUFFER(outVb, outVertex);
 
-					inVertex  += inVSize;
-					outVertex += outVSize;
+						// translate and resize the vertex (relatively to the mesh origin)
+						*(CVector *) outVertex = *posIt + sM * *(CVector *) inVertex;				
+
+						inVertex  += inVSize;
+						outVertex += outVSize;
+					}
+					while (--k);
 				}
-				while (--k);
-			}
 
-			
-			++posIt;
-			ptCurrSize += ptCurrSizeIncrement;
-			ptBasis += ptBasisIncrement;
+				
+				++posIt;
+				ptCurrSize += ptCurrSizeIncrement;
+				ptBasis += ptBasisIncrement;
+			}
+			while (posIt != endPosIt);
 		}
-		while (posIt != endPosIt);
+		else
+		{
+			// morphed case
+			
+			// first, compute the morph value for each mesh
+			float	morphValues[MeshBufSize];
+			float	*currMorphValue;
+			uint	morphValueIncr;
+
+			if (_MorphScheme) // variable case
+			{
+				currMorphValue = (float *) _MorphScheme->make(_Owner, size - leftToDo, &morphValues[0], sizeof(float), toProcess, true);
+				morphValueIncr  = 1;
+			}
+			else /// constant case
+			{
+				currMorphValue = &_MorphValue;
+				morphValueIncr  = 0;
+			}
+
+			do
+			{
+				const uint numShapes = _Shapes.size();
+				const uint8 *m0, *m1;
+				float lambda;
+				float opLambda;
+				if (*currMorphValue >= numShapes - 1)
+				{
+					lambda = 0.f;
+					opLambda = 1.f;
+					m0 = m1 = (uint8 *) (NLMISC::safe_cast<CMesh *>(_Shapes[numShapes - 1])->getVertexBuffer().getVertexCoordPointer());
+				}
+				else if (*currMorphValue <= 0)
+				{
+					lambda = 0.f;
+					opLambda = 1.f;
+					m0 = m1 = (uint8 *) (NLMISC::safe_cast<CMesh *>(_Shapes[0])->getVertexBuffer().getVertexCoordPointer());
+				}
+				else
+				{
+					uint iMeshIndex = (uint) *currMorphValue;
+					lambda = *currMorphValue - iMeshIndex;
+					opLambda = 1.f - lambda;
+					m0 = (uint8 *) NLMISC::safe_cast<CMesh *>(_Shapes[iMeshIndex])->getVertexBuffer().getVertexCoordPointer();
+					m1 = (uint8 *) NLMISC::safe_cast<CMesh *>(_Shapes[iMeshIndex + 1])->getVertexBuffer().getVertexCoordPointer();
+				}
+						
+				uint k = nbVerticesInSource;
+				// do we need a normal ?
+				if (modelVb.getVertexFormat() & CVertexBuffer::NormalFlag)
+				{
+					M.identity();
+					M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
+					sM = M;
+					sM.scale(*ptCurrSize);
+
+					// offset of normals in the prerotated mesh				
+					do
+					{
+						// todo : add address  for in vertex
+						CHECK_VERTEX_BUFFER(outVb,	  outVertex);							
+						CHECK_VERTEX_BUFFER(outVb,	  outVertex + outNormalOff);	
+
+						// morph, and transform the vertex
+						*(CVector *) outVertex = *posIt + sM * (opLambda * *(CVector *) m0 + lambda * *(CVector *) m1);
+						// morph, and transform the normal
+						*(CVector *) (outVertex + outNormalOff) = M * (opLambda * *(CVector *) (m0 + inNormalOff)
+																	  + lambda * *(CVector *) (m1 + inNormalOff)).normed();
+						
+
+						m0  += inVSize;
+						m1  += inVSize;
+						outVertex += outVSize;
+					}
+					while (--k);
+				}
+				else
+				{
+					// no normal to transform
+					sM.identity();
+					sM.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
+					sM.scale(*ptCurrSize);
+
+					do
+					{			
+						// todo : add address  for in vertex
+						CHECK_VERTEX_BUFFER(outVb, outVertex);
+						// morph, and transform the vertex
+						*(CVector *) outVertex = *posIt + sM * (opLambda * *(CVector *) m0 + opLambda * *(CVector *) m1);
+
+						m0  += inVSize;
+						m1  += inVSize;
+						outVertex += outVSize;
+					}
+					while (--k);
+				}
+
+				
+				++posIt;
+				ptCurrSize += ptCurrSizeIncrement;
+				ptBasis += ptBasisIncrement;
+			}
+			while (posIt != endPosIt);
+		}		
 
 		// compute colors if needed
 		if (_UseColorScheme)
@@ -1403,6 +1626,7 @@ void CPSConstraintMesh::newElement(CPSLocated *emitterLocated, uint32 emitterInd
 	{		
 		_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
 	}
+	if (_MorphScheme && _MorphScheme->hasMemory()) _MorphScheme->newElement(emitterLocated, emitterIndex);
 }
 	
 //====================================================================================	
@@ -1417,6 +1641,7 @@ void CPSConstraintMesh::deleteElement(uint32 index)
 		_IndexInPrecompBasis[index] = _IndexInPrecompBasis[_Owner->getSize() - 1];
 	}
 	deleteColorElement(index);
+	if (_MorphScheme && _MorphScheme->hasMemory()) _MorphScheme->deleteElement(index);
 }
 	
 //====================================================================================
@@ -1430,6 +1655,7 @@ void CPSConstraintMesh::resize(uint32 size)
 		_IndexInPrecompBasis.resize(size);
 	}
 	resizeColor(size);
+	if (_MorphScheme && _MorphScheme->hasMemory()) _MorphScheme->resize(size, getColorOwner()->getSize());
 }	
 
 //====================================================================================
@@ -1778,9 +2004,9 @@ void	CPSConstraintMesh::CGlobalTexAnims::serial(NLMISC::IStream &f) throw(NLMISC
 void CPSConstraintMesh::restoreMaterials()
 {
 	update();
-	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_ModelShape);
+	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_Shapes[0]);
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
-	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_ModelShape, modelVb.getVertexFormat() 
+	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_Shapes[0], modelVb.getVertexFormat() 
 															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 
 	TRdrPassSet rdrPasses = md.RdrPasses;

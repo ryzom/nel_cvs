@@ -1,7 +1,7 @@
 /** \file sound_driver_al.h
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.h,v 1.3 2001/07/10 16:49:08 cado Exp $
+ * $Id: sound_driver_al.h,v 1.4 2001/07/19 12:47:07 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,7 +103,7 @@ public:
 	void					applyRolloffFactor( float f );
 
 	/// Temp
-	virtual bool			loadWavFile( IBuffer *destbuffer, char *filename );
+	virtual bool			loadWavFile( IBuffer *destbuffer, const char *filename );
 
 	// Does not create a sound loader
 

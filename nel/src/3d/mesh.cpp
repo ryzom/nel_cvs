@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.62 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: mesh.cpp,v 1.63 2002/06/27 12:25:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -446,6 +446,8 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 void CMeshGeom::setBlendShapes(std::vector<CBlendShape>&bs)
 {
 	_MeshMorpher->BlendShapes = bs;
+	// must update some RunTime parameters
+	compileRunTime();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * ARGB pixel format
  *
- * $Id: rgba.cpp,v 1.8 2001/01/12 13:21:42 corvazier Exp $
+ * $Id: rgba.cpp,v 1.9 2001/02/23 09:09:03 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ void CRGBA::set(uint8 r, uint8 g, uint8 b, uint8 a)
 	A = a;
 }
 // ***************************************************************************
-void CRGBA::blendFromui(CRGBA &c0, CRGBA &c1, uint coef) // coef must be in [0,256]
+void CRGBA::blendFromui(const CRGBA &c0, const CRGBA &c1, uint coef) // coef must be in [0,256]
 {
 	int	a1 = coef;
 	int	a2 = 256-a1;

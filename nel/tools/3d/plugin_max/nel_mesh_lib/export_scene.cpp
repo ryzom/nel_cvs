@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.8 2001/08/29 14:41:29 besson Exp $
+ * $Id: export_scene.cpp,v 1.9 2001/09/05 15:46:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,10 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 		{
 			aIGArray[nNumIG].DontAddToScene = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0)?true:false;
 			aIGArray[nNumIG].InstanceName = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_INSTANCE_NAME, "");
+			if (aIGArray[nNumIG].InstanceName == "") // no instance name was set, takes the node name instead
+			{
+				aIGArray[nNumIG].InstanceName = pNode->GetName();
+			}
 
 			INode *pParent = pNode->GetParentNode();
 
@@ -167,9 +171,10 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 					if (ad&&ad->data)
 					{
 						// get file name only
-						char fName[_MAX_FNAME];												
-						::_splitpath((const char*)ad->data, NULL, NULL, fName, NULL) ;
-						aIGArray[nNumIG].Name=fName;
+						char fName[_MAX_FNAME];
+						char ext[_MAX_FNAME];
+						::_splitpath((const char*)ad->data, NULL, NULL, fName, ext) ;						
+						aIGArray[nNumIG].Name=fName + std::string(ext);
 					}
 					else
 					{

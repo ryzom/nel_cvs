@@ -1,7 +1,7 @@
 /** \file cpu_info.cpp
  * <File description>
  *
- * $Id: cpu_info.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: cpu_info.cpp,v 1.4 2002/03/28 13:21:42 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -49,8 +49,7 @@ static bool DetectMMX(void)
 
 		return result == 1;
  
-
-		printf("mmx detected\n");
+		// printf("mmx detected\n");
 
 	#else
 		return false;
@@ -60,49 +59,46 @@ static bool DetectMMX(void)
 
 static bool DetectSSE(void)
 {	
-	#if 0 // not activated for now ...
-		#ifdef NL_OS_WINDOWS
-			if (!CCpuInfo::hasCPUID()) return false; // cpuid not supported ...
+	#ifdef NL_OS_WINDOWS
+		if (!CCpuInfo::hasCPUID()) return false; // cpuid not supported ...
 
-			uint32 result = 0;
-			__asm
-			{			
-				mov eax, 1   // request for feature flags
-				cpuid 							
-				test EDX, 002000000h   // bit 25 in feature flags equal to 1
-				je noSSE
-				mov result, 1  // sse detected
-			noSSE:
-			}
+		uint32 result = 0;
+		__asm
+		{			
+			mov eax, 1   // request for feature flags
+			cpuid 							
+			test EDX, 002000000h   // bit 25 in feature flags equal to 1
+			je noSSE
+			mov result, 1  // sse detected
+		noSSE:
+		}
 
 
-			if (result)
+		if (result)
+		{
+			// check OS support for SSE
+			try 
 			{
-				// check OS support for SSE
-				try 
+				__asm
 				{
-					__asm
-					{
-						xorps xmm0, xmm0  // Streaming SIMD Extension
-					}
+					xorps xmm0, xmm0  // Streaming SIMD Extension
 				}
-				catch(...)
-				{
-					return false;
-				}
-			
-				return true;
 			}
-			else
+			catch(...)
 			{
 				return false;
 			}
-		#else
-			printf("sse not detected\n");
-			return false
-		#endif
+		
+			// printf("sse detected\n");
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	#else
-		return false;
+		return false
 	#endif
 }
 

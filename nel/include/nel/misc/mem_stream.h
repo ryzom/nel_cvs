@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.21 2002/05/28 13:12:39 besson Exp $
+ * $Id: mem_stream.h,v 1.22 2002/06/03 10:02:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,10 @@ public:
 	{
 		resetPtrTable();
 		_Buffer.clear();
-		_Buffer.resize (_DefaultCapacity);
+		if (!isReading())
+		{
+			_Buffer.resize (_DefaultCapacity);
+		}
 		_BufPos = _Buffer.getPtr();
 	}
 

@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.10 2002/09/16 14:50:07 lecroart Exp $
+ * $Id: login_service.h,v 1.11 2002/09/16 17:38:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,9 +48,6 @@ using namespace NLNET;
 /// Set the version of the server. you have to increase it each time the client-server protocol changes.
 /// You have to increment the client too (the server and client version must be the same)
 extern uint32 ServerVersion;
-
-// true is you want to store password in crypted format, 0 for plain text
-extern bool CryptPassword;
 
 
 

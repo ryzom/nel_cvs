@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.22 2002/09/16 17:17:32 lecroart Exp $
+ * $Id: login_service.cpp,v 1.23 2002/09/16 17:38:03 lecroart Exp $
  *
  * \todo check must say who are the master LS to know who set the shard online/offline etc... (USE an int instead of bool for Online)
  *
@@ -80,7 +80,6 @@ using namespace NLNET;
 //
 
 uint32 ServerVersion = 1;
-bool CryptPassword = true;
 
 // store specific user information
 NLMISC::CFileDisplayer Fd (NELNS_LOGS "login_service.stat");
@@ -285,7 +284,6 @@ void beep (uint freq, uint nb, uint beepDuration, uint pauseDuration)
 void cbVar (CConfigFile::CVar &var)
 {
 	if (var.Name == "ServerVersion") ServerVersion = var.asInt();
-	else if (var.Name == "CryptPassword") CryptPassword = var.asInt() == 1;
 	else nlstop;
 }
 

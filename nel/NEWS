@@ -1,3 +1,14 @@
+June 6 2002
+===========
+
+* NLMISC: Added getFileSize();
+
+* NLMISC: Now cut .log when they are greater then 5 mega bits;
+
+*  NLNET: Added custumizable variable display using DisplayedVariables in the config file.
+
+* NLMISC: Added += in the config file to append values in an array.
+
 May 27 2002
 ===========
 

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.36 2004/07/08 08:55:25 distrib Exp $
+ * $Id: welcome_service.cpp,v 1.37 2004/07/08 09:38:38 legros Exp $
  *
  */
 
@@ -563,7 +563,7 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	else if (ShardOpen != ClosedForAll)
 	{
 		const std::string&	allowedGroups = OpenGroups;
-		bool				userInOpenGroups = (allowedGroups.find(userPriv) != std::string::npos);
+		bool				userInOpenGroups = (!userPriv.empty() && !allowedGroups.empty() && allowedGroups.find(userPriv) != std::string::npos);
 
 		// open for all or user is privileged
 		authorizeUser = (ShardOpen == OpenForAll || userInOpenGroups);

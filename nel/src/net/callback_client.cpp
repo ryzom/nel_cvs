@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.22 2002/05/22 08:04:17 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.23 2002/06/11 15:32:22 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,7 +133,7 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
  */
 bool CCallbackClient::flush (TSockId hostid) 
 {
-	nlassert (hostid != InvalidSockId);	// invalid hostid
+	nlassert (hostid == InvalidSockId);	// invalid hostid
 	checkThreadId ();
 
 #ifdef USE_MESSAGE_RECORDER

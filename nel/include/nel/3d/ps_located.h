@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.4 2001/04/27 14:28:08 vizerie Exp $
+ * $Id: ps_located.h,v 1.5 2001/05/02 11:49:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -255,8 +255,20 @@ public:
 
 
 
-	/// get the number of instance in this located container
-	uint32 getSize(void) const { return _Size ; }
+	/// get the current number of instance in this located container
+	uint32 getSize(void) const 
+	{ 
+		return _Size ; 
+	}
+
+	/** get the max number of instance in this located container
+	 *	\see resize()
+	 */
+	uint32 getMaxSize(void) const 
+	{ 
+		return _MaxSize ; 
+	}
+
 	/**
 	* Resize the located container, in order to accept more instances
 	*/
@@ -772,8 +784,7 @@ class CPSTargetLocatedBindable : public CPSLocatedBindable
 
 		/** Detach a target. If not present -> assert
 		 * This also call releaseTargetRsc for clean up
-		 */
-		
+		 */		
 		void detachTarget(CPSLocated *ptr) ;
 
 		/// return the number of targets

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.4 2001/04/27 14:28:08 vizerie Exp $
+ * $Id: ps_particle.h,v 1.5 2001/05/02 11:49:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,10 +30,14 @@
 #include "nel/3d/ps_located.h"
 #include "nel/3d/material.h"
 #include "nel/3d/ps_util.h"
+#include "nel/3d/vertex_buffer.h"
+
+
 
 
 namespace NL3D {
 
+template <typename T> struct CPSAttribMaker ;
 
 /**
  * This is the base class for all particle
@@ -89,9 +93,85 @@ public:
 
 	/// serialisation. Derivers must override this
 	virtual void serial(NLMISC::IStream &f) { CPSLocatedBindable::serial(f) ; }
-
-
+	
 };
+
+
+
+
+
+
+/// this class adds tunable color to a particle. Must be added using public inheritance
+class CPSColoredParticle
+{
+	public:
+
+		/** Set an attribute maker that produce a color
+		 *  It must have been allocated by new
+		 * It will be deleted by this object
+		 */
+		void setColorScheme(CPSAttribMaker<CRGBA> *col) ;
+
+		/// Set a constant color for the particles
+		void setColor(const NLMISC::CRGBA col) ;
+
+		/// ctor : default are white particles (constant color)
+		CPSColoredParticle() ;
+
+		/// dtor
+		~CPSColoredParticle() ;
+
+		/// serialization
+		void serialColorScheme(NLMISC::IStream &f) ;
+
+	protected:		
+		/// if this is false, constant color will be used instead of a scheme
+		bool _UseColorScheme ;
+
+		CRGBA _Color ;
+
+		// used only if _UseColorScheme is set to true
+
+		CPSAttribMaker<CRGBA> *_ColorScheme ; 						
+
+		/// Update the material and the vb and the like so that they match the color scheme
+		virtual void updateMatAndVb(void) = 0 ;
+} ;
+
+
+/// this class adds tunable size to a particle. Must be added using public inheritance
+class CPSSizedParticle
+{
+	public:
+
+		/** Set an attribute maker that produce a size
+		 *  It must have been allocated by new
+		 *  It will be deleted by this object
+		 */
+		virtual void setSizeScheme(CPSAttribMaker<float> *size) ;
+
+		/// Set a constant size for the particles
+		virtual void setSize(float size) ;
+
+		/// ctor : default are 0.1f particles
+		CPSSizedParticle() ;
+
+		/// dtor
+		~CPSSizedParticle() ;
+
+		/// serialization
+		void serialSizeScheme(NLMISC::IStream &f) ;
+
+	protected:		
+		/// if this is false, constant size will be used instead of a scheme
+		bool _UseSizeScheme ;
+		float _ParticleSize ;
+		CPSAttribMaker<float> *_SizeScheme ; // used only if _UseSizeScheme is set to true				
+} ;
+
+/// this class adds tunable 2D rotation to a particle
+
+
 
 
 
@@ -99,7 +179,7 @@ public:
  *	this is just a coloured dot that fade to black during its life
  */
 
-class CPSDot : public CPSParticle
+class CPSDot : public CPSParticle, public CPSColoredParticle
 {
 	public:
 		/**
@@ -107,25 +187,31 @@ class CPSDot : public CPSParticle
 		*/
 		virtual void draw(void) ;
 
-		void resize(uint32) {}
+		void resize(uint32 size) { _Vb.setNumVertices(size) ;}
+
+		/// we don't save datas so it does nothing for now
 		bool newElement(void) { return true ; }
+
+		/// we don't save datas so it does nothing for now
 		void deleteElement(uint32) {}
 	
 		
+		/// ctor
+
+		CPSDot() { init() ; }
+
 		NLMISC_DECLARE_CLASS(CPSDot) ;
-		// ctor
-		CPSDot(const CRGBA &color = CRGBA(255, 255, 255)) ;
-
-
-		/// set the color of the dot
-		void setColor(const CRGBA &c) { _Color = c ; }
 
 		///serialisation
 		void serial(NLMISC::IStream &f) ;
 	protected:
-		void init(void) ;
-		CRGBA _Color ;
+		
+		void init(void) ;		
 		CMaterial _Mat ;
+		CVertexBuffer _Vb ;
+
+		/// update the material and the vb so that they match the color scheme
+		virtual void updateMatAndVb(void) ;
 } ;
 
 
@@ -134,31 +220,50 @@ class CPSDot : public CPSParticle
  */
 
 
-
-const float FaceLookAtSize = 0.3f ;
-
-class CPSFaceLookAt : public CPSDot
+class CPSFaceLookAt : public CPSParticle, public CPSColoredParticle, public CPSSizedParticle
 {
 public:
 	/// create the face look at by giving a texture and an optionnal color
-	CPSFaceLookAt(CSmartPtr<ITexture> tex, const CRGBA &c = CRGBA(255, 255, 255)) ;
+	CPSFaceLookAt(CSmartPtr<ITexture> tex) ;
 	virtual void draw(void) ;
 	void serial(NLMISC::IStream &f) ;
 	
 	NLMISC_DECLARE_CLASS(CPSFaceLookAt) ;
 
-	virtual bool completeBBox(NLMISC::CAABBox &box) const  
-	{ 
-		CPSUtil::addRadiusToAABBox(box, FaceLookAtSize) ;
-		return true  ;	
-	}
+	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
 
-	void init(void) ;
+	virtual void resize(uint32 size) ; 
+		
+	/// we don't save datas so it does nothing for now
+	bool newElement(void) { return true ; }
 
-	CPSFaceLookAt() {}
+	/// we don't save datas so it does nothing for now
+	void deleteElement(uint32) {}
+
+	// default ctor
+
+	CPSFaceLookAt() ;
+
+	//dtor
+
+	~CPSFaceLookAt() ;
 protected:
+
+	/// initialisations
+	virtual void init(void) ;
 	
 	CSmartPtr<ITexture> _Tex ;
+
+	// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
+	virtual void updateMatAndVb(void) ;
+
+	CMaterial _Mat ;
+	CVertexBuffer _Vb ;
+
+	// an index buffer used for drawing
+	uint32 *_IndexBuffer ;
+
+	
 } ;
 
 

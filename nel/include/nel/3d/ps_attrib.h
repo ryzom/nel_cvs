@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.4 2001/05/02 11:49:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,9 +55,11 @@ public:
 	/// Constructor
 	CPSAttrib(uint32 maxNbInstances = DefaultMaxLocatedInstance);
 
-	/// resize the attributes tab
-
+	/// resize the attributes tab. This tells what is the mx number of element in this tab, but don't add elements
 	void resize(uint32 nbInstances) ;
+
+	/// resize the attribute tab, but fill the whole tab elements, so size = maxSize
+	void resizeNFill(uint32 nbInstances) ;
 	 
 	/// get a const reference on an attribute instance
 	const T &operator[](uint32 index) const { nlassert(index < _Size) ; return _Tab[index] ; }
@@ -95,8 +97,10 @@ public:
 
 
 	/// return the number of instance in the container
-
 	uint32 getSize(void) const { return _Size ; }
+
+	/// return the max number of instance in the container
+	uint32 getMaxSize(void) const { return _MaxSize ; }
 
 
 	//// remove an object from the tab
@@ -120,6 +124,26 @@ template <typename T>
 CPSAttrib<T>::CPSAttrib(uint32 maxNbInstances) : _MaxSize(maxNbInstances), _Size(0)
 {
 }
+
+template <typename T> 
+void CPSAttrib<T>::resizeNFill(uint32 nbInstances)
+{
+	_Tab.reserve(nbInstances) ;
+	sint32 leftToFill = nbInstances - _Size ;
+
+	if (leftToFill > 0)
+	{
+		do
+		{
+			_Tab.push_back(T()) ;
+		}
+		while (--leftToFill) ;
+	}
+
+	_Size = _MaxSize = nbInstances ;
+	
+}
+
 
 template <typename T> 
 void CPSAttrib<T>::resize(uint32 nbInstances)

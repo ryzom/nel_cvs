@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
+ * $Id: ps_force.h,v 1.4 2001/05/02 11:49:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,8 @@ public:
 };
 
 
-// example of gravity class for test
+/// a gravity class
+
 class CPSGravity : public CPSForce
 {
 public:
@@ -108,14 +109,90 @@ public:
 	virtual void show(CAnimationTime ellapsedTime)  ;
 
 
+	/// set the gravity strenght
+	void setG(float g) { _G = g ; }
+
+	/// get the gravity strenght
+	float getG(void) const { return _G ; } 
+
+	CPSGravity(float g = 9.8f) : _G(g)
+	{}
+
+	/// serialization
+	virtual void serial(NLMISC::IStream &f) ;
+
+
 	NLMISC_DECLARE_CLASS(CPSGravity) ; 
 
 
+	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
 	virtual bool newElement(void) { return true ; } ;	
+
+	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
 	virtual void deleteElement(uint32 index) {} ;	
+
+	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
 	virtual void resize(uint32 size) {} ;
 
+protected:
+
+	float _G ;
+
 } ;
+
+
+/// a spring class
+
+class CPSSpring : public CPSForce
+{
+public:
+
+
+	/// set the k coefficient of the spring
+	void setK(float k) { _K = k ; } 
+
+	/// get the k coeefficient of the dpring
+	float getK(void) const { return _K ; }
+
+	/// ctor : k is the coefficient of the spring
+
+	CPSSpring(float k = 1.0f) : _K(1.0f)
+	{}
+
+
+	/// serialization
+	virtual void serial(NLMISC::IStream &f) ;
+
+
+	/// Compute the force on the targets
+	virtual void performMotion(CAnimationTime ellapsedTime)  ;
+
+	/// Show the force (edition mode)
+	virtual void show(CAnimationTime ellapsedTime)  ;
+
+
+	NLMISC_DECLARE_CLASS(CPSSpring) ; 
+
+
+	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
+	virtual bool newElement(void) { return true ; } ;	
+
+	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
+	virtual void deleteElement(uint32 index) {} ;	
+
+	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
+	virtual void resize(uint32 size) {} ;
+
+protected:
+
+	float _K ;
+
+} ;
+
+
+
+
+
 
 
 

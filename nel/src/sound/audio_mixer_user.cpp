@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.31 2002/08/26 09:36:28 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.32 2002/09/03 18:16:32 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/time_nl.h"
+#include "nel/misc/command.h"
 
 
 using namespace NLMISC;
@@ -977,5 +978,48 @@ void CAudioMixerUser::setListenerPos (const NLMISC::CVector &pos)
 	_Listener.setPos(pos);
 	CBackgroundSoundManager::setListenerPosition(pos);
 }
+
+NLMISC_COMMAND (displaySoundInfo, "Display information about the audio mixer", "")
+{
+	if(args.size() != 0) return false;
+
+	if (CAudioMixerUser::instance() == NULL)
+	{
+		log.displayNL ("No audio mixer available");
+		return true;
+	}
+
+	log.displayNL ("%d tracks, MAX_TRACKS = %d, contains:", CAudioMixerUser::instance()->_NbTracks, MAX_TRACKS);
+
+	for (uint i = 0; i < CAudioMixerUser::instance()->_NbTracks; i++)
+	{
+		if (CAudioMixerUser::instance()->_Tracks[i] == NULL)
+		{
+			log.displayNL ("Track %d is NULL", i);
+		}
+		else
+		{
+			log.displayNL ("Track %d %s available and %s playing.", i, (CAudioMixerUser::instance()->_Tracks[i]->isAvailable()?"is":"is not"), (CAudioMixerUser::instance()->_Tracks[i]->isPlaying()?"is":"is not"));
+			if (CAudioMixerUser::instance()->_Tracks[i]->getUserSource() == NULL)
+			{
+				log.displayNL ("    CUserSource is NULL");
+			}
+			else
+			{
+				CVector pos;
+				CAudioMixerUser::instance()->_Tracks[i]->getUserSource()->getPos(pos);
+				string bufname;
+				if (CAudioMixerUser::instance()->_Tracks[i]->getUserSource()->getBuffer())
+					bufname = CAudioMixerUser::instance()->_Tracks[i]->getUserSource()->getBuffer()->getName();
+				log.displayNL ("    CUserSource is id %d buffer name '%s' pos %f %f %f", CAudioMixerUser::instance()->_Tracks[i]->getUserSource()->getSound(), bufname.c_str(), pos.x, pos.y, pos.z);
+			}
+		}
+	}
+
+	return true;
+}
+
+
+
 
 } // NLSOUND

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.25 2002/07/25 13:35:10 lecroart Exp $
+ * $Id: audio_mixer_user.h,v 1.26 2002/09/03 18:16:32 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -287,6 +287,8 @@ public:
 	uint32 _UpdateCount;
 	uint32 _CreateCount;
 #endif
+
+	friend struct displaySoundInfoClass;
 
 };
 

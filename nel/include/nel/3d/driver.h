@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.7 2000/11/06 17:37:49 berenguier Exp $
+ * $Id: driver.h,v 1.8 2000/11/06 18:12:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -421,6 +421,9 @@ public:
 	virtual bool			setupTexture(CTexture& tex)=0;
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;
+
+	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
+	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true)=0;
 
 	virtual void			setupViewMatrix(const CMatrix& mtx)=0;
 

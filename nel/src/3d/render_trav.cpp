@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.4 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: render_trav.cpp,v 1.5 2000/11/06 18:12:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/3d/hrc_trav.h"
 #include "nel/3d/clip_trav.h"
 #include "nel/3d/light_trav.h"
+#include "nel/3d/driver.h"
 using namespace std;
 using namespace NLMISC;
 
@@ -55,6 +56,16 @@ IObs		*CRenderTrav::createDefaultObs() const
 // ***************************************************************************
 void		CRenderTrav::traverse()
 {
+	ITravCameraScene::update();
+
+	// Bind to Driver.
+	IDriver::currentDriver()->setFrustum(Left, Right, Bottom, Top, Near, Far, Perspective);
+	IDriver::currentDriver()->setupViewMatrix(ViewMatrix);
+
+	// Clear screen.
+	IDriver::currentDriver()->clear2D(CRGBA(0,0,0,0));
+	IDriver::currentDriver()->clearZBuffer();
+
 	// First traverse the root.
 	if(Root)
 		Root->traverse(NULL);

@@ -170,6 +170,7 @@
 #define IDC_EDIT_SCHEME                 1074
 #define IDI_APP_ICON                    1074
 #define IDB_SOUND                       1075
+#define IDC_GET_SCHEME                  1075
 #define IDC_CLAMP_ATTRIB                1076
 #define IDD_SOUND                       1076
 #define IDC_SCHEME_INPUT                1077
@@ -177,14 +178,19 @@
 #define IDC_ATTRIB_NB_CYCLES            1078
 #define IDB_SOUND_FREQ                  1078
 #define IDD_ABOUT                       1079
+#define IDC_PUT_SCHEME                  1079
 #define IDD_LB_EXTERN_IB                1080
 #define IDC_ATTR_BITMAP                 1081
 #define IDD_PICK_SOUND                  1081
 #define IDC_CONSTANT_VALUE_POS          1082
 #define IDD_CHOOSE_LAG                  1082
 #define IDD_EDITSPINNER                 1083
+#define IDD_SCHEME_BANK_DLG             1084
+#define IDD_CHOOSE_NAME                 1085
 #define IDC_AVAILABLE_TARGET            1086
+#define IDB_PARTICLE_WIDTH              1086
 #define IDC_PARTICLE_COLOR              1087
+#define IDB_PARTICLE_HEIGHT             1087
 #define IDC_BINDABLE_TYPE               1088
 #define IDC_BROWSE_COLOR                1089
 #define IDC_VALUE1                      1090
@@ -267,6 +273,42 @@
 #define IDC_PLAY_SOUND                  1171
 #define IDC_LAG                         1172
 #define IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS 1173
+#define IDC_REMOVE                      1174
+#define IDC_SCHEME_LIST                 1175
+#define IDC_NAME_CHOSEN                 1176
+#define IDC_SAVE_BANK                   1177
+#define IDC_LOAD_BANK                   1178
+#define IDC_INDE_SIZES                  1179
+#define IDC_SIZE_WIDTH                  1180
+#define IDC_SIZE_HEIGHT                 1181
+#define IDC_WIDTH_HEIGHT_BOX            1182
+#define IDM_DOT_LOC                     2000
+#define IDM_LOOKAT_LOC                  2001
+#define IDM_FANLIGHT_LOC                2002
+#define IDM_RIBBON_LOC                  2003
+#define IDM_TAILDOT_LOC                 2004
+#define IDM_MESH_LOC                    2005
+#define IDM_CONSTRAINT_MESH_LOC         2006
+#define IDM_FACE_LOC                    2007
+#define IDM_SHOCKWAVE_LOC               2008
+#define IDM_GRAVITY_FORCE_LOC           2009
+#define IDM_DIRECTIONNAL_FORCE_LOC      2010
+#define IDM_SPRING_FORCE_LOC            2011
+#define IDM_FLUID_FRICTION_LOC          2012
+#define IDM_CENTRAL_GRAVITY_LOC         2013
+#define IDM_CYLINDRIC_VORTEX_LOC        2014
+#define IDM_BROWNIAN_MOVE_LOC           2015
+#define IDM_ZONE_PLANE_LOC              2016
+#define IDM_ZONE_SPHERE_LOC             2017
+#define IDM_ZONE_RECTANGLE_LOC          2018
+#define IDM_ZONE_DISC_LOC               2019
+#define IDM_ZONE_CYLINDER_LOC           2020
+#define IDM_DIRECTIONNAL_EMITTER_LOC    2021
+#define IDM_OMNIDIRECTIONNAL_EMITTER_LOC 2022
+#define IDM_RECTANGLE_EMITTER_LOC       2023
+#define IDM_CONIC_EMITTER_LOC           2024
+#define IDM_SPHERICAL_EMITTER_LOC       2025
+#define IDM_SOUND_LOC                   2026
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -345,42 +387,13 @@
 #define IDM_REMOVE_ALL_INSTANCES_FROM_SCENE 32863
 #define IDM_MERGE_PS                    32864
 
-
-#define IDM_DOT_LOC 2000
-#define IDM_LOOKAT_LOC 2001
-#define IDM_FANLIGHT_LOC 2002
-#define IDM_RIBBON_LOC 2003
-#define IDM_TAILDOT_LOC 2004
-#define IDM_MESH_LOC 2005
-#define IDM_CONSTRAINT_MESH_LOC 2006
-#define IDM_FACE_LOC 2007
-#define IDM_SHOCKWAVE_LOC 2008
-#define IDM_GRAVITY_FORCE_LOC 2009
-#define IDM_DIRECTIONNAL_FORCE_LOC 2010
-#define IDM_SPRING_FORCE_LOC 2011
-#define IDM_FLUID_FRICTION_LOC 2012
-#define IDM_CENTRAL_GRAVITY_LOC 2013
-#define IDM_CYLINDRIC_VORTEX_LOC 2014
-#define IDM_BROWNIAN_MOVE_LOC 2015
-#define IDM_ZONE_PLANE_LOC 2016
-#define IDM_ZONE_SPHERE_LOC 2017
-#define IDM_ZONE_RECTANGLE_LOC 2018
-#define IDM_ZONE_DISC_LOC 2019
-#define IDM_ZONE_CYLINDER_LOC 2020
-#define IDM_DIRECTIONNAL_EMITTER_LOC 2021
-#define IDM_OMNIDIRECTIONNAL_EMITTER_LOC 2022
-#define IDM_RECTANGLE_EMITTER_LOC 2023
-#define IDM_CONIC_EMITTER_LOC 2024
-#define IDM_SPHERICAL_EMITTER_LOC 2025
-#define IDM_SOUND_LOC 2026
-
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1084
+#define _APS_NEXT_RESOURCE_VALUE        1088
 #define _APS_NEXT_COMMAND_VALUE         32865
-#define _APS_NEXT_CONTROL_VALUE         1174
+#define _APS_NEXT_CONTROL_VALUE         1183
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

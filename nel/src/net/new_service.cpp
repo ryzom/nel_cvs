@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: new_service.cpp,v 1.9 2001/04/06 16:08:12 lecroart Exp $
+ * $Id: new_service.cpp,v 1.10 2001/04/09 10:06:18 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -215,11 +215,11 @@ sint INewService::main (int argc, char **argv)
 		// Initialize debug stuffs, create displayers for nl* functions
 		//
 
-		initDebug();
+		//initDebug(); //deprecated
 #ifdef NL_RELEASE
-		ErrorLog.addDisplayer (&sd);
-		WarningLog.addDisplayer (&sd);
-		InfoLog.addDisplayer (&sd);
+		ErrorLog->addDisplayer (&sd);
+		WarningLog->addDisplayer (&sd);
+		InfoLog->addDisplayer (&sd);
 #endif // NL_RELEASE
 
 		//

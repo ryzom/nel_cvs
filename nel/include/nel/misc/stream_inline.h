@@ -6,7 +6,7 @@
  * Pkoi? : pour optimiser la lecture/ecriture (plus de if du tout). Plus rapide pour olivier de faire des copies
  * de messages (brut) que de se taper un if dans le CMessage.
  *
- * $Id: stream_inline.h,v 1.17 2000/12/18 13:44:46 cado Exp $
+ * $Id: stream_inline.h,v 1.18 2001/01/09 10:31:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -339,6 +339,28 @@ inline	void		IStream::serial(ucstring &b) throw(EStream)
 	for(sint i=0;i<len;i++)
 		serial(b[i]);
 }
+
+
+
+// ======================================================================================================
+inline uint8			IStream::serialBitField8(uint8  bf)
+{
+	serial(bf);
+	return bf;
+}
+// ======================================================================================================
+inline uint16			IStream::serialBitField16(uint16  bf)
+{
+	serial(bf);
+	return bf;
+}
+// ======================================================================================================
+inline uint32			IStream::serialBitField32(uint32  bf)
+{
+	serial(bf);
+	return bf;
+}
+
 
 }
 

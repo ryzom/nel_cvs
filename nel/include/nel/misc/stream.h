@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.32 2000/12/08 09:27:42 chafik Exp $
+ * $Id: stream.h,v 1.33 2001/01/09 10:31:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -233,6 +233,23 @@ public:
 			serial(i);
 		}
 	}
+
+
+	/** \name BitField serialisation.
+	 * Unlike other serial method, The reading bitfield is returned!! If !this->isReading(), bf is returned.
+	 *
+	 * MUST use it simply like this:   a= serialBitFieldX(a);		// where X== 8, 16 or 32.
+	 *
+	 * NB: Performance warning: the data is stored as an uint8, uint16 or uint32, according to the method you use.
+	 */
+	//@{
+	/// Serialisation of bitfield <=8 bits.
+	uint8			serialBitField8(uint8  bf);
+	/// Serialisation of bitfield <=16 bits.
+	uint16			serialBitField16(uint16  bf);
+	/// Serialisation of bitfield <=32 bits.
+	uint32			serialBitField32(uint32  bf);
+	//@}
 
 
 	/** \name Multiple serialisation.

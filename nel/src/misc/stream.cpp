@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.13 2000/12/05 10:37:37 berenguier Exp $
+ * $Id: stream.cpp,v 1.14 2001/01/09 10:31:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -283,6 +283,8 @@ void			IStream::setInOut(bool inputStream)
 {
 	_InputStream= inputStream;
 }
+
+
 
 
 }

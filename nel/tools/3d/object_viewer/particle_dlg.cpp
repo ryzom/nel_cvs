@@ -1,7 +1,8 @@
 /** \file particle_dlg.cpp
- * <File description>
+ * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
+ * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.4 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.5 2001/06/25 13:31:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,7 +118,7 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 
 	{
 		CShapeStream st(&psc) ;
-		NLMISC::COFile oFile("dummy.shape") ;
+		NLMISC::COFile oFile("dummy.ps") ;
 
 		oFile.serial(st) ;
 	}
@@ -125,7 +126,7 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 
 
 	
-	_CurrSystemModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance("dummy.shape")) ;
+	_CurrSystemModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance("dummy.ps")) ;
 
 	nlverify(_CurrSystemModel) ;
 
@@ -140,8 +141,12 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 
 
 
-	_StartStopDlg = new CStartStopParticleSystem(this) ;
-		
+	StartStopDlg = new CStartStopParticleSystem(this) ;
+	
+	#ifdef NL_DEBUG
+
+	_CrtSetDbgFlag (_CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF) ;
+	#endif
 
 }
 
@@ -165,7 +170,7 @@ CParticleDlg::~CParticleDlg()
 	delete ParticleTreeCtrl ;
 	delete CurrentRightPane ;
 
-	delete _StartStopDlg ;
+	delete StartStopDlg ;
 
 	delete FontManager ;
 	delete FontGenerator ;
@@ -215,7 +220,7 @@ BOOL CParticleDlg::OnInitDialog()
 	ParticleTreeCtrl->ShowWindow(SW_SHOW) ;
 
 
-	_StartStopDlg->Create(IDD_PARTICLE_SYSTEM_START_STOP, this) ;	
+	StartStopDlg->Create(IDD_PARTICLE_SYSTEM_START_STOP, this) ;	
 
 
 
@@ -299,6 +304,10 @@ CRect CParticleDlg::getTreeRect(int cx, int cy) const
 void CParticleDlg::setRightPane(CWnd *pane)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	if (CurrentRightPane)
+	{
+		CurrentRightPane->DestroyWindow() ;
+	}
 	delete CurrentRightPane ;
 	CurrentRightPane = pane ;
 	RECT r ;	
@@ -357,6 +366,6 @@ LRESULT CParticleDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 void CParticleDlg::OnShowWindow(BOOL bShow, UINT nStatus) 
 {
 	CDialog::OnShowWindow(bShow, nStatus);
-	_StartStopDlg->ShowWindow(bShow) ;	
+	StartStopDlg->ShowWindow(bShow) ;	
 		
 }

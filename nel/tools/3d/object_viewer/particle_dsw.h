@@ -1,7 +1,7 @@
 /** \file particle_dsw.h
- * <File description>
+ * particle system workspace,
  *
- * $Id: particle_dsw.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: particle_dsw.h,v 1.2 2001/06/25 13:31:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

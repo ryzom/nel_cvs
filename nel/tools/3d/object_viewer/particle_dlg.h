@@ -1,7 +1,8 @@
 /** \file particle_dlg.h
- * <File description>
+ * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
+ * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.3 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.4 2001/06/25 13:31:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,6 +125,8 @@ public:
 	const CWnd *getRightPane(void) const { return CurrentRightPane ; }
 
 
+	CStartStopParticleSystem *StartStopDlg ;
+
 protected:
 
 	
@@ -131,7 +134,7 @@ protected:
 
 
 
-	CStartStopParticleSystem *_StartStopDlg ;
+	
 
 	// the current system that is being edited
 	NL3D::CParticleSystem *_CurrPS ;

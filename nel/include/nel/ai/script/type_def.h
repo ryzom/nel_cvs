@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.9 2001/01/17 10:32:29 chafik Exp $
+ * $Id: type_def.h,v 1.10 2001/01/18 15:47:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,8 @@ namespace NLAISCRIPT
 		virtual void getError(char *) const{}
 		virtual int getLine() const{ return 0;}
 		virtual int getColone() const{return 0;}
+		double evalParam(IOpType *);
+		virtual double eval (IOpType *);
 		//@}
 
 		virtual ~IOpType();
@@ -215,6 +217,7 @@ namespace NLAISCRIPT
 		{
 			if ( f.isReading() )
 			{
+				if(_Ident) delete _Ident;
 				_Ident = new NLAIC::CIdentType(f);
 				delete _TxtInfo;
 				char txt[1028*8];		
@@ -236,6 +239,152 @@ namespace NLAISCRIPT
 			delete _TxtInfo;
 		}
 	};
+
+
+	/**	
+	* 
+	* This class define an know type under a list od type.
+	* Type = Typ_1 | Typ_2 ... | Type_n
+	*
+	* \author Chafik sameh	
+	* \author Nevrax France
+	* \date 2000
+	*/
+	class COperandSimpleListOr: public IOpType
+	{
+	private:
+		std::list<NLAIC::CIdentType *> _TypeListe;
+		//NLAIC::CIdentType *_Ident;
+		char *_TxtInfo;
+
+	public:
+		COperandSimpleListOr(NLMISC::IStream &f)
+		{
+			serial(f);
+		}		
+
+		COperandSimpleListOr(const std::list<NLAIC::CIdentType *> &l)
+		{
+			char txt[1028*8];		
+			sprintf(txt,"constraint<COperandSimpleListOr> for ...");
+			_TxtInfo = new char [strlen(txt) + 1];
+			strcpy(_TxtInfo,txt);
+
+			std::list<NLAIC::CIdentType *>::const_iterator i = l.begin();
+			while(i != l.end())
+			{
+				_TypeListe.push_back(new NLAIC::CIdentType(*(*i++)));
+			}
+		}
+
+
+		COperandSimpleListOr(int count, ...);
+
+		const std::list<NLAIC::CIdentType *> &getList() const
+		{
+			return _TypeListe;
+		}
+
+		const char *getInfo()
+		{
+			return _TxtInfo;
+		}
+
+		const NLAIC::CIdentType *getConstraintTypeOf()
+		{
+			return _TypeListe.back();
+		}
+
+		virtual ConstraintTypeEnum getTypeOfClass() const
+		{
+			return operandSimpleListOr;
+		}
+
+		bool operator == (const IConstraint &c) const
+		{
+			if(getTypeOfClass() == c.getTypeOfClass())
+			{		
+				const COperandSimpleListOr &l = (const COperandSimpleListOr &)c;
+				if(l._TypeListe.size() != _TypeListe.size()) return false;
+
+				std::list<NLAIC::CIdentType *>::const_iterator i = _TypeListe.begin();
+				std::list<NLAIC::CIdentType *>::const_iterator j = l._TypeListe.begin();
+				while(i != _TypeListe.end())
+				{
+					if(!((*i++) == (*j++))) return false;
+				}
+				return true;
+			}
+			return false;
+		}
+
+		bool dependOn(const IConstraint *) const
+		{
+			return false;
+		}
+
+		const IConstraint *clone() const
+		{
+			IConstraint *x = new COperandSimpleListOr(_TypeListe);
+			return x;
+		}		
+
+		bool satisfied()
+		{
+			return true;
+		}
+
+		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		{
+			if ( f.isReading() )
+			{
+				while(_TypeListe.size())
+				{
+					delete _TypeListe.back();
+					_TypeListe.pop_back();
+				}
+				
+			
+				sint32 i;
+				f.serial(i);				
+				while(i --)
+				{
+					NLAIC::CIdentType *ident = new NLAIC::CIdentType(f);
+					_TypeListe.push_back(ident);
+				}				
+				delete _TxtInfo;
+				char txt[1028*8];		
+				sprintf(txt,"constraint<COperandSimpleListOr> for ...");
+				_TxtInfo = new char [strlen(txt) + 1];
+				strcpy(_TxtInfo,txt);
+			}
+			else
+			{
+				sint32 n =  (sint32)getTypeOfClass();
+				f.serial(n);
+				n = _TypeListe.size();
+				f.serial(n);
+				std::list<NLAIC::CIdentType *>::iterator i = _TypeListe.begin();
+				while(i != _TypeListe.end())
+				{
+					(*i++)->serial(f);
+				}								
+			}
+		}
+
+		virtual double eval (IOpType *);
+
+		~COperandSimpleListOr()
+		{
+			while(_TypeListe.size())
+			{
+				delete _TypeListe.back();
+				_TypeListe.pop_back();
+			}
+			delete _TxtInfo;
+		}
+	};
+
 
 	/**
 	* Class COperandUnknown.
@@ -784,6 +933,10 @@ namespace NLAISCRIPT
 
 		case operandSimple:
 			x = new COperandSimple(f);
+			return x;
+
+		case operandSimpleListOr:
+			x = new COperandSimpleListOr(f);
 			return x;
 		}
 		return NULL;

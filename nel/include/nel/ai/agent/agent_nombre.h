@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.7 2001/01/18 15:16:10 puzin Exp $
+ * $Id: agent_nombre.h,v 1.8 2001/01/18 15:47:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,26 +32,36 @@
 namespace NLAIAGENT
 {	
 
-
+	/**
+	This define the base of nomber manipulation.Nomber manibulation is need for the script and agent fonctionality.
+	* \author Chafik sameh	 	
+	* \author Nevrax France
+	* \date 2000
+	*/
 	class INombreDefine: public IObjetOp
 	{
 
 	public:
 
+		///This enum define ident for hard coded method that we have to import its under the script.
 		enum  TMethodNumDef {
-			TConst,
-			TLastM
+			TConst, ///Index of the constructor method
+			TLastM ///The count of import method.
 		};
 
+		///Structure to define the name ande the id of hard coded mathod.
 		struct CMethodCall
 		{
 			CMethodCall(const char *name, int i): MethodName (name)
 			{				
 				Index = i;
 			}
+			///Name of the method.
 			CStringVarName MethodName;
+			///Index of the method in the class.
 			sint32 Index;
 		};
+		///This variable its used to store method import characteristic.
 		static CMethodCall StaticMethod[];
 
 	public:
@@ -71,6 +81,7 @@ namespace NLAIAGENT
 		//@}
 
 
+		///All number can be read as a bouble, user ave to make the good cast to retreive the type of the number.
 		virtual double getNumber() const = 0;
 		virtual ~INombreDefine()
 		{

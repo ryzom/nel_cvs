@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.8 2001/01/18 15:04:46 portier Exp $
+ * $Id: actor_script.h,v 1.9 2001/01/18 15:47:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,7 +132,8 @@ namespace NLAIAGENT
 				fid_onActivate,
 				fid_unActivate,
 				fid_onUnActivate,
-				fid_switch
+				fid_switch,
+				fid_last
 			};
 
 			bool _IsActivated;

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.6 2001/01/15 17:58:20 chafik Exp $
+ * $Id: agent_script.h,v 1.7 2001/01/18 15:47:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,18 +49,48 @@ namespace NLAIAGENT
 	*/
 	class CAgentScript : public IAgentManager
 	{
-	public:
-		/// \name Static definition for internal method. 
-		//@{
-		///Offset for the send member method.
-		static const int sendTag;
-		///Offset for the getChild member method.
-		static const int getChildTag;
-		///Offset for the addChild member method.
-		static const int addChildTag;
-		///this int represent the las allocation offset method.
-		static const int baseMethodIn;
-		//@}
+	public:		
+
+		///This enum define ident for hard coded method that we have to import its under the script.
+		enum  TMethodNumDef {
+			TSend, ///Index of the send method
+			TSendContinuation, ///Index of the send with continuation method.
+			TGetChildTag, ///Index of the getChild method
+			TAddChildTag,///Index of the addChild method
+			TLastM ///The count of export method.
+		};
+
+		enum TTypeCheck{
+			CheckAll,
+			CheckCount,
+			DoNotCheck
+		};
+
+		///Structure to define the name, id and argument type of hard coded mathod.
+		struct CMethodCall
+		{
+			CMethodCall(const char *name, int i,const IObjectIA *a,TTypeCheck checkArg,int argCount,IObjectIA *r): 
+					MethodName (name),ArgType(a),ReturnValue(r)
+			{
+				Index = i;
+				CheckArgType = checkArg;
+				ArgCount = argCount;
+			}
+			///Name of the method.
+			CStringVarName MethodName;
+			///Type of the method argument.
+			const IObjectIA *ArgType;
+			///Return value type.
+			IObjectIA *ReturnValue;
+			///CheckArg is for force the method argument test. If its true we test juste the name coherence.
+			TTypeCheck CheckArgType;			
+			///Count neaded when the CheckCount it set.
+			sint ArgCount;
+			///Index of the method in the class.
+			sint32 Index;				
+		};
+		///This variable its used to store method import characteristic.
+		static CMethodCall StaticMethod[];
 
 	private:
 		///Type def for the map witch store the name of dynamic agent store in the agent.
@@ -165,6 +195,7 @@ namespace NLAIAGENT
 		virtual bool isEqual(const IBasicObjectIA &a) const;
 
 		IObjectIA::CProcessResult sendMethod(IObjectIA *);
+		IObjectIA::CProcessResult sendMethodContinuation(IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);		
 

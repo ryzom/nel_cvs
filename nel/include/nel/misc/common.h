@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.42 2002/08/23 12:18:13 lecroart Exp $
+ * $Id: common.h,v 1.43 2002/09/26 14:56:52 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,7 +161,6 @@ template<class T>	inline T maxof(const T& a,  const T& b,  const T& c,  const T&
 template<class T>	inline T maxof(const T& a,  const T& b,  const T& c,  const T& d,  const T& e)
 	{return std::max(maxof(a,b,c,d),e);}
 
-
 /** \c contReset take a container like std::vector or std::deque and put his size to 0 like \c clear() but free all buffers.
  * This function is useful because \c resize(), \c clear(), \c erase() or \c reserve() methods never realloc when the array size come down.
  * \param a is the container to reset.
@@ -204,6 +203,18 @@ inline float	degToRad( float deg )
 inline float	radToDeg( float rad )
 {
 	return rad * 180.0f / (float)Pi;
+}
+
+
+/** Return true if double is a valid value (not inf nor nan)
+ */
+inline double	isValidDouble (double v)
+{
+#ifdef NL_OS_WINDOWS
+	return _finite(v) && !_isnan(v);
+#else
+	return !isnan(v) && !isinf(v);
+#endif
 }
 
 

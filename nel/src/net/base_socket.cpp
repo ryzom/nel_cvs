@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.41 2001/02/16 16:33:30 cado Exp $
+ * $Id: base_socket.cpp,v 1.42 2001/02/16 16:45:06 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ ESocket::ESocket( const char *reason, bool systemerror )
 #elif defined NL_OS_UNIX
 		_Reason += ": " + ERROR_MSG;
 #endif
-		_Reason = ")";
+		_Reason += ")";
 	}
 }
 

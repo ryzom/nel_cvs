@@ -1,7 +1,7 @@
 /** \file fuzzy_script.h
  * Interpret class for the fuzzy controler
  *
- * $Id: fuzzy_script.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: fuzzy_script.h,v 1.5 2001/02/27 14:21:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NLAISCRIPT
 	class CFuzzyControlerClass;
 	class IOpCode;
 }
-
+/*
 namespace NLAIFUZZY
 {
 	class CFuzzyControlerScript : public NLAIAGENT::IMessageBase {
@@ -81,5 +81,5 @@ namespace NLAIFUZZY
 			const NLAIC::CIdentType &getType() const;
 	};
 }
-
+*/
 #endif

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * TODO: File description
  *
- * $Id: mesh_mrm.cpp,v 1.78 2005/01/05 17:47:29 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.78.4.1 2005/01/28 13:16:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1285,6 +1285,8 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 {
 	H_AUTO( NL3D_MeshMRMGeom_rdrSkinGrpGeom )
 
+	// NB: not need to test if _Lods.empty(), because already done through supportSkinGrouping()
+		
 	// get a ptr on scene
 	CScene				*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
@@ -2523,6 +2525,10 @@ void	CMeshMRMGeom::compileRunTime()
 // ***************************************************************************
 void	CMeshMRMGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, float polygonCount, uint32 rdrFlags)
 {
+	// if no _Lods, no draw
+	if(_Lods.empty())
+		return;
+	
 	// get the result of the Load Balancing.
 	float	alphaMRM= _LevelDetail.getLevelDetailFromPolyCount(polygonCount);
 
@@ -3326,9 +3332,14 @@ sint			CMeshMRMGeom::renderShadowSkinGeom(CMeshMRMInstance	*mi, uint remainingVe
 {
 	uint	numVerts= _ShadowSkinVertices.size();
 
+	// if no verts, no draw
 	if(numVerts==0)
 		return 0;
 
+	// if no lods, there should be no verts, but still ensure no bug in applyArrayShadowSkin()
+	if(_Lods.empty())
+		return 0;
+	
 	// If the Lod is too big to render in the VBufferHard
 	if(numVerts>remainingVertices)
 		// return Failure

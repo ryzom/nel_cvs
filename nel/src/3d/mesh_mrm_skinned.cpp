@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.11 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.11.4.1 2005/01/28 13:16:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -577,6 +577,13 @@ inline sint	CMeshMRMSkinnedGeom::chooseLod(float alphaMRM, float &alphaLod)
 		alphaLod= alphaMRM-(numLod-1);
 	}
 
+	/// Ensure numLod is correct
+	if(numLod>=(sint)_Lods.size())
+	{
+		numLod= _Lods.size()-1;
+		alphaLod= 1;
+	}
+
 	return numLod;
 }
 
@@ -746,6 +753,10 @@ sint	CMeshMRMSkinnedGeom::renderSkinGroupGeom(CMeshMRMSkinnedInstance	*mi, float
 {
 	H_AUTO( NL3D_MeshMRMGeom_rdrSkinGrpGeom )
 
+	// since not tested in supportSkinGrouping(), must test _Lods.empty(): no lod, no draw
+	if(_Lods.empty())
+		return 0;
+		
 	// get a ptr on scene
 	CScene				*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
@@ -1312,6 +1323,10 @@ void	CMeshMRMSkinnedGeom::compileRunTime()
 // ***************************************************************************
 void	CMeshMRMSkinnedGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, float polygonCount, uint32 rdrFlags)
 {
+	// if no _Lods, no draw
+	if(_Lods.empty())
+		return;
+	
 	// get the result of the Load Balancing.
 	float	alphaMRM= _LevelDetail.getLevelDetailFromPolyCount(polygonCount);
 
@@ -1957,9 +1972,14 @@ sint			CMeshMRMSkinnedGeom::renderShadowSkinGeom(CMeshMRMSkinnedInstance	*mi, ui
 {
 	uint	numVerts= _ShadowSkinVertices.size();
 
+	// if no verts, no draw
 	if(numVerts==0)
 		return 0;
 
+	// if no lods, there should be no verts, but still ensure no bug in applyArrayShadowSkin()
+	if(_Lods.empty())
+		return 0;
+	
 	// If the Lod is too big to render in the VBufferHard
 	if(numVerts>remainingVertices)
 		// return Failure

@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.23 2002/07/16 09:46:17 besson Exp $
+ * $Id: form_elm.cpp,v 1.24 2002/07/24 16:04:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1335,7 +1335,8 @@ exit:;
 		// Get the path name
 		string formName;
 		backupFirstElm->getFormName (formName);
-		if ((formName.size () > 0) && (formName[0] != '.') && (formName[0] != '['))
+		uint formNameSize = formName.size ();
+		if ((formNameSize > 0) && (formName[formNameSize-1] != '.') && (formName[formNameSize-1] != '['))
 			formName += ".";
 		formName += name;
 

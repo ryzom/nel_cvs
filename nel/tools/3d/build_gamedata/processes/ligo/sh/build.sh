@@ -1,6 +1,5 @@
 #!/bin/bash
 
-rm ./output/*.zone
 
 # ********************
 # Make the config file

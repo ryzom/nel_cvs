@@ -1,7 +1,7 @@
 /** \file texture_grouped.h
  * <File description>
  *
- * $Id: texture_grouped.h,v 1.3 2002/02/15 17:13:29 vizerie Exp $
+ * $Id: texture_grouped.h,v 1.4 2002/02/20 16:36:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,6 @@ public:
 	/** Get the U-delta and V delta in the groupedTexture for one unit texture (they all have the same size).	 
 	 *  return (0, 0) if no textures have been set
 	 */
-
 	const CUV &getUVDelta(void) const
 	{
 		return _DeltaUV;
@@ -145,15 +144,14 @@ public:
 		}
 	}
 
+
+	virtual void release();
+
 	
 	NLMISC_DECLARE_CLASS(CTextureGrouped);
 
-protected:
-
-	/// number of textures in the group
-	uint32 _NbTex;
-
-	
+protected:	
+	uint32 _NbTex; // for caching
 
 	/// pointers to the original textures
 	typedef std::vector< CSmartPtr<ITexture> > TTexList;
@@ -163,8 +161,6 @@ protected:
 	CUV _DeltaUV;
 
 	/// the UVs for each texture in the group
-
-
 	TFourUVList _TexUVs;
 
 

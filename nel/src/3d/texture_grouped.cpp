@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.6 2002/02/15 17:13:29 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.7 2002/02/20 16:36:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,30 +24,69 @@
  */
 
 #include "3d/texture_grouped.h"
+#include "3d/texture_file.h"
 #include "nel/misc/common.h"
+#include "nel/misc/path.h"
+
 #include <algorithm>
 
 namespace NL3D {
 
+///=====================================================================================================
+/// This is used to get the size of a texture, with an optimisation in the case of texture files
+static inline void GetTextureSize(ITexture *tex, uint &width, uint &height)
+{	
+	if (tex->getClassName() == "CTextureFile")
+	{
+		CTextureFile *tf = static_cast<CTextureFile *>(tex);
+		try
+		{						
+			uint32 srcWidth, srcHeight;
+			if (!tf->getFileName().empty())
+			{
+				CBitmap::loadSize(tf->getFileName(), srcWidth, srcHeight);
+				width = srcWidth;
+				height = srcHeight;
+			}
+			else
+			{
+				width = height = 0;
+			}
+		}
+		catch (NLMISC::EStream &)
+		{
+			nlinfo("Unable to get size of texture : %d", tf->getFileName().c_str());
+			width = height = 0;
+		}
+	}
+	else // we must generate the texture to get its size
+	{
+		tex->generate();
+		width = tex->getWidth();
+		height = tex->getHeight();
+		if (tex->getReleasable())
+		{
+			tex->release();
+		}
+	}
+}
 
-/*
- * Constructor
- */
+///=====================================================================================================
 CTextureGrouped::CTextureGrouped() : _NbTex(0)
 {
 	setFilterMode(Linear, LinearMipMapOff);
 }
 
-
-// copy ctor
+///=====================================================================================================
 CTextureGrouped::CTextureGrouped(const CTextureGrouped &src) : ITexture(src)
 {
 	// copy the part associated with us;
 	duplicate(src);
 }
 
+///=====================================================================================================
 void CTextureGrouped::duplicate(const CTextureGrouped &src)
-{
+{	
 	_NbTex = src._NbTex;
 	TTexList texCopy(src._Textures.begin(), src._Textures.end());
 	_Textures.swap(texCopy);
@@ -55,7 +94,7 @@ void CTextureGrouped::duplicate(const CTextureGrouped &src)
 	_TexUVs.swap(uvCopy);
 }
 
-/// = operator
+///=====================================================================================================
 CTextureGrouped &CTextureGrouped::operator=(const CTextureGrouped &src)
 {
 	ITexture::operator=(src); // copy parent part
@@ -63,119 +102,122 @@ CTextureGrouped &CTextureGrouped::operator=(const CTextureGrouped &src)
 	return *this;
 }
 
-
+///=====================================================================================================
 bool CTextureGrouped::areValid(CSmartPtr<ITexture> *textureTab, uint nbTex)
-{
-	
-
-	CSmartPtr<ITexture> *pt = textureTab;
-
-	(*pt)->generate(); // we need this to get the size;
-	uint32 xSize = (*pt)->getWidth(), ySize = (*pt)->getHeight();
-
-
-	// we must have 2 power of 2
-	nlassert(NLMISC::isPowerOf2(xSize));
-	nlassert(NLMISC::isPowerOf2(ySize));
-
-	CBitmap::TType pixelFormat = (*pt)->PixelFormat;
-
-	for(uint k = 0; k < nbTex; ++k, ++pt)
+{		
+	bool result = true;	
+	uint k;
+	for(k = 0; k < nbTex; ++k)
 	{
-		(*pt)->generate();
-		if ((*pt)->getWidth() != xSize) return false;
-		if ((*pt)->getHeight() != ySize) return false;	
-		if ((*pt)->PixelFormat != pixelFormat) return false;
+		textureTab[k]->generate();		
+		if (textureTab[k]->getWidth() != textureTab[0]->getWidth()
+			|| textureTab[k]->getHeight() != textureTab[0]->getHeight()
+			|| textureTab[k]->getPixelFormat() != textureTab[0]->getPixelFormat()
+		   )
+		{ 
+			result = false; 
+			break; 
+		}		
 	}
-	return true;
+
+
+	for (k = 0; k < nbTex; ++k)
+	{
+		if (textureTab[k]->getReleasable()) textureTab[k]->release();
+	}
+	return result;
 }
 
-
+///=====================================================================================================
 void CTextureGrouped::setTextures(CSmartPtr<ITexture> *textureTab, uint nbTex)
 {
-	nlassert(nbTex > 0);
-	nlassert(areValid(textureTab, nbTex));
-
-	CSmartPtr<ITexture> *pt = textureTab;
+	nlassert(nbTex > 0);	
 	
-
-	(*pt)->generate(); // we need this to get the size;
-
-	const uint32 width = (*pt)->getWidth();
-	const uint32 height = (*pt)->getHeight();
-
-	const uint32 totalHeight = height * nbTex;
-
-	const uint32 realHeight = NLMISC::raiseToNextPowerOf2(totalHeight);
+	#ifdef NL_DEBUG
+		nlassert(areValid(textureTab, nbTex));
+	#endif
 	
+	// Generate the first texture to get the size	
+	uint width, height;
+	GetTextureSize(textureTab[0], width, height);
 
-	// now we got a height that is a power of 2
-
-	resize(width, realHeight, (*pt)->PixelFormat );
-
-
+	const uint totalHeight = height * nbTex;
+	const uint realHeight  = totalHeight ? NLMISC::raiseToNextPowerOf2(totalHeight) : 0;	
+	
 	_TexUVs.clear();
-	_Textures.clear();
-
+	_Textures.clear();	
 	
-
-	const float deltaV = (float(totalHeight) / float(realHeight)) * (1.0f / nbTex);
-
+	const float deltaV = realHeight ? (float(totalHeight) / float(realHeight)) * (1.0f / nbTex)
+									: 1.f;
 	_DeltaUV = CUV(1,  deltaV);
-
 	CUV currentUV(0, 0);
+	
+	_Textures.reserve(nbTex);
+	_TexUVs.reserve(nbTex);
 
-	for(uint k = 0; k < nbTex; ++k, ++pt)
+	for(uint k = 0; k < nbTex; ++k)
 	{	
 		TFourUV uvs;
-		_Textures.push_back(*pt);
+		_Textures.push_back(textureTab[k]);
 
 		uvs.uv0 = currentUV;
 		uvs.uv1 = currentUV + CUV(1, 0);
 		uvs.uv2 = currentUV + _DeltaUV;
 		uvs.uv3 = currentUV + CUV(0, deltaV);
-
 		currentUV.V += deltaV;
 		_TexUVs.push_back(uvs);
-	}
-
+	}	
 	_NbTex = nbTex;
-
 	touch(); // the texture need regeneration
+
+	nlassert(_NbTex == _Textures.size());
 }
 
-
-/** 
-	 * Generate the texture.	 
-	 */	
+///=====================================================================================================
 void CTextureGrouped::doGenerate()
 {
-
-	if (!_NbTex)
+	nlassert(_NbTex == _Textures.size());
+	if (_NbTex == 0)
 	{
 		makeDummy();
 	}
 	else
-	{
-		TTexList::const_iterator  pt = _Textures.begin(), ptEnd = _Textures.end();			
-		const uint32 height = (*pt)->getHeight();
+	{		
+		// Generate the first texture to get the size	
+		_Textures[0]->generate();
+		const uint width = _Textures[0]->getWidth(), height = _Textures[0]->getHeight();		
+		const uint totalHeight = height * _NbTex;
+		const uint realHeight  = NLMISC::raiseToNextPowerOf2(totalHeight);	
 
+		resize(width, realHeight, _Textures[0]->getPixelFormat());
+		
+		uint k;
 		sint32 currY =  0;
-		for(; pt != ptEnd; ++pt)
+		for(k = 0; k < _NbTex; ++k)
 		{			
-			/// make sure that datas are available
-			(*pt)->generate();
-			this->blit(*pt, 0, currY);
+			_Textures[k]->generate();
+			if (_Textures[k]->getWidth() != width
+				|| _Textures[k]->getHeight() != height
+				|| _Textures[k]->getPixelFormat() != _Textures[0]->getPixelFormat())
+			{
+				makeDummy();
+				break;
+			}						
+			this->blit(_Textures[k], 0, currY);
 			currY += height;			
+		}
+
+		for(k = 0; k < _NbTex; ++k)
+		{
+			if ( _Textures[k]->getReleasable())
+			{
+				_Textures[k]->release();
+			}
 		}
 	}	
 }
 
-
-	
-	
-
-
+///=====================================================================================================
 void CTextureGrouped::getTextures(CSmartPtr<ITexture> *textureTab) const
 {
 	CSmartPtr<ITexture> *dest = textureTab;
@@ -186,7 +228,7 @@ void CTextureGrouped::getTextures(CSmartPtr<ITexture> *textureTab) const
 	}
 }
 
-
+///=====================================================================================================
 bool	CTextureGrouped::supportSharing() const
 {
 	// all textures in this group must support sharing for this one to support it
@@ -198,7 +240,7 @@ bool	CTextureGrouped::supportSharing() const
 	return true;
 }
 
-
+///=====================================================================================================
 std::string		CTextureGrouped::getShareName() const
 {
 	nlassert(supportSharing());
@@ -211,32 +253,34 @@ std::string		CTextureGrouped::getShareName() const
 	return shareName;
 }
 
-
-
+///=====================================================================================================
 void CTextureGrouped::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1);
+	
 	if (f.isReading())
 	{
 		TTexList texList;
-		uint32 nbTex;
 
+		/// read the number of textures
+		uint32 nbTex;
 		f.serial(nbTex);
 
-		ITexture *ptTex = NULL;
-
+		/// cerate a vector of textures
+		ITexture *ptTex = NULL;		
+		texList.reserve(nbTex);
 		for (uint k = 0; k < nbTex; ++k)
 		{
 			f.serialPolyPtr(ptTex);
 			texList.push_back(ptTex);
 		}		
 		
+		// setup the textures
 		setTextures(&texList[0], nbTex);
-
 		touch();
 	}
 	else
-	{
+	{		
 		f.serial(_NbTex);
 		ITexture *ptTex;
 		for (TTexList::iterator it = _Textures.begin(); it != _Textures.end(); ++it)
@@ -247,8 +291,17 @@ void CTextureGrouped::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 }
 
-
-	
-
+///=====================================================================================================
+void CTextureGrouped::release()
+{
+	ITexture::release();
+	for(uint k = 0; k < _NbTex; ++k)
+	{
+		if ( _Textures[k]->getReleasable())
+		{
+			_Textures[k]->release();
+		}
+	}
+}
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.45 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: common.cpp,v 1.46 2003/11/20 14:02:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -625,11 +625,11 @@ sint nlstricmp(const char *lhs,const char *rhs)
 {
 	nlassert(lhs);
 	nlassert(rhs);
-	uint lchar, rchar;
+	int lchar, rchar;
 	while (*lhs != '\0' && *rhs != '\0')
 	{
-		lchar = ::toupper(*lhs);
-		rchar = ::toupper(*rhs);
+		lchar = ::tolower(*lhs);
+		rchar = ::tolower(*rhs);
 		if (lchar != rchar) return lchar - rchar;
 		++lhs;
 		++rhs;

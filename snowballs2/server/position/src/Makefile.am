@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2001/08/07 14:50:29 valignat Exp $
+# $Id: Makefile.am,v 1.4 2001/10/29 18:56:28 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -10,7 +10,7 @@ sno_position_SOURCES = main.cpp      \
                        physics.h     \
 		       physics.cpp
 
-sno_position_LDADD   = -lnelmisc -lnelnet -lpthread
+sno_position_LDADD   = @NEL_LIBS@
 
 
 # End of Makefile.am

@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Chat Service.
  *
- * $Id: main.cpp,v 1.1 2001/07/19 15:26:41 valignat Exp $
+ * $Id: main.cpp,v 1.2 2001/10/29 18:56:28 lecroart Exp $
  */
 
 /*
@@ -34,7 +34,7 @@
 
 
 using namespace NLNET;
-
+using namespace std;
 
 /****************************************************************************
  * Function:   cbChat

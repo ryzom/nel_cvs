@@ -2,7 +2,7 @@ dnl ==========================================================================
 dnl Configuration script for Snowballs
 dnl ==========================================================================
 dnl
-dnl $Id: configure.in,v 1.5 2001/08/08 10:23:32 valignat Exp $
+dnl $Id: configure.in,v 1.6 2001/10/29 18:56:28 lecroart Exp $
 dnl 
 
 
@@ -169,7 +169,13 @@ if test "$NEL_CONFIG" = "no"; then
     NeL library is needed to compile Snowballs (www.nevrax.org).])
 else
     NEL_CFLAGS=`nel-config --cflags`
-    NEL_LIBS=`nel-config --libs`
+
+    if test x"$enable_client" != x"yes"
+    then
+        NEL_LIBS=`nel-config --libs --without-ai --without-3d`
+    else
+        NEL_LIBS=`nel-config --libs --without-ai`
+    fi
 fi
 
 AC_SUBST(NEL_CFLAGS)

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.16 2000/12/12 14:50:50 cado Exp $
+ * $Id: log.cpp,v 1.17 2000/12/13 11:05:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ using namespace std;
 namespace NLMISC
 {
 
-string CLog::_LocalHostAndService;
+string *CLog::_LocalHostAndService = NULL;
 
 
 /*
@@ -63,7 +63,10 @@ void CLog::setLocalHostAndService( const std::string& hostname, const std::strin
 #else
 	ss << servicename.c_str() << "/" << hostname.c_str() << "/" << getpid();
 #endif
-	_LocalHostAndService = ss.str();
+	if (_LocalHostAndService == NULL)
+		_LocalHostAndService = new string;
+		
+	*_LocalHostAndService = ss.str();
 }
 
 
@@ -168,7 +171,7 @@ void CLog::display( const char *format, ... )
 	ss << priorityStr().c_str();
 	if ( _Long )
 	{
-		ss << " " << _LocalHostAndService.c_str();
+		ss << " " << _LocalHostAndService->c_str();
 	}
 	if ( _File != NULL )
 	{

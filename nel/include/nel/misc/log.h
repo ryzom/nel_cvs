@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.11 2000/12/07 15:18:41 cado Exp $
+ * $Id: log.h,v 1.12 2000/12/13 11:05:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,7 +100,7 @@ protected:
 
 	std::string					priorityStr() const;
 
-	static std::string			_LocalHostAndService;
+	static std::string			*_LocalHostAndService;
 	
 private:
 

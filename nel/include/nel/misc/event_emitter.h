@@ -1,7 +1,7 @@
 /** \file event_emitter.h
  * class CEventEmitter
  *
- * $Id: event_emitter.h,v 1.9 2001/01/08 17:58:30 corvazier Exp $
+ * $Id: event_emitter.h,v 1.10 2002/03/28 10:45:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/event_server.h"
+#include "nel/misc/smart_ptr.h"
+
 
 
 namespace NLMISC {
@@ -45,9 +47,11 @@ class CEventServer;
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
  * **********************************
  */
-class IEventEmitter
+class IEventEmitter	: public NLMISC::CRefCount
 {
 public:
+	/// dtor
+	virtual ~IEventEmitter() {}
 	/** 
 	 * sends all events to server
 	 * (should call CEventServer method postEvent() ) 

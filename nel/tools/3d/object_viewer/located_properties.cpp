@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.13 2001/09/26 17:49:59 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.14 2001/10/03 15:53:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "particle_dlg.h"
 #include "particle_tree_ctrl.h"
 #include "attrib_dlg.h"
+#include "lb_extern_id_dlg.h"
 
 using NL3D::CPSLocated;
 
@@ -62,6 +63,7 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 	m_DisgradeWithLOD = FALSE;
 	m_ParametricIntegration = FALSE;
 	m_ParametricMotion = FALSE;
+	m_TriggerOnDeath = FALSE;
 	//}}AFX_DATA_INIT
 
 
@@ -91,12 +93,15 @@ void CLocatedProperties::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLocatedProperties)
+	DDX_Control(pDX, IDC_EDIT_TRIGGER_ON_DEATH, m_EditTriggerOnDeath);
+	DDX_Control(pDX, IDC_TRIGGER_ON_DEATH, m_TriggerOnDeathCtrl);
 	DDX_Control(pDX, IDC_PARAMETRIC_MOTION, m_ParametricMotionCtrl);
 	DDX_Control(pDX, IDC_PARTICLE_NUMBER_POS, m_MaxNbParticles);
 	DDX_Check(pDX, IDC_LIMITED_LIFE_TIME, m_LimitedLifeTime);
 	DDX_Check(pDX, IDC_SYSTEM_BASIS, m_SystemBasis);
 	DDX_Check(pDX, IDC_DISGRADE_WITH_LOD, m_DisgradeWithLOD);	
 	DDX_Check(pDX, IDC_PARAMETRIC_MOTION, m_ParametricMotion);
+	DDX_Check(pDX, IDC_TRIGGER_ON_DEATH, m_TriggerOnDeath);
 	//}}AFX_DATA_MAP
 }
 
@@ -107,6 +112,8 @@ BEGIN_MESSAGE_MAP(CLocatedProperties, CDialog)
 	ON_BN_CLICKED(IDC_SYSTEM_BASIS, OnSystemBasis)
 	ON_BN_CLICKED(IDC_DISGRADE_WITH_LOD, OnDisgradeWithLod)
 	ON_BN_CLICKED(IDC_PARAMETRIC_MOTION, OnParametricMotion)
+	ON_BN_CLICKED(IDC_EDIT_TRIGGER_ON_DEATH, OnEditTriggerOnDeath)
+	ON_BN_CLICKED(IDC_TRIGGER_ON_DEATH, OnTriggerOnDeath)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -184,6 +191,9 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	
 	m_SystemBasis				= _Located->isInSystemBasis();	
 	m_LimitedLifeTime			= _Located->getLastForever() ? FALSE : TRUE;
+	m_TriggerOnDeath			= _Located->isTriggerOnDeathEnabled();
+	updateTriggerOnDeath();
+
 
 	_SkipFrameRateWrapper.Located = _Located;
 	_SkipFramesDlg->setWrapper(&_SkipFrameRateWrapper);
@@ -191,12 +201,22 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 
 	m_DisgradeWithLOD = _Located->hasLODDegradation();
 	updateIntegrable();
+	updateTriggerOnDeath();
 	UpdateData(FALSE);
 	ShowWindow(SW_SHOW);
 
 
 }
 
+void CLocatedProperties::updateTriggerOnDeath(void)
+{
+	nlassert(_Located);
+	BOOL enable = !_Located->getLastForever();
+	m_TriggerOnDeathCtrl.EnableWindow(enable);
+	m_EditTriggerOnDeath.EnableWindow(( (enable ? true : false /* MSVC6 warning */ )
+										&& _Located->isTriggerOnDeathEnabled())
+									  );
+}
 
 void CLocatedProperties::updateIntegrable(void) 
 {
@@ -220,6 +240,7 @@ void CLocatedProperties::OnLimitedLifeTime()
 		_Located->setInitialLife(_Located->getInitialLife());
 		_LifeDialog->EnableWindow(TRUE);
 	}
+	updateTriggerOnDeath();
 }
 
 void CLocatedProperties::OnSystemBasis() 
@@ -241,4 +262,23 @@ void CLocatedProperties::OnParametricMotion()
 {
 	UpdateData();
 	_Located->enableParametricMotion(m_ParametricMotion ? true : false);
+}
+
+void CLocatedProperties::OnEditTriggerOnDeath() 
+{
+	UpdateData();
+	CLBExternIDDlg 	dlg(_Located->getTriggerEmitterID());
+	int res = dlg.DoModal();
+	if ( res == IDOK )
+	{
+		_Located->setTriggerEmitterID( dlg.getNewID() );
+	}
+	
+}
+
+void CLocatedProperties::OnTriggerOnDeath() 
+{
+	UpdateData();
+	_Located->enableTriggerOnDeath(m_TriggerOnDeath ? true : false /* MSVC6 wraning */);
+	updateTriggerOnDeath();
 }

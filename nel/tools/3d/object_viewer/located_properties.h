@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.h,v 1.8 2001/09/26 17:49:59 vizerie Exp $
+ * $Id: located_properties.h,v 1.9 2001/10/03 15:53:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,8 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CLocatedProperties)
 	enum { IDD = IDD_LOCATED_PROPERTIES };
+	CButton	m_EditTriggerOnDeath;
+	CButton	m_TriggerOnDeathCtrl;
 	CButton	m_ParametricMotionCtrl;
 	CStatic	m_MaxNbParticles;
 	BOOL	m_LimitedLifeTime;
@@ -73,6 +75,7 @@ public:
 	BOOL	m_DisgradeWithLOD;
 	BOOL	m_ParametricIntegration;
 	BOOL	m_ParametricMotion;
+	BOOL	m_TriggerOnDeath;
 	//}}AFX_DATA
 
 
@@ -166,6 +169,10 @@ protected:
 	/// update the integrable check box
 	void updateIntegrable(void);
 
+	/// update the 'trigger on death' control
+	void updateTriggerOnDeath(void);
+
+
 
 	// Generated message map functions
 	//{{AFX_MSG(CLocatedProperties)
@@ -174,6 +181,8 @@ protected:
 	afx_msg void OnSystemBasis();
 	afx_msg void OnDisgradeWithLod();
 	afx_msg void OnParametricMotion();
+	afx_msg void OnEditTriggerOnDeath();
+	afx_msg void OnTriggerOnDeath();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

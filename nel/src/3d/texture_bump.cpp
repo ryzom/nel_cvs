@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.12 2004/06/02 16:21:36 vizerie Exp $
+ * $Id: texture_bump.cpp,v 1.13 2004/08/20 17:38:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "std3d.h"
 
 #include "3d/texture_bump.h"
+
+
 
 
 namespace NL3D {
@@ -321,8 +323,7 @@ void CTextureBump::doGenerate(bool async)
 		{
 			normalizationFactor = NormalizeDsDt((uint16 *) &(getPixels()[0]), width, height, _UseAbsoluteOffsets, _Signed);
 		}
-	}
-
+	}	
 	// create entry in the map for the normalization factor
 	std::string shareName = getShareName();
 	TNameToNI::iterator it = _NameToNF.find(shareName);
@@ -334,10 +335,10 @@ void CTextureBump::doGenerate(bool async)
 		ni.NormalizationFactor = normalizationFactor;
 		std::pair<TNameToNI::iterator, bool> pb = _NameToNF.insert(TNameToNI::value_type(shareName, ni));
 		_NormalizationFactor = &(pb.first->second.NormalizationFactor);
-		_NameToNFHandle = pb.first;
+		_NameToNFHandle = pb.first;		
 	}
 	else
-	{
+	{		
 		// another map has computed the factor
 		_NormalizationFactor = &(it->second.NormalizationFactor);
 		_NameToNFHandle = it;
@@ -387,7 +388,8 @@ float CTextureBump::getNormalizationFactor()
 	}
 	if (!_HeightMap) return 1.f;
 	// not computed yet, see if another map has computed it
-	TNameToNI::iterator it = _NameToNF.find(getShareName());
+	std::string shareName = getShareName();
+	TNameToNI::iterator it = _NameToNF.find(shareName);	
 	if (it != _NameToNF.end())
 	{
 		_NameToNFHandle = it;

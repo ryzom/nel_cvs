@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * <File description>
  *
- * $Id: texture_bump.h,v 1.8 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_bump.h,v 1.9 2004/08/20 17:38:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -78,8 +78,10 @@ public:
 	/// Test wether normalization is forced with that texture
 	bool				    isNormalizationForced() const { return _ForceNormalize; }
 
-	/// Get the normalization factor. This is valid only if the texture has been generated
-	float					getNormalizationFactor();
+	/** Get the normalization factor. This is valid only if the texture has been generated
+	  * NB : make this virtual because it access static object (_NameToNF) from both DLL and main app, so don't want duplication
+	  */
+	virtual float					getNormalizationFactor();
 	
 
 	/** Use signed format or not. Default is to used signed format

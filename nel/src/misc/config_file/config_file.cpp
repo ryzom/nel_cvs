@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.36 2002/06/13 15:09:09 lecroart Exp $
+ * $Id: config_file.cpp,v 1.37 2002/06/20 12:23:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -223,6 +223,12 @@ CConfigFile::~CConfigFile ()
 
 void CConfigFile::load (const string &fileName)
 {
+	if(fileName.empty())
+	{
+		nlwarning ("Can't load a empty file name configfile");
+		return;
+	}
+
  	_FileName = fileName;
 	_Callback = NULL;
 
@@ -266,6 +272,8 @@ void CConfigFile::reparse (const char *filename)
 	{
 		_LastModified = getLastModified ();
 
+		nlassert (!_FileName.empty());
+
 		if (cf_ifile.open (_FileName))
 		{
 			// if we clear all the array, we'll lost the callback on variable and all information
@@ -303,6 +311,8 @@ void CConfigFile::reparse (const char *filename)
 	}
 	else
 	{
+		nlassert (strlen(filename)>0);
+
 		// load external config filename, don't overwrite existant variable
 		if (cf_ifile.open (filename))
 		{

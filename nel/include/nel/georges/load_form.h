@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.5 2002/07/03 09:55:54 lecroart Exp $
+ * $Id: load_form.h,v 1.6 2002/07/05 14:59:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,8 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		packedFilenamePath = packedFilename;
 	}
 
+	bool olde, newe;
+	NLMISC::CIFile::getVersionException(olde, newe);
 	// load the packed sheet if exists
 	try
 	{
@@ -158,6 +160,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		// clear the container because it can contains partially loaded sheet so we must clean it before continue
 		container.clear ();
 	}
+	NLMISC::CIFile::setVersionException(olde, newe);
 
 	// set up the current sheet in container to remove sheet that are in the container and not in the directory anymore
 	std::map<NLMISC::CSheetId, bool> sheetToRemove;

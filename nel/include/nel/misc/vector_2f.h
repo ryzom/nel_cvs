@@ -1,7 +1,7 @@
 /** \file vector_2f.h
  * <File description>
  *
- * $Id: vector_2f.h,v 1.4 2002/04/23 16:24:07 vizerie Exp $
+ * $Id: vector_2f.h,v 1.5 2002/11/14 17:39:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,6 +142,11 @@ inline	CVector2f	operator*(float f, const CVector2f &v)
 	return v*f;
 }
 
+// for map/set insertion
+inline bool operator < (const CVector2f &lhs, const CVector2f &rhs)
+{
+	return (lhs.x != rhs.x) ? lhs.x < rhs.x : lhs.y < rhs.y;	
+}
 
 } // NLMISC
 

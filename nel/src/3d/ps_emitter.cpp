@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.11 2001/06/25 13:49:58 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.12 2001/06/25 16:10:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -513,6 +513,41 @@ void CPSEmitterRectangle::resize(uint32 size)
 	_Height.resize(size) ;
 }
 
+void CPSEmitterRectangle::showTool(void)
+{
+	nlassert(_Owner) ;
+	const uint size = _Owner->getSize() ;
+	if (!size) return ;
+	setupDriverModelMatrix() ;	
+	CMatrix mat ;
+	
+	CPSLocated *loc ;
+	uint32 index ;
+	CPSLocatedBindable *lb ;
+	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
+
+	for (uint k = 0 ; k < size ; ++k) 
+	{	
+		const CVector &I = _Basis[k].X ;
+		const CVector &J = _Basis[k].Y ;
+		mat.setRot(I, J , I ^J) ;
+		mat.setPos(_Owner->getPos()[k]) ;
+		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
+		setupDriverModelMatrix() ;	
+
+		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
+	
+
+
+		const CVector &pos = _Owner->getPos()[k] ;
+		CPSUtil::display3DQuad(*getDriver(), pos + I * _Width[k] + J * _Height[k]
+										   , pos + I * _Width[k] - J * _Height[k]
+										   , pos - I * _Width[k] - J * _Height[k]
+										   , pos - I * _Width[k] + J * _Height[k], col) ;
+	}
+}
+
+
 
 ////////////////////////////////////
 // CPSEmitterconic implementation //
@@ -557,7 +592,6 @@ void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 		    * dir ;
 	pos = _Owner->getPos()[index] ;	
 }
-
 
 
 

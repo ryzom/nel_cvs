@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.3 2001/06/25 13:49:58 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.4 2001/06/25 16:10:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -472,6 +472,8 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 		CVector getDir(void) const { return _Dir ; }
 
+	
+		void showTool(void) ;
 
 	
 

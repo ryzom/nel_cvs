@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera interface between the game and NeL
  *
- * $Id: camera.cpp,v 1.19 2002/11/05 09:47:36 lecroart Exp $
+ * $Id: camera.cpp,v 1.20 2003/11/17 10:26:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,7 +102,7 @@ void	initCamera()
 	// Setup the sky scene
 	//
 
-	SkyScene = Driver->createScene();
+	SkyScene = Driver->createScene(false);
 
 	SkyCamera = SkyScene->getCam ();
 	SkyCamera->setTransformMode (UTransformable::DirectMatrix);
@@ -117,7 +117,7 @@ void	initCamera()
 	// Setup the logo scene
 	//
 
-	LogoScene = Driver->createScene();
+	LogoScene = Driver->createScene(false);
 
 	CViewport v;
 	v.init (0.0f, 0.80f, 0.2f, 0.2f);

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs main file
  *
- * $Id: client.cpp,v 1.59 2003/09/15 11:21:15 lecroart Exp $
+ * $Id: client.cpp,v 1.60 2003/11/17 10:26:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
 	initLoadingState ();
 
 	// Create a scene
-	Scene = Driver->createScene();
+	Scene = Driver->createScene(false);
 
 	// Init the landscape using the previously created UScene
 	displayLoadingState ("Initialize Landscape");

@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.5 2002/11/29 09:10:33 lecroart Exp $
+ * $Id: report.cpp,v 1.6 2003/02/10 10:26:14 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -67,7 +67,8 @@ void setReportEmailFunction (void *emailFunction)
 	EmailFunction = (TEmailFunction)emailFunction;
 
 #ifdef NL_OS_WINDOWS
-	EnableWindow(sendReport, FALSE);
+	if (sendReport)
+		EnableWindow(sendReport, FALSE);
 #endif
 }
 

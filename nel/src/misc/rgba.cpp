@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * ARGB pixel format
  *
- * $Id: rgba.cpp,v 1.16 2003/09/30 17:27:04 vizerie Exp $
+ * $Id: rgba.cpp,v 1.17 2005/02/17 17:10:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -621,6 +621,7 @@ bool CRGBA::convertToHLS(float &h, float &l, float &s) const
 	/// Get saturation
 	if (minV == maxV)  // all composants are equals -> achromatique
 	{
+		h = 0;
 		s = 0;		
 		return true;
 	}

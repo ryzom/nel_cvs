@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.16 2000/12/01 11:14:46 corvazier Exp $
+ * $Id: zone.cpp,v 1.17 2000/12/06 15:58:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,6 +128,37 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 	}
 
 	NumVertices= maxVertex+1;
+}
+
+
+// ***************************************************************************
+void			CZone::retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVertex> &borderVertices)
+{
+	sint i,j;
+
+	// uncompress Patchs.
+	//=========================
+	patchs.resize(Patchs.size());
+	for(j=0;j<(sint)patchs.size();j++)
+	{
+		CPatchInfo			&pi= patchs[j];
+		CPatch				&pa= Patchs[j];
+		CPatchConnect		&pc= PatchConnects[j];
+
+		// re-Build the uncompressed bezier patch.
+		pa.unpack(pi.Patch);
+		pi.Tiles= pa.Tiles;
+		// from the patchConnect.
+		pi.OrderS= pc.OrderS;
+		pi.OrderT= pc.OrderT;
+		pi.ErrorSize= pc.ErrorSize;
+		for(i=0;i<4;i++)
+		{
+			pi.BaseVertices[i]= pc.BaseVertices[i];
+		}
+		for(i=0;i<4;i++)
+			pi.BindEdges[i]= pc.BindEdges[i];
+	}
 }
 
 

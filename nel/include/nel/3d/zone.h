@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.11 2000/12/01 17:01:28 berenguier Exp $
+ * $Id: zone.h,v 1.12 2000/12/06 15:58:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,6 +192,16 @@ public:
 	void			build(const CZone &zone);
 
 
+	/** Retrieve zone patchinfo.
+	 * This method uncompress the patchs coordinates and all info into the patch info/borderVertices.
+	 * Warning!!! Due to compression, data won't be the same as those given in build().
+	 *
+	 * \param patchs the PatchInfo of this zone.
+	 * \param borderVertices vertices connectivity for this zone.
+	 */
+	void			retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVertex> &borderVertices);
+
+
 	/** Compile a zone. Make it usable for clip()/refine()/render().
 	 * This method do:
 	 *	- attach this to loadedZones.
@@ -263,6 +273,8 @@ public:
 	bool			compiled() const {return Compiled;}
 	uint16			getZoneId() const {return ZoneId;}
 	sint			getNumPatchs() const {return Patchs.size();}
+	// Return the Bounding Box of the zone.
+	const CAABBoxExt	&getZoneBB() const {return ZoneBB;}
 
 	/** 
 	 * Get a read only patch pointer.

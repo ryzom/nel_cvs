@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.16 2000/12/06 10:16:51 berenguier Exp $
+ * $Id: patch.h,v 1.17 2000/12/06 15:58:34 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -208,6 +208,9 @@ public:
 	// Serial just the un-compiled part.
 	void			serial(NLMISC::IStream &f);
 
+	// unpack the patch into a floating point one.
+	void			unpack(CBezierPatch	&p) const;
+
 // Private part.
 private:
 /*********************************/
@@ -284,10 +287,8 @@ private:
 	// For cahcing.
 	static	const CPatch	*LastPatch;
 
-	// unpack the patch into a floating point one.
+	// unpack the patch into the cache.
 	CBezierPatch	*unpackIntoCache() const;
-	// unpack the patch into a floating point one.
-	void			unpack(CBezierPatch	&p) const;
 
 };
 

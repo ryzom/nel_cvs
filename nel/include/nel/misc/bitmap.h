@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.17 2002/11/29 09:12:41 lecroart Exp $
+ * $Id: bitmap.h,v 1.18 2002/12/06 14:20:54 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -616,6 +616,7 @@ inline bool CBitmap::writeJPG( NLMISC::IStream &f, uint8 quality)
 inline bool CBitmap::writeJPG( NLMISC::IStream &f, uint8 quality)
 {
 	nlwarning ("You must put #define USE_JPEG before all include in the file where you call writeJPG() if you want jpeg support");
+	return false;
 }
 #endif // USE_JPEG
 

@@ -1,7 +1,7 @@
 /** \file ligo/material.cpp
  * A ligoscape material
  *
- * $Id: ligo_material.cpp,v 1.2 2003/09/01 12:05:57 lecroart Exp $
+ * $Id: ligo_material.cpp,v 1.3 2003/09/30 13:49:13 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 // Ligo include
 #include "ligo_error.h"
 
-using namespace NL3D;
+//using namespace NL3D;
 
 namespace NLLIGO
 {

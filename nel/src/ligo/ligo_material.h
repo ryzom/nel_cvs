@@ -1,7 +1,7 @@
 /** \file ligo/ligo_material.h
  * A ligoscape material
  *
- * $Id: ligo_material.h,v 1.1 2002/02/28 08:14:36 besson Exp $
+ * $Id: ligo_material.h,v 1.2 2003/09/30 13:49:13 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "zone_template.h"
 
 // NeL include
-#include "3d/zone.h"
+//#include "3d/zone.h"
 
 namespace NLLIGO
 {

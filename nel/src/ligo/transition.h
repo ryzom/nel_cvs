@@ -1,7 +1,7 @@
 /** \file transition.h
  * A transition template definition
  *
- * $Id: transition.h,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: transition.h,v 1.2 2003/09/30 13:50:27 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "zone_edge.h"
 
 // NeL include
-#include "3d/zone.h"
+//#include "3d/zone.h"
 
 namespace NLLIGO
 {

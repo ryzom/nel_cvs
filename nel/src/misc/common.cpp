@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.39 2003/04/09 13:36:31 lecroart Exp $
+ * $Id: common.cpp,v 1.40 2003/04/16 13:00:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -479,9 +479,14 @@ string secondsToHumanReadable (uint32 time)
 	uint32 newres = res;
 	while (true)
 	{
-		newres /= divCoef[div];
-		if(newres < 3 || div > 2)
+		if(div > 2)
 			break;
+
+		newres /= divCoef[div];
+		
+		if(newres < 3)
+			break;
+
 		div++;
 		res = newres;
 	}

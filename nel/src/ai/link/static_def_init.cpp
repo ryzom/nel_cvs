@@ -50,8 +50,10 @@
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CSimpleLocalMailBox::IdSimpleLocalMailBox("SimpleLocalMailBox",NLAIC::CSelfClassCFactory(CSimpleLocalMailBox(NULL)),
-														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
+	const NLAIC::CIdentType CSimpleLocalMailBox::IdSimpleLocalMailBox("SimpleLocalMailBox",
+														NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CSimpleLocalMailBox(NULL)),
+														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
+														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
 	const NLAIC::CIdentType CLocalMailBox::IdLocalMailBox("LocalMailBox",NLAIC::CSelfClassCFactory(CLocalMailBox(NULL)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	

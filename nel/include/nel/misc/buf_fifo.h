@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * <File description>
  *
- * $Id: buf_fifo.h,v 1.1 2001/02/23 13:54:11 lecroart Exp $
+ * $Id: buf_fifo.h,v 1.2 2001/02/23 14:54:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ public:
 	CBufFIFO ();
 	~CBufFIFO ();
 
-	uint8	*push (uint32 size);
+	void	 push (std::vector<uint8> &buffer);
 
 	void	 pop (std::vector<uint8> &buffer);
 

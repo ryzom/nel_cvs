@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * <File description>
  *
- * $Id: buf_fifo.cpp,v 1.1 2001/02/23 13:54:11 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.2 2001/02/23 14:54:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,39 +87,37 @@ CBufFIFO::~CBufFIFO()
 	}
 }
 
-uint8 *CBufFIFO::push(uint32 size)
+void CBufFIFO::push(std::vector<uint8> &buffer)
 {
 	TTicks before = CTime::getPerformanceTime();
 
 	//nldebug("push(%d)", size);
 
-	nlassert(size > 0 && size<1000);
+	nlassert(buffer.size() > 0 && buffer.size() < 1000);
 
 	// stat code
-	if (size > _BiggestBlock) _BiggestBlock = size;
-	if (size < _SmallestBlock) _SmallestBlock = size;
+	if (buffer.size() > _BiggestBlock) _BiggestBlock = buffer.size();
+	if (buffer.size() < _SmallestBlock) _SmallestBlock = buffer.size();
 
 	_Pushed++;
 
-	while (!canFit (size + sizeof (uint32)))
+	while (!canFit (buffer.size() + sizeof (uint32)))
 	{
 		resize(_BufferSize * 2);
 	}
 
-	*(uint32 *)_Head = size;
+	*(uint32 *)_Head = buffer.size();
 	_Head += sizeof(uint32);
 
-	uint8 *start = _Head;
+	memcpy(_Head, &(buffer[0]), buffer.size());
 
-	_Head += size;
+	_Head += buffer.size();
 
 	_Empty = false;
 
 	TTicks after = CTime::getPerformanceTime();
 
 	_PushedTime += after - before;
-
-	return start;
 }
 
 void CBufFIFO::pop (vector<uint8> &buffer)

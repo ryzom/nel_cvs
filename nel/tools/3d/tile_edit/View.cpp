@@ -212,7 +212,10 @@ int TileList::setTile128 (int tile, const std::string& name, NL3D::CTile::TBitma
 			CTileSet::TError error;
 			int pixel=-1;
 			int composante=4;
-			error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
+			if (type == CTile::additive)
+				error=CTileSet::ok;
+			else
+				error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
 			if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128)&&!zouille ())
 			{
 				char sTmp[512];
@@ -275,7 +278,11 @@ int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitma
 			int pixel=-1;
 			int composante=4;
 
-			if (((error=tileBank2.getTileSet(_tileSet)->checkTile256 (type, border, pixel, composante))!=CTileSet::ok)&&!zouille())
+			if (type == CTile::additive)
+				error=CTileSet::ok;
+			else
+				error=tileBank2.getTileSet(_tileSet)->checkTile256 (type, border, pixel, composante);
+			if ((error!=CTileSet::ok)&&!zouille())
 			{
 				char sTmp[512];
 				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};

@@ -2635,7 +2635,51 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 
 	// Toggle arrows ?
 	if (AsyncListener.isKeyPushed ((TKey)PainterKeys[ToggleArrows]))
+	{
+		// Toggle
 		pData->pobj->additiveTile^=true;
+
+		// Go
+		if (pData->pobj->additiveTile)
+		{
+			// Add a additive tile...
+			int i;
+			for (i=0; i<landscape.Landscape.TileBank.getTileCount(); i++)
+			{
+				landscape.Landscape.TileBank.getTile(i)->setFileName (CTile::additive, "arrow.tga");
+				landscape.Landscape.releaseTiles(i, 1);
+			}
+		}
+		else
+		{
+			// Copy original bank
+			landscape.Landscape.TileBank = bank;
+
+			// Add a additive tile...
+			int i;
+			for (i=0; i<landscape.Landscape.TileBank.getTileCount(); i++)
+			{
+				landscape.Landscape.releaseTiles(i, 1);
+			}
+		}
+
+		// Touch all patches
+		for (uint zone=0; zone<pData->VectMesh.size(); zone++)
+		{
+			// Get the zone
+			CZone *pZone=landscape.Landscape.getZone (zone);
+			nlassert (pZone);
+
+			// For each patch
+			uint numPatch=pZone->getNumPatchs();
+			for (uint patch=0; patch<numPatch; patch++)
+			{
+				// Invalidate this patch
+				pZone->changePatchTextureAndColor (patch, NULL, NULL);
+				//pZone->refreshTesselationGeometry (patch);
+			}
+		}
+	}
 
 	// Toggle automatic lighting ?
 	if (AsyncListener.isKeyPushed ((TKey)PainterKeys[AutomaticLighting]))
@@ -2835,8 +2879,7 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 
 		// Render.
 		//==================
-
-		landscape.enableAdditive (pData->pobj->additiveTile);
+		landscape.enableAdditive (true);
 
 		scene.render();
 
@@ -3977,18 +4020,8 @@ DWORD WINAPI myThread (LPVOID vData)
 			CNELU::Camera->setMatrix (mat);
 			CNELU::Camera->setPerspective( 75.f*(float)Pi/180.f/*vp->GetFOV()*/, 1.33f, 0.1f, 1000.f);
 
-			// Get module path...
-			char path[512];
-			_makepath (path, NULL, NULL, "arrow", ".tga");
- 
-			// Add a additive tile...
-			int i;
-			for (i=0; i<TheLand->Landscape.TileBank.getTileCount(); i++)
-			{
-				TheLand->Landscape.TileBank.getTile(i)->setFileName (CTile::additive, path);
-			}
-
 			// Form each zone
+			uint i;
 			for (i = 0; i <(int)pData->VectMesh.size(); i++)
 			{
 				// Get pointers

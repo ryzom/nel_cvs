@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.10 2003/03/10 14:17:13 robert Exp $
+ * $Id: classifier.h,v 1.11 2003/03/11 09:56:03 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include <set>
 #include "nel/misc/debug.h"
 #include "nel/misc/string_conversion.h"
+#include "sensors_motivations_actions_def.h"
 
 namespace NLAINIMAT
 {
@@ -41,13 +42,13 @@ namespace NLAINIMAT
 ///////////////////////////
 
 /// This type give all the actions and virtual actions (high level action) of an Agent.
-extern enum TAction;
+//extern enum TAction;
 
 /// This type give all the motivations of an Agent.
-extern enum TMotivation;
+//extern enum TMotivation;
 
 /// This type give all the sensors of an Agent.
-extern enum TSensor;
+//extern enum TSensor;
 
 
 /// Used to know how a behaviour terminate

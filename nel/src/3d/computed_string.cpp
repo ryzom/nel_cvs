@@ -1,6 +1,6 @@
 /** \file computed_string.cpp
  * Computed string
- * $Id: computed_string.cpp,v 1.1 2000/11/17 14:59:43 coutelas Exp $
+ * $Id: computed_string.cpp,v 1.2 2000/11/28 13:24:12 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,11 +38,12 @@ namespace NL3D {
 /*------------------------------------------------------------------*\
 							render2D()
 \*------------------------------------------------------------------*/
-void CComputedString::render2D (IDriver& driver, 
+void CComputedString::render2D (IDriver& driver,
 								float x, float z,
+								THotSpot hotspot,
 								float scaleX, float scaleZ,
-								float rotateY,
-								THotSpot hotspot)
+								float rotateY
+								)
 {
 
 	//x*=ResX/ResY;

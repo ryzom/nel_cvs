@@ -153,7 +153,7 @@
 																									NLAIC::CTypeOfOperator::opEq  |
 																									NLAIC::CTypeOfOperator::opNot );
 
-	const NLAIC::CIdentType CAgentScript::IdAgentScript("AgentScript", NLAIC::CSelfClassCFactory( CAgentScript(NULL) ),
+	const NLAIC::CIdentType CAgentScript::IdAgentScript("AgentScript", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CAgentScript(NULL) ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
@@ -161,15 +161,15 @@
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
-	const NLAIC::CIdentType CActor::IdActor("CActor", NLAIC::CSelfClassCFactory( CActor() ),
+	const NLAIC::CIdentType CActor::IdActor("CActor", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CActor() ),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CActorScript::IdActorScript("ActorScript", NLAIC::CSelfClassCFactory( CActorScript(NULL) ),
+	const NLAIC::CIdentType CActorScript::IdActorScript("ActorScript", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CActorScript(NULL) ),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CMainAgentScript::IdMainAgentScript("MainAgentScript", NLAIC::CSelfClassCFactory( CMainAgentScript(NULL) ),
+	const NLAIC::CIdentType CMainAgentScript::IdMainAgentScript("MainAgentScript", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CMainAgentScript(NULL) ),
 													NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 													NLAIC::CTypeOfOperator::opEq );
 
@@ -216,7 +216,8 @@
 		NLAIC::CTypeOfOperator::opNeg | 
 		NLAIC::CTypeOfOperator::opNot ); 
 
-	const NLAIC::CIdentType CBoolAssert::IdBoolAssert = NLAIC::CIdentType( "BoolAssert", NLAIC::CSelfClassCFactory(CBoolAssert( CStringVarName("Inst") )),
+	const NLAIC::CIdentType CBoolAssert::IdBoolAssert = NLAIC::CIdentType( "BoolAssert", 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CBoolAssert( CStringVarName("Inst") )),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNeg | 

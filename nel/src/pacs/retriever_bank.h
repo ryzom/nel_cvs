@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.10 2003/03/31 11:59:09 legros Exp $
+ * $Id: retriever_bank.h,v 1.11 2003/04/14 18:36:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -279,6 +279,12 @@ public:
 
 	///
 	bool		allLoaded() const { return _AllLoaded; }
+
+	/// Tells if retriever is loaded
+	bool		isLoaded(uint n) const
+	{
+		return (n < _Retrievers.size() && _Retrievers[n].isLoaded());
+	}
 
 	// @}
 };

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.42 2003/01/30 17:56:43 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.43 2003/04/14 18:36:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -282,7 +282,7 @@ void	NLPACS::CRetrieverInstance::unlink(vector<CRetrieverInstance> &instances)
 
 
 
-void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
+void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst, bool sortByDistance) const
 //NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
 {
 /*
@@ -372,10 +372,10 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimat
 
 	return retrieved;
 */
-	retrievePosition(CVectorD(estimated), retriever, cst);
+	retrievePosition(CVectorD(estimated), retriever, cst, sortByDistance);
 }
 
-void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
+void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst, bool sortByDistance) const
 {
 	CVector							localEstimated;
 
@@ -432,7 +432,7 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 
 				// if it is closer to the estimation than the previous remembered...
 				found = true;
-				float	distance = (float)fabs(localEstimated.z-meanHeight);
+				float	distance = sortByDistance ? (float)fabs(localEstimated.z-meanHeight) : meanHeight;
 				cst.SortedSurfaces.push_back(CCollisionSurfaceTemp::CDistanceSurface(distance, (uint16)surf, (uint16)_InstanceId, cst.SurfaceLUT[surf].FoundCloseEdge));
 
 			}
@@ -465,7 +465,7 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 				{
 					// if it is closer to the estimation than the previous remembered...
 					found = true;
-					float	distance = (float)fabs(localEstimated.z-lp.Estimation.z);
+					float	distance = sortByDistance ? (float)fabs(localEstimated.z-lp.Estimation.z) : lp.Estimation.z;
 					cst.SortedSurfaces.push_back(CCollisionSurfaceTemp::CDistanceSurface(distance, (uint16)surf, (uint16)_InstanceId, cst.SurfaceLUT[surf].FoundCloseEdge));
 				}
 			}

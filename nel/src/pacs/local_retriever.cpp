@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.57 2003/04/07 17:02:59 legros Exp $
+ * $Id: local_retriever.cpp,v 1.58 2003/04/14 18:36:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1156,8 +1156,6 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<
 					continue;
 
 				isOnBorder = true;
-				//cst.incSurface(left);
-				//cst.incSurface(right);
 				if (left >= 0)
 				{
 					cst.SurfaceLUT[left].FoundCloseEdge = true;
@@ -1173,7 +1171,7 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<
 			}
 			else if (vertices[stop].x == estim.x)
 			{
-				// if 
+				// if (yes)
 				continue;
 			}
 

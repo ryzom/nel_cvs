@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.77 2003/04/09 19:54:24 cado Exp $
+ * $Id: global_retriever.cpp,v 1.78 2003/04/14 18:36:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,15 +103,25 @@ void	NLPACS::CGlobalRetriever::initRetrieveTable()
 
 //
 
-void	NLPACS::CGlobalRetriever::selectInstances(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst) const
+bool	NLPACS::CGlobalRetriever::selectInstances(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst) const
 {
 	_InstanceGrid.select(bbox.getMin(), bbox.getMax());
 	cst.CollisionInstances.clear();
 
+	bool	allLoaded = true;
+
 	NLPACS::CQuadGrid<uint32>::CIterator	it;
 	for (it=_InstanceGrid.begin(); it!=_InstanceGrid.end(); ++it)
+	{
 		if (_Instances[*it].getBBox().intersect(bbox))
+		{
+			if (!_RetrieverBank->isLoaded(_Instances[*it].getRetrieverId()))
+				allLoaded = false;
 			cst.CollisionInstances.push_back(*it);
+		}
+	}
+
+	return allLoaded;
 }
 
 //
@@ -545,7 +555,8 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	CAABBox	bbpos;
 	bbpos.setCenter(estimated);
 	bbpos.setHalfSize(CVector(0.5f, 0.5f, 0.5f));
-	selectInstances(bbpos, _InternalCST);
+	if (!selectInstances(bbpos, _InternalCST))
+		return result;
 
 	uint	i;
 
@@ -634,6 +645,122 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 {
 	return retrievePosition(estimated, 1.0e10);
 }
+
+//
+
+// Retrieves the position of an estimated point in the global retriever using layer hint
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, uint h, uint &res) const
+{
+	// the retrieved position
+	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
+
+	if (!_BBox.include(CVector((float)estimated.x, (float)estimated.y, (float)estimated.z)))
+	{
+		_ForbiddenInstances.clear();
+		res = Failed;
+		return result;
+	}
+
+
+	// get the best matching instances
+	CAABBox	bbpos;
+	bbpos.setCenter(estimated);
+	bbpos.setHalfSize(CVector(0.5f, 0.5f, 0.5f));
+	bool	canGet = selectInstances(bbpos, _InternalCST);
+
+	if (!canGet)
+	{
+		res = MissingLr;
+		return result;
+	}
+
+	uint	i;
+
+	_InternalCST.SortedSurfaces.clear();
+
+	// for each instance, try to retrieve the position
+	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
+	{
+		uint32							id = _InternalCST.CollisionInstances[i];
+		const CRetrieverInstance		&instance = _Instances[id];
+		const CLocalRetriever			&retriever = _RetrieverBank->getRetriever(instance.getRetrieverId());
+
+		uint	j;
+		for (j=0; j<_ForbiddenInstances.size(); ++j)
+			if (_ForbiddenInstances[j] == (sint32)id)
+				break;
+
+		if (j<_ForbiddenInstances.size() || !retriever.isLoaded())
+			continue;
+
+		instance.retrievePosition(estimated, retriever, _InternalCST, false);
+	}
+
+	_ForbiddenInstances.clear();
+
+	if (!_InternalCST.SortedSurfaces.empty())
+	{
+		// if there are some selected surfaces, sort them
+		std::sort(_InternalCST.SortedSurfaces.begin(), _InternalCST.SortedSurfaces.end(), CCollisionSurfaceTemp::CDistanceSurface());
+
+		if (h >= _InternalCST.SortedSurfaces.size())
+		{
+			// found less surfaces than expected, abort
+			res = Failed;
+			return result;
+		}
+
+		uint32							id = _InternalCST.SortedSurfaces[h].Instance;
+		const CRetrieverInstance		&instance = _Instances[id];
+		const CLocalRetriever			&retriever = _RetrieverBank->getRetriever(instance.getRetrieverId());
+
+		// get the UGlobalPosition of the estimation for this surface
+		result.InstanceId = id;
+		result.LocalPosition.Surface = _InternalCST.SortedSurfaces[h].Surface;
+		result.LocalPosition.Estimation = instance.getLocalPosition(estimated);
+
+		CRetrieverInstance::snapVector(result.LocalPosition.Estimation);
+
+		// if there are more than 1 one possible (and best matching) surface, insure the position within the surface (by moving the point)
+//		if (_InternalCST.SortedSurfaces.size() >= 2 && 
+//			_InternalCST.SortedSurfaces[1].Distance-_InternalCST.SortedSurfaces[0].Distance < InsureSurfaceThreshold)
+		if (_InternalCST.SortedSurfaces[h].FoundCloseEdge)
+		{
+			bool	moved;
+			uint	numMove = 0;
+			do
+			{
+				moved = retriever.insurePosition(result.LocalPosition);
+				++numMove;
+			}
+			while (moved && numMove < 100);
+			// the algo won't loop infinitely
+
+			if (numMove > 1)
+			{
+				nldebug("PACS: insured position inside surface (%d,%d)-(%f,%f,%f), %d moves needed", result.InstanceId, result.LocalPosition.Surface, estimated.x, estimated.y, estimated.z, numMove-1);
+			}
+
+			if (moved)
+			{
+				nlwarning ("PACS: couldn't insure position (%.f,%.f) within the surface (surf=%d,inst=%d) after 100 retries", result.LocalPosition.Estimation.x, result.LocalPosition.Estimation.y, result.LocalPosition.Surface, result.InstanceId);
+			}
+		}
+
+		// and after selecting the best surface (and some replacement) snap the point to the surface
+		instance.snap(result.LocalPosition, retriever);
+	}
+	else
+	{
+		res = Failed;
+//		nlwarning("PACS: unable to retrieve correct position (%f,%f,%f)", estimated.x, estimated.y, estimated.z);
+//		nlSleep(1);
+	}
+
+	res = Success;
+	return result;
+}
+
 
 //
 

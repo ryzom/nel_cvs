@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "3d"=R:\code\nel\src\3d.dsp - Package Owner=<4>
+Project: "3d"=..\..\..\..\src\3d.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -18,7 +18,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "driver_opengl"=R:\code\nel\src\3d\driver\opengl\driver_opengl.dsp - Package Owner=<4>
+Project: "driver_opengl"=..\..\..\..\src\3d\driver\opengl\driver_opengl.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -36,7 +36,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "misc"=R:\code\nel\src\misc.dsp - Package Owner=<4>
+Project: "misc"=..\..\..\..\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -44,6 +44,24 @@ Package=<5>
 
 Package=<4>
 {{{
+}}}
+
+###############################################################################
+
+Project: "nel_3dsmax_shared"=..\nel_3dsmax_shared\nel_3dsmax_shared.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name nel_patch_lib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -71,6 +89,12 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name nel_mesh_lib
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name object_viewer
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name nel_3dsmax_shared
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -88,6 +112,45 @@ Package=<4>
 ###############################################################################
 
 Project: "nel_patch_lib"=..\nel_patch_lib\nel_patch_lib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "object_viewer"=..\..\object_viewer\object_viewer.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name 3d
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name driver_opengl
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name sound
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "sound"=..\..\..\..\src\sound.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

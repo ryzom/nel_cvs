@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * <File description>
  *
- * $Id: animation_playlist.cpp,v 1.4 2001/03/29 15:16:44 corvazier Exp $
+ * $Id: animation_playlist.cpp,v 1.5 2001/03/29 15:26:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,7 +193,7 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, CAnimationTime time) 
 				if (pAnimation)
 				{
 					// Compute the non-wrapped time
-					CAnimationTime wrappedTime=pAnimation->getBeginTime ()+(time-_TimeOrigin[s])/_SpeedFactor[s];
+					CAnimationTime wrappedTime=pAnimation->getBeginTime ()+(time-_TimeOrigin[s])*_SpeedFactor[s];
 
 					// Wrap mode
 					switch (_WrapMode[s])

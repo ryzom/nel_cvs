@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.20 2004/04/01 19:07:53 vizerie Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.21 2004/04/06 13:39:28 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1297,7 +1297,7 @@ static void ARBVertexProgramDumpInstr(const CVPInstruction &instr, std::string &
 
 
 // ***************************************************************************
-bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgram, GLuint id)
+bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgram, GLuint id, bool &specularWritten)
 {
 	// tmp
 	CVPParser::TProgram parsedProgram = inParsedProgram;
@@ -1323,12 +1323,12 @@ bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgra
 	uint writtenSpecularComponents = 0;
 	for(uint k = 0; k < parsedProgram.size(); ++k)
 	{
-		if (parsedProgram[k].Dest.Value.OutputRegisterValue == CVPOperand::OSecondaryColor)
+		if (parsedProgram[k].Dest.Type ==  CVPOperand::OutputRegister && parsedProgram[k].Dest.Value.OutputRegisterValue == CVPOperand::OSecondaryColor)
 		{
 			writtenSpecularComponents |= parsedProgram[k].Dest.WriteMask;
 		}
 	}
-	// tmp fix : write unwritten components of specular (seems that glDisable(GL_COLOR_SUM_ARB) does not work in a rare case for me ...)
+	// tmp fix : write unwritten components of specular (seems that glDisable(GL_COLOR_SUM_ARB) does not work in a rare case for me ...)		
 	if (writtenSpecularComponents != 0xf)
 	{
 		// add a new instruction to write 0 in unwritten components
@@ -1358,16 +1358,29 @@ bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgra
 		vpi.Src2.Swizzle = sw;		
 		//
 		parsedProgram.push_back(vpi);
-	}
+	}		
+	specularWritten = (writtenSpecularComponents != 0);
+		
 	for(uint k = 0; k < parsedProgram.size(); ++k)
 	{
 		std::string instr;
 		ARBVertexProgramDumpInstr(parsedProgram[k], instr);
-		code += instr;
-	}	
-	
-	
-	code += "END\n";		
+		code += instr + "\r\n";
+	}			
+	code += "END\n";
+	//
+	/*
+	static COFile output;
+	static bool opened = false;
+	if (!opened)
+	{
+		output.open("vp.txt", false, true);
+		opened = true;
+	}
+	std::string header = "=====================================================================================";
+	output.serial(header);
+	output.serial(code);
+	*/
 	//
 	nglBindProgramARB( GL_VERTEX_PROGRAM_ARB, id);
 	glGetError();
@@ -1414,6 +1427,8 @@ bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgra
 	return true;	
 }
 
+
+
 // ***************************************************************************
 bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 {
@@ -1447,24 +1462,13 @@ bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 			// Set the pointer
 			program->_DrvInfo=drvInfo;
 
-			if (!setupARBVertexProgram(parsedProgram, drvInfo->ID))
+			if (!setupARBVertexProgram(parsedProgram, drvInfo->ID, drvInfo->SpecularWritten))
 			{
 				delete drvInfo;
 				program->_DrvInfo = NULL;
 				_VtxPrgDrvInfos.erase(it);
 				return false;
-			}
-
-			// see if specular is written	
-			
-			for(uint k = 0; k < parsedProgram.size(); ++k)
-			{
-				if (parsedProgram[k].Dest.Value.OutputRegisterValue == CVPOperand::OSecondaryColor)
-				{
-					drvInfo->SpecularWritten =  true;
-					break;
-				}
-			}
+			}			
 		}
 		else
 		{
@@ -1481,16 +1485,18 @@ bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 		else
 		{
 			glDisable( GL_COLOR_SUM_ARB ); // no specular written
-		}
+		}		
 		_LastSetuppedVP = program;
 	}
 	else
 	{		
-		glDisable( GL_VERTEX_PROGRAM_ARB );
+		glDisable( GL_VERTEX_PROGRAM_ARB );		
+		glDisable( GL_COLOR_SUM_ARB );
 		_VertexProgramEnabled = false;		
 	}
 	return true;
 }
+
 
 // ***************************************************************************
 bool CDriverGL::activeEXTVertexShader (CVertexProgram *program)
@@ -1557,8 +1563,8 @@ bool CDriverGL::activeEXTVertexShader (CVertexProgram *program)
 		_LastSetuppedVP = program;
 	}
 	else
-	{		
-		glDisable( GL_VERTEX_SHADER_EXT );
+	{				
+		glDisable( GL_VERTEX_SHADER_EXT );				
 		_VertexProgramEnabled = false;		
 	}
 	return true;	

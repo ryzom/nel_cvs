@@ -1,7 +1,7 @@
 /** \file buffer_al.h
  * OpenAL buffer
  *
- * $Id: buffer_al.h,v 1.1 2001/06/26 15:28:56 cado Exp $
+ * $Id: buffer_al.h,v 1.2 2001/07/04 13:13:07 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,7 @@ public:
 
 
 	/** Return true if the buffer is able to be fill part by part, false if it must be filled in one call
-	 * OpenAL 1.0 -> false
+	 * (OpenAL 1.0 -> false)
 	 */
 	virtual bool		isFillMoreSupported() const				{ return false; }
 	/// Force the buffer size without filling data (if isFillMoreSupported() only)

@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
+ * $Id: ps_face.cpp,v 1.4 2002/04/15 08:41:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,7 @@ public:
 		// number of left faces to draw, number of faces to process at once
 		uint32 leftFaces = size, toProcess;
 		f._Owner->incrementNbDrawnParticles(size); // for benchmark purpose		
+		f.setupDriverModelMatrix();
 		driver->activeVertexBuffer(vb);
 		if (f.isMultiTextureEnabled())
 		{

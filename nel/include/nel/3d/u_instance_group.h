@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.28 2003/09/25 12:13:13 corvazier Exp $
+ * $Id: u_instance_group.h,v 1.29 2004/03/12 16:24:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -204,16 +204,14 @@ public:
 	virtual const NLMISC::CVector& getInstanceScale (uint instanceNb) const=0;
 
 	/**
-	 * Return an instance of the group. This instance must be destroyed by the user using delete ().
-	 * Destructor of this instance will not delete remove the object from the scene.
+	 * Return an instance of the group. The instance lifeTime is the same of the instangeGroup lifeTime
 	 *
 	 * \param instanceNb is the number of the instance.
 	 */
 	virtual const UInstance	*getInstance (uint instanceNb) const=0;
 
 	/**
-	 * Return an instance of the group. This instance must be destroyed by the user using delete ()
-	 * Destructor of this instance will not delete remove the object from the scene.
+	 * Return an instance of the group. The instance lifeTime is the same of the instangeGroup lifeTime
 	 *
 	 * \param instanceNb is the number of the instance.
 	 */
@@ -244,12 +242,17 @@ public:
 	/**
 	 * All the instances must be checked against the following cluster system
 	 */
-	virtual void setClusterSystem (class UInstanceGroup *pClusterSystem)=0;
+	virtual void setClusterSystemForInstances (class UInstanceGroup *pClusterSystem)=0;
 
 	/** Link this ig clusters as sons of clusters of 'ig' that conatains them.
 	  * \return true if the link succeeded
 	  */
 	virtual bool linkToParentCluster(UInstanceGroup *father) = 0;
+
+	/** return the parent cluster system of this IG. NULL if this is the GlobalInstanceGroup.
+	  * \return true if the link succeeded
+	  */
+	virtual UInstanceGroup *getParentCluster() const =0;
 
 	/**
 	 * Get all dynamic portals in the instance group
@@ -325,6 +328,8 @@ public:
 	// @}
 
 
+	/// For debug purpose, display clusters as poly/lines. The matrixs and frustum should have been setuped
+	virtual void			displayDebugClusters(UDriver *drv, class UTextContext *txtCtx) = 0;
 
 };
 

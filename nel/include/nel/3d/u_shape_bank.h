@@ -1,7 +1,7 @@
 /** \file u_shape_bank.h
  * Game interface for managing shape bank.
  *
- * $Id: u_shape_bank.h,v 1.4 2004/02/19 09:44:56 vizerie Exp $
+ * $Id: u_shape_bank.h,v 1.5 2004/03/12 16:24:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #define NL_U_SHAPE_BANK_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/3d/u_shape.h"
+
 
 namespace NLMISC
 {
@@ -93,6 +95,11 @@ public:
 	 */
 	virtual void	preLoadShapesFromBNP(const std::string &shapeCacheName, 
 		const std::string &bnpName, const std::string &wildCard, NLMISC::IProgressCallback *progress = NULL, bool flushTextures = false) =0;
+
+	/** Return a UShape proxy from this name. NB: if not found the mesh is not loaded, and the proxy
+	 *	returned will be empty
+	 */
+	virtual UShape	getShape(const std::string &shapeName) = 0;
 
 };
 

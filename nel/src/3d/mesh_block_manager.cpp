@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.cpp
  * <File description>
  *
- * $Id: mesh_block_manager.cpp,v 1.5 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_block_manager.cpp,v 1.6 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -123,6 +123,9 @@ void			CMeshBlockManager::flush(IDriver *drv, CScene *scene, CRenderTrav *render
 	_RenderCtx.Scene= scene;
 	_RenderCtx.RenderTrav= renderTrav;
 	
+	// TempYoyo
+	bool	bkupFog= drv->fogEnabled();
+	//drv->enableFog(false);
 
 	// render
 	//==========
@@ -153,7 +156,9 @@ void			CMeshBlockManager::flush(IDriver *drv, CScene *scene, CRenderTrav *render
 		}
 	}
 
-
+	// TempYoyo
+	drv->enableFog(bkupFog);
+	
 	// reset.
 	//==========
 

@@ -1,7 +1,7 @@
 /** \file u_visual_collision_manager.h
  * Interface to visual collision manager.
  *
- * $Id: u_visual_collision_manager.h,v 1.3 2004/03/03 19:01:21 berenguier Exp $
+ * $Id: u_visual_collision_manager.h,v 1.4 2004/03/12 16:24:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ class	ULandscape;
 class	UVisualCollisionEntity;
 
 
+// ***************************************************************************
 /**
  * Interface to visual collision manager.
  * \author Lionel Berenguier
@@ -80,13 +81,23 @@ public:
 	virtual void					setSunContributionPower (float power, float maxThreshold) =0;
 
 
-	/** Get Camera Ray-Cylinder collision.
+	/** Get Typical Camera 3rd person collision.
 	 *	For landscape, it is done only against TileFaces (ie only under approx 50 m)
 	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
 	 *	\param radius is the radius of the 'cylinder'
 	 *	\param cone if true, the object tested is a cone (radius goes to end)
-	*/
+	 */
 	virtual float					getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone) =0;
+
+
+	/** Add a Mesh to the collision manager. For now it is used only for Camera Collision
+	 *	number of vertices and number of triangles must not exceed 65535
+	 *	\return the id used for remove, 0 if not succeed
+	 */
+	virtual uint					addMeshCollision(const std::vector<CVector> &vertices, const std::vector<uint16> &triangles) =0;
+	/** Remove a Mesh from the collision manager.
+	 */
+	virtual void					removeMeshCollision(uint id) =0;
 
 };
 

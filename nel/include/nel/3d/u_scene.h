@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.47 2004/03/04 14:36:29 vizerie Exp $
+ * $Id: u_scene.h,v 1.48 2004/03/12 16:24:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,6 +135,14 @@ public:
 	virtual	void			setViewport(const class CViewport& viewport)=0;
 	/// Get the current Viewport.
 	virtual	CViewport		getViewport()=0;
+
+	/** Special For Camera Third person. Traverse the ClusterSystem with a Ray 
+	 *	(clip through portals, cluster system hierarchy...), to find where could lies 
+	 *	the camera at End point.
+	 *	As result, a camera->setClusterSystem() is done with the found cluster system
+	 */
+	virtual	void			findCameraClusterSystemFromRay(UCamera *cam, UInstanceGroup *startClusterSystem,
+		const NLMISC::CVector &startPos, const NLMISC::CVector &endPos) =0;
 	//@}
 
 

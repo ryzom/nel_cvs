@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.12 2001/06/14 10:23:18 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.13 2001/06/18 07:57:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -288,10 +288,7 @@ namespace NLAIAGENT
 		{
 			std::pair<IMessageBase *, sint32> p = ((*i).second);//->second->incRef();
 			IMessageBase *msg = (IMessageBase *)p.first;//->clone();
-			msg->incRef();
-			/*msg->setSender(this);
-			msg->setPerformatif(IMessageBase::PTell);
-			msg->setMethodIndex(0,p.second);*/
+			msg->incRef();			
 			(*i).first->sendMessage((IObjectIA *)msg);
 			i ++;
 		}

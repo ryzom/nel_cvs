@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.13 2001/06/15 14:39:10 portier Exp $
+ * $Id: agent_digital.h,v 1.14 2001/06/18 07:56:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,13 @@ namespace NLAIAGENT
 		DigitalType(NLMISC::IStream &is):INombre<float>(is)
 		{
 		}
+
+		virtual IObjetOp &neg()
+		{
+			_Value = -_Value;
+			chekBorn();
+			return *this;
+		}
 		
 		/// \name Base class member method.			
 		//@{
@@ -132,6 +139,13 @@ namespace NLAIAGENT
 		{
 		}
 
+		virtual IObjetOp &neg()
+		{
+			_Value = -_Value;
+			chekBorn();
+			return *this;
+		}
+
 		/// \name Base class member method.			
 		//@{
 		virtual const NLAIC::IBasicType *clone() const
@@ -193,6 +207,13 @@ namespace NLAIAGENT
 		DDigitalType(NLMISC::IStream &is):INombre<double>(is)
 		{
 		}
+
+		virtual IObjetOp &neg()
+		{
+			_Value = -_Value;
+			chekBorn();
+			return *this;
+		}
 		
 		/// \name Base class member method.			
 		//@{
@@ -251,11 +272,19 @@ namespace NLAIAGENT
 
 		BorneDDigitalType(const BorneDDigitalType &a): IBornNombre<double>(a)
 		{
-		}				
+		}		
 
 		///Construct from a NEL stream.
 		BorneDDigitalType(NLMISC::IStream &is):IBornNombre<double>(is)
 		{
+		}
+
+
+		virtual IObjetOp &neg()
+		{
+			_Value = -_Value;
+			chekBorn();
+			return *this;
 		}
 
 		/// \name Base class member method.			
@@ -316,6 +345,13 @@ namespace NLAIAGENT
 		IntegerType(NLMISC::IStream &is):INombre<sint32>(is)
 		{
 		}
+
+		virtual IObjetOp &neg()
+		{
+			_Value = -_Value;
+			chekBorn();
+			return *this;
+		}
 		
 
 		virtual const NLAIC::IBasicType *clone() const
@@ -372,6 +408,13 @@ namespace NLAIAGENT
 		ShortIntegerType(NLMISC::IStream &is):INombre<sint16>(is)
 		{
 		}
+
+		virtual IObjetOp &neg()
+		{
+			_Value = -_Value;
+			chekBorn();
+			return *this;
+		}
 		
 
 		virtual const NLAIC::IBasicType *clone() const
@@ -427,6 +470,13 @@ namespace NLAIAGENT
 		CharType(NLMISC::IStream &is):INombre<sint8>(is)
 		{
 		}
+
+		virtual IObjetOp &neg()
+		{
+			_Value = -_Value;
+			chekBorn();
+			return *this;
+		}
 		
 		virtual const NLAIC::IBasicType *clone() const
 		{
@@ -472,6 +522,7 @@ namespace NLAIAGENT
 		UInt8Type(NLMISC::IStream &is):INombre<uint8>(is)
 		{
 		}
+
 		
 		virtual const NLAIC::IBasicType *clone() const
 		{

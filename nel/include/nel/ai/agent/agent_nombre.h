@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.10 2001/06/15 14:33:58 portier Exp $
+ * $Id: agent_nombre.h,v 1.11 2001/06/18 07:56:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,12 +208,7 @@ namespace NLAIAGENT
 			return *this;
 		}
 
-		virtual IObjetOp &neg()
-		{
-			_Value = -_Value;
-			chekBorn();
-			return *this;
-		}
+		virtual IObjetOp &neg() = 0;		
 
 		virtual IObjetOp &operator *= (const IObjetOp &a)
 		{

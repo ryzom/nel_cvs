@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.27 2002/12/18 16:27:02 berenguier Exp $
+ * $Id: computed_string.cpp,v 1.28 2003/01/22 18:00:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,103 +164,130 @@ void CComputedString::render2DClip (IDriver& driver,
 	zmin*= wndHeight;
 	zmax*= wndHeight;
 
+	// Test String Bound against clip window
+	// If entirely out skip
+	if (((x+XMin) > xmax) || ((x+XMax) < xmin) ||
+		((z+ZMin) > zmax) || ((z+ZMax) < zmin))
+		return;
+
+	// test if entirely in.
+	bool	allIn;
+	allIn=	((x+XMin) >= xmin) && ((x+XMax) <= xmax) &&
+			((z+ZMin) >= zmin) && ((z+ZMax) <= zmax);
+
+
+	// **** setup driver context
 	driver.setFrustum(0, (float)wndWidth, 0, (float)wndHeight, -1, 1, false);  // resX/resY
 
-	// tansformation matrix initialized to identity
-	CMatrix matrix;
-	matrix.identity();
-		
 	// view matrix <-> identity
-	driver.setupViewMatrix (matrix);
-	driver.setupModelMatrix (matrix);
+	driver.setupViewMatrix (CMatrix::Identity);
 	
 	// rendering each primitives 
 	Material->setZFunc (CMaterial::always);
 	Material->setZWrite (false);
 	Material->setColor (Color);
 
-	// clipping
-	VerticesClipped.setNumVertices (Vertices.getNumVertices());
+	// **** clipping?
 	uint32 nNumQuad = 0;
-	CVector *pIniPos0 = (CVector*)Vertices.getVertexCoordPointer (0);
-	CVector *pIniPos2 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*2);
-	CVector *pClipPos0 = (CVector*)VerticesClipped.getVertexCoordPointer (0);
-	CVector *pClipPos1 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize());
-	CVector *pClipPos2 = (CVector*)(((char*)pClipPos1) + Vertices.getVertexSize());
-	CVector *pClipPos3 = (CVector*)(((char*)pClipPos2) + Vertices.getVertexSize());
-	CUV *pClipUV0 = (CUV*)VerticesClipped.getTexCoordPointer (0, 0);
-	CUV *pClipUV1 = (CUV*)(((char*)pClipUV0) + Vertices.getVertexSize());
-	CUV *pClipUV2 = (CUV*)(((char*)pClipUV1) + Vertices.getVertexSize());
-	CUV *pClipUV3 = (CUV*)(((char*)pClipUV2) + Vertices.getVertexSize());
-	float ratio;
-	for (uint32 i = 0; i < Vertices.getNumVertices(); i+=4)
+	if(allIn)
 	{
-		if (((x+pIniPos0->x) > xmax) || ((x+pIniPos2->x) < xmin) ||
-			((z+pIniPos0->z) > zmax) || ((z+pIniPos2->z) < zmin))
+		// tansformation matrix initialized to identity
+		CMatrix matrix;
+		matrix.translate(CVector(x,0,z));
+		driver.setupModelMatrix (matrix);
+		// setup original vertices 
+		nNumQuad= Vertices.getNumVertices()/4;
+		driver.activeVertexBuffer(Vertices);
+	}
+	else
+	{
+		// clip into VerticesClipped
+		VerticesClipped.setNumVertices (Vertices.getNumVertices());
+		CVector *pIniPos0 = (CVector*)Vertices.getVertexCoordPointer (0);
+		CVector *pIniPos2 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*2);
+		CVector *pClipPos0 = (CVector*)VerticesClipped.getVertexCoordPointer (0);
+		CVector *pClipPos1 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize());
+		CVector *pClipPos2 = (CVector*)(((char*)pClipPos1) + Vertices.getVertexSize());
+		CVector *pClipPos3 = (CVector*)(((char*)pClipPos2) + Vertices.getVertexSize());
+		CUV *pClipUV0 = (CUV*)VerticesClipped.getTexCoordPointer (0, 0);
+		CUV *pClipUV1 = (CUV*)(((char*)pClipUV0) + Vertices.getVertexSize());
+		CUV *pClipUV2 = (CUV*)(((char*)pClipUV1) + Vertices.getVertexSize());
+		CUV *pClipUV3 = (CUV*)(((char*)pClipUV2) + Vertices.getVertexSize());
+		float ratio;
+		for (uint32 i = 0; i < Vertices.getNumVertices(); i+=4)
 		{
-			// Totally clipped do nothing
-		}
-		else
-		{
-			memcpy (pClipPos0, pIniPos0, Vertices.getVertexSize()*4);
-
-			pClipPos0->x += x; pClipPos1->x += x; pClipPos2->x += x; pClipPos3->x += x;
-			pClipPos0->z += z; pClipPos1->z += z; pClipPos2->z += z; pClipPos3->z += z;
-			if ((pClipPos0->x >= xmin) && (pClipPos0->z >= zmin) && (pClipPos2->x <= xmax) && (pClipPos2->z <= zmax))
+			if (((x+pIniPos0->x) > xmax) || ((x+pIniPos2->x) < xmin) ||
+				((z+pIniPos0->z) > zmax) || ((z+pIniPos2->z) < zmin))
 			{
-				// Not clipped
+				// Totally clipped do nothing
 			}
 			else
 			{
-				// Partially clipped
+				memcpy (pClipPos0, pIniPos0, Vertices.getVertexSize()*4);
 
-				if (pClipPos0->x < xmin)
+				pClipPos0->x += x; pClipPos1->x += x; pClipPos2->x += x; pClipPos3->x += x;
+				pClipPos0->z += z; pClipPos1->z += z; pClipPos2->z += z; pClipPos3->z += z;
+				if ((pClipPos0->x >= xmin) && (pClipPos0->z >= zmin) && (pClipPos2->x <= xmax) && (pClipPos2->z <= zmax))
 				{
-					ratio = ((float)(xmin - pClipPos0->x))/((float)(pClipPos1->x - pClipPos0->x));
-					pClipPos3->x = pClipPos0->x = xmin;
-					pClipUV0->U += ratio*(pClipUV1->U - pClipUV0->U);
-					pClipUV3->U += ratio*(pClipUV2->U - pClipUV3->U);
+					// Not clipped
 				}
+				else
+				{
+					// Partially clipped
 
-				if (pClipPos0->z < zmin)
-				{
-					ratio = ((float)(zmin - pClipPos0->z))/((float)(pClipPos3->z - pClipPos0->z));
-					pClipPos1->z = pClipPos0->z = zmin;
-					pClipUV0->V += ratio*(pClipUV3->V - pClipUV0->V);
-					pClipUV1->V += ratio*(pClipUV2->V - pClipUV1->V);
-				}
+					if (pClipPos0->x < xmin)
+					{
+						ratio = ((float)(xmin - pClipPos0->x))/((float)(pClipPos1->x - pClipPos0->x));
+						pClipPos3->x = pClipPos0->x = xmin;
+						pClipUV0->U += ratio*(pClipUV1->U - pClipUV0->U);
+						pClipUV3->U += ratio*(pClipUV2->U - pClipUV3->U);
+					}
 
-				if (pClipPos2->x > xmax)
-				{
-					ratio = ((float)(xmax - pClipPos2->x))/((float)(pClipPos3->x - pClipPos2->x));
-					pClipPos2->x = pClipPos1->x = xmax;
-					pClipUV2->U += ratio*(pClipUV3->U - pClipUV2->U);
-					pClipUV1->U += ratio*(pClipUV0->U - pClipUV1->U);
-				}
+					if (pClipPos0->z < zmin)
+					{
+						ratio = ((float)(zmin - pClipPos0->z))/((float)(pClipPos3->z - pClipPos0->z));
+						pClipPos1->z = pClipPos0->z = zmin;
+						pClipUV0->V += ratio*(pClipUV3->V - pClipUV0->V);
+						pClipUV1->V += ratio*(pClipUV2->V - pClipUV1->V);
+					}
 
-				if (pClipPos2->z > zmax)
-				{
-					ratio = ((float)(zmax - pClipPos2->z))/((float)(pClipPos1->z - pClipPos2->z));
-					pClipPos2->z = pClipPos3->z = zmax;
-					pClipUV2->V += ratio*(pClipUV1->V - pClipUV2->V);
-					pClipUV3->V += ratio*(pClipUV0->V - pClipUV3->V);
+					if (pClipPos2->x > xmax)
+					{
+						ratio = ((float)(xmax - pClipPos2->x))/((float)(pClipPos3->x - pClipPos2->x));
+						pClipPos2->x = pClipPos1->x = xmax;
+						pClipUV2->U += ratio*(pClipUV3->U - pClipUV2->U);
+						pClipUV1->U += ratio*(pClipUV0->U - pClipUV1->U);
+					}
+
+					if (pClipPos2->z > zmax)
+					{
+						ratio = ((float)(zmax - pClipPos2->z))/((float)(pClipPos1->z - pClipPos2->z));
+						pClipPos2->z = pClipPos3->z = zmax;
+						pClipUV2->V += ratio*(pClipUV1->V - pClipUV2->V);
+						pClipUV3->V += ratio*(pClipUV0->V - pClipUV3->V);
+					}
 				}
+				++nNumQuad;
+				pClipPos0 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize()*4);
+				pClipPos1 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize());
+				pClipPos2 = (CVector*)(((char*)pClipPos1) + Vertices.getVertexSize());
+				pClipPos3 = (CVector*)(((char*)pClipPos2) + Vertices.getVertexSize());
+				pClipUV0 = (CUV*)( ((char*)pClipUV0) + Vertices.getVertexSize()*4 );
+				pClipUV1 = (CUV*)(((char*)pClipUV0) + Vertices.getVertexSize());
+				pClipUV2 = (CUV*)(((char*)pClipUV1) + Vertices.getVertexSize());
+				pClipUV3 = (CUV*)(((char*)pClipUV2) + Vertices.getVertexSize());
 			}
-			++nNumQuad;
-			pClipPos0 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize()*4);
-			pClipPos1 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize());
-			pClipPos2 = (CVector*)(((char*)pClipPos1) + Vertices.getVertexSize());
-			pClipPos3 = (CVector*)(((char*)pClipPos2) + Vertices.getVertexSize());
-			pClipUV0 = (CUV*)( ((char*)pClipUV0) + Vertices.getVertexSize()*4 );
-			pClipUV1 = (CUV*)(((char*)pClipUV0) + Vertices.getVertexSize());
-			pClipUV2 = (CUV*)(((char*)pClipUV1) + Vertices.getVertexSize());
-			pClipUV3 = (CUV*)(((char*)pClipUV2) + Vertices.getVertexSize());
+			pIniPos0 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*4);
+			pIniPos2 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*2);
 		}
-		pIniPos0 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*4);
-		pIniPos2 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*2);
+
+		// identity
+		driver.setupModelMatrix (CMatrix::Identity);
+		// setup vertices clipped
+		driver.activeVertexBuffer (VerticesClipped);
 	}
-	//VerticesClipped.setNumVertices (4*nNumQuad);
-	driver.activeVertexBuffer (VerticesClipped);
+
+	// *** rendering
 	// Clamp for selection
 	driver.renderQuads (*Material, SelectStart, min((uint32)nNumQuad, SelectSize) );
 }

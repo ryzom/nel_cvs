@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.37 2002/11/21 16:36:20 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.38 2003/01/22 18:00:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,6 +133,12 @@ void CFontManager::computeString (const ucstring &s,
 
 	CTextureFont::SLetterKey k;
 
+	// string bound.
+	output.XMin= FLT_MAX;
+	output.XMax= -FLT_MAX;
+	output.ZMin= FLT_MAX;
+	output.ZMax= -FLT_MAX;
+
 	// string info.
 	sint32 nMaxZ = -(sint32)height*2, nMinZ = height*2;
 	output.StringHeight = 0;
@@ -179,6 +185,16 @@ void CFontManager::computeString (const ucstring &s,
 				output.Vertices.setTexCoord		(j, 0, u1, v1);
 				++j;
 				
+				// String Bound
+				output.XMin= min(output.XMin, x1);
+				output.XMin= min(output.XMin, x2);
+				output.XMax= max(output.XMax, x1);
+				output.XMax= max(output.XMax, x2);
+				output.ZMin= min(output.ZMin, z1);
+				output.ZMin= min(output.ZMin, z2);
+				output.ZMax= max(output.ZMax, z1);
+				output.ZMax= max(output.ZMax, z2);
+
 				// String info
 				sint32	nZ1 = (sint32)pLI->Top-(sint32)pLI->CharHeight;
 				sint32	nZ2 = pLI->Top;

@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.8 2002/12/18 16:27:02 berenguier Exp $
+ * $Id: computed_string.h,v 1.9 2003/01/22 18:00:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,8 @@ public:
 	float StringWidth;
 	/// The height of the string, in pixels (eg: 10)
 	float StringHeight;
+	/// The BBox of all vertices. used for render2DClip()
+	float XMin, ZMin, XMax, ZMax;
 
 	/** StringLine is the size from bottom of the whole string image to the hotspot in pixels.
 	 *	for instance if the hotspot is bottomLeft the imaginary line of the string "bpc"

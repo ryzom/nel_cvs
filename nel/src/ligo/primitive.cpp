@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * TODO: File description
  *
- * $Id: primitive.cpp,v 1.47 2004/11/18 17:52:53 vizerie Exp $
+ * $Id: primitive.cpp,v 1.47.6.1 2005/01/11 13:13:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1915,9 +1915,12 @@ void IPrimitive::write (xmlNodePtr xmlNode, const char *filename) const
 	xmlSetProp (xmlNode, (const xmlChar*)"TYPE", (const xmlChar*)(const_cast<IPrimitive*> (this)->getClassName ().c_str ()));
 
 	// Save the unparsed property
-	xmlNodePtr commentNode = xmlNewComment((const xmlChar*)(_UnparsedProperties.c_str()));
-	nlverify(commentNode);
-	xmlAddChild(xmlNode, commentNode);
+	if (!_UnparsedProperties.empty())
+	{
+		xmlNodePtr commentNode = xmlNewComment((const xmlChar*)(_UnparsedProperties.c_str()));
+		nlverify(commentNode);
+		xmlAddChild(xmlNode, commentNode);
+	}
 
 	// Save the properties
 	std::map<std::string, IProperty*>::const_iterator ite =	_Properties.begin ();
@@ -2286,6 +2289,9 @@ uint32 CPrimitives::genAlias(const IPrimitive *prim, uint32 preferedAlias)
 	// insert the alias
 //	nldebug("Alias: added alias %u, %u alias in use", ret, _AliasInUse.size()+1);
 	_AliasInUse.insert(make_pair(ret, prim));
+
+	// callback
+	prim->onModifyPrimitive (*this);
 
 	return ret;
 }

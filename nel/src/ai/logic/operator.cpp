@@ -21,7 +21,7 @@
 
 #include <list>
 #include <vector>
-#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/ai_assert.h"
 #include "nel/ai/logic/varset.h"
 #include "nel/ai/logic/valueset.h"
 #include "nel/ai/logic/fact.h"

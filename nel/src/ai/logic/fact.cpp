@@ -18,7 +18,7 @@
  */
 
 #include "nel/ai/logic/fact.h"
-#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/ai_assert.h"
 #include "nel/ai/logic/varset.h"
 
 namespace NLAILOGIC

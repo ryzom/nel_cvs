@@ -21,7 +21,7 @@
 #include "nel/ai/logic/var.h"
 #include "nel/ai/logic/boolval.h"
 #include "nel/ai/logic/clause.h"
-#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/ai_assert.h"
 
 namespace NLAILOGIC
 {

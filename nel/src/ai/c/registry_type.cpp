@@ -1,6 +1,6 @@
 /** \file register_type.cpp
  *
- * $Id: registry_type.cpp,v 1.4 2001/01/10 16:39:11 chafik Exp $
+ * $Id: registry_type.cpp,v 1.5 2001/01/11 17:02:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include <stdarg.h>
 
 #include "nel/ai/c/abstract_interface.h" 
-#include "nel/ai/e/ia_exception.h" 
+#include "nel/ai/e/ai_exception.h" 
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/c/registry_type.h"
 

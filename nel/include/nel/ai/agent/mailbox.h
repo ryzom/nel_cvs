@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: mailbox.h,v 1.5 2001/01/11 17:02:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #define NL_MAIL_BOX_H
 
 #include "nel/ai/agent/messagerie.h"
-#include "nel/ai/agent/baseia.h"
+#include "nel/ai/agent/baseai.h"
 
 namespace NLAIAGENT
 {	

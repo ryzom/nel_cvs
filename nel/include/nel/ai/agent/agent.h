@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.6 2001/01/09 17:16:52 chafik Exp $
+ * $Id: agent.h,v 1.7 2001/01/11 17:02:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_AGENTS_H
 
 #include "nel/ai/agent/agentexport.h"
-#include "nel/ai/agent/baseia.h"
+#include "nel/ai/agent/baseai.h"
 #include "nel/ai/agent/mailbox.h"
 
 namespace NLAIAGENT

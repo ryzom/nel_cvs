@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Includes all logic related files
  *
- * $Id: logic.h,v 1.2 2001/01/08 14:39:59 valignat Exp $
+ * $Id: logic.h,v 1.3 2001/01/11 17:02:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "nel/ai/logic/varset.h"
 #include "nel/ai/logic/valueset.h"
 #include "nel/ai/logic/fact.h"
-#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/ai_assert.h"
 #include "nel/ai/logic/bool_assert.h"
 #include "nel/ai/logic/fo_assert.h"
 #include "nel/ai/logic/rule.h"

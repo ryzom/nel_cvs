@@ -19,7 +19,7 @@
 
 #include "nel/ai/logic/factbase.h"
 #include "nel/ai/logic/varset.h"
-#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/ai_assert.h"
 #include "nel/ai/logic/bool_assert.h"
 #include "nel/ai/logic/fo_assert.h"
 #include "nel/ai/logic/fact.h"

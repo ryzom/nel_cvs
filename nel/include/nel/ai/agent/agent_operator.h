@@ -1,7 +1,7 @@
 /** \file agent_operator.h
  * Includes class operator for IObjectIA objects.
  *
- * $Id: agent_operator.h,v 1.6 2001/01/09 17:16:52 chafik Exp $
+ * $Id: agent_operator.h,v 1.7 2001/01/11 17:02:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #define NL_AGENT_OPERATOR_H
 
 //#include "nel/ai/c/abstract_interface.h"
-#include "nel/ai/agent/baseia.h"
+#include "nel/ai/agent/baseai.h"
 
 
 namespace NLAIAGENT

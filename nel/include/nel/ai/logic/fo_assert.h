@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Frst order logic assertions
  *
- * $Id: fo_assert.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: fo_assert.h,v 1.4 2001/01/11 17:02:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_FO_ASSERT_H
 #define NL_FO_ASSERT_H
 
-#include "nel/ai/logic/ia_assert.h"
+#include "nel/ai/logic/ai_assert.h"
 
 namespace NLAILOGIC
 {

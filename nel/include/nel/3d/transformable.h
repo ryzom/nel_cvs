@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.7 2001/03/28 12:13:31 berenguier Exp $
+ * $Id: transformable.h,v 1.8 2001/04/02 16:00:36 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -301,7 +301,7 @@ private:
 	CAnimatedValueVector	_Scale;
 	CAnimatedValueVector	_Pivot;
 
-	// clear transfrom fglas.
+	// clear transform flags.
 	void	clearTransformFlags() const;
 
 	// compute the matrix.

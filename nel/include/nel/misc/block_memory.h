@@ -1,7 +1,7 @@
 /** \file block_memory.h
  * Block memory allocation
  *
- * $Id: block_memory.h,v 1.1 2001/06/08 16:11:10 berenguier Exp $
+ * $Id: block_memory.h,v 1.2 2001/12/27 14:24:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,11 +48,14 @@ namespace NLMISC
  *
  * free() check invalid ptr in debug only, for extra cost of 8 octets per element.
  *
+ * NB: if template parameter __ctor_dtor__ is false, then ctor and dtor are not called when an element is allocate()-ed
+ *	or deallocate()-ed.
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-template<class T>
+template<class T, bool __ctor_dtor__= true >
 class CBlockMemory
 {
 public:
@@ -66,6 +69,18 @@ public:
 		_NextFreeElt= NULL;
 		_NAllocatedElts= 0;
 	}
+	// just copy setup from other blockMemory, don't copy data!
+	CBlockMemory(const CBlockMemory<T, __ctor_dtor__> &other)
+	{
+		_BlockSize= other._BlockSize;
+		// if other block is rebinded, don't copy its rebinded size.
+		_EltSize= std::max(sizeof(T), sizeof(void*));
+		// No elts allocated
+		_NextFreeElt= NULL;
+		_NAllocatedElts= 0;
+	}
+	/** purge()
+	 */
 	~CBlockMemory()
 	{
 		purge();
@@ -96,7 +111,8 @@ public:
 		_NextFreeElt= *(void**)_NextFreeElt;
 		
 		// construct the allocated element.
-		new (ret) T;
+		if( __ctor_dtor__ )
+			new (ret) T;
 
 
 		// some simple Check.
@@ -132,7 +148,8 @@ public:
 #endif
 		
 		// destruct the element.
-		ptr->~T();
+		if( __ctor_dtor__ )
+			ptr->~T();
 
 		// just append this freed element to the list.
 		*(void**)ptr= _NextFreeElt;
@@ -161,6 +178,31 @@ public:
 
 
 // ********************
+public:
+
+	// This is to be used with CSTLBlockAllocator only!!! It change the size of an element!!
+	void		__stl_alloc_changeEltSize(uint eltSize)
+	{
+		// must not be used with object ctor/dtor behavior.
+		nlassert(__ctor_dtor__ == false);
+		// format size.
+		eltSize= std::max(eltSize, sizeof(void*));
+		// if not the same size as before
+		if(_EltSize!= eltSize)
+		{
+			// verify that rebind is made before any allocation!!
+			nlassert(_Blocks.empty());
+			// change the size.
+			_EltSize= eltSize;
+		}
+	};
+	// This is to be used with CSTLBlockAllocator only!!!
+	uint		__stl_alloc_getEltSize() const
+	{
+		return _EltSize;
+	}
+
+
 private:
 	/// size of a block.
 	uint		_BlockSize;

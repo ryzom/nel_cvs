@@ -471,6 +471,14 @@ SOURCE=..\include\nel\misc\object_vector.h
 
 SOURCE=..\include\nel\misc\pool_memory.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\misc\stl_block_allocator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\stl_block_allocator.h
+# End Source File
 # End Group
 # Begin Group "Makefile"
 

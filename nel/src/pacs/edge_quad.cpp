@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.14 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: edge_quad.cpp,v 1.15 2002/08/22 15:02:50 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -230,8 +230,9 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 
 			if (edges[i].Link != -1 && cd.size() > 0)
 			{
-				nlwarning("In NLPACS::CEdgeQuad::build()");
-				nlerror("exterior edge %d with interior link crosses some surfaces", i);
+				nlwarning ("In NLPACS::CEdgeQuad::build()");
+				nlwarning ("ERROR: exterior edge %d with interior link crosses some surfaces", i);
+				cd.clear ();
 			}
 
 			// add start surface to the collision description

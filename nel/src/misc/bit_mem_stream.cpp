@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.6 2001/11/12 10:26:11 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.7 2001/11/13 16:07:45 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -193,12 +193,12 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 			value = 0;
 		}
 
-		// Clear high-order bits after _FreeBits
-		uint8 v = *_BufPos; // & ((1 << _FreeBits) - 1);
+		// Clear high-order bits after _FreeBits (otherwise wrong values are read)
+		uint8 v = *_BufPos & ((1 << _FreeBits) - 1);
 
 		if ( nbits > _FreeBits )
 		{
-			nldebug( "Reading byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
+			//nldebug( "Reading byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			value |= (v << (nbits-_FreeBits));
 			++_BufPos;
 			uint readbits = _FreeBits;
@@ -208,8 +208,9 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		}
 		else
 		{
-			nldebug( "Reading last byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
+			//nldebug( "Reading last byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			value |= (v >> (_FreeBits-nbits));
+			displayByteBits( *_BufPos, 8, _FreeBits-1 );
 			if ( _FreeBits == nbits )
 			{
 				_FreeBits = 8;
@@ -250,7 +251,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		if ( nbits > _FreeBits )
 		{
 			// Longer than the room in the current byte
-			nldebug( "Writing byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
+			//nldebug( "Writing byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			displayDwordBits( value, 32, nbits-1 );
 			*_BufPos |= (v >> (nbits - _FreeBits));
 			uint filledbits = _FreeBits;
@@ -261,7 +262,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		else
 		{
 			// Shorter or equal
-			nldebug( "Writing last byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
+			//nldebug( "Writing last byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			displayByteBits( *_BufPos, 8, 7 );
 			*_BufPos |= (v << (_FreeBits-nbits));
 			displayByteBits( *_BufPos, 8, _FreeBits-1 );

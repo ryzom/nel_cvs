@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.12 2001/05/04 09:53:42 coutelas Exp $
+ * $Id: callback_net_base.h,v 1.13 2001/05/10 08:16:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,11 @@ namespace NLNET {
 
 class CCallbackNetBase;
 
-/// Callback function type for message processing
+/** Callback function type for message processing
+ *
+ * msgin contains parameters of the message
+ * from is the SockId of the connection, for a client, from is always the same value
+ */
 typedef void (*TMsgCallback) (CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 
 

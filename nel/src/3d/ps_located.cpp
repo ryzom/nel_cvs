@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.71 2004/06/17 08:03:55 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.72 2004/06/29 15:02:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1343,8 +1343,18 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_Pos);
 	f.serial(_Speed);
 	f.serial(_Time);
+	if (f.isReading())
+	{
+		// tmp fix : some fx were saved with a life that is != to 0
+		// this cause an assertion in CPSLocated::updateLife, because all particle are assumed to have an age of 0 when the system is started
+		// TODO : saving _Time is maybe unecessary... or find something better for CPSLocated::updateLife
+		uint timeSize = _Time.getSize();
+		if (timeSize != 0)
+		{		
+			std::fill(&_Time[0], &_Time[0] + timeSize, 0.f);
+		}
+	}
 	f.serial(_TimeIncrement);
-
 	f.serial(_Size); 
 	f.serial(_MaxSize);
 

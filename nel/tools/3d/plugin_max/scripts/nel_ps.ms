@@ -1,19 +1,27 @@
 -- plugin to put a nel particle system in a scene
 plugin Geometry nel_ps
 name:"Nel particle system"
-category:"Nel"
+category:"Nel Tools"
 classID:#(0x58ce2893, 0xbd2b74ef)
 extends:Box
 (	
-	parameters pblock
+	parameters pblock rollout:param
 	(
 		ps_file_name type:#String default:"dummy.ps"
+		userParam1 type:#float ui:userParam1_s
+		userParam2 type:#float ui:userParam2_s
+		userParam3 type:#float ui:userParam3_s
+		userParam4 type:#float ui:userParam4_s
 	)
 
 	rollout param "Parameters"
 	(
 		edittext ps_file_name_et "file:"
 		button browse "Browse..."
+		spinner userParam1_s "user param 1" range:[0,1,0] type:#float scale:0.01
+		spinner userParam2_s "user param 2" range:[0,1,0] type:#float scale:0.01
+		spinner userParam3_s "user param 3" range:[0,1,0] type:#float scale:0.01
+		spinner userParam4_s "user param 4" range:[0,1,0] type:#float scale:0.01
 		on ps_file_name_et changed val do
 		(
 			ps_file_name = val

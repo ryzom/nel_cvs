@@ -1,7 +1,7 @@
 /** \file time_nl.h
  * OS independant time class provided system clock
  *
- * $Id: time_nl.h,v 1.8 2002/01/23 14:26:58 lecroart Exp $
+ * $Id: time_nl.h,v 1.9 2002/01/23 14:45:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,9 +39,9 @@ namespace NLMISC
 
 /// New time types
 typedef double TGameTime;		// Time according to the game (used for determining day, night...) (double in seconds)
-typedef sint64 TGameCycle;		// Integer game cycle count from the game (in ticks)
+typedef uint32 TGameCycle;		// Integer game cycle count from the game (in game ticks)
 typedef double TLocalTime;		// Time according to the machine's local clock (double in seconds)
-typedef sint64 TCPUCycle;		// Integer cycle count from the CPU (for profiling in ticks)
+typedef sint64 TCPUCycle;		// Integer cycle count from the CPU (for profiling in cpu ticks)
 
 /// Old time type
 typedef sint64 TTime;

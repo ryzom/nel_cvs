@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.28 2003/12/16 18:02:59 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.29 2003/12/29 17:29:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,7 +163,7 @@ void CCallbackClient::update ( sint32 timeout )
 {
 //	nldebug ("L3: Client: update()");
 
-	H_AUTO(L3UpdateCallbackClient);
+	H_AUTO(L3UpdateClient);
 
 	checkThreadId ();
 

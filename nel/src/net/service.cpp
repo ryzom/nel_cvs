@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.199 2003/12/16 18:02:59 lecroart Exp $
+ * $Id: service.cpp,v 1.200 2003/12/29 17:29:49 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1081,16 +1081,16 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				CHTimer::endBench();
 				break;
 			}
-	
+
 			CConfigFile::checkConfigFiles ();
-	
+
 			updateAdmin ();
 
 			CFile::checkFileChange();
 
 			// get and manage layer 5 messages
-			H_TIME(NLNETManageMessages, CUnifiedNetwork::getInstance()->update (_UpdateTimeout););
-			
+			CUnifiedNetwork::getInstance()->update (_UpdateTimeout);
+
 			// resync the clock every hours
 //			if (resyncEvenly)
 //			{

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.72 2003/12/16 18:02:59 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.73 2003/12/29 17:29:49 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -436,7 +436,29 @@ void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 			return;
 		}
 
-		H_TIME(L5UserCallback, (*itcb).second (msgin, uc->ServiceName, sid););
+		{
+			static map<string, CHTimer> timers;
+			map<string, CHTimer>::iterator it;
+			
+			{
+				H_AUTO(L5UCHTimerOverhead);
+				string callbackName = "USR_CB_" + msgin.getName();
+				it = timers.find(callbackName);
+				if(it == timers.end())
+				{
+					it = timers.insert(make_pair(callbackName, CHTimer(NULL))).first;
+					(*it).second.setName((*it).first.c_str());
+				}
+			}
+
+			{
+				H_AUTO(L5UserCallback);
+				
+				(*it).second.before();
+				(*itcb).second (msgin, uc->ServiceName, sid);
+				(*it).second.after();
+			}
+		}
 
 		uc->TotalCallbackCalled++;
 		TotalCallbackCalled++;
@@ -834,6 +856,8 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 
 void	CUnifiedNetwork::update(TTime timeout)
 {
+	H_AUTO(CUnifiedNetworkUpdate);
+	
 	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::update() whereas it is not initialised yet"));
 
 	if (ThreadCreator != NLMISC::getThreadId()) nlwarning ("HNETL5: Multithread access but this class is not thread safe thread creator = %u thread used = %u", ThreadCreator, NLMISC::getThreadId());
@@ -879,6 +903,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 		}
 		else if (enableRetry)
 		{
+			H_AUTO(L5NSReconnect);
 			try
 			{
 				vector<CInetAddress> laddr = CInetAddress::localAddresses();
@@ -946,7 +971,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 							if (uc.IsExternal)
 							{
 								// in the case that the service is external, we can't send our sid because the external service can
-								// have other connectin with the same sid (for example, LS can have 2 WS with same sid => sid = 0 and leave
+								// have other connection with the same sid (for example, LS can have 2 WS with same sid => sid = 0 and leave
 								// the other side to find a good number
 								ssid = 0;
 							}

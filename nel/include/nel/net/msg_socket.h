@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.13 2000/10/10 15:28:15 cado Exp $
+ * $Id: msg_socket.h,v 1.14 2000/10/11 16:25:25 cado Exp $
  *
  * Interface for CMsgSocket
  */
@@ -75,10 +75,18 @@ public:
 	 */
 	CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port );
 
+	/** Constructs a client object, that connects to a service. The address of the server provider
+	 * the service is retrieved using a Naming Service.
+	 * \param callbackarray Define this array statically.
+	 * \param arraysize Use sizeof(callbackarray)-sizeof(callbackarray[0])
+	 * \param service Name of the service
+	 */
+	CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const std::string& service );
+
 	/** Constructs a client object, that connects to servaddr. 
 	 * \param callbackarray Define this array statically.
 	 * \param arraysize Use sizeof(callbackarray)-sizeof(callbackarray[0])
-	 * \param port Address of the server
+	 * \param servaddr Address of the server
 	 */
 	CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr );
 

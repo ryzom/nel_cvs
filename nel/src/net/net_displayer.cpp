@@ -18,13 +18,14 @@
  */
 
 /*
- * $Id: net_displayer.cpp,v 1.7 2000/10/10 15:28:15 cado Exp $
+ * $Id: net_displayer.cpp,v 1.8 2000/10/11 16:25:25 cado Exp $
  *
  * Implementation of CNetDisplayer
  */
 
 #include "nel/net/net_displayer.h"
 #include "nel/net/message.h"
+#include "nel/net/naming_client.h"
 
 #include <string>
 
@@ -38,32 +39,38 @@ namespace NLNET {
 CNetDisplayer::CNetDisplayer() :
 	_Server( true, false ) // disable logging otherwise an infinite recursion may occur
 {
+	findAndConnect();
 }
 
 
 /*
- * Alt. Constructor
+ * Find the server (using the NS) and connect
  */
-CNetDisplayer::CNetDisplayer( const CInetAddress& logServerAddr ) :
-	_Server( true, false ) // disable logging otherwise an infinite recursion may occur
+void CNetDisplayer::findAndConnect()
 {
-	setLogServer( logServerAddr );
+	CInetAddress servaddr;
+	if ( CNamingClient::lookup( "LOGS", servaddr ) )
+	{
+		setLogServer( servaddr );
+	}
 }
-
 
 /*
  * Sets logging server address
  */
 void CNetDisplayer::setLogServer( const CInetAddress& logServerAddr )
 {
-	_ServerAddr = logServerAddr;
-	try
+	if ( ! _Server.connected() )
 	{
-		_Server.connect( _ServerAddr );
-	}
-	catch( ESocket& )
-	{
-		// Silence
+		_ServerAddr = logServerAddr;
+		try
+		{
+			_Server.connect( _ServerAddr );
+		}
+		catch( ESocket& )
+		{
+			// Silence
+		}
 	}
 }
 
@@ -86,7 +93,7 @@ void CNetDisplayer::display( const std::string& str )
 	try {
 		if ( ! _Server.connected() )
 		{
-			_Server.connect( _ServerAddr );
+			findAndConnect();
 		}
 		CMessage msg( "", false );
 		msg.setType( 0 ); // we don't listen for incoming replies, therefore we must not use a type as string. 0 is the default action for CLogService : "LOG"

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.cpp,v 1.7 2000/10/11 08:31:07 lecroart Exp $
+ * $Id: log.cpp,v 1.8 2000/10/11 16:25:25 cado Exp $
  *
  * Implementation for CLog
  */
@@ -145,9 +145,15 @@ void CLog::display( const char *format, ... )
 
 	// Send to the attached displayers
 
-	for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
+	for ( CDisplayers::iterator idi1=_Displayers.begin(); idi1!=_Displayers.end(); idi1++ )
 	{
-		(*idi)->display( s );
+		IDisplayer *disp = (*idi1);
+	}
+
+	for ( CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
+	{
+		IDisplayer *disp = (*idi);
+		disp->display( s );
 	}
 
 	_File = NULL;

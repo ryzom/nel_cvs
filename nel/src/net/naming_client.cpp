@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: naming_client.cpp,v 1.1 2000/10/10 15:28:15 cado Exp $
+ * $Id: naming_client.cpp,v 1.2 2000/10/11 16:25:25 cado Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -153,7 +153,7 @@ void CNamingClient::registerService( const std::string& name, const CInetAddress
 {
 	CNamingClient::openT();
 	CMessage msgout( "" ); //"RG" );
-	msgout.setType( 1 );
+	msgout.setType( 2 );
 	msgout.serial( const_cast<std::string&>(name) );
 	msgout.serial( const_cast<CInetAddress&>(addr) );
 	CNamingClient::_ClientSock->send( msgout );
@@ -172,7 +172,7 @@ void CNamingClient::unregisterService( const std::string& name, const CInetAddre
 {
 	CNamingClient::openT();
 	CMessage msgout( "" ); //"UN" );
-	msgout.setType( 2 );
+	msgout.setType( 3 );
 	msgout.serial( const_cast<std::string&>(name) );
 	msgout.serial( const_cast<CInetAddress&>(addr) );
 	CNamingClient::_ClientSock->send( msgout );
@@ -205,6 +205,42 @@ bool CNamingClient::lookup( const std::string& name, CInetAddress& addr )
 	uint16 validtime;
 	msgin.serial( validtime );
 	if ( validtime == 0)
+	{
+		nldebug( "Service %s not found", name.c_str() );
+		CNamingClient::closeT();
+		return false;
+	}
+	else
+	{
+		msgin.serial( addr );
+		nldebug( "Service %s is at %s", name.c_str(), addr.asIPString().c_str() );
+		CNamingClient::closeT();
+		return true;
+	}
+}
+
+
+/* Tells the Naming Service the specified address does not respond for the specified service
+ * and returns true and another address for the service if available, otherwise returns false
+ */
+bool CNamingClient::lookupAlternate( const std::string& name, CInetAddress& addr )
+{
+	CNamingClient::openT();
+
+	// Send request
+	nldebug( "Looking-up again for service %s...", name.c_str() );
+	CMessage msgout( "" ); // "LA" );
+	msgout.setType( 1 );
+	msgout.serial( const_cast<std::string&>(name) );
+	msgout.serial( addr );
+	CNamingClient::_ClientSock->send( msgout );
+
+	// Wait for answer
+	CMessage msgin( "", true );
+	CNamingClient::_ClientSock->receive( msgin );
+	uint16 validtime;
+	msgin.serial( validtime );
+	if ( validtime == 0 )
 	{
 		nldebug( "Service %s not found", name.c_str() );
 		CNamingClient::closeT();

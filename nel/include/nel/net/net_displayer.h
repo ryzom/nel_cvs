@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.h,v 1.7 2000/10/10 15:28:15 cado Exp $
+ * $Id: net_displayer.h,v 1.8 2000/10/11 16:25:25 cado Exp $
  *
  * Interface for CNetDisplayer
  */
@@ -34,7 +34,7 @@ namespace NLNET {
 
 
 /**
- * Net Displayer. Sends the strings to a logger server.
+ * Net Displayer. Sends the strings to a logger server (LOGS).
  * \ref log_howto
  * \author Olivier Cado
  * \author Nevrax France
@@ -47,11 +47,16 @@ public:
 	/// Constructor
 	CNetDisplayer();
 
-	/// Alt. constructor
-	CNetDisplayer( const CInetAddress& logServerAddr );
-
-	/// Sets logging server address
+	/** Sets logging server address. Call this method from outside only if you want to use a LOGS not registered within the NS.
+	 * It does nothing if the displayer is already connected to a server.
+	 */
 	void setLogServer( const CInetAddress& logServerAddr );
+
+	/// Returns true if the displayer is connected to a Logging Service.
+	bool connected()
+	{
+		return _Server.connected();
+	}
 
 	/// Destructor
 	virtual ~CNetDisplayer();
@@ -60,6 +65,11 @@ public:
 	 * \warning If not connected, tries to connect to the logging server each call. It can slow down your program a lot.
 	 */
 	virtual void display (const std::string& str);
+
+protected:
+
+	/// Find the server (using the NS) and connect
+	void findAndConnect();
 
 private:
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.h,v 1.12 2000/10/11 13:23:50 valignat Exp $
+ * $Id: base_socket.h,v 1.13 2000/10/11 16:25:25 cado Exp $
  *
  * Interface of CBaseSocket
  */
@@ -62,6 +62,19 @@ protected:
 
 	std::string	_Reason;
 	uint		_ErrNum;
+};
+
+
+/// Exception raised when connect() fails
+class ESocketConnectionFailed : public ESocket
+{
+public:
+	/// Constructor
+	ESocketConnectionFailed( uint errnum=0 )
+	{
+		_Reason = "Connection failed";
+		_ErrNum = errnum;
+	}
 };
 
 
@@ -127,8 +140,13 @@ public:
 	/** Connection (reliable sockets only).
 	 * If the socket is unreliable, it does not connect but saves the remote address so that next calls to
 	 * send() do the same as sendTo with addr as an argument.
+	 *
+	 * This method does not return a boolean, otherwise a programmer could ignore the result and no
+	 * exception would be thrown if connection fails :
+	 * - If !addr.isValid an exception ESocket is thrown
+	 * - If connect() fails for another reason, an exception ESocketConnectionFailed is thrown
 	 */
-	void				connect( const CInetAddress& addr ) throw (ESocket);
+	void				connect( const CInetAddress& addr ) throw (ESocketConnectionFailed,ESocket);
 
 	/** Binds the socket to the specified port. Call bind() for an unreliable socket if the host acts as a server and expects to receive
 	 * messages. If the host acts as a client, call directly sendTo(), in this case you need not bind the socket.

@@ -18,16 +18,17 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.15 2000/10/11 13:23:50 valignat Exp $
+ * $Id: msg_socket.cpp,v 1.16 2000/10/11 16:25:25 cado Exp $
  *
  * Implementation of CMsgSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  */
 
+#include "nel/misc/debug.h"
 #include "nel/net/msg_socket.h"
 #include "nel/net/message.h"
-#include "nel/misc/debug.h"
+#include "nel/net/naming_client.h"
 
 using namespace std;
 
@@ -78,6 +79,52 @@ CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16
 	listensock->_IsListening = true;
 	addNewConnection( listensock );
 	listen( listensock, port );
+}
+
+
+const char *service_not_found_cstr = "Service not found";
+
+
+/* Constructs a client object, that connects to a service. The address of the server provider
+ * the service is retrieved using a Naming Service.
+ */
+CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const std::string& service )
+{
+	init( callbackarray, arraysize );
+
+	// Look up for service
+	CInetAddress servaddr;
+	if ( CNamingClient::lookup( service, servaddr ) )
+	{
+		bool service_ok = false;
+
+		// Try to connect to server
+		while ( ! service_ok )
+		{
+			_ClientSock = new CSocket();
+			_ClientSock->_OwnerClient = this;
+			_ClientSock->_IsListening = false;
+			try
+			{
+				_ClientSock->connect( servaddr );
+				service_ok = true;
+			}
+			catch ( ESocketConnectionFailed& )
+			{
+				// If the connection failed, inform the Naming Service and try another server
+				delete _ClientSock;
+				if ( ! CNamingClient::lookupAlternate( service, servaddr ) )
+				{
+					throw ESocket( service_not_found_cstr );
+				}
+			}
+		}
+	}
+	else
+	{
+		throw ESocket( service_not_found_cstr );
+	}
+	addNewConnection( _ClientSock );
 }
 
 

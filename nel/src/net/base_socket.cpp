@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.11 2000/10/11 13:23:50 valignat Exp $
+ * $Id: base_socket.cpp,v 1.12 2000/10/11 16:25:25 cado Exp $
  *
  * Implementation of CBaseSocket
  */
@@ -107,7 +107,7 @@ CBaseSocket::CBaseSocket( bool reliable, bool logging ) :
 	}
 	if ( _Logging )
 	{
-		nldebug( "Socket %d open", _Sock );
+		nldebug( "Socket %d open (%s)", _Sock, _Reliable?"TCP":"UDP" );
 	}
 }
 
@@ -187,48 +187,31 @@ void CBaseSocket::setNoDelay( bool value ) throw (ESocket)
 /*
  * Connection
  */
-void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocket)
+void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFailed,ESocket)
 {
-	if ( ! _Reliable )
-	{
-		// When using an unreliable socket, send() does the same as sendTo(_RemoteAddr).
-		_RemoteAddr = addr;
-		return;
-	}
-
 	// Check address
 	if ( ! addr.isValid() )
 	{
 		throw ESocket( "Unable to connect to invalid address" );
 	}
 
-	// Connection
-	// log( "Trying TCP connection on " + addr.ipAddress() );
+	// Connection (when _Sock is a datagram socket, connect establishes a default destination address)
 	if ( ::connect( _Sock, (const sockaddr *)(addr.sockAddr()), sizeof(sockaddr_in) ) != 0 )
 	{
-		throw ESocket( "Connection failed", ERROR_NUM );
+		throw ESocketConnectionFailed( ERROR_NUM );
 	}
 	if ( _Logging )
 	{
 		nldebug( "Socket %d connected to %s", _Sock, addr.asIPString().c_str() );
 	}
-
-	// Get local socket name
-	sockaddr saddr;
-	int saddrlen = sizeof(saddr);
-	if ( getsockname( _Sock, &saddr, (socklen_t*)(&saddrlen) ) != 0 )
-	{
-		if ( _Logging ) {
-			nldebug( "Network error: getsockname() failed " );
-		}
-	}
-	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
+	setLocalAddress();
 	if ( _Logging )
 	{
 		nldebug( "Socket %d is at %s", _Sock, _LocalAddr.asIPString().c_str() );
-	}
+	}	
 	_RemoteAddr = addr;
-	_Connected = true;
+	_Connected = _Reliable;
+	_Bound = !_Reliable;
 }
 
 
@@ -366,22 +349,14 @@ bool CBaseSocket::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) th
  */
 void CBaseSocket::send( const uint8* buffer, uint len ) throw (ESocket)
 {
-	if ( _Connected )
+	if ( ::send( _Sock, (const char*)buffer, len, 0 ) == SOCKET_ERROR )
 	{
-		if ( ::send( _Sock, (const char*)buffer, len, 0 ) == SOCKET_ERROR )
-		{
-			throw ESocket( "Unable to send data", ERROR_NUM );
-		}
-		if ( _Logging )
-		{
-			nldebug( "Socket %d sent %d bytes", _Sock, len );
-		}
+		throw ESocket( "Unable to send data", ERROR_NUM );
 	}
-	else
+	if ( _Logging )
 	{
-		sendTo( buffer, len, _RemoteAddr );
+		nldebug( "Socket %d sent %d bytes", _Sock, len );
 	}
-	
 }
 
 

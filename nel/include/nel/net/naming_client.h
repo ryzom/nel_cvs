@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: naming_client.h,v 1.3 2000/10/10 16:30:52 cado Exp $
+ * $Id: naming_client.h,v 1.4 2000/10/11 16:25:25 cado Exp $
  *
  * Interface for CNamingClient
  */
@@ -94,8 +94,18 @@ public:
 	/// Unregister a service from the naming service
 	static void			unregisterService( const std::string& name, const CInetAddress& addr );
 
-	/// Returns true and the address of the specified service if it is found, otherwise returns false
+	/** Returns true and the address of the specified service if it is found, otherwise returns false
+	 * \param name [in] Name of the service to find
+	 * \param addr [out] Address of the service
+	 */
 	static bool			lookup( const std::string& name, CInetAddress& addr );
+
+	/** Tells the Naming Service the specified address does not respond for the specified service,
+	 * and returns true and another address for the service if available, otherwise returns false
+	 * \param name [in] Name of the service to find
+	 * \param addr [in/out] In: Address of the service that does not respond. Out: Alternative address
+	 */
+	static bool			lookupAlternate( const std::string& name, CInetAddress& addr );
 
 	//@}
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.13 2000/10/11 13:23:50 valignat Exp $
+ * $Id: inet_address.cpp,v 1.14 2000/10/11 16:25:25 cado Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -221,7 +221,7 @@ const sockaddr_in *CInetAddress::sockAddr() const
  */
 string CInetAddress::ipAddress() const
 {
-	stringstream ss;
+	stringstream ss; // or use inet_ntoa
 	ss << _SockAddr->sin_addr.S_un.S_un_b.s_b1 << "." << _SockAddr->sin_addr.S_un.S_un_b.s_b2 << "." << _SockAddr->sin_addr.S_un.S_un_b.s_b3 << "." << _SockAddr->sin_addr.S_un.S_un_b.s_b4;
 	return ss.str();
 }

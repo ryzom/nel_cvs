@@ -1,7 +1,7 @@
 /** \file agent_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_mailer.h,v 1.6 2001/01/23 09:15:44 chafik Exp $
+ * $Id: agent_mailer.h,v 1.7 2001/01/24 17:13:37 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,7 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *newInstance() const
 		{			
 			NLAIC::IBasicType *x = new CLocalAgentMail();
+			//incRef();
 			return x;
 		}
 
@@ -181,7 +182,7 @@ namespace NLAIAGENT
 			_HostAgent->removeChild(p);
 		}
 		virtual void runChildren();
-		virtual void processMessages();	
+		virtual void processMessages();			
 		virtual IObjectIA::CProcessResult sendMessage(IMessageBase *msg)
 		{
 			return _HostAgent->sendMessage(msg);

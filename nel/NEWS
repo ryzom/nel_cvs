@@ -1,4 +1,14 @@
 
+April 23 2002
+=============
+
+*  NLNET: Added a new variable "StartCommands" (array of string) that execute these commands
+          at the startup of the service (after the init() and before the first update()).
+
+* NLMISC: Added a new variable "RootConfigFilename" (string) that is a config filename that
+          will be read. It's used to set common variable in a common file for all services.
+
+
 March 28 2002
 =============
 

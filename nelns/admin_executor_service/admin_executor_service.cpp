@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.35 2003/01/15 11:18:51 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.36 2003/01/22 14:17:24 lecroart Exp $
  *
  */
 
@@ -1313,14 +1313,13 @@ static TUnifiedCallbackItem CallbackArray[] =
 	{ "SR", cbServiceReady },
 	{ "LOG", cbLog },
 
-	{ "GET_VIEW", cbGetView },
+	{ "AES_GET_VIEW", cbGetView },
 	{ "VIEW", cbView },
 
 	{ "REGISTERED_SERVICES", cbRegisteredServices },
 	
 	{ "REJECTED", cbRejected },
 	{ "ADMIN_EMAIL", cbAdminEmail },
-	
 };
 
 // don't mix because we have to add this callbackarray IN the init()
@@ -1519,12 +1518,12 @@ public:
 
 /// Naming Service
 NLNET_SERVICE_MAIN (CAdminExecutorService, "AES", "admin_executor_service", 49997, CallbackArray, NELNS_CONFIG, NELNS_LOGS);
-
+/*
 uint32 toto = 123, tata = 5456;
 
 NLMISC_VARIABLE(uint32, toto, "test the get view system");
 NLMISC_VARIABLE(uint32, tata, "test the get view system");
-
+*/
 NLMISC_COMMAND (getViewAES, "send a view and receive an array as result", "<varpath>")
 {
 //	if(args.size() != 1) return false;
@@ -1648,9 +1647,9 @@ NLMISC_DYNVARIABLE(string, NetBytesReceived, "Amount of bytes received to all ne
 	if (get) *pointer = bytesToHumanReadable(getSystemNetwork (0));
 }
 
-NLMISC_DYNVARIABLE(string, NetError, "Number of error on all networks cards")
+NLMISC_DYNVARIABLE(uint32, NetError, "Number of error on all networks cards")
 {
-	if (get) *pointer = bytesToHumanReadable((uint32) (getSystemNetwork (2) + getSystemNetwork (10)));
+	if (get) *pointer = (uint32) (getSystemNetwork (2) + getSystemNetwork (10));
 }
 
 #endif // NL_OS_UNIX

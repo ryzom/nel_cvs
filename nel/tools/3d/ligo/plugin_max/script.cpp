@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.27 2004/06/17 13:49:25 corvazier Exp $
+ * $Id: script.cpp,v 1.28 2005/01/31 15:44:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,30 +25,6 @@
 
 #define EXPORT_GET_ALLOCATOR
 
-#include "max_to_ligo.h"
-
-// From ligo library
-#include "ligo/zone_template.h"
-#include "nel/ligo/ligo_config.h"
-#include "ligo/ligo_error.h"
-#include "ligo/ligo_material.h"
-#include "ligo/transition.h"
-#include "ligo/zone_bank.h"
-
-// From nel 3d
-#include <3d/zone.h>
-#include <3d/zone_symmetrisation.h>
-#include <3d/nelu.h>
-#include <3d/landscape_model.h>
-
-// From nel misc
-#include <nel/misc/file.h>
-#include <nel/misc/o_xml.h>
-#include <nel/misc/i_xml.h>
-#include <nel/misc/config_file.h>
-
-
-
 // Various MAX and MXS includes
 #include "MAXScrpt.h"
 #include "3dmath.h"
@@ -62,14 +38,42 @@
 #include "stdmat.h"
 #include "definsfn.h"
 
+// Visual
+#include <direct.h>
+
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 // From nel patch lib
 #include "../../plugin_max/nel_patch_lib/rpo.h"
 #include "../../plugin_max/nel_mesh_lib/export_nel.h"
 
-// Visual
-#include <direct.h>
 
+// From nel 3d
+#include <3d/zone.h>
+#include <3d/zone_symmetrisation.h>
+#include <3d/nelu.h>
+#include <3d/landscape_model.h>
 
+// From nel misc
+#include <nel/misc/file.h>
+#include <nel/misc/o_xml.h>
+#include <nel/misc/i_xml.h>
+#include <nel/misc/config_file.h>
+
+// From ligo library
+#include "ligo/zone_template.h"
+#include "nel/ligo/ligo_config.h"
+#include "ligo/ligo_error.h"
+#include "ligo/ligo_material.h"
+#include "ligo/transition.h"
+#include "ligo/zone_bank.h"
+
+#include "max_to_ligo.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -77,7 +81,7 @@ using namespace NLLIGO;
 using namespace NL3D;
 
 // APP DATA
-#define NEL3D_APPDATA_LIGO_USE_BOUNDINGBOX	(1342141818)
+#define NEL3D_APPDATA_LIGO_USE_BOUNDINGBOX	((uint32)1342141818)
 
 // ***************************************************************************
 

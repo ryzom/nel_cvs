@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.12 2001/12/12 10:26:39 vizerie Exp $
+ * $Id: ps_force.h,v 1.13 2002/01/28 14:28:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -566,77 +566,65 @@ protected:
 };
 
 
-// a brownian force functor
-class CPSBrownianFunctor
-{
-public:
-	CPSBrownianFunctor() : _K(1.f) 
-	{		
-	}
-
-	#ifdef NL_OS_WINDOWS
-		__forceinline
-	#endif
-	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , TAnimationTime ellapsedTime)
-	 {
-		static double divRand = (2.f / RAND_MAX);
-		NLMISC::CVector dir( (float) (rand() * divRand - 1), (float) (rand() * divRand - 1) , (float) (rand() * divRand - 1) );
-		speed += ellapsedTime * _K * invMass * dir;
-	 }
-
-	 virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	 {
-		 f.serialVersion(1);
-		 // we don't save intensity info : it is saved by the owning object (and set before each use of this functor)
-	 }
-
-	 float getK(void) const { return _K; }	 
-	 void setK(float coeff) { _K = coeff; }
-protected:
-	// the friction coeff
-	float _K;
-};
-
-
-/** the fluid friction force. We don't derive from CPSForceIntensityHelper (which derives from CPSForce
-  * , because CIsotropicForceT also derives from CPSForce, and we don't want to use virtual inheritance
+/** A Brownian motion  
   */  
 
 
-class CPSBrownianForce : public CIsotropicForceT<CPSBrownianFunctor>, public CPSForceIntensity
+class CPSBrownianForce : public CPSForceIntensityHelper
 {
 public:
 	// create the force with a friction coefficient
-	CPSBrownianForce(float intensity = 1.f)
-	{
-		setIntensity(intensity);
-		_Name = std::string("BrownianForce");
-	}
-
-	// inherited from CIsotropicForceT
-	virtual void setupFunctor(uint32 index)
-	{
-		_F.setK(_IntensityScheme ? _IntensityScheme->get(_Owner, index) : _K);
-	}
+	CPSBrownianForce(float intensity = 1.f);		
 	
 	NLMISC_DECLARE_CLASS(CPSBrownianForce)
 
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	{
-		f.serialVersion(1);
-		CIsotropicForceT<CPSBrownianFunctor>::serial(f);
-		serialForceIntensity(f);
-		if (f.isReading())
-		{
-			registerToTargets();
-		}
-	}
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
+
+	/// We provide a kind of integration on a predefined sequence
+	virtual bool		 isIntegrable(void) const;
+
+	virtual void integrate(float date, CPSLocated *src, uint32 startIndex, uint32 numObjects, NLMISC::CVector *destPos = NULL, NLMISC::CVector *destSpeed = NULL,
+							bool accumulate = false,
+							uint posStride = sizeof(NLMISC::CVector), uint speedStride = sizeof(NLMISC::CVector)
+							);
+
+	virtual void integrateSingle(float startDate, float deltaT, uint numStep,								 
+								 CPSLocated *src, uint32 indexInLocated,
+								 NLMISC::CVector *destPos,
+								 bool accumulate = false,
+								 uint posStride = sizeof(NLMISC::CVector));
+
+	/// perform initialisations
+	static void initPrecalc();
+
+	void setIntensity(float value);
+	void setIntensityScheme(CPSAttribMaker<float> *scheme);
+
+	/// Compute the force on the targets
+	virtual void performDynamic(TAnimationTime ellapsedTime);
+
+	void show(TAnimationTime ellapsedTime)  {}
+
+
+	/** When used with parametric integration, this tells factor tells how fast the force acts on particle 
+	  * (how fast it go through the lookup table in fact)
+	  */
+	void	setParametricFactor(float factor) {  _ParametricFactor = factor; }
+	float   getParametricFactor() const { return _ParametricFactor; }
 
 protected:
 	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner; }
 	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex); }
 	virtual void deleteElement(uint32 index) { deleteForceIntensityElement(index); }
 	virtual void resize(uint32 size) { resizeForceIntensity(size); }
+
+	float  _ParametricFactor; // tells how fast this force act on a particle when parametric motion is used
+	static NLMISC::CVector PrecomputedPos[]; // after the sequence we must be back to the start position
+	static NLMISC::CVector PrecomputedSpeed[];
+
+	/// various impulsion for normal motion
+	static NLMISC::CVector PrecomputedImpulsions[];
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.24 2001/12/27 10:19:16 lecroart Exp $
+ * $Id: ps_force.cpp,v 1.25 2002/01/28 14:28:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -316,10 +316,7 @@ void CPSGravity::performDynamic(TAnimationTime ellapsedTime)
 {	
 	
 	// perform the operation on each target
-
 	CVector toAdd;
-
-
 	for (uint32 k = 0; k < _Owner->getSize(); ++k)
 	{	
 		CVector toAddLocal = ellapsedTime * CVector(0, 0, _IntensityScheme ? - _IntensityScheme->get(_Owner, k) : - _K);
@@ -579,11 +576,11 @@ void CPSGravity::integrateSingle(float startDate, float deltaT, uint numStep,
 		else
 		{
 			uint numToSkip = ScaleFloatGE(startDate, deltaT, pi.Date, numStep);		
-			if (numToSkip != 0)
+			if (numToSkip < numStep)
 			{
+				numStep -= numToSkip;
 				float currDate = startDate + deltaT * numToSkip - pi.Date;
-				const NLMISC::CVector &startSpeed = pi.Speed;				
-				nlassert(currDate >= 0);
+				const NLMISC::CVector &startSpeed = pi.Speed;								
 				do
 				{
 					#ifdef NL_DEBUG
@@ -594,7 +591,7 @@ void CPSGravity::integrateSingle(float startDate, float deltaT, uint numStep,
 					currDate += deltaT;
 					destPos = (NLMISC::CVector *) ( (uint8 *) destPos + stride);
 				}
-				while (--numToSkip);
+				while (--numStep);
 			}				
 		}
 	}
@@ -960,6 +957,400 @@ void CPSMagneticForce::performDynamic(TAnimationTime ellapsedTime)
 				}
 			}
 		}
+	}
+}
+
+
+/**
+ *  Brownian force implementation
+ */
+
+const uint BFNumPredefinedPos    = 8192;	// should be a power of 2
+const uint BFPredefinedNumInterp = 256;	    /** this should divide BFNumPredefinedPos. This define the number 
+											  * of values used to interpolate between 2 position of the npose
+											  * (because we don't filter values when we access them)
+											  */
+const uint BFNumPrecomputedImpulsions = 1024; /// used to avoid to have to call rand for each particle the force applies on...
+
+NLMISC::CVector CPSBrownianForce::PrecomputedPos[BFNumPredefinedPos]; // after the sequence we must be back to the start position
+NLMISC::CVector CPSBrownianForce::PrecomputedSpeed[BFNumPredefinedPos];
+NLMISC::CVector CPSBrownianForce::PrecomputedImpulsions[BFNumPrecomputedImpulsions];
+
+///==========================================================
+CPSBrownianForce::CPSBrownianForce(float intensity /* = 1.f*/) : _ParametricFactor(1.f)
+{
+	setIntensity(intensity);
+	_Name = std::string("BrownianForce");
+
+}
+
+///==========================================================
+bool	CPSBrownianForce::isIntegrable(void) const
+{
+	return _IntensityScheme == NULL;
+}
+
+
+///==========================================================
+void CPSBrownianForce::integrate(float date, CPSLocated *src,
+								 uint32 startIndex,
+								 uint32 numObjects,
+								 NLMISC::CVector *destPos,
+								 NLMISC::CVector *destSpeed,
+								 bool accumulate,
+								 uint posStride, uint speedStride
+							    )
+{
+	/// MASS DIFFERENT FROM 1 IS NOT SUPPORTED		
+	float deltaT;
+	if (!destPos && !destSpeed) return;
+	CPSLocated::TPSAttribParametricInfo::const_iterator it = src->_PInfo.begin() + startIndex,
+														endIt = src->_PInfo.begin() + startIndex + numObjects;
+	float lookUpFactor = _ParametricFactor * BFNumPredefinedPos;
+	float speedFactor  = _ParametricFactor * _K;
+	if (!accumulate) // compute coords from initial condition, and applying this force
+	{
+		if (destPos && !destSpeed) // fills dest pos only
+		{
+			while (it != endIt)
+			{
+				float deltaT = date - it->Date;
+				uint index = (uint) (lookUpFactor * deltaT) & (BFNumPredefinedPos - 1);
+				destPos->set(it->Pos.x + deltaT * it->Speed.x + _K * PrecomputedPos[index].x,
+							 it->Pos.y + deltaT * it->Speed.y + _K * PrecomputedPos[index].y,
+							 it->Pos.z + deltaT * it->Speed.z + _K * PrecomputedPos[index].z );
+				++it;
+				NEXT_POS;	
+			}
+		}
+		else if (!destPos && destSpeed) // fills dest speed only
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;
+				uint index = (uint) (lookUpFactor * deltaT) & (BFNumPredefinedPos - 1);
+				destSpeed->x = it->Speed.x  + speedFactor * PrecomputedSpeed[index].x;				
+				destSpeed->y = it->Speed.y  + speedFactor * PrecomputedSpeed[index].y;
+				destSpeed->z = it->Speed.z  + speedFactor * PrecomputedSpeed[index].z;
+				++it;
+				NEXT_SPEED;	
+			}
+		}
+		else // fills both speed and pos
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;
+				uint index = (uint) (lookUpFactor * deltaT) & (BFNumPredefinedPos - 1);
+				destPos->x = it->Pos.x + deltaT * it->Speed.x + _K * PrecomputedPos[index].x;				
+				destPos->y = it->Pos.y + deltaT * it->Speed.y + _K * PrecomputedPos[index].y;
+				destPos->z = it->Pos.z + deltaT * it->Speed.z + _K * PrecomputedPos[index].z;
+
+				destSpeed->x = it->Speed.x + speedFactor * PrecomputedSpeed[index].x;				
+				destSpeed->y = it->Speed.y + speedFactor * PrecomputedSpeed[index].y;
+				destSpeed->z = it->Speed.z + speedFactor * PrecomputedSpeed[index].z;
+
+				++it;
+				NEXT_POS;
+				NEXT_SPEED;
+			}
+		}
+	}
+	else // accumulate datas
+	{
+		if (destPos && !destSpeed) // fills dest pos only
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;
+				uint index = (uint) (lookUpFactor * deltaT) & (BFNumPredefinedPos - 1);
+				destPos->set(destPos->x + _K * PrecomputedPos[index].x,
+							 destPos->y + _K * PrecomputedPos[index].y,
+							 destPos->z + _K * PrecomputedPos[index].z);
+				++it;
+				NEXT_POS;	
+			}
+		}
+		else if (!destPos && destSpeed) // fills dest speed only
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;
+				uint index = (uint) (lookUpFactor * deltaT) & (BFNumPredefinedPos - 1);
+				destSpeed->set(destSpeed->x + speedFactor * PrecomputedSpeed[index].x,
+							   destSpeed->y + speedFactor * PrecomputedSpeed[index].y,
+							   destSpeed->z + speedFactor * PrecomputedSpeed[index].z);
+				++it;
+				NEXT_SPEED;	
+			}
+		}
+		else // fills both speed and pos
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;
+				uint index = (uint) (lookUpFactor * deltaT) & (BFNumPredefinedPos - 1);
+				destPos->set(destPos->x + _K * PrecomputedPos[index].x,
+							 destPos->y + _K * PrecomputedPos[index].y,
+							 destPos->z + _K * PrecomputedPos[index].z);
+				destSpeed->set(destSpeed->x + speedFactor * PrecomputedSpeed[index].x,
+							   destSpeed->y + speedFactor * PrecomputedSpeed[index].y,
+							   destSpeed->z + speedFactor * PrecomputedSpeed[index].z);	
+				++it;
+				NEXT_POS;
+				NEXT_SPEED;
+			}
+		}
+	}	
+}
+
+
+///==========================================================
+void CPSBrownianForce::integrateSingle(float startDate, float deltaT, uint numStep,								 
+								 CPSLocated *src, uint32 indexInLocated,
+								 NLMISC::CVector *destPos,
+								 bool accumulate,
+								 uint stride)
+{
+	nlassert(src->isParametricMotionEnabled());
+	nlassert(deltaT > 0);
+	nlassert(numStep > 0);
+	#ifdef NL_DEBUG
+		NLMISC::CVector *endPos = (NLMISC::CVector *) ( (uint8 *) destPos + stride * numStep);
+	#endif
+	const CPSLocated::CParametricInfo &pi = src->_PInfo[indexInLocated];
+	const NLMISC::CVector &startPos   = pi.Pos;	
+	if (numStep != 0)
+	{
+		float lookUpFactor = _ParametricFactor * BFPredefinedNumInterp;
+		if (!accumulate)
+		{				
+			/// fill start of datas (particle didn't exist at that time, so we fill by the start position)
+			destPos = FillBufUsingSubdiv(startPos, pi.Date, startDate, deltaT, numStep, destPos, stride);
+			if (numStep != 0)
+			{
+				float currDate = startDate - pi.Date;
+				nlassert(currDate >= 0);				
+				const NLMISC::CVector &startSpeed = pi.Speed;			
+				do
+				{
+					#ifdef NL_DEBUG
+						nlassert(destPos < endPos);
+					#endif
+					uint index = (uint) (lookUpFactor * currDate) & (BFNumPredefinedPos - 1);
+					destPos->x = startPos.x + currDate * startSpeed.x + _K * PrecomputedPos[index].x;
+					destPos->y = startPos.y + currDate * startSpeed.y + _K * PrecomputedPos[index].y;
+					destPos->z = startPos.z + currDate * startSpeed.z + _K * PrecomputedPos[index].z;
+					currDate += deltaT;
+					destPos = (NLMISC::CVector *) ( (uint8 *) destPos + stride);
+				}
+				while (--numStep);
+			}
+		}
+		else
+		{
+			uint numToSkip = ScaleFloatGE(startDate, deltaT, pi.Date, numStep);		
+			if (numToSkip < numStep)
+			{
+				numStep -= numToSkip;				
+				float currDate = startDate + deltaT * numToSkip - pi.Date;
+				const NLMISC::CVector &startSpeed = pi.Speed;				
+				
+				do
+				{
+					#ifdef NL_DEBUG
+						nlassert(destPos < endPos);
+					#endif
+					uint index = (uint) (lookUpFactor * currDate) & (BFNumPredefinedPos - 1);
+					destPos->x += _K * PrecomputedPos[index].x;
+					destPos->y += _K * PrecomputedPos[index].y;
+					destPos->z += _K * PrecomputedPos[index].z;
+					currDate += deltaT;
+					destPos = (NLMISC::CVector *) ( (uint8 *) destPos + stride);
+				}
+				while (--numStep);				
+			}
+		}
+	}	
+}
+
+
+///==========================================================
+void CPSBrownianForce::initPrecalc()
+{
+	/// create the pos table
+	nlassert(BFNumPredefinedPos % BFPredefinedNumInterp == 0);
+	
+	NLMISC::CVector p0(0, 0, 0), p1;
+	const uint numStep = BFNumPredefinedPos / BFPredefinedNumInterp;
+	NLMISC::CVector *dest = PrecomputedPos;
+	uint k, l;
+	for (k = 0; k < numStep; ++k)
+	{
+		if (k != numStep - 1)
+		{
+			p1.set(2.f * (NLMISC::frand(1.f) - 0.5f),
+				   2.f * (NLMISC::frand(1.f) - 0.5f),
+				   2.f * (NLMISC::frand(1.f) - 0.5f));
+		}
+		else
+		{
+			p1.set(0, 0, 0);
+		}
+		float lambda     = 0.f;
+		float lambdaStep = 1.f / BFPredefinedNumInterp;
+		for (l = 0; l < BFPredefinedNumInterp; ++l)
+		{
+			*dest++ = lambda * p1 + (1.f - lambda) * p0;
+			lambda += lambdaStep;
+		}
+		p0 = p1;				
+	}
+
+	// now, filter the table several time to get something more smooth
+	for (k = 0; k < (BFPredefinedNumInterp << 2) ; ++k)
+	{
+		for (l = 1; l < (BFNumPredefinedPos - 1); ++l)
+		{
+			PrecomputedPos[l] = 0.5f * (PrecomputedPos[l - 1] + PrecomputedPos[l + 1]);
+		}
+	}
+
+
+	// compute the table of speeds, by using on a step of 1.s
+	for (l = 1; l < (BFNumPredefinedPos - 1); ++l)
+	{
+		PrecomputedSpeed[l] = 0.5f * (PrecomputedPos[l + 1] - PrecomputedPos[l - 1]);
+	}
+	PrecomputedSpeed[BFNumPredefinedPos - 1] = NLMISC::CVector::Null;
+
+	// compute the table of impulsion
+	for (k = 0; k < BFNumPrecomputedImpulsions; ++k)
+	{
+		static double divRand = (2.f / RAND_MAX);
+		PrecomputedImpulsions[k].set( (float) (rand() * divRand - 1),
+									  (float) (rand() * divRand - 1),
+									  (float) (rand() * divRand - 1) 
+									);
+	}
+}
+
+///==========================================================
+void CPSBrownianForce::setIntensity(float value)
+{
+	if (_IntensityScheme)
+	{
+		CPSForceIntensity::setIntensity(value);
+		renewIntegrable(); // integrable again
+	}
+	else
+	{
+		CPSForceIntensity::setIntensity(value);
+	}
+}
+
+
+///==========================================================
+void CPSBrownianForce::setIntensityScheme(CPSAttribMaker<float> *scheme)
+{
+	if (!_IntensityScheme)
+	{
+		cancelIntegrable(); // not integrable anymore
+	}			
+	CPSForceIntensity::setIntensityScheme(scheme);	
+}
+
+///==========================================================
+void CPSBrownianForce::performDynamic(TAnimationTime ellapsedTime)
+{
+	// perform the operation on each target	
+	for (uint32 k = 0; k < _Owner->getSize(); ++k)
+	{		
+		float intensity = _IntensityScheme ? _IntensityScheme->get(_Owner, k) : _K;
+		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+		{			
+			uint32 size = (*it)->getSize();
+
+			if (!size) continue;
+
+			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2End;
+			/// start at a random position in the precomp impulsion tab
+			uint startPos = (uint) ::rand() % BFNumPrecomputedImpulsions;
+			NLMISC::CVector *imp = PrecomputedImpulsions + startPos;
+
+			if ((*it)->getMassScheme())
+			{
+				float intensityXtime = intensity * ellapsedTime;
+				TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin();						
+				do
+				{			
+					uint toProcess = std::min((uint) (BFNumPrecomputedImpulsions - startPos), (uint) size);
+					it2End = it2 + toProcess;
+					do
+					{
+						float factor = intensityXtime * *invMassIt;
+						it2->set(it2->x + factor * imp->x,
+								it2->y + factor * imp->y,
+								it2->z + factor * imp->x);
+						++invMassIt;
+						++imp;
+						++it2;
+					}
+					while (it2 != it2End);
+					startPos = 0;
+					imp = PrecomputedImpulsions;	
+					size -= toProcess;
+				}
+				while (size != 0);
+			}
+			else
+			{				
+				do
+				{			
+					uint toProcess = std::min((uint) (BFNumPrecomputedImpulsions - startPos) , (uint) size);
+					it2End = it2 + toProcess;
+					float factor = intensity * ellapsedTime * (*it)->getInitialMass();
+					do
+					{						
+						it2->set(it2->x + factor * imp->x,
+								it2->y + factor * imp->y,
+								it2->z + factor * imp->x);						
+						++imp;
+						++it2;
+					}
+					while (it2 != it2End);
+					startPos = 0;
+					imp = PrecomputedImpulsions;	
+					size -= toProcess;
+				}
+				while (size != 0);
+			}
+			
+		}
+	}	
+}
+
+///=======================================================================
+void CPSBrownianForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	sint ver = f.serialVersion(3);		
+	if (ver <= 2)
+	{
+		uint8 dummy;
+		f.serial(dummy); // old data in version 2 not used anymore	
+		CPSForce::serial(f);
+		f.serial(dummy); // old data in version 2 not used anymore	
+		serialForceIntensity(f);
+		if (f.isReading())
+		{
+			registerToTargets();
+		}
+	}
+
+	if (ver >= 2)
+	{
+		CPSForceIntensityHelper::serial(f);
+		f.serial(_ParametricFactor);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.7 2001/07/04 12:36:55 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.8 2001/07/12 15:52:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_PS_ATTRIB_MAKER_TEMPLATE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/ps_attrib_maker.h"
+#include "3d/ps_attrib_maker_helper.h"
 #include "3d/ps_plane_basis.h"
 
 
@@ -44,7 +44,7 @@ namespace NL3D {
 
 /** a blending function
  * it blends between t1 and t2 by the alpha amount
- * specializing this function may help with some types of data that don't have the needed operator (CRGBA)
+ * specializing this function may help with some types of data that don't have the needed operator (NLMISC::CRGBA)
  */
 
 template <typename T>
@@ -54,11 +54,11 @@ inline T PSValueBlend(const T &t1, const T &t2, float alpha)
 }
 
 
-/// CRGBA specialization of the PSValueBlend function
+/// NLMISC::CRGBA specialization of the PSValueBlend function
 template <>
-inline CRGBA PSValueBlend(const CRGBA &t1, const CRGBA &t2, float alpha)
+inline NLMISC::CRGBA PSValueBlend(const NLMISC::CRGBA &t1, const NLMISC::CRGBA &t2, float alpha)
 {
-	CRGBA result ;
+	NLMISC::CRGBA result ;
 	result.blendFromui(t1, t2, (uint) (255.0f * alpha)) ;
 	return result ;
 }

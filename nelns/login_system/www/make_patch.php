@@ -29,7 +29,7 @@
 
 	if (!isset($shard_version))
 	{
-		die("Bad shard version, you must provide a shard version to know where data are. For example: http://myurl/make_distrib?shard_version=12");
+		die("Bad shard version, you must provide a shard version to know where data are. For example: http://myurl/make_distrib?shard_version=12 or without number for default patch");
 	}
 
 	if (strlen($shard_version) == 0)
@@ -67,8 +67,8 @@
 			// only add file that are not .gz
 			if (is_file("$path/$entry") && substr("$entry", -3) != ".gz")
 			{
-				// if the gz associated doesn't exist, create it
-				if (!file_exists("$path/$entry.gz"))
+				// if the gz associated doesn't exist or too old, create it
+				if (!file_exists("$path/$entry.gz") || filemtime ("$path/$entry.gz") < filemtime ("$path/$entry"))
 				{
 					if (compressFile ("$path/$entry"))
 					{
@@ -95,9 +95,9 @@
 				}
 				else
 				{
+					$ok = false;
 					echo "<tr><td><font color=red>ERROR</font></td><td>$entry</td><td>$fsize</td><td>$fdate</td><br>\n";
 					$tline++;
-					$ok = false;
 				}
 
 				if ($tline >= 20)

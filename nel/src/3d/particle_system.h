@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.3 2001/06/25 13:44:06 vizerie Exp $
+ * $Id: particle_system.h,v 1.4 2001/06/25 16:11:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ class CFontManager ;
 class CPSCopyHelper ;
 class CScene ;
 class CPSLocated ;
-
+class IDriver ;
 
 /** Particles system classes. They can be used as it. If you want to use a particle system in 
  *  a scene (M.O.T model), see particle_system_shape.h and particle_system_instance.h

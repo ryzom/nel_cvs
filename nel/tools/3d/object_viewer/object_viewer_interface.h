@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.7 2001/06/26 14:58:35 corvazier Exp $
+ * $Id: object_viewer_interface.h,v 1.8 2001/07/11 08:26:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,9 @@ public:
 
 	// Set ambient color
 	virtual void setAmbientColor (const NLMISC::CRGBA& color)=0;
+
+	// Set background color
+	virtual void setBackGroundColor (const NLMISC::CRGBA& color)=0;
 
 	// Set ambient color
 	virtual void setLight (unsigned char id, const NL3D::CLight& light)=0;

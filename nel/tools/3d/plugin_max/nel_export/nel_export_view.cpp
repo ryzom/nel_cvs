@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.7 2001/06/26 14:58:35 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.8 2001/07/11 08:26:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -390,6 +390,9 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 		// Setup ambient light
 		view->setAmbientColor (CExportNel::getAmbientColor (ip, time));
+
+		// Setup background color
+		view->setBackGroundColor(CExportNel::getBackGroundColor(ip, time));
 
 		// Build light vector
 		std::vector<CLight> vectLight;

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.12 2001/07/04 17:17:23 vizerie Exp $
+ * $Id: object_viewer.h,v 1.13 2001/07/11 08:26:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,7 +174,7 @@ public:
 	void serial (NLMISC::IStream& f);
 
 	/// set the backgournd color
-	void setBackGroundColor(NLMISC::CRGBA col) { _BackGroundColor = col ; }
+	void setBackGroundColor(const NLMISC::CRGBA& col) { _BackGroundColor = col ; }
 
 	/// get the background color
 	NLMISC::CRGBA getBackGroundColor(void) { return _BackGroundColor ; }

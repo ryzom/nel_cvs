@@ -1,7 +1,7 @@
 /** \file export_light.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_light.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: export_light.cpp,v 1.3 2001/07/11 08:26:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,7 +162,6 @@ bool CExportNel::buildLight (GenLight &maxLight, NL3D::CLight& nelLight, INode& 
 }
 
 // ***************************************************************************
-
 // Get the ambient value
 CRGBA CExportNel::getAmbientColor (Interface& ip, TimeValue time)
 {
@@ -171,6 +170,23 @@ CRGBA CExportNel::getAmbientColor (Interface& ip, TimeValue time)
 
 	// Get max color
 	Point3 color=255.f*ip.GetAmbient (time, valid);
+	clamp (color.x, 0.f, 255.f);
+	clamp (color.y, 0.f, 255.f);
+	clamp (color.z, 0.f, 255.f);
+
+	// Return NeL color
+	return CRGBA ((uint8)color.x, (uint8)color.y, (uint8)color.z);
+}
+
+// ***************************************************************************
+// Get the ambient value
+CRGBA CExportNel::getBackGroundColor (Interface& ip, TimeValue time)
+{
+	// validuty
+	Interval valid=NEVER;
+
+	// Get max color
+	Point3 color=255.f*ip.GetBackGround(time, valid);
 	clamp (color.x, 0.f, 255.f);
 	clamp (color.y, 0.f, 255.f);
 	clamp (color.z, 0.f, 255.f);

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.12 2001/07/09 17:17:06 corvazier Exp $
+ * $Id: export_nel.h,v 1.13 2001/07/11 08:26:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -321,6 +321,9 @@ public:
 
 	// Get the ambient value
 	static NLMISC::CRGBA			getAmbientColor (Interface& ip, TimeValue time);
+
+	// Get the backgorund value
+	static NLMISC::CRGBA			getBackGroundColor (Interface& ip, TimeValue time);
 
 	// *** Script access
 

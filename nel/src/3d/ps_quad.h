@@ -1,7 +1,7 @@
 /** \file ps_quad.h
  * Base quads particles.
  *
- * $Id: ps_quad.h,v 1.3 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_quad.h,v 1.4 2004/01/13 18:34:44 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,6 +125,7 @@ protected:
 		VBTexAnimated	= 0x0004, // the texture coordinate can be animated (not precomputed)
 		VBTex2		    = 0x0008, // the vb has second texture coordinates 
 		VBTex2Animated  = 0x0010, // the second texture coordinates can be animated (not precomputed)
+		VBFullMask      = 0x001f
 	};
 
 	/// the various kind of vertex buffers we need

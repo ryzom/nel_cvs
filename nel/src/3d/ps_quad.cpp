@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.5 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.6 2004/01/13 18:34:44 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,6 +191,7 @@ CVertexBuffer &CPSQuad::getNeededVB()
 			}
 		}
 	}
+	nlassert((flags & ~VBFullMask) == 0); // check for overflow
 	nlassert(_VbTab[flags] != NULL);
 	return *(_VbTab[flags]); // get the vb
 }

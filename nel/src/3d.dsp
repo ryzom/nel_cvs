@@ -167,11 +167,11 @@ SOURCE=..\include\nel\3d\scene.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\tile_bank.cpp
+SOURCE=.\3d\tile_bank.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\3d\tile_bank.h
+SOURCE=..\include\nel\3d\tile_bank.h
 # End Source File
 # End Target
 # End Project

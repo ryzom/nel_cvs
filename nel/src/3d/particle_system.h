@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.7 2001/07/12 16:34:08 legros Exp $
+ * $Id: particle_system.h,v 1.8 2001/07/13 17:06:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,7 +173,7 @@ public:
 	*  \param aabbox a ref to the result box
 	*/
 
-	void computeBBox(NLMISC::CAABBox &aabbox) const ;
+	void computeBBox(NLMISC::CAABBox &aabbox) ;
 
 
 	/** Set the matrix for the system. This only affect elements that are in the same basis
@@ -329,7 +329,12 @@ public:
 	  * This may be needed for systems that move fast. 
 	  */
 
-	bool setAutoComputeBBox(bool enable = true) { _ComputeBBox = enable ; }
+	void setAutoComputeBBox(bool enable = true) { _ComputeBBox = enable ; }
+
+
+	/// test whether the system compute himself his bbox
+	bool getAutoComputeBBox(void) const { return _ComputeBBox ; }
+
 
 	/** set a precomputed bbox (expressed in the system basis). This is allowed only when setAutoComputeBBox 
 	  * is called with false (nlassert otherwise).
@@ -341,7 +346,37 @@ public:
 		_PreComputedBBox = precompBBox ;
 	}
 		
+	/// get the last computed bbox
+	void getLastComputedBBox(NLMISC::CAABBox &dest) { dest = _PreComputedBBox ; }
+	
 
+	/** tell the system to delete himself when its out of range (in fact, the Model holding it will destroy it when this
+	  * flag is set)  The default is false.
+	  */
+	void setDestroyWhenOutOfRange(bool enable = true) { _DestroyWhenOutOfRange ; }
+	
+	/// check whether the system must be destroyed when it's out of range.
+	bool getDestroyWhenOutOfRange(void) const { return _DestroyWhenOutOfRange ; }
+
+
+	/// this enum give consitions on which the system may be destroyed
+	enum TDieCondition { none, noMoreParticles, noMoreParticlesAndEmitters   } ;
+
+
+	/// when != to none, the Model hodling this sytem will be destroyed when dieCondition is met
+	void setDestroyCondition(TDieCondition dieCondition) { _DieCondition = dieCondition ; }
+
+	/// get the destroy condition
+	TDieCondition getDestroyCondition(void) const { return _DieCondition ; }
+
+	/** Set a delay before to apply the death condition test
+	  * This may be necessary : the system could be destroyed because there are no particles
+	  * , but no particles were emitted yet
+	  */
+	void setDelayBeforeDeathConditionTest(CAnimationTime delay) { _DelayBeforeDieTest  = delay ; }
+
+	/// get the a delay before to apply the death condition test	  
+	CAnimationTime getDelayBeforeDeathConditionTest(void) const { return _DelayBeforeDieTest ; }
 
 protected:
 
@@ -402,6 +437,9 @@ protected:
 
 	bool _Touch ;
 
+	TDieCondition  _DieCondition ;
+	CAnimationTime _DelayBeforeDieTest ;
+	bool		   _DestroyWhenOutOfRange ;
 };
 
 

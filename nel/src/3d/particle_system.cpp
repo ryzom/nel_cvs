@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.21 2001/07/12 15:58:57 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.22 2001/07/13 17:06:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,9 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 									, _InvMaxViewDist(1.f / 50.f)									
 									, _LODRatio(0.5f)
 									, _ComputeBBox(true)
+									, _DieCondition(none)
+									, _DelayBeforeDieTest(0.2f) 
+									, _DestroyWhenOutOfRange(false)
 {
 	for (uint k = 0 ; k < MaxPSUserParam ; ++k) _UserParam[k].Value = 0 ;
 }
@@ -128,7 +131,7 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	sint version =  f.serialVersion(3) ;	
+	sint version =  f.serialVersion(5) ;	
 	//f.serial(_ViewMat) ;
 	f.serial(_SysMat) ;
 	f.serial(_Date) ;
@@ -164,6 +167,27 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		if (_AccurateIntegration) f.serial(_CanSlowDown, _TimeThreshold, _MaxNbIntegrations) ;
 		f.serial(_InvMaxViewDist, _LODRatio) ;	
 	}
+
+	if (version > 3) // tell wether the system must compute his bbox, hold a precomputed bbox
+	{
+		f.serial(_ComputeBBox) ;
+		if (!_ComputeBBox)
+		{
+			f.serial(_PreComputedBBox) ;
+		}
+	}
+
+	if (version > 4) // lifetime informations
+	{
+		f.serial(_DestroyWhenOutOfRange) ;
+		f.serialEnum(_DieCondition) ;
+		if (_DieCondition != none)
+		{
+			f.serial(_DelayBeforeDieTest) ;
+		}
+	}	
+
+
 }
 
 
@@ -192,7 +216,7 @@ void CParticleSystem::remove(CParticleSystemProcess *ptr)
 
 
 
-void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox) const
+void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 {
 	if (!_ComputeBBox)
 	{
@@ -222,8 +246,14 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox) const
 			}
 		}
 	}
-	aabbox.setCenter(_SysMat.getPos()) ;
-	aabbox.setHalfSize(NLMISC::CVector::Null) ;
+
+	if (!foundOne)
+	{
+		aabbox.setCenter(_SysMat.getPos()) ;
+		aabbox.setHalfSize(NLMISC::CVector::Null) ;
+	}
+	
+	_PreComputedBBox = aabbox ;	
 }
 
 

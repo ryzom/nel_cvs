@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.223 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.224 2004/08/20 13:48:19 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1530,7 +1530,7 @@ bool CDriverGL::getCurrentScreenMode(GfxMode &mode)
 	devmode.dmDriverExtra= 0;
 	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &devmode);
 
-	mode.Windowed= false;
+	mode.Windowed= !_FullScreen;
 	mode.OffScreen= false;
 	mode.Depth= (uint8)devmode.dmBitsPerPel;
 	mode.Frequency= devmode.dmDisplayFrequency,

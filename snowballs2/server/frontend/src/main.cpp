@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.11 2002/03/25 10:16:32 lecroart Exp $
+ * $Id: main.cpp,v 1.12 2002/03/26 10:33:29 lecroart Exp $
  */
 
 /*
@@ -616,7 +616,7 @@ public:
 		DebugLog->addNegativeFilter ("SB:");
 
 		// Connect the frontend to the login system
-		CLoginServer::init( *getServer(), onConnectionClient, &ConfigFile); 
+		CLoginServer::init( *getServer(), onConnectionClient);
 
 		/********************************************************************
 		 * Client connection management

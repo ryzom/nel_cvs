@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.20 2003/11/17 14:26:38 distrib Exp $
+ * $Id: primitive.cpp,v 1.21 2003/11/28 15:04:09 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1489,7 +1489,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 			if (!getPropertyByName (parameter.Name.c_str(), result))
 			{
 				// Create the property
-				if (parameter.Type == CPrimitiveClass::CParameter::StringArray)
+				if ((parameter.Type == CPrimitiveClass::CParameter::StringArray) || (parameter.Type == CPrimitiveClass::CParameter::ConstStringArray))
 					result = new CPropertyStringArray();
 				else
 					result = new CPropertyString();

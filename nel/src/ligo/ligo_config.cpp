@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.9 2003/11/17 14:26:38 distrib Exp $
+ * $Id: ligo_config.cpp,v 1.10 2003/11/28 15:04:09 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -258,7 +258,17 @@ bool CLigoConfig::canBeChild (const NLLIGO::IPrimitive &child, const NLLIGO::IPr
 					break;
 			}
 
-			return (i<parentClass->DynamicChildren.size ());
+			if (i<parentClass->DynamicChildren.size ())
+				return true;
+
+			for (i=0; i<parentClass->GeneratedChildren.size (); i++)
+			{
+				// The same ?
+				if (parentClass->GeneratedChildren[i].ClassName == childClassName)
+					break;
+			}
+
+			return (i<parentClass->GeneratedChildren.size ());
 		}
 		else
 			return true;

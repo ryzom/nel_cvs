@@ -1,7 +1,7 @@
 /** \file primitive_configuration.cpp
  * Ligo primitive configuration description.
  *
- * $Id: primitive_configuration.cpp,v 1.3 2003/11/17 14:26:38 distrib Exp $
+ * $Id: primitive_configuration.cpp,v 1.4 2003/11/28 15:04:09 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -115,6 +115,20 @@ bool	CPrimitiveConfigurations::belong (const IPrimitive &primitive) const
 			if (primitive.getPropertyByName (pairs.first.c_str(), value))
 			{
 				if (value == pairs.second)
+					continue;
+			}
+
+			// Get the property
+			const std::vector<string> *array = NULL;
+			if (primitive.getPropertyByName (pairs.first.c_str(), array) && array)
+			{
+				uint i;
+				for (i=0; i<array->size(); i++)
+				{
+					if ((*array)[i] == pairs.second)
+						break;
+				}
+				if (i!=array->size())
 					continue;
 			}
 

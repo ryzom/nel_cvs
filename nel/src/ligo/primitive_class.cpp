@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.7 2003/11/17 14:26:38 distrib Exp $
+ * $Id: primitive_class.cpp,v 1.8 2003/11/28 15:04:09 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -248,6 +248,10 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 		ShowArrow = true;
 		ReadBool ("SHOW_ARROW", ShowArrow, primitiveNode, filename, config);
 		
+		// Numberize when copy the primitive
+		Numberize = true;
+		ReadBool ("NUMBERIZE", Numberize, primitiveNode, filename, config);
+
 		// Read the parameters
 		xmlNodePtr paramNode = CIXml::getFirstChildNode (primitiveNode, "PARAMETER");
 		if (paramNode)
@@ -278,6 +282,8 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 							parameter.Type = CParameter::String;
 						else if (type == "string_array")
 							parameter.Type = CParameter::StringArray;
+						else if (type == "const_string_array")
+							parameter.Type = CParameter::ConstStringArray;
 						else
 						{
 							config.syntaxError (filename, paramNode, "Unknown primitive parameter type (%s)", type.c_str ());
@@ -296,7 +302,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 						parameter.Lookup = false;
 						ReadBool ("LOOKUP", parameter.Lookup, paramNode, filename, config);
 
-						// Lookup
+						// Read only primitive
 						parameter.ReadOnly = false;
 						ReadBool ("READ_ONLY", parameter.ReadOnly, paramNode, filename, config);
 

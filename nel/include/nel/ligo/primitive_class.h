@@ -1,7 +1,7 @@
 /** \file primitive_class.h
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.h,v 1.4 2003/11/04 14:55:26 corvazier Exp $
+ * $Id: primitive_class.h,v 1.5 2003/11/28 15:04:09 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -91,6 +91,9 @@ public:
 	/// Show arrow ?
 	bool					ShowArrow;
 
+	/// Numberize on copy ?
+	bool					Numberize;
+
 	/// Init parameters
 	class CInitParameters
 	{
@@ -141,6 +144,7 @@ public:
 			ConstString,
 			String,
 			StringArray,
+			ConstStringArray,
 		}			Type;
 
 		/// Is parameter visible ?

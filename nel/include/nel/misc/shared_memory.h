@@ -1,7 +1,7 @@
 /** \file shared_memory.h
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.h,v 1.3 2002/08/08 14:42:05 cado Exp $
+ * $Id: shared_memory.h,v 1.4 2002/08/09 09:39:27 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -39,6 +39,19 @@ namespace NLMISC {
 typedef const char *TSharedMemId;
 #else
 typedef key_t TSharedMemId;
+#endif
+
+
+/* Helpers:
+ * toSharedMemId: converts an integer to TSharedMemId
+ * NL_SMID: format type used for printf syntax. Ex: nldebug( "Segment %"NL_SMID" was created", sharedMemId );
+ */
+#ifdef NL_OS_WINDOWS
+#define toSharedMemId( id ) toString( "%d", id ).c_str()
+#define NL_SMID "s"
+#else
+#define toSharedMemId( id ) (id)
+#define NL_SMID "d"
 #endif
 
 

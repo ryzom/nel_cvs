@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.9 2000/11/08 14:56:45 lecroart Exp $
+ * $Id: config_file.cpp,v 1.10 2000/11/23 11:48:15 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,13 +243,14 @@ uint32	CConfigFile::_Timeout = 1000;
 
 uint32 CConfigFile::getLastModified ()
 {
-#if defined(WIN32)
+#if defined (NL_OS_WINDOWS)
 	struct _stat buf;
-#else
+	int result = _stat (_FileName.c_str (), &buf);
+#else defined (NL_OS_UNIX)
 	struct stat buf;
+	int result = stat (_FileName.c_str (), &buf);
 #endif
 
-	int result = _stat (_FileName.c_str (), &buf);
 	if (result != 0) return 0;
 	else return buf.st_mtime;
 }

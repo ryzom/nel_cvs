@@ -1,7 +1,7 @@
 /** \file u_env_sound.h
  * UEnvSound: Game interface for localized environment sounds
  *
- * $Id: u_env_sound.h,v 1.7 2001/08/28 16:58:47 cado Exp $
+ * $Id: u_env_sound.h,v 1.8 2001/09/10 17:27:39 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,10 @@ class USource;
  *       | /
  *       -----x (right)
  * \endverbatim
+ *
+ * An envsound source plays with the priority HighPri, and has the
+ * priority LowPri when not playing.
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

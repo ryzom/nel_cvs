@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.9 2001/09/04 13:46:03 vizerie Exp $
+ * $Id: u_source.h,v 1.10 2001/09/10 17:27:39 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,8 @@ class USource;
 typedef CSound* TSoundId;
 
 /// Priority of the sources (p1<p2 means p1 has higher priority than p2)
-enum TSoundPriority { HighPri, MidPri, LowPri };
+enum TSoundPriority { HighestPri, HighPri, MidPri, LowPri };
+const uint NbSoundPriorities = 4;
 
 /// Type of callbacks called before a spawned source is deleted
 typedef void (*TSpawnEndCallback) (USource *, void *);
@@ -65,6 +66,12 @@ typedef void (*TSpawnEndCallback) (USource *, void *);
  *       |  y (front)
  *       | /
  *       -----x (right)
+ *
+ * The default priority is MidPri.
+ * Some properties are assigned at initialization's time, from the
+ * specified sound id (use NeL Sources Sound Builder to set these
+ * initial values).
+ *
  * \endverbatim
  * \author Olivier Cado
  * \author Nevrax France

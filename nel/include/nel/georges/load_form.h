@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.14 2002/10/02 12:05:08 coutelas Exp $
+ * $Id: load_form.h,v 1.15 2002/10/18 15:18:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,11 +96,11 @@
  * \param container the map that will be filled by this function
  */
 template <class T>
-void loadForm (const std::string &sheetFilter, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container)
+void loadForm (const std::string &sheetFilter, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container, bool updatePackedSheet=true)
 {
 	std::vector<std::string> vs;
 	vs.push_back(sheetFilter);
-	loadForm(vs, packedFilename, container);
+	loadForm(vs, packedFilename, container, updatePackedSheet);
 }
 
 /** This function is used to load values from georges sheet in a quick way.
@@ -109,23 +109,10 @@ void loadForm (const std::string &sheetFilter, const std::string &packedFilename
  * \param container the map that will be filled by this function
  */
 template <class T>
-void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container)
+void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container, bool updatePackedSheet=true)
 {
 	// check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
 	nlassert (packedFilename.find (".packed_sheets") != std::string::npos);
-
-	// make sure the CSheetId singleton has been properly initialised
-	NLMISC::CSheetId::init();
-
-	// build a vector of the sheetFilters sheet ids (".item")
-	std::vector<NLMISC::CSheetId> sheetIds;
-	std::vector<std::string> filenames;
-	for (uint i = 0; i < sheetFilters.size(); i++)
-		NLMISC::CSheetId::buildIdVector(sheetIds, filenames, sheetFilters[i]);
-
-	// if there s no file, nothing to do
-	if (sheetIds.empty())
-		return;
 
 	std::string packedFilenamePath = NLMISC::CPath::lookup(packedFilename, false);
 	if (packedFilenamePath.empty())
@@ -160,6 +147,26 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		container.clear ();
 	}
 	NLMISC::CIFile::setVersionException(olde, newe);
+
+	// make sure the CSheetId singleton has been properly initialised
+	NLMISC::CSheetId::init(updatePackedSheet);
+
+	// if we don't want to update packed sheet, we nothing more to do
+	if (!updatePackedSheet)
+	{
+		nlinfo ("Don't update the packed sheet with real sheet");
+		return;
+	}
+
+	// build a vector of the sheetFilters sheet ids (ie: "item")
+	std::vector<NLMISC::CSheetId> sheetIds;
+	std::vector<std::string> filenames;
+	for (uint i = 0; i < sheetFilters.size(); i++)
+		NLMISC::CSheetId::buildIdVector(sheetIds, filenames, sheetFilters[i]);
+
+	// if there s no file, nothing to do
+	if (sheetIds.empty())
+		return;
 
 	// set up the current sheet in container to remove sheet that are in the container and not in the directory anymore
 	std::map<NLMISC::CSheetId, bool> sheetToRemove;

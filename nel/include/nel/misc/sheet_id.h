@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.8 2002/10/02 15:51:17 lecroart Exp $
+ * $Id: sheet_id.h,v 1.9 2002/10/18 15:18:09 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -66,7 +66,7 @@ public :
 	/**
 	 *	Load the association sheet ref / sheet name 
 	 */
-	static void init();
+	static void init(bool removeUnknownSheet);
 	
 	/**
 	 * Return the **whole** sheet id (id+type)
@@ -175,6 +175,8 @@ private :
 	static std::map<std::string,uint32> _SheetNameToId;
 	static std::vector<std::string> _FileExtensions;
 	static bool _Initialised;
+
+	static bool _RemoveUnknownSheet;
 
 	static void loadSheetId ();
 	static void cbFileChange (const std::string &filename);

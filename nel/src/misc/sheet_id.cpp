@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.15 2002/10/02 15:51:00 lecroart Exp $
+ * $Id: sheet_id.cpp,v 1.16 2002/10/18 15:17:56 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -42,6 +42,7 @@ map<uint32,std::string> CSheetId::_SheetIdToName;
 map<std::string,uint32> CSheetId::_SheetNameToId;
 vector<std::string> CSheetId::_FileExtensions;
 bool CSheetId::_Initialised=false;
+bool CSheetId::_RemoveUnknownSheet=true;
 
 const CSheetId CSheetId::Unknown(0);
 
@@ -107,28 +108,31 @@ void CSheetId::loadSheetId ()
 		// Close the file.
 		file.close();
 
-		uint32 removednbfiles = 0;
-		uint32 nbfiles = _SheetIdToName.size();
-
-		// now we remove all files that not available
-		map<uint32,string>::iterator itStr2;
-		for( itStr2 = _SheetIdToName.begin(); itStr2 != _SheetIdToName.end(); )
+		if (_RemoveUnknownSheet)
 		{
-			if (CPath::exists ((*itStr2).second))
-			{
-				++itStr2;
-			}
-			else
-			{
-				map<uint32,string>::iterator olditStr = itStr2;
-				//nldebug ("Removing file '%s' from CSheetId because the file not exists", (*olditStr).second.c_str ());
-				itStr2++;
-				_SheetIdToName.erase (olditStr);
-				removednbfiles++;
-			}
-		}
+			uint32 removednbfiles = 0;
+			uint32 nbfiles = _SheetIdToName.size();
 
-		nlinfo ("Removed %d files on %d from CSheetId because these files doesn't exists", removednbfiles, nbfiles);
+			// now we remove all files that not available
+			map<uint32,string>::iterator itStr2;
+			for( itStr2 = _SheetIdToName.begin(); itStr2 != _SheetIdToName.end(); )
+			{
+				if (CPath::exists ((*itStr2).second))
+				{
+					++itStr2;
+				}
+				else
+				{
+					map<uint32,string>::iterator olditStr = itStr2;
+					//nldebug ("Removing file '%s' from CSheetId because the file not exists", (*olditStr).second.c_str ());
+					itStr2++;
+					_SheetIdToName.erase (olditStr);
+					removednbfiles++;
+				}
+			}
+
+			nlinfo ("Removed %d files on %d from CSheetId because these files doesn't exists", removednbfiles, nbfiles);
+		}
 
 		// build the invert map & file extension vector
 		map<uint32,string>::iterator itStr;
@@ -160,13 +164,15 @@ void CSheetId::loadSheetId ()
 //	init
 //
 //-----------------------------------------------
-void CSheetId::init()
+void CSheetId::init(bool removeUnknownSheet)
 {
 	// allow multiple calls to init in case libraries depending on sheetid call this init from their own
 	if (_Initialised)
 		return;
 
 	CFile::addFileChangeCallback ("sheet_id.bin", cbFileChange);
+
+	_RemoveUnknownSheet = removeUnknownSheet;
 
 	loadSheetId ();
 

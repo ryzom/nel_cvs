@@ -1,7 +1,7 @@
 /** \file flare_shape.h
  * <File description>
  *
- * $Id: flare_shape.h,v 1.11 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: flare_shape.h,v 1.12 2004/06/29 13:42:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -43,6 +43,9 @@ const NLMISC::CClassId FlareModelClassId =  NLMISC::CClassId(0x6d674c32, 0x53b96
 
 // max number of flares
 const uint MaxFlareNum= 10;
+
+class CMesh;
+class CShapeBank;
 
 /**
  * shape for a flare
@@ -92,6 +95,12 @@ public:
 	{ 
 		nlassert(index < MaxFlareNum);
 		_Tex[index] = tex; 
+		if (tex)
+		{		
+			// clamp borders
+			_Tex[index]->setWrapS(ITexture::Clamp);
+			_Tex[index]->setWrapT(ITexture::Clamp);
+		}
 	}
 
 	/** get the nth texture used by the flare.
@@ -264,13 +273,39 @@ public:
 	CTrackDefaultVector*	getDefaultPos ()		{return &_DefaultPos;}
 	// @}
 
+	/** Set the name of the mesh that is used to test the visible surface
+	  * If the value is empty, then a simple point is used
+	  * The mesh materials are ignored
+	  */
+	void					setOcclusionTestMeshName(const std::string &shapeName);
+	const std::string	   &getOcclusionTestMeshName() const { return _OcclusionTestMeshName; }	
+	/** Return the mesh that is used to perform the occlusion test. 
+	  * \return pointer to the mesh, or NULL if not used or not found
+	  */
+	CMesh				   *getOcclusionTestMesh(CShapeBank &sb);
+	// Tell wether the occlusion mesh inherit the rotation/scale part of the model matrix
+	void					setOcclusionTestMeshInheritScaleRot(bool on) { _OcclusionTestMeshInheritScaleRot = on; }
+	bool					getOcclusionTestMeshInheritScaleRot() const { return _OcclusionTestMeshInheritScaleRot; }
 
+	void    setScaleWhenDisappear(bool enable) { _ScaleWhenDisappear = enable; }
+	bool	getScaleWhenDisappear() const { return _ScaleWhenDisappear; }
+	void	setSizeDisappear(float size) { _SizeDisappear = size; }
+	void	setAngleDisappear(float angle) { _AngleDisappear = angle; }
+	float	getSizeDisappear() const { return _SizeDisappear; }
+	float	getAngleDisappear() const { return _AngleDisappear; }
+
+	// decide wether first flare is displayed using lookat mode
+	void	setLookAtMode(bool on) { _LookAtMode = on; }
+	bool	getLookAtMode() const {	return _LookAtMode; }
 protected:
 	friend class CFlareModel;	
 	NLMISC::CSmartPtr<ITexture> _Tex[MaxFlareNum];
 	NLMISC::CRGBA				_Color;
 	NLMISC::CRGBA				_DazzleColor;
 	float						_Size[MaxFlareNum];
+	float						_SizeDisappear;
+	bool						_ScaleWhenDisappear;
+	float                       _AngleDisappear;
 	float						_Pos[MaxFlareNum];
 	TAnimationTime				_Persistence;
 	float						_Spacing;
@@ -282,6 +317,11 @@ protected:
 	float						_MaxViewDist;
 	float						_MaxViewDistRatio;				
 	bool						_InfiniteDist;
+	std::string					_OcclusionTestMeshName;
+	NLMISC::CSmartPtr<CMesh>	_OcclusionTestMesh;
+	bool						_OcclusionMeshNotFound;
+	bool						_OcclusionTestMeshInheritScaleRot;
+	bool						_LookAtMode; 
 };
 
 

@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.14 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: flare_shape.cpp,v 1.15 2004/06/29 13:42:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,15 +29,20 @@
 #include "3d/flare_model.h"
 #include "3d/scene.h"
 #include "3d/driver.h"
+#include "3d/mesh.h"
+#include "3d/shape_bank.h"
+
+
 
 namespace NL3D {
 
 
-/*
- * Constructor
- */
+//***************************************************************************************************************
 CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White),
 							  _DazzleColor(NLMISC::CRGBA::Black),
+							  _ScaleWhenDisappear(false),
+							  _SizeDisappear(0.f),
+							  _AngleDisappear(0.f),
 							  _Persistence(1),
 							  _Spacing(1),
 							  _Attenuable(false),
@@ -46,7 +51,10 @@ CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White),
 							  _DazzleEnabled(false),
 							  _DazzleAttenuationRange(0.f),							  
 							  _MaxViewDistRatio (0.9f),
-							  _InfiniteDist(false)
+							  _InfiniteDist(false),
+							  _OcclusionMeshNotFound(false),							  
+							  _OcclusionTestMeshInheritScaleRot(false),
+							  _LookAtMode(true)
 {
 	// init default pos
 	for (uint k = 0; k < MaxFlareNum; ++k)
@@ -60,9 +68,12 @@ CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White),
 }
 
 
+//***************************************************************************************************************
 void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(3);
+	// Version 4 : - added occlusion test mesh, size reduction, angle modification when object is occluded
+	//             - added lookat mode for first flare
+	sint ver = f.serialVersion(4);
 	f.serial(_Color, _Persistence, _Spacing);	
 	f.serial(_Attenuable);
 	if (_Attenuable)
@@ -91,12 +102,22 @@ void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_DazzleColor, _DazzleAttenuationRange);
 	}
 	f.serial(_InfiniteDist);
-
 	if (ver >= 2)
-		f.serial( _DistMax );	
+	{
+		f.serial( _DistMax );
+	}
+	if (ver >= 4)
+	{		
+		f.serial(_OcclusionTestMeshName);
+		f.serial(_ScaleWhenDisappear);
+		f.serial(_SizeDisappear);
+		f.serial(_AngleDisappear);
+		f.serial(_OcclusionTestMeshInheritScaleRot);
+		f.serial(_LookAtMode);
+	}	
 }
 
-	
+//***************************************************************************************************************
 CTransformShape		*CFlareShape::createInstance(CScene &scene)
 {
 	CFlareModel *fm = NLMISC::safe_cast<CFlareModel *>(scene.createModel(FlareModelClassId) );
@@ -107,6 +128,7 @@ CTransformShape		*CFlareShape::createInstance(CScene &scene)
 	return fm;
 }
 
+//***************************************************************************************************************
 float				CFlareShape::getNumTriangles (float distance)
 {
 	float count = 0;
@@ -117,18 +139,19 @@ float				CFlareShape::getNumTriangles (float distance)
 	return count;
 }
 
+//***************************************************************************************************************
 bool				CFlareShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {		
 	// compute flare pos in world basis : 
 	const NLMISC::CVector pos = worldMatrix.getPos();
 	for (std::vector<NLMISC::CPlane>::const_iterator it = pyramid.begin(); it != pyramid.end(); ++it)
 	{
-		if ((*it) * pos > 0) return false;
+		if ((*it) * pos > _Size[0]) return false;
 	}
 	return true;
 }
 
-
+//***************************************************************************************************************
 void				CFlareShape::getAABBox(NLMISC::CAABBox &bbox) const
 {
 	// the flare himself is a point
@@ -136,7 +159,7 @@ void				CFlareShape::getAABBox(NLMISC::CAABBox &bbox) const
 	bbox.setHalfSize(CVector::Null);
 }
 
-
+//***************************************************************************************************************
 void				CFlareShape::flushTextures (IDriver &driver, uint selectedTexture)
 {
 	// Flush each texture
@@ -152,6 +175,48 @@ void				CFlareShape::flushTextures (IDriver &driver, uint selectedTexture)
 		}
 	}
 }
+
+//***************************************************************************************************************
+void CFlareShape::setOcclusionTestMeshName(const std::string &shapeName)
+{
+	if (shapeName == _OcclusionTestMeshName) return;	
+	_OcclusionTestMeshName = shapeName;
+	_OcclusionTestMesh = NULL;
+}
+
+
+//***************************************************************************************************************
+CMesh *CFlareShape::getOcclusionTestMesh(CShapeBank &sb)
+{
+	if (_OcclusionTestMesh) return _OcclusionTestMesh;
+	if (_OcclusionMeshNotFound) return NULL;
+	if (_OcclusionTestMeshName.empty()) return NULL;
+	if (!sb.isPresent(_OcclusionTestMeshName))
+	{
+		sb.load(_OcclusionTestMeshName);
+		if (!sb.isPresent(_OcclusionTestMeshName))
+		{
+			_OcclusionMeshNotFound = true;
+			return NULL;
+		}
+	}
+	IShape *mesh = sb.addRef(_OcclusionTestMeshName);
+	if (!mesh)
+	{
+		_OcclusionMeshNotFound = true;
+		return NULL;
+	}
+	_OcclusionTestMesh = dynamic_cast<CMesh *>(mesh);
+	if (!_OcclusionTestMesh)
+	{
+		_OcclusionMeshNotFound = true;
+		nlwarning("%s is not a mesh. Mesh required for occlusion testing", _OcclusionTestMeshName.c_str());
+		sb.release(mesh);
+		return NULL;
+	}	
+	return _OcclusionTestMesh;
+}
+
 
 
 } // NL3D

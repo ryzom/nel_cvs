@@ -1,7 +1,7 @@
 /** \file flare_model.h
  * <File description>
  *
- * $Id: flare_model.h,v 1.6 2003/06/13 13:58:47 vizerie Exp $
+ * $Id: flare_model.h,v 1.7 2004/06/29 13:42:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,10 +28,13 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/transform_shape.h"
+#include "3d/vertex_buffer.h"
 
 
 namespace NL3D {
 
+struct IOcclusionQuery;
+class CMesh;
 
 /**
  * <Class description>
@@ -43,22 +46,57 @@ class CFlareModel : public CTransformShape
 {
 public:
 	enum { MaxNumContext = 4 };
+	enum { OcclusionTestFrameDelay = 2 }; // number of frame to wait before occlusion result is collected
 	/// Constructor
 	CFlareModel();
-
+	// dtor
+	~CFlareModel();
 	// register this model
 	static void registerBasic();	
 	static CTransform *creator() { return new CFlareModel; }
-
 	/// \name CTransform traverse specialisation
 	// @{
 	virtual void	traverseRender();
-	// @}
-
-protected:
+	// @}		
+	// From CTransform
+	virtual	bool isFlare() const { return true; }
+	// Debugging aid : if an occlusion test mesh is used, display it using the current material
+	void renderOcclusionTestMesh(IDriver &drv);
+private:
 	friend class CFlareShape;
-	float				_Intensity[MaxNumContext];	
-	CScene				*_Scene;	
+	float					 _Intensity[MaxNumContext];	
+	CScene					 *_Scene;	
+	IOcclusionQuery			 *_OcclusionQuery[MaxNumContext][OcclusionTestFrameDelay]; // delay real test by a whole frame to avoid any stall
+	IOcclusionQuery			 *_DrawQuery[MaxNumContext][OcclusionTestFrameDelay]; // querries to retrieve the surface that would have been drawned if there were no occlusion
+	NLMISC::CRefPtr<IDriver> _LastDrv; // last driver used for render
+	uint64					 _LastRenderIntervalBegin; // Interval of frames during which this flare was traversed for render
+	uint64					 _LastRenderIntervalEnd;
+	uint64					 _NumFrameForOcclusionQuery; // number of frames that were necessary to get the occlusion query result
+	static CMaterial		 _OcclusionQueryMaterial;
+	static CMaterial		 _DrawQueryMaterial;
+	static bool				 _OcclusionQuerySettuped;
+	static CVertexBuffer	 _OcclusionQueryVB;
+private:
+	void resetOcclusionQuerries();
+	// Issue an occlusion query with the given mesh to get the visibility ratio
+	void occlusionTest(CMesh &mesh, IDriver &drv);
+public:
+	CFlareModel *Next; // linked list of flare model to test at each frame
+public:
+	static void initStatics();
+	static void updateOcclusionQueryBegin(IDriver *drv);
+	static void updateOcclusionQueryEnd(IDriver *drv);
+	/** Update state of occlusion query at the end of the frame. For private use by the CScene class
+	  * updateOcclusionQueryBegin() should have been called	  
+	  */
+	void updateOcclusionQuery(IDriver *drv);
+	/** Render all primitives of a mesh using the current material / metrix etc ...
+	  * NB : this does NOT activate the vertex buffer of the mesh
+	  * it must be activated prior to the call
+	  */
+	void renderOcclusionMeshPrimitives(CMesh &mesh, IDriver &drv);
+	// setup matrix of the occlusion test mesh in the driver
+	void    setupOcclusionMeshMatrix(IDriver &drv, CScene &scene) const;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.57 2002/08/27 17:11:28 coutelas Exp $
+ * $Id: path.cpp,v 1.58 2002/08/27 17:14:11 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #   include <sys/stat.h>
 #	include <dirent.h>
 #   include <unistd.h>
+#   include <errno.h>
 #endif // NL_OS_WINDOWS
 
 using namespace std;

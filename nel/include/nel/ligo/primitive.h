@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.16 2003/01/20 10:05:52 corvazier Exp $
+ * $Id: primitive.h,v 1.17 2003/01/22 15:46:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ void Register ();
  */
 class IProperty
 {
+public:
 	// Force class to be polymorphic
 	virtual void foo () const = 0;
 };

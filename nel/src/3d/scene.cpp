@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.28 2001/04/24 10:22:22 berenguier Exp $
+ * $Id: scene.cpp,v 1.29 2001/06/11 09:25:58 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -270,7 +270,7 @@ void CScene::setShapeBank(CShapeBank*pShapeBank)
 
 // ***************************************************************************
 
-CTransformShape	*CScene::createInstance(const std::string &shapeName)
+CTransformShape	*CScene::createInstance(const string &shapeName)
 {
 	// We must attach a bank to the scene (a ShapeBank handle the shape caches and 
 	// the creation/deletion of the instances)
@@ -292,7 +292,7 @@ CTransformShape	*CScene::createInstance(const std::string &shapeName)
 
 // ***************************************************************************
 
-void CScene::createInstanceAsync(const std::string &shapeName, CTransformShape **pInstance)
+void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pInstance)
 {
 	// We must attach a bank to the scene (a ShapeBank handle the shape caches and 
 	// the creation/deletion of the instances)

@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.21 2001/05/31 12:16:11 vizerie Exp $
+ * $Id: scene.h,v 1.22 2001/06/11 09:24:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,6 +197,15 @@ public:
 	void			deleteInstance(CTransformShape*model);
 	//@}
 
+	/// \name Light Mgt.
+	//@{
+	// TODO:
+	// TurnOff/TurnOn
+	// Animate
+	//CLight* addStaticLight(CLight*); // Generate Light Map
+	//void addDynamicLight(CLight*); // ??? Vertex lighting
+	//@}
+
 private:
 	typedef			std::map<sint, ITravScene*>	TTravMap;
 	TTravMap		RenderTraversals;	// Sorted via their getRenderOrder().
@@ -216,7 +225,9 @@ private:
 
 	// The root models (will be deleted by CScene).
 	CTransform		*Root;
-	// TODO: define the lightgroup model.
+
+	// The Ligths
+	//std::list<CLight*> _StaticLightList;
 
 	/// \name Shape/Instances.
 	//@{

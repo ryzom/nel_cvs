@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.1 2001/04/06 13:31:20 besson Exp $
+ * $Id: scene_group.h,v 1.2 2001/06/11 09:24:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 namespace NLMISC
 {
+class CRGBA;
 class IStream;
 struct EStream;
 }
@@ -108,7 +109,13 @@ public:
 	/// Remove all the instances from the scene
 	bool removeFromScene (CScene& scene);
 
-private:
+	void getLights( std::set<std::string> &LightNames );
+	void setLightFactor( const std::string &LightName, NLMISC::CRGBA nFactor );
+
+
+// debug purpose : protected:
+public:
+
 	TInstanceArray					_InstancesInfos;
 	std::vector<CTransformShape*>	_Instances;
 };

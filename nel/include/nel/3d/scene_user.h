@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.6 2001/04/23 09:14:27 besson Exp $
+ * $Id: scene_user.h,v 1.7 2001/06/11 09:24:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -273,7 +273,7 @@ public:
 		CInstanceGroupUser *user=new CInstanceGroupUser;
 
 		// Init the class
-		if (!user->init (instanceGroup, _Scene))
+		if (!user->load (instanceGroup))
 		{
 			// Prb, erase it
 			delete user;

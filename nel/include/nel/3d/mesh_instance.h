@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.6 2001/04/24 14:57:58 corvazier Exp $
+ * $Id: mesh_instance.h,v 1.7 2001/06/11 09:24:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,13 @@ public:
 	{
 		return _ApplySkinOk;
 	}
+
+	/// \name LightMap properties
+	// @{
+	uint32 getNbLightMap();
+	void getLightMapName( uint32 nLightMapNb, std::string &LightMapName );
+	void setLightMapFactor( const std::string &LightMapName, CRGBA nFactor );
+	// @}
 
 
 protected:

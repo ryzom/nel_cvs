@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.16 2001/05/31 09:33:37 vizerie Exp $
+ * $Id: mesh.h,v 1.17 2001/06/11 09:24:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ public:
 	/// A corner of a face.
 	struct	CCorner
 	{
-		sint		Vertex;		/// The vertex Id.
+		sint32		Vertex;		/// The vertex Id.
 		CVector		Normal;
 		NLMISC::CUV			Uvs[IDRV_VF_MAXSTAGES];
 		CRGBA		Color;
@@ -80,13 +80,17 @@ public:
 		// Setup all to 0, but Color (to white)... Important for good corner comparison.
 		// This is slow but doesn't matter since used at mesh building....
 		CCorner();
+
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	};
 
 	/// A Triangle face.
 	struct	CFace
 	{
 		CCorner		Corner[3];
-		sint		MaterialId;
+		sint32		MaterialId;
+
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	};
 
 
@@ -96,7 +100,7 @@ public:
 	struct	CSkinWeight
 	{
 		/// What matrix of the skeleton shape this vertex use.
-		uint			MatrixId[NL3D_MESH_SKINNING_MAX_MATRIX];
+		uint32			MatrixId[NL3D_MESH_SKINNING_MAX_MATRIX];
 		/// weight of this matrix (sum of 4 must be 1).
 		float			Weights[NL3D_MESH_SKINNING_MAX_MATRIX];
 
@@ -109,8 +113,28 @@ public:
 				Weights[i]=0;
 			}
 		}
+
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	};
 
+
+	struct CMatStage
+	{ 
+		uint8 nMatNb, nStageNb; 
+		void	serial(NLMISC::IStream &f)
+		{
+			f.serial(nMatNb);
+			f.serial(nStageNb);
+		}
+	};
+	struct CLightInfoMapList : std::list< CMatStage >
+	{
+		void	serial(NLMISC::IStream &f)
+		{
+			f.serialCont((std::list< CMatStage >&)*this);
+		}
+	};
+	typedef std::map< std::string, CLightInfoMapList >	TLightInfoMap;
 
 	/// A mesh information.
 	struct	CMeshBuild
@@ -118,7 +142,7 @@ public:
 		/** the IDRV_VF* flags which tells what vertices data are used. See IDriver::setVertexFormat() for 
 		 * more information. NB: IDRV_VF_XYZ is always considered to true.
 		 */
-		sint					VertexFlags;
+		sint32					VertexFlags;
 
 		// Default value for position of this mesh
 		CVector					DefaultPos;
@@ -136,9 +160,15 @@ public:
 		// Palette Skinning Vertices array (same size as Vertices). NULL if no skinning.
 		std::vector<CSkinWeight>	SkinWeights;
 
-
 		// Faces array
 		std::vector<CFace>		Faces;
+
+		// Map of light information
+		TLightInfoMap			LightInfoMap;
+
+		// Serialization
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
 	};
 	//@}
 
@@ -236,9 +266,8 @@ public:
 		return _MatrixBlocks[matrixBlockIndex].RdrPass[renderingPassIndex].MaterialId ;
 	}
 
-
-
 	// @}
+
 
 // ************************
 private:
@@ -429,10 +458,14 @@ private:
 	/// This tells if the mesh is correctly skinned.
 	bool						_Skinned;
 
+public:
+	// Map of light information ( LightName, list(MaterialNb, StageNb) )
+	TLightInfoMap				_LightInfos;	
 
+private:
 	/// Animated Material mgt.
 	typedef std::map<uint32, CMaterialBase>	TAnimatedMaterialMap;
-	TAnimatedMaterialMap			_AnimatedMaterials;
+	TAnimatedMaterialMap		_AnimatedMaterials;
 
 
 	/// Transform default tracks. Those default tracks are instancied, ie, CInstanceMesh will have the same and can't specialize it.

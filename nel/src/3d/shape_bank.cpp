@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.5 2001/04/23 09:14:27 besson Exp $
+ * $Id: shape_bank.cpp,v 1.6 2001/06/11 09:25:58 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,7 +139,11 @@ bool CShapeBank::isPresent(const string &shapeName)
 					// Parse all textures from this material and setup
 					for(j = 0; j < IDRV_MAT_MAXTEXTURES; ++j)
 					if( rMat.texturePresent(j) )
+					{
+						//--const_cast<CMaterial&>(rMat).setTexture(j,NULL);
+						//---rMat.getTexture(j)->setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
 						_pDriver->setupTexture(*rMat.getTexture(j));
+					}
 				}
 			}
 			

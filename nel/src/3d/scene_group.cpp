@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.3 2001/05/22 08:37:22 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.4 2001/06/11 09:25:58 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,10 @@
 #include "nel/misc/stream.h"
 #include "nel/3d/scene.h"
 #include "nel/3d/transform_shape.h"
+#include "nel/3d/mesh_instance.h"
 
 using namespace NLMISC;
+using namespace std;
 
 namespace NL3D 
 {
@@ -43,7 +45,7 @@ uint CInstanceGroup::getNumInstance () const
 
 // ***************************************************************************
 
-const std::string& CInstanceGroup::getInstanceName (uint instanceNb) const
+const string& CInstanceGroup::getInstanceName (uint instanceNb) const
 {
 	// Return the name of the n-th instance
 	return _InstancesInfos[instanceNb].Name;
@@ -127,25 +129,57 @@ void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 }
 
 // ***************************************************************************
-
 bool CInstanceGroup::addToScene (CScene& scene)
 {
-	int i;
+	sint i;
 
 	_Instances.resize( _InstancesInfos.size() );
 
-	std::vector<CInstance>::iterator it = _InstancesInfos.begin();
+	vector<CInstance>::iterator it = _InstancesInfos.begin();
 	for( i=0; i<(sint)_InstancesInfos.size(); ++i,++it )
 	{
 		CInstance &rInstanceInfo = *it;
 
 		// Creation and positionning of the new instance
 		_Instances[i] = scene.createInstance ( rInstanceInfo.Name + ".shape" );
+
+		// TempYoyo.
+		// --------	
+		sint	j;
+		CMeshInstance	*mi= (CMeshInstance	*)_Instances[i];
+		for(j=0;j<mi->Materials.size();j++)
+		{
+			//mi->Materials[j].setTexture(0, NULL);
+			//mi->Materials[j].getTexture(1)->setFilterMode(ITexture::Nearest, ITexture::NearestMipMapOff);
+			CMaterial &mat = mi->Materials[j]; 
+			mi->Materials[j].setColor(CRGBA(255,255,255,255));
+
+
+			// Put lightmap for all materials
+		/*	
+			mi->Materials[j].texEnvOpRGB( 0, CMaterial::Replace );
+			mi->Materials[j].texEnvArg0RGB( 0, CMaterial::&Texture, CMaterial::SrcColor );
+
+			mi->Materials[j].texEnvOpRGB( 1, CMaterial::Replace );
+			mi->Materials[j].texEnvArg0RGB( 1, CMaterial::Texture, CMaterial::SrcColor );
+		*/	
+		}
+		// --------	
+		// TempYoyo end
+	
+
+		if( _Instances[i] == NULL )
+		{
+			printf("Not found %s.shape file\n", rInstanceInfo.Name.c_str());
+			nlstop;
+		}
+	
 		if (_Instances[i])
 		{
 			_Instances[i]->setPos( rInstanceInfo.Pos );
 			_Instances[i]->setRotQuat( rInstanceInfo.Rot );
 			_Instances[i]->setScale( rInstanceInfo.Scale );
+			_Instances[i]->setPivot( CVector::Null );
 		}
 	}
 
@@ -169,7 +203,7 @@ bool CInstanceGroup::addToScene (CScene& scene)
 
 bool CInstanceGroup::removeFromScene (CScene& scene)
 {
-	std::vector<CTransformShape*>::iterator it = _Instances.begin();
+	vector<CTransformShape*>::iterator it = _Instances.begin();
 	for( int i=0; i<(sint)_InstancesInfos.size(); ++i,++it )
 	{
 		CTransformShape *pTShape = *it;
@@ -178,5 +212,44 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 	}
 	return true;
 }
+
+
+// ***************************************************************************
+void CInstanceGroup::getLights( set<string> &LightNames )
+{
+	LightNames.clear();
+	for( uint32 i = 0; i < _Instances.size(); ++i )
+	{
+		CMeshInstance *pMI = dynamic_cast<CMeshInstance*>(_Instances[i]);
+		if( pMI != NULL )
+		{
+			uint32 nNbLM = pMI->getNbLightMap();
+			for( uint32 j = 0; j < nNbLM; ++j )
+			{
+				string sTmp;
+				pMI->getLightMapName( j, sTmp );
+				set<string>::iterator itSet =  LightNames.find(sTmp);
+				if( itSet == LightNames.end() )
+					LightNames.insert( sTmp );
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+void CInstanceGroup::setLightFactor( const string &LightName, CRGBA Factor )
+{
+	for( uint32 i = 0; i < _Instances.size(); ++i )
+	{
+		CMeshInstance *pMI = dynamic_cast<CMeshInstance*>(_Instances[i]);
+		if( pMI != NULL )
+		{
+			pMI->setLightMapFactor( LightName, Factor );
+		}
+	}
+}
+
+
+
 
 } // NL3D

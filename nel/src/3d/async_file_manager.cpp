@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.2 2001/05/17 14:19:59 berenguier Exp $
+ * $Id: async_file_manager.cpp,v 1.3 2001/06/11 09:25:58 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,7 @@ void CAsyncFileManager::CMeshLoad::run()
 	typedef set<string> TAlreadyPresentTextureSet;
 	TAlreadyPresentTextureSet AlreadyPresentTextureSet;
 	
-
+/* // TEST
 	int tmp = 1;
 	//for(int i=0;i<100000000;++i)
 	for(int j=0;j<4000;++j)
@@ -77,7 +77,7 @@ void CAsyncFileManager::CMeshLoad::run()
 		}
 		//nlSleep(0);
 	}
-
+*/
 
 	try
 	{

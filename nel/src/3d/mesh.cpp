@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.17 2001/06/11 07:31:45 corvazier Exp $
+ * $Id: mesh.cpp,v 1.18 2001/06/11 09:25:58 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,6 +114,51 @@ bool	CMesh::CCornerTmp::operator<(const CCornerTmp &c) const
 }
 
 
+// ***************************************************************************
+void CMesh::CCorner::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serial(Vertex);
+	f.serial(Normal);
+	for(int i=0;i<IDRV_VF_MAXSTAGES;++i) f.serial(Uvs[i]);
+	f.serial(Color);
+	f.serial(Specular);
+}
+
+// ***************************************************************************
+void CMesh::CFace::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	for(int i=0;i<3;++i) 
+		f.serial(Corner[i]);
+	f.serial(MaterialId);
+}
+
+// ***************************************************************************
+void CMesh::CSkinWeight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	for(int i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;++i)
+	{
+		f.serial(MatrixId[i]);
+		f.serial(Weights[i]);
+	}
+}
+
+// ***************************************************************************
+void CMesh::CMeshBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+
+	f.serial( VertexFlags );
+	f.serial( DefaultPos );
+	f.serial( DefaultPivot );
+	f.serial( DefaultRotEuler );
+	f.serial( DefaultRotQuat );
+	f.serial( DefaultScale );
+
+	f.serialCont( Materials );
+	f.serialCont( Vertices );
+	f.serialCont( SkinWeights );
+	f.serialCont( Faces );
+
+}
 
 
 // ***************************************************************************
@@ -141,6 +186,9 @@ CMesh::CMesh()
 void	CMesh::build(CMeshBuild &m)
 {
 	sint	i;
+
+	// Copy light information
+	_LightInfos = m.LightInfoMap;
 
 	// clear the animated materials.
 	_AnimatedMaterials.clear();
@@ -426,6 +474,8 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 4:
+		- lightinfo
 	Version 3:
 		- skinning.
 	Version 2:
@@ -435,10 +485,14 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(3);
+	sint	ver= f.serialVersion(4);
 
 	f.serial(_VBuffer);
 
+	if(ver>=4)
+	{
+		f.serialCont(_LightInfos);
+	}
 	// New Architecture for V3+ meshs.
 	if(ver>=3)
 	{
@@ -853,7 +907,6 @@ sint	CMesh::CMatrixBlock::getMatrixIdLocation(uint32 boneId) const
 	// not found.
 	return -1;
 }
-
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.4 2001/04/09 14:25:39 corvazier Exp $
+ * $Id: mesh_instance.cpp,v 1.5 2001/06/11 09:25:58 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,9 @@
 
 #include "nel/3d/mesh_instance.h"
 #include "nel/3d/mesh.h"
+#include <list>
 
+using namespace std;
 
 namespace NL3D 
 {
@@ -77,6 +79,40 @@ ITrack*		CMeshInstance::getDefaultTrack (uint valueId)
 		nlstop;
 	};
 	return NULL;
+}
+
+// ***************************************************************************
+uint32 CMeshInstance::getNbLightMap()
+{
+	CMesh* pMesh=(CMesh*)(IShape*)Shape;
+	return pMesh->_LightInfos.size();
+}
+
+// ***************************************************************************
+void CMeshInstance::getLightMapName( uint32 nLightMapNb, std::string &LightMapName )
+{
+	CMesh* pMesh=(CMesh*)(IShape*)Shape;
+	if( nLightMapNb >= pMesh->_LightInfos.size() )
+		return;
+	CMesh::TLightInfoMap::iterator itMap = pMesh->_LightInfos.begin();
+	for( uint32 i = 0; i < nLightMapNb; ++i ) ++itMap;
+	LightMapName = itMap->first;
+}
+
+// ***************************************************************************
+void CMeshInstance::setLightMapFactor( const std::string &LightMapName, CRGBA Factor )
+{
+	CMesh* pMesh=(CMesh*)(IShape*)Shape;
+	CMesh::TLightInfoMap::iterator itMap = pMesh->_LightInfos.find( LightMapName );
+	if( itMap == pMesh->_LightInfos.end() )
+		return;
+	CMesh::CLightInfoMapList::iterator itList = itMap->second.begin();
+	uint32 nNbElt = itMap->second.size();
+	for( uint32 i = 0; i < nNbElt; ++i )
+	{
+		Materials[itList->nMatNb].setLightMapFactor( itList->nStageNb, Factor );
+		++itList;
+	}
 }
 
 

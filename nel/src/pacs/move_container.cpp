@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.21 2002/04/23 07:48:40 corvazier Exp $
+ * $Id: move_container.cpp,v 1.22 2002/05/23 09:57:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1483,6 +1483,80 @@ void UTriggerInfo::serial (NLMISC::IStream& stream)
 	stream.serial (CollisionDesc);
 }
 
+
+
+// ***************************************************************************
+void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 firstWorldImage,uint8 numWorldImage,std::vector<UMovePrimitive*> *primitives,float orientation,const NLMISC::CVector &position)
+{
+	CPrimitiveBlock *block = NLMISC::safe_cast<CPrimitiveBlock *>(pb);
+	// Reserve the pointer array
+	if (primitives)
+		primitives->reserve (block->Primitives.size());
+
+	// For each primitive
+	uint prim;
+	for (prim=0; prim<block->Primitives.size(); prim++)
+	{
+		// Create a collisionable primitive
+		UMovePrimitive *primitive = addCollisionablePrimitive (firstWorldImage, numWorldImage);
+		
+		// Ref on the block descriptor
+		CPrimitiveDesc &desc = block->Primitives[prim];
+
+		// Set its properties
+		primitive->setPrimitiveType (desc.Type);
+		primitive->setReactionType (desc.Reaction);
+		primitive->setTriggerType (desc.Trigger);
+		primitive->setCollisionMask (desc.CollisionMask);
+		primitive->setOcclusionMask (desc.OcclusionMask);
+		primitive->setObstacle (desc.Obstacle);
+		primitive->setAbsorbtion (desc.Attenuation);
+		if (desc.Type == UMovePrimitive::_2DOrientedBox)
+		{
+			primitive->setSize (desc.Length[0], desc.Length[1]);
+		}
+		else
+		{
+			nlassert (desc.Type == UMovePrimitive::_2DOrientedCylinder);
+			primitive->setRadius (desc.Length[0]);
+		}
+		primitive->setHeight (desc.Height);
+
+		// Insert the primitives
+
+		// For each world image
+		uint wI;
+		for (wI=firstWorldImage; wI<(uint)(firstWorldImage+numWorldImage); wI++)
+		{
+			// Insert the primitive
+			primitive->insertInWorldImage (firstWorldImage);
+
+			// Final position
+			float cosa = (float) cos (orientation);
+			float sina = (float) sin (orientation);
+			CVector finalPos;
+			finalPos.x = cosa * desc.Position.x - sina * desc.Position.y + position.x;
+			finalPos.y = sina * desc.Position.y + cosa * desc.Position.y + position.y;
+			finalPos.z = desc.Position.z + position.z;
+
+			// Set the primtive orientation
+			if (desc.Type == UMovePrimitive::_2DOrientedBox)
+				primitive->setOrientation ((float)fmod (desc.Orientation + orientation, 2*Pi), wI);
+
+			// Set the primitive global position
+			primitive->setGlobalPosition (finalPos, wI);
+		}
+
+		// Feedback asked ?
+		if (primitives)
+		{
+			// Add the pointer
+			primitives->push_back (primitive);
+		}
+	}			
+}
+
+
 // ***************************************************************************
 
 bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position)
@@ -1509,73 +1583,10 @@ bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint
 
 			// Serial it
 			file.serial (block);
+
+			// add primitives
+			addCollisionnablePrimitiveBlock(&block, firstWorldImage, numWorldImage, primitives, orientation, position);
 		
-			// Reserve the pointer array
-			if (primitives)
-				primitives->reserve (block.Primitives.size());
-
-			// For each primitive
-			uint prim;
-			for (prim=0; prim<block.Primitives.size(); prim++)
-			{
-				// Create a collisionable primitive
-				UMovePrimitive *primitive = addCollisionablePrimitive (firstWorldImage, numWorldImage);
-				
-				// Ref on the block descriptor
-				CPrimitiveDesc &desc = block.Primitives[prim];
-
-				// Set its properties
-				primitive->setPrimitiveType (desc.Type);
-				primitive->setReactionType (desc.Reaction);
-				primitive->setTriggerType (desc.Trigger);
-				primitive->setCollisionMask (desc.CollisionMask);
-				primitive->setOcclusionMask (desc.OcclusionMask);
-				primitive->setObstacle (desc.Obstacle);
-				primitive->setAbsorbtion (desc.Attenuation);
-				if (desc.Type == UMovePrimitive::_2DOrientedBox)
-				{
-					primitive->setSize (desc.Length[0], desc.Length[1]);
-				}
-				else
-				{
-					nlassert (desc.Type == UMovePrimitive::_2DOrientedCylinder);
-					primitive->setRadius (desc.Length[0]);
-				}
-				primitive->setHeight (desc.Height);
-
-				// Insert the primitives
-
-				// For each world image
-				uint wI;
-				for (wI=firstWorldImage; wI<(uint)(firstWorldImage+numWorldImage); wI++)
-				{
-					// Insert the primitive
-					primitive->insertInWorldImage (firstWorldImage);
-
-					// Final position
-					float cosa = (float) cos (orientation);
-					float sina = (float) sin (orientation);
-					CVector finalPos;
-					finalPos.x = cosa * desc.Position.x - sina * desc.Position.y + position.x;
-					finalPos.y = sina * desc.Position.y + cosa * desc.Position.y + position.y;
-					finalPos.z = desc.Position.z + position.z;
-
-					// Set the primtive orientation
-					if (desc.Type == UMovePrimitive::_2DOrientedBox)
-						primitive->setOrientation ((float)fmod (desc.Orientation + orientation, 2*Pi), wI);
-
-					// Set the primitive global position
-					primitive->setGlobalPosition (finalPos, wI);
-				}
-
-				// Feedback asked ?
-				if (primitives)
-				{
-					// Add the pointer
-					primitives->push_back (primitive);
-				}
-			}
-
 			return true;
 		}
 		else

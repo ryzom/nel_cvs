@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.9 2002/04/23 07:48:40 corvazier Exp $
+ * $Id: move_container.h,v 1.10 2002/05/23 09:57:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,9 @@ public:
 
 	/// Load a block of collisionable primitive
 	bool						loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position);
+
+	/// Add a block of collsionnable primitives
+	void						addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position);
 
 	/// Set world image as static world image.
 	void						setAsStatic (uint8 worldImage);

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.5 2001/10/26 08:20:08 vizerie Exp $
+ * $Id: texture.h,v 1.6 2001/11/21 15:57:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,7 +202,7 @@ public:
 	 */
 	void			setUploadFormat(TUploadFormat pf);
 	TUploadFormat	getUploadFormat() const {return _UploadFormat;}
-	void			setFilterMode(TMagFilter magf, TMinFilter minf);
+	virtual         void setFilterMode(TMagFilter magf, TMinFilter minf);
 	TMagFilter		getMagFilter() const {return _MagFilter;}
 	TMinFilter		getMinFilter() const {return _MinFilter;}
 	bool			mipMapOff() const {return _MinFilter==NearestMipMapOff || _MinFilter==LinearMipMapOff;}

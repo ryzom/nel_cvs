@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.56 2001/10/29 09:36:38 corvazier Exp $
+ * $Id: zone.cpp,v 1.57 2002/01/28 14:43:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1302,6 +1302,24 @@ void			CZone::applyHeightField(const CLandscape &landScape)
 		for(i=0;i<4;i++)
 			pa.Interiors[i].pack(p.Interiors[i], PatchBias, PatchScale);
 	}
+}
+
+// ***************************************************************************
+void CZone::setupColorsFromTileFlags(const NLMISC::CRGBA colors[4])
+{
+	for (uint k = 0; k < Patchs.size(); ++k)
+	{
+		Patchs[k].setupColorsFromTileFlags(colors);
+	}
+}
+
+
+// ***************************************************************************
+void CZone::copyTilesFlags(sint destPatchId, const CPatch *srcPatch)
+{
+	CPatch *destPatch = getPatch(destPatchId);
+	
+	destPatch->copyTileFlagsFromPatch(srcPatch);
 }
 
 

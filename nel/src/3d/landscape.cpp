@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.100 2001/12/26 14:15:24 berenguier Exp $
+ * $Id: landscape.cpp,v 1.101 2002/01/28 14:46:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2742,5 +2742,13 @@ void		CLandscape::setVegetableUpdateLightingFrequency(float freq)
 	_VegetableManager->setUpdateLightingFrequency(freq);
 }
 
+// ***************************************************************************
+void		CLandscape::setupColorsFromTileFlags(const NLMISC::CRGBA colors[4])
+{
+	for (TZoneMap::iterator it = Zones.begin(); it != Zones.end(); ++it)
+	{
+		it->second->setupColorsFromTileFlags(colors);
+	}
+}
 
 } // NL3D

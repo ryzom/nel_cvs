@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.12 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: zone.h,v 1.13 2002/01/28 14:43:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -435,7 +435,20 @@ public:
 	 */
 	void			applyHeightField(const CLandscape &landScape);
 
-
+	/** Debug purpose only : setup the colors of the patch of this zone so that it shows which tiles
+	  * have vegetable disabled, or are above, below water.
+	  * User provides a table with 4 colors for each state :
+	  * color 0 = above water
+	  * color 1 = underwater
+	  * color 2 = intersect water
+	  * color 3 = vegetable disabled
+	  */
+	void setupColorsFromTileFlags(const NLMISC::CRGBA colors[4]);
+	
+	/** Copy the tiles flags from a src patch to a patch of this zone.
+	  * the patch must match of course...
+	  */
+	void copyTilesFlags(sint destPatchId, const CPatch *srcPatch);
 
 // Private part.
 private:

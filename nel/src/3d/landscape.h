@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.29 2001/12/12 10:05:46 berenguier Exp $
+ * $Id: landscape.h,v 1.30 2002/01/28 14:46:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -437,6 +437,17 @@ public:
 	 *	If you set 0, no update will be done at all (this is the default setup!!).
 	 */
 	void		setVegetableUpdateLightingFrequency(float freq);
+
+
+	/** Debug purpose only : setup the colors of the patch of all the currently loaded zones
+	  * so that it shows which tiles have vegetable disabled, or are above, below water.
+	  * User provides a table with 4 colors for each state :
+	  * color 0 = above water
+	  * color 1 = underwater
+	  * color 2 = intersect water
+	  * color 3 = vegetable disabled
+	  */
+	void setupColorsFromTileFlags(const NLMISC::CRGBA colors[4]);
 
 	// @}
 

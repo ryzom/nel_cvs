@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.7 2001/05/23 15:18:00 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.8 2001/06/12 08:40:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,7 @@ template <typename T> class CPSAttrib
 protected:
 	// the container type is likely to change depending on memory requirement
 	typedef std::vector<T> TContType ;
+	typedef T type ;
 public:
 
 	/// Constructor

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.3 2001/05/23 15:18:00 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.4 2001/06/12 08:40:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,8 +185,8 @@ public:
 
 	void getValues(T &startValue, T &endValue) const
 	{
-		startValue = _Value[0] ;
-		endValue = _Value[n] ;
+		startValue = _Values[0] ;
+		endValue = _Values[n] ;
 	}	
 
 	/// set the Values
@@ -281,12 +281,24 @@ public:
 		nlassert(tab) ;
 		T *pt = tab ;
 		T *src = _Tab ;
-		for (uint32 k = 0 ; k < _NbValues ; ++k)
+		for (uint32 k = 0 ; k <= ((_NbValues - 1) / _NbStages) ; ++k)
 		{
 			*pt++ = *src ;
 			src += _NbStages ; // jump the interpolated values
 		}
 	}
+
+	/// get one value
+	T getValue(uint index)	const
+	{		
+		nlassert(index < getNumValues()) ;
+		nlassert(_Tab) ;
+		return _Tab[index * _NbStages] ;
+	}
+
+
+	/// get the number of stages between each value
+	uint32 getNumstages(void) const { return _NbStages ; }
 
 	uint32 getNumValues(void) const { return ((_NbValues - 1) / _NbStages) + 1 ; }
 
@@ -296,6 +308,7 @@ public:
 	 *  \param nbStages The result is sampled into a table by linearly interpolating values. This give the number of step between each value
 	 *  WARNING : for integer types, some specilization exist that ensure correct interpolation. see below
 	 */
+
 
 	inline void setValues(const T *ValueTab, uint32 numValues, uint32 nbStages) ;
 	

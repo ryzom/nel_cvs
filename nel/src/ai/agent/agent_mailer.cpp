@@ -1,6 +1,6 @@
 /** \file agent_mailer.cpp
  *
- * $Id: agent_mailer.cpp,v 1.4 2001/01/17 10:42:55 chafik Exp $
+ * $Id: agent_mailer.cpp,v 1.5 2001/01/22 16:12:51 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,12 +29,12 @@ namespace NLAIAGENT
 	CLocalAgentMail::CLocalAgentMail(IBasicAgent *host):IBasicAgent(NULL)
 	{
 		_HostAgent = host;
-		_HostAgent->connect(this);
+		//_HostAgent->connect(this);
 	}
 
 	CLocalAgentMail::~CLocalAgentMail()
 	{
-		if(_HostAgent) 
+		/*if(_HostAgent) 
 		{
 			//_HostAgent->onKill(this);			
 			Kill();
@@ -42,7 +42,7 @@ namespace NLAIAGENT
 			//_HostAgent->release();
 
 		}
-		else Kill();
+		else Kill();*/
 	}
 
 	void CLocalAgentMail::runChildren()

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.15 2001/01/19 14:34:54 chafik Exp $
+ * $Id: agent_script.cpp,v 1.16 2001/01/22 16:12:51 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,6 +221,7 @@ namespace NLAIAGENT
 #endif
 		_Components[ index ]->release();
 		_Components[ index ] = op;
+		if( ((const NLAIC::CTypeOfObject &)op->getType()) & (NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret)) ((IAgent *)op)->setParent((const IWordNumRef *)*this);
 	}
 
 	sint32 CAgentScript::getStaticMemberSize() const
@@ -788,6 +789,7 @@ namespace NLAIAGENT
 		{
 			r = IAgent::isMember(className,methodName,param);
 			if(!r.size() && _AgentClass != NULL) return _AgentClass->isMember(className,methodName,param);
+			return r;
 			
 		}
 		return tQueue();

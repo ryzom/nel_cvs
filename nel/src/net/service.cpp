@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.79 2001/08/30 17:07:36 lecroart Exp $
+ * $Id: service.cpp,v 1.80 2001/09/05 08:54:23 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -342,7 +342,7 @@ sint IService::main (void *wd)
 
 #if defined (NL_OS_WINDOWS)
 		CWinDisplayer *cwd = (CWinDisplayer *) wd;
-		uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel;
+		uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel, scrollLabel;
 		if (cwd != NULL)
 		{
 			DebugLog->addDisplayer (cwd);
@@ -356,6 +356,7 @@ sint IService::main (void *wd)
 			sndLabel = cwd->createLabel ("");
 			rcvQLabel = cwd->createLabel ("");
 			sndQLabel = cwd->createLabel ("");
+			scrollLabel = cwd->createLabel ("");
 		}
 #endif
 
@@ -796,11 +797,11 @@ sint IService::main (void *wd)
 				str += toString (CNetManager::getSendQueueSize ());
 				cwd->setLabel (sndQLabel, str);
 
+				// display the scroll text
 				static string toto =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
 										"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
-				
 				static int pos = 0;
-				cwd->setLabel (sndQLabel, toto.substr ((pos++)%(toto.size()/2), string::npos));
+				cwd->setLabel (scrollLabel, toto.substr ((pos++)%(toto.size()/2), string::npos));
 			}
 #endif
 

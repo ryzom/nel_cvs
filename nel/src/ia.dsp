@@ -83,7 +83,7 @@ LIB32=link.exe -lib
 # Begin Group "agent"
 
 # PROP Default_Filter ""
-# Begin Group "cpp"
+# Begin Group "ag_cpp"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -167,7 +167,7 @@ SOURCE=.\ai\agent\msg_group.cpp
 SOURCE=.\ai\agent\paire_type.cpp
 # End Source File
 # End Group
-# Begin Group "h"
+# Begin Group "ag_h"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -267,7 +267,7 @@ SOURCE=..\include\nel\ai\agent\object_type.h
 # Begin Group "common"
 
 # PROP Default_Filter ""
-# Begin Group "cpp"
+# Begin Group "c_cpp"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -287,7 +287,7 @@ SOURCE=.\ai\c\registry_class.cpp
 SOURCE=.\ai\c\registry_type.cpp
 # End Source File
 # End Group
-# Begin Group "h"
+# Begin Group "c_h"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -315,7 +315,7 @@ SOURCE=..\include\nel\ai\c\registry_type.h
 # Begin Group "fuzzy"
 
 # PROP Default_Filter ""
-# Begin Group "cpp"
+# Begin Group "f_cpp"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -355,7 +355,7 @@ SOURCE=.\ai\fuzzy\fuzzyvar.cpp
 SOURCE=.\ai\fuzzy\interpret_fuzzy_controler.cpp
 # End Source File
 # End Group
-# Begin Group "h"
+# Begin Group "f_h"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -403,7 +403,7 @@ SOURCE=..\include\nel\ai\fuzzy\interpret_fuzzy_controler.h
 # Begin Group "link"
 
 # PROP Default_Filter ""
-# Begin Group "cpp"
+# Begin Group "link_cpp"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -415,7 +415,7 @@ SOURCE=.\ai\link\ia.cpp
 SOURCE=.\ai\link\static_def_init.cpp
 # End Source File
 # End Group
-# Begin Group "h"
+# Begin Group "link_h"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -427,7 +427,7 @@ SOURCE=..\include\nel\ai\link\nl_ia.h
 # Begin Group "logic"
 
 # PROP Default_Filter ""
-# Begin Group "cpp"
+# Begin Group "l_cpp"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -499,7 +499,7 @@ SOURCE=.\ai\logic\var.cpp
 SOURCE=.\ai\logic\varset.cpp
 # End Source File
 # End Group
-# Begin Group "h"
+# Begin Group "l_h"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -579,7 +579,7 @@ SOURCE=..\include\nel\ai\logic\varset.h
 # Begin Group "pyserver"
 
 # PROP Default_Filter ""
-# Begin Group "cpp"
+# Begin Group "py_cpp"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -591,7 +591,7 @@ SOURCE=.\ai\pyserver\pylib.cpp
 SOURCE=.\ai\pyserver\pythonmethode.cpp
 # End Source File
 # End Group
-# Begin Group "h"
+# Begin Group "py_h"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -607,7 +607,7 @@ SOURCE=..\include\nel\ai\pyserver\pythonsupport.h
 # Begin Group "script"
 
 # PROP Default_Filter ""
-# Begin Group "cpp"
+# Begin Group "scrp_cpp"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -680,10 +680,6 @@ SOURCE=.\ai\script\interpret_object_message.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\script\interpret_object_operator.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ai\script\lexlang.cpp
 # End Source File
 # Begin Source File
@@ -743,7 +739,7 @@ SOURCE=.\ai\script\yacc.cpp
 SOURCE=.\ai\script\ytable.cpp
 # End Source File
 # End Group
-# Begin Group "h"
+# Begin Group "scrp_h"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -891,11 +887,11 @@ SOURCE=.\ai\script\lex_yacc\lexicon.lex
 # Begin Group "exception"
 
 # PROP Default_Filter ""
-# Begin Group "cpp"
+# Begin Group "e_cpp"
 
 # PROP Default_Filter ""
 # End Group
-# Begin Group "h"
+# Begin Group "e_h"
 
 # PROP Default_Filter ""
 # Begin Source File

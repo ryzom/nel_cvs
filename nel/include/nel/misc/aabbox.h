@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.8 2002/04/22 08:14:23 berenguier Exp $
+ * $Id: aabbox.h,v 1.9 2003/02/14 14:14:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,10 +38,6 @@ namespace NLMISC
 
 class CMatrix;
 class CBSphere;
-
-using	NLMISC::CVector;
-using	NLMISC::CPlane;
-
 
 // ***************************************************************************
 /**

@@ -1,7 +1,7 @@
 /** \file bsphere.h
  * <File description>
  *
- * $Id: bsphere.h,v 1.2 2001/08/01 15:42:41 berenguier Exp $
+ * $Id: bsphere.h,v 1.3 2003/02/14 14:14:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,10 +34,6 @@
 
 namespace NLMISC 
 {
-
-using NLMISC::CVector;
-using NLMISC::CPlane;
-using NLMISC::CMatrix;
 
 
 /**

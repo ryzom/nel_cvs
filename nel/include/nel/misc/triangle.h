@@ -1,7 +1,7 @@
 /** \file triangle.h
  * <File description>
  *
- * $Id: triangle.h,v 1.2 2001/06/11 13:33:28 berenguier Exp $
+ * $Id: triangle.h,v 1.3 2003/02/14 14:14:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,9 +36,6 @@ namespace NLMISC
 
 namespace NLMISC 
 {
-
-
-using NLMISC::CVector;
 
 
 // ***************************************************************************

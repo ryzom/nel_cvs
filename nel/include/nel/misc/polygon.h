@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.10 2002/11/05 11:32:29 vizerie Exp $
+ * $Id: polygon.h,v 1.11 2003/02/14 14:14:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,10 +35,6 @@
 
 namespace NLMISC 
 {
-
-using NLMISC::CVector;
-using NLMISC::CPlane;
-using NLMISC::CMatrix;
 
 
 class CTriangle;

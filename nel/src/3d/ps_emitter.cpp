@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.43 2002/10/10 13:32:08 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.44 2002/11/14 17:34:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -234,7 +234,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 				{
 					nbToGenerate --;
 					emit(emitterPos, index, pos, speed);
-					emittedIndex = _EmittedType->newElement(pos, speed, this->_Owner, index);
+					emittedIndex = _EmittedType->newElement(pos, speed, this->_Owner, index, true, deltaT);
 					if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 				}
@@ -245,7 +245,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 				{
 					nbToGenerate --;
 					emit(emitterPos, index, pos, speed);
-					emittedIndex = _EmittedType->newElement(pos, speed, this->_Owner, index, false);
+					emittedIndex = _EmittedType->newElement(pos, speed, this->_Owner, index, false, deltaT);
 					if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 				}
@@ -256,7 +256,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 			while (nbToGenerate --)
 			{
 				emit(emitterPos, index, pos, speed);
-				emittedIndex = _EmittedType->newElement(pos, speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner);
+				emittedIndex = _EmittedType->newElement(pos, speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index, true, deltaT);
 				if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 			}
@@ -272,7 +272,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 			{
 				nbToGenerate --;
 				emit(emitterPos, index, pos, speed);
-				emittedIndex = _EmittedType->newElement(pos, m * speed, this->_Owner, index);
+				emittedIndex = _EmittedType->newElement(pos, m * speed, this->_Owner, index, true, deltaT);
 				if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 			}
@@ -282,7 +282,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 			while (nbToGenerate --)
 			{
 				emit(emitterPos, index, pos, speed);
-				emittedIndex = _EmittedType->newElement(pos, m * speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index);
+				emittedIndex = _EmittedType->newElement(pos, m * speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index, true, deltaT);
 				if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 			}

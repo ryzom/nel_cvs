@@ -49,12 +49,12 @@ public :
 	/**
 	 *	Constructor
 	 */
-	CSheetId( uint32 sheetRef = 0 ) { _Id.Id = sheetRef; }
+	explicit CSheetId( uint32 sheetRef = 0 ) { _Id.Id = sheetRef; }
 
 	/**
 	 *	Constructor
 	 */
-	CSheetId( const std::string& sheetName );
+	explicit CSheetId( const std::string& sheetName );
 
 	/**
 	 *	Load the association sheet ref / sheet name 
@@ -97,6 +97,16 @@ public :
 	 *	Operator<
 	 */
 	bool operator < (const CSheetId& sheetRef ) const;
+
+	/**
+	 *	Operator==
+	 */
+	inline bool operator == (const CSheetId& sheetRef ) const { return ( _Id.Id == sheetRef._Id.Id) ; }
+
+	/**
+	 *	Operator !=
+	 */
+	inline bool operator != (const CSheetId& sheetRef ) const { return (_Id.Id != sheetRef._Id.Id) ; }
 
 
 

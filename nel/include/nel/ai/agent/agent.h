@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.20 2002/01/03 15:05:40 chafik Exp $
+ * $Id: agent.h,v 1.21 2002/02/01 12:23:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,6 +364,12 @@ namespace NLAIAGENT
 			virtual void removeChild(const IBasicAgent *p);
 			virtual void removeChild(std::list<IBasicAgent *>::iterator &iter);
 			//@}
+			virtual sint getChildCoun() const
+			{
+				return _SizeChild;
+			}
+
+			virtual void onKill(IConnectIA *A);
 
 			/// \name Some IBasicInterface method.
 			//@{

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.49 2002/01/31 11:07:17 chafik Exp $
+ * $Id: agents.cpp,v 1.50 2002/02/01 12:24:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,11 @@ namespace NLAIAGENT
 
 	void IAgent::onKill(IConnectIA *a)
 	{
-		if(eraseFromList<IBasicAgent *>(&_AgentList,(IBasicAgent *)a)) _SizeChild --;
+		if(eraseFromList<IBasicAgent *>(&_AgentList,(IBasicAgent *)a)) 
+		{
+			a->release();
+			_SizeChild --;
+		}
 		removeConnection(a);		
 		IAgentComposite::onKill(a);		
 		/*while(_Mail->getMessageCount())

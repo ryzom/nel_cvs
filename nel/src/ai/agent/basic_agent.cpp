@@ -1,6 +1,6 @@
 /** \file basic_agent.cpp
  *
- * $Id: basic_agent.cpp,v 1.12 2002/01/03 15:06:14 chafik Exp $
+ * $Id: basic_agent.cpp,v 1.13 2002/02/01 12:24:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,12 @@ namespace NLAIAGENT
 			IBasicAgent *b = (*i++);
 		}*/
 		deleteListe();
+	}
+
+	void IAgentComposite::onKill(IConnectIA *a)
+	{
+		//removeChild((const IBasicAgent *)a);
+		IBasicAgent::onKill(a);
 	}
 
 	// Ajoute un fils à l'agent.

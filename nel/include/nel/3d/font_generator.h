@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.4 2000/11/22 10:11:35 coutelas Exp $
+ * $Id: font_generator.h,v 1.5 2000/12/05 10:03:38 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,12 @@
 
 #include "nel/misc/types_nl.h"
 #include <string>
+
+#ifdef NL_OS_WINDOWS
+// automatically add the freetype library if you use CFontGenerator class
+#pragma comment(lib, "freetype.lib")
+#endif
+
 
 namespace NL3D {
 

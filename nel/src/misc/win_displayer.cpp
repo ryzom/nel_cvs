@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.21 2002/06/12 16:49:22 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.22 2002/06/18 14:03:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -314,7 +314,31 @@ void CWinDisplayer::resizeLabels ()
 	}
 }
 
-void CWinDisplayer::open (string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs)
+void CWinDisplayer::setTitleBar (const string &titleBar)
+{
+	string wn;
+	if (!titleBar.empty())
+	{
+		wn += titleBar;
+		wn += ": ";
+	}
+#ifdef NL_RELEASE_DEBUG
+	string mode = "NL_RELEASE_DEBUG";
+#elif defined(NL_DEBUG_FAST)
+	string mode = "NL_DEBUG_FAST";
+#elif defined(NL_DEBUG)
+	string mode = "NL_DEBUG";
+#elif defined(NL_RELEASE)
+	string mode = "NL_RELEASE";
+#else
+	string mode = "???";
+#endif
+	wn += "Nel Service Console (compiled " __DATE__ " " __TIME__ " in " + mode + " mode)";
+
+	SetWindowText (_HWnd, wn.c_str());
+}
+
+void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs)
 {
 	_HistorySize = hs;
 
@@ -341,16 +365,8 @@ void CWinDisplayer::open (string windowNameEx, bool iconified, sint x, sint y, s
 	WndRect.bottom = h;
 	AdjustWindowRect(&WndRect,WndFlags,FALSE);
 	
-	string wn;
-	if (!windowNameEx.empty())
-	{
-		wn += windowNameEx;
-		wn += ": ";
-	}
-	wn += "Nel Service Console (compiled " __DATE__ " " __TIME__ ") ";
-
 	// create the window
-	_HWnd = CreateWindow ("NLClass", wn.c_str(), WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
+	_HWnd = CreateWindow ("NLClass", "", WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
 	SetWindowLong (_HWnd, GWL_USERDATA, (LONG)this);
 	
 	// create the font
@@ -394,6 +410,8 @@ void CWinDisplayer::open (string windowNameEx, bool iconified, sint x, sint y, s
 
 	SetWindowPos (_HWnd, NULL, x, y, w, h, flag);
 	SetWindowPos (_HWnd, NULL, x, y, rc.right - rc.left, rc.bottom - rc.top, flag);
+
+	setTitleBar (titleBar);
 
 	if (iconified)
 		ShowWindow(_HWnd,SW_MINIMIZE);

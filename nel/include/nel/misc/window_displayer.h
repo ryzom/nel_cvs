@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.7 2002/06/12 16:49:17 lecroart Exp $
+ * $Id: window_displayer.h,v 1.8 2002/06/18 14:03:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,7 @@ public:
 	virtual ~CWindowDisplayer ();
 
 	// open the window and run the display thread (MT)
-	void	create (std::string windowNameEx = "", bool iconified = false, sint x = -1, sint y = -1, sint w = 700, sint h = 300, sint hs = 10000);
+	void	create (std::string titleBar = "", bool iconified = false, sint x = -1, sint y = -1, sint w = 700, sint h = 300, sint hs = 10000);
 
 	// create a new label. empty string mean separator. start with @ means that is a command (MT)
 	uint	createLabel (const char *value = "?");
@@ -66,6 +66,9 @@ public:
 
 	// execute user commands (MT) return false to quit
 	bool	update ();
+
+	// set a special title to the window bar
+	virtual void	setTitleBar (const std::string &titleBar) { }
 
 	virtual void	getWindowPos (uint32 &x, uint32 &y, uint32 &w, uint32 &h) { x=y=w=h=0; }
 

@@ -1,7 +1,7 @@
 /** \file vertex_program.h
  * Vertex program definition
  *
- * $Id: vertex_program.h,v 1.1 2001/09/06 07:29:42 corvazier Exp $
+ * $Id: vertex_program.h,v 1.2 2001/10/08 15:01:15 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -90,6 +90,9 @@ public:
 	/// Constructor
 	CVertexProgram (const char* program);
 
+	/// Destructor
+	virtual ~CVertexProgram ();
+
 	/// Get the program
 	const std::string&	getProgram () const { return _Program; };
 
@@ -99,7 +102,7 @@ private:
 
 public:
 	/// The driver informations. For the driver implementation only.
-	NLMISC::CSmartPtr<IVertexProgramDrvInfos>	_DrvInfo;
+	NLMISC::CRefPtr<IVertexProgramDrvInfos>		_DrvInfo;
 };
 
 

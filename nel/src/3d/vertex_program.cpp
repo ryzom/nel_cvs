@@ -1,7 +1,7 @@
 /** \file vertex_program.cpp
  * Vertex program definition
  *
- * $Id: vertex_program.cpp,v 1.1 2001/09/06 07:29:42 corvazier Exp $
+ * $Id: vertex_program.cpp,v 1.2 2001/10/08 15:01:15 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -51,6 +51,14 @@ IVertexProgramDrvInfos::~IVertexProgramDrvInfos ()
 CVertexProgram::CVertexProgram (const char* program)
 {
 	_Program=program;
+}
+
+
+// ***************************************************************************
+CVertexProgram::~CVertexProgram ()
+{
+	// Must kill the drv mirror of this VB.
+	_DrvInfo.kill();
 }
 
 } // NL3D

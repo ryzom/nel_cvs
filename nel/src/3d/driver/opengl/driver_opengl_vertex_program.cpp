@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertx_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.2 2001/09/07 07:32:09 corvazier Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.3 2001/10/08 15:01:15 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -90,7 +90,7 @@ bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 				ItVtxPrgDrvInfoPtrList	it= _VtxPrgDrvInfos.insert(_VtxPrgDrvInfos.end());
 
 				// Create a driver info
-				drvInfo=new CVertexProgamDrvInfosGL (this, it);
+				*it = drvInfo = new CVertexProgamDrvInfosGL (this, it);
 
 				// Set the pointer
 				program->_DrvInfo=drvInfo;

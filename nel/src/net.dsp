@@ -223,26 +223,6 @@ SOURCE=.\net\buf_sock.cpp
 SOURCE=..\include\nel\net\buf_sock.h
 # End Source File
 # End Group
-# Begin Group "Layer2"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\net\stream_client.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\stream_client.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\net\stream_server.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\stream_server.h
-# End Source File
-# End Group
 # Begin Group "Layer3"
 
 # PROP Default_Filter ""

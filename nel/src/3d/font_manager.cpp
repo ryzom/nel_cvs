@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.5 2000/11/22 10:11:55 coutelas Exp $
+ * $Id: font_manager.cpp,v 1.6 2000/11/28 13:27:26 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,6 +122,9 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 				const CDisplayDescriptor &desc, 
 				CComputedString &output)
 {
+	// keep the 800*600 ratio
+	fontSize = fontSize*desc.ResX/800;
+	
 	// Setting vertices format
 	output.Vertices.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_RGBA | IDRV_VF_UV[0]);
 	output.Vertices.setNumVertices(4 * s.size());
@@ -154,8 +157,6 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 			output.Vertices.setTexCoord(4*i,0,0,vm);
 			output.Vertices.setRGBA(4*i, color);
 
-			output.StringWidth -= x;
-
 			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * desc.FontRatio;
 			z = (penz + dz) * desc.FontRatio;
 			x/= desc.ResY;
@@ -163,8 +164,6 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 			output.Vertices.setVertexCoord(4*i+1, x, 0, z);
 			output.Vertices.setTexCoord(4*i+1,0,um,vm);
 			output.Vertices.setRGBA(4*i+1, color);
-
-			output.StringWidth += x;
 
 			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * desc.FontRatio;
 			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * desc.FontRatio;
@@ -199,6 +198,8 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 		
 	}
 
+	output.StringWidth = penx * desc.FontRatio;
+	output.StringWidth /= desc.ResY;
 }
 
 

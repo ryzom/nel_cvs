@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.19 2002/06/13 13:51:58 vizerie Exp $
+ * $Id: u_instance_group.h,v 1.20 2002/06/24 17:09:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,27 @@ namespace NL3D
 	class UInstance;
 	class UDriver;
 
+
+
+
+/** Callback to know when an instance group begin to be added  
+  */
+struct IIGAddBegin
+{
+	virtual void startAddingIG(uint numInstances) = 0;
+};
+
+/** Callback to know when an instance group is added / removed from the scene.
+  * NB: This is called after all 'transformName' calls in the ITransformName callback
+  */
+struct IAddRemoveInstance
+{
+	// All instances have been been added to the scene
+	virtual void instanceGroupAdded() = 0;
+	// All instances have been removed from the scene
+	virtual void instanceGroupRemoved() = 0;
+};
+
 /**
  * Callback class used at instancegroup loading
  *
@@ -62,22 +83,11 @@ public:
 	 * instance to another name. This should be useful to replace various shapes by others 
 	 * like in a shape-template. The function is called with the name of the shape and the
 	 * user must return the new name of the shape.
+	 * NB: This is called after the 'startAddingIG' calls in the IIGAddBegin callback
 	 * \param Name is the name of the shape contained in the instance group
 	 * \return the new name of the shape which must be loaded in place of the param
 	 */
-	virtual std::string transformName (const std::string &Name) = 0;
-};
-
-
-
-/** Callback to know when an instance group is added / removed from the scene.
-  */
-struct IAddRemoveInstance
-{
-	// All instances have been been added to the scene
-	virtual void instanceGroupAdded() = 0;
-	// All instances have been removed from the scene
-	virtual void instanceGroupRemoved() = 0;
+	virtual std::string transformName (uint index, const std::string &Name) = 0;
 };
 
 
@@ -110,6 +120,9 @@ public:
 
 	/// set a callback to know when an instance has been added / removed from scene
 	virtual void setAddRemoveInstanceCallback(IAddRemoveInstance *callback) = 0;
+
+	/// Set a callback to know when an instance group is being created, and how many instances it contains
+	virtual void setIGAddBeginCallback(IIGAddBegin *callback) = 0;
 
 	/**
 	 * Add all the instances to the scene. By default, freezeHRC() those instances and the root.

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.9 2001/07/24 08:38:30 vizerie Exp $
+ * $Id: ps_particle.h,v 1.10 2001/08/09 08:02:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ namespace NL3D {
 // class forward declarations //
 ////////////////////////////////
 
-class CTextureGrouped ;
+class CTextureGrouped;
 
 /**
  * This is the base class for all particle
@@ -66,14 +66,14 @@ public:
 
 
 	/// return this bindable type
-	uint32 getType(void) const { return PSParticle ; }
+	uint32 getType(void) const { return PSParticle; }
 
 
 	/// return priority
-	virtual uint32 getPriority(void) const { return 1000 ; }
+	virtual uint32 getPriority(void) const { return 1000; }
 
 	/// return true if this located bindable derived class holds alive particles
-	virtual bool hasParticles(void) const { nlassert(_Owner) ; return _Owner->getSize() != 0 ; }
+	virtual bool hasParticles(void) const { nlassert(_Owner); return _Owner->getSize() != 0; }
 	
 	/**
 	* process one pass for the particles. The default behaviour shows the particles
@@ -85,29 +85,29 @@ public:
 			|| (pass == PSSolidRender && hasOpaqueFaces())
 			)
 		{
-			draw(pass == PSSolidRender) ;
+			draw(pass == PSSolidRender);
 		}
 		else 
 		if (pass == PSToolRender) // edition mode only
 		{			
-			showTool() ;
+			showTool();
 		}
 	}
 
 	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void)  = 0 ;
+	virtual bool hasTransparentFaces(void)  = 0;
 
 	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void)  = 0 ;
+	virtual bool hasOpaqueFaces(void)  = 0;
 
-	/// draw the particles
-	virtual void draw(bool opaque) = 0 ;
+	/// derivers draw the particles here
+	virtual void draw(bool opaque) {}
 
 	/// draw the particles for edition mode. The default behaviour just draw a wireframe model 	 
-	virtual void showTool() ;
+	virtual void showTool();
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const = 0 ;
+	virtual uint32 getMaxNumFaces(void) const = 0;
 
 
 
@@ -115,8 +115,8 @@ public:
 	/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{ 
-		f.serialVersion(1) ;
-		CPSLocatedBindable::serial(f) ; 
+		f.serialVersion(1);
+		CPSLocatedBindable::serial(f); 
 	}
 protected:
 
@@ -128,24 +128,24 @@ protected:
 	{
 		if (_Owner)
 		{
-			_Owner->notifyMaxNumFacesChanged() ;
+			_Owner->notifyMaxNumFacesChanged();
 		}
 	}
 
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) = 0 ;
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) = 0;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for the index given
 	 *  index out of range -> nl_assert
 	 */
-	virtual void deleteElement(uint32 index) = 0 ;
+	virtual void deleteElement(uint32 index) = 0;
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
-	virtual void resize(uint32 size) = 0 ;	
+	virtual void resize(uint32 size) = 0;	
 };
 
 
@@ -163,61 +163,61 @@ class CPSColoredParticle
 		 *  It must have been allocated by new
 		 * It will be deleted by this object
 		 */
-		void setColorScheme(CPSAttribMaker<CRGBA> *col) ;
+		void setColorScheme(CPSAttribMaker<CRGBA> *col);
 
 		/// get the color scheme (NULL if none)
-		CPSAttribMaker<CRGBA> *getColorScheme(void) { return _ColorScheme ; }
+		CPSAttribMaker<CRGBA> *getColorScheme(void) { return _ColorScheme; }
 
 		/// get the color scheme (NULL if none) const version
-		const CPSAttribMaker<CRGBA> *getColorScheme(void) const { return _ColorScheme ; }
+		const CPSAttribMaker<CRGBA> *getColorScheme(void) const { return _ColorScheme; }
 
 		/// Set a constant color for the particles. remove any previous scheme
-		void setColor(NLMISC::CRGBA col) ;
+		void setColor(NLMISC::CRGBA col);
 
 		/// Get the color
-		NLMISC::CRGBA getColor(void) const { return _Color ; }
+		NLMISC::CRGBA getColor(void) const { return _Color; }
 
 		/// ctor : default are white particles (constant color)
-		CPSColoredParticle() ;
+		CPSColoredParticle();
 
 		/// dtor
-		~CPSColoredParticle() ;
+		~CPSColoredParticle();
 
 		/// serialization. 
-		void serialColorScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		void serialColorScheme(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 		
 
 	protected:		
 
 		/// deriver must return their owner there
-		virtual CPSLocated *getColorOwner(void) = 0 ;
+		virtual CPSLocated *getColorOwner(void) = 0;
 
 		/// if this is false, constant color will be used instead of a scheme
-		bool _UseColorScheme ;
+		bool _UseColorScheme;
 
-		CRGBA _Color ;
+		CRGBA _Color;
 
 		// used only if _UseColorScheme is set to true
 
-		CPSAttribMaker<CRGBA> *_ColorScheme ; 						
+		CPSAttribMaker<CRGBA> *_ColorScheme; 						
 
 		/// Update the material and the vb and the like so that they match the color scheme
-		virtual void updateMatAndVbForColor(void) = 0 ;
+		virtual void updateMatAndVbForColor(void) = 0;
 
 		void newColorElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		{
-			if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->newElement(emitterLocated, emitterIndex) ;
+			if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->newElement(emitterLocated, emitterIndex);
 		}	
 		void deleteColorElement(uint32 index)
 		{
-			if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->deleteElement(index) ;
+			if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->deleteElement(index);
 		}
 		void resizeColor(uint32 size)
 		{
-			if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->resize(size, getColorOwner()->getSize()) ;
+			if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->resize(size, getColorOwner()->getSize());
 		}
-} ;
+};
 
 
 /// this class adds tunable size to a particle. Can be added using public multiple inheritance
@@ -229,53 +229,53 @@ class CPSSizedParticle
 		 *  It must have been allocated by new
 		 *  It will be deleted by this object
 		 */
-		void setSizeScheme(CPSAttribMaker<float> *size) ;
+		void setSizeScheme(CPSAttribMaker<float> *size);
 
 
 
 		/// get the size scheme (NULL if none)
-		CPSAttribMaker<float> *getSizeScheme(void) { return _SizeScheme ; }
+		CPSAttribMaker<float> *getSizeScheme(void) { return _SizeScheme; }
 
 		/// get the size scheme (NULL if none) const version
-		const CPSAttribMaker<float> *getSizeScheme(void) const { return _SizeScheme ; }
+		const CPSAttribMaker<float> *getSizeScheme(void) const { return _SizeScheme; }
 
 		/// Set a constant size for the particles
-		void setSize(float size) ;
+		void setSize(float size);
 
 		/// get the constant size
-		float getSize(void) const { return _ParticleSize ; }
+		float getSize(void) const { return _ParticleSize; }
 
 		/// ctor : default are 0.1f particles
-		CPSSizedParticle() ;
+		CPSSizedParticle();
 
 		/// dtor
-		~CPSSizedParticle() ;
+		~CPSSizedParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
-		void serialSizeScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		void serialSizeScheme(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	protected:	
 		
 		/// deriver must return their owner there
-		virtual CPSLocated *getSizeOwner(void) = 0 ;
+		virtual CPSLocated *getSizeOwner(void) = 0;
 
 		/// if this is false, constant size will be used instead of a scheme
-		bool _UseSizeScheme ;
-		float _ParticleSize ;
-		CPSAttribMaker<float> *_SizeScheme ; // used only if _UseSizeScheme is set to true				
+		bool _UseSizeScheme;
+		float _ParticleSize;
+		CPSAttribMaker<float> *_SizeScheme; // used only if _UseSizeScheme is set to true				
 		void newSizeElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		{
-			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->newElement(emitterLocated, emitterIndex) ;
+			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->newElement(emitterLocated, emitterIndex);
 		}	
 		void deleteSizeElement(uint32 index)
 		{
-			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->deleteElement(index) ;
+			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->deleteElement(index);
 		}
 		void resizeSize(uint32 size)
 		{
-			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->resize(size, getSizeOwner()->getSize()) ;
+			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->resize(size, getSizeOwner()->getSize());
 		}
-} ;
+};
 
 
 
@@ -289,32 +289,32 @@ class CPSRotated2DParticle
 		 *  It will be deleted by this object
 		 *  Output angles must range from 0.0f to 256.0f
 		 */
-		void setAngle2DScheme(CPSAttribMaker<float> *scheme) ;
+		void setAngle2DScheme(CPSAttribMaker<float> *scheme);
 
 		/// get the angle 2D scheme (NULL if none)
-		CPSAttribMaker<float> *getAngle2DScheme(void) { return _Angle2DScheme ; }
+		CPSAttribMaker<float> *getAngle2DScheme(void) { return _Angle2DScheme; }
 
 		/// get the angle 2D scheme (NULL if none) const version
-		const CPSAttribMaker<float> *getAngle2DScheme(void) const { return _Angle2DScheme ; }
+		const CPSAttribMaker<float> *getAngle2DScheme(void) const { return _Angle2DScheme; }
 
 
 		/** Set a constant angle for the particle. Angles range from  0.0f to 256.0f (2 pi)
 		 *	This discrad any previous scheme
 		 * \see setAngle2DScheme()
 		 */
-		void setAngle2D(float angle) ;
+		void setAngle2D(float angle);
 
 		/// get the constant 
-		float getAngle2D(void) const { return _Angle2D ; }
+		float getAngle2D(void) const { return _Angle2D; }
 
 		/// ctor : default are unrotated particles (angle = 0.0f)
-		CPSRotated2DParticle() ;
+		CPSRotated2DParticle();
 
 		/// dtor
-		~CPSRotated2DParticle() ;
+		~CPSRotated2DParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
-		void serialAngle2DScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		void serialAngle2DScheme(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 
 
@@ -325,43 +325,43 @@ class CPSRotated2DParticle
 		 */
 		static inline const float *getRotTable(void)
 		{
-			nlassert(_InitializedRotTab) ; // must have called initRotTable at the start of the apply
-			return _RotTable ;
+			nlassert(_InitializedRotTab); // must have called initRotTable at the start of the apply
+			return _RotTable;
 		}
 
 		/// init the rotation table
 
-		static void initRotTable(void) ;
+		static void initRotTable(void);
 
 
 	protected:	
 		/// deriver must return their owner there
-		virtual CPSLocated *getAngle2DOwner(void) = 0 ;
+		virtual CPSLocated *getAngle2DOwner(void) = 0;
 
 		/// if this is false, constant size will be used instead of a scheme
-		bool _UseAngle2DScheme ;
-		float _Angle2D ;
-		CPSAttribMaker<float> *_Angle2DScheme ; // used only if _UseSizeScheme is set to true				
-		static float _RotTable[4 * 256] ;
+		bool _UseAngle2DScheme;
+		float _Angle2D;
+		CPSAttribMaker<float> *_Angle2DScheme; // used only if _UseSizeScheme is set to true				
+		static float _RotTable[4 * 256];
 
 		#ifdef NL_DEBUG
 			/// it is true if the table has been initialized, for debug purposes
-			static bool _InitializedRotTab ;
+			static bool _InitializedRotTab;
 		#endif
 
 		void newAngle2DElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		{
-			if (_Angle2DScheme && _Angle2DScheme->hasMemory()) _Angle2DScheme->newElement(emitterLocated, emitterIndex) ;
+			if (_Angle2DScheme && _Angle2DScheme->hasMemory()) _Angle2DScheme->newElement(emitterLocated, emitterIndex);
 		}	
 		void deleteAngle2DElement(uint32 index)
 		{
-			if (_Angle2DScheme && _Angle2DScheme->hasMemory()) _Angle2DScheme->deleteElement(index) ;
+			if (_Angle2DScheme && _Angle2DScheme->hasMemory()) _Angle2DScheme->deleteElement(index);
 		}
 		void resizeAngle2D(uint32 size)
 		{
-			if (_Angle2DScheme && _Angle2DScheme->hasMemory()) _Angle2DScheme->resize(size, getAngle2DOwner()->getSize()) ;
+			if (_Angle2DScheme && _Angle2DScheme->hasMemory()) _Angle2DScheme->resize(size, getAngle2DOwner()->getSize());
 		}
-} ;
+};
 
 /** this class adds a texture to a particle. The texture can be animated or not. it can be used by public multiple inheritance.
  *  The frame animation are all stored in the same texture for optimisation so it's not suited for large anim...
@@ -376,31 +376,31 @@ class CPSTexturedParticle
 		 *  a texture group must have been set before this, an assertion occurs otherwise
 		 *  The integer is used as an index in a grouped texture. It tells which frame to use
 		 */
-		void setTextureIndexScheme(CPSAttribMaker<sint32> *animOrder) ;
+		void setTextureIndexScheme(CPSAttribMaker<sint32> *animOrder);
 
 		/// get the texture scheme (null if none)
-		CPSAttribMaker<sint32> *getTextureIndexScheme(void) { return _TextureIndexScheme ; }
+		CPSAttribMaker<sint32> *getTextureIndexScheme(void) { return _TextureIndexScheme; }
 
 		/// get the texture scheme (null if none) const version
-		const CPSAttribMaker<sint32> *getTextureIndexScheme(void) const { return _TextureIndexScheme ; }
+		const CPSAttribMaker<sint32> *getTextureIndexScheme(void) const { return _TextureIndexScheme; }
 
 		/// set a constant index for the current texture. not very useful, but available...
-		void setTextureIndex(sint32 index) ;
+		void setTextureIndex(sint32 index);
 
 		/// get the animated texture index. MeaningFul only if a texture group was set
-		sint32 getTextureIndex(void) const { return _TextureIndex ; } 
+		sint32 getTextureIndex(void) const { return _TextureIndex; } 
 
 
 		
 
 		/// set the texture group being used. It toggles animation on
-		void setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup) ;
+		void setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup);
 
 		/// get the texture group used. it discard any previous single texture. (if null, there's no texture animation)
-		CTextureGrouped *getTextureGroup(void) {  return _TexGroup ; }
+		CTextureGrouped *getTextureGroup(void) {  return _TexGroup; }
 
 		/// get the texture group used if there's a texture scheme, const version. (if null, there's no texture animation)
-		const CTextureGrouped *getTextureGroup(void) const { return _TexGroup ; }
+		const CTextureGrouped *getTextureGroup(void) const { return _TexGroup; }
 
 
 
@@ -410,64 +410,64 @@ class CPSTexturedParticle
 		 *	This discard any previous scheme
 		 * \see setTextureScheme()
 		 */
-		void setTexture(CSmartPtr<ITexture> tex) ;
+		void setTexture(CSmartPtr<ITexture> tex);
 
 		/// get the constant texture
-		ITexture *getTexture(void) { return _Tex ; }
+		ITexture *getTexture(void) { return _Tex; }
 		// get the texture (const version)
-		const ITexture *getTexture(void) const { return _Tex ; }
+		const ITexture *getTexture(void) const { return _Tex; }
 
 
 
 		/// ctor : default have no texture. You must set it, otherwise you'll get an assertion when it's drawn
 
 
-		CPSTexturedParticle() ;
+		CPSTexturedParticle();
 
 		/// dtor
-		~CPSTexturedParticle() ;
+		~CPSTexturedParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
 
-		void serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;		
+		void serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream);		
 
 
 	protected:	
 		
 		/// deriver must return their owner there
-		virtual CPSLocated *getTextureIndexOwner(void) = 0 ;
+		virtual CPSLocated *getTextureIndexOwner(void) = 0;
 
 		/// if this is false, constant size will be used instead of a scheme
 
-		bool _UseTextureIndexScheme ;
+		bool _UseTextureIndexScheme;
 
 		// a single texture
-		CSmartPtr<ITexture> _Tex ;
+		CSmartPtr<ITexture> _Tex;
 
 		// a grouped texture
-		CSmartPtr<CTextureGrouped> _TexGroup ;		
+		CSmartPtr<CTextureGrouped> _TexGroup;		
 		
-		CPSAttribMaker<sint32> *_TextureIndexScheme ; // used only if _UseSizeScheme is set to true							
+		CPSAttribMaker<sint32> *_TextureIndexScheme; // used only if _UseSizeScheme is set to true							
 
 		// a texture index. Most of the time, a scheme of index will be used instead of that
-		sint32 _TextureIndex ;
+		sint32 _TextureIndex;
 
 		/// Update the material so that it match the texture scheme
-		virtual void updateMatAndVbForTexture(void) = 0 ;
+		virtual void updateMatAndVbForTexture(void) = 0;
 
 		void newTextureIndexElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		{
-			if (_TextureIndexScheme && _TextureIndexScheme->hasMemory()) _TextureIndexScheme->newElement(emitterLocated, emitterIndex) ;
+			if (_TextureIndexScheme && _TextureIndexScheme->hasMemory()) _TextureIndexScheme->newElement(emitterLocated, emitterIndex);
 		}	
 		void deleteTextureIndexElement(uint32 index)
 		{
-			if (_TextureIndexScheme && _TextureIndexScheme->hasMemory()) _TextureIndexScheme->deleteElement(index) ;
+			if (_TextureIndexScheme && _TextureIndexScheme->hasMemory()) _TextureIndexScheme->deleteElement(index);
 		}
 		void resizeTextureIndex(uint32 size)
 		{
-			if (_TextureIndexScheme && _TextureIndexScheme->hasMemory()) _TextureIndexScheme->resize(size, getTextureIndexOwner()->getSize() ) ;
+			if (_TextureIndexScheme && _TextureIndexScheme->hasMemory()) _TextureIndexScheme->resize(size, getTextureIndexOwner()->getSize() );
 		}
-} ;
+};
 
 
 
@@ -486,59 +486,59 @@ class CPSRotated3DPlaneParticle
 		 *  It must have been allocated by new
 		 *  It will be deleted by this object				
 		 */
-		void setPlaneBasisScheme(CPSAttribMaker<CPlaneBasis> *basisMaker) ;
+		void setPlaneBasisScheme(CPSAttribMaker<CPlaneBasis> *basisMaker);
 
 		/** Set a constant basis for all particles
 		 * \see setPlaneBasisSchemeScheme()
 		 */
 
 		/// get the plane basis scheme, (NULL if none)
-		CPSAttribMaker<CPlaneBasis> *getPlaneBasisScheme(void) { return _PlaneBasisScheme ; }
+		CPSAttribMaker<CPlaneBasis> *getPlaneBasisScheme(void) { return _PlaneBasisScheme; }
 
 		/// get the plane basis scheme, (NULL if none) const version
-		const CPSAttribMaker<CPlaneBasis> *getPlaneBasisScheme(void) const { return _PlaneBasisScheme ; }
+		const CPSAttribMaker<CPlaneBasis> *getPlaneBasisScheme(void) const { return _PlaneBasisScheme; }
 
-		void setPlaneBasis(const CPlaneBasis &basis) ;
+		void setPlaneBasis(const CPlaneBasis &basis);
 
 		/// get the constant basis
-		CPlaneBasis getPlaneBasis(void) const { return _PlaneBasis ; }
+		CPlaneBasis getPlaneBasis(void) const { return _PlaneBasis; }
 
 		/// ctor : default have constant basis that map to the I & J vector (e.g identity)
-		CPSRotated3DPlaneParticle() ;
+		CPSRotated3DPlaneParticle();
 
 		/// dtor
-		~CPSRotated3DPlaneParticle() ;
+		~CPSRotated3DPlaneParticle();
 
 		/// serialization. We choose a different name because of multiple-inheritance
 
-		void serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;		
+		void serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream);		
 
 
 	protected:		
 		/// if this is false, constant size will be used instead of a scheme
 
 		/// deriver must return their owner there
-		virtual CPSLocated *getPlaneBasisOwner(void) = 0 ;
+		virtual CPSLocated *getPlaneBasisOwner(void) = 0;
 
-		bool _UsePlaneBasisScheme ;
+		bool _UsePlaneBasisScheme;
 		
-		CPSAttribMaker<CPlaneBasis> *_PlaneBasisScheme ; // used only if _UseSizeScheme is set to true							
+		CPSAttribMaker<CPlaneBasis> *_PlaneBasisScheme; // used only if _UseSizeScheme is set to true							
 		
-		CPlaneBasis _PlaneBasis ; // constant basis..
+		CPlaneBasis _PlaneBasis; // constant basis..
 
 		void newPlaneBasisElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		{
-			if (_PlaneBasisScheme && _PlaneBasisScheme->hasMemory()) _PlaneBasisScheme->newElement(emitterLocated, emitterIndex) ;
+			if (_PlaneBasisScheme && _PlaneBasisScheme->hasMemory()) _PlaneBasisScheme->newElement(emitterLocated, emitterIndex);
 		}	
 		void deletePlaneBasisElement(uint32 index)
 		{
-			if (_PlaneBasisScheme && _PlaneBasisScheme->hasMemory()) _PlaneBasisScheme->deleteElement(index) ;
+			if (_PlaneBasisScheme && _PlaneBasisScheme->hasMemory()) _PlaneBasisScheme->deleteElement(index);
 		}
 		void resizePlaneBasis(uint32 size)
 		{
-			if (_PlaneBasisScheme && _PlaneBasisScheme->hasMemory()) _PlaneBasisScheme->resize(size, getPlaneBasisOwner()->getSize()) ;
+			if (_PlaneBasisScheme && _PlaneBasisScheme->hasMemory()) _PlaneBasisScheme->resize(size, getPlaneBasisOwner()->getSize());
 		}
-} ;
+};
 
 
 /** This add a hint to rotated particle : only a few one are rotated, and the other are duplcated
@@ -559,13 +559,13 @@ struct CPSHintParticleRotateTheSame
 	virtual void hintRotateTheSame(uint32 nbConfiguration
 							, float minAngularVelocity = NLMISC::Pi
 							, float maxAngularVelocity = NLMISC::Pi
-						  ) = 0 ;
+						  ) = 0;
 
 	/** disable the hint 'hintRotateTheSame'
 	 *  The previous set scheme for roation is used
 	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
 	 */
-	virtual void disableHintRotateTheSame(void) = 0 ;
+	virtual void disableHintRotateTheSame(void) = 0;
 	
 
 	/** check wether a call to hintRotateTheSame was performed
@@ -573,8 +573,8 @@ struct CPSHintParticleRotateTheSame
 	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
 	 */
 
-	virtual uint32 checkHintRotateTheSame(float &minAngularVelocity, float &maxAngularVelocity) const = 0 ;
-} ;
+	virtual uint32 checkHintRotateTheSame(float &minAngularVelocity, float &maxAngularVelocity) const = 0;
+};
 
 
 
@@ -585,29 +585,29 @@ struct CPSTailParticle
 	/** (de)activate color fading
 	 * when its done, colors fades to black along the tail
 	 */
-	virtual void setColorFading(bool onOff = true) = 0 ;
+	virtual void setColorFading(bool onOff = true) = 0;
 
 	/// test wether color fading is activated
-	virtual bool getColorFading(void) const = 0 ;
+	virtual bool getColorFading(void) const = 0;
 		
 		
 	/// there may be a maximum with some particles	
-	virtual void setTailNbSeg(uint32 nbSeg) = 0 ;
+	virtual void setTailNbSeg(uint32 nbSeg) = 0;
 
 	// get the number of segments in the tail
-	virtual	uint32 getTailNbSeg(void) const = 0 ;
+	virtual	uint32 getTailNbSeg(void) const = 0;
 
 	
 	/** tells in which basis is the tail
 	 *  It requires one transform per particle if it is not the same as the located that hold that particle
 	 *  The default is false. With that you can control if a rotation of the system will rotate the tail
 	 */
-	virtual void setSystemBasis(bool yes) = 0 ;
+	virtual void setSystemBasis(bool yes) = 0;
 
 		
 	/// return true if the tails are in the system basis
-	virtual bool isInSystemBasis(void) const = 0 ;
-} ;
+	virtual bool isInSystemBasis(void) const = 0;
+};
 
 
 
@@ -615,11 +615,11 @@ struct CPSTailParticle
 struct CPSShapeParticle
 {
 	/// set a new shape
-	virtual void setShape(const std::string &shape) = 0 ;
+	virtual void setShape(const std::string &shape) = 0;
 
 	/// get the shape used for those particles	
-	virtual std::string getShape(void) const = 0 ;
-} ;
+	virtual std::string getShape(void) const = 0;
+};
 
 
 /** this contains material of a particle, this doesn't initilize anything, this just give the abylity to 
@@ -629,22 +629,22 @@ class CPSMaterial
 {
 public:
 	/// ctor : the default is additive blending
-	CPSMaterial() ;
+	CPSMaterial();
 
 	/// this enum summarize the useful modes for blending to the framebuffer
-	enum TBlendingMode { add, modulate, alphaBlend, alphaTest } ;	
+	enum TBlendingMode { add, modulate, alphaBlend, alphaTest };	
 
 	/// serialization (not serial because it will be used via multiple-inheritance)
-	void serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream) ;	
+	void serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 
 	/// set the blending mode. The default is ass
-	void setBlendingMode(CPSMaterial::TBlendingMode mode) ;
+	void setBlendingMode(CPSMaterial::TBlendingMode mode);
 
 	/// return the blending mode currently used
-	CPSMaterial::TBlendingMode getBlendingMode(void) const ;
+	CPSMaterial::TBlendingMode getBlendingMode(void) const;
 protected:
-	CMaterial _Mat ;		
-} ;
+	CMaterial _Mat;		
+};
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -660,50 +660,50 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 		/**
 		* process one pass for the particle	
 		*/
-		virtual void draw(bool opaque) ;
+		virtual void draw(bool opaque);
 
 	
 	
 		
 		/// ctor
 
-		CPSDot() { init() ; _Name = std::string("point") ;}
+		CPSDot() { init(); _Name = std::string("point");}
 
-		NLMISC_DECLARE_CLASS(CPSDot) ;
+		NLMISC_DECLARE_CLASS(CPSDot);
 
 		///serialisation
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 		/// return true if there are transparent faces in the object
-		virtual bool hasTransparentFaces(void) ;
+		virtual bool hasTransparentFaces(void);
 
 		/// return true if there are Opaque faces in the object
-		virtual bool hasOpaqueFaces(void) ;
+		virtual bool hasOpaqueFaces(void);
 
 		/// return the max number of faces needed for display. This is needed for LOD balancing
-		virtual uint32 getMaxNumFaces(void) const ;
+		virtual uint32 getMaxNumFaces(void) const;
 
 	protected:
 		
-		virtual CPSLocated *getColorOwner(void) { return _Owner ; }
+		virtual CPSLocated *getColorOwner(void) { return _Owner; }
 
-		void init(void) ;		
+		void init(void);		
 		
-		CVertexBuffer _Vb ;
+		CVertexBuffer _Vb;
 
 		/// update the material and the vb so that they match the color scheme
-		virtual void updateMatAndVbForColor(void) ;
+		virtual void updateMatAndVbForColor(void);
 		
 		/** Set the nax number of dot		
 	    */
-		void resize(uint32 size) ;
+		void resize(uint32 size);
 
 		/// we don't save datas so it does nothing for now
-		void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+		void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 
 		/// we don't save datas so it does nothing for now
-		void deleteElement(uint32) ;
-} ;
+		void deleteElement(uint32);
+};
 
 
  
@@ -728,74 +728,74 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 		/** create the quad by giving a texture. This can't be a CTextureGrouped (for animation)
 		* animation must be set later by using setTextureScheme
 		*/
-		CPSQuad(CSmartPtr<ITexture> tex = NULL) ;
+		CPSQuad(CSmartPtr<ITexture> tex = NULL);
 
 
 		/// return true if there are transparent faces in the object
-		virtual bool hasTransparentFaces(void) ;
+		virtual bool hasTransparentFaces(void);
 
 		/// return true if there are Opaque faces in the object
-		virtual bool hasOpaqueFaces(void) ;
+		virtual bool hasOpaqueFaces(void);
 
 
 		/// return the max number of faces needed for display. This is needed for LOD balancing
-		virtual uint32 getMaxNumFaces(void) const ;
+		virtual uint32 getMaxNumFaces(void) const;
 
 	protected:		
 
 		// dtor
-		virtual ~CPSQuad() ;
+		virtual ~CPSQuad();
 
 		/// initialisations
-		virtual void init(void) ;	
+		virtual void init(void);	
 
 		/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
-		virtual void updateMatAndVbForColor(void) ;
+		virtual void updateMatAndVbForColor(void);
 
 		/// update the material and the vb so that they match the texture scheme.
-		virtual void updateMatAndVbForTexture(void) ;
+		virtual void updateMatAndVbForTexture(void);
 
 		/// this is inlined to save cost of call by derived class
 		void newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		{
-			newColorElement(emitterLocated, emitterIndex) ;
-			newSizeElement(emitterLocated, emitterIndex) ;
-			newTextureIndexElement(emitterLocated, emitterIndex) ;
+			newColorElement(emitterLocated, emitterIndex);
+			newSizeElement(emitterLocated, emitterIndex);
+			newTextureIndexElement(emitterLocated, emitterIndex);
 		}
 
 		/// this is inlined to save cost of call by derived class
 		void deleteElement(uint32 index)
 		{
-			deleteColorElement(index) ;
-			deleteSizeElement(index) ;
-			deleteTextureIndexElement(index) ;
+			deleteColorElement(index);
+			deleteSizeElement(index);
+			deleteTextureIndexElement(index);
 		}
 
-		void resize(uint32 capacity) ;
+		void resize(uint32 capacity);
 	
 		/// complete the bbox depending on the size of particles
-		virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
+		virtual bool completeBBox(NLMISC::CAABBox &box) const  ;
 
 		/** calculate current color and texture coordinate before any rendering
 		 *  size can't be higher that quadBufSize ...
 		 */
-		void updateVbColNUVForRender(uint32 startIndex, uint32 numQuad)	 ;	
+		void updateVbColNUVForRender(uint32 startIndex, uint32 numQuad)	;	
 
 		
-		CVertexBuffer _Vb ;
+		CVertexBuffer _Vb;
 
 
 
 		/// DERIVER MUST CALL this		 
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;	
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 
 
-		virtual CPSLocated *getColorOwner(void) { return _Owner ; }
-		virtual CPSLocated *getSizeOwner(void) { return _Owner ; }
-		virtual CPSLocated *getTextureIndexOwner(void) { return _Owner ; }
+		virtual CPSLocated *getColorOwner(void) { return _Owner; }
+		virtual CPSLocated *getSizeOwner(void) { return _Owner; }
+		virtual CPSLocated *getTextureIndexOwner(void) { return _Owner; }
 
 	
- } ;
+ };
 
 
 
@@ -816,11 +816,11 @@ public:
 	/** create the face look at by giving a texture. This can't be a CTextureGrouped (for animation)
      * animation must be set later by using setTextureScheme
 	 */
-	CPSFaceLookAt(CSmartPtr<ITexture> tex = NULL) ;
-	virtual void draw(bool opaque) ;
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	CPSFaceLookAt(CSmartPtr<ITexture> tex = NULL);
+	virtual void draw(bool opaque);
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	
-	NLMISC_DECLARE_CLASS(CPSFaceLookAt) ;
+	NLMISC_DECLARE_CLASS(CPSFaceLookAt);
 	
 		
 	/** activate 'fake' motion blur (its done by deforming the quad)
@@ -831,42 +831,42 @@ public:
 	 */
 	void activateMotionBlur(float coeff = 1.f, float threshold = 1.f)
 	{
-		_MotionBlurCoeff = coeff ;
-		_Threshold = threshold ;
+		_MotionBlurCoeff = coeff;
+		_Threshold = threshold;
 	}
 
 	/// set the motion blur coeff (0 = none)
-	void setMotionBlurCoeff(float coeff) { _MotionBlurCoeff = coeff ; }
+	void setMotionBlurCoeff(float coeff) { _MotionBlurCoeff = coeff; }
 
 	/// set the motion blur threshold
-	void setMotionBlurThreshold(float threshold) { _Threshold = threshold ; }
+	void setMotionBlurThreshold(float threshold) { _Threshold = threshold; }
 
 
 
 	/** return the motion blur coeff (0.f means none)
 	 *  \see  activateMotionBlur()
 	 */
-	float getMotionBlurCoeff(void) const { return _MotionBlurCoeff ; }
+	float getMotionBlurCoeff(void) const { return _MotionBlurCoeff; }
 
 	/// get the motion blur threshold
-	float getMotionBlurThreshold(void) const { return _Threshold ; }
+	float getMotionBlurThreshold(void) const { return _Threshold; }
 	
 
 protected:
 
-	float _MotionBlurCoeff ;
+	float _MotionBlurCoeff;
 
 	// threshold for the motion blur
-	float _Threshold ;
+	float _Threshold;
 
 		
-	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;	
-	void deleteElement(uint32) ;
-	void resize(uint32) ;
+	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
+	void deleteElement(uint32);
+	void resize(uint32);
 
-	virtual CPSLocated *getAngle2DOwner(void) { return _Owner ; }
+	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
 
-} ;
+};
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -884,86 +884,86 @@ class CPSFanLight : public CPSParticle, public CPSColoredParticle
 				  , public CPSMaterial
 {
 public:
-	virtual void draw(bool opaque) ;
+	virtual void draw(bool opaque);
 
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
-	NLMISC_DECLARE_CLASS(CPSFanLight) ;
+	NLMISC_DECLARE_CLASS(CPSFanLight);
 
-	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
+	virtual bool completeBBox(NLMISC::CAABBox &box) const  ;
 
 	/// Ctor, with the numbers of fans to draw (minimum is 3, maximum is 128)
-	CPSFanLight(uint32 nbFans = 7) ;
+	CPSFanLight(uint32 nbFans = 7);
 
 	// Set the number of fans used for drawing (minimum is 3, maximum is 128)
-	void setNbFans(uint32 nbFans) ;
+	void setNbFans(uint32 nbFans);
 
 	// Get the number of fans used for drawing
 	uint32 getNbFans(void) const
 	{
-		return _NbFans ;
+		return _NbFans;
 	}
 
 	/** Set the speed for phase
 	 *	If the located holding this particle as a limited lifetime, it gives how many 0-2Pi cycle it'll do during its life
 	 *  Otherwise it gives how many cycle there are in a second
 	 */
-	void setPhaseSpeed(float multiplier) ;
+	void setPhaseSpeed(float multiplier);
 
 	/// get the speed for phase
-	float getPhaseSpeed(void) const { return _PhaseSpeed / 256.0f ; }
+	float getPhaseSpeed(void) const { return _PhaseSpeed / 256.0f; }
 
 	// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
-	virtual void updateMatAndVbForColor(void) ;
+	virtual void updateMatAndVbForColor(void);
 
 
 	/// must call this at least if you intend to use fanlight
-	static void initFanLightPrecalc(void) ;
+	static void initFanLightPrecalc(void);
 
 	/// dtor
-	~CPSFanLight() ;
+	~CPSFanLight();
 
 
 	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void) ;
+	virtual bool hasTransparentFaces(void);
 
 	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void) ;
+	virtual bool hasOpaqueFaces(void);
 
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const ;
+	virtual uint32 getMaxNumFaces(void) const;
 
 protected:
 	/// initialisations
-	virtual void init(void) ;
+	virtual void init(void);
 
-	uint32 _NbFans ;
-	CVertexBuffer _Vb ;
+	uint32 _NbFans;
+	CVertexBuffer _Vb;
 	
-	uint32   *_IndexBuffer ;
+	uint32   *_IndexBuffer;
 
-	static uint8 _RandomPhaseTab[128] ;
+	static uint8 _RandomPhaseTab[128];
 
-	float _PhaseSpeed ;
+	float _PhaseSpeed;
 
 	#ifdef NL_DEBUG		
-		static bool _RandomPhaseTabInitialized ;
+		static bool _RandomPhaseTabInitialized;
 	#endif
 		
-	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 	
-	void deleteElement(uint32) ;
+	void deleteElement(uint32);
 
 	/// Set the max number of fanlights		
-	virtual void resize(uint32 size) ; 
+	virtual void resize(uint32 size); 
 
-	virtual CPSLocated *getColorOwner(void) { return _Owner ; }
-	virtual CPSLocated *getSizeOwner(void) { return _Owner ; }
-	virtual CPSLocated *getAngle2DOwner(void) { return _Owner ; }
+	virtual CPSLocated *getColorOwner(void) { return _Owner; }
+	virtual CPSLocated *getSizeOwner(void) { return _Owner; }
+	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
 
 
-} ;
+};
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -978,9 +978,12 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 				 , public CPSTailParticle, public CPSMaterial
 {
 	public:
-		/// process one pass for the particle	
-		
-		virtual void draw(bool opaque) ;
+
+		/// process one pass for the particle			
+		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime);		
+
+		/// draw (but don't animate) particles
+		virtual void draw(bool opaque);
 		
 	
 		/** (de)activate color fading
@@ -988,77 +991,77 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 		 */
 		void setColorFading(bool onOff = true) 
 		{ 
-			_ColorFading = onOff ; 
-			setupColor() ;
+			_ColorFading = onOff; 
+			setupColor();
 		}
 
 		/// test wether color fading is activated
-		bool getColorFading(void) const { return _ColorFading ; }
+		bool getColorFading(void) const { return _ColorFading; }
 		
 		/// ctor. It tells how many segments there are in the tail. 255 is the maximum
-		CPSTailDot(uint32 nbSegmentInTail = 4) ;
+		CPSTailDot(uint32 nbSegmentInTail = 4);
 
 		/** set the number of segments in the tail		
 		 * 255 is the maximum
 	     */
-		void setTailNbSeg(uint32 nbSeg) ;
+		void setTailNbSeg(uint32 nbSeg);
 
 		// get the number of segments in the tail
-		uint32 getTailNbSeg(void) const { return _TailNbSeg ; }
+		uint32 getTailNbSeg(void) const { return _TailNbSeg; }
 
-		NLMISC_DECLARE_CLASS(CPSTailDot) ;
+		NLMISC_DECLARE_CLASS(CPSTailDot);
 
 		///serialisation
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 		
 		/** tells in which basis is the tail
 		 *  It requires one transform per particle if it is not the same as the located that hold that particle
 		 *  The default is false. With that you can control if a rotation of the system will rotate the tail
 		 */
-		void setSystemBasis(bool yes) { _SystemBasisEnabled = yes ; }
+		void setSystemBasis(bool yes) { _SystemBasisEnabled = yes; }
 
 		
 		/// return true if the tails are in the system basis
-		bool isInSystemBasis(void) const { return _SystemBasisEnabled ; }
+		bool isInSystemBasis(void) const { return _SystemBasisEnabled; }
 
 		/// return true if there are transparent faces in the object
-		virtual bool hasTransparentFaces(void) ;
+		virtual bool hasTransparentFaces(void);
 
 		/// return true if there are Opaque faces in the object
-		virtual bool hasOpaqueFaces(void) ;
+		virtual bool hasOpaqueFaces(void);
 
 		/// return the max number of faces needed for display. This is needed for LOD balancing
-		virtual uint32 getMaxNumFaces(void) const ;
+		virtual uint32 getMaxNumFaces(void) const;
 
 	protected:
 		
-		void init(void) ;		
+		void init(void);		
 		
-		CVertexBuffer _Vb ;	
+		CVertexBuffer _Vb;	
 		// a set of lines to draw
-		CPrimitiveBlock _Pb ; 
+		CPrimitiveBlock _Pb; 
 
 		// number of segments in the tail
-		uint32 _TailNbSeg ;
+		uint32 _TailNbSeg;
 
 		
 		// true if the tail is in the system basis, false otherwise
-		bool _SystemBasisEnabled ;
+		bool _SystemBasisEnabled;
 
 
 
 		
 		/// true if the tail color must fade to black
-		bool _ColorFading ;
+		bool _ColorFading;
 							
 		
 		// resize the vertex buffer to keep old datas
-		void CPSTailDot::resizeVb(uint32 oldTailNbSeg, uint32 size) ;
+		void CPSTailDot::resizeVb(uint32 oldTailNbSeg, uint32 size);
 
 		// setup the initial colors in the whole vb : black or a precomputed gradient for constant color
-		void setupColor(void) ;
+		void setupColor(void);
 
-		virtual CPSLocated *getColorOwner(void) { return _Owner ; }
+		virtual CPSLocated *getColorOwner(void) { return _Owner; }
 
 
 
@@ -1066,15 +1069,15 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 
 		/// update the material and the vb so that they match the color scheme
 
-		virtual void updateMatAndVbForColor(void) ;
+		virtual void updateMatAndVbForColor(void);
 
 		/// Set the max number of TailDot				
-		void resize(uint32 size) ;
+		void resize(uint32 size);
 		
-		void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+		void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 		
-		void deleteElement(uint32 index) ;
-} ;
+		void deleteElement(uint32 index);
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1095,11 +1098,14 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 
 
 		virtual bool hasParticles(void) const 
-		{ nlassert(_Owner) ; return _Owner->getSize() || _NbDyingRibbons ; }
+		{ nlassert(_Owner); return _Owner->getSize() || _NbDyingRibbons; }
 
-		/// process one pass for the particle	
-		
-		virtual void draw(bool opaque) ;
+		/// process one pass for the particle			
+		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime);		
+
+
+		// draw (but doesn't animate) the ribbons
+		void draw(bool opaque);
 	
 	
 		/** (de)activate color fading
@@ -1107,24 +1113,24 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 		 */
 		void setColorFading(bool onOff = true) 
 		{ 
-			_ColorFading = onOff ; 
-			setupColor(_AliveRibbons) ;
+			_ColorFading = onOff; 
+			setupColor(_AliveRibbons);
 		}
 
 		/** When this is set to true, the ribbon light remains after it is 'destroyed'
 		 *  The default is false
 		 */
-		void setPersistAfterDeath(bool persit = true) ;
+		void setPersistAfterDeath(bool persit = true);
 
 		/** return true if the ribbon light persist after death 
 		 *  \see _PersistAfterDeath()
 		 */
-		bool getPersistAfterDeath(void) const { return _DyingRibbons != NULL ; }
+		bool getPersistAfterDeath(void) const { return _DyingRibbons != NULL; }
 
 
 
 		/// test wether color fading is activated
-		bool getColorFading(void) const { return _ColorFading ; }
+		bool getColorFading(void) const { return _ColorFading; }
 		
 		/** ctor.
 		 * \param nbSegmentInTail the number of segment the ribbon has in its tail
@@ -1134,17 +1140,17 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 		 */
 		CPSRibbon(uint32 nbSegmentInTail = 256
 				  , const CVector *shape = Losange
-				  , uint32 nbPointsInShape = NbVerticesInLosange) ;
+				  , uint32 nbPointsInShape = NbVerticesInLosange);
 
 
 		// dtor
-		~CPSRibbon() ;
+		~CPSRibbon();
 
 		// set the number of segments in the tail		
-		void setTailNbSeg(uint32 nbSeg) ;
+		void setTailNbSeg(uint32 nbSeg);
 
 		// get the number of segments in the tail
-		uint32 getTailNbSeg(void) const { return _TailNbSeg ; }
+		uint32 getTailNbSeg(void) const { return _TailNbSeg; }
 
 		/** set a new shape for the ribbon
 		 * If the number of vertices in the shape has changed, the previous ribbon will be desroyed
@@ -1153,88 +1159,88 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 		 *         and be located in the x-y plane (z can be used for effects) . This will be copied
 		 *  \param nbPointsInShape : the number of points in the shape
 		 */
-		void setShape(const CVector *shape, uint32 nbPointsInShape) ;
+		void setShape(const CVector *shape, uint32 nbPointsInShape);
 
 		/// get the number of vertice in the shape used for ribbons
-		uint32 getNbVerticesInShape(void) const { return _ShapeNbSeg ; }
+		uint32 getNbVerticesInShape(void) const { return _ShapeNbSeg; }
 		
 		/** Get a copy of the shape used for ribbon
 		 *  \param dest a table of cvector that has the right size, it will be filled with vertices
 		 *  \see getNbVerticesInShape()
 		 */
 
-		void getShape(CVector *shape) const ;
+		void getShape(CVector *shape) const;
 
 
-		NLMISC_DECLARE_CLASS(CPSRibbon) ;
+		NLMISC_DECLARE_CLASS(CPSRibbon);
 
 		///serialisation
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 		
 		/** tells in which basis is the tail
 		 *  It requires one transform per particle if it is not the same as the located that hold that particle
 		 *  The default is false. With that you can control if a rotation of the system will rotate the tail
 		 */
-		void setSystemBasis(bool yes) { _SystemBasisEnabled = yes ; }
+		void setSystemBasis(bool yes) { _SystemBasisEnabled = yes; }
 
 		
 		/// return true if the tails are in the system basis
-		bool isInSystemBasis(void) const { return _SystemBasisEnabled ; }
+		bool isInSystemBasis(void) const { return _SystemBasisEnabled; }
 
 
 		/// Set a texture. NULL remove it
 		void setTexture(CSmartPtr<ITexture> tex, float uFactor = 1.f, float vFactor = 1.f)
 		{
-			_Tex = tex ;
-			_UFactor = uFactor ;
-			_VFactor = vFactor ;
-			updateMatAndVbForTexture() ;
+			_Tex = tex;
+			_UFactor = uFactor;
+			_VFactor = vFactor;
+			updateMatAndVbForTexture();
 		}
 
 		// get the u-factor for texture mapping
-		float getUFactor(void) const { return _UFactor ; }
+		float getUFactor(void) const { return _UFactor; }
 
 		// get the v-factor for texture mapping
-		float getVFactor(void) const { return _VFactor ; }
+		float getVFactor(void) const { return _VFactor; }
 
 		/// get the texture used
 		ITexture *getTexture(void)
 		{
-			return _Tex ; 
+			return _Tex; 
 		}
 
 		/// return true if there are transparent faces in the object
-		virtual bool hasTransparentFaces(void) ;
+		virtual bool hasTransparentFaces(void);
 
 		/// return true if there are Opaque faces in the object
-		virtual bool hasOpaqueFaces(void) ;
+		virtual bool hasOpaqueFaces(void);
 	
 
 		/// Predefined shape : a regular losange shape
-		static const CVector  Losange[] ;
+		static const CVector  Losange[];
 		/// number of vertices in the losange
-		static const uint32 NbVerticesInLosange ;
+		static const uint32 NbVerticesInLosange;
 
 		/// Predefined shape : height sides
-		static const CVector  HeightSides[] ;
+		static const CVector  HeightSides[];
 		/// number of vertices in the height side (must be 8 ... :)  )
-		static const uint32 NbVerticesInHeightSide ;
+		static const uint32 NbVerticesInHeightSide;
 
 		/// Predifined shape : pentagram
-		static const CVector Pentagram[] ;
-		static const uint32 NbVerticesInPentagram ;
+		static const CVector Pentagram[];
+		static const uint32 NbVerticesInPentagram;
 
 		/// Predifined shape : triangle
-		static const CVector Triangle[] ;
-		static const uint32 NbVerticesInTriangle ;				
+		static const CVector Triangle[];
+		static const uint32 NbVerticesInTriangle;				
 
 
 		/// return the max number of faces needed for display. This is needed for LOD balancing
-		virtual uint32 getMaxNumFaces(void) const ;
+		virtual uint32 getMaxNumFaces(void) const;
 
 	protected:
 		
-		void init(void) ;		
+		void init(void);		
 
 
 		/** used to describe ribbons
@@ -1250,122 +1256,122 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 		{		
 
 			// vertex buffer containing vertices
-			CVertexBuffer _Vb ;	
+			CVertexBuffer _Vb;	
 
 			// an index buffer
-			uint32 *_Ib ; 
+			uint32 *_Ib; 
 		
 			/** used to memorize the last positions in all ribbon. Position are stored consecutively		 
 			 */
 
-			std::vector<CVector> _Pos ;
+			std::vector<CVector> _Pos;
 
 			// color are stored sequentially for each tail
-			std::vector<CRGBA> _ColTab ;
-		} ;
+			std::vector<CRGBA> _ColTab;
+		};
 
 
 		
 
-		CRibbonsDesc _AliveRibbons ;
-		CRibbonsDesc *_DyingRibbons ;
+		CRibbonsDesc _AliveRibbons;
+		CRibbonsDesc *_DyingRibbons;
 
 
 		// the number of dying ribbons that are present
-		uint32 _NbDyingRibbons ;
+		uint32 _NbDyingRibbons;
 
 		// a counter to tell how much frame is left for each ribbon
-		std::vector<uint32> _DyingRibbonsLifeLeft ;
+		std::vector<uint32> _DyingRibbonsLifeLeft;
 
 		//  texture, if used
 
-		CSmartPtr<ITexture> _Tex ;
+		CSmartPtr<ITexture> _Tex;
 
 		// number of segments in the tail
-		uint32 _TailNbSeg ;
+		uint32 _TailNbSeg;
 
 		// number of segments in shape
-		uint32 _ShapeNbSeg ;
+		uint32 _ShapeNbSeg;
 
 	
 
 		// true if the tails are in the system basis
-		bool _SystemBasisEnabled ;
+		bool _SystemBasisEnabled;
 
 		// for texture use only
-		float _UFactor, _VFactor ;
+		float _UFactor, _VFactor;
 
 		// the shape that is used
-		std::vector<CVector> _Shape ;
+		std::vector<CVector> _Shape;
 
 		// ratio pos : it is used to determine what is the ratio size between 2 slice in a ribbon
-		std::vector<float> _SliceRatioTab ;				
+		std::vector<float> _SliceRatioTab;				
 		
 		/// true if the tail color must fade to black
-		bool _ColorFading ;
+		bool _ColorFading;
 							
 		
 		/** resize and stup Vb (and index buffer also)
 		 *  \param rb a reference to the set of ribbons to setup
 		 */
-		void resizeVb(CRibbonsDesc &rb) ;
+		void resizeVb(CRibbonsDesc &rb);
 
 		/// setup the initial colors in the whole vb : black or a precomputed gradient for constant color
-		void setupColor(CRibbonsDesc &rb) ;
+		void setupColor(CRibbonsDesc &rb);
 
 		/// update the material and the vb so that they match the color scheme
-		virtual void updateMatAndVbForColor(void) ;
+		virtual void updateMatAndVbForColor(void);
 
 		/// init a ribbon : at start, all vertices have the same pos
 
-		void initRibbonPos(CRibbonsDesc &rb, uint32 index, const CVector &pos) ;
+		void initRibbonPos(CRibbonsDesc &rb, uint32 index, const CVector &pos);
 
 
 		/// call when a texture has changed
-		virtual void updateMatAndVbForTexture(void) ;
+		virtual void updateMatAndVbForTexture(void);
 
 		/// setup the uvs
-		void setupUV(CRibbonsDesc &rb) ;
+		void setupUV(CRibbonsDesc &rb);
 
 
 		/// recompute slice of the ribbons, but not the last
-		void decalRibbons(CRibbonsDesc &rb, const uint32 size) ;	
+		void decalRibbons(CRibbonsDesc &rb, const uint32 size);	
 
 		/// compute last slice of the ribbons
 		void computeLastSlice(CRibbonsDesc &rb, const uint32 size);
 
 		/// render a ribbon desc
-		void render(CRibbonsDesc &rb, const uint32 size) ;
+		void render(CRibbonsDesc &rb, const uint32 size);
 
 
 		/// init a ribbon desc
-		void init(CRibbonsDesc &rb) ;
+		void init(CRibbonsDesc &rb);
 
 
 		/// stup the Vb, when textures are on / off
-		void setupVertexFormatNMat(CRibbonsDesc &rb) ;
+		void setupVertexFormatNMat(CRibbonsDesc &rb);
 
 		/// delete an element in the specified ribbon desc
-		void deleteElement(CRibbonsDesc &rb, uint32 index, const uint32 size) ;
+		void deleteElement(CRibbonsDesc &rb, uint32 index, const uint32 size);
 
 		/// duplicate a ribbon between ribbonDesc
-		void copyElement(CRibbonsDesc &rbSrc, uint32 srcIndex, CRibbonsDesc &rbDest, uint32 destIndex) ;
+		void copyElement(CRibbonsDesc &rbSrc, uint32 srcIndex, CRibbonsDesc &rbDest, uint32 destIndex);
 
 
 		/// Set the max number of Ribbon				
-		void resize(uint32 size) ;
+		void resize(uint32 size);
 		
 		/// add a nex ribbon
-		void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+		void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 		
 		/// delete a ribbon given its index
-		void deleteElement(uint32 index) ;
+		void deleteElement(uint32 index);
 
-		virtual CPSLocated *getColorOwner(void) { return _Owner ; }
-		virtual CPSLocated *getSizeOwner(void) { return _Owner ; }
-		virtual CPSLocated *getAngle2DOwner(void) { return _Owner ; }
+		virtual CPSLocated *getColorOwner(void) { return _Owner; }
+		virtual CPSLocated *getSizeOwner(void) { return _Owner; }
+		virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
 
-} ;
+};
 
 
 
@@ -1402,13 +1408,13 @@ public:
 	/** Create the face 
 	 *  you can give a non-animated texture here
 	 */
-	CPSFace(CSmartPtr<ITexture> tex = NULL) ;
+	CPSFace(CSmartPtr<ITexture> tex = NULL);
 
-	virtual void draw(bool opaque) ;
+	virtual void draw(bool opaque);
 
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
-	NLMISC_DECLARE_CLASS(CPSFace) ;
+	NLMISC_DECLARE_CLASS(CPSFace);
 
 
 	/** Tells that all faces are turning in the same manner, and only have a rotationnal bias
@@ -1423,7 +1429,7 @@ public:
 	void hintRotateTheSame(uint32 nbConfiguration
 							, float minAngularVelocity = NLMISC::Pi
 							, float maxAngularVelocity = NLMISC::Pi
-						  ) ;
+						  );
 
 	/** disable the hint 'hintRotateTheSame'
 	 *  The previous set scheme for roation is used
@@ -1431,7 +1437,7 @@ public:
 	 */
 	void disableHintRotateTheSame(void)
 	{
-		hintRotateTheSame(0) ;
+		hintRotateTheSame(0);
 	}
 
 	/** check wether a call to hintRotateTheSame was performed
@@ -1441,48 +1447,48 @@ public:
 
 	uint32 checkHintRotateTheSame(float &min, float &max) const
 	{
-		min = _MinAngularVelocity ;
-		max = _MaxAngularVelocity ;
-		return _PrecompBasis.size() ; 
+		min = _MinAngularVelocity;
+		max = _MaxAngularVelocity;
+		return _PrecompBasis.size(); 
 	}
 
 
 protected:
 	
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 	
 	
-	virtual void deleteElement(uint32 index) ;
+	virtual void deleteElement(uint32 index);
 	
-	virtual void resize(uint32 size) ;
+	virtual void resize(uint32 size);
 		
 
 
 	// we must store them for serialization
-	float _MinAngularVelocity ;
-	float _MaxAngularVelocity ;
+	float _MinAngularVelocity;
+	float _MaxAngularVelocity;
 
 	struct CPlaneBasisPair
 	{		
-		CPlaneBasis Basis ;
-		CVector Axis ; // an axis for rotation
-		float AngularVelocity ; // an angular velocity
-	} ;
+		CPlaneBasis Basis;
+		CVector Axis; // an axis for rotation
+		float AngularVelocity; // an angular velocity
+	};
 
 	/// a set of precomp basis, before and after transfomation in world space, used if the hint 'RotateTheSame' has been called
-	std::vector< CPlaneBasisPair > _PrecompBasis ;
+	std::vector< CPlaneBasisPair > _PrecompBasis;
 
 	/// this contain an index in _PrecompBasis for each particle
-	std::vector<uint32> _IndexInPrecompBasis ;
+	std::vector<uint32> _IndexInPrecompBasis;
 
 	/// fill _IndexInPrecompBasis with index in the range [0.. nb configurations[
-	void fillIndexesInPrecompBasis(void) ;
+	void fillIndexesInPrecompBasis(void);
 
-	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner ; }
+	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
 
 
 
-} ;
+};
 
 
 class CPSShockWave : public CPSParticle, public CPSSizedParticle
@@ -1497,102 +1503,102 @@ public:
 	 *  \param radiusCut : indicate how much to subtract to the outter radius to get the inner radius
 	 *  \param  tex : the texture that must be applied to the shockwave
 	 */
-	CPSShockWave(uint nbSeg = 9, float radiusCut = 0.8f , CSmartPtr<ITexture> tex = NULL) ;
+	CPSShockWave(uint nbSeg = 9, float radiusCut = 0.8f , CSmartPtr<ITexture> tex = NULL);
 
 	/** set a new number of seg (mus be >= 3 and <= 64)
 	 *  \see CPSShockWave()
 	 */
-	void setNbSegs(uint nbSeg) ;
+	void setNbSegs(uint nbSeg);
 
 	/// retrieve the number of segs
-	uint getNbSegs(void) const { return _NbSeg ; }
+	uint getNbSegs(void) const { return _NbSeg; }
 
 	/** set a new radius cut
 	 *  \see CPSShockWave()
 	 */
-	void setRadiusCut(float aRatio) ;
+	void setRadiusCut(float aRatio);
 
 	/// get the radius ratio
-	float getRadiusCut(void) const { return _RadiusCut ; }
+	float getRadiusCut(void) const { return _RadiusCut; }
 
 
 	/// serialisation. Derivers must override this, and call their parent version
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
-	NLMISC_DECLARE_CLASS(CPSShockWave) ;
+	NLMISC_DECLARE_CLASS(CPSShockWave);
 
-	virtual void draw(bool opaque) ;
+	virtual void draw(bool opaque);
 
 
 	/// complete the bbox depending on the size of particles
-	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
+	virtual bool completeBBox(NLMISC::CAABBox &box) const  ;
 
 	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void) ;
+	virtual bool hasTransparentFaces(void);
 
 	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void) ;
+	virtual bool hasOpaqueFaces(void);
 	
 	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const ;
+	virtual uint32 getMaxNumFaces(void) const;
 
 protected:
 	/// initialisations
-	virtual void init(void) ;	
+	virtual void init(void);	
 
 
 	/** calculate current color and texture coordinate before any rendering
 	 *  size can't be higher that shockWaveBufSize ...
 	 */
-	void updateVbColNUVForRender(uint32 startIndex, uint32 size)	 ;	
+	void updateVbColNUVForRender(uint32 startIndex, uint32 size)	;	
 
 
 	/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
-	virtual void updateMatAndVbForColor(void) ;
+	virtual void updateMatAndVbForColor(void);
 
 	/// update the material and the vb so that they match the texture scheme.
-	virtual void updateMatAndVbForTexture(void) ;
+	virtual void updateMatAndVbForTexture(void);
 
 
 
 
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex)  ;
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for the index given
 	 *  index out of range -> nl_assert
 	 */
-	virtual void deleteElement(uint32 index)  ;
+	virtual void deleteElement(uint32 index) ;
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
-	virtual void resize(uint32 size)  ;	
+	virtual void resize(uint32 size) ;	
 
 
 	// the number of seg in the shockwave
-	uint32 _NbSeg ; 
+	uint32 _NbSeg; 
 
 	// ratio to get the inner circle radius from the outter circle radius
-	float _RadiusCut ;
+	float _RadiusCut;
 
 
 	// a vertex buffer
-	CVertexBuffer _Vb ;
+	CVertexBuffer _Vb;
 
 	// an index buffer
-	CPrimitiveBlock _Pb ;
+	CPrimitiveBlock _Pb;
 
 
-	virtual CPSLocated *getColorOwner(void) { return _Owner ; }
-	virtual CPSLocated *getSizeOwner(void) { return _Owner ; }
-	virtual CPSLocated *getAngle2DOwner(void) { return _Owner ; }
-	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner ; }
-	virtual CPSLocated *getTextureIndexOwner(void) { return _Owner ; }
+	virtual CPSLocated *getColorOwner(void) { return _Owner; }
+	virtual CPSLocated *getSizeOwner(void) { return _Owner; }
+	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
+	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
+	virtual CPSLocated *getTextureIndexOwner(void) { return _Owner; }
 
-} ;
+};
 
 
 /** This class is for mesh handling. It operates with any mesh, but it must insert them in the scene...
@@ -1609,22 +1615,22 @@ public:
 	/// construct the system by using the given shape for mesh
 	CPSMesh(const std::string &shape = "") : _Invalidated(false)
 	{
-		_Shape = shape ;
-		_Name = std::string("Mesh") ;
+		_Shape = shape;
+		_Name = std::string("Mesh");
 	}
 
 	/// set a new shape for that kind of particles
-	void setShape(const std::string &shape) { _Shape = shape ; }
+	void setShape(const std::string &shape) { _Shape = shape; }
 
 	/// get the shape used for those particles	
-	std::string getShape(void) const { return _Shape ; }
+	std::string getShape(void) const { return _Shape; }
 
 		/// serialisation. Derivers must override this, and call their parent version
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
-	virtual ~CPSMesh() ;
+	virtual ~CPSMesh();
 
-	NLMISC_DECLARE_CLASS(CPSMesh) ;
+	NLMISC_DECLARE_CLASS(CPSMesh);
 
 
 	/** invalidate the transformShapes that were inserted in the scene, so they need to be rebuilt
@@ -1633,55 +1639,55 @@ public:
 
 	void invalidate() 
 	{ 
-		_Invalidated = true ; 
-		_Instances.clear() ;
+		_Invalidated = true; 
+		_Instances.clear();
 	}
 
 	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void) ;
+	virtual bool hasTransparentFaces(void);
 
 	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void) ;
+	virtual bool hasOpaqueFaces(void);
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const ;
+	virtual uint32 getMaxNumFaces(void) const;
 
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex)  ;
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for the index given
 	 *  index out of range -> nl_assert
 	 */
-	virtual void deleteElement(uint32 index)  ;
+	virtual void deleteElement(uint32 index) ;
 
 
-	virtual void draw(bool opaque) ;
+	virtual void draw(bool opaque);
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
-	virtual void resize(uint32 size)  ;	
+	virtual void resize(uint32 size) ;	
 
-	//CSmartPtr<IShape> _Shape ;
+	//CSmartPtr<IShape> _Shape;
 
-	std::string _Shape ;
+	std::string _Shape;
 
 	// a container for mesh instances
-	typedef CPSAttrib<CTransformShape *> TInstanceCont ;
+	typedef CPSAttrib<CTransformShape *> TInstanceCont;
 
-	TInstanceCont _Instances ;
+	TInstanceCont _Instances;
 
 	// this is set to true when the transformed shape have to be recerated
 
-	bool _Invalidated ;
+	bool _Invalidated;
 
-	virtual CPSLocated *getSizeOwner(void) { return _Owner ; }
-	virtual CPSLocated *getAngle2DOwner(void) { return _Owner ; }
-	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner ; }
-} ; 
+	virtual CPSLocated *getSizeOwner(void) { return _Owner; }
+	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
+	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
+}; 
 
 
 /** This class is for mesh that have very simple geometry. The constraint is that they can only have one matrix block. 
@@ -1696,19 +1702,19 @@ class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle
 public:	
 	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL), _Touched(true)
 	{		
-		_Name = std::string("ConstraintMesh") ;
+		_Name = std::string("ConstraintMesh");
 	}
 
-	virtual ~CPSConstraintMesh() ;
+	virtual ~CPSConstraintMesh();
 
 	/** construct the mesh by using the given mesh shape file	
 	 */
-	void setShape(const std::string &meshFileName) ;
+	void setShape(const std::string &meshFileName);
 
 
 
 	/// get the shape used for those particles	
-	std::string getShape(void) const { return _MeshShapeFileName ; }
+	std::string getShape(void) const { return _MeshShapeFileName; }
 
 	/** Tells that all meshs are turning in the same manner, and only have a rotationnal bias
 	 *  This is a lot faster then other method. Any previous set scheme for 3d rotation is kept.
@@ -1722,7 +1728,7 @@ public:
 	void hintRotateTheSame(uint32 nbConfiguration
 							, float minAngularVelocity = NLMISC::Pi
 							, float maxAngularVelocity = NLMISC::Pi
-						  ) ;
+						  );
 
 	/** disable the hint 'hintRotateTheSame'
 	 *  The previous set scheme for roation is used
@@ -1730,7 +1736,7 @@ public:
 	 */
 	void disableHintRotateTheSame(void)
 	{
-		hintRotateTheSame(0) ;
+		hintRotateTheSame(0);
 	}
 
 	/** check wether a call to hintRotateTheSame was performed
@@ -1740,148 +1746,148 @@ public:
 
 	uint32 checkHintRotateTheSame(float &min, float &max) const
 	{
-		min = _MinAngularVelocity ;
-		max = _MaxAngularVelocity ;
-		return _PrecompBasis.size() ; 
+		min = _MinAngularVelocity;
+		max = _MaxAngularVelocity;
+		return _PrecompBasis.size(); 
 	}
 
 
 		/// serialisation. Derivers must override this, and call their parent version
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	
-	NLMISC_DECLARE_CLASS(CPSConstraintMesh) ;
+	NLMISC_DECLARE_CLASS(CPSConstraintMesh);
 	
 	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void) ;
+	virtual bool hasTransparentFaces(void);
 
 	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void) ;
+	virtual bool hasOpaqueFaces(void);
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const ;
+	virtual uint32 getMaxNumFaces(void) const;
 
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex)  ;
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for the index given
 	 *  index out of range -> nl_assert
 	 */
-	virtual void deleteElement(uint32 index)  ;
+	virtual void deleteElement(uint32 index) ;
 
 	/** called when particles must be drawn
 	  * \param opaque true if we are dealing with the opaque pass, false for transparent faces
 	  */
-	virtual void draw(bool opaque) ;
+	virtual void draw(bool opaque);
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
-	virtual void resize(uint32 size)  ;	
+	virtual void resize(uint32 size) ;	
 	
 
 	/// build the mesh data
-	void update(void) ;
+	void update(void);
 
 	
 
 	/// a rendering pass
 	struct RdrPass
 	{
-		CMaterial Mat ;
-		CPrimitiveBlock Pb ;
+		CMaterial Mat;
+		CPrimitiveBlock Pb;
 		
-	} ;
+	};
 
 	// cache the number of faces in the source shape
-	uint32 _NumFaces ;
+	uint32 _NumFaces;
 
 	// name of the mesh shape  it was generated from
-	std::string _MeshShapeFileName ;
+	std::string _MeshShapeFileName;
 
 	// A new mesh has been set, so we must reconstruct it when needed
-	bool _Touched ;
+	bool _Touched;
 
 	// flags that indicate wether the object has transparent faces. When touched, it is undefined
-	bool _HasTransparentFaces ;
+	bool _HasTransparentFaces;
 
 	// flags that indicate wether the object has opaques faces. When touched, it is undefined
-	bool _HasOpaqueFaces ;
+	bool _HasOpaqueFaces;
 
 
 	// the shape bank containing the shape
-	CShapeBank  *_ModelBank ;
+	CShapeBank  *_ModelBank;
 
 	//  the shape we're using
-	IShape  *_ModelShape ;
+	IShape  *_ModelShape;
 
-	typedef std::vector<RdrPass> TRdrPassVect ;
+	typedef std::vector<RdrPass> TRdrPassVect;
 	// the rendering passes
-	TRdrPassVect _RdrPasses ;
+	TRdrPassVect _RdrPasses;
 
 	
 	//  the only vertex buffer for the model mesh 5if points the vb of the mesh used as a model)
-	const CVertexBuffer *_ModelVb ;
+	const CVertexBuffer *_ModelVb;
 
 
 	// the vertex buffer for pre-rotated meshs (it is computed before each new mesh is shown)
 	// it does only contains position and normal when present
-	CVertexBuffer  _PreRotatedMeshVb ;
+	CVertexBuffer  _PreRotatedMeshVb;
 
 
 	/** the vertex buffer for a batch of mesh
 	 *  If contains all vertices data, and only position and normal (when used)	 are uspdated
 	 *  By using datas from _PreRotatedMeshVb
 	 */
-	CVertexBuffer _MeshBatchVb ;
+	CVertexBuffer _MeshBatchVb;
 
 
 	/** the primitive block for a batch of meshs. It is only computed once when build() is called.
 	 *  It contains duplication of the original mesh pb
 	 */
-	CPrimitiveBlock _MeshBatchPb ;
+	CPrimitiveBlock _MeshBatchPb;
 
 
 	
 	// we must store them for serialization
-	float _MinAngularVelocity ;
-	float _MaxAngularVelocity ;
+	float _MinAngularVelocity;
+	float _MaxAngularVelocity;
 
 
 	// use for rotation of precomputed meshs
 	struct CPlaneBasisPair
 	{		
-		CPlaneBasis Basis ;
-		CVector Axis ; // an axis for rotation
-		float AngularVelocity ; // an angular velocity
-	} ;
+		CPlaneBasis Basis;
+		CVector Axis; // an axis for rotation
+		float AngularVelocity; // an angular velocity
+	};
 
 	/// a set of precomp basis, before and after transfomation in world space, used if the hint 'RotateTheSame' has been called
-	std::vector< CPlaneBasisPair > _PrecompBasis ;
+	std::vector< CPlaneBasisPair > _PrecompBasis;
 
 	/// this contain an index in _PrecompBasis for each particle
-	std::vector<uint32> _IndexInPrecompBasis ;
+	std::vector<uint32> _IndexInPrecompBasis;
 
 	/// fill _IndexInPrecompBasis with index in the range [0.. nb configurations[
-	void fillIndexesInPrecompBasis(void) ;
+	void fillIndexesInPrecompBasis(void);
 
 	/// when pre-rotated mesh are used, this setup the vb and ib used for copy
-	void setupPreRotatedVb(sint vertexFlags) ;
+	void setupPreRotatedVb(sint vertexFlags);
 
 	// when a new model mesh is set, this setup the Vb used for drawing
-	void setupVb(sint vertexFlags) ;
+	void setupVb(sint vertexFlags);
 
 
 	// release the model shape (dtor, or before loading)
-	void clean(void) ;
+	void clean(void);
 
-	virtual CPSLocated *getSizeOwner(void) { return _Owner ; }	
-	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner ; }
+	virtual CPSLocated *getSizeOwner(void) { return _Owner; }	
+	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
 
-} ; 
+}; 
 
 
 } // NL3D

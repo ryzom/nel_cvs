@@ -2,7 +2,7 @@
  * Snowballs 2 specific code for managing the radar.
  * This code was taken from Snowballs 1.
  *
- * $Id: radar.cpp,v 1.3 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: radar.cpp,v 1.4 2001/07/18 17:15:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,6 +96,8 @@ void displayRadar ()
 	float yBottom = RadarPosY;
 	float xCenter = RadarPosX + RadarWidth/2.0f;
 	float yCenter = RadarPosY + RadarHeight/2.0f;
+
+	Driver->setMatrixMode2D11 ();
 
 	// Background
 	Driver->drawQuad (xLeft,yBottom,xRight,yTop,RadarBackColor);
@@ -342,6 +344,8 @@ void displayLittleRadar()
 
 	float xRight = RadarLittlePosX + radius*3.f/4.f;
 	float yTop = RadarLittlePosY + radius;
+
+	Driver->setMatrixMode2D11 ();
 	
 	// Background
 	Driver->drawQuad (xLeft,yBottom,xRight,yTop,RadarBackColor);

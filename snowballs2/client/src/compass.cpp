@@ -2,7 +2,7 @@
  * Snowballs 2 specific code for managing the compass.
  * This code was taken from Snowballs 1.
  *
- * $Id: compass.cpp,v 1.1 2001/07/18 16:06:34 lecroart Exp $
+ * $Id: compass.cpp,v 1.2 2001/07/18 17:15:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "mouse_listener.h"
 #include "camera.h"
 #include "client.h"
+#include "entities.h"
 
 //
 // Namespaces
@@ -56,26 +57,49 @@ using namespace std;
 
 static NL3D::UMaterial *CompassMaterial = NULL;
 
+// These variables are automatically set with the config file
+
+static	float	CompassPosX, CompassPosY, CompassRadius;
+static	CRGBA	CompassColor;
+
 //
 // Functions
 //
 
+void cbUpdateCompass (CConfigFile::CVar &var)
+{
+	if (var.Name == "CompassPosX") CompassPosX = var.asFloat ();
+	else if (var.Name == "CompassPosY") CompassPosY = var.asFloat ();
+	else if (var.Name == "CompassRadius") CompassRadius = var.asFloat ();
+	else if (var.Name == "CompassColor") CompassColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
+	else nlwarning ("Unknown variable update %s", var.Name.c_str());
+}
+
 void initCompass ()
 {
+	ConfigFile.setCallback ("CompassPosX", cbUpdateCompass);
+	ConfigFile.setCallback ("CompassPosY", cbUpdateCompass);
+	ConfigFile.setCallback ("CompassRadius", cbUpdateCompass);
+	ConfigFile.setCallback ("CompassColor", cbUpdateCompass);
+
+	cbUpdateCompass (ConfigFile.getVar ("CompassPosX"));
+	cbUpdateCompass (ConfigFile.getVar ("CompassPosY"));
+	cbUpdateCompass (ConfigFile.getVar ("CompassRadius"));
+	cbUpdateCompass (ConfigFile.getVar ("CompassColor"));
+
 	CompassMaterial = Driver->createMaterial ();
 	CompassMaterial->initUnlit ();
-//	CompassMaterial->setBlendFunc (UMaterial::srcalpha, UMaterial::invsrcalpha);
-//	CompassMaterial->setBlend(true);
-//	CompassMaterial->setColor(CRGBA(50,255,255,150));
+	CompassMaterial->setBlendFunc (UMaterial::srcalpha, UMaterial::invsrcalpha);
+	CompassMaterial->setBlend(true);
 }
 
 void updateCompass ()
 {
-//	float x = 0.9f*4.f/3.f;
-//	float y = 0.1f;
-	float x = 0.5f;
-	float y = 0.5f;
-	float radius = 0.015f;
+	float x = CompassPosX;
+	float y = CompassPosY;
+	float radius = CompassRadius;
+
+	CompassMaterial->setColor(CompassColor);
 
 	// tri
 	CTriangle tri;
@@ -90,50 +114,59 @@ void updateCompass ()
 	quad.V2.set ( radius,  radius, 0);
 	quad.V3.set (-radius,  radius, 0);
 	
-	Driver->setMatrixMode2D11 ();
+	Driver->setMatrixMode2D43 ();
 
 	CMatrix mtx;
-	mtx.identity();
-	Driver->setViewMatrix (mtx);
 
 	// up
 	mtx.identity();
 	mtx.translate(CVector(x,y,0));
-	mtx.rotateY(MouseListener->getOrientation() - (float)Pi/2);
+	mtx.rotateZ(MouseListener->getOrientation() - (float)Pi/2);
 	mtx.translate(CVector(0,radius,0));
-	Driver->setViewMatrix (mtx);
+	Driver->setModelMatrix (mtx);
 	Driver->drawTriangle (tri,  *CompassMaterial);
 
 	// down
 	mtx.identity();
 	mtx.translate(CVector(x,y,0));
-	mtx.rotateY(MouseListener->getOrientation() + (float)Pi/2);
+	mtx.rotateZ(MouseListener->getOrientation() + (float)Pi/2);
 	mtx.translate(CVector(0,radius,0));
-	Driver->setViewMatrix (mtx);
+	Driver->setModelMatrix (mtx);
 	Driver->drawTriangle (tri,  *CompassMaterial);
 
 	// left
 	mtx.identity();
 	mtx.translate(CVector(x,y,0));
-	mtx.rotateY(MouseListener->getOrientation());
+	mtx.rotateZ(MouseListener->getOrientation());
 	mtx.translate(CVector(0,radius,0));
-	Driver->setViewMatrix (mtx);
+	Driver->setModelMatrix (mtx);
 	Driver->drawTriangle (tri,  *CompassMaterial);
 
 	// right
 	mtx.identity();
 	mtx.translate(CVector(x,y,0));
-	mtx.rotateY(MouseListener->getOrientation() - (float)Pi);
+	mtx.rotateZ(MouseListener->getOrientation() - (float)Pi);
 	mtx.translate(CVector(0,radius,0));
-	Driver->setViewMatrix (mtx);
+	Driver->setModelMatrix (mtx);
 	Driver->drawTriangle (tri,  *CompassMaterial);
 
 	// center
 	mtx.identity();
 	mtx.translate(CVector(x,y,0));
-	mtx.rotateY(MouseListener->getOrientation());
-	Driver->setViewMatrix (mtx);
+	mtx.rotateZ(MouseListener->getOrientation());
+	Driver->setModelMatrix (mtx);
 	Driver->drawQuad (quad,  *CompassMaterial);
+
+	x *= 3.0/4.0f;
+
+	// Print position
+	TextContext->setHotSpot(UTextContext::MiddleTop);
+	TextContext->setColor(CompassColor);
+	TextContext->setFontSize(14);
+	if (Self != NULL)
+		TextContext->printfAt(x, y-4.0f*radius, "%.2f %.2f %.2f", Self->Position.x, Self->Position.y, Self->Position.z);
+	else
+		TextContext->printfAt(x, y-4.0f*radius, "%.2f %.2f %.2f", MouseListener->getPosition().x, MouseListener->getPosition().y, MouseListener->getPosition().z);
 }
 
 void releaseCompass ()

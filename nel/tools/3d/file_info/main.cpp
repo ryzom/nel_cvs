@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.1 2002/05/14 12:49:38 berenguier Exp $
+ * $Id: main.cpp,v 1.2 2002/05/28 08:35:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include <conio.h>
 #include "3d/scene_group.h"
 #include "3d/zone.h"
+#include "3d/skeleton_shape.h"
+#include "3d/register_3d.h"
 #include "nel/misc/file.h"
 
 
@@ -35,18 +37,16 @@ using	namespace std;
 using	namespace NLMISC;
 using	namespace NL3D;
 
-int		main(int argc, const char *argv[])
-{
-	if(argc<2)
-	{
-		puts("Usage: ig_info file.???");
-		puts("    For now, only .ig and .zone are supported");
-		puts("Press any key");
-		_getch();
-		return -1;
-	}
 
-	const char *fileName= argv[1];
+/// Dispaly info for file in stdout
+void	displayInfo(FILE *logStream, const char *fileName)
+{
+	if(fileName==NULL)
+		return;
+
+	// some general info.
+	fprintf(logStream, "File: %s\n", fileName);
+	fprintf(logStream, "***********\n\n");
 
 	if(strstr(fileName, ".zone"))
 	{
@@ -60,8 +60,8 @@ int		main(int argc, const char *argv[])
 		zone.retrieve(zoneInfo);
 
 		// display Info on the zone:
-		printf("  Num Patchs: %d\n", zone.getNumPatchs() );
-		printf("  Num PointLights: %d\n", zoneInfo.PointLights.size() );
+		fprintf(logStream, "  Num Patchs: %d\n", zone.getNumPatchs() );
+		fprintf(logStream, "  Num PointLights: %d\n", zoneInfo.PointLights.size() );
 	}
 	else if(strstr(fileName, ".ig"))
 	{
@@ -71,12 +71,89 @@ int		main(int argc, const char *argv[])
 		file.serial(ig);
 
 		// display Info on the ig:
-		printf("  Num Instances: %d\n", ig.getNumInstance() );
-		printf("  Num PointLights: %d\n", ig.getPointLightList().size() );
+		fprintf(logStream, "  Num Instances: %d\n", ig.getNumInstance() );
+		fprintf(logStream, "  Num PointLights: %d\n", ig.getPointLightList().size() );
+	}
+	else if(strstr(fileName, ".skel"))
+	{
+		// read the skeleton.
+		CIFile	file(fileName);
+		CShapeStream	shapeStream;
+		file.serial(shapeStream);
+		CSkeletonShape	*skel= dynamic_cast<CSkeletonShape*>(shapeStream.getShapePointer());
+
+		if(skel)
+		{
+			vector<CBoneBase>	bones;
+			skel->retrieve(bones);
+			// Display Bone Infos.
+			fprintf(logStream, "Num Bones: %d\n", bones.size());
+			for(uint i=0; i<bones.size(); i++)
+			{
+				// get default pos.
+				const CAnimatedValueBlendable<CVector>	&posValue= 
+					static_cast<const CAnimatedValueBlendable<CVector>	&>(bones[i].DefaultPos.getValue());
+				CVector	pos= posValue.Value;
+
+				// get default rotquat.
+				const CAnimatedValueBlendable<CQuat>	&rotValue= 
+					static_cast<const CAnimatedValueBlendable<CQuat>	&>(bones[i].DefaultRotQuat.getValue());
+				CQuat	rotQuat= rotValue.Value;
+
+				// get default scale.
+				const CAnimatedValueBlendable<CVector>	&scaleValue= 
+					static_cast<const CAnimatedValueBlendable<CVector>	&>(bones[i].DefaultScale.getValue());
+				CVector	scale= scaleValue.Value;
+
+				// print info
+				fprintf(logStream, "Bone %2d. %s.\n", i, bones[i].Name.c_str());
+				fprintf(logStream, "   Pos:      (%2.3f, %2.3f, %2.3f)\n", 
+					pos.x, pos.y, pos.z);
+				fprintf(logStream, "   RotQuat:  (%2.3f, %2.3f, %2.3f, %2.3f)\n", 
+					rotQuat.x, rotQuat.y, rotQuat.z, rotQuat.w);
+				fprintf(logStream, "   Scale:    (%2.3f, %2.3f, %2.3f)\n",
+					scale.x, scale.y, scale.z);
+			}
+		}
+		else
+		{
+			fprintf(logStream, "Bad Skel file\n");
+		}
 	}
 	else
 	{
-		puts("unsupported format");
+		fprintf(logStream, "unsupported format\n");
+	}
+}
+
+
+/// Dispaly info cmd line
+int		main(int argc, const char *argv[])
+{
+	registerSerial3d();
+
+	if(argc<2)
+	{
+		puts("Usage: ig_info file.???");
+		puts("    For now, only .ig, .zone, .skel are supported");
+		puts("    Results are displayed too in \"c:/temp/file_info.log\" ");
+		puts("Press any key");
+		_getch();
+		return -1;
+	}
+
+	const char *fileName= argv[1];
+
+	// Display on screen.
+	displayInfo(stdout, fileName);
+
+	// Display in file.
+	FILE	*logStream;
+	logStream= fopen("C:/temp/file_info.log", "wt");
+	if(logStream)
+	{
+		displayInfo(logStream, fileName);
+		fclose(logStream);
 	}
 
 	puts("Press any key");

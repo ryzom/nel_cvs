@@ -273,6 +273,7 @@
 #define IDC_PHI_VALUE                   1123
 #define IDC_ROT_SPEED_MIN               1123
 #define IDC_UPDATE_MIN_ROT_SPEED        1124
+#define IDD_SELECT_SIZE                 1124
 #define IDC_ROT_SPEED_MAX               1125
 #define IDC_TAIL_FADE                   1125
 #define IDC_UPDATE_MAX_ROT_SPEED        1126
@@ -566,6 +567,8 @@
 #define IDC_GLOBAL_USER_PARAM_3         1363
 #define IDC_DIRECTION_TEXT              1363
 #define IDC_GLOBAL_USER_PARAM_4         1364
+#define IDC_WIDTH                       1364
+#define IDC_HEIGHT                      1365
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -719,9 +722,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1124
+#define _APS_NEXT_RESOURCE_VALUE        1125
 #define _APS_NEXT_COMMAND_VALUE         32912
-#define _APS_NEXT_CONTROL_VALUE         1364
+#define _APS_NEXT_CONTROL_VALUE         1366
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.7 2001/07/17 15:56:23 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.8 2001/07/18 08:00:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,8 +52,7 @@ class CParticleSystemModel : public CTransformShape
 	public:
 		/// register the basic models and observers
 		static	void	registerBasic();
-
-		friend class CParticleSystemShape ;
+	
 
 		/// ctor
 		CParticleSystemModel() ;

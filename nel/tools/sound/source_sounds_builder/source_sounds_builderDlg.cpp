@@ -211,10 +211,10 @@ void CSource_sounds_builderDlg::OnSelchangedTree1(NMHDR* pNMHDR, LRESULT* pResul
 		uint32 index = m_Tree.GetItemData( pNMTreeView->itemNew.hItem );
 		nlassert( index < _Sounds.size() );
 		_SoundPage->setCurrentSound( _Sounds[index], pNMTreeView->itemNew.hItem );
-		_SoundPage->getPropertiesFromSound();
 		_SoundPage->ShowWindow( SW_SHOW );
 		((CButton*)GetDlgItem( IDC_Save ))->EnableWindow( false );
 		_SoundPage->SetFocus();
+		_SoundPage->getPropertiesFromSound();
 	}
 	else
 	{

@@ -66,6 +66,16 @@ protected:
 	afx_msg void OnClose();
 	afx_msg void OnLooped();
 	virtual BOOL OnInitDialog();
+	afx_msg void OnChangeEditInnerAngle();
+	afx_msg void OnChangeEditOuterAngle();
+	afx_msg void OnPaint();
+	afx_msg void OnChangeEditOuterGain();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnChangeEditMinDist();
+	afx_msg void OnChangeEditMaxDist();
+	afx_msg void OnButtonHelp();
+	afx_msg void OnChangeEditGain();
+	afx_msg void OnButtonTestOuterGain();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -78,6 +88,8 @@ protected:
 	void						UpdateCurrentSound();
 	void						UpdateStereo();
 	bool						LoadSound();
+	void						DrawCones();
+	void						Play( bool ousidecone );
 };
 
 //{{AFX_INSERT_LOCATION}}

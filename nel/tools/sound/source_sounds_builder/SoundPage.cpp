@@ -8,8 +8,13 @@
 
 #include "../src/sound/driver/buffer.h"
 
+#include "nel/sound/u_listener.h"
+
 #include <nel/misc/common.h>
+#include <nel/misc/vector.h>
 using namespace NLMISC;
+
+#include <math.h>
 
 using namespace std;
 
@@ -19,6 +24,69 @@ using namespace std;
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+
+#define CONE_X 340
+#define CONE_Y 280
+#define CONE_R 30
+
+
+//----------------------------------------------------------
+// Name: ConvertLinearSliderPosToLogScale()
+// Desc: Converts a linear slider position to a quasi logrithmic scale
+//-----------------------------------------------------------------------------
+float ConvertLinearSliderPosToLogScale( LONG lSliderPos )
+{
+    if( lSliderPos > 0 && lSliderPos <= 10 )
+    {
+        return lSliderPos*0.01f;
+    }
+    else if( lSliderPos > 10 && lSliderPos <= 20 )
+    {
+        return (lSliderPos-10)*0.1f;
+    }
+    else if( lSliderPos > 20 && lSliderPos <= 30 )
+    {
+        return (lSliderPos-20)*1.0f;
+    }
+    else if( lSliderPos > 30 && lSliderPos <= 40 )
+    {
+        return (lSliderPos-30)*10.0f;
+    }
+
+    return 0.0f;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name: ConvertLinearSliderPosToLogScale()
+// Desc: Converts a quasi logrithmic scale to a slider position
+//-----------------------------------------------------------------------------
+LONG ConvertLogScaleToLinearSliderPosTo( FLOAT fValue )
+{
+    if( fValue > 0.0f && fValue <= 0.1f )
+    {
+        return (LONG)(fValue/0.01f);
+    }
+    else if( fValue > 0.1f && fValue <= 1.0f )
+    {
+        return (LONG)(fValue/0.1f) + 10;
+    }
+    else if( fValue > 1.0f && fValue <= 10.0f )
+    {
+        return (LONG)(fValue/1.0f) + 20;
+    }
+    else if( fValue > 10.0f && fValue <= 100.0f )
+    {
+        return (LONG)(fValue/10.0f) + 30;
+    }
+
+    return 0;
+}
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CSoundPage dialog
@@ -59,6 +127,7 @@ BOOL CSoundPage::OnInitDialog()
 	try
 	{
 		_AudioMixer->init();
+		//_AudioMixer->getListener()->setPos( CVector(0.0f,0.0f,-0.0001f) );
 	}
 	catch( Exception& e )
 	{
@@ -68,7 +137,14 @@ BOOL CSoundPage::OnInitDialog()
 		_AudioMixer = NULL;
 	}
 	waitcursor.Restore();
-	
+
+	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetRange( 0, 40 );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderMinDist ))->SetRange( 0, 1000 );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderMaxDist ))->SetRange( 0, 1000 );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderInnerAngle ))->SetRange( 0, 360 );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderOuterAngle ))->SetRange( 0, 360 );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderOuterGain ))->SetRange( 0, 40 );
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -107,7 +183,17 @@ BEGIN_MESSAGE_MAP(CSoundPage, CDialog)
 	ON_BN_CLICKED(IDC_PlaySound, OnPlaySound)
 	ON_WM_CLOSE()
 	ON_BN_CLICKED(IDC_Looped, OnLooped)
+	ON_EN_CHANGE(IDC_EditInnerAngle, OnChangeEditInnerAngle)
+	ON_EN_CHANGE(IDC_EditOuterAngle, OnChangeEditOuterAngle)
+	ON_WM_PAINT()
+	ON_EN_CHANGE(IDC_EditOuterGain, OnChangeEditOuterGain)
+	ON_WM_HSCROLL()
+	ON_EN_CHANGE(IDC_EditMinDist, OnChangeEditMinDist)
+	ON_EN_CHANGE(IDC_EditMaxDist, OnChangeEditMaxDist)
+	ON_BN_CLICKED(IDC_ButtonHelp, OnButtonHelp)
+	ON_EN_CHANGE(IDC_EditGain, OnChangeEditGain)
 	ON_BN_CLICKED(IDC_Cancel, OnCancel)
+	ON_BN_CLICKED(IDC_ButtonTestOuterGain, OnButtonTestOuterGain)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -164,6 +250,7 @@ void		CSoundPage::getPropertiesFromSound()
 	m_Filename = _CurrentSound->getFilename().c_str();
 	m_Gain = _CurrentSound->getGain();
 	m_Pos3D = _CurrentSound->isDetailed();
+	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_Gain*100.0f ) );
 	UpdateStereo();
 
 	if ( m_Pos3D )
@@ -173,9 +260,15 @@ void		CSoundPage::getPropertiesFromSound()
 		m_InnerAngleDeg = (uint)radToDeg( _CurrentSound->getConeInnerAngle() );
 		m_OuterAngleDeg = (uint)radToDeg( _CurrentSound->getConeOuterAngle() );
 		m_OuterGain = _CurrentSound->getConeOuterGain();
+		((CSliderCtrl*)GetDlgItem( IDC_SliderMinDist ))->SetPos( (int)m_MinDist );
+		((CSliderCtrl*)GetDlgItem( IDC_SliderMaxDist ))->SetPos( (int)m_MaxDist );
+		((CSliderCtrl*)GetDlgItem( IDC_SliderInnerAngle ))->SetPos( m_InnerAngleDeg );
+		((CSliderCtrl*)GetDlgItem( IDC_SliderOuterAngle ))->SetPos( m_OuterAngleDeg );
+		((CSliderCtrl*)GetDlgItem( IDC_SliderOuterGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_OuterGain*100.0f ) );
 	}
 	UpdateData( false );
 
+	Invalidate();
 	OnPos3D(); // enable/disable 3d properties
 }
 
@@ -206,11 +299,24 @@ void CSoundPage::setCurrentSound( CSound *sound, HTREEITEM hitem )
 void CSoundPage::OnPos3D() 
 {
 	UpdateData( true );
+	GetDlgItem( IDC_Pos3DGroup )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_MinDist )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_MaxDist )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_ConeInnerAngle )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_ConeOuterAngle )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_ConeOuterGain )->EnableWindow( m_Pos3D );
 	GetDlgItem( IDC_EditMinDist )->EnableWindow( m_Pos3D );
 	GetDlgItem( IDC_EditMaxDist )->EnableWindow( m_Pos3D );
 	GetDlgItem( IDC_EditInnerAngle )->EnableWindow( m_Pos3D );
 	GetDlgItem( IDC_EditOuterAngle )->EnableWindow( m_Pos3D );
 	GetDlgItem( IDC_EditOuterGain )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_SliderMinDist )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_SliderMaxDist )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_SliderInnerAngle )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_SliderOuterAngle )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_SliderOuterGain )->EnableWindow( m_Pos3D );
+	GetDlgItem( IDC_ButtonTestOuterGain )->EnableWindow( m_Pos3D );
+	DrawCones();
 }
 
 
@@ -311,22 +417,24 @@ bool CSoundPage::LoadSound()
  */
 void CSoundPage::OnRemove() 
 {
-	nlassert( _Tree && _CurrentSound );
-	_Tree->DeleteItem( _HItem );
+	if ( AfxMessageBox( "Are you sure to remove the current sound from the list ?", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+	{
+		nlassert( _Tree && _CurrentSound );
+		_Tree->DeleteItem( _HItem );
+	}
 }
 
 
 /*
  *
  */
-void CSoundPage::OnPlaySound() 
+void CSoundPage::Play( bool outsidecone ) 
 {
 	CWaitCursor waitcursor;
 
 	// Load sound
 	try 
 	{
-		UpdateData( true );
 		if ( LoadSound() )
 		{
 			UpdateData( false );
@@ -342,6 +450,16 @@ void CSoundPage::OnPlaySound()
 				_Source->setSound( _CurrentSound );
 			}
 			_Source->setLooping( (bool)m_Looped );
+			if ( outsidecone )
+			{
+				_Source->setPos( CVector(0.0f,0.0f,-0.1f) );
+				_Source->setDirection( CVector(0.0f,0.0f,-1.0f) ); // directional
+			}
+			else
+			{
+				_Source->setPos( CVector(0.0f,0.0f,0.0f) );
+				_Source->setDirection( CVector(0.0f,0.0f,0.0f) ); // non-directional
+			}
 			_Source->play();
 		}
 
@@ -361,12 +479,23 @@ void CSoundPage::OnPlaySound()
 /*
  *
  */
+void CSoundPage::OnPlaySound()
+{
+	UpdateData( true );
+	m_Looped = false;
+	Play( false );
+}
+
+
+/*
+ *
+ */
 void CSoundPage::OnLooped() 
 {
 	UpdateData( true );
 	if ( m_Looped )
 	{
-		OnPlaySound();
+		Play( false );
 	}
 	else
 	{
@@ -375,6 +504,17 @@ void CSoundPage::OnLooped()
 			_Source->stop();
 		}
 	}
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnButtonTestOuterGain() 
+{
+	UpdateData( true );
+	m_Looped = false;
+	Play( true );
 }
 
 
@@ -409,5 +549,231 @@ void CSoundPage::OnClose()
 		}
 		delete _AudioMixer;
 	}
+}
+
+
+/*
+ *
+ */
+void CSoundPage::DrawCones()
+{
+	if ( m_InnerAngleDeg > m_OuterAngleDeg )
+	{
+		GetDlgItem( IDC_BadCone )->SetWindowText( "Inner > Outer !" );
+	}
+	else
+	{
+		GetDlgItem( IDC_BadCone )->SetWindowText( "" );
+	}
+
+	uint xcenter = CONE_X;
+	uint ycenter = CONE_Y;
+	uint radius = CONE_R;
+	CRect rect( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1 );
+	InvalidateRect( &rect, true );
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnChangeEditGain() 
+{
+	UpdateData( true );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_Gain*100.0f ) );
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnChangeEditMinDist() 
+{
+	UpdateData( true );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderMinDist ))->SetPos( (int)m_MinDist );
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnChangeEditMaxDist() 
+{
+	UpdateData( true );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderMaxDist ))->SetPos( (int)m_MaxDist );
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnChangeEditInnerAngle() 
+{
+	UpdateData( true );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderInnerAngle ))->SetPos( m_InnerAngleDeg );
+	DrawCones();
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnChangeEditOuterAngle() 
+{
+	UpdateData( true );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderOuterAngle ))->SetPos( m_OuterAngleDeg );
+	DrawCones();
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnChangeEditOuterGain() 
+{
+	UpdateData( true );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderOuterGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_OuterGain*100.0f) );
+	DrawCones();
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnHScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar )
+{
+	CSliderCtrl *slider = (CSliderCtrl*)pScrollBar; // MFC sucks
+
+	nPos = slider->GetPos();
+	{
+		if ( slider == GetDlgItem( IDC_SliderGain ) )
+		{
+			m_Gain = ConvertLinearSliderPosToLogScale( nPos ) / 100.0f;
+			if ( _Source != NULL )
+			{
+				_Source->setGain( m_Gain );
+			}
+		}
+		else if ( slider == GetDlgItem( IDC_SliderMinDist ) )
+		{
+			m_MinDist = (float)nPos;
+		}
+		else if ( slider == GetDlgItem( IDC_SliderMaxDist ) )
+		{
+			m_MaxDist = (float)nPos;
+		}
+		else if ( slider == GetDlgItem( IDC_SliderInnerAngle ) )
+		{
+			m_InnerAngleDeg = nPos;
+		}
+		else if ( slider == GetDlgItem( IDC_SliderOuterAngle ) )
+		{
+			m_OuterAngleDeg = nPos;
+		}
+		else if ( slider == GetDlgItem( IDC_SliderOuterGain ) )
+		{
+			m_OuterGain = ConvertLinearSliderPosToLogScale( nPos ) / 100.0f;
+		}
+		UpdateData( false );
+		DrawCones();
+	}
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnPaint() 
+{
+	CPaintDC dc(this); // device context for painting
+
+	uint xcenter = CONE_X;
+	uint ycenter = CONE_Y;
+	uint radius = CONE_R;
+	float innerangle = degToRad((float)m_InnerAngleDeg);
+	float outerangle = degToRad((float)m_OuterAngleDeg);
+
+	/*// Erase background (done by InvalidateRect())
+	CRect rect( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1 );
+	CBrush brush;
+	brush.CreateSolidBrush( GetSysColor( COLOR_BTNFACE ) );
+	dc.FillRect( &rect, &brush );*/
+
+	if ( m_Pos3D )
+	{
+		COLORREF innercolor = RGB(255,0,0);
+		uint8 c = (uint)(255.0f * (1.0f - (float)(ConvertLogScaleToLinearSliderPosTo( m_OuterGain*100.0f ))/40.0f )); // linear, not logarithmic
+		COLORREF outercolor = RGB(255,c,c);
+		COLORREF tcolor = RGB(255,c/1.5,c/1.5); // not progressive
+		if ( m_OuterGain == 0.0f ) // change white to background color
+		{
+			outercolor = GetSysColor( COLOR_BTNFACE );
+		}
+
+		uint dx = (uint)(radius*sin(outerangle/2.0f));
+		uint y = ycenter-(uint)(radius*cos(outerangle/2.0f));
+
+		// Outside
+		CPen outpen( PS_SOLID, 1, outercolor );
+		CBrush outbrush;
+		outbrush.CreateSolidBrush( outercolor );
+		dc.SelectObject( &outpen );
+		dc.SelectObject( &outbrush );
+		dc.Pie( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1,	xcenter-dx, y, xcenter+dx, y );
+
+		// Transition
+		if ( (dx != 0) || (outerangle > 3.14) )
+		{
+			CPen tpen( PS_SOLID, 1, tcolor );
+			CBrush tbrush;
+			tbrush.CreateSolidBrush( tcolor );
+			dc.SelectObject( &tpen );
+			dc.SelectObject( &tbrush );
+			dc.Pie( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1,	xcenter+dx, y, xcenter-dx, y );
+		}
+
+		dx = (uint)(radius*sin(innerangle/2.0f));
+		y = ycenter-(uint)(radius*cos(innerangle/2.0f));
+
+		// Inner
+		if ( (dx != 0) || (innerangle > 3.14) )
+		{
+			CPen inpen( PS_SOLID, 1, innercolor );
+			CBrush inbrush;
+			inbrush.CreateSolidBrush( innercolor );
+			dc.SelectObject( &inpen );
+			dc.SelectObject( &inbrush );
+			dc.Pie( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1,	xcenter+dx, y, xcenter-dx, y );
+		}
+	}
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnButtonHelp() 
+{
+	AfxMessageBox( "\
+Min Dist: Distance threshold below which gain is clamped (does not increase anymore).\n\
+Unit: meters. Range: 0 - 1000000 (the maximum value 1e+006 is considered as infinite).\n\n\
+Max Dist: Distance threshold above which gain is clamped (does not decrease anymore).\n\
+Unit: meters. Range: 0 - 1000000 m (the maximum value 1e+006 is considered as infinite).\n\n\
+Cone Inner Angle: Inside angle of the sound cone where the main gain is applied. \
+The default of 360 means that the inner angle covers the entire world, which is equivalent to \
+an omnidirectional source.\n\
+Unit: degrees. Range: 0 - 360.\n\n\
+Cone Outer Angle: Outer angle of the sound cone where the outer gain is applied \
+to the main gain. The default of 360 means that the outer angle covers the entire world. If \
+the inner angle is also 360, then there is no transition zone for angle-dependent (progressive) \
+attenuation.\n\
+Unit: degress. Range: 0 - 360.\n\n\
+Cone Outer Gain: The factor with which the main gain is multiplied to determine the effective \
+gain outside the cone defined by the outer angle. To test the outer gain, you can play the \
+sound source as if you were outside the cone.\n\
+Range: 0 - 1.\n\n\
+NOTE ABOUT GAINS: A gain factor is logarithmic ; 1.0 means no attenuation (full volume) ; 0.5 \
+means an attenuation of 6 dB ; 0 means silence.\
+" );	
 }
 

@@ -14,10 +14,10 @@ ig_light_timeout=`cat ../../cfg/config.cfg | grep "zone_build_ig_light_timeout" 
 
 # Log error
 echo ------- >> log.log
-echo --- Build zone : light >> log.log
+echo --- Zone lighting >> log.log
 echo ------- >> log.log
 echo ------- 
-echo --- Build zone : light 
+echo --- Zone lighting
 echo ------- 
 date >> log.log
 date

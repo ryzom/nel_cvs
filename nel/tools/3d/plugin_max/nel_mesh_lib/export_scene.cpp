@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.19 2002/06/07 08:56:56 vizerie Exp $
+ * $Id: export_scene.cpp,v 1.20 2002/07/02 12:05:24 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -397,7 +397,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 				if (aIGArray[nNumIG].Clusters.size() == 0)
 				{
 					char tam[256];
-					sprintf(tam,"Object %s is not attached to any cluster\nbut his flag clusterize is set", pNode->GetName());
+					sprintf(tam,"ERROR: Object %s is not attached to any cluster\nbut his flag clusterize is set", pNode->GetName());
 					//MessageBox(NULL, tam, "Warning", MB_OK);
 					nlwarning(tam);
 				}

@@ -30,6 +30,6 @@ cp -u -p shape_with_coarse_mesh_builded/*.shape $client_directory/$shape_install
 cp -u -p shape_with_coarse_mesh_builded/*.dds $client_directory/$bitmap_install_directory  2>> log.log
 
 if test "$lightmap_install_directory"; then
-	mkdir $client_directory/$lightmap_install_directory 2>> log.log 2> null
+	mkdir $client_directory/$lightmap_install_directory 2>> log.log 2> /dev/null
 	cp -u -p lightmap_16_bits/*.tga $client_directory/$lightmap_install_directory  2>> log.log
 fi

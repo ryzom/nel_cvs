@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.8 2002/05/13 15:44:57 valignat Exp $
+ * $Id: ig_lighter.cpp,v 1.9 2002/07/02 12:05:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,9 @@ void	lightIg(const NL3D::CInstanceGroup &igIn, NL3D::CInstanceGroup &igOut, NL3D
 // ***************************************************************************
 int main(int argc, char* argv[])
 {
+	// Filter addSearchPath
+	InfoLog->addNegativeFilter ("adding the path");
+
 	// Register 3d
 	registerSerial3d ();
 

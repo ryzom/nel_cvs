@@ -143,7 +143,7 @@ cd ..
 # **************
 
 cd ../zone
-mkdir zone_exported 2> null
+mkdir zone_exported 2> /dev/null
 
 # Try to copy ligo zone if any
 # ****************************

@@ -53,14 +53,14 @@ rbank_shape_pathes=`cat ../../cfg/config.cfg | grep "rbank_shape_path" | sed -e 
 rbank_temp_path=`echo $rbank_scratch_path$rbank_rbank_name`/
 
 # Make some directories
-mkdir $rbank_scratch_path 2> null
-mkdir $rbank_temp_path 2> null
-mkdir $rbank_temp_path"retrievers" 2> null
-mkdir $rbank_temp_path"tesselation" 2> null
-mkdir $rbank_temp_path"smooth" 2> null
-mkdir $rbank_temp_path"smooth/preproc" 2> null
-mkdir $rbank_temp_path"raw" 2> null
-mkdir $rbank_temp_path"raw/preproc" 2> null
+mkdir $rbank_scratch_path 2> /dev/null
+mkdir $rbank_temp_path 2> /dev/null
+mkdir $rbank_temp_path"retrievers" 2> /dev/null
+mkdir $rbank_temp_path"tesselation" 2> /dev/null
+mkdir $rbank_temp_path"smooth" 2> /dev/null
+mkdir $rbank_temp_path"smooth/preproc" 2> /dev/null
+mkdir $rbank_temp_path"raw" 2> /dev/null
+mkdir $rbank_temp_path"raw/preproc" 2> /dev/null
 
 # Global options
 build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -68,12 +68,12 @@ build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_director
 # Log error
 echo >> log.log
 echo ------- >> log.log
-echo --- Build the bbox file >> log.log
+echo --- Build RBank : Build the bbox file >> log.log
 echo ------- >> log.log
 echo >> log.log
 echo 
 echo ------- 
-echo --- Build the bbox file
+echo --- Build RBank : Build the bbox file
 echo ------- 
 echo 
 date >> log.log
@@ -157,12 +157,12 @@ echo " " >> build_rbank.cfg
 # Log error
 echo >> log.log
 echo ------- >> log.log
-echo --- Tesselate >> log.log
+echo --- Build RBank : Tesselate >> log.log
 echo ------- >> log.log
 echo >> log.log
 echo 
 echo ------- 
-echo --- Tesselate
+echo --- Build RBank : Tesselate
 echo ------- 
 echo 
 date >> log.log
@@ -219,12 +219,12 @@ done
 # Log error
 echo >> log.log
 echo ------- >> log.log
-echo --- Compute >> log.log
+echo --- Build RBank : Compute >> log.log
 echo ------- >> log.log
 echo >> log.log
 echo 
 echo ------- 
-echo --- Compute
+echo --- Build RBank : Compute
 echo ------- 
 echo 
 date >> log.log
@@ -257,12 +257,12 @@ done
 # Log error
 echo >> log.log
 echo ------- >> log.log
-echo --- Proclocal >> log.log
+echo --- Build RBank : Proclocal >> log.log
 echo ------- >> log.log
 echo >> log.log
 echo 
 echo ------- 
-echo --- Proclocal
+echo --- Build RBank : Proclocal
 echo ------- 
 echo 
 date >> log.log
@@ -295,12 +295,12 @@ done
 # Log error
 echo >> log.log
 echo ------- >> log.log
-echo --- Procglobal >> log.log
+echo --- Build RBank : Procglobal >> log.log
 echo ------- >> log.log
 echo >> log.log
 echo 
 echo ------- 
-echo --- Procglobal
+echo --- Build RBank : Procglobal
 echo ------- 
 echo 
 date >> log.log
@@ -346,12 +346,12 @@ echo MergeOutputPrefix  = \"tempMerged\"\; >> build_indoor_rbank.cfg
 # Log error
 echo >> log.log
 echo ------- >> log.log
-echo --- Merge cmb in rbank >> log.log
+echo --- Build RBank : Merge cmb in rbank >> log.log
 echo ------- >> log.log
 echo >> log.log
 echo 
 echo ------- 
-echo --- Merge cmb in rbank 
+echo --- Build RBank : Merge cmb in rbank 
 echo ------- 
 echo 
 date >> log.log
@@ -366,12 +366,12 @@ $exec_timeout $indoor_timeout $build_indoor_rbank
 
 echo >> log.log
 echo ------- >> log.log
-echo --- Copy gr and rbank >> log.log
+echo --- Build RBank : Copy gr and rbank >> log.log
 echo ------- >> log.log
 echo >> log.log
 echo 
 echo ------- 
-echo --- Copy gr and rbank
+echo --- Build RBank : Copy gr and rbank
 echo ------- 
 echo 
 date >> log.log

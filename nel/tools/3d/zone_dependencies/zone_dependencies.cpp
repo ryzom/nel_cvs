@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.12 2002/06/26 13:05:30 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.13 2002/07/02 12:05:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,6 +153,9 @@ static void computeIGBBoxFromContinent(NLMISC::CConfigFile &parameter,
 ///=========================================================
 int main (int argc, char* argv[])
 {
+	// Filter addSearchPath
+	InfoLog->addNegativeFilter ("adding the path");
+
 	TShapeMap shapeMap;
 
 	// Check number of args

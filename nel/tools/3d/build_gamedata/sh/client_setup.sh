@@ -16,5 +16,5 @@ echo  > log.log
 # For each directory
 for i in $client_setup_directories ; do
 	# Create the directory
-	mkdir $client_directory/$i 2> null
+	mkdir $client_directory/$i 2> /dev/null
 done

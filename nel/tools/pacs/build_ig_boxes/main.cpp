@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.3 2002/02/19 15:57:56 corvazier Exp $
+ * $Id: main.cpp,v 1.4 2002/07/02 12:05:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,7 +93,7 @@ void	init()
 		cf.load("build_ig_boxes.cfg");
 	
 		Output = getString(cf, "Output");
-		nlinfo("Output=%s", Output.c_str());
+		// nlinfo("Output=%s", Output.c_str());
 
 		CConfigFile::CVar &cvIGs = cf.getVar("IGs");
 		for (i=0; i<cvIGs.size(); i++)
@@ -119,6 +119,9 @@ CFileDisplayer fd("evallog.log", true);
 
 int main(int argc, char **argv)
 {
+	// Filter addSearchPath
+	InfoLog->addNegativeFilter("adding the path");
+
 	createDebug();
 
 	try
@@ -142,9 +145,15 @@ int main(int argc, char **argv)
 			// search in group for water instance
 			for (j=0; j<ig._InstancesInfos.size(); ++j)
 			{
-				// c'est degueulasse, mais c'est les coders a la 3D, y savent pas coder
+				/*
+				   Ben: c'est degueulasse, mais c'est les coders a la 3D, y savent pas coder
+				   Hld: ouai, mais ca marche pas ton truc, alors p'tet qu'on sait pas coder mais toi non plus :p Special Dedicace to SupaGreg!
 				string	shapeName = ig._InstancesInfos[j].Name+".shape";
-				string	shapeNameLookup = CPath::lookup(shapeName, false, false);
+				*/
+				string	shapeName = ig._InstancesInfos[j].Name;
+				if (CFile::getExtension (shapeName) == "")
+					shapeName += ".shape";
+				string	shapeNameLookup = CPath::lookup (shapeName, false, false);
 				if (!shapeNameLookup.empty())
 					shapeName = shapeNameLookup;
 

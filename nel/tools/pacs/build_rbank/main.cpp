@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.7 2002/06/17 14:25:12 corvazier Exp $
+ * $Id: main.cpp,v 1.8 2002/07/02 12:05:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,7 +117,7 @@ void	initMoulinette()
 		CConfigFile::CVar &cvPathes = cf.getVar("Pathes");
 		for (i=0; i<cvPathes.size(); ++i)
 		{
-			nldebug("Using search path %s", cvPathes.asString(i).c_str());
+			// nldebug("Using search path %s", cvPathes.asString(i).c_str());
 			CPath::addSearchPath(cvPathes.asString(i));
 		}
 
@@ -272,6 +272,8 @@ CFileDisplayer fd("evallog.log", true);
 
 int main(int argc, char **argv)
 {
+	// Filter addSearchPath
+	InfoLog->addNegativeFilter ("adding the path");
 
 #ifdef LOG_ALL_INFO_TO_FILE
 	createDebug();

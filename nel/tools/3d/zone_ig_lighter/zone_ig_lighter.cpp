@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.8 2002/06/26 14:28:03 corvazier Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.9 2002/07/02 12:05:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,6 +98,9 @@ class CMyIgZoneLighter : public CInstanceLighter
 
 int main(int argc, char* argv[])
 {
+	// Filter addSearchPath
+	CPath::addSearchPath(zonePaths);
+
 	// Register 3d
 	registerSerial3d ();
 

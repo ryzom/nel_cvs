@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.22 2002/11/14 17:42:17 vizerie Exp $
+ * $Id: hierarchical_timer.cpp,v 1.23 2003/02/07 16:06:35 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -243,21 +243,30 @@ uint64 CHTimer::getProcessorFrequency(bool quick)
 #endif
 
 
+
 //=================================================================
-void	CHTimer::startBench(bool wantStandardDeviation /*= false*/, bool quick)
+void	CHTimer::startBench(bool wantStandardDeviation /*= false*/, bool quick, bool reset)
 {
-	nlassert(!_Benching)
-	clear();
+	nlassert(!_Benching);
+
+	if(reset)
+		clear();
+
 	_Benching = true;
 	_BenchStartedOnce = true;
 	_RootNode.Owner = &_RootTimer;
-#	ifdef NL_CPU_INTEL
+
+	if(reset)
+	{
+#ifdef NL_CPU_INTEL
 		double freq = (double) getProcessorFrequency(quick);
 		_MsPerTick = 1000 / (double) freq;
-#	else
+#else
 		_MsPerTick = CTime::ticksToSecond(1000);
-#	endif
-	CSimpleClock::init();
+#endif
+		CSimpleClock::init();
+	}
+
 	_RootNode.Owner = &_RootTimer;
 	_WantStandardDeviation = wantStandardDeviation;
 	_RootTimer.before();

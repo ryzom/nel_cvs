@@ -4,7 +4,7 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "lb_extern_id_dlg.h"
-#include "3d/ps_located.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -16,10 +16,9 @@ static char THIS_FILE[] = __FILE__;
 // CLBExternIDDlg dialog
 
 
-CLBExternIDDlg::CLBExternIDDlg(NL3D::CPSLocatedBindable *lb, CWnd* pParent /* = NULL*/)
-	: CDialog(CLBExternIDDlg::IDD, pParent), _LB(lb)
+CLBExternIDDlg::CLBExternIDDlg(uint32 id, CWnd* pParent /* = NULL*/)
+	: CDialog(CLBExternIDDlg::IDD, pParent), _ID(id)
 {
-	nlassert(_LB);
 	//{{AFX_DATA_INIT(CLBExternIDDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
@@ -48,24 +47,22 @@ END_MESSAGE_MAP()
 BOOL CLBExternIDDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
-	
-	nlassert(_LB);	
-	GetDlgItem(IDC_ID_VALUE)->EnableWindow(_LB->getExternID() != 0);
-	((CButton *) GetDlgItem(IDC_ENABLE_EXTERN_ID))->SetCheck(_LB->getExternID() != 0 ? 1 : 0);
+		
+	GetDlgItem(IDC_ID_VALUE)->EnableWindow(_ID != 0);
+	((CButton *) GetDlgItem(IDC_ENABLE_EXTERN_ID))->SetCheck(_ID != 0 ? 1 : 0);
 
-	if (_LB->getExternID())
+	if (_ID)
 	{
 		char val[5];
 		for (uint k = 0; k < 4; ++k)
 		{
 			#ifdef NL_LITTLE_ENDIAN
-				val[k] = (unsigned char) (_LB->getExternID() >> ((3 - k) << 3));
+				val[k] = (unsigned char) (_ID >> ((3 - k) << 3));
 			#else
-				val[k] = (unsigned char) (_LB->getExternID() >> (k << 3));				
+				val[k] = (unsigned char) (_ID >> (k << 3));				
 			#endif
 		}
-		val[4] = '\0';
-		_ID    = _LB->getExternID();
+		val[4] = '\0';		
 		GetDlgItem(IDC_ID_VALUE)->SetWindowText(val);
 
 	}

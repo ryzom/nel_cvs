@@ -17,7 +17,7 @@ class CLBExternIDDlg : public CDialog
 {
 // Construction
 public:
-	CLBExternIDDlg(NL3D::CPSLocatedBindable *lb, CWnd* pParent = NULL);   // standard constructor
+	CLBExternIDDlg(uint32 id, CWnd* pParent = NULL);   // standard constructor
 
 	uint32 getNewID(void) const { return _ID; } // the id after edition by this dialog
 // Dialog Data
@@ -35,8 +35,7 @@ public:
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
-	NL3D::CPSLocatedBindable *_LB; // the bindable being edited by this dialog
+protected:	
 	uint32					  _ID; // the current ID
 
 	// Generated message map functions

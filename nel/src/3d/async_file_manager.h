@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager.h,v 1.3 2002/04/18 08:30:00 besson Exp $
+ * $Id: async_file_manager.h,v 1.4 2002/04/23 09:18:19 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ class CAsyncFileManager : public NLMISC::CTaskManager
 public:
 
 	static CAsyncFileManager &getInstance (); // Must be called instead of constructing the object
-	void terminate (); // End all tasks and terminate
+	static void terminate (); // End all tasks and terminate if any tasks
 
 	void loadMesh (const std::string &meshName, IShape **ppShp, IDriver *pDriver);
 	void loadIG (const std::string &igName, CInstanceGroup **ppIG);

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.7 2002/04/18 08:30:00 besson Exp $
+ * $Id: async_file_manager.cpp,v 1.8 2002/04/23 09:18:19 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,8 +66,11 @@ CAsyncFileManager &CAsyncFileManager::getInstance()
 
 void CAsyncFileManager::terminate ()
 {
-	delete &getInstance();
-	_Singleton = NULL;
+	if (_Singleton != NULL)
+	{
+		delete &getInstance();
+		_Singleton = NULL;
+	}
 }
 
 // ***************************************************************************

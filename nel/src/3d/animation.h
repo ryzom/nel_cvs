@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.4 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: animation.h,v 1.5 2002/04/12 16:16:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,8 @@ class ITrack;
 class CAnimation : public UAnimation
 {
 public:
-
+	/// ctor
+	CAnimation();
 	/// Destructor
 	~CAnimation ();
 
@@ -148,6 +149,14 @@ private:
 
 	// Vector of channel pointer.
 	TVectAPtrTrack		_TrackVector;
+	
+	/// \name Anim time caching
+	// @{
+		mutable TAnimationTime		_BeginTime;	
+		mutable TAnimationTime		_EndTime;
+		mutable bool				_BeginTimeTouched;
+		mutable bool				_EndTimeTouched;
+	// @}
 };
 
 

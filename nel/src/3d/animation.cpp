@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.12 2002/02/28 12:59:49 besson Exp $
+ * $Id: animation.cpp,v 1.13 2002/04/12 16:16:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,12 @@ namespace NL3D
 
 // ***************************************************************************
 
+CAnimation::CAnimation() : _BeginTimeTouched(true), _EndTimeTouched(true)
+{	
+}
+
+// ***************************************************************************
+
 CAnimation::~CAnimation ()
 {
 	// Delete all the pointers in the array
@@ -53,6 +59,10 @@ void CAnimation::addTrack (const std::string& name, ITrack* pChannel)
 
 	// Add an entry in the array
 	_TrackVector.push_back (pChannel);
+
+	// 
+	_BeginTimeTouched = _EndTimeTouched = true;
+
 }
 
 // ***************************************************************************
@@ -97,48 +107,57 @@ void CAnimation::getTrackNames (std::set<std::string>& setString) const
 
 TAnimationTime CAnimation::getBeginTime () const
 {
-	// Track count
-	uint trackCount=_TrackVector.size();
-
-	// Track count empty ?
-	if (trackCount==0)
-		return 0.f;
-
-	// Look for the lowest
-	TAnimationTime lowest=_TrackVector[0]->getBeginTime ();
-
-	// Scan all keys
-	for (uint t=1; t<trackCount; t++)
+	if (_BeginTimeTouched)
 	{
-		if (_TrackVector[t]->getBeginTime ()<lowest)
-			lowest=_TrackVector[t]->getBeginTime ();
+		// Track count
+		uint trackCount=_TrackVector.size();
+
+		// Track count empty ?
+		if (trackCount==0)
+			return 0.f;
+
+		// Look for the lowest
+		_BeginTime=_TrackVector[0]->getBeginTime ();
+
+		// Scan all keys
+		for (uint t=1; t<trackCount; t++)
+		{
+			if (_TrackVector[t]->getBeginTime ()<_BeginTime)
+				_BeginTime=_TrackVector[t]->getBeginTime ();
+		}
+
+		_BeginTimeTouched = false;
 	}
 
-	return lowest;
+	return _BeginTime;
 }
 
 // ***************************************************************************
 
 TAnimationTime CAnimation::getEndTime () const
 {
-	// Track count
-	uint trackCount=_TrackVector.size();
-
-	// Track count empty ?
-	if (trackCount==0)
-		return 0.f;
-
-	// Look for the lowest
-	TAnimationTime highest=_TrackVector[0]->getEndTime ();
-
-	// Scan tracks keys
-	for (uint t=1; t<trackCount; t++)
+	if (_EndTimeTouched)
 	{
-		if (_TrackVector[t]->getEndTime ()>highest)
-			highest=_TrackVector[t]->getEndTime ();
+		// Track count
+		uint trackCount=_TrackVector.size();
+
+		// Track count empty ?
+		if (trackCount==0)
+			return 0.f;
+
+		// Look for the highest
+		_EndTime=_TrackVector[0]->getEndTime ();
+
+		// Scan tracks keys
+		for (uint t=1; t<trackCount; t++)
+		{
+			if (_TrackVector[t]->getEndTime ()>_EndTime)
+				_EndTime=_TrackVector[t]->getEndTime ();
+		}
+		_EndTimeTouched = false;
 	}
 
-	return highest;
+	return _EndTime;
 }
 
 // ***************************************************************************

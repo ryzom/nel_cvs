@@ -624,7 +624,7 @@ void CBuilderZone::newZone ()
 	sint32 i;
 	sint32 x = 0, y = 0;
 	// If there are some zone already present increase x until free
-	for (i = 0; i < _ZoneRegions.size(); ++i)
+	for (i = 0; i < (sint32)_ZoneRegions.size(); ++i)
 	{
 		CBuilderZoneRegion *pBZR = _ZoneRegions[i];
 		const string &rsZone = pBZR->getName (x, y);

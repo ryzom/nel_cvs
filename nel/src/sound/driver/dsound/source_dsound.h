@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.3 2002/06/04 10:01:21 hanappe Exp $
+ * $Id: source_dsound.h,v 1.4 2002/06/11 09:36:09 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,6 +132,9 @@ public:
 	    Returns an indication whether the source actually streamed data or not. */
 	virtual bool			update2();
 
+	/// Returns the number of milliseconds the source has been playing
+	virtual uint32			getTime() { return 1000 * _BytesWritten / _SampleRate; }
+
 	//@}
 
 
@@ -212,7 +215,11 @@ public:
 	// Reset the source before reuse
 	void					reset();
 
+	/// Update the source's volume according to its distance and fade out curve. 
+	/// It takes the current position of the listener as argument.
+	void					updateVolume( NLMISC::CVector& listener );
 
+	virtual void			setAlpha(double a) { _Alpha = a; }
 
 private:
 
@@ -226,13 +233,13 @@ private:
     static uint32			_SwapCopySize;
 
     // The number of channels
-    static uint				_Channels;
+    static uint				_DefaultChannels;
 
     // The default sample rate
-    static uint				_SampleRate;
+    static uint				_DefaultSampleRate;
 
     // The default sample size
-    static uint				_SampleSize;
+    static uint				_DefaultSampleSize;
 
     // The length of the crossfade, in samples
     static uint32			_XFadeSize;
@@ -242,6 +249,9 @@ private:
 
 	// Utility function that unlocks the DirectSound buffer 
 	bool					unlock(uint8* ptr1, DWORD bytes1, uint8* ptr2, DWORD bytes2);
+
+	// Replace the current buffer with the swap buffer
+	void					swap();
 
 	// getFadeOutSize() calculates how many samples have been written after the
 	// write cursor in the DirectSound buffer. This value is returned in the
@@ -321,6 +331,9 @@ private:
 	// The frequency of the source [0,10], i.e. slowed down or accelerated
 	float					_Freq;
 
+	// The sample rate of the source (= _Freq * _Buffer sample rate)
+	uint32					_SampleRate;
+
 	// Has this source been handed out. 
 	bool					_IsUsed;
 	
@@ -330,6 +343,7 @@ private:
 	// Return the 'used' state of the source
 	bool					isUsed() { return _IsUsed; }
 
+	double					_Alpha;
 
 #if NLSOUND_PROFILE
 

@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.3 2002/06/04 10:01:20 hanappe Exp $
+ * $Id: buffer_dsound.cpp,v 1.4 2002/06/11 09:36:09 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,19 +26,20 @@
 
 #include "stddsound.h"
 #include "buffer_dsound.h"
+#include "nel/misc/path.h"
 
 
 #include <windows.h>
 #include <mmsystem.h>
 
-
+using namespace NLMISC;
+using namespace std;
 
 namespace NLSOUND {
 
 
-CBufferDSound::CBufferDSound( uint buffername )
+CBufferDSound::CBufferDSound()
 {
-	_BufferName = buffername;
     _Data = NULL;
     _Size = 0; 
     _Format = Mono16;
@@ -119,6 +120,8 @@ bool CBufferDSound::loadWavFile(const char* file)
 
 
     // Check it's a WAVE file 
+    riff_chunk.ckid = FOURCC_RIFF;
+
     error = (sint) mmioDescend(hmmio, &riff_chunk, NULL, 0);
 
     if ((error != 0) || (riff_chunk.ckid != FOURCC_RIFF) || (riff_chunk.fccType != mmioFOURCC('W', 'A', 'V', 'E'))) 
@@ -263,6 +266,9 @@ bool CBufferDSound::loadWavFile(const char* file)
 
 
     mmioClose(hmmio, 0);
+
+
+	_Name = CFile::getFilenameWithoutExtension(file);
 
 	return true;
 

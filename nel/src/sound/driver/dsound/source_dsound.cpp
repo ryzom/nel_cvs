@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.5 2002/06/04 10:01:21 hanappe Exp $
+ * $Id: source_dsound.cpp,v 1.6 2002/06/11 09:36:09 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "sound_driver_dsound.h"
 #include "buffer_dsound.h"
 #include "sound_exception.h"
+#include "listener_dsound.h"
 
 
 
@@ -61,9 +62,9 @@ uint32 CSourceDSound::_SecondaryBufferSize = 65536;
 uint32 CSourceDSound::_SwapCopySize = 32768;
 uint32 CSourceDSound::_UpdateCopySize = 16384;
 uint32 CSourceDSound::_XFadeSize = 64;
-uint CSourceDSound::_Channels = 1;
-uint CSourceDSound::_SampleRate = 22050;
-uint CSourceDSound::_SampleSize = 16;
+uint CSourceDSound::_DefaultChannels = 1;
+uint CSourceDSound::_DefaultSampleRate = 22050;
+uint CSourceDSound::_DefaultSampleSize = 16;
 
 
 
@@ -96,14 +97,13 @@ uint32 CSourceDSound::_TotalUpdateSize = 0;
 /*
  * Constructor
  */
-CSourceDSound::CSourceDSound( uint sourcename ) : _SourceName(sourcename)
+CSourceDSound::CSourceDSound( uint sourcename ) : ISource(), _SourceName(sourcename)
 {
-    _Buffer = 0;
     _BufferSize = 0;
 	_SwapBuffer = 0;
     _SecondaryBuffer = 0;
 	_SecondaryBufferState = NL_DSOUND_SILENCED;
-    _3DBuffer = NULL;
+    _3DBuffer = 0;
     _NextWritePos = 0;
     _BytesWritten = 0;
     _SilenceWritten = 0;
@@ -112,7 +112,9 @@ CSourceDSound::CSourceDSound( uint sourcename ) : _SourceName(sourcename)
 	_EndState = NL_DSOUND_TAIL1;
 	_UserState = NL_DSOUND_STOPPED;
 	_Freq = 1.0f;
+	_SampleRate = _DefaultSampleRate;
 	_IsUsed = false;
+	_Alpha = 0.0;
     InitializeCriticalSection(&_CriticalSection);
 }
 
@@ -126,8 +128,13 @@ CSourceDSound::~CSourceDSound()
 
 	CSoundDriverDSound::instance()->removeSource(this);
 
+    EnterCriticalSection(&_CriticalSection); 
+
+	// Release the DirectSound buffer within the critical zone
+	// to avoid a call to update during deconstruction
 	release();
 
+    LeaveCriticalSection(&_CriticalSection); 
     DeleteCriticalSection(&_CriticalSection);
 }
 
@@ -137,6 +144,13 @@ CSourceDSound::~CSourceDSound()
  */
 void CSourceDSound::release()
 {
+	_Buffer = 0;
+
+    if (_SecondaryBuffer != 0)
+    {
+        _SecondaryBuffer->Stop();
+	}
+
 	if (_3DBuffer != 0)
     {
         _3DBuffer->Release();
@@ -145,7 +159,6 @@ void CSourceDSound::release()
 
     if (_SecondaryBuffer != 0)
     {
-        _SecondaryBuffer->Stop();
         _SecondaryBuffer->Release();
 		_SecondaryBuffer = 0;
     }
@@ -162,9 +175,9 @@ void CSourceDSound::init(LPDIRECTSOUND directSound)
     WAVEFORMATEX format;
 
     format.cbSize = sizeof(WAVEFORMATEX);
-    format.nChannels = _Channels;
-    format.wBitsPerSample = _SampleSize;
-    format.nSamplesPerSec = _SampleRate;
+    format.nChannels = _DefaultChannels;
+    format.wBitsPerSample = _DefaultSampleSize;
+    format.nSamplesPerSec = _DefaultSampleRate;
     format.nBlockAlign = format.nChannels * format.wBitsPerSample / 8;
     format.nAvgBytesPerSec = format.nSamplesPerSec * format.nBlockAlign;
     format.wFormatTag = WAVE_FORMAT_PCM;
@@ -276,7 +289,24 @@ void CSourceDSound::reset()
 
 void CSourceDSound::setStaticBuffer( IBuffer *buffer )
 {
+    EnterCriticalSection(&_CriticalSection); 
+
+	// If the user calls setStaticBuffer with a null buffer,
+	// stop the currently playing buffer and set it to null.
+	// Otherwise, store the buffer in the swap buffer variable.
+	// A crossfade between the current buffer and the swap buffer
+	// will be done when the user calls play.
+	if (buffer == 0)
+	{
+		stop();
+		_Buffer = 0;
+		_BufferSize = 0;
+		_BytesWritten = 0;
+	}
+
 	_SwapBuffer = buffer;
+
+    LeaveCriticalSection(&_CriticalSection); 
 }
 
 
@@ -300,41 +330,66 @@ bool CSourceDSound::getLooping() const
 
 
 /*
+ * Replace the current buffer with the swap buffer
+ */
+void CSourceDSound::swap()
+{
+	_Buffer = _SwapBuffer;
+	_BufferSize = _Buffer->getSize();
+	_BytesWritten = 0;
+	_SwapBuffer = 0;
+}
+
+/*
  * Play the static buffer (or stream in and play)
  */
 void CSourceDSound::play()
 {
     EnterCriticalSection(&_CriticalSection); 
 
-
-	if (_SwapBuffer != 0)
+	switch (_SecondaryBufferState)
 	{
-
-		_UserState = NL_DSOUND_PLAYING;
-		DBGPOS(("PLAY: PLAYING"));
-
-		if (_SecondaryBufferState == NL_DSOUND_SILENCED)
+	case NL_DSOUND_FILLING:
+		if (_SwapBuffer != 0)
 		{
-			_Buffer = _SwapBuffer;
-			_BufferSize = _Buffer->getSize();
-			_SwapBuffer = 0;
-			_BytesWritten = 0;
-
-			fadeIn();
-		}
-		else 
-		{
+			// crossfade to the new sound 
 			crossFade();
 		}
-	}
-	else if ((_UserState == NL_DSOUND_PAUSED) || (_UserState == NL_DSOUND_STOPPED))
-	{
-		_UserState = NL_DSOUND_PLAYING;
-		DBGPOS(("PLAY: PLAYING"));
+		break;
 
-		fadeIn();
+	case NL_DSOUND_SILENCING:
+		if (_SwapBuffer != 0)
+		{
+			if (_Buffer != 0)
+			{
+				// crossfade to the new sound
+				crossFade();
+			}
+			else
+			{
+				swap();
+				fadeIn();
+			}
+		}
+		break;
+
+
+	case NL_DSOUND_SILENCED:
+		if (_SwapBuffer != 0)
+		{
+			// fade in to the new sound
+			swap();
+			fadeIn();
+		}
+		else
+		{
+			// start the old sound again
+			fadeIn();
+		}
 	}
 
+	_UserState = NL_DSOUND_PLAYING;
+	DBGPOS(("PLAY: PLAYING"));
 
     LeaveCriticalSection(&_CriticalSection); 
 }
@@ -419,6 +474,11 @@ bool CSourceDSound::needsUpdate()
     DWORD playPos, writePos;
 	uint32 space;
 	
+    if (_SecondaryBuffer == 0)
+	{
+		return true;
+	}
+
 	_SecondaryBuffer->GetCurrentPosition(&playPos, &writePos);
 
 		
@@ -465,7 +525,6 @@ bool CSourceDSound::update2()
     // Enter critical region
     //
     EnterCriticalSection(&_CriticalSection);
-
 
 
 	switch (_SecondaryBufferState)
@@ -712,15 +771,14 @@ void CSourceDSound::setPitch( float coeff )
 	{
 		TSampleFormat format;
 		uint freq;
-		uint newfreq;
 
 		_Buffer->getFormat(format, freq);
 
-		newfreq = (uint) (coeff * (float) freq);
+		_SampleRate = (uint32) (coeff * (float) freq);
 
 		//nldebug("Freq=%d", newfreq);
 
-		if (_SecondaryBuffer->SetFrequency(newfreq) != DS_OK)
+		if (_SecondaryBuffer->SetFrequency(_SampleRate) != DS_OK)
 		{
 			//nldebug("SetFrequency failed (buffer freq=%d, NeL freq=%.5f, DSound freq=%d)", freq, coeff, newfreq);
 		}
@@ -859,6 +917,92 @@ void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
 	}
 }
 
+/**
+ * Update the source's volume according to its distance and fade out curve. 
+ * It takes the current position of the listener as argument.
+ */
+void CSourceDSound::updateVolume( NLMISC::CVector& listener )
+{
+	CVector pos;
+	
+	getPos(pos);
+	pos -= listener;
+
+	float sqrdist = pos.sqrnorm();
+	float min, max;
+
+	getMinMaxDistances(min, max);
+
+	if (sqrdist < min * min) 
+	{
+		_SecondaryBuffer->SetVolume(0);
+		nldebug("VOLUME = 0dB, rolloff = %0.2f", CListenerDSound::instance()->getRolloffFactor());
+	}
+	else if (sqrdist > max * max)
+	{
+		_SecondaryBuffer->SetVolume(-10000);
+		nldebug("VOLUME = -100dB, rolloff = %0.2f", CListenerDSound::instance()->getRolloffFactor());
+	}
+	else
+	{
+		LONG db;
+		enum { NLSOUND_LINEAR_DB, NLSOUND_LINEAR_AMP, NLSOUND_INVDIST_AMP} distType = NLSOUND_LINEAR_AMP;
+
+		double dist = (double) sqrt(sqrdist);
+
+#if 0
+		switch(distType) {
+
+		case NLSOUND_LINEAR_DB:
+			{
+				double alpha = (dist - min) / (max - min);
+				db = (LONG) (-10000.0 * alpha);
+			}
+			break;
+
+		case NLSOUND_LINEAR_AMP:
+			{
+				double amp = 0.0001 + 0.9999 * (max - dist) / (max - min);
+				db = (LONG) (2000.0 * log10((double) amp));
+			}
+			break;
+
+		case NLSOUND_INVDIST_AMP:
+			{
+				double amp = min / 	dist;
+				db = (LONG) (2000.0 * log10((double) amp));
+			}
+			break;
+		}
+#else
+
+		if (_Alpha == 0.0) {
+			double db1 = -10000.0 * (dist - min) / (max - min);
+			db = (LONG) db1;
+
+		} else if (_Alpha > 0.0) {
+			double db1 = -10000.0 * (dist - min) / (max - min);
+			double amp2 = 0.0001 + 0.9999 * (max - dist) / (max - min);
+			double db2 = 2000.0 * log10((double) amp2);
+			db = (LONG) ((1.0 - _Alpha) * db1 + _Alpha * db2);
+
+		} else if (_Alpha < 0.0) {
+			double db1 = -10000.0 * (dist - min) / (max - min);
+			double amp3 = min / dist;
+			double db3 = 2000.0 * log10((double) amp3);
+			db = (LONG) ((1.0 - _Alpha) * db1 + _Alpha * db3);
+
+		}
+#endif
+
+		
+
+		_SecondaryBuffer->SetVolume(db);
+		
+		nldebug("VOLUME = %d dB, rolloff = %0.2f", db/100, CListenerDSound::instance()->getRolloffFactor());
+	}
+
+}
 
 /*
  * Set the cone angles (in radian) and gain (in [0 , 1]) (3D mode only)
@@ -1107,6 +1251,12 @@ bool CSourceDSound::fill()
 		return false;
 	}
 
+    if (_SecondaryBuffer == 0)
+	{
+		return false;
+	}
+
+
 	INITTIME(startPos);
 
 
@@ -1302,6 +1452,10 @@ bool CSourceDSound::silence()
     DWORD playPos, writePos;
     uint32 space;
 
+    if (_SecondaryBuffer == 0)
+	{
+		return false;
+	}
 		
 	INITTIME(startPos);
 
@@ -1529,6 +1683,11 @@ void CSourceDSound::crossFade()
 		return;
 	}
 
+    if (_SecondaryBuffer == 0)
+	{
+		return;
+	}
+
 
     INITTIME(start); 
     
@@ -1579,10 +1738,20 @@ void CSourceDSound::crossFade()
 	xfadeByteSize = 2 * xfadeSize;
 
 
-    float amp1 = 1.0f;
-    float amp2 = 0.0f;
-    float incr = 1.0f / xfadeSize;
+    float amp1, amp2, incr;
 
+	if (xfadeSize == 0)
+	{
+		amp1 = 0.0f;
+		amp2 = 1.0f;
+		incr = 0.0f;
+	}
+	else
+	{
+		amp1 = 1.0f;
+		amp2 = 0.0f;
+		incr = 1.0f / xfadeSize;
+	}
 
     // Start copying the samples
     
@@ -1732,6 +1901,10 @@ void CSourceDSound::fadeOut()
 		return;
 	}
 
+    if (_SecondaryBuffer == 0)
+	{
+		return;
+	}
 
     INITTIME(start);
     
@@ -1760,8 +1933,18 @@ void CSourceDSound::fadeOut()
 	getFadeOutSize(writePos, xfadeSize, in1, writtenTooMuch);
     xfadeByteSize = 2 * xfadeSize;
 
-    float amp1 = 1.0f;
-    float incr = 1.0f / xfadeSize;
+    float amp1, incr;
+
+	if (xfadeSize == 0)
+	{
+		amp1 = 0.0f;
+		incr = 0.0f;
+	}
+	else
+	{
+		amp1 = 1.0f;
+		incr = 1.0f / xfadeSize;
+	}
 
 
 	if (writtenTooMuch > _BytesWritten)
@@ -1906,6 +2089,10 @@ void CSourceDSound::fadeIn()
 		return;
 	}
 
+    if (_SecondaryBuffer == 0)
+	{
+		return;
+	}
 
 	INITTIME(startPos);
 

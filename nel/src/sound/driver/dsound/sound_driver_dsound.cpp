@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.4 2002/06/04 10:01:21 hanappe Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.5 2002/06/11 09:36:09 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -584,7 +584,7 @@ IBuffer *CSoundDriverDSound::createBuffer()
 
 
     // FIXME: set buffer ID
-    return new CBufferDSound(0);   
+    return new CBufferDSound();   
 }
 
 
@@ -637,7 +637,25 @@ void CSoundDriverDSound::removeSource(ISource *source)
 
 void CSoundDriverDSound::commit3DChanges()
 {
-	CListenerDSound::instance()->commit3DChanges();
+	CListenerDSound* listener = CListenerDSound::instance();
+	listener->commit3DChanges();
+
+
+	// FIXME: VOLUMETEST
+	/*
+	CVector origin;
+	listener->getPos(origin);
+
+	set<CSourceDSound*>::iterator iter;
+
+	for (iter = _Sources.begin(); iter != _Sources.end(); iter++)
+	{
+		if ((*iter)->isPlaying()) 
+		{
+			(*iter)->updateVolume(origin);
+		}
+	}
+	*/
 }
 
 

@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.5 2002/06/04 10:01:21 hanappe Exp $
+ * $Id: listener_dsound.cpp,v 1.6 2002/06/11 09:36:09 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,9 @@ CListenerDSound::CListenerDSound(LPDIRECTSOUND3DLISTENER dsoundListener) //: ILi
 	{
 		_Instance = this;
         _Listener = dsoundListener;
+
+		// FIXME: VOLUMETEST
+		//setRolloffFactor(DS3D_MINROLLOFFFACTOR);
 	}
 	else
 	{
@@ -261,11 +264,30 @@ void CListenerDSound::setRolloffFactor( float f )
 			f = DS3D_MINROLLOFFFACTOR;
 		}
 
-        if (FAILED(_Listener->SetRolloffFactor(f, DS3D_DEFERRED)))
+		// FIXME: VOLUMETEST
+		//f = DS3D_MINROLLOFFFACTOR;
+
+        
+		if (FAILED(_Listener->SetRolloffFactor(f, DS3D_DEFERRED)))
 		{
 			nldebug("SetRolloffFactor failed");
 		}
     }
+}
+
+
+float CListenerDSound::getRolloffFactor()
+{   
+	if (_Listener != NULL)
+    {
+		float f;
+		_Listener->GetRolloffFactor(&f);
+		return f;
+    }
+	else
+	{
+		return 1.0;
+	}
 }
 
 

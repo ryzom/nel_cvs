@@ -1,7 +1,7 @@
 /** \file buffer_dsound.h
  * DSound buffer
  *
- * $Id: buffer_dsound.h,v 1.1 2002/05/24 16:50:48 hanappe Exp $
+ * $Id: buffer_dsound.h,v 1.2 2002/06/11 09:36:09 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,33 +47,33 @@ class CBufferDSound : public IBuffer
 public:
 
 	/// Constructor
-	CBufferDSound( uint buffername=0 );
+	CBufferDSound();
 	/// Destructor
-	virtual				~CBufferDSound();
+	virtual	~CBufferDSound();
 
 	/// Set the sample format. Example: freq=44100
-	virtual void		setFormat( TSampleFormat format, uint freq );
+	virtual void			setFormat( TSampleFormat format, uint freq );
 
     /// Set the buffer size and fill the buffer. Return true if ok. Call setFormat() first.
-	virtual bool		fillBuffer( void *src, uint32 bufsize );
+	virtual bool			fillBuffer( void *src, uint32 bufsize );
 
 	/// Return the size of the buffer, in bytes
-    virtual uint32		getSize() const                         { return _Size; }
+    virtual uint32			getSize() const				{ return _Size; }
 
 	/// Return the duration (in ms) of the sample in the buffer
-    virtual float		getDuration() const; 
+    virtual float			getDuration() const; 
 
     /// Return true if the buffer is stereo, false if mono
-    virtual bool		isStereo() const                        { return (_Format == Stereo8) || (_Format == Stereo16); }
+    virtual bool			isStereo() const			{ return (_Format == Stereo8) || (_Format == Stereo16); }
 
     /// Return the format and frequency
-    virtual void		getFormat( TSampleFormat& format, uint& freq ) const   { format = _Format; freq = _Freq; }
+    virtual void			getFormat( TSampleFormat& format, uint& freq ) const   { format = _Format; freq = _Freq; }
 
 
 	/** Return true if the buffer is able to be fill part by part, false if it must be filled in one call
 	 * (OpenAL 1.0 -> false)
 	 */
-	virtual bool		isFillMoreSupported() const				{ return false; }
+	virtual bool			isFillMoreSupported() const	{ return false; }
 
     /// Force the buffer size without filling data (if isFillMoreSupported() only)
 	//virtual void		setSize( uint32 size )					{ throw ESoundDriverNotSupp(); }
@@ -86,27 +86,26 @@ public:
 	//virtual bool		fillMore( void *src, uint32 srcsize )	{ throw ESoundDriverNotSupp(); }
 
 	
-	/// Return the buffer name
-	uint bufferName() { return _BufferName; }
-
     /// Load a sound file in the buffer. Throws an exception is an error occurs.
-	bool loadWavFile(const char* filename);
+	virtual bool			loadWavFile(const char* filename);
 
 	/// Return a pointer to the sample data
-    uint8* getData() { return _Data; }
+    virtual uint8*			getData() const				{ return _Data; }
+
+	/// Return the name of the buffer
+	virtual std::string&	getName()					{ return _Name; }
 
 private:
 
-	// Buffer name
-	uint _BufferName;
+	std::string		_Name;
 
-    uint8* _Data;
+    uint8*			_Data;
 
-    uint32 _Size; 
+    uint32			_Size; 
 
-    TSampleFormat _Format;
+    TSampleFormat	_Format;
 
-    uint _Freq;
+    uint			_Freq;
 
 
 #if USE_LOCDEFER

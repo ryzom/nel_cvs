@@ -1,7 +1,7 @@
 /** \file listener_dsound.h
  * DirectSound sound listener
  *
- * $Id: listener_dsound.h,v 1.2 2002/06/04 10:01:21 hanappe Exp $
+ * $Id: listener_dsound.h,v 1.3 2002/06/11 09:36:09 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,9 @@ public:
 
     /// Set the rolloff factor (default: 1) to scale the distance attenuation effect
 	virtual void			setRolloffFactor( float f );
+
+    /// Return the rolloff factor 
+	virtual float			getRolloffFactor();
 
     /// Set DSPROPERTY_EAXLISTENER_ENVIRONMENT and DSPROPERTY_EAXLISTENER_ENVIRONMENTSIZE if EAX available (see EAX listener properties)
 	virtual void			setEnvironment( uint env, float size=7.5f );

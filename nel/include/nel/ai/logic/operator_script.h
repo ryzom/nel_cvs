@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.20 2001/07/13 14:52:59 portier Exp $
+ * $Id: operator_script.h,v 1.21 2001/07/18 09:50:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,8 @@ namespace NLAIAGENT
 
 			void lookForGoals();
 			bool checkPreconditions();
+			void execOnActivate();
+			void checkPause();
 	};
 }
 #endif

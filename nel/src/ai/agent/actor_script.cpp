@@ -38,7 +38,6 @@ namespace NLAIAGENT
 		CActorScript::ParamSuccessMsg->release();		
 		CActorScript::ParamFailureMsg->release();
 	}
-
 	/////////////////////////////////////////////////////////////
 
 
@@ -825,6 +824,3 @@ namespace NLAIAGENT
 		return _TopLevel;
 	}
 }
-
-
-

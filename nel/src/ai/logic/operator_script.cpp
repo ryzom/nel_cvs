@@ -16,7 +16,7 @@ namespace NLAIAGENT
 	{
 		_CurrentGoal = a._CurrentGoal;
 		_CyclesBeforeUpdate = a._CyclesBeforeUpdate;
-		_IsActivable = false;
+		_IsActivable = a._IsActivable;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -109,12 +109,14 @@ namespace NLAIAGENT
 		// TODO
 	}
 
+	// This is where the activation of the operator and its children is controled...
 	const IObjectIA::CProcessResult &COperatorScript::run()
 	{
 #ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
 #endif
 
+		// Checks the goal and preconditions after a certain number of cycles (defined in the script after the UdpateEvery keyword)
 		if ( _CyclesBeforeUpdate == 0 )
 		{
 			_IsActivable = checkActivation();
@@ -123,12 +125,9 @@ namespace NLAIAGENT
 		else
 			_CyclesBeforeUpdate--;
 
-
-		// Runs the operator if every precondition is validated	
-		if ( _IsActivable )
+		if ( _IsActivable ) // If the goal exists and the preconditions are validated
 		{
-			// If it wasn't activated before, initialises the current goal and runs the OnActivate() function
-			if ( _IsActivated == false)			
+			if ( _IsActivated == false)		// If the operator wasn't activated before, initialises the current goal and runs the OnActivate() function
 			{
 				// Registers to the goal and gets the args
 				if ( _CurrentGoal == NULL && ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL )
@@ -141,34 +140,17 @@ namespace NLAIAGENT
 				if ( ( _CurrentGoal != NULL && _CurrentGoal->isSelected() ) || ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() == NULL)
 				{
 					activate();
-
-					// if found, runs the script's OnActivate() function declared in the operator class
-					if ( _OnActivateIndex != -1 )
-					{
-						if ( getAgentManager() != NULL )
-						{
-							NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
-							context->Self = this;
-							runMethodeMember( _OnActivateIndex , context);
-							_OnActivateIndex = -1;
-						}
-					}
-					else
-						onActivate();
+					execOnActivate();	// Execs onActivate() function in the script if defined otherwise in C++ inherited from CActorScript.
 				}
 			}
 			else
-				if ( (_CurrentGoal != NULL) )
-				{
-					if ( (_IsPaused == false) && !_CurrentGoal->isSelected() )
-						pause();
-					if ( (_IsPaused == true)  && _CurrentGoal->isSelected() )
-						restart();
-				}
+				checkPause();			// Check if the agent must be paused / restarted
 
-			if ( _CurrentGoal != NULL)
+			// If the operator is activated and not paused, runs it (including its children), 
+			// otherwise just process messages
+			if ( _IsActivated )
 			{
-				if(_CurrentGoal->isSelected()) 
+				if( !_IsPaused ) 
 					return CAgentScript::run();
 				else
 				{
@@ -179,15 +161,47 @@ namespace NLAIAGENT
 		}
 		else
 		{
-			// If the operator is curently activated, unactivates it
-			if ( _IsActivated == true )
+			if ( _IsActivated == true )		// If the operator is curently activated, unactivates it
 			{
-				unActivate();			
-//				_IsPaused = false;
+				unActivate();
 			}
 			return IObjectIA::ProcessRun;
 		}
 		return IObjectIA::ProcessRun;
+	}
+
+
+	void COperatorScript::execOnActivate()
+	{
+		if ( _OnActivateIndex != -1 ) 					// if found, runs the script's OnActivate() function declared in the operator class
+		{
+			if ( getAgentManager() != NULL )
+			{
+				NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+				context->Self = this;
+				runMethodeMember( _OnActivateIndex , context);
+				_OnActivateIndex = -1;
+			}
+		}
+		else
+			onActivate();								// Otherwise runs the C++ virtual one (inherited from CActorScript)
+	}
+
+
+	void COperatorScript::checkPause()
+	{
+		if ( _OnActivateIndex != -1 ) 					// if found, runs the script's OnActivate() function declared in the operator class
+		{
+			if ( getAgentManager() != NULL )
+			{
+				NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+				context->Self = this;
+				runMethodeMember( _OnActivateIndex , context);
+				_OnActivateIndex = -1;
+			}
+		}
+		else
+			onActivate();								// Otherwise runs the C++ virtual one (inherited from CActorScript)
 	}
 
 	// This function selects a goals among the ones the operator can process
@@ -200,7 +214,7 @@ namespace NLAIAGENT
 			return NULL;
 	}
 
-
+	// Check if the owner of the operator has a goal the operator could process and if the preconditions are validated
 	bool COperatorScript::checkActivation()
 	{
 		if ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL)
@@ -248,11 +262,17 @@ namespace NLAIAGENT
 		return ((NLAISCRIPT::COperatorClass *)_AgentClass)->isValidFonc( context );
 	}
 
+	// Called by the gaol when canceles: removes all childs and unactivates the operator.
 	void COperatorScript::cancel()
 	{
 		CActorScript::cancel();
 	}
 
+	// The priority of an operator is calculated as follow:
+	//		
+	//		- If the operator is not activable (no corresponding goal and / or preconditions are not validated), return 0
+	//		- If fuzzy conds exist,  returns their truth value multiplied by the operator's class priority (defined in the script using the Priority keyword)
+	//		- If no fuzzy conds, return 1 * the operator's class priority (defined in the script using the Priority keyword)
 	float COperatorScript::priority() const
 	{
 		if (! _IsActivable )
@@ -302,6 +322,7 @@ namespace NLAIAGENT
 		return result;
 	}
 
+	// Tries to unify a new first order logic fact with current instanciations of the operator's vars
 	std::list<NLAILOGIC::CValueSet *> *COperatorScript::propagate(std::list<NLAILOGIC::CValueSet *> &liaisons, NLAILOGIC::CValueSet *fact, std::vector<sint32> &pos_vals) 
 	{
 		std::list<NLAILOGIC::CValueSet *> *conflits = new std::list<NLAILOGIC::CValueSet *>;
@@ -345,6 +366,8 @@ namespace NLAIAGENT
 		return conflits;
 	}
 
+
+	// Tries to unify a list of new first order logic facts with current instanciations of the operator's vars
 	std::list<NLAILOGIC::CFact *> *COperatorScript::propagate(std::list<NLAILOGIC::CFact *> &facts)
 	{
 		std::list<NLAILOGIC::CFact *> *conflicts = new std::list<NLAILOGIC::CFact *>;
@@ -403,6 +426,8 @@ namespace NLAIAGENT
 		return conflicts;
 	}
 
+
+	// Simple unifcation between to first order logic patterns
 	NLAILOGIC::CValueSet *COperatorScript::unifyLiaison( const NLAILOGIC::CValueSet *fp, NLAILOGIC::CValueSet *vals, std::vector<sint32> &pos_vals)
 	{
 		NLAILOGIC::CValueSet *result;
@@ -416,6 +441,7 @@ namespace NLAIAGENT
 		}
 	}
 
+	// Instanciate a goals's args as static components of the operator
 	void COperatorScript::linkGoalArgs(NLAILOGIC::CGoal *g)
 	{
 		std::vector<NLAIAGENT::IObjectIA *>::const_iterator it_arg = g->getArgs().begin();
@@ -428,21 +454,22 @@ namespace NLAIAGENT
 		}
 	}
 
+	// Function called when a lauched actor succeded
 	void COperatorScript::onSuccess( IObjectIA *)
 	{
-
-		//Scotsh!
-		if(_CurrentGoal == NULL) return;
-		// Tells the goal the operator succeded
+		if(_CurrentGoal == NULL) 
+			return;
 		_CurrentGoal->operatorSuccess( this );
 		_CurrentGoal = NULL;
 		unActivate();
 	}
 	
+	// Function called when a lauched actor failed
 	void COperatorScript::onFailure( IObjectIA *)
 	{
-		//Scotsh!
-		if(_CurrentGoal == NULL) return;
+
+		if(_CurrentGoal == NULL) 
+			return;
 		// Tells the goal the operator failed
 		_CurrentGoal->operatorFailure( this );
 		_CurrentGoal = NULL;

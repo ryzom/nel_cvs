@@ -53,7 +53,7 @@ if test "$panoply_file_list" ; then
 		echo $mask_list >> current_panoply.cfg
 		../../bin/panoply_maker current_panoply.cfg	
 	done
-	ls panoply >> $panoply_file_list
+	ls panoply > $panoply_file_list
 fi
 
 

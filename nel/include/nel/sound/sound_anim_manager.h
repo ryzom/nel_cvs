@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.7 2002/07/26 09:22:37 lecroart Exp $
+ * $Id: sound_anim_manager.h,v 1.8 2002/08/06 09:13:57 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ struct eqsndanim
 /// 
 typedef sint32 TSoundAnimId;
 
-const CSoundAnimationNoId = -1;
+const TSoundAnimId CSoundAnimationNoId = -1;
 
 ///
 typedef sint32 TSoundAnimPlayId;

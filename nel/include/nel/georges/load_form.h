@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.26 2003/06/10 09:41:31 distrib Exp $
+ * $Id: load_form.h,v 1.27 2003/10/17 14:08:23 ledorze Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -318,7 +318,8 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	NLMISC::TTime start = NLMISC::CTime::getLocalTime ();
 
 	NLMISC::CSmartPtr<NLGEORGES::UForm> form;
-
+	std::vector<NLMISC::CSmartPtr<NLGEORGES::UForm> >	cacheFormList;
+	
 	for (uint j = 0; j < NeededToRecompute.size(); j++)
 	{
 		if(NLMISC::CTime::getLocalTime () > last + 5000)
@@ -335,6 +336,10 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			formLoader = NLGEORGES::UFormLoader::createLoader ();
 		}
 
+		//	cache used to retain information (to optimize time).
+		if (form)
+			cacheFormList.push_back	(form);
+		
 		// Load the form with given sheet id
 		form = formLoader->loadForm (sheetIds[NeededToRecompute[j]].toString().c_str ());
 		if (form)
@@ -354,7 +359,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 					std::string p = NLMISC::CPath::lookup (*first, false, false);
 					if (!p.empty())
 					{
-						uint32 date = NLMISC::CFile::getFileModificationDate(p);
+//						uint32 date = NLMISC::CFile::getFileModificationDate(p);
 
 						uint dicIndex;
 						std::string filename = NLMISC::CFile::getFilename(p);

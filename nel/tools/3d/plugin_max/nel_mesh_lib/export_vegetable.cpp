@@ -1,7 +1,7 @@
 /** \file export_vegetable.cpp
  * Export from 3dsmax a NeL vegetable mesh
  *
- * $Id: export_vegetable.cpp,v 1.3 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_vegetable.cpp,v 1.4 2002/04/04 14:47:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,13 @@ bool  CExportNel::buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INo
 
 							// Lighted ?
 							vegetableBuild.Lighted = CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_ON_LIGHTED, 0) == 0;
+						}
+
+						// PreComputeLighting?
+						if (vegetableBuild.PreComputeLighting)
+						{
+							// BestSidedPreComputeLighting?
+							vegetableBuild.BestSidedPreComputeLighting= CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING, 0) != BST_UNCHECKED;
 						}
 
 						// Max bend weight

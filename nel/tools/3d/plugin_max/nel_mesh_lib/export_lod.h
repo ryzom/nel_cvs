@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.20 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_lod.h,v 1.21 2002/04/04 14:47:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,9 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 
 /// Lod for bone.
 #define NEL3D_APPDATA_BONE_LOD_DISTANCE				(1423062615)
+
+/// Vegetable special lighting
+#define NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING	(1423062616)
 
 // ***************************************************************************
 

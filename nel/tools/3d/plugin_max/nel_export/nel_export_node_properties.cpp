@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.30 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.31 2002/04/04 14:47:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,7 @@ public:
 	int						VegetableAlphaBlendOnLighted;
 	int						VegetableAlphaBlendOffLighted;
 	int						VegetableAlphaBlendOffDoubleSided;
+	int						VegetableForceBestSidedLighting;
 	int						VegetableBendCenter;
 	std::string				VegetableBendFactor;
 
@@ -279,6 +280,18 @@ void VegetableStateChanged (HWND hwndDlg)
 	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_LIGHTED_DYNAMIC), enable && !alphaBlend);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_UNLIGHTED), enable && !alphaBlend);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED), enable && !alphaBlend);
+
+
+	// Precomputed Liggting?
+	bool	precomputed;
+	if(alphaBlend)
+		precomputed= IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED)!=BST_UNCHECKED;
+	else
+		precomputed= IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED)!=BST_UNCHECKED;
+	
+	// Force Best Sided Lighting only if precomputed
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_FORCE_BEST_SIDED_LIGHTING), enable && precomputed);
+
 }
 
 
@@ -927,6 +940,8 @@ int CALLBACK VegetableDialogCallback (
 			CheckRadioButton(hwndDlg, IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED, IDC_VEGETABLE_AB_OFF_UNLIGHTED, IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED+currentParam->VegetableAlphaBlendOffLighted);
 			
 			SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED), BM_SETCHECK, currentParam->VegetableAlphaBlendOffDoubleSided, 0);
+
+			SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE_FORCE_BEST_SIDED_LIGHTING), BM_SETCHECK, currentParam->VegetableForceBestSidedLighting, 0);
 			
 			CheckRadioButton(hwndDlg, IDC_CENTER_NULL, IDC_CENTER_Z, IDC_CENTER_NULL+currentParam->VegetableBendCenter);
 
@@ -974,6 +989,8 @@ int CALLBACK VegetableDialogCallback (
 							
 							currentParam->VegetableAlphaBlendOffDoubleSided = SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED), BM_GETCHECK, 0, 0);
 
+							currentParam->VegetableForceBestSidedLighting= SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE_FORCE_BEST_SIDED_LIGHTING), BM_GETCHECK, 0, 0);
+
 							if (IsDlgButtonChecked (hwndDlg, IDC_CENTER_NULL) == BST_CHECKED)
 								currentParam->VegetableBendCenter = 0;
 							else if (IsDlgButtonChecked (hwndDlg, IDC_CENTER_Z) == BST_CHECKED)
@@ -991,9 +1008,16 @@ int CALLBACK VegetableDialogCallback (
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 					case IDC_VEGETABLE_ALPHA_BLEND_ON:
 					case IDC_VEGETABLE_ALPHA_BLEND_OFF:
+					case IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED:
+					case IDC_VEGETABLE_AB_ON_UNLIGHTED:
+					case IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED:
+					case IDC_VEGETABLE_AB_OFF_LIGHTED_DYNAMIC:
+					case IDC_VEGETABLE_AB_OFF_UNLIGHTED:
 						VegetableStateChanged (hwndDlg);
 						break;
+
 					case IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED:
+					case IDC_VEGETABLE_FORCE_BEST_SIDED_LIGHTING:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						break;
@@ -2209,6 +2233,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.VegetableAlphaBlendOffDoubleSided = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED, BST_UNCHECKED);
 		param.VegetableBendCenter = CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, 0);
 		param.VegetableBendFactor = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT));
+		param.VegetableForceBestSidedLighting= CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING, BST_UNCHECKED);
+
 		param.ExportLightMapName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, NEL3D_LM_GROUPNAME_DEFAULT);
 
 		// Ligoscape
@@ -2336,6 +2362,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.VegetableBendCenter = -1;
 			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT))!=param.VegetableBendFactor)
 				param.VegetableBendFactor = "";
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING, BST_UNCHECKED)!=param.VegetableForceBestSidedLighting)
+				param.VegetableForceBestSidedLighting = BST_INDETERMINATE;
 
 			// Lightmap
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0")!=param.LumelSizeMul)
@@ -2516,6 +2544,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, param.VegetableBendCenter);
 				if (param.VegetableBendFactor != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, param.VegetableBendFactor);
+				if (param.VegetableForceBestSidedLighting != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING, param.VegetableForceBestSidedLighting);
 
 				if (param.ListActived)
 				{

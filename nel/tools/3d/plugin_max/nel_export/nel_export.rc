@@ -274,29 +274,32 @@ BEGIN
                     IDC_VEGETABLE_ALPHA_BLEND_ON,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,21,30,112,15
     CONTROL         "Alpha Blend OFF",IDC_VEGETABLE_ALPHA_BLEND_OFF,"Button",
-                    BS_AUTORADIOBUTTON,21,75,85,15
+                    BS_AUTORADIOBUTTON,20,74,85,15
     CONTROL         "Lighted - precomputed",
                     IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,51,45,85,15
+                    BS_AUTORADIOBUTTON | WS_GROUP,50,45,85,15
     CONTROL         "Unlighted",IDC_VEGETABLE_AB_ON_UNLIGHTED,"Button",
-                    BS_AUTORADIOBUTTON,51,60,90,15
+                    BS_AUTORADIOBUTTON,50,61,90,15
     CONTROL         "Lighted - precomputed",
                     IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,51,90,85,15
+                    BS_AUTORADIOBUTTON | WS_GROUP,50,90,85,15
     CONTROL         "Lighted - dynamic",IDC_VEGETABLE_AB_OFF_LIGHTED_DYNAMIC,
-                    "Button",BS_AUTORADIOBUTTON,51,105,90,15
+                    "Button",BS_AUTORADIOBUTTON,50,105,90,15
     CONTROL         "Unighted",IDC_VEGETABLE_AB_OFF_UNLIGHTED,"Button",
-                    BS_AUTORADIOBUTTON,51,120,85,15
+                    BS_AUTORADIOBUTTON,50,120,85,15
     CONTROL         "Double sided",IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,51,135,85,15
-    GROUPBOX        "Alpha mode",IDC_STATIC,15,20,135,135
+                    BS_AUTO3STATE | WS_TABSTOP,50,135,85,15
+    GROUPBOX        "Alpha mode",IDC_STATIC,15,20,135,155
     GROUPBOX        "Bend center",IDC_STATIC,160,20,105,45
     CONTROL         "Center Null",IDC_CENTER_NULL,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,165,30,50,15
-    CONTROL         "Center Z",IDC_CENTER_Z,"Button",BS_AUTORADIOBUTTON,165,
+                    BS_AUTORADIOBUTTON | WS_GROUP,166,30,50,15
+    CONTROL         "Center Z",IDC_CENTER_Z,"Button",BS_AUTORADIOBUTTON,166,
                     45,50,15
     LTEXT           "Bend Factor (0 - 1)",IDC_STATIC,160,75,60,8
-    EDITTEXT        IDC_VEGETABLE_BEND_FACTOR,225,70,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_VEGETABLE_BEND_FACTOR,226,70,40,14,ES_AUTOHSCROLL
+    CONTROL         "Force Best Sided Lighting",
+                    IDC_VEGETABLE_FORCE_BEST_SIDED_LIGHTING,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,20,155,120,15
 END
 
 IDD_INSTANCE DIALOG DISCARDABLE  0, 0, 360, 200

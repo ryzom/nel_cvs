@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.3 2001/12/27 15:11:37 besson Exp $
+ * $Id: u_instance.h,v 1.4 2002/02/06 14:47:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,8 @@ public:
 	virtual	uint				getNumMaterials() const =0;
 	/// return a local access on a material, to change its values. (NB: overwrited, if animated).
 	virtual	UInstanceMaterial	&getMaterial(uint materialId)=0;
+	/// Select textures of material among several sets (if available)
+	virtual void selectTextureSet(uint id)=0;
 	// @}
 
 };

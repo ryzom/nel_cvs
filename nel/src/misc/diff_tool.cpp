@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.5 2004/01/15 17:39:41 lecroart Exp $
+ * $Id: diff_tool.cpp,v 1.6 2004/03/05 16:39:56 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -230,6 +230,11 @@ ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffCo
 				lines.erase(lines.begin()+i);
 				--i;
 			}
+			else if (lines[i].find("// HASH_VALUE ") != string::npos)
+			{
+				lines.erase(lines.begin()+i);
+				--i;
+			}
 		}
 
 		comment.erase();
@@ -243,8 +248,8 @@ ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffCo
 		if (!si.Identifier.empty() || !si.Text.empty())
 		{
 			// add hash value comment if needed
-			if (si.Comments.find(ucstring("// HASH_VALUE ")) == ucstring::npos)
-				str += ucstring("// HASH_VALUE ") + CI18N::hashToString(si.HashValue)+ nl;
+//			if (si.Comments.find(ucstring("// HASH_VALUE ")) == ucstring::npos)
+			str += ucstring("// HASH_VALUE ") + CI18N::hashToString(si.HashValue)+ nl;
 			str += ucstring("// INDEX ") + NLMISC::toString("%u", first-strings.begin())+ nl;
 			str += si.Identifier + '\t';
 
@@ -326,6 +331,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			nlwarning("DT: Error parsing phrase identifier after %s\n", lastRead.c_str());
 			return false;
 		}
+//		nldebug("DT: parsing phrase '%s'", phrase.Identifier.c_str());
 		lastRead = phrase.Identifier;
 		CI18N::skipWhiteSpace(first, last, &phrase.Comments);
 		if (!CI18N::parseMarkedString('(', ')', first, last, phrase.Parameters))
@@ -414,6 +420,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			phrase.HashValue = makePhraseHash(phrase);
 		}
 
+//		nldebug("DT : storing phrase '%s'", phrase.Identifier.c_str());
 		phrases.push_back(phrase);
 	}
 

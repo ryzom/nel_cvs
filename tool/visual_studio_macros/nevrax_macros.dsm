@@ -8,7 +8,7 @@
 '
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
-' $Id: nevrax_macros.dsm,v 1.18 2002/01/09 10:31:23 cado Exp $
+' $Id: nevrax_macros.dsm,v 1.19 2002/01/10 14:41:48 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -24,7 +24,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros.dsm,v 1.18 2002/01/09 10:31:23 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros.dsm,v 1.19 2002/01/10 14:41:48 cado Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/* Copyright, 2000-2002 Nevrax Ltd." + vbLf + _
@@ -281,7 +281,7 @@ Sub NevraxNewClass()
 		" * <Class description>" + vbLf + _
 		" * \author " + CurrentProgrammerName + vbLf + _
 		" * \author Nevrax France" + vbLf + _
-		" * \date 2001" + vbLf + _
+		" * \date 2002" + vbLf + _
 		" */" + vbLf + _
 		"class " + ClassName
 	if AncClassName <> "" then

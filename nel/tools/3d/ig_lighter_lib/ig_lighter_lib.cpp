@@ -1,7 +1,7 @@
 /** \file ig_lighter_lib.cpp
  * <File description>
  *
- * $Id: ig_lighter_lib.cpp,v 1.1 2002/03/12 16:29:57 berenguier Exp $
+ * $Id: ig_lighter_lib.cpp,v 1.2 2003/04/22 16:17:37 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -138,7 +138,7 @@ void	CIgLighterLib::overSampleCell(CIGSurfaceLightBuild::CCellCorner &cell, uint
 // ***************************************************************************
 void	CIgLighterLib::lightIg(CInstanceLighter &instanceLighter,
 	const CInstanceGroup &igIn, CInstanceGroup &igOut, CInstanceLighter::CLightDesc &lightDesc, 
-	CSurfaceLightingInfo &slInfo)
+	CSurfaceLightingInfo &slInfo, const char *igName)
 {
 	sint				i;
 
@@ -246,7 +246,7 @@ void	CIgLighterLib::lightIg(CInstanceLighter &instanceLighter,
 	// Add pointLights of the IG.
 	for(i=0; i<(sint)igIn.getPointLightList().size();i++)
 	{
-		instanceLighter.addStaticPointLight( igIn.getPointLightList()[i] );
+		instanceLighter.addStaticPointLight( igIn.getPointLightList()[i], igName );
 	}
 
 

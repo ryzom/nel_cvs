@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.10 2002/07/03 08:45:50 corvazier Exp $
+ * $Id: ig_lighter.cpp,v 1.11 2003/04/22 16:17:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,12 +107,12 @@ protected:
 
 // ***************************************************************************
 void	lightIg(const NL3D::CInstanceGroup &igIn, NL3D::CInstanceGroup &igOut, NL3D::CInstanceLighter::CLightDesc &lightDesc, 
-		CIgLighterLib::CSurfaceLightingInfo &slInfo)
+		CIgLighterLib::CSurfaceLightingInfo &slInfo, const char *igName)
 {
 	// Create an instance of MyIgLighter.
 	CMyIgLighter	lighter;
 	// lightIg
-	CIgLighterLib::lightIg(lighter, igIn, igOut, lightDesc, slInfo);
+	CIgLighterLib::lightIg(lighter, igIn, igOut, lightDesc, slInfo, igName);
 }
 
 
@@ -243,12 +243,18 @@ int main(int argc, char* argv[])
 				// serial the retrieverBank. Exception if not found.
 				fin.open(CPath::lookup(rbankFile));
 				retrieverBank= new CRetrieverBank;
+				retrieverBank->setNamePrefix(CFile::getFilenameWithoutExtension(rbankFile).c_str ());
+
+				// Add the search path for LR files
+				CPath::addSearchPath (CFile::getPath(rbankFile));
+
 				fin.serial(*retrieverBank);
 				fin.close();
 
 				// serial the globalRetriever. Exception if not found.
 				fin.open(CPath::lookup(grFile));
 				globalRetriever= new CGlobalRetriever;
+
 				// set the RetrieverBank before loading
 				globalRetriever->setRetrieverBank(retrieverBank);
 				fin.serial(*globalRetriever);
@@ -332,7 +338,7 @@ int main(int argc, char* argv[])
 				slInfo.ColIdentifierSuffix= colIdentifierSuffix;
 				slInfo.BuildDebugSurfaceShape= buildDebugSurfaceShape;
 				slInfo.DebugSunName= debugSunName;
-				lightIg(*listIg[iIg], igOut, lighterDesc, slInfo);
+				lightIg(*listIg[iIg], igOut, lighterDesc, slInfo, fileNameIn.c_str ());
 
 				// Save this ig.
 				COFile	fout;

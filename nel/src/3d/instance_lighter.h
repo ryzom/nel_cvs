@@ -1,7 +1,7 @@
 /** \file instance_lighter.h
  * <File description>
  *
- * $Id: instance_lighter.h,v 1.5 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: instance_lighter.h,v 1.6 2003/04/22 16:17:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,7 +121,7 @@ public:
 	/**	Tool method which take a single IG, and do all the god job to light this one, with no other dependencies
 	 *	NB: it uses instLighter passed, init() ing it. It use lightDesc.UserShapeMap or it load Shape in directory lightDesc.ShapePath
 	 */
-	static	void	lightIgSimple(CInstanceLighter &instLighter, const CInstanceGroup &igIn, CInstanceGroup &igOut, const CLightDesc &lightDesc);
+	static	void	lightIgSimple(CInstanceLighter &instLighter, const CInstanceGroup &igIn, CInstanceGroup &igOut, const CLightDesc &lightDesc, const char *igName);
 
 public:
 
@@ -165,7 +165,7 @@ public:
 	/** Append a static point light to compute. call at setup stage (before light() ).
 	 *	NB: you must append all PointLights of intersets, even ones from the IG to compute.
 	 */
-	void			addStaticPointLight(const CPointLightNamed &pln);
+	void			addStaticPointLight(const CPointLightNamed &pln, const char *igName);
 
 	//@}
 

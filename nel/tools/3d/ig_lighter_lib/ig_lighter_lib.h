@@ -1,7 +1,7 @@
 /** \file ig_lighter_lib.h
  * <File description>
  *
- * $Id: ig_lighter_lib.h,v 1.1 2002/03/12 16:29:57 berenguier Exp $
+ * $Id: ig_lighter_lib.h,v 1.2 2003/04/22 16:17:37 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -80,7 +80,7 @@ public:
 	 */
 	static void	lightIg(NL3D::CInstanceLighter &instanceLighter,
 		const NL3D::CInstanceGroup &igIn, NL3D::CInstanceGroup &igOut, NL3D::CInstanceLighter::CLightDesc &lightDesc, 
-		CSurfaceLightingInfo &slInfo);
+		CSurfaceLightingInfo &slInfo, const char *igName);
 
 
 // ******************************

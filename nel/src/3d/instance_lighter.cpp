@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.12 2002/06/14 09:36:26 berenguier Exp $
+ * $Id: instance_lighter.cpp,v 1.13 2003/04/22 16:17:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -996,24 +996,32 @@ bool	CInstanceLighter::CPointLightRT::testRaytrace(const CVector &v, sint instan
 
 
 // ***************************************************************************
-void			CInstanceLighter::addStaticPointLight(const CPointLightNamed &pln)
+void			CInstanceLighter::addStaticPointLight(const CPointLightNamed &pln, const char *igName)
 {
-	// build the plRT.
-	CPointLightRT	plRT;
-	plRT.PointLight= pln;
-	// compute plRT.OODeltaAttenuation
-	plRT.OODeltaAttenuation= pln.getAttenuationEnd() - pln.getAttenuationBegin();
-	if(plRT.OODeltaAttenuation <=0 )
-		plRT.OODeltaAttenuation= 1e10f;
-	else
-		plRT.OODeltaAttenuation= 1.0f / plRT.OODeltaAttenuation;
-	// compute plRT.BSphere
-	plRT.BSphere.Center= pln.getPosition();
-	plRT.BSphere.Radius= pln.getAttenuationEnd();
-	// NB: FaceCubeGrid will be computed during light()
+	// Too many light ?
+	if (_StaticPointLights.size () <= 256)
+	{
+		// build the plRT.
+		CPointLightRT	plRT;
+		plRT.PointLight= pln;
+		// compute plRT.OODeltaAttenuation
+		plRT.OODeltaAttenuation= pln.getAttenuationEnd() - pln.getAttenuationBegin();
+		if(plRT.OODeltaAttenuation <=0 )
+			plRT.OODeltaAttenuation= 1e10f;
+		else
+			plRT.OODeltaAttenuation= 1.0f / plRT.OODeltaAttenuation;
+		// compute plRT.BSphere
+		plRT.BSphere.Center= pln.getPosition();
+		plRT.BSphere.Radius= pln.getAttenuationEnd();
+		// NB: FaceCubeGrid will be computed during light()
 
-	// add the plRT
-	_StaticPointLights.push_back(plRT);
+		// add the plRT
+		_StaticPointLights.push_back(plRT);
+	}
+	else
+	{
+		nlwarning ("ERROR: Too many static lights in ig (%s).", igName);
+	}
 
 }
 
@@ -1383,13 +1391,17 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 		// If this light is used.
 		if(plRT.RefCount > 0)
 		{
-			// Must Copy it into Ig.
-			listPointLight.push_back(plRT.PointLight);
-			plRT.DstId= plId++;
-			// If index >= 255, too many lights (NB: => because 255 is a NULL code).
-			if(plId>=0xFF)
+			// Valid light ?
+			if (plId <=0xFF)
 			{
-				throw Exception("Too many Static Point Lights influence the IG!!");
+				// Must Copy it into Ig.
+				listPointLight.push_back(plRT.PointLight);
+				plRT.DstId= plId++;
+				// If index >= 255, too many lights (NB: => because 255 is a NULL code).
+			}
+			else
+			{
+				nlwarning("ERROR: Too many Static Point Lights influence the IG!!");
 			}
 		}
 	}
@@ -1479,7 +1491,7 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 
 
 // ***************************************************************************
-void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInstanceGroup &igIn, CInstanceGroup &igOut, const CLightDesc &lightDesc)
+void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInstanceGroup &igIn, CInstanceGroup &igOut, const CLightDesc &lightDesc, const char *igName)
 {
 	sint				i;
 
@@ -1581,7 +1593,7 @@ void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInsta
 	// Add pointLights of the IG.
 	for(i=0; i<(sint)igIn.getPointLightList().size();i++)
 	{
-		instLighter.addStaticPointLight( igIn.getPointLightList()[i] );
+		instLighter.addStaticPointLight( igIn.getPointLightList()[i], igName );
 	}
 
 

@@ -8,10 +8,16 @@
 // Variables
 // ---------------------------------------------------------------------------------------- 
 
+	// where we can find the mysql database
 	$DBHost		= "localhost";
 	$DBUserName	= "";
 	$DBPassword	= "";
 	$DBName		= "nel";
+
+	// where we can find the dir.gz and other files
+	// you can use a secure access using .htaccess and .htpasswd, in this case, set the url like this:
+	// "http://login:password@localhost/patch"
+	$PatchURL = "http://localhost/patch";
 
 // ---------------------------------------------------------------------------------------- 
 // Functions
@@ -22,8 +28,10 @@
 	// return true if the check is ok
 	function checkLoginPassword ($login, $password, &$id, &$reason)
 	{
-		$link = mysql_connect() or die ("Can't connect to database: ".mysql_error());
-		mysql_select_db ("nel") or die ("Can't access to the table: ".mysql_error());
+		global $DBHost, $DBUserName, $DBPassword, $DBName;
+
+		$link = mysql_connect($DBHost, $DBUserName, $DBPassword) or die ("Can't connect to database host:$DBHost user:$DBUserName");
+		mysql_select_db ($DBName) or die ("Can't access to the table dbname:$DBName");
 		$query = "SELECT * FROM user where Login='".$login."'";
 		$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 		
@@ -125,7 +133,7 @@
 		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
 		echo "<html><head><title>patch form</title></head><body>\n";
 		echo "<h1>Please wait while patching $clientApplication version $clientVersion to version $serverVersion </h1>\n";
-		echo '<!--nel="patch" serverVersion="'.$serverVersion.'" nelUrl="'.$PHP_SELF.'?cmd=login&shardid='.$shardid.'" nelServerPath="http://localhost/patch" nelUrlFailed="'.$PHP_SELF.'?cmd=patchFailed"'."\n";
+		echo '<!--nel="patch" serverVersion="'.$serverVersion.'" nelUrl="'.$PHP_SELF.'?cmd=login&shardid='.$shardid.'" nelServerPath="'.$PatchURL.'" nelUrlFailed="'.$PHP_SELF.'?cmd=patchFailed"'."\n";
 		echo "<h1>Current state</h1>\n";
 		echo "<!--nel_start_state--><!--nel_end_state--><br>\n";
 		echo "<h1>Log</h1>\n";
@@ -190,8 +198,8 @@
 		global $PHP_SELF;
 		global $DBHost, $DBUserName, $DBPassword, $DBName;
 
-		$link = mysql_connect($DBHost, $DBUserName, $DBPassword) or die ("Can't connect to database");
-		mysql_select_db ($DBName) or die ("Can't access to the table");
+		$link = mysql_connect($DBHost, $DBUserName, $DBPassword) or die ("Can't connect to database host:$DBHost user:$DBUserName");
+		mysql_select_db ($DBName) or die ("Can't access to the table dbname:$DBName");
 		$query = "SELECT * FROM shard WHERE ClientApplication='".$clientApplication."'";
 		$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 		
@@ -222,13 +230,13 @@
 					if ($row["Online"])
 					{
 						if ($versionok)
-							echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), wsip:'.$row["WsAddr"]."\n";
+							echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), shardid:'.$row["ShardId"].' wsip:'.$row["WsAddr"]."\n";
 						else
-							echo '<a href="'.basename($PHP_SELF).'?cmd=patch&serverVersion='.$row["Version"].'&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), wsip:'.$row["WsAddr"]."\n";
+							echo '<a href="'.basename($PHP_SELF).'?cmd=patch&serverVersion='.$row["Version"].'&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), shardid:'.$row["ShardId"].' wsip:'.$row["WsAddr"]."\n";
 					}
 					else
 					{
-						echo $row["Name"].' '.$ver.' (offline), wsip:'.$row["WsAddr"]."\n";
+						echo $row["Name"].' '.$ver.' (offline), shardid:'.$row["ShardId"].' wsip:'.$row["WsAddr"]."\n";
 					}
 					echo "</li>\n";
 				}

@@ -32,6 +32,9 @@
 		{
 			if ($this->isReading())
 			{
+				if ($this->Pos+1 > strlen($this->Buffer))
+					return false;
+
 				$val = ord($this->Buffer{$this->Pos++});
 				//printf ("read uint8 '%d'<br>", $val);
 			}
@@ -41,12 +44,16 @@
 				$this->Pos++;
 				//printf ("write uint8 '%d' %d<br>", $val, $this->Pos);
 			}
+			return true;
 		}
 
 		function serialuint32 (&$val)
 		{
 			if ($this->isReading())
 			{
+				if ($this->Pos+4 > strlen($this->Buffer))
+					return false;
+
 				$val = ord($this->Buffer{$this->Pos++});
 				$val += ord($this->Buffer{$this->Pos++})<<8;
 				$val += ord($this->Buffer{$this->Pos++})<<16;
@@ -62,13 +69,19 @@
 				$this->Pos += 4;
 				//printf ("write uint32 '%d' %d<br>", $val, $this->Pos);
 			}
+			return true;
 		}
 
 		function serialstring (&$val)
 		{
 			if ($this->isReading())
 			{
-				$this->serialuint32($size);
+				if (!$this->serialuint32($size))
+					return false;
+
+				if ($this->Pos+$size > strlen($this->Buffer))
+					return false;
+
 				$val = substr ($this->Buffer, $this->Pos, $size);
 				//printf ("read string '%s'<br>", $val);
 				$this->Pos += strlen($val);
@@ -80,6 +93,7 @@
 				$this->Pos += strlen($val);
 				//printf ("write string '%s' %d<br>", $val, $this->Pos);
 			}
+			return true;
 		}
 	}
 
@@ -107,17 +121,21 @@
 	function sendMessage ($fp, $msgout)
 	{
 		$size = $msgout->Pos;
-		$buffer = chr(($size>>24)&0xFF);
+		$buffer  = chr(($size>>24)&0xFF);
 		$buffer .= chr(($size>>16)&0xFF);
 		$buffer .= chr(($size>>8)&0xFF);
 		$buffer .= chr($size&0xFF);
 		$buffer .= $msgout->Buffer;
 
-		fwrite ($fp, $buffer);
+		if (!fwrite ($fp, $buffer))
+			return false;
 
 		//printf ("sent packet size '%d'<br>", strlen($buffer));
 		
+		// strange but flush returns false even if it s ok
 		fflush ($fp);
+
+		return true;
 	}
 
 	function waitMessage ($fp, &$msgin)
@@ -125,20 +143,28 @@
 		//echo "waiting a message";
 		$size = 0;
 		$val = fread ($fp, 1);
+		if (feof ($fp)) return false;
 		$size = ord($val) << 24;
 		$val = fread ($fp, 1);
+		if (feof ($fp)) return false;
 		$size = ord($val) << 16;
 		$val = fread ($fp, 1);
+		if (feof ($fp)) return false;
 		$size += ord($val) << 8;
 		$val = fread ($fp, 1);
+		if (feof ($fp)) return false;
 		$size += ord($val);
 		//printf ("receive packet size '%d'<br>", $size);
 		$fake = fread ($fp, 4);
+		if (feof ($fp)) return false;
 		$size -= 4; // remove the fake
 
 		$buffer = fread ($fp, $size);
+		if (feof ($fp)) return false;
 		$msgin = new CMemStream;
 		$msgin->setBuffer ($buffer);
+
+		return true;
 	}
 
 	function askClientConnection ($shardid, $uid, &$res)
@@ -158,18 +184,40 @@
 		$msgout->serialuint32 ($shardid);
 		$msgout->serialuint32 ($uid);
 
-		sendMessage ($fp, $msgout);
+		if (!sendMessage ($fp, $msgout))
+		{
+			$res = "Can't send message connection to the Login Service";
+			return $ok;
+		}
 
-		waitMessage ($fp, $msgin);
+		if (!waitMessage ($fp, $msgin))
+		{
+			$res = "Can't receive the answer from the Login Service";
+			return $ok;
+		}
 
-		$msgin->serialstring($reason);
+		if (!$msgin->serialstring($reason))
+		{
+			$res = "Can't read the reason";
+			return $ok;
+		}
 		//printf("reason size %d", strlen($reason));
 			
 		if(strlen($reason) == 0)
 		{
 			// it s ok, let's connect
-			$msgin->serialstring($cookie);
-			$msgin->serialstring($addr);
+			if (!$msgin->serialstring($cookie))
+			{
+				$res = "Can't read the cookie";
+				return $ok;
+			}
+
+			if (!$msgin->serialstring($addr))
+			{
+				$res = "Can't read the addr";
+				return $ok;
+			}
+
 			$res = '<!--nel="launch" nelArgs="'.$cookie.' '.$addr.'"-->';
 			$ok = true;
 		}
@@ -207,11 +255,23 @@
 		$msgout->serialuint32 ($shardid);
 		$msgout->serialuint32 ($uid);
 
-		sendMessage ($fp, $msgout);
+		if (!sendMessage ($fp, $msgout))
+		{
+			$res = "Can't send message disconnect to the Login Service";
+			return $ok;
+		}
 
-		waitMessage ($fp, $msgin);
+		if (!waitMessage ($fp, $msgin))
+		{
+			$res = "Can't receive the answer from the Login Service";
+			return $ok;
+		}
 
-		$msgin->serialstring($res);
+		if (!$msgin->serialstring($res))
+		{
+			$res = "Can't read the string";
+			return $ok;
+		}
 		//printf("reason size %d", strlen($res));
 			
 		if(strlen($res) == 0)

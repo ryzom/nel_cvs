@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.24 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: instance_group_user.h,v 1.25 2003/05/26 09:00:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,7 +109,7 @@ private:
 	void setPos (const NLMISC::CVector &pos);
 	void setRotQuat (const NLMISC::CQuat &q);
 
-	bool getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
+	bool getStaticLightSetup(uint retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
 		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient);
 
 	NLMISC::CVector getPos ();

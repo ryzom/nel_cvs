@@ -1,7 +1,7 @@
 /** \file ig_surface_light.cpp
  * <File description>
  *
- * $Id: ig_surface_light.cpp,v 1.4 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: ig_surface_light.cpp,v 1.5 2003/05/26 09:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -97,15 +97,28 @@ void			CIGSurfaceLight::clear()
 // ***************************************************************************
 void			CIGSurfaceLight::serial(NLMISC::IStream &f)
 {
-	(void)f.serialVersion(0);
+	/*
+	Version 1:
+		- The retriever grid map is now a map<uint,CRetrieverLightGrid>. Discard compatibility but.
+	*/
+	sint	ver= f.serialVersion(1);
 
 	f.serial(_CellSize);
 	f.serial(_OOCellSize);
-	f.serialCont(_RetrieverGridMap);
+	if(ver<1)
+	{
+		std::map<std::string, CRetrieverLightGrid>		oldFormatRetrieverGridMap;
+		f.serialCont(oldFormatRetrieverGridMap);
+		_RetrieverGridMap.clear();
+	}
+	else
+	{
+		f.serialCont(_RetrieverGridMap);
+	}
 }
 
 // ***************************************************************************
-bool			CIGSurfaceLight::getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const CVector &localPos, 
+bool			CIGSurfaceLight::getStaticLightSetup(uint retrieverIdentifier, sint surfaceId, const CVector &localPos, 
 	std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 {
 	nlassert(_Owner);

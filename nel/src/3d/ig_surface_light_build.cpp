@@ -1,7 +1,7 @@
 /** \file ig_surface_light_build.cpp
  * <File description>
  *
- * $Id: ig_surface_light_build.cpp,v 1.3 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: ig_surface_light_build.cpp,v 1.4 2003/05/26 09:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/ig_surface_light_build.h"
+#include "3d/scene_group.h"
 
 
 using namespace NLMISC;
@@ -56,18 +57,14 @@ void			CIGSurfaceLightBuild::buildSunDebugMesh(CMesh::CMeshBuild &meshBuild,
 		{
 			CSurface	&surface= it->second.Grids[iSurf];
 
-			// Resize vector and faces.
+			// Resize vector.
 			uint	wVert= surface.Width;
 			uint	hVert= surface.Height;
-			uint	wCell= wVert-1;
-			uint	hCell= hVert-1;
 			uint	vId0= meshBuild.Vertices.size();
 			// Allocate vertices / colors
 			meshBuild.Vertices.resize(vId0 + wVert*hVert);
 			vector<CRGBA>	colors;
 			colors.resize(wVert*hVert);
-			// Allocate enough space for faces.
-			meshBuild.Faces.reserve(meshBuild.Faces.size() + wCell*hCell *2);
 
 			// Build vertices pos and colors.
 			uint	x, y;
@@ -91,57 +88,164 @@ void			CIGSurfaceLightBuild::buildSunDebugMesh(CMesh::CMeshBuild &meshBuild,
 			}
 
 			// Build faces
-			for(y=0;y<hCell; y++)
-			{
-				for(x=0;x<wCell; x++)
-				{
-					uint	v00= y*wVert + x;
-					uint	v10= y*wVert + x+1;
-					uint	v01= (y+1)*wVert + x;
-					uint	v11= (y+1)*wVert + x+1;
-
-					// Skip this cell??
-					bool	skip= false;
-					if(!surface.Cells[v00].InSurface && !surface.Cells[v00].Dilated)	skip= true;
-					if(!surface.Cells[v10].InSurface && !surface.Cells[v10].Dilated)	skip= true;
-					if(!surface.Cells[v01].InSurface && !surface.Cells[v01].Dilated)	skip= true;
-					if(!surface.Cells[v11].InSurface && !surface.Cells[v11].Dilated)	skip= true;
-
-
-					if(!skip)
-					{
-						// 1st triangle.
-						CMesh::CFace	face0;
-						face0.MaterialId= 0;
-						face0.Corner[0].Vertex= vId0+ v00;
-						face0.Corner[0].Color= colors[v00];
-						face0.Corner[1].Vertex= vId0+ v10;
-						face0.Corner[1].Color= colors[v10];
-						face0.Corner[2].Vertex= vId0+ v01;
-						face0.Corner[2].Color= colors[v01];
-
-						// 2nd triangle.
-						CMesh::CFace	face1;
-						face1.MaterialId= 0;
-						face1.Corner[0].Vertex= vId0+ v10;
-						face1.Corner[0].Color= colors[v10];
-						face1.Corner[1].Vertex= vId0+ v11;
-						face1.Corner[1].Color= colors[v11];
-						face1.Corner[2].Vertex= vId0+ v01;
-						face1.Corner[2].Color= colors[v01];
-
-						// Add 2 triangles
-						meshBuild.Faces.push_back(face0);
-						meshBuild.Faces.push_back(face1);
-					}
-				}
-			}
-
+			addDebugMeshFaces(meshBuild, surface, vId0, colors);
 
 		}
 	}
 
+}
 
+
+// ***************************************************************************
+void			CIGSurfaceLightBuild::buildPLDebugMesh(CMesh::CMeshBuild &meshBuild, CMeshBase::CMeshBaseBuild &meshBaseBuild, const CVector &deltaPos, const CInstanceGroup &igOut)
+{
+	contReset(meshBuild);
+	contReset(meshBaseBuild);
+	meshBaseBuild.Materials.resize(1);
+	meshBaseBuild.Materials[0].initUnlit();
+
+	meshBuild.VertexFlags= CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag;
+
+	// Get the number of lights in Ig.
+	uint	numLight= igOut.getPointLightList().size();
+	numLight= raiseToNextPowerOf2(numLight);
+	uint	idMultiplier= 256/ numLight;
+
+	// For all grids.
+	ItRetrieverGridMap	it;
+	for(it= RetrieverGridMap.begin(); it!= RetrieverGridMap.end(); it++)
+	{
+		// get the final surface
+		CIGSurfaceLight::TRetrieverGridMap::const_iterator	itIg= 
+			igOut.getIGSurfaceLight().getRetrieverGridMap().find(it->first);
+
+		// If not found, abort
+		if( itIg== igOut.getIGSurfaceLight().getRetrieverGridMap().end() )
+		{
+			nlwarning("buildPLDebugMesh fails to find retriever '%d' in igOut", it->first);
+			continue;
+		}
+		else if( it->second.Grids.size()!=itIg->second.Grids.size() )
+		{
+			nlwarning("buildPLDebugMesh find retriever '%d' in igOut, but with bad size: excepting: %d, get: %d", 
+				it->first, it->second.Grids.size(), itIg->second.Grids.size() );
+			continue;
+		}
+
+		// For all surface of the retriever.
+		for(uint iSurf= 0; iSurf<it->second.Grids.size(); iSurf++)
+		{
+			CSurface					&surface= it->second.Grids[iSurf];
+			const CSurfaceLightGrid		&igSurface= itIg->second.Grids[iSurf];
+
+			// Resize vector.
+			uint	wVert= surface.Width;
+			uint	hVert= surface.Height;
+			uint	vId0= meshBuild.Vertices.size();
+			// Allocate vertices / colors
+			meshBuild.Vertices.resize(vId0 + wVert*hVert);
+			vector<CRGBA>	colors;
+			colors.resize(wVert*hVert);
+
+			// Build vertices pos and colors.
+			uint	x, y;
+			for(y=0;y<hVert; y++)
+			{
+				for(x=0;x<wVert; x++)
+				{
+					uint	vId= y*wVert + x;
+					// Copy Pos.
+					meshBuild.Vertices[vId0 + vId]= surface.Cells[vId].CenterPos + deltaPos;
+					// init Color with idMultiplier in Blue (info!).
+					CRGBA	&col= colors[vId];
+					col.set(0,0, idMultiplier, 255);
+					// store the compressed id of the light found in igOut.
+					nlassert( CSurfaceLightGrid::NumLightPerCorner>=2 );
+					uint	idLight0= igSurface.Cells[vId].Light[0];
+					uint	idLight1= igSurface.Cells[vId].Light[1];
+					// 255 means no light. If at least one light
+					if(idLight0<255)
+					{
+						uint	v= (idLight0+1)*idMultiplier;
+						col.R= min(v, 255U);
+						// if second light
+						if(idLight1<255)
+						{
+							v= (idLight1+1)*idMultiplier;
+							col.G= min(v, 255U);
+						}
+					}
+				}
+			}
+
+			// Build faces
+			addDebugMeshFaces(meshBuild, surface, vId0, colors);
+
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+void			CIGSurfaceLightBuild::addDebugMeshFaces(CMesh::CMeshBuild &meshBuild, CSurface &surface, uint vId0, 
+	const std::vector<CRGBA>	&colors)
+{
+	// Resize faces.
+	uint	wVert= surface.Width;
+	uint	hVert= surface.Height;
+	uint	wCell= wVert-1;
+	uint	hCell= hVert-1;
+	// Allocate enough space for faces.
+	meshBuild.Faces.reserve(meshBuild.Faces.size() + wCell*hCell *2);
+
+	// Build faces
+	uint	x,y;
+	for(y=0;y<hCell; y++)
+	{
+		for(x=0;x<wCell; x++)
+		{
+			uint	v00= y*wVert + x;
+			uint	v10= y*wVert + x+1;
+			uint	v01= (y+1)*wVert + x;
+			uint	v11= (y+1)*wVert + x+1;
+
+			// Skip this cell??
+			bool	skip= false;
+			if(!surface.Cells[v00].InSurface && !surface.Cells[v00].Dilated)	skip= true;
+			if(!surface.Cells[v10].InSurface && !surface.Cells[v10].Dilated)	skip= true;
+			if(!surface.Cells[v01].InSurface && !surface.Cells[v01].Dilated)	skip= true;
+			if(!surface.Cells[v11].InSurface && !surface.Cells[v11].Dilated)	skip= true;
+
+
+			if(!skip)
+			{
+				// 1st triangle.
+				CMesh::CFace	face0;
+				face0.MaterialId= 0;
+				face0.Corner[0].Vertex= vId0+ v00;
+				face0.Corner[0].Color= colors[v00];
+				face0.Corner[1].Vertex= vId0+ v10;
+				face0.Corner[1].Color= colors[v10];
+				face0.Corner[2].Vertex= vId0+ v01;
+				face0.Corner[2].Color= colors[v01];
+
+				// 2nd triangle.
+				CMesh::CFace	face1;
+				face1.MaterialId= 0;
+				face1.Corner[0].Vertex= vId0+ v10;
+				face1.Corner[0].Color= colors[v10];
+				face1.Corner[1].Vertex= vId0+ v11;
+				face1.Corner[1].Color= colors[v11];
+				face1.Corner[2].Vertex= vId0+ v01;
+				face1.Corner[2].Color= colors[v01];
+
+				// Add 2 triangles
+				meshBuild.Faces.push_back(face0);
+				meshBuild.Faces.push_back(face1);
+			}
+		}
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file ig_surface_light.h
  * <File description>
  *
- * $Id: ig_surface_light.h,v 1.4 2003/05/19 13:08:17 berenguier Exp $
+ * $Id: ig_surface_light.h,v 1.5 2003/05/26 09:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -59,8 +59,8 @@ public:
 			f.serial(Grids);
 		}
 	};
-	typedef std::map<std::string, CRetrieverLightGrid>		TRetrieverGridMap;
-	typedef TRetrieverGridMap::iterator						ItRetrieverGridMap;
+	typedef std::map<uint32, CRetrieverLightGrid>	TRetrieverGridMap;
+	typedef TRetrieverGridMap::iterator				ItRetrieverGridMap;
 
 public:
 
@@ -83,7 +83,7 @@ public:
 	void			serial(NLMISC::IStream &f);
 
 	/** Get StaticLightSetup Infos from the grid
-	 *	\param retrieverIdentifier value returned by CClobalRetriever::getIdentifier(globalPos).
+	 *	\param retrieverIdentifier value returned by CGlobalRetriever::getLocalRetrieverId(globalPos).
 	 *	\param surfaceId the id of the surface in the LocalRetriever
 	 *	\param localPos position to retrieve info. 
 	 *	Position local to the LocalRetriever!! ie gp.LocalPosition.Estimated
@@ -91,7 +91,7 @@ public:
 	 *	\return false if retrieverIdentifier / surfaceId is not found. In this case pointLightList is not
 	 *	modified, and sunContribution is set to 255, and localAmbient is set to 0
 	 */
-	bool			getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const CVector &localPos,
+	bool			getStaticLightSetup(uint retrieverIdentifier, sint surfaceId, const CVector &localPos,
 		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient);
 
 

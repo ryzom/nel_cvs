@@ -1,7 +1,7 @@
 /** \file ig_surface_light_build.h
  * <File description>
  *
- * $Id: ig_surface_light_build.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: ig_surface_light_build.h,v 1.3 2003/05/26 09:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -102,8 +102,8 @@ public:
 		// There is localRetriver.getNumSurfaces() Grids.
 		std::vector<CSurface>		Grids;
 	};
-	typedef std::map<std::string, CRetrieverLightGrid>		TRetrieverGridMap;
-	typedef TRetrieverGridMap::iterator						ItRetrieverGridMap;
+	typedef std::map<uint, CRetrieverLightGrid>		TRetrieverGridMap;
+	typedef TRetrieverGridMap::iterator				ItRetrieverGridMap;
 
 
 	// The requested CellSize (setuped by CInstanceLighter)
@@ -116,6 +116,13 @@ public:
 
 	/// Debug: build a colored Grid mesh of SunContribution.
 	void			buildSunDebugMesh(CMesh::CMeshBuild &meshBuild, CMeshBase::CMeshBaseBuild &meshBaseBuild, const CVector &deltaPos=CVector::Null);
+
+	/// Debug: build a colored Grid mesh of PointLight. R= pointLight1 id. G= PointLight2 id. B= The multiplier used to show Ids.
+	void			buildPLDebugMesh(CMesh::CMeshBuild &meshBuild, CMeshBase::CMeshBaseBuild &meshBaseBuild, const CVector &deltaPos, const CInstanceGroup &igOut);
+
+private:
+	void			addDebugMeshFaces(CMesh::CMeshBuild &meshBuild, CSurface &surface, uint vId0, 
+		const std::vector<CRGBA>	&colors);
 
 };
 

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.31 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: instance_group_user.cpp,v 1.32 2003/05/26 09:00:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -439,7 +439,7 @@ void			CInstanceGroupUser::unfreezeHRC()
 
 // ***************************************************************************
 bool			CInstanceGroupUser::getStaticLightSetup(
-		const std::string &retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
+		uint retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
 		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 {
 	NL3D_MEM_IG

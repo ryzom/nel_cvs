@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.70 2004/04/09 14:24:24 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.71 2004/05/11 16:36:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -746,7 +746,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 		// Re affect the cluster to the accelerator if not the root
 		if (!_ClusterInstances[i]->isRoot())
 		{
-			_ClipTrav->Accel.erase (_ClusterInstances[i]->AccelIt);
+			_ClipTrav->unregisterCluster(_ClusterInstances[i]);
 			_ClipTrav->registerCluster (_ClusterInstances[i]);
 		}
 	}

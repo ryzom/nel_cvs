@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.23 2004/04/13 17:01:15 berenguier Exp $
+ * $Id: cluster.cpp,v 1.24 2004/05/11 16:36:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -392,7 +392,7 @@ void CCluster::traverseHrc ()
 	// Re affect the cluster to the accelerator if not the root
 	if (!isRoot())
 	{
-		Group->_ClipTrav->Accel.erase (AccelIt);
+		Group->_ClipTrav->unregisterCluster(this);
 		Group->_ClipTrav->registerCluster (this);
 	}
 }

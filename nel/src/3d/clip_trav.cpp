@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.42 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: clip_trav.cpp,v 1.43 2004/05/11 16:36:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,15 +69,66 @@ CClipTrav::~CClipTrav()
 }
 
 // ***************************************************************************
-bool CClipTrav::fullSearch (vector<CCluster*>& result, CInstanceGroup *pIG, const CVector& pos)
+bool CClipTrav::fullSearch (vector<CCluster*>& vCluster, const CVector& pos)
 {
-	uint32 i, j;
+	CQuadGrid<CCluster*>::CIterator itAcc;
+	
+	// search with help of Accel
+	bool bInWorld = true;
+	Accel.select (pos, pos);
+	itAcc = Accel.begin();
+	while (itAcc != Accel.end())
+	{
+		CCluster *pCluster = *itAcc;
+		if (pCluster->isIn (pos))
+		{
+			vCluster.push_back (pCluster);
+			bInWorld = false;
+		}
+		++itAcc;
+	}
+	
+	// if not found at all
+	if (bInWorld)
+	{
+		vCluster.push_back (RootCluster);
+	}
+	// else must filter to take only the ones that are the lower in the hierarchy (same as in old code)
+	else
+	{
+		uint	i;
+		std::set<CCluster*>		parentExclude;
 
+		// for each cluster, avoid its parent
+		for(i=0;i<vCluster.size();i++)
+		{
+			CCluster	*cluster= vCluster[i];
+			while(cluster->Father)
+			{
+				cluster= cluster->Father;
+				parentExclude.insert(cluster);
+			}
+		}
+
+		// reparse to remove clusters presents in the exclude set
+		std::vector<CCluster*>::iterator	it;
+		for(it=vCluster.begin(); it!=vCluster.end();)
+		{
+			if(parentExclude.find(*it)!=parentExclude.end())
+				it= vCluster.erase(it);
+			else
+				it++;
+		}
+	}
+
+	/*
+	// Old slow code (up to 5 ms on a 2.4 Ghz, in a big city).
+	uint32 i, j;
 	for (i = 0; i < pIG->_ClusterInstances.size(); ++i)
 	{
 		for (j = 0; j < pIG->_ClusterInstances[i]->Children.size(); ++j)
 		{
-			if (fullSearch (result, pIG->_ClusterInstances[i]->Children[j]->Group, pos))
+			if (fullSearch (vCluster, pIG->_ClusterInstances[i]->Children[j]->Group, pos))
 				return true;
 		}
 	}
@@ -85,11 +136,12 @@ bool CClipTrav::fullSearch (vector<CCluster*>& result, CInstanceGroup *pIG, cons
 	for (i = 0; i < pIG->_ClusterInstances.size(); ++i)
 	{
 		if (pIG->_ClusterInstances[i]->isIn(pos))
-			result.push_back (pIG->_ClusterInstances[i]);
+			vCluster.push_back (pIG->_ClusterInstances[i]);
 	}
-	if (result.size() > 0)
-		return true;
-	return false;
+	if (vCluster.size() > 0)
+		return true;*/
+
+	return true;
 }
 
 /// Set cluster tracking on/off (ie storage of thje visible cluster during clip traversal)
@@ -231,7 +283,7 @@ void CClipTrav::traverse()
 	CQuadGrid<CCluster*>::CIterator itAcc;
 	if (Camera->getClusterSystem() == (CInstanceGroup*)-1)
 	{
-		fullSearch(vCluster, RootCluster->Group, CamPos);
+		fullSearch(vCluster, CamPos);
 		for (i = 0; i < vCluster.size(); ++i)
 			sceneRoot->clipAddChild(vCluster[i]);
 	}
@@ -438,18 +490,13 @@ void CClipTrav::registerCluster (CCluster* pCluster)
 // ***************************************************************************
 void CClipTrav::unregisterCluster (CCluster* pCluster)
 {
-	Accel.selectAll();
-	CQuadGrid<CCluster*>::CIterator itAcc = Accel.begin();
-	while (itAcc != Accel.end())
-	{
-		CCluster *pC = *itAcc;
-		if (pCluster == pC)
-		{
-			Accel.erase (itAcc);
-			break;
-		}
-		++itAcc;
-	}
+	if(!pCluster)
+		return;
+
+	Accel.erase(pCluster->AccelIt);
+
+	// just ensure it point to NULL
+	pCluster->AccelIt= CQuadGrid<CCluster*>::CIterator();
 }
 
 

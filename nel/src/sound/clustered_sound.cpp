@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.17 2004/03/19 16:50:40 lecroart Exp $
+ * $Id: clustered_sound.cpp,v 1.18 2004/05/11 16:37:12 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -294,7 +294,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 
 	// Retreive the list of cluster where the listener is
 	vector<CCluster*> vCluster;
-	clipTrav.fullSearch (vCluster, clipTrav.RootCluster->Group, listenerPos);
+	clipTrav.fullSearch (vCluster, listenerPos);
 
 
 	// reset the audible cluster map

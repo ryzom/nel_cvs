@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.21 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: clip_trav.h,v 1.22 2004/05/11 16:36:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,9 +116,9 @@ public:
 
 	/// \name Cluster system related methods.
 	//@{
-	/** Retreive a list of cluster for witch the position is inside.
+	/** Retreive a list of cluster for witch the position is inside. At least return the RootCluster one
 	*/
-	bool fullSearch (std::vector<CCluster*>& result, CInstanceGroup *pIG, const CVector& pos);
+	bool fullSearch (std::vector<CCluster*>& result, const CVector& pos);
 
 	/// Set cluster tracking on/off (ie storage of thje visible cluster during clip traversal)
 	void setClusterVisibilityTracking(bool track);

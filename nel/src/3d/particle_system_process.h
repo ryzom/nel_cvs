@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.13 2003/11/25 14:38:30 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.14 2004/02/19 09:51:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/3d/animation_time.h"
+#include "3d/texture.h"
 
 namespace NLMISC
 {
@@ -176,6 +177,10 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 
 		// returns the number of sub-objects (including this one, that requires the user matrix for its computations)
 		virtual uint			getUserMatrixUsageCount() const;
+
+		// append all tex in the given vector
+		virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv) = 0;
+		
 
 			
 	protected:

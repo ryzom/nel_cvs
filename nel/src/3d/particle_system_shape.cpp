@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.41 2003/11/25 16:57:20 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.42 2004/02/19 09:50:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/scene.h"
 #include "3d/driver.h"
 #include "3d/skeleton_model.h"
+#include "3d/texture_file.h"
 #include "nel/misc/file.h"
 #include "nel/misc/mem_stream.h"
 #include "nel/misc/hierarchical_timer.h"
@@ -193,7 +194,26 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 	_ParticleSystemProto.serialPtr(myInstance); // instanciate the system	
 
 
-	myInstance->setScene(&scene);
+	myInstance->setScene(&scene);	
+
+	if (_CachedTex.empty() && scene.getDriver())
+	{
+		// load && cache textures
+		myInstance->enumTexs(_CachedTex, *scene.getDriver());		
+		for(uint k = 0; k < _CachedTex.size(); ++k)
+		{		
+			scene.getDriver()->setupTexture (*(ITexture *)_CachedTex[k]);			
+		}
+	}
+	else
+	{
+		for(uint k = 0; k < _CachedTex.size(); ++k)
+		{								
+			//nlinfo(_CachedTex[k]->getShareName().c_str());
+		}
+	}
+
+	// tmp
 
 	if (_Sharing)
 	{
@@ -270,5 +290,38 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 		PARTICLES_CHECK_MEM;
 	}
 }
+
+///===========================================================================
+void CParticleSystemShape::flushTextures(IDriver &driver, uint selectedTexture)
+{
+	// if textures are already flushed, no-op
+	if (!_CachedTex.empty()) return;	
+	if (_SharedSystem)
+	{
+		_SharedSystem->enumTexs(_CachedTex, driver);
+	}
+	else
+	{
+		// must create an instance just to flush the textures
+		CParticleSystem *myInstance = NULL;						
+
+		// serialize from the memory stream	
+		if (!_ParticleSystemProto.isReading()) // we must be sure that we are reading the stream
+		{
+			_ParticleSystemProto.invert();
+		}				
+		_ParticleSystemProto.resetPtrTable();
+		_ParticleSystemProto.seek(0, IStream::begin);
+		_ParticleSystemProto.serialPtr(myInstance); // instanciate the system			
+		myInstance->enumTexs(_CachedTex, driver);
+		delete myInstance;
+	}
+	for(uint k = 0; k < _CachedTex.size(); ++k)
+	{				
+		//nlinfo(_CachedTex[k]->getShareName().c_str());
+		driver.setupTexture(*_CachedTex[k]);		
+	}
+}
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.18 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: particle_system_shape.h,v 1.19 2004/02/19 09:50:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,8 +138,8 @@ public:
 	  */
 	CParticleSystem *instanciatePS(CScene &scene);
 protected:
-	/// inherited from ishape \todo nico : implement flush texture for PS
-	virtual void				flushTextures (IDriver &driver, uint selectedTexture) {}		
+	/// inherited from ishape
+	virtual void				flushTextures (IDriver &driver, uint selectedTexture);
 
 protected:
 
@@ -168,6 +168,9 @@ protected:
 	bool				_DestroyModelWhenOutOfRange;			// mirror the ps value
 	bool				_UsePrecomputedBBox;					// mirror the ps value
 	bool				_Sharing;								// mirror the ps value
+
+	// keep smart pointer on textures for caching, so that when flushTextures is called, subsequent 
+	std::vector<NLMISC::CSmartPtr<ITexture> > _CachedTex;
 };
 
 } // NL3D

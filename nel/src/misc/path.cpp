@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.18 2002/02/07 13:44:04 berenguier Exp $
+ * $Id: path.cpp,v 1.19 2002/02/12 13:55:59 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -181,11 +181,11 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 		NL_DISPLAY_PATH("CPath::lookup(%s): found in the current directory: '%s'", filename.c_str(), filename.c_str());
 		return filename;
 	}
-	
 
 	// Try to find in the map directories
 	CPath *inst = CPath::getInstance();
-	map<string, CFileEntry>::iterator it = inst->_Files.find (filename);
+	string str = strlwr (filename);
+	map<string, CFileEntry>::iterator it = inst->_Files.find (str);
 	// If found in the map, returns it
 	if (it != inst->_Files.end())
 	{
@@ -552,9 +552,9 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 	else
 	{
 		if (remap)
-			nlwarning ("CPath::addSearchPath(%s, %d, %s): remapped file '%s' already inserted in the map directory", file.c_str(), remap, virtual_ext.c_str(), filename.c_str());
+			nlwarning ("CPath::addSearchPath(%s, %d, %s): remapped file '%s' already inserted in the map directory (location: %s)", file.c_str(), remap, virtual_ext.c_str(), filename.c_str(), (*it).second.Path.c_str());
 		else
-			nlwarning ("CPath::addSearchPath(%s, %d, %s): file '%s' already inserted in the map directory", file.c_str(), remap, virtual_ext.c_str(), filename.c_str());
+			nlwarning ("CPath::addSearchPath(%s, %d, %s): file '%s' already inserted in the map directory (location: %s)", file.c_str(), remap, virtual_ext.c_str(), filename.c_str(), (*it).second.Path.c_str());
 	}
 
 	if (!remap && !ext.empty())
@@ -612,14 +612,14 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 	CPath *inst = CPath::getInstance();
 
 	// find if the file already exist
-	map<string, CFileEntry>::iterator it = inst->_Files.find (filename);
+	map<string, CFileEntry>::iterator it = inst->_Files.find (strlwr(filename));
 	if (it != inst->_Files.end ())
 	{
 		nlwarning ("CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
 	}
 	else
 	{
-		inst->_Files.insert (make_pair (filename, CFileEntry (filepath, remap, extension)));
+		inst->_Files.insert (make_pair (strlwr(filename), CFileEntry (filepath, remap, extension)));
 		NL_DISPLAY_PATH("CPath::insertFileInMap(%s, %s, %d, %s): added", filename.c_str(), filepath.c_str(), remap, extension.c_str());
 	}
 }

@@ -1,7 +1,7 @@
 /** \file baseai.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.27 2002/08/01 14:17:54 chafik Exp $
+ * $Id: baseai.h,v 1.28 2002/09/26 14:18:09 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,10 +68,11 @@ namespace NLAIAGENT
 	template <class T>
 	bool eraseFromList(std::list<T> *l,T a)
 	{
-		std::list<T>::iterator i = l->begin();
+		typedef typename std::list<T>::iterator TIterator;
+		TIterator i = l->begin();
 		while(i != l->end())
 		{		
-			std::list<T>::iterator j = i++;
+			TIterator j = i++;
 			if(*j == a)
 			{
 				l->erase(j);

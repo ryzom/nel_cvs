@@ -3,13 +3,42 @@ rm log.log 2> /dev/null
 
 # *** Build shape files (.shape)
 
+# Get the database directory
+database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 # Bin
 tga_2_dds='../../bin/tga2dds.exe'
 build_coarse_mesh='../../bin/build_coarse_mesh.exe'
 lightmap_optimizer='../../bin/lightmap_optimizer.exe'
+build_clodtex='../../bin/build_clodtex.exe'
+
 
 # Log error
 echo ------- > log.log
+echo --- Build shape : Copy Shape / build CLodTex >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Build shape : Copy Shape / build CLodTex
+echo ------- 
+date >> log.log
+date
+
+
+# Get the lod config file in the database
+clod_config_file=`cat ../../cfg/config.cfg | grep "clod_config_file" | sed -e 's/clod_config_file//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# if clod cfg is setup, build clod
+if (test -f $database_directory/$clod_config_file)
+then
+	# build the shape with clod texture. convert from 'shape_not_optimized' to 'shape'
+	$build_clodtex -d $database_directory/$clod_config_file clod shape_not_optimized shape
+else
+	# just copy shape_not_optimized to shape
+	./sh/transfert_shape_optimize.bat
+fi
+
+# Log error
+echo ------- >> log.log
 echo --- Build shape : optimize lightmaps >> log.log
 echo ------- >> log.log
 echo ------- 
@@ -18,10 +47,11 @@ echo -------
 date >> log.log
 date
 
-# delete shape and lightmap
-# copy lightmap_not_optimized to lightmap and shape_not_optimized to shape
-./sh/transfert_optimize.bat
 
+# copy lightmap_not_optimized to lightmap
+./sh/transfert_lightmap_optimize.bat
+
+# Optimize lightmaps if any
 $lightmap_optimizer ./lightmap ./shape
 
 
@@ -66,9 +96,6 @@ date
 
 # Get the build gamedata directory
 build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
-# Get the database directory
-database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get texture pathes
 map_source_directories=`cat ../../cfg/directories.cfg | grep "map_source_directory" | sed -e 's/map_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`

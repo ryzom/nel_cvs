@@ -1,7 +1,11 @@
 #!/bin/bash
 rm log.log 2> /dev/null
 
+# *********************************************
+# *********************************************
 # *** Export shape files (.shape) from Max
+# *********************************************
+# *********************************************
 
 exec_timeout='../../bin/exec_timeout.exe'
 
@@ -66,3 +70,41 @@ for i in $shape_source_directories ; do
 	# Idle
 	../../idle.bat
 done
+
+
+# *********************************************
+# *********************************************
+# *** Export character lod shape files (.clod) from Max
+# *********************************************
+# *********************************************
+
+# Get the clod directories
+clod_source_directories=`cat ../../cfg/directories.cfg | grep "clod_source_directory" | sed -e 's/clod_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Log error
+echo ------- >> log.log
+echo --- Export clod >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Export clod
+echo ------- 
+date >> log.log
+date
+
+# For each directoy
+
+for i in $clod_source_directories ; do
+	# Copy the script. TAKE IT FROM clodbank process. But write it here.
+	cat ../clodbank/maxscript/clod_export.ms | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_clod&$build_gamedata_directory/processes/shape/clod&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/shape/tag&g" > $max_directory/scripts/clod_export.ms
+
+	# Start max
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
+
+	# Concat log.log files
+	cat $max_directory/log.log >> log.log
+
+	# Idle
+	../../idle.bat
+done
+
+

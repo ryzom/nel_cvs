@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.10 2004/04/27 12:15:08 vizerie Exp $
+ * $Id: cloud_scape.cpp,v 1.11 2004/04/27 13:23:16 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -484,7 +484,7 @@ void CCloudScape::anim (double dt, NL3D::CCamera *pCamera)
 	// If rendering was too slow and took too much time of the previous frame, we decrease the max delta time to give clouds less processing time
 	// Otherwise a cycle occurs, and slow rendering propagate from frame to frame
 
-	if (dt != 0) nlinfo("render time = %.1f, ratio = %.1f, max delta time = %f", (float) (1000 * _LastAnimRenderTime),  (float) (100 * _LastAnimRenderTime / dt), (float) _MaxDeltaTime);
+	
 
 	if (dt != 0 && _LastAnimRenderTime > MAX_TIME_FOR_CLOUD_ANIM && (_LastAnimRenderTime / dt) > MAX_FRAME_PERCENT_FOR_CLOUD_RENDERING)
 	{

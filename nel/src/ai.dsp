@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=ai_lib - Win32 DebugFast
+CFG=ai - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,15 +13,15 @@ CFG=ai_lib - Win32 DebugFast
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "ai.mak" CFG="ai_lib - Win32 DebugFast"
+!MESSAGE NMAKE /f "ai.mak" CFG="ai - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "ai_lib - Win32 Release" (based on "Win32 (x86) Static Library")
-!MESSAGE "ai_lib - Win32 Debug" (based on "Win32 (x86) Static Library")
-!MESSAGE "ai_lib - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
-!MESSAGE "ai_lib - Win32 DebugFast" (based on "Win32 (x86) Static Library")
-!MESSAGE "ai_lib - Win32 ReleaseProfile" (based on "Win32 (x86) Static Library")
+!MESSAGE "ai - Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "ai - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "ai - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
+!MESSAGE "ai - Win32 DebugFast" (based on "Win32 (x86) Static Library")
+!MESSAGE "ai - Win32 ReleaseProfile" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -31,7 +31,7 @@ CFG=ai_lib - Win32 DebugFast
 CPP=cl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "ai_lib - Win32 Release"
+!IF  "$(CFG)" == "ai - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -54,7 +54,7 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\lib\nlai.lib"
 
-!ELSEIF  "$(CFG)" == "ai_lib - Win32 Debug"
+!ELSEIF  "$(CFG)" == "ai - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -77,7 +77,7 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\lib\nlai_debug.lib"
 
-!ELSEIF  "$(CFG)" == "ai_lib - Win32 ReleaseDebug"
+!ELSEIF  "$(CFG)" == "ai - Win32 ReleaseDebug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -100,12 +100,12 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\lib\nlai_rd.lib"
 
-!ELSEIF  "$(CFG)" == "ai_lib - Win32 DebugFast"
+!ELSEIF  "$(CFG)" == "ai - Win32 DebugFast"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "ai_lib___Win32_DebugFast"
-# PROP BASE Intermediate_Dir "ai_lib___Win32_DebugFast"
+# PROP BASE Output_Dir "ai___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "ai___Win32_DebugFast"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
@@ -120,15 +120,15 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
+# ADD BASE LIB32 /nologo /out:"..\lib\nlai_debug.lib"
 # ADD LIB32 /nologo /out:"..\lib\nlai_debug_fast.lib"
 
-!ELSEIF  "$(CFG)" == "ai_lib - Win32 ReleaseProfile"
+!ELSEIF  "$(CFG)" == "ai - Win32 ReleaseProfile"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "ai_lib___Win32_ReleaseProfile"
-# PROP BASE Intermediate_Dir "ai_lib___Win32_ReleaseProfile"
+# PROP BASE Output_Dir "ai___Win32_ReleaseProfile"
+# PROP BASE Intermediate_Dir "ai___Win32_ReleaseProfile"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
@@ -143,28 +143,24 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo /out:"..\lib\nlai_lib.lib"
+# ADD BASE LIB32 /nologo /out:"..\lib\nlai.lib"
 # ADD LIB32 /nologo /out:"..\lib\nlai_profile.lib"
 
 !ENDIF 
 
 # Begin Target
 
-# Name "ai_lib - Win32 Release"
-# Name "ai_lib - Win32 Debug"
-# Name "ai_lib - Win32 ReleaseDebug"
-# Name "ai_lib - Win32 DebugFast"
-# Name "ai_lib - Win32 ReleaseProfile"
+# Name "ai - Win32 Release"
+# Name "ai - Win32 Debug"
+# Name "ai - Win32 ReleaseDebug"
+# Name "ai - Win32 DebugFast"
+# Name "ai - Win32 ReleaseProfile"
 # Begin Group "agent"
 
 # PROP Default_Filter ""
 # Begin Group "ag_cpp"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\ai\agent\actor.cpp
-# End Source File
 # Begin Source File
 
 SOURCE=.\ai\agent\actor_script.cpp
@@ -999,6 +995,10 @@ SOURCE=.\ai\script\opcode_register.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\script\param_container.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\script\script_debug_source.cpp
 # End Source File
 # Begin Source File
@@ -1140,6 +1140,10 @@ SOURCE=..\include\nel\ai\script\opcode_ldb.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\script\opcode_lpt.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\script\param_container.h
 # End Source File
 # Begin Source File
 

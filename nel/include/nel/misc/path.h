@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.19 2002/03/25 09:24:46 lecroart Exp $
+ * $Id: path.h,v 1.20 2002/04/18 12:44:43 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -126,7 +126,7 @@ public:
 	static std::string	standardizePath (const std::string &path, bool addFinalSlash = true);
 
 	/** List all files in a directory.
-	 *	\param path path where files are scanned
+	 *	\param path path where files are scanned (MUST NOT BE EMPTY)
 	 *	\param recurse true if want to recurs directories
 	 *	\param wantDir true if want to add directorires in result
 	 *	\param wantFile true if want to add files in result

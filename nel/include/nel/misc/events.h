@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.1 2000/11/09 16:17:03 coutelas Exp $
+ * $Id: events.h,v 1.2 2000/11/09 17:51:16 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,9 @@ protected:
 
 const CClassId EventKeyDownId (0x3c2643da, 0x43f802a1);
 const CClassId EventKeyUpId (0x1e62e85, 0x68a35d46);
-
+const CClassId EventCharId (0x552255fe, 0x75a2373f);
+const CClassId EventMouseDownId (0x35b7878, 0x5d4a0f86);
+const CClassId EventMouseUpId (0xcce1f7e, 0x7ed344d7);
 /* VK_0 thru VK_9 are the same as ASCII '0' thru '9' (0x30 - 0x39) */
 /* VK_A thru VK_Z are the same as ASCII 'A' thru 'Z' (0x41 - 0x5A) */
 
@@ -195,10 +197,7 @@ const uint VK_PA1            =0xFD;
 const uint VK_OEM_CLEAR      =0xFE;
 
 /**
- * CEvent
- * \author Stephane Coutelas
- * \author Nevrax France
- * \date 2000
+ * CEventKeyDown
  */
 class CEventKeyDown : public CEvent
 {
@@ -210,6 +209,64 @@ public:
 	uint Key;
 };
 
+/**
+ * CEventKeyUp
+ */
+class CEventKeyUp : public CEvent
+{
+public:
+	CEventKeyUp (uint key) : CEvent (EventKeyUpId)
+	{
+		Key=key;
+	}
+	uint Key;
+};
+
+/**
+ * CEventChar
+ */
+class CEventChar : public CEvent
+{
+public:
+	CEventChar (ucchar c) : CEvent (EventCharId)
+	{
+		Char=c;
+	}
+	ucchar Char;
+};
+
+
+/**
+ * CEventMouseDown
+ */
+class CEventMouseDown : public CEvent
+{
+public:
+	uint X,Y;
+
+	CEventMouseDown (uint x, uint y) : CEvent (EventMouseDownId)
+	{
+		X = x;
+		Y = y;
+	}
+	
+};
+
+
+/**
+ * CEventMouseUp
+ */
+class CEventMouseUp : public CEvent
+{
+public:
+	uint X,Y;
+
+	CEventMouseUp (uint x, uint y) : CEvent (EventMouseUpId)
+	{
+		X = x;
+		Y = y;
+	}	
+};
 
 
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.72 2001/06/27 08:32:40 lecroart Exp $
+ * $Id: service.cpp,v 1.73 2001/06/28 12:21:18 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -73,20 +73,9 @@ using namespace NLMISC;
 namespace NLNET
 {
 
-string IService::_ShortName = "";
-string IService::_LongName = "";
-string IService::_AliasName= "";
-uint16 IService::_DefaultPort = 0;
-
-sint32 IService::_UpdateTimeout = 0;
-
-
-CConfigFile IService::ConfigFile;
-
-IService	 *IService::Instance = NULL;
-
-
+//
 // Constants
+//
 
 static const sint Signal[] = {
   SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM
@@ -97,16 +86,36 @@ static const char *SignalName[]=
   "SIGABRT", "SIGFPE", "SIGILL", "SIGINT", "SIGSEGV", "SIGTERM"
 };
 
+//
 // Variables
+//
 
 static sint ExitSignalAsked = 0;
 static CStdDisplayer sd;
 
+// services stat
+static sint32 NetSpeedLoop, UserSpeedLoop;
+
+string IService::_ShortName = "";
+string IService::_LongName = "";
+string IService::_AliasName= "";
+uint16 IService::_DefaultPort = 0;
+
+sint32 IService::_UpdateTimeout = 0;
+
+CConfigFile IService::ConfigFile;
+
+IService	 *IService::Instance = NULL;
+
+//
 // Prototypes
+//
 
 static void sigHandler (int Sig);
 
+//
 // Functions
+//
 
 static void initSignal()
 {
@@ -220,20 +229,6 @@ void IService::getCustomParams()
 */
 }
 
-
-uint32 toto = 200675;
-NLMISC_VARIABLE(uint32, toto, "this is the toto variable");
-
-
-
-NLMISC_COMMAND (hello, "hello", "")
-{
-	if(args.size() != 0) return false;
-
-	log.displayNL ("Hello World!");
-	return true;
-}
-
 CLog commandLog;
 CNetDisplayer commandDisplayer(false);
 
@@ -324,8 +319,6 @@ sint IService::main (int argc, char **argv, void *wd)
 	}
 	return main (wd);
 }
-
-
 
 // The main function of the service
 sint IService::main (void *wd)
@@ -768,18 +761,18 @@ sint IService::main (void *wd)
 				}
 			}
 
-			sint32 deltaNet = (sint32)(CTime::getLocalTime () - before);
-			sint32 deltaUsr = (sint32)(before - bbefore);
+			NetSpeedLoop = (sint32)(CTime::getLocalTime () - before);
+			UserSpeedLoop = (sint32)(before - bbefore);
 
 #if defined (NL_OS_WINDOWS)
 			if (cwd != NULL)
 			{
 				string str;
 				str = "NetSpdLoop: ";
-				str += toString (deltaNet);
+				str += toString (NetSpeedLoop);
 				cwd->setLabel (speedNetLabel, str.c_str ());
 				str = "UsrSpdLoop: ";
-				str += toString (deltaUsr);
+				str += toString (UserSpeedLoop);
 				cwd->setLabel (speedUsrLabel, str.c_str ());
 				str = "Rcv: ";
 				str += toString (CNetManager::getBytesReceived ());
@@ -874,6 +867,38 @@ sint IService::main (void *wd)
 	nlinfo ("Service ends");
 
 	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
+}
+
+
+//
+// Commands and Variables for controling all services
+//
+
+NLMISC_VARIABLE(sint32, NetSpeedLoop, "duration of the last network loop (in ms)");
+NLMISC_VARIABLE(sint32, UserSpeedLoop, "duration of the last user loop (in ms)");
+
+NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this service")
+{
+	// we can only read the value
+	if (get) *pointer = CNetManager::getBytesReceived ();
+}
+
+NLMISC_DYNVARIABLE(uint64, SendedBytes, "total of bytes sended by this service")
+{
+	// we can only read the value
+	if (get) *pointer = CNetManager::getBytesSended ();
+}
+
+NLMISC_DYNVARIABLE(uint64, ReceivedQueueSize, "current size in bytes of the received queue size")
+{
+	// we can only read the value
+	if (get) *pointer = CNetManager::getReceiveQueueSize ();
+}
+
+NLMISC_DYNVARIABLE(uint64, SendedQueueSize, "current size in bytes of the sended queue size")
+{
+	// we can only read the value
+	if (get) *pointer = CNetManager::getSendQueueSize ();
 }
 
 } //NLNET

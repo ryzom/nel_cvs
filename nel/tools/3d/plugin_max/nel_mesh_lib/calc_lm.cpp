@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.39 2002/04/04 07:48:15 besson Exp $
+ * $Id: calc_lm.cpp,v 1.40 2002/04/24 08:15:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1406,7 +1406,7 @@ CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n,
 		if( light_intensity > 0.0f )
 		{
 			if( bRcvShadows && rLight.bCastShadow && gOptions.bShadow )
-				RTFactor = wrt.raytrace (pRT, nLight, rtVal, gOptions.nExportLighting==1);
+				RTFactor = wrt.raytrace (pRT, vLights[nLight], rtVal, gOptions.nExportLighting==1);
 			else
 				RTFactor = CRGBAF(1.0f, 1.0f, 1.0f, 1.0f);
 		}

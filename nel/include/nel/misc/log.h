@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.27 2002/01/04 10:20:39 lecroart Exp $
+ * $Id: log.h,v 1.28 2002/03/14 13:49:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ public:
 	/// Add a new displayer in the log. You have to create the displayer, remove it and delete it when you have finish with it.
 	/// For example, in a 3dDisplayer, you can add the displayer when you want, and the displayer displays the string if the 3d
 	/// screen is available and do nothing otherwise. In this case, if you want, you could leave the displayer all the time.
-	void addDisplayer (IDisplayer *displayer);
+	void addDisplayer (IDisplayer *displayer, bool bypassFilter = false);
 
 	/// Return the first displayer selected by his name
 	IDisplayer *getDisplayer (const char *displayerName);
@@ -75,7 +75,7 @@ public:
 	bool attached(IDisplayer *displayer) const;
 	
 	/// Returns true if no displayer is attached
-	bool noDisplayer() const { return _Displayers.empty(); }
+	bool noDisplayer() const { return _Displayers.empty() && _BypassFilterDisplayers.empty(); }
 
 
 	/// Set the name of the process
@@ -97,6 +97,9 @@ public:
 	/// Display a string (and nothing more) to all attached displayers. Call setPosition() before. Releases the mutex.
 	void displayRaw (const char *format, ...);
 
+	/// Display a raw text to the normal displayer but without filtering
+	/// It's used by the Memdisplayer (little hack to work)
+	void forceDisplayRaw (const char *format, ...);
 	
 	/// Adds a positive filter. Tells the logger to log only the lines that contain filterstr
 	void addPositiveFilter( const char *filterstr );
@@ -127,6 +130,8 @@ protected:
 	typedef std::list<IDisplayer *> CDisplayers;
 
 	CDisplayers                       _Displayers;
+
+	CDisplayers                       _BypassFilterDisplayers;	// these displayers always log info (by pass filter system)
 
 	CMutex							  _Mutex;
 

@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.13 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: displayer.h,v 1.14 2002/03/14 13:49:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLMISC
 // Debug information
 struct TDisplayInfo
 {
-	TDisplayInfo() {}
+	TDisplayInfo() : Date(0), LogType(CLog::LOG_NO), ThreadId(0), Filename(NULL), Line(-1) {}
 	
 	time_t				Date;
 	CLog::TLogType		LogType;

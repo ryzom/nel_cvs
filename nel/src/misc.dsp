@@ -504,14 +504,6 @@ SOURCE=.\misc\Makefile.am
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\misc\debug_displayer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\debug_displayer.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\misc\displayer.cpp
 # End Source File
 # Begin Source File
@@ -533,6 +525,14 @@ SOURCE=.\misc\log.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\log.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\mem_displayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\mem_displayer.h
 # End Source File
 # Begin Source File
 

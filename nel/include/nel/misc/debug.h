@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.37 2001/09/12 16:52:20 cado Exp $
+ * $Id: debug.h,v 1.38 2002/03/14 13:49:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,11 +31,14 @@
 #include "nel/misc/common.h"
 #include "nel/misc/log.h"
 #include "nel/misc/mutex.h"
+#include "nel/misc/mem_displayer.h"
 
 namespace NLMISC
 {
 
+//
 // Externals
+//
 
 extern CLog *ErrorLog;
 extern CLog *WarningLog;
@@ -43,8 +46,11 @@ extern CLog *InfoLog;
 extern CLog *DebugLog;
 extern CLog *AssertLog;
 
+extern CMemDisplayer *DefaultMemDisplayer;
 
+//
 // Functions
+//
 
 /// Never use this function (internal use only)
 void nlFatalError (const char *format, ...);
@@ -60,7 +66,7 @@ void createDebug ();
 
 /**
  * \def nldebug(exp)
- * Log a string in debug mode only. You don't have to put the final new line. It will be automatically append at the end of the string.
+ * Log a debug string. You don't have to put the final new line. It will be automatically append at the end of the string.
  *
  * Example:
  *\code
@@ -71,19 +77,15 @@ void createDebug ();
 	}
  *\endcode
  */
+#define nldebug NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
 
-#ifdef NL_DEBUG
-#define nldebug \
-NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
-#else
-#define nldebug if (false) 
-#endif
 
 /**
  * \def nlinfo(exp)
  * Same as nldebug but it will be display in debug and in release mode.
  */
 #define nlinfo NLMISC::createDebug (), NLMISC::InfoLog->setPosition( __LINE__, __FILE__ ), NLMISC::InfoLog->displayNL
+
 
 /**
  * \def nlwarning(exp)
@@ -104,6 +106,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
  */
 #define nlwarning NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog->displayNL
 
+
 /**
  * \def nlerror(exp)
  * Same as nlinfo but you have to call it when you have a fatal error, this macro display the text and \b exit the application
@@ -122,12 +125,14 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
  */
 #define nlerror NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 
+
 /**
  * \def nlerrornoex(exp)
  * Same as nlerror but it doesn't generate any exceptions. It's used only in very specific case, for example, when you
  * call a nlerror in a catch block (look the service.cpp)
  */
 #define nlerrornoex NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlError
+
 
 /**
  * \def nlassert(exp)
@@ -245,6 +250,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
+		NLMISC::DefaultMemDisplayer->write (); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -257,6 +263,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
+		NLMISC::DefaultMemDisplayer->write (); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -269,6 +276,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 		NLMISC::AssertLog->setPosition( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
+		NLMISC::DefaultMemDisplayer->write (); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -279,6 +287,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
+		NLMISC::DefaultMemDisplayer->write (); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -291,6 +300,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
+		NLMISC::DefaultMemDisplayer->write (); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -303,6 +313,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
+		NLMISC::DefaultMemDisplayer->write (); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -312,6 +323,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 	NLMISC::createDebug (); \
 	NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 	NLMISC::AssertLog->displayNL ("STOP "); \
+	NLMISC::DefaultMemDisplayer->write (); \
 	NLMISC_BREAKPOINT \
 }
 
@@ -323,6 +335,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->displayNL ("STOP "); \
+		NLMISC::DefaultMemDisplayer->write (); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -333,6 +346,7 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 	NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
 	NLMISC::AssertLog->display ("STOP "); \
 	NLMISC::AssertLog->displayRawNL str; \
+	NLMISC::DefaultMemDisplayer->write (); \
 	NLMISC_BREAKPOINT \
 }
 
@@ -376,7 +390,7 @@ struct EFatalError : public Exception
 
 
 /**
- * safe_cast<>: this is a function wihch nlassert() a dynamic_cast in Debug, and just do a static_cast in release.
+ * safe_cast<>: this is a function which nlassert() a dynamic_cast in Debug, and just do a static_cast in release.
  * So slow check is made in debug, but only fast cast is made in release.
  */
 template<class T, class U>	inline T	safe_cast(U o)

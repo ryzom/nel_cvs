@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.41 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.42 2003/06/13 13:59:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -989,6 +989,30 @@ void		CSceneUser::profileQuadGridClipManager()
 {
 	_Scene.getClipTrav().getQuadGridClipManager()->profile();
 }
+
+// ***************************************************************************
+uint CSceneUser::getNumFlareContexts() const
+{
+	return CScene::MaxNumFlareContexts;
+}
+
+// ***************************************************************************
+void CSceneUser::setFlareContext(uint context)
+{
+	if (context > CScene::MaxNumFlareContexts)
+	{
+		nlwarning("Invalid flare context");
+		return;
+	}
+	_Scene.setFlareContext(context);
+}
+
+// ***************************************************************************
+uint CSceneUser::getFlareContext() const
+{
+	return _Scene.getFlareContext(); 
+}
+
 
 
 } // NL3D

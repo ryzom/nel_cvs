@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.37 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: u_scene.h,v 1.38 2003/06/13 13:59:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -404,6 +404,21 @@ public:
 	virtual sint32				getCLodAnimIdByName(uint32 shapeId, const std::string &name) const =0;
 
 	//@}
+
+
+	/** \name Flare contexts
+	  * The flare objects are designed to work with a single scene, because they simulate 'retinian persistence' based on the visibility in the current scene.
+	  * Several context allow to deals with a flare rendered from several points of views.
+	  * There's a limited number of contexts
+	  */
+	// @{
+		// Get thje max number of contexts
+		virtual uint getNumFlareContexts() const = 0;
+		// Set the current context for flares. context must be < to MaxNumFlareContexts
+		virtual void	setFlareContext(uint context) = 0;
+		// Get the current context for flares
+		virtual uint    getFlareContext() const = 0;
+	// @}
 
 	/// \name Profiling and Render Filtering
 	// @{

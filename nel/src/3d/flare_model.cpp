@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.19 2003/04/15 15:56:57 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.20 2003/06/13 13:58:47 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -41,8 +41,9 @@ namespace NL3D {
 /*
  * Constructor
  */
-CFlareModel::CFlareModel() : _Intensity(0)
+CFlareModel::CFlareModel()
 {
+	std::fill(_Intensity, _Intensity + MaxNumContext, 0);
 	setTransparency(true);
 	setOpacity(false);
 
@@ -65,7 +66,7 @@ void	CFlareModel::traverseRender()
 	IDriver				*drv  = renderTrav.getDriver();
 	if (renderTrav.isCurrentPassOpaque()) return;
 	
-	
+	uint flareContext = _Scene ? _Scene->getFlareContext() : 0;
 
 	// transform the flare on screen	
 	const CVector		upt = getWorldMatrix().getPos(); // unstransformed pos	
@@ -127,15 +128,15 @@ void	CFlareModel::traverseRender()
 		float p = fs->getPersistence();
 		if (fs == 0)
 		{
-			_Intensity = 0;			
+			_Intensity[flareContext] = 0;			
 			return;
 		}
 		else
 		{
-			_Intensity -= 1.f / p * (float)_Scene->getEllapsedTime();	
-			if (_Intensity < 0.f) 
+			_Intensity[flareContext] -= 1.f / p * (float)_Scene->getEllapsedTime();	
+			if (_Intensity[flareContext] < 0.f) 
 			{				
-				_Intensity = 0.f;
+				_Intensity[flareContext] = 0.f;
 				return;	// nothing to draw
 			}
 		}			
@@ -145,12 +146,12 @@ void	CFlareModel::traverseRender()
 		float p = fs->getPersistence();
 		if (fs == 0)
 		{
-			_Intensity = 1;
+			_Intensity[flareContext] = 1;
 		}
 		else
 		{
-			_Intensity += 1.f / p * (float)_Scene->getEllapsedTime();	
-			if (_Intensity > 1.f) _Intensity = 1.f;
+			_Intensity[flareContext] += 1.f / p * (float)_Scene->getEllapsedTime();	
+			if (_Intensity[flareContext] > 1.f) _Intensity[flareContext] = 1.f;
 		}			
 	}
 
@@ -235,7 +236,7 @@ void	CFlareModel::traverseRender()
 	}	*/	
 	if (!fs->getAttenuable() )
 	{
-		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * _Intensity));
+		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * _Intensity[flareContext]));
 	}
 	else
 	{
@@ -243,7 +244,7 @@ void	CFlareModel::traverseRender()
 		{			
 			return; // nothing to draw;		
 		}
-		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * _Intensity * (1.f - norm / fs->getAttenuationRange() )));
+		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * _Intensity[flareContext] * (1.f - norm / fs->getAttenuationRange() )));
 	}
 
 

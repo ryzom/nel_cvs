@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.41 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: scene.h,v 1.42 2003/06/13 13:59:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "3d/load_balancing_trav.h"
 #include "3d/light_trav.h"
 #include "3d/render_trav.h"
+#include "3d/flare_model.h"
 
 
 
@@ -535,6 +536,20 @@ public:
 
 	// @}
 
+	/** \name Flare contexts
+	  * The flare objects are designed to work with a single scene, because they simulate 'retinian persistence' based on the visibility in the current scene.
+	  * Several context allow to deals with a flare rendered from several points of views.
+	  * There's a limited number of contexts (MaxNumFlareContexts)
+	  */
+	// @{
+		// The max number of contexts for flares
+		enum { MaxNumFlareContexts = CFlareModel::MaxNumContext };
+		// Set the current context for flares. context must be < to MaxNumFlareContexts
+		void	setFlareContext(uint context) { nlassert(context < MaxNumFlareContexts); _FlareContext = context; }
+		// Get the current context for flares
+		uint    getFlareContext() const { return _FlareContext; }		
+	// @}
+
 private:
 
 	/// The camera / Viewport.
@@ -681,6 +696,8 @@ private:
 	/// Update all models. All dirty models are cleaned
 	void	updateModels();
 
+	// current context for rendering of flares
+	uint _FlareContext;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file flare_model.h
  * <File description>
  *
- * $Id: flare_model.h,v 1.5 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: flare_model.h,v 1.6 2003/06/13 13:58:47 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NL3D {
 class CFlareModel : public CTransformShape
 {
 public:
-
+	enum { MaxNumContext = 4 };
 	/// Constructor
 	CFlareModel();
 
@@ -57,7 +57,7 @@ public:
 
 protected:
 	friend class CFlareShape;
-	float				_Intensity;	
+	float				_Intensity[MaxNumContext];	
 	CScene				*_Scene;	
 };
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.101 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: scene.cpp,v 1.102 2003/06/13 13:59:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,6 +164,8 @@ CScene::CScene()
 
 	// Update model list to NULL
 	_UpdateModelList= NULL;
+
+	_FlareContext = 0;
 }
 // ***************************************************************************
 void	CScene::release()

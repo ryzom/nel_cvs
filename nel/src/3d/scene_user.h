@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.41 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: scene_user.h,v 1.42 2003/06/13 13:59:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -285,6 +285,13 @@ public:
 	virtual void				profileNextRender();
 	virtual void				getProfileResults(CBenchResults &results);
 	virtual void				profileQuadGridClipManager();
+	// @}
+
+	/// \name Flare contexts	  
+	// @{
+		virtual uint	getNumFlareContexts() const;		
+		virtual void	setFlareContext(uint context);		
+		virtual uint    getFlareContext() const;
 	// @}
 
 public:

@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.15 2002/10/28 11:07:39 corvazier Exp $
+ * $Id: form_elm.h,v 1.16 2002/10/29 17:34:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -645,7 +645,7 @@ inline bool CFormElm::convertValue (bool &result, const char *value) const
 inline bool CFormElm::convertValue (NLMISC::CRGBA &result, const char *value) const
 {
 	float r, g, b;
-	if (sscanf (value, "%f,%f,%f", &r, &g, &b) == 1)
+	if (sscanf (value, "%f,%f,%f", &r, &g, &b) == 3)
 	{
 		NLMISC::clamp (r, 0.f, 255.f);
 		NLMISC::clamp (g, 0.f, 255.f);

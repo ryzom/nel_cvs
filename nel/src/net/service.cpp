@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.89 2001/10/04 15:46:46 lecroart Exp $
+ * $Id: service.cpp,v 1.90 2001/10/05 14:52:41 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1038,23 +1038,6 @@ NLMISC_COMMAND(removefilter_info, "remove a filter on InfoLog", "<filterstr>")
 	return true;
 }
 
-
-NLMISC_COMMAND (time, "displays the universal time", "")
-{
-	if(args.size() != 0) return false;
-
-	if ( CUniTime::Sync )
-	{
-		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms, CUniTime::getUniTime(): %"NL_I64"dms", CTime::getLocalTime (), CUniTime::getUniTime ());
-		log.displayNL ("CUniTime::getStringUniTime(): '%s'", CUniTime::getStringUniTime());
-	}
-	else
-	{
-		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms <Universal time not sync>", CTime::getLocalTime ());
-	}
-
-	return true;
-}
 
 
 } //NLNET

@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.26 2001/06/18 09:09:20 cado Exp $
+ * $Id: unitime.cpp,v 1.27 2001/10/05 14:52:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "nel/misc/common.h"
 #include "nel/misc/time_nl.h"
+#include "nel/misc/command.h"
 
 #include "nel/net/callback_client.h"
 #include "nel/net/callback_server.h"
@@ -343,5 +344,28 @@ void CUniTime::syncUniTimeFromServer (CCallbackClient *client)
 error:
 	nlwarning ("there's no connection or lost or can't synchronize universal time");
 }
+
+
+//
+// Commands
+//
+
+NLMISC_COMMAND (time, "displays the universal time", "")
+{
+	if(args.size() != 0) return false;
+
+	if ( CUniTime::Sync )
+	{
+		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms, CUniTime::getUniTime(): %"NL_I64"dms", CTime::getLocalTime (), CUniTime::getUniTime ());
+		log.displayNL ("CUniTime::getStringUniTime(): '%s'", CUniTime::getStringUniTime());
+	}
+	else
+	{
+		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms <Universal time not sync>", CTime::getLocalTime ());
+	}
+
+	return true;
+}
+
 
 } // NLNET

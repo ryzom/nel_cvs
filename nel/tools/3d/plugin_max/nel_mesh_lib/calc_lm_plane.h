@@ -2,7 +2,7 @@
  * LightMap Calculation settings
  * Plane of faces in the same smooth group
  *
- * $Id: calc_lm_plane.h,v 1.2 2002/04/04 07:48:15 besson Exp $
+ * $Id: calc_lm_plane.h,v 1.3 2002/04/10 17:15:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,10 @@
 #ifndef NL_CALC_LM_PLANE_H
 #define NL_CALC_LM_PLANE_H
 
+// msk : this is the mask it has a size of w*h
+// col : is all color planes continuous it has a size of w*h*nNbLayerUsed
 
+// -------------------------------------------------------------------------------------------
 struct SLMPlane
 {
 
@@ -48,7 +51,7 @@ struct SLMPlane
 
 	// -----------------------------------------------------------------------
 	// Interface
-	// -------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------
 
 	SLMPlane ();
 

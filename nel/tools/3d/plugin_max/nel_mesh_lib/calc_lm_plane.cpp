@@ -2,7 +2,7 @@
  * This is a sub-module for calculating ligtmaps
  * This is the code of the plane wich regroup lightmap faces
  *
- * $Id: calc_lm_plane.cpp,v 1.4 2002/04/04 07:48:15 besson Exp $
+ * $Id: calc_lm_plane.cpp,v 1.5 2002/04/10 17:15:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,11 @@ void SLMPlane::copyColToBitmap32 (CBitmap* pImage, uint32 nLayerNb)
 			vBitmap[4*i+2] = 255;
 		else
 			vBitmap[4*i+2] = (uint8)(fMult*col[i+w*h*nLayerNb].B);
-		vBitmap[4*i+3] = 255;
+		// Mask go into alpha channel
+		if (msk[i] != 0)
+			vBitmap[4*i+3] = 255;
+		else
+			vBitmap[4*i+3] = 0;
 	}
 }
 

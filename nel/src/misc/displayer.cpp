@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.49 2003/02/07 17:44:00 cado Exp $
+ * $Id: displayer.cpp,v 1.50 2003/02/07 17:44:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -393,7 +393,6 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 		{
 			fclose (_FilePointer);
 			rename (_FileName.c_str(), CFile::findNewFile (_FileName).c_str());
-			fclose (_FilePointer);
 			_FilePointer = (FILE*) 1;
 		}
 	}

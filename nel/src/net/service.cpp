@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.168 2003/02/17 10:52:52 lecroart Exp $
+ * $Id: service.cpp,v 1.169 2003/02/21 15:52:35 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -125,7 +125,7 @@ static uint SignalisedThread;
 
 static CFileDisplayer fd;
 static CNetDisplayer commandDisplayer(false);
-static CLog commandLog;
+//static CLog commandLog;
 
 static string CompilationDate;
 static uint32 LaunchingDate;
@@ -144,6 +144,10 @@ string CompilationMode = "NL_RELEASE";
 string CompilationMode = "???";
 #endif
 
+// use to display result of command (on file and windows displayer) **without** filter
+static CLog CommandLog;
+
+static bool Bench = false;
 
 //
 // Callback managing
@@ -192,12 +196,11 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 			}
 			else
 				vara.push_back(cmd);
-
-
-			mdDisplayVars.clear ();
-			ICommand::execute(cmd, logDisplayVars, true);
-			const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
 			
+			mdDisplayVars.clear ();
+			ICommand::execute(cmd, logDisplayVars, !isCommand(cmd));
+			const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
+
 			if (isCommand(cmd))
 			{
 				// we want the log of the command
@@ -422,18 +425,11 @@ void AESConnection (const string &serviceName, uint16 sid, void *arg)
 		CMessage msgout2 ("SR");
 		CUnifiedNetwork::getInstance()->send("AES", msgout2);
 	}
-
-	// add the displayer to the standard logger
-//	TSockId			hid;
-//	CCallbackClient *client = dynamic_cast<CCallbackClient *>(CUnifiedNetwork::getInstance()->getNetBase("AES", hid));
-//	commandDisplayer.setLogServer (client);
-//	commandLog.addDisplayer (&commandDisplayer);
 }
 
 
 static void AESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 {
-//	commandLog.removeDisplayer (&commandDisplayer);
 }
 
 
@@ -443,7 +439,7 @@ static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint
 	msgin.serial (command);
 
 	nlinfo ("Executing command from network : '%s'", command.c_str());
-	ICommand::execute (command, *InfoLog);
+	ICommand::execute (command, CommandLog);
 }
 
 
@@ -743,7 +739,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		WarningLog->addDisplayer (&fd);
 		AssertLog->addDisplayer (&fd);
 		ErrorLog->addDisplayer (&fd);
-
+		CommandLog.addDisplayer (&fd, true);
 
 		//
 		// Init the hierarchical timer
@@ -825,13 +821,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			
 			if (haveArg('I')) iconified = true;
 
-			WindowDisplayer->create (string("*INIT* ") + _ShortName + " " + _LongName, iconified, x, y, w, h, history, fs, fn, ww);
+			WindowDisplayer->create (string("*INIT* ") + _ShortName + " " + _LongName, iconified, x, y, w, h, history, fs, fn, ww, &CommandLog);
 
 			DebugLog->addDisplayer (WindowDisplayer);
 			InfoLog->addDisplayer (WindowDisplayer);
 			WarningLog->addDisplayer (WindowDisplayer);
 			ErrorLog->addDisplayer (WindowDisplayer);
 			AssertLog->addDisplayer (WindowDisplayer);
+			CommandLog.addDisplayer(WindowDisplayer, true);
 
 			// adding default displayed variables
 			displayedVariables.push_back(make_pair(string("NetLop|NetSpeedLoop"), WindowDisplayer->createLabel ("NetLop")));
@@ -1232,7 +1229,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		{
 			for (sint i = 0; i < var->size(); i++)
 			{
-				ICommand::execute (var->asString(i), *InfoLog);
+				ICommand::execute (var->asString(i), CommandLog);
 			}
 		}
 
@@ -1252,7 +1249,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		do
 		{
-			CHTimer::startBench(false, true, false);
+			if(Bench) CHTimer::startBench(false, true, false);
 
 			// count the amount of time to manage internal system
 			TTime bbefore = CTime::getLocalTime ();
@@ -1463,6 +1460,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			WarningLog->removeDisplayer (WindowDisplayer);
 			ErrorLog->removeDisplayer (WindowDisplayer);
 			AssertLog->removeDisplayer (WindowDisplayer);
+			CommandLog.removeDisplayer (WindowDisplayer);
 
 			delete WindowDisplayer;
 			WindowDisplayer = NULL;
@@ -1500,8 +1498,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	CHTimer::display();
 	CHTimer::displayByExecutionPath ();
-	CHTimer::displayHierarchical(InfoLog, true, 64);
-	CHTimer::displayHierarchicalByExecutionPathSorted (InfoLog, CHTimer::TotalTime, true, 64);
+	CHTimer::displayHierarchical(&CommandLog, true, 64);
+	CHTimer::displayHierarchicalByExecutionPathSorted (&CommandLog, CHTimer::TotalTime, true, 64);
 
 	nlinfo ("Service ends");
 
@@ -1557,6 +1555,8 @@ NLMISC_DYNVARIABLE(string, Uptime, "time from the launching of the program")
 {
 	if (get) *pointer = secondsToHumanReadable (CTime::getSecondsSince1970() - LaunchingDate);
 }
+
+NLMISC_VARIABLE(bool, Bench, "1 if benching 0 if not");
 
 NLMISC_VARIABLE(string, CompilationDate, "date of the compilation");
 NLMISC_VARIABLE(string, CompilationMode, "mode of the compilation");

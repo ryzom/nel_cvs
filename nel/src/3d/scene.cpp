@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.116 2004/02/19 09:48:34 vizerie Exp $
+ * $Id: scene.cpp,v 1.117 2004/03/04 14:30:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,8 @@
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 
+//
+#include "nel/misc/system_info.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -364,6 +366,171 @@ void	CScene::render(bool	doHrcPass)
 
 	// Reset profiling
 	_NextRenderProfile= false;
+
+	/*
+	uint64 total = PSStatsRegisterPSModelObserver +
+				  PSStatsRemovePSModelObserver + 
+				  PSStatsUpdateOpacityInfos +
+				  PSStatsUpdateLightingInfos +
+				  PSStatsGetAABBox +
+				  PSStatsReallocRsc +
+				  PSStatsReleasePSPointer +
+				  PSStatsRefreshRscDeletion +
+				  PSStatsReleaseRsc +
+				  PSStatsReleaseRscAndInvalidate +
+				  PSStatsGetNumTriangles +
+				  PSStatsCheckAgainstPyramid +
+				  PSStatsTraverseAnimDetail +
+				  PSStatsDoAnimate +
+				  PSStatsTraverseRender +
+				  PSStatsTraverseClip +
+				  PSStatsCheckDestroyCondition +
+				  PSStatsForceInstanciate +
+				  PSStatsDoAnimatePart1 +
+				  PSStatsDoAnimatePart2 +
+				  PSStatsDoAnimatePart3 +
+				  PSStatsTraverseAnimDetailPart1 +
+				  PSStatsTraverseAnimDetailPart2 +
+				  PSStatsTraverseAnimDetailPart3 +
+				  PSStatsTraverseAnimDetailPart4 +
+				  PSAnim1 +
+				  PSAnim2+
+				  PSAnim3+
+				  PSAnim4+
+				  PSAnim5+
+				  PSAnim6+
+				  PSAnim7+
+				  PSAnim8+
+				  PSAnim9+
+				  PSAnim10+
+				  PSAnim11;
+	
+
+	 if (((double) total / (double) NLMISC::CSystemInfo::getProcessorFrequency()) > 0.01)
+	 {	 	
+		  nlinfo("***** PS STATS ****");
+		  #define PS_STATS(var) \
+		  nlinfo("time for " #var " = %.2f", (float) (1000 * ((double) var / (double) CSystemInfo::getProcessorFrequency())));
+
+		  PS_STATS(PSStatsRegisterPSModelObserver)
+		  PS_STATS(PSStatsRemovePSModelObserver)
+		  PS_STATS(PSStatsUpdateOpacityInfos)
+		  PS_STATS(PSStatsUpdateLightingInfos)
+		  PS_STATS(PSStatsGetAABBox)
+		  PS_STATS(PSStatsReallocRsc)
+		  PS_STATS(PSStatsReleasePSPointer)
+		  PS_STATS(PSStatsRefreshRscDeletion)
+		  PS_STATS(PSStatsReleaseRsc)
+		  PS_STATS(PSStatsReleaseRscAndInvalidate)
+		  PS_STATS(PSStatsGetNumTriangles)
+		  PS_STATS(PSStatsCheckAgainstPyramid)
+		  PS_STATS(PSStatsTraverseAnimDetail)
+		  PS_STATS(PSStatsDoAnimate)
+		  PS_STATS(PSStatsTraverseRender)
+		  PS_STATS(PSStatsTraverseClip)
+		  PS_STATS(PSStatsClipSystemInstanciated);
+		  PS_STATS(PSStatsClipSystemNotInstanciated);
+		  PS_STATS(PSStatsClipSystemCheckAgainstPyramid);
+		  PS_STATS(PSStatsInsertInVisibleList);		  
+		  PS_STATS(PSStatsCheckDestroyCondition)
+		  PS_STATS(PSStatsForceInstanciate)
+		  PS_STATS(PSStatsDoAnimatePart1)
+		  PS_STATS(PSStatsDoAnimatePart2)
+		  PS_STATS(PSStatsDoAnimatePart3)
+		  PS_STATS(PSStatsTraverseAnimDetailPart1)
+		  PS_STATS(PSStatsTraverseAnimDetailPart2)
+		  PS_STATS(PSStatsTraverseAnimDetailPart3)
+		  PS_STATS(PSStatsTraverseAnimDetailPart4)
+		  PS_STATS(PSAnim1)
+		  PS_STATS(PSAnim2)
+		  PS_STATS(PSAnim3)
+		  PS_STATS(PSAnim4)
+		  PS_STATS(PSAnim5)
+		  PS_STATS(PSAnim6)
+		  PS_STATS(PSAnim7)
+		  PS_STATS(PSAnim8)
+		  PS_STATS(PSAnim9)
+		  PS_STATS(PSAnim10)
+		  PS_STATS(PSAnim11)
+		  PS_STATS(PSStatsZonePlane)
+		  PS_STATS(PSStatsZoneSphere)
+		  PS_STATS(PSStatsZoneDisc)
+		  PS_STATS(PSStatsZoneRectangle)
+		  PS_STATS(PSStatsZoneCylinder)
+		  PS_STATS(PSMotion1)
+		  PS_STATS(PSMotion2)
+		  PS_STATS(PSMotion3)
+		  PS_STATS(PSMotion4)		  
+		  PS_STATS(PSStatCollision)
+		  PS_STATS(PSStatEmit)
+		  PS_STATS(PSStatRender)
+		  
+
+		nlinfo("num do animate = %d", (int) PSStatsNumDoAnimateCalls);
+
+		nlinfo("Max et = %.2f", PSMaxET);
+		nlinfo("Max ps nb pass = %d", (int) PSMaxNBPass);
+
+		PS_STATS(total)
+		 
+	 }
+
+	 PSStatsRegisterPSModelObserver = 0;
+	 PSStatsRemovePSModelObserver = 0;
+	 PSStatsUpdateOpacityInfos = 0;
+	 PSStatsUpdateLightingInfos = 0;
+	 PSStatsGetAABBox = 0;
+	 PSStatsReallocRsc = 0;
+	 PSStatsReleasePSPointer = 0;
+	 PSStatsRefreshRscDeletion = 0;
+	 PSStatsReleaseRsc = 0;
+	 PSStatsReleaseRscAndInvalidate = 0;
+	 PSStatsGetNumTriangles = 0;
+	 PSStatsCheckAgainstPyramid = 0;
+	 PSStatsTraverseAnimDetail = 0;
+	 PSStatsDoAnimate = 0;
+	 PSStatsTraverseRender = 0;
+	 PSStatsTraverseClip = 0;
+	 PSStatsCheckDestroyCondition = 0;
+	 PSStatsForceInstanciate = 0;
+	 PSStatsClipSystemInstanciated = 0;
+	 PSStatsClipSystemNotInstanciated = 0;
+	 PSStatsClipSystemCheckAgainstPyramid = 0;
+	 PSStatsInsertInVisibleList = 0;
+	 PSStatsDoAnimatePart1 = 0;
+	 PSStatsDoAnimatePart2 = 0;
+	 PSStatsDoAnimatePart3 = 0;
+	 PSStatsTraverseAnimDetailPart1 = 0;
+	 PSStatsTraverseAnimDetailPart2 = 0;
+	 PSStatsTraverseAnimDetailPart3 = 0;
+	 PSStatsTraverseAnimDetailPart4 = 0;	
+	 PSStatsNumDoAnimateCalls = 0;
+	 PSAnim1 = 0;
+	 PSAnim2 = 0;
+	 PSAnim3 = 0;
+	 PSAnim4 = 0;
+	 PSAnim5 = 0;
+	 PSAnim6 = 0;
+	 PSAnim7 = 0;
+	 PSAnim8 = 0;
+	 PSAnim9 = 0;
+	 PSAnim10 = 0;
+	 PSAnim11 = 0;
+	 PSMaxET = 0.f;
+	 PSMaxNBPass = 0;
+	 PSStatsZonePlane = 0;
+	 PSStatsZoneSphere = 0;
+	 PSStatsZoneDisc = 0;
+	 PSStatsZoneRectangle = 0;
+	 PSStatsZoneCylinder = 0;
+	 PSMotion1 = 0;
+	 PSMotion2 = 0;
+	 PSMotion3 = 0;
+	 PSMotion4 = 0;	 
+	 PSStatCollision = 0;
+	 PSStatEmit = 0;
+	 PSStatRender = 0;	 
+	 */
 }
 
 // ***************************************************************************
@@ -1100,3 +1267,24 @@ void			CScene::setShadowMapMaxCasterAround(uint num)
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

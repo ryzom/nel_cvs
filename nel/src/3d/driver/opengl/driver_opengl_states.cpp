@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.25 2004/06/29 13:49:15 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.26 2004/08/03 16:32:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,7 @@ CDriverGLStates::CDriverGLStates()
 	_DepthRangeFar = 1.f;
 	_ZBias = 0.f;
 	_MaxDriverLight= 0;
+	_CullMode = CCW;
 }
 
 
@@ -168,6 +169,10 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	_DepthRangeFar = 1.f;
 	_ZBias = 0.f;	
 	glDepthRange (0, 1);
+
+	// Cull order
+	_CullMode = CCW;
+	glCullFace(GL_BACK);
 	
 		
 }
@@ -509,12 +514,14 @@ void		CDriverGLStates::setZBias(float zbias)
 	}
 }
 
+
+volatile bool depthRangeCache = true;
 // ***************************************************************************
 void CDriverGLStates::setDepthRange(float znear, float zfar)
 {
 	nlassert(znear != zfar);
 #ifndef NL3D_GLSTATE_DISABLE_CACHE
-	if (znear != _DepthRangeNear || zfar != _DepthRangeFar)
+	if (!depthRangeCache || (znear != _DepthRangeNear || zfar != _DepthRangeFar))
 #endif
 	{
 		_DepthRangeNear = znear;
@@ -880,7 +887,6 @@ void CDriverGLStates::forceBindARBVertexBuffer(uint objectID)
 	_CurrARBVertexBuffer = objectID;
 }
 
-
 // ***************************************************************************
 void CDriverGLStates::bindARBVertexBuffer(uint objectID)
 {
@@ -891,6 +897,25 @@ void CDriverGLStates::bindARBVertexBuffer(uint objectID)
 		forceBindARBVertexBuffer(objectID);
 	} 
 }
+
+// ***************************************************************************
+void CDriverGLStates::setCullMode(TCullMode cullMode)
+{
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if (cullMode != _CullMode)
+#endif
+	{
+		glCullFace(cullMode == CCW ? GL_BACK : GL_FRONT);
+		_CullMode = cullMode;
+	}
+}
+
+// ***************************************************************************
+CDriverGLStates::TCullMode CDriverGLStates::getCullMode() const
+{
+	return _CullMode;
+}
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.11 2004/07/06 16:51:53 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.12 2004/08/03 16:33:12 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -630,7 +630,14 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 		_DoubleSided = (flags&IDRV_MAT_DOUBLE_SIDED)!=0;
 
 		// Handle backside
-		setRenderState (D3DRS_CULLMODE, _DoubleSided?D3DCULL_NONE:_InvertCullMode?D3DCULL_CCW:D3DCULL_CW);
+		if (_CullMode == CCW)
+		{		
+			setRenderState (D3DRS_CULLMODE, _DoubleSided?D3DCULL_NONE:_InvertCullMode?D3DCULL_CCW:D3DCULL_CW);
+		}
+		else
+		{
+			setRenderState (D3DRS_CULLMODE, _DoubleSided?D3DCULL_NONE:_InvertCullMode?D3DCULL_CW:D3DCULL_CCW);
+		}	
 
 		
 		// Active states

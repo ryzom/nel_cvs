@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.46 2004/06/29 13:43:38 vizerie Exp $
+ * $Id: driver_user.cpp,v 1.47 2004/08/03 16:30:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/texture_user.h"
 #include "3d/scene_user.h"
 #include "3d/init_3d.h"
+#include "3d/water_env_map_user.h"
 #include "3d/water_pool_manager.h"
 #include "nel/3d/u_camera.h"
 #include "nel/misc/hierarchical_timer.h"
@@ -1591,6 +1592,38 @@ void CDriverUser::displayBench (class NLMISC::CLog *log)
 {
 	_Driver->displayBench (log);
 }
+
+// ***************************************************************************
+UWaterEnvMap *CDriverUser::createWaterEnvMap()
+{
+	NL3D_MEM_DRIVER
+	CWaterEnvMapUser *wem = new CWaterEnvMapUser;
+	wem->EnvMap.Driver = this;
+	return wem;
+}
+
+// ***************************************************************************
+void CDriverUser::deleteWaterEnvMap(UWaterEnvMap *map)
+{
+	NL3D_MEM_DRIVER
+	delete (CWaterEnvMapUser *) map;
+}
+
+void CDriverUser::setCullMode(TCullMode cullMode)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	_Driver->setCullMode((IDriver::TCullMode) cullMode);
+}
+
+UDriver::TCullMode CDriverUser::getCullMode() const
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	return (TCullMode) _Driver->getCullMode();
+}
+
+
 
 // ***************************************************************************
 

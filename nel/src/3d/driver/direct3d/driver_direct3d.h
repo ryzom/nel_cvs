@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.17 2004/07/09 13:02:26 berenguier Exp $
+ * $Id: driver_direct3d.h,v 1.18 2004/08/03 16:33:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -641,6 +641,10 @@ public:
 	virtual void startBench (bool wantStandardDeviation = false, bool quick = false, bool reset = true);
 	virtual void endBench ();
 	virtual void displayBench (class NLMISC::CLog *log);
+
+
+	virtual void			setCullMode(TCullMode cullMode);
+	virtual	TCullMode       getCullMode() const;
 
 private:
 
@@ -1671,8 +1675,8 @@ public:
 	void			enableLightInternal(uint8 num, bool enable);
 	// on/off Lights for LightMap mode: only the first light is enabled in lightmap mode
 	void			setupLightMapDynamicLighting(bool enable);
-	
 
+	TCullMode		_CullMode;
 };
 
 #define NL_D3DCOLOR_RGBA(rgba) (D3DCOLOR_ARGB(rgba.A,rgba.R,rgba.G,rgba.B))

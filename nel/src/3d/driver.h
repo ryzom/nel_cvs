@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.74 2004/06/29 13:57:38 vizerie Exp $
+ * $Id: driver.h,v 1.75 2004/08/03 16:33:53 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,6 +129,7 @@ public:
 	enum TMessageBoxId { okId=0, yesId, noId, abortId, retryId, cancelId, ignoreId, idCount };
 	enum TMessageBoxType { okType=0, okCancelType, yesNoType, abortRetryIgnoreType, yesNoCancelType, retryCancelType, typeCount };
 	enum TMessageBoxIcon { noIcon=0, handIcon, questionIcon, exclamationIcon, asteriskIcon, warningIcon, errorIcon, informationIcon, stopIcon, iconCount };
+	enum TCullMode { CCW = 0, CW };
 
 	/**
 	  * Driver's polygon modes.
@@ -1141,6 +1142,13 @@ public:
 
 	// get the number of call to swapBuffer since the driver was created
 	virtual uint64			getSwapBufferCounter() const = 0;
+
+	/** Set cull mode
+	  * Useful for mirrors / cube map rendering or when the scene must be rendered upside down
+	  */
+	virtual void			setCullMode(TCullMode cullMode) = 0;
+	virtual	TCullMode       getCullMode() const = 0;	
+
 protected:
 	friend	class	IVBDrvInfos;
 	friend	class	IIBDrvInfos;

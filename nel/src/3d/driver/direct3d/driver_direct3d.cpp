@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.13 2004/07/06 16:53:22 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.14 2004/08/03 16:33:36 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -169,6 +169,7 @@ CDriverD3D::CDriverD3D()
 	// All User Light are disabled by Default
 	for(i=0;i<MaxLight;i++)
 		_UserLightEnable[i]= false;	
+	_CullMode = CCW;
 }
 
 // ***************************************************************************
@@ -2241,10 +2242,34 @@ uint COcclusionQueryD3D::getVisibleCount()
 
 // ***************************************************************************
 bool CDriverD3D::isWaterShaderSupported() const
-{
+{			
 	return _PixelShaderVersion >= D3DPS_VERSION(1, 1);
 }
 
+// ***************************************************************************
+void CDriverD3D::setCullMode(TCullMode cullMode)
+{
+#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+	if (cullMode != _CullMode)
+#endif
+	{
+		if (_InvertCullMode)
+		{
+			setRenderState(D3DRS_CULLMODE, _CullMode == CCW ? D3DCULL_CW : D3DCULL_CCW);
+		}
+		else
+		{
+			setRenderState(D3DRS_CULLMODE, _CullMode == CCW ? D3DCULL_CCW : D3DCULL_CW);
+		}
+		_CullMode = cullMode;
+	}
+}
+
+// ***************************************************************************
+IDriver::TCullMode CDriverD3D::getCullMode() const
+{
+	return _CullMode;
+}
 
 
 

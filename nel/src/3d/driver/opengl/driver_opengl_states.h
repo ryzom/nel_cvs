@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.18 2004/06/29 13:49:15 vizerie Exp $
+ * $Id: driver_opengl_states.h,v 1.19 2004/08/03 16:32:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,8 +77,7 @@ namespace NL3D
  */
 class CDriverGLStates
 {
-public:
-
+public:	
 	/// Constructor. no-op.
 	CDriverGLStates();
 	// init. Do it just after setDisplay()
@@ -133,7 +132,7 @@ public:
 
 	/// \name Texture Mode setting.
 	// @{
-	enum			TTextureMode {TextureDisabled, Texture2D, TextureCubeMap, TextureModeCount};
+	enum			TTextureMode {TextureDisabled, Texture2D, TextureCubeMap, TextureModeCount};	
 	/// same as glActiveTextureARB(). usefull for setTextureMode.
 	void			activeTextureARB(uint stage);
 	/// same as active texture arb, but with no cache check
@@ -181,6 +180,10 @@ public:
 	void			forceBindARBVertexBuffer(uint objectID);
 	uint			getCurrBoundARBVertexBuffer() const { return _CurrARBVertexBuffer; }
 
+	enum TCullMode  { CCW = 0, CW };
+	void			setCullMode(TCullMode cullMode);
+	TCullMode       getCullMode() const;
+
 private:
 	bool			_CurBlend;
 	bool			_CurFog;
@@ -221,6 +224,9 @@ private:
 	float			_DepthRangeNear;
 	float			_DepthRangeFar;
 	float			_ZBias; // NB : zbias is in window coordinates
+
+	TCullMode		_CullMode;
+
 private:
 	void updateDepthRange();
 

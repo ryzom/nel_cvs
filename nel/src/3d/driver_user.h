@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.43 2004/06/29 13:43:38 vizerie Exp $
+ * $Id: driver_user.h,v 1.44 2004/08/03 16:30:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,6 +191,12 @@ public:
 	virtual void			setLight (uint8 num, const ULight& light);
 	virtual void			enableLight (uint8 num, bool enable=true);
 	virtual void			setAmbientColor (CRGBA color);
+	// @}
+
+	/// \name Cull mode
+	// @{	
+	virtual void			setCullMode(TCullMode cullMode);
+	virtual	TCullMode       getCullMode() const;
 	// @}
 
 
@@ -477,6 +483,12 @@ public:
 	virtual void startBench (bool wantStandardDeviation = false, bool quick = false, bool reset = true);
 	virtual void endBench ();
 	virtual void displayBench (class NLMISC::CLog *log);
+	// @}
+
+	/// \name Water envmap
+	// @{	
+	virtual UWaterEnvMap *createWaterEnvMap();	
+	virtual void		  deleteWaterEnvMap(UWaterEnvMap *map);
 	// @}
 
 public:

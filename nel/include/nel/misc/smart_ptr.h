@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: smart_ptr.h,v 1.7 2000/10/03 08:23:08 berenguier Exp $
+ * $Id: smart_ptr.h,v 1.8 2000/10/09 13:35:10 berenguier Exp $
  *
  * CSmartPtr and CRefPtr class.
  */
@@ -76,7 +76,19 @@ public:
 
 /**
  * Standard SmartPtr class. T Must derive from CRefCount.
- * The ref counter cannot be put directly in the smartptr since inheritance must be supported.
+ * Once a normal ptr is assigned to a SmartPtr, the smartptr will own this pointer, and delete it when no other smartptr
+ * reference the object (with a reference couting scheme). The following code works, since the object himself must herit 
+ * from CRefCount, and so hold the refcount.
+ * \code
+	CSmartPtr<A>	a0, a1;
+	A				*p0;
+	a0= new A;	// Ok. RefCount==1.
+	p0= a0;		// Ok, cast operator. object still owned by a0.
+	a1= p0;		// Ok!! RefCount==2. Object owned by a0 and a1;
+	// At destruction, a1 unref(), then a0 unref() and delete the object.
+ \endcode
+ *
+ * The ref counter cannot be put directly in the smartptr since the preceding behavior must be supported and inheritance must be supported too.
  * Here, if A is a base class of B, Pa and Pb are smartptr of a and b respectively, then \c Pa=Pb; is a valid operation.
  * But, doing this, you may ensure that you have a virtual dtor(), since dtor() Pa may call ~A() (or you may ensure that Pa
  * won't destruct A, which it sound much more as a normal pointer :) ).
@@ -159,10 +171,10 @@ public:
 
 	/// Cast operator.
     operator T*(void) const { SMART_TRACE("castT*()"); return Ptr; }
-	/// Cast operator. Doesn't check NULL.
-    T* operator->(void) const { SMART_TRACE("ope->()"); return Ptr; }
-	/// Cast operator. Doesn't check NULL.
+	/// Indirection operator. Doesn't check NULL.
     T& operator*(void) const { SMART_TRACE("ope*()"); return *Ptr; }
+	/// Selection operator. Doesn't check NULL.
+    T* operator->(void) const { SMART_TRACE("ope->()"); return Ptr; }
 
 	/// operator=. Giving a NULL pointer is a valid operation.
     CSmartPtr& operator=(T* p);
@@ -177,7 +189,7 @@ public:
 // ***************************************************************************
 /**
  * CRefPtr: an Advanced SmartPtr class. T Must derive from CRefCount.
- * CRefPtr works like a CSmartPtr and provide the same behavior, except for the kill() method.
+ * CRefPtr works like a CSmartPtr (see SmartPtr for infos) and provide the same behavior, except for the kill() method.
  * If you use CRefPtr, you can use the kill() method do delete the object. All other CRefPtr which point 
  * to it can know if it has been deleted.
  *
@@ -224,9 +236,9 @@ public:
 
 	/// Cast operator. Check if the object has been deleted somewhere, and return NULL if this is the case.
 	operator T*()	const;
-	/// Cast operator. Doesn't test if ptr has been deleted somewhere, and doesn't check NULL.
+	/// Indirection operator. Doesn't test if ptr has been deleted somewhere, and doesn't check NULL.
     T& operator*(void)	const;
-	/// Cast operator. Doesn't test if ptr has been deleted somewhere, and doesn't check NULL.
+	/// Selection operator. Doesn't test if ptr has been deleted somewhere, and doesn't check NULL.
     T* operator->(void)	const;
 
 

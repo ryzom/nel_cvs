@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.16 2001/05/29 16:16:25 chafik Exp $
+ * $Id: libcode.cpp,v 1.17 2001/10/02 14:53:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,7 @@ namespace NLAISCRIPT
 			return r;
 		case 2:			
 			return format((const NLAIAGENT::IBaseGroupType *)param);
+			break;
 		}
 		return r;
 	}

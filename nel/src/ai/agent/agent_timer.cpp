@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.25 2001/10/02 09:00:42 cado Exp $
+ * $Id: agent_timer.cpp,v 1.26 2001/10/02 14:53:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -241,7 +241,7 @@ namespace NLAIAGENT
 		while(i != _Call.end())
 		{
 			connect((*i).first);
-			std::pair<IMessageBase *, sint32> p = ((*i).second);//->second->incRef();
+			std::pair<IMessageBase *, sint32> p = ((*i).second);
 			p.first->incRef();
 			i ++;
 		}
@@ -299,8 +299,8 @@ namespace NLAIAGENT
 		uint n = 0;
 		while(_CallIter != _Call.end())
 		{
-			std::pair<IMessageBase *, sint32> p = ((*_CallIter).second);//->second->incRef();
-			IMessageBase *msg = (IMessageBase *)p.first;//->clone();
+			std::pair<IMessageBase *, sint32> p = ((*_CallIter).second);
+			IMessageBase *msg = (IMessageBase *)p.first;
 			msg->incRef();
 			if((*_CallIter).first->getState().ResultState == NLAIAGENT::processIdle) (*_CallIter).first->sendMessage((IObjectIA *)msg);
 			_CallIter ++;

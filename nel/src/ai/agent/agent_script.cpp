@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.87 2001/09/25 08:41:09 portier Exp $
+ * $Id: agent_script.cpp,v 1.88 2001/10/02 14:53:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -752,6 +752,8 @@ namespace NLAIAGENT
 
 #ifdef NL_DEBUG
 	const char *txt = (const char *)msg->getType();
+	std::string txtName;
+	compName.getDebugString(txtName);
 #endif
 
 		while(p.first != p.second)
@@ -1123,7 +1125,7 @@ namespace NLAIAGENT
 
 #ifdef PROFILE
 	NLMISC::TTicks TimeRun = 0;
-	NLMISC::TTicks NbRun = 0;		
+	NLMISC::TTicks NbRun = 0;
 #endif
 
 	const IObjectIA::CProcessResult &CAgentScript::run()

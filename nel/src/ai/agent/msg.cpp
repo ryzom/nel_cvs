@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.14 2001/08/23 09:36:10 chafik Exp $
+ * $Id: msg.cpp,v 1.15 2001/10/02 14:53:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -342,6 +342,8 @@ namespace NLAIAGENT
 				{
 					CLocalAgentMail *o = (CLocalAgentMail *)((IBaseGroupType *)p)->get();					
 					setSender((IObjectIA *)o->getHost());
+					/*setSender((IObjectIA *)((IBaseGroupType *)p)->get());
+					_Sender->incRef();*/
 					return IObjectIA::CProcessResult();
 				}
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.104 2003/08/21 09:30:19 boucher Exp $
+ * $Id: object_viewer.cpp,v 1.105 2003/08/22 09:03:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,6 +95,7 @@
 #include "light_group_factor.h"
 #include "choose_bg_color_dlg.h"
 #include "choose_sun_color_dlg.h"
+#include "choose_frame_delay.h"
 
 
 
@@ -482,6 +483,8 @@ CObjectViewer::~CObjectViewer ()
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if (_MainFrame)
 		delete (_MainFrame);
+	if (_ChooseFrameDelayDlg)
+		delete _ChooseFrameDelayDlg;
 	if (_SlotDlg)	
 		delete _SlotDlg;
 	if (_AnimationSetDlg)
@@ -497,9 +500,7 @@ CObjectViewer::~CObjectViewer ()
 	if (_SoundAnimDlg)
 		delete _SoundAnimDlg;
 	if (_LightGroupDlg)
-		delete _LightGroupDlg;
-	if (_ChooseFrameDelayDlg)
-		delete _ChooseFrameDelayDlg;
+		delete _LightGroupDlg;	
 	if (_ChooseBGColorDlg)
 		delete _ChooseBGColorDlg;
 	if (_VegetableDlg)

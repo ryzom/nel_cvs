@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.10 2000/12/05 10:39:18 corvazier Exp $
+ * $Id: texture.h,v 1.11 2000/12/06 12:50:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,7 +224,12 @@ public:
 	 * \param _delete Is true if the class must delete the pointer.
 	 * \date 2000
 	 */	
-	CTextureMem(uint8 *data, uint32 lenght, bool _delete) { CTextureMem(); setPointer(data, lenght, _delete); }
+	CTextureMem(uint8 *data, uint32 lenght, bool _delete) 
+	{ 
+		_Data=NULL;
+		_Delete=false;
+		setPointer(data, lenght, _delete); 
+	}
 
 
 	/** 

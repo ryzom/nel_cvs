@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.26 2003/04/28 09:32:52 ledorze Exp $
+ * $Id: entity_id.h,v 1.27 2003/05/28 12:40:01 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -498,7 +498,7 @@ public :
 
 		uint64 x = DetailedId.Id;
 		char baseTable[] = "0123456789abcdef";
-		for(n = 10; n < 19; n ++)
+		for(n = 10; n < 20; n ++)
 		{
 			b[19 - n] = baseTable[(x & 15)];
 			x >>= 4;

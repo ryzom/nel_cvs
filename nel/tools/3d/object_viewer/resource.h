@@ -9,11 +9,14 @@
 #define IDD_ANIMATION_SET               1002
 #define IDC_SCROLLBAR                   1002
 #define IDC_RED_AMOUNT                  1002
+#define IDC_PSI_SCROLLBAR               1002
 #define IDC_SLOT_NAME                   1003
 #define IDD_SELECT_STRING               1003
 #define IDC_GREEN_AMOUNT                1003
+#define IDC_THETA_SCROLLBAR             1003
 #define IDD_ANIMATION                   1004
 #define IDC_BLUE_AMOUNT                 1004
+#define IDC_PHI_SCROLLBAR               1004
 #define IDC_BLEND                       1005
 #define IDD_SCENE                       1005
 #define IDD_PARTICLE                    1006
@@ -103,9 +106,12 @@
 #define IDD_PS_MOVER                    1043
 #define IDC_LOOP                        1044
 #define IDC_RESET_CAMERA                1044
+#define IDD_BASIS_EDIT                  1044
 #define IDC_EULER                       1045
 #define IDC_OBJECT_MODE                 1046
+#define IDB_BASIS                       1046
 #define IDC_MOVE_SPEED                  1047
+#define IDD_HINT_ROTATE_THE_SAME        1047
 #define IDC_VIEW_PARTICLE               1048
 #define IDC_SLIDER                      1050
 #define IDC_MOVE_ELEMENT                1050
@@ -166,6 +172,16 @@
 #define IDC_UPDATE_YPOS                 1117
 #define IDC_UPDATE_ZPOS                 1118
 #define IDC_SUB_COMPONENT               1119
+#define IDC_PSI_VALUE                   1121
+#define IDC_THETA_VALUE                 1122
+#define IDC_HINT_PRECOMPUTED_ROTATIONS  1122
+#define IDC_PHI_VALUE                   1123
+#define IDC_ROT_SPEED_MIN               1123
+#define IDC_UPDATE_MIN_ROT_SPEED        1124
+#define IDC_ROT_SPEED_MAX               1125
+#define IDC_UPDATE_MAX_ROT_SPEED        1126
+#define IDC_NB_MODELS                   1127
+#define IDC_UPDATE_NB_MODELS            1128
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -203,9 +219,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1044
+#define _APS_NEXT_RESOURCE_VALUE        1048
 #define _APS_NEXT_COMMAND_VALUE         32810
-#define _APS_NEXT_CONTROL_VALUE         1120
+#define _APS_NEXT_CONTROL_VALUE         1125
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

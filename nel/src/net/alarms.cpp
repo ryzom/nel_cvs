@@ -1,7 +1,7 @@
-/** \file email.cpp
- * send email
+/** \file alarms.cpp
+ * manage services alarms
  *
- * $Id: alarms.cpp,v 1.4 2003/01/17 15:03:52 lecroart Exp $
+ * $Id: alarms.cpp,v 1.5 2003/02/07 16:08:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "stdnet.h"
+
+#include <time.h>
 
 #include "nel/net/service.h"
 #include "nel/net/alarms.h"
@@ -74,9 +76,12 @@ void sendAdminEmail (char *format, ...)
 	char *text;
 	NLMISC_CONVERT_VARGS (text, format, 4096);
 	
+	time_t t = time (&t);
+
 	string str;
-	str  = "Server "+CInetAddress::localHost().hostName();
-	str += " service "+IService::getInstance()->getServiceUnifiedName();
+	str  = asctime (localtime (&t));
+	str += " Server " + CInetAddress::localHost().hostName();
+	str += " service " + IService::getInstance()->getServiceUnifiedName();
 	str += " : ";
 	str += text;
 
@@ -197,13 +202,24 @@ void setAlarms (const vector<string> &alarms)
 		CVarPath servicevarpath (servervarpath.Destination[0].second);
 		if(servicevarpath.Destination.size() == 0 || servicevarpath.Destination[0].second.empty())
 			continue;
-		
+	
 		string name = servicevarpath.Destination[0].second;
 
-		nlinfo ("path %s name %s -> %s", alarms[i].c_str(), name.c_str(), alarms[i+1].c_str());
-		if (ICommand::exists(name))
+		if (IService::getInstance()->getServiceUnifiedName().find(servicevarpath.Destination[0].first) != string::npos && ICommand::exists(name))
 		{
+			nlinfo ("Adding alarm '%s' limit %d order %s (varpath '%s')", name.c_str(), atoi(alarms[i+1].c_str()), alarms[i+2].c_str(), alarms[i].c_str());
 			Alarms.push_back(CAlarm(name, atoi(alarms[i+1].c_str()), alarms[i+2]=="gt"));
+		}
+		else
+		{
+			if (IService::getInstance()->getServiceUnifiedName().find(servicevarpath.Destination[0].first) == string::npos)
+			{
+				nlinfo ("Skipping alarm '%s' limit %d order %s (varpath '%s') (not for my service, i'm '%s')", name.c_str(), atoi(alarms[i+1].c_str()), alarms[i+2].c_str(), alarms[i].c_str(), IService::getInstance()->getServiceUnifiedName().c_str());
+			}
+			else
+			{
+				nlinfo ("Skipping alarm '%s' limit %d order %s (varpath '%s') (var not exist)", name.c_str(), atoi(alarms[i+1].c_str()), alarms[i+2].c_str(), alarms[i].c_str());
+			}
 		}
 	}
 }

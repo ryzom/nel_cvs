@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.14 2002/08/22 16:11:48 cado Exp $
+ * $Id: callback_client.h,v 1.15 2003/02/07 16:07:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,11 @@ public:
 	uint64	getReceiveQueueSize () { return CBufClient::getReceiveQueueSize(); }
 	uint64	getSendQueueSize () { return CBufClient::getSendQueueSize(); }
 
+	void displayReceiveQueueStat (NLMISC::CLog *log = NLMISC::InfoLog) { CBufClient::displayReceiveQueueStat(log); }
+	void displaySendQueueStat (NLMISC::CLog *log = NLMISC::InfoLog, TSockId destid = InvalidSockId) { CBufClient::displaySendQueueStat(log); }
+
+	void displayThreadStat (NLMISC::CLog *log = NLMISC::InfoLog) { CBufClient::displayThreadStat(log); }
+	
 private:
 
 	/// These function is public in the base class and put it private here because user cannot use it in layer 2

@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.23 2002/12/16 18:02:14 cado Exp $
+ * $Id: buf_client.cpp,v 1.24 2003/02/07 16:08:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,9 @@ using namespace std;
 
 namespace NLNET {
 
+
+uint32 	NbClientReceiveTask = 0;
+	
 
 /***************************************************************************************************
  * User main thread (initialization)
@@ -105,6 +108,11 @@ void CBufClient::connect( const CInetAddress& addr )
 /***************************************************************************************************
  * User main thread (running)
  **************************************************************************************************/
+
+void CBufClient::displayThreadStat (NLMISC::CLog *log)
+{
+	log->displayNL ("client thread %p nbloop %d", _RecvTask, _RecvTask->NbLoop);
+}
 
 
 /*
@@ -428,6 +436,8 @@ CBufClient::~CBufClient()
  */
 void CClientReceiveTask::run()
 {
+	NbClientReceiveTask++;
+	NbNetworkTask++;
 	nlnettrace( "CClientReceiveTask::run" );
 
 	_NBBufSock->Sock->setTimeOutValue( 60, 0 );
@@ -452,6 +462,8 @@ void CClientReceiveTask::run()
 				// Push message into receive queue
 				_Client->pushMessageIntoReceiveQueue( _NBBufSock->receivedBuffer() );
 			}
+			
+			NbLoop++;
 
 			/* // OLD: blocking client connection
 			// Receive message length (in blocking mode)
@@ -503,7 +515,12 @@ void CClientReceiveTask::run()
 	}
 
 	nlnettrace( "Exiting CClientReceiveTask::run()" );
+	NbClientReceiveTask--;
+	NbNetworkTask--;
 }
+
+NLMISC_VARIABLE(uint32, NbClientReceiveTask, "Number of client receive thread");
+
 
 
 } // NLNET

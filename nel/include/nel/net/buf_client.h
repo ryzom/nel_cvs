@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.8 2002/12/16 18:03:09 cado Exp $
+ * $Id: buf_client.h,v 1.9 2003/02/07 16:07:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ class CClientReceiveTask : public NLMISC::IRunnable
 public:
 
 	/// Constructor (increments the reference to the object pointed to by the smart pointer sockid)
-	CClientReceiveTask( CBufClient *client, CNonBlockingBufSock *bufsock ) : _Client(client), _NBBufSock(bufsock) {} // CHANGED: non-blocking client connection
+	CClientReceiveTask( CBufClient *client, CNonBlockingBufSock *bufsock ) : NbLoop(0), _Client(client), _NBBufSock(bufsock) {} // CHANGED: non-blocking client connection
 
 	/// Run
 	virtual void run();
@@ -58,6 +58,8 @@ public:
 	/// Returns the socket identifier
 	TSockId					sockId() { return (TSockId)_NBBufSock; }
 
+	uint32	NbLoop;
+	
 private:
 
 	CBufClient					*_Client;
@@ -131,6 +133,13 @@ public:
 
 	// Returns the size in bytes of the data stored in the send queue.
 	uint32	getSendQueueSize() const { return _BufSock->SendFifo.size(); }
+
+	void displaySendQueueStat (NLMISC::CLog *log = NLMISC::InfoLog)
+	{
+		_BufSock->SendFifo.displayStats(log);
+	}
+	
+	void displayThreadStat (NLMISC::CLog *log);
 
 	/** Sets the time flush trigger (in millisecond). When this time is elapsed,
 	 * all data in the send queue is automatically sent (-1 to disable this trigger)

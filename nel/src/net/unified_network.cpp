@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.59 2003/01/28 14:14:37 cado Exp $
+ * $Id: unified_network.cpp,v 1.60 2003/02/07 16:08:26 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -39,6 +39,9 @@ CFileDisplayer fd;
 static uint ThreadCreator = 0;
 
 static const uint64 AppIdDeadConnection = 0xDEAD;
+
+static uint32 TotalCallbackCalled = 0;
+
 
 #define AUTOCHECK_DISPLAY nlwarning
 //#define AUTOCHECK_DISPLAY CUnifiedNetwork::getInstance()->displayInternalTables (), nlerror
@@ -420,7 +423,13 @@ void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 			nlwarning ("HNETL5: Received message %s from a service %hu but the associated callback is NULL", msgin.getName ().c_str(), sid);
 			return;
 		}
+
+		H_BEFORE(L5UserCallback); // Not tick-wise
 		(*itcb).second (msgin, uc->ServiceName, sid);
+		H_AFTER(L5UserCallback); // Not tick-wise
+
+		uc->TotalCallbackCalled++;
+		TotalCallbackCalled++;
 	}
 }
 
@@ -869,8 +878,10 @@ void	CUnifiedNetwork::update(TTime timeout)
 	{
 		// update all server connections
 		if (_CbServer)
+		{
 			_CbServer->update(0);
-
+		}
+		
 		// update all client connections
 		for (uint k = 0; k<_UsedConnection.size(); ++k)
 		{
@@ -890,6 +901,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 				}
 				else if (enableRetry && uc.AutoRetry)
 				{
+					H_BEFORE(L5AutoReconnect); // Not tick-wise
 					try
 					{
 						CCallbackClient *cbc = (CCallbackClient *)uc.Connection[j].CbNetBase;
@@ -937,6 +949,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 					{
 						nlinfo ("HNETL5: can't connect to %s-%hu now (%s)", uc.ServiceName.c_str(), uc.ServiceId, e.what ());
 					}
+					H_AFTER(L5AutoReconnect); // Not tick-wise
 				}
 			}
 		}
@@ -947,8 +960,10 @@ void	CUnifiedNetwork::update(TTime timeout)
 		if (CTime::getLocalTime() - t0 > timeout)
 			break;
 		
+		H_BEFORE(L5UpdateSleep); // Not tick-wise
 		// Enable windows multithreading before rescanning all connections
 		nlSleep (1);
+		H_AFTER(L5UpdateSleep); // Not tick-wise
 	}
 
 	autoCheck();
@@ -1352,7 +1367,6 @@ bool CUnifiedNetwork::isServiceLocal (const std::string &serviceName)
 	pair<TNameMappedConnection::const_iterator,TNameMappedConnection::const_iterator>	range;
 	range = _NamedCnx.equal_range(serviceName);
 
-	bool found = false;
 	if (range.first != _NamedCnx.end())
 	{
 		uint16	sid = (*(range.first)).second;
@@ -1447,6 +1461,7 @@ CUnifiedNetwork::CUnifiedConnection	*CUnifiedNetwork::getUnifiedConnection (uint
 
 void	CUnifiedNetwork::autoCheck()
 {
+	H_BEFORE(L5UpdateAutoCheck); // Not tick-wise
 	uint i, j;
 
 	for (i = 0; i < _IdCnx.size (); i++)
@@ -1523,6 +1538,7 @@ void	CUnifiedNetwork::autoCheck()
 			}
 		}
 	}
+	H_AFTER(L5UpdateAutoCheck); // Not tick-wise
 }
 
 
@@ -1547,7 +1563,7 @@ void CUnifiedNetwork::displayInternalTables (NLMISC::CLog *log)
 	{
 		if(_IdCnx[i].State != CUnifiedNetwork::CUnifiedConnection::NotUsed)
 		{
-			log->displayNL ("> %s-%hu %s %s %s (%d extaddr %d cnx)", _IdCnx[i].ServiceName.c_str (), _IdCnx[i].ServiceId, _IdCnx[i].IsExternal?"ext":"int", _IdCnx[i].AutoRetry?"autoretry":"noautoretry", _IdCnx[i].SendId?"sendid":"nosendid", _IdCnx[i].ExtAddress.size (), _IdCnx[i].Connection.size ());
+			log->displayNL ("> %s-%hu %s %s %s (%d extaddr %d cnx) tcbc %d", _IdCnx[i].ServiceName.c_str (), _IdCnx[i].ServiceId, _IdCnx[i].IsExternal?"ext":"int", _IdCnx[i].AutoRetry?"autoretry":"noautoretry", _IdCnx[i].SendId?"sendid":"nosendid", _IdCnx[i].ExtAddress.size (), _IdCnx[i].Connection.size (), _IdCnx[i].TotalCallbackCalled);
 			uint maxc = _IdCnx[i].Connection.size ();
 			if(_IdCnx[i].Connection.size () <= _IdCnx[i].ExtAddress.size ())
 				maxc = _IdCnx[i].ExtAddress.size ();
@@ -1728,6 +1744,59 @@ static bool createMessage (CMessage &msgout, const vector<string> &args, CLog &l
 	return true;
 }
 
+
+//
+// Commands and Variables
+//
+
+NLMISC_VARIABLE(uint32, TotalCallbackCalled, "Total callback called number on layer 5");
+
+NLMISC_DYNVARIABLE(uint64, SendQueueSize, "current size in bytes of all send queues")
+{
+	if (get)
+	{
+		if (!CUnifiedNetwork::isUsed ())
+			*pointer = 0;
+		else
+			*pointer = CUnifiedNetwork::getInstance()->getSendQueueSize();
+	}
+}
+
+NLMISC_DYNVARIABLE(uint64, ReceiveQueueSize, "current size in bytes of all receive queues")
+{
+	if (get)
+	{
+		if (!CUnifiedNetwork::isUsed ())
+			*pointer = 0;
+		else
+			*pointer = CUnifiedNetwork::getInstance()->getReceiveQueueSize();
+	}
+}
+
+
+NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this service")
+{
+	if (get)
+	{
+		if (!CUnifiedNetwork::isUsed ())
+			*pointer = 0;
+		else
+			*pointer = CUnifiedNetwork::getInstance()->getBytesReceived ();
+	}
+}
+
+NLMISC_DYNVARIABLE(uint64, SentBytes, "total of bytes sent by this service")
+{
+	if (get)
+	{
+		if (!CUnifiedNetwork::isUsed ())
+			*pointer = 0;
+		else
+			*pointer = CUnifiedNetwork::getInstance()->getBytesSent ();
+	}
+}
+
+
 /*
  * Simulate a message that comes from the network.
  *
@@ -1852,7 +1921,77 @@ NLMISC_COMMAND(msgout, "Send a message to a specified service (ex: msgout 128 RE
 	
 	return true;
 }
+	
+NLMISC_COMMAND(l5QueuesStats, "Displays queues stats of network layer5", "")
+{
+	if(args.size() != 0) return false;
+	
+	if (!CUnifiedNetwork::isUsed ())
+	{
+		log.displayNL("Can't display internal table because layer5 is not used");
+		return false;
+	}
+	
+	log.displayNL ("%u Unified Connections:", CUnifiedNetwork::getInstance()->_IdCnx.size ());
+	for (uint i = 0; i < CUnifiedNetwork::getInstance()->_IdCnx.size (); i++)
+	{
+		if(CUnifiedNetwork::getInstance()->_IdCnx[i].State != CUnifiedNetwork::CUnifiedConnection::NotUsed)
+		{
+			log.displayNL ("> %s-%hu %s %s %s (%d extaddr %d cnx) tcbc %d", CUnifiedNetwork::getInstance()->_IdCnx[i].ServiceName.c_str (), CUnifiedNetwork::getInstance()->_IdCnx[i].ServiceId, CUnifiedNetwork::getInstance()->_IdCnx[i].IsExternal?"ext":"int", CUnifiedNetwork::getInstance()->_IdCnx[i].AutoRetry?"autoretry":"noautoretry", CUnifiedNetwork::getInstance()->_IdCnx[i].SendId?"sendid":"nosendid", CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress.size (), CUnifiedNetwork::getInstance()->_IdCnx[i].Connection.size (), CUnifiedNetwork::getInstance()->_IdCnx[i].TotalCallbackCalled);
+			uint maxc = CUnifiedNetwork::getInstance()->_IdCnx[i].Connection.size ();
+			if(CUnifiedNetwork::getInstance()->_IdCnx[i].Connection.size () <= CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress.size ())
+				maxc = CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress.size ();
+			
+			for (uint j = 0; j < maxc; j++)
+			{
+				string base;
+				if(j < CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress.size ())
+				{
+					base += CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress[j].asString ();
+				}
+				else
+				{
+					base += "notvalid";
+				}
+				
+				string ext;
+				if(j < CUnifiedNetwork::getInstance()->_IdCnx[i].Connection.size () && CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].valid())
+				{
+					if(CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].IsServerConnection)
+					{
+						ext += "server ";
+					}
+					else
+					{
+						ext += "client ";
+					}
+					ext += CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->getSockId (CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].HostId)->asString ();
+					ext += " appid:" + toString(CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].getAppId());
+					if (CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->connected ())
+						ext += " connected";
+					else
+						ext += " notconnected";
+				}
+				else
+				{
+					ext += "notvalid";
+				}
+				
+				log.displayNL ("  - %s %s", base.c_str (), ext.c_str ());
+				log.displayNL ("     * ReceiveQueueStat");
+				CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->displayReceiveQueueStat(&log);
+				log.displayNL ("     * SendQueueStat");
+				CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->displaySendQueueStat(&log, CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].HostId);
+				log.displayNL ("     * ThreadStat");
+				CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->displayThreadStat(&log);
+			}
+		}
+	}
+	
+	return true;
+}
 
+	
 NLMISC_COMMAND(l5InternalTables, "Displays internal table of network layer5", "")
 {
 	if(args.size() != 0) return false;

@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.24 2002/06/12 10:16:41 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.25 2003/02/07 16:07:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,11 @@ public:
 	virtual uint64	getReceiveQueueSize () = 0;
 	virtual uint64	getSendQueueSize () = 0;
 
+	virtual void displayReceiveQueueStat (NLMISC::CLog *log = NLMISC::InfoLog) = 0;
+	virtual void displaySendQueueStat (NLMISC::CLog *log = NLMISC::InfoLog, TSockId destid = InvalidSockId) = 0;
+
+	virtual void displayThreadStat (NLMISC::CLog *log = NLMISC::InfoLog) = 0;
+	
 	/** Force to send all data pending in the send queue.
 	 * On a client, the hostid isn't used and must be InvalidSockId
 	 * On a server, you must provide a hostid.

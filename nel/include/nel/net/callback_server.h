@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.14 2002/06/12 10:16:41 lecroart Exp $
+ * $Id: callback_server.h,v 1.15 2003/02/07 16:07:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,6 +81,11 @@ public:
 
 	uint64	getReceiveQueueSize () { return CBufServer::getReceiveQueueSize(); }
 	uint64	getSendQueueSize () { return CBufServer::getSendQueueSize(0); }
+
+	void displayReceiveQueueStat (NLMISC::CLog *log = NLMISC::InfoLog) { CBufServer::displayReceiveQueueStat(log); }
+	void displaySendQueueStat (NLMISC::CLog *log = NLMISC::InfoLog, TSockId destid = InvalidSockId) { CBufServer::displaySendQueueStat(log, destid); }
+	
+	void displayThreadStat (NLMISC::CLog *log = NLMISC::InfoLog) { CBufServer::displayThreadStat(log); }
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.25 2002/08/21 09:45:03 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.26 2003/02/07 16:08:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,6 +163,8 @@ void CCallbackClient::update ( sint32 timeout )
 {
 //	nldebug ("L3: Client: update()");
 
+	H_BEFORE(L3UpdateCallbackClient); // Not tick-wise
+
 	checkThreadId ();
 
 	baseUpdate (timeout); // first receive
@@ -178,6 +180,8 @@ void CCallbackClient::update ( sint32 timeout )
 #ifdef USE_MESSAGE_RECORDER
 	}
 #endif
+	
+	H_AFTER(L3UpdateCallbackClient); // Not tick-wise
 }
 
 

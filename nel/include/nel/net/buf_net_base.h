@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.10 2002/08/22 16:10:56 cado Exp $
+ * $Id: buf_net_base.h,v 1.11 2003/02/07 16:07:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,7 @@ typedef CSynchronizedFIFO::CAccessor CFifoAccessor;
 /// Size of a block
 typedef uint32 TBlockSize;
 
+extern uint32 	NbNetworkTask;
 
 /**
  * Layer 1
@@ -90,6 +91,12 @@ public:
 		return syncfifo.value().size();
 	}
 
+	void displayReceiveQueueStat (NLMISC::CLog *log = NLMISC::InfoLog)
+	{
+		CFifoAccessor syncfifo( &_RecvFifo );
+		syncfifo.value().displayStats(log);
+	}
+	
 	/**
 	 * Sets the max size of the received messages.
 	 * Default value: 2^31-1 (0x7FFFFFF) (which is the very maximum !).

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.165 2003/01/20 13:51:15 lecroart Exp $
+ * $Id: service.cpp,v 1.166 2003/02/07 16:08:26 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -95,6 +95,16 @@ static const char *SignalName[]=
   "SIGABRT", "SIGFPE", "SIGILL", "SIGINT", "SIGSEGV", "SIGTERM"
 };
 
+static const char* NegFiltersNames[] =
+{
+   "NegFiltersDebug",
+   "NegFiltersInfo",
+   "NegFiltersWarning",
+   "NegFiltersAssert",
+   "NegFiltersError",
+   0
+};
+	
 
 //
 // Variables
@@ -119,6 +129,8 @@ static CLog commandLog;
 
 static string CompilationDate;
 static uint32 LaunchingDate;
+
+static uint32 NbUserUpdate = 0;
 
 #ifdef NL_RELEASE_DEBUG
 string CompilationMode = "NL_RELEASE_DEBUG";
@@ -617,26 +629,38 @@ void cbLogFilter (CConfigFile::CVar &var)
 	if (var.Name == "NegFiltersDebug")
 	{
 		log = DebugLog;
-		nlinfo ("Updating negative filter on debug from config file");
 	}
 	else if (var.Name == "NegFiltersInfo")
 	{
 		log = InfoLog;
-		nlinfo ("Updating negative filter on info from config file");
+	}
+	else if (var.Name == "NegFiltersWarning")
+	{
+		log = WarningLog;
+	}
+	else if (var.Name == "NegFiltersAssert")
+	{
+		log = AssertLog;
+	}
+	else if (var.Name == "NegFiltersError")
+	{
+		log = ErrorLog;
 	}
 	else
 	{
 		nlstop;
 	}
 
-	// remove all old filter from configfile
+	nlinfo ("Updating %s from config file", var.Name.c_str());
+	
+	// remove all old filters from config file
 	CConfigFile::CVar &oldvar = IService::getInstance()->ConfigFile.getVar (var.Name);
 	for (sint j = 0; j < oldvar.size(); j++)
 	{
 		log->removeFilter (oldvar.asString(j).c_str());
 	}
 
-	// add all new filter from configfile
+	// add all new filters from config file
 	for (sint i = 0; i < var.size(); i++)
 	{
 		log->addNegativeFilter (var.asString(i).c_str());
@@ -726,7 +750,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		CHTimer::startBench(false, true);
-
+		CHTimer::endBench();
+		
 
 		//
 		// Load the config file
@@ -736,30 +761,21 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 
 		//
-		// Set the negatif filter from the config file
+		// Set the negative filter from the config file
 		//
 
-		if ((var = ConfigFile.getVarPtr ("NegFiltersDebug")) != NULL)
+		for(const char **name = NegFiltersNames; *name; name++)
 		{
-			ConfigFile.setCallback ("NegFiltersDebug", cbLogFilter);
-			for (sint i = 0; i < var->size(); i++)
+			if ((var = ConfigFile.getVarPtr (*name)) != NULL)
 			{
-				DebugLog->addNegativeFilter (var->asString(i).c_str());
+				ConfigFile.setCallback (*name, cbLogFilter);
+				cbLogFilter(*var);
 			}
 		}
-
-		if ((var = ConfigFile.getVarPtr ("NegFiltersInfo")) != NULL)
-		{
-			ConfigFile.setCallback ("NegFiltersInfo", cbLogFilter);
-			for (sint i = 0; i < var->size(); i++)
-			{
-				InfoLog->addNegativeFilter (var->asString(i).c_str());
-			}
-		}
-
-
+		
+		
 		//
-		// Create the window if neeeded
+		// Create the window if needed
 		//
 
 		if ((var = ConfigFile.getVarPtr ("WindowStyle")) != NULL)
@@ -1236,19 +1252,21 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		do
 		{
-			//H_BEFORE(NLNETServiceLoop); // Not tick-wise
+			CHTimer::startBench(false, true, false);
+
 			// count the amount of time to manage internal system
 			TTime bbefore = CTime::getLocalTime ();
 
 			// call the user update and exit if the user update asks it
-			//H_BEFORE(NLNETServiceUpdate);
+			H_BEFORE(NLNETServiceUpdate);
 			if (!update ())
 			{
-				//H_AFTER(NLNETServiceLoop); // Not tick-wise
-				//H_AFTER(NLNETServiceUpdate);
+				H_AFTER(NLNETServiceUpdate);
+				CHTimer::endBench();
 				break;
 			}
-			//H_AFTER(NLNETServiceUpdate);
+			NbUserUpdate++;
+			H_AFTER(NLNETServiceUpdate);
 			
 			// count the amount of time to manage internal system
 			TTime before = CTime::getLocalTime ();
@@ -1266,7 +1284,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// stop the loop if the exit signal asked
 			if (ExitSignalAsked > 0)
 			{
-				//H_AFTER(NLNETServiceLoop) // Not tick-wise
+				CHTimer::endBench();
 				break;
 			}
 	
@@ -1276,10 +1294,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			CFile::checkFileChange();
 
-			//H_BEFORE(NLNETManageMessages); // Not tick-wise
+			H_BEFORE(NLNETManageMessages); // Not tick-wise
 			// get and manage layer 5 messages
 			CUnifiedNetwork::getInstance()->update (_UpdateTimeout);
-			//H_AFTER(NLNETManageMessages); // Not tick-wise
+			H_AFTER(NLNETManageMessages); // Not tick-wise
 			
 			// resync the clock every hours
 			if (resyncEvenly)
@@ -1370,15 +1388,15 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
-			//H_AFTER(NLNETServiceLoop); // Not tick-wise
 
+			CHTimer::endBench();
+			
 			// Resetting the hierarchical timer must be done outside the top-level timer
 			if ( _ResetMeasures )
 			{
 				CHTimer::clear();
 				_ResetMeasures = false;
 			}
-			//H_AFTER(NLNETServiceLoop);
 		}
 		while (true);
 	}
@@ -1480,7 +1498,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 */
 #endif
 
-	CHTimer::endBench();
 	CHTimer::display();
 	CHTimer::displayByExecutionPath ();
 	CHTimer::displayHierarchical(InfoLog, true, 64);
@@ -1547,6 +1564,8 @@ NLMISC_VARIABLE(string, CompilationMode, "mode of the compilation");
 NLMISC_VARIABLE(sint32, NetSpeedLoop, "duration of the last network loop (in ms)");
 NLMISC_VARIABLE(sint32, UserSpeedLoop, "duration of the last user loop (in ms)");
 
+NLMISC_VARIABLE(uint32, NbUserUpdate, "number of time the user IService::update() called");
+
 NLMISC_DYNVARIABLE(uint32, ListeningPort, "default listening port for this service")
 {
 	if (get) *pointer = IService::getInstance()->getPort();
@@ -1570,34 +1589,6 @@ NLMISC_DYNVARIABLE(string, LogDirectory, "path where the service is logging")
 NLMISC_DYNVARIABLE(string, ConfigDirectory, "path where the config file is")
 {
 	if (get) *pointer = IService::getInstance()->_ConfigDir + IService::getInstance()->_LongName + ".cfg";
-}
-
-NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this service")
-{
-	// we can only read the value
-	if (get)
-		*pointer = CUnifiedNetwork::getInstance()->getBytesReceived ();
-}
-
-NLMISC_DYNVARIABLE(uint64, SentBytes, "total of bytes sent by this service")
-{
-	// we can only read the value
-	if (get)
-		*pointer = CUnifiedNetwork::getInstance()->getBytesSent ();
-}
-
-NLMISC_DYNVARIABLE(uint64, ReceivedQueueSize, "current size in bytes of the received queue size")
-{
-	// we can only read the value
-	if (get)
-		*pointer = CUnifiedNetwork::getInstance()->getReceiveQueueSize ();
-}
-
-NLMISC_DYNVARIABLE(uint64, SentQueueSize, "current size in bytes of the sent queue size")
-{
-	// we can only read the value
-	if (get)
-		*pointer = CUnifiedNetwork::getInstance()->getSendQueueSize ();
 }
 
 NLMISC_DYNVARIABLE(string, Scroller, "current size in bytes of the sent queue size")
@@ -1856,7 +1847,7 @@ NLMISC_DYNVARIABLE(string, State, "Set this value to 0 to shutdown the service a
 		{
 			nlinfo ("I can't set State=0 because I'm the admin and I should never quit");
 		}
-		else if (*pointer == "0")
+		else if (*pointer == "0" || *pointer == "2")
 		{
 			// ok, we want to set the value to false, just quit
 			nlinfo ("User ask me with a command to quit using the State variable");

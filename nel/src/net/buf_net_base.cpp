@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.cpp,v 1.10 2002/08/23 12:35:46 lecroart Exp $
+ * $Id: buf_net_base.cpp,v 1.11 2003/02/07 16:08:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@ using namespace std;
 
 namespace NLNET {
 
+uint32 	NbNetworkTask = 0;
 
 /***************************************************************************************************
  * User main thread 
@@ -56,5 +57,6 @@ CBufNetBase::CBufNetBase() :
 #endif
 }
 
-
+NLMISC_VARIABLE(uint32, NbNetworkTask, "Number of server and client thread");
+	
 } // NLNET

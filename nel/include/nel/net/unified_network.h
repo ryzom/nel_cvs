@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.34 2003/01/28 14:15:07 cado Exp $
+ * $Id: unified_network.h,v 1.35 2003/02/07 16:07:56 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -317,6 +317,8 @@ private:
 		/// This contains the connection id that will be used for default network, it's a connection id used for Connection index
 		uint8						DefaultNetwork;
 
+		uint32						TotalCallbackCalled;
+
 		CUnifiedConnection() { reset(); }
 
 		CUnifiedConnection(const std::string &name, uint16 id, bool isExternal) 
@@ -352,6 +354,7 @@ private:
 			Connection.clear ();
 			DefaultNetwork = 0xDD;
 			NetworkConnectionAssociations.clear();
+			TotalCallbackCalled = 0;
 		}
 
 		// this function wrap the globa default network and network asssociation with this specific connection because they can have
@@ -489,6 +492,7 @@ private:
 	friend void	uNetUnregistrationBroadcast(const std::string &name, TServiceId sid, const std::vector<CInetAddress> &addr);
 	friend struct isServiceLocalClass;
 	friend struct l5CallbackClass;
+	friend struct l5QueuesStatsClass;
 };
 
 

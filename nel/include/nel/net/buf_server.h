@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.14 2002/12/16 18:03:09 cado Exp $
+ * $Id: buf_server.h,v 1.15 2003/02/07 16:07:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,8 @@ public:
 	/// Wake the thread up, when blocked in select (Unix only)
 	void	wakeUp();
 #endif
+
+	uint32 NbLoop;
 
 protected:
 
@@ -208,13 +210,18 @@ public:
 	// Returns the size in bytes of the data stored in the send queue.
 	uint32	getSendQueueSize( TSockId destid );
 
+	void	displaySendQueueStat( NLMISC::CLog *log = NLMISC::InfoLog, TSockId destid = InvalidSockId);
+
+	void displayThreadStat (NLMISC::CLog *log = NLMISC::InfoLog);
+		
+
 	/** Sets the time flush trigger (in millisecond). When this time is elapsed,
 	 * all data in the send queue is automatically sent (-1 to disable this trigger)
 	 */
 	void	setTimeFlushTrigger( TSockId destid, sint32 ms ) { nlassert( destid != InvalidSockId ); destid->setTimeFlushTrigger( ms ); }
 
 	/** Sets the size flush trigger. When the size of the send queue reaches or exceeds this
-	 * calue, all data in the send queue is automatically sent (-1 to disable this trigger )
+	 * value, all data in the send queue is automatically sent (-1 to disable this trigger )
 	 */
 	void	setSizeFlushTrigger( TSockId destid, sint32 size ) { nlassert( destid != InvalidSockId ); destid->setSizeFlushTrigger( size ); }
 

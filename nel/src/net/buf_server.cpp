@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.38 2002/12/16 18:02:14 cado Exp $
+ * $Id: buf_server.cpp,v 1.39 2003/02/07 16:08:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,11 +45,12 @@ using namespace std;
 
 namespace NLNET {
 
+uint32 	NbServerListenTask = 0;
+uint32 	NbServerReceiveTask = 0;
 
 /***************************************************************************************************
  * User main thread (initialization)
  **************************************************************************************************/
-
 
 /*
  * Constructor
@@ -123,7 +124,7 @@ void CListenTask::init( uint16 port, sint32 maxExpectedBlockSize )
 /*
  * Constructor
  */
-CServerTask::CServerTask() : _ExitRequired(false)
+CServerTask::CServerTask() : _ExitRequired(false), NbLoop (0)
 {
 #ifdef NL_OS_UNIX
 	pipe( _WakeUpPipeHandle );
@@ -601,7 +602,7 @@ void CBufServer::receive( CMemStream& buffer, TSockId* phostid )
 	//	nldebug ("receive message number %u", val);
 	if ((*phostid)->ReceiveNextValue != val)
 	{
-		nlwarning (("LNETL1: !!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s), warn lecroart@nevrax.com with the log now please", val, (*phostid)->ReceiveNextValue, (*phostid)->asString().c_str()));
+		nlwarning ("LNETL1: !!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s), warn lecroart@nevrax.com with the log now please", val, (*phostid)->ReceiveNextValue, (*phostid)->asString().c_str());
 		// resync the message number
 		(*phostid)->ReceiveNextValue = val;
 	}
@@ -703,6 +704,56 @@ uint32 CBufServer::getSendQueueSize( TSockId destid )
 	}
 }
 
+void CBufServer::displayThreadStat (NLMISC::CLog *log)
+{
+	// For each thread
+	CThreadPool::iterator ipt;
+	{
+		CSynchronized<CThreadPool>::CAccessor poolsync( &_ThreadPool );
+		for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
+		{
+			// For each thread of the pool
+			CServerReceiveTask *task = receiveTask(ipt);
+			// For each socket of the thread, update sending
+			log->displayNL ("server receive thread %p nbloop %d", task, task->NbLoop);
+		}
+	}
+
+	log->displayNL ("server listen thread %p nbloop %d", _ListenTask, _ListenTask->NbLoop);
+}
+
+void CBufServer::displaySendQueueStat (NLMISC::CLog *log, TSockId destid)
+{
+	if ( destid != InvalidSockId )
+	{
+		destid->SendFifo.displayStats(log);
+	}
+	else
+	{
+		// add all client buffers
+		
+		// For each thread
+		CThreadPool::iterator ipt;
+		{
+			CSynchronized<CThreadPool>::CAccessor poolsync( &_ThreadPool );
+			for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
+			{
+				// For each thread of the pool
+				CServerReceiveTask *task = receiveTask(ipt);
+				CConnections::iterator ipb;
+				{
+					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
+					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
+					{
+						// For each socket of the thread, update sending
+						(*ipb)->SendFifo.displayStats(log);
+					}
+				}
+			}
+		}
+	}
+}
+
 
 /*
  * Returns the number of bytes received since the previous call to this method
@@ -739,6 +790,9 @@ uint64 CBufServer::newBytesSent()
  */
 void CListenTask::run()
 {
+	NbNetworkTask++;
+	NbServerListenTask++;
+
 	nlnettrace( "CListenTask::run" );
 
 #ifdef NL_OS_UNIX
@@ -801,6 +855,8 @@ void CListenTask::run()
 
 			// Dispatch the socket into the thread pool
 			_Server->dispatchNewSocket( bufsock );
+
+			NbLoop++;
 		}
 		catch ( ESocket& e )
 		{
@@ -810,6 +866,8 @@ void CListenTask::run()
 	}
 
 	nlnettrace( "Exiting CListenTask::run" );
+	NbServerListenTask--;
+	NbNetworkTask--;
 }
 
 
@@ -940,6 +998,8 @@ void CBufServer::addNewThread( CThreadPool& threadpool, CServerBufSock *bufsock 
  */
 void CServerReceiveTask::run()
 {
+	NbNetworkTask++;
+	NbServerReceiveTask++;
 	nlnettrace( "CServerReceiveTask::run" );
 
 	SOCKET descmax;
@@ -1047,7 +1107,7 @@ void CServerReceiveTask::run()
 				}*/
 				//nlerror( "LNETL1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
 				nldebug( "LNETL1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
-				return;
+				goto end;
 		}
 
 		// 4. Get results
@@ -1112,7 +1172,6 @@ void CServerReceiveTask::run()
 
 */
 			}
-
 		}
 
 #ifdef NL_OS_UNIX
@@ -1127,9 +1186,13 @@ void CServerReceiveTask::run()
 			nldebug( "LNETL1: Receive thread select woken-up" );
 		}
 #endif
-		
+
+		NbLoop++;
 	}
+end:
 	nlnettrace( "Exiting CServerReceiveTask::run" );
+	NbServerReceiveTask--;
+	NbNetworkTask--;
 }
 
 
@@ -1166,5 +1229,7 @@ void CServerReceiveTask::clearClosedConnections()
 	}
 }
 
+NLMISC_VARIABLE(uint32, NbServerListenTask, "Number of server listen thread");
+NLMISC_VARIABLE(uint32, NbServerReceiveTask, "Number of server receive thread");
 
 } // NLNET

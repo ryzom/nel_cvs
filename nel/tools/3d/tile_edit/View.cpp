@@ -39,6 +39,11 @@ CFont *normal_font = NULL;
 __int64 flagGroupSort = 0; int showNULL = 0;
 //ViewPopup *theViewPopup = 0;
 
+bool zouille ()
+{
+	return (GetAsyncKeyState(VK_F2)&(1<<15)) != 0;
+};
+
 // Rotate a buffer
 void rotateBuffer (uint &Width, uint &Height, std::vector<NLMISC::CBGRA>& Tampon)
 {
@@ -209,7 +214,7 @@ int TileList::setTile128 (int tile, const std::string& name, NL3D::CTile::TBitma
 			int pixel=-1;
 			int composante=4;
 			error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
-			if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128))
+			if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128)&&!zouille ())
 			{
 				char sTmp[512];
 				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
@@ -272,7 +277,8 @@ int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitma
 			CTileSet::TError error;
 			int pixel=-1;
 			int composante=4;
-			if ((error=tileBank2.getTileSet(_tileSet)->checkTile256 (type, border, pixel, composante))!=CTileSet::ok)
+
+			if (((error=tileBank2.getTileSet(_tileSet)->checkTile256 (type, border, pixel, composante))!=CTileSet::ok)&&!zouille())
 			{
 				char sTmp[512];
 				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
@@ -336,7 +342,7 @@ int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile:
 			int pixel=-1;
 			int composante=4;
 			error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
-			if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128))
+			if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128)&&!zouille ())
 			{
 				char sTmp[512];
 				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
@@ -440,8 +446,8 @@ int TileList::setTileTransitionAlpha (int tile, const std::string& name, int rot
 			int indexError;
 			int pixel=-1;
 			int composante=4;
-			if ((error=tileBank2.getTileSet(_tileSet)->checkTileTransition ((CTileSet::TTransition)tile, CTile::alpha, border, indexError,
-				pixel, composante))!=CTileSet::ok)
+			if (((error=tileBank2.getTileSet(_tileSet)->checkTileTransition ((CTileSet::TTransition)tile, CTile::alpha, border, indexError,
+				pixel, composante))!=CTileSet::ok)&&!zouille ())
 			{
 				char sMsg[512];
 				if ((error==CTileSet::topInterfaceProblem)||(error==CTileSet::bottomInterfaceProblem)||(error==CTileSet::leftInterfaceProblem)

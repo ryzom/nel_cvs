@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.h
- * <File description>
+ * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: value_gradient_dlg.h,v 1.3 2001/06/25 12:53:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,8 +38,12 @@
 // CValueGradientDlg dialog
 
 class CEditAttribDlg ;
+template <class T> class CEditableRangeT ;
+typedef CEditableRangeT<uint32> CEditableRangeUInt ;
 
+#include "ps_wrapper.h"
 #include "attrib_list_box.h"
+
 
 
 /** This struct serves as an interface to manage the gradient.
@@ -66,6 +70,12 @@ struct IValueGradientDlgClient
 
 	// return the number of values in a scheme
 	virtual uint32 getSchemeSize(void) const  = 0 ;
+
+	// get the number of interpolation step
+	virtual uint32 getNbSteps(void) const = 0 ;
+
+	// set the number of interpolation steps
+	virtual void setNbSteps(uint32 value) = 0 ;
 	
 } ;
 
@@ -115,6 +125,9 @@ protected:
 	// the dialog for edition of the current value
 	CEditAttribDlg *_EditValueDlg ;
 
+	// the dialog to edit the current number of step for gradient interpolation
+	CEditableRangeUInt *_NbStepDlg ;
+
 	// the current size of the gradient
 	uint _Size ;
 
@@ -129,6 +142,16 @@ protected:
 	afx_msg void OnSelchangeGradientList();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+	// a wrapper to tune the number of step
+	struct tagNbStepWrapper :public IPSWrapperUInt
+	{
+		// the interface that was passed to the dialog this struct is part of
+		IValueGradientDlgClient *I ;	
+		uint32 get(void) const { return I->getNbSteps() ; }
+		void set(const uint32 &nbSteps) { I->setNbSteps(nbSteps) ; }
+
+	} _NbStepWrapper ;
 };
 
 //{{AFX_INSERT_LOCATION}}

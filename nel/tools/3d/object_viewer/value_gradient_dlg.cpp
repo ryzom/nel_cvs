@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.cpp
- * <File description>
+ * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: value_gradient_dlg.cpp,v 1.3 2001/06/25 12:53:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "value_gradient_dlg.h"
 
 #include "edit_attrib_dlg.h"
+#include "editable_range.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,12 +49,16 @@ CValueGradientDlg::CValueGradientDlg(IValueGradientDlgClient *clientInterface
 {
 	//{{AFX_DATA_INIT(CValueGradientDlg)
 	//}}AFX_DATA_INIT
+
+	_NbStepDlg = new CEditableRangeUInt(std::string("GRADIENT NB STEP"), 1, 255) ;
 }
 
 
 CValueGradientDlg::~CValueGradientDlg()
 {	
 	delete _EditValueDlg ;
+	_NbStepDlg->DestroyWindow() ;
+	delete _NbStepDlg ;
 }
 
 
@@ -172,7 +177,17 @@ BOOL CValueGradientDlg::OnInitDialog()
 	m_GradientList.setCtrlID(IDC_GRADIENT_LIST) ;
 	m_GradientList.setDrawer(_ClientInterface) ;
 
+
+	_NbStepWrapper.I = _ClientInterface ;
+	_NbStepDlg->setWrapper(&_NbStepWrapper) ;
+	_NbStepDlg->init(181, 45, this) ;
+	_NbStepDlg->enableLowerBound(0, true) ;
+
+
 	UpdateData(FALSE) ;		
+
+
+	OnSelchangeGradientList() ;
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

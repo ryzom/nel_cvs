@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.11 2001/02/08 17:27:45 chafik Exp $
+ * $Id: agent.h,v 1.12 2001/02/12 09:54:00 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,7 +136,19 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}
-		
+
+		/**
+		runError is to processing reltative to PError Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
+		*/
+		virtual IMessageBase *runError(const IMessageBase &m)
+		{
+			char debugString[1024*4];
+			char text[2048*8];
+			getDebugString(debugString);
+			sprintf(text,"runError(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
 
 	public:
 		///Contruct agent with an parent.

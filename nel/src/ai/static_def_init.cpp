@@ -245,7 +245,7 @@
 
 	const NLAIC::CIdentType CMessageScript::IdMessageScript("MessageScript", NLAIC::CSelfClassCFactory( CMessageScript() ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
-		NLAIC::CTypeOfOperator::opEq );	
+		NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CFuzzyInterval::IdFuzzyInterval = NLAIC::CIdentType("FuzzyInterval",NLAIC::CSelfClassCFactory(CFuzzyInterval("Inst",0,0)),
 		NLAIC::CTypeOfObject::tObject,
@@ -412,6 +412,11 @@
 
 	const NLAIC::CIdentType CPKill::IdPKill = NLAIC::CIdentType( "Kill", 
 		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPKill()), 
+		NLAIC::CTypeOfObject::tPerformative,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
+	const NLAIC::CIdentType CPError::IdPError = NLAIC::CIdentType( "Error",
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPError()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 

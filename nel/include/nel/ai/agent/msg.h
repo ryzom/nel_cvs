@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.2 2001/02/05 10:36:24 chafik Exp $
+ * $Id: msg.h,v 1.3 2001/02/12 09:54:05 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@ namespace NLAIAGENT
 
 		* \author Chafik sameh
 		* \author Portier Pierre
+		* \author Robert Gabriel
 		* \author Nevrax France
 		* \date 2000
 	*/
@@ -56,7 +57,8 @@ namespace NLAIAGENT
 			PAsk,
 			PBreak,
 			PTell,
-			PKill
+			PKill,
+			PError
 		};
 
 	private:

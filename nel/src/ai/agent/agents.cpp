@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.20 2001/02/08 17:27:53 chafik Exp $
+ * $Id: agents.cpp,v 1.21 2001/02/12 09:54:52 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,8 +126,15 @@ namespace NLAIAGENT
 			}
 			catch(NLAIE::IException &e)
 			{
+				// We send an Error message because the incoming message isn't processed.
+				IMessageBase *o = (IMessageBase *)msg.clone();
+				o->setMethodIndex(-1,-1);
+				o->setSender(this);
+				o->setPerformatif(IMessageBase::PError);
+				o->setReceiver((IObjectIA *)msg.getSender());
+				((IObjectIA *)msg.getSender())->sendMessage(o);
+
 				getMail()->popMessage();
-				//throw NLAIE::CExceptionContainer(e);
 			}		
 		}
 	}
@@ -292,6 +299,9 @@ namespace NLAIAGENT
 			break;
 		case IMessageBase::PKill:
 			returnMsg = runKill(msg);
+			break;
+		case IMessageBase::PError:
+			returnMsg = runError(msg);
 			break;
 		}
 		if(returnMsg) returnMsg->release();

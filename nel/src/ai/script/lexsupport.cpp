@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.9 2001/01/23 16:39:32 chafik Exp $
+ * $Id: lexsupport.cpp,v 1.10 2001/02/12 09:55:05 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,6 +133,7 @@ namespace NLAISCRIPT
 		DicoDeNom.insert(Arbre::value_type("BREAK",BREAK) );
 		DicoDeNom.insert(Arbre::value_type("TELL",TELL) );
 		DicoDeNom.insert(Arbre::value_type("KILL",KILL) );
+		DicoDeNom.insert(Arbre::value_type("ERROR",ERROR) );
 
 		
 		//DicoDeNom.insert(Arbre::value_type("Digital",DIGITAL) );		

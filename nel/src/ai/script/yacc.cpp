@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.15 2001/01/31 14:01:09 chafik Exp $
+ * $Id: yacc.cpp,v 1.16 2001/02/12 09:55:17 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -613,6 +613,7 @@ namespace NLAISCRIPT
 			listRun.push_back((const char *)NLAIAGENT::CPBreak::IdPBreak);
 			listRun.push_back((const char *)NLAIAGENT::CPTell::IdPTell);
 			listRun.push_back((const char *)NLAIAGENT::CPKill::IdPKill);
+			listRun.push_back((const char *)NLAIAGENT::CPError::IdPError);
 			listRun.push_back((const char *)NLAIAGENT::CPExec::IdPExec);
 			
 			char nameRun[1024];			

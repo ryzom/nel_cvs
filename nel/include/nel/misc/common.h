@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.26 2001/05/24 14:17:35 cado Exp $
+ * $Id: common.h,v 1.27 2001/05/25 14:28:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,6 +127,19 @@ inline float frand(float mod)
 	double	r = (double) rand();
 	r/= (double) RAND_MAX;
 	return (float)(r * mod);
+}
+
+
+/** Return -1 if f<0, 0 if f==0, 1 if f>1
+ */
+inline sint fsgn(double f)
+{
+	if(f<0)
+		return -1;
+	else if(f>0)
+		return 1;
+	else
+		return 0;
 }
 
 

@@ -31,7 +31,7 @@ for i in $process_to_complete ; do
 	# cat processes/$i/log.log >> log.log
 
 	# Idle
-	idle.bat
+	./idle.bat
 done
 
 # Get the quality option to choose the goor properties.cfg file

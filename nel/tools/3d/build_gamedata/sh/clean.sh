@@ -23,6 +23,6 @@ for i in $process_to_complete ; do
 	# cat processes/$i/log.log >> log.log
 
 	# Idle
-	idle.bat
+	./idle.bat
 done
 

@@ -22,5 +22,5 @@ for i in $client_setup_directories ; do
 	rm $client_directory/$i/*
 
 	# Idle
-	idle.bat
+	./idle.bat
 done

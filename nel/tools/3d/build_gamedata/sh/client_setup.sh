@@ -19,5 +19,5 @@ for i in $client_setup_directories ; do
 	mkdir $client_directory/$i 2> /dev/null
 
 	# Idle
-	idle.bat
+	./idle.bat
 done

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.2 2001/04/25 17:23:02 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,8 +113,9 @@ void CPSDot::step(TPSProcessPass pass, CAnimationTime)
 
 
 
-void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void CPSDot::serial(NLMISC::IStream &f)
 {
+	f.serialCheck((uint32) 'PSDO') ;
 	CPSParticle::serial(f) ;
 	f.serialVersion(1) ;
 	f.serial(_Color) ;
@@ -137,12 +138,19 @@ void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	/// create the face look at by giving a texture and an optionnal color
 CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex, const CRGBA &c) : CPSDot(c), _Tex(tex)
 {
+	init() ;
+}
+
+void CPSFaceLookAt::init(void)
+{
 	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
 	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;
 	_Mat.setTexture(0, _Tex) ;
 	_Mat.setBlend(true) ;
 }
+
+
 void CPSFaceLookAt::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
 	if (pass != PSBlendRender) return  ;
@@ -219,10 +227,22 @@ void CPSFaceLookAt::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	delete[] tab ;
 
 }
-void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void CPSFaceLookAt::serial(NLMISC::IStream &f)
 {
+	f.serialCheck((uint32) 'PFLA') ;
 	CPSDot::serial(f) ;
-	f.serialPolyPtr((ITexture *&) _Tex) ;
+
+	ITexture *ptTex = _Tex ;
+
+	f.serialPolyPtr(ptTex) ;
+	
+
+	if (f.isReading())
+	{	
+		_Tex = ptTex ;
+		init() ;
+	}
+	
 }
 	
 

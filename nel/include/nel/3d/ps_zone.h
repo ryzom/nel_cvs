@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
+ * $Id: ps_zone.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,12 +50,16 @@ const float PSCollideEpsilon = 10E-5f ;
  * \author Nevrax France
  * \date 2001
  */
-class CPSZone : public CPSForce
+class CPSZone : public CPSTargetLocatedBindable
 {
 public:
 
 	/// Constructor
 	CPSZone();
+
+	// dtor
+
+	~CPSZone() ;
 
 	/**
 	*  Gives the type for this bindable.	
@@ -83,14 +87,20 @@ public:
 		
 
 	/// Add a new type of located for this zone to apply on. nlassert if present	
-	virtual void attachTarget(CSmartPtr<CPSLocated> ptr) ;
+	virtual void attachTarget(CPSLocated *ptr) ;
 
-	/// Detach a target. If not present -> assert
-	virtual void detachTarget(CSmartPtr<CPSLocated> ptr) ;
 
 	
 	/// serialisation, DERIVER must override this
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) { CPSLocatedBindable::serial(f) ; }
+	virtual void serial(NLMISC::IStream &f) { CPSTargetLocatedBindable::serial(f) ; }
+
+
+	/** Inherited from CPSTargetLocatedBindable. Its called when one of the targets has been detroyed or detached
+	 *  The default behaviour, release collision infos from the located
+	 */
+	
+	virtual void releaseTargetRsc(CPSLocated *target) ;
+
 
 protected:
 
@@ -132,7 +142,7 @@ class CPSZonePlane : public CPSZone, public IPSMover
 		// return a matrix of the system. No valid index -> assert
 		virtual CMatrix getMatrix(uint32 index) const ;
 
-		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		virtual void serial(NLMISC::IStream &f) ;
 
 	protected:
 		TPSAttribVector _Normal ;

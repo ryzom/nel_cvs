@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -210,6 +210,7 @@ void CPSUtil::displayBasis(const NLMISC::CMatrix &m, float size, CFontGenerator 
 
 void CPSUtil::print(const std::string &text, CFontGenerator &fg, CFontManager &fm, const CVector &pos, float size)
 {
+	nlassert((&fg) && (&fm)) ;
 	IDriver *driver = CNELU::Driver ;
 	CComputedString cptedString ;	
 	fm.computeString ( text,

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
+ * $Id: particle_system.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,11 +42,12 @@ namespace NLMISC
 namespace NL3D {
 
 
-using NLMISC::CSmartPtr ;
+
 using NLMISC::CMatrix ;
 class CParticleSystem ;
 class CFontGenerator ;
 class CFontManager ;
+class CPSCopyHelper ;
 
 
 
@@ -57,11 +58,12 @@ enum TPSProcessPass { PSCollision, PSMotion, PSSolidRender, PSBlendRender, PSToo
 
 
 
+
 /**
  *	A system particle process; A process is anything that can be called at each update 
  */
 
-class CParticleSystemProcess : public NLMISC::IStreamable, public NLMISC::CRefCount
+class CParticleSystemProcess : public NLMISC::IStreamable
 {
 	public:
 		/**
@@ -71,9 +73,12 @@ class CParticleSystemProcess : public NLMISC::IStreamable, public NLMISC::CRefCo
 
 		/// ctor
 		CParticleSystemProcess() : _Owner(NULL), _SystemBasisEnabled(false) {}
-
+		
 		/// dtor
-		virtual ~CParticleSystemProcess()  {} ;
+		virtual ~CParticleSystemProcess()  {}
+
+
+
 
 		/** Compute the aabbox of this located, (expressed in world basis
 		*  \return true if there is any aabbox
@@ -115,7 +120,13 @@ class CParticleSystemProcess : public NLMISC::IStreamable, public NLMISC::CRefCo
 
 		void setSystemBasis(bool sysBasis = true) { _SystemBasisEnabled = sysBasis ; }
 
+		/** serialize the whole system
+		* Everything is saved, except for the fontManager and the fontGenerator
+		* They must be set again if the edition pass, that show forces and zone, is used
+		*/
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		
+
 		
 		
 	protected:
@@ -150,19 +161,26 @@ public:
 	/// ctor
 	CParticleSystem();
 
+
+	/*** duplication method
+	 * \param ch for private use, set to null by default
+	 */
+	CParticleSystem *clone(CPSCopyHelper *ch = NULL)  ;
+
 	/// dtor
 	~CParticleSystem() ;
 
 	/** attach a process (such as a located : see particle_system_located.h) to the system
-     *  if already present -> nl assert
+	 *  It is then owned by the process and will be deleted by it
+     *  if already present -> nl assert	 
 	 */
-	void attach(CSmartPtr<CParticleSystemProcess> ptr) ;
+	void attach(CParticleSystemProcess *ptr) ;
 
-	/** detach a process
+	/** remove a process
+	 * It is deleted by the system
      *  if not present -> nl assert
 	 */
-
-	void detach(const CSmartPtr<CParticleSystemProcess> &ptr) ;
+	void remove(CParticleSystemProcess *ptr) ;
 
 	/// get the number of process that are attached to the system
 
@@ -172,7 +190,7 @@ public:
 	 *  Get a ref to the nth process.
 	 *  Out of range -> nlassert
 	 */	
-	CSmartPtr<CParticleSystemProcess> &getProcess(uint32 index)
+	CParticleSystemProcess *getProcess(uint32 index)
 	{ 
 		nlassert(index < _ProcessVect.size()) ;
 		return _ProcessVect[index] ; 
@@ -182,7 +200,7 @@ public:
 	 *  Get a const ref to the nth process.
 	 *  Out of range -> nlassert
 	 */	
-	const CSmartPtr<CParticleSystemProcess> &getProcess(uint32 index) const
+	const CParticleSystemProcess *getProcess(uint32 index) const
 	{ 
 		nlassert(index < _ProcessVect.size()) ;
 		return _ProcessVect[index] ; 
@@ -232,7 +250,7 @@ public:
 
 protected:
 		
-	typedef std::vector<CSmartPtr<CParticleSystemProcess> > TProcessVect ;
+	typedef std::vector< CParticleSystemProcess *> TProcessVect ;
 	TProcessVect _ProcessVect ;
 	CFontGenerator *_FontGenerator ;
 	CFontManager *_FontManager ;
@@ -242,12 +260,68 @@ protected:
 	CMatrix _SysMat ; 
 	// the inverted matrix of the system
 	CMatrix _InvSysMat ;
+
 };
 
 
+/**
+ *	This class holds infos needed to duplicate a particle system
+ *  Because of cross referencement, an object of the system may need referencment before it is created
+ *  With map holding pointer to already created object, we can duplicate the system safely
+ *  for now it is for PRIVATE USE... 
+ *  may be useful in NLMISC later as it could be used with other kind of objects ...
+ */ 
+
+/*class CPSCopyHelper
+{
+	public:
+		// duplicate an object using the copy ctor, if it has not been before
+		template <class T> T *ctorCopy(const T &src) 
+		{
+			TCopiedIt it = _Alreadycopied.find(src) ;
+			if (it  != _AlreadyCopied.end())
+			{
+				return (T *) it ;
+			}
+			else
+			{
+				T *result = new T(src) ;
+				_AlreadyCopied.insert((void *) result) ;
+				return result ;
+			}
+		}
+		// duplicate an object using its clone method, if it has not been before
+
+		template <class T> T *clone(const T &src)
+		{
+			TCopiedIt it = _AlreadyCopied.find(src) ;
+			if (it  != _AlreadyCopied.end())
+			{
+				return (T *) *it ;
+			}
+			else
+			{
+				T *result = src.clone(this) ;
+				_AlreadyCopied.insert((void *) result) ;
+				return result ;
+			}
+		}		
 
 
+		// insert a value that has been copied by other means
+		void insert(void *ptr)
+		{
+			std::pair<TCopiedIt, bool> result = _AlreadyCopied.insert(ptr) ;
+			nlassert(result.second) ;
+		}	
 
+	private:
+		typedef std::set<void *> TAlreadyCopied ;
+		typedef TAlreadyCopied::iterator TCopiedIt ;
+		TAlreadyCopied _AlreadyCopied ;
+} ;
+
+*/
 
 /** this class helps to instanciate a particle system from its shape
  *

@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
+ * $Id: ps_force.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,35 +47,13 @@ namespace NL3D {
  * \author Nevrax France
  * \date 2001
  */
-class CPSForce : public CPSLocatedBindable
+class CPSForce : public CPSTargetLocatedBindable
 {
 public:
 
 	/// Constructor
 	CPSForce();
-
-	/// Add a new type of located for this force to apply on. nlassert if present
-	virtual void attachTarget(CSmartPtr<CPSLocated> ptr) ;
-
-	/// Detach a target. If not present -> assert
-	virtual void detachTarget(CSmartPtr<CPSLocated> ptr) ;
-
-	/// return the number of targets
-	uint32 getNbTargets(void) const { return _Targets.size() ; }
-
-	/// Return a ref on a target. Invalid range -> nlassert
-	CSmartPtr<CPSLocated> getTarget(uint32 index) 
-	{
-		nlassert(index < _Targets.size()) ;
-		return _Targets[index] ;
-	}
-
-	/// Return a const ref on a target. Invalid range -> nlassert
-	const CSmartPtr<CPSLocated> getTarget(uint32 index) const
-	{
-		nlassert(index < _Targets.size()) ;
-		return _Targets[index] ;
-	}
+	
 
 	/// return this bindable type
 	uint32 getType(void) const { return PSForce ; }
@@ -101,7 +79,7 @@ public:
 	virtual void show(CAnimationTime ellapsedTime)  = 0 ;
 
 	/// Serial the force definition. MUST be called by deriver during their serialisation
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	virtual void serial(NLMISC::IStream &f) ;
 
 
 	virtual bool newElement(void) = 0 ;
@@ -116,11 +94,6 @@ public:
 	virtual void resize(uint32 size) = 0 ;
 
 	
-
-protected:
-	typedef std::vector<CSmartPtr<CPSLocated> > TTargetCont ;
-	TTargetCont _Targets ;
-
 };
 
 

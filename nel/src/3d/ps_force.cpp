@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,47 +44,16 @@ CPSForce::CPSForce()
 {
 }
 
-void CPSForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void CPSForce::serial(NLMISC::IStream &f)
 {
-	CPSLocatedBindable::serial(f) ;
-	uint32 size ;
-	f.serialVersion(1) ;	
-	if (f.isReading())
-	{
-		_Targets.clear() ;
-		f.serial(size) ;
-		for (uint32 k = 0 ; k < size ; ++k)
-		{
-			CPSLocated *pt = NULL ;
-			f.serialPolyPtr(pt) ;
-			_Targets.push_back(CSmartPtr<CPSLocated>(pt)) ;
-		}
-	}
-	else
-	{
-		size = _Targets.size() ;
-		f.serial(size) ;
-		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
-		{
-			CPSLocated *pt = (*it) ;
-			f.serialPolyPtr(pt) ;
-		}
-	}
+	CPSTargetLocatedBindable::serial(f) ;
+	f.serialCheck((uint32) 'FORC') ;
+	CPSLocatedBindable::serial(f) ;	
+	f.serialVersion(1) ;		
 }
 
 
-void CPSForce::attachTarget(CSmartPtr<CPSLocated> ptr)
-{
-	nlassert(std::find(_Targets.begin(), _Targets.end(), ptr) == _Targets.end()) ;
-	_Targets.push_back(ptr) ;
-}
 
-void CPSForce::detachTarget(CSmartPtr<CPSLocated> ptr)
-{
-	TTargetCont::iterator it = std::find(_Targets.begin(), _Targets.end(), ptr) ;
-	nlassert(it != _Targets.end()) ;
-	_Targets.erase(it) ;
-}
 
 void CPSForce::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
@@ -193,6 +162,9 @@ void CPSGravity::show(CAnimationTime ellapsedTime)
 		{
 			pos = getSysMat() * pos ;
 		}
+
+		// must have set this
+		nlassert(getFontGenerator() && getFontGenerator()) ;
 		
 		CPSUtil::print(std::string("G")
 							, *getFontGenerator()

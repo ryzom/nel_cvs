@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,7 @@ const CFontManager *CParticleSystemProcess::getFontManager(void) const
 
 void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialCheck((uint32) 'PSPR') ;
 	f.serialVersion(1) ;
 	f.serialPtr(_Owner) ;
 	f.serial(_SystemBasisEnabled) ;
@@ -92,9 +93,51 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 }
 
 
+
+// clonage
+CParticleSystem *CParticleSystem::clone(CPSCopyHelper *ch)
+{
+
+/*	if (!ch)
+	{
+		ch = new CPSCopyHelper ;		
+		CParticleSystem *result =  ch->clone(*this) ;
+		delete ch ;
+		return result ;
+	}
+	else
+	{
+		CParticleSystem *copy = NULL ;
+		
+	
+		copy = new CParticleSystem ;
+	
+		for (TProcessVect::const_iterator it = ps._ProcessVect.begin() ; it != ps._ProcessVect.end() ; ++it)
+		{
+			copy->_ProcessVect.push_back(*ch.clone(*it)) ;
+		}
+	// copy the attributes
+
+		copy->_FontGenerator = ps._FontGenerator ;
+		copy->_FontManager = ps._FontManager ;
+		copy->_ViewMat = ps._ViewMat ;
+		copy->_SysMat = ps._SysMat ;
+		copy->_InvSysMat = ps._InvSysMat ;
+
+		return copy ;
+	} */
+	return NULL ;
+}
+
+
+
 /// dtor
 CParticleSystem::~CParticleSystem()
 {
+	for (TProcessVect::iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	{
+		delete *it ;
+	}
 }
 
 
@@ -117,6 +160,7 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 void CParticleSystem::serial(NLMISC::IStream &f)
 {
 	uint32 size ;
+	f.serialCheck((uint32) 'PSYS') ;
 	f.serialVersion(1) ;	
 	if (f.isReading())
 	{
@@ -126,7 +170,7 @@ void CParticleSystem::serial(NLMISC::IStream &f)
 		{
 			CParticleSystemProcess *pt = NULL  ;
 			f.serialPolyPtr(pt) ;
-			_ProcessVect.push_back(CSmartPtr<CParticleSystemProcess>(pt)) ;
+			_ProcessVect.push_back(pt) ;
 		}
 		f.serial(_ViewMat) ;
 		f.serial(_SysMat) ;
@@ -151,7 +195,7 @@ void CParticleSystem::serial(NLMISC::IStream &f)
 }
 
 
-void CParticleSystem::attach(CSmartPtr<CParticleSystemProcess> ptr)
+void CParticleSystem::attach(CParticleSystemProcess *ptr)
 {
 	nlassert(std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) == _ProcessVect.end() ) ;
 	nlassert(ptr->getOwner() == NULL) ; // deja attache a un autre systeme
@@ -159,10 +203,11 @@ void CParticleSystem::attach(CSmartPtr<CParticleSystemProcess> ptr)
 	ptr->setOwner(this) ;
 }
 
-void CParticleSystem::detach(const CSmartPtr<CParticleSystemProcess> &ptr)
+void CParticleSystem::remove(CParticleSystemProcess *ptr)
 {
 	TProcessVect::iterator it = std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) ;
 	nlassert(it != _ProcessVect.end() ) ;
+	delete *it ;
 	_ProcessVect.erase(it) ;
 	ptr->setOwner(NULL) ;
 }

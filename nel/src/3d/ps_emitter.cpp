@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NL3D {
 /////////////////////////////////
 void CPSFrequency::serial(NLMISC::IStream &f)
 {
+	f.serialCheck((uint32)'NLPS') ;
 	f.serialVersion(1) ;
 	f.serialEnum(_FreqType) ;
 	switch (_FreqType)
@@ -124,8 +125,9 @@ void CPSEmitter::resize(uint32 size)
 }
 
 
-void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void CPSEmitter::serial(NLMISC::IStream &f)
 {
+	f.serialCheck((uint32) 'EMIT') ;
 	CPSLocatedBindable::serial(f) ;
 	f.serialVersion(1) ;
 	f.serial(_Freq) ;

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
+ * $Id: ps_particle.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 	virtual void resize(uint32 size) = 0 ;
 
 	/// serialisation. Derivers must override this
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) { CPSLocatedBindable::serial(f) ; }
+	virtual void serial(NLMISC::IStream &f) { CPSLocatedBindable::serial(f) ; }
 
 
 };
@@ -110,7 +110,7 @@ class CPSDot : public CPSParticle
 		void setColor(const CRGBA &c) { _Color = c ; }
 
 		///serialisation
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		void serial(NLMISC::IStream &f) ;
 	protected:
 		void init(void) ;
 		CRGBA _Color ;
@@ -132,7 +132,7 @@ public:
 	/// create the face look at by giving a texture and an optionnal color
 	CPSFaceLookAt(CSmartPtr<ITexture> tex, const CRGBA &c = CRGBA(255, 255, 255)) ;
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	void serial(NLMISC::IStream &f) ;
 	
 	NLMISC_DECLARE_CLASS(CPSFaceLookAt) ;
 
@@ -142,6 +142,7 @@ public:
 		return true  ;	
 	}
 
+	void init(void) ;
 
 	CPSFaceLookAt() {}
 protected:

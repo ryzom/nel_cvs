@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
+ * $Id: ps_located.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_PARTICLE_SYSTEM_LOCATED_H
 
 #include <stack>
+#include <memory>
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/particle_system.h"
@@ -40,10 +41,10 @@
 namespace NL3D 
 {
 
-using NLMISC::CSmartPtr ;
+
 using NLMISC::CVector ;
 class CPSLocatedBindable ;
-class IDriver ;
+class CPSTargetLocatedBindable ;
 class CParticleSystem ;
 class CPSZone ;
 
@@ -73,7 +74,7 @@ struct CPSCollisionInfo
 		dist = -1 ;
 	}
 
-	 void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	 void serial(NLMISC::IStream &f)
 	 {
 		f.serialVersion(1) ;
 		f.serial(dist, newPos, newSpeed) ;
@@ -108,14 +109,17 @@ public:
 	/**
 	* attach a bindable object to this located, such as a force or a particle
 	* a bindable must be attached only once (-> nlassert)
+	* the bindable is then owned by the system
+	* and will be deleted by it
 	*/
-	void bind(CSmartPtr<CPSLocatedBindable> lb) ;
+	void bind(CPSLocatedBindable *lb) ;
 
 	/** remove a bound object from the located
 	*  if the object doesnt exist -> nlassert
+	*  it is deleted
 	*/
 
-	void unbind(const CSmartPtr<CPSLocatedBindable> &lb) ;
+	void remove(const CPSLocatedBindable *lb) ;
 
 	/**
 	* count the number of bound objects
@@ -125,7 +129,7 @@ public:
 	/**
 	* get a reference to a bound object
 	*/
-	const CSmartPtr<CPSLocatedBindable> &getBoundObject(uint32 index) const 
+	const CPSLocatedBindable *getBoundObject(uint32 index) const 
 	{
 		nlassert(index < _LocatedBoundCont.size()) ;
 		return _LocatedBoundCont[index] ;
@@ -159,7 +163,7 @@ public:
 
 	/**	 
 	* Get the index of the new element that is created
-	* Valid only when the newElement method (overridable) of a LocatedBindable is called 
+	* Valid only after the newElement method (overridable) of a LocatedBindable is called 
 	*: you get the index of the located being generated, if you need its pos, speed, or mass. 
 	*/
 
@@ -259,7 +263,7 @@ public:
 	void resize(uint32 newSize) ;
 
 	/// serialization	 
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	void serial(NLMISC::IStream &f) ;
 
 	/// Shortcut to get an instance of the 3d driver
 	IDriver *getDriver() const { return CNELU::Driver ;  }
@@ -310,7 +314,7 @@ public:
 
 
 	/** A collider must call this when a collision occurs
-	*  If the collider was nearer it will be taken in account
+	*  If the collider was nearer that another one it will be taken in account
 	*  \index the index of instance that collided
 	*/
 
@@ -321,24 +325,23 @@ public:
 	*/
 	static inline const CMatrix &getConversionMatrix(const CPSLocated *A, const CPSLocated *B) ;
 
-	/// objects that want to be dtor observer (see registerDtorObserver) must implement this interface
-/*	struct IDtorObserver
-	{
-		virtual targetDestroyed(CPSLocated *target) = 0 ;
-	} ;*/
 
-	/** Register a dtor observer
+
+	 
+	/** Register a dtor observer; (that derives from CPSTargetLocatedBindable)
 	*  Each observer will be called when this object dtor is called
 	*  This allow for objects that hold this as a target to know when the located is suppressed
-	*  (example : forces hold located as targets)
-	*  When an observer is detroyed, it MUST call removeDtorObserver
+	*  (example : collision objects hold located as targets)
+	*  When an observer is detroyed, it MUST call removeDtorObserver, unless the located has been destroyed
+	*  which will be notified by the call of releaseTargetRsc in CPSTargetLocatedBindable
+	*  The same observer can only register once, otherwise, an assertion occurs	
 	*/
 
-//	void registerDtorObserver(IDtorObserver *anObserver) ;
+	void registerDtorObserver(CPSTargetLocatedBindable *observerInterface) ;	
 
 
 	/// remove a dtor observer (not present -> nlassert)
-//	void unregisterDtorObserver(IDtorObserver *anObserver) ;
+	void unregisterDtorObserver(CPSTargetLocatedBindable *anObserver) ;
 
 
 
@@ -347,7 +350,7 @@ public:
 protected:		
 
 	// container of all object that are bound to a located
-	typedef std::vector< CSmartPtr<CPSLocatedBindable> > TLocatedBoundCont ;
+	typedef std::vector< CPSLocatedBindable *> TLocatedBoundCont ;
 
 
 	// the list of all located
@@ -394,7 +397,7 @@ protected:
 	{
 		CVector _Pos ;
 		CVector _Speed ;
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+		void serial(NLMISC::IStream &f)
 		{
 			f.serial(_Pos, _Speed) ;
 		}			
@@ -433,7 +436,9 @@ protected:
 	 /// this prepare the located ofr collision tests
 	 void resetCollisionInfo(void) ;
 	
-	
+	 typedef std::vector<CPSTargetLocatedBindable *> TDtorObserversVect ;
+
+	TDtorObserversVect _DtorObserversVect ;
 } ;
 
 
@@ -528,7 +533,7 @@ const uint32 PSZone  = 4 ;
 * this include forces, particle, and so on...
 */
 
-class CPSLocatedBindable : public NLMISC::CRefCount, public NLMISC::IStreamable
+class CPSLocatedBindable : public NLMISC::IStreamable
 {
 public:
 	
@@ -549,7 +554,7 @@ public:
 
 
 	/// serialization
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	virtual void serial(NLMISC::IStream &f) ;
 
 	/// dtor
 
@@ -729,8 +734,6 @@ protected:
 
 	CPSLocated  *_Owner ;
 
-
-//	typedef 
 } ;
 
 
@@ -746,6 +749,73 @@ inline bool operator<(const CPSLocatedBindable &lhs, const CPSLocatedBindable &r
 }
 
 
+
+//******************************************************************************************
+//******************************************************************************************
+//******************************************************************************************
+
+
+/** This class is a located bindable that can focus on several target
+ *  Can be inherited by bindable like forces or collision zones
+ */
+
+class CPSTargetLocatedBindable : public CPSLocatedBindable
+{
+	public:
+
+		/** Add a new type of located for this force to apply on. nlassert if present
+		 *  By overriding this and calling the CPSTargetLocatedBindable version,
+		 *  you can also send some notficiation to the object that's being attached
+		 */
+
+		virtual void attachTarget(CPSLocated *ptr) ;
+
+		/** Detach a target. If not present -> assert
+		 * This also call releaseTargetRsc for clean up
+		 */
+		
+		void detachTarget(CPSLocated *ptr) ;
+
+		/// return the number of targets
+		uint32 getNbTargets(void) const { return _Targets.size() ; }
+
+		/// Return a ptr on a target. Invalid range -> nlassert
+		CPSLocated *getTarget(uint32 index) 
+		{
+			nlassert(index < _Targets.size()) ;
+			return _Targets[index] ;
+		}
+
+		/// Return a const ptr on a target. Invalid range -> nlassert
+		const CPSLocated *getTarget(uint32 index) const
+		{
+			nlassert(index < _Targets.size()) ;
+			return _Targets[index] ;
+		}
+
+
+		
+		/** it is called when a target is destroyed or detached
+		 *  Override this if you allocated resources from the target (to release them)
+		 *  IMPORTANT : as objects are no polymorphic while being destroyed, this class
+		 *  can't call your releaseTargetRsc override in its destructor. You must
+		 *  must redefine the destructor and call this method yourself for all target
+		 *  see ps_zone.cpp for an example
+		 */
+		virtual void releaseTargetRsc(CPSLocated *target) {} ;
+
+
+		/// Seralization, must be called by derivers
+		void serial(NLMISC::IStream &f) ;
+
+
+		virtual ~CPSTargetLocatedBindable() ;
+	protected:
+
+		typedef std::vector< CPSLocated *> TTargetCont ;
+		TTargetCont _Targets ;	
+
+} ;
 
 
 

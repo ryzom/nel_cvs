@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ struct CPSFrequency
 	CPSFrequency() : _FreqType(regular), _Period(0.0f), _GenNb(1)
 	{
 	}
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	void serial(NLMISC::IStream &f) ;
 } ;
 
 
@@ -114,7 +114,7 @@ public:
 
 
 	/// Serialization
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	virtual void serial(NLMISC::IStream &f) ;
 
 protected:
 
@@ -141,7 +141,7 @@ public:
 
 
 	/// serialisation
- 	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+ 	virtual	void serial(NLMISC::IStream &f) ;
 
 	
 	NLMISC_DECLARE_CLASS(CPSEmitterOmni) ;

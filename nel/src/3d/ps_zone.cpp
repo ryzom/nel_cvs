@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,25 +41,37 @@ CPSZone::CPSZone()
 {
 }
 
+// dtor
+
+CPSZone::~CPSZone()
+{	
+	// release the collisionInfos we've querried
+	
+	for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+	{		
+		releaseTargetRsc(*it) ;
+	}
+}
+
 
 /** Add a new type of located for this zone to apply on. 
 * We override this to queery the target to allocate the CollisionInfo attribute
 */
-void CPSZone::attachTarget(CSmartPtr<CPSLocated> ptr)
+void CPSZone::attachTarget(CPSLocated *ptr)
 {
-	CPSForce::attachTarget(ptr) ;
+		
+	CPSTargetLocatedBindable::attachTarget(ptr) ;
 	ptr->queryCollisionInfo() ;
 }
 
 
-/** Detach a target.
-* We override this to queery the target to deallocate the CollisionInfo attribute
-*/
 
-void CPSZone::detachTarget(CSmartPtr<CPSLocated> ptr)
+
+/// inherit from CPSTargetLocatedBindable. Its called when one of the targets has been detroyed
+void CPSZone::releaseTargetRsc(CPSLocated *target)
 {
-	ptr->releaseCollisionInfo() ;
-	CPSForce::detachTarget(ptr) ;
+	// tell the target that we were using collision infos and that we won't use them anymore
+	target->releaseCollisionInfo() ;
 }
 
 
@@ -254,8 +266,9 @@ CMatrix CPSZonePlane::getMatrix(uint32 index) const
 }
 
 
-void CPSZonePlane::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void CPSZonePlane::serial(NLMISC::IStream &f)
 {
+	f.serialCheck((uint32) 'PSPL') ;
 	CPSZone::serial(f) ;
 	f.serialVersion(1) ;
 	f.serial(_Normal) ;

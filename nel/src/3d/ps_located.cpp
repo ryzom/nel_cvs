@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.2 2001/04/26 08:44:13 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,10 @@ CPSLocated::CPSLocated() : _MinMass(1), _MaxMass(1), _LastForever(true)
 						 , _MaxSize(DefaultMaxLocatedInstance), _UpdateLock(false)
 						 , _CollisionInfo(NULL), _CollisionInfoNbRef(0)
 {
+	for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin() ; it != _LocatedBoundCont.end() ; ++it)
+	{
+		delete *it ;
+	}	
 }
 
 
@@ -53,8 +57,21 @@ CPSLocated::CPSLocated() : _MinMass(1), _MaxMass(1), _LastForever(true)
 
 CPSLocated::~CPSLocated()
 {
-	nlassert(_CollisionInfoNbRef == 0) ; //If this is not null, then someone didnt call releaseCollisionInfo
+	// call all the dtor observers
+	for (TDtorObserversVect::iterator it = _DtorObserversVect.begin() ; it != _DtorObserversVect.end() ; ++it)
+	{
+		(*it)->releaseTargetRsc(this) ;
+	}
+
+	nlassert(_CollisionInfoNbRef == 0) ; //If this is not = 0, then someone didnt call releaseCollisionInfo
+										 // If this happen, you can register with the CPSTargetLocatedBindable
+										 // (observer pattern)
+										 // and override releaseTarget to call releaseCollisionInfo
 	nlassert(!_CollisionInfo) ;
+
+	// delete all bindable
+
+
 }
 
 
@@ -62,7 +79,7 @@ CPSLocated::~CPSLocated()
 /**
 * sorted insertion  (by decreasing priority order) of a bindable (particle e.g an aspect, emitter) in a located
 */
-void CPSLocated::bind(CSmartPtr<CPSLocatedBindable> lb)
+void CPSLocated::bind(CPSLocatedBindable *lb)
 {
 	nlassert(std::find(_LocatedBoundCont.begin(), _LocatedBoundCont.end(), lb) == _LocatedBoundCont.end()) ;	
 	TLocatedBoundCont::iterator it = _LocatedBoundCont.begin() ;
@@ -77,12 +94,30 @@ void CPSLocated::bind(CSmartPtr<CPSLocatedBindable> lb)
 
 
 
-void CPSLocated::unbind(const CSmartPtr<CPSLocatedBindable> &p)
+void CPSLocated::remove(const CPSLocatedBindable *p)
 {
 	TLocatedBoundCont::iterator it = std::find(_LocatedBoundCont.begin(), _LocatedBoundCont.end(), p) ;
 	nlassert(it != _LocatedBoundCont.end()) ;	
+	delete *it ;
 	_LocatedBoundCont.erase(it) ;
 }
+
+
+void CPSLocated::registerDtorObserver(CPSTargetLocatedBindable *anObserver)
+{
+	// check wether the observer wasn't registered twice
+	nlassert(std::find(_DtorObserversVect.begin(), _DtorObserversVect.end(), anObserver) == _DtorObserversVect.end()) ;
+	_DtorObserversVect.push_back(anObserver) ;
+}
+
+void CPSLocated::unregisterDtorObserver(CPSTargetLocatedBindable *anObserver)
+{
+	// check that it was registered
+	TDtorObserversVect::iterator it = std::find(_DtorObserversVect.begin(), _DtorObserversVect.end(), anObserver) ;
+	nlassert(it != _DtorObserversVect.end()) ;
+	_DtorObserversVect.erase(it) ;
+}
+
 
 
 
@@ -219,9 +254,11 @@ void CPSLocated::resize(uint32 newSize)
 }
 
 
-void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void CPSLocated::serial(NLMISC::IStream &f)
 {
 	// TODO : update this
+
+	f.serialCheck((uint32) 'LOCA') ;
 	
 	CParticleSystemProcess::serial(f) ;
 
@@ -237,10 +274,14 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_Size) ; 
 	f.serial(_MaxSize) ;
 
+	f.serial(_LastForever) ;
+
 	f.serialPtr(_CollisionInfo) ;
 	f.serial(_CollisionInfoNbRef) ;
 	f.serial(_MinMass, _MaxMass) ;
 	f.serial(_MaxLife, _MinLife) ;
+
+	f.serialContPolyPtr(_DtorObserversVect) ;
 
 	if (f.isReading())
 	{
@@ -292,7 +333,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			CPSLocatedBindable *pt = NULL ;
 			f.serialPolyPtr(pt) ;
-			_LocatedBoundCont.push_back(CSmartPtr<CPSLocatedBindable>(pt)) ;
+			_LocatedBoundCont.push_back(pt) ;
 		}
 		
 	}
@@ -513,12 +554,82 @@ void CPSLocated::resetCollisionInfo(void)
 }
 
 
-void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void CPSLocatedBindable::serial(NLMISC::IStream &f)
 {
+	f.serialCheck((uint32) 'BIND') ;
 	f.serialVersion(1) ;
 	f.serialPtr(_Owner) ;
 }
 
+
+
+void CPSTargetLocatedBindable::serial(NLMISC::IStream &f)
+{
+	uint32 size ;
+	f.serialVersion(1) ;	
+	if (f.isReading())
+	{
+		_Targets.clear() ;
+		f.serial(size) ;
+		for (uint32 k = 0 ; k < size ; ++k)
+		{
+			CPSLocated *pt = NULL ;
+			f.serialPolyPtr(pt) ;
+			_Targets.push_back(pt) ;
+		}
+	}
+	else
+	{
+		size = _Targets.size() ;
+		f.serial(size) ;
+		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+		{
+			CPSLocated *pt = (*it) ;
+			f.serialPolyPtr(pt) ;
+		}
+	}
+
+	f.serialPtr(_Owner) ;
+}
+
+
+void CPSTargetLocatedBindable::attachTarget(CPSLocated *ptr)
+{
+
+	// a target can't be shared between different particle systems
+	#ifdef NL_DEBUG
+	if (_Owner)
+	{
+		nlassert(_Owner->getOwner() == ptr->getOwner()) ;
+	}
+	#endif
+
+	// see wether this target has not been registered before 
+	nlassert(std::find(_Targets.begin(), _Targets.end(), ptr) == _Targets.end()) ;
+	_Targets.push_back(ptr) ;
+
+	// we register us to be notified when the target disappear
+	ptr->registerDtorObserver(this) ;
+}
+
+void CPSTargetLocatedBindable::detachTarget(CPSLocated *ptr)
+{
+	TTargetCont::iterator it = std::find(_Targets.begin(), _Targets.end(), ptr) ;
+	nlassert(it != _Targets.end()) ;
+	releaseTargetRsc(*it) ;	
+	_Targets.erase(it) ;
+	ptr->unregisterDtorObserver(this) ;
+
+}
+
+CPSTargetLocatedBindable::~CPSTargetLocatedBindable()
+{
+	// we unregister to all the targets
+	for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+	{		
+		(*it)->unregisterDtorObserver(this) ;
+	}
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.49 2004/01/07 18:45:02 distrib Exp $
+ * $Id: common.cpp,v 1.50 2004/01/08 14:58:14 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -798,8 +798,6 @@ void explode (const std::string &src, const std::string &sep, std::vector<std::s
 	string::size_type oldpos = 0, pos;
 
 	res.clear ();
-
-	nlinfo("%d", src.size());
 
 	do
 	{

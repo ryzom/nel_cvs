@@ -119,6 +119,10 @@ SOURCE=.\pacs\chain_quad.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\pacs\collision_mesh_build.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\pacs\collision_surface_temp.cpp
 # End Source File
 # Begin Source File
@@ -132,6 +136,22 @@ SOURCE=.\pacs\edge_collide.cpp
 # Begin Source File
 
 SOURCE=.\pacs\edge_collide.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\edge_quad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\edge_quad.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\exterior_mesh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\exterior_mesh.h
 # End Source File
 # End Group
 # Begin Group "Dynamic Collisions"
@@ -223,14 +243,6 @@ SOURCE=.\pacs\chain.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\pacs\exterior_mesh.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\pacs\exterior_mesh.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\pacs\global_retriever.cpp
 # End Source File
 # Begin Source File
@@ -310,6 +322,10 @@ SOURCE=..\include\nel\pacs\u_retriever_bank.h
 
 # PROP Default_Filter ""
 # End Group
+# Begin Source File
+
+SOURCE=.\pacs\quad_grid.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\pacs\vector_2s.cpp

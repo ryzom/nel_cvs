@@ -120,9 +120,20 @@ using  namespace NLIAFUZZY;
 	EnteteDeDefinition	:	DEFINE DefinitionDeGroup
 						|	DEFINE IDENT
 							{
-								((IClassInterpret *)_SelfClass.get())->setClassName(NLIAAGENT::CStringVarName(LastyyText[1]));
-								((IClassInterpret *)_SelfClass.get())->buildVTable();
-								RegisterClass();
+								try
+								{
+									NLIAC::CIdentType id(LastyyText[1]);
+									char text[1024*4];
+									sprintf(text,"class '%s' all ready exist",LastyyText[1]);
+									yyerror(text);
+									return 0;
+								}
+								catch(NLIAE::IException &)
+								{
+									((IClassInterpret *)_SelfClass.get())->setClassName(NLIAAGENT::CStringVarName(LastyyText[1]));
+									((IClassInterpret *)_SelfClass.get())->buildVTable();
+									RegisterClass();
+								}
 							}
 						;
 

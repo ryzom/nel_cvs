@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.15 2002/02/15 17:07:53 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.16 2002/02/20 11:15:28 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -253,7 +253,7 @@ void CPSMesh::deleteElement(uint32 index)
 }
 
 //====================================================================================
-void CPSMesh::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+void CPSMesh::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 {
 		if (pass == PSSolidRender)			
 		{
@@ -900,7 +900,8 @@ CPSConstraintMesh::CPSConstraintMesh() : _ModelBank(NULL),
 										 _ModulatedStages(0),
 										 _VertexColorLightingForced(false),
 										 _MorphScheme(NULL),
-										 _MorphValue(0)
+										 _MorphValue(0),
+										 _NumFaces(0)
 {		
 	_Name = std::string("ConstraintMesh");
 }
@@ -1485,7 +1486,7 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TA
 
 
 //====================================================================================
-void CPSConstraintMesh::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+void CPSConstraintMesh::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 {
 		if (
 			(pass == PSBlendRender && hasTransparentFaces())

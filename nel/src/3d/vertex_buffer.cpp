@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.30 2001/10/02 08:42:42 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.31 2001/10/19 13:40:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -647,7 +647,8 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 	nlassert (f.isReading());
 
 	// Set default value type
-	for (uint i=0; i<NumValue; i++)
+	uint i;
+	for (i=0; i<NumValue; i++)
 		_Type[i]=DefaultValueType[i];
 
 	uint32 nbVert;	// Read only

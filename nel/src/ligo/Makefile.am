@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.2 2003/08/29 16:25:50 distrib Exp $
+# $Id: Makefile.am,v 1.3 2003/11/12 10:27:53 distrib Exp $
 #
 
 MAINTAINERCLEANFILES     = Makefile.in
@@ -11,6 +11,7 @@ libnelligo_la_SOURCES = ligo_config.cpp                        \
 						ligo_material.cpp                    \
 						primitive.cpp                    \
 						primitive_class.cpp                    \
+						primitive_configuration.cpp		\
                         transition.cpp                  \
                         zone_bank.h                    \
 						zone_edge.cpp                      \

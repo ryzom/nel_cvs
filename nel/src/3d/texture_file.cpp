@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.10 2001/11/22 08:48:11 corvazier Exp $
+ * $Id: texture_file.cpp,v 1.11 2001/12/06 15:10:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,13 +141,13 @@ void CTextureFile::doGenerate()
 					}
 					else
 					{
-						nlinfo ("Can't convert the usercolor texture %s in alpha mode", file2);
+						nlinfo ("Can't convert the usercolor texture %s in alpha mode", file2.c_str());
 					}
 				}
 				else
 				{
 					// Error
-					nlinfo ("User color texture is not the same size than the texture. (Tex : %s, Usercolor : %s)", file, file2);
+					nlinfo ("User color texture is not the same size than the texture. (Tex : %s, Usercolor : %s)", file.c_str(), file2.c_str());
 				}
 			}
 		}

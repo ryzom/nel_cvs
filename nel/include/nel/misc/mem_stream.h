@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.22 2002/06/03 10:02:06 lecroart Exp $
+ * $Id: mem_stream.h,v 1.23 2002/08/23 14:34:45 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,6 +286,19 @@ public:
 #else // NL_LITTLE_ENDIAN
 		IStream::serial( val );
 #endif // NL_LITTLE_ENDIAN
+	}
+
+	template <class T>
+	void			fastRead( T& value )
+	{
+		// Check that we don't read more than there is to read
+		if ( lengthS()+sizeof(value) > lengthR() )
+		{
+			throw EStreamOverflow();
+		}
+		// Serialize in
+		value = *(T*)_BufPos;
+		_BufPos += sizeof(value);
 	}
 
 

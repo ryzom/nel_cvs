@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.19 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.20 2002/08/23 14:34:15 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -99,28 +99,7 @@ void CBitMemStream::serialBit( bool& bit )
 }
 
 
-sint32 CBitMemStream::getPosInBit ()
-{
-	if (isReading())
-	{
-		return getPos() * 8 + (8 - _FreeBits);
-	}
-	else
-	{
-		if (_Buffer.getPtr() - 1 == _BufPos)
-			return 0;
-		else if (_FreeBits == 8)
-			return (getPos() + 1) * 8;
-		else
-			return getPos() * 8 + (8 - _FreeBits);
-/*		if (_Buffer.empty())
-			return 0;
-		else if (_FreeBits == 8)
-			return (getPos() + 1) * 8;
-		else
-			return getPos() * 8 + (8 - _FreeBits);
-*/	}
-}
+//sint32 CBitMemStream::getPosInBit ()
 
 
 #define displayByteBits(a,b,c)

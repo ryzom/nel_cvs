@@ -245,13 +245,15 @@ SOURCE=.\sound\sound.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\obj\Debug\nlsound_lowlevel_debug.lib
+SOURCE=..\obj\DebugFast\nlsound_lowlevel_debug_fast.lib
 
 !IF  "$(CFG)" == "sound - Win32 Release"
 
 # PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "sound - Win32 Debug"
+
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "sound - Win32 ReleaseDebug"
 
@@ -278,7 +280,27 @@ SOURCE=..\obj\Release\nlsound_lowlevel.lib
 
 !ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
 
-# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\obj\Debug\nlsound_lowlevel_debug.lib
+
+!IF  "$(CFG)" == "sound - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "sound - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "sound - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
+
 # PROP Exclude_From_Build 1
 
 !ENDIF 
@@ -300,7 +322,6 @@ SOURCE=..\obj\ReleaseDebug\nlsound_lowlevel_rd.lib
 
 !ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
 
-# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 
 !ENDIF 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.36.2.1 2003/04/24 14:05:44 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.36.2.2 2003/05/06 12:00:31 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -339,7 +339,7 @@ public:
 		virtual void onEvent() =0;
 		virtual ~IMixerEvent()
 		{
-			nldebug("Destroying IMixerEvent %p", this);
+//			nldebug("Destroying IMixerEvent %p", this);
 		}
 
 	};

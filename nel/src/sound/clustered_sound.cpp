@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.10.2.3 2003/04/30 13:34:50 fleury Exp $
+ * $Id: clustered_sound.cpp,v 1.10.2.4 2003/05/06 12:00:31 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -505,6 +505,20 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 		{				
 			CPortal *portal = clusters[i]->getPortal(j);
 			const std::vector<CVector> &poly = portal->getPoly();
+
+			if (poly.size() < 3)
+			{
+				// only warn once, avoid log flooding !
+				static std::set<std::string>	warned;
+				if (warned.find(clusters[i]->Name) == warned.end())
+				{
+					nlwarning("Cluster [%s] contains a portal [%s] with less than 3 vertex !", 
+						clusters[i]->Name.c_str(), portal->getName().empty() ? "no name" : portal->getName().c_str());
+					warned.insert(clusters[i]->Name);
+				}
+				valid = false;
+				continue;
+			}
 			CVector normal = (poly[0] - poly[1]) ^ (poly[2] - poly[1]);
 
 			float dist = (realListener - poly[0]) * normal;
@@ -591,183 +605,199 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 				{
 					const vector<CVector> &poly = portal->getPoly();
 
-					// Test to skip portal with suface > 40 m2 (aprox)
-					float surface = ((poly[2]-poly[1]) ^ (poly[0]-poly[1])).norm();
-					if (surface > 340 /* && otherCluster->isIn(travContext.ListenerPos, travContext.MaxDist-travContext.Dist)*/)
+					// a security test 
+					if (poly.size() < 3)
 					{
-						float minDist;
-						CVector nearPos;
-						CAABBox box = otherCluster->getBBox();
-
-						minDist = getAABoxNearestPos(box, travContext.ListenerPos, nearPos);
-
-						if (travContext.Dist + minDist < _MaxEarDistance)
+						// only warn once, avoid log flooding !
+						static std::set<std::string>	warned;
+						if (warned.find(cluster->Name) == warned.end())
 						{
-							CVector soundDir = (nearPos - travContext.ListenerPos).normed();
-							CClusterSoundStatus css;
-							css.Gain = travContext.Gain;
-							css.Dist = travContext.Dist + minDist;
-							css.Occlusion = travContext.Occlusion;
-							css.OcclusionLFFactor = travContext.OcclusionLFFactor;
-							css.Obstruction = travContext.Obstruction;
-							css.OcclusionRoomRatio = travContext.OcclusionRoomRatio;
-							css.DistFactor = css.Dist / _MaxEarDistance;
-							css.Direction = travContext.Direction;
-
-							float alpha = travContext.Alpha;
-							CVector d1(travContext.Direction1), d2;
-
-							css.Direction = interpolateSourceDirection(travContext, css.Dist+travContext.Dist, nearPos, travContext.ListenerPos /*realListener*/, d1, d2, alpha);
-							css.Position = nearPos + css.Dist * css.Direction;
-							css.PosAlpha = min(1.0f, css.Dist / _PortalInterpolate);
-
-							if (addAudibleCluster(otherCluster, css))
-							{
-//								debugLines.push_back(CLine(travContext.ListenerPos, nearPos));
-								CSoundTravContext stc(travContext);
-								stc.FilterUnvisibleChild = true;
-								stc.Direction1 = d1;
-								stc.Direction2 = d2;
-								stc.Direction = css.Direction;
-								stc.PreviousCluster = cluster;
-								stc.Alpha = alpha;
-								stc.PreviousVector = (nearPos - travContext.ListenerPos).normed();
-								addNextTraverse(otherCluster, stc);
-								_AudioPath.push_back(make_pair(travContext.ListenerPos, nearPos));
-							}
+							nlwarning("Cluster [%s] contains a portal [%s] with less than 3 vertex !", 
+								cluster->Name.c_str(), portal->getName().empty() ? "no name" : portal->getName().c_str());
+							warned.insert(cluster->Name);
 						}
 					}
 					else
 					{
-						// find the nearest point of this portal (either on of the perimeter vertex or a point on the portal surface)
-						float minDist;
-						CVector nearPos;
 
-						minDist = getPolyNearestPos(poly, travContext.ListenerPos, nearPos);
-
-						if (travContext.Dist+minDist < _MaxEarDistance)
+						// Test to skip portal with suface > 40 m2 (aprox)
+						float surface = ((poly[2]-poly[1]) ^ (poly[0]-poly[1])).norm();
+						if (surface > 340 /* && otherCluster->isIn(travContext.ListenerPos, travContext.MaxDist-travContext.Dist)*/)
 						{
-							// TODO : compute relative gain according to portal behavior.
-							CClusterSoundStatus css;
-							css.Gain = travContext.Gain;
-							CVector soundDir = (nearPos - travContext.ListenerPos).normed();
-							uint occId = portal->getOcclusionModelId();
-							std::hash_map<NLMISC::TStringId, uint>::iterator it(_IdToMaterial.find(occId));
+							float minDist;
+							CVector nearPos;
+							CAABBox box = otherCluster->getBBox();
 
-#if EAX_AVAILABLE == 1
-							if (it != _IdToMaterial.end())
+							minDist = getAABoxNearestPos(box, travContext.ListenerPos, nearPos);
+
+							if (travContext.Dist + minDist < _MaxEarDistance)
 							{
-								// found an occlusion material for this portal
-								uint matId = it->second;
-								css.Occlusion = max(sint32(EAXBUFFER_MINOCCLUSION), sint32(travContext.Occlusion + EAX_MATERIAL_PARAM[matId][0])); //- 1800); //EAX_MATERIAL_THINDOOR;
-								css.OcclusionLFFactor = travContext.OcclusionLFFactor * EAX_MATERIAL_PARAM[matId][1]; //EAX_MATERIAL_THICKDOORLF; //0.66f; //0.0f; //min(EAX_MATERIAL_THINDOORLF, travContext.OcclusionLFFactor);
-								css.OcclusionRoomRatio = EAX_MATERIAL_PARAM[matId][2] * travContext.OcclusionRoomRatio;
-							}
-							else
-							{
-								// the id does not match any know material
+								CVector soundDir = (nearPos - travContext.ListenerPos).normed();
+								CClusterSoundStatus css;
+								css.Gain = travContext.Gain;
+								css.Dist = travContext.Dist + minDist;
 								css.Occlusion = travContext.Occlusion;
 								css.OcclusionLFFactor = travContext.OcclusionLFFactor;
+								css.Obstruction = travContext.Obstruction;
 								css.OcclusionRoomRatio = travContext.OcclusionRoomRatio;
-							}
-#else	// EAX_AVAILABLE
-							if (it != _IdToMaterial.end())
-							{
-								// found an occlusion material for this portal
-								uint matId = it->second;
-								css.Gain *= EAX_MATERIAL_PARAM[matId];
-							}
-#endif	// EAX_AVAILABLE
-/*							if (portal->getOcclusionModel() == "wood door")
-							{
-//								css.Gain *= 0.5f;
-#if EAX_AVAILABLE == 1
-								css.Occlusion = max(EAXBUFFER_MINOCCLUSION, travContext.Occlusion + EAX_MATERIAL_THICKDOOR); //- 1800); //EAX_MATERIAL_THINDOOR;
-								css.OcclusionLFFactor = 0.1f * travContext.OcclusionLFFactor; //EAX_MATERIAL_THICKDOORLF; //0.66f; //0.0f; //min(EAX_MATERIAL_THINDOORLF, travContext.OcclusionLFFactor);
-								css.OcclusionRoomRatio = EAX_MATERIAL_THICKDOORROOMRATION * travContext.OcclusionRoomRatio;
-#else
-								css.Gain *= 0.5f;
-#endif
-							}
-							else if (portal->getOcclusionModel() == "brick door")
-							{
-#if EAX_AVAILABLE == 1
-								css.Occlusion = max(EAXBUFFER_MINOCCLUSION, travContext.Occlusion + EAX_MATERIAL_BRICKWALL);
-								css.OcclusionLFFactor = min(EAX_MATERIAL_BRICKWALLLF, travContext.OcclusionLFFactor);
-								css.OcclusionRoomRatio = EAX_MATERIAL_BRICKWALLROOMRATIO * travContext.OcclusionRoomRatio;
-#else
-								css.Gain *= 0.2f;
-#endif
-							}
-							else
-							{
-#if EAX_AVAILABLE == 1
-								css.Occlusion = travContext.Occlusion;
-								css.OcclusionLFFactor = travContext.OcclusionLFFactor;
-								css.OcclusionRoomRatio = travContext.OcclusionRoomRatio;
-#endif
-							}
+								css.DistFactor = css.Dist / _MaxEarDistance;
+								css.Direction = travContext.Direction;
 
-*/							// compute obstruction	
-							if (travContext.NbPortal >= 1)
-							{
-								float h = soundDir * travContext.PreviousVector;
-								float obst;
+								float alpha = travContext.Alpha;
+								CVector d1(travContext.Direction1), d2;
 
-								if (h < 0)
+								css.Direction = interpolateSourceDirection(travContext, css.Dist+travContext.Dist, nearPos, travContext.ListenerPos /*realListener*/, d1, d2, alpha);
+								css.Position = nearPos + css.Dist * css.Direction;
+								css.PosAlpha = min(1.0f, css.Dist / _PortalInterpolate);
+
+								if (addAudibleCluster(otherCluster, css))
 								{
-//									obst = float(2000 + asinf(-(soundDir ^ travContext.PreviousVector).norm()) / (Pi/2) * 2000);
-									obst = float(4000 - (soundDir ^ travContext.PreviousVector).norm() * 2000);
+	//								debugLines.push_back(CLine(travContext.ListenerPos, nearPos));
+									CSoundTravContext stc(travContext);
+									stc.FilterUnvisibleChild = true;
+									stc.Direction1 = d1;
+									stc.Direction2 = d2;
+									stc.Direction = css.Direction;
+									stc.PreviousCluster = cluster;
+									stc.Alpha = alpha;
+									stc.PreviousVector = (nearPos - travContext.ListenerPos).normed();
+									addNextTraverse(otherCluster, stc);
+									_AudioPath.push_back(make_pair(travContext.ListenerPos, nearPos));
+								}
+							}
+						}
+						else
+						{
+							// find the nearest point of this portal (either on of the perimeter vertex or a point on the portal surface)
+							float minDist;
+							CVector nearPos;
+
+							minDist = getPolyNearestPos(poly, travContext.ListenerPos, nearPos);
+
+							if (travContext.Dist+minDist < _MaxEarDistance)
+							{
+								// TODO : compute relative gain according to portal behavior.
+								CClusterSoundStatus css;
+								css.Gain = travContext.Gain;
+								CVector soundDir = (nearPos - travContext.ListenerPos).normed();
+								uint occId = portal->getOcclusionModelId();
+								std::hash_map<NLMISC::TStringId, uint>::iterator it(_IdToMaterial.find(occId));
+
+	#if EAX_AVAILABLE == 1
+								if (it != _IdToMaterial.end())
+								{
+									// found an occlusion material for this portal
+									uint matId = it->second;
+									css.Occlusion = max(sint32(EAXBUFFER_MINOCCLUSION), sint32(travContext.Occlusion + EAX_MATERIAL_PARAM[matId][0])); //- 1800); //EAX_MATERIAL_THINDOOR;
+									css.OcclusionLFFactor = travContext.OcclusionLFFactor * EAX_MATERIAL_PARAM[matId][1]; //EAX_MATERIAL_THICKDOORLF; //0.66f; //0.0f; //min(EAX_MATERIAL_THINDOORLF, travContext.OcclusionLFFactor);
+									css.OcclusionRoomRatio = EAX_MATERIAL_PARAM[matId][2] * travContext.OcclusionRoomRatio;
 								}
 								else
 								{
-//									obst = float(asinf((soundDir ^ travContext.PreviousVector).norm()) / (Pi/2) * 2000);
-									obst = float((soundDir ^ travContext.PreviousVector).norm() * 2000);
+									// the id does not match any know material
+									css.Occlusion = travContext.Occlusion;
+									css.OcclusionLFFactor = travContext.OcclusionLFFactor;
+									css.OcclusionRoomRatio = travContext.OcclusionRoomRatio;
+								}
+	#else	// EAX_AVAILABLE
+								if (it != _IdToMaterial.end())
+								{
+									// found an occlusion material for this portal
+									uint matId = it->second;
+									css.Gain *= EAX_MATERIAL_PARAM[matId];
+								}
+	#endif	// EAX_AVAILABLE
+	/*							if (portal->getOcclusionModel() == "wood door")
+								{
+	//								css.Gain *= 0.5f;
+	#if EAX_AVAILABLE == 1
+									css.Occlusion = max(EAXBUFFER_MINOCCLUSION, travContext.Occlusion + EAX_MATERIAL_THICKDOOR); //- 1800); //EAX_MATERIAL_THINDOOR;
+									css.OcclusionLFFactor = 0.1f * travContext.OcclusionLFFactor; //EAX_MATERIAL_THICKDOORLF; //0.66f; //0.0f; //min(EAX_MATERIAL_THINDOORLF, travContext.OcclusionLFFactor);
+									css.OcclusionRoomRatio = EAX_MATERIAL_THICKDOORROOMRATION * travContext.OcclusionRoomRatio;
+	#else
+									css.Gain *= 0.5f;
+	#endif
+								}
+								else if (portal->getOcclusionModel() == "brick door")
+								{
+	#if EAX_AVAILABLE == 1
+									css.Occlusion = max(EAXBUFFER_MINOCCLUSION, travContext.Occlusion + EAX_MATERIAL_BRICKWALL);
+									css.OcclusionLFFactor = min(EAX_MATERIAL_BRICKWALLLF, travContext.OcclusionLFFactor);
+									css.OcclusionRoomRatio = EAX_MATERIAL_BRICKWALLROOMRATIO * travContext.OcclusionRoomRatio;
+	#else
+									css.Gain *= 0.2f;
+	#endif
+								}
+								else
+								{
+	#if EAX_AVAILABLE == 1
+									css.Occlusion = travContext.Occlusion;
+									css.OcclusionLFFactor = travContext.OcclusionLFFactor;
+									css.OcclusionRoomRatio = travContext.OcclusionRoomRatio;
+	#endif
 								}
 
-//								float sqrdist = (realListener - nearPoint).sqrnorm();
-								if (travContext.Dist < 2.0f)	// interpolate a 2 m
-									obst *= travContext.Dist / 2.0f;
-#if EAX_AVAILABLE == 1
-								css.Obstruction = max(sint32(EAXBUFFER_MINOBSTRUCTION), sint32(travContext.Obstruction - sint32(obst)));
-								css.OcclusionLFFactor = 0.50f * travContext.OcclusionLFFactor;
-#else
-								css.Gain *= float(pow(10, -(obst/4)/2000));
-#endif
-							}
-							else
-								css.Obstruction = travContext.Obstruction;
-//							css.Dist = travContext.Dist + float(sqrt(minDist));
-							css.Dist = travContext.Dist + minDist;
-							css.DistFactor = css.Dist / _MaxEarDistance;
-							float	portalDist = css.Dist; 
-							float	alpha = travContext.Alpha;
-							CVector d1(travContext.Direction1), d2(travContext.Direction2);
+	*/							// compute obstruction	
+								if (travContext.NbPortal >= 1)
+								{
+									float h = soundDir * travContext.PreviousVector;
+									float obst;
 
-							css.Direction = interpolateSourceDirection(travContext, portalDist+travContext.Dist, nearPos, travContext.ListenerPos /*realListener*/, d1, d2, alpha);
-							css.Position = nearPos + css.Dist * css.Direction;
-							css.PosAlpha = min(1.0f, css.Dist / _PortalInterpolate);
+									if (h < 0)
+									{
+	//									obst = float(2000 + asinf(-(soundDir ^ travContext.PreviousVector).norm()) / (Pi/2) * 2000);
+										obst = float(4000 - (soundDir ^ travContext.PreviousVector).norm() * 2000);
+									}
+									else
+									{
+	//									obst = float(asinf((soundDir ^ travContext.PreviousVector).norm()) / (Pi/2) * 2000);
+										obst = float((soundDir ^ travContext.PreviousVector).norm() * 2000);
+									}
 
-							if (addAudibleCluster(otherCluster, css))
-							{
-//								debugLines.push_back(CLine(travContext.ListenerPos, nearPoint));
-								CSoundTravContext tc(nearPos, travContext.FilterUnvisibleChild, !cluster->VisibleFromFather);
-								tc.Dist = css.Dist;
-								tc.Gain = css.Gain;
-								tc.Occlusion = css.Occlusion;
-								tc.OcclusionLFFactor = css.OcclusionLFFactor;
-								tc.OcclusionRoomRatio = css.OcclusionRoomRatio;
-								tc.Obstruction = css.Obstruction;
-								tc.Direction1 = d1;
-								tc.Direction2 = d2;
-								tc.NbPortal = travContext.NbPortal+1;
-								tc.Direction = css.Direction;
-								tc.PreviousCluster = cluster;
-								tc.Alpha = alpha;
-								tc.PreviousVector = soundDir;
+	//								float sqrdist = (realListener - nearPoint).sqrnorm();
+									if (travContext.Dist < 2.0f)	// interpolate a 2 m
+										obst *= travContext.Dist / 2.0f;
+	#if EAX_AVAILABLE == 1
+									css.Obstruction = max(sint32(EAXBUFFER_MINOBSTRUCTION), sint32(travContext.Obstruction - sint32(obst)));
+									css.OcclusionLFFactor = 0.50f * travContext.OcclusionLFFactor;
+	#else
+									css.Gain *= float(pow(10, -(obst/4)/2000));
+	#endif
+								}
+								else
+									css.Obstruction = travContext.Obstruction;
+	//							css.Dist = travContext.Dist + float(sqrt(minDist));
+								css.Dist = travContext.Dist + minDist;
+								css.DistFactor = css.Dist / _MaxEarDistance;
+								float	portalDist = css.Dist; 
+								float	alpha = travContext.Alpha;
+								CVector d1(travContext.Direction1), d2(travContext.Direction2);
 
-								addNextTraverse(otherCluster, tc);
-								_AudioPath.push_back(make_pair(travContext.ListenerPos, nearPos));
+								css.Direction = interpolateSourceDirection(travContext, portalDist+travContext.Dist, nearPos, travContext.ListenerPos /*realListener*/, d1, d2, alpha);
+								css.Position = nearPos + css.Dist * css.Direction;
+								css.PosAlpha = min(1.0f, css.Dist / _PortalInterpolate);
+
+								if (addAudibleCluster(otherCluster, css))
+								{
+	//								debugLines.push_back(CLine(travContext.ListenerPos, nearPoint));
+									CSoundTravContext tc(nearPos, travContext.FilterUnvisibleChild, !cluster->VisibleFromFather);
+									tc.Dist = css.Dist;
+									tc.Gain = css.Gain;
+									tc.Occlusion = css.Occlusion;
+									tc.OcclusionLFFactor = css.OcclusionLFFactor;
+									tc.OcclusionRoomRatio = css.OcclusionRoomRatio;
+									tc.Obstruction = css.Obstruction;
+									tc.Direction1 = d1;
+									tc.Direction2 = d2;
+									tc.NbPortal = travContext.NbPortal+1;
+									tc.Direction = css.Direction;
+									tc.PreviousCluster = cluster;
+									tc.Alpha = alpha;
+									tc.PreviousVector = soundDir;
+
+									addNextTraverse(otherCluster, tc);
+									_AudioPath.push_back(make_pair(travContext.ListenerPos, nearPos));
+								}
 							}
 						}
 					}

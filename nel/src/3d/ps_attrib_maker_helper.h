@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.18 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.19 2004/06/17 08:06:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1159,10 +1159,24 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 
 					NLMISC::OptFastFloorEnd();				
 				}	
+			}			
+			// Compute a single value from the input assuming that NLMISC::OptFastFloorBegin() has been called			  
+			virtual T getInternal(float input)
+			{
+				input *= _NbCycles;
+				if (_Clamp)
+				{
+					if (input >= MaxInputValue) return _F(1.f);
+					return _F(input);
+				}	
+				else
+				{
+					return input == MaxInputValue ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(input));
+				}
 			}
-
-
 };
+
+
 
 ///////////////////////////////////////////////
 // implementation of CPSAttribMakerT methods //
@@ -1175,47 +1189,17 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 	nlassert(loc);
 	switch (_InputType.InputType)
 	{
-		case CPSInputType::attrDate:	
-		{
-			float v = _NbCycles * loc->getTime()[index];
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-
-			result = _F(NLMISC::OptFastFractionnalPart(v));
-		}
+		case CPSInputType::attrDate: 
+			result = getInternal(loc->getTime()[index]);		
 		break;
 		case CPSInputType::attrInverseMass:	
-		{
-			float v = _NbCycles * loc->getInvMass()[index];
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-			result =  _F(NLMISC::OptFastFractionnalPart(v));
-		}
-		break;		
-		case CPSInputType::attrSpeed:	
-		{
-			float v = _NbCycles * loc->getSpeed()[index].norm();
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-			result = _F(NLMISC::OptFastFractionnalPart(v));
-		}
+			result=  getInternal(loc->getInvMass()[index]);
 		break;
-
+		case CPSInputType::attrSpeed: 
+			result = getInternal(loc->getSpeed()[index].norm());
+		break;
 		case CPSInputType::attrPosition:	
-		{
-			float v = _NbCycles * loc->getPos()[index].norm();
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-			result = _F(NLMISC::OptFastFractionnalPart(v));
-		}
+			result = getInternal(loc->getPos()[index].norm());		
 		break;
 		case CPSInputType::attrUniformRandom:	
 		{
@@ -1224,12 +1208,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 		break;
 		case CPSInputType::attrUserParam:
 		{			
-			float v = _NbCycles * loc->getUserParam(_InputType.UserParamNum); 
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-			result = _F(v);
+			result = getInternal(loc->getUserParam(_InputType.UserParamNum));			
 		}
 		break;
 		case CPSInputType::attrLOD:
@@ -1243,7 +1222,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
 			}
-			else result = _F(r - uint32(r));						
+			else result = (r == MaxInputValue) ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(r));
 		}
 		break;
 		case CPSInputType::attrSquareLOD:
@@ -1258,7 +1237,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
 			}
-			else result = _F(r - uint32(r));						
+			else result = (r == MaxInputValue) ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(r));						
 		}
 		break;
 		case CPSInputType::attrClampedLOD:
@@ -1278,7 +1257,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
 			}
-			else result = _F(r - uint32(r));						
+			else result = (r == MaxInputValue) ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(r));
 		}
 		break;
 		case CPSInputType::attrClampedSquareLOD:
@@ -1298,7 +1277,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
 			}
-			else result = _F(r - uint32(r));						
+			else result = (r == MaxInputValue) ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(r));
 		}
 		break;	
 		default:
@@ -1319,43 +1298,22 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 	{
 		case CPSInputType::attrDate:	
 		{
-			float v = _NbCycles * infos.Life;
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-			result = _F(NLMISC::OptFastFractionnalPart(v));
+			result = getInternal(infos.Life);			
 		}
 		break;
 		case CPSInputType::attrInverseMass:	
 		{
-			float v = _NbCycles * infos.InvMass;
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-			result =  _F(NLMISC::OptFastFractionnalPart(v));
+			result = getInternal(infos.InvMass);			
 		}
 		break;		
 		case CPSInputType::attrSpeed:	
 		{
-			float v = _NbCycles * infos.Speed.norm();
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-			result = _F(NLMISC::OptFastFractionnalPart(v));
+			result = getInternal(infos.Speed.norm());			
 		}
 		break;
-
 		case CPSInputType::attrPosition:	
 		{
-			float v = _NbCycles * infos.Pos.norm();
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-			result = _F(NLMISC::OptFastFractionnalPart(v));
+			result = getInternal(infos.Pos.norm());			
 		}
 		break;
 		case CPSInputType::attrUniformRandom:	
@@ -1364,13 +1322,8 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 		}
 		break;
 		case CPSInputType::attrUserParam:
-		{			
-			float v = _NbCycles * infos.Loc->getUserParam(_InputType.UserParamNum); 
-			if (_Clamp)
-			{
-				if (v > MaxInputValue) v = MaxInputValue;
-			}
-			result = _F(v);
+		{	
+			result = getInternal(infos.Loc->getUserParam(_InputType.UserParamNum));			
 		}
 		break;
 		case CPSInputType::attrLOD:
@@ -1384,7 +1337,7 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
 			}
-			else result = _F(r - uint32(r));						
+			else result = (r == MaxInputValue) ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(r));
 		}
 		break;
 		case CPSInputType::attrSquareLOD:
@@ -1399,7 +1352,7 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
 			}
-			else result = _F(r - uint32(r));						
+			else result = (r == MaxInputValue) ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(r));
 		}
 		break;
 		case CPSInputType::attrClampedLOD:
@@ -1407,7 +1360,6 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 			static NLMISC::CVector lodVect;
 			float lodOffset;			
 			infos.Loc->getLODVect(lodVect, lodOffset, infos.Loc->getMatrixMode());
-
 			float r = infos.Pos * lodVect + lodOffset;
 			if (r < 0) 
 			{
@@ -1419,7 +1371,7 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
 			}
-			else result = _F(r - uint32(r));						
+			else result = (r == MaxInputValue) ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(r));
 		}
 		break;
 		case CPSInputType::attrClampedSquareLOD:
@@ -1439,14 +1391,13 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
 			}
-			else result = _F(r - uint32(r));						
+			else result = (r == MaxInputValue) ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(r));
 		}
 		break;	
 		default:
 			result = T();
 		break;		
 	}
-
 	NLMISC::OptFastFloorEnd();
 	return result;	
 }
@@ -1754,7 +1705,7 @@ public:
 		}
 
 	}	
-
+	virtual bool hasCustomInput() { return false; }
 
 protected:
 	// the attribute we memorize

@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.17 2001/12/11 09:27:05 chafik Exp $
+ * $Id: msg.cpp,v 1.18 2001/12/11 15:45:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,18 +174,21 @@ namespace NLAIAGENT
 
 	void IMessageBase::setSender(IObjectIA *s, bool v)
 	{					
+		if(_SenderIsVolatile) _Sender->release();
 		_Sender = s;
 		_SenderIsVolatile = v;
 	}
 
 	void IMessageBase::setReceiver(IObjectIA *r, bool v)
-	{			
+	{	
+		if(_ReceiverIsVolatile) _Receiver->release();
 		_Receiver = r;
 		_ReceiverIsVolatile = v;
 	}
 
 	void IMessageBase::setContinuation(IObjectIA *r, bool v)
-	{						
+	{					
+		if(_ContinuationIsVolatile) _Continuation->release();
 		_Continuation = r;
 		_ContinuationIsVolatile = v;
 	}

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.26 2003/11/17 14:56:51 berenguier Exp $
+ * $Id: hierarchical_timer.h,v 1.27 2003/12/16 18:01:59 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -42,11 +42,11 @@
 
 #ifdef ALLOW_TIMING_MEASURES
 	// Several macros to use
-#	define H_TIME(name, inst) \
+#	define H_TIME(__name,__inst) \
 	{ \
-		static NLMISC::CHTimer	nl_h_timer(name); \
+		static NLMISC::CHTimer	nl_h_timer(#__name); \
 		nl_h_timer.before(); \
-		inst \
+		__inst \
 		nl_h_timer.after(); \
 	}
 	//
@@ -57,15 +57,15 @@
 	// display the timer info after each loop call
 #	define H_AUTO_INST(__name)	static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimerInst	__name##_auto(&__name##_timer);
 
-/** H_AUTO splitted in 2. The declaration of the static timer, and a CAutoTimer instance.
- *	Usefull to group same timer bench in different functions for example
+/** H_AUTO splited in 2. The declaration of the static timer, and a CAutoTimer instance.
+ *	Useful to group same timer bench in different functions for example
  */
 #	define H_AUTO_DECL(__name)		static NLMISC::CHTimer	__name##_timer(#__name); 
 #	define H_AUTO_USE(__name)		NLMISC::CAutoTimer	__name##_auto(&__name##_timer);
 
 #else
 	// void macros
-#	define H_TIME(name, inst)	
+#	define H_TIME(__name,__inst) __inst
 #	define H_BEFORE(__name)
 #	define H_AFTER(__name)	
 #	define H_AUTO(__name)	

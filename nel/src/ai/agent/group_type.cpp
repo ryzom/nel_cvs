@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.19 2001/05/22 16:08:15 chafik Exp $
+ * $Id: group_type.cpp,v 1.20 2001/06/18 13:57:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -948,9 +948,8 @@ namespace NLAIAGENT
 	{
 		while(_Vector.size())
 		{
-			NLAIC::IBasicInterface * o = (NLAIC::IBasicInterface *)_Vector.front();
-			if ( o != NULL )
-				o->release();
+			NLAIC::IBasicInterface * o = (NLAIC::IBasicInterface *)_Vector.front();			
+			o->release();
 			_Vector.erase( _Vector.begin() );
 		}
 	}

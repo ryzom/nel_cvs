@@ -219,7 +219,7 @@ namespace NLAILOGIC
 		case 0:
 			{					
 
-				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->getFront()->clone();
+				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->getFront();
 				param->popFront();
 #ifdef NL_DEBUG
 				const char *dbg_name = name->getStr().getString();

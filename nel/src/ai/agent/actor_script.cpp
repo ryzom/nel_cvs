@@ -40,6 +40,7 @@ namespace NLAIAGENT
 		while (  _Launched.size() )
 		{
 			_Launched.front()->Kill();
+			_Launched.front()->release();
 			_Launched.pop_front();
 		}
 	}
@@ -201,8 +202,8 @@ namespace NLAIAGENT
 
 	void CActorScript::processMessages()
 	{
-		if ( _IsActivated )
-			CAgentScript::processMessages();
+		//if ( _IsActivated )
+		CAgentScript::processMessages();
 	}
 
 	const IObjectIA::CProcessResult &CActorScript::run()
@@ -225,7 +226,10 @@ namespace NLAIAGENT
 			return CAgentScript::run();
 		}
 		else
+		{
+			processMessages();
 			return IObjectIA::ProcessRun;
+		}
 	}
 
 	const NLAIC::CIdentType &CActorScript::getType() const
@@ -298,7 +302,7 @@ namespace NLAIAGENT
 			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 			{
 				IBaseGroupType *fw = (IBaseGroupType *) ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
-				( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
+				//( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
 				while ( fw->size() )
 				{
 					handles.push_back( (CStringType *) fw->getFront() );
@@ -382,7 +386,7 @@ namespace NLAIAGENT
 				const char *dbg_param_front_type = (const char *) fw->getType();
 #endif
 
-				( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
+				//( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
 //				while ( fw->size() )
 //				{
 					handles.push_back( (CStringType *) fw);
@@ -516,3 +520,4 @@ namespace NLAIAGENT
 		return 1.0;
 	}
 }
+

@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_action.cpp,v 1.5 2001/05/22 16:08:15 chafik Exp $
+ * $Id: msg_action.cpp,v 1.6 2001/06/18 13:57:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,7 +120,7 @@ namespace NLAIAGENT
 		{
 		case 0:
 			{					
-				IObjectIA *param = (IObjectIA *) arg->get()->clone();
+				IObjectIA *param = (IObjectIA *) arg->get();
 				arg->popFront();
 #ifdef NL_DEBUG
 				std::string buffer;
@@ -230,8 +230,7 @@ namespace NLAIAGENT
 		{
 		case 0:
 			{					
-				IObjectIA *param = (IObjectIA *) arg->get()->clone();
-				arg->popFront();
+				IObjectIA *param = (IObjectIA *) arg->get()->clone();				
 #ifdef NL_DEBUG
 				std::string buffer;
 				param->getDebugString( buffer );

@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.10 2001/05/22 16:08:15 chafik Exp $
+ * $Id: msg_goal.cpp,v 1.11 2001/06/18 13:57:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,7 +118,7 @@ namespace NLAIAGENT
 		{
 		case 0:
 			{					
-				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->getFront()->clone();
+				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->getFront();
 				param->popFront();
 #ifdef NL_DEBUG
 				std::string buffer;

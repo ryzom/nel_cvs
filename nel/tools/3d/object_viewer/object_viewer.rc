@@ -1403,6 +1403,19 @@ BEGIN
     LTEXT           "Static",IDC_STATIC_GLOBAL_WIND_POWER,185,10,25,10
 END
 
+IDD_SETUP_FOG DIALOG DISCARDABLE  0, 0, 186, 46
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Fog setup"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+    LTEXT           "Start :",IDC_STATIC,24,10,26,10
+    LTEXT           "End :",IDC_STATIC,24,26,26,10
+    EDITTEXT        IDC_EDIT1,51,8,55,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,51,25,55,12,ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1915,6 +1928,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 24
     END
+
+    IDD_SETUP_FOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 39
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2180,19 +2201,21 @@ BEGIN
     BEGIN
         MENUITEM "Set &move speed...",          ID_VIEW_SETMOVESPEED
         MENUITEM "&Set background...",          ID_VIEW_SETBACKGROUND
+        MENUITEM "Activate &fog",               IDM_ACTIVATE_FOG
+        MENUITEM "Setup f&og",                  IDM_SETUP_FOG
         MENUITEM SEPARATOR
         MENUITEM "&Reset camera",               ID_VIEW_RESET_CAMERA
         MENUITEM SEPARATOR
         MENUITEM "Set lag",                     IDM_SET_LAG
         MENUITEM SEPARATOR
-        MENUITEM "Activate texture set 1",      IDM_ACTIVATE_TEXTURE_SET_1
-        MENUITEM "Activate texture set 2",      IDM_ACTIVATE_TEXTURE_SET_2
-        MENUITEM "Activate texture set 3",      IDM_ACTIVATE_TEXTURE_SET_3
-        MENUITEM "Activate texture set 4",      IDM_ACTIVATE_TEXTURE_SET_4
-        MENUITEM "Activate texture set 5",      IDM_ACTIVATE_TEXTURE_SET_5
-        MENUITEM "Activate texture set 6",      IDM_ACTIVATE_TEXTURE_SET_6
-        MENUITEM "Activate texture set 7",      IDM_ACTIVATE_TEXTURE_SET_7
-        MENUITEM "Activate texture set 8",      IDM_ACTIVATE_TEXTURE_SET_8
+        MENUITEM "Activate texture set &1",     IDM_ACTIVATE_TEXTURE_SET_1
+        MENUITEM "Activate texture set &2",     IDM_ACTIVATE_TEXTURE_SET_2
+        MENUITEM "Activate texture set &3",     IDM_ACTIVATE_TEXTURE_SET_3
+        MENUITEM "Activate texture set &4",     IDM_ACTIVATE_TEXTURE_SET_4
+        MENUITEM "Activate texture set &5",     IDM_ACTIVATE_TEXTURE_SET_5
+        MENUITEM "Activate texture set &6",     IDM_ACTIVATE_TEXTURE_SET_6
+        MENUITEM "Activate texture set &7",     IDM_ACTIVATE_TEXTURE_SET_7
+        MENUITEM "Activate texture set &8",     IDM_ACTIVATE_TEXTURE_SET_8
     END
     POPUP "&Scene"
     BEGIN

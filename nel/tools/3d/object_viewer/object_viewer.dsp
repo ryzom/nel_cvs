@@ -202,6 +202,10 @@ SOURCE=.\edit_ex.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\fog_dlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\global_wind_dlg.cpp
 # End Source File
 # Begin Source File
@@ -292,6 +296,10 @@ SOURCE=.\dialog_progress.h
 # Begin Source File
 
 SOURCE=.\edit_ex.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\fog_dlg.h
 # End Source File
 # Begin Source File
 

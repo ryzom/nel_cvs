@@ -263,6 +263,7 @@
 #define IDC_UPDATE_ZPOS                 1118
 #define IDB_PAUSE_SYSTEM                1118
 #define IDC_SUB_COMPONENT               1119
+#define IDD_SETUP_FOG                   1120
 #define IDC_PSI_VALUE                   1121
 #define IDC_THETA_VALUE                 1122
 #define IDC_HINT_PRECOMPUTED_ROTATIONS  1122
@@ -530,6 +531,8 @@
 #define IDC_CONSISTENT_EMISSION         1340
 #define IDC_SLIDER_GLOBAL_WIND_POWER    1341
 #define IDC_STATIC_GLOBAL_WIND_POWER    1342
+#define IDC_EDIT1                       1343
+#define IDC_EDIT2                       1344
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -658,14 +661,16 @@
 #define IDM_COPY_BINDABLE               32887
 #define IDM_PASTE_BINDABLE              32888
 #define IDM_PASTE_LOCATED               32889
+#define IDM_ACTIVATE_FOG                32890
+#define IDM_SETUP_FOG                   32891
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1119
-#define _APS_NEXT_COMMAND_VALUE         32890
-#define _APS_NEXT_CONTROL_VALUE         1343
+#define _APS_NEXT_RESOURCE_VALUE        1121
+#define _APS_NEXT_COMMAND_VALUE         32892
+#define _APS_NEXT_CONTROL_VALUE         1344
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

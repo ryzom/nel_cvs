@@ -249,6 +249,25 @@ SOURCE=.\net\callback_server.cpp
 
 SOURCE=..\include\nel\net\callback_server.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\net\new_message.cpp
+
+!IF  "$(CFG)" == "net - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "net - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "net - Win32 ReleaseDebug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\new_message.h
+# End Source File
 # End Group
 # Begin Group "service_clients"
 
@@ -289,6 +308,15 @@ SOURCE=..\include\nel\net\unitime.h
 # Begin Source File
 
 SOURCE=.\net\new_service.cpp
+
+!IF  "$(CFG)" == "net - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "net - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "net - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

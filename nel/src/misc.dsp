@@ -472,14 +472,6 @@ SOURCE=..\include\nel\misc\path.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\misc\quad.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\quad.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\misc\rgba.cpp
 # End Source File
 # Begin Source File
@@ -492,11 +484,27 @@ SOURCE=.\misc\smart_ptr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\quad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\quad.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\smart_ptr.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\misc\smart_ptr_inline.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\string_id_array.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\string_id_array.h
 # End Source File
 # Begin Source File
 

@@ -17,3 +17,6 @@ echo --- Install zone
 echo ------- 
 
 cp -u zone_lighted/*.* $client_directory/$zone_install_directory  2>> log.log
+
+# copy the water maps once they have been lighted
+cp -u water_shapes_lighted/*.* $client_directory/$water_maps_directories

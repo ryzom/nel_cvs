@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.18 2003/10/07 12:33:51 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.19 2003/11/18 13:59:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -431,7 +431,7 @@ void CPSInitialPos::restoreSystem()
 	//	nlassert(itSize->first->getSize() == 0)
 		for (uint l = 0; l < itSize->second; ++l)
 		{
-			itSize->first->newElement();
+			itSize->first->newElement(NLMISC::CVector::Null, NLMISC::CVector::Null, NULL, 0, itSize->first->getMatrixMode(), 0.f);
 		}
 
 		uint realSize = itSize->first->getSize();

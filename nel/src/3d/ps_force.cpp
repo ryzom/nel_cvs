@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.31 2002/11/14 17:35:07 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.32 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,23 +120,22 @@ void	CPSForce::releaseTargetRsc(CPSLocated *target)
 
 
 
-void	CPSForce::basisChanged(bool systemBasis)
+void	CPSForce::basisChanged(TPSMatrixMode matrixMode)
 {
 	if (!this->isIntegrable()) return;
 	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
 	{	
-		(*it)->integrableForceBasisChanged(systemBasis);
+		(*it)->integrableForceBasisChanged(matrixMode);
 	}		
 }
 
 
 void	CPSForce::cancelIntegrable(void)
 {
-	nlassert(_Owner);
-	bool useSystemBasis = _Owner->isInSystemBasis();
+	nlassert(_Owner);	
 	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
 	{
-		if ((*it)->isInSystemBasis() == useSystemBasis)
+		if ((*it)->getMatrixMode() == _Owner->getMatrixMode())
 		{
 			(*it)->unregisterIntegrableForce(this);
 			(*it)->addNonIntegrableForceRef();
@@ -147,11 +146,10 @@ void	CPSForce::cancelIntegrable(void)
 
 void	CPSForce::renewIntegrable(void)
 {
-	nlassert(_Owner);
-	bool useSystemBasis = _Owner->isInSystemBasis();
+	nlassert(_Owner);	
 	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
 	{
-		if ((*it)->isInSystemBasis() == useSystemBasis)
+		if ((*it)->getMatrixMode() == _Owner->getMatrixMode())
 		{
 			(*it)->registerIntegrableForce(this);
 			(*it)->releaseNonIntegrableForceRef();
@@ -451,11 +449,8 @@ void CPSGravity::show(TAnimationTime ellapsedTime)
 	for (TPSAttribVector::const_iterator it = _Owner->getPos().begin(); it != _Owner->getPos().end(); ++it)
 	{
 		mat.identity();
-		mat.translate(*it);
-		if (_Owner->isInSystemBasis())
-		{
-			mat = getSysMat() * mat;
-		}
+		mat.translate(*it);		
+		mat = getLocalToWorldMatrix() * mat;		
 		
 		driver->setupModelMatrix(mat);
 		driver->activeVertexBuffer(vb);
@@ -466,11 +461,9 @@ void CPSGravity::show(TAnimationTime ellapsedTime)
 		// affiche un g a cote de la force
 
 		CVector pos = *it + CVector(1.5f * toolSize, 0, -1.2f * toolSize);
-
-		if (_Owner->isInSystemBasis())
-		{
-			pos = getSysMat() * pos;
-		}
+		
+		pos = getLocalToWorldMatrix() * pos;
+		
 
 		// must have set this
 		nlassert(getFontGenerator() && getFontGenerator());

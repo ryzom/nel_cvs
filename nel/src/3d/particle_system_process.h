@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.11 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.12 2003/11/18 13:57:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,16 @@ enum TPSProcessPass
 { PSEmit, PSCollision, PSMotion, PSSolidRender, PSBlendRender, PSToolRender } ;
 
 
+/** Objects of particle systems can be local to various matrixs defined by the following enum  
+  */
+enum TPSMatrixMode
+{
+	PSFXWorldMatrix = 0,
+	PSIdentityMatrix,
+	PSFatherSkeletonWorldMatrix,
+	PSMatrixModeCount
+};
+
 
 /**
  *	A system particle process; A process is anything that can be called at each update of the system
@@ -66,7 +76,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		/// \name Object
 		/// @{
 			/// ctor
-			CParticleSystemProcess() : _Owner(NULL), _SystemBasisEnabled(false) {}
+			CParticleSystemProcess() : _Owner(NULL), _MatrixMode(PSFXWorldMatrix) {}
 			
 			/// dtor
 			virtual ~CParticleSystemProcess()  {}
@@ -93,14 +103,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		virtual bool			computeBBox(NLMISC::CAABBox &aabbox) const = 0 ;
 
 		/// Set the process owner. Called by the particle system during attachment.
-		void					setOwner(CParticleSystem *ps) 
-		{ 
-			if (ps == NULL)
-			{
-				releaseAllRef();
-			}
-			_Owner = ps ; 
-		}
+		void					setOwner(CParticleSystem *ps);
 
 		/// Retrieve the particle system that owns this process
 		CParticleSystem			*getOwner(void) { return _Owner ; }
@@ -134,19 +137,13 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 			const CFontManager		*getFontManager(void) const ;
 		//@}
 
-		/**	
-		* Return true if the process is in the particle system basis, false if it's in the world basis
-		*/
-		bool					isInSystemBasis(void) const 
-		{ 
-			return _SystemBasisEnabled ; 
-		}
-
-		/** Choose the basis for this process. Warning : This won't change any existing coordinate
-		 *  By default, all process are expressed in the world basis
-		 *  \param sysBasis truer if particles are in the system basis
+		// get matrix used for that object
+		TPSMatrixMode getMatrixMode() const { return _MatrixMode; }			
+			
+		/** Choose the basis for this process. NB: This won't change any existing coordinate
+		 *  By default, all process are expressed in the world basis		 
 		 */
-		virtual void			setSystemBasis(bool sysBasis = true) { _SystemBasisEnabled = sysBasis ; }
+		virtual void			setMatrixMode(TPSMatrixMode matrixMode);
 	
 		/// tells wether there are alive entities / particles in the system
 		virtual bool			hasParticles(void) const { return false ; }
@@ -167,7 +164,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		virtual void			performParametricMotion(TAnimationTime date,
 											 TAnimationTime ellapsedTime,
 											 TAnimationTime realEllapsedTime) { nlassert(0);}
-
+		
 		/// Update the life of objects..
 		virtual void			updateLife(TAnimationTime ellapsedTime) = 0;
 
@@ -176,12 +173,16 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 
 		// Helper to know if this class can be downcasted to a CPSLocated class
 		virtual bool            isLocated() const { return false; }
+
+		// returns the number of sub-objects (including this one, that requires the father skeleton matrix for its computations)
+		virtual uint			getFatherSkelMatrixUsageCount() const;
+
 			
 	protected:
 		CParticleSystem *_Owner ;
 
 		// true if the system basis is used for display and motion
-		bool _SystemBasisEnabled ;
+		TPSMatrixMode	 _MatrixMode;
 	
 } ;
 

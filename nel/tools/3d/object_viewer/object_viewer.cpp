@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.108 2003/11/07 14:29:32 besson Exp $
+ * $Id: object_viewer.cpp,v 1.109 2003/11/18 13:59:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -259,6 +259,12 @@ CObjectViewer::CObjectViewer ()
 	_CharacterScalePos= 1;
 	_CurrentCamera = -1;
 
+	
+}
+
+// ***************************************************************************
+void CObjectViewer::loadConfigFile()
+{
 	// Charge l'object_viewer.ini
 	try
 	{
@@ -617,6 +623,9 @@ void CObjectViewer::initUI (HWND parent)
 	// Init NELU
 	CNELU::init (640, 480, viewport, 32, true, view->m_hWnd);
 	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
+
+	// load the config file
+	loadConfigFile();
 
 	// Create a root.
 	_SceneRoot= (CTransform*)CNELU::Scene->createModel(NL3D::TransformId);

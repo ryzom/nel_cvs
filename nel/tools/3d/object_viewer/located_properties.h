@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.h,v 1.10 2003/08/22 09:02:22 vizerie Exp $
+ * $Id: located_properties.h,v 1.11 2003/11/18 13:59:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,7 @@ public:
 	BOOL	m_ParametricIntegration;
 	BOOL	m_ParametricMotion;
 	BOOL	m_TriggerOnDeath;
+	int		m_MatrixMode;
 	//}}AFX_DATA
 
 
@@ -191,6 +192,7 @@ protected:
 	afx_msg void OnEditTriggerOnDeath();
 	afx_msg void OnTriggerOnDeath();
 	afx_msg void OnAssignCount();
+	afx_msg void OnSelchangeMatrixMode();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

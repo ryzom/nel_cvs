@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.17 2002/11/14 17:35:07 vizerie Exp $
+ * $Id: ps_force.h,v 1.18 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,7 +139,7 @@ protected:
 	/** inherited from	 CPSLocatedBindable. When we deal with integrable forces, 
 	  * they must be in the same basis than their target. If this change, we must notify the target of it.	  
 	  */
-	virtual void		 basisChanged(bool systemBasis);
+	virtual void		 basisChanged(TPSMatrixMode systemBasis);
 
 	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) = 0;
 	

@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.18 2003/08/22 09:02:22 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.19 2003/11/18 13:59:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,11 +53,12 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 {
 	//{{AFX_DATA_INIT(CLocatedProperties)
 	m_LimitedLifeTime = FALSE;
-	m_SystemBasis = FALSE;
+	m_MatrixMode = 0;
 	m_DisgradeWithLOD = FALSE;
 	m_ParametricIntegration = FALSE;
 	m_ParametricMotion = FALSE;
 	m_TriggerOnDeath = FALSE;
+	m_MatrixMode = -1;
 	//}}AFX_DATA_INIT
 
 	nlassert(pdlg->getObjectViewer());
@@ -97,24 +98,24 @@ void CLocatedProperties::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TRIGGER_ON_DEATH, m_TriggerOnDeathCtrl);
 	DDX_Control(pDX, IDC_PARAMETRIC_MOTION, m_ParametricMotionCtrl);
 	DDX_Control(pDX, IDC_PARTICLE_NUMBER_POS, m_MaxNbParticles);
-	DDX_Check(pDX, IDC_LIMITED_LIFE_TIME, m_LimitedLifeTime);
-	DDX_Check(pDX, IDC_SYSTEM_BASIS, m_SystemBasis);
+	DDX_Check(pDX, IDC_LIMITED_LIFE_TIME, m_LimitedLifeTime);	
 	DDX_Check(pDX, IDC_DISGRADE_WITH_LOD, m_DisgradeWithLOD);	
 	DDX_Check(pDX, IDC_PARAMETRIC_MOTION, m_ParametricMotion);
 	DDX_Check(pDX, IDC_TRIGGER_ON_DEATH, m_TriggerOnDeath);
+	DDX_CBIndex(pDX, IDC_MATRIX_MODE, m_MatrixMode);
 	//}}AFX_DATA_MAP
 }
 
 
 BEGIN_MESSAGE_MAP(CLocatedProperties, CDialog)
 	//{{AFX_MSG_MAP(CLocatedProperties)
-	ON_BN_CLICKED(IDC_LIMITED_LIFE_TIME, OnLimitedLifeTime)
-	ON_BN_CLICKED(IDC_SYSTEM_BASIS, OnSystemBasis)
+	ON_BN_CLICKED(IDC_LIMITED_LIFE_TIME, OnLimitedLifeTime)	
 	ON_BN_CLICKED(IDC_DISGRADE_WITH_LOD, OnDisgradeWithLod)
 	ON_BN_CLICKED(IDC_PARAMETRIC_MOTION, OnParametricMotion)
 	ON_BN_CLICKED(IDC_EDIT_TRIGGER_ON_DEATH, OnEditTriggerOnDeath)
 	ON_BN_CLICKED(IDC_TRIGGER_ON_DEATH, OnTriggerOnDeath)
 	ON_BN_CLICKED(IDC_ASSIGN_COUNT, OnAssignCount)
+	ON_CBN_SELCHANGE(IDC_MATRIX_MODE, OnSelchangeMatrixMode)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -197,7 +198,7 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	}
 	
 	
-	m_SystemBasis				= _Located->isInSystemBasis();	
+	m_MatrixMode				= (int) _Located->getMatrixMode();
 	m_LimitedLifeTime			= _Located->getLastForever() ? FALSE : TRUE;
 	m_TriggerOnDeath			= _Located->isTriggerOnDeathEnabled();
 	updateTriggerOnDeath();
@@ -288,15 +289,6 @@ void CLocatedProperties::OnLimitedLifeTime()
 }
 
 //****************************************************************************************************************
-void CLocatedProperties::OnSystemBasis() 
-{
-	UpdateData();
-	_Located->setSystemBasis(m_SystemBasis ? true : false);
-	updateIntegrable();
-	UpdateData(FALSE);
-}
-
-//****************************************************************************************************************
 void CLocatedProperties::OnDisgradeWithLod() 
 {
 	UpdateData();
@@ -350,4 +342,14 @@ void CLocatedProperties::OnAssignCount()
 {
 	_Located->resize(_Located->getSize()); // set new max size
 	_MaxNbParticles->update();
+}
+
+//****************************************************************************************************************
+void CLocatedProperties::OnSelchangeMatrixMode() 
+{
+	UpdateData();
+	nlassert(_Located);
+	_Located->setMatrixMode((NL3D::TPSMatrixMode) m_MatrixMode);
+	updateIntegrable();
+	UpdateData(FALSE);
 }

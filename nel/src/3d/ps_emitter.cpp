@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.51 2003/11/04 09:42:06 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.52 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,9 +59,6 @@ static void replaceNullPeriodsByThreshold(float *tab, uint numElem)
 	}
 }
 
-
-
-
 ///////////////////////////////
 // CPSEmitter implementation //
 ///////////////////////////////
@@ -74,10 +71,11 @@ CPSEmitter::CPSEmitter() : _EmittedType(NULL),
 						   _GenNbScheme(NULL), 
 						   _EmitDelay(0),
 						   _MaxEmissionCount(0),
-						   _SpeedBasisEmission(false),
-						   _EmitDirBasis(true),
+						   _SpeedBasisEmission(false),						   
 						   _ConsistentEmission(true),
-						   _BypassAutoLOD(false)
+						   _BypassAutoLOD(false),
+						   _UserMatrixModeForEmissionDirection(false),
+						   _UserDirectionMatrixMode(PSFXWorldMatrix)
 {
 }
 
@@ -121,18 +119,18 @@ void CPSEmitter::setOwner(CPSLocated *psl)
 inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
 {	
 	static NLMISC::CVector speed, pos;
-	
+	nlassert(_Owner);
 	if (!_SpeedBasisEmission)
 	{
 		if (_SpeedInheritanceFactor == 0.f)
 		{		
-			if (_EmitDirBasis)
+			if (!_UserMatrixModeForEmissionDirection)
 			{
 				while (nbToGenerate > 0)
 				{
 					nbToGenerate --;
 					emit(_Owner->getPos()[index], index, pos, speed);
-					_EmittedType->newElement(pos, speed, this->_Owner, index);
+					_EmittedType->newElement(pos, speed, this->_Owner, index, _Owner->getMatrixMode(), 0.f);
 				}
 			}
 			else
@@ -141,7 +139,7 @@ inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
 				{
 					nbToGenerate --;
 					emit(_Owner->getPos()[index], index, pos, speed);
-					_EmittedType->newElement(pos, speed, this->_Owner, index, false);
+					_EmittedType->newElement(pos, speed, this->_Owner, index, _UserDirectionMatrixMode, 0.f);
 				}
 			}
 		}
@@ -150,7 +148,7 @@ inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
 			while (nbToGenerate --)
 			{
 				emit(_Owner->getPos()[index], index, pos, speed);
-				_EmittedType->newElement(pos, speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner);
+				_EmittedType->newElement(pos, speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, 0, _Owner->getMatrixMode(), 0.f);
 			}
 		}
 	}
@@ -164,7 +162,7 @@ inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
 			{
 				nbToGenerate --;
 				emit(_Owner->getPos()[index], index, pos, speed);
-				_EmittedType->newElement(pos, m * speed, this->_Owner, index);
+				_EmittedType->newElement(pos, m * speed, this->_Owner, index, _Owner->getMatrixMode(), 0.f);
 			}
 		}
 		else
@@ -172,7 +170,7 @@ inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
 			while (nbToGenerate --)
 			{
 				emit(_Owner->getPos()[index], index, pos, speed);
-				_EmittedType->newElement(pos, m * speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index);
+				_EmittedType->newElement(pos, m * speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index, _Owner->getMatrixMode(), 0.f);
 			}
 		}
 	}
@@ -255,18 +253,19 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 											 )
 {		
 	static NLMISC::CVector speed, pos; /// speed and pos of emittee
+	nlassert(_Owner);
 	sint emittedIndex;
 	if (!_SpeedBasisEmission)
 	{
 		if (_SpeedInheritanceFactor == 0.f)
 		{		
-			if (_EmitDirBasis)
+			if (!_UserMatrixModeForEmissionDirection)
 			{
 				while (nbToGenerate > 0)
 				{
 					nbToGenerate --;
 					emit(emitterPos, index, pos, speed);
-					emittedIndex = _EmittedType->newElement(pos, speed, this->_Owner, index, true, deltaT);
+					emittedIndex = _EmittedType->newElement(pos, speed, this->_Owner, index, _Owner->getMatrixMode(), deltaT);
 					if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 				}
@@ -277,7 +276,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 				{
 					nbToGenerate --;
 					emit(emitterPos, index, pos, speed);
-					emittedIndex = _EmittedType->newElement(pos, speed, this->_Owner, index, false, deltaT);
+					emittedIndex = _EmittedType->newElement(pos, speed, this->_Owner, index, _UserDirectionMatrixMode, deltaT);
 					if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 				}
@@ -288,7 +287,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 			while (nbToGenerate --)
 			{
 				emit(emitterPos, index, pos, speed);
-				emittedIndex = _EmittedType->newElement(pos, speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index, true, deltaT);
+				emittedIndex = _EmittedType->newElement(pos, speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index, _Owner->getMatrixMode(), deltaT);
 				if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 			}
@@ -304,7 +303,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 			{
 				nbToGenerate --;
 				emit(emitterPos, index, pos, speed);
-				emittedIndex = _EmittedType->newElement(pos, m * speed, this->_Owner, index, true, deltaT);
+				emittedIndex = _EmittedType->newElement(pos, m * speed, this->_Owner, index, _Owner->getMatrixMode(), deltaT);
 				if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 			}
@@ -314,7 +313,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 			while (nbToGenerate --)
 			{
 				emit(emitterPos, index, pos, speed);
-				emittedIndex = _EmittedType->newElement(pos, m * speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index, true, deltaT);
+				emittedIndex = _EmittedType->newElement(pos, m * speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index, _Owner->getMatrixMode(), deltaT);
 				if (emittedIndex != - 1) CompensateEmission(_EmittedType, emittedIndex, deltaT, ellapsedTime, realEllapsedTimeRatio);
 					else break;
 			}
@@ -1919,16 +1918,20 @@ void CPSEmitter::bounceOccured(uint32 index)
 ///==========================================================================
 void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-
+	/// version 6  : the flag _EmitDirBasis no longer exist, it has been replaced by _UserMatrixModeForEmissionDirection
+	//               
 	/// version 5  : added _BypassAutoLOD
 	/// version 4  : added consistent emissions
-	sint ver = f.serialVersion(4);	
+	sint ver = f.serialVersion(6);	
 	CPSLocatedBindable::serial(f);
 	
 	f.serialPolyPtr(_EmittedType);
 	f.serial(_Phase);
 	f.serial(_SpeedInheritanceFactor);
-	f.serial(_SpeedBasisEmission);
+
+	bool speedBasisEmission = _SpeedBasisEmission; // tmp copy because of bitfield serialization scheme
+	f.serial(speedBasisEmission);
+	_SpeedBasisEmission = speedBasisEmission;
 	
 	f.serialEnum(_EmissionType);
 
@@ -2008,17 +2011,47 @@ void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			 f.serial(_GenNb);
 		}
 	}
-	if (ver > 1)
+	if (ver > 1 && ver < 6)
 	{
-		f.serial(_EmitDirBasis);
+		nlassert(f.isReading());
+		bool emitDirBasis;
+		f.serial(emitDirBasis);
+		if (emitDirBasis)
+		{
+			_UserMatrixModeForEmissionDirection = false;
+			_UserDirectionMatrixMode = PSFXWorldMatrix;
+		}
+		else
+		{
+			_UserMatrixModeForEmissionDirection = true;
+			if (_Owner)
+			{
+				_UserDirectionMatrixMode = _Owner->getMatrixMode() == PSFXWorldMatrix ? PSIdentityMatrix : PSFXWorldMatrix;
+			}
+			else
+			{
+				_UserDirectionMatrixMode = PSFXWorldMatrix;
+			}
+		}
 	}
 	if (ver >= 4)
 	{
-		f.serial(_ConsistentEmission);
+		bool consistentEmission = _ConsistentEmission; // tmp copy because of bitfield serialization scheme
+		f.serial(consistentEmission);
+		_ConsistentEmission = consistentEmission;
 	}
 	if (ver >= 5)
 	{
-		f.serial(_BypassAutoLOD);
+		bool byassAutoLOD = _BypassAutoLOD; // tmp copy because of bitfield serialization scheme
+		f.serial(byassAutoLOD);
+		_BypassAutoLOD = byassAutoLOD;
+	}
+	if (ver >= 6)
+	{
+		bool userMatrixModeForEmissionDirection = _UserMatrixModeForEmissionDirection; // tmp copy because of bitfield serialization scheme
+		f.serial(userMatrixModeForEmissionDirection);
+		_UserMatrixModeForEmissionDirection = userMatrixModeForEmissionDirection;
+		f.serialEnum(_UserDirectionMatrixMode);
 	}
 }
 
@@ -2373,7 +2406,7 @@ void CPSEmitterRectangle::showTool(void)
 		const CVector &J = _Basis[k].Y;
 		mat.setRot(I, J , I ^J);
 		mat.setPos(_Owner->getPos()[k]);
-		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager());				
+		CPSUtil::displayBasis(getDriver() ,getLocalToWorldMatrix(), mat, 1.f, *getFontGenerator(), *getFontManager());				
 		setupDriverModelMatrix();	
 
 		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));
@@ -2554,6 +2587,62 @@ void CPSRadialEmitter::emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC:
 	pos = srcPos;
 }
 
+
+///===============================================================================
+void CPSEmitter::enableSpeedBasisEmission(bool enabled /*=true*/)
+{
+	bool wasFatherSkelMatNeeded = isFatherSkelMatrixUsed();
+	_SpeedBasisEmission  = enabled;
+	updatePSRefCountForFatherSkelMatrixUsage(isFatherSkelMatrixUsed(), wasFatherSkelMatNeeded);
+}
+
+///===============================================================================
+void CPSEmitter::enableUserMatrixModeForEmissionDirection(bool enable /*=true*/)
+{
+	bool wasFatherSkelMatNeeded = isFatherSkelMatrixUsed();
+	_UserMatrixModeForEmissionDirection = enable;
+	updatePSRefCountForFatherSkelMatrixUsage(isFatherSkelMatrixUsed(), wasFatherSkelMatNeeded);
+}
+
+///===============================================================================
+void CPSEmitter::setUserMatrixModeForEmissionDirection(TPSMatrixMode matrixMode)
+{
+	bool wasFatherSkelMatNeeded = isFatherSkelMatrixUsed();
+	_UserDirectionMatrixMode = matrixMode;
+	updatePSRefCountForFatherSkelMatrixUsage(isFatherSkelMatrixUsed(), wasFatherSkelMatNeeded);
+}
+
+
+///==========================================================================
+void CPSEmitter::updatePSRefCountForFatherSkelMatrixUsage(bool matrixIsNeededNow, bool matrixWasNeededBefore)
+{
+	if (_Owner && _Owner->getOwner())
+	{
+		if (matrixIsNeededNow && !matrixWasNeededBefore)
+		{
+			_Owner->getOwner()->addRefForSkeletonSysCoordInfo();
+		}
+		else if (matrixIsNeededNow && !matrixWasNeededBefore)
+		{
+			_Owner->getOwner()->releaseRefForSkeletonSysCoordInfo();
+		}
+	}
+}
+
+///==========================================================================
+bool CPSEmitter::isFatherSkelMatrixUsed() const
+{
+	return !_SpeedBasisEmission && _UserMatrixModeForEmissionDirection && _UserDirectionMatrixMode == PSFatherSkeletonWorldMatrix;
+}
+
+///==========================================================================
+bool CPSEmitter::getFatherSkelMatrixUsageCount() const
+{
+	return isFatherSkelMatrixUsed() ? 1 : 0;
+}
+
+
+
 } // NL3D
 
 namespace NLMISC
@@ -2575,6 +2664,7 @@ std::string toString(NL3D::CPSEmitter::TEmissionType type)
 		break;
 	}
 }
+
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.15 2003/07/30 16:03:32 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.16 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -657,7 +657,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;	
@@ -666,7 +666,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFSquareDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;	
@@ -675,7 +675,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
@@ -684,7 +684,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampSquareDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
@@ -745,7 +745,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;	
@@ -754,7 +754,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFSquareDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;	
@@ -763,7 +763,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
@@ -772,7 +772,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampSquareDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
@@ -849,7 +849,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;	
@@ -858,7 +858,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFSquareDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;	
@@ -867,7 +867,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
@@ -876,7 +876,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampSquareDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
@@ -935,7 +935,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;	
@@ -944,7 +944,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFSquareDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;	
@@ -953,7 +953,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
@@ -962,7 +962,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampSquareDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
@@ -1037,7 +1037,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFDot3AddIterator<TIteratorVectStep1> 
 								it( TIteratorVectStep1(loc->getPos().begin(), startIndex) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;	
@@ -1046,7 +1046,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFSquareDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;	
@@ -1055,7 +1055,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampDot3AddIterator<TIteratorVectStep1>
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;
@@ -1064,7 +1064,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampSquareDot3AddIterator<TIteratorVectStep1> 
 								it(TIteratorVectStep1(loc->getPos().begin(), startIndex));
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;
@@ -1123,7 +1123,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;	
@@ -1132,7 +1132,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFSquareDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616(loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;	
@@ -1141,7 +1141,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616( loc->getPos().begin(), startIndex, srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;
@@ -1150,7 +1150,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 							
 							CFClampSquareDot3AddIterator<TIteratorVectStep1616> 
 								it( TIteratorVectStep1616( loc->getPos().begin(), startIndex,  srcStep) );
-							loc->getLODVect(it.V, it.Offset, loc->isInSystemBasis());			
+							loc->getLODVect(it.V, it.Offset, loc->getMatrixMode());			
 							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;
@@ -1237,7 +1237,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 		{	
 			static NLMISC::CVector lodVect;
 			float lodOffset;			
-			loc->getLODVect(lodVect, lodOffset, loc->isInSystemBasis());						
+			loc->getLODVect(lodVect, lodOffset, loc->getMatrixMode());
 			float r = fabsf(loc->getPos()[index] * lodVect + lodOffset);
 			r = _NbCycles * r > MaxInputValue ? MaxInputValue : r;			
 			if (_Clamp)
@@ -1251,7 +1251,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 		{	
 			static NLMISC::CVector lodVect;
 			float lodOffset;			
-			loc->getLODVect(lodVect, lodOffset, loc->isInSystemBasis());						
+			loc->getLODVect(lodVect, lodOffset, loc->getMatrixMode());						
 			float r = loc->getPos()[index] * lodVect + lodOffset;
 			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);
 
@@ -1266,7 +1266,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 		{	
 			static NLMISC::CVector lodVect;
 			float lodOffset;			
-			loc->getLODVect(lodVect, lodOffset, loc->isInSystemBasis());						
+			loc->getLODVect(lodVect, lodOffset, loc->getMatrixMode());
 
 			float r = loc->getPos()[index] * lodVect + lodOffset;
 			if (r < 0) 
@@ -1286,7 +1286,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 		{	
 			static NLMISC::CVector lodVect;
 			float lodOffset;			
-			loc->getLODVect(lodVect, lodOffset, loc->isInSystemBasis());						
+			loc->getLODVect(lodVect, lodOffset, loc->getMatrixMode());
 
 			float r = loc->getPos()[index] * lodVect + lodOffset;
 			if (r < 0) 

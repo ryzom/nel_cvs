@@ -181,6 +181,7 @@
 #define IDC_DEGRADATION_EXPONENT        1070
 #define IDC_EDITED_OBJECT               1070
 #define IDC_PROJECTION_MODE             1070
+#define IDC_MATRIX_MODE                 1070
 #define IDC_START_PICTURE               1071
 #define IDD_SET_VALUE                   1071
 #define IDC_ALTERNATE_OP                1071
@@ -616,6 +617,8 @@
 #define IDC_LINK_TO_SKELETON            1387
 #define IDC_UNLINK_FROM_SKELETON        1388
 #define IDC_LINK_PLAY_TO_SCENE_PLAY     1389
+#define IDC_DIRECTION                   1390
+#define IDC_DIRECTION_MODE              1391
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -811,9 +814,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1132
+#define _APS_NEXT_RESOURCE_VALUE        1133
 #define _APS_NEXT_COMMAND_VALUE         32962
-#define _APS_NEXT_CONTROL_VALUE         1390
+#define _APS_NEXT_CONTROL_VALUE         1392
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

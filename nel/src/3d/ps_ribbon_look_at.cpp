@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.8 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.9 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -340,8 +340,8 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	const NLMISC::CVector       K = _Owner->computeK();
 
 	
-	CMatrix mat =  _Owner->isInSystemBasis() ? getViewMat()  *  getSysMat()
-																  : getViewMat();
+	const NLMISC::CMatrix &mat =  getLocalToWorldMatrix();
+										
 	IDriver *drv = this->getDriver();
 	setupDriverModelMatrix();
 	drv->activeVertexBuffer(VB);

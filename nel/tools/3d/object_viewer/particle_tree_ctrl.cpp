@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.49 2003/11/07 14:29:32 besson Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.50 2003/11/18 13:59:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -685,7 +685,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				OnSelchanged((NMHDR *) &nmt, &pResult);
 			}
 
-			sint32 objIndex = nt->Loc->newElement();
+			sint32 objIndex = nt->Loc->newElement(NLMISC::CVector::Null, NLMISC::CVector::Null, NULL, 0, nt->Loc->getMatrixMode(), 0.f);
 
 			nt = new CNodeType(nt->Loc, objIndex);
 			_NodeTypes.push_back(nt);
@@ -1156,7 +1156,7 @@ std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> CParticleTreeCtrl::createLo
 	
 	CPSLocated *loc = new CPSLocated;
 	loc->setName(name);
-	loc->setSystemBasis(true);		
+	loc->setMatrixMode(NL3D::PSFXWorldMatrix);
 	ps->attach(loc);
 
 	CNodeType *newNt = new CNodeType(loc);
@@ -1229,13 +1229,17 @@ void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &m)
 			CNodeType *nt = (CNodeType *) GetItemData(currItem);
 			if (nt->Type == CNodeType::locatedInstance)
 			{
-				if (nt->Loc->isInSystemBasis())
+				if (nt->Loc->getMatrixMode() == NL3D::PSFXWorldMatrix)
 				{
 					mat = _ParticleDlg->getPSWorldMatrix().inverted() * m;	
 				}
-				else
+				else if (nt->Loc->getMatrixMode() == NL3D::PSIdentityMatrix)
 				{
 					mat = m;
+				}
+				else
+				{
+					return;
 				}
 
 				CWnd *rightPane = _ParticleDlg->getRightPane();
@@ -1276,7 +1280,7 @@ NLMISC::CMatrix CParticleTreeCtrl::getElementMatrix(void) const
 			NLMISC::CMatrix m;
 			m.identity();
 			m.setPos(pos);
-			if (nt->Loc->isInSystemBasis())
+			if (nt->Loc->getMatrixMode() == NL3D::PSFXWorldMatrix)
 			{
 				m = _ParticleDlg->getPSWorldMatrix() * m;
 			}

@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.60 2003/08/22 08:58:07 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.61 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,7 @@ namespace NL3D {
 /**
  * Constructor
  */
-	CPSLocated::CPSLocated() : _MaxNumFaces(0),
+CPSLocated::CPSLocated() : _MaxNumFaces(0),
 							   _Name(std::string("located")),
 							   _NbFramesToSkip(0),
 							   _MaxSize(DefaultMaxLocatedInstance),
@@ -83,6 +83,39 @@ namespace NL3D {
 							   _TriggerID((uint32) 'NONE'),
 							   _ParametricMotion(false)							   
 {		
+}
+
+
+//*****************************************************************************************************
+const NLMISC::CMatrix &CPSLocated::getLocalToWorldMatrix() const
+{
+	nlassert(_Owner);
+	switch(getMatrixMode())
+	{
+		case PSFXWorldMatrix:				return _Owner->getSysMat();
+		case PSIdentityMatrix:				return NLMISC::CMatrix::Identity;
+		case PSFatherSkeletonWorldMatrix:	return _Owner->getFatherSkeletonMatrix();
+		default:
+			nlassert(0);
+	}
+	nlassert(0);
+	return NLMISC::CMatrix::Identity;
+}
+
+//*****************************************************************************************************
+const NLMISC::CMatrix &CPSLocated::getWorldToLocalMatrix() const
+{
+	nlassert(_Owner);
+	switch(getMatrixMode())
+	{
+		case PSFXWorldMatrix:				return _Owner->getInvertedSysMat();
+		case PSIdentityMatrix:				return NLMISC::CMatrix::Identity;
+		case PSFatherSkeletonWorldMatrix:	return _Owner->getInvertedFatherSkeletonMatrix();
+		default:
+			nlassert(0);
+	}
+	nlassert(0);
+	return NLMISC::CMatrix::Identity;
 }
 
 
@@ -363,21 +396,21 @@ void	CPSLocated::enableParametricMotion(bool enable /*= true*/)
 }
 
 ///***************************************************************************************
-void CPSLocated::setSystemBasis(bool sysBasis)
-{			
+void CPSLocated::setMatrixMode(TPSMatrixMode matrixMode)
+{
 	CHECK_PS_INTEGRITY
-	if (sysBasis != isInSystemBasis())
+	if (matrixMode != getMatrixMode())
 	{		
 		for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 		{
-			(*it)->basisChanged(sysBasis);
+			(*it)->basisChanged(matrixMode);
 		}
 
-		CParticleSystemProcess::setSystemBasis(sysBasis);
+		CParticleSystemProcess::setMatrixMode(matrixMode);
 
 		for (TForceVect::iterator fIt = _IntegrableForces.begin(); fIt != _IntegrableForces.end(); ++fIt)
 		{			
-			integrableForceBasisChanged( (*fIt)->getOwner()->isInSystemBasis() );
+			integrableForceBasisChanged( (*fIt)->getOwner()->getMatrixMode() );
 		}				
 	}
 	CHECK_PS_INTEGRITY
@@ -437,11 +470,11 @@ bool CPSLocated::hasEmitters(void) const
 }
 
 ///***************************************************************************************
-void CPSLocated::getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis)
+void CPSLocated::getLODVect(NLMISC::CVector &v, float &offset, TPSMatrixMode matrixMode)
 {
 	nlassert(_Owner);
 	CHECK_PS_INTEGRITY
-	_Owner->getLODVect(v, offset, systemBasis);
+	_Owner->getLODVect(v, offset, matrixMode);
 	CHECK_PS_INTEGRITY
 }
 
@@ -532,38 +565,59 @@ void CPSLocated::setMassScheme(CPSAttribMaker<float> *scheme)
 	
 ///***************************************************************************************
 /// get a matrix that helps to express located B coordinate in located A basis
-const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *A, const CPSLocated *B)
-{
-	nlassert(A->_Owner == B->_Owner); // conversion must be made between entity of the same system
-	if (A->_SystemBasisEnabled == B->_SystemBasisEnabled)
+const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CParticleSystem &ps, TPSMatrixMode destMode, TPSMatrixMode srcMode)
+{	
+	switch(destMode)
 	{
-		return NLMISC::CMatrix::Identity;
+		case PSFXWorldMatrix:
+			switch(srcMode)
+			{
+				case PSFXWorldMatrix:				return NLMISC::CMatrix::Identity;
+				case PSIdentityMatrix:				return ps.getInvertedSysMat();	
+				case PSFatherSkeletonWorldMatrix:	return ps.getFatherSkeletonToFXMatrix();
+				default:
+				nlassert(0);
+			}
+		break;
+		case PSIdentityMatrix:
+			switch(srcMode)
+			{
+				case PSFXWorldMatrix:				return ps.getSysMat();
+				case PSIdentityMatrix:				return NLMISC::CMatrix::Identity;
+				case PSFatherSkeletonWorldMatrix:	return ps.getFatherSkeletonMatrix();	
+				default:
+				nlassert(0);
+			}
+		break;
+		case PSFatherSkeletonWorldMatrix:
+			switch(srcMode)
+			{
+				case PSFXWorldMatrix:				return ps.getFXToFatherSkeletonMatrix();
+				case PSIdentityMatrix:				return ps.getInvertedFatherSkeletonMatrix();
+				case PSFatherSkeletonWorldMatrix:	return NLMISC::CMatrix::Identity;
+				default:
+				nlassert(0);
+			}
+		break;
+		default:
+			nlassert(0);
 	}
-	else
-	{
-		if (B->_SystemBasisEnabled)
-		{
-			return B->_Owner->getSysMat();
-		}
-		else
-		{
-			return A->_Owner->getInvertedSysMat();
-		}
-	}	
+	nlassert(0);
+	return NLMISC::CMatrix::Identity;
 }
 
 ///***************************************************************************************
 NLMISC::CVector CPSLocated::computeI(void) const 
 {
 	CHECK_PS_INTEGRITY
-	if (!_SystemBasisEnabled)
+	if (getMatrixMode() == PSIdentityMatrix)
 	{
 		return _Owner->getInvertedViewMat().getI();
 	}
 	else
 	{
 		// we must express the I vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getI());
+		return getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getI());
 	}
 	CHECK_PS_INTEGRITY
 }
@@ -572,14 +626,14 @@ NLMISC::CVector CPSLocated::computeI(void) const
 NLMISC::CVector CPSLocated::computeJ(void) const 
 {
 	CHECK_PS_INTEGRITY
-	if (!_SystemBasisEnabled)
+	if (getMatrixMode() == PSIdentityMatrix)
 	{
 		return _Owner->getInvertedViewMat().getJ();
 	}
 	else
 	{
 		// we must express the J vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getJ());
+		return getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getJ());
 	}
 	CHECK_PS_INTEGRITY
 }
@@ -588,14 +642,14 @@ NLMISC::CVector CPSLocated::computeJ(void) const
 NLMISC::CVector CPSLocated::computeK(void) const
 {
 	CHECK_PS_INTEGRITY
-	if (!_SystemBasisEnabled)
+	if (getMatrixMode() == PSIdentityMatrix)
 	{
 		return _Owner->getInvertedViewMat().getK();
 	}
 	else
 	{
 		// we must express the K vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getK());
+		return getWorldToLocalMatrix().mulVector(_Owner->getInvertedViewMat().getK());
 	}
 	CHECK_PS_INTEGRITY
 }
@@ -748,7 +802,7 @@ void CPSLocated::unregisterDtorObserver(CPSLocatedBindable *anObserver)
 /**
  * new element generation
  */
-sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated *emitter, uint32 indexInEmitter, bool basisConversionForSpeed, TAnimationTime ellapsedTime /* = 0.f */)
+sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated *emitter, uint32 indexInEmitter, TPSMatrixMode speedCoordSystem, TAnimationTime ellapsedTime /* = 0.f */)
 {	
 	CHECK_PS_INTEGRITY
 	if (_UpdateLock)
@@ -785,29 +839,109 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 
 	// During creation, we interpolate the position of the system (by using the ellapsed time) if particle are created in world basis and if the emitter is in local basis.
 	// Example a fireball FX let particles in world basis, but the fireball is moving. If we dont interpolate position between 2 frames, emission will appear to be "sporadic".
-	// For now, we manage the local to world case. The world to local is possible, but not very useful
-	const CMatrix &convMat = emitter ? CPSLocated::getConversionMatrix(this, emitter) 
-									 :  CMatrix::Identity;
-	if (!_SystemBasisEnabled && emitter && emitter->_SystemBasisEnabled)
+	// For now, we manage the local to world case. The world to local is possible, but not very useful	
+	switch(emitter ? emitter->getMatrixMode() : this->getMatrixMode())
 	{
-		// Interpolate linearly position of the system based on the ellapsed time.
-		// The system keep track the ellapsed time passed in the call to step(), so it can compute the right position for us
-		#ifdef NL_DEBUG
-			nlassert(_Owner);
-		#endif
-		CVector sysPosDelta;
-		_Owner->interpolatePosDelta(sysPosDelta, ellapsedTime);
-		creationIndex  =_Pos.insert(convMat * pos + sysPosDelta);
+		case PSFXWorldMatrix:
+			switch(this->getMatrixMode())
+			{
+				case PSFXWorldMatrix:
+				{								
+					creationIndex  =_Pos.insert(pos);
+				}
+				break;
+				case PSIdentityMatrix:
+				{			
+					CVector fxPosDelta;
+					_Owner->interpolateFXPosDelta(fxPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getSysMat() * pos + fxPosDelta);
+				}
+				break;
+				case PSFatherSkeletonWorldMatrix:
+				{					
+					CVector fxPosDelta;
+					_Owner->interpolateFXPosDelta(fxPosDelta, ellapsedTime);
+					CVector skelPosDelta;
+					_Owner->interpolateFatherSkeletonPosDelta(skelPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getInvertedFatherSkeletonMatrix() * (_Owner->getSysMat() * pos + fxPosDelta - skelPosDelta));
+				}
+				break;
+				default:
+				nlassert(0);
+			}
+		break;
+		case PSIdentityMatrix:
+			switch(this->getMatrixMode())
+			{
+				case PSFXWorldMatrix:
+				{					
+					CVector fxPosDelta;
+					_Owner->interpolateFXPosDelta(fxPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getInvertedSysMat() * (pos - fxPosDelta));
+				}
+				break;
+				case PSIdentityMatrix:
+				{					
+					creationIndex  =_Pos.insert(pos);
+				}
+				break;
+				case PSFatherSkeletonWorldMatrix:
+				{					
+					CVector skelPosDelta;
+					_Owner->interpolateFatherSkeletonPosDelta(skelPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getInvertedFatherSkeletonMatrix() * (pos - skelPosDelta));
+				}
+				break;
+				default:
+				nlassert(0);
+			}
+		break;
+		case PSFatherSkeletonWorldMatrix:
+			switch(this->getMatrixMode())
+			{
+				case PSFXWorldMatrix:
+				{					
+					CVector fxPosDelta;
+					_Owner->interpolateFXPosDelta(fxPosDelta, ellapsedTime);
+					CVector skelPosDelta;
+					_Owner->interpolateFatherSkeletonPosDelta(skelPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getInvertedSysMat() * (_Owner->getFatherSkeletonMatrix() * pos + skelPosDelta- fxPosDelta));
+				}
+				break;
+				case PSIdentityMatrix:
+				{				
+					CVector skelPosDelta;
+					_Owner->interpolateFatherSkeletonPosDelta(skelPosDelta, ellapsedTime);
+					creationIndex  =_Pos.insert(_Owner->getFatherSkeletonMatrix() * pos + skelPosDelta);	
+				}
+				break;
+				case PSFatherSkeletonWorldMatrix:
+				{					
+					creationIndex  =_Pos.insert(pos);
+				}
+				break;
+				default:
+				nlassert(0);
+			}
+		break;
+		default:
+			nlassert(0);
+	}
+
+	
+	nlassert(creationIndex != -1); // all attributs must contains the same number of elements	
+
+	if (speedCoordSystem == this->getMatrixMode()) // is speed vector expressed in the good basis ?
+	{		
+		_Speed.insert(speed);
 	}
 	else
 	{
-		creationIndex  =_Pos.insert(convMat * pos);
-	}	
-	nlassert(creationIndex != -1); // all attributs must contains the same number of elements
-	
-	_Speed.insert(basisConversionForSpeed ? convMat.mulVector(speed) : speed);
-	
-
+		// must do conversion of speed
+		nlassert(_Owner);
+		const NLMISC::CMatrix &convMat = getConversionMatrix(*_Owner, this->getMatrixMode(), speedCoordSystem);
+		_Speed.insert(convMat.mulVector(speed));
+	}
 			
 	_InvMass.insert(1.f / ((_MassScheme && emitter) ? _MassScheme->get(emitter, indexInEmitter) : _InitialMass ) );
 	_Time.insert(0.0f);	
@@ -1490,10 +1624,11 @@ void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 ///***************************************************************************************
 void CPSLocated::updateNewElementRequestStack(void)
 {
+	// TODO : update / remove this
 	CHECK_PS_INTEGRITY
 	while (!_RequestStack.empty())
 	{
-		newElement(_RequestStack.top()._Pos, _RequestStack.top()._Speed);
+		newElement(_RequestStack.top()._Pos, _RequestStack.top()._Speed, NULL, 0, PSFXWorldMatrix, 0.f);
 		_RequestStack.pop();
 	}
 	CHECK_PS_INTEGRITY
@@ -1561,15 +1696,8 @@ bool CPSLocated::computeBBox(NLMISC::CAABBox &box) const
 ///***************************************************************************************
 void CPSLocated::setupDriverModelMatrix(void) 
 {
-	CHECK_PS_INTEGRITY
-	if (_SystemBasisEnabled)
-	{
-		getDriver()->setupModelMatrix(_Owner->getSysMat());		
-	}
-	else
-	{
-		getDriver()->setupModelMatrix(CMatrix::Identity);
-	}
+	CHECK_PS_INTEGRITY	
+	getDriver()->setupModelMatrix(getLocalToWorldMatrix());			
 	CHECK_PS_INTEGRITY
 }
 
@@ -1632,7 +1760,7 @@ void CPSLocated::registerIntegrableForce(CPSForce *f)
 	CHECK_PS_INTEGRITY
 	nlassert(std::find(_IntegrableForces.begin(), _IntegrableForces.end(), f) == _IntegrableForces.end()); // force registered twice
 	_IntegrableForces.push_back(f);
-	if (_SystemBasisEnabled != f->getOwner()->isInSystemBasis())
+	if (getMatrixMode() != f->getOwner()->getMatrixMode())
 	{
 		++_NumIntegrableForceWithDifferentBasis;
 		releaseParametricInfos();
@@ -1649,7 +1777,7 @@ void CPSLocated::unregisterIntegrableForce(CPSForce *f)
 	std::vector<CPSForce *>::iterator it = std::find(_IntegrableForces.begin(), _IntegrableForces.end(), f);
 	nlassert(it != _IntegrableForces.end() );	
 	_IntegrableForces.erase(it);
-	if (_SystemBasisEnabled != f->getOwner()->isInSystemBasis())
+	if (getMatrixMode() != f->getOwner()->getMatrixMode())
 	{
 		--_NumIntegrableForceWithDifferentBasis;
 	}
@@ -1676,10 +1804,10 @@ void CPSLocated::releaseNonIntegrableForceRef(void)
 
 
 ///***************************************************************************************
-void CPSLocated::integrableForceBasisChanged(bool basis)
+void CPSLocated::integrableForceBasisChanged(TPSMatrixMode matrixMode)
 {	
 	CHECK_PS_INTEGRITY
-	if (_SystemBasisEnabled != basis)
+	if (getMatrixMode() != matrixMode)
 	{
 		++_NumIntegrableForceWithDifferentBasis;
 		releaseParametricInfos();
@@ -1738,8 +1866,10 @@ CPSLocatedBindable::CPSLocatedBindable() : _LOD(PSLod1n2), _Owner(NULL), _Extern
 	_Owner = NULL;
 }
 
+///***************************************************************************************
 void CPSLocatedBindable::setOwner(CPSLocated *psl)
 { 
+	if (psl == _Owner) return;
 	if (psl == NULL)
 	{
 		releaseAllRef();
@@ -1750,10 +1880,27 @@ void CPSLocatedBindable::setOwner(CPSLocated *psl)
 			{
 				deleteElement(0);
 			}
-		}
+		}				
+	}	
+	if (_Owner && _Owner->getOwner())
+	{
+		_Owner->getOwner()->releaseRefForSkeletonSysCoordInfo(getFatherSkelMatrixUsageCount());
 	}
-	_Owner = psl; 
+	_Owner = psl;
+	if (_Owner && _Owner->getOwner())
+	{
+		_Owner->getOwner()->addRefForSkeletonSysCoordInfo(getFatherSkelMatrixUsageCount());
+	} 
 }
+
+///***************************************************************************************
+void CPSLocatedBindable::finalize(void)
+{
+	if (_Owner && _Owner->getOwner())
+	{
+		_Owner->getOwner()->releaseRefForSkeletonSysCoordInfo(getFatherSkelMatrixUsageCount());
+	}
+}	
 
 ///***************************************************************************************
 CPSLocatedBindable::~CPSLocatedBindable()
@@ -1766,21 +1913,6 @@ CPSLocatedBindable::~CPSLocatedBindable()
 		}
 	}
 }
-
-///***************************************************************************************
-const NLMISC::CMatrix &CPSLocatedBindable::getLocatedMat(void) const
-{
-	nlassert(_Owner);
-	if (_Owner->isInSystemBasis())
-	{
-		return _Owner->getOwner()->getSysMat();
-	}
-	else
-	{
-		return NLMISC::CMatrix::Identity;
-	}
-}
-
 
 ///***************************************************************************************
 void CPSLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
@@ -1895,20 +2027,6 @@ const NLMISC::CMatrix &CPSLocatedBindable::getInvertedSysMat(void) const
 	nlassert(_Owner);
 		return _Owner->getOwner()->getInvertedSysMat();
 
-}
-
-///***************************************************************************************
-const NLMISC::CMatrix &CPSLocatedBindable::getInvertedLocatedMat(void) const
-{
-	nlassert(_Owner);
-	if (_Owner->isInSystemBasis())
-	{
-		return _Owner->getOwner()->getInvertedSysMat();
-	}
-	else
-	{
-		return NLMISC::CMatrix::Identity;
-	}
 }
 
 ///***************************************************************************************
@@ -2031,6 +2149,7 @@ void CPSTargetLocatedBindable::finalize(void)
 	{		
 		releaseTargetRsc(*it);
 	}
+	CPSLocatedBindable::finalize();	
 }
 
 ///***************************************************************************************
@@ -2066,8 +2185,16 @@ void CPSTargetLocatedBindable::releaseAllRef()
 	CPSLocatedBindable::releaseAllRef();
 }
 
-
-
+///***************************************************************************************
+uint CPSLocated::getFatherSkelMatrixUsageCount() const
+{
+	uint count = 0;
+	for(TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		count += (*it)->getFatherSkelMatrixUsageCount();		
+	}
+	return count + CParticleSystemProcess::getFatherSkelMatrixUsageCount();
+}
 
 
 } // NL3D

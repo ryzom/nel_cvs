@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.6 2003/11/03 18:08:19 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.7 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -553,8 +553,7 @@ public:
 					const float epsilon  = 10E-5f;
 					const float normEpsilon  = 10E-6f;
 					
-					CMatrix tMat =  la._Owner->isInSystemBasis() ? la.getViewMat()  *  la.getSysMat()
-															  : la.getViewMat();
+					CMatrix tMat = la.getViewMat()  *  la._Owner->getLocalToWorldMatrix();								
 			
 					while (it != endIt)
 					{

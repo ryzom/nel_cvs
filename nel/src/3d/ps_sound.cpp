@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.23 2003/09/30 09:37:31 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.24 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -156,45 +156,23 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 		currFrequency = _PitchScheme ? (float *) _PitchScheme->make(getOwner(), size - leftToDo, frequencies, sizeof(float), toProcess, true)
 									 : &_Pitch;
 		endIt = it + toProcess;
-		if (!_Owner->isInSystemBasis())
+		const CMatrix &localToWorld = _Owner->getLocalToWorldMatrix();		
+		do
 		{
-			do
-			{
-				if (*it) // was this sound instanciated?
-				{							
-					(*it)->setSoundParams(*currVol
-										  , *posIt
-										  , *speedIt
-										  , *currFrequency);						  
-				}
-				currVol += GainPtInc;
-				currFrequency += frequencyPtInc;
-				++posIt;
-				++speedIt;
-				++it;
+			if (*it) // was this sound instanciated?
+			{							
+				(*it)->setSoundParams(*currVol,
+									  localToWorld * *posIt,
+									  localToWorld.mulVector(*speedIt),
+									  *currFrequency);						  
 			}
-			while (it != endIt);
+			currVol += GainPtInc;
+			currFrequency += frequencyPtInc;
+			++posIt;
+			++speedIt;
+			++it;
 		}
-		else
-		{
-			const NLMISC::CMatrix m = _Owner->getOwner()->getSysMat();
-			do
-			{
-				if (*it) // was this sound instanciated?
-				{
-					(*it)->setSoundParams(*currVol
-										  , m * *posIt
-										  , *speedIt
-										  , *currFrequency);						  
-				}
-				currVol += GainPtInc;
-				currFrequency += frequencyPtInc;
-				++posIt;
-				++speedIt;
-				++it;
-			}
-			while (it != endIt);
-		}		
+		while (it != endIt);		
 		leftToDo -= toProcess;
 	}
 	while (leftToDo);
@@ -341,7 +319,7 @@ void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		
 			if (_Sounds[index])
 			{			
-				const NLMISC::CMatrix &mat = _Owner->isInSystemBasis() ? _Owner->getOwner()->getSysMat() : NLMISC::CMatrix::Identity;
+				const NLMISC::CMatrix &mat = getLocalToWorldMatrix();
 				_Sounds[index]->setSoundParams(_GainScheme ? _GainScheme->get(getOwner(), 0) : 0,
 											   mat * _Owner->getPos()[index], 
 											   _Owner->getSpeed()[index], 

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.28 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.29 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -384,7 +384,7 @@ void CPSMesh::updatePos()
 		CMatrix mat, tmat;		
 
 		// the matrix used to get in the right basis
-		const CMatrix &transfo = _Owner->isInSystemBasis() ? /*_Owner->getOwner()->*/getSysMat() : CMatrix::Identity;
+		const CMatrix &transfo = getLocalToWorldMatrix();
 		do
 		{
 			(*instanceIt)->show();

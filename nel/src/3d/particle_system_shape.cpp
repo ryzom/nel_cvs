@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.38 2003/03/04 18:16:30 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.39 2003/11/18 13:57:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/particle_system_model.h"
 #include "3d/scene.h"
 #include "3d/driver.h"
+#include "3d/skeleton_model.h"
 #include "nel/misc/file.h"
 #include "nel/misc/mem_stream.h"
 #include "nel/misc/hierarchical_timer.h"
@@ -244,7 +245,8 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	/// if sharing is enabled,  we should resetup the system matrix
 	if (ps->isSharingEnabled())
 	{
-		ps->setSysMat(trans->getWorldMatrix());
+		ps->setSysMat(&(psm->getWorldMatrix()));
+		ps->setFatherSkeletonMatrix(psm->getSkeletonModel() ? &psm->getSkeletonModel()->getWorldMatrix() : &psm->getWorldMatrix());
 	}
 	
 	// Setup the matrix.

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.26 2003/11/04 09:42:06 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.27 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,6 @@ namespace NL3D {
 class CPSEmitter : public CPSLocatedBindable
 {
 public:
-
 	/// \name Object
 	//@{
 		/// Constructor
@@ -192,28 +191,34 @@ public:
 			return _SpeedInheritanceFactor;
 		}
 
-		/// This use the speed of the emitter to create a basis (like with cameras), and express the emission speed in it
-		void							enableSpeedBasisEmission(bool enabled = true)
-		{
-			_SpeedBasisEmission  = enabled;
-		}
+		/** Align the direction of emission on the emitter speed.
+		  * NB This also implies that the coord. system in which the speed vector is expressed if the same than the one of the emitter
+		  * so the calls to enableUserMatrixModeForEmissionDirection() & setUserMatrixModeForEmissionDirection() have no effects (but their value is retained)
+		  */
+		void							enableSpeedBasisEmission(bool enabled = true);		
 
-		/** Check if the speed basis emission is enabled
+		/** Check if the direction of emission is aligned on the emitter speed.
 		 *  \see enableSpeedBasisEmission()
 		 */
 		bool							isSpeedBasisEmissionEnabled(void) const { return _SpeedBasisEmission; }
 
-
-		/** Set the basis for the direction of emission. When set to true, 
-		  *	the direction is in the emitter basis (this is the default), 
-		  * otherwise it is used directly as the world basis speed vector if the emitter it is the system basis, 
-		  * and vice-versa. 
-		  * NB : if 'speedBasisEmission' is enabled , or if the speed inheritance factor is not null, it has no effect.
-		  **/
-		void							setSpeedVectorInEmitterBasis(bool enable) { _EmitDirBasis = enable;}
-
-		/// Test wether the emission direction is in the system basis
-		bool							isSpeedVectorInEmitterBasis(void) const   { return _EmitDirBasis;}
+		/** By default, the direction of emission is supposed to be expressed in the same coordinate system than the one of the emitter.
+		  * Enabling a user matrix mode for the direction of emission allows to change that behaviour.
+		  * example of use :
+		  * A fire p.s is linked to a torch, but the torch doesn't point to the top. So particles are emitted in the axis aligned to the torch
+		  * If matrix mode for direction emission is set to PSIdentityMatrix, then the direction is interpreted to be in world, and is thus independant from
+		  * the torch orientation : particles are always spawned in the +K direction.
+		  * Other example : an emitter sticked to a bone that must emit in the system coordinate of the skeleton (and thus with a direction of emission that is independant from in the bone matrix)
+		  * NB  : if isSpeedBasisEmissionEnabled() == true then this flag is meaningless
+          */
+		void							enableUserMatrixModeForEmissionDirection(bool enable = true);
+		bool							isUserMatrixModeForEmissionDirectionEnabled() const { return _UserMatrixModeForEmissionDirection; }
+		/** Set the coord. system in with the direction is expressed. This value is taken in account only
+		  * if enableUserMatrixModeForEmissionDirection(true) has been called.
+		  * NB  : if isSpeedBasisEmissionEnabled() == true then this value is meaningless
+          */
+		void							setUserMatrixModeForEmissionDirection(TPSMatrixMode matrixMode);
+		TPSMatrixMode					getUserMatrixModeForEmissionDirection() const {	return _UserDirectionMatrixMode; }		
 	//@}
 	
 	/// Process a single emission. For external use (in the user interface layer)
@@ -261,7 +266,11 @@ public:
 	bool					testEmitForever() const;
 
 	// from CPSLocated
-	virtual void setOwner(CPSLocated *psl);	
+	virtual void setOwner(CPSLocated *psl);		
+
+
+	// from from CPSLocated
+	virtual bool			getFatherSkelMatrixUsageCount() const;
 
 protected:	
 
@@ -287,8 +296,15 @@ protected:
 	void							processRegularEmissionConsistentWithNoLOD(TAnimationTime ellapsedTime, float realEllapsedTimeRatio);
 
 
+	// test if father skeleton matrix is needed to compute direction of emission
+	bool							isFatherSkelMatrixUsed() const;
 
-
+	/** The particle system maintains a ref counter to see how many object requires the father skeleton matrix for their computation
+	  * (if it isn't required, a significant amount of memory used for maintenance can be saved)
+	  * This tool function helps increasing / decreasing that count by seeing if the matrix is still required or not
+	  */
+	void							updatePSRefCountForFatherSkelMatrixUsage(bool matrixIsNeededNow, bool matrixWasNeededBefore);
+	
 
 	/** This method is called each time one (and only one) located must be emitted.
 	 *  DERIVERS MUST DEFINE THIS
@@ -334,10 +350,11 @@ protected:
 	CPSAttribMaker<uint32>			*_GenNbScheme;
 	float							_EmitDelay;
 	uint8							_MaxEmissionCount;
-	bool							_SpeedBasisEmission;
-	bool							_EmitDirBasis; // true when emission direction is in the emitter basis
-	bool							_ConsistentEmission; 
-	bool							_BypassAutoLOD;
+	bool							_SpeedBasisEmission                 : 1;	
+	bool							_ConsistentEmission                 : 1; 
+	bool							_BypassAutoLOD                      : 1;
+	bool							_UserMatrixModeForEmissionDirection : 1; // true when the direction of emission is expressed in a user defined coordinate system (otherwise it is expressed in this object coordinate system, as specified by setMatrixMode)
+	TPSMatrixMode					_UserDirectionMatrixMode;
 	static bool						_BypassEmitOnDeath; // for edition only
 };
 

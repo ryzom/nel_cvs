@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.27 2003/08/19 12:52:52 vizerie Exp $
+ * $Id: ps_located.h,v 1.28 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -219,12 +219,12 @@ public:
 	* \param ellapsedTime
 	*/
 
-	sint32 newElement(const NLMISC::CVector &pos = NLMISC::CVector::Null,
-		              const NLMISC::CVector &speed = NLMISC::CVector::Null,
-					  CPSLocated *emitterLocated = NULL,
-					  uint32 indexInEmitter = 0,
-					  bool basisConversionForSpeed = true,
-					  TAnimationTime ellapsedTime = 0.f);
+	sint32 newElement(const NLMISC::CVector &pos,
+		              const NLMISC::CVector &speed,
+					  CPSLocated *emitterLocated,
+					  uint32 indexInEmitter,
+					  TPSMatrixMode speedCoordSystem,
+					  TAnimationTime ellapsedTime);
 
 
 	/**
@@ -239,7 +239,7 @@ public:
 	CScene *getScene(void);
 
 	/// shortcut to the same method of the owning particle system
-	void getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis);
+	void getLODVect(NLMISC::CVector &v, float &offset, TPSMatrixMode matrixMode);
 
 
 	/**  Shorcut to increase the particle counter (number of particle drawn, for benchmark purpose )
@@ -447,13 +447,19 @@ public:
 
 	inline void collisionUpdate(const CPSCollisionInfo &ci, uint32 index);
 
+	// get a conversion matrix between 2 matrix modes		
+	static const NLMISC::CMatrix &getConversionMatrix(const CParticleSystem &ps, TPSMatrixMode to, TPSMatrixMode from);
+
 	/** get a matrix that helps to express located B coordinate in located A basis
 	*  A and B must belong to the same system
 	*/
 	static const NLMISC::CMatrix &getConversionMatrix(const CPSLocated *A, const CPSLocated *B);
+	
+	
+	const NLMISC::CMatrix &getLocalToWorldMatrix() const;
 
-
-
+	const NLMISC::CMatrix &getWorldToLocalMatrix() const;
+	
 	 
 	/** Register a dtor observer; (that derives from CPSLocatedBindable)
 	*  Each observer will be called when this object dtor is called (call of method notifyTargetRemoved() )
@@ -505,10 +511,8 @@ public:
 	/// ask for the max number of faces the located wants (for LOD balancing)
 	virtual uint querryMaxWantedNumFaces(void);
 
-	/** Inherited from CParticlesystemProcess. Tells us that the basis may have changed. We notify the bound objects
-	  * of it.
-	  */
-	virtual void setSystemBasis(bool sysBasis = true);
+	// Inherited from CParticlesystemProcess. Change the coord system for thta system.
+	virtual void setMatrixMode(TPSMatrixMode matrixMode);	
 
 	/// Test wether this located support parametric motion
 	bool         supportParametricMotion(void) const;
@@ -559,6 +563,9 @@ public:
       * nb : return -1 if located last for ever
 	  */
 	float				evalMaxDuration() const;
+
+	// from CParticleSystemProcess
+	 virtual uint	getFatherSkelMatrixUsageCount() const;	
 	
 protected:
 
@@ -730,7 +737,6 @@ protected:
 	 // for debug : check that system integrity is ok, otherwise -> assert
 	 void checkIntegrity() const;
 
-
 public:
 	 /// PRIVATE USE: register a force that is integrable on this located. It must have been registered only once
 	 void registerIntegrableForce(CPSForce *f);
@@ -739,7 +745,7 @@ public:
 	 void unregisterIntegrableForce(CPSForce *f);
 
 	 /// PRIVATE USE: says that an integrable force basis has changed, and says which is the right basis
-	 void integrableForceBasisChanged(bool basis);
+	 void integrableForceBasisChanged(TPSMatrixMode basis);
 
 	 /// PRIVATE USE: add a reference count that says that non-integrable forces have been added
 	 void addNonIntegrableForceRef(void);
@@ -807,7 +813,7 @@ public:
 		  * by the system, so you should never need calling it. This has been introduced because calls in dtor are not polymorphic
 		  * to derived class (which are already destroyed anyway), and some infos are needed in some dtor. The default behaviour does nothing
 		  */
-		virtual void		finalize(void) {}
+		virtual void		finalize(void);
 		/// dtor
 		virtual ~CPSLocatedBindable();		
 	//@}
@@ -887,16 +893,10 @@ public:
 
 	/// Shortcut to get the matrix of the system		 
 	const NLMISC::CMatrix	&getSysMat(void) const;	
+	/// Shortcut to get the local to world matrix
+	const NLMISC::CMatrix	&getLocalToWorldMatrix() const;
 	/// shortcut to get the inverted matrix of the system	
-	const NLMISC::CMatrix	&getInvertedSysMat(void) const;	
-	/** Get the matrix applied to this set of located bindable
-	 *  It may be the identity or the system matrix
-	 */
-	const NLMISC::CMatrix	&getLocatedMat(void) const;	
-	/** Get the matrix applied to this set of located bindable
-	 *  It may be the identity sor the inverted system matrix
-	 */
-	const NLMISC::CMatrix	&getInvertedLocatedMat(void) const;	
+	const NLMISC::CMatrix	&getInvertedSysMat(void) const;		
 	/// shortcut to get the view matrix
 	const NLMISC::CMatrix	&getViewMat(void) const;	
 	/// shortcut to get the inverted view matrix
@@ -943,11 +943,13 @@ public:
 	/** Called when the basis of the owner changed. the default behaviour does nothing
 	  * \param newBasis : True if in the system basis, false for the world basis.
 	  */
-	virtual void			basisChanged(bool systemBasis) {}
+	virtual void			basisChanged(TPSMatrixMode systemBasis) {}
 
 	/// called when a located has switch between incrmental / parametric motion. The default does nothing
 	virtual	void			motionTypeChanged(bool parametric) {}
 	
+	// returns the number of sub-objects (including this one, that requires the father skeleton matrix for its computations)
+	virtual bool			getFatherSkelMatrixUsageCount() const { return 0; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1093,6 +1095,28 @@ protected:
 
 };
 
+
+/////////////
+// INLINES //
+/////////////
+
+//*****************************************************************************************************
+inline const NLMISC::CMatrix &CPSLocated::getConversionMatrix(const CPSLocated *A,const CPSLocated *B)
+{
+	nlassert(A);
+	nlassert(B);
+	nlassert(A->_Owner == B->_Owner); // conversion must be made between entity of the same system
+	const CParticleSystem *ps = A->_Owner;
+	nlassert(ps);
+	return getConversionMatrix(*ps, A->getMatrixMode(), B->getMatrixMode());
+}
+
+//*****************************************************************************************************
+inline const NLMISC::CMatrix &CPSLocatedBindable::getLocalToWorldMatrix() const
+{
+	nlassert(_Owner);
+	return _Owner->getLocalToWorldMatrix();
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.50 2003/10/07 12:29:50 vizerie Exp $
+ * $Id: object_viewer.h,v 1.51 2003/11/18 13:59:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,6 +224,7 @@ public:
 
 	// Init the UI
 	void initUI (HWND parent=NULL);
+	
 
 	// Go
 	void go ();
@@ -595,6 +596,9 @@ private:
 
 	// The root of all objects added to the scene. Rotated for user convenience
 	NL3D::CTransform							*_SceneRoot;
+
+	// load the config file
+	void	loadConfigFile();
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.15 2003/08/22 09:01:22 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.16 2003/11/18 13:59:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,8 +49,6 @@ CEmitterDlg::CEmitterDlg(NL3D::CPSEmitter *emitter, CParticleDlg *particleDlg)
 	nlassert(_Emitter);
 	nlassert(_ParticleDlg);
 	//{{AFX_DATA_INIT(CEmitterDlg)
-	m_UseSpeedBasis = FALSE;
-	m_ConvertSpeedVectorFromEmitterBasis = FALSE;
 	m_ConsistentEmission = _Emitter->isConsistentEmissionEnabled();
 	m_BypassAutoLOD = FALSE;
 	//}}AFX_DATA_INIT
@@ -109,10 +107,9 @@ void CEmitterDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CEmitterDlg)
+	DDX_Control(pDX, IDC_DIRECTION_MODE, m_DirectionModeCtrl);
 	DDX_Control(pDX, IDC_TYPE_OF_EMISSION, m_EmissionTypeCtrl);
-	DDX_Control(pDX, IDC_EMITTED_TYPE, m_EmittedTypeCtrl);
-	DDX_Check(pDX, IDC_USE_SPEED_BASIS, m_UseSpeedBasis);
-	DDX_Check(pDX, IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS, m_ConvertSpeedVectorFromEmitterBasis);
+	DDX_Control(pDX, IDC_EMITTED_TYPE, m_EmittedTypeCtrl);	
 	DDX_Check(pDX, IDC_CONSISTENT_EMISSION, m_ConsistentEmission);
 	DDX_Check(pDX, IDC_BYPASS_AUTOLOD, m_BypassAutoLOD);
 	//}}AFX_DATA_MAP
@@ -122,11 +119,10 @@ void CEmitterDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CEmitterDlg, CDialog)
 	//{{AFX_MSG_MAP(CEmitterDlg)
 	ON_CBN_SELCHANGE(IDC_EMITTED_TYPE, OnSelchangeEmittedType)
-	ON_CBN_SELCHANGE(IDC_TYPE_OF_EMISSION, OnSelchangeTypeOfEmission)
-	ON_BN_CLICKED(IDC_USE_SPEED_BASIS, OnUseSpeedBasis)	
-	ON_BN_CLICKED(IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS, OnConvertSpeedVectorFromEmitterBasis)
+	ON_CBN_SELCHANGE(IDC_TYPE_OF_EMISSION, OnSelchangeTypeOfEmission)	
 	ON_BN_CLICKED(IDC_CONSISTENT_EMISSION, OnConsistentEmission)
 	ON_BN_CLICKED(IDC_BYPASS_AUTOLOD, OnBypassAutoLOD)
+	ON_CBN_SELCHANGE(IDC_DIRECTION_MODE, OnSelchangeDirectionMode)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -272,10 +268,31 @@ BOOL CEmitterDlg::OnInitDialog()
 		ecr->GetClientRect(&r);
 		posY += r.bottom;
 	}
-
-
-	m_UseSpeedBasis = _Emitter->isSpeedBasisEmissionEnabled();
-	this->m_ConvertSpeedVectorFromEmitterBasis = _Emitter->isSpeedVectorInEmitterBasis();
+	
+	if (_Emitter->isSpeedBasisEmissionEnabled())
+	{
+		m_DirectionModeCtrl.SetCurSel((int)AlignOnEmitterDirection);
+	}
+	else if (!_Emitter->isUserMatrixModeForEmissionDirectionEnabled())
+	{
+		m_DirectionModeCtrl.SetCurSel((int)Default);
+	}
+	else if (_Emitter->getUserMatrixModeForEmissionDirection() == NL3D::PSFXWorldMatrix)
+	{
+		m_DirectionModeCtrl.SetCurSel((int)LocalToSystem);
+	}
+	else if (_Emitter->getUserMatrixModeForEmissionDirection() == NL3D::PSIdentityMatrix)
+	{
+		m_DirectionModeCtrl.SetCurSel((int)InWorld);
+	}
+	else if (_Emitter->getUserMatrixModeForEmissionDirection() == NL3D::PSFatherSkeletonWorldMatrix)
+	{
+		m_DirectionModeCtrl.SetCurSel((int)LocalToFatherSkeleton);
+	}
+	else
+	{
+		nlassert(0);
+	}	
 
 	updatePeriodDlg();
 
@@ -296,21 +313,6 @@ BOOL CEmitterDlg::OnInitDialog()
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
-
-void CEmitterDlg::OnUseSpeedBasis() 
-{
-	UpdateData();
-	_Emitter->enableSpeedBasisEmission(m_UseSpeedBasis ? true : false);
-	UpdateData(TRUE);
-}
-
-void CEmitterDlg::OnConvertSpeedVectorFromEmitterBasis() 
-{
-	UpdateData();
-	_Emitter->setSpeedVectorInEmitterBasis(m_ConvertSpeedVectorFromEmitterBasis ? true : false);
-	UpdateData(TRUE);
-}
-
 
 void CEmitterDlg::OnConsistentEmission() 
 {
@@ -338,4 +340,39 @@ void CEmitterDlg::CMaxEmissionCountWrapper::set(const uint32 &count)
 	   MaxEmissionCountDlg->updateValueFromReader();
    }
    SSPS->resetAutoCount();
+}
+
+void CEmitterDlg::OnSelchangeDirectionMode() 
+{
+	UpdateData();
+	nlassert(_Emitter);
+	switch(m_DirectionModeCtrl.GetCurSel())
+	{
+		case Default:
+			_Emitter->enableSpeedBasisEmission(false);
+			_Emitter->enableUserMatrixModeForEmissionDirection(false);
+		break;
+		case AlignOnEmitterDirection:
+			_Emitter->enableSpeedBasisEmission(true);
+			_Emitter->enableUserMatrixModeForEmissionDirection(false);
+		break;
+		case InWorld:
+			_Emitter->enableSpeedBasisEmission(false);
+			_Emitter->enableUserMatrixModeForEmissionDirection(true);
+			_Emitter->setUserMatrixModeForEmissionDirection(NL3D::PSIdentityMatrix);
+		break;
+		case LocalToSystem:
+			_Emitter->enableSpeedBasisEmission(false);
+			_Emitter->enableUserMatrixModeForEmissionDirection(true);
+			_Emitter->setUserMatrixModeForEmissionDirection(NL3D::PSFXWorldMatrix);
+		break;
+		case LocalToFatherSkeleton:
+			_Emitter->enableSpeedBasisEmission(false);
+			_Emitter->enableUserMatrixModeForEmissionDirection(true);
+			_Emitter->setUserMatrixModeForEmissionDirection(NL3D::PSFatherSkeletonWorldMatrix);
+		break;
+	}
+	
+
+	UpdateData(FALSE);
 }

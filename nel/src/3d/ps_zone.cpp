@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.23 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_zone.cpp,v 1.24 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,7 +157,7 @@ void CPSZonePlane::show(TAnimationTime)
 		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));
 		CMatrix mat = buildBasis(k);
 
-		CPSUtil::displayBasis(getDriver(), getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager());
+		CPSUtil::displayBasis(getDriver(), getLocalToWorldMatrix(), mat, 1.f, *getFontGenerator(), *getFontManager());
 
 
 		setupDriverModelMatrix();
@@ -639,7 +639,7 @@ void CPSZoneDisc::show(TAnimationTime ellapsedTime)
 		CPSUtil::displayDisc(*getDriver(), radiusIt->R, *posIt, mat, 32, col);
 
 		mat.setPos(*posIt);
-		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager());				
+		CPSUtil::displayBasis(getDriver() ,getLocalToWorldMatrix(), mat, 1.f, *getFontGenerator(), *getFontManager());				
 		setupDriverModelMatrix();			
 	}	
 }
@@ -1179,7 +1179,7 @@ void CPSZoneCylinder::show(TAnimationTime ellapsedTime)
 		CPSUtil::displayCylinder(*getDriver(), *posIt, mat, *dimIt, 32, col); 
 
 		mat.setPos(*posIt);
-		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager());				
+		CPSUtil::displayBasis(getDriver() ,getLocalToWorldMatrix(), mat, 1.f, *getFontGenerator(), *getFontManager());				
 		setupDriverModelMatrix();	
 	
 	}
@@ -1383,7 +1383,7 @@ void CPSZoneRectangle::show(TAnimationTime ellapsedTime)
 		const CVector &J = _Basis[k].Y;
 		mat.setRot(I, J , I ^J);
 		mat.setPos(_Owner->getPos()[k]);
-		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager());				
+		CPSUtil::displayBasis(getDriver(), getLocalToWorldMatrix(), mat, 1.f, *getFontGenerator(), *getFontManager());				
 		setupDriverModelMatrix();	
 
 		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));

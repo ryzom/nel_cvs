@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.41 2003/11/06 14:49:49 vizerie Exp $
+ * $Id: particle_system.h,v 1.42 2003/11/18 13:59:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,10 +32,12 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/3d/animation_time.h"
+#include "nel/3d/animation_time.h"
 #include "3d/animated_value.h"
 #include "3d/particle_system_process.h"
 #include "3d/ps_lod.h"
 #include "3d/ps_attrib_maker.h"
+
 
 #include <map>
 
@@ -153,37 +155,59 @@ public:
 	
 	///\name Position of the system
 		//@{
+			/** Set the matrix for elements with matrixMode == PSFXMatrix.
+			  * NB: The previous matrix position is backuped during this call (used to interpolate the system position during integration),
+			  * so this should be called only once per frame
+			  * NB : pointer to the matrix should remains valid as long as that particle system exists (not copy of the matrix is kept)
+			  */		 
+			void setSysMat(const NLMISC::CMatrix *m);
 
+			/** The same as 'setSysMat', but to set the matrix for elements with matrixMode == PSFatherSkeletonMatrix.
+              * NB : this should be called after 'setSysMat' for the current frame
+			  */
+			void setFatherSkeletonMatrix(const NLMISC::CMatrix *m);
+			
+			/// return the matrix of the system
+			const NLMISC::CMatrix &getSysMat() const 
+			{ 				
+				return _CoordSystemInfo.Matrix ? *_CoordSystemInfo.Matrix : NLMISC::CMatrix::Identity; 
+			}
 
-		/** Set the matrix for the system. This only affect elements that are in the same basis
-		 * you don't need to call this if it is used with a CPaticleSystemModel : Call ITransformable method. In this case
-		 * , setSysMat will be called automatically when needed to mirror the ITransformable matrix.
-		 * NB: The previous matrix is backuped during this call (used to interpolate the system when emission occur in the world basis),
-		 * so this should be called only once per frame
-		 */
-		 
-		void setSysMat(const NLMISC::CMatrix &m);
-		
-		/// return the matrix of the system
-		const NLMISC::CMatrix &getSysMat(void) const { return _SysMat; }
+			/// return the inverted matrix of the system
+			const NLMISC::CMatrix &getInvertedSysMat() const { return _CoordSystemInfo.InvMatrix; } 
 
-		/// return the previous matrix of the system
-		const NLMISC::CMatrix &getOldSysMat(void) const { return _OldSysMat; }
+			/** return the matrix of the father skeleton
+			  * NB : to save memory, the father skel matrix is actually saved when at least one instance of CPSLocated that belongs to the system
+			  * makes a reference on it. This is usually the case when CPSLocated::setMatrixMode(PSFatherSkeletonMatrix) is called.
+			  * If no reference is made, then the system matrix is returned instead.
+			  */
+			const NLMISC::CMatrix &getFatherSkeletonMatrix() const 
+			{ 
+				return _FatherSkelCoordSystemInfo ? *(_FatherSkelCoordSystemInfo->CoordSystemInfo.Matrix) : getSysMat(); 
+			}		
 
-		/// return the inverted matrix of the system
-		const NLMISC::CMatrix &getInvertedSysMat(void) const { return _InvSysMat; } 
+			/** return the inverted matrix of the father skeleton
+			  * NB : to save memory, the father skel matrix is actually saved when at least one instance of CPSLocated that belongs to the system
+			  * makes a reference on it. This is usually the case when CPSLocated::setMatrixMode(PSFatherSkeletonMatrix) is called.
+			  * If no reference is made, then the inverted system matrix is returned instead.
+			  */
+			const NLMISC::CMatrix &getInvertedFatherSkeletonMatrix() const { return _FatherSkelCoordSystemInfo ? _FatherSkelCoordSystemInfo->CoordSystemInfo.InvMatrix : getInvertedSysMat(); } 
 
-		/** set the view matrix  
-		  * This must be called otherwise results can't be correct
-		  */
-		void setViewMat(const NLMISC::CMatrix &m);
+			// conversion matrix (from father skeleton matrix to fx matrix)
+			const NLMISC::CMatrix &getFatherSkeletonToFXMatrix() const { return _FatherSkelCoordSystemInfo ? _FatherSkelCoordSystemInfo->SkelBasisToFXBasis : NLMISC::CMatrix::Identity; }
+			// conversion matrix (from fx matrix to father skeleton matrix)
+			const NLMISC::CMatrix &getFXToFatherSkeletonMatrix() const { return _FatherSkelCoordSystemInfo ? _FatherSkelCoordSystemInfo->FXBasisToSkelBasis : NLMISC::CMatrix::Identity; }
+			
+			/** set the view matrix  
+			  * This must be called otherwise results can't be correct
+			  */
+			void setViewMat(const NLMISC::CMatrix &m);
 
-		/// get the view matrix .
-		const NLMISC::CMatrix &getViewMat(void) const { return _ViewMat; }
+			/// get the view matrix .
+			const NLMISC::CMatrix &getViewMat(void) const { return _ViewMat; }
 
-		/// get the inverted view matrix . It is stored each time a new frame is processed	 
-		const NLMISC::CMatrix &getInvertedViewMat(void) const { return _InvertedViewMat; }
-
+			/// get the inverted view matrix . It is stored each time a new frame is processed	 
+			const NLMISC::CMatrix &getInvertedViewMat(void) const { return _InvertedViewMat; }
 		//@}
 
 
@@ -550,7 +574,7 @@ public:
 		  * You'll have for a given pos : pos * v + offset  = 0 at the nearest point, and 1 when
 		  * pos is at maxDist from the viewer. This is used by sub-component of the system.
 		  */
-		void getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis);
+		void getLODVect(NLMISC::CVector &v, float &offset, TPSMatrixMode matrixMode);
 
 		/// get the current LOD of the system. It is based on the distance of the center of the system to the viewer
 		TPSLod getLOD(void) const;	
@@ -804,7 +828,10 @@ public:
 		bool				hasEmitters(void) const;
 
 		/// return true when there are still particles
-		bool				hasParticles(void) const;
+		bool				hasParticles() const;		
+
+		/// return true when there are still temporary particles
+		bool				hasTemporaryParticles() const;
 
 		/// This enum tells when animation must be performed
 		enum TAnimType 
@@ -817,7 +844,7 @@ public:
 		/** Deprecated. This set the animation type to AnimInCluster.
           * \see setAnimType(TAnimType animType)
 		  */
-		void				performMotionWhenOutOfFrustum(bool enable = true) 
+		void				performMotionWhenOutOfFrustum(bool enable = true)
 		{ 
 			_AnimType = enable ? AnimInCluster : AnimVisible;
 			_PresetBehaviour = UserBehaviour;
@@ -951,10 +978,10 @@ public:
 			void activateEmitters(bool active);			
 			// test is there are active emitters in the system
 			bool hasActiveEmitters() const;
-			// test if there are emitters in the system (not actual instances of , but emitter, but derivers of CPSEmitter bound to the system)
+			// test if there are emitters in the system (e.g. derivers of CPSEmitter bound to the system)
 			bool hasEmittersTemplates() const;
 			/** Eval a duration of the system (duration after which there are no particle lefts).
-			  *It is meaningful only if the system can finish.
+			  * It is meaningful only if the system can finish.
 			  * After the given duration particle will have been spawn, and will possibly have finished their life.
 			  * The system may last longer (case where an emitter is triggered when it bounce cannot be evaluated correclty without running the system)
 			  * NB : calling this is costly	
@@ -994,9 +1021,11 @@ private:
 	void					stepLocated(TPSProcessPass pass, TAnimationTime et, TAnimationTime realEt);
 	void					updateLODRatio();
 	void					updateColor();
+	// for debug only
+	void					checkIntegrity();
 	// map that contain global value that can be affected to user param
-	static TGlobalValuesMap  _GlobalValuesMap;
-	// map that contain gloàbal vector values
+	static TGlobalValuesMap		  _GlobalValuesMap;
+	// map that contain global vector values
 	static TGlobalVectorValuesMap _GlobalVectorValuesMap;
 	// A bbox that has been specified by the user
 	NLMISC::CAABBox			 _PreComputedBBox;
@@ -1007,23 +1036,53 @@ private:
 	TProcessVect			 _ProcessVect;
 	CFontGenerator			 *_FontGenerator;
 	CFontManager			 *_FontManager;
-	// the view matrix
+	
+	// Infos about a coordinate system (current matrix, previous pos...)	  
+	class CCoordSystemInfo
+	{
+	public:
+		const NLMISC::CMatrix *Matrix;			// gives the matrix to use 
+		NLMISC::CMatrix		   InvMatrix;       // inverted matrix for that coord system
+		NLMISC::CVector		   OldPos;			// translation part of matrix at previous frame
+		NLMISC::CVector        CurrentDeltaPos;	// current pos (for integration step) of the coord system relative to its final pos
+	public:
+		CCoordSystemInfo()
+		{
+			Matrix = NULL;
+		}
+	};
+
+
+	class CFatherSkelCoordSystemInfo
+	{
+	public:
+		CCoordSystemInfo	CoordSystemInfo;		
+		NLMISC::CMatrix		SkelBasisToFXBasis; // conversion matrix : from Skel basis to FX Basis
+		NLMISC::CMatrix		FXBasisToSkelBasis; // conversion matrix : from FX basis to Skel Basis		
+		uint16				NumRef; // number of objects in the system that use position of the father skeleton
+		                            // because this is used rarely, we allocate memory to track the father skeleton matrix only when needed
+	public:
+		CFatherSkelCoordSystemInfo()
+		{
+			NumRef = 0;
+		}
+	};
+
+	CCoordSystemInfo		   _CoordSystemInfo;				// coordinate system infos for this fx
+	CFatherSkelCoordSystemInfo *_FatherSkelCoordSystemInfo;     // coordinate system infos for an hypothetic skeleton parent (if that fx is sticked)
+	
+		
+	
+
+
+
+	// the view matrix (TODO : this is duplcated from CScene)
 	NLMISC::CMatrix			 _ViewMat;
 
-	// the inverted view matrix
+	// the inverted view matrix (TODO : this is duplcated from CScene)
 	NLMISC::CMatrix			 _InvertedViewMat;
 
-	// the matrix of the system
-	NLMISC::CMatrix			 _SysMat; 
-	// The previous matrix of the system. It is used to perform emission of particles in the world basis at the right position when the systm is moving
-	NLMISC::CMatrix			 _OldSysMat; 
-	// the inverted matrix of the system
-	NLMISC::CMatrix			 _InvSysMat;
-	// Current position of the system. It is interpolated during integration, and is used by emitter to emit at the correct position
-	NLMISC::CVector          _CurrentDeltaPos;
-	// Delta position of the system
-	NLMISC::CVector          _DeltaPos;
-
+	
 	// number of rendered pass on the system, incremented each time the system is redrawn
 	uint64					 _Date;	
 
@@ -1088,8 +1147,7 @@ private:
 	NLMISC::CRGBA								_GlobalColorLighted;
 	NLMISC::CRGBA								_LightingColor;
 	NLMISC::CRGBA								_UserColor;
-
-	/// \TODO nico replace this with a bitfield (and change serialisation accordingly)	
+	
 	bool										_ComputeBBox                         : 1;	/// when set to true, the system will compute his BBox every time computeBBox is called
 	bool										_BBoxTouched                         : 1;
 	bool										_AccurateIntegration                 : 1;		
@@ -1114,10 +1172,18 @@ private:
 		static uint									_NumInstances;
 	#endif
 public:
-	// For use by emitters only : This compute a delta of position to ensure that spaning position are correct when the system moves
-	void		interpolatePosDelta(NLMISC::CVector &dest, TAnimationTime deltaT);
+	// For use by emitters only : This compute a delta of position of the fx matrix to ensure that spawning position are correct when the system moves
+	void		interpolateFXPosDelta(NLMISC::CVector &dest, TAnimationTime deltaT);
+	// For use by emitters only : This compute a delta of position of the fatherSkeletonMatrix to ensure that spawning position are correct when the system moves
+	void		interpolateFatherSkeletonPosDelta(NLMISC::CVector &dest, TAnimationTime deltaT);
 	// For use by emitters only : Get the current emit ratio when auto-LOD is used. Valid only during the 'Emit' pass
 	float		getAutoLODEmitRatio() const { return _AutoLODEmitRatio; }	
+	// For private used by CPSLocated instances : should be called when the matrix mode of a located has changed
+	void		matrixModeChanged(CParticleSystemProcess *proc, TPSMatrixMode oldMode, TPSMatrixMode newMode);
+	// FOR PRIVATE USE : called when one more object of the system needs the _FatherSkelCoordSystemInfo field => so allocate it if needed.
+	void		addRefForSkeletonSysCoordInfo(uint numRefs = 1);
+	// FOR PRIVATE USE : called when one less object of the system needs the _FatherSkelCoordSystemInfo field => deallocate it when there are no references left
+	void		releaseRefForSkeletonSysCoordInfo(uint numRefs = 1);
 };
 
 

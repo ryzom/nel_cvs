@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.3 2003/10/23 09:20:37 vizerie Exp $
+ * $Id: ps_light.cpp,v 1.4 2003/11/18 13:57:30 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -161,7 +161,7 @@ void CPSLight::step(TPSProcessPass pass,TAnimationTime ellapsedTime,TAnimationTi
 	float		  attenStart[BATCH_SIZE];
 	float		  attenEnd[BATCH_SIZE];
 	CPSAttrib<CPointLightModel *>::iterator lightIt = _Lights.begin();
-	const CMatrix *convMat = _Owner->isInSystemBasis() ? &getSysMat() : &CMatrix::Identity;				
+	const CMatrix *convMat = &(getLocalToWorldMatrix());
 	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin();
 	CRGBA globalColor = _Owner->getOwner()->getGlobalColor();
 	while (numLeftLights)
@@ -383,13 +383,13 @@ void CPSLight::show()
 		const NLMISC::CRGBA colStart = (((lb == NULL || this == lb) && loc == _Owner && index == k)  ? CRGBA::Blue : CRGBA(0, 0, 127));
 		const NLMISC::CRGBA colEnd = (((lb == NULL || this == lb) && loc == _Owner && index == k)  ? CRGBA::Red : CRGBA(127, 0, 0));
 		//
-		CPSUtil::displayDisc(*getDriver(), radiusStart, getSysMat() * _Owner->getPos()[k], xzMat, numSubdiv, colStart);
-		CPSUtil::displayDisc(*getDriver(), radiusStart, getSysMat() * _Owner->getPos()[k], xyMat, numSubdiv, colStart);
-		CPSUtil::displayDisc(*getDriver(), radiusStart, getSysMat() * _Owner->getPos()[k], yzMat, numSubdiv, colStart);
+		CPSUtil::displayDisc(*getDriver(), radiusStart, getLocalToWorldMatrix() * _Owner->getPos()[k], xzMat, numSubdiv, colStart);
+		CPSUtil::displayDisc(*getDriver(), radiusStart, getLocalToWorldMatrix() * _Owner->getPos()[k], xyMat, numSubdiv, colStart);
+		CPSUtil::displayDisc(*getDriver(), radiusStart, getLocalToWorldMatrix() * _Owner->getPos()[k], yzMat, numSubdiv, colStart);
 		//
-		CPSUtil::displayDisc(*getDriver(), radiusEnd, getSysMat() * _Owner->getPos()[k], xzMat, numSubdiv, colEnd);
-		CPSUtil::displayDisc(*getDriver(), radiusEnd, getSysMat() * _Owner->getPos()[k], xyMat, numSubdiv, colEnd);
-		CPSUtil::displayDisc(*getDriver(), radiusEnd, getSysMat() * _Owner->getPos()[k], yzMat, numSubdiv, colEnd);
+		CPSUtil::displayDisc(*getDriver(), radiusEnd, getLocalToWorldMatrix() * _Owner->getPos()[k], xzMat, numSubdiv, colEnd);
+		CPSUtil::displayDisc(*getDriver(), radiusEnd, getLocalToWorldMatrix() * _Owner->getPos()[k], xyMat, numSubdiv, colEnd);
+		CPSUtil::displayDisc(*getDriver(), radiusEnd, getLocalToWorldMatrix() * _Owner->getPos()[k], yzMat, numSubdiv, colEnd);
 		//
 	}
 }

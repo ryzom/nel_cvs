@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.57 2003/11/06 14:51:32 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.58 2003/11/18 13:58:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -496,7 +496,8 @@ void	CParticleSystemModel::doAnimate()
 	CParticleSystem		*ps = getPS();
 	CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();
 	const CMatrix		&mat= getWorldMatrix();	 
-	ps->setSysMat(mat);
+	ps->setSysMat(&mat);
+	ps->setFatherSkeletonMatrix(_FatherSkeletonModel ? &_FatherSkeletonModel->getWorldMatrix() : &mat);
 	ps->setViewMat(clipTrav.ViewMatrix);
 	updateOpacityInfos();
 	updateLightingInfos();

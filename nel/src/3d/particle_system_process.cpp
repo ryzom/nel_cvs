@@ -1,7 +1,7 @@
 /** \file particle_system_process.cpp
  * <File description>
  *
- * $Id: particle_system_process.cpp,v 1.2 2002/02/28 12:59:50 besson Exp $
+ * $Id: particle_system_process.cpp,v 1.3 2003/11/18 13:57:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,38 +34,87 @@ namespace NL3D {
 // CParticleSystemProcess implementation   //
 /////////////////////////////////////////////
 
+//***********************************************************************************************************
+void CParticleSystemProcess::setOwner(CParticleSystem *ps)
+{
+	if (ps == _Owner) return;
+	if (ps == NULL)
+	{
+		releaseAllRef();		
+	}	
+	_Owner->releaseRefForSkeletonSysCoordInfo(getFatherSkelMatrixUsageCount());		
+	_Owner = ps; 
+	_Owner->addRefForSkeletonSysCoordInfo(getFatherSkelMatrixUsageCount());
+}
 
+
+//***********************************************************************************************************
+uint CParticleSystemProcess::getFatherSkelMatrixUsageCount() const
+{
+	return _MatrixMode == PSFatherSkeletonWorldMatrix;
+}
+
+//***********************************************************************************************************
+void CParticleSystemProcess::setMatrixMode(TPSMatrixMode matrixMode)
+{
+	nlassert((uint) matrixMode <= PSMatrixModeCount);
+	if (matrixMode == _MatrixMode) return;
+	if (_Owner) // notify the system that matrix mode has changed for that object
+	{
+		_Owner->matrixModeChanged(this, _MatrixMode, matrixMode);
+	}
+	_MatrixMode = matrixMode;
+}
+
+
+//***********************************************************************************************************
 CFontGenerator *CParticleSystemProcess::getFontGenerator(void)
 {
-			nlassert(_Owner) ;
-			return _Owner->getFontGenerator() ;
+			nlassert(_Owner);
+			return _Owner->getFontGenerator();
 }
 
+//***********************************************************************************************************
 const CFontGenerator *CParticleSystemProcess::getFontGenerator(void) const 
 {
-			nlassert(_Owner) ;
-			return _Owner->getFontGenerator() ;
+			nlassert(_Owner);
+			return _Owner->getFontGenerator();
 }
 
+//***********************************************************************************************************
 CFontManager *CParticleSystemProcess::getFontManager(void)
 {
-			nlassert(_Owner) ;
-			return _Owner->getFontManager() ;
+			nlassert(_Owner);
+			return _Owner->getFontManager();
 }
 
+//***********************************************************************************************************
 const CFontManager *CParticleSystemProcess::getFontManager(void) const 
 {
-			nlassert(_Owner) ;
-			return _Owner->getFontManager() ;
+			nlassert(_Owner);
+			return _Owner->getFontManager();
 }
 
 
 
+//***********************************************************************************************************
 void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	f.serialVersion(1) ;
-	f.serialPtr(_Owner) ;
-	f.serial(_SystemBasisEnabled) ;	
+	// version 2 : added matrix mode (just not fx world matrix or identity)
+	// version 1 : base version
+	sint ver = f.serialVersion(2);
+	f.serialPtr(_Owner);
+	if (ver == 1)
+	{	
+		nlassert(f.isReading());
+		bool usesFXWorldMatrix;
+		f.serial(usesFXWorldMatrix);
+		_MatrixMode = usesFXWorldMatrix ? PSFXWorldMatrix : PSIdentityMatrix;
+	}
+	if (ver >= 2)
+	{
+		f.serialEnum(_MatrixMode);
+	}
 }
 
 

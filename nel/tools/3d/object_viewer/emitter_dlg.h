@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.11 2003/08/22 09:01:27 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.12 2003/11/18 13:59:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,9 @@ namespace NL3D
 
 class CEmitterDlg : public CDialog, public CDialogStack
 {
-// Construction
+public:
+	// this enum match the option in the combo box that allow to choose how the direction of emission is computed.
+	enum TDirectionMode { Default = 0, AlignOnEmitterDirection, InWorld, LocalToSystem, LocalToFatherSkeleton };
 public:
 	CEmitterDlg(NL3D::CPSEmitter *emitter, CParticleDlg *particleDlg);   // standard constructor
 
@@ -60,12 +62,11 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CEmitterDlg)
 	enum { IDD = IDD_EMITTER_DIALOG };
+	CComboBox	m_DirectionModeCtrl;
 	CComboBox	m_EmissionTypeCtrl;
-	CComboBox	m_EmittedTypeCtrl;
-	BOOL	m_UseSpeedBasis;
-	BOOL	m_ConvertSpeedVectorFromEmitterBasis;
-	BOOL	m_ConsistentEmission;
-	BOOL	m_BypassAutoLOD;
+	CComboBox	m_EmittedTypeCtrl;	
+	BOOL		m_ConsistentEmission;
+	BOOL		m_BypassAutoLOD;
 	//}}AFX_DATA
 
 
@@ -93,11 +94,11 @@ protected:
 	//{{AFX_MSG(CEmitterDlg)
 	afx_msg void OnSelchangeEmittedType();
 	afx_msg void OnSelchangeTypeOfEmission();
-	virtual BOOL OnInitDialog();
-	afx_msg void OnUseSpeedBasis();	
+	virtual BOOL OnInitDialog();	
 	afx_msg void OnConvertSpeedVectorFromEmitterBasis();
 	afx_msg void OnConsistentEmission();
 	afx_msg void OnBypassAutoLOD();
+	afx_msg void OnSelchangeDirectionMode();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

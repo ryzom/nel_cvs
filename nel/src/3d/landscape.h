@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.24 2001/11/21 13:57:32 berenguier Exp $
+ * $Id: landscape.h,v 1.25 2001/11/22 17:13:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -415,6 +415,11 @@ public:
 	 */
 	void		setVegetableWindAnimationTime(double windTime);
 
+	/** return the number of faces displayed in Driver with the vegetable manager.
+	 *	Out  CPrimitiveProfile::NTriangles displayed by vegetable part is returned.
+	 */
+	uint		getNumVegetableFaceRendered() const;
+
 	// @}
 
 
@@ -702,6 +707,8 @@ private:
 	CRGBA						_VegetableAmbient;
 	CRGBA						_VegetableDiffuse;
 
+	/// profile
+	uint						_NumVegetableFaceRendered;
 
 	/// List of VegetableBlock, to be tested for creation each frame.
 	CTessList<CLandscapeVegetableBlock>		_VegetableBlockList;

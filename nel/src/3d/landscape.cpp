@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.93 2001/11/21 13:57:32 berenguier Exp $
+ * $Id: landscape.cpp,v 1.94 2001/11/22 17:13:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,6 +220,7 @@ CLandscape::CLandscape() :
 	_DriverOkForVegetable= false;
 	_VegetableAmbient.set(64, 64, 64, 255);
 	_VegetableDiffuse.set(150, 150, 150, 255);
+	_NumVegetableFaceRendered= 0;
 
 }
 // ***************************************************************************
@@ -1244,6 +1245,10 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 
 	// 5. Vegetable Management.
 	//================================
+	CPrimitiveProfile	ppIn, ppOut;
+	driver->profileRenderedPrimitives(ppIn, ppOut);
+	uint	precNTriRdr= ppOut.NTriangles;
+
 	// render all vegetables, only if driver support VertexProgram.
 	if(isVegetableActive())
 	{
@@ -1256,6 +1261,10 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 		}
 		_VegetableManager->render(vegetablePyramid, driver);
 	}
+
+	// compute number of triangles rendered with vegetable manager.
+	driver->profileRenderedPrimitives(ppIn, ppOut);
+	_NumVegetableFaceRendered= ppOut.NTriangles-precNTriRdr;
 
 }
 
@@ -2675,6 +2684,13 @@ void		CLandscape::setVegetableWindAnimationTime(double windTime)
 {
 	// setup vegetable manager
 	_VegetableManager->setWindAnimationTime(windTime);
+}
+
+
+// ***************************************************************************
+uint		CLandscape::getNumVegetableFaceRendered() const
+{
+	return _NumVegetableFaceRendered;
 }
 
 

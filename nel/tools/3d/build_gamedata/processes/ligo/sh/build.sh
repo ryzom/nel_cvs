@@ -29,7 +29,7 @@ dir_ligosrc=`cat ../../cfg/directories.cfg | grep "ligo_source_directory" | sed 
 dir_ligobricks=`cat ../../cfg/directories.cfg | grep "ligo_bricks_directory" | sed -e 's/ligo_bricks_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 dir_dfn=`cat ../../cfg/site.cfg | grep "level_design_dfn_directory" | sed -e 's/level_design_dfn_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 continent_file=`cat ../../cfg/config.cfg | grep "continent_file" | sed -e 's/continent_file//' | sed -e 's/ //g' | sed -e 's/=//g'`
-dir_world=`cat ../../cfg/directories.cfg | grep "level_design_world_directory" | sed -e 's/level_design_world_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+dir_world=`cat ../../cfg/site.cfg | grep "level_design_world_directory" | sed -e 's/level_design_world_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 
 
@@ -79,7 +79,7 @@ echo "ZoneLight = 0;" >> land_exporter.cfg
 echo "CellSize = 160;" >> land_exporter.cfg
 
 # Where to take dfn files
-echo "DFNDir = $dir_dfn;" >> land_exporter.cfg
+echo "DFNDir = \"$dir_dfn\";" >> land_exporter.cfg
 
 # CMB input directory
 echo "RefCMBDir = \"$dir_ligobricks/cmb\";" >> land_exporter.cfg

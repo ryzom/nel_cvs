@@ -39,6 +39,7 @@ uint PainterKeys[KeyCounter]=
 	KeyA,
 	KeyS,
 	KeyQ,
+	KeyL,
 };
 
 // Keys
@@ -69,6 +70,7 @@ const char* PainterKeysName[KeyCounter]=
 	"AutomaticLighting",
 	"SelectColorBrush",
 	"ToggleColorBrushMode",
+	"LockBorders",
 };
 
 // Light settings
@@ -122,6 +124,8 @@ extern const unsigned char all[];
 extern const unsigned int allSize;
 extern const unsigned char light[];
 extern const unsigned int lightSize;
+extern const unsigned char lock[];
+extern const unsigned int lockSize;
 
 /*-------------------------------------------------------------------*/
 
@@ -252,6 +256,7 @@ CBankCont::CBankCont (CTileBank& bank, HINSTANCE hInstance)
 	_11Bitmap		=	new CTextureMem ((uint8*)_11, _11Size, false);
 	allBitmap		=	new CTextureMem ((uint8*)all, allSize, false);
 	lightBitmap		=	new CTextureMem ((uint8*)light, lightSize, false);
+	lockBitmap		=	new CTextureMem ((uint8*)lock, lockSize, false);
 
 	// Resize the tileset array
 	TileSet.resize (bank.getTileSetCount());

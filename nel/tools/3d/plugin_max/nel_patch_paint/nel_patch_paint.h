@@ -109,6 +109,8 @@ struct EPM_PaintTile
 	EPM_PaintTile ()
 	{
 		Mesh=-1;
+		frozen = false;
+		locked = 0;
 	}
 	EPM_PaintTile* get2Voisin (int i)
 	{
@@ -170,12 +172,14 @@ struct EPM_PaintTile
 	void set256 (int rotate)
 	{
 	}
-	bool intersect (const Ray& ray, std::vector<EPM_Mesh>& vectMesh, TimeValue t, NLMISC::CVector& hit, CVector& topVector);
-	sint32		patch;
-	sint32		tile;
-	sint16		Mesh;
-	uint8		u;
-	uint8		v;
+	bool			intersect (const Ray& ray, std::vector<EPM_Mesh>& vectMesh, TimeValue t, NLMISC::CVector& hit, CVector& topVector);
+	sint32			patch;
+	sint32			tile;
+	sint16			Mesh;
+	uint8			u;
+	uint8			v;
+	bool			frozen;
+	uint8			locked;
 	EPM_PaintTile*	voisins[4];
 	uint8			rotate[4];
 	CVector			Center;
@@ -261,12 +265,20 @@ protected:
 	void SetTile (int mesh, int tile, const tileDesc& desc, std::vector<EPM_Mesh>& vectMesh, CLandscape* land, CNelPatchChanger& nelPatchChg,
 			std::vector<CBackupValue>* backupStack, bool undo=true, bool updateDisplace=false);
 
+	bool isLockedEx (PaintPatchMod *pobj, EPM_PaintTile* pTile, std::vector<EPM_Mesh>& vectMesh, CLandscape* land);
+
+	inline static bool isLocked (PaintPatchMod *pobj, EPM_PaintTile* pTile, uint8 mask = 0xff);
+
+	static bool isLocked256 (PaintPatchMod *pobj, EPM_PaintTile* pTile);
+
 	// Get a tile
 	void GetTile (int mesh, int tile, tileDesc& desc, std::vector<EPM_Mesh>& vectMesh, CLandscape* land);
 
 	bool PutATile ( EPM_PaintTile* pTile, int tileSet, int curRotation, const NL3D::CTileBank& bank, 
 								   bool selectCycle, std::set<EPM_PaintTile*>& visited, std::vector<EPM_Mesh>& vectMesh, 
 								   NL3D::CLandscape* land, CNelPatchChanger& nelPatchChg, bool _256);
+
+	bool ClearATile ( EPM_PaintTile* pTile, std::vector<EPM_Mesh>& vectMesh, NL3D::CLandscape* land, CNelPatchChanger& nelPatchChg, bool _256, bool _force128=false);
 
 	void PutADisplacetile ( EPM_PaintTile* pTile, const CTileBank& bank, 
 								   std::vector<EPM_Mesh>& vectMesh, 
@@ -401,6 +413,7 @@ class PaintPatchMod : public Modifier
 		static int		channelModified;
 		static bool		additiveTile;
 		static bool		automaticLighting;
+		static bool		lockBorders;
 
 		RefResult NotifyRefChanged( Interval changeInt,RefTargetHandle hTarget, 
 		   PartID& partID, RefMessage message ) { return REF_SUCCEED; }
@@ -643,6 +656,19 @@ class EPTempData
 		void UpdateCache(RPO *patchOb);
 		PaintPatchMod	*GetMod() { return mod; }
 };
+
+inline bool EPM_PaintMouseProc::isLocked (PaintPatchMod *pobj, EPM_PaintTile* pTile, uint8 mask)
+{
+	// Lock border ?
+	if (pobj->lockBorders)
+	{
+		// Return the lock state
+		return (pTile->locked & mask) != 0;
+	}
+
+	// Not locked
+	return false;
+}
 
 
 #endif // __EDITPATCH_H__

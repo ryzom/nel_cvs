@@ -68,6 +68,7 @@ public:
 	CSmartPtr<CTextureMem>				_11Bitmap;
 	CSmartPtr<CTextureMem>				allBitmap;
 	CSmartPtr<CTextureMem>				lightBitmap;
+	CSmartPtr<CTextureMem>				lockBitmap;
 
 	// Handle on 
 	HCURSOR								HCur;
@@ -112,6 +113,7 @@ enum PainterKeysType
 	AutomaticLighting,
 	SelectColorBrush,
 	ToggleColorBrushMode,
+	LockBorders,
 	KeyCounter
 };
 

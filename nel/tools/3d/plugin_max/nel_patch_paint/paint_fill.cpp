@@ -47,98 +47,213 @@ void CFillPatch::fillTile (int mesh, int patch, std::vector<EPM_Mesh> &vectMesh,
 			if (nTile==-1)
 				return;
 
-			// For all tiles in this tile
-			for (uint vv=0; vv<(uint)_256+1; vv++)
-			for (uint uu=0; uu<(uint)_256+1; uu++)
+			// Check if the tiles are locked and if they are near a locked tile
+			uint vv;
+			uint uu;
+			bool nearLocked = false;
+			bool locked = false;
+			for (vv=0; vv<(uint)_256+1; vv++)
+			for (uu=0; uu<(uint)_256+1; uu++)
 			{
-				// Get the tile pointer
+				// Get the tile
 				EPM_PaintTile *pTile=&_MouseProc->metaTile[mesh][patch*NUM_TILE_SEL+(vv+v)*MAX_TILE_IN_PATCH+uu+u];
 				nlassert (pTile->Mesh==mesh);
 				nlassert (pTile->patch==patch);
 
-				if (tileSet!=-1)
+				// Locked ?
+				if (_256)
 				{
-					// 256 tile ?
-					if (_256)
+					// Locked ?
+					if (_MouseProc->isLocked256 (_PObj, pTile))
 					{
-						switch (((uu&1)<<1)|(vv&1))
+						locked = true;
+						break;
+					}
+				}
+				else
+				{
+					// Locked ?
+					if (_MouseProc->isLockedEx (_PObj, pTile, vectMesh, _Landscape))
+					{
+						locked = true;
+						break;
+					}
+				}
+
+				// Near a locked tile ?
+				uint n;
+				for (n=0; n<4; n++)
+				{
+					// Neighbor ?
+					if (pTile->voisins[n])
+					{
+						if (_256)
 						{
-						case 0:
-							// LeftTop
-							descFill.setTile (1, ((0-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
-							break;
-						case 1:
-							// LeftBottom
-							descFill.setTile (1, ((1-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
-							break;
-						case 2:
-							// RightTop
-							descFill.setTile (1, ((3-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
-							break;
-						case 3:
-							// RightBottom
-							descFill.setTile (1, ((2-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
-							break;
-						default:
-							nlassert (0);		// no !
+							// Neighbor locked ?
+							if (_MouseProc->isLocked256 (_PObj, pTile->voisins[n]))
+							{
+								nearLocked = true;
+							}
+						}
+						else
+						{
+							// Neighbor locked ?
+							if (_MouseProc->isLockedEx (_PObj, pTile->voisins[n], vectMesh, _Landscape))
+							{
+								nearLocked = true;
+							}
 						}
 					}
-					else
-						// Set the tile
-						descFill.setTile (1, 0, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+				}
+			}
 
-					// Check if neighborhood must be cleared
-					for (uint n=0; n<4; n++)
+			// If unlocked
+			if (!locked)
+			{
+				// Near a locked tile ?
+				if (nearLocked)
+				{
+					// For all tiles in this tile
+					for (vv=0; vv<(uint)_256+1; vv++)
+					for (uu=0; uu<(uint)_256+1; uu++)
 					{
-						// Neighborhood not in this patch?
-						if ((pTile->voisins[n])&&((pTile->voisins[n]->Mesh!=mesh)||(pTile->voisins[n]->patch!=patch)))
+						// Get the tile pointer
+						EPM_PaintTile *pTile=&_MouseProc->metaTile[mesh][patch*NUM_TILE_SEL+(vv+v)*MAX_TILE_IN_PATCH+uu+u];
+						nlassert (pTile->Mesh==mesh);
+						nlassert (pTile->patch==patch);
+
+						// Clear the tile
+						_MouseProc->ClearATile (pTile, vectMesh, _Landscape, nelPatchChg, _256, !_256);
+					}
+				}
+				else // Not near a locked tile ?
+				{
+					// For all tiles in this tile, check it is compatible
+					bool compatible = true;
+					if (tileSet!=-1)
+					{
+						for (vv=0; vv<(uint)_256+1; vv++)
+						for (uu=0; uu<(uint)_256+1; uu++)
 						{
-							bool compatible=false;
+							// Get the tile pointer
+							EPM_PaintTile *pTile=&_MouseProc->metaTile[mesh][patch*NUM_TILE_SEL+(vv+v)*MAX_TILE_IN_PATCH+uu+u];
+							nlassert (pTile->Mesh==mesh);
+							nlassert (pTile->patch==patch);
 
-							// Neigborhood not compatible ?
-							tileDesc descNei;
-							_MouseProc->GetTile (pTile->voisins[n]->Mesh, pTile->voisins[n]->tile, descNei, vectMesh, _Landscape);
-
-							// If empty continue
-							if (descNei.getNumLayer()==0)
-								continue;
-
-							// Voisin have one layer
-							if (descNei.getNumLayer()==1)
+							// Check if neighborhood must be cleared
+							uint n;
+							for (n=0; n<4; n++)
 							{
-								// Check rotation
-								if (descNei.getLayer(0).Rotate==((pTile->rotate[n]+rot)&3))
+								// Neighborhood not in this patch?
+								if ((pTile->voisins[n])&&((pTile->voisins[n]->Mesh!=mesh)||(pTile->voisins[n]->patch!=patch)))
 								{
-									// Get the tile set
-									int neiTileSet;
-									int number;
-									CTileBank::TTileType type;
-									bank.getTileXRef (descNei.getLayer(0).Tile, neiTileSet, number, type);
+									// Neigborhood not compatible ?
+									tileDesc descNei;
+									_MouseProc->GetTile (pTile->voisins[n]->Mesh, pTile->voisins[n]->tile, descNei, vectMesh, _Landscape);
 
-									// Same tileSet
-									if (tileSet==neiTileSet)
+									// If empty, compatible
+									if (descNei.getNumLayer()==0)
 										continue;
+
+									// Voisin have one layer
+									if (descNei.getNumLayer()==1)
+									{
+										// Check rotation
+										if (descNei.getLayer(0).Rotate==((pTile->rotate[n]+rot)&3))
+										{
+											// Get the tile set
+											int neiTileSet;
+											int number;
+											CTileBank::TTileType type;
+											bank.getTileXRef (descNei.getLayer(0).Tile, neiTileSet, number, type);
+
+											// Same tileSet
+											if (tileSet==neiTileSet)
+												continue;
+										}
+									}
+
+									// Not compatible
+									compatible = false;
+									break;
 								}
+							}
+
+							// Breaked ?
+							if (n<4)
+								break;
+						}
+					}
+
+					// Compatible ?
+					if (compatible)
+					{
+						// Set each tiles
+						for (vv=0; vv<(uint)_256+1; vv++)
+						for (uu=0; uu<(uint)_256+1; uu++)
+						{
+							// Get the tile pointer
+							EPM_PaintTile *pTile=&_MouseProc->metaTile[mesh][patch*NUM_TILE_SEL+(vv+v)*MAX_TILE_IN_PATCH+uu+u];
+							nlassert (pTile->Mesh==mesh);
+							nlassert (pTile->patch==patch);
+
+							if (tileSet!=-1)
+							{
+								// 256 tile ?
+								if (_256)
+								{
+									switch (((uu&1)<<1)|(vv&1))
+									{
+									case 0:
+										// LeftTop
+										descFill.setTile (1, ((0-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+										break;
+									case 1:
+										// LeftBottom
+										descFill.setTile (1, ((1-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+										break;
+									case 2:
+										// RightTop
+										descFill.setTile (1, ((3-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+										break;
+									case 3:
+										// RightBottom
+										descFill.setTile (1, ((2-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+										break;
+									default:
+										nlassert (0);		// no !
+									}
+								}
+								else
+									// Set the tile
+									descFill.setTile (1, 0, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
 							}
 
 							// Get the displace index
 							tileDesc descOrig;
-							_MouseProc->GetTile (pTile->voisins[n]->Mesh, pTile->voisins[n]->tile, descOrig, vectMesh, _Landscape);
+							_MouseProc->GetTile (mesh, pTile->tile, descOrig, vectMesh, _Landscape);
 
-							// Not compatible, clear it
-							descClear.setDisplace (descOrig.getDisplace());
-							_MouseProc->SetTile (pTile->voisins[n]->Mesh, pTile->voisins[n]->tile, descClear, vectMesh, _Landscape, nelPatchChg, NULL);
+							// Fill the current tile with the current tileset and rotation
+							descFill.setDisplace (descOrig.getDisplace ());
+							_MouseProc->SetTile (mesh, pTile->tile, descFill, vectMesh, _Landscape, nelPatchChg, NULL);
+						}
+					}
+					else
+					{
+						// For all tiles in this tile
+						for (vv=0; vv<(uint)_256+1; vv++)
+						for (uu=0; uu<(uint)_256+1; uu++)
+						{
+							// Get the tile pointer
+							EPM_PaintTile *pTile=&_MouseProc->metaTile[mesh][patch*NUM_TILE_SEL+(vv+v)*MAX_TILE_IN_PATCH+uu+u];
+							nlassert (pTile->Mesh==mesh);
+							nlassert (pTile->patch==patch);
+
+							// Clear the tile
+							_MouseProc->ClearATile (pTile, vectMesh, _Landscape, nelPatchChg, _256, !_256);
 						}
 					}
 				}
-
-				// Get the displace index
-				tileDesc descOrig;
-				_MouseProc->GetTile (mesh, pTile->tile, descOrig, vectMesh, _Landscape);
-
-				// Fill the current tile with the current tileset and rotation
-				descFill.setDisplace (descOrig.getDisplace ());
-				_MouseProc->SetTile (mesh, pTile->tile, descFill, vectMesh, _Landscape, nelPatchChg, NULL);
 			}
 		}
 		

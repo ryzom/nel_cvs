@@ -87,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /debug /machine:I386
-# ADD LINK32 Maxscrpt.lib helpsys.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib winmm.lib stlport_vc6.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm"
+# ADD LINK32 Maxscrpt.lib helpsys.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib winmm.lib stlport_vc6.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm"
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Hybrid"
@@ -219,6 +219,11 @@ SOURCE=.\pick_color.cur
 # PROP Default_Filter "*.tga"
 # Begin Source File
 
+SOURCE=.\_0.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\_0.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -271,6 +276,11 @@ InputName=_0
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\_1.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -329,6 +339,11 @@ InputName=_1
 # End Source File
 # Begin Source File
 
+SOURCE=.\_10.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\_10.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -381,6 +396,11 @@ InputName=_10
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\_11.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -439,6 +459,11 @@ InputName=_11
 # End Source File
 # Begin Source File
 
+SOURCE=.\_128.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\_128.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -491,6 +516,11 @@ InputName=_128
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\_2.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -549,6 +579,11 @@ InputName=_2
 # End Source File
 # Begin Source File
 
+SOURCE=.\_256.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\_256.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -601,6 +636,11 @@ InputName=_256
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\_3.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -659,6 +699,11 @@ InputName=_3
 # End Source File
 # Begin Source File
 
+SOURCE=.\_4.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\_4.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -711,6 +756,11 @@ InputName=_4
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\_5.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -769,6 +819,11 @@ InputName=_5
 # End Source File
 # Begin Source File
 
+SOURCE=.\_6.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\_6.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -821,6 +876,11 @@ InputName=_6
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\_7.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -879,6 +939,11 @@ InputName=_7
 # End Source File
 # Begin Source File
 
+SOURCE=.\_8.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\_8.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -931,6 +996,11 @@ InputName=_8
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\_9.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -989,6 +1059,11 @@ InputName=_9
 # End Source File
 # Begin Source File
 
+SOURCE=.\_small.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\_small.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -1041,6 +1116,11 @@ InputName=_small
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\all.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -1099,6 +1179,11 @@ InputName=all
 # End Source File
 # Begin Source File
 
+SOURCE=.\large.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\large.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -1154,6 +1239,11 @@ InputName=large
 # End Source File
 # Begin Source File
 
+SOURCE=.\light.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=.\light.tga
 
 !IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
@@ -1206,6 +1296,71 @@ InputName=light
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\lock.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\lock.tga
+
+!IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\lock.tga
+InputName=lock
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Debug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\lock.tga
+InputName=lock
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Hybrid"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\lock.tga
+InputName=lock
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 ReleaseDebug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\lock.tga
+InputName=lock
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\medium.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -1268,102 +1423,7 @@ InputName=medium
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
 # Begin Source File
 
-SOURCE=.\_0.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_1.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_10.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_11.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_128.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_2.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_256.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_3.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_4.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_5.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_6.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_7.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_8.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_9.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_small.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\all.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
 SOURCE=.\DllEntry.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\large.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\light.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\medium.cpp
-# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 

@@ -9,6 +9,28 @@ namespace NL3D
 	class ITexture;
 }
 
+/* 
+ * CVertexColorFrozed
+ * 
+ * Log a frozen vertex color painting
+ */
+class CVertexColorFrozed
+{
+public:
+	// Constructors
+	CVertexColorFrozed () {};
+	CVertexColorFrozed (EPM_PaintTile *tile, int s, int t)
+	{
+		Tile = tile;
+		S = s;
+		T = t;
+	}
+
+	// Members
+	EPM_PaintTile	*Tile;
+	int				S, T;
+};
+
 class CPaintColor
 {
 public:
@@ -65,10 +87,16 @@ private:
 
 	// Recurcive function to paint a tile
 	void paintATile (EPM_PaintTile *pTile, std::set<EPM_PaintTile*>& visited, const CVector& hit, std::vector<EPM_Mesh> &vectMesh, 
-		std::set<int>& modified, CNelPatchChanger& nelPatchChg);
+		CNelPatchChanger& nelPatchChg, std::vector<CVertexColorFrozed> &frozenVertices);
 
 	// Paint a vertex of a patch
 	void paintAVertex (int mesh, int patch, int s, int t, const CVector& hit, std::vector<EPM_Mesh> &vectMesh, CNelPatchChanger& nelPatchChg);
+
+	// Get the vertex id in the neighbor
+	static bool getVertexInNeighbor (EPM_PaintTile *pTile, int curU, int curV, int neighbor, int &finalMesh, int &finalPatch, int &finalS, int &finalT);
+
+	// Force frozen reference zone to paint vertex color on the boundaries
+	void forceFrozen (const std::vector<CVertexColorFrozed> &frozenVertices, CNelPatchChanger& nelPatchChg, std::vector<EPM_Mesh> &vectMesh);
 
 private:
 	PaintPatchMod			*_PObj;

@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.17 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: zone_lighter.h,v 1.18 2004/05/05 17:08:11 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -602,7 +602,7 @@ private:
 	  */
 	TShapeVect									_WaterShapes;
 
-	typedef CQuadGrid<CWaterShape *>			TWaterShapeQuadGrid;
+	typedef CQuadGrid<CShapeInfo>				TWaterShapeQuadGrid;
 
 	TWaterShapeQuadGrid							_WaterShapeQuadGrid;
 

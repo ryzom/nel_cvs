@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.33 2004/04/09 14:18:12 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.34 2004/05/05 17:08:11 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -621,6 +621,17 @@ void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly) const
 	objMat.rotate(_DefaultRotQuat.getDefaultValue());
 	objMat.scale(_DefaultScale.getDefaultValue());
 	
+	for (uint k = 0; k < _Poly.Vertices.size(); ++k)
+	{
+		poly.Vertices[k] = objMat * NLMISC::CVector(_Poly.Vertices[k].x, _Poly.Vertices[k].y, 0);
+	}
+}
+
+
+//============================================
+void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly, const NLMISC::CMatrix &objMat) const
+{
+	poly.Vertices.resize(_Poly.Vertices.size());
 	for (uint k = 0; k < _Poly.Vertices.size(); ++k)
 	{
 		poly.Vertices[k] = objMat * NLMISC::CVector(_Poly.Vertices[k].x, _Poly.Vertices[k].y, 0);

@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.23 2003/02/07 16:08:26 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.24 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ CCallbackServer::CCallbackServer( TRecordingState rec, const string& recfilename
 	_ConnectionCbArg(NULL)
 {
 #ifndef USE_MESSAGE_RECORDER
-	nlassertex( rec==Off, ("The message recorder is disabled at compilation time ; switch the recording state Off") );
+	nlassertex( rec==Off, ("LNETL3S: The message recorder is disabled at compilation time ; switch the recording state Off") );
 #endif
 	
 	CBufServer::setDisconnectionCallback (_NewDisconnectionCallback, this);
@@ -338,7 +338,7 @@ bool CCallbackServer::replaySystemCallbacks()
 				return true;
 
 			case Disconnecting:
-				nldebug( "Disconnection event for %p", sockid );
+				nldebug( "LNETL3S: Disconnection event for %p", sockid );
 				sockid->Sock->disconnect();
 				sockid->setConnectedState( false );
 	
@@ -365,7 +365,7 @@ bool CCallbackServer::replaySystemCallbacks()
 				// Bind it to the "old" sockid
 				_MR_SockIds.insert( make_pair( _MR_Recorder.ReceivedMessages.front().SockId, sockid ) );
 
-				nldebug( "LNETL1: Connection event for %p", sockid );
+				nldebug( "LNETL3S: Connection event for %p", sockid );
 				sockid->setConnectedState( true );
 					
 				// Call callback if needed
@@ -376,7 +376,7 @@ bool CCallbackServer::replaySystemCallbacks()
 				break;
 				}
 			default:
-				nlerror( "LNETL1: Invalid system event type in client receive queue" );
+				nlerror( "LNETL3S: Invalid system event type in client receive queue" );
 			}
 			// Extract system event
 			_MR_Recorder.ReceivedMessages.pop();

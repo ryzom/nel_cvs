@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.23 2003/09/01 12:05:57 lecroart Exp $
+ * $Id: message.cpp,v 1.24 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,7 +190,7 @@ void CMessage::setType (NLMISC::CStringIdArray::TStringId id)
 		nlassert (length () == 0);
 
 		uint8 format = FormatLong | (_StringMode << 1);
-		nlinfo( "OUT format = %hu", (uint16)format );
+		//nlinfo( "MSG: OUT format = %hu", (uint16)format );
 
 		// Force binary mode for header
 		bool msgmode = _StringMode;
@@ -272,7 +272,7 @@ void CMessage::setType (const std::string &name)
 		else
 		{
 			uint8 format = FormatShort | (msgmode << 1);
-			//nldebug( "OUT format = %hu", (uint16)format );
+			//nldebug( "MSG: OUT format = %hu", (uint16)format );
 			serial (format);
 
 			// End of binary header
@@ -486,6 +486,5 @@ void	CMessage::serialMessage( CMessage& msg )
 		serialBuffer( const_cast<uint8*>(msg.buffer()), msg.length() );
 	}
 }
-
 
 }

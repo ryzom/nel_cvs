@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.19 2003/04/03 13:01:18 corvazier Exp $
+ * $Id: system_info.cpp,v 1.20 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,7 +140,7 @@ string CSystemInfo::getOS ()
 	int fd = open("/proc/version", O_RDONLY);
 	if (fd == -1)
 	{
-		nlwarning ("Can't get OS from /proc/version: %s", strerror (errno));
+		nlwarning ("SI: Can't get OS from /proc/version: %s", strerror (errno));
 	}
 	else
 	{
@@ -275,7 +275,7 @@ uint64 CSystemInfo::getProcessorFrequency(bool quick)
 		freq = (uint64) ((double)tickDelta / timeDelta);
 	}
 	
-	nlinfo ("CSystemInfo: Processor frequency is %.0f MHz", (float)freq/1000000.0);
+	nlinfo ("SI: CSystemInfo: Processor frequency is %.0f MHz", (float)freq/1000000.0);
 	freqComputed = true;
 #endif // NL_CPU_INTEL
 	return freq;
@@ -432,7 +432,7 @@ uint32 getSystemMemory (uint col)
 	int fd = open("/proc/meminfo", O_RDONLY);
 	if (fd == -1)
 	{
-		nlwarning ("Can't get OS from /proc/meminfo: %s", strerror (errno));
+		nlwarning ("SI: Can't get OS from /proc/meminfo: %s", strerror (errno));
 		return 0;
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.43 2003/08/27 16:16:25 distrib Exp $
+ * $Id: buf_server.cpp,v 1.44 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,7 +100,7 @@ void CBufServer::init( uint16 port )
 	}
 	else
 	{
-		nldebug( "LNETL0: Binding listen socket to any address, port %hu", port );
+		nldebug( "LNETL1: Binding listen socket to any address, port %hu", port );
 	}
 }
 
@@ -830,7 +830,7 @@ void CListenTask::run()
 #endif
 			nldebug( "LNETL1: Waiting incoming connection..." );
 			CServerBufSock *bufsock = new CServerBufSock( _ListenSock.accept() );
-			nldebug( "New connection : %s", bufsock->asString().c_str() );
+			nldebug( "LNETL1: New connection : %s", bufsock->asString().c_str() );
 			bufsock->setNonBlocking();
 			bufsock->setMaxExpectedBlockSize( _MaxExpectedBlockSize );
 			if ( _Server->noDelay() )
@@ -848,7 +848,7 @@ void CListenTask::run()
 		}
 		catch ( ESocket& e )
 		{
-			nlinfo( "Exception in listen thread: %s", e.what() ); // It can occur in normal behavior (e.g. when exiting)
+			nlinfo( "LNETL1: Exception in listen thread: %s", e.what() ); // It can occur in normal behavior (e.g. when exiting)
 			// It can also occur when too many sockets are open (e.g. 885 connections)
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.193 2003/09/09 15:26:20 lecroart Exp $
+ * $Id: service.cpp,v 1.194 2003/10/20 16:12:01 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -169,12 +169,12 @@ static void sigHandler(int Sig)
 		{
 			if (getThreadId () != SignalisedThread)
 			{
-				nldebug ("Not the main thread received the signal (%s, %d), ignore it", SignalName[i],Sig);
+				nldebug ("SERVICE: Not the main thread received the signal (%s, %d), ignore it", SignalName[i],Sig);
 				return;
 			}
 			else
 			{
-				nlinfo ("Signal %s (%d) received", SignalName[i], Sig);
+				nlinfo ("SERVICE: Signal %s (%d) received", SignalName[i], Sig);
 				switch (Sig)
 				{
 				case SIGABRT :
@@ -186,13 +186,13 @@ static void sigHandler(int Sig)
 				// signal-handler routines are usually called asynchronously when an interrupt occurs.
 				if (ExitSignalAsked == 0)
 				{
-					nlinfo ("Receive a signal that said that i must exit");
+					nlinfo ("SERVICE: Receive a signal that said that i must exit");
 					ExitSignalAsked = Sig;
 					return;
 				}
 				else
 				{
-					nlinfo ("Signal already received, launch the brutal exit");
+					nlinfo ("SERVICE: Signal already received, launch the brutal exit");
 					exit (EXIT_FAILURE);
 				}
 				break;
@@ -200,7 +200,7 @@ static void sigHandler(int Sig)
 			}
 		}
 	}
-	nlinfo ("Unknown signal received (%d)", Sig);
+	nlwarning ("SERVICE: Unknown signal received (%d)", Sig);
 }
 
 // Initialise the signal redirection
@@ -226,7 +226,7 @@ static void initSignal()
 void cbDirectoryChanged (IVariable &var)
 {
 	string vp = CPath::getFullPath(var.toString());
-	nlinfo ("'%s' changed to '%s'", var.getName().c_str(), vp.c_str());
+	nlinfo ("SERVICE: '%s' changed to '%s'", var.getName().c_str(), vp.c_str());
 	var.fromString(vp);
 
 	if (var.getName() == "RunningDirectory")
@@ -355,7 +355,7 @@ void cbLogFilter (CConfigFile::CVar &var)
 		nlstop;
 	}
 
-	nlinfo ("Updating %s from config file", var.Name.c_str());
+	nlinfo ("SERVICE: Updating %s from config file", var.Name.c_str());
 	
 	// remove all old filters from config file
 	CConfigFile::CVar &oldvar = IService::getInstance()->ConfigFile.getVar (var.Name);
@@ -435,7 +435,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// check if the default exists
 			if (!CFile::fileExists(ConfigDirectory.c_str() + _LongName + "_default.cfg"))
 			{
-				nlerror ("The config file '%s' is not found, neither the default one, can't launch the service", cfn.c_str());
+				nlerror ("SERVICE: The config file '%s' is not found, neither the default one, can't launch the service", cfn.c_str());
 			}
 			else
 			{
@@ -443,7 +443,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				FILE *fp = fopen (cfn.c_str(), "w");
 				if (fp == NULL)
 				{
-					nlerror ("Can't create config file '%s'", cfn.c_str());
+					nlerror ("SERVICE: Can't create config file '%s'", cfn.c_str());
 				}
 				fprintf(fp, "// link the default config file for %s\n", _LongName.c_str());
 				fprintf(fp, "RootConfigFilename = \"%s_default.cfg\";\n", _LongName.c_str());
@@ -540,7 +540,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			if (WindowDisplayer == NULL && disp != "NONE")
 			{
-				nlwarning ("Unknown value for the WindowStyle (should be GTK, WIN or NONE), use no window displayer");
+				nlwarning ("SERVICE: Unknown value for the WindowStyle (should be GTK, WIN or NONE), use no window displayer");
 			}
 		}
 
@@ -596,8 +596,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 		}
 
-		nlinfo ("Starting Service '%s' using NeL ("__DATE__" "__TIME__") compiled %s", _ShortName.c_str(), CompilationDate.c_str());
-		nlinfo ("On OS: %s", CSystemInfo::getOS().c_str());
+		nlinfo ("SERVICE: Starting Service '%s' using NeL ("__DATE__" "__TIME__") compiled %s", _ShortName.c_str(), CompilationDate.c_str());
+		nlinfo ("SERVICE: On OS: %s", CSystemInfo::getOS().c_str());
 
 		setStatus (EXIT_SUCCESS);
 
@@ -651,7 +651,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			perror("sigprocmask()");
 			IgnoredPipe = false;
 		}
-		nldebug ("SIGPIPE %s", IgnoredPipe?"Ignored":"Not Ignored");
+		nldebug ("SERVICE: SIGPIPE %s", IgnoredPipe?"Ignored":"Not Ignored");
 #endif // NL_OS_UNIX
 
 
@@ -700,12 +700,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			if ( srecstate == "RECORD" )
 			{
 				_RecordingState = CCallbackNetBase::Record;
-				nlinfo( "Service recording messages" );
+				nlinfo( "SERVICE: Service recording messages" );
 			}
 			else if ( srecstate == "REPLAY" )
 			{
 				_RecordingState = CCallbackNetBase::Replay;
-				nlinfo( "Service replaying messages" );
+				nlinfo( "SERVICE: Service replaying messages" );
 			}
 			else
 			{
@@ -769,7 +769,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			sint32 sid = var->asInt();
 			if (sid<=0 || sid>255)
 			{
-				nlwarning("Bad SId value in the config file, %d is not in [0;255] range", sid);
+				nlwarning("SERVICE: Bad SId value in the config file, %d is not in [0;255] range", sid);
 				_SId = 0;
 			}
 			else
@@ -834,7 +834,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 					}
 					else
 					{
-						nlinfo( "Exiting..." );
+						nlinfo( "SERVICE: Exiting..." );
 						beep( 880, 400 );
 						beep( 440, 400 );
 						beep( 220, 400 );
@@ -843,7 +843,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				}
 				catch (ESocketConnectionFailed &)
 				{
-					nlwarning ("Could not connect to the Naming Service (%s). Retrying in a few seconds...", loc.asString().c_str());
+					nlwarning ("SERVICE: Could not connect to the Naming Service (%s). Retrying in a few seconds...", loc.asString().c_str());
 					nlSleep (5000);
 				}
 			}
@@ -954,7 +954,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		_Initialized = true;
 
-		nlinfo ("Service initialised, executing StartCommands");
+		nlinfo ("SERVICE: Service initialised, executing StartCommands");
 
 		//
 		// Call the user command from the config file if any
@@ -978,7 +978,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Set service ready
 		//
 
-		nlinfo ("Service ready");
+		nlinfo ("SERVICE: Service ready");
 
 		if (WindowDisplayer != NULL)
 			WindowDisplayer->setTitleBar (_ShortName + " " + _LongName + " " + Version.c_str());
@@ -1018,7 +1018,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				// update the window displayer and quit if asked
 				if (!WindowDisplayer->update ())
 				{
-					nlinfo ("The window displayer was closed by user, need to quit");
+					nlinfo ("SERVICE: The window displayer was closed by user, need to quit");
 					ExitSignalAsked = 1;
 				}
 			}
@@ -1157,7 +1157,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	}
 	catch ( uint ) // SEH exceptions
 	{
-		ErrorLog->displayNL( "System exception" );
+		ErrorLog->displayNL( "SERVICE: System exception" );
 	}
 
 #ifdef NL_RELEASE
@@ -1179,7 +1179,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	try
 	{
-		nlinfo ("Service starts releasing");
+		nlinfo ("SERVICE: Service starts releasing");
 
 		//
 		// Call the user service release() if the init() was called
@@ -1213,7 +1213,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			WindowDisplayer = NULL;
 		}
 
-		nlinfo ("Service released succesfuly");
+		nlinfo ("SERVICE: Service released succesfuly");
 	}
 /*	catch (ETrapDebug &)
 	{
@@ -1248,7 +1248,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	CHTimer::displayHierarchical(&CommandLog, true, 64);
 	CHTimer::displayHierarchicalByExecutionPathSorted (&CommandLog, CHTimer::TotalTime, true, 64);
 
-	nlinfo ("Service ends");
+	nlinfo ("SERVICE: Service ends");
 
 	string name = getServiceLongName () + ".memory_report";
 	NLMEMORY::StatisticsReport (name.c_str(), false);
@@ -1258,7 +1258,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 void IService::exit (sint code)
 {
-	nlinfo ("somebody called IService::exit(), I have to quit");
+	nlinfo ("SERVICE: Somebody called IService::exit(), I have to quit");
 	ExitSignalAsked = code;
 }
 
@@ -1341,7 +1341,7 @@ NLMISC_COMMAND (quit, "exit the service", "")
 {
 	if(args.size() != 0) return false;
 
-	nlinfo ("User ask me with a command to quit");
+	log.displayNL("User ask me with a command to quit");
 	ExitSignalAsked = 0xFFFF;
 
 	return true;
@@ -1367,7 +1367,7 @@ NLMISC_COMMAND (mutex, "display mutex values", "")
 	map<CFairMutex*,TMutexLocks>::iterator im;
 	for ( im=acquiretimes.begin(); im!=acquiretimes.end(); ++im )
 	{
-		nlinfo( "%d %p %s: %.0f %.0f, called %u times th(%d, %d wait)%s", (*im).second.MutexNum, (*im).first, (*im).second.MutexName.c_str(),
+		log.displayNL( "%d %p %s: %.0f %.0f, called %u times th(%d, %d wait)%s", (*im).second.MutexNum, (*im).first, (*im).second.MutexName.c_str(),
 			CTime::cpuCycleToSecond((*im).second.TimeToEnter)*1000.0, CTime::cpuCycleToSecond((*im).second.TimeInMutex)*1000.0,
 			(*im).second.Nb, (*im).second.ThreadHavingTheMutex, (*im).second.WaitingMutex,
 			(*im).second.Dead?" DEAD":"");
@@ -1394,10 +1394,10 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 	log.displayNL ("Service %suse admin executor service", IService::getInstance()->_DontUseAES?"don't ":"");
 	log.displayNL ("NeL is compiled in %s mode", CompilationMode.c_str());
 
-	nlinfo ("Services arguments: %d args", IService::getInstance()->_Args.size ());
+	log.displayNL ("Services arguments: %d args", IService::getInstance()->_Args.size ());
 	for (uint i = 0; i < IService::getInstance()->_Args.size (); i++)
 	{
-		nlinfo ("  argv[%d] = '%s'", i, IService::getInstance()->_Args[i].c_str ());
+		log.displayNL ("  argv[%d] = '%s'", i, IService::getInstance()->_Args[i].c_str ());
 	}
 
 	log.displayNL ("Naming service info: %s", CNamingClient::info().c_str());
@@ -1437,19 +1437,6 @@ NLMISC_COMMAND(getUnknownConfigFileVariables, "display the variables from config
 	return true;
 }
 
-NLMISC_COMMAND (freeze, "Freeze the service for N seconds (for debug purpose)", "<N>")
-{
-	if(args.size() != 1) return false;
-
-	sint32 n = atoi (args[0].c_str());
-
-	log.displayNL ("Freezing %d seconds", n);
-
-	nlSleep(n * 1000);	
-	return true;
-}
-
-
 // -1 = service is quitting
 // 0 = service is not connected
 // 1 = service is running
@@ -1469,18 +1456,18 @@ NLMISC_DYNVARIABLE(string, State, "Set this value to 0 to shutdown the service a
 	{
 		if (IService::getInstance()->getServiceShortName() == "AES" || IService::getInstance()->getServiceShortName() == "AS")
 		{
-			nlinfo ("I can't set State=0 because I'm the admin and I should never quit");
+			nlinfo ("SERVICE: I can't set State=0 because I'm the admin and I should never quit");
 		}
 		else if (*pointer == "0" || *pointer == "2")
 		{
 			// ok, we want to set the value to false, just quit
-			nlinfo ("User ask me with a command to quit using the State variable");
+			nlinfo ("SERVICE: User ask me with a command to quit using the State variable");
 			ExitSignalAsked = 0xFFFE;
 			running = "Quitting";
 		}
 		else
 		{
-			nlwarning ("Unknown value for State '%s'", (*pointer).c_str());
+			nlwarning ("SERVICE: Unknown value for State '%s'", (*pointer).c_str());
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: variable.cpp,v 1.2 2003/09/03 13:50:56 lecroart Exp $
+ * $Id: variable.cpp,v 1.3 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ void cbVarChanged (CConfigFile::CVar &cvar)
 		{
 			IVariable *var = (IVariable *)((*comm).second);
 			string val = cvar.asString();
-			nlinfo ("Setting variable '%s' with value '%s' from config file", cvar.Name.c_str(), val.c_str());
+			nlinfo ("VAR: Setting variable '%s' with value '%s' from config file", cvar.Name.c_str(), val.c_str());
 			var->fromString(val, true);
 		}
 	}
@@ -61,12 +61,12 @@ void IVariable::init (NLMISC::CConfigFile &configFile)
 				if (cvar != 0)
 				{
 					string val = cvar->asString();
-					nlinfo ("Setting variable '%s' with value '%s' from config file '%s'", var->_CommandName.c_str(), val.c_str(), configFile.getFilename().c_str());
+					nlinfo ("VAR: Setting variable '%s' with value '%s' from config file '%s'", var->_CommandName.c_str(), val.c_str(), configFile.getFilename().c_str());
 					var->fromString(val, true);
 				}
 				else
 				{
-					nlwarning ("No variable '%s' in config file '%s'", var->_CommandName.c_str(), configFile.getFilename().c_str());
+					nlwarning ("VAR: No variable '%s' in config file '%s'", var->_CommandName.c_str(), configFile.getFilename().c_str());
 				}
 			}
 		}

@@ -2,7 +2,7 @@
  * _CUniTime class
  * THIS CLASS IS DEPRECATED, DON'T USE IT
  *
- * $Id: unitime.cpp,v 1.33 2003/02/07 16:07:45 lecroart Exp $
+ * $Id: unitime.cpp,v 1.34 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -265,7 +265,7 @@ static void cbServerAskUniversalTime (CMessage& msgin, TSockId from, CCallbackNe
 	TTime ut = _CUniTime::getUniTime ();
 
 	// afficher l adresse de celui qui demande
-	nlinfo("Send the universal time %"NL_I64"d to '%s'", ut, netbase.hostAddress(from).asString().c_str());
+	nlinfo("UT: Send the universal time %"NL_I64"d to '%s'", ut, netbase.hostAddress(from).asString().c_str());
 	
 	CMessage msgout (netbase.getSIDA(), "GUT");
 	msgout.serial (ut);

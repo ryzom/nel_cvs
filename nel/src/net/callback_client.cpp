@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.26 2003/02/07 16:08:25 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.27 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -243,7 +243,7 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 //		nldebug ("receive message number %u", val);
 		if (ReceiveNextValue != val)
 		{
-			nlstopex (("LNETL1: !!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s), warn lecroart@nevrax.com with the log now please", val, ReceiveNextValue, id()->asString().c_str()));
+			nlstopex (("LNETL3C: !!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s), warn lecroart@nevrax.com with the log now please", val, ReceiveNextValue, id()->asString().c_str()));
 			// resync the message number
 			ReceiveNextValue = val;
 		}
@@ -410,7 +410,7 @@ bool CCallbackClient::replaySystemCallbacks()
 				return true;
 
 			case Disconnecting:
-				nldebug( "Disconnection event" );
+				nldebug( "LNETL3C: Disconnection event" );
 				_BufSock->setConnectedState( false );
 	
 				// Call callback if needed
@@ -421,7 +421,7 @@ bool CCallbackClient::replaySystemCallbacks()
 				break;
 
 			default:
-				nlerror( "LNETL1: Invalid system event type in client receive queue" );
+				nlerror( "LNETL3C: Invalid system event type in client receive queue" );
 			}
 			// Extract system event
 			_MR_Recorder.ReceivedMessages.pop();

@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.17 2003/10/17 14:52:50 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.18 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -234,17 +234,17 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 
 	if (RegisteredEntities.find (reid) != RegisteredEntities.end ())
 	{
-		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EId is already in the map", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+		nlwarning ("EIT: Can't register EId %s EntityName %s UId %d UserName %s because EId is already in the map", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		return;
 	}
 
 	if (entityNameExists(entityName))
 	{
-		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EntityName is already in the map", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+		nlwarning ("EIT: Can't register EId %s EntityName %s UId %d UserName %s because EntityName is already in the map", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		return;
 	}
 	
-	nlinfo ("Register EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+	nlinfo ("EIT: Register EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 	RegisteredEntities.insert (make_pair(reid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot)));
 
 	save ();
@@ -261,11 +261,11 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 	
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("Can't unregister EId %s because EId is not in the map", reid.toString().c_str());
+		nlwarning ("EIT: Can't unregister EId %s because EId is not in the map", reid.toString().c_str());
 		return;
 	}
 	
-	nlinfo ("Unregister EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), (*it).second.EntityName.toString().c_str(), (*it).second.UId, (*it).second.UserName.c_str());
+	nlinfo ("EIT: Unregister EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), (*it).second.EntityName.toString().c_str(), (*it).second.UId, (*it).second.UserName.c_str());
 	RegisteredEntities.erase (reid);
 	
 	save ();
@@ -281,22 +281,22 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 	map<CEntityId, CEntityIdTranslator::CEntity>::iterator it = RegisteredEntities.find (reid);
 	bool needSave = false;
 	
-	nlinfo ("Checking EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+	nlinfo ("EIT: Checking EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 	
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("Check failed because EId is not in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+		nlwarning ("EIT: Check failed because EId is not in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		
 		if (entityNameExists(entityName))
 		{
-			nlwarning ("Check failed because entity name already exist (%s) for EId %s EntityName '%s' UId %d UserName '%s'", getByEntity(entityName).toString().c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("EIT: Check failed because entity name already exist (%s) for EId %s EntityName '%s' UId %d UserName '%s'", getByEntity(entityName).toString().c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		}
 	}
 	else
 	{
 		if ((*it).second.EntityName != entityName)
 		{
-			nlwarning ("Check failed because entity name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.EntityName.toString().c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("EIT: Check failed because entity name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.EntityName.toString().c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 			if(!entityName.empty())
 			{
 				(*it).second.EntityName = entityName;
@@ -305,7 +305,7 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 		}
 		if ((*it).second.UId != uid)
 		{
-			nlwarning ("Check failed because uid not identical (%d) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UId, reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("EIT: Check failed because uid not identical (%d) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UId, reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 			if (uid != 0)
 			{
 				(*it).second.UId = uid;
@@ -314,7 +314,7 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 		}
 		if ((*it).second.UserName != userName)
 		{
-			nlwarning ("Check failed because user name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UserName.c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("EIT: Check failed because user name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UserName.c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 			if(!userName.empty())
 			{
 				(*it).second.UserName = userName;
@@ -336,14 +336,14 @@ void cbInvalidEntityNamesFilename(const std::string &invalidEntityNamesFilename)
 
 	if (fn.empty())
 	{
-		nlwarning ("Can't load filename '%s' for invalid entity names filename (not found)", invalidEntityNamesFilename.c_str());
+		nlwarning ("EIT: Can't load filename '%s' for invalid entity names filename (not found)", invalidEntityNamesFilename.c_str());
 		return;
 	}
 
 	FILE *fp = fopen (fn.c_str(), "r");
 	if (fp == NULL)
 	{
-		nlwarning ("Can't load filename '%s' for invalid entity names filename", fn.c_str());
+		nlwarning ("EIT: Can't load filename '%s' for invalid entity names filename", fn.c_str());
 		return;
 	}
 
@@ -367,17 +367,17 @@ void CEntityIdTranslator::load (const string &fileName, const string &invalidEnt
 {
 	if (fileName.empty())
 	{
-		nlwarning ("Can't load empty filename for EntityIdTranslator");
+		nlwarning ("EIT: Can't load empty filename for EntityIdTranslator");
 		return;
 	}
 
 	if (!FileName.empty())
 	{
-		nlwarning ("Can't load file '%s' for EntityIdTranslator because we already load the file '%s'", fileName.c_str(), FileName.c_str());
+		nlwarning ("EIT: Can't load file '%s' for EntityIdTranslator because we already load the file '%s'", fileName.c_str(), FileName.c_str());
 		return;
 	}
 	
-	nlinfo ("CEntityIdTranslator: load '%s'", fileName.c_str());
+	nlinfo ("EIT: CEntityIdTranslator: load '%s'", fileName.c_str());
 
 	FileName = fileName;
 
@@ -392,7 +392,7 @@ void CEntityIdTranslator::load (const string &fileName, const string &invalidEnt
 	}
 	else
 	{
-		nlwarning ("Can't load filename '%s' for EntityIdTranslator", FileName.c_str());
+		nlwarning ("EIT: Can't load filename '%s' for EntityIdTranslator", FileName.c_str());
 	}
 
 	cbInvalidEntityNamesFilename (invalidEntityNamesFilename);
@@ -404,11 +404,11 @@ void CEntityIdTranslator::save ()
 {
 	if (FileName.empty())
 	{
-		nlwarning ("Can't save empty filename for EntityIdTranslator (you forgot to load() it before?)");
+		nlwarning ("EIT: Can't save empty filename for EntityIdTranslator (you forgot to load() it before?)");
 		return;
 	}
 
-	nlinfo ("CEntityIdTranslator: save");
+	nlinfo ("EIT: CEntityIdTranslator: save");
 
 	COFile ofile;
 	if( ofile.open(FileName) )
@@ -421,7 +421,7 @@ void CEntityIdTranslator::save ()
 	}
 	else
 	{
-		nlwarning ("Can't save filename '%s' for EntityIdTranslator", FileName.c_str());
+		nlwarning ("EIT: Can't save filename '%s' for EntityIdTranslator", FileName.c_str());
 	}
 }
 
@@ -459,7 +459,7 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 	reit it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("%s is not registered in CEntityIdTranslator", reid.toString().c_str());
+		nlwarning ("EIT: %s is not registered in CEntityIdTranslator", reid.toString().c_str());
 		entityName = "";
 		entitySlot = -1;
 		uid = ~0;
@@ -486,7 +486,7 @@ void CEntityIdTranslator::setEntityOnline (const CEntityId &eid, bool online)
 	reit it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("%s is not registered in CEntityIdTranslator", reid.toString().c_str());
+		nlwarning ("EIT: %s is not registered in CEntityIdTranslator", reid.toString().c_str());
 	}
 	else
 	{
@@ -504,7 +504,7 @@ bool CEntityIdTranslator::isEntityOnline (const CEntityId &eid)
 	reit it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("%s is not registered in CEntityIdTranslator", reid.toString().c_str());
+		nlwarning ("EIT: %s is not registered in CEntityIdTranslator", reid.toString().c_str());
 		return false;
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.42 2002/12/30 15:22:51 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.43 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -452,7 +452,7 @@ CInetAddress CInetAddress::localHost()
 
 	if ( localaddr.ipAddress() == "127.0.0.1" )
 	{
-		nlwarning ("*** No network card detected! using localhost (127.0.0.1)");
+		nlwarning ("LNETL0: No network card detected! using localhost (127.0.0.1)");
 	}
 
 	return localaddr;

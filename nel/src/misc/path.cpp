@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.82 2003/09/18 16:25:41 distrib Exp $
+ * $Id: path.cpp,v 1.83 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -122,7 +122,7 @@ void CPath::clearMap ()
 {
 	CPath *inst = CPath::getInstance();
 	inst->_Files.clear ();
-	NL_DISPLAY_PATH("CPath::clearMap(): map directory cleared");
+	NL_DISPLAY_PATH("PATH: CPath::clearMap(): map directory cleared");
 }
 
 sint CPath::findExtension (const string &ext1, const string &ext2)
@@ -147,12 +147,12 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 
 	if (ext1lwr.empty() || ext2lwr.empty())
 	{
-		nlwarning ("CPath::remapExtension(%s, %s, %d): can't remap empty extension", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
+		nlwarning ("PATH: CPath::remapExtension(%s, %s, %d): can't remap empty extension", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
 
 	if (ext1lwr == "bnp" || ext2lwr == "bnp")
 	{
-		nlwarning ("CPath::remapExtension(%s, %s, %d): you can't remap a big file", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
+		nlwarning ("PATH: CPath::remapExtension(%s, %s, %d): you can't remap a big file", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
 
 	if (!substitute)
@@ -174,14 +174,14 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 			}
 			it = nit;
 		}
-		NL_DISPLAY_PATH("CPath::remapExtension(%s, %s, %d): extension removed", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
+		NL_DISPLAY_PATH("PATH: CPath::remapExtension(%s, %s, %d): extension removed", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
 	else
 	{
 		sint n = inst->findExtension (ext1lwr, ext2lwr);
 		if (n != -1)
 		{
-			nlwarning ("CPath::remapExtension(%s, %s, %d): remapping already set", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
+			nlwarning ("PATH: CPath::remapExtension(%s, %s, %d): remapping already set", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 			return;
 		}
 
@@ -208,7 +208,7 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 			}
 			it++;
 		}
-		NL_DISPLAY_PATH("CPath::remapExtension(%s, %s, %d): extension added", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
+		NL_DISPLAY_PATH("PATH: CPath::remapExtension(%s, %s, %d): extension added", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
 }
 
@@ -217,14 +217,14 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 	// Try to find in the current directory
 	if ( lookupInLocalDirectory && CFile::fileExists(filename) )
 	{
-		NL_DISPLAY_PATH("CPath::lookup(%s): found in the current directory: '%s'", filename.c_str(), filename.c_str());
+		NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the current directory: '%s'", filename.c_str(), filename.c_str());
 		return filename;
 	}
 
 	// If the file already contains a @, it means that a lookup already proceed and returning a big file, do nothing
 	if (filename.find ("@") != string::npos)
 	{
-		NL_DISPLAY_PATH("CPath::lookup(%s):	already found", filename.c_str());
+		NL_DISPLAY_PATH("PATH: CPath::lookup(%s):	already found", filename.c_str());
 		return filename;
 	}
 
@@ -242,7 +242,7 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 	// If found in the map, returns it
 	if (it != inst->_Files.end())
 	{
-		NL_DISPLAY_PATH("CPath::lookup(%s): found in the map directory: '%s'", filename.c_str(), (*it).second.Path.c_str());
+		NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the map directory: '%s'", filename.c_str(), (*it).second.Path.c_str());
 		return (*it).second.Path;
 	}
 	
@@ -253,7 +253,7 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 		string s = inst->_AlternativePaths[i] + filename;
 		if ( CFile::fileExists(s) )
 		{
-			NL_DISPLAY_PATH("CPath::lookup(%s): found in the alternative directory: '%s'", filename.c_str(), s.c_str());
+			NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the alternative directory: '%s'", filename.c_str(), s.c_str());
 			return s;
 		}
 		
@@ -265,7 +265,7 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 				string rs = inst->_AlternativePaths[i] + CFile::getFilenameWithoutExtension (filename) + "." + inst->_Extensions[j].first;
 				if ( CFile::fileExists(rs) )
 				{
-					NL_DISPLAY_PATH("CPath::lookup(%s): found in the alternative directory: '%s'", filename.c_str(), rs.c_str());
+					NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the alternative directory: '%s'", filename.c_str(), rs.c_str());
 					return rs;
 				}
 			}
@@ -276,7 +276,7 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 	// Not found
 	if (displayWarning)
 	{
-		nlwarning ("CPath::lookup(%s): file not found", filename.c_str());
+		nlwarning ("PATH: CPath::lookup(%s): file not found", filename.c_str());
 	}
 
 	if (throwException)
@@ -548,7 +548,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 {			
 	if(	path.empty() )
 	{
-		NL_DISPLAY_PATH("CPath::getPathContent(): Empty input Path");
+		NL_DISPLAY_PATH("PATH: CPath::getPathContent(): Empty input Path");
 		return;
 	}
 
@@ -560,7 +560,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 
 	if (dir == NULL)
 	{
-		NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): could not open the directory", path.c_str(), recurse, wantDir, wantFile);
+		NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): could not open the directory", path.c_str(), recurse, wantDir, wantFile);
 		return;
 	}
 
@@ -572,7 +572,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		dirent *de = readdir(dir);
 		if (de == NULL)
 		{
-			NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): end of directory", path.c_str(), recurse, wantDir, wantFile);
+			NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): end of directory", path.c_str(), recurse, wantDir, wantFile);
 			break;
 		}
 
@@ -587,20 +587,20 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 			// skip CVS directory
 			if (fn == "CVS")
 			{
-				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): skip CVS directory", path.c_str(), recurse, wantDir, wantFile);
+				NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): skip CVS directory", path.c_str(), recurse, wantDir, wantFile);
 				continue;
 			}
 
 			string stdName = standardizePath(standardizePath(path) + fn);
 			if (recurse)
 			{
-				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): need to recurse into '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
+				NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): need to recurse into '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
 				recursPath.push_back (stdName);
 			}
 
 			if (wantDir)
 			{
-				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): adding path '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
+				NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): adding path '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
 				result.push_back (stdName);
 			}
 		}
@@ -608,7 +608,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		{
 			if (fn.size() >= 4 && fn.substr (fn.size()-4) == ".log")
 			{
-				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): skip *.log files (%s)", path.c_str(), recurse, wantDir, wantFile, fn.c_str());
+				NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): skip *.log files (%s)", path.c_str(), recurse, wantDir, wantFile, fn.c_str());
 				continue;
 			}
 
@@ -624,7 +624,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 			string stdName = standardizePath(path) + getname(de);
 			
 				
-			NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): adding file '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
+			NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): adding file '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
 			result.push_back (stdName);
 		}
 	}
@@ -659,7 +659,7 @@ void CPath::removeAllAlternativeSearchPath ()
 {
 	CPath *inst = CPath::getInstance();
 	inst->_AlternativePaths.clear ();
-	NL_DISPLAY_PATH("CPath::RemoveAllAternativeSearchPath(): removed");
+	NL_DISPLAY_PATH("PATH: CPath::RemoveAllAternativeSearchPath(): removed");
 }
 
 
@@ -672,14 +672,14 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative, c
 	// check empty directory
 	if (path.empty())
 	{
-		nlwarning ("CPath::addSearchPath(%s, %d, %d): can't add empty directory, skip it", path.c_str(), recurse, alternative);
+		nlwarning ("PATH: CPath::addSearchPath(%s, %d, %d): can't add empty directory, skip it", path.c_str(), recurse, alternative);
 		return;
 	}
 
 	// check if it s a directory
 	if (!CFile::isDirectory (path))
 	{
-		nlinfo ("CPath::addSearchPath(%s, %d, %d): '%s' is not a directory, I'll call addSearchFile()", path.c_str(), recurse, alternative, path.c_str());
+		nlinfo ("PATH: CPath::addSearchPath(%s, %d, %d): '%s' is not a directory, I'll call addSearchFile()", path.c_str(), recurse, alternative, path.c_str());
 		addSearchFile (path, false, "", progressCallBack);
 		return;
 	}
@@ -689,13 +689,13 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative, c
 	// check if it s a directory
 	if (!CFile::isExists (newPath))
 	{
-		nlwarning ("CPath::addSearchPath(%s, %d, %d): '%s' is not found, skip it", path.c_str(), recurse, alternative, newPath.c_str());
+		nlwarning ("PATH: CPath::addSearchPath(%s, %d, %d): '%s' is not found, skip it", path.c_str(), recurse, alternative, newPath.c_str());
 		return;
 	}
 
-	nlinfo ("CPath::addSearchPath(%s, %d, %d): adding the path '%s'", path.c_str(), recurse, alternative, newPath.c_str());
+	nlinfo ("PATH: CPath::addSearchPath(%s, %d, %d): adding the path '%s'", path.c_str(), recurse, alternative, newPath.c_str());
 
-	NL_DISPLAY_PATH("CPath::addSearchPath(%s, %d, %d): try to add '%s'", path.c_str(), recurse, alternative, newPath.c_str());
+	NL_DISPLAY_PATH("PATH: CPath::addSearchPath(%s, %d, %d): try to add '%s'", path.c_str(), recurse, alternative, newPath.c_str());
 
 	if (alternative)
 	{
@@ -723,11 +723,11 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative, c
 			{
 				// add them in the alternative directory
 				inst->_AlternativePaths.push_back (pathsToProcess[p]);
-				NL_DISPLAY_PATH("CPath::addSearchPath(%s, %d, %d): path '%s' added", newPath.c_str(), recurse, alternative, pathsToProcess[p].c_str());
+				NL_DISPLAY_PATH("PATH: CPath::addSearchPath(%s, %d, %d): path '%s' added", newPath.c_str(), recurse, alternative, pathsToProcess[p].c_str());
 			}
 			else
 			{
-				nlwarning ("CPath::addSearchPath(%s, %d, %d): path '%s' already added", newPath.c_str(), recurse, alternative, pathsToProcess[p].c_str());
+				nlwarning ("PATH: CPath::addSearchPath(%s, %d, %d): path '%s' already added", newPath.c_str(), recurse, alternative, pathsToProcess[p].c_str());
 			}
 		}
 	}
@@ -791,28 +791,28 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 	// check empty file
 	if (newFile.empty())
 	{
-		nlwarning ("CPath::addSearchFile(%s, %d, %s): can't add empty file, skip it", file.c_str(), remap, virtual_ext.c_str());
+		nlwarning ("PATH: CPath::addSearchFile(%s, %d, %s): can't add empty file, skip it", file.c_str(), remap, virtual_ext.c_str());
 		return;
 	}
 
 	// check if the file exists
 	if (!CFile::isExists (newFile))
 	{
-		nlwarning ("CPath::addSearchFile(%s, %d, %s): '%s' is not found, skip it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
+		nlwarning ("PATH: CPath::addSearchFile(%s, %d, %s): '%s' is not found, skip it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
 		return;
 	}
 
 	// check if it s a file
 	if (CFile::isDirectory (newFile))
 	{
-		nlwarning ("CPath::addSearchFile(%s, %d, %s): '%s' is not a file, skip it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
+		nlwarning ("PATH: CPath::addSearchFile(%s, %d, %s): '%s' is not a file, skip it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
 		return;
 	}
 
 	// check if it s a big file
 	if (CFile::getExtension(newFile) == "bnp")
 	{
-		NL_DISPLAY_PATH ("CPath::addSearchFile(%s, %d, %s): '%s' is a big file, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
+		NL_DISPLAY_PATH ("PATH: CPath::addSearchFile(%s, %d, %s): '%s' is a big file, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
 		addSearchBigFile(file, false, false, progressCallBack);
 		return;
 	}
@@ -852,21 +852,21 @@ void CPath::addSearchListFile (const string &filename, bool recurse, bool altern
 	// check empty file
 	if (filename.empty())
 	{
-		nlwarning ("CPath::addSearchListFile(%s, %d, %d): can't add empty file, skip it", filename.c_str(), recurse, alternative);
+		nlwarning ("PATH: CPath::addSearchListFile(%s, %d, %d): can't add empty file, skip it", filename.c_str(), recurse, alternative);
 		return;
 	}
 
 	// check if the file exists
 	if (!CFile::isExists (filename))
 	{
-		nlwarning ("CPath::addSearchListFile(%s, %d, %d): '%s' is not found, skip it", filename.c_str(), recurse, alternative, filename.c_str());
+		nlwarning ("PATH: CPath::addSearchListFile(%s, %d, %d): '%s' is not found, skip it", filename.c_str(), recurse, alternative, filename.c_str());
 		return;
 	}
 
 	// check if it s a file
 	if (CFile::isDirectory (filename))
 	{
-		nlwarning ("CPath::addSearchListFile(%s, %d, %d): '%s' is not a file, skip it", filename.c_str(), recurse, alternative, filename.c_str());
+		nlwarning ("PATH: CPath::addSearchListFile(%s, %d, %d): '%s' is not a file, skip it", filename.c_str(), recurse, alternative, filename.c_str());
 		return;
 	}
 
@@ -884,19 +884,19 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 	// Check if filename is not empty
 	if (sBigFilename.empty())
 	{
-		nlwarning ("CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
+		nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
 		return;
 	}
 	// Check if the file exists
 	if (!CFile::isExists (sBigFilename))
 	{
-		nlwarning ("CPath::addSearchBigFile(%s, %d, %d): '%s' is not found, skip it", sBigFilename.c_str(), recurse, alternative, sBigFilename.c_str());
+		nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): '%s' is not found, skip it", sBigFilename.c_str(), recurse, alternative, sBigFilename.c_str());
 		return;
 	}
 	// Check if it s a file
 	if (CFile::isDirectory (sBigFilename))
 	{
-		nlwarning ("CPath::addSearchBigFile(%s, %d, %d): '%s' is not a file, skip it", sBigFilename.c_str(), recurse, alternative, sBigFilename.c_str());
+		nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): '%s' is not a file, skip it", sBigFilename.c_str(), recurse, alternative, sBigFilename.c_str());
 		return;
 	}
 	// Open and read the big file header
@@ -905,7 +905,7 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 	FILE *Handle = fopen (sBigFilename.c_str(), "rb");
 	if (Handle == NULL)
 	{
-		nlwarning ("CPath::addSearchBigFile(%s, %d, %d): can't open file, skip it", sBigFilename.c_str(), recurse, alternative);
+		nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): can't open file, skip it", sBigFilename.c_str(), recurse, alternative);
 		return;
 	}
 
@@ -946,7 +946,7 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 		string sTmp = strlwr(string(FileName));
 		if (sTmp.empty())
 		{
-			nlwarning ("CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
+			nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
 			continue;
 		}
 		string bigfilenamealone = CFile::getFilename (sBigFilename);
@@ -988,46 +988,46 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 		{
 			// if there's a file in a big file and a file in a path, the file in path wins
 			// remplace with the new one
-			nlinfo ("CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s' but special case so overide it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
+			nlinfo ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s' but special case so overide it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
 			(*it).second.Path = filepath;
 			(*it).second.Remapped = remap;
 			(*it).second.Extension = extension;
 		}
 		else
 		{
-			nlwarning ("CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
+			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
 		}
 	}
 	else
 	{
 		inst->_Files.insert (make_pair (strlwr(filename), CFileEntry (filepath, remap, strlwr(extension))));
-		NL_DISPLAY_PATH("CPath::insertFileInMap(%s, %s, %d, %s): added", strlwr(filename).c_str(), filepath.c_str(), remap, strlwr(extension).c_str());
+		NL_DISPLAY_PATH("PATH: CPath::insertFileInMap(%s, %s, %d, %s): added", strlwr(filename).c_str(), filepath.c_str(), remap, strlwr(extension).c_str());
 	}
 }
 
 void CPath::display ()
 {
 	CPath *inst = CPath::getInstance ();
-	nlinfo ("Contents of the map:");
-	nlinfo ("%-25s %-5s %-5s %s", "filename", "ext", "remap", "full path");
-	nlinfo ("----------------------------------------------------");
+	nlinfo ("PATH: Contents of the map:");
+	nlinfo ("PATH: %-25s %-5s %-5s %s", "filename", "ext", "remap", "full path");
+	nlinfo ("PATH: ----------------------------------------------------");
 	for (map<string, CFileEntry>::iterator it = inst->_Files.begin(); it != inst->_Files.end (); it++)
 	{
-		nlinfo ("%-25s %-5s %-5d %s", (*it).first.c_str(), (*it).second.Extension.c_str(), (*it).second.Remapped, (*it).second.Path.c_str());
+		nlinfo ("PATH: %-25s %-5s %-5d %s", (*it).first.c_str(), (*it).second.Extension.c_str(), (*it).second.Remapped, (*it).second.Path.c_str());
 	}
-	nlinfo ("");
-	nlinfo ("Contents of the alternative directory:");
+	nlinfo ("PATH: ");
+	nlinfo ("PATH: Contents of the alternative directory:");
 	for (uint i = 0; i < inst->_AlternativePaths.size(); i++)
 	{
-		nlinfo ("'%s'", inst->_AlternativePaths[i].c_str ());
+		nlinfo ("PATH: '%s'", inst->_AlternativePaths[i].c_str ());
 	}
-	nlinfo ("");
-	nlinfo ("Contents of the remapped entension table:");
+	nlinfo ("PATH: ");
+	nlinfo ("PATH: Contents of the remapped entension table:");
 	for (uint j = 0; j < inst->_Extensions.size(); j++)
 	{
-		nlinfo ("'%s' -> '%s'", inst->_Extensions[j].first.c_str (), inst->_Extensions[j].second.c_str ());
+		nlinfo ("PATH: '%s' -> '%s'", inst->_Extensions[j].first.c_str (), inst->_Extensions[j].second.c_str ());
 	}
-	nlinfo ("End of display");
+	nlinfo ("PATH: End of display");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1093,7 +1093,7 @@ bool CFile::isDirectory (const string &filename)
 	DWORD res = GetFileAttributes(filename.c_str());
 	if (res == ~0U)
 	{
-		nlwarning ("%s is not a valid file / directory name", filename.c_str ());
+		nlwarning ("PATH: %s is not a valid file / directory name", filename.c_str ());
 		return false;
 	}
 	return (res & FILE_ATTRIBUTE_DIRECTORY) != 0;
@@ -1102,7 +1102,7 @@ bool CFile::isDirectory (const string &filename)
 	int res = stat (filename.c_str (), &buf);
 	if (res == -1)
 	{
-		nlwarning ("can't stat '%s' error %d '%s'", filename.c_str(), errno, strerror(errno));
+		nlwarning ("PATH: can't stat '%s' error %d '%s'", filename.c_str(), errno, strerror(errno));
 		return false;
 	}
 	return (buf.st_mode & S_IFDIR) != 0;
@@ -1276,7 +1276,7 @@ void CFile::removeFileChangeCallback (const std::string &filename)
 	{
 		if(FileToCheck[i].FileName == fn)
 		{
-			nlinfo ("CFile::removeFileChangeCallback: '%s' is removed from checked files modification", fn.c_str());
+			nlinfo ("PATH: CFile::removeFileChangeCallback: '%s' is removed from checked files modification", fn.c_str());
 			FileToCheck.erase(FileToCheck.begin()+i);
 			return;
 		}
@@ -1290,7 +1290,7 @@ void CFile::addFileChangeCallback (const std::string &filename, void (*cb)(const
 	{
 		fn = filename;
 	}
-	nlinfo ("CFile::addFileChangeCallback: I'll check the modification date for this file '%s'", fn.c_str());
+	nlinfo ("PATH: CFile::addFileChangeCallback: I'll check the modification date for this file '%s'", fn.c_str());
 	FileToCheck.push_back(CFileEntry(fn, cb));
 }
 
@@ -1336,13 +1336,13 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 		FILE *fp1 = fopen(ssrc.c_str(), "rb");
 		if (fp1 == NULL)
 		  {
-			nlwarning ("CopyMoveFile error: can't fopen in read mode '%s'", ssrc.c_str());
+			nlwarning ("PATH: CopyMoveFile error: can't fopen in read mode '%s'", ssrc.c_str());
 			return false;
 		  }
 		FILE *fp2 = fopen(sdest.c_str(), "wb");
 		if (fp2 == NULL)
 		  {
-			nlwarning ("CopyMoveFile error: can't fopen in read write mode '%s'", sdest.c_str());
+			nlwarning ("PATH: CopyMoveFile error: can't fopen in read write mode '%s'", sdest.c_str());
 			return false;
 		  }
 		static char buffer [1000];
@@ -1355,13 +1355,13 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 	  {
 		if (link (ssrc.c_str(), sdest.c_str()) == -1)
 		  {
-			nlwarning ("CopyMoveFile error: can't link '%s' into '%s'", ssrc.c_str(), sdest.c_str());
+			nlwarning ("PATH: CopyMoveFile error: can't link '%s' into '%s'", ssrc.c_str(), sdest.c_str());
 			return false;
 		  }
 
 		if (unlink (ssrc.c_str()) == -1)
 		  {
-			nlwarning ("CopyMoveFile error: can't unlink '%s'", ssrc.c_str());
+			nlwarning ("PATH: CopyMoveFile error: can't unlink '%s'", ssrc.c_str());
 			return false;
 		  }
 	  }
@@ -1445,7 +1445,7 @@ bool CFile::setRWAccess(const std::string &filename)
 		// try to set the read/write access
 		if (_chmod (filename.c_str(), _S_IREAD | _S_IWRITE) == -1)
 		{
-			nlwarning ("Can't set RW access to file '%s': %d %s", filename.c_str(), errno, strerror(errno));
+			nlwarning ("PATH: Can't set RW access to file '%s': %d %s", filename.c_str(), errno, strerror(errno));
 			return false;
 		}
 	}
@@ -1464,7 +1464,7 @@ bool CFile::deleteFile(const std::string &filename)
 	int res = unlink (filename.c_str());
 	if (res == -1)
 	{
-		nlwarning ("Can't delete file '%s': %d %s", filename.c_str(), errno, strerror(errno));
+		nlwarning ("PATH: Can't delete file '%s': %d %s", filename.c_str(), errno, strerror(errno));
 		return false;
 	}
 	return true;

@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.35 2003/09/03 13:50:56 lecroart Exp $
+ * $Id: config_file.h,v 1.36 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -294,7 +294,7 @@ struct EBadType : public EConfigFile
 		static char str[NLMISC::MaxCStringSize];
 		smprintf (str, NLMISC::MaxCStringSize, "Bad variable type, variable \"%s\" is a %s and not a %s", varName.c_str (), CConfigFile::CVar::TypeName[varType], CConfigFile::CVar::TypeName[wantedType]);
 		_Reason = str;
-		nlinfo("Exception will be launched: %s", _Reason.c_str());
+		nlinfo("CF: Exception will be launched: %s", _Reason.c_str());
 	}
 };
 
@@ -305,7 +305,7 @@ struct EBadSize : public EConfigFile
 		static char str[NLMISC::MaxCStringSize];
 		smprintf (str, NLMISC::MaxCStringSize, "Trying to access to the index %d but the variable \"%s\" size is %d", varIndex, varName.c_str (), varSize);
 		_Reason = str;
-		nlinfo("Exception will be launched: %s", _Reason.c_str());
+		nlinfo("CF: Exception will be launched: %s", _Reason.c_str());
 	}
 };
 
@@ -316,7 +316,7 @@ struct EUnknownVar : public EConfigFile
 		static char str[NLMISC::MaxCStringSize];
 		smprintf (str, NLMISC::MaxCStringSize, "variable \"%s\" not found in file \"%s\"", varName.c_str (), filename.c_str());
 		_Reason = str;
-		nlinfo("Exception will be launched: %s", _Reason.c_str());
+		nlinfo("CF: Exception will be launched: %s", _Reason.c_str());
 	}
 };
 
@@ -327,7 +327,7 @@ struct EParseError : public EConfigFile
 		static char str[NLMISC::MaxCStringSize];
 		smprintf (str, NLMISC::MaxCStringSize, "Parse error on the \"%s\" file, line %d", fileName.c_str (), currentLine);
 		_Reason = str;
-		nlinfo("Exception will be launched: %s", _Reason.c_str());
+		nlinfo("CF: Exception will be launched: %s", _Reason.c_str());
 	}
 };
 

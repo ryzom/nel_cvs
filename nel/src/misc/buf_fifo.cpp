@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.25 2003/02/07 16:06:48 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.26 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,7 +169,7 @@ void CBufFIFO::pop ()
 {
 	if (empty ())
 	{
-		nlwarning("Try to pop an empty fifo!");
+		nlwarning("BF: Try to pop an empty fifo!");
 		return;
 	}
 
@@ -210,7 +210,7 @@ uint8 CBufFIFO::frontLast ()
 	
 	if (empty ())
 	{
-		nlwarning("Try to get the front of an empty fifo!");
+		nlwarning("BF: Try to get the front of an empty fifo!");
 		return 0;
 	}
 
@@ -361,7 +361,7 @@ void CBufFIFO::front (uint8 *&buffer, uint32 &size)
 
 	if (empty ())
 	{
-		nlwarning("Try to get the front of an empty fifo!");
+		nlwarning("BF: Try to get the front of an empty fifo!");
 		return;
 	}
 
@@ -457,7 +457,7 @@ void CBufFIFO::resize (uint32 size)
 	if (size < _BufferSize && UsedSize > size)
 	{
 		// probleme, on a pas assez de place pour caser les datas => on fait pas
-		nlwarning("Can't resize the FIFO because there's not enough room in the new wanted buffer (%d bytes needed at least)", UsedSize);
+		nlwarning("BF: Can't resize the FIFO because there's not enough room in the new wanted buffer (%d bytes needed at least)", UsedSize);
 		return;
 	}
 

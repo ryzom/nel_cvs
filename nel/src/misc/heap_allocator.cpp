@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.11 2003/08/27 16:16:25 distrib Exp $
+ * $Id: heap_allocator.cpp,v 1.12 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2293,7 +2293,7 @@ uint CHeapAllocator::getAllocatedSystemMemory ()
 	int fd = open("/proc/self/stat", O_RDONLY);
 	if (fd == -1)
 	{
-		nlwarning ("Can't get OS from /proc/self/stat: %s", strerror (errno));
+		nlwarning ("HA: Can't get OS from /proc/self/stat: %s", strerror (errno));
 	}
 	else
 	{

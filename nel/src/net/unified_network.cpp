@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.69 2003/08/05 14:46:32 cado Exp $
+ * $Id: unified_network.cpp,v 1.70 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -368,10 +368,10 @@ void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &
 	{
 		CUnifiedNetwork::CUnifiedConnection *uc = &uni->_IdCnx[inSid];
 		nlstop;
-		nlinfo ("ext addr %s", vectorCInetAddressToString (uc->ExtAddress).c_str ());
+		nlinfo ("HNETL5: ext addr %s", vectorCInetAddressToString (uc->ExtAddress).c_str ());
 		for(uint i = 0; i < uc->Connection.size(); i++)
-			nlinfo ("cnx %s", uc->Connection[i].HostId->asString ().c_str ());
-		nlinfo ("%s", allstuffs.c_str ());
+			nlinfo ("HNETL5: cnx %s", uc->Connection[i].HostId->asString ().c_str ());
+		nlinfo ("HNETL5: %s", allstuffs.c_str ());
 	}
 
 	// send the callback to the user with the first connection
@@ -712,7 +712,7 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 			// It's happen, for example, when you try to connect to a service that is not in the network but use IP translation
 			if (j == laddr.size ())
 			{
-				nlwarning ("I can't access '%s' because I haven't a net card on this network, we'll use the first network", addr[i].asString ().c_str ());
+				nlwarning ("HNETL5: I can't access '%s' because I haven't a net card on this network, we'll use the first network", addr[i].asString ().c_str ());
 				j = 0;
 			}
 		}
@@ -749,7 +749,7 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 		{
 			uc->Connection[i] = CUnifiedNetwork::CUnifiedConnection::TConnection(cbc);
 
-			nlinfo ("%s", allstuffs.c_str ());
+			nlinfo ("HNETL5: %s", allstuffs.c_str ());
 		}
 
 		if (connectSuccess && sendId)
@@ -1336,7 +1336,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 	uint8 connectionId = findConnectionId ((*itnmc).second, nid);
 	if (connectionId == 0xff)	// failed
 	{
-		nlwarning ("Can't getNetBase %s because no connection available", name.c_str());
+		nlwarning ("HNETL5: Can't getNetBase %s because no connection available", name.c_str());
 		host = InvalidSockId;
 		return NULL;
 	}
@@ -1361,7 +1361,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(uint16 sid, TSockId &host, uint8 n
 	uint8 connectionId = findConnectionId (sid, nid);
 	if (connectionId == 0xff)	// failed
 	{
-		nlwarning ("Can't getNetBase %hu because no connection available", sid);
+		nlwarning ("HNETL5: Can't getNetBase %hu because no connection available", sid);
 		host = InvalidSockId;
 		return NULL;
 	}
@@ -1481,7 +1481,7 @@ CUnifiedNetwork::CUnifiedConnection	*CUnifiedNetwork::getUnifiedConnection (uint
 	{
 		if (sid != _IdCnx[sid].ServiceId)
 		{
-			AUTOCHECK_DISPLAY ("Sid index %hu is not the same that in the entry %hu", sid, _IdCnx[sid].ServiceId);
+			AUTOCHECK_DISPLAY ("HNETL5: Sid index %hu is not the same that in the entry %hu", sid, _IdCnx[sid].ServiceId);
 			return NULL;
 		}
 		return &_IdCnx[sid];
@@ -1489,7 +1489,7 @@ CUnifiedNetwork::CUnifiedConnection	*CUnifiedNetwork::getUnifiedConnection (uint
 	else
 	{
 		if ( warn )
-			nlwarning ("Try to get a bad unified connection (sid %hu is not in the table)", sid);
+			nlwarning ("HNETL5: Try to get a bad unified connection (sid %hu is not in the table)", sid);
 		return NULL;
 	}
 }
@@ -1692,7 +1692,7 @@ void CUnifiedNetwork::addNamedCnx (const std::string &name, uint16 sid)
 
 		if (it != range.second)
 		{
-			AUTOCHECK_DISPLAY ("Try to add 2 times the same connection %s-%hu", name.c_str(), sid);
+			AUTOCHECK_DISPLAY ("HNETL5: Try to add 2 times the same connection %s-%hu", name.c_str(), sid);
 			return;
 		}
 	}
@@ -1715,7 +1715,7 @@ void CUnifiedNetwork::removeNamedCnx (const std::string &name, uint16 sid)
 	// assume not empty
 	if (range.first == range.second)
 	{
-		AUTOCHECK_DISPLAY ("The unified connection %s-%hu wasn't on the _NamedCnx", name.c_str(), sid);
+		AUTOCHECK_DISPLAY ("HNETL5: The unified connection %s-%hu wasn't on the _NamedCnx", name.c_str(), sid);
 		return;
 	}
 
@@ -1726,7 +1726,7 @@ void CUnifiedNetwork::removeNamedCnx (const std::string &name, uint16 sid)
 	// assume id exists
 	if (it == range.second)
 	{
-		AUTOCHECK_DISPLAY ("The unified connection %s-%hu wasn't on the _NamedCnx", name.c_str(), sid);
+		AUTOCHECK_DISPLAY ("HNETL5: The unified connection %s-%hu wasn't on the _NamedCnx", name.c_str(), sid);
 		return;
 	}
 
@@ -1759,7 +1759,7 @@ void CUnifiedNetwork::callServiceUpCallback (const std::string &serviceName, uin
 			if (cb)
 				cb(serviceName, sid, (*it2).second);
 			else
-				nlwarning ("User set an empty callback for '%s' service up", serviceName.c_str());
+				nlwarning ("HNETL5: User set an empty callback for '%s' service up", serviceName.c_str());
 		}
 	}
 	
@@ -1770,7 +1770,7 @@ void CUnifiedNetwork::callServiceUpCallback (const std::string &serviceName, uin
 			if (_UpUniCallback[c].first != NULL)
 				_UpUniCallback[c].first (serviceName, sid, _UpUniCallback[c].second);
 			else
-				nlwarning ("User set an empty callback for '*' service up");
+				nlwarning ("HNETL5: User set an empty callback for '*' service up");
 		}
 	}
 }
@@ -1788,7 +1788,7 @@ void CUnifiedNetwork::callServiceDownCallback (const std::string &serviceName, u
 			if (cb)
 				cb(serviceName, sid, (*it2).second);
 			else
-				nlwarning ("User set an empty callback for '%s' service down", serviceName.c_str());
+				nlwarning ("HNETL5: User set an empty callback for '%s' service down", serviceName.c_str());
 		}
 	}
 	
@@ -1799,7 +1799,7 @@ void CUnifiedNetwork::callServiceDownCallback (const std::string &serviceName, u
 			if (_DownUniCallback[c].first != NULL)
 				_DownUniCallback[c].first (serviceName, sid, _DownUniCallback[c].second);
 			else
-				nlwarning ("User set an empty callback for '*' service down");
+				nlwarning ("HNETL5: User set an empty callback for '*' service down");
 		}
 	}
 }

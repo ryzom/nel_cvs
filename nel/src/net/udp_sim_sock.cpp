@@ -2,7 +2,7 @@
  * This class provides the same function as CUdpSock but can simulate
  * lag and other parameter like packet lost.
  *
- * $Id: udp_sim_sock.cpp,v 1.2 2002/11/04 14:34:48 lecroart Exp $
+ * $Id: udp_sim_sock.cpp,v 1.3 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -219,7 +219,7 @@ void				CUdpSimSock::setSimValues (NLMISC::CConfigFile &cf)
 	}
 	catch (Exception &e)
 	{
-		nlwarning ("Problem during getting Sim values from config file: %s", e.what());
+		nlwarning ("LNETL0: Problem during getting Sim values from config file: %s", e.what());
 	}
 }
 

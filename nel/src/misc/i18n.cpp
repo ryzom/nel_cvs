@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.41 2003/10/10 15:48:00 boucher Exp $
+ * $Id: i18n.cpp,v 1.42 2003/10/20 16:10:17 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -78,7 +78,7 @@ void CI18N::load (const std::string &languageCode)
 
 	if (i == _NbLanguages)
 	{
-		nlwarning("Unknow language code : %s, defaulting to %s", _LanguageCodes[0].c_str());
+		nlwarning("I18N: Unknow language code : %s, defaulting to %s", _LanguageCodes[0].c_str());
 		i = 0;
 	}
 
@@ -108,14 +108,14 @@ void CI18N::load (const std::string &languageCode)
 		ucstring ucs;
 		if (!parseLabel(first, last, label))
 		{
-			nlwarning("Error reading label field in %s. Stop reading after %s.", fileName.c_str(), lastReadLabel.c_str());
+			nlwarning("I18N: Error reading label field in %s. Stop reading after %s.", fileName.c_str(), lastReadLabel.c_str());
 			return;
 		}
 		lastReadLabel = label;
 		skipWhiteSpace(first, last);
 		if (!parseMarkedString('[', ']', first, last, ucs))
 		{
-			nlwarning("Error reading text for label %s in %s. Stop reading.", label.c_str(), fileName.c_str());
+			nlwarning("I18N: Error reading text for label %s in %s. Stop reading.", label.c_str(), fileName.c_str());
 			return;
 		}
 
@@ -124,7 +124,7 @@ void CI18N::load (const std::string &languageCode)
 		ret = _StrMap.insert(std::make_pair(label, ucs));
 		if (!ret.second)
 		{
-			nlwarning("Error in %s, the label %s exist twice !", fileName.c_str(), label.c_str());
+			nlwarning("I18N: Error in %s, the label %s exist twice !", fileName.c_str(), label.c_str());
 		}
 		skipWhiteSpace(first, last);
 	}
@@ -133,7 +133,7 @@ void CI18N::load (const std::string &languageCode)
 	StrMapContainer::iterator it(_StrMap.find("LanguageName"));
 	if (it == _StrMap.end())
 	{
-		nlwarning("In file %s, missing LanguageName translation (should be first in file)", fileName.c_str());
+		nlwarning("I18N: In file %s, missing LanguageName translation (should be first in file)", fileName.c_str());
 	}
 }
 
@@ -150,7 +150,7 @@ const ucstring &CI18N::get (const std::string &label)
 	if (it != _StrMap.end())
 		return it->second;
 
-	nlwarning("The string %s did not exist in language %s", label.c_str(), _LanguageCodes[_SelectedLanguage].c_str());
+	nlwarning("I18N: The string %s did not exist in language %s", label.c_str(), _LanguageCodes[_SelectedLanguage].c_str());
 
 	static ucstring	badString;
 
@@ -309,7 +309,7 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 			// ignore tab, new lines and line feed
 			if (*it == openMark)
 			{
-				nlwarning("Found a non escaped openmark %c in a delimited string (Delimiters : '%c' - '%c')", char(openMark), char(openMark), char(closeMark));
+				nlwarning("I18N: Found a non escaped openmark %c in a delimited string (Delimiters : '%c' - '%c')", char(openMark), char(openMark), char(closeMark));
 				return false;
 			}
 			if (*it == '\t' || *it == '\n' || *it == '\r')
@@ -338,7 +338,7 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 					else if(*it == openMark)
 						result.push_back(openMark);
 					else
-						nlwarning("Ignoring unknown escape code \\%c (char value : %u)", char(*it), *it);
+						nlwarning("I18N: Ignoring unknown escape code \\%c (char value : %u)", char(*it), *it);
 				}
 				++it;
 			}
@@ -355,7 +355,7 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 
 		if (it == last || *it != closeMark)
 		{
-			nlwarning("Missing end of delimited string (Delimiters : '%c' - '%c')", char(openMark), char(closeMark));
+			nlwarning("I18N: Missing end of delimited string (Delimiters : '%c' - '%c')", char(openMark), char(closeMark));
 			return false;
 		}
 		else
@@ -363,7 +363,7 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 	}
 	else
 	{
-		nlwarning("Malformed or non existent delimited string (Delimiters : '%c' - '%c')", char(openMark), char(closeMark));
+		nlwarning("I18N: Malformed or non existent delimited string (Delimiters : '%c' - '%c')", char(openMark), char(closeMark));
 		return false;
 	}
 
@@ -422,7 +422,7 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 			if (parseMarkedString('\"', '\"', first, last, name))
 			{
 				string subFilename = name.toString();
-				nldebug("Including '%s' into '%s'",
+				nldebug("I18N: Including '%s' into '%s'",
 					subFilename.c_str(),
 					filename.c_str());
 				ucstring inserted;
@@ -441,7 +441,7 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 			}
 			else
 			{
-				nlwarning("Error parsing include file in line '%s' from file '%s'",
+				nlwarning("I18N: Error parsing include file in line '%s' from file '%s'",
 					result.substr(pos, result.find(ucstring("\n"), pos) - pos).c_str(),
 					filename.c_str());
 			}

@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.17 2002/12/16 18:03:09 cado Exp $
+ * $Id: buf_sock.h,v 1.18 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,7 +144,7 @@ protected:
 		// Test flag
 		if ( flag==condition )
 		{
-			nldebug( "Pushing event to %s", asString().c_str() );
+			nldebug( "LNETL1: Pushing event to %s", asString().c_str() );
 			std::vector<uint8> buffer;
 			if ( sockid == InvalidSockId )
 			{

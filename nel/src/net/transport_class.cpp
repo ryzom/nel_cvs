@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.18 2003/07/16 13:17:18 cado Exp $
+ * $Id: transport_class.cpp,v 1.19 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -89,18 +89,18 @@ string typeToString (CTransportClass::TProp type)
 
 void CTransportClass::displayDifferentClass (uint8 sid, const string &className, const vector<CRegisteredBaseProp> &otherClass, const vector<CRegisteredBaseProp *> &myClass)
 {
-	nlinfo ("Service with sid %u send me the TransportClass '%s' with differents properties:", sid, className.c_str());
+	nlinfo ("NETTC: Service with sid %u send me the TransportClass '%s' with differents properties:", sid, className.c_str());
 	uint i;
-	nlinfo ("  My local TransportClass is:");
+	nlinfo ("NETTC:  My local TransportClass is:");
 	for (i = 0; i < myClass.size(); i++)
 	{
-		nlinfo ("    Property: %d Name: '%s' type: '%s'", i, myClass[i]->Name.c_str(), typeToString(myClass[i]->Type).c_str());
+		nlinfo ("NETTC:    Property: %d Name: '%s' type: '%s'", i, myClass[i]->Name.c_str(), typeToString(myClass[i]->Type).c_str());
 	}
 
-	nlinfo ("  The other side TransportClass is:");
+	nlinfo ("NETTC:  The other side TransportClass is:");
 	for (i = 0; i < otherClass.size(); i++)
 	{
-		nlinfo ("    Property: %d Name: '%s' type: '%s'", i, otherClass[i].Name.c_str(), typeToString(otherClass[i].Type).c_str());
+		nlinfo ("NETTC:    Property: %d Name: '%s' type: '%s'", i, otherClass[i].Name.c_str(), typeToString(otherClass[i].Type).c_str());
 	}
 }
 
@@ -114,7 +114,7 @@ void CTransportClass::registerOtherSideClass (uint8 sid, TOtherSideRegisteredCla
 		if (res == LocalRegisteredClass.end ())
 		{
 			// it s a class that the other side have but not me, can't send this class
-			nlwarning ("CTransportClass::registerOtherSideClass(): the other side class '%s' is not registered in my system, skip it", (*it).first.c_str());
+			nlwarning ("NETTC: the other side class '%s' is not registered in my system, skip it", (*it).first.c_str());
 			continue;
 		}
 
@@ -135,7 +135,7 @@ void CTransportClass::registerOtherSideClass (uint8 sid, TOtherSideRegisteredCla
 				{
 					if ((*it).second[j].Type != (*res).second.Instance->Prop[k]->Type)
 					{
-						nlwarning ("Property '%s' of the class '%s' have not the same type in the 2 sides (%s %s)", (*it).second[j].Name.c_str(), (*it).first.c_str(), typeToString((*it).second[j].Type).c_str(), typeToString((*res).second.Instance->Prop[k]->Type).c_str());
+						nlwarning ("NETTC: Property '%s' of the class '%s' have not the same type in the 2 sides (%s %s)", (*it).second[j].Name.c_str(), (*it).first.c_str(), typeToString((*it).second[j].Type).c_str(), typeToString((*res).second.Instance->Prop[k]->Type).c_str());
 					}
 					break;
 				}
@@ -264,7 +264,7 @@ void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 	CTransportClass::TRegisteredClass::iterator it = CTransportClass::LocalRegisteredClass.find (className);
 	if (it == CTransportClass::LocalRegisteredClass.end ())
 	{
-		nlwarning ("cbTCReceiveMessage(): Receive unknown transport class '%s' received from %s-%hu", className.c_str(), name.c_str(), sid);
+		nlwarning ("NETTC: Receive unknown transport class '%s' received from %s-%hu", className.c_str(), name.c_str(), sid);
 		return;
 	}
 
@@ -272,7 +272,7 @@ void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 	
 	if (!(*it).second.Instance->read (name, (uint8)sid))
 	{
-		nlwarning ("cbTCReceiveMessage(): Can't read the transportclass '%s' received from %s-%hu", className.c_str(), name.c_str(), sid);
+		nlwarning ("NETTC: Can't read the transportclass '%s' received from %s-%hu", className.c_str(), name.c_str(), sid);
 	}
 }
 

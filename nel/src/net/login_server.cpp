@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.31 2003/07/09 18:00:27 lecroart Exp $
+ * $Id: login_server.cpp,v 1.32 2003/10/20 16:12:01 lecroart Exp $
  *
  */
 
@@ -86,7 +86,7 @@ void refreshPendingList ()
 	{
 		if ((*it).Time < Time - TimeBeforeEraseCookie)
 		{
-			nlinfo("Removing cookie '%s' because too old", (*it).Cookie.toString().c_str());
+			nlinfo("LS: Removing cookie '%s' because too old", (*it).Cookie.toString().c_str());
 			it = PendingUsers.erase (it);
 		}
 		else
@@ -118,7 +118,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 		if ((*it).Cookie == cookie)
 		{
 			// the cookie already exists, erase it and return false
-			nlwarning ("cookie %s is already in the pending user list", cookie.toString().c_str());
+			nlwarning ("LS: Cookie %s is already in the pending user list", cookie.toString().c_str());
 			PendingUsers.erase (it);
 			reason = "cookie already exists";
 			break;
@@ -127,7 +127,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	if (it == PendingUsers.end ())
 	{
 		// add it to the awaiting client
-		nlinfo ("New cookie %s (name '%s' priv '%s') inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str());
+		nlinfo ("LS: New cookie %s (name '%s' priv '%s') inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str());
 		PendingUsers.push_back (CPendingUser (cookie, userName, userPriv));
 		reason = "";
 	}
@@ -151,11 +151,11 @@ void cbWSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint
 		map<uint32, TSockId>::iterator it = UserIdSockAssociations.find (userid);
 		if (it == UserIdSockAssociations.end ())
 		{
-			nlwarning ("Can't disconnect the user %d, he is not found", userid);
+			nlwarning ("LS: Can't disconnect the user %d, he is not found", userid);
 		}
 		else
 		{
-			nlinfo ("Disconnect the user %d", userid);
+			nlinfo ("LS: Disconnect the user %d", userid);
 			Server->disconnect ((*it).second);
 		}
 	}
@@ -206,7 +206,7 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	
 	if (!reason.empty())
 	{
-		nlwarning ("User (%s) is not in the pending user list (cookie:%s)", netbase.hostAddress(from).asString().c_str(), cookie.toString().c_str());
+		nlwarning ("LS: User (%s) is not in the pending user list (cookie:%s)", netbase.hostAddress(from).asString().c_str(), cookie.toString().c_str());
 		// deconnect him
 		netbase.disconnect (from);
 	}
@@ -229,7 +229,7 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 
 void ClientConnection (TSockId from, void *arg)
 {
-	nldebug("new client connection: %s", from->asString ().c_str ());
+	nldebug("LS: new client connection: %s", from->asString ().c_str ());
 
 	// the client could only call "SV" message
 	Server->authorizeOnly ("SV", from);
@@ -253,7 +253,7 @@ static void setListenAddress(const string &la)
 		ListenAddr = la;
 	}
 	
-	nlinfo("Listen Address that will be send to client is now '%s'", ListenAddr.c_str());
+	nlinfo("LS: Listen Address that will be send to client is now '%s'", ListenAddr.c_str());
 }
 
 void cfcbListenAddress (CConfigFile::CVar &var)
@@ -266,7 +266,7 @@ void cfcbDefaultUserPriv(CConfigFile::CVar &var)
 	// set the new ListenAddr
 	DefaultUserPriv = var.asString();
 	
-	nlinfo("The default user priv is '%s'", DefaultUserPriv.c_str());
+	nlinfo("LS: The default user priv is '%s'", DefaultUserPriv.c_str());
 }
 
 void cfcbAcceptInvalidCookie(CConfigFile::CVar &var)
@@ -274,7 +274,7 @@ void cfcbAcceptInvalidCookie(CConfigFile::CVar &var)
 	// set the new ListenAddr
 	AcceptInvalidCookie = var.asInt() == 1;
 	
-	nlinfo("This service %saccept invalid cookie", AcceptInvalidCookie?"":"doesn't ");
+	nlinfo("LS: This service %saccept invalid cookie", AcceptInvalidCookie?"":"doesn't ");
 }
 
 void cfcbTimeBeforeEraseCookie(CConfigFile::CVar &var)
@@ -282,7 +282,7 @@ void cfcbTimeBeforeEraseCookie(CConfigFile::CVar &var)
 	// set the new ListenAddr
 	TimeBeforeEraseCookie = var.asInt();
 	
-	nlinfo("This service will remove cookie after %d seconds", TimeBeforeEraseCookie);
+	nlinfo("LS: This service will remove cookie after %d seconds", TimeBeforeEraseCookie);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -372,7 +372,7 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, st
 	{
 		if ((*it).Cookie == lc)
 		{
-			nlinfo ("Cookie '%s' is valid and pending (user %s), send the client connection to the WS", lc.toString ().c_str (), (*it).UserName.c_str());
+			nlinfo ("LS: Cookie '%s' is valid and pending (user %s), send the client connection to the WS", lc.toString ().c_str (), (*it).UserName.c_str());
 
 			// warn the WS that the client effectively connected
 			uint8 con = 1;
@@ -474,7 +474,7 @@ NLMISC_DYNVARIABLE(string, LSListenAddress, "the listen address sended to the cl
 	{
 		if ((*pointer).find (":") == string::npos)
 		{
-			nlwarning ("You must set the address + port (ie: \"itsalive.nevrax.org:38000\")");
+			nlwarning ("LS: You must set the address + port (ie: \"itsalive.nevrax.org:38000\")");
 			return;
 		}
 		else if ((*pointer).empty())
@@ -485,7 +485,7 @@ NLMISC_DYNVARIABLE(string, LSListenAddress, "the listen address sended to the cl
 		{
 			ListenAddr = *pointer;
 		}
-		nlinfo ("Listen Address that will be send to client is '%s'", ListenAddr.c_str());
+		nlinfo ("LS: Listen Address that will be send to client is '%s'", ListenAddr.c_str());
 	}
 }
 

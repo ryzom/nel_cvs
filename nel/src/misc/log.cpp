@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.54 2003/08/21 09:25:47 boucher Exp $
+ * $Id: log.cpp,v 1.55 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,7 +130,7 @@ void CLog::addDisplayer (IDisplayer *displayer, bool bypassFilter)
 		}
 		else
 		{
-			nlwarning ("Couldn't add the displayer, it was already added");
+			nlwarning ("LOG: Couldn't add the displayer, it was already added");
 		}
 	}
 	else
@@ -142,7 +142,7 @@ void CLog::addDisplayer (IDisplayer *displayer, bool bypassFilter)
 		}
 		else
 		{
-			nlwarning ("Couldn't add the displayer, it was already added");
+			nlwarning ("LOG: Couldn't add the displayer, it was already added");
 		}
 	}
 }
@@ -151,7 +151,7 @@ void CLog::removeDisplayer (IDisplayer *displayer)
 {
 	if (displayer == NULL)
 	{
-		nlwarning ("Trying to remove a NULL displayer");
+		nlwarning ("LOG: Trying to remove a NULL displayer");
 		return;
 	}
 
@@ -173,7 +173,7 @@ void CLog::removeDisplayer (const char *displayerName)
 {
 	if (displayerName == NULL || displayerName[0] == '\0')
 	{
-		nlwarning ("Trying to remove an empty displayer name");
+		nlwarning ("LOG: Trying to remove an empty displayer name");
 		return;
 	}
 
@@ -207,7 +207,7 @@ IDisplayer *CLog::getDisplayer (const char *displayerName)
 {
 	if (displayerName == NULL || displayerName[0] == '\0')
 	{
-		nlwarning ("Trying to get an empty displayer name");
+		nlwarning ("LOG: Trying to get an empty displayer name");
 		return NULL;
 	}
 

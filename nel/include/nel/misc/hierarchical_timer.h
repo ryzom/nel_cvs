@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.22 2003/04/03 13:01:18 corvazier Exp $
+ * $Id: hierarchical_timer.h,v 1.23 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -488,7 +488,7 @@ inline void	CHTimer::after(bool displayAfter /*= false*/)
 	_CurrNode->LastSonsTotalTime = _CurrNode->SonsTotalTime;
 	if (displayAfter)
 	{		
-		nlinfo("FEHTIMER> %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);
+		nlinfo("HTIMER: %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);
 	}
 	//
 	if (_WantStandardDeviation)

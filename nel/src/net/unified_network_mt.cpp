@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network_mt.cpp,v 1.2 2002/10/24 08:39:20 lecroart Exp $
+ * $Id: unified_network_mt.cpp,v 1.3 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -727,7 +727,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 				}
 				catch (ESocketConnectionFailed &)
 				{
-					nlwarning ("Could not connect to the Naming Service (%s). Retrying in a few seconds...", _NamingServiceAddr.asString().c_str());
+					nlwarning ("HNETL5: Could not connect to the Naming Service (%s). Retrying in a few seconds...", _NamingServiceAddr.asString().c_str());
 				}
 			}
 		}
@@ -1413,7 +1413,7 @@ void	CUnifiedNetwork::autoCheck()
 		// ca crash ici des fois kan on quitte violement
 		if (i != (uint16)appId)
 		{
-			nlwarning("i != appId !! -- (i = %x) != (appId = %"NL_I64"x)", i, appId);
+			nlwarning("HNETL5: i != appId !! -- (i = %x) != (appId = %"NL_I64"x)", i, appId);
 			if (DefaultMemDisplayer)
 				DefaultMemDisplayer->write();
 

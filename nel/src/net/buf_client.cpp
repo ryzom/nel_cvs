@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.25 2003/07/09 15:20:00 cado Exp $
+ * $Id: buf_client.cpp,v 1.26 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,7 +165,7 @@ bool CBufClient::dataAvailable()
 			// Process disconnection event
 			case CBufNetBase::Disconnection:
 
-				nldebug( "Disconnection event" );
+				nldebug( "LNETL1: Disconnection event" );
 				_BufSock->setConnectedState( false );
 
 				// Call callback if needed

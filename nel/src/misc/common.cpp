@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.44 2003/10/20 14:35:29 lecroart Exp $
+ * $Id: common.cpp,v 1.45 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -865,5 +865,40 @@ void displayDwordBits( uint32 b, uint nbits, sint beginpos, bool displayBegin, N
 	}
 }
 
+
+NLMISC_COMMAND(sleep, "Freeze the service for N seconds (for debug purpose)", "<N>")
+{
+	if(args.size() != 1) return false;
+	
+	sint32 n = atoi (args[0].c_str());
+	
+	log.displayNL ("Sleeping during %d seconds", n);
+	
+	nlSleep(n * 1000);	
+	return true;
+}
+
+NLMISC_COMMAND(system, "Execute the command line using system() function call (wait until the end of the command)", "<commandline>")
+{
+	if(args.size() != 1) return false;
+	
+	string cmd = args[0];
+	log.displayNL ("Executing '%s'", cmd.c_str());
+	system(cmd.c_str());
+	log.displayNL ("End of Execution of '%s'", cmd.c_str());
+	return true;
+}
+
+NLMISC_COMMAND(launchProgram, "Execute the command line using launcProgram() function call (launch in background task without waiting the end of the execution)", "<programName> <arguments>")
+{
+	if(args.size() != 2) return false;
+	
+	string cmd = args[0];
+	string arg = args[1];
+	log.displayNL ("Executing '%s' with argument '%s'", cmd.c_str(), arg.c_str());
+	launchProgram(cmd, arg);
+	log.displayNL ("End of Execution of '%s' with argument '%s'", cmd.c_str(), arg.c_str());
+	return true;
+}
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.24 2003/09/08 08:20:18 berenguier Exp $
+ * $Id: sheet_id.cpp,v 1.25 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -51,7 +51,7 @@ const CSheetId CSheetId::Unknown(0);
 
 void CSheetId::cbFileChange (const std::string &filename)
 {
-	nlinfo ("%s changed, reload it", filename.c_str());
+	nlinfo ("SHEETID: %s changed, reload it", filename.c_str());
 
 	loadSheetId();
 }
@@ -64,7 +64,7 @@ CSheetId::CSheetId( const string& sheetName )
 {
 	if (!build(sheetName))
 	{
-		nlwarning("<CSheetId::CSheetId> The sheet '%s' is not in sheet_id.bin, setting it to Unknown",sheetName.c_str());
+		nlwarning("SHEETID: The sheet '%s' is not in sheet_id.bin, setting it to Unknown",sheetName.c_str());
 		*this = Unknown;
 	}
 
@@ -143,7 +143,7 @@ void CSheetId::loadSheetId ()
 				}
 			}
 
-			nlinfo ("Removed %d files on %d from CSheetId because these files doesn't exists", removednbfiles, nbfiles);
+			nlinfo ("SHEETID: Removed %d files on %d from CSheetId because these files doesn't exists", removednbfiles, nbfiles);
 		}
 
 		// build the invert map & file extension vector
@@ -231,7 +231,7 @@ void CSheetId::loadSheetAlias ()
 	}
 	else
 	{
-		nlwarning("<CSheetId::loadSheetAlias> Can't open the file alias.packed_sheets");
+		nlwarning("SHEETID: Can't open the file alias.packed_sheets");
 	}
 }
 
@@ -305,7 +305,7 @@ CSheetId& CSheetId::operator=( const string& sheetName )
 		return *this;
 	}
 	
-	nlwarning("<CSheetId::operator=> The sheet %s is not in sheet_id.bin, setting it to Unknown",sheetName.c_str());
+	nlwarning("SHEETID: The sheet %s is not in sheet_id.bin, setting it to Unknown",sheetName.c_str());
 	*this = Unknown;
 	
 	return *this;
@@ -385,7 +385,7 @@ void CSheetId::display()
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
 	{
 		//nlinfo("%d %s",(*itStr).first,(*itStr).second.c_str());
-		nlinfo("(%08x %d) %s",(*itStr).first,(*itStr).first,(*itStr).second.c_str());
+		nlinfo("SHEETID: (%08x %d) %s",(*itStr).first,(*itStr).first,(*itStr).second.c_str());
 	}
 
 } // display //
@@ -411,7 +411,7 @@ void CSheetId::display(uint8 type)
 		if (type==sheetId.IdInfos.Type)
 		{
 			//nlinfo("%d %s",(*itStr).first,(*itStr).second.c_str());
-			nlinfo("(%08x %d) %s",(*itStr).first,(*itStr).first,(*itStr).second.c_str());
+			nlinfo("SHEETID: (%08x %d) %s",(*itStr).first,(*itStr).first,(*itStr).second.c_str());
 		}
 	}
 

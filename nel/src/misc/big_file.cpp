@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.7 2003/01/07 17:46:20 miller Exp $
+ * $Id: big_file.cpp,v 1.8 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -215,7 +215,7 @@ FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize,
 	uint32 i, nPos = sFileName.find ('@');
 	if (nPos == string::npos)
 	{
-		nlwarning ("Couldn't load '%s'", sFileName.c_str());
+		nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
 		return NULL;
 	}
 
@@ -227,14 +227,14 @@ FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize,
 
 	if (_BNPs.find (zeBigFileName) == _BNPs.end())
 	{
-		nlwarning ("Couldn't load '%s'", sFileName.c_str());
+		nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
 		return NULL;
 	}
 
 	BNP &rbnp = _BNPs.find (zeBigFileName)->second;
 	if (rbnp.Files.find (zeFileName) == rbnp.Files.end())
 	{
-		nlwarning ("Couldn't load '%s'", sFileName.c_str());
+		nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
 		return NULL;
 	}
 

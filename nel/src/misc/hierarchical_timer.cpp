@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.29 2003/04/03 13:01:19 corvazier Exp $
+ * $Id: hierarchical_timer.cpp,v 1.30 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -228,7 +228,7 @@ void	CHTimer::endBench()
 	}
 	else
 	{
-		nlwarning("FEHTIMER> Stopping the bench inside a benched functions !");
+		nlwarning("HTIMER: Stopping the bench inside a benched functions !");
 	}
 	_Benching = false;
 }
@@ -800,7 +800,7 @@ void	CHTimer::after(bool displayAfter /*= false*/)
 
 	if (displayAfter)
 	{		
-		nlinfo("FEHTIMER> %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);
+		nlinfo("HTIMER: %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);
 	}
 	//
 	if (_WantStandardDeviation)

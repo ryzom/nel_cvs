@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.1 2003/10/15 17:07:17 cado Exp $
+ * $Id: diff_tool.cpp,v 1.2 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -134,7 +134,7 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 
 		if (!CI18N::parseLabel(first, last, si.Identifier))
 		{
-			nlwarning("Fatal : Invalid label will reading %s after %s\n", filename.c_str(), lastLabel.c_str());
+			nlwarning("DT: Fatal : Invalid label will reading %s after %s\n", filename.c_str(), lastLabel.c_str());
 			return false;
 		}
 		lastLabel = si.Identifier;
@@ -143,7 +143,7 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 
 		if (!CI18N::parseMarkedString(openMark, closeMark, first, last, si.Text))
 		{
-			nlwarning("Fatal : Invalid text value reading %s for label %s\n", filename.c_str(), lastLabel.c_str());
+			nlwarning("DT: Fatal : Invalid text value reading %s for label %s\n", filename.c_str(), lastLabel.c_str());
 			return false;
 		}
 
@@ -153,7 +153,7 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 
 			if (!CI18N::parseMarkedString(openMark, closeMark, first, last, si.Text2))
 			{
-				nlwarning("Fatal : Invalid text2 value reading %s for label %s\n", filename.c_str(), lastLabel.c_str());
+				nlwarning("DT: Fatal : Invalid text2 value reading %s for label %s\n", filename.c_str(), lastLabel.c_str());
 				return false;
 			}
 
@@ -184,7 +184,7 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 			it = unik.find(stringInfos[i].Identifier); 
 			if (it != unik.end())
 			{
-				nlwarning("loadStringFile : identifier '%s' exist twice", stringInfos[i].Identifier.c_str() );
+				nlwarning("DT: loadStringFile : identifier '%s' exist twice", stringInfos[i].Identifier.c_str() );
 				error = true;
 			}
 			else
@@ -309,20 +309,20 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			break;
 		if (!CI18N::parseLabel(first, last, phrase.Identifier))
 		{
-			nlwarning("Error parsing phrase identifier after %s\n", lastRead.c_str());
+			nlwarning("DT: Error parsing phrase identifier after %s\n", lastRead.c_str());
 			return false;
 		}
 		lastRead = phrase.Identifier;
 		CI18N::skipWhiteSpace(first, last, &phrase.Comments);
 		if (!CI18N::parseMarkedString('(', ')', first, last, phrase.Parameters))
 		{
-			nlwarning("Error parsing parameter list for phrase %s\n", phrase.Identifier.c_str());
+			nlwarning("DT: Error parsing parameter list for phrase %s\n", phrase.Identifier.c_str());
 			return false;
 		}
 		CI18N::skipWhiteSpace(first, last, &phrase.Comments);
 		if (first == last || *first != '{')
 		{
-			nlwarning("Error parsing block opening '{' in phase %s\n", phrase.Identifier.c_str());
+			nlwarning("DT: Error parsing block opening '{' in phase %s\n", phrase.Identifier.c_str());
 			return false;
 		}
 		++first;
@@ -339,7 +339,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			CI18N::skipWhiteSpace(first, last, &clause.Comments);
 			if (first == last)
 			{
-				nlwarning("Found end of file in non closed block for phrase %s\n", phrase.Identifier.c_str());
+				nlwarning("DT: Found end of file in non closed block for phrase %s\n", phrase.Identifier.c_str());
 				return false;
 			}
 
@@ -352,7 +352,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			{
 				if (!CI18N::parseMarkedString('(', ')', first, last, cond))
 				{
-					nlwarning("Error parsing conditionnal expression in phrase %s, clause %u\n", phrase.Identifier.c_str(), phrase.Clauses.size()+1);
+					nlwarning("DT: Error parsing conditionnal expression in phrase %s, clause %u\n", phrase.Identifier.c_str(), phrase.Clauses.size()+1);
 					return false;
 				}
 				clause.Conditions += "(" + cond + ") ";
@@ -360,7 +360,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			}
 			if (first == last)
 			{
-				nlwarning("Found end of file in non closed block for phrase %s\n", phrase.Identifier.c_str());
+				nlwarning("DT: Found end of file in non closed block for phrase %s\n", phrase.Identifier.c_str());
 				return false;
 			}
 			// read the idnetifier (if any)
@@ -375,7 +375,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			}
 			else
 			{
-				nlwarning("Error reading text for clause %u (%s) in  phrase %s\n", 
+				nlwarning("DT: Error reading text for clause %u (%s) in  phrase %s\n", 
 					phrase.Clauses.size()+1, 
 					clause.Identifier.c_str(), 
 					phrase.Identifier.c_str());
@@ -388,7 +388,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 		CI18N::skipWhiteSpace(first, last);
 		if (first == last || *first != '}')
 		{
-			nlwarning("Missing block clogin tag '}' in phrase %s\n", phrase.Identifier.c_str());
+			nlwarning("DT: Missing block clogin tag '}' in phrase %s\n", phrase.Identifier.c_str());
 			return false;
 		}
 		++first;
@@ -413,7 +413,7 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			it = unik.find(phrases[i].Identifier); 
 			if (it != unik.end())
 			{
-				nlwarning("loadStringFile : identifier '%s' exist twice", phrases[i].Identifier.c_str() );
+				nlwarning("DT: loadStringFile : identifier '%s' exist twice", phrases[i].Identifier.c_str() );
 				error = true;
 			}
 			else
@@ -525,7 +525,7 @@ bool loadExcelSheet(const string filename, TWorksheet &worksheet, bool checkUniq
 	CIFile	fp;
 	if(!fp.open(filename))
 	{
-		nldebug("Can't open file [%s]\n", filename.c_str());
+		nldebug("DT: Can't open file [%s]\n", filename.c_str());
 		return true;
 	}
 	fp.close();
@@ -630,7 +630,7 @@ bool readExcelSheet(const ucstring &str, TWorksheet &worksheet, bool checkUnique
 					it = unik.find(worksheet.getData(i, nameCol)); 
 					if (it != unik.end())
 					{
-						nlwarning("loadStringFile : identifier '%s' exist twice", worksheet.getData(i, nameCol).toString().c_str() );
+						nlwarning("DT: loadStringFile : identifier '%s' exist twice", worksheet.getData(i, nameCol).toString().c_str() );
 						error = true;
 					}
 					else

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.4 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: async_file_manager.cpp,v 1.5 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -222,7 +222,7 @@ void CAsyncFileManager::CFileLoad::run (void)
 	}
 	else
 	{
-		nlwarning ("Couldn't load '%s'", _FileName.c_str());
+		nlwarning ("AFM: Couldn't load '%s'", _FileName.c_str());
 		*_ppFile = (uint8*)-1;
 	}
 }
@@ -267,7 +267,7 @@ void CAsyncFileManager::CMultipleFileLoad::run (void)
 		}
 		else
 		{
-			nlwarning ("Couldn't load '%s'", _FileNames[i].c_str());
+			nlwarning ("AFM: Couldn't load '%s'", _FileNames[i].c_str());
 			*_Ptrs[i] = (uint8*)-1;
 		}
 	}

@@ -25,7 +25,7 @@
  *      implementation only works with messages with a length that is
  *      a multiple of the size of an 8-bit character.
  *
- * $Id: sha1.cpp,v 1.3 2003/02/20 17:12:13 coutelas Exp $
+ * $Id: sha1.cpp,v 1.4 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,21 +145,21 @@ CHashKey getSHA1(const uint8 *buffer, uint32 size)
 	err = SHA1Reset(&sha);
 	if (err)
 	{
-		nlwarning("SHA1Reset Error %d.\n", err );
+		nlwarning("SHA: SHA1Reset Error %d.\n", err );
 		return CHashKey();
 	}
 	
 	err = SHA1Input(&sha, (const uint8_t*)buffer, size);
 	if (err)
 	{
-		nlwarning ("SHA1Input Error %d.\n", err);
+		nlwarning ("SHA: SHA1Input Error %d.\n", err);
 		return CHashKey();
 	}
 	
 	err = SHA1Result(&sha, Message_Digest);
 	if (err)
 	{
-		nlwarning("SHA1Result Error %d, could not compute message digest.\n", err );
+		nlwarning("SHA: SHA1Result Error %d, could not compute message digest.\n", err );
 		return CHashKey();
 	}
 	
@@ -178,7 +178,7 @@ CHashKey getSHA1(const string &filename)
 	ifile.setCacheFileOnOpen(true);
 	if (!ifile.open(CPath::lookup(filename)))
 	{
-		nlwarning ("Can't open the file '%s'", filename.c_str());
+		nlwarning ("SHA: Can't open the file '%s'", filename.c_str());
 		return CHashKey();
 	}
 
@@ -188,7 +188,7 @@ CHashKey getSHA1(const string &filename)
 	err = SHA1Reset(&sha);
 	if (err)
 	{
-		nlwarning("SHA1Reset Error %d.\n", err );
+		nlwarning("SHA: SHA1Reset Error %d.\n", err );
 		ifile.close ();
 		return CHashKey();
 	}
@@ -205,7 +205,7 @@ CHashKey getSHA1(const string &filename)
 		err = SHA1Input(&sha, buffer, n);
 		if (err)
 		{
-			nlwarning ("SHA1Input Error %d.\n", err);
+			nlwarning ("SHA: SHA1Input Error %d.\n", err);
 			ifile.close();
 			return CHashKey();
 		}
@@ -218,7 +218,7 @@ CHashKey getSHA1(const string &filename)
 	err = SHA1Result(&sha, Message_Digest);
 	if (err)
 	{
-		nlwarning("SHA1Result Error %d, could not compute message digest.\n", err );
+		nlwarning("SHA: SHA1Result Error %d, could not compute message digest.\n", err );
 		return CHashKey();
 	}
 

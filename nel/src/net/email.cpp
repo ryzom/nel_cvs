@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: email.cpp,v 1.5 2003/01/21 14:02:21 lecroart Exp $
+ * $Id: email.cpp,v 1.6 2003/10/20 16:12:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,7 +91,7 @@ bool sendEMailCommand (CTcpSock &sock, const std::string &command, uint32 code =
 	{
 		if (sock.send ((uint8 *)buffer.c_str(), size) != CSock::Ok)
 		{
-			nlwarning ("Can't send data to the server");
+			nlwarning ("EMAIL: Can't send data to the server");
 			return false;
 		}
 	}
@@ -110,7 +110,7 @@ bool sendEMailCommand (CTcpSock &sock, const std::string &command, uint32 code =
 				uint32 c = atoi (res.c_str());
 				if (c != code)
 				{
-					nlwarning ("EMail command '%s' returned '%s' instead of code %d on sock %s", command.substr(0, 20).c_str(), res.substr(0, res.size()-2).c_str(), code, sock.remoteAddr().asString().c_str());
+					nlwarning ("EMAIL: EMail command '%s' returned '%s' instead of code %d on sock %s", command.substr(0, 20).c_str(), res.substr(0, res.size()-2).c_str(), code, sock.remoteAddr().asString().c_str());
 					return false;
 				}
 				return true;
@@ -118,7 +118,7 @@ bool sendEMailCommand (CTcpSock &sock, const std::string &command, uint32 code =
 		}
 		else
 		{
-			nlwarning ("EMail connection closed before end of line, command '%s' returned '%s' on sock %s (code %d)", command.substr(0, 20).c_str(), res.c_str(), sock.remoteAddr().asString().c_str(), code);
+			nlwarning ("EMAIL: EMail connection closed before end of line, command '%s' returned '%s' on sock %s (code %d)", command.substr(0, 20).c_str(), res.c_str(), sock.remoteAddr().asString().c_str(), code);
 			return false;
 		}
 	}
@@ -143,7 +143,7 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 		{
 			if(DefaultSMTPServer.empty())
 			{
-				nlwarning ("Can't send email because no SMTPServer was provided");
+				nlwarning ("EMAIL: Can't send email because no SMTPServer was provided");
 				goto end;
 			}
 			else
@@ -160,7 +160,7 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 
 		if (!sock.connected())
 		{
-			nlwarning ("Can't connect to email server %s", formatedSMTPServer.c_str());
+			nlwarning ("EMAIL: Can't connect to email server %s", formatedSMTPServer.c_str());
 			goto end;
 		}
 
@@ -168,7 +168,7 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 		{
 			if(DefaultTo.empty())
 			{
-				nlwarning ("Can't send email because no To was provided");
+				nlwarning ("EMAIL: Can't send email because no To was provided");
 				goto end;
 			}
 			else
@@ -243,7 +243,7 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 			FILE *src_stream = fopen (attachedFile.c_str(), "rb");
 			if (src_stream == NULL)
 			{
-				nlwarning ("Can't attach file '%s' to the email because the file can't be open", attachedFile.c_str());
+				nlwarning ("EMAIL: Can't attach file '%s' to the email because the file can't be open", attachedFile.c_str());
 			}
 			else
 			{
@@ -305,7 +305,7 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 	}
 	catch (Exception &e)
 	{
-		nlwarning ("Can't send email: %s", e.what());
+		nlwarning ("EMAIL: Can't send email: %s", e.what());
 		goto end;
 	}
 

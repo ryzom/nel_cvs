@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.52 2003/09/12 17:05:36 besson Exp $
+ * $Id: config_file.cpp,v 1.53 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -245,7 +245,7 @@ void CConfigFile::load (const string &fileName)
 {
 	if(fileName.empty())
 	{
-		nlwarning ("Can't load a empty file name configfile");
+		nlwarning ("CF: Can't load a empty file name configfile");
 		return;
 	}
 
@@ -298,7 +298,7 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 {
 	if (FileNames.empty())
 	{
-		nlwarning ("Can't reparse config file because file name is empty");
+		nlwarning ("CF: Can't reparse config file because file name is empty");
 		return;
 	}
 
@@ -312,7 +312,7 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 	while (!fn.empty())
 	{
 		fn = NLMISC::CPath::getFullPath(fn, false);
-		nldebug ("Adding config file '%s' in the config file", fn.c_str());
+		nldebug ("CF: Adding config file '%s' in the config file", fn.c_str());
 		FileNames.push_back (fn);
 		LastModified.push_back (CFile::getFileModificationDate(fn));
 
@@ -325,13 +325,13 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 			cf_ifile.close();
 			if (!parsingOK)
 			{
-				nlwarning ("Parsing error in file %s line %d", fn.c_str(), cf_CurrentLine);
+				nlwarning ("CF: Parsing error in file %s line %d", fn.c_str(), cf_CurrentLine);
 				throw EParseError (fn, cf_CurrentLine);
 			}
 		}
 		else
 		{
-			nlwarning ("Config file '%s' not found in the path '%s'", fn.c_str(), CPath::getCurrentPath().c_str());
+			nlwarning ("CF: Config file '%s' not found in the path '%s'", fn.c_str(), CPath::getCurrentPath().c_str());
 			throw EFileNotFound (fn);
 		}
 		cf_ifile.close ();
@@ -353,7 +353,7 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 
 			if (RootConfigFilename != fn)
 			{
-				nlinfo ("RootConfigFilename variable found in the '%s' config file, parse the root config file '%s'", fn.c_str(), RootConfigFilename.c_str());
+				nlinfo ("CF: RootConfigFilename variable found in the '%s' config file, parse the root config file '%s'", fn.c_str(), RootConfigFilename.c_str());
 				fn = RootConfigFilename;
 			}
 			else
@@ -476,7 +476,7 @@ void CConfigFile::save () const
 	FILE *fp = fopen (getFilename().c_str (), "w");
 	if (fp == NULL)
 	{
-		nlwarning ("Couldn't create %s file", getFilename().c_str ());
+		nlwarning ("CF: Couldn't create %s file", getFilename().c_str ());
 		return;
 	}
 
@@ -635,7 +635,7 @@ void CConfigFile::display (CLog *log) const
 void CConfigFile::setCallback (void (*cb)())
 {
 	_Callback = cb;
-	nlinfo ("Setting callback when the file '%s' is modified externaly", FileNames.empty()?"":getFilename().c_str());
+	nlinfo ("CF: Setting callback when the file '%s' is modified externaly", FileNames.empty()?"":getFilename().c_str());
 }
 
 void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CVar &var))
@@ -645,7 +645,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 		if (VarName == (*it).Name)
 		{
 			(*it).Callback = cb;
-			nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly", VarName.c_str(), getFilename().c_str());
+			nlinfo ("CF: Setting callback when the variable '%s' on the file '%s' is modified externaly", VarName.c_str(), getFilename().c_str());
 			return;
 		}
 	}
@@ -656,7 +656,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 	Var.Type = CVar::T_UNKNOWN;
 	Var.Comp = false;
 	_Vars.push_back (Var);
-	nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), getFilename().c_str());
+	nlinfo ("CF: Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), getFilename().c_str());
 }
 
 // ***************************************************************************
@@ -696,7 +696,7 @@ void CConfigFile::checkConfigFiles ()
 			}
 			catch (EConfigFile &e)
 			{
-				nlwarning ("Exception will re-reading modified config file '%s': %s", e.what ());
+				nlwarning ("CF: Exception will re-reading modified config file '%s': %s", e.what ());
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.15 2003/05/16 17:46:42 lecroart Exp $
+ * $Id: i_xml.cpp,v 1.16 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -195,7 +195,7 @@ bool CIXml::init (IStream &stream)
 	}
 	else
 	{
-		nlwarning ("The stream is not an input stream.");
+		nlwarning ("XML: The stream is not an input stream.");
 	}
 
 	// Error

@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.10 2003/03/10 18:13:33 corvazier Exp $
+ * $Id: o_xml.cpp,v 1.11 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -357,7 +357,7 @@ void COXml::serial(ucstring &b)
 		else
 		{
 			/// \todo hulud: handle ucstring to utf-8.
-			nlwarning ("handle ucstring to utf-8");
+			nlwarning ("XML: handle ucstring to utf-8");
 			output[i]=(b[i]&0xff);
 		}
 	}
@@ -436,13 +436,13 @@ bool COXml::xmlPushBeginInternal (const char *nodeName)
 		}
 		else
 		{
-			nlwarning ( "You must close your xmlPushBegin - xmlPushEnd before calling a new xmlPushBegin.");
+			nlwarning ( "XML: You must close your xmlPushBegin - xmlPushEnd before calling a new xmlPushBegin.");
 			return false;
 		}
 	}
 	else
 	{
-		nlwarning ( "Output stream has not been setuped.");
+		nlwarning ( "XML: Output stream has not been setuped.");
 		return false;
 	}
 
@@ -467,13 +467,13 @@ bool COXml::xmlPushEndInternal ()
 		}
 		else
 		{
-			nlwarning ( "You must call xmlPushBegin before calling xmlPushEnd.");
+			nlwarning ( "XML: You must call xmlPushBegin before calling xmlPushEnd.");
 			return false;
 		}
 	}
 	else
 	{
-		nlwarning ( "Output stream has not been setuped.");
+		nlwarning ( "XML: Output stream has not been setuped.");
 		return false;
 	}
 
@@ -501,13 +501,13 @@ bool COXml::xmlPopInternal ()
 		}
 		else
 		{
-			nlwarning ( "You must call xmlPop after xmlPushEnd.");
+			nlwarning ( "XML: You must call xmlPop after xmlPushEnd.");
 			return false;
 		}
 	}
 	else
 	{
-		nlwarning ( "Output stream has not been setuped.");
+		nlwarning ( "XML: Output stream has not been setuped.");
 		return false;
 	}
 
@@ -535,13 +535,13 @@ bool COXml::xmlSetAttribInternal (const char *attribName)
 		}
 		else
 		{
-			nlwarning ( "You must call xmlSetAttrib between xmlPushBegin and xmlPushEnd calls.");
+			nlwarning ( "XML: You must call xmlSetAttrib between xmlPushBegin and xmlPushEnd calls.");
 			return false;
 		}
 	}
 	else
 	{
-		nlwarning ( "Output stream has not been setuped.");
+		nlwarning ( "XML: Output stream has not been setuped.");
 		return false;
 	}
 
@@ -566,13 +566,13 @@ bool COXml::xmlBreakLineInternal ()
 		}
 		else
 		{
-			nlwarning ( "You must call xmlNBreakLine after xmlPushEnd.");
+			nlwarning ( "XML: You must call xmlNBreakLine after xmlPushEnd.");
 			return false;
 		}
 	}
 	else
 	{
-		nlwarning ( "Output stream has not been setuped.");
+		nlwarning ( "XML: Output stream has not been setuped.");
 		return false;
 	}
 
@@ -600,13 +600,13 @@ bool COXml::xmlCommentInternal (const char *comment)
 		}
 		else
 		{
-			nlwarning ( "You must call xmlCommentInternal between xmlPushBegin and xmlPushEnd.");
+			nlwarning ( "XML: You must call xmlCommentInternal between xmlPushBegin and xmlPushEnd.");
 			return false;
 		}
 	}
 	else
 	{
-		nlwarning ( "Output stream has not been setuped.");
+		nlwarning ( "XML: Output stream has not been setuped.");
 		return false;
 	}
 	// Ok

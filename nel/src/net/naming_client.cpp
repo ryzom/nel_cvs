@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.57 2003/06/25 10:19:50 cado Exp $
+ * $Id: naming_client.cpp,v 1.58 2003/10/20 16:12:01 lecroart Exp $
  *
  */
 
@@ -213,7 +213,7 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	// oh my god, it s my sid! but i m alive, why this f*cking naming service want to kill me? ok, i leave it alone!
 	if(CNamingClient::_MySId == sid)
 	{
-		nlwarning ("Naming Service asked me to leave, I leave!");
+		nlwarning ("NC: Naming Service asked me to leave, I leave!");
 		IService::getInstance()->exit();
 		return;
 	}
@@ -328,7 +328,7 @@ bool CNamingClient::registerService (const std::string &name, const std::vector<
 	else
 	{
 		nldebug ("NC: Naming service refused to register service %s at %s", name.c_str(), addr[0].asString().c_str());
-		nlwarning ("Startup denied: %s", Reason.c_str());
+		nlwarning ("NC: Startup denied: %s", Reason.c_str());
 		Reason.clear();
 	}
 
@@ -521,7 +521,7 @@ bool CNamingClient::lookupAndConnect (const std::string &name, CCallbackClient &
 		}
 		catch (ESocketConnectionFailed &e)
 		{
-			nldebug( "Connection to %s failed: %s, tring another service if available", servaddr.asString().c_str(), e.what() );
+			nldebug( "NC: Connection to %s failed: %s, tring another service if available", servaddr.asString().c_str(), e.what() );
 
 			// try another server and if service is not found, return false
 			if (!CNamingClient::lookupAlternate (name, servaddr))

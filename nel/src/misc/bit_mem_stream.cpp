@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.30 2003/09/01 14:31:16 distrib Exp $
+ * $Id: bit_mem_stream.cpp,v 1.31 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -159,7 +159,7 @@ NLMISC_COMMAND( verboseAllTraffic, "Verbose the all-traffic logs", "" )
 			VerboseAllTraffic=false;
 	}
 
-	nlinfo("verboseAllTraffic is %s",VerboseAllTraffic?"ON":"OFF");
+	nlinfo("BMS: verboseAllTraffic is %s",VerboseAllTraffic?"ON":"OFF");
 	return true;
 }
 
@@ -478,7 +478,7 @@ void	CBitMemStream::serial(std::string &b)
 		serial( len );
 		if (len > length()-getPos())
 		{
-			nlwarning("string maximum length reached, perhaps invalid string size (%d)", len);
+			nlwarning("BMS: string maximum length reached, perhaps invalid string size (%d)", len);
 			throw NLMISC::EInvalidDataStream();
 		}
 		b.resize( len );
@@ -563,7 +563,7 @@ void	CBitMemStream::serialMemStream(CBitMemStream &b)
 		serial (len);
 		if (len > length()-getPos())
 		{
-			nlwarning("bitmemstream maximum length reached, perhaps invalid bitmemstream size (%d)", len);
+			nlwarning("BMS: bitmemstream maximum length reached, perhaps invalid bitmemstream size (%d)", len);
 			throw NLMISC::EInvalidDataStream();
 		}
 
@@ -600,7 +600,7 @@ void CBitMemStream::serialCont(std::vector<bool> &cont)
 		serial(len);
 		if (len/8 > (sint32)(length()-getPos()))
 		{
-			nlwarning("stl container maximum length reached, perhaps invalid container size (%d)", len);
+			nlwarning("BMS: stl container maximum length reached, perhaps invalid container size (%d)", len);
 			throw NLMISC::EInvalidDataStream();
 		}
 		// special version for vector: adjut good size.
@@ -653,7 +653,7 @@ void	displayBitStream( const CBitMemStream& msg, sint beginbitpos, sint endbitpo
 {
 	sint beginpos = beginbitpos/8;
 	sint endpos = endbitpos/8;
-	nlinfo( "beginpos %d endpos %d beginbitpos %d endbitpos %d", beginpos, endpos, beginbitpos, endbitpos );
+	nlinfo( "BMS: beginpos %d endpos %d beginbitpos %d endbitpos %d", beginpos, endpos, beginbitpos, endbitpos );
 	displayByteBits( *(msg.buffer()+beginpos), 8, 8-(beginbitpos-beginpos*8), true, log );
 	const uint8 *p;
 	for ( p=msg.buffer()+beginpos+1; p<msg.buffer()+endpos-1; ++p )

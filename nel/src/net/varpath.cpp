@@ -1,7 +1,7 @@
 /** \file varpath.cpp
  * use to manage variable path (ie: [serv1,serv2].*.*.var)
  *
- * $Id: varpath.cpp,v 1.6 2003/06/30 09:36:17 lecroart Exp $
+ * $Id: varpath.cpp,v 1.7 2003/10/20 16:12:01 lecroart Exp $
  *
  */
 
@@ -124,7 +124,7 @@ void CVarPath::decode ()
 				// end of token
 				if (val == "")
 				{
-					nlwarning ("Bad VarPath '%s', suppose it s an empty varpath", RawVarPath.c_str());
+					nlwarning ("VP: Bad VarPath '%s', suppose it s an empty varpath", RawVarPath.c_str());
 					Destination.clear ();
 					return;
 				}
@@ -150,7 +150,7 @@ void CVarPath::decode ()
 	}
 	else
 	{
-		nlwarning ("Malformated VarPath '%s' before position %d", RawVarPath.c_str (), TokenPos);
+		nlwarning ("VP: Malformated VarPath '%s' before position %d", RawVarPath.c_str (), TokenPos);
 		return;
 	}
 
@@ -164,7 +164,7 @@ void CVarPath::decode ()
 	}
 	else if (val != "." && val != "" && val != "=")
 	{
-		nlwarning ("Malformated VarPath '%s' before position %d", RawVarPath.c_str (), TokenPos);
+		nlwarning ("VP: Malformated VarPath '%s' before position %d", RawVarPath.c_str (), TokenPos);
 		return;
 	}
 
@@ -207,10 +207,10 @@ bool CVarPath::isFinal ()
 
 void CVarPath::display ()
 {
-	nlinfo ("VarPath dest = %d", Destination.size ());
+	nlinfo ("VP: VarPath dest = %d", Destination.size ());
 	for (uint i = 0; i < Destination.size (); i++)
 	{
-		nlinfo (" > '%s' '%s'", Destination[i].first.c_str(), Destination[i].second.c_str());
+		nlinfo ("VP:  > '%s' '%s'", Destination[i].first.c_str(), Destination[i].second.c_str());
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.8 2003/08/27 16:16:25 distrib Exp $
+ * $Id: mem_displayer.cpp,v 1.9 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -253,7 +253,7 @@ static void displayCallStack (CLog *log)
 
 	if (SymInitialize (GetCurrentProcess(), NULL, FALSE) == FALSE)
 	{
-		nlwarning ("SymInitialize(%p, '%s') failed", GetCurrentProcess(), symbolPath.c_str());
+		nlwarning ("DISP: SymInitialize(%p, '%s') failed", GetCurrentProcess(), symbolPath.c_str());
 		return;
 	}
 
@@ -263,7 +263,7 @@ static void displayCallStack (CLog *log)
 
 	if (GetThreadContext (GetCurrentThread(), &context) == FALSE)
 	{
-		nlwarning ("GetThreadContext(%p) failed", GetCurrentThread());
+		nlwarning ("DISP: GetThreadContext(%p) failed", GetCurrentThread());
 		return;
 	}
 	

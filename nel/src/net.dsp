@@ -249,6 +249,14 @@ SOURCE=.\net\callback_server.cpp
 
 SOURCE=..\include\nel\net\callback_server.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\net\new_service.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\new_service.h
+# End Source File
 # End Group
 # Begin Group "service_clients"
 

@@ -1,0 +1,58 @@
+Mode d'emploi des macros Nevrax
+02/08/00 cado@nevrax.com
+$Id: ModeEmploi.txt,v 1.1 2000/08/02 14:13:09 cado Exp $
+----------
+
+
+1. Installation
+---------------
+
+a. Dans Visual Studio, menu Tools, Macros,
+Options>>, Loaded Files,
+Browse, R:\code\tools\VisualStudioMacros\nevrax_macros.dsm,
+Close
+
+b. (Facultatif) Raccourci clavier : Menu Tools, Macros, choisir
+nevrax_macros dans la liste Macro File, sélectionner NevraxToggleHCPP,
+Options>>, Keystrokes, dans "Press new shortcut key" taper la
+combinaison Ctrl+< (touche Ctrl et touche <). Dans Current keys, on
+voit s'afficher Ctrl+< ; Close
+
+c. (Facultatif) Bouton supplémentaire : Menu Tools, Macros,
+sélectionner NevraxNewClass (du fichier nevrax_macros), Options>>,
+oolbars, glisser-déposer NevraxNewClass sur une barre d'outil de Visual
+Studio, choisir une image pour le bouton (par exemple le petit crayon
+jaune), OK, Close.
+
+
+2. Utilisation
+--------------
+
+- NevraxToggleHCPP (raccourci-clavier "Ctrl-<" installé en 1.b. ci-dessus)
+  Cette macro sert à passer d'un .h à un .cpp et vice-versa.
+  Elle est compatible avec l'arborescence de NeL.
+
+- NevraxNewClass (bouton installé en 1.c. ci-dessus)
+  Cette macro est un assistant de création de classe, adaptée pour
+  Ryzom. Les étapes :
+  1. Choix du nom de la classe. Ex: CMaClasse
+  2. Confirmation du nom des fichiers .h et .cpp à créer. Ex: Pour
+     CMaClasse, la macro propose ma_classe
+  3. Confirmation du répertoire des sources .cpp. Par défaut :
+     R:\code\nel\src
+  4. Confirmation du répertoire des includes .h. Par défaut :
+     R:\code\nel\include\nel
+  5. Choix ou confirmation du répertoire de travail. Celui-ci doit
+     être tapé une fois par session de Visual Studio, après il est
+     mémorisé. Exs: misc ou system ou 3d ou ia ou network ou database
+     Les répertoires ainsi formés (ex: R:\code\nel\src\misc et
+     R:\code\nel\include\nel\misc) doivent déjà exister
+  6. Choix d'une classe de base (si la nouvelle classe doit être
+     dérivée d'une classe parente) (ex: CBaseClass) ou NO BASE CLASS.
+  7. Si vous avez entré une classe de base, vous devez entrer le
+     nom du fichier include de cette classe. Ex: nel/misc/base_class
+     N'oubliez pas le chemin d'accès (comme dans l'exemple ci-dessus).
+  Remarque :
+  Le bouton Annuler fonctionne seulement dans les étapes 1,2,6,7
+  (merci VBScript !). Si vous vous trompez en 3,4 ou 5, cliquez sur
+  Annuler dans l'étape 6.

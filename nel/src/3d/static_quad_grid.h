@@ -1,7 +1,7 @@
 /** \file static_quad_grid.h
  * <File description>
  *
- * $Id: static_quad_grid.h,v 1.1 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: static_quad_grid.h,v 1.2 2002/02/13 17:34:41 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -190,7 +190,7 @@ void			CStaticQuadGrid<T>::build(CQuadGrid<T> &quadGrid)
 	_ChangeBasis= quadGrid.getBasis();
 	_Grid.resize(_Size * _Size);
 
-	CMatrix		invBasis= _ChangeBasis.inverted();
+	NLMISC::CMatrix		invBasis= _ChangeBasis.inverted();
 
 	// Count number of elements per cell, and total copies of elements
 	uint	totalDupElt= 0;

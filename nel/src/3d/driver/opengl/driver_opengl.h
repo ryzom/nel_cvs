@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.151 2003/08/20 09:57:29 besson Exp $
+ * $Id: driver_opengl.h,v 1.152 2003/11/03 18:08:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -337,7 +337,9 @@ public:
 
 	virtual void			renderPoints(CMaterial& Mat, uint32 numPoints) ;
 	
-	virtual void			renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads) ;
+	virtual void			renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads);
+
+	virtual void		    renderOrientedQuads(CMaterial &mat, uint32 startIndex, uint32 numQuads);
 
 	virtual bool			swapBuffers();
 

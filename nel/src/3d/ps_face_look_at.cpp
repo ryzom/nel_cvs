@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.5 2003/08/22 08:57:42 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.6 2003/11/03 18:08:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -539,6 +539,7 @@ public:
 							currentSize2 += currentSizeStep2;
 						}					
 					}
+					driver->renderQuads(la._Mat, 0, toProcess);
 				}
 				else
 				{
@@ -678,9 +679,8 @@ public:
 						++speedIt;
 						currentSize += currentSizeStep;					
 					}
-
-				}			
-				driver->renderQuads(la._Mat, 0, toProcess);			
+					driver->renderOrientedQuads(la._Mat, 0, toProcess);
+				}							
 				leftToDo -= toProcess;				
 			}
 			while (leftToDo);

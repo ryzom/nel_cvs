@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.h,v 1.6 2000/10/06 10:27:36 lecroart Exp $
+ * $Id: log.h,v 1.7 2000/10/09 08:46:29 cado Exp $
  *
  * Interface for CLog
  */
@@ -37,6 +37,8 @@ typedef std::vector<IDisplayer *> CDisplayers;
 /**
  * When display() is called, the logger builds a string a sends it to its attached displayers.
  * \ref log_howto
+ * \todo cado display() and displayRaw() should save the string and send it only when displayRawNL()
+ * (or a flush()-style method) is called.
  * \author Vianney Lecroart, Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -88,9 +90,12 @@ protected:
 private:
 
 	TLogPriority				_Priority;
+	std::string					_LocalHost;
+	bool						_Long;
+
 	uint						_Line;
 	char						*_File;
-	bool						_Long;
+
 	CDisplayers					_Displayers;
 };
 

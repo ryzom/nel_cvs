@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.10 2000/10/04 14:34:10 cado Exp $
+ * $Id: inet_address.cpp,v 1.11 2000/10/09 08:46:29 cado Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -220,7 +220,7 @@ string CInetAddress::ipAddress() const
 /*
  * Returns host name
  */
-string CInetAddress::hostName() const
+const string& CInetAddress::hostName() const
 {
 	return _HostName;
 }

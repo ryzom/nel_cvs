@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.h,v 1.8 2000/10/03 13:27:11 cado Exp $
+ * $Id: inet_address.h,v 1.9 2000/10/09 08:46:29 cado Exp $
  *
  * Interface for CInetAddress
  */
@@ -94,7 +94,7 @@ public:
 	std::string			ipAddress() const;
 
 	/// Returns hostname
-	std::string			hostName() const;
+	const std::string&	hostName() const;
 
 	/// Returns port
 	uint16				port() const;

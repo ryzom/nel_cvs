@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.cpp,v 1.3 2000/10/06 10:27:36 lecroart Exp $
+ * $Id: log.cpp,v 1.4 2000/10/09 08:46:29 cado Exp $
  *
  * Implementation for CLog
  */
@@ -20,6 +20,7 @@
 
 #include "nel/misc/displayer.h"
 #include "nel/misc/log.h"
+#include "nel/net/base_socket.h"
 #include "nel/net/service.h"
 #include "nel/net/inet_address.h"
 
@@ -39,7 +40,17 @@ CLog::CLog( TLogPriority priority, bool longinfo ) :
 	_Line( 0 ),
 	_File( NULL ),
 	_Long( longinfo )
-{}
+{
+	try
+	{
+		NLNET::CBaseSocket::init();
+		_LocalHost = NLNET::CInetAddress::localHost().hostName();
+	}
+	catch ( NLNET::ESocket& )
+	{
+		_LocalHost = "<UnknownHost>";
+	}
+}
 
 
 void CLog::addDisplayer (IDisplayer *displayer)
@@ -69,7 +80,9 @@ void CLog::removeDisplayer (IDisplayer *displayer)
 }
 
 
-/// Returns a pointer the filename, skipping the directory
+/*
+ * Returns a pointer the filename, skipping the directory
+ */
 char *getFilename( char *lfilename )
 {
 #ifdef NL_OS_WINDOWS
@@ -131,14 +144,7 @@ void CLog::display( const char *format, ... )
 	ss << priorityStr().c_str() << " ";
 	if ( _Long )
 	{
-		try
-		{
-			ss << NLNET::CInetAddress::localHost().hostName().c_str() << " " << NLNET::IService::serviceName() << " ";
-		}
-		catch (NLNET::ESocket)
-		{
-			ss << "<UnknownHost> " << NLNET::IService::serviceName() << " ";
-		}
+		ss << _LocalHost.c_str() << " " << NLNET::IService::serviceName() << " ";
 	}
 	if ( _File != NULL )
 	{

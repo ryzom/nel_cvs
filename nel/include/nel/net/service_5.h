@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.8 2001/12/28 10:17:30 lecroart Exp $
+ * $Id: service_5.h,v 1.9 2002/01/14 13:55:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,6 +189,9 @@ public:
 
 	static NLMISC::CConfigFile	ConfigFile;
 
+	/// Singleton
+	static IService5				*Instance;
+
 protected:
 
 	/// Array of arguments
@@ -219,9 +222,6 @@ protected:
 
 	/// Sets the service identifier
 	void setServiceId (NLNET::TServiceId sid)	{ _SId = sid; }
-
-	/// Singleton
-	static IService5				*Instance;
 
 	friend void AESConnection (const std::string &serviceName, uint16 sid, void *arg);
 

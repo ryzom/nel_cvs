@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.14 2003/07/03 07:46:52 corvazier Exp $
+ * $Id: memory_manager.h,v 1.15 2003/07/03 09:58:25 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -361,16 +361,19 @@ inline void operator delete[](void* p, const char *filename, int line)
 
 /* New operator in debug mode
  * Doesn't work with placement new. To do a placement new, undef new, make your placement new, and redefine new with the macro NL_NEW */
+
+
 #ifdef WIN32
-
-#define NL_NEW new(__FILE__, __LINE__)
-#define new NL_NEW
-
+	#ifndef NL_NO_DEFINE_NEW
+		#define NL_NEW new(__FILE__, __LINE__)
+		#define new NL_NEW
+	#else // NL_NO_DEFINE_NEW
+		#define NL_NEW new
+	#endif // NL_NO_DEFINE_NEW
 #else
-
-#define NL_NEW new
-
+	#define NL_NEW new
 #endif
+
 
 // Use allocation context ?
 #define NL_ALLOC_CONTEXT(str) ((void)0);

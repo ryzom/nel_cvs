@@ -1,7 +1,7 @@
 /** \file memory_config.h
  * Memory manager configuraition
  *
- * $Id: memory_config.h,v 1.1 2003/07/01 15:33:14 corvazier Exp $
+ * $Id: memory_config.h,v 1.2 2003/07/03 09:58:25 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -37,6 +37,9 @@
 
 // Stop when free a NULL pointer
 //#define NL_HEAP_STOP_NULL_FREE
+
+// Define this to disable the define new used to track memory leak
+//#define NL_NO_DEFINE_NEW
 
 #endif // NL_MEMORY_CONFIG_H
 

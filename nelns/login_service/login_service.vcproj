@@ -82,7 +82,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
+				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="TRUE"
+				FavorSizeOrSpeed="1"
+				EnableFiberSafeOptimizations="TRUE"
+				OptimizeForWindowsApplication="TRUE"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -104,6 +109,9 @@
 				SuppressStartupBanner="TRUE"
 				ProgramDatabaseFile=".\Release/login_service.pdb"
 				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -142,7 +150,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				PreprocessorDefinitions="__WIN__;_DEBUG;__STL_DEBUG;WIN32;_WINDOWS"
-				StringPooling="TRUE"
+				StringPooling="FALSE"
+				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
@@ -200,8 +209,14 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="TRUE"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="FALSE"
+				EnableFiberSafeOptimizations="TRUE"
+				OptimizeForWindowsApplication="TRUE"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -224,6 +239,9 @@
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"

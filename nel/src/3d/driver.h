@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.78 2004/09/17 15:23:31 vizerie Exp $
+ * $Id: driver.h,v 1.79 2004/10/05 17:18:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -360,6 +360,11 @@ public:
 	virtual	bool			isForceNormalize() const =0;
 
 
+	/** Get max number of per stage constant that can be used simultaneously.
+	  * This will usually match the number of texture stages, but with a D3D driver, this feature is not available most of the time
+	  * so it is emulated. If pixel shaders are available this will be fully supported.
+	  */
+	virtual void			getNumPerStageConstant(uint &lightedMaterial, uint &unlightedMaterial) const = 0;
 
 	/** return true if driver support VertexBufferHard.
 	 */

@@ -23,29 +23,62 @@ Here is the implementation point of view :
 
 \subsection networkusing Using the network engine
 
-- How can I send a message to another host, using the message handling system (layer 2) ?
+Example : I want to ask the "family service" (FMLS) the age of Toto. Let's say the family service
+understands a message of type "AGEREQ" and answers back a message of type "AGE" :
 
-Example : I want to send the string "toto" to the host "server.nevrax.net" on port 40000 :
+-# How to send a synchronous request to a host, using CSocket (layer 2) ?
+
 \code
-  // Create a client "message socket" with no callback (because we don't expect to receive messages)
-  // that connects to the specified host
-  CMsgSocket client ( NULL, 0, CInetAddress( "server.nevrax.net", 40000 ) );
+  uint16 validitytime;
+  CSocket client;
+  // Connect to the family service
+  if ( CNamingClient::lookupAndConnect( "FMLS", client, validitytime ) )
+  {
+	// Send request
+	CMessage msgout( "AGEREQ" );
+	msgout.serial( Toto.name() );
+	client.send( msgout );
 
-  // Send "toto"
-  string toto = "toto";
-  CMessage msgout ( "MSGNAME", false ); // The remote host should have a callback for "MSGNAME"
-  msgout.serial( toto );
-  client.send( msgout );
+	// Receive answer
+	uint16 age;
+	CMessage msgin( "", true );
+	client.receive( msgin );
+	msgin.serial( age );
+	Toto.setAge( age );
+  }
+
 \endcode
 
-If we plan to send some more messages, we should receive any incoming messages before sending the rest of the messages :
+-# How can I send an asynchronous request to a host, using CMsgSocket, the message handling system (layer 3) ?
+
 \code
-  CMessage msgouts ( false ) [10]; // here I don't reuse the same message
-  for ( int i=0; i<10; i++ )
+  // Callback to process the answer
+  void cbProcessAge( CMessage& msgin, TSenderId idfrom )
   {
-    client.update(); // tests if a message has been received, and if so it is processed
-    msgouts[i].serial( i ); // send an integer
-    client.send( msgouts[i] );
+    uint16 age;
+    Toto.setAge( age );
+  }
+
+  // Callback array
+  TCallbackItem ClientCallbacks [] =
+  {
+    { "AGE", cbProcessEntityStateG }
+  };
+
+  void main()
+  {
+    // Connect to the family service
+    CMsgSocket client ( ClientCallbacks, sizeof(ClientCallbacks)/sizeof(TCallbackItem), "FAMS" );
+
+    // Send request
+    CMessage msgout ( "AGEREQ" ); // The server should have a callback associated to "AGEREQ"
+    msgout.serial( Toto.name() );
+    client.send( msgout );
+
+    while ( true )
+    {
+      client.update(); // tests if a message has been received, and if the associated callback is called back
+    }
   }
 \endcode
 

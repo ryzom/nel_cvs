@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.44 2004/01/08 15:13:03 lecroart Exp $
+ * $Id: types_nl.h,v 1.45 2004/06/23 13:50:49 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -40,6 +40,11 @@
 #ifdef HAVE_NELCONFIG_H
 #  include "nelconfig.h"
 #endif // HAVE_NELCONFIG_H
+
+
+// If you want to compile in final version just put 1 instead of 0
+// WARNING: never comment this #define
+#define FINAL_VERSION 0
 
 
 // Operating systems definition

@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.3 2001/02/05 10:10:09 coutelas Exp $
+ * $Id: frustum.cpp,v 1.4 2001/02/12 08:47:14 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,11 +75,11 @@ CVector			CFrustum::project(const CVector &vec) const
 	float		w, h;
 	float		OOw, OOh;
 
-	// Fast transform to openGL like axis, but with Z to front (and not back).
+	// Fast transform to openGL like axis.
 	CVector		pt;
 	pt.x= vec.x;
 	pt.y= vec.z;
-	pt.z= vec.y;	// => this is a left hand axis.
+	pt.z= -vec.y;
 
 	decalX= (Right+Left);
 	decalY= (Top+Bottom);
@@ -92,15 +92,16 @@ CVector			CFrustum::project(const CVector &vec) const
 	if(Perspective)
 	{
 		ret.x= (2*Near*pt.x + decalX*pt.z)*OOw;
-		ret.x/= pt.z;
+		ret.x/= -pt.z;
 		ret.y= (2*Near*pt.y + decalY*pt.z)*OOh;
-		ret.y/= pt.z;
+		ret.y/= -pt.z;
 	}
 	else
 	{
-		ret.x= (2-decalX)*OOw;
-		ret.y= (2-decalY)*OOh;
+		ret.x= (2*pt.x-decalX)*OOw;
+		ret.y= (2*pt.y-decalY)*OOh;
 	}
+
 
 	// Map it to 0..1.
 	ret.x= 0.5f*(ret.x+1);
@@ -109,6 +110,79 @@ CVector			CFrustum::project(const CVector &vec) const
 
 	return ret;
 }
+
+
+
+// ***************************************************************************
+CVector			CFrustum::unProject(const CVector &vec) const
+{
+	CVector		ret;
+	float		decalX, decalY;
+	float		w, h;
+	float		OOw, OOh;
+
+	decalX= (Right+Left);
+	decalY= (Top+Bottom);
+	w= Right-Left;
+	h= Top-Bottom;
+	OOw= 1.0f/w;
+	OOh= 1.0f/h;
+
+	// vec is a vector in a left hand axis.
+	CVector		pt;
+	pt.x= vec.x;
+	pt.y= vec.y;
+	pt.z= vec.z;
+	
+	// Map it to -1..1
+	pt.x= 2*(pt.x-0.5);
+	pt.y= 2*(pt.y-0.5);
+
+	// Map Z to Near..Far.
+	// Z IN is 1/Z, and is in 0..1.
+	// inverse to 1..0.
+	pt.z= 1-pt.z;
+	// Map ret.z to 1/Far..1/Near.
+	pt.z= 1/Far+(1/Near-1/Far)*pt.z;
+	// Inverse, so ret.z E Near..Far.
+	pt.z= 1/pt.z;
+	// Actually, pt.z==w, homogenous coordinate.
+
+
+	// unproject
+	if(Perspective)
+	{
+		// w of homogenous coordinate.
+		float	Wh;
+		float	Zin;
+		Wh= pt.z;
+		Zin= -pt.z;
+
+		// unproject.  (Projection is: x'= x/w.  y'= y/w).
+		pt.x= pt.x*Wh;
+		pt.y= pt.y*Wh;
+		ret.x= (pt.x*w-decalX*Zin)/(2*Near);
+		ret.y= (pt.y*w-decalY*Zin)/(2*Near);
+		ret.z= Zin;
+	}
+	else
+	{
+		// NOT DONE YET.
+		nlstop;
+		/*ret.x= (pt.x*w+decalX)/2;
+		ret.y= (pt.y*h+decalY)/2;
+		*/
+	}
+
+	// Fast transform from openGL like axis.
+	pt =ret;
+	ret.x= pt.x;
+	ret.y= -pt.z;
+	ret.z= pt.y;
+
+	return ret;
+}
+
 
 
 } // NL3D

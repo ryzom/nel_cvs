@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.11 2001/01/22 15:32:05 lecroart Exp $
+ * $Id: computed_string.cpp,v 1.12 2001/02/12 08:46:56 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,11 +88,12 @@ void CComputedString::render2D (IDriver& driver,
 {
 	//x*=ResX/ResY;
 	x*=(float)4/3;
+
 	driver.setFrustum(0, 4.0f/3.0f, 0, 1, -1, 1, false);  // resX/resY
 
 	// Computing hotspot translation vector
 	CVector hotspotVector = getHotSpotVector(hotspot);
-	
+
 	// tansformation matrix initialized to identity
 	CMatrix matrix;
 	matrix.identity();

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.32 2003/03/10 16:09:23 besson Exp $
+ * $Id: i18n.cpp,v 1.33 2003/03/11 12:50:55 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -50,200 +50,12 @@ const std::string		CI18N::_LanguageCodes[] =
 };
 
 const uint				CI18N::_NbLanguages = sizeof(CI18N::_LanguageCodes) / sizeof(std::string);
-
 CI18N::StrMapContainer	CI18N::_StrMap;
 bool					CI18N::_StrMapLoaded = false;
-//string					CI18N::_Path = "";
-//string					CI18N::_FileName = "";
-
 const ucstring			CI18N::_NotTranslatedValue("<Not Translated>");
-
-
 bool					CI18N::_LanguagesNamesLoaded = false;
 sint32					CI18N::_SelectedLanguage = -1;
 
-/*ucchar CI18N::eatChar (IStream &is)
-{
-	uint8 c;
-	ucchar code;
-	sint iterations = 0;
-
-	is.serial (c);
-	code = c;
-
-	if ((code & 0xFE) == 0xFC)
-	{
-		code &= 0x01;
-		iterations = 5;
-	}
-	else if ((code & 0xFC) == 0xF8)
-	{
-		code &= 0x03;
-		iterations = 4;
-	}
-	else if ((code & 0xF8) == 0xF0)
-	{
-		code &= 0x07;
-		iterations = 3;
-	}
-	else if ((code & 0xF0) == 0xE0)
-	{
-		code &= 0x0F;
-		iterations = 2;
-	}
-	else if ((code & 0xE0) == 0xC0)
-	{
-		code &= 0x1F;
-		iterations = 1;
-	}
-	else if ((code & 0x80) == 0x80)
-	{
-		nlerror ("CI18N::eatChar(): Invalid UTF-8 character");
-	}
-	else
-	{
-		return code;
-	}
-
-	for (sint i = 0; i < iterations; i++)
-	{
-		uint8 ch;
-		is.serial (ch);
-
-		if ((ch & 0xC0) != 0x80)
-		{
-			nlerror ("CI18N::eatChar(): Invalid UTF-8 character");
-		}
-
-		code <<= 6;
-		code |= (ucchar)(ch & 0x3F);
-	}
-	return code;
-}
-*/
-/*
-void CI18N::checkASCII7B (ucchar c)
-{
-	if (c>0x7F)
-	{
-		nlerror ("CI18N::checkASCII7B: '%c' isn't ASCII 7bits", c);
-	}
-}
-*/
-/*
-void CI18N::skipComment(IStream &is, int &line)
-{
-	// the first '/' is already eated
-	ucchar c;
-	bool longcomment = false;
-
-	c = eatChar (is);
-	if (c == '/') longcomment = false;
-	else if (c == '*') longcomment = true;
-
-	do
-	{
-		c = eatChar (is);
-		if (!longcomment && c == '\n')
-		{
-			line++;
-			return;
-		}
-		if (longcomment && c == '*')
-		{
-			c = eatChar (is);
-			if (c == '/') return;
-		}
-	}
-	while (true);
-}
-*/
-/*
-ucchar CI18N::skipWS(IStream &is, int &line)
-{
-	ucchar c;
-	do
-	{
-		c = eatChar (is);
-		if (c == '\n') line++;
-		if (c == '/')
-		{
-			skipComment (is, line);
-			c = eatChar (is);
-		}
-	}
-	while (isspace (c));
-	return c;
-}
-*/
-/*
-void CI18N::createLanguageFile (uint32 lid)
-{
-	nlassert (lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
-	
-	// write the new string in the file
-	COFile cof;
-	nlverify (cof.open (_Path + _LanguageFiles[lid] + ".uxt", true, true));
-
-	stringstream ss2;
-	ss2 << "\"" << _LanguageFiles[lid] << "\"" << endl;
-	cof.serialBuffer((uint8 *)(ss2.str().c_str()), ss2.str().size());
-	cof.close ();
-}
-*/
-/*
-void CI18N::createLanguageEntry (const string &lval, const string &rval)
-{
-	sint i;
-	for (i = 0; i < (sint)lval.size () ; i++)
-	{
-		unsigned char c = (unsigned char) lval[i];
-		if (c>0x7F)
-		{
-			nlerror ("CI18N::createLanguageEntry(\"%s\"): your string must be ASCII 7bits ('%c' isn't ASCII 7bits)", lval.c_str(), c);
-		}
-	}
-	for (i = 0; i < (sint)rval.size () ; i++)
-	{
-		unsigned char c = (unsigned char) rval[i];
-		if (c>0x7F)
-		{
-			nlerror ("CI18N::createLanguageEntry(\"%s\"): your string must be ASCII 7bits ('%c' isn't ASCII 7bits)", rval.c_str(), c);
-		}
-	}
-
-	for (i = 0; i < (sint)(sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0])); i++)
-	{
-		COFile cof;
-		nlverify (cof.open (_Path + _LanguageFiles[i] + ".uxt", true, true));
-
-		stringstream ss2;
-		ss2 << "\"";
-		for (sint i = 0; i < (sint) lval.size (); i++)
-		{
-			if (lval[i] == '"')
-				ss2 << '\\';
-			ss2 << lval[i];
-		}
-		ss2 << "\" = \"";
-		for (sint i2 = 0; i2 < (sint) rval.size(); i2++)
-		{
-			if (rval[i2] == '"')
-				ss2 << '\\';
-			ss2 << rval[i2];
-		}
-		ss2 << "\"" << endl;
-		cof.serialBuffer((uint8 *)(ss2.str().c_str()), ss2.str().size());
-		cof.close ();
-	}
-}
-*/
-/*
-void CI18N::setPath (const char* str)
-{
-	_Path = str;
-}
-*/
 
 void CI18N::load (const std::string &languageCode)
 {
@@ -314,143 +126,7 @@ void CI18N::load (const std::string &languageCode)
 		nlwarning("In file %s, missing LanguageName translation (should be first in file)", fileName.c_str());
 	}
 }
-/*
-void CI18N::load (uint32 lid)
-{
-	nlassert (lid < _NbLanguages);
-	nlassert (_LanguagesNamesLoaded);
 
-	_FileName  = _Path + _LanguageFiles[lid] + ".uxt";
-
-	_SelectedLanguage = lid;
-
-	if (_StrMapLoaded)	_StrMap.clear ();
-	else				_StrMapLoaded = true;
-
-	CIFile cf;
-	// if the file does not exist, it'll be create automatically
-	if (!cf.open (_FileName, true))
-	{
-		nlwarning ("Could not open file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].toString().c_str(), lid);
-		createLanguageFile (lid);
-		return;
-	}
-	nldebug ("Loading file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].toString ().c_str(), lid);
-
-	bool startstr = false, equal = false, second = false;
-	int line = 1;
-	try
-	{
-		ucchar c;
-		// get the language name
-		c = skipWS (cf, line);
-		if (c != '"')
-		{
-			nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
-		}
-		do
-		{
-			c = eatChar (cf);
-			if (c == '\\')
-			{
-				c = eatChar (cf);
-			}
-			else if (c == '"') break;
-			else if (c == '\n') line++;
-		}
-		while (true);
-
-		while (true)
-		{
-			string codstr;
-			ucstring trsstr;
-			ucchar c;
-
-			codstr = "";
-			trsstr = "";
-
-			// get the coder string
-			c = skipWS (cf, line);
-			if (c != '"')
-			{
-				nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
-			}
-			startstr = true;
-			do
-			{
-				c = eatChar (cf);
-				if (c == '\\')
-				{
-					c = eatChar (cf);
-				}
-				else if (c == '"') break;
-				else if (c == '\n') line++;
-				checkASCII7B (c);
-				codstr += (char) c;
-			}
-			while (true);
-			startstr = false;
-
-			equal = true;
-			// get the '='
-			c = skipWS (cf, line);
-			if (c != '=')
-			{
-				nlerror ("'=' missing in \"%s\" line %d", _FileName.c_str(), line);
-			}
-			equal = false;
-
-			second = true;
-			// get the translated string
-			c = skipWS (cf, line);
-			if (c != '"')
-			{
-				nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
-			}
-			startstr = true;
-			do
-			{
-				c = eatChar (cf);
-				if (c == '\\')
-				{
-					c = eatChar (cf);
-				}
-				else if (c == '"') break;
-				else if (c == '\n') line++;
-				trsstr += c;
-			}
-			while (true);
-			startstr = false;
-			second = false;
-
-			// Insert the node.
-			pair<ItStrMap, bool> pr;
-			pr = _StrMap.insert (ValueStrMap (codstr, trsstr));
-			if (!pr.second)
-			{
-				nlwarning ("the string '%s' is duplicate in the langage file '%s' line %d, ignored the last one", codstr.c_str(), _FileName.c_str(), line);
-			}
-		}
-	}
-	catch (EReadError &)
-	{
-		// always comes here when it's the end of file
-		if (startstr)
-		{
-			nlerror ("a string didn't have the close '\"' in \"%s\" line %d", _FileName.c_str(), line);
-		}
-		if (equal)
-		{
-			nlerror ("'=' missing in \"%s\" line %d", _FileName.c_str(), line);
-		}
-		if (second)
-		{
-			nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
-		}
-		cf.close ();
-	}
-}
-*/
 const ucstring &CI18N::get (const std::string &label)
 {
 	if (label.empty())
@@ -472,49 +148,12 @@ const ucstring &CI18N::get (const std::string &label)
 
 	return badString;
 }
-/*
-const ucstring &CI18N::get (const char *str)
-{
-	nlassert (_StrMapLoaded);
-
-	ItStrMap it = _StrMap.find (str);
-
-	if (it == _StrMap.end ())
-	{
-		// str not found, add it in the map and in the file
-		stringstream ss;
-		ss << "<Not Translated>:" << str;
-
-		pair<ItStrMap, bool> pr;
-
-		pr = _StrMap.insert (ValueStrMap (str, ss.str()));
-		nlassert (pr.second);
-		it = pr.first;
-
-		// write the new string in all files
-		createLanguageEntry (str, ss.str());
-
-		// warn the user
-		nlwarning ("\"%s\" is not in the \"%s\" language file, I add in all languages files.", str, _FileName.c_str());
-	}
-
-	return it->second;
-}
-*/
 
 ucstring CI18N::getCurrentLanguageName ()
 {
 	return get("LanguageName");
 }
 
-/*string CI18N::getCurrentLanguage ()
-{
-	if (_SelectedLanguage == -1)
-		return "<NoLanguage>";
-	else
-		return _LanguageFiles[_SelectedLanguage];
-}
-*/
 
 void CI18N::remove_C_Comment(ucstring &commentedString)
 {
@@ -568,7 +207,7 @@ void CI18N::remove_C_Comment(ucstring &commentedString)
 }
 
 
-void	CI18N::skipWhiteSpace(ucstring::const_iterator &it, ucstring::const_iterator &last)
+void	CI18N::skipWhiteSpace(ucstring::const_iterator &it, ucstring::const_iterator &last, ucstring *storeComments)
 {
 	while (it != last &&
 			(
@@ -576,13 +215,48 @@ void	CI18N::skipWhiteSpace(ucstring::const_iterator &it, ucstring::const_iterato
 				||	*it == 0xd
 				||	*it == ' '
 				||	*it == '\t'
+				||	(storeComments && *it == '/' && it+1 != last && *(it+1) == '/')
+				||	(storeComments && *it == '/' && it+1 != last && *(it+1) == '*')
 			))
 	{
-		++it;
+		if (storeComments && *it == '/' && it+1 != last && *(it+1) == '/')
+		{
+			// found a one line C comment. Store it until end of line.
+			while (it != last && *it != '\n')
+				storeComments->push_back(*it++);
+			// store the final '\n'
+			if (it != last)
+				storeComments->push_back(*it++);
+			if (it != last && *it == '\r')
+			{
+				// also store the cariage return !
+				storeComments->push_back(*it++);
+			}
+		}
+		else if (storeComments && *it == '/' && it+1 != last && *(it+1) == '*')
+		{
+			// found a multiline C++ comment. store until we found the closing '*/'
+			while (it != last && !(*it == '*' && it+1 != last && *(it+1) == '/'))
+				storeComments->push_back(*it++);
+			// store the final '*'
+			if (it != last)
+				storeComments->push_back(*it++);
+			// store the final '/'
+			if (it != last)
+				storeComments->push_back(*it++);
+			// and a new line.
+			storeComments->push_back('\r');
+			storeComments->push_back('\n');
+		}
+		else
+		{
+			// just skip white space or don't store comments
+			++it;
+		}
 	}
 }
 
-bool CI18N::parseLabel			(ucstring::const_iterator &it, ucstring::const_iterator &last, std::string &label)
+bool CI18N::parseLabel(ucstring::const_iterator &it, ucstring::const_iterator &last, std::string &label)
 {
 	label.erase();
 
@@ -632,7 +306,7 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 			else if (*it == '\\' && it+1 != last && *(it+1) != '\\')
 			{
 				++it;
-				// this is an esace sequence !
+				// this is an escape sequence !
 				switch(*it)
 				{
 				case 't':
@@ -642,7 +316,11 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 					result.push_back('\n');
 					break;
 				default:
-					nlwarning("Ignoring unknown escape code \\%c", *it);
+					// escape the close mark ?
+					if(*it == closeMark)
+						result.push_back(closeMark);
+					else
+						nlwarning("Ignoring unknown escape code \\%c (char value : %u)", char(*it), *it);
 				}
 				++it;
 			}
@@ -673,78 +351,7 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 
 	return true;
 }
-/*
-const vector<ucstring> &CI18N::getLanguageNames()
-{
-	enumFiles();
-	return _LanguageNames;
-}
-*/
-/*
-void CI18N::enumFiles()
-{
-	static bool done = false;
 
-	if (done)
-		return;
-
-	done = true;
-
-	CIFile cf;
-
-	if (!_LanguagesNamesLoaded)
-	{
-		for (int i = 0; i < (int)(sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0])); i++)
-		{
-			string fn = _Path + _LanguageFiles[i] + ".uxt";
-
-			ucstring lg;
-
-			if (!cf.open (fn, true))
-			{
-				nlwarning ("Could not open file \"%s\" (lid:%d)", fn.c_str(), i);
-				createLanguageFile (i);
-				lg = _LanguageFiles[i];
-			}
-			else
-			{
-				int line = 1;
-				try
-				{
-					ucchar c;
-					// get the language name
-					c = skipWS (cf, line);
-					if (c != '"')
-					{
-						nlerror ("open '\"' missing in \"%s\" line %d", fn.c_str(), line);
-					}
-					do
-					{
-						c = eatChar (cf);
-						if (c == '\\')
-						{
-							c = eatChar (cf);
-						}
-						else if (c == '"') break;
-						else if (c == '\n') line++;
-						lg += c;
-					}
-					while (true);
-				}
-				catch (EReadError)
-				{
-					nlerror ("Missing the language name in the beginning of the file %s", fn.c_str());
-				}
-				cf.close ();
-			}
-			// add the language name
-			_LanguageNames.push_back (lg);
-			nldebug ("add %d '%s' '%s'", i, fn.c_str (), _LanguageFiles[i]);
-		}
-		_LanguagesNamesLoaded = true;
-	}
-}
-*/
 
 void CI18N::readTextFile(const std::string &filename, ucstring &result, bool forceUtf8)
 {
@@ -767,6 +374,15 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 		text.push_back(c);
 	}
 
+	readTextBuffer((uint8*)&text[0], text.size(), result, forceUtf8);
+}
+
+void CI18N::readTextBuffer(uint8 *buffer, uint size, ucstring &result, bool forceUtf8)
+{
+	std::string text;
+
+	text.append((char*)buffer, size);
+
 	static char utf16Header[] = {char(0xff), char(0xfe), 0};
 	static char utf16RevHeader[] = {char(0xfe), char(0xff), 0};
 	static char utf8Header[] = {char(0xef), char(0xbb), char(0xbf), 0};
@@ -775,7 +391,7 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 	{
 		if (text.find(utf8Header) == 0)
 			// remove utf8 header
-			text = std::string(&(*(text.begin()+3)), text.size()-3);
+			text = std::string(text, 3);
 		result.fromUtf8(text);
 	}
 	else if (text.find(utf8Header) == 0)
@@ -787,7 +403,7 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 	else if (text.find(utf16Header) == 0)
 	{
 		// remove utf16 header
-		text = std::string(&(*(text.begin()+2)), text.size()-2);
+		text = std::string(text, 2);
 		uint32 size = text.size();
 		// check pair number of bytes
 		nlassert((text.size() & 1) == 0);
@@ -800,7 +416,7 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 	else if (text.find(utf16RevHeader) == 0)
 	{
 		// remove utf16 header
-		text = std::string(&(*(text.begin()+2)), text.size()-2);
+		text = std::string(text, 2);
 		uint32 size = text.size();
 		// check pair number of bytes
 		nlassert((text.size() & 1) == 0);
@@ -823,6 +439,59 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 		// so, just to a direct conversion
 		result = text;
 	}
+}
+
+
+void CI18N::writeTextFile(const std::string filename, const ucstring &content)
+{
+	COFile file(filename);
+
+	// write the unicode 16 bits tag
+	uint16 unicodeTag = 0xfeff;
+	file.serial(unicodeTag);
+
+	uint i;
+	for (i=0; i<content.size(); ++i)
+	{
+		uint16 c = content[i];
+		file.serial(c);
+	}
+}
+
+ucstring CI18N::makeMarkedString(ucchar openMark, ucchar closeMark, const ucstring &text)
+{
+	ucstring ret;
+
+	ret.push_back(openMark);
+
+	ucstring::const_iterator first(text.begin()), last(text.end());
+	for (; first != last; ++first)
+	{
+		if (*first == '\n')
+		{
+			ret += '\\';
+			ret += 'n';
+		}
+		else if (*first == '\t')
+		{
+			ret += '\\';
+			ret += 't';
+		}
+		else if (*first == closeMark)
+		{
+			// excape the embeded closing mark
+			ret += '\\';
+			ret += closeMark;
+		}
+		else
+		{
+			ret += *first;
+		}
+	}
+
+	ret += closeMark;
+
+	return ret;
 }
 
 

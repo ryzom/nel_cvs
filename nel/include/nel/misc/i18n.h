@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.10 2003/03/06 11:08:40 boucher Exp $
+ * $Id: i18n.h,v 1.11 2003/03/11 12:50:55 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,14 +108,38 @@ public:
 	 */
 	static void readTextFile(const std::string &filename, ucstring &result, bool forceUtf8 = false);
 
+	/** Read the content of a buffer as a unicode text.
+	 *	This is to read preloaded unicode files.
+	 *	The method support 16 bits or 8bits utf-8 tagged buffer.
+	 *	8 bits UTF-8 encofing can be reconized by a non official header :
+	 *	EF,BB, BF.
+	 *	16 bits encoding can be reconized by the official header :
+	 *	FF, FE, witch can be reversed if the data are MSB first.
+	 *	
+	 *	Optionnaly, you can force the reader to consider the file as
+	 *	UTF-8 encoded.
+	 */
+	static void readTextBuffer(uint8 *buffer, uint size, ucstring &result, bool forceUtf8 = false);
+
 	/** Remove any C style comment from the passed string.
 	 */
 	static void remove_C_Comment(ucstring &commentedString);
 
+	/** Write a unicode text file using unicode 16 encoding.
+	 */
+	static void writeTextFile(const std::string filename, const ucstring &content);
+
+	static ucstring makeMarkedString(ucchar openMark, ucchar closeMark, const ucstring &text);
+
 	//@{
 	//\name Parsing utility
-	/// Skip the white space.
-	static void		skipWhiteSpace		(ucstring::const_iterator &it, ucstring::const_iterator &last);
+	/** Skip the white space.
+	 *	You can optionnaly pass a ucstring pointer to receive any comments string that build the
+	 *	white space.
+	 *	This is usefull if you whant to keep the comments.
+	 *	NB : comments are appended to the comments string.
+	 */
+	static void		skipWhiteSpace		(ucstring::const_iterator &it, ucstring::const_iterator &last, ucstring *storeComments = NULL);
 	/// Parse a label
 	static bool		parseLabel			(ucstring::const_iterator &it, ucstring::const_iterator &last, std::string &label);
 	/// Parse a marked string. NB : usualy, we use [ and ] as string delimiters in translation files.
@@ -127,33 +151,16 @@ private:
 
 	typedef std::map<std::string, ucstring>						StrMapContainer;
 
-//	typedef std::map<std::string, ucstring>::iterator			 ItStrMap;
-//	typedef std::map<std::string, ucstring>::value_type			 ValueStrMap;
-
 	static StrMapContainer										 _StrMap;
 	static bool													 _StrMapLoaded;
 
-//	static std::string											 _Path;
-//	static std::string											 _FileName;
 	static const std::string									 _LanguageCodes[];
 	static const uint											_NbLanguages;
 
-//	static std::vector<ucstring>								 _LanguageNames;
-//	static std::vector<std::string>								 _LanguageCodes;
 	static bool													 _LanguagesNamesLoaded;
 
 	static sint32												 _SelectedLanguage;
 	static const ucstring										_NotTranslatedValue;
-
-//	static void		enumFiles			();
-//	static ucchar	eatChar				(IStream &is);
-//	static void		checkASCII7B		(ucchar c);
-
-//	static void		createLanguageFile	(uint32 lid);
-//	static void		createLanguageEntry (const std::string &lval, const std::string &rval);
-
-//	static void		skipComment			(IStream &is, int &line);
-//	static ucchar	skipWS				(IStream &is, int &line);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.cpp
  * <File description>
  *
- * $Id: coarse_mesh_build.cpp,v 1.4 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: coarse_mesh_build.cpp,v 1.5 2003/01/31 16:14:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,15 +36,15 @@ namespace NL3D
 
 // ***************************************************************************
 
-bool CCoarseMeshBuild::build (const std::vector<CCoarseMeshDesc>& coarseMeshes, CBitmap& bitmap, CStats& stats, float mulArea)
+bool CCoarseMeshBuild::build (const std::vector<CCoarseMeshDesc>& coarseMeshes, std::vector<NLMISC::CBitmap> &bitmaps, CStats& stats, float mulArea)
 {
 	// 1. build the bitmap
 	MapBitmapDesc desc;
-	if (buildBitmap (coarseMeshes, bitmap, stats, desc, mulArea)==false)
+	if (buildBitmap (coarseMeshes, bitmaps, stats, desc, mulArea)==false)
 		return false;
 
 	// 2. remap coordinates
-	remapCoordinates (coarseMeshes, desc);
+	remapCoordinates (coarseMeshes, desc, bitmaps.size ());
 
 	// 3. ok
 	return true;
@@ -67,7 +67,7 @@ public:
 
 // ***************************************************************************
 
-bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMeshes, CBitmap& bitmap, CStats& stats, MapBitmapDesc& desc, float mulArea)
+bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMeshes, std::vector<NLMISC::CBitmap> &bitmaps, CStats& stats, MapBitmapDesc& desc, float mulArea)
 {
 	// Total area used by texture
 	uint totalArea=0;
@@ -75,7 +75,7 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 	// ***************************************************************************
 
 	// 1. scan each bitmap: calc the area of the bitmap and it its name in the maps sorted by area
-	typedef std::multimap<uint, CBitmapDesc> MapAreaBitmap;
+	typedef std::multimap<uint, CBitmapDesc*> MapAreaBitmap;
 	MapAreaBitmap mapArea;
 	uint mesh;
 	for (mesh=0; mesh<coarseMeshes.size(); mesh++)
@@ -109,17 +109,25 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 				ITexture *texture=material.getTexture(0);
 				if (texture)
 				{
-					// Get its name
+					// For each bitmaps
+					uint i;
 					std::string name;
-					if (texture->supportSharing())
+					for (i=0; i<bitmaps.size (); i++)
 					{
-						// Get sharing name
-						name=texture->getShareName();
-					}
-					else
-					{
-						// Build a name
-						name=toString ((uint)texture);
+						// Select the good slot
+						texture->selectTexture (i);
+
+						// Get its name
+						if (texture->supportSharing())
+						{
+							// Get sharing name
+							name+=strlwr(texture->getShareName());
+						}
+						else
+						{
+							// Build a name
+							name+=toString ((uint)texture);
+						}
 					}
 
 					// Already added ?
@@ -127,30 +135,63 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 					{
 						// Add it..
 
-						// Generate the texture
-						texture->generate();
-
-						// Convert to RGBA
-						texture->convertToType (CBitmap::RGBA);
-
-						// Backup original size
-						float originalWidth = (float)texture->getWidth();
-						float originalHeight = (float)texture->getHeight();
-
-						// Expand the texture
-						expand (*texture);
+						// Insert it in the maps
+						MapBitmapDesc::iterator ite = desc.insert (MapBitmapDesc::value_type (name, CBitmapDesc ())).first;
 
 						// Descriptor for this texture
-						CBitmapDesc descBitmap;
-						uint area = texture->getWidth() * texture->getHeight();
-						descBitmap.Texture = texture;
-						descBitmap.Name = name;
-						descBitmap.FactorU = originalWidth;
-						descBitmap.FactorV = originalHeight;
+						CBitmapDesc &descBitmap = ite->second;
 
-						// Insert it in the maps
-						desc.insert (MapBitmapDesc::value_type (name, descBitmap));
-						mapArea.insert (MapAreaBitmap::value_type(area, descBitmap));
+						// Backup original size
+						uint originalWidth;
+						uint originalHeight;
+
+						// For each bitmaps
+						uint i;
+						descBitmap.Bitmaps.resize (bitmaps.size ());
+						for (i=0; i<bitmaps.size (); i++)
+						{
+							// Select the good slot
+							texture->selectTexture (i);
+
+							// Generate the texture
+							texture->generate();
+
+							// Convert to RGBA
+							texture->convertToType (CBitmap::RGBA);
+
+							// First texture ?
+							if (i == 0)
+							{
+								// Backup original size
+								originalWidth = texture->getWidth();
+								originalHeight = texture->getHeight();
+							}
+
+							// Resample, if needed
+							if (i != 0)
+							{
+								// New size
+								if ( ( originalWidth != texture->getWidth () ) || originalHeight != texture->getHeight  () )
+								{
+									texture->resample (originalWidth, originalHeight);
+								}
+							}
+
+							// Copy the texture
+							descBitmap.Bitmaps[i] = *texture;
+
+							// Expand the texture
+							expand (descBitmap.Bitmaps[i]);
+						}
+
+						// Texture area
+						uint area = descBitmap.Bitmaps[0].getWidth() * descBitmap.Bitmaps[0].getHeight();
+						descBitmap.Name = name;
+						descBitmap.FactorU = (float)originalWidth;
+						descBitmap.FactorV = (float)originalHeight;
+
+						// Insert in the map area
+						mapArea.insert (MapAreaBitmap::value_type(area, &(ite->second)));
 
 						// Sum area if added
 						totalArea+=area;
@@ -176,7 +217,9 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 	uint height=1<<(newArea/2 + (newArea&1));
 
 	// Resize the bitmap and set the pixel format
-	bitmap.resize (width, height, CBitmap::RGBA);
+	uint i;
+	for (i=0; i<bitmaps.size (); i++)
+		bitmaps[i].resize (width, height, CBitmap::RGBA);
 
 	// Checks
 	if (totalArea==0)
@@ -206,12 +249,12 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 		ite--;
 		nlassert (ite!=mapArea.end());
 
-		// Texture
-		ITexture *texture=ite->second.Texture;
-
 		// Size of the texture
-		uint widthTex=texture->getWidth();
-		uint heightTex=texture->getHeight();
+		uint widthTex=ite->second->Bitmaps[0].getWidth();
+		uint heightTex=ite->second->Bitmaps[0].getHeight();
+
+		// Some checks
+		nlassert (bitmaps.size () == ite->second->Bitmaps.size ());
 
 		// Width and height max
 		uint widthMax=width-widthTex;
@@ -275,19 +318,24 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 						maxTexHeight=heightTex;
 
 					// Blit in the texture
-					bitmap.blit (texture, u, v);
+					uint i;
+					for (i=0; i<bitmaps.size (); i++)
+					{
+						// Check..
+						nlassert (	(ite->second->Bitmaps[0].getWidth () == ite->second->Bitmaps[i].getWidth ()) && 
+									(ite->second->Bitmaps[0].getHeight () == ite->second->Bitmaps[i].getHeight ())	);
 
-					// Get the descriptor by the name
-					MapBitmapDesc::iterator iteInserted=desc.find (ite->second.Name);
-					nlassert (iteInserted!=desc.end());
+						// Blit it
+						bitmaps[i].blit (&(ite->second->Bitmaps[i]), u, v);
+					}					
 
 					// Set the U and V texture coordinates
-					iteInserted->second.U=(float)(u+1)/(float)width;
-					iteInserted->second.V=(float)(v+1)/(float)height;
+					ite->second->U=(float)(u+1)/(float)width;
+					ite->second->V=(float)(v+1)/(float)height;
 
 					// Set ratio
-					iteInserted->second.FactorU /= (float)width;
-					iteInserted->second.FactorV /= (float)height;
+					ite->second->FactorU /= (float)width;
+					ite->second->FactorV /= (float)height;
 
 					// End
 					break;
@@ -379,7 +427,7 @@ void CCoarseMeshBuild::expand (CBitmap& bitmap)
 
 // ***************************************************************************
 
-void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coarseMeshes, const MapBitmapDesc& desc)
+void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coarseMeshes, const MapBitmapDesc& desc, uint outputBitmapCount)
 {
 	// 1. scan each bitmap: calc the area of the bitmap and it its name in the maps sorted by area
 	typedef std::multimap<float, CBitmapDesc> MapAreaBitmap;
@@ -421,15 +469,23 @@ void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coa
 				{
 					// Get its name
 					std::string name;
-					if (texture->supportSharing())
+					uint i;
+					for (i=0; i<outputBitmapCount; i++)
 					{
-						// Get sharing name
-						name=texture->getShareName();
-					}
-					else
-					{
-						// Build a name
-						name=toString ((uint)texture);
+						// Select the good slot
+						texture->selectTexture (i);
+
+						// Get its name
+						if (texture->supportSharing())
+						{
+							// Get sharing name
+							name+=strlwr(texture->getShareName());
+						}
+						else
+						{
+							// Build a name
+							name+=toString ((uint)texture);
+						}
 					}
 
 					// Find the texture

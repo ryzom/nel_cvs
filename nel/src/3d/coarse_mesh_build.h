@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.h
  * Class used to build the coarse meshes
  *
- * $Id: coarse_mesh_build.h,v 1.1 2001/07/11 07:43:55 corvazier Exp $
+ * $Id: coarse_mesh_build.h,v 1.2 2003/01/31 16:14:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,7 +107,7 @@ public:
 	  * \param start will receive various statistics about the build process.
 	  * \param mulArea is the mul factor used to increase to theorical global texture size.
 	  */
-	bool		build (const std::vector<CCoarseMeshDesc>& coarseMeshes, NLMISC::CBitmap& bitmap, CStats& stats, float mulArea);
+	bool		build (const std::vector<CCoarseMeshDesc>& coarseMeshes, std::vector<NLMISC::CBitmap> &bitmaps, CStats& stats, float mulArea);
 
 private:
 
@@ -122,8 +122,8 @@ private:
 		float		FactorU;
 		float		FactorV;
 
-		// Pointer on the texture
-		ITexture	*Texture;
+		// Pointer on the textures
+		std::vector<NLMISC::CBitmap>	Bitmaps;
 
 		// Pointer on the texture
 		std::string	Name;
@@ -135,10 +135,10 @@ private:
 	void		expand (NLMISC::CBitmap& bitmap);
 
 	// Build the bitmap. Return false if the bitmap size is too small
-	bool		buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMeshes, NLMISC::CBitmap& bitmap, CStats& stats, MapBitmapDesc& desc, float mulArea);
+	bool		buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMeshes, std::vector<NLMISC::CBitmap> &bitmaps, CStats& stats, MapBitmapDesc& desc, float mulArea);
 
 	// Remap the coordinate
-	void		remapCoordinates (const std::vector<CCoarseMeshDesc>& coarseMeshes, const MapBitmapDesc& desc);
+	void		remapCoordinates (const std::vector<CCoarseMeshDesc>& coarseMeshes, const MapBitmapDesc& desc, uint outputBitmapCount);
 };
 
 

@@ -421,7 +421,7 @@ void		CVegetableDlg::appendVegetableSet(NL3D::CTileVegetableDesc &vegetSet)
 			veget.Rz.Rand*= radToDeg;
 
 			// Add a new vegetable to the list.
-			_Vegetables.push_back();
+			_Vegetables.push_back( CVegetableDesc ());
 			uint	id= _Vegetables.size()-1;
 			_Vegetables[id].initVegetable(veget);
 
@@ -511,7 +511,7 @@ void CVegetableDlg::OnSelchangeListVegetable()
 void CVegetableDlg::OnButtonVegetableAdd() 
 {
 	// Add a new vegetable to the list.
-	_Vegetables.push_back();
+	_Vegetables.push_back(CVegetableDesc ());
 	uint	id= _Vegetables.size()-1;
 	_Vegetables[id].initDefaultVegetable();
 
@@ -606,7 +606,7 @@ void CVegetableDlg::OnButtonVegetableLoadDesc()
 				// read the vegetable
 				f.serial(veget);
 				// Add a new vegetable to the list.
-				_Vegetables.push_back();
+				_Vegetables.push_back(CVegetableDesc ());
 				uint	id= _Vegetables.size()-1;
 				_Vegetables[id].initVegetable(veget);
 

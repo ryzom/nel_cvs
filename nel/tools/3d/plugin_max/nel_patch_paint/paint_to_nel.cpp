@@ -17,21 +17,18 @@ std::vector<CTileElement>* CNelPatchChanger::getTileArray (int mesh, int patch)
 		ite=(_MapNeLPatchInfo.insert (CNelPatchMap::value_type (CNelPatchKey (mesh, patch), CNelPatchValue()))).first;
 
 	// Array doesn't exist ?
-	if (ite->second.Tiles.get()==NULL)
+	if (ite->second.Tiles.empty ())
 	{
 		// Get the zone for this mesh
 		CZone* zone=_Landscape->getZone (mesh);
 		nlassert (zone);
 
-		// Create a new one
-		ite->second.Tiles=std::auto_ptr< std::vector<CTileElement> > (new std::vector<CTileElement>);
-
 		// Copy it from the patch
-		*ite->second.Tiles=zone->getPatchTexture (patch);
+		ite->second.Tiles = zone->getPatchTexture (patch);
 	}
 
 	// Return the array	
-	return ite->second.Tiles.get();
+	return &(ite->second.Tiles);
 }
 
 /*-------------------------------------------------------------------*/
@@ -47,21 +44,18 @@ std::vector<CTileColor>* CNelPatchChanger::getColorArray (int mesh, int patch)
 		ite=(_MapNeLPatchInfo.insert (CNelPatchMap::value_type (CNelPatchKey (mesh, patch), CNelPatchValue()))).first;
 
 	// Array doesn't exist ?
-	if (ite->second.TileColors.get()==NULL)
+	if (ite->second.TileColors.empty ())
 	{
 		// Get the zone for this mesh
 		CZone* zone=_Landscape->getZone (mesh);
 		nlassert (zone);
 
-		// Create a new one
-		ite->second.TileColors=std::auto_ptr< std::vector<CTileColor> > (new std::vector<CTileColor>);
-
 		// Copy it from the patch
-		*ite->second.TileColors=zone->getPatchColor (patch);
+		ite->second.TileColors = zone->getPatchColor (patch);
 	}
 
 	// Return the array	
-	return ite->second.TileColors.get();
+	return &(ite->second.TileColors);
 }
 
 /*-------------------------------------------------------------------*/
@@ -147,7 +141,7 @@ void CNelPatchChanger::applyChanges (bool displace)
 		nlassert (zone);
 
 		// Assign to the NeL patch
-		zone->changePatchTextureAndColor (ite->first.second, ite->second.Tiles.get(), ite->second.TileColors.get());
+		zone->changePatchTextureAndColor (ite->first.second, &(ite->second.Tiles), &(ite->second.TileColors));
 
 		// Displace ?
 		//if (displace)

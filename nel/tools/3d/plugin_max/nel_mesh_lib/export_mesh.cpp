@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.52 2002/11/20 10:21:36 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.53 2003/01/31 16:14:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1945,7 +1945,9 @@ bool CExportNel::buildMeshAABBox(INode &node, NLMISC::CAABBox &dest, TimeValue t
 	//
 	if (deleteIt)
 	{
+#ifndef NL_DEBUG
 		delete tri;
+#endif // NL_DEBUG
 	}
 	return true;
 }

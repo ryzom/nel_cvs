@@ -104,7 +104,7 @@ map_source_directories=`cat ../../cfg/directories.cfg | grep "map_source_directo
 texture_mul_size_value=`cat ../../cfg/config.cfg | grep "texture_mul_size_value" | sed -e 's/texture_mul_size_value//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the coarse mesh texture name
-coarse_mesh_texture_name=`cat ../../cfg/config.cfg | grep "coarse_mesh_texture_name" | sed -e 's/coarse_mesh_texture_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+coarse_mesh_texture_names=`cat ../../cfg/config.cfg | grep "coarse_mesh_texture_names" | sed -e 's/coarse_mesh_texture_names//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Copy the config file header
 cat cfg/config_header.cfg | sed -e "s/texture_mul_size_value/$texture_mul_size_value/g" > cfg/config_generated.cfg
@@ -147,6 +147,16 @@ for i in shape_with_coarse_mesh/*.[sS][hH][aA][pP][eE]; do
 	# Idle
 	../../idle.bat
 done
+echo '};' >> cfg/config_generated.cfg
+
+# Add output bitmap list
+echo ' ' >> cfg/config_generated.cfg
+echo 'output_textures = {' >> cfg/config_generated.cfg
+# For each shape with coarse mesh
+for i in $coarse_mesh_texture_names ; do
+	# Add the path
+	echo '	"shape_with_coarse_mesh/'$i'.tga"', >> cfg/config_generated.cfg
+done
 
 # Close the config file
 echo '};' >> cfg/config_generated.cfg
@@ -164,11 +174,10 @@ echo -------
 date >> log.log
 date
 
-if ( test -f shape_with_coarse_mesh/nel_coarse_texture.tga )
-then
-	# Convert the coarse texture to dds
-	$tga_2_dds shape_with_coarse_mesh/nel_coarse_texture.tga -o shape_with_coarse_mesh_builded/nel_coarse_texture_builded.dds -a 5 2>> log.log
-
-	# Rename the coarse mesh texture
-	mv shape_with_coarse_mesh_builded/nel_coarse_texture_builded.dds "shape_with_coarse_mesh_builded/"$coarse_mesh_texture_name".dds"
-fi
+# Convert the coarse texture to dds
+for i in $coarse_mesh_texture_names ; do
+	if ( test -f shape_with_coarse_mesh/$i.tga )
+	then
+		$tga_2_dds shape_with_coarse_mesh/$i.tga -o shape_with_coarse_mesh_builded/$i.dds -a 5 2>> log.log
+	fi
+done

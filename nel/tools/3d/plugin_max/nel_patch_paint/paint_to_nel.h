@@ -15,8 +15,8 @@ class CNelPatchValue
 private:
 	bool											TileLoaded;
 	bool											ColorLoaded;
-	std::auto_ptr< std::vector<CTileElement> >		Tiles;
-	std::auto_ptr< std::vector<CTileColor> >		TileColors;
+	std::vector<CTileElement>						Tiles;
+	std::vector<CTileColor>							TileColors;
 };
 
 typedef std::map<CNelPatchKey, CNelPatchValue> CNelPatchMap;

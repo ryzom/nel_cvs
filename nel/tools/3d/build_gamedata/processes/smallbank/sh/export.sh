@@ -16,7 +16,7 @@ bank_source_directory=`cat ../../cfg/directories.cfg | grep "bank_source_directo
 # Get the timeout
 timeout=`cat ../../cfg/config.cfg | grep "smallbank_build_timeout" | sed -e 's/smallbank_build_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-# Get the swt directories
+# Get the tiles root directories
 tile_root_source_directory=`cat ../../cfg/directories.cfg | grep "tile_root_source_directory" | sed -e 's/tile_root_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error

@@ -1,7 +1,7 @@
 /** \file build_coarse_mesh.cpp
  * Precalc coarse mesh objets to build a single texture
  *
- * $Id: build_coarse_mesh.cpp,v 1.6 2002/07/03 08:45:50 corvazier Exp $
+ * $Id: build_coarse_mesh.cpp,v 1.7 2003/01/31 16:14:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 
+using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
 
@@ -70,8 +71,16 @@ int main(int argc, char* argv[])
 			cf.load (argv[1]);
 
 			// Get the texture_output variable (a string)
-			CConfigFile::CVar &texture_output = cf.getVar ("output_texture");
-			std::string texture_output_path = texture_output.asString ();
+			CConfigFile::CVar &texture_output = cf.getVar ("output_textures");
+			std::vector<std::string> texture_output_path;
+			uint outputTextureCount = texture_output.size();
+			texture_output_path.resize (outputTextureCount);
+			uint i;
+			for (i=0; i<outputTextureCount; i++)
+			{
+				// Get the i texture
+				texture_output_path[i] = texture_output.asString (i);
+			}
 
 			// Get the texture_mul_size variable (a float)
 			CConfigFile::CVar &texture_mul_size = cf.getVar ("texture_mul_size");
@@ -95,7 +104,6 @@ int main(int argc, char* argv[])
 			shapes.reserve (list_mesh.size ());
 
 			// Load all the shapes
-			uint i;
 			uint list_mesh_count=list_mesh.size ()/2;
 			for (i = 0; i < list_mesh_count; i++)
 			{
@@ -188,7 +196,8 @@ int main(int argc, char* argv[])
 				printf ("Compute the coarse meshes...\n");
 
 				// A bitmap
-				CBitmap coarseBitmap;
+				vector<CBitmap> coarseBitmap;
+				coarseBitmap.resize (texture_output_path.size ());
 				
 				// Build the coarse meshes
 				CCoarseMeshBuild::CStats stats; 
@@ -218,27 +227,30 @@ int main(int argc, char* argv[])
 						}
 					}
 
-					// Write the bitmap
-					printf ("Write texture %s...\n", texture_output_path.c_str());
+					// Write the bitmaps
+					for (i=0; i<texture_output_path.size (); i++)
+					{
+						printf ("Write textures %s...\n", texture_output_path[i].c_str());
 
-					// File for the texture
-					COFile outputFile;
-					if (outputFile.open (texture_output_path))
-					{
-						// Write a TGA file
-						if (!coarseBitmap.writeTGA (outputFile, 32))
+						// File for the texture
+						COFile outputFile;
+						if (outputFile.open (texture_output_path[i]))
 						{
-							nlwarning ("ERROR can't write the file %s\n", texture_output_path.c_str());
+							// Write a TGA file
+							if (!coarseBitmap[i].writeTGA (outputFile, 32))
+							{
+								nlwarning ("ERROR can't write the file %s\n", texture_output_path[i].c_str());
+							}
 						}
-					}
-					else
-					{
-						nlwarning ("ERROR can't write file %s\n", texture_output_path.c_str());
+						else
+						{
+							nlwarning ("ERROR can't write file %s\n", texture_output_path[i].c_str());
+						}
 					}
 
 					// Show stats
 					printf ("\nCoarse meshes computed: %d\nTexture size: %dx%d\nArea of the texture used: %f%%\nCompute time (s): %f\n", 
-						shapes.size(), coarseBitmap.getWidth(), coarseBitmap.getHeight(), stats.TextureUsed*100.f, 
+						shapes.size(), coarseBitmap[0].getWidth(), coarseBitmap[0].getHeight(), stats.TextureUsed*100.f, 
 						((float)(uint32)CTime::getLocalTime ()-startTime)/1000.f);
 				}
 				else

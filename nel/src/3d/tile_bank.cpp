@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: tile_bank.cpp,v 1.4 2000/10/19 07:54:57 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.5 2000/10/23 14:03:34 corvazier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -74,16 +74,18 @@ void CTileLand::setName (const std::string& name)
 
 
 // ***************************************************************************
-const sint CTileBank::_version=1;
+const sint CTileBank::_version=2;
 // ***************************************************************************
 void    CTileBank::serial(IStream &f)
 {
+	f.serialCheck (std::string ("BANK"));
+
 	sint streamver = f.serialVersion(_version);
 	
 	// Version 1 not compatible
 	if (f.isReading())
 	{
-		if (streamver<1)
+		if (streamver<2)
 			throw EOlderStream();
 	}
 
@@ -182,6 +184,26 @@ void CTileBank::freeTile (int tileIndex)
 	}
 	if (i<(sint)_tileVector.size()-1)
 		_tileVector.resize (i+1);
+}
+// ***************************************************************************
+sint CTileBank::getNumBitmap (CTile::TBitmap bitmap) const
+{
+	std::set<std::string> setString;
+	for (int i=0; i<(sint)_tileVector.size(); i++)
+	{
+		if (!_tileVector[i].isFree())
+		{
+			const std::string &str=_tileVector[i].getFileName (bitmap);
+			if (str!="")
+			{
+				std::vector<char> vect (str.length()+1);
+				memcpy (&*vect.begin(), str.c_str(), str.length()+1);
+				strlwr (&*vect.begin());
+				setString.insert (std::string (&*vect.begin()));
+			}
+		}
+	}
+	return setString.size();
 }
 
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: tile_bank.h,v 1.2 2000/10/19 07:55:09 corvazier Exp $
+ * $Id: tile_bank.h,v 1.3 2000/10/23 14:03:15 corvazier Exp $
  *
  * Management of tile texture.
  */
@@ -356,6 +356,7 @@ public:
 	sint addTileSet (const std::string& name);
 	void removeTileSet (sint landIndex);
 	void clear ();
+	sint getNumBitmap (CTile::TBitmap bitmap) const;
 
 	void    serial(class NLMISC::IStream &f);
 private:

@@ -1,7 +1,7 @@
 /** \file ps_macro.h
  * Some macros used by the particle systems for rendering.
  *
- * $Id: ps_macro.h,v 1.5 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: ps_macro.h,v 1.6 2004/09/17 15:18:46 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,15 +30,6 @@
 #define NL_PS_MACRO_H
 
 #include "nel/misc/types_nl.h"
-
-/// this macro is used to see whether a write in a vertex buffer is correct
-#ifdef NL_DEBUG
-	#define CHECK_VERTEX_BUFFER(vb, pt) { CVertexBufferRead vba; (vb).lock (vba); \
-										nlassert((uint8 *) (pt) >= (uint8 *) vba.getVertexCoordPointer()  \
-				&& (uint8 *) (pt) < ((uint8 *) vba.getVertexCoordPointer() + (vb).getVertexSize() * (vb).getNumVertices()));}
-#else
-	#define CHECK_VERTEX_BUFFER(a,b)
-#endif
 
 // private usage : macro to check the memory integrity
 #if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)

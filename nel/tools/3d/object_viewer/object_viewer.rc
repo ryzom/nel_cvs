@@ -380,6 +380,8 @@ BEGIN
                     225,21
     CONTROL         "Disgrade with lod",IDC_DISGRADE_WITH_LOD,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,94,31,69,11
+    CONTROL         "Parametric motion",IDC_PARAMETRIC_MOTION,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,171,31,84,12
 END
 
 IDD_SELECT_RANGE DIALOG DISCARDABLE  0, 0, 119, 66
@@ -1309,6 +1311,7 @@ BEGIN
             MENUITEM "ConstraintMesh",              IDM_CONSTRAINT_MESH
             MENUITEM "Face",                        IDM_FACE
             MENUITEM "ShockWave",                   IDM_SHOCKWAVE
+            MENUITEM "Ribbon look at",              IDM_RIBBON_LOOK_AT
         END
         POPUP "Bind force..."
         BEGIN
@@ -1381,6 +1384,7 @@ BEGIN
             MENUITEM "ConstraintMesh",              IDM_CONSTRAINT_MESH_LOC
             MENUITEM "Face",                        IDM_FACE_LOC
             MENUITEM "ShockWave",                   IDM_SHOCKWAVE_LOC
+            MENUITEM "Ribbon look at",              IDM_RIBBON_LOOK_AT_LOC
         END
         POPUP "Bind force..."
         BEGIN

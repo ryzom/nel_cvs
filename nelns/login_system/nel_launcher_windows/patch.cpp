@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.5 2002/12/24 10:51:04 lecroart Exp $
+ * $Id: patch.cpp,v 1.6 2003/02/13 18:26:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,9 +52,9 @@ void setRWAccess (const string &filename)
 		throw Exception ("Can't have read/write access to '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
 }
 
-void deleteFile (const string &filename)
+void deleteFile (const string &filename, bool throwException=true)
 {
-	if (!NLMISC::CFile::deleteFile(filename))
+	if (!NLMISC::CFile::deleteFile(filename) && throwException)
 		throw Exception ("Can't delete '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
 }
 
@@ -156,7 +156,7 @@ private:
 			}
 
 			// first, get the file that contains all files
-			deleteFile (DirFilename.c_str());
+			deleteFile (DirFilename.c_str(), false);
 
 			downloadFile (ServerRootPath+DirFilename, DirFilename);
 

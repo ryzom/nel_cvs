@@ -1,7 +1,7 @@
 /** \file build_clod_bank.cpp
  * build a .clodbank with a config file.
  *
- * $Id: build_clod_bank.cpp,v 1.4 2002/05/28 13:25:38 berenguier Exp $
+ * $Id: build_clod_bank.cpp,v 1.5 2002/09/04 10:18:22 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -172,13 +172,21 @@ int	main(int argc, char *argv[])
 
 					// Try to load the animation
 					CAnimation			*anim= new CAnimation;
-					// NB: fatal error if anim not found
-					iFile.open( CPath::lookup(animFileName) );
-					iFile.serial(*anim);
-					iFile.close();
-					// Add to the builder. NB: animation will be delete in this method.
-					// NB: the key name here is the entire file, with the .anim, for easier georges editing.
-					lodBuilder.addAnim(animFileName.c_str(), anim, bakeFrameRate);
+					// NB: continue, to list all ANIM if anim not found
+					try
+					{
+						iFile.open( CPath::lookup(animFileName) );
+						iFile.serial(*anim);
+						iFile.close();
+						// Add to the builder. NB: animation will be delete in this method.
+						// NB: the key name here is the entire file, with the .anim, for easier georges editing.
+						lodBuilder.addAnim(animFileName.c_str(), anim, bakeFrameRate);
+					}
+					catch(EPathNotFound &)
+					{
+						printf("ERROR anim not found %s", animFileName.c_str());
+						delete	anim;
+					}
 				}
 				printf("\n");
 

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.13 2002/06/10 16:51:17 berenguier Exp $
+ * $Id: hierarchical_timer.cpp,v 1.14 2002/06/11 08:34:01 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -788,12 +788,14 @@ void	CHTimer::after(bool displayAfter /*= false*/)
 	_PreambuleClock.start();
 	//		
 	//nlinfo((std::string("clock ") + _Name + std::string(" time = ") + NLMISC::toString(_CurrNode->Clock.getNumTicks())).c_str());
-	uint64 numTicks = _CurrNode->Clock.getNumTicks()  - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
+	sint64 numTicks = _CurrNode->Clock.getNumTicks()  - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
+	numTicks= std::max((sint64)0, numTicks);
 
 	_CurrNode->TotalTime += numTicks;		
-	_CurrNode->MinTime = std::min(_CurrNode->MinTime, numTicks);
-	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, numTicks);
+	_CurrNode->MinTime = std::min(_CurrNode->MinTime, (uint64)numTicks);
+	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, (uint64)numTicks);
 	_CurrNode->LastSonsTotalTime = _CurrNode->SonsTotalTime;
+
 	if (displayAfter)
 	{		
 		nlinfo("FEHTIMER> %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.10 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.11 2002/06/12 12:26:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,6 +138,21 @@ bool		CMeshMultiLodClipObs::clip(IBaseClipObs *caller)
 	else
 		// return result of clip
 		return true;
+}
+
+
+// ***************************************************************************
+void		CMeshMultiLodClipObs::forceClip(TClipReason clipReason)
+{
+	// If the clip is due to a DistMax reason, must delete Coarses instances.
+	if(clipReason == IBaseClipObs::DistMaxClip)
+	{
+		CMeshMultiLodInstance	*inst= (CMeshMultiLodInstance*)Model;
+		inst->deleteCoarseInstances();
+	}
+
+	// Call Base method (traverse Sons)
+	CTransformShapeClipObs::forceClip(clipReason);
 }
 
 

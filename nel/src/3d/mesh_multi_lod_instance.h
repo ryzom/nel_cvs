@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.11 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.12 2002/06/12 12:26:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,8 +131,11 @@ class	CMeshMultiLodClipObs : public CTransformShapeClipObs
 {
 public:
 
-	/// clip the shape, and set renderable.
+	/// clip the shape
 	virtual	bool	clip(IBaseClipObs *caller);
+
+	// override method. If distMaxClip, then must delete coarse Instances.
+	virtual	void	forceClip(TClipReason clipReason);
 
 
 	static IObs	*creator() {return new CMeshMultiLodClipObs;}

@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
+ * $Id: quad_grid_clip_cluster.cpp,v 1.3 2002/06/12 12:26:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,13 @@ void		CQuadGridClipCluster::update()
 
 
 // ***************************************************************************
+CQuadGridClipClusterClipObs::CQuadGridClipClusterClipObs()
+{
+	_LastClipWasDistMaxClip= false;
+	_LastClipWasFrustumClip= false;
+}
+
+// ***************************************************************************
 void		CQuadGridClipClusterClipObs::traverse(IObs *caller)
 {
 	CQuadGridClipCluster	*cluster= (CQuadGridClipCluster*)Model;
@@ -79,7 +86,14 @@ void		CQuadGridClipClusterClipObs::traverse(IObs *caller)
 
 	// if empty, just return (not visible at all).
 	if(cluster->_Empty)
+	{
+		/* reset cache, to be sure that any instances added to this cluster later will 
+			be correctly updated if a clip of this cluster occurs.
+		*/
+		_LastClipWasDistMaxClip= false;
+		_LastClipWasFrustumClip= false;
 		return;
+	}
 
 	// First, clip DistMax.
 	CAABBox		&bbox= cluster->_BBox;
@@ -90,9 +104,24 @@ void		CQuadGridClipClusterClipObs::traverse(IObs *caller)
 		float		dist= (c - clipTrav->CamPos).norm();
 		// it the bbox is entirely out the distMax
 		if( dist-cluster->_Radius > cluster->_DistMax )
+		{
+			// if the cluster was DistMax-visible at last frame
+			if( !_LastClipWasDistMaxClip )
+			{
+				// Advert sons of the clip. Important for CMeshMultiLodInstace. Do it for me and my sons.
+				forceClip(IBaseClipObs::DistMaxClip);
+				// new state.
+				_LastClipWasDistMaxClip= true;
+			}
+			// quit
 			return;
+		}
+		else
+		{
+			// reset.
+			_LastClipWasDistMaxClip= false;
+		}
 	}
-
 
 	// Then clip against pyramid
 	bool	unspecified= false;
@@ -116,9 +145,22 @@ void		CQuadGridClipClusterClipObs::traverse(IObs *caller)
 
 	// if ! visible at all, just skip sons.
 	if(!visible)
-		return;
+	{
+		// if the cluster was frustum visible at last frame
+		if( !_LastClipWasFrustumClip )
+		{
+			// Advert sons of the clip. Do it for me and my sons.
+			forceClip(IBaseClipObs::FrustumClip);
+			// new state.
+			_LastClipWasFrustumClip= true;
+		}
+	}
 	else
 	{
+		// reset frustum clip cache.
+		_LastClipWasFrustumClip= false;
+
+		// clip sons.
 		if(unspecified)
 		{
 			// clip the sons individually 

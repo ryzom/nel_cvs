@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.9 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: clip_trav.h,v 1.10 2002/06/12 12:26:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,6 +204,8 @@ public:
 	 */
 	bool			Visible;
 
+	enum TClipReason	{FrustumClip=0, DistMaxClip, countClip};
+
 public:
 	
 
@@ -244,6 +246,14 @@ public:
 	 *	- always traverseSons(), to clip the sons.
 	 */
 	virtual	void	traverse(IObs *caller) =0;
+
+
+	/** This method is called when a father want to clip all his sons (eg: QuadGridClipCluster)
+	 *  The default behavior is just to call this method on observer sons
+	 *	\param TClipReason is the reason of the forced clip. either a frustrum clip or a DistMax Clip
+	 */
+	virtual	void	forceClip(TClipReason clipReason);
+
 
 	/** 
 	 * Because the clip traversal is a graph of observer not a hierarchy

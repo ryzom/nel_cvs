@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.h
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.h,v 1.1 2001/08/28 11:44:22 berenguier Exp $
+ * $Id: quad_grid_clip_cluster.h,v 1.2 2002/06/12 12:26:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,8 +92,11 @@ private:
  */
 class	CQuadGridClipClusterClipObs : public IBaseClipObs
 {
+	bool		_LastClipWasDistMaxClip;
+	bool		_LastClipWasFrustumClip;
+
 public:
-	CQuadGridClipClusterClipObs() {}
+	CQuadGridClipClusterClipObs();
 
 
 	// not used by traverse().

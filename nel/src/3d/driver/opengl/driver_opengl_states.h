@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.4 2001/10/31 10:13:36 berenguier Exp $
+ * $Id: driver_opengl_states.h,v 1.5 2001/11/07 10:51:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,6 +108,8 @@ public:
 
 	/// nv texture shaders. Should be used only if this caps is present!
 	void            enableNVTextureShader(bool enabled);
+	// check nv texture shader consistency
+	void			verifyNVTextureShaderConfig();
 
 	/// \name Texture Mode setting.
 	// @{
@@ -118,6 +120,8 @@ public:
 	 *	NB: if CubeMap extension not supported, TextureCubeMap <=> TextureDisabled.
 	 */
 	void			setTextureMode(TTextureMode texMode);
+	// reset texture mode to the default (disabled) for the current stage. It forces the state (useful after texture shaders)
+	void			resetTextureMode();	
 	// @}
 
 	/// \name Vertex Array enabling.

@@ -1,7 +1,7 @@
 /** \file client.h
  * 
  *
- * $Id: client.h,v 1.6 2001/07/16 13:01:02 legros Exp $
+ * $Id: client.h,v 1.7 2001/07/17 12:27:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D
 	class UDriver;
 	class UScene;
 	class UTextContext;
-	class U3dMouseListener;
+	class C3dMouseListener;
 }
 
 extern NLMISC::CConfigFile		ConfigFile;
@@ -43,7 +43,8 @@ extern NLMISC::CConfigFile		ConfigFile;
 extern NL3D::UDriver			*Driver;
 extern NL3D::UScene				*Scene;
 extern NL3D::UTextContext		*TextContext;
-extern NL3D::U3dMouseListener	*MouseListener;
+//extern NL3D::U3dMouseListener	*MouseListener;
+extern NL3D::C3dMouseListener	*MouseListener;
 
 extern NLMISC::TTime			LastTime, NewTime;
 

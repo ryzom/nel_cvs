@@ -166,6 +166,14 @@ SOURCE=.\src\landscape.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\mouse_listener.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\mouse_listener.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\network.cpp
 # End Source File
 # Begin Source File

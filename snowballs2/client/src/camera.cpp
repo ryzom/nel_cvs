@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.7 2001/07/16 13:17:47 lecroart Exp $
+ * $Id: camera.cpp,v 1.8 2001/07/17 12:27:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,18 +27,22 @@
 #include <nel/misc/vectord.h>
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_scene.h>
-#include <nel/3d/u_3d_mouse_listener.h>
 #include <nel/3d/u_instance.h>
 #include <nel/3d/u_skeleton.h>
+#include <nel/3d/u_visual_collision_entity.h>
+#include <nel/3d/u_visual_collision_manager.h>
 
 #include "client.h"
 #include "entities.h"
+#include "mouse_listener.h"
+#include "pacs.h"
 
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 
-UCamera				*Camera = NULL;
+UCamera					*Camera = NULL;
+UVisualCollisionEntity	*CamCollisionEntity = NULL;
 
 float				ViewLagBehind = 2.0f;
 float				ViewHeight = 2.0f;
@@ -56,6 +60,8 @@ void	initCamera()
 							ConfigFile.getVar("StartPoint").asFloat(2)),
 							CVectorD (0,0,0));
 
+	CamCollisionEntity = VisualCollisionManager->createEntity();
+	CamCollisionEntity->setCeilMode(true);
 
 	Snow = Scene->createInstance("snow.ps");
 	Snow->setTransformMode (UTransformable::DirectMatrix);
@@ -63,26 +69,10 @@ void	initCamera()
 
 void	updateCamera()
 {
-	// update the mouse listener position
-	if (Self != NULL)
-	{
-		if (Self->Skeleton != NULL)
-			MouseListener->setMatrix(Self->Skeleton->getMatrix());
-		else
-			MouseListener->setMatrix(Self->Instance->getMatrix());
-	}
-
-	CMatrix	mat = MouseListener->getViewMatrix();
-	mat.translate(CVector(0.0f, -ViewLagBehind, ViewHeight));
-	float	alpha = (float)atan((ViewHeight-ViewTargetHeight)/ViewLagBehind);
-	mat.rotateX(-alpha);
-	Camera->setMatrix(mat);
-
 	// Set the new position of the snow emitter
-	CVector pos = mat.getPos ();
-	CMatrix mat2;
-	mat2.setPos (pos);
-	Snow->setMatrix (mat2);
+	CMatrix	mat = CMatrix::Identity;
+	mat.setPos (Camera->getMatrix().getPos());
+	Snow->setMatrix(mat);
 }
 
 void	releaseCamera()

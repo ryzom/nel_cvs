@@ -1,7 +1,7 @@
 /** \file camera.h
  * 
  *
- * $Id: camera.h,v 1.3 2001/07/16 13:01:02 legros Exp $
+ * $Id: camera.h,v 1.4 2001/07/17 12:27:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,16 +26,18 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <nel/3d/u_camera.h>
+namespace NL3D
+{
+	class UCamera;
+	class UVisualCollisionEntity;
+};
 
 void	initCamera();
 void	updateCamera();
 void	releaseCamera();
 
-extern float			ViewLagBehind;
-extern float			ViewHeight;
-extern float			ViewTargetHeight;
-extern NL3D::UCamera	*Camera;
+extern NL3D::UCamera				*Camera;
+extern NL3D::UVisualCollisionEntity	*CamCollisionEntity;
 
 #endif // CAMERA_H
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape management with user interface
  *
- * $Id: landscape.cpp,v 1.4 2001/07/12 13:51:37 legros Exp $
+ * $Id: landscape.cpp,v 1.5 2001/07/17 12:27:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,11 +39,11 @@
 #include <nel/3d/u_text_context.h>
 #include <nel/3d/u_instance.h>
 #include <nel/3d/u_scene.h>
-#include <nel/3d/u_3d_mouse_listener.h>
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
 
 #include "client.h"
+#include "mouse_listener.h"
 
 using namespace std;
 using namespace NLMISC;

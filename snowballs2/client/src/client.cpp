@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.27 2001/07/16 13:17:47 lecroart Exp $
+ * $Id: client.cpp,v 1.28 2001/07/17 12:27:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@
 #include <nel/3d/u_text_context.h>
 #include <nel/3d/u_instance.h>
 #include <nel/3d/u_scene.h>
-#include <nel/3d/u_3d_mouse_listener.h>
+//#include <nel/3d/u_3d_mouse_listener.h>
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
 
@@ -63,6 +63,7 @@
 #include "pacs.h"
 #include "animation.h"
 #include "network.h"
+#include "mouse_listener.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -76,8 +77,11 @@ CConfigFile ConfigFile;
 
 UDriver				*Driver = NULL;
 UScene				*Scene = NULL;
-U3dMouseListener	*MouseListener = NULL;
 UInstance			*Cube = NULL;
+
+//U3dMouseListener	*MouseListener = NULL;
+C3dMouseListener	*MouseListener = NULL;
+
 
 UTextContext		*TextContext = NULL;
 
@@ -131,16 +135,29 @@ int main(int argc, char **argv)
 	Driver->setDisplay (UDriver::CMode(640, 480, 0));
 	Driver->setFontManagerMaxMemory (2000000);
 
+	Driver->showCursor(false);
+	Driver->setCapture(true);
+	Driver->setMousePos(0.5f, 0.5f);
+
 	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
 
 	// Create a scene
 	Scene = Driver->createScene();
 
+	// Init the landscape using the previously created UScene
+	initLandscape();
+
+	// Init the pacs
+	initPACS();
+
 	// Camera
 	initCamera();
 
 	// Create a 3D mouse listener
-	MouseListener = Driver->create3dMouseListener ();
+//	MouseListener = Driver->create3dMouseListener ();
+	MouseListener = new C3dMouseListener();
+	MouseListener->addToServer(Driver->EventServer);
+	MouseListener->setCamera(Camera);
 	MouseListener->setHotSpot (CVectorD (0,0,0));
 	MouseListener->setFrustrum (Camera->getFrustum());
 	MouseListener->setMatrix (Camera->getMatrix());
@@ -155,12 +172,6 @@ int main(int argc, char **argv)
 
 	// Init the entities prefs
 	initEntities();
-
-	// Init the landscape using the previously created UScene
-	initLandscape();
-
-	// Init the pacs
-	initPACS();
 
 	// Init animation
 	initAnimation ();
@@ -194,9 +205,11 @@ int main(int argc, char **argv)
 		updateAnimation ();
 
 		// Update all entities positions
+		MouseListener->updateKeys();
 		updateEntities();
 
 		// setup the camera
+		MouseListener->updateCamera();
 		updateCamera();
 
 		// Update the landscape
@@ -251,6 +264,11 @@ int main(int argc, char **argv)
 		{
 			clearCommands ();
 		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF9))
+		{
+			if (Self != NULL)
+				resetEntityPosition(Self->Id);
+		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyF12))
 		{
 			CBitmap btm;
@@ -264,8 +282,11 @@ int main(int argc, char **argv)
 		{
 			if (Self != NULL)
 			{
+				/// todo
+/*
 				CVector	Direction = CVector((float)cos(Self->Angle), (float)sin(Self->Angle), (2.0f-ViewHeight)/ViewLagBehind).normed();
 				shotSnowball(Self->Id, Self->Position+Direction*100.0f);
+*/
 			}
 		}
 
@@ -276,10 +297,16 @@ int main(int argc, char **argv)
 		CConfigFile::checkConfigFiles ();
 	}
 
+	Driver->setCapture(false);
+	Driver->showCursor(true);
+
 	releaseNetwork ();
+	releaseAnimation ();
 	releasePACS();
 	releaseLandscape();
-	releaseAnimation ();
+
+	MouseListener->removeFromServer(Driver->EventServer);
+	delete MouseListener;
 
 	delete Driver;
 

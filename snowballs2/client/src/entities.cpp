@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.13 2001/07/16 13:17:47 lecroart Exp $
+ * $Id: entities.cpp,v 1.14 2001/07/17 12:27:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,6 @@
 #include <nel/3d/u_text_context.h>
 #include <nel/3d/u_instance.h>
 #include <nel/3d/u_scene.h>
-#include <nel/3d/u_3d_mouse_listener.h>
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
 #include <nel/3d/u_skeleton.h>
@@ -60,6 +59,7 @@
 #include "pacs.h"
 #include "animation.h"
 #include "camera.h"
+#include "mouse_listener.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -219,8 +219,8 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		// allows collision snapping to the ceiling
 		entity.VisualCollisionEntity->setCeilMode(true);
 
-		entity.Instance = Scene->createInstance("box.shape");
-//		entity.Instance = Scene->createInstance("snowball.ps");
+//		entity.Instance = Scene->createInstance("box.shape");
+		entity.Instance = Scene->createInstance("snowball.ps");
 		entity.Speed = SnowballSpeed;
 
 		entity.setState (CEntity::Normal);
@@ -250,7 +250,7 @@ void removeEntity (uint32 eid)
 		entity.Particule = NULL;
 	}
 
-	if (entity.Type == CEntity::Other)
+//	if (entity.Type == CEntity::Other)
 	{
 
 		entity.Particule = Scene->createInstance("disappear.ps");
@@ -381,13 +381,73 @@ void stateNormal (CEntity &entity)
 	{
 		// the self entity
 		// get new position
-		newPos = MouseListener->getViewMatrix().getPos();
+		newPos = MouseListener->getPosition();
 		// get new orientation
-		CVector	j = MouseListener->getViewMatrix().getJ();
-		ViewHeight -= j.z;
-		j.z = 0.0f;
-		j.normalize();
-		entity.Angle = (float)atan2(j.y, j.x);
+		entity.Angle = MouseListener->getOrientation();
+
+		if (Driver->AsyncListener.isKeyDown (KeyUP))
+		{
+			if (Driver->AsyncListener.isKeyDown (KeyLEFT))
+			{
+				entity.AuxiliaryAngle = (float)Pi/4.0f;
+			}
+			else if (Driver->AsyncListener.isKeyDown (KeyRIGHT))
+			{
+				entity.AuxiliaryAngle = -(float)Pi/4.0f;
+			}
+			else
+			{
+				entity.AuxiliaryAngle = 0;
+			}
+			playAnimation (*Self, WalkAnimId);
+		}
+		else if (Driver->AsyncListener.isKeyDown (KeyDOWN))
+		{
+			if (Driver->AsyncListener.isKeyDown (KeyLEFT))
+			{
+				entity.AuxiliaryAngle = (float)Pi-(float)Pi/4.0f;
+			}
+			else if (Driver->AsyncListener.isKeyDown (KeyRIGHT))
+			{
+				entity.AuxiliaryAngle = -(float)Pi+(float)Pi/4.0f;
+			}
+			else
+			{
+				entity.AuxiliaryAngle = (float)Pi;
+			}
+			playAnimation (*Self, WalkAnimId);
+		}
+		else if (Driver->AsyncListener.isKeyDown (KeyLEFT))
+		{
+			entity.AuxiliaryAngle = (float)Pi/2.0f;
+			playAnimation (*Self, WalkAnimId);
+		}
+		else if (Driver->AsyncListener.isKeyDown (KeyRIGHT))
+		{
+			entity.AuxiliaryAngle = -(float)Pi/2.0f;
+			playAnimation (*Self, WalkAnimId);
+		}
+		else
+		{
+			playAnimation (*Self, IdleAnimId);
+		}
+
+		float	sweepDistance = entity.AuxiliaryAngle-entity.InterpolatedAuxiliaryAngle;
+		if (sweepDistance > (float)Pi)
+		{
+			sweepDistance -= (float)Pi*2.0f;
+			entity.InterpolatedAuxiliaryAngle += (float)Pi*2.0f;
+		}
+		if (sweepDistance < -(float)Pi)
+		{
+			sweepDistance += (float)Pi*2.0f;
+			entity.InterpolatedAuxiliaryAngle -= (float)Pi*2.0f;
+		}
+		float	sweepAngle = 4.0f*sweepDistance;
+		entity.InterpolatedAuxiliaryAngle += (float)(sweepAngle*dt);
+		if ((entity.AuxiliaryAngle-entity.InterpolatedAuxiliaryAngle)*sweepAngle <= 0.0)
+			entity.InterpolatedAuxiliaryAngle = entity.AuxiliaryAngle;
+		entity.Angle += entity.InterpolatedAuxiliaryAngle;
 
 		entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
 	}
@@ -457,15 +517,18 @@ void updateEntities ()
 		eit = nexteit;
 	}
 
+/*
 	if (Driver->AsyncListener.isKeyDown (KeyUP))
 	{
-		playAnimation (*Self, WalkAnimId);
+		if (Self != NULL)
+			playAnimation (*Self, WalkAnimId);
 	}
 	else
 	{
-		playAnimation (*Self, IdleAnimId);
+		if (Self != NULL)
+			playAnimation (*Self, IdleAnimId);
 	}
-	
+*/	
 	
 	// evaluate collisions
 	MoveContainer->evalCollision(dt, 0);
@@ -502,31 +565,32 @@ void updateEntities ()
 			entity.VisualCollisionEntity->snapToGround(entity.Position);
 		}
 
-		if (entity.Type == CEntity::Snowball && SnapSnowballs)
-		{
-			CVector	snapPos = entity.Position;
-			entity.VisualCollisionEntity->snapToGround(snapPos);
-			entity.Instance->setPos(snapPos);
-			CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
-			entity.Instance->setRotQuat(jdir);
-		} else
+
 		if (entity.Instance != NULL)
 		{
-			if (entity.Skeleton != NULL)
-				entity.Skeleton->setPos(entity.Position);
-			else
-				entity.Instance->setPos(entity.Position);
+			CVector	jdir = CVector(-(float)cos(entity.Angle), -(float)sin(entity.Angle), 0.0f);
 
-			CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
-			
 			if (entity.Skeleton != NULL)
+			{
+				entity.Skeleton->setPos(entity.Position);
 				entity.Skeleton->setRotQuat(jdir);
+			}
 			else
+			{
+				entity.Instance->setPos(entity.Position);
 				entity.Instance->setRotQuat(jdir);
+			}
 		}
 
 		if (entity.Particule != NULL)
+		{
 			entity.Particule->setPos(entity.Position);
+		}
+
+		if (entity.Type == CEntity::Self)
+		{
+			MouseListener->setPosition(entity.Position);
+		}
 	}
 }
 
@@ -539,14 +603,11 @@ void renderEntitiesNames ()
 	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
 	{
 		CEntity	&entity = (*eit).second;
-		if (entity.Instance != NULL && entity.Type != CEntity::Snowball)
+		if (entity.Instance != NULL && entity.Type == CEntity::Other)
 		{
 			CMatrix		mat = Camera->getMatrix();
 			mat.setPos(entity.Position + CVector(0.0f, 0.0f, 2.0f));
-//			CMatrix		mat = entity.Instance->getMatrix();
-//			mat.translate(CVector(0.0f, 0.0f, 2.0f));
 			mat.scale(4.0f);
-//			mat.setRot(Camera->get
 			TextContext->render3D(mat, entity.Name);
 		}
 	}
@@ -615,23 +676,16 @@ void initRadar ()
 
 
 
-
-
-
 void displayRadarPoint (const CVector &Position, const CVector &Center, float Size, const CRGBA &Color)
 {
 	float userPosX, userPosY;
 
 	// convert from world coords to radar coords (0.0 -> 1.0)
-
 	userPosX = (Position.x - Center.x) / (2.0f*WorldWidth);
 	userPosY = (Position.y - Center.y) / (2.0f*WorldHeight);
-
 	// userpos is between -0.5 -> +0.5
-
 	userPosX *= RadarZoom;
 	userPosY *= RadarZoom;
-
 	/// \todo virer kan ca marchera
 	string str = toString(userPosX) + " / " + toString(userPosY) + " ** ";
 	str += toString(Center.x) + " / " + toString(Center.y) + " *** ";
@@ -640,10 +694,8 @@ void displayRadarPoint (const CVector &Position, const CVector &Center, float Si
 
 	if (userPosX > 0.5f || userPosX < -0.5f || userPosY > 0.5f || userPosY < -0.5f)
 		return;
-
 	userPosX += 0.5f;
 	userPosY += 0.5f;
-
 	// userpos is between 0.0 -> 1.0
 
 	userPosX *= RadarWidth;
@@ -686,6 +738,30 @@ void updateRadar ()
 }
 
 //
+void	resetEntityPosition(uint32 eid)
+{
+	uint32 sbid = NextEID++;
+	EIT eit = findEntity (eid);
+
+	CEntity	&entity = (*eit).second;
+
+	UGlobalPosition	gPos;
+	// get the global position
+	gPos = GlobalRetriever->retrievePosition(entity.Position);
+	// convert it in a vector 3d
+	entity.Position = GlobalRetriever->getGlobalPosition(gPos);
+	// get the good z position
+	gPos.LocalPosition.Estimation.z = 0.0f;
+	entity.Position.z = GlobalRetriever->getMeanHeight(gPos);
+
+	// snap to the ground
+	if (entity.VisualCollisionEntity != NULL)
+		entity.VisualCollisionEntity->snapToGround(entity.Position);
+
+	if (entity.MovePrimitive != NULL)
+		entity.MovePrimitive->setGlobalPosition(CVector(entity.Position.x, entity.Position.y, entity.Position.z), 0);
+}
+
 void	shotSnowball(uint32 eid, const CVector &target)
 {
 	uint32 sbid = NextEID++;
@@ -714,7 +790,6 @@ void	shotSnowball(uint32 eid, const CVector &target)
 			CVector	snapped = testPos;
 			CVector	normal;
 			// here use normal to check if we have collision
-//			snowball.VisualCollisionEntity->snapToGround(snapped, normal);
 			if (snowball.VisualCollisionEntity->snapToGround(snapped, normal) && (testPos.z-snapped.z)*normal.z < 0.0f)
 			{
 				testPos -= step*0.5f;

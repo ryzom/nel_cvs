@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.10 2001/07/16 13:17:47 lecroart Exp $
+ * $Id: entities.h,v 1.11 2001/07/17 12:27:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,8 @@ public:
 	// Contain the current position of the entity
 	NLMISC::CVector					Position;
 	float							Speed, 
-									Angle;
+									Angle,
+									AuxiliaryAngle, InterpolatedAuxiliaryAngle;
 
 	enum TState	{ Appear, Normal, Disappear };
 
@@ -97,6 +98,7 @@ void	removeEntity (uint32 eid);
 void	updateEntities ();
 void	initEntities();
 
+void	resetEntityPosition(uint32 eid);
 void	shotSnowball(uint32 eid, const NLMISC::CVector &target);
 
 void	initRadar ();

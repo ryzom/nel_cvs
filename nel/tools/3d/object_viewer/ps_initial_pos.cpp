@@ -1,7 +1,7 @@
 
 /** \file ps_initial_pos.cpp
  *
- * $Id: ps_initial_pos.cpp,v 1.1 2004/06/17 08:04:45 vizerie Exp $
+ * $Id: ps_initial_pos.cpp,v 1.2 2004/06/18 09:51:50 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -46,6 +46,7 @@ void CPSInitialPos::reset()
 //******************************************************************************************************
 void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 {
+	nlassert(!_PS);
 	reset();
 	uint32 nbLocated = ps->getNbProcess();
 

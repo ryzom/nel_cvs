@@ -1,6 +1,6 @@
 /** \file ps_initial_pos.h
  *
- * $Id: ps_initial_pos.h,v 1.1 2004/06/17 08:04:45 vizerie Exp $
+ * $Id: ps_initial_pos.h,v 1.2 2004/06/18 09:51:50 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -53,9 +53,7 @@ public:
 	/// update data when a located in a particle system has been removed	
 	void removeLocated(NL3D::CPSLocated *loc);
 	/// update data when a located bindable in a particle system has been removed	
-	void removeLocatedBindable(NL3D::CPSLocatedBindable *lb);	
-	// reset all initial infos
-	void reset();	
+	void removeLocatedBindable(NL3D::CPSLocatedBindable *lb);		
 	// initial position and speed of a located instance in a particle system
 	struct CInitPSInstanceInfo
 	{	
@@ -77,8 +75,7 @@ public:
 	NL3D::CParticleSystem *getPS() { return _PS; }
 	const NL3D::CParticleSystem *getPS() const { return _PS; }
 	bool isStateMemorized() const { return _PS != NULL; }
-protected:
-
+private:
 	typedef std::vector<CInitPSInstanceInfo> TInitInfoVect;
 	typedef std::vector<CRotScaleInfo> TRotScaleInfoVect;
 	typedef std::vector< std::pair<NL3D::CPSLocated *, uint32> > TInitialLocatedSizeVect;
@@ -87,6 +84,8 @@ protected:
 	// initial number of instances for each located
 	TInitialLocatedSizeVect  _InitialSizeVect;
 	NL3D::CParticleSystem *_PS;	
+	// reset all initial infos
+	void reset();	
 };
 
 

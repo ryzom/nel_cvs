@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.42 2001/08/13 14:22:23 legros Exp $
+ * $Id: global_retriever.cpp,v 1.43 2001/08/20 13:18:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,18 +211,23 @@ const NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint32 
 
 	instance.make(id, retrieverId, retriever, orientation, origin);
 
-	if (_BBox.getHalfSize() == CVector::Null)
+	CVector	hsize = instance.getBBox().getHalfSize();
+	hsize.z = 0.0f;
+	if (hsize != CVector::Null)
 	{
-		_BBox = instance.getBBox();
-	}
-	else
-	{
-		_BBox.extend(instance.getBBox().getMin());
-		_BBox.extend(instance.getBBox().getMax());
-	}
+		if (_BBox.getHalfSize() == CVector::Null)
+		{
+			_BBox = instance.getBBox();
+		}
+		else
+		{
+			_BBox.extend(instance.getBBox().getMin());
+			_BBox.extend(instance.getBBox().getMax());
+		}
 
-	if (getRetriever(instance.getRetrieverId()).getType() == CLocalRetriever::Interior)
-		instance.initEdgeQuad(*this);
+		if (getRetriever(instance.getRetrieverId()).getType() == CLocalRetriever::Interior)
+			instance.initEdgeQuad(*this);
+	}
 
 	return instance;
 }
@@ -323,7 +328,7 @@ CVector		NLPACS::CGlobalRetriever::getGlobalPosition(const UGlobalPosition &glob
 	else
 	{
 		// it should be an error here
-		return CVector::Null;
+		return global.LocalPosition.Estimation;
 	}
 }
 
@@ -336,7 +341,7 @@ CVectorD	NLPACS::CGlobalRetriever::getDoubleGlobalPosition(const NLPACS::UGlobal
 	else
 	{
 		// it should be an error here
-		return CVectorD::Null;
+		return CVectorD(global.LocalPosition.Estimation);
 	}
 }
 

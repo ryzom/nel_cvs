@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.18 2002/05/23 10:02:42 lecroart Exp $
+ * $Id: mem_stream.h,v 1.19 2002/05/23 14:50:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,7 @@ public:
 	CMemStream( bool inputStream=false, bool stringmode=false, uint32 defaultcapacity=0 ) :
 		NLMISC::IStream( inputStream ), _StringMode( stringmode )
 	{
-		_DefaultCapacity = std::max( defaultcapacity, (uint32)4 ); // prevent from no allocation
+		_DefaultCapacity = std::max( defaultcapacity, (uint32)16 ); // prevent from no allocation
 		_Buffer.resize (_DefaultCapacity);
 		_BufPos = _Buffer.getPtr();
 	}
@@ -88,6 +88,7 @@ public:
 		_Buffer = other._Buffer;
 		_BufPos = _Buffer.getPtr() + other.lengthS();
 		_StringMode = other._StringMode;
+		_DefaultCapacity = other._DefaultCapacity;
 		return *this;
 	}
 

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.5 2001/07/25 08:12:04 lecroart Exp $
+ * $Id: primitive_world_image.cpp,v 1.6 2001/08/01 15:44:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1212,7 +1212,12 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 	if (retriever)
 	{
 		// Make a domove in the Ben data
-		double deltaTime=(collisionPosition-_Position.getPos ()).norm()/_DeltaPosition.norm();
+		double	deltaDist= _DeltaPosition.norm();
+		double	deltaTime;
+		if(deltaDist==0)
+			deltaTime= 0;
+		else
+			deltaTime=(collisionPosition-_Position.getPos ()).norm()/deltaDist;
 		nlassert (deltaTime>=0);
 		nlassert (deltaTime<=1);
 
@@ -1286,7 +1291,12 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 		if (retriever)
 		{
 			// Make a domove in the Ben data
-			double deltaTime=(collisionPosition-second._Position.getPos ()).norm()/second._DeltaPosition.norm();
+			double	deltaDist= second._DeltaPosition.norm();
+			double	deltaTime;
+			if(deltaDist==0)
+				deltaTime= 0;
+			else
+				deltaTime=(collisionPosition-second._Position.getPos ()).norm()/deltaDist;
 			clamp (deltaTime, 0.0, 1.0);
 
 			UGlobalPosition newPosition = retriever->doMove (second._Position.getGlobalPos (), second._DeltaPosition,

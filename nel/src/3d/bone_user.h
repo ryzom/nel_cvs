@@ -1,7 +1,7 @@
 /** \file bone_user.h
  * <File description>
  *
- * $Id: bone_user.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: bone_user.h,v 1.2 2001/08/01 15:44:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,16 @@ public:
 	{
 		// do nothing.
 	}
+	// @}
+
+	/// \name Special feature
+	// @{
+
+	virtual	const CMatrix	&getLastWorldMatrixComputed() const
+	{
+		return static_cast<CBone*>(_Transformable)->getWorldMatrix();
+	}
+
 	// @}
 
 };

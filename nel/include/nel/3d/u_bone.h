@@ -1,7 +1,7 @@
 /** \file u_bone.h
  * <File description>
  *
- * $Id: u_bone.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_bone.h,v 1.2 2001/08/01 15:44:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,17 @@ protected:
 	/// Constructor. By default, RotQuat mode.
 	UBone() {}
 	virtual	~UBone() {}
+	// @}
+
+
+	/// \name Special feature
+	// @{
+
+	/** get the last world matrix computed in last render().
+	 *	NB: this WM is computed in last render() only if the object was not clipped. So use it wisely.
+	 */
+	virtual	const CMatrix	&getLastWorldMatrixComputed() const =0;
+
 	// @}
 
 public:

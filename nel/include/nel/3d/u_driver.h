@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.27 2003/03/06 10:05:13 corvazier Exp $
+ * $Id: u_driver.h,v 1.28 2003/04/28 12:32:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -474,6 +474,9 @@ public:
 		  * From this interface you can deal with mouse and keyboard as above, but you can also manage game devices (joysticks, joypads ...)
 		  */
 		virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager() = 0;
+
+		// get delay used for mouse double click
+		virtual uint	getDoubleClickDelay(bool hardwareMouse) = 0;
 
 		/** show cursor if b is true, or hide it if b is false
 		  * NB: This has no effects if a low level mouse is used.

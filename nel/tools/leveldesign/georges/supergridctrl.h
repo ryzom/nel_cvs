@@ -217,6 +217,8 @@ public:
 	virtual void OnUpdateListViewItem(CTreeItem* lpItem, LV_ITEM *plvItem);
 	//override this to activate any control when lButtonDown in a cell, called from within OnLButtonDown
 	virtual void OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht);
+	//override this to activate any control when rButtonDown in a cell, called from within OnRButtonDown
+	virtual void OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht);
 	//override this to provide your dragimage, default: creates an image + text
 	virtual CImageList *CreateDragImageEx(int nItem);
     //called before item is about to explode, return TRUE to continue, FALSE to prevent expanding
@@ -239,6 +241,7 @@ public:
 	virtual BOOL OnVkReturn(void);
 	//called before from within OnlButtonDown and OnDblclk, but before anything happens, return TRUE to continue, FALSE to say not selecting the item
 	virtual BOOL OnItemLButtonDown(LVHITTESTINFO& ht);
+	virtual BOOL OnItemRButtonDown(LVHITTESTINFO& ht);
 public:
 	//creates a root
 	CTreeItem*  InsertRootItem(CItemInfo * lpRoot);
@@ -436,6 +439,7 @@ protected:
 	afx_msg void MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct);	
 	afx_msg void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
 	afx_msg void OnSysColorChange();
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

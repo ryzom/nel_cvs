@@ -12,8 +12,10 @@
 	#error include 'stdafx.h' before including this file for PCH
 #endif
 
+#include "nel/misc/path.h"
 #include "resource.h"       // main symbols
 #include "../georges_lib/StringEx.h"
+#include "../georges_lib/Loader.h"
 
 //////////////////////////²///////////////////////////////////////////////////
 // CGeorgesApp:
@@ -24,6 +26,7 @@ class CGeorgesApp : public CWinApp
 {
 	CStringEx	sxrootdirectory;
 	CStringEx	sxworkdirectory;
+	CLoader		loader;
 
 
 	CMultiDocTemplate *_MultiDocTemplate;
@@ -36,6 +39,7 @@ public:
 	CStringEx GetRootDirectory() const;
 	void SetWorkDirectory( const CStringEx _sxworkdirectory );
 	void SetRootDirectory( const CStringEx _sxrootdirectory );
+	CLoader* GetLoader() { return &loader; }
 
 // Overrides
 	// ClassWizard generated virtual function overrides

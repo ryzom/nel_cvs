@@ -6,6 +6,7 @@
 
 #include "GeorgesDoc.h"
 
+#include "../georges_lib/Loader.h"
 #include "../georges_lib/Form.h"
 #include "../georges_lib/FormFile.h"
 #include "../georges_lib/FormBodyEltAtom.h"
@@ -36,15 +37,15 @@ END_MESSAGE_MAP()
 
 CGeorgesDoc::CGeorgesDoc()
 {
-	item.SetLoader( &loader );
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
-	loader.SetRootDirectory( papp->GetRootDirectory() );
-	loader.SetWorkDirectory( papp->GetWorkDirectory() );
+	SetRootDirectory( papp->GetRootDirectory() );
+	SetWorkDirectory( papp->GetWorkDirectory() );
+	CLoader* ploader = papp->GetLoader();
+	item.SetLoader( ploader );
 }
 
 CGeorgesDoc::~CGeorgesDoc()
 {
-//	delete pff;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -95,6 +96,9 @@ void CGeorgesDoc::OnCloseDocument()
 
 BOOL CGeorgesDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	papp->SetRootDirectory( sxrootdirectory );
+	papp->SetWorkDirectory( sxworkdirectory );
 	DeleteContents();
 	item.Load( CStringEx( lpszPathName ) );		
 	SetModifiedFlag( FALSE );
@@ -103,33 +107,71 @@ BOOL CGeorgesDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName) 
 {
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+
 #if 1
+
+	papp->SetRootDirectory( sxrootdirectory );
+	papp->SetWorkDirectory( sxworkdirectory );
 	item.Save( CStringEx( lpszPathName ) );		
 	SetModifiedFlag( FALSE );
+
 #else
-	std::vector< CStringEx > v;
-	v.push_back( "essai21" );
-	v.push_back( "essai102" );
-	v.push_back( "essai113" );
-	v.push_back( "essai154" );
-	loader.SetTypPredef( "patat_name.typ", v );
+
+	std::vector< std::pair< CStringEx, CStringEx > > lpsx;
+	std::vector< std::pair< CStringEx, CStringEx > > lpsx2;
+	std::vector< CStringEx > lsx;
+
+	lpsx.push_back( std::make_pair( CStringEx( "Include_patats" ),						CStringEx( "list< patat_name.typ >" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Exclude_patats" ),						CStringEx( "list< patat_name.typ >" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Plants" ),								CStringEx( "list< plant_properties.dfn >" ) ) );
+	papp->GetLoader()->MakeDfn( "U:\\dfn\\vegetable.dfn", &lpsx );
+
+	// définition des propriétés possibles d'une plante
+	lpsx.clear();
+	lpsx.push_back( std::make_pair( CStringEx( "Name" ),								CStringEx( "plant_name.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Density" ),								CStringEx( "float.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Falloff" ),								CStringEx( "float.typ" ) ) );
+	papp->GetLoader()->MakeDfn( "U:\\dfn\\plant_properties.dfn", &lpsx );
+
+	lpsx.push_back( std::make_pair( CStringEx( "Shape" ),								CStringEx( "filename.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Collision_radius" ),					CStringEx( "float.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Bunding_radius" ),						CStringEx( "float.typ" ) ) );
+	papp->GetLoader()->MakeDfn( "U:\\dfn\\plant.dfn", &lpsx );
+
+	// définition globale d'une plante
+	lpsx.clear();
+	lpsx.push_back( std::make_pair( CStringEx( "Glaieul.plant" ),						CStringEx( "Glaieul.plant" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Hortensia.plant" ),						CStringEx( "Hortensia.plant" ) ) );
+	papp->GetLoader()->MakeTyp( "U:\\dfn\\plant_name.typ", "string", "PLANT", "true", "", "", "Glaieul.plant", &lpsx, &lpsx2 );
+
+	lpsx.clear();
+	lpsx.push_back( std::make_pair( CStringEx( "PatatFrite" ),							CStringEx( "PatatFrite" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "PatatVapeur" ),							CStringEx( "PatatVapeur" ) ) );
+	papp->GetLoader()->MakeTyp( "U:\\dfn\\patat_name.typ", "string", "PATAT", "true", "", "", "PatatFrite", &lpsx, &lpsx2 );
+
+	lsx.push_back( "PatateFrite" );
+	lsx.push_back( "PatatePuree" );
+	lsx.push_back( "PatateVapeur" );
+	papp->GetLoader()->SetTypPredef( "U:\\dfn\\patat_name.typ", lsx );
+
 #endif
+
 	return( TRUE );
 }
 
 BOOL CGeorgesDoc::OnNewDocument()
 {
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	if (!CDocument::OnNewDocument())
 		return FALSE;
 
-	DeleteContents();
-	SetModifiedFlag( FALSE );
 	CFileDialog Dlg( true );
 	int s = Dlg.m_ofn.Flags;
 	Dlg.m_ofn.Flags |= OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST | OFN_NONETWORKBUTTON;
 	Dlg.m_ofn.lpstrTitle  = "Choosing a DFN file";
 	Dlg.m_ofn.lpstrFilter = "Define files\0*.dfn";
-	Dlg.m_ofn.lpstrInitialDir = CStringEx( loader.GetRootDirectory() +"dfn\\" ).c_str();
+	Dlg.m_ofn.lpstrInitialDir = CStringEx( sxrootdirectory +"dfn\\" ).c_str();
 	int nRet = -1;
 	nRet = Dlg.DoModal();
 
@@ -141,7 +183,7 @@ BOOL CGeorgesDoc::OnNewDocument()
 	CStringEx sxdfn( p );
 	fn.ReleaseBuffer();
 
-	item.New( sxdfn );		
+	NewDocument( sxdfn );
 
 	return( TRUE );
 
@@ -149,6 +191,9 @@ BOOL CGeorgesDoc::OnNewDocument()
 
 void CGeorgesDoc::NewDocument( const CStringEx _sxfilename )
 {
+	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
+	papp->SetRootDirectory( sxrootdirectory );
+	papp->SetWorkDirectory( sxworkdirectory );
 	DeleteContents();
 	item.New( _sxfilename );		
 	SetModifiedFlag( FALSE );
@@ -217,7 +262,25 @@ void CGeorgesDoc::GetItemListPredef( const unsigned int _index, CStringList* _sl
 		_slist->AddTail( (*it).c_str() );
 }
 
+void CGeorgesDoc::SetWorkDirectory( const CStringEx _sxworkdirectory )
+{
+	sxworkdirectory = _sxworkdirectory;
+}
 
+void CGeorgesDoc::SetRootDirectory( const CStringEx _sxrootdirectory )
+{
+	sxrootdirectory = _sxrootdirectory;
+}
+
+CStringEx CGeorgesDoc::GetWorkDirectory() const
+{
+	return( sxworkdirectory );
+}
+
+CStringEx CGeorgesDoc::GetRootDirectory() const
+{
+	return( sxrootdirectory );
+}
 
 
 

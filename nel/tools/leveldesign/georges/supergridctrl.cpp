@@ -234,6 +234,7 @@ BEGIN_MESSAGE_MAP(CSuperGridCtrl, CListCtrl)
 	ON_WM_MEASUREITEM_REFLECT()
 	ON_WM_DRAWITEM_REFLECT()
 	ON_WM_SYSCOLORCHANGE()
+	ON_WM_RBUTTONDOWN()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -2104,7 +2105,6 @@ BOOL CSuperGridCtrl::IsChildOf(const CTreeItem* pParent, const CTreeItem* pChild
 }
 
 
-
 void CSuperGridCtrl::OnLButtonDown(UINT nFlags, CPoint point) 
 {
 	if( GetFocus() != this) 
@@ -2509,6 +2509,10 @@ void CSuperGridCtrl::OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTIN
 		EditLabelEx(ht.iItem, ht.iSubItem);	
 }
 	
+void CSuperGridCtrl::OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht)
+{
+}
+	
 
 COLORREF CSuperGridCtrl::GetCellRGB()
 {
@@ -2568,6 +2572,11 @@ BOOL CSuperGridCtrl::OnItemCollapsed(CTreeItem *pItem)
 
 
 BOOL CSuperGridCtrl::OnItemLButtonDown(LVHITTESTINFO& ht)
+{
+	return 1;
+}
+
+BOOL CSuperGridCtrl::OnItemRButtonDown(LVHITTESTINFO& ht)
 {
 	return 1;
 }
@@ -2757,3 +2766,30 @@ void CRectangle::DrawMinus(void)
 	m_pDC->LineTo(m_left+3, m_topdown);
 }
 
+
+
+void CSuperGridCtrl::OnRButtonDown(UINT nFlags, CPoint point) 
+{
+	if( GetFocus() != this) 
+		SetFocus();
+
+	LVHITTESTINFO ht;
+	ht.pt = point;
+	SubItemHitTest(&ht);
+	if(OnItemRButtonDown(ht))
+	{
+		BOOL bSelect=1;
+		bSelect = HitTestOnSign(point, ht);
+		if(bSelect && ht.iItem!=-1)
+		{
+			m_CurSubItem = IndexToOrder(ht.iSubItem);
+			CHeaderCtrl* pHeader = GetHeaderCtrl();
+			// Make the column fully visible.
+			MakeColumnVisible(Header_OrderToIndex(pHeader->m_hWnd, m_CurSubItem));
+			OnControlRButtonDown(nFlags, point, ht);
+//			CListCtrl::OnRButtonDown(nFlags, point);
+			//update row anyway for selection bar
+			InvalidateItemRect(ht.iItem);
+		}
+	}
+}

@@ -273,6 +273,10 @@ SOURCE=.\testtreedlg.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=.\res\folders.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\georges.ico
 # End Source File
 # Begin Source File
@@ -286,6 +290,10 @@ SOURCE=.\res\georges.rc2
 # Begin Source File
 
 SOURCE=.\res\georgesDoc.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\subitems.bmp
 # End Source File
 # Begin Source File
 

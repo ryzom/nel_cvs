@@ -195,7 +195,6 @@ int CMySuperGrid::GetIcon(const CTreeItem* pItem)
 }
 
 
-
 //override
 void CMySuperGrid::OnUpdateListViewItem(CTreeItem* lpItem, LV_ITEM *plvItem)
 {
@@ -275,6 +274,134 @@ void CMySuperGrid::OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO
 			CSuperGridCtrl::OnControlLButtonDown(nFlags, point, ht);
 	}
 }
+
+BOOL CMySuperGrid::OnItemRButtonDown(LVHITTESTINFO& ht)
+{
+	if(ht.iItem!=-1)
+	{
+	}
+	return 1;
+}
+
+void CMySuperGrid::OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht)
+{
+	CTreeItem*pSelItem = GetTreeItem(ht.iItem);
+	if(pSelItem!=NULL)
+	{	
+		CMenu menu;
+		menu.LoadMenu( IDR_MENU_LISTCTRL );
+		CMenu* pPopup = menu.GetSubMenu(0);
+		CPoint pt = point ; 
+		ClientToScreen ( &pt ) ; 
+		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, AfxGetMainWnd());
+	}		
+/*
+		CItemInfo* pInfo = GetData(pSelItem);
+		CItemInfo::CONTROLTYPE ctrlType;
+		if(pInfo->GetControlType(ht.iSubItem-1, ctrlType))
+		{	
+			if(ctrlType==pInfo->CONTROLTYPE::combobox) 
+			{
+					CStringList* list=NULL;
+					pInfo->GetListData(ht.iSubItem-1, list);
+					CComboBox * pList = ShowList(ht.iItem, ht.iSubItem, list);
+			}
+		}								
+		else //activate default edit control
+			CSuperGridCtrl::OnControlLButtonDown(nFlags, point, ht);
+*/
+}
+
+
+/*
+
+void CNOPListView::OnRButtonDown(UINT nFlags, CPoint point) 
+{
+	LVHITTESTINFO lvhti;
+	lvhti.pt = point;
+	if( GetListCtrl().SubItemHitTest(&lvhti) == -1 )
+	return;
+	if( IsValidX(lvhti.iSubItem) )
+	{
+		int oldy = ySubItem;
+		ySubItem = lvhti.iItem;
+		xSubItem = lvhti.iSubItem;
+
+		GetListCtrl().SetItemState( ySubItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED ); 
+		if( oldy != ySubItem )
+			GetListCtrl().RedrawItems( oldy, oldy ); 
+		GetListCtrl().RedrawItems( ySubItem, ySubItem ); 
+	}
+	if (lvhti.flags & LVHT_ONITEM)
+	{
+		char c = GetDocument()->GetType(ySubItem)[0]; 		
+		CMenu menu;
+		switch( c )
+		{
+		case '{' :
+			{
+				menu.LoadMenu( IDR_MENU_FIELD_LIST );
+				break;
+			}
+		default:
+			return;
+		}
+		CMenu* pPopup = menu.GetSubMenu(0);
+		CPoint pt = point ; 
+		ClientToScreen ( &pt ) ; 
+		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, AfxGetMainWnd());
+	}
+}
+
+void CNOPTreeView::OnRButtonDown(UINT nFlags, CPoint point) 
+{
+//   CTreeView::OnLButtonDown(nFlags, point);
+
+	//Tester sur quoi on est!
+	CPoint      ptAction;
+	UINT        flags;
+
+	if( m_bDragging )
+		return;
+	HitItem = GetTreeCtrl().HitTest(point, &flags);
+	if( !HitItem )
+		return;
+	CNOPTreeInfo* pti = (CNOPTreeInfo*)(GetTreeCtrl().GetItemData( HitItem ));
+	if( pti->IsDir() )
+		return;
+
+	if( pti->IsNop() )
+	{
+		CMenu menu;
+		menu.LoadMenu( IDR_MENU_NOP );
+		CMenu* pPopup = menu.GetSubMenu(0);
+		CPoint pt = point ; 
+		ClientToScreen ( &pt ) ; 
+		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, AfxGetMainWnd());
+	} 
+	else
+	{
+		CMenu menu;
+		menu.LoadMenu( IDR_MENU_PAR  );
+		CMenu* pPopup = menu.GetSubMenu(0);
+		CPoint pt = point ; 
+		ClientToScreen ( &pt ) ; 
+		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, AfxGetMainWnd());
+	}
+}
+
+*/
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1153,3 +1280,5 @@ void CMySuperGrid::SetNewImage(int nItem)
 		SetItemState(0, uflag, uflag);
 	}
 */
+
+

@@ -53,19 +53,10 @@ protected:
 	//{{AFX_MSG(CGeorgesView)
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-//	afx_msg void Ondialog();
-//	afx_msg void OnDialog1();
 	afx_msg void OnToolsCollapse();
-//	afx_msg void OnToolsDelete();
 	afx_msg void OnToolsExpand();
 	afx_msg void OnToolsExpandall();
-//	afx_msg void OnToolsSearch();
-//	afx_msg void OnToolsSort();
-//	afx_msg void OnUpdateToolsDragdrop(CCmdUI* pCmdUI);
-//	afx_msg void OnToolsDragdrop();
 	afx_msg void OnToolsDeleteall();
-//	afx_msg void OnToolsDynamicupdateitem();
-//	afx_msg void OnToolsSetimage();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

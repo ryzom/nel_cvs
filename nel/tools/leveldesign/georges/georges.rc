@@ -137,6 +137,16 @@ BEGIN
     END
 END
 
+IDR_MENU_LISTCTRL MENU DISCARDABLE 
+BEGIN
+    POPUP "LISTCTRLMENU"
+    BEGIN
+        MENUITEM "&Add to list",                ID_LISTCTRLMENU_ADDTOLIST
+        MENUITEM "&Remove from list",           ID_LISTCTRLMENU_REMOVEFROMLIST
+
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -365,15 +375,16 @@ END
 #define _AFX_NO_TRACKER_RESOURCES
 #define _AFX_NO_PROPERTY_RESOURCES
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
 #ifdef _WIN32
-LANGUAGE 9, 1
+LANGUAGE 12, 1
 #pragma code_page(1252)
-#endif
+#endif //_WIN32
 #include "res\Georges.rc2"  // non-Microsoft Visual C++ edited resources
-#include "afxres.rc"         // Standard components
-#include "afxprint.rc"       // printing/print preview resources
+#include "l.fra\afxres.rc"          // Standard components
+#include "l.fra\afxdb.rc"           // Database resources
 #endif
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

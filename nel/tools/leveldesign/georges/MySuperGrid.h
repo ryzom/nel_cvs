@@ -51,6 +51,7 @@ public:
 	CTreeItem* SearchEx(CTreeItem *pStartPosition, CString strItem);
 	// Overrides
 	void OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht);	
+	void OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht);	
 	void OnUpdateListViewItem(CTreeItem* lpItem, LV_ITEM *plvItem);
 	CItemInfo* CopyData(CItemInfo* lpSrc);
 	int GetIcon(const CTreeItem* pItem);
@@ -62,6 +63,7 @@ public:
 	BOOL OnDeleteItem(CTreeItem* pItem, int nIndex);
 	BOOL OnVkReturn(void);
 	BOOL OnItemLButtonDown(LVHITTESTINFO& ht);
+	BOOL OnItemRButtonDown(LVHITTESTINFO& ht);
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMySuperGrid)
 	//}}AFX_VIRTUAL
@@ -91,3 +93,4 @@ protected:
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(AFX_MYSUPERGRID_H__09B964C4_953D_11D2_9B04_002018026B76__INCLUDED_)
+

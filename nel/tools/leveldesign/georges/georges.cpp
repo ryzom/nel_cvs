@@ -43,8 +43,6 @@ CGeorgesApp::CGeorgesApp()
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 	_MultiDocTemplate = NULL;
-	sxrootdirectory = "U:\\";
-	sxworkdirectory = "U:\\";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -66,6 +64,7 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 	Enable3dControlsStatic();	// Call this when linking to MFC statically
 #endif
 */
+
 	if (_MultiDocTemplate == NULL)
 	{
 		NLMISC_REGISTER_CLASS( CFormBodyElt );
@@ -113,6 +112,12 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 	// The one and only window has been initialized, so show and update it.
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
+
+	sxrootdirectory = "U:\\";
+	sxworkdirectory = "U:\\";
+	NLMISC::CPath::clearMap();
+    NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
+    NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 
 	return TRUE;
 }
@@ -173,12 +178,24 @@ void CGeorgesApp::OnAppAbout()
 
 void CGeorgesApp::SetWorkDirectory( const CStringEx _sxworkdirectory )
 {
-	sxworkdirectory = _sxworkdirectory;
+	if( sxworkdirectory != _sxworkdirectory )
+	{
+		sxworkdirectory = _sxworkdirectory;
+		NLMISC::CPath::clearMap();
+		NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
+		NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
+	}
 }
 
 void CGeorgesApp::SetRootDirectory( const CStringEx _sxrootdirectory )
 {
-	sxrootdirectory = _sxrootdirectory;
+	if( sxrootdirectory != _sxrootdirectory )
+	{
+		sxrootdirectory = _sxrootdirectory;
+		NLMISC::CPath::clearMap();
+		NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
+		NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
+	}
 }
 
 CStringEx CGeorgesApp::GetWorkDirectory() const

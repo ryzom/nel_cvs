@@ -30,15 +30,6 @@ BEGIN_MESSAGE_MAP(CGeorgesView, CView)
 	ON_COMMAND(ID_TOOLS_EXPAND, OnToolsExpand)
 	ON_COMMAND(ID_TOOLS_EXPANDALL, OnToolsExpandall)
 	ON_COMMAND(ID_TOOLS_DELETEALL, OnToolsDeleteall)
-//	ON_COMMAND(ID_TOOLS_DELETE, OnToolsDelete)
-//	ON_COMMAND(ID_TOOLS_VIEWINADIALOG, Ondialog)
-//	ON_COMMAND(IDD_DIALOG1, OnDialog1)
-//	ON_COMMAND(ID_TOOLS_SEARCH, OnToolsSearch)
-//	ON_COMMAND(ID_TOOLS_SORT, OnToolsSort)
-//	ON_UPDATE_COMMAND_UI(ID_TOOLS_DRAGDROP, OnUpdateToolsDragdrop)
-//	ON_COMMAND(ID_TOOLS_DRAGDROP, OnToolsDragdrop)
-//	ON_COMMAND(ID_TOOLS_DYNAMICUPDATEITEM, OnToolsDynamicupdateitem)
-//	ON_COMMAND(ID_TOOLS_SETIMAGE, OnToolsSetimage)
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, CView::OnFilePrint)
@@ -156,6 +147,9 @@ void CGeorgesView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 	CView::OnPrint(pDC, pInfo);
 }
 
+
+
+
 /*
 void CGeorgesView::OnToolsDelete() 
 {
@@ -219,3 +213,5 @@ void CGeorgesView::OnToolsSetimage()
 	m_List.SetNewImage(nItem);	
 }
 */
+
+

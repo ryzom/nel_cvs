@@ -9,8 +9,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-//#include "Form.h"
-#include "../georges_lib/Loader.h"
 #include "../georges_lib/Item.h"
 
 class CFormFile;
@@ -22,14 +20,12 @@ protected: // create from serialization only
 	CGeorgesDoc();
 	DECLARE_DYNCREATE(CGeorgesDoc)
 
-	CLoader		loader;
 	CItem		item;
 	CStringEx	sxrootdirectory;
 	CStringEx	sxworkdirectory;
 
 // Attributes
 public:
-//	CFormFile*	pff;	//	Only for tests
 
 // Operations 
 public:
@@ -44,8 +40,12 @@ public:
 	bool IsItemEnum( const unsigned int _index ) const;
 	void GetItemListPredef( const unsigned int _index, CStringList* _slist ) const;
 	void NewDocument( const CStringEx& _sxdfnname ) const;
-	CLoader* GetLoader() { return &loader; }
 	void NewDocument( const CStringEx _sxfilename );
+
+	CStringEx GetWorkDirectory() const;
+	CStringEx GetRootDirectory() const;
+	void SetWorkDirectory( const CStringEx _sxworkdirectory );
+	void SetRootDirectory( const CStringEx _sxrootdirectory );
 	
 // Overrides
 	// ClassWizard generated virtual function overrides

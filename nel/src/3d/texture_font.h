@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.3 2001/09/06 16:24:01 besson Exp $
+ * $Id: texture_font.h,v 1.4 2001/09/07 11:46:03 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@
 namespace NL3D
 {
 
-#define TEXTUREFONT_NBCATEGORY	4
+#define TEXTUREFONT_NBCATEGORY	5
 
 //****************************************************************************
 /**

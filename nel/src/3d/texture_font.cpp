@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.8 2001/09/07 09:17:21 besson Exp $
+ * $Id: texture_font.cpp,v 1.9 2001/09/07 11:46:03 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,8 +39,8 @@ namespace NL3D
 
 const int TextureSizeX = 1024;
 const int TextureSizeY = 1024; // If change this value -> change NbLine too
-const int Categories[TEXTUREFONT_NBCATEGORY] = { 8, 16, 24, 32 };
-const int NbLine[TEXTUREFONT_NBCATEGORY] = { 16, 24, 16, 4 }; // Based on textsize
+const int Categories[TEXTUREFONT_NBCATEGORY] = { 8, 16, 24, 32, 64 };
+const int NbLine[TEXTUREFONT_NBCATEGORY] = { 8, 24, 16, 4, 1 }; // Based on textsize
 
 
 // ---------------------------------------------------------------------------
@@ -302,7 +302,14 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 	// The letter is not already present
 	// Found the category of the new letter
 	uint32 width, height;
-	k.FontGenerator->getSizes (k.Char, k.Size, width, height);
+
+	//k.FontGenerator->getSizes (k.Char, k.Size, width, height);
+	// \todo mat : Temporaire !!! Essayer de faire intervenir le cache de freetype
+	uint32 nPitch, nGlyphIndex;
+	sint32 nLeft, nTop, nAdvX;
+	k.FontGenerator->getBitmap (k.Char, k.Size, width, height, nPitch, nLeft, nTop, 
+														nAdvX, nGlyphIndex );
+
 	cat = 0;
 
 	if (((sint)width > Categories[TEXTUREFONT_NBCATEGORY-1]) ||
@@ -335,6 +342,9 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 	Back[cat]->Size = k.Size;
 	Back[cat]->CharWidth = width;
 	Back[cat]->CharHeight = height;
+	Back[cat]->Top = nTop;
+	Back[cat]->Left = nLeft;
+	Back[cat]->AdvX = nAdvX;
 	Back[cat]->Prev = NULL;
 	Back[cat]->Next = Front[cat];
 	Front[cat]->Prev = Back[cat];

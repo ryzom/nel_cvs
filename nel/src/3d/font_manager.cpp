@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.30 2001/09/07 09:17:21 besson Exp $
+ * $Id: font_manager.cpp,v 1.31 2001/09/07 11:46:03 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,205 @@ CMaterial* CFontManager::getFontMaterial()
  * This function compute a basic_string
  *
  */
+/*
 template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::basic_string<T> &s,
+				CFontGenerator *fontGen,
+				const NLMISC::CRGBA &color,
+				uint32 fontSize,
+				IDriver *driver,
+				CComputedString &output,
+				bool	keep800x600Ratio)
+{
+
+	float FontRatio = 1.0;
+	uint32 width, height;
+
+	output.Color = color;
+	driver->getWindowSize (width, height);
+	if (height > 0)
+		FontRatio = FontRatio / height;
+	
+	// resize fontSize if window not of 800x600.
+	if (keep800x600Ratio)
+	{
+		// keep the 800*600 ratio
+		fontSize = (uint32)floor(fontSize*height/600.f);
+		fontSize = max(fontSize, (uint32)2);
+	}
+	
+	// Setting vertices format
+	output.Vertices.setNumVertices (4 * s.size());
+	
+	// 1 character <-> 1 primitive block
+	sint32 penx = 0, dx;
+	sint32 penz = 0, dz;
+	float x1, z1, x2, z2;
+	float u1, v1, u2, v2;
+	CMaterial		*pMatFont = fm->getFontMaterial();
+	CTextureFont	*pTexFont = (CTextureFont*)(pMatFont->getTexture (0));
+	float hlfW = 0.5f / pTexFont->getWidth();
+	float hlfH = 0.5f / pTexFont->getHeight();
+	float hlfPix = 0.5f;
+	if (height > 0)
+		hlfPix = hlfPix / height;
+	CTextureFont::SLetterKey k;
+
+	output.StringHeight = 0;
+	uint j = 0;
+	for (uint i = 0; i < s.size(); i++)
+	{
+		// Creating font
+		k.Char = s[i];
+		k.FontGenerator = fontGen;
+		k.Size = fontSize;
+		CTextureFont::SLetterInfo *pLI = pTexFont->getLetterInfo (k);
+		if(pLI != NULL)
+		{
+			if ((pLI->CharWidth > 0) && (pLI->CharHeight > 0))
+			{
+				// Creating vertices
+				dx = pLI->Left;
+				dz = -((sint32)pLI->CharHeight-(sint32)(pLI->Top));
+				u1 = pLI->U - hlfW;
+				v1 = pLI->V - hlfH;
+				u2 = pLI->U + ((float)pLI->CharWidth) / pTexFont->getWidth() + hlfW;
+				v2 = pLI->V + ((float)pLI->CharHeight) / pTexFont->getHeight() + hlfH;
+
+				x1 = (penx + dx) * FontRatio - hlfPix;
+				z1 = (penz + dz) * FontRatio - hlfPix;
+				x2 = (penx + dx + (sint32)pLI->CharWidth)  * FontRatio + hlfPix;
+				z2 = (penz + dz + (sint32)pLI->CharHeight) * FontRatio + hlfPix;
+
+				output.Vertices.setVertexCoord	(j, x1, 0, z1);
+				output.Vertices.setTexCoord		(j, 0, u1, v2);
+				++j;
+
+				output.Vertices.setVertexCoord	(j, x2, 0, z1);
+				output.Vertices.setTexCoord		(j, 0, u2, v2);
+				++j;
+
+				output.Vertices.setVertexCoord	(j, x2, 0, z2); 
+				output.Vertices.setTexCoord		(j, 0, u2, v1);
+				++j;
+
+				output.Vertices.setVertexCoord	(j, x1, 0, z2); 
+				output.Vertices.setTexCoord		(j, 0, u1, v1);
+				++j;
+				
+				if (z2 > output.StringHeight) 
+					output.StringHeight = z2;
+			}
+			penx += pLI->AdvX;
+		}
+
+		// Building Material
+		output.Material = pMatFont;
+	}
+	output.Vertices.setNumVertices (j);
+
+	output.StringWidth = penx * FontRatio;
+}
+  */
+
+static void NL3DcomputeStringChar (CFontManager *fm, const std::basic_string<char> &s,
+				CFontGenerator *fontGen,
+				const NLMISC::CRGBA &color,
+				uint32 fontSize,
+				IDriver *driver,
+				CComputedString &output,
+				bool	keep800x600Ratio)
+{
+
+	float FontRatio = 1.0;
+	uint32 width, height;
+
+	output.Color = color;
+	driver->getWindowSize (width, height);
+	if (height > 0)
+		FontRatio = FontRatio / height;
+	
+	// resize fontSize if window not of 800x600.
+	if (keep800x600Ratio)
+	{
+		// keep the 800*600 ratio
+		fontSize = (uint32)floor(fontSize*height/600.f);
+		fontSize = max(fontSize, (uint32)2);
+	}
+	
+	// Setting vertices format
+	output.Vertices.setNumVertices (4 * s.size());
+	
+	// 1 character <-> 1 primitive block
+	sint32 penx = 0, dx;
+	sint32 penz = 0, dz;
+	float x1, z1, x2, z2;
+	float u1, v1, u2, v2;
+	CMaterial		*pMatFont = fm->getFontMaterial();
+	CTextureFont	*pTexFont = (CTextureFont*)(pMatFont->getTexture (0));
+	float hlfW = 0.5f / pTexFont->getWidth();
+	float hlfH = 0.5f / pTexFont->getHeight();
+	float hlfPix = 0.5f;
+	if (height > 0)
+		hlfPix = hlfPix / height;
+	CTextureFont::SLetterKey k;
+
+	output.StringHeight = 0;
+	uint j = 0;
+	for (uint i = 0; i < s.size(); i++)
+	{
+		// Creating font
+		k.Char = s[i];
+		k.FontGenerator = fontGen;
+		k.Size = fontSize;
+		CTextureFont::SLetterInfo *pLI = pTexFont->getLetterInfo (k);
+		if(pLI != NULL)
+		{
+			if ((pLI->CharWidth > 0) && (pLI->CharHeight > 0))
+			{
+				// Creating vertices
+				dx = pLI->Left;
+				dz = -((sint32)pLI->CharHeight-(sint32)(pLI->Top));
+				u1 = pLI->U - hlfW;
+				v1 = pLI->V - hlfH;
+				u2 = pLI->U + ((float)pLI->CharWidth) / pTexFont->getWidth() + hlfW;
+				v2 = pLI->V + ((float)pLI->CharHeight) / pTexFont->getHeight() + hlfH;
+
+				x1 = (penx + dx) * FontRatio - hlfPix;
+				z1 = (penz + dz) * FontRatio - hlfPix;
+				x2 = (penx + dx + (sint32)pLI->CharWidth)  * FontRatio + hlfPix;
+				z2 = (penz + dz + (sint32)pLI->CharHeight) * FontRatio + hlfPix;
+
+				output.Vertices.setVertexCoord	(j, x1, 0, z1);
+				output.Vertices.setTexCoord		(j, 0, u1, v2);
+				++j;
+
+				output.Vertices.setVertexCoord	(j, x2, 0, z1);
+				output.Vertices.setTexCoord		(j, 0, u2, v2);
+				++j;
+
+				output.Vertices.setVertexCoord	(j, x2, 0, z2); 
+				output.Vertices.setTexCoord		(j, 0, u2, v1);
+				++j;
+
+				output.Vertices.setVertexCoord	(j, x1, 0, z2); 
+				output.Vertices.setTexCoord		(j, 0, u1, v1);
+				++j;
+				
+				if (z2 > output.StringHeight) 
+					output.StringHeight = z2;
+			}
+			penx += pLI->AdvX;
+		}
+
+		// Building Material
+		output.Material = pMatFont;
+	}
+	output.Vertices.setNumVertices (j);
+
+	output.StringWidth = penx * FontRatio;
+}
+// ---------------------------------------------------------------------------------------
+static void NL3DcomputeStringUC (CFontManager *fm, const std::basic_string<ucchar> &s,
 				CFontGenerator *fontGen,
 				const NLMISC::CRGBA &color,
 				uint32 fontSize,
@@ -184,7 +382,7 @@ void CFontManager::computeString (const std::string &s,
 								  CComputedString &output,
 								  bool	keep800x600Ratio)
 {
-	NL3DcomputeString (this, s, fontGen, color, fontSize, driver, output,keep800x600Ratio);
+	NL3DcomputeStringChar (this, s, fontGen, color, fontSize, driver, output,keep800x600Ratio);
 }
 
 
@@ -199,7 +397,7 @@ void CFontManager::computeString (const ucstring &s,
 								  CComputedString &output,
 								  bool	keep800x600Ratio)
 {
-	NL3DcomputeString (this, s, fontGen, color, fontSize, driver, output,keep800x600Ratio);
+	NL3DcomputeStringUC (this, s, fontGen, color, fontSize, driver, output,keep800x600Ratio);
 }
 
 

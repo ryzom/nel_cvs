@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.8 2003/03/05 15:14:52 boucher Exp $
+ * $Id: buffer_dsound.cpp,v 1.8.2.1 2003/04/24 16:19:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,8 +170,12 @@ float CBufferDSound::getDuration() const
 {
     float frames = (float) _Size;
 
-    switch (_Format) {
+    switch (_Format) 
+	{
     case Mono8:
+        break;
+    case Mono16ADPCM:
+        frames *= 2.0f;
         break;
     case Mono16:
         frames /= 2.0f;
@@ -202,7 +206,7 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
   
     if (_Data != NULL)
     {
-        free(_Data);
+        delete [] _Data;
         _Data = NULL;
     }
 
@@ -405,6 +409,104 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
 	_Name = nameId;
 
 	return true;
+}
+
+
+bool CBufferDSound::readRawBuffer(const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency)
+{
+	// free any existing data
+    if (_Data != NULL)
+    {
+        free(_Data);
+        _Data = NULL;
+    }
+
+	_Format = format;
+	_Size = dataSize;
+    // Allocate the sample buffer
+	_Data = new uint8 [_Size];
+
+    // read in the format data
+	memcpy(_Data, rawData, dataSize);
+
+    _Freq = frequency;
+
+
+    // Allocate the sample buffer
+
+	static NLMISC::TStringId	empty(CSoundDriverDSound::instance()->getStringMapper()->map(""));
+	NLMISC::TStringId nameId = CSoundDriverDSound::instance()->getStringMapper()->map(CFile::getFilenameWithoutExtension(name));
+	// if name is preseted, the name must match.
+	if (_Name != empty)
+	{
+		nlassertex(nameId == _Name, ("The preseted name and buffer name doen't match !"));
+	}
+	_Name = nameId;
+
+	return true;
+}
+
+uint32 CBufferDSound::getBufferADPCMEncoded(vector<uint8> &result)
+{
+	result.clear();
+
+	if (_Data == 0)
+		return 0;
+
+	if (_Format != Mono16)
+		return 0;
+
+	uint32 nbSample = _Size/2;
+	nbSample &= 0xfffffffe;
+
+	result.resize(nbSample / 2);
+
+	TADPCMState	state;
+	state.PreviousSample = 0;
+	state.StepIndex = 0;
+	encodeADPCM((sint16*)_Data, &result[0], nbSample, state);
+
+	return nbSample;
+}
+
+uint32 CBufferDSound::getBufferMono16(std::vector<sint16> &result)
+{
+	result.clear();
+
+	if (_Data == 0)
+		return 0;
+
+	if (_Format == Mono16)
+	{
+		uint nbSample = _Size/2;
+		nbSample &= 0xfffffffe;
+
+		result.reserve(nbSample);
+		result.insert(result.begin(), (sint16*)_Data, ((sint16*)_Data)+nbSample);
+
+		return nbSample;
+	}
+	else if (_Format == Stereo16)
+	{
+		uint nbSample = _Size/4;
+		nbSample &= 0xfffffffe;
+
+		struct TFrame
+		{
+			sint16	Channel1;
+			sint16	Channel2;
+		};
+		result.reserve(nbSample);
+		TFrame *frame = (TFrame *)_Data;
+		for (uint i=0; i<nbSample; ++i)
+		{
+			result[i] = (frame->Channel1>>1) +(frame->Channel2>>1);
+		}
+
+		return nbSample;
+	}
+	else
+		return 0;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.11 2003/03/03 17:21:17 boucher Exp $
+ * $Id: source_dsound.h,v 1.11.2.1 2003/04/24 16:19:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "sound/driver/source.h"
 #include "../sound_driver.h"
+#include "../buffer.h"
 
 //#include <windows.h>
 #include <dsound.h>
@@ -48,7 +49,7 @@ class CBufferDSound;
  *   - the buffer still contains samples but silence is being written (silencing),
  *   - the buffer contains no samples but only silence (silenced)
  */
-enum TSourceDSoundBufferState 
+/*enum TSourceDSoundBufferState 
 { 
 	/// The buffer is being filled with samples (filling),
 	NL_DSOUND_FILLING, 
@@ -57,9 +58,10 @@ enum TSourceDSoundBufferState
 	/// The buffer contains no samples but only silence (silenced)
 	NL_DSOUND_SILENCED 
 } ;
-
+/*
 
 /** The state of the source as experienced by the user: playing, paused, and stopped. */
+/*
 enum TSourceDSoundUserState 
 { 
 	/// The buffer is playing.
@@ -69,19 +71,20 @@ enum TSourceDSoundUserState
 	/// The buffer is stopped.
 	NL_DSOUND_STOPPED 
 };
-
+*/
 
 /** To figger out whether the sound device has played all the samples in the buffer,
  *  the position of the play cursor is traced relatively to the position of the last
  *  sample in the buffer.
  */
+/*
 enum TSourceDSoundEndState
 {
 	NL_DSOUND_TAIL1, 
 	NL_DSOUND_TAIL2, 
 	NL_DSOUND_ENDED 
 };
-
+*/
 
 /**
  * DirectSound sound source
@@ -119,6 +122,8 @@ public:
 	 */
 	virtual void			setStaticBuffer( IBuffer *buffer );
 
+	virtual IBuffer			*getStaticBuffer();
+
     /// Set the next source that is to be played immediately after the present source
 	//virtual void					setNext( ISource *next );
 	//@}
@@ -152,14 +157,14 @@ public:
 	virtual bool			isPaused() const;
 
     /// Update the source (e.g. continue to stream the data in)
-	virtual void			update();
+	virtual bool			update();
 
     /** Update the source (e.g. continue to stream the data in)
 	    Returns an indication whether the source actually streamed data or not. */
-	virtual bool			update2();
+//	virtual bool			update2();
 
 	/// Returns the number of milliseconds the source has been playing
-	virtual uint32			getTime() { return 1000 * _BytesWritten / (_SampleRate * 2); }
+	virtual uint32			getTime();
 
 	//@}
 
@@ -261,131 +266,196 @@ public:
 
 private:
 
+	void copySampleTo16BitsTrack(void *dst, void *src, uint nbSample, TSampleFormat sourceFormat);
+
+	enum TSourceState
+	{
+		source_stoped,
+		source_playing,
+		source_silencing,
+		source_swap_pending
+	};
+
+
 	/// Release all DirectSound resources
 	void					release();
 
     // The minimum size of available space in the DS buffer for update
-    static uint32			_UpdateCopySize;
-
+    static const uint32			_UpdateCopySize;
     // The size of the samples that are copied when buffers are swapped
-    static uint32			_SwapCopySize;
-
+    static const uint32			_SwapCopySize;
     // The number of channels
-    static uint				_DefaultChannels;
-
+    static const uint			_DefaultChannels;
     // The default sample rate
-    static uint				_DefaultSampleRate;
-
+    static const uint			_DefaultSampleRate;
     // The default sample size
-    static uint				_DefaultSampleSize;
-
+    static const uint			_DefaultSampleSize;
     // The length of the crossfade, in samples
-    static uint32			_XFadeSize;
+    static const uint32			_XFadeSize;
+
+	/// The play and write cursors
+	struct TCursors
+	{
+		uint32		PlayCursor;
+		uint32		WriteCursor;
+		uint32		WriteSize;
+	};
+
+	/// A locked buffer info.
+	struct TLockedBufferInfo
+	{
+		// First locked part.
+		sint16		*Ptr1;
+		uint32		Size1;
+
+		// second locked part (or 0 if none) 
+		sint16		*Ptr2;
+		uint32		Size2;
+	};
 
 	// Utility function that locks the DirectSound buffer and restores it if it was lost.
-	bool					lock(uint32 writePos, uint32 size, uint8* &ptr1, DWORD &bytes1, uint8* &ptr2, DWORD &bytes2);
+//	bool					lock(uint32 writePos, uint32 size, uint8* &ptr1, DWORD &bytes1, uint8* &ptr2, DWORD &bytes2);
+	bool					lock(uint32 writePos, uint32 size, TLockedBufferInfo &lockedInfo);
 
 	// Utility function that unlocks the DirectSound buffer 
-	bool					unlock(uint8* ptr1, DWORD bytes1, uint8* ptr2, DWORD bytes2);
+//	bool					unlock(uint8* ptr1, DWORD bytes1, uint8* ptr2, DWORD bytes2);
+	bool					unlock(const TLockedBufferInfo &lockedInfo);
+
+	void					getCursors(TCursors &cursors);
+	uint32					checkFillCursor();
+
+
+	void					fillData(const TLockedBufferInfo &lbi, int nbSample);
+	void					fillData(sint16 *dst, uint nbSample);
+	void					fillSilence(const TLockedBufferInfo &lbi, int nbSample);
+
+	void					xfade(const TLockedBufferInfo &lbi, sint16 *src);
+	void					fadeOut(const TLockedBufferInfo &lbi);
+	void					fadeIn(const TLockedBufferInfo &lbi);
+
+	void					advanceFill(TLockedBufferInfo &lbi, uint nbSample);
+
+
 
 	// Replace the current buffer with the swap buffer
 	void					swap();
-
 	// getFadeOutSize() calculates how many samples have been written after the
 	// write cursor in the DirectSound buffer. This value is returned in the
 	// writtenTooMuch variable. The xfadeSize contains the number of samples over
 	// which to do a xfade or fade out, and in1 points to the sample in the sample
 	// buffer where to start the fade.
-	void					getFadeOutSize(uint32 writePos, uint32& xfadeSize, sint16* &in1, uint32 &writtenTooMuch);
+//	void					getFadeOutSize(uint32 writePos, uint32& xfadeSize, sint16* &in1, uint32 &writtenTooMuch);
 
 	// Fill the buffer with fresh samples. Should be called inside the critical zone.
 	bool					fill();
-
 	// Fill the buffer with sparkling silence. Should be called inside the critical zone.
 	bool					silence();
-
 	// Do a cross fade between the current buffer and the buffer stored in the _SwapBuffer
 	// variable. Call inside the critical zone.
 	void					crossFade();
-
 	// Fade out the current buffer. Call inside the critical zone.
 	void					fadeOut();
-
 	// Fade in the current buffer. Call inside the critical zone.
 	void					fadeIn();
-
 	/// Check whether the play position has advanced enough to require an update
 	bool					needsUpdate();
+
 	
 	// Source name
 	uint					_SourceName;
 
+
+	TSourceState			_State;
+//	uint32					_FillCursor;
+
     // The size of the sound buffer, in bytes
-    uint32					_BufferSize;
+//    uint32					_BufferSize;
+
+	IBuffer					*_Sample;
+	// Size of the buffer in sample
+	uint					_SampleSize;	
+	// Position in the buffer in sample.
+	uint					_SampleOffset;
+	// The number of sample realy played (depend on play cursor).
+	uint32					_PlayOffset;
+	TSampleFormat			_Format;
+	uint					_SampleFreq;
+
+
+	// The frequency of the source [0,10], i.e. slowed down or accelerated
+	float					_Freq;
+	// The sample rate of the source (= _Freq * _Buffer sample rate)
+	uint32					_SampleRate;
+
+
+	IBuffer					*_NextSample;
+
+	uint32					_LastPlayPos;
+	uint32					_FillOffset;
+	uint32					_SilenceWriten;
 
     // The next sound buffer
-    IBuffer					*_SwapBuffer;
+//    IBuffer					*_SwapBuffer;
 
     // To loop or not to loop
     bool					_Loop;
 
 	// The state of the source (playing, paused, stopped)
-	TSourceDSoundUserState	_UserState;
+//	TSourceDSoundUserState	_UserState;
 
     // DirectSound secondary buffer
     LPDIRECTSOUNDBUFFER		_SecondaryBuffer;
-
     // The byte size of the DirectSound secondary buffers
-    static uint32			_SecondaryBufferSize;
-
-	// The state of the DirectSound buffer (filling, silencing, silenced)
-	TSourceDSoundBufferState _SecondaryBufferState;
-
+    static const uint32			_SecondaryBufferSize;
+	// The mask for the buffer size
+    static const uint32			_SizeMask;
     // 3D interface of the secondary buffer. 
     LPDIRECTSOUND3DBUFFER	_3DBuffer;
-
     // The critial section object to protect the swap and update functions
     CRITICAL_SECTION		_CriticalSection; 
 
+	// The state for ADPCM decompression.
+	IBuffer::TADPCMState	_ADPCMState;
+
+
+	// The state of the DirectSound buffer (filling, silencing, silenced)
+//	TSourceDSoundBufferState _SecondaryBufferState;
+
+
+
     // The next position in the DirectSound buffer where we should write next
-    uint32					_NextWritePos;
+//    uint32					_NextWritePos;
 
     // The total number of bytes written from the current sound buffer
-    uint32					_BytesWritten;
+//    uint32					_BytesWritten;
 
     // The amount of silence written (in bytes) after the end of the current sound buffer
-    uint32					_SilenceWritten;
+//    uint32					_SilenceWritten;
 
     // The position of the last audio sample written.
-    uint32					_EndPosition;
+//    uint32					_EndPosition;
+
 
 	// The state of the buffer to reach the end of the audio samples. To flag the buffer as
 	// STOPPED, we have to make sure all the samples in the buffer are played. The play
 	// cursor in the DirectSound buffer is inspected and when it crosses the position of
 	// the last sample written (_EndPosition) the buffer is flagged as stopped. The _EndState
 	// field is used to keep a trace of the whereabouts of the play cursor.
-	TSourceDSoundEndState	_EndState;
+//	TSourceDSoundEndState	_EndState;
 
-	// The frequency of the source [0,10], i.e. slowed down or accelerated
-	float					_Freq;
-
-	// The sample rate of the source (= _Freq * _Buffer sample rate)
-	uint32					_SampleRate;
 
 	// Has this source been handed out. 
-	bool					_IsUsed;
+/*	bool					_IsUsed;
 	
 	// Set the 'used' state of the source. Managed by the driver.
 	void					setUsed(bool v) { _IsUsed = v; }
 
 	// Return the 'used' state of the source
 	bool					isUsed() { return _IsUsed; }
-
+*/
 	sint32					_Volume;
 	float					_Gain;
-
 	double					_Alpha;
-
 	NLMISC::CVector			_Pos;
 
 #if EAX_AVAILABLE == 1

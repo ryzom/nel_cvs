@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.11 2002/09/25 09:38:05 corvazier Exp $
+ * $Id: type.cpp,v 1.12 2002/10/02 13:33:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -413,6 +413,101 @@ public:
 
 // ***************************************************************************
 
+#define NL_TOKEN_STRING 0
+#define NL_TOKEN_DOUBLE_QUOTE 1
+#define NL_TOKEN_OPEN_BRACKET 2
+#define NL_TOKEN_NAME 3
+#define NL_TOKEN_END 4
+
+uint getNextToken (const char *startString, string &token, uint &offset)
+{
+	if (startString[offset] == 0)
+		return NL_TOKEN_END;
+	if (startString[offset] == '"')
+	{
+		offset++;
+		return NL_TOKEN_DOUBLE_QUOTE;
+	}
+	if (startString[offset] == '{')
+	{
+		offset++;
+		return NL_TOKEN_OPEN_BRACKET;
+	}
+	if ( (startString[offset] == '$') && (strncmp (startString+offset+1, "filename", 8) == 0) )
+	{
+		offset += 9;
+		return NL_TOKEN_NAME;
+	}
+	token = "";
+	while (startString[offset])
+	{
+		if (startString[offset] == '\\')
+		{
+			if (startString[offset+1])
+			{
+				token += startString[offset+1];
+				offset++;
+			}
+			else
+			{
+				offset++;
+				break;
+			}
+		}
+		else if (startString[offset] == '"')
+			break;
+		else if (startString[offset] == '{')
+			break;
+		else if ( (startString[offset] == '$') && (strncmp (startString+offset+1, "filename", 8) == 0) )
+			break;
+		else
+			token += startString[offset];
+		offset++;
+	}
+	return NL_TOKEN_STRING;
+}
+
+// ***************************************************************************
+
+uint findSpecialCharacter (const char *special, char c, uint startOffset)
+{
+	uint offset = startOffset;
+	while (special[offset])
+	{
+		if (special[offset] == '\\')
+		{
+			if (special[offset+1])
+				offset++;
+			else
+				break;
+		}
+		else
+		{
+			if (special[offset] == c)
+				return offset;
+		}
+		offset++;
+	}
+	return 0xffffffff;
+}
+
+// ***************************************************************************
+
+void buildError (char *msg, uint offset)
+{
+	msg[0] = 0;
+	if (offset<512)
+	{
+		uint i;
+		for (i=0; i<offset; i++)
+			msg[i] = '-';
+		msg[i] = '^';
+		msg[i+1] = 0;
+	}
+}
+
+// ***************************************************************************
+
 bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *node, const CFormDfn &parentDfn, uint parentIndex, bool evaluate, uint32 *where, uint32 round, const char *formName) const
 {
 	// Node exist ?
@@ -443,25 +538,25 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 	// evaluate the value ?
 	if (evaluate)
 	{
-		// Evaluate predefinition
-		uint i;
-		uint predefCount = Definitions.size ();
-		for (i=0; i<predefCount; i++)
-		{
-			// Ref on the value
-			const CType::CDefinition &def = Definitions[i];
-
-			// This predefinition ?
-			if (def.Label == result)
-			{
-				result = def.Value;
-				break;
-			}
-		}
-
 		// Evaluate numerical expression
 		if ((Type == Double) || (Type == SignedInt) || (Type == UnsignedInt) || (Type == UnsignedInt))
 		{
+			// Evaluate predefinition
+			uint i;
+			uint predefCount = Definitions.size ();
+			for (i=0; i<predefCount; i++)
+			{
+				// Ref on the value
+				const CType::CDefinition &def = Definitions[i];
+
+				// This predefinition ?
+				if (def.Label == result)
+				{
+					result = def.Value;
+					break;
+				}
+			}
+
 			double value;
 			CMyEvalNumExpr expr (form);
 			int offset;
@@ -474,74 +569,166 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 			else
 			{
 				// Build a nice error output in warning
-				char msg[512] = {0};
-				if (offset<512)
-				{
-					int i;
-					for (i=0; i<offset; i++)
-						msg[i] = '-';
-					msg[i] = '^';
-					msg[i+1] = 0;
-				}
+				char msg[512];
+				buildError (msg, offset);
 				warning (false, formName, form->getFilename ().c_str (), "getValue", "Syntax error in expression: %s\n%s\n%s", expr.getErrorString (error), result.c_str (), msg);
 				return false;
 			}
 		}
-		else
+		else // For strings
 		{
-			// Not empty command ?
-			if (!result.empty ())
+			// Get next text
+			uint offset = 0;
+			string dest;
+			while (offset < result.size ())
 			{
-				// Ref to a variable ?
-				if (result[0] == '"')
+				string token;
+				uint tokenType = getNextToken (result.c_str (), token, offset);
+
+				// Bracklets, {numerical expressions} : numerical expressions to string
+				if (tokenType == NL_TOKEN_OPEN_BRACKET)
 				{
-					uint i;
-					for (i=1; i<result.size (); i++)
+					// Find the second "
+					uint nextEnd = findSpecialCharacter (result.c_str (), '}', offset);
+					if (nextEnd == 0xffffffff)
 					{
-						if (result[i]=='"')
+						// Build a nice error output in warning
+						char msg[512];
+						buildError (msg, result.size ());
+						warning (false, formName, form->getFilename ().c_str (), "getValue", "Missing closing quote\n%s\n%s", result.c_str (), msg);
+						return false;
+					}
+					else
+					{
+						// try to get a Form value
+						string valueName = result.substr ( offset, nextEnd-offset );
+
+						// Evaluate predefinition
+						uint i;
+						uint predefCount = Definitions.size ();
+						for (i=0; i<predefCount; i++)
 						{
+							// Ref on the value
+							const CType::CDefinition &def = Definitions[i];
+
+							// This predefinition ?
+							if (def.Label == valueName)
+							{
+								valueName = def.Value;
+								break;
+							}
+						}
+
+						double value;
+						CMyEvalNumExpr expr (form);
+						int offsetExpr;
+						CEvalNumExpr::TReturnState error = expr.evalExpression (valueName.c_str (), value, &offsetExpr, round);
+						if (error == CEvalNumExpr::NoError)
+						{
+							// To string
+							dest += toString (value);
+						}
+						else
+						{
+							// Build a nice error output in warning
+							char msg[512];
+							buildError (msg, offset+offsetExpr);
+							warning (false, formName, form->getFilename ().c_str (), "getValue", "Syntax error in expression: %s\n%s\n%s", expr.getErrorString (error), result.c_str (), msg);
+							return false;
+						}
+					}
+
+					// Next offset
+					offset = nextEnd + 1;
+				}
+				else if (tokenType == NL_TOKEN_DOUBLE_QUOTE)
+				{
+					// Find the second "
+					uint nextEnd = findSpecialCharacter (result.c_str (), '"', offset);
+					if (nextEnd == 0xffffffff)
+					{
+						// Build a nice error output in warning
+						char msg[512];
+						buildError (msg, result.size ());
+						warning (false, formName, form->getFilename ().c_str (), "getValue", "Missing double quote\n%s\n%s", result.c_str (), msg);
+						return false;
+					}
+					else
+					{
+						// try to get a Form value
+						string valueName = result.substr ( offset, nextEnd-offset );
+
+						// The parent Dfn
+						const CFormDfn *parentDfn;
+						const CFormDfn *nodeDfn;
+						const CType *nodeType;
+						CFormElm *node;
+						uint parentIndex;
+						bool array;
+						bool parentVDfnArray;
+						UFormDfn::TEntryType type;
+
+						// Search for the node
+						if (((const CFormElm&)form->getRootNode ()).getNodeByName (valueName.c_str (), &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array, parentVDfnArray, false, round))
+						{
+							// End, return the current index
+							if (type == UFormDfn::EntryType)
+							{
+								// The atom
+								const CFormElmAtom *atom = node ? safe_cast<const CFormElmAtom*> (node) : NULL;
+
+								// Evale
+								nlassert (nodeType);
+								string result2;
+								if (nodeType->getValue (result2, form, atom, *parentDfn, parentIndex, true, NULL, round, valueName.c_str ()))
+								{
+									dest += result2;
+								}
+							}
+							else
+							{
+								char msg[512];
+								buildError (msg, offset);
+								warning (false, formName, form->getFilename ().c_str (), "getValue", "Node is not an atom (%s)\n%s\n%s", valueName.c_str (), result.c_str (), msg);
+								return false;
+							}
+						}
+						else
+							return false;
+					}
+
+					// Next offset
+					offset = nextEnd + 1;
+				}
+				else if (tokenType == NL_TOKEN_STRING)
+				{
+					// Evaluate predefinition
+					uint i;
+					uint predefCount = Definitions.size ();
+					for (i=0; i<predefCount; i++)
+					{
+						// Ref on the value
+						const CType::CDefinition &def = Definitions[i];
+
+						// This predefinition ?
+						if (def.Label == token)
+						{
+							token = def.Value;
 							break;
 						}
 					}
-					if (i == result.size ())
-					{
-						warning (false, formName, form->getFilename ().c_str (), "getValue", "Missing double quote in value : %s.", result.c_str ());
-						return false;
-					}
-					string valueName = result.substr (1, i-1);
 
-					// try to get a Form value
-
-					// The parent Dfn
-					const CFormDfn *parentDfn;
-					const CFormDfn *nodeDfn;
-					const CType *nodeType;
-					CFormElm *node;
-					uint parentIndex;
-					bool array;
-					bool parentVDfnArray;
-					UFormDfn::TEntryType type;
-
-					// Search for the node
-					if (((const CFormElm&)form->getRootNode ()).getNodeByName (valueName.c_str (), &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array, parentVDfnArray, false, round))
-					{
-						// End, return the current index
-						if (type == UFormDfn::EntryType)
-						{
-							// The atom
-							const CFormElmAtom *atom = node ? safe_cast<const CFormElmAtom*> (node) : NULL;
-
-							// Evale
-							nlassert (nodeType);
-							if (nodeType->getValue (result, form, atom, *parentDfn, parentIndex, true, NULL, round, valueName.c_str ()))
-							{
-								return true;
-							}
-						}
-					}
-					return false;
+					// Take the remaining of the string
+					dest += token;
 				}
-			}	
+				else if (tokenType == NL_TOKEN_NAME)
+				{
+					dest += form->getFilename ();
+				}
+			}
+
+			// Final result
+			result = dest;
 		}
 	}
 

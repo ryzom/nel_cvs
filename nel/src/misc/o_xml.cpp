@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.8 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: o_xml.cpp,v 1.9 2002/10/02 13:33:01 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -660,6 +660,19 @@ xmlDocPtr COXml::getDocument ()
 	_Document = xmlNewDoc ((const xmlChar *)_Version.c_str());
 
 	return _Document;
+}
+
+// ***************************************************************************
+
+bool COXml::isStringValidForProperties (const char *str)
+{
+	while (*str)
+	{
+		if (*str == '\n')
+			return false;
+		str++;
+	}
+	return true;
 }
 
 // ***************************************************************************

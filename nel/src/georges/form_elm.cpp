@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.31 2002/10/01 17:01:29 coutelas Exp $
+ * $Id: form_elm.cpp,v 1.32 2002/10/02 13:33:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 
 #include "stdgeorges.h"
 
+#include "nel/misc/o_xml.h"
 #include "nel/misc/i_xml.h"
 
 #include "form.h"
@@ -2955,7 +2956,15 @@ xmlNodePtr  CFormElmAtom::write (xmlNodePtr root, const CForm *form, const char 
 
 		// The value
 		if (!Value.empty ())
-			xmlSetProp (node, (const xmlChar*)"Value", (const xmlChar*)Value.c_str());
+		{
+			if (COXml::isStringValidForProperties (Value.c_str ()))
+				xmlSetProp (node, (const xmlChar*)"Value", (const xmlChar*)Value.c_str());
+			else
+			{
+				xmlNodePtr textNode = xmlNewText ((const xmlChar *)Value.c_str ());
+				xmlAddChild (node, textNode);
+			}
+		}
 
 		// Return the new node
 		return node;
@@ -2982,6 +2991,18 @@ void CFormElmAtom::read (xmlNodePtr node, CFormLoader &loader, const CType *type
 
 			// Delete the value
 			xmlFree ((void*)value);
+		}
+		else
+		{
+			// Get content
+			const char *valueText = (const char*)xmlNodeGetContent (node);
+			if (valueText)
+			{
+				setValue (valueText);
+
+				// Delete the value
+				xmlFree ((void*)valueText);
+			}
 		}
 	}
 }

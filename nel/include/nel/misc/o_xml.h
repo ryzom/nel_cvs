@@ -1,7 +1,7 @@
 /** \file o_xml.h
  * Output xml stream
  *
- * $Id: o_xml.h,v 1.4 2002/05/17 06:34:14 corvazier Exp $
+ * $Id: o_xml.h,v 1.5 2002/10/02 13:33:01 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -117,6 +117,10 @@ public:
 	/** Get root XML document pointer
 	  */
 	xmlDocPtr getDocument ();
+
+	/** Return true if the string is valid to be stored in a XML property without modification.
+	  */
+	static bool		isStringValidForProperties (const char *str);
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.24 2001/04/25 16:53:21 lecroart Exp $
+ * $Id: common.h,v 1.25 2001/05/02 08:44:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -296,10 +296,10 @@ class Exception : public std::exception
 protected:
 	std::string	_Reason;
 public:
-	Exception() : _Reason("Unknown Exception") { }
-	Exception(const std::string &reason) : _Reason(reason) { }
-	Exception(const char *format, ...) { NLMISC_CONVERT_VARGS (_Reason, format, NLMISC::MaxCStringSize); }
-	virtual const char	*what() const throw() { return _Reason.c_str(); }
+	Exception();
+	Exception(const std::string &reason);
+	Exception(const char *format, ...);
+	virtual const char	*what() const throw();
 };
 
 

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.5 2001/04/11 15:00:06 cado Exp $
+ * $Id: common.cpp,v 1.6 2001/05/02 08:44:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "nel/misc/debug.h"
 
 #include "nel/misc/common.h"
 
@@ -96,6 +98,26 @@ string stringFromVector( const vector<uint8>& v )
 	return s;
 }
 
+Exception::Exception() : _Reason("Unknown Exception")
+{
+	nlwarning("Exception will be launch: %s", _Reason.c_str());
+}
+
+Exception::Exception(const std::string &reason) : _Reason(reason)
+{
+	nlwarning("Exception will be launch: %s", _Reason.c_str());
+}
+
+Exception::Exception(const char *format, ...)
+{
+	NLMISC_CONVERT_VARGS (_Reason, format, NLMISC::MaxCStringSize);
+	nlwarning("Exception will be launch: %s", _Reason.c_str());
+}
+
+const char	*Exception::what() const throw()
+{
+	return _Reason.c_str();
+}
 
 
 } // NLMISC

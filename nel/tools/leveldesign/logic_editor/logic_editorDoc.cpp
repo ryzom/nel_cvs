@@ -525,6 +525,11 @@ BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 		logicStateMachine.addState( logicState );
 	}
 
+	// set the first state of the state machine
+	pos = m_states.GetStartPosition();
+	m_states.GetNextAssoc( pos, eltName, (void*&)pState );
+	logicStateMachine.setCurrentState( string((LPCSTR)eltName) );
+
 	// save the logic state machine
 	logicStateMachine.serial( xmlfileOut );
 

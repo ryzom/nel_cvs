@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.23 2001/08/30 17:07:36 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.24 2001/09/20 13:24:24 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,6 +156,7 @@ CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilen
 	_BytesReceived = 0;
 
 	nldebug ("disable display layer 3 association message");
+	createDebug(); // for addNegativeFilter to work even in release and releasedebug modes
 	DebugLog->addNegativeFilter ("L3NB_ASSOC");
 
 	// add the callback needed to associate messages with id

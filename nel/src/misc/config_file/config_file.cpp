@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.50 2003/09/03 13:50:56 lecroart Exp $
+ * $Id: config_file.cpp,v 1.51 2003/09/10 14:43:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -444,10 +444,8 @@ CConfigFile::CVar *CConfigFile::getVarPtr (const std::string &varName)
 	for (i = 0; i < _Vars.size(); i++)
 	{
 		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
-		if (_Vars[i].Name == varName && _Vars[i].Type != CVar::T_UNKNOWN)
-		{
+		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
 			return &(_Vars[i]);
-		}
 	}
 
 	// if not found, add it in the array if necessary
@@ -621,6 +619,9 @@ void CConfigFile::display (CLog *log) const
 			case CConfigFile::CVar::T_REAL:
 				log->displayRawNL ("%-20s `%f`", _Vars[i].Name.c_str(), _Vars[i].RealValues[0]);
 				break;
+			case CConfigFile::CVar::T_UNKNOWN:
+				log->displayRawNL ("%-20s <Unknown>", _Vars[i].Name.c_str());
+				break;
 			default:
 			{
 				log->displayRawNL ("%-20s <default case> (%d)" , _Vars[i].Name.c_str(), _Vars[i].Type);
@@ -653,6 +654,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 	Var.Name = VarName;
 	Var.Callback = cb;
 	Var.Type = CVar::T_UNKNOWN;
+	Var.Comp = false;
 	_Vars.push_back (Var);
 	nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), getFilename().c_str());
 }

@@ -1,0 +1,83 @@
+/** \file main_agent_script.h
+ * class for the man agent.
+ *
+ * $Id: main_agent_script.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#ifndef NL_MAIN_AGENTS_SCRIPT_H
+#define NL_MAIN_AGENTS_SCRIPT_H
+
+#include "agent_manager.h"
+namespace NLIAAGENT
+{	
+
+	class NLIASCRIPT::CCodeContext;
+	class NLIASCRIPT::CStackPointer;
+
+	/**	
+	This class is the main agent, this main agent is a reception centre for all agent in a serveur. Wen agent is in it, he can access to an script
+	context to execute script code.
+
+	* \author Chafik sameh	 	
+	* \author Nevrax France
+	* \date 2000	
+	*/	
+	class CMainAgentScript : public CAgentScript 
+	{
+	
+	private:
+
+		///Context for the script.
+		NLIASCRIPT::CCodeContext	*_CodeContext;
+		///Heap and stack for the script.
+		NLIASCRIPT::CStackPointer	*_Stack,*_Heap;
+		
+	public:
+		static const NLIAC::CIdentType IdMainAgentScript;
+			
+	public:		
+		virtual int getBaseMethodCount() const;
+		virtual const IObjectIA *getAgentContext() const;
+
+	public:
+		CMainAgentScript(const CMainAgentScript &);
+		CMainAgentScript(IAgentManager *,NLIAC::IIO *io);
+		CMainAgentScript(NLIAC::IIO *io);
+		virtual ~CMainAgentScript();
+
+		const NLIAC::CIdentType &getType() const
+		{
+			return IdMainAgentScript;
+		}
+
+		virtual IObjectIA::CProcessResult addDynamicAgent(IBaseGroupType *g);
+
+		virtual const NLIAC::IBasicType *clone() const;
+		virtual const NLIAC::IBasicType *newInstance() const;
+
+		virtual	void CMainAgentScript::processMessages();
+		virtual	IObjectIA::CProcessResult sendMessage(IObjectIA *);
+		virtual IObjectIA *run(const IMessageBase &); ///throw throw Exc::CExceptionNotImplemented;		
+		virtual const IObjectIA::CProcessResult &run();
+	};	
+}
+#endif

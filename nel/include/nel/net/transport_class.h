@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.17 2003/05/14 10:24:22 lecroart Exp $
+ * $Id: transport_class.h,v 1.18 2003/06/06 12:54:12 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -519,6 +519,7 @@ inline bool CTransportClass::read (const std::string &name, uint8 sid)
 
 	// call the user callback
 	callback (name, sid);
+	return true;
 }
 
 } // NLNET

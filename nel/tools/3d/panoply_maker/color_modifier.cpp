@@ -1,7 +1,7 @@
 /** \file color_modifier.cpp
  * A class describing color modifications
  *
- * $Id: color_modifier.cpp,v 1.2 2002/02/06 13:15:46 vizerie Exp $
+ * $Id: color_modifier.cpp,v 1.3 2002/05/15 09:17:50 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -76,7 +76,7 @@ void CColorModifier::convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CB
 			result.B = CalcBrightnessContrast(result.B, Luminosity, Contrast, grey);
 
 			// blend to the destination by using the mask alpha			
-			dest->blendFromui(*dest, result, mask->A);
+			dest->blendFromui(*dest, result, mask->R);
 			
 
 			/// keep alpha from the source

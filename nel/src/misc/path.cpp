@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.90 2003/11/21 16:28:46 boucher Exp $
+ * $Id: path.cpp,v 1.91 2003/11/25 14:14:32 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -267,13 +267,6 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 
 string CPath::lookup (const string &filename, bool throwException, bool displayWarning, bool lookupInLocalDirectory)
 {
-	// Try to find in the current directory
-	if ( lookupInLocalDirectory && CFile::fileExists(filename) )
-	{
-		NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the current directory: '%s'", filename.c_str(), filename.c_str());
-		return filename;
-	}
-
 	// If the file already contains a @, it means that a lookup already proceed and returning a big file, do nothing
 	if (filename.find ("@") != string::npos)
 	{
@@ -350,6 +343,12 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 		}
 	}
 
+	// Try to find in the current directory
+	if ( lookupInLocalDirectory && CFile::fileExists(filename) )
+	{
+		NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the current directory: '%s'", filename.c_str(), filename.c_str());
+		return filename;
+	}
 
 	// Not found
 	if (displayWarning)

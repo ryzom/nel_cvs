@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.66 2002/08/28 12:11:21 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.67 2002/09/24 14:44:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -420,13 +420,15 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		}
 		
 		
+		// Texture shader part.
+		//=====================
+
 		if (_Extensions.NVTextureShader)
 		{
 			if (matShader == CMaterial::Normal)
 			{
 				// Texture addressing modes (support only via NVTextureShader for now)
-				//===================================================================				
-				
+				//===================================================================								
 				if ( mat.getFlags() & IDRV_MAT_TEX_ADDR )
 				{		
 					enableNVTextureShader(true);
@@ -443,9 +445,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 							glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, glAddrMode);				
 							_CurrentTexAddrMode[stage] = glAddrMode;					
 						}
-					}
-					
-									
+					}														
 				}
 				else
 				{
@@ -456,7 +456,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			{
 				enableNVTextureShader(false);
 			}
-		}
+		}		
 
 		_CurrentMaterial=&mat;
 	}
@@ -496,7 +496,7 @@ sint			CDriverGL::beginMultiPass()
 	case CMaterial::PerPixelLighting:
 		return  beginPPLMultiPass();
 	case CMaterial::PerPixelLightingNoSpec:
-		return  beginPPLNoSpecMultiPass();
+		return  beginPPLNoSpecMultiPass();	
 	/* case CMaterial::Caustics:
 		return  beginCausticsMultiPass(); */
 
@@ -520,7 +520,7 @@ void			CDriverGL::setupPass(uint pass)
 		break;
 	case CMaterial::PerPixelLightingNoSpec:
 		setupPPLNoSpecPass(pass);
-		break;
+		break;	
 	/* case CMaterial::Caustics:
 		case CMaterial::Caustics:
 		break; */
@@ -547,7 +547,7 @@ void			CDriverGL::endMultiPass()
 		break;
 	case CMaterial::PerPixelLightingNoSpec:
 		endPPLNoSpecMultiPass();
-		break;
+		break;	
 	/* case CMaterial::Caustics:
 		endCausticsMultiPass();
 		break; */
@@ -580,8 +580,8 @@ void CDriverGL::computeLightMapInfos (const CMaterial &mat)
 
 	// Compute how many pass, according to driver caps.
 	_NLightMapPerPass = inlGetNumTextStages()-1;
-	// Can do more than 2 texture stages only if NVTextureEnvCombine4.
-	if (!_Extensions.NVTextureEnvCombine4)
+	// Can do more than 2 texture stages only if NVTextureEnvCombine4 or ATIXTextureEnvCombine3
+	if (!_Extensions.NVTextureEnvCombine4 || !_Extensions.ATIXTextureEnvCombine3)
 		_NLightMapPerPass = 1;
 
 	// Number of pass.
@@ -613,7 +613,7 @@ void			CDriverGL::setupLightMapPass(uint pass)
 {
 	const CMaterial &mat= *_CurrentMaterial;
 
-	// No lightmap or all blakcs??, just setup "black texture" for stage 0.
+	// No lightmap or all blacks??, just setup "black texture" for stage 0.
 	if(_NLightMaps==0)
 	{
 		ITexture	*text= mat.getTexture(0);
@@ -687,40 +687,62 @@ void			CDriverGL::setupLightMapPass(uint pass)
 				}
 				else
 				{
-					// Here, we are sure that texEnvCombine4 is OK.
-					nlassert(_Extensions.NVTextureEnvCombine4);
+					// Here, we are sure that texEnvCombine4 or texEnvCombine3 is OK.
+					nlassert(_Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3);
 
 					// setup constant color with Lightmap factor.
 					stdEnv.ConstantColor=lmapFactor;
 					activateTexEnvColor(stage, stdEnv);
 
+
+					// TexEnv is special.
+					_CurrentTexEnvSpecial[stage] = TexEnvSpecialLightMap;
+
+					// Setup env for texture stage.
+					_DriverGLStates.activeTextureARB(stage);
+
 					// setup TexEnvCombine4 (ignore alpha part).
-					if(_CurrentTexEnvSpecial[stage] != TexEnvSpecialLightMapNV4)
+					if(_CurrentTexEnvSpecial[stage] != TexEnvSpecialLightMap)
 					{
-						// TexEnv is special.
-						_CurrentTexEnvSpecial[stage] = TexEnvSpecialLightMapNV4;
+						if (_Extensions.NVTextureEnvCombine4)
+						{											
+							// What we want to setup is  Texture*Constant + Previous*1.
+							glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
 
-						// Setup env for texture stage.
-						_DriverGLStates.activeTextureARB(stage);
-
-						// What we want to setup is  Texture*Constant + Previous*1.
-						glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
-
-						// Operator.
-						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
-						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
-						// Arg0.
-						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
-						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
-						// Arg1.
-						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT );
-						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
-						// Arg2.
-						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
-						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
-						// Arg3.
-						glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
-						glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+							// Operator.
+							glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
+							glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
+							// Arg0.
+							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+							// Arg1.
+							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT );
+							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+							// Arg2.
+							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
+							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+							// Arg3.
+							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+						}																
+						else
+						{
+							// ATI EnvCombine3
+							// What we want to setup is  Texture*Constant + Previous.
+							glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+							// Operator.
+							glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);
+							glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATIX);						
+							// Arg0.
+							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+							// Arg1.
+							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT );
+							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+							// Arg2.
+							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
+							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+						}
 					}
 				}
 
@@ -883,7 +905,7 @@ sint			CDriverGL::beginSpecularMultiPass()
 	if(!_Extensions.ARBTextureCubeMap)
 		return 1;
 
-	if( _Extensions.NVTextureEnvCombine4 ) // NVidia optimization
+	if( _Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3) // NVidia or ATI optimization
 		return 1;
 	else
 		return 2;
@@ -909,10 +931,10 @@ void			CDriverGL::setupSpecularPass(uint pass)
 		_DriverGLStates.enableBlend(false);
 
 		// Stage 0
-		if(_CurrentTexEnvSpecial[0] != TexEnvSpecialSpecularStage0NV4)
+		if(_CurrentTexEnvSpecial[0] != TexEnvSpecialSpecularStage0)
 		{
 			// TexEnv is special.
-			_CurrentTexEnvSpecial[0] = TexEnvSpecialSpecularStage0NV4;
+			_CurrentTexEnvSpecial[0] = TexEnvSpecialSpecularStage0;
 
 			_DriverGLStates.activeTextureARB(0);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
@@ -946,9 +968,9 @@ void			CDriverGL::setupSpecularPass(uint pass)
 		// Special: not the same sepcial env if there is or not texture in stage 0.
 		CTexEnvSpecial		newEnvStage1;
 		if( mat.getTexture(0) == NULL )
-			newEnvStage1= TexEnvSpecialSpecularStage1NoTextNV4;
+			newEnvStage1= TexEnvSpecialSpecularStage1NoText;
 		else
-			newEnvStage1= TexEnvSpecialSpecularStage1NV4;
+			newEnvStage1= TexEnvSpecialSpecularStage1;
 		// Test if same env as prec.
 		if(_CurrentTexEnvSpecial[1] != newEnvStage1)
 		{
@@ -964,7 +986,7 @@ void			CDriverGL::setupSpecularPass(uint pass)
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
 			// Arg1.
-			if( newEnvStage1 == TexEnvSpecialSpecularStage1NoTextNV4 )
+			if( newEnvStage1 == TexEnvSpecialSpecularStage1NoText )
 			{
 				glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_ZERO );
 				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_ONE_MINUS_SRC_COLOR);
@@ -980,6 +1002,77 @@ void			CDriverGL::setupSpecularPass(uint pass)
 			// Arg3.
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO );
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+			// Result : Texture*Previous.Alpha+Previous
+		}
+
+		// Setup TexCoord gen for stage1.
+		_DriverGLStates.activeTextureARB(1);
+		_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
+		_DriverGLStates.setTexGenMode (1, GL_REFLECTION_MAP_ARB);
+		_DriverGLStates.enableTexGen (1, true);
+	}
+	else if (_Extensions.ATIXTextureEnvCombine3)
+	{
+		// Ok we can do it in a single pass
+		_DriverGLStates.enableBlend(false);
+
+		// Stage 0
+		if(_CurrentTexEnvSpecial[0] != TexEnvSpecialSpecularStage0)
+		{
+			// TexEnv is special.
+			_CurrentTexEnvSpecial[0] = TexEnvSpecialSpecularStage0;
+
+			_DriverGLStates.activeTextureARB(0);		
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+			// Operator Mad (Arg0 * Arg2 + Arg1)			
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE );
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_REPLACE );
+			// Arg0.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA );
+			// Arg1.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);			
+			// Result RGB : Texture*Diffuse, Alpha : Texture
+		}
+
+		// Set Stage 1
+		// Special: not the same sepcial env if there is or not texture in stage 0.
+		CTexEnvSpecial		newEnvStage1;
+		if( mat.getTexture(0) == NULL )
+			newEnvStage1= TexEnvSpecialSpecularStage1NoText;
+		else
+			newEnvStage1= TexEnvSpecialSpecularStage1;
+		// Test if same env as prec.
+		if(_CurrentTexEnvSpecial[1] != newEnvStage1)
+		{
+			// TexEnv is special.
+			_CurrentTexEnvSpecial[1] = newEnvStage1;
+
+			_DriverGLStates.activeTextureARB(1);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+			// Operator Add (Arg0*Arg1+Arg2*Arg3)
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX );
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATIX );
+			// Arg0.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
+			// Arg2.
+			if( newEnvStage1 == TexEnvSpecialSpecularStage1NoText )
+			{
+				glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_ZERO );
+				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_ONE_MINUS_SRC_COLOR);
+			}
+			else
+			{
+				glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
+				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_ALPHA );
+			}
+			// Arg1.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR );			
 			// Result : Texture*Previous.Alpha+Previous
 		}
 
@@ -1062,8 +1155,10 @@ struct CSpecCubeMapFunctor : ICubeMapFunctor
 	CSpecCubeMapFunctor(float exp) : Exp(exp) {}
 	virtual NLMISC::CRGBA operator()(const NLMISC::CVector &v)
 	{
+		
 		uint8 intensity = (uint8) (255.f * ::powf(std::max(v.normed().z, 0.f), Exp));
-		return NLMISC::CRGBA(intensity, intensity, intensity, intensity);
+		return NLMISC::CRGBA(intensity, intensity, intensity, intensity); 		
+		//return Exp == 1.f ? CRGBA((uint8)(v.x*127+127), (uint8)(v.y*127+127), (uint8)(v.z*127+127), 0): CRGBA::Black;
 	}
 	float Exp;
 };
@@ -1228,21 +1323,39 @@ void			CDriverGL::setupPPLPass(uint pass)
 		_CurrentTexEnvSpecial[0] = TexEnvSpecialPPLStage0;
 		_DriverGLStates.activeTextureARB(0);
 
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
-		
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);			
-		// Arg0 = Diffuse read in cube map
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
-		// Arg1 = Light color
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
-		// Arg2 = Primary color (other light diffuse and 
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PRIMARY_COLOR_EXT);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
-		// Arg3 = White (= ~ Black)
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);		
+		if (_Extensions.NVTextureEnvCombine4)
+		{		
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+			
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);			
+			// Arg0 = Diffuse read in cube map
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			// Arg1 = Light color
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+			// Arg2 = Primary color (other light diffuse and 
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PRIMARY_COLOR_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+			// Arg3 = White (= ~ Black)
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+		}
+		else // use ATI extension
+		{
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+			
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);			
+			// Arg0 = Diffuse read in cube map
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			// Arg1 = Light color
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_CONSTANT_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+			// Arg2 = Primary color (other light diffuse and 
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PRIMARY_COLOR_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);			
+		}
 	}
 	activateTexEnvColor(0, _PPLightDiffuseColor);
 
@@ -1262,34 +1375,66 @@ void			CDriverGL::setupPPLPass(uint pass)
 		_CurrentTexEnvSpecial[2] = TexEnvSpecialPPLStage2;
 		_DriverGLStates.activeTextureARB(2);
 
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
-		
-		//== colors ==
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);			
-		// Arg0 = Specular read in cube map
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
-		// Arg1 = Light color
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
-		// Arg2 = Primary color (other light diffuse and 
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
-		// Arg3 = White (= ~ Black)
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+		if (_Extensions.NVTextureEnvCombine4)
+		{
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);		
+			//== colors ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);
+			// Arg0 = Specular read in cube map
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			// Arg1 = Light color
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+			// Arg2 = Primary color ( + other light diffuse )
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+			// Arg3 = White (= ~ Black)
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
 
-		//== alpha ==
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD);			
-		// Arg0 = PREVIOUS ALPHA
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PREVIOUS_EXT);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_COLOR);
-		// Arg1 = 1
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_ONE_MINUS_SRC_COLOR);
-		// Arg2 = 0
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_COLOR);		
+			//== alpha ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD);			
+			// Arg0 = PREVIOUS ALPHA
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_COLOR);
+			// Arg1 = 1
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_ONE_MINUS_SRC_COLOR);
+			// Arg2 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_COLOR);
+			// Arg3 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_COLOR);
+		}
+		else // ATI EnvCombine3
+		{
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);		
+			//== colors ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);			
+			// Arg0 = Specular read in cube map
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			// Arg2 = Light color
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_CONSTANT_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+			// Arg1 = Primary color ( + other light diffuse)
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);			
+
+			//== alpha ==
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATIX);			
+			// Arg0 = PREVIOUS ALPHA
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_COLOR);
+			// Arg2 = 1
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_ONE_MINUS_SRC_COLOR);
+			// Arg1 = 0
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_SRC_COLOR);
+		}
 	}
 	activateTexEnvColor(2, _PPLightSpecularColor);	
 
@@ -1345,21 +1490,39 @@ void			CDriverGL::setupPPLNoSpecPass(uint pass)
 		_CurrentTexEnvSpecial[0] = TexEnvSpecialPPLStage0;
 		_DriverGLStates.activeTextureARB(0);
 
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
-		
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);			
-		// Arg0 = Diffuse read in cube map alpha
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
-		// Arg1 = Light color
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
-		// Arg2 = Primary color (other light diffuse and 
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PRIMARY_COLOR_EXT);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
-		// Arg3 = White (= ~ Black)
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);		
+		if (_Extensions.NVTextureEnvCombine4)
+		{
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+			
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);			
+			// Arg0 = Diffuse read in cube map alpha
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			// Arg1 = Light color
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+			// Arg2 = Primary color (other light diffuse and 
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PRIMARY_COLOR_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+			// Arg3 = White (= ~ Black)
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+		}
+		else
+		{
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+			
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX);			
+			// Arg0 = Diffuse read in cube map alpha
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			// Arg2 = Light color
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_CONSTANT_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+			// Arg1 = Primary color (other light diffuse and 
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PRIMARY_COLOR_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);			
+		}
 	}
 	activateTexEnvColor(0, _PPLightDiffuseColor);
 
@@ -1375,9 +1538,6 @@ void			CDriverGL::endPPLNoSpecMultiPass()
 {	
 	// nothing to do there ...
 }
-
-
-
 
 // ***************************************************************************
 /* sint		CDriverGL::beginCausticsMultiPass(const CMaterial &mat)

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.73 2004/09/16 16:41:51 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.74 2004/09/23 12:14:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2254,6 +2254,30 @@ void CAudioMixerUser::debugLogEvent(const char *reason)
 	{
 		nlinfo("\t: %x - (%d,%x)", itEv->first, (uint32)itEv->second->first, itEv->second->second.ptr());
 	}
+}
+
+
+// ***************************************************************************
+bool	CAudioMixerUser::playMusic(const std::string &fileName)
+{
+	if(getSoundDriver())
+		return getSoundDriver()->playMusic(fileName);
+	else
+		return false;
+}
+
+// ***************************************************************************
+void	CAudioMixerUser::stopMusic()
+{
+	if(getSoundDriver())
+		getSoundDriver()->stopMusic();
+}
+
+// ***************************************************************************
+void	CAudioMixerUser::setMusicVolume(float gain)
+{
+	if(getSoundDriver())
+		getSoundDriver()->setMusicVolume(gain);
 }
 
 

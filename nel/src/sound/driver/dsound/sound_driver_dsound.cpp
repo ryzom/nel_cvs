@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.30 2004/09/16 16:42:24 berenguier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.31 2004/09/23 12:15:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1058,5 +1058,23 @@ void	CSoundDriverDSound::displayBench(CLog *log)
 		NLMISC::CHTimer::display(log, CHTimer::TotalTime);
 }
 
+
+// ***************************************************************************
+bool	CSoundDriverDSound::playMusic(const std::string &fileName)
+{
+	// unsupported
+	return false;
+}
+
+void	CSoundDriverDSound::stopMusic()
+{
+	// unsupported
+}
+
+void	CSoundDriverDSound::setMusicVolume(float gain)
+{
+	// unsupported
+}
+	
 
 } // NLSOUND

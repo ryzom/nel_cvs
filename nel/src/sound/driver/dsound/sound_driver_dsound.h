@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.14 2004/08/30 12:45:47 berenguier Exp $
+ * $Id: sound_driver_dsound.h,v 1.15 2004/09/23 12:15:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,6 +113,10 @@ public:
 	LPKSPROPERTYSET		createPropertySet(CSourceDSound *source);
 #endif
 
+	virtual bool	playMusic(const std::string &fileName);
+	virtual void	stopMusic();
+	virtual void	setMusicVolume(float gain);
+		
 private:
 
 	// The callback for the multimedia timer

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.36 2004/09/16 16:43:18 berenguier Exp $
+ * $Id: u_audio_mixer.h,v 1.37 2004/09/23 12:16:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -338,6 +338,26 @@ public:
 	virtual void displayDriverBench(NLMISC::CLog *log) =0;
 
 	//@}
+
+
+	//@{
+	//@name Sound Music
+	/** Play some music (.mp3 etc...) (implemented in fmod only)
+	 *	FMOD: The File is loaded in memory, but decompressed by FMod in a thread
+	 *	Hence if the mp3 fileSize is 5 Mb, it will take only 5 Mb in memory (not the decompressed 40 Mb size)
+	 *	NB: if an old music was played, it is first stop with stopMusic()
+	 *	\param fileName full path of file name (no CPath::lookup is done)
+	 */
+	virtual bool	playMusic(const std::string &fileName) =0;
+	/** Stop the music previously loaded and played (the Memory is also freed)
+	 */
+	virtual void	stopMusic() =0;
+	/** Set the music volume (if any music played). (volume value inside [0 , 1]) (default: 1)
+	 *	NB: the volume of music is NOT affected by IListener::setGain()
+	 */
+	virtual void	setMusicVolume(float gain) =0;
+	//@}
+
 
 	/// Destructor
 	virtual				~UAudioMixer() {}

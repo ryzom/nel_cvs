@@ -1,7 +1,7 @@
 /** \file sound_dirver_fmod.h
  * DirectSound sound source
  *
- * $Id: sound_driver_fmod.h,v 1.2 2004/09/16 16:42:48 berenguier Exp $
+ * $Id: sound_driver_fmod.h,v 1.3 2004/09/23 12:16:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,15 @@ public:
 	/// Return the string mapper
 	IStringMapperProvider	*getStringMapper()	{return _StringMapper;}
 
+	// play the music
+	virtual bool	playMusic(const std::string &fileName);
+	
+	// stop the music
+	virtual void	stopMusic();
 
+	// set music volume
+	virtual void	setMusicVolume(float gain);
+	
 	// Tool method to transform from Nel coords to FMod coords
 	static void	toFModCoord(const NLMISC::CVector &in, float out[3]);
 
@@ -158,6 +166,13 @@ private:
 
 	/// If want to create buffer in software (no hardware)
 	bool					_ForceSoftwareBuffer;
+
+	/// Music
+	FSOUND_STREAM			*_FModMusicStream;	// The FMod stream, pointing on
+	uint8					*_FModMusicBuffer;	// this RAM buffer (representation of a MP3 file)
+	sint					_FModMusicChannel;	// channel played for music
+	uint8					_FModMusicVolume;
+	
 };
 
 

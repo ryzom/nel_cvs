@@ -1,7 +1,7 @@
 /** \file sound_driver_fmod.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_fmod.cpp,v 1.2 2004/09/16 16:42:48 berenguier Exp $
+ * $Id: sound_driver_fmod.cpp,v 1.3 2004/09/23 12:16:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include <eax.h>
 
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/path.h"
+#include "nel/misc/file.h"
 #include "sound_driver_fmod.h"
 #include "listener_fmod.h"
 
@@ -95,6 +97,10 @@ CSoundDriverFMod::CSoundDriverFMod()
 		_FModOk= false;
 		_MasterGain= 1.f;
 		_ForceSoftwareBuffer= false;
+		_FModMusicStream= NULL;
+		_FModMusicBuffer= NULL;
+		_FModMusicChannel= -1;
+		_FModMusicVolume= 255;
     }
 	else
 	{
@@ -133,6 +139,10 @@ CSoundDriverFMod::~CSoundDriverFMod()
 {
 	nldebug("Destroying FMOD");
 
+	// Stop any played music
+	stopMusic();
+
+	
 	// Assure that the remaining sources have released all their channels before closing
 	set<CSourceFMod*>::iterator iter;
 	for (iter = _Sources.begin(); iter != _Sources.end(); iter++)
@@ -391,6 +401,103 @@ void	CSoundDriverFMod::toFModCoord(const CVector &in, float out[3])
 	out[2]= in.y;
 }
 
+// ***************************************************************************
+bool	CSoundDriverFMod::playMusic(const std::string &fileName)
+{
+	if(!_FModOk)
+		return false;
+
+	// stop old one
+	if(_FModMusicStream)
+		stopMusic();
+
+	// try to load the new one in memory
+	uint32	fs= NLMISC::CFile::getFileSize(fileName);
+	if(fs==0)
+		return false;
+	
+	// try to load into memory
+	NLMISC::CIFile		fileIn;
+	if(fileIn.open(fileName))
+	{
+		_FModMusicBuffer= new uint8 [fs];
+		// read
+		try
+		{
+			fileIn.serialBuffer(_FModMusicBuffer, fs);
+		}
+		catch(...)
+		{
+			nlwarning("Sound FMOD: Error While reading music file: %s", fileName.c_str());
+			delete[] _FModMusicBuffer;
+			_FModMusicBuffer= NULL;
+			return false;
+		}
+		// Load to a stream FMOD sample
+		_FModMusicStream= FSOUND_Stream_Open((const char*)_FModMusicBuffer, 
+			FSOUND_2D|FSOUND_LOADMEMORY|FSOUND_LOOP_NORMAL, 0, fs);
+		// not succeed?
+		if(!_FModMusicStream)
+		{
+			nlwarning("Sound FMOD: Error While creating the FMOD stream for music file: %s", fileName.c_str());
+			delete[] _FModMusicBuffer;
+			_FModMusicBuffer= NULL;
+			return false;
+		}
+			
+		fileIn.close();
+	}
+	else
+	{
+		nlwarning("Sound FMOD: Error While reading music file: %s", fileName.c_str());
+		return false;
+	}
+
+	// loaded => play!
+	nlassert(_FModMusicStream);
+	_FModMusicChannel= FSOUND_Stream_Play(FSOUND_FREE, _FModMusicStream);
+	// stereo pan (as reccomended)
+	FSOUND_SetPan(_FModMusicChannel, FSOUND_STEREOPAN);
+	// set backuped volume
+	FSOUND_SetVolumeAbsolute(_FModMusicChannel, _FModMusicVolume);
+	
+	return true;
+}
+
+// ***************************************************************************
+void	CSoundDriverFMod::stopMusic()
+{
+	if(!_FModOk)
+		return;
+	
+	// if really playing some music
+	if(_FModMusicStream)
+	{
+		// stop
+		FSOUND_Stream_Stop(_FModMusicStream);
+		_FModMusicChannel= -1;
+		// free
+		FSOUND_Stream_Close(_FModMusicStream);
+		_FModMusicStream= NULL;
+		delete[] _FModMusicBuffer;
+		_FModMusicBuffer= NULL;
+	}
+}
+
+// ***************************************************************************
+void	CSoundDriverFMod::setMusicVolume(float gain)
+{
+	if(!_FModOk)
+		return;
+
+	// bkup the volume
+	clamp(gain, 0.f, 1.f);
+	_FModMusicVolume= uint(gain*255);
+
+	// if playing, set the volume
+	if(_FModMusicStream)
+		FSOUND_SetVolumeAbsolute(_FModMusicChannel, _FModMusicVolume);
+}
 
 
 } // NLSOUND

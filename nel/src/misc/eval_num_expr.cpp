@@ -1,7 +1,7 @@
 /** \file eval_num_expr.cpp
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.cpp,v 1.7 2003/07/01 09:41:20 lecroart Exp $
+ * $Id: eval_num_expr.cpp,v 1.8 2005/01/31 15:11:56 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::readDecimal (double &value)
 		const char *start = _ExprPtr;
 		double fract;
 		readIntegerNumberDecimal (fract);
-		fract /= (double)pow (10 ,(_ExprPtr-start));
+		fract /= (double)pow (10.0,(sint)(_ExprPtr-start));
 		value += fract;
 	}
 

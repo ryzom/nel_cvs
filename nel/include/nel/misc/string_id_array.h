@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * Container that provides associations between string and integer
  *
- * $Id: string_id_array.h,v 1.15 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: string_id_array.h,v 1.16 2005/01/31 15:11:22 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ public:
 	/// Adds a string in the string in the array
 	void addString(const std::string &str, TStringId id)
 	{
-		nlassert (id >= 0 && id < pow(2, sizeof (TStringId)*8));
+		nlassert (id >= 0 && id < pow(2.0, (sint)sizeof (TStringId)*8));
 		nlassert (!str.empty());
 
 		if (id >= (sint32) _StringArray.size())
@@ -76,7 +76,7 @@ public:
 	/// Adds a string in the string at the end of the array
 	void addString(const std::string &str)
 	{
-		nlassert (_StringArray.size () < pow(2, sizeof (TStringId)*8));
+		nlassert (_StringArray.size () < pow(2.0, (sint)sizeof (TStringId)*8));
 		nlassert (!str.empty());
 
 		// add at the end

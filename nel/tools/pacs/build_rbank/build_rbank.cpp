@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.9 2003/01/06 18:18:04 legros Exp $
+ * $Id: build_rbank.cpp,v 1.8 2002/12/17 16:23:04 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -346,7 +346,7 @@ void processRetriever(string &zoneName)
 
 			//
 			CSurfaceSplitter	splitter;
-			//splitter.build(retriever);
+			splitter.build(retriever);
 
 			// and save it...
 

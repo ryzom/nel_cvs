@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.19 2003/01/07 17:09:55 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.18 2002/12/24 10:50:05 lecroart Exp $
  *
  */
 
@@ -55,9 +55,6 @@ using namespace NLNET;
 //
 // Variables
 //
-
-static uint RecordNbPlayers = 0;
-static uint NbPlayers = 0;
 
 
 //
@@ -149,28 +146,16 @@ static void cbWSDisconnection (const std::string &serviceName, uint16 sid, void 
 		if (Shards[i].SId == sid)
 		{
 			// shard disconnected
-			nlinfo("ShardId %d with IP '%s' is offline!", Shards[i].ShardId, ia.asString ().c_str());
-			nlinfo("*** ShardId %3d NbPlayers %3d -> %3d", Shards[i].ShardId, Shards[i].NbPlayers, 0);
-			
-			string query = "update shard set Online=Online-1, NbPlayers=NbPlayers-"+toString(Shards[i].NbPlayers)+" where ShardId="+toString(Shards[i].ShardId);
+			nlinfo("ShardId %d with ip '%s' is offline!", Shards[i].ShardId, ia.asString ().c_str());
+
+			string query = "update shard set Online=Online-1, NbPlayers=NbPlayers-"+toString(Shards[i].NbPlayer)+" where ShardId="+toString(Shards[i].ShardId);
 			sint ret = mysql_query (DatabaseConnection, query.c_str ());
 			if (ret != 0)
 			{
 				nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
 			}
 
-			NbPlayers -= Shards[i].NbPlayers;
-
-			Shards[i].NbPlayers = 0;
-
 			// put users connected on this shard offline
-
-			query = "update user set State=Offline, ShardId=-1 where ShardId="+toString(Shards[i].ShardId);
-			ret = mysql_query (DatabaseConnection, query.c_str ());
-			if (ret != 0)
-			{
-				nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
-			}
 			
 			Shards.erase (Shards.begin () + i);
 
@@ -437,6 +422,9 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 		return;
 	}
 
+	static uint recordNbPlayer = 0;
+	static uint nbPlayer = 0;
+
 	sint ShardPos = findShardWithSId (sid);
 
 	if (con == 1)
@@ -454,8 +442,7 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 
 		if (ShardPos != -1)
 		{
-			nlinfo("*** ShardId %3d NbPlayers %3d -> %3d", Shards[ShardPos].ShardId, Shards[ShardPos].NbPlayers, Shards[ShardPos].NbPlayers+1);
-			Shards[ShardPos].NbPlayers++;
+			Shards[ShardPos].NbPlayer++;
 
 			string query = "update shard set NbPlayers=NbPlayers+1 where ShardId="+toString(Shards[ShardPos].ShardId);
 			sint ret = mysql_query (DatabaseConnection, query.c_str ());
@@ -471,12 +458,12 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 		nldebug ("Id %d is connected on the shard", Id);
 		Output->displayNL ("###: %3d User connected to the shard (%d)", Id, Shards[ShardPos].ShardId);
 
-		NbPlayers++;
-		if (NbPlayers > RecordNbPlayers)
+		nbPlayer++;
+		if (nbPlayer > recordNbPlayer)
 		{
-			RecordNbPlayers = NbPlayers;
+			recordNbPlayer = nbPlayer;
 			beep (2000, 1, 100, 0);
-			nlwarning("New player number record!!! %d players online on all shards", RecordNbPlayers);
+			nlwarning("New player number record!!! %d players online on all shards", recordNbPlayer);
 		}
 	}
 	else
@@ -494,8 +481,7 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 
 		if (ShardPos != -1)
 		{
-			nlinfo("*** ShardId %3d NbPlayers %3d -> %3d", Shards[ShardPos].ShardId, Shards[ShardPos].NbPlayers, Shards[ShardPos].NbPlayers-1);
-			Shards[ShardPos].NbPlayers--;
+			Shards[ShardPos].NbPlayer--;
 
 			string query = "update shard set NbPlayers=NbPlayers-1 where ShardId="+toString(Shards[ShardPos].ShardId);
 			sint ret = mysql_query (DatabaseConnection, query.c_str ());
@@ -511,7 +497,7 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 		nldebug ("Id %d is disconnected from the shard", Id);
 		Output->displayNL ("###: %3d User disconnected from the shard (%d)", Id, Shards[ShardPos].ShardId);
 
-		NbPlayers--;
+		nbPlayer--;
 	}
 }
 
@@ -541,15 +527,8 @@ void connectionWSUpdate ()
 
 void connectionWSRelease ()
 {
-	nlinfo ("I'm going down, clean the database");
+	nlinfo ("I'm goind down, clean the database");
 
-
-	while (!Shards.empty())
-	{
-		cbWSDisconnection ("", Shards[0].SId, NULL);
-	}
-	
-/*	
 	// we remove all shards online from my list
 	for (uint32 i = 0; i < Shards.size (); i++)
 	{
@@ -558,9 +537,9 @@ void connectionWSRelease ()
 		const CInetAddress &ia = cnb->hostAddress (from);
 
 		// shard disconnected
-		nlinfo("Set ShardId %d with IP '%s' offline in the database and set %d players to offline", Shards[i].ShardId, ia.asString ().c_str());
-		
-		string query = "update shard set Online=Online-1, NbPlayers=NbPlayers-"+toString(Shards[i].NbPlayers)+" where ShardId="+toString(Shards[i].ShardId);
+		nlinfo("Set ShardId %d with ip '%s' offline in the database", Shards[i].ShardId, ia.asString ().c_str());
+
+		string query = "update shard set Online=Online-1, NbPlayers=NbPlayers-"+toString(Shards[i].NbPlayer)+" where ShardId="+toString(Shards[i].ShardId);
 		sint ret = mysql_query (DatabaseConnection, query.c_str ());
 		if (ret != 0)
 		{
@@ -570,6 +549,4 @@ void connectionWSRelease ()
 		// put users connected on this shard offline
 	}
 	Shards.clear ();
-*/
-
 }

@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.53 2003/01/07 17:10:35 lecroart Exp $
+ * $Id: common.h,v 1.52 2002/12/18 19:14:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -356,13 +356,6 @@ inline std::string toString (const sint8 &t)
 }
 #endif // NL_OS_UNIX
 
-
-/** Explode a string into a vector of string with *sep* as separator. If sep can be more than 1 char, in this case,
- * we find the entire sep to separator (it s not a set of possible separator)
- *
- * \param skipEmpty if true, we don't put in the res vector empty string
- */
-void explode (const std::string &src, const std::string &sep, std::vector<std::string> &res, bool skipEmpty = false);
 
 
 /* All the code above is used to add our types (uint8, ...) in the stringstream (used by the toString() function).

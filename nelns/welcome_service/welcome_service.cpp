@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.22 2003/01/07 17:09:34 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.21 2002/10/24 08:19:44 lecroart Exp $
  *
  */
 
@@ -221,7 +221,7 @@ void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 				{
 					// bye bye little player
 					uint32 userid = (*itc).first;
-					nlinfo ("Due to a frontend crash, removed the player %d", userid);
+					nldebug ("due to a frontend crash, removed the player %d", userid);
 					CMessage msgout ("CC");
 					msgout.serial (userid);
 					uint8 con = 0;

@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.7 2003/01/06 18:18:04 legros Exp $
+ * $Id: build_surf.h,v 1.6 2002/09/26 14:54:12 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,7 +231,6 @@ public:
 	uint8							Character;
 	uint8							Level;
 	uint8							WaterShape;
-	uint8							QuantHeight;
 	
 	bool							IsBorder;
 	bool							IsHorizontal;
@@ -305,7 +304,6 @@ public:
 		IsMergable = true;
 		CutFlag = 0;
 		WaterShape = 255;
-		QuantHeight = 0;
 	}
 
 	/// Computes the bbox of the surface element.
@@ -448,7 +446,6 @@ public:
 
 	float									Area;
 	float									WaterHeight;
-	uint8									QuantHeight;
 
 	/// The BBox of the whole zone (in which the surface should be contained.)
 	NLMISC::CAABBox							BBox;

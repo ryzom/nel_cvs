@@ -91,6 +91,180 @@ ShaderPerPixelLighting = 7
 ShaderPerPixelLightingNoSpec = 7
 
 
+----------------------------------------------------------------------------------------------------------------
+-- Nel BitmapTexture properties : this provide additionnal slots to create textures sets
+plugin textureMap NelBitmapTexture
+	name:"Nel Multi Bitmap"
+	classID:#(0x5a8003f9, 0x43e0955)
+	extends:BitmapTexture
+	replaceUI:false
+	version:1.0
+(
+	local currSelectedTextureSet
+	parameters pblock rollout:AdditionnalBitmaps
+	(
+			bitmap1FileName type:#String default:"" ui:cBitmap1FileName
+			bitmap2FileName type:#String default:"" ui:cBitmap2FileName
+			bitmap3FileName type:#String default:"" ui:cBitmap3FileName
+			bitmap4FileName type:#String default:"" ui:cBitmap4FileName
+	)
+    rollout AdditionnalBitmaps "Additionnal bitmaps" rolledUp:false
+    (
+		edittext 	  cBitmap1FileName "ID 1:" width:230 across:3
+		button 		  browse1 "Get" align:#left across:2 offset:[100, 0]
+		button        view1   "View" offset:[40, 0]
+		
+		edittext 	  cBitmap2FileName "ID 2:" width:230 across:3
+		button 		  browse2 "Get" align:#left across:2 offset:[100, 0]
+		button        view2   "View" offset:[40, 0]
+		
+		edittext 	  cBitmap3FileName "ID 3:" width:230 across:3
+		button 		  browse3 "Get" align:#left across:2 offset:[100, 0]
+		button        view3   "View" offset:[40, 0]
+		
+		edittext 	  cBitmap4FileName "ID 4:" width:230 across:3
+		button 		  browse4 "Get" align:#left across:2 offset:[100, 0]
+		button        view4   "View" offset:[40, 0]
+
+						
+		on browse1 pressed do
+		(
+			myNewBitmap = selectBitmap()
+			if myNewBitmap != undefined then
+			(
+				bitmap1FileName = myNewBitmap.fileName
+				if currSelectedTextureSet == undefined or currSelectedTextureSet == 1 then
+				(
+					try
+					(
+						delegate.bitmap = openBitmap bitmap1FileName
+					)
+					catch
+					(
+						-- well, no luck..
+					)
+				)
+			)			
+		)
+		
+		on view1 pressed do
+		(	
+			try
+			(	
+				local myBitmap = openBitMap cBitmap1FileName.text
+				display myBitmap
+			)
+			catch
+			(
+				messagebox "Unable to find / display bitmap"
+			)
+		)
+		
+		on browse2 pressed do
+		(
+			myNewBitmap = selectBitmap()
+			if myNewBitmap != undefined then
+			(
+				bitmap2FileName = myNewBitmap.fileName
+				if currSelectedTextureSet == 2
+				then
+				(
+					try
+					(
+						delegate.bitmap = openBitmap bitmap2FileName
+					)
+					catch
+					(
+						-- well, no luck..
+					)
+				)
+			)			
+		)
+		
+		on view2 pressed do
+		(	
+			try
+			(	
+				local myBitmap = openBitMap cBitmap2FileName.text
+				display myBitmap
+			)
+			catch
+			(
+				messagebox "Unable to find / display bitmap"
+			)
+		)
+		
+		on browse3 pressed do
+		(
+			myNewBitmap = selectBitmap()
+			if myNewBitmap != undefined then
+			(
+				bitmap3FileName = myNewBitmap.fileName				
+				if currSelectedTextureSet == 3
+				then 
+				(
+					try
+					(
+						delegate.bitmap = openBitmap bitmap3FileName
+					)
+					catch
+					(
+						-- well, no luck..
+					)
+				)
+			)			
+		)
+		
+		on view3 pressed do
+		(	
+			try
+			(	
+				local myBitmap = openBitMap cBitmap3FileName.text
+				display myBitmap
+			)
+			catch
+			(
+				messagebox "Unable to find / display bitmap"
+			)
+		)
+		
+		on browse4 pressed do
+		(
+			myNewBitmap = selectBitmap()
+			if myNewBitmap != undefined then
+			(
+				bitmap4FileName = myNewBitmap.fileName
+				if currSelectedTextureSet == 4
+				then 
+				(
+					try
+					(
+						delegate.bitmap = openBitmap bitmap4FileName
+					)
+					catch
+					(
+						-- well, no luck..
+					)
+				)
+
+
+			)			
+		)
+		
+		on view4 pressed do
+		(	
+			try
+			(	
+				local myBitmap = openBitMap cBitmap4FileName.text
+				display myBitmap
+			)
+			catch
+			(
+				messagebox "Unable to find / display bitmap"
+			)
+		)
+	)
+)
 
 ----------------------------------------------------------------------------------------------------------------
 fn convertMaxBitmapToNelBitmap maxMap =

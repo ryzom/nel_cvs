@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.15 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.16 2004/04/09 14:30:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -449,8 +449,8 @@ const char* NL3D_LandscapeFar0EndProgram=
 	DP4 o[HPOS].y, c[1], R1;															\n\
 	DP4 o[HPOS].z, c[2], R1;															\n\
 	DP4 o[HPOS].w, c[3], R1;															\n\
-	MOV o[TEX0].xy, v[8];																\n\
-	MOV o[TEX1].xy, v[9];																\n\
+	MOV o[TEX0], v[8];																\n\
+	MOV o[TEX1], v[9];																\n\
 	DP4	o[FOGC].x, c[10], R1;															\n\
 	END																					\n\
 ";
@@ -476,8 +476,8 @@ const char* NL3D_LandscapeFar1EndProgram=
 	DP4 o[HPOS].y, c[1], R1;															\n\
 	DP4 o[HPOS].z, c[2], R1;															\n\
 	DP4 o[HPOS].w, c[3], R1;															\n\
-	MOV o[TEX0].xy, v[8];																\n\
-	MOV o[TEX1].xy, v[9];																\n\
+	MOV o[TEX0], v[8];																\n\
+	MOV o[TEX1], v[9];																\n\
 	DP4	o[FOGC].x, c[10], R1;															\n\
 	END																					\n\
 ";
@@ -496,8 +496,8 @@ const char* NL3D_LandscapeTileEndProgram=
 	DP4 o[HPOS].y, c[1], R1;															\n\
 	DP4 o[HPOS].z, c[2], R1;															\n\
 	DP4 o[HPOS].w, c[3], R1;															\n\
-	MOV o[TEX0].xy, v[8];																\n\
-	MOV o[TEX1].xy, v[9];																\n\
+	MOV o[TEX0], v[8];																	\n\
+	MOV o[TEX1], v[9];																	\n\
 	DP4	o[FOGC].x, c[10], R1;															\n\
 	END																					\n\
 ";
@@ -509,8 +509,8 @@ const char* NL3D_LandscapeTileLightMapEndProgram=
 	DP4 o[HPOS].y, c[1], R1;															\n\
 	DP4 o[HPOS].z, c[2], R1;															\n\
 	DP4 o[HPOS].w, c[3], R1;															\n\
-	MOV o[TEX0].xy, v[13];																\n\
-	MOV o[TEX1].xy, v[9];																\n\
+	MOV o[TEX0], v[13];																\n\
+	MOV o[TEX1], v[9];																\n\
 	DP4	o[FOGC].x, c[10], R1;															\n\
 	END																					\n\
 ";

@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.cpp
  * <File description>
  *
- * $Id: meshvp_per_pixel_light.cpp,v 1.7 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: meshvp_per_pixel_light.cpp,v 1.8 2004/04/09 14:30:05 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -343,7 +343,7 @@ static const char*	PPLightingVPCodeEnd=
 	DP4 o[HPOS].y, c[1], v[0];															\n\
 	DP4 o[HPOS].z, c[2], v[0];															\n\
 	DP4 o[HPOS].w, c[3], v[0];															\n\
-	MOV o[TEX1].xy, v[8];																\n\
+	MOV o[TEX1], v[8];																	\n\
 	END																					\n\
 ";
 

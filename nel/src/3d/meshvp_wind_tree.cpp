@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.11 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.12 2004/04/09 14:29:46 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -81,9 +81,9 @@ static const char*	WindTreeVPCodeEnd=
 	DP4 o[HPOS].y, c[1], R5;															\n\
 	DP4 o[HPOS].z, c[2], R5;															\n\
 	DP4 o[HPOS].w, c[3], R5;															\n\
-	MOV o[TEX0].xy, v[8];																\n\
+	MOV o[TEX0], v[8];																\n\
 	# hulud : remove this line for the moment because it doesn't work under d3d, if it is needed, we will have to create 2 CVertexProgram objects.\n\
-	#MOV o[TEX1].xy, v[9];																\n\
+	#MOV o[TEX1], v[9];																\n\
 	DP4	o[FOGC].x, c[6], R5;															\n\
 	END																					\n\
 ";

@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.3 2001/01/15 11:11:18 berenguier Exp $
+ * $Id: texture_font.h,v 1.4 2001/01/15 14:57:56 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,8 +71,9 @@ public:
 		_FontGen = NULL;
 		_Width = 0;
 		_Height = 0;
-		setWrapS(ITexture::Clamp);
-		setWrapT(ITexture::Clamp);
+		
+		setWrapS(ITexture::Repeat);
+		setWrapT(ITexture::Repeat);
 
 		// Font are always Alpha only.
 		setUploadFormat(Alpha);
@@ -92,6 +93,9 @@ public:
 		_Width = 0;
 		_Height = 0;
 
+		setWrapS(ITexture::Repeat);
+		setWrapT(ITexture::Repeat);
+
 		// Font are always Alpha only.
 		setUploadFormat(Alpha);
 	}
@@ -108,6 +112,9 @@ public:
 		_FontGen = fg;
 		_Width = 0;
 		_Height = 0;
+
+		setWrapS(ITexture::Repeat);
+		setWrapT(ITexture::Repeat);
 
 		// Font are always Alpha only.
 		setUploadFormat(Alpha);

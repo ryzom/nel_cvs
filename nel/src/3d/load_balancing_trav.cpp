@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.4 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.5 2001/08/31 10:31:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,7 +82,6 @@ void				CLoadBalancingTrav::traverse()
 	// count NbFacePass0.
 	traverseVisibilityList();
 
-
 	// Compute ratio
 	switch(PolygonBalancingMode)
 	{
@@ -90,10 +89,16 @@ void				CLoadBalancingTrav::traverse()
 		_FaceRatio= 1;
 		break;
 	case PolygonBalancingOn	:
-		_FaceRatio= _NbFaceWanted / NbFacePass0;
+		if(NbFacePass0!=0)
+			_FaceRatio= (float)_NbFaceWanted / NbFacePass0;
+		else
+			_FaceRatio= 1;
 		break;
 	case PolygonBalancingClamp:
-		_FaceRatio= _NbFaceWanted / NbFacePass0;
+		if(NbFacePass0!=0)
+			_FaceRatio= (float)_NbFaceWanted / NbFacePass0;
+		else
+			_FaceRatio= 1;
 		clamp(_FaceRatio, 0, 1);
 		break;
 	};

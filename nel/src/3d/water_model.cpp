@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.12 2001/11/27 16:30:19 vizerie Exp $
+ * $Id: water_model.cpp,v 1.13 2001/12/12 10:30:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -842,8 +842,8 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 		{
 			// setup bump proj matrix
 			static const float idMat[] = {0.25f, 0, 0, 0.25f};	
-			drv->setMatrix2DForTextureOffsetAddrMode(0, idMat);
 			drv->setMatrix2DForTextureOffsetAddrMode(1, idMat);
+			drv->setMatrix2DForTextureOffsetAddrMode(2, idMat);
 
 			WaterMat.setTexture(0, shape->_BumpMap[0]);
 			WaterMat.setTexture(1, shape->_BumpMap[1]);				
@@ -918,10 +918,12 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 
 
 		cst[4  - cstOffset].set(1.f, 1.f, 1.f, 1.f); // use with min man, and to get the 1 constant		
-		cst[7  - cstOffset] .set(obsPos.x, obsPos.y, obsPos.z - zHeight, 0.f);
+		cst[7  - cstOffset].set(obsPos.x, obsPos.y, obsPos.z - zHeight, 0.f);
 		cst[8  - cstOffset].set(0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
 
 	
+		
+
 		/// set all our constants in one call
 		drv->setConstant(4, sizeof(cst) / (4 * sizeof(float)), (float *) &cst[0]);
 

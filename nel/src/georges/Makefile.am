@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.6 2002/06/03 10:00:49 lecroart Exp $
+# $Id: Makefile.am,v 1.7 2002/06/10 17:02:05 cado Exp $
 #
 
 MAINTAINERCLEANFILES     = Makefile.in
@@ -13,8 +13,7 @@ libnelgeorges_la_SOURCES = form.cpp                        \
                            stdgeorges.cpp                  \
                            stdgeorges.h                    \
 						   header.cpp                      \
-						   load_form.cpp                     \
-						   sheet_id.cpp                      \
+						   load_form.cpp                   \
 						   type.cpp
 
 AM_CXXFLAGS         	 = -I$(top_srcdir)/src

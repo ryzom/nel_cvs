@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.55 2003/03/13 15:25:57 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.56 2003/03/17 10:43:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -791,6 +791,17 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		nlassert (buildMesh.Faces[face].MaterialId>=0);
 		nlassert (buildMesh.Faces[face].MaterialId<(sint)(maxBaseBuild.FirstMaterial+maxBaseBuild.NumMaterials));
 
+		// Does this object use a vertex program that need specific vertex format ?
+		bool vpColorVertex = false;
+		uint vertexProgram = getScriptAppData (&node, NEL3D_APPDATA_VERTEXPROGRAM_ID, 0);
+		switch (vertexProgram)
+		{
+		case 1:
+			// Wind tree
+			vpColorVertex = true;
+			break;
+		}
+
 		// Export the 3 corners
 		for (int corner=0; corner<3; corner++)
 		{
@@ -976,8 +987,8 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			pCorner->Color.R=255;
 			pCorner->Color.G=255;
 			pCorner->Color.B=255;
-			if ( (maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].ColorVertex) &&
-				(buildMesh.VertexFlags&CVertexBuffer::PrimaryColorFlag) )
+			if ( ( (maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].ColorVertex) &&
+				(buildMesh.VertexFlags&CVertexBuffer::PrimaryColorFlag) ) || vpColorVertex )
 			{
 				// Get a pointer on Mappingvertex for this channel. Channel 0 is the color channel.
 				TVFace *pMapVert=pMesh->mapFaces(0);

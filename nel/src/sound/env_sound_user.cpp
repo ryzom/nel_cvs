@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.15 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: env_sound_user.cpp,v 1.16 2001/09/10 13:45:45 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLSOUND {
 /*
  * Constructor
  */
-CEnvSoundUser::CEnvSoundUser() : _Play(false), _Source(NULL), _BoundingShape(NULL), _Parent(NULL), _Mark(false), _Gain(1.0f)
+CEnvSoundUser::CEnvSoundUser() : _Play(false), _Source(NULL), _BoundingShape(NULL), _Transition(false), _Parent(NULL), _Mark(false), _Gain(1.0f)
 {
 }
 

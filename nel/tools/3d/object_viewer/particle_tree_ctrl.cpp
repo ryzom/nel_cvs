@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.25 2001/09/17 14:03:01 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.26 2001/09/26 17:51:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -502,6 +502,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case IDM_SHOCKWAVE_LOC:  createLocAndBindable = true;
 		case IDM_SHOCKWAVE:
 			toCreate = new NL3D::CPSShockWave;
+		break;
+		case IDM_RIBBON_LOOK_AT_LOC:  createLocAndBindable = true;
+		case IDM_RIBBON_LOOK_AT:
+			toCreate = new NL3D::CPSRibbonLookAt;
 		break;
 
 		//////////////

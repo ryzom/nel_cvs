@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.cpp,v 1.86 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: driver.cpp,v 1.87 2004/04/29 08:36:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -440,7 +440,7 @@ void IDriver::profileTextureUsage(std::vector<std::string> &result)
 		case	ITexture::Alpha: strUploadFormat= ("Format: Alpha"); break;
 		case	ITexture::AlphaLuminance: strUploadFormat= ("Format: AlphaLuminance"); break;
 		case	ITexture::DsDt: strUploadFormat= ("Format: DsDt"); break;
-		default: strUploadFormat= toString("Format??: %d", i); break;
+		default: strUploadFormat= toString("Format??: %d", infoKey.UpLoadFormat); break;
 		}
 
 		// header info

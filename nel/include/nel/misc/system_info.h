@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.12 2004/09/22 14:53:37 berenguier Exp $
+ * $Id: system_info.h,v 1.13 2004/09/24 12:38:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,10 @@ public:
 	/** true if running under NT
 	 */
 	static bool isNT();
+
+	/* returns the space left on the hard drive that contains the filename
+	 */
+	static std::string availableHDSpace (const std::string &filename);
 
 	/** returns all the physical memory available on this computer
 	  */

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.63 2004/07/12 14:02:37 miller Exp $
+ * $Id: common.cpp,v 1.64 2004/09/24 12:38:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -238,91 +238,6 @@ sint64 atoiInt64 (const char *ident, sint64 base)
 end:
 	if (neg) number = -number;
 	return number;
-
-///	old sameh algo
-/*	uint64 k = 0;
-
-	while (*ident != '\0')
-	{
-		switch(*(ident++))
-		{
-		case '0':
-			k +=0;
-			break;
-		case '1':
-			k +=1;
-			break;
-		case '2':
-			k +=2;
-			break;
-		case '3':
-			k +=3;
-			break;
-		case '4':
-			k +=4;
-			break;
-		case '5':
-			k +=5;
-			break;
-		case '6':
-			k +=6;
-			break;
-		case '7':
-			k +=7;
-			break;
-		case '8':
-			k +=8;
-			break;
-		case '9':
-			k +=9;
-			break;
-		case 'a':
-			k +=10;
-			break;
-		case 'b':
-			k +=11;
-			break;
-		case 'c':
-			k +=12;
-			break;
-		case 'd':
-			k +=13;
-			break;
-		case 'e':
-			k +=14;
-			break;
-		case 'f':
-			k +=15;
-			break;
-
-		case 'A':
-			k +=10;
-			break;
-		case 'B':
-			k +=11;
-			break;
-		case 'C':
-			k +=12;
-			break;
-		case 'D':
-			k +=13;
-			break;
-		case 'E':
-			k +=14;
-			break;
-		case 'F':
-			k +=15;
-			break;
-
-		case 0:
-			return k;
-			break;
-		}
-		if(*ident != 0) k *= base;
-	}
-
-	return k;
-*/
 }
 
 void itoaInt64 (sint64 number, char *str, sint64 base)
@@ -407,7 +322,7 @@ bool isPowerOf2(sint32 v)
 
 string bytesToHumanReadable (const std::string &bytes)
 {
-	static char *divTable[]= { "b", "kb", "mb", "gb" };
+	static char *divTable[]= { "B", "kB", "mB", "gB" };
 	uint div = 0;
 	uint64 res = atoiInt64(bytes.c_str());
 	uint64 newres = res;
@@ -424,7 +339,7 @@ string bytesToHumanReadable (const std::string &bytes)
 
 string bytesToHumanReadable (uint32 bytes)
 {
-	static char *divTable[]= { "b", "kb", "mb", "gb" };
+	static char *divTable[]= { "B", "kB", "mB", "gB" };
 	uint div = 0;
 	uint32 res = bytes;
 	uint32 newres = res;
@@ -457,7 +372,7 @@ uint32 humanReadableToBytes (const string &str)
 		if (str.size()<3)
 			return res;
 
-		// there s no break and it s **normal**
+		// there s no break and it's **normal**
 		switch (str[str.size()-2])
 		{
 		case 'g': res *= 1024;
@@ -611,30 +526,6 @@ void		toUpper(char *str)
 		str++;
 	}
 }
-
-/*sint nlstricmp(const char *lhs,const char *rhs)
-{
-	nlassert(lhs);
-	nlassert(rhs);
-	int lchar, rchar;
-	while (*lhs != '\0' && *rhs != '\0')
-	{
-		lchar = ::tolower(*lhs);
-		rchar = ::tolower(*rhs);
-		if (lchar != rchar) return lchar - rchar;
-		++lhs;
-		++rhs;
-	}
-	if (*lhs != 0) return 1;
-	if (*rhs != 0) return -1;
-	return 0;
-}
-
-sint nlstricmp(const std::string &lhs,const std::string &rhs)
-{
-	return nlstricmp(lhs.c_str(), rhs.c_str());
-}
-*/
 
 
 //

@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.28 2004/09/22 14:52:30 berenguier Exp $
+ * $Id: system_info.cpp,v 1.29 2004/09/24 12:38:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -693,52 +693,84 @@ bool CSystemInfo::isNT()
 
 #ifdef NL_OS_UNIX
 
-static inline char *skipWS(const char *p)
+// return the value of the colname in bytes from /proc/meminfo
+uint32 getSystemMemory (const string &colname)
 {
-    while (isspace(*p)) p++;
-    return (char *)p;
-}
+    if (colname.empty())
+        return 0;
 
-static inline char *skipToken(const char *p)
-{
-    while (isspace(*p)) p++;
-    while (*p && !isspace(*p)) p++;
-    return (char *)p;
-}
+    int fd = open("/proc/meminfo", O_RDONLY);
+    if (fd == -1)
+    {
+		nlwarning ("SI: Can't open /proc/meminfo: %s", strerror (errno));
+		return 0;
+    }
+    else
+    {
+        char buffer[4096+1];
+        uint32 len = read(fd, buffer, sizeof(buffer)-1);
+        close(fd);
+        buffer[len] = '\0';
 
-// col: 0=total used free shared buffers cached
-uint32 getSystemMemory (uint col)
-{
-	if (col > 5)
-		return 0;
-	
-	int fd = open("/proc/meminfo", O_RDONLY);
-	if (fd == -1)
-	{
-		nlwarning ("SI: Can't get OS from /proc/meminfo: %s", strerror (errno));
-		return 0;
-	}
-	else
-	{
-		char buffer[4096+1];
-		int len = read(fd, buffer, sizeof(buffer)-1);
-		close(fd);
-		buffer[len] = '\0';
-			
-		/* be prepared for extra columns to appear be seeking to ends of lines */
-		char *p = strchr(buffer, '\n');
-		p = skipToken(p);			/* "Mem:" */
-		for (uint i = 0; i < col; i++)
-		{
-			p = skipToken(p);
-		}
-		return strtoul(p, &p, 10);
-	}
+        vector<string> splitted;
+        explode(buffer,"\n", splitted, true);
+
+        for(uint32 i = 0; i < splitted.size(); i++)
+        {
+            vector<string> sline;
+            explode(splitted[i], " ", sline, true);
+            if(sline.size() == 3 && sline[0] == colname)
+            {
+                uint32 val = atoi(sline[1].c_str());
+                if(sline[2] == "kB")
+                    val *= 1024;
+                return val;
+            }
+        }
+    }
+	nlwarning ("SI: Can't find the colname '%s' in /proc/meminfo", colname.c_str());
+	return 0;
 }
 
 #endif // NL_OS_UNIX
 
 
+string CSystemInfo::availableHDSpace (const string &filename)
+{
+#ifdef NL_OS_UNIX
+    string cmd = "df " + filename + " >/tmp/nelhdfs";
+    system (cmd.c_str());
+
+    int fd = open("/tmp/nelhdfs", O_RDONLY);
+    if (fd == -1)
+    {
+        return 0;
+    }
+    else
+    {
+        char buffer[4096+1];
+        int len = read(fd, buffer, sizeof(buffer)-1);
+        close(fd);
+        buffer[len] = '\0';
+
+        vector<string> splitted;
+        explode(buffer,"\n", splitted, true);
+
+        if(splitted.size() < 2)
+            return "NoInfo";
+
+        vector<string> sline;
+        explode(splitted[1]," ", sline, true);
+
+        if(sline.size() < 5)
+            return splitted[1];
+
+        return bytesToHumanReadable(atoi(sline[3].c_str())*1024) + "/" + sline[4];
+    }
+#else
+	return "NoInfo";
+#endif
+}
 
 
 uint32 CSystemInfo::availablePhysicalMemory ()
@@ -751,11 +783,13 @@ uint32 CSystemInfo::availablePhysicalMemory ()
 
 #elif defined NL_OS_UNIX
 
-	return getSystemMemory (2) + getSystemMemory (4) + getSystemMemory (5);
+	return getSystemMemory("MemFree:")+getSystemMemory("Buffers:")+getSystemMemory("Cached:");
 
-#endif
+#else
 
 	return 0;
+
+#endif
 }
 
 uint32 CSystemInfo::totalPhysicalMemory ()
@@ -768,13 +802,28 @@ uint32 CSystemInfo::totalPhysicalMemory ()
 
 #elif defined NL_OS_UNIX
 
-	return getSystemMemory (0);
+	return getSystemMemory("MemTotal:");
 	
 #endif
 
 	return 0;
 }
 
+
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, AvailableHDSpace, "Hard drive space left in bytes")
+{
+	// ace: it's a little bit tricky, if you don't understand how it works, don't touch!
+	static string location;
+	if (get)
+	{
+		*pointer = (CSystemInfo::availableHDSpace(location));
+		location = "";
+	}
+	else
+	{
+		location = *pointer;
+	}
+}
 
 NLMISC_CATEGORISED_DYNVARIABLE(nel, string, AvailablePhysicalMemory, "Physical memory available on this computer in bytes")
 {

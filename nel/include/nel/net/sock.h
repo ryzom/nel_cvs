@@ -1,7 +1,7 @@
 /** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.10 2001/09/10 13:41:04 cado Exp $
+ * $Id: sock.h,v 1.11 2001/09/12 17:16:15 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -306,6 +306,10 @@ private:
 
 	/// True if the network library has been initialized
 	static bool		_Initialized;
+
+	// Test: send & receive duration (ms)
+	uint32			_MaxReceiveTime;
+	uint32			_MaxSendTime;
 
 };
 

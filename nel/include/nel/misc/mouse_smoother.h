@@ -1,6 +1,6 @@
 /** \file mouse_smoother.h
  *
- * $Id: mouse_smoother.h,v 1.3 2005/02/22 10:14:12 besson Exp $
+ * $Id: mouse_smoother.h,v 1.4 2005/03/03 14:15:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -54,6 +54,8 @@ public:
 	double				getSamplingPeriod() const { return _SamplingPeriod; }	
 	// Reset smoother. The next returned position will be the exact position of mouse (no smoothing with previous position is done)
 	void				reset();
+	// \return trueif no sampling has occured since last resetor construction
+	bool				isReseted() const { return !_Init; }
 	// Sample pos, and return smoothed position
 	CVector2f			samplePos(const CVector2f &wantedPos, double date);
 private:

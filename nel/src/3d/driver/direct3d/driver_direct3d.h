@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.36 2004/12/09 09:38:40 lecroart Exp $
+ * $Id: driver_direct3d.h,v 1.37 2004/12/17 09:35:08 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -487,7 +487,7 @@ public:
 
 
 
-// optimisation of an effect pass 
+// optimisation of an effect 2 
 class CFXPassRecorder : public ID3DXEffectStateManager
 {
 public:
@@ -1881,10 +1881,13 @@ public:
 				_CurrentMaterialInfo->FXCache->applyPass(*this, drvInfo, pass);
 			}
 			else
-			{				
+			{
+#if (DIRECT3D_VERSION >= 0x0900) && (D3D_SDK_VERSION >= 32)
+				drvInfo->Effect->BeginPass (pass);
+				drvInfo->Effect->EndPass ();
+#else
 				drvInfo->Effect->Pass (pass);
-				//drvInfo->Effect->BeginPass (pass);
-				//drvInfo->Effect->EndPass ();
+#endif
 			}
 		}
 

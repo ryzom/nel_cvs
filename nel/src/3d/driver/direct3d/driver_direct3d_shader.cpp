@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.14 2004/12/15 18:08:05 vizerie Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.15 2004/12/17 09:35:08 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1128,9 +1128,12 @@ void CFXCache::begin(CShaderDrvInfosD3D *si, CDriverD3D *driver)
 		for(uint k = 0; k < numPasses; ++k)
 		{						
 			pr.Target = &Passes[k];			
+#if (DIRECT3D_VERSION >= 0x0900) && (D3D_SDK_VERSION >= 32)
+			si->Effect->BeginPass(k);
+			si->Effect->EndPass();
+#else
 			si->Effect->Pass(k);
-			//si->Effect->BeginPass(k);
-			//si->Effect->EndPass();
+#endif
 		}
 		r = si->Effect->End();
 		nlassert(r == D3D_OK);
@@ -1154,9 +1157,12 @@ void CFXCache::applyPass(class CDriverD3D &drv, CShaderDrvInfosD3D *si, uint pas
 	nlassert(passIndex < NumPasses);
 	if (Passes.empty())
 	{
+#if (DIRECT3D_VERSION >= 0x0900) && (D3D_SDK_VERSION >= 32)
+		HRESULT r = si->Effect->BeginPass(passIndex);
+		si->Effect->EndPass ();
+#else
 		HRESULT r = si->Effect->Pass(passIndex);
-		//HRESULT r = si->Effect->BeginPass(passIndex);
-		//si->Effect->EndPass();
+#endif
 		nlassert(r == D3D_OK);
 	}
 	else

@@ -642,6 +642,14 @@ SOURCE=..\include\nel\misc\ucstring.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\value_smoother.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\value_smoother.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\win_displayer.cpp
 # End Source File
 # Begin Source File

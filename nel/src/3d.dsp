@@ -115,7 +115,7 @@ SOURCE=.\3d\anim_detail_trav.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\anim_detail_trav.h
+SOURCE=.\3d\anim_detail_trav.h
 # End Source File
 # Begin Source File
 
@@ -123,7 +123,7 @@ SOURCE=.\3d\clip_trav.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\clip_trav.h
+SOURCE=.\3d\clip_trav.h
 # End Source File
 # Begin Source File
 
@@ -131,7 +131,7 @@ SOURCE=.\3d\hrc_trav.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\hrc_trav.h
+SOURCE=.\3d\hrc_trav.h
 # End Source File
 # Begin Source File
 
@@ -139,7 +139,7 @@ SOURCE=.\3d\light_trav.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\light_trav.h
+SOURCE=.\3d\light_trav.h
 # End Source File
 # Begin Source File
 
@@ -147,11 +147,11 @@ SOURCE=.\3d\render_trav.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\render_trav.h
+SOURCE=.\3d\render_trav.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\trav_scene.h
+SOURCE=.\3d\trav_scene.h
 # End Source File
 # End Group
 # Begin Group "Models"
@@ -163,7 +163,7 @@ SOURCE=.\3d\camera.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\camera.h
+SOURCE=.\3d\camera.h
 # End Source File
 # Begin Source File
 
@@ -171,7 +171,7 @@ SOURCE=.\3d\landscape_model.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\landscape_model.h
+SOURCE=.\3d\landscape_model.h
 # End Source File
 # Begin Source File
 
@@ -179,7 +179,7 @@ SOURCE=.\3d\mesh_instance.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mesh_instance.h
+SOURCE=.\3d\mesh_instance.h
 # End Source File
 # Begin Source File
 
@@ -187,7 +187,7 @@ SOURCE=.\3d\particle_system_model.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\particle_system_model.h
+SOURCE=.\3d\particle_system_model.h
 # End Source File
 # Begin Source File
 
@@ -195,7 +195,7 @@ SOURCE=.\3d\skeleton_model.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\skeleton_model.h
+SOURCE=.\3d\skeleton_model.h
 # End Source File
 # Begin Source File
 
@@ -203,7 +203,7 @@ SOURCE=.\3d\transform.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\transform.h
+SOURCE=.\3d\transform.h
 # End Source File
 # Begin Source File
 
@@ -211,7 +211,7 @@ SOURCE=.\3d\transform_shape.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\transform_shape.h
+SOURCE=.\3d\transform_shape.h
 # End Source File
 # End Group
 # Begin Group "Landscape"
@@ -226,7 +226,7 @@ SOURCE=.\3d\zone_manager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\zone_manager.h
+SOURCE=.\3d\zone_manager.h
 # End Source File
 # Begin Source File
 
@@ -234,7 +234,7 @@ SOURCE=.\3d\zone_search.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\zone_search.h
+SOURCE=.\3d\zone_search.h
 # End Source File
 # End Group
 # Begin Group "Tools"
@@ -246,7 +246,7 @@ SOURCE=.\3d\zone_smoother.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\zone_smoother.h
+SOURCE=.\3d\zone_smoother.h
 # End Source File
 # Begin Source File
 
@@ -254,7 +254,7 @@ SOURCE=.\3d\zone_tgt_smoother.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\zone_tgt_smoother.h
+SOURCE=.\3d\zone_tgt_smoother.h
 # End Source File
 # End Group
 # Begin Source File
@@ -263,7 +263,7 @@ SOURCE=.\3d\bezier_patch.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\bezier_patch.h
+SOURCE=.\3d\bezier_patch.h
 # End Source File
 # Begin Source File
 
@@ -271,7 +271,7 @@ SOURCE=.\3d\landscape.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\landscape.h
+SOURCE=.\3d\landscape.h
 # End Source File
 # Begin Source File
 
@@ -279,7 +279,7 @@ SOURCE=.\3d\landscape_profile.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\landscape_profile.h
+SOURCE=.\3d\landscape_profile.h
 # End Source File
 # Begin Source File
 
@@ -287,7 +287,7 @@ SOURCE=.\3d\patch.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\patch.h
+SOURCE=.\3d\patch.h
 # End Source File
 # Begin Source File
 
@@ -295,7 +295,7 @@ SOURCE=.\3d\patch_rdr_pass.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\patch_rdr_pass.h
+SOURCE=.\3d\patch_rdr_pass.h
 # End Source File
 # Begin Source File
 
@@ -303,7 +303,7 @@ SOURCE=.\3d\tess_block.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tess_block.h
+SOURCE=.\3d\tess_block.h
 # End Source File
 # Begin Source File
 
@@ -311,7 +311,7 @@ SOURCE=.\3d\tess_list.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tess_list.h
+SOURCE=.\3d\tess_list.h
 # End Source File
 # Begin Source File
 
@@ -319,7 +319,7 @@ SOURCE=.\3d\tessellation.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tessellation.h
+SOURCE=.\3d\tessellation.h
 # End Source File
 # Begin Source File
 
@@ -327,7 +327,7 @@ SOURCE=.\3d\texture_far.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\texture_far.h
+SOURCE=.\3d\texture_far.h
 # End Source File
 # Begin Source File
 
@@ -335,7 +335,7 @@ SOURCE=.\3d\texture_near.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\texture_near.h
+SOURCE=.\3d\texture_near.h
 # End Source File
 # Begin Source File
 
@@ -343,7 +343,7 @@ SOURCE=.\3d\tile_color.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tile_color.h
+SOURCE=.\3d\tile_color.h
 # End Source File
 # Begin Source File
 
@@ -351,7 +351,7 @@ SOURCE=.\3d\tile_element.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tile_element.h
+SOURCE=.\3d\tile_element.h
 # End Source File
 # Begin Source File
 
@@ -359,7 +359,7 @@ SOURCE=.\3d\tile_lumel.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tile_lumel.h
+SOURCE=.\3d\tile_lumel.h
 # End Source File
 # Begin Source File
 
@@ -367,7 +367,7 @@ SOURCE=.\3d\zone.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\zone.h
+SOURCE=.\3d\zone.h
 # End Source File
 # End Group
 # Begin Group "Driver"
@@ -379,11 +379,11 @@ SOURCE=.\3d\driver.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\driver.h
+SOURCE=.\3d\driver.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\driver_material_inline.h
+SOURCE=.\3d\driver_material_inline.h
 # End Source File
 # Begin Source File
 
@@ -391,7 +391,7 @@ SOURCE=.\3d\dru.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\dru.h
+SOURCE=.\3d\dru.h
 # End Source File
 # Begin Source File
 
@@ -399,7 +399,7 @@ SOURCE=.\3d\light.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\light.h
+SOURCE=.\3d\light.h
 # End Source File
 # Begin Source File
 
@@ -407,7 +407,7 @@ SOURCE=.\3d\material.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\material.h
+SOURCE=.\3d\material.h
 # End Source File
 # Begin Source File
 
@@ -415,7 +415,7 @@ SOURCE=.\3d\primitive_block.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\primitive_block.h
+SOURCE=.\3d\primitive_block.h
 # End Source File
 # Begin Source File
 
@@ -423,7 +423,7 @@ SOURCE=.\3d\shader.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\shader.h
+SOURCE=.\3d\shader.h
 # End Source File
 # Begin Source File
 
@@ -431,7 +431,7 @@ SOURCE=.\3d\texture.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\texture.h
+SOURCE=.\3d\texture.h
 # End Source File
 # Begin Source File
 
@@ -439,7 +439,7 @@ SOURCE=.\3d\vertex_buffer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\vertex_buffer.h
+SOURCE=.\3d\vertex_buffer.h
 # End Source File
 # End Group
 # Begin Group "Font"
@@ -451,7 +451,7 @@ SOURCE=.\3d\computed_string.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\computed_string.h
+SOURCE=.\3d\computed_string.h
 # End Source File
 # Begin Source File
 
@@ -459,7 +459,7 @@ SOURCE=.\3d\font_generator.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\font_generator.h
+SOURCE=.\3d\font_generator.h
 # End Source File
 # Begin Source File
 
@@ -467,7 +467,7 @@ SOURCE=.\3d\font_manager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\font_manager.h
+SOURCE=.\3d\font_manager.h
 # End Source File
 # Begin Source File
 
@@ -475,7 +475,7 @@ SOURCE=.\3d\text_context.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\text_context.h
+SOURCE=.\3d\text_context.h
 # End Source File
 # End Group
 # Begin Group "Container"
@@ -483,7 +483,7 @@ SOURCE=..\include\nel\3d\text_context.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\include\nel\3d\bsp_tree.h
+SOURCE=.\3d\bsp_tree.h
 # End Source File
 # Begin Source File
 
@@ -491,15 +491,15 @@ SOURCE=.\3d\ptr_set.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ptr_set.h
+SOURCE=.\3d\ptr_set.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\quad_grid.h
+SOURCE=.\3d\quad_grid.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\quad_tree.h
+SOURCE=.\3d\quad_tree.h
 # End Source File
 # End Group
 # Begin Group "Tiles"
@@ -511,7 +511,7 @@ SOURCE=.\3d\tile_bank.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tile_bank.h
+SOURCE=.\3d\tile_bank.h
 # End Source File
 # Begin Source File
 
@@ -519,7 +519,7 @@ SOURCE=.\3d\tile_far_bank.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tile_far_bank.h
+SOURCE=.\3d\tile_far_bank.h
 # End Source File
 # End Group
 # Begin Group "Shapes"
@@ -531,7 +531,7 @@ SOURCE=.\3d\mesh.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mesh.h
+SOURCE=.\3d\mesh.h
 # End Source File
 # Begin Source File
 
@@ -539,7 +539,7 @@ SOURCE=.\3d\mesh_base.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mesh_base.h
+SOURCE=.\3d\mesh_base.h
 # End Source File
 # Begin Source File
 
@@ -547,7 +547,7 @@ SOURCE=.\3d\mesh_mrm.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mesh_mrm.h
+SOURCE=.\3d\mesh_mrm.h
 # End Source File
 # Begin Source File
 
@@ -555,7 +555,7 @@ SOURCE=.\3d\particle_system_shape.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\particle_system_shape.h
+SOURCE=.\3d\particle_system_shape.h
 # End Source File
 # Begin Source File
 
@@ -563,7 +563,7 @@ SOURCE=.\3d\shape.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\shape.h
+SOURCE=.\3d\shape.h
 # End Source File
 # Begin Source File
 
@@ -579,7 +579,7 @@ SOURCE=.\3d\skeleton_shape.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\skeleton_shape.h
+SOURCE=.\3d\skeleton_shape.h
 # End Source File
 # End Group
 # Begin Group "Textures"
@@ -591,7 +591,7 @@ SOURCE=.\3d\texture_file.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\texture_file.h
+SOURCE=.\3d\texture_file.h
 # End Source File
 # Begin Source File
 
@@ -599,7 +599,7 @@ SOURCE=.\3d\texture_font.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\texture_font.h
+SOURCE=.\3d\texture_font.h
 # End Source File
 # Begin Source File
 
@@ -607,7 +607,7 @@ SOURCE=.\3d\texture_grouped.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\texture_grouped.h
+SOURCE=.\3d\texture_grouped.h
 # End Source File
 # Begin Source File
 
@@ -615,7 +615,7 @@ SOURCE=.\3d\texture_mem.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\texture_mem.h
+SOURCE=.\3d\texture_mem.h
 # End Source File
 # End Group
 # Begin Group "Mrm"
@@ -627,7 +627,7 @@ SOURCE=.\3d\mrm_builder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mrm_builder.h
+SOURCE=.\3d\mrm_builder.h
 # End Source File
 # Begin Source File
 
@@ -635,7 +635,7 @@ SOURCE=.\3d\mrm_internal.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mrm_internal.h
+SOURCE=.\3d\mrm_internal.h
 # End Source File
 # Begin Source File
 
@@ -643,7 +643,7 @@ SOURCE=.\3d\mrm_mesh.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mrm_mesh.h
+SOURCE=.\3d\mrm_mesh.h
 # End Source File
 # Begin Source File
 
@@ -651,7 +651,7 @@ SOURCE=.\3d\mrm_parameters.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mrm_parameters.h
+SOURCE=.\3d\mrm_parameters.h
 # End Source File
 # End Group
 # Begin Group "Animation"
@@ -663,7 +663,7 @@ SOURCE=.\3d\animatable.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\animatable.h
+SOURCE=.\3d\animatable.h
 # End Source File
 # Begin Source File
 
@@ -671,7 +671,7 @@ SOURCE=.\3d\animated_material.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\animated_material.h
+SOURCE=.\3d\animated_material.h
 # End Source File
 # Begin Source File
 
@@ -679,7 +679,7 @@ SOURCE=.\3d\animated_value.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\animated_value.h
+SOURCE=.\3d\animated_value.h
 # End Source File
 # Begin Source File
 
@@ -687,7 +687,7 @@ SOURCE=.\3d\animation.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\animation.h
+SOURCE=.\3d\animation.h
 # End Source File
 # Begin Source File
 
@@ -695,7 +695,7 @@ SOURCE=.\3d\animation_playlist.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\animation_playlist.h
+SOURCE=.\3d\animation_playlist.h
 # End Source File
 # Begin Source File
 
@@ -703,7 +703,7 @@ SOURCE=.\3d\animation_set.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\animation_set.h
+SOURCE=.\3d\animation_set.h
 # End Source File
 # Begin Source File
 
@@ -715,7 +715,7 @@ SOURCE=.\3d\bone.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\bone.h
+SOURCE=.\3d\bone.h
 # End Source File
 # Begin Source File
 
@@ -723,7 +723,7 @@ SOURCE=.\3d\channel_mixer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\channel_mixer.h
+SOURCE=.\3d\channel_mixer.h
 # End Source File
 # Begin Source File
 
@@ -731,7 +731,7 @@ SOURCE=.\3d\key.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\key.h
+SOURCE=.\3d\key.h
 # End Source File
 # Begin Source File
 
@@ -739,7 +739,7 @@ SOURCE=.\3d\play_list_manager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\play_list_manager.h
+SOURCE=.\3d\play_list_manager.h
 # End Source File
 # Begin Source File
 
@@ -747,7 +747,7 @@ SOURCE=.\3d\skeleton_weight.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\skeleton_weight.h
+SOURCE=.\3d\skeleton_weight.h
 # End Source File
 # Begin Source File
 
@@ -755,11 +755,11 @@ SOURCE=.\3d\track.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\track.h
+SOURCE=.\3d\track.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\track_bezier.h
+SOURCE=.\3d\track_bezier.h
 # End Source File
 # Begin Source File
 
@@ -767,11 +767,11 @@ SOURCE=.\3d\track_keyframer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\track_keyframer.h
+SOURCE=.\3d\track_keyframer.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\track_tcb.h
+SOURCE=.\3d\track_tcb.h
 # End Source File
 # Begin Source File
 
@@ -779,7 +779,7 @@ SOURCE=.\3d\transformable.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\transformable.h
+SOURCE=.\3d\transformable.h
 # End Source File
 # End Group
 # Begin Group "UserImp"
@@ -791,7 +791,7 @@ SOURCE=.\3d\animation_set_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\animation_set_user.h
+SOURCE=.\3d\animation_set_user.h
 # End Source File
 # Begin Source File
 
@@ -799,7 +799,7 @@ SOURCE=.\3d\bone_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\bone_user.h
+SOURCE=.\3d\bone_user.h
 # End Source File
 # Begin Source File
 
@@ -807,7 +807,7 @@ SOURCE=.\3d\camera_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\camera_user.h
+SOURCE=.\3d\camera_user.h
 # End Source File
 # Begin Source File
 
@@ -815,7 +815,7 @@ SOURCE=.\3d\driver_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\driver_user.h
+SOURCE=.\3d\driver_user.h
 # End Source File
 # Begin Source File
 
@@ -835,7 +835,7 @@ SOURCE=.\3d\instance_group_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\instance_group_user.h
+SOURCE=.\3d\instance_group_user.h
 # End Source File
 # Begin Source File
 
@@ -843,7 +843,7 @@ SOURCE=.\3d\instance_material_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\instance_material_user.h
+SOURCE=.\3d\instance_material_user.h
 # End Source File
 # Begin Source File
 
@@ -851,7 +851,7 @@ SOURCE=.\3d\instance_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\instance_user.h
+SOURCE=.\3d\instance_user.h
 # End Source File
 # Begin Source File
 
@@ -859,7 +859,7 @@ SOURCE=.\3d\landscape_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\landscape_user.h
+SOURCE=.\3d\landscape_user.h
 # End Source File
 # Begin Source File
 
@@ -867,7 +867,7 @@ SOURCE=.\3d\material_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\material_user.h
+SOURCE=.\3d\material_user.h
 # End Source File
 # Begin Source File
 
@@ -875,7 +875,7 @@ SOURCE=.\3d\play_list_manager_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\play_list_manager_user.h
+SOURCE=.\3d\play_list_manager_user.h
 # End Source File
 # Begin Source File
 
@@ -883,7 +883,7 @@ SOURCE=.\3d\play_list_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\play_list_user.h
+SOURCE=.\3d\play_list_user.h
 # End Source File
 # Begin Source File
 
@@ -891,7 +891,7 @@ SOURCE=.\3d\scene_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\scene_user.h
+SOURCE=.\3d\scene_user.h
 # End Source File
 # Begin Source File
 
@@ -899,7 +899,7 @@ SOURCE=.\3d\shape_bank_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\shape_bank_user.h
+SOURCE=.\3d\shape_bank_user.h
 # End Source File
 # Begin Source File
 
@@ -907,7 +907,7 @@ SOURCE=.\3d\skeleton_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\skeleton_user.h
+SOURCE=.\3d\skeleton_user.h
 # End Source File
 # Begin Source File
 
@@ -915,7 +915,7 @@ SOURCE=.\3d\text_context_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\text_context_user.h
+SOURCE=.\3d\text_context_user.h
 # End Source File
 # Begin Source File
 
@@ -923,7 +923,7 @@ SOURCE=.\3d\texture_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\texture_user.h
+SOURCE=.\3d\texture_user.h
 # End Source File
 # Begin Source File
 
@@ -931,7 +931,7 @@ SOURCE=.\3d\transform_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\transform_user.h
+SOURCE=.\3d\transform_user.h
 # End Source File
 # Begin Source File
 
@@ -939,7 +939,7 @@ SOURCE=.\3d\transformable_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\transformable_user.h
+SOURCE=.\3d\transformable_user.h
 # End Source File
 # Begin Source File
 
@@ -951,7 +951,7 @@ SOURCE=.\3d\visual_collision_entity_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\visual_collision_entity_user.h
+SOURCE=.\3d\visual_collision_entity_user.h
 # End Source File
 # Begin Source File
 
@@ -959,7 +959,7 @@ SOURCE=.\3d\visual_collision_manager_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\visual_collision_manager_user.h
+SOURCE=.\3d\visual_collision_manager_user.h
 # End Source File
 # End Group
 # Begin Group "User"
@@ -967,103 +967,103 @@ SOURCE=..\include\nel\3d\visual_collision_manager_user.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\animation_time.h
+SOURCE=..\include\nel\3d\animation_time.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\frustum.h
+SOURCE=..\include\nel\3d\frustum.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\height_map.h
+SOURCE=..\include\nel\3d\height_map.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_3d_mouse_listener.h
+SOURCE=..\include\nel\3d\u_3d_mouse_listener.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_animation_set.h
+SOURCE=..\include\nel\3d\u_animation_set.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_bone.h
+SOURCE=..\include\nel\3d\u_bone.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_camera.h
+SOURCE=..\include\nel\3d\u_camera.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_driver.h
+SOURCE=..\include\nel\3d\u_driver.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_instance.h
+SOURCE=..\include\nel\3d\u_instance.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_instance_group.h
+SOURCE=..\include\nel\3d\u_instance_group.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_instance_material.h
+SOURCE=..\include\nel\3d\u_instance_material.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_landscape.h
+SOURCE=..\include\nel\3d\u_landscape.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_material.h
+SOURCE=..\include\nel\3d\u_material.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_play_list.h
+SOURCE=..\include\nel\3d\u_play_list.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_play_list_manager.h
+SOURCE=..\include\nel\3d\u_play_list_manager.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_scene.h
+SOURCE=..\include\nel\3d\u_scene.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_shape_bank.h
+SOURCE=..\include\nel\3d\u_shape_bank.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_skeleton.h
+SOURCE=..\include\nel\3d\u_skeleton.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_text_context.h
+SOURCE=..\include\nel\3d\u_text_context.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_texture.h
+SOURCE=..\include\nel\3d\u_texture.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_transform.h
+SOURCE=..\include\nel\3d\u_transform.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_transformable.h
+SOURCE=..\include\nel\3d\u_transformable.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_visual_collision_entity.h
+SOURCE=..\include\nel\3d\u_visual_collision_entity.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\u_visual_collision_manager.h
+SOURCE=..\include\nel\3d\u_visual_collision_manager.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\tmp\viewport.h
+SOURCE=..\include\nel\3d\viewport.h
 # End Source File
 # End Group
 # Begin Group "Makefile"
@@ -1083,19 +1083,19 @@ SOURCE=.\3d\particle_system.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\particle_system.h
+SOURCE=.\3d\particle_system.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_attrib.h
+SOURCE=.\3d\ps_attrib.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_attrib_maker.h
+SOURCE=.\3d\ps_attrib_maker.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_attrib_maker_template.h
+SOURCE=.\3d\ps_attrib_maker_template.h
 # End Source File
 # Begin Source File
 
@@ -1103,11 +1103,11 @@ SOURCE=.\3d\ps_color.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_color.h
+SOURCE=.\3d\ps_color.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_edit.h
+SOURCE=.\3d\ps_edit.h
 # End Source File
 # Begin Source File
 
@@ -1115,7 +1115,7 @@ SOURCE=.\3d\ps_emitter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_emitter.h
+SOURCE=.\3d\ps_emitter.h
 # End Source File
 # Begin Source File
 
@@ -1123,7 +1123,7 @@ SOURCE=.\3d\ps_float.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_float.h
+SOURCE=.\3d\ps_float.h
 # End Source File
 # Begin Source File
 
@@ -1131,7 +1131,7 @@ SOURCE=.\3d\ps_force.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_force.h
+SOURCE=.\3d\ps_force.h
 # End Source File
 # Begin Source File
 
@@ -1139,7 +1139,7 @@ SOURCE=.\3d\ps_int.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_int.h
+SOURCE=.\3d\ps_int.h
 # End Source File
 # Begin Source File
 
@@ -1147,7 +1147,7 @@ SOURCE=.\3d\ps_located.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_located.h
+SOURCE=.\3d\ps_located.h
 # End Source File
 # Begin Source File
 
@@ -1166,11 +1166,11 @@ SOURCE=.\3d\ps_particle.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_particle.h
+SOURCE=.\3d\ps_particle.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_plane_basis.h
+SOURCE=.\3d\ps_plane_basis.h
 # End Source File
 # Begin Source File
 
@@ -1178,7 +1178,7 @@ SOURCE=.\3d\ps_plane_basis_maker.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_plane_basis_maker.h
+SOURCE=.\3d\ps_plane_basis_maker.h
 # End Source File
 # Begin Source File
 
@@ -1186,7 +1186,7 @@ SOURCE=.\3d\ps_util.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_util.h
+SOURCE=.\3d\ps_util.h
 # End Source File
 # Begin Source File
 
@@ -1194,7 +1194,7 @@ SOURCE=.\3d\ps_zone.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\ps_zone.h
+SOURCE=.\3d\ps_zone.h
 # End Source File
 # End Group
 # Begin Group "Collisions"
@@ -1206,7 +1206,7 @@ SOURCE=.\3d\landscape_collision_grid.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\landscape_collision_grid.h
+SOURCE=.\3d\landscape_collision_grid.h
 # End Source File
 # Begin Source File
 
@@ -1214,7 +1214,7 @@ SOURCE=.\3d\visual_collision_entity.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\visual_collision_entity.h
+SOURCE=.\3d\visual_collision_entity.h
 # End Source File
 # Begin Source File
 
@@ -1222,7 +1222,7 @@ SOURCE=.\3d\visual_collision_manager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\visual_collision_manager.h
+SOURCE=.\3d\visual_collision_manager.h
 # End Source File
 # End Group
 # Begin Source File
@@ -1231,7 +1231,7 @@ SOURCE=.\3d\async_file_manager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\async_file_manager.h
+SOURCE=.\3d\async_file_manager.h
 # End Source File
 # Begin Source File
 
@@ -1250,7 +1250,7 @@ SOURCE=.\3d\event_mouse_listener.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\event_mouse_listener.h
+SOURCE=.\3d\event_mouse_listener.h
 # End Source File
 # Begin Source File
 
@@ -1258,7 +1258,7 @@ SOURCE=.\3d\mini_col.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mini_col.h
+SOURCE=.\3d\mini_col.h
 # End Source File
 # Begin Source File
 
@@ -1280,7 +1280,7 @@ SOURCE=.\3d\mot.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\mot.h
+SOURCE=.\3d\mot.h
 # End Source File
 # Begin Source File
 
@@ -1288,7 +1288,7 @@ SOURCE=.\3d\nelu.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\nelu.h
+SOURCE=.\3d\nelu.h
 # End Source File
 # Begin Source File
 
@@ -1296,7 +1296,7 @@ SOURCE=.\3d\register_3d.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\register_3d.h
+SOURCE=.\3d\register_3d.h
 # End Source File
 # Begin Source File
 
@@ -1304,7 +1304,7 @@ SOURCE=.\3d\scene.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\scene.h
+SOURCE=.\3d\scene.h
 # End Source File
 # Begin Source File
 
@@ -1312,7 +1312,7 @@ SOURCE=.\3d\scene_group.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\scene_group.h
+SOURCE=.\3d\scene_group.h
 # End Source File
 # End Target
 # End Project

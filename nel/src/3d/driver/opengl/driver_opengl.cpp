@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.68 2001/02/05 17:00:04 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.69 2001/02/05 17:20:20 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,7 +163,7 @@ bool CDriverGL::init()
 		wc.cbWndExtra		= 0;
 		wc.hInstance		= GetModuleHandle(NULL);
 		wc.hIcon			= NULL;
-		wc.hCursor			= NULL;
+		wc.hCursor			= LoadCursor(NULL,IDC_ARROW);
 		wc.hbrBackground	= WHITE_BRUSH;
 		wc.lpszClassName	= "NLClass";
 		wc.lpszMenuName		= NULL;

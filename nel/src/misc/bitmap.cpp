@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.49 2004/04/09 14:41:15 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.50 2004/04/27 12:19:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1458,7 +1458,7 @@ void CBitmap::buildMipMaps()
 			{
 				sint	j0= mulw*j;
 				sint	j1= mulw*j+1;
-				if(mulh==1)
+				if(mulw==1)
 					j1=j0;
 				CRGBA	&c0= pRgbaPrev[i0+j0];
 				CRGBA	&c1= pRgbaPrev[i0+j1];
@@ -2951,8 +2951,8 @@ void CBitmap::blend(CBitmap &Bm0, CBitmap &Bm1, uint16 factor, bool inputBitmapI
 	uint8 *dest				= &(this->_Data[0][0]);
 	
 
-	#ifdef NL_OS_WINDOWS			
-	if (CSystemInfo::hasMMX())		
+	#ifdef NL_OS_WINDOWS				
+	if (CSystemInfo::hasMMX())	
 	{
 		// On a P4 2GHz, with a 256x256 texture, I got the following results :
 		// without mmx : 5.2 ms
@@ -2966,8 +2966,8 @@ void CBitmap::blend(CBitmap &Bm0, CBitmap &Bm1, uint16 factor, bool inputBitmapI
 		uint64 blendFactor1;
 		uint16 *bf0 = (uint16 *) &blendFactor0;
 		uint16 *bf1 = (uint16 *) &blendFactor1;
-		bf0[0] = bf0[1] = bf0[2] = bf0[3] = factor;
-		bf1[0] = bf1[1] = bf1[2] = bf1[3] = 256 - factor;
+		bf0[0] = bf0[1] = bf0[2] = bf0[3] = (1 << 6) * (factor);
+		bf1[0] = bf1[1] = bf1[2] = bf1[3] = (1 << 6) * (256 - factor);
 		__asm
 		{			
 			mov esi, src0
@@ -2995,15 +2995,15 @@ void CBitmap::blend(CBitmap &Bm0, CBitmap &Bm1, uint16 factor, bool inputBitmapI
 			pxor mm5, mm5       // mm5 = 0
 			pmulhw mm6, mm1     // src1 = src1 * (1 - blendfactor)
 			punpcklbw mm4, mm2  // mm4 contains src0 color 1 in high bytes
-			paddusw mm6, mm7    // mm6 = src0[0] blended with src1[0]
+			paddusw mm6, mm7    // mm6 = src0[0] blended with src1[0]			
 			psrl      mm4, 1
-			punpcklbw mm5, mm3  // mm4 contains src1 color 1 in high bytes
-			psll      mm6, 1
+			psrlw     mm6, 5
+			punpcklbw mm5, mm3  // mm4 contains src1 color 1 in high bytes			
 			psrl      mm5, 1
 			pmulhw    mm4, mm0     // src0 = src0 * blendFactor
 			pmulhw    mm5, mm1     // src1 = src1 * (1 - blendfactor)
-			paddusw   mm4, mm5    // mm6 = src0[1] blended with src1[1]
-			psll      mm4, 1
+			paddusw   mm4, mm5    // mm6 = src0[1] blended with src1[1]			
+			psrlw     mm4, 5
 			// pack result
 			packuswb  mm4, mm6
 			dec		  ecx

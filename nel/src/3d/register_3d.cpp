@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.8 2001/03/14 14:33:52 corvazier Exp $
+ * $Id: register_3d.cpp,v 1.9 2001/03/16 16:52:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,20 +78,6 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTrackDefaultBool);
 		NLMISC_REGISTER_CLASS(CTrackDefaultRGBA);
 
-		// Keys
-		NLMISC_REGISTER_CLASS(CKeyTCBFloat);
-		NLMISC_REGISTER_CLASS(CKeyTCBVector);
-		NLMISC_REGISTER_CLASS(CKeyTCBQuat);
-		NLMISC_REGISTER_CLASS(CKeyTCBInt);
-		NLMISC_REGISTER_CLASS(CKeyTCBRGBA);
-		NLMISC_REGISTER_CLASS(CKeyBezierFloat);
-		NLMISC_REGISTER_CLASS(CKeyBezierVector);
-		NLMISC_REGISTER_CLASS(CKeyBezierQuat);
-		NLMISC_REGISTER_CLASS(CKeyBezierInt);
-		NLMISC_REGISTER_CLASS(CKeyBezierRGBA);
-		NLMISC_REGISTER_CLASS(CKeyString);
-		NLMISC_REGISTER_CLASS(CKeyBool);
-		NLMISC_REGISTER_CLASS(CKeyRGBA);
 
 		// Don't register CTextureCroos,, since local, and not designed to be serialised.
 

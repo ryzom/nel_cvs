@@ -1,1 +1,0 @@
-BOOL CheckPluginVersion (const char* ServerPlugin);

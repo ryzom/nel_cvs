@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.10 2002/05/16 16:29:29 besson Exp $
+ * $Id: win_event_emitter.cpp,v 1.11 2003/02/24 16:38:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,6 @@ void CWinEventEmitter::submitEvents(CEventServer & server)
 	// Dispatch sent messages
 	_InternalServer.setServer (&server);
 	_InternalServer.pump ();
-
 }
 
 
@@ -244,6 +243,7 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 				}
 				break;
 			}
+			break;
 		}
 	case WM_DESTROY:
 		server->postEvent (new CEventDestroyWindow (this));

@@ -1,6 +1,6 @@
 -- Constants
 
-NEL3D_APPDATA_INSTANCE_NAME			=	1423062562
+NEL3D_APPDATA_IGNAME				=	1423062564
 NEL3D_APPDATA_LOD_NAME_COUNT		=	1423062537
 NEL3D_APPDATA_LOD_NAME				=   1423062538
 NEL3D_APPDATA_LOD_NAME_COUNT_MAX	=	10
@@ -218,135 +218,148 @@ group "Other Nodes"
 		-- Selected ?
 		if (IgName.text != "") and (BuildingFilenamePath != "") and (VillageFilenamePath != "") then
 		(
-			-- Reset
-			max reset file
-
-			-- Look for an unique postfix
-			buildingName = IgName.text
-			postfix = "_" + buildingName
-
-			-- XRef the projects
-			nodesName = getMAXFileObjectNames BuildingFilenamePath
-			if nodesName != undefined then
+			-- Load the scene
+			ProgressText.text  = "Loading village " + (getFilenameFile VillageFilenamePath)
+			Progress.value = 50
+			if (loadMaxFile VillageFilenamePath) == true then
 			(
-				-- The lod name array
-				lodNameArray = #()
+				-- Unhide all
+				max unhide all
+				max unfreeze all
 
-				-- For each node visible
-				for iCount = 1 to nodesName.count do
+				-- Select all
+				max select all
+
+				-- Erase all
+				max delete
+
+				-- Look for an unique postfix
+				buildingName = IgName.text
+				postfix = "_" + buildingName
+
+				-- XRef the projects
+				nodesName = getMAXFileObjectNames BuildingFilenamePath
+				if nodesName != undefined then
 				(
-					-- Garbage collector
-					gc ()
+					-- The lod name array
+					lodNameArray = #()
 
-					-- Progress bar
-					ProgressText.text  = "XRef building " + (getFilenameFile BuildingFilenamePath)
-					Progress.value = iCount*100/nodesName.count
-
-					-- Node ref
-					nodeName = nodesName[iCount]
-
-					-- Make an xref
-					node = xrefs.addNewXRefObject BuildingFilenamePath (nodeName as string)
-					if node != undefined then
+					-- For each node visible
+					for iCount = 1 to nodesName.count do
 					(
-						-- Rename its lod
-						countString = getAppData node NEL3D_APPDATA_LOD_NAME_COUNT
-						if (countString != undefined) then
+						-- Garbage collector
+						gc ()
+
+						-- Progress bar
+						ProgressText.text  = "XRef building " + (getFilenameFile BuildingFilenamePath)
+						Progress.value = iCount*100/nodesName.count
+
+						-- Node ref
+						nodeName = nodesName[iCount]
+
+						-- Make an xref
+						node = xrefs.addNewXRefObject BuildingFilenamePath (nodeName as string)
+						if node != undefined then
 						(
-							count = countString as integer
-							for lod = 1 to count do
+							-- Rename its lod
+							countString = getAppData node NEL3D_APPDATA_LOD_NAME_COUNT
+							if (countString != undefined) then
 							(
-								lodName = getAppData node (NEL3D_APPDATA_LOD_NAME+lod-1)
-								if lodName != undefined then
+								count = countString as integer
+								for lod = 1 to count do
 								(
-									setAppData node (NEL3D_APPDATA_LOD_NAME+lod-1) (lodName + postfix)
-									append lodNameArray (lodName + postfix)
+									lodName = getAppData node (NEL3D_APPDATA_LOD_NAME+lod-1)
+									if lodName != undefined then
+									(
+										setAppData node (NEL3D_APPDATA_LOD_NAME+lod-1) (lodName + postfix)
+										append lodNameArray (lodName + postfix)
+									)
 								)
 							)
-						)
 
-						-- Remove some node properties
-						deleteAppData node NEL3D_APPDATA_INSTANCE_NAME
-						deleteAppData node NEL3D_APPDATA_DONTEXPORT
-						deleteAppData node NEL_OBJET_NAME_DATA
+							-- Remove some node properties
+							deleteAppData node NEL3D_APPDATA_IGNAME
+							deleteAppData node NEL3D_APPDATA_DONTEXPORT
+							deleteAppData node NEL_OBJET_NAME_DATA
 
-						-- Is it a light ?
-						if (superclassof node == light) then
-						(
-							-- Is it in the landscape ?
-							arrayToTest = LandscapeLight.items
-							if (isInArray arrayToTest node.name) == true then
+							-- Is it a light ?
+							if (superclassof node == light) then
 							(
-								if (ZoneName.text != "") then
-									setAppData node NEL3D_APPDATA_INSTANCE_NAME ZoneName.text
+								-- Is it in the landscape ?
+								arrayToTest = LandscapeLight.items
+								if (isInArray arrayToTest node.name) == true then
+								(
+									if (ZoneName.text != "") then
+										setAppData node NEL3D_APPDATA_IGNAME ZoneName.text
+								)
+								else
+								(
+									if (IgName.text != "") then
+										setAppData node NEL3D_APPDATA_IGNAME IgName.text
+								)
 							)
 							else
 							(
+								-- Add ig name
 								if (IgName.text != "") then
-									setAppData node NEL3D_APPDATA_INSTANCE_NAME IgName.text
-							)
-						)
-						else
-						(
-							-- Add ig name
-							if (IgName.text != "") then
-								setAppData node NEL3D_APPDATA_INSTANCE_NAME IgName.text
+									setAppData node NEL3D_APPDATA_IGNAME IgName.text
 
-							-- Is a collision shape ?
-							col = getAppData node NEL3D_APPDATA_COLLISION
-							if col == undefined then
-								col = getAppData node NEL3D_APPDATA_COLLISION_EXTERIOR
+								-- Is a collision shape ?
+								col = getAppData node NEL3D_APPDATA_COLLISION
+								if col == undefined then
+									col = getAppData node NEL3D_APPDATA_COLLISION_EXTERIOR
 
-							-- not a collision
-							if (col == undefined) or (col == "0") then
-							(
-								-- Is it exterior ?
-								arrayToTest = ExteriorMesh.items
-								if (isInArray arrayToTest node.name) == false then
+								-- not a collision
+								if (col == undefined) or (col == "0") then
 								(
-									-- Don't export this shape
-									setAppData node NEL3D_APPDATA_DONTEXPORT "1"
+									-- Is it exterior ?
+									arrayToTest = ExteriorMesh.items
+									if (isInArray arrayToTest node.name) == false then
+									(
+										-- Don't export this shape
+										setAppData node NEL3D_APPDATA_DONTEXPORT "1"
 
-									-- This shape is a reference
-									setAppData node NEL_OBJET_NAME_DATA node.name
+										-- This shape is a reference
+										setAppData node NEL_OBJET_NAME_DATA node.name
+									)
 								)
 							)
+
+							-- Rename the node
+							node.name = node.name + postfix
 						)
-
-						-- Rename the node
-						node.name = node.name + postfix
 					)
-				)
 
-				-- Erase lod properties
-				for lod in lodNameArray do
-				(
-					-- Select the node by name
-					node = getnodebyname lod
-					if (node != undefined) then
+					-- Erase lod properties
+					for lod in lodNameArray do
 					(
-						deleteAppData node NEL3D_APPDATA_INSTANCE_NAME
-						deleteAppData node NEL3D_APPDATA_DONTEXPORT
-						deleteAppData node NEL_OBJET_NAME_DATA
+						-- Select the node by name
+						node = getnodebyname lod
+						if (node != undefined) then
+						(
+							deleteAppData node NEL3D_APPDATA_IGNAME
+							deleteAppData node NEL3D_APPDATA_DONTEXPORT
+							deleteAppData node NEL_OBJET_NAME_DATA
+						)
 					)
-				)
 
-				-- Make a selection group
-				max select all
-				selectionSets[buildingName] = selection
+					-- Make a selection group
+					max select all
+					selectionSets[buildingName] = selection
 
-				-- Merge the destination project
-				ProgressText.text  = "Merge village " + (getFilenameFile VillageFilenamePath)
-				Progress.value = 50
-				if (mergeMAXFile VillageFilenamePath #mergeDups) == true then
-				(
-					ProgressText.text  = "Finished - OK"
-					Progress.value = 100
-				)
-				else
-				(
-					ProgressText.text  = "Finished - Error"
-					Progress.value = 100
+					-- Merge the destination project
+					ProgressText.text  = "Merge village " + (getFilenameFile VillageFilenamePath)
+					Progress.value = 50
+					if (mergeMAXFile VillageFilenamePath #mergeDups) == true then
+					(
+						ProgressText.text  = "Finished - OK"
+						Progress.value = 100
+					)
+					else
+					(
+						ProgressText.text  = "Finished - Error"
+						Progress.value = 100
+					)
 				)
 			)
 		)

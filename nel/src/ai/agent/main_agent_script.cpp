@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.12 2001/03/26 08:44:57 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.13 2001/04/03 08:45:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,23 +31,23 @@ namespace NLAIAGENT
 {
 	CMainAgentScript::CMainAgentScript(const CMainAgentScript &a): IMainAgent(a)
 	{
-		_Stack = new NLAISCRIPT::CStackPointer();
-		_Heap = new NLAISCRIPT::CStackPointer();
+		_Stack = new NLAISCRIPT::CStackPointer(4096*8);
+		_Heap = new NLAISCRIPT::CStackPointer(4096*8);
 
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,a._CodeContext->InputOutput);
 	}
 
 	CMainAgentScript::CMainAgentScript(IAgentManager *main,NLAIC::IIO *io):IMainAgent (main)
 	{
-		_Stack = new NLAISCRIPT::CStackPointer();
-		_Heap = new NLAISCRIPT::CStackPointer();
+		_Stack = new NLAISCRIPT::CStackPointer(4096*8);
+		_Heap = new NLAISCRIPT::CStackPointer(4096*8);
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
 	}
 	
 	CMainAgentScript::CMainAgentScript(NLAIC::IIO *io):IMainAgent (NULL)
 	{		
-		_Stack = new NLAISCRIPT::CStackPointer();
-		_Heap = new NLAISCRIPT::CStackPointer();
+		_Stack = new NLAISCRIPT::CStackPointer(4096*8);
+		_Heap = new NLAISCRIPT::CStackPointer(4096*8);
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
 	}
 

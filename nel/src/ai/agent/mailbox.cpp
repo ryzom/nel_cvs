@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.12 2001/02/21 11:36:39 chafik Exp $
+ * $Id: mailbox.cpp,v 1.13 2001/04/03 08:45:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -468,9 +468,14 @@ namespace NLAIAGENT
 	{		
 		tListMailBoxIter i_mbox = _ListMailBox.begin();
 
+#ifdef NL_DEBUG
+		int s = _ListMailBox.size();
+#endif
+
 		while ( i_mbox != _ListMailBox.end() )
 		{
-			std::list<const IMessageBase *> *msg_lst = (*i_mbox)->pumpMessages();
+			IMailBox *box = (*i_mbox);
+			std::list<const IMessageBase *> *msg_lst = box->pumpMessages();
 			if ( msg_lst != NULL)
 			{
 				while ( msg_lst->size() )

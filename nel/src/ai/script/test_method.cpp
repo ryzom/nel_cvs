@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.6 2001/03/30 12:40:26 chafik Exp $
+ * $Id: test_method.cpp,v 1.7 2001/04/03 08:45:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,3 +216,4 @@ namespace NLAISCRIPT
 	}
 
 }
+

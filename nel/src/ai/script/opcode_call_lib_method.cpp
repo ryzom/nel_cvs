@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.4 2001/01/08 14:42:12 valignat Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.5 2001/04/03 08:45:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -256,6 +256,10 @@ namespace NLAISCRIPT
 
 		context.Param.push_back(param);
 		param->incRef();
+
+#ifdef NL_DEBUG
+		int db_size = context.Param.size();
+#endif
 		
 		std::list<sint32>::iterator it = _I.begin();
 		while(it != _I.end())
@@ -278,9 +282,12 @@ namespace NLAISCRIPT
 			context.Stack --;
 		}
 
-		
-		context.Param.back()->release();
+#ifdef NL_DEBUG
+		db_size = context.Param.size();		
+#endif
+		NLAIAGENT::IObjectIA *p = context.Param.back();
 		context.Param.pop_back();
+		p->release();
 		
 		return r.ResultState;		
 	}	

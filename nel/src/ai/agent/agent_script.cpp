@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.43 2001/03/30 15:09:15 portier Exp $
+ * $Id: agent_script.cpp,v 1.44 2001/04/03 08:45:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -317,9 +317,12 @@ namespace NLAIAGENT
 			_AgentClass->release();
 
 		// destruction of static components
-		for ( int i = 0; i < _NbComponents; i++ )
-			_Components[i]->release();
-		delete[] _Components;
+		if(_Components != NULL)
+		{
+			for ( int i = 0; i < _NbComponents; i++ )
+				_Components[i]->release();
+			delete[] _Components;
+		}
 		
 		//if(_AgentManager != NULL) _AgentManager->release();
 		

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.61 2005/01/10 15:03:57 vizerie Exp $
+ * $Id: scene.h,v 1.62 2005/01/20 11:13:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,13 +162,31 @@ public:
 	 *  This also update waiting instance that are loaded asynchronously (by calling updateWaitingInstances)
 	 * NB: no Driver clear buffers (color or ZBuffer) are done....
 	 * This call t->traverse() function to registered render traversal following their order given.
+	 * NB: assert-crash if you are between a beginPartRender() and a endPartRender()
 	 * \param doHrcPass set it to false to indicate that the CHrcTrav have not to be traversed. UseFull to optimize if 
 	 * you know that NONE of your models have moved (a good example is a shoot of the scene from different cameras).
+	 */
+	void			render(bool	doHrcPass=true);
+
+	/** Begin Part Rendering
+	 *	During beginPartRender()/endPartRender(), you can ask other scene to render their part, but you should
+	 *	avoid to create models or modify the scene (not fully tested)
+	 *  WARNING: assert-crash if beetween a beginPartRender()/endPartRender()
+	 */
+	void			beginPartRender();
+	/** Render a part (see render() for what it does)
+	 *	beginPartRender() must have been called
 	 * \param renderPart a combination of UScene::TRenderPart flags, allow to choose which part of the scene must be rendered
 	 *	WARNING: always must begin rendering with at least UScene::RenderOpaque, else shadows won't work
+	 *	WARNING: assert-crash if a part in 'rp' has already been rendered since the last beginPartRender()
 	 */
-	void			render(bool	doHrcPass=true, UScene::TRenderPart renderPart = UScene::RenderAll);
+	void			renderPart(UScene::TRenderPart rp, bool doHrcPass=true);
+	/** End Part Rendering (commit model creation and deletion that were asked during rendering)
+	 */
+	void			endPartRender();
+
 	//@}
+
 
 	/** Update instances that are loaded asynchronously
 	  * \param systemTimeEllapsed : the time between 2 calls to updateWaitingInstances, in seconds

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * TODO: File description
  *
- * $Id: u_scene.h,v 1.58 2004/11/15 10:24:19 lecroart Exp $
+ * $Id: u_scene.h,v 1.59 2005/01/20 11:15:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,9 +119,28 @@ public:
 	 * NB: nlerror if the current camera has been deleted.
 	 * NB: the UDriver Light setup (see UDriver::setLight() / UDriver::setAmbientColor()) is modified.
 	 *	At the exit of render(), all UDriver lights are disabled.
-	 * \param renderPart a combination of TRenderPart flags, allow to choose which part of the scene must be rendered	 
 	 */
-	virtual	void			render(TRenderPart renderPart = RenderAll, bool updateWaitingInstances = true, bool restoreMatrixContextAfterRender = true)=0;
+	virtual	void			render(bool updateWaitingInstances = true, bool restoreMatrixContextAfterRender = true)=0;
+
+	/** Begin Part Rendering
+	 *	During beginPartRender()/endPartRender(), you can ask other scene to render their part, but you should
+	 *	avoid to create models or modify the scene (not fully tested)
+	 *  WARNING: assert-crash if beetween a beginPartRender()/endPartRender()
+	 */
+	virtual	void			beginPartRender() =0;
+
+	/** Render a part (see render() for what it does)
+	 *	beginPartRender() must have been called
+	 * \param renderPart a combination of UScene::TRenderPart flags, allow to choose which part of the scene must be rendered
+	 *	WARNING: always must begin rendering with at least UScene::RenderOpaque, else shadows won't work
+	 *	WARNING: assert-crash if a part in 'rp' has already been rendered since the last beginPartRender()
+	 */
+	virtual void			renderPart(UScene::TRenderPart rp) =0;
+
+	/** End Part Rendering (commit model creation and deletion that were asked during rendering)
+	 */
+	virtual void			endPartRender(bool updateWaitingInstances = true, bool restoreMatrixContextAfterRender = true) =0;
+
 
 	/** Update waiting instances and igs that are loaded asynchronously
 	  * NB: this is called by render()

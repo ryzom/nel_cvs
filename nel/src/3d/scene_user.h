@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * TODO: File description
  *
- * $Id: scene_user.h,v 1.59 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: scene_user.h,v 1.60 2005/01/20 11:13:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,7 +111,12 @@ public:
 
 	/// \name Render
 	//@{
-	virtual	void			render(TRenderPart renderPart = RenderAll, bool updateWaitingInstances = true, bool restoreMatrixContextAfterRender = true);
+	// render methods
+	virtual	void			render(bool updateWaitingInstances = true, bool restoreMatrixContextAfterRender = true);
+	virtual	void			beginPartRender();
+	virtual	void			renderPart(TRenderPart rp);
+	virtual	void			endPartRender(bool updateWaitingInstances = true, bool restoreMatrixContextAfterRender = true);
+	
 	// update async loading whithout a call to render
 	virtual void			updateWaitingInstances(double ellapsedTime);
 	virtual	void			animate(TGlobalAnimationTime time);	

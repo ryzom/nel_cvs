@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.11 2003/03/11 09:56:03 coutelas Exp $
+ * $Id: classifier.h,v 1.12 2003/03/14 14:28:50 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -272,9 +272,15 @@ public :
 	/// Donne la Puissance Propre d'une Motivation
 	void setMotivationPP(TMotivation motivationName, double PP);
 
-	/// Fixe la valeur d'une motivation
-	void setMotivationValue(TMotivation motivationName, double value);
+	/// Retourne la Puissance Propre d'une Motivation
+	double getMotivationPP(TMotivation motivationName) const;
 
+	/// Fixe la valeur d'une motivation
+	void	setMotivationValue(TMotivation motivationName, double value);
+
+	/// Retourne la valeur d'une motiation
+	double	getMotivationValue(TMotivation motivationName) const;
+	
 	/// Chaine de debug
 	void getDebugString (std::string &t) const;
 
@@ -355,8 +361,14 @@ public :
 	/// Donne la Puissance Propre d'une Motivation
 	void setMotivationPP(TMotivation motivationName, double PP);
 
+	/// Retourne la Puissance Propre d'une Motivation
+	double getMotivationPP(TMotivation motivationName) const;
+	
 	/// Fixe la valeur d'une motivation
 	void setMotivationValue(TMotivation motivationName, double value);
+
+	/// Retourne la valeur d'une motiation
+	double	getMotivationValue(TMotivation motivationName) const ;
 
 	/// Return the Behavior that must be active
 	std::pair<TAction, TTargetId> selectBehavior();
@@ -401,7 +413,7 @@ private :
 	std::map<TAction, CMotivateCS>			_ClassifiersAndVirtualActionIntensity;	// <virtualActionName, classeur> the virtualActionName is also the CS name.
 	CCSPerception*							_pSensorsValues;						// Valeurs des senseurs
 	std::map<TAction, CMotivationEnergy>	_ActionsExecutionIntensity;				// <actionName, ExecutionIntensity>
-	std::map<TAction, TTargetId>			_IdByActions;							// Id associate with each action.
+	std::map<TAction, TTargetId>			_IdByActions;							// Id associate with each action (virtual or not).
 	std::map<TAction, TTargetId>::iterator	_ItCurrentAction;						// Iterator on the current active action in _IdByActions
 };
 

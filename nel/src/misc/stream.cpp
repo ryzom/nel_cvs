@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.26 2003/04/02 14:46:14 cado Exp $
+ * $Id: stream.cpp,v 1.27 2003/04/02 15:36:54 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -421,7 +421,7 @@ void			IStream::setXMLMode (bool on)
 /*
  * Serial memstream, bitmemstream...
  */
-void	IStream::serial( CMemStream &b )
+void	IStream::serialMemStream( CMemStream &b )
 {
 	uint32 len=0;
 

@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.58 2003/04/02 14:45:45 cado Exp $
+ * $Id: stream.h,v 1.59 2003/04/02 15:37:16 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -265,7 +265,7 @@ public:
 	}
 
 	/// Serial memstream, bitmemstream...
-	virtual void serial( CMemStream &b );
+	virtual void serialMemStream( CMemStream &b );
 
 	/** \name BitField serialisation.
 	 * Unlike other serial method, The reading bitfield is returned!! If !this->isReading(), bf is returned.

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.26 2003/02/24 10:31:27 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.27 2003/04/02 15:37:01 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -569,9 +569,9 @@ inline	void		CBitMemStream::serial(ucstring &b)
 
 
 /*
- * Serial string
+ * Serial bitmemstream
  */
-void	CBitMemStream::serial(CBitMemStream &b)
+void	CBitMemStream::serialMemStream(CBitMemStream &b)
 {
 #ifdef LOG_ALL_TRAFFIC
 	sint32 bitpos = getPosInBit();

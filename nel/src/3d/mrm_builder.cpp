@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.11 2001/06/21 12:58:53 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.12 2001/06/22 12:50:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1692,6 +1692,10 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::C
 					}
 				}
 			}
+
+			// Optimisation: for better cache, sort the destLod.InfluencedVertices in increasing order.
+			sort(destLod.InfluencedVertices.begin(), destLod.InfluencedVertices.end());
+
 
 			// Then Build the MatrixInfluences array, for all thoses Influenced Vertices only.
 			// This is the map MatrixId -> MatrixInfId.

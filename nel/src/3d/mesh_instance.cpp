@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.3 2001/04/05 12:17:14 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.4 2001/04/09 14:25:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,7 @@ ITrack*		CMeshInstance::getDefaultTrack (uint valueId)
 		// Problem, new values ?
 		nlstop;
 	};
+	return NULL;
 }
 
 

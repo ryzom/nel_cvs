@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
+ * $Id: scene_user.h,v 1.3 2001/04/09 14:25:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/3d/camera_user.h"
 #include "nel/3d/instance_user.h"
 #include "nel/3d/landscape_user.h"
+#include "nel/3d/instance_group_user.h"
 
 
 namespace NL3D {
@@ -57,9 +58,10 @@ protected:
 	// Components List.
 	typedef	CPtrSet<CTransformUser>		TTransformSet;
 	typedef	CPtrSet<CLandscapeUser>		TLandscapeSet;
+	typedef	CPtrSet<CInstanceGroupUser>	TInstanceGroupSet;
 	TTransformSet		_Transforms;
 	TLandscapeSet		_Landscapes;
-
+	TInstanceGroupSet	_InstanceGroups;
 
 public:
 
@@ -185,6 +187,36 @@ public:
 		// The component is auto added/deleted to _Scene in ctor/dtor.
 		_Landscapes.erase((CLandscapeUser*) land);
 	}
+
+
+	virtual	UInstanceGroup	*createInstanceGroup (const std::string &instanceGroup)
+	{
+		// Create the instance group
+		CInstanceGroupUser *user=new CInstanceGroupUser;
+
+		// Init the class
+		if (!user->init (instanceGroup, _Scene))
+		{
+			// Prb, erase it
+			delete user;
+
+			// Return error code
+			return NULL;
+		}
+
+		// Insert the pointer in the pointer list
+		_InstanceGroups.insert (user);
+
+		// return the good value
+		return user;
+	}
+
+	virtual	void			deleteInstanceGroup (UInstanceGroup	*group)
+	{
+		// The component is auto added/deleted to _Scene in ctor/dtor.
+		_InstanceGroups.erase (dynamic_cast<CInstanceGroupUser*>(group));
+	}
+
 	//@}
 
 };

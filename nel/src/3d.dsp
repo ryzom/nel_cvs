@@ -727,6 +727,14 @@ SOURCE=.\3d\frustum.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\instance_group_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\instance_group_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\instance_user.cpp
 # End Source File
 # Begin Source File
@@ -828,6 +836,10 @@ SOURCE=..\include\nel\3d\tmp\u_driver.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tmp\u_instance.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_instance_group.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.1 2001/02/28 16:19:35 berenguier Exp $
+ * $Id: u_scene.h,v 1.2 2001/04/09 14:25:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NL3D
 class UCamera;
 class UInstance;
 class ULandscape;
-
+class UInstanceGroup;
 
 //****************************************************************************
 /**
@@ -110,6 +110,12 @@ public:
 	/// delete a landscape.
 	virtual	void			deleteLandscape(ULandscape *land)=0;
 
+	/** Create a new instance group for this scene.
+	  * If fails (file not found or serial error), return NULL.
+	  */
+	virtual	UInstanceGroup	*createInstanceGroup(const std::string &instanceGroup) =0;
+	/// Delete an instance group from this scene.
+	virtual	void			deleteInstanceGroup(UInstanceGroup	*group) =0;
 
 	//@}
 

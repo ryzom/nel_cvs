@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.10 2002/11/04 15:40:42 boucher Exp $
+ * $Id: u_form_elm.h,v 1.11 2003/10/13 10:39:07 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,8 +86,8 @@ public:
 	  * "position.x"			:	get the element named x in the struct named position
 	  * "entities[2].color"		:	get the node named color in the second element of the entities array
 	  */
-	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true, uint32 round=0xffffffff) const = 0;
-	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true, uint32 round=0xffffffff) = 0;
+	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true, uint32 round=0) const = 0;
+	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true, uint32 round=0) = 0;
 
 	
 	/// Where a value has been found
@@ -112,19 +112,19 @@ public:
 	  * \return true if the result has been filled, false if the value has not been found or the cast has failed or the evaluation has failed.
 	  * \see getNodeByName ()
 	  */
-	virtual bool	getValueByName (std::string &result, const char *namename, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (sint8 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (uint8 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (sint16 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (uint16 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (sint32 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (uint32 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (float &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (double &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
-	virtual bool	getValueByName (bool &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (std::string &result, const char *namename, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
+	virtual bool	getValueByName (sint8 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
+	virtual bool	getValueByName (uint8 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
+	virtual bool	getValueByName (sint16 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
+	virtual bool	getValueByName (uint16 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
+	virtual bool	getValueByName (sint32 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
+	virtual bool	getValueByName (uint32 &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
+	virtual bool	getValueByName (float &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
+	virtual bool	getValueByName (double &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
+	virtual bool	getValueByName (bool &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
 
 	/// Warning, only R, G and B members are filled, not A.
-	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, TEval evaluate = Eval, TWhereIsValue *where = NULL, uint32 round=0) const = 0;
 
 	/**
 	  * Set a form value with its name. If the node doesn't exist, it is created.

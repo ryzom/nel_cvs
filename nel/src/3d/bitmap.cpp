@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.23 2001/02/16 11:08:24 corvazier Exp $
+ * $Id: bitmap.cpp,v 1.24 2001/02/20 11:05:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1411,6 +1411,8 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 	resamplePicture32 ((NLMISC::CRGBA*)&_Data[0][0], pDestRgba, _Width, _Height, nNewWidth, nNewHeight);
 	NLMISC::contReset(_Data[0]); // free memory
 	_Data[0] =  pDestui;
+	_Width= nNewWidth;
+	_Height= nNewHeight;
 
 	// Rebuilding mipmaps
 	if(needRebuild)

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.35 2002/06/12 10:14:37 lecroart Exp $
+ * $Id: scene_group.cpp,v 1.36 2002/06/13 13:49:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -803,9 +803,11 @@ CInstanceGroup::TState CInstanceGroup::getAddToSceneState ()
 // Search in the hierarchy of ig the most low level (child) ig that contains the clusters that
 // are flagged to be visible from father or which father is visible
 bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
-{
+{		
 	uint32 i, j;
 	bool ret;
+
+	
 
 	for (i = 0; i < pFather->_ClusterInstances.size(); ++i)
 	{
@@ -814,20 +816,31 @@ bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
 			if (linkToParent(pFather->_ClusterInstances[i]->Children[j]->Group))
 				return true;
 		}
-	}
+	}	
 	ret = false;
-	for (j = 0; j < this->_ClusterInstances.size(); ++j)
-	{
-		if ((this->_ClusterInstances[j]->FatherVisible) ||
-			(this->_ClusterInstances[j]->VisibleFromFather))
+	if (this != pFather)
+	{		
+		for (j = 0; j < this->_ClusterInstances.size(); ++j)
 		{
-			for (i = 0; i < pFather->_ClusterInstances.size(); ++i)
-			{				
-				if (pFather->_ClusterInstances[i]->isIn(this->_ClusterInstances[j]->getBBox()))
-				{
-					pFather->_ClusterInstances[i]->Children.push_back(this->_ClusterInstances[j]);
-					this->_ClusterInstances[j]->Father = pFather->_ClusterInstances[i];
-					ret = true;
+			if ((this->_ClusterInstances[j]->FatherVisible) ||
+				(this->_ClusterInstances[j]->VisibleFromFather))
+			{
+				for (i = 0; i < pFather->_ClusterInstances .size(); ++i)
+				{			
+					
+					if (pFather->_ClusterInstances[i]->isIn(this->_ClusterInstances[j]->getBBox()))
+					{
+						if (this->_ClusterInstances[j]->Father != pFather->_ClusterInstances[i]) // not already sons of the right cluster ?
+						{						
+							// unlink from parent
+							this->_ClusterInstances[j]->unlinkFromParent();
+
+							// relink in hierarchy
+							pFather->_ClusterInstances[i]->Children.push_back(this->_ClusterInstances[j]);
+							this->_ClusterInstances[j]->Father = pFather->_ClusterInstances[i];
+						}
+						ret = true;
+					}
 				}
 			}
 		}

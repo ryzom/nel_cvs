@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.16 2002/05/24 12:37:38 vizerie Exp $
+ * $Id: scene_group.h,v 1.17 2002/06/13 13:49:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -331,10 +331,8 @@ public:
 
 	// @}
 
-
-private:
-
-	/// Look through all hierarchy our clusters that must be linked to our parent
+	/** Look through all hierarchy our clusters that must be linked to our parent
+	  */
 	bool linkToParent (CInstanceGroup*pFather);
 
 public:

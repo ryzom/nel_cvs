@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.60 2003/07/31 13:31:04 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.61 2003/07/31 16:18:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -545,29 +545,17 @@ void CInstanceGroup::getShapeName (uint instanceIndex, std::string &shapeName) c
 	const CInstance &rInstanceInfo = _InstancesInfos[instanceIndex];
 	if (!rInstanceInfo.DontAddToScene)
 	{
-		bool getShapeName = true;
-	
 		// If there is a callback added to this instance group then transform
 		// the name of the shape to load.
 		if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
 		{												
 			shapeName = _TransformName->transformName (instanceIndex, rInstanceInfo.InstanceName, rInstanceInfo.Name);
-			if (!shapeName.empty())
-				getShapeName = false;
 		}
 		
-		if (getShapeName)
-		{			
-			if (rInstanceInfo.Name.find('.') == std::string::npos)
-			{
-				shapeName = rInstanceInfo.Name + ".shape";
-			}
-			else	// extension has already been added
-			{
-				shapeName = rInstanceInfo.Name;
-			}
-		}
-		strlwr (shapeName);
+		shapeName = strlwr (shapeName);
+
+		if (!shapeName.empty() && shapeName.find('.') == std::string::npos)
+			shapeName += ".shape";
 	}
 }
 
@@ -795,30 +783,17 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver, uint selec
 		if (!rInstanceInfo.DontAddToScene)
 		{
 			string shapeName;
-			bool   getShapeName = true;
-
 			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
 			{												
 				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName, rInstanceInfo.Name);		
-				if (!shapeName.empty())
-					getShapeName = false;
 			}
 			
-
-			if (getShapeName)
-			{						
-				if (rInstanceInfo.Name.find('.') == std::string::npos)
-				{
-					shapeName = rInstanceInfo.Name + ".shape";
-				}
-				else	// extension has already been added
-				{
-					shapeName  = rInstanceInfo.Name;
-				}
-			}
 			shapeName = strlwr (shapeName);
 
-			shapeName = strlwr (shapeName);
+			if (!shapeName.empty() && shapeName.find('.') == std::string::npos)
+				shapeName += ".shape";
+			
+
 			if (allShapesToLoad.find(shapeName) == allShapesToLoad.end())
 			{
 				allShapesToLoad.insert (shapeName);

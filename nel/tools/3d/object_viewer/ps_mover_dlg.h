@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.h
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.h,v 1.5 2001/06/26 09:17:50 vizerie Exp $
+ * $Id: ps_mover_dlg.h,v 1.6 2001/06/27 16:44:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ protected:
 
 
 	// wrappers to scale objects
-	struct tagUniformScaleWrapper : public IPSWrapperFloat
+	struct CUniformScaleWrapper : public IPSWrapperFloat
 	{
 		uint32 Index ;
 		NL3D::IPSMover *M ;
@@ -144,7 +144,7 @@ protected:
 	} _UniformScaleWrapper ;
 
 	/// wrapper to scale the X coordinate
-	struct tagXScaleWrapper : public IPSWrapperFloat
+	struct CXScaleWrapper : public IPSWrapperFloat
 	{
 		uint32 Index ;
 		NL3D::IPSMover *M ;
@@ -157,7 +157,7 @@ protected:
 	} _XScaleWrapper ;
 
 	/// wrapper to scale the Y coordinate
-	struct tagYScaleWrapper : public IPSWrapperFloat
+	struct CYScaleWrapper : public IPSWrapperFloat
 	{
 		uint32 Index ;
 		NL3D::IPSMover *M ;
@@ -170,7 +170,7 @@ protected:
 	} _YScaleWrapper ;
 
 	/// wrapper to scale the Z coordinate
-	struct tagZScaleWrapper : public IPSWrapperFloat
+	struct CZScaleWrapper : public IPSWrapperFloat
 	{
 		uint32 Index ;
 		NL3D::IPSMover *M ;
@@ -183,7 +183,7 @@ protected:
 	} _ZScaleWrapper ;
 
 	/// wrapper for direction
-	struct tagDirectionWrapper : public IPSWrapper<NLMISC::CVector>
+	struct CDirectionWrapper : public IPSWrapper<NLMISC::CVector>
 	{
 		uint32 Index ;
 		NL3D::IPSMover *M ;

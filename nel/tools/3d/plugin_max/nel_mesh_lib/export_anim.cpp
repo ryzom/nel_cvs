@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.24 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.25 2001/12/12 10:36:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,7 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 	}
 
 	// check for note track export (a string track used to create events)
-	int exportNoteTrack = CExportNel::getScriptAppData(&node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, -1);
+	int exportNoteTrack = CExportNel::getScriptAppData(&node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, -1);	
 
 	if (exportNoteTrack)
 	{
@@ -132,7 +132,7 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 	}
 }
 
-
+// --------------------------------------------------
 
 void CExportNel::addNoteTrack(NL3D::CAnimation& animation, INode& node)
 {
@@ -709,7 +709,8 @@ void CExportNel::addObjTracks (CAnimation& animation, Object& obj, const char* p
 // --------------------------------------------------
 
 void CExportNel::addMtlTracks (CAnimation& animation, Mtl& mtl, const char* parentName, Interface *ip)
-{
+{	
+
 	// Material name
 	std::string mtlName=std::string(parentName)+getName (mtl)+".";
 
@@ -843,6 +844,7 @@ void CExportNel::addMtlTracks (CAnimation& animation, Mtl& mtl, const char* pare
 			}
 		}
 	}
+	
 
 	// Export sub materials tracks
 	int s;
@@ -851,16 +853,171 @@ void CExportNel::addMtlTracks (CAnimation& animation, Mtl& mtl, const char* pare
 		addMtlTracks (animation, *mtl.GetSubMtl(s), parentName, ip);
 
 	// Export sub texmaps tracks
-	subMtl=mtl.NumSubTexmaps();
+	/*subMtl=mtl.NumSubTexmaps();
 	for (s=0; s<subMtl; s++)
-		addTexTracks (animation, *mtl.GetSubTexmap(s), parentName);
+		addTexTracks (animation, *mtl.GetSubTexmap(s), parentName);*/
+
+	// *** export textures matrix animation if enabled
+
+	/// test wether texture matrix animation should be exported
+	int bExportTexMatAnim;
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bExportTextureMatrix", (ParamType2)TYPE_BOOL, &bExportTexMatAnim, 0);
+
+	if (bExportTexMatAnim != 0)
+	{
+		for (uint i=0; i<IDRV_MAT_MAXTEXTURES; i++)
+		{			
+			// Get the enable flag name
+			char enableSlotName[100];
+			smprintf (enableSlotName, 100, "bEnableSlot_%d", i+1);
+
+			// Get the enable flag 
+			int bEnableSlot = 0;
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, enableSlotName, (ParamType2)TYPE_BOOL, &bEnableSlot, 0);
+			if (bEnableSlot)
+			{
+				// Get the texture arg name
+				char textureName[100];
+				smprintf (textureName, 100, "tTexture_%d", i+1);
+
+				// Get the texture pointer
+				Texmap *pTexmap = NULL;
+				CExportNel::getValueByNameUsingParamBlock2 (mtl, textureName, (ParamType2)TYPE_TEXMAP, &pTexmap, 0);
+				if (pTexmap)
+				{
+					addTexTracks(animation, *pTexmap, ip, i, mtlName.c_str());
+				}
+			}
+		}
+	}
 }
 
 // --------------------------------------------------
 
-void CExportNel::addTexTracks (CAnimation& animation, Texmap& tex, const char* parentName)
+void CExportNel::addTexTracks (CAnimation& animation, Texmap& tex, Interface *ip, uint stage, const char* parentName)
 {
+	// Texmap name
+	
+
+	// Tmp track*
+	ITrack *pTrack;
+
+	std::string name;
+
+	CExportDesc desc;
+
+
+	/// export the u translation
+	// Get a controller pointer
+	Control* c = getControlerByName (tex, "U Offset");
+	if (c)
+	{
+		desc.reset();
+		pTrack=buildATrack (animation, *c, typeFloat, tex, desc, ip, NULL, NULL);
+		if (pTrack)
+		{
+			name = parentName + std::string (CAnimatedMaterial::getTexMatUTransName(stage));
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
+		}
+	}
+
+
+	/// export the v translation
+	// Get a controller pointer
+                                    	c=getControlerByName (tex, "V Offset");
+	if (c)
+	{
+		desc.reset();
+		pTrack=buildATrack (animation, *c, typeFloat, tex, desc, ip, NULL, NULL);
+		if (pTrack)
+		{
+			name = parentName + std::string (CAnimatedMaterial::getTexMatVTransName(stage));
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
+		}
+	}
+
+
+	/// export the u scale
+	// Get a controller pointer
+	c = getControlerByName (tex, "U Tiling");
+	if (c)
+	{
+		desc.reset();
+		pTrack=buildATrack (animation, *c, typeFloat, tex, desc, ip, NULL, NULL);
+		if (pTrack)
+		{
+			name = parentName + std::string (CAnimatedMaterial::getTexMatUScaleName(stage));
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
+		}
+	}
+
+
+	/// export the v scale
+	// Get a controller pointer
+	c=getControlerByName (tex, "V Tiling");
+	if (c)
+	{
+		desc.reset();
+		pTrack=buildATrack (animation, *c, typeFloat, tex, desc, ip, NULL, NULL);
+		if (pTrack)
+		{
+			name = parentName + std::string (CAnimatedMaterial::getTexMatVScaleName(stage));
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
+		}
+	}
+
+
+	/// export the w rotation
+	// Get a controller pointer
+	c=getControlerByName (tex, "W Angle");
+	if (c)
+	{
+		desc.reset();
+		pTrack=buildATrack (animation, *c, typeFloat, tex, desc, ip, NULL, NULL);
+		if (pTrack)
+		{
+			name = parentName + std::string (CAnimatedMaterial::getTexMatWRotName(stage));
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
+		}
+	}
 }
+
+
 
 // --------------------------------------------------
 

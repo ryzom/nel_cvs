@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.17 2001/07/05 16:04:17 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.18 2001/07/09 17:18:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,6 +147,18 @@ CObjectViewer::~CObjectViewer ()
 
 // ***************************************************************************
 
+void initCamera ()
+{
+	// Camera
+	CFrustum frustrum;
+	uint32 width, height;
+	CNELU::Driver->getWindowSize (width, height);
+	frustrum.initPerspective( 75.f*(float)Pi/180.f, (float)width/(float)height, 0.1f, 1000.f);
+	CNELU::Camera->setFrustum (frustrum);
+}
+
+// ***************************************************************************
+
 void CObjectViewer::initUI ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -163,10 +175,7 @@ void CObjectViewer::initUI ()
 	getRegisterWindowState (&driverWnd, REGKEY_OBJ_VIEW_OPENGL_WND, true);
 
 	// Camera
-	CFrustum frustrum;
-	frustrum.initPerspective( 75.f*(float)Pi/180.f, 1.33f, 0.1f, 1000.f);
-	CNELU::Camera->setFrustum (frustrum);
-		
+	initCamera ();
 
 	// Hide the main window
 	//driverWnd.ShowWindow (SW_HIDE);
@@ -247,7 +256,7 @@ void CObjectViewer::go ()
 		_SlotDlg->Playlist.setupMixer (_ChannelMixer, _AnimationDlg->getTime());
 
 		// Animate the automatic animation in the scene
-		CNELU::Scene.animate( NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
+		CNELU::Scene.animate( (float)NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
 
 		// Eval channel mixer for transform
 		_ChannelMixer.eval (false);
@@ -275,6 +284,24 @@ void CObjectViewer::go ()
 			CDRU::drawLine (_MouseListener.getHotSpot()+CVector (0, 0, radius), _MouseListener.getHotSpot()+CVector (0, 0, -radius), _HotSpotColor, *CNELU::Driver);
 		}
 
+		// Test some keys
+		if (CNELU::AsyncListener.isKeyPushed(KeyF3))
+		{
+			// Change render mode
+			switch (CNELU::Driver->getPolygonMode())
+			{
+			case IDriver::Filled:
+				CNELU::Driver->setPolygonMode (IDriver::Line);
+				break;
+			case IDriver::Line:
+				CNELU::Driver->setPolygonMode (IDriver::Point);
+				break;
+			case IDriver::Point:
+				CNELU::Driver->setPolygonMode (IDriver::Filled);
+				break;
+			}
+		}
+
 		// Swap the buffers
 		CNELU::swapBuffers();
 
@@ -290,6 +317,9 @@ void CObjectViewer::go ()
 
 		// Pump message from the server
 		CNELU::EventServer.pump();
+
+		// Reset camera aspect ratio
+		initCamera ();
 
 		if (!_SceneDlg->MoveElement)
 		{

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.16 2002/05/23 10:02:26 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.17 2002/05/23 13:09:56 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -217,7 +217,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		// Resize if necessary
 		if ( _FreeBits == 8 ) // _FreeBits is from 7 downto 1, then 8
 		{
-			if (_BufPos == _Buffer.getPtr()+_Buffer.size())
+			if (_BufPos == _Buffer.getPtr()+_Buffer.size() - 1)
 			{
 				// need to resize
 				_Buffer.resize(_Buffer.size()*2+1);

@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.8 2002/11/25 14:11:41 boucher Exp $
+ * $Id: sound_driver.cpp,v 1.9 2003/01/03 16:52:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,9 +121,9 @@ ISoundDriver	*ISoundDriver::createDriver()
 			throw ESoundDriverUnknownVersion();
 	}
 
-#else // NL_OS_LINUX
+#else // NL_OS_UNIX
 #error "Dynamic DLL loading not implemented!"
-#endif // NL_OS_LINUX
+#endif // NL_OS_UNIX
 
 	ISoundDriver *ret = createSoundDriver();
 	if ( ret == NULL )

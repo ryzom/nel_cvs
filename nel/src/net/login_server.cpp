@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.20 2002/11/04 16:42:15 lecroart Exp $
+ * $Id: login_server.cpp,v 1.21 2003/01/03 16:51:22 lecroart Exp $
  *
  */
 
@@ -281,7 +281,7 @@ void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 		ListenAddr = server.localAddr ().asIPString();
 	}
 
-	nlinfo("Listen Addresss trapped '%s'", ListenAddr.c_str());
+	nlinfo("Listen Address trapped '%s'", ListenAddr.c_str());
 
 	DisconnectClientCallback = dc;
 }

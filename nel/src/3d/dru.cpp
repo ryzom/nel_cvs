@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.35 2002/06/26 10:15:31 lecroart Exp $
+ * $Id: dru.cpp,v 1.36 2003/01/03 16:52:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,9 +119,9 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 			throw EDruOpenglDriverUnknownVersion();
 	}
 
-#else // NL_OS_LINUX
+#else // NL_OS_UNIX
 #error "Dynamic DLL loading not implemented!"
-#endif // NL_OS_LINUX
+#endif // NL_OS_UNIX
 
 	IDriver		*ret= createDriver();
 	if (ret == NULL)

@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.6 2002/12/26 14:46:52 robert Exp $
+ * $Id: classifier.h,v 1.7 2003/01/21 16:35:26 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,101 @@
 namespace NLAINIMAT
 {
 
-typedef	std::map< std::string , char>	TSensorMap;
+/**
+  * This class store all the actions and virtual actions (high level action) of an Agent.
+  * \author Gabriel ROBERT
+  * \author Nevrax France
+  * \date 2003
+  */
+class CActionsBox
+{
+public :
+	enum TAction
+	{
+		closeCombat,
+		distanceCombat,
+		flee,
+		eat,
+		rest,
+		v_fight
+	};
+
+	CActionsBox();
+	virtual ~CActionsBox();
+	
+	/**
+	  * Execute a given action on a given target Id.
+	  * \param actionId is the Id of the requested action
+	  * \param targetID is the Id of the target on wich the action will be executed.
+	  */
+	void executeAction(TAction actionId, uint64 targetID);
+
+	static std::string getNameFromId(TAction actionId);
+};
+
+/**
+  * This class store all the motivations of an Agent.
+  * \author Gabriel ROBERT
+  * \author Nevrax France
+  * \date 2003
+  */
+class CMotivationsBox
+{
+public :
+	enum TMotivation
+	{
+		HUNGER,
+		AGGRO,
+		FEAR,
+		FATIGUE
+	};
+
+	CMotivationsBox();
+	virtual ~CMotivationsBox();
+	
+	/**
+	  * Give the Motivation Value of a Motivation.
+	  * \param actionId is the Id of the requested action
+	  * \param targetID is the Id of the target on wich the action will be executed.
+	  */
+	double getMotivationValue(TMotivation motivationId);
+
+	static std::string getNameFromId(TMotivation motivationId);
+};
+
+/**
+  * This class store all the sensors of an Agent.
+  * \author Gabriel ROBERT
+  * \author Nevrax France
+  * \date 2003
+  */
+class CSensorsBox
+{
+public :
+	enum TSensor
+	{
+		MunitionsAmount,
+		FoodType,
+		IsAlive,
+		IAmStronger,
+		IAmAttacked
+	};
+
+	CSensorsBox();
+	virtual ~CSensorsBox();
+	
+	/**
+	  * Give the value of a given sensor and a given target Id.
+	  * \param sensorId is the Id of the requested sensor
+	  * \param targetID is the Id of the target on wich the sensor must compute.
+	  * \return the sensor value.
+	  */
+	char getSensorValue(TSensor sensorId, uint64 targetID);
+
+	static std::string getNameFromId(TSensor sensorId);
+};
+
+typedef	std::map<CSensorsBox::TSensor, char>	TSensorMap;
 
 /**
   * A simple and minimal version of a Classifier System.
@@ -51,12 +145,12 @@ private :
 	public :
 		CClassifierConditionCell(TSensorMap::const_iterator itSensor, char value);
 		bool isActivable() const;
-		std::string getSensorName() const;
+		CSensorsBox::TSensor getSensorName() const;
 		char getValue();
 
 	private :
-		std::map<std::string, char>::const_iterator	_itSensor;			// A reference to the sensor associate with this condition.
-		char										_value;				// The condition value;
+		std::map<CSensorsBox::TSensor, char>::const_iterator	_itSensor;			// A reference to the sensor associate with this condition.
+		char													_value;				// The condition value;
 	};
 
 	 // A classifier is a three parts components (condition, priority, behavior).
@@ -64,12 +158,12 @@ private :
 	{
 	public:
 		CClassifier();
-		~CClassifier();
+		virtual ~CClassifier();
 
 	public :
 		std::list<CClassifierConditionCell*>	Condition;
 		double									Priority;
-		std::string								Behavior;
+		CActionsBox::TAction 					Behavior;
 	};
 
 private :
@@ -88,7 +182,7 @@ public :
 	  * \param priority is the importance of this rule. The value should be between 0 an 1.
 	  * \param behavior is the action to execute if this classifier is selected.
 	  */
-	void addClassifier(const TSensorMap &conditionsMap, double priority, const char* behavior);
+	void addClassifier(const TSensorMap &conditionsMap, double priority, CActionsBox::TAction behavior);
 
 	/// Merge two CS
 	void addClassifierSystem(const CClassifierSystem &cs);
@@ -105,23 +199,14 @@ public :
 	  * \param classifierNumber is the number of the classifier.
 	  * \return is the condition part of the wanted Classifier.
 	  */
-	std::string getActionPart(sint16 classifierNumber);
+	CActionsBox::TAction getActionPart(sint16 classifierNumber);
 
 	void getDebugString(std::string &t) const;
 };
 
-/* ***G***
- * Ce que je dois encore ajouter :
- * Une fonction d'apprentissage
- * Une fonction de création de nouveaux classeurs
- * Une "anticipation" à ma façon
- *
- * Architecture NetCS
- * 
- */
-
 /**
   * An action for a Classifier System.
+  * Used to describes all the rules (classifiers) wich will have this action in the condition part.
   * \author Gabriel ROBERT
   * \author Nevrax France
   * \date 2002
@@ -129,25 +214,31 @@ public :
 class CActionCS
 {
 public :
-	CActionCS(std::string name);
+	CActionCS(CActionsBox::TAction name);
 	virtual ~CActionCS();
 
 	/// Return the action name
-	std::string getName() const;
+	CActionsBox::TAction getName() const;
 
-	/// Ajout d'une nouvelle règle motivant cette action
-	void addMotivationRule (std::string motivationName, const TSensorMap &conditionsMap, double priority);
+	/// Ajout d'une nouvelle règle motivant cette action dans une motivation
+	void addMotivationRule (CMotivationsBox::TMotivation motivationName, const TSensorMap &conditionsMap, double priority);
+
+	/// Ajout d'une nouvelle règle motivant cette action dans une action virtuel
+	void addVirtualActionRule (CActionsBox::TAction virtualActionName, const TSensorMap &conditionsMap, double priority);
 
 	/// Chaine de debug
 	void getDebugString (std::string &t) const;
 
-	const std::map<std::string, CClassifierSystem> *getClassifiersMap () const;
+	const std::map<CMotivationsBox::TMotivation, CClassifierSystem> *getClassifiersByMotivationMap () const;
+	const std::map<CActionsBox::TAction, CClassifierSystem>			*getClassifiersByVirtualActionMap () const;
 
 private :
-	std::map<std::string, CClassifierSystem>	_ClassifiersByMotivation;
-	std::string									_Name;
+//	std::map<std::string, CClassifierSystem>	_ClassifiersByMotivation;
+//	std::string									_Name;
+	std::map<CMotivationsBox::TMotivation, CClassifierSystem>	_ClassifiersByMotivation;
+	std::map<CActionsBox::TAction, CClassifierSystem>			_ClassifiersByVirtualAction;
+	CActionsBox::TAction										_Name;
 };
-
 
 /**
   * A Class for manage witch source motivate a CS or an action
@@ -169,22 +260,27 @@ class CMotivationEnergy
 		}
 	};
 
-	typedef	std::map< std::string , CMotivationValue>	TEnergyByMotivation;
+	typedef	std::map< CMotivationsBox::TMotivation, CMotivationValue>	TEnergyByMotivation;
 
 public :
 	CMotivationEnergy();
 	virtual ~CMotivationEnergy();
 
 	double	getSumValue() const;
-	void	removeProvider(std::string providerName);
-	void	addProvider(std::string providerName, const CMotivationEnergy& providerMotivation);
-	void	updateProvider(std::string providerName, const CMotivationEnergy& providerMotivation);
+
+	/// Gestion des classeurs qui apportent la motivation
+	void	removeProvider(CMotivationsBox::TMotivation providerName);
+	void	removeProvider(CActionsBox::TAction providerName);
+	void	addProvider(CMotivationsBox::TMotivation providerName, const CMotivationEnergy& providerMotivation);
+	void	addProvider(CActionsBox::TAction providerName, const CMotivationEnergy& providerMotivation);
+	void	updateProvider(CMotivationsBox::TMotivation providerName, const CMotivationEnergy& providerMotivation);
+	void	updateProvider(CActionsBox::TAction providerName, const CMotivationEnergy& providerMotivation);
 
 	/// Donne la Puissance Propre d'une Motivation
-	void setMotivationPP(std::string motivationName, double PP);
+	void setMotivationPP(CMotivationsBox::TMotivation motivationName, double PP);
 
 	/// Fixe la valeur d'une motivation
-	void setMotivationValue(std::string motivationName, double value);
+	void setMotivationValue(CMotivationsBox::TMotivation motivationName, double value);
 
 	/// Chaine de debug
 	void getDebugString (std::string &t) const;
@@ -192,11 +288,11 @@ public :
 private :
 	void computeMotivationValue();
 
-	double										_SumValue;
-	std::map<std::string, TEnergyByMotivation>	_MotivationProviders;
-	TEnergyByMotivation							_EnergyByMotivation; // <MotivationSource, motivationValue>
+	double														_SumValue;
+	std::map<CMotivationsBox::TMotivation, TEnergyByMotivation>	_MotivationProviders;
+	std::map<CActionsBox::TAction, TEnergyByMotivation>			_VirtualActionProviders;
+	TEnergyByMotivation											_EnergyByMotivation; // <MotivationSource, motivationValue>
 };
-
 
 /**
   * A Modular Hierarchical Classifier System.
@@ -225,7 +321,8 @@ public :
 	  * \param sensorMap is a map whose key is the sensor name and value the sensor value.
 	  * \return is the number of the the selected classifier.
 	  */
-	sint16 selectBehavior(std::string motivationName, const TSensorMap &sensorMap);
+	sint16 selectBehavior(CMotivationsBox::TMotivation motivationName, const TSensorMap &sensorMap);
+	sint16 selectBehavior(CActionsBox::TAction motivationName, const TSensorMap &sensorMap);
 
 	/**
 	  * Give the action part of a given Classifier.
@@ -233,19 +330,22 @@ public :
 	  * \param classifierNumber is the number of the classifier.
 	  * \return is the condition part of the wanted Classifier.
 	  */
-	std::string getActionPart(std::string motivationName, sint16 classifierNumber);
+	CActionsBox::TAction getActionPart(CMotivationsBox::TMotivation motivationName, sint16 classifierNumber);
+	CActionsBox::TAction getActionPart(CActionsBox::TAction motivationName, sint16 classifierNumber);
 
-	// To now if a behav selected by a CS is an action (if not, it's a common CS)
-	bool isAnAction(std::string behav) const;
+	/// To now if a behav selected by a CS is an action (if not, it's a common CS)
+	bool isAnAction(CActionsBox::TAction behav) const;
 
 	/// Chaine de debug
 	void getDebugString(std::string &t) const;
 	
 private :
-	std::map<std::string, CClassifierSystem>	_ClassifierSystems;	// <motivationName, classeur> CS by motivation name.
-	std::set<std::string>						_ActionSet;			// Set of all executablle actions
+	std::map<CMotivationsBox::TMotivation, CClassifierSystem>	_MotivationClassifierSystems;		// <motivationName, classeur> CS by motivation name.
+	std::map<CActionsBox::TAction, CClassifierSystem>			_VirtualActionClassifierSystems;	// <virtualActionName, classeur> CS by motivation name.
+	std::set<CActionsBox::TAction>								_ActionSet;							// Set of all executablle actions
+//	std::map<std::string, CClassifierSystem>	_ClassifierSystems;		// <motivationName, classeur> CS by motivation name.
+//	std::set<std::string>						_ActionSet;				// Set of all executablle actions
 };
-
 
 /**
   * A Modular Hierarchical Classifier System.
@@ -262,13 +362,13 @@ public :
 	virtual ~CMHiCSagent();
 
 	/// Donne la Puissance Propre d'une Motivation
-	void setMotivationPP(std::string motivationName, double PP);
+	void setMotivationPP(CMotivationsBox::TMotivation motivationName, double PP);
 
 	/// Fixe la valeur d'une motivation
-	void setMotivationValue(std::string motivationName, double value);
+	void setMotivationValue(CMotivationsBox::TMotivation motivationName, double value);
 
 	/// Return the Behavior that must be active
-	std::string selectBehavior();
+	CActionsBox::TAction selectBehavior();
 
 	/// Update the values in the NetCS
 	void run();
@@ -283,43 +383,32 @@ private :
 	class CMotivateCS
 	{
 	public :
-		sint16				ClassifierNumber;
+		sint16				ClassifierNumber;		// Number of the last classifier actived by this motivation
 		CMotivationEnergy	MotivationIntensity;
-		uint16				NumberOfActivations;
+		uint16				dbgNumberOfActivations;	// For debug purpose
 	public :
 		CMotivateCS()
 		{
 			ClassifierNumber	= -1;
-			NumberOfActivations	= 0;
+			dbgNumberOfActivations	= 0;
 		}
 	};
 
 	// Will spread the reckon of the motivation value along a motivation branch.
-	void spreadMotivationReckon(std::string commonCS);
+	void spreadMotivationReckon(CMotivationsBox::TMotivation CS);
+	void spreadMotivationReckon(CActionsBox::TAction CS);
 
-	CMHiCSbase*									_pMHiCSbase;						// A pointer on the rules base.
-	std::map<std::string, CMotivateCS>			_ClassifiersAndMotivationIntensity;	// <motivationName, classeur> the motivationName is also the CS name.
-	TSensorMap									_SensorsValues;						// Valeurs des senseurs
-	std::map<std::string, CMotivationEnergy>	_ActionsExecutionIntensity;			// <actionName, ExecutionIntensity>
+	void motivationCompute();
+	void virtualActionCompute();
+
+	private :
+	CMHiCSbase*											_pMHiCSbase;							// A pointer on the rules base.
+	std::map<CMotivationsBox::TMotivation, CMotivateCS>	_ClassifiersAndMotivationIntensity;		// <motivationName, classeur> the motivationName is also the CS name.
+	std::map<CActionsBox::TAction, CMotivateCS>			_ClassifiersAndVirtualActionIntensity;	// <virtualActionName, classeur> the virtualActionName is also the CS name.
+	TSensorMap											_SensorsValues;							// Valeurs des senseurs
+	std::map<CActionsBox::TAction, CMotivationEnergy>	_ActionsExecutionIntensity;				// <actionName, ExecutionIntensity>
 };
 
-/****
-	CNetCS :
-		- renvois l'action à effectuer
-		- contient tous les CS
-		+ addAction
-		+ setPerception
-		+ run
-		+ selectBehavior
-
-	CMotivateTrack :
-		- Il y en a une par ID d'objet (plus une quand y'a personne ?)
-		- contient les niveaux de motivations de chaque CS ainsi que les actions élues de chaque CS.
-
-	CSensorCenter :
-		- centralise toutes la valeurs des senseurs
-		- il y a une liste par ID
- ****/
 
 /****
 MHiCS s'articule autoure d'une partie active (MHiCSagent) associé à chaque agent et une partie passive (MHiCSbase) qui est la base des règles partagée.
@@ -338,6 +427,11 @@ MHiCSbase :
 -----------
 Composents :
  - Un ensemble de CS
+
+
+  NOTES :
+  -------
+  Il va falloir que je sépare mes entrées en action, virtual action et motivations.
 
  ****/
 

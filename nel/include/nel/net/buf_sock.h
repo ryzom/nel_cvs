@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.15 2002/05/21 16:38:21 lecroart Exp $
+ * $Id: buf_sock.h,v 1.16 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,12 +115,12 @@ protected:
 	virtual std::string typeStr() const { return "CLT "; }
 
 	/** Pushes a disconnection message into bnb's receive queue, if it has not already been done
-	 * (returns true in this case). You can either specify a sockid (for server) or NULL (for client)
+	 * (returns true in this case). You can either specify a sockid (for server) or InvalidSockId (for client)
 	 */
 	bool advertiseDisconnection( CBufNetBase *bnb, TSockId sockid )
 	{
 #ifdef NL_DEBUG
-		if ( sockid != NULL )
+		if ( sockid != InvalidSockId )
 		{
 			nlassert( sockid == this );
 		}
@@ -130,18 +130,23 @@ protected:
 
 	
 	/** Pushes a system message into bnb's receive queue, if the flags meets the condition, then
-	 * resets the flag and returns true. You can either specify a sockid (for server) or NULL (for client).
+	 * resets the flag and returns true. You can either specify a sockid (for server) or InvalidSockId (for client).
 	 */
 	bool advertiseSystemEvent(
 		CBufNetBase *bnb, TSockId sockid, bool& flag, bool condition, CBufNetBase::TEventType event )
 	{
-		nlassert (this != InvalidSockId);	// invalid bufsock
+#ifdef NL_DEBUG
+		if ( sockid != InvalidSockId )
+		{
+			nlassert( sockid == this );
+		}
+#endif
 		// Test flag
 		if ( flag==condition )
 		{
 			nldebug( "Pushing event to %s", asString().c_str() );
 			std::vector<uint8> buffer;
-			if ( sockid == NULL )
+			if ( sockid == InvalidSockId )
 			{
 				// Client: event type only
 				buffer.resize( 1 );

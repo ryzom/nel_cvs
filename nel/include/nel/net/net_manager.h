@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.13 2002/01/30 10:07:57 lecroart Exp $
+ * $Id: net_manager.h,v 1.14 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,7 +125,7 @@ public:
 	static void	update (NLMISC::TTime timeout = 0);
 
 	/// Sends a message to a specific serviceName
-	static void	send (const std::string &serviceName, const CMessage &buffer, TSockId hostid = 0);
+	static void	send (const std::string &serviceName, const CMessage &buffer, TSockId hostid = InvalidSockId);
 
 	/** Sets callback for incoming connections (or NULL to disable callback)
 	 * On a client, the callback will be call when the connection to the server is established (the first connection or after the server shutdown and started)

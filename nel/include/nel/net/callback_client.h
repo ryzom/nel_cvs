@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.12 2002/05/22 08:04:17 lecroart Exp $
+ * $Id: callback_client.h,v 1.13 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,11 +50,11 @@ public:
 	/// Constructor
 	CCallbackClient( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true );
 
-	/// Sends a message to the remote host (the second parameter isn't used
-	void	send (const CMessage &buffer, TSockId hostid = 0, bool log = true);
+	/// Sends a message to the remote host (the second parameter isn't used)
+	void	send (const CMessage &buffer, TSockId hostid = InvalidSockId, bool log = true);
 
 	/// Force to send all data pending in the send queue.
-	bool	flush (TSockId hostid = 0);
+	bool	flush (TSockId hostid = InvalidSockId);
 	
 	/// Updates the network (call this method evenly)
 	void	update ( sint32 timeout=0 );
@@ -72,13 +72,13 @@ public:
 	 * Unlike in CCallbackClient, you can call disconnect() on a socket that is already disconnected
 	 * (it will do nothing)
 	 */
-	void	disconnect (TSockId hostid = 0);
+	void	disconnect (TSockId hostid = InvalidSockId);
 
 	/// Sets callback for disconnections (or NULL to disable callback)
 	void	setDisconnectionCallback (TNetCallback cb, void *arg) { checkThreadId (); CCallbackNetBase::setDisconnectionCallback (cb, arg); }
 
 	/// Returns the sockid
-	virtual TSockId	getSockId (TSockId hostid = 0);
+	virtual TSockId	getSockId (TSockId hostid = InvalidSockId);
 
 	uint64	getReceiveQueueSize () { return CBufClient::getReceiveQueueSize(); }
 	uint64	getSendQueueSize () { return CBufClient::getSendQueueSize(); }

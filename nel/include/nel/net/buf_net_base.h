@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.8 2002/05/21 16:38:21 lecroart Exp $
+ * $Id: buf_net_base.h,v 1.9 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ class CBufSock;
 /// Socket identifier
 typedef CBufSock *TSockId;
 
-static const TSockId InvalidSockId = (TSockId) 0xFFFFFFFF;
+static const TSockId InvalidSockId = (TSockId) NULL;
 
 /// Callback function for message processing
 typedef void (*TNetCallback) ( TSockId from, void *arg );

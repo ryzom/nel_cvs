@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.25 2002/06/10 10:11:33 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.26 2002/06/12 10:16:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -324,9 +324,8 @@ void CBufSock::disconnect( bool connectedstate )
  */
 string CBufSock::asString() const
 {
-	nlassert (this != InvalidSockId);	// invalid bufsock
 	stringstream ss;
-	if (this == NULL) // tricky
+	if (this == InvalidSockId) // tricky
 		ss << "<Null>";
 	else
 	{

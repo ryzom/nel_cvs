@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.126 2002/06/10 16:53:31 berenguier Exp $
+ * $Id: service.cpp,v 1.127 2002/06/12 10:16:34 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -302,7 +302,7 @@ static void initSignal()
 
 // Ctor
 IService::IService() :
-	_Initialized(false), _WindowDisplayer(NULL), _UpdateTimeout(100), _Port(0), _RecordingState(CCallbackNetBase::Off), _SId(0), _Status(0), _IsService5(false), _ResetMeasures(false)
+	_Initialized(false), WindowDisplayer(NULL), _UpdateTimeout(100), _Port(0), _RecordingState(CCallbackNetBase::Off), _SId(0), _Status(0), _IsService5(false), _ResetMeasures(false)
 {
 	// Singleton
 	nlassert( _Instance == NULL );
@@ -522,18 +522,18 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 #ifdef NL_USE_GTK
 			if (disp == "GTK")
 			{
-				_WindowDisplayer = new CGtkDisplayer ("DEFAULT_WD");
+				WindowDisplayer = new CGtkDisplayer ("DEFAULT_WD");
 			}
 #endif // NL_USE_GTK
 
 #ifdef NL_OS_WINDOWS
 			if (disp == "WIN")
 			{
-				_WindowDisplayer = new CWinDisplayer ("DEFAULT_WD");
+				WindowDisplayer = new CWinDisplayer ("DEFAULT_WD");
 			}
 #endif // NL_OS_WINDOWS
 
-			if (_WindowDisplayer == NULL && disp != "NONE")
+			if (WindowDisplayer == NULL && disp != "NONE")
 			{
 				nlwarning ("Unknown value for the WindowStyle (should be GTK, WIN or NONE), use no window displayer");
 			}
@@ -545,7 +545,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		vector <pair<string,uint> > displayedVariables;
 		//uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel, scrollLabel;
-		if (_WindowDisplayer != NULL)
+		if (WindowDisplayer != NULL)
 		{
 			//
 			// Init window param if necessary
@@ -564,31 +564,34 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			if (haveArg('I')) iconified = true;
 
 			if (w == -1 && h == -1)
-				_WindowDisplayer->create (_ShortName + " " + _LongName, iconified, x, y);
+				WindowDisplayer->create (_ShortName + " " + _LongName, iconified, x, y);
 			else
-				_WindowDisplayer->create (_ShortName + " " + _LongName, iconified, x, y, w, h);
+				WindowDisplayer->create (_ShortName + " " + _LongName, iconified, x, y, w, h);
 
-			DebugLog->addDisplayer (_WindowDisplayer);
-			InfoLog->addDisplayer (_WindowDisplayer);
-			WarningLog->addDisplayer (_WindowDisplayer);
-			ErrorLog->addDisplayer (_WindowDisplayer);
-			AssertLog->addDisplayer (_WindowDisplayer);
+			DebugLog->addDisplayer (WindowDisplayer);
+			InfoLog->addDisplayer (WindowDisplayer);
+			WarningLog->addDisplayer (WindowDisplayer);
+			ErrorLog->addDisplayer (WindowDisplayer);
+			AssertLog->addDisplayer (WindowDisplayer);
 
 			// adding default displayed variables
-			displayedVariables.push_back(make_pair(string("NetSpeedLoop:NetLop"), _WindowDisplayer->createLabel ("NetLop")));
-			displayedVariables.push_back(make_pair(string("UserSpeedLoop:UsrLop"), _WindowDisplayer->createLabel ("UsrLop")));
-			displayedVariables.push_back(make_pair(string("ReceivedBytes:Rcv"), _WindowDisplayer->createLabel ("Rcv")));
-			displayedVariables.push_back(make_pair(string("SentBytes:Snd"), _WindowDisplayer->createLabel ("Snd")));
-			displayedVariables.push_back(make_pair(string("ReceivedQueueSize:RcvQ"), _WindowDisplayer->createLabel ("RcvQ")));
-			displayedVariables.push_back(make_pair(string("SentQueueSize:SndQ"), _WindowDisplayer->createLabel ("SndQ")));
-			displayedVariables.push_back(make_pair(string("Scroller:"), _WindowDisplayer->createLabel ("NeL Rulez")));
+			displayedVariables.push_back(make_pair(string("NetLop|NetSpeedLoop"), WindowDisplayer->createLabel ("NetLop")));
+			displayedVariables.push_back(make_pair(string("UsrLop|UserSpeedLoop"), WindowDisplayer->createLabel ("UsrLop")));
+			displayedVariables.push_back(make_pair(string("Rcv|ReceivedBytes"), WindowDisplayer->createLabel ("Rcv")));
+			displayedVariables.push_back(make_pair(string("Snd|SentBytes"), WindowDisplayer->createLabel ("Snd")));
+			displayedVariables.push_back(make_pair(string("RcvQ|ReceivedQueueSize"), WindowDisplayer->createLabel ("RcvQ")));
+			displayedVariables.push_back(make_pair(string("SndQ|SentQueueSize"), WindowDisplayer->createLabel ("SndQ")));
+			displayedVariables.push_back(make_pair(string("|Scroller"), WindowDisplayer->createLabel ("NeL Rulez")));
+			
+//			WindowDisplayer->createLabel ("@Toto|doTotoStuff");
+//			WindowDisplayer->createLabel ("@printConfigFile");
 
 			try
 			{
 				CConfigFile::CVar &v = ConfigFile.getVar("DisplayedVariables");
 				for (sint i = 0; i < v.size(); i++)
 				{
-					displayedVariables.push_back(make_pair(v.asString(i), _WindowDisplayer->createLabel (v.asString(i).c_str())));
+					displayedVariables.push_back(make_pair(v.asString(i), WindowDisplayer->createLabel (v.asString(i).c_str())));
 				}
 			}
 			catch (EUnknownVar&) { }
@@ -1025,10 +1028,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// count the amount of time to manage internal system
 			TTime before = CTime::getLocalTime ();
 
-			if (_WindowDisplayer != NULL)
+			if (WindowDisplayer != NULL)
 			{
 				// update the window displayer and quit if asked
-				if (!_WindowDisplayer->update ())
+				if (!WindowDisplayer->update ())
 					ExitSignalAsked = true;
 			}
 
@@ -1078,7 +1081,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
 			UserSpeedLoop = (sint32) (before - bbefore);
 
-			if (_WindowDisplayer != NULL)
+			if (WindowDisplayer != NULL)
 			{
 				uint64 rcv, snd, rcvq, sndq;
 				if (isService5())
@@ -1103,16 +1106,21 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 				for (uint i = 0; i < displayedVariables.size(); i++)
 				{
+					// it s a separator, do nothing
 					if (displayedVariables[i].first.empty())
+						continue;
+
+					// it s a command, do nothing
+					if (displayedVariables[i].first[0] == '@')
 						continue;
 
 					string dispName = displayedVariables[i].first;
 					string varName = dispName;
-					sint pos = dispName.find(":");
+					sint pos = dispName.find("|");
 					if (pos != string::npos)
 					{
-						dispName = displayedVariables[i].first.substr(pos+1);
-						varName = displayedVariables[i].first.substr(0, pos);
+						varName = displayedVariables[i].first.substr(pos+1);
+						dispName = displayedVariables[i].first.substr(0, pos);
 					}
 
 					if (dispName.empty())
@@ -1140,7 +1148,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 						}
 					}
 					md.unlockStrings();
-					_WindowDisplayer->setLabel (displayedVariables[i].second, str);
+					WindowDisplayer->setLabel (displayedVariables[i].second, str);
 				}
 
 			}
@@ -1211,16 +1219,16 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Remove the window displayer
 		//
 
-		if (_WindowDisplayer != NULL)
+		if (WindowDisplayer != NULL)
 		{
-			DebugLog->removeDisplayer (_WindowDisplayer);
-			InfoLog->removeDisplayer (_WindowDisplayer);
-			WarningLog->removeDisplayer (_WindowDisplayer);
-			ErrorLog->removeDisplayer (_WindowDisplayer);
-			AssertLog->removeDisplayer (_WindowDisplayer);
+			DebugLog->removeDisplayer (WindowDisplayer);
+			InfoLog->removeDisplayer (WindowDisplayer);
+			WarningLog->removeDisplayer (WindowDisplayer);
+			ErrorLog->removeDisplayer (WindowDisplayer);
+			AssertLog->removeDisplayer (WindowDisplayer);
 
-			delete _WindowDisplayer;
-			_WindowDisplayer = NULL;
+			delete WindowDisplayer;
+			WindowDisplayer = NULL;
 		}
 
 		nlinfo ("Service released succesfuly");
@@ -1404,7 +1412,7 @@ NLMISC_COMMAND(displayMeasures, "display hierarchical timer", "")
 NLMISC_COMMAND(getWinDisplayerInfo, "display the info about the pos and size of the window displayer", "")
 {
 	uint32 x,y,w,h;
-	IService::getInstance()->_WindowDisplayer->getWindowPos (x,y,w,h);
+	IService::getInstance()->WindowDisplayer->getWindowPos (x,y,w,h);
 	log.displayNL ("Window Displayer : XWinParam = %d; YWinParam = %d; WWinParam = %d; HWinParam = %d;", x, y, w, h);
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.21 2002/05/21 16:37:38 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.22 2002/06/12 10:16:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,7 @@ CCallbackServer::CCallbackServer( TRecordingState rec, const string& recfilename
  */
 void CCallbackServer::sendAllMyAssociations (TSockId to)
 {
+	nlassert (to != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 	nlassert (connected ());
 
@@ -122,13 +123,12 @@ void CCallbackServer::sendAllMyAssociations (TSockId to)
  */
 void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 {
-	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 	nlassert (connected ());
 	nlassert (buffer.length() != 0);
 	nlassert (buffer.typeIsSet());
 
-	if (hostid == 0)
+	if (hostid == InvalidSockId)
 	{
 		// broadcast
 		sint nb = nbConnections ();
@@ -234,7 +234,7 @@ void CCallbackServer::receive (CMessage &buffer, TSockId *hostid)
 
 /*
  * Disconnect a connection
- * Set hostid to NULL to disconnect all connections.
+ * Set hostid to InvalidSockId to disconnect all connections.
  * If hostid is not null and the socket is not connected, the method does nothing.
  * Before disconnecting, any pending data is actually sent.
  * Recorded : YES in noticeDisconnection called in the disconnection callback
@@ -242,7 +242,6 @@ void CCallbackServer::receive (CMessage &buffer, TSockId *hostid)
  */
 void CCallbackServer::disconnect( TSockId hostid )
 {
-	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
 
 #ifdef USE_MESSAGE_RECORDER

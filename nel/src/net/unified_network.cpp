@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.39 2002/06/11 14:46:19 legros Exp $
+ * $Id: unified_network.cpp,v 1.40 2002/06/12 10:16:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -497,9 +497,8 @@ void	CUnifiedNetwork::release()
 
 	uint	i;
 
-
 	// disconnect all clients
-	_CbServer->disconnect(NULL);
+	_CbServer->disconnect(InvalidSockId);
 	delete _CbServer;
 	_CbServer = NULL;
 
@@ -840,7 +839,10 @@ void	CUnifiedNetwork::updateConnectionTable()
 				nlassert(cnx.EntryUsed);
 				// if was a callback  client before (!IsServerConnection), delete the callback client
 				if (!cnx.IsServerConnection)
+				{
 					delete cnx.Connection.CbClient;
+					cnx.Connection.CbClient = NULL;
+				}
 				cnx.IsServerConnection = true;
 				cnx.Connection.HostId = _ConnectionStack[i].SHost;
 
@@ -928,7 +930,6 @@ void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout)
 					continue;
 
 				found = true;
-
 
 				if (connection.IsServerConnection)
 					_CbServer->send(msgout, connection.Connection.HostId);
@@ -1329,6 +1330,7 @@ void	CUnifiedNetwork::CUnifiedConnection::reset()
 	AutoRetry = false;
 	SendId = false;
 	Connection.CbClient = NULL;
+	Connection.HostId = InvalidSockId;
 	AutoCheck = false;
 }
 
@@ -1455,7 +1457,7 @@ NLMISC_COMMAND(msgout, "Send a message to a specified service", "<ServiceName>|<
 	if (!createMessage (msg, args, log))
 		return false;
 
-	TSockId host = 0;
+	TSockId host = InvalidSockId;
 	CCallbackNetBase *cnb = NULL;
 
 	if (serviceId != 0)

@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.23 2002/03/14 09:47:06 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.24 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,9 +80,9 @@ public:
 
 	/** Sends a message to special connection.
 	 * On a client, the hostid isn't used.
-	 * On a server, you must provide a hostid. If you hostid = 0, the message will be sent to all connected client.
+	 * On a server, you must provide a hostid. If you hostid = InvalidSockId, the message will be sent to all connected client.
 	 */
-	virtual void	send (const CMessage &buffer, TSockId hostid = 0, bool log = true) = 0;
+	virtual void	send (const CMessage &buffer, TSockId hostid = InvalidSockId, bool log = true) = 0;
 
 	uint64	getBytesSent () { return _BytesSent; }
 	uint64	getBytesReceived () { return _BytesReceived; }
@@ -91,10 +91,10 @@ public:
 	virtual uint64	getSendQueueSize () = 0;
 
 	/** Force to send all data pending in the send queue.
-	 * On a client, the hostid isn't used.
+	 * On a client, the hostid isn't used and must be InvalidSockId
 	 * On a server, you must provide a hostid.
 	 */
-	virtual bool	flush (TSockId hostid = 0) = 0;
+	virtual bool	flush (TSockId hostid = InvalidSockId) = 0;
 	
 	/**	Appends callback array with the specified array. You can add callback only *after* adding the server or the client.
 	 * \param arraysize is the number of callback items.
@@ -108,14 +108,14 @@ public:
 	void	setDisconnectionCallback (TNetCallback cb, void *arg) { checkThreadId ();  _DisconnectionCallback = cb; _DisconnectionCbArg = arg; }
 
 	/// returns the sockid of a connection. On a server, this function returns the parameter. On a client, it returns the connection.
-	virtual TSockId	getSockId (TSockId hostid = 0) = 0;
+	virtual TSockId	getSockId (TSockId hostid = InvalidSockId) = 0;
 
 	/** Sets the callback that you want the other side calls. If it didn't call this callback, it will be disconnected
 	 * If cb is NULL, we authorize *all* callback.
-	 * On a client, the hostid must be 0 (or ommited).
+	 * On a client, the hostid must be InvalidSockId (or ommited).
 	 * On a server, you must provide a hostid.
 	 */
-	void	authorizeOnly (const char *callbackName, TSockId hostid = 0);
+	void	authorizeOnly (const char *callbackName, TSockId hostid = InvalidSockId);
 
 	/// Returns true if this is a CCallbackServer
 	bool	isAServer () const { checkThreadId (); return _IsAServer; }
@@ -130,7 +130,7 @@ public:
 	/// This function is implemented in the client and server class
 	virtual bool	connected () const { nlstop; return false; }
 	/// This function is implemented in the client and server class
-	virtual void	disconnect (TSockId hostid = 0) { nlstop; }
+	virtual void	disconnect (TSockId hostid = InvalidSockId) { nlstop; }
 
 	/// Returns the address of the specified host
 	virtual const	CInetAddress& hostAddress (TSockId hostid);

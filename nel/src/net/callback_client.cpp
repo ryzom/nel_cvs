@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.23 2002/06/11 15:32:22 legros Exp $
+ * $Id: callback_client.cpp,v 1.24 2002/06/12 10:16:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfil
  */
 void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 {
-	nlassert (hostid != InvalidSockId);	// invalid hostid
+	nlassert (hostid == InvalidSockId);	// should always be InvalidSockId on client
 	checkThreadId ();
 	nlassert (connected ());
 	nlassert (buffer.length() != 0);
@@ -133,7 +133,7 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
  */
 bool CCallbackClient::flush (TSockId hostid) 
 {
-	nlassert (hostid == InvalidSockId);	// invalid hostid
+	nlassert (hostid == InvalidSockId);	// should always be InvalidSockId on client
 	checkThreadId ();
 
 #ifdef USE_MESSAGE_RECORDER
@@ -218,7 +218,7 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 {
 	checkThreadId ();
 	nlassert (connected ());
-	*hostid = NULL;
+	*hostid = InvalidSockId;
 
 #ifdef USE_MESSAGE_RECORDER
 	if ( _MR_RecordingState != Replay )
@@ -268,11 +268,10 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
  */
 TSockId	CCallbackClient::getSockId (TSockId hostid)
 {
-	nlassert (hostid != InvalidSockId);	// invalid hostid
+	nlassert (hostid == InvalidSockId);
 	checkThreadId ();
 	nlassert (connected ());
 
-	nlassert (hostid == NULL);
 	return id ();
 }
 
@@ -352,7 +351,7 @@ void CCallbackClient::connect( const CInetAddress& addr )
  */
 void CCallbackClient::disconnect( TSockId hostid )
 {
-	nlassert (hostid != InvalidSockId);	// invalid hostid
+	nlassert (hostid == InvalidSockId);	// should always be InvalidSockId on client
 	checkThreadId ();
 
 	SendNextValue = ReceiveNextValue = 0;

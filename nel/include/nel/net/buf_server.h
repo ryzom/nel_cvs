@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.12 2002/05/21 16:38:21 lecroart Exp $
+ * $Id: buf_server.h,v 1.13 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -171,8 +171,8 @@ public:
 	void	init( uint16 port );
 
 	/** Disconnect a connection
-	 * Set hostid to NULL to disconnect all connections.
-	 * If hostid is not null and the socket is not connected, the method does nothing.
+	 * Set hostid to InvalidSockId to disconnect all connections.
+	 * If hostid is not InvalidSockId and the socket is not connected, the method does nothing.
 	 * If quick is true, any pending data will not be sent before disconnecting.
 	 */
 	void	disconnect( TSockId hostid, bool quick=false );
@@ -182,7 +182,7 @@ public:
 
 
 
-	/** Send a message to the specified host, or to all hosts if hostid is zero
+	/** Send a message to the specified host, or to all hosts if hostid is InvalidSockId
 	 */
 	//void	send( const std::vector<uint8>& buffer, TSockId hostid );
 	void	send( const NLMISC::CMemStream& buffer, TSockId hostid );
@@ -210,18 +210,18 @@ public:
 	/** Sets the time flush trigger (in millisecond). When this time is elapsed,
 	 * all data in the send queue is automatically sent (-1 to disable this trigger)
 	 */
-	void	setTimeFlushTrigger( TSockId destid, sint32 ms ) { nlassert( destid != NULL ); destid->setTimeFlushTrigger( ms ); }
+	void	setTimeFlushTrigger( TSockId destid, sint32 ms ) { nlassert( destid != InvalidSockId ); destid->setTimeFlushTrigger( ms ); }
 
 	/** Sets the size flush trigger. When the size of the send queue reaches or exceeds this
 	 * calue, all data in the send queue is automatically sent (-1 to disable this trigger )
 	 */
-	void	setSizeFlushTrigger( TSockId destid, sint32 size ) { nlassert( destid != NULL ); destid->setSizeFlushTrigger( size ); }
+	void	setSizeFlushTrigger( TSockId destid, sint32 size ) { nlassert( destid != InvalidSockId ); destid->setSizeFlushTrigger( size ); }
 
 	/** Force to send all data pending in the send queue.
 	 * \returns False if an error has occured (e.g. the remote host is disconnected).
 	 * To retrieve the reason of the error, call CSock::getLastError() and/or CSock::errorString()
 	 */
-	bool	flush( TSockId destid ) { nlassert( destid != NULL ); return destid->flush(); }
+	bool	flush( TSockId destid ) { nlassert( destid != InvalidSockId ); return destid->flush(); }
 
 
 
@@ -230,7 +230,7 @@ public:
 	const CInetAddress&	listenAddress() const { return _ListenTask->localAddr(); }
 
 	/// Returns the address of the specified host
-	const CInetAddress& hostAddress( TSockId hostid ) { nlassert( hostid != NULL ); return hostid->Sock->remoteAddr(); }
+	const CInetAddress& hostAddress( TSockId hostid ) { nlassert( hostid != InvalidSockId ); return hostid->Sock->remoteAddr(); }
 
 	/*
 	/// Returns the number of bytes pushed into the receive queue since the beginning (mutexed)
@@ -289,6 +289,7 @@ protected:
 
 	void pushBufferToHost( const NLMISC::CMemStream& buffer, TSockId hostid )
 	{
+		nlassert( hostid != InvalidSockId );
 		if ( hostid->pushBuffer( buffer ) )
 		{
 			_BytesPushedOut += buffer.length() + sizeof(TBlockSize); // statistics
@@ -423,7 +424,7 @@ public:
 	void	addNewSocket( TSockId sockid )
 	{
 		//nlnettrace( "CServerReceiveTask::addNewSocket" );
-		nlassert( sockid != NULL );
+		nlassert( sockid != InvalidSockId );
 		{
 			NLMISC::CSynchronized<CConnections>::CAccessor connectionssync( &_Connections );
 			connectionssync.value().insert( sockid );
@@ -440,7 +441,7 @@ public:
 	void	addToRemoveSet( TSockId sockid )
 	{
 		nlnettrace( "CServerReceiveTask::addToRemoveSet" );
-		nlassert( sockid != NULL );
+		nlassert( sockid != InvalidSockId );
 		{
 			// Three possibilities :
 			// - The value is inserted into the set.

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.21 2002/05/27 16:50:55 lecroart Exp $
+ * $Id: unified_network.h,v 1.22 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -233,9 +233,9 @@ private:
 
 		CUnifiedConnection() { reset(); }
 
-		CUnifiedConnection(const std::string &name, uint16 id, CCallbackClient *cb) : ServiceName(name), ServiceId(id), IsServerConnection(false), EntryUsed(true), IsConnected(false), IsExternal(false), AutoCheck(false) { Connection.CbClient = cb; }
+		CUnifiedConnection(const std::string &name, uint16 id, CCallbackClient *cb) : ServiceName(name), ServiceId(id), IsServerConnection(false), EntryUsed(true), IsConnected(false), IsExternal(false), AutoCheck(false) { nlassert (cb != NULL); Connection.CbClient = cb; }
 
-		CUnifiedConnection(const std::string &name, uint16 id, TSockId host) : ServiceName(name), ServiceId(id), IsServerConnection(true), EntryUsed(true), IsConnected(false), IsExternal(false), AutoCheck(false) { Connection.HostId = host; }
+		CUnifiedConnection(const std::string &name, uint16 id, TSockId host) : ServiceName(name), ServiceId(id), IsServerConnection(true), EntryUsed(true), IsConnected(false), IsExternal(false), AutoCheck(false) { nlassert (host != InvalidSockId); Connection.HostId = host; }
 
 		void					reset();
 	};
@@ -248,8 +248,8 @@ private:
 		TSockId		SHost;
 		bool		NeedInsert;		// patch in case of deconnection->reconnection in the same loop
 
-		CConnectionId() : SName("DEAD"), SId(0xDEAD) {}
-		CConnectionId(const std::string &name, uint16 sid, TSockId hid = 0, bool needInsert = true) : SName(name), SId(sid), SHost(hid), NeedInsert(needInsert) {}
+		CConnectionId() : SName("DEAD"), SId(0xDEAD), SHost(InvalidSockId), NeedInsert(false) {}
+		CConnectionId(const std::string &name, uint16 sid, TSockId hid = InvalidSockId, bool needInsert = true) : SName(name), SId(sid), SHost(hid), NeedInsert(needInsert) {}
 	};
 
 	//

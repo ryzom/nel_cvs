@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.13 2002/05/22 08:04:17 lecroart Exp $
+ * $Id: callback_server.h,v 1.14 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ public:
 	void	send (const CMessage &buffer, TSockId hostid, bool log = true);
 
 	/// Force to send all data pending in the send queue.
-	bool	flush (TSockId destid) { checkThreadId (); nlassert( destid != NULL ); return CBufServer::flush(destid); }
+	bool	flush (TSockId destid) { checkThreadId (); nlassert( destid != InvalidSockId ); return CBufServer::flush(destid); }
 
 	/// Updates the network (call this method evenly)
 	void	update (sint32 timeout=0);
@@ -67,8 +67,8 @@ public:
 	bool	connected () const { checkThreadId (); return true; } 
 
 	/** Disconnect a connection
-	 * Set hostid to NULL to disconnect all connections.
-	 * If hostid is not null and the socket is not connected, the method does nothing.
+	 * Set hostid to InvalidSockId to disconnect all connections.
+	 * If hostid is not InvalidSockId and the socket is not connected, the method does nothing.
 	 * Before disconnecting, any pending data is actually sent.
 	 */
 	void	disconnect (TSockId hostid);
@@ -77,7 +77,7 @@ public:
 	const CInetAddress& hostAddress (TSockId hostid) { nlassert(hostid!=InvalidSockId); checkThreadId(); return CBufServer::hostAddress (hostid); }
 
 	/// Returns the sockid (cf. CCallbackClient)
-	virtual TSockId	getSockId (TSockId hostid = 0);
+	virtual TSockId	getSockId (TSockId hostid = InvalidSockId);
 
 	uint64	getReceiveQueueSize () { return CBufServer::getReceiveQueueSize(); }
 	uint64	getSendQueueSize () { return CBufServer::getSendQueueSize(0); }

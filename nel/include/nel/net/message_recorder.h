@@ -1,7 +1,7 @@
 /** \file message_recorder.h
  * Class CMessageRecorder (allows to record/replay message input/output)
  *
- * $Id: message_recorder.h,v 1.3 2001/10/25 12:16:07 cado Exp $
+ * $Id: message_recorder.h,v 1.4 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ TNetworkEvent StringToEvent( string& s );
 struct TMessageRecord
 {
 	/// Default constructor
-	TMessageRecord( bool input = false ) : UpdateCounter(0), SockId(NULL), Message( "", input ) {}
+	TMessageRecord( bool input = false ) : UpdateCounter(0), SockId(InvalidSockId), Message( "", input ) {}
 
 	/// Alt. constructor
 	TMessageRecord( TNetworkEvent event, TSockId sockid, CMessage& msg, sint64 updatecounter ) :

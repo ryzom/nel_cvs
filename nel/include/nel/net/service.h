@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.51 2002/05/27 16:49:03 lecroart Exp $
+ * $Id: service.h,v 1.52 2002/06/12 10:16:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -320,10 +320,8 @@ public:
 
 	//@}
 
-protected:
-
 	/// The window displayer instance
-	NLMISC::CWindowDisplayer			*_WindowDisplayer;
+	NLMISC::CWindowDisplayer			*WindowDisplayer;
 
 private:
 

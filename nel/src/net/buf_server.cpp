@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.30 2002/06/10 10:11:32 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.31 2002/06/12 10:16:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -261,7 +261,7 @@ CBufServer::~CBufServer()
 void CBufServer::disconnect( TSockId hostid, bool quick )
 {
 	nlnettrace( "CBufServer::disconnect" );
-	if ( hostid != NULL )
+	if ( hostid != InvalidSockId )
 	{
 		// Disconnect only if physically connected
 		if ( hostid->Sock->connected() )
@@ -314,7 +314,7 @@ void CBufServer::send( const CMemStream& buffer, TSockId hostid )
 
 	H_AUTO (CBufServer_send);
 
-	if ( hostid != NULL )
+	if ( hostid != InvalidSockId )
 	{
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
@@ -412,7 +412,7 @@ bool CBufServer::dataAvailable()
 					recvfifo.value().front( buffer );
 
 					TSockId sockid = *((TSockId*)(&*buffer.begin()));
-					nldebug( "LNETL1: Disconnection event for %p", sockid );
+					nldebug( "LNETL1: Disconnection event for %p %s", sockid, sockid->asString().c_str());
 
 					sockid->setConnectedState( false );
 
@@ -435,7 +435,7 @@ bool CBufServer::dataAvailable()
 					recvfifo.value().front( buffer );
 
 					TSockId sockid = *((TSockId*)(&*buffer.begin()));
-					nldebug( "LNETL1: Connection event for %p", sockid );
+					nldebug( "LNETL1: Connection event for %p %s", sockid, sockid->asString().c_str());
 
 					sockid->setConnectedState( true );
 					
@@ -567,7 +567,7 @@ void CBufServer::update()
 
 uint32 CBufServer::getSendQueueSize( TSockId destid )
 {
-	if ( destid != NULL )
+	if ( destid != InvalidSockId )
 	{
 		return destid->SendFifo.size();
 	}

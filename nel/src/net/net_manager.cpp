@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.21 2002/06/10 10:11:33 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.22 2002/06/12 10:16:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,7 +109,7 @@ void CNetManager::createConnection(CBaseStruct &Base, const CInetAddress &Addr, 
 		cc->connect (Addr);
 
 		if (Base.ConnectionCallback != NULL)
-			Base.ConnectionCallback (Base.Name, cc->getSockId(0), Base.ConnectionCbArg);
+			Base.ConnectionCallback (Base.Name, cc->getSockId(), Base.ConnectionCbArg);
 	}
 	catch (ESocketConnectionFailed &e)
 	{
@@ -281,7 +281,7 @@ void CNetManager::addClient (const std::string &serviceName)
 	{
 		// call the user that we are connected
 		if ((*itbm).second.ConnectionCallback != NULL)
-			(*itbm).second.ConnectionCallback (serviceName, cc->getSockId(0), (*itbm).second.ConnectionCbArg);
+			(*itbm).second.ConnectionCallback (serviceName, cc->getSockId(), (*itbm).second.ConnectionCbArg);
 	}
 }
 
@@ -401,7 +401,7 @@ void CNetManager::update (TTime timeout)
 								cc->connect (CInetAddress((*itbm).second.ServiceNames[0]));
 
 								if ((*itbm).second.ConnectionCallback != NULL)
-									(*itbm).second.ConnectionCallback ((*itbm).second.Name, cc->getSockId(0), (*itbm).second.ConnectionCbArg);
+									(*itbm).second.ConnectionCallback ((*itbm).second.Name, cc->getSockId(), (*itbm).second.ConnectionCbArg);
 							}
 							catch (ESocketConnectionFailed &e)
 							{
@@ -437,8 +437,6 @@ void CNetManager::update (TTime timeout)
 
 void CNetManager::send (const std::string &serviceName, const CMessage &buffer, TSockId hostid)
 {
-	nlassert (hostid != InvalidSockId);	// invalid hostid
-
 	nldebug ("HNETL4: send for service '%s' message %s to %s", serviceName.c_str(), buffer.toString().c_str(), hostid->asString().c_str());
 	ItBaseMap itbm = find (serviceName);
 	for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)

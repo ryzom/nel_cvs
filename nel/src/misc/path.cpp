@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.12 2001/12/03 11:16:15 lecroart Exp $
+ * $Id: path.cpp,v 1.13 2001/12/10 17:02:50 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ namespace NLMISC {
 //
 
 // Use this define if you want to display info about the CPath.
-#define	NL_DEBUG_PATH
+//#define	NL_DEBUG_PATH
 
 #ifdef	NL_DEBUG_PATH
 #define	NL_DISPLAY_PATH	nlinfo

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.10 2002/04/25 10:34:57 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.11 2003/08/22 09:07:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #pragma once
 #endif 
 
+#include "object_viewer.h"
 
 
 
@@ -130,16 +131,15 @@ protected:
 /////////////////////////////////////////////////////////////////////////////
 // CStartStopParticleSystem dialog
 
-class CStartStopParticleSystem : public CDialog
+class CStartStopParticleSystem : public CDialog, public CObjectViewer::IMainLoopCallBack
 {
 // Construction
 public:
 	CStartStopParticleSystem(CParticleDlg *particleDlg);   // standard constructor
-
-
+	// dtor
+	~CStartStopParticleSystem();	
 	/// return true if a system is being played
 	bool isRunning() const { return _Running; }
-
 	/** Return true if a system is paused.
 	  * Must call only if running
 	  */
@@ -148,15 +148,12 @@ public:
 		nlassert(isRunning());
 		return _Paused;
 	}
-
 	/// force the system to stop
 	void stop();
 	/// force the system to start
 	void start();	
 	/// toggle between start and stop
 	void toggle();
-
-
 	/** call this to say that a located has been removed
 	 *  When the system starts, the initial state is memorised
 	 *  This must be called to ensure that the system won't try to restore instance of a removed located
@@ -168,7 +165,6 @@ public:
 			_SystemInitialPos.removeLocated(loc);
 		}
 	}
-
 	/** call this to say that a located bindable has been removed
 	 *  When the system starts, the initial state is memorised
 	 *  This must be called to ensure that the system won't try to restore instance of a removed located bindable
@@ -180,15 +176,15 @@ public:
 			_SystemInitialPos.removeLocatedBindable(lb);
 		}
 	}
-
 	/// This remove any memorized instance from the system
 	void reset();
-
-
-
 	/// return true when the display bbox button is pressed...
 	bool isBBoxDisplayEnabled();
-
+	// enable / disbale auto-count
+	void enableAutoCount(bool enable);	
+	// reset the autocount the next time the system will be started
+	void resetAutoCount(bool reset = true);
+	bool getResetFlag() const { return _ResetAutoCount; }		
 // Dialog Data
 	//{{AFX_DATA(CStartStopParticleSystem)
 	enum { IDD = IDD_PARTICLE_SYSTEM_START_STOP };
@@ -197,6 +193,7 @@ public:
 	CButton	m_StartPicture;
 	BOOL	m_DisplayBBox;	
 	int		m_SpeedSliderPos;
+	BOOL	m_DisplayHelpers;
 	//}}AFX_DATA
 
 
@@ -217,6 +214,10 @@ private:
 	afx_msg void OnStopSystem();
 	afx_msg void OnPause();
 	afx_msg void OnReleasedcaptureAnimSpeed(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnDisplayHelpers();
+	afx_msg void OnEnableAutoCount();
+	afx_msg void OnResetCount();
+	afx_msg void OnAutoRepeat();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -224,6 +225,15 @@ private:
 	bool _Running;
 	// true if the system is in pause mode
 	bool _Paused;
+	// need the auto-count to be rested
+	bool _ResetAutoCount;
+	// Last number of particle that was displayed (keep this to avoid flickering)
+	sint _LastCurrNumParticles;
+	sint _LastMaxNumParticles;
+	// last displayed date for the system
+	float _LastSystemDate;
+	//
+	bool _AutoRepeat;
 
 	// the dialog that own this dialog
 	CParticleDlg *_ParticleDlg;
@@ -232,7 +242,8 @@ private:
 
 private:
 	void setSpeedSliderValue(float value);
-
+	// From CObjectViewer::IMainLoopCallBack : update display of number of particles
+	virtual void go();	
 };
 
 //{{AFX_INSERT_LOCATION}}

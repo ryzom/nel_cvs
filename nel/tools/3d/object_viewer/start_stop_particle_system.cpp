@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.16 2003/04/14 15:33:11 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.17 2003/08/22 09:07:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "start_stop_particle_system.h"
+#include "located_properties.h"
 
 #include "3d/particle_system.h"
 #include "3d/ps_located.h"
@@ -49,22 +50,42 @@
 /////////////////////////////////////////////////////////////////////////////
 // CStartStopParticleSystem dialog
 
-
+//******************************************************************************************************
 CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg)
-	: CDialog(CStartStopParticleSystem::IDD, particleDlg), _ParticleDlg(particleDlg), _Running(false) , _Paused(false)
+	: CDialog(CStartStopParticleSystem::IDD, particleDlg),
+	  _ParticleDlg(particleDlg),
+	  _Running(false),
+	  _Paused(false),
+	  _ResetAutoCount(true),
+	  _LastCurrNumParticles(-1),
+	  _LastMaxNumParticles(-1),
+	  _LastSystemDate(-1.f),
+	  _AutoRepeat(false)
 {
+	nlassert(particleDlg && particleDlg->getObjectViewer());
+	particleDlg->getObjectViewer()->registerMainLoopCallBack(this);
 	//{{AFX_DATA_INIT(CStartStopParticleSystem)
 	m_DisplayBBox = TRUE;
 	m_SpeedSliderPos = 100;	
+	m_DisplayHelpers = FALSE;
 	//}}AFX_DATA_INIT
 }
 
+//******************************************************************************************************
+CStartStopParticleSystem::~CStartStopParticleSystem()
+{
+	nlassert(_ParticleDlg && _ParticleDlg->getObjectViewer());
+	_ParticleDlg->getObjectViewer()->removeMainLoopCallBack(this);
+}
+
+//******************************************************************************************************
 bool CStartStopParticleSystem::isBBoxDisplayEnabled()
 {
 	UpdateData();
 	return m_DisplayBBox ? true : false;
 }
 	
+//******************************************************************************************************
 void CStartStopParticleSystem::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -74,6 +95,7 @@ void CStartStopParticleSystem::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_START_PICTURE, m_StartPicture);
 	DDX_Check(pDX, IDC_DISPLAY_BBOX, m_DisplayBBox);	
 	DDX_Slider(pDX, IDC_ANIM_SPEED, m_SpeedSliderPos);
+	DDX_Check(pDX, IDC_DISPLAY_HELPERS, m_DisplayHelpers);
 	//}}AFX_DATA_MAP
 
 
@@ -86,78 +108,80 @@ BEGIN_MESSAGE_MAP(CStartStopParticleSystem, CDialog)
 	ON_BN_CLICKED(IDC_STOP_PICTURE, OnStopSystem)
 	ON_BN_CLICKED(IDC_PAUSE_PICTURE, OnPause)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_ANIM_SPEED, OnReleasedcaptureAnimSpeed)
+	ON_BN_CLICKED(IDC_DISPLAY_HELPERS, OnDisplayHelpers)
+	ON_BN_CLICKED(IDC_ENABLE_AUTO_COUNT, OnEnableAutoCount)
+	ON_BN_CLICKED(IDC_RESET_COUNT, OnResetCount)
+	ON_BN_CLICKED(IDC_AUTOREPEAT, OnAutoRepeat)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CStartStopParticleSystem message handlers
 
+//******************************************************************************************************
 BOOL CStartStopParticleSystem::OnInitDialog() 
 {
-	CDialog::OnInitDialog();
-	
-	HBITMAP bm[3];
-		
+	CDialog::OnInitDialog();	
+	HBITMAP bm[3];		
 	bm[0] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_START_SYSTEM));
 	bm[1] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_STOP_SYSTEM));
-	bm[2] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_PAUSE_SYSTEM));
-
-
-	
+	bm[2] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_PAUSE_SYSTEM));	
 	m_StartPicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[0]);
 	m_StopPicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[1]);
 	m_PausePicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[2]);
-
-
-
 	m_StopPicture.EnableWindow(FALSE);
 	m_PausePicture.EnableWindow(FALSE);
-
 	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_ANIM_SPEED);
 	sl->SetRange(0, 100);
-
 	setSpeedSliderValue(1.f);
-
-	
+	GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(FALSE);	
+	((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(0);
+	GetDlgItem(IDC_RESET_COUNT)->EnableWindow(FALSE);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+//******************************************************************************************************
 void CStartStopParticleSystem::OnStartSystem() 
 {
-
+	UpdateData();
 	if (!_Running)
 	{	
 		_Running = true;
 		_SystemInitialPos.copySystemInitialPos(_ParticleDlg->getCurrPS() );	
 		// enable the system to take the right date from the scene	
 		_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true);		
-		_ParticleDlg->getCurrPSModel()->enableDisplayTools(false); 
+		_ParticleDlg->getCurrPSModel()->enableDisplayTools(m_DisplayHelpers != FALSE);
 		_ParticleDlg->getCurrPS()->setSystemDate(0.f);
+		if (_ParticleDlg->getCurrPS()->getAutoCountFlag())
+		{
+			if (_ResetAutoCount)
+			{
+				// reset particle size arrays
+				_ParticleDlg->getCurrPS()->matchArraySize();
+				_ResetAutoCount = false;
+				GetDlgItem(IDC_RESET_COUNT)->EnableWindow(TRUE);
+			}
+		}
 	}
-
 	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true);
 	_Paused = false;
-
-
 	_ParticleDlg->ParticleTreeCtrl->suppressLocatedInstanceNbItem(0);
-
-
 	m_StartPicture.EnableWindow(FALSE);
 	m_StopPicture.EnableWindow(TRUE);
 	m_PausePicture.EnableWindow(TRUE);
-
 	UpdateData(FALSE);
-
 	NL3D::CParticleSystem *ps = _SystemInitialPos.getPS();
 	if (ps)
 	{
 		ps->reactivateSound();		
-	}
+	}	
+	GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(TRUE);
 }
 
+//******************************************************************************************************
 void CStartStopParticleSystem::OnStopSystem() 
-{
+{	
 	_Running = false;
 	_Paused = false;
 	_SystemInitialPos.restoreSystem();
@@ -165,7 +189,7 @@ void CStartStopParticleSystem::OnStopSystem()
 	_ParticleDlg->ParticleTreeCtrl->rebuildLocatedInstance();
 	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(false);	
 	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.f);
-	_ParticleDlg->getCurrPSModel()->enableDisplayTools(true); 
+	_ParticleDlg->getCurrPSModel()->enableDisplayTools(true);
 
 	m_StartPicture.EnableWindow(TRUE);
 	m_StopPicture.EnableWindow(FALSE);
@@ -179,9 +203,11 @@ void CStartStopParticleSystem::OnStopSystem()
 	{
 		ps->stopSound();
 	}
+
+	GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(FALSE);
 }
 
-
+//******************************************************************************************************
 void CStartStopParticleSystem::OnPause() 
 {
 	nlassert(_Running);
@@ -194,15 +220,14 @@ void CStartStopParticleSystem::OnPause()
 	UpdateData(FALSE);
 }
 
-
+//******************************************************************************************************
 void CStartStopParticleSystem::toggle()
 {
 	if (_Running) stop();
 	else start();
 }
 
-
-
+//******************************************************************************************************
 void CStartStopParticleSystem::start()
 {
 	if (!_Running)
@@ -211,8 +236,7 @@ void CStartStopParticleSystem::start()
 	}
 }
 
-
-
+//******************************************************************************************************
 void CStartStopParticleSystem::stop()
 {
 	if (_Running)
@@ -225,12 +249,15 @@ void CStartStopParticleSystem::stop()
 ///////////////////////////////////
 // CPSInitialPos  implementation //
 ///////////////////////////////////
+//******************************************************************************************************
 void CPSInitialPos::reset()
 {
 	_InitInfoVect.clear();
 	_RotScaleInfoVect.clear();
 	_InitialSizeVect.clear();
 }
+
+//******************************************************************************************************
 void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 {
 	reset();
@@ -308,9 +335,7 @@ struct CRemoveLocatedBindableFromRotScaleInfoVectPred
 	bool operator()(const CPSInitialPos::CRotScaleInfo &value) { return value.LB == LB; }
 };
 
-
-
-
+//******************************************************************************************************
 void CPSInitialPos::removeLocated(NL3D::CPSLocated *loc)
 {
 	// in each container, we delete every element that has a pointer over lthe located loc
@@ -333,20 +358,16 @@ void CPSInitialPos::removeLocated(NL3D::CPSLocated *loc)
 
 }
 
-
+//******************************************************************************************************
 void CPSInitialPos::removeLocatedBindable(NL3D::CPSLocatedBindable *lb)
 {
 	CRemoveLocatedBindableFromRotScaleInfoVectPred p;
 	p.LB = lb;
-	_RotScaleInfoVect.erase(std::remove_if(_RotScaleInfoVect.begin(), _RotScaleInfoVect.end(), p)
-							, _RotScaleInfoVect.end() );
+	_RotScaleInfoVect.erase(std::remove_if(_RotScaleInfoVect.begin(), _RotScaleInfoVect.end(), p), _RotScaleInfoVect.end() );
 }
 
-
-
-
-
-	// reinitialize the system with its initial instances positions
+//******************************************************************************************************
+// reinitialize the system with its initial instances positions
 void CPSInitialPos::restoreSystem()
 {
 	nlassert(_PS); // no system has been memorized yet
@@ -411,14 +432,14 @@ void CPSInitialPos::restoreSystem()
 	}
 }
 
+//******************************************************************************************************
 void CStartStopParticleSystem::setSpeedSliderValue(float value)
 {
 	m_SpeedSliderPos = (int) (value * 100);
 	UpdateData(FALSE);
 }
 
-
-
+//******************************************************************************************************
 void CStartStopParticleSystem::OnReleasedcaptureAnimSpeed(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	UpdateData();
@@ -427,9 +448,120 @@ void CStartStopParticleSystem::OnReleasedcaptureAnimSpeed(NMHDR* pNMHDR, LRESULT
 	*pResult = 0;		
 }
 
-
+//******************************************************************************************************
 void CStartStopParticleSystem::reset()
 { 
 	_SystemInitialPos.reset(); 
 	setSpeedSliderValue(1.f);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnDisplayHelpers() 
+{
+	UpdateData();
+	_ParticleDlg->getCurrPSModel()->enableDisplayTools(!_Running || m_DisplayHelpers != FALSE);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnEnableAutoCount() 
+{		
+	bool autoCount = ((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->GetCheck() != 0;
+	if (autoCount)
+	{	
+		CString caption;
+		CString mess;
+		caption.LoadString(IDS_PARTICLE_SYSTEM_EDITOR);
+		mess.LoadString(IDS_ENABLE_AUTOCOUNT);
+		if (MessageBox((LPCTSTR) mess, (LPCTSTR) caption, MB_OKCANCEL) != IDOK)
+		{
+			((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(0);
+			return;
+		}
+	}
+	enableAutoCount(autoCount);	
+	resetAutoCount();
+	if (_Running)
+	{
+		OnStopSystem();
+	}
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::resetAutoCount(bool reset /* = true */)
+{
+	_ResetAutoCount = reset;
+	GetDlgItem(IDC_RESET_COUNT)->EnableWindow(_ParticleDlg->getCurrPS()->getAutoCountFlag() && !reset ? TRUE : FALSE);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnResetCount() 
+{
+	resetAutoCount();
+	if (_Running)
+	{
+		OnStopSystem();
+	}
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::enableAutoCount(bool enable)
+{	
+	((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(enable ? 1 : 0);
+	_ParticleDlg->getCurrPS()->setAutoCountFlag(enable);
+	GetDlgItem(IDC_RESET_COUNT)->EnableWindow(enable && !_ResetAutoCount ? TRUE : FALSE);
+	CLocatedProperties *lp =dynamic_cast<CLocatedProperties *>(_ParticleDlg->getRightPane());
+	if (lp)
+	{
+		lp->getParticleCountDlg()->EnableWindow(enable ? FALSE : TRUE);
+	}
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::go()
+{
+	NL3D::CParticleSystem *ps = _ParticleDlg->getCurrPS();
+	sint currNumParticles = (sint) ps->getCurrNumParticles();
+	sint maxNumParticles = (sint) ps->getMaxNumParticles();
+	// auto repeat feature
+	if (_AutoRepeat)
+	{
+		if (_Running)
+		{		
+			if (ps->getSystemDate() > ps->evalDuration())
+			{
+				if (currNumParticles == 0)
+				{ 
+					// restart system
+					_SystemInitialPos.restoreSystem();
+					_SystemInitialPos.copySystemInitialPos(ps);			
+					ps->setSystemDate(0.f);
+				}
+			}
+		}
+	}
+	// display number of particles		
+	if (currNumParticles != _LastCurrNumParticles || maxNumParticles != _LastMaxNumParticles)
+	{	
+		CString numParts;	
+		numParts.LoadString(IDS_NUM_PARTICLES);
+		numParts += CString(NLMISC::toString("%d / %d",(int) currNumParticles, (int) maxNumParticles).c_str());
+		GetDlgItem(IDC_NUM_PARTICLES)->SetWindowText((LPCTSTR) numParts);
+		_LastCurrNumParticles = currNumParticles;
+		_LastMaxNumParticles = maxNumParticles;
+	}
+	// display system date
+	if (_ParticleDlg->getCurrPS()->getSystemDate() != _LastSystemDate)
+	{
+		_LastSystemDate = ps->getSystemDate();
+		CString sysDate;	
+		sysDate.LoadString(IDS_SYSTEM_DATE);
+		sysDate += CString(NLMISC::toString("%.2f s",_LastSystemDate).c_str());
+		GetDlgItem(IDC_SYSTEM_DATE)->SetWindowText((LPCTSTR) sysDate);
+	}
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnAutoRepeat() 
+{
+	_AutoRepeat = ((CButton *) GetDlgItem(IDC_AUTOREPEAT))->GetCheck() != 0;
 }

@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.56 2003/09/09 15:23:26 lecroart Exp $
+ * $Id: displayer.cpp,v 1.57 2003/09/09 19:17:14 brigand Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,8 +315,8 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 
 CFileDisplayer::CFileDisplayer (const std::string &filename, bool eraseLastLog, const char *displayerName) : IDisplayer (displayerName), _NeedHeader(true), _LastLogSizeChecked(0)
 {
-	setParam (filename, eraseLastLog);
 	_FilePointer = (FILE*)1;
+	setParam (filename, eraseLastLog);
 }
 
 CFileDisplayer::CFileDisplayer () : IDisplayer (""), _NeedHeader(true), _LastLogSizeChecked(0)

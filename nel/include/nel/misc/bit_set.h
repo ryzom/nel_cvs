@@ -1,7 +1,7 @@
 /** \file bit_set.h
  * CBitSet class
  *
- * $Id: bit_set.h,v 1.3 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: bit_set.h,v 1.4 2001/04/24 14:55:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,9 @@ public:
 	/// \name Basics.
 	//@{
 	/// Resize the bit array. All Bits are reseted.
-	void	resize(uint numBits);
+	void	resize (uint numBits);
+	/// Resize the bit array. Bits are not reseted. New bits are set with value.
+	void	resizeNoReset (uint numBits, bool value=false);
 	/// Clear the bitarray so size() return 0.
 	void	clear();
 	/// Return size of the bit array.

@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.11 2001/03/29 15:39:56 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.12 2001/04/24 14:55:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -238,6 +238,7 @@ public:
 
 	/** 
 	  * Add a channel for a specific value of an IAnimatable object.
+	  * Warning: this method will assign the default value in the animated value.
 	  * 
 	  * \param channelName is the name of the channel.
 	  * \param animatable is a pointer on the IAnimatable object in which the value is stored. It will be kept
@@ -320,6 +321,8 @@ public:
 	  * Calling this method will dirt the mixer, ie, all the mixer's channels will 
 	  * be visited to check if they are used by the old animation. If they are, they
 	  * will be linked in the internal CChannel list.
+	  *
+	  * Warning: this method will assign the default value in the animated value that are removed from the active channel queue.
 	  * 
 	  * \param slot is the slot number to empty. Must be >= 0 and < NumAnimationSlot.
 	  */

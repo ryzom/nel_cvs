@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.13 2001/03/30 10:33:09 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.14 2001/04/24 14:55:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -245,6 +245,12 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 
 		// Dirt all the slots
 		dirtAll ();
+
+		// Affect the default value in the animated value
+		entry._Value->affect (entry._DefaultTracks->getValue());
+
+		// Touch the animated value and its owner to recompute them later.
+		entry._Object->touch (entry._ValueId, entry._OwnerValueId);
 	}
 }
 
@@ -502,6 +508,14 @@ void CChannelMixer::refreshList ()
 						// Stop
 						break;
 					}
+				}
+
+				// Still in use?
+				if (!add)
+				{
+					// Set it's value to default and touch it's object
+					channel._Value->affect (channel._DefaultTracks->getValue());
+					channel._Object->touch (channel._ValueId, channel._OwnerValueId);
 				}
 			}
 		}

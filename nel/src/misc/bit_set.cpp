@@ -1,7 +1,7 @@
 /** \file bit_set.cpp
  * CBitSet class
  *
- * $Id: bit_set.cpp,v 1.6 2000/11/21 17:12:13 valignat Exp $
+ * $Id: bit_set.cpp,v 1.7 2001/04/24 14:55:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,25 @@ void	CBitSet::resize(uint numBits)
 
 	// reset to 0.
 	clearAll();
+}
+void	CBitSet::resizeNoReset(uint numBits, bool value)
+{
+	if(numBits==0)
+		clear();
+
+	uint oldNum=NumBits;
+	NumBits= numBits;
+	Array.resize( (NumBits+BITLEN-1) / BITLEN );
+	uint	nLastBits= NumBits & (BITLEN-1) ;
+	// Generate the mask for the last word.
+	if(nLastBits==0)
+		MaskLast= ~((uint)0);
+	else
+		MaskLast= (1<< nLastBits) -1;
+
+	// Set new bit to value
+	for (uint i=oldNum; i<(uint)NumBits; i++)
+		set(i, value);
 }
 uint	CBitSet::size() const
 {

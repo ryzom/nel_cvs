@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.7 2001/03/28 10:31:09 berenguier Exp $
+ * $Id: animatable.h,v 1.8 2001/04/24 14:55:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,7 +147,13 @@ public:
 	  * \param father the father we must inform of our update.
 	  * \param fatherOwnerBit What bit of father we must set when we are updated
 	  */
-	void	setFather(IAnimatable *father, uint fatherOwnerBit) {_Father= father; _FatherOwnerBit= fatherOwnerBit;}
+	void	setFather(IAnimatable *father, uint fatherOwnerBit)
+	{
+		_Father= father; _FatherOwnerBit= fatherOwnerBit;
+
+		// propagate the touch to the fathers.
+		propagateTouch();
+	}
 
 
 	/**
@@ -186,7 +192,7 @@ public:
 	void resize (uint count)
 	{
 		// Bit are reseted after resize (doc), nothing invalidate
-		bitSet.resize (count);
+		bitSet.resizeNoReset (count);
 	}
 	// @}
 

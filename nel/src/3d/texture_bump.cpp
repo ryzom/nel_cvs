@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.5 2001/12/06 16:53:23 vizerie Exp $
+ * $Id: texture_bump.cpp,v 1.6 2002/02/15 17:12:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 namespace NL3D {
 
+#define MID_SIGN_VALUE 127
+
 
 /// create a DsDt texture from a height map (red component of a rgba bitmap)
 static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest, bool absolute)
@@ -44,31 +46,84 @@ static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest, bool a
 
 			if (!absolute)
 			{
-				*(sint8 *) &dest[off] = (sint8) (ds - 127);
-				((sint8 *) &dest[off])[1] = (sint8) (dt - 127);
+
+				dest[off] = (uint16) ((ds + MID_SIGN_VALUE) & 0xff)  | ((dt + MID_SIGN_VALUE) << 8);				
 			}
 			else
 			{
-				*(sint8 *) &dest[off] = (sint8) abs(ds);
-				((sint8 *) &dest[off])[1] = (sint8) abs(dt);
+				dest[off] = (uint16) (abs(ds) |  (abs(dt) << 8));
 			}
 		}
 	}
 }
 
+/// Normalize a DsDt texture after it has been built, and return the normalization factor
+static float NormalizeDsDt(uint16 *src, sint width, sint height, bool absolute)
+{
+	const uint size = width * height;
+	uint highestDelta = 0;
+	uint k;
+
+	/// first, get the highest delta
+	if (absolute)
+	{
+		for (k = 0; k < size; ++k)
+		{
+			highestDelta = std::max(highestDelta, (uint) (src[k] & 255));
+			highestDelta = std::max(highestDelta, (uint) src[k] >> 8);
+		}
+
+		if (highestDelta == 0)
+		{
+			return 1.f;
+		}
+		float normalizationFactor = 255.f / highestDelta;
+		for (k = 0; k < size; ++k)
+		{
+			uint8 du = (uint8) ((uint) (src[k] & 0xff) * normalizationFactor);
+			uint16 dv = (uint16) (((uint) src[k] >> 8) * normalizationFactor);
+			src[k] = (uint16) du | (dv << 8); 
+		}
+		return 1.f / normalizationFactor;
+	}
+	else
+	{		
+		for (k = 0; k < size; ++k)
+		{
+			highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) ((src[k] & 255) - MID_SIGN_VALUE)));
+			highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) ((src[k] >> 8) - MID_SIGN_VALUE)));			
+		}
+
+		if (highestDelta == 0)
+		{
+			return 1.f;
+		}
+		float normalizationFactor = 127.f / highestDelta;
+		for (k = 0; k < size; ++k)
+		{
+			uint8 du = (uint8) (sint8) (((sint8) (src[k] & 255) - MID_SIGN_VALUE) * normalizationFactor + MID_SIGN_VALUE);
+			uint16 dv = (uint8) (sint8) (((sint8) (src[k] >> 8) - MID_SIGN_VALUE) * normalizationFactor + MID_SIGN_VALUE);
+			src[k] = (uint16) du | (dv << 8); 
+		}
+		return 1.f / normalizationFactor;
+	}
+}
 
 
 
 /*
  * Constructor
  */
-CTextureBump::CTextureBump() : _DisableSharing(false), _UseAbsoluteOffsets(false)
+CTextureBump::CTextureBump() : _NormalizationFactor(0.f),
+							   _DisableSharing(false),
+							   _UseAbsoluteOffsets(false),
+							   _ForceNormalize(true)
 {
 	// mipmapping not supported for now, disable it
 	ITexture::setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
 }
 
-
+///==============================================================================================
 void CTextureBump::setFilterMode(TMagFilter magf, TMinFilter minf)
 {	
 	nlstop; // set filter mode not allowed with bump textures (not supported by some GPUs)
@@ -83,9 +138,12 @@ void CTextureBump::setHeightMap(ITexture *heightMap)
 	}
 }
 
+
+///==============================================================================================
 void CTextureBump::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(1);
+	/// version 2 : normalization flag
+	sint ver = f.serialVersion(2);
 	ITexture::serial(f);
 	ITexture *tex = NULL;	
 	if (f.isReading())
@@ -100,13 +158,17 @@ void CTextureBump::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialPolyPtr(tex);
 	}
 	f.serial(_DisableSharing);
-	if (ver > 0)
+	if (ver >= 1)
 	{
 		f.serial(_UseAbsoluteOffsets);
 	}
+	if (ver >= 2)
+	{
+		f.serial(_ForceNormalize);
+	}
 }
 
-
+///==============================================================================================
 void CTextureBump::doGenerate()
 {	
 	if (!_HeightMap)
@@ -127,12 +189,20 @@ void CTextureBump::doGenerate()
 	CBitmap::resize(_HeightMap->getWidth(), _HeightMap->getHeight(), CBitmap::DsDt);	
 	// build the DsDt map
 	BuildDsDt((uint32 *) &(_HeightMap->getPixels()[0]), width, height, (uint16 *) &(getPixels()[0]), _UseAbsoluteOffsets);
+
+	// Normalize the map if needed
+	if (_ForceNormalize)
+	{
+		_NormalizationFactor = NormalizeDsDt((uint16 *) &(getPixels()[0]), width, height, _UseAbsoluteOffsets);
+	}
+
 	if (_HeightMap->getReleasable())
 	{
 		_HeightMap->release();
 	}
 }
 
+///==============================================================================================
 void CTextureBump::release()
 {
 	ITexture::release();
@@ -146,13 +216,15 @@ void CTextureBump::release()
 }
 
 
+///==============================================================================================
 bool	CTextureBump::supportSharing() const
 {	
 	return !_DisableSharing && _HeightMap && _HeightMap->supportSharing();	
 }
 
-	
-std::string	CTextureBump::getShareName() const
+
+///==============================================================================================
+	std::string	CTextureBump::getShareName() const
 {
 	nlassert(supportSharing());
 	return "BumpDsDt:" + _HeightMap->getShareName();

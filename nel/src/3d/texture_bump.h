@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * <File description>
  *
- * $Id: texture_bump.h,v 1.4 2001/12/06 16:53:23 vizerie Exp $
+ * $Id: texture_bump.h,v 1.5 2002/02/15 17:12:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -68,16 +68,32 @@ public:
 	void					setAbsoluteOffsets(bool use = true) { _UseAbsoluteOffsets = true; }
 	bool					getAbsoluteOffsets() const { return _UseAbsoluteOffsets; }
 
+	/** Force normalization of this texture when it is generated, so that the deltas reach their maximum amplitude.
+	  * After the texture generation, the factor needed to normalize can be obtained
+	  */
+	void					forceNormalize(bool force = true) { _ForceNormalize = force; }
 
+	/// Test wether normalization is forced with that texture
+	bool				    isNormalizationForced() const { return _ForceNormalize; }
+
+	/// Get the normalization factor. This is valid only if the texture has been generated
+	float					getNormalizationFactor() 
+	{ 
+		nlassert(_ForceNormalize);
+		return _NormalizationFactor; 
+	}
+
+	// inherited from ITexture. release this texture, and its datas
+	virtual void release();	
 	
 protected:
 	// inherited from ITexture. Generate this bumpmap pixels
-	virtual void doGenerate();
-	// inherited from ITexture. release this texture, and its datas
-	virtual void release();	
+	virtual void doGenerate();	
 	NLMISC::CSmartPtr<ITexture> _HeightMap;
+	float						_NormalizationFactor;
 	bool						_DisableSharing;
 	bool						_UseAbsoluteOffsets;
+	bool						_ForceNormalize;
 private:
 	/// we don't allow for mipmap for bump so we redefine this to prevent the user from doing this on the base class Itexture
 	virtual         void setFilterMode(TMagFilter magf, TMinFilter minf);

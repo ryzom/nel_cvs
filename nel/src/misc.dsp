@@ -729,6 +729,14 @@ SOURCE=..\include\nel\misc\entity_id.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\fast_mem.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\fast_mem.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\hierarchical_timer.cpp
 # End Source File
 # Begin Source File

@@ -2247,14 +2247,6 @@ SOURCE=.\3d\fast_floor.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\fast_mem.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\fast_mem.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\radix_sort.cpp
 # End Source File
 # Begin Source File

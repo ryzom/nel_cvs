@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
  * <File description>
  *
- * $Id: texture_dlm.cpp,v 1.7 2002/04/23 14:38:13 berenguier Exp $
+ * $Id: texture_dlm.cpp,v 1.8 2002/05/14 10:13:07 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "3d/texture_dlm.h"
 #include "nel/misc/common.h"
-#include "3d/fast_mem.h"
+#include "nel/misc/fast_mem.h"
 
 
 using namespace std;

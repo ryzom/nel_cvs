@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.3 2002/04/10 15:57:02 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.4 2002/05/14 10:13:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "3d/skeleton_model.h"
 #include "nel/misc/bsphere.h"
 #include "3d/stripifier.h"
-#include "3d/fast_mem.h"
+#include "nel/misc/fast_mem.h"
 #include "nel/misc/cpu_info.h"
 
 

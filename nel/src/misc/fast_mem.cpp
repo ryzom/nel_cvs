@@ -1,7 +1,7 @@
 /** \file fast_mem.cpp
- * <File description>
+ * Fast memory copy and precache
  *
- * $Id: fast_mem.cpp,v 1.2 2002/04/22 17:11:28 berenguier Exp $
+ * $Id: fast_mem.cpp,v 1.1 2002/05/14 10:11:14 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,13 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#include "std3d.h"
+#include "stdmisc.h"
 
-#include "3d/fast_mem.h"
+#include "nel/misc/fast_mem.h"
 #include "nel/misc/cpu_info.h"
 
 
-namespace NL3D 
+namespace NLMISC
 {
 
 #ifdef NL_OS_WINDOWS
@@ -222,4 +222,4 @@ void		CFastMem::precacheBest(const void *src, uint nbytes)
 
 #endif
 
-} // NL3D
+} // NLMISC

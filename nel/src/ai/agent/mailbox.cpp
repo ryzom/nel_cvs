@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.22 2001/06/28 15:47:54 chafik Exp $
+ * $Id: mailbox.cpp,v 1.23 2001/07/06 08:26:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,7 @@ namespace NLAIAGENT
 	
 	CSimpleLocalMailBox::~CSimpleLocalMailBox()
 	{			
-		while(_ListMessage.size())
+		while(_ListMessage.begin() != _ListMessage.end())
 		{
 			IMessageBase *m = (IMessageBase *)_ListMessage.back();
 			m->release();
@@ -102,6 +102,10 @@ namespace NLAIAGENT
 	sint32 CSimpleLocalMailBox::getMessageCount() const
 	{
 		return _ListMessage.size();
+	}
+	bool CSimpleLocalMailBox::isEmpty() const
+	{
+		return _ListMessage.begin() == _ListMessage.end();
 	}
 
 	std::list<const IMessageBase *> *CSimpleLocalMailBox::pumpMessages(/*IBasicMessageGroup &*/) const
@@ -258,14 +262,14 @@ namespace NLAIAGENT
 
 	CLocalMailBox::~CLocalMailBox()
 	{
-		while(_ListMessageIn.size())
+		while(_ListMessageIn.begin() != _ListMessageIn.end())
 		{
 			IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
 			msg->release();
 			_ListMessageIn.pop_back();
 		}
 
-		while(_ListSharedMessage.size())
+		while(_ListSharedMessage.begin() != _ListSharedMessage.end())
 		{
 			IMessageBase *msg = (IMessageBase *)_ListSharedMessage.back();
 			msg->release();
@@ -304,6 +308,11 @@ namespace NLAIAGENT
 	sint32 CLocalMailBox::getMessageCount() const
 	{
 		return _ListMessageIn.size();
+	}
+
+	bool CLocalMailBox::isEmpty() const
+	{
+		return _ListMessageIn.begin() == _ListMessageIn.end();
 	}
 	
 	/*void CLocalMailBox::sendMessage(const IBasicAgent &,const IBaseGroupType &)
@@ -449,7 +458,7 @@ namespace NLAIAGENT
 	std::list<const IMessageBase *> *CLocalMailBox::pumpMessages(/*IBasicMessageGroup &grp*/) const
 	{
 		//return _ListMessageIn.pumpMessages( grp );
-		if(_ListSharedMessage.size())
+		if(_ListSharedMessage.begin() != _ListSharedMessage.end())
 		{
 			std::list<const IMessageBase *> *l = new tListMessage;
 			tListMessageCstIter msgItr = _ListSharedMessage.begin();
@@ -509,7 +518,7 @@ namespace NLAIAGENT
 		nlinfo("\tconnected:\n %s", connected.c_str());		
 		
 #endif*/
-		while(_ListSharedMessage.size())
+		while(_ListSharedMessage.begin() != _ListSharedMessage.end())
 		{
 			IMessageBase *b = (IMessageBase *)_ListSharedMessage.back();
 			b->release();
@@ -548,7 +557,7 @@ namespace NLAIAGENT
 			std::list<const IMessageBase *> *msg_lst = box->pumpMessages();
 			if ( msg_lst != NULL)
 			{
-				while ( msg_lst->size() )
+				while ( msg_lst->begin() != msg_lst->end())
 				{
 					IMessageBase *m = (IMessageBase *) msg_lst->front();
 					m->incRef();
@@ -585,7 +594,7 @@ namespace NLAIAGENT
 	
 	CScriptMailBox::~CScriptMailBox()
 	{			
-		while(_ListMessage.size())
+		while(_ListMessage.begin() != _ListMessage.end())
 		{
 			IMessageBase *m = (IMessageBase *)_ListMessage.back();
 			m->release();

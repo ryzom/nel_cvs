@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.14 2001/06/18 07:56:52 chafik Exp $
+ * $Id: agent_digital.h,v 1.15 2001/07/06 08:25:37 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,7 +93,7 @@ namespace NLAIAGENT
 			
 		virtual void getDebugString(std::string &text) const
 		{			
-			text += NLAIC::stringGetBuild("<float> %f",getValue());
+			text += NLAIC::stringGetBuild("%f",getValue());
 		}		
 
 		virtual const CProcessResult &run();
@@ -165,7 +165,7 @@ namespace NLAIAGENT
 		
 		virtual void getDebugString(std::string &text) const
 		{
-			text += NLAIC::stringGetBuild("_Value<%f> [_inf<%f> _sup<%f>]",getValue(),getInf(),getSup());
+			text += NLAIC::stringGetBuild("%f [_inf<%f> _sup<%f>]",getValue(),getInf(),getSup());
 		}
 		//@}
 
@@ -306,7 +306,7 @@ namespace NLAIAGENT
 		
 		virtual void getDebugString(std::string &text) const
 		{
-			text += NLAIC::stringGetBuild("_Value<%e> [_inf<%e> _sup<%e>]",getValue(),getInf(),getSup());
+			text += NLAIC::stringGetBuild("%e [_inf<%e> _sup<%e>]",getValue(),getInf(),getSup());
 		}
 		//@}
 
@@ -494,7 +494,7 @@ namespace NLAIAGENT
 
 		virtual void getDebugString(std::string &text) const
 		{
-			text += NLAIC::stringGetBuild("%c",getValue());
+			text += NLAIC::stringGetBuild("%d",getValue());
 		}		
 
 		virtual const CProcessResult &run();
@@ -540,7 +540,7 @@ namespace NLAIAGENT
 
 		virtual void getDebugString(std::string &text) const
 		{
-			text += NLAIC::stringGetBuild("%c",getValue());
+			text += NLAIC::stringGetBuild("%d",getValue());
 		}		
 
 		virtual const CProcessResult &run();
@@ -591,7 +591,7 @@ namespace NLAIAGENT
 
 		virtual void getDebugString(std::string &text) const
 		{
-			text += NLAIC::stringGetBuild("%c",getValue());
+			text += NLAIC::stringGetBuild("%d",getValue());
 		}		
 
 		virtual const CProcessResult &run();
@@ -643,7 +643,7 @@ namespace NLAIAGENT
 
 		virtual void getDebugString(std::string &text) const
 		{
-			text += NLAIC::stringGetBuild("%c",getValue());
+			text += NLAIC::stringGetBuild("%d",getValue());
 		}		
 
 		virtual const CProcessResult &run();

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.72 2001/06/28 15:47:54 chafik Exp $
+ * $Id: agent_script.cpp,v 1.73 2001/07/06 08:26:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,6 +21,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+#include "nel/ai/nl_ai.h"
 #include "nel/ai/agent/agent_script.h"
 #include "nel/ai/agent/agent_manager.h"
 #include "nel/ai/agent/agent_local_mailer.h"
@@ -67,6 +68,23 @@ namespace NLAIAGENT
 
 	void CAgentScript::initAgentScript()
 	{
+
+		std::string msgStr;
+		std::string scriptName("MsgAgentScript");
+
+		msgStr = std::string("From Message : Define MsgTellCompoment\n{");
+		msgStr += std::string("Component:\n");		
+		msgStr += std::string("\tString<'CompomentName'>;\n");
+		msgStr += std::string("\tMessage<'MsgType'>;\n");
+		msgStr += std::string("End\n");
+
+		msgStr += std::string("Constructor(String i; Message msg)\n");
+		msgStr += std::string("\tCompomentName = i;\n");
+		msgStr += std::string("\tMsgType = msg;\n");
+		msgStr += std::string("End\n");
+		msgStr += std::string("}\n");
+		NLAILINK::buildScript(msgStr,scriptName);
+
 		
 		msgType = new NLAISCRIPT::COperandSimpleListOr(3,	
 														new NLAIC::CIdentType(CMessageList::IdMessage),
@@ -153,32 +171,7 @@ namespace NLAIAGENT
 																			new NLAISCRIPT::CObjectUnknown(
 																			new NLAISCRIPT::COperandSimple(
 																			//check if correct
-																			new NLAIC::CIdentType(*IAgent::IdAgent))));
-
-	////////////////////////////////////////////////////////////////////////
-	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
-
-		/*StaticMethod[CAgentScript::TGoal] = new CAgentScript::CMethodCall(	_RUNACHIEVE_, 
-																			CAgentScript::TGoal, ParamGoalMsg,
-																			CAgentScript::CheckAll,
-																			1,
-																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
-
-		StaticMethod[CAgentScript::TCancelGoal] = new CAgentScript::CMethodCall(	_RUNACHIEVE_, 
-																			CAgentScript::TCancelGoal, ParamCancelGoalMsg,
-																			CAgentScript::CheckAll,
-																			1,
-																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
-
-
-		StaticMethod[CAgentScript::TFact] = new CAgentScript::CMethodCall(	_RUNTEL_, 
-																			CAgentScript::TFact, ParamFactMsg,
-																			CAgentScript::CheckAll,
-																			1,
-																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );*/
-
-	////////////////////////////////////////////////////////////////////////
-
+																			new NLAIC::CIdentType(*IAgent::IdAgent))));	
 
 
 		StaticMethod[CAgentScript::TSelf] = new CAgentScript::CMethodCall(	_SELF_, 
@@ -202,9 +195,7 @@ namespace NLAIAGENT
 																				0,
 																				new NLAISCRIPT::CObjectUnknown(
 																				new NLAISCRIPT::COperandSimple(
-																				new NLAIC::CIdentType(DigitalType::IdDigitalType))));
-
-		
+																				new NLAIC::CIdentType(DigitalType::IdDigitalType))));		
 	}
 
 	void CAgentScript::releaseAgentScript()
@@ -1035,7 +1026,7 @@ namespace NLAIAGENT
 		IObjectIA *c = NULL;
 		if( _AgentManager != NULL) c = (IObjectIA *)_AgentManager->getAgentContext();
 		else c = NULL;
-		while(getMail()->getMessageCount())
+		while(!getMail()->isEmpty())
 		{
 			IMessageBase &msg = (IMessageBase &)getMail()->getMessage();
 #ifdef NL_DEBUG
@@ -1493,7 +1484,7 @@ namespace NLAIAGENT
 #endif
 		
 
-		if(className == NULL)
+ 		if(className == NULL)
 		{
 
 			tQueue r;

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.37 2001/07/02 10:06:58 chafik Exp $
+ * $Id: agents.cpp,v 1.38 2001/07/06 08:26:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,7 +165,7 @@ namespace NLAIAGENT
 	
 	void IAgent::processMessages()
 	{
-		while(getMail()->getMessageCount())
+		while(!getMail()->isEmpty())
 		{
 			const IMessageBase &msg = getMail()->getMessage();
 #ifdef NL_DEBUG

@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.10 2001/05/22 16:08:01 chafik Exp $
+ * $Id: mailbox.h,v 1.11 2001/07/06 08:25:37 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ namespace NLAIAGENT
 		virtual void shareMessage() = 0;
 		virtual void popMessage() = 0;
 		virtual sint32	getMessageCount() const = 0;
+		virtual bool isEmpty() const = 0;
 
 		virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &*/) const= 0;
 
@@ -96,6 +97,7 @@ namespace NLAIAGENT
 		virtual const IMessageBase &getMessage();
 		virtual void popMessage();
 		virtual sint32	getMessageCount() const;		
+		virtual bool isEmpty() const;
 		virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &*/) const;		
 		virtual const CProcessResult &getState() const;
 		virtual void setState(TProcessStatement state, IObjectIA *result);
@@ -143,6 +145,7 @@ namespace NLAIAGENT
 			virtual void shareMessage();
 			virtual void popMessage();
 			virtual sint32	getMessageCount() const;
+			virtual bool isEmpty() const;
 			//virtual void sendMessage(const IBasicAgent &,const IBaseGroupType &);
 			virtual IObjectIA::CProcessResult sendMessage(IMessageBase *);
 			virtual void addMessage(IMessageBase *msg);

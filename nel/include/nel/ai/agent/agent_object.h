@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.16 2001/06/15 12:17:30 portier Exp $
+ * $Id: agent_object.h,v 1.17 2001/07/06 08:25:37 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,6 +140,18 @@ namespace NLAIAGENT
 	
 	class CPaireType: public IObjetOp
 	{
+	public:
+		struct CMethodCall
+		{
+			CMethodCall(const char *name, int i): MethodName (name)
+			{				
+				Index = i;
+			}
+			CStringVarName MethodName;
+			sint32 Index;
+		};
+		static CMethodCall _Method[];
+
 	private:		
 		IObjectIA *_First;
 		IObjectIA *_Second;
@@ -230,6 +242,11 @@ namespace NLAIAGENT
 			if(((IObjectIA &)t._First) == ((IObjectIA &)_First)) return t._Second == _Second;
 			return false;
 		}
+
+		virtual sint32 getMethodIndexSize() const;
+		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
+		virtual	CProcessResult runMethodeMember(sint32 index,IObjectIA *);
 	};	
 
 	/**	

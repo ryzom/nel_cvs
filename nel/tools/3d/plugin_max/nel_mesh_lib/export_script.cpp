@@ -1,7 +1,7 @@
 /** \file export_script.cpp
  * Export script utility from 3dsmax
  *
- * $Id: export_script.cpp,v 1.3 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: export_script.cpp,v 1.4 2001/12/14 17:55:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -160,9 +160,8 @@ std::string CExportNel::getScriptAppData (Animatable *node, uint32 id, const std
 		return def;
 
 	// String to int
-	char block[512];
-	if (sscanf ((const char*)ap->data, "%s", &block)==1)
-		return block;
+	if (((const char*)ap->data)[ap->length - 1] == 0)
+		return (const char*)ap->data;
 	else
 		return def;
 }

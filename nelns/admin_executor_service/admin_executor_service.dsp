@@ -150,5 +150,13 @@ SOURCE=.\admin_executor_service.cfg
 
 SOURCE=.\admin_executor_service.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\log_report.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\log_report.h
+# End Source File
 # End Target
 # End Project

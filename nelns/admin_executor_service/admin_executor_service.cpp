@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.58 2004/02/12 17:51:50 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.59 2004/03/01 19:38:50 cado Exp $
  *
  */
 
@@ -69,6 +69,8 @@
 #include "nel/net/varpath.h"
 #include "nel/net/email.h"
 #include "nel/net/admin.h"
+
+#include "log_report.h"
 
 //
 // Namespaces
@@ -1616,6 +1618,74 @@ NLMISC_COMMAND (aesSystem, "Execute a system() call", "<command>")
 	}
 	
 	CFile::deleteFile(fn);
+
+	return true;
+}
+
+
+
+CMakeLogTask MakingLogTask;
+
+
+NLMISC_COMMAND( makeLogReport, "Build a report of logs produced on the machine", "[stop]" )
+{
+	if ( args.empty() )
+	{
+		if ( ! MakingLogTask.isRunning() )
+		{
+			MakingLogTask.start();
+			log.displayNL( "Task started" );
+		}
+		else
+		{
+			log.displayNL( "The makeLogReport task is already in progress, wait until the end of call 'makeLogReport stop' to terminate it");
+		}
+	}
+	else if ( args[0] == "stop" )
+	{
+		if ( MakingLogTask.isRunning() )
+		{
+			nlinfo( "Stopping makeLogReport task..." );
+			MakingLogTask.terminateTask();
+			log.displayNL( "Task stopped" );
+		}
+		else
+			log.displayNL( "Task is not running" );
+	}
+
+	return true;
+}
+
+NLMISC_COMMAND( displayLogReport, "Display summary of a part of the log report built by makeLogReport",
+			    "[<service id> | <-p page number>]" )
+{
+	if ( MakingLogTask.isRunning() )
+	{
+		log.displayNL( "Please wait until the completion of the makeLogReport task, or stop it" );
+		return true;
+	}
+	log.displayNL( MakingLogTask.isComplete() ? "Full stats:" : "Temporary stats" );
+	if ( args.empty() )
+	{
+		// Summary
+		MainLogReport.report( &log );
+	}
+	else if ( (! args[0].empty()) && (args[0] == "-p") )
+	{
+		// By page
+		if ( args.size() < 2 )
+		{
+			log.displayNL( "Page number missing" );
+			return false;
+		}
+		uint pageNum = atoi( args[1].substr( 1 ).c_str() );
+		MainLogReport.reportPage( pageNum, &log );
+	}
+	else
+	{
+		// By service
+		MainLogReport.reportByService( args[0], &log );
+	}
 
 	return true;
 }

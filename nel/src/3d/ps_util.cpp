@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.16 2001/06/25 13:38:13 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.17 2001/06/25 16:09:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -369,12 +369,12 @@ CMatrix CPSUtil::buildSchmidtBasis(const CVector &k_)
 	CVector k = k_ ;
 	k.normalize() ;
 	CVector i ;
-	if (fabs(1.0f - k * CVector::I) > epsilon)
+	if ((1.0f - fabsf(k * CVector::I)) > epsilon)
 	{
 		i = k ^ CVector::I ;
 	}
 	else
-	if (fabs(1.0f - k * CVector::J) > epsilon)
+	if ((1.0f - fabs(k * CVector::J)) > epsilon)
 	{
 		i = k ^ CVector::J ;
 	}

@@ -1,7 +1,7 @@
 /** \file zone_search.cpp
  * CZoneSearch class
  *
- * $Id: zone_search.cpp,v 1.1 2001/02/28 14:43:19 berenguier Exp $
+ * $Id: zone_search.cpp,v 1.2 2001/03/19 10:12:38 puzin Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ pair<string, uint32> CZoneSearch::getZoneName(uint x, uint y, uint cx, uint cy)
 	char firstLetter = zoneX / 26 + 'a';
 	char secondLetter = zoneX % 26 + 'a';
 
-	sprintf(name, "%d_%c%c.zonew", zoneY, firstLetter, secondLetter);
+	sprintf(name, "%d_%c%c.zonel", zoneY, firstLetter, secondLetter);
 
 	return make_pair<string, uint32>(string(name), distance);
 }

@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.25 2003/01/22 14:16:27 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.26 2003/02/21 15:50:49 lecroart Exp $
  *
  */
 
@@ -1497,6 +1497,9 @@ void addRequest (const string &rawvarpath, TSockId from)
 			sendAlarms((*aesit).SId);
 		}
 
+		// send an empty string to say to php that there's nothing
+		string str;
+		sendString (from, str);
 		return;
 	}
 

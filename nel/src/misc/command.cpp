@@ -1,7 +1,7 @@
 /** \file command.cpp
  * TODO: File description
  *
- * $Id: command.cpp,v 1.34 2004/11/15 10:25:03 lecroart Exp $
+ * $Id: command.cpp,v 1.35 2005/02/18 17:38:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NLMISC {
 ICommand::TCategorySet* ICommand::Categories;
 ICommand::TCommand* ICommand::Commands;
 bool ICommand::CommandsInit;
+set<std::string>		ICommand::_CommandsDisablingControlChar;
 
 ICommand::ICommand(const char *categoryName, const char *commandName, const char *commandHelp, const char *commandArgs)
 {
@@ -115,9 +116,11 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 		log.displayNL ("Executing command : '%s'", disp.c_str());
 	}
 
+	// true to indicate that '"', ';' and '\' are special character sequence control
+	bool allowControlChar= true;
+
 	// convert the buffer into string vector
 	vector<pair<string, vector<string> > > commands;
-	
 	bool firstArg = true;
 	uint i = 0;
 	while (true)
@@ -138,7 +141,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 		
 		// get param
 		string arg;
-		if (commandWithArgs[i] == '\"')
+		if (allowControlChar && commandWithArgs[i] == '\"')
 		{
 			// starting with a quote "
 			i++;
@@ -185,7 +188,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 			// normal word
 			while (true)
 			{
-				if (commandWithArgs[i] == '\\')
+				if (allowControlChar && commandWithArgs[i] == '\\')
 				{
 					// manage escape char backslash
 					i++;
@@ -205,7 +208,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 							return;
 					}
 				}
-				else if (commandWithArgs[i] == ';')
+				else if (allowControlChar && commandWithArgs[i] == ';')
 				{
 					// command separator
 					break;
@@ -228,8 +231,13 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 		{
 			if (firstArg)
 			{
+				// the first arg is the command
 				commands.push_back (make_pair(arg, vector<string> () ));
 				firstArg = false;
+
+				// does this command disable control char for remaining params?
+				if(!isControlCharForCommandEnabled(arg))
+					allowControlChar= false;
 			}
 			else
 			{
@@ -238,7 +246,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 		}
 
 		// separator
-		if (i < commandWithArgs.size() && commandWithArgs[i] == ';')
+		if (i < commandWithArgs.size() && allowControlChar && commandWithArgs[i] == ';')
 		{
 			firstArg = true;
 			i++;
@@ -478,5 +486,24 @@ NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/command
 	log.displayNL("'%s' is not a command, category or wildcard. Type 'help' for more information", args[0].c_str());
 	return true;
 }
+
+// ***************************************************************************
+void	ICommand::enableControlCharForCommand(const std::string &commandName, bool state)
+{
+	if(state)
+		// allow, so erase from the set of those who disable
+		_CommandsDisablingControlChar.erase(commandName);
+	else
+		// disable, so insert in the set of those who disable
+		_CommandsDisablingControlChar.insert(commandName);
+}
+
+// ***************************************************************************
+bool	ICommand::isControlCharForCommandEnabled(const std::string &commandName)
+{
+	// true if not in the set
+	return _CommandsDisablingControlChar.find(commandName)==_CommandsDisablingControlChar.end();
+}
+
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.33 2004/09/07 16:07:15 vuarand Exp $
+ * $Id: command.h,v 1.34 2005/02/18 17:39:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 
 #include <string>
 #include <map>
+#include <set>
 #include <vector>
 //#include <sstream>
 #include <istream>
@@ -157,12 +158,30 @@ public:
 	
 	const std::string &getName () const { return _CommandName; }
 
+	/** declare a command to "enable control char". By default all commands "enable control char"
+	 *
+	 *	eg: if enableControlCharForCommand("region", false) is called, then the command:
+	 *
+	 *	region hello; "i am busy" \never disturb me please
+	 *
+	 *	won't treat '"', '\' and ';' as special control character.
+	 *	Thus the final list of args will be (separated by '/' here for clarity):
+	 *
+	 *	hello;/"i/am/busy"/\never/disturb/me/please
+	 */
+	static void	enableControlCharForCommand(const std::string &commandName, bool state);
+
+	/// see enableControlCharForCommand()
+	static bool	isControlCharForCommandEnabled(const std::string &commandName);
+	
 protected:
 
 	std::string _CommandName;
 
 	friend void cbVarChanged (CConfigFile::CVar &var);
 
+private:
+	static std::set<std::string>		_CommandsDisablingControlChar;
 };
 
 /** This class is only used to serialize easily a command for the admin service for example */

@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.9 2001/11/27 16:30:19 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.10 2001/11/28 09:54:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ const char *WaterVpCode = "!!VP1.0\n\
 					  ADD R3, c[15], -R3;														\n\
 					  MAX R3, c[5],	R3;															\n\
 					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
-					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
+					  MUL R4.z,   R3, v[0];			#attenuate height with distance				\n\
 					  MOV R4.xyw, v[0];															\n\
 					  MOV R0.z,  c[4].x;			#set normal z to 1							\n\
 					  DP3 R3.x, R0, R0;															\n\
@@ -62,15 +62,16 @@ const char *WaterVpCode = "!!VP1.0\n\
 					  DP4 o[HPOS].z, c[2], R4;													\n\
 					  DP4 o[HPOS].w, c[3], R4;													\n\
 					  MUL R3, v[0], c[10];			#compute bump 0 uv's						\n\
-					  ADD o[TEX0].xy, R3, c[9];												\n\
+					  ADD o[TEX0].xy, R3, c[9];													\n\
 					  MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\
 					  ADD o[TEX1].xy, R3, c[11];												\n\
 					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-					  DP3 R2.x, R1, R0;\n\
-					  MUL R0, R0, R2.x;\n\
-					  ADD R2, R0, R0;\n\
-					  ADD R0, R2, -R1;				#compute reflection vector \n\
-					  MUL o[TEX2].xy, R0, c[8];\n\
+					  DP3 R2.x, R1, R0;															\n\
+					  MUL R0, R0, R2.x;															\n\
+					  ADD R2, R0, R0;															\n\
+					  ADD R0, R2, -R1;				#compute reflection vector					\n\
+					  MUL o[TEX2].xy, R0, c[8];													\n\
+					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";
 
@@ -96,17 +97,18 @@ const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
 					  DP4 o[HPOS].z, c[2], R4;													\n\
 					  DP4 o[HPOS].w, c[3], R4;													\n\
 					  MUL R3, v[0], c[10];			#compute bump 0 uv's						\n\
-					  ADD o[TEX0].xy, R3, c[9];												\n\
+					  ADD o[TEX0].xy, R3, c[9];													\n\
 					  MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\
 					  ADD o[TEX1].xy, R3, c[11];												\n\
-					  DP4 o[TEX3].x, R4, c[13]; #compute uv for diffuse texture				\n\
-					  DP4 o[TEX3].y, R4, c[14];												\n\
+					  DP4 o[TEX3].x, R4, c[13]; #compute uv for diffuse texture					\n\
+					  DP4 o[TEX3].y, R4, c[14];													\n\
 					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-					  DP3 R2.x, R1, R0;\n\
-					  MUL R0, R0, R2.x;\n\
-					  ADD R2, R0, R0;\n\
-					  ADD R0, R2, -R1;				#compute reflection vector \n\
-					  MUL o[TEX2].xy, R0, c[8];\n\
+					  DP3 R2.x, R1, R0;															\n\
+					  MUL R0, R0, R2.x;															\n\
+					  ADD R2, R0, R0;															\n\
+					  ADD R0, R2, -R1;				#compute reflection vector					\n\
+					  MUL o[TEX2].xy, R0, c[8];													\n\
+					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";
 
@@ -134,11 +136,12 @@ const char *WaterVpCode2Stages = "!!VP1.0\n\
 					  DP4 o[HPOS].z, c[2], R4;													\n\
 					  DP4 o[HPOS].w, c[3], R4;													\n\
 					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-					  DP3 R2.x, R1, R0;\n\
-					  MUL R0, R0, R2.x;\n\
-					  ADD R2, R0, R0;\n\
-					  ADD R0, R2, -R1;				#compute reflection vector \n\
-					  MUL o[TEX0].xy, R0, c[8];\n\
+					  DP3 R2.x, R1, R0;															\n\
+					  MUL R0, R0, R2.x;															\n\
+					  ADD R2, R0, R0;															\n\
+					  ADD R0, R2, -R1;				#compute reflection vector					\n\
+					  MUL o[TEX0].xy, R0, c[8];													\n\
+					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";
 
@@ -162,14 +165,15 @@ const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
 					  DP4 o[HPOS].y, c[1], R4;													\n\
 					  DP4 o[HPOS].z, c[2], R4;													\n\
 					  DP4 o[HPOS].w, c[3], R4;													\n\
-					  DP4 o[TEX1].x, v[0], c[13];\n\
-					  DP4 o[TEX1].y, v[0], c[14];\n\
+					  DP4 o[TEX1].x, v[0], c[13];												\n\
+					  DP4 o[TEX1].y, v[0], c[14];												\n\
 					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-					  DP3 R2.x, R1, R0;\n\
-					  MUL R0, R0, R2.x;\n\
-					  ADD R2, R0, R0;\n\
-					  ADD R0, R2, -R1;				#compute reflection vector \n\
-					  MUL o[TEX0].xy, R0, c[8];\n\
+					  DP3 R2.x, R1, R0;															\n\
+					  MUL R0, R0, R2.x;															\n\
+					  ADD R2, R0, R0;															\n\
+					  ADD R0, R2, -R1;				#compute reflection vector					\n\
+					  MUL o[TEX0].xy, R0, c[8];													\n\
+					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";
 

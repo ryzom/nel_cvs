@@ -354,8 +354,8 @@ int main(int nNbArg, char **ppArgs)
 		dir (sFilter, AllLightmapNames, false);
 		for (i = 0; i < (sint32)AllLightmapNames.size(); ++i)
 		{
-			string sTmp2;
-			sTmp2 = getBaseName (AllLightmapNames[i]) + NLMISC::toString(nNbLayer+1) + ".tga";
+			string sTmp2 = getBaseName (AllLightmapNames[i]);
+			sTmp2 += NLMISC::toString(nNbLayer+1) + ".tga";
 			if (fileExist(sTmp2))
 			{	// More layer than expected delete name i
 				for (j = i+1; j < (sint32)AllLightmapNames.size(); ++j)
@@ -365,6 +365,66 @@ int main(int nNbArg, char **ppArgs)
 			}
 		}
 
+		// Check if all layer of the same lightmap has the same size
+		if (nNbLayer > 0)
+		for (i = 0; i < (sint32)AllLightmapNames.size(); ++i)
+		{
+			string sTmp2;
+			sTmp2 = getBaseName (AllLightmapNames[i]) + "0.tga";
+			uint32 wRef, hRef;
+			try
+			{
+				NLMISC::CIFile inFile;
+				inFile.open(sTmp2);
+				CBitmap::loadSize(inFile, wRef, hRef);
+			}
+			catch (NLMISC::Exception &e)
+			{
+				outString (string("ERROR :") + e.what());
+				return -1;
+			}
+
+			bool bFound = false;
+			for (k = 1; k <= (sint32)nNbLayer; ++k)
+			{
+				string sTmp3 = getBaseName (AllLightmapNames[i]) + NLMISC::toString(k) + ".tga";
+				uint32 wCur = wRef, hCur = hRef;
+				try
+				{
+					NLMISC::CIFile inFile;
+					inFile.open(sTmp3);
+					CBitmap::loadSize(inFile, wCur, hCur);
+				}
+				catch (NLMISC::Exception &)
+				{
+				}
+
+				if ((wCur != wRef) || (hCur != hRef))
+				{
+					bFound = true;
+					break;
+				}
+			}
+			// Should delete all layers of this lightmap (in fact in lightmapnames list we have
+			// only the name of the current layer)
+			if (bFound)
+			{
+				sTmp2 = getBaseName (AllLightmapNames[i]);
+				outString(string("ERROR: lightmaps ")+sTmp2+"*.tga not all the same size\n");
+				for (k = 0; k < (sint32)AllLightmapNames.size(); ++k)
+				{
+					if (strnicmp(AllLightmapNames[k].c_str(), sTmp2.c_str(), sTmp2.size()) == 0)
+					{
+						for (j = k+1; j < (sint32)AllLightmapNames.size(); ++j)
+							AllLightmapNames[j-1] = AllLightmapNames[j];
+						AllLightmapNames.resize (AllLightmapNames.size()-1);
+						k = -1;
+						i = -1;
+					}
+				}
+			}
+		}
+		
 		if (AllLightmapNames.size() == 0)
 			continue;
 		

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.25 2001/08/09 13:10:27 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.26 2001/08/15 12:12:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,10 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+
+
+
 
 #include "std_afx.h"
 
@@ -55,6 +59,9 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+
+
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -392,9 +399,9 @@ void CObjectViewer::go ()
 
 		CNELU::clearBuffers(_BackGroundColor);
 
-		// Draw the scene
-		CNELU::Scene.render();
-
+		// Draw the scene		
+		CNELU::Scene.render();		
+		
 		// call of callback list
 		{
 			std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end()) ;

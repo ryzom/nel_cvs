@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.6 2001/07/12 15:38:32 vizerie Exp $
+ * $Id: ps_zone.h,v 1.7 2001/08/15 12:08:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,8 +103,7 @@ public:
 		f.serialVersion(1) ;
 		CPSTargetLocatedBindable::serial(f) ; 
 		f.serialEnum(_CollisionBehaviour) ;
-		f.serial(_BounceFactor) ;
-		
+		f.serial(_BounceFactor) ;		
 	}
 
 

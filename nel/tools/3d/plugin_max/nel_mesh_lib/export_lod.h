@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.11 2001/12/06 09:28:02 corvazier Exp $
+ * $Id: export_lod.h,v 1.12 2001/12/12 10:37:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,9 @@
 #define NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED	(1423062584)
 #define NEL3D_APPDATA_BEND_CENTER					(1423062585)
 #define NEL3D_APPDATA_BEND_FACTOR					(1423062586)
+
+/// animated materials
+#define NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS		(1423062587)
 
 // ***************************************************************************
 

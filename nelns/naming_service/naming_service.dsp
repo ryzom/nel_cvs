@@ -147,6 +147,10 @@ LINK32=link.exe
 # Name "naming_service - Win32 DebugFast"
 # Begin Source File
 
+SOURCE=..\naming_service.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\naming_service.cpp
 # End Source File
 # Begin Source File

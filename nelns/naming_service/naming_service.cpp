@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.15 2001/10/16 09:26:54 legros Exp $
+ * $Id: naming_service.cpp,v 1.16 2001/11/13 12:02:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1296,7 +1296,7 @@ const TServiceId	CNamingService::BaseSId = 128;
 
 
 /// Naming Service
-NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray )
+NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray)
 
 
 //
@@ -1304,7 +1304,7 @@ NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray
 //
 
 
-NLMISC_COMMAND (services, "displays the list of all registered services", "")
+NLMISC_COMMAND (services_ns, "displays the list of all registered services", "")
 {
 	if(args.size() != 0) return false;
 

@@ -70,21 +70,23 @@ BOOL CVariablePage::OnInitDialog()
 //	addVariable
 //
 //---------------------------------------------------------
-void CVariablePage::addVariable( CChildFrame *pChild, CLogic_editorDoc *pDoc, CString varName )
+void CVariablePage::addVariable( CLogic_editorDoc *pDoc, CString varName )
 {
-	// check if a var or a counter with the same name already exist in the doc
-	void *pointer;
+	// check if a var or a counter with the same name already exist in the page
+	if( m_listVariables.FindStringExact(0,varName) == LB_ERR )
+	{
+		// add the variable in the page
+		m_listVariables.AddString( varName );
+	}
 
-	if ( ( pDoc->m_variables.Find(m_sVarName) != NULL) || ( pDoc->m_counters.Lookup(m_sVarName, pointer) != FALSE) )
-		return;
+	// if the doc has not been loaded from file, the variable is not yet in doc
+	void * pointer;
+	if( (pDoc->m_variables.Find(varName) == NULL) || (pDoc->m_counters.Lookup(varName, pointer) == FALSE) )
+	{
+		pDoc->m_variables.AddTail( varName );
+	}
 
-	// add this var in the list and in the document
-	m_listVariables.AddString( varName );
-	pDoc->m_variables.AddTail( varName );
-
-	//CEditorFormView *formView = static_cast<CEditorFormView *> (pChild->m_wndSplitter.GetPane(0,1));
-//	formView->m_pPropertySheet->Update();
-
+	// update page
 	UpdateData(FALSE);
 
 } // addVariable //
@@ -105,7 +107,7 @@ void CVariablePage::OnButtonAdd()
 	CLogic_editorDoc *pDoc = static_cast<CLogic_editorDoc *> (pChild->GetActiveDocument());
 	ASSERT_VALID(pDoc);	
 
-	addVariable( pChild, pDoc, m_sVarName );
+	addVariable( pDoc, m_sVarName );
 }
 
 

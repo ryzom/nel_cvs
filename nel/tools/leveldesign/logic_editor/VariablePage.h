@@ -9,7 +9,6 @@
 
 #include "ResizablePage.h"
 
-class CChildFrame;
 class CLogic_editorDoc;
 
 
@@ -25,7 +24,7 @@ public:
 	CVariablePage();
 	~CVariablePage();
 
-	void addVariable( CChildFrame *pChild, CLogic_editorDoc *pDoc, CString varName );
+	void addVariable( CLogic_editorDoc *pDoc, CString varName );
 
 // Dialog Data
 	//{{AFX_DATA(CVariablePage)

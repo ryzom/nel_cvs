@@ -1,6 +1,6 @@
 /** \file login_client.cpp
  *
- * $Id: login_client.cpp,v 1.2 2001/05/02 12:54:13 lecroart Exp $
+ * $Id: login_client.cpp,v 1.3 2001/05/02 12:57:16 lecroart Exp $
  *
  */
 

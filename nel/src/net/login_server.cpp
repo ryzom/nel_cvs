@@ -1,6 +1,6 @@
 /** \file login_server.cpp
  *
- * $Id: login_server.cpp,v 1.2 2001/05/02 12:54:13 lecroart Exp $
+ * $Id: login_server.cpp,v 1.3 2001/05/02 12:57:16 lecroart Exp $
  *
  */
 
@@ -79,7 +79,7 @@ void cbWSChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 		if ((*it).Cookie == cookie)
 		{
 			// the cookie already exists, erase it and return false
-			nlwarning ("cookie %s is already in the pending user list", cookie.toString());
+			nlwarning ("cookie %s is already in the pending user list", cookie.toString().c_str());
 			PendingUsers.erase (it);
 			reason = "cookie already exists";
 			break;
@@ -167,7 +167,7 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	
 	if (!reason.empty())
 	{
-		nlwarning ("User (%s) is not in the pending user list (cookie:%s)", netbase.hostAddress(from).asString().c_str(), cookie.toString());
+		nlwarning ("User (%s) is not in the pending user list (cookie:%s)", netbase.hostAddress(from).asString().c_str(), cookie.toString().c_str());
 		// deconnect him
 		netbase.disconnect (from);
 	}

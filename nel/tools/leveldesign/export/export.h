@@ -1,7 +1,7 @@
 /** \file export.h
  * Export from leveldesign data to client data
  *
- * $Id: export.h,v 1.3 2002/01/16 15:26:49 besson Exp $
+ * $Id: export.h,v 1.4 2002/02/13 16:55:54 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,8 @@ struct SVegInst
 	float			Scale;
 
 	float			Radius;
-	std::string		Name;
+	std::string		ShapeName; // the .shape stored in the name field of the instance (that represents the shape name)
+	std::string		PlantName; // the .plant associated which is stored in the instance name
 };
 
 // ---------------------------------------------------------------------------

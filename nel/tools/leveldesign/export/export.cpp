@@ -1,7 +1,7 @@
 /** \file export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.3 2002/01/16 15:26:49 besson Exp $
+ * $Id: export.cpp,v 1.4 2002/02/13 16:55:54 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -499,7 +499,8 @@ bool CExport::generateVegetable (const std::string &SrcFile)
 					continue;
 
 				SVegInst vi;
-				vi.Name = rFormPlant.Shape;
+				vi.ShapeName = rFormPlant.Shape;
+				vi.PlantName = rPlant.Name;
 				vi.Scale = (formVegetable.ScaleMax-formVegetable.ScaleMin)*frand(1.0)+formVegetable.ScaleMin;
 				vi.Radius = rFormPlant.BundingRadius * vi.Scale;
 				vi.Rot = (float)Pi * frand (1.0);
@@ -663,13 +664,14 @@ void CExport::writeVegetable (const string &LandFile)
 			Instances[k].Rot = CQuat(CVector::K, _VegInsts[vegZone[k]].Rot);
 			Instances[k].Scale = CVector(_VegInsts[vegZone[k]].Scale, _VegInsts[vegZone[k]].Scale, _VegInsts[vegZone[k]].Scale);
 			Instances[k].nParent = -1;
-			Instances[k].Name = _VegInsts[vegZone[k]].Name;
-			Instances[k].InstanceName = "vegetable_"; // see if it works
+			Instances[k].Name = _VegInsts[vegZone[k]].ShapeName;
+			Instances[k].InstanceName = _VegInsts[vegZone[k]].PlantName;
+			/*Instances[k].InstanceName = "vegetable_"; // see if it works
 			Instances[k].InstanceName += ZoneName + "_";
 			Instances[k].InstanceName += '0' + ((k/1000)%10);
 			Instances[k].InstanceName += '0' + ((k/100) %10);
 			Instances[k].InstanceName += '0' + ((k/10)  %10);
-			Instances[k].InstanceName += '0' + ( k      %10);
+			Instances[k].InstanceName += '0' + ( k      %10);*/
 		}
 
 // \todo trap -> look why it dont seems to work with a global positionning

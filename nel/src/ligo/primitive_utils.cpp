@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.cpp,v 1.3 2004/07/13 14:43:21 cardouat Exp $
+ * $Id: primitive_utils.cpp,v 1.4 2004/08/20 08:05:05 boucher Exp $
  */
 
 #include <nel/ligo/primitive_utils.h>
@@ -37,7 +37,7 @@
 namespace NLLIGO
 {
 
-std::string buildPrimPath(IPrimitive *prim)
+std::string buildPrimPath(const IPrimitive *prim)
 {
 	std::string path;
 

@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.7 2002/07/29 17:14:18 lecroart Exp $
+ * $Id: load_form.h,v 1.8 2002/07/30 10:09:59 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,7 +112,7 @@ template <class T>
 void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<NLMISC::CSheetId, T> &container)
 {
 	// check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
-	nlassert (packedFilename.find (".packed_sheets") != string::npos);
+	nlassert (packedFilename.find (".packed_sheets") != std::string::npos);
 
 	// make sure the CSheetId singleton has been properly initialised
 	NLMISC::CSheetId::init();
@@ -127,7 +127,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	if (sheetIds.empty())
 		return;
 
-	string packedFilenamePath = NLMISC::CPath::lookup(packedFilename, false);
+	std::string packedFilenamePath = NLMISC::CPath::lookup(packedFilename, false);
 	if (packedFilenamePath.empty())
 	{
 		packedFilenamePath = packedFilename;
@@ -175,7 +175,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 
 	NLGEORGES::UFormLoader *formLoader = NULL;
 
-	vector<uint> NeededToRecompute;
+	std::vector<uint> NeededToRecompute;
 
 	for (uint k = 0; k < filenames.size(); k++)
 	{
@@ -194,14 +194,14 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 
 	nlinfo ("%d sheets checked, %d need to be recomputed", filenames.size(), NeededToRecompute.size());
 
-	TTime last = CTime::getLocalTime ();
-	TTime start = CTime::getLocalTime ();
+	NLMISC::TTime last = NLMISC::CTime::getLocalTime ();
+	NLMISC::TTime start = NLMISC::CTime::getLocalTime ();
 
 	for (uint j = 0; j < NeededToRecompute.size(); j++)
 	{
-		if(CTime::getLocalTime () > last + 5000)
+		if(NLMISC::CTime::getLocalTime () > last + 5000)
 		{
-			last = CTime::getLocalTime ();
+			last = NLMISC::CTime::getLocalTime ();
 			if(j>0)
 				nlinfo ("%.0f%% completed (%d/%d), %d seconds remaining", (float)j*100.0/NeededToRecompute.size(),j,NeededToRecompute.size(), (NeededToRecompute.size()-j)*(last-start)/j/1000);
 		}
@@ -233,7 +233,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		}
 	}
 
-	nlinfo ("%d seconds to recompute %d sheets", (uint32)(CTime::getLocalTime()-start)/1000, NeededToRecompute.size());
+	nlinfo ("%d seconds to recompute %d sheets", (uint32)(NLMISC::CTime::getLocalTime()-start)/1000, NeededToRecompute.size());
 
 	// free the georges loader if necessary
 	if (formLoader != NULL)

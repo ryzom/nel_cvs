@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.6 2002/02/18 12:54:21 lecroart Exp $
+ * $Id: buf_net_base.h,v 1.7 2002/03/28 17:45:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,6 @@ namespace NLNET {
 
 
 class CBufSock;
-class CReceiveTask;
 
 /// Socket identifier
 typedef CBufSock *TSockId;

@@ -1,7 +1,7 @@
 /** \file path_content.cpp
  *	list the path content with details on each files
  *
- * $Id: path_content_diff.cpp,v 1.1 2003/01/03 15:03:37 coutelas Exp $
+ * $Id: path_content_diff.cpp,v 1.2 2003/01/03 17:46:28 coutelas Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -118,8 +118,9 @@ sint main( sint argc, char ** argv )
 		{
 			differentFiles.push_back( newFileName );
 
-			string outputLine = newFileName + "\t\t"+toString(newSize) + "\t" + toString(newModificationDate) + "\t" + toString(newCreationDate) + "\n";
-			output.serialBuffer((uint8*)(const_cast<char*>(outputLine.data())),outputLine.size());
+			//string outputLine = newFileName + "\t\t"+toString(newSize) + "\t" + toString(newModificationDate) + "\t" + toString(newCreationDate) + "\n";
+			//output.serialBuffer((uint8*)(const_cast<char*>(outputLine.data())),outputLine.size());
+			output.serialBuffer((uint8*)(const_cast<char*>(newFileName.data())),newFileName.size());
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file located_properties.cpp
  * <File description>
  *
- * $Id: located_properties.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.3 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,9 +165,9 @@ void CLocatedProperties::init(uint32 x, uint32 y, CWnd *pParent)
 
 	
 	m_SystemBasis = _Located->isInSystemBasis() ;
-	m_LimitedLifeTime = !_Located->getLastForever() ;
+	m_LimitedLifeTime = !_Located->getLastForever()  ;
 
-	UpdateData(false) ;
+	UpdateData(FALSE) ;
 
 	OnLimitedLifeTime() ;
 

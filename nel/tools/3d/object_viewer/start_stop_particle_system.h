@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * <File description>
  *
- * $Id: start_stop_particle_system.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.2 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,61 @@
 
 #if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// star_stop_particle_system.h : header file
-//
+#endif 
+
+
+
+
+#include "nel/misc/vector.h"
+
+namespace NL3D
+{
+	class CParticleSystem ;
+	class CPSLocated ;
+}
+
+
+
+
+class CParticleDlg ;
+
+
+/** this class helps to copy the position of initial instances in a particle
+ *  system. This enable a system to run, and have its parameter modified.
+ *  When the user press stop, he will find the system at t = 0, with the new parameters
+ */
+class CPSInitialPos
+{
+public:
+
+	CPSInitialPos() : _PS(NULL) {}
+
+	// construct this by copying the datas of the system
+	void copySystemInitialPos(NL3D::CParticleSystem *ps) ;
+
+	// reinitialize the system with its initial instances positions
+	void restoreSystem() ;
+
+protected:
+
+	// initial position and speed of a located instance in a particle system
+	struct CInitPSInstanceInfo
+	{
+		CInitPSInstanceInfo(const NLMISC::CVector &pos, const NLMISC::CVector &speed) : Pos(pos), Speed(speed) {}
+		NLMISC::CVector Pos ;
+		NLMISC::CVector Speed ;
+	} ;
+
+	typedef std::vector<CInitPSInstanceInfo> TInitInfoVect ;
+
+	// initial infos of the system
+	std::map<NL3D::CPSLocated *, TInitInfoVect> _StartInfos ;
+
+	NL3D::CParticleSystem *_PS ;
+} ;
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CStartStopParticleSystem dialog
@@ -39,7 +91,7 @@ class CStartStopParticleSystem : public CDialog
 {
 // Construction
 public:
-	CStartStopParticleSystem(CWnd* pParent = NULL);   // standard constructor
+	CStartStopParticleSystem(CParticleDlg *particleDlg);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CStartStopParticleSystem)
@@ -62,8 +114,16 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CStartStopParticleSystem)
 	virtual BOOL OnInitDialog();
+	afx_msg void OnStartSystem();
+	afx_msg void OnStopSystem();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+	
+		// the dialog that own this dialog
+	CParticleDlg *_ParticleDlg ;
+
+	CPSInitialPos _SystemInitialPos ;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.8 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: scene_dlg.cpp,v 1.9 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ CSceneDlg::CSceneDlg(CObjectViewer *objView, CWnd* pParent /*=NULL*/)
 	ObjectMode = TRUE;
 	MoveSpeed = 10.0f;
 	ViewParticle = FALSE;
+	MoveElement = FALSE;
 	//}}AFX_DATA_INIT
 	ObjView=objView;
 
@@ -103,6 +104,7 @@ void CSceneDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_OBJECT_MODE, ObjectMode);
 	DDX_Text(pDX, IDC_MOVE_SPEED, MoveSpeed);
 	DDX_Check(pDX, IDC_VIEW_PARTICLE, ViewParticle);
+	DDX_Check(pDX, IDC_MOVE_ELEMENT, MoveElement);
 	//}}AFX_DATA_MAP
 }
 
@@ -120,6 +122,7 @@ BEGIN_MESSAGE_MAP(CSceneDlg, CDialog)
 	ON_BN_CLICKED(IDC_RESET_CAMERA, OnResetCamera)
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_VIEW_PARTICLE, OnViewParticles)
+	ON_BN_CLICKED(IDC_MOVE_ELEMENT, OnMoveElement)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -446,3 +449,16 @@ void CSceneDlg::OnDestroy()
 	CDialog::OnDestroy();
 }
 
+void CSceneDlg::OnMoveElement() 
+{
+	UpdateData() ;
+	if (!MoveElement) // switch back to camera mode ?
+	{
+		ObjView->getMouseListener().enableModelMatrixEdition(false) ;
+	}
+	else
+	{
+		ObjView->getMouseListener().enableModelMatrixEdition() ;
+		ObjView->getMouseListener().setModelMatrix(ObjView->getParticleDialog()->getElementMatrix()) ;
+	}
+}

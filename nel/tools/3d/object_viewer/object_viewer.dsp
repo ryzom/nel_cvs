@@ -273,6 +273,18 @@ SOURCE=.\bmp00010.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bmp00011.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bmp00012.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bmp00013.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\object_viewer.rc2
 # End Source File
 # Begin Source File
@@ -329,6 +341,14 @@ SOURCE=.\editable_range.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\emitter_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\emitter_dlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\located_bindable_dialog.cpp
 # End Source File
 # Begin Source File
@@ -342,6 +362,14 @@ SOURCE=.\located_properties.cpp
 # Begin Source File
 
 SOURCE=.\located_properties.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\located_target_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\located_target_dlg.h
 # End Source File
 # Begin Source File
 
@@ -390,6 +418,14 @@ SOURCE=.\start_stop_particle_system.cpp
 # Begin Source File
 
 SOURCE=.\start_stop_particle_system.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\texture_chooser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\texture_chooser.h
 # End Source File
 # Begin Source File
 

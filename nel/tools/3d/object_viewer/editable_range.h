@@ -1,7 +1,7 @@
 /** \file editable_range.h
  * <File description>
  *
- * $Id: editable_range.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: editable_range.h,v 1.3 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 
 		virtual void init(uint32 x, uint32 y, CWnd *pParent) ;
 
-		BOOL EnableWindow( BOOL bEnable = TRUE );
+	BOOL EnableWindow( BOOL bEnable = TRUE );
 
 
 public:
@@ -162,10 +162,10 @@ public:
 		_Range = CRangeManager<T>::GetRange(_Id, _Range.first, _Range.second) ;
 		value2CString(_Range.first, m_MinRange) ;
 		value2CString(_Range.second, m_MaxRange) ;		
-		if (_Wrapper)
+	/*	if (_Wrapper)
 		{
 			setValue(_Wrapper->get()) ;
-		}
+		}*/
 		UpdateData(FALSE) ;
 	}
 	void updateValueFromReader(void)
@@ -182,6 +182,7 @@ protected:
 		const char *message = string2value(m_Value, value) ;
 		if (!message)
 		{
+			_Wrapper->set(value) ;
 			setValue(value) ;
 		}
 		else
@@ -225,7 +226,7 @@ protected:
 	{
 		value2CString(value, m_Value) ;
 
-		_Wrapper->set(value) ;
+	//	_Wrapper->set(value) ;
 
 		if (value < _Range.first)
 		{

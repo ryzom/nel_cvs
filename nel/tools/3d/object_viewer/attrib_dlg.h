@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * <File description>
  *
- * $Id: attrib_dlg.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.3 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,11 +88,19 @@ public:
 	// private usage (not private because accessed by a static function) : set the nbCycles parameter of the scheme (e.g the input multiplier)
 	virtual void setSchemeNbCycles(float nbCycles) = 0 ;
 
+	BOOL EnableWindow( BOOL bEnable = TRUE );
+
 // Implementation
-protected:	
+protected:
+	
+	
 
 	// change the dialog for constant values
 	void cstValueUpdate() ;
+
+
+	// toggle back from scheme to cst value
+	virtual void resetCstValue(void) = 0 ;
 
 	// change the dialog for scheme usage
 	void schemeValueUpdate() ;
@@ -189,6 +197,11 @@ public:
 	virtual void setCurrentScheme(uint index) = 0 ;
 	virtual sint getCurrentScheme(void) const  = 0 ;
 
+	virtual void resetCstValue(void) 
+	{ 
+		_Wrapper->set(_Wrapper->get()) ; // reuse current color 
+	}
+
 	virtual bool hasSchemeCustomInput(void) const { return _SchemeWrapper->getScheme()->hasCustomInput() ; }
 	virtual uint getSchemeInput(void) const { return (uint)  _SchemeWrapper->getScheme()->getInput() ; }	
 	virtual void setSchemeInput(uint index) { _SchemeWrapper->getScheme()->setInput((NL3D::CPSLocated::AttributeType) index) ; }
@@ -259,6 +272,39 @@ protected:
 	std::string _CstValueId ;
 	float _MinRange, _MaxRange ;
 } ;
+
+
+/** an attribute editor specialized for unsigned int values
+ */
+
+class CAttribDlgUInt : public CAttribDlgT<uint32>
+{	
+public:
+	/** ctor
+	 *  \param valueID an unique id for the constant value editable range dialog
+	 *  \param minValue : the min value for the editable range dlg(for constant value)
+	 *  \param maxValue : the min value for the editable range dlg (for constant value)
+	 */
+	CAttribDlgUInt(const std::string &valueID, uint32 minValue, uint32 maxValue)  ;
+
+	
+	// inherited from CAttribDlg
+	virtual uint getNumScheme(void) const ;	
+	virtual std::string getSchemeName(uint index) const ;	
+	virtual void editScheme(void) ;	
+	virtual void setCurrentScheme(uint index) ;
+	virtual sint getCurrentScheme(void) const  ;
+
+
+
+protected:
+
+	virtual CEditAttribDlg *createConstantValueDlg() ;
+	// ID for the cst float value  edition dialog
+	std::string _CstValueId ;
+	uint32 _MinRange, _MaxRange ;
+} ;
+
 
 
 /** an attribute editor specialized for RGB values

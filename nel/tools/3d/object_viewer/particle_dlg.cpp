@@ -1,7 +1,7 @@
 /** \file particle_dlg.cpp
  * <File description>
  *
- * $Id: particle_dlg.cpp,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.2 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,11 +45,18 @@
 #include "nel/3d/ps_float.h"
 #include "nel/3d/ps_int.h"
 #include "nel/3d/ps_plane_basis_maker.h"
+#include "nel/3d/particle_system_model.h"
+#include "nel/3d/particle_system_shape.h"
+#include "nel/3d/texture_file.h"
+#include "nel/3d/texture_grouped.h"
+#include "nel/3d/nelu.h"
+#include "nel/3d/font_manager.h"
+#include "nel/3d/font_generator.h"
+
+#include "nel/misc/file.h"
 
 #include "start_stop_particle_system.h"
 
-#include "nel/3d/texture_file.h"
-#include "nel/3d/texture_grouped.h"
 
 using namespace NL3D ;
 
@@ -63,12 +70,28 @@ static char THIS_FILE[] = __FILE__;
 // CParticleDlg dialog
 
 
-CParticleDlg::CParticleDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CParticleDlg::IDD, pParent), _CurrentRightPane(NULL)
+CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
+	: CDialog(CParticleDlg::IDD, pParent), SceneDlg(sceneDlg), _CurrentRightPane(NULL)
 {
 	//{{AFX_DATA_INIT(CParticleDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+
+
+
+
+
+	// Font manager
+	FontManager = new NL3D::CFontManager ;	
+	FontManager->setMaxMemory(2000000);
+		
+	// Font generator
+	FontGenerator = new NL3D::CFontGenerator ("arial.ttf") ;
+
+
+
+	//////
+
 
 	_ParticleTreeCtrl = new CParticleTreeCtrl(this) ;
 
@@ -76,87 +99,66 @@ CParticleDlg::CParticleDlg(CWnd* pParent /*=NULL*/)
 	// for now, let's create a dummy system for test
 
 	CParticleSystem *ps = new CParticleSystem ;
-	CPSLocated		  *lp = new CPSLocated
-					  ,*lp2 = new CPSLocated					  					  
-					  ,*le = new CPSLocated
-					  ,*lf = new CPSLocated					  
-					  ;
-				
-	float strenght[] = { 1, 10, 1 } ;
-	sint32 nbs[] = { 1, 20, 1 } ;
-					  
 
-	ps->attach(lp) ;		
-	ps->attach(lp2) ;
-	ps->attach(le) ;
-	ps->attach(lf) ;
-	
+	// now, saves the system, and use a stream to instanciate it in the scene
 
+	CParticleSystemShape psc   ;
+	psc.buildFromPS(*ps) ;
 
-	CPSFace *fa  = new CPSFace(new CTextureFile("snow.tga")) ;
-	fa->setColor(CRGBA::White) ;
-	fa->hintRotateTheSame(60, 3.f * float(NLMISC::Pi), 5.f * float(NLMISC::Pi)) ;
-	fa->setSize(0.15f) ;
-	lp->resize(5000) ; 
-	lp->bind(fa) ;
-	lp->setLifeTime(3.f, 3.f) ;
+	{
+		CShapeStream st(&psc) ;
+		NLMISC::COFile oFile("dummy.shape") ;
 
-
-	fa  = new CPSFace(new CTextureFile("snow.tga")) ;
-	fa->setColor(CRGBA::White) ;
-	fa->hintRotateTheSame(4, 3.f * float(NLMISC::Pi), 5.f * float(NLMISC::Pi)) ;
-	fa->setSize(0.09f) ;
-	lp2->resize(5000) ; 
-	lp2->bind(fa) ;
-	lp2->setLifeTime(.5f, .5f) ;
-
+		oFile.serial(st) ;
+	}
+	delete ps ;
 
 
 	
+	_CurrSystemModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance("dummy.shape")) ;
 
-	CPSEmitterRectangle *er = new CPSEmitterRectangle ;	
-	er->setEmittedType(lp) ;	
-	er->setGenNb(10) ;		
-	er->setDir(5.f * (-CVector::K + 0.5f * CVector::I)) ;
-	le->bind(er) ;	
-	sint index = le->newElement() ;
-	CMatrix m ;
-	m.translate(CVector(0, 0, 5)) ;
-	m.scale(CVector(24, 24, 1)) ;
-	er->applyMatrix(index, m) ;
-	le->setSystemBasis(true) ;
+	nlverify(_CurrSystemModel) ;
 
-	CPSEmitterOmni *eo  = new CPSEmitterOmni ;
-	eo->setEmissionType(CPSEmitter::onDeath) ;
-	eo->setEmittedType(lp2) ;
-	eo->setSpeedInheritanceFactor(-1.f) ;
-	eo->setGenNb(4) ;
-	lp->bind(eo) ;
-	
+	_CurrSystemModel->enableDisplayTools() ;
+	_CurrSystemModel->setEllapsedTime(0.f) ;
+	_CurrPS = _CurrSystemModel->getPS() ;
+
+	_CurrPS->setFontManager(FontManager) ;
+	_CurrPS->setFontGenerator(FontGenerator) ;
 
 
-	
-	CPSForce *g = new CPSGravity ;
-	g->attachTarget(lp2) ;
-	lf->bind(g) ;
-	lf->newElement() ;
-
-	_CurrPS = ps ;
 
 
-	/////////////////////
 
-	_StartStopDlg = new CStartStopParticleSystem ;
+	_StartStopDlg = new CStartStopParticleSystem(this) ;
+		
 
 }
 
 
+void CParticleDlg::moveElement(const NLMISC::CMatrix &mat)
+{
+	_ParticleTreeCtrl->moveElement(mat) ;
+}
+
+NLMISC::CMatrix CParticleDlg::getElementMatrix(void) const
+{
+	return _ParticleTreeCtrl->getElementMatrix() ;
+}
+
+
+
 CParticleDlg::~CParticleDlg()
 {
+	//NL3D::CNELU::Scene.deleteInstance(_CurrSystemModel) ;
+
 	delete _ParticleTreeCtrl ;
 	delete _CurrentRightPane ;
-	delete _CurrPS ;
+
 	delete _StartStopDlg ;
+
+	delete FontManager ;
+	delete FontGenerator ;
 }
 
 
@@ -198,7 +200,7 @@ BOOL CParticleDlg::OnInitDialog()
    | TVS_DISABLEDRAGDROP , r, this, 0x1005) ;
 
 
-	_ParticleTreeCtrl->buildTreeFromPS(_CurrPS) ;
+	_ParticleTreeCtrl->buildTreeFromPS(_CurrPS, _CurrSystemModel) ;
 	_ParticleTreeCtrl->init() ;
 	_ParticleTreeCtrl->ShowWindow(SW_SHOW) ;
 
@@ -284,7 +286,7 @@ CRect CParticleDlg::getTreeRect(int cx, int cy) const
 	}
 }
 
-void CParticleDlg::setLeftPane(CWnd *pane)
+void CParticleDlg::setRightPane(CWnd *pane)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	delete _CurrentRightPane ;

@@ -89,11 +89,16 @@
 #define IDC_LOAD_PLAYLIST               1037
 #define IDB_EMISSION_QUANTITY           1037
 #define IDC_CLEAR_SCENE                 1038
+#define IDB_EMISSION_PERIOD             1038
 #define IDC_SAVE_PLAYLIST               1039
+#define IDB_MODULATE_STRENGHT           1039
 #define IDC_LOAD_SCENE                  1040
+#define IDD_TEXTURE_CHOOSER             1040
 #define IDC_VIEW_ANIMATION              1041
+#define IDD_LOCATED_TARGET_DLG          1041
 #define IDC_VIEW_ANIMATIONSET           1042
 #define IDC_STOP                        1042
+#define IDB_LOCATED_INSTANCE            1042
 #define IDC_VIEW_SLOTS                  1043
 #define IDC_PLAY                        1043
 #define IDC_LOOP                        1044
@@ -103,6 +108,7 @@
 #define IDC_MOVE_SPEED                  1047
 #define IDC_VIEW_PARTICLE               1048
 #define IDC_SLIDER                      1050
+#define IDC_MOVE_ELEMENT                1050
 #define IDC_SELECT_RANGE                1051
 #define IDC_MAX_RANGE                   1052
 #define IDC_UPDATE_VALUE                1053
@@ -121,6 +127,7 @@
 #define IDC_UPPER_BOUND                 1065
 #define IDC_COMBO1                      1070
 #define IDC_USE_SCHEME                  1070
+#define IDC_TYPE_OF_EMISSION            1070
 #define IDC_START_PICTURE               1071
 #define IDC_STOP_PICTURE                1072
 #define IDC_SCHEME                      1073
@@ -131,6 +138,7 @@
 #define IDC_ATTR_BITMAP                 1081
 #define IDC_CONSTANT_VALUE_POS          1082
 #define IDC_LIST1                       1085
+#define IDC_AVAILABLE_TARGET            1086
 #define IDC_PARTICLE_COLOR              1087
 #define IDC_BINDABLE_TYPE               1088
 #define IDC_BROWSE_COLOR                1089
@@ -143,6 +151,12 @@
 #define IDC_VALUE_DOWN                  1096
 #define IDC_REMOVE_VALUE                1097
 #define IDC_GRADIENT_LIST               1098
+#define IDC_EMITTED_TYPE                1101
+#define IDC_BROWSE_TEXTURE              1104
+#define IDC_USE_SPEED_BASIS             1108
+#define IDC_ADD_TARGET                  1109
+#define IDC_REMOVE_TARGET               1110
+#define IDC_TARGET                      1111
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -172,14 +186,17 @@
 #define ID_MENU_DELETE                  32803
 #define ID_MENU_NEWLOCATED              32804
 #define IDM_DELETE_LOCATED_BINDABLE     32806
+#define ID_INSTANCIATE_LOCATED          32807
+#define ID_MENU_SAVE_PS                 32808
+#define ID_MENU_LOAD_PS                 32809
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1038
-#define _APS_NEXT_COMMAND_VALUE         32807
-#define _APS_NEXT_CONTROL_VALUE         1101
+#define _APS_NEXT_RESOURCE_VALUE        1043
+#define _APS_NEXT_COMMAND_VALUE         32810
+#define _APS_NEXT_CONTROL_VALUE         1112
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * <File description>
  *
- * $Id: particle_tree_ctrl.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.3 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "object_viewer.h"
 #include "particle_tree_ctrl.h"
 #include "located_bindable_dialog.h"
+#include "emitter_dlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,17 +42,27 @@ static char THIS_FILE[] = __FILE__;
 
 
 #include "nel/3d/particle_system.h"
+#include "nel/3d/particle_system_model.h"
+#include "nel/3d/particle_system_shape.h"
 #include "nel/3d/ps_located.h"
 #include "nel/3d/ps_particle.h"
 #include "nel/3d/ps_force.h"
 #include "nel/3d/ps_zone.h"
 #include "nel/3d/ps_emitter.h"
+#include "nel/3d/nelu.h"
+
+#include "nel/misc/path.h"
+#include "nel/misc/file.h"
 
 #include "located_properties.h"
 #include "located_bindable_dialog.h"
+#include "located_target_dlg.h"
+#include "scene_dlg.h"
+#include "object_viewer.h"
 
 
 using NL3D::CParticleSystem ;
+using NL3D::CParticleSystemModel ;
 using NL3D::CPSLocated ;
 using NL3D::CPSLocatedBindable ;
 
@@ -62,7 +73,7 @@ using NL3D::CPSLocatedBindable ;
 // CParticleTreeCtrl
 
 
-static const uint IconIDs[] = { IDB_FORCE, IDB_PARTICLE, IDB_EMITTER, IDB_LIGHT, IDB_PARTICLE, IDB_PARTICLE_SYSTEM, IDB_LOCATED } ;
+static const uint IconIDs[] = { IDB_FORCE, IDB_PARTICLE, IDB_EMITTER, IDB_LIGHT, IDB_PARTICLE, IDB_PARTICLE_SYSTEM, IDB_LOCATED, IDB_LOCATED_INSTANCE } ;
 static const uint NumIconIDs = sizeof(IconIDs) / sizeof(uint) ;
 
 
@@ -89,18 +100,49 @@ CParticleTreeCtrl::CParticleTreeCtrl(CParticleDlg *pdlg) : _ParticleDlg(pdlg)
 
 CParticleTreeCtrl::~CParticleTreeCtrl()
 {
+	for (std::vector<CNodeType *>::iterator it = _NodeTypes.begin() ; it != _NodeTypes.end() ; ++it)
+	{
+		delete *it ;
+	}
 }
 
 
+void CParticleTreeCtrl::rebuildLocatedInstance(void)
+{
+	HTREEITEM currPS = GetRootItem(), currLocated ;
 
-void CParticleTreeCtrl::buildTreeFromPS(CParticleSystem *ps)
+	currLocated = this->GetChildItem(currPS) ;
+
+	while(currLocated)
+	{
+		CNodeType *nt = (CNodeType *) GetItemData(currLocated) ;
+		nlassert(nt->Type == CNodeType::located) ;
+		CPSLocated *loc = nt->Loc ;
+
+		for (uint32 k = 0 ; k < loc->getSize() ; ++k)
+		{
+			CNodeType *newNt = new CNodeType(loc, k) ;
+			_NodeTypes.push_back(newNt) ;
+			InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, "instance", 7, 7, 0, 0, (LPARAM) newNt, currLocated, TVI_LAST) ;
+		}
+		currLocated = GetNextItem(currLocated, TVGN_NEXT) ;
+	}
+}
+
+
+void CParticleTreeCtrl::buildTreeFromPS(CParticleSystem *ps, CParticleSystemModel *psm)
 {
 	// for now, there's only one root ...
 			
-	HTREEITEM rootId =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE, NULL, 5, 5, 0, 0, 0, TVI_ROOT, TVI_LAST) ;
+	CNodeType *nt = new CNodeType(ps, psm) ;
+	_NodeTypes.push_back(nt) ;
+
+	HTREEITEM rootId =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE, NULL, 5, 5, 0, 0, NULL, TVI_ROOT, TVI_LAST) ;
+
+	// set the param (doesn't seems to work during first creation)
 
 
-
+	SetItemData(rootId, (LPARAM) nt) ;
 
 	// now, create each located
 
@@ -119,7 +161,9 @@ void CParticleTreeCtrl::buildTreeFromPS(CParticleSystem *ps)
 
 		
 		// insert an item for the located
-		lastLocatedChild =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM |TVIF_TEXT, loc->getName().c_str() , 6, 6, 0, 0, (LPARAM) loc, rootId, TVI_LAST) ;
+		nt = new CNodeType(loc) ;
+		_NodeTypes.push_back(nt) ;
+		lastLocatedChild =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM |TVIF_TEXT, loc->getName().c_str() , 6, 6, 0, 0, (LPARAM) nt, rootId, TVI_LAST) ;
 
 
 		// now, insert each object that is bound to the located
@@ -131,10 +175,15 @@ void CParticleTreeCtrl::buildTreeFromPS(CParticleSystem *ps)
 			CPSLocatedBindable *lb = loc->getBoundObject(l) ;			
 			// we ordered the image so that they match the type for a located bindable (force, particles, collision zones...)
 
-			lastBoundObject = InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT , lb->getName().c_str() , lb->getType(), lb->getType(), 0, 0, (LPARAM) lb, lastLocatedChild, TVI_LAST) ;
+			nt = new CNodeType(lb) ;
+			_NodeTypes.push_back(nt) ;
+			lastBoundObject = InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT , lb->getName().c_str() , lb->getType(), lb->getType(), 0, 0, (LPARAM) nt, lastLocatedChild, TVI_LAST) ;
 		}
 	}
 }
+
+
+
 
 
 BEGIN_MESSAGE_MAP(CParticleTreeCtrl, CTreeCtrl)
@@ -162,27 +211,80 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 	
 	*pResult = 0;
 
-
-	NLMISC::IStreamable *obj = ((NLMISC::IStreamable *) pNMTreeView->itemNew.lParam) ;
+	static NL3D::CParticleSystem *lastClickedPS = NULL ;
 	
-	// we use dynamic cast to see what kind of object we are dealing with
-		
-	if (dynamic_cast<CPSLocated *>(obj))
-	{		
-		CLocatedProperties *lp = new CLocatedProperties(dynamic_cast<CPSLocated *>(obj)) ;
-		lp->init(0, 0, _ParticleDlg) ;	
-		_ParticleDlg->setLeftPane(lp) ;
-		return ;
-	}
-	else if (dynamic_cast<CPSLocatedBindable *>(obj))
-	{		
-		CLocatedBindableDialog *lbd = new CLocatedBindableDialog(dynamic_cast<CPSLocatedBindable *>(obj)) ;
-		lbd->init(_ParticleDlg) ;
-		_ParticleDlg->setLeftPane(lbd) ;
-		return ;
-	}
 
-	_ParticleDlg->setLeftPane(NULL) ;
+	CNodeType *nt = (CNodeType  *) pNMTreeView->itemNew.lParam ;
+	
+
+	nlassert(nt) ;
+		
+	switch (nt->Type)
+	{
+		case CNodeType::located:
+		{	
+			CLocatedProperties *lp = new CLocatedProperties(nt->Loc) ;
+			lp->init(0, 0, _ParticleDlg) ;	
+			_ParticleDlg->setRightPane(lp) ;
+			if (lastClickedPS)
+			{
+				lastClickedPS->setCurrentEditedElement(NULL) ;
+			}
+			return ;
+		}
+		break ;
+		case CNodeType::locatedBindable:
+		{
+			if (dynamic_cast<NL3D::CPSEmitter *>(nt->Bind))
+			{
+				CEmitterDlg *ed =  new CEmitterDlg(dynamic_cast<NL3D::CPSEmitter *>(nt->Bind)) ;
+				ed->init(_ParticleDlg) ;
+				_ParticleDlg->setRightPane(ed) ;
+			}
+			else
+			if (dynamic_cast<NL3D::CPSTargetLocatedBindable *>(nt->Bind))
+			{
+				CLocatedTargetDlg *ltd =  new CLocatedTargetDlg(dynamic_cast<NL3D::CPSTargetLocatedBindable *>(nt->Bind)) ;
+				ltd->init(_ParticleDlg) ;
+				_ParticleDlg->setRightPane(ltd) ;
+			}
+			else
+			{
+				CLocatedBindableDialog *lbd = new CLocatedBindableDialog(nt->Bind) ;
+				lbd->init(_ParticleDlg) ;
+				_ParticleDlg->setRightPane(lbd) ;			
+			}
+
+			if (lastClickedPS)
+			{
+				lastClickedPS->setCurrentEditedElement(NULL) ;
+			}
+
+			return ;
+		}
+		break ;
+		case CNodeType::particleSystem:
+		{
+			_ParticleDlg->setRightPane(NULL) ;
+			if (lastClickedPS)
+			{
+				lastClickedPS->setCurrentEditedElement(NULL) ;
+			}
+		}
+		break ;
+		case CNodeType::locatedInstance:
+		{
+			_ParticleDlg->setRightPane(NULL) ;
+			NL3D::CParticleSystem *ps = nt->Loc->getOwner() ;
+			ps->setCurrentEditedElement(nt->Loc, nt->LocatedInstanceIndex) ;
+			CObjectViewer *ov = _ParticleDlg->SceneDlg->ObjView ;
+			ov->getMouseListener().setModelMatrix(_ParticleDlg->getElementMatrix()) ;
+			lastClickedPS = ps ;
+		}
+		break ;
+	}
+	
+	
 }
 
 
@@ -210,26 +312,26 @@ void CParticleTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 		item.hItem = GetSelectedItem() ;
 		GetItem(&item) ;
 
-		NLMISC::IClassable *obj =  (NLMISC::IClassable *) item.lParam ;
+		CNodeType *nt =  (CNodeType *) item.lParam ;
 
 
 
-
-		if (dynamic_cast<CPSLocated *>(obj))
-		{		   
-		   menu.LoadMenu(IDR_LOCATED_MENU) ;		   		
-		}
-		else
-		if (dynamic_cast<CPSLocatedBindable *>(obj))
+		switch (nt->Type)
 		{
-		   
-		   menu.LoadMenu(IDR_LOCATED_BINDABLE_MENU) ;		   		
+			case CNodeType::located:
+				 menu.LoadMenu(IDR_LOCATED_MENU) ;
+			break ;
+			case CNodeType::locatedBindable:
+				menu.LoadMenu(IDR_LOCATED_BINDABLE_MENU) ;		 
+			break ;
+			case CNodeType::particleSystem:
+				 menu.LoadMenu(IDR_PARTICLE_SYSTEM_MENU) ;	
+			break ;
+			default:
+				return ;
+			break ;
 		}
-		else
-		{
-			return ;
-		}
-
+		
 
 		subMenu = menu.GetSubMenu(0);    
 		nlassert(subMenu) ;
@@ -328,16 +430,20 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		//////////////
 		case IDM_DELETE_LOCATED:
 		{
-			_ParticleDlg->setLeftPane(NULL) ;
+			_ParticleDlg->setRightPane(NULL) ;
 			TVITEM item ;
 			item.mask = TVIF_HANDLE | TVIF_PARAM ;
 			item.hItem = GetSelectedItem() ;
 			GetItem(&item) ;
-			nlassert(dynamic_cast<CPSLocated *>((NLMISC::IClassable *) item.lParam)) ;
-			CPSLocated *loc = (CPSLocated *) item.lParam ;			
+			
+			CNodeType *nt = (CNodeType *) item.lParam ;
+			CPSLocated *loc = nt->Loc ;			
 			CParticleSystem *ps = _ParticleDlg->getCurrPS() ;
 			ps->remove(loc) ;	
 			DeleteItem(item.hItem) ;			
+			delete nt ;
+
+			_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt)) ;
 			return TRUE ;
 			
 			//return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
@@ -347,13 +453,14 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 		case IDM_DELETE_LOCATED_BINDABLE:
 		{
-			_ParticleDlg->setLeftPane(NULL) ;
+			_ParticleDlg->setRightPane(NULL) ;
 			TVITEM item ;
 			item.mask = TVIF_HANDLE | TVIF_PARAM ;
 			item.hItem = GetSelectedItem() ;
-			GetItem(&item) ;
-			nlassert(dynamic_cast<CPSLocatedBindable *>((NLMISC::IClassable *) item.lParam)) ;
-			CPSLocatedBindable *lb = (CPSLocatedBindable *) item.lParam ;			
+			GetItem(&item) ;	
+			
+			CNodeType *nt = (CNodeType *) item.lParam ;
+			CPSLocatedBindable *lb = nt->Bind ;			
 
 			// now, get the father
 
@@ -361,12 +468,158 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			GetItem(&item) ;
 			
 
-			nlassert(dynamic_cast<CPSLocated *>((NLMISC::IClassable *) item.lParam)) ;
-			CPSLocated *loc = (CPSLocated *) item.lParam ;	
+			
+			CPSLocated *loc = ((CNodeType *) item.lParam)->Loc ;	
 			loc->remove(lb) ;
 
 			DeleteItem(GetSelectedItem()) ;			
+			
+			delete nt ; 
+			_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt)) ;
+
 			return TRUE ;			
+		}
+		break ;
+
+
+		// instanciate an element
+		case ID_INSTANCIATE_LOCATED:
+		{
+			TVITEM item ;
+			item.mask = TVIF_HANDLE | TVIF_PARAM ;
+			item.hItem = GetSelectedItem() ;
+			GetItem(&item) ;
+
+			CNodeType *nt = (CNodeType *) item.lParam ;
+			CPSLocated *loc = nt->Loc ;	
+			if (loc->getSize() == loc->getMaxSize())
+			{
+				loc->resize(loc->getMaxSize() + 1) ;
+				// force a re-update of the left pane
+				NM_TREEVIEW nmt ;
+				LRESULT pResult ;
+				nmt.itemNew.lParam = GetItemData(GetSelectedItem()) ;
+				OnSelchanged((NMHDR *) &nmt, &pResult) ;
+			}
+
+			sint32 objIndex = loc->newElement() ;
+
+			nt = new CNodeType(loc, objIndex) ;
+			_NodeTypes.push_back(nt) ;
+			// insert the element in the tree
+			InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, "instance", 7, 7, 0, 0, (LPARAM) nt, GetSelectedItem(), TVI_LAST) ;
+			Invalidate() ;
+		}
+		break ;
+
+		////////////////////////
+		// PARTICLE SYSTEM OP //
+		////////////////////////
+		
+		case ID_MENU_NEWLOCATED:
+		{
+			std::string name ; 
+			char num[128] ;
+			if (_PSElementIdentifiers.count(std::string("located")))
+			{
+				sprintf(num, "%d", ++_PSElementIdentifiers[std::string("located")]) ;
+			}
+			else
+			{
+				name = std::string("located 0") ;
+			}		
+
+			TVITEM item ;
+			item.mask = TVIF_HANDLE | TVIF_PARAM ;
+			item.hItem = GetSelectedItem() ;
+
+			GetItem(&item) ;
+
+			CPSLocated *loc = new CPSLocated ;
+			loc->setName(name) ;
+			CParticleSystem *ps = ((CNodeType *) item.lParam)->PS ;
+			ps->attach(loc) ;
+
+			CNodeType *nt = new CNodeType(loc) ;
+			_NodeTypes.push_back(nt) ;
+			// insert item in tree
+			InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, name.c_str(), 6, 6, 0, 0, (LPARAM) nt, GetSelectedItem(), TVI_LAST) ;
+			Invalidate() ;
+		}
+		break ;
+		case ID_MENU_LOAD_PS:
+		{
+				CFileDialog fd(TRUE, "ps", NULL, 0, NULL, this) ;
+				if (fd.DoModal() == IDOK)
+				{
+					// Add to the path
+					char drive[256];
+					char dir[256];
+					char path[256];
+
+					// Add search path for the texture
+					_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
+					_makepath (path, drive, dir, NULL, NULL);
+					NLMISC::CPath::addSearchPath (path);
+
+
+					CNodeType *nt = (CNodeType *) GetItemData(GetSelectedItem()) ;
+					NL3D::CNELU::Scene.deleteInstance(nt->PSModel) ;					
+				
+					nt->PSModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName()))) ;
+					nt->PS = nt->PSModel->getPS() ;									
+					nt->PSModel->setEllapsedTime(0.f) ; // system is paused
+					nt->PSModel->enableDisplayTools(true) ;
+				
+					_ParticleDlg->setRightPane(NULL) ;
+					_ParticleDlg->setNewCurrPS(nt->PS, nt->PSModel) ;
+
+					nt->PS->setFontManager(_ParticleDlg->FontManager) ;
+					nt->PS->setFontGenerator(_ParticleDlg->FontGenerator) ;
+
+					DeleteItem(TVI_ROOT) ;
+					buildTreeFromPS(nt->PS, nt->PSModel) ;
+					rebuildLocatedInstance() ;
+				}
+
+		}
+		break ;
+		case ID_MENU_SAVE_PS:
+		{
+			
+				CFileDialog fd(FALSE, "ps", NULL, 0, NULL, this) ;
+				if (fd.DoModal() == IDOK)
+				{
+					// Add to the path
+					char drive[256];
+					char dir[256];
+					char path[256];
+
+					// Add search path for the texture
+					_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
+					_makepath (path, drive, dir, NULL, NULL);
+					NLMISC::CPath::addSearchPath (path);
+
+
+					CNodeType *nt = (CNodeType *) GetItemData(GetSelectedItem()) ;
+
+					// build a shape from our system, and save it
+					NL3D::CParticleSystemShape psc  ;
+
+					try
+					{
+						psc.buildFromPS(*nt->PS) ;
+						{
+							NL3D::CShapeStream st(&psc) ;
+							NLMISC::COFile oFile((LPCTSTR) fd.GetPathName()) ;
+							oFile.serial(st) ;
+						}
+					}
+					catch (NLMISC::Exception &E)
+					{
+						MessageBox(E.what(), "save error") ;
+					}	
+				}
 		}
 		break ;
 	}
@@ -392,16 +645,45 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 		TVITEM item ;
 		item.mask = TVIF_HANDLE | TVIF_PARAM ;
-		item.hItem = GetSelectedItem() ;
-
-	
+		item.hItem = GetSelectedItem() ;		
 
 
 		GetItem(&item) ;
-		CPSLocated *loc = (CPSLocated *) item.lParam ;
+		CPSLocated *loc = ((CNodeType *) item.lParam)->Loc ;
 		loc->bind(toCreate) ;
+		CNodeType *nt = new CNodeType(toCreate) ;
+		_NodeTypes.push_back(nt) ;
 		// insert the element in the tree
-		InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, toCreate->getName().c_str(), toCreate->getType(), toCreate->getType(), 0, 0, (LPARAM) toCreate, GetSelectedItem(), TVI_LAST) ;
+		// we want that the instance always appears in the last position
+
+		HTREEITEM son = this->GetChildItem(GetSelectedItem()) ;
+		HTREEITEM lastSon ;
+
+		if (!son)
+		{
+			lastSon = GetSelectedItem() ;
+		}
+		else
+		{
+
+			lastSon  = TVI_FIRST ;
+
+			while (son != NULL)
+			{
+				item.hItem = son ;
+				GetItem(&item) ;
+				if (((CNodeType *) item.lParam)->Type == CNodeType::locatedInstance)
+				{
+					break ;
+				}
+				lastSon = son ;
+				son = this->GetChildItem(son) ;
+			}
+		}
+
+
+		InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, toCreate->getName().c_str(), toCreate->getType(), toCreate->getType(), 0, 0, (LPARAM) nt, GetSelectedItem(), lastSon) ;
+		Invalidate() ;
 	}
 
 
@@ -428,15 +710,62 @@ void CParticleTreeCtrl::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
 	if (info->item.pszText)
 	{
 		this->SetItemText(info->item.hItem, info->item.pszText) ;
-		NLMISC::IClassable *obj  = (NLMISC::IClassable *) info->item.lParam ;
 
-		if (dynamic_cast<CPSLocated *>(obj))
+		CNodeType *nt = (CNodeType *) info->item.lParam ;
+
+		switch (nt->Type)
 		{
-			((CPSLocated *) obj)->setName(std::string(info->item.pszText)) ;
+			case CNodeType::located :
+			{
+				nt->Loc->setName(std::string(info->item.pszText)) ;
+			}
+			break ;
+			case CNodeType::locatedBindable :
+			{
+				nt->Bind->setName(std::string(info->item.pszText)) ;
+			}
+			break ;
 		}
-		else if (dynamic_cast<CPSLocatedBindable *>(obj))
+
+	}
+}
+
+
+void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &mat)
+{
+	
+	// the current element must be an instance
+	if (::IsWindow(m_hWnd))
+	{
+		HTREEITEM currItem = GetSelectedItem() ;
+		if (currItem)
 		{
-			((CPSLocatedBindable *) obj)->setName(std::string(info->item.pszText)) ;
+			CNodeType *nt = (CNodeType *) GetItemData(currItem) ;
+			if (nt->Type == CNodeType::locatedInstance)
+			{
+				nt->Loc->getPos()[nt->LocatedInstanceIndex] = mat.getPos() ;
+			}
 		}
 	}
+}
+
+
+
+NLMISC::CMatrix CParticleTreeCtrl::getElementMatrix(void) const
+{
+	HTREEITEM currItem = GetSelectedItem() ;
+	if (currItem)
+	{
+		CNodeType *nt = (CNodeType *) GetItemData(currItem) ;
+		if (nt->Type == CNodeType::locatedInstance)
+		{
+			NLMISC::CVector pos = nt->Loc->getPos()[nt->LocatedInstanceIndex] ;
+			NLMISC::CMatrix m ;
+			m.identity() ;
+			m.setPos(pos) ;
+			return m ; 
+		}
+	}
+
+	return NLMISC::CMatrix::Identity ;
 }

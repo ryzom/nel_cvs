@@ -1,7 +1,7 @@
 /** \file scene_dlg.h
  * <File description>
  *
- * $Id: scene_dlg.h,v 1.5 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: scene_dlg.h,v 1.6 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,7 @@ public:
 	BOOL	ObjectMode;
 	float	MoveSpeed;
 	BOOL	ViewParticle;
+	BOOL	MoveElement;
 	//}}AFX_DATA
 
 	class CObjectViewer	*ObjView;
@@ -82,6 +83,7 @@ protected:
 	afx_msg void OnResetCamera();
 	afx_msg void OnDestroy();
 	afx_msg void OnViewParticles();
+	afx_msg void OnMoveElement();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

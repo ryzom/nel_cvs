@@ -1,7 +1,7 @@
  /** \file edit_attrib_dlg.h
  * <File description>
  *
- * $Id: edit_attrib_dlg.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: edit_attrib_dlg.h,v 1.2 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 class CEditAttribDlg : public CDialog
 {
 public:
+	virtual BOOL EnableWindow( BOOL bEnable = TRUE ) { return CDialog::EnableWindow(bEnable) ; } ;
 	virtual void init(uint32 x, uint32 y, CWnd *pParent) = 0 ;
 	virtual ~CEditAttribDlg() {}
 } ;

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * <File description>
  *
- * $Id: particle_tree_ctrl.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.2 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,9 +29,10 @@
 
 #if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// particle_tree_ctrl.h : header file
-//
+#endif
+
+
+#include "nel/misc/matrix.h"
 
 
 class CParticleDlg ;
@@ -41,7 +42,12 @@ class CParticleDlg ;
 namespace NL3D
 {
 	class CParticleSystem ;
+	class CParticleSystemModel ;
 }
+
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CParticleTreeCtrl window
@@ -68,10 +74,21 @@ public:
 
 
 	/// build a portion of the tree using the given particle system
-	void buildTreeFromPS(NL3D::CParticleSystem *ps) ;
+	void buildTreeFromPS(NL3D::CParticleSystem *ps, NL3D::CParticleSystemModel *psm) ;
+
+	// rebuild the located instance in the tree (after loading for example)
+	void rebuildLocatedInstance(void) ;
 
 	void init(void) ;
 	// Generated message map functions
+
+	// move the current element by using the given matrix
+	void moveElement(const NLMISC::CMatrix &mat) ;
+
+	// get the matrix of the current element being selected, or identity if there's none
+	NLMISC::CMatrix getElementMatrix(void) const ;
+
+
 protected:
 	//{{AFX_MSG(CParticleTreeCtrl)
 	afx_msg void OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult);
@@ -84,6 +101,44 @@ protected:
 
 	// the dialog that contain us
 	CParticleDlg *_ParticleDlg ;
+
+	/** this struct is used to identify the type of each node	
+	 */
+	struct CNodeType
+	{	
+		enum { located, particleSystem, locatedBindable, locatedInstance  } Type ;
+		union
+		{
+			NL3D::CPSLocated *Loc ;
+			NL3D::CPSLocatedBindable *Bind ;
+			NL3D::CParticleSystem *PS ;		
+		} ;
+
+		
+		// if Type = particleSystem, it gives the model of this system
+		NL3D::CParticleSystemModel *PSModel ;
+
+		// for the located instance type, this is the index of the instance
+		uint32 LocatedInstanceIndex ;
+
+		// a located
+		CNodeType(NL3D::CPSLocated *loc) { Loc = loc ; Type = located ; }
+
+		// an instance of a located
+		CNodeType(NL3D::CPSLocated *loc, uint32 index) { Loc = loc ; Type = locatedInstance ; LocatedInstanceIndex = index ; }
+		CNodeType(NL3D::CParticleSystem *ps, NL3D::CParticleSystemModel *psModel) 
+		{ 			
+			Type = particleSystem ; 
+			PS = ps ; 
+		
+			PSModel = psModel ;
+		}
+		CNodeType(NL3D::CPSLocatedBindable *lb) { Bind = lb ; Type = locatedBindable ; }
+
+	} ;
+
+	// node that we allocated
+	std::vector<CNodeType *> _NodeTypes ;
 
 	DECLARE_MESSAGE_MAP()
 };

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * <File description>
  *
- * $Id: located_bindable_dialog.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.3 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "nel/3d/ps_force.h"
 #include "nel/3d/ps_emitter.h"
 #include "nel/3d/ps_zone.h"
+
+#include "texture_chooser.h"
 
 #include "attrib_dlg.h"
 
@@ -135,10 +137,19 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 			ad->GetClientRect(&rect) ;
 			yPos += rect.bottom + 3 ;
 		}
-	}
 
-
-	
+		// check support for animated texture
+		if (dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable))
+		{
+			CTextureChooser *tc = new CTextureChooser ;
+			_SubDialogs.push_back(tc) ;
+			_TextureWrapper.P = dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable) ;
+			tc->setWrapper(&_TextureWrapper) ;
+			tc->init(xPos, yPos, this) ;
+			tc->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+		}
+	}	
 }
 
 

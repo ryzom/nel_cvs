@@ -1,7 +1,7 @@
 /** \file ps_wrapper.h
  * <File description>
  *
- * $Id: ps_wrapper.h,v 1.1 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: ps_wrapper.h,v 1.2 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "nel/misc/vector.h"
 
 #include "nel/3d/ps_attrib_maker.h"
+#include "nel/3d/texture.h"
 
 // here we define interface that helps to create wrappers between the particle system interface and 
 // a dialog.
@@ -71,5 +72,12 @@ typedef IPSWrapper<uint32> IPSWrapperUInt ;
 typedef IPSSchemeWrapper<uint32> IPSSchemeWrapperUInt ;
 
 
+// texture
+
+struct IPSWrapperTexture
+{
+	virtual NL3D::ITexture *get(void) = 0 ;
+	virtual void set(NL3D::ITexture *) = 0 ;
+} ;
 
 #endif

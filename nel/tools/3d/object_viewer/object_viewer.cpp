@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.9 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.10 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,7 +190,7 @@ void CObjectViewer::initUI ()
 	getRegisterWindowState (_SceneDlg, REGKEY_OBJ_VIEW_SCENE_DLG, false);
 
 	// Create particle dialog
-	_ParticleDlg=new CParticleDlg (&driverWnd);
+	_ParticleDlg=new CParticleDlg (&driverWnd, _SceneDlg);
 	_ParticleDlg->Create (IDD_PARTICLE);
 	getRegisterWindowState (_ParticleDlg, REGKEY_OBJ_PARTICLE_DLG, false);	
 
@@ -246,21 +246,14 @@ void CObjectViewer::go ()
 		_ChannelMixer.eval (false);
 
 		// Mouse listener
-		_SceneDlg->UpdateData ();
-		if (_SceneDlg->ObjectMode)
-			_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
-		else
-		{
-			_MouseListener.setMouseMode (CEvent3dMouseListener::firstPerson);
-			_MouseListener.setSpeed (_SceneDlg->MoveSpeed);
-		}
-
-		// New matrix from camera
-		CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
-		CNELU::Camera->setMatrix (_MouseListener.getViewMatrix());
+		_SceneDlg->UpdateData();
+		
+		
 
 		// Clear the buffers
-		CNELU::clearBuffers(CRGBA(120,120,120));
+//		CNELU::clearBuffers(CRGBA(120,120,120));
+
+		CNELU::clearBuffers(CRGBA(0,0,0));
 
 		// Draw the scene
 		CNELU::Scene.render();
@@ -278,8 +271,30 @@ void CObjectViewer::go ()
 		// Swap the buffers
 		CNELU::swapBuffers();
 
+
+		if (_SceneDlg->ObjectMode)
+			_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
+		else
+		{
+			_MouseListener.setMouseMode (CEvent3dMouseListener::firstPerson);
+			_MouseListener.setSpeed (_SceneDlg->MoveSpeed);
+		}
+
+
 		// Pump message from the server
 		CNELU::EventServer.pump();
+
+		if (!_SceneDlg->MoveElement)
+		{
+			// New matrix from camera
+			CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
+			CNELU::Camera->setMatrix (_MouseListener.getViewMatrix());
+		}
+		else
+		{
+			// for now we apply a transform on the selected object in the particle system			
+			_ParticleDlg->moveElement(_MouseListener.getModelMatrix()) ;		
+		}
 
 		// Pump others message for the windows
 		MSG	msg;

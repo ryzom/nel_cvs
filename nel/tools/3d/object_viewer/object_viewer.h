@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.7 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: object_viewer.h,v 1.8 2001/06/15 16:05:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,17 @@ public:
 
 	// Listener
 	virtual void operator ()(const NLMISC::CEvent& event);
+
+	// get the mouse listener
+	NL3D::CEvent3dMouseListener &getMouseListener(void) { return _MouseListener ; }
+	const NL3D::CEvent3dMouseListener &getMouseListener(void) const { return _MouseListener ; }
+
+	// get the particle dialog
+	CParticleDlg *getParticleDialog(void) { return _ParticleDlg ; }
+	const CParticleDlg *getParticleDialog(void) const { return _ParticleDlg ; }
+
+
+
 
 	// Not exported
 	void setAnimTime (float animStart, float animEnd);

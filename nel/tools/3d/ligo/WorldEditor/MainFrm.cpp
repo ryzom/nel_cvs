@@ -85,6 +85,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_SAVELANDSCAPE, OnMenuFileSaveLandscape)
 	ON_COMMAND(ID_FILE_GENERATE, OnMenuFileGenerate)
 	ON_COMMAND(ID_FILE_EXPORT, OnMenuFileExportToLevelD)
+	ON_COMMAND(ID_FILE_VIEW, OnMenuFileView)
 	ON_COMMAND(ID_FILE_EXIT, OnMenuFileExit)
 	ON_COMMAND(ID_MODE_ZONE, OnMenuModeZone)
 	ON_COMMAND(ID_MODE_LOGIC, OnMenuModeLogic)
@@ -388,6 +389,8 @@ bool CMainFrame::init (bool bMakeAZone)
 	catch (Exception& e)
 	{
 		MessageBox (e.what(), "Warning");
+		SEnvironnement newEnv;
+		_Environnement = newEnv;
 	}
 	return false;
 }
@@ -528,6 +531,7 @@ void CMainFrame::OnMenuFileExportToLevelD ()
 	dialog.TileBankFile = _Environnement.ExportOptions.TileBankFile.c_str();
 	dialog.HeightMapFile = _Environnement.ExportOptions.HeightMapFile.c_str();
 	dialog.ZFactor = toString(_Environnement.ExportOptions.ZFactor).c_str();
+	dialog.Lighting = _Environnement.ExportOptions.Light;
 
 	if (dialog.DoModal() == IDOK)
 	{
@@ -536,6 +540,7 @@ void CMainFrame::OnMenuFileExportToLevelD ()
 		_Environnement.ExportOptions.TileBankFile = (LPCSTR)dialog.TileBankFile;
 		_Environnement.ExportOptions.HeightMapFile = (LPCSTR)dialog.HeightMapFile;
 		_Environnement.ExportOptions.ZFactor = (float)atof ((LPCSTR)dialog.ZFactor);
+		_Environnement.ExportOptions.Light = dialog.Lighting;
 
 		CExportCBDlg *pDlg = new CExportCBDlg();
 		//Check if new succeeded and we got a valid pointer to a dialog object

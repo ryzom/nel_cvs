@@ -183,6 +183,10 @@ SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\mainfrmView.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MoveDlg.cpp
 # End Source File
 # Begin Source File

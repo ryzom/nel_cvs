@@ -25,6 +25,7 @@ CExportDlg::CExportDlg(CWnd* pParent /*=NULL*/)
 	TileBankFile = _T("");
 	HeightMapFile = _T("");
 	ZFactor = _T("");
+	Lighting = 0;
 	//}}AFX_DATA_INIT
 }
 
@@ -39,6 +40,31 @@ void CExportDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_TILEBANKFILE, TileBankFile);
 	DDX_Text(pDX, IDC_EDIT_HEIGHTMAPFILE, HeightMapFile);
 	DDX_Text(pDX, IDC_EDIT_ZFACTOR, ZFactor);
+
+	if (pDX->m_bSaveAndValidate)
+	{
+		// Download
+		if (GetCheckedRadioButton (IDC_RADIOLIGHTNOISE, IDC_RADIOLIGHTNO) == IDC_RADIOLIGHTNOISE)
+			Lighting = 2;
+		else
+		if (GetCheckedRadioButton (IDC_RADIOLIGHTNOISE, IDC_RADIOLIGHTNO) == IDC_RADIOLIGHTPATCH)
+			Lighting = 1;
+		else
+		if (GetCheckedRadioButton (IDC_RADIOLIGHTNOISE, IDC_RADIOLIGHTNO) == IDC_RADIOLIGHTNO)
+			Lighting = 0;
+	}
+	else
+	{
+		// Upload
+		if (Lighting == 0)
+			CheckRadioButton (IDC_RADIOLIGHTNOISE, IDC_RADIOLIGHTNO, IDC_RADIOLIGHTNO);
+		else
+		if (Lighting == 1)
+			CheckRadioButton (IDC_RADIOLIGHTNOISE, IDC_RADIOLIGHTNO, IDC_RADIOLIGHTPATCH);
+		else
+		if (Lighting == 2)
+			CheckRadioButton (IDC_RADIOLIGHTNOISE, IDC_RADIOLIGHTNO, IDC_RADIOLIGHTNOISE);
+	}
 	//}}AFX_DATA_MAP
 }
 

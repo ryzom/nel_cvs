@@ -101,26 +101,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	if (commandLinePtr[strlen (commandLinePtr)-1]=='"')
 		commandLinePtr[strlen (commandLinePtr)-1]=0;
 
-
-	string _RootDir;
-	HMODULE hModule = GetModuleHandle ("WORLDEDITOR.EXE");
-	if (hModule)
-	{
-		// Get the path
-		char sModulePath[256];
-		int res = GetModuleFileName (hModule, sModulePath, 256);
-
-		// Success ?
-		if (res)
-		{
-			// Path
-			char sDrive[256];
-			char sDir[256];
-			_splitpath (sModulePath, sDrive, sDir, NULL, NULL);
-			_RootDir = sDrive;
-			_RootDir += sDir;
-		}
-	}
 	char sCurDir[MAX_PATH];
 	GetCurrentDirectory(MAX_PATH, sCurDir);
 	string sRootDir = string(sCurDir) + "\\";

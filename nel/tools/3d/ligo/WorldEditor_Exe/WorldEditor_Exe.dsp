@@ -180,9 +180,5 @@ SOURCE=.\res\WorldEditor_Exe.ico
 SOURCE=.\res\WorldEditor_Exe.rc2
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\ReadMe.txt
-# End Source File
 # End Target
 # End Project

@@ -1,7 +1,7 @@
 /** \file export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.1 2002/01/16 15:22:33 besson Exp $
+ * $Id: export.cpp,v 1.2 2002/01/28 17:37:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,8 @@
 
 #include "3d/zone.h"
 #include "3d/tile_bank.h"
+#include "3d/zone_lighter.h"
+#include "3d/landscape.h"
 
 #include <windows.h>
 
@@ -50,12 +52,13 @@ SExportOptions::SExportOptions ()
 	ZoneRegion = NULL;
 	CellSize = 160.0f;
 	ZFactor = 1.0f;
+	Light = false;
 }
 
 // ---------------------------------------------------------------------------
 void SExportOptions::serial (NLMISC::IStream& s)
 {
-	int version = s.serialVersion(3);
+	int version = s.serialVersion (4);
 
 	s.serial (OutZoneDir);
 	s.serial (RefZoneDir);
@@ -68,6 +71,9 @@ void SExportOptions::serial (NLMISC::IStream& s)
 
 	if (version > 2)
 		s.serial (HeightMapFile);
+
+	if (version > 3)
+		s.serial (Light);
 }
 
 // ---------------------------------------------------------------------------
@@ -139,6 +145,8 @@ bool CExport::export (SExportOptions &options, IExportCB *expCB)
 		{
 			if (_ExportCB != NULL)
 				_ExportCB->dispWarning (string("Cant load height map : ") + _Options->HeightMapFile);
+			delete _HeightMap;
+			_HeightMap = NULL;
 		}
 	}
 
@@ -282,14 +290,16 @@ void CExport::treatPattern (sint32 x, sint32 y,
 	for (i = 0; i < sMask.w; ++i)
 	if (sMask.Tab[i+j*sMask.w])
 	{
-		//set (x+deltaX+i, y+deltaY+j, 0, 0, STRING_UNUSED, true);
-		//setRot (x+deltaX+i, y+deltaY+j, 0);
-		//setFlip (x+deltaX+i, y+deltaY+j, 0);
-
 		CZone UnitZone;
+		CZone UnitZoneLighted;
 
 		// Put all the patches contained in the square ... in the unit zone
 		cutZone (BigZone, UnitZone, x+deltaX+i, y+deltaY+j, PatchTransfered);
+
+		if (_Options->Light > 0)
+			light (UnitZoneLighted, UnitZone);
+		else
+			UnitZoneLighted = UnitZone;
 
 		// Save the zone
 		string DstZoneFileName;
@@ -305,7 +315,7 @@ void CExport::treatPattern (sint32 x, sint32 y,
 			//////// ATTENTION
 			DstZoneFileName = _Options->OutZoneDir + string("\\") + DstZoneFileName + string(".zonel");
 			COFile outFile (DstZoneFileName);
-			UnitZone.serial (outFile);
+			UnitZoneLighted.serial (outFile);
 		}
 		catch (Exception &)
 		{
@@ -314,8 +324,10 @@ void CExport::treatPattern (sint32 x, sint32 y,
 		}
 		
 		// Set the zone as unused to not treat it the next time
-		//pZR->basicSet (x+deltaX+i, y+deltaY+j, 0, 0, STRING_UNUSED);
 		ZoneTreated[(x+deltaX+i)-nMinX + ((y+deltaY+j)-nMinY) * nStride] = true;
+
+		if ((_ExportCB != NULL) && (_ExportCB->isCanceled()))
+			break;
 	}
 }
 
@@ -425,11 +437,63 @@ int TransitionFlipUD[48] =
 	41	// 47
 };
 
+int TransitionRotCCW[48] =
+{
+	27,	// 0
+	28,	// 1
+	29,	// 2
+	0,	// 3
+	1,	// 4
+	2,	// 5
+	33,	// 6
+	34,	// 7
+	35,	// 8
+	6,	// 9
+	7,	// 10
+	8,	// 11
+	39,	// 12
+	40,	// 13
+	17,	// 14
+	12,	// 15
+	13,	// 16
+	41,	// 17
+	45,	// 18
+	46,	// 19
+	47,	// 20
+	18,	// 21
+	19,	// 22
+	20,	// 23
+	3,	// 24
+	4,	// 25
+	5,	// 26
+	24,	// 27
+	25,	// 28
+	26,	// 29
+	9,	// 30
+	10,	// 31
+	11,	// 32
+	30,	// 33
+	31,	// 34
+	32,	// 35
+	15,	// 36
+	16,	// 37
+	14,	// 38
+	36,	// 39
+	37,	// 40
+	38,	// 41
+	21,	// 42
+	22,	// 43
+	23,	// 44
+	42,	// 45
+	43,	// 46
+	44	// 47
+};
+
 // ---------------------------------------------------------------------------
 void CExport::transformZone (CZone &zeZone, sint32 nPosX, sint32 nPosY, uint8 nRot, uint8 nFlip)
 {
 	// Conversion nPosX,nPosY to Zone Coordinate ZoneX, ZoneY
-	uint32 i, j, k;
+	uint32 i, j, k, pass;
 	vector<CPatchInfo>		PatchInfos;
 	vector<CBorderVertex>	BorderVertices;
 
@@ -444,6 +508,9 @@ void CExport::transformZone (CZone &zeZone, sint32 nPosX, sint32 nPosY, uint8 nR
 	CMatrix Transfo;
 	Transfo.setRot (CQuat(CVector::K, (float)(nRot * Pi / 2.0f)));
 	Transfo.setPos (CVector(nPosX*_Options->CellSize, (nPosY)*_Options->CellSize, 0.0f));
+
+	if (nFlip != 0)
+		nFlip = 1;
 
 	if (nFlip == 1)
 		Transfo.scale(CVector(-1.0f, 1.0f, 1.0f));
@@ -460,7 +527,7 @@ void CExport::transformZone (CZone &zeZone, sint32 nPosX, sint32 nPosY, uint8 nR
 		for (j = 0; j < 4; ++j)
 			rPI.Patch.Interiors[j].z += getHeight(rPI.Patch.Vertices[j].x, rPI.Patch.Vertices[j].y);
 
-		// when j == 7 or 0 use vertex 0
+		// when j == 7 or 0 use vertex 0 for delta Z to ensure continuity of normals
 		// when j == 1 or 2 use vertex 1
 		// when j == 3 or 4 use vertex 2
 		// when j == 5 or 6 use vertex 3
@@ -545,7 +612,7 @@ void CExport::transformZone (CZone &zeZone, sint32 nPosX, sint32 nPosY, uint8 nR
 		for (k = 0; k < rPI.OrderT; ++k)
 		for (j = 0; j < rPI.OrderS; ++j)
 		{
-			for (int pass = 0; pass < 3; ++pass)
+			for (pass = 0; pass < 3; ++pass)
 			{
 				if (rPI.Tiles[j+k*rPI.OrderS].Tile[pass] == NL_TILE_ELM_LAYER_EMPTY)
 					break;
@@ -575,11 +642,10 @@ void CExport::transformZone (CZone &zeZone, sint32 nPosX, sint32 nPosY, uint8 nR
 			}
 
 			// 256x256
-
 			bool is256x256;
 			uint8 uvOff;
 
-			rPI.Tiles[j+k*rPI.OrderS].getTile256Info(is256x256, uvOff);
+			rPI.Tiles[j+k*rPI.OrderS].getTile256Info (is256x256, uvOff);
 			if (is256x256)
 			{
 				if (uvOff == 1)
@@ -594,6 +660,91 @@ void CExport::transformZone (CZone &zeZone, sint32 nPosX, sint32 nPosY, uint8 nR
 		}
 	}
 
+	// Rotate all tile elements in CW (because zones are turned in CCW)
+	// If zone flipped rotate tile elements by 180°
+	set<string> allnames; // Debug
+	for (i = 0; i < PatchInfos.size(); ++i)
+	{
+		CPatchInfo &rPI = PatchInfos[i];
+		
+		for (j = 0; j < rPI.Tiles.size(); ++j)
+		{
+			int tileSet, number;
+			CTileBank::TTileType type;
+			CTileSet *pTS;
+			uint8 nbOfRot;
+
+			// Is the tile is painted ?
+			if (rPI.Tiles[j].Tile[0] == 65535)
+				continue;
+			
+			_ZeTileBank->getTileXRef (rPI.Tiles[j].Tile[0], tileSet, number, type);
+			pTS = _ZeTileBank->getTileSet (tileSet);
+
+			// Debug beg
+			/*
+			if (allnames.find(pTS->getName()) == allnames.end())
+			{
+				allnames.insert(pTS->getName());
+				if (_ExportCB != NULL)
+				{
+					if (!pTS->getOriented())
+						_ExportCB->dispInfo (pTS->getName() + " NOT oriented");
+					else
+						_ExportCB->dispInfo (pTS->getName() + " oriented");
+				}
+			}
+			*/
+			// Debug end
+
+			if (!pTS->getOriented())
+			{
+				nbOfRot = (4-nRot+2*nFlip)%4; // Not oriented so we can rot tile
+			}
+			else
+			{
+				nbOfRot = (2*nFlip)%4; // Oriented so we cant rot tile
+			}
+
+			// Rotate Tiles
+			// Invert rotation effect on transition
+			for (pass = 0; pass < 3; ++pass)
+			{
+				if (rPI.Tiles[j].Tile[pass] == NL_TILE_ELM_LAYER_EMPTY)
+					break;
+				uint8 ori = rPI.Tiles[j].getTileOrient (pass);
+
+				// Invert rotation effect on transition
+				_ZeTileBank->getTileXRef(rPI.Tiles[j].Tile[pass], tileSet, number, type);
+				if (type == CTileBank::transition)
+				{
+					nlassert((number >= 0) && (number <= 47));
+					int NumberAfterRot = number;
+					for (k = 0; k < nbOfRot; ++k)
+						NumberAfterRot = TransitionRotCCW[NumberAfterRot];
+
+					pTS = _ZeTileBank->getTileSet (tileSet);
+					CTileSetTransition *pTST = pTS->getTransition (NumberAfterRot);
+					int tileIdAfterRot = pTST->getTile();
+					rPI.Tiles[j].Tile[pass] = tileIdAfterRot;
+
+				}
+				// Rotate tile
+				ori = (4+ori-nbOfRot)%4;
+				rPI.Tiles[j].setTileOrient (pass, ori);
+			}
+
+			// Process the tile 256x256
+			bool is256x256;
+			uint8 uvOff;
+
+			rPI.Tiles[j].getTile256Info (is256x256, uvOff);
+			if (is256x256)
+				rPI.Tiles[j].setTile256Info (is256x256,  (uvOff+nbOfRot)%4);
+
+		}
+	}
+	
 	zeZone.build (nZoneId, PatchInfos, BorderVertices);
 }
 
@@ -719,4 +870,125 @@ float CExport::getHeight (float x, float y)
 	deltaZ *= _Options->ZFactor;
 
 	return deltaZ;
+}
+
+// ---------------------------------------------------------------------------
+void CExport::light (NL3D::CZone &zoneOut, NL3D::CZone &zoneIn)
+{
+	// Same as zone_lighter stand-alone exe
+	// ------------------------------------
+	/*	CZoneLighter zl;
+	CLandscape land;
+	CZoneLighter::CLightDesc ld;
+	vector<CZoneLighter::CTriangle> obstacle;
+	vector<uint> listzone;
+
+	ld.SkyContribution = false;
+	ld.Oversampling = CZoneLighter::CLightDesc::NoOverSampling;
+	ld.Shadow = false;
+	ld.Softshadow = false;
+	ld.NumCPU = 1;
+	ld.GridSize = 2;
+
+	try
+	{
+		zl.init ();
+		land.init ();
+		land.TileBank = *_ZeTileBank;
+		land.initTileBanks();
+		land.addZone (zoneIn);
+
+		listzone.push_back(zoneIn.getZoneId());
+
+		zl.light (land, zoneOut, zoneIn.getZoneId(), ld, obstacle, listzone);
+	}
+	catch (Exception &e)
+	{
+		if (_ExportCB != NULL)
+			_ExportCB->dispError (e.what());
+	}*/
+
+	// Quickest version without noise
+	// ------------------------------
+
+	CLandscape land;
+
+	land.init ();
+	land.TileBank = *_ZeTileBank;
+	land.initTileBanks();
+	land.addZone (zoneIn);
+	
+
+	vector<CPatchInfo> vPI;
+	vector<CBorderVertex> vBV;
+	uint32 i, j, k, m;
+	float s, t, val;
+	CVector n, l = CVector (1.0f, 1.0f, -1.0f);
+	vector<CVector> vertices;
+	CVector v[4];
+
+	l.normalize();
+
+	CZone *dyn = land.getZone(zoneIn.getZoneId());
+	uint32 numPatch = dyn->getNumPatchs();
+
+	zoneIn.retrieve (vPI, vBV);
+
+	if (_Options->Light == 2) // Noise ?
+	for (i = 0; i < numPatch; ++i)
+	{
+		const CPatch *pCP = const_cast<const CZone *>(dyn)->getPatch (i);
+
+		CPatchInfo &rPI = vPI[i];
+		vertices.resize((rPI.OrderT*4+1)*(rPI.OrderS*4+1));
+
+		for (k = 0; k < (rPI.OrderT*4+1); ++k)
+		for (j = 0; j < (rPI.OrderS*4+1); ++j)
+		{
+			s = (((float)j) / (rPI.OrderS*4));
+			t = (((float)k) / (rPI.OrderT*4));
+			vertices[j+k*(rPI.OrderS*4+1)] = pCP->computeVertex(s, t);
+		}
+
+		for (k = 0; k < (rPI.OrderT*4); ++k)
+		for (j = 0; j < (rPI.OrderS*4); ++j)
+		{
+			v[0] = vertices[(j+0)+(k+0)*(rPI.OrderS*4+1)];
+			v[1] = vertices[(j+1)+(k+0)*(rPI.OrderS*4+1)];
+			v[2] = vertices[(j+1)+(k+1)*(rPI.OrderS*4+1)];
+			v[3] = vertices[(j+0)+(k+1)*(rPI.OrderS*4+1)];
+
+			val = 0.0f;
+			for (m = 0; m < 4; ++m)
+			{
+				n = (v[(m+0)%4]-v[(m+2)%4])^(v[(m+0)%4]-v[(m+1)%4]);
+				n.normalize();
+				val += 255.0f*(1.0f-n*l)/2.0f;
+			}
+			val = val / 4.0f;
+			clamp (val, 0.0f, 255.0f);
+			rPI.Lumels[j+k*rPI.OrderS*4] = (uint8)(val);
+		}
+	}
+	else // No noise
+	for (i = 0; i < numPatch; ++i)
+	{
+		const CPatch *pCP = const_cast<const CZone *>(dyn)->getPatch (i);
+		CBezierPatch *pBP = pCP->unpackIntoCache();
+
+		CPatchInfo &rPI = vPI[i];
+
+		for (k = 0; k < (rPI.OrderT*4); ++k)
+		for (j = 0; j < (rPI.OrderS*4); ++j)
+		{
+			s = ((0.5f+(float)j) / (rPI.OrderS*4));
+			t = ((0.5f+(float)k) / (rPI.OrderT*4));
+			n = pBP->evalNormal (s, t);
+			val = 255.0f*(1.0f-n*l)/2.0f;
+			clamp (val, 0.0f, 255.0f);
+			rPI.Lumels[j+k*rPI.OrderS*4] = (uint8)(val);
+		}
+	}
+
+	zoneOut.build (zoneIn.getZoneId(), vPI, vBV);
 }

@@ -1013,7 +1013,6 @@ void CBuilderZone::add (const CVector &worldPos)
 		return;
 
 	if (_StackZone.isEmpty())
-		//_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
 		_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
 
 	if (_RandomSelection)
@@ -1067,7 +1066,6 @@ void CBuilderZone::add (const CVector &worldPos)
 		_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
 		_ZoneRegions[_ZoneRegionSelected]->add (x, y, rot, flip, pZBE);
 	}
-//	_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
 	_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
 }
 
@@ -1081,13 +1079,11 @@ void CBuilderZone::del (const CVector &worldPos)
 		return;
 
 	if (_StackZone.isEmpty())
-		//_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
 		_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
 
 	_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
 	_ZoneRegions[_ZoneRegionSelected]->del (x, y);
 
-	//_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
 	_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
 }
 

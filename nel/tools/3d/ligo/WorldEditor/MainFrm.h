@@ -133,6 +133,7 @@ protected:
 	afx_msg void OnMenuFileSaveLandscape ();
 	afx_msg void OnMenuFileGenerate ();
 	afx_msg void OnMenuFileExportToLevelD ();
+	afx_msg void OnMenuFileView ();
 	afx_msg void OnMenuModeZone ();
 	afx_msg void OnMenuModeLogic ();
 	afx_msg void OnMenuModeType ();

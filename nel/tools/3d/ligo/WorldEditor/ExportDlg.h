@@ -24,6 +24,7 @@ public:
 	CString	TileBankFile;
 	CString	HeightMapFile;
 	CString	ZFactor;
+	uint8	Lighting;
 	//}}AFX_DATA
 
 

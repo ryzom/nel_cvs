@@ -4,7 +4,7 @@
  * Get the .land, the reference zones and the heightmap and generate
  * all zones that will be next welded and lighted.
  *
- * $Id: export.h,v 1.1 2002/01/16 15:22:33 besson Exp $
+ * $Id: export.h,v 1.2 2002/01/28 17:37:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,8 @@ struct SExportOptions
 	
 	std::string		HeightMapFile;
 	float			ZFactor;
+
+	uint8			Light; // Roughly light the zone (0-none, 1-patch, 2-noise)
 	
 	// Options not saved
 	NLLIGO::CZoneRegion		*ZoneRegion; // The region to make
@@ -129,6 +131,8 @@ private:
 				std::vector<bool> &PatchTransfered);
 
 	float getHeight (float x, float y);
+
+	void light (NL3D::CZone &zoneOut, NL3D::CZone &zoneIn);
 };
 
 #endif // WE_EXPORT_H

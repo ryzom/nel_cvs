@@ -90,6 +90,9 @@ BEGIN
     BUTTON      ID_MODE_TYPE
     SEPARATOR
     BUTTON      ID_MODE_SELECT
+    SEPARATOR
+    BUTTON      ID_BUTTON32795
+    BUTTON      ID_FILE_VIEW
 END
 
 IDR_MAINFRAME_LIGHT TOOLBAR DISCARDABLE  16, 16
@@ -119,6 +122,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Generate",                   ID_FILE_GENERATE
         MENUITEM "Export For LevelD.",          ID_FILE_EXPORT
+        MENUITEM "&View",                       ID_FILE_VIEW
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END
@@ -340,11 +344,13 @@ BEGIN
     EDITTEXT        IDC_EDIT_REFZONEDIR,7,16,153,14,ES_AUTOHSCROLL
     LTEXT           "Reference Zones Directory",IDC_STATIC,7,7,86,8
     PUSHBUTTON      "...",IDC_BUTTON_REFZONEDIR,166,16,13,14
-    GROUPBOX        "Lighting",IDC_STATIC,7,144,74,27,WS_DISABLED
-    CONTROL         "On",IDC_RADIOLIGHTINGON,"Button",BS_AUTORADIOBUTTON | 
-                    WS_DISABLED,14,155,25,10
-    CONTROL         "Off",IDC_RADIOLIGHTINGOFF,"Button",BS_AUTORADIOBUTTON | 
-                    WS_DISABLED,50,155,25,10
+    GROUPBOX        "Lighting",IDC_STATIC,7,141,118,30
+    CONTROL         "Noise",IDC_RADIOLIGHTNOISE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,13,154,34,10
+    CONTROL         "Patch",IDC_RADIOLIGHTPATCH,"Button",BS_AUTORADIOBUTTON,
+                    51,154,35,10
+    CONTROL         "No",IDC_RADIOLIGHTNO,"Button",BS_AUTORADIOBUTTON,89,154,
+                    25,10
     LTEXT           "Output Zones Directory",IDC_STATIC,7,33,74,8
     EDITTEXT        IDC_EDIT_OUTZONEDIR,7,42,153,14,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON_OUTZONEDIR,166,42,13,14

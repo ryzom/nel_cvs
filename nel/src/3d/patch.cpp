@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.19 2000/12/01 16:35:34 corvazier Exp $
+ * $Id: patch.cpp,v 1.20 2000/12/01 17:19:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -856,7 +856,12 @@ void			CPatch::getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvS
 	else
 	{
 		orient= Tiles[tileId].getTileOrient(passNum);
-		Zone->Landscape->getTileUvScaleBias(tileNumber, additive, uvScaleBias);
+		CTile::TBitmap type;
+		if(additive)
+			type= CTile::additive;
+		else
+			type= CTile::diffuse;
+		Zone->Landscape->getTileUvScaleBias(tileNumber, type, uvScaleBias);
 	}
 
 }

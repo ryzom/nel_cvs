@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.10 2000/12/01 11:14:58 corvazier Exp $
+ * $Id: landscape.h,v 1.11 2000/12/01 17:18:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,11 @@
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+// The maximum amount of different tiles in world.
+const	sint	NbTilesMax= 65536;
 
 
 // ***************************************************************************
@@ -87,6 +92,8 @@ public:
 	bool			removeZone(uint16 zoneId);
 	/// Disconnect, and Delete all zones.
 	void			clear();
+
+	
 	/// Set tile near distance. Default 50.f.
 	void setTileNear (float tileNear)
 	{
@@ -97,6 +104,9 @@ public:
 	{
 		return _TileDistNear;
 	}
+	// TODO: other landscape param setup (Transition etc...).
+	// Store it by landscape, and not only globally in CTessFace statics.
+
 
 	/** Clip the landscape according to frustum. 
 	 * Planes must be normalized.
@@ -107,9 +117,6 @@ public:
 	/// Render the landscape.
 	void			render(IDriver *drv, const CVector &refineCenter, bool doTileAddPass=false);
 
-
-	// TODO: landscape param setup (Transition etc...).
-	// Store it by landscape, and not only globally in CTessFace statics.
 
 	/** Get a zone pointer.
 	 * 
@@ -126,6 +133,12 @@ public:
 	const CZone*	getZone (sint zoneId) const;
 
 
+	/// Force a range of tiles to be loaded in the driver...
+	void			flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles);
+	/// Force a range of tiles to be loaded in the driver...
+	void			releaseTiles(uint16 tileStart, uint16 nbTiles);
+
+
 private:
 	// Private part used by CPatch.
 	friend class	CPatch;
@@ -137,7 +150,7 @@ private:
 	// Return the render pass for a tile Id.
 	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass);
 	// Return the UvScaleBias for a tile Id. uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
-	void			getTileUvScaleBias(sint tileId, bool additiveRdrPass, CVector &uvScaleBias);
+	void			getTileUvScaleBias(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
 
 	// Update globals value to CTessFace
 	void updateGlobals () const;
@@ -152,45 +165,50 @@ private:
 	CPrimitiveBlock	PBlock;
 
 
-	// The map of tile texture.
-	typedef	NLMISC::CSmartPtr<ITexture>	PTexture;
+	// Shortcuts.
+	// TODO: must use a CRefPtr instead for PTexture, when CRefPtr will be patched to work with CSmartPtr etc...
+	typedef	NLMISC::CSmartPtr<ITexture>			PTexture;
+
+
+	// The map of tile texture loaded.
 	typedef	std::map<std::string, PTexture>	TTileTextureMap;
-	typedef	TTileTextureMap::iterator	ItTileTextureMap;
+	typedef	TTileTextureMap::iterator		ItTileTextureMap;
 	TTileTextureMap		TileTextureMap;
 
 
+	// The additional realtime structure for a tile.
 	struct	CTileInfo
 	{
-		// Is this tile correctly loaded?
-		bool			TileOk;
-		// Should be a pointer, when/if tiles will be grouped in a multiple big square textures.
-		CPatchRdrPass	RdrPass;
-		// The scale/Bias to access this tile in those big texture.
+		// NB: CSmartPtr are not used for simplicity, and because of TTileRdrPassSet...
+		// CPatchRdrPass::RefCount are excplictly incremented/decremented...
+		// The rdrpass for diffuse+bump material.
+		CPatchRdrPass	*DiffuseRdrPass;
+		// The rdrpass for additive material (may be NULL if no additive part).
+		CPatchRdrPass	*AdditiveRdrPass;
+		// The scale/Bias to access those tiles in the big texture.
 		// uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
 		// Manages the demi-texel on tile border too.
-		CVector			UvScaleBias;
-	};
-	struct	CTileKey
-	{
-		uint16	TileId;
-		bool	Additive;
-		bool	operator<(const CTileKey &k) const
-		{
-			if(Additive!=k.Additive)
-				return !Additive;
-			else
-				return TileId<k.TileId;
-		}
+		CVector			DiffuseUvScaleBias;
+		CVector			BumpUvScaleBias;
+		CVector			AdditiveUvScaleBias;
 	};
 
+	// The parrallel array of tile of those existing in TileBank. size of NbTilesMax.
+	std::vector<CTileInfo*>				TileInfos;
 
-	// The map of tile Rdr Pass.
-	typedef	std::map<CTileKey, CTileInfo>	TTileRdrPassMap;
-	typedef	TTileRdrPassMap::iterator	ItTileRdrPassMap;
-	TTileRdrPassMap		TileRdrPassMap;
+
+	// The set of tile Rdr Pass.
+	typedef	std::set<CPatchRdrPass>		TTileRdrPassSet;
+	typedef	TTileRdrPassSet::iterator	ItTileRdrPassSet;
+	TTileRdrPassSet		TileRdrPassSet;
+
+
+	// The Tile material.
+	CMaterial		TileMaterial;
 
 	// TODO_TEXTURE.
 	// For test only. The only one Far material.
+	CMaterial		FarMaterial;
 	CPatchRdrPass	FarRdrPass;
 	CPatchRdrPass	TileRdrPass;
 	CMaterial		FarMat;
@@ -201,8 +219,11 @@ private:
 
 
 private:
-	// Internal only. Force the insert in TileRdrPassMap of the tile (with TileBank).
-	void			loadTile(const CTileKey &key);
+	// Internal only. Force load of the tile (with TileBank).
+	void			loadTile(uint16 tileId);
+	void			releaseTile(uint16 tileId);
+	ITexture		*findTileTexture(const std::string &textName);
+	CPatchRdrPass	*findTileRdrPass(const CPatchRdrPass &pass);
 
 };
 

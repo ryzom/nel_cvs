@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.7 2001/03/14 10:41:54 corvazier Exp $
+ * $Id: register_3d.cpp,v 1.8 2001/03/14 14:33:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerBezierRGBA);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearFloat);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearVector);
-		//NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearQuat);
+		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearQuat);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearInt);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearRGBA);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerConstFloat);

@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.8 2001/03/14 10:37:14 corvazier Exp $
+ * $Id: track.cpp,v 1.9 2001/03/14 14:33:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ CTrackKeyFramerBezierRGBA ttoto9;
 
 CTrackKeyFramerLinearFloat	lattoto10;
 CTrackKeyFramerLinearVector	lattoto11;
-//CTrackKeyFramerLinearQuat	lattoto12;
+CTrackKeyFramerLinearQuat	lattoto12;
 CTrackKeyFramerLinearInt	lattoto13;
 CTrackKeyFramerLinearRGBA	lattoto14;
 
@@ -78,7 +78,8 @@ CTrackDefaultRGBA ttoto16;
 
 
 // ***************************************************************************
-/*void CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>::evalKey (	
+
+void CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>::evalKey (	
 			const CKeyQuat* previous, const CKeyQuat* next, 
 			CAnimationTime datePrevious, CAnimationTime dateNext, 
 			CAnimationTime date )
@@ -99,10 +100,17 @@ CTrackDefaultRGBA ttoto16;
 			if (next)
 				_Value.Value=next->Value;
 	}
-}*/
-
+}
 
 // ***************************************************************************
+
+const IAnimatedValue& CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>::getValue () const
+{
+	return _Value;
+}
+
+// ***************************************************************************
+
 void CTrackKeyFramerLinear<CKeyRGBA, NLMISC::CRGBA>::evalKey (	
 			const CKeyRGBA* previous, const CKeyRGBA* next,
 			CAnimationTime datePrevious, CAnimationTime dateNext,
@@ -130,6 +138,7 @@ void CTrackKeyFramerLinear<CKeyRGBA, NLMISC::CRGBA>::evalKey (
 
 
 // ***************************************************************************
+
 void CTrackKeyFramerLinear<CKeyInt, sint32>::evalKey (	
 			const CKeyInt* previous, const CKeyInt* next,
 			CAnimationTime datePrevious, CAnimationTime dateNext,

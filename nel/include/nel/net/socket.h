@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.11 2000/10/03 13:27:12 cado Exp $
+ * $Id: socket.h,v 1.12 2000/10/04 14:34:10 cado Exp $
  *
  * Interface for CSocket
  */
@@ -142,7 +142,7 @@ private:
 
 };
 
-}
+} // NLNET
 
 #endif // NL_SOCKET_H
 

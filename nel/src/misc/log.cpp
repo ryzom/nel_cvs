@@ -8,9 +8,9 @@
  */
 
 /*
- * $Id: log.cpp,v 1.1 2000/09/21 12:30:15 lecroart Exp $
+ * $Id: log.cpp,v 1.2 2000/10/04 14:34:10 cado Exp $
  *
- * <Replace this by a description of the file>
+ * Implementation for CLog
  */
 
 #include <stdarg.h>
@@ -20,9 +20,26 @@
 
 #include "nel/misc/displayer.h"
 #include "nel/misc/log.h"
+#include "nel/net/service.h"
+#include "nel/net/inet_address.h"
+
+#include <stdio.h>
+#include <time.h>
+#include <sstream>
+using namespace std;
+
 
 namespace NLMISC
 {
+
+
+CLog::CLog( TLogPriority priority, bool longinfo ) :
+	_Priority( priority ),
+	_Line( 0 ),
+	_File( NULL ),
+	_Long( longinfo )
+{}
+
 
 void CLog::addDisplayer (IDisplayer *displayer)
 {
@@ -50,19 +67,104 @@ void CLog::removeDisplayer (IDisplayer *displayer)
 	}
 }
 
-void CLog::display (const std::string format, ...)
+
+/// Returns a pointer the filename, skipping the directory
+char *getFilename( char *lfilename )
 {
-	char		string[1024];
-
-	va_list args;
-	va_start (args, format);
-	vsprintf (string, format.c_str (), args);
-	va_end (args);
-
-	for (std::vector<IDisplayer *>::iterator idi = _Displayers.begin (); idi < _Displayers.end (); idi++)
+#ifdef NL_OS_WINDOWS
+	char *slash = strrchr( lfilename, '\\' );
+#else
+	char *slash = sttrchr( lfilename, '/' );
+#endif
+	if ( slash == NULL )
 	{
-		(*idi)->display (string);
+		return lfilename;
+	}
+	else
+	{
+		return slash+1;
 	}
 }
+
+
+void CLog::display( const char *format, ... )
+{
+	// Build the string
+
+	char cstring [1024];
+
+	va_list args;
+	va_start( args, format );
+	vsprintf( cstring, format, args );
+	va_end( args );
+
+	time_t t;
+	time( &t );
+	
+	char cstime[25];
+	strftime( cstime, 25, "%y/%m/%d %H:%M:%S", localtime( &t ) );
+
+	stringstream ss;
+	if ( _Long )
+	{
+		ss << cstime << " ";
+	}
+	ss << priorityStr().c_str() << " ";
+	if ( _Long )
+	{
+		ss << NLNET::CInetAddress::localHost().hostName().c_str() << " " << NLNET::IService::serviceName() << " ";
+	}
+	if ( _File != NULL )
+	{
+		ss << getFilename(_File) << " " << _Line << " ";
+	}
+	ss << ": " << cstring << endl;
+	string s = ss.str();
+
+	// Send to the attached displayers
+
+	for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
+	{
+		(*idi)->display( s );
+	}
+
+	_File = NULL;
+	_Line = 0;
+}
+
+
+/*
+ * Display a string (and nothing more) to all attached displayers
+ */
+void CLog::displayRaw( const char *format, ... )
+{
+	// Build the string
+	char cstring [1024];
+	va_list args;
+	va_start( args, format );
+	vsprintf( cstring, format, args );
+	va_end( args );
+
+	// Send to the attached displayers
+	for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
+	{
+		(*idi)->display( cstring );
+	}
+}
+
+
+string CLog::priorityStr() const
+{
+	switch ( _Priority )
+	{
+		case LOG_DEBUG : return "DBG";
+		case LOG_WARNING : return "WRN";
+		case LOG_INFO : return "INF";
+		case LOG_ERROR : return "ERR";
+		case LOG_STAT : return "STT";
+	}
+	return "";
+}
+
 
 } // NLMISC

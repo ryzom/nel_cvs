@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.4 2000/10/04 13:58:22 lecroart Exp $
+ * $Id: service.cpp,v 1.5 2000/10/04 14:34:10 cado Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -20,6 +20,9 @@
 
 #include "nel/net/service.h"
 
+#include <iostream>
+using namespace std;
+
 using namespace NLMISC;
 
 namespace NLNET
@@ -27,19 +30,35 @@ namespace NLNET
 
 sint IService::main (int argc, char **argv)
 {
-	for (sint i = 0; i < argc; i++)
+	try
 	{
-		_Args.push_back (argv[i]);
+		for (sint i = 0; i < argc; i++)
+		{
+			_Args.push_back (argv[i]);
+		}
+
+		setStatus (EXIT_SUCCESS);
+
+		init ();
+		while (update())
+		{
+			CConfigFile::checkConfigFiles ();
+		}
+		release ();
 	}
-
-	setStatus (EXIT_SUCCESS);
-
-	init ();
-	while (update())
+	catch ( Exception& e )
 	{
-		CConfigFile::checkConfigFiles ();
+		cout << e.what() << endl;
+		setStatus( EXIT_FAILURE );
+		try
+		{
+			release();
+		}
+		catch ( Exception& e )
+		{
+			cout << "Error releasing service : " << e.what() << endl;
+		}
 	}
-	release ();
 	return getStatus ();
 }
 

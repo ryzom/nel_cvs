@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.9 2000/10/03 13:27:12 cado Exp $
+ * $Id: inet_address.cpp,v 1.10 2000/10/04 14:34:10 cado Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -30,11 +30,16 @@
 #include "nel/misc/stream.h"
 #include <sstream>
 
+
 #ifdef NL_OS_WINDOWS
-	#include <winsock2.h>
+
+#include <winsock2.h>
+
 #elif defined NL_OS_LINUX
-	#include <netinet/in.h>
-	#define WSAGetLastError() 0
+
+#include <netinet/in.h>
+#define WSAGetLastError() 0
+
 #endif
 
 
@@ -258,8 +263,8 @@ std::string CInetAddress::asIPString() const
 void CInetAddress::serial( NLMISC::IStream& s )
 {
 	s.serial( _HostName );
-	s.serialBuffer( (uint8*)_SockAddr, sizeof(_SockAddr) );
-	// This is possible only because the contents of _SockAddr is platform-independant !
+	s.serialBuffer( (uint8*)_SockAddr, sizeof(*_SockAddr) ); // this is possible only because the contents of _SockAddr is platform-independant !
+	s.serial( _Valid );
 }
 
 

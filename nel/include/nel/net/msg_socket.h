@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.9 2000/10/03 13:27:12 cado Exp $
+ * $Id: msg_socket.h,v 1.10 2000/10/04 14:34:10 cado Exp $
  *
  * Interface for CMsgSocket
  */
@@ -91,7 +91,9 @@ public:
 
 	/** Updates the connected sockets and accept new connections.
 	 * - When a new connection incomes (server mode only), the callback of name "C" is called if it exists. Its message contains the address of the remote socket (CInetAddress).
+	 *
 	 * - When a message is received, the callback of name msgTypeAsString() or of index msgTypeAsNumber() is called. An exception is raised it doesn't exist.
+	 *
 	 * - When a connection is closed, the callback of name "D" is called if it exists. The message is empty.
 	 *
 	 * When a message with a name (as a string) is received, a binding message is replied to the sender, so that

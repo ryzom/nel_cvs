@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.9 2000/10/03 13:27:12 cado Exp $
+ * $Id: msg_socket.cpp,v 1.10 2000/10/04 14:34:10 cado Exp $
  *
  * Implementation of CMsgSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
@@ -27,27 +27,31 @@
 
 #include "nel/net/msg_socket.h"
 #include "nel/net/message.h"
-#include "nel/misc/log.h"
-extern NLMISC::CLog Log;
+#include "nel/misc/debug.h"
 
 using namespace std;
 
 
 #ifdef NL_OS_WINDOWS
-	#include <winsock2.h>
+
+#include <winsock2.h>
+
 #elif defined NL_OS_LINUX
-	#include <unistd.h>
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netinet/in.h>
-	#include <arpa/inet.h>
-	#include <netdb.h>
-	#include <errno.h>
-	#include <fcntl.h>
-	#define SOCKET_ERROR -1
-	#define INVALID_SOCKET -1
-	typedef int SOCKET;
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <errno.h>
+#include <fcntl.h>
+#define SOCKET_ERROR -1
+#define INVALID_SOCKET -1
+typedef int SOCKET;
+
 #endif
+
 
 using namespace std;
 
@@ -155,7 +159,7 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 	{
 		throw ESocket("Server socket creation failed");
 	}
-	Log.display( "Socket %d open as a server socket\n", listensock->_Sock );
+	nldebug( "Socket %d open as a server socket", listensock->_Sock );
 
 	// Bind socket to port	
 	if ( ::bind( listensock->_Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )
@@ -178,7 +182,7 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 	{
 		throw ESocket("Unable to listen on specified port");
 	}
-	Log.display( "Socket %d listening at %s\n", listensock->_Sock, addr.asIPString().c_str() );
+	nldebug( "Socket %d listening at %s", listensock->_Sock, addr.asIPString().c_str() );
 }
 
 
@@ -222,19 +226,21 @@ void CMsgSocket::receive()
 		// Iterate on the sockets where data are available
 		bool erased = false;
 		CConnections::iterator ilps;
-		for ( ilps=_Connections.begin(); ilps!=_Connections.end(); )
+		for ( ilps=_Connections.begin(); ilps!=_Connections.end(); ) // we don't check the newly added connections because their flag _DataAvailable is false
 		{
 			if ( (*ilps)->_DataAvailable )
 			{
 				if ( (*ilps)->_IsListening )
 				{
 					// Accept connection request
-					CMessage msg;
+					CMessage msgout;
 					CSocket& sock = accept( (*ilps)->descriptor() );
-					msg.setType( "C" );
 					CInetAddress addr = sock.remoteAddr();
-					msg.serial( addr );
-					processReceivedMessage( msg, sock );
+					msgout.serial( addr );
+					CMessage msgin( true );
+					msgin.setType( "C" );
+					msgin.fill( msgout.buffer(), msgout.length() );
+					processReceivedMessage( msgin, sock );
 				}
 				else
 				{
@@ -299,7 +305,7 @@ CSocket& CMsgSocket::accept( SOCKET listen_descr ) throw (ESocket)
 	addr.setSockAddr( &saddr );
 	CSocket *connection = new CSocket( newsock, addr );
 	addNewConnection( connection );
-	Log.display( "Socket %d accepted an incoming connection from %s and opened socket %d\n", listen_descr, addr.asIPString().c_str(), newsock );
+	nldebug( "Socket %d accepted an incoming connection from %s and opened socket %d", listen_descr, addr.asIPString().c_str(), newsock );
 	return *connection;
 }
 
@@ -420,13 +426,16 @@ void CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 			}
 		}
 
-		// Send a binding message
-		CMessage bindmsg;
-		TTypeNum num = (*its).pt() - _CallbackArray;
-		bindmsg.setType( "B" );
-		bindmsg.serial( s );
-		bindmsg.serial( num );
-		sock.send( bindmsg );
+		if ( ! ((s=="C") || (s=="D") ) )
+		{
+			// Send a binding message
+			CMessage bindmsg;
+			TTypeNum num = (*its).pt() - _CallbackArray;
+			bindmsg.setType( "B" );
+			bindmsg.serial( s );
+			bindmsg.serial( num );
+			sock.send( bindmsg );
+		}
 
 		// Call the callback funtion
 		callback( msg, sock._SenderId );

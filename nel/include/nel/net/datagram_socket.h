@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: datagram_socket.h,v 1.6 2000/10/03 13:27:11 cado Exp $
+ * $Id: datagram_socket.h,v 1.7 2000/10/04 14:34:10 cado Exp $
  *
  * Interface for CDatagramSocket
  */
@@ -27,23 +27,6 @@
 #define NL_DATAGRAM_SOCKET_H
 
 #include "nel/net/base_socket.h"
-
-
-#ifdef NL_OS_WINDOWS
-	#include <winsock2.h>
-#elif defined NL_OS_LINUX
-	#include <unistd.h>
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netinet/in.h>
-	#include <arpa/inet.h>
-	#include <netdb.h>
-	#include <errno.h>
-	#include <fcntl.h>
-	#define SOCKET_ERROR -1
-	#define INVALID_SOCKET -1
-	typedef int SOCKET;
-#endif
 
 
 namespace NLNET {

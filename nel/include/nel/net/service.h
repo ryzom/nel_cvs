@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.h,v 1.5 2000/10/04 13:58:15 lecroart Exp $
+ * $Id: service.h,v 1.6 2000/10/04 14:34:10 cado Exp $
  *
  * Base class for all network services
  */
@@ -34,13 +34,13 @@ class IService
 {
 public:
 
-	/// Initializes the service (must be called before run())
+	/// Initializes the service (must be called before the first call to update())
 	virtual void		init () {}
 
-	/// This function is call every "frame" (you must call init() before)
+	/// This function is called every "frame" (you must call init() before). It must return false if the service is stopped.
 	virtual bool		update () { return false; }
 
-	/// Should close the service (to close the service, kill the process).
+	/// Finalization
 	virtual void		release () {}
 
 	/// Returns the current service name

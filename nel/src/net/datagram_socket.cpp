@@ -18,31 +18,33 @@
  */
 
 /*
- * $Id: datagram_socket.cpp,v 1.5 2000/10/02 16:42:23 cado Exp $
+ * $Id: datagram_socket.cpp,v 1.6 2000/10/04 14:34:10 cado Exp $
  *
  * Implementation for CDatagramSocket
  */
 
 #include "nel/net/datagram_socket.h"
 #include "nel/net/message.h"
-#include "nel/misc/log.h"
+#include "nel/misc/debug.h"
 
-extern NLMISC::CLog Log;
 
 #ifdef NL_OS_WINDOWS
-	#include <winsock2.h>
+
+#include <winsock2.h>
+
 #elif defined NL_OS_LINUX
-	#include <unistd.h>
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netinet/in.h>
-	#include <arpa/inet.h>
-	#include <netdb.h>
-	#include <errno.h>
-	#include <fcntl.h>
-	#define SOCKET_ERROR -1
-	#define INVALID_SOCKET -1
-	typedef int SOCKET;
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <errno.h>
+#include <fcntl.h>
+#define SOCKET_ERROR -1
+#define INVALID_SOCKET -1
+typedef int SOCKET;
+
 #endif
 
 
@@ -62,7 +64,7 @@ CDatagramSocket::CDatagramSocket() throw (ESocket) :
 	{
 		throw ESocket("Datagram socket creation failed");
 	}
-	Log.display( "Socket %d open\n", _Sock );
+	nldebug( "Socket %d open", _Sock );
 }
 
 
@@ -84,18 +86,18 @@ void CDatagramSocket::bind( uint16 port ) throw (ESocket)
 	// Bind the socket
 	if ( ::bind( _Sock, (sockaddr*)(_LocalAddr.sockAddr()), sizeof(sockaddr) ) == SOCKET_ERROR )
 	{
-		#ifdef NL_OS_WINDOWS
-			switch ( WSAGetLastError() ) {
+#ifdef NL_OS_WINDOWS
+		switch ( WSAGetLastError() ) {
 			case WSAEADDRINUSE : throw ESocket("Bind failed : address in use");
 			case WSAEADDRNOTAVAIL : throw ESocket("Bind failed : address not available");
 			default : throw ESocket("Bind failed");
-			}
-		#elif defined NL_OS_LINUX
-			throw ESocket(strerror(errno));
-		#endif
+		}
+#elif defined NL_OS_LINUX
+		throw ESocket(strerror(errno));
+#endif
 	}
 	_Bound = true;
-	Log.display( "Socket %d bound at %s\n", _Sock, _LocalAddr.asIPString().c_str() );
+	nldebug( "Socket %d bound at %s", _Sock, _LocalAddr.asIPString().c_str() );
 }
 
 
@@ -112,7 +114,7 @@ void CDatagramSocket::sendTo( const CMessage& message, const CInetAddress& addr 
 	{
 		throw ESocket("Unable to send datagram");
 	}
-	Log.display( "Socket %d sent %d bytes to %s\n", _Sock, alldata.length(), addr.asIPString().c_str() );
+	nldebug( "Socket %d sent %d bytes to %s", _Sock, alldata.length(), addr.asIPString().c_str() );
 
 	// 5bis. If socket is unbound, retrieve local address
 	if ( ! _Bound )
@@ -141,11 +143,11 @@ bool CDatagramSocket::receivedFrom( CMessage& message, CInetAddress& addr ) thro
 	int brecvd = ::recvfrom( _Sock, (char*)alldata.bufferToFill( msgtotalsize ), msgtotalsize , 0, (sockaddr*)&saddr, &saddrlen );
 	if ( brecvd == SOCKET_ERROR )
 	{
-		#ifdef NL_OS_WINDOWS
-			throw ESocket("Cannot receive msgtype",WSAGetLastError());
-		#else
-			throw ESocket("Cannot receive msgtype",errno);
-		#endif
+#ifdef NL_OS_WINDOWS
+		throw ESocket("Cannot receive msgtype",WSAGetLastError());
+#else
+		throw ESocket("Cannot receive msgtype",errno);
+#endif
 	}
 
 	// Get sender's address
@@ -155,7 +157,7 @@ bool CDatagramSocket::receivedFrom( CMessage& message, CInetAddress& addr ) thro
 	// TODO: change this
 	//message.decode( alldata );
 
-	Log.display( "Socket %d received %d bytes from %s\n", _Sock, alldata.length(), addr.asIPString().c_str() );
+	nldebug( "Socket %d received %d bytes from %s\n", _Sock, alldata.length(), addr.asIPString().c_str() );
 
 	return true;
 }

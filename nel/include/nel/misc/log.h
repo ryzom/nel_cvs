@@ -8,24 +8,35 @@
  */
 
 /*
- * $Id: log.h,v 1.1 2000/09/21 12:31:16 lecroart Exp $
+ * $Id: log.h,v 1.2 2000/10/04 14:34:10 cado Exp $
  *
- * <Replace this by a description of the file>
+ * Interface for CLog
  */
 
 #ifndef NL_LOG_H
 #define NL_LOG_H
 
+#include "nel/misc/types_nl.h"
+
+#include <string>
 #include <vector>
+
+
 
 namespace NLMISC
 {
 
-	class IDisplayer;
+class IDisplayer;
+
+
+typedef enum { LOG_ERROR, LOG_WARNING, LOG_INFO, LOG_DEBUG, LOG_STAT } TLogPriority;
+
+typedef std::vector<IDisplayer *> CDisplayers;
+
 
 /**
- * <Replace this by a description of the class>
- * \author Vianney Lecroart
+ * When display() is called, the logger builds a string a sends it to its attached displayers.
+ * \author Vianney Lecroart, Olivier Cado
  * \author Nevrax France
  * \date 2000
  */
@@ -34,7 +45,7 @@ class CLog
 public:
 
 	/// Constructor
-	CLog() {}
+	CLog( TLogPriority priority=LOG_DEBUG, bool longinfo=false );
 
 	/// Add a new displayer in the log. You have to create the displayer, remove it and delete it when you have finnish with it.
 	/// For example, in a 3dDisplayer, you can add the displayer when you want, and the displayer displayer the string if the 3d
@@ -44,12 +55,30 @@ public:
 	/// Remove a displayer. If the displayer doesn't work, you could remove it.
 	void removeDisplayer (IDisplayer *displayer);
 
-	/// Display a string to all displayer available.
-	void display (const std::string format, ...);
+	/// Sets line and file parameters
+	void setParam( uint line, char *file )
+	{
+		_Line = line;
+		_File = file;
+	}
+
+	/// Display a string in decorated form to all attached displayers. Call setParam before.
+	void display( const char *format, ... );
+
+	/// Display a string (and nothing more) to all attached displayers
+	void displayRaw( const char *format, ... );
+
+protected:
+
+	std::string priorityStr() const;
 
 private:
 
-	std::vector<IDisplayer *> _Displayers;
+	TLogPriority				_Priority;
+	uint						_Line;
+	char						*_File;
+	bool						_Long;
+	CDisplayers					_Displayers;
 };
 
 } // NLMISC

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.12 2000/10/03 13:27:12 cado Exp $
+ * $Id: socket.cpp,v 1.13 2000/10/04 14:34:10 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -27,26 +27,29 @@
 
 #include "nel/net/socket.h"
 #include "nel/net/message.h"
-#include "nel/misc/log.h"
-extern NLMISC::CLog Log;
+#include "nel/misc/debug.h"
 
 /*#include <iostream> //debug
 using namespace std;*/
 
 #ifdef NL_OS_WINDOWS
-	#include <winsock2.h>
+
+#include <winsock2.h>
+
 #elif defined NL_OS_LINUX
-	#include <unistd.h>
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netinet/in.h>
-	#include <arpa/inet.h>
-	#include <netdb.h>
-	#include <errno.h>
-	#include <fcntl.h>
-	#define SOCKET_ERROR -1
-	#define INVALID_SOCKET -1
-	typedef int SOCKET;
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <errno.h>
+#include <fcntl.h>
+#define SOCKET_ERROR -1
+#define INVALID_SOCKET -1
+typedef int SOCKET;
+
 #endif
 
 
@@ -73,6 +76,7 @@ CSocket::CSocket( bool logging ) :
 CSocket::CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket) :
 	CBaseSocket( sock ),
 	_Connected( false ),
+	_DataAvailable( false ),
 	_RemoteAddr( remoteaddr ),
 	_IsListening( false )
 {
@@ -130,7 +134,7 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	}
 	if ( _Logging )
 	{
-		Log.display( "Socket %d open\n", _Sock );
+		nldebug( "Socket %d open", _Sock );
 	}
 
 	// Connection
@@ -141,7 +145,7 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	}
 	if ( _Logging )
 	{
-		Log.display( "Socket %d connected to %s\n", _Sock, addr.asIPString() );
+		nldebug( "Socket %d connected to %s", _Sock, addr.asIPString() );
 	}
 
 	// Get local socket name
@@ -150,13 +154,13 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
 	{
 		if ( _Logging ) {
-			Log.display( "Network error: getsockname() failed (CSocket::connect)" );
+			nldebug( "Network error: getsockname() failed (CSocket::connect)" );
 		}
 	}
 	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
 	if ( _Logging )
 	{
-		Log.display( "Socket %d is at %s\n", _Sock, _LocalAddr.asIPString().c_str() );
+		nldebug( "Socket %d is at %s", _Sock, _LocalAddr.asIPString().c_str() );
 	}
 	_RemoteAddr = addr;
 	_Connected = true;
@@ -178,12 +182,12 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 	{
 		if ( message.typeIsNumber() )
 		{
-			Log.display( "Socket %d sent message %hd (%s) of %d bytes\n",
+			nldebug( "Socket %d sent message %hd (%s) of %d bytes",
 				_Sock, message.typeAsNumber(), message.typeAsString().c_str(), alldata.length() );
 		}
 		else
 		{
-			Log.display( "Socket %d sent message %s of %d bytes\n",
+			nldebug( "Socket %d sent message %s of %d bytes",
 				_Sock, message.typeAsString().c_str(), alldata.length() );
 		}
 	}
@@ -253,7 +257,7 @@ void CSocket::processBindMessage( CMessage& message )
 	_MsgMap.insert( TMsgMapItem(key,num) );
 	if ( _Logging )
 	{
-		Log.display( "Socket %d : %s is now known as %hu for received messages\n", _Sock, key.c_str(), num );
+		nldebug( "Socket %d : %s is now known as %hu for received messages", _Sock, key.c_str(), num );
 	}
 }
 
@@ -375,12 +379,12 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	{
 		if ( message.typeIsNumber() )
 		{
-			Log.display( "Socket %d received message %hd of %d bytes\n",
+			nldebug( "Socket %d received message %hd of %d bytes",
 				_Sock, message.typeAsNumber(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
 		}
 		else
 		{
-			Log.display( "Socket %d received message %s of %d bytes\n",
+			nldebug( "Socket %d received message %s of %d bytes",
 				_Sock, message.typeAsString().c_str(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
 		}
 	}

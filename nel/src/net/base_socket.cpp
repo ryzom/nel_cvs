@@ -18,31 +18,33 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.7 2000/10/03 13:27:12 cado Exp $
+ * $Id: base_socket.cpp,v 1.8 2000/10/04 14:34:10 cado Exp $
  *
  * Implementation of CBaseSocket
  */
 
 #include "nel/net/base_socket.h"
-#include "nel/misc/log.h"
+#include "nel/misc/debug.h"
 
-/// \todo cado Debug logging class instead
-extern NLMISC::CLog Log;
 
 #ifdef NL_OS_WINDOWS
-	#include <winsock2.h>
+
+#include <winsock2.h>
+
 #elif defined NL_OS_LINUX
-	#include <unistd.h>
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netinet/in.h>
-	#include <arpa/inet.h>
-	#include <netdb.h>
-	#include <errno.h>
-	#include <fcntl.h>
-	#define SOCKET_ERROR -1
-	#define INVALID_SOCKET -1
-	typedef int SOCKET;
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <errno.h>
+#include <fcntl.h>
+#define SOCKET_ERROR -1
+#define INVALID_SOCKET -1
+typedef int SOCKET;
+
 #endif
 
 
@@ -111,16 +113,16 @@ void CBaseSocket::close()
 {
 	if ( _Sock != INVALID_SOCKET )
 	{
-		#ifdef NL_OS_WINDOWS
-			shutdown( _Sock, SD_BOTH );
-			closesocket( _Sock );
-		#elif defined NL_OS_LINUX
-			shutdown( _Sock, SHUT_RDWR ):
-			::close( _Sock );
-		#endif
+#ifdef NL_OS_WINDOWS
+		shutdown( _Sock, SD_BOTH );
+		closesocket( _Sock );
+#elif defined NL_OS_LINUX
+		shutdown( _Sock, SHUT_RDWR ):
+		::close( _Sock );
+#endif
 	if ( _Logging )
 	{
-		Log.display( "Socket %d closed at %s\n", _Sock, _LocalAddr.asIPString().c_str() );
+		nldebug( "Socket %d closed at %s", _Sock, _LocalAddr.asIPString().c_str() );
 	}
 	_Sock = INVALID_SOCKET;
 	}

@@ -699,6 +699,10 @@ SOURCE=.\3d\bsp_tree.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\layered_ordering_table.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ordering_table.h
 # End Source File
 # Begin Source File

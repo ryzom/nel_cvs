@@ -16,6 +16,19 @@ Requirements
       - STLPort 4.0           <URL:http://www.stlport.org/>
       - FreeType 2            <URL:http://www.freetype.org/>
 
+   On a GNU/Linux platform you will need the following libraries and
+   softwares :
+
+      - Mesa           <URL:http://www.mesa3d.org/>
+      - Autoconf       <URL:http://www.gnu.org/software/autoconf/autoconf.html>
+      - Automake       <URL:http://www.gnu.org/software/automake/automake.html>
+      - Libtool        <URL:http://www.gnu.org/software/libtool/libtool.html>
+      - Lex / Flex     <URL:http://www.gnu.org/software/flex/flex.html>
+      - Yacc / Bison   <URL:http://www.gnu.org/software/bison/bison.html>
+
+   Most of these softwares should be already installed on your system or
+   provided on your installation disk. 
+
 
 Compilation
 ===========

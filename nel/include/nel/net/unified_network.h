@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.15 2002/01/30 10:07:57 lecroart Exp $
+ * $Id: unified_network.h,v 1.16 2002/02/07 17:17:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,27 +136,29 @@ public:
 	void	send (const CMessage &msg);
 
 
-	/** Sets callback for incoming connections (or NULL to disable callback).
+	/** Sets callback for incoming connections.
 	 * On a client, the callback will be call when the connection to the server is established (the first connection or after the server shutdown and started)
 	 * On a server, the callback is called each time a new client is connected to him
 	 * 
-	 * Only the last set callback will be called, that is only one callback is active at a time.
+	 * If the serviceName is "*", you can set more than one callback, each one will be called one after one.
+	 * Otherwise only the last setCallback will be called (and you can set cb to NULL to remove the callback).
 	 * If the serviceName is "*", the callback will be call for any services
 	 * If you set the same callback for a specific service S and for "*", the callback might be
 	 * call twice (in case the service S is up)
 	 */
-	void	setServiceUpCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg);
+	void	setServiceUpCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg, bool back=true);
 
-	/** Sets callback for disconnections (or NULL to disable callback).
+	/** Sets callback for disconnections.
 	 * On a client, the callback will be call each time the connection to the server is lost.
 	 * On a server, the callback is called each time a client is disconnected.
 	 * 
-	 * Only the last set callback will be called, that is only one callback is active at a time.
+	 * If the serviceName is "*", you can set more than one callback, each one will be called one after one.
+	 * Otherwise only the last setCallback will be called (and you can set cb to NULL to remove the callback).
 	 * If the serviceName is "*", the callback will be call for any services
 	 * If you set the same callback for a specific service S and for "*", the callback might be
 	 * call twice (in case the service S is down)
 	 */
-	void	setServiceDownCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg);
+	void	setServiceDownCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg, bool back=true);
 
 
 	/// Gets the CCallbackNetBase of the service
@@ -262,9 +264,9 @@ private:
 
 	/// Map of the up/down service callbacks
 	TNameMappedCallback											_UpCallbacks;
-	TCallbackArgItem											_UpUniCallback;
+	std::vector<TCallbackArgItem>								_UpUniCallback;
 	TNameMappedCallback											_DownCallbacks;
-	TCallbackArgItem											_DownUniCallback;
+	std::vector<TCallbackArgItem>								_DownUniCallback;
 
 	/// Recording state
 	CCallbackNetBase::TRecordingState							_RecordingState;
@@ -308,10 +310,6 @@ private:
 	//
 	CUnifiedNetwork() : _ExtSId(256), _LastRetry(0), _MThreadId(0xFFFFFFFF), _MutexCount(0), _CbServer(NULL), _NextUpdateTime(0)
 	{
-		_UpUniCallback.first = NULL;
-		_UpUniCallback.second = NULL;
-		_DownUniCallback.first = NULL;
-		_DownUniCallback.second = NULL;
 	}
 
 	~CUnifiedNetwork() { }

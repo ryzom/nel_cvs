@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.28 2002/01/22 14:08:59 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.29 2002/02/07 17:16:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,9 +152,10 @@ void	cbDisconnection(TSockId from, void *arg)
 		}
 
 		// call the generic callback
-		if (instance->_DownUniCallback.first != NULL)
+		for (uint c = 0; c < instance->_DownUniCallback.size (); c++)
 		{
-			instance->_DownUniCallback.first(cnx.ServiceName, cnx.ServiceId, instance->_DownUniCallback.second);
+			if (instance->_DownUniCallback[c].first != NULL)
+				instance->_DownUniCallback[c].first(cnx.ServiceName, cnx.ServiceId, instance->_DownUniCallback[c].second);
 		}
 
 		nldebug("Received disconnection signal from service %s %d (appId=%d)", cnx.ServiceName.c_str(), cnx.ServiceId, (uint16)from->appId());
@@ -221,9 +222,10 @@ void	cbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &ne
 		cb(inSName, inSid, (*it).second.second);
 	}
 
-	if (instance->_UpUniCallback.first != NULL)
+	for (uint c = 0; c < instance->_UpUniCallback.size (); c++)
 	{
-		instance->_UpUniCallback.first (inSName, inSid, instance->_UpUniCallback.second);
+		if (instance->_UpUniCallback[c].first != NULL)
+			instance->_UpUniCallback[c].first (inSName, inSid, instance->_UpUniCallback[c].second);
 	}
 }
 
@@ -387,10 +389,6 @@ void	CUnifiedNetwork::release()
 	_UpCallbacks.clear();
 	_DownCallbacks.clear();
 	_Callbacks.clear();
-	_UpUniCallback.first = NULL;
-	_UpUniCallback.second = NULL;
-	_DownUniCallback.first = NULL;
-	_DownUniCallback.second = NULL;
 
 	// disconnect the connection with the naming service
 	CNamingClient::disconnect ();
@@ -465,9 +463,10 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 			cb(name, sid, (*itcb).second.second);
 		}
 
-		if (_UpUniCallback.first != NULL)
+		for (uint i = 0; i < _UpUniCallback.size (); i++)
 		{
-			_UpUniCallback.first(name, sid, _UpUniCallback.second);
+			if (_UpUniCallback[i].first != NULL)
+				_UpUniCallback[i].first (name, sid, _UpUniCallback[i].second);
 		}
 	}
 }
@@ -734,9 +733,10 @@ void	CUnifiedNetwork::updateConnectionTable()
 					cb(cnx.ServiceName, cnx.ServiceId, (*itcb).second.second);
 				}
 
-				if (_UpUniCallback.first != NULL)
+				for (uint i = 0; i < _UpUniCallback.size (); i++)
 				{
-					_UpUniCallback.first(cnx.ServiceName, cnx.ServiceId, _UpUniCallback.second);
+					if (_UpUniCallback[i].first != NULL)
+						_UpUniCallback[i].first (cnx.ServiceName, cnx.ServiceId, _UpUniCallback[i].second);
 				}
 			}
 		}
@@ -874,11 +874,16 @@ void	CUnifiedNetwork::addCallbackArray (const TUnifiedCallbackItem *callbackarra
 }
 
 
-void	CUnifiedNetwork::setServiceUpCallback (const string &serviceName, TUnifiedNetCallback cb, void *arg)
+void	CUnifiedNetwork::setServiceUpCallback (const string &serviceName, TUnifiedNetCallback cb, void *arg, bool back)
 {
 	if (serviceName == "*")
 	{
-		_UpUniCallback = make_pair(cb, arg);
+		nlassert (cb != NULL);
+		if (back)
+			_UpUniCallback.push_back (make_pair(cb, arg));
+		else
+			_UpUniCallback.insert (_UpUniCallback.begin(), make_pair(cb, arg));
+
 		return;
 	}
 
@@ -895,11 +900,16 @@ void	CUnifiedNetwork::setServiceUpCallback (const string &serviceName, TUnifiedN
 	(*it).second.second = arg;
 }
 
-void	CUnifiedNetwork::setServiceDownCallback (const string &serviceName, TUnifiedNetCallback cb, void *arg)
+void	CUnifiedNetwork::setServiceDownCallback (const string &serviceName, TUnifiedNetCallback cb, void *arg, bool back)
 {
 	if (serviceName == "*")
 	{
-		_DownUniCallback = make_pair(cb, arg);
+		nlassert (cb != NULL);
+		if (back)
+			_DownUniCallback.push_back (make_pair(cb, arg));
+		else
+			_DownUniCallback.insert (_DownUniCallback.begin(), make_pair(cb, arg));
+
 		return;
 	}
 

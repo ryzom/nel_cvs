@@ -1,7 +1,7 @@
 /** \file portal.h
  * Definition of a cluster/portal visibility
  *
- * $Id: portal.h,v 1.2 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: portal.h,v 1.3 2002/06/04 14:49:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,12 +83,16 @@ public:
 	CCluster* getCluster (uint pos) { return _Clusters[pos]; }
 
 	/// return false if the polygon is not convex
-	bool setPoly (std::vector<NLMISC::CVector> &poly);
+	bool setPoly (const std::vector<NLMISC::CVector> &poly);
+
+	/// get this cluster poly in local coordinates
+	void getPoly (std::vector<NLMISC::CVector> &dest) const;
 
 	/// Serial
 	void serial (NLMISC::IStream& f);
 
 	void setWorldMatrix (const NLMISC::CMatrix &WM);
+	
 
 	void setName (std::string &name) { _Name = name; }
 

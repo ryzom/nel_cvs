@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.5 2002/02/28 12:59:50 besson Exp $
+ * $Id: portal.cpp,v 1.6 2002/06/04 14:49:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,7 +134,7 @@ uint8 CPortal::getNbCluster()
 }
 
 // ***************************************************************************
-bool CPortal::setPoly(std::vector<CVector> &poly)
+bool CPortal::setPoly(const std::vector<CVector> &poly)
 {
 	uint i;
 
@@ -176,6 +176,13 @@ bool CPortal::setPoly(std::vector<CVector> &poly)
 }
 
 // ***************************************************************************
+void CPortal::getPoly(std::vector<NLMISC::CVector> &dest) const
+{
+	dest = _LocalPoly;
+}
+
+
+// ***************************************************************************
 void CPortal::serial (NLMISC::IStream& f)
 {
 	sint version=f.serialVersion (0);
@@ -192,6 +199,7 @@ void CPortal::setWorldMatrix (const CMatrix &WM)
 	for (uint32 i = 0; i < _LocalPoly.size(); ++i)
 		_Poly[i] = WM.mulPoint(_LocalPoly[i]);
 }
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.38 2003/03/18 10:24:35 corvazier Exp $
+ * $Id: types_nl.h,v 1.39 2003/03/31 13:57:44 cado Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -67,6 +67,14 @@
 #  endif
 #endif
 
+
+// Mode checks: NL_DEBUG and NL_DEBUG_FAST are allowed at the same time, but not with any release mode
+// (by the way, NL_RELEASE and NL_RELEASE_DEBUG are not allowed at the same time, see above)
+#if defined (NL_DEBUG) || defined (NL_DEBUG_FAST)
+#if defined (NL_RELEASE) || defined (NL_RELEASE_DEBUG)
+#error "Error in preprocessor directives for NeL debug mode!"
+#endif
+#endif
 
 // Remove stupid Visual C++ warning
 

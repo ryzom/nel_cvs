@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.6 2001/09/06 16:24:01 besson Exp $
+ * $Id: texture_font.cpp,v 1.7 2001/09/07 08:35:24 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,7 +305,7 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 	k.FontGenerator->getSizes (k.Char, k.Size, width, height);
 	cat = 0;
 
-	while ((width > Categories[cat]) || (height > Categories[cat]))
+	while (((sint)width > Categories[cat]) || ((sint)height > Categories[cat]))
 	{
 		++cat;
 		nlassert (cat != TEXTUREFONT_NBCATEGORY);

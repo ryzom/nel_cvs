@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $Id: nel-config.in,v 1.1 2001/05/02 17:11:33 valignat Exp $
+# $Id: nel-config.in,v 1.2 2001/11/07 16:25:13 valignat Exp $
 #
 # nel-config
 #
@@ -15,6 +15,12 @@ exec_prefix=@exec_prefix@
 lib_dir=@libdir@
 include_dir=@includedir@
 
+enable_net=@enable_net@
+enable_3d=@enable_3d@
+enable_pacs=@enable_pacs@
+enable_sound=@enable_sound@
+enable_ai=@enable_ai@
+
 usage()
 {
     cat <<EOF
@@ -26,9 +32,11 @@ Options:
    [--libs]
    [--libtool]
    [--cflags]
-   [--without-3d]
-   [--without-ai]
    [--without-network]
+   [--without-3d]
+   [--without-pacs]
+   [--without-sound]
+   [--without-ai]
 EOF
     exit $1
 }
@@ -74,14 +82,20 @@ do
         --libtool)
             echo_libtool=yes
             ;;
+        --without-net|--without-network)
+            without_net=yes
+            ;;
         --without-3d)
             without_3d=yes
+            ;;
+        --without-pacs)
+            without_pacs=yes
             ;;
         --without-ai)
             without_ai=yes
             ;;
-        --without-net|--without-network)
-            without_net=yes
+        --without-snd|--without-sound)
+            without_sound=yes
             ;;
         *)
             usage 1 1>&2
@@ -117,25 +131,37 @@ fi
 if test "$echo_libs" = "yes"
 then
     lib_misc="-lnelmisc"
-    lib_3d="-lnel3d"
-    lib_ai="-lnelai"
     lib_net="-lnelnet"
+    lib_3d="-lnel3d"
+    lib_pacs="-lnelpacs"
+    lib_sound="-lnelsnd"
+    lib_ai="-lnelai"
 
     libs="$lib_misc"
 
-    if test "$without_3d" != "yes"
+    if test "$without_net" != "yes" -a "$enable_net" = "yes"
+    then
+        libs="$libs $lib_net"
+    fi
+
+    if test "$without_3d" != "yes" -a "$enable_3d" = "yes"
     then
         libs="$libs $lib_3d"
     fi
 
-    if test "$without_ai" != "yes"
+    if test "$without_pacs" != "yes" -a "$enable_pacs" = "yes"
     then
-        libs="$libs $lib_ai"
+        libs="$libs $lib_pacs"
     fi
 
-    if test "$without_net" != "yes"
+    if test "$without_sound" != "yes" -a "$enable_sound" = "yes"
     then
-        libs="$libs $lib_net"
+        libs="$libs $lib_sound"
+    fi
+
+    if test "$without_ai" != "yes" -a "$enable_ai" = "yes"
+    then
+        libs="$libs $lib_ai"
     fi
 
     echo -L@libdir@ $libs
@@ -144,15 +170,32 @@ fi
 if test "$echo_libtool" = "yes"
 then
     libtool_misc="$lib_dir/libnelmisc.la"
-    libtool_3d="$lib_dir/libnel3d.la"
-    libtool_ai="$lib_dir/libnelai.la"
     libtool_net="$lib_dir/libnelnet.la"
+    libtool_3d="$lib_dir/libnel3d.la"
+    libtool_pacs="$lib_dir/libnelpacs.la"
+    libtool_sound="$lib_dir/libnelsnd.la"
+    libtool_ai="$lib_dir/libnelai.la"
 
     libtool="$libtool_misc"
+
+    if test "$without_net" != "yes"
+    then
+        libtool="$libtool $libtool_net"
+    fi
 
     if test "$without_3d" != "yes"
     then
         libtool="$libtool $libtool_3d"
+    fi
+
+    if test "$without_pacs" != "yes"
+    then
+        libtool="$libtool $libtool_pacs"
+    fi
+
+    if test "$without_sound" != "yes"
+    then
+        libtool="$libtool $libtool_sound"
     fi
 
     if test "$without_ai" != "yes"
@@ -160,12 +203,8 @@ then
         libtool="$libtool $libtool_ai"
     fi
 
-    if test "$without_net" != "yes"
-    then
-        libtool="$libtool $libtool_net"
-    fi
-
     echo $libtool
 fi
 
 # EOF
+

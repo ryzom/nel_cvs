@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * events listener
  *
- * $Id: event_listener.h,v 1.11 2002/08/21 09:36:01 lecroart Exp $
+ * $Id: event_listener.h,v 1.12 2004/04/09 14:16:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,11 +49,33 @@ public:
 	/// Constructor
 	IEventListener();
 
+
+	/** Called by CServer::pumpEvent(). The default calls the () operator, unless a hook has been set.
+	  * In this case processEvent is called on the hook instead (the hook can forward the call to that listener afterwards).
+	  */
+	virtual void process(const CEvent& event) 
+	{ 
+		if (_Hook)
+		{
+			_Hook->process(event);
+		}
+		else
+		{		
+			(*this)(event); 
+		}
+	}	
+
 	/**
 	  * Call back of the listener.
 	  * \param event is the event send to the listener
 	  */
 	virtual void operator ()(const CEvent& event)=0;
+
+	// Set a hook which can intercept msgs. 
+    void			setHook(IEventListener *hook) { _Hook = hook; }
+	IEventListener *getHook() const  { return _Hook; }
+private:
+	IEventListener *_Hook;
 };
 
 

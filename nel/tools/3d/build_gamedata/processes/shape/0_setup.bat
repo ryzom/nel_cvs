@@ -10,5 +10,6 @@ mkdir lightmap_16_bits 2> null
 mkdir shape_with_coarse_mesh_builded 2> null
 mkdir clod 2> null
 mkdir tag 2> null
+mkdir anim 2> null
 rm null
 

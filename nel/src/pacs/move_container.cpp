@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.16 2001/09/26 09:42:06 corvazier Exp $
+ * $Id: move_container.cpp,v 1.17 2001/10/29 16:08:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -860,7 +860,7 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 		if (!found)
 		{
 			nlassert ((d0==d1)&&(d0==d2));
-			nlassert (f1==f2);
+//			nlassert (f1==f2);
 			if (_Retriever&&testMoveValid)
 			{
 				// Do move

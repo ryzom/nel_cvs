@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.4 2001/07/11 07:43:55 corvazier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.5 2001/07/11 16:11:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,8 +55,10 @@ CCoarseMeshManager::CCoarseMeshManager()
 	// ** Init material
 
 	// Double sided
+	_Material.initUnlit ();
 	_Material.setDoubleSided (true);
-	_Material.setBlend (true);
+	_Material.setAlphaTest (true);
+	_Material.setColor (CRGBA (255, 255, 255));
 
 	// Texture
 	_Material.setTexture (0, _Texture);
@@ -140,19 +142,10 @@ void CCoarseMeshManager::setMatrixMesh (uint64 id, const CMeshGeom& geom, const 
 
 // ***************************************************************************
 
-void CCoarseMeshManager::setMeshColor (uint64 id, const CMeshGeom& geom, NLMISC::CRGBA color)
+void CCoarseMeshManager::setColor (NLMISC::CRGBA color)
 {
-	// Get the render pass id
-	uint32 renderPass = getRenderPassId (id);
-
-	// Find the render pass
-	TRenderingPassMap::iterator ite=_RenderPass.find (renderPass);
-
-	// Not found ?
-	nlassert ( ite!=_RenderPass.end() );
-
-	// remove it
-	ite->second.setMeshColor (getRenderPassMeshId (id), geom, color);
+	// Set the color
+	_Material.setColor (color);
 }
 
 // ***************************************************************************
@@ -352,43 +345,6 @@ void CCoarseMeshManager::CRenderPass::setMatrixMesh (uint32 id, const CMeshGeom&
 
 		// Next point
 		vSrc+=vtSize;
-		vDest+=vtSize;
-	}
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::CRenderPass::setMeshColor (uint32 id, const CMeshGeom& geom, CRGBA color)
-{
-	// Is there a free vertex buffer ?
-	uint16 vertexBufferId=getVertexBufferId (id);
-
-	// *** Transform the vertices
-
-	// Src vertex buffer
-	const CVertexBuffer &vbSrc=geom.getVertexBuffer();
-
-	// Check the vertex format
-	nlassert (vbSrc.getVertexFormat() == NL3D_COARSEMESH_VERTEX_FORMAT);
-
-	// Number of source vertex
-	uint32 nbVSrc = vbSrc.getNumVertices();
-	nlassert (nbVSrc<=VBlockSize);
-	sint colorOffset = vbSrc.getColorOff();
-
-	// Vertex size
-	uint vtSize=vbSrc.getVertexSize ();
-
-	// Copy vector
-	uint8 *vDest = (uint8 *)VBuffer.getVertexCoordPointer (vertexBufferId*VBlockSize);
-	
-	// Copy it
-	for (uint i=0; i<nbVSrc; i++)
-	{
-		// Transform position
-		*(CRGBA*)(vDest+colorOffset) = color;
-
-		// Next point
 		vDest+=vtSize;
 	}
 }

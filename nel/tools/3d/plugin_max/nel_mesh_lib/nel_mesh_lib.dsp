@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /Zm200 /c
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -152,6 +152,19 @@ SOURCE=.\export_material.cpp
 # Begin Source File
 
 SOURCE=.\export_mesh.cpp
+
+!IF  "$(CFG)" == "nel_mesh_lib - Win32 Release"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "nel_mesh_lib - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "nel_mesh_lib - Win32 Hybrid"
+
+!ELSEIF  "$(CFG)" == "nel_mesh_lib - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -174,6 +187,10 @@ SOURCE=.\stdafx.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\calc_lm.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\export_lod.h

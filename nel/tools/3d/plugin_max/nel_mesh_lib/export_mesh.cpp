@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.10 2001/07/11 07:43:55 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.11 2001/07/11 16:11:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 // Export a mesh
 IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, 
 								const CSkeletonShape* skeletonShape, bool absolutePath,
-								CExportNelOptions &opt)
+								CExportNelOptions &opt, bool view)
 {
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
@@ -155,7 +155,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 					bool isOpaque;
 					multiLodBuild.LodMeshes.resize (1);
 					multiLodBuild.LodMeshes[0].MeshGeom=buildMeshGeom (node, ip, time, skeletonShape, absolutePath, opt, multiLodBuild.BaseMesh, 
-						listMaterialName, isTransparent, isOpaque, CMatrix::Identity);
+						listMaterialName, isTransparent, isOpaque, CMatrix::Identity, view);
 					multiLodBuild.LodMeshes[0].DistMax=getScriptAppData (&node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
 					multiLodBuild.LodMeshes[0].BlendLength=getScriptAppData (&node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
 					multiLodBuild.LodMeshes[0].Flags=0;
@@ -163,7 +163,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendIn;
 					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_BLEND_OUT, NEL3D_APPDATA_LOD_BLEND_OUT_DEFAULT))
 						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendOut;
-					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT))
+					if ((getScriptAppData (&node, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT)) && (!view))
 						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::CoarseMesh;
 					if (isTransparent)
 						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::IsTransparent;
@@ -203,7 +203,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 
 							// Fill the structure
 							multiLodBuild.LodMeshes[index].MeshGeom=buildMeshGeom (*lodNode, ip, time, skeletonShape, absolutePath, opt, multiLodBuild.BaseMesh, 
-								listMaterialName, isTransparent, isOpaque, worldToNodeMatrix*nodeTM);
+								listMaterialName, isTransparent, isOpaque, worldToNodeMatrix*nodeTM, view);
 							multiLodBuild.LodMeshes[index].DistMax=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
 							multiLodBuild.LodMeshes[index].BlendLength=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
 							multiLodBuild.LodMeshes[index].Flags=0;
@@ -211,7 +211,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendIn;
 							if (getScriptAppData (lodNode, NEL3D_APPDATA_LOD_BLEND_OUT, NEL3D_APPDATA_LOD_BLEND_OUT_DEFAULT))
 								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendOut;
-							if (getScriptAppData (lodNode, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT))
+							if ((getScriptAppData (lodNode, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT)) && (!view))
 								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::CoarseMesh;
 							if (isTransparent)
 								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::IsTransparent;
@@ -814,7 +814,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 								CExportNelOptions &opt, CMeshBase::CMeshBaseBuild &buildBaseMesh, 
 								std::vector<std::string>& listMaterialName,
 								bool& isTransparent,
-								bool& isOpaque, const CMatrix& nodeToParentMatrix)
+								bool& isOpaque, const CMatrix& nodeToParentMatrix, bool view)
 {
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
@@ -848,7 +848,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 				deleteIt = true;
 
 			// Coarse mesh ?
-			bool coarseMesh=getScriptAppData (&node, NEL3D_APPDATA_LOD_COARSE_MESH, 0)!=0;
+			bool coarseMesh=(getScriptAppData (&node, NEL3D_APPDATA_LOD_COARSE_MESH, 0)!=0) && (!view);
 
 			// No skeleton shape
 			if (coarseMesh)

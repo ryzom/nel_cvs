@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.13 2001/07/11 08:26:53 besson Exp $
+ * $Id: export_nel.h,v 1.14 2001/07/11 16:11:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,7 +152,7 @@ public:
 	  */
 	static NL3D::IShape*			buildShape (INode& node, Interface& ip, TimeValue tvTime, 
 												const NL3D::CSkeletonShape* skeletonShape, bool absolutePath,
-												CExportNelOptions &opt);
+												CExportNelOptions &opt, bool view);
 
 	/**
 	  * Build a NeL meshBuild
@@ -441,7 +441,7 @@ private:
 	  */
 	static NL3D::IMeshGeom			*buildMeshGeom (INode& node, Interface& ip, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath,
 													CExportNelOptions &opt, NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName,
-													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& WorldToparentMatrix);
+													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& WorldToparentMatrix, bool view);
 
 	// Get the normal of a face for a given corner in localSpace
 	static Point3					getLocalNormal (int face, int corner, Mesh& mesh);

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.5 2001/07/10 14:25:11 corvazier Exp $
+ * $Id: u_scene.h,v 1.6 2001/07/11 16:11:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,11 @@
 
 #include "nel/misc/types_nl.h"
 
+
+namespace NLMISC
+{
+class CRGBA;
+};
 
 namespace NL3D
 {
@@ -197,6 +202,14 @@ public:
 	/** Set the dynamic coarse meshes's common texture.
 	*/
 	virtual void setDynamicCoarseMeshManagerTexture (const char *sPath) =0;
+
+	/** Set the static coarse meshes global color.
+	*/
+	virtual void setStaticCoarseMeshManagerColor (const NLMISC::CRGBA& color) =0;
+
+	/** Set the dynamic coarse meshes's common texture.
+	*/
+	virtual void setDynamicCoarseMeshManagerColor (const NLMISC::CRGBA& color) =0;
 
 	//@}
 };

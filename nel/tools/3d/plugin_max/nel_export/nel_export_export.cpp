@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.5 2001/07/11 16:11:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,7 +72,7 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, Time
 		}
 
 		// Export in mesh format
-		IShape*	pShape=CExportNel::buildShape (node, ip, time, skeletonShape, false, opt);
+		IShape*	pShape=CExportNel::buildShape (node, ip, time, skeletonShape, false, opt, false);
 
 		// Erase the skeleton
 		if (skeletonShape)

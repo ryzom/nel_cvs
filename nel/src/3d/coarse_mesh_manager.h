@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.3 2001/07/09 17:17:05 corvazier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.4 2001/07/11 16:11:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NL3D
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_MASK	(NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY-1)
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY		(1<<NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_SHIFT)
 #define NL3D_COARSEMESH_VERTEXBUFFER_RESERVE			10
-#define NL3D_COARSEMESH_VERTEX_FORMAT					(IDRV_VF_XYZ|IDRV_VF_NORMAL|IDRV_VF_COLOR|IDRV_VF_UV[0])
+#define NL3D_COARSEMESH_VERTEX_FORMAT					(IDRV_VF_XYZ|IDRV_VF_UV[0])
 #define NL3D_COARSEMESH_PRIMITIVE_BLOCK_SIZE			100
 
 // ***************************************************************************
@@ -121,9 +121,9 @@ public:
 	void setMatrixMesh (uint64 id, const CMeshGeom& geom, const CMatrix& matrix);
 
 	/**
-	  * Set the opacity of a mesh
+	  * Set the global color of the coarse meshes
 	  */
-	void setMeshColor (uint64 id, const CMeshGeom& geom, NLMISC::CRGBA color);
+	void setColor (NLMISC::CRGBA color);
 
 	/**
 	  * Render the container
@@ -187,11 +187,6 @@ private:
 		  * Set the matrix of a mesh
 		  */
 		void setMatrixMesh (uint32 id, const CMeshGeom& geom, const CMatrix& matrix);
-
-		/**
-		  * Set the opacity of a mesh
-		  */
-		void setMeshColor (uint32 id, const CMeshGeom& geom, NLMISC::CRGBA color);
 
 		/**
 		  * Render the container

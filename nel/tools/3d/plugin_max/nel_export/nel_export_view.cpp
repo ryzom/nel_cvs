@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.8 2001/07/11 08:26:53 besson Exp $
+ * $Id: nel_export_view.cpp,v 1.9 2001/07/11 16:11:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -344,7 +344,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 						// Export the shape
 						IShape *pShape;
 						CSkeletonShape *skeletonShape=dynamic_cast<CSkeletonShape*> ((IShape*)iteSkelShape->second->Shape);
-						pShape=CExportNel::buildShape (*pNode, ip, time, skeletonShape, true, opt);
+						pShape=CExportNel::buildShape (*pNode, ip, time, skeletonShape, true, opt, true);
 
 						// Build succesful ?
 						if (pShape)
@@ -365,7 +365,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				{
 					// Export the shape
 					IShape *pShape;
-					pShape=CExportNel::buildShape (*pNode, ip, time, NULL, true, opt);
+					pShape=CExportNel::buildShape (*pNode, ip, time, NULL, true, opt, true);
 
 					// Export successful ?
 					if (pShape)

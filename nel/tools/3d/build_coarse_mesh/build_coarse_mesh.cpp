@@ -1,7 +1,7 @@
 /** \file build_coarse_mesh.cpp
  * Precalc coarse mesh objets to build a single texture
  *
- * $Id: build_coarse_mesh.cpp,v 1.1 2001/07/11 07:43:56 corvazier Exp $
+ * $Id: build_coarse_mesh.cpp,v 1.2 2001/07/11 16:11:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -233,7 +233,7 @@ int main(int argc, char* argv[])
 					}
 
 					// Show stats
-					printf ("\nCoarse meshes computed: %d\nTexture size: %dx%d\nArea of the texture used: %f%%\nCompute time (s): %f", 
+					printf ("\nCoarse meshes computed: %d\nTexture size: %dx%d\nArea of the texture used: %f%%\nCompute time (s): %f\n", 
 						shapes.size(), coarseBitmap.getWidth(), coarseBitmap.getHeight(), stats.TextureUsed*100.f, 
 						((float)(uint32)CTime::getLocalTime ()-startTime)/1000.f);
 				}

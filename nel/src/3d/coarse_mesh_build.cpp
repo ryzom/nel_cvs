@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.cpp
  * <File description>
  *
- * $Id: coarse_mesh_build.cpp,v 1.1 2001/07/11 07:43:55 corvazier Exp $
+ * $Id: coarse_mesh_build.cpp,v 1.2 2001/07/11 16:11:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -307,7 +307,7 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 	while (ite!=mapArea.begin());
 
 	// Some stats
-	stats.TextureUsed=(float)totalArea/(float)newArea;
+	stats.TextureUsed=(float)totalArea/(float)(width*height);
 
 	return true;
 }

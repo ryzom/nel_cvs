@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.6 2001/07/09 17:17:06 corvazier Exp $
+ * $Id: scene_user.h,v 1.7 2001/07/11 16:11:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -350,6 +350,8 @@ public:
 	//@{
 	virtual void setStaticCoarseMeshManagerTexture (const char *sPath);
 	virtual void setDynamicCoarseMeshManagerTexture (const char *sPath);
+	virtual void setStaticCoarseMeshManagerColor (const CRGBA& color);
+	virtual void setDynamicCoarseMeshManagerColor (const CRGBA& color);
 	//@}
 
 public:

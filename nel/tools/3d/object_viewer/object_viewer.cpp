@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.18 2001/07/09 17:18:53 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.19 2001/07/11 16:11:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,10 +32,13 @@
 #include <3d/mesh.h>
 #include <3d/transform_shape.h>
 #include <3d/mesh_instance.h>
+#include <3d/text_context.h>
 #include <3d/skeleton_model.h>
+
 #include <nel/misc/file.h>
 #include <nel/misc/path.h>
 #include <nel/misc/time_nl.h>
+#include <nel/misc/config_file.h>
 
 #include "editable_range.h"
 #include "range_manager.h"
@@ -112,6 +115,7 @@ CObjectViewer::CObjectViewer ()
 	_AnimationDlg=NULL;
 	_SceneDlg=NULL;
 	_ParticleDlg = NULL ;
+	_FontGenerator = NULL ;
 
 	// Setup animation set
 	_ChannelMixer.setAnimationSet (&_AnimationSet);
@@ -126,6 +130,42 @@ CObjectViewer::CObjectViewer ()
 
 	// Hotspot size
 	_HotSpotSize=10.f;
+
+	_ShowInfo=true;
+
+	// Charge l'object_viewer.ini
+	try
+	{
+		// Get the module path
+#ifdef NL_DEBUG
+		HMODULE hModule = GetModuleHandle("object_viewer_debug.dll");
+#elif defined (NL_RELEASE_DEBUG)
+		HMODULE hModule = GetModuleHandle("object_viewer_rd.dll");
+#else
+		HMODULE hModule = GetModuleHandle("object_viewer.dll");
+#endif
+		nlassert (hModule);
+		char sModulePath[256];
+		char sDrive[256];
+		char sDir[256];
+		int res=GetModuleFileName(hModule, sModulePath, 256);
+		nlassert(res);
+		_splitpath (sModulePath, sDrive, sDir, NULL, NULL);
+		_makepath (sModulePath, sDrive, sDir, "object_viewer", ".cfg");
+
+		// Load the config file
+		CConfigFile cf;
+		cf.load (sModulePath);
+		
+		// Add search pathes
+		CConfigFile::CVar &search_pathes = cf.getVar ("search_pathes");
+		for (uint i=0; i<(uint)search_pathes.size(); i++)
+			CPath::addSearchPath (search_pathes.asString(i));
+	}
+	catch (Exception& e)
+	{
+		MessageBox (NULL, e.what(), "Objectviwer.cfg", MB_OK|MB_ICONEXCLAMATION);
+	}
 }
 
 // ***************************************************************************
@@ -143,6 +183,8 @@ CObjectViewer::~CObjectViewer ()
 		delete _SceneDlg;
 	if (_ParticleDlg)
 		delete _ParticleDlg ;
+	if (_FontGenerator)
+		delete _FontGenerator ;
 }
 
 // ***************************************************************************
@@ -162,6 +204,21 @@ void initCamera ()
 void CObjectViewer::initUI ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// The fonts manager
+	_FontManager.setMaxMemory(2000000);
+
+	// The windows path
+	uint dSize = ::GetWindowsDirectory(NULL, 0) ;
+	nlverify(dSize) ;
+	char *wd = new char[dSize] ;	
+	nlverify(::GetWindowsDirectory(wd, dSize)) ;
+	_FontPath=wd;
+	_FontPath+="\\fonts\\arial.ttf" ;
+
+	// The font generator
+	_FontGenerator = new NL3D::CFontGenerator ( _FontPath ) ;
+	delete[] wd ;
 
 	// The viewport
 	CViewport viewport;
@@ -203,7 +260,7 @@ void CObjectViewer::initUI ()
 	getRegisterWindowState (_SceneDlg, REGKEY_OBJ_VIEW_SCENE_DLG, false);
 
 	// Create particle dialog
-	_ParticleDlg=new CParticleDlg (&driverWnd, _SceneDlg);
+	_ParticleDlg=new CParticleDlg (this, &driverWnd, _SceneDlg);
 	_ParticleDlg->Create (IDD_PARTICLE);
 	getRegisterWindowState (_ParticleDlg, REGKEY_OBJ_PARTICLE_DLG, false);	
 
@@ -242,6 +299,16 @@ void CObjectViewer::go ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+	// Text context to show infos
+	CTextContext topInfo;
+	topInfo.init (CNELU::Driver, &_FontManager);
+	topInfo.setKeep800x600Ratio(false);
+	topInfo.setFontGenerator (_FontPath);
+	topInfo.setHotSpot (CComputedString::TopLeft);
+	topInfo.setColor (CRGBA (255,255,255));
+	topInfo.setFontSize (12);
+	
+
 	do
 	{
 		CNELU::Driver->activate ();
@@ -274,6 +341,10 @@ void CObjectViewer::go ()
 		// Draw the scene
 		CNELU::Scene.render();
 
+		// Profile polygon count
+		CPrimitiveProfile in, out;
+		CNELU::Driver->profileRenderedPrimitives (in, out);
+
 		// Draw the hotSpot
 		if (_SceneDlg->ObjectMode)
 		{
@@ -300,6 +371,21 @@ void CObjectViewer::go ()
 				CNELU::Driver->setPolygonMode (IDriver::Filled);
 				break;
 			}
+		}
+		if (CNELU::AsyncListener.isKeyPushed(KeyF2))
+		{
+			_ShowInfo^=true;
+		}
+		
+		// Calc FPS
+		static sint64 lastTime=NLMISC::CTime::getPerformanceTime ();
+		sint64 newTime=NLMISC::CTime::getPerformanceTime ();
+		float fps = (float)(1.0 / NLMISC::CTime::ticksToSecond (newTime-lastTime));
+		lastTime=newTime;
+		if (_ShowInfo)
+		{
+			topInfo.printfAt (0, 1, "Fps: %5.1f   -   Nb tri: %d   -   Texture VRAM used (Mo): %5.2f", fps, in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips,
+				(float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024) );
 		}
 
 		// Swap the buffers

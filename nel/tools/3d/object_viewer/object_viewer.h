@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.13 2001/07/11 08:26:53 besson Exp $
+ * $Id: object_viewer.h,v 1.14 2001/07/11 16:11:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,8 +55,14 @@
 #include <3d/shape.h>
 #include <3d/event_mouse_listener.h>
 #include <3d/light.h>
+#include <3d/font_manager.h>
 #include <nel/misc/event_listener.h>
 #include <nel/misc/stream.h>
+
+namespace NL3D
+{
+class CFontGenerator;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -158,7 +164,9 @@ public:
 
 
 
-	// Not exported
+	/// Not exported
+	// @{
+
 	void setAnimTime (float animStart, float animEnd);
 
 	// Reset the slots
@@ -179,6 +187,13 @@ public:
 	/// get the background color
 	NLMISC::CRGBA getBackGroundColor(void) { return _BackGroundColor ; }
 
+	/// Get font manager
+	NL3D::CFontManager		*getFontManager () { return &_FontManager; };
+
+	/// Get font generator
+	NL3D::CFontGenerator	*getFontGenerator () { return _FontGenerator; };
+	// @}
+
 private:
 	CAnimationDlg								*_AnimationDlg;
 	CMainDlg									*_SlotDlg;
@@ -194,6 +209,12 @@ private:
 	NLMISC::CRGBA								_HotSpotColor;
 	float										_HotSpotSize;
 	NLMISC::CRGBA								_BackGroundColor;
+	bool										_ShowInfo;
+
+	// Font mgt
+	NL3D::CFontManager							_FontManager;
+	NL3D::CFontGenerator						*_FontGenerator;
+	std::string									_FontPath;
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

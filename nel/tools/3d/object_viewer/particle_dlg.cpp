@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.9 2001/07/04 12:16:50 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.10 2001/07/11 16:11:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,35 +75,15 @@ static char THIS_FILE[] = __FILE__;
 // CParticleDlg dialog
 
 
-CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
+CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CSceneDlg* sceneDlg)
 	: CDialog(CParticleDlg::IDD, pParent), SceneDlg(sceneDlg), CurrentRightPane(NULL)
 {
 	//{{AFX_DATA_INIT(CParticleDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 
-
-
-
-
-	// Font manager
-	FontManager = new NL3D::CFontManager ;	
-	FontManager->setMaxMemory(2000000);
-		
-	uint dSize = ::GetWindowsDirectory(NULL, 0) ;
-	nlverify(dSize) ;
-	char *wd = new char[dSize] ;	
-	nlverify(::GetWindowsDirectory(wd, dSize)) ;
-
-	std::string wds(wd) ;
-	wds+="\\fonts\\arial.ttf" ;
-
-	// Font generator
-	FontGenerator = new NL3D::CFontGenerator ( wds.c_str() ) ;
-
-	delete[] wd ;
-
-
+	nlverify (FontManager = main->getFontManager());
+	nlverify (FontGenerator = main->getFontGenerator());
 
 	//////
 	const std::string emptySystemName("private_empty_particle_system.ps") ;
@@ -157,9 +137,6 @@ CParticleDlg::~CParticleDlg()
 	delete CurrentRightPane ;
 
 	delete StartStopDlg ;
-
-	delete FontManager ;
-	delete FontGenerator ;
 }
 
 

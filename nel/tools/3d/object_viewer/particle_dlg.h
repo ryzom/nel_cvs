@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.5 2001/06/27 16:47:10 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.6 2001/07/11 16:11:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ class CParticleDlg : public CDialog
 {
 // Construction
 public:
-	CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg);   // standard constructor
+	CParticleDlg(class CObjectViewer* main, CWnd *pParent, CSceneDlg* sceneDlg);   // standard constructor
 	~CParticleDlg() ;
 
 	void setRightPane(CWnd *pane) ;

@@ -640,7 +640,7 @@ SOURCE=.\3d\material.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\occlusion_query.h
+SOURCE=.\3d\occlusion_query.h
 # End Source File
 # Begin Source File
 
@@ -1606,11 +1606,11 @@ SOURCE=.\3d\visual_collision_manager_user.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\water_env_map_user.cpp
+SOURCE=.\3d\water_env_map_user.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\water_env_map_user.h
+SOURCE=.\3d\water_env_map_user.h
 # End Source File
 # End Group
 # Begin Group "User"
@@ -1790,7 +1790,7 @@ SOURCE=..\include\nel\3d\u_water.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\3d\u_water_env_map.h
+SOURCE=..\include\nel\3d\u_water_env_map.h
 # End Source File
 # Begin Source File
 
@@ -2169,7 +2169,7 @@ SOURCE=.\3d\ps_misc.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\ps_spawn_info.h
+SOURCE=.\3d\ps_spawn_info.h
 # End Source File
 # Begin Source File
 
@@ -2302,11 +2302,11 @@ SOURCE=.\3d\quad_grid_clip_manager.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\water_env_map.cpp
+SOURCE=.\3d\water_env_map.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\water_env_map.h
+SOURCE=.\3d\water_env_map.h
 # End Source File
 # Begin Source File
 

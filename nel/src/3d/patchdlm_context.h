@@ -1,7 +1,7 @@
 /** \file patchdlm_context.h
  * <File description>
  *
- * $Id: patchdlm_context.h,v 1.2 2002/04/16 09:44:03 berenguier Exp $
+ * $Id: patchdlm_context.h,v 1.3 2002/04/16 12:36:27 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/tess_list.h"
 #include "nel/misc/bsphere.h"
 #include "nel/misc/aabbox.h"
+#include "3d/landscape_def.h"
 
 
 namespace NL3D 
@@ -157,6 +158,9 @@ public:
 	void			compileLighting();
 
 	CPatch			*getPatch() const {return _Patch;}
+
+	// For Bench. Get the size in memory this class use.
+	uint			getMemorySize() const;
 
 // *************************
 private:

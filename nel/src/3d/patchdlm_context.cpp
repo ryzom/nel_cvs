@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.2 2002/04/16 09:44:03 berenguier Exp $
+ * $Id: patchdlm_context.cpp,v 1.3 2002/04/16 12:36:27 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -196,7 +196,14 @@ CPatchDLMContext::~CPatchDLMContext()
 
 
 // ***************************************************************************
+#ifdef NL_DLM_TILE_RES
+// if tileRes defined, still start to clip at tessBlockLevel.
+#define	NL_DLM_CLIP_FACTOR		2
+#else
+// start to clip at tessBlockLevel (same as dlm map precision)
 #define	NL_DLM_CLIP_FACTOR		1
+#endif
+
 #define	NL_DLM_CLIP_NUM_LEVEL	3
 
 // ***************************************************************************
@@ -213,9 +220,16 @@ bool			CPatchDLMContext::generate(CPatch *patch, CTextureDLM *textureDLM, CPatch
 	_DLMContextList= ctxList;
 	_DLMContextList->append(this);
 
-	// Get Texture Size info; get coord at cornes of tessBlocks
+	// Get Texture Size info; 
+#ifdef NL_DLM_TILE_RES
+	// get coord at cornes of tiles
+	Width= (_Patch->getOrderS())+1;
+	Height= (_Patch->getOrderT())+1;
+#else
+	// get coord at cornes of tessBlocks
 	Width= (_Patch->getOrderS()/2)+1;
 	Height= (_Patch->getOrderT()/2)+1;
+#endif
 
 	// Allocate space in texture
 	if(!_DLMTexture->createLightMap(Width, Height, TextPosX, TextPosY))
@@ -243,6 +257,13 @@ bool			CPatchDLMContext::generate(CPatch *patch, CTextureDLM *textureDLM, CPatch
 		DLMUBias= 1;
 		DLMVBias= 1;
 	}
+
+	// TestYoyo: to see lightmap usage in the big texture
+	/*DLMUScale= _Patch->getOrderS();
+	DLMVScale= _Patch->getOrderT();
+	DLMUBias= 0;
+	DLMVBias= 0;*/
+
 
 	// Allocate RAM Lightmap
 	_LightMap.resize(Width*Height);
@@ -275,8 +296,15 @@ bool			CPatchDLMContext::generate(CPatch *patch, CTextureDLM *textureDLM, CPatch
 
 	// Size of the cluster array (at level 0)
 	uint	bsx, bsy;
+#ifdef NL_DLM_TILE_RES
+	// level 0 is at tile level.
+	bsx= max(1, (_Patch->getOrderS())/NL_DLM_CLIP_FACTOR );
+	bsy= max(1, (_Patch->getOrderT())/NL_DLM_CLIP_FACTOR );
+#else
+	// level 0 is at tessBlock level.
 	bsx= max(1, (_Patch->getOrderS()/2)/NL_DLM_CLIP_FACTOR );
 	bsy= max(1, (_Patch->getOrderT()/2)/NL_DLM_CLIP_FACTOR );
+#endif
 
 	// resize bboxes for level 0.
 	static	vector<CAABBox>		tmpBBoxes[NL_DLM_CLIP_NUM_LEVEL];
@@ -572,26 +600,22 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 	endX= min(endX*NL_DLM_CLIP_FACTOR+1, Width);
 	endY= min(endY*NL_DLM_CLIP_FACTOR+1, Height);
 
+	// TestYoyo only.
+	/*extern uint YOYO_LandDLCount;
+	YOYO_LandDLCount+= (endX - startX) * (endY - startY);*/
 
 	// process all vertices
 	//================
 	float	r,g,b;
 	CRGBA	*dst= &_LightMap[0];
-	// If the texture is already black, don't need to add to previous color
-	/*if(_IsSrcTextureFullBlack)
+	CVertex		*originVert= vert;
+	CRGBA		*originDst= dst;
+	// If the pointLight is a spot, compute is more complex/slower
+	if(pl.IsSpot)
 	{
-		// TODO_OPTIM
-	}
-	else*/
-	{
-		CVertex		*originVert= vert;
-		CRGBA		*originDst= dst;
 		for(y=startY; y<endY; y++)
 		{
 			nverts= endX - startX;
-			// TempYoyo
-			/*extern uint YOYO_LandDLCount;
-			YOYO_LandDLCount+= nverts;*/
 
 			vert= originVert + startX + y*Width;
 			dst= originDst + startX + y*Width;
@@ -630,8 +654,49 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 			}
 		}
 	}
+	// else, pointLight with no Spot cone attenuation
+	else
+	{
+		for(y=startY; y<endY; y++)
+		{
+			nverts= endX - startX;
+
+			vert= originVert + startX + y*Width;
+			dst= originDst + startX + y*Width;
+			for(;nverts>0; nverts--, vert++, dst++)
+			{
+				CVector	dirToP= vert->Pos - pl.Pos;
+				float	dist= dirToP.norm();
+				dirToP/= dist;
+
+				// distance attenuation
+				float	attDist= (dist-pl.AttMax) * pl.OOAttDelta;
+				clamp(attDist, 0.f, 1.f);
+
+				// compute diffuse lighting
+				float	diff= -(vert->Normal * dirToP);
+				clamp(diff, 0.f, 1.f);
+				
+				// compute colors.
+				diff*= attDist;
+				r= pl.R*diff;
+				g= pl.G*diff;
+				b= pl.B*diff;
+
+				CRGBA	col;
+				col.R= (uint8)OptFastFloor(r);
+				col.G= (uint8)OptFastFloor(g);
+				col.B= (uint8)OptFastFloor(b);
+
+				// add to map.
+				dst->addRGBOnly(*dst, col);
+			}
+		}
+	}
+
 
 	// Src texture is modified, hence it can't be black.
+	//==============
 	_IsSrcTextureFullBlack= false;
 }
 
@@ -649,6 +714,16 @@ void			CPatchDLMContext::compileLighting()
 		// copy full black state
 		_IsDstTextureFullBlack= _IsSrcTextureFullBlack;
 	}
+}
+
+
+// ***************************************************************************
+uint			CPatchDLMContext::getMemorySize() const
+{
+	return sizeof(CPatchDLMContext) + 
+		_Vertices.size() * sizeof(CVertex) +
+		_LightMap.size() * sizeof(CRGBA) +
+		_Clusters.size() * sizeof(CCluster);
 }
 
 

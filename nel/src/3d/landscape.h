@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.35 2002/04/12 15:59:56 berenguier Exp $
+ * $Id: landscape.h,v 1.36 2002/04/16 12:36:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -526,6 +526,12 @@ public:
 	 *	\param pls list of pointLigths to influence landscape
 	 */
 	void			computeDynamicLighting(const std::vector<CPointLight*>	&pls);
+
+	/** For bench only. return approximate ammount of memory taken by dynamic lightmap in RAM.
+	 *	This is sizeof(global Texture in RAM) + all patchDLMContext.
+	 *	NB: not so slow, but do not call in final release.
+	 */
+	uint			getDynamicLightingMemoryLoad() const;
 
 	/** Set PointLight Max Attenuation End landscape support. Every pointLight AttEnd is clamped to this value.
 	 *	Default is 30.f.

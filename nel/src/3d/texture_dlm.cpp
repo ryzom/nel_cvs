@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
  * <File description>
  *
- * $Id: texture_dlm.cpp,v 1.1 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: texture_dlm.cpp,v 1.2 2002/04/16 12:36:27 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -85,12 +85,21 @@ CTextureDLM::CTextureDLM(uint width, uint height)
 // ***************************************************************************
 uint				CTextureDLM::getTypeForSize(uint width, uint height)
 {
+#ifdef NL_DLM_TILE_RES
+	nlassert(width==3 || width==5 || width==9 || width==17);
+	nlassert(height==3 || height==5 || height==9 || height==17);
+#else
 	nlassert(width==2 || width==3 || width==5 || width==9);
 	nlassert(height==2 || height==3 || height==5 || height==9);
+#endif
 
-	// 0 for 2, 1 for 3, 2 for 5, and 3 for 9.
+	// 0 for 2, 1 for 3, 2 for 5, and 3 for 9, and 4 for 17
 	width= getPowerOf2(width-1);
 	height= getPowerOf2(height-1);
+#ifdef NL_DLM_TILE_RES
+	// 0 for 3, 1 for 5, 2, for 9, and 3 for 17
+	width--; height--;
+#endif
 
 	uint id= width + height*4;
 	nlassert(id<NL_DLM_LIGHTMAP_TYPE_SIZE);
@@ -180,6 +189,8 @@ bool			CTextureDLM::createLightMap(uint w, uint h, uint &x, uint &y)
 	uint	nLMapOnX= NL_DLM_BLOCK_SIZE / block->Width;
 	uint	nLMapOnY= NL_DLM_BLOCK_SIZE / block->Height;
 	uint	nLMapPerBlock= nLMapOnX * nLMapOnY;
+	// bit must fit in a uint64
+	nlassert(nLMapPerBlock<=64);
 
 	// get an id in the FreeSpace bitField.
 	uint	i;

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.108 2002/04/12 15:59:56 berenguier Exp $
+ * $Id: landscape.cpp,v 1.109 2002/04/16 12:36:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3279,6 +3279,28 @@ void			CLandscape::setDynamicLightingMaxAttEnd(float maxAttEnd)
 {
 	maxAttEnd= max(maxAttEnd, 1.f);
 	_DLMMaxAttEnd= maxAttEnd;
+}
+
+
+// ***************************************************************************
+uint			CLandscape::getDynamicLightingMemoryLoad() const
+{
+	uint	mem= 0;
+	// First, set size of global texture overhead.
+	mem= NL3D_LANDSCAPE_DLM_WIDTH * NL3D_LANDSCAPE_DLM_HEIGHT * sizeof(CRGBA);
+
+	// Then, for each patchContext created
+	CPatchDLMContext	*ctxPtr= _PatchDLMContextList->begin();
+	while(ctxPtr!=NULL)
+	{
+		// add its memory load.
+		mem+= ctxPtr->getMemorySize();
+
+		// next
+		ctxPtr= (CPatchDLMContext*)ctxPtr->Next;
+	}
+
+	return mem;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.8 2002/04/12 15:59:56 berenguier Exp $
+ * $Id: landscape_def.h,v 1.9 2002/04/16 12:36:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,11 @@ class	IDriver;
 // For Landscape dynamic lighting, size of the dynamic lightmap.
 #define	NL3D_LANDSCAPE_DLM_WIDTH	512
 #define	NL3D_LANDSCAPE_DLM_HEIGHT	256
+
+// if NL_DLM_TILE_RES is defined, DLM texture precision are at Tile precision (ie 2m)
+// If not defined then suppose TessBlock coarser precision (4m)
+#define NL_DLM_TILE_RES
+
 
 
 // ***************************************************************************

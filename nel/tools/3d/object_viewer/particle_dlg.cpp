@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.20 2003/08/19 12:53:26 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.21 2003/08/22 09:05:30 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,7 @@ using namespace NL3D;
 
 //**************************************************************************************************************************
 CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame)
-	: CDialog(CParticleDlg::IDD, pParent), MainFrame(mainFrame), CurrentRightPane(NULL), _ObjView(main)
+	: CDialog(CParticleDlg::IDD, pParent), MainFrame(mainFrame), CurrentRightPane(NULL), _ObjView(main), _EmptyBBox(true), _AutoUpdateBBox(false)
 
 {
 	//{{AFX_DATA_INIT(CParticleDlg)
@@ -74,7 +74,7 @@ CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame*
 	nlverify (FontManager = main->getFontManager());
 	nlverify (FontGenerator = main->getFontGenerator());
 
-	resetSystem();
+	resetSystem();	
 
 
 	ParticleTreeCtrl = new CParticleTreeCtrl(this);
@@ -103,6 +103,7 @@ void CParticleDlg::resetSystem(void)
 	
 	_CurrSystemModel = (NL3D::CParticleSystemModel *) CNELU::Scene.createInstance(emptySystemName);
 	_CurrSystemModel->setTransformMode(NL3D::CTransform::DirectMatrix);
+	
 
 	// link to the root for manipulation
 	_ObjView->getSceneRoot()->hrcLinkSon(_CurrSystemModel);
@@ -121,7 +122,7 @@ void CParticleDlg::resetSystem(void)
 	_CurrPS = _CurrSystemModel->getPS();
 
 	_CurrPS->setFontManager(FontManager);
-	_CurrPS->setFontGenerator(FontGenerator);
+	_CurrPS->setFontGenerator(FontGenerator);	
 }
 
 //**************************************************************************************************************************
@@ -170,6 +171,13 @@ END_MESSAGE_MAP()
 //**************************************************************************************************************************
 void CParticleDlg::OnDestroy() 
 {
+	if (CurrentRightPane)
+	{
+		CurrentRightPane->DestroyWindow();
+		delete CurrentRightPane;
+		CurrentRightPane = NULL;
+	}
+
 	setRegisterWindowState (this, REGKEY_OBJ_PARTICLE_DLG);
 	CDialog::OnDestroy();		
 }
@@ -318,10 +326,28 @@ void CParticleDlg::go(void)
 {
 	if (StartStopDlg->isBBoxDisplayEnabled() && _CurrPS)
 	{
-		NLMISC::CAABBox b;
-		_CurrPS->getLastComputedBBox(b);
-		NL3D::CNELU::Driver->setupModelMatrix(_CurrPS->getSysMat());
-		NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, b, _CurrPS->getAutoComputeBBox() ? CRGBA::White : CRGBA::Red);
+		NL3D::CNELU::Driver->setupModelMatrix(_CurrPS->getSysMat());		
+		if (_AutoUpdateBBox)
+		{
+			NLMISC::CAABBox currBBox;
+			_CurrPS->forceComputeBBox(currBBox);
+			if (_EmptyBBox)
+			{
+				_EmptyBBox = false;
+				_CurrBBox = currBBox;
+			}
+			else
+			{			
+				NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, _CurrBBox, CRGBA::Blue);			
+				_CurrBBox = NLMISC::CAABBox::computeAABBoxUnion(currBBox, _CurrBBox);
+			}
+			_CurrPS->setPrecomputedBBox(_CurrBBox);
+		}	
+		else
+		{
+			_CurrPS->getLastComputedBBox(_CurrBBox);
+		}
+		NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, _CurrBBox, _CurrPS->getAutoComputeBBox() ? CRGBA::White : CRGBA::Red);
 	}
 }
 

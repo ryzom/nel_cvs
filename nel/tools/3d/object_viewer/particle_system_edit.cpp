@@ -1,7 +1,7 @@
  /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.19 2003/08/19 12:53:26 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.20 2003/08/22 09:05:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,20 @@
 #include "choose_name.h"
 #include "particle_tree_ctrl.h"
 #include "particle_dlg.h"
+#include "choose_frame_delay.h"
+
+static	void concatEdit2Lines(CEdit &edit)
+{
+	const	uint lineLen= 1000;
+	uint	n;
+	// retrieve the 2 lines.
+	char	tmp0[2*lineLen];
+	char	tmp1[lineLen];
+	n= edit.GetLine(0, tmp0, lineLen);	tmp0[n]= 0;
+	n= edit.GetLine(1, tmp1, lineLen);	tmp1[n]= 0;
+	// concat and update the CEdit.
+	edit.SetWindowText(strcat(tmp0, tmp1));
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -67,6 +81,9 @@ CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps, CParticleTre
 	m_EnableLoadBalancing = FALSE;
 	m_BypassMaxNumSteps = FALSE;
 	m_ForceLighting = FALSE;
+	m_BBoxX = _T("");
+	m_BBoxY = _T("");
+	m_BBoxZ = _T("");
 	//}}AFX_DATA_INIT
 }
 
@@ -81,6 +98,8 @@ CParticleSystemEdit::~CParticleSystemEdit()
 	REMOVE_WND(_LODRatioDlg); 
 	REMOVE_WND(_AutoLODDlg);
 	REMOVE_WND(_GlobalColorDlg);
+	_ParticleTreeCtrl->getParticleDlg()->getObjectViewer()->getFrameDelayDlg()->lockToPS(false);
+
 }
 
 //=====================================================
@@ -88,10 +107,12 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 {
 	Create(CParticleSystemEdit::IDD, pParent);
 
+	// TODO : remove all ugly hardcoded values
+
+	RECT r;
 
 	const sint xPos = 80;
 	sint yPos = 162;
-
 
 	_MaxViewDistDlg = new CEditableRangeFloat (std::string("MAX VIEW DIST"), 0, 100.f);
 	_MaxViewDistWrapper.PS = _PS;
@@ -107,18 +128,22 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	_LODRatioDlg->init(87, 357, this);
 
 
-	_TimeThresholdDlg = new CEditableRangeFloat (std::string("TIME THRESHOLD"), 0.005f, 0.5f);
+	_TimeThresholdDlg = new CEditableRangeFloat (std::string("TIME THRESHOLD"), 0.005f, 0.3f);
 	_TimeThresholdWrapper.PS = _PS;
 	_TimeThresholdDlg->enableLowerBound(0, true);
 	_TimeThresholdDlg->setWrapper(&_TimeThresholdWrapper);
-	_TimeThresholdDlg->init(87, 74, this);
+	GetDlgItem(IDC_TIME_THRESHOLD_PLACE_HOLDER)->GetWindowRect(&r);
+	ScreenToClient(&r);
+	_TimeThresholdDlg->init(r.left, r.top, this);
 
 
 	_MaxIntegrationStepDlg = new CEditableRangeUInt (std::string("MAX INTEGRATION STEPS"), 0, 4);	
 	_MaxNbIntegrationWrapper.PS = _PS;
 	_MaxIntegrationStepDlg->enableLowerBound(0, true);
 	_MaxIntegrationStepDlg->setWrapper(&_MaxNbIntegrationWrapper);
-	_MaxIntegrationStepDlg->init(87, 115, this);
+	GetDlgItem(IDC_MAX_STEP_PLACE_HOLDER)->GetWindowRect(&r);
+	ScreenToClient(&r);
+	_MaxIntegrationStepDlg->init(r.left, r.top, this);
 
 
 				
@@ -142,7 +167,9 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	bool klt;
 	_PS->getAccurateIntegrationParams(t, max, csd, klt);
 	
-	m_PrecomputeBBoxCtrl.SetCheck(!_PS->getAutoComputeBBox());
+	m_PrecomputeBBoxCtrl.SetCheck(_PS->getAutoComputeBBox() ? 0 : 1);
+	((CButton *) GetDlgItem(IDC_AUTO_BBOX))->SetCheck(_ParticleTreeCtrl->getParticleDlg()->getAutoBBox() ? 1 : 0);
+	
 	m_EnableSlowDown = csd;	
 	((CButton *)	GetDlgItem(IDC_SHARABLE))->SetCheck(_PS->isSharingEnabled());	
 
@@ -167,6 +194,10 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	m_EnableLoadBalancing = _PS->isLoadBalancingEnabled();
 	_MaxIntegrationStepDlg->EnableWindow(_PS->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
 	m_ForceLighting = _PS->getForceGlobalColorLightingFlag();
+
+	CString lockButtonStr;
+	lockButtonStr.LoadString(IDS_LOCK_PS);
+	GetDlgItem(IDC_LOCK_FRAME_DELAY)->SetWindowText(lockButtonStr);
 
 	UpdateData(FALSE);
 	ShowWindow(SW_SHOW);	
@@ -213,32 +244,50 @@ void CParticleSystemEdit::OnPrecomputeBbox()
 {
 	UpdateData();
 	_PS->setAutoComputeBBox(!_PS->getAutoComputeBBox() ? true : false);
+	if (!_PS->getAutoComputeBBox())
+	{
+		_ParticleTreeCtrl->getParticleDlg()->setAutoBBox(true);
+		_ParticleTreeCtrl->getParticleDlg()->resetAutoBBox();
+		((CButton *) GetDlgItem(IDC_AUTO_BBOX))->SetCheck(1);
+	}
+	else
+	{
+		_ParticleTreeCtrl->getParticleDlg()->setAutoBBox(false);
+		((CButton *) GetDlgItem(IDC_AUTO_BBOX))->SetCheck(0);
+	}
 	updatePrecomputedBBoxParams();	
 }
 
 //=====================================================
 void CParticleSystemEdit::updatePrecomputedBBoxParams()
 {
-	BOOL ew = !_PS->getAutoComputeBBox();
+	nlassert(_ParticleTreeCtrl);
+	BOOL ew = !_ParticleTreeCtrl->getParticleDlg()->getAutoBBox() && !_PS->getAutoComputeBBox();
+		
 	m_BBoxXCtrl.EnableWindow(ew);
 	m_BBoxYCtrl.EnableWindow(ew);
 	m_BBoxZCtrl.EnableWindow(ew);
+	GetDlgItem(IDC_DEC_BBOX)->EnableWindow(!_PS->getAutoComputeBBox());
+	GetDlgItem(IDC_INC_BBOX)->EnableWindow(!_PS->getAutoComputeBBox());
+	GetDlgItem(IDC_AUTO_BBOX)->EnableWindow(!_PS->getAutoComputeBBox());
 	
 	if (!ew)
 	{
-		m_BBoxXCtrl.SetWindowText("");
-		m_BBoxYCtrl.SetWindowText("");
-		m_BBoxZCtrl.SetWindowText("");
+		m_BBoxX = "";
+		m_BBoxY = "";
+		m_BBoxZ = "";
 	}
 	else
 	{
 		NLMISC::CAABBox b;
 		_PS->computeBBox(b);
 		char out[128];
-		sprintf(out, "%.3g", b.getHalfSize().x); m_BBoxXCtrl.SetWindowText(out);
-		sprintf(out, "%.3g", b.getHalfSize().y); m_BBoxYCtrl.SetWindowText(out);
-		sprintf(out, "%.3g", b.getHalfSize().z); m_BBoxZCtrl.SetWindowText(out);
+		sprintf(out, "%.3g", b.getHalfSize().x); m_BBoxX = out;
+		sprintf(out, "%.3g", b.getHalfSize().y); m_BBoxY = out;
+		sprintf(out, "%.3g", b.getHalfSize().z); m_BBoxZ = out;
 	}
+
+	GetDlgItem(IDC_RESET_BBOX)->EnableWindow(_ParticleTreeCtrl->getParticleDlg()->getAutoBBox() && !_PS->getAutoComputeBBox());
 
 	UpdateData(FALSE);
 }
@@ -275,6 +324,9 @@ void CParticleSystemEdit::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ENABLE_LOAD_BALANCING, m_EnableLoadBalancing);
 	DDX_Check(pDX, IDC_BYPASS_MAX_NUM_STEPS, m_BypassMaxNumSteps);
 	DDX_Check(pDX, IDC_FORCE_GLOBAL_LIGHITNG, m_ForceLighting);
+	DDX_Text(pDX, IDC_BB_X, m_BBoxX);
+	DDX_Text(pDX, IDC_BB_Y, m_BBoxY);
+	DDX_Text(pDX, IDC_BB_Z, m_BBoxZ);
 	//}}AFX_DATA_MAP
 }
 
@@ -283,8 +335,7 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	//{{AFX_MSG_MAP(CParticleSystemEdit)
 	ON_BN_CLICKED(IDC_ACCURATE_INTEGRATION, OnAccurateIntegration)
 	ON_BN_CLICKED(IDC_ENABLE_SLOW_DOWN, OnEnableSlowDown)
-	ON_BN_CLICKED(IDC_PRECOMPUTE_BBOX, OnPrecomputeBbox)
-	ON_BN_CLICKED(IDC_UPDATE_BBOX, OnUpdateBbox)
+	ON_BN_CLICKED(IDC_PRECOMPUTE_BBOX, OnPrecomputeBbox)	
 	ON_BN_CLICKED(IDC_INC_BBOX, OnIncBbox)
 	ON_BN_CLICKED(IDC_DEC_BBOX, OnDecBbox)
 	ON_BN_CLICKED(IDC_DIE_WHEN_OUT_OF_RANGE, OnDieWhenOutOfRange)
@@ -307,6 +358,12 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_BYPASS_MAX_NUM_STEPS, OnBypassMaxNumSteps)
 	ON_BN_CLICKED(IDC_FORCE_GLOBAL_LIGHITNG, OnForceGlobalLighitng)
 	ON_BN_CLICKED(IDC_AUTO_DELAY, OnAutoDelay)
+	ON_EN_CHANGE(IDC_BB_Z, OnChangeBBZ)
+	ON_EN_CHANGE(IDC_BB_X, OnChangeBBX)
+	ON_EN_CHANGE(IDC_BB_Y, OnChangeBBY)
+	ON_BN_CLICKED(IDC_AUTO_BBOX, OnAutoBbox)
+	ON_BN_CLICKED(IDC_RESET_BBOX, OnResetBBox)
+	ON_BN_CLICKED(IDC_LOCK_FRAME_DELAY, OnLockFrameDelay)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -334,9 +391,8 @@ void CParticleSystemEdit::OnEnableSlowDown()
 }
 
 //=====================================================
-void CParticleSystemEdit::OnUpdateBbox() 
+void CParticleSystemEdit::updateBBoxFromText()
 {
-	UpdateData();
 	NLMISC::CVector h;
 	char inX[128], inY[128], inZ[128];
 	m_BBoxXCtrl.GetWindowText(inX, 128);
@@ -709,7 +765,7 @@ void CParticleSystemEdit::OnGlobalUserParam4()
 
 //=====================================================
 void CParticleSystemEdit::OnBypassMaxNumSteps() 
-{
+{ 
 	UpdateData(TRUE);
 	if (m_BypassMaxNumSteps && !_PS->canFinish())
 	{		
@@ -744,4 +800,74 @@ void CParticleSystemEdit::refresh()
 	updateIntegrationParams();
 	updateDieOnEventParams();
 	updateLifeMgtPresets();
+}
+
+//=====================================================
+void CParticleSystemEdit::OnChangeBBX() 
+{
+	UpdateData();	
+	// Trick to track "Enter" keypress: CEdit are multiline. If GetLineCount()>1, then
+	// user has press enter.
+	if(m_BBoxXCtrl.GetLineCount()>1)
+	{
+		// must ccat 2 lines of the CEdit.
+		concatEdit2Lines(m_BBoxXCtrl);
+		m_BBoxXCtrl.GetWindowText(m_BBoxX);
+		updateBBoxFromText();		
+	}	
+}
+
+//=====================================================
+void CParticleSystemEdit::OnChangeBBY() 
+{
+	UpdateData();	
+	// Trick to track "Enter" keypress: CEdit are multiline. If GetLineCount()>1, then
+	// user has press enter.
+	if(m_BBoxYCtrl.GetLineCount()>1)
+	{
+		// must ccat 2 lines of the CEdit.
+		concatEdit2Lines(m_BBoxYCtrl);
+		m_BBoxYCtrl.GetWindowText(m_BBoxY);
+		updateBBoxFromText();		
+	}
+}
+
+//=====================================================
+void CParticleSystemEdit::OnChangeBBZ() 
+{
+	UpdateData();	
+	// Trick to track "Enter" keypress: CEdit are multiline. If GetLineCount()>1, then
+	// user has press enter.
+	if(m_BBoxZCtrl.GetLineCount()>1)
+	{
+		// must ccat 2 lines of the CEdit.
+		concatEdit2Lines(m_BBoxZCtrl);
+		m_BBoxZCtrl.GetWindowText(m_BBoxZ);
+		updateBBoxFromText();		
+	}	
+}
+
+//=====================================================
+void CParticleSystemEdit::OnAutoBbox() 
+{
+	nlassert(_ParticleTreeCtrl);
+	_ParticleTreeCtrl->getParticleDlg()->setAutoBBox(!_ParticleTreeCtrl->getParticleDlg()->getAutoBBox());
+	updatePrecomputedBBoxParams();
+}
+
+//=====================================================
+void CParticleSystemEdit::OnResetBBox() 
+{
+	nlassert(_ParticleTreeCtrl);
+	_ParticleTreeCtrl->getParticleDlg()->resetAutoBBox();	
+}
+
+//=====================================================
+void CParticleSystemEdit::OnLockFrameDelay() 
+{
+	bool locked = !_ParticleTreeCtrl->getParticleDlg()->getObjectViewer()->getFrameDelayDlg()->isLockedToPS();
+	_ParticleTreeCtrl->getParticleDlg()->getObjectViewer()->getFrameDelayDlg()->lockToPS(locked);
+	CString buttonStr;
+	buttonStr.LoadString(locked ? IDS_UNLOCK_PS : IDS_LOCK_PS);
+	GetDlgItem(IDC_LOCK_FRAME_DELAY)->SetWindowText(buttonStr);
 }

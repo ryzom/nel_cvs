@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.11 2003/08/19 12:53:26 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.12 2003/08/22 09:05:30 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,6 +140,14 @@ public:
 	CWnd *getRightPane(void) { return CurrentRightPane; }
 	const CWnd *getRightPane(void) const { return CurrentRightPane; }
 
+	// auto bbox for fx
+	void  setAutoBBox(bool enable) { _AutoUpdateBBox = enable; }
+	bool  getAutoBBox() const { return 	_AutoUpdateBBox; }
+	// reset the auto bbox
+	void  resetAutoBBox() {	_EmptyBBox = true; }
+	// get the object viewer instance
+	CObjectViewer *getObjectViewer() const { return _ObjView; }
+
 
 	CStartStopParticleSystem *StartStopDlg;
 
@@ -152,9 +160,13 @@ protected:
 	// the current model that holds our system
 	NL3D::CParticleSystemModel *_CurrSystemModel;
 
+	// the system bbox must be updated automatically
+	bool						_AutoUpdateBBox;
 	
-
-
+	// the last computed bbox for the system
+	bool						_EmptyBBox;
+	NLMISC::CAABBox			    _CurrBBox;
+	
 
 	// the current right pane of the editor
 	CWnd   *CurrentRightPane;

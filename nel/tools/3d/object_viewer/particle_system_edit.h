@@ -1,7 +1,7 @@
 /** \file particle_system_edit.h
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.h,v 1.13 2003/08/19 12:53:26 vizerie Exp $
+ * $Id: particle_system_edit.h,v 1.14 2003/08/22 09:05:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,6 +122,9 @@ public:
 	BOOL	m_EnableLoadBalancing;
 	BOOL	m_BypassMaxNumSteps;
 	BOOL	m_ForceLighting;
+	CString	m_BBoxX;
+	CString	m_BBoxY;
+	CString	m_BBoxZ;
 	//}}AFX_DATA
 
 
@@ -148,8 +151,7 @@ protected:
 	//{{AFX_MSG(CParticleSystemEdit)
 	afx_msg void OnAccurateIntegration();
 	afx_msg void OnEnableSlowDown();
-	afx_msg void OnPrecomputeBbox();
-	afx_msg void OnUpdateBbox();
+	afx_msg void OnPrecomputeBbox();	
 	afx_msg void OnIncBbox();
 	afx_msg void OnDecBbox();
 	afx_msg void OnDieWhenOutOfRange();
@@ -172,6 +174,12 @@ protected:
 	afx_msg void OnBypassMaxNumSteps();
 	afx_msg void OnForceGlobalLighitng();
 	afx_msg void OnAutoDelay();
+	afx_msg void OnChangeBBZ();
+	afx_msg void OnChangeBBX();
+	afx_msg void OnChangeBBY();
+	afx_msg void OnAutoBbox();
+	afx_msg void OnResetBBox();
+	afx_msg void OnLockFrameDelay();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -181,6 +189,7 @@ protected:
 	void updateDieOnEventParams();
 	void updateLifeMgtPresets();
 	void childPopupClosed(CWnd *child);
+	void updateBBoxFromText();
 
 	static CTimeThresholdWrapper		_TimeThresholdWrapper;
 	static CMaxViewDistWrapper			_MaxViewDistWrapper;

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.46 2003/04/22 13:58:45 berenguier Exp $
+ * $Id: calc_lm.cpp,v 1.47 2003/04/25 13:51:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -267,7 +267,7 @@ void SLightBuild::convertFromMaxLight (INode *node,TimeValue tvTime)
 			{
 				ProjBitmap.resize (pProjMap->Width(), pProjMap->Height(), CBitmap::RGBA);
 				// Copy the bitmap
-				std::vector<uint8> &rBitmap = ProjBitmap.getPixels();
+				CObjectVector<uint8> &rBitmap = ProjBitmap.getPixels();
 				BMM_Color_64 OnePixel;
 				for( uint32 k = 0; k < ProjBitmap.getHeight(); ++k )
 				for( uint32 j = 0; j < ProjBitmap.getWidth(); ++j )

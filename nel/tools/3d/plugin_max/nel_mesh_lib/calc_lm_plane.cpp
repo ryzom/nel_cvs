@@ -2,7 +2,7 @@
  * This is a sub-module for calculating ligtmaps
  * This is the code of the plane wich regroup lightmap faces
  *
- * $Id: calc_lm_plane.cpp,v 1.5 2002/04/10 17:15:20 besson Exp $
+ * $Id: calc_lm_plane.cpp,v 1.6 2003/04/25 13:51:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,7 @@ void SLMPlane::copyColToBitmap32 (CBitmap* pImage, uint32 nLayerNb)
 		pImage->resize(w,h);
 	}
 
-	vector<uint8> &vBitmap = pImage->getPixels();
+	CObjectVector<uint8> &vBitmap = pImage->getPixels();
 
 	for( uint32 i = 0; i < w*h; ++i )
 	{
@@ -392,7 +392,7 @@ void SLMPlane::contourDetect ()
 		CBitmap b;
 		COFile f( "c:\\temp\\gloup.tga" );
 		b.resize(w,h);
-		vector<uint8>&bits = b.getPixels();
+		CObjectVector<uint8>&bits = b.getPixels();
 		for( i = 0; i < w*h; ++i )
 		{
 			bits[i*4+0] = bits[i*4+1] = bits[i*4+2] = bits[i*4+3] = ray[i]*255;

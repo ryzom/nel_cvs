@@ -79,8 +79,8 @@ bool fileExist (const std::string &sFileName)
 bool tryAllPos (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 &x, sint32 &y)
 {
 	uint32 i, j;
-	vector<uint8> &rSrcPix = pSrc->getPixels();
-	vector<uint8> &rDstPix = pDst->getPixels();
+	NLMISC::CObjectVector<uint8> &rSrcPix = pSrc->getPixels();
+	NLMISC::CObjectVector<uint8> &rDstPix = pDst->getPixels();
 
 	// Recalculate real size of the source (without padding to power of 2)
 	uint32 nSrcWidth = 0, nSrcHeight = 0;
@@ -134,8 +134,8 @@ bool putIn (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 x, sint32 y)
 {
 	uint32 a, b;
 
-	vector<uint8> &rSrcPix = pSrc->getPixels();
-	vector<uint8> &rDstPix = pDst->getPixels();
+	NLMISC::CObjectVector<uint8> &rSrcPix = pSrc->getPixels();
+	NLMISC::CObjectVector<uint8> &rDstPix = pDst->getPixels();
 
 	for (b = 0; b < pSrc->getHeight(); ++b)
 	for (a = 0; a < pSrc->getWidth(); ++a)

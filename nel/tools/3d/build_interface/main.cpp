@@ -41,8 +41,8 @@ const	uint32	posStep= 4;
 bool tryAllPos (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 &x, sint32 &y)
 {
 	uint32 i, j;
-	vector<uint8> &rSrcPix = pSrc->getPixels();
-	vector<uint8> &rDstPix = pDst->getPixels();
+	CObjectVector<uint8> &rSrcPix = pSrc->getPixels();
+	CObjectVector<uint8> &rDstPix = pDst->getPixels();
 
 	// Recalculate real size of the source (without padding to power of 2)
 	uint32 nSrcWidth = pSrc->getWidth(), nSrcHeight = pSrc->getHeight();
@@ -160,7 +160,7 @@ void enlargeCanvas (NLMISC::CBitmap &b)
 	NLMISC::CBitmap b2;
 	b2.resize (nNewWidth, nNewHeight, NLMISC::CBitmap::RGBA);
 	
-	std::vector<uint8> &rPixelBitmap = b2.getPixels(0);
+	CObjectVector<uint8> &rPixelBitmap = b2.getPixels(0);
 	for (sint32 i = 0; i < nNewWidth*nNewHeight*4; ++i)
 		rPixelBitmap[i] = 0;
 	
@@ -238,9 +238,9 @@ int main(int nNbArg, char **ppArgs)
 	NLMISC::CBitmap GlobalTexture, GlobalMask;
 	GlobalTexture.resize (1, 1, NLMISC::CBitmap::RGBA);
 	GlobalMask.resize (1, 1, NLMISC::CBitmap::RGBA);
-	std::vector<uint8> &rPixelBitmap = GlobalTexture.getPixels(0);
+	CObjectVector<uint8> &rPixelBitmap = GlobalTexture.getPixels(0);
 	rPixelBitmap[0] = rPixelBitmap[1] = rPixelBitmap[2] = rPixelBitmap[3] = 0;
-	std::vector<uint8> &rPixelMask = GlobalMask.getPixels(0);
+	CObjectVector<uint8> &rPixelMask = GlobalMask.getPixels(0);
 	rPixelMask[0] = rPixelMask[1] = rPixelMask[2] = rPixelMask[3] = 0;
 	vector<NLMISC::CUV> UVMin, UVMax;
 	UVMin.resize (AllMapNames.size(), NLMISC::CUV(0.0f, 0.0f));

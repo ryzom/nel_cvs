@@ -794,7 +794,7 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 				sTemp += AllMeshBuilds[nNode].second->GetName();
 				sTemp += ".tga";
 				pTexture->resize( nLightMapSizeX, nLightMapSizeY );
-				vector<uint8> &rText = pTexture->getPixels();
+				CObjectVector<uint8> &rText = pTexture->getPixels();
 				for( j = 0; j < nLightMapSizeY; ++j )
 				for( i = 0; i < nLightMapSizeX; ++i )
 					if( TheLightMap[i+j*nLightMapSizeX] != 0 )
@@ -990,7 +990,7 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 		theColor.B = (1+n.z)/2;
 		theColor.A = 1.;
 
-					vector<uint8> &pixel = pLightMap->getPixels();
+					CObjectVector<uint8> &pixel = pLightMap->getPixels();
 					pixel[(j+nPiecePosX + (k+nPiecePosY)*pLightMap->getWidth())*4+0] = theColor.R*255;
 					pixel[(j+nPiecePosX + (k+nPiecePosY)*pLightMap->getWidth())*4+1] = theColor.G*255;
 					pixel[(j+nPiecePosX + (k+nPiecePosY)*pLightMap->getWidth())*4+2] = theColor.B*255;

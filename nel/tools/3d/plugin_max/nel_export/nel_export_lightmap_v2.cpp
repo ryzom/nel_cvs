@@ -815,7 +815,7 @@ void ResizeBitmap32( CBitmap *pImage, sint32 nNewSizeX, sint32 nNewSizeY )
 	for( i = 0; i < 4*nNewSizeX*nNewSizeY; ++i )
 		vImgTemp[i] = 0;
 
-	vector<uint8> &vBitmap = pImage->getPixels();
+	CObjectVector<uint8> &vBitmap = pImage->getPixels();
 	sint32 nCurSizeX = pImage->getWidth();
 	sint32 nCurSizeY = pImage->getHeight();
 	for( j = 0; j < min(nCurSizeY,nNewSizeY); ++j )
@@ -1515,7 +1515,7 @@ void CopyPlaneColToBitmap32( CBitmap* pImage, SLMPlane &Plane, sint32 nLayerNb )
 		( pImage->getHeight() != Plane.h ) )
 		ResizeBitmap32( pImage, Plane.w, Plane.h );
 
-	vector<uint8> &vBitmap = pImage->getPixels();
+	CObjectVector<uint8> &vBitmap = pImage->getPixels();
 
 	for( sint32 i = 0; i < Plane.w*Plane.h; ++i )
 	{

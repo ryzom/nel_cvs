@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.61 2003/02/17 16:25:39 corvazier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.62 2003/04/25 13:46:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -502,7 +502,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 					// Fill mipmaps.
 					for(sint i=0;i<nMipMaps;i++)
 					{
-						void	*ptr= &(*pTInTC->getPixels(i).begin());
+						void	*ptr= pTInTC->getPixels(i).getPtr();
 						uint	w= pTInTC->getWidth(i);
 						uint	h= pTInTC->getHeight(i);
 						if (bUpload)
@@ -553,7 +553,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 						// Fill mipmaps.
 						for(sint i=decalMipMapResize;i<nMipMaps;i++)
 						{
-							void	*ptr= &(*tex.getPixels(i).begin());
+							void	*ptr= tex.getPixels(i).getPtr();
 							sint	size= tex.getPixels(i).size();
 							if (bUpload)
 							{
@@ -603,7 +603,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 						// Fill mipmaps.
 						for(sint i=0;i<nMipMaps;i++)
 						{
-							void	*ptr= &(*tex.getPixels(i).begin());
+							void	*ptr= tex.getPixels(i).getPtr();
 							uint	w= tex.getWidth(i);
 							uint	h= tex.getHeight(i);
 
@@ -677,7 +677,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 					// Fill mipmaps.
 					for(sint i=0;i<nMipMaps;i++)
 					{
-						void	*ptr= &(*tex.getPixels(i).begin());
+						void	*ptr= tex.getPixels(i).getPtr();
 						sint	w= tex.getWidth(i);
 						sint	h= tex.getHeight(i);
 						clamp(x0, 0, w);
@@ -814,7 +814,7 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 
 		// Compute src compressed size and location
 		sint imageSize = (x1-x0)*(y1-y0);
-		void *ptr = &(*tex.getPixels(nNumMipMap).begin());
+		void *ptr = tex.getPixels(nNumMipMap).getPtr();
 
 		// If DXTC1 or DXTC1A, then 4 bits/texel else 8 bits/texel
 		if (glfmt == GL_COMPRESSED_RGB_S3TC_DXT1_EXT || glfmt == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
@@ -859,7 +859,7 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 		// glSrcFmt and ITexture format must be identical
 		nlassert (glSrcFmt!=GL_RGBA || tex.getPixelFormat()==CBitmap::RGBA);
 
-		void	*ptr= &(*tex.getPixels(nNumMipMap).begin());
+		void	*ptr= tex.getPixels(nNumMipMap).getPtr();
 		glPixelStorei (GL_UNPACK_ROW_LENGTH, w);
 		glPixelStorei (GL_UNPACK_SKIP_ROWS, y0);
 		glPixelStorei (GL_UNPACK_SKIP_PIXELS, x0);

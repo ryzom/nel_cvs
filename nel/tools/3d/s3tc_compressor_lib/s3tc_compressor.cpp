@@ -1,7 +1,7 @@
 /** \file s3tc_compressor.cpp
  * <File description>
  *
- * $Id: s3tc_compressor.cpp,v 1.2 2003/04/02 13:34:55 berenguier Exp $
+ * $Id: s3tc_compressor.cpp,v 1.3 2003/04/25 13:48:28 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -198,7 +198,7 @@ void		CS3TCCompressor::compress(const NLMISC::CBitmap &bmpSrc, bool optMipMap, u
 	for(sint mp= 0;mp<(sint)picSrc.getMipMapCount();mp++)
 	{
 		uint8	*pixDest;
-		uint8	*pixSrc= &(*picSrc.getPixels(mp).begin());
+		uint8	*pixSrc= picSrc.getPixels(mp).getPtr();
 		sint	w= picSrc.getWidth(mp);
 		sint	h= picSrc.getHeight(mp);
 		vector<uint8>	compdata;

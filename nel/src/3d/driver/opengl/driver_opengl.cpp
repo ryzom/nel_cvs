@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.182 2003/04/15 15:58:31 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.183 2003/04/25 13:46:57 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1957,8 +1957,7 @@ void			CDriverGL::getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect)
 	if(clipRect(rect))
 	{
 		bitmap.resize(rect.Width, rect.Height, CBitmap::RGBA);
-		vector<uint8> &d = bitmap.getPixels ();
-		glReadPixels (rect.X, rect.Y, rect.Width, rect.Height, GL_RGBA, GL_UNSIGNED_BYTE, &(d[0]));
+		glReadPixels (rect.X, rect.Y, rect.Width, rect.Height, GL_RGBA, GL_UNSIGNED_BYTE, bitmap.getPixels ().getPtr());
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * <File description>
  *
- * $Id: nel_export_lightmap_v1.cpp,v 1.4 2002/03/14 18:22:12 vizerie Exp $
+ * $Id: nel_export_lightmap_v1.cpp,v 1.5 2003/04/25 13:51:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -944,7 +944,7 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 				sTemp += AllMeshBuilds[nNode].second->GetName();
 				sTemp += ".tga";
 				pTexture->resize( nLightMapSizeX, nLightMapSizeY );
-				vector<uint8> &rText = pTexture->getPixels();
+				CObjectVector<uint8> &rText = pTexture->getPixels();
 				for( j = 0; j < nLightMapSizeY; ++j )
 				for( i = 0; i < nLightMapSizeX; ++i )
 					if( TheLightMap[i+j*nLightMapSizeX] != 0 )
@@ -1140,7 +1140,7 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 		theColor.B = (1+n.z)/2;
 		theColor.A = 1.;
 
-					vector<uint8> &pixel = pLightMap->getPixels();
+					CObjectVector<uint8> &pixel = pLightMap->getPixels();
 					pixel[(j+nPiecePosX + (k+nPiecePosY)*pLightMap->getWidth())*4+0] = theColor.R*255;
 					pixel[(j+nPiecePosX + (k+nPiecePosY)*pLightMap->getWidth())*4+1] = theColor.G*255;
 					pixel[(j+nPiecePosX + (k+nPiecePosY)*pLightMap->getWidth())*4+2] = theColor.B*255;

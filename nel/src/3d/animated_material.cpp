@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.11 2002/02/28 12:59:49 besson Exp $
+ * $Id: animated_material.cpp,v 1.12 2002/07/03 09:06:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,7 +208,14 @@ void	CAnimatedMaterial::update()
 		diff.A= c;
 
 		// setup material.
-		_Material->setLighting(true, false, _Emissive.Value, _Ambient.Value, diff, _Specular.Value, _Shininess.Value);
+		if (_Material->isLighted())
+		{		
+			_Material->setLighting(true, false, _Emissive.Value, _Ambient.Value, diff, _Specular.Value, _Shininess.Value);
+		}
+		else
+		{
+			_Material->setColor(diff);
+		}
 
 		// clear flags.
 		clearFlag(AmbientValue);

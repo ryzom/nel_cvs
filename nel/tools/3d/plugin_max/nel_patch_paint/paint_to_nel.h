@@ -12,11 +12,13 @@ typedef std::pair<int, int> CNelPatchKey;
 class CNelPatchValue
 {
 	friend class CNelPatchChanger;
+	CNelPatchValue ();
+	~CNelPatchValue ();
 private:
 	bool											TileLoaded;
 	bool											ColorLoaded;
-	std::vector<CTileElement>						Tiles;
-	std::vector<CTileColor>							TileColors;
+	std::vector<CTileElement>						*Tiles;
+	std::vector<CTileColor>							*TileColors;
 };
 
 typedef std::map<CNelPatchKey, CNelPatchValue> CNelPatchMap;

@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.15 2003/02/19 16:17:45 berenguier Exp $
+ * $Id: vegetable.h,v 1.16 2003/07/30 16:07:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_VEGETABLE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/noise_value.h"
+#include "nel/misc/noise_value.h"
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/matrix.h"
 #include "3d/vegetable_uv8.h"
@@ -59,23 +59,23 @@ public:
 
 public:
 	/// Name of the shape to use.
-	std::string			ShapeName;
+	std::string					ShapeName;
 	/// Density== Number of instance to create / m².
-	CNoiseValue			Density;	// floor(Density*surface)== nbShape to create.
+	NLMISC::CNoiseValue			Density;	// floor(Density*surface)== nbShape to create.
 	/// the maximum density computed. if <0, no maximum. -1 by default.
-	float				MaxDensity;
+	float						MaxDensity;
 	/// Random Scale.
-	CNoiseValue			Sxy, Sz;
+	NLMISC::CNoiseValue			Sxy, Sz;
 	/// Random Orientation.
-	CNoiseValue			Rx, Ry, Rz;
+	NLMISC::CNoiseValue			Rx, Ry, Rz;
 	/// Random Bend factor.
-	CNoiseValue			BendFactor;
+	NLMISC::CNoiseValue			BendFactor;
 	/// Random Bend Phase.
-	CNoiseValue			BendPhase;
+	NLMISC::CNoiseValue			BendPhase;
 	/// Fixed Bend FrequencyFactor. NB: rounded during addInstance to the nearest NL3D_VEGETABLE_FREQUENCY_FACTOR_PREC
-	float				BendFrequencyFactor;
+	float						BendFrequencyFactor;
 	/// The color to modulate the instance.
-	CNoiseColorGradient	Color;
+	NLMISC::CNoiseColorGradient	Color;
 	/** At which distance this vegetable will be rendered.
 	 *	NB: DistType is not managed by CVegetableManager, but by user (eg CLandscape).
 	 */

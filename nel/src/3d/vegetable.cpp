@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.18 2003/02/19 16:17:45 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.19 2003/07/30 16:07:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "3d/vegetable.h"
 #include "nel/misc/common.h"
 #include "3d/vegetable_manager.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 
 
 using namespace std;
@@ -41,7 +41,7 @@ namespace NL3D
 
 // ***************************************************************************
 // Generate random value, but seed is spacial. Take a high frequency, so it gets more the aspect of random.
-static	CNoiseValue		RandomGenerator(0,1, 7.68f);
+static	NLMISC::CNoiseValue		RandomGenerator(0,1, 7.68f);
 
 
 // ***************************************************************************
@@ -150,7 +150,7 @@ void	CVegetable::generateGroupEx(float nbInst, const CVector &posInWorld, const 
 	nbInst+= 0.99f * RandomGenerator.evalOneLevelRandom(posInWorld);
 
 	// and then get only the integral part.
-	sint	nbInstances= OptFastFloor(nbInst);
+	sint	nbInstances= NLMISC::OptFastFloor(nbInst);
 	nbInstances= max(0, nbInstances);
 
 	// resize the instances

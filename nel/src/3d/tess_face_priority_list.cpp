@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.cpp
  * <File description>
  *
- * $Id: tess_face_priority_list.cpp,v 1.5 2002/08/23 16:32:52 berenguier Exp $
+ * $Id: tess_face_priority_list.cpp,v 1.6 2003/07/30 16:07:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/debug.h"
 #include <math.h>
 #include "3d/tessellation.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 
 
 using	namespace NLMISC;
@@ -288,7 +288,7 @@ void		CTessFacePriorityList::insert(uint quadrantId, float distance, CTessFace *
 	else
 	{
 		// Must insert so we can't miss it when a shift occurs (=> floor).
-		idInsert= OptFastFloor(distance + rollTable.Remainder);
+		idInsert= NLMISC::OptFastFloor(distance + rollTable.Remainder);
 	}
 	idInsert= std::max(0, idInsert);
 

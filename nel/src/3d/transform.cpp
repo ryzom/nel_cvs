@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.62 2003/07/11 12:47:33 corvazier Exp $
+ * $Id: transform.cpp,v 1.63 2003/07/30 16:07:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "3d/skeleton_model.h"
 #include "3d/scene.h"
 #include "3d/root_model.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "nel/misc/hierarchical_timer.h"
 
 
@@ -1073,7 +1073,7 @@ void	CTransform::traverseLight()
 			const CPointLight	*pl= _LightContribution.PointLight[i];
 			// don't worry about the precision of floor, because of *255.
 			float	distToModel= (pl->getPosition() - worldModelPos).norm();
-			sint	attFactor= OptFastFloor( 255 * pl->computeLinearAttenuation(worldModelPos, distToModel) );
+			sint	attFactor= NLMISC::OptFastFloor( 255 * pl->computeLinearAttenuation(worldModelPos, distToModel) );
 			_LightContribution.AttFactor[i]= (uint8)attFactor;
 		}
 

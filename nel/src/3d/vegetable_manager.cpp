@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.33 2003/06/02 15:00:25 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.34 2003/07/30 16:08:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "3d/vegetable_manager.h"
 #include "3d/driver.h"
 #include "3d/texture_file.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/vegetable_quadrant.h"
 #include "3d/dru.h"
 #include "3d/radix_sort.h"
@@ -1017,7 +1017,7 @@ inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceD
 		// Compute Sun Light.
 		dpSun= rotNormal*sunDir;
 		float	f= max(0.f, -dpSun);
-		col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+		col.modulateFromuiRGBOnly(primaryRGBA, NLMISC::OptFastFloor(f*256));
 		// Add it with ambient
 		resColor.addRGBOnly(col, secondaryRGBA);
 
@@ -1027,14 +1027,14 @@ inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceD
 		{
 			dpPL[0]= rotNormal*vegetLex.Direction[0];
 			f= max(0.f, -dpPL[0]);
-			col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
+			col.modulateFromuiRGBOnly(diffusePL[0], NLMISC::OptFastFloor(f*256));
 			resColor.addRGBOnly(col, resColor);
 			// Compute Light 1 ?
 			if(vegetLex.NumLights>=2)
 			{
 				dpPL[1]= rotNormal*vegetLex.Direction[1];
 				f= max(0.f, -dpPL[1]);
-				col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
+				col.modulateFromuiRGBOnly(diffusePL[1], NLMISC::OptFastFloor(f*256));
 				resColor.addRGBOnly(col, resColor);
 			}
 		}
@@ -1053,7 +1053,7 @@ inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceD
 
 		// Compute Sun Light.
 		float	f= max(0.f, dpSun);
-		col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+		col.modulateFromuiRGBOnly(primaryRGBA, NLMISC::OptFastFloor(f*256));
 		// Add it with ambient
 		resColor.addRGBOnly(col, secondaryRGBA);
 
@@ -1062,13 +1062,13 @@ inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceD
 		if(vegetLex.NumLights>=1)
 		{
 			f= max(0.f, dpPL[0]);
-			col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
+			col.modulateFromuiRGBOnly(diffusePL[0], NLMISC::OptFastFloor(f*256));
 			resColor.addRGBOnly(col, resColor);
 			// Compute Light 1 ?
 			if(vegetLex.NumLights>=2)
 			{
 				f= max(0.f, dpPL[1]);
-				col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
+				col.modulateFromuiRGBOnly(diffusePL[1], NLMISC::OptFastFloor(f*256));
 				resColor.addRGBOnly(col, resColor);
 			}
 		}
@@ -1100,7 +1100,7 @@ inline void		computeVegetVertexLightingForceBestSided(const CVector &rotNormal, 
 		dpSun= rotNormal*sunDir;
 		// ForceBestSided: take the absolute value (max of -val,val)
 		float	f= (float)fabs(dpSun);
-		col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+		col.modulateFromuiRGBOnly(primaryRGBA, NLMISC::OptFastFloor(f*256));
 		// Add it with ambient
 		resColor.addRGBOnly(col, secondaryRGBA);
 
@@ -1111,14 +1111,14 @@ inline void		computeVegetVertexLightingForceBestSided(const CVector &rotNormal, 
 			dpPL[0]= rotNormal*vegetLex.Direction[0];
 			// ForceBestSided: take the absolute value (max of -val,val)
 			f= (float)fabs(dpPL[0]);
-			col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
+			col.modulateFromuiRGBOnly(diffusePL[0], NLMISC::OptFastFloor(f*256));
 			resColor.addRGBOnly(col, resColor);
 			// Compute Light 1 ?
 			if(vegetLex.NumLights>=2)
 			{
 				dpPL[1]= rotNormal*vegetLex.Direction[1];
 				f= (float)fabs(dpPL[1]);
-				col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
+				col.modulateFromuiRGBOnly(diffusePL[1], NLMISC::OptFastFloor(f*256));
 				resColor.addRGBOnly(col, resColor);
 			}
 		}
@@ -1178,14 +1178,14 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	CRGBA		ambientRGBA, diffuseRGBA;
 	CRGBA		primaryRGBA, secondaryRGBA;
 	// diffuseColor
-	diffuseRGBA.R= (uint8)OptFastFloor(diffuseColor.R*255);
-	diffuseRGBA.G= (uint8)OptFastFloor(diffuseColor.G*255);
-	diffuseRGBA.B= (uint8)OptFastFloor(diffuseColor.B*255);
+	diffuseRGBA.R= (uint8)NLMISC::OptFastFloor(diffuseColor.R*255);
+	diffuseRGBA.G= (uint8)NLMISC::OptFastFloor(diffuseColor.G*255);
+	diffuseRGBA.B= (uint8)NLMISC::OptFastFloor(diffuseColor.B*255);
 	diffuseRGBA.A= 255;
 	// ambientColor
-	ambientRGBA.R= (uint8)OptFastFloor(ambientColor.R*255);
-	ambientRGBA.G= (uint8)OptFastFloor(ambientColor.G*255);
-	ambientRGBA.B= (uint8)OptFastFloor(ambientColor.B*255);
+	ambientRGBA.R= (uint8)NLMISC::OptFastFloor(ambientColor.R*255);
+	ambientRGBA.G= (uint8)NLMISC::OptFastFloor(ambientColor.G*255);
+	ambientRGBA.B= (uint8)NLMISC::OptFastFloor(ambientColor.B*255);
 	ambientRGBA.A= 255;
 
 	// For Lighted, modulate with global light.
@@ -1527,7 +1527,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 				// compute the distance with orientation of the quadrant. (DotProduct)
 				float	dist= triangleCenters[i] * quadDir;
 				// compress to sint16. 
-				ig->_TriangleQuadrantOrders[quadId][offTri + i]= (sint16)OptFastFloor(dist*distFactor);
+				ig->_TriangleQuadrantOrders[quadId][offTri + i]= (sint16)NLMISC::OptFastFloor(dist*distFactor);
 			}
 		}
 	}
@@ -2208,7 +2208,7 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 			z= z*_NumZSortBlendLayers / _ZSortLayerDistMax;
 			// Avoid a floor(), using an OptFastFloor, but without the OptFastFloorBegin() End() group.
 			// => avoid the imprecision with such a trick; *256, then divide the integer by 256.
-			sint	layer= OptFastFloor(z*256) >> 8;
+			sint	layer= NLMISC::OptFastFloor(z*256) >> 8;
 			clamp(layer, 0, (sint)_NumZSortBlendLayers-1);
 
 			// Range in correct layer, according to water ordering

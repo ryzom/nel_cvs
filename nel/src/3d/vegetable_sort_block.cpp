@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.cpp
  * <File description>
  *
- * $Id: vegetable_sort_block.cpp,v 1.6 2003/06/02 15:00:25 berenguier Exp $
+ * $Id: vegetable_sort_block.cpp,v 1.7 2003/07/30 16:08:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "3d/vegetable_sort_block.h"
 #include "3d/radix_sort.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "nel/misc/hierarchical_timer.h"
 
 

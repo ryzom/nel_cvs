@@ -1,7 +1,7 @@
 /** \file surface_light_grid.cpp
  * <File description>
  *
- * $Id: surface_light_grid.cpp,v 1.5 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: surface_light_grid.cpp,v 1.6 2003/07/30 16:06:50 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "3d/surface_light_grid.h"
 #include "nel/misc/common.h"
 #include "3d/ig_surface_light.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/light_influence_interpolator.h"
 #include "3d/point_light_named.h"
 #include "3d/scene_group.h"
@@ -70,8 +70,8 @@ void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vecto
 	// fastFloor: use a precision of 256 to avoid doing OptFastFloorBegin.
 	sint	wfixed= wCell<<8;
 	sint	hfixed= hCell<<8;
-	sint	xfixed= OptFastFloor(xfloat * 256);
-	sint	yfixed= OptFastFloor(yfloat * 256);
+	sint	xfixed= NLMISC::OptFastFloor(xfloat * 256);
+	sint	yfixed= NLMISC::OptFastFloor(yfloat * 256);
 	clamp(xfixed, 0, wfixed);
 	clamp(yfixed, 0, hfixed);
 	// compute the cell coord, and the subCoord for bilinear.

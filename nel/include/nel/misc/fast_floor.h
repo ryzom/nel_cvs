@@ -1,7 +1,7 @@
 /** \file fast_floor.h
  * <File description>
  *
- * $Id: fast_floor.h,v 1.4 2002/04/22 16:34:12 berenguier Exp $
+ * $Id: fast_floor.h,v 1.1 2003/07/30 16:10:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include <math.h>
 
-namespace NL3D
+namespace NLMISC
 {					  
 
 // fastFloor function. 
@@ -39,7 +39,7 @@ namespace NL3D
 
 // The magic constant value. support both positive and negative numbers.
 extern double	OptFastFloorMagicConst ; 
-extern int OptFastFloorBkupCW ;
+extern int		OptFastFloorBkupCW ;
 // init float CW.
 inline void  OptFastFloorBegin()
 {
@@ -145,7 +145,7 @@ inline uint32 OptFastFloor24(float x)
 
 
 
-} // NL3D
+} // NLMISC
 
 
 #endif // NL_FAST_FLOOR_H

@@ -1,7 +1,7 @@
 /** \file noise_value.cpp
  * <File description>
  *
- * $Id: noise_value.cpp,v 1.6 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: noise_value.cpp,v 1.1 2003/07/30 16:09:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,14 +23,14 @@
  * MA 02111-1307, USA.
  */
 
-#include "std3d.h"
+#include "stdmisc.h"
 
-#include "3d/noise_value.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/noise_value.h"
+#include "nel/misc/fast_floor.h"
 
-using namespace NLMISC;
 
-namespace NL3D 
+
+namespace NLMISC 
 {
 
 
@@ -343,4 +343,4 @@ void	CNoiseColorGradient::serial(IStream &f)
 
 
 
-} // NL3D
+} // NLMISC

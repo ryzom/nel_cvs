@@ -1,7 +1,7 @@
 /** \file noise_value.h
  * <File description>
  *
- * $Id: noise_value.h,v 1.3 2001/11/21 13:57:32 berenguier Exp $
+ * $Id: noise_value.h,v 1.1 2003/07/30 16:10:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,11 +32,11 @@
 #include "nel/misc/rgba.h"
 
 
-namespace NL3D 
+namespace NLMISC
 {
 
 
-using NLMISC::CVector;
+
 
 
 // ***************************************************************************
@@ -69,7 +69,7 @@ public:
 	float	evalOneLevelRandom(const CVector &posInWorld) const;
 
 
-	void	serial(NLMISC::IStream &f);
+	void	serial(IStream &f);
 
 // *******************
 private:
@@ -91,7 +91,7 @@ class	CNoiseColorGradient
 public:
 	/// Abs and Rand should be 0 and 1 here. If not, some colors may not be generated...
 	CNoiseValue					NoiseValue;
-	std::vector<NLMISC::CRGBAF>	Gradients;
+	std::vector<CRGBAF>	Gradients;
 
 
 public:
@@ -99,9 +99,9 @@ public:
 	 *	result unmodified if no colors. If only one color, copied into result.
 	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
 	 */
-	void	eval(const CVector &posInWorld, NLMISC::CRGBAF &result) const;
+	void	eval(const CVector &posInWorld, CRGBAF &result) const;
 
-	void	serial(NLMISC::IStream &f);
+	void	serial(IStream &f);
 };
 
 

@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: opcode_lpt.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: opcode_lpt.cpp,v 1.6 2001/02/27 12:58:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 
 namespace NLAISCRIPT
 {
-	NLAIAGENT::TProcessStatement CLptMemberOpCode::runOpCode(CCodeContext &context)
+	/*NLAIAGENT::TProcessStatement CLptMemberOpCode::runOpCode(CCodeContext &context)
 	{
 		context.Stack ++;
 		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)(context.Self)->getStaticMember(_B);
@@ -40,7 +40,7 @@ namespace NLAISCRIPT
 		char txt[1024*8];
 		((NLAIAGENT::IObjectIA *)(context.Self))->getStaticMember(_B)->getDebugString(txt);
 		sprintf(str,"ldb la reference du membre <%d> '%s' de la class '%s'",_B,txt,(const char *)((NLAIAGENT::IObjectIA *)(context.Self))->getType());		
-	}
+	}*/
 
 
 	NLAIAGENT::TProcessStatement CLptStackMemberiOpCode::runOpCode(CCodeContext &context)

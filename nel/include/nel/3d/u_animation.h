@@ -1,7 +1,7 @@
 /** \file u_animation.h
  * User interface to access animations fonctionnalities
  *
- * $Id: u_animation.h,v 1.4 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: u_animation.h,v 1.5 2002/05/07 08:16:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,6 +103,13 @@ public:
 	  * \return the end time.
 	  */
 	virtual TAnimationTime	getEndTime () const =0;
+
+	/**
+	  * Say if all track of this animation loop.
+	  *	NB: If no tracks in the animation, return true
+	  */
+	virtual	bool			allTrackLoop() const =0;
+
 };
 
 

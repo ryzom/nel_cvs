@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.56 2003/01/03 16:51:38 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.57 2003/01/14 10:51:23 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -338,6 +338,7 @@ void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &
 		return;
 	}
 
+	bool FirstConnection = (uni->_IdCnx[inSid].Connection.size () == 0);
 
 	// add the connection to the already inserted unified connection
 	if (pos >= uni->_IdCnx[inSid].Connection.size ())
@@ -364,7 +365,7 @@ void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &
 	}
 
 	// send the callback to the user with the first connection
-	if (uni->_IdCnx[inSid].Connection.size () == 1)
+	if (FirstConnection)
 	{
 		// insert the name in the map to be able to send message with the name
 		uni->addNamedCnx (inSName, inSid);

@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.9 2002/02/26 17:30:23 corvazier Exp $
+ * $Id: sound_system.cpp,v 1.10 2002/06/20 08:39:54 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,22 +28,36 @@
 #include "sound_system.h"
 #include "nel/sound/u_audio_mixer.h"
 #include "nel/sound/u_listener.h"
+#include "nel/sound/sound_anim_manager.h"
+#include "nel/sound/sound_animation.h"
+#include "nel/sound/sound_anim_player.h"
 #include "nel/misc/path.h"
 #include "edit_ps_sound.h"
 
-NLSOUND::UAudioMixer *CSoundSystem::_AudioMixer = NULL;
-std::set<std::string>		 CSoundSystem::_SoundBanksFileName;
-static				 NLMISC::CVector SoundListenerPos = NLMISC::CVector::Null;
+using namespace std;
+using namespace NLMISC;
+using namespace NLSOUND;
 
+
+UAudioMixer				*CSoundSystem::_AudioMixer = NULL;
+set<string>				CSoundSystem::_SoundBanksFileName;
+set<string>				CSoundSystem::_SampleBanksFileName;
+static CVector			SoundListenerPos = CVector::Null;
+CSoundAnimManager		*CSoundSystem::_AnimManager = NULL;
+TSoundAnimId			CSoundSystem::_CurrentAnimation = CSoundAnimation::NoId;
+sint32					CSoundSystem::_CurrentPlayback = -1;
+CVector					CSoundSystem::_Zero = CVector::Null;
+string					CSoundSystem::_SamplePath;
+sint					CSoundSystem::_AnimIndex = -1;
 
 void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 {
 	if (_AudioMixer)
 	{	
-		NLSOUND::UListener *l = _AudioMixer->getListener();
+		UListener *l = _AudioMixer->getListener();
 		SoundListenerPos = m.getPos();
 		l->setPos(SoundListenerPos);		
-		NLMISC::CVector j = m.getJ(), k = m.getK();
+		CVector j = m.getJ(), k = m.getK();
 		l->setOrientation(j, k);
 	}
 }
@@ -51,41 +65,60 @@ void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 
 void CSoundSystem::initSoundSystem ()
 {		
-	
+
 	_AudioMixer = NLSOUND::UAudioMixer::createAudioMixer();
 	try
 	{
 		_AudioMixer->init(AUTOBALANCE_DEFAULT_PERIOD);
+		_AudioMixer->setSamplePath(_SamplePath);
+		_AnimManager = new CSoundAnimManager(_AudioMixer);
 	}
 	catch (NLMISC::Exception &e)
 	{
-		std::string mess = std::string("Unable to init sound :") + e.what();
+		string mess = string("Unable to init sound :") + e.what();
 		nlwarning ("Init sound: %s", mess.c_str());
 		_AudioMixer = NULL;
+		_AnimManager = NULL;
 		return;
 	}
 	setPSSoundSystem(_AudioMixer);
 
-	if (_SoundBanksFileName.size())
+		
+	for (set<string>::const_iterator it1 = _SampleBanksFileName.begin();
+		 it1 != _SampleBanksFileName.end();
+		 ++it1)
 	{
-		
-			for (std::set<std::string>::const_iterator it = _SoundBanksFileName.begin();
-				 it != _SoundBanksFileName.end();
-				 ++it)
-			{
-				try
-				{
-					_AudioMixer->loadSoundBuffers(NLMISC::CPath::lookup(*it).c_str());
-				}
-				catch (NLMISC::Exception &e)
-				{
-					std::string mess = "Unable to load sound file :" + *it
-								+ "\n" + e.what();
-					nlwarning ("Init sound: %s", mess.c_str());
-				}
-			}					
-		
-	}
+		try
+		{
+			//_AudioMixer->loadSampleBank(NLMISC::CPath::lookup(*it).c_str());
+			_AudioMixer->loadSampleBank((*it1).c_str());
+		}
+		catch (NLMISC::Exception &e)
+		{
+			string mess = "Unable to load sound file :" + *it1
+						+ "\n" + e.what();
+			nlwarning ("Init sound: %s", mess.c_str());
+		}
+	}					
+
+	for (set<string>::const_iterator it2 = _SoundBanksFileName.begin();
+		 it2 != _SoundBanksFileName.end();
+		 ++it2)
+	{
+		try
+		{
+			//_AudioMixer->loadSoundBank(NLMISC::CPath::lookup(*it).c_str());
+			_AudioMixer->loadSoundBank((*it2).c_str());
+		}
+		catch (NLMISC::Exception &e)
+		{
+			string mess = "Unable to load sound file :" + *it2
+						+ "\n" + e.what();
+			nlwarning ("Init sound: %s", mess.c_str());
+		}
+	}					
+
+
 }
 
 
@@ -102,12 +135,20 @@ void CSoundSystem::poll()
 void CSoundSystem::releaseSoundSystem(void)
 {
 	setPSSoundSystem(NULL);
-	delete _AudioMixer;
-	_AudioMixer = NULL;
+	if (_AnimManager)
+	{
+		delete _AnimManager;
+		_AnimManager = NULL;
+	}
+	if (_AudioMixer)
+	{
+		delete _AudioMixer;
+		_AudioMixer = NULL;
+	}
 }
 
 
-void CSoundSystem::play(const std::string &soundName)
+void CSoundSystem::play(const string &soundName)
 {
 	if (_AudioMixer)
 	{
@@ -121,3 +162,35 @@ void CSoundSystem::play(const std::string &soundName)
 	}
 }
 
+void CSoundSystem::playAnimation(string& name, sint index, float start, float lastTime, float curTime)
+{
+	if (_AnimManager == NULL)
+	{
+		return;
+	}
+
+	TSoundAnimId id = _AnimManager->getAnimationFromName(name);
+
+	if ((id != _CurrentAnimation) || (_AnimIndex != index))
+	{
+		if (_CurrentPlayback != -1)
+		{
+			_AnimManager->stopAnimation(_CurrentPlayback);
+		}
+		_CurrentAnimation = CSoundAnimation::NoId;
+		_CurrentPlayback = -1;
+		_AnimIndex = index;
+
+		if (id != CSoundAnimation::NoId)
+		{
+			_CurrentAnimation = id;
+			_CurrentPlayback = _AnimManager->playAnimation(id, start, &_Zero);
+		}
+	}
+	else if (!_AnimManager->isPlaying(_CurrentPlayback))
+	{
+		_CurrentPlayback = _AnimManager->playAnimation(_CurrentAnimation, start, &_Zero);
+	}
+
+	_AnimManager->update(lastTime, curTime);
+}

@@ -1,7 +1,7 @@
 /** \file sound_system.h
  * This initilize the sound system
  *
- * $Id: sound_system.h,v 1.4 2001/09/05 15:44:05 vizerie Exp $
+ * $Id: sound_system.h,v 1.5 2002/06/20 08:39:54 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,8 +29,12 @@
 
 
 #include <nel/misc/types_nl.h>
+#include <nel/misc/vector.h>
 #include <string>
 #include <set>
+
+#include "nel/sound/sound_anim_manager.h"
+
 
 namespace NLSOUND
 {
@@ -52,6 +56,14 @@ public:
 	{
 		_SoundBanksFileName.insert(soundBankFileName);
 	}
+	/// set the name of the file containing the sample bank
+	static void addSampleBank(const std::string &sampleBankFileName)
+	{
+		_SampleBanksFileName.insert(sampleBankFileName);
+	}
+
+	static void setSamplePath(std::string& path)		{ _SamplePath = path; }
+
 	/** Init the sound system this also load the sound bank
 	  * See setSoundBank
 	  */
@@ -70,11 +82,32 @@ public:
 	static void play(const std::string &soundName);
 
 	// get the audio mixer, or null if init failed
-	static NLSOUND::UAudioMixer *getAudioMixer(void) { return _AudioMixer; }	
+	static NLSOUND::UAudioMixer *getAudioMixer(void)	{ return _AudioMixer; }	
+
+	/// Load the sound animation with the specified name
+	static void loadAnimation(std::string& name)		{ _AnimManager->loadAnimation(name); }
+
+	/// Start playing a sound animation. 
+	static void playAnimation(std::string& name, sint index, float start, float lastTime, float curTime);
+
+	/// Update the sound animations. 
+	static void updateAnimations(float lastTime, float curTime)	{ _AnimManager->update(lastTime, curTime); };
+
+
+	/// Returns a reference to the animation manager
+	static NLSOUND::CSoundAnimManager* getSoundAnimManager()		{ return _AnimManager; }
 
 private:
-	static NLSOUND::UAudioMixer *_AudioMixer;
-	static std::set<std::string>	_SoundBanksFileName;
+	static NLSOUND::UAudioMixer			*_AudioMixer;
+	static std::set<std::string>		_SoundBanksFileName;
+	static std::set<std::string>		_SampleBanksFileName;
+	static NLSOUND::CSoundAnimManager	*_AnimManager;
+	static sint							_AnimIndex;
+	static NLSOUND::TSoundAnimId		_CurrentAnimation;
+	static NLSOUND::TSoundAnimPlayId	_CurrentPlayback;
+	static NLMISC::CVector				_Zero;
+	static std::string					_SamplePath;
+
 };
 
 

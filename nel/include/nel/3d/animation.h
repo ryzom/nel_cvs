@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.6 2001/03/13 17:04:23 corvazier Exp $
+ * $Id: animation.h,v 1.7 2001/03/16 16:03:26 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,22 +62,6 @@ public:
 	/// \name Public interface.
 
 	enum { NotFound=0xffffffff };
-
-	/**
-	  * Get animation name.
-	  */
-	const std::string& getName () const
-	{
-		return _Name;
-	}
-
-	/**
-	  * Set animation name.
-	  */
-	void setName (const char* sName)
-	{
-		_Name=sName;
-	}
 
 	/** Get track with its name.
 	  *

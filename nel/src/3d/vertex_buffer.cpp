@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.29 2001/09/07 09:27:38 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.30 2001/10/02 08:42:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -201,6 +201,33 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 	initEx ();
 
 	return (true);
+}
+
+// --------------------------------------------------
+
+CVertexBuffer::TValue CVertexBuffer::getValueIdByNumberEx (uint valueNumber)
+{
+	// See NV_vertex_program spec, or driver_opengl_vertex.cpp:: GLVertexAttribIndex.
+	static	TValue	lut[16]= {
+		Position,
+		Weight,
+		Normal,
+		PrimaryColor,
+		SecondaryColor,
+		Fog,
+		PaletteSkin,
+		Empty,
+		TexCoord0,
+		TexCoord1,
+		TexCoord2,
+		TexCoord3,
+		TexCoord4,
+		TexCoord5,
+		TexCoord6,
+		TexCoord7,
+	};
+
+	return lut[valueNumber];
 }
 
 // --------------------------------------------------

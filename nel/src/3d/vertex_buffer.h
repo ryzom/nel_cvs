@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.6 2001/09/07 07:32:08 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.7 2001/10/02 08:42:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -351,6 +351,14 @@ public:
 	  * \name This is usable only with OpenGL vertex_program or DX8 vertex shaders.
 	  */
 	// @{
+
+		/**
+		  * get the corresponding TValue according to the number of vertex attribute wanted (v[0], v[1] ...)
+		  *	Warning!: (TValue)valueNumber != getValueIdByNumberEx(valueNumber).
+		  *
+		  * \param valueNumber is the value index (0..15) you want to know the valueId.
+		  */
+		static TValue		getValueIdByNumberEx (uint valueNumber);
 
 		/**
 		  * Clear all value in the vertex buffer. After this call, call addValue for each value you want in your vertex

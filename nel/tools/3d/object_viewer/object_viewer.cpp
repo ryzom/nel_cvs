@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.61 2002/03/15 10:57:51 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.62 2002/03/21 15:21:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1263,7 +1263,7 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 						uint instance = 0xffffffff;
 
 						// Is a skeleton ?
-						if (readed[i].SkeletonId)
+						if (readed[i].IsSkeleton)
 						{
 							// Add the skel
 							instance = addSkel (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str());
@@ -1271,11 +1271,14 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 						else
 						{
 							// Add the mesh
-							instance = addMesh (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str(), readed[i].SkeletonId + firstInstance, (readed[i].BindBoneName=="")?NULL:readed[i].BindBoneName.c_str());
+							if (readed[i].SkeletonId != 0xffffffff)
+								instance = addMesh (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str(), readed[i].SkeletonId + firstInstance, (readed[i].BindBoneName=="")?NULL:readed[i].BindBoneName.c_str());
+							else
+								instance = addMesh (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str(), 0xffffffff, (readed[i].BindBoneName=="")?NULL:readed[i].BindBoneName.c_str());
 						}
 
 						// Check instance number
-						nlassert (instance == (firstInstance+i));
+ 						nlassert (instance == (firstInstance+i));
 
 						// Load animations
 						for (uint anim=0; anim<readed[i].AnimationFileName.size(); anim++)
@@ -1582,7 +1585,14 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 	// *** Add the shape
 
 	// Store the shape pointer
-	CNELU::ShapeBank->add (meshName, CSmartPtr<IShape> (pMeshShape));
+	if (CNELU::ShapeBank->isPresent(meshName))
+	{
+		delete pMeshShape;
+		pMeshShape = CNELU::ShapeBank->addRef(meshName);
+		CNELU::ShapeBank->release (pMeshShape);
+	}
+	else
+		CNELU::ShapeBank->add (meshName, CSmartPtr<IShape> (pMeshShape));
 
 	// Must create the instance?
 	if(createInstance)
@@ -1703,7 +1713,14 @@ uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 	// *** Add the shape
 
 	// Store the shape pointer
-	CNELU::ShapeBank->add (skelName, CSmartPtr<IShape> (pSkelShape));
+	if (CNELU::ShapeBank->isPresent(skelName))
+	{
+		delete pSkelShape;
+		pSkelShape = CNELU::ShapeBank->addRef(skelName);
+		CNELU::ShapeBank->release (pSkelShape);
+	}
+	else
+		CNELU::ShapeBank->add (skelName, CSmartPtr<IShape> (pSkelShape));
 
 	// Create a model and add it to the scene
 	CTransformShape	*pTrShape=CNELU::Scene.createInstance (skelName);
@@ -1729,6 +1746,7 @@ uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 		iInfo->MustDelete = true;
 		iInfo->Saved.ShapeFilename = skelName;
 		iInfo->Saved.IsSkeleton = true;
+		iInfo->Saved.SkeletonId = 0xffffffff;
 		_ListInstance.push_back (iInfo);	
 
 		// Return the instance
@@ -1894,6 +1912,8 @@ void CObjectViewer::removeAllInstancesFromScene()
 	CNELU::Scene.deleteInstance(_ObjectLightTest);
 	_ObjectLightTest= NULL;
 
+	// Reset mesh cache
+	CNELU::ShapeBank->reset();
 
 	// Invalidate dialogs
 	if (CNELU::Driver->isActive())

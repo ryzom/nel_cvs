@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.11 2002/08/21 13:38:06 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.12 2002/09/13 08:22:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -753,7 +753,7 @@ public:
 	void TurnPatch(PatchMesh *patch);
 
 	// Export a zone to NeL format
-	bool exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, NL3D::CZoneSymmetrisation& sym, int zoneId, float snapCell, float weldThreshold);
+	bool exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, NL3D::CZoneSymmetrisation& sym, int zoneId, float snapCell, float weldThreshold, bool forceBuildZoneSymmetry);
 
 	// Export a zone to NeL format
 	void importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId);

@@ -1,7 +1,7 @@
 /** \file nel_export_zone.cpp
  * <File description>
  *
- * $Id: nel_export_zone.cpp,v 1.4 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: nel_export_zone.cpp,v 1.5 2002/09/13 08:22:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ bool CNelExport::exportZone (const char *sPath, INode& node, TimeValue time)
 			// Build the zone
 			CZone zone;
 			CZoneSymmetrisation zoneSymmetry;
-			if (pPatchObject->rpatch->exportZone (&node, &pPatchObject->patch, zone, zoneSymmetry, 0, 160, 1))
+			if (pPatchObject->rpatch->exportZone (&node, &pPatchObject->patch, zone, zoneSymmetry, 0, 160, 1, false))
 			{
 				// Open a file
 				COFile file;

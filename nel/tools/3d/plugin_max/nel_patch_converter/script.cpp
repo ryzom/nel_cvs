@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.11 2002/08/27 12:40:46 corvazier Exp $
+ * $Id: script.cpp,v 1.12 2002/09/13 08:22:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,7 +181,7 @@ export_zone_cf (Value** arg_list, int count)
 			// Create a zone
 			CZone zone;
 			CZoneSymmetrisation zoneSymmetry;
-			if (tri->rpatch->exportZone (node, &tri->patch, zone, zoneSymmetry, nZone, 160, 1))
+			if (tri->rpatch->exportZone (node, &tri->patch, zone, zoneSymmetry, nZone, 160, 1, false))
 			{
 				// Export path 
 				const char* sPath=arg_list[1]->to_string();

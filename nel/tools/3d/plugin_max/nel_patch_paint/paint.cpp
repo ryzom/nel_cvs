@@ -4201,7 +4201,7 @@ DWORD WINAPI myThread (LPVOID vData)
 
 				// Create the zone..
 				CZone	zone;
-				if (rpatch->exportZone (pData->VectMesh[i].Node, patch, zone, symVector[i], i, config.CellSize, config.Snap))
+				if (rpatch->exportZone (pData->VectMesh[i].Node, patch, zone, symVector[i], i, config.CellSize, config.Snap, true))
 				{
 					// Smooth corner
 					CZoneCornerSmoother cornerSmoother;

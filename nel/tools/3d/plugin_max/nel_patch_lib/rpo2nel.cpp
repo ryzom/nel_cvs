@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.21 2002/08/23 15:41:45 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.22 2002/09/13 08:22:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include "rpo.h"
 #include "3d/zone.h"
+#include "3d/zone_symmetrisation.h"
 
 // For MAX_RELEASE
 #include <plugapi.h>
@@ -155,7 +156,7 @@ int getScriptAppData (Animatable *node, uint32 id, int def)
 
 // ***************************************************************************
 
-bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZoneSymmetrisation &zoneSymmetry, int zoneId, float snapCell, float weldThreshold)
+bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZoneSymmetrisation &zoneSymmetry, int zoneId, float snapCell, float weldThreshold, bool forceBuildZoneSymmetry)
 {
 	Matrix3					TM;
 	CPatchInfo				pi;
@@ -575,6 +576,18 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 		sym *= rot;	
 		sym.invert ();
 		if (!CPatchInfo::transform (patchinfo, zoneSymmetry, bank, symmetry, rotate, snapCell, weldThreshold, sym))
+		{
+			return false;
+		}
+	}
+	// Force the build ?
+	else if (forceBuildZoneSymmetry)
+	{
+		// For each patches
+		NL3D::CZoneSymmetrisation::CError error;
+
+		// Build the structure
+		if (!zoneSymmetry.build (patchinfo, snapCell, weldThreshold, bank, error, CMatrix::Identity))
 		{
 			return false;
 		}

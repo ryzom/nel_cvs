@@ -1,7 +1,7 @@
 /** \file listen_sock.cpp
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.cpp,v 1.2 2001/06/27 08:31:19 lecroart Exp $
+ * $Id: listen_sock.cpp,v 1.3 2001/11/27 14:12:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,7 @@ CTcpSock *CListenSock::accept()
 	  newsock = ::accept( _Sock, (sockaddr*)&saddr, &saddrlen );
 	  if ( newsock == INVALID_SOCKET )*/
 	    {
-		throw ESocket( "Accept returned an invalid socket");
+			throw ESocket( "Accept returned an invalid socket");
 	    }
 	}
 

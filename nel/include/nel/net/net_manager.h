@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.10 2001/08/30 17:07:57 lecroart Exp $
+ * $Id: net_manager.h,v 1.11 2001/11/27 14:13:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,7 +148,7 @@ public:
 
 	static void createConnection(CBaseStruct &Base, const CInetAddress &Addr, const std::string& name);
 
-	static uint64 getBytesSended ();
+	static uint64 getBytesSent ();
 	static uint64 getBytesReceived ();
 
 	static uint64 getReceiveQueueSize ();

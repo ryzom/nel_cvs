@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.9 2001/11/20 16:36:55 legros Exp $
+ * $Id: service_5.cpp,v 1.10 2001/11/27 14:12:48 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -940,7 +940,11 @@ sint IService5::main ()
 			ErrorLog->removeDisplayer (wd);
 			AssertLog->removeDisplayer (wd);
 
+			nlinfo ("Window displayer removed");
+
 			delete wd;
+
+			nlinfo ("Window displayer deleted");
 		}
 
 		nlinfo ("Service released succesfuly");
@@ -987,7 +991,7 @@ NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this servi
 	if (get) *pointer = CUnifiedNetwork::getInstance()->getBytesReceived ();
 }
 
-NLMISC_DYNVARIABLE(uint64, SendedBytes, "total of bytes sent by this service")
+NLMISC_DYNVARIABLE(uint64, SentBytes, "total of bytes sent by this service")
 {
 	// we can only read the value
 	if (get) *pointer = CUnifiedNetwork::getInstance()->getBytesSent ();
@@ -999,7 +1003,7 @@ NLMISC_DYNVARIABLE(uint64, ReceivedQueueSize, "current size in bytes of the rece
 	if (get) *pointer = CUnifiedNetwork::getInstance()->getReceiveQueueSize ();
 }
 
-NLMISC_DYNVARIABLE(uint64, SendedQueueSize, "current size in bytes of the sent queue size")
+NLMISC_DYNVARIABLE(uint64, SentQueueSize, "current size in bytes of the sent queue size")
 {
 	// we can only read the value
 	if (get) *pointer = CUnifiedNetwork::getInstance()->getSendQueueSize ();

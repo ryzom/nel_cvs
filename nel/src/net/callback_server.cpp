@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.15 2001/10/25 12:13:02 cado Exp $
+ * $Id: callback_server.cpp,v 1.16 2001/11/27 14:12:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,11 +130,11 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 	{
 		// broadcast
 		sint nb = nbConnections ();
-		_BytesSended += buffer.length () * nb;
+		_BytesSent += buffer.length () * nb;
 	}
 	else
 	{
-		_BytesSended += buffer.length ();
+		_BytesSent += buffer.length ();
 	}
 
 //	if (log)

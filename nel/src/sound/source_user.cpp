@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.18 2001/09/14 20:23:45 lecroart Exp $
+ * $Id: source_user.cpp,v 1.19 2001/11/27 14:12:59 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -532,7 +532,7 @@ bool					CSourceUser::isStopped()
 		{
 			if (CTime::getLocalTime()-_PlayStart < _Sound->getDuration())
 			{
-				nlwarning ("openagl bug (think that the sample is finnished but not : %u %u", (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
+				nlwarning ("openal bug (think that the sample is finished but not : %u %u", (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
 			}
 		}
 	}
@@ -543,7 +543,7 @@ bool					CSourceUser::isStopped()
 		{
 			if (CTime::getLocalTime()-_PlayStart < _Sound->getDuration())
 			{
-/// open al thinks that the sound is finnish but is not!!!
+/// open al thinks that the sound is finish but is not!!!
 ///				nlinfo ("%u %u", (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
 ////				nlstop;
 			}

@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.4 2001/02/23 09:08:52 corvazier Exp $
+ * $Id: win_event_emitter.cpp,v 1.5 2001/11/27 14:12:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ void CWinEventEmitter::submitEvents(CEventServer & server)
 		DispatchMessage(&msg);
 	}
 
-	// Dispatch sended messages
+	// Dispatch sent messages
 	_InternalServer.setServer (&server);
 	_InternalServer.pump ();
 

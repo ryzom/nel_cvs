@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.16 2001/11/26 16:42:40 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.17 2001/11/27 14:12:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -565,7 +565,6 @@ void	CUnifiedNetwork::updateConnectionTable()
 				// only remap the from and server
 				nlassert(cnx.EntryUsed);
 				cnx.IsServerConnection = true;
-				cnx.ServiceId = 
 				cnx.Connection.HostId = _ConnectionStack[i].SHost;
 			}
 		}
@@ -919,9 +918,9 @@ uint64 CUnifiedNetwork::getBytesSent ()
 	CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
 	for (i=0; i<idAccess.value().size(); ++i)
 		if (idAccess.value()[i].EntryUsed && !idAccess.value()[i].IsServerConnection)
-			sent += idAccess.value()[i].Connection.CbClient->getBytesSended();
+			sent += idAccess.value()[i].Connection.CbClient->getBytesSent();
 
-	sent += _CbServer.getBytesSended();
+	sent += _CbServer.getBytesSent();
 	return sent;
 }
 

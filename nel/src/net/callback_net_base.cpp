@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.26 2001/11/22 10:40:13 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.27 2001/11/27 14:12:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,7 +152,7 @@ CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilen
 	_ThreadId = getThreadId ();
 	_NewDisconnectionCallback = cbnbNewDisconnection;
 
-	_BytesSended = 0;
+	_BytesSent = 0;
 	_BytesReceived = 0;
 
 	nldebug ("disable display layer 3 association message");

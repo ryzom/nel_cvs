@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.98 2001/11/13 12:00:29 lecroart Exp $
+ * $Id: service.cpp,v 1.99 2001/11/27 14:12:48 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -828,7 +828,7 @@ sint IService::main ()
 				str += toString (CNetManager::getBytesReceived ());
 				wd->setLabel (rcvLabel, str);
 				str = "Snd: ";
-				str += toString (CNetManager::getBytesSended ());
+				str += toString (CNetManager::getBytesSent ());
 				wd->setLabel (sndLabel, str);
 				str = "RcvQ: ";
 				str += toString (CNetManager::getReceiveQueueSize ());
@@ -956,10 +956,10 @@ NLMISC_DYNVARIABLE(uint64, _ReceivedBytes, "total of bytes received by this serv
 	if (get) *pointer = CNetManager::getBytesReceived ();
 }
 
-NLMISC_DYNVARIABLE(uint64, _SendedBytes, "total of bytes sended by this service")
+NLMISC_DYNVARIABLE(uint64, _SentBytes, "total of bytes sended by this service")
 {
 	// we can only read the value
-	if (get) *pointer = CNetManager::getBytesSended ();
+	if (get) *pointer = CNetManager::getBytesSent ();
 }
 
 NLMISC_DYNVARIABLE(uint64, _ReceivedQueueSize, "current size in bytes of the received queue size")
@@ -968,7 +968,7 @@ NLMISC_DYNVARIABLE(uint64, _ReceivedQueueSize, "current size in bytes of the rec
 	if (get) *pointer = CNetManager::getReceiveQueueSize ();
 }
 
-NLMISC_DYNVARIABLE(uint64, _SendedQueueSize, "current size in bytes of the sended queue size")
+NLMISC_DYNVARIABLE(uint64, _SentQueueSize, "current size in bytes of the sended queue size")
 {
 	// we can only read the value
 	if (get) *pointer = CNetManager::getSendQueueSize ();

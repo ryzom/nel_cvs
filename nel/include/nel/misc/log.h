@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.25 2001/09/12 16:54:47 lecroart Exp $
+ * $Id: log.h,v 1.26 2001/11/27 14:13:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ public:
 
 	CLog(TLogType logType = LOG_NO);
 
-	/// Add a new displayer in the log. You have to create the displayer, remove it and delete it when you have finnish with it.
+	/// Add a new displayer in the log. You have to create the displayer, remove it and delete it when you have finish with it.
 	/// For example, in a 3dDisplayer, you can add the displayer when you want, and the displayer displays the string if the 3d
 	/// screen is available and do nothing otherwise. In this case, if you want, you could leave the displayer all the time.
 	void addDisplayer (IDisplayer *displayer);

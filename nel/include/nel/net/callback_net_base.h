@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.20 2001/10/25 12:16:16 cado Exp $
+ * $Id: callback_net_base.h,v 1.21 2001/11/27 14:13:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,7 +84,7 @@ public:
 	 */
 	virtual void	send (const CMessage &buffer, TSockId hostid = 0, bool log = true) = 0;
 
-	uint64	getBytesSended () { return _BytesSended; }
+	uint64	getBytesSent () { return _BytesSent; }
 	uint64	getBytesReceived () { return _BytesReceived; }
 
 	virtual uint64	getReceiveQueueSize () = 0;
@@ -159,7 +159,7 @@ public:
 
 protected:
 
-	uint64	_BytesSended, _BytesReceived;
+	uint64	_BytesSent, _BytesReceived;
 
 	/// Used by client and server class
 	TNetCallback _NewDisconnectionCallback;

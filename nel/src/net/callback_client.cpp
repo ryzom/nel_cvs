@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.15 2001/10/16 09:22:26 legros Exp $
+ * $Id: callback_client.cpp,v 1.16 2001/11/27 14:12:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,7 +83,7 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 	nlassert (buffer.length() != 0);
 	nlassert (buffer.typeIsSet());
 
-	_BytesSended += buffer.length ();
+	_BytesSent += buffer.length ();
 
 //	if (log)
 	{

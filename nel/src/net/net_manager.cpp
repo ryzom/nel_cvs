@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.15 2001/11/22 10:40:13 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.16 2001/11/27 14:12:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -479,17 +479,17 @@ CNetManager::ItBaseMap CNetManager::find (const std::string &serviceName)
 	return p.first;
 }
 
-uint64 CNetManager::getBytesSended ()
+uint64 CNetManager::getBytesSent ()
 {
-	uint64 sended = 0;
+	uint64 sent = 0;
 	for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
 	{
 		for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
 		{
-			sended += (*itbm).second.NetBase[i]->getBytesSended ();
+			sent += (*itbm).second.NetBase[i]->getBytesSent ();
 		}
 	}
-	return sended;
+	return sent;
 }
 
 uint64 CNetManager::getBytesReceived ()

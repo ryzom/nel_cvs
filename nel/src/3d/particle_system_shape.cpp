@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.22 2001/08/15 12:03:36 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.23 2001/08/16 17:07:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ using NLMISC::CIFile;
 
 CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f), _DestroyWhenOutOfFrustum(false)												
 												, _DestroyModelWhenOutOfRange(false)
+												, _UsePrecomputedBBox(false)
 {
 	for (uint k = 0; k < 4; ++k)
 	{
@@ -69,7 +70,7 @@ CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f), _DestroyWhen
 
 void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(4);
+	sint ver = f.serialVersion(5);
 	NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector();
 	f.serialCont(buf);
 	if (ver > 1)
@@ -91,6 +92,15 @@ void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_MaxViewDist);
 		f.serial(_DestroyWhenOutOfFrustum);		
 		f.serial(_DestroyModelWhenOutOfRange);
+	}
+
+	if ( ver > 4)
+	{
+		f.serial(_UsePrecomputedBBox);
+		if (_UsePrecomputedBBox)
+		{
+			f.serial(_PrecomputedBBox);
+		}
 	}
 }
 
@@ -114,13 +124,29 @@ void CParticleSystemShape::buildFromPS(const CParticleSystem &ps)
 	_MaxViewDist = myPs->getMaxViewDist();
 	_DestroyWhenOutOfFrustum = myPs->doesDestroyWhenOutOfFrustum();	
 	_DestroyModelWhenOutOfRange    = myPs->getDestroyModelWhenOutOfRange();
+	if (!myPs->getAutoComputeBBox())
+	{
+		_UsePrecomputedBBox = true;
+		myPs->computeBBox(_PrecomputedBBox);
+	}
+	else
+	{
+		_UsePrecomputedBBox = false;
+	}
 }
 
 
 void	CParticleSystemShape::getAABBox(NLMISC::CAABBox &bbox) const
 {
-	bbox.setCenter(NLMISC::CVector::Null);
-	bbox.setHalfSize(NLMISC::CVector(1, 1, 1));
+	if (!_UsePrecomputedBBox)
+	{
+		bbox.setCenter(NLMISC::CVector::Null);
+		bbox.setHalfSize(NLMISC::CVector(1, 1, 1));
+	}
+	else
+	{
+		bbox = _PrecomputedBBox;
+	}
 }
 
 
@@ -142,8 +168,6 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 	_ParticleSystemProto.serialPtr(myInstance); // instanciate the system	
 
 	myInstance->setScene(&scene);		
-
-
 
 	return myInstance;
 }

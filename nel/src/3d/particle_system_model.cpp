@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.15 2001/08/15 12:02:38 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.16 2001/08/16 17:07:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -329,42 +329,89 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 			const CVector pos = m->getMatrix().getPos();
 		
 			const CVector d = pos - trav->CamPos;
-			// check wether system not too far		
-			if (d * d > pss->_MaxViewDist * pss->_MaxViewDist) 
+
+
+			// test the shape to see wether we have a precomputed bbox
+
+			if (!pss->_UsePrecomputedBBox)
 			{
-				Visible = false;
-				m->_OutOfFrustum = true;
-				if (pss->_DestroyModelWhenOutOfRange)
+				// check wether system not too far		
+				if (d * d > pss->_MaxViewDist * pss->_MaxViewDist) 
 				{
-					m->invalidate();
-				}			
-				return;
-			}		
-
-
-			m->_OutOfFrustum = false;
-			/// frustum test		
-			for(sint i=0; i < (sint)pyramid.size(); i++)
-			{					
-				if ( (pyramid[i]   *  mat  ) * pos > 0.f ) 
-				{
+					Visible = false;
 					m->_OutOfFrustum = true;
-					if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
+					if (pss->_DestroyModelWhenOutOfRange)
 					{
-						Visible = false;
-						// this system will never be instanciated, so we invalidate it
 						m->invalidate();
-						return;		
+					}			
+					return;
+				}		
+
+				m->_OutOfFrustum = false;
+				/// frustum test		
+				for(sint i=0; i < (sint)pyramid.size(); i++)
+				{					
+					if ( (pyramid[i]   *  mat  ) * pos > 0.f ) 
+					{
+						m->_OutOfFrustum = true;
+						if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
+						{
+							Visible = false;
+							// this system will never be instanciated, so we invalidate it
+							m->invalidate();
+							return;		
+						}
+						break;					
 					}
-					break;					
-				}
-			}			
+				}			
 
-			nlassert(dynamic_cast<CClipTrav*>(Trav));
-			static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
+				nlassert(dynamic_cast<CClipTrav*>(Trav));
+				static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
 
-			Visible = true;		
-			return;
+				Visible = true;		
+				return;
+			}
+			else
+			{
+
+				CPlane farPlane;
+				farPlane.make(trav->CamLook, trav->CamPos + ps->getMaxViewDist() * trav->CamLook);
+				if (!pss->_PrecomputedBBox.clipBack(farPlane  * mat  ))				
+				{
+					Visible = false;
+					m->_OutOfFrustum = true;
+					if (pss->_DestroyModelWhenOutOfRange)
+					{
+						m->invalidate();
+					}			
+					return;
+				}		
+
+				m->_OutOfFrustum = false;
+				/// frustum test		
+				for(sint i=0; i < (sint)pyramid.size(); i++)
+				{					
+					if ( !pss->_PrecomputedBBox.clipBack(pyramid[i]  * mat  ) ) 
+					{
+						m->_OutOfFrustum = true;
+						if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
+						{
+							Visible = false;
+							// this system will never be instanciated, so we invalidate it
+							m->invalidate();
+							return;		
+						}
+						break;					
+					}
+				}			
+
+				nlassert(dynamic_cast<CClipTrav*>(Trav));
+				static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
+
+				Visible = true;		
+				return;
+				
+			}
 		}
 		
 		

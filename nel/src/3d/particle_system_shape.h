@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.10 2001/08/09 08:02:04 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.11 2001/08/16 17:07:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,6 +146,8 @@ protected:
 	float				_MaxViewDist;							// the max view distance of the system, mirror the PS value
 	bool                _DestroyWhenOutOfFrustum;				// mirror the ps value	
 	bool				_DestroyModelWhenOutOfRange;			// mirror the ps value
+	bool				_UsePrecomputedBBox;					// mirror the ps value
+	NLMISC::CAABBox     _PrecomputedBBox;						// mirror the ps value
 
 	
 

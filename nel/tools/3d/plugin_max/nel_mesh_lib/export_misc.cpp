@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.5 2001/07/02 16:30:58 besson Exp $
+ * $Id: export_misc.cpp,v 1.6 2001/08/02 12:17:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -276,29 +276,38 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 					BOOL bRes=FALSE;
 					switch (type)
 					{
-					case TYPE_PCNT_FRAC:
-					case TYPE_FLOAT:
-						bRes=param->GetValue(id, tvTime, *(float*)pValue, ivalid);
+						case TYPE_PCNT_FRAC:
+						case TYPE_FLOAT:
+							bRes=param->GetValue(id, tvTime, *(float*)pValue, ivalid);
 						break;
-					case TYPE_BOOL:
-					case TYPE_INT:
-						bRes=param->GetValue(id, tvTime, *(int*)pValue, ivalid);
+						case TYPE_BOOL:
+						case TYPE_INT:
+							bRes=param->GetValue(id, tvTime, *(int*)pValue, ivalid);
 						break;
-					case TYPE_RGBA:
-					case TYPE_POINT3:
-						bRes=param->GetValue(id, tvTime, *(Point3*)pValue, ivalid);
+						case TYPE_RGBA:
+						case TYPE_POINT3:
+							bRes=param->GetValue(id, tvTime, *(Point3*)pValue, ivalid);
 						break;
-					case TYPE_STRING:
-						//bRes=param->GetValue(id, tvTime, *(TCHAR**)pValue, ivalid);
-						*(std::string*)pValue = param->GetStr(id, tvTime);
+						case TYPE_STRING:
+							*(std::string*)pValue = param->GetStr (id, tvTime);
+							bRes = TRUE;
 						break;
-					case TYPE_STRING_TAB:
+						case TYPE_STRING_TAB:
 						{
 							std::vector<std::string> &rTab = *(std::vector<std::string>*)pValue;
-							uint total = param->Count(id);
+							uint total = param->Count (id);
 							rTab.resize(total);
 							for( uint i = 0; i < total; ++i )
-								rTab[i] = param->GetStr(id, tvTime, i);
+								rTab[i] = param->GetStr (id, tvTime, i);
+						}
+						break;
+						case TYPE_BOOL_TAB:
+						{
+							std::vector<bool> &rTab = *(std::vector<bool>*)pValue;
+							uint total = param->Count (id);
+							rTab.resize(total);
+							for( uint i = 0; i < total; ++i )
+								rTab[i] = param->GetInt(id, tvTime, i) ? true : false;
 						}
 						break;
 					}

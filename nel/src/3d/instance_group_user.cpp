@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.5 2001/07/30 14:40:14 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.6 2001/08/02 12:19:40 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,6 +141,17 @@ void CInstanceGroupUser::removeFromScene (class UScene& scene)
 uint CInstanceGroupUser::getNumInstance () const
 {
 	return _InstanceGroup.getNumInstance ();
+}
+
+// ***************************************************************************
+
+const std::string& CInstanceGroupUser::getShapeName (uint instanceNb) const
+{
+	// Check args
+	if (instanceNb>=_InstanceGroup.getNumInstance ())
+		nlerror("getShapeName*(): bad instance Id");
+	
+	return _InstanceGroup.getShapeName (instanceNb);
 }
 
 // ***************************************************************************

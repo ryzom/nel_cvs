@@ -251,13 +251,13 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 // Dialog
 //
 
-IDD_NODE_PROPERTIES DIALOG DISCARDABLE  0, 0, 183, 370
+IDD_NODE_PROPERTIES DIALOG DISCARDABLE  0, 0, 183, 409
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Node properties"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,7,349,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,126,349,50,14
+    DEFPUSHBUTTON   "OK",IDOK,7,388,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,126,388,50,14
     GROUPBOX        "LOD root properties",IDC_STATIC,5,5,172,85
     LTEXT           "List of lod mesh (ungrowing order):",IDC_STATIC,15,15,
                     108,10,SS_CENTERIMAGE
@@ -302,19 +302,24 @@ BEGIN
     LTEXT           "Dist coarsest:",IDC_STATIC,80,235,45,13,SS_CENTERIMAGE
     EDITTEXT        IDC_DIST_COARSEST,125,235,45,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    GROUPBOX        "Accelerator properties",IDC_STATIC,7,264,169,81
+    GROUPBOX        "Accelerator properties",IDC_STATIC,7,259,169,81
     CONTROL         "Not an accelerator",IDC_RADIOACCELNO,"Button",
-                    BS_AUTORADIOBUTTON,15,276,75,10
+                    BS_AUTORADIOBUTTON,15,271,75,10
     CONTROL         "Portal",IDC_RADIOACCELPORTAL,"Button",
-                    BS_AUTORADIOBUTTON,15,287,34,10
+                    BS_AUTORADIOBUTTON,15,282,34,10
     CONTROL         "Cluster",IDC_RADIOACCELCLUSTER,"Button",
-                    BS_AUTORADIOBUTTON,15,309,37,10
+                    BS_AUTORADIOBUTTON,15,304,37,10
     CONTROL         "Father visible",IDC_FATHER_VISIBLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,37,320,57,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,37,315,57,10
     CONTROL         "Visible from father",IDC_VISIBLE_FROM_FATHER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,37,331,71,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,37,326,71,10
     CONTROL         "Dynamic Portal",IDC_DYNAMIC_PORTAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,37,298,63,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,37,293,63,10
+    GROUPBOX        "Game Dev Infos",IDC_STATIC,7,344,169,40
+    LTEXT           "Name",IDC_STATIC,13,357,20,8
+    EDITTEXT        IDC_EDIT_INSTANCE_NAME,37,355,132,14,ES_AUTOHSCROLL
+    CONTROL         "Don't add to scene",IDC_DONT_ADD_TO_SCENE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,370,76,10
 END
 
 
@@ -331,7 +336,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 176
         TOPMARGIN, 7
-        BOTTOMMARGIN, 363
+        BOTTOMMARGIN, 402
     END
 END
 #endif    // APSTUDIO_INVOKED

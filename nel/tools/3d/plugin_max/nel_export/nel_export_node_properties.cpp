@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.4 2001/07/31 09:21:44 besson Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.5 2001/08/02 12:18:43 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,8 @@ public:
 										// 3rd bit -> Father visible
 										// 4th bit -> Visible from father
 										// 5th bit -> Dynamic Portal
+	std::string				InstanceName;
+	int						DontAddToScene;
 };
 
 // ***************************************************************************
@@ -235,6 +237,17 @@ int CALLBACK LodDialogCallback (
 				EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
 			}
 
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), currentParam->InstanceName.c_str());
+			if (currentParam->DontAddToScene != -1)
+			{
+				EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), true);
+				SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
+			}
+			else
+			{
+				EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), false);
+			}
+
 			// Move dialog
 			RECT windowRect, desktopRect;
 			GetWindowRect (hwndDlg, &windowRect);
@@ -317,6 +330,10 @@ int CALLBACK LodDialogCallback (
 								currentParam->AccelType |= 8;
 							if (IsDlgButtonChecked (hwndDlg, IDC_DYNAMIC_PORTAL) == BST_CHECKED)
 								currentParam->AccelType |= 16;
+
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), tmp, 512);
+							currentParam->InstanceName=tmp;
+							currentParam->DontAddToScene=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_GETCHECK, 0, 0);
 							
 							// Quit
 							EndDialog(hwndDlg, IDOK);
@@ -531,6 +548,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		}
 		param.AccelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 0);
 
+		param.InstanceName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
+		param.DontAddToScene=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0);
+		
+
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
 		ite++;
@@ -570,6 +591,11 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 0)!=param.AccelType)
 				param.AccelType = -1;
+
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0)!=param.DontAddToScene)
+				param.DontAddToScene = -1;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "")!=param.InstanceName)
+				param.InstanceName = "";
 
 			// Get name count for this node
 			std::list<std::string> tmplist;
@@ -636,6 +662,11 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 				if (param.AccelType != -1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, param.AccelType);
+
+				if (param.InstanceName != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);
+				if (param.DontAddToScene != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, param.DontAddToScene);
 
 				if (param.ListActived)
 				{

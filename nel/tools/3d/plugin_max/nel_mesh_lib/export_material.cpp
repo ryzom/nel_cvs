@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.13 2001/07/11 08:24:59 besson Exp $
+ * $Id: export_material.cpp,v 1.14 2001/08/02 12:17:56 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,9 +140,19 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	/// TODO: Only one texture for the time. Add multitexture support, and shaders support.
 
 	// Look for a diffuse texmap
-	Texmap* pDifTexmap=mtl.GetSubTexmap(ID_DI);
-	Texmap* pOpaTexmap=mtl.GetSubTexmap(ID_OP);
-	Texmap* pSpeTexmap=mtl.GetSubTexmap(ID_SP);
+	vector<bool> mapEnables;
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "mapEnables", (ParamType2)TYPE_BOOL_TAB, &mapEnables, tvTime);
+
+	Texmap *pDifTexmap = NULL;
+	Texmap *pOpaTexmap = NULL;
+	Texmap *pSpeTexmap = NULL;
+
+	if (mapEnables[ID_DI])
+		pDifTexmap = mtl.GetSubTexmap (ID_DI);
+	if (mapEnables[ID_OP])
+		pOpaTexmap = mtl.GetSubTexmap (ID_OP);
+	if (mapEnables[ID_SP])
+		pSpeTexmap = mtl.GetSubTexmap (ID_SP);
 
 	// Is there a lightmap handling wanted
 	int bLightMap = 0; // false
@@ -270,7 +280,22 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 			for( int i = 0; i< (int)names.size(); ++i )
 			{
 				CTextureFile *pT = new CTextureFile;
-				pT->setFileName(names[i]);
+
+				char sFileName[512];
+				strcpy(sFileName, names[i].c_str());
+				if (!absolutePath)
+				{
+					// Decompose bitmap file name
+					char sName[256];
+					char sExt[256];
+					_splitpath (sFileName, NULL, NULL, sName, sExt);
+					// Make the final path
+					_makepath (sFileName, NULL, NULL, sName, sExt);
+				}
+
+				// Set the file name
+				pT->setFileName(sFileName);
+
 				pTextureCube->setTexture(tfNewOrder[i], pT);
 			}
 		}

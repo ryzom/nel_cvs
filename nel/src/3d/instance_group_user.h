@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.2 2001/07/30 14:40:14 besson Exp $
+ * $Id: instance_group_user.h,v 1.3 2001/08/02 12:19:40 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,7 @@ private:
 	void addToScene (class UScene& scene);
 	void removeFromScene (class UScene& scene);
 	uint getNumInstance () const;
+	const std::string& getShapeName (uint instanceNb) const;
 	const std::string& getInstanceName (uint instanceNb) const;
 	const NLMISC::CVector& getInstancePos (uint instanceNb) const;
 	const NLMISC::CQuat& getInstanceRot (uint instanceNb) const;

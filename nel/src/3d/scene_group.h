@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.2 2001/07/30 14:40:14 besson Exp $
+ * $Id: scene_group.h,v 1.3 2001/08/02 12:19:40 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 	class CInstance
 	{
 	public:
-		/// Name of the instance
+		/// Name of the Shape Instance
 		std::string Name;
 
 		/// The parent instance (-1 if root)
@@ -87,6 +87,10 @@ public:
 		NLMISC::CVector Pos;
 		NLMISC::CVector Scale;
 
+		// Name of the instance
+		std::string InstanceName;
+		bool DontAddToScene;
+
 		/// Serial the instance
 		void serial (NLMISC::IStream& f);
 	};
@@ -99,7 +103,10 @@ public:
 	/// Get number of instance in this group
 	uint getNumInstance () const;
 
-	/// Get an instance name (the name of the mesh referenced)
+	/// Get the name of the mesh referenced
+	const std::string& getShapeName (uint instanceNb) const;
+
+	/// Get the instance name
 	const std::string& getInstanceName (uint instanceNb) const;
 
 	/// Get an instance position

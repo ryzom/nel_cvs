@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.8 2001/07/30 14:40:14 besson Exp $
+ * $Id: scene_group.cpp,v 1.9 2001/08/02 12:19:40 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,10 +44,17 @@ namespace NL3D
 void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 {
 	// Serial a version number
-	sint version=f.serialVersion (1);
+	sint version=f.serialVersion (2);
+
+	// Serial the gamedev data
+	if (version >= 2)
+	{
+		f.serial (InstanceName);
+		f.serial (DontAddToScene);
+	}
 
 	// Serial the clusters
-	if( version >= 1 )
+	if (version >= 1)
 		f.serialCont (Clusters);
 
 	// Serial the name
@@ -79,10 +86,18 @@ uint CInstanceGroup::getNumInstance () const
 
 // ***************************************************************************
 
-const string& CInstanceGroup::getInstanceName (uint instanceNb) const
+const string& CInstanceGroup::getShapeName (uint instanceNb) const
 {
 	// Return the name of the n-th instance
 	return _InstancesInfos[instanceNb].Name;
+}
+
+// ***************************************************************************
+
+const string& CInstanceGroup::getInstanceName (uint instanceNb) const
+{
+	// Return the name of the n-th instance
+	return _InstancesInfos[instanceNb].InstanceName;
 }
 
 // ***************************************************************************
@@ -256,24 +271,32 @@ bool CInstanceGroup::addToScene (CScene& scene)
 	// Creation and positionning of the new instance
 
 	vector<CInstance>::iterator it = _InstancesInfos.begin();
+
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
-		CInstance &rInstanceInfo = *it;
-
-		_Instances[i] = scene.createInstance (rInstanceInfo.Name + ".shape");
-
-		if( _Instances[i] == NULL )
+		if (!_InstancesInfos[i].DontAddToScene)
 		{
-			printf("Not found %s.shape file\n", rInstanceInfo.Name.c_str());
-			nlstop;
+			CInstance &rInstanceInfo = *it;
+
+			_Instances[i] = scene.createInstance (rInstanceInfo.Name + ".shape");
+
+			if( _Instances[i] == NULL )
+			{
+				printf("Not found %s.shape file\n", rInstanceInfo.Name.c_str());
+				nlstop;
+			}
+		
+			if (_Instances[i])
+			{
+				_Instances[i]->setPos (rInstanceInfo.Pos);
+				_Instances[i]->setRotQuat (rInstanceInfo.Rot);
+				_Instances[i]->setScale (rInstanceInfo.Scale);
+				_Instances[i]->setPivot (CVector::Null);
+			}
 		}
-	
-		if (_Instances[i])
+		else
 		{
-			_Instances[i]->setPos (rInstanceInfo.Pos);
-			_Instances[i]->setRotQuat (rInstanceInfo.Rot);
-			_Instances[i]->setScale (rInstanceInfo.Scale);
-			_Instances[i]->setPivot (CVector::Null);
+			_Instances[i] = NULL;
 		}
 	}
 
@@ -287,6 +310,7 @@ bool CInstanceGroup::addToScene (CScene& scene)
 	}
 	it = _InstancesInfos.begin();
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
+	if (!_InstancesInfos[i].DontAddToScene)
 	{
 		CInstance &rInstanceInfo = *it;
 		if( rInstanceInfo.nParent != -1 ) // Is the instance get a parent
@@ -331,6 +355,8 @@ bool CInstanceGroup::addToScene (CScene& scene)
 
 	// Link shapes to clusters
 	for (i = 0; i < _Instances.size(); ++i)
+	if (!_InstancesInfos[i].DontAddToScene)
+	{
 		if (_InstancesInfos[i].Clusters.size() > 0)
 		{
 			pClipTrav->unlink (NULL, _Instances[i]);
@@ -345,6 +371,7 @@ bool CInstanceGroup::addToScene (CScene& scene)
 			// Moreover we must set their clustersystem they will be tested against
 			_Instances[i]->setClusterSystem (_ClusterSystem);
 		}
+	}
 	_Root->freeze();
 
 	// HRC OBS like

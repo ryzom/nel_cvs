@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: driver_opengl_light.cpp,v 1.3 2001/08/02 12:19:40 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D
 void	CDriverGL::setLight (uint8 num, const CLight& light)
 {
 	// Check light count is good
-	nlassert (num<_MaxDriverLight);
+//	nlassert (num<_MaxDriverLight);
 	
 	// Set the light
 	if (num<_MaxDriverLight)
@@ -122,7 +122,7 @@ void	CDriverGL::setLight (uint8 num, const CLight& light)
 void	CDriverGL::enableLight (uint8 num, bool enable)
 {
 	// Check light count is good
-	nlassert (num<_MaxDriverLight);
+//	nlassert (num<_MaxDriverLight);
 
 	// Enable glLight
 	if (num<_MaxDriverLight)

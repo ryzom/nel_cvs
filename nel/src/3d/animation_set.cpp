@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.4 2001/03/08 13:35:36 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.5 2001/03/08 13:40:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/animation_set.h"
+#include "nel/misc/stream.h"
 
 
 namespace NL3D 
@@ -81,5 +82,24 @@ void CAnimationSet::build ()
 }
 
 // ***************************************************************************
+
+void CAnimationSet::serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+{
+	// Serial an header
+	f.serialCheck ((uint32)"_LEN");
+	f.serialCheck ((uint32)"MINA");
+	f.serialCheck ((uint32)"TES_");
+
+	// Serial a version
+	sint version=f.serialVersion (0);
+
+	// Serial the class
+	f.serialCont (_Animation);
+	f.serialMap (_ChannelIdByName);
+	f.serialMap (_AnimationIdByName);
+}
+
+// ***************************************************************************
+
 
 } // NL3D

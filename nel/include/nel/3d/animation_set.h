@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.6 2001/03/08 13:35:36 corvazier Exp $
+ * $Id: animation_set.h,v 1.7 2001/03/08 13:40:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,11 @@
 #include <string>
 #include <vector>
 
+namespace NLMISC
+{
+class IStream;
+struct EStream;
+}
 
 namespace NL3D {
 
@@ -115,6 +120,9 @@ public:
 	  * When all animations are built, call this method to finlize the set.
 	  */
 	void build ();
+
+	/// Serial the template
+	void serial (NLMISC::IStream& f) throw (NLMISC::EStream);
 
 private:
 	std::vector <CAnimation>		_Animation;

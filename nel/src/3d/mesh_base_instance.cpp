@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.8 2002/04/12 16:19:49 vizerie Exp $
+ * $Id: mesh_base_instance.cpp,v 1.9 2002/06/24 17:13:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,15 +169,6 @@ bool		CMeshBaseInstance::isLightable() const
 
 
 // ***************************************************************************
-void CMeshBaseInstance::selectTextureSet(uint index)
-{
-	for (std::vector<CMaterial>::iterator it = Materials.begin(); it != Materials.end(); ++it)
-	{
-		it->selectTextureSet(index);
-	}
-}
-
-// ***************************************************************************
 
 void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
 {
@@ -250,5 +241,26 @@ void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
 
 
 // ***************************************************************************
+void CMeshBaseInstance::selectTextureSet(uint id)
+{
+	nlassert(Shape);
+	CMeshBase *mb = NLMISC::safe_cast<CMeshBase *>((IShape *) Shape);
+	const uint numMat = mb->getNbMaterial();
+	nlassert(numMat == Materials.size());
+	// see which material are selectable
+	for(uint k = 0; k < numMat; ++k)
+	{
+		CMaterial &mat = mb->getMaterial(k);
+		for(uint l = 0; l < IDRV_MAT_MAXTEXTURES; ++l)
+		{
+			if (mat.getTexture(l) && mat.getTexture(l)->isSelectable())
+			{
+				Materials[k].setTexture(l, mat.getTexture(l)->buildNonSelectableVersion(id));
+			}
+		}
+	}
+
+}
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.11 2002/04/12 16:19:49 vizerie Exp $
+ * $Id: mesh_base.h,v 1.12 2002/06/24 17:13:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,11 @@ public:
 	}
 
 	/// Get a material
+	CMaterial& getMaterial(uint id)
+	{
+		return _Materials[id];
+	}
+	/// Get a material, const version
 	const CMaterial& getMaterial(uint id) const
 	{
 		return _Materials[id];

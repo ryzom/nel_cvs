@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.12 2002/06/10 14:02:47 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.13 2002/06/24 17:13:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,11 +130,7 @@ public:
 
 	/// Lighting behavior. return true if mesh!=NULL and if not all lightMapped.
 	virtual bool		isLightable() const;
-
-
-	/// Select a texture set for this mesh (if available)
-	void selectTextureSet(uint index);
-
+	
 
 	/// Get the scene which owns this instance.
 	CScene				*getScene() const {return _OwnerScene;}
@@ -148,6 +144,9 @@ public:
 	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
 	 */
 	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest) {}
+
+	/// If there are selectable texture in this mesh shape, this replace the matching material instances with the right texture	
+	void selectTextureSet(uint id);
 
 
 protected:

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.173 2004/05/17 12:44:40 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.174 2004/06/07 17:29:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -201,7 +201,6 @@ public:
 	uint16					VertexFormat;
 	uint16					VertexSize;
 	uint32					NumVertices;
-	uint32					NumWeight;	
 	CVertexBuffer::TType	Type[CVertexBuffer::NumValue];
 	uint8					UVRouting[CVertexBuffer::MaxStage];
 

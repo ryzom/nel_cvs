@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.49 2004/05/14 15:05:09 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.50 2004/06/07 17:29:48 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1509,7 +1509,6 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	VertexFormat= flags;
 	VertexSize= vb.getVertexSize();
 	NumVertices= vb.getNumVertices();
-	NumWeight= vb.getNumWeight();	
 
 	// Lock the buffer
 	CVertexBufferReadWrite access;

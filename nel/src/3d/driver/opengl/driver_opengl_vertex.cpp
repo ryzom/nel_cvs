@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.51 2004/07/21 12:18:02 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.52 2004/08/03 16:31:06 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -621,28 +621,31 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 	if (VB.VertexFormat & (CVertexBuffer::TexCoord0Flag<<uvId))
 	{
 		// Check type, if not supported, just ignore
-		if (VB.Type[CVertexBuffer::TexCoord0+uvId]==CVertexBuffer::Float2)
+		CVertexBuffer::TType uvType = VB.Type[CVertexBuffer::TexCoord0+uvId];
+		if (uvType == CVertexBuffer::Float2 || 
+			uvType == CVertexBuffer::Float3)
 		{
 			_DriverGLStates.enableTexCoordArray(true);
+			uint numTexCoord = (uvType == CVertexBuffer::Float2) ? 2 : 3;
 			// Setup ATI VBHard or std ptr.
 			switch(VB.VBMode)
 			{
 				case CVertexBufferInfo::HwATI: 
-					nglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, 2, GL_FLOAT, VB.VertexSize, VB.VertexObjectId, 
+					nglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, numTexCoord, GL_FLOAT, VB.VertexSize, VB.VertexObjectId, 
 						              (uint) VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
 				break;
 				case CVertexBufferInfo::HwARB:
 					_DriverGLStates.bindARBVertexBuffer(VB.VertexObjectId);
 					// with arb buffers, position is relative to the start of the stream
-					glTexCoordPointer(2,GL_FLOAT,VB.VertexSize, VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
+					glTexCoordPointer(numTexCoord,GL_FLOAT,VB.VertexSize, VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
 				break;
 				case CVertexBufferInfo::SysMem:
 				case CVertexBufferInfo::HwNVIDIA:
-					glTexCoordPointer(2,GL_FLOAT,VB.VertexSize, VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
+					glTexCoordPointer(numTexCoord,GL_FLOAT,VB.VertexSize, VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
 				break;
 			}			
 		}
-		else
+		else		
 		{
 			_DriverGLStates.enableTexCoordArray(false);
 		}

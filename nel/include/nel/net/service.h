@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.47 2002/03/26 09:43:19 lecroart Exp $
+ * $Id: service.h,v 1.48 2002/03/28 17:45:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -378,6 +378,12 @@ private:
 	TUnifiedCallbackItem				*_CallbackArray5;
 	TCallbackItem						*_CallbackArray;
 	uint								_CallbackArraySize;
+
+	/// true if the service don't use the naming service
+	bool								_DontUseNS;
+	/// true if the service don't use the admin executor service
+	bool								_DontUseAES;
+
 
 	//@}
 

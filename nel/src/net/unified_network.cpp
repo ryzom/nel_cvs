@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.35 2002/03/25 09:22:22 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.36 2002/03/28 17:45:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -421,7 +421,8 @@ void	CUnifiedNetwork::release()
 	_Callbacks.clear();
 
 	// disconnect the connection with the naming service
-	CNamingClient::disconnect ();
+	if (CNamingClient::connected ())
+		CNamingClient::disconnect ();
 }
 
 void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, bool sendId, bool external, uint16 sid, bool autoRetry)

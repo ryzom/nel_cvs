@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.5 2001/11/13 11:58:42 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.6 2001/11/13 13:05:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -253,15 +253,22 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 	CCallbackClient	*cbc = new CCallbackClient();
 	cbc->setDisconnectionCallback(cbDisconnection, NULL);
 	cbc->setDefaultCallback(cbMsgProcessing);
+
+	bool	connectSuccess = false;
+
 	try
 	{
 		cbc->connect(addr);
 		cbc->getSockId()->setAppId(sid);
+		connectSuccess = true;
 	}
 	catch (ESocketConnectionFailed &e)
 	{
-		nlinfo ("L5: can't connect to %s (sid %u) now (%s)", name.c_str(), sid, e.what ());
+		nlwarning ("L5: can't connect to %s (sid %u) now (%s)", name.c_str(), sid, e.what ());
 	}
+
+	if (!connectSuccess && !autoRetry)
+		return;
 
 	{
 		CRWSynchronized<TNameMappedConnection>::CWriteAccessor				nameAccess(&_NamedCnx);
@@ -281,29 +288,33 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 		cnx.IsExternal = external;
 		cnx.AutoRetry = autoRetry;
 		cnx.ExtAddress = addr;
+		cnx.SendId = sendId;
 	}
 
-	if (sendId)
+	if (connectSuccess)
 	{
-		// send identification to the service
-		CMessage	msg("UN_SIDENT");
-		uint16		ssid = _SId;
-		msg.serial(_Name);
-		msg.serial(ssid);	// serializes a 16 bits service id
-		send(name, msg);
-	}
+		if (sendId)
+		{
+			// send identification to the service
+			CMessage	msg("UN_SIDENT");
+			uint16		ssid = _SId;
+			msg.serial(_Name);
+			msg.serial(ssid);	// serializes a 16 bits service id
+			send(name, msg);
+		}
 
-	// call the connection callback associated to this service
-	TNameMappedCallback::iterator	itcb = _UpCallbacks.find(name);
-	if (itcb != _UpCallbacks.end() && (*itcb).second.first != NULL)
-	{
-		TUnifiedNetCallback	cb = (*itcb).second.first;
-		cb(name, sid, (*itcb).second.second);
-	}
+		// call the connection callback associated to this service
+		TNameMappedCallback::iterator	itcb = _UpCallbacks.find(name);
+		if (itcb != _UpCallbacks.end() && (*itcb).second.first != NULL)
+		{
+			TUnifiedNetCallback	cb = (*itcb).second.first;
+			cb(name, sid, (*itcb).second.second);
+		}
 
-	if (_UpUniCallback.first != NULL)
-	{
-		_UpUniCallback.first(name, sid, _UpUniCallback.second);
+		if (_UpUniCallback.first != NULL)
+		{
+			_UpUniCallback.first(name, sid, _UpUniCallback.second);
+		}
 	}
 }
 
@@ -366,6 +377,29 @@ void	CUnifiedNetwork::updateConnectionTable()
 		{
 			cnx.Connection.CbClient->connect(cnx.ExtAddress);
 			cnx.IsConnected = true;
+
+			if (cnx.SendId)
+			{
+				// send identification to the service
+				CMessage	msg("UN_SIDENT");
+				uint16		ssid = _SId;
+				msg.serial(_Name);
+				msg.serial(ssid);	// serializes a 16 bits service id
+				send(cnx.ServiceName, msg);
+			}
+
+			// call the connection callback associated to this service
+			TNameMappedCallback::iterator	itcb = _UpCallbacks.find(cnx.ServiceName);
+			if (itcb != _UpCallbacks.end() && (*itcb).second.first != NULL)
+			{
+				TUnifiedNetCallback	cb = (*itcb).second.first;
+				cb(cnx.ServiceName, cnx.ServiceId, (*itcb).second.second);
+			}
+
+			if (_UpUniCallback.first != NULL)
+			{
+				_UpUniCallback.first(cnx.ServiceName, cnx.ServiceId, _UpUniCallback.second);
+			}
 		}
 		catch (ESocketConnectionFailed &e)
 		{

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.5 2001/11/13 11:58:42 lecroart Exp $
+ * $Id: unified_network.h,v 1.6 2001/11/13 13:05:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,6 +203,8 @@ private:
 		bool					IsExternal;
 		/// Auto-retry mode
 		bool					AutoRetry;
+		/// Auto identify at connection
+		bool					SendId;
 		/// The external connection address
 		CInetAddress			ExtAddress;
 		/// The connection

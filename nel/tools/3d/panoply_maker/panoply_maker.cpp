@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.10 2002/06/10 09:54:39 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.11 2002/06/24 08:44:09 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -483,7 +483,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 			outputFileName += bi.DefaultSeparator + bi.ColorMasks[maskID].CMs[colorID].ColID;
 		}
 		
-		nlwarning("--- writing %s", outputFileName.c_str());
+		nlwarning("Writing %s", outputFileName.c_str());
 		/// Save the result. We let propagate exceptions (if there's no more space disk it useless to continue...)
 		{
 			try

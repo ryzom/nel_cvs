@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.29 2003/01/03 16:42:53 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.30 2003/01/03 17:06:43 lecroart Exp $
  *
  */
 
@@ -1488,32 +1488,37 @@ uint64 getSystemNetwork (uint col)
 	if (col > 15)
 		return 0;
 
-    char buffer[4096+1];
-    int fd, len;
-    char *p;
-	
-	fd = open("/proc/net/dev", O_RDONLY);
-	len = read(fd, buffer, sizeof(buffer)-1);
-	close(fd);
-	buffer[len] = '\0';
-
-	p = strchr(buffer, '\n')+1;
-	p = strchr(p, '\n')+1;
-	
-	uint64 val = 0;
-	while (true)
+	int fd = open("/proc/net/dev", O_RDONLY);
+	if (fd == -1)
 	{
-		p = strchr(p, ':');
-		if (p == NULL)
-			break;
-		p++;
-		for (uint i = 0; i < col; i++)
-		{
-			p = skipToken(p);
-		}
-		val += strtoul(p, &p, 10);
+		nlwarning ("Can't get OS from /proc/net/dev: %s", strerror (errno));
+		return 0;
 	}
-	return val;
+	else
+	{
+		char buffer[4096+1];
+		int len = read(fd, buffer, sizeof(buffer)-1);
+		close(fd);
+		buffer[len] = '\0';
+
+		char *p = strchr(buffer, '\n')+1;
+		p = strchr(p, '\n')+1;
+
+		uint64 val = 0;
+		while (true)
+		{
+			p = strchr(p, ':');
+			if (p == NULL)
+				break;
+			p++;
+			for (uint i = 0; i < col; i++)
+			{
+				p = skipToken(p);
+			}
+			val += strtoul(p, &p, 10);
+		}
+		return val;
+	}
 }
 
 NLMISC_DYNVARIABLE(uint64, NetBytesSent, "Amount of bytes sent to all networks cards in bytes")

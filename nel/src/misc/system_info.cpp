@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.12 2003/01/03 15:24:33 lecroart Exp $
+ * $Id: system_info.cpp,v 1.13 2003/01/03 17:04:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #	include <sys/stat.h>
 #	include <fcntl.h>
 #	include <unistd.h>
+#	include <errno.h>
 #endif
 
 #include "nel/misc/system_info.h"
@@ -135,17 +136,23 @@ string CSystemInfo::getOS ()
 
 #elif defined NL_OS_UNIX
 
-    char buffer[4096+1];
-    int fd, len;
-    char *p;
+	int fd = open("/proc/version", O_RDONLY);
+	if (fd == -1)
+	{
+		nlwarning ("Can't get OS from /proc/version: %s", strerror (errno));
+	}
+	else
+	{
+		char buffer[4096+1];
+		int len = read(fd, buffer, sizeof(buffer)-1);
+		close(fd);
+		
+		// remove the \n and set \0
+		buffer[len-1] = '\0';
+		
+		OSString = buffer;
+	}
 	
-	fd = open("/proc/version", O_RDONLY);
-	len = read(fd, buffer, sizeof(buffer)-1);
-	close(fd);
-	buffer[len] = '\0';
-
-	OSString = buffer;
-
 #endif	// NL_OS_UNIX
 
 	return OSString;
@@ -403,23 +410,22 @@ uint32 getSystemMemory (uint col)
 {
 	if (col > 5)
 		return 0;
-
-    char buffer[4096+1];
-    int fd, len;
-    char *p;
 	
-    /* get system wide memory usage */
-    {
-		char *p;
-		
-		fd = open("/proc/meminfo", O_RDONLY);
-		len = read(fd, buffer, sizeof(buffer)-1);
+	int fd = open("/proc/meminfo", O_RDONLY);
+	if (fd == -1)
+	{
+		nlwarning ("Can't get OS from /proc/meminfo: %s", strerror (errno));
+		return 0;
+	}
+	else
+	{
+		char buffer[4096+1];
+		int len = read(fd, buffer, sizeof(buffer)-1);
 		close(fd);
 		buffer[len] = '\0';
-		
-		/* be prepared for extra columns to appear be seeking
-		to ends of lines */
-		p = strchr(buffer, '\n');
+			
+		/* be prepared for extra columns to appear be seeking to ends of lines */
+		char *p = strchr(buffer, '\n');
 		p = skipToken(p);			/* "Mem:" */
 		for (uint i = 0; i < col; i++)
 		{

@@ -190,18 +190,13 @@ namespace NLAIAGENT
 
 	void COperatorScript::checkPause()
 	{
-		if ( _OnActivateIndex != -1 ) 					// if found, runs the script's OnActivate() function declared in the operator class
+		if ( (_CurrentGoal != NULL) )
 		{
-			if ( getAgentManager() != NULL )
-			{
-				NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
-				context->Self = this;
-				runMethodeMember( _OnActivateIndex , context);
-				_OnActivateIndex = -1;
-			}
+			if ( (_IsPaused == false) && !_CurrentGoal->isSelected() )
+				pause();
+			if ( (_IsPaused == true)  && _CurrentGoal->isSelected() )
+				restart();
 		}
-		else
-			onActivate();								// Otherwise runs the C++ virtual one (inherited from CActorScript)
 	}
 
 	// This function selects a goals among the ones the operator can process

@@ -84,6 +84,23 @@ namespace NLAILOGIC
 		return NULL;
 	}
 
+	void CFactBase::addFact(CFact *f)
+	{
+		IBaseAssert *assert = findAssert( f->getAssertName(), f->size() );
+		// Si non la créer
+		if ( !assert )
+		{
+			if ( f->size() == 0 )
+				_Asserts.push_back( assert = new CBoolAssert( f->getAssertName() ) );	// 0 order assert
+			else
+			{
+				CStringVarName x((CStringVarName &)f->getAssertName());
+				_Asserts.push_back( assert = new CFirstOrderAssert(x) );	// First order assert
+				assert->addFact( f );
+			}
+		}
+	}
+
 	void CFactBase::addFact(IVarName &a_name , CValueSet *fp)
 	{
 		// Est-ce que l'assertion existe déja?

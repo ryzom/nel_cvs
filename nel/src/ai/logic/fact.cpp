@@ -28,6 +28,7 @@ namespace NLAILOGIC
 
 	CFact::CFact() : CValueSet()
 	{
+		_Assert = NULL;
 		_AssertName = NULL;
 	}	
 
@@ -46,6 +47,7 @@ namespace NLAILOGIC
 
 	CFact::CFact(IBaseAssert *a, bool v) : CValueSet(1)
 	{
+		_Assert = a;
 		_Values[0] = new CBoolType(v);
 		_AssertName = NULL;
 	}
@@ -68,6 +70,7 @@ namespace NLAILOGIC
 	CFact::CFact(NLAIAGENT::IVarName &name) : CValueSet()
 	{
 		_AssertName = (NLAIAGENT::IVarName *) name.clone();
+		_Assert = NULL;
 	}
 
 	CFact::CFact(sint32 i,NLAIAGENT::IVarName *a) : CValueSet(i )
@@ -80,15 +83,19 @@ namespace NLAILOGIC
 	CFact::CFact(NLAIAGENT::IVarName &a, CValueSet *vals) : CValueSet( *vals )
 	{
 		_AssertName = (NLAIAGENT::IVarName *) a.clone();
+		_Assert = NULL;
 	}
 
 	CFact::CFact(NLAIAGENT::IVarName &a, bool v) : CValueSet(1)
 	{
 		_Values[0] = new CBoolType(v);
+		_AssertName = (NLAIAGENT::IVarName *) a.clone();
+		_Assert = NULL;
 	}
 
 	CFact::CFact(NLAIAGENT::IVarName &a, CVarSet *vars) : CValueSet( vars->size() )
 	{
+		_Assert = NULL;
 		std::list<IObjetOp *> *vals = vars->getValues();
 		std::list<IObjetOp *>::iterator it_v = vals->begin();
 		while ( it_v != vals->end() )
@@ -111,6 +118,11 @@ namespace NLAILOGIC
 	IBaseAssert *CFact::getAssert() 
 	{
 		return _Assert;
+	}
+
+	NLAIAGENT::IVarName &CFact::getAssertName()
+	{
+		return *_AssertName;
 	}
 
 	void CFact::getDebugString(std::string &txt) const
@@ -259,6 +271,7 @@ namespace NLAILOGIC
 			_AssertName = (NLAIAGENT::IVarName *) fact._AssertName->clone();
 		else
 			_AssertName = NULL;
+		_Assert = fact._Assert;
 	}
 
 	const NLAIC::IBasicType *CFact::clone() const

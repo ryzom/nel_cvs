@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.h
  * Face look at particles.
  *
- * $Id: ps_face_look_at.h,v 1.4 2003/08/22 08:57:42 vizerie Exp $
+ * $Id: ps_face_look_at.h,v 1.5 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,7 @@ class CPSFaceLookAt;
  *  These particles can have 2 different size (width and height) when activated
  */
 class CPSFaceLookAt :   public CPSQuad, public CPSRotated2DParticle
-					{
+{
 public:
 	/** create the face look at by giving a texture. This can't be a CTextureGrouped (for animation)
      * animation must be set later by using setTextureScheme

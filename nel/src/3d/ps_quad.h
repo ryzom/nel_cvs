@@ -1,7 +1,7 @@
 /** \file ps_quad.h
  * Base quads particles.
  *
- * $Id: ps_quad.h,v 1.4 2004/01/13 18:34:44 cado Exp $
+ * $Id: ps_quad.h,v 1.5 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ class IDriver;
 			   , public CPSMultiTexturedParticle
 			   , public CPSSizedParticle
 			   , public CPSMaterial
- {
+{
 public:
 	/** create the quad by giving a texture. This can't be a CTextureGrouped (for animation)
 	* animation must be set later by using setTextureScheme
@@ -69,6 +69,9 @@ public:
 
 	// from CPSParticle
 	virtual bool supportGlobalColorLighting() const { return true; }
+
+	// from CPSLocatedBindable
+	virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
 
 protected:		
 	// dtor

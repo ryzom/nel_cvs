@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.29 2003/11/25 14:37:15 vizerie Exp $
+ * $Id: ps_located.h,v 1.30 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -566,6 +566,9 @@ public:
 
 	// from CParticleSystemProcess
 	 virtual uint	getUserMatrixUsageCount() const;	
+
+	 // from CPSProcess
+	 virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
 	
 protected:
 
@@ -951,6 +954,10 @@ public:
 	// returns the number of sub-objects (including this one, that requires the user matrix for its computations)
 	virtual bool			getUserMatrixUsageCount() const { return 0; }
 
+	// enum tex used by the object, and append them to dest
+	virtual	void			enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv) {}
+	
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1084,7 +1091,8 @@ public:
 	void				serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	/// Finalize this object : the default is to call releaseTargetRsc on targets
 	virtual void		finalize(void);
-	virtual				~CPSTargetLocatedBindable();
+	virtual				~CPSTargetLocatedBindable();	
+	
 protected:
 	/** Inherited from CPSLocatedBindable. A target has been remove If not present -> assert
 	 * This also call releaseTargetRsc for clean up

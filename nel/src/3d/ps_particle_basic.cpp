@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.8 2004/02/12 16:54:51 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.9 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -932,6 +932,39 @@ void	CPSMultiTexturedParticle::setUseLocalDateAlt(bool use)
 	if (use) _MultiTexState |= ScrollUseLocalDateAlternate;
 	else _MultiTexState &= ~ ScrollUseLocalDateAlternate;
 }
+
+//==========================================
+void CPSTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest)
+{
+	if (_Tex) 
+	{
+		dest.push_back(_Tex);
+	}
+	if (getTextureGroup())
+	{
+		dest.push_back(getTextureGroup());
+	}
+}
+
+//==========================================
+void CPSMultiTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
+{	
+	if (_MainOp  == EnvBumpMap)
+	{
+		if (drv.isTextureAddrModeSupported(CMaterial::OffsetTexture))
+		{
+			if (_Texture2) dest.push_back(_Texture2);
+		}
+		else
+		{
+			if (_AlternateTexture2) dest.push_back(_AlternateTexture2);
+		}
+		return;
+	}	
+	if (_Texture2) dest.push_back(_Texture2);	
+}
+
+
 
 } // NL3D
 

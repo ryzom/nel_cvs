@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.4 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.5 2004/02/19 09:49:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,9 @@ public:
 
 	// from CPSParticle
 	virtual bool supportGlobalColorLighting() const { return true; }
+
+	// from CPSLocatedBindable
+	virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
 
 protected:
 

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.54 2003/11/25 14:37:15 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.55 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2215,6 +2215,7 @@ void CPSEmitterOmni::emit(const NLMISC::CVector &srcPos, uint32 index, CVector &
 
 	pos = srcPos;
 	speed = v;	
+	
 }
 
 ///==========================================================================

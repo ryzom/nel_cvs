@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.7 2004/02/12 16:54:03 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.8 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -575,6 +575,11 @@ void CPSQuad::updateMatBeforeRendering(IDriver *drv)
 	}
 }
 
+void CPSQuad::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
+{
+	CPSTexturedParticle::enumTexs(dest);
+	CPSMultiTexturedParticle::enumTexs(dest, drv);
+}
 
 
 } // NL3D

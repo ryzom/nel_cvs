@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.64 2004/02/12 18:50:24 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.65 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1168,7 +1168,17 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	sint ver = f.serialVersion(6);
 	CParticleSystemProcess::serial(f);
 	
-	f.serial(_Name);
+	if (f.isReading() && !CParticleSystem::getSerializeIdentifierFlag())
+	{
+		// just skip the name
+		sint32 len;
+		f.serial(len);
+		f.seek(len, NLMISC::IStream::current);
+	}
+	else
+	{	
+		f.serial(_Name);
+	}
 
 	f.serial(_InvMass);
 	f.serial(_Pos);
@@ -1971,7 +1981,20 @@ void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	sint ver = f.serialVersion(4);
 	f.serialPtr(_Owner);
 	if (ver > 1) f.serialEnum(_LOD);
-	if (ver > 2) f.serial(_Name);
+	if (ver > 2) 
+	{
+		if (f.isReading() && !CParticleSystem::getSerializeIdentifierFlag())
+		{
+			// just skip the name
+			sint32 len;
+			f.serial(len);
+			f.seek(len, NLMISC::IStream::current);
+		}
+		else
+		{	
+			f.serial(_Name);
+		}
+	}
 	if (ver > 3) 
 	{
 		if (f.isReading())
@@ -2244,6 +2267,16 @@ uint CPSLocated::getUserMatrixUsageCount() const
 	}
 	return count + CParticleSystemProcess::getUserMatrixUsageCount();
 }
+
+///***************************************************************************************
+void CPSLocated::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
+{
+	for(TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		(*it)->enumTexs(dest, drv);
+	}
+}
+
 
 
 } // NL3D

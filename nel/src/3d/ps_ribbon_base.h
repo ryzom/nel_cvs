@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.6 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.7 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 
 #include "3d/ps_particle_basic.h"
+#include "nel/misc/object_vector.h"
 
 
 namespace NL3D 
@@ -94,8 +95,8 @@ public:
 	float					getLODDegradation() const { return _LODDegradation; }
 
 protected:
-	typedef std::vector<NLMISC::CVector> TPosVect;
-	typedef	std::vector<float>			 TFloatVect; // all positions for each ribbons packed in a single vector
+	typedef NLMISC::CObjectVector<NLMISC::CVector, false> TPosVect;
+	typedef	std::vector<float>							  TFloatVect; // all positions for each ribbons packed in a single vector
 	
 	uint32							  _NbSegs;
 	TAnimationTime					  _SegDuration;

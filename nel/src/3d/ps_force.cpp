@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.32 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.33 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1230,7 +1230,7 @@ void CPSBrownianForce::integrateSingle(float startDate, float deltaT, uint numSt
 
 ///==========================================================
 void CPSBrownianForce::initPrecalc()
-{
+{	
 	/// create the pos table
 	nlassert(BFNumPredefinedPos % BFPredefinedNumInterp == 0);
 	

@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.12 2003/07/01 14:06:15 vizerie Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.13 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -294,9 +294,8 @@ void CPSPlaneBasisFollowSpeed::makeN(CPSLocated *loc,
 
 
 ///============================================================================
-CSpinnerFunctor::CSpinnerFunctor() : _NbSamples(16), _Axis(NLMISC::CVector::K)
-{
-	updateSamples();
+CSpinnerFunctor::CSpinnerFunctor() : _NbSamples(0), _Axis(NLMISC::CVector::K)
+{	
 }
 
 ///============================================================================
@@ -331,15 +330,26 @@ void CSpinnerFunctor::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 ///============================================================================
 void CSpinnerFunctor::updateSamples(void)
 {
+	if (_NbSamples == 0) return;
 	// compute step between each angle
 	const float angInc = (float) (2.f * NLMISC::Pi / _NbSamples);
 	_PBTab.resize(_NbSamples + 1);
 	NLMISC::CMatrix mat;
-	// compute each sample
+	CPSUtil::buildSchmidtBasis(_Axis, mat);
+	NLMISC::CVector I = mat.getI();
+	NLMISC::CVector J = mat.getJ();
+	// compute basis for rotation
 	for (uint32 k = 0; k < _NbSamples; ++k)
 	{		
-		mat.setRot(NLMISC::CQuat(_Axis, k * angInc));
-		_PBTab[k] = CPlaneBasis(mat.getI(), mat.getJ());
+		float ca = cosf(k * angInc);
+		float sa = sinf(k * angInc);		
+		_PBTab[k].X.set(ca * I.x + sa * J.x,
+						ca * I.y + sa * J.y,
+						ca * I.z + sa * J.z);
+			
+		_PBTab[k].Y.set(- sa * I.x + ca * J.x,
+					    - sa * I.y + ca * J.y,
+						- sa * I.z + ca * J.z);
 	}
 }
 

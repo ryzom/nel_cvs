@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.75 2003/12/11 09:28:47 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.76 2004/02/19 09:51:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,8 @@ uint	CParticleSystem::_NumInstances = 0;
 
 
 static const float PS_MIN_TIMEOUT = 1.f; // the test that check if there are no particles left 
+bool CParticleSystem::_SerialIdentifiers = false;
+
 
 ///////////////////////////////////
 // CPaticleSystem implementation //
@@ -606,7 +608,17 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	
 	if (version > 1) // name of the system
 	{
-		f.serial(_Name);
+		if (f.isReading() && !getSerializeIdentifierFlag())
+		{
+			// just skip the name
+			sint32 len;
+			f.serial(len);
+			f.seek(len, NLMISC::IStream::current);
+		}
+		else
+		{		
+			f.serial(_Name);
+		}
 	}
 
 	if (version > 2) // infos about integration, and LOD
@@ -1879,6 +1891,16 @@ void CParticleSystem::checkIntegrity()
 		nlassert(_UserCoordSystemInfo->NumRef == userMatrixUsageCount);
 	}
 }
+
+///=======================================================================================
+void CParticleSystem::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
+{
+	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+	{			
+		(*it)->enumTexs(dest, drv);
+	}
+}
+
 
 
 } // NL3D

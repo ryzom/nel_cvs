@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.10 2003/07/30 16:04:49 vizerie Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.11 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/ps_attrib_maker_bin_op.h"
 #include "3d/ps_plane_basis.h"
 #include "nel/misc/fast_floor.h"
+#include "nel/misc/object_vector.h"
 
 
 namespace NL3D {
@@ -199,7 +200,7 @@ public:
 	/// serial this object
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 protected:
-	std::vector<CPlaneBasis>	_PBTab;
+	NLMISC::CObjectVector<CPlaneBasis, false>	_PBTab;
 	uint32						_NbSamples;
 	NLMISC::CVector				_Axis;
 	/// update the samples tab
@@ -209,6 +210,7 @@ protected:
 
 
 /// this is a spinner : this compute a basis by applying a rotation over the given axis
+// nb : default init is done with nb samples = 0, so must set a number of samples that is > 0 before use
 class CPSBasisSpinner : public CPSAttribMakerT<CPlaneBasis, CSpinnerFunctor>
 {
 public:

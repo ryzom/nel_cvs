@@ -1,7 +1,7 @@
 /** \file ps_float.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.12 2003/07/30 16:04:29 vizerie Exp $
+ * $Id: ps_float.h,v 1.13 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,7 +100,9 @@ public:
 	CPSAttribMakerBase *clone() const { return new CPSFloatBinOp(*this); }
 };
 
-/// this functor produce float based on a hermite curve
+/** this functor produce float based on a hermite curve
+  * NB : must be init before use, or assert occurs
+  */
 class CPSFloatCurveFunctor
 {
 	public:
@@ -116,7 +118,9 @@ class CPSFloatCurveFunctor
 			}
 		};
 		
-		/// ctor. The default is a cst function whose value is .5
+		/** ctor. The default is a cst function whose value is .5
+		  * NB : must be init before use, or assert occurs
+		  */
 		CPSFloatCurveFunctor();
 
 		/** Add a control point. There is a sorted insertion based on the date

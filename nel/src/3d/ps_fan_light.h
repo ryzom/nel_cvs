@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * FanLight particles
  *
- * $Id: ps_fan_light.h,v 1.5 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_fan_light.h,v 1.6 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,9 @@ public:
 
 	// from CPSParticle
 	virtual bool supportGlobalColorLighting() const { return true; }
+
+	virtual	void			enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
+	
 	
 protected:
 	void				newElement(CPSLocated *emitterLocated, uint32 emitterIndex);

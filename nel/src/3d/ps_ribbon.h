@@ -1,7 +1,7 @@
 /** \file ps_ribbon.h
  * Ribbons particles.
  *
- * $Id: ps_ribbon.h,v 1.5 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_ribbon.h,v 1.6 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -174,6 +174,9 @@ public:
 
 	// from CPSParticle
 	virtual bool supportGlobalColorLighting() const { return true; }
+
+	// from CPSLocatedBindable
+	virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
 protected:		
 /// interface to derived classes
 	

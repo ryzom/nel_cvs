@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.11 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.12 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -456,6 +456,9 @@ class CPSTexturedParticle
 
 		/// serialization. We choose a different name because of multiple-inheritance
 		void serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream);		
+
+		void			enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest);
+		
 		
 	protected:			
 		/// deriver must return their owner there
@@ -601,6 +604,9 @@ public:
 	/// Set a bump factor (when embm is used)
 	void	setBumpFactor(float bumpFactor) { _BumpFactor = bumpFactor; touch(); }
 	float	getBumpFactor() const { return _BumpFactor; }
+
+	void			enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
+	
 
 protected:	
 	void						setupMultiTexEnv(TOperator op, ITexture *tex1, ITexture *tex2, CMaterial &mat);	

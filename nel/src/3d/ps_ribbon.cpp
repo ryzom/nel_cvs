@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.9 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.10 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1139,6 +1139,14 @@ void CPSRibbon::getShape(CVector *shape) const
 	std::copy(_Shape.begin(), _Shape.end(), shape);
 }
 
+///==================================================================================================================
+void CPSRibbon::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
+{
+	if (_Tex) 
+	{
+		dest.push_back(_Tex);
+	}
+}
 
 
 } // NL3D

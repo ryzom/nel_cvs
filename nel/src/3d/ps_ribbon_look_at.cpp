@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.11 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.12 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,9 +149,7 @@ void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAn
 		/** We support Auto-LOD for ribbons, although there is a built-in LOD (that change the geometry rather than the number of ribbons)
 		  * that gives better result (both can be used simultaneously)
 		  */
-
 		displayRibbons(numToProcess, step);
-
 	}
 	else 
 	if (pass == PSToolRender) // edition mode only
@@ -274,8 +272,7 @@ static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uin
 		*(NLMISC::CVector *) (currVert + vertexSize) = inter + ribSize * invTgNorm * (- tangent.x * K + tangent.z * I);
 	}
 	else if (next->Proj.y > ZEpsilon) // first point cross the near plane
-	{
-			// compute intersection point
+	{			
 		// compute intersection point
 		NLMISC::CVector inter;
 		NLMISC::CVector tInter;
@@ -346,6 +343,8 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	setupDriverModelMatrix();
 	drv->activeVertexBuffer(VB);
 	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose	
+
+	
 	
 	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribons to process at once
 	
@@ -388,6 +387,7 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	}
 	
 	
+	
 	uint toProcess;
 	uint ribbonIndex = 0; // index of the first ribbon in the batch being processed
 	
@@ -411,6 +411,7 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 			ptCurrSize = &_ParticleSize;
 			ptCurrSizeIncrement = 0;
 		}
+		
 
 		/// setup colors
 		NLMISC::CRGBA	*ptCurrColor=0;
@@ -418,7 +419,8 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		{
 			colors.resize(nbRibbons);
 			ptCurrColor = (NLMISC::CRGBA *) _ColorScheme->make(this->_Owner, ribbonIndex, &colors[0], sizeof(NLMISC::CRGBA), toProcess, true, srcStep);			
-		}		
+		}	
+		
 		
 		currVert = (uint8 *) VB.getVertexCoordPointer();
 		for (uint k = ribbonIndex; k < ribbonIndex + toProcess; ++k)
@@ -441,10 +443,10 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 					computeRibbon((uint) (fpRibbonIndex >> 16), &rIt->Interp, sizeof(CVectInfo));				
 					do
 					{					
-						MakeProj(rIt->Proj, mat * rIt->Interp); 
+						MakeProj(rIt->Proj, mat * rIt->Interp);
 						++rIt;				
 					}
-					while (rIt != rItEnd);			
+					while (rIt != rItEnd);								
 				}
 				else
 				{
@@ -506,7 +508,9 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 				currVert += vertexSizeX2;
 
 				fpRibbonIndex += srcStep;
+				
 		}
+		
 
 		PB.setNumTri((_UsedNbSegs << 1) * toProcess);
 		// display the result
@@ -591,5 +595,16 @@ uint	CPSRibbonLookAt::getNumRibbonsInVB() const
 	const uint vertexInVB = 256;	
 	return std::max(1u, (uint) (vertexInVB / (_UsedNbSegs + 1)));
 }
+
+//==========================================================================	
+void CPSRibbonLookAt::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
+{
+	if (_Tex) 
+	{
+		dest.push_back(_Tex);
+		_Tex->getShareName();
+	}
+}
+
 
 } // NL3D

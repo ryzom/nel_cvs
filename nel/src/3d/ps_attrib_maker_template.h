@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.18 2003/07/30 16:03:47 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.19 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/ps_attrib_maker_helper.h"
 #include "3d/ps_plane_basis.h"
 #include "nel/misc/fast_floor.h"
+#include "nel/misc/object_vector.h"
 
 namespace NL3D {
 
@@ -55,17 +56,15 @@ inline T PSValueBlend(const T &t1, const T &t2, float alpha)
 
 
 /// NLMISC::CRGBA specialization of the PSValueBlend function
-template <>
 inline NLMISC::CRGBA PSValueBlend(const NLMISC::CRGBA &t1, const NLMISC::CRGBA &t2, float alpha)
-{
+{	
 	NLMISC::CRGBA result;
-	result.blendFromui(t1, t2, NLMISC::OptFastFloor(255.0f * alpha));
+	result.blendFromui(t1, t2, (uint) (255.0f * alpha));
 	return result;
 }
 
 
 /// CPlaneBasis specilization of the PSValueBlend function
-template <>
 inline CPlaneBasis PSValueBlend(const CPlaneBasis &t1, const CPlaneBasis &t2, float alpha)
 {	
 	return CPlaneBasis(PSValueBlend(t1.getNormal(), t2.getNormal(), alpha));
@@ -335,6 +334,9 @@ public:
 
 
 	inline void setValues(const T *ValueTab, uint32 numValues, uint32 nbStages);
+
+	// the same, but value gradient has already been computed, so ValueTab must contains numValues * nbStages + 1 values
+	inline void setValuesUnpacked(const T *ValueTab, uint32 numValues, uint32 nbStages);
 	
 	/// get the number of stages between each value
 	uint32 getNumStages(void) const { return _NbStages; }
@@ -373,7 +375,7 @@ public:
 	
 protected:
 	// a table of Values that interpolate the values given
-	std::vector<T> _Tab;
+	NLMISC::CObjectVector<T, false> _Tab;
 
 
 	// number of interpolated value between each 'key'
@@ -420,31 +422,26 @@ public:
 
 
 
-	
+// tool function used by CPSValueGradientFunc<T>::setValues(
 template <typename T> 
-inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValues, uint32 nbStages)
+inline void computeGradient(const T *valueTab, uint32 numValues, uint32 nbStages, NLMISC::CObjectVector<T, false> &grad, T &minValue, T &maxValue)
 {
-	nlassert(numValues > 1);
-	nlassert(nbStages > 0);
-
-	_NbStages = nbStages;
-	_MaxValue = _MinValue = valueTab[0];
-	_NbValues = (numValues - 1) * nbStages;
-	_Tab.resize(_NbValues + 1);
-
-
+	minValue = maxValue = valueTab[0];
 	float step = 1.0f / float(nbStages);
 	float alpha; 
+
+	uint nbValues = (numValues - 1) * nbStages;
+	grad.resize(nbValues + 1);
 	
-	typename std::vector<T>::iterator dest = _Tab.begin();
+	T *dest = &grad[0];
 	// copy the tab performing linear interpolation between values given in parameter
 	for (uint32 k = 0; k  < (numValues - 1); ++k)
 	{	
-		_MaxValue = std::max(_MaxValue, valueTab[k]);
-		_MinValue = std::min(_MinValue, valueTab[k]);
+		maxValue = std::max(maxValue, valueTab[k]);
+		minValue = std::min(minValue, valueTab[k]);
 		
 		alpha = 0;
-
+		
 		for(uint32 l = 0; l < nbStages; ++l)
 		{			
 			// use the right version of the template function PSValueBlend
@@ -456,6 +453,38 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 	*dest++ = valueTab[numValues - 1];
 }
 
+// special optimisation for rgba
+void computeGradient(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbStages, NLMISC::CObjectVector<NLMISC::CRGBA, false> &grad, NLMISC::CRGBA &minValue, NLMISC::CRGBA &maxValue);
+
+	
+template <typename T> 
+inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValues, uint32 nbStages)
+{	
+	nlassert(numValues > 1);
+	nlassert(nbStages > 0);
+
+	computeGradient(valueTab, numValues, nbStages, _Tab, _MinValue, _MaxValue);
+	//
+	_NbStages = nbStages;
+	_NbValues = _Tab.size() - 1;	
+	
+}
+
+
+// special optimization for rgba
+void CPSValueGradientFunc<NLMISC::CRGBA>::setValues(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbStages);
+
+
+
+template <typename T> 
+inline void CPSValueGradientFunc<T>::setValuesUnpacked(const T *valueTab, uint32 numValues, uint32 nbStages)
+{
+	_NbStages = nbStages;
+	_MaxValue = _MinValue = valueTab[0];
+	_NbValues = (numValues - 1) * nbStages;
+	_Tab.resize(_NbValues + 1);
+	std::copy(valueTab, valueTab + _NbValues + 1, &_Tab[0]);
+}
 
 
 
@@ -515,3 +544,24 @@ void CPSValueGradientFunc<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 #endif // NL_PS_ATTRIB_MAKER_TEMPLATE_H
 
 /* End of ps_attrib_maker_template.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

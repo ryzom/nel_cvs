@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.7 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_color.h,v 1.8 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,11 +84,18 @@ public:
 
 
 
-/// This is a color gradient class
+/** This is a color gradient class
+  * NB: a non null gradient must be set before use
+  */
 class CPSColorGradient : public CPSValueGradient<NLMISC::CRGBA>
 {
 public:
 	NLMISC_DECLARE_CLASS(CPSColorGradient);
+
+	/** default ctor
+	  * NB: a non null gradient must be set before use
+	  */
+	CPSColorGradient();
 
 	/**	
 	 *	Construct the value gradient blender by passing a pointer to a color table.
@@ -96,8 +103,7 @@ public:
 	 * \param nbCycles : The nb of time the pattern is repeated during particle life. see ps_attrib_maker.h
 	 */
 
-	CPSColorGradient(const NLMISC::CRGBA *colorTab = CPSColorGradient::_DefaultGradient
-						, uint32 nbValues = 2, uint32 nbStages = 64, float nbCycles = 1.0f);
+	CPSColorGradient(const NLMISC::CRGBA *colorTab, uint32 nbValues, uint32 nbStages, float nbCycles = 1.0f);
 	static NLMISC::CRGBA _DefaultGradient[];	
 	CPSAttribMakerBase *clone() const { return new CPSColorGradient(*this); }
 };

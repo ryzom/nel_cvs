@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.7 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.8 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -537,6 +537,15 @@ uint CPSFanLight::getNumFanlightsInVB() const
 {
 	const uint numRib = NumVertsInBuffer / (2 + _NbFans);
 	return std::max(1u, numRib);
+}
+
+///====================================================================================
+void CPSFanLight::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
+{
+	if (_Tex) 
+	{	
+		dest.push_back(_Tex);
+	}
 }
 
 } // NL3D

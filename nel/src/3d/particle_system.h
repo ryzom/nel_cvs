@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.45 2003/12/11 09:28:47 vizerie Exp $
+ * $Id: particle_system.h,v 1.46 2004/02/19 09:51:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1017,6 +1017,11 @@ public:
 			uint getCurrNumParticles() const;
 			// tool fct : get the list of located that target another located
 			void getTargeters(const CPSLocated *target, std::vector<CPSTargetLocatedBindable *> &targeters);
+			// allow to serialize identifiers. The default is false (to speedup instanciation of ps by not creating unecessary strings)
+			static void setSerializeIdentifierFlag(bool on) { _SerialIdentifiers = on; }			
+			static bool getSerializeIdentifierFlag() { return _SerialIdentifiers; }
+			// list all textures used by the ps, and append them in the given vector
+			void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
 		// @}
 
 	
@@ -1175,6 +1180,8 @@ private:
 	bool										_AutoCount							 : 1;
 	bool										_HiddenAtCurrentFrame				 : 1;
 	bool										_HiddenAtPreviousFrame				 : 1;
+
+	static bool									_SerialIdentifiers;
 
 	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
 	float										_InverseEllapsedTime;	

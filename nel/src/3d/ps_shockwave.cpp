@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.5 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.6 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -525,6 +525,12 @@ uint CPSShockWave::getNumShockWavesInVB() const
 {
 	const uint numRib = NumVertsInBuffer / ((_NbSeg + 1) << 1);
 	return std::max(1u, numRib);
+}
+
+///=================================================================================
+void CPSShockWave::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
+{
+	CPSTexturedParticle::enumTexs(dest);
 }
 
 } // NL3D

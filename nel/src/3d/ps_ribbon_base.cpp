@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.10 2004/01/30 13:28:26 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.11 2004/02/19 09:49:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,7 +158,7 @@ void	CPSRibbonBase::updateGlobals(float realET)
 
 	/// updating ribbons positions	
 	TPSAttribVector::iterator posIt = _Owner->getPos().begin();
-	TPosVect::iterator currIt = _Ribbons.begin() + _RibbonIndex;
+	NLMISC::CVector *currIt = &_Ribbons[_RibbonIndex];
 	uint k = size;
 	for (;;)
 	{
@@ -175,13 +175,13 @@ void	CPSRibbonBase::updateGlobals(float realET)
 void	CPSRibbonBase::computeHermitteRibbon(uint index, NLMISC::CVector *dest, uint stride /* = sizeof(NLMISC::CVector)*/)
 {	
 	nlassert(!_Parametric);	
-	TPosVect::iterator startIt = _Ribbons.begin() + (_NbSegs + 1 + EndRibbonStorage) * index;
-	TPosVect::iterator endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
-	TPosVect::iterator currIt  = startIt + _RibbonIndex;	
-	const TPosVect::const_iterator firstIt = currIt;
-	TPosVect::iterator nextIt  = currIt + 1;
+	NLMISC::CVector *startIt = &_Ribbons[(_NbSegs + 1 + EndRibbonStorage) * index];
+	NLMISC::CVector *endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
+	NLMISC::CVector *currIt  = startIt + _RibbonIndex;	
+	const NLMISC::CVector *firstIt = currIt;
+	NLMISC::CVector *nextIt  = currIt + 1;
 	if (nextIt == endIt) nextIt = startIt;
-	TPosVect::iterator nextNextIt = nextIt + 1;	
+	NLMISC::CVector *nextNextIt = nextIt + 1;	
 	if (nextNextIt == endIt) nextNextIt = startIt;	
 	float *date = &_SamplingDate[0];			
 
@@ -250,12 +250,12 @@ void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint 
 {
 	/// well we could avoid code duplication with computeHermitteRibbon, but this is simply easier than using templates for now...
 	nlassert(!_Parametric);	
-	TPosVect::iterator startIt = _Ribbons.begin() + (_NbSegs + 1 + EndRibbonStorage) * index;
-	TPosVect::iterator endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
-	TPosVect::iterator currIt  = startIt + _RibbonIndex;	
-	TPosVect::iterator nextIt  = currIt + 1;
+	NLMISC::CVector *startIt = &_Ribbons[(_NbSegs + 1 + EndRibbonStorage) * index];
+	NLMISC::CVector *endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
+	NLMISC::CVector *currIt  = startIt + _RibbonIndex;	
+	NLMISC::CVector *nextIt  = currIt + 1;
 	if (nextIt == endIt) nextIt = startIt;
-	TPosVect::iterator nextNextIt = nextIt + 1;	
+	NLMISC::CVector *nextNextIt = nextIt + 1;	
 	if (nextNextIt == endIt) nextNextIt = startIt;	
 	float *date = &_SamplingDate[0];				
 
@@ -315,13 +315,13 @@ void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint 
 void CPSRibbonBase::computeLinearCstSizeRibbon(uint index, NLMISC::CVector *dest, uint stride /* = sizeof(NLMISC::CVector)*/)
 {	
 	nlassert(!_Parametric);	
-	TPosVect::iterator startIt = _Ribbons.begin() + (_NbSegs + 1 + EndRibbonStorage) * index;
-	TPosVect::iterator endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
-	TPosVect::iterator currIt  = startIt + _RibbonIndex;	
-	TPosVect::iterator firstIt = currIt;	
-	TPosVect::iterator nextIt  = currIt + 1;
+	CVector *startIt = &_Ribbons[(_NbSegs + 1 + EndRibbonStorage) * index];
+	NLMISC::CVector *endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
+	NLMISC::CVector *currIt  = startIt + _RibbonIndex;	
+	NLMISC::CVector *firstIt = currIt;	
+	NLMISC::CVector *nextIt  = currIt + 1;
 	if (nextIt == endIt) nextIt = startIt;
-	TPosVect::iterator nextNextIt = nextIt + 1;	
+	NLMISC::CVector *nextNextIt = nextIt + 1;	
 	if (nextNextIt == endIt) nextNextIt = startIt;		
 
 	uint leftToDo = _UsedNbSegs + 1;
@@ -382,13 +382,13 @@ void CPSRibbonBase::computeLinearCstSizeRibbon(uint index, NLMISC::CVector *dest
 void CPSRibbonBase::computeHermitteCstSizeRibbon(uint index, NLMISC::CVector *dest, uint stride /* = sizeof(NLMISC::CVector)*/)
 {	
 	nlassert(!_Parametric);	
-	TPosVect::iterator startIt = _Ribbons.begin() + (_NbSegs + 1 + EndRibbonStorage) * index;
-	TPosVect::iterator endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
-	TPosVect::iterator currIt  = startIt + _RibbonIndex;	
-	TPosVect::iterator firstIt = currIt;	
-	TPosVect::iterator nextIt  = currIt + 1;
+	NLMISC::CVector *startIt = &_Ribbons[(_NbSegs + 1 + EndRibbonStorage) * index];
+	NLMISC::CVector *endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
+	NLMISC::CVector *currIt  = startIt + _RibbonIndex;	
+	NLMISC::CVector *firstIt = currIt;	
+	NLMISC::CVector *nextIt  = currIt + 1;
 	if (nextIt == endIt) nextIt = startIt;
-	TPosVect::iterator nextNextIt = nextIt + 1;	
+	NLMISC::CVector *nextNextIt = nextIt + 1;	
 	if (nextNextIt == endIt) nextNextIt = startIt;
 
 	NLMISC::CVector t0 = (*nextIt - *currIt);
@@ -528,7 +528,7 @@ void	CPSRibbonBase::resize(uint32 size)
 void CPSRibbonBase::resetSingleRibbon(uint index, const NLMISC::CVector &pos)
 {
 	nlassert(!_Parametric);
-	TPosVect::iterator it = _Ribbons.begin() + (index * (_NbSegs + 1 + EndRibbonStorage));
+	NLMISC::CVector *it = &_Ribbons[(index * (_NbSegs + 1 + EndRibbonStorage))];
 	std::fill(it, it + (_NbSegs + 1 + EndRibbonStorage), pos);
 }
 

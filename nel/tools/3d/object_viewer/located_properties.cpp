@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.20 2004/05/14 16:18:53 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.21 2004/06/17 08:12:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,8 +48,8 @@ using NL3D::CPSLocated;
 //****************************************************************************************************************
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedProperties dialog
-CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdlg)
-	: CDialog(CLocatedProperties::IDD, pdlg), _Located(loc), _ParticleDlg(pdlg), _MassDialog(NULL), _LifeDialog(NULL)
+CLocatedProperties::CLocatedProperties(CParticleWorkspace::CNode *node, NL3D::CPSLocated *loc,  CParticleDlg *pdlg)
+	: CDialog(CLocatedProperties::IDD, pdlg), _Node(node), _Located(loc), _ParticleDlg(pdlg), _MassDialog(NULL), _LifeDialog(NULL)
 {
 	//{{AFX_DATA_INIT(CLocatedProperties)
 	m_LimitedLifeTime = FALSE;
@@ -65,7 +65,7 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 	pdlg->getObjectViewer()->registerMainLoopCallBack(this);
 	
 
-	_MaxNbParticles = new CEditableRangeUInt("MAX_NB_PARTICLES", 1, 501);
+	_MaxNbParticles = new CEditableRangeUInt("MAX_NB_PARTICLES", _Node, 1, 501);
 	_MaxNbParticles->enableUpperBound(30000, false);
 	
 }
@@ -146,10 +146,11 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	const sint xPos = 0;
 	sint yPos = 100;
 
-	_LifeDialog = new CAttribDlgFloat("LIFETIME");
+	_LifeDialog = new CAttribDlgFloat("LIFETIME", _Node);
 	_LifeDialog->enableMemoryScheme(false);
 
 	_LifeWrapper.Located = _Located;
+	_LifeWrapper.Node = _Node;
 	_LifeWrapper.SSPS = _ParticleDlg->StartStopDlg;
 
 	_LifeDialog->setWrapper(&_LifeWrapper);			
@@ -170,7 +171,7 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	}	
 
 
-	_MassDialog = new CAttribDlgFloat("PARTICLE_MASS", 0.001f, 10);	
+	_MassDialog = new CAttribDlgFloat("PARTICLE_MASS", _Node, 0.001f, 10);	
 	_MassDialog->enableLowerBound(0, true); // 0 is disallowed
 	_MassDialog->enableMemoryScheme(false);
 	_MassWrapper.Located = _Located;
@@ -186,6 +187,7 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	m_MaxNbParticles.GetWindowRect(&r);
 	_MaxNbParticlesWrapper.TreeCtrl = _ParticleDlg->ParticleTreeCtrl;
 	_MaxNbParticlesWrapper.Located = _Located;
+	_MaxNbParticlesWrapper.Node = _Node;
 	_MaxNbParticles->setWrapper(&_MaxNbParticlesWrapper);	
 	_MaxNbParticles->init(r.left - pr.left, r.top - pr.top, this);
 
@@ -235,7 +237,7 @@ void CLocatedProperties::OnLimitedLifeTime()
 		bool forceApplied = false;
 		// check that no force are applied on the located
 		std::vector<NL3D::CPSTargetLocatedBindable *> targeters;
-		_ParticleDlg->getCurrPS()->getTargeters(_Located, targeters);
+		_Located->getOwner()->getTargeters(_Located, targeters);
 		for(uint k = 0; k < targeters.size(); ++k)
 		{
 			if (targeters[k]->getType() == NL3D::PSForce)
@@ -278,7 +280,8 @@ void CLocatedProperties::OnLimitedLifeTime()
 		_LifeDialog->EnableWindow(TRUE);
 	}
 	updateTriggerOnDeath();
-	_ParticleDlg->StartStopDlg->resetAutoCount();
+	_ParticleDlg->StartStopDlg->resetAutoCount(_Node);
+	touchPSState();
 }
 
 //****************************************************************************************************************
@@ -286,7 +289,7 @@ void CLocatedProperties::OnDisgradeWithLod()
 {
 	UpdateData();
 	_Located->forceLODDegradation(m_DisgradeWithLOD ? true : false /* to avoid warning from MSVC */);
-	
+	touchPSState();
 }
 
 //****************************************************************************************************************
@@ -294,6 +297,7 @@ void CLocatedProperties::OnParametricMotion()
 {
 	UpdateData();
 	_Located->enableParametricMotion(m_ParametricMotion ? true : false);
+	touchPSState();
 }
 
 //****************************************************************************************************************
@@ -304,9 +308,12 @@ void CLocatedProperties::OnEditTriggerOnDeath()
 	int res = dlg.DoModal();
 	if ( res == IDOK )
 	{
-		_Located->setTriggerEmitterID( dlg.getNewID() );
+		if (dlg.getNewID() != _Located->getTriggerEmitterID())
+		{		
+			_Located->setTriggerEmitterID( dlg.getNewID() );
+			touchPSState();
+		}
 	}
-	
 }
 
 //****************************************************************************************************************
@@ -315,13 +322,14 @@ void CLocatedProperties::OnTriggerOnDeath()
 	UpdateData();
 	_Located->enableTriggerOnDeath(m_TriggerOnDeath ? true : false /* MSVC6 wraning */);
 	updateTriggerOnDeath();
+	touchPSState();
 }
 
 //****************************************************************************************************************
-void CLocatedProperties::go()
+void CLocatedProperties::goPostRender()
 {
 	nlassert(_ParticleDlg);
-	if (_ParticleDlg->getCurrPS()->getAutoCountFlag()) 
+	if (_Located->getOwner()->getAutoCountFlag()) 
 	{
 		// update number of particle from ps
 		_MaxNbParticles->update();
@@ -332,9 +340,10 @@ void CLocatedProperties::go()
 
 //****************************************************************************************************************
 void CLocatedProperties::OnAssignCount() 
-{
+{	
 	_Located->resize(_Located->getSize()); // set new max size
 	_MaxNbParticles->update();
+	touchPSState();
 }
 
 //****************************************************************************************************************
@@ -345,4 +354,12 @@ void CLocatedProperties::OnSelchangeMatrixMode()
 	_Located->setMatrixMode((NL3D::TPSMatrixMode) m_MatrixMode);
 	updateIntegrable();
 	UpdateData(FALSE);
+	touchPSState();
 }
+
+//****************************************************************************************************************
+void CLocatedProperties::touchPSState()
+{
+	if (_Node) _Node->setModified(true);
+}
+

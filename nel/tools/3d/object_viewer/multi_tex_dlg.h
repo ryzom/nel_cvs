@@ -1,7 +1,7 @@
 /** \file multi_tex_dlg.h
  * A dialog to tune multexturing for particles that support it
  *
- * $Id: multi_tex_dlg.h,v 1.3 2002/02/15 17:18:31 vizerie Exp $
+ * $Id: multi_tex_dlg.h,v 1.4 2004/06/17 08:11:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #endif 
 
 #include "ps_wrapper.h"
+#include "particle_workspace.h"
 
 namespace NL3D
 {
@@ -49,8 +50,7 @@ class CMultiTexDlg : public CDialog
 {
 // Construction
 public:
-	CMultiTexDlg(NL3D::CPSMultiTexturedParticle *mtp, IPopupNotify* pn, CWnd *pParent);   // standard constructor
-
+	CMultiTexDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSMultiTexturedParticle *mtp, IPopupNotify* pn, CWnd *pParent);   // standard constructor
 	~CMultiTexDlg();
 
 	/// create and show this dialog
@@ -82,6 +82,7 @@ protected:
 	IPopupNotify	*_PN;
 	// the multitextured particle being edited
 	NL3D::CPSMultiTexturedParticle *_MTP;
+	CParticleWorkspace::CNode	   *_Node;
 
 	// Generated message map functions
 	//{{AFX_MSG(CMultiTexDlg)
@@ -96,9 +97,7 @@ protected:
 	afx_msg void OnUseParticleDate();
 	afx_msg void OnUseParticleDateAlt();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-	
-
+	DECLARE_MESSAGE_MAP()	
 	// texture wrappers
 	struct CMainTexWrapper : IPSWrapperTexture
 	{
@@ -107,24 +106,19 @@ protected:
 		virtual void set(NL3D::ITexture *);
 	} _TexWrapper;
 
-
 	struct CAlternateTexWrapper : IPSWrapperTexture
 	{
 		NL3D::CPSMultiTexturedParticle *MTP;
 		virtual NL3D::ITexture *get(void);
 		virtual void set(NL3D::ITexture *);
 	} _AlternateTexWrapper;
-
-
 	CTextureChooser *_MainTexDlg, *_AltTexDlg;
-
 	void readValues(bool alternate); // get the values from the particle
-	void writeValues(bool alternate);
-	
-	
+	void writeValues(bool alternate);	
 	void updateAlternate();
 	void updateTexOp();
 	void updateBumpFactorEnabled();
+	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }	
 };
 
 //{{AFX_INSERT_LOCATION}}

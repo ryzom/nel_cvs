@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.15 2003/08/22 09:00:52 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.16 2004/06/17 08:12:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,8 +40,8 @@
 // CEditableRange dialog
 
 
-CEditableRange::CEditableRange(const std::string &id) 
-	: _Id(id)
+CEditableRange::CEditableRange(const std::string &id, CParticleWorkspace::CNode *node) 
+	: _Id(id), _Node(node)
 {
 	//{{AFX_DATA_INIT(CEditableRange)
 	m_MinRange = _T("");
@@ -49,7 +49,7 @@ CEditableRange::CEditableRange(const std::string &id)
 	m_Value = _T("");
 	m_SliderPos = 0;
 	//}}AFX_DATA_INIT
-		
+			
 
 
 }

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.19 2004/05/19 10:20:56 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.20 2004/06/17 08:12:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,17 +37,15 @@ namespace NL3D
 
 
 
-#include "ps_wrapper.h"
 #include "nel/misc/rgba.h"
+//
 #include "3d/texture.h"
 #include "3d/ps_plane_basis.h"
 #include "3d/particle_system.h"
 #include "3d/ps_particle.h"
 #include "3d/ps_particle2.h"
-
-
-
-
+//
+#include "ps_wrapper.h"
 #include "dialog_stack.h"
 
 using NLMISC::CRGBA;
@@ -64,7 +62,7 @@ class CLocatedBindableDialog : public CDialog, CDialogStack
 // Construction
 public:
 	// create this dialog to edit the given bindable
-	CLocatedBindableDialog(NL3D::CPSLocatedBindable *bindable);   // standard constructor
+	CLocatedBindableDialog(CParticleWorkspace::CNode *ownerNode,  NL3D::CPSLocatedBindable *bindable);   // standard constructor
 
 	/// dtor
 	~CLocatedBindableDialog();
@@ -101,6 +99,7 @@ protected:
 	/// create the size control, or update it if it has been created. It returns the heivht of the control
 	uint updateSizeControl();
 
+	CParticleWorkspace::CNode		*_Node;
 	NL3D::CPSLocatedBindable		*_Bindable;		// the bindable being edited
 	CParticleDlg					*_ParticleDlg; // the dialog that owns us
 	class CAttribDlgFloat			*_SizeCtrl;	// the control used for size
@@ -306,9 +305,8 @@ protected:
 			   void set(const float &v) { R->setTexFactor(R->getUFactor(), v); }
 			} _RibbonVFactorWrapper;
 
-
-
-
+	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }
+	void touchPSState();
 };
 
 //{{AFX_INSERT_LOCATION}}

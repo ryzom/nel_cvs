@@ -1,7 +1,7 @@
 /** \file particle_system_edit.h
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.h,v 1.14 2003/08/22 09:05:52 vizerie Exp $
+ * $Id: particle_system_edit.h,v 1.15 2004/06/17 08:08:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "dialog_stack.h"
 #include "popup_notify.h"
 #include "editable_range.h"
+#include "particle_workspace.h"
 
 namespace NL3D
 {
@@ -94,7 +95,7 @@ class CParticleSystemEdit : public CDialog, public CDialogStack, public IPopupNo
 {
 // Construction
 public:
-	CParticleSystemEdit(NL3D::CParticleSystem *ps, CParticleTreeCtrl *ptc);   // standard constructor
+	CParticleSystemEdit(CParticleWorkspace::CNode *ownerNode, CParticleTreeCtrl *ptc);   // standard constructor
 
 	~CParticleSystemEdit();
 
@@ -138,14 +139,12 @@ public:
 // Implementation
 protected:
 
-	NL3D::CParticleSystem *_PS;
-
-
-	CEditableRangeFloat *_TimeThresholdDlg, *_MaxViewDistDlg, *_LODRatioDlg;
-	CEditableRangeUInt  *_MaxIntegrationStepDlg; 
-	CDialog				*_AutoLODDlg;
-	CDialog				*_GlobalColorDlg;
-	CParticleTreeCtrl   *_ParticleTreeCtrl;
+	CParticleWorkspace::CNode *_Node;
+	CEditableRangeFloat		  *_TimeThresholdDlg, *_MaxViewDistDlg, *_LODRatioDlg;
+	CEditableRangeUInt		  *_MaxIntegrationStepDlg; 
+	CDialog					  *_AutoLODDlg;
+	CDialog					  *_GlobalColorDlg;
+	CParticleTreeCtrl		  *_ParticleTreeCtrl;
 
 	// Generated message map functions
 	//{{AFX_MSG(CParticleSystemEdit)
@@ -197,6 +196,7 @@ protected:
 	static CLODRatioWrapper				_LODRatioWrapper;
     /// wrapper to tune user parameters
 	static CUserParamWrapper			_UserParamWrapper[4];
+	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }
 };
 
 //{{AFX_INSERT_LOCATION}}

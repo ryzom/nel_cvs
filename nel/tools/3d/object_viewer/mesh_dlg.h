@@ -1,6 +1,6 @@
 /** \file mesh_dlg.h
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.h,v 1.2 2001/12/18 18:38:28 vizerie Exp $
+ * $Id: mesh_dlg.h,v 1.3 2004/06/17 08:11:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #include "popup_notify.h"
 #include "particle_dlg.h"
+#include "particle_workspace.h"
 
 namespace NL3D
 {
@@ -46,7 +47,7 @@ class CMeshDlg : public CDialog, IPopupNotify
 {
 // Construction
 public:
-	CMeshDlg(NL3D::CPSShapeParticle *sp, CParticleDlg  *particleDlg);   // standard constructor
+	CMeshDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSShapeParticle *sp, CParticleDlg  *particleDlg);   // standard constructor
 	~CMeshDlg();
 
 	void init(CWnd *pParent, sint x, sint y);
@@ -69,9 +70,10 @@ public:
 
 // Implementation
 protected:
-	CParticleDlg           *_ParticleDlg;
-	NL3D::CPSShapeParticle *_ShapeParticle;
-	CEditMorphMeshDlg	   *_EMMD;
+	CParticleWorkspace::CNode *_Node;
+	CParticleDlg			  *_ParticleDlg;
+	NL3D::CPSShapeParticle	  *_ShapeParticle;
+	CEditMorphMeshDlg		  *_EMMD;
 	void updateForMorph();
 	virtual void childPopupClosed(CWnd *child);
 	// Generated message map functions
@@ -82,6 +84,8 @@ protected:
 	afx_msg void OnEditMorph();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }
+	void touchPSState();
 };
 
 //{{AFX_INSERT_LOCATION}}

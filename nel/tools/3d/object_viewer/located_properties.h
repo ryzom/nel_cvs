@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.h,v 1.12 2004/05/14 16:18:53 vizerie Exp $
+ * $Id: located_properties.h,v 1.13 2004/06/17 08:12:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,13 +36,11 @@
 #endif // _MSC_VER > 1000
 // located_properties.h : header file
 //
-
-
-
 #include "editable_range.h"
 #include "particle_tree_ctrl.h"
 #include "dialog_stack.h"
 #include "start_stop_particle_system.h"
+#include "particle_workspace.h"
 
 namespace  NL3D
 {
@@ -59,7 +57,7 @@ class CLocatedProperties : public CDialog, public CObjectViewer::IMainLoopCallBa
 {
 // Construction
 public:
-	CLocatedProperties(NL3D::CPSLocated *loc, CParticleDlg *pdlg);   // standard constructor
+	CLocatedProperties(CParticleWorkspace::CNode *node, NL3D::CPSLocated *loc, CParticleDlg *pdlg);   // standard constructor
 
 	~CLocatedProperties();
 
@@ -93,16 +91,15 @@ public:
 
 // Implementation
 protected:
-	
+	CParticleWorkspace::CNode *_Node;
+	//
 	CEditableRangeUInt *_MaxNbParticles;
 	CEditableRangeUInt *_SkipFramesDlg;
-	
+	//
 	CAttribDlgFloat *_MassDialog;
 	CAttribDlgFloat *_LifeDialog;
-	 
-
+	//
 	CParticleDlg *_ParticleDlg;
-
 	/// some wrappers used to read / write value from / to the particle system
 
 		
@@ -113,6 +110,7 @@ protected:
 
 		struct CMaxNbParticlesWrapper : public IPSWrapperUInt
 		{
+			CParticleWorkspace::CNode *Node;
 			NL3D::CPSLocated *Located;
 			CParticleTreeCtrl *TreeCtrl;
 			uint32 get(void) const { return Located->getMaxSize(); }
@@ -123,7 +121,8 @@ protected:
 
 				if (v < Located->getSize())
 				{
-					TreeCtrl->suppressLocatedInstanceNbItem(v);
+					nlassert(Node);
+					TreeCtrl->suppressLocatedInstanceNbItem(*Node, v);
 				}
 
 				Located->resize(v); 
@@ -148,10 +147,11 @@ protected:
 		{
 		   CStartStopParticleSystem *SSPS;
 		   NL3D::CPSLocated *Located;
+		   CParticleWorkspace::CNode *Node;
 		   float get(void) const { return Located->getInitialLife(); }
-		   void set(const float &v) { Located->setInitialLife(v); SSPS->resetAutoCount(); }
+		   void set(const float &v) { Located->setInitialLife(v); SSPS->resetAutoCount(Node); }
 		   virtual scheme_type *getScheme(void) const { return Located->getLifeScheme(); }
-		   virtual void setScheme(scheme_type *s) { Located->setLifeScheme(s); SSPS->resetAutoCount();; }
+		   virtual void setScheme(scheme_type *s) { Located->setLifeScheme(s); SSPS->resetAutoCount(Node); }
 		} _LifeWrapper;											
 
 
@@ -166,7 +166,8 @@ protected:
 	void updateTriggerOnDeath(void);
 
 	// from CObjectViewer::IMainLoopCallBack
-	virtual void go();
+	virtual void goPostRender();
+	virtual void goPreRender() {}
 
 
 	// Generated message map functions
@@ -182,6 +183,8 @@ protected:
 	afx_msg void OnSelchangeMatrixMode();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+	void touchPSState();
 };
 
 //{{AFX_INSERT_LOCATION}}

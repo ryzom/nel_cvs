@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.12 2003/11/18 13:59:52 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.13 2004/06/17 08:12:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@ namespace NL3D
 
 #include "attrib_dlg.h"
 #include "dialog_stack.h"
+#include "particle_workspace.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CEmitterDlg dialog
@@ -51,7 +52,7 @@ public:
 	// this enum match the option in the combo box that allow to choose how the direction of emission is computed.
 	enum TDirectionMode { Default = 0, AlignOnEmitterDirection, InWorld, LocalToSystem, LocalToFatherSkeleton };
 public:
-	CEmitterDlg(NL3D::CPSEmitter *emitter, CParticleDlg *particleDlg);   // standard constructor
+	CEmitterDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSEmitter *emitter, CParticleDlg *particleDlg);   // standard constructor
 
 	~CEmitterDlg();
 
@@ -81,6 +82,7 @@ public:
 protected:
 	// the emitter being edited
 	NL3D::CPSEmitter	 *_Emitter;	
+	CParticleWorkspace::CNode *_Node;
 	CAttribDlgFloat		 *_PeriodDlg;
 	CAttribDlgUInt		 *_GenNbDlg;
 	CAttribDlgFloat		 *_StrenghtModulateDlg;
@@ -119,12 +121,13 @@ protected:
 
 			struct CPeriodWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
 			{
+			   CParticleWorkspace::CNode *Node;
 			   NL3D::CPSEmitter *E;
 			   CStartStopParticleSystem *SSPS;
 			   float get(void) const { return E->getPeriod(); }
-			   void set(const float &v) { E->setPeriod(v); SSPS->resetAutoCount(); }
+			   void set(const float &v) { E->setPeriod(v); SSPS->resetAutoCount(Node); }
 			   scheme_type *getScheme(void) const { return E->getPeriodScheme(); }
-			   void setScheme(scheme_type *s) { E->setPeriodScheme(s); SSPS->resetAutoCount(); }
+			   void setScheme(scheme_type *s) { E->setPeriodScheme(s); SSPS->resetAutoCount(Node); }
 			} _PeriodWrapper;
 
 		//////////////////////////////////////////////
@@ -135,10 +138,11 @@ protected:
 			{
 			   NL3D::CPSEmitter *E;
 			   CStartStopParticleSystem *SSPS;
+			   CParticleWorkspace::CNode *Node;
 			   uint32 get(void) const { return E->getGenNb(); }
-			   void set(const uint32 &v) { E->setGenNb(v); SSPS->resetAutoCount(); }
+			   void set(const uint32 &v) { E->setGenNb(v); SSPS->resetAutoCount(Node); }
 			   scheme_type *getScheme(void) const { return E->getGenNbScheme(); }
-			   void setScheme(scheme_type *s) { E->setGenNbScheme(s); SSPS->resetAutoCount(); }
+			   void setScheme(scheme_type *s) { E->setGenNbScheme(s); SSPS->resetAutoCount(Node); }
 			} _GenNbWrapper;
 
 		////////////////////////////////////////////////////////
@@ -196,8 +200,9 @@ protected:
 			{
 			   NL3D::CPSEmitter *E;
 			   CStartStopParticleSystem *SSPS;
+			   CParticleWorkspace::CNode *Node;
 			   float get(void) const { return E->getEmitDelay(); }
-			   void set(const float &f) { E->setEmitDelay(f); SSPS->resetAutoCount(); }	
+			   void set(const float &f) { E->setEmitDelay(f); SSPS->resetAutoCount(Node); }	
 			} _DelayedEmissionWrapper;
 
 
@@ -210,6 +215,7 @@ protected:
 			   CEditableRangeUInt   *MaxEmissionCountDlg;
 			   NL3D::CPSEmitter *E;
 			   CStartStopParticleSystem *SSPS;
+			   CParticleWorkspace::CNode *Node;
 			   HWND	HWnd;
 			   uint32 get(void) const { return E->getMaxEmissionCount(); }
 			   void set(const uint32 &count);
@@ -218,6 +224,8 @@ protected:
 
 	// contains pointers to the located
 	std::vector<NL3D::CPSLocated *> _LocatedList;
+
+	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }
 };
 
 //{{AFX_INSERT_LOCATION}}

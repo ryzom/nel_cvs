@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.9 2004/06/01 16:28:45 vizerie Exp $
+ * $Id: mesh_dlg.cpp,v 1.10 2004/06/17 08:11:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,18 +25,17 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "mesh_dlg.h"
+#include "edit_morph_mesh_dlg.h"
+//
 #include "3d/ps_particle.h"
 #include "3d/ps_mesh.h"
-#include "edit_morph_mesh_dlg.h"
 #include "3d/particle_system_model.h"
-
-
-
+//
 #include "nel/misc/path.h"
 
 ///==================================================================
-CMeshDlg::CMeshDlg(NL3D::CPSShapeParticle *sp, CParticleDlg  *particleDlg)
-	: _ShapeParticle(sp), _EMMD(NULL), _ParticleDlg(particleDlg)
+CMeshDlg::CMeshDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSShapeParticle *sp, CParticleDlg  *particleDlg)
+	: _Node(ownerNode), _ShapeParticle(sp), _EMMD(NULL), _ParticleDlg(particleDlg)
 {
 	//{{AFX_DATA_INIT(CMeshDlg)
 	//}}AFX_DATA_INIT
@@ -85,6 +84,16 @@ BEGIN_MESSAGE_MAP(CMeshDlg, CDialog)
 END_MESSAGE_MAP()
 
 ///==================================================================
+void CMeshDlg::touchPSState()
+{
+	if (_Node && _Node->getPSModel())
+	{	
+		_Node->getPSModel()->touchTransparencyState();
+		_Node->getPSModel()->touchLightableState();
+	}
+}
+
+///==================================================================
 void CMeshDlg::OnBrowseShape() 
 {
 	
@@ -108,8 +117,7 @@ void CMeshDlg::OnBrowseShape()
 		{		
 			_ShapeParticle->setShape(std::string(fname) + ext);		
 			m_ShapeName = (std::string(fname) + ext).c_str();
-			_ParticleDlg->getCurrPSModel()->touchTransparencyState();
-			_ParticleDlg->getCurrPSModel()->touchLightableState();
+			touchPSState();			
 		}
 		catch (NLMISC::Exception &e)
 		{
@@ -186,6 +194,7 @@ void CMeshDlg::OnEnableMorphing()
 		cm->setShape(currName);
 	}
 	updateForMorph();
+	updateModifiedFlag();
 }
 
 ///==================================================================
@@ -194,7 +203,7 @@ void CMeshDlg::OnEditMorph()
 	nlassert(_EMMD == NULL);
 	NL3D::CPSConstraintMesh *cm = NLMISC::safe_cast<NL3D::CPSConstraintMesh *>(_ShapeParticle);
 	EnableWindow(FALSE);
-	_EMMD = new CEditMorphMeshDlg(cm, this, _ParticleDlg, this);
+	_EMMD = new CEditMorphMeshDlg(_Node, cm, this, _ParticleDlg, this);
 	_EMMD->init(this);
 }
 

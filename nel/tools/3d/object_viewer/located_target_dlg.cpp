@@ -1,7 +1,7 @@
 /** \file located_target_dlg.cpp
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.cpp,v 1.9 2003/08/22 09:02:56 vizerie Exp $
+ * $Id: located_target_dlg.cpp,v 1.10 2004/06/17 08:11:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,9 @@
 // CLocatedTargetDlg dialog
 
 
-CLocatedTargetDlg::CLocatedTargetDlg(NL3D::CPSTargetLocatedBindable *lbTarget, CParticleDlg *particleDlg) : _LBTarget(lbTarget), _ParticleDlg(particleDlg)
+CLocatedTargetDlg::CLocatedTargetDlg(CParticleWorkspace::CNode *ownerNode,
+									 NL3D::CPSTargetLocatedBindable *lbTarget,
+									 CParticleDlg *particleDlg) : _Node(ownerNode), _LBTarget(lbTarget), _ParticleDlg(particleDlg)
 {
 	nlassert(particleDlg);
 	//{{AFX_DATA_INIT(CLocatedTargetDlg)
@@ -78,7 +80,6 @@ void CLocatedTargetDlg::init(CWnd* pParent)
 void CLocatedTargetDlg::OnAddTarget() 
 {
 	UpdateData();
-	
 	int totalCount = m_AvailableTargets.GetCount();
 	nlassert(totalCount);
 	std::vector<int> indexs;
@@ -122,27 +123,21 @@ void CLocatedTargetDlg::OnAddTarget()
 		m_AvailableTargets.DeleteString(indexs[k] - k);
 		int l = m_Targets.AddString(loc->getName().c_str());
 		m_Targets.SetItemData(l, (DWORD) loc);
-	}
-
-	
+	}	
 	UpdateData(FALSE);
-
-
+	//
+	updateModifiedFlag();
 }
 
 void CLocatedTargetDlg::OnRemoveTarget() 
 {
 	UpdateData();	
-
-
 	int totalCount = m_Targets.GetCount();
 	nlassert(totalCount);
 	std::vector<int> indexs;
 	indexs.resize(totalCount);
 	int selCount = m_Targets.GetSelItems(totalCount, &indexs[0]);
-
 	std::sort(indexs.begin(), indexs.begin() + selCount); // we never know ...
-
 	for (int k = 0; k < selCount; ++k)
 	{
 		NL3D::CPSLocated *loc = (NL3D::CPSLocated *) m_Targets.GetItemData(indexs[k] - k);
@@ -153,8 +148,8 @@ void CLocatedTargetDlg::OnRemoveTarget()
 	
 		m_AvailableTargets.SetItemData(l, (DWORD) loc);
 	}
-
 	UpdateData(FALSE);	
+	updateModifiedFlag();
 }
 
 BOOL CLocatedTargetDlg::OnInitDialog() 
@@ -207,7 +202,7 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 
 	if (dynamic_cast<NL3D::CPSZone *>(_LBTarget))
 	{
-		CCollisionZoneDlg *czd = new CCollisionZoneDlg(dynamic_cast<NL3D::CPSZone *>(_LBTarget), _ParticleDlg);
+		CCollisionZoneDlg *czd = new CCollisionZoneDlg(_Node, dynamic_cast<NL3D::CPSZone *>(_LBTarget), _ParticleDlg);
 		pushWnd(czd);
 		czd->init(posX, posY, this);
 	}
@@ -218,7 +213,7 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 	if (dynamic_cast<NL3D::CPSForceIntensity *>(_LBTarget))
 	{
 		_ForceIntensityWrapper.F = dynamic_cast<NL3D::CPSForceIntensity *>(_LBTarget);
-		CAttribDlgFloat *fi = new CAttribDlgFloat(std::string("FORCE INTENSITY"), 0, 100);
+		CAttribDlgFloat *fi = new CAttribDlgFloat(std::string("FORCE INTENSITY"), _Node, 0, 100);
 		pushWnd(fi);			
 		fi->setWrapper(&_ForceIntensityWrapper);
 		fi->setSchemeWrapper(&_ForceIntensityWrapper);
@@ -234,7 +229,7 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 	// vortex (to tune viscosity)
 	if (dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget))
 	{
-		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("RADIAL_VISCOSITY"), 0, 1);
+		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("RADIAL_VISCOSITY"), _Node, 0, 1);
 		pushWnd(rv);
 		_RadialViscosityWrapper.V = dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget);
 		rv->setWrapper(&_RadialViscosityWrapper);
@@ -248,7 +243,7 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 		rv->GetClientRect(&r);
 		posY += r.bottom + 3;
 
-		CEditableRangeFloat *tv = new CEditableRangeFloat(std::string("TANGENTIAL_VISCOSITY"), 0, 1);
+		CEditableRangeFloat *tv = new CEditableRangeFloat(std::string("TANGENTIAL_VISCOSITY"), _Node, 0, 1);
 		pushWnd(tv);
 		_TangentialViscosityWrapper.V = dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget);
 		tv->setWrapper(&_TangentialViscosityWrapper);
@@ -279,7 +274,7 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 	// Brownian (to tune parametric factor)
 	if (dynamic_cast<NL3D::CPSBrownianForce *>(_LBTarget))
 	{
-		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("PARAMETRIC_FACTOR"), 0, 64);
+		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("PARAMETRIC_FACTOR"), _Node, 0, 64);
 		pushWnd(rv);
 		_ParamFactorWrapper.F = static_cast<NL3D::CPSBrownianForce *>(_LBTarget);
 		rv->setWrapper(&_ParamFactorWrapper);

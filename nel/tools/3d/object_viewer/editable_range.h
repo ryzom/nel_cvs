@@ -1,7 +1,7 @@
 /** \file editable_range.h
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.h,v 1.12 2003/08/08 16:58:09 vizerie Exp $
+ * $Id: editable_range.h,v 1.13 2004/06/17 08:12:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,22 +39,19 @@
 #include "range_selector.h"
 #include "ps_wrapper.h"
 #include "bound_checker.h"
-
+#include "particle_workspace.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditableRange dialog
 
 class CEditableRange : public CEditAttribDlg
 {
-public:
-	
-
+public:	
 	/**
-	 * construct the dialog by giving it an Id. It will be used to save the user preference
-	 * Each dialog of this type must have its own id in the app
+	 * Construct the dialog by giving it an Id. It will be used to save the user preference.
+	 * Each dialog of this type must have its own id in the app.
 	 */
-	CEditableRange(const std::string &id);   // standard constructor
-
+	CEditableRange(const std::string &id, CParticleWorkspace::CNode *node);   // standard constructor
 // Dialog Data
 	//{{AFX_DATA(CEditableRange)
 	enum { IDD = IDD_EDITABLE_RANGE };
@@ -78,56 +75,34 @@ public:
 
 
 	// init the dialog at the given position
-	public:
-
+public:
 	virtual void init(uint32 x, uint32 y, CWnd *pParent);
-
 	BOOL EnableWindow( BOOL bEnable = TRUE );
-
-
 public:
 	/// for derivers : this must querries the value to the desired manager and set the dialog values
 	virtual void updateRange(void) = 0;
 	/** for derivers : value update from a linked object (reader). See examples in subclasses
 	 */
 	virtual void updateValueFromReader(void) = 0;
-
 	// empty the values and the slider
-	void emptyDialog(void);
-
-	
+	void emptyDialog(void);	
 	// validate the lower an upper bound of a range from their string representation
 	virtual bool editableRangeValueValidator(const CString &lo, const CString &up) = 0;
-
 	// update the dialog display
 	void update();
-
 // Implementation
-protected:
-
-	
+protected:	
 	/** for derivers : value update : this is call with a float ranging from 0.f to 1.f (from the slider)
 	 *  And it must convert it to the desired value, changing the value of this dialog
 	 */
-	virtual void updateValueFromSlider(double sliderValue) = 0;
-
-	
-
+	virtual void updateValueFromSlider(double sliderValue) = 0;	
 	/// the text has changed, and the user has pressed update
 	virtual void updateValueFromText(void) = 0;	
-
-
-
-
 	// the range tune button was pressed. It muist show a dialog that allows the user to choose the range he wants
-	virtual void selectRange(void) = 0;
-
-	
-
+	virtual void selectRange(void) = 0;	
 	// the unique id of this dialog
 	std::string _Id;
-
-
+	CParticleWorkspace::CNode *_Node; // Node that owns the value	
 	// Generated message map functions
 	//{{AFX_MSG(CEditableRange)
 	virtual BOOL OnInitDialog();
@@ -151,13 +126,15 @@ class CEditableRangeT : public CEditableRange, public CBoundChecker<T>
 {
 public:
 /// ctor, it gives the range for the values
-	CEditableRangeT(const std::string &id, T defaultMin, T defaultMax)
-		: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)		
+	CEditableRangeT(const std::string &id, CParticleWorkspace::CNode *node, T defaultMin, T defaultMax)
+		: CEditableRange(id, node), _Range(defaultMin, defaultMax), _Wrapper(NULL)		
 	{		
 	}
 	
-	// set an interface of a wrapper  to read / write values in the particle system
-	void setWrapper(IPSWrapper<T> *wrapper) { _Wrapper = wrapper; }
+	/** set an interface of a wrapper  to read / write values in the particle system
+	  * NB : The 'OwnerNode' field of the wrapper if set to the value given when to 'node' when this object was constructed
+	  */
+	void setWrapper(IPSWrapper<T> *wrapper) { _Wrapper = wrapper; _Wrapper->OwnerNode = _Node; }
 
 
 
@@ -206,7 +183,7 @@ protected:
 			}
 			
 
-			_Wrapper->set(value);
+			_Wrapper->setAndUpdateModifiedFlag(value);
 			setValue(value);
 			return;
 		}
@@ -239,7 +216,7 @@ protected:
 
 		if (_Wrapper)
 		{
-			_Wrapper->set(value);
+			_Wrapper->setAndUpdateModifiedFlag(value);
 		}
 
 		UpdateData(FALSE);
@@ -339,8 +316,8 @@ protected:
 // float specialization.                              //
 ////////////////////////////////////////////////////////
 
-CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin, float defaultMax ) 
-	: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
+CEditableRangeT<float>::CEditableRangeT(const std::string &id, CParticleWorkspace::CNode *node, float defaultMin, float defaultMax ) 
+	: CEditableRange(id, node), _Range(defaultMin, defaultMax), _Wrapper(NULL)
 {
 }
 
@@ -365,8 +342,8 @@ inline const char *CEditableRangeT<float>::string2value(const CString &value, fl
 // uint32 specialization.                             //
 ////////////////////////////////////////////////////////
 
-CEditableRangeT<uint32>::CEditableRangeT(const std::string &id, uint32 defaultMin , uint32 defaultMax )
-	: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
+CEditableRangeT<uint32>::CEditableRangeT(const std::string &id, CParticleWorkspace::CNode *node, uint32 defaultMin , uint32 defaultMax )
+	: CEditableRange(id, node), _Range(defaultMin, defaultMax), _Wrapper(NULL)
 {
 }
 
@@ -401,8 +378,8 @@ inline const char *CEditableRangeT<uint32>::string2value(const CString &value, u
 // sint32 specialization.                             //
 ////////////////////////////////////////////////////////
 
-CEditableRangeT<sint32>::CEditableRangeT(const std::string &id, sint32 defaultMin , sint32 defaultMax )
-	: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
+CEditableRangeT<sint32>::CEditableRangeT(const std::string &id, CParticleWorkspace::CNode *node, sint32 defaultMin , sint32 defaultMax)
+	: CEditableRange(id, node), _Range(defaultMin, defaultMax), _Wrapper(NULL)
 {
 }
 

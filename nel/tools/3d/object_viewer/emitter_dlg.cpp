@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.19 2004/06/01 16:29:05 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.20 2004/06/17 08:12:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,8 +38,9 @@
 // CEmitterDlg dialog
 
 
-CEmitterDlg::CEmitterDlg(NL3D::CPSEmitter *emitter, CParticleDlg *particleDlg)
-	  : _Emitter(emitter),
+CEmitterDlg::CEmitterDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSEmitter *emitter, CParticleDlg *particleDlg)
+	  : _Node(ownerNode),
+		_Emitter(emitter),
 	    _PeriodDlg(NULL),
 		_GenNbDlg(NULL),
 	    _StrenghtModulateDlg(NULL),
@@ -135,7 +136,7 @@ void CEmitterDlg::OnSelchangeEmittedType()
 	uint k = m_EmittedTypeCtrl.GetCurSel();
 	if (!_Emitter->setEmittedType(_LocatedList[k]))
 	{
-		if (_ParticleDlg->getCurrPS()->getBehaviourType() == NL3D::CParticleSystem::SpellFX || _ParticleDlg->getCurrPS()->getBypassMaxNumIntegrationSteps())
+		if (_Emitter->getOwner()->getOwner()->getBehaviourType() == NL3D::CParticleSystem::SpellFX || _Emitter->getOwner()->getOwner()->getBypassMaxNumIntegrationSteps())
 		{		
 			MessageBox("Can't perform operation : the system is flagged with 'No max nb steps' or uses the preset 'Spell FX', and thus, should have a finite duration. This operation create a loop in the system, and so is forbidden.", "Error", MB_ICONEXCLAMATION);
 		}
@@ -145,7 +146,8 @@ void CEmitterDlg::OnSelchangeEmittedType()
 		}
 		initEmittedType();
 	}	
-	_ParticleDlg->StartStopDlg->resetAutoCount();
+	_ParticleDlg->StartStopDlg->resetAutoCount(_Node);
+	updateModifiedFlag();
 }
 
 void CEmitterDlg::OnSelchangeTypeOfEmission() 
@@ -162,7 +164,8 @@ void CEmitterDlg::OnSelchangeTypeOfEmission()
 	}
 
 	updatePeriodDlg();
-	_ParticleDlg->StartStopDlg->resetAutoCount();
+	_ParticleDlg->StartStopDlg->resetAutoCount(_Node);
+	updateModifiedFlag();
 }
 
 
@@ -182,25 +185,27 @@ BOOL CEmitterDlg::OnInitDialog()
 
 	 GetDlgItem(IDC_SPEED_INHERITANCE_FACTOR_FRAME)->GetWindowRect(&r);
 	 ScreenToClient(&r);
-	_SpeedInheritanceFactorDlg = new CEditableRangeFloat("SPEED_INHERITANCE_FACTOR", -1.f, 1.f);
+	_SpeedInheritanceFactorDlg = new CEditableRangeFloat("SPEED_INHERITANCE_FACTOR", _Node, -1.f, 1.f);
 	_SpeedInheritanceFactorWrapper.E = _Emitter;
 	_SpeedInheritanceFactorDlg->setWrapper(&_SpeedInheritanceFactorWrapper);
 	_SpeedInheritanceFactorDlg->init(r.left, r.top, this);
 
 	 GetDlgItem(IDC_DELAYED_EMISSION_FRAME)->GetWindowRect(&r);
 	 ScreenToClient(&r);
-	_DelayedEmissionDlg = new CEditableRangeFloat("DELAYED_EMISSION", 0.f, 10.f);
+	_DelayedEmissionDlg = new CEditableRangeFloat("DELAYED_EMISSION", _Node, 0.f, 10.f);
 	_DelayedEmissionDlg->enableLowerBound(0.f, false);
 	_DelayedEmissionWrapper.E = _Emitter;
+	_DelayedEmissionWrapper.Node = _Node;
 	_DelayedEmissionWrapper.SSPS = _ParticleDlg->StartStopDlg;
 	_DelayedEmissionDlg->setWrapper(&_DelayedEmissionWrapper);
 	_DelayedEmissionDlg->init(r.left, r.top, this);
 
 	GetDlgItem(IDC_MAX_EMISSION_COUNT_FRAME)->GetWindowRect(&r);
 	 ScreenToClient(&r);
-	_MaxEmissionCountDlg = new CEditableRangeUInt("MAX_EMISSION_COUNT", 0, 100);	
+	_MaxEmissionCountDlg = new CEditableRangeUInt("MAX_EMISSION_COUNT", _Node, 0, 100);
 	_MaxEmissionCountDlg->enableUpperBound(256, false);
 	_MaxEmissionCountWrapper.E = _Emitter;
+	_MaxEmissionCountWrapper.Node = _Node;
 	_MaxEmissionCountWrapper.SSPS = _ParticleDlg->StartStopDlg;
 	_MaxEmissionCountWrapper.HWnd = (HWND) (*this);
 	_MaxEmissionCountDlg->setWrapper(&_MaxEmissionCountWrapper);
@@ -214,8 +219,9 @@ BOOL CEmitterDlg::OnInitDialog()
 
 	// setup the dialog for the period of emission edition
 
-	_PeriodDlg = new CAttribDlgFloat("EMISSION_PERIOD", 0.f, 2.f);	
+	_PeriodDlg = new CAttribDlgFloat("EMISSION_PERIOD", _Node, 0.f, 2.f);	
 	_PeriodWrapper.E = _Emitter;
+	_PeriodWrapper.Node = _Node;
 	_PeriodWrapper.SSPS = _ParticleDlg->StartStopDlg;
 	_PeriodDlg->setWrapper(&_PeriodWrapper);
 	_PeriodDlg->setSchemeWrapper(&_PeriodWrapper);
@@ -225,8 +231,9 @@ BOOL CEmitterDlg::OnInitDialog()
 
 	// setup the dialog that helps tuning the number of particle being emitted at a time
 
-	_GenNbDlg = new CAttribDlgUInt("EMISSION_GEN_NB",1,11);
+	_GenNbDlg = new CAttribDlgUInt("EMISSION_GEN_NB",  _Node, 1, 11);
 	_GenNbWrapper.E = _Emitter;
+	_GenNbWrapper.Node = _Node;
 	_GenNbWrapper.SSPS = _ParticleDlg->StartStopDlg;
 	_GenNbDlg->setWrapper(&_GenNbWrapper);
 	_GenNbDlg->setSchemeWrapper(&_GenNbWrapper);
@@ -236,7 +243,7 @@ BOOL CEmitterDlg::OnInitDialog()
 
 	if (dynamic_cast<NL3D::CPSModulatedEmitter *>(_Emitter))
 	{
-		_StrenghtModulateDlg = new CAttribDlgFloat("EMISSION_GEN_NB",1,11);
+		_StrenghtModulateDlg = new CAttribDlgFloat("EMISSION_GEN_NB",  _Node, 1, 11);
 		_ModulatedStrenghtWrapper.E = dynamic_cast<NL3D::CPSModulatedEmitter *>(_Emitter);
 		_StrenghtModulateDlg->setWrapper(&_ModulatedStrenghtWrapper);
 		_StrenghtModulateDlg->setSchemeWrapper(&_ModulatedStrenghtWrapper);
@@ -261,7 +268,7 @@ BOOL CEmitterDlg::OnInitDialog()
 	// radius  for conic emitter
 	if (dynamic_cast<NL3D::CPSEmitterConic *>(_Emitter))
 	{
-		CEditableRangeFloat *ecr = new CEditableRangeFloat(std::string("CONIC EMITTER RADIUS"), 0.1f, 2.1f);
+		CEditableRangeFloat *ecr = new CEditableRangeFloat(std::string("CONIC EMITTER RADIUS"), _Node, 0.1f, 2.1f);
 		pushWnd(ecr);
 		_ConicEmitterRadiusWrapper.E = dynamic_cast<NL3D::CPSEmitterConic *>(_Emitter);
 		ecr->setWrapper(&_ConicEmitterRadiusWrapper);
@@ -325,6 +332,7 @@ void CEmitterDlg::OnConsistentEmission()
 {
 	UpdateData();
 	_Emitter->enableConsistenEmission(m_ConsistentEmission != 0 ? true : false /* VC6 warning */);
+	updateModifiedFlag();
 	UpdateData(TRUE);
 }
 
@@ -333,6 +341,7 @@ void CEmitterDlg::OnBypassAutoLOD()
 	UpdateData();
 	_Emitter->setBypassAutoLOD(m_BypassAutoLOD ? true : false);
 	UpdateData(TRUE);	
+	updateModifiedFlag();
 }
 
 void CEmitterDlg::CMaxEmissionCountWrapper::set(const uint32 &count)
@@ -346,7 +355,7 @@ void CEmitterDlg::CMaxEmissionCountWrapper::set(const uint32 &count)
 	   ::MessageBox(HWnd, (LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);	   
 	   MaxEmissionCountDlg->updateValueFromReader();
    }
-   SSPS->resetAutoCount();
+   SSPS->resetAutoCount(Node);
 }
 
 void CEmitterDlg::OnSelchangeDirectionMode() 
@@ -379,7 +388,6 @@ void CEmitterDlg::OnSelchangeDirectionMode()
 			_Emitter->setUserMatrixModeForEmissionDirection(NL3D::PSUserMatrix);
 		break;
 	}
-	
-
+	updateModifiedFlag();
 	UpdateData(FALSE);
 }

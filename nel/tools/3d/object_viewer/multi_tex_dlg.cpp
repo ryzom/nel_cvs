@@ -1,7 +1,7 @@
 /** \file multi_tex_dlg.cpp
  * A dialog to tune multexturing for particles that support it
  *
- * $Id: multi_tex_dlg.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
+ * $Id: multi_tex_dlg.cpp,v 1.5 2004/06/17 08:11:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,8 +39,9 @@
 // CMultiTexDlg dialog
 
 
-CMultiTexDlg::CMultiTexDlg(NL3D::CPSMultiTexturedParticle *mtp, IPopupNotify* pn, CWnd *pParent)
+CMultiTexDlg::CMultiTexDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSMultiTexturedParticle *mtp, IPopupNotify* pn, CWnd *pParent)
 	: CDialog(IDD_MULTITEX, pParent),
+	  _Node(ownerNode),
 	  _MTP(mtp),
 	  _MainTexDlg(NULL), _AltTexDlg(NULL),
 	  _PN(pn)
@@ -110,13 +111,13 @@ BOOL CMultiTexDlg::OnInitDialog()
 
 	RECT r;
 	
-	_MainTexDlg = new CTextureChooser;
+	_MainTexDlg = new CTextureChooser(NULL, _Node);
 	_MainTexDlg->setWrapper(&_TexWrapper);
 	GetDlgItem(IDC_TEX_CHOOSER)->GetWindowRect(&r);
 	ScreenToClient(&r);
 	_MainTexDlg->init(r.left, r.top, this);
 
-	_AltTexDlg = new CTextureChooser;
+	_AltTexDlg = new CTextureChooser(NULL, _Node);
 	_AltTexDlg->setWrapper(&_AlternateTexWrapper);
 	GetDlgItem(IDC_TEX_CHOOSER_ALTERNATE)->GetWindowRect(&r);
 	ScreenToClient(&r);
@@ -228,6 +229,7 @@ void CMultiTexDlg::writeValues(bool alternate)
 		{
 			_MTP->setScrollSpeed(0, vs1);	
 			_MTP->setScrollSpeed(1, vs2);	
+			updateModifiedFlag();
 		}
 		else
 		{
@@ -249,6 +251,7 @@ void CMultiTexDlg::writeValues(bool alternate)
 			{
 				_MTP->setAlternateScrollSpeed(0, vs1);	
 				_MTP->setAlternateScrollSpeed(1, vs2);	
+				updateModifiedFlag();
 			}
 		}
 	}
@@ -259,6 +262,7 @@ void CMultiTexDlg::writeValues(bool alternate)
 	if (sscanf(bumpFactorTxt, "%f", &bumpFactor) == 1)
 	{
 		_MTP->setBumpFactor(bumpFactor);
+		updateModifiedFlag();
 	}
 }
 
@@ -274,6 +278,7 @@ void CMultiTexDlg::OnEnableAlternate()
 {
 	_MTP->enableAlternateTex(!_MTP->isAlternateTexEnabled());
 	updateAlternate();
+	updateModifiedFlag();
 }
 
 //======================================================
@@ -317,6 +322,7 @@ void CMultiTexDlg::OnSelchangeAlternateOp()
 {
 	UpdateData(TRUE);
 	_MTP->setAlternateTexOp((NL3D::CPSMultiTexturedParticle::TOperator) m_AlternateOpCtrl.GetCurSel());	
+	updateModifiedFlag();
 }
 
 //======================================================
@@ -324,8 +330,8 @@ void CMultiTexDlg::OnSelchangeMainOp()
 {
 	UpdateData(TRUE);
 	_MTP->setMainTexOp((NL3D::CPSMultiTexturedParticle::TOperator) m_MainOpCtrl.GetCurSel());	
-	updateBumpFactorEnabled();
-	
+	updateModifiedFlag();
+	updateBumpFactorEnabled();		
 }
 
 //======================================================
@@ -341,6 +347,7 @@ void CMultiTexDlg::OnUseParticleDate()
 {
 	UpdateData();
 	_MTP->setUseLocalDate(m_UseParticleDate ? true : false /* VC WARNING */);	
+	updateModifiedFlag();
 }
 
 //======================================================
@@ -348,4 +355,5 @@ void CMultiTexDlg::OnUseParticleDateAlt()
 {
 	UpdateData();
 	_MTP->setUseLocalDateAlt(m_UseParticleDateAlt ? true : false /* VC WARNING */);	
+	updateModifiedFlag();
 }

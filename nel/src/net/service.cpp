@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.191 2003/09/09 15:08:22 lecroart Exp $
+ * $Id: service.cpp,v 1.192 2003/09/09 15:22:46 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -470,8 +470,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			LogDirectory = CPath::standardizePath(getArg('L'));
 
 		createDebug (LogDirectory.c_str(), false);
-
-		//DebugLog->addNegativeFilter ("NETL");
 
 		// we create the log with service name filename ("test_service.log" for example)
 		fd.setParam (LogDirectory.c_str() + _LongName + ".log", false);

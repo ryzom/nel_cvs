@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__STL_DEBUG" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__STL_DEBUG" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -113,7 +113,16 @@ SOURCE=.\3d\render_trav.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\render_trav.h
+SOURCE=R:\code\nel\src\3d\tile_bank.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+# ADD CPP /YX
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -143,6 +152,15 @@ SOURCE=..\include\nel\3d\transform.h
 # Begin Source File
 
 SOURCE=.\3d\mot.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+# ADD CPP /YX
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

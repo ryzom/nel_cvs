@@ -6,6 +6,7 @@
 #include "nel/ai/agent/comp_handle.h"
 #include "nel/ai/fuzzy/fuzzyset.h"
 #include "nel/ai/logic/valueset.h"
+#include "nel/ai/logic/factbase.h"
 
 namespace NLAIAGENT
 {
@@ -19,6 +20,7 @@ namespace NLAIAGENT
 		_Maintain = a._Maintain;
 		_Priority = 0;
 		_Exclusive = a._Exclusive;
+		_FactBase = NULL;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -33,6 +35,7 @@ namespace NLAIAGENT
 		_Maintain = false;
 		_Priority = 0;
 		_Exclusive = true;
+		_FactBase = NULL;
 	}	
 
 	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CActorScript( manager )
@@ -43,6 +46,7 @@ namespace NLAIAGENT
 		_Maintain = false;
 		_Priority = 0;
 		_Exclusive = true;
+		_FactBase = NULL;
 	}
 
 	COperatorScript::~COperatorScript()
@@ -50,6 +54,19 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 		//const char *className = (const char *)getType();
 #endif
+
+		if ( _CurrentGoal != NULL )
+			_CurrentGoal->release();
+
+		if ( _FactBase != NULL )
+			_FactBase->release();
+
+		std::vector<NLAIAGENT::IObjectIA *>::iterator it_val = _VarValues.begin();
+		while ( it_val != _VarValues.end() )
+		{
+			(*it_val)->release();
+			it_val++;
+		}
 	}
 
 	const NLAIC::IBasicType *COperatorScript::clone() const

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.26 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.27 2002/06/25 12:57:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,6 +164,10 @@ void		CRenderTrav::traverse()
 	// Render Opaque stuff.
 	// =============================
 
+	// TempYoyo
+	//OrderOpaqueList.reset();
+	//OrderTransparentList.reset();
+
 	// Start LodCharacter Manager render.
 	Scene->getLodCharacterManager()->beginRender(getDriver(), CamPos);
 
@@ -178,6 +182,14 @@ void		CRenderTrav::traverse()
 		OrderOpaqueList.next();
 	}
 
+	/* Render MeshBlock Manager. 
+		Some Meshs may be render per block. Interesting to remove VertexBuffer and Material setup overhead.
+		Faster if rendered before lods, for ZBuffer optimisation: render first near objects then far. 
+		Lods are usually far objects.
+	*/
+	MeshBlockManager.flush(Driver, Scene, this);
+
+
 	// End LodCharacter Manager render.
 	Scene->getLodCharacterManager()->endRender();
 
@@ -190,13 +202,6 @@ void		CRenderTrav::traverse()
 	Scene->getDynamicCoarseMeshManager()->render(Driver);
 	// Render static one.
 	Scene->getStaticCoarseMeshManager()->render(Driver);
-
-
-	/* Render MeshBlock Manager. 
-		Some Meshs may be render per block. Interesting to remove VertexBuffer and Material setup overhead.
-	*/
-	MeshBlockManager.flush(Driver, Scene, this);
-
 
 
 	// Render Transparent stuff.

@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.27 2002/10/09 13:49:08 cado Exp $
+ * $Id: sock.cpp,v 1.28 2002/10/24 08:39:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -349,6 +349,7 @@ void CSock::connect( const CInetAddress& addr )
 #endif
 		}
 */
+
 		throw ESocketConnectionFailed( addr );
 	}
 	setLocalAddress();

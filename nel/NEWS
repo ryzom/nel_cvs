@@ -1,3 +1,12 @@
+October 24 2002
+===============
+
+*  NLNET: Changed whole admin system and not already usable
+*  NLNET: nel/tools/admin is totally deprecated, don't compile/use it anymore
+*  NLNET: IService now manages only layer 5 services
+*  NLNET: all nelns are converted to layer 5 services
+*  NLNET: login system was totally rewritten, with now nel_launcher and apache/mysql/php system
+
 August 22 2002
 ==============
 

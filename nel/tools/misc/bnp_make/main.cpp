@@ -1,8 +1,11 @@
+
 #include "nel/misc/types_nl.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <io.h>
-#include <direct.h>
+//#include <io.h>
+//#include <direct.h>
+
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 #include "nel/misc/file.h"
@@ -205,7 +208,7 @@ void unpack (const string &dirName)
 	for (uint32 i = 0; i < gBNPHeader.Files.size(); ++i)
 	{
 		BNPFile &rBNPFile = gBNPHeader.Files[i];
-		string filename = dirName + "\\" + rBNPFile.Name;
+		string filename = dirName + "/" + rBNPFile.Name;
 		out = fopen (filename.c_str(), "wb");
 		if (out != NULL)
 		{
@@ -303,7 +306,7 @@ int main (int nNbArg, char **ppArgs)
 				{
 					getcwd (sCurDir, MAX_PATH);
 					
-					gDestBNPFile = string(sDestDir) + '\\';
+					gDestBNPFile = string(sDestDir) + '/';
 
 					if(nNbArg == 5)
 					{
@@ -314,7 +317,7 @@ int main (int nNbArg, char **ppArgs)
 					}
 					else
 					{
-						char *pos = strrchr (sCurDir, '\\');
+						char *pos = strrchr (sCurDir, '/');
 						if (pos != NULL)
 						{
 							gDestBNPFile += string(pos+1);
@@ -359,9 +362,9 @@ int main (int nNbArg, char **ppArgs)
 		int i;
 		string path;
 		gDestBNPFile = ppArgs[2];
-		if ((gDestBNPFile.rfind('\\') != string::npos) || (gDestBNPFile.rfind('/') != string::npos))
+		if ((gDestBNPFile.rfind('/') != string::npos) || (gDestBNPFile.rfind('/') != string::npos))
 		{
-			int pos = gDestBNPFile.rfind('\\');
+			int pos = gDestBNPFile.rfind('/');
 			if (pos == string::npos)
 				pos = gDestBNPFile.rfind('/');
 			for (i = 0; i <= pos; ++i)
@@ -393,7 +396,8 @@ int main (int nNbArg, char **ppArgs)
 		if (!gBNPHeader.read (gDestBNPFile))
 			return -1;
 
-		mkdir (dirName.c_str());
+		//mkdir (dirName.c_str());
+		CFile::createDirectory(dirName);
 
 		unpack (dirName);
 

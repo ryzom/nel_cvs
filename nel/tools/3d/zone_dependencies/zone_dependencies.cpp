@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.16 2002/08/22 14:46:19 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.17 2003/02/03 14:00:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -727,8 +727,7 @@ static bool computeBBoxFromVillage(const NLGEORGES::UFormElm *villageItem,
 					group.serial (inputFile);
 					if (computeIGBBox(group, currBBox, shapeMap))
 					{
-						bboxFound = true;
-						if (l == 0)
+						if (!bboxFound)
 						{
 							result = currBBox;							
 						}
@@ -736,6 +735,7 @@ static bool computeBBoxFromVillage(const NLGEORGES::UFormElm *villageItem,
 						{						
 							result = NLMISC::CAABBox::computeAABBoxUnion(result, currBBox);
 						}
+						bboxFound = true;
 					}
 				}
 				catch(NLMISC::Exception &)

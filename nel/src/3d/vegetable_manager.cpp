@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.18 2002/03/15 16:10:44 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.19 2002/04/04 13:18:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1019,6 +1019,62 @@ inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceD
 
 
 // ***************************************************************************
+inline void		computeVegetVertexLightingForceOneSided(const CVector &rotNormal, bool instanceDoubleSided,
+	const CVector &sunDir, CRGBA primaryRGBA, CRGBA secondaryRGBA,
+	CVegetableLightEx &vegetLex, CRGBA diffusePL[2],
+	CRGBA *dstFront, CRGBA *dstBack)
+{
+	float	dpSun;
+	float	dpPL[2];
+	CRGBA	col;
+	CRGBA	resColor;
+
+
+	// compute front-facing coloring.
+	{
+		// Compute Sun Light.
+		dpSun= rotNormal*sunDir;
+		// ForceOneSided: take the absolute value (max of -val,val)
+		float	f= (float)fabs(dpSun);
+		col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+		// Add it with ambient
+		resColor.addRGBOnly(col, secondaryRGBA);
+
+		// Add influence of 2 lights only. (unrolled for better BTB use)
+		// Compute Light 0 ?
+		if(vegetLex.NumLights>=1)
+		{
+			dpPL[0]= rotNormal*vegetLex.Direction[0];
+			// ForceOneSided: take the absolute value (max of -val,val)
+			f= (float)fabs(dpPL[0]);
+			col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
+			resColor.addRGBOnly(col, resColor);
+			// Compute Light 1 ?
+			if(vegetLex.NumLights>=2)
+			{
+				dpPL[1]= rotNormal*vegetLex.Direction[1];
+				f= (float)fabs(dpPL[1]);
+				col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
+				resColor.addRGBOnly(col, resColor);
+			}
+		}
+
+		// copy to dest
+		*dstFront= resColor;
+	}
+
+	// If 2Sided
+	if(instanceDoubleSided)
+	{
+		// Since forceOneSided, same color as front_facing
+
+		// copy to dest
+		*dstBack= resColor;
+	}
+}
+
+
+// ***************************************************************************
 void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
@@ -1040,6 +1096,8 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	uint	rdrPass;
 	rdrPass= getRdrPassInfoForShape(shape, vegetWaterState, instanceLighted, instanceDoubleSided, 
 		instanceZSort, destLighted, precomputeLighting);
+	// oneSided Precompute lighting or not??
+	bool	oneSidedPrecomputeLighting= precomputeLighting && shape->OneSidedPreComputeLighting;
 
 
 	// veget rdrPass
@@ -1283,10 +1341,20 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			rotNormal.normalize();
 
 			// Do the compute.
-			computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
-				_DirectionalLight, primaryRGBA, secondaryRGBA, 
-				vegetLex, diffusePL, 
-				(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+			if(!oneSidedPrecomputeLighting)
+			{
+				computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
+					_DirectionalLight, primaryRGBA, secondaryRGBA, 
+					vegetLex, diffusePL, 
+					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+			}
+			else
+			{
+				computeVegetVertexLightingForceOneSided(rotNormal, instanceDoubleSided, 
+					_DirectionalLight, primaryRGBA, secondaryRGBA, 
+					vegetLex, diffusePL, 
+					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+			}
 
 		}
 
@@ -2291,6 +2359,9 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 	bool	instanceDoubleSided= shape->DoubleSided;
 	// Precompute lighting or not??
 	bool	precomputeLighting= instanceLighted && shape->PreComputeLighting;
+	// oneSided Precompute lighting or not??
+	bool	oneSidedPrecomputeLighting= precomputeLighting && shape->OneSidedPreComputeLighting;
+	// destLighted?
 	bool	destLighted= instanceLighted && !shape->PreComputeLighting;
 	// Diffuse and ambient, modulated by current GlobalAmbient and GlobalDiffuse.
 	CRGBA	primaryRGBA, secondaryRGBA;
@@ -2320,6 +2391,7 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 	uint	dstColor1Off= ( (destLighted||instanceDoubleSided)? 
 		dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1) : 0);
 	uint	dstColor0Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR0);
+
 
 
 	// For all vertices, recompute lighting.
@@ -2353,10 +2425,20 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 			rotNormal.normalize();
 
 			// Do the compute.
-			computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
-				_DirectionalLight, primaryRGBA, secondaryRGBA, 
-				vegetLex, diffusePL, 
-				(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+			if(!oneSidedPrecomputeLighting)
+			{
+				computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
+					_DirectionalLight, primaryRGBA, secondaryRGBA, 
+					vegetLex, diffusePL, 
+					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+			}
+			else
+			{
+				computeVegetVertexLightingForceOneSided(rotNormal, instanceDoubleSided, 
+					_DirectionalLight, primaryRGBA, secondaryRGBA, 
+					vegetLex, diffusePL, 
+					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
+			}
 
 		}
 

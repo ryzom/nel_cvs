@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.110 2002/02/15 17:43:03 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.111 2002/02/18 09:37:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -381,10 +381,10 @@ public:
 	virtual void			forceTextureResize(uint divisor);
 
 	/// Setup texture env functions. Used by setupMaterial
-	inline void				setTextureEnvFunction(uint stage, CMaterial& mat);
+	void				setTextureEnvFunction(uint stage, CMaterial& mat);
 
 	/// setup the texture matrix for a given number of stages (starting from 0)
-	inline void      setupUserTextureMatrix(uint numStages, CMaterial& mat);
+	void      setupUserTextureMatrix(uint numStages, CMaterial& mat);
 
 	/// For objects with caustics, setup the first texture (which actually is the one from the material)
 	/*static inline void		setupCausticsFirstTex(const CMaterial &mat);

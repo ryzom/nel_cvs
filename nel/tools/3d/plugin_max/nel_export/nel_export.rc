@@ -26,7 +26,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_PANEL DIALOG DISCARDABLE  0, 0, 108, 226
+IDD_PANEL DIALOG DISCARDABLE  0, 0, 108, 251
 STYLE WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -40,9 +40,11 @@ BEGIN
                     15
     PUSHBUTTON      "Export skeleton",ID_SAVESKELETON,10,30,85,15
     PUSHBUTTON      "Options",ID_OPTIONS,10,173,85,15
-    PUSHBUTTON      "Node properties",ID_NODE_PROPERTIES,10,195,85,15
+    PUSHBUTTON      "Node properties",ID_NODE_PROPERTIES,10,194,85,15
     PUSHBUTTON      "Export Collision",ID_SAVECOLLISION,10,131,85,15
-    CTEXT           "Can't read the version",IDC_VERSION,15,215,75,10
+    CTEXT           "Can't read the version",IDC_VERSION,15,234,75,10
+    PUSHBUTTON      "Test interface mesh",ID_TEST_INTERFACE_MESH,10,215,85,
+                    15
 END
 
 IDD_SWT DIALOG DISCARDABLE  0, 0, 186, 63
@@ -262,6 +264,14 @@ BEGIN
     EDITTEXT        IDC_RADIAL_NORMAL_32,200,90,57,14,ES_AUTOHSCROLL
     LTEXT           "For the 4 last smoothing group, choose the node you want to use the position to compute radial normals from it.",
                     IDC_STATIC,140,15,120,25
+    GROUPBOX        "Mesh interfaces",IDC_STATIC,134,110,219,55
+    LTEXT           "Interface .max file",IDC_STATIC,141,120,61,15,
+                    SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_INTERFACE_FILE,221,120,110,14,ES_AUTOHSCROLL
+    LTEXT           "Interface weld threshold",IDC_STATIC,141,140,77,15,
+                    SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_INTERFACE_THRESHOLD,221,140,110,14,
+                    ES_AUTOHSCROLL
 END
 
 IDD_VEGETABLE DIALOG DISCARDABLE  0, 0, 360, 200
@@ -302,7 +312,7 @@ BEGIN
                     BS_AUTO3STATE | WS_TABSTOP,20,155,120,15
 END
 
-IDD_INSTANCE DIALOG DISCARDABLE  0, 0, 360, 200
+IDD_INSTANCE DIALOG DISCARDABLE  0, 0, 360, 195
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -321,19 +331,19 @@ BEGIN
                     IDC_STATIC,195,45,160,15
     CONTROL         "Don't add to scene. If checked, this instance will not be added in the scene.",
                     IDC_DONT_ADD_TO_SCENE,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,5,70,255,10
+                    WS_TABSTOP,5,71,255,10
     CONTROL         "Don't export the shape. If checked, no shape file will be exported from this object.",
-                    IDC_DONT_EXPORT,"Button",BS_AUTO3STATE | WS_TABSTOP,5,85,
+                    IDC_DONT_EXPORT,"Button",BS_AUTO3STATE | WS_TABSTOP,5,86,
                     271,10
-    GROUPBOX        "Collision",IDC_STATIC,5,141,170,45
+    GROUPBOX        "Collision",IDC_STATIC,5,142,170,45
     CONTROL         "Collision Mesh",IDC_CHECK_COLLISION,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,10,151,110,10
+                    BS_AUTO3STATE | WS_TABSTOP,10,152,110,10
     CONTROL         "Collision Mesh Exterior",IDC_CHECK_COLLISION_EXTERIOR,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,10,167,110,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,10,168,110,10
     CONTROL         "Allow automatic animation.",IDC_AUTOMATIC_ANIM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,100,96,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,101,96,9
     LTEXT           "If the shape is ""obj.shape"", then it will bind ""obj.anim"" automatically.",
-                    IDC_STATIC,17,110,88,24
+                    IDC_STATIC,17,111,88,24
 END
 
 
@@ -350,7 +360,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 101
         TOPMARGIN, 7
-        BOTTOMMARGIN, 219
+        BOTTOMMARGIN, 244
     END
 
     IDD_SWT, DIALOG
@@ -422,7 +432,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 353
         TOPMARGIN, 7
-        BOTTOMMARGIN, 193
+        BOTTOMMARGIN, 188
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -461,7 +471,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1, 0, 0, 115
+ FILEVERSION 1,0,0,116
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -479,7 +489,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "TECH: \0"
             VALUE "CompanyName", "\0"
-            VALUE "FileVersion", "1, 0, 0, 115\0"
+            VALUE "FileVersion", "1, 0, 0, 116\0"
             VALUE "InternalName", "CNelExport\0"
             VALUE "LegalCopyright", "\0"
             VALUE "LegalTrademarks", "\0"
@@ -531,14 +541,14 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 // Dialog
 //
 
-IDD_NODE_PROPERTIES_PANEL DIALOG DISCARDABLE  0, 0, 384, 261
+IDD_NODE_PROPERTIES_PANEL DIALOG DISCARDABLE  0, 0, 384, 290
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Node properties"
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "Tab1",IDC_TAB,"SysTabControl32",0x0,7,7,370,228
-    DEFPUSHBUTTON   "Ok",IDOK,270,240,50,15
-    PUSHBUTTON      "Cancel",IDCANCEL,327,240,50,15
+    CONTROL         "Tab1",IDC_TAB,"SysTabControl32",0x0,7,7,370,258
+    DEFPUSHBUTTON   "Ok",IDOK,270,267,50,15
+    PUSHBUTTON      "Cancel",IDCANCEL,327,267,50,15
 END
 
 IDD_VERTEX_PROGRAM DIALOG DISCARDABLE  0, 0, 361, 211
@@ -648,7 +658,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 377
         TOPMARGIN, 7
-        BOTTOMMARGIN, 254
+        BOTTOMMARGIN, 283
     END
 
     IDD_VERTEX_PROGRAM, DIALOG

@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.28 2002/04/10 14:39:40 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.29 2002/04/23 16:26:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "../nel_mesh_lib/export_lod.h"
 #include "../nel_patch_lib/rpo.h"
 #include "nel_export_scene.h"
+
+
  
 using namespace NL3D;
 using namespace NLMISC;
@@ -672,6 +674,50 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					}
 				}
 				break;
+				case ID_TEST_INTERFACE_MESH:					
+				{										
+					nlassert (theIP);					
+					theCNelExport.init (false, true, theIP);
+					// Get time
+					TimeValue time = theCNelExport._Ip->GetTime();
+					
+					// Get node count
+					uint nNumSelNode=theCNelExport._Ip->GetSelNodeCount();
+
+					// Check all selected nodes
+					if (nNumSelNode)
+					{
+						// Get the nodes
+						std::vector<INode*> vectNode;
+						theCNelExport.getSelectedNode (vectNode);
+						if (vectNode.size() == 0)
+						{
+							::MessageBox(hWnd, "No nodes selected", "Error", MB_OK|MB_ICONEXCLAMATION);
+							return ret;
+						}
+
+						// create a mem displayer, that will receive errors						
+						try
+						{								
+							// test all nodes
+							for(std::vector<INode*>::iterator it = vectNode.begin(); it != vectNode.end(); ++it)
+							{
+								nlassert(theCNelExport._ExportNel);
+								if (!theCNelExport._ExportNel->selectInterfaceVertices(**it, time))
+								{
+									::MessageBox(NULL, "Unable to bind interface of mesh %s", (*it)->GetName(), MB_OK | MB_ICONEXCLAMATION);
+									break;
+								}									
+							}	
+							theIP->RedrawViews(time);
+						}
+						catch(std::exception &e)
+						{							
+							::MessageBox(hWnd, e.what(), "Error", MB_OK | MB_ICONEXCLAMATION);
+						}						
+					}
+				}
+				break;									
 			}
 			
 			break;

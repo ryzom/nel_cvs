@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.19 2002/04/30 09:46:59 vizerie Exp $
+ * $Id: u_scene.h,v 1.20 2002/05/07 16:04:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -137,12 +137,7 @@ public:
 													    UInstanceGroup **pIG,
 														const NLMISC::CVector &offset
 													   ) = 0;
-	/** Update the waiting ig from a call to createInstanceGroupAndAddToSceneAsync.
-	  * This allow to check which instance group are loaded and allow to add them to scene.
-	  * This is called at each render, so you don't usually need to call it.
-	  */ 
-	virtual void	updateWaitingIG() = 0;
-
+	
 	/**	Stop loading and adding an ig to the scene
 	  */
 	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG) = 0;

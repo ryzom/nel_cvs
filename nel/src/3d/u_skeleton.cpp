@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: u_skeleton.cpp,v 1.3 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: u_skeleton.cpp,v 1.4 2004/07/27 17:46:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "3d/skeleton_model.h"
 #include "3d/mesh_base_instance.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/scene.h"
+#include "3d/shape_bank.h"
 
 
 namespace NL3D
@@ -442,6 +444,60 @@ const NLMISC::CVector	&USkeleton::getSSSWODir() const
 	NL3D_HAUTO_UI_SKELETON;
 	CSkeletonModel	*object = getObjectPtr();
 	return object->getSSSWODir();
+}
+
+// ***************************************************************************
+const std::string		&USkeleton::getShapeName() const
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+
+	static std::string emptyStr;
+	
+	CSkeletonModel	*object = getObjectPtr();
+	if(!object)
+		return emptyStr;
+	
+	// get the shape bank
+	CScene *scene= object->getOwnerScene();
+	CShapeBank	*sb= scene->getShapeBank();
+	if(!sb)
+		return emptyStr;
+	
+	// get the shape name
+	const std::string *str= sb->getShapeNameFromShapePtr(object->Shape);
+	if(str)
+		return *str;
+	else
+		return emptyStr;
+	
+}
+
+// ***************************************************************************
+void USkeleton::getStickedObjects(std::vector<UTransform> &sticks)
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+
+	sticks.clear();
+
+	CSkeletonModel	*sm= getObjectPtr();
+	if(!sm)
+		return;
+	
+	const std::set<CTransform*>	&stickSet= sm->getStickedObjects();
+	std::set<CTransform*>::const_iterator	it= stickSet.begin();
+	sticks.reserve(stickSet.size());
+	for(;it!=stickSet.end();it++)
+	{
+		sticks.push_back(*it);
+	}
+}
+
+// ***************************************************************************
+void USkeleton::cast(UTransform object)
+{
+	attach(dynamic_cast<CSkeletonModel*>(object.getObjectPtr()));
 }
 
 

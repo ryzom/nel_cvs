@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.15 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: shape_bank.h,v 1.16 2004/07/27 17:46:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,6 +161,9 @@ public:
 		const std::vector<std::string> &listFile, const std::string &wildCardNotLwr, NLMISC::IProgressCallback *progress = NULL, bool flushTextures = false, IDriver *drv = NULL);
 	// @}
 
+	// get the shape Name from the shape Ptr. return NULL if not found
+	const std::string*	getShapeNameFromShapePtr(IShape* pShp) const;
+	
 private:
 	/// \name Shape/Instances.
 	//@{
@@ -221,7 +224,6 @@ private:
 	};
 
 private:
-	std::string*	getShapeNameFromShapePtr(IShape* pShp);
 	IShape*			getShapePtrFromShapeName(const std::string &pShpName);
 	CShapeCache*	getShapeCachePtrFromShapePtr(IShape* pShp);
 	CShapeCache*	getShapeCachePtrFromShapeCacheName(const std::string &shapeCacheName);

@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.29 2004/06/21 17:38:41 lecroart Exp $
+ * $Id: shape_bank.cpp,v 1.30 2004/07/27 17:46:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ IShape*CShapeBank::addRef(const string &shapeNameNotLwr)
 	list<IShape*>::iterator lsIt = pShpCache->Elements.begin();
 	while(lsIt != pShpCache->Elements.end())
 	{
-		string *sTemp = getShapeNameFromShapePtr(*lsIt);
+		const string *sTemp = getShapeNameFromShapePtr(*lsIt);
 		if( *sTemp == shapeName )
 		{
 			// Ok the shape cache contains the shape remove it and return
@@ -95,7 +95,7 @@ IShape*CShapeBank::addRef(const string &shapeNameNotLwr)
 void CShapeBank::release(IShape* pShp)
 {
 	// Do we have the last smartPtr on the shape ?
-	string* str = getShapeNameFromShapePtr( pShp );
+	const string* str = getShapeNameFromShapePtr( pShp );
 
 	if (str == NULL)
 	{
@@ -720,9 +720,9 @@ CShapeBank::CShapeCache* CShapeBank::getShapeCachePtrFromShapeCacheName(const st
 
 // ***************************************************************************
 
-string* CShapeBank::getShapeNameFromShapePtr(IShape* pShp)
+const string* CShapeBank::getShapeNameFromShapePtr(IShape* pShp) const
 {
-	TShapeInfoMap::iterator scfpmIt = ShapePtrToShapeInfo.find( pShp );
+	TShapeInfoMap::const_iterator scfpmIt = ShapePtrToShapeInfo.find( pShp );
 	if( scfpmIt != ShapePtrToShapeInfo.end() )
 	{
 		return &(scfpmIt->second.sShpName);

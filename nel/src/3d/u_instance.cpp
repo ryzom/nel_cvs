@@ -1,7 +1,7 @@
 /** \file u_instance.cpp
  * Interface for instance objects.
  *
- * $Id: u_instance.cpp,v 1.3 2004/06/21 09:42:54 berenguier Exp $
+ * $Id: u_instance.cpp,v 1.4 2004/07/27 17:46:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "3d/mesh_multi_lod_instance.h"
 #include "3d/seg_remanence.h"
 #include "nel/misc/debug.h"
+#include "3d/scene.h"
+#include "3d/shape_bank.h"
 
 
 using	namespace NLMISC;
@@ -338,5 +340,36 @@ void UInstance::setDistMax(float distMax)
 }
 
 // ***************************************************************************
+
+const std::string &UInstance::getShapeName() const
+{
+	NL3D_MEM_INSTANCE
+
+	static std::string emptyStr;
+	
+	CTransformShape	*object = getObjectPtr();
+	if(!object)
+		return emptyStr;
+
+	// get the shape bank
+	CScene *scene= object->getOwnerScene();
+	CShapeBank	*sb= scene->getShapeBank();
+	if(!sb)
+		return emptyStr;
+
+	// get the shape name
+	const std::string *str= sb->getShapeNameFromShapePtr(object->Shape);
+	if(str)
+		return *str;
+	else
+		return emptyStr;
+}
+
+// ***************************************************************************
+void	UInstance::cast(UTransform object)
+{
+	attach(dynamic_cast<CTransformShape*>(object.getObjectPtr()));
+}
+
 
 } // NL3D

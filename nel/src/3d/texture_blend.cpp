@@ -1,7 +1,7 @@
 /** \file texture_blend.cpp
  * A helper texture class to blend between 2 others textures.
  *
- * $Id: texture_blend.cpp,v 1.3 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_blend.cpp,v 1.4 2004/02/20 14:40:20 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -106,10 +106,13 @@ void CTextureBlend::doGenerate(bool async)
 		makeDummy();
 		return;
 	}
-	
+	//NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();
 	_BlendTex[0]->generate();
 	_BlendTex[1]->generate();
-	this->blend(*_BlendTex[0], *_BlendTex[1], _BlendFactor);		
+	
+	this->blend(*_BlendTex[0], *_BlendTex[1], _BlendFactor, true);
+	/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
+	nlinfo("blend time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));*/
 }
 
 
@@ -127,7 +130,7 @@ void	CTextureBlend::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			_BlendTex[k] = tex;
 			touch();
 		}
-		else
+		else 
 		{
 			tex = _BlendTex[k];
 			f.serialPolyPtr(tex);

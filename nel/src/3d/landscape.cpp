@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.54 2001/04/24 14:57:32 corvazier Exp $
+ * $Id: landscape.cpp,v 1.55 2001/04/25 13:53:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/texture_far.h"
 #include "nel/3d/landscape_profile.h"
 #include "nel/3d/tmp/height_map.h"
+
 using namespace NLMISC;
 using namespace std;
 

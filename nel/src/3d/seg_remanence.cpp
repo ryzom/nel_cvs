@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.4 2002/07/04 10:35:39 vizerie Exp $
+ * $Id: seg_remanence.cpp,v 1.5 2002/07/04 14:50:46 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/driver.h"
 #include "3d/scene.h"
 #include "3d/anim_detail_trav.h"
+#include "3d/skeleton_model.h"
 
 
 
@@ -74,6 +75,14 @@ CSegRemanence::CSegRemanence() : _NumSlice(0),
 CSegRemanence::~CSegRemanence()
 {
 	delete _AniMat;
+	// Auto detach me from skeleton. Must do it here, not in ~CTransform().
+	if(_FatherSkeletonModel)
+	{
+		// detach me from the skeleton.
+		// Observers hierarchy is modified.
+		_FatherSkeletonModel->detachSkeletonSon(this);
+		nlassert(_FatherSkeletonModel==NULL);
+	}
 }
 
 //===============================================================
@@ -156,7 +165,7 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 	}
 	else
 	{
-		_UnrollRatio = std::max(0.f, _UnrollRatio - scene->getEllapsedTime() / (srs->getNumSlices() * srs->getSliceTime()));
+		_UnrollRatio = std::max(0.f, _UnrollRatio - srs->getRollupRatio() * scene->getEllapsedTime() / (srs->getNumSlices() * srs->getSliceTime()));
 		if (_UnrollRatio == 0.f)
 		{
 			_Stopping = false;

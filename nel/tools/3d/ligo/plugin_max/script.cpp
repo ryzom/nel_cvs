@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.24 2003/07/10 09:33:18 distrib Exp $
+ * $Id: script.cpp,v 1.25 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 // From ligo library
 #include "ligo/zone_template.h"
-#include "ligo/ligo_config.h"
+#include "nel/ligo/ligo_config.h"
 #include "ligo/ligo_error.h"
 #include "ligo/ligo_material.h"
 #include "ligo/transition.h"

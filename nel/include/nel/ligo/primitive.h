@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.19 2003/03/06 19:47:14 coutelas Exp $
+ * $Id: primitive.h,v 1.20 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,11 +37,17 @@
 namespace NLLIGO
 {
 
-// There are only x and y used in the vector
-// LayerName is the Group to which the primitive belongs to
-// Hide say if the primitive is hidden or not
+/**
+  * Ligo primitives are used to add logical geometrical gameplay informations.
+  * Ligo primitives are NODES, POINTS, PATHES or ZONES.
+  * Ligo primitives have a CLASS.
+  *
+  * The primitive class definies the properties attached to the primitive
+  * The primitive class are defined in the XML file specified in the LigoClass field of the CLigoConfig class.
+  */
 
 class CPrimitives;
+class CLigoConfig;
 
 // ***************************************************************************
 
@@ -55,6 +61,13 @@ void Register ();
 class IProperty
 {
 public:
+	IProperty ()
+	{
+		Default = false;
+	}
+
+	// This property is set to default
+	bool Default;
 	// Force class to be polymorphic
 	virtual void foo () const = 0;
 };
@@ -70,6 +83,7 @@ class CPropertyString : public IProperty
 public:
 	CPropertyString () {};
 	CPropertyString (const char *str);
+	CPropertyString (const char *str, bool _default);
 	~CPropertyString () {};
 	std::string			String;
 
@@ -89,6 +103,7 @@ public:
 	CPropertyStringArray () {};
 	~CPropertyStringArray () {}
 	CPropertyStringArray (const std::vector<std::string> &stringArray);
+	CPropertyStringArray (const std::vector<std::string> &stringArray, bool _default);
 	std::vector<std::string>	StringArray;
 
 	// Force class to be polymorphic
@@ -280,7 +295,7 @@ public:
 	void				removeProperties ();
 
 	// Read the primitive
-	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version);
+	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config);
 
 	// Write the primitive
 	virtual void write (xmlNodePtr xmlNode, const char *filename) const;
@@ -331,7 +346,7 @@ private:
 	virtual CPrimVector			*getPrimVector ();
 
 	// Read the primitive
-	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version);
+	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config);
 
 	// \name From IPrimitive
 	virtual IPrimitive *copy () const;
@@ -371,7 +386,7 @@ private:
 	virtual CPrimVector			*getPrimVector ();
 
 	// Read the primitive
-	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version);
+	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config);
 
 	// Write the primitive
 	virtual void write (xmlNodePtr xmlNode, const char *filename) const;
@@ -407,7 +422,7 @@ private:
 	virtual CPrimVector			*getPrimVector ();
 
 	// Read the primitive
-	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version);
+	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config);
 
 	// Write the primitive
 	virtual void write (xmlNodePtr xmlNode, const char *filename) const;
@@ -458,7 +473,7 @@ private:
 	virtual CPrimVector			*getPrimVector ();
 
 	// Read the primitive
-	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version);
+	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config);
 
 	// Write the primitive
 	virtual void write (xmlNodePtr xmlNode, const char *filename) const;
@@ -514,7 +529,7 @@ public:
 	CPrimNode		*RootNode;
 
 	// Read the primitive
-	bool			read (xmlNodePtr xmlNode, const char *filename);
+	bool			read (xmlNodePtr xmlNode, const char *filename, CLigoConfig &config);
 
 	// Write the primitive
 	void			write (xmlDocPtr xmlNode, const char *filename) const;

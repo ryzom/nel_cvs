@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.56 2003/07/28 11:54:45 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.57 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2202,9 +2202,9 @@ void CAudioMixerUser::stopBackgroundSound ()
 	_BackgroundSoundManager->stop (); 
 }
 
-void CAudioMixerUser::loadBackgroundSound (const std::string &continent) 
+void CAudioMixerUser::loadBackgroundSound (const std::string &continent, NLLIGO::CLigoConfig &config)
 { 
-	_BackgroundSoundManager->load (continent); 
+	_BackgroundSoundManager->load (continent, config); 
 }
 
 } // NLSOUND

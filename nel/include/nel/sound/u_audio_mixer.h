@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.28 2003/07/03 15:14:49 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.29 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,11 @@ namespace NL3D
 namespace NLMISC
 {
 	class IProgressCallback;
+}
+
+namespace NLLIGO
+{
+	class CLigoConfig;
 }
 
 namespace NLSOUND {
@@ -278,7 +283,7 @@ public:
 	virtual const TBackgroundFilterFades &getBackgroundFilterFades() = 0;
 
 	virtual void		loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot) =0;
-	virtual void		loadBackgroundSound (const std::string &continent) = 0;
+	virtual void		loadBackgroundSound (const std::string &continent, NLLIGO::CLigoConfig &config) = 0;
 	virtual void		playBackgroundSound () = 0;
 	virtual void		stopBackgroundSound () = 0;
 

@@ -21,7 +21,7 @@
 #include "nel/misc/events.h"
 #include "nel/misc/file.h"
 
-#include "ligo/ligo_config.h"
+#include "nel/ligo/ligo_config.h"
 
 #include "paint_ui.h"
 #include "paint_vcolor.h"

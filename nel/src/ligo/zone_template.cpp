@@ -1,7 +1,7 @@
 /** \file zone_template.cpp
  * Ligo zone template implementation
  *
- * $Id: zone_template.cpp,v 1.5 2002/04/10 12:45:30 corvazier Exp $
+ * $Id: zone_template.cpp,v 1.6 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "zone_template.h"
 #include "ligo_error.h"
-#include "ligo_config.h"
+#include "nel/ligo/ligo_config.h"
 
 #include "nel/misc/stream.h"
 #include "nel/misc/matrix.h"

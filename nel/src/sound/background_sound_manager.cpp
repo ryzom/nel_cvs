@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.19 2003/07/22 13:30:25 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.20 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -614,7 +614,7 @@ void CBackgroundSoundManager::loadSoundsFromRegion(const CPrimRegion &region)
 		play();
 }
 
-void CBackgroundSoundManager::load (const string &continent)
+void CBackgroundSoundManager::load (const string &continent, NLLIGO::CLigoConfig &config)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager);
 	// First, try to load from a .primitive file (contain everythink)
@@ -634,7 +634,7 @@ void CBackgroundSoundManager::load (const string &continent)
 			CIXml xml;
 			xml.init (file);
 
-			primitives.read(xml.getRootNode(), fn.c_str());
+			primitives.read(xml.getRootNode(), fn.c_str(), config);
 //			region.serial(xml);
 			file.close ();
 

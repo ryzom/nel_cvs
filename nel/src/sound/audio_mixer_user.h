@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.39 2003/07/03 15:16:12 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.40 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,12 @@
 #include <numeric>
 
 
+namespace NLLIGO {
+
+class CLigoConfig;
+
+}
+
 namespace NLSOUND {
 
 
@@ -53,7 +59,6 @@ class CSoundBank;
 class CSourceCommon;
 class CClusteredSound;
 class CBackgroundSoundManager;
-
 
 /*
  * Max number of tracks (physical sources)
@@ -279,7 +284,7 @@ public:
 	virtual void				loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot);
-	virtual void				loadBackgroundSound (const std::string &continent);
+	virtual void				loadBackgroundSound (const std::string &continent, NLLIGO::CLigoConfig &config);
 	virtual void				playBackgroundSound ();
 	virtual void				stopBackgroundSound ();
 

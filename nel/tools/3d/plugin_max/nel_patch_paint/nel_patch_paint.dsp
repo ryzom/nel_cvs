@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 Maxscrpt.lib helpsys.lib freetype.lib winmm.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib /nologo /base:"0x05830000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelpaintpatch.dlm" /release
+# ADD LINK32 Maxscrpt.lib helpsys.lib winmm.lib libxml2.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelpaintpatch.dlm" /release
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
@@ -88,7 +88,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /debug /machine:I386
-# ADD LINK32 Maxscrpt.lib helpsys.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib winmm.lib stlport_vc6.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm" /pdbtype:sept
+# ADD LINK32 Maxscrpt.lib helpsys.lib winmm.lib stlport_vc6.lib libxml2.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Hybrid"
@@ -115,7 +115,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\..\maxsdk\plugin\mods.dlm"
-# ADD LINK32 nl3d_debug.lib nlmisc_debug.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /nodefaultlib:"msvcrtd.lib" /out:"C:\3dsmax3_1\plugins\nelpaintpatch.dlm" /pdbtype:sept
+# ADD LINK32 nl3d_debug.lib nlmisc_debug.lib libxml2.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /nodefaultlib:"msvcrtd.lib" /out:"C:\3dsmax3_1\plugins\nelpaintpatch.dlm" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 ReleaseDebug"
@@ -144,7 +144,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib Maxscrpt.lib helpsys.lib freetype.lib winmm.lib /nologo /base:"0x05830000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\neleditpatch.dlm" /release
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 Maxscrpt.lib helpsys.lib freetype.lib winmm.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelpaintpatch.dlm" /pdbtype:sept /release
+# ADD LINK32 Maxscrpt.lib helpsys.lib winmm.lib libxml2.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelpaintpatch.dlm" /pdbtype:sept /release
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 DebugFast"
@@ -173,7 +173,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 Maxscrpt.lib helpsys.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib winmm.lib stlport_vc6.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm"
 # SUBTRACT BASE LINK32 /pdb:none /incremental:no
-# ADD LINK32 Maxscrpt.lib helpsys.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib winmm.lib stlport_vc6.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm" /pdbtype:sept
+# ADD LINK32 Maxscrpt.lib helpsys.lib winmm.lib stlport_vc6.lib libxml2.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 # Begin Special Build Tool
 SOURCE="$(InputPath)"

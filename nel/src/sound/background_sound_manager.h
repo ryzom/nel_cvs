@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.7 2003/03/03 12:58:08 boucher Exp $
+ * $Id: background_sound_manager.h,v 1.8 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -36,6 +36,7 @@
 namespace NLLIGO
 {
 	class CPrimRegion;
+	class CLigoConfig;
 }
 
 namespace NLSOUND {
@@ -101,7 +102,7 @@ public:
 	 * With the new primitive file, this method will try to load the .primitive file before
 	 * attempting to load any .prim file. If the .primitive is found, then no .prim are loaded.
 	 */
-	void		load (const std::string &continent);
+	void		load (const std::string &continent, NLLIGO::CLigoConfig &config);
 
 	/** Remove all data about the current continents
 	 */

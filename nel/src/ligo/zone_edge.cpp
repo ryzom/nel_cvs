@@ -1,7 +1,7 @@
 /** \file zone_edge.cpp
  * A ZoneEdge descriptor
  *
- * $Id: zone_edge.cpp,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: zone_edge.cpp,v 1.2 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 // Ligo include
 #include "zone_edge.h"
-#include "ligo_config.h"
+#include "nel/ligo/ligo_config.h"
 #include "ligo_error.h"
 
 // NeL include

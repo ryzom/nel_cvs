@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.16 2003/03/06 19:47:08 coutelas Exp $
+ * $Id: primitive.cpp,v 1.17 2003/08/01 13:11:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "nel/ligo/primitive.h"
+#include "nel/ligo/ligo_config.h"
+#include "nel/ligo/primitive_class.h"
 #include "nel/misc/i_xml.h"
 
 using namespace NLMISC;
@@ -200,12 +202,28 @@ CPropertyString::CPropertyString (const char *str)
 }
 
 // ***************************************************************************
+
+CPropertyString::CPropertyString (const char *str, bool _default)
+{
+	String = str;
+	Default = _default;
+}
+
+// ***************************************************************************
 // CPropertyStringArray
 // ***************************************************************************
 
 CPropertyStringArray::CPropertyStringArray (const std::vector<std::string> &stringArray)
 {
 	StringArray = stringArray;
+}
+
+// ***************************************************************************
+
+CPropertyStringArray::CPropertyStringArray (const std::vector<std::string> &stringArray, bool _default)
+{
+	StringArray = stringArray;
+	Default = _default;
 }
 
 // ***************************************************************************
@@ -348,9 +366,9 @@ bool CPrimZone::contains (const NLMISC::CVector &v, const std::vector<NLMISC::CV
 // CPrimNode
 // ***************************************************************************
 
-bool CPrimNode::read (xmlNodePtr xmlNode, const char *filename, uint version)
+bool CPrimNode::read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config)
 {
-	return IPrimitive::read (xmlNode, filename, version);
+	return IPrimitive::read (xmlNode, filename, version, config);
 }
 
 // ***************************************************************************
@@ -445,7 +463,7 @@ NLLIGO::IPrimitive *CPrimPoint::copy () const
 
 // ***************************************************************************
 
-bool CPrimPoint::read (xmlNodePtr xmlNode, const char *filename, uint version)
+bool CPrimPoint::read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config)
 {
 	// Read points
 	xmlNodePtr ptNode = GetFirstChildNode (xmlNode, filename, "PT");
@@ -470,7 +488,7 @@ bool CPrimPoint::read (xmlNodePtr xmlNode, const char *filename, uint version)
 		return false;
 	}
 
-	return IPrimitive::read (xmlNode, filename, version);
+	return IPrimitive::read (xmlNode, filename, version, config);
 }
 
 // ***************************************************************************
@@ -523,7 +541,7 @@ CPrimVector	*CPrimPath::getPrimVector ()
 
 // ***************************************************************************
 
-bool CPrimPath::read (xmlNodePtr xmlNode, const char *filename, uint version)
+bool CPrimPath::read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config)
 {
 	// Read points
 	VPoints.clear ();
@@ -541,7 +559,7 @@ bool CPrimPath::read (xmlNodePtr xmlNode, const char *filename, uint version)
 		while ((ptNode = CIXml::getNextChildNode (ptNode, "PT")));
 	}
 
-	return IPrimitive::read (xmlNode, filename, version);
+	return IPrimitive::read (xmlNode, filename, version, config);
 }
 
 // ***************************************************************************
@@ -590,7 +608,7 @@ CPrimVector	*CPrimZone::getPrimVector ()
 
 // ***************************************************************************
 
-bool CPrimZone::read (xmlNodePtr xmlNode, const char *filename, uint version)
+bool CPrimZone::read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config)
 {
 	// Read points
 	VPoints.clear ();
@@ -608,7 +626,7 @@ bool CPrimZone::read (xmlNodePtr xmlNode, const char *filename, uint version)
 		while ((ptNode = CIXml::getNextChildNode (ptNode, "PT")));
 	}
 
-	return IPrimitive::read (xmlNode, filename, version);
+	return IPrimitive::read (xmlNode, filename, version, config);
 }
 
 // ***************************************************************************
@@ -1335,7 +1353,7 @@ bool IPrimitive::addPropertyByName (const char *property_name, IProperty *result
 
 // ***************************************************************************
 
-bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version)
+bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config)
 {
 	// Erase old properties
 	_Properties.clear ();
@@ -1455,6 +1473,70 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version)
 		while (propNode = CIXml::getNextChildNode (propNode, "PROPERTY"));
 	}
 
+	// Get the primitive class
+	const CPrimitiveClass *primitiveClass = config.getPrimitiveClass (*this);
+	if (primitiveClass)
+	{
+		// For each properties
+		uint count = primitiveClass->Parameters.size ();
+		uint i;
+		for (i=0; i<count; i++)
+		{
+			const CPrimitiveClass::CParameter &parameter = primitiveClass->Parameters[i];
+			
+			// Get the property
+			IProperty *result;
+			CPropertyString *pString = NULL;
+			CPropertyStringArray *pStringArray = NULL;
+			if (!getPropertyByName (parameter.Name.c_str(), result))
+			{
+				// Create the property
+				if (parameter.Type == CPrimitiveClass::CParameter::StringArray)
+				{
+					pStringArray = new CPropertyStringArray();
+					nlverify (addPropertyByName (parameter.Name.c_str(), pStringArray));
+				}
+				else
+				{
+					pString = new CPropertyString();
+					nlverify (addPropertyByName (parameter.Name.c_str(), pString));
+				}
+			}
+			else
+			{
+				pString = dynamic_cast<CPropertyString*>(result);
+				if (!pString)
+					pStringArray = dynamic_cast<CPropertyStringArray*>(result);
+			}
+
+			// Property have default values ?
+			if (pString)
+			{
+				// Empty string ?
+				if (pString->String.empty())
+				{
+					// Set as default
+					pString->Default = true;
+					if (parameter.DefaultValue.size()>=1)
+						pString->String = parameter.DefaultValue[0].Name;
+				}
+			}
+			else if (pStringArray)
+			{
+				// Empty string array ?
+				if (pStringArray->StringArray.empty())
+				{
+					// Set as default
+					pStringArray->Default = true;
+					uint i;
+					pStringArray->StringArray.resize (parameter.DefaultValue.size());
+					for (i=0; i<pStringArray->StringArray.size(); i++)
+						pStringArray->StringArray[i] = parameter.DefaultValue[i].Name;
+				}
+			}
+		}
+	}
+
 	// Read children
 	xmlNodePtr childNode;
 	childNode = CIXml::getFirstChildNode (xmlNode, "CHILD");
@@ -1485,7 +1567,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version)
 				}
 
 				// Read it
-				primitive->read (childNode, filename, version);
+				primitive->read (childNode, filename, version, config);
 
 				// Add it
 				insertChild (primitive);
@@ -1517,56 +1599,60 @@ void IPrimitive::write (xmlNodePtr xmlNode, const char *filename) const
 	std::map<std::string, IProperty*>::const_iterator ite =	_Properties.begin ();
 	while (ite != _Properties.end ())
 	{
-		// Create new nodes
-		xmlNodePtr propNode = xmlNewChild ( xmlNode, NULL, (const xmlChar*)"PROPERTY", NULL);
-		xmlNodePtr nameNode = xmlNewChild ( propNode, NULL, (const xmlChar*)"NAME", NULL);
-		xmlNodePtr textNode = xmlNewText ((const xmlChar *)(ite->first.c_str ()));
-		xmlAddChild (nameNode, textNode);
-
-		// Type
-		const CPropertyString *str = dynamic_cast<const CPropertyString *> (ite->second);
-		if (str)
+		// Not a default property ?
+		if (!ite->second->Default)
 		{
-			// Set the type
-			xmlSetProp (propNode, (const xmlChar*)"TYPE", (const xmlChar*)"string");
-
 			// Create new nodes
-			xmlNodePtr stringNode = xmlNewChild ( propNode, NULL, (const xmlChar*)"STRING", NULL);
-			xmlNodePtr textNode = xmlNewText ((const xmlChar *)(str->String.c_str ()));
-			xmlAddChild (stringNode, textNode);
-		}
-		else
-		{
-			// Should be an array
-			const CPropertyStringArray *array = dynamic_cast<const CPropertyStringArray *> (ite->second);
-			if (array)
+			xmlNodePtr propNode = xmlNewChild ( xmlNode, NULL, (const xmlChar*)"PROPERTY", NULL);
+			xmlNodePtr nameNode = xmlNewChild ( propNode, NULL, (const xmlChar*)"NAME", NULL);
+			xmlNodePtr textNode = xmlNewText ((const xmlChar *)(ite->first.c_str ()));
+			xmlAddChild (nameNode, textNode);
+
+			// Type
+			const CPropertyString *str = dynamic_cast<const CPropertyString *> (ite->second);
+			if (str)
 			{
 				// Set the type
-				xmlSetProp (propNode, (const xmlChar*)"TYPE", (const xmlChar*)"string_array");
+				xmlSetProp (propNode, (const xmlChar*)"TYPE", (const xmlChar*)"string");
 
-				// For each strings in the array
-				for (uint i=0; i<array->StringArray.size (); i++)
-				{
-					// Create new nodes
-					xmlNodePtr stringNode = xmlNewChild ( propNode, NULL, (const xmlChar*)"STRING", NULL);
-					xmlNodePtr textNode = xmlNewText ((const xmlChar *)(array->StringArray[i].c_str ()));
-					xmlAddChild (stringNode, textNode);
-				}
+				// Create new nodes
+				xmlNodePtr stringNode = xmlNewChild ( propNode, NULL, (const xmlChar*)"STRING", NULL);
+				xmlNodePtr textNode = xmlNewText ((const xmlChar *)(str->String.c_str ()));
+				xmlAddChild (stringNode, textNode);
 			}
 			else
 			{
-				// Should be a color
-				const CPropertyColor *color = safe_cast<const CPropertyColor *> (ite->second);
+				// Should be an array
+				const CPropertyStringArray *array = dynamic_cast<const CPropertyStringArray *> (ite->second);
+				if (array)
+				{
+					// Set the type
+					xmlSetProp (propNode, (const xmlChar*)"TYPE", (const xmlChar*)"string_array");
 
-				// Set the type
-				xmlSetProp (propNode, (const xmlChar*)"TYPE", (const xmlChar*)"color");
+					// For each strings in the array
+					for (uint i=0; i<array->StringArray.size (); i++)
+					{
+						// Create new nodes
+						xmlNodePtr stringNode = xmlNewChild ( propNode, NULL, (const xmlChar*)"STRING", NULL);
+						xmlNodePtr textNode = xmlNewText ((const xmlChar *)(array->StringArray[i].c_str ()));
+						xmlAddChild (stringNode, textNode);
+					}
+				}
+				else
+				{
+					// Should be a color
+					const CPropertyColor *color = safe_cast<const CPropertyColor *> (ite->second);
 
-				// Create new nodes
-				xmlNodePtr colorNode = xmlNewChild ( propNode, NULL, (const xmlChar*)"COLOR", NULL);
-				xmlSetProp (colorNode, (const xmlChar*)"R", (const xmlChar*)toString (color->Color.R).c_str ());
-				xmlSetProp (colorNode, (const xmlChar*)"G", (const xmlChar*)toString (color->Color.G).c_str ());
-				xmlSetProp (colorNode, (const xmlChar*)"B", (const xmlChar*)toString (color->Color.B).c_str ());
-				xmlSetProp (colorNode, (const xmlChar*)"A", (const xmlChar*)toString (color->Color.A).c_str ());
+					// Set the type
+					xmlSetProp (propNode, (const xmlChar*)"TYPE", (const xmlChar*)"color");
+
+					// Create new nodes
+					xmlNodePtr colorNode = xmlNewChild ( propNode, NULL, (const xmlChar*)"COLOR", NULL);
+					xmlSetProp (colorNode, (const xmlChar*)"R", (const xmlChar*)toString (color->Color.R).c_str ());
+					xmlSetProp (colorNode, (const xmlChar*)"G", (const xmlChar*)toString (color->Color.G).c_str ());
+					xmlSetProp (colorNode, (const xmlChar*)"B", (const xmlChar*)toString (color->Color.B).c_str ());
+					xmlSetProp (colorNode, (const xmlChar*)"A", (const xmlChar*)toString (color->Color.A).c_str ());
+				}
 			}
 		}
 
@@ -1632,7 +1718,7 @@ CPrimitives& CPrimitives::operator= (const CPrimitives &other)
 
 // ***************************************************************************
 
-bool CPrimitives::read (xmlNodePtr xmlNode, const char *filename)
+bool CPrimitives::read (xmlNodePtr xmlNode, const char *filename, CLigoConfig &config)
 {
 	nlassert (xmlNode);
 
@@ -1658,7 +1744,7 @@ bool CPrimitives::read (xmlNodePtr xmlNode, const char *filename)
 				if (xmlNode)
 				{
 					// Read the primitive tree
-					((IPrimitive*)RootNode)->read (xmlNode, filename, version);
+					((IPrimitive*)RootNode)->read (xmlNode, filename, version, config);
 				}
 			}
 			else

@@ -108,7 +108,7 @@ SOURCE=.\ligo\ligo_config.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ligo\ligo_config.h
+SOURCE=..\include\nel\ligo\ligo_config.h
 # End Source File
 # Begin Source File
 
@@ -133,6 +133,14 @@ SOURCE=.\ligo\primitive.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\ligo\primitive.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ligo\primitive_class.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ligo\primitive_class.h
 # End Source File
 # Begin Source File
 

@@ -184,26 +184,26 @@
 // main 
 // --------------------------------------------------------------------------------------
 
-	if ($cmd == "ask")
+	if ($_GET["cmd"] == "ask")
 	{
-		askSalt($login);
+		askSalt($_GET["login"]);
 		die();
 	}
 
 	// check cp is set (force bool)
-	$cp = ($cp == "1");
+	$cp = ($_GET["$cp"] == "1");
 
-	if (!checkUserValidity($login, $password, $clientApplication, $cp, $id, $reason, $priv, $extended))
+	if (!checkUserValidity($_GET["login"], $_GET["password"], $_GET["clientApplication"], $cp, $id, $reason, $priv, $extended))
 	{
 		echo "0:".$reason;
 	}
 	else
 	{
-		if ($cmd == "login")
+		if ($_GET["cmd"] == "login")
 		{
 			// user selected a shard, try to add the user to the shard
 
-			if (askClientConnection($shardid, $id, $login, $priv, $extended, $res, $patchURLS))
+			if (askClientConnection($_GET["shardid"], $id, $_GET["login"], $priv, $extended, $res, $patchURLS))
 			{
 				// access granted, send cookie and addr
 				echo "1:".$res;
@@ -236,7 +236,7 @@
 		else
 		{
 			// user logged, display the available shard
-			displayAvailableShards ($id, $clientApplication, $cp);
+			displayAvailableShards ($id, $_GET["clientApplication"], $cp);
 		}
 	}
 ?>

@@ -1,6 +1,6 @@
 /** \file diff_tool.h
  *
- * $Id: diff_tool.h,v 1.1 2003/10/15 17:07:17 cado Exp $
+ * $Id: diff_tool.h,v 1.2 2003/10/22 16:38:38 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -184,7 +184,7 @@ namespace STRING_MANAGER
 		{
 			if (count != ColCount)
 			{
-				for (uint i=0; i<count; ++i)
+				for (uint i=0; i<Data.size(); ++i)
 					Data[i].resize(count);
 			}
 			ColCount = count;
@@ -208,6 +208,16 @@ namespace STRING_MANAGER
 			nlassert(row.size() == ColCount);
 
 			Data.insert(Data.begin()+rowIndex, row);
+		}
+
+		// resize the rows
+		void resize(uint numRows)
+		{
+			uint	oldSize= Data.size();
+			Data.resize(numRows);
+			// alloc good Column count for new lines
+			for(uint i= oldSize;i<Data.size();i++)
+				Data[i].resize(ColCount);
 		}
 
 		bool findRow(uint colIndex, const ucstring &colValue, uint &rowIndex)

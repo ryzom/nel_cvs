@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.2 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: diff_tool.cpp,v 1.3 2003/10/22 16:38:26 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 using namespace NLMISC;
 using namespace std;
+
 
 namespace STRING_MANAGER
 {
@@ -529,65 +530,131 @@ bool loadExcelSheet(const string filename, TWorksheet &worksheet, bool checkUniq
 		return true;
 	}
 	fp.close();
-
+				
 	ucstring str;
 	CI18N::readTextFile(filename, str, false, false);
-
+	
 	if (!readExcelSheet(str, worksheet, checkUnique))
 		return false;
-
+	
 	return true;
 }
 
 bool readExcelSheet(const ucstring &str, TWorksheet &worksheet, bool checkUnique)
 {
-	vector<ucstring> lines;
+	if(str.empty())
+		return true;
+
+	// copy the str to a big ucchar array => Avoid allocation / free
+	vector<ucchar>	strArray;
+	// append a '\0'
+	strArray.resize(str.size()+1);
+	strArray[strArray.size()-1]= 0;
+	memcpy(&strArray[0], &str[0], str.size()*sizeof(ucchar));
+
+
+	// **** Build array of lines. just point to strArray, and fill 0 where appropriated
+	vector<ucchar*> lines;
+	lines.reserve(500);
 	ucstring::size_type pos = 0;
 	ucstring::size_type lastPos = 0;
 	while ((pos = str.find(nl, lastPos)) != ucstring::npos)
 	{
-		ucstring line = str.substr(lastPos, pos - lastPos);
-		if (!line.empty())
+		if (pos>lastPos)
 		{
-//			nldebug("Found line : [%s]", line.toString().c_str());
-			lines.push_back(line);
+			strArray[pos]= 0;
+//			nldebug("Found line : [%s]", ucstring(&strArray[lastPos]).toString().c_str());
+			lines.push_back(&strArray[lastPos]);
 		}
-		lastPos = lastPos + 2 + line.size();
+		lastPos = pos + 2;
 	}
 
-	if (lastPos != str.size() -2)
+	// Must add last line if no \r\n ending
+	if (lastPos < str.size())
 	{
-		ucstring line = str.substr(lastPos, str.size() - 2);
-		if (!line.empty())
-		{
-//			nldebug("Found line : [%s]", line.toString().c_str());
-			lines.push_back(line);
-		}
+		pos= str.size();
+		strArray[pos]= 0;
+//		nldebug("Found line : [%s]", ucstring(&strArray[lastPos]).toString().c_str());
+		lines.push_back(&strArray[lastPos]);
 	}
 
 //	nldebug("Found %u lines", lines.size());
-	for (uint i=0; i<lines.size(); ++i)
-	{
-		vector<ucstring>	cells;
-		ucstring			cell;
 
-		ucstring::iterator	first(lines[i].begin()), last(lines[i].end());
-		for (; first != last; ++first)
+	// **** Do 2 pass.1st count the cell number, then fill. => avoid reallocation
+	uint		newColCount= 0;
+	uint		i;
+	for (i=0; i<lines.size(); ++i)
+	{
+		uint	numCells;
+		numCells= 0;
+
+		ucchar	*first= lines[i];
+		for (; *first != 0; ++first)
+		{
+			if (*first == '\t')
+			{
+				numCells++;
+			}
+			else if (*first == '"' && first==lines[i])
+			{
+				// read a quoted field.
+				first++;
+				while (*first != 0 && *first != '"' && *(first+1) != 0 && *(first+1) != '"')
+				{
+					first++;
+					if (*first != 0 && *first == '"')
+					{
+						// skip this
+						first++;
+					}
+				}
+			}
+		}
+		// last cell
+		numCells++;
+		
+		// take max cell of all lines
+		newColCount= max(newColCount, numCells);
+	}
+
+	
+	// **** alloc / enlarge worksheet
+	// enlarge Worksheet column size, as needed
+	while (worksheet.ColCount < newColCount)
+		worksheet.insertColumn(worksheet.ColCount);
+
+	// enlarge Worksheet row size, as needed
+	uint	startLine= worksheet.size();
+	worksheet.resize(startLine + lines.size());
+
+
+	// **** fill worksheet
+	ucstring	cell;
+	for (i=0; i<lines.size(); ++i)
+	{
+		uint	numCells;
+		numCells= 0;
+		cell.erase();
+		
+		ucchar	*first= lines[i];
+		for (; *first != 0; ++first)
 		{
 			if (*first == '\t')
 			{
 //				nldebug("Found cell [%s]", cell.toString().c_str());
-				cells.push_back(cell);
+				worksheet.setData(startLine + i, numCells, cell);
+				numCells++;
 				cell.erase();
 			}
-			else if (*first == '"' && cell.empty())
+			else if (*first == '"' && first==lines[i])
 			{
 				// read a quoted field.
 				first++;
-				while (first != last && *first != '"' && (first+1) != last && *(first+1) != '"')
+				while (*first != 0 && *first != '"' && *(first+1) != 0 && *(first+1) != '"')
 				{
-					cell += *first++;
-					if (first != last && *first == '"')
+					cell += *first;
+					first++;
+					if (*first != 0 && *first == '"')
 					{
 						// skip this
 						first++;
@@ -601,15 +668,14 @@ bool readExcelSheet(const ucstring &str, TWorksheet &worksheet, bool checkUnique
 		}
 //		nldebug("Found cell [%s]", cell.toString().c_str());
 		/// append last cell
-		cells.push_back(cell);
-//		nldebug("Found %u cells in line %u", cells.size(), i);
-		while (worksheet.ColCount < cells.size())
-			worksheet.insertColumn(worksheet.ColCount);
-		cells.resize(worksheet.ColCount);
-		worksheet.insertRow(worksheet.Data.size(), cells);
+		worksheet.setData(startLine + i, numCells, cell);
+		numCells++;
+		nlassert(numCells<=newColCount);
+//		nldebug("Found %u cells in line %u", numCells, i);
 	}
+	
 
-	// identifier uniqueness checking.
+	// **** identifier uniqueness checking.
 	if (checkUnique)
 	{
 		if (worksheet.size() > 0)
@@ -641,6 +707,7 @@ bool readExcelSheet(const ucstring &str, TWorksheet &worksheet, bool checkUnique
 			}
 		}
 	}
+	
 	return true;
 }
 
@@ -657,18 +724,32 @@ void makeHashCode(TWorksheet &sheet, bool forceRehash)
 				sheet.insertColumn(0);
 				sheet.Data[0][0] = ucstring("*HASH_VALUE");
 			}
+
+			// Check columns
+			vector<bool>	columnOk;
+			columnOk.resize(sheet.ColCount, false);
+			for (uint k=1; k<sheet.ColCount; ++k)
+			{
+				if (sheet.Data[0][k].find(ucstring("*")) != 0 && sheet.Data[0][k].find(ucstring("DIFF ")) != 0)
+				{
+					columnOk[k]= true;
+				}
+			}
+			
+			// make hash for each line
+			ucstring str;
 			for (uint j=1; j<sheet.Data.size(); ++j)
 			{
-				ucstring str;
+				str.erase();
 				for (uint k=1; k<sheet.ColCount; ++k)
 				{
-					if (sheet.Data[0][k].find(ucstring("*")) != 0 && sheet.Data[0][k].find(ucstring("DIFF ")) != 0)
+					if (columnOk[k])
 					{
 						str += sheet.Data[j][k];
 					}
 				}
 				uint64 hash = CI18N::makeHash(str);
-				sheet.Data[j][0] = CI18N::hashToString(hash);
+				CI18N::hashToUCString(hash, sheet.Data[j][0]);
 			}
 		}
 		else
@@ -687,13 +768,36 @@ void makeHashCode(TWorksheet &sheet, bool forceRehash)
 
 ucstring prepareExcelSheet(const TWorksheet &worksheet)
 {
-	ucstring text;
+	if(worksheet.Data.empty())
+		return ucstring();
 
+	// **** First pass: count approx the size
+	uint	approxSize= 0;
 	for (uint i=0; i<worksheet.Data.size(); ++i)
 	{
 		for (uint j=0; j<worksheet.Data[i].size(); ++j)
 		{
-			if (i > 0 && worksheet.Data[0][j] == ucstring("*HASH_VALUE"))
+			approxSize+= worksheet.Data[i][j].size() + 1;
+		}
+		approxSize++;
+	}
+
+	// Hash value for each column?
+	vector<bool>	hashValue;
+	hashValue.resize(worksheet.Data[0].size());
+	for (uint j=0; j<worksheet.Data[0].size(); ++j)
+	{
+		hashValue[j]= worksheet.Data[0][j] == ucstring("*HASH_VALUE");
+	}
+
+	// **** Second pass: fill
+	ucstring text;
+	text.reserve(approxSize*2);
+	for (uint i=0; i<worksheet.Data.size(); ++i)
+	{
+		for (uint j=0; j<worksheet.Data[i].size(); ++j)
+		{
+			if (i > 0 && hashValue[j])
 				text += "_";
 			text += worksheet.Data[i][j];
 			if (j != worksheet.Data[i].size()-1)

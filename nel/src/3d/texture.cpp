@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.23 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: texture.cpp,v 1.24 2004/08/13 15:44:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,7 @@ ITexture::~ITexture()
 void	ITexture::releaseDriverSetup()
 {
 	// Must kill the drv mirror of this texture.
-	TextureDrvShare.kill();
+	if (TextureDrvShare) TextureDrvShare.kill();
 }
 
 
@@ -161,5 +161,6 @@ void ITexture::setRenderTarget (bool enable)
 }
 
 // ***************************************************************************
+
 
 } // NL3D

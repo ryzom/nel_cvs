@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.38 2003/05/28 12:54:43 vizerie Exp $
+ * $Id: water_model.cpp,v 1.39 2004/02/13 10:10:03 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -231,7 +231,12 @@ static void SetupWaterVertex(  sint  qLeft,
 
 			float deltaU = wXf - wx;
 			float deltaV = wYf - wy;
-			nlassert(deltaU >= 0.f && deltaU <= 1.f  && deltaV >= 0.f && deltaV <= 1.f);
+			//nlassert(deltaU >= 0.f && deltaU <= 1.f  && deltaV >= 0.f && deltaV <= 1.f);
+			if (deltaU <= 0.f || deltaU >= 1.f  || deltaV <= 0.f || deltaV >= 1.f)
+			{
+				nlwarning ("water problem, deltaU %f deltaV %f", deltaU, deltaV);
+				return;
+			}
 			const float			  *ptWaterPrev = whm.getPrevPointer()  + offset;
 
 

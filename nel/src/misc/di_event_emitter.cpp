@@ -1,7 +1,7 @@
 /** \file dx_event_emitter.cpp
  * <File description>
  *
- * $Id: di_event_emitter.cpp,v 1.3 2003/05/09 12:46:07 corvazier Exp $
+ * $Id: di_event_emitter.cpp,v 1.4 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -251,10 +251,10 @@ void	CDIEventEmitter::releaseKeyboard()
 
 
 //==========================================================================
-void	CDIEventEmitter::submitEvents(CEventServer &server)
+void	CDIEventEmitter::submitEvents(CEventServer &server, bool allWindows)
 {
 	_InternalServer.setServer(&server);
-	_InternalServer.pump();
+	_InternalServer.pump(allWindows);
 }
 
 //==========================================================================

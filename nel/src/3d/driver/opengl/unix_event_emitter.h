@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.h
  * <File description>
  *
- * $Id: unix_event_emitter.h,v 1.3 2002/02/07 18:08:50 berenguier Exp $
+ * $Id: unix_event_emitter.h,v 1.4 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ public:
 	 * (should call CEventServer method postEvent() ) 
 	 * \param server
 	 */	
-	virtual void submitEvents(CEventServer & server);
+	virtual void submitEvents(CEventServer & server, bool allWindows);
 
 public:
 	void processMessage (XEvent &event, CEventServer &server);

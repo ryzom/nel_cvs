@@ -1,7 +1,7 @@
 /** \file event_server.h
  * events server
  *
- * $Id: event_server.h,v 1.6 2002/08/21 09:36:01 lecroart Exp $
+ * $Id: event_server.h,v 1.7 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,9 +66,9 @@ public:
 
 	/** 
 	 * get call every callbacks associated with event id
-	 * \param event
+	 * \param allWindows is true : pump the messages of all windows, not only the driver window.
 	 */	
-	void pump();
+	void pump(bool allWindows = false);
 		
 	/** 
 	 * Add a callback (associated with an id)

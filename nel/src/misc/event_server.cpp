@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * events server
  *
- * $Id: event_server.cpp,v 1.8 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: event_server.cpp,v 1.9 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ void CEventServer::postEvent(CEvent * event)
 /*------------------------------------------------------------------*\
 							pump()
 \*------------------------------------------------------------------*/
-void CEventServer::pump()
+void CEventServer::pump(bool allWindows)
 {
 	std::list<IEventEmitter*>::iterator item = _Emitters.begin();
 	
@@ -56,7 +56,7 @@ void CEventServer::pump()
 	while(item!=_Emitters.end())
 	{
 		// ask emitters to submit their events to server
-		(*item)->submitEvents(*this);
+		(*item)->submitEvents(*this, allWindows);
 		item++;
 	}
 

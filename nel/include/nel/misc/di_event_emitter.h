@@ -1,7 +1,7 @@
 /** \file dx_event_emitter.h
  * <File description>
  *
- * $Id: di_event_emitter.h,v 1.4 2003/04/28 12:31:43 vizerie Exp $
+ * $Id: di_event_emitter.h,v 1.5 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -143,7 +143,7 @@ public:
 	//@}
 
 	/// from IEventEmitter
-	virtual void			submitEvents(CEventServer &server);	
+	virtual void			submitEvents(CEventServer &server, bool allWindows);	
 
 	// Build a TMouseButton value from the current buttons state
 	TMouseButton	buildButtonsFlags() const;

@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.16 2003/03/11 15:35:14 boucher Exp $
+ * $Id: text_context_user.cpp,v 1.17 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -215,7 +215,7 @@ bool			CTextContextUser::getKeep800x600Ratio() const
 // ***************************************************************************
 uint32 CTextContextUser::textPush(const char *format, ...)  
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCPh0 )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	char *str;
@@ -225,7 +225,7 @@ uint32 CTextContextUser::textPush(const char *format, ...)
 }
 uint32 CTextContextUser::textPush(const ucstring &str)  
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCPh1 )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	return _TextContext.textPush(str) ;
@@ -240,6 +240,7 @@ void CTextContextUser::setStringColor(uint32 i, CRGBA newCol)
 }
 void CTextContextUser::setStringSelection(uint32 i, uint32 selectStart, uint32 selectSize)
 {
+	NL3D_MEM_TEXT_CONTEXT
 	CComputedString	*str= _TextContext.getComputedString(i);
 	if(str)
 	{
@@ -249,6 +250,7 @@ void CTextContextUser::setStringSelection(uint32 i, uint32 selectStart, uint32 s
 }
 void CTextContextUser::resetStringSelection(uint32 i)
 {
+	NL3D_MEM_TEXT_CONTEXT
 	CComputedString	*str= _TextContext.getComputedString(i);
 	if(str)
 	{
@@ -258,14 +260,14 @@ void CTextContextUser::resetStringSelection(uint32 i)
 }
 void CTextContextUser::erase(uint32 i)  
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCErs )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	_TextContext.erase(i);
 }
 UTextContext::CStringInfo		CTextContextUser::getStringInfo(uint32 i)
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCIfo )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	CComputedString		*cstr= _TextContext.getComputedString(i);
@@ -276,7 +278,7 @@ UTextContext::CStringInfo		CTextContextUser::getStringInfo(uint32 i)
 }
 UTextContext::CStringInfo		CTextContextUser::getStringInfo(const ucstring &str)
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCIfo )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	_TextContext.computeStringInfo(str, _CacheString);
@@ -284,14 +286,14 @@ UTextContext::CStringInfo		CTextContextUser::getStringInfo(const ucstring &str)
 }
 void CTextContextUser::clear()  
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCClr )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	_TextContext.clear();
 }
 void CTextContextUser::printAt(float x, float y, uint32 i) 
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCPt0 )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	_TextContext.printAt(x, y, i);
@@ -299,7 +301,7 @@ void CTextContextUser::printAt(float x, float y, uint32 i)
 }
 void CTextContextUser::printClipAt(URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax)
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCPt1 )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	_TextContext.printClipAt(static_cast<CRenderStringBuffer&>(renderBuffer), x, y, i, xmin, ymin, xmax, ymax);
@@ -307,13 +309,14 @@ void CTextContextUser::printClipAt(URenderStringBuffer &renderBuffer, float x, f
 }
 void CTextContextUser::printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax)
 {
+	NL_ALLOC_CONTEXT( 3dTCPt2 )
 	static	CRenderStringBuffer	rdrBuffer;
 	printClipAt(rdrBuffer, x, y ,i, xmin, ymin, xmax, ymax);
 	flushRenderBuffer(&rdrBuffer);
 }
 void CTextContextUser::printAt(float x, float y, const ucstring &ucstr) 
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCPt3 )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	_TextContext.printAt(x, y, ucstr);
@@ -321,7 +324,7 @@ void CTextContextUser::printAt(float x, float y, const ucstring &ucstr)
 }
 void CTextContextUser::printfAt(float x, float y, const char * format, ...) 
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCPt4 )
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	char *str;
@@ -333,7 +336,7 @@ void CTextContextUser::printfAt(float x, float y, const char * format, ...)
 
 void CTextContextUser::render3D(const CMatrix &mat, const ucstring &ucstr) 
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCRd0 )
 	NL3D_HAUTO_RENDER_3D_TEXTCONTEXT;
 
 	CComputedString computedStr;
@@ -345,7 +348,7 @@ void CTextContextUser::render3D(const CMatrix &mat, const ucstring &ucstr)
 }
 void CTextContextUser::render3D(const CMatrix &mat, const char *format, ...) 
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCRd1 )
 	NL3D_HAUTO_RENDER_3D_TEXTCONTEXT;
 
 	char *str;
@@ -368,7 +371,7 @@ float CTextContextUser::getLastXBound() const
 // ***************************************************************************
 void			CTextContextUser::dumpCacheTexture (const char *filename)
 {
-	NL3D_MEM_TEXT_CONTEXT
+	NL_ALLOC_CONTEXT( 3dTCDup )
 	_TextContext.dumpCache (filename);
 }
 
@@ -376,14 +379,17 @@ void			CTextContextUser::dumpCacheTexture (const char *filename)
 // ***************************************************************************
 URenderStringBuffer		*CTextContextUser::createRenderBuffer()
 {
+	NL_ALLOC_CONTEXT( 3dTCBuf )
 	return new CRenderStringBuffer;
 }
 void					CTextContextUser::deleteRenderBuffer(URenderStringBuffer *buffer)
 {
+	NL_ALLOC_CONTEXT( 3dTCBuf )
 	delete buffer;
 }
 void					CTextContextUser::flushRenderBuffer(URenderStringBuffer *buffer)
 {
+	NL_ALLOC_CONTEXT( 3dTCBuf )
 	nlassert(buffer);
 	CRenderStringBuffer	*rdrBuffer= static_cast<CRenderStringBuffer*>(buffer);
 	if(rdrBuffer->NumQuads)

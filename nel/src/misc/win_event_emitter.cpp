@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.12 2003/05/09 12:46:07 corvazier Exp $
+ * $Id: win_event_emitter.cpp,v 1.13 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,10 +46,10 @@ namespace NLMISC {
 /*------------------------------------------------------------------*\
 							submitEvents()
 \*------------------------------------------------------------------*/
-void CWinEventEmitter::submitEvents(CEventServer & server)
+void CWinEventEmitter::submitEvents(CEventServer & server, bool allWindows)
 {
 	MSG	msg;
-	while ( PeekMessage(&msg,(HWND)_HWnd,0,0,PM_REMOVE) )
+	while ( PeekMessage(&msg,allWindows?NULL:(HWND)_HWnd,0,0,PM_REMOVE) )
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
@@ -57,7 +57,7 @@ void CWinEventEmitter::submitEvents(CEventServer & server)
 
 	// Dispatch sent messages
 	_InternalServer.setServer (&server);
-	_InternalServer.pump ();
+	_InternalServer.pump (allWindows);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.43 2003/04/22 16:38:10 distrib Exp $
+ * $Id: nel_export_view.cpp,v 1.44 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -312,7 +312,7 @@ void CNelExport::viewMesh (TimeValue time)
 							CAnimation *anim=new CAnimation;
 							_ExportNel->addAnimation (*anim, *skeletonRoot, "", true);
 
-							// Set the single animation
+							// Set the single animation							
 							view->setSingleAnimation (anim, "3dsmax current animation", instance);
 
 							// Insert in the map

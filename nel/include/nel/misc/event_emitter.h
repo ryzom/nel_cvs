@@ -1,7 +1,7 @@
 /** \file event_emitter.h
  * class CEventEmitter
  *
- * $Id: event_emitter.h,v 1.10 2002/03/28 10:45:42 vizerie Exp $
+ * $Id: event_emitter.h,v 1.11 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	 * (should call CEventServer method postEvent() ) 
 	 * \param server
 	 */	
-	virtual void submitEvents(CEventServer & server) = 0;
+	virtual void submitEvents(CEventServer & server, bool allWindows) = 0;
 		
 };
 

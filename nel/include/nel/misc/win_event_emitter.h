@@ -1,7 +1,7 @@
 /** \file win_event_emitter.h
  * <File description>
  *
- * $Id: win_event_emitter.h,v 1.4 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: win_event_emitter.h,v 1.5 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ public:
 	 * (should call CEventServer method postEvent() ) 
 	 * \param server
 	 */	
-	virtual void submitEvents(CEventServer & server);
+	virtual void submitEvents(CEventServer & server, bool allWindows);
 
 	/// Build the flags of the current buttons state
 	TMouseButton buildFlags() const;

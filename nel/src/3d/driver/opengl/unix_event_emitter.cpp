@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.7 2002/08/21 09:37:12 lecroart Exp $
+ * $Id: unix_event_emitter.cpp,v 1.8 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ void CUnixEventEmitter::init (Display *dpy, Window win)
   _win = win;
 }
 
-void CUnixEventEmitter::submitEvents(CEventServer & server)
+void CUnixEventEmitter::submitEvents(CEventServer & server, bool allWindows)
 {
 	while (XPending(_dpy))
 	{

@@ -1,7 +1,7 @@
 /** \file event_emitter_multi.cpp
  * <File description>
  *
- * $Id: event_emitter_multi.cpp,v 1.2 2003/04/28 12:34:32 vizerie Exp $
+ * $Id: event_emitter_multi.cpp,v 1.3 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -81,11 +81,11 @@ bool	CEventEmitterMulti::isEmitter(IEventEmitter *e) const
 }
 
 ///============================================================
-void CEventEmitterMulti::submitEvents(CEventServer &server)
+void CEventEmitterMulti::submitEvents(CEventServer &server, bool allWindows)
 {
 	for (TEmitterCont::iterator it = _Emitters.begin(); it != _Emitters.end(); ++it)
 	{
-		it->first->submitEvents(server);
+		it->first->submitEvents(server, allWindows);
 	}
 }
 ///============================================================

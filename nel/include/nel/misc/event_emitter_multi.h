@@ -1,7 +1,7 @@
 /** \file event_emitter_multi.h
  * <File description>
  *
- * $Id: event_emitter_multi.h,v 1.2 2003/04/28 12:32:07 vizerie Exp $
+ * $Id: event_emitter_multi.h,v 1.3 2003/06/18 14:38:57 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -55,7 +55,7 @@ public:
 	IEventEmitter *getEmitter(uint index);
 	const IEventEmitter *getEmitter(uint index) const;
 	/// From IEventEmitter. This call submitEvents on all the emitters
-	virtual void submitEvents(CEventServer &server);
+	virtual void submitEvents(CEventServer &server, bool allWindows);
 private:
 	typedef std::vector<std::pair<IEventEmitter *, bool> > TEmitterCont;
 	TEmitterCont	_Emitters;	

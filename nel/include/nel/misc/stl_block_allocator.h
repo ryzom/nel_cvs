@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.h
  * <File description>
  *
- * $Id: stl_block_allocator.h,v 1.2 2001/12/27 14:31:47 berenguier Exp $
+ * $Id: stl_block_allocator.h,v 1.3 2001/12/27 17:14:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,14 +42,29 @@ namespace NLMISC {
  * This class works with STLPort. It implements __stl_alloc_rebind() (not C++ standard??) to work properly
  *	with list<>/set<> etc... node allocations.
  *
- * NB: if used with a vector<> or a deque<> (or if allocate(..,n) is called with n>1), it's still work, 
- *	but it's use malloc()/free() instead.
+ * NB: if used with a vector<> or a deque<> (ie if allocate(..,n) is called with n>1), it's still work, 
+ *	but it's use malloc()/free() instead, so it is fully unusefull in this case :)
+ *
+ * CSTLBlockAllocator use a pointer on a CBlockMemory, so multiple containers can share the same 
+ *	blockMemory, for maximum space/speed efficiency.
+ *
+ * Because of CBlockMemory allocation scheme, only same containers of same types can share the
+ *	same CBlockMemory instance (eg: "list<uint, &myBlockMemory>; vector<uint, &myBlockMemory>;" is invalid and 
+ *	will assert when allocations will occur).
+ *
+ * To construct a container which use this allocator, do like this:
+ *	list<uint, CSTLBlockAllocator<uint>>		myList( ptrOnBlockMemory );
+ *
+ * But see CSTLBlockList for easier list instanciation, because using it, you'll do like this:
+ *	CSTLBlockList<uint>		myList(ptrOnBlockMemory);
+ *
+ * Note: CSTLBlockAllocator take only 4 bytes in memory (a ptr on a CBlockMemory)
  *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-template<class T, size_t blockSize=16>
+template<class T>
 class CSTLBlockAllocator
 {
 public:
@@ -90,18 +105,19 @@ public:
 
 public:
 
-	/// Constructor
-	CSTLBlockAllocator() : _BlockMemory(blockSize)
+	/// Constructor. Must gives a blockMemory to ctor. NB: must gives a CBlockMemory<T, false> !!!
+	CSTLBlockAllocator(CBlockMemory<T, false> *bm) : _BlockMemory(bm)
 	{
 	}
 	/// copy ctor
-	CSTLBlockAllocator(const CSTLBlockAllocator<T, blockSize> &other) : _BlockMemory(blockSize)
+	CSTLBlockAllocator(const CSTLBlockAllocator<T> &other) : _BlockMemory(other._BlockMemory)
 	{
-		// don't copy any setup from the other allocator.
+		// just copy the block memory from the other allocator.
 	}
 	/// dtor
 	~CSTLBlockAllocator()
 	{
+		_BlockMemory= NULL;
 	}
 
 
@@ -112,12 +128,14 @@ public:
 		// If sizeof 1, use CBlockMemory allocation
 		if(n==1)
 		{
+#ifdef NL_DEBUG
 			// verify that we allocate with good size!! (verify __stl_alloc_rebind scheme).
 			// ie an allocator can be used only to allocate a kind of element
 			uint	eltSize= std::max(sizeof(T), sizeof(void*));
-			nlassert( eltSize == _BlockMemory.__stl_alloc_getEltSize() );
+			nlassert( eltSize == _BlockMemory->__stl_alloc_getEltSize() );
+#endif
 			// and allocate.
-			return _BlockMemory.allocate();
+			return _BlockMemory->allocate();
 		}
 		// else use std malloc
 		else
@@ -130,7 +148,7 @@ public:
 			return;
 		// If sizeof 1, use CBlockMemory allocation
 		if(n==1)
-			_BlockMemory.free((T*)p);
+			_BlockMemory->free((T*)p);
 		// else use std free
 		else
 			free(p);
@@ -138,18 +156,18 @@ public:
 
 
 	template <class T, class U>
-	CSTLBlockAllocator<U, blockSize>& __stl_alloc_rebind(CSTLBlockAllocator<T, blockSize>& __a, const U*)
+	CSTLBlockAllocator<U>& __stl_alloc_rebind(CSTLBlockAllocator<T>& __a, const U*)
 	{
 		// must change the internal eltSize of __a.
-		__a._BlockMemory.__stl_alloc_changeEltSize(sizeof(U));
+		__a._BlockMemory->__stl_alloc_changeEltSize(sizeof(U));
 		// and just typecast/return him
-		return (CSTLBlockAllocator<U, blockSize>&)(__a); 
+		return (CSTLBlockAllocator<U>&)(__a); 
 	}
 
 	template <class T, class U>
-	CSTLBlockAllocator<U, blockSize> __stl_alloc_create(const CSTLBlockAllocator<T, blockSize>&, const U*)
+	CSTLBlockAllocator<U> __stl_alloc_create(const CSTLBlockAllocator<T>&, const U*)
 	{
-		return CSTLBlockAllocator<U, blockSize>();
+		return CSTLBlockAllocator<U>();
 	}
 
 
@@ -158,7 +176,7 @@ public:
 private:
 
 	// The blockMemory used to allocate elements
-	CBlockMemory<T, false>		_BlockMemory;
+	CBlockMemory<T, false>		*_BlockMemory;
 
 };
 

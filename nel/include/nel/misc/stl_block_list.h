@@ -1,7 +1,7 @@
 /** \file stl_block_list.h
  * <File description>
  *
- * $Id: stl_block_list.h,v 1.1 2001/12/27 14:31:47 berenguier Exp $
+ * $Id: stl_block_list.h,v 1.2 2001/12/27 17:14:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,32 +38,35 @@ namespace NLMISC {
 /**
  * This class is a list<> which use CSTLBlockAllocator
  *
+ * You construct such a list like this:
+ *	CSTLBlockList<uint>		myList(ptrOnBlockMemory);
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-template <class T, size_t blockSize=16>
-class CSTLBlockList : public std::list<T, CSTLBlockAllocator<T, blockSize> >
+template <class T>
+class CSTLBlockList : public std::list<T, CSTLBlockAllocator<T> >
 {
 public:
-    explicit CSTLBlockList(const allocator_type& a= CSTLBlockAllocator<T, blockSize>() ) :
-		std::list<T,CSTLBlockAllocator<T, blockSize> >(a)
+    explicit CSTLBlockList(CBlockMemory<T, false> *bm ) :
+		std::list<T, CSTLBlockAllocator<T> >(CSTLBlockAllocator<T>(bm))
     {
     }
 
-    explicit CSTLBlockList(size_type n, const T& v=T(), const allocator_type& a=CSTLBlockAllocator<T, blockSize>() ) :
-		std::list<T,CSTLBlockAllocator<T, blockSize> >(n,v,a)
+    explicit CSTLBlockList(size_type n, CBlockMemory<T, false> *bm ) :
+		std::list<T, CSTLBlockAllocator<T> >(n,T(),CSTLBlockAllocator<T>(bm))
     {
     }
 
-	explicit CSTLBlockList(size_type __n) :
-		std::list<T, CSTLBlockAllocator<T, blockSize> >(n)
-	{
-	}
+	explicit CSTLBlockList(size_type n, const T& v, CBlockMemory<T, false> *bm ) :
+		std::list<T, CSTLBlockAllocator<T> >(n,v,CSTLBlockAllocator<T>(bm))
+    {
+    }
 
 
-    CSTLBlockList(const_iterator first,const_iterator last, const allocator_type& a=CSTLBlockAllocator<T, blockSize>() ):
-		std::list<T,CSTLBlockAllocator<T, blockSize> >(first,last,a)
+    CSTLBlockList(const_iterator first,const_iterator last, CBlockMemory<T, false> *bm ):
+		std::list<T, CSTLBlockAllocator<T> >(first,last,CSTLBlockAllocator<T>(bm))
     {
     }
 };

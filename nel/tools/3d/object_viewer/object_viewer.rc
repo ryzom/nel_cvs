@@ -650,7 +650,7 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_EDIT_PARTICLE_SYSTEM DIALOG DISCARDABLE  0, 0, 307, 359
+IDD_EDIT_PARTICLE_SYSTEM DIALOG DISCARDABLE  0, 0, 307, 394
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -681,22 +681,27 @@ BEGIN
     PUSHBUTTON      "Update",IDC_UPDATE_BBOX,156,266,43,16
     PUSHBUTTON      "+ 10 %",IDC_INC_BBOX,201,266,31,16
     PUSHBUTTON      "- 10 %",IDC_DEC_BBOX,235,266,31,16
-    GROUPBOX        "System life",IDC_STATIC,4,299,295,50
+    GROUPBOX        "System life",IDC_STATIC,4,294,295,78
     CONTROL         "Model removed when out of range",
                     IDC_DIE_WHEN_OUT_OF_RANGE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,307,124,11
-    LTEXT           "Die on event :",IDC_STATIC,7,334,46,9
-    COMBOBOX        IDC_PS_DIE_ON_EVENT,55,332,106,45,CBS_DROPDOWNLIST | 
+    LTEXT           "Die on event :",IDC_STATIC,7,356,46,9
+    COMBOBOX        IDC_PS_DIE_ON_EVENT,55,354,106,45,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Apply after delay :",IDC_STATIC,169,333,58,11
-    EDITTEXT        IDC_APPLY_AFTRE_DELAY,231,331,29,13,ES_AUTOHSCROLL
-    LTEXT           "s",IDC_STATIC,265,333,8,9
-    CONTROL         "PS removed when out of frustum",
+    LTEXT           "Apply after delay :",IDC_STATIC,169,355,58,11
+    EDITTEXT        IDC_APPLY_AFTRE_DELAY,231,353,29,13,ES_AUTOHSCROLL
+    LTEXT           "s",IDC_STATIC,265,355,8,9
+    CONTROL         "PS resource removed when out of frustum ",
                     IDC_DIE_WHEN_OUT_OF_FRUSTRUM,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,134,307,123,10
+                    WS_TABSTOP,138,307,150,10
     CONTROL         "perform motion when out of frustum",
                     IDC_PERFORM_MOTION_WHEN_OUT_OF_FRUSTUM,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,320,122,8
+    LTEXT           "(But not the object (model) that hold it, unless",
+                    IDC_STATIC,148,318,125,10
+    LTEXT           ", unless ""Model removed when o.o.r "" is checked)",
+                    IDC_STATIC,150,327,136,17
+    GROUPBOX        "",IDC_STATIC,135,300,157,47
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -981,7 +986,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 300
         TOPMARGIN, 7
-        BOTTOMMARGIN, 352
+        BOTTOMMARGIN, 387
     END
 
     IDD_BIN_OP, DIALOG

@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.9 2001/03/16 16:50:14 berenguier Exp $
+ * $Id: mot.cpp,v 1.10 2001/04/03 07:55:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,7 +152,10 @@ IModel	*CMOT::createModel(const CClassId &idModel)
 	itModel= RegModels.find(e);
 
 	if(itModel==RegModels.end())
+	{
+		nlstop;			// Warning, CScene::registerBasics () has not been called !
 		return NULL;
+	}
 	else
 	{
 		IModel	*m= (*itModel).Creator();

@@ -26,11 +26,10 @@ date >> log.log
 date
 
 
-cp -u -p shape/*.[sS][hH][aA][pP][eE] $client_directory/$shape_install_directory  2>> log.log
-cp -u -p shape_with_coarse_mesh_builded/*.[sS][hH][aA][pP][eE] $client_directory/$shape_install_directory  2>> log.log
-cp -u -p shape_with_coarse_mesh_builded/*.[dD][dD][sS] $client_directory/$bitmap_install_directory  2>> log.log
+cp -u -p -R shape/. $client_directory/$shape_install_directory  2>> log.log
+cp -u -p -R shape_with_coarse_mesh_builded/. $client_directory/$shape_install_directory  2>> log.log
 
 if test "$lightmap_install_directory"; then
 	mkdir $client_directory/$lightmap_install_directory 2>> log.log 2> /dev/null
-	cp -u -p lightmap_16_bits/*.[tT][gG][aA] $client_directory/$lightmap_install_directory  2>> log.log
+	cp -u -p -R lightmap_16_bits/. $client_directory/$lightmap_install_directory  2>> log.log
 fi

@@ -19,4 +19,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p vegetset/*.[vV][eE][gG][eE][tT][sS][eE][tT] $client_directory/$vegetset_install_directory  2>> log.log
+cp -u -p -R vegetset/. $client_directory/$vegetset_install_directory  2>> log.log

@@ -19,4 +19,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p smallbank/*.[sS][mM][aA][lL][lL][bB][aA][nN][kK] $client_directory/$bank_install_directory  2>> log.log
+cp -u -p -R smallbank/. $client_directory/$bank_install_directory  2>> log.log

@@ -19,5 +19,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p output/*.[gG][rR] $client_directory/$pacs_install_directory  2>> log.log
-cp -u -p output/*.[rR][bB][aA][nN][kK] $client_directory/$pacs_install_directory  2>> log.log
+cp -u -p -R output/. $client_directory/$pacs_install_directory  2>> log.log

@@ -19,4 +19,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p fonts/*.* $client_directory/$fonts_install_directory  2>> log.log
+cp -u -p -R fonts/. $client_directory/$fonts_install_directory  2>> log.log

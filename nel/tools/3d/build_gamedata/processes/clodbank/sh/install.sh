@@ -19,4 +19,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p clodbank/*.[cC][lL][oO][dD][bB][aA][nN][kK] $client_directory/$shape_install_directory  2>> log.log
+cp -u -p -R clodbank/. $client_directory/$shape_install_directory  2>> log.log

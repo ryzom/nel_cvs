@@ -22,7 +22,7 @@ echo -------
 date >> log.log
 date
 
-cp -u -p pacs_prim/*.[pP][aA][cC][sS]_[pP][rR][iI][mM] $client_directory/$pacs_primitive_install_directory  2>> log.log
+cp -u -p -R pacs_prim/. $client_directory/$pacs_primitive_install_directory  2>> log.log
 
 if test "$want_landscape_col_prim_pacs_list" ; then
    ls pacs_prim | grep ".pacs_prim" >> $client_directory/landscape_col_prim_pacs_list.txt

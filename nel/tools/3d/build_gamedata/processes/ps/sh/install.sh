@@ -19,4 +19,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p ps/*.[pP][sS] $client_directory/$ps_install_directory  2>> log.log
+cp -u -p -R ps/. $client_directory/$ps_install_directory  2>> log.log

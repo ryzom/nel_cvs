@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.13 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: event_listener.cpp,v 1.14 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,7 +120,8 @@ void CEventListenerAsync::operator ()(const CEvent& event)
 	{
 		CEventKeyUp *pEvent=(CEventKeyUp*)&event;
 		
-
+		_KeyArray.clear (pEvent->Key);
+		
 		switch(pEvent->Key)
 		{
 			case KeyRCONTROL:
@@ -167,7 +168,6 @@ void CEventListenerAsync::operator ()(const CEvent& event)
 		}
 
 
-		_KeyArray.clear (pEvent->Key);
 		// Do not "raise up" the key, until someone has get the state of this key.
 		if(_KeyReleaseArray.get(pEvent->Key))
 		{			

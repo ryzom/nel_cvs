@@ -1,7 +1,7 @@
 /** \file di_mouse_device.h
  * <File description>
  *
- * $Id: di_mouse_device.h,v 1.3 2002/04/10 12:41:49 vizerie Exp $
+ * $Id: di_mouse_device.h,v 1.4 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -70,7 +70,7 @@ public:
 		/** Create a mouse device from a valid DirectInput8 pointer. This must then be deleted by the caller.
 		  * \return the interface or throw an exception if the creation failed
 		  */
-		static CDIMouse *createMouseDevice(IDirectInput8 *di8, HWND hwnd, CDIEventEmitter *diEventEmitter) throw(EDirectInput);
+		static CDIMouse *createMouseDevice(IDirectInput8 *di8, HWND hwnd, CDIEventEmitter *diEventEmitter, bool hardware, class CWinEventEmitter *we) throw(EDirectInput);
 	//@}
 	
 	///\name Mouse params, inherited from IMouseDevice
@@ -81,6 +81,8 @@ public:
 		TAxisMode			getMouseMode(TAxis axis) const;		
 		void				setMouseSpeed(float speed);		
 		float				getMouseSpeed() const;		
+		void				setMouseAcceleration(uint speed);
+		uint				getMouseAcceleration() const;
 		void				setMouseFrame(const CRect &rect);		
 		const CRect			&getMouseFrame() const;		
 		void				setDoubleClickDelay(uint ms);
@@ -113,15 +115,17 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 private:
-	LPDIRECTINPUTDEVICE8		_Mouse;		
+	LPDIRECTINPUTDEVICE8		_Mouse;	
+	// 
+	bool						_Hardware;
 	//
 	TMessageMode				_MessageMode;
 	//
 	TAxisMode					_MouseAxisMode[NumMouseAxis];
 	sint32						_XMousePos, _YMousePos; // position encoded in fixed point 32 : 32. This allow wrapping and no loss of precision, when not in clamped mode
-	sint32						_XRaw, _YRaw;
 	bool						_FirstX, _FirstY;
 	float						_MouseSpeed;
+	uint						_MouseAccel;
 	CRect						_MouseFrame;
 	//
 	bool						_MouseButtons[MaxNumMouseButtons];
@@ -136,6 +140,8 @@ private:
 	float						_XFactor, _YFactor;
 	//
 	CDIEventEmitter				*_DIEventEmitter;
+	// The windows emitter to enable / disble win32 mouse messages
+	NLMISC::CRefPtr<CWinEventEmitter>	_WE;
 private:
 	/// ctor
 	CDIMouse();

@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.7 2003/02/14 14:11:35 lecroart Exp $
+ * $Id: di_keyboard_device.cpp,v 1.8 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -352,8 +352,8 @@ void	CDIKeyboard::transitionOccured(CEventServer *server, const IInputDeviceEven
 TKeyButton CDIKeyboard::buildKeyButtonsFlags() const
 {
 	return (TKeyButton) ( (ShiftPressed   ? shiftKeyButton : 0)
-						  | (CtrlPressed  ? altKeyButton   : 0)
-						  | (AltPressed   ? ctrlKeyButton  : 0)
+						  | (CtrlPressed  ? ctrlKeyButton   : 0)
+						  | (AltPressed   ? altKeyButton  : 0)
 						);
 }
 
@@ -377,8 +377,14 @@ void CDIKeyboard::keyTriggered(bool pressed, uint dikey, CEventServer *server, u
 	if (keyValue == 0) return;
 
 	CEventKey *ek;
-	if (pressed ) ek = new CEventKeyDown(keyValue, buildKeyButtonsFlags(), false, _DIEventEmitter);
-				 else ek = new CEventKeyUp(keyValue, buildKeyButtonsFlags(), _DIEventEmitter);
+	if (pressed )
+	{
+		ek = new CEventKeyDown(keyValue, buildKeyButtonsFlags(), false, _DIEventEmitter);
+	}
+	else 
+	{
+		ek = new CEventKeyUp(keyValue, buildKeyButtonsFlags(), _DIEventEmitter);
+	}
 	server->postEvent(ek);
 
 	if (pressed)

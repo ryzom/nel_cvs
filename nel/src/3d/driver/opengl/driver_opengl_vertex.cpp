@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.31 2002/09/24 14:42:08 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.32 2003/02/27 15:44:04 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1132,6 +1132,20 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 
 
 	return ok;
+}
+
+
+// ***************************************************************************
+uint32				CDriverGL::getAvailableVertexAGPMemory ()
+{
+	return _AGPVertexArrayRange->sizeAllocated();
+}
+
+
+// ***************************************************************************
+uint32				CDriverGL::getAvailableVertexVRAMMemory ()
+{
+	return _VRAMVertexArrayRange->sizeAllocated();
 }
 
 

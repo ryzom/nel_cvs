@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.172 2003/02/12 16:45:36 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.173 2003/02/27 15:44:04 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1680,7 +1680,14 @@ void	CDriverGL::setupScissor (const class CScissor& scissor)
 void CDriverGL::showCursor(bool b)
 {
 #ifdef NL_OS_WINDOWS
-	ShowCursor(b);
+	if (b)
+	{
+		while (ShowCursor(b) < 0) {};
+	}
+	else
+	{
+		while (ShowCursor(b) >= 0) {};
+	}
 #elif defined (NL_OS_UNIX)
 
 	if (b)
@@ -2143,7 +2150,7 @@ void	CDriverGL::setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float sh
 }
 
 // ***************************************************************************
-NLMISC::IMouseDevice	*CDriverGL::enableLowLevelMouse(bool enable)
+NLMISC::IMouseDevice	*CDriverGL::enableLowLevelMouse(bool enable, bool exclusive)
 {
 	#ifdef NL_OS_WINDOWS
 		if (_EventEmitter.getNumEmitters() < 2) return NULL;
@@ -2152,7 +2159,7 @@ NLMISC::IMouseDevice	*CDriverGL::enableLowLevelMouse(bool enable)
 		{
 			try
 			{
-				NLMISC::IMouseDevice *md = diee->getMouseDevice();				
+				NLMISC::IMouseDevice *md = diee->getMouseDevice(exclusive);
 				return md;
 			}
 			catch (EDirectInput &)

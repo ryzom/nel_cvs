@@ -1,7 +1,7 @@
 /** \file mouse_device.h
  * <File description>
  *
- * $Id: mouse_device.h,v 1.1 2002/03/28 10:36:37 vizerie Exp $
+ * $Id: mouse_device.h,v 1.2 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -51,7 +51,7 @@ struct IMouseDevice : public IInputDevice
 		  *                - no speed apllied 
 		  *				   - no factor applied
 		  *                - CGDMouseMove messages are sent
-		  *				   - Coordinates expressed in mickeys
+		  *				   - Move expressed in mickeys
 		  * Normal messages : - CEventMouseMove messages are sent
 		  *					  - A frame may clamp one or both axis
 		  *                   - The mouse speed can be changed	  
@@ -80,6 +80,14 @@ struct IMouseDevice : public IInputDevice
 		  * NB : invalid in raw message mode
 		  */
 		virtual float					getMouseSpeed() const  = 0;
+		/** Set the mouse acceleration. It is the threshold in mickey, when start the acceleration. 0 means not acceleration.
+		  * NB : invalid in raw message mode
+		  */
+		virtual void					setMouseAcceleration(uint speed)  = 0;
+		/** Get the mouse acceleration.
+		  * NB : invalid in raw message mode
+		  */
+		virtual uint					getMouseAcceleration() const  = 0;
 		/** Set the current frame in which the mouse can move, expressed in pixels.
 		  * NB do not forget to call setMouseFactors if you want the results to be reported in the 0-1 range.
   		  * NB : invalid in raw message mode.

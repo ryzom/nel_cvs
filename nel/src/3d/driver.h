@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.46 2003/01/28 13:23:08 corvazier Exp $
+ * $Id: driver.h,v 1.47 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -350,7 +350,15 @@ public:
 	 */
 	virtual	bool			initVertexArrayRange(uint agpMem, uint vramMem=0) =0;
 
+	/** Return the amount of AGP memory allocated by initVertexArrayRange() to store vertices.
+	*/
+	virtual uint32			getAvailableVertexAGPMemory () =0;
 
+	/** Return the amount of video memory allocated by initVertexArrayRange() to store vertices.
+	*/
+	virtual uint32			getAvailableVertexVRAMMemory () =0;
+	
+	
 	/** create a IVertexBufferHard. delete it with deleteVertexBufferHard.
 	 *	NB: user should (must) keep a CRefPtr<> on this ptr, because if driver is deleted (for any reason)
 	 *	the pointer will be no longer valid.
@@ -577,7 +585,7 @@ public:
 	      *      - Calls to showCursor have no effects
 		  *      - Calls to setCapture have no effects
 		  */
-		virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable) = 0;
+		virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable, bool exclusive) = 0;
 
 		/** Enable / disable  a low level keyboard.
 		  * Such a keyboard can only send KeyDown and KeyUp event. It just consider the keyboard as a

@@ -1,7 +1,7 @@
 /** \file di_mouse.cpp
  * <File description>
  *
- * $Id: di_mouse_device.cpp,v 1.2 2002/04/10 12:41:49 vizerie Exp $
+ * $Id: di_mouse_device.cpp,v 1.3 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "misc/di_mouse_device.h"
 #include "nel/misc/game_device_events.h"
+#include "nel/misc/win_event_emitter.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -46,6 +47,7 @@ namespace NLMISC
 //======================================================
 CDIMouse::CDIMouse() : _MessageMode(RawMode),
 					   _MouseSpeed(1.0f),
+					   _MouseAccel(10000),
 					   _Mouse(NULL),
 					   _XAcc(0),
 					   _YAcc(0),
@@ -58,8 +60,6 @@ CDIMouse::CDIMouse() : _MessageMode(RawMode),
 					   OldDIXPos(0),
 					   OldDIYPos(0),
 					   OldDIZPos(0),
-					   _XRaw(0),
-					   _YRaw(0),
 					   _FirstX(true),
    					   _FirstY(true)
 
@@ -104,6 +104,19 @@ void		CDIMouse::setMouseSpeed(float speed)
 }
 
 //======================================================
+void		CDIMouse::setMouseAcceleration(uint accel)
+{
+	nlassert(_MessageMode == NormalMode);
+	_MouseAccel = accel;
+}
+
+//======================================================
+uint		CDIMouse::getMouseAcceleration() const
+{
+	return _MouseAccel;
+}
+
+//======================================================
 bool	CDIMouse::setBufferSize(uint size)
 {
 	nlassert(size > 0);
@@ -133,18 +146,19 @@ void	CDIMouse::setMousePos(float x, float y)
 }
 
 //======================================================
-CDIMouse *CDIMouse::createMouseDevice(IDirectInput8 *di8, HWND hwnd, CDIEventEmitter *diEventEmitter) throw(EDirectInput)
+CDIMouse *CDIMouse::createMouseDevice(IDirectInput8 *di8, HWND hwnd, CDIEventEmitter *diEventEmitter, bool hardware, CWinEventEmitter *we) throw(EDirectInput)
 {
 	std::auto_ptr<CDIMouse> mouse(new CDIMouse);
 	mouse->_DIEventEmitter = diEventEmitter;
+	mouse->_Hardware = hardware;
 	HRESULT result = di8->CreateDevice(GUID_SysMouse, &(mouse->_Mouse), NULL);
 	if (result != DI_OK) throw EDirectInputNoMouse();
-	result = mouse->_Mouse->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_EXCLUSIVE);
+	result = mouse->_Mouse->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | (hardware ? DISCL_EXCLUSIVE:DISCL_NONEXCLUSIVE));
 	if (result != DI_OK) throw EDirectInputCooperativeLevelFailed();
 	mouse->_Mouse->SetDataFormat(&c_dfDIMouse2);	
 	mouse->setBufferSize(64);
-
-
+	mouse->_WE = we;
+	
 	/** we want an absolute mouse mode, so that, if the event buffer get full, we can retrieve the right position
 	  */
 	DIPROPDWORD prop;
@@ -158,6 +172,11 @@ CDIMouse *CDIMouse::createMouseDevice(IDirectInput8 *di8, HWND hwnd, CDIEventEmi
 	//
 	mouse->_Mouse->Acquire();	
 	mouse->_hWnd = hwnd;
+	
+	// Enable win32 mouse message only if hardware mouse in normal mode
+	if (mouse->_WE)
+		mouse->_WE->enableMouseEvents(mouse->_Hardware && (mouse->_MessageMode == IMouseDevice::NormalMode));
+
 	return mouse.release();
 }
 
@@ -291,67 +310,86 @@ void CDIMouse::processButton(uint button, bool pressed, CEventServer *server, ui
 //======================================================
 void CDIMouse::submit(IInputDeviceEvent *deviceEvent, CEventServer *server)
 {
-	CDIEvent *die = safe_cast<CDIEvent *>(deviceEvent);
-	bool	pressed;
-	switch(die->Datas.dwOfs)
+	if (!_Hardware || (_MessageMode == RawMode))
 	{
-		case	DIMOFS_X:
+		CDIEvent *die = safe_cast<CDIEvent *>(deviceEvent);
+		bool	pressed;
+		switch(die->Datas.dwOfs)
 		{
-			if (!_FirstX)
+			case	DIMOFS_X:
 			{
-				sint dep = (sint32) die->Datas.dwData - OldDIXPos;				
-				_XAcc += dep;				
+				if (!_FirstX)
+				{
+					sint dep = (sint32) die->Datas.dwData - OldDIXPos;				
+					
+					// Acceleration
+					if (_MouseAccel)
+					{
+						sint accelFactor = abs (dep) / (sint)_MouseAccel;
+						dep <<= accelFactor;
+					}
+
+					_XAcc += dep;				
+				}
+				else
+				{
+					_FirstX = false;
+				}
+				OldDIXPos = (sint32) die->Datas.dwData;
 			}
-			else
+			break;
+			case	DIMOFS_Y:
 			{
-				_FirstX = false;
+				if (!_FirstY)
+				{
+					sint dep = (sint32) die->Datas.dwData - OldDIYPos;				
+					
+					// Acceleration
+					if (_MouseAccel)
+					{
+						sint accelFactor = abs (dep) / (sint)_MouseAccel;
+						dep <<= accelFactor;
+					}
+
+					_YAcc -= dep;
+				}
+				else
+				{	
+					_FirstY = false;
+				}
+				OldDIYPos = (sint32) die->Datas.dwData;
 			}
-			OldDIXPos = (sint32) die->Datas.dwData;
-		}
-		break;
-		case	DIMOFS_Y:
-		{
-			if (!_FirstY)
+			break;
+			case	DIMOFS_Z:
 			{
-				sint dep = (sint32) die->Datas.dwData - OldDIYPos;				
-				_YAcc -= dep;				
+				updateMove(server);
+				sint dep = die->Datas.dwData - OldDIZPos;
+				OldDIZPos = (sint32) die->Datas.dwData;
+				CEventMouseWheel *emw = 
+				new CEventMouseWheel((float) (_XMousePos >> 16),
+											 (float) (_XMousePos >> 16),										 
+											 buildMouseButtonFlags(),
+											 dep > 0,
+											 _DIEventEmitter);
+				server->postEvent(emw);
 			}
-			else
-			{	
-				_FirstY = false;
-			}
-			OldDIYPos = (sint32) die->Datas.dwData;
+			break;
+			case	DIMOFS_BUTTON0:	/* left button */			
+				pressed = (die->Datas.dwData & 0x80) != 0;
+				processButton(0, pressed, server, die->Datas.dwTimeStamp);
+			break;
+			case	DIMOFS_BUTTON1: /* right button */
+				pressed = (die->Datas.dwData & 0x80) != 0;
+				processButton(1, pressed, server, die->Datas.dwTimeStamp);
+			break;
+			case	DIMOFS_BUTTON2: /* middle button */
+				pressed = (die->Datas.dwData & 0x80) != 0;
+				processButton(2, pressed, server, die->Datas.dwTimeStamp);
+			break;
+			default:
+				return;
+			break;
 		}
-		break;
-		case	DIMOFS_Z:
-		{
-			updateMove(server);
-			sint dep = die->Datas.dwData - OldDIZPos;
-			OldDIZPos = (sint32) die->Datas.dwData;
-			CEventMouseWheel *emw = 
-			new CEventMouseWheel((float) (_XMousePos >> 16),
-										 (float) (_XMousePos >> 16),										 
-										 buildMouseButtonFlags(),
-										 dep > 0,
-										 _DIEventEmitter);
-			server->postEvent(emw);
-		}
-		break;
-		case	DIMOFS_BUTTON0:	/* left button */			
-			pressed = (die->Datas.dwData & 0x80) != 0;
-			processButton(0, pressed, server, die->Datas.dwTimeStamp);
-		break;
-		case	DIMOFS_BUTTON1: /* right button */
-			pressed = (die->Datas.dwData & 0x80) != 0;
-			processButton(1, pressed, server, die->Datas.dwTimeStamp);
-		break;
-		case	DIMOFS_BUTTON2: /* middle button */
-			pressed = (die->Datas.dwData & 0x80) != 0;
-			processButton(2, pressed, server, die->Datas.dwTimeStamp);
-		break;
-		default:
-			return;
-		break;
 	}
 }
 
@@ -370,9 +408,7 @@ void	CDIMouse::updateMove(CEventServer *server)
 		}
 		else
 		{			
-			_XRaw += _XAcc;
-			_YRaw += _YAcc;
-			CGDMouseMove *emm = new CGDMouseMove(_DIEventEmitter, this, _XRaw, _YRaw);
+			CGDMouseMove *emm = new CGDMouseMove(_DIEventEmitter, this, _XAcc, _YAcc);
 			server->postEvent(emm);			
 		}
 		_XAcc = _YAcc = 0;
@@ -422,6 +458,10 @@ void	CDIMouse::setMessagesMode(TMessageMode mode)
 	{
 		_FirstX = _FirstY = false;
 	}	
+	
+	// Enable win32 mouse message only if hardware mouse in normal mode
+	if (_WE)
+		_WE->enableMouseEvents(_Hardware && (_MessageMode == NormalMode));
 }
 
 

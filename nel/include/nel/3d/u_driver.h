@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.25 2003/01/28 13:23:08 corvazier Exp $
+ * $Id: u_driver.h,v 1.26 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -402,6 +402,14 @@ public:
 	/// Get the height of the window
 	virtual uint			getWindowHeight () =0;
 
+	/** Return the amount of AGP memory allocated by initVertexArrayRange() to store vertices.
+	*/
+	virtual uint32			getAvailableVertexAGPMemory () =0;
+
+	/** Return the amount of video memory allocated by initVertexArrayRange() to store vertices.
+	*/
+	virtual uint32			getAvailableVertexVRAMMemory () =0;
+
 	/** get the RGBA back buffer
 	  *
 	  * \param bitmap the buffer will be written in this bitmap
@@ -450,7 +458,7 @@ public:
 		  *      - Calls to showCursor have no effects
 		  *      - Calls to setCapture have no effects
 		  */
-		virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable) = 0;
+		virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable, bool hardware) = 0;
 
 		/** Enable / disable  a low level keyboard.		  
 		  * This returns a interface to some parameters when it is supported, or NULL otherwise.

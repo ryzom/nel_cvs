@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.137 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.138 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,6 +228,9 @@ public:
 #endif // NL_OS_WINDOWS
 	}
 
+	virtual uint32			getAvailableVertexAGPMemory ();
+	virtual uint32			getAvailableVertexVRAMMemory ();
+
 	virtual emptyProc		getWindowProc();
 
 	virtual bool			activate();
@@ -373,7 +376,7 @@ public:
 
 	virtual void			setCapture (bool b);
 
-	virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable);
+	virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable, bool exclusive);
 		
 	virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable);
 

@@ -1,7 +1,7 @@
 /** \file dx_event_emitter.cpp
  * <File description>
  *
- * $Id: di_event_emitter.cpp,v 1.1 2002/03/28 10:30:15 vizerie Exp $
+ * $Id: di_event_emitter.cpp,v 1.2 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -44,12 +44,7 @@
 namespace NLMISC
 {
 
-#ifdef NL_DEBUG
-	static const char DirectInputLibName[] = "dinput8.dll";
-#else
-	static const char DirectInputLibName[] = "dinput8d.dll";
-#endif
-
+static const char DirectInputLibName[] = "dinput8.dll";
 
 /////////////////////////////////
 //	CDIEventEmitter statics	   //
@@ -183,17 +178,16 @@ TMouseButton	CDIEventEmitter::buildButtonsFlags() const
 }
 
 //======================================================
-IMouseDevice	*CDIEventEmitter::getMouseDevice() throw(EInputDevice)
+IMouseDevice	*CDIEventEmitter::getMouseDevice(bool hardware) throw(EInputDevice)
 {
 	if (_Mouse) return _Mouse;	// already created ?
 	try
 	{
 		// Create a mouse
-		std::auto_ptr<CDIMouse> mouse(CDIMouse::createMouseDevice(_DInput8, _hWnd, this));	
+		std::auto_ptr<CDIMouse> mouse(CDIMouse::createMouseDevice(_DInput8, _hWnd, this, hardware, _WE));
 		// register to the device server
 		_DeviceServer.registerDevice(mouse.get());
 		_Mouse = mouse.get();	
-		if (_WE)	_WE->enableMouseEvents(false);		
 		return mouse.release();
 	}
 	catch (...)

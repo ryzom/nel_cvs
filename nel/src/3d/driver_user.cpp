@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.29 2003/01/28 13:23:08 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.30 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1144,6 +1144,14 @@ uint			CDriverUser::getWindowHeight ()
 	_Driver->getWindowSize (width, height);
 	return height;
 }
+uint32			CDriverUser::getAvailableVertexAGPMemory ()
+{
+	return _Driver->getAvailableVertexAGPMemory ();
+}
+uint32			CDriverUser::getAvailableVertexVRAMMemory ()
+{
+	return _Driver->getAvailableVertexVRAMMemory ();
+}	
 void			CDriverUser::getBuffer (CBitmap &bitmap) 
 {
 	NL3D_MEM_DRIVER
@@ -1187,12 +1195,12 @@ bool			CDriverUser::fillBuffer (CBitmap &bitmap)
 // ***************************************************************************
 // ***************************************************************************
 
-NLMISC::IMouseDevice			*CDriverUser::enableLowLevelMouse(bool enable)
+NLMISC::IMouseDevice			*CDriverUser::enableLowLevelMouse(bool enable, bool exclusive)
 {
 	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
-	return _Driver->enableLowLevelMouse(enable);
+	return _Driver->enableLowLevelMouse(enable, exclusive);
 }
 NLMISC::IKeyboardDevice			*CDriverUser::enableLowLevelKeyboard(bool enable) 
 {

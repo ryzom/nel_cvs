@@ -1,7 +1,7 @@
 /** \file game_device_event.h
  * <File description>
  *
- * $Id: game_device_events.h,v 1.3 2003/02/25 14:16:48 berenguier Exp $
+ * $Id: game_device_events.h,v 1.4 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -48,12 +48,12 @@ const CClassId  EventGDPOVChanged(0x362851b9, 0x395c4d61);
 
 
 //==========================================================================================
-/// A raw mouse move message, expressed in mickeys (absolute values)
+/// A raw mouse move message, expressed in mickeys (relative values)
 class  CGDMouseMove : public CEvent
 {
 public:
 	IMouseDevice *MD;
-	sint X, Y;	
+	sint X, Y;
 public:
 	CGDMouseMove(IEventEmitter *emitter, IMouseDevice *md, sint x, sint y) : CEvent(emitter, EventGDMouseMove), MD(md), X(x), Y(y)
 	{}

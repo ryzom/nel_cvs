@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.23 2003/01/28 13:23:08 corvazier Exp $
+ * $Id: driver_user.h,v 1.24 2003/02/27 15:44:04 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -342,6 +342,8 @@ public:
 	virtual void			getWindowSize (uint32 &width, uint32 &height);
 	virtual uint			getWindowWidth ();
 	virtual uint			getWindowHeight ();
+	virtual uint32			getAvailableVertexAGPMemory ();
+	virtual uint32			getAvailableVertexVRAMMemory ();
 	virtual void			getBuffer (CBitmap &bitmap) ;
 	virtual void			getZBuffer (std::vector<float>  &zbuffer) ;
 	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) ;
@@ -352,7 +354,7 @@ public:
 
 	/// \name Mouse / Keyboards / Game devices
 	// @{
-	virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable);
+	virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable, bool exclusive);
 	//
 	virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable) ;
 	virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager();

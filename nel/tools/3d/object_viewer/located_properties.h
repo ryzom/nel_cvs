@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.h,v 1.7 2001/07/24 09:06:39 vizerie Exp $
+ * $Id: located_properties.h,v 1.8 2001/09/26 17:49:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,11 +45,11 @@
 
 namespace  NL3D
 {
-	class CPSLocated ;
-} ; 
+	class CPSLocated;
+}; 
 
 
-class CAttribDlgFloat  ;
+class CAttribDlgFloat;
 
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedProperties dialog
@@ -60,16 +60,19 @@ class CLocatedProperties : public CDialog
 public:
 	CLocatedProperties(NL3D::CPSLocated *loc, CParticleDlg *pdlg);   // standard constructor
 
-	~CLocatedProperties() ;
+	~CLocatedProperties();
 
-	void init(uint32 x, uint32 y) ;
+	void init(uint32 x, uint32 y);
 // Dialog Data
 	//{{AFX_DATA(CLocatedProperties)
 	enum { IDD = IDD_LOCATED_PROPERTIES };
+	CButton	m_ParametricMotionCtrl;
 	CStatic	m_MaxNbParticles;
 	BOOL	m_LimitedLifeTime;
 	BOOL	m_SystemBasis;
 	BOOL	m_DisgradeWithLOD;
+	BOOL	m_ParametricIntegration;
+	BOOL	m_ParametricMotion;
 	//}}AFX_DATA
 
 
@@ -83,14 +86,14 @@ public:
 // Implementation
 protected:
 	
-	CEditableRangeUInt *_MaxNbParticles ;
-	CEditableRangeUInt *_SkipFramesDlg ;
+	CEditableRangeUInt *_MaxNbParticles;
+	CEditableRangeUInt *_SkipFramesDlg;
 	
-	CAttribDlgFloat *_MassDialog ;
-	CAttribDlgFloat *_LifeDialog ;
+	CAttribDlgFloat *_MassDialog;
+	CAttribDlgFloat *_LifeDialog;
 	 
 
-	CParticleDlg *_ParticleDlg ;
+	CParticleDlg *_ParticleDlg;
 
 	/// some wrappers used to read / write value from / to the particle system
 
@@ -102,9 +105,9 @@ protected:
 
 		struct CMaxNbParticlesWrapper : public IPSWrapperUInt
 		{
-			NL3D::CPSLocated *Located ;
-			CParticleTreeCtrl *TreeCtrl ;
-			uint32 get(void) const { return Located->getMaxSize() ; }
+			NL3D::CPSLocated *Located;
+			CParticleTreeCtrl *TreeCtrl;
+			uint32 get(void) const { return Located->getMaxSize(); }
 			void set(const uint32 &v) 
 			{ 
 				// if the max new size is lower than the current number of instance, we must suppress item
@@ -112,12 +115,12 @@ protected:
 
 				if (v < Located->getSize())
 				{
-					TreeCtrl->suppressLocatedInstanceNbItem(v) ;
+					TreeCtrl->suppressLocatedInstanceNbItem(v);
 				}
 
-				Located->resize(v) ; 
+				Located->resize(v); 
 			}
-		} _MaxNbParticlesWrapper ;
+		} _MaxNbParticlesWrapper;
 
 
 		/////////////////////////////////////////////////
@@ -126,21 +129,21 @@ protected:
 
 		struct CMassWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 		{
-		   NL3D::CPSLocated *Located ;
-		   float get(void) const { return Located->getInitialMass() ; }
-		   void set(const float &v) { Located->setInitialMass(v) ; }
-		   virtual scheme_type *getScheme(void) const { return Located->getMassScheme() ; }
-		   virtual void setScheme(scheme_type *s) { Located->setMassScheme(s) ; }
-		} _MassWrapper ;
+		   NL3D::CPSLocated *Located;
+		   float get(void) const { return Located->getInitialMass(); }
+		   void set(const float &v) { Located->setInitialMass(v); }
+		   virtual scheme_type *getScheme(void) const { return Located->getMassScheme(); }
+		   virtual void setScheme(scheme_type *s) { Located->setMassScheme(s); }
+		} _MassWrapper;
 
 		struct CLifeWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 		{
-		   NL3D::CPSLocated *Located ;
-		   float get(void) const { return Located->getInitialLife() ; }
-		   void set(const float &v) { Located->setInitialLife(v) ; }
-		   virtual scheme_type *getScheme(void) const { return Located->getLifeScheme() ; }
-		   virtual void setScheme(scheme_type *s) { Located->setLifeScheme(s) ; }
-		} _LifeWrapper ;
+		   NL3D::CPSLocated *Located;
+		   float get(void) const { return Located->getInitialLife(); }
+		   void set(const float &v) { Located->setInitialLife(v); }
+		   virtual scheme_type *getScheme(void) const { return Located->getLifeScheme(); }
+		   virtual void setScheme(scheme_type *s) { Located->setLifeScheme(s); }
+		} _LifeWrapper;
 
 						
 				
@@ -149,16 +152,20 @@ protected:
 		////////////////////////////////
 		struct CSkipFrameWrapper : public IPSWrapperUInt
 		{
-			NL3D::CPSLocated *Located ;
-			uint32 get(void) const { return Located->getFrameRate() ; }
-			void set(const uint32 &value) { Located->setFrameRate(value) ; }
-		} _SkipFrameRateWrapper ;
+			NL3D::CPSLocated *Located;
+			uint32 get(void) const { return Located->getFrameRate(); }
+			void set(const uint32 &value) { Located->setFrameRate(value); }
+		} _SkipFrameRateWrapper;
 
 
 
 	// the located this dialog is editing
+	NL3D::CPSLocated *_Located;
 
-	NL3D::CPSLocated *_Located ;
+
+	/// update the integrable check box
+	void updateIntegrable(void);
+
 
 	// Generated message map functions
 	//{{AFX_MSG(CLocatedProperties)
@@ -166,6 +173,7 @@ protected:
 	afx_msg void OnLimitedLifeTime();
 	afx_msg void OnSystemBasis();
 	afx_msg void OnDisgradeWithLod();
+	afx_msg void OnParametricMotion();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

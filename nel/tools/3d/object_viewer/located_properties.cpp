@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.12 2001/09/17 14:02:00 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.13 2001/09/26 17:49:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,8 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 	m_LimitedLifeTime = FALSE;
 	m_SystemBasis = FALSE;
 	m_DisgradeWithLOD = FALSE;
+	m_ParametricIntegration = FALSE;
+	m_ParametricMotion = FALSE;
 	//}}AFX_DATA_INIT
 
 
@@ -89,10 +91,12 @@ void CLocatedProperties::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLocatedProperties)
+	DDX_Control(pDX, IDC_PARAMETRIC_MOTION, m_ParametricMotionCtrl);
 	DDX_Control(pDX, IDC_PARTICLE_NUMBER_POS, m_MaxNbParticles);
 	DDX_Check(pDX, IDC_LIMITED_LIFE_TIME, m_LimitedLifeTime);
 	DDX_Check(pDX, IDC_SYSTEM_BASIS, m_SystemBasis);
-	DDX_Check(pDX, IDC_DISGRADE_WITH_LOD, m_DisgradeWithLOD);
+	DDX_Check(pDX, IDC_DISGRADE_WITH_LOD, m_DisgradeWithLOD);	
+	DDX_Check(pDX, IDC_PARAMETRIC_MOTION, m_ParametricMotion);
 	//}}AFX_DATA_MAP
 }
 
@@ -102,6 +106,7 @@ BEGIN_MESSAGE_MAP(CLocatedProperties, CDialog)
 	ON_BN_CLICKED(IDC_LIMITED_LIFE_TIME, OnLimitedLifeTime)
 	ON_BN_CLICKED(IDC_SYSTEM_BASIS, OnSystemBasis)
 	ON_BN_CLICKED(IDC_DISGRADE_WITH_LOD, OnDisgradeWithLod)
+	ON_BN_CLICKED(IDC_PARAMETRIC_MOTION, OnParametricMotion)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -177,23 +182,26 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	_MaxNbParticles->init(r.left - pr.left, r.top - pr.top, this);
 
 	
-	m_SystemBasis = _Located->isInSystemBasis();
-	m_LimitedLifeTime = _Located->getLastForever() ? FALSE : TRUE;
-
-
+	m_SystemBasis				= _Located->isInSystemBasis();	
+	m_LimitedLifeTime			= _Located->getLastForever() ? FALSE : TRUE;
 
 	_SkipFrameRateWrapper.Located = _Located;
 	_SkipFramesDlg->setWrapper(&_SkipFrameRateWrapper);
 	_SkipFramesDlg->init(99, 339, this);
 
 	m_DisgradeWithLOD = _Located->hasLODDegradation();
+	updateIntegrable();
 	UpdateData(FALSE);
-
-
-
 	ShowWindow(SW_SHOW);
 
 
+}
+
+
+void CLocatedProperties::updateIntegrable(void) 
+{
+	m_ParametricMotion			= _Located->isParametricMotionEnabled();
+	m_ParametricMotionCtrl.EnableWindow(_Located->supportParametricMotion());
 }
 
 void CLocatedProperties::OnLimitedLifeTime() 
@@ -218,6 +226,8 @@ void CLocatedProperties::OnSystemBasis()
 {
 	UpdateData();
 	_Located->setSystemBasis(m_SystemBasis ? true : false);
+	updateIntegrable();
+	UpdateData(FALSE);
 }
 
 void CLocatedProperties::OnDisgradeWithLod() 
@@ -225,4 +235,10 @@ void CLocatedProperties::OnDisgradeWithLod()
 	UpdateData();
 	_Located->forceLODDegradation(m_DisgradeWithLOD ? true : false /* to avoid warning from MSVC */);
 	
+}
+
+void CLocatedProperties::OnParametricMotion() 
+{
+	UpdateData();
+	_Located->enableParametricMotion(m_ParametricMotion ? true : false);
 }

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.19 2002/11/25 14:07:45 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.20 2003/01/08 15:38:42 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,17 @@
 #include "nel/ligo/primitive.h"
 #include <vector>
 
+namespace NL3D
+{
+	class CCluster;
+	class UScene;
+	class CScene;
+}
+
+namespace NLMISC
+{
+	class IProgressCallback;
+}
 
 namespace NLSOUND {
 
@@ -66,15 +77,41 @@ class UAudioMixer
 {
 public:
 
-	/** Structure that containg the background flags.*/
+
+	/** Structure that contain the background flags.*/
 	struct TBackgroundFlags
 	{
-		bool	Flags[16];
+		// speudo enum
+		enum 
+		{
+			/// Number of filter flags in the background.
+			NB_BACKGROUND_FLAGS = 32
+		};
+
+		bool	Flags[NB_BACKGROUND_FLAGS];
 
 		void serial(NLMISC::IStream &s)
 		{
-			for (uint i = 0; i<16; ++i)
+			for (uint i = 0; i<NB_BACKGROUND_FLAGS; ++i)
 				s.serial(Flags[i]);
+		}
+	};
+
+	/** Structure that contain the background filter fadein and fade out
+	 *  This are configuration data.
+	 */
+	struct TBackgroundFilterFades
+	{
+		NLMISC::TTime	FadeIns[TBackgroundFlags::NB_BACKGROUND_FLAGS];
+		NLMISC::TTime	FadeOuts[TBackgroundFlags::NB_BACKGROUND_FLAGS];
+
+		TBackgroundFilterFades()
+		{
+			for (uint i=0; i<TBackgroundFlags::NB_BACKGROUND_FLAGS; ++i)
+			{
+				FadeIns[i] = 0;
+				FadeOuts[i] = 0;
+			}
 		}
 	};
 
@@ -85,10 +122,19 @@ public:
 	 * In case of failure, can throw one of these ESoundDriver (Exception) objects:
 	 * ESoundDriverNotFound, ESoundDriverCorrupted, ESoundDriverOldVersion, ESoundDriverUnknownVersion.
 	 *
-	 * The sources will be auto-balanced every "balance_period" in millisecond (but in update())
-	 * (set 0 for "never auto-balance")
+	 * You can ask for EAX support. If EAX support is requested, then the mixer will try to allocate
+	 * hardware accelerated audio tracks. 
+	 * If the total of available harware track is less than 10, then EAX is automaticaly 
+	 * deactivated.
 	 */
-	virtual void		init(/* uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD */) = 0;
+	virtual void		init(bool useEax = true, NLMISC::IProgressCallback *progressCallBack = NULL) = 0;
+
+	/** Initialisation of the clustered sound system.
+	  */
+	virtual void		initClusteredSound(NL3D::UScene *uscene, float minGain, float maxDistance, float portalInterpolate = 20.0f) = 0;
+	/** Initialisation of the clustered sound system. CNELU version
+	 */
+	virtual void		initClusteredSound(NL3D::CScene *scene, float minGain, float maxDistance, float portalInterpolate = 20.0f) = 0;
 	/** Set the priority channel reserve.
 	 *	Each priority channel can be assign a restrictive reserve value.
 	 *	This value is used when the number free track available for playing drop
@@ -145,16 +191,8 @@ public:
 	 */
 	virtual uint32		getLoadedSampleSize() =0;
 
-
-	/** Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
-	 *	\deprecated
-	 */
-//	virtual	void		loadEnvSounds( const char *filename, UEnvSound **treeRoot=NULL ) = 0;
-	/// Load sounds. Returns the number of sounds successfully loaded.
-//	virtual void		loadSoundBank( const std::string &path ) = 0;
 	/// Get a TSoundId from a name (returns NULL if not found)
 	virtual TSoundId	getSoundId( const std::string &name ) = 0;
-
 
 	/** Add a logical sound source (returns NULL if name not found).
 	 * If spawn is true, the source will auto-delete after playing. If so, the return USource* pointer
@@ -162,14 +200,9 @@ public:
 	 * pass a callback function that will be called (if not NULL) just before deleting the spawned
 	 * source.
 	 */
-	virtual USource		*createSource( const std::string &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam = NULL, CSoundContext *context=0) = 0;
+	virtual USource		*createSource( const std::string &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context=0) = 0;
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
-	virtual USource		*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam  = NULL, CSoundContext *context=0 ) = 0;
-	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
-	 * when deleting the audio mixer object
-	 */
-//	virtual void		removeSource( USource *source ) = 0;
-
+	virtual USource		*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam  = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context=0 ) = 0;
 
 	/** Use this method to set the listener position instead of using getListener->setPos();
 	 * It's because we have to update the background sounds in this case.
@@ -209,7 +242,14 @@ public:
 	 */
 	virtual void		writeProfile(std::ostream& out) = 0;
 
+	virtual void		setBackgroundFlagName(uint flagIndex, const std::string &flagName) = 0;
+	virtual void		setBackgroundFlagShortName(uint flagIndex, const std::string &flagShortName) = 0;
+	virtual const std::string &getBackgroundFlagName(uint flagIndex) =0;
+	virtual const std::string &getBackgroundFlagShortName(uint flagIndex) =0;
 	virtual void		setBackgroundFlags(const TBackgroundFlags &backgroundFlags) = 0;
+	virtual const TBackgroundFlags &getBackgroundFlags() =0;
+	virtual void		setBackgroundFilterFades(const TBackgroundFilterFades &backgroundFilterFades) = 0;
+	virtual const TBackgroundFilterFades &getBackgroundFilterFades() = 0;
 
 	virtual void		loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region) = 0;
 	virtual void		loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region) = 0;
@@ -217,7 +257,6 @@ public:
 	virtual void		loadBackgroundSound (const std::string &continent) = 0;
 	virtual void		playBackgroundSound () = 0;
 	virtual void		stopBackgroundSound () = 0;
-//	virtual void		setBackgroundSoundDayNightRatio (float ratio) = 0;
 
 	virtual void		getPlayingSoundsPos(std::vector<std::pair<bool, NLMISC::CVector> > &pos) =0;
 

@@ -1,6 +1,6 @@
 /** \file vertex_program_parse.cpp
  *
- * $Id: vertex_program_parse.cpp,v 1.2 2002/10/03 09:37:44 coutelas Exp $
+ * $Id: vertex_program_parse.cpp,v 1.3 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -1075,7 +1075,7 @@ static void dumpOperand(const CVPOperand &op, bool destOperand, std::string &out
   */
 static void dumpInstr(const CVPInstruction &instr, std::string &out)
 {
-	nlassert(instr.Opcode < CVPInstruction::OpcodeCount)
+	nlassert(instr.Opcode < CVPInstruction::OpcodeCount);
 	out = instrToName[instr.Opcode];
 	uint nbOp = instr.getNumUsedSrc();
 	std::string destOperand;

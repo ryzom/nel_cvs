@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.65 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.66 2003/03/18 10:24:44 corvazier Exp $
  *
  */
 
@@ -2924,7 +2924,7 @@ CTessFace		*CTessFace::linkTessFaceWithEdge(const CVector2f &uv0, const CVector2
 	if(matchEdge(uv0, uv1, vb, vr))
 	{
 		// If leaf, check if unbound (else ptr is invalid)
-		nlassert(FRight==NULL || !isLeaf())
+		nlassert(FRight==NULL || !isLeaf());
 		FRight= linkTo;
 		return this;
 	}

@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.11 2003/03/05 15:14:52 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.12 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,7 +146,7 @@ void				CSampleBank::load(bool async)
 
 	if (_Loaded)
 	{
-		nlwarning("Trying to load an already loaded bank : %s", _Name);
+		nlwarning("Trying to load an already loaded bank : %s", _Name.c_str ());
 		return;
 	}
 
@@ -291,7 +291,7 @@ bool				CSampleBank::unload()
 
 	if (!_Loaded)
 	{
-		nlwarning("Trying to unload an already unloaded bank : %s", _Name);
+		nlwarning("Trying to unload an already unloaded bank : %s", _Name.c_str ());
 	}
 
 	// need to wait end of load ?

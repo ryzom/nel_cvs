@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.13 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: form.cpp,v 1.14 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -281,7 +281,7 @@ void CForm::write (class NLMISC::IStream &stream, bool georges4CVS)
 bool CForm::insertParent (uint before, const char *filename, CForm *parent)
 {
 	// Set or reset ?
-	nlassert (parent)
+	nlassert (parent);
 
 	// Must have the same DFN
 	if (parent->Elements.FormDfn == Elements.FormDfn)

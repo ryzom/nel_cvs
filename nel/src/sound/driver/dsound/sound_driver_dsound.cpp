@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.17 2003/03/06 17:27:20 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.18 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -683,7 +683,7 @@ void CSoundDriverDSound::update()
 	NLMISC::TTime	last = CTime::getLocalTime() - now;
 	if (last > _TimerPeriod / 2)
 	{
-		nlwarning("CSoundDriverDSound::TimerCallback : update took %u millisec", uint32(last));
+		nlwarning("CSoundDriverDSound::TimerCallback : update took %u millisec", (uint32)last);
 	}
 
 #if NLSOUND_PROFILE

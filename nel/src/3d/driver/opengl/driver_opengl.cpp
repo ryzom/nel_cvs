@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.176 2003/03/17 15:16:59 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.177 2003/03/18 10:24:43 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2149,7 +2149,7 @@ void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const uint stage, const floa
 {
 	if (!supportTextureShaders()) return;
 	//nlassert(supportTextureShaders());
-	nlassert(stage < (uint) inlGetNumTextStages() )
+	nlassert(stage < (uint) inlGetNumTextStages() );
 	_DriverGLStates.activeTextureARB(stage);
 	glTexEnvfv(GL_TEXTURE_SHADER_NV, GL_OFFSET_TEXTURE_MATRIX_NV, mat);
 }
@@ -2382,7 +2382,7 @@ bool CDriverGL::supportEMBM() const
 bool CDriverGL::isEMBMSupportedAtStage(uint stage) const
 {
 	nlassert(supportEMBM());
-	nlassert(stage < IDRV_MAT_MAXTEXTURES)
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	return _StageSupportEMBM[stage];
 
 }

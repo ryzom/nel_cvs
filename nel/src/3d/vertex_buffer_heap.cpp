@@ -1,7 +1,7 @@
 /** \file vertex_buffer_heap.cpp
  * <File description>
  *
- * $Id: vertex_buffer_heap.cpp,v 1.4 2003/03/17 17:32:53 berenguier Exp $
+ * $Id: vertex_buffer_heap.cpp,v 1.5 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -65,7 +65,7 @@ void			CVertexBufferHeap::init(IDriver *driver, uint vertexFormat, uint maxVerti
 	// setup the vertexBuffer soft with queried info.
 	_VBSoft.setVertexFormat(vertexFormat);
 	// VertexSize must be a multitple of 4 (Heap alignement ...)
-	nlassert( (_VBSoft.getVertexSize()&3) == 0)
+	nlassert( (_VBSoft.getVertexSize()&3) == 0);
 
 	// create the VBHard, if possible
 	_VBHard= driver->createVertexBufferHard(_VBSoft.getVertexFormat(), _VBSoft.getValueTypePointer(), maxVertices, IDriver::VBHardAGP, _VBSoft.getUVRouting());

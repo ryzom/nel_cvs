@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.47 2003/03/11 09:39:54 berenguier Exp $
+ * $Id: particle_system_model.cpp,v 1.48 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -382,7 +382,7 @@ float CParticleSystemModel::getNumTriangles (float distance)
 ///=========================================================================================
 bool CParticleSystemModel::checkAgainstPyramid(const std::vector<CPlane>	&pyramid) const
 {		
-	nlassert(_ParticleSystem)
+	nlassert(_ParticleSystem);
 	NLMISC::CAABBox bbox;
 	_ParticleSystem->computeBBox(bbox);		
 	const CMatrix		&mat = getMatrix();

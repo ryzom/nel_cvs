@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.15 2002/10/25 16:16:08 berenguier Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.16 2003/03/18 10:24:44 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -529,7 +529,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					++ numOpIndex;
 					srcValue[l] = firstTempRegister + 3;
 					glError = glGetError();
-					nlassert(glError == GL_NO_ERROR)
+					nlassert(glError == GL_NO_ERROR);
 				}
 
 				// test if swizzle or negate is used
@@ -557,7 +557,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 						++numSwizzle;
 						srcValue[l] = firstTempRegister + l;
 						glError = glGetError();
-						nlassert(glError == GL_NO_ERROR)
+						nlassert(glError == GL_NO_ERROR);
 					}
 				}
 			}
@@ -869,7 +869,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 			}
 
 			glError = glGetError();
-			nlassert(glError == GL_NO_ERROR)
+			nlassert(glError == GL_NO_ERROR);
 
 				
 			// apply write mask if any
@@ -998,7 +998,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 			}
 
 			glError = glGetError();
-			nlassert(glError == GL_NO_ERROR)
+			nlassert(glError == GL_NO_ERROR);
 		}
 
 		
@@ -1013,7 +1013,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 		}
 		else
 		{
-			nlassert(componentWritten[CVPOperand::OPrimaryColor] == 0xf)
+			nlassert(componentWritten[CVPOperand::OPrimaryColor] == 0xf);
 		}
 		if (componentWritten[CVPOperand::OSecondaryColor] == 0)
 		{
@@ -1024,7 +1024,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 		}
 		else
 		{
-			nlassert(componentWritten[CVPOperand::OSecondaryColor] == 0xf)
+			nlassert(componentWritten[CVPOperand::OSecondaryColor] == 0xf);
 		}
 		nlassert(componentWritten[CVPOperand::OHPosition] == 0xf); // should have written all component of position	
 

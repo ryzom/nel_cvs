@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.36 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.37 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1274,7 +1274,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 					else
 					{
 						// Let the parent DFN
-						nlassert (*parentDfn)
+						nlassert (*parentDfn);
 
 						// New current node
 						CFormElmArray *parentNode = safe_cast<CFormElmArray*> (*node);

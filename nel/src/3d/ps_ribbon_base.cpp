@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.6 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.7 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -597,7 +597,7 @@ void CPSRibbonBase::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //=======================================================	
 void CPSRibbonBase::updateLOD()
 {
-	nlassert(_Owner)
+	nlassert(_Owner);
 	float ratio = _Owner->getOwner()->getOneMinusCurrentLODRatio();	
 	float squaredRatio = ratio * ratio;
 	float lodRatio = _LODDegradation + (1.f - _LODDegradation ) * squaredRatio * squaredRatio * squaredRatio;

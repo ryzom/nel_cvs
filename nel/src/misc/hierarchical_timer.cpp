@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.26 2003/02/21 15:53:11 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.27 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -680,7 +680,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 void	CHTimer::clear()
 {
 	// should not be benching !
-	nlassert(_CurrNode == &_RootNode)
+	nlassert(_CurrNode == &_RootNode);
 	_RootNode.releaseSons();
 	_CurrNode = &_RootNode;
 	_RootNode.reset();	

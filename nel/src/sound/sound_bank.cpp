@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.12 2003/03/05 15:14:52 boucher Exp $
+ * $Id: sound_bank.cpp,v 1.13 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,7 +124,7 @@ void CSoundBank::unregisterBufferAssoc(CSimpleSound *sound, IBuffer * buffer)
 		{
 			TSimpleSoundContainer::iterator it2(it->second.find(sound));
 
-			nlassert(it2 != it->second.end())
+			nlassert(it2 != it->second.end());
 			it->second.erase(it2);
 
 			if (it->second.empty())

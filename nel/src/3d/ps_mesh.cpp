@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.22 2003/03/17 16:52:55 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.23 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -768,7 +768,7 @@ public:
 		m.setupDriverModelMatrix();	
 
 		// renderPasses setup
-		nlassert(m._Owner)	
+		nlassert(m._Owner);
 
 		// storage for sizes of meshs
 		float sizes[ConstraintMeshBufSize];

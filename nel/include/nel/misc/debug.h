@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.47 2002/11/14 17:39:37 vizerie Exp $
+ * $Id: debug.h,v 1.48 2003/03/18 10:24:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,14 +84,22 @@ extern bool DebugNeedAssert;
 	}
  *\endcode
  */
+#ifdef NL_RELEASE
+#define nldebug 0&&
+#else // NL_RELEASE
 #define nldebug NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
+#endif // NL_RELEASE
 
 
 /**
  * \def nlinfo(exp)
  * Same as nldebug but it will be display in debug and in release mode.
  */
+#ifdef NL_RELEASE
+#define nlinfo 0&&
+#else // NL_RELEASE
 #define nlinfo NLMISC::createDebug (), NLMISC::InfoLog->setPosition( __LINE__, __FILE__ ), NLMISC::InfoLog->displayNL
+#endif // NL_RELEASE
 
 
 /**
@@ -111,7 +119,11 @@ extern bool DebugNeedAssert;
 	}
  *\endcode
  */
+#ifdef NL_RELEASE
+#define nlwarning 0&&
+#else // NL_RELEASE
 #define nlwarning NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog->displayNL
+#endif // NL_RELEASE
 
 
 /**
@@ -251,6 +263,20 @@ extern bool DebugNeedAssert;
 
 // removed because we always check assert (even in release mode) #if defined(NL_DEBUG)
 
+#ifdef NL_RELEASE
+#define nlassert(exp) \
+NULL
+#define nlassertonce(exp) \
+NULL
+#define nlassertex(exp, str) \
+NULL
+#define nlverify(exp) \
+{ exp; }
+#define nlverifyonce(exp) \
+{ exp; }
+#define nlverifyex(exp, str) \
+{ exp; }
+#else // NL_RELEASE
 #define nlassert(exp) \
 { \
 	static bool ignoreNextTime = false; \
@@ -368,6 +394,7 @@ extern bool DebugNeedAssert;
 			NLMISC_BREAKPOINT; \
 	} \
 }
+#endif // NL_RELEASE
 
 
 
@@ -431,31 +458,6 @@ extern bool DebugNeedAssert;
 	} \
 }
 
-
-/* removed because we always check assert (even in release mode) 
-#else // NL_DEBUG
-
-#define nlassert(exp) \
-NULL
-#define nlassertonce(exp) \
-NULL
-#define nlassertex(exp, str) \
-NULL
-#define nlverify(exp) \
-{ exp; }
-#define nlverifyonce(exp) \
-{ exp; }
-#define nlverifyex(exp, str) \
-{ exp; }
-#define nlstop \
-NULL
-#define nlstoponce \
-NULL
-#define nlstopex(str) \
-NULL
-
-#endif // NL_DEBUG
-*/
 
 struct EFatalError : public Exception
 {

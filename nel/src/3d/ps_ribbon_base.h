@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.2 2002/02/21 17:35:47 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.3 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,7 +88,7 @@ public:
 	  */
 	void					setLODDegradation(float percent)
 	{ 
-		nlassert(percent >= 0 && percent <= 1)
+		nlassert(percent >= 0 && percent <= 1);
 		_LODDegradation = percent;
 	}
 	float					getLODDegradation() const { return _LODDegradation; }

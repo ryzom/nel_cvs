@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.38 2001/07/12 15:59:25 vizerie Exp $
+# $Id: Makefile.am,v 1.39 2001/07/24 08:49:50 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -48,7 +48,9 @@ libnel3d_la_SOURCES  = bezier_patch.cpp \
 					   ps_particle.cpp ps_plane_basis_maker.cpp ps_util.cpp ps_zone.cpp \
 					   ps_attrib_maker_bin_op.cpp particle_system_process.cpp\
 					   particle_system_shape.cpp particle_system_model.cpp\
-                       async_file_manager.cpp
+                       async_file_manager.cpp fast_floor.cpp\
+					   flare_shape.cpp flare_model.cpp
+
 
 AM_CXXFLAGS          = @FREETYPE_CFLAGS@
 

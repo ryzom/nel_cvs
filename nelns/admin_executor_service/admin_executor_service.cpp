@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.20 2002/11/13 15:46:15 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.21 2002/11/15 16:42:20 lecroart Exp $
  *
  */
 
@@ -46,6 +46,8 @@
 #include <direct.h>
 #else
 #include <unistd.h>
+#include <sys/types.h>
+#include <signal.h>
 #endif
 
 #include <string>
@@ -92,7 +94,6 @@ struct CRequest
 	uint			NbWaiting;
 	uint32			NbReceived;
 	uint16			SId;
-
 	uint32			Time;	// when the request was ask
 
 	vector<pair<vector<string>, vector<string> > > Answers;
@@ -111,8 +112,21 @@ struct CService
 	bool			Ready;			/// true if the service is ready
 	bool			Connected;		/// true if the service is connected to the AES
 	vector<CSerialCommand>	Commands;
+	bool			AutoReconnect;	/// true means that AES must relaunch the service if lost
+	uint32			PId;			/// process Id used to kill the application
 
 	vector<uint32>	WaitingRequestId;		/// contains all request that the server hasn't reply yet
+
+	string toString ()
+	{
+		string res;
+		if (!AliasName.empty())
+		{
+			res = AliasName+"/";
+		}
+		res += ShortName + "-" + NLMISC::toString(ServiceId);
+		return res;
+	}
 
 	void init (const string &shortName, uint16 serviceId)
 	{
@@ -130,8 +144,11 @@ struct CService
 		Ready = false;
 		Connected = false;
 		Commands.clear ();
+		AutoReconnect = false;
+		PId = 0;
 	}
 };
+
 
 //
 // Variables
@@ -145,6 +162,104 @@ vector<CRequest> Requests;
 vector<string> RegisteredServices;
 
 const uint32 RequestTimeout = 5;
+
+vector<pair<uint32, string> > WaitingToLaunchServices;	// date and alias name
+
+
+//
+// Launch services functions
+//
+
+// start a service immediatly
+bool startService (const string &serviceAlias)
+{
+	string command, path, arg;
+	
+	nlinfo ("Starting the service alias '%s'", serviceAlias.c_str());
+	
+	try
+	{
+		path = IService::getInstance()->ConfigFile.getVar(serviceAlias).asString(0);
+		command = IService::getInstance()->ConfigFile.getVar(serviceAlias).asString(1);
+	}
+	catch(EConfigFile &e)
+	{
+		nlwarning ("Error in serviceAlias '%s' in config file (%s)", serviceAlias.c_str(), e.what());
+		return false;
+	}
+	
+	// give the service alias to the service to forward it back when it will connected to the aes.
+	arg = " -N";
+	arg += serviceAlias;
+	
+	// set the path for the config file
+	arg += " -C";
+	arg += path;
+	
+	// set the path for log
+	arg += " -L";
+	arg += path;
+	
+	// set the path for running
+	arg += " -A";
+	arg += path;
+	
+#ifdef NL_OS_WINDOWS
+	arg += " >NUL:";
+#else
+	arg += " >/dev/null";
+#endif
+	
+	bool res = launchProgram (command, arg);
+	
+	// if launching ok, leave 1 second to the new launching service before lauching next one
+	if (res)
+		nlSleep (1000);
+	
+	return res;
+}
+
+
+
+// start service in future
+void startService (uint32 date, const string &serviceAlias)
+{
+	if (date <= CTime::getSecondsSince1970())
+	{
+		startService (serviceAlias);
+	}
+	else
+	{
+		for(uint i = 0; i < WaitingToLaunchServices.size(); i++)
+		{
+			if (WaitingToLaunchServices[i].second == serviceAlias)
+			{
+				nlwarning ("service %s already in waiting queue to launch", serviceAlias.c_str());
+				return;
+			}
+		}
+
+		WaitingToLaunchServices.push_back (make_pair(date, serviceAlias));
+	}
+}
+
+void checkWaitingServices ()
+{
+	uint32 d = CTime::getSecondsSince1970();
+
+	for(uint i = 0; i < WaitingToLaunchServices.size(); )
+	{
+		if (WaitingToLaunchServices[i].first <= d)
+		{
+			startService (WaitingToLaunchServices[i].second);
+			WaitingToLaunchServices.erase (WaitingToLaunchServices.begin()+i);
+		}
+		else
+		{
+			i++;
+		}
+	}
+}
 
 //
 // Request functions
@@ -356,57 +471,6 @@ public:
 };
 
 
-bool startService (const string &serviceAlias)
-{
-	string command, path, arg;
-
-	nlinfo ("Starting the service alias '%s'", serviceAlias.c_str());
-
-	try
-	{
-		path = IService::getInstance()->ConfigFile.getVar(serviceAlias).asString(0);
-		command = IService::getInstance()->ConfigFile.getVar(serviceAlias).asString(1);
-	}
-	catch(EConfigFile &e)
-	{
-		nlwarning ("Error in serviceAlias '%s' in config file (%s)", serviceAlias.c_str(), e.what());
-		return false;
-	}
-
-	// give the service alias to the service to forward it back when it will connected to the aes.
-	arg = " -N";
-	arg += serviceAlias;
-
-	// set the path for the config file
-	arg += " -C";
-	arg += path;
-
-	// set the path for log
-	arg += " -L";
-	arg += path;
-
-	// set the path for running
-	arg += " -A";
-	arg += path;
-
-#ifdef NL_OS_WINDOWS
-	arg += " >NUL:";
-#else
-	arg += " >/dev/null";
-#endif
-
-	bool res = launchProgram (command, arg);
-
-	// if launching ok, leave 1 second to the new launching service before lauching next one
-	if (res)
-		nlSleep (1000);
-
-	return res;
-}
-
-
-
-
 
 
 
@@ -444,7 +508,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 					msgout.serial(rid);
 					msgout.serial (varpath.Destination[i].second);
 					CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
-					nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), Services[j].ShortName.c_str(), Services[j].ServiceId);
+					nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
 				}
 			}
 
@@ -517,7 +581,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 					msgout.serial(rid);
 					msgout.serial (varpath.Destination[i].second);
 					CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
-					nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), (*sit).ShortName.c_str(), (*sit).ServiceId);
+					nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
 				}
 			}
 
@@ -533,7 +597,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 					msgout.serial(rid);
 					msgout.serial (varpath.Destination[i].second);
 					CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
-					nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), Services[j].ShortName.c_str(), Services[j].ServiceId);
+					nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
 				}
 			}
 
@@ -589,7 +653,6 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 				else
 				{
 */	
-				//SIT sit = findService (atoi(service.substr(pos+1).c_str()), false);
 				SIT sit = findService (service);
 				if (sit == Services.end ())
 				{
@@ -641,15 +704,37 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 				else
 				{
 					addRequestWaitingNb (rid);
+					bool send = true;
+					// check if the command is not to stop the service
+					CVarPath subvarpath(varpath.Destination[i].second);
+					for (uint k = 0; k < subvarpath.Destination.size (); k++)
+					{
+						if (subvarpath.Destination[k].first == "State=0")
+						{
+							// If we stop the service, we don't have to reconnect the service
+							(*sit).AutoReconnect = false;
+						}
+						else if (subvarpath.Destination[k].first == "State=-1")
+						{
+#ifdef NL_OS_UNIX
+							// kill the service
+							kill ((*sit).PId, SIGKILL);
+							send = false;
+#endif // NL_OS_UNIX
+						}
+					}
 					
-					(*sit).WaitingRequestId.push_back (rid);
-					CMessage msgout("GET_VIEW");
-					msgout.serial(rid);
-					msgout.serial (varpath.Destination[i].second);
-					CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
-					nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), (*sit).ShortName.c_str(), (*sit).ServiceId);
+					if (send)
+					{
+						// now send the request to the service
+						(*sit).WaitingRequestId.push_back (rid);
+						CMessage msgout("GET_VIEW");
+						msgout.serial(rid);
+						msgout.serial (varpath.Destination[i].second);
+						CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
+						nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
+					}
 				}
-//				}
 			}			
 		}
 	}
@@ -804,23 +889,14 @@ static void cbServiceIdentification (CMessage &msgin, const std::string &service
 		return;
 	}
 
-	msgin.serial (Services[sid].AliasName, Services[sid].LongName);
+	msgin.serial (Services[sid].AliasName, Services[sid].LongName, Services[sid].PId);
 	msgin.serialCont (Services[sid].Commands);
 
+	// if there's an alias, it means that it s me that launch the services, autoreconnect it
+	if (!Services[sid].AliasName.empty())
+		Services[sid].AutoReconnect = true;
+
 	nlinfo ("*:*:%d is identified to be '%s' '%s-%hu' '%s'", Services[sid].ServiceId, Services[sid].AliasName.c_str(), Services[sid].ShortName.c_str(), Services[sid].ServiceId, Services[sid].LongName.c_str());
-
-/*	CService *s = (CService*) (uint) from->appId();
-
-	msgin.serial (s->AliasName, s->ShortName, s->LongName);
-	msgin.serialCont (s->Commands);
-
-	nlinfo ("*:*:%d is identified to be '%s' '%s' '%s'", s->Id, s->AliasName.c_str(), s->ShortName.c_str(), s->LongName.c_str());
-
-	// broadcast the message to the admin service
-	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SID");
-	msgout.serial (s->Id, s->AliasName, s->ShortName, s->LongName);
-	msgout.serialCont (s->Commands);
-	CNetManager::send ("AESAS", msgout);*/
 }
 
 static void cbServiceReady /*(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)*/(CMessage &msgin, const std::string &serviceName, uint16 sid)
@@ -839,16 +915,6 @@ static void cbServiceReady /*(CMessage& msgin, TSockId from, CCallbackNetBase &n
 
 	nlinfo ("*:*:%d is ready (%s-%hu)", Services[sid].ServiceId, Services[sid].ShortName.c_str (), Services[sid].ServiceId);
 	Services[sid].Ready = true;
-
-/*	CService *s = (CService*) (uint) from->appId();
-
-	nlinfo ("*:*:%d is ready", s->Id);
-	s->Ready = true;
-
-	// broadcast the message to the admin service
-	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SR");
-	msgout.serial (s->Id);
-	CNetManager::send ("AESAS", msgout);*/
 }
 
 static void cbLog /*(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)*/(CMessage &msgin, const std::string &serviceName, uint16 sid)
@@ -914,7 +980,7 @@ static void cbGetView (CMessage &msgin, const std::string &serviceName, uint16 s
 	addRequest (rid, rawvarpath, sid);
 }
 
-void serviceConnection /*(const string &serviceName, TSockId from, void *arg)*/(const std::string &serviceName, uint16 sid, void *arg)
+void serviceConnection (const std::string &serviceName, uint16 sid, void *arg)
 {
 	// don't add AS
 	if (serviceName == "AS")
@@ -929,19 +995,9 @@ void serviceConnection /*(const string &serviceName, TSockId from, void *arg)*/(
 
 	nlinfo ("%s-%hu connected", Services[sid].ShortName.c_str (), Services[sid].ServiceId);
 
-/*	Services.push_back (CService (from));
-	CService *s = &(Services.back());
-	from->setAppId ((uint64)(uint)s);
+}
 
-	nlinfo ("*:*:%d connected", s->Id);
-	
-	// broadcast the message to the admin service
-	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SC");
-	msgout.serial (s->Id);
-	CNetManager::send ("AESAS", msgout);
-*/}
-
-void serviceDisconnection /*(const string &serviceName, TSockId from, void *arg)*/(const std::string &serviceName, uint16 sid, void *arg)
+void serviceDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 {
 	// don't remove AS
 	if (serviceName == "AS")
@@ -968,19 +1024,15 @@ void serviceDisconnection /*(const string &serviceName, TSockId from, void *arg)
 
 	nlinfo ("%s-%hu disconnected", Services[sid].ShortName.c_str (), Services[sid].ServiceId);
 
+	if (Services[sid].AutoReconnect)
+	{
+		// we have to relaunch it
+		nlinfo ("Waiting few seconds and relaunching the service %s", Services[sid].toString().c_str ());
+		startService (CTime::getSecondsSince1970()+IService::getInstance()->ConfigFile.getVar("RestartDelay").asInt(), Services[sid].AliasName);
+	}
+
 	Services[sid].reset();
-
-/*	CService *s = (CService*) (uint) from->appId();
-
-
-	// broadcast the message to the admin service
-	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SD");
-	msgout.serial (s->Id);
-	CNetManager::send ("AESAS", msgout);
-
-	// remove the service from the list
-	Services.erase (findService(s->Id));
-*/}
+}
 
 
 /** Callback Array
@@ -1152,20 +1204,6 @@ static void ASDisconnection (const string &serviceName, uint16 sid, void *arg)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*void loadAndSendServicesAliasList (CConfigFile::CVar &services)
-{
-	vector<string> servicesaliaslist;
-	for (sint i = 0 ; i < services.size (); i++)
-	{
-		servicesaliaslist.push_back (services.asString(i));
-	}
-
-	CMessage msgout2 (CNetManager::getSIDA ("AESAS"), "SAL");
-	msgout2.serialCont (servicesaliaslist);
-	CNetManager::send ("AESAS", msgout2, 0);
-}
-*/
-
 class CAdminExecutorService : public IService
 {
 public:
@@ -1187,22 +1225,12 @@ public:
 			ASHost += ":49996";
 
 		CUnifiedNetwork::getInstance()->addService ("AS", CInetAddress(ASHost));
-
-/*		CNetManager::setConnectionCallback ("AES", serviceConnection, NULL);
-		CNetManager::setDisconnectionCallback ("AES", serviceDisconnection, NULL);
-
-		// install the server for AS
-		CNetManager::setConnectionCallback ("AESAS", cbASServiceConnection, NULL);
-		CNetManager::addServer ("AESAS", 49996);
-		CNetManager::addCallbackArray ("AESAS", AESASCallbackArray, sizeof(AESASCallbackArray)/sizeof(AESASCallbackArray[0]));
-*/
-//		ConfigFile.setCallback ("Services", loadAndSendServicesAliasList);
-//		loadAndSendServicesAliasList (IService::ConfigFile.getVar ("Services"));
 	}
 
 	bool		update ()
 	{
 		cleanRequest ();
+		checkWaitingServices ();
 
 		return true;
 	}

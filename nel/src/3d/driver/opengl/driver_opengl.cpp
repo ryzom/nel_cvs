@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.135 2002/02/07 18:08:50 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.136 2002/02/15 17:43:03 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -215,6 +215,8 @@ CDriverGL::CDriverGL()
 	// reserve enough space to never reallocate, nor test for reallocation.
 	_LightMapLUT.resize(NL3D_DRV_MAX_LIGHTMAP);
 	_UserTexMatEnabled = 0;
+	
+///	buildCausticCubeMapTex();
 
 }
 
@@ -1093,6 +1095,8 @@ bool CDriverGL::release()
 	// Call IDriver::release() before, to destroy textures, shaders and VBs...
 	IDriver::release();
 
+	// release caustic cube map
+//	_CauticCubeMap = NULL;
 
 	// Reset VertexArrayRange.
 	resetVertexArrayRange();
@@ -1734,7 +1738,7 @@ uint32			CDriverGL::getUsedTextureMemory() const
 	uint32 memory=0;
 	
 	// For each texture used
-	set<ITexture*>::iterator ite=_TextureUsed.begin();
+	set<NLMISC::CSmartPtr<ITexture> >::iterator ite=_TextureUsed.begin();
 	while (ite!=_TextureUsed.end())
 	{
 		// Get a gl texture
@@ -1770,6 +1774,7 @@ bool CDriverGL::isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) c
 	}
 	else
 	{
+		// additionnal test may be performed here (this is why there isn't just 'return _Extensions.NVTextureShader != NULL'
 		return false;
 	}
 }
@@ -1803,27 +1808,31 @@ void      CDriverGL::enableNVTextureShader(bool enabled)
 	}	
 }
 
+/// A cube map functor to build a caustic cube map
+/*struct CCausticCubeMapFunctor : ICubeMapFunctor
+{
+	virtual NLMISC::CRGBA operator()(const NLMISC::CVector &v)
+	{
+		uint8 intensity = v.z > 0 ? (uint8) (255.f * v.z) : 0;
+		return NLMISC::CRGBA(intensity, intensity, intensity);
+	}
+};
+
+/** Build a face of a caustic cube map ( as rgba for now )
+  */
+/*static uint8 *buildCausticCubeMapTex(const NLMISC::CVector &start,
+									 const NLMISC::CVector &uDir,
+									 const NLMISC::CVector &vDir,
+									 uint size)
+{
+	const uint mapSize = 64;
+	CCausticCubeMapFunctor f;
+	_CauticCubeMap = BuildCubeMap(mapSize, f);
+}*/
+
+									
 
 // ****************************************************************************
-void CDriverGL::verifyNVTextureShaderConfig()
-{
-	if (_NVTextureShaderEnabled)
-	{
-		int consistent;
-		for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
-		{
-			_DriverGLStates.activeTextureARB(k);
-			glGetTexEnviv(GL_TEXTURE_SHADER_NV, GL_SHADER_CONSISTENT_NV, & consistent);
-			if(consistent == GL_FALSE)
-			{
-				int texAddrMode;
-				glGetTexEnviv(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, &texAddrMode);
-				nlinfo("inconsistent shader, stage = %d, shader = %d", k, texAddrMode);
-				nlassert(0);
-			}
-		}
-	}
-}
 
 
 

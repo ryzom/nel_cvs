@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.109 2002/02/07 18:08:50 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.110 2002/02/15 17:43:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@
 #include "3d/ptr_set.h"
 #include "nel/misc/heap_memory.h"
 #include "driver_opengl_states.h"
-
+#include "3d/texture_cube.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -379,6 +379,18 @@ public:
 	virtual void			forceDXTCCompression(bool dxtcComp);
 
 	virtual void			forceTextureResize(uint divisor);
+
+	/// Setup texture env functions. Used by setupMaterial
+	inline void				setTextureEnvFunction(uint stage, CMaterial& mat);
+
+	/// setup the texture matrix for a given number of stages (starting from 0)
+	inline void      setupUserTextureMatrix(uint numStages, CMaterial& mat);
+
+	/// For objects with caustics, setup the first texture (which actually is the one from the material)
+	/*static inline void		setupCausticsFirstTex(const CMaterial &mat);
+
+	/// For objects with caustics, setup the caustic texture itself
+	static inline void		setupCausticsSecondTex(uint stage);*/
 
 	virtual bool			setupMaterial(CMaterial& mat);
 
@@ -782,6 +794,14 @@ private:
 	void			endSpecularMultiPass(const CMaterial &mat);
 	// @}
 
+	/// \name Caustics
+	// @{
+	/*sint			beginCausticsMultiPass(const CMaterial &mat);
+	void			setupCausticsPass(const CMaterial &mat, uint pass);
+	void			endCausticsMultiPass(const CMaterial &mat);*/
+	// @}
+
+
 
 	/// setup GL arrays, with a vb info.
 	void			setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool skinning, bool paletteSkinning);
@@ -827,13 +847,13 @@ private:
 
 	/// \name Profiling
 	// @{
-	CPrimitiveProfile				_PrimitiveProfileIn;
-	CPrimitiveProfile				_PrimitiveProfileOut;
-	uint32							_AllocatedTextureMemory;
-	uint32							_NbSetupMaterialCall;
-	uint32							_NbSetupModelMatrixCall;
-	bool							_SumTextureMemoryUsed;
-	std::set<ITexture*>				_TextureUsed;
+	CPrimitiveProfile									_PrimitiveProfileIn;
+	CPrimitiveProfile									_PrimitiveProfileOut;
+	uint32												_AllocatedTextureMemory;
+	uint32												_NbSetupMaterialCall;
+	uint32												_NbSetupModelMatrixCall;
+	bool												_SumTextureMemoryUsed;
+	std::set<NLMISC::CSmartPtr<ITexture> >				_TextureUsed;
 	uint							computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const;
 	// @}
 
@@ -881,6 +901,11 @@ private:
 	static const uint GLMatrix[IDriver::NumMatrix];
 	static const uint GLTransform[IDriver::NumTransform];
 
+	/// \name Caustics shaders
+	// @{
+		NLMISC::CSmartPtr<CTextureCube>	_CausticCubeMap; // a cube map used for the rendering of caustics
+		static void initCausticCubeMap();
+	// @}
 };
 
 } // NL3D

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.42 2001/08/02 09:13:59 valignat Exp $
+# $Id: Makefile.am,v 1.43 2001/08/07 14:18:44 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -129,6 +129,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        mini_col.h                          \
                        mot.cpp                             \
                        mot.h                               \
+                       motion_blur.cpp                     \
+                       motion_blur.h                       \
                        mrm_builder.cpp                     \
                        mrm_builder.h                       \
                        mrm_internal.cpp                    \
@@ -242,6 +244,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        text_context_user.h                 \
                        texture.cpp                         \
                        texture.h                           \
+                       texture_blank.h                     \
+                       texture_blank.cpp                   \
                        texture_cube.cpp                    \
                        texture_cube.h                      \
                        texture_far.cpp                     \

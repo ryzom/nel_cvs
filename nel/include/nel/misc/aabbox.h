@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.7 2002/04/12 16:05:37 berenguier Exp $
+ * $Id: aabbox.h,v 1.8 2002/04/22 08:14:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,8 @@ public:
 	bool			clipBack(const CPlane &p) const;
 	/// Does the bbox include this point.
 	bool			include(const CVector &a) const;
+	/// Does the bbox include entirely this bbox.
+	bool			include(const CAABBox &box) const;
 	/// Does the bbox intersect the bbox box.
 	bool			intersect(const CAABBox &box) const;
 	/// Does the bbox intersect the triangle ABC.

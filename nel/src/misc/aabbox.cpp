@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.6 2002/04/12 16:05:46 berenguier Exp $
+ * $Id: aabbox.cpp,v 1.7 2002/04/22 08:13:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,19 @@ bool			CAABBox::include(const CVector &a) const
 	if(Center.y-HalfSize.y>a.y)	return false;
 	if(Center.z+HalfSize.z<a.z)	return false;
 	if(Center.z-HalfSize.z>a.z)	return false;
+	return true;
+}
+
+
+// ***************************************************************************
+bool			CAABBox::include(const CAABBox &box) const
+{
+	if(Center.x+HalfSize.x < box.Center.x+box.HalfSize.x)	return false;
+	if(Center.x-HalfSize.x > box.Center.x-box.HalfSize.x)	return false;
+	if(Center.y+HalfSize.y < box.Center.y+box.HalfSize.y)	return false;
+	if(Center.y-HalfSize.y > box.Center.y-box.HalfSize.y)	return false;
+	if(Center.z+HalfSize.z < box.Center.z+box.HalfSize.z)	return false;
+	if(Center.z-HalfSize.z > box.Center.z-box.HalfSize.z)	return false;
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.20 2002/02/15 17:18:08 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.21 2002/02/21 17:40:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -461,7 +461,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 
 		}		
 
-		if (dynamic_cast<NL3D::CPSRibbonLookAt *>(_Bindable))
+		if (dynamic_cast<NL3D::CPSRibbonBase *>(_Bindable))
 		{									
 		
 			// add dialog for uv tuning with ribbon

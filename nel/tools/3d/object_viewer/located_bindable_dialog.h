@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.14 2002/02/15 17:18:08 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.15 2002/02/21 17:40:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,7 +238,7 @@ protected:
 		//////////////////////////////////////		
 			struct CSegDurationWrapper : public IPSWrapperFloat
 			{
-			   NL3D::CPSRibbonLookAt *R;
+			   NL3D::CPSRibbonBase *R;
 			   float get(void) const { return R->getSegDuration(); }
 			   void set(const float &v) { R->setSegDuration(v); }
 			} _SegDurationWrapper;

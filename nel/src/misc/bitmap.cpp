@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.14 2001/11/07 11:18:49 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.15 2001/11/09 15:45:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1688,17 +1688,20 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 	uint32 devDirectoryOffset;
 	char signature[16];
 
-	f.seek (-26, f.end);
-	f.serial(extAreaOffset);
-	f.serial(devDirectoryOffset);
-	for(i=0; i<16; i++)
+	f.seek (0, f.end);
+	newTgaFormat = false;
+	if (f.getPos() >= 26)
 	{
-		f.serial(signature[i]);
+		f.seek (-26, f.end);
+		f.serial(extAreaOffset);
+		f.serial(devDirectoryOffset);
+		for(i=0; i<16; i++)
+		{
+			f.serial(signature[i]);
+		}
+		if(strncmp(signature,"TRUEVISION-XFILE",16)==0)
+			newTgaFormat = true;
 	}
-	if(strncmp(signature,"TRUEVISION-XFILE",16)==0)
-		newTgaFormat = true;
-	else
-		newTgaFormat = false;
 
 
 
@@ -2536,7 +2539,7 @@ void	CBitmap::rot90CW()
 
 	for( j = 0; j < nHeight; ++j )
 	for( i = 0; i < nWidth;  ++i )
-		pDestRgba[j+i*nWidth] = pSrcRgba[i+(nHeight-1-j)*nWidth];
+		pDestRgba[j+i*nHeight] = pSrcRgba[i+(nHeight-1-j)*nWidth];
 
 	uint32 nTemp = _Width;
 	_Width = _Height;
@@ -2569,7 +2572,7 @@ void	CBitmap::rot90CCW()
 
 	for( j = 0; j < nHeight; ++j )
 	for( i = 0; i < nWidth;  ++i )
-		pDestRgba[j+i*nWidth] = pSrcRgba[nWidth-1-i+j*nWidth];
+		pDestRgba[j+i*nHeight] = pSrcRgba[nWidth-1-i+j*nWidth];
 
 	uint32 nTemp = _Width;
 	_Width = _Height;

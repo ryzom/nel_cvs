@@ -76,7 +76,7 @@ then
 	echo "LandFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> ig_elevation.cfg
 
 
-	../../bin/ig_elevation elevation.cfg
+	../../bin/ig_elevation ig_elevation.cfg
 
 	# elevation of the heightmap for land_ligo
 	# ++++++++++++++++++++++++++++++++++++++++++++
@@ -109,7 +109,7 @@ then
 	echo "LandFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> ig_elevation.cfg
 
 
-	../../bin/ig_elevation elevation.cfg
+	../../bin/ig_elevation ig_elevation.cfg
 
 
 	# merge land_ld and land_max_elev

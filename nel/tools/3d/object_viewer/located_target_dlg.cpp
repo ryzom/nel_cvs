@@ -1,7 +1,7 @@
 /** \file located_target_dlg.cpp
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.cpp,v 1.8 2002/11/18 17:58:22 vizerie Exp $
+ * $Id: located_target_dlg.cpp,v 1.9 2003/08/22 09:02:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,8 +38,9 @@
 // CLocatedTargetDlg dialog
 
 
-CLocatedTargetDlg::CLocatedTargetDlg(NL3D::CPSTargetLocatedBindable *lbTarget) : _LBTarget(lbTarget)	
+CLocatedTargetDlg::CLocatedTargetDlg(NL3D::CPSTargetLocatedBindable *lbTarget, CParticleDlg *particleDlg) : _LBTarget(lbTarget), _ParticleDlg(particleDlg)
 {
+	nlassert(particleDlg);
 	//{{AFX_DATA_INIT(CLocatedTargetDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
@@ -86,6 +87,33 @@ void CLocatedTargetDlg::OnAddTarget()
 
 	std::sort(indexs.begin(), indexs.begin() + selCount); // we never know ...
 
+	// check that force isn't applied on a forever lasting object
+	if (dynamic_cast<NL3D::CPSForce *>(_LBTarget))
+	{	
+		bool forEverLastingTarget = false;
+		for (int k = 0; k < selCount; ++k)
+		{
+			NL3D::CPSLocated *loc = (NL3D::CPSLocated *) m_AvailableTargets.GetItemData(indexs[k] - k);
+			nlassert(loc);
+			if (loc->getLastForever())
+			{
+				forEverLastingTarget = true;
+				break;
+			}
+		}
+		if (forEverLastingTarget)
+		{	
+			CString warningStr;
+			CString messStr;
+			warningStr.LoadString(IDS_WARNING);
+			messStr.LoadString(IDS_FORCE_APPLIED_ON_OBJECT_THAT_LAST_FOREVER);
+			if (MessageBox((LPCTSTR) messStr, (LPCTSTR) warningStr, MB_OKCANCEL) != IDOK)
+			{
+				return;
+			}
+		}
+	}
+	//
 	for (int k = 0; k < selCount; ++k)
 	{
 		NL3D::CPSLocated *loc = (NL3D::CPSLocated *) m_AvailableTargets.GetItemData(indexs[k] - k);
@@ -179,7 +207,7 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 
 	if (dynamic_cast<NL3D::CPSZone *>(_LBTarget))
 	{
-		CCollisionZoneDlg *czd = new CCollisionZoneDlg(dynamic_cast<NL3D::CPSZone *>(_LBTarget));
+		CCollisionZoneDlg *czd = new CCollisionZoneDlg(dynamic_cast<NL3D::CPSZone *>(_LBTarget), _ParticleDlg);
 		pushWnd(czd);
 		czd->init(posX, posY, this);
 	}

@@ -1,7 +1,7 @@
 /** \file located_target_dlg.h
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.h,v 1.6 2002/01/28 14:54:46 vizerie Exp $
+ * $Id: located_target_dlg.h,v 1.7 2003/08/22 09:02:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "ps_wrapper.h"
 
 
+class CParticleDlg;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -47,7 +48,7 @@ class CLocatedTargetDlg : public CDialog, public CDialogStack
 {
 // Construction
 public:
-	CLocatedTargetDlg(NL3D::CPSTargetLocatedBindable *blTarget);   // standard constructor
+	CLocatedTargetDlg(NL3D::CPSTargetLocatedBindable *blTarget, CParticleDlg *particleDlg);   // standard constructor
 
 
 
@@ -74,7 +75,7 @@ protected:
 	// the target we're focusing on
 	NL3D::CPSTargetLocatedBindable *_LBTarget;
 
-	
+	CParticleDlg *_ParticleDlg;
 
 	// Generated message map functions
 	//{{AFX_MSG(CLocatedTargetDlg)

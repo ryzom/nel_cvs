@@ -80,18 +80,7 @@
 
 	const NLAIC::CIdentType *IAgent::IdAgent = NULL;/*("GenericAgent", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)staticAgent), 
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
-															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/
-
-	const NLAIC::CIdentType CSimpleLocalMailBox::IdSimpleLocalMailBox("SimpleLocalMailBox",
-														NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CSimpleLocalMailBox(NULL)),
-														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
-														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
-
-	const NLAIC::CIdentType CScriptMailBox::IdScriptMailBox("ScriptMailBox",
-														NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CScriptMailBox(NULL)),
-														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
-														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
-
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/	
 
 	const NLAIC::CIdentType CLocalMailBox::IdLocalMailBox("LocalMailBox",
 														NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CLocalMailBox(NULL)),

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.137 2003/01/13 16:58:59 chafik Exp $
+ * $Id: agent_script.cpp,v 1.138 2003/01/20 16:14:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1563,7 +1563,7 @@ namespace NLAIAGENT
 
 		
 		//const IMailBox::tListMessage &l = mail->getMesseageListe();
-		sint n = mail->size();
+		sint n = mail->getMessageCount();
 
 		while(/*l.begin() != l.end()*/n--)
 		{
@@ -1583,7 +1583,7 @@ namespace NLAIAGENT
 					o = IBasicAgent::run( msg );
 					if(o != NULL) o->release();
 				}
-				if ( mail->size() != 0 )
+				if ( mail->getMessageCount() != 0 )
 					mail->popMessage();
 			}
 			else 

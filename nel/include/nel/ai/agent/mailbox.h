@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.13 2001/09/06 16:47:58 chafik Exp $
+ * $Id: mailbox.h,v 1.14 2003/01/20 16:14:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,9 @@
 
 namespace NLAIAGENT
 {	
+	/**
+	Abstract class for mail box management.
+	*/
 	class IMailBox:public IConnectIA
 	{
 	public:
@@ -41,31 +44,32 @@ namespace NLAIAGENT
 		IMailBox(const IWordNumRef *parent);
 		IMailBox(const IMailBox &A);
 		IMailBox (NLMISC::IStream &is);
-
-		virtual void save(NLMISC::IStream &os) = 0;	
-		virtual void load(NLMISC::IStream &is) = 0;
-		
 		virtual ~IMailBox();
 
+		
+		///Redefinition of this method to force user to write it.
+		//@{		
+		virtual void save(NLMISC::IStream &os) = 0;	
+		virtual void load(NLMISC::IStream &is) = 0;		
+
+		//@}
+
+		///Add a agent message to the buffer
 		virtual void addMessage(IMessageBase *msg) = 0;
-
+		///Add a new mail box to this mail, all message hapend here will be acheived to the mail box connected.
 		virtual void addMailBox(IMailBox *) = 0;
+		///Remove a mail box.
 		virtual void removeMailBox(IMailBox *) = 0;
-
-		virtual const IMessageBase &getMessage() = 0;
-		virtual void shareMessage() = 0;
+		///Get the first message from the buffer.
+		virtual const IMessageBase &getMessage() = 0;	
+		///Pop the first message from the buffer.
 		virtual void popMessage() = 0;
+		///get message count.
 		virtual sint32	getMessageCount() const = 0;
-		virtual bool isEmpty() const = 0;
-		virtual sint size() const = 0;
+		///test if buffer is empty.
+		virtual bool isEmpty() const = 0;				
 
-		virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &*/) const= 0;
-
-		virtual const tListMessage &getMesseageListe() const = 0;
-
-		/*virtual void addGroup(IBasicMessageGroup &) = 0;
-		virtual void removeGroup(IBasicMessageGroup &) = 0;
-		virtual std::list<IBasicMessageGroup *> &getGroups() = 0;*/
+		virtual const tListMessage &getMesseageListe() const = 0;		
 
 	};
 
@@ -77,57 +81,7 @@ namespace NLAIAGENT
 	inline void IMailBox::load(NLMISC::IStream &is)
 	{			
 		IConnectIA::load(is);
-	}
-
-	class CSimpleLocalMailBox:public IMailBox
-	{
-	protected:
-		IMailBox::tListMessage _ListMessage;
-		IObjectIA::CProcessResult	_RunState;
-		std::list<IBasicMessageGroup *> _Msg_grps;
-		sint _Size;
-
-	public:
-		static const NLAIC::CIdentType IdSimpleLocalMailBox;
-	public:
-		CSimpleLocalMailBox (const IWordNumRef *parent);
-		CSimpleLocalMailBox (NLMISC::IStream &is);
-		CSimpleLocalMailBox (const CSimpleLocalMailBox &a);
-		virtual ~CSimpleLocalMailBox();
-		virtual void addMessage(IMessageBase *msg);
-		virtual void addMailBox(IMailBox *);
-		virtual void removeMailBox(IMailBox *);
-		virtual void shareMessage() {}
-		virtual const IMessageBase &getMessage();
-		virtual void popMessage();
-		virtual sint32	getMessageCount() const;		
-		virtual bool isEmpty() const;
-		virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &*/) const;		
-		virtual const CProcessResult &getState() const;
-		virtual void setState(TProcessStatement state, IObjectIA *result);
-		virtual const IObjectIA::CProcessResult &run();
-//		virtual void fillMailBox();
-		virtual bool isEqual(const IBasicObjectIA &a) const;
-		virtual const NLAIC::IBasicType *clone() const;
-		virtual const NLAIC::IBasicType *newInstance() const;
-		virtual const NLAIC::CIdentType &getType() const;
-		virtual void getDebugString(std::string &t) const;
-		virtual void save(NLMISC::IStream &os);
-		virtual void load(NLMISC::IStream &is);
-		virtual void onKill(IConnectIA *);
-		virtual IObjectIA::CProcessResult sendMessage(IMessageBase *);
-		virtual const tListMessage &getMesseageListe() const 
-		{
-			return _ListMessage;
-		}
-
-		virtual sint size() const
-		{
-			return _Size;
-		}
-	private:
-			virtual IConnectIA &getConnection(IConnectIA &r);
-	};
+	}	
 
 	
 	class CLocalMailBox:public IMailBox
@@ -154,8 +108,7 @@ namespace NLAIAGENT
 			CLocalMailBox (NLMISC::IStream &is);
 			CLocalMailBox (const CLocalMailBox &A);
 			virtual ~CLocalMailBox();
-			virtual const IMessageBase &getMessage();
-			virtual void shareMessage();
+			virtual const IMessageBase &getMessage();			
 			virtual void popMessage();
 			virtual sint32	getMessageCount() const;
 			virtual bool isEmpty() const;
@@ -175,8 +128,7 @@ namespace NLAIAGENT
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual const CProcessResult &getState() const ;
-			virtual void setState(TProcessStatement state, IObjectIA *result);
-			virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &grp*/) const;
+			virtual void setState(TProcessStatement state, IObjectIA *result);			
 			virtual const IObjectIA::CProcessResult &run();
 			virtual void getDebugString(std::string &t) const;
 			virtual const tListMessage &getMesseageListe() const 
@@ -186,38 +138,9 @@ namespace NLAIAGENT
 			virtual sint size() const
 			{
 				return _Size;
-			}
-			/*virtual void addGroup(IBasicMessageGroup &grp);
-			virtual std::list<IBasicMessageGroup *> &getGroups() ;
-			virtual void removeGroup(IBasicMessageGroup &grp);*/
-		private:
-			void fillMailBox();
+			}			
 
 	};
-
-	class CScriptMailBox : public CSimpleLocalMailBox
-	{
-	private:
-		sint32 _CIndex;
-		const IMessageBase *translateMsg(const IMessageBase *);
-	public:
-		static const NLAIC::CIdentType IdScriptMailBox;
-
-	public:
-			CScriptMailBox (const IWordNumRef *parent);
-			CScriptMailBox (NLMISC::IStream &is);
-			CScriptMailBox (const CScriptMailBox &A);
-			virtual ~CScriptMailBox();
-			virtual const IObjectIA::CProcessResult &run();
-			virtual void fillMailBox();
-
-			void setIndex(sint32);
-			sint32 getIndex();
-
-			virtual const NLAIC::IBasicType *clone() const;
-			virtual const NLAIC::IBasicType *newInstance() const;
-			virtual const NLAIC::CIdentType &getType() const;
-
-	};	
+	
 }
 #endif

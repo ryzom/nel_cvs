@@ -1,7 +1,7 @@
 /** \file cpu_info.cpp
  * <File description>
  *
- * $Id: cpu_info.cpp,v 1.4 2002/03/28 13:21:42 berenguier Exp $
+ * $Id: cpu_info.cpp,v 1.5 2002/03/28 16:58:21 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ static bool DetectSSE(void)
 			return false;
 		}
 	#else
-		return false
+		return false;
 	#endif
 }
 

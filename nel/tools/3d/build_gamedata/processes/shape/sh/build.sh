@@ -11,6 +11,40 @@ tga_2_dds='tga2dds.exe'
 build_coarse_mesh='build_coarse_mesh.exe'
 lightmap_optimizer='lightmap_optimizer.exe'
 build_clodtex='build_clodtex.exe'
+build_shadow_skin='build_shadow_skin.exe'
+
+# Log error
+echo ------- > log.log
+echo --- Build ShadowSkin shape >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Build ShadowSkin shape
+echo ------- 
+date >> log.log
+date
+
+# build shadow skin?
+do_build_shadow_skin=`cat ../../cfg/config.cfg | grep -w "build_shadow_skin" | sed -e 's/build_shadow_skin//' | sed -e 's/ //g' | sed -e 's/=//g'`
+build_shadow_skin_ratio==`cat ../../cfg/config.cfg | grep "build_shadow_skin_ratio" | sed -e 's/build_shadow_skin_ratio//' | sed -e 's/ //g' | sed -e 's/=//g'`
+build_shadow_skin_maxface==`cat ../../cfg/config.cfg | grep "build_shadow_skin_maxface" | sed -e 's/build_shadow_skin_maxface//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+
+# if config wanted then must compute shadowSkin
+if ( test "$do_build_shadow_skin" = "1" )
+then
+	for i in shape_not_optimized/*.[sS][hH][aA][pP][eE] ; do
+		if ( test -f $i )
+		then
+			dest=`echo $i | sed -e 's/shape_not_optimized/shape/g'`
+			# if date is newer in shape_not_optimized than in shape, compute
+			if ( ! test -e $dest ) || ( test $i -nt $dest )
+			then
+				# NB: overwrite shape_not_optimized, because will be cloded/copied below to shapes/
+				$build_shadow_skin $i $i $build_shadow_skin_ratio $build_shadow_skin_maxface
+			fi
+		fi
+	done
+fi
 
 
 # Log error
@@ -22,7 +56,6 @@ echo --- Build shape : Copy Shape / build CLodTex
 echo ------- 
 date >> log.log
 date
-
 
 # Get the lod config file in the database
 clod_config_file=`cat ../../cfg/config.cfg | grep "clod_config_file" | sed -e 's/clod_config_file//' | sed -e 's/ //g' | sed -e 's/=//g'`

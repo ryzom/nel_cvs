@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.1 2000/12/15 17:40:51 coutelas Exp $
+ * $Id: text_context.h,v 1.2 2000/12/19 15:15:50 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,7 +215,7 @@ public:
 	}
 
 	/**
-	 *	print
+	 *	printAt
 	 * print a string of the list
 	 * (rq : it leaves the string in the stack)
 	 * \param x (between 0 and 1)
@@ -233,7 +233,24 @@ public:
 	}
 
 	/**
-	 *	print
+	 *	printAt
+	 * print a ucstring at the location
+	 * \param x (between 0 and 1)
+	 * \param y (between 0 and 1)
+	 * \param ucstr the ucstring
+	 */
+	void printAt(float x, float y, ucstring ucstr)
+	{
+		NL3D::CComputedString cptdstr;
+		_FontManager.computeString(ucstr,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
+		cptdstr.render2D(*NL3D::CNELU::Driver,
+							x,y,
+							_HotSpot,
+							_ScaleX,_ScaleZ);
+	}
+
+	/**
+	 *	printfAt
 	 * compute and print a string at the location
 	 * \param x (between 0 and 1)
 	 * \param y (between 0 and 1)
@@ -261,6 +278,16 @@ public:
 	uint32 getStringListSize() const
 	{
 		return _StringList.size();
+	}
+
+	/**
+	 *	operator[]
+	 * \return the computed string
+	 */
+	const CComputedString operator[](uint32 i) const
+	{
+		nlassert(i<_StringList.size());
+		return _StringList[i];
 	}
 	
 	/// destructor

@@ -1,7 +1,7 @@
 /** \file env_effect.cpp
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.cpp,v 1.2 2001/07/17 14:21:54 cado Exp $
+ * $Id: env_effect.cpp,v 1.3 2001/07/19 12:50:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,7 +100,7 @@ void			CEnvEffect::selectEnv( const std::string& tag )
 			return;
 		}
 	}
-	nldebug( "AM: EnvEffect; Environment %s not found", tag.c_str() );
+	nldebug( "AM: EnvEffect: Environment %s not found", tag.c_str() );
 	// Don't change _Current if not found
 }
 

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.22 2001/07/12 17:07:57 lecroart Exp $
+ * $Id: client.cpp,v 1.23 2001/07/12 17:39:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
 		updateLandscape ();
 
 		// Set new animation date
-//		Scene->animate (float(NewTime)/1000);
+		Scene->animate (float(NewTime)/1000);
 
 		// Render
 		Scene->render ();

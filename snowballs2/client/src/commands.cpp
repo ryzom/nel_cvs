@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: commands.cpp,v 1.7 2001/07/12 17:07:57 lecroart Exp $
+ * $Id: commands.cpp,v 1.8 2001/07/12 17:39:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,6 +221,9 @@ void	initCommands()
 
 	CommandsLog.addDisplayer (&CommandsDisplayer);
 	InfoLog->addDisplayer (&CommandsDisplayer);
+	WarningLog->addDisplayer (&CommandsDisplayer);
+	AssertLog->addDisplayer (&CommandsDisplayer);
+	ErrorLog->addDisplayer (&CommandsDisplayer);
 
 	ConfigFile.setCallback ("CommandsBoxX", cbUpdateCommands);
 	ConfigFile.setCallback ("CommandsBoxY", cbUpdateCommands);

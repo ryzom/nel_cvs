@@ -1,7 +1,7 @@
 /** \file network.h
  * 
  *
- * $Id: network.h,v 1.2 2001/07/12 17:07:57 lecroart Exp $
+ * $Id: network.h,v 1.3 2001/07/12 17:39:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,12 @@
 
 #include <string>
 
+#include "entities.h"
+
 // return true if the client is online
 bool	isOnline ();
 void	sendChatLine (std::string Line);
+void	sendEntityPos (const CEntity &entity);
 
 void	initNetwork ();
 void	updateNetwork ();

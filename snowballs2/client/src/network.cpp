@@ -1,7 +1,7 @@
 /** \file network.cpp
  * manage the connection to the shard and messages
  *
- * $Id: network.cpp,v 1.2 2001/07/12 17:07:57 lecroart Exp $
+ * $Id: network.cpp,v 1.3 2001/07/12 17:39:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,9 +98,22 @@ void	sendChatLine (string Line)
 {
 	if (!isOnline ()) return;
 
-	CMessage msgout (Connection.getSIDA(), "CHAT");
-	msgout.serial (Line);
-	Connection.send (msgout);
+	/// \todo ace: send the message
+
+//	CMessage msgout (Connection.getSIDA(), "CHAT");
+//	msgout.serial (Line);
+//	Connection.send (msgout);
+}
+
+void	sendEntityPos (const CEntity &entity)
+{
+	if (!isOnline ()) return;
+
+	/// \todo ace: send the message
+
+//	CMessage msgout (Connection.getSIDA(), "ENTITY_POS");
+//	msgout.serial ();
+//	Connection.send (msgout);
 }
 
 
@@ -137,6 +150,18 @@ NLMISC_COMMAND(connect,"connect to the login system","<login> <password>")
 	{
 		log.displayNL ("Shard %d: %s (%s)", i, CLoginClient::ShardList[i].ShardName.c_str(), CLoginClient::ShardList[i].WSAddr.c_str());
 	}
+
+	return true;
+}
+
+NLMISC_COMMAND(disconnect,"disconnect from the shard","")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if (args.size() != 0) return false;
+
+	if (!isOnline()) log.displayNL ("You already are offline");
+
+	Connection.disconnect ();
 
 	return true;
 }

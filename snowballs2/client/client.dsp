@@ -158,6 +158,14 @@ SOURCE=.\src\landscape.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\network.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\network.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\pacs.cpp
 # End Source File
 # Begin Source File

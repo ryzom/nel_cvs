@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.3 2001/08/28 16:37:44 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.4 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,12 @@ float				CLoadBalancingTrav::computeModelNbFace(float faceIn, float camDist)
 	return faceIn * _FaceRatio;
 }
 
+
+// ***************************************************************************
+float				CLoadBalancingTrav::getNbFaceAsked () const
+{
+	return NbFacePass0;
+}
 
 
 } // NL3D

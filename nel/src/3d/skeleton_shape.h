@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * <File description>
  *
- * $Id: skeleton_shape.h,v 1.4 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: skeleton_shape.h,v 1.5 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,9 @@ public:
 	/// serial this skeletonshape.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CSkeletonShape);
+
+	/// flush textures used by this shape.
+	virtual void				flushTextures (IDriver &driver) {};
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.115 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.116 2001/08/30 10:07:12 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -197,6 +197,8 @@ CDriverGL::CDriverGL()
 	_AllocatedTextureMemory= 0;
 
 	_ForceDXTCCompression= false;
+
+	_SumTextureMemoryUsed = false;
 }
 
 
@@ -661,6 +663,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	// Reset profiling.
 	_AllocatedTextureMemory= 0;
+	_TextureUsed.clear();
 	_PrimitiveProfileIn.reset();
 	_PrimitiveProfileOut.reset();
 
@@ -786,6 +789,8 @@ bool CDriverGL::swapBuffers()
 	_PrimitiveProfileIn.reset();
 	_PrimitiveProfileOut.reset();
 
+	// Reset the texture set
+	_TextureUsed.clear();
 
 	// Reset VertexArrayRange.
 	if(_CurrentVertexBufferHard)
@@ -1398,6 +1403,41 @@ void			CDriverGL::profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitivePr
 uint32			CDriverGL::profileAllocatedTextureMemory()
 {
 	return _AllocatedTextureMemory;
+}
+
+
+// ***************************************************************************
+void			CDriverGL::enableUsedTextureMemorySum (bool enable)
+{
+	if (enable)
+		nlinfo ("PERFORMANCE INFO: enableUsedTextureMemorySum has been set to true in CDriverGL\n");
+	_SumTextureMemoryUsed=enable;
+}
+
+
+// ***************************************************************************
+uint32			CDriverGL::getUsedTextureMemory() const
+{
+	// Sum memory used
+	uint32 memory=0;
+
+	// For each texture used
+	set<ITexture*>::iterator ite=_TextureUsed.begin();
+	while (ite!=_TextureUsed.end())
+	{
+		// Get a gl texture
+		CTextureDrvInfosGL*	gltext;
+		gltext= (CTextureDrvInfosGL*)(ITextureDrvInfos*)((*ite)->TextureDrvShare->DrvTexture);
+
+		// Sum the memory used by this texture
+		memory+=gltext->TextureMemory;
+
+		// Next texture
+		ite++;
+	}
+
+	// Return the count
+	return memory;
 }
 
 

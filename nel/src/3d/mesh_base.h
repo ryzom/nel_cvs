@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.5 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: mesh_base.h,v 1.6 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,6 +143,8 @@ public:
 	/// serial the base Part of this mesh.
 	void	serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream);
 
+	/// Flush textures
+	void	flushTextures (IDriver &driver);
 
 // ************************
 protected:

@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.3 2001/08/28 16:37:44 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.4 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,9 @@ public:
 
 	void				setNbFaceWanted(uint nFaces) {_NbFaceWanted= nFaces;}
 	uint				getNbFaceWanted() {return _NbFaceWanted;}
+
+	// Get the last face count asked from the instances before reduction.
+	float				getNbFaceAsked () const;
 
 	//@}
 

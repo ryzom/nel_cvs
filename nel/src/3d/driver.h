@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.12 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: driver.h,v 1.13 2001/08/30 10:07:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -372,7 +372,7 @@ public:
 	// @{
 
 
-	/** get the number of primitives rendered from the last swapBuffers() call.
+	/** Get the number of primitives rendered from the last swapBuffers() call.
 	 *	\param pIn the number of requested rendered primitive.
 	 *	\param pOut the number of effective rendered primitive. pOut==pIn if no multi-pass material is used
 	 *	(Lightmap, Specular ...).
@@ -380,10 +380,21 @@ public:
 	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut) =0;
 
 
-	/** return the amount of Texture memory requested. taking mipmap, compression, texture format, etc... into account.
+	/** Return the amount of Texture memory requested. taking mipmap, compression, texture format, etc... into account.
 	 *	NB: because of GeForce*, RGB888 is considered to be 32 bits. So it may be false for others cards :).
 	 */
 	virtual	uint32			profileAllocatedTextureMemory() =0;
+
+	
+	/** Enable the sum of texture memory used since last swapBuffers() call. To retrieve the memory used call getUsedTextureMemory().
+	 */
+	virtual void			enableUsedTextureMemorySum (bool enable=true) =0;
+	
+
+	/** Return the amount of texture video memory used since last swapBuffers() call. Before use this method, you should enable
+	 *  the sum with enableUsedTextureMemorySum().
+	 */
+	virtual uint32			getUsedTextureMemory() const =0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.10 2001/07/05 09:38:49 besson Exp $
+ * $Id: mesh_base.cpp,v 1.11 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -217,6 +217,20 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi)
 	else
 	{
 		mi->setOpacity( true );
+	}
+}
+
+// ***************************************************************************
+void	CMeshBase::flushTextures(IDriver &driver)
+{
+	// Mat count
+	uint matCount=_Materials.size();
+
+	// Flush each material textures
+	for (uint mat=0; mat<matCount; mat++)
+	{
+		/// Flush material textures
+		_Materials[mat].flushTextures (driver);
 	}
 }
 

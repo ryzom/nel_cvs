@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.8 2001/08/30 09:19:46 besson Exp $
+ * $Id: instance_group_user.h,v 1.9 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,12 +59,12 @@ public:
 
 	// Init without a scene
 	bool init (const std::string &instanceGroup);
-	bool init (const std::string &instanceGroup, CScene &scene);
+	//bool init (const std::string &instanceGroup, CScene &scene, UDriver *driver);
 
 private:
 	// From UInstanceGroup
-	void addToScene (class UScene& scene);
-	void addToScene (class CScene& scene);
+	void addToScene (class UScene& scene, UDriver *driver);
+	void addToScene (class CScene& scene, IDriver *driver);
 	void removeFromScene (class UScene& scene);
 	uint getNumInstance () const;
 	const std::string& getShapeName (uint instanceNb) const;

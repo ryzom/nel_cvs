@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.4 2001/08/07 14:16:32 vizerie Exp $
+ * $Id: flare_shape.cpp,v 1.5 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "3d/flare_shape.h"
 #include "3d/flare_model.h"
 #include "3d/scene.h"
+#include "3d/driver.h"
 
 namespace NL3D {
 
@@ -122,6 +123,16 @@ void				CFlareShape::getAABBox(NLMISC::CAABBox &bbox) const
 	bbox.setHalfSize(CVector::Null) ;
 }
 
+
+void				CFlareShape::flushTextures (IDriver &driver)
+{
+	// Flush each texture
+	for (uint tex=0; tex<MaxFlareNum; tex++)
+	{
+		/// Flush texture
+		driver.setupTexture (*_Tex[tex]);
+	}
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.22 2001/07/11 08:24:59 besson Exp $
+ * $Id: material.cpp,v 1.23 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "3d/material.h"
 #include "3d/texture.h"
 #include "3d/shader.h"
+#include "3d/driver.h"
 #include "nel/misc/stream.h"
 
 using namespace std;
@@ -249,6 +250,22 @@ void CMaterial::setTexture(uint8 n, ITexture* ptex)
 	{
 		_Textures[n]=ptex;
 		_Touched|=IDRV_TOUCHED_TEX[n];
+	}
+}
+
+
+// ***************************************************************************
+void			CMaterial::flushTextures (IDriver &driver)
+{
+	// For each textures
+	for (uint tex=0; tex<IDRV_MAT_MAXTEXTURES; tex++)
+	{
+		// Texture exist ?
+		if (_Textures[tex])
+		{
+			// Force setup texture
+			driver.setupTexture (*_Textures[tex]);
+		}
 	}
 }
 

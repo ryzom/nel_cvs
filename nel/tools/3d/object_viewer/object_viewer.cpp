@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.31 2001/08/29 12:41:47 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.32 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -372,6 +372,9 @@ void CObjectViewer::initUI (HWND parent)
 	_MouseListener.addToServer(CNELU::EventServer);
 		
 	CNELU::Driver->activate ();
+
+	// Enable sum of vram
+	CNELU::Driver->enableUsedTextureMemorySum ();
 }
 
 // ***************************************************************************
@@ -471,11 +474,15 @@ void CObjectViewer::go ()
 		float fps = (float)(1.0 / NLMISC::CTime::ticksToSecond (newTime-lastTime));
 		lastTime=newTime;
 		char msgBar[512];
-		sprintf (msgBar, "Fps: %03.1f   -   Nb tri: %d   -   Texture VRAM used (Mo): %5.2f  -  Distance: %5.0f", fps, 
-			in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips,
+		sprintf (msgBar, "Fps: %03.1f -- Nb tri: %d -- Texture VRAM used (Mo): %5.2f - Texture VRAM allocated (Mo): %5.2f -- Distance: %5.0f", fps, 
+			in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips, (float)CNELU::Driver->getUsedTextureMemory () / (float)(1024*1024), 
 			(float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024), 
 			(_SceneCenter-CNELU::Camera->getMatrix().getPos()).norm() );
 		_MainFrame->StatusBar.SetWindowText (msgBar);
+
+		
+		float toto=0;
+		float number=1/toto;
 
 
 		// Swap the buffers

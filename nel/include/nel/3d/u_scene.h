@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.8 2001/08/30 09:19:46 besson Exp $
+ * $Id: u_scene.h,v 1.9 2001/08/30 10:07:11 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,6 +196,8 @@ public:
 	virtual	void				setLoadMaxPolygon(uint nFaces) =0;
 	virtual	uint				getLoadMaxPolygon() const =0;
 
+	/// Get the last face count asked from the instances before reduction.
+	virtual float				getNbFaceAsked () const =0;
 
 	//@}
 

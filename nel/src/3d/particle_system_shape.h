@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.11 2001/08/16 17:07:38 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.12 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,7 +163,9 @@ protected:
 	/// Trigger default track
 	CTrackDefaultBool			_DefaultTriggerTrack;
 
-	
+	/// inherited from ishape
+	/// todo Nicolas: flush texture of the particule system
+	virtual void				flushTextures (IDriver &driver) {};
 
 };
 

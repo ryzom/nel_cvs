@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.6 2001/08/24 16:37:16 berenguier Exp $
+ * $Id: scene_group.h,v 1.7 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,8 +143,15 @@ public:
 	/// Add all the instances to the scene
 	void createRoot (CScene& scene);
 
-	/// Add all the instances to the scene. By default, freezeHRC() those instances and the root.
-	bool addToScene (CScene& scene);
+	/**
+	  * Add all the instances to the scene. By default, freezeHRC() those instances and the root.
+	  *
+	  * \param scene is the scene in which you want to add the instance group.
+	  * \param driver is a pointer to a driver. If this pointer is not NULL, the textures used by
+	  * the shapes will be preloaded in this driver. If the pointer is NULL (default), textures
+	  * will ve loaded when the shape will be used.
+	  */
+	bool addToScene (CScene& scene, IDriver *driver=NULL);
 
 	/// Remove all the instances from the scene
 	bool removeFromScene (CScene& scene);

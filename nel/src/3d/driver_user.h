@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.6 2001/08/23 10:09:03 berenguier Exp $
+ * $Id: driver_user.h,v 1.7 2001/08/30 10:07:11 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -560,6 +560,10 @@ public:
 	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut);
 
 	virtual	uint32			profileAllocatedTextureMemory();
+
+	virtual void			enableUsedTextureMemorySum (bool enable);
+	
+	virtual uint32			getUsedTextureMemory() const;
 
 	// @}
 

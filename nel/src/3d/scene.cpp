@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.48 2001/08/29 12:49:29 berenguier Exp $
+ * $Id: scene.cpp,v 1.49 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -576,6 +576,14 @@ void	CScene::setLoadMaxPolygon(uint nFaces)
 	nlassert(LoadBalancingTrav);
 	nFaces= max(nFaces, (uint)1);
 	LoadBalancingTrav->setNbFaceWanted(nFaces);
+}
+
+
+// ***************************************************************************
+float	CScene::getNbFaceAsked () const
+{
+	nlassert(LoadBalancingTrav);
+	return LoadBalancingTrav->getNbFaceAsked ();
 }
 
 

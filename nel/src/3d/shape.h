@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.6 2001/08/24 16:37:16 berenguier Exp $
+ * $Id: shape.h,v 1.7 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,6 +95,10 @@ public:
 	 * if opaquePass render the opaque materials else render the transparent materials.
 	 */
 	virtual void				render(IDriver *drv, CTransformShape *trans, bool opaquePass)=0;
+
+	/** flush textures used by this shape.
+	 */
+	virtual void				flushTextures (IDriver &driver)=0;
 
 	/** return the bounding box of the shape. Default is to return Null bbox.
 	 */

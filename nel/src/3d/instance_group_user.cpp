@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.10 2001/08/27 08:24:36 berenguier Exp $
+ * $Id: instance_group_user.cpp,v 1.11 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ UInstanceGroup	*UInstanceGroup::createInstanceGroup (const std::string &instance
 
 // ***************************************************************************
 
-bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
+/*bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
 {
 	// Create a file
 	CIFile file;
@@ -69,6 +69,11 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
 		{
 			// Read the class
 			_InstanceGroup.serial (file);
+
+			// Driver pointer
+			CDriver *driver = ;
+
+			
 
 			// Add to the scene
 			addToScene (scene);
@@ -90,7 +95,7 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
 
 	// Ok
 	return true;
-}
+}*/
 
 // ***************************************************************************
 bool CInstanceGroupUser::init (const std::string &instanceGroup)
@@ -125,15 +130,19 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup)
 }
 
 // ***************************************************************************
-void CInstanceGroupUser::addToScene (class UScene& scene)
+void CInstanceGroupUser::addToScene (class UScene& scene, UDriver *driver)
 {
-	addToScene (((CSceneUser*)&scene)->getScene());
+	// Get driver pointer
+	IDriver *cDriver= driver ? safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
+
+	// Add to the scene
+	addToScene (((CSceneUser*)&scene)->getScene(), cDriver);
 }
 
 // ***************************************************************************
-void CInstanceGroupUser::addToScene (class CScene& scene)
+void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
 {
-	_InstanceGroup.addToScene (scene);
+	_InstanceGroup.addToScene (scene, driver);
 	// Fill in the map accelerating search of instance by names
 	for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
 	{

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.31 2001/08/23 10:09:03 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.32 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -232,6 +232,13 @@ bool CDriverGL::setupTexture(ITexture& tex)
 {
 	if(tex.isTextureCube() && (!_Extensions.ARBTextureCubeMap))
 		return true;
+
+	// -1. Profile, log the use of this texture
+	if (_SumTextureMemoryUsed)
+	{
+		// Insert the pointer of this texture
+		_TextureUsed.insert (&tex);
+	}
 
 	// 0. Create/Retrieve the driver texture.
 	//=======================================

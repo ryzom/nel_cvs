@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.8 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.9 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,6 +89,13 @@ void				CSceneUser::setLoadMaxPolygon(uint nFaces)
 uint				CSceneUser::getLoadMaxPolygon() const
 {
 	return _Scene.getLoadMaxPolygon();
+}
+
+// ***************************************************************************
+
+float				CSceneUser::getNbFaceAsked () const
+{
+	return _Scene.getNbFaceAsked ();
 }
 
 // ***************************************************************************

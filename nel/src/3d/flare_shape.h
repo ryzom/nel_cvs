@@ -1,7 +1,7 @@
 /** \file flare_shape.h
  * <File description>
  *
- * $Id: flare_shape.h,v 1.6 2001/08/07 14:16:32 vizerie Exp $
+ * $Id: flare_shape.h,v 1.7 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -81,6 +81,8 @@ public:
 	/// inherited from ishape
 	virtual float				getNumTriangles (float distance) ;
 
+	/// inherited from ishape
+	virtual void				flushTextures (IDriver &driver);
 
 	/** set a texture for the flare
 	  * \param index the index of the flare to set. Vaklue ranges from 0 to MaxFlareNum - 1

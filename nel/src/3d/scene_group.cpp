@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.17 2001/08/29 10:27:42 besson Exp $
+ * $Id: scene_group.cpp,v 1.18 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -274,7 +274,7 @@ void CInstanceGroup::createRoot (CScene& scene)
 }
 
 // ***************************************************************************
-bool CInstanceGroup::addToScene (CScene& scene)
+bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 {
 	uint32 i, j;
 
@@ -311,6 +311,13 @@ bool CInstanceGroup::addToScene (CScene& scene)
 				_Instances[i]->setRotQuat (rInstanceInfo.Rot);
 				_Instances[i]->setScale (rInstanceInfo.Scale);
 				_Instances[i]->setPivot (CVector::Null);
+
+				// Driver not NULL ?
+				if (driver)
+				{
+					// Flush shape's texture with this driver
+					_Instances[i]->Shape->flushTextures (*driver);
+				}
 			}
 		}
 		else

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.10 2001/08/28 11:44:22 berenguier Exp $
+ * $Id: scene.h,v 1.11 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -244,6 +244,8 @@ public:
 	void			setLoadMaxPolygon(uint nFaces);
 	uint			getLoadMaxPolygon() const;
 
+	/// Get the last face count asked from the instances before reduction.
+	float			getNbFaceAsked () const;
 
 	/** The mode of polygon balancing.
 	 * PolygonBalancingOff => Models will be rendered with the number of faces they want to render.

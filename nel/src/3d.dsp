@@ -1626,6 +1626,14 @@ SOURCE=.\3d\fast_floor.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\init_3d.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\init_3d.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mini_col.cpp
 # End Source File
 # Begin Source File

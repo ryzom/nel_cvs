@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.7 2001/08/30 09:22:03 berenguier Exp $
+ * $Id: u_driver.h,v 1.8 2001/08/30 10:07:11 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -473,17 +473,26 @@ public:
 	/// \name Profiling.
 	// @{
 
-	/** get the number of primitives rendered from the last swapBuffers() call.
+	/** Get the number of primitives rendered from the last swapBuffers() call.
 	 *	\param pIn the number of requested rendered primitive.
 	 *	\param pOut the number of effective rendered primitive. pOut==pIn if no multi-pass material is used
 	 *	(Lightmap, Specular ...).
 	 */
 	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut) =0;
 
-	/** return the amount of Texture memory requested. taking mipmap, compression, texture format, etc... into account.
+	/** Return the amount of Texture memory requested. taking mipmap, compression, texture format, etc... into account.
 	 *	NB: because of GeForce*, RGB888 is considered to be 32 bits. So it may be false for others cards :).
 	 */
 	virtual	uint32			profileAllocatedTextureMemory() =0;
+
+	/** Enable the sum of texture memory used since last swapBuffers() call. To retrieve the memory used call getUsedTextureMemory().
+	 */
+	virtual void			enableUsedTextureMemorySum (bool enable=true) =0;
+	
+	/** Return the amount of texture video memory used since last swapBuffers() call. Before use this method, you should enable
+	 *  the sum with enableUsedTextureMemorySum().
+	 */
+	virtual uint32			getUsedTextureMemory() const =0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.13 2001/08/30 09:19:46 besson Exp $
+ * $Id: scene_user.h,v 1.14 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -364,6 +364,9 @@ public:
 
 	virtual	void				setLoadMaxPolygon(uint nFaces);
 	virtual	uint				getLoadMaxPolygon() const;
+
+	virtual float				getNbFaceAsked () const;
+
 	//@}
 
 	/// \name Coarse meshes mgt.

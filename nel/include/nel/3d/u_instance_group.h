@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.9 2001/08/27 08:24:36 berenguier Exp $
+ * $Id: u_instance_group.h,v 1.10 2001/08/30 10:07:11 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ namespace NLMISC
 namespace NL3D 
 {
 	class UInstance;
+	class UDriver;
 /**
  * Game interface for managing group instance.
  *
@@ -58,9 +59,14 @@ public:
 	virtual ~UInstanceGroup () {};
 
 	/**
-	 *	add this instance group to the given scene
+	 * Add all the instances to the scene. By default, freezeHRC() those instances and the root.
+	 *
+	 * \param scene is the scene in which you want to add the instance group.
+	 * \param driver is a pointer to a driver. If this pointer is not NULL, the textures used by
+	 * the shapes will be preloaded in this driver. If the pointer is NULL (default), textures
+	 * will ve loaded when the shape will be used.
 	 */
-	virtual void addToScene(class UScene& scene)=0;
+	virtual void addToScene(class UScene& scene, UDriver *driver=NULL)=0;
 
 	/**
 	 *	remove this instance group from the given scene

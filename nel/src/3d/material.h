@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.3 2001/07/11 08:24:59 besson Exp $
+ * $Id: material.h,v 1.4 2001/08/30 10:07:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -325,7 +325,9 @@ public:
 	// \todo mb Clean this flag
 	bool					getStainedGlassWindow() { return _StainedGlassWindow; }
 	void					setStainedGlassWindow(bool val) { _StainedGlassWindow = val; }
-
+	
+	/// Flush textures. Force texture generation.
+	void					flushTextures (IDriver &driver);
 
 	void		serial(NLMISC::IStream &f);
 

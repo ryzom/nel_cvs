@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.cpp
  * <File description>
  *
- * $Id: lod_texture_builder.cpp,v 1.1 2002/11/08 18:44:23 berenguier Exp $
+ * $Id: lod_texture_builder.cpp,v 1.2 2002/11/12 16:46:37 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -42,7 +42,7 @@ using namespace NL3D;
 // ***************************************************************************
 CLodTextureBuilder::CLodTextureBuilder()
 {
-	_OverSampleDistance= 0.10f;
+	_OverSampleDistance= 0.05f;
 }
 
 

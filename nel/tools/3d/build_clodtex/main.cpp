@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
  * <File description>
  *
- * $Id: main.cpp,v 1.2 2002/11/12 15:52:38 berenguier Exp $
+ * $Id: main.cpp,v 1.3 2002/11/12 16:46:37 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -202,13 +202,13 @@ int main(int argc, char *argv[])
 				uint32		fileOutDate= CFile::getFileModificationDate(pathNameOut);
 				if(	fileOutDate >= fileInDate )
 				{
-					printf("Skiping %s\n", fileNameIn.c_str());
+					NLMISC::InfoLog->displayRaw("Skiping %s\n", fileNameIn.c_str());
 					continue;
 				}
 			}
 
 			// progress
-			printf("Processing %s", fileNameIn.c_str());
+			NLMISC::InfoLog->displayRaw("Processing %s", fileNameIn.c_str());
 
 			// search in all lods if the file Name match a filter
 			for(uint j=0;j<LodFilters.size();j++)
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
 					if( computeOneShape( (clod_dir_in+"/"+LodNames[j]+".clod").c_str(), pathNameIn.c_str(), pathNameOut.c_str() ) )
 					{
 						// succed => stop
-						printf(" - CLod Textured with %s", LodNames[j].c_str());
+						NLMISC::InfoLog->displayRaw(" - CLod Textured with %s", LodNames[j].c_str());
 						break;
 					}
 				}
@@ -228,10 +228,10 @@ int main(int argc, char *argv[])
 			if(j==LodFilters.size())
 			{
 				CFile::copyFile(pathNameOut.c_str(), pathNameIn.c_str());
-				printf(" - Copied");
+				NLMISC::InfoLog->displayRaw(" - Copied");
 			}
 
-			printf("\n");
+			NLMISC::InfoLog->displayRaw("\n");
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.136 2005/03/24 18:54:10 berenguier Exp $
+ * $Id: scene.cpp,v 1.137 2005/04/01 14:27:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -259,9 +259,12 @@ void	CScene::release()
 	_QuadGridClipManager= NULL;
 	ClipTrav.setQuadGridClipManager(NULL);
 
-	// reset the _LodCharacterManager
+	// DON'T reset the _LodCharacterManager, because it can be shared across scenes
+	/*
 	if(_LodCharacterManager)
 		_LodCharacterManager->reset();
+	*/
+	_LodCharacterManager= NULL;
 
 	// delete the coarseMeshManager
 	if(_CoarseMeshManager)

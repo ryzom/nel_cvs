@@ -1,0 +1,58 @@
+/* plane_inline.h
+ *
+ * Copyright (C) 2000 Nevrax. All rights reserved.
+ *
+ * The redistribution, use and modification in source or binary forms of
+ * this software is subject to the conditions set forth in the copyright
+ * document ("Copyright") included with this distribution.
+ */
+
+/*
+ * $Id: plane_inline.h,v 1.1 2000/09/15 11:39:09 berenguier Exp $
+ *
+ * class CPlane
+ */
+
+#ifndef NL_PLANE_INLINE_H
+#define NL_PLANE_INLINE_H
+
+
+namespace NLMISC
+{
+
+
+//============================================================
+inline	CVector	CPlane::getNormal() const
+{
+	return CVector(a,b,c);
+}
+//============================================================
+inline	float	CPlane::distance(const CVector &p) const
+{
+	CVector	v= getNormal().normed();
+	return fabs(v*p + d);
+}
+//============================================================
+inline	float	CPlane::operator*(const CVector &p) const
+{
+	return a*p.x + b*p.y + c*p.z + d;
+}
+//============================================================
+inline	CVector CPlane::project(const CVector &a,const CVector &b) const
+{
+	float decal;
+	float	da= (*this)*a;
+	float	db= (*this)*b;
+	if(db-da ==0)
+		return a;
+	decal= ( 0-da ) / ( db - da );
+	return a + (b-a)*decal;
+}
+
+
+}
+
+
+#endif // NL_PLANE_H
+
+/* End of plane.h */

@@ -33,20 +33,28 @@ namespace NLAILOGIC
 	IBaseOperator::IBaseOperator()
 	{
 		_Comment = NULL;
+		_Goal = NULL;
 	}
 
 	IBaseOperator::IBaseOperator(const char *c)
 	{
 		_Comment = new char[ strlen(c) ];
 		strcpy( _Comment , c);
+		_Goal = NULL;
 	}
 
 	IBaseOperator::IBaseOperator(const IBaseOperator &c)
 	{
-		if ( c._Comment )
+		if ( c._Comment != NULL )
 		{
 			_Comment = new char[strlen(c._Comment)];
 			strcpy(_Comment,c._Comment);
+		}
+
+		if ( c._Goal != NULL )
+		{
+			_Goal = c._Goal;
+			_Goal->release();
 		}
 
 		sint32 i;
@@ -59,8 +67,11 @@ namespace NLAILOGIC
 
 	IBaseOperator::~IBaseOperator()
 	{
-		if ( _Comment )
+		if ( _Comment != NULL )
 			delete[] _Comment;
+
+		if ( _Goal != NULL )
+			_Goal->release();
 	}
 
 	/// Sets teh comment for the operator
@@ -134,5 +145,16 @@ namespace NLAILOGIC
 			tmp_val->incRef();
 			_Concs.push_back( tmp_val );
 		}
+	}
+
+	void IBaseOperator::setGoal(IBaseAssert *goal)
+	{
+		if ( _Goal )
+			_Goal->release();
+
+		_Goal = goal;
+
+		if ( goal != NULL )
+			_Goal->incRef();
 	}
 }

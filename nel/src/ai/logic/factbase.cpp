@@ -200,4 +200,9 @@ namespace NLAILOGIC
 		a->incRef();
 		_Asserts.push_back(a);
 	}
+
+	void CFactBase::addGoal(IVarName &a_name , CValueSet *fp)
+	{
+		addFact(a_name, fp);
+	}
 }

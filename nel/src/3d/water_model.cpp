@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.50.2.2 2005/02/21 15:30:40 vizerie Exp $
+ * $Id: water_model.cpp,v 1.50.2.3 2005/02/21 17:42:37 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1315,6 +1315,7 @@ uint CWaterModel::getNumWantedVertices()
 	{	
 		for(sint y = height - bottomGap; y < height; ++y)
 		{		
+			nlassert (y >= 0 && y < (sint)_Inside.size());
 			_Inside[y].first =  border[y].first;
 			_Inside[y].second = border[y].first - 1; // insert null raster
 		}	
@@ -1324,11 +1325,13 @@ uint CWaterModel::getNumWantedVertices()
 	{
 		if (_Inside[y].first > _Inside[y].second)
 		{
+			nlassert (y >= 0 && y < (sint)_Inside.size());
 			_Inside[y].first =  border[y].first;
 			_Inside[y].second = border[y].first - 1;
 		}		
 		else if (border[y].first > border[y].second)
 		{
+			nlassert (y >= 0 && y < (sint)_Inside.size());
 			border[y].first = _Inside[y].first;
 			border[y].second = _Inside[y].first - 1;
 		}		

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.75 2003/08/05 15:38:15 cado Exp $
+ * $Id: debug.cpp,v 1.76 2003/08/07 13:09:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -461,7 +461,8 @@ public:
 		DWORD displacement = 0 ;
 		DWORD resdisp = 0;
 
-/*
+//
+		/*
 		// "Debugging Applications" John Robbins
 		// The problem is that the symbol engine finds only those source
 		// line addresses (after the first lookup) that fall exactly on
@@ -479,7 +480,8 @@ public:
 				break;
 			}
 		}
-*/
+		*/
+//
 
 		// "Debugging Applications" John Robbins
 		// I found the line, and the source line information is correct, so
@@ -512,15 +514,16 @@ public:
 			str += toString("!0x%X", addr);
 		}
 
-		/*
-		DWORD disp;
+//
+		
+		/*DWORD disp;
 		if (SymGetLineFromAddr (getProcessHandle(), addr, &disp, &line))
 		{
 			str = line.FileName;
 			str += "(" + toString (line.LineNumber) + ")";
 		}
 		else
-		{
+		{*/
 			HRESULT hr = GetLastError();
 			IMAGEHLP_MODULE module;
 			::ZeroMemory (&module, sizeof(module));
@@ -538,8 +541,10 @@ public:
 			char tmp[32];
 			sprintf (tmp, "!0x%X", addr);
 			str += tmp;
-		}
-		str +=" DEBUG:"+toString("0x%08X", addr);*/
+		//}
+		str +=" DEBUG:"+toString("0x%08X", addr);
+
+//
 		
 		return str;
 	}
@@ -571,6 +576,9 @@ public:
 	{
 		while (findAndErase(rawType, "std::")) ;
 		while (findAndErase(displayType, "std::")) ;
+
+		while (findAndErase(rawType, "_STL::")) ;
+		while (findAndErase(displayType, "_STL::")) ;
 
 		while (findAndErase(rawType, "const")) ;
 
@@ -629,7 +637,7 @@ public:
 
 /// \todo ace it sometimes crash because try to access invalid address because the stack is not good (i don t know why)
 
-/*		// if there s parameter, parse them
+		// if there s parameter, parse them
 		if(i!=string::npos)
 		{
 			// copy the '('
@@ -647,7 +655,7 @@ public:
 
 					string displayType = type;
 					cleanType (type, displayType);
-
+					
 					char tmp[1024];
 					if(type == "void")
 					{
@@ -655,59 +663,77 @@ public:
 					}
 					else if(type == "int")
 					{
-						sprintf (tmp, "%d", *addr);
+						if (!IsBadReadPtr(addr,sizeof(int)))
+							sprintf (tmp, "%d", *addr);
 					}
 					else if (type == "char")
 					{
-						if (isprint(*addr))
-						{
-							sprintf (tmp, "'%c'", *addr);
-						}
-						else
-						{
-							sprintf (tmp, "%d", *addr);
-						}
-					}
-					else if (type == "char*" && *addr != NULL)
-					{
-						uint pos = 0;
-						tmp[pos++] = '\"';
-						for (uint i = 0; i < strlen((char*)*addr); i++)
-						{
-							if (pos == 1020)
-								break;
-							char c = ((char *)*addr)[i];
-							if (c == '\n')
+						if (!IsBadReadPtr(addr,sizeof(char)))
+							if (isprint(*addr))
 							{
-								tmp[pos++] = '\\';
-								tmp[pos++] = 'n';
-							}
-							else if (c == '\r')
-							{
-								tmp[pos++] = '\\';
-								tmp[pos++] = 'r';
-							}
-							else if (c == '\t')
-							{
-								tmp[pos++] = '\\';
-								tmp[pos++] = 't';
+								sprintf (tmp, "'%c'", *addr);
 							}
 							else
-								tmp[pos++] = c;
-						}
-						tmp[pos++] = '\"';
-						tmp[pos++] = '\0';
+							{
+								sprintf (tmp, "%d", *addr);
+							}
 					}
-					else if (type == "string" && *addr != NULL)
+					else if (type == "char*")
 					{
-						sprintf (tmp, "\"%s\"", ((string*)addr)->c_str());
+						if (!IsBadReadPtr(addr,sizeof(char*)) && *addr != NULL)
+						{
+							if (!IsBadStringPtr((char*)*addr,32))
+							{
+								uint pos = 0;
+								tmp[pos++] = '\"';
+								for (uint i = 0; i < 32; i++)
+								{
+									char c = ((char *)*addr)[i];
+									if (c == '\0')
+										break;
+									else if (c == '\n')
+									{
+										tmp[pos++] = '\\';
+										tmp[pos++] = 'n';
+									}
+									else if (c == '\r')
+									{
+										tmp[pos++] = '\\';
+										tmp[pos++] = 'r';
+									}
+									else if (c == '\t')
+									{
+										tmp[pos++] = '\\';
+										tmp[pos++] = 't';
+									}
+									else
+										tmp[pos++] = c;
+								}
+								tmp[pos++] = '\"';
+								tmp[pos++] = '\0';
+							}
+						}
+					}
+					else if (type == "string") // we assume a string is always passed by reference (i.e. addr is a string**)
+					{
+						if (!IsBadReadPtr(addr,sizeof(string*)))
+						{
+							if (*addr != NULL)
+							{
+								if (!IsBadReadPtr((void*)*addr,sizeof(string)))
+									sprintf (tmp, "\"%s\"", ((string*)*addr)->c_str());
+							}
+						}
 					}
 					else
 					{
-						if(*addr == NULL)
-							sprintf (tmp, "<NULL>");
-						else
-							sprintf (tmp, "0x%X", *addr);
+						if (!IsBadReadPtr(addr,sizeof(ULONG*)))
+						{
+							if(*addr == NULL)
+								sprintf (tmp, "<NULL>");
+							else
+								sprintf (tmp, "0x%X", *addr);
+						}
 					}
 
 					str += displayType;
@@ -732,7 +758,7 @@ public:
 				str += " bytes";
 			}
 		}
-*/
+
 //		nlinfo ("after parsing '%s'", str.c_str());
 
 		return str;
@@ -751,6 +777,7 @@ static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 {
 #ifdef FINAL_VERSION
 	// In final version, throw EDebug to display a smart dialog box with callstack & log when crashing
+#pragma message ( "Smart crash enabled" )
 	throw EDebug (pexp);
 #else
 	// In debug version, let the program crash and use a debugger (clicking "Cancel")
@@ -811,13 +838,12 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 #endif
 }
 
-
 void createDebug (const char *logPath, bool logInFile)
 {
 	NL_ALLOC_CONTEXT (_Debug)
 	
-	static bool alreadyCreate = false;
-	if (!alreadyCreate)
+	static bool alreadyCreateSharedAmongThreads = false;
+	if ( !alreadyCreateSharedAmongThreads )
 	{
 		// Debug Info for mutexes
 #ifdef MUTEX_DEBUG
@@ -825,9 +851,18 @@ void createDebug (const char *logPath, bool logInFile)
 #endif
 
 #ifdef NL_OS_WINDOWS
-		//if (!IsDebuggerPresent ())
+		if (!IsDebuggerPresent ())
 		{
-			_set_se_translator(exceptionTranslator);
+			// Use an environment variable to share the value among the EXE and its child DLLs
+			// (otherwise there would be one distinct bool by module, and the last
+			// _set_se_translator would overwrite the previous ones)
+			const char *SE_TRANSLATOR_IN_MAIN_MODULE = "NEL_SE_TRANS";
+			TCHAR envBuf [2];
+			if ( GetEnvironmentVariable( SE_TRANSLATOR_IN_MAIN_MODULE, envBuf, 2 ) == 0)
+			{
+				_set_se_translator(exceptionTranslator);
+				SetEnvironmentVariable( SE_TRANSLATOR_IN_MAIN_MODULE, "1" );
+			}
 		}
 #endif // NL_OS_WINDOWS
 
@@ -869,7 +904,7 @@ void createDebug (const char *logPath, bool logInFile)
 		
 		initDebug2(logInFile);
 
-		alreadyCreate = true;
+		alreadyCreateSharedAmongThreads = true;
 	}
 }
 

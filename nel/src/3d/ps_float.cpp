@@ -1,7 +1,7 @@
 /** \file ps_size.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.9 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.10 2001/10/02 16:38:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,6 +154,10 @@ void CPSFloatCurveFunctor::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialVersion(1);
 	f.serial(_NumSamples, _Smoothing);
 	f.serialCont(_CtrlPoints);
+	if (f.isReading())
+	{
+		updateTab();
+	}
 }
 
 float CPSFloatCurveFunctor::getSlope(uint index) const

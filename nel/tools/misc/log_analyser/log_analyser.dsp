@@ -110,6 +110,10 @@ SOURCE=.\LogSessions.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\PlugInSelector.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File
@@ -136,6 +140,10 @@ SOURCE=.\log_analyserDlg.h
 # Begin Source File
 
 SOURCE=.\LogSessions.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PlugInSelector.h
 # End Source File
 # Begin Source File
 

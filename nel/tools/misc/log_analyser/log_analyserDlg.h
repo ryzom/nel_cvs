@@ -1,7 +1,7 @@
 /** \file Log_analyserDlg.h
  * header file
  *
- * $Id: log_analyserDlg.h,v 1.3 2003/05/14 17:26:11 cado Exp $
+ * $Id: log_analyserDlg.h,v 1.4 2003/08/06 14:05:57 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "FilterDialog.h"
 #include "ViewDialog.h"
 #include "LogSessions.h"
+#include "PlugInSelector.h"
 #include <vector>
 #include <map>
 
@@ -45,6 +46,7 @@ struct TStampedLine
 	CString	Line;
 };
 
+
 /////////////////////////////////////////////////////////////////////////////
 // CLog_analyserDlg dialog
 
@@ -59,6 +61,12 @@ public:
 
 	///
 	CViewDialog *				onAddCommon( const std::vector<CString>& filenames );
+
+	///
+	void						loadPluginConfiguration();
+
+	///
+	bool						addPlugIn( const std::string& dllName );
 
 	///
 	void						displayCurrentLine( const CString& line );
@@ -81,6 +89,7 @@ public:
 	CFilterDialog						FilterDialog;
 	bool								Trace;
 	int									ResizeViewInProgress;
+	std::vector<CString>				Plugins;
 
 // Dialog Data
 	//{{AFX_DATA(CLog_analyserDlg)
@@ -98,8 +107,11 @@ public:
 	std::vector<CViewDialog*>			Views;
 
 	CLogSessions						LogSessionsDialog;
+	CPlugInSelector						PlugInSelectorDialog;
 
 	std::multimap<int, TStampedLine>	TraceMap;
+
+	TAnalyseFunc						AnalyseFunc;
 
 // Implementation
 protected:
@@ -121,6 +133,7 @@ protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnDropFiles( HDROP hDropInfo );
 	afx_msg void OnDispLineHeaders();
+	afx_msg void OnAnalyse();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

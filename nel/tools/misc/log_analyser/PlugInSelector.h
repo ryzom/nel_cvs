@@ -1,7 +1,7 @@
-/** \file LogSessions.h
+/** \file PlugInSelector.h
  * header file
  *
- * $Id: LogSessions.h,v 1.4 2003/08/06 14:05:57 cado Exp $
+ * $Id: PlugInSelector.h,v 1.1 2003/08/06 14:05:57 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -23,49 +23,48 @@
  * MA 02111-1307, USA.
  */
 
-#include <vector>
-
-#if !defined(AFX_LOGSESSIONS_H__24A056CC_9FE8_4A90_B3FF_DAF2BF4929F0__INCLUDED_)
-#define AFX_LOGSESSIONS_H__24A056CC_9FE8_4A90_B3FF_DAF2BF4929F0__INCLUDED_
+#if !defined(AFX_PLUGINSELECTOR_H__3BA56BCC_F700_4C1E_9C56_E34561C8DB61__INCLUDED_)
+#define AFX_PLUGINSELECTOR_H__3BA56BCC_F700_4C1E_9C56_E34561C8DB61__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-// LogSessions.h : header file
+// PlugInSelector.h : header file
 //
 
-/////////////////////////////////////////////////////////////////////////////
-// CLogSessions dialog
+#include <vector>
+#include <string>
 
-class CLogSessions : public CDialog
+typedef std::string (*TInfoFunc) (void);
+typedef bool (*TAnalyseFunc)( const std::vector<const char *>&, std::string&, std::string& );
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CPlugInSelector dialog
+
+class CPlugInSelector : public CDialog
 {
 // Construction
 public:
-	CLogSessions(CWnd* pParent = NULL);   // standard constructor
+	CPlugInSelector(CWnd* pParent = NULL);   // standard constructor
 
-	///
-	void		addLogSession( const CString& line );
-
-	///
-	void		clear() { Sessions.clear(); }
-
-	///
-	CString		getStartDate() const;
-
-	std::vector<CString> Sessions;
-	std::vector<CString> Filenames;
-	
 // Dialog Data
-	//{{AFX_DATA(CLogSessions)
-	enum { IDD = IDD_LOGSESSIONS };
-	CListBox	m_ListBox;
-	CString	m_StartDate;
+	//{{AFX_DATA(CPlugInSelector)
+	enum { IDD = IDD_PLUGINSELECTOR_DIALOG };
+	CListBox	m_PlugInListBox;
 	//}}AFX_DATA
+
+
+	void		setPluginList( const std::vector<CString>& cont ) { Dlls = &cont; }
+
+	const std::vector<CString>	*Dlls;
+	HINSTANCE					LibInst;
+	TAnalyseFunc				AnalyseFunc;
 
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CLogSessions)
+	//{{AFX_VIRTUAL(CPlugInSelector)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -74,8 +73,10 @@ public:
 protected:
 
 	// Generated message map functions
-	//{{AFX_MSG(CLogSessions)
+	//{{AFX_MSG(CPlugInSelector)
 	virtual BOOL OnInitDialog();
+	afx_msg void OnSelchangeList1();
+	virtual void OnCancel();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -83,4 +84,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_LOGSESSIONS_H__24A056CC_9FE8_4A90_B3FF_DAF2BF4929F0__INCLUDED_)
+#endif // !defined(AFX_PLUGINSELECTOR_H__3BA56BCC_F700_4C1E_9C56_E34561C8DB61__INCLUDED_)

@@ -1,10 +1,10 @@
 /** \file log_analyserDlg.cpp
  * implementation file
  *
- * $Id: log_analyserDlg.cpp,v 1.5 2003/05/14 17:26:11 cado Exp $
+ * $Id: log_analyserDlg.cpp,v 1.6 2003/08/06 14:05:57 cado Exp $
  */
 
-/* Copyright, 2002 Nevrax Ltd.
+/* Copyright, 2002-2003 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify
@@ -83,6 +83,7 @@ BEGIN_MESSAGE_MAP(CLog_analyserDlg, CDialog)
 	ON_WM_LBUTTONUP()
 	ON_WM_DROPFILES()
 	ON_BN_CLICKED(IDC_DispLineHeaders, OnDispLineHeaders)
+	ON_BN_CLICKED(IDC_Analyse, OnAnalyse)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -107,6 +108,9 @@ BOOL CLog_analyserDlg::OnInitDialog()
 	catch ( EConfigFile& )
 	{*/
 	LogDateString = "Log Starting [";
+	AnalyseFunc = NULL;
+	m_Edit.SetLimitText( ~0 );
+
 	//}
 	
 
@@ -130,6 +134,8 @@ BOOL CLog_analyserDlg::OnInitDialog()
 		v.push_back( cmdLine.c_str() );
 		addView( v );
 	}
+
+	loadPluginConfiguration();
 
 	DragAcceptFiles( true );
 	
@@ -173,6 +179,16 @@ HCURSOR CLog_analyserDlg::OnQueryDragIcon()
 }
 
 
+string getFileExtension (const string &filename)
+{
+	string::size_type pos = filename.find_last_of ('.');
+	if (pos == string::npos)
+		return "";
+	else
+		return filename.substr (pos + 1);
+}
+
+
 /*
  * Open in the same view
  */
@@ -184,9 +200,67 @@ void CLog_analyserDlg::OnDropFiles( HDROP hDropInfo )
 	{
 		CString filename;
 		DragQueryFile( hDropInfo, i, filename.GetBufferSetLength( 200 ), 200 );
-		v.push_back( filename );
+
+		// Plug-in DLL or log file
+		if ( getFileExtension( string(filename) ) == "dll" )
+		{
+			if ( addPlugIn( string(filename) ) )
+				AfxMessageBox( CString("Plugin added: ") + filename );
+			else
+				AfxMessageBox( CString("Plugin already registered: ") + filename );
+		}
+		else
+		{
+			v.push_back( filename );
+		}
 	}
-	addView( v );
+
+	if ( ! v.empty() )
+		addView( v );
+}
+
+
+/*
+ *
+ */
+bool CLog_analyserDlg::addPlugIn( const std::string& dllName )
+{
+	int i = 0;
+	char pluginN [10] = "Plugin0";
+	CString pn = theApp.GetProfileString( _T(""), _T(pluginN) );
+	while ( ! pn.IsEmpty() )
+	{
+		if ( string(pn) == dllName )
+			return false; // already registered
+		++i;
+		sprintf( pluginN, "Plugin%d", i );
+		pn = theApp.GetProfileString( _T(""), _T(pluginN) );
+	}
+	theApp.WriteProfileString( _T(""), _T(pluginN), dllName.c_str() );
+	Plugins.push_back( dllName.c_str() );
+	return true;
+}
+
+
+/*
+ *
+ */
+void CLog_analyserDlg::loadPluginConfiguration()
+{
+	// Read from the registry
+	free( (void*)theApp.m_pszRegistryKey );
+	theApp.m_pszRegistryKey = _tcsdup( _T("Nevrax") );
+
+	CString pn = theApp.GetProfileString( _T(""), _T("Plugin0") );
+	char pluginN [10];
+	int i = 0;
+	while ( ! pn.IsEmpty() )
+	{
+		Plugins.push_back( pn );
+		++i;
+		sprintf( pluginN, "Plugin%d", i );
+		pn = theApp.GetProfileString( _T(""), _T(pluginN) );
+	}
 }
 
 
@@ -318,7 +392,7 @@ void CLog_analyserDlg::OnAddtraceview()
 
 
 /*
- *
+ * Precondition: !filenames.empty()
  */
 CViewDialog *CLog_analyserDlg::onAddCommon( const vector<CString>& filenames )
 {
@@ -727,9 +801,9 @@ void CLog_analyserDlg::OnDestroy()
 /*
  *
  */
-void CLog_analyserDlg::OnHelpBtn() 
+void CLog_analyserDlg::OnHelpBtn()
 {
-	CString s = "NeL Log Analyser v1.3.0-alpha\n(c) 2002-2003 Nevrax\n\n";
+	CString s = "NeL Log Analyser v1.4.0\n(c) 2002-2003 Nevrax\n\n";
 	s += "Simple Mode: open one or more log files using the button 'Add View...'.\n";
 	s += "You can make a multiple selection, then the files will be sorted by log order.\n";
 	s += "If the file(s) being opened contain(s) several log sessions, you can choose one or\n";
@@ -752,7 +826,53 @@ void CLog_analyserDlg::OnHelpBtn()
 	s += "Use the right scrollbar to scroll all the views at the same time.\n";
 	s += "The logs in Trace Format should contains some lines that have a substring sTRACE:n:\n";
 	s += "where s is an optional service name (e.g. FS) and n is the gamecycle of the action\n";
-	s += "(an integer).";
+	s += "(an integer).\n\n";
+	s += "Plug-in system: You can provide DLLs to perform some processing or analysis on the first\n";
+	s += "view. To register a new plug-in, drag-n-drop the DLL on the main window of the Log Analyser.\n";
+	s += "To unregister a plug-in, see HKEY_CURRENT_USER\\Software\\Nevrax\\log_analyser.INI in the\n";
+	s += "registry.";
 	MessageBox( s );	
 }
 
+
+
+void CLog_analyserDlg::OnAnalyse() 
+{
+	PlugInSelectorDialog.setPluginList( Plugins );
+	if ( PlugInSelectorDialog.DoModal() == IDOK )
+	{
+		if ( Views.empty() )
+		{
+			AfxMessageBox( "This plug-in needs to be applied on the first open view" );
+			return;
+		}
+
+		if ( ! PlugInSelectorDialog.AnalyseFunc )
+		{
+			AfxMessageBox( "Could not load function doAnalyse in dll" );
+			return;
+		}
+
+		string resstr, logstr;
+		PlugInSelectorDialog.AnalyseFunc( *(const std::vector<const char *>*)(void*)&(Views[0]->Buffer), resstr, logstr );
+		if ( ! logstr.empty() )
+		{
+			vector<CString> pl;
+			pl.push_back( "Analyse log" );
+			onAddCommon( pl );
+			Views.back()->addText( logstr.c_str() );
+			Views.back()->commitAddedLines();
+		}
+		displayCurrentLine( resstr.c_str() );
+
+		// Debug checks
+		int nStartChar, nEndChar;
+		m_Edit.GetSel( nStartChar, nEndChar );
+		if ( nEndChar != (int)resstr.size() )
+		{
+			CString s;
+			s.Format( "Error: plug-in returned %u characters, only %d displayed", resstr.size(), nEndChar+1 );
+			AfxMessageBox( s );
+		}
+	}
+}

@@ -1,7 +1,7 @@
 /** \file ViewDialog.cpp
  * implementation file
  *
- * $Id: ViewDialog.cpp,v 1.5 2003/05/14 17:26:11 cado Exp $
+ * $Id: ViewDialog.cpp,v 1.6 2003/08/06 14:05:57 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -650,6 +650,26 @@ void CViewDialog::select( int index )
 int CViewDialog::getScrollIndex() const
 {
 	return m_ListCtrl.GetTopIndex();
+}
+
+
+/*
+ * Add several lines
+ */
+void CViewDialog::addText( const CString& lines )
+{
+	int pos, lineStartPos=0;
+	for ( pos=0; pos<lines.GetLength(); ++pos )
+	{
+		if ( lines[pos] == '\n' )
+		{
+			addLine( lines.Mid( lineStartPos, pos-lineStartPos ) );
+			++pos; // skip '\n'
+			lineStartPos = pos;
+		}
+	}
+	if ( lineStartPos > pos )
+		addLine( lines.Mid( lineStartPos, pos-lineStartPos ) );
 }
 
 

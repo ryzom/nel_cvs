@@ -1,7 +1,7 @@
 /** \file ViewDialog.h
  * header file
  *
- * $Id: ViewDialog.h,v 1.4 2003/05/14 17:26:11 cado Exp $
+ * $Id: ViewDialog.h,v 1.5 2003/08/06 14:05:57 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -103,7 +103,10 @@ public:
 	void		loadFileOrSeries();
 
 	/// Add one line
-	void		addLine( const CString &line ) { Buffer.push_back( line ); }
+	void		addLine( const CString& line ) { Buffer.push_back( line ); }
+
+	/// Add several lines
+	void		addText( const CString& lines );
 
 	/// Commit the lines previously added
 	void		commitAddedLines();

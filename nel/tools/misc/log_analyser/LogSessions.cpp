@@ -1,7 +1,7 @@
 /** \file LogSessions.cpp
  * implementation file
  *
- * $Id: LogSessions.cpp,v 1.2 2003/05/14 17:26:11 cado Exp $
+ * $Id: LogSessions.cpp,v 1.3 2003/08/06 14:05:57 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -22,8 +22,6 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-// LogSessions.cpp : implementation file
-//
 
 #include "stdafx.h"
 #include "log_analyser.h"
@@ -73,7 +71,7 @@ END_MESSAGE_MAP()
 /*
  *
  */
-void CLogSessions::addLogSession( CString line )
+void CLogSessions::addLogSession( const CString& line )
 {
 	Sessions.push_back( line );
 }

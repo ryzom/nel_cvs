@@ -3,6 +3,7 @@
 // Used by log_analyser.rc
 //
 #define IDD_LOG_ANALYSER_DIALOG         102
+#define IDD_PLUGINSELECTOR_DIALOG       103
 #define IDR_MAINFRAME                   128
 #define IDD_View                        130
 #define IDD_FILTERDIALOG                131
@@ -28,7 +29,9 @@
 #define IDC_CheckAllFileSeries          1021
 #define IDC_DragBar                     1024
 #define IDC_DispLineHeaders             1026
-#define IDC_DispLineHeaders2            1027
+#define IDC_Analyse                     1027
+#define IDC_PLUGIN_INFO                 1029
+#define IDC_GROUP_INFO                  1030
 
 // Next default values for new objects
 // 
@@ -36,7 +39,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1027
-#define _APS_NEXT_SYMED_VALUE           101
+#define _APS_NEXT_CONTROL_VALUE         1031
+#define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

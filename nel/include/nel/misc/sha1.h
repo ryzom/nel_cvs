@@ -8,7 +8,7 @@
  *      single character names, were used because those were the names
  *      used in the publication.
  *
- * $Id: sha1.h,v 1.4 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: sha1.h,v 1.5 2004/07/28 07:56:19 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -40,7 +40,7 @@
 
 struct CHashKey
 {
-	CHashKey () { }
+	CHashKey () { HashKeyString.resize(20); }
 	
 	CHashKey (const unsigned char Message_Digest[20])
 	{

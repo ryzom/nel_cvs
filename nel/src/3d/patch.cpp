@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.99 2004/09/30 18:47:01 berenguier Exp $
+ * $Id: patch.cpp,v 1.100 2004/09/30 19:11:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1963,17 +1963,24 @@ void			CPatch::bind(CBindInfo	Edges[4], bool rebind)
 		else if(bind.NPatchs==5)
 		{
 			/* I am binded to a bigger patch. There is 2 cases:
-				- rebind=false. This is an original Bind of all patch of a zone. CANNOT do rebind faces, since my bigger
-					neighbor patch may not be correctly tesselated (but if the bigger neighbor patch Id is Lower than the small
-					neighbor patch Id, for instance if BiggerPatchId==50, and ThisPatch=100, since in this case, the BIND is 
-					already done). Therefore let the BiggerPatch do the correct bind (see above)
+				- rebind=false. This is an original Bind of all patch of a zone. 
+					If my bigger patch has not be bound, I CANNOT do rebind faces, since my bigger neighbor patch is not 
+					correctly tesselated.
+					Wait for the BiggerPatch do the correct bind (see above)
 				- rebind=true. This is possible for a patch in border of zone to have some bind 1/X (even if Bind 1/X 
-					is not possible across zone, it IS possible that a patch containing a bind 1/X on a edge not on ZONE 
+					is not possible across zone, it IS possible that a patch containing a bind 1/X NOT ON EDGE OF ZONE
 					exist (and they do exist...))
-					In this case, MUST do the rebind (because of CZoneBindPatch() which first unbind all, then rebind)
-
+				
+				If neighbor bind has been done (must be the case for rebind), MUST do the rebind 
+					(because of CZoneBindPatch() which first unbind() this, then bind())
 			*/
+			// if rebind, my neigbhor bind should be done
 			if(rebind==true)
+			{
+				nlassert(bind.Next[0]->_BindZoneNeighbor[bind.Edge[0]]);
+			}
+			// if my neighbor is bound, i have to do the bind (since CZoneBindPatch() had call unbind)
+			if(bind.Next[0]->_BindZoneNeighbor[bind.Edge[0]])
 			{
 				// First, make the link with the face to which I must connect.
 				// -----------------

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.86 2003/07/22 09:28:37 legros Exp $
+ * $Id: global_retriever.cpp,v 1.87 2003/11/03 17:22:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -584,7 +584,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 //
 
 // Retrieves the position of an estimated point in the global retriever using layer hint
-NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, uint h, uint &res) const
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, uint h, sint &res) const
 {
 	// the retrieved position
 	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));

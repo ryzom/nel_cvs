@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.32 2003/10/23 18:58:13 puzin Exp $
+ * $Id: global_retriever.h,v 1.33 2003/11/03 17:22:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -284,7 +284,7 @@ public:
 
 
 	/// Retrieves the position of an estimated point in the global retriever (double instead.)
-	UGlobalPosition					retrievePosition(const NLMISC::CVectorD &estimated, uint h, uint &result) const;
+	UGlobalPosition					retrievePosition(const NLMISC::CVectorD &estimated, uint h, sint &result) const;
 
 
 	/// Insure position inside surface

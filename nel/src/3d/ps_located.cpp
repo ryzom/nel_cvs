@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.49 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_located.cpp,v 1.50 2002/10/10 13:32:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,7 +72,7 @@ namespace NL3D {
 							   _NumIntegrableForceWithDifferentBasis(0),
 							   _TriggerOnDeath(false),
 							   _TriggerID((uint32) 'NONE'),
-							   _ParametricMotion(false)
+							   _ParametricMotion(false)							   
 {		
 }
 
@@ -1052,7 +1052,7 @@ static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ell
 
 
 void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
-{
+{	
 	if (!_Size) return;	
 
 
@@ -1160,17 +1160,23 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 		// apply the pass to all bound objects
 		for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 		{
-			if ((*it)->getLOD() == PSLod1n2 || _Owner->getLOD() == (*it)->getLOD()) // has this object the right LOD ?
-			{
-				(*it)->step(pass, ellapsedTime, realEt);
+			if ((*it)->isActive())
+			{			
+				if ((*it)->getLOD() == PSLod1n2 || _Owner->getLOD() == (*it)->getLOD()) // has this object the right LOD ?
+				{
+					(*it)->step(pass, ellapsedTime, realEt);
+				}
 			}
 		}
 	}
 	else
 	{
 		for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
-		{		
-			(*it)->step(pass, ellapsedTime, realEt);		
+		{	
+			if ((*it)->isActive())
+			{			
+				(*it)->step(pass, ellapsedTime, realEt);
+			}
 		}
 
 	}
@@ -1471,7 +1477,7 @@ uint CPSLocated::getIndexOf(const CPSLocatedBindable *lb) const
 
 
 ///=============================================================================
-CPSLocatedBindable::CPSLocatedBindable() : _LOD(PSLod1n2), _Owner(NULL), _ExternID(0)
+CPSLocatedBindable::CPSLocatedBindable() : _LOD(PSLod1n2), _Owner(NULL), _ExternID(0), _Active(true)
 {
 	_Owner = NULL;
 }

@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.20 2002/04/25 08:27:45 vizerie Exp $
+ * $Id: ps_located.h,v 1.21 2002/10/10 13:32:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -790,7 +790,9 @@ public:
 		/// dtor
 		virtual ~CPSLocatedBindable();		
 	//@}
-
+	/// Activate / Deactivate this object. When not active, the owning system won't try to call the 'step' method
+		void					setActive(bool active) { _Active = active; }
+		bool					isActive() const { return _Active; }				
   /**
 	*  Gives the type for this bindable.
 	*  types are encoded as constant uint32
@@ -928,14 +930,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-protected:    
-
-	/// tells when this object must be dealt with
-	TPSLod _LOD; 
-
-
-	std::string _Name;
-
+protected:
 	friend class CPSLocated;
 
 	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
@@ -945,7 +940,7 @@ protected:
 
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable (pos etc...) are still accessible 
-	 *  for of the index given
+	 *  for the given index.
 	 *  index out of range -> nl_assert
 	 */
 
@@ -975,8 +970,15 @@ protected:
 	/// set the located that hold this located bindable
 	virtual void setOwner(CPSLocated *psl);	
 
+protected:
 	CPSLocated  *_Owner;
 	uint32		_ExternID;
+	/// tells when this object must be dealt with
+	TPSLod		_LOD; 
+	// Name for this bindable
+	std::string _Name;
+	//
+	bool        _Active; // Say if this bindable is active. If not active, the owning system won't try to call 'step' on that object. True by default
 };
 
 

@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.1 2002/03/28 10:30:15 vizerie Exp $
+ * $Id: di_keyboard_device.cpp,v 1.2 2002/03/29 16:21:02 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -32,7 +32,7 @@
 
 #include "nel/misc/win_event_emitter.h"
 #include <memory>
-#include <DX8/dinput.h>
+#include <dinput.h>
 
 
 namespace NLMISC 

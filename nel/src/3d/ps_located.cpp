@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.38 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_located.cpp,v 1.39 2002/01/07 14:35:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1192,7 +1192,7 @@ bool CPSLocated::computeBBox(NLMISC::CAABBox &box) const
 			tmpBox = startBox;
 			if ((*it)->completeBBox(tmpBox))
 			{
-				box = CPSUtil::computeAABBoxUnion(tmpBox, box);
+				box = NLMISC::CAABBox::computeAABBoxUnion(tmpBox, box);
 			}
 		}
 	}

@@ -18,7 +18,8 @@ class CMySuperGrid : public CSuperGridCtrl
 {
 protected:
 	CTreeItem* pitemroot;
-	CGeorgesDoc* pdoc;	
+	CGeorgesDoc* pdoc;
+	CTreeItem* currenttreeitem;
 	// Construction
 public:
 	CMySuperGrid();
@@ -32,6 +33,10 @@ public:
 	void InitializeGrid( CGeorgesDoc* const _pdoc );
 	unsigned int LoadSubItem( CTreeItem* _itemparent, unsigned int& _index );
 	void LoadItem();
+	void InitializeSubItemNumber( CTreeItem* _itemparent, unsigned int& _index );
+	void InitializeSubItemNumber();
+	void InitializeItemNumber();
+
 	void HowToInsertItemsAfterTheGridHasBeenInitialized(int nIndex, const CString& str);
 	void HowToLoopThroughAllItems_if_we_wanted_to_print_them_or_what_ever(CDC *pDC);
 	void HowToLoopThroughAllItems_that_has_a_checkmark_and_print_them_or_what_ever(CDC *pDC);
@@ -82,6 +87,9 @@ protected:
 protected:
 	//{{AFX_MSG(CMySuperGrid)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnListNewitem();
+	afx_msg void OnListchildAdditem();
+	afx_msg void OnListchildDelitem();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

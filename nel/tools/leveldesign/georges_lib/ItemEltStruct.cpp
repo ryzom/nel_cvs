@@ -16,6 +16,7 @@
 
 CItemEltStruct::CItemEltStruct( CLoader* const _pl ) : CItemElt( _pl )
 {
+	infos = ITEM_ISSTRUCT;
 	pmed = 0;
 }
 

@@ -36,6 +36,10 @@ public:
 	virtual unsigned int GetNbElt() const;
 	virtual CItemElt* GetElt( const unsigned int _index ) const;
 	virtual CItemElt* GetElt( const CStringEx sxname ) const;
+
+	void NewElt();
+	void AddElt( const CItemElt* const _pie );
+	void DelElt( const CItemElt* const _pie );
 };
 
 #endif // !defined(AFX_ITEMELTLIST_H__69BC62E0_FAC1_4D3E_90ED_B34BD22790DE__INCLUDED_)

@@ -124,26 +124,29 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 
 	lpsx.push_back( std::make_pair( CStringEx( "Include_patats" ),						CStringEx( "list< patat_name.typ >" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Exclude_patats" ),						CStringEx( "list< patat_name.typ >" ) ) );
-	lpsx.push_back( std::make_pair( CStringEx( "Plants" ),								CStringEx( "list< plant_properties.dfn >" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Plants" ),								CStringEx( "list< plant_instance.dfn >" ) ) );
 	papp->GetLoader()->MakeDfn( "U:\\dfn\\vegetable.dfn", &lpsx );
 
 	// définition des propriétés possibles d'une plante
 	lpsx.clear();
-	lpsx.push_back( std::make_pair( CStringEx( "Name" ),								CStringEx( "plant_name.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "File name" ),							CStringEx( "plant_name.typ" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Density" ),								CStringEx( "float.typ" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Falloff" ),								CStringEx( "float.typ" ) ) );
-	papp->GetLoader()->MakeDfn( "U:\\dfn\\plant_properties.dfn", &lpsx );
+	papp->GetLoader()->MakeDfn( "U:\\dfn\\plant_instance.dfn", &lpsx );
 
+	lpsx.clear();
+	lpsx.push_back( std::make_pair( CStringEx( "Name" ),								CStringEx( "string.typ" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Shape" ),								CStringEx( "filename.typ" ) ) );
+	lpsx.push_back( std::make_pair( CStringEx( "Shadow" ),								CStringEx( "filename.typ" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Collision_radius" ),					CStringEx( "float.typ" ) ) );
 	lpsx.push_back( std::make_pair( CStringEx( "Bunding_radius" ),						CStringEx( "float.typ" ) ) );
 	papp->GetLoader()->MakeDfn( "U:\\dfn\\plant.dfn", &lpsx );
 
 	// définition globale d'une plante
-	lpsx.clear();
-	lpsx.push_back( std::make_pair( CStringEx( "Glaieul.plant" ),						CStringEx( "Glaieul.plant" ) ) );
-	lpsx.push_back( std::make_pair( CStringEx( "Hortensia.plant" ),						CStringEx( "Hortensia.plant" ) ) );
-	papp->GetLoader()->MakeTyp( "U:\\dfn\\plant_name.typ", "string", "PLANT", "true", "", "", "Glaieul.plant", &lpsx, &lpsx2 );
+//	lpsx.clear();
+//	lpsx.push_back( std::make_pair( CStringEx( "Glaieul.plant" ),						CStringEx( "Glaieul.plant" ) ) );
+//	lpsx.push_back( std::make_pair( CStringEx( "Hortensia.plant" ),						CStringEx( "Hortensia.plant" ) ) );
+//	papp->GetLoader()->MakeTyp( "U:\\dfn\\plant_name.typ", "string", "PLANT", "true", "", "", "Glaieul.plant", &lpsx, &lpsx2 );
 
 	lpsx.clear();
 	lpsx.push_back( std::make_pair( CStringEx( "PatatFrite" ),							CStringEx( "PatatFrite" ) ) );
@@ -282,6 +285,23 @@ CStringEx CGeorgesDoc::GetRootDirectory() const
 	return( sxrootdirectory );
 }
 
+void CGeorgesDoc::AddListParent( const unsigned int _index ) const
+{
+	item.AddListParent( _index ); 
+//	UpdateAllViews();
+}
+
+void CGeorgesDoc::AddListChild( const unsigned int _index ) const
+{
+	item.AddListChild( _index ); 
+//	UpdateAllViews();
+}
+
+void CGeorgesDoc::DelListChild( const unsigned int _index ) const
+{
+	item.DelListChild( _index ); 
+//	UpdateAllViews();
+}
 
 
 

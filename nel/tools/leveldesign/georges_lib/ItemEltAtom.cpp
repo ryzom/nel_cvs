@@ -14,6 +14,7 @@
 
 CItemEltAtom::CItemEltAtom( CLoader* const _pl ) : CItemElt( _pl )
 {
+	infos = ITEM_ISATOM;
 	pmet = 0; 
 }
 
@@ -25,7 +26,6 @@ void CItemEltAtom::BuildItem( CMoldElt* const _pme )
 {
 	pmet = dynamic_cast< CMoldEltType* >( _pme );      
 	nlassert( pmet );
-	infos = ITEM_ISATOM;
 	sxparentvalue.clear();
 	sxcurrentvalue.clear();
 	sxoldparentvalue.clear();

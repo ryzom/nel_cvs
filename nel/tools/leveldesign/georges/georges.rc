@@ -137,13 +137,21 @@ BEGIN
     END
 END
 
-IDR_MENU_LISTCTRL MENU DISCARDABLE 
+IDR_M_LIST MENU DISCARDABLE 
 BEGIN
-    POPUP "LISTCTRLMENU"
+    POPUP "LIST"
     BEGIN
-        MENUITEM "&Add to list",                ID_LISTCTRLMENU_ADDTOLIST
-        MENUITEM "&Remove from list",           ID_LISTCTRLMENU_REMOVEFROMLIST
+        MENUITEM "&New Item",                   ID_LIST_NEWITEM
+    END
+END
 
+IDR_M_LISTCHILD MENU DISCARDABLE 
+BEGIN
+    POPUP "LISTCHILD"
+    BEGIN
+        MENUITEM "&Add Item",                   ID_LISTCHILD_ADDITEM
+        MENUITEM "&Delete Item",                ID_LISTCHILD_DELITEM
+        , INACTIVE
     END
 END
 

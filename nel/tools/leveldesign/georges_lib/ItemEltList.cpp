@@ -15,6 +15,7 @@
 
 CItemEltList::CItemEltList( CLoader* const _pl ) : CItemElt( _pl )
 {
+	infos = ITEM_ISLIST;
 	piemodel = 0;
 }
 
@@ -37,6 +38,8 @@ void CItemEltList::Clear()
 void CItemEltList::BuildItem( CItemElt* const _pie )
 {
 	piemodel = _pie;
+	piemodel->AddInfos( ITEM_ISLISTCHILD );
+	piemodel->SetListParent( this );
 	nlassert( piemodel );
 }
 
@@ -56,6 +59,8 @@ void CItemEltList::FillParent( const CFormBodyElt* const _pfbe )
 	while( pfbe )
 	{
 		CItemElt* pie = piemodel->Clone();
+		pie->AddInfos( ITEM_ISLISTCHILD );
+		pie->SetListParent( this );
 		pie->FillParent( pfbe );
 		sx.format( "#%d", i );
 		pie->SetName( sx );
@@ -74,6 +79,8 @@ void CItemEltList::FillCurrent( const CFormBodyElt* const _pfbe )
 	while( pfbe )
 	{
 		CItemElt* pie = piemodel->Clone();
+		pie->AddInfos( ITEM_ISLISTCHILD );
+		pie->SetListParent( this );
 		pie->FillCurrent( pfbe );
 		sx.format( "#%d", i );
 		pie->SetName( sx );
@@ -127,4 +134,23 @@ CItemElt* CItemEltList::GetElt( const CStringEx _sxname ) const
 		if( (*it)->GetName() == _sxname )
 			return( *it );
 	return( 0 );
+}
+
+void CItemEltList::NewElt()
+{
+	CItemElt* pie = piemodel->Clone();
+	pie->AddInfos( ITEM_ISLISTCHILD );
+	pie->SetListParent( this );
+	CStringEx sx;
+	sx.format( "#%d", vpie.size() );
+	pie->SetName( sx );
+	vpie.push_back( pie );
+}
+
+void CItemEltList::AddElt( const CItemElt* const _pie )
+{
+}
+
+void CItemEltList::DelElt( const CItemElt* const _pie )
+{
 }

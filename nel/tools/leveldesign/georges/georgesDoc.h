@@ -42,6 +42,10 @@ public:
 	void NewDocument( const CStringEx& _sxdfnname ) const;
 	void NewDocument( const CStringEx _sxfilename );
 
+	void AddListParent( const unsigned int _index ) const;
+	void AddListChild( const unsigned int _index ) const;
+	void DelListChild( const unsigned int _index ) const;
+
 	CStringEx GetWorkDirectory() const;
 	CStringEx GetRootDirectory() const;
 	void SetWorkDirectory( const CStringEx _sxworkdirectory );

@@ -19,9 +19,9 @@ public:
 	CItemLoader();
 	virtual ~CItemLoader();
 
-	void LoadItem( CItem& _f, const CStringEx& _sxfilename );
-	void LoadItem( CItem& _f, const CStringEx& _sxfilename, const CStringEx& _sxdate ); 
-	void SaveItem( CItem& _f, const CStringEx& _sxfilename );
+	void LoadItem( CItem& _item, const CStringEx& _sxfilename );
+	void LoadItem( CItem& _item, const CStringEx& _sxfilename, const CStringEx& _sxdate ); 
+	void SaveItem( CItem& _item, const CStringEx& _sxfilename );
 };
 
 #endif // !defined(AFX_ITEMLOADER_H__50EEC0FB_1F29_464D_A34D_2DCFA762563D__INCLUDED_)

@@ -28,12 +28,16 @@ protected:
 	CStringEx		sxparentresult;	
 	CStringEx		sxparentvalue;	
 	CStringEx		sxoldparentvalue;	
+	CItemElt*		listparent;
 
 public:
 	CItemElt( CLoader* const _pl );
 	virtual ~CItemElt();
 
 	void SetName( const CStringEx _sxname );
+	void AddInfos( const unsigned int _infos );
+	void SetListParent( CItemElt* const _listparent );
+	CItemElt* GetListParent() const;
 
 	unsigned int GetInfos() const;
 	CStringEx GetName() const;

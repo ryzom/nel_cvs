@@ -6,6 +6,7 @@
 #include "GeorgesDoc.h"
 #include "MySuperGrid.h"
 #include "ComboInListView.h"
+#include "../georges_lib/Common.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -23,6 +24,7 @@ CMySuperGrid::CMySuperGrid()
 	m_bDrag = TRUE;
 	pitemroot = 0;
 	pdoc = 0;
+	currenttreeitem = 0;
 }
 
 CMySuperGrid::~CMySuperGrid()
@@ -33,6 +35,9 @@ CMySuperGrid::~CMySuperGrid()
 BEGIN_MESSAGE_MAP(CMySuperGrid, CSuperGridCtrl)
 	//{{AFX_MSG_MAP(CMySuperGrid)
 	ON_WM_CREATE()
+	ON_COMMAND(ID_LIST_NEWITEM, OnListNewitem)
+	ON_COMMAND(ID_LISTCHILD_ADDITEM, OnListchildAdditem)
+	ON_COMMAND(ID_LISTCHILD_DELITEM, OnListchildDelitem)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -75,8 +80,6 @@ int CMySuperGrid::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	return 0;
 }
-
-
 
 void CMySuperGrid::InitializeGrid( CGeorgesDoc* const _pdoc )
 {
@@ -123,6 +126,110 @@ unsigned int CMySuperGrid::LoadSubItem( CTreeItem* _itemparent, unsigned int& _i
 	return( n );
 }
 
+void CMySuperGrid::InitializeSubItemNumber( CTreeItem* _itemparent, unsigned int& _index )
+{
+/*
+	CItemInfo* lpiteminfo = GetData( _itemparent ); 
+	if( !lpiteminfo )
+		return;
+	lpiteminfo->SetItemIndex( _index+1 ); 
+
+
+	CTreeItem* pParent = GetItem( _itemparent, nbre? ); ou GetNextItem
+
+	int n = pdoc->GetItemNbElt( _index );
+	_index++;
+	int nn = n;
+	while( nn > 1 )
+		nn -= InitializeSubItemNumber( pParent, _index );
+	return( n );
+*/
+}
+
+void CMySuperGrid::InitializeItemNumber()
+{
+/*
+	int nb_elt = pdoc->GetItemNbElt();
+	SetItemCount( nb_elt );
+	unsigned int index = 0;
+	CItemInfo* lpiteminfo = GetData( pitemroot );
+	if( !lpiteminfo )
+		return;
+	lpiteminfo->SetItemIndex( 0 ); 
+	while( nb_elt > 0 )
+		nb_elt -= LoadSubItem( pitemroot, index );
+*/
+}
+/*
+void CSuperGridCtrl::ExpandAll(CTreeItem *pItem, int& nScroll)
+{
+	const int nChildren = pItem->m_listChild.GetCount();
+	if (nChildren > 0)
+	{
+		int nIndex = NodeToIndex(pItem);
+		nScroll = Expand(pItem, nIndex);
+	}
+
+	POSITION pos = pItem->m_listChild.GetHeadPosition();
+	while (pos)
+	{
+		CTreeItem *pChild = (CTreeItem*)pItem->m_listChild.GetNext(pos);
+		ExpandAll(pChild, nScroll);
+	}
+	
+}
+
+
+
+int CSuperGridCtrl::Expand(CTreeItem* pSelItem, int nIndex)
+{
+	if(ItemHasChildren(pSelItem) && IsCollapsed(pSelItem))
+	{
+
+		LV_ITEM lvItem;
+		lvItem.mask = LVIF_INDENT;
+		lvItem.iItem = nIndex;
+		lvItem.iSubItem = 0;
+		lvItem.lParam=(LPARAM)pSelItem;
+		lvItem.iIndent = GetIndent(pSelItem);
+		SetItem(&lvItem);
+		
+		Hide(pSelItem, FALSE);
+		//expand children
+		POSITION pos = pSelItem->m_listChild.GetHeadPosition();
+		while(pos != NULL)
+		{
+			CTreeItem* pNextNode = (CTreeItem*)pSelItem->m_listChild.GetNext(pos);
+			CString str = GetData(pNextNode)->GetItemText();
+			LV_ITEM lvItem;
+			lvItem.mask = LVIF_TEXT | LVIF_INDENT | LVIF_PARAM;
+			lvItem.pszText =str.GetBuffer(1); 
+			lvItem.iItem = nIndex + 1;
+			lvItem.iSubItem = 0;
+			lvItem.lParam=(LPARAM)pNextNode;
+			lvItem.iIndent = GetIndent(pSelItem)+1;
+			CListCtrl::InsertItem(&lvItem);
+			if(GetData(pNextNode)->GetCheck())
+				SetCheck(nIndex + 1);
+			//get subitems
+			int nSize = GetData(pNextNode)->GetItemCount();
+			for(int i=0; i< nSize;i++)
+			{
+			   CString str=GetData(pNextNode)->GetSubItem(i);
+			   lvItem.mask = LVIF_TEXT;
+			   lvItem.iSubItem = i+1;
+			   lvItem.pszText=str.GetBuffer(1);
+			   SetItem(&lvItem);
+			}
+			nIndex++;
+		}
+	}
+	InternaleUpdateTree();
+	return nIndex;
+}
+
+  */
+
 void CMySuperGrid::LoadItem()
 {
 	DeleteAll();
@@ -150,9 +257,8 @@ void CMySuperGrid::LoadItem()
 
 	SetRedraw(1);
 	InvalidateRect(NULL);
-	UpdateWindow();
-
 }
+
 
 //helper function to copy CItemInfo used when drag/drop you must override this this function to suit your own CItemInfo class
 CItemInfo* CMySuperGrid::CopyData(CItemInfo* lpSrc)
@@ -277,124 +383,117 @@ void CMySuperGrid::OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO
 
 BOOL CMySuperGrid::OnItemRButtonDown(LVHITTESTINFO& ht)
 {
-	if(ht.iItem!=-1)
-	{
-	}
-	return 1;
+//	if( ht.iItem == -1 )
+//		return 0;
+	return 1; 
 }
 
 void CMySuperGrid::OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht)
 {
-	CTreeItem*pSelItem = GetTreeItem(ht.iItem);
-	if(pSelItem!=NULL)
-	{	
+	currenttreeitem = GetTreeItem(ht.iItem);
+	if( !currenttreeitem )
+		return;	
+	CItemInfo *lp = GetData( currenttreeitem );
+	if( !lp )
+		return;
+	unsigned int infos = pdoc->GetItemInfos( lp->GetItemIndex()-1 );
+	if( infos & ITEM_ISLISTCHILD )
+	{
 		CMenu menu;
-		menu.LoadMenu( IDR_MENU_LISTCTRL );
-		CMenu* pPopup = menu.GetSubMenu(0);
+		menu.LoadMenu( IDR_M_LISTCHILD );
+		CMenu* pPopup = menu.GetSubMenu( 0 );
+		CPoint pt = point; 
+		ClientToScreen( &pt ) ; 
+		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
+	}
+	if( infos & ITEM_ISLIST )
+	{
+		CMenu menu;
+		menu.LoadMenu( IDR_M_LIST );
+		CMenu* pPopup = menu.GetSubMenu( 0 );
 		CPoint pt = point ; 
-		ClientToScreen ( &pt ) ; 
-		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, AfxGetMainWnd());
-	}		
-/*
-		CItemInfo* pInfo = GetData(pSelItem);
-		CItemInfo::CONTROLTYPE ctrlType;
-		if(pInfo->GetControlType(ht.iSubItem-1, ctrlType))
-		{	
-			if(ctrlType==pInfo->CONTROLTYPE::combobox) 
-			{
-					CStringList* list=NULL;
-					pInfo->GetListData(ht.iSubItem-1, list);
-					CComboBox * pList = ShowList(ht.iItem, ht.iSubItem, list);
-			}
-		}								
-		else //activate default edit control
-			CSuperGridCtrl::OnControlLButtonDown(nFlags, point, ht);
-*/
+		ClientToScreen( &pt ) ; 
+		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
+	}
 }
 
 
-/*
 
-void CNOPListView::OnRButtonDown(UINT nFlags, CPoint point) 
+void CMySuperGrid::OnListNewitem() 
 {
-	LVHITTESTINFO lvhti;
-	lvhti.pt = point;
-	if( GetListCtrl().SubItemHitTest(&lvhti) == -1 )
-	return;
-	if( IsValidX(lvhti.iSubItem) )
-	{
-		int oldy = ySubItem;
-		ySubItem = lvhti.iItem;
-		xSubItem = lvhti.iSubItem;
-
-		GetListCtrl().SetItemState( ySubItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED ); 
-		if( oldy != ySubItem )
-			GetListCtrl().RedrawItems( oldy, oldy ); 
-		GetListCtrl().RedrawItems( ySubItem, ySubItem ); 
-	}
-	if (lvhti.flags & LVHT_ONITEM)
-	{
-		char c = GetDocument()->GetType(ySubItem)[0]; 		
-		CMenu menu;
-		switch( c )
-		{
-		case '{' :
-			{
-				menu.LoadMenu( IDR_MENU_FIELD_LIST );
-				break;
-			}
-		default:
-			return;
-		}
-		CMenu* pPopup = menu.GetSubMenu(0);
-		CPoint pt = point ; 
-		ClientToScreen ( &pt ) ; 
-		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, AfxGetMainWnd());
-	}
+	if( !currenttreeitem  )
+		return;	
+	CItemInfo *lp = GetData( currenttreeitem );
+	if( lp == NULL )
+		return;
+	unsigned int currentitem = lp->GetItemIndex();
+	if( currentitem < 0 )
+		return;
+	pdoc->AddListParent( currentitem );
+//	LoadSubItem( currenttreeitem, currentitem );
+	LoadItem();
+	SetRedraw(1);
+	InvalidateRect(NULL);
+	UpdateWindow();
 }
 
-void CNOPTreeView::OnRButtonDown(UINT nFlags, CPoint point) 
-{
-//   CTreeView::OnLButtonDown(nFlags, point);
-
-	//Tester sur quoi on est!
-	CPoint      ptAction;
-	UINT        flags;
-
-	if( m_bDragging )
-		return;
-	HitItem = GetTreeCtrl().HitTest(point, &flags);
-	if( !HitItem )
-		return;
-	CNOPTreeInfo* pti = (CNOPTreeInfo*)(GetTreeCtrl().GetItemData( HitItem ));
-	if( pti->IsDir() )
-		return;
-
-	if( pti->IsNop() )
+/*
+//CItemInfo* lpiteminfo = new CItemInfo( _index+1 );
+	CItemInfo* lpiteminfo = new CItemInfo();
+	lpiteminfo->SetItemText( pdoc->GetItemName( currentitem ) );
+	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentResult( _index ) );
+	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentValue( _index ) );
+	lpiteminfo->AddSubItemText( pdoc->GetItemFormula( _index ) );
+	if( pdoc->IsItemEnum( _index ) )
 	{
-		CMenu menu;
-		menu.LoadMenu( IDR_MENU_NOP );
-		CMenu* pPopup = menu.GetSubMenu(0);
-		CPoint pt = point ; 
-		ClientToScreen ( &pt ) ; 
-		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, AfxGetMainWnd());
-	} 
-	else
-	{
-		CMenu menu;
-		menu.LoadMenu( IDR_MENU_PAR  );
-		CMenu* pPopup = menu.GetSubMenu(0);
-		CPoint pt = point ; 
-		ClientToScreen ( &pt ) ; 
-		pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, AfxGetMainWnd());
+		lpiteminfo->SetControlType(lpiteminfo->CONTROLTYPE::combobox, 1);
+		CStringList lst;
+		pdoc->GetItemListPredef( _index, &lst );
+		lpiteminfo->SetListData(1, &lst);
 	}
-}
-
+	CTreeItem* pParent = InsertItem( _itemparent, lpiteminfo );
+	
+	int n = pdoc->GetItemNbElt( _index );
+	_index++;
+	int nn = n;
+	while( nn > 1 )
+		nn -= LoadSubItem( pParent, _index );
+	return( n );
 */
 
+void CMySuperGrid::OnListchildAdditem() 
+{
+	if( !currenttreeitem  )
+		return;	
+	CItemInfo *lp = GetData( currenttreeitem );
+	if( lp == NULL )
+		return;
+	unsigned int currentitem = lp->GetItemIndex();
+	if( currentitem < 0 )
+		return;
+	pdoc->AddListChild( currentitem );
+	LoadItem();
+	SetRedraw(1);
+	InvalidateRect(NULL);
+	UpdateWindow();
+}
 
-
-
+void CMySuperGrid::OnListchildDelitem() 
+{
+	if( !currenttreeitem  )
+		return;	
+	CItemInfo *lp = GetData( currenttreeitem );
+	if( lp == NULL )
+		return;
+	unsigned int currentitem = lp->GetItemIndex();
+	if( currentitem < 0 )
+		return;
+	pdoc->DelListChild( currentitem );
+	LoadItem();
+	SetRedraw(1);
+	InvalidateRect(NULL);
+	UpdateWindow();
+}
 
 
 
@@ -570,7 +669,7 @@ void CMySuperGrid::HowToInsertItemsAfterTheGridHasBeenInitialized(int nIndex, co
 		}
 		SetRedraw(1);
 		InvalidateRect(NULL);
-		UpdateWindow();
+//		UpdateWindow();
 	}
 }
 
@@ -1280,5 +1379,6 @@ void CMySuperGrid::SetNewImage(int nItem)
 		SetItemState(0, uflag, uflag);
 	}
 */
+
 
 

@@ -216,3 +216,42 @@ void CItem::GetListPredef( const unsigned int _index, std::vector< CStringEx >& 
 		sx = pmet->GetPredefDesignation( i++ );
 	}
 }
+
+void CItem::AddListParent( const unsigned int _index ) const
+{
+	CItemElt* pie = GetElt( _index );
+	if( !pie )
+		return;
+	CItemEltList* piel = dynamic_cast< CItemEltList* >( pie );
+	if( !piel )
+		return;
+	piel->NewElt();
+}
+
+void CItem::AddListChild( const unsigned int _index ) const
+{
+	CItemElt* pie = GetElt( _index );
+	if( !pie )
+		return;
+	CItemElt* piep = pie->GetListParent();
+	if( !piep )
+		return;
+	CItemEltList* piel = dynamic_cast< CItemEltList* >( piep );
+	if( !piel )
+		return;
+	piel->AddElt( pie );
+}
+
+void CItem::DelListChild( const unsigned int _index ) const
+{
+	CItemElt* pie = GetElt( _index );
+	if( !pie )
+		return;
+	CItemElt* piep = pie->GetListParent();
+	if( !piep )
+		return;
+	CItemEltList* piel = dynamic_cast< CItemEltList* >( piep );
+	if( !piel )
+		return;
+	piel->DelElt( pie );
+}

@@ -13,6 +13,7 @@ CItemElt::CItemElt( CLoader* const _pl )
 {
 	nlassert( _pl );
 	pl = _pl;
+	listparent = 0;
 }
 
 CItemElt::~CItemElt()
@@ -22,6 +23,21 @@ CItemElt::~CItemElt()
 unsigned int CItemElt::GetInfos() const
 {
 	return( infos );
+}
+
+void CItemElt::AddInfos( const unsigned int _infos )
+{
+	infos |= _infos;
+}
+
+void CItemElt::SetListParent( CItemElt* const _listparent )
+{
+	listparent = _listparent;
+}
+
+CItemElt* CItemElt::GetListParent() const
+{
+	return( listparent );
 }
 
 void CItemElt::SetName( const CStringEx _sxname )

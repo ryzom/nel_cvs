@@ -1313,7 +1313,7 @@ void CSuperGridCtrl::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		if(plvItem->iItem != -1) //valid item
 		{
-			CTreeItem*pSelItem = GetTreeItem(plvItem->iItem);
+			CTreeItem* pSelItem = GetTreeItem(plvItem->iItem);
 			if(pSelItem != NULL)
 				OnUpdateListViewItem(pSelItem, plvItem);
 		}
@@ -2131,6 +2131,28 @@ void CSuperGridCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 }
 
+void CSuperGridCtrl::OnRButtonDown(UINT nFlags, CPoint point) 
+{
+	LVHITTESTINFO ht;
+	ht.pt = point;
+	SubItemHitTest(&ht);
+	if(OnItemRButtonDown(ht))
+	{
+		BOOL bSelect=1;
+		bSelect = HitTestOnSign(point, ht);
+		if(bSelect && ht.iItem!=-1)
+		{
+			m_CurSubItem = IndexToOrder(ht.iSubItem);
+			CHeaderCtrl* pHeader = GetHeaderCtrl();
+			// Make the column fully visible.
+			MakeColumnVisible(Header_OrderToIndex(pHeader->m_hWnd, m_CurSubItem));
+			CListCtrl::OnLButtonDown(nFlags, point);
+			OnControlRButtonDown(nFlags, point, ht);
+			//update row anyway for selection bar
+			InvalidateItemRect(ht.iItem);
+		}
+	}
+}
 
 void CSuperGridCtrl::OnUpdateListViewItem(CTreeItem* lpItem, LV_ITEM *plvItem)
 {
@@ -2768,28 +2790,3 @@ void CRectangle::DrawMinus(void)
 
 
 
-void CSuperGridCtrl::OnRButtonDown(UINT nFlags, CPoint point) 
-{
-	if( GetFocus() != this) 
-		SetFocus();
-
-	LVHITTESTINFO ht;
-	ht.pt = point;
-	SubItemHitTest(&ht);
-	if(OnItemRButtonDown(ht))
-	{
-		BOOL bSelect=1;
-		bSelect = HitTestOnSign(point, ht);
-		if(bSelect && ht.iItem!=-1)
-		{
-			m_CurSubItem = IndexToOrder(ht.iSubItem);
-			CHeaderCtrl* pHeader = GetHeaderCtrl();
-			// Make the column fully visible.
-			MakeColumnVisible(Header_OrderToIndex(pHeader->m_hWnd, m_CurSubItem));
-			OnControlRButtonDown(nFlags, point, ht);
-//			CListCtrl::OnRButtonDown(nFlags, point);
-			//update row anyway for selection bar
-			InvalidateItemRect(ht.iItem);
-		}
-	}
-}

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.149 2004/08/13 15:36:16 vizerie Exp $
+ * $Id: landscape.cpp,v 1.149.4.1 2004/09/14 17:18:02 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,7 +269,7 @@ CLandscape::CLandscape() :
 		CLandscapeGlobals::PassTriArray.setNumIndexes( 1000 );
 
 	// set volatile index buffer to avoid stalls
-	CLandscapeGlobals::PassTriArray.setPreferredMemory(CIndexBuffer::AGPVolatile, false);
+	CLandscapeGlobals::PassTriArray.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
 
 	_LockCount = 0;
 

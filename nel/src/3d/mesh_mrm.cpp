@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.73 2004/08/13 15:38:33 vizerie Exp $
+ * $Id: mesh_mrm.cpp,v 1.73.4.1 2004/09/14 17:17:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3283,6 +3283,7 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 	{
 		shiftedTris.setNumIndexes(_ShadowSkinTriangles.size());
 	}
+	shiftedTris.setPreferredMemory(CIndexBuffer::RAMVolatile, false);	
 	{
 		CIndexBufferReadWrite iba;
 		shiftedTris.lock(iba);

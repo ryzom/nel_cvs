@@ -1,7 +1,7 @@
 /** \file sound_anim_track.cpp
  * An animation sound track
  *
- * $Id: sound_animation.cpp,v 1.3 2002/07/25 13:35:10 lecroart Exp $
+ * $Id: sound_animation.cpp,v 1.4 2002/09/03 18:15:49 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,9 @@ namespace NLSOUND {
 
 void CSoundAnimation::addMarker(CSoundAnimMarker* marker)
 {
+	if (marker == NULL)
+		return;
+
 	_Dirty = true;
 	_Markers.push_back(marker);
 	sort();
@@ -51,6 +54,9 @@ void CSoundAnimation::addMarker(CSoundAnimMarker* marker)
 
 void CSoundAnimation::removeMarker(CSoundAnimMarker* marker)
 {
+	if (marker == NULL)
+		return;
+
 	_Dirty = true;
 	vector<CSoundAnimMarker*>::iterator iter;
 	for (iter = _Markers.begin(); iter != _Markers.end(); iter++)

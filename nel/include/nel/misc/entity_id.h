@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.23 2002/08/21 09:36:01 lecroart Exp $
+ * $Id: entity_id.h,v 1.24 2002/11/19 16:40:31 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,11 +173,11 @@ public :
 		ident = (char*)str;
 		id = ident;
 
-		while(*(ident++) != ':');		
+		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
 		type = ident;
-		while(*(ident++) != ':');		
+		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
 		creator = ident;
-		while(*(ident++) != ':');		
+		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
 		dyn = ident;	
 
 //Sameh conversion en fonction de la base.
@@ -456,9 +456,8 @@ public :
 	// ---------------------------------------------------------------------------------
 	// string convertions
 
-	/// Have a debug string.
+	/// return a string in form "(a:b:c:d)" where a,b,c,d are components of entity id.
 	std::string toString() const
-//	virtual std::string toString() const
 	{
 		std::string id;
 		getDebugString (id);

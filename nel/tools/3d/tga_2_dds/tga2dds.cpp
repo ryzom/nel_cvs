@@ -1,7 +1,7 @@
 /** \file tga2dds.cpp
  * TGA to DDS converter
  *
- * $Id: tga2dds.cpp,v 1.2 2000/11/06 15:12:43 coutelas Exp $
+ * $Id: tga2dds.cpp,v 1.3 2001/01/23 09:20:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,7 +22,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#include <iostream.h>
+#include <iostream>
 
 #include "nel/misc/file.h"
 #include "nel/3d/bitmap.h"
@@ -32,6 +32,10 @@
 #include "s3_intrf.h"
 #include "ddraw.h"
 
+
+using namespace NLMISC;
+using namespace NL3D;
+using namespace std;
 
 
 #define	DXT1	1
@@ -55,7 +59,7 @@ void main(int argc, char **argv);
 
 
 
-bool sameType(const char *sFileNameDest, uint8 algo)
+bool sameType(const char *sFileNameDest, uint8 algo, bool wantMipMap)
 {
 	uint32 dds;
 	FILE *f = fopen(sFileNameDest,"rb");
@@ -71,37 +75,45 @@ bool sameType(const char *sFileNameDest, uint8 algo)
 		cerr<<sFileNameDest<< "is not closed"<<endl;
 	}
 
+	bool	algoOk= false;
 	switch(algo)
 	{
 		case DXT1:
 			if(h.ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X', 'T', '1')
 				&& h.ddpfPixelFormat.dwRGBBitCount==0)
-				return true;
+				algoOk=true;
 			break;
 					
 		case DXT1A:
 			if(h.ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X', 'T', '1')
 				&& h.ddpfPixelFormat.dwRGBBitCount>0)
-				return true;
+				algoOk=true;
 			break;
 		
 		case DXT3:
 			if(h.ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X', 'T', '3'))
-				return true;
+				algoOk=true;
 			break;
 
 		case DXT5:
 			if(h.ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X', 'T', '5'))
-				return true;
+				algoOk=true;
 			break;
 	}
+	if(!algoOk)
+		return false;
 	
+	// Test Mipmap.
+	bool	fileHasMipMap= (h.dwFlags&DDSD_MIPMAPCOUNT) && (h.dwMipMapCount>1);
+	if(fileHasMipMap==wantMipMap)
+		return true;
+
 	return false;
 }
 
 
 
-bool dataCheck(const char *sFileNameSrc, const char *sFileNameDest, uint8 algo)
+bool dataCheck(const char *sFileNameSrc, const char *sFileNameDest, uint8 algo, bool wantMipMap)
 {
 	
 	HANDLE h1 = CreateFile( sFileNameSrc, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -139,7 +151,7 @@ bool dataCheck(const char *sFileNameSrc, const char *sFileNameDest, uint8 algo)
 	}
 	if(nComp==-1)
 	{
-		if(!sameType(sFileNameDest, algo))
+		if(!sameType(sFileNameDest, algo, wantMipMap))
 		{
 			return false; // file exists but a new compression type is required
 		}
@@ -160,13 +172,14 @@ void writeInstructions()
 	cout<<"extension \"_usercolor\""<<endl;
 	cout<<"ex : pic.tga, the associated user color file must be : pic_usercolor.tga"<<endl; 
 	cout<<endl;
-	cout<<"syntax : tga2dds <input.tga> [<output.dds>] [<algo>] "<<endl;
+	cout<<"syntax : tga2dds <input.tga> [-o <output.dds>] [-a <algo>] [-m]"<<endl;
 	cout<<endl;
 	cout<<"with"<<endl;
 	cout<<"algo : 1  for DXTC1 (no alpha)"<<endl;
 	cout<<"       1A for DXTC1 with alpha"<<endl;
 	cout<<"       3  for DXTC3"<<endl;
-	cout<<"       5  for DXTC3"<<endl;
+	cout<<"       5  for DXTC5"<<endl;
+	cout<<"-m   : Create MipMap"<<endl;
 	cout<<endl;
 	cout<<"default : DXTC1 if Tga 24b, DXTC5 if Tga 32b."<<endl;
 	cout<<endl;
@@ -185,6 +198,137 @@ std::string getOutputFileName(std::string inputFileName)
 }
 
 
+// ***************************************************************************
+void		compressMipMap(uint8 *pixSrc, sint width, sint height, vector<uint8>	&compdata, DDSURFACEDESC &dest, sint algo)
+{
+	// Filling DDSURFACEDESC structure for input
+	DDSURFACEDESC src;
+	memset(&src, 0, sizeof(src));
+	src.dwSize = sizeof(src);
+	src.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_LPSURFACE | 
+				  DDSD_PITCH | DDSD_PIXELFORMAT;
+	src.dwHeight = height;
+	src.dwWidth = width;
+	src.lPitch = width * 4;
+	src.lpSurface = pixSrc;
+	src.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+	src.ddpfPixelFormat.dwFlags = DDPF_RGB | DDPF_ALPHAPIXELS;
+	src.ddpfPixelFormat.dwRGBBitCount = 32;
+	src.ddpfPixelFormat.dwRBitMask = 0x0000ff;
+	src.ddpfPixelFormat.dwGBitMask = 0x00ff00;
+	src.ddpfPixelFormat.dwBBitMask = 0xff0000;
+	src.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
+
+	// Filling DDSURFACEDESC structure for output
+	//===========================================
+	memset(&dest, 0, sizeof(dest));
+	dest.dwSize = sizeof(dest);
+	
+	// Setting encode type
+	uint32 encodeType = 0;
+	switch(algo)
+	{
+		case DXT1:
+			encodeType = S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_ALPHA_NONE;
+			dest.dwLinearSize = width * height / 2; // required by S3TCTool
+			break;
+		case DXT1A:
+			encodeType = S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_RGB_ALPHA_COMPARE;
+			S3TCsetAlphaReference(127); // set the threshold to 0.5
+			dest.dwLinearSize = width * height / 2; // required by S3TCTool
+			break;
+		case DXT3:
+			encodeType = S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_ALPHA_EXPLICIT;
+			dest.dwLinearSize = width * height; // required by S3TCTool
+			break;
+		case DXT5:
+			encodeType = S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_ALPHA_INTERPOLATED;
+			dest.dwLinearSize = width * height; // required by S3TCTool
+			break;
+	}
+
+	
+
+	// Encoding
+	//===========
+	// resize dest.
+	uint32 encodeSz = S3TCgetEncodeSize(&src,encodeType);
+	compdata.resize(encodeSz);
+	// Go!
+	float weight[3] = {0.3086f, 0.6094f, 0.0820f};
+	S3TCencode(&src, NULL, &dest, &(*compdata.begin()), encodeType, weight);
+	
+	switch(algo)
+	{
+		case DXT1:
+			dest.ddpfPixelFormat.dwFourCC = MAKEFOURCC('D','X', 'T', '1');
+			break;
+		case DXT1A:
+			dest.ddpfPixelFormat.dwFourCC = MAKEFOURCC('D','X', 'T', '1');
+			break;
+		case DXT3:
+			dest.ddpfPixelFormat.dwFourCC = MAKEFOURCC('D','X', 'T', '3');
+			break;
+		case DXT5:
+			dest.ddpfPixelFormat.dwFourCC = MAKEFOURCC('D','X', 'T', '5');
+			break;
+	}
+
+}
+
+
+// ***************************************************************************
+string		OptOutputFileName;
+sint		OptAlgo= -1;
+bool		OptMipMap= false;
+bool	parseOptions(int argc, char **argv)
+{
+	for(sint i=2;i<argc;i++)
+	{
+		// OutputFileName.
+		if(!strcmp(argv[i], "-o"))
+		{
+			i++;
+			if(i>=argc) return false;
+			OptOutputFileName= argv[i];
+		}
+		// Algo.
+		else if(!strcmp(argv[i], "-a"))
+		{
+			i++;
+			if(i>=argc) return false;
+			if(!strcmp(argv[i],"1"))	OptAlgo = DXT1;
+			else
+			if(!strcmp(argv[i],"1A")) 	OptAlgo = DXT1A;
+			else
+			if(!strcmp(argv[i],"1a")) 	OptAlgo = DXT1A;
+			else
+			if(!strcmp(argv[i],"3"))	OptAlgo = DXT3;
+			else
+			if(!strcmp(argv[i],"5"))	OptAlgo = DXT5;
+			else
+			{
+				cerr<<"Algorithm unknown : "<<argv[i]<<endl;
+				exit(1);
+			}
+		}
+		// MipMap.
+		else if(!strcmp(argv[i], "-m"))
+		{
+			OptMipMap= true;
+		}
+		// What is this option?
+		else
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+// ***************************************************************************
 void main(int argc, char **argv)
 {
 	uint8 algo;
@@ -196,22 +340,37 @@ void main(int argc, char **argv)
 	*/
 
 	
+	// Parse Command Line.
+	//====================
 	if(argc<2)
 	{
 		writeInstructions();
 		return;
 	}
-	if(strcmp(argv[1],"/?")==0)
+	if(!strcmp(argv[1],"/?"))
+	{
+		writeInstructions();
+		return;
+	}
+	if(!strcmp(argv[1],"-?"))
+	{
+		writeInstructions();
+		return;
+	}
+	if(!parseOptions(argc, argv))
 	{
 		writeInstructions();
 		return;
 	}
 
+
+	// Reading TGA and converting to RGBA
+	//====================================
 	NL3D::CBitmap picTga;
 	NL3D::CBitmap picTga2;
+	NL3D::CBitmap picSrc;
 
 	
-	// Reading TGA and converting to RGBA
 	std::string inputFileName(argv[1]);
 	if(inputFileName.find("_usercolor")<inputFileName.length())
 	{
@@ -237,76 +396,33 @@ void main(int argc, char **argv)
 	input.close();
 	uint32 height = picTga.getHeight();
 	uint32 width= picTga.getWidth();
-	picTga.convertToRGBA();
+	picTga.convertToType (CBitmap::RGBA);
 
 
-
-	// Output file name & algo
+	// Output file name and algo.
+	//===========================
 	std::string outputFileName;
-	if(argc==2)
+	if(OptOutputFileName!="")
+		outputFileName= OptOutputFileName;
+	else
+		outputFileName= getOutputFileName(inputFileName);
+	// Choose Algo.
+	if(OptAlgo!=-1)
 	{
-		outputFileName = getOutputFileName(inputFileName);
-		
+		algo= OptAlgo;
+	}
+	else
+	{
 		if(imageDepth==24)
 			algo = DXT1;
 		else
 			algo = DXT5;
 	}
-	if(argc==3)
-	{
-		if(strcmp(argv[2],"1") == 0) 
-		{
-			algo = DXT1;
-			outputFileName = getOutputFileName(inputFileName);
-		}
-		else
-		if(strcmp(argv[2],"1A") == 0) 
-		{
-			algo = DXT1A;
-			outputFileName = getOutputFileName(inputFileName);
-		}
-		else
-		if(strcmp(argv[2],"3") == 0)
-		{
-			algo = DXT3;
-			outputFileName = getOutputFileName(inputFileName);
-		}
-		else
-		if(strcmp(argv[2],"5") == 0) 
-		{
-			algo = DXT5;
-			outputFileName = getOutputFileName(inputFileName);
-		}
-		else
-		{
-			outputFileName = argv[2];
-			if(imageDepth==24)
-				algo = DXT1;
-			else
-				algo = DXT5;
-		}
-	}
-	if(argc==4)
-	{
-		if(strcmp(argv[3],"1") == 0)	algo = DXT1;
-		else
-		if(strcmp(argv[3],"1A") == 0) 	algo = DXT1A;
-		else
-		if(strcmp(argv[3],"3") == 0)	algo = DXT3;
-		else
-		if(strcmp(argv[3],"5") == 0)	algo = DXT5;
-		else
-		{
-			cerr<<"Algorithm unknown : "<<argv[3]<<endl;
-			exit(1);
-		}
-		outputFileName = argv[3];
-	}
-			
-	
+
 
 	// Data check
-	if(dataCheck(inputFileName.c_str(),outputFileName.c_str(),algo))
+	//===========
+	if(dataCheck(inputFileName.c_str(),outputFileName.c_str(),algo, OptMipMap))
 	{
 		cout<<outputFileName<<" : a recent dds file already exists"<<endl;
 		return;
@@ -324,6 +440,8 @@ void main(int argc, char **argv)
 
 
 
+	// UserColor
+	//===========
 	/*
 	// Checking if option "usercolor" has been used
 	std::string userColorFileName;
@@ -366,7 +484,10 @@ void main(int argc, char **argv)
 		uint32 width2 = picTga2.getWidth();
 		nlassert(width2==width);
 		nlassert(height2==height);
-		picTga2.convertToRGBA();
+		picTga2.convertToType (CBitmap::RGBA);
+
+
+
 		RGBASrc2 = picTga2.getPixels();
 
 		NLMISC::CRGBA *pRGBASrc = (NLMISC::CRGBA*)&RGBASrc[0];
@@ -398,56 +519,18 @@ void main(int argc, char **argv)
 	}
 	else
 		RGBADest = RGBASrc;
+
+	// Copy to the dest bitmap.
+	picSrc.resize(width, height, CBitmap::RGBA);
+	picSrc.getPixels(0)= RGBADest;
 	
 
-	// Filling DDSURFACEDESC structure for input
-	DDSURFACEDESC src;
-	memset(&src, 0, sizeof(src));
-	src.dwSize = sizeof(src);
-	src.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_LPSURFACE | 
-				  DDSD_PITCH | DDSD_PIXELFORMAT;
-	src.dwHeight = height;
-	src.dwWidth = width;
-	src.lPitch = width * 4;
-	src.lpSurface = &(*RGBADest.begin());
-	src.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
-	src.ddpfPixelFormat.dwFlags = DDPF_RGB | DDPF_ALPHAPIXELS;
-	src.ddpfPixelFormat.dwRGBBitCount = 32;
-	src.ddpfPixelFormat.dwRBitMask = 0x0000ff;
-	src.ddpfPixelFormat.dwGBitMask = 0x00ff00;
-	src.ddpfPixelFormat.dwBBitMask = 0xff0000;
-	src.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
+	// Compress
+	//===========
+	vector<uint8>		CompressedMipMaps;
+	DDSURFACEDESC		dest;
 
-
-	// DDSURFACEDESC structure for output
-	DDSURFACEDESC dest;
-	memset(&dest, 0, sizeof(dest));
-	dest.dwSize = sizeof(dest);
-	
-	
-	// Setting encode type
-	uint32 encodeType = 0;
-	switch(algo)
-	{
-		case DXT1:
-			encodeType = S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_ALPHA_NONE;
-			dest.dwLinearSize = width * height / 2; // required by S3TCTool
-			break;
-		case DXT1A:
-			encodeType = S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_RGB_ALPHA_COMPARE;
-			S3TCsetAlphaReference(127); // set the threshold to 0.5
-			dest.dwLinearSize = width * height / 2; // required by S3TCTool
-			break;
-		case DXT3:
-			encodeType = S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_ALPHA_EXPLICIT;
-			dest.dwLinearSize = width * height; // required by S3TCTool
-			break;
-		case DXT5:
-			encodeType = S3TC_ENCODE_RGB_FULL | S3TC_ENCODE_ALPHA_INTERPOLATED;
-			dest.dwLinearSize = width * height; // required by S3TCTool
-			break;
-	}
-
+	// log.
 	std::string algostr;
 	switch(algo)
 	{
@@ -465,32 +548,38 @@ void main(int argc, char **argv)
 			break;
 	}
 	cout<<"compressing ("<<algostr<<") "<<inputFileName<<" to "<<outputFileName<<endl;
-	uint32 encodeSz = S3TCgetEncodeSize(&src,encodeType);
-	uint8 * pDestBuf = new uint8[encodeSz];
-	float weight[3] = {0.3086f, 0.6094f, 0.0820f};
-	
 
-	// Encoding
-	S3TCencode(&src, NULL, &dest, pDestBuf, encodeType, weight);
-	
-	switch(algo)
+
+	// For all mipmaps, compress.
+	if(OptMipMap)
 	{
-		case DXT1:
-			dest.ddpfPixelFormat.dwFourCC = MAKEFOURCC('D','X', 'T', '1');
-			break;
-		case DXT1A:
-			dest.ddpfPixelFormat.dwFourCC = MAKEFOURCC('D','X', 'T', '1');
-			break;
-		case DXT3:
-			dest.ddpfPixelFormat.dwFourCC = MAKEFOURCC('D','X', 'T', '3');
-			break;
-		case DXT5:
-			dest.ddpfPixelFormat.dwFourCC = MAKEFOURCC('D','X', 'T', '5');
-			break;
+		// Build the mipmaps.
+		picSrc.buildMipMaps();
+	}
+	for(sint mp= 0;mp<(sint)picSrc.getMipMapCount();mp++)
+	{
+		uint8	*pixDest;
+		uint8	*pixSrc= &(*picSrc.getPixels(mp).begin());
+		sint	w= picSrc.getWidth(mp);
+		sint	h= picSrc.getWidth(mp);
+		vector<uint8>	compdata;
+		DDSURFACEDESC	temp;
+		compressMipMap(pixSrc, w, h, compdata, temp, algo);
+		// Copy the result of the base dds in the dest.
+		if(mp==0)
+			dest= temp;
+
+		// Append this data to the global data.
+		sint	delta= CompressedMipMaps.size();
+		CompressedMipMaps.resize(CompressedMipMaps.size()+compdata.size());
+		pixDest= &(*CompressedMipMaps.begin())+ delta;
+		memcpy( pixDest, &(*compdata.begin()), compdata.size());
 	}
 
 
+
 	// Replace DDSURFACEDESC destination header by a DDSURFACEDESC2 header
+	//====================================================================
 	DDSURFACEDESC2 dest2;
 	memset(&dest2, 0, sizeof(dest2));
 	dest2.dwSize = sizeof(dest2);
@@ -498,18 +587,19 @@ void main(int argc, char **argv)
 					DDSD_LINEARSIZE | DDSD_PIXELFORMAT; 
 	dest2.dwHeight = dest.dwHeight;
 	dest2.dwWidth = dest.dwWidth;
-	dest2.lPitch = dest.lPitch;
 	dest2.dwLinearSize = dest.dwLinearSize;
-	dest2.dwBackBufferCount = dest.dwBackBufferCount;
 	dest2.dwMipMapCount = dest.dwMipMapCount;
-	dest2.dwRefreshRate = dest.dwRefreshRate;
 	dest2.dwAlphaBitDepth = dest.dwAlphaBitDepth;
 	dest2.dwReserved = dest.dwReserved;
 	dest2.lpSurface = dest.lpSurface;
 	dest2.ddpfPixelFormat = dest.ddpfPixelFormat;
+	// Setting Nb MipMap.
+	dest2.dwFlags|= DDSD_MIPMAPCOUNT;
+	dest2.dwMipMapCount= picSrc.getMipMapCount();
 
 
 	// Saving DDS file
+	//=================
 	NLMISC::COFile output;
 	if(!output.open(outputFileName))
 	{
@@ -528,10 +618,8 @@ void main(int argc, char **argv)
 		exit(1);
 	}
 	
-	for(uint32 i=0; i<encodeSz; i++)
-	{
-		output.serial(pDestBuf[i]);
-	}
+	output.serialBuffer(&(*CompressedMipMaps.begin()), CompressedMipMaps.size());
+
 	
 	output.close();
 

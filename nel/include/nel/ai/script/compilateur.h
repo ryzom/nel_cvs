@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: compilateur.h,v 1.2 2001/01/08 09:45:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -326,7 +326,7 @@ namespace NLIASCRIPT
 		ResultState cintaine a processIdle if the code is generate or ProcessError if there are a prsing error.
 		If there are no problem Result contain the code to execut.
 		*/
-		NLIAAGENT::IObjectIA::CProcessResult Compile();
+		virtual NLIAAGENT::IObjectIA::CProcessResult Compile();
 
 		///Yacc parser.
 		int	yyparse();

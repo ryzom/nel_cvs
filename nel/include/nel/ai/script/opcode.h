@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: opcode.h,v 1.2 2001/01/08 09:45:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_OP_CODE_H_
-#define NL_OP_CODE_H_
+#ifndef NL_OP_CODE_H
+#define NL_OP_CODE_H
 
 #include <math.h>
 #include "logic/varset.h"
@@ -2010,6 +2010,7 @@ namespace NLIASCRIPT
 	};
 }
 
-#include "opcode_call_method.h"
-#include "opcode_call_lib_method.h"
+#include "script/opcode_call_method.h"
+#include "script/opcode_call_lib_method.h"
 #endif
+

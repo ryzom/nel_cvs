@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.11 2003/11/17 10:51:35 lecroart Exp $
+ * $Id: heap_allocator.cpp,v 1.12 2004/01/15 17:36:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -995,7 +995,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 				// ********
 				// * Attempt to allocate more than 1 Go
 				// ********
-				NL_ALLOC_STOP
+				NL_ALLOC_STOP;
 
 				outOfMemory();
 				return NULL;

@@ -13,22 +13,55 @@
 #endif
 
 #include "resource.h"		// main symbols
+#include <afxinet.h>
+
+#include "Configuration.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CNel_launcherApp:
 // See nel_launcher.cpp for the implementation of this class
 //
+#define APP	(*((CNel_launcherApp*)AfxGetApp()))
+#define MAGIC_KEY_MD5	"#-#ryzom#-#"
+#define RYZOM_HOST		"ryzom-europe.goa.com"
+#define URL_LOGIN_WEB	"http://" RYZOM_HOST "/betatest/login.php"
+#define CONFIG_FILE		"nel_launcher.cfg"
+#define PATCH_BAT_FILE	"update_nel_launcher.bat"
+#define MSGBOX(sTitle, sMsg)	{	CMsgDlg dlgMsg(sTitle, sMsg); dlgMsg.DoModal();	}
+#define IS_WINNT		(APP.m_bWinNT)
 
 class CNel_launcherApp : public CWinApp
 {
 public:
 	CNel_launcherApp();
+	void SetRegKey(char* lpszValueName, CString csValue);
+	CString GetRegKeyValue(const char* lpszEntry);
+	void	ResetConnection();
+	BOOL	GetWindowsVersion();
+	void	EnableLog(BOOL bEnable = TRUE);
+	void	Log(CString cs);
+
+public:	
+	CString	m_csLogin;
+	CString	m_csPassword;
+	HCURSOR	m_hcPointer;
+	BOOL	m_bWinNT;
+	BOOL	m_bAuthWeb;
+	BOOL	m_bAuthGame;
+	CConfiguration	m_config;
+	double	m_dVersion;
+	BOOL	m_bLog;
+
+private:
+	CString ReadInfoFromRegistry(const char* lpszEntry, HKEY hkey);
+	void	LoadVersion();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CNel_launcherApp)
 	public:
 	virtual BOOL InitInstance();
+	virtual int ExitInstance();
 	//}}AFX_VIRTUAL
 
 // Implementation

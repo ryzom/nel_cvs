@@ -45,7 +45,8 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "C:\Dev\Ryzom\code\nel\include\nel" /I "C:\Dev\Ryzom\code\nel\src" /I "C:\Dev\Ryzom\code\nel\include\nel\stlport" /I "C:\Dev\zlib114" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
+# SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -55,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 zlib.lib wininet.lib /nologo /subsystem:windows /incremental:yes /machine:I386 /nodefaultlib:"LIBCMTD" /libpath:"C:\Dev\Ryzom\code\nel\lib" /libpath:"C:\Dev\zlib114"
 
 !ELSEIF  "$(CFG)" == "nel_launcher - Win32 Debug"
 
@@ -71,7 +72,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GR /GX /Z7 /Od /Gf /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Z7 /Od /Gf /I "C:\Dev\Ryzom\code\nel\include\nel" /I "C:\Dev\Ryzom\code\nel\src" /I "C:\Dev\Ryzom\code\nel\include\nel\stlport" /I "C:\Dev\zlib114" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /U "LIBCMTD" /FR /Yu"stdafx.h" /FD /GZ /c
+# SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -81,7 +83,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /out:"nel_launcher.exe"
+# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /libpath:"C:\Dev\Ryzom\code\nel\lib" /libpath:"C:\Dev\zlib114"
 
 !ELSEIF  "$(CFG)" == "nel_launcher - Win32 DebugFast"
 
@@ -98,7 +100,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GR /GX /Z7 /Od /Ob1 /Gf /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Z7 /Od /Ob1 /Gf /I "D:\nevrax\code\nel\src" /I "D:\Launcher\src\include\stlport" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /U "LIBCMTD" /Yu"stdafx.h" /FD /GZ /c
+# SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -108,7 +111,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386
+# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /nodefaultlib:"LIBCMTD" /libpath:"D:\Launcher\src\lib" /libpath:"D:\nevrax\code\nel\lib"
 
 !ELSEIF  "$(CFG)" == "nel_launcher - Win32 ReleaseDebug"
 
@@ -125,7 +128,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Z7 /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "NL_RELEASE_DEBUG" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Z7 /O2 /I "C:\Dev\Ryzom\code\nel\include\nel" /I "C:\Dev\Ryzom\code\nel\src" /I "C:\Dev\Ryzom\code\nel\include\nel\stlport" /I "C:\Dev\zlib114" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /U "LIBCMTD" /FR /Yu"stdafx.h" /FD /c
+# SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -135,7 +139,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /incremental:yes /debug /machine:I386
+# ADD LINK32 Zlib.lib Wininet.lib /nologo /subsystem:windows /incremental:yes /debug /machine:I386 /nodefaultlib:"LIBCMTD" /libpath:"C:\Dev\Ryzom\code\nel\lib" /libpath:"C:\Dev\zlib114"
+# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 
@@ -150,7 +155,50 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\BarTabsWnd.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\BarWnd.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Configuration.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\LoadingPageDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\LoginDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Md5.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MsgDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\nel_launcher.cpp
+
+!IF  "$(CFG)" == "nel_launcher - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 ReleaseDebug"
+
+# ADD CPP /Yu
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -159,10 +207,44 @@ SOURCE=.\nel_launcher.rc
 # Begin Source File
 
 SOURCE=.\nel_launcherDlg.cpp
+
+!IF  "$(CFG)" == "nel_launcher - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\patch.cpp
+
+!IF  "$(CFG)" == "nel_launcher - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 ReleaseDebug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\PictureHlp.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ProgressDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -172,11 +254,56 @@ SOURCE=.\StdAfx.cpp
 # Begin Source File
 
 SOURCE=.\webbrowser2.cpp
+
+!IF  "$(CFG)" == "nel_launcher - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 ReleaseDebug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\WebDlg.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\BarTabsWnd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\BarWnd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Configuration.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\LoadingPageDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\LoginDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Md5.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MsgDlg.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\nel_launcher.h
@@ -191,6 +318,14 @@ SOURCE=.\patch.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\PictureHlp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ProgressDlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Resource.h
 # End Source File
 # Begin Source File
@@ -201,13 +336,45 @@ SOURCE=.\StdAfx.h
 
 SOURCE=.\webbrowser2.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\WebDlg.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\res\barre_top.bmp
+SOURCE=.\res\background.jpg
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\bg_login.jpg
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\btn_login_down.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\btn_login_up.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\btn_quit_down.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\btn_quit_up.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\cursor1.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\iconic.bmp
 # End Source File
 # Begin Source File
 
@@ -217,6 +384,38 @@ SOURCE=.\res\nel_launcher.ico
 
 SOURCE=.\res\nel_launcher.rc2
 # End Source File
+# Begin Source File
+
+SOURCE=.\res\progress.jpg
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\ryzom.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\tab_news.jpg
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\tab_news_focus.jpg
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\tab_rn.jpg
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\tab_rn_focus.jpg
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\tab_servers.jpg
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\tab_servers_focus.jpg
+# End Source File
 # End Group
 # Begin Source File
 
@@ -224,12 +423,12 @@ SOURCE=.\nel_launcher.cfg
 # End Source File
 # End Target
 # End Project
+# Section nel_launcher : {8856F961-340A-11D0-A96B-00C04FD705A2}
+# 	2:21:DefaultSinkHeaderFile:webbrowser2.h
+# 	2:16:DefaultSinkClass:CWebBrowser2
+# End Section
 # Section nel_launcher : {D30C1661-CDAF-11D0-8A3E-00C04FC9E26E}
 # 	2:5:Class:CWebBrowser2
 # 	2:10:HeaderFile:webbrowser2.h
 # 	2:8:ImplFile:webbrowser2.cpp
-# End Section
-# Section nel_launcher : {8856F961-340A-11D0-A96B-00C04FD705A2}
-# 	2:21:DefaultSinkHeaderFile:webbrowser2.h
-# 	2:16:DefaultSinkClass:CWebBrowser2
 # End Section

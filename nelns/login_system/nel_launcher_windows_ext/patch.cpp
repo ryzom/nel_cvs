@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.6 2003/06/23 14:36:23 lecroart Exp $
+ * $Id: patch.cpp,v 1.7 2003/07/24 15:48:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -293,17 +293,19 @@ private:
 
 			for (i = 0; i < needToGetFilesList.size(); i++)
 			{
-				if (needToGetFilesList[i].Filename == NelLauncherFilename)
+				string fn = needToGetFilesList[i].Filename;
+
+				if (fn == NelLauncherFilename)
 				{
 					getFile (needToGetFilesList[i]);
 					patchExe = true;
 				}
-				else if (needToGetFilesList[i].Filename == NelLauncherConfigFilename)
+				else if (fn == NelLauncherConfigFilename)
 				{
 					getFile (needToGetFilesList[i]);
 					patchCfg = true;
 				}
-				else if (needToGetFilesList[i].Filename == RelaunchNelLauncherBatchFilename)
+				else if (fn == RelaunchNelLauncherBatchFilename)
 				{
 					getFile (needToGetFilesList[i]);
 					patchBat = true;
@@ -364,6 +366,8 @@ private:
 				
 				if (patchExe)
 				{
+					nlinfo ("Need to special patch '%s'",NelLauncherFilename.c_str());
+
 					fprintf(fp, ":loopexe\n");
 					fprintf(fp, "attrib -r -a -s -h %s\n", NelLauncherFilename.c_str());
 					fprintf(fp, "del %s\n", NelLauncherFilename.c_str());
@@ -373,6 +377,8 @@ private:
 
 				if (patchCfg)
 				{
+					nlinfo ("Need to special patch '%s'",NelLauncherConfigFilename.c_str());
+
 					fprintf(fp, ":loopcfg\n");
 					fprintf(fp, "attrib -r -a -s -h %s\n", NelLauncherConfigFilename.c_str());
 					fprintf(fp, "del %s\n", NelLauncherConfigFilename.c_str());
@@ -753,6 +759,7 @@ private:
 	string UrlOk;
 	string UrlFailed;
 
+public:
 	uint TotalFilesToGet;
 	uint TotalBytesToGet;
 	uint CurrentFilesToGet;
@@ -808,4 +815,32 @@ bool patchState (string &state, std::string &stateLog)
 	}
 
 	return statechanged;
+}
+
+int getTotalFilesToGet()
+{
+	if(PatchThread)
+		return PatchThread->TotalFilesToGet;
+	return 0;
+}
+
+int getCurrentFilesToGet()
+{
+	if(PatchThread)
+		return PatchThread->CurrentFilesToGet;
+	return 0;
+}
+
+int getTotalBytesToGet()
+{
+	if(PatchThread)
+		return PatchThread->TotalBytesToGet;
+	return 0;
+}
+
+int getCurrentBytesToGet()
+{
+	if(PatchThread)
+		return PatchThread->CurrentBytesToGet;
+	return 0;
 }

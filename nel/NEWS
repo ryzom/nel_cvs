@@ -1,3 +1,10 @@
+May 27 2002
+===========
+
+*  NLNET: -I command line and IWinParam config file variable to start services in minimized.
+
+*  NLNET: getWinDisplayerInfo() command to have info about size and pos (copy/paste into .cfg)
+
 May 21 2002
 ===========
 

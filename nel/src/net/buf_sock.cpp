@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.23 2002/05/22 14:27:45 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.24 2002/05/27 16:50:24 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,8 +166,8 @@ bool CBufSock::flush()
 	{		
 		// Send
 		CSock::TSockResult res;
-		TBlockSize realLen = _ReadyToSendBuffer.size() - _RTSBIndex;
 		TBlockSize len = _ReadyToSendBuffer.size() - _RTSBIndex;
+		TBlockSize realLen = len;
 
 		res = Sock->send( _ReadyToSendBuffer.getPtr()+_RTSBIndex, len, false );
 

@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.13 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: file.cpp,v 1.14 2001/03/05 09:15:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,7 @@ bool		CIFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 	return false;
 }
 // ======================================================================================================
-sint32		CIFile::getpos () throw(EStream)
+sint32		CIFile::getPos () throw(EStream)
 {
 	if (_F)
 	{
@@ -240,7 +240,7 @@ bool		COFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 	return false;
 }
 // ======================================================================================================
-sint32		COFile::getpos () throw(EStream)
+sint32		COFile::getPos () throw(EStream)
 {
 	if (_F)
 	{

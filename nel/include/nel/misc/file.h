@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.h,v 1.10 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: file.h,v 1.11 2001/03/05 09:15:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,7 @@ public:		// Advanced Usage.
 	/// Seek the file
 	bool	seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream);
 	/// Gt the location of the file pointer
-	sint32	getpos () throw(EStream);
+	sint32	getPos () throw(EStream);
 
 protected:
 	virtual void		serialBuffer(uint8 *buf, uint len)throw(EReadError);
@@ -138,7 +138,7 @@ public:		// Advanced Usage.
 	/// Seek the file
 	bool	seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream);
 	/// Gt the location of the file pointer
-	sint32	getpos () throw(EStream);
+	sint32	getPos () throw(EStream);
 
 	// very useful to serialize string in text mode (without the size)
 	virtual void		serialBuffer(uint8 *buf, uint len) throw(EWriteError);

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.11 2001/06/27 16:46:03 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.12 2001/07/04 12:15:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,6 +162,7 @@ void CParticleTreeCtrl::suppressLocatedInstanceNbItem(uint32 newSize)
 				{
 					_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt)) ;
 					DeleteItem(currLocElement) ;					
+					delete nt ;
 				}
 			}
 			currLocElement = nextCurrLocElement ;
@@ -474,6 +475,9 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case IDM_RECTANGLE_EMITTER:
 			toCreate = new NL3D::CPSEmitterRectangle ;
 		break ;
+		case IDM_SPHERICAL_EMITTER:
+			toCreate = new NL3D::CPSSphericalEmitter ;
+		break ;
 
 
 		////////////////
@@ -502,8 +506,25 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case IDM_GRAVITY_FORCE:
 			toCreate = new NL3D::CPSGravity ;
 		break ;
+		case IDM_DIRECTIONNAL_FORCE:
+			toCreate = new NL3D::CPSDirectionnalForce ;
+		break ;
 		case IDM_SPRING_FORCE:
 			toCreate = new NL3D::CPSSpring ;
+		break ;
+		case IDM_FLUID_FRICTION:
+			toCreate = new NL3D::CPSFluidFriction ;
+		break ;
+
+		case IDM_CENTRAL_GRAVITY:
+			toCreate = new NL3D::CPSCentralGravity ;
+		break ;
+
+		case IDM_CYLINDRIC_VORTEX:
+			toCreate = new NL3D::CPSCylindricVortex ;
+		break ;
+		case IDM_BROWNIAN_MOVE:
+			toCreate = new NL3D::CPSBrownianForce ;
 		break ;
 
 		//////////////
@@ -567,8 +588,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case IDM_DELETE_LOCATED_INSTANCE:
 		{
 			nlassert(nt->Type == CNodeType::locatedInstance) ;
-			suppressLocatedInstanceNbItem(0) ;
 			nt->Loc->deleteElement(nt->LocatedInstanceIndex) ;						
+			suppressLocatedInstanceNbItem(0) ;			
 			rebuildLocatedInstance() ;			
 		}
 		break; 
@@ -617,6 +638,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			
 			CPSLocated *loc = new CPSLocated ;
 			loc->setName(name) ;
+			loc->setSystemBasis(true) ;
 			CParticleSystem *ps = nt->PS ;
 			ps->attach(loc) ;
 
@@ -652,6 +674,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					{
 						nt->PSModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName()))) ;
 						nt->PS = nt->PSModel->getPS() ;									
+						nt->PSModel->enableAutoGetEllapsedTime(false) ;
 						nt->PSModel->setEllapsedTime(0.f) ; // system is paused
 						nt->PSModel->enableDisplayTools(true) ;
 					

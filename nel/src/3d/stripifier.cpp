@@ -1,7 +1,7 @@
 /** \file stripifier.cpp
  * <File description>
  *
- * $Id: stripifier.cpp,v 1.3 2002/02/28 12:59:51 besson Exp $
+ * $Id: stripifier.cpp,v 1.4 2003/03/17 17:34:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ CStripifier::CStripifier()
 
 // ***************************************************************************
 /*
-	NVidia(tm) 's method get better performance (8ms on 50K faces meshe, instead of 9.2ms), but 
+	NVidia(tm) 's method get better performance (8ms on 50K faces meshe, instead of 8.9ms), but 
 	precomputing is much slower (1'40 instead of 0'??  :)  ).
 */
 /*void		CStripifier::optimizeTriangles(const CPrimitiveBlock &in, CPrimitiveBlock &out, uint cacheSize)
@@ -97,7 +97,6 @@ CStripifier::CStripifier()
 
 }*/
 
-
 // ***************************************************************************
 struct	CVertexCache
 {
@@ -121,14 +120,14 @@ struct	CVertexCache
 				_VertexInCache[removed]= 0;
 			_Cache.pop_front();
 			// push_back
-			_VertexInCache[vert]= 1;
+			_VertexInCache[vert]= 3;
 			_Cache.push_back(vert);
 		}
 	}
 
 	bool	isVertexInCache(uint vert)
 	{
-		return _VertexInCache[vert]!=0;
+		return _VertexInCache[vert]==3;
 	}
 
 	// return which vertex is at which place in the cache. 0xFFFFFFFF if the entry is empty
@@ -137,6 +136,16 @@ struct	CVertexCache
 		return _Cache[vertIdInCache];
 	}
 
+	void	tempTouchVertex(uint vert, bool inCache)
+	{
+		if( _VertexInCache[vert]&1 )
+		{
+			if(inCache)
+				_VertexInCache[vert]|= 2;
+			else
+				_VertexInCache[vert]&= 1;
+		}
+	}
 
 private:
 	// 0 if not in the cache
@@ -189,6 +198,18 @@ void		CStripifier::optimizeTriangles(const CPrimitiveBlock &in, CPrimitiveBlock 
 	vector<COrderFace>	inFaces;
 	sint			i;
 	sint			numTris= in.getNumTri();
+
+	// TestYoyo: All the same tri => perfect vertex caching...
+	/*out.setNumTri(numTris);
+	for(i=0;i< numTris; i++)
+	{
+		uint32	v0= *(in.getTriPointer()+0);
+		uint32	v1= *(in.getTriPointer()+1);
+		uint32	v2= *(in.getTriPointer()+2);
+		out.setTri(i, v0, v1, v2);
+	}
+	return;*/
+
 
 	// prepare inIndices.
 	//--------------------
@@ -292,6 +313,51 @@ void		CStripifier::optimizeTriangles(const CPrimitiveBlock &in, CPrimitiveBlock 
 							// else the one which add the minimum of vertex possible: nextToInsert
 							else
 							{
+								// Add cost of faces that use vertices pushed out (better results...)
+								uint	numVOut= c;
+								uint	k;
+								for(k=cacheSize-numVOut; k<cacheSize; k++)
+								{
+									uint	vertexOutId= vertexCache.getVertexInCache(k);
+									if(vertexOutId==0xFFFFFFFF)
+										continue;
+									// TempRemove the vertex from the cache
+									vertexCache.tempTouchVertex(vertexOutId, false);
+								}
+								// parse all faces that still use those out vertices.
+								for(k=cacheSize-numVOut; k<cacheSize; k++)
+								{
+									uint	vertexOutId= vertexCache.getVertexInCache(k);
+									if(vertexOutId==0xFFFFFFFF)
+										continue;
+									CCornerNode		*cornerOut= vertexConnectivity[vertexOutId];
+									while(cornerOut)
+									{
+										uint	faceOutId= cornerOut->FaceId;
+
+										// if the face is not yet inserted AND not the one treated
+										if(!inFaces[faceOutId].Inserted && faceOutId!=faceId)
+										{
+											// Add cache miss of this face
+											c+= inFaces[faceOutId].countCacheMiss(vertexCache);
+										}
+
+										// next corner
+										cornerOut= cornerOut->Next;
+									}
+								}
+								// reset touch
+								for(k=cacheSize-numVOut; k<cacheSize; k++)
+								{
+									uint	vertexOutId= vertexCache.getVertexInCache(k);
+									if(vertexOutId==0xFFFFFFFF)
+										continue;
+									// restore TempTouch the vertex from the cache
+									vertexCache.tempTouchVertex(vertexOutId, true);
+								}
+
+
+								// take the minimum cost
 								if(c<minC)
 								{
 									nextToInsert= faceId;

@@ -125,97 +125,27 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=.\animation_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
 # ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\animation_set_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
 # ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\blend_wnd.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
 # ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\main_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
 # ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\object_viewer.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
 # ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -224,59 +154,17 @@ SOURCE=.\object_viewer.rc
 # Begin Source File
 
 SOURCE=.\scene_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
 # ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\select_string.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
 # ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\slot_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
 # ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-# ADD CPP /Yu"std_afx.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -442,7 +330,6 @@ SOURCE=.\attrib_list_box.h
 
 SOURCE=.\basis_edit.cpp
 
-
 !IF  "$(CFG)" == "object_viewer - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
@@ -452,6 +339,7 @@ SOURCE=.\basis_edit.cpp
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
 
 !ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -635,6 +523,14 @@ SOURCE=.\particle_tree_ctrl.cpp
 # Begin Source File
 
 SOURCE=.\particle_tree_ctrl.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\precomputed_rotations_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\precomputed_rotations_dlg.h
 # End Source File
 # Begin Source File
 

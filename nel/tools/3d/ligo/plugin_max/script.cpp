@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.5 2002/01/03 13:12:56 corvazier Exp $
+ * $Id: script.cpp,v 1.6 2002/01/28 17:38:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,7 @@ using namespace NL3D;
 def_visible_primitive( export_material,						"NeLLigoExportMaterial");
 def_visible_primitive( export_transition,					"NeLLigoExportTransition");
 def_visible_primitive( export_zone,							"NeLLigoExportZone");
-def_visible_primitive( export_transition_zone,				"NeLLigoExportTransitionZone");
+//def_visible_primitive( export_transition_zone,				"NeLLigoExportTransitionZone");
 def_visible_primitive( get_error_zone_template,				"NeLLigoGetErrorZoneTemplate");
 def_visible_primitive( get_snap ,							"NeLLigoGetSnap");
 def_visible_primitive( get_cell_size ,						"NeLLigoGetCellSize");
@@ -981,13 +981,28 @@ Value* export_zone_cf (Value** arg_list, int count)
 				// Build a filename
 				char drive[512];
 				char path[512];
+				char finalpath[512];
 				char name[512];
 				char ext[512];
 				_splitpath (fileName.c_str(), drive, path, name, ext);
 
-				// Build it
-				char outputFilename[512];
-				_makepath (outputFilename, drive, path, name, ".zone");
+				// Build the zone filename
+				char outputFilenameZone[512];
+				strcpy (finalpath, path);
+				strcat (finalpath, "zones\\");
+				_makepath (outputFilenameZone, drive, finalpath, name, ".zone");
+
+				// Build the snap shot filename
+				char outputFilenameSnapShot[512];
+				strcpy (finalpath, path);
+				strcat (finalpath, "zoneBitmaps\\");
+				_makepath (outputFilenameSnapShot, drive, finalpath, name, ".tga");
+
+				// Build the ligozone filename
+				char outputFilenameLigozone[512];
+				strcpy (finalpath, path);
+				strcat (finalpath, "zoneLigos\\");
+				_makepath (outputFilenameLigozone, drive, finalpath, name, ".ligozone");
 
 				// Build the zone
 				CZone zone;
@@ -1046,9 +1061,6 @@ Value* export_zone_cf (Value** arg_list, int count)
 								CBitmap snapshot;
 								if (MakeSnapShot (zone, snapshot, *tileBank, width, height, config, errorInDialog))
 								{
-									// Build the snap shot filename
-									char outputFilenameSnapShot[512];
-									_makepath (outputFilenameSnapShot, drive, path, name, ".tga");
 
 									// Output the snap shot
 									COFile outputSnapShot;
@@ -1059,7 +1071,7 @@ Value* export_zone_cf (Value** arg_list, int count)
 
 										// Output stream
 										COFile output;
-										if (output.open (outputFilename))
+										if (output.open (outputFilenameZone))
 										{
 											// Serial the NeL zone
 											zone.serial (output);
@@ -1111,7 +1123,7 @@ Value* export_zone_cf (Value** arg_list, int count)
 											try
 											{
 												// Open the selected zone file
-												if (outputLigoZone.open (fileName))
+												if (outputLigoZone.open (outputFilenameLigozone))
 												{
 													// Create an xml stream
 													COXml outputXml;
@@ -1127,7 +1139,7 @@ Value* export_zone_cf (Value** arg_list, int count)
 												{
 													// Error message
 													char tmp[512];
-													smprintf (tmp, 512, "Can't open the ligozone file %s for writing.", fileName.c_str() );
+													smprintf (tmp, 512, "Can't open the ligozone file %s for writing.", outputFilenameLigozone );
 													CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 												}
 											}
@@ -1135,7 +1147,7 @@ Value* export_zone_cf (Value** arg_list, int count)
 											{
 												// Error message
 												char tmp[512];
-												smprintf (tmp, 512, "Error while loading the file %s : %s", fileName, e.what());
+												smprintf (tmp, 512, "Error while writing the file %s : %s", outputFilenameLigozone, e.what());
 												CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 											}
 										}
@@ -1151,7 +1163,7 @@ Value* export_zone_cf (Value** arg_list, int count)
 									{
 										// Error message
 										char tmp[512];
-										smprintf (tmp, 512, "Can't open the NeL zone file %s for writing.", outputFilename);
+										smprintf (tmp, 512, "Can't open the NeL zone file %s for writing.", outputFilenameZone);
 										CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 									}
 								}
@@ -1189,6 +1201,7 @@ Value* export_zone_cf (Value** arg_list, int count)
 // ***************************************************************************
  
 /// Export a ligo zone
+/* // \todo hulud or trap -> remove the code that is not used anymore
 Value* export_transition_zone_cf (Value** arg_list, int count)
 {
 	// Make sure we have the correct number of arguments (4)
@@ -1471,7 +1484,7 @@ Value* export_transition_zone_cf (Value** arg_list, int count)
 
 	// Return false
 	return &false_value;
-}
+}*/
 
 // ***************************************************************************
 

@@ -4,7 +4,9 @@ old_zone_path				= "w:\\database\\landscape\\zones\\"
 ligo_root_path				= "c:\\ligo\\"
 ligo_material_path			= "materials\\"
 ligo_transition_path		= "transitions\\"
-ligo_zone_path				= "zones\\"
+-- ligo_export_path path where to put (*.zone,*ligozone and *.tga)
+-- 3 pathes are created under this one :(zones, zoneLigos and zoneBitmaps)
+ligo_export_path			= "c:\\leveldesign\\"
 
 -- Some extensions
 
@@ -60,7 +62,9 @@ ligo_scale_app			= 1266703979
 ligo_instance_app		= 1266703980
 
 -- Project file list
+
 project_file_list		= #()
+project_cur_file		= ""
 
 -- Functions
 
@@ -97,7 +101,19 @@ fn isTransition name =
 -- Refresh project list
 fn refresh_project_list =
 (
-	project_file_list = getFiles (ligo_root_path+"*.max")
+	project_file_list = getFiles (ligo_root_path + "*.max")
+	-- Refresh rollouts
+	-- material template
+	material_rollout.refresh_list ()
+	-- material zone
+	material_zone_rollout.refresh_mat_list ()
+	material_zone_rollout.refresh_zone_list material_zone_rollout.MaterialDDL.selected
+	-- transition template
+	transition_rollout.refresh_mat_list ()
+	transition_rollout.refresh_list ()
+	-- transition zone
+	transition_zone_rollout.refresh_trans_list ()
+	transition_zone_rollout.refresh_list transition_zone_rollout.TransitionDDL.selected
 )
 
 -- Is this node a debug markers ?
@@ -235,7 +251,7 @@ fn get_material_and_zone_name_in_zone_project_name zoneNameSrc result =
 	)
 
 	-- Error
-	Messagebox (zoneName+" is not a valid zone material project name. ( should be : zonematerial-materialName-zoneName.max )") title:title_msgbox beep:true
+	Messagebox (zoneNameSrc+" is not a valid zone material project name. ( should be : zonematerial-materialName-zoneName.max )") title:title_msgbox beep:true
 
 	-- Error
 	return false
@@ -597,11 +613,11 @@ fn export_and_check_and_debug_zone checkOnly debug =
 			result = #()
 			if (get_material_and_zone_name_in_zone_project_name maxFileName result) == true then
 			(
-				filename = result[1]
+				matname = result[1]
 				zonename = result[2]
 
 				-- Make a full path
-				filename = ligo_root_path+ligo_material_path+filename+ligo_material_ext
+				filename = ligo_root_path+ligo_material_path+matname+ligo_material_ext
 
 				if (NeLLigoCheckZoneWithMaterial $ filename true) == false then
 				(
@@ -628,10 +644,11 @@ fn export_and_check_and_debug_zone checkOnly debug =
 					else
 					(
 						-- Select an output filename
-						filename = ligo_root_path+ligo_zone_path+zonename+ligo_zone_ext
+						-- filename = ligo_root_path+ligo_zone_path+matname+"-"+zonename+ligo_zone_ext
+						filename = ligo_export_path + matname + "-" + zonename + ligo_zone_ext
 						
 						-- Make an array of properties
-						props = #( #("zone", zonename), #("material", result[1]) ) 
+						props = #( #("zone", (matname + "-" + zonename)), #("material", result[1]) ) 
 
 						-- Add the properties
 						addProperties $ props
@@ -727,7 +744,8 @@ fn export_and_check_and_debug_transition_zone checkOnly debug =
 					if ok == true then
 					(
 						-- Make transition file with them
-						transitionName = ligo_root_path+ligo_transition_path+names[1]+"-"+names[2]+ligo_transition_ext
+						transitionName = ligo_root_path + ligo_transition_path + names[1] + "-"
+						transitionName = transitionName + names[2] + ligo_transition_ext
 
 						-- Export success
 						result = true
@@ -745,10 +763,10 @@ fn export_and_check_and_debug_transition_zone checkOnly debug =
 									if checkOnly == false then
 									(
 										-- Zone name
-										zoneBaseName = names[3]+"-"+((zone-1) as string)
+										zoneBaseName = names[1] + "-" + names[2] + "-" + names[3] + "-" + ((zone-1) as string)
 
 										-- Get the destination filename for export
-										filename = ligo_root_path+ligo_zone_path+zoneBaseName+ligo_zone_ext
+										filename = ligo_export_path + zoneBaseName + ligo_zone_ext
 
 										-- Make an array of properties
 										props = #( #("zone", zoneBaseName), #("transname", (names[1]+"-"+names[2]) ), #("transtype", TransitionType[zone] ), #("transtype", TransitionType[zone] ), #("transnum", (TransitionNumBis[zone] as string) ) ) 
@@ -863,6 +881,105 @@ fn getTransition id =
 	return undefined
 )
 
+-- Compare 2 dates
+fn date_older_or_equal_than date1 date2 =
+(
+	tabDate1 = filterstring date1 "/ :"
+	tabDate2 = filterstring date2 "/ :"
+
+	-- Year comparison
+	if ((tabDate1[3] as integer) < (tabDate2[3] as integer)) then
+		return true
+	if ((tabDate1[3] as integer) > (tabDate2[3] as integer)) then
+		return false
+
+	-- Month comparison
+	-- French Date ?
+	if (tabDate1.count == 6) then
+	(
+		if ((tabDate1[2] as integer) < (tabDate2[2] as integer)) then
+			return true
+		if ((tabDate1[2] as integer) > (tabDate2[2] as integer)) then
+			return false
+	)
+	-- Not french date so this is an english date
+	else
+	(
+		if ((tabDate1[1] as integer) < (tabDate2[1] as integer)) then
+			return true
+		if ((tabDate1[1] as integer) > (tabDate2[1] as integer)) then
+			return false
+	)
+
+	-- Day comparison
+	-- French Date ?
+	if (tabDate1.count == 6) then
+	(
+		if ((tabDate1[1] as integer) < (tabDate2[1] as integer)) then
+			return true
+		if ((tabDate1[1] as integer) > (tabDate2[1] as integer)) then
+			return false
+	)
+	-- Not french date so this is an english date
+	else
+	(
+		if ((tabDate1[2] as integer) < (tabDate2[2] as integer)) then
+			return true
+		if ((tabDate1[2] as integer) > (tabDate2[2] as integer)) then
+			return false
+	)
+
+	-- MidDay comparison if english date
+	if (tabDate1.count == 7) then
+	(
+		if ((tabDate1[7] == "AM") and (tabDate2[7] == "PM")) then
+			return true
+		if ((tabDate1[7] == "PM") and (tabDate2[7] == "AM")) then
+			return false
+	)
+
+	-- Hour
+	if ((tabDate1[4] as integer) < (tabDate2[4] as integer)) then
+		return true
+	if ((tabDate1[4] as integer) > (tabDate2[4] as integer)) then
+		return false
+
+	-- Minute
+	if ((tabDate1[5] as integer) < (tabDate2[5] as integer)) then
+		return true
+	if ((tabDate1[5] as integer) > (tabDate2[5] as integer)) then
+		return false
+
+	-- Seconds
+	if ((tabDate1[6] as integer) < (tabDate2[6] as integer)) then
+		return true
+	if ((tabDate1[6] as integer) > (tabDate2[6] as integer)) then
+		return false
+
+	-- equal date
+	return true
+)
+
+-- Put in upper case
+fn uppercase instring =
+(  
+	local upper, lower, outstring
+	upper="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	lower="abcdefghijklmnopqrstuvwxyz" 
+
+	outstring = copy instring 
+
+	for i = 1 to outstring.count do 
+	(  
+		j = findString lower outstring[i]
+		if (j != undefined) then
+			outstring[i] = upper[j] 
+		else
+			outstring[i] = instring[i]
+	)
+	outstring     -- value of outstring will be returned as function result 
+)
+
 -- Roll out
 
 rollout material_rollout "Material Template"
@@ -888,9 +1005,52 @@ group "Projects management"
 
 	)
 
+	fn refresh_list =
+	(
+		-- Array
+		tmpArray = #()
+
+		-- Make an array of material project
+		for curFileName in project_file_list do
+		(
+			-- Valid name ?
+			if (isMaterial curFileName) == true then
+			(
+				curFileDate = getFileModDate curFileName
+				expFileDate = ""
+				expFileNameBase = #()
+				if (get_material_name_in_material_name curFileName expFileNameBase) == true then
+				(
+					-- Exported File Name
+					expFileName = ligo_root_path + ligo_material_path + expFileNameBase[1] + ligo_material_ext
+					if (getFiles expFileName).count != 0 then					
+						expFileDate = getFileModDate expFileName
+				)
+
+				-- Get token
+				tokenArray = filterString (getFilenameFile curFileName) "-"
+				if (expFileDate != "") and (date_older_or_equal_than curFileDate expFileDate) then
+				(
+					append tmpArray ("[ok]"+tokenArray[2])
+				)
+				else
+				(
+					append tmpArray ("[..]"+tokenArray[2])
+				)
+			)
+		)
+
+		MaterialProject.items = tmpArray
+	)
+
 	on ExportMaterial pressed do 
 	(
+		if (project_cur_file != "") then
+		(
+			saveMaxFile project_cur_file
+		)
 		export_and_check_and_debug_material CheckOnly.checked Debug.checked
+		refresh_list ()
 	)
 
 	on DeleteDebugMarkers pressed do 
@@ -943,26 +1103,6 @@ group "Projects management"
 		)
 	)
 
-	fn refresh_list =
-	(
-		-- Array
-		tmpArray = #()
-
-		-- Make an array of material project
-		for proj in project_file_list do
-		(
-			-- Valid name ?
-			if (isMaterial proj) == true then
-			(
-				-- Get token
-				tokenArray = filterString (getFilenameFile proj) "-"
-				append tmpArray tokenArray[2]
-			)
-		)
-
-		MaterialProject.items = tmpArray
-	)
-
 	on material_rollout open do
 	(
 		refresh_list ()
@@ -1008,6 +1148,7 @@ group "Projects management"
 					-- Save the max file
 					saveMaxFile projectName
 					loadMaxFile projectName
+					project_cur_file = projectName
 
 					-- Refresh max project
 					refresh_project_list ()
@@ -1019,11 +1160,17 @@ group "Projects management"
 
 	on MaterialProject doubleClicked id do
 	(
-		-- Check for save
+		-- Save current file
+		--if (project_cur_file != "") then
+		--	saveMaxFile project_cur_file
+
 		if (checkForSave ()) == true then
 		(
-			-- Open the max project
-			loadMaxFile (ligo_root_path+ligo_material_prefix+MaterialProject.items[id]+".max")
+			-- Open the new file
+			project_cur_file = substring MaterialProject.items[id] 5 100
+			project_cur_file = ligo_root_path + ligo_material_prefix + project_cur_file + ".max"
+			loadMaxFile (project_cur_file)
+			refresh_list ()
 		)
 	)
 )
@@ -1047,18 +1194,69 @@ group "Check, debug and export"
 group "Projects management"
 	(
 
-	Listbox		TransitionProject		"Transition projects"			height:8 align:#center
-	Label		TransitionName0			"Material 0:"					align:#left
-	EditText	NewTransitionName0		""								width:140 align:#left
-	Label		TransitionName1			"Material 1:"					align:#left
-	EditText	NewTransitionName1		""								width:140 align:#left
-	Button		AddTransition			"Add transition"				width:140 align:#center
+	Listbox			TransitionProject		"Transition projects"			height:8 align:#center
+	Dropdownlist	NewTransitionName0DDL	"Material 0:"					width:140 align:#left
+	Dropdownlist	NewTransitionName1DDL	"Material 1:"					width:140 align:#left
+	Button			AddTransition			"Add transition"				width:140 align:#center
 
+	)
+
+	fn refresh_mat_list =
+	(
+		tmpArray = #()
+		for proj in project_file_list do
+		(
+			tokenArray = filterString (getFilenameFile proj) "-"
+			if (isMaterial proj) then
+				append tmpArray tokenArray[2]
+		)
+		NewTransitionName0DDL.items = tmpArray
+		NewTransitionName1DDL.items = tmpArray
+	)
+
+	fn refresh_list =
+	(
+		tmpArray = #()
+
+		-- Make an array of zonematerial project
+		for curFileName in project_file_list do
+		(
+			if (isTransition curFileName) == true then
+			(
+				-- Get token
+				tokenArray = filterString (getFilenameFile curFileName) "-"
+				curFileDate = getFileModDate curFileName
+
+				-- exported file date
+				expFileDate = ""
+				-- expFileName = ligo_export_path + "zoneLigos\\" + tokenArray[1] + "-" + tokenArray[2] + ligo_zone_ext
+				expFileName = ligo_root_path + ligo_transition_path + tokenArray[2] + "-" + tokenArray[3] + ligo_transition_ext
+
+				if (getFiles expFileName).count != 0 then
+					expFileDate = getFileModDate expFileName
+
+				-- Get token
+				tokenArray = filterString (getFilenameFile curFileName) "-"
+				if (expFileDate != "") and (date_older_or_equal_than curFileDate expFileDate) then
+				(
+					append tmpArray ("[ok]" + tokenArray[2] + "-" + tokenArray[3])
+				)
+				else
+				(
+					append tmpArray ("[..]" + tokenArray[2] + "-" + tokenArray[3])
+				)
+			)
+		)
+
+		TransitionProject.items = tmpArray
 	)
 
 	on ExportTransition pressed do 
 	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
 		export_and_check_and_debug_transition_template CheckOnly.checked Debug.checked
+		refresh_list ()
 	)
 
 	on HideOtherZones pressed do
@@ -1299,29 +1497,39 @@ group "Projects management"
 		AddPainterModToVisible ()
 	)
 
-	fn refresh_list =
-	(
-		-- Array
-		tmpArray = #()
-
-		-- Make an array of material project
-		for proj in project_file_list do
-		(
-			-- Valid name ?
-			if (isTransition proj) == true then
-			(
-				-- Get token
-				tokenArray = filterString (getFilenameFile proj) "-"
-				append tmpArray (tokenArray[2]+"-"+tokenArray[3])
-			)
-		)
-
-		TransitionProject.items = tmpArray
-	)
-
 	on transition_rollout open do
 	(
+		refresh_mat_list ()
 		refresh_list ()
+	)
+
+	fn isValidTransition matName1 matName2 =
+	(
+		if (matName1 == "") or (matName2 == "") then
+			return false
+		if (matName1 == matName2) then
+		(
+			Messagebox ("Choose different names for first and second material.") title:title_msgbox beep:true
+			return false
+		)
+		-- Does the transition already exist ?
+		for i = 1 to 2 do
+		(
+			if (i == 1) then
+				testName = uppercase (matName1 + "-" + matName2)
+			else
+				testName = uppercase (matName2 + "-" + matName1)
+			for trans in TransitionProject.items do
+			(
+				testName2 = uppercase (substring trans 5 100)
+				if (testName == testName2) then
+				(
+					Messagebox ("The transition already exists.") title:title_msgbox beep:true
+					return false
+				)
+			)
+		)
+		return true
 	)
 
 	on AddTransition pressed do
@@ -1330,11 +1538,7 @@ group "Projects management"
 		cellSize = NeLLigoGetCellSize ()
 
 		-- Valid name ?
-		if (NewTransitionName0.text == "") or (NewTransitionName1.text == "") then		
-		(
-			Messagebox ("Choose a the names of your first and second material for the new transition.") title:title_msgbox beep:true
-		)
-		else
+		if (isValidTransition NewTransitionName0DDL.selected NewTransitionName1DDL.selected) == true then
 		(
 			-- Check for save
 			if (checkForSave ()) == true then
@@ -1343,7 +1547,8 @@ group "Projects management"
 				max file new
 
 				-- Project name
-				projectName = ligo_root_path+ligo_transition_prefix+NewTransitionName0.text+"-"+NewTransitionName1.text+".max"
+				projectName = ligo_root_path + ligo_transition_prefix + NewTransitionName0DDL.selected
+				projectName = projectName + "-" + NewTransitionName1DDL.selected + ".max"
 
 				-- Open the project
 				if (loadMaxFile projectName) == false then
@@ -1370,6 +1575,7 @@ group "Projects management"
 					-- Save the max file
 					saveMaxFile projectName
 					loadMaxFile projectName
+					project_cur_file = projectName
 
 					-- Refresh max project
 					refresh_project_list ()
@@ -1385,7 +1591,9 @@ group "Projects management"
 		if (checkForSave ()) == true then
 		(
 			-- Open the max project
-			loadMaxFile (ligo_root_path+ligo_transition_prefix+TransitionProject.items[id]+".max")
+			project_cur_file = substring TransitionProject.items[id] 5 100
+			project_cur_file = ligo_root_path + ligo_transition_prefix + project_cur_file + ".max"
+			loadMaxFile project_cur_file
 		)
 	)
 )
@@ -1407,16 +1615,74 @@ group "Check, debug and export"
 group "Projects management"
 	(
 
-	Listbox		ZoneProject				"Zone projects"			height:8 align:#center
-	Label		ZoneName				"Zone name:"			align:#left
-	EditText	NewZoneName				""						width:140 align:#left
-	Button		AddZone					"Add zone"				width:140 align:#center
+	Dropdownlist	MaterialDDL				"Material"				height:8 align:#center
+	Listbox			ZoneProject				"Zones"					height:8 align:#center
+	Label			ZoneName				"Zone name:"			align:#left
+	EditText		NewZoneName				""						width:140 align:#left
+	Button			AddZone					"Add zone"				width:140 align:#center
 
+	)
+
+	fn refresh_mat_list =
+	(
+		tmpArray = #()
+		for proj in project_file_list do
+		(
+			-- Get token
+			tokenArray = filterString (getFilenameFile proj) "-"
+			if (isMaterial proj) then
+				append tmpArray tokenArray[2]
+		)
+		MaterialDDL.items = tmpArray
+	)
+
+	fn refresh_zone_list currentMaterial =
+	(
+		tmpArray = #()
+
+		-- Make an array of zonematerial project
+		for curFileName in project_file_list do
+		(
+			-- Get token
+			tokenArray = filterString (getFilenameFile curFileName) "-"
+
+			-- Valid name ?
+			if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial") and (tokenArray[2] == currentMaterial) then
+			(
+				curFileDate = getFileModDate curFileName
+
+				-- exported file date
+				expFileDate = ""
+				expFileNameBase = #()
+				if (get_material_and_zone_name_in_zone_project_name curFileName expFileNameBase) == true then
+				(					
+					-- expFileName = ligo_root_path + ligo_zone_path + expFileNameBase[1] + "-" + expFileNameBase[2] + ligo_zone_ext
+					expFileName = ligo_export_path + "zoneLigos\\" + expFileNameBase[1] + "-" + expFileNameBase[2] + ligo_zone_ext
+					if (getFiles expFileName).count != 0 then
+						expFileDate = getFileModDate expFileName
+				)
+
+				-- Get token
+				tokenArray = filterString (getFilenameFile curFileName) "-"
+				if (expFileDate != "") and (date_older_or_equal_than curFileDate expFileDate) then
+				(
+					append tmpArray ("[ok]"+tokenArray[3])
+				)
+				else
+				(
+					append tmpArray ("[..]"+tokenArray[3])
+				)
+			)
+		)
+		ZoneProject.items = tmpArray
 	)
 
 	on ExportZone pressed do 
 	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
 		export_and_check_and_debug_zone CheckOnly.checked Debug.checked
+		refresh_zone_list MaterialDDL.selected
 	)
 
 	on DeleteDebugMarkers pressed do 
@@ -1571,30 +1837,10 @@ group "Projects management"
 		)
 	)
 
-	fn refresh_list =
-	(
-		-- Array
-		tmpArray = #()
-
-		-- Make an array of material project
-		for proj in project_file_list do
-		(
-			-- Get token
-			tokenArray = filterString (getFilenameFile proj) "-"
-
-			-- Valid name ?
-			if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial") then
-			(
-				append tmpArray (tokenArray[2]+"-"+tokenArray[3])
-			)
-		)
-
-		ZoneProject.items = tmpArray
-	)
-
 	on material_zone_rollout open do
 	(
-		refresh_list ()
+		refresh_mat_list ()
+		refresh_zone_list MaterialDDL.selected
 	)
 
 	on AddZone pressed do
@@ -1625,10 +1871,12 @@ group "Projects management"
 						-- Save the max file
 						saveMaxFile projectName
 						loadMaxFile projectName
+						project_cur_file = projectName
 
 						-- Refresh max project
 						refresh_project_list ()
-						refresh_list ()
+						MaterialDDL.selected = materialName
+						refresh_zone_list MaterialDDL.selected
 					)
 				)
 			)
@@ -1645,8 +1893,16 @@ group "Projects management"
 		if (checkForSave ()) == true then
 		(
 			-- Open the max project
-			loadMaxFile (ligo_root_path+ligo_zonematerial_prefix+ZoneProject.items[id]+".max")
+			project_cur_file = MaterialDDL.selected + "-" + (substring ZoneProject.items[id] 5 100)
+			project_cur_file = ligo_root_path + ligo_zonematerial_prefix + project_cur_file + ".max"
+			loadMaxFile project_cur_file
+			refresh_zone_list MaterialDDL.selected
 		)
+	)
+
+	on MaterialDDL selected NewMaterialSelected do
+	(
+		refresh_zone_list MaterialDDL.selected
 	)
 )
 
@@ -1669,16 +1925,70 @@ group "Check, debug and export"
 group "Projects management"
 	(
 
-	Listbox		ZoneProject				"Zone transition projects"		height:8 align:#center
-	Label		ZoneName				"Zone transition name:"			align:#left
-	EditText	NewZoneName				""								width:140 align:#left
-	Button		AddZone					"Add transition zone"			width:140 align:#center
+	Dropdownlist	TransitionDDL			"Transition"					height:8 align:#center
+	Listbox			ZoneProject				"Zone transition projects"		height:8 align:#center
+	Label			ZoneName				"Zone transition name:"			align:#left
+	EditText		NewZoneName				""								width:140 align:#left
+	Button			AddZone					"Add transition zone"			width:140 align:#center
 
+	)
+
+	fn refresh_trans_list =
+	(
+		tmpArray = #()
+		for proj in project_file_list do
+		(
+			-- Get token
+			tokenArray = filterString (getFilenameFile proj) "-"
+			if (isTransition proj) then
+				append tmpArray (tokenArray[2] + "-" + tokenArray[3])
+		)
+		TransitionDDL.items = tmpArray
+	)
+
+	fn refresh_list trans =
+	(
+		tmpArray = #()
+
+		for curFileName in project_file_list do
+		(
+			-- Get token
+			tokenArray = filterString (getFilenameFile curFileName) "-"
+
+			-- Valid name ?
+			if (tokenArray.count == 4) and (tokenArray[1] == "zonetransition") and
+				((tokenArray[2]+"-"+tokenArray[3]) == trans) then
+			(
+				curFileDate = getFileModDate curFileName
+
+				-- exported file date
+				isUpToDate = true
+				for i = 0 to 8 do
+				(
+					expFileDate = ""
+					expFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + "-" + tokenArray[3]
+					expFileName = expFileName + "-" + tokenArray[4] + "-" + (i as string) + ligo_zone_ext
+					if (getFiles expFileName).count != 0 then
+						expFileDate = getFileModDate expFileName
+					if not ((expFileDate != "") and (date_older_or_equal_than curFileDate expFileDate)) then
+						isUpToDate = false
+				)
+				if (isUpToDate == true) then
+					append tmpArray ("[ok]" + tokenArray[4])
+				else
+					append tmpArray ("[..]" + tokenArray[4])
+			)
+		)
+
+		ZoneProject.items = tmpArray
 	)
 
 	on ExportZone pressed do 
 	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
 		export_and_check_and_debug_transition_zone CheckOnly.checked Debug.checked
+		refresh_list TransitionDDL.selected
 	)
 
 	on DeleteDebugMarkers pressed do 
@@ -1852,30 +2162,10 @@ group "Projects management"
 		)
 	)
 
-	fn refresh_list =
-	(
-		-- Array
-		tmpArray = #()
-
-		-- Make an array of material project
-		for proj in project_file_list do
-		(
-			-- Get token
-			tokenArray = filterString (getFilenameFile proj) "-"
-
-			-- Valid name ?
-			if (tokenArray.count == 4) and (tokenArray[1] == "zonetransition") then
-			(
-				append tmpArray (tokenArray[2]+"-"+tokenArray[3]+"-"+tokenArray[4])
-			)
-		)
-
-		ZoneProject.items = tmpArray
-	)
-
 	on transition_zone_rollout open do
 	(
-		refresh_list ()
+		refresh_trans_list ()
+		refresh_list TransitionDDL.selected
 	)
 
 	on AddZone pressed do
@@ -1899,7 +2189,8 @@ group "Projects management"
 				if (checkForSave ()) == true then
 				(
 					-- Project name
-					projectName = ligo_root_path+ligo_zonetransition_prefix+materialName0+"-"+materialName1+"-"+NewZoneName.text+".max"
+					projectName = ligo_root_path + ligo_zonetransition_prefix + materialName0 + "-" 
+					projectName = projectName + materialName1 + "-" + NewZoneName.text + ".max"
 
 					-- Open the project
 					if (loadMaxFile projectName) == false then
@@ -1907,10 +2198,11 @@ group "Projects management"
 						-- Save the max file
 						saveMaxFile projectName
 						loadMaxFile projectName
+						project_cur_file = projectName
 
 						-- Refresh max project
 						refresh_project_list ()
-						refresh_list ()
+						refresh_list TransitionDDL.selected
 					)
 				)
 			)
@@ -1927,8 +2219,15 @@ group "Projects management"
 		if (checkForSave ()) == true then
 		(
 			-- Open the max project
-			loadMaxFile (ligo_root_path+ligo_zonetransition_prefix+ZoneProject.items[id]+".max")
+			project_cur_file = transitionDDL.selected + "-" + (substring ZoneProject.items[id] 5 100)
+			project_cur_file = ligo_root_path + ligo_zonetransition_prefix + project_cur_file + ".max"
+			loadMaxFile project_cur_file
 		)
+	)
+
+	on TransitionDDL selected NewTransitionSelected do
+	(
+		refresh_list TransitionDDL.selected
 	)
 
 	on HideOtherZones pressed do
@@ -2021,9 +2320,12 @@ group "Flags"
 
 rollout options_rollout "Options"
 (
-group "Ligo root directory"
+group "Directories"
 	(
+		Label			LigoPathLabel			"Ligo Root Path"		align:#left
 		EditText		LigoPath				""						width:140 align:#center
+		Label			ExportPathLabel			"Ligo Export Path"		align:#left
+		EditText		LigoExportPath			""						width:140 align:#center		
 		Button 			SetupDirectories		"Setup directories"		width:140 align:#center
 		Button 			ExportOldZonesTga		"Export old zones TGA"	width:140 align:#center
 	)
@@ -2033,7 +2335,7 @@ group "Ligo root directory"
 		makedir ligo_root_path
 		makedir (ligo_root_path+"\\materials")
 		makedir (ligo_root_path+"\\transitions")
-		makedir (ligo_root_path+"\\zones")
+		-- makedir (ligo_root_path+"\\zones")
 	)
 
 	fn findID node =
@@ -2137,9 +2439,19 @@ group "Ligo root directory"
 		setINISetting ((GetDir #plugcfg)+"\\ligo.ini") "LigoConfig" "LigoPath" ligo_root_path
 	)
 
+	on LigoExportPath changed newPath do
+	(
+		ligo_export_path = newPath
+		lastChar = ligo_export_path[ligo_export_path.count]
+		if (lastChar != '\') and (lastChar != '/') then
+			ligo_export_path += "\\"
+		setINISetting ((GetDir #plugcfg)+"\\ligo.ini") "LigoConfig" "LigoExportPath" ligo_export_path
+	)
+
 	on options_rollout open do
 	(
 		LigoPath.text = ligo_root_path
+		LigoExportPath.text = ligo_export_path
 	)
 
 )
@@ -2154,11 +2466,13 @@ if ligoscape_tools_floater != undefined do
 -- Get the ligo path
 ligopath = getINISetting ((GetDir #plugcfg)+"\\ligo.ini") "LigoConfig" "LigoPath" 
 if ligopath != "" then ligo_root_path = ligopath
+ligopath = getINISetting ((GetDir #plugcfg)+"\\ligo.ini") "LigoConfig" "LigoExportPath" 
+if ligopath != "" then ligo_export_path = ligopath
 
 -- Get the project list
 refresh_project_list ()
 
-ligoscape_tools_floater = newRolloutFloater "NeL Ligoscape" 200 600
+ligoscape_tools_floater = newRolloutFloater "NeL Ligoscape" 225 600
 
 addrollout material_rollout ligoscape_tools_floater rolledUp:true
 addrollout transition_rollout ligoscape_tools_floater rolledUp:true

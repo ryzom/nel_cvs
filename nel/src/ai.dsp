@@ -116,10 +116,6 @@ SOURCE=.\ai\agent\agent_script.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\agent\agent_server_mailer.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ai\agent\agents.cpp
 # End Source File
 # Begin Source File
@@ -287,6 +283,10 @@ SOURCE=..\include\nel\ai\agent\object_type.h
 SOURCE=..\include\nel\ai\agent\performative.h
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\ai\agent\agent_proxy_mailer.cpp
+# End Source File
 # End Group
 # Begin Group "common"
 

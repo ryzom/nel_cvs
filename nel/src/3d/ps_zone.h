@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.2 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: ps_zone.h,v 1.3 2001/06/25 13:46:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,7 +168,10 @@ class CPSZonePlane : public CPSZone, public IPSMover
 
 		
 		virtual void setMatrix(uint32 index, const CMatrix &m) ;		
-		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual CMatrix getMatrix(uint32 index) const ;			
+		virtual bool onlyStoreNormal(void) const { return true ; }	
+		virtual CVector getNormal(uint32 index) ;	
+		virtual void setNormal(uint32 index, CVector n) ;
 
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
@@ -268,6 +271,9 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 		virtual CMatrix getMatrix(uint32 index) const ;
 		virtual void setScale(uint32 k, float scale) ;
 		virtual CVector getScale(uint32 k) const ;
+		virtual bool onlyStoreNormal(void) const { return true ; }	
+		virtual CVector getNormal(uint32 index) ;	
+		virtual void setNormal(uint32 index, CVector n) ;
 
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
@@ -366,7 +372,7 @@ class CPSZoneRectangle : public CPSZone, public IPSMover
 
 		// inherited from IPSMover
 		virtual bool supportUniformScaling(void) const { return true ; }		
-		virtual bool supportScaling(void) const { return true ; }
+		virtual bool supportNonUniformScaling(void) const { return true ; }
 		virtual void setMatrix(uint32 index, const CMatrix &m) ;	
 		virtual CMatrix getMatrix(uint32 index) const ;
 		virtual void setScale(uint32 index, float scale) ;	

@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.10 2001/06/18 16:32:39 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.11 2001/06/25 13:46:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,7 +146,7 @@ void CPSZonePlane::show(CAnimationTime)
 		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
 		CMatrix mat = buildBasis(k) ;
 
-		CPSUtil::displayBasis(getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;
+		CPSUtil::displayBasis(getDriver(), getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;
 
 
 		setupDriverModelMatrix() ;
@@ -272,11 +272,19 @@ void CPSZonePlane::setMatrix(uint32 index, const CMatrix &m)
 	_Owner->getPos()[index] = m.getPos() ;	
 }
 
-
-
 CMatrix CPSZonePlane::getMatrix(uint32 index) const
 {
 	return buildBasis(index) ;
+}
+
+
+CVector CPSZonePlane::getNormal(uint32 index)
+{
+	return _Normal[index] ;
+}
+void CPSZonePlane::setNormal(uint32 index, CVector n)
+{
+	_Normal[index] = n ;
 }
 
 
@@ -610,7 +618,7 @@ void CPSZoneDisc::show(CAnimationTime ellapsedTime)
 		CPSUtil::displayDisc(*getDriver(), radiusIt->R, *posIt, mat, 32, col) ;
 
 		mat.setPos(*posIt) ;
-		CPSUtil::displayBasis(getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
+		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
 		setupDriverModelMatrix() ;			
 	}	
 }
@@ -622,17 +630,12 @@ void CPSZoneDisc::show(CAnimationTime ellapsedTime)
 
 void CPSZoneDisc::setMatrix(uint32 index, const CMatrix &m)
 {
-	nlassert(index < _Radius.getSize()) ;
-	
+	nlassert(index < _Radius.getSize()) ;	
 	// compute new pos
 	_Owner->getPos()[index] = m.getPos() ;
-	
-
 	// compute new normal
 	_Normal[index] = m.getK() ;
 }
-
-
 
 CMatrix CPSZoneDisc::getMatrix(uint32 index) const
 {
@@ -640,6 +643,15 @@ CMatrix CPSZoneDisc::getMatrix(uint32 index) const
 	m.translate(_Owner->getPos()[index]) ;		
 	m = m * CPSUtil::buildSchmidtBasis(_Normal[index]) ;
 	return m ;	
+}
+
+CVector CPSZoneDisc::getNormal(uint32 index)
+{
+	return _Normal[index] ;
+}
+void CPSZoneDisc::setNormal(uint32 index, CVector n)
+{
+	_Normal[index] = n ;
 }
 
 void CPSZoneDisc::setScale(uint32 k, float scale)
@@ -1144,7 +1156,7 @@ void CPSZoneCylinder::show(CAnimationTime ellapsedTime)
 		CPSUtil::displayCylinder(*getDriver(), *posIt, mat, *dimIt, 32, col) ; 
 
 		mat.setPos(*posIt) ;
-		CPSUtil::displayBasis(getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
+		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
 		setupDriverModelMatrix() ;	
 	
 	}
@@ -1334,7 +1346,7 @@ void CPSZoneRectangle::show(CAnimationTime ellapsedTime)
 		const CVector &J = _Basis[k].Y ;
 		mat.setRot(I, J , I ^J) ;
 		mat.setPos(_Owner->getPos()[k]) ;
-		CPSUtil::displayBasis(getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
+		CPSUtil::displayBasis(getDriver() ,getLocatedMat(), mat, 1.f, *getFontGenerator(), *getFontManager()) ;				
 		setupDriverModelMatrix() ;	
 
 		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;

@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.4 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: material.h,v 1.5 2001/10/26 08:16:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ const uint32 IDRV_TOUCHED_DOUBLE_SIDED	=	0x00000200;
 const uint32 IDRV_TOUCHED_LIGHTMAP		=	0x00000400;
 const uint32 IDRV_TOUCHED_ALPHA_TEST	=	0x00000800;
 
+
 // Start texture touch at 0x10000.
 const uint32 IDRV_TOUCHED_TEX[IDRV_MAT_MAXTEXTURES]		=
 	{0x00010000, 0x00020000, 0x00040000, 0x00080000};
@@ -72,6 +73,7 @@ const uint32 IDRV_MAT_DEFMAT		=	0x00000040;
 const uint32 IDRV_MAT_BLEND			=	0x00000080;
 const uint32 IDRV_MAT_DOUBLE_SIDED	=	0x00000100;
 const uint32 IDRV_MAT_ALPHA_TEST	= 	0x00000200;
+const uint32 IDRV_MAT_TEX_ADDR	    = 	0x00000400;
 
 // ***************************************************************************
 /**
@@ -139,6 +141,24 @@ public:
 	enum TTexOperand		{ SrcColor=0, InvSrcColor, SrcAlpha, InvSrcAlpha };
 	// @}
 
+	/** \name Texture Addressing Modes. They are valid only with the normal texture shader. 
+	  *	All modes are not supported everywhere, so you should check for it in the driver.
+	  * The modes are similar to those introduced with DirectX 8.0 Pixel Shaders and OpenGL
+	  * TEXTURE_SHADERS_NV
+	  */
+	// @{
+	enum TTexAddressingMode { 
+							 None = 0, FetchTexture, PassThrough, CullFragment,
+							 OffsetTexture, OffsetTextureScale, 
+							 DependentARTexture, DependentGBTexture,
+							 DP3, DP3Texture2D,
+							 DP3CubeMap, DP3ReflectCubeMap, DP3ConstEyeReflectCubeMap,
+							 DP3DiffuseCubeMap,
+							 DP3DepthReplace,
+							 TexAddrCount
+							};
+	// @}
+
 
 public:
 	/// \name Object.
@@ -188,6 +208,30 @@ public:
 	bool					getBlend() const { return (_Flags&IDRV_MAT_BLEND)!=0; }
 	TBlend					getSrcBlend(void)  const { return(_SrcBlend); }
 	TBlend					getDstBlend(void)  const { return(_DstBlend); }
+	// @}
+
+
+	/// \name Texture Addressing Mode Method
+	// @{		
+	/** enable / disable the use of special texture addressing modes
+	  * When enabled, all texture addressing modes are set to 'None'
+	  */
+	void					enableTexAddrMode(bool enable = true);
+
+	/// test whether texture addressing mode are enabled
+	bool					texAddrEnabled() const;
+
+	/** Set a texture addressing mode for the given stage. 
+	  * You should test if this mode is supported in the driver you plane to use.
+	  * Texture addressing modes should have been enabled otherwise an assertion is raised
+	  */
+	void					setTexAddressingMode(uint8 stage, TTexAddressingMode mode);
+
+	/// Get the texture addressing mode for the given stage
+	TTexAddressingMode		getTexAddressingMode(uint8 stage);			
+	// @}
+
+
 	// @}
 
 
@@ -420,6 +464,7 @@ private:
 
 public:
 	// Private. For Driver only.
+	uint8				    _TexAddrMode[IDRV_MAT_MAXTEXTURES]; // texture addressing enum packed as bytes
 	CTexEnv					_TexEnvs[IDRV_MAT_MAXTEXTURES];
 	CRefPtr<IShader>		pShader;
 

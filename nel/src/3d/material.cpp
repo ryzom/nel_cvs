@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.24 2001/09/18 08:33:43 berenguier Exp $
+ * $Id: material.cpp,v 1.25 2001/10/26 08:16:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,8 @@ CMaterial::~CMaterial()
 void		CMaterial::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 4:
+		- Texture Addressing modes
 	Version 3:
 		- LightMaps.
 	Version 2:
@@ -177,6 +179,17 @@ void		CMaterial::serial(NLMISC::IStream &f)
 	if(ver>=3)
 	{
 		f.serialCont(_LightMaps);
+	}
+
+	if (ver >= 4)
+	{
+		if (_Flags & IDRV_MAT_TEX_ADDR)
+		{
+			for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+			{
+				f.serial(_TexAddrMode[i]);
+			}
+		}
 	}
 
 	if(f.isReading())
@@ -337,6 +350,47 @@ void			CMaterial::CLightMap::serial(NLMISC::IStream &f)
 	}
 }
 
+
+
+// ***************************************************************************
+void				CMaterial::enableTexAddrMode(bool enable /*= true*/)
+{
+	if (enable)
+	{
+		if (!(_Flags & IDRV_MAT_TEX_ADDR))
+		{
+			_Flags |= IDRV_MAT_TEX_ADDR;
+			for (sint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+			{
+				_TexAddrMode[k] = (uint8) FetchTexture;
+			}			
+		}
+		else
+		{
+			_Flags &= ~IDRV_MAT_TEX_ADDR;			
+		}
+	}
+}
+
+bool			    CMaterial::texAddrEnabled() const
+{
+	return _Flags & IDRV_MAT_TEX_ADDR != 0;
+}
+
+
+void				CMaterial::setTexAddressingMode(uint8 stage, TTexAddressingMode mode)
+{
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	nlassert(mode < TexAddrCount);
+	_TexAddrMode[stage] = (uint8) mode;	
+}
+
+
+CMaterial::TTexAddressingMode	CMaterial::getTexAddressingMode(uint8 stage)
+{
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	return (TTexAddressingMode) _TexAddrMode[stage];
+}
 
 }
 

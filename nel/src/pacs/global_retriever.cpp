@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.21 2001/06/06 09:42:43 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.22 2001/06/06 14:43:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,29 +80,61 @@ void	NLPACS::CGlobalRetriever::makeLinks(uint n)
 	// links nth instance with its leftmost neighbor.
 	if (x > 0 && _Instances[n].getInstanceId() >= 0 && _Instances[n-1].getInstanceId() >= 0)
 	{
-		_Instances[n].link(_Instances[n-1], 0, _RetrieverBank->getRetrievers());
-		_Instances[n-1].link(_Instances[n], 2, _RetrieverBank->getRetrievers());
+		try
+		{
+			_Instances[n].link(_Instances[n-1], 0, _RetrieverBank->getRetrievers());
+			_Instances[n-1].link(_Instances[n], 2, _RetrieverBank->getRetrievers());
+		}
+		catch (Exception &e)
+		{
+			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
+			nlwarning("caught an exception: %s", e.what());
+		}
 	}
 
 	// links nth instance with its downmost neighbor.
 	if (y < (uint)(_Height-1) && _Instances[n].getInstanceId() >= 0 && _Instances[n+_Width].getInstanceId() >= 0)
 	{
-		_Instances[n].link(_Instances[n+_Width], 1, _RetrieverBank->getRetrievers());
-		_Instances[n+_Width].link(_Instances[n], 3, _RetrieverBank->getRetrievers());
+		try
+		{
+			_Instances[n].link(_Instances[n+_Width], 1, _RetrieverBank->getRetrievers());
+			_Instances[n+_Width].link(_Instances[n], 3, _RetrieverBank->getRetrievers());
+		}
+		catch (Exception &e)
+		{
+			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
+			nlwarning("caught an exception: %s", e.what());
+		}
 	}
 
 	// links nth instance with its rightmost neighbor.
 	if (x < (uint)(_Width-1) && _Instances[n].getInstanceId() >= 0 && _Instances[n+1].getInstanceId() >= 0)
 	{
-		_Instances[n].link(_Instances[n+1], 2, _RetrieverBank->getRetrievers());
-		_Instances[n+1].link(_Instances[n], 0, _RetrieverBank->getRetrievers());
+		try
+		{
+			_Instances[n].link(_Instances[n+1], 2, _RetrieverBank->getRetrievers());
+			_Instances[n+1].link(_Instances[n], 0, _RetrieverBank->getRetrievers());
+		}
+		catch (Exception &e)
+		{
+			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
+			nlwarning("caught an exception: %s", e.what());
+		}
 	}
 
 	// links nth instance with its uppermost neighbor.
 	if (y > 0 && _Instances[n].getInstanceId() >= 0 && _Instances[n-_Width].getInstanceId() >= 0)
 	{
-		_Instances[n].link(_Instances[n-_Width], 3, _RetrieverBank->getRetrievers());
-		_Instances[n-_Width].link(_Instances[n], 1, _RetrieverBank->getRetrievers());
+		try
+		{
+			_Instances[n].link(_Instances[n-_Width], 3, _RetrieverBank->getRetrievers());
+			_Instances[n-_Width].link(_Instances[n], 1, _RetrieverBank->getRetrievers());
+		}
+		catch (Exception &e)
+		{
+			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
+			nlwarning("caught an exception: %s", e.what());
+		}
 	}
 }
 
@@ -1264,11 +1296,20 @@ void	NLPACS::CGlobalRetriever::testRotCollisionWithCollisionChains(CCollisionSur
 
 // ***************************************************************************
 
-NLPACS::UGlobalRetriever *NLPACS::UGlobalRetriever::createGlobalRetriever (const char *globalRetriver, const char *retriverBank)
+NLPACS::UGlobalRetriever *NLPACS::UGlobalRetriever::createGlobalRetriever (const char *globalRetriever, const NLPACS::URetrieverBank *retrieverBank)
 {
-	// TODO: create a global retriever
-	// return new CGlobalRetriever (...);
-	return NULL;
+	// Cast
+//	nlassert (dynamic_cast<const NLPACS::CRetrieverBank*>(retrieverBank));
+	const NLPACS::CRetrieverBank*	bank=static_cast<const NLPACS::CRetrieverBank*>(retrieverBank);
+
+	CIFile	file;
+	file.open(globalRetriever);
+	CGlobalRetriever	*retriever = new CGlobalRetriever();
+	file.serial(*retriever);
+
+	retriever->setRetrieverBank(bank);
+
+	return static_cast<UGlobalRetriever *>(retriever);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file progress_callback.cpp
  * <File description>
  *
- * $Id: progress_callback.cpp,v 1.2 2002/12/18 10:56:34 coutelas Exp $
+ * $Id: progress_callback.cpp,v 1.3 2002/12/18 11:13:53 coutelas Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -59,4 +59,4 @@ void IProgressCallback::progress (float progressValue)
 {
 }
 
-// NLMISC
+} // NLMISC

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.79 2003/04/18 15:57:27 legros Exp $
+ * $Id: global_retriever.cpp,v 1.80 2003/05/07 11:58:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1788,6 +1788,7 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 				cst.MoveDescs.push_back(CMoveSurfaceDesc(t, colChain.LeftSurface, colChain.RightSurface));
 				cst.MoveDescs.back().ExteriorEdge = colChain.ExteriorEdge;
 				cst.MoveDescs.back().ChainId = (uint16)colChain.ChainId;
+				cst.MoveDescs.back().MovementSens= colEdge.Norm*(endCol-startCol)>=0;
 			}
 
 			// next edge.
@@ -1815,6 +1816,11 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 			if (msd.ExteriorEdge && msd.LeftSurface.RetrieverInstanceId != -1)
 			{
 				bool	enterInterior = (currentSurface.RetrieverInstanceId == msd.RightSurface.RetrieverInstanceId);
+
+				// msd.MovementSens is true if we "geometrically" leave the interior.
+				// If logic and geometric disagree, discard
+				if(enterInterior == msd.MovementSens)
+					continue;
 
 				uint	j;
 				sint32	cmp = (msd.LeftSurface.RetrieverInstanceId<<16) + msd.ChainId;

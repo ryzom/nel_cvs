@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.8 2003/01/30 17:56:43 legros Exp $
+ * $Id: collision_surface_temp.h,v 1.9 2003/05/07 11:58:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,6 +170,9 @@ public:
 
 	/// Is it an interface between exterior and interior
 	bool				ExteriorEdge;
+
+	/// true if Dot product between EdgeCollide Norm and Movement is >=0.
+	bool				MovementSens;
 
 	/// Chain Id of the exterior edge
 	uint16				ChainId;

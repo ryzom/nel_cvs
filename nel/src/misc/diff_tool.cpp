@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.6 2004/03/05 16:39:56 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.7 2004/03/19 18:15:07 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -705,7 +705,7 @@ bool readExcelSheet(const ucstring &str, TWorksheet &worksheet, bool checkUnique
 		/// append last cell
 		worksheet.setData(startLine + i, numCells, cell);
 		numCells++;
-		nlassert(numCells<=newColCount);
+		nlassertex(numCells<=newColCount, ("readExcelSheet: bad row format: at line %u, the row has %u cell, max is %u", i, numCells, newColCount));
 //		nldebug("Found %u cells in line %u", numCells, i);
 	}
 	

@@ -1,6 +1,6 @@
 /** \file diff_tool.h
  *
- * $Id: diff_tool.h,v 1.4 2004/03/15 16:34:33 cado Exp $
+ * $Id: diff_tool.h,v 1.5 2004/03/19 18:14:45 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -170,7 +170,7 @@ namespace STRING_MANAGER
 
 		void eraseColumn(uint colIndex)
 		{
-			nlassert(colIndex < ColCount);
+			nlassertex(colIndex < ColCount, ("TWorksheet::eraseColumn : bad column index: colIndex(%u) is not less than ColCount(%u)", colIndex, ColCount));
 
 			for (uint i=0; i<Data.size(); ++i)
 			{
@@ -225,8 +225,8 @@ namespace STRING_MANAGER
 
 		void insertRow(uint rowIndex, const TRow &row)
 		{
-			nlassert(rowIndex <= Data.size());
-			nlassert(row.size() == ColCount);
+			nlassertex(rowIndex <= Data.size(), ("TWorksheet::insertRow: bad row index: rowIndex(%u) is out of range (max=%u)", rowIndex, Data.size()-1));
+			nlassertex(row.size() == ColCount, ("TWorksheet::insertRow: bad column count : inserted row size(%u) is invalid (must be %u)", row.size(), ColCount));
 
 			Data.insert(Data.begin()+rowIndex, row);
 		}
@@ -243,7 +243,7 @@ namespace STRING_MANAGER
 
 		bool findRow(uint colIndex, const ucstring &colValue, uint &rowIndex)
 		{
-			nlassert(colIndex < ColCount);
+			nlassertex(colIndex < ColCount, ("TWorksheet::findRow: bad column index: colIndex(%u) is not less than ColCount(%u)", colIndex, ColCount));
 
 			TData::iterator first(Data.begin()), last(Data.end());
 
@@ -261,33 +261,35 @@ namespace STRING_MANAGER
 
 		void setData(uint rowIndex, uint colIndex, const ucstring &value)
 		{
-			nlassert(rowIndex < Data.size());
-			nlassert(colIndex < ColCount);
+			nlassertex(rowIndex < Data.size(), ("TWorksheet::setData: bad row index: rowIndex(%u) is out of range (max=%u)", rowIndex, Data.size()));
+			nlassertex(colIndex < ColCount, ("TWorksheet::setData: bad column index: colIndex(%u) is not less than ColCount(%u)", colIndex, ColCount));
 
 			Data[rowIndex][colIndex] = value;
 		}
 
 		const ucstring &getData(uint rowIndex, uint colIndex) const
 		{
-			nlassert(rowIndex < Data.size());
-			nlassert(colIndex < ColCount);
+			nlassertex(rowIndex < Data.size(), ("TWorksheet::getData: bad row index: rowIndex(%u) is out of range (max=%u)", rowIndex, Data.size()));
+			nlassertex(colIndex < ColCount, ("TWorksheet::getData: bad column index: colIndex(%u) is not less than ColCount(%u)", colIndex, ColCount));
 
 			return Data[rowIndex][colIndex];
 		}
 
 		void setData(uint rowIndex, const ucstring &colName, const ucstring &value)
 		{
-			nlassert(rowIndex > 0 && rowIndex < Data.size());
+			nlassertex(rowIndex > 0, ("TWorksheet::setData: rowIndex(%u) must be greater then 0 !", rowIndex));
+			nlassertex(rowIndex < Data.size(), ("TWorksheet::setData: rowIndex(%u) is out of range (max=%u)", rowIndex, Data.size()));
 			TWorksheet::TRow::iterator it = std::find(Data[0].begin(), Data[0].end(), ucstring(colName));
-			nlassert(it != Data[0].end());
+			nlassertex(it != Data[0].end(), ("TWorksheet::setData: invalid colName: can't find the column named '%s' at row %u", colName.toString().c_str(), rowIndex));
 
 			Data[rowIndex][it - Data[0].begin()] = value;
 		}
 		const ucstring &getData(uint rowIndex, const ucstring &colName) const
 		{
-			nlassert(rowIndex > 0 && rowIndex < Data.size());
+			nlassertex(rowIndex > 0, ("TWorksheet::getData: bad row index: rowIndex(%u) must be greater then 0 !", rowIndex));
+			nlassertex(rowIndex < Data.size(), ("TWorksheet::getData: bad row index: rowIndex(%u) is out of range (max=%u)", rowIndex, Data.size()));
 			TWorksheet::TRow::const_iterator it = std::find(Data[0].begin(), Data[0].end(), ucstring(colName));
-			nlassert(it != Data[0].end());
+			nlassertex(it != Data[0].end(), ("TWorksheet::getData: invalid colName: can't find the column named '%s' at row %u", colName.toString().c_str(), rowIndex));
 
 			return Data[rowIndex][it - Data[0].begin()];
 		}

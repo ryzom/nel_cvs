@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.3 2001/07/25 14:25:24 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.4 2001/08/16 17:05:56 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "3d/particle_system_instance_user.h"
 #include "3d/particle_system.h"
+#include "3d/ps_emitter.h"
 
 
 namespace NL3D {
@@ -131,6 +132,41 @@ UInstanceMaterial	&CParticleSystemInstanceUser::getMaterial(uint materialId)
 }
 
 
+static inline uint32 IDToLittleEndian(uint32 input)
+{
+	#ifdef NL_LITTLE_ENDIAN
+		return input;
+	#else
+		return ((input & (0xff<<24))>>24)
+				|| ((input & (0xff<<16))>>8)
+				|| ((input & (0xff<<8))<<8)
+				|| ((input & 0xff)<<24);
+	#endif
+}
+
+void	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
+{
+
+	const uint32 id = IDToLittleEndian(anId);
+	nlassert(isSystemPresent());
+	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
+	uint numLb  = ps->getNumLocatedBindableByExternID(id);
+	nlassert(numLb != 0); // INVALID ID !!
+	for (uint k = 0; k < numLb; ++k)
+	{
+		CPSLocatedBindable *lb = ps->getLocatedBindableByExternID(id, k);		
+		if (lb->getType() == PSEmitter)
+		{
+			CPSEmitter *e = NLMISC::safe_cast<CPSEmitter *>(lb);
+			nlassert(e->getOwner());
+			uint nbInstances = e->getOwner()->getSize();
+			for (uint l = 0; l < nbInstances; ++l)
+			{
+				e->singleEmit(l, quantity);
+			}
+		}
+	}
+}
 
 
 

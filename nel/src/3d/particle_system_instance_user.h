@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.3 2001/08/06 10:23:27 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.4 2001/08/16 17:05:56 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -62,6 +62,9 @@ public:
 		virtual	UInstanceMaterial	&getMaterial(uint materialId) ;
 	// @}
 
+	// \name inherited from UParticleSystemInstance
+	// @{
+		virtual void		emit(uint32 id, uint quantity);
 		virtual bool		isSystemPresent		(void) const ;		
 		virtual bool		getSystemBBox(NLMISC::CAABBox &bbox) ;
 		virtual void		setUserParam		(uint index, float value) ;

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.70 2003/03/31 11:55:52 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.71 2003/04/07 12:36:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2114,9 +2114,7 @@ void CDriverGL::setupWaterPass(uint pass)
 	if (ATIWaterShaderHandleNoDiffuseMap)	
 	{
 		setupWaterPassR200(mat);
-	}
-	
-	// else TODO : simpler shader
+	}	
 	
 }
 
@@ -2133,7 +2131,7 @@ void CDriverGL::endWaterMultiPass()
 	else
 	if (ATIWaterShaderHandleNoDiffuseMap)	
 	{
-		glDisable(GL_FRAGMENT_SHADER_ATI);
+		glDisable(GL_FRAGMENT_SHADER_ATI);						
 	}
 	/** for the NV20 nothing else to clean (uses only CMaterial standard features, including texture shaders ..)
 	  */

@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.3 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: object_vector.h,v 1.4 2003/04/18 13:13:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,6 +163,10 @@ public:
 
 	/// \name Accessor
 	// @{
+
+	/** return true if the container is empty
+	 */
+	bool		empty() const {return _Size==0;}
 
 	/** return size of the array (in number of elements)
 	 */

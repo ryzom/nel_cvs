@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * <File description>
  *
- * $Id: ps_mesh.h,v 1.5 2002/01/16 14:00:14 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.6 2002/01/23 09:32:57 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/vertex_buffer.h"
 #include "3d/material.h"
 #include "3d/primitive_block.h"
+#include "3d/shape.h"
 
 
 
@@ -54,7 +55,6 @@ namespace NL3D {
 class CPSLocated;
 class CTransformShape;
 class CShapeBank;
-class IShape;
 class CMesh;
 
 

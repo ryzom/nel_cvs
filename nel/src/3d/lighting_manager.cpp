@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.13 2003/11/07 14:27:14 besson Exp $
+ * $Id: lighting_manager.cpp,v 1.14 2003/11/13 14:22:31 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ namespace NL3D {
 /* LightQuadGrid setup. This is the same setup for StaticLightedModelQuadGrid setup.
 	NB: with this setup, a light will lies into 4*4=16 squares of a quadGrid at max.
 */
-#define	NL3D_LIGHT_QUAD_GRID_SIZE				256
+#define	NL3D_LIGHT_QUAD_GRID_SIZE				128
 #define	NL3D_LIGHT_QUAD_GRID_ELTSIZE			10.f
 #define	NL3D_LIGHT_QUAD_GRID_RADIUS_LIMIT		20.f
 // Factor for a level to the next: size/=factor, eltSize*=factor, and radiusLimit*=factor.

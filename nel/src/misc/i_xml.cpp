@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.14 2003/05/16 17:44:59 lecroart Exp $
+ * $Id: i_xml.cpp,v 1.15 2003/05/16 17:46:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -459,7 +459,8 @@ void CIXml::serial(bool &b)
 
 void CIXml::serialBit(bool &bit)
 {
-	serial( u );
+	uint8 u;
+	serial (u);
 	bit = (u!=0);
 }
 

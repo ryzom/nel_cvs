@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.10 2001/08/09 12:08:44 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.11 2001/08/09 15:21:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,7 +170,10 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 			_MeshVector[k].EndPolygonCount=_MeshVector[k+1].MeshGeom->getNumTriangles (endDist);
 
 		// Calc A
-		_MeshVector[k].A=(_MeshVector[k].EndPolygonCount-startPolyCount)/(endDist-startDist);
+		if (endDist==startDist)
+			_MeshVector[k].A=0;
+		else
+			_MeshVector[k].A=(_MeshVector[k].EndPolygonCount-startPolyCount)/(endDist-startDist);
 
 		// Calc A
 		_MeshVector[k].B=_MeshVector[k].EndPolygonCount-_MeshVector[k].A*endDist;

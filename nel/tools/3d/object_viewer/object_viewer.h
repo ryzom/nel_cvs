@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.16 2001/07/24 09:04:57 vizerie Exp $
+ * $Id: object_viewer.h,v 1.17 2001/08/09 15:21:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,6 +227,7 @@ private:
 	NLMISC::CRGBA								_HotSpotColor;
 	float										_HotSpotSize;
 	NLMISC::CRGBA								_BackGroundColor;
+	NLMISC::CVector								_SceneCenter;
 
 	// Font mgt
 	NL3D::CFontManager							_FontManager;

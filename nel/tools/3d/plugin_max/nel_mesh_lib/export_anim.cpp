@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.12 2001/08/09 08:09:23 vizerie Exp $
+ * $Id: export_anim.cpp,v 1.13 2001/08/09 15:21:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,14 @@ void CExportNel::addParticleSystemTracks(CAnimation& animation, INode& node, con
 			if (pTrack)
 			{
 				std::string name=parentName+std::string (NL3D::CParticleSystemModel::getPSParamName((uint) NL3D::CParticleSystemModel::PSParam0 + k));
-				animation.addTrack (name.c_str(), pTrack);
+				if (animation.getTrackByName (name.c_str()))
+				{
+					delete pTrack;
+				}
+				else
+				{
+					animation.addTrack (name.c_str(), pTrack);
+				}
 			}
 		}	
 	}
@@ -142,7 +149,15 @@ void CExportNel::addParticleSystemTracks(CAnimation& animation, INode& node, con
 	if (ctrl)
 	{
 		ITrack *pTrack = buildOnOffTrack(*ctrl);
-		animation.addTrack(parentName+std::string("PSTrigger"), pTrack);
+		std::string name=parentName+std::string("PSTrigger");
+		if (animation.getTrackByName (name.c_str()))
+		{
+			delete pTrack;
+		}
+		else
+		{
+			animation.addTrack(name, pTrack);
+		}
 	}
 }
 
@@ -179,7 +194,14 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			if (pTrack)
 			{
 				name=parentName+std::string (ITransformable::getScaleValueName());
-				animation.addTrack (name.c_str(), pTrack);
+				if (animation.getTrackByName (name.c_str()))
+				{
+					delete pTrack;
+				}
+				else
+				{
+					animation.addTrack (name.c_str(), pTrack);
+				}
 			}
 		}
 
@@ -194,7 +216,14 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			if (pTrack)
 			{
 				name=parentName+std::string (ITransformable::getRotQuatValueName());
-				animation.addTrack (name.c_str(), pTrack);
+				if (animation.getTrackByName (name.c_str()))
+				{
+					delete pTrack;
+				}
+				else
+				{
+					animation.addTrack (name.c_str(), pTrack);
+				}
 			}
 		}
 
@@ -209,7 +238,14 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			if (pTrack)
 			{
 				name=parentName+std::string (ITransformable::getPosValueName());
-				animation.addTrack (name.c_str(), pTrack);
+				if (animation.getTrackByName (name.c_str()))
+				{
+					delete pTrack;
+				}
+				else
+				{
+					animation.addTrack (name.c_str(), pTrack);
+				}
 			}
 		}
 		else
@@ -219,7 +255,14 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			if (pTrack)
 			{
 				name=parentName+std::string (ITransformable::getPosValueName());
-				animation.addTrack (name.c_str(), pTrack);
+				if (animation.getTrackByName (name.c_str()))
+				{
+					delete pTrack;
+				}
+				else
+				{
+					animation.addTrack (name.c_str(), pTrack);
+				}
 			}
 		}
 
@@ -234,7 +277,14 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			if (pTrack)
 			{
 				name=parentName+std::string (CCamera::getRollValueName());
-				animation.addTrack (name.c_str(), pTrack);
+				if (animation.getTrackByName (name.c_str()))
+				{
+					delete pTrack;
+				}
+				else
+				{
+					animation.addTrack (name.c_str(), pTrack);
+				}
 			}
 		}
 	}
@@ -394,7 +444,14 @@ void CExportNel::addLightTracks (NL3D::CAnimation& animation, INode& node, const
 				ITrack *pTrack=buildATrack (animation, *c, typeColor, node, desc, ip, NULL, NULL);
 				if (pTrack)
 				{
-					animation.addTrack (name.c_str(), pTrack);
+					if (animation.getTrackByName (name.c_str()))
+					{
+						delete pTrack;
+					}
+					else
+					{
+						animation.addTrack (name.c_str(), pTrack);
+					}
 				}
 			}
 		}
@@ -436,7 +493,14 @@ void CExportNel::addMtlTracks (CAnimation& animation, Mtl& mtl, const char* pare
 		{
 			// Add it in the animation
 			name=mtlName+std::string (CAnimatedMaterial::getAmbientValueName());
-			animation.addTrack (name.c_str(), pTrack);
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
 		}
 	}
 
@@ -453,7 +517,14 @@ void CExportNel::addMtlTracks (CAnimation& animation, Mtl& mtl, const char* pare
 		{
 			// Add it in the animation
 			name=mtlName+std::string (CAnimatedMaterial::getDiffuseValueName());
-			animation.addTrack (name.c_str(), pTrack);
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
 		}
 	}
 
@@ -472,7 +543,14 @@ void CExportNel::addMtlTracks (CAnimation& animation, Mtl& mtl, const char* pare
 		{
 			// Add it in the animation
 			name=mtlName+std::string (CAnimatedMaterial::getSpecularValueName());
-			animation.addTrack (name.c_str(), pTrack);
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
 		}
 	}
 
@@ -489,7 +567,14 @@ void CExportNel::addMtlTracks (CAnimation& animation, Mtl& mtl, const char* pare
 		{
 			// Add it in the animation
 			name=mtlName+std::string (CAnimatedMaterial::getEmissiveValueName());
-			animation.addTrack (name.c_str(), pTrack);
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
 		}
 	}
      
@@ -506,7 +591,14 @@ void CExportNel::addMtlTracks (CAnimation& animation, Mtl& mtl, const char* pare
 		{
 			// Add it in the animation
 			name=mtlName+std::string (CAnimatedMaterial::getOpacityValueName());
-			animation.addTrack (name.c_str(), pTrack);
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
 		}
 	}
 

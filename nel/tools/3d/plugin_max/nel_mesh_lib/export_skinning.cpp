@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.6 2001/07/09 17:17:06 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.7 2001/08/09 15:21:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,8 @@ public:
 
 // ***************************************************************************
 
-void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node, mapBoneBindPos* mapBindPos, TimeValue time)
+void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node, mapBoneBindPos* mapBindPos, TInodePtrInt& mapId, 
+									 TimeValue time)
 {
 	// Build a bone vector
 	std::vector<CBoneBase> bonesArray;
@@ -92,8 +93,11 @@ void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node,
 	// Counter
 	sint32 idCount=0;
 
+	// Set for node name
+	std::set<std::string> nameSet;
+
 	// Parse the tree
-	buildSkeleton (bonesArray, node, mapBindPos, time, idCount);
+	buildSkeleton (bonesArray, node, mapBindPos, mapId, nameSet, time, idCount);
 
 	// Then build the object
 	skeletonShape.build (bonesArray);
@@ -101,7 +105,8 @@ void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node,
 
 // ***************************************************************************
 
-void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, TimeValue time, sint32& idCount, sint32 father)
+void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, TInodePtrInt& mapId, 
+								std::set<std::string> &nameSet, TimeValue time, sint32& idCount, sint32 father)
 {
 	// **** Save the current the id
 	int id=idCount;
@@ -114,14 +119,21 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 	// Bone name
 	bone.Name=getName (node);
 
+	// Inserted ?
+	if (!nameSet.insert (bone.Name).second)
+		bone.Name+="_Second";
+
 	// Id of the father
 	bone.FatherId=father;
+
+	// Insert id with name
+	mapId.insert (TInodePtrInt::value_type(&node, id));
 
 	// ** Set inherit flags
 
 	// Get the TM controler
 	Control *c;
-    c = node.GetTMController();
+	c = node.GetTMController();
 
 	// If a TM controler existd
 	if (c)
@@ -151,7 +163,7 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 	bone.DefaultRotEuler=CVector (0,0,0);
 	bone.DefaultPos=nelPos;
 
-	// Get node bindpos matrix
+		// Get node bindpos matrix
 	Matrix3 worldTM;
 	bool matrixComputed=false;
 	if (mapBindPos)
@@ -185,7 +197,7 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 
 	// **** Call on child
 	for (int children=0; children<node.NumberOfChildren(); children++)
-		buildSkeleton (bonesArray, *node.GetChildNode(children), mapBindPos, time, ++idCount, id);
+		buildSkeleton (bonesArray, *node.GetChildNode(children), mapBindPos, mapId, nameSet, time, ++idCount, id);
 }
 
 // ***************************************************************************
@@ -258,7 +270,7 @@ bool CExportNel::isSkin (INode& node)
 
 // ***************************************************************************
 
-uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const CSkeletonShape& skeletonShape, INode& node)
+uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const TInodePtrInt& skeletonShape, INode& node)
 {
 	// Return success
 	uint ok=NoError;
@@ -369,12 +381,12 @@ uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const CSkeletonSha
 							{
 								// Previous value
 								ite--;
-
-								// Get the bone name
-								std::string name=getName (*comSkinInterface->GetBone(ite->second));
 								
 								// Get the bones ID
-								sint32 matrixId=skeletonShape.getBoneIdByName (name);
+								sint32 matrixId=-1;
+								TInodePtrInt::const_iterator itId=skeletonShape.find (comSkinInterface->GetBone(ite->second));
+								if (itId!=skeletonShape.end())
+									matrixId=itId->second;
 
 								// Find the bone ?
 								if (matrixId==-1)
@@ -563,11 +575,11 @@ uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const CSkeletonSha
 								// Previous value
 								ite--;
 
-								// Get the bone name
-								std::string name=getName (*ite->second);
-								
 								// Get the bones ID
-								sint32 matrixId=skeletonShape.getBoneIdByName (name);
+								sint32 matrixId=-1;
+								TInodePtrInt::const_iterator itId=skeletonShape.find (ite->second);
+								if (itId!=skeletonShape.end())
+									matrixId=itId->second;
 
 								// Find the bone ?
 								if (matrixId==-1)

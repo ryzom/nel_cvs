@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.20 2001/08/09 08:09:23 vizerie Exp $
+ * $Id: export_nel.h,v 1.21 2001/08/09 15:21:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,6 +135,10 @@ class CExportDesc;
 
 // ***************************************************************************
 
+typedef std::map<INode*, sint32> TInodePtrInt;
+
+// ***************************************************************************
+
 /**
  * 3dsmax to NeL export interface for other things that landscape.
  * \author Cyril Corvazier
@@ -168,9 +172,8 @@ public:
 	  *
 	  * skeletonShape must be NULL if no bones.
 	  */
-	static NL3D::IShape*			buildShape (INode& node, Interface& ip, TimeValue tvTime, 
-												const NL3D::CSkeletonShape* skeletonShape, bool absolutePath,
-												CExportNelOptions &opt, bool view);
+	static NL3D::IShape*			buildShape (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, 
+												bool absolutePath, CExportNelOptions &opt, bool view);
 
 	/**
 	  * Build a NeL meshBuild
@@ -270,10 +273,13 @@ public:
 	 *
 	 * mapBindPos is the pointer of the map of bind pos by bone. Can be NULL if the skeleton is already in the bind pos.
 	 */
-	static void						buildSkeletonShape (NL3D::CSkeletonShape& skeletonShape, INode& node, mapBoneBindPos* mapBindPos, TimeValue time);
+	static void						buildSkeletonShape (NL3D::CSkeletonShape& skeletonShape, INode& node, mapBoneBindPos* mapBindPos, 
+														TInodePtrInt& mapId, TimeValue time);
 
 	// Build an array of CBoneBase
-	static void						buildSkeleton (std::vector<NL3D::CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, TimeValue time, sint32& idCount, sint32 father=-1);
+	static void						buildSkeleton (std::vector<NL3D::CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, 
+														TInodePtrInt& mapId, std::set<std::string> &nameSet, 
+														TimeValue time, sint32& idCount, sint32 father=-1);
 
 	/*
 	 * Add Skinning data into the build structure.
@@ -286,7 +292,7 @@ public:
 	 * VertexWithoutWeight
 	 * InvalidSkeleton
 	 */
-	static uint						buildSkinning (NL3D::CMesh::CMeshBuild& buildMesh, const NL3D::CSkeletonShape& skeletonShape, INode& node);
+	static uint						buildSkinning (NL3D::CMesh::CMeshBuild& buildMesh, const TInodePtrInt& skeletonShape, INode& node);
 
 	// Return true if the mesh is a skin, else return false.
 	static bool						isSkin (INode& node);
@@ -466,7 +472,7 @@ private:
 	  * if skeletonShape is NULL, no skinning is exported.
 	  */
 	static void						buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild,
-														INode& node, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath, 
+														INode& node, TimeValue time, const TInodePtrInt* nodeMap, bool absolutePath, 
 														const NLMISC::CMatrix& newBasis=NLMISC::CMatrix::Identity);
 
 	/**
@@ -477,7 +483,7 @@ private:
 	/**
 	  * Build a mesh geom with a node
 	  */
-	static NL3D::IMeshGeom			*buildMeshGeom (INode& node, Interface& ip, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath,
+	static NL3D::IMeshGeom			*buildMeshGeom (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, bool absolutePath,
 													CExportNelOptions &opt, NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName,
 													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& WorldToparentMatrix, bool view);
 

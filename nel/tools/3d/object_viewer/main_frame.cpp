@@ -6,6 +6,7 @@
 #include "main_frame.h"
 #include "set_value_dlg.h"
 #include "particle_dlg.h"
+#include "about_dialog.h"
 
 #include <nel/misc/file.h>
 
@@ -149,6 +150,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Y, OnUpdateEditY)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Z, OnUpdateEditZ)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVEELEMENT, OnUpdateEditMoveelement)
+	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -350,6 +352,9 @@ void CMainFrame::OnResetCamera()
 			}
 		}
 	}
+
+	// Setup scene center
+	ObjView->_SceneCenter=hotSpot;
 
 	// Setup camera
 	CNELU::Camera->lookAt (hotSpot+CVector(0.57735f,0.57735f,0.57735f)*radius, hotSpot);
@@ -747,4 +752,10 @@ void CMainFrame::OnUpdateEditZ(CCmdUI* pCmdUI)
 void CMainFrame::OnUpdateEditMoveelement(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (MoveElement);
+}
+
+void CMainFrame::OnHelpAboutobjectviewer() 
+{
+	CAboutDialog about;
+	about.DoModal();
 }

@@ -114,6 +114,7 @@ public:
 	afx_msg void OnUpdateEditY(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZ(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditMoveelement(CCmdUI* pCmdUI);
+	afx_msg void OnHelpAboutobjectviewer();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

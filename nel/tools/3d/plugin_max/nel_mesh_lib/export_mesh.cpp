@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.15 2001/08/09 13:14:00 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.16 2001/08/09 15:21:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -582,8 +582,9 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 // ***************************************************************************
 
 // Build a mesh interface
-void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, 
-									 const TInodePtrInt* nodeMap, bool absolutePath, const CMatrix& newBasis)
+void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild, 
+									 INode& node, TimeValue time, const TInodePtrInt* nodeMap, bool absolutePath, 
+									 const CMatrix& newBasis)
 {
 	// Get a pointer on the 3dsmax mesh
 	Mesh *pMesh=&tri.mesh;

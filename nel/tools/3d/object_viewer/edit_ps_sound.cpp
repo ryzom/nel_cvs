@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.cpp
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.cpp,v 1.9 2002/11/04 15:40:44 boucher Exp $
+ * $Id: edit_ps_sound.cpp,v 1.10 2003/03/03 13:05:37 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,7 +157,7 @@ END_MESSAGE_MAP()
 void CEditPSSound::OnBrowseSound() 
 {
 //	CPickSound::TNameVect names;
-	vector<string>	names;
+	vector<NLMISC::TStringId>	names;
 	
 
 	NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer();
@@ -170,7 +170,7 @@ void CEditPSSound::OnBrowseSound()
 
 	if (ps.DoModal() == IDOK)
 	{
-		m_SoundName = ps.getName().c_str();
+		m_SoundName = NLMISC::CStringMapper::unmap(ps.getName()).c_str();
 		_Sound->setSoundName(ps.getName());
 		UpdateData(FALSE);
 	}
@@ -181,7 +181,7 @@ BOOL CEditPSSound::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	nlassert(_Sound);
-	m_SoundName = _Sound->getSoundName().c_str();
+	m_SoundName = NLMISC::CStringMapper::unmap(_Sound->getSoundName()).c_str();
 	
 	UpdateData(FALSE);
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -192,7 +192,7 @@ void CEditPSSound::OnChangeSoundName()
 {
 	nlassert(_Sound);
 	UpdateData();
-	_Sound->setSoundName( (LPCTSTR) m_SoundName );	
+	_Sound->setSoundName( NLMISC::CStringMapper::map((LPCTSTR) m_SoundName) );	
 }
 
 void CEditPSSound::OnSpawn() 

@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.19 2003/02/05 17:45:20 corvazier Exp $
+ * $Id: sound_system.cpp,v 1.20 2003/03/03 13:05:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,12 +66,27 @@ void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 
 void CSoundSystem::initSoundSystem ()
 {		
-/*
+	_AudioMixer = NULL;
+	_AnimManager = NULL;
 	_AudioMixer = NLSOUND::UAudioMixer::createAudioMixer();
 	try
 	{
 		_AudioMixer->setSamplePath(_SamplePath);
 		_AudioMixer->init();
+	}
+	catch(NLMISC::Exception &e)
+	{
+		// in case of exeption during mixer init, the mixer is destroyed !
+		string mess = string("Unable to init sound :") + e.what();
+		nlwarning ("Init sound: %s", mess.c_str());
+		_AudioMixer = NULL;
+		return;
+	}
+
+	// ok for the mixer, now create the sound anim manager
+	try
+	{
+		// TODO : boris : Hum, as far as I know, throwing exeption in constructor is a very BAD idea...
 		_AnimManager = new CSoundAnimManager(_AudioMixer);
 	}
 	catch (NLMISC::Exception &e)
@@ -83,16 +98,15 @@ void CSoundSystem::initSoundSystem ()
 			delete _AnimManager;
 			_AnimManager = NULL;
 		}
-		if (_AudioMixer)
-		{
-			delete _AudioMixer;
-			_AudioMixer = NULL;
-		}
+
+		delete _AudioMixer;
+		_AudioMixer = NULL;
+
 		return;
 	}
 	setPSSoundSystem(_AudioMixer);
 
-		
+/*		
 	for (set<string>::const_iterator it1 = _SampleBanksFileName.begin();
 		 it1 != _SampleBanksFileName.end();
 		 ++it1)
@@ -161,7 +175,7 @@ void CSoundSystem::play(const string &soundName)
 {
 	if (_AudioMixer)
 	{
-		NLSOUND::USource *src = _AudioMixer->createSource(soundName, true);
+		NLSOUND::USource *src = _AudioMixer->createSource(CStringMapper::map(soundName), true);
 		if (src)
 		{
 			src->setLooping(false);

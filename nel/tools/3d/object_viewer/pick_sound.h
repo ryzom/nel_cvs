@@ -1,7 +1,7 @@
 /** \file pick_sound.h
  * Dialog used to select a sound in the sound bank.
  *
- * $Id: pick_sound.h,v 1.5 2002/11/04 15:40:45 boucher Exp $
+ * $Id: pick_sound.h,v 1.6 2003/03/03 13:05:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #endif // _MSC_VER > 1000
 // pick_sound.h : header file
 //
-
+#include "nel/misc/string_mapper.h"
 #include <vector>
 #include <string>
 
@@ -43,11 +43,11 @@ class CPickSound : public CDialog
 {
 // Construction
 public:
-	typedef std::vector<const char *> TNameVect;
-	CPickSound(const std::vector<std::string> &names, CWnd* pParent = NULL);   // standard constructor
+	typedef std::vector<NLMISC::TStringId> TNameVect;
+	CPickSound(const TNameVect &names, CWnd* pParent = NULL);   // standard constructor
 
 
-	const std::string &getName(void) const { return _CurrName; }
+	const NLMISC::TStringId &getName(void) const { return _CurrName; }
 
 // Dialog Data
 	//{{AFX_DATA(CPickSound)
@@ -65,9 +65,8 @@ public:
 
 // Implementation
 protected:
-	//TNameVect _Names;
-	std::vector<std::string>	_Names;
-	std::string _CurrName;
+	TNameVect			_Names;
+	NLMISC::TStringId	_CurrName;
 
 	UINT _Timer;
 

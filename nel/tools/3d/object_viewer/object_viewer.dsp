@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 nlligo_r.lib nlgeorges_r.lib mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib freetype.lib /nologo /subsystem:windows /dll /incremental:yes /machine:I386 /out:"../../../lib/object_viewer.dll"
+# ADD LINK32 nlligo_r.lib nlgeorges_r.lib mfcs42.lib msvcrt.lib libc.lib libxml2.lib freetype.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:yes /machine:I386 /out:"../../../lib/object_viewer.dll"
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
@@ -87,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 nlligo_d.lib nlgeorges_d.lib libxml2_debug.lib mfcs42d.lib version.lib freetype_debug.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# ADD LINK32 nlligo_d.lib nlgeorges_d.lib libxml2_debug.lib mfcs42d.lib freetype_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
@@ -115,7 +115,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
-# ADD LINK32 nlligo_rd.lib nlgeorges_rd.lib mfcs42.lib version.lib libxml2.lib freetype.lib nlgeorges_rd.lib libjpeg.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
+# ADD LINK32 nlligo_rd.lib nlgeorges_rd.lib mfcs42.lib libxml2.lib freetype.lib libjpeg.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
 # SUBTRACT LINK32 /incremental:yes
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
@@ -144,7 +144,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none /incremental:no
-# ADD LINK32 nlligo_df.lib nlgeorges_df.lib freetype_debug.lib mfcs42d.lib msvcrtd.lib version.lib libxml2_debug.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
+# ADD LINK32 nlligo_df.lib nlgeorges_df.lib freetype_debug.lib mfcs42d.lib msvcrtd.lib libxml2_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 

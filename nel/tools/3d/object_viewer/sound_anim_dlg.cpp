@@ -1,7 +1,7 @@
 /** \file sound_anim_dlg.cpp
  * The main dialog to edit animation sound tracks
  *
- * $Id: sound_anim_dlg.cpp,v 1.3 2002/11/04 15:40:45 boucher Exp $
+ * $Id: sound_anim_dlg.cpp,v 1.4 2003/03/03 13:05:37 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,18 +138,18 @@ void CSoundAnimDlg::updateSounds()
 {
 	if (_SelectedMarker != 0)
 	{
-		vector<const char*> sounds;
+		vector<NLMISC::TStringId> sounds;
 
 		_SelectedMarker->getSounds(sounds);
 
 		CListBox* list = (CListBox*) GetDlgItem(IDC_SOUND_ANIM_LIST);
 		list->ResetContent();
 
-		vector<const char*>::iterator iter;
+		vector<NLMISC::TStringId>::iterator iter;
 
 		for (iter = sounds.begin(); iter != sounds.end(); iter++)
 		{
-			list->AddString(*iter);
+			list->AddString(CStringMapper::unmap(*iter).c_str());
 		}
 
 		list->UpdateData();
@@ -163,7 +163,7 @@ void CSoundAnimDlg::OnAddSound()
 	if (_SelectedMarker != 0)
 	{
 //		CPickSound::TNameVect names;
-		vector<string>	names;
+		vector<NLMISC::TStringId>	names;
 		
 
 		NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer();
@@ -176,8 +176,8 @@ void CSoundAnimDlg::OnAddSound()
 
 		if (ps.DoModal() == IDOK)
 		{
-			string name = ps.getName();
-			_SelectedMarker->addSound(name);
+//			string name = ps.getName();
+			_SelectedMarker->addSound(ps.getName());
 			updateSounds();	
 		}
 	}
@@ -195,7 +195,7 @@ void CSoundAnimDlg::OnRemoveSound()
 		if (list->GetText(list->GetCurSel(), s) != LB_ERR)
 		{
 			string name(s);
-			_SelectedMarker->removeSound(name);
+			_SelectedMarker->removeSound(CStringMapper::map(name));
 			updateSounds();	
 		}
 	}

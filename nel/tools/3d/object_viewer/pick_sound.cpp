@@ -1,7 +1,7 @@
 /** \file pick_sound.cpp
  * Dialog used to select a sound in the sound bank.
  *
- * $Id: pick_sound.cpp,v 1.5 2002/11/04 15:40:45 boucher Exp $
+ * $Id: pick_sound.cpp,v 1.6 2003/03/03 13:05:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ using namespace std;
 // CPickSound dialog
 
 
-CPickSound::CPickSound(const std::vector<std::string> &names, CWnd* pParent /*=NULL*/)
+CPickSound::CPickSound(const CPickSound::TNameVect &names, CWnd* pParent /*=NULL*/)
 	: CDialog(CPickSound::IDD, pParent), _Names(names)
 {
 	
@@ -76,19 +76,24 @@ BOOL CPickSound::OnInitDialog()
 	CDialog::OnInitDialog();
 	UpdateData();
 	
-	for (vector<string>::const_iterator it = _Names.begin(); it	!= _Names.end(); ++it)
+	for (TNameVect::iterator it = _Names.begin(); it	!= _Names.end(); ++it)
 	{
-		m_NameList.AddString(it->c_str());
+		m_NameList.AddString(NLMISC::CStringMapper::unmap(*it).c_str());
 	}
 
 	_Timer = SetTimer (1, 100, NULL);
 
 	// store value
-	_BackupGain = CSoundSystem::getAudioMixer()->getListener ()->getGain();
-	CSoundSystem::getAudioMixer()->getListener ()->getVelocity(_BackupVel);
+	if (CSoundSystem::getAudioMixer())
+	{
+		_BackupGain = CSoundSystem::getAudioMixer()->getListener ()->getGain();
+		CSoundSystem::getAudioMixer()->getListener ()->getVelocity(_BackupVel);
 
-	CSoundSystem::getAudioMixer()->getListener ()->setGain(1.0f);
-	CSoundSystem::getAudioMixer()->getListener ()->setVelocity(NLMISC::CVector(0,0,0));
+		CSoundSystem::getAudioMixer()->getListener ()->setGain(1.0f);
+		CSoundSystem::getAudioMixer()->getListener ()->setVelocity(NLMISC::CVector(0,0,0));
+	}
+	else
+		_BackupGain  = 1.0f;
 
 	// set new value
 
@@ -109,7 +114,7 @@ void CPickSound::OnSelchange()
 	nlassert(m_NameList.GetTextLen(m_NameList.GetCurSel()) < 1024);
 	
 	m_NameList.GetText(m_NameList.GetCurSel(), str);
-	_CurrName = str; 
+	_CurrName = NLMISC::CStringMapper::map(str); 
 	
 }
 
@@ -137,6 +142,9 @@ void CPickSound::OnDestroy()
 		KillTimer (_Timer);
 
 	// restore old value
-	CSoundSystem::getAudioMixer()->getListener ()->setGain(_BackupGain);
-	CSoundSystem::getAudioMixer()->getListener ()->setVelocity(_BackupVel);
+	if (CSoundSystem::getAudioMixer())
+	{
+		CSoundSystem::getAudioMixer()->getListener ()->setGain(_BackupGain);
+		CSoundSystem::getAudioMixer()->getListener ()->setVelocity(_BackupVel);
+	}
 }

@@ -27,10 +27,8 @@
 #  define NL_LITTLE_ENDIAN
 #  ifdef _DEBUG
 #    define NL_DEBUG
-#  elif defined(NDEBUG)
-#    define NL_RELEASE
 #  else
-#    error "No debug mode defined"
+#    define NL_RELEASE
 #  endif
 #else
 #  define NL_OS_LINUX
@@ -42,7 +40,7 @@
 #ifdef NL_OS_WINDOWS
 #  pragma warning (disable : 4786)			// STL too long indentifier
 #  pragma warning (disable : 4290)			// throw() not implemented warning
-#endif
+#endif // NL_OS_WINDOWS
 
 // Standard types
 

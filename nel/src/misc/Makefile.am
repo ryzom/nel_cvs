@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.15 2001/02/13 18:21:25 cado Exp $
+# $Id: Makefile.am,v 1.16 2001/02/14 14:55:41 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -18,7 +18,7 @@ libnelmisc_la_SOURCES = bit_set.cpp class_id.cpp class_registry.cpp \
                         win_event_emitter.cpp win_thread.cpp rect.cpp \
                         system_info.cpp command.cpp p_thread.cpp
 
-libnelmisc_la_LIBADD  = config_file/libconfig.la
+libnelmisc_la_LIBADD  = config_file/libconfig.la -lpthread
 
 libnelmisc_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.6 2001/06/01 13:42:30 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.7 2001/06/13 10:22:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,8 @@ CCallbackClient::CCallbackClient ()
  */
 void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 {
-	// no size limit anymore
+	checkThreadId ();
+	nlassert (connected ());
 	nlassert (buffer.length() != 0);
 	nlassert (buffer.typeIsSet());
 
@@ -76,13 +77,18 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 void CCallbackClient::update ( sint32 timeout )
 {
 //	nldebug ("L3C: Client: update()");
+	nlassert (connected ());
 
+	checkThreadId ();
 	CStreamClient::update ();
 	baseUpdate (timeout);
 }
 
 void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 {
+	checkThreadId ();
+	nlassert (connected ());
+
 	*hostid = NULL;
 	CStreamClient::receive (buffer);
 	buffer.readType ();
@@ -90,8 +96,12 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 
 TSockId	CCallbackClient::getSockId (TSockId hostid)
 {
+	checkThreadId ();
+	nlassert (connected ());
+
 	nlassert (hostid == NULL);
 	return id ();
 }
+
 
 } // NLNET

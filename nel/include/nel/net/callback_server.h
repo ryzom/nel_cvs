@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.6 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: callback_server.h,v 1.7 2001/06/13 10:22:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,25 +51,25 @@ public:
 	void	send (const CMessage &buffer, TSockId hostid, bool log = true);
 
 	/// Force to send all data pending in the send queue.
-	bool	flush (TSockId destid) { nlassert( destid != NULL ); return CStreamServer::flush(destid); }
+	bool	flush (TSockId destid) { checkThreadId (); nlassert( destid != NULL ); return CStreamServer::flush(destid); }
 
 	/// Updates the network (call this method evenly)
-	void	update ( sint32 timeout=0 );
+	void	update (sint32 timeout=0);
 
 	/// Sets callback for incoming connections (or NULL to disable callback)
-	void	setConnectionCallback (TNetCallback cb, void *arg) { _ConnectionCallback = cb; _ConnectionCbArg = arg; }
+	void	setConnectionCallback (TNetCallback cb, void *arg) { checkThreadId (); _ConnectionCallback = cb; _ConnectionCbArg = arg; }
 
 	/// Sets callback for disconnections (or NULL to disable callback)
-	void	setDisconnectionCallback (TNetCallback cb, void *arg) { CCallbackNetBase::setDisconnectionCallback (cb, arg); }
+	void	setDisconnectionCallback (TNetCallback cb, void *arg) { checkThreadId (); CCallbackNetBase::setDisconnectionCallback (cb, arg); }
 
 	/// Returns true if the connection is still connected. on server, we always "connected"
-	bool	connected () const { return true; } 
+	bool	connected () const { checkThreadId (); return true; } 
 
 	/// Disconnect a connection
-	void	disconnect (TSockId hostid) { CStreamServer::disconnect (hostid); }
+	void	disconnect (TSockId hostid) { checkThreadId (); CStreamServer::disconnect (hostid); }
 
 	/// Returns the address of the specified host
-	const CInetAddress& hostAddress (TSockId hostid) { return CStreamServer::hostAddress (hostid); }
+	const CInetAddress& hostAddress (TSockId hostid) { checkThreadId (); return CStreamServer::hostAddress (hostid); }
 
 	virtual TSockId	getSockId (TSockId hostid = 0);
 
@@ -78,7 +78,7 @@ private:
 	/// This function is public in the base class and put it private here because user cannot use it in layer 2
 	void	send (const NLMISC::CMemStream &buffer, TSockId hostid) { nlstop; }
 
-	bool	dataAvailable () { return CStreamServer::dataAvailable (); }
+	bool	dataAvailable () { checkThreadId (); return CStreamServer::dataAvailable (); }
 	void	receive (CMessage &buffer, TSockId *hostid);
 
 	void	sendAllMyAssociations (TSockId to);

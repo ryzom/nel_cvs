@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.9 2001/06/12 15:41:11 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.10 2001/06/13 10:22:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,9 @@ CCallbackServer::CCallbackServer () : _ConnectionCallback(NULL), _ConnectionCbAr
 
 void CCallbackServer::sendAllMyAssociations (TSockId to)
 {
+	checkThreadId ();
+	nlassert (connected ());
+
 	// he wants all associations
 	CMessage msgout (getSIDA(), "RAA");
 
@@ -86,7 +89,8 @@ void CCallbackServer::sendAllMyAssociations (TSockId to)
  */
 void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 {
-	// no limit size anymore
+	checkThreadId ();
+	nlassert (connected ());
 	nlassert (buffer.length() != 0);
 	nlassert (buffer.typeIsSet());
 
@@ -101,20 +105,29 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 
 void CCallbackServer::update ( sint32 timeout )
 {
-//	nldebug ("L3S: Client: update()");
+	checkThreadId ();
+	nlassert (connected ());
+
+	//	nldebug ("L3S: Client: update()");
 	baseUpdate ( timeout ); // first receive
 	CStreamServer::update (); // then send
 }
 
 void CCallbackServer::receive (CMessage &buffer, TSockId *hostid)
 {
+	checkThreadId ();
+	nlassert (connected ());
+
 	CStreamServer::receive (buffer, hostid);
 	buffer.readType ();
 }
 
 TSockId CCallbackServer::getSockId (TSockId hostid)
 {
+	checkThreadId ();
+	nlassert (connected ());
 	nlassert (hostid != NULL);
+
 	return hostid;
 }
 

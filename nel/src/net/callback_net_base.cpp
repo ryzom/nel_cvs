@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.15 2001/06/12 15:41:11 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.16 2001/06/13 10:22:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,6 +126,8 @@ CCallbackNetBase::CCallbackNetBase () : _FirstUpdate (true), _DisconnectionCallb
 
 	// add the callback needed to associate messages with id
 	addCallbackArray (cbnbMessageAssociationArray, sizeof (cbnbMessageAssociationArray) / sizeof (cbnbMessageAssociationArray[0]));
+
+	_ThreadId = getThreadId ();
 }
 
 /*
@@ -133,6 +135,8 @@ CCallbackNetBase::CCallbackNetBase () : _FirstUpdate (true), _DisconnectionCallb
  */
 void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CStringIdArray::TStringId arraysize)
 {
+	checkThreadId ();
+
 	// be sure that the 2 array have the same size
 	nlassert (_CallbackArray.size () == (uint)_OutputSIDA.size ());
 
@@ -166,6 +170,8 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 
 void CCallbackNetBase::processOneMessage ()
 {
+	checkThreadId ();
+
 	CMessage msgin (_OutputSIDA, "", true);
 	TSockId tsid;
 	receive (msgin, &tsid);
@@ -220,6 +226,8 @@ void CCallbackNetBase::processOneMessage ()
 
 void CCallbackNetBase::baseUpdate (sint32 timeout)
 {
+	checkThreadId ();
+
 	nlassert( timeout >= -1 );
 	TTime t0 = CTime::getLocalTime();
 
@@ -341,7 +349,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 
 const	CInetAddress& CCallbackNetBase::hostAddress (TSockId hostid)
 {
-	// should never called
+	// should never be called
 	nlstop;
 	static CInetAddress tmp;
 	return tmp;
@@ -349,6 +357,8 @@ const	CInetAddress& CCallbackNetBase::hostAddress (TSockId hostid)
 
 void	CCallbackNetBase::setOtherSideAssociations (const char **associationarray, NLMISC::CStringIdArray::TStringId arraysize)
 {
+	checkThreadId ();
+
 	nldebug ("L3NB_ASSOC: setOtherSideAssociations() sets %d association strings", arraysize);
 
 	for (sint i = 0; i < arraysize; i++)
@@ -360,11 +370,15 @@ void	CCallbackNetBase::setOtherSideAssociations (const char **associationarray, 
 
 void	CCallbackNetBase::displayAllMyAssociations ()
 {
+	checkThreadId ();
+
 	_OutputSIDA.display ();
 }
 
 void	CCallbackNetBase::authorizeOnly (const char *callbackName, TSockId hostid)
 {
+	checkThreadId ();
+
 	nldebug ("L3NB: authorizeOnly (%s, %s)", callbackName, hostid->asString().c_str());
 
 	hostid = getSockId (hostid);
@@ -374,6 +388,14 @@ void	CCallbackNetBase::authorizeOnly (const char *callbackName, TSockId hostid)
 		hostid->AuthorizedCallback = "";
 	else
 		hostid->AuthorizedCallback = callbackName;
+}
+
+void CCallbackNetBase::checkThreadId () const
+{
+	if (getThreadId () != _ThreadId)
+	{
+		nlerror ("You try to access to the same CCallbackClient or CCallbackServer with 2 differents thread (%d and %d)", _ThreadId, getThreadId());
+	}
 }
 
 } // NLNET

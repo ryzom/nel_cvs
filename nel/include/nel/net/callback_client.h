@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.5 2001/05/17 15:39:54 cado Exp $
+ * $Id: callback_client.h,v 1.6 2001/06/13 10:22:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,19 +53,19 @@ public:
 	void	send (const CMessage &buffer, TSockId hostid = 0, bool log = true);
 
 	/// Force to send all data pending in the send queue.
-	bool	flush (TSockId hostid = 0) { return CStreamClient::flush(); }
+	bool	flush (TSockId hostid = 0) { checkThreadId (); return CStreamClient::flush(); }
 	
 	/// Updates the network (call this method evenly)
 	void	update ( sint32 timeout=0 );
 
 	/// Returns true if the connection is still connected
-	virtual bool	connected () const { return CStreamClient::connected (); } 
+	virtual bool	connected () const { checkThreadId (); return CStreamClient::connected (); } 
 
 	/// Disconnect a connection
-	void	disconnect (TSockId hostid = 0) { CStreamClient::disconnect (); }
+	void	disconnect (TSockId hostid = 0) { checkThreadId (); CStreamClient::disconnect (); }
 
 	/// Sets callback for disconnections (or NULL to disable callback)
-	void	setDisconnectionCallback (TNetCallback cb, void *arg) { CCallbackNetBase::setDisconnectionCallback (cb, arg); }
+	void	setDisconnectionCallback (TNetCallback cb, void *arg) { checkThreadId (); CCallbackNetBase::setDisconnectionCallback (cb, arg); }
 
 	virtual TSockId	getSockId (TSockId hostid = 0);
 
@@ -74,7 +74,7 @@ private:
 	/// These function is public in the base class and put it private here because user cannot use it in layer 2
 	void	send (const NLMISC::CMemStream &buffer) { nlstop; }
 
-	bool	dataAvailable () { return CStreamClient::dataAvailable (); }
+	bool	dataAvailable () {  checkThreadId (); return CStreamClient::dataAvailable (); }
 	void	receive (CMessage &buffer, TSockId *hostid = NULL);
 
 };

@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.14 2001/06/12 15:41:11 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.15 2001/06/13 10:22:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,7 +89,7 @@ public:
 	void	addCallbackArray (const TCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
 
 	/// Sets callback for disconnections (or NULL to disable callback)
-	void	setDisconnectionCallback (TNetCallback cb, void *arg) { _DisconnectionCallback = cb; _DisconnectionCbArg = arg; }
+	void	setDisconnectionCallback (TNetCallback cb, void *arg) { checkThreadId ();  _DisconnectionCallback = cb; _DisconnectionCbArg = arg; }
 
 	/// returns the sockid of a connection. On a server, this function returns the parameter. On a client, it returns the connection.
 	virtual TSockId	getSockId (TSockId hostid = 0) = 0;
@@ -102,7 +102,7 @@ public:
 	void	authorizeOnly (const char *callbackName, TSockId hostid = 0);
 
 	/// Returns true if this is a CCallbackServer
-	bool	isAServer () const { return _IsAServer; }
+	bool	isAServer () const { checkThreadId (); return _IsAServer; }
 
 	/// Use this function to get the String ID Array needed when you want to create a message
 	NLMISC::CStringIdArray	&getSIDA () { return _InputSIDA; }
@@ -183,6 +183,11 @@ private:
 	friend void cbnbMessageRecvAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 
 	friend void cbnbNewDisconnection (TSockId from, void *data);
+
+protected:
+	/// \todo debug feature that we should remove one day
+	uint	_ThreadId;
+	void	checkThreadId () const;
 };
 
 

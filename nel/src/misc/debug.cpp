@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.85 2003/12/30 11:15:37 lecroart Exp $
+ * $Id: debug.cpp,v 1.86 2003/12/30 13:49:34 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -852,7 +852,7 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 
 	// there s no stack on GNU/Linux, only get the log without filters
 
-	result += "No callstack available";
+	result += "No callstack available\n";
 	result += "-------------------------------\n";
 	result += "\n";
 	if(DefaultMemDisplayer)
@@ -870,21 +870,21 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 	// add specific information about the application
 	if(CrashCallback)
 	{
-		_Reason += "User Crash Callback:\n";
-		_Reason += "-------------------------------\n";
+		result += "User Crash Callback:\n";
+		result += "-------------------------------\n";
 		static bool looping = false;
 		if(looping)
 		{
-			_Reason += "******* WARNING: crashed in the user crash callback *******\n";
+			result += "******* WARNING: crashed in the user crash callback *******\n";
 			looping = false;
 		}
 		else
 		{
 			looping = true;
-			_Reason += CrashCallback();
+			result += CrashCallback();
 			looping = false;
 		}
-		_Reason += "-------------------------------\n";
+		result += "-------------------------------\n";
 	}
 	
 #endif

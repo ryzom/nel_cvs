@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.4 2001/07/04 12:38:31 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.5 2001/07/12 15:58:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,10 +52,7 @@ class CParticleSystemModel : public CTransformShape
 		friend class CParticleSystemShape ;
 
 		/// ctor
-		CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedTime(0.01f), _ToolDisplayEnabled(false)
-								, _AutoGetEllapsedTime(true)
-		{}
-
+		CParticleSystemModel() ;
 		/// dtor
 		~CParticleSystemModel() ;		
 
@@ -89,7 +86,7 @@ class CParticleSystemModel : public CTransformShape
 		
 
 		/// activate the display of tool (for edition purpose)
-		void enableDisplayTools(bool enable = true) { _ToolDisplayEnabled = enable ; }
+		void enableDisplayTools(bool enable = true) { _ToolDisplayEnabled = enable ; touchTransparencyState() ; }
 
 		// check wether the display of tools is enabled
 		bool isToolDisplayEnabled(void) const { return _ToolDisplayEnabled ; }
@@ -105,6 +102,11 @@ class CParticleSystemModel : public CTransformShape
 			return bobs->WorldMatrix;
 		}
 
+		/** This update the infos about opacity (e.g are there solid faces and / or transparent faces in the system).
+		  * This must be called when the system is instanciated, or when attributes have changed, such as the blending mode
+		  */
+
+		void updateOpacityInfos(void) ;
 
 
 	
@@ -115,8 +117,38 @@ class CParticleSystemModel : public CTransformShape
 		void setParticleSystem(CParticleSystem *ps)
 		{
 			nlassert(!_ParticleSystem) ;
-			_ParticleSystem = ps ;			
+			_ParticleSystem = ps ;	
+			updateOpacityInfos() ;
 		}
+
+
+		/// for now, we have 4 animatables value in a system
+		enum	TAnimValues
+		{
+			OwnerBit= CTransformShape::AnimValueLast,
+			PSParam0,
+			PSParam1,
+			PSParam2,
+			PSParam3,
+			AnimValueLast,
+		};
+
+	
+		virtual IAnimatedValue* getValue (uint valueId) ;
+
+		virtual const char *getValueName (uint valueId) const ; 
+
+		static const char *getPSParamName (uint valueId) ;
+
+	
+		virtual ITrack* getDefaultTrack (uint valueId) ;
+
+	
+		virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix=std::string()) ;
+
+
+		/// edition purpose : touch the system to tell that the transparency state of the system has changed (added/removes opaque/tansparent faces )
+		void touchTransparencyState(void) { _TransparencyStateTouched = true ; }
 
 	protected:
 
@@ -128,12 +160,40 @@ class CParticleSystemModel : public CTransformShape
 		CAnimationTime _EllapsedTime ;
 
 		bool _ToolDisplayEnabled ;
+
+		
+		bool _TransparencyStateTouched ;
 } ;
+
+
+/** Detail animation observer for a particle system. It perform motion of the particles
+  */
+class	CParticleSystemDetailObs : public CTransformAnimDetailObs
+{
+public:
+
+	/** this do :
+	 *  - call CTransformAnimDetailObs::traverse() => traverseSons.
+	 *  - update particles.
+	 */
+	virtual	void	traverse(IObs *caller) ;	
+
+
+public:
+	static IObs	*creator() {return new CParticleSystemDetailObs;}
+};
+
+
+
 
 
 
 
 } // NL3D
+
+
+
+
 
 
 #endif // NL_PARTICLE_SYSTEM_MODEL_H

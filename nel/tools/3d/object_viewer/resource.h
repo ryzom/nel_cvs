@@ -203,7 +203,6 @@
 #define IDD_PICK_SOUND                  1081
 #define IDC_CONSTANT_VALUE_POS          1082
 #define IDD_CHOOSE_FRAME_DELAY          1082
-#define IDD_CHOOSE_FRAME_DELAY          1082
 #define IDD_EDITSPINNER                 1083
 #define IDD_SCHEME_BANK_DLG             1084
 #define IDD_CHOOSE_NAME                 1085
@@ -576,6 +575,7 @@
 #define IDC_GLOBAL_USER_PARAM_4         1364
 #define IDC_WIDTH                       1364
 #define IDC_HEIGHT                      1365
+#define IDC_BYPASS_MAX_NUM_STEPS        1366
 #define IDC_MAX_DIST_BIAS_TEXT          1367
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
@@ -733,7 +733,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1126
 #define _APS_NEXT_COMMAND_VALUE         32913
-#define _APS_NEXT_CONTROL_VALUE         1366
+#define _APS_NEXT_CONTROL_VALUE         1367
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

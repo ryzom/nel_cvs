@@ -781,7 +781,7 @@ BEGIN
     CONTROL         "Accurate integration",IDC_ACCURATE_INTEGRATION,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,9,11,81,11
     LTEXT           "Time threshold :",IDC_STATIC,16,46,38,18
-    LTEXT           "Max num integrations :",IDC_STATIC,16,73,42,19
+    LTEXT           "Max steps:",IDC_STATIC,16,77,42,11
     LTEXT           "User param1 :",IDC_STATIC,7,108,46,11
     LTEXT           "User param2 :",IDC_STATIC,7,129,46,11
     LTEXT           "User param3 :",IDC_STATIC,7,152,46,11
@@ -814,11 +814,11 @@ BEGIN
     LTEXT           "s",IDC_STATIC,269,359,8,9
     CONTROL         "PS resource removed when not visible",
                     IDC_DIE_WHEN_OUT_OF_FRUSTRUM,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,150,328,137,10
+                    WS_TABSTOP,135,329,139,10
     LTEXT           "Anim type :",IDC_ANIM_TYPE,11,343,35,10
-    COMBOBOX        IDC_ANIM_TYPE_CTRL,48,341,119,46,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_ANIM_TYPE_CTRL,48,341,98,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "",IDC_STATIC,7,322,283,51
+    GROUPBOX        "",IDC_STATIC,7,322,287,51
     LTEXT           "Life mgt presets :",IDC_STATIC,7,313,57,10
     COMBOBOX        IDC_LIFE_MGT_PRESETS,67,310,92,77,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -828,7 +828,7 @@ BEGIN
                     WS_TABSTOP,209,311,46,11
     PUSHBUTTON      "Settings...",IDC_EDIT_AUTO_LOD,258,309,34,13
     CONTROL         "Force lifetime update",IDC_FORCE_LIFE_TIME_UPDATE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,119,34,93,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,341,78,12
     CONTROL         "Enable global color",IDC_GLOBAL_COLOR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,202,251,74,10
     PUSHBUTTON      "Edit...",IDC_EDIT_GLOBAL_COLOR,202,262,32,10
@@ -841,6 +841,8 @@ BEGIN
     PUSHBUTTON      "global",IDC_GLOBAL_USER_PARAM_2,279,126,22,15
     PUSHBUTTON      "global",IDC_GLOBAL_USER_PARAM_3,280,148,21,15
     PUSHBUTTON      "global",IDC_GLOBAL_USER_PARAM_4,280,169,22,15
+    CONTROL         "No max nb steps",IDC_BYPASS_MAX_NUM_STEPS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,227,340,65,14
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -2477,6 +2479,9 @@ BEGIN
 0x0058, 
     IDC_LIFE_MGT_PRESETS, 0x403, 13, 0
 0x7355, 0x7265, 0x6420, 0x6665, 0x6e69, 0x6465, "\000" 
+    IDC_LIFE_MGT_PRESETS, 0x403, 18, 0
+0x6f4d, 0x6976, 0x676e, 0x4c20, 0x6f6f, 0x6970, 0x676e, 0x4620, 0x0058, 
+
     0
 END
 

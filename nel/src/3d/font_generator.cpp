@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.18 2002/10/02 16:40:32 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.19 2002/10/07 07:58:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 	error = FT_New_Face (_Library, fontFileName.c_str (), 0, &_Face);
 	if (error)
 	{
-		nlerror ("FT_New_Face() failed with file 's%': %s", fontFileName.c_str(), getFT2Error(error));
+		nlerror ("FT_New_Face() failed with file '%s': %s", fontFileName.c_str(), getFT2Error(error));
 	}
 
 	string fontEx = fontExFileName;
@@ -127,7 +127,7 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 	error = FT_Select_Charmap (_Face, ft_encoding_unicode);
 	if (error)
 	{
-		nlerror ("FT_Select_Charmap() failed with file 's%': %s", fontFileName.c_str(), getFT2Error(error));
+		nlerror ("FT_Select_Charmap() failed with file '%s': %s", fontFileName.c_str(), getFT2Error(error));
 	}
 }
 
@@ -314,7 +314,7 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 	error = FT_New_Face (_Library, fontFileName.c_str (), 0, &_Face);
 	if (error)
 	{
-		nlerror ("FT_New_Face() failed with file 's%': %s", fontFileName.c_str(), getFT2Error(error));
+		nlerror ("FT_New_Face() failed with file '%s': %s", fontFileName.c_str(), getFT2Error(error));
 	}
 
 	if (fontExFileName != "")

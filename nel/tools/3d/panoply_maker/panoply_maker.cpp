@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.15 2002/07/03 08:45:50 corvazier Exp $
+ * $Id: panoply_maker.cpp,v 1.16 2002/07/09 08:13:50 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -331,7 +331,7 @@ static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, c
 
 	if (masks.size() == 0) 
 	{
-		nlwarning("no masks found, processing next");
+		nlwarning("(%s) no masks found, processing next", fileNameWithExtension.c_str ());
 		return false;
 	}
 	/// check is each genarated texture has the same date or is more recent

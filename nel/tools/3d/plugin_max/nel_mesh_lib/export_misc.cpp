@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.32 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.33 2003/04/14 17:08:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -863,8 +863,15 @@ INode *CExportNel::getRootNode() const
 
 std::string		CExportNel::getAnimatedLight (INode *node)
 {
-	std::string		ret;
-	return CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED_LIGHT, NEL3D_APPDATA_LM_ANIMATED_LIGHT_DEFAULT);
+	std::string		ret = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED_LIGHT, NEL3D_APPDATA_LM_ANIMATED_LIGHT_DEFAULT);
+	if (ret == "Sun")
+		ret = "";
+	if (ret == "GlobalLight")
+		ret = "";
+	if (ret == "(Use NelLight Modifier)")
+		ret = "";
+
+	return ret;
 }
 
 // ***********************************************************************************************

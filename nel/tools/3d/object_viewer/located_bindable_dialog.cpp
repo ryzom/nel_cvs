@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.29 2004/05/19 10:20:56 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.30 2004/05/26 15:56:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,7 +114,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		// blending mode
 		m_BlendingMode.SetCurSel((uint) material->getBlendingMode() );
 		// z-test		
-		((CButton *) GetDlgItem(IDC_ZTEST))->SetCheck(material->isZTestEnabled ? BST_CHECKED : BST_UNCHECKED);
+		((CButton *) GetDlgItem(IDC_ZTEST))->SetCheck(material->isZTestEnabled() ? BST_CHECKED : BST_UNCHECKED);
 		// z-bias
 		GetDlgItem(IDC_ZBIAS)->SetWindowText(NLMISC::toString("%.2f", -material->getZBias()).c_str());						
 	}

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.16 2002/02/15 17:03:46 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.17 2002/02/20 11:10:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,7 +75,7 @@ public:
 	* So you don't need to redefine this most of the time
 	*
 	*/
-	virtual void					step(TPSProcessPass pass, TAnimationTime ellapsedTime);
+	virtual void					step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime);
 	
 
 	/// Display the emitter in edition mode
@@ -225,28 +225,35 @@ public:
 protected:	
 
 	/// this will call emit, and will add additionnal features (speed addition and so on)
-	inline void						processEmit(uint32 index, sint nbToGenerate);
+	void						processEmit(uint32 index, sint nbToGenerate);
 
 	/// The same as processEmit, but can also add a time delta
-	inline void						processEmitConsistent(uint32 index, sint nbToGenerate, TAnimationTime deltaT);
+	void						processEmitConsistent(const NLMISC::CVector &emitterPos,
+													  uint32 emitterIndex,
+													  sint nbToGenerate,
+													  TAnimationTime deltaT,
+													  TAnimationTime ellapsedTime,
+													  float realEllapsedTimeRatio
+													 );
 
 	/// regular emission processing
 	void							processRegularEmission(TAnimationTime ellapsedTime);
 
 	/** Regular emission processing, with low-framrate compensation
 	  */
-	void							processRegularEmissionConsistent(TAnimationTime ellapsedTime);
+	void							processRegularEmissionConsistent(TAnimationTime ellapsedTime, float realEllapsedTimeRatio);
 
 
 
 
 	/** This method is called each time one (and only one) located must be emitted.
 	 *  DERIVERS MUST DEFINE THIS
+	 *  \param srcPos the source position of the emitter (with eventually a correction)
 	 *  \param index the index of the emitter in the tab that generated a located	 
 	 *  \param pos the resulting pos of the particle, expressed in the emitter basis
 	 *  \param speed the reulting speed of the emitter, expressed in the emitter basis
 	 */
-	virtual void					emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) = 0;
+	virtual void					emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) = 0;
 
 	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 	 */
@@ -409,7 +416,7 @@ public:
 	
 	NLMISC_DECLARE_CLASS(CPSEmitterDirectionnal);
 	
-	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
+	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 
 	void setDir(const NLMISC::CVector &v) { _Dir = v; }
 
@@ -438,7 +445,7 @@ class CPSRadialEmitter : public CPSEmitterDirectionnal
 	/// serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 	NLMISC_DECLARE_CLASS(CPSRadialEmitter);
-	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
+	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 };
 
 
@@ -463,7 +470,7 @@ public:
 
 
 	/// emission of located
-	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
+	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 protected:
 	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner; }
 	virtual void newElement(CPSLocated *emitter, uint32 emitterIndex);
@@ -497,7 +504,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 		/// emission of located
 
-		virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
+		virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 
 		virtual void setDir(const NLMISC::CVector &v) { _Dir = v; }
 
@@ -569,7 +576,7 @@ public:
 
 
 	/// emission of located
-	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
+	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 
 	/// set a new radius for emission
 	void setRadius(float r) { _Radius = r; }
@@ -609,7 +616,7 @@ public:
 
 	/// emission of located
 
-	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
+	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 
 	
 

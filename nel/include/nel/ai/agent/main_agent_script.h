@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.11 2001/03/26 08:45:22 chafik Exp $
+ * $Id: main_agent_script.h,v 1.12 2001/04/10 12:35:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,9 @@ namespace NLAIAGENT
 		IMainAgent(const IMainAgent &a):CAgentScript(a){}
 		IMainAgent(IAgentManager *a):CAgentScript(a){}
 		IMainAgent():CAgentScript(NULL){}
+		virtual ~IMainAgent()
+		{
+		}
 
 
 		virtual	IObjectIA::CProcessResult sendMessage(const CAgentNumber &,IObjectIA *) = 0;

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.20 2001/04/05 16:29:50 portier Exp $
+ * $Id: baseai.cpp,v 1.21 2001/04/10 12:35:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -247,7 +247,7 @@ namespace NLAIAGENT
 
 				IPerformative *p;
 				msg = (IMessageBase *)((IBaseGroupType *)a)->pop();
-				this->incRef();
+				//this->incRef();
 				msg->setReceiver(this);
 				p = (IPerformative *)((IBaseGroupType *)a)->pop();
 				msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());

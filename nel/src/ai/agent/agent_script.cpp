@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.50 2001/04/05 15:29:02 chafik Exp $
+ * $Id: agent_script.cpp,v 1.51 2001/04/10 12:35:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -565,7 +565,7 @@ namespace NLAIAGENT
 		
 		o->setParent( (const IWordNumRef *) *this );
 		CNotifyParentScript *m = new CNotifyParentScript(this);
-		this->incRef();
+		//this->incRef();
 		m->setSender(this);
 		m->setPerformatif(IMessageBase::PTell);
 		((IObjectIA *)o)->sendMessage(m);
@@ -657,7 +657,7 @@ namespace NLAIAGENT
 	{
 		CNotifyParentScript *m = new CNotifyParentScript((IBasicAgent *)getParent());
 		m->setPerformatif(IMessageBase::PTell);
-		this->incRef();
+		//this->incRef();
 		m->setSender(this);
 		IObjectIA::CProcessResult r;
 		r.Result = m;
@@ -670,7 +670,7 @@ namespace NLAIAGENT
 
 		CNotifyParentScript *m = new CNotifyParentScript(this);
 		m->setPerformatif(IMessageBase::PTell);
-		this->incRef();
+		//this->incRef();
 		m->setSender(this);
 
 		for(i = 0; i < _NbComponents; i++)
@@ -751,7 +751,7 @@ namespace NLAIAGENT
 	const char *classBase = (const char *)getType();
 #endif
 		IMessageBase *msg = (IMessageBase *)m;
-		this->incRef();
+		//this->incRef();
 		msg->setReceiver(this);
 		//if(msg->getMethodIndex() < 0)
 		{
@@ -880,9 +880,9 @@ namespace NLAIAGENT
 			{
 				IMessageBase *o = (IMessageBase *)returnMsg->clone();
 				o->setMethodIndex(-1,-1);
-				this->incRef();
+				//this->incRef();
 				o->setSender(this);
-				((IObjectIA *)msg->getContinuation())->incRef();
+				//((IObjectIA *)msg->getContinuation())->incRef();
 				o->setReceiver((IObjectIA *)msg->getContinuation());
 				((IObjectIA *)msg->getContinuation())->sendMessage(o);
 			}
@@ -892,9 +892,9 @@ namespace NLAIAGENT
 			{
 				IMessageBase *o = (IMessageBase *)returnMsg->clone();
 				o->setMethodIndex(-1,-1);
-				this->incRef();
+				//this->incRef();
 				o->setSender(this);
-				((IObjectIA *)msg->getContinuation())->incRef();
+				//((IObjectIA *)msg->getContinuation())->incRef();
 				o->setReceiver((IObjectIA *)msg->getContinuation());
 				((IObjectIA *)msg->getContinuation())->sendMessage(o);
 			}
@@ -903,10 +903,10 @@ namespace NLAIAGENT
 			{
 				IMessageBase *o = (IMessageBase *)returnMsg->clone();
 				o->setMethodIndex(-1,-1);
-				this->incRef();
+				//this->incRef();
 				o->setSender(this);
 				o->setPerformatif(IMessageBase::PTell);
-				if(returnMsg->getSender() != NULL) ((IObjectIA *)returnMsg->getSender())->incRef();
+				//if(returnMsg->getSender() != NULL) ((IObjectIA *)returnMsg->getSender())->incRef();
 				o->setReceiver((IObjectIA *)returnMsg->getSender());
 				((IObjectIA *)msg->getSender())->sendMessage(o);
 
@@ -915,9 +915,9 @@ namespace NLAIAGENT
 				{
 					IMessageBase *o = (IMessageBase *)returnMsg->clone();
 					o->setMethodIndex(-1,-1);
-					this->incRef();
+					//this->incRef();
 					o->setSender(this);
-					if(msg->getContinuation() != NULL) ((IObjectIA *)msg->getContinuation())->incRef();
+					//if(msg->getContinuation() != NULL) ((IObjectIA *)msg->getContinuation())->incRef();
 					o->setReceiver((IObjectIA *)msg->getContinuation());
 					o->setPerformatif(IMessageBase::PTell);
 					((IObjectIA *)msg->getContinuation())->sendMessage(o);
@@ -929,9 +929,9 @@ namespace NLAIAGENT
 			{
 				IMessageBase *o = (IMessageBase *)returnMsg->clone();
 				o->setMethodIndex(-1,-1);
-				this->incRef();
+				//this->incRef();
 				o->setSender(this);
-				if(msg->getContinuation() != NULL) ((IObjectIA *)msg->getContinuation())->incRef();
+				//if(msg->getContinuation() != NULL) ((IObjectIA *)msg->getContinuation())->incRef();
 				o->setReceiver((IObjectIA *)msg->getContinuation());
 				((IObjectIA *)msg->getContinuation())->sendMessage(o);
 			}
@@ -941,9 +941,9 @@ namespace NLAIAGENT
 			{
 				IMessageBase *o = (IMessageBase *)returnMsg->clone();
 				o->setMethodIndex(-1,-1);
-				this->incRef();
+				//this->incRef();
 				o->setSender(this);
-				if(msg->getContinuation() != NULL) ((IObjectIA *)msg->getContinuation())->incRef();
+				//if(msg->getContinuation() != NULL) ((IObjectIA *)msg->getContinuation())->incRef();
 				o->setReceiver((IObjectIA *)msg->getContinuation());
 				((IObjectIA *)msg->getContinuation())->sendMessage(o);
 			}
@@ -953,9 +953,9 @@ namespace NLAIAGENT
 			{
 				IMessageBase *o = (IMessageBase *)returnMsg->clone();
 				o->setMethodIndex(-1,-1);
-				this->incRef();
+				//this->incRef();
 				o->setSender(this);
-				if(msg->getContinuation() != NULL) ((IObjectIA *)msg->getContinuation())->incRef();
+				//if(msg->getContinuation() != NULL) ((IObjectIA *)msg->getContinuation())->incRef();
 				o->setReceiver((IObjectIA *)msg->getContinuation());
 				((IObjectIA *)msg->getContinuation())->sendMessage(o);
 			}

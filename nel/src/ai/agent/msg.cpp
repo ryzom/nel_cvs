@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.6 2001/03/26 14:50:01 chafik Exp $
+ * $Id: msg.cpp,v 1.7 2001/04/10 12:35:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,11 +58,11 @@ namespace NLAIAGENT
 	{
 		IMessageBase &b = (IMessageBase &)a;
 		_Sender = b._Sender;
-		if(_Sender) _Sender->incRef();
+		//if(_Sender) _Sender->incRef();
 		_Receiver = b._Receiver;
-		if(_Receiver) _Receiver->incRef();
+		//if(_Receiver) _Receiver->incRef();
 		_Continuation = b._Continuation;
-		if(_Continuation) _Continuation->incRef();
+		//if(_Continuation) _Continuation->incRef();
 		setGroup((IBasicMessageGroup &)b.getGroup());
 		*_List = *b._List;
 		return *this;
@@ -136,20 +136,20 @@ namespace NLAIAGENT
 			IRefrence *ref = CLocWordNumRef::getRef(r);
 			if(ref != NULL)
 			{
-				if(_Sender) _Sender->release();
+				//if(_Sender) _Sender->release();
 				_Sender = ref;
-				_Sender->incRef();
+				//_Sender->incRef();
 			}
 			else
 			{
-				if(_Sender) _Sender->release();
+				//if(_Sender) _Sender->release();
 				_Sender = new CProxyAgentMail(r.getId());
 			}
 			
 		}
 		else
 		{
-			if(_Sender) _Sender->release();
+			//if(_Sender) _Sender->release();
 			_Sender = NULL;
 		}
 		
@@ -160,20 +160,20 @@ namespace NLAIAGENT
 			IRefrence *ref = CLocWordNumRef::getRef(r);
 			if(ref != NULL)
 			{
-				if(_Receiver) _Receiver->release();
+				//if(_Receiver) _Receiver->release();
 				_Receiver = ref;
-				_Receiver->incRef();
+				//_Receiver->incRef();
 			}
 			else
 			{
-				if(_Receiver) _Receiver->release();
+				//if(_Receiver) _Receiver->release();
 				_Receiver = new CProxyAgentMail(r.getId());
 			}
 			
 		}
 		else
 		{
-			if(_Receiver) _Receiver->release();
+			//if(_Receiver) _Receiver->release();
 			_Receiver = NULL;
 		}
 		is.serial(t);		
@@ -183,20 +183,20 @@ namespace NLAIAGENT
 			IRefrence *ref = CLocWordNumRef::getRef(r);
 			if(ref != NULL)
 			{
-				if(_Continuation) _Continuation->release();
+				//if(_Continuation) _Continuation->release();
 				_Continuation = ref;
-				_Continuation->incRef();
+				//_Continuation->incRef();
 			}
 			else
 			{				
-				if(_Continuation) _Continuation->release();
+				//if(_Continuation) _Continuation->release();
 				_Continuation = new CProxyAgentMail(r.getId());
 			}
 			
 		}
 		else
 		{
-			if(_Continuation) _Continuation->release();
+			//if(_Continuation) _Continuation->release();
 			_Continuation = NULL;
 		}
 
@@ -307,7 +307,7 @@ namespace NLAIAGENT
 			case _TSetContinuation:
 				{
 					IObjectIA *o = (IObjectIA *)((IBaseGroupType *)p)->get();
-					o->incRef();
+					//o->incRef();
 					setContinuation(o);
 				}
 			}

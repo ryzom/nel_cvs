@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.14 2001/04/05 15:29:02 chafik Exp $
+ * $Id: codage.cpp,v 1.15 2001/04/10 12:35:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,7 +123,7 @@ namespace NLAISCRIPT
 
 
 #ifdef NL_DEBUG 
-	bool NL_AI_DEBUG_SERVER = 1;
+	bool NL_AI_DEBUG_SERVER = 0;
 #endif
 
 

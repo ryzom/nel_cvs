@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.57 2004/06/14 15:04:41 cado Exp $
+ * $Id: common.cpp,v 1.58 2004/06/18 14:11:36 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -574,6 +574,7 @@ std::string &strlwr (std::string &str)
 
 char *strlwr (char *str)
 {
+	char *base = str;
 	if (str == NULL)
 		return NULL;
 
@@ -586,7 +587,7 @@ char *strlwr (char *str)
 		str++;
 	}
 
-	return str;
+	return base;
 }
 
 std::string &strupr (std::string &str)

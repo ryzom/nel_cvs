@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.13 2002/02/12 15:47:12 berenguier Exp $
+ * $Id: export_misc.cpp,v 1.14 2002/02/26 17:30:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -641,6 +641,9 @@ void CExportNel::outputErrorMessage (Interface *ip, const char *message, const c
 		MessageBox (ip->GetMAXHWnd(), message, title, MB_OK|MB_ICONEXCLAMATION);
 	}
 	mprintf (message);
+	mprintf ("\n");
+
+	nlwarning ("Error in max file %s : ", ip->GetCurFilePath());
 	nlwarning (message);
 }
 

@@ -3876,7 +3876,7 @@ DWORD WINAPI myThread (LPVOID vData)
 						CExportNelOptions opt;
 						opt.bShadow=false;
 						opt.bExportLighting=false;
-						pShape=CExportNel::buildShape (*pNode, *pData->eproc->ip, pData->T, NULL, true, opt, true);
+						pShape=CExportNel::buildShape (*pNode, *pData->eproc->ip, pData->T, NULL, true, opt, true, true);
 
 						// Export successful ?
 						if (pShape)

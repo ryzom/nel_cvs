@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.8 2001/09/12 13:36:02 vizerie Exp $
+ * $Id: sound_system.cpp,v 1.9 2002/02/26 17:30:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 }
 
 
-void CSoundSystem::initSoundSystem(void)
+void CSoundSystem::initSoundSystem ()
 {		
 	
 	_AudioMixer = NLSOUND::UAudioMixer::createAudioMixer();
@@ -60,7 +60,7 @@ void CSoundSystem::initSoundSystem(void)
 	catch (NLMISC::Exception &e)
 	{
 		std::string mess = std::string("Unable to init sound :") + e.what();
-		::MessageBox(NULL, mess.c_str(), "Object viewer", MB_OK);
+		nlwarning ("Init sound: %s", mess.c_str());
 		_AudioMixer = NULL;
 		return;
 	}
@@ -81,7 +81,7 @@ void CSoundSystem::initSoundSystem(void)
 				{
 					std::string mess = "Unable to load sound file :" + *it
 								+ "\n" + e.what();
-					::MessageBox(NULL, mess.c_str(), "stream error", MB_OK);
+					nlwarning ("Init sound: %s", mess.c_str());
 				}
 			}					
 		

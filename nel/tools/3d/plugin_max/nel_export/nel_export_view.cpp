@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.22 2002/02/18 13:27:05 berenguier Exp $
+ * $Id: nel_export_view.cpp,v 1.23 2002/02/26 17:30:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -319,7 +319,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 						// Export the shape
 						IShape *pShape;
 						CSkeletonShape *skeletonShape=dynamic_cast<CSkeletonShape*> ((IShape*)iteSkelShape->second.SkeletonShape->Shape);
-						pShape=CExportNel::buildShape (*pNode, ip, time, &iteSkelShape->second.MapId, true, opt, true);
+						pShape=CExportNel::buildShape (*pNode, ip, time, &iteSkelShape->second.MapId, true, opt, true, true);
 
 						// Build succesful ?
 						if (pShape)
@@ -340,7 +340,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				{
 					// Export the shape
 					IShape *pShape = NULL;
-					pShape=CExportNel::buildShape (*pNode, ip, time, NULL, true, opt, true);					
+					pShape=CExportNel::buildShape (*pNode, ip, time, NULL, true, opt, true, true);
 
 					// Export successful ?
 					if (pShape)
@@ -478,20 +478,24 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		if ( opt.bExportLighting && atLeastOneLight)
 		{
 			// setup lighting and sun, if any light added. Else use std OpenGL front lighting
-			view->setupSceneLightingSystem(true, igSunDirection, igSunColor);
+			view->setupSceneLightingSystem(true, igSunDirection, CRGBA::Black, igSunColor, igSunColor);
 		}
 		else
 		{
-			// Use old Driver Light mgt.
-			view->setupSceneLightingSystem(false, igSunDirection, igSunColor);
-
 			// Build light vector
 			std::vector<CLight> vectLight;
 			CExportNel::getLights (vectLight, time, ip);
 
-			// Insert each lights
-			for (uint light=0; light<vectLight.size(); light++)
-				view->setLight (light, vectLight[light]);
+			// Light in the scene ?
+			if (!vectLight.empty())
+			{
+				// Use old Driver Light mgt.
+				view->setupSceneLightingSystem(false, igSunDirection, CRGBA::Black, igSunColor, igSunColor);
+
+				// Insert each lights
+				for (uint light=0; light<vectLight.size(); light++)
+					view->setLight (light, vectLight[light]);
+			}
 		}
 
 		// Reset the camera

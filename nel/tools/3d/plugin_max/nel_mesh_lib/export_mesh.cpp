@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.32 2002/02/11 16:54:51 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.33 2002/02/26 17:30:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 
 // Export a mesh
 IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, 
-								bool absolutePath, CExportNelOptions &opt, bool view)
+								bool absolutePath, CExportNelOptions &opt, bool view, bool errorInDialog)
 {
 	
 	// Here, we must check what kind of node we can build with this mesh.
@@ -495,7 +495,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 
 						// Must be done after the build to update vertex links
 						// Pass to buildMeshMorph if the original mesh is skinned or not
-						buildMeshMorph (buildMesh, node, time, nodeMap!=NULL);
+						buildMeshMorph (buildMesh, node, time, nodeMap!=NULL, errorInDialog, ip);
 						mesh->setBlendShapes (buildMesh.BlendShapes);
 
 						// Return this pointer
@@ -1276,7 +1276,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 }
 
 // ***************************************************************************
-void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time,bool skined)
+void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time, bool skined, bool errorInDialog, Interface& ip)
 {
 	Modifier *pMorphMod = getModifier (&node, MAX_MORPHER_CLASS_ID);
 
@@ -1292,6 +1292,10 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 			nNbVertVB = buildMesh.VertLink[i].VertVB;
 	++nNbVertVB; // Because we have the highest index to transform to a number
 
+	// Orignal number of polygons
+	uint polyCount = buildMesh.Faces.size();
+	uint vertexCount = buildMesh.Vertices.size();
+
 	for (i = 0; i < 100; ++i)
 	{
 		INode *pNode = (INode*)pMorphMod->GetReference (101+i);
@@ -1305,6 +1309,23 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 			convertMatrix(finalSpace, node.GetNodeTM(time));
 		CMesh::CMeshBuild *pMB = createMeshBuild (*pNode, time, true, pMBB, finalSpace);
 
+		// Same number of faces and vertices ?
+		if (vertexCount != pMB->Vertices.size())
+		{
+			char message[512];
+			smprintf (message, 512, "The morph target \"%s\" in slot %d has not the same vertex count than the original object \"%s\".", pNode->GetName(), i+1, node.GetName());
+			outputErrorMessage (&ip, message, "NeL Export", errorInDialog);
+			continue;
+		}
+
+		// Same number of faces and vertices ?
+		if (polyCount != pMB->Faces.size())
+		{
+			char message[512];
+			smprintf (message, 512, "The morph target \"%s\" in slot %d has not the same polygon count than the original object \"%s\".", pNode->GetName(), i+1, node.GetName());
+			outputErrorMessage (&ip, message, "NeL Export", errorInDialog);
+			continue;
+		}
 
 		bs.Name = pNode->GetName();
 

@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.11 2002/02/18 17:23:37 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.12 2002/02/26 17:30:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,7 @@ Value* export_shape_cf (Value** arg_list, int count)
 	
 	// Export
 	CExportNel::deleteLM( *node, opt );
-	if (CNelExport::exportMesh (sPath, *node, *ip, ip->GetTime(), opt))
+	if (CNelExport::exportMesh (sPath, *node, *ip, ip->GetTime(), opt, false))
 		ret = &true_value;
 
 	return ret;
@@ -168,7 +168,7 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	{
 		// Export
 		CExportNel::deleteLM( *node, opt );
-		if (CNelExport::exportMesh (sPath.c_str(), *node, *ip, ip->GetTime(), opt))
+		if (CNelExport::exportMesh (sPath.c_str(), *node, *ip, ip->GetTime(), opt, false))
 			ret = &true_value;
 	}
 	catch (Exception &e)

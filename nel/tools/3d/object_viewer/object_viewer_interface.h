@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.13 2002/02/12 15:39:30 berenguier Exp $
+ * $Id: object_viewer_interface.h,v 1.14 2002/02/26 17:30:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,7 @@ public:
 
 	/** Setup Scene lighting System. Disabled by default
 	 */
-	virtual void setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunColor)=0;
+	virtual void setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunAmbiant, NLMISC::CRGBA sunDiffuse, NLMISC::CRGBA sunSpecular)=0;
 
 
 	// Get instance

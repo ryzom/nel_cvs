@@ -1,7 +1,7 @@
 /** \file calc_lm.h
  * LightMap Calculation settings
  *
- * $Id: calc_lm.h,v 1.3 2002/02/18 13:27:53 berenguier Exp $
+ * $Id: calc_lm.h,v 1.4 2002/02/26 17:30:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,6 @@
 // ***********************************************************************************************
 
 #define NEL3D_APPDATA_LM			41654684
-#define NEL3D_APPDATA_LM_DYNAMIC	(NEL3D_APPDATA_LM)
 #define NEL3D_APPDATA_LM_GROUPNAME	(NEL3D_APPDATA_LM+1)
 #define NEL3D_APPDATA_LM_ANIMATED	(NEL3D_APPDATA_LM+2)
 

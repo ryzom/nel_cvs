@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.6 2002/02/19 13:38:46 besson Exp $
+ * $Id: zone_dependencies.cpp,v 1.7 2002/02/26 17:30:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -495,12 +495,9 @@ static bool computeIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeM
 			std::string shapePathName;
 			std::string toLoad = it->Name;
 			if (getExt(toLoad).empty()) toLoad += ".shape";
-			try
-			{
-				shapePathName = NLMISC::CPath::lookup(toLoad, false);
-			}
+			shapePathName = NLMISC::CPath::lookup(toLoad, false, false);
 
-			catch(NLMISC::Exception &)			
+			if (shapePathName.empty())
 			{
 				nlwarning("Unable to find shape %s", it->Name.c_str());
 				validBBox = false;

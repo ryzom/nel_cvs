@@ -143,6 +143,10 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /libpath:"C:\3dsmax3_1\Maxsdk\lib" /release
 # ADD LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /libpath:"C:\3dsmax3_1\Maxsdk\lib" /release
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PreLink_Cmds=buildinc version.ver nel_patch_converter.rc	rc /l 0x40c /fo"ReleaseDebug/nel_patch_converter.res" /d "NDEBUG" nel_patch_converter.rc
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 DebugFast"
 

@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.19 2002/02/18 13:27:05 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.20 2002/02/26 17:30:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std_afx.h"
 #include "nel_export.h"
 #include "../nel_mesh_lib/export_lod.h"
+#include "../nel_mesh_lib/calc_lm.h"
 #include "../nel_patch_lib/nel_patch_mesh.h"
 
 using namespace NLMISC;
@@ -121,20 +122,26 @@ public:
 	int						DontAddToScene;	
 	std::string				InstanceGroupName;
 	int						DontExport;
-	int						ExportNoteTrack;
-	int						ExportAnimatedMaterials;
 
+	// Lighting
 	std::string				LumelSizeMul;
 	std::string				SoftShadowRadius;
 	std::string				SoftShadowConeLength;
-
-
-	// misc
-	int						FloatingObject;
 	int						ExportRealTimeLight;
 	int						ExportLightMapLight;
 	int						ExportAsSunLight;
 	int						UseLightingLocalAttenuation;
+	int						ExportLightMapAnimated;
+	std::string				ExportLightMapName;
+
+	// misc
+	int						FloatingObject;
+	int						ExportNoteTrack;
+	int						ExportAnimatedMaterials;
+	int						SWT;
+	std::string				SWTWeight;
+	int						LigoSymmetry;
+	std::string				LigoRotate;
 
 
 	// Vegetable
@@ -145,10 +152,6 @@ public:
 	int						VegetableAlphaBlendOffDoubleSided;
 	int						VegetableBendCenter;
 	std::string				VegetableBendFactor;
-
-	// Ligoscape
-	int						LigoSymmetry;
-	std::string				LigoRotate;
 
 	// Dialog
 	HWND					SubDlg[TAB_COUNT];
@@ -161,7 +164,7 @@ int CALLBACK LightmapDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 int CALLBACK VegetableDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK MiscDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-const char				*SubText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lightmap", "Vegetable", "Misc"};
+const char				*SubText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lighting", "Vegetable", "Misc"};
 const int				SubTab[TAB_COUNT]	= {IDD_LOD, IDD_ACCEL, IDD_INSTANCE, IDD_LIGHTMAP, IDD_VEGETABLE, IDD_MISC};
 DLGPROC					SubProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, InstanceDialogCallback, LightmapDialogCallback, VegetableDialogCallback, MiscDialogCallback};
 
@@ -179,6 +182,14 @@ void MRMStateChanged (HWND hwndDlg)
 	EnableWindow (GetDlgItem (hwndDlg, IDC_DIST_FINEST), enable);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_DIST_MIDDLE), enable);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_DIST_COARSEST), enable);
+}
+
+// ***************************************************************************
+
+void LightingStateChanged (HWND hwndDlg, CLodDialogBoxParam *currentParam)
+{
+	bool lightmapLight = (SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_LIGHT), BM_GETCHECK, 0, 0)!=BST_UNCHECKED);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), lightmapLight);
 }
 
 // ***************************************************************************
@@ -703,6 +714,17 @@ int CALLBACK LightmapDialogCallback (
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_LUMELSIZEMUL), currentParam->LumelSizeMul.c_str());
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_RADIUS), currentParam->SoftShadowRadius.c_str());
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_CONELENGTH), currentParam->SoftShadowConeLength.c_str());
+
+			// Lighting
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_SETCHECK, currentParam->ExportRealTimeLight, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_LIGHT), BM_SETCHECK, currentParam->ExportLightMapLight, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_ANIMATED), BM_SETCHECK, currentParam->ExportLightMapAnimated, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_AS_SUN_LIGHT), BM_SETCHECK, currentParam->ExportAsSunLight, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), BM_SETCHECK, currentParam->UseLightingLocalAttenuation, 0);
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), currentParam->ExportLightMapName.c_str());
+
+			// Set enable disable
+			LightingStateChanged (hwndDlg, currentParam);
 		}
 		break;
 
@@ -712,6 +734,9 @@ int CALLBACK LightmapDialogCallback (
 				HWND hwndButton = (HWND) lParam;
 				switch (LOWORD(wParam)) 
 				{
+					case IDC_RESET_NAME:
+						SetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), "GlobalLight");
+					break;
 					case IDCANCEL:
 						EndDialog(hwndDlg, IDCANCEL);
 					break;
@@ -725,13 +750,28 @@ int CALLBACK LightmapDialogCallback (
 							currentParam->SoftShadowRadius = tmp;
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_CONELENGTH), tmp, 512);
 							currentParam->SoftShadowConeLength = tmp;
+
+							// RealTime light
+							currentParam->ExportRealTimeLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_GETCHECK, 0, 0);
+							currentParam->ExportLightMapLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_LIGHT), BM_GETCHECK, 0, 0);
+							currentParam->ExportAsSunLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_AS_SUN_LIGHT), BM_GETCHECK, 0, 0);
+							currentParam->UseLightingLocalAttenuation = SendMessage (GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), BM_GETCHECK, 0, 0);
+							currentParam->ExportLightMapAnimated = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_ANIMATED), BM_GETCHECK, 0, 0);
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), tmp, 512);
+							currentParam->ExportLightMapName = tmp;
 						}
 					break;
-					case IDC_EDIT_LUMELSIZEMUL:
-					case IDC_EDIT_SOFTSHADOW_RADIUS:
-					case IDC_EDIT_SOFTSHADOW_CONELENGTH:
+					case IDC_EXPORT_REALTIME_LIGHT:
+					case IDC_USE_LIGHT_LOCAL_ATTENUATION:
+					case IDC_EXPORT_LIGHTMAP_LIGHT:
+					case IDC_EXPORT_LIGHTMAP_ANIMATED:
+					case IDC_EXPORT_AS_SUN_LIGHT:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+
+						// Set enable disable
+						LightingStateChanged (hwndDlg, currentParam);
+
 						break;
 				}
 			}
@@ -766,7 +806,8 @@ int CALLBACK LightmapDialogCallback (
 
 		case WM_DESTROY:						
 		break;
-	
+
+
 		default:
 		return FALSE;
 	}
@@ -911,11 +952,9 @@ int CALLBACK MiscDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_LIGO_SYMMETRY), BM_SETCHECK, currentParam->LigoSymmetry, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_LIGO_ROTATE), currentParam->LigoRotate.c_str());
 
-			// Lighting
-			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_SETCHECK, currentParam->ExportRealTimeLight, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_LIGHT), BM_SETCHECK, currentParam->ExportLightMapLight, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_AS_SUN_LIGHT), BM_SETCHECK, currentParam->ExportAsSunLight, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), BM_SETCHECK, currentParam->UseLightingLocalAttenuation, 0);
+			// SWT
+			SendMessage (GetDlgItem (hwndDlg, IDC_SWT), BM_SETCHECK, currentParam->SWT, 0);
+			SetWindowText (GetDlgItem (hwndDlg, IDC_SWT_WEIGHT), currentParam->SWTWeight.c_str());
 		}
 		break;
 
@@ -940,20 +979,16 @@ int CALLBACK MiscDialogCallback (
 							GetWindowText (GetDlgItem (hwndDlg, IDC_LIGO_ROTATE), tmp, 512);
 							currentParam->LigoRotate = tmp;
 
-							// RealTime light
-							currentParam->ExportRealTimeLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_GETCHECK, 0, 0);
-							currentParam->ExportLightMapLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_LIGHT), BM_GETCHECK, 0, 0);
-							currentParam->ExportAsSunLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_AS_SUN_LIGHT), BM_GETCHECK, 0, 0);
-							currentParam->UseLightingLocalAttenuation = SendMessage (GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), BM_GETCHECK, 0, 0);
+							// SWT
+							currentParam->SWT = SendMessage (GetDlgItem (hwndDlg, IDC_SWT), BM_GETCHECK, 0, 0);
+							GetWindowText (GetDlgItem (hwndDlg, IDC_SWT_WEIGHT), tmp, 512);
+							currentParam->SWTWeight = tmp;
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
 					case IDC_FLOATING_OBJECT:
 					case IDC_EXPORT_ANIMATED_MATERIALS:
-					case IDC_EXPORT_REALTIME_LIGHT:
-					case IDC_USE_LIGHT_LOCAL_ATTENUATION:
-					case IDC_EXPORT_LIGHTMAP_LIGHT:
-					case IDC_EXPORT_AS_SUN_LIGHT:
+					case IDC_SWT:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						break;
@@ -1567,16 +1602,24 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.VegetableAlphaBlendOffDoubleSided = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED, BST_UNCHECKED);
 		param.VegetableBendCenter = CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, 0);
 		param.VegetableBendFactor = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT));
+		param.ExportLightMapName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
 
 		// Ligoscape
 		param.LigoSymmetry = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, BST_UNCHECKED);
 		param.LigoRotate = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0));
+
+		// Ligoscape
+		param.SWT = CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT, BST_UNCHECKED);
+		param.SWTWeight = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, 0.f));
 
 		// RealTimeLigt.
 		param.ExportRealTimeLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED);
 
 		// LightmapLigt. (true by default)
 		param.ExportLightMapLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, BST_CHECKED);
+
+		// LightmapLigt. (true by default)
+		param.ExportLightMapAnimated= CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED, BST_UNCHECKED);
 
 		// ExportAsSunLight.
 		param.ExportAsSunLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, BST_UNCHECKED);
@@ -1691,6 +1734,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0)) != param.LigoRotate)
 				param.LigoRotate = "";
 
+			// SWT
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT, BST_UNCHECKED) != param.SWT)
+				param.SWT = BST_INDETERMINATE;
+			if (toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, 0.f)) != param.SWTWeight)
+				param.SWTWeight = "";
+
 			// RealTimeLight
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED) != param.ExportRealTimeLight)
 				param.ExportRealTimeLight= BST_INDETERMINATE;
@@ -1699,9 +1748,19 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, BST_CHECKED) != param.ExportLightMapLight)
 				param.ExportLightMapLight= BST_INDETERMINATE;
 
+			// ExportLightMapAnimated
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED, BST_UNCHECKED) != param.ExportLightMapAnimated)
+				param.ExportLightMapAnimated= BST_INDETERMINATE;
+
 			// ExportAsSunLight
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, BST_UNCHECKED) != param.ExportAsSunLight)
 				param.ExportAsSunLight= BST_INDETERMINATE;
+
+			// Lightmap name
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight")!=param.ExportLightMapName)
+			{
+				param.ExportLightMapName = "";
+			}
 
 			// UseLightingLocalAttenuation
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED) != param.UseLightingLocalAttenuation)
@@ -1817,6 +1876,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				if (param.LigoRotate != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, param.LigoRotate);
 
+				// SWT
+				if (param.SWT != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT, param.SWT);
+				if (param.SWTWeight != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, param.SWTWeight);
+
 				// RealTime Light.
 				if (param.ExportRealTimeLight != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, param.ExportRealTimeLight);
@@ -1825,9 +1890,17 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				if (param.ExportLightMapLight != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, param.ExportLightMapLight);
 
+				// ExportLightMapAnimated.
+				if (param.ExportLightMapAnimated != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED, param.ExportLightMapAnimated);
+
 				// ExportAsSunLight.
 				if (param.ExportAsSunLight != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, param.ExportAsSunLight);
+
+				// ExportLightMapName
+				if (param.ExportLightMapName != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, param.ExportLightMapName);
 
 				// UseLightingLocalAttenuation
 				if (param.UseLightingLocalAttenuation != BST_INDETERMINATE)

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.55 2002/02/12 15:39:30 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.56 2002/02/26 17:30:22 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -278,14 +278,36 @@ CObjectViewer::CObjectViewer ()
 		}
 		try
 		{
-			CConfigFile::CVar &var = cf.getVar("scene_light_sun_color");
-			_SceneLightSunColor.R = var.asInt(0);
-			_SceneLightSunColor.G = var.asInt(1);
-			_SceneLightSunColor.B = var.asInt(2);
+			CConfigFile::CVar &var = cf.getVar("scene_light_sun_ambiant");
+			_SceneLightSunAmbiant.R = var.asInt(0);
+			_SceneLightSunAmbiant.G = var.asInt(1);
+			_SceneLightSunAmbiant.B = var.asInt(2);
 		}
 		catch (EUnknownVar &)
 		{
-			_SceneLightSunColor= NLMISC::CRGBA::White;
+			_SceneLightSunAmbiant= NLMISC::CRGBA::Black;
+		}
+		try
+		{
+			CConfigFile::CVar &var = cf.getVar("scene_light_sun_diffuse");
+			_SceneLightSunDiffuse.R = var.asInt(0);
+			_SceneLightSunDiffuse.G = var.asInt(1);
+			_SceneLightSunDiffuse.B = var.asInt(2);
+		}
+		catch (EUnknownVar &)
+		{
+			_SceneLightSunDiffuse= NLMISC::CRGBA::White;
+		}
+		try
+		{
+			CConfigFile::CVar &var = cf.getVar("scene_light_sun_specular");
+			_SceneLightSunSpecular.R = var.asInt(0);
+			_SceneLightSunSpecular.G = var.asInt(1);
+			_SceneLightSunSpecular.B = var.asInt(2);
+		}
+		catch (EUnknownVar &)
+		{
+			_SceneLightSunSpecular= NLMISC::CRGBA::White;
 		}
 		try
 		{
@@ -358,7 +380,7 @@ void CObjectViewer::initUI (HWND parent)
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	// init sound
-	CSoundSystem::initSoundSystem();
+	CSoundSystem::initSoundSystem ();
 
 	// The fonts manager
 	_FontManager.setMaxMemory(2000000);
@@ -439,7 +461,7 @@ void CObjectViewer::initUI (HWND parent)
 	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
 
 	// Init default lighting seutp.
-	setupSceneLightingSystem(_SceneLightEnabled, _SceneLightSunDir, _SceneLightSunColor);
+	setupSceneLightingSystem(_SceneLightEnabled, _SceneLightSunDir, _SceneLightSunAmbiant, _SceneLightSunDiffuse, _SceneLightSunSpecular);
 
 	// Camera
 	initCamera (_CameraFocal);
@@ -1845,14 +1867,14 @@ void CObjectViewer::addInstanceGroup(NL3D::CInstanceGroup *ig)
 }
 
 // ***************************************************************************
-void CObjectViewer::setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunColor)
+void CObjectViewer::setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunAmbiant, NLMISC::CRGBA sunDiffuse, NLMISC::CRGBA sunSpecular)
 {
 	CNELU::Scene.enableLightingSystem(enable);
 
 	// Setup sun.
-	CNELU::Scene.setSunAmbient(NLMISC::CRGBA::Black);
-	CNELU::Scene.setSunDiffuse(sunColor);
-	CNELU::Scene.setSunSpecular(sunColor);
+	CNELU::Scene.setSunAmbient(sunAmbiant);
+	CNELU::Scene.setSunDiffuse(sunDiffuse);
+	CNELU::Scene.setSunSpecular(sunSpecular);
 	CNELU::Scene.setSunDirection(sunDir);
 }
 

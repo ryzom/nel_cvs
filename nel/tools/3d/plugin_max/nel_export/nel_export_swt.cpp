@@ -1,7 +1,7 @@
 /** \file nel_export_swt.cpp
  * <File description>
  *
- * $Id: nel_export_swt.cpp,v 1.4 2001/10/29 09:35:56 corvazier Exp $
+ * $Id: nel_export_swt.cpp,v 1.5 2002/02/26 17:30:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,15 +31,10 @@
 #include "3d/skeleton_weight.h"
 #include "nel/misc/file.h"
 #include "../nel_mesh_lib/export_nel.h"
+#include "../nel_mesh_lib/export_lod.h"
 
 using namespace NL3D;
 using namespace NLMISC;
-
-#define NEL_SWT_CLASS_ID_A 0x9765367
-#define NEL_SWT_CLASS_ID_B 0x4b4a356a
-
-
-
 
 bool CNelExport::exportSWT(const char *sPath, std::vector<INode*>& vectNode, Interface& ip)
 {
@@ -58,28 +53,30 @@ bool CNelExport::exportSWT(const char *sPath, std::vector<INode*>& vectNode, Int
 	{
 		// Get the SWT Modifier
 		INode *pNode = *it;
-		Modifier *pModifier = CExportNel::getModifier (pNode,Class_ID(NEL_SWT_CLASS_ID_A, NEL_SWT_CLASS_ID_B) );
-		if (pModifier == NULL) continue;
 
-		// Get the value of the parameters
-		CExportNel::getValueByNameUsingParamBlock2( *pModifier, "swtPosValue", (ParamType2)TYPE_FLOAT, &rPosValue, 0);
-		CExportNel::getValueByNameUsingParamBlock2( *pModifier, "swtRotValue", (ParamType2)TYPE_FLOAT, &rRotValue, 0);
-		CExportNel::getValueByNameUsingParamBlock2( *pModifier, "swtScaleValue", (ParamType2)TYPE_FLOAT, &rScaleValue, 0);
+		// SWT active ?
+		if (CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_EXPORT_SWT, BST_UNCHECKED) != BST_UNCHECKED)
+		{
+			// Get the value
+			rPosValue = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, 0.f);
+			rRotValue = rPosValue;
+			rScaleValue = rPosValue;
 
-		// Store them in the temporary list
-		aSWNodes.resize(nNumNode+3);
-		aSWNodes[nNumNode].Name = pNode->GetName();
-		aSWNodes[nNumNode].Name += std::string (".")+ITransformable::getRotQuatValueName();
-		aSWNodes[nNumNode].Weight = rRotValue;
-		++nNumNode;
-		aSWNodes[nNumNode].Name = pNode->GetName();
-		aSWNodes[nNumNode].Name += std::string (".")+ITransformable::getPosValueName ();
-		aSWNodes[nNumNode].Weight = rPosValue;
-		++nNumNode;
-		aSWNodes[nNumNode].Name = pNode->GetName();
-		aSWNodes[nNumNode].Name += std::string (".")+ITransformable::getScaleValueName();
-		aSWNodes[nNumNode].Weight = rScaleValue;
-		++nNumNode;
+			// Store them in the temporary list
+			aSWNodes.resize(nNumNode+3);
+			aSWNodes[nNumNode].Name = pNode->GetName();
+			aSWNodes[nNumNode].Name += std::string (".")+ITransformable::getRotQuatValueName();
+			aSWNodes[nNumNode].Weight = rRotValue;
+			++nNumNode;
+			aSWNodes[nNumNode].Name = pNode->GetName();
+			aSWNodes[nNumNode].Name += std::string (".")+ITransformable::getPosValueName ();
+			aSWNodes[nNumNode].Weight = rPosValue;
+			++nNumNode;
+			aSWNodes[nNumNode].Name = pNode->GetName();
+			aSWNodes[nNumNode].Name += std::string (".")+ITransformable::getScaleValueName();
+			aSWNodes[nNumNode].Weight = rScaleValue;
+			++nNumNode;
+		}
 	}
 
 	if (aSWNodes.size())

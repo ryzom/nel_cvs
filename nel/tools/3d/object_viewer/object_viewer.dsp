@@ -116,6 +116,10 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 # ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib freetype.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PreLink_Cmds=buildinc version.ver object_viewer.rc	rc /l 0x40c /fo"ReleaseDebug/object_viewer.res" /d "NDEBUG" /d "_AFXDLL" object_viewer.rc
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
 

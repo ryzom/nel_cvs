@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.10 2001/12/06 14:31:46 corvazier Exp $
+ * $Id: nel_export.h,v 1.11 2002/02/26 17:30:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,7 @@ public:
 	void getSelectedNode (std::vector<INode*>& vectNode);
 
 	static	bool	exportZone	(const char *sName, INode& node, TimeValue time);
-	static	bool	exportMesh	(const char *sPath, INode& node, Interface& ip, TimeValue time, CExportNelOptions &opt);
+	static	bool	exportMesh	(const char *sPath, INode& node, Interface& ip, TimeValue time, CExportNelOptions &opt, bool errorInDialog);
 	static	bool	exportAnim	(const char *sPath, std::vector<INode*>& vectNode, Interface& ip, TimeValue time, bool scene);
 	static	bool	exportSWT	(const char *sPath, std::vector<INode*>& vectNode, Interface& ip);
 	//static	bool	exportScene	(std::vector<INode*>& vectNode);

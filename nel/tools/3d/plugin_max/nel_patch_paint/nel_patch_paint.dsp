@@ -145,6 +145,10 @@ LINK32=link.exe
 # SUBTRACT BASE LINK32 /pdb:none
 # ADD LINK32 Maxscrpt.lib helpsys.lib freetype.lib winmm.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelpaintpatch.dlm" /release
 # SUBTRACT LINK32 /pdb:none
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PreLink_Cmds=buildinc version.ver nel_patch_paint.rc	rc /l 0x409 /fo"ReleaseDebug/nel_patch_paint.res" /d "NDEBUG" nel_patch_paint.rc
+# End Special Build Tool
 
 !ENDIF 
 

@@ -801,7 +801,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 BOOL CMainFrame::OnEraseBkgnd(CDC* pDC) 
 {
 	// TODO: Add your message handler code here and/or call default
-	return FALSE;
+	return TRUE;
 }
 
 void CMainFrame::OnUpdateWindowAnimation(CCmdUI* pCmdUI) 
@@ -915,6 +915,4 @@ void CMainFrame::OnActivateTextureSet(UINT nID)
 
 	ObjView->activateTextureSet(convIndex[nID - IDM_ACTIVATE_TEXTURE_SET_1]);	
 }
-
-
 

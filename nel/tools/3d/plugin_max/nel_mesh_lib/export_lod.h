@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.15 2002/02/18 13:27:53 berenguier Exp $
+ * $Id: export_lod.h,v 1.16 2002/02/26 17:30:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,9 @@
 /// Export As Sun Light
 #define NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT			(1423062591)
 
+/// SWT weight for bones
+#define NEL3D_APPDATA_EXPORT_SWT					(1423062600)
+#define NEL3D_APPDATA_EXPORT_SWT_WEIGHT				(1423062601)
 
 // ***************************************************************************
 

@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.21 2002/01/03 13:12:56 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.22 2002/02/26 17:30:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -350,7 +350,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
 								CExportNel::deleteLM( *pNode, theExportSceneStruct );
 								// Export the mesh
-								if (!theCNelExport.exportMesh (sSavePath, *pNode, *theCNelExport.ip, time, theExportSceneStruct))
+								if (!theCNelExport.exportMesh (sSavePath, *pNode, *theCNelExport.ip, time, theExportSceneStruct, true))
 								{
 									// Error message
 									char sErrorMsg[512];

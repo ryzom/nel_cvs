@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.32 2002/02/18 13:27:53 berenguier Exp $
+ * $Id: calc_lm.cpp,v 1.33 2002/02/26 17:30:24 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,11 +134,7 @@ void SLightBuild::convertFromMaxLight (INode *node,TimeValue tvTime)
 		return;
 
 	// Is the light is animatable ? (TEMP MAT)
-	int bDynamic = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_DYNAMIC, 0);
-	if( bDynamic )
-		this->GroupName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
-	else
-		this->GroupName = "GlobalLight";
+	this->GroupName = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_GROUPNAME, "GlobalLight");
 
 	// Eval the light state fot this tvTime
 	// Set the light mode
@@ -2399,9 +2395,27 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			//string sSaveName = AllMeshBuilds[nNode].second->GetName();
 			string sSaveName = ZeNode.GetName();
 			char tmp[32];
+			sSaveName += "_";
 			sprintf( tmp, "%d", nLightMapNb );
 			sSaveName += tmp;
 			sSaveName += ".tga";
+			
+			// Get the name of the max project
+			char projectName[512];
+			_splitpath (ip.GetCurFileName(), NULL, NULL, projectName, NULL);
+
+			// Concat name of the project with name of the file
+			sSaveName = (const char*)projectName + std::string ("_") + sSaveName;
+			sSaveName = strlwr (sSaveName);
+
+			// Remove spaces
+			uint i;
+			for (i=0; i<sSaveName.length(); i++)
+			{
+				if (sSaveName[i] == ' ')
+					sSaveName[i] = '_';
+			}
+
 			pLightMap->setFileName( sSaveName );
 			sSaveName = gOptions.sExportLighting;
 			if( sSaveName[sSaveName.size()-1] != '\\' ) sSaveName += "\\";

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.30 2002/02/12 15:39:30 berenguier Exp $
+ * $Id: object_viewer.h,v 1.31 2002/02/26 17:30:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -284,7 +284,7 @@ public:
 
 	/** inherited from CObjectViewerInterface
 	 */
-	virtual void setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunColor);
+	virtual void setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunAmbiant, NLMISC::CRGBA sunDiffuse, NLMISC::CRGBA sunSpecular);
 
 	/// \name Landscape Vegetable Edition
 	// @{
@@ -401,7 +401,9 @@ private:
 	// Lightigng Setup (from cfg).
 	bool										_SceneLightEnabled;
 	NLMISC::CVector								_SceneLightSunDir;
-	NLMISC::CRGBA								_SceneLightSunColor;
+	NLMISC::CRGBA								_SceneLightSunAmbiant;
+	NLMISC::CRGBA								_SceneLightSunDiffuse;
+	NLMISC::CRGBA								_SceneLightSunSpecular;
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

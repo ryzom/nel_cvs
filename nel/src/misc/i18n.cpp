@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.13 2001/01/02 09:20:21 lecroart Exp $
+ * $Id: i18n.cpp,v 1.14 2001/01/12 10:14:33 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -332,7 +332,7 @@ void CI18N::load (uint32 lid)
 			pr = _StrMap.insert (ValueStrMap (codstr, trsstr));
 			if (!pr.second)
 			{
-				nlwarning ("already exists, ignored");
+				nlwarning ("the string '%s' is duplicate in the langage file '%s' line %d, ignored the last one", codstr.c_str(), _FileName.c_str(), line);
 			}
 		}
 	}

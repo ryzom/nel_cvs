@@ -40,6 +40,9 @@ static char THIS_FILE[] = __FILE__;
 #define ID_MENU_BACKUP_RESTORE_ONE	0x0063
 #define ID_MENU_REGION_DELETE		0x0064
 #define ID_MENU_REGION_BACKUP_ONE	0x0065
+#define ID_MENU_REGION_SET_ACTIVE	0x0066
+#define ID_MENU_REGION_NEW_PRIM		0x0067
+#define ID_MENU_REGION_NEW_GEORGES	0x0068
 
 // ---------------------------------------------------------------------------
 
@@ -78,6 +81,9 @@ BEGIN_MESSAGE_MAP (CMasterTree, CTreeCtrl)
 	ON_COMMAND(ID_MENU_BACKUP_RESTORE_ONE,	OnMenuBackupRestoreOne)
 	ON_COMMAND(ID_MENU_REGION_DELETE,		OnMenuRegionDelete)
 	ON_COMMAND(ID_MENU_REGION_BACKUP_ONE,	OnMenuRegionBackupOne)
+	ON_COMMAND(ID_MENU_REGION_SET_ACTIVE,	OnMenuRegionSetActive)
+	ON_COMMAND(ID_MENU_REGION_NEW_PRIM,		OnMenuRegionNewPrim)
+	ON_COMMAND(ID_MENU_REGION_NEW_GEORGES,	OnMenuRegionNewGeorges)
 
 END_MESSAGE_MAP()
 
@@ -86,6 +92,7 @@ CMasterTree::CMasterTree ()
 {
 	_LDrag = false;
 	_LastItemSelected = NULL;
+	_LastActiveRegion = NULL;
 }
 
 // ---------------------------------------------------------------------------
@@ -152,6 +159,8 @@ void CMasterTree::OnLButtonDown (UINT nFlags, CPoint point)
 		Expand (hItem, TVE_EXPAND);
 	}
 	Select (hItem, TVGN_CARET);
+
+	CTreeCtrl::OnLButtonDown (nFlags, point);
 }
 
 // ---------------------------------------------------------------------------
@@ -164,21 +173,41 @@ void CMasterTree::OnLButtonDblClk (UINT nFlags, CPoint point)
 	{
 		CMasterTreeDlg *pDlg = (CMasterTreeDlg*)GetParent();
 
+		if (hParent == NULL)
+			return;
+
 		if ((hParent != NULL) && (GetParentItem (hParent) == NULL))
 		{
 			// Double click on a region open all editors
 			// Parse all files and open them in the good editor
 			HTREEITEM hChildItem = GetChildItem (hItem);
-
 			while (hChildItem != NULL)
 			{
 				pDlg->openAnyFileFromItem (hChildItem);
 				hChildItem = GetNextItem (hChildItem, TVGN_NEXT);
 			}
+			OnMenuRegionSetActive ();
 			return;
 		}
 		else
 		{
+			// Found the region item in which the file has been clicked
+			HTREEITEM hRegion = hParent;
+			hParent = GetParentItem (hRegion);
+
+			while (GetParentItem(hParent) != NULL)
+			{
+				hRegion = hParent;
+				hParent = GetParentItem (hRegion);
+			}
+
+			CMasterTreeDlg *pDlg = (CMasterTreeDlg*)GetParent ();
+			if (_LastActiveRegion != NULL)
+				SetItem (_LastActiveRegion, TVIF_STATE, NULL, 0, 0, 0, TVIS_BOLD, 0);
+			SetItem (hRegion, TVIF_STATE, NULL, 0, 0, TVIS_BOLD, TVIS_BOLD, 0);
+			_LastActiveRegion = hRegion;
+			pDlg->selectRegion (string((LPCSTR)GetItemText(hRegion)), string((LPCSTR)GetItemText(hParent)));
+			// Open the file
 			pDlg->openAnyFileFromItem (hItem);
 		}
 	}
@@ -366,16 +395,21 @@ void CMasterTree::OnRButtonDown (UINT nFlags, CPoint point)
 		{
 			if (GetItemText(hParent) == "Trash")
 			{
+				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_SET_ACTIVE, "&Set Active");
 				pMenu->AppendMenu (MF_STRING, ID_MENU_TRASH_DELETE, "&Delete");
 				pMenu->AppendMenu (MF_STRING, ID_MENU_TRASH_RESTORE_ONE, "&Restore");
 			}
 			if (GetItemText(hParent) == "Backup")
 			{
+				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_SET_ACTIVE, "&Set Active");
 				pMenu->AppendMenu (MF_STRING, ID_MENU_BACKUP_DELETE, "&Delete");
 				pMenu->AppendMenu (MF_STRING, ID_MENU_BACKUP_RESTORE_ONE, "&Restore");
 			}
 			if (GetItemText(hParent) == "Regions")
 			{
+				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_SET_ACTIVE, "&Set Active");
+				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_NEW_PRIM, "New &Patat");
+				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_NEW_GEORGES, "New &Form");
 				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_DELETE, "&Delete");
 				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_BACKUP_ONE, "&Backup");
 			}
@@ -529,6 +563,33 @@ void CMasterTree::OnMenuRegionBackupOne ()
 	pDlg->regionBackupOne (GetItemText(GetSelectedItem()));
 }
 
+// ---------------------------------------------------------------------------
+void CMasterTree::OnMenuRegionSetActive ()
+{
+	CMasterTreeDlg *pDlg = (CMasterTreeDlg*)GetParent ();
+	HTREEITEM hItem = GetSelectedItem ();
+	HTREEITEM hParent = GetParentItem (hItem);
+
+	if (_LastActiveRegion != NULL)
+		SetItem (_LastActiveRegion, TVIF_STATE, NULL, 0, 0, 0, TVIS_BOLD, 0);
+	SetItem (hItem, TVIF_STATE, NULL, 0, 0, TVIS_BOLD, TVIS_BOLD, 0);
+	_LastActiveRegion = hItem;
+	pDlg->selectRegion (string((LPCSTR)GetItemText(hItem)), string((LPCSTR)GetItemText(hParent)));
+}
+
+// ---------------------------------------------------------------------------
+void CMasterTree::OnMenuRegionNewPrim ()
+{
+	CMasterTreeDlg *pDlg = (CMasterTreeDlg*)GetParent();
+	pDlg->regionNewPrim (GetItemText(GetSelectedItem()));
+}
+
+// ---------------------------------------------------------------------------
+void CMasterTree::OnMenuRegionNewGeorges ()
+{
+	CMasterTreeDlg *pDlg = (CMasterTreeDlg*)GetParent();
+	pDlg->regionNewGeorges (GetItemText(GetSelectedItem()));
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CMasterTreeDlg dialog
@@ -747,18 +808,44 @@ void CMasterTreeDlg::update (const string &path)
 	// Parse all the path
 	char sCurDir[MAX_PATH];
 	GetCurrentDirectory (MAX_PATH, sCurDir);
-	//parseAdd (TVI_ROOT, path);
 	HTREEITEM hItemReg = pTree->InsertItem ("Regions", 2, 2, TVI_ROOT);
 	parseAdd (hItemReg, path + "Regions", RegionSortBy);
 	pTree->Expand (hItemReg, TVE_EXPAND);
-	HTREEITEM hItem = pTree->InsertItem ("Trash", 4, 4, TVI_ROOT);
-	parseAdd (hItem, path + "Trash", TrashSortBy);
-	pTree->Expand (hItem, TVE_EXPAND);
-	hItem = pTree->InsertItem ("Backup", 3, 3, TVI_ROOT);
-	parseAdd (hItem, path + "Backup", BackupSortBy);
-	pTree->Expand (hItem, TVE_EXPAND);
+	HTREEITEM hItemTrash = pTree->InsertItem ("Trash", 4, 4, TVI_ROOT);
+	parseAdd (hItemTrash, path + "Trash", TrashSortBy);
+	pTree->Expand (hItemTrash, TVE_EXPAND);
+	HTREEITEM hItemBack = pTree->InsertItem ("Backup", 3, 3, TVI_ROOT);
+	parseAdd (hItemBack, path + "Backup", BackupSortBy);
+	pTree->Expand (hItemBack, TVE_EXPAND);
 	pTree->EnsureVisible(hItemReg);
 	SetCurrentDirectory (sCurDir);
+	// Hilight active region
+	CMainFrame *pMF = (CMainFrame *)GetParent ();
+	HTREEITEM hItem;
+	if (pMF->getActiveRegionPath() == "Regions")
+		hItem = hItemReg;
+	else if (pMF->getActiveRegionPath() == "Trash")
+		hItem = hItemTrash;
+	else if (pMF->getActiveRegionPath() == "Backup")
+		hItem = hItemBack;
+	else return;
+	HTREEITEM hChildItem = pTree->GetChildItem (hItem);
+	bool bFound = false;
+	while (hChildItem != NULL)
+	{
+		if (pMF->getActiveRegion() == (LPCSTR)pTree->GetItemText(hChildItem))
+		{
+			pTree->SetItem (hChildItem, TVIF_STATE, NULL, 0, 0, TVIS_BOLD, TVIS_BOLD, 0);
+			bFound = true;
+			break;
+		}
+
+		hChildItem = pTree->GetNextItem (hChildItem, TVGN_NEXT);
+	}
+	if (!bFound)
+	{
+		pMF->setActiveRegion ("","");
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -796,7 +883,6 @@ BOOL CMasterTreeDlg::OnInitDialog()
 // ---------------------------------------------------------------------------
 void CMasterTreeDlg::OnSize (UINT nType, int cx, int cy)
 {
-//	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_TREE);
 	if (_Tree)
 		_Tree->SetWindowPos (&wndTop, 0, 0, cx-20, cy-20, SWP_NOMOVE);
 }
@@ -823,12 +909,16 @@ void CMasterTreeDlg::openAnyFile (const char *fname)
 	{
 		pMF->openWorldEditor ();
 		pMF->openWorldEditorFile (fname);
+		return;
 	}
 	if (stricmp(&fname[size-6],".logic") == 0)
 	{
 		pMF->openLogicEditor ();
 		pMF->openLogicEditorFile (fname);
+		return;
 	}
+	pMF->openGeorges ();
+	pMF->openGeorgesFile (fname);
 }
 
 // ---------------------------------------------------------------------------
@@ -837,7 +927,7 @@ void CMasterTreeDlg::openAnyFileFromItem (HTREEITEM hItem)
 	map<HTREEITEM,string>::iterator it = _Files.find (hItem);
 	if (it != _Files.end())
 	{
-		openAnyFile(it->second.c_str());
+		openAnyFile (it->second.c_str());
 	}
 }
 
@@ -954,6 +1044,26 @@ void CMasterTreeDlg::regionBackupOne (const char *str)
 {
 	CMainFrame *pMF = (CMainFrame *)GetParent();
 	pMF->regionBackupOne (str);
+}
+// ---------------------------------------------------------------------------
+void CMasterTreeDlg::regionNewPrim (const char *str)
+{
+	CMainFrame *pMF = (CMainFrame *)GetParent();
+	pMF->regionNewPrim (str);
+}
+
+// ---------------------------------------------------------------------------
+void CMasterTreeDlg::regionNewGeorges (const char *str)
+{
+	CMainFrame *pMF = (CMainFrame *)GetParent();
+	pMF->regionNewGeorges (str);
+}
+
+// ---------------------------------------------------------------------------
+void CMasterTreeDlg::selectRegion (const string &Region, const string &Directory)
+{
+	CMainFrame *pMF = (CMainFrame *)GetParent();
+	pMF->setActiveRegion (Region, Directory);
 }
 
 // ---------------------------------------------------------------------------

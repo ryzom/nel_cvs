@@ -6,10 +6,13 @@
 
 #include "MainFrm.h"
 #include "NewRegion.h"
+#include "NewGeorgesFormDlg.h"
+#include "PrimNameDlg.h"
 #include "ChooseTag.h"
 #include "ChooseDir.h"
+#include "exportdlg.h"
+#include "exportcbdlg.h"
 
-#include "/code/nel/tools/3d/ligo/worldeditor/worldeditor_interface.h"
 #include "/code/nel/tools/leveldesign/georges/georges_interface.h"
 #include "/code/nel/tools/leveldesign/logic_editor/logic_editor_interface.h"
 
@@ -30,7 +33,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 
 // ---------------------------------------------------------------------------
-CEnvironnement::CEnvironnement()
+SEnvironnement::SEnvironnement()
 {
 	MasterX				= 0;
 	MasterY				= 0;
@@ -65,9 +68,13 @@ CEnvironnement::CEnvironnement()
 }
 
 // ---------------------------------------------------------------------------
-void CEnvironnement::serial (NLMISC::IStream& s)
+void SEnvironnement::serial (NLMISC::IStream& s)
 {
-	sint version = s.serialVersion (0);
+	sint version = s.serialVersion (1);
+
+	if (version > 0)
+		s.serial (ExportOptions);
+
 	s.serial (MasterX);
 	s.serial (MasterY);
 	s.serial (MasterTreeX);
@@ -82,7 +89,7 @@ void CEnvironnement::serial (NLMISC::IStream& s)
 	s.serial (WorldEdY);
 	s.serial (WorldEdCX);
 	s.serial (WorldEdCY);
-
+ 
 	s.serial (GeorgesOpened);
 	s.serial (GeorgesX);
 	s.serial (GeorgesY);
@@ -97,6 +104,35 @@ void CEnvironnement::serial (NLMISC::IStream& s)
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// CMasterCB
+/////////////////////////////////////////////////////////////////////////////
+
+// ---------------------------------------------------------------------------
+CMasterCB::CMasterCB ()
+{
+	_MainFrame = NULL;
+}
+
+// ---------------------------------------------------------------------------
+void CMasterCB::setMainFrame (CMainFrame*pMF)
+{
+	_MainFrame = pMF;
+}
+
+// ---------------------------------------------------------------------------
+vector<string> &CMasterCB::getAllPrimZoneNames ()
+{
+	return _PrimZoneList;
+}
+
+// ---------------------------------------------------------------------------
+void CMasterCB::setAllPrimZoneNames (vector<string> &primZoneList)
+{
+	_PrimZoneList = primZoneList;
+	_MainFrame->georgesUpdatePatatoid();
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // CMainFrame
 /////////////////////////////////////////////////////////////////////////////
 
@@ -108,6 +144,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	ON_COMMAND(ID_REGION_NEW, onRegionNew)
 	ON_COMMAND(ID_REGION_SAVE, onRegionSave)
+	ON_COMMAND(ID_REGION_EXPORT, onRegionExport)
 
 	ON_COMMAND(ID_REGION_EMPTY_TRASH, onRegionEmptyTrash)
 	ON_COMMAND(ID_REGION_EMPTY_BACKUP, onRegionEmptyBackup)
@@ -304,15 +341,18 @@ void CMainFrame::openGeorges ()
 		return;
 	_Environnement.GeorgesOpened = true;
 	if (_Georges != NULL)
+	{
 		_Georges->initUILight (_Environnement.GeorgesX, _Environnement.GeorgesY, 
 								_Environnement.GeorgesCX, _Environnement.GeorgesCY);
+	}
 	GetMenu()->CheckMenuItem (ID_WINDOWS_GEORGES, MF_CHECKED);
 }
 
 // ---------------------------------------------------------------------------
 void CMainFrame::openGeorgesFile (const char *fileName)
 {
-//	_Georges->loadFile (fileName);
+	_Georges->SetWorkDirectory (_Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion);
+	_Georges->LoadDocument (fileName);
 }
 
 // ---------------------------------------------------------------------------
@@ -330,6 +370,74 @@ void CMainFrame::closeGeorges ()
 	_Environnement.GeorgesCX = r.right - r.left;
 	_Georges->releaseUI ();
 	GetMenu()->CheckMenuItem (ID_WINDOWS_GEORGES, MF_UNCHECKED);
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::georgesUpdatePatatoid ()
+{
+	if (_Georges == NULL)
+		return;
+	_Georges->SetWorkDirectory (_Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion);
+	_Georges->SetTypPredef ("patat_name.typ", _MasterCB.getAllPrimZoneNames());
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::georgesCreateFilesWhenNewRegion ()
+{
+	// When we arrive in this function the current directory is the new region being created
+	if (_Georges == NULL)
+		return;
+
+	CreateDirectory ("dfn", NULL);
+	char curdir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, curdir);
+	string fullname = string(curdir) + "\\dfn\\patat_name.typ";
+	vector< pair< string, string > > lpsx;
+	vector< pair< string, string > > lpsx2;
+	lpsx.push_back (make_pair(string("PatatFrite"),	string("PatatFrite")));
+	lpsx.push_back (make_pair(string("PatatVapeur"), string("PatatVapeur")));
+	_Georges->MakeTyp (fullname, "string", "PATAT", "true", "", "", "PatatFrite", &lpsx, &lpsx2);
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::georgesCreatePlantName ()
+{
+	WIN32_FIND_DATA fdTmp;
+	char curdir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, curdir);
+
+	string plantname = _Environnement.RootDir + "common\\dfn\\";
+	if (!SetCurrentDirectory(plantname.c_str()))
+		return;
+
+	plantname += "plant_name.typ";
+
+	// If plantname file do not already exists
+	if (FindFirstFile(plantname.c_str(), &fdTmp) == INVALID_HANDLE_VALUE)
+	{
+		vector< pair< string, string > > lpsx;
+		vector< pair< string, string > > lpsx2;
+		lpsx.push_back (std::make_pair(string("xxx.plant"),	string("xxx.plant")));
+		lpsx.push_back (std::make_pair(string("yyy.plant"), string("yyy.plant")));
+ 		_Georges->MakeTyp (plantname, "string", "PLANT", "true", "", "", "xxx.plant", &lpsx, &lpsx2);
+	}
+
+	// Parse the plant directory and add all these predef
+	string plantdir = _Environnement.RootDir + "common\\plant";
+	SetCurrentDirectory (plantdir.c_str());
+
+	vector<string> allPlants;
+	HANDLE hFind = FindFirstFile ("*.plant", &fdTmp);
+	while (hFind != INVALID_HANDLE_VALUE)
+	{
+		allPlants.push_back (string(fdTmp.cFileName));
+		if (FindNextFile (hFind, &fdTmp) == 0)
+			break;
+	}
+	FindClose (hFind);
+	_Georges->SetTypPredef ("plant_name.typ", allPlants);
+
+	SetCurrentDirectory (curdir);
 }
 
 // ---------------------------------------------------------------------------
@@ -800,6 +908,67 @@ void CMainFrame::regionBackupOne	(const char *str)
 }
 
 // ---------------------------------------------------------------------------
+void CMainFrame::regionNewPrim (const char *str)
+{
+	if (_WorldEditor != NULL)
+	{
+		// Ask the name to the user
+		CPrimNameDlg dial;
+		if (dial.DoModal() == IDOK)
+		{
+			string primname = dial.str;
+			string sTmp = _Environnement.RootDir + "Regions\\" + str + "\\" + primname;
+			_WorldEditor->createEmptyPrimFile (sTmp.c_str());
+			updateTree ();
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::regionNewGeorges (const char *str)
+{
+	if (_Georges == NULL)
+		return;
+	CNewGeorgesFormDlg dial;
+	if (dial.DoModal() == IDOK)
+	{
+		// Ask the user the .dfn to use
+		char curdir[MAX_PATH];
+		GetCurrentDirectory (MAX_PATH, curdir);
+		string newDir = _Environnement.RootDir + "common\\dfn";
+		SetCurrentDirectory (newDir.c_str());
+
+		CFileDialog fd (true, "*.dfn", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,
+						"Definition (*.dfn)|*.dfn", this);
+
+		if (fd.DoModal() == IDOK)
+		{
+			string sTmp = _Environnement.RootDir + "Regions\\" + str + "\\" + (LPCSTR)dial.str;
+			_Georges->SetWorkDirectory (_Environnement.RootDir + "Regions\\" + str);
+			_Georges->createInstanceFile (sTmp, (LPCSTR)fd.GetFileName());
+		}
+
+		SetCurrentDirectory (curdir);
+		updateTree ();
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::setActiveRegion (const std::string &Region, const std::string &Dir)
+{
+	_ActiveRegion = Region;
+	_ActiveRegionPath = Dir;
+	if (_Georges != NULL)
+		_Georges->SetWorkDirectory (_Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion);
+
+	if (_Environnement.WorldEdOpened)
+	{
+		string sTmp = _Environnement.RootDir + _ActiveRegionPath + "\\" + _ActiveRegion + "\\" + _ActiveRegion + ".land";
+		openWorldEditorFile (sTmp.c_str());
+	}
+}
+
+// ---------------------------------------------------------------------------
 void CMainFrame::OnSize (UINT nType, int cx, int cy)
 {
 }
@@ -843,7 +1012,11 @@ int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 
 	// WORLDEDITOR
 	if (_WorldEditor != NULL)
+	{
+		_MasterCB.setMainFrame (this);
+		_WorldEditor->setMasterCB (&_MasterCB);
 		_WorldEditor->setRootDir (_Environnement.RootDir.c_str());
+	}
 	if (_Environnement.WorldEdOpened)
 	{ 
 		_Environnement.WorldEdOpened = false;
@@ -851,8 +1024,11 @@ int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 	}
 
 	// GEORGES
-//	if (_Georges != NULL)
-//		_Georges->setRootDir (_Environnement.RootDir.c_str());
+	if (_Georges != NULL)
+	{
+		_Georges->SetRootDirectory (_Environnement.RootDir+"common");
+		georgesCreatePlantName ();		
+	}
 	if (_Environnement.GeorgesOpened)
 	{ 
 		_Environnement.GeorgesOpened = false;
@@ -928,37 +1104,53 @@ void CMainFrame::createDirIfNotExist (const string& dirName, const string& error
 void CMainFrame::onRegionNew ()
 {
 	// Ask for a region name
-	NewRegion newRegDial(this);
-	if (newRegDial.DoModal() == IDOK)
+	CNewRegion newRegDial(this);
+	if (newRegDial.DoModal() != IDOK)
+		return;
+
+	// Create directory and template class
+	string newDirName = (LPCSTR)newRegDial.str;
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+	SetCurrentDirectory (_Environnement.RootDir.c_str());
+
+	createDirIfNotExist ("Regions", "Cannot create Regions system directory");
+	createDirIfNotExist ("Backup", "Cannot create Backup system directory");
+	createDirIfNotExist ("Trash", "Cannot create Trash system directory");
+
+	SetCurrentDirectory ("Regions");
+
+	if (SetCurrentDirectory (newDirName.c_str()))
 	{
-		// Create directory and template class
-		string newDirName = (LPCSTR)newRegDial.str;
-		char sCurDir[MAX_PATH];
-		GetCurrentDirectory (MAX_PATH, sCurDir);
-		SetCurrentDirectory (_Environnement.RootDir.c_str());
-
-		createDirIfNotExist ("Regions", "Cannot create Regions system directory");
-		createDirIfNotExist ("Backup", "Cannot create Backup system directory");
-		createDirIfNotExist ("Trash", "Cannot create Trash system directory");
-
-		SetCurrentDirectory ("Regions");
-
-		if (SetCurrentDirectory (newDirName.c_str()))
-		{
-			MessageBox ("Region already exists.", "Error", MB_ICONERROR|MB_OK);
-			SetCurrentDirectory (sCurDir);
-			return;
-		}
-
-		createDirIfNotExist (newDirName, "Cannot create a region.");
-
-		// Ok so now create default files
-		SetCurrentDirectory (newDirName.c_str());
-		_WorldEditor->createDefaultFiles (newDirName.c_str());
-
-		_Tree->update (_Environnement.RootDir);
+		MessageBox ("Region already exists.", "Error", MB_ICONERROR|MB_OK);
 		SetCurrentDirectory (sCurDir);
+		return;
 	}
+
+	createDirIfNotExist (newDirName, "Cannot create a region.");
+
+	// Import the .land file
+	CFileDialog fd (true, "*.land", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,
+					"Landscape (*.land)|*.land", this);
+
+	int retFD = fd.DoModal();
+
+	string newName = _Environnement.RootDir + "Regions\\" + newDirName + "\\" + newDirName + ".land";
+	if (retFD == IDOK)
+	{
+		CopyFile (fd.GetFileName(), newName.c_str(), false);
+	}
+
+	SetCurrentDirectory (_Environnement.RootDir.c_str());
+	SetCurrentDirectory ("Regions");
+	SetCurrentDirectory (newDirName.c_str());
+
+	// Ok so now create default files
+	//_WorldEditor->createDefaultFiles (newDirName.c_str());
+	georgesCreateFilesWhenNewRegion ();
+
+	_Tree->update (_Environnement.RootDir);
+	SetCurrentDirectory (sCurDir);
 }
 
 // ---------------------------------------------------------------------------
@@ -980,6 +1172,69 @@ void CMainFrame::onRegionSave ()
 //		if (_LogicEditor)
 //			_LogicEditor->saveOpenedFiles();
 	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onRegionExport ()
+{
+	onRegionSave ();
+
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+	string sTmp = _Environnement.RootDir + "Regions\\";
+	SetCurrentDirectory (sTmp.c_str());
+
+	vector<string> vRegNames;
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = FindFirstFile ("*.*", &fd);
+	while (hFind != INVALID_HANDLE_VALUE)
+	{
+		if (!((strcmp (fd.cFileName, ".") == 0) || (strcmp (fd.cFileName, "..") == 0)))
+		{
+			if ((fd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0)
+			{
+				vRegNames.push_back (string(fd.cFileName));
+			}
+		}
+		if (FindNextFile (hFind, &fd) == 0)
+			break;
+	}
+
+	if (vRegNames.size() == 0)
+		return;
+
+	CExportDlg dlg (this);
+	
+	_Environnement.ExportOptions.SourceDir = _ActiveRegion;
+	dlg.setOptions (_Environnement.ExportOptions, vRegNames);
+	if (dlg.DoModal() == IDOK)
+	{
+		CExport export;
+		CExportCBDlg *pDlg = new CExportCBDlg();
+		//Check if new succeeded and we got a valid pointer to a dialog object
+		if (pDlg != NULL)
+		{
+			BOOL ret = pDlg->Create (IDD_EXPORTCB, this);
+			if (!ret)   //Create failed.
+			{
+				delete pDlg;
+				pDlg = NULL;
+			}
+			pDlg->ShowWindow (SW_SHOW);
+		}
+   
+		_Environnement.ExportOptions.SourceDir = _Environnement.RootDir + "Regions\\" + _Environnement.ExportOptions.SourceDir;
+		_Environnement.ExportOptions.RootDir = _Environnement.RootDir + "Common\\";
+		export.export (_Environnement.ExportOptions, pDlg->getExportCB());
+
+		pDlg->setFinishedButton ();
+		while (pDlg->getFinished () == false)
+		{
+			pDlg->pump ();
+		}
+		pDlg->DestroyWindow ();
+	}
+	SetCurrentDirectory (sCurDir);
 }
 
 // ---------------------------------------------------------------------------

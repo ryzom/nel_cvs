@@ -30,3 +30,11 @@ Georges
 
 Georges needs a root directory which is :
 DFN (This directory regroups the .DFN definition of a type class)
+
+
+RESTRICTIONS
+************
+
+Do not use prim.dfn, land.dfn nor logic.dfn in georges, else if you
+instanciate those you will get xxx.logic or something like that which
+could be not easy to differenciate from a worldeditor logic file.

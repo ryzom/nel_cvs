@@ -1,31 +1,31 @@
-#if !defined(AFX_NEWREGION_H__27E9FA5F_8636_46BF_BD58_BA0E95CB9297__INCLUDED_)
-#define AFX_NEWREGION_H__27E9FA5F_8636_46BF_BD58_BA0E95CB9297__INCLUDED_
+#if !defined(AFX_PRIMNAMEDLG_H__F0E3AA5C_BDB0_4164_A70B_D3C86235E508__INCLUDED_)
+#define AFX_PRIMNAMEDLG_H__F0E3AA5C_BDB0_4164_A70B_D3C86235E508__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-// NewRegion.h : header file
+// PrimNameDlg.h : header file
 //
 
 /////////////////////////////////////////////////////////////////////////////
-// NewRegion dialog
+// CPrimNameDlg dialog
 
-class CNewRegion : public CDialog
+class CPrimNameDlg : public CDialog
 {
 // Construction
 public:
-	CNewRegion(CWnd* pParent = NULL);   // standard constructor
+	CPrimNameDlg(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
-	//{{AFX_DATA(CNewRegion)
-	enum { IDD = IDD_NEWREGION };
+	//{{AFX_DATA(CPrimNameDlg)
+	enum { IDD = IDD_PRIMNAME };
 	CString	str;
 	//}}AFX_DATA
 
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CNewRegion)
+	//{{AFX_VIRTUAL(CPrimNameDlg)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -34,7 +34,7 @@ public:
 protected:
 
 	// Generated message map functions
-	//{{AFX_MSG(CNewRegion)
+	//{{AFX_MSG(CPrimNameDlg)
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
@@ -43,4 +43,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_NEWREGION_H__27E9FA5F_8636_46BF_BD58_BA0E95CB9297__INCLUDED_)
+#endif // !defined(AFX_PRIMNAMEDLG_H__F0E3AA5C_BDB0_4164_A70B_D3C86235E508__INCLUDED_)

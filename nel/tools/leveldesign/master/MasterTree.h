@@ -28,6 +28,7 @@ class CMasterTree : public CTreeCtrl
 	CImageList *_DragImg;
 	HTREEITEM _DragItem;
 	HTREEITEM _LastItemSelected;
+	HTREEITEM _LastActiveRegion;
 
 	UINT    m_nTimerID;
 	UINT    m_timerticks;
@@ -68,6 +69,9 @@ public:
 	afx_msg void OnMenuBackupRestoreOne ();
 	afx_msg void OnMenuRegionDelete ();
 	afx_msg void OnMenuRegionBackupOne ();
+	afx_msg void OnMenuRegionSetActive ();
+	afx_msg void OnMenuRegionNewPrim ();
+	afx_msg void OnMenuRegionNewGeorges ();
 
 	DECLARE_MESSAGE_MAP()
 };
@@ -114,6 +118,10 @@ public:
 	void backupRestoreOne (const char *str);
 	void regionDelete (const char *str);
 	void regionBackupOne (const char *str);
+	void regionNewPrim (const char *str);
+	void regionNewGeorges (const char *str);
+
+	void selectRegion (const std::string &Region, const std::string &Directory);
 
 // Dialog Data
 	//{{AFX_DATA(CMasterTree)

@@ -105,7 +105,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 libxml2.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "master - Win32 ReleaseDebug"
 
@@ -153,6 +153,14 @@ SOURCE=.\ChooseTag.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ExportCBDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ExportDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
@@ -165,7 +173,15 @@ SOURCE=.\MasterTree.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\NewGeorgesFormDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\NewRegion.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PrimNameDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -186,6 +202,14 @@ SOURCE=.\ChooseTag.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ExportCBDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ExportDlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainFrm.h
 # End Source File
 # Begin Source File
@@ -198,7 +222,15 @@ SOURCE=.\MasterTree.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\NewGeorgesFormDlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\NewRegion.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PrimNameDlg.h
 # End Source File
 # Begin Source File
 

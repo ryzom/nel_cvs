@@ -16,6 +16,10 @@
 #include "MasterTree.h"
 #include <string>
 
+#include "../export/export.h"
+
+#include "/code/nel/tools/3d/ligo/worldeditor/worldeditor_interface.h" // MasterCB
+
 // ---------------------------------------------------------------------------
 // Interface to the tools
 // ---------------------------------------------------------------------------
@@ -23,10 +27,11 @@
 class IWorldEditor;
 class IGeorges;
 class ILogicEditor;
+class CMainFrame;
 
 // ---------------------------------------------------------------------------
 
-struct CEnvironnement
+struct SEnvironnement
 {
 	// Master params
 	sint32 MasterX, MasterY;
@@ -47,16 +52,39 @@ struct CEnvironnement
 	bool LogicEditorOpened;
 	sint32 LogicEditorX, LogicEditorY, LogicEditorCX, LogicEditorCY;
 
-	CEnvironnement();
+	// Export params
+	SExportOptions ExportOptions;
+
+	SEnvironnement ();
 	void serial (NLMISC::IStream& s);
 };
 
 
 // ---------------------------------------------------------------------------
 
+class CMasterCB : public IMasterCB
+{
+	CMainFrame					*_MainFrame;
+	std::vector<std::string>	_PrimZoneList;
+
+public:
+	
+	CMasterCB ();
+	void setMainFrame (CMainFrame*pMF); // Link to master
+
+	// Accessors
+	std::vector<std::string> &getAllPrimZoneNames ();
+
+	// Overridables
+	// setAllPrimZoneNames : called when the list of patatoid changes
+	virtual void setAllPrimZoneNames (std::vector<std::string> &primZoneList);
+};
+
+// ---------------------------------------------------------------------------
+
 class CMainFrame : public CFrameWnd
 {
-	CEnvironnement	_Environnement;
+	SEnvironnement	_Environnement;
 
 	IWorldEditor	*_WorldEditor;
 	HMODULE			_WorldEditorModule;
@@ -69,8 +97,9 @@ class CMainFrame : public CFrameWnd
 
 	CMasterTreeDlg	*_Tree;
 
-//protected: // create from serialization only
-//	DECLARE_DYNCREATE(CMainFrame)
+	std::string		_ActiveRegion;
+	std::string		_ActiveRegionPath;
+	CMasterCB		_MasterCB;
 
 public:
 
@@ -80,20 +109,42 @@ public:
 	void getAllInterfaces (); // Load all dlls and get tools interfaces
 	void releaseAllInterfaces ();
 
+	// ***********
+	// WORLDEDITOR
+	// ***********
+
 	void openWorldEditor ();
 	void openWorldEditorFile (const char *fileName);
 	void closeWorldEditor ();
+
+	// *******
+	// GEORGES
+	// *******
 
 	void openGeorges ();
 	void openGeorgesFile (const char *fileName);
 	void closeGeorges ();
 
+	void georgesUpdatePatatoid ();
+	void georgesCreateFilesWhenNewRegion ();
+	void georgesCreatePlantName ();
+
+	// ***********
+	// LOGICEDITOR
+	// ***********
+
 	void openLogicEditor ();
 	void openLogicEditorFile (const char *fileName);
 	void closeLogicEditor ();
 
-	// Tools
-	
+	// *****
+	// TOOLS
+	// *****
+
+	// Tree manipulation
+
+	void deltree (const std::string &dirName);
+
 	void updateTree ();
 	void emptyTrash ();
 	void emptyBackup ();
@@ -108,9 +159,14 @@ public:
 	void backupRestoreOne	(const char *str);
 	void regionDelete		(const char *str);
 	void regionBackupOne	(const char *str);
+	void regionNewPrim		(const char *str);
+	void regionNewGeorges	(const char *str);
 
+	// Active region
 
-	void deltree (const std::string &dirName);
+	void setActiveRegion (const std::string &Region, const std::string &Dir);
+	std::string getActiveRegion () { return _ActiveRegion; }
+	std::string	getActiveRegionPath () { return _ActiveRegionPath; }
 
 
 #ifdef _DEBUG
@@ -137,6 +193,7 @@ public:
 
 protected:
 	afx_msg void onRegionSave ();
+	afx_msg void onRegionExport ();
 	afx_msg void onRegionEmptyTrash ();
 	afx_msg void onRegionEmptyBackup ();
 	afx_msg void onRegionBackupAll ();

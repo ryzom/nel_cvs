@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.9 2002/06/06 16:52:36 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.10 2002/06/07 15:12:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ uint64 CSimpleClock::_StartStopNumTicks = 0;
 CHTimer::CNode  CHTimer::_RootNode;
 CHTimer::CNode *CHTimer::_CurrNode = &_RootNode;
 CSimpleClock	CHTimer::_PreambuleClock;
-CHTimer			CHTimer::_RootTimer("root");
+CHTimer			CHTimer::_RootTimer("root", true);
 bool			CHTimer::_Benching = false;
 bool			CHTimer::_BenchStartedOnce = false;
 double			CHTimer::_MsPerTick;
@@ -164,7 +164,7 @@ uint CHTimer::CNode::getNumNodes() const
 //=================================================================
 void CHTimer::walkTreeToCurrent()
 {
-	if (_CurrNode->Owner == this) return;
+	if (_IsRoot) return;	
 	bool found = false;
 	for(uint k = 0; k < _CurrNode->Sons.size(); ++k)
 	{

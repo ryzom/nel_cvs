@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.12 2002/06/06 16:15:44 legros Exp $
+ * $Id: hierarchical_timer.h,v 1.13 2002/06/07 15:12:09 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -209,7 +209,7 @@ public:
 						};
 public:
 	/// ctor
-	CHTimer(const char *name) : _Name(name) {}
+	CHTimer(const char *name, bool isRoot = false) : _Name(name), _IsRoot(isRoot) {}
 	/// Starts a measuring session
 	inline void CHTimer::before();
 	// Ends a measuring session
@@ -372,6 +372,8 @@ private:
 	CHTimer							*_Parent;
 	// the sons timers
 	TTimerVect						_Sons;
+	// Tells if this is a root node
+	bool							_IsRoot;
 private:
 	// root node of the hierarchy
 	static CNode					_RootNode;
@@ -392,7 +394,8 @@ private:
 	//
 	static bool						_WantStandardDeviation;
 	//
-	static CHTimer				   *_CurrTimer;
+	static CHTimer				   *_CurrTimer;	
+
 };
 
 
@@ -433,7 +436,7 @@ inline void	CHTimer::before()
 {	
 	if (!_Benching) return;
 	_PreambuleClock.start();	
-	walkTreeToCurrent();		
+	walkTreeToCurrent();			
 	++ _CurrNode->NumVisits;
 	_CurrNode->SonsPreambule = 0;
 	if (!_Parent && _CurrTimer != this)

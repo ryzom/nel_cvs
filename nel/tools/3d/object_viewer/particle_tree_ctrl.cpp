@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.37 2002/11/18 18:01:51 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.38 2003/03/17 16:53:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -469,7 +469,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		break;
 		case IDM_CONSTRAINT_MESH_LOC:  createLocAndBindable = true;
 		case IDM_CONSTRAINT_MESH:
-			toCreate = new NL3D::CPSConstraintMesh;			
+			toCreate = new NL3D::CPSConstraintMesh;
 		break;
 		case IDM_FACE_LOC:  createLocAndBindable = true;
 		case IDM_FACE:
@@ -1049,11 +1049,13 @@ std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> CParticleTreeCtrl::createLo
 	char num[128];
 	if (_PSElementIdentifiers.count(std::string("located")))
 	{
-		sprintf(num, "%d", ++_PSElementIdentifiers[std::string("located")]);
+		sprintf(num, "located %d", ++_PSElementIdentifiers[std::string("located")]);
+		name = num;
 	}
 	else
 	{
 		name = std::string("located 0");
+		_PSElementIdentifiers["located"] = 0;
 	}		
 
 	

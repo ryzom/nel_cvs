@@ -73,9 +73,11 @@ TextureShaderDisable = 1
 -- Normal Shader
 
 ShaderSingleTexture = 1
-ShaderAddTwoTexture = 2
-ShaderMulTwoTexture = 3
-ShaderBlendTwoTexture = 4
+ShaderAddTwoTextures = 2
+ShaderMulTwoTextures = 3
+ShaderBlendTwoTextures = 4
+ShaderBlendMask = 5
+ShaderMixTwoTextures = 6
 
 -- Shader Type
 
@@ -553,7 +555,7 @@ plugin material NelMaterial
 
 		group "Setup Stage"
 		(
-			dropdownlist dlShader	"Normal Shader" items:#( "Single Texture (RGBA1) (A1)", "Addition Two Textures (RGB1+RGB2) (A2)", "Multiply Two Textures (RGB1*RGB2) (A2)", "Blend Two Textures (RGB1*(1-A1)+RGB2*A1) (A2)" ) 
+			dropdownlist dlShader	"Normal Shader" items:#( "Single Texture (RGBA1) (A1)", "Addition Two Textures (RGB1+RGB2) (A2)", "Multiply Two Textures (RGB1*RGB2) (A2)", "Blend Two Textures (RGB1*(1-A1)+RGB2*A1) (A2)", "Blend Texture (RGB1)(A2)", "Mix Two Textures (RGB1*0.5+RGB2*0.5) (A1*0.5+A2*0.5)" ) 
 			Button btLoadShader "Load Normal Shader" align:#left
 		)
 
@@ -1718,7 +1720,7 @@ plugin material NelMaterial
 			iAlphaArg1Operand_1	= OprdAlpha
 			iTextureShader_1 = TextureShaderDisable
 		)
-		else if shader == ShaderAddTwoTexture then
+		else if shader == ShaderAddTwoTextures then
 		(
 			-- Two texture texture
 
@@ -1748,7 +1750,7 @@ plugin material NelMaterial
 			iAlphaArg1Operand_2	= OprdAlpha
 			iTextureShader_2 = TextureShaderDisable
 		)
-		else if shader == ShaderMulTwoTexture then
+		else if shader == ShaderMulTwoTextures then
 		(
 			-- Two texture texture
 
@@ -1778,7 +1780,7 @@ plugin material NelMaterial
 			iAlphaArg1Operand_2	= OprdAlpha
 			iTextureShader_2 = TextureShaderDisable
 		)
-		else if shader == ShaderBlendTwoTexture then
+		else if shader == ShaderBlendTwoTextures then
 		(
 			-- Two texture texture
 
@@ -1808,6 +1810,64 @@ plugin material NelMaterial
 			iAlphaArg0Operand_2	= OprdAlpha
 			iAlphaArg1Operand_2	= OprdAlpha
 			iTextureShader_2 = TextureShaderDisable
+		)
+		else if shader == ShaderBlendMask then
+		(
+			-- Two texture texture
+
+			bEnableSlot_1 = true
+			iRgbOperation_1	= OptorModulate
+			iRgbArg0_1	= Src0Texture
+			iRgbArg1_1	= Src1Diffuse
+			iRgbArg0Operand_1	= OprdRGB
+			iRgbArg1Operand_1	= OprdRGB
+			iAlphaOperation_1 = OptorReplace
+			iAlphaArg0_1 = Src0Texture
+			iAlphaArg0Operand_1	= OprdAlpha
+			iTextureShader_1 = TextureShaderDisable
+
+			bEnableSlot_2 = true
+			iRgbOperation_2	= OptorReplace
+			iRgbArg0_1	= Src1Previous
+			iRgbArg0Operand_2	= OprdRGB
+			iAlphaOperation_2 = OptorModulate
+			iAlphaArg0_2 = Src0Texture
+			iAlphaArg1_2 = Src1Diffuse
+			iAlphaArg0Operand_2	= OprdAlpha
+			iAlphaArg1Operand_2	= OprdAlpha
+			iTextureShader_2 = TextureShaderDisable
+		)
+		else if shader == ShaderMixTwoTextures then
+		(
+			-- Two texture texture
+
+			bEnableSlot_1 = true
+			iRgbOperation_1	= OptorModulate
+			iRgbArg0_1	= Src0Texture
+			iRgbArg1_1	= Src1Diffuse
+			iRgbArg0Operand_1	= OprdRGB
+			iRgbArg1Operand_1	= OprdRGB
+			iAlphaOperation_1 = OptorModulate
+			iAlphaArg0_1 = Src0Texture
+			iAlphaArg0_2 = Src1Diffuse
+			iAlphaArg0Operand_1	= OprdAlpha
+			iAlphaArg1Operand_1	= OprdAlpha
+			iTextureShader_1 = TextureShaderDisable
+
+			bEnableSlot_2 = true
+			iRgbOperation_2	= OptorBlend
+			iRgbBlendSource_2 = SrcBlendConstant
+			iRgbArg0_2	= Src0Texture
+			iRgbArg1_2	= Src1Previous
+			iRgbArg0Operand_2	= OprdRGB
+			iAlphaOperation_2	= OptorBlend
+			iAlphaBlendSource_2 = SrcBlendConstant
+			iAlphaArg0_2 = Src0Texture
+			iAlphaArg1_2 = Src1Previous
+			iAlphaArg0Operand_2	= OprdAlpha
+			iAlphaArg1Operand_2	= OprdAlpha
+			iTextureShader_2 = TextureShaderDisable
+			iConstantAlpha_2 = 127
 		)
 
 		-- Update the user interface

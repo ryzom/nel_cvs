@@ -1,7 +1,7 @@
 /** \file main.cpp
  * 
  *
- * $Id: main.cpp,v 1.5 2002/07/26 16:05:38 corvazier Exp $
+ * $Id: main.cpp,v 1.6 2003/03/05 15:24:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,11 +206,15 @@ void makeGlobalRetriever(vector<CVector> &translation)
 	{
 		serialAndSave(rb, OutputPath+MergeOutputPrefix+".rbank");
 		serialAndSave(gr, OutputPath+MergeOutputPrefix+".gr");
+
+		rb.saveRetrievers(OutputPath, MergeOutputPrefix);
 	}
 	else
 	{
 		serialAndSave(rb, OutputPath+OutputPrefix+".rbank");
 		serialAndSave(gr, OutputPath+OutputPrefix+".gr");
+
+		rb.saveRetrievers(OutputPath, OutputPrefix);
 	}
 
 	gr.check();

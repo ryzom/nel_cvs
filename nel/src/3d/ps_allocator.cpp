@@ -1,6 +1,6 @@
 /** \file ps_allocator.cpp
  *
- * $Id: ps_allocator.cpp,v 1.3 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_allocator.cpp,v 1.4 2005/02/15 15:28:01 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -31,7 +31,7 @@ namespace NL3D
 	#ifdef PS_FAST_ALLOC
 		uint NumPSAlloc = 0;
 		uint NumDealloc = 0;	
-		NLMISC::CContiguousBlockAllocator *PSBlockAllocator;
+		NLMISC::CContiguousBlockAllocator *PSBlockAllocator= NULL;
 		static std::allocator<uint8> PSStdAllocator;
 		//
 		typedef NLMISC::CContiguousBlockAllocator *TBlocAllocPtr;

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * TODO: File description
  *
- * $Id: particle_system_shape.cpp,v 1.52 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system_shape.cpp,v 1.53 2005/02/15 15:28:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -225,6 +225,7 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene, NLMISC::CCon
 
 
 	#ifdef PS_FAST_ALLOC
+		nlassert(PSBlockAllocator == NULL);
 		if (blockAllocator)
 		{
 			// set new allocator for particle system memory
@@ -395,6 +396,7 @@ void CParticleSystemShape::flushTextures(IDriver &driver, uint selectedTexture)
 		CParticleSystem *myInstance = NULL;
 
 		#ifdef PS_FAST_ALLOC
+			nlassert(PSBlockAllocator == NULL);
 			NLMISC::CContiguousBlockAllocator blockAllocator;
 			PSBlockAllocator = &blockAllocator;
 			blockAllocator.init(300000); // we release memory just after, and we don't want to fragment the memory, so provide large enough mem		

@@ -1,6 +1,6 @@
 /** \file msg_notify.cpp
  *
- * $Id: msg_notify.cpp,v 1.9 2001/05/22 16:08:15 chafik Exp $
+ * $Id: msg_notify.cpp,v 1.10 2002/08/13 15:33:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,23 +30,23 @@ namespace NLAIAGENT
 {
 	CNotifyParentScript::CNotifyParentScript( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
 	{
-		set(0,new DigitalType(0.0));
-		set(1,new CLocalAgentMail(NULL));
+		/*set(0,new DigitalType(0.0));
+		set(1,new CLocalAgentMail(NULL));*/
 	}
 
 	CNotifyParentScript::CNotifyParentScript(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
-		CVectorGroupType *x = new CVectorGroupType(2);		
+		/*CVectorGroupType *x = new CVectorGroupType(2);		
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);		
 		set(0,new DigitalType(0.0));
-		set(1,new CLocalAgentMail(NULL));
+		set(1,new CLocalAgentMail(NULL));*/
 	}
 
 	CNotifyParentScript::CNotifyParentScript(IBasicAgent *agent):
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass.getFactory()->getClass())
 	{		
-		CVectorGroupType *x = new CVectorGroupType(2);
+		/*CVectorGroupType *x = new CVectorGroupType(2);
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);
 		if(agent == NULL)
@@ -58,7 +58,7 @@ namespace NLAIAGENT
 		{
 			set(0,new DigitalType(1.0));
 			set(1,new CLocalAgentMail(agent));
-		}
+		}*/
  	}
 
 	CNotifyParentScript::CNotifyParentScript(const CNotifyParentScript &m): CMessageScript(m)
@@ -67,7 +67,7 @@ namespace NLAIAGENT
 
 	const NLAIC::IBasicType *CNotifyParentScript::clone() const
 	{
-		if(((const INombreDefine *)getFront())->getNumber() != 0.0)
+		/*if(((const INombreDefine *)getFront())->getNumber() != 0.0)
 		{
 			//CLocalAgentMail *g = (CLocalAgentMail *)get();
 			return new CNotifyParentScript(*this);
@@ -75,7 +75,8 @@ namespace NLAIAGENT
 		else
 		{
 			return new CNotifyParentScript();
-		}
+		}*/
+		return new CNotifyParentScript(*this);
 	}
 
 	const NLAIC::CIdentType &CNotifyParentScript::getType() const

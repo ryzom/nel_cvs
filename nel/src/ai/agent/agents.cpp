@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.52 2002/08/08 09:21:57 chafik Exp $
+ * $Id: agents.cpp,v 1.53 2002/08/13 15:33:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -575,11 +575,11 @@ namespace NLAIAGENT
 	{
 		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == m.getType())
 		{
-			const INombreDefine *n = (const INombreDefine *)m.getFront();
+			/*const INombreDefine *n = (const INombreDefine *)m.getFront();
 			if(n->getNumber() != 0.0)
 			{
 				const CLocalAgentMail *parent = (const CLocalAgentMail *)m.get();
-			}
+			}*/
 			return (IMessageBase *)m.clone();			
 		}
 		else

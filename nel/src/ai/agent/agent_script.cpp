@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.127 2002/08/13 13:21:49 portier Exp $
+ * $Id: agent_script.cpp,v 1.128 2002/08/13 15:33:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -852,9 +852,12 @@ namespace NLAIAGENT
 	{	
 		sint i;
 
+#ifdef NL_DEBUG
+		const char *text = (const char *)getType();
+		const char *textP = (const char *)getParent()->getType();
+#endif
 		CNotifyParentScript *m = new CNotifyParentScript(this);
-		m->setPerformatif(IMessageBase::PTell);
-		//this->incRef();
+		m->setPerformatif(IMessageBase::PTell);		
 		m->setSender(this);
 
 		for(i = 0; i < _NbComponents; i++)
@@ -864,7 +867,11 @@ namespace NLAIAGENT
 				CNotifyParentScript *msg = (CNotifyParentScript *)m->clone();
 				try
 				{
-					_Components[i]->sendMessage(msg);					
+					uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+					const NLAIC::CTypeOfObject &t = _Components[i]->getType();
+
+					if((t.getValue() & b) == b)
+									_Components[i]->sendMessage(msg);					
 				}
 				catch(NLAIE::IException &)
 				{

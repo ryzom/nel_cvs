@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.52 2002/05/13 16:49:00 berenguier Exp $
+ * $Id: export_nel.h,v 1.53 2002/06/03 15:28:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -225,6 +225,8 @@ public:
  */
 class CExportNel
 {
+private:
+	class	CAnimationBuildCtx;
 public:
 	enum
 	{
@@ -328,7 +330,7 @@ public:
 
 	// Build a NeL track with a 3dsmax node and a controller.
 	NL3D::ITrack*					buildATrack (NL3D::CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, 
-												std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool bodyBiped=false);
+												CAnimationBuildCtx	*animBuildCtx, bool bodyBiped=false);
 
 	// Build a Nel bool track from a On/Off max Controller (doesn't work with buildATRack, which require a keyframer interface
 	// , which isn't provided by an on / off controller)
@@ -338,13 +340,12 @@ public:
 	void							addParticleSystemTracks(NL3D::CAnimation& animation, INode& node, const char* parentName) ;
 
 	// Add tracks for the bone and its children (recursive)
-	void							addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, bool root);
+	void							addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, 
+										CAnimationBuildCtx	*animBuildCtx, bool root);
 
 	// Add biped tracks
-	void							addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, bool root);
-	void							addBipedNodeTrack (NL3D::CAnimation& animation, INode& node, const char* parentName,
-										std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled, bool root);
-//	void							addBipedPathTrack (NL3D::CAnimation& animation, INode& node, const char* parentName);
+	void							addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName,
+										CAnimationBuildCtx	*animBuildCtx, bool root);
 
 
 	// Add a note track. It tackes the first note track of the object
@@ -375,8 +376,7 @@ public:
 	// Create the transform matrix tracks
 	void							createBipedKeyFramer (NL3D::ITrack *&nelRot, NL3D::ITrack *&nelPos, bool isRot, bool isPos, 
 														float ticksPerSecond, const Interval& range, int oRT, const CExportDesc& desc, 
-														INode& node, std::set<TimeValue>* previousKeys, 
-														std::set<TimeValue>* previousKeysSampled);
+														INode& node, CAnimationBuildCtx	*animBuildCtx);
 
 	// convert to nel time value
 	static NL3D::TAnimationTime		convertTime (TimeValue time);
@@ -815,7 +815,7 @@ private:
 
 	// Add tracks for the node
 	void							addNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName,
-													std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool root, 
+													CAnimationBuildCtx	*animBuildCtx, bool root, 
 													bool bodyBiped=false);
 
 	// Add tracks for the node's bones 
@@ -836,10 +836,6 @@ private:
 	// Add tracks for the texture
 	void							addTexTracks (NL3D::CAnimation& animation, Texmap& tex, uint stage, const char* parentName);
 
-	// Add controller key time in the set
-	void							addBipedKeyTime (Control& c, std::set<TimeValue>& keys, std::set<TimeValue>& keysSampled, bool subKeys, 
-													const char *nodeName);
-	
 
 	// Get a biped key parameter using script
 	bool							getBipedKeyInfo (const char* nodeName, const char* paramName, uint key, float& res);
@@ -851,6 +847,65 @@ private:
 	// Change inplace biped mode
 	bool							setBipedInplaceMode (const char* nodeName, const char* inplaceFunction, 
 															bool onOff);
+
+	// Current context for addAnimation()
+	class	CAnimationBuildCtx
+	{
+	public:
+		struct	CBipedKey
+		{
+			TimeValue			Time;
+			NLMISC::CVector		Pos;
+			NLMISC::CQuat		Quat;
+			NLMISC::CVector		Scale;
+		};
+
+		struct	CBipedNode
+		{
+			INode							*Node;
+			// Oversampled position
+			std::vector<CBipedKey>			Keys;
+		};
+
+		// The animation range for Biped Nodes. BipedRangeMin and BipedRangeMax are inclusive
+		TimeValue					BipedRangeMin;
+		TimeValue					BipedRangeMax;
+
+		// All biped nodes we must export.
+		std::vector<CBipedNode>		BipedNodes;
+
+	public:
+		CAnimationBuildCtx();
+		
+		bool			hasBipedNodes() const {return BipedNodes.size()>0;}
+
+		// compile the bipedMap from BipedNodes.
+		void			compileBiped();
+
+		// From a node, get its associated CBipedNode in the BipedNodes array.
+		CBipedNode		*getBipedNodeInfo(INode *node);
+
+	private:
+		// Map from INode * to CBiped Id in BipedNodes
+		typedef	std::map<INode*, uint>	TBipedMap;
+		TBipedMap						_BipedMap;
+	};
+
+	// Bkup ctx of a biped bone.
+	struct	CBipedNodePlaceMode
+	{
+		INode				*Node;
+		bool				InPlaceMode;
+		bool				InPlaceYMode;
+		bool				InPlaceXMode;
+	};
+
+
+	// 
+	void							buildBipedInformation(CAnimationBuildCtx &animBuildCtx, INode &node);
+	// 
+	void							overSampleBipedAnimation(CAnimationBuildCtx &animBuildCtx, uint overSampleValue);
+
 private:
 
 	// Pointer on the interface

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.28 2003/01/03 11:25:05 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.29 2003/01/03 16:42:53 lecroart Exp $
  *
  */
 
@@ -1496,14 +1496,14 @@ uint64 getSystemNetwork (uint col)
 	len = read(fd, buffer, sizeof(buffer)-1);
 	close(fd);
 	buffer[len] = '\0';
-	
+
 	p = strchr(buffer, '\n')+1;
-	p = strchr(buffer, '\n')+1;
+	p = strchr(p, '\n')+1;
 	
 	uint64 val = 0;
 	while (true)
 	{
-		p = strchr(buffer, ':');
+		p = strchr(p, ':');
 		if (p == NULL)
 			break;
 		p++;
@@ -1528,7 +1528,7 @@ NLMISC_DYNVARIABLE(uint64, NetBytesReceived, "Amount of bytes received to all ne
 
 NLMISC_DYNVARIABLE(uint32, NetError, "Number of error on all networks cards")
 {
-	if (get) *pointer = getSystemNetwork (2) + getSystemNetwork (10);
+	if (get) *pointer = (uint32) (getSystemNetwork (2) + getSystemNetwork (10));
 }
 
 #endif // NL_OS_UNIX

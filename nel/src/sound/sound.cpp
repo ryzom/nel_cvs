@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.9 2001/08/28 16:59:34 cado Exp $
+ * $Id: sound.cpp,v 1.10 2001/09/03 14:40:45 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,8 +52,8 @@ bool			CSound::_AllowMissingWave = false;
 /*
  * Constructor
  */
-CSound::CSound() : _Buffer(NULL), _Gain(1.0f), _Pitch(1.0f), _Detailed(false),
-	_MinDist(1.0f), _MaxDist(1000000.0f),
+CSound::CSound() : _Buffer(NULL), _Gain(1.0f), _Pitch(1.0f), _Looping(false),
+	_Detailed(false), _MinDist(1.0f), _MaxDist(1000000.0f),
 	_ConeInnerAngle(6.283185f), _ConeOuterAngle(6.283185f), _ConeOuterGain( 1.0f )
 {
 }

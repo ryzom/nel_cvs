@@ -139,7 +139,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor_rd.dll"
+# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386 /out:"..\master\logic_editor_rd.dll"
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy ..\master\logic_editor_rd.dll ..\logic_editor_exe
+# End Special Build Tool
 
 !ENDIF 
 

@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.70 2004/02/05 09:48:57 besson Exp $
+ * $Id: zone.cpp,v 1.71 2004/02/10 16:04:29 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1679,6 +1679,12 @@ bool CPatchInfo::getTileSymmetryRotate (const CTileBank &bank, uint tile, bool &
 
 			// Get tile xref
 			bank.getTileXRef ((int)tile, tileSet, number, type);
+
+			if ((tileSet < 0) || (tileSet >= bank.getTileSetCount()))
+			{
+				nlwarning("tile %d has an unknown tileSet (%d)",tile, tileSet);
+				return false;
+			}
 
 			// Is it an oriented tile ?
 			if (bank.getTileSet (tileSet)->getOriented())

@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.cpp
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.cpp,v 1.6 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: zone_symmetrisation.cpp,v 1.7 2004/02/10 16:04:29 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -442,6 +442,12 @@ bool CZoneSymmetrisation::setTileState (const NL3D::CPatchInfo &patch, uint patc
 							CTileBank::TTileType type;
 							bank.getTileXRef (tile, tileSet, number, type);
 
+							if ((tileSet < 0) || (tileSet >= bank.getTileSetCount()))
+							{
+								nlwarning("CZoneSymmetrisation::setTileState : tile %d has an unknown tileSet (%d)", tile, tileSet);
+								return false;
+							}
+
 							// Set it only if not oriented
 							if (!bank.getTileSet (tileSet)->getOriented ())
 							{
@@ -579,7 +585,13 @@ bool CZoneSymmetrisation::setOrientedTileState (const NL3D::CPatchInfo &patch, u
 						int tileSet;
 						int number;
 						CTileBank::TTileType type;
+
 						bank.getTileXRef (tile, tileSet, number, type);
+						if ((tileSet < 0) || (tileSet >= bank.getTileSetCount()))
+						{
+							nlwarning("CZoneSymmetrisation::setOrientedTileState : tile %d has an unknown tileSet (%d)", tile, tileSet);
+							return false;
+						}
 
 						// Set it only if oriented
 						if (bank.getTileSet (tileSet)->getOriented ())
@@ -683,6 +695,12 @@ bool CZoneSymmetrisation::propagateTileState (uint patch, uint s, uint t, const 
 			int number;
 			CTileBank::TTileType type;
 			bank.getTileXRef (tileIndex, tileSetToPropagate, number, type);
+
+			if ((tileSetToPropagate < 0) || (tileSetToPropagate >= bank.getTileSetCount()))
+			{
+				nlwarning("CZoneSymmetrisation::propagateTileState: tile %d has an unknown tileSet (%d)", tileIndex, tileSetToPropagate);
+				return false;
+			}
 
 			// Oriented ?
 			bool oriented = bank.getTileSet (tileSetToPropagate)->getOriented ();

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.47 2004/08/03 16:19:57 vizerie Exp $
+ * $Id: u_driver.h,v 1.48 2004/08/13 16:06:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "nel/misc/bitmap.h"
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "nel/3d/primitive_profile.h"
 
 
@@ -46,6 +47,7 @@ namespace NLMISC
 	struct IMouseDevice;
 	struct IKeyboardDevice;
 	struct IInputDeviceManager;
+	class CLog;
 }
 
 
@@ -652,6 +654,25 @@ public:
 	 */
 	virtual	void			profileVBHardAllocation(std::vector<std::string> &result) = 0;
 
+	/** If the driver support it, enable profile index buffers
+	 *	No-Op if already profiling
+	 */
+	virtual	void			startProfileIBLock() = 0;
+
+	/** If the driver support it, stop profile index buffer locks, and "print" result
+	 *	No-Op if already profiling
+	 *	NB: The results are the Locks in Chronogical time (since last swapBuffers).
+	 *	Since multiple frame are summed, an "*" is marked againts the index buffer name to show if it was not
+	 *	always this one (ptr test and not name test) in the chronogical order.
+	 *	NB: if the driver does not support index buffer profiling, result is empty.
+	 *	NB: ???? string is displayed if the index buffer has no name or if was just deleted.
+	 */
+	virtual	void			endProfileIBLock(std::vector<std::string> &result) = 0;
+
+	/** display index buffer allocated
+	 */
+	virtual	void			profileIBAllocation(std::vector<std::string> &result) = 0;
+
 	/** For each texture setuped in the driver, "print" result: type, shareName, format and size (mipmap included)
 	 */
 	virtual	void			profileTextureUsage(std::vector<std::string> &result) =0;
@@ -716,7 +737,7 @@ public:
 		// Delete a water envmap previously created with 'createWaterEnvMap'
 		virtual void		  deleteWaterEnvMap(UWaterEnvMap *) = 0;
 	// @}
-
+	
 
 public:
 
@@ -739,3 +760,24 @@ public:
 #endif // NL_U_DRIVER_H
 
 /* End of u_driver.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

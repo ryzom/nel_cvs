@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.3 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: particle_system_model.h,v 1.4 2001/07/04 12:38:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,7 @@ class CParticleSystemModel : public CTransformShape
 
 		/// ctor
 		CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedTime(0.01f), _ToolDisplayEnabled(false)
+								, _AutoGetEllapsedTime(true)
 		{}
 
 		/// dtor
@@ -72,7 +73,15 @@ class CParticleSystemModel : public CTransformShape
 			return _ParticleSystem ;
 		}
 
-		/// set the ellapsed time (in second) used for animation.
+		/** when called with true, this force the model to querry himself the ellapsed time to the scene.
+		  * This is the default. Otherwise, setEllapsedTime must be called
+		  */
+		void enableAutoGetEllapsedTime(bool enable = true) { _AutoGetEllapsedTime = enable ; }
+
+		/// tells wether the model will querry himself for the ellapsed time
+		  bool isAutoGetEllapsedTimeEnabled(void) const { return _AutoGetEllapsedTime ; }
+
+		/// set the ellapsed time (in second) used for animation. 		  
 		void setEllapsedTime(CAnimationTime ellapsedTime) { _EllapsedTime = ellapsedTime ; }
 		
 		/// get the ellapsed time used for animation
@@ -110,6 +119,8 @@ class CParticleSystemModel : public CTransformShape
 		}
 
 	protected:
+
+		bool _AutoGetEllapsedTime ;
 
 		// instance of the particle system that this model holds
 		CParticleSystem *_ParticleSystem ;

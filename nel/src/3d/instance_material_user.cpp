@@ -1,7 +1,7 @@
 /** \file instance_material_user.cpp
  * <File description>
  *
- * $Id: instance_material_user.cpp,v 1.9 2004/04/09 14:31:36 vizerie Exp $
+ * $Id: instance_material_user.cpp,v 1.10 2004/04/27 12:03:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,10 +123,10 @@ void CInstanceMaterialUser::emptyTexture(uint stage /*=0*/)
 }
 
 // ***************************************************************************
-bool CInstanceMaterialUser::isSupportedByDriver(UDriver &drv)
+bool CInstanceMaterialUser::isSupportedByDriver(UDriver &drv, bool forceBaseCaps)
 {	
 	IDriver *idrv = NLMISC::safe_cast<CDriverUser *>(&drv)->getDriver();
-	return _Material->isSupportedByDriver(*idrv);	
+	return _Material->isSupportedByDriver(*idrv, forceBaseCaps);	
 }
 
 // ***************************************************************************

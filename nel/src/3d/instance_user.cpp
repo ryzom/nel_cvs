@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.21 2004/03/23 10:21:09 vizerie Exp $
+ * $Id: instance_user.cpp,v 1.22 2004/04/27 12:03:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,11 +223,11 @@ float CInstanceUser::getSliceTime() const
 }
 
 // ***************************************************************************
-bool CInstanceUser::supportMaterialRendering(UDriver &drv)
+bool CInstanceUser::supportMaterialRendering(UDriver &drv, bool forceBaseCaps)
 {
 	for(uint k = 0; k < _Materials.size(); ++k)
 	{
-		if (!_Materials[k].isSupportedByDriver(drv)) return false;
+		if (!_Materials[k].isSupportedByDriver(drv, forceBaseCaps)) return false;
 	}
 	return true;
 }

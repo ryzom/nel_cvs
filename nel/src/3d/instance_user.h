@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.20 2004/03/23 10:20:54 vizerie Exp $
+ * $Id: instance_user.h,v 1.21 2004/04/27 12:03:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,7 +154,7 @@ public:
 
 	
 
-	virtual	bool		supportMaterialRendering(UDriver &drv);
+	virtual	bool		supportMaterialRendering(UDriver &drv, bool forceBaseCaps);
 	
 };
 

@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.16 2004/04/09 14:31:36 vizerie Exp $
+ * $Id: instance_material_user.h,v 1.17 2004/04/27 12:03:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -342,7 +342,7 @@ public:
 		return _Material->getUserTexMat(stage);
 	}
 
-	virtual	bool	isSupportedByDriver(UDriver &drv);
+	virtual	bool	isSupportedByDriver(UDriver &drv, bool forceBaseCaps = false);
 
 	virtual	void				setWrapS(uint stage, TWrapMode mode)
 	{

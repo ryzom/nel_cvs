@@ -1,7 +1,7 @@
 /** \file material_user.cpp
  * <File description>
  *
- * $Id: material_user.cpp,v 1.5 2004/04/26 17:15:43 corvazier Exp $
+ * $Id: material_user.cpp,v 1.6 2004/04/27 12:02:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,10 +34,10 @@
 namespace NL3D
 {
 
-bool CMaterialUser::isSupportedByDriver(UDriver &drv)
+bool CMaterialUser::isSupportedByDriver(UDriver &drv, bool forceBaseCaps)
 {
 	NL3D_MEM_MATERIAL		
-	return _Material.isSupportedByDriver(*(NLMISC::safe_cast<CDriverUser *>(&drv)->getDriver()));
+	return _Material.isSupportedByDriver(*(NLMISC::safe_cast<CDriverUser *>(&drv)->getDriver()), forceBaseCaps);
 }
 
 void CMaterialUser::setAlphaTest(bool active)

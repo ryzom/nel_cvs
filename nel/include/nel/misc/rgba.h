@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.19 2002/02/13 09:10:46 vizerie Exp $
+ * $Id: rgba.h,v 1.20 2002/03/14 17:00:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,10 +190,10 @@ public:
 	void	add(const CRGBA &c0, const CRGBA &c1)
 	{
 		uint	r,g,b,a;
-		r= c0.R + c1.R;	clamp(r, 0U, 255U);	R= (uint8)r;
-		g= c0.G + c1.G;	clamp(g, 0U, 255U);	G= (uint8)g;
-		b= c0.B + c1.B;	clamp(b, 0U, 255U);	B= (uint8)b;
-		a= c0.A + c1.A;	clamp(a, 0U, 255U);	A= (uint8)a;
+		r= c0.R + c1.R;	r= std::min(r, 255U);	R= (uint8)r;
+		g= c0.G + c1.G;	g= std::min(g, 255U);	G= (uint8)g;
+		b= c0.B + c1.B;	b= std::min(b, 255U);	B= (uint8)b;
+		a= c0.A + c1.A;	a= std::min(a, 255U);	A= (uint8)a;
 	}
 
 	/**
@@ -202,10 +202,10 @@ public:
 	void	sub(const CRGBA &c0, const CRGBA &c1)
 	{
 		sint	r,g,b,a;
-		r= c0.R - c1.R;	clamp(r, 0, 255);	R= (uint8)r;
-		g= c0.G - c1.G;	clamp(g, 0, 255);	G= (uint8)g;
-		b= c0.B - c1.B;	clamp(b, 0, 255);	B= (uint8)b;
-		a= c0.A - c1.A;	clamp(a, 0, 255);	A= (uint8)a;
+		r= c0.R - c1.R;	r= std::max(r, 0);	R= (uint8)r;
+		g= c0.G - c1.G;	g= std::max(g, 0);	G= (uint8)g;
+		b= c0.B - c1.B;	b= std::max(b, 0);	B= (uint8)b;
+		a= c0.A - c1.A;	a= std::max(a, 0);	A= (uint8)a;
 	}
 
 
@@ -253,10 +253,20 @@ public:
 	void	addRGBOnly(const CRGBA &c0, const CRGBA &c1)
 	{
 		uint	r,g,b;
-		r= c0.R + c1.R;	clamp(r, 0U, 255U);	R= (uint8)r;
-		g= c0.G + c1.G;	clamp(g, 0U, 255U);	G= (uint8)g;
-		b= c0.B + c1.B;	clamp(b, 0U, 255U);	B= (uint8)b;
+		r= c0.R + c1.R;	r= std::min(r, 255U);	R= (uint8)r;
+		g= c0.G + c1.G;	g= std::min(g, 255U);	G= (uint8)g;
+		b= c0.B + c1.B;	b= std::min(b, 255U);	B= (uint8)b;
 	}
+	/// see sub()
+	void	subRGBOnly(const CRGBA &c0, const CRGBA &c1)
+	{
+		sint	r,g,b;
+		r= c0.R - c1.R;	r= std::max(r, 0);	R= (uint8)r;
+		g= c0.G - c1.G;	g= std::max(g, 0);	G= (uint8)g;
+		b= c0.B - c1.B;	b= std::max(b, 0);	B= (uint8)b;
+	}
+
+
 
 	// @}
 

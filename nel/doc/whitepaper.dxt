@@ -1,6 +1,7 @@
 /*!
-/page NeL Whitepaper
-/author Vincent Archer <archer@nevrax.org>
+
+\page general NeL Whitepaper
+\author Vincent Archer <archer@nevrax.org>
 
 The purpose of this document is to present a general overview of the whole of the
 NeL infrastructure. After reading this document, you should have a good understanding
@@ -13,14 +14,14 @@ general interface description documents for each component are provided. There i
 separate global programming manual, describing exactly how to code for a complete product
 using NeL components.
 
-/section build Building system
+\section build Building system
 
 Building systems are very different, depending on whether you work on a Windows/Visual
 C++ environment, or a Unix/C++ environment (the two development environments currently
 supported in the official NeL system). The building system reflects this and thus
 consists of two different subsystems:
 
-/subsection unixbuild Unix build
+\subsection unixbuild Unix build
 
 Building the NeL system in a Unix-based environment uses the auto-configure system
 that is pretty much a standard in GNU tools and other environment-portable packages. The
@@ -32,15 +33,15 @@ generate a set of Makefile.in. All modifications (notably adding source files) a
 into the Makefile.am files themselves, and never to Makefile.in or Makefile. The .am
 template is stored in the CVS tree, but not the rest.
 
-/subsection winbuild Windows build
+\subsection winbuild Windows build
 
 [to be completed]
 
-/section components Components
+\section components Components
 
 [to be completed]
 
-/section externals External components
+\section externals External components
 
 The following external components are used to build the NeL system. These components
 are either included directly in the NeL system and are available immediately when

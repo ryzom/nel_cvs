@@ -83,7 +83,7 @@ BOOL CNel_launcherDlg::OnInitDialog()
 	ConfigFile.load ("nel_launcher.cfg");
 
 	// get the working path
-	string workingPath = CPath::standardizePath (ConfigFile.getVar ("Application").asString(2));
+	string workingPath = CPath::getFullPath (ConfigFile.getVar ("Application").asString(2));
 	
 	if (!NLMISC::CFile::isExists (workingPath))
 	{

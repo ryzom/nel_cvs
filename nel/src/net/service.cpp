@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.136 2002/07/18 15:01:14 lecroart Exp $
+ * $Id: service.cpp,v 1.137 2002/07/25 13:34:48 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -203,11 +203,13 @@ static void cbExecCommand5 (CMessage &msgin, const std::string &serviceName, uin
 // if we receive the stop service, we try to exit now
 static void cbStopService (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
+	nlinfo ("Receive a stop from '%s', need to quit", from->asString().c_str());
 	ExitSignalAsked = 0xFFFF;
 }
 
 static void cbStopService5 (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
+	nlinfo ("Receive a stop from service %s-%d, need to quit", serviceName.c_str(), sid);
 	ExitSignalAsked = 0xFFFF;
 }
 
@@ -260,6 +262,7 @@ static void sigHandler(int Sig)
 				// signal-handler routines are usually called asynchronously when an interrupt occurs.
 				if (ExitSignalAsked == 0)
 				{
+					nlinfo ("Receive a signal that said that i must exit");
 					ExitSignalAsked = Sig;
 					return;
 				}
@@ -1032,11 +1035,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			{
 				// update the window displayer and quit if asked
 				if (!WindowDisplayer->update ())
-					ExitSignalAsked = true;
+				{
+					nlinfo ("The window displayer was closed by user, need to quit");
+					ExitSignalAsked = 1;
+				}
 			}
 
 			// stop the loop if the exit signal asked
-			if (ExitSignalAsked)
+			if (ExitSignalAsked > 0)
 			{
 				H_AFTER(NLNETServiceLoop);
 				break;
@@ -1271,6 +1277,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 void IService::exit (sint code)
 {
+	nlinfo ("somebody called IService::exit(), I have to quit");
 	ExitSignalAsked = code;
 }
 
@@ -1334,6 +1341,7 @@ NLMISC_COMMAND (quit, "exit the service", "")
 {
 	if(args.size() != 0) return false;
 
+	nlinfo ("User ask me with a command to quit");
 	ExitSignalAsked = 0xFFFF;
 
 	return true;

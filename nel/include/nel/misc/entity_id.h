@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.39 2004/02/20 11:34:08 distrib Exp $
+ * $Id: entity_id.h,v 1.40 2004/04/01 13:32:05 brigand Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -570,6 +570,8 @@ class CEidHash
 public:
 	size_t	operator () ( const NLMISC::CEntityId & id ) const 
 	{ 		
+		uint64 hash64 = id.getUniqueId();
+		return size_t(hash64) ^ size_t( hash64 >> 32 );
 		return (uint32)id.getShortId(); 
 	}
 };

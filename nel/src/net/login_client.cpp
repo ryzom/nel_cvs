@@ -1,6 +1,8 @@
 /** \file login_client.cpp
+ * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
+ * connects to the shard.
  *
- * $Id: login_client.cpp,v 1.5 2001/06/13 10:21:33 lecroart Exp $
+ * $Id: login_client.cpp,v 1.6 2001/06/21 09:00:44 cado Exp $
  *
  */
 
@@ -45,6 +47,7 @@ CLoginClient::TShardList CLoginClient::ShardList;
 string CLoginClient::_GfxInfos;
 
 CCallbackClient *CLoginClient::_CallbackClient = NULL;
+
 
 // Callback for answer of the login password.
 bool VerifyLoginPassword;

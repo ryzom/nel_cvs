@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.13 2002/03/19 17:42:48 valignat Exp $
+ * $Id: admin_executor_service.cpp,v 1.14 2002/03/25 09:27:34 lecroart Exp $
  *
  */
 
@@ -36,10 +36,10 @@
 #define NELNS_LOGS ""
 #endif // NELNS_LOGS
 
+#include "nel/misc/types_nl.h"
+
 #include <fcntl.h>
 #include <sys/stat.h>
-
-#include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
@@ -59,11 +59,11 @@
 #include "nel/net/service.h"
 #include "nel/net/net_manager.h"
 
-#ifdef NL_OS_WINDOWS
+/*#ifdef NL_OS_WINDOWS
 #define getcwd _getcwd
 #define chdir _chdir
 #endif
-
+*/
  
 using namespace std;
 using namespace NLMISC;
@@ -118,26 +118,16 @@ SIT findService (uint32 sid, bool asrt = true)
 class CExecuteCommandThread : public IRunnable
 {
 public:
-	string Command, Path;
+	string Command;
 
-	CExecuteCommandThread (string command, string path = "") : Command(command), Path(path) { }
+	CExecuteCommandThread (string command) : Command(command) { }
 
 	void run ()
 	{
-		nlinfo ("start executing '%s' in '%s' directory", Command.c_str(), Path.c_str());
+		nlinfo ("start executing '%s'", Command.c_str());
 		
-		char oldpath[256];
-		if (!Path.empty())
-		{
-			getcwd(oldpath,256);
-			chdir(Path.c_str());
-		}
-
 		system (Command.c_str());
 		
-		if (!Path.empty())
-			chdir(oldpath);
-
 		nlinfo ("end executing: %s", Command.c_str());
 	}
 };
@@ -145,32 +135,22 @@ public:
 class CExecuteServiceThread : public IRunnable
 {
 public:
-	string ServiceAlias, ServiceCommand, ServicePath;
+	string ServiceCommand;
 
-	CExecuteServiceThread (string serviceAlias, string serviceCommand, string servicePath = "") :
-		ServiceCommand(serviceCommand), ServicePath(servicePath), ServiceAlias(serviceAlias) { }
+	CExecuteServiceThread (string serviceCommand) :
+		ServiceCommand(serviceCommand) { }
 
 	void run ()
 	{
-		nlinfo ("start service '%s' '%s' in '%s' directory", ServiceAlias.c_str(), ServiceCommand.c_str(), ServicePath.c_str());
+		nlinfo ("start service '%s'", ServiceCommand.c_str());
 		
-		char oldpath[256];
-		if (!ServicePath.empty())
-		{
-			getcwd(oldpath,256);
-			chdir(ServicePath.c_str());
-		}
-
 #ifdef NL_OS_WINDOWS
 		WinExec (ServiceCommand.c_str(), SW_MINIMIZE/*SW_SHOWNORMAL*/);
 #else
 		system (ServiceCommand.c_str());
 #endif
 
-		if (!ServicePath.empty())
-			chdir(oldpath);
-
-		nlinfo ("end service '%s' '%s' in '%s' directory", ServiceAlias.c_str(), ServiceCommand.c_str(), ServicePath.c_str());
+		nlinfo ("end service '%s'", ServiceCommand.c_str());
 	}
 };
 
@@ -387,8 +367,8 @@ static void cbStartService (CMessage& msgin, TSockId from, CCallbackNetBase &net
 
 	try
 	{
-		path = IService::ConfigFile.getVar(serviceAlias).asString(0);
-		command = IService::ConfigFile.getVar(serviceAlias).asString(1);
+		path = IService::getInstance()->ConfigFile.getVar(serviceAlias).asString(0);
+		command = IService::getInstance()->ConfigFile.getVar(serviceAlias).asString(1);
 	}
 	catch(EConfigFile &e)
 	{
@@ -397,8 +377,16 @@ static void cbStartService (CMessage& msgin, TSockId from, CCallbackNetBase &net
 	}
 
 	// give the service alias to the service to forward it back when it will connected to the aes.
-	command += " -n";
-	command += serviceAlias.c_str();
+	command += " -N";
+	command += serviceAlias;
+
+	// set the path for the config file
+	command += " -C";
+	command += path;
+
+	// set the path for log
+	command += " -L";
+	command += path;
 
 #ifdef NL_OS_WINDOWS
 	command += " >NUL:";
@@ -406,7 +394,7 @@ static void cbStartService (CMessage& msgin, TSockId from, CCallbackNetBase &net
 	command += " >/dev/null";
 #endif
 
-	IThread *thread = IThread::create (new CExecuteServiceThread (serviceAlias, command, path));
+	IThread *thread = IThread::create (new CExecuteServiceThread (command));
 	thread->start ();
 }
 
@@ -469,7 +457,7 @@ void cbASServiceConnection (const string &serviceName, TSockId from, void *arg)
 	}
 	CNetManager::send ("AESAS", msgout, from);
 
-	loadAndSendServicesAliasList (IService::ConfigFile.getVar ("Services"));
+	loadAndSendServicesAliasList (IService::getInstance()->ConfigFile.getVar ("Services"));
 }
 
 TCallbackItem AESASCallbackArray[] =
@@ -527,4 +515,4 @@ public:
 
 
 /// Naming Service
-NLNET_SERVICE_MAIN (CAdminExecutorService, "AES", "admin_executor_service", 49997, ServicesCallbackArray, NELNS_CONFIG, NELNS_LOGS);
+NLNET_OLD_SERVICE_MAIN (CAdminExecutorService, "AES", "admin_executor_service", 49997, ServicesCallbackArray, NELNS_CONFIG, NELNS_LOGS);

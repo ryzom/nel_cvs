@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * <File description>
  *
- * $Id: p_thread.cpp,v 1.3 2001/02/14 13:40:18 cado Exp $
+ * $Id: p_thread.cpp,v 1.4 2001/02/14 13:47:24 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ static void *ProxyFunc( void *arg )
 /*
  * Constructor
  */
-CPThread::CPThread( IRunnable *runnable ) : _Runnable( runnable ), _Started( false )
+CPThread::CPThread( IRunnable *runnable ) : Runnable( runnable ), _Started( false )
 {}
 
 
@@ -110,13 +110,13 @@ void CPThread::terminate()
  */
 void CPThread::wait ()
 {
-	if (ThreadHandle != -1)
+	if ( _Started )
 	{
 		if ( pthread_join( _ThreadHandle, NULL ) != 0 )
 		{
 			throw EThread( "Cannot join with thread" );
 		}
-		_Started = false;;
+		_Started = false;
 	}
 }
 

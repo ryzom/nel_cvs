@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.23 2001/05/24 14:17:35 cado Exp $
+ * $Id: message.h,v 1.24 2001/06/07 16:15:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,6 +138,9 @@ public:
 	/// Sets the message type as a number (in range 0..32767) and put it in the buffer if we are in writing mode
 	void setType (NLMISC::CStringIdArray::TStringId id)
 	{
+		// PATCH: the id system is not available
+		nlstop;
+
 		// check if we already do a setType ()
 		nlassert (!_TypeSet);
 		// don't accept negative value
@@ -187,8 +190,11 @@ public:
 			// check if they don't already serial some stuffs
 			nlassert (length () == 0);
 
-			// if we can send the id instead of the string, just do it (c)nike!
-			NLMISC::CStringIdArray::TStringId id = _SIDA->getId (name);
+			// if we can send the id instead of the string, "just do it" (c)nike!
+			//NLMISC::CStringIdArray::TStringId id = _SIDA->getId (name);
+
+			// PATCH: always send in full text
+			NLMISC::CStringIdArray::TStringId id = -1;
 
 			if (id == -1)
 			{

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.17 2004/06/22 10:05:59 berenguier Exp $
+ * $Id: driver_opengl_states.h,v 1.18 2004/06/29 13:49:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,7 +119,12 @@ public:
 	void			setSpecular(uint32 packedColor, const GLfloat color[4]);
 	void			setShininess(float shin);
 	void			setVertexColorLighted(bool enable);
-	void			setDepthRange (float zDelta);
+	void			setDepthRange (float znear, float zfar);
+	void			getDepthRange(float &znear, float &zfar) const { znear = _DepthRangeNear; zfar = _DepthRangeFar; }
+	/** Set z-bias 
+      * NB : this is done in window coordinate, not in world coordinate as with CMaterial
+	  */
+	void			setZBias(float zbias);
 	// NB: set 0 to reset TexGen.
 	void			setTexGenMode (uint stage, GLint mode);
 	// @}
@@ -209,11 +214,15 @@ private:
 	bool			_TexCoordArrayEnabled[8];
 	bool			_VertexAttribArrayEnabled[CVertexBuffer::NumValue];	
 
-	GLint			_TexGenMode[8];
+	GLint			_TexGenMode[8];	
 
-	float			_CurZRangeDelta;
+	uint			_CurrARBVertexBuffer;
 
-	uint			_CurrARBVertexBuffer;	
+	float			_DepthRangeNear;
+	float			_DepthRangeFar;
+	float			_ZBias; // NB : zbias is in window coordinates
+private:
+	void updateDepthRange();
 
 	// Mirror of glEnable() and GL_LIGHT0+i
 	enum	{MaxLight=8};

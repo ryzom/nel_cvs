@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.24 2004/06/22 10:05:59 berenguier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.25 2004/06/29 13:49:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,9 @@ CDriverGLStates::CDriverGLStates()
 {
 	_TextureCubeMapSupported= false;
 	_CurrARBVertexBuffer = 0;
+	_DepthRangeNear = 0.f;
+	_DepthRangeFar = 1.f;
+	_ZBias = 0.f;
 	_MaxDriverLight= 0;
 }
 
@@ -65,7 +68,9 @@ void			CDriverGLStates::init(bool supportTextureCubeMap, uint maxLight)
 	{
 		_VertexAttribArrayEnabled[i]= false;
 	}
-
+	_DepthRangeNear = 0.f;
+	_DepthRangeFar = 1.f;
+	_ZBias = 0.f;
 	// by default all lights are disabled (not reseted in forceDefaults)
 	for(i=0; i<MaxLight; i++)
 	{
@@ -159,7 +164,9 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	_CurrentClientActiveTextureARB= 0;
 
 	// Depth range
-	_CurZRangeDelta = 0;
+	_DepthRangeNear = 0.f;
+	_DepthRangeFar = 1.f;
+	_ZBias = 0.f;	
 	glDepthRange (0, 1);
 	
 		
@@ -482,19 +489,37 @@ void			CDriverGLStates::setVertexColorLighted(bool enable)
 	}
 }
 
+
 // ***************************************************************************
-void		CDriverGLStates::setDepthRange (float zDelta)
+void CDriverGLStates::updateDepthRange()
+{
+	float delta = _ZBias * (_DepthRangeFar - _DepthRangeNear);
+	glDepthRange(delta + _DepthRangeNear, delta + _DepthRangeFar);
+}
+
+// ***************************************************************************
+void		CDriverGLStates::setZBias(float zbias)
 {
 #ifndef NL3D_GLSTATE_DISABLE_CACHE
-	if (zDelta != _CurZRangeDelta)
+	if (zbias != _ZBias)
 #endif
 	{		
-		_CurZRangeDelta = zDelta;
+		_ZBias = zbias;
+		updateDepthRange();
+	}
+}
 
-		// Setup the range
-		glDepthRange (zDelta, 1+zDelta);
-		
-			
+// ***************************************************************************
+void CDriverGLStates::setDepthRange(float znear, float zfar)
+{
+	nlassert(znear != zfar);
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if (znear != _DepthRangeNear || zfar != _DepthRangeFar)
+#endif
+	{
+		_DepthRangeNear = znear;
+		_DepthRangeFar = zfar;
+		updateDepthRange();
 	}
 }
 

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.51 2001/01/15 16:01:17 nevrax Exp $
+ * $Id: msg_socket.cpp,v 1.52 2001/01/18 16:50:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -490,7 +490,7 @@ void CMsgSocket::sendToAllExceptHosts( CMessage& outmsg, const set<TSenderId>& e
 /*
  * See header file
  */
-void CMsgSocket::update()
+bool CMsgSocket::update()
 {
 /*#ifdef NL_DEBUG
 	uint nb_recvd = 0;
@@ -498,7 +498,7 @@ void CMsgSocket::update()
 #endif*/
 
 	// Check data available on all sockets, including the server socket
-	while ( getDataAvailableStatus() )
+	if ( getDataAvailableStatus() )
 	{
 		// Iterate on the sockets where data are available
 		CConnections::iterator ilps;
@@ -590,11 +590,16 @@ void CMsgSocket::update()
 		nldebug( "Nb: %u - Bytes: %u", nb_recvd, bytes_recvd );
 #endif*/
 
-		// Receive only one message per update if not in "receive all" mode
+		/*// Receive only one message per update if not in "receive all" mode
 		if ( ! receiveAllMode() )
 		{
 			break;
-		}
+		}*/
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 

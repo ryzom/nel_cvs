@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.cpp
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.cpp,v 1.8 2001/01/16 11:23:03 cado Exp $
+ * $Id: cubic_entity_interpolator.cpp,v 1.9 2001/01/18 16:50:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,10 @@ CCubicEntityInterpolator::CCubicEntityInterpolator() :
  */
 void CCubicEntityInterpolator::begin( const IMovingEntity& src, const IMovingEntity& dest, TDuration duration )
 {
+	if ( src.full3d() )
+	{
+		InfoLog.displayRawNL( "Convergence from %f  %f  %f to %f  %f  %f", src.pos().x, src.pos().y, src.pos().z, src.pos().x, src.pos().y, src.pos().z );
+	}
 	_Dest = dest;
 	_Duration = duration;
 	_Elapsed = 0;
@@ -124,7 +128,7 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 	//es.setPos( _Dest.pos() );
 	//_Active = false;
 	CVector prevpos = es.pos();
-	prevpos.z = 0.0f; // assuming ground mode for now
+	//prevpos.z = 0.0f; // assuming ground mode for now (used for trajectory vector)
 	_Elapsed += deltatime;
 	float ratio = _Elapsed / _Duration;
 	if ( ratio < 0.9 ) // not interpolating until 100%
@@ -136,7 +140,7 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 		
 		// Continuity for trajectory vector
 		CVector p = es.pos();
-		//p.z = 0.0f;
+		//p.z = 0.0f; // assuming ground mode for now (used for trajectory vector)
 		es.setTrajVector( (p-prevpos).normed() / deltatime );
 
 		// Body heading : linear interpolation
@@ -144,6 +148,7 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 	}
 	else
 	{
+		//InfoLog.displayRawNL( "End at %f\n", es.pos().z );
 		es = _Dest; // setting the right pos
 		_Active = false;
 	}

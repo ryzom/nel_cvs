@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.33 2001/01/15 13:40:57 cado Exp $
+ * $Id: msg_socket.h,v 1.34 2001/01/18 16:50:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,10 +216,10 @@ public:
 	 * When a message with a name (as a string) is received, a binding message is replied to the sender, so that
 	 * next time it sends this type of message, the type is represented by a message type code.
 	 */
-	static void		update();
+	static bool						update();
 
 	/// Sets timeout for receive() in milliseconds
-	static void		setTimeout( uint32 ms );
+	static void					setTimeout( uint32 ms );
 
 	/// Returns the internet address of the listening socket (server mode only)
 	static const CInetAddress	*listenAddress();

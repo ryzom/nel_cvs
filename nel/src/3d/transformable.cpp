@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.4 2001/03/21 11:14:15 berenguier Exp $
+ * $Id: transformable.cpp,v 1.5 2001/03/27 17:36:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,11 +79,11 @@ const char 	*ITransformable::getValueName (uint valueId) const
 	// what value ?
 	switch (valueId)
 	{
-	case PosValue:			return "POS";
-	case RotEulerValue:		return "ROTEULER";
-	case RotQuatValue:		return "ROTQUAT";
-	case ScaleValue:		return "SCALE";
-	case PivotValue:		return "PIVOT";
+	case PosValue:			return getPosValueName ();
+	case RotEulerValue:		return getRotEulerValueName();
+	case RotQuatValue:		return getRotQuatValueName();
+	case ScaleValue:		return getScaleValueName();
+	case PivotValue:		return getPivotValueName();
 	}
 
 	// No, only ITrnasformable values!
@@ -92,8 +92,31 @@ const char 	*ITransformable::getValueName (uint valueId) const
 
 	return "";
 }
-
-
+// ***************************************************************************
+const char	*ITransformable::getPosValueName ()
+{
+	return "pos";
+}
+// ***************************************************************************
+const char	*ITransformable::getRotEulerValueName()
+{
+	return "roteuler";
+}
+// ***************************************************************************
+const char	*ITransformable::getRotQuatValueName()
+{
+	return "rotquat";
+}
+// ***************************************************************************
+const char	*ITransformable::getScaleValueName()
+{
+	return "scale";
+}
+// ***************************************************************************
+const char	*ITransformable::getPivotValueName()
+{
+	return "pivot";
+}
 // ***************************************************************************
 bool	ITransformable::testTransformFlags() const
 {

@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.4 2001/03/21 11:14:03 berenguier Exp $
+ * $Id: transformable.h,v 1.5 2001/03/27 17:36:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -275,6 +275,11 @@ public:
 	// @}
 
 
+	static const char *getPosValueName ();
+	static const char *getRotEulerValueName();
+	static const char *getRotQuatValueName();
+	static const char *getScaleValueName();
+	static const char *getPivotValueName();
 	
 
 private:

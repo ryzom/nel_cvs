@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.15 2004/04/27 12:07:41 vizerie Exp $
+ * $Id: driver_opengl_states.h,v 1.16 2004/05/14 15:02:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,8 +33,6 @@
 
 namespace NL3D 
 {
-
-
 
 // ***************************************************************************
 /**
@@ -86,7 +84,7 @@ public:
 	void			init(bool supportTextureCubeMap);
 
 	/// Reset all OpenGL states of interest to default, and update caching.
-	void			forceDefaults(uint nbTextureStages);
+	void			forceDefaults(uint nbTextureStages);	
 
 	/// \name enable if !0
 	// @{
@@ -96,6 +94,7 @@ public:
 	/// enable and set good AlphaFunc.
 	void			enableAlphaTest(uint enable);
 	void			enableLighting(uint enable);
+	bool			isLightingEnabled() const { return _CurLighting; }
 	void			enableZWrite(uint enable);	
 	// @}
 
@@ -135,6 +134,7 @@ public:
 	 *	NB: if CubeMap extension not supported, TextureCubeMap <=> TextureDisabled.
 	 */
 	void			setTextureMode(TTextureMode texMode);
+	TTextureMode	getTextureMode() const { return _TextureMode[_CurrentActiveTextureARB]; }
 	// reset texture mode to the default (disabled) for the current stage. It forces the state (useful after texture shaders)
 	void			resetTextureMode();	
 	// @}
@@ -161,6 +161,7 @@ public:
 
 	// special version for ARB_vertex_program used with ARB_vertex_buffer or ATI_vertex_attrib_array_object
 	void			enableVertexAttribArrayARB(uint glIndex, bool enable);		
+
 
 	// @}
 	

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.155 2003/11/25 16:19:25 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.156 2003/12/02 11:22:44 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,8 @@ public:
 	GLuint					ID;
 	// Is the internal format of the texture is a compressed one?
 	bool					Compressed;
+	// Is the internal format of the texture has mipmaps?
+	bool					MipMap;
 
 	// This is the computed size of what memory this texture take.
 	uint32					TextureMemory;

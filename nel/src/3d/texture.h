@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.12 2003/11/13 09:57:23 corvazier Exp $
+ * $Id: texture.h,v 1.13 2003/12/02 11:23:05 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -304,24 +304,6 @@ public:
 		{
 			doGenerate(async);
 			_GoodGenerate=true;
-		}
-
-		// No mipmap in a compressed format ?
-		TType pixelFormat = getPixelFormat();
-		if ((getMipMapCount() == 1) && ((pixelFormat>=DXTC1) && (pixelFormat<=DXTC5)))
-		{
-			// No, disable mipmaps for this texture
-			switch (_MinFilter)
-			{
-			case NearestMipMapNearest:
-			case NearestMipMapLinear:
-				_MinFilter = NearestMipMapOff;
-				break;
-			case LinearMipMapNearest:
-			case LinearMipMapLinear:
-				_MinFilter = LinearMipMapOff;
-				break;
-			}
 		}
 	}
 

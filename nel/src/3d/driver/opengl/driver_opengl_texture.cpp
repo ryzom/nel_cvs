@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.63 2003/05/06 15:27:06 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.64 2003/12/02 11:22:44 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDri
 	glGenTextures(1,&ID);
 	
 	Compressed= false;
+	MipMap= false;
 	TextureMemory= 0;
 
 	// Nb: at Driver dtor, all tex infos are deleted, so _Driver is always valid.
@@ -245,12 +246,12 @@ static inline GLenum	translateWrapToGl(ITexture::TWrapMode mode, const CGlExtens
 
 
 // ***************************************************************************
-static inline GLenum	translateMagFilterToGl(ITexture::TMagFilter mode)
+static inline GLenum	translateMagFilterToGl(CTextureDrvInfosGL *glText)
 {	
 #ifdef NEL_FORCE_NEAREST
 	return GL_NEAREST;
 #else NEL_FORCE_NEAREST
-	switch(mode)
+	switch(glText->MagFilter)
 	{
 		case ITexture::Linear: return GL_LINEAR;
 		case ITexture::Nearest: return GL_NEAREST;
@@ -264,20 +265,39 @@ static inline GLenum	translateMagFilterToGl(ITexture::TMagFilter mode)
 
 
 // ***************************************************************************
-static inline GLenum	translateMinFilterToGl(ITexture::TMinFilter mode)
+static inline GLenum	translateMinFilterToGl(CTextureDrvInfosGL *glText)
 {
 #ifdef NEL_FORCE_NEAREST
 	return GL_NEAREST;
 #else NEL_FORCE_NEAREST
-	switch(mode)
+
+	if(glText->MipMap)
 	{
-		case ITexture::NearestMipMapOff: return GL_NEAREST;
-		case ITexture::NearestMipMapNearest: return GL_NEAREST_MIPMAP_NEAREST;
-		case ITexture::NearestMipMapLinear: return GL_NEAREST_MIPMAP_LINEAR;
-		case ITexture::LinearMipMapOff: return GL_LINEAR;
-		case ITexture::LinearMipMapNearest: return GL_LINEAR_MIPMAP_NEAREST;
-		case ITexture::LinearMipMapLinear: return GL_LINEAR_MIPMAP_LINEAR;
-		default: break;
+		switch(glText->MinFilter)
+		{
+			case ITexture::NearestMipMapOff: return GL_NEAREST;
+			case ITexture::NearestMipMapNearest: return GL_NEAREST_MIPMAP_NEAREST;
+			case ITexture::NearestMipMapLinear: return GL_NEAREST_MIPMAP_LINEAR;
+			case ITexture::LinearMipMapOff: return GL_LINEAR;
+			case ITexture::LinearMipMapNearest: return GL_LINEAR_MIPMAP_NEAREST;
+			case ITexture::LinearMipMapLinear: return GL_LINEAR_MIPMAP_LINEAR;
+			default: break;
+		}
+	}
+	else
+	{
+		switch(glText->MinFilter)
+		{
+			case ITexture::NearestMipMapOff:
+			case ITexture::NearestMipMapNearest:
+			case ITexture::NearestMipMapLinear:
+				 return GL_NEAREST;
+			case ITexture::LinearMipMapOff:
+			case ITexture::LinearMipMapNearest:
+			case ITexture::LinearMipMapLinear:
+				 return GL_LINEAR;
+			default: break;
+		}
 	}
 
 	nlstop;
@@ -347,6 +367,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 		mustCreate = true;
 	}
 
+	// Does the texture has been touched ?
 	if ( (!tex.touched()) && (!mustCreate) )
 		return true; // Do not do anything
 
@@ -499,6 +520,9 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 					else
 						nMipMaps= 1;
 
+					// MipMap upload?
+					gltext->MipMap= nMipMaps>1;
+
 					// Fill mipmaps.
 					for(sint i=0;i<nMipMaps;i++)
 					{
@@ -533,14 +557,15 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 
 					// DXTC: if same format, and same mipmapOn/Off, use glTexCompressedImage*.
 					// We cannot build the mipmaps if they are not here.
-					if(_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt) &&
-						(tex.mipMapOff() || tex.getMipMapCount()>1) )
+					if(_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt))
 					{
-						sint	nMipMaps;
+						sint	nMipMaps = 1;
+						
 						if(tex.mipMapOn())
 							nMipMaps= tex.getMipMapCount();
-						else
-							nMipMaps= 1;
+
+						// MipMap upload?
+						gltext->MipMap= nMipMaps>1;
 
 						// Degradation in Size allowed only if DXTC texture are provided with mipmaps.
 						// Because use them to resize !!!
@@ -599,6 +624,9 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 						}
 						else
 							nMipMaps= 1;
+
+						// MipMap upload?
+						gltext->MipMap= nMipMaps>1;
 
 						// Fill mipmaps.
 						for(sint i=0;i<nMipMaps;i++)
@@ -726,15 +754,15 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_S, translateWrapToGl(ITexture::Clamp, _Extensions));
 			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_T, translateWrapToGl(ITexture::Clamp, _Extensions));
 			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_R, translateWrapToGl(ITexture::Clamp, _Extensions));
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
+			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
 		}
 		else
 		{
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
 		}
 
 
@@ -793,12 +821,8 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 	GLint glSrcFmt = getGlSrcTextureFormat (tex, glfmt);
 	GLenum  glSrcType= getGlSrcTextureComponentType(glSrcFmt);
 	// If DXTC format
-	//if (isDXTCFormat(glfmt))
-	if (_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt) &&
-			(tex.mipMapOff() || tex.getMipMapCount()>1) )
+	if (_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt))
 	{
-		nlassert (_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt) &&
-					(tex.mipMapOff() || tex.getMipMapCount()>1) );
 
 		sint nUploadMipMaps;
 		if (tex.mipMapOn())
@@ -936,12 +960,12 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 						if(gltext->MagFilter!= tex->getMagFilter())
 						{
 							gltext->MagFilter= tex->getMagFilter();
-							glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
+							glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
 						}
 						if(gltext->MinFilter!= tex->getMinFilter())
 						{
 							gltext->MinFilter= tex->getMinFilter();
-							glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+							glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
 						}
 					}
 				}
@@ -979,12 +1003,12 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 					if(gltext->MagFilter!= tex->getMagFilter())
 					{
 						gltext->MagFilter= tex->getMagFilter();
-						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
+						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
 					}
 					if(gltext->MinFilter!= tex->getMinFilter())
 					{
 						gltext->MinFilter= tex->getMinFilter();					
-						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
 					}
 				}
 			}
@@ -1155,6 +1179,7 @@ void		CDriverGL::swapTextureHandle(ITexture &tex0, ITexture &tex1)
 		Can't do swap(*t0, *t1), because must keep the correct _DriverIterator
 	*/
 	swap(t0->ID, t1->ID);
+	swap(t0->MipMap, t1->MipMap);
 	swap(t0->Compressed, t1->Compressed);
 	swap(t0->TextureMemory, t1->TextureMemory);
 	swap(t0->WrapS, t1->WrapS);

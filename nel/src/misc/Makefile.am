@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.28 2001/10/16 12:53:34 lecroart Exp $
+# $Id: Makefile.am,v 1.29 2001/10/23 13:21:32 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -61,7 +61,8 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         win_displayer.cpp                  \
                         win_event_emitter.cpp              \
                         win_thread.cpp                     \
-                        reader_writer.cpp                  
+                        reader_writer.cpp                  \
+                        entity_id.cpp                      
 
 AM_CXXFLAGS           = @XML_CFLAGS@
 

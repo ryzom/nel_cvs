@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=misc - Win32 DebugFast
+CFG=misc - Win32 DebugInstrument
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=misc - Win32 DebugFast
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "misc.mak" CFG="misc - Win32 DebugFast"
+!MESSAGE NMAKE /f "misc.mak" CFG="misc - Win32 DebugInstrument"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -21,6 +21,7 @@ CFG=misc - Win32 DebugFast
 !MESSAGE "misc - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "misc - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
 !MESSAGE "misc - Win32 DebugFast" (based on "Win32 (x86) Static Library")
+!MESSAGE "misc - Win32 DebugInstrument" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -93,6 +94,31 @@ BSC32=bscmake.exe
 LIB32=link.exe -lib
 # ADD LIB32 /nologo /out:"../lib/nlmisc_df.lib"
 
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugInstrument"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "misc___Win32_DebugInstrument"
+# PROP BASE Intermediate_Dir "misc___Win32_DebugInstrument"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "../obj/DebugInstrument/misc"
+# PROP Intermediate_Dir "../obj/DebugInstrument/misc"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /I "../include" /D "_LIB" /D "NL_DEBUG_FAST" /D "LIBXML_STATIC" /D "_DEBUG" /D "_MBCS" /D "WIN32" /Yu"stdmisc.h" /FD /GZ /c
+# SUBTRACT BASE CPP /Gf /Gy /Fr
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "NL_DEBUG_FAST" /D "LIBXML_STATIC" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "NL_DEBUG_INSTRUMENT" /Yu"stdmisc.h" /FD /GZ /c
+# SUBTRACT CPP /Gf /Gy /Fr
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"../lib/nlmisc_df.lib"
+# ADD LIB32 /nologo /out:"../lib/nlmisc_di.lib"
+
 !ENDIF 
 
 # Begin Target
@@ -101,6 +127,7 @@ LIB32=link.exe -lib
 # Name "misc - Win32 Debug"
 # Name "misc - Win32 ReleaseDebug"
 # Name "misc - Win32 DebugFast"
+# Name "misc - Win32 DebugInstrument"
 # Begin Group "Stream"
 
 # PROP Default_Filter ""

@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=3d - Win32 DebugFast
+CFG=3d - Win32 DebugInstrument
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=3d - Win32 DebugFast
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "3d.mak" CFG="3d - Win32 DebugFast"
+!MESSAGE NMAKE /f "3d.mak" CFG="3d - Win32 DebugInstrument"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -21,6 +21,7 @@ CFG=3d - Win32 DebugFast
 !MESSAGE "3d - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "3d - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
 !MESSAGE "3d - Win32 DebugFast" (based on "Win32 (x86) Static Library")
+!MESSAGE "3d - Win32 DebugInstrument" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -94,6 +95,31 @@ BSC32=bscmake.exe
 LIB32=link.exe -lib
 # ADD LIB32 /nologo /out:"../lib/nl3d_df.lib"
 
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "3d___Win32_DebugInstrument"
+# PROP BASE Intermediate_Dir "3d___Win32_DebugInstrument"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "../obj/DebugInstrument/3d"
+# PROP Intermediate_Dir "../obj/DebugInstrument/3d"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /I "../include" /D "_LIB" /D "NL_DEBUG_FAST" /D "_DEBUG" /D "_MBCS" /D "LIBXML_STATIC" /D "WIN32" /Yu"std3d.h" /FD /GZ /Zm200 /c
+# SUBTRACT BASE CPP /Gf /Gy /Fr
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "NL_DEBUG_FAST" /D "_DEBUG" /D "_MBCS" /D "LIBXML_STATIC" /D "WIN32" /D "NL_DEBUG_INSTRUMENT" /Yu"std3d.h" /FD /GZ /Zm200 /c
+# SUBTRACT CPP /Gf /Gy /Fr
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"../lib/nl3d_df.lib"
+# ADD LIB32 /nologo /out:"../lib/nl3d_di.lib"
+
 !ENDIF 
 
 # Begin Target
@@ -102,6 +128,7 @@ LIB32=link.exe -lib
 # Name "3d - Win32 Debug"
 # Name "3d - Win32 ReleaseDebug"
 # Name "3d - Win32 DebugFast"
+# Name "3d - Win32 DebugInstrument"
 # Begin Group "Traversals"
 
 # PROP Default_Filter ""
@@ -298,6 +325,8 @@ SOURCE=.\3d\water_model.cpp
 !ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
 
 !ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
 
 !ENDIF 
 
@@ -881,7 +910,30 @@ SOURCE=.\3d\mesh_mrm_skin.cpp
 # Begin Source File
 
 SOURCE=.\3d\mesh_mrm_skin_template.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
 # PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -894,7 +946,30 @@ SOURCE=.\3d\mesh_mrm_skinned.h
 # Begin Source File
 
 SOURCE=.\3d\mesh_mrm_skinned_template.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
 # PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -2676,7 +2751,30 @@ SOURCE=.\3d\shadow_poly_receiver.h
 # Begin Source File
 
 SOURCE=.\3d\async_file_manager.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
 # PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -2766,7 +2864,30 @@ SOURCE=.\3d\std3d.h
 # Begin Source File
 
 SOURCE=.\3d\vertex_buffer_heap.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
 # PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

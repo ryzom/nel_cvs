@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=driver_dsound - Win32 DebugFast
+CFG=driver_dsound - Win32 DebugInstrument
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=driver_dsound - Win32 DebugFast
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "driver_dsound.mak" CFG="driver_dsound - Win32 DebugFast"
+!MESSAGE NMAKE /f "driver_dsound.mak" CFG="driver_dsound - Win32 DebugInstrument"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -21,6 +21,7 @@ CFG=driver_dsound - Win32 DebugFast
 !MESSAGE "driver_dsound - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "driver_dsound - Win32 ReleaseDebug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "driver_dsound - Win32 DebugFast" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "driver_dsound - Win32 DebugInstrument" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -108,6 +109,36 @@ LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
 # ADD LINK32 nlsound_lowlevel_df.lib kernel32.lib winspool.lib comdlg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib nlmisc_df.lib eax.lib eaxguid.lib user32.lib gdi32.lib advapi32.lib dsound.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_df.dll" /pdbtype:sept /libpath:"../../../../lib"
 
+!ELSEIF  "$(CFG)" == "driver_dsound - Win32 DebugInstrument"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "driver_dsound___Win32_DebugInstrument"
+# PROP BASE Intermediate_Dir "driver_dsound___Win32_DebugInstrument"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "../../../../obj/DebugInstrument/driver_dsound"
+# PROP Intermediate_Dir "../../../../obj/DebugInstrument/driver_dsound"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /I "../../../../include" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "_MBCS" /D "LIBXML_STATIC" /D "WIN32" /FD /GZ /c
+# SUBTRACT BASE CPP /Gf /Gy /Fr /YX /Yc /Yu
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../../../../include" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "_MBCS" /D "LIBXML_STATIC" /D "WIN32" /D "NL_DEBUG_INSTRUMENT" /FD /GZ /c
+# SUBTRACT CPP /Gf /Gy /Fr /YX /Yc /Yu
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 nlsound_lowlevel_df.lib kernel32.lib winspool.lib comdlg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib nlmisc_df.lib eax.lib eaxguid.lib user32.lib gdi32.lib advapi32.lib dsound.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_df.dll" /pdbtype:sept /libpath:"../../../../lib"
+# ADD LINK32 nlsound_lowlevel_df.lib kernel32.lib winspool.lib comdlg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib nlmisc_df.lib eax.lib eaxguid.lib user32.lib gdi32.lib advapi32.lib dsound.lib /nologo /dll /incremental:no /pdb:"../../../../lib/nel_drv_dsound_win_di.pdb" /debug /machine:I386 /def:".\driver_dsound.def" /out:"../../../../lib/nel_drv_dsound_win_di.dll" /libpath:"../../../../lib" /fixed:no
+# SUBTRACT LINK32 /pdb:none
+
 !ENDIF 
 
 # Begin Target
@@ -116,6 +147,7 @@ LINK32=link.exe
 # Name "driver_dsound - Win32 Debug"
 # Name "driver_dsound - Win32 ReleaseDebug"
 # Name "driver_dsound - Win32 DebugFast"
+# Name "driver_dsound - Win32 DebugInstrument"
 # Begin Source File
 
 SOURCE=..\dsound\buffer_dsound.cpp
@@ -127,6 +159,21 @@ SOURCE=..\dsound\buffer_dsound.h
 # Begin Source File
 
 SOURCE=..\dsound\driver_dsound.def
+
+!IF  "$(CFG)" == "driver_dsound - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "driver_dsound - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "driver_dsound - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "driver_dsound - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "driver_dsound - Win32 DebugInstrument"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -164,6 +211,11 @@ SOURCE=..\dsound\stddsound.cpp
 
 !ELSEIF  "$(CFG)" == "driver_dsound - Win32 DebugFast"
 
+# ADD CPP /Yc"stddsound.h"
+
+!ELSEIF  "$(CFG)" == "driver_dsound - Win32 DebugInstrument"
+
+# ADD BASE CPP /Yc"stddsound.h"
 # ADD CPP /Yc"stddsound.h"
 
 !ENDIF 

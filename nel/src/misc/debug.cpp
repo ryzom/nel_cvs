@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.32 2001/04/06 16:08:27 lecroart Exp $
+ * $Id: debug.cpp,v 1.33 2001/04/06 16:45:39 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,7 +127,7 @@ void initDebug2 ()
 
 void createDebug ()
 {
-	static alreadyCreate = false;
+	static bool alreadyCreate = false;
 	if (!alreadyCreate)
 	{
 		ErrorLog = new CLog (CLog::LOG_ERROR);

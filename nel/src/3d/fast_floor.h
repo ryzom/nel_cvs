@@ -1,7 +1,7 @@
 /** \file fast_floor.h
  * <File description>
  *
- * $Id: fast_floor.h,v 1.3 2002/04/12 12:04:58 lecroart Exp $
+ * $Id: fast_floor.h,v 1.4 2002/04/22 16:34:12 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -86,6 +86,37 @@ inline float __stdcall OptFastFractionnalPart(float x)
 }
 
 
+// The magic constant value, for 24 bits precision support positive numbers only
+extern float	OptFastFloorMagicConst24 ; 
+extern int		OptFastFloorBkupCW24 ;
+// init float CW. Init with float 24 bits precision, for faster float operation.
+inline void  OptFastFloorBegin24()
+{
+	OptFastFloorBkupCW24= _controlfp(0, 0);
+	_controlfp( _RC_DOWN|_PC_24, _MCW_RC|_MCW_PC );
+}
+
+// reset float CW.
+inline void  OptFastFloorEnd24()
+{
+	_controlfp(OptFastFloorBkupCW24, _MCW_RC|_MCW_PC);
+}
+
+// Force __stdcall to not pass parameters in registers.
+/// Same method as OptFastFloor, but result are always positive and should never be bigger than 2^23-1
+inline uint32 __stdcall OptFastFloor24(float x)
+{	
+	static uint32	res;
+	__asm
+	{
+		fld		x
+		fadd	dword ptr OptFastFloorMagicConst24
+		fstp	dword ptr res		
+	}
+
+	return res;
+}
+
 
 
 #else
@@ -99,6 +130,14 @@ inline sint  OptFastFloor(float x)
 inline float  OptFastFractionnalPart(float x)
 {
 	return x - (sint) x ;
+}
+
+
+inline void  OptFastFloorBegin24() {}
+inline void  OptFastFloorEnd24() {}
+inline uint32 OptFastFloor24(float x)
+{
+	return (uint32)floor(x);
 }
 
 

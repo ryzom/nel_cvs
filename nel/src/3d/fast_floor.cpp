@@ -1,7 +1,7 @@
 /** \file fast_floor.cpp
  * <File description>
  *
- * $Id: fast_floor.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
+ * $Id: fast_floor.cpp,v 1.3 2002/04/22 16:34:12 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,5 +32,7 @@ namespace NL3D {
 
 double	OptFastFloorMagicConst = pow(2,52) + pow(2,51);
 int OptFastFloorBkupCW ;
+float	OptFastFloorMagicConst24 = (float)pow(2,23);
+int OptFastFloorBkupCW24 ;
 
 } // NL3D

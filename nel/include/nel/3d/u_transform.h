@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.3 2001/08/16 15:49:59 besson Exp $
+ * $Id: u_transform.h,v 1.4 2001/08/27 08:24:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,25 @@ public:
 	virtual	TVisibility		getVisibility()=0;
 	// @}
 
+
+	/// \name freezeHRC
+	// @{
+	/** Optimisation: freeze the HRC so the WorldMatrix computed at next render() will be kept for long, and 
+	 *	the model won't either be tested in HRC.
+	 *
+	 *	NB: the model won't be tested in HRC only if this model is a "root"
+	 *	For maximum optimisation, you should freezeHRC() all the models of a hierarchy, from base root to leaves.
+	 *
+	 *	NB: if the hierarchy of this object must change, or if the object must moves, you must call unfreezeHRC() first,
+	 *	and you should do this for all the parents of this model.
+	 */
+	virtual	void			freezeHRC()=0;
+
+
+	/**	see freezeHRC().
+	 */
+	virtual	void			unfreezeHRC()=0;
+	// @}
 
 };
 

@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.6 2001/08/15 12:00:42 vizerie Exp $
+ * $Id: instance_group_user.h,v 1.7 2001/08/27 08:24:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,10 @@ private:
 	// The real instance group
 	CInstanceGroup	_InstanceGroup;
 	std::map<std::string,CInstanceUser*> _Instances;
+
+
+	virtual void			freezeHRC();
+	virtual void			unfreezeHRC();
 
 	friend class CTransformUser;
 };

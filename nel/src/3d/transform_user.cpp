@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.4 2001/08/16 15:50:00 besson Exp $
+ * $Id: transform_user.cpp,v 1.5 2001/08/27 08:24:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,21 @@ void CTransformUser::setClusterSystem (UInstanceGroup *pIG)
 UInstanceGroup *CTransformUser::getClusterSystem ()
 {
 	return _pIG;
+}
+
+
+// ***************************************************************************
+void			CTransformUser::freezeHRC()
+{
+	nlassert(_Transform) ; // object invalid now ...
+	_Transform->freezeHRC();
+}
+
+// ***************************************************************************
+void			CTransformUser::unfreezeHRC()
+{
+	nlassert(_Transform) ; // object invalid now ...
+	_Transform->unfreezeHRC();
 }
 
 

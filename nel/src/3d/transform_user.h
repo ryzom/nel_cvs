@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.5 2001/08/16 15:50:00 besson Exp $
+ * $Id: transform_user.h,v 1.6 2001/08/27 08:24:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,6 +139,14 @@ public:
 		nlassert(_Transform) ; // object invalid now ...
 		return (UTransform::TVisibility)(uint32)_Transform->getVisibility();
 	}
+	// @}
+
+
+	
+	/// \name freezeHRC
+	// @{
+	virtual	void			freezeHRC();
+	virtual	void			unfreezeHRC();
 	// @}
 
 

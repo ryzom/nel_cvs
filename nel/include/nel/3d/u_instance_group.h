@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.8 2001/08/15 12:10:49 vizerie Exp $
+ * $Id: u_instance_group.h,v 1.9 2001/08/27 08:24:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,6 +185,13 @@ public:
 	 * Get the rotation
 	 */
 	virtual NLMISC::CQuat	getRotQuat ()=0;
+
+
+	/// see UTransform::freezeHRC(). Do it for all instances (not clusters), and for the root of the IG.
+	virtual void			freezeHRC()=0;
+
+	/// see UTransform::unfreezeHRC(). Do it for all instances (not clusters), and for the root of the IG.
+	virtual void			unfreezeHRC()=0;
 
 };
 

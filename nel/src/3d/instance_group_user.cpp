@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.9 2001/08/15 12:00:27 vizerie Exp $
+ * $Id: instance_group_user.cpp,v 1.10 2001/08/27 08:24:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -298,5 +298,19 @@ CQuat CInstanceGroupUser::getRotQuat ()
 {
 	return _InstanceGroup.getRotQuat();
 }
+
+
+// ***************************************************************************
+void			CInstanceGroupUser::freezeHRC()
+{
+	_InstanceGroup.freezeHRC();
+}
+
+// ***************************************************************************
+void			CInstanceGroupUser::unfreezeHRC()
+{
+	_InstanceGroup.unfreezeHRC();
+}
+
 
 } // NL3D

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.6 2002/03/26 10:11:43 corvazier Exp $
+# $Id: Makefile.am,v 1.7 2002/03/26 10:15:43 corvazier Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -41,7 +41,7 @@ libnelpacs_la_SOURCES = chain.cpp                          \
                         move_primitive.h                   \
                         primitive_world_image.cpp          \
                         primitive_world_image.h            \
-                        primitive_block.cpp                \
+                        primitive_block_pacs.cpp                \
                         primitive_block.h                  \
                         retrievable_surface.cpp            \
                         retrievable_surface.h              \

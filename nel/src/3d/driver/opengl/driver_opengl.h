@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.123 2002/08/19 09:39:18 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.124 2002/08/19 09:51:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -794,7 +794,7 @@ private:
 
 	// Caching
 	bool			_LastVertexSetupIsLightMap;
-	uint8			_LightMapUVMap[IDRV_MAT_MAXTEXTURES];
+	sint8			_LightMapUVMap[IDRV_MAT_MAXTEXTURES];
 
 	// restore std vertex Setup.
 	void			resetLightMapVertexSetup();

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.64 2002/08/19 09:39:18 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.65 2002/08/19 09:51:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -728,6 +728,7 @@ void			CDriverGL::setupLightMapPass(uint pass)
 				if( !_LastVertexSetupIsLightMap || _LightMapUVMap[stage]!=1 )
 				{
 					setupUVPtr(stage, _LastVB, 1);
+					_LightMapUVMap[stage]= 1;
 				}
 			}
 
@@ -755,6 +756,7 @@ void			CDriverGL::setupLightMapPass(uint pass)
 				if( !_LastVertexSetupIsLightMap || _LightMapUVMap[stage]!=0 )
 				{
 					setupUVPtr(stage, _LastVB, 0);
+					_LightMapUVMap[stage]= 0;
 				}
 			}
 		}
@@ -835,6 +837,8 @@ void			CDriverGL::resetLightMapVertexSetup()
 	{
 		// normal behavior: each texture has its own UV.
 		setupUVPtr(i, _LastVB, i);
+		// reset cache
+		_LightMapUVMap[i]= -1;
 	}
 
 	// pop VertexColor array if necessary.

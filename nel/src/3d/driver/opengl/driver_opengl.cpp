@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.149 2002/08/19 09:39:17 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.150 2002/08/19 09:51:38 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -219,6 +219,8 @@ CDriverGL::CDriverGL()
 	
 	// Ligtmap preca.
 	_LastVertexSetupIsLightMap= false;
+	for(i=0; i < IDRV_MAT_MAXTEXTURES; i++)
+		_LightMapUVMap[i]= -1;
 	// reserve enough space to never reallocate, nor test for reallocation.
 	_LightMapLUT.resize(NL3D_DRV_MAX_LIGHTMAP);
 	// must set replace for alpha part.

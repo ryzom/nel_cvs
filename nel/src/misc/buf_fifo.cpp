@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.6 2001/03/01 17:33:43 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.7 2001/03/06 16:49:59 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -261,6 +261,8 @@ uint32 CBufFIFO::size ()
 void CBufFIFO::resize (uint32 size)
 {
 	TTicks before = CTime::getPerformanceTime();
+
+	if (size == 0) size = 100;
 
 #if DEBUG_FIFO
 	nldebug("resize(%d)", size);

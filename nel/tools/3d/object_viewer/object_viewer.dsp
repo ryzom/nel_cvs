@@ -301,228 +301,143 @@ SOURCE=.\particle.bmp
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\attrib_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\attrib_dlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\attrib_dlg.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\attrib_dlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\attrib_list_box.cpp
+SOURCE=R:\code\nel\tools\3d\object_viewer\attrib_list_box.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\attrib_list_box.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\attrib_list_box.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\basis_edit.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\basis_edit.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\basis_edit.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\basis_edit.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\color_button.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=.\collision_zone_dlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\color_button.h
+SOURCE=.\collision_zone_dlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\color_edit.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\color_button.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\color_edit.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\color_button.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\edit_attrib_dlg.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\color_edit.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\editable_range.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\color_edit.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\editable_range.h
+SOURCE=.\dialog_stack.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\emitter_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=.\direction_attr.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\emitter_dlg.h
+SOURCE=.\direction_attr.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\located_bindable_dialog.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=.\direction_edit.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\located_bindable_dialog.h
+SOURCE=.\direction_edit.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\located_properties.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\edit_attrib_dlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\located_properties.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\editable_range.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\located_target_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\editable_range.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\located_target_dlg.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\emitter_dlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\particle_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\emitter_dlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\particle_dlg.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\located_bindable_dialog.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\particle_dsw.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\located_bindable_dialog.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\particle_tree_ctrl.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\located_properties.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\particle_tree_ctrl.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\located_properties.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\located_target_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\located_target_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\mesh_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\mesh_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\particle_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\particle_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\particle_dsw.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\particle_tree_ctrl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\particle_tree_ctrl.h
 # End Source File
 # Begin Source File
 
@@ -534,140 +449,71 @@ SOURCE=R:\code\nel\tools\3d\object_viewer\precomputed_rotations_dlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\ps_mover_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\ps_mover_dlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ps_mover_dlg.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\ps_mover_dlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\ps_wrapper.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\ps_wrapper.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\range_manager.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\range_manager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\range_manager.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\range_manager.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\range_selector.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\range_selector.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\range_selector.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\range_selector.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\start_stop_particle_system.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\start_stop_particle_system.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\start_stop_particle_system.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\start_stop_particle_system.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\texture_chooser.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=.\tail_particle_dlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\texture_chooser.h
+SOURCE=.\tail_particle_dlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\value_blender_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\texture_chooser.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\value_blender_dlg.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\texture_chooser.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\value_gradient_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ENDIF 
-
+SOURCE=R:\code\nel\tools\3d\object_viewer\value_blender_dlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\value_gradient_dlg.h
+SOURCE=R:\code\nel\tools\3d\object_viewer\value_blender_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\value_gradient_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\tools\3d\object_viewer\value_gradient_dlg.h
 # End Source File
 # End Group
 # Begin Source File

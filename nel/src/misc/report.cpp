@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.10 2004/04/30 18:05:55 corvazier Exp $
+ * $Id: report.cpp,v 1.11 2004/07/09 09:45:30 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -58,7 +58,8 @@ namespace NLMISC
 static HWND sendReport;
 #endif
 
-typedef bool (*TEmailFunction) (const std::string &smtpServer, const std::string &from, const std::string &to, const std::string &subject, const std::string &body, const std::string &attachedFile = "", bool onlyCheck = false);
+//old doesn't work on visual c++ 7.1 due to default parameter typedef bool (*TEmailFunction) (const std::string &smtpServer, const std::string &from, const std::string &to, const std::string &subject, const std::string &body, const std::string &attachedFile = "", bool onlyCheck = false);
+typedef bool (*TEmailFunction) (const std::string &smtpServer, const std::string &from, const std::string &to, const std::string &subject, const std::string &body, const std::string &attachedFile, bool onlyCheck);
 
 #define DELETE_OBJECT(a) if((a)!=NULL) { DeleteObject (a); a = NULL; }
 
@@ -140,7 +141,7 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		{
 			if (EmailFunction != NULL)
 			{
-				bool res = EmailFunction ("", "", "", Subject, Body, AttachedFile);
+				bool res = EmailFunction ("", "", "", Subject, Body, AttachedFile, false);
 				if (res)
 				{
 					EnableWindow(sendReport, FALSE);

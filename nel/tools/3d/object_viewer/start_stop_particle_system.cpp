@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
- * <File description>
+ * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.5 2001/06/18 16:33:48 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.6 2001/06/25 12:50:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,8 @@
 #include "3d/ps_located.h"
 #include "3d/particle_system_model.h"
 
+#include  <algorithm>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -46,7 +48,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg)
-	: CDialog(CStartStopParticleSystem::IDD, particleDlg), _ParticleDlg(particleDlg)
+	: CDialog(CStartStopParticleSystem::IDD, particleDlg), _ParticleDlg(particleDlg), _Running(FALSE) 
 {
 	//{{AFX_DATA_INIT(CStartStopParticleSystem)
 	//}}AFX_DATA_INIT
@@ -60,6 +62,8 @@ void CStartStopParticleSystem::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_STOP_PICTURE, m_StopPicture);
 	DDX_Control(pDX, IDC_START_PICTURE, m_StartPicture);
 	//}}AFX_DATA_MAP
+
+
 }
 
 
@@ -96,6 +100,7 @@ BOOL CStartStopParticleSystem::OnInitDialog()
 
 void CStartStopParticleSystem::OnStartSystem() 
 {
+	_Running = true ;
 	_SystemInitialPos.copySystemInitialPos(_ParticleDlg->getCurrPS() ) ;
 	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.01f) ;
 	_ParticleDlg->getCurrPSModel()->enableDisplayTools(false) ; 
@@ -109,17 +114,27 @@ void CStartStopParticleSystem::OnStartSystem()
 
 void CStartStopParticleSystem::OnStopSystem() 
 {
+	_Running = false ;
 	_SystemInitialPos.restoreSystem() ;
 
 	_ParticleDlg->ParticleTreeCtrl->rebuildLocatedInstance() ;
-
 	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.f) ; // pause
 	_ParticleDlg->getCurrPSModel()->enableDisplayTools(true) ; 
 
 	m_StartPicture.EnableWindow(TRUE) ;
 	m_StopPicture.EnableWindow(FALSE) ;
 	UpdateData(FALSE) ;
+}
 
+
+
+
+void CStartStopParticleSystem::stop(void)
+{
+	if (_Running)
+	{
+		OnStopSystem() ;
+	}
 }
 
 
@@ -128,15 +143,19 @@ void CStartStopParticleSystem::OnStopSystem()
 ///////////////////////////////////
 void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 {
+	
 	_InitInfoVect.clear() ;
 	_RotScaleInfoVect.clear() ;
+	_InitialSizeVect.clear() ;
 	uint32 nbLocated = ps->getNbProcess() ;
 	_PS = ps ; 
 	for(uint32 k = 0 ; k < nbLocated ; ++k)
 	{
+		
 		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(ps->getProcess(k)) ;
 		if (loc)
 		{
+			_InitialSizeVect.push_back(std::make_pair(loc, loc->getSize()) ) ;
 			for (uint32 l = 0 ; l < loc->getSize() ; ++l)
 			{
 				CInitPSInstanceInfo ii ;
@@ -144,12 +163,16 @@ void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 				ii.Loc = loc ;
 				ii.Pos = loc->getPos()[l] ;
 				ii.Speed = loc->getSpeed()[l] ;
+				_InitInfoVect.push_back(ii) ;
 				
 				for (uint32 m = 0 ; m < loc->getNbBoundObjects() ; ++m)
 				{
+					
 					if (dynamic_cast<NL3D::IPSMover *>(loc->getBoundObject(m)))
 					{
 						CRotScaleInfo rsi ;
+						rsi.Loc = loc ;
+						rsi.LB = loc->getBoundObject(m) ;
 						rsi.Index = l ;
 						rsi.Psm = dynamic_cast<NL3D::IPSMover *>(loc->getBoundObject(m)) ;
 						rsi.Scale = rsi.Psm->getScale(l) ;											
@@ -163,27 +186,136 @@ void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 }
 
 
+// PRIVATE : a predicate used in CPSInitialPos::removeLocated
+struct CRemoveLocatedPred
+{
+	NL3D::CPSLocated *Loc	 ;
+} ;
+
+// private : predicate to remove located from a CPSInitialPos::TInitialLocatedSizeVect vector
+struct CRemoveLocatedFromLocatedSizePred : public CRemoveLocatedPred
+{
+	bool operator()(const std::pair<NL3D::CPSLocated *, uint32> &value) { return Loc == value.first ; }
+} ;
+
+// private : predicate to remove located from a PSInitialPos::CInitPSInstanceInfo vector
+struct CRemoveLocatedFromInitPSInstanceInfoVectPred : public CRemoveLocatedPred
+{
+	bool operator()(const CPSInitialPos::CInitPSInstanceInfo &value) { return value.Loc == Loc ; }
+} ;
+
+// private : predicate to remove located from a PSInitialPos::CRotScaleInfo vector
+struct CRemoveLocatedFromRotScaleInfoVectPred : public CRemoveLocatedPred
+{
+	bool operator()(const CPSInitialPos::CRotScaleInfo &value) { return value.Loc == Loc ; }
+} ;
+
+// private : predicate to remove located bindable pointers in a TRotScaleInfoVect vect
+struct CRemoveLocatedBindableFromRotScaleInfoVectPred
+{
+	// the located bindable taht has been removed
+	NL3D::CPSLocatedBindable *LB ;
+	bool operator()(const CPSInitialPos::CRotScaleInfo &value) { return value.LB == LB ; }
+} ;
+
+
+
+
+void CPSInitialPos::removeLocated(NL3D::CPSLocated *loc)
+{
+	// in each container, we delete every element that has a pointer over lthe located loc
+	// , by using the dedicated predicate. 
+
+	CRemoveLocatedFromLocatedSizePred p ;
+	p.Loc = loc ;
+	_InitialSizeVect.erase(std::remove_if(_InitialSizeVect.begin(), _InitialSizeVect.end(), p)
+							, _InitialSizeVect.end() ) ;
+
+	CRemoveLocatedFromInitPSInstanceInfoVectPred p2 ;
+	p2.Loc = loc ;
+	_InitInfoVect.erase(std::remove_if(_InitInfoVect.begin(), _InitInfoVect.end(), p2)
+						, _InitInfoVect.end()) ;
+
+	CRemoveLocatedFromRotScaleInfoVectPred p3 ;
+	p3.Loc = loc ;
+	_RotScaleInfoVect.erase(std::remove_if(_RotScaleInfoVect.begin(), _RotScaleInfoVect.end(), p3)
+							 , _RotScaleInfoVect.end()) ;
+
+}
+
+
+void CPSInitialPos::removeLocatedBindable(NL3D::CPSLocatedBindable *lb)
+{
+	CRemoveLocatedBindableFromRotScaleInfoVectPred p ;
+	p.LB = lb ;
+	_RotScaleInfoVect.erase(std::remove_if(_RotScaleInfoVect.begin(), _RotScaleInfoVect.end(), p)
+							, _RotScaleInfoVect.end() ) ;
+}
+
+
+
 
 
 	// reinitialize the system with its initial instances positions
 void CPSInitialPos::restoreSystem()
 {
 	nlassert(_PS) ; // no system has been memorized yet
+
+
+	// delete all the instance of the system
+
+	for (uint k = 0 ; k < _PS->getNbProcess() ; ++k)
+	{
+		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(_PS->getProcess(k)) ;
+		if (loc)
+		{
+			while (loc->getSize())
+			{
+				loc->deleteElement(0) ;
+			}
+
+			nlassert(loc->getSize() == 0) ;
+		}
+	}
+
+	// recreate the initial number of instances
+
+	for (TInitialLocatedSizeVect ::iterator itSize = _InitialSizeVect.begin() ; itSize != _InitialSizeVect.end() ; ++itSize)
+	{
+	//	nlassert(itSize->first->getSize() == 0)
+		for (uint l = 0 ; l < itSize->second ; ++l)
+		{
+			itSize->first->newElement() ;
+		}
+
+		uint realSize = itSize->first->getSize() ;
+		uint size = itSize->second ;
+		
+	}
+
+
+
 	for (TInitInfoVect::iterator it = _InitInfoVect.begin() ; it != _InitInfoVect.end() ; ++it)
 	{
-		it->Loc->getPos()[it->Index] = it->Pos ;
-		it->Loc->getSpeed()[it->Index] = it->Speed ;
+		if (it->Index < it->Loc->getSize())
+		{
+			it->Loc->getPos()[it->Index] = it->Pos ;
+			it->Loc->getSpeed()[it->Index] = it->Speed ;
+		}
 	}
 	for (TRotScaleInfoVect::iterator it2 = _RotScaleInfoVect.begin() ; it2 != _RotScaleInfoVect.end() ; ++it2)
 	{
-		it2->Psm->setMatrix(it2->Index, it2->Rot) ;
-		if (it2->Psm->supportNonUniformScaling())
+		if (it2->Index < it2->Loc->getSize())
 		{
-			it2->Psm->setScale(it2->Index, it2->Scale) ;
-		}
-		else if (it2->Psm->supportUniformScaling())
-		{
-			it2->Psm->setScale(it2->Index, it2->Scale.x) ;
+			it2->Psm->setMatrix(it2->Index, it2->Rot) ;
+			if (it2->Psm->supportNonUniformScaling())
+			{
+				it2->Psm->setScale(it2->Index, it2->Scale) ;
+			}
+			else if (it2->Psm->supportUniformScaling())
+			{
+				it2->Psm->setScale(it2->Index, it2->Scale.x) ;
+			}
 		}
 	}
 }

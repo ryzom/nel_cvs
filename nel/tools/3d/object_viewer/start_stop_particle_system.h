@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
- * <File description>
+ * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.3 2001/06/18 16:33:48 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.4 2001/06/25 12:50:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,10 +60,18 @@ public:
 	// construct this by copying the datas of the system
 	void copySystemInitialPos(NL3D::CParticleSystem *ps) ;
 
-	// reinitialize the system with its initial instances positions
+	/** reinitialize the system with its initial instances positions
+	  * Works only once per copySystemInitialPos() call
+	  */	  
 	void restoreSystem() ;
 
-protected:
+
+	
+	/// update data when a located in a particle system has been removed	
+	void removeLocated(NL3D::CPSLocated *loc) ;
+
+	/// update data when a located bindable in a particle system has been removed	
+	void removeLocatedBindable(NL3D::CPSLocatedBindable *lb) ;	
 
 	// initial position and speed of a located instance in a particle system
 	struct CInitPSInstanceInfo
@@ -74,22 +82,31 @@ protected:
 		NLMISC::CVector Pos ;		
 	} ;
 
-	// rotation and scale
+	// rotation and scale of an element
 	struct CRotScaleInfo
 	{	
 		uint32 Index ;
+		NL3D::CPSLocated *Loc ;
+		NL3D::CPSLocatedBindable *LB ;
 		NL3D::IPSMover *Psm ;
 		NLMISC::CMatrix Rot ;
 		NLMISC::CVector Scale ;
 	} ;
 
+protected:
+
+
+
 
 	typedef std::vector<CInitPSInstanceInfo> TInitInfoVect ;
 	typedef std::vector<CRotScaleInfo> TRotScaleInfoVect ;
+	typedef std::vector< std::pair<NL3D::CPSLocated *, uint32> > TInitialLocatedSizeVect ;
 
 	TInitInfoVect _InitInfoVect ;
 	TRotScaleInfoVect _RotScaleInfoVect ;
-	
+
+	// initial number of instances for each located
+	TInitialLocatedSizeVect  _InitialSizeVect ;
 
 	NL3D::CParticleSystem *_PS ;
 } ;
@@ -105,6 +122,41 @@ class CStartStopParticleSystem : public CDialog
 // Construction
 public:
 	CStartStopParticleSystem(CParticleDlg *particleDlg);   // standard constructor
+
+
+	/// return true if a system is being played
+	bool isRunning(void) const { return _Running ; }
+
+	/// force the system to stop
+	void stop(void) ;
+
+	/** call this to say that a located has been removed
+	 *  When the system starts, the initial state is memorised
+	 *  This must be called to ensure that the system won't try to restore instance of a removed located
+	 */
+	void removeLocated(NL3D::CPSLocated *loc)
+	{
+		if (_Running)
+		{
+			_SystemInitialPos.removeLocated(loc) ;
+		}
+	}
+
+	/** call this to say that a located bindable has been removed
+	 *  When the system starts, the initial state is memorised
+	 *  This must be called to ensure that the system won't try to restore instance of a removed located bindable
+	 */
+	void removeLocatedBindable(NL3D::CPSLocatedBindable *lb)
+	{
+		if (_Running)
+		{
+			_SystemInitialPos.removeLocatedBindable(lb) ;
+		}
+	}
+
+
+
+
 
 // Dialog Data
 	//{{AFX_DATA(CStartStopParticleSystem)
@@ -132,8 +184,10 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-	
-		// the dialog that own this dialog
+	// return true if a system is being played
+	bool _Running ;
+
+	// the dialog that own this dialog
 	CParticleDlg *_ParticleDlg ;
 
 	CPSInitialPos _SystemInitialPos ;

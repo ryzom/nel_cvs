@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.44 2001/11/05 09:30:14 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.45 2001/11/07 17:13:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,9 @@
 
 #include <vector>
 
+
 #include "object_viewer.h"
+
 #include <3d/nelu.h>
 #include <3d/mesh.h>
 #include <3d/transform_shape.h>
@@ -46,6 +48,8 @@
 #include <3d/animation_playlist.h>
 #include <3d/track_keyframer.h>
 
+
+
 #include <nel/misc/common.h>
 #include <nel/misc/file.h>
 #include <nel/misc/path.h>
@@ -53,6 +57,9 @@
 #include <nel/misc/config_file.h>
 
 #include <nel/sound/u_audio_mixer.h>
+#include <3d/water_pool_manager.h>
+
+
 
 
 #include "editable_range.h"
@@ -64,6 +71,7 @@
 #include "main_frame.h"
 #include "sound_system.h"
 #include "scheme_manager.h"
+#include "day_night_dlg.h"
 
 
 
@@ -174,8 +182,8 @@ CObjectViewer::CObjectViewer ()
 	_SlotDlg=NULL;
 	_AnimationSetDlg=NULL;
 	_AnimationDlg=NULL;
-	_ParticleDlg = NULL ;
-	_FontGenerator = NULL ;
+	_ParticleDlg = NULL;
+	_FontGenerator = NULL;
 
 	// no lag is the default
 	_Lag = 0;
@@ -186,10 +194,12 @@ CObjectViewer::CObjectViewer ()
 	_HotSpotColor.B=0;
 	_HotSpotColor.A=255;
 
-	_BackGroundColor = CRGBA::Black ;
+	_BackGroundColor = CRGBA::Black;
 
 	// Hotspot size
 	_HotSpotSize=10.f;
+
+	_Wpm = &NL3D::GetWaterPoolManager();
 
 	// Charge l'object_viewer.ini
 	try
@@ -263,9 +273,11 @@ CObjectViewer::~CObjectViewer ()
 	if (_AnimationDlg)
 		delete _AnimationDlg;
 	if (_ParticleDlg)
-		delete _ParticleDlg ;
+		delete _ParticleDlg;
+	if (_DayNightDlg)
+		delete _DayNightDlg;
 	if (_FontGenerator)
-		delete _FontGenerator ;
+		delete _FontGenerator;
 }
 
 // ***************************************************************************
@@ -293,16 +305,16 @@ void CObjectViewer::initUI (HWND parent)
 	_FontManager.setMaxMemory(2000000);
 
 	// The windows path
-	uint dSize = ::GetWindowsDirectory(NULL, 0) ;
-	nlverify(dSize) ;
-	char *wd = new char[dSize] ;	
-	nlverify(::GetWindowsDirectory(wd, dSize)) ;
+	uint dSize = ::GetWindowsDirectory(NULL, 0);
+	nlverify(dSize);
+	char *wd = new char[dSize];	
+	nlverify(::GetWindowsDirectory(wd, dSize));
 	_FontPath=wd;
-	_FontPath+="\\fonts\\arial.ttf" ;
+	_FontPath+="\\fonts\\arial.ttf";
 
 	// The font generator
-	_FontGenerator = new NL3D::CFontGenerator ( _FontPath ) ;
-	delete[] wd ;
+	_FontGenerator = new NL3D::CFontGenerator ( _FontPath );
+	delete[] wd;
 
 	// The viewport
 	CViewport viewport;
@@ -392,6 +404,11 @@ void CObjectViewer::initUI (HWND parent)
 	_ParticleDlg=new CParticleDlg (this, _MainFrame, _MainFrame);
 	_ParticleDlg->Create (IDD_PARTICLE);
 	getRegisterWindowState (_ParticleDlg, REGKEY_OBJ_PARTICLE_DLG, false);
+
+	// Create day night dialog
+	_DayNightDlg=new CDayNightDlg (this, _MainFrame);
+	_DayNightDlg->Create (IDD_DAYNIGHT);
+	getRegisterWindowState (_DayNightDlg, REGKEY_OBJ_DAYNIGHT_DLG, false);
 
 	// Set backgroupnd color
 	setBackGroundColor(_MainFrame->BgColor);
@@ -688,11 +705,11 @@ void CObjectViewer::go ()
 		
 		// call of callback list
 		{
-			std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end()) ;
+			std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end());
 
-			for (std::vector<IMainLoopCallBack *>::iterator it = _CallBackList.begin(); it != _CallBackList.end() ; ++it)
+			for (std::vector<IMainLoopCallBack *>::iterator it = _CallBackList.begin(); it != _CallBackList.end(); ++it)
 			{
-				(*it)->go() ;
+				(*it)->go();
 			}
 		}
 
@@ -781,7 +798,7 @@ void CObjectViewer::go ()
 		else
 		{
 			// for now we apply a transform on the selected object in the particle system			
-			_ParticleDlg->moveElement(_MouseListener.getModelMatrix()) ;		
+			_ParticleDlg->moveElement(_MouseListener.getModelMatrix());		
 		}
 
 		// Pump message from the server
@@ -1090,9 +1107,9 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 	if (ver > 1)
 	{	
 		// serial the ranges for particles edition
-		CRangeManager<float>::serial(f) ;
-		CRangeManager<uint32>::serial(f) ;
-		CRangeManager<sint32>::serial(f) ;
+		CRangeManager<float>::serial(f);
+		CRangeManager<uint32>::serial(f);
+		CRangeManager<sint32>::serial(f);
 	}
 }
 
@@ -1465,16 +1482,16 @@ void CObjectViewer::setLight (unsigned char id, const NL3D::CLight& light)
   */
 void CObjectViewer::registerMainLoopCallBack(IMainLoopCallBack *i)
 {
-//	nlassert(std::find(_CallBackList.begin(), _CallBackList.end(), i) == _CallBackList.begin()) ; // the object was register twice !!
-	_CallBackList.push_back(i) ;
+//	nlassert(std::find(_CallBackList.begin(), _CallBackList.end(), i) == _CallBackList.begin()); // the object was register twice !!
+	_CallBackList.push_back(i);
 }
 
 /// remove an object that was registered with registerMainLoopCallBack()
 void CObjectViewer::removeMainLoopCallBack(IMainLoopCallBack *i)
 {
-	std::vector<IMainLoopCallBack *>::iterator it = std::find(_CallBackList.begin(), _CallBackList.end(), i) ;
-	nlassert(it  != _CallBackList.end()) ; // this object wasn't registered
-	_CallBackList.erase(it) ;	
+	std::vector<IMainLoopCallBack *>::iterator it = std::find(_CallBackList.begin(), _CallBackList.end(), i);
+	nlassert(it  != _CallBackList.end()); // this object wasn't registered
+	_CallBackList.erase(it);	
 }
 
 // ***************************************************************************
@@ -1615,3 +1632,5 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 		}
 	}
 }
+
+

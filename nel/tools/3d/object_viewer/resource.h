@@ -200,6 +200,7 @@
 #define IDC_BINDABLE_TYPE               1088
 #define IDD_CURVE_EDIT                  1088
 #define IDC_BROWSE_COLOR                1089
+#define IDD_DAYNIGHT                    1089
 #define IDC_VALUE1                      1090
 #define IDC_VALUE2                      1091
 #define IDC_EDITED_VALUE                1092
@@ -309,6 +310,7 @@
 #define IDC_USE_LIST                    1195
 #define IDC_USE_MIXER                   1196
 #define IDC_PLAYLIST                    1197
+#define IDC_SLIDER1                     1198
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -419,14 +421,15 @@
 #define IDM_MAGNETIC_FORCE_LOC          32868
 #define IDM_RADIAL_EMITTER              32869
 #define IDM_RADIAL_EMITTER_LOC          32870
+#define ID_WINDOW_DAYNIGHT              32871
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1089
-#define _APS_NEXT_COMMAND_VALUE         32871
-#define _APS_NEXT_CONTROL_VALUE         1198
+#define _APS_NEXT_RESOURCE_VALUE        1090
+#define _APS_NEXT_COMMAND_VALUE         32872
+#define _APS_NEXT_CONTROL_VALUE         1199
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

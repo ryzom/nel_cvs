@@ -8,6 +8,7 @@
 #include "particle_dlg.h"
 #include "about_dialog.h"
 #include "choose_lag.h"
+#include "day_night_dlg.h"
 
 #include <nel/misc/file.h>
 
@@ -92,6 +93,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	AnimationSetWindow=false;
 	MixerSlotsWindow=false;
 	ParticlesWindow=false;
+	DayNightWindow=false;
 	MoveElement=false;
 	MoveMode=true;
 	X=true;
@@ -134,12 +136,14 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_ANIMATIONSET, OnWindowAnimationset)
 	ON_COMMAND(ID_WINDOW_MIXERSSLOTS, OnWindowMixersslots)
 	ON_COMMAND(ID_WINDOW_PARTICLES, OnWindowParticles)
+	ON_COMMAND(ID_WINDOW_DAYNIGHT, OnWindowDayNight)
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATION, OnUpdateWindowAnimation)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATIONSET, OnUpdateWindowAnimationset)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_MIXERSSLOTS, OnUpdateWindowMixersslots)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_PARTICLES, OnUpdateWindowParticles)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_DAYNIGHT, OnUpdateWindowDayNight)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_OBJECTMODE, OnUpdateViewObjectmode)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPERSONMODE, OnUpdateViewFirstpersonmode)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_X, OnUpdateEditX)
@@ -172,6 +176,7 @@ void CMainFrame::update ()
 	ObjView->_AnimationSetDlg->ShowWindow (AnimationSetWindow?SW_SHOW:SW_HIDE);
 	ObjView->_SlotDlg->ShowWindow (MixerSlotsWindow?SW_SHOW:SW_HIDE);
 	ObjView->_ParticleDlg->ShowWindow (ParticlesWindow?SW_SHOW:SW_HIDE);
+	ObjView->_DayNightDlg->ShowWindow (DayNightWindow?SW_SHOW:SW_HIDE);
 }
 
 // ***************************************************************************
@@ -192,8 +197,10 @@ void CMainFrame::registerValue (bool read)
 			RegQueryValueEx (hKey, "ViewAnimationSet", 0, &type, (LPBYTE)&AnimationSetWindow, &len);
 			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewSlots", 0, &type, (LPBYTE)&MixerSlotsWindow, &len);
-			len=sizeof (float);
+			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewParticles", 0, &type, (LPBYTE)&ParticlesWindow, &len);
+			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewDayNight", 0, &type, (LPBYTE)&DayNightWindow, &len);
 			len=sizeof (float);
 			RegQueryValueEx (hKey, "MoveSpeed", 0, &type, (LPBYTE)&MoveSpeed, &len);
 			len=sizeof (BOOL);
@@ -211,6 +218,7 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "ViewAnimationSet", 0, REG_BINARY, (LPBYTE)&AnimationSetWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewSlots", 0, REG_BINARY, (LPBYTE)&MixerSlotsWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewParticles", 0, REG_BINARY, (LPBYTE)&ParticlesWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewDayNight", 0, REG_BINARY, (LPBYTE)&ParticlesWindow, sizeof(bool));
 			RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
 			RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&MoveMode, sizeof(BOOL));
 			RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&BgColor, sizeof(NLMISC::CRGBA));
@@ -714,6 +722,13 @@ void CMainFrame::OnWindowParticles()
 	update ();
 }
 
+void CMainFrame::OnWindowDayNight() 
+{
+	DayNightWindow^=true;
+	update ();
+}
+
+
 static UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator
@@ -781,6 +796,11 @@ void CMainFrame::OnUpdateWindowMixersslots(CCmdUI* pCmdUI)
 void CMainFrame::OnUpdateWindowParticles(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (ParticlesWindow);
+}
+
+void CMainFrame::OnUpdateWindowDayNight(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (DayNightWindow);
 }
 
 void CMainFrame::OnUpdateViewObjectmode(CCmdUI* pCmdUI) 

@@ -248,7 +248,7 @@ IDD_ANIMATION_SET DIALOGEX 0, 0, 237, 236
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Animation set manager"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Tree1",IDC_TREE,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
@@ -292,7 +292,7 @@ IDD_ANIMATION DIALOGEX 0, 0, 366, 49
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Animation"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Slider1",IDC_TIME_LINE,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,0,20,365,15
@@ -885,6 +885,16 @@ BEGIN
     GROUPBOX        "Loop",IDC_STATIC,307,162,104,26
 END
 
+IDD_DAYNIGHT DIALOG DISCARDABLE  0, 0, 191, 29
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Day/Night toggle"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Day",IDC_STATIC,4,8,18,10
+    LTEXT           "Night",IDC_STATIC,167,8,18,10
+    SCROLLBAR       IDC_SCROLLBAR1,25,6,137,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1221,6 +1231,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 186
     END
+
+    IDD_DAYNIGHT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 184
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 22
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1270,7 +1288,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1, 0, 0, 91
+ FILEVERSION 1,0,0,91
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -1498,6 +1516,7 @@ BEGIN
         MENUITEM "Animation &set",              ID_WINDOW_ANIMATIONSET
         MENUITEM "&Mixer slots",                ID_WINDOW_MIXERSSLOTS
         MENUITEM "&Particles",                  ID_WINDOW_PARTICLES
+        MENUITEM "Day/Night",                   ID_WINDOW_DAYNIGHT
     END
     POPUP "&Help"
     BEGIN

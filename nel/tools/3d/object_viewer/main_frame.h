@@ -49,6 +49,7 @@ public:
 	bool			AnimationSetWindow;
 	bool			MixerSlotsWindow;
 	bool			ParticlesWindow;
+	bool		    DayNightWindow;
 	bool			MoveElement;
 	bool			X;
 	bool			Y;
@@ -97,12 +98,14 @@ public:
 	afx_msg void OnWindowAnimationset();
 	afx_msg void OnWindowMixersslots();
 	afx_msg void OnWindowParticles();
+	afx_msg void OnWindowDayNight();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnUpdateWindowAnimation(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowAnimationset(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowMixersslots(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowParticles(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowDayNight(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewObjectmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewFirstpersonmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditX(CCmdUI* pCmdUI);

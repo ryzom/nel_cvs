@@ -186,6 +186,10 @@ SOURCE=.\choose_name.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\day_night_dlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main_dlg.cpp
 # ADD CPP /Yu"std_afx.h"
 # End Source File
@@ -252,6 +256,10 @@ SOURCE=.\choose_lag.h
 # Begin Source File
 
 SOURCE=.\choose_name.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\day_night_dlg.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.5 2001/06/12 12:30:58 besson Exp $
+ * $Id: nel_export_script.cpp,v 1.6 2001/09/06 12:31:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,10 +40,12 @@ using namespace NLMISC;
 \*===========================================================================*/
 
 def_visible_primitive ( export_shape,	"NelExportShape");
+def_visible_primitive ( export_animation,	"NelExportAnimation");
 def_visible_primitive ( export_ig,		"NelExportInstanceGroup");
 def_visible_primitive ( view_shape,		"NelViewShape");
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
+char *sExportAnimationErrorMsg = "NelExportAnimation [node array] [Filename.anim] [bool_scene_animation]";
 
 Value* export_shape_cf (Value** arg_list, int count)
 {
@@ -92,6 +94,61 @@ Value* export_shape_cf (Value** arg_list, int count)
 	CExportNel::deleteLM( *node, opt );
 	if (CNelExport::exportMesh (sPath, *node, *ip, ip->GetTime(), opt))
 		ret = &true_value;
+
+	return ret;
+}
+
+
+Value* export_animation_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (2)
+	check_arg_count(export_shape, 3, count);
+
+	// Check to see if the arguments match up to what we expect
+	type_check (arg_list[0], Array, sExportAnimationErrorMsg);
+	type_check (arg_list[1], String, sExportAnimationErrorMsg);
+	type_check (arg_list[2], Boolean, sExportAnimationErrorMsg);
+
+	// Export path 
+	const char* sPath=arg_list[1]->to_string();
+
+	// Get time
+	TimeValue time=MAXScript_interface->GetTime();
+	
+	// Get array
+	Array* array=(Array*)arg_list[0];
+
+	// Check each value in the array
+	uint i;
+	for (i=0; i<(uint)array->size; i++)
+		type_check (array->get (i+1), MAXNode, sExportAnimationErrorMsg);
+
+	// Ok ?
+	Boolean *ret=&false_value;
+
+	// Save all selected objects
+	if (array->size)
+	{
+		// Make a list of nodes
+		std::vector<INode*> vectNode;
+		for (i=0; i<(uint)array->size; i++)
+			vectNode.push_back (array->get (i+1)->to_node());
+
+		// Scene anim ?
+		BOOL scene=arg_list[2]->to_bool();
+
+		// Export the zone
+		if (theCNelExport.exportAnim (sPath, vectNode, *MAXScript_interface, time, scene!=FALSE))
+		{
+			// Ok
+			ret=&true_value;
+		}
+		else
+		{
+			// Error message
+			mprintf ("Error exporting animation %s in the file\n%s\n", (*vectNode.begin())->GetName(), sPath);
+		}
+	}
 
 	return ret;
 }

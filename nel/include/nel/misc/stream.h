@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.68 2004/05/24 16:59:54 berenguier Exp $
+ * $Id: stream.h,v 1.69 2004/05/24 17:02:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -923,6 +923,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
+				// NB: suppose the serial of the element serialize at least one byte
 				nlassert(ssize >= len);
 			}
 
@@ -1026,6 +1027,7 @@ protected:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
+				// NB: suppose the serial of the element serialize at least one byte
 				nlassert(ssize >= len);
 			}
 			
@@ -1088,6 +1090,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
+				// NB: suppose the serial of the element serialize at least one byte
 				nlassert(ssize >= len);
 			}
 			
@@ -1202,6 +1205,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
+				// NB: suppose the serial of the element serialize at least one byte
 				nlassert(ssize >= len);
 			}
 			
@@ -1330,6 +1334,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
+				// NB: suppose the serial of the element serialize at least one byte
 				nlassert(ssize >= len);
 			}
 			
@@ -1427,6 +1432,7 @@ private:
 			uint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
+				// NB: suppose the serial of the element serialize at least one byte
 				nlassert(ssize >= len);
 			}
 			

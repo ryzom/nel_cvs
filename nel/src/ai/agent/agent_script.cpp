@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.35 2001/03/01 16:54:04 chafik Exp $
+ * $Id: agent_script.cpp,v 1.36 2001/03/05 13:50:19 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -756,7 +756,8 @@ namespace NLAIAGENT
 				NLAISCRIPT::COperandSimple *t = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(m->getType()));
 				NLAISCRIPT::CParam p(1,t);
 
-				tQueue r = isMember(NULL,&CStringVarName(runMsg),p);
+				CStringVarName tmp_name = CStringVarName(runMsg);
+				tQueue r = isMember(NULL,&tmp_name,p);
 				if(r.size())
 				{
 					NLAIAGENT::CIdMethod m = r.top();

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.172.2.2 2003/05/14 10:03:34 lecroart Exp $
+ * $Id: service.cpp,v 1.172.2.3 2003/06/11 15:22:36 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -451,6 +451,12 @@ static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint
 
 static void cbStopService (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
+	if (IService::getInstance()->getServiceShortName () == "AES" && IService::getInstance()->getServiceShortName () == "AS")
+	{
+		// don't stop these service, we always need them
+		return;
+	}
+
 	nlinfo ("Receive a stop from service %s-%d, need to quit", serviceName.c_str(), sid);
 	ExitSignalAsked = 0xFFFF;
 }
@@ -1574,7 +1580,13 @@ NLMISC_DYNVARIABLE(string, LaunchingDate, "date of the launching of the program"
 
 NLMISC_DYNVARIABLE(string, Uptime, "time from the launching of the program")
 {
-	if (get) *pointer = secondsToHumanReadable (CTime::getSecondsSince1970() - LaunchingDate);
+	if (get)
+	{
+		if (human)
+			*pointer = secondsToHumanReadable (CTime::getSecondsSince1970() - LaunchingDate);
+		else
+			*pointer = toString(CTime::getSecondsSince1970() - LaunchingDate);
+	}
 }
 
 NLMISC_VARIABLE(bool, Bench, "1 if benching 0 if not");

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.40 2003/04/16 13:00:51 lecroart Exp $
+ * $Id: common.cpp,v 1.40.2.1 2003/06/11 15:22:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -492,6 +492,33 @@ string secondsToHumanReadable (uint32 time)
 	}
 	return toString ("%u%s", res, divTable[div]);
 }
+
+uint32 fromHumanReadable (const std::string &str)
+{
+	if (str.size() == 0)
+		return 0;
+
+	uint32 val = atoi (str.c_str());
+
+	switch (str[str.size()-1])
+	{
+	case 's': return val;			// second
+	case 'n': return val*60;		// minutes (mn)
+	case 'h': return val*60*60;		// hour
+	case 'd': return val*60*60*24;	// day
+	case 'b':	// bytes
+		switch (str[str.size()-2])
+		{
+		case 'k': return val*1024;
+		case 'm': return val*1024*1024;
+		case 'g': return val*1024*1024*1024;
+		default : return val;
+		}
+	default: return val;
+	}
+	return 0;
+}
+
 
 NLMISC_COMMAND(stohr, "Convert a second number into an human readable time", "<int>")
 {

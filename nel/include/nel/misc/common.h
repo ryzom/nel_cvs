@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.57 2003/04/03 13:01:18 corvazier Exp $
+ * $Id: common.h,v 1.57.2.1 2003/06/11 15:21:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -337,6 +337,10 @@ uint32 humanReadableToBytes (const std::string &str);
 
 /// Convert a time into a string that is easily readable by an human, for example 3600 -> "1h"
 std::string secondsToHumanReadable (uint32 time);
+
+
+/// Get a bytes or time in string format and convert it in seconds or bytes
+uint32 fromHumanReadable (const std::string &str);
 
 
 /// This function execute a program in the background and returns instantly (used for example to launch services in AES).

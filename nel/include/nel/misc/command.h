@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.22 2003/03/20 17:52:49 lecroart Exp $
+ * $Id: command.h,v 1.22.2.1 2003/06/11 15:21:59 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,10 +79,10 @@ namespace NLMISC {
 struct __name##Class: public NLMISC::ICommand \
 { \
 	__name##Class() : NLMISC::ICommand(#__name,__help,__args) { } \
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet); \
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human); \
 }; \
 __name##Class __name##Instance; \
-bool __name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet)
+bool __name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 
 
 /**
@@ -100,7 +100,9 @@ public:
 
 	virtual ICommand::~ICommand();
 
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet) = 0;
+	// quiet means that we don't display anything else than the value
+	// human means that we want the value in a human readable if possible
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human) = 0;
 
 	std::string HelpString;
 	std::string CommandArgs;
@@ -120,7 +122,7 @@ public:
 
 	/// Executes the command and display output to the log
 	/// \param quiet true if you don't want to display the "executing the command ..."
-	static void execute (const std::string &commandWithArgs, NLMISC::CLog &log, bool quiet = false);
+	static void execute (const std::string &commandWithArgs, NLMISC::CLog &log, bool quiet = false, bool human = true);
 
 	/** Command name completion.
 	 * Case-sensitive. Displays the list after two calls with the same non-unique completion.

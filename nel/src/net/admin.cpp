@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.2 2003/03/26 14:29:03 lecroart Exp $
+ * $Id: admin.cpp,v 1.2.2.1 2003/06/11 15:22:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,9 +131,10 @@ void updateAdmin()
 			if (CurrentTime >= GraphUpdates[j].LastUpdate + GraphUpdates[j].Update)
 			{
 				// have to send a new update for this var
-				ICommand::execute(GraphUpdates[j].Name, logDisplayVars, true);
+				ICommand::execute(GraphUpdates[j].Name, logDisplayVars, true, false);
 				const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
 				nlassert (strs.size() == 1);
+				uint32 val = atoi(strs[0].c_str());
 
 				string name = IService::getInstance()->getServiceAliasName();
 				if (name.empty())
@@ -144,7 +145,7 @@ void updateAdmin()
 
 				msgout.serial (name);
 				msgout.serial (GraphUpdates[j].Name);
-				msgout.serial (const_cast<string&>(strs[0]));
+				msgout.serial (val);
 
 				empty = false;
 
@@ -175,7 +176,7 @@ void updateAdmin()
 		for (uint i = 0; i < Alarms.size(); )
 		{
 			mdDisplayVars.clear ();
-			ICommand::execute(Alarms[i].Name, logDisplayVars, true);
+			ICommand::execute(Alarms[i].Name, logDisplayVars, true, false);
 			const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
 
 			if (strs.size()>0)
@@ -287,7 +288,7 @@ void setInformations (const vector<string> &alarms, const vector<string> &graphu
 		
 		string name = servicevarpath.Destination[0].second;
 		
-		if (IService::getInstance()->getServiceUnifiedName().find(servicevarpath.Destination[0].first) != string::npos && ICommand::exists(name))
+		if (servicevarpath.Destination[0].first == "*" || IService::getInstance()->getServiceUnifiedName().find(servicevarpath.Destination[0].first) != string::npos && ICommand::exists(name))
 		{
 			nlinfo ("Adding graphupdate '%s' update %d (varpath '%s')", name.c_str(), atoi(graphupdate[i+1].c_str()), graphupdate[i].c_str());
 			GraphUpdates.push_back(CGraphUpdate(name, atoi(graphupdate[i+1].c_str())));
@@ -326,7 +327,6 @@ NLMISC_COMMAND (displayInformations, "displays all admin informations", "")
 	}
 	return true;
 }
-
 
 
 } // NLNET

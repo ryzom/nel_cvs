@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.46 2001/02/20 11:05:06 berenguier Exp $
+ * $Id: landscape.cpp,v 1.47 2001/02/22 13:38:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -714,7 +714,7 @@ void			CLandscape::loadTile(uint16 tileId)
 		pass.TextureDiffuse= new CTextureCross;
 	if(tile)
 	{
-		textName= tile->getRelativeFileName (CTile::diffuse);
+		textName= tile->getRelativeFileName (CTile::alpha);
 		if(textName!="")
 			pass.TextureAlpha= findTileTexture(TileBank.getAbsPath()+textName);
 	}

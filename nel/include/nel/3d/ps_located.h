@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.5 2001/05/02 11:49:50 vizerie Exp $
+ * $Id: ps_located.h,v 1.6 2001/05/08 13:37:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -195,12 +195,13 @@ public:
 
 
 	/** Set the duration of locateds.
-	*  They must not be immortal -> nlassert
-	*/
+	 *  Any previous call to setLastForever() is discraded
+	 *  They must not be immortal -> nlassert
+	 */
 
 	void setLifeTime(CAnimationTime min, CAnimationTime max)
 	{
-		nlassert(!_LastForever) ;
+		_LastForever = false ;
 		_MaxLife = max ;
 		_MinLife = min ;
 	}
@@ -218,8 +219,11 @@ public:
 		return _MaxLife ; 
 	}
 
-	/// set/unset immortality for located
-	void setLastForever(bool isImmortal = true) { _LastForever = isImmortal ; }
+	/// set immortality for located
+	void setLastForever(void) 
+	{ 
+		_LastForever = true ; 
+	}
 	/// retrieve immortality for locateds
 	bool getLastForever(void) const { return _LastForever ; }
 

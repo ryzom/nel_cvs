@@ -1,7 +1,7 @@
-/** \file ps_size.cpp
+/** \file ps_int.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.2 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_int.cpp,v 1.1 2001/05/08 13:37:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,25 +23,20 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/ps_float.h"
+#include "nel/3d/ps_int.h"
 
 
 namespace NL3D {
 
 
+sint32 CPSIntGradient::_DefaultGradient[] = { 0, 10 } ;
 
 
-
-float CPSFloatGradient::_DefaultGradient[] = { 0.0f, 1.0f } ;
-
-
-
-CPSFloatGradient::CPSFloatGradient(float *floatTab, uint32 nbValues, uint32 nbStages, float nbCycles) 
-				: CPSValueGradient<float>(nbCycles)
+CPSIntGradient::CPSIntGradient(sint32 *intTab, uint32 nbValues, uint32 nbStages, float nbCycles) 
+				: CPSValueGradient<sint32>(nbCycles)
 {
-	_F.setValues(floatTab, nbValues, nbStages) ;
+	_F.setValues(intTab, nbValues, nbStages) ;
 }
-
 
 
 

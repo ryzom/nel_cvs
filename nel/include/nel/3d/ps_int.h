@@ -1,7 +1,7 @@
-/** \file ps_size.h
+/** \file ps_int.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.2 2001/05/08 13:37:08 vizerie Exp $
+ * $Id: ps_int.h,v 1.1 2001/05/08 13:37:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,28 +23,27 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_PS_FLOAT_H
-#define NL_PS_FLOAT_H
+#ifndef NL_PS_INT_H
+#define NL_PS_INT_H
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/ps_attrib_maker_template.h"
-#include "nel/3d/tmp/animation_time.h"
-#include <algorithm>
+
 
 namespace NL3D {
 
 
-/// these are some attribute makers for float
+/// these are some attribute makers for int
 
-/// This is a float blender class. It just blend between 2 values
+/// This is a int blender class. It just blend between 2 values
 
-class CPSFloatBlender : public CPSValueBlender<float>
+class CPSIntBlender : public CPSValueBlender<sint32>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSFloatBlender) ;
-	CPSFloatBlender(float startFloat = 0.1f , float endFloat = 0.0f, float nbCycles = 1.0f) : CPSValueBlender<float>(nbCycles)
+	NLMISC_DECLARE_CLASS(CPSIntBlender) ;
+	CPSIntBlender(sint32 startInt = 0 , sint32 endInt = 10, float nbCycles = 1.0f) : CPSValueBlender<sint32>(nbCycles)
 	{
-		_F.setValues(startFloat, endFloat) ;
+		_F.setValues(startInt, endInt) ;
 	}
 	
 	// F is serialized by base classes...
@@ -52,11 +51,11 @@ public:
 } ;
 
 
-/// This is a float gradient class
-class CPSFloatGradient : public CPSValueGradient<float>
+/// This is a int gradient class
+class CPSIntGradient : public CPSValueGradient<sint32>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSFloatGradient) ;
+	NLMISC_DECLARE_CLASS(CPSIntGradient) ;
 
 	/**	
 	 *	Construct the value gradient blender by passing a pointer to a float table.
@@ -64,22 +63,21 @@ public:
 	 * \param nbCycles : The nb of time the pattern is repeated during particle life. see ps_attrib_maker.h
 	 */
 
-	CPSFloatGradient(float *floatTab = CPSFloatGradient::_DefaultGradient
-						, uint32 nbValues = 2, uint32 nbStages = 16, float nbCycles = 1.0f) ;
+	CPSIntGradient(sint32 *intTab = CPSIntGradient::_DefaultGradient
+						, uint32 nbValues = 2, uint32 nbStages = 10, float nbCycles = 1.0f) ;
 
 
 
-	static float _DefaultGradient[] ;
+	static sint32 _DefaultGradient[] ;
 	
 	// F is serialized by base classes...	
 
 } ;
 
 
-
 } // NL3D
 
 
-#endif // NL_PS_FLOAT_H
+#endif // NL_PS_INT_H
 
-/* End of ps_size.h */
+/* End of ps_int.h */

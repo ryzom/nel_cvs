@@ -1,7 +1,7 @@
 /** \file ps_color.cpp
  * <File description>
  *
- * $Id: ps_color.cpp,v 1.1 2001/05/02 11:48:46 vizerie Exp $
+ * $Id: ps_color.cpp,v 1.2 2001/05/08 13:37:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,7 +72,7 @@ void CPSColorGradientFunc::getColors(CRGBA *tab) const
 
 
 
-void CPSColorGradientFunc::setColors(CRGBA *colorTab, uint32 numCol)
+void CPSColorGradientFunc::setColors(const CRGBA *colorTab, uint32 numCol)
 {
 	nlassert(numCol > 1) ;
 
@@ -83,7 +83,7 @@ void CPSColorGradientFunc::setColors(CRGBA *colorTab, uint32 numCol)
 
 
 	// we have a 64 colors gradient for each tansition
-	_NumCol = (numCol - 1) << 6 ;
+	_NumCol = ((numCol - 1) << 6) + 1 ;
 	_Tab = new CRGBA[_NumCol] ;
 
 	for (uint32 k = 0 ; k  < (numCol - 1) ; ++k)
@@ -95,6 +95,7 @@ void CPSColorGradientFunc::setColors(CRGBA *colorTab, uint32 numCol)
 			_Tab[ (k << 6) + l ] = c ;
 		}
 	}
+	_Tab[_NumCol - 1] = colorTab[numCol - 1] ;
 }
 	
 
@@ -107,7 +108,7 @@ void CPSColorGradientFunc::serial(NLMISC::IStream &f)
 	{
 		uint32 numCol ;
 		f.serial(numCol) ;
-		_NumCol = (numCol - 1) << 6 ;
+		_NumCol = ((numCol - 1) << 6) + 1 ;
 
 		// create the table on the stack for small gradient
 		if (numCol < 256)

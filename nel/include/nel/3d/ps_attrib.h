@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.4 2001/05/02 11:49:50 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.5 2001/05/08 13:37:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ public:
 	/// resize the attributes tab. This tells what is the mx number of element in this tab, but don't add elements
 	void resize(uint32 nbInstances) ;
 
-	/// resize the attribute tab, but fill the whole tab elements, so size = maxSize
+	/// resize the attribute tab, but fill the whole tab of with a given value
 	void resizeNFill(uint32 nbInstances) ;
 	 
 	/// get a const reference on an attribute instance

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.4 2001/05/02 11:48:46 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.5 2001/05/08 13:37:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@
 #include "nel/3d/ps_zone.h"
 #include "nel/3d/ps_color.h"
 #include "nel/3d/ps_float.h"
+#include "nel/3d/ps_int.h"
 
 
 
@@ -54,6 +55,27 @@ namespace NL3D {
 
 using NLMISC::CVector ;
 
+
+#ifdef NL_DEBUG
+	bool CPSUtil::_CosTableInitialized = false ;
+#endif
+
+float CPSUtil::_CosTable[256] ;
+float CPSUtil::_SinTable[256] ;
+
+
+void CPSUtil::initFastCosNSinTable(void)
+{
+	for (uint32 k = 0 ; k < 256 ; k++)
+	{
+		const float angle =  k / 256.0f * 2.0f * float(NLMISC::Pi) ; 
+		_CosTable[k] = (float) cos( angle ) ;
+		_SinTable[k] = (float) sin( angle ) ;
+	}
+	#ifdef NL_DEBUG
+		_CosTableInitialized = true ;
+	#endif
+}
 
 
 void CPSUtil::registerSerialParticleSystem(void)
@@ -66,8 +88,16 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSZonePlane) ;
 		NLMISC_REGISTER_CLASS(CPSColorFader) ;
 		NLMISC_REGISTER_CLASS(CPSColorGradient) ;
-		NLMISC_REGISTER_CLASS(CPSFloatBlender) ;
+		NLMISC_REGISTER_CLASS(CPSFloatBlender) ;		
+		NLMISC_REGISTER_CLASS(CPSFloatGradient) ;
+		NLMISC_REGISTER_CLASS(CPSIntBlender) ;		
+		NLMISC_REGISTER_CLASS(CPSIntGradient) ;
 		NLMISC_REGISTER_CLASS(CPSSpring) ;
+		NLMISC_REGISTER_CLASS(CPSFanLight) ;
+		// while we are here, we perform some important inits
+		CPSRotated2DParticle::initRotTable() ; // init the precalc rot table for face lookat
+		initFastCosNSinTable() ; // init fast cosine lookup table
+		CPSFanLight::initFanLightPrecalc() ;
 }
 
 

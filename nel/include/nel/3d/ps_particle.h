@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.5 2001/05/02 11:49:50 vizerie Exp $
+ * $Id: ps_particle.h,v 1.6 2001/05/08 13:37:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,8 @@
 
 namespace NL3D {
 
-template <typename T> struct CPSAttribMaker ;
+template <typename T> class CPSAttribMaker ;
+class CTextureGrouped ;
 
 /**
  * This is the base class for all particle
@@ -88,10 +89,10 @@ public:
 	 */
 	virtual void deleteElement(uint32 index) = 0 ;
 
-	/// Resize the bindable attributes containers DERIVERS MUST CALL THEIR PARENT VERSION
+	/// Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	virtual void resize(uint32 size) = 0 ;
 
-	/// serialisation. Derivers must override this
+	/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) { CPSLocatedBindable::serial(f) ; }
 	
 };
@@ -101,7 +102,7 @@ public:
 
 
 
-/// this class adds tunable color to a particle. Must be added using public inheritance
+/// this class adds tunable color to a particle. Can be added using public multiple inheritance
 class CPSColoredParticle
 {
 	public:
@@ -112,7 +113,7 @@ class CPSColoredParticle
 		 */
 		void setColorScheme(CPSAttribMaker<CRGBA> *col) ;
 
-		/// Set a constant color for the particles
+		/// Set a constant color for the particles. remove any previous scheme
 		void setColor(const NLMISC::CRGBA col) ;
 
 		/// ctor : default are white particles (constant color)
@@ -121,7 +122,7 @@ class CPSColoredParticle
 		/// dtor
 		~CPSColoredParticle() ;
 
-		/// serialization
+		/// serialization. 
 		void serialColorScheme(NLMISC::IStream &f) ;
 
 	protected:		
@@ -135,11 +136,11 @@ class CPSColoredParticle
 		CPSAttribMaker<CRGBA> *_ColorScheme ; 						
 
 		/// Update the material and the vb and the like so that they match the color scheme
-		virtual void updateMatAndVb(void) = 0 ;
+		virtual void updateMatAndVbForColor(void) = 0 ;
 } ;
 
 
-/// this class adds tunable size to a particle. Must be added using public inheritance
+/// this class adds tunable size to a particle. Can be added using public multiple inheritance
 class CPSSizedParticle
 {
 	public:
@@ -148,10 +149,10 @@ class CPSSizedParticle
 		 *  It must have been allocated by new
 		 *  It will be deleted by this object
 		 */
-		virtual void setSizeScheme(CPSAttribMaker<float> *size) ;
+		void setSizeScheme(CPSAttribMaker<float> *size) ;
 
 		/// Set a constant size for the particles
-		virtual void setSize(float size) ;
+		void setSize(float size) ;
 
 		/// ctor : default are 0.1f particles
 		CPSSizedParticle() ;
@@ -159,7 +160,7 @@ class CPSSizedParticle
 		/// dtor
 		~CPSSizedParticle() ;
 
-		/// serialization
+		/// serialization. We choose a different name because of multiple-inheritance
 		void serialSizeScheme(NLMISC::IStream &f) ;
 
 	protected:		
@@ -169,7 +170,117 @@ class CPSSizedParticle
 		CPSAttribMaker<float> *_SizeScheme ; // used only if _UseSizeScheme is set to true				
 } ;
 
-/// this class adds tunable 2D rotation to a particle
+
+
+/// this class adds tunable 2D rotation to a particle, it can be used by public multiple inheritance
+
+class CPSRotated2DParticle
+{
+	public:
+
+		/** Set an attribute maker that produce a float
+		 *  It must have been allocated by new
+		 *  It will be deleted by this object
+		 *  Output angles must range from 0.0f to 256.0f
+		 */
+		void setAngle2DScheme(CPSAttribMaker<float> *size) ;
+
+		/** Set a constant angle for the particle. Angles range from  0.0f to 256.0f (2 pi)
+		 *	This discrad any previous scheme
+		 * \see setAngle2DScheme()
+		 */
+		void setAngle2D(float angle) ;
+
+		/// ctor : default are unrotated particles (angle = 0.0f)
+		CPSRotated2DParticle() ;
+
+		/// dtor
+		~CPSRotated2DParticle() ;
+
+		/// serialization. We choose a different name because of multiple-inheritance
+		void serialAngle2DScheme(NLMISC::IStream &f) ;
+
+
+
+		/** this return a float table used to speed up rotations of face look at and the like
+		 * for each angle, there are 4 float : 2 couple of float : a1, b1, a2, b2
+		 * a1 * I + b1 * K = up left corner, a2 * I + b2 * K = up right corner, 
+		 * This table must have been initialized with initRotTable
+		 */
+		static inline const float *getRotTable(void)
+		{
+			nlassert(_InitializedRotTab) ; // must have called initRotTable at the start of the apply
+			return _RotTable ;
+		}
+
+		/// init the rotation table
+
+		static void initRotTable(void) ;
+
+
+	protected:		
+		/// if this is false, constant size will be used instead of a scheme
+		bool _UseAngle2DScheme ;
+		float _Angle2D ;
+		CPSAttribMaker<float> *_Angle2DScheme ; // used only if _UseSizeScheme is set to true				
+		static float _RotTable[4 * 256] ;
+
+		#ifdef NL_DEBUG
+			/// it is true if the table has been initialized, for debug purposes
+			static bool _InitializedRotTab ;
+		#endif
+} ;
+
+/// this class adds a texture to a particle. The texture can be animated or not. it can be used by public multiple inheritance
+ 
+
+class CPSTexturedParticle
+{
+	public:
+
+		/** Set an attribute maker that produce a sint32
+		 *  It must have been allocated by new
+		 *  It will be deleted by this object		
+		 *  The integer is used as an index in a grouped texture. It tells which frame to use
+		 */
+		void setTextureScheme(CSmartPtr<CTextureGrouped> textureGroup, CPSAttribMaker<sint32> *animOrder) ;
+
+		/** Set a constant texture for the particle
+		 *	This discard any previous scheme
+		 * \see setTextureScheme()
+		 */
+		void setTexture(CSmartPtr<ITexture> tex) ;
+
+		/// ctor : default have no texture. You must set it, otherwise you'll get an assertion when it's drawn
+
+
+		CPSTexturedParticle() ;
+
+		/// dtor
+		~CPSTexturedParticle() ;
+
+		/// serialization. We choose a different name because of multiple-inheritance
+
+		void serialTextureScheme(NLMISC::IStream &f) ;		
+
+
+	protected:		
+		/// if this is false, constant size will be used instead of a scheme
+
+		bool _UseTextureScheme ;
+
+		// a single texture
+		CSmartPtr<ITexture> _Tex ;
+
+		// a grouped texture
+		CSmartPtr<CTextureGrouped> _TexGroup ;		
+		
+		CPSAttribMaker<sint32> *_TextureScheme ; // used only if _UseSizeScheme is set to true							
+
+
+		/// Update the material so that it match the texture scheme
+		virtual void updateMatAndVbForTexture(void) = 0 ;
+} ;
 
 
 
@@ -211,7 +322,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
 		CVertexBuffer _Vb ;
 
 		/// update the material and the vb so that they match the color scheme
-		virtual void updateMatAndVb(void) ;
+		virtual void updateMatAndVbForColor(void) ;
 } ;
 
 
@@ -220,11 +331,13 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
  */
 
 
-class CPSFaceLookAt : public CPSParticle, public CPSColoredParticle, public CPSSizedParticle
+class CPSFaceLookAt : public CPSParticle, public CPSColoredParticle
+					, public CPSSizedParticle, public CPSRotated2DParticle
+					, public CPSTexturedParticle
 {
 public:
 	/// create the face look at by giving a texture and an optionnal color
-	CPSFaceLookAt(CSmartPtr<ITexture> tex) ;
+	CPSFaceLookAt(CSmartPtr<ITexture> tex = NULL) ;
 	virtual void draw(void) ;
 	void serial(NLMISC::IStream &f) ;
 	
@@ -240,22 +353,19 @@ public:
 	/// we don't save datas so it does nothing for now
 	void deleteElement(uint32) {}
 
-	// default ctor
-
-	CPSFaceLookAt() ;
-
 	//dtor
 
 	~CPSFaceLookAt() ;
 protected:
 
 	/// initialisations
-	virtual void init(void) ;
-	
-	CSmartPtr<ITexture> _Tex ;
+	virtual void init(void) ;	
 
 	// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
-	virtual void updateMatAndVb(void) ;
+	virtual void updateMatAndVbForColor(void) ;
+
+	// update the material and the vb so that they match the texture scheme.
+	virtual void updateMatAndVbForTexture(void) ;
 
 	CMaterial _Mat ;
 	CVertexBuffer _Vb ;
@@ -264,6 +374,80 @@ protected:
 	uint32 *_IndexBuffer ;
 
 	
+} ;
+
+
+/**
+ * A fan light particle
+ */
+
+
+
+class CPSFanLight : public CPSParticle, public CPSColoredParticle, public CPSSizedParticle, public CPSRotated2DParticle
+{
+public:
+	virtual void draw(void) ;
+
+	void serial(NLMISC::IStream &f) ;
+
+	NLMISC_DECLARE_CLASS(CPSFanLight) ;
+
+	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
+
+	virtual void resize(uint32 size) ; 
+	
+	/// we don't save datas so it does nothing for now
+	bool newElement(void) { return true ; }
+
+	/// we don't save datas so it does nothing for now
+	void deleteElement(uint32) {}
+
+
+	/// Ctor, with the numbers of fans to draw (minimum is 3, maximum is 128)
+	CPSFanLight(uint32 nbFans = 7) ;
+
+	// Set the number of fans used for drawing (minimum is 3, maximum is 128)
+	void setNbFans(uint32 nbFans) ;
+
+	// Get the number of fans used for drawing
+	uint32 gteNbFans(void) const
+	{
+		return _NbFans ;
+	}
+
+	/** Set the speed for phase
+	 *	If the located holding this particle as a limited lifetime, it gives how many 0-2Pi cycle it'll do during its life
+	 *  Otherwise it gives how many cycle there are in a second
+	 */
+	void setPhaseSpeed(float multiplier) ;
+
+	// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
+	virtual void updateMatAndVbForColor(void) ;
+
+
+	/// must call this at least if you intend to use fanlight
+	static void initFanLightPrecalc(void) ;
+
+	/// dtor
+	~CPSFanLight() ;
+
+protected:
+	/// initialisations
+	virtual void init(void) ;
+
+	uint32 _NbFans ;
+	CVertexBuffer _Vb ;
+	CMaterial _Mat ;
+	uint32   *_IndexBuffer ;
+
+	static uint8 _RandomPhaseTab[128] ;
+
+	float _PhaseSpeed ;
+
+	#ifdef NL_DEBUG		
+		static bool _RandomPhaseTabInitialized ;
+	#endif
+
 } ;
 
 

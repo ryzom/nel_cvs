@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.5 2001/05/02 11:48:46 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.6 2001/05/08 13:37:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,13 @@ void CPSLocated::bind(CPSLocatedBindable *lb)
 	_LocatedBoundCont.insert(it, lb) ;
 	lb->setOwner(this) ;
 	lb->resize(_MaxSize) ;
+
+	// any located bindable that is bound to us should have no element in it for now !!
+	// we reisze the boundable, so that it has ne same number of elements as us
+	for (uint32 k = 0 ; k < _Size ; ++k)
+	{
+		lb->newElement() ;
+	}
 }
 
 
@@ -325,29 +332,8 @@ void CPSLocated::serial(NLMISC::IStream &f)
 	
 	f.serial(_UpdateLock) ;
 
-	uint32 size ;	
-	if (f.isReading())
-	{
-		_LocatedBoundCont.clear() ;
-		f.serial(size) ;
-		for (uint32 k = 0 ; k < size ; ++k)
-		{
-			CPSLocatedBindable *pt = NULL ;
-			f.serialPolyPtr(pt) ;
-			_LocatedBoundCont.push_back(pt) ;
-		}
-		
-	}
-	else
-	{
-		size = _LocatedBoundCont.size() ;
-		f.serial(size) ;
-		for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
-		{
-			CPSLocatedBindable *pt = (*it) ;
-			f.serialPolyPtr(pt) ;
-		}
-	}
+	
+	f.serialContPolyPtr(_LocatedBoundCont) ;	
 }
 
 
@@ -428,6 +414,15 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 					++itTime ;
 					++itTimeInc ;
 				}
+			}
+		}
+		else
+		{
+			// the time attribute gives the life in seconds
+			TPSAttribTime::iterator itTime = _Time.begin(), endItTime = _Time.end() ;
+			for (; itTime != endItTime ; ++itTime)
+			{
+				*itTime += ellapsedTime ;
 			}
 		}
 	}

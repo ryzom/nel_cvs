@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.1 2001/05/02 11:49:50 vizerie Exp $
+ * $Id: ps_color.h,v 1.2 2001/05/08 13:37:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,10 +84,13 @@ class CPSColorFader : public CPSAttribMakerT<CRGBA, CPSColorFaderFunc>
 public:
 		NLMISC_DECLARE_CLASS(CPSColorFader) ;
 
-		CPSColorFader(CRGBA c1 = CRGBA(255, 255, 255), CRGBA c2 = CRGBA(0, 0, 0)) 
+		CPSColorFader(CRGBA c1 = CRGBA(255, 255, 255), CRGBA c2 = CRGBA(0, 0, 0), float nbCycles = 1.0f) 
+					: CPSAttribMakerT<CRGBA, CPSColorFaderFunc>(nbCycles) 
 		{
 			_F.setColors(c1, c2) ;
 		}
+
+		// serialization is done by CPSAttribMakerT
 } ;
 
 
@@ -109,14 +112,14 @@ public:
 	/// copie the colors in the specified table
 	void getColors(CRGBA *tab) const ;	
 
-	uint32 getNumCol(void) const { return (_NumCol >> 6) + 1 ; }
+	uint32 getNumCol(void) const { return ((_NumCol - 1) >> 6) + 1 ; }
 
 	/** set the colors
 	 *  \param numCol number of color, must be >= 2
 	 *  \colorTab a table containing the colors. color will be blended, so you must only provide keyframe colors	 
 	 */
 
-	void setColors(CRGBA *colorTab, uint32 numCol) ;
+	void setColors(const CRGBA *colorTab, uint32 numCol) ;
 	
 
 	/// serialization
@@ -141,12 +144,15 @@ class CPSColorGradient : public CPSAttribMakerT<CRGBA, CPSColorGradientFunc>
 public:
 		NLMISC_DECLARE_CLASS(CPSColorGradient) ;
 
-		CPSColorGradient(CRGBA *tab = CPSColorGradient::_DefaultGradient, uint32 numCol = 2) 
+		CPSColorGradient(CRGBA *tab = CPSColorGradient::_DefaultGradient, uint32 numCol = 2
+						 ,float nbCycles = 1.0f) : CPSAttribMakerT<CRGBA, CPSColorGradientFunc>(nbCycles) 
 		{
 			_F.setColors(tab, numCol) ;
 		}
-protected:
+
 	static CRGBA _DefaultGradient[] ;
+
+	// serialization is done by CPSAttribMakerT
 } ;
 
 

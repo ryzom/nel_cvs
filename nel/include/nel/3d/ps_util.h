@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.2 2001/04/26 08:46:34 vizerie Exp $
+ * $Id: ps_util.h,v 1.3 2001/05/08 13:37:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,9 +95,46 @@ struct CPSUtil
 	static NLMISC::CAABBox transformAABBox(const NLMISC::CMatrix &mat, const NLMISC::CAABBox &box) ;
 
 	/** build a basis from a vector using Schmidt orthogonalization method
-	 *  \param v : K axis if the resulting basis
+	 *  \param v : K axis in the resulting basis
 	 */
 	static CMatrix buildSchmidtBasis(const CVector &v) ;	 
+
+
+	/** get a cosine from the fast cosine table (which must be have initialised with initFastCosNSinTable).
+	 *  256 <=> 2 Pi
+	 */
+	static inline float getCos(sint32 angle) 
+	{ 
+		nlassert(_CosTableInitialized == true) ;
+		return _CosTable[angle & 0xff] ;
+	}
+
+	/** get a cosine from the fast cosine table (which must be have initialised with initFastCosNSinTable).
+	 *  256 <=> 2 Pi
+	 */
+	static inline float getSin(sint32 angle) 
+	{ 
+		nlassert(_CosTableInitialized == true) ;
+		return _SinTable[angle & 0xff] ;
+	}
+
+	/** Init the table for cosine and sinus lookup
+     *	\see getCos(), getSin()
+	 */
+	static void initFastCosNSinTable(void) ;
+
+	protected:
+
+	#ifdef NL_DEBUG
+		static bool _CosTableInitialized ;
+	#endif
+
+		// a table for fast cosine lookup
+		static float _CosTable[256] ;
+		// a table for fast sinus lookup
+		static float _SinTable[256] ;
+
+
 };
 
 void CPSUtil::addRadiusToAABBox(NLMISC::CAABBox &box, float radius)

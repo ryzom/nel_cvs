@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.4 2001/05/08 13:37:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,10 +75,13 @@ if (pass != PSMotion) return ;
 				uint32 k, l;
 				// we don't use an iterator here
 				// because it could be invalidated if size change (a located ould generate itself)	
-				for ( k = 0 ; k < _Phase.getSize()	; ++k) 												   
+
+				const uint32 size = _Owner->getSize() ;
+
+				for ( k = 0 ; k < size; ++k) 												   
 				{
 					_Phase[k] += ellapsedTime ;
-					if ( _Phase[k] >= _Freq._Period) // phase over period -> must emit
+					if ( _Phase[k] >= _Freq._Period) // phase is greater than period -> must emit
 					{
 						_Phase[k] -= _Freq._Period ;
 						for (l = 0 ; l < _Freq._GenNb ; ++l) // emit one or several located
@@ -148,6 +151,8 @@ void CPSEmitterOmni::emit(uint32 index)
 				   , /*((rand() % 1000) -500) / 500.0f*/ (rand() % 1000) / 1000.0f) ;
 	v.normalize() ;
 	v *= 3.0f ;
+
+		
 
 
 	// retrieve the pos from the located that hold us, and the index of the emitter 

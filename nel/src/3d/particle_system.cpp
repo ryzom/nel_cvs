@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.6 2001/05/02 09:23:28 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.7 2001/05/08 13:37:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,6 +169,13 @@ void CParticleSystem::serial(NLMISC::IStream &f)
 	f.serialVersion(1) ;	
 	if (f.isReading())
 	{
+		// delete previously attached process
+
+		for (TProcessVect::iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+		{
+			delete (*it) ;
+		}
+
 		_ProcessVect.clear() ;
 		f.serial(size) ;
 		for (uint32 k = 0 ; k < size ; ++k)
@@ -207,6 +214,8 @@ void CParticleSystem::attach(CParticleSystemProcess *ptr)
 	_ProcessVect.push_back(ptr) ;
 	ptr->setOwner(this) ;
 }
+
+
 
 void CParticleSystem::remove(CParticleSystemProcess *ptr)
 {

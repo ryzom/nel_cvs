@@ -1,7 +1,7 @@
 /** \file animation_playlist.h
  * <File description>
  *
- * $Id: animation_playlist.h,v 1.4 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: animation_playlist.h,v 1.5 2003/05/16 17:07:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,7 +157,7 @@ public:
 	  * Default value is 1.f.
 	  *
 	  * \param slot is the id to get the slot.
-	  * \param time will get the playlist time for which the start weight is set. Default is 0.f.
+	  * \param time will get the playlist time for which the start weight is set. Default time is 0.f.
 	  * \return the start weight used in the slot.
 	  */
 	float getStartWeight (uint8 slot, TGlobalAnimationTime& time) const;
@@ -167,7 +167,7 @@ public:
 	  * Default value is 1.f.
 	  *
 	  * \param slot is the id of the slot to set.
-	  * \param time is the playlist time for which the start weight is set. Default is 1.f.
+	  * \param time is the playlist time for which the end weight is set. Default time is 0.f.
 	  * \param endWeight is the factor to use in this slot.
 	  */
 	void setEndWeight (uint8 slot, float endWeight, TGlobalAnimationTime time);

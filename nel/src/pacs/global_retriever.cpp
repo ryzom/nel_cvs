@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.58 2002/04/03 13:23:34 lecroart Exp $
+ * $Id: global_retriever.cpp,v 1.59 2002/04/18 13:57:31 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -518,6 +518,8 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		result.InstanceId = id;
 		result.LocalPosition.Surface = _InternalCST.SortedSurfaces[0].Surface;
 		result.LocalPosition.Estimation = instance.getLocalPosition(estimated);
+
+		CRetrieverInstance::snapVector(result.LocalPosition.Estimation);
 
 		// if there are more than 1 one possible (and best matching) surface, insure the position within the surface (by moving the point)
 //		if (_InternalCST.SortedSurfaces.size() >= 2 && 

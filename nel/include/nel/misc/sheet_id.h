@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.4 2002/06/07 09:04:23 puzin Exp $
+ * $Id: sheet_id.h,v 1.5 2002/06/10 14:51:41 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -66,21 +66,19 @@ public :
 	static void init();
 	
 	/**
-	 * Return the sheet type
+	 * Return the **whole** sheet id (id+type)
 	 */
-	uint8 getType() const { return _Id.IdInfos.Type; } 
+	uint32 asInt() const { return _Id.Id; }
 
 	/**
-	 * Return the sheet id (without type info)
+	 * Return the sheet type (sub part of the sheetid)
 	 */
-	uint32 getId() const { return _Id.IdInfos.Id; } 
+	uint8 getType() const { return _Id.IdInfos.Type; }
 
 	/**
-	 * Return the sheet id
+	 * Return the sheet sub id (sub part of the sheetid)
 	 */
-	uint32 asInt() const { return _Id.Id; } 
-
-
+	uint8 getShortId() const { return _Id.IdInfos.Id; }
 
 	/**
 	 *	Operator=

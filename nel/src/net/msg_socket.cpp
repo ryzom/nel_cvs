@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.43 2000/12/19 17:35:31 lecroart Exp $
+ * $Id: msg_socket.cpp,v 1.44 2000/12/20 10:08:17 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1060,6 +1060,16 @@ void CMsgSocket::authorizeOnly( TMsgCallback callback, TSenderId idfrom )
 void CMsgSocket::authorizeAll( TSenderId idfrom )
 {
 	socketFromId( idfrom )->setAuthorizedCallback( NULL );
+}
+
+
+/*
+ * Disconnects a connection
+ */
+void CMsgSocket::close( TSenderId idfrom )
+{
+	handleConnectionClosure( iteratorFromId( idfrom ) );
+	nlinfo( "Connection %u deliberately disconnected", idfrom );
 }
 
 

@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.13 2000/12/15 16:59:28 cado Exp $
+ * $Id: local_area.h,v 1.14 2000/12/20 10:08:17 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,10 +45,10 @@ typedef std::map<TEntityId,CRemoteEntity*> CRemoteEntities;
 /// Iterator on CRemoteEntities
 typedef CRemoteEntities::iterator ItRemoteEntities;
 
-/// Callbacks for creation of new remote entities
-typedef void (*TNewEntityCallback) ( CRemoteEntity* );
+/// Callbacks for creating and moving remote entities
+typedef void (*TEntityCallback) ( CRemoteEntity* );
 
-/// Callbacks for processing a remote entity (e.g. deletion)
+/// Callbacks for processing a remote entity using id (e.g. deletion)
 typedef void (*TEntityIdCallback) ( TEntityId );
 
 
@@ -93,7 +93,7 @@ public:
 	}
 
 	/// Provides a callback function to be called after creating a new remote entity
-	void					setNewEntityCallback( TNewEntityCallback cb )
+	void					setNewEntityCallback( TEntityCallback cb )
 	{
 		_NewEntityCallback = cb;
 	}
@@ -102,6 +102,18 @@ public:
 	void					setEntityRemovedCallback( TEntityIdCallback cb )
 	{
 		_EntityRemovedCallback = cb;
+	}
+
+	/// Provides a callback function to be called after moving a remote entity
+	void					setEntityMovedCallback( TEntityCallback cb )
+	{
+		_EntityMovedCallback = cb;
+	}
+
+	/// Returns the callback function to be called after moving a remote entity
+	TEntityCallback			entityMovedCallback() const
+	{
+		return _EntityMovedCallback;
 	}
 
 	/// Provides a callback function to be called when receiving unknown messages
@@ -122,7 +134,7 @@ public:
 	// Friend helper functions
 	friend inline void createRemoteEntity( const IMovingEntity& es );
 	friend inline bool findEntity( TEntityId id, ItRemoteEntities& ire );
-	friend void processEntityState( const IMovingEntity& es );
+	friend void processEntityState( IMovingEntity& es );
 
 	// Callbacks
 	friend void cbProcessEntityStateInGroundMode( CMessage& msgin, TSenderId idfrom );
@@ -140,8 +152,9 @@ private:
 
 	TPosUnit			_Radius;
 	CRemoteEntities		_Neighbors;
-	TNewEntityCallback	_NewEntityCallback;
+	TEntityCallback		_NewEntityCallback;
 	TEntityIdCallback	_EntityRemovedCallback;
+	TEntityCallback		_EntityMovedCallback;
 	TMsgCallback		_UnknownMessagesCallback;
 
 	NLMISC::TTime		_PreviousTime;

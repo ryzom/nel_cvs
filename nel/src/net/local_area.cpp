@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.22 2000/12/19 17:35:31 lecroart Exp $
+ * $Id: local_area.cpp,v 1.23 2000/12/20 10:08:17 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,7 @@ inline bool NLNET::findEntity( TEntityId id, ItRemoteEntities& ire )
 
 
 // Processes the entity state
-void NLNET::processEntityState( const IMovingEntity& es )
+void NLNET::processEntityState( IMovingEntity& es )
 {
 	// Search id in the entity map
 	ItRemoteEntities ire;

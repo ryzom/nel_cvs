@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.29 2000/12/14 15:30:05 cado Exp $
+ * $Id: msg_socket.h,v 1.30 2000/12/20 10:08:17 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,6 +173,9 @@ public:
 
 	/// Allows to call any callback, for the specified connection
 	static void		authorizeAll( TSenderId idfrom );
+
+	/// Disconnects a connection
+	static void		close( TSenderId idfrom );
 
 	///@name Statistics
 	//@{

@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.56 2004/05/27 12:59:56 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.57 2004/06/01 15:57:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1465,7 +1465,7 @@ int CALLBACK LMCCopyFromDialogCallback(
 }
 
 // ***************************************************************************
-void	lmcCopyFrom(CLodDialogBoxParam *currentParam)
+void	lmcCopyFrom(CLodDialogBoxParam *currentParam, HWND parentDlg)
 {
 	uint	i;
 
@@ -1489,7 +1489,7 @@ void	lmcCopyFrom(CLodDialogBoxParam *currentParam)
 
 	// **** launch the choosing dialog
 	paramLMCFrom.reset();
-	if (DialogBoxParam (hInstance, MAKEINTRESOURCE(IDD_LMC_CHOOSE_FROM), theCNelExport._Ip->GetMAXHWnd(), LMCCopyFromDialogCallback, (long)&paramLMCFrom)==IDOK
+	if (DialogBoxParam (hInstance, MAKEINTRESOURCE(IDD_LMC_CHOOSE_FROM), parentDlg, LMCCopyFromDialogCallback, (long)&paramLMCFrom)==IDOK
 		&& paramLMCFrom.SelectionDone)
 	{
 		// **** Apply to the current setup
@@ -1502,11 +1502,13 @@ void	lmcCopyFrom(CLodDialogBoxParam *currentParam)
 			{
 				currentParam->LMCAmbient[i]= amb;
 				currentParam->LMCAmbient[i].Ctrl->SetColor(RGB(amb.R, amb.G, amb.B));
+				currentParam->LMCAmbient[i].DifferentValues= false;
 			}
 			if(paramLMCFrom.DiffFilter[i])
 			{
 				currentParam->LMCDiffuse[i]= diff;
 				currentParam->LMCDiffuse[i].Ctrl->SetColor(RGB(diff.R, diff.G, diff.B));
+				currentParam->LMCDiffuse[i].DifferentValues= false;
 			}
 		}
 	}
@@ -1596,7 +1598,7 @@ int CALLBACK Lightmap2DialogCallback (
 						lmcAutoSetup(currentParam, true);
 					break;
 					case IDC_LMC_COPY_FROM:
-						lmcCopyFrom(currentParam);
+						lmcCopyFrom(currentParam, hwndDlg);
 					break;
 				}
 			}

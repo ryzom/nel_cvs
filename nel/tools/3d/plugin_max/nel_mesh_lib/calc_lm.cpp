@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.55 2004/05/14 15:00:14 berenguier Exp $
+ * $Id: calc_lm.cpp,v 1.56 2004/06/01 15:57:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1332,7 +1332,7 @@ CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n,
 				lightAmbiCol.G = light_intensity * rLight.Ambient.G / 255.0f;
 				lightAmbiCol.B = light_intensity * rLight.Ambient.B / 255.0f;
 				lightAmbiCol.A = light_intensity * rLight.Ambient.A / 255.0f;
-				light_intensity = max(0.0f, n*p_light);
+				light_intensity *= max(0.0f, n*p_light);
 				lightDiffCol.R = light_intensity * rLight.Diffuse.R / 255.0f;
 				lightDiffCol.G = light_intensity * rLight.Diffuse.G / 255.0f;
 				lightDiffCol.B = light_intensity * rLight.Diffuse.B / 255.0f;

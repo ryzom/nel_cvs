@@ -80,7 +80,7 @@ public:
 
 	virtual bool			clear2D(CRGBA& rgba);
 
-	virtual bool			clearZBuffer(float zval=0);
+	virtual bool			clearZBuffer(float zval=1);
 
 	virtual bool			setupTexture(CTexture& tex);
 
@@ -90,7 +90,7 @@ public:
 
 	virtual void			setupViewMatrix(const CMatrix& mtx);
 
-	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n);
+	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0);
 
 	virtual CMatrix			getViewMatrix(void) const;
 

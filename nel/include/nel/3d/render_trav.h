@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.5 2000/10/27 14:29:42 berenguier Exp $
+ * $Id: render_trav.h,v 1.6 2000/11/07 15:35:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@ class	IBaseRenderObs;
 class	IBaseHrcObs;
 class	IBaseClipObs;
 class	IBaseLightObs;
+class	IDriver;
 
 
 // ***************************************************************************
@@ -82,6 +83,7 @@ public:
 	NLMISC::CClassId	getClassId() const {return RenderTravId;}
 	sint				getRenderOrder() const {return 4000;}
 	/** First traverse the root (if any), then render the render list.
+	 * NB: no Driver clear buffers (color or ZBuffer) are done....
 	 * \warning If an observer exist both in the graph and in the render list, it will be effectively traversed twice.
 	 */
 	void				traverse();
@@ -90,17 +92,21 @@ public:
 	/// \name RenderList.
 	//@{
 	/// Clear the list of rendered observers.
-	void	clearRenderList();
+	void			clearRenderList();
 	/// Add an observer to the list of rendered observers. \b DOESN'T \b CHECK if already inserted.
-	void	addRenderObs(IBaseRenderObs *o);
+	void			addRenderObs(IBaseRenderObs *o);
 	//@}
 
+
+	void			setDriver(IDriver *drv) {Driver= drv;}
+	IDriver			*getDriver() {return Driver;}
 
 private:
 	// A grow only list of observers to be rendered.
 	// We don't use a ZList, since it may unusefull if we sort primitives by material.
 	std::vector<IBaseRenderObs*>	RenderList;
 
+	IDriver			*Driver;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.2 2000/11/06 17:39:30 berenguier Exp $
+ * $Id: landscape.cpp,v 1.3 2000/11/07 15:34:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,7 +154,7 @@ void			CLandscape::refine(const CVector &refineCenter)
 	}
 }
 // ***************************************************************************
-void			CLandscape::render(const CVector &refineCenter, bool doTileAddPass)
+void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doTileAddPass)
 {
 	CTessFace::RefineCenter= refineCenter;
 	ItZoneMap	it;
@@ -189,14 +189,14 @@ void			CLandscape::render(const CVector &refineCenter, bool doTileAddPass)
 
 		// Active VB.
 		CTessFace::CurrentVB->setNumVertices(CTessFace::CurrentVertexIndex);
-		IDriver::currentDriver()->activeVertexBuffer(*CTessFace::CurrentVB);
+		driver->activeVertexBuffer(*CTessFace::CurrentVB);
 
 		// Render All material RdrPass.
 		// TODO_TEXTURE. For TEST only here. Do it on TileRdrPass.
 		TileRdrPass.buildPBlock(PBlock);
 		// must resetTriList at each end of each material process.
 		TileRdrPass.resetTriList();
-		IDriver::currentDriver()->render(PBlock, *TileRdrPass.Mat);
+		driver->render(PBlock, *TileRdrPass.Mat);
 	}
 
 
@@ -215,14 +215,14 @@ void			CLandscape::render(const CVector &refineCenter, bool doTileAddPass)
 
 	// Active VB.
 	CTessFace::CurrentVB->setNumVertices(CTessFace::CurrentVertexIndex);
-	IDriver::currentDriver()->activeVertexBuffer(*CTessFace::CurrentVB);
+	driver->activeVertexBuffer(*CTessFace::CurrentVB);
 
 	// Render All material RdrPass.
 	// TODO_TEXTURE. For TEST only here. Do it on FarRdrPass.
 	FarRdrPass.buildPBlock(PBlock);
 	// must resetTriList at each end of each material process.
 	FarRdrPass.resetTriList();
-	IDriver::currentDriver()->render(PBlock, *FarRdrPass.Mat);
+	driver->render(PBlock, *FarRdrPass.Mat);
 
 
 	// 3. Far1Render pass.
@@ -240,14 +240,14 @@ void			CLandscape::render(const CVector &refineCenter, bool doTileAddPass)
 
 	// Active VB.
 	CTessFace::CurrentVB->setNumVertices(CTessFace::CurrentVertexIndex);
-	IDriver::currentDriver()->activeVertexBuffer(*CTessFace::CurrentVB);
+	driver->activeVertexBuffer(*CTessFace::CurrentVB);
 
 	// Render All material RdrPass.
 	// TODO_TEXTURE. For TEST only here. Do it on FarRdrPass.
 	FarRdrPass.buildPBlock(PBlock);
 	// must resetTriList at each end of each material process.
 	FarRdrPass.resetTriList();
-	IDriver::currentDriver()->render(PBlock, *FarRdrPass.Mat);
+	driver->render(PBlock, *FarRdrPass.Mat);
 
 
 }
@@ -297,7 +297,7 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 		// First, refine.
 		landModel->Landscape->refine(trav->CamPos);
 		// then render.
-		landModel->Landscape->render(trav->CamPos);
+		landModel->Landscape->render(trav->getDriver(), trav->CamPos);
 	}
 }
 

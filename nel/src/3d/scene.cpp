@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.4 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: scene.cpp,v 1.5 2000/11/07 15:34:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/render_trav.h"
 #include "nel/3d/transform.h"
 #include "nel/3d/camera.h"
+#include "nel/3d/driver.h"
 using namespace std;
 using namespace NLMISC;
 
@@ -154,10 +155,25 @@ void	CScene::render(bool	doHrcPass)
 }
 
 // ***************************************************************************
+void	CScene::clear(CRGBA col)
+{
+	RenderTrav->getDriver()->clear2D(col);
+	RenderTrav->getDriver()->clearZBuffer();
+}
+
+
+// ***************************************************************************
 void	CScene::setCam(const CSmartPtr<CCamera>	&cam)
 {
 	CurrentCamera= cam;
 }
+
+// ***************************************************************************
+void	CScene::setDriver(IDriver *drv)
+{
+	RenderTrav->setDriver(drv);
+}
+
 
 }
 

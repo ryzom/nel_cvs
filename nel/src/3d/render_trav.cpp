@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.5 2000/11/06 18:12:22 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.6 2000/11/07 15:34:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@ namespace	NL3D
 CRenderTrav::CRenderTrav()
 {
 	RenderList.reserve(1024);
+	Driver= NULL;
 }
 // ***************************************************************************
 IObs		*CRenderTrav::createDefaultObs() const
@@ -59,12 +60,10 @@ void		CRenderTrav::traverse()
 	ITravCameraScene::update();
 
 	// Bind to Driver.
-	IDriver::currentDriver()->setFrustum(Left, Right, Bottom, Top, Near, Far, Perspective);
-	IDriver::currentDriver()->setupViewMatrix(ViewMatrix);
+	getDriver()->setFrustum(Left, Right, Bottom, Top, Near, Far, Perspective);
+	getDriver()->setupViewMatrix(ViewMatrix);
 
-	// Clear screen.
-	IDriver::currentDriver()->clear2D(CRGBA(0,0,0,0));
-	IDriver::currentDriver()->clearZBuffer();
+	// Don't Clear screen, leave it to caller.
 
 	// First traverse the root.
 	if(Root)

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.2 2000/10/27 15:00:24 viau Exp $
+ * $Id: vertex_buffer.cpp,v 1.3 2000/11/07 15:34:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@ namespace NL3D
 
 CVertexBuffer::CVertexBuffer()
 {
+	_Flags=0;
 }
 
 CVertexBuffer::~CVertexBuffer()
@@ -47,6 +48,7 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 
 	_VertexSize=0;
 	offset=0;
+	_Flags=0;
 	if (flags & IDRV_VF_XYZ)
 	{
 		_Flags|=IDRV_VF_XYZ;
@@ -116,6 +118,20 @@ void* CVertexBuffer::getVertexCoordPointer(uint idx)
 	return((void*)ptr);
 }
 
+void* CVertexBuffer::getNormalCoordPointer(uint idx)
+{
+	uint8*	ptr;
+
+	if ( !(_Flags & IDRV_VF_NORMAL) )
+	{
+		return(NULL);
+	}
+	ptr=&(*_Verts.begin());
+	ptr+=_NormalOff;
+	ptr+=idx*_VertexSize;
+	return((void*)ptr);
+}
+
 void* CVertexBuffer::getColorPointer(uint idx)
 {
 	uint8*	ptr;
@@ -160,6 +176,37 @@ bool CVertexBuffer::setVertexCoord(uint idx, float x, float y, float z)
 	*ptr=y;
 	ptr++;
 	*ptr=z;
+	return(true);
+}
+
+// --------------------------------------------------
+
+bool CVertexBuffer::setVertexCoord(uint idx, const CVector &v)
+{
+	uint8*	ptr;
+
+	if ( !(_Flags & IDRV_VF_XYZ) )
+	{
+		return(false);
+	}
+	ptr=&_Verts[idx*_VertexSize];
+	memcpy(ptr, &(v.x), 3*sizeof(float));
+	return(true);
+}
+
+// --------------------------------------------------
+
+bool CVertexBuffer::setNormalCoord(uint idx, const CVector &v)
+{
+	uint8*	ptr;
+
+	if ( !(_Flags & IDRV_VF_NORMAL) )
+	{
+		return(false);
+	}
+	ptr=&_Verts[idx*_VertexSize];
+	ptr+=_NormalOff;
+	memcpy(ptr, &(v.x), 3*sizeof(float));
 	return(true);
 }
 

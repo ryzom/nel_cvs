@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.8 2000/11/06 18:12:12 berenguier Exp $
+ * $Id: driver.h,v 1.9 2000/11/07 15:35:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@ using NLMISC::CRefPtr;
 using NLMISC::CRefCount;
 using NLMISC::CSmartPtr;
 using NLMISC::CRGBA;
+using NLMISC::CVector;
 using NLMISC::CMatrix;
 
 // --------------------------------------------------
@@ -114,12 +115,14 @@ const uint32	IDRV_MAT_DEFMAT		= 0x00000040;
 const uint32	IDRV_MAT_BLEND		= 0x00000080;
 
 
-enum ZFunc		{ always,never,equal,notequal,less,lessequal,greater,greaterequal };
-enum TBlend		{ one, zero, srcalpha, invsrcalpha };
-enum TShader	{ normal, user_color, envmap, bump};
-
 class CMaterial : public CRefCount
 {
+public:
+	enum ZFunc		{ always,never,equal,notequal,less,lessequal,greater,greaterequal };
+	enum TBlend		{ one, zero, srcalpha, invsrcalpha };
+	enum TShader	{ normal, user_color, envmap, bump};
+
+
 private:
 
 	TShader					_ShaderType;
@@ -322,6 +325,8 @@ public:
 	bool					setNumVertices(uint16 n);
 
 	bool					setVertexCoord(uint idx, float x, float y, float z);
+	bool					setVertexCoord(uint idx, const CVector &v);
+	bool					setNormalCoord(uint idx, const CVector &v);
 	bool					setRGBA(uint idx, CRGBA& rgba);
 	bool					setTexCoord(uint idx, uint8 stage, float u, float v);
 							~CVertexBuffer(void);
@@ -336,6 +341,7 @@ public:
 	}
 
 	void*					getVertexCoordPointer(uint idx=0);
+	void*					getNormalCoordPointer(uint idx=0);
 	void*					getColorPointer(uint idx=0);
 	void*					getTexCoordPointer(uint idx=0, uint8 stage=0);
 };
@@ -377,7 +383,7 @@ public:
 						Height=0;
 						Depth=0;
 					}
-					GfxMode(uint16 w, uint16 h,uint8 d);
+					GfxMode(uint16 w, uint16 h, uint8 d, bool windowed= true);
 };
 
 typedef std::vector<GfxMode> ModeList;
@@ -389,7 +395,6 @@ class IDriver
 friend class ITextureDrvInfos;
 private:
 	std::list< CRefPtr<ITextureDrvInfos> >	_pTexDrvInfos;
-	static IDriver*							_Current;
 public:
 							IDriver(void) { };
 	virtual					~IDriver(void) 
@@ -412,11 +417,12 @@ public:
 
 	virtual bool			processMessages(void)=0;
 
+	/// Before rendering via a driver in a thread, must activate() (per thread).
 	virtual bool			activate(void)=0;
 
 	virtual bool			clear2D(CRGBA& rgba)=0;
 
-	virtual bool			clearZBuffer(float zval=0)=0;
+	virtual bool			clearZBuffer(float zval=1)=0;
 
 	virtual bool			setupTexture(CTexture& tex)=0;
 
@@ -427,7 +433,7 @@ public:
 
 	virtual void			setupViewMatrix(const CMatrix& mtx)=0;
 
-	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n)=0;
+	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0)=0;
 
 	virtual CMatrix			getViewMatrix(void) const=0;
 
@@ -439,9 +445,6 @@ public:
 
 	virtual bool			release(void)=0;
 
-
-public:
-	static IDriver			*currentDriver() {return _Current;}
 
 };
 

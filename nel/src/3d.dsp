@@ -25,7 +25,7 @@ CFG=3d - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -47,7 +47,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
@@ -70,7 +70,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
@@ -175,13 +175,33 @@ SOURCE=.\3d\tessellation.cpp
 
 SOURCE=..\include\nel\3d\tessellation.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\zone.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\zone.h
+# End Source File
 # End Group
 # Begin Group "Driver"
 
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\3d\driver.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\3d\driver.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\dru.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\dru.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.1 2000/11/06 15:03:52 berenguier Exp $
+ * $Id: landscape.h,v 1.2 2000/11/07 15:35:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 	/// Refine/Geomorph the tesselation of the landscape.
 	void			refine(const CVector &refineCenter);
 	/// Render the landscape.
-	void			render(const CVector &refineCenter, bool doTileAddPass=false);
+	void			render(IDriver *drv, const CVector &refineCenter, bool doTileAddPass=false);
 
 
 	// TODO: landscape param setup (Transition etc...).

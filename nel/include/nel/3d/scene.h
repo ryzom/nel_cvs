@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.3 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: scene.h,v 1.4 2000/11/07 15:35:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "nel/3d/mot.h"
 #include "nel/3d/trav_scene.h"
+#include "nel/misc/rgba.h"
 
 
 namespace NL3D
@@ -45,6 +46,7 @@ class	CDefaultLightObs;
 class	CDefaultRenderObs;
 class	CTransform;
 class	CCamera;
+class	IDriver;
 
 
 // ***************************************************************************
@@ -63,6 +65,7 @@ class	CCamera;
  * - initRootModels() to create/setRoot the defaults models roots for the basic traversals:
  *		- CTransform
  *		- CLightGroup
+ * - set your driver for this scene with setDriver().
  * - create any other model with createModel() (such as a camera).
  * - Specify a Camera (SmartPtr-ed !!)
  * - render().
@@ -119,6 +122,8 @@ public:
 	void	initDefaultTravs();
 	/// Create/setRoot the defaults models roots: a CTransform and a CLightGroup.
 	void	initDefaultRoots();
+	/// Set the driver to render Traversal.
+	void	setDriver(IDriver *drv);
 	//@}
 
 	/** Add a ITrav or a ITravScene to the scene.
@@ -129,11 +134,15 @@ public:
 	void	addTrav(ITrav *v);
 
 	/** Render the scene, via the registered ITravScene, from the CurrentCamera view.
+	 * NB: no Driver clear buffers (color or ZBuffer) are done....
 	 * This call t->traverse() function to registered render traversal following their order given.
 	 * \param doHrcPass set it to false to indicate that the CHrcTrav have not to be traversed. UseFull to optimize if 
 	 * you know that NONE of your models have moved (a good example is a shoot of the scene from different cameras).
 	 */
 	void	render(bool	doHrcPass=true);
+
+	/// Clear all the buffer of the RenderTrav current driver window .
+	void	clear(NLMISC::CRGBA col= NLMISC::CRGBA(0,0,0,0));
 
 
 	/// Set the current camera (smartptr-ed!!).

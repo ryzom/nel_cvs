@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.4 2000/11/06 14:34:14 viau Exp $
+ * $Id: driver_opengl.cpp,v 1.5 2000/11/07 15:34:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,22 +215,24 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 //	OutputDebugString("----- make current");
     wglMakeCurrent(_hDC,_hRC);
 #endif
-	glMatrixMode(GL_MODELVIEW);
 	glViewport(0,0,mode.Width,mode.Height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 	glOrtho(0,mode.Width,mode.Height,0,-1.0f,1.0f);	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_AUTO_NORMAL);
 	glDisable(GL_BLEND);
 	glDisable(GL_COLOR_MATERIAL);
 	glDisable(GL_CULL_FACE);
-	glDisable(GL_DITHER);
+	glEnable(GL_DITHER);
 	glDisable(GL_FOG);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_LINE_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_GREATER);
+	glDepthFunc(GL_LEQUAL);
 	return(true);
 }
 
@@ -319,16 +321,31 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	glVertexPointer(3,GL_FLOAT,VB.getVertexSize(),VB.getVertexCoordPointer());
 
 	flags=VB.getFlags();
+
 	if (flags & IDRV_VF_RGBA)
 	{
 		glEnableClientState(GL_COLOR_ARRAY);
 		glColorPointer(4,GL_UNSIGNED_BYTE,VB.getVertexSize(),VB.getColorPointer());
 	}
+	else
+		glDisableClientState(GL_COLOR_ARRAY);
+
+	if (flags & IDRV_VF_NORMAL)
+	{
+		glEnableClientState(GL_NORMAL_ARRAY);
+		glNormalPointer(GL_FLOAT,VB.getVertexSize(),VB.getNormalCoordPointer());
+	}
+	else
+		glDisableClientState(GL_NORMAL_ARRAY);
+
 	if (flags & IDRV_VF_UV[0])
 	{
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2,GL_FLOAT,VB.getVertexSize(),VB.getTexCoordPointer(0,0));
 	}
+	else
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
 	return(true);
 }
 
@@ -336,12 +353,20 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 {
-	ITextureDrvInfos*	iinfos;
+	// Temp Antoine.
+	/*ITextureDrvInfos*	iinfos;
 	CTextureDrvInfosGL*	infosgl;
 
 	iinfos=(Mat.getTexture(0)).DrvInfos;
 	infosgl=static_cast<CTextureDrvInfosGL*>(iinfos);
 	glBindTexture(GL_TEXTURE_2D,infosgl->ID);
+	*/
+
+	// Temp YOYO.
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glDisable(GL_TEXTURE_2D);
+
 	glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
 	return(true);
 }

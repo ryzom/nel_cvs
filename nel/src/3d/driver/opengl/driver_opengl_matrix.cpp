@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.1 2000/11/06 16:14:21 viau Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.2 2000/11/07 15:32:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,11 +43,11 @@ void CDriverGL::setFrustum(float left, float right, float bottom, float top, flo
 	glLoadIdentity();
 	if (perspective)
 	{
-		glFrustum(left,right,top,bottom,znear,zfar);
+		glFrustum(left,right,bottom,top,znear,zfar);
 	}
 	else
 	{
-		glOrtho(left,right,top,bottom,znear,zfar);
+		glOrtho(left,right,bottom,top,znear,zfar);
 	}
 	glMatrixMode(GL_MODELVIEW);
 }

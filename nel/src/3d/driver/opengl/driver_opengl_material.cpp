@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.2 2000/11/06 14:34:14 viau Exp $
+ * $Id: driver_opengl_material.cpp,v 1.3 2000/11/07 15:33:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,20 +36,20 @@ namespace NL3D
 {
 // --------------------------------------------------
 
-static bool convBlend(TBlend blend, GLenum& glenum)
+static bool convBlend(CMaterial::TBlend blend, GLenum& glenum)
 {
 	switch(blend)
 	{
-	case one:
+	case CMaterial::one:
 		glenum=GL_ONE;
 		return(true);
-	case zero:
+	case CMaterial::zero:
 		glenum=GL_ZERO;
 		return(true);
-	case srcalpha:
+	case CMaterial::srcalpha:
 		glenum=GL_SRC_ALPHA;
 		return(true);
-	case invsrcalpha:
+	case CMaterial::invsrcalpha:
 		glenum=GL_ONE_MINUS_SRC_ALPHA;
 		return(true);
 	default:
@@ -58,32 +58,32 @@ static bool convBlend(TBlend blend, GLenum& glenum)
 	return(false);
 }
 
-static bool convZFunction(ZFunc zfunc, GLenum& glenum)
+static bool convZFunction(CMaterial::ZFunc zfunc, GLenum& glenum)
 {
 	switch(zfunc)
 	{
-	case always:
+	case CMaterial::always:
 		glenum=GL_ALWAYS;
 		return(true);
-	case never:
+	case CMaterial::never:
 		glenum=GL_NEVER;
 		return(true);
-	case equal:
+	case CMaterial::equal:
 		glenum=GL_EQUAL;
 		return(true);
-	case notequal:
+	case CMaterial::notequal:
 		glenum=GL_NOTEQUAL;
 		return(true);
-	case less:
+	case CMaterial::less:
 		glenum=GL_LESS;
 		return(true);
-	case lessequal:
+	case CMaterial::lessequal:
 		glenum=GL_LEQUAL;
 		return(true);
-	case greater:
+	case CMaterial::greater:
 		glenum=GL_GREATER;
 		return(true);
-	case greaterequal:
+	case CMaterial::greaterequal:
 		glenum=GL_GEQUAL;
 		return(true);
 	default:

@@ -340,6 +340,14 @@ SOURCE=..\include\nel\misc\log.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\path.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\path.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\rgba.cpp
 # End Source File
 # Begin Source File

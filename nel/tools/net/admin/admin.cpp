@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * 
  *
- * $Id: admin.cpp,v 1.7 2001/06/27 08:32:17 lecroart Exp $
+ * $Id: admin.cpp,v 1.8 2002/03/01 10:21:25 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -57,16 +57,14 @@ int main (int argc, char **argv)
 	ConfigFile.load ("admin.cfg");
 	CConfigFile::CVar &host = ConfigFile.getVar ("ASHosts");
 	
-	for (sint i = 0 ; i < host.size (); i += 3)
+	for (sint i = 0 ; i < host.size (); i += 4)
 	{
-		string ASName = host.asString(i);
-		string ASAddr = host.asString(i+1);
-
 		// add the AS in the list
 		AdminServices.push_back (CAdminService());
 		CAdminService *as = &(AdminServices.back());
-		as->ASAddr = ASAddr;
-		as->ASName = ASName;
+		as->ASName   = host.asString(i+0);
+		as->ASAddr   = host.asString(i+1);
+		as->Password = host.asString(i+2);
 		interfAddAS (as);
 	}
 

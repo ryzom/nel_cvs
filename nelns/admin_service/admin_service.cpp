@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.12 2002/02/15 17:07:43 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.13 2002/03/01 10:20:32 lecroart Exp $
  *
  */
 
@@ -672,24 +672,16 @@ static void cbAuthenticateClient (CMessage& msgin, TSockId from, CCallbackNetBas
 	// Check the validity of the admin
 	//
 	
-	string login, password;
+	string password;
 	bool ok = false;
 	try
 	{
-		msgin.serial (login, password);
+		msgin.serial (password);
 
-		CConfigFile::CVar &users = IService::ConfigFile.getVar("Users");
-		for (sint i = 0 ; i < users.size (); i+=2)
+		if (password == IService::ConfigFile.getVar("Password").asString())
 		{
-			if (login == users.asString(i))
-			{
-				if (password == users.asString(i + 1))
-				{
-					// good authentification
-					ok = true;
-				}
-				break;
-			}
+			// good authentification
+			ok = true;
 		}
 	}
 	catch (Exception &)
@@ -700,13 +692,13 @@ static void cbAuthenticateClient (CMessage& msgin, TSockId from, CCallbackNetBas
 	if (ok)
 	{
 		netbase.authorizeOnly (NULL, from);
-		nlinfo ("Admin authentification success login: '%s'", login.c_str());
+		nlinfo ("Admin authentification success");
 	}
 	else
 	{
 		// bad auth => disconnect
 		netbase.disconnect (from);
-		nlwarning ("Bad admin authentification try login: '%s' password: '%s'", login.c_str(), password.c_str());
+		nlwarning ("Bad admin authentification, tried password: '%s'", password.c_str());
 		return;
 	}
 

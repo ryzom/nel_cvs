@@ -1,7 +1,7 @@
 /** \file datas.h
  *
  *
- * $Id: datas.h,v 1.8 2001/07/05 14:16:06 lecroart Exp $
+ * $Id: datas.h,v 1.9 2002/03/01 10:21:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,6 +205,7 @@ struct CAdminService
 
 	std::string		ASAddr;			/// name of the layer4 connection, used to send message to this AS (AS address and service name are the same)
 	std::string		ASName;			/// name of the shard in a human form (ex: "San Fresco Shard")
+	std::string		Password;
 	bool			Connected;
 
 	TAdminExecutorServices AdminExecutorServices;

@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.10 2001/11/13 15:13:38 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.11 2002/03/01 10:21:25 lecroart Exp $
  *
  *
  */
@@ -260,17 +260,18 @@ static void cbSaveConfig ()
 
 static void cbAddAdminService ()
 {
-	string name, addr;
+	string name, addr, password;
 
 	// ask values from the user
 
 	if (!queryValue (name)) return;
 	if (!queryValue (addr)) return;
+	if (!queryValue (password)) return;
 
 	// check if these values are not already in the array
 
 	CConfigFile::CVar &host = ConfigFile.getVar ("ASHosts");
-	for (sint i = 0 ; i < host.size (); i += 3)
+	for (sint i = 0 ; i < host.size (); i += 4)
 	{
 		if (host.asString(i) == name)
 		{
@@ -288,6 +289,7 @@ static void cbAddAdminService ()
 
 	host.setAsString (name, host.size ());
 	host.setAsString (addr, host.size ());
+	host.setAsString (password, host.size ());
 	host.setAsString ("0", host.size ());
 
 	// add the AS in the list
@@ -296,6 +298,7 @@ static void cbAddAdminService ()
 	CAdminService *as = &(AdminServices.back());
 	as->ASName = name;
 	as->ASAddr = addr;
+	as->Password = password;
 	interfAddAS (as);
 }
 
@@ -1414,12 +1417,12 @@ void runInterf ()
 
 	// autoconnect if needed
 	CConfigFile::CVar &host = ConfigFile.getVar ("ASHosts");
-	for (sint i = 0 ; i < host.size (); i += 3)
+	for (sint i = 0 ; i < host.size (); i += 4)
 	{
-		if (host.asInt(i+2) == 1)
+		if (host.asInt(i+3) == 1)
 		{
 			string str = "connect ";
-			str += toString (AdminServices[i/3].Id);
+			str += toString (AdminServices[i/4].Id);
 			ICommand::execute (str, logstdout);
 		}
 	}
@@ -1595,6 +1598,7 @@ void saveConfig ()
 
 		hs.push_back ((*asit).ASName);
 		hs.push_back ((*asit).ASAddr);
+		hs.push_back ((*asit).Password);
 		hs.push_back (((*asit).Connected)?"1":"0");
 
 		AESIT aesit;

@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.h
  * <File description>
  *
- * $Id: visual_collision_mesh.h,v 1.3 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: visual_collision_mesh.h,v 1.4 2004/08/03 16:16:18 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -94,6 +94,13 @@ public:
 
 	/// receive a shadowMap. render in driver the triangles that intersect the shadow
 	void		receiveShadowMap(const NLMISC::CMatrix &instanceMatrix, const CShadowContext &shadowContext);
+
+	// get vertices of the mesh
+	const std::vector<NLMISC::CVector> &getVertices() const { return _Vertices; }
+
+	// get triangles of the mesh
+	const std::vector<uint16> &getTriangles() const { return _Triangles; }
+	
 		
 // *********************
 private:

@@ -3,6 +3,7 @@
 
 #include <nel/misc/file.h>
 #include <nel/3d/animation_set.h>
+#include "anim_utility.h"
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -15,7 +16,7 @@ int main(int argc, char* argv[])
 		// Output an help
 		printf  (
 					"animation_set_builder [animation_set.animset] [animation.anim]\n"
-					"\tThis command line add the animation.anim animation into the animation_set.animset animation set\n"
+					"\tThis command line add or replace the animation.anim animation into the animation_set.animset animation set\n"
 				);
 	}
 	else
@@ -45,27 +46,40 @@ int main(int argc, char* argv[])
 			}
 
 			// Animation
-			CAnimation anim;
+			CAnimation	*anim= new CAnimation;
 
 			// Read the input animation
 			if (inFile.open (argv[2]))
 			{
 				// Ok, read it
-				anim.serial (inFile);
+				anim->serial (inFile);
 
 				// Close it
 				inFile.close ();
 
-				// *** Build the animation set
+				// *** Build/replace the animation set
 
-				// Add an animation
-				uint id=animSet.addAnimation (anim.getName().c_str());
+				// build animation name.
+				std::string		animName= getName(argv[2]);
 
-				// Copy the animation
-				*animSet.getAnimation (id)=anim;
+
+				// animation found in the animation set?
+				uint	animId=	animSet.getAnimationIdByName(animName);
+				if( animId == CAnimation::NotFound)
+				{
+					// No, add it.
+					animId= animSet.addAnimation(animName.c_str(),  anim);
+				}
+				else
+				{
+					// Copy the animation
+					*animSet.getAnimation (animId)= *anim;
+				}
+
 
 				// Build the animation set
 				animSet.build ();
+
 
 				// *** Save the animation Set
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.23 2002/01/03 15:10:22 chafik Exp $
+# $Id: Makefile.am,v 1.24 2002/01/28 12:07:08 chafik Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -10,7 +10,6 @@ libagent_la_SOURCES     = baseai.cpp \
                           agents.cpp \
                           msg.cpp \
                           mailbox.cpp \
-                          actor.cpp \
                           agent_3dvector.cpp \
                           agent_input.cpp \
                           basic_agent.cpp \

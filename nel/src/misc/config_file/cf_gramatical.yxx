@@ -22,17 +22,18 @@ using namespace NLMISC;
 #define YYPARSE_PARAM pvararray
 
 // WARNING!!!! DEBUG_PRINTF are commented using // so IT MUST HAVE NO INSTRUCTION AFTER A DEBUG_PRINTF OR THEY LL BE COMMENTED
+/*
+#define DEBUG_PRINTF	InfoLog->displayRaw
+#define DEBUG_PRINT(a)	InfoLog->displayRaw(a)
+*/
 
-//#define DEBUG_PRINTF	InfoLog->displayRaw
+#define DEBUG_PRINT(a)
 #ifdef __GNUC__
 #define DEBUG_PRINTF(format, args...)
 #else // __GNUC__
 #define DEBUG_PRINTF	// InfoLog->displayRaw
 #endif // __GNUC__
 
-
-//#define DEBUG_PRINT(a)	InfoLog->displayRaw(a)
-#define DEBUG_PRINT(a)
 
 /* Types */
 
@@ -210,11 +211,12 @@ inst:		VARIABLE ADD_ASSIGN expression SEMICOLON
 
 expression:	expr2 { $$ = $1; cf_CurrentVar.Comp = false; DEBUG_PRINT("false\n"); }
 			| LBRACE exprbrace RBRACE { $$ = $2; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); }
+			| LBRACE exprbrace COMMA RBRACE { $$ = $2; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); }
+			| LBRACE RBRACE { $$ = $2; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); }
 			;
 
-exprbrace:	expr2 { $$ =  $1; /*cf_CurrentVar.Type = $1.Type;*/ cf_setVar (cf_CurrentVar, $1); }
-			| expr2 { $$ = $1; /*cf_CurrentVar.Type = $1.Type;*/ cf_setVar (cf_CurrentVar, $1); } COMMA exprbrace
-			| { }
+exprbrace:	expr2					{ $$ = $1; /*cf_CurrentVar.Type = $1.Type;*/ cf_setVar (cf_CurrentVar, $1); }
+			| exprbrace COMMA expr2 { $$ = $3; /*cf_CurrentVar.Type = $3.Type;*/ cf_setVar (cf_CurrentVar, $3); }
 			;
 
 expr2:		expr3 { $$ = $1; }

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.21 2002/04/02 15:35:10 legros Exp $
+ * $Id: local_retriever.h,v 1.22 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -236,7 +236,12 @@ protected:
 
 	// @}
 
+	/// Tells if retriever is loaded
+	bool								_Loaded;
 
+public:
+	///
+	bool								LoadCheckFlag;
 
 private:
 	/// The intersection between an ordered chain and the path.
@@ -312,6 +317,9 @@ public:
 	/// Returns the identifier of the retriever.
 	const std::string					&getIdentifier() const { return _Id; }
 
+	/// Is loaded ?
+	bool								isLoaded() const { return _Loaded; }
+
 	/// build BBoxes of interior surfaces in surfaceBBoxes (cleared first)
 	void								buildInteriorSurfaceBBoxes(std::vector<NLMISC::CAABBox>	&surfaceBBoxes) const;
 
@@ -329,6 +337,19 @@ public:
 		}
 	}
 
+	/// Builds the polygons (loops) of a given surface
+	void								build3dSurfacePolygons(uint32 surface, std::list<NLMISC::CPolygon> &polygons) const;
+
+	/// Builds the polygons (loops) of all surfaces in the retriever
+	void								build3dSurfacePolygons(std::list< std::list<NLMISC::CPolygon> > &polygons) const
+	{
+		uint	i;
+		for (i=0; i<_Surfaces.size(); ++i)
+		{
+			polygons.push_back();
+			build3dSurfacePolygons(i, polygons.back());
+		}
+	}
 	// @}
 
 
@@ -401,9 +422,15 @@ public:
 	///
 	void								flushFullOrderedChains() { _FullOrderedChains.clear(); }
 
+	///
+	void								setFullOrderedChains(const std::vector<COrderedChain3f> &foc)	{ _FullOrderedChains = foc; }
+
 
 	/// Serialises the CLocalRetriever.
 	void								serial(NLMISC::IStream &f);
+
+	/// Clear
+	void								clear();
 
 	// @}
 

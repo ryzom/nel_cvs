@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.16 2002/06/07 12:34:23 legros Exp $
+ * $Id: u_global_retriever.h,v 1.17 2002/12/18 14:56:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,6 +115,12 @@ public:
 	  * Retrieves the position of an estimated point in the global retriever (double instead.) with a snapping threshold
 	  */
 	virtual UGlobalPosition			retrievePosition(const NLMISC::CVectorD &estimated, double threshold) const =0;
+
+	/**
+	  * Insure position inside a surface
+	  */
+	virtual bool					insurePosition(UGlobalPosition &pos) const =0;
+
 	/**
 	  * Tests if the global position is a interior position
 	  */
@@ -127,7 +133,7 @@ public:
 	///
 	virtual float					distanceToBorder(const UGlobalPosition &pos) const =0;
 	///
-	virtual void					getBorders(const UGlobalPosition &pos, std::vector<NLMISC::CLine> &edges) =0;
+	virtual void					getBorders(const UGlobalPosition &pos, std::vector<std::pair<NLMISC::CLine, uint8> > &edges) =0;
 
 	/**
 	  * For interior position only, snap the position to the ground.
@@ -143,6 +149,16 @@ public:
 	  * Converts a global position object into a 'human-readable' CVector (double instead.)
 	  */
 	virtual NLMISC::CVectorD		getDoubleGlobalPosition(const UGlobalPosition &global) const =0;
+
+	/**
+	  * Refresh loaded retrievers around a position (one retriever is loaded at a time)
+	  */
+	virtual void					refreshLrAround(const NLMISC::CVector &position, float radius) =0;
+
+	/**
+	  * Refresh loaded retrievers around a position (all retrievers are updated at this time -- used at startup)
+	  */
+	virtual void					refreshLrAroundNow(const NLMISC::CVector &position, float radius) =0;
 
 	/**
 	  * Create a global retriever.

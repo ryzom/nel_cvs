@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.6 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: retriever_bank.h,v 1.7 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,13 @@
 
 #include <vector>
 #include <string>
+#include <set>
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/file.h"
+#include "nel/misc/common.h"
+#include "nel/misc/path.h"
 
 #include "pacs/local_retriever.h"
 #include "nel/pacs/u_retriever_bank.h"
@@ -47,11 +50,25 @@ namespace NLPACS
  */
 class CRetrieverBank : public URetrieverBank
 {
+	friend class URetrieverBank;
+
 protected:
 	/// The retrievers stored in the retriever bank.
 	std::vector<CLocalRetriever>		_Retrievers;
 
+	/// All loaded ?
+	bool								_AllLoaded;
+
+	/// Bank name prefix
+	std::string							_NamePrefix;
+
+	/// The loaded retrievers, if the retriever bank is not in loadAll mode
+	std::set<uint>						_LoadedRetrievers;
+
 public:
+	/// Constructor
+	CRetrieverBank(bool allLoaded = true) : _AllLoaded(allLoaded) {}
+
 	/// Returns the vector of retrievers.
 	const std::vector<CLocalRetriever>	&getRetrievers() const { return _Retrievers; }
 
@@ -59,7 +76,13 @@ public:
 	uint								size() const { return _Retrievers.size(); }
 
 	/// Gets nth retriever.
-	const CLocalRetriever				&getRetriever(uint n) const { return _Retrievers[n]; }
+	const CLocalRetriever				&getRetriever(uint n) const
+	{
+		nlassert(n < _Retrievers.size());
+		if (!_Retrievers[n].isLoaded())
+			nlwarning("Trying to access rbank '%s', retriever %d not loaded", _NamePrefix.c_str(), n);
+		return _Retrievers[n];
+	}
 
 	/// Adds the given retriever to the bank.
 	uint								addRetriever(const CLocalRetriever &retriever) { _Retrievers.push_back(retriever); return _Retrievers.size()-1; }
@@ -90,8 +113,113 @@ public:
 		*/
 		(void)f.serialVersion(0);
 
-		f.serialCont(_Retrievers);
+		if (!_AllLoaded)
+		{
+			if (f.isReading())
+			{
+				uint32	num = 0;
+				f.serial(num);
+				nlinfo("Presetting RetrieverBank '%s', %d retriever slots allocated", _NamePrefix.c_str(), num);
+				_Retrievers.resize(num);
+			}
+			else
+			{
+				nlwarning("Unable to write incomplete CRetrieverBank '%s' to stream, data might be lost!", _NamePrefix.c_str());
+			}
+		}
+		else
+		{
+			f.serialCont(_Retrievers);
+		}
 	}
+
+	/// Write separate retrievers using dynamic filename convention
+	void								saveRetrievers(const std::string &path, const std::string &bankPrefix)
+	{
+		uint	i;
+		for (i=0; i<_Retrievers.size(); ++i)
+		{
+			NLMISC::COFile	f(NLMISC::CPath::standardizePath(path) + bankPrefix + "_" + NLMISC::toString(i) + ".lr");
+			f.serial(_Retrievers[i]);
+		}
+	}
+
+	/// @name Dynamic retrieve loading
+	// @{
+
+	/// Diff loaded retrievers
+	void		diff(const std::set<uint> &newlr, std::set<uint> &in, std::set<uint> &out)
+	{
+		std::set<uint>::iterator	it;
+
+		for (it=_LoadedRetrievers.begin(); it!=_LoadedRetrievers.end(); ++it)
+		{
+			uint	n = *it;
+			if (n >= _Retrievers.size())
+				continue;
+			_Retrievers[n].LoadCheckFlag = true;
+		}
+
+		for (it=newlr.begin(); it!=newlr.end(); ++it)
+		{
+			uint	n = *it;
+			if (n >= _Retrievers.size())
+				continue;
+			if (!_Retrievers[n].LoadCheckFlag)
+				in.insert(n);
+			_Retrievers[n].LoadCheckFlag = false;
+		}
+
+		for (it=_LoadedRetrievers.begin(); it!=_LoadedRetrievers.end(); ++it)
+		{
+			uint	n = *it;
+			if (n >= _Retrievers.size())
+				continue;
+			if (_Retrievers[n].LoadCheckFlag)
+				out.insert(n);
+			_Retrievers[n].LoadCheckFlag = false;
+		}
+	}
+
+	/// Loads nth retriever from stream
+	void		loadRetriever(uint n, NLMISC::IStream &s)
+	{
+		if (_AllLoaded || n >= _Retrievers.size() || _Retrievers[n].isLoaded())
+		{
+			nlwarning("RetrieverBank '%s' asked to load retriever %n whereas not needed, aborted", _NamePrefix.c_str(), n);
+			return;
+		}
+
+		s.serial(_Retrievers[n]);
+		_LoadedRetrievers.insert(n);
+	}
+
+	/// Insert a retriever in loaded list
+	void		setRetrieverAsLoaded(uint n)
+	{
+		_LoadedRetrievers.insert(n);
+	}
+
+	/// Unload nth retriever
+	void		unloadRetriever(uint n)
+	{
+		if (_AllLoaded || n >= _Retrievers.size() || !_Retrievers[n].isLoaded())
+		{
+			nlwarning("RetrieverBank '%s' asked to unload retriever %n whereas not needed, aborted", _NamePrefix.c_str(), n);
+			return;
+		}
+
+		_Retrievers[n].clear();
+		_LoadedRetrievers.erase(n);
+	}
+
+	///
+	const std::string	&getNamePrefix() const	{ return _NamePrefix; }
+
+	///
+	bool		allLoaded() const { return _AllLoaded; }
+
+	// @}
 };
 
 }; // NLPACS

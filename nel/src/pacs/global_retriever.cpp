@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.66 2002/10/29 17:17:28 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.67 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,11 +27,15 @@
 
 #include "nel/misc/path.h"
 #include "nel/misc/line.h"
+#include "nel/misc/async_file_manager.h"
+#include "nel/misc/common.h"
 
 #include "nel/misc/hierarchical_timer.h"
 
 #include "pacs/global_retriever.h"
 #include "pacs/retriever_bank.h"
+
+#include <set>
 
 
 #include "nel/misc/time_nl.h"
@@ -114,12 +118,6 @@ void	NLPACS::CGlobalRetriever::serial(NLMISC::IStream &f)
 
 	f.serialCont(_Instances);
 	f.serial(_BBox);
-
-	if (f.isReading())
-	{
-		initQuadGrid();
-		initRetrieveTable();
-	}
 }
 
 //
@@ -231,7 +229,7 @@ float	NLPACS::CGlobalRetriever::distanceToBorder(const UGlobalPosition &pos) con
 	return getRetriever(_Instances[pos.InstanceId].getRetrieverId()).distanceToBorder(pos.LocalPosition);
 }
 
-void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vector<NLMISC::CLine> &edges)
+void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vector<std::pair<NLMISC::CLine, uint8> > &edges)
 {
 	edges.clear();
 
@@ -240,11 +238,13 @@ void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vecto
 
 	CRetrieverInstance	&instance = _Instances[pos.InstanceId];
 	CLocalRetriever		&retriever = const_cast<CLocalRetriever &>(getRetriever(instance.getRetrieverId()));
+	if (!retriever.isLoaded())
+		return;
 	CChainQuad			&chainquad = retriever.getChainQuad();
 
 	CAABBox				box;
 	box.setCenter(pos.LocalPosition.Estimation);
-	box.setHalfSize(CVector(15.0f, 15.0f, 100.0f));
+	box.setHalfSize(CVector(50.0f, 50.0f, 100.0f));
 	chainquad.selectEdges(box, _InternalCST);
 
 	uint		ece;
@@ -253,16 +253,38 @@ void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vecto
 	for (ece=0; ece<_InternalCST.EdgeChainEntries.size(); ++ece)
 	{
 		CEdgeChainEntry		&entry = _InternalCST.EdgeChainEntries[ece];
-		const COrderedChain	&ochain = retriever.getOrderedChain(entry.OChainId);
 
-		uint	edge;
-		for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
+		//
+		const CChain	&fchain = retriever.getChain(retriever.getOrderedChain(entry.OChainId).getParentId());
+		uint8			chainType = (fchain.getRight() >= 0 ? 1 : (fchain.isBorderChain() ? 2 : 0));
+
+		if (retriever.getFullOrderedChains().size() > 0)
 		{
-			edges.push_back(CLine());
-			edges.back().V0 = ochain[edge].unpack3f() + origin;
-			edges.back().V0.z = zp;
-			edges.back().V1 = ochain[edge+1].unpack3f() + origin;
-			edges.back().V1.z = zp;
+			const COrderedChain3f	&ochain = retriever.getFullOrderedChain(entry.OChainId);
+
+			uint	edge;
+			for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
+			{
+				edges.push_back(make_pair(CLine(), chainType));
+				edges.back().first.V0 = ochain[edge] + origin;
+				edges.back().first.V0.z = zp;
+				edges.back().first.V1 = ochain[edge+1] + origin;
+				edges.back().first.V1.z = zp;
+			}
+		}
+		else
+		{
+			const COrderedChain	&ochain = retriever.getOrderedChain(entry.OChainId);
+
+			uint	edge;
+			for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
+			{
+				edges.push_back(make_pair(CLine(), chainType));
+				edges.back().first.V0 = ochain[edge].unpack3f() + origin;
+				edges.back().first.V0.z = zp;
+				edges.back().first.V1 = ochain[edge+1].unpack3f() + origin;
+				edges.back().first.V1.z = zp;
+			}
 		}
 	}
 }
@@ -317,12 +339,15 @@ void	NLPACS::CGlobalRetriever::makeAllLinks()
 		makeLinks(n);
 }
 
-void	NLPACS::CGlobalRetriever::initAll()
+void	NLPACS::CGlobalRetriever::initAll(bool initInstances)
 {
-	uint	n;
-	for (n=0; n<_Instances.size(); ++n)
-		if (_Instances[n].getInstanceId() != -1 && _Instances[n].getRetrieverId() != -1)
-			_Instances[n].init(_RetrieverBank->getRetriever(_Instances[n].getRetrieverId()));
+	if (initInstances)
+	{
+		uint	n;
+		for (n=0; n<_Instances.size(); ++n)
+			if (_Instances[n].getInstanceId() != -1 && _Instances[n].getRetrieverId() != -1)
+				_Instances[n].init(_RetrieverBank->getRetriever(_Instances[n].getRetrieverId()));
+	}
 
 	initQuadGrid();
 	initRetrieveTable();
@@ -506,6 +531,10 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		uint32							id = _InternalCST.CollisionInstances[i];
 		const CRetrieverInstance		&instance = _Instances[id];
 		const CLocalRetriever			&retriever = _RetrieverBank->getRetriever(instance.getRetrieverId());
+
+		if (!retriever.isLoaded())
+			continue;
+
 		instance.retrievePosition(estimated, retriever, _InternalCST);
 	}
 
@@ -995,7 +1024,10 @@ const NLPACS::CRetrievableSurface	*NLPACS::CGlobalRetriever::getSurfaceById(cons
 	if(surfId.RetrieverInstanceId>=0 && surfId.SurfaceId>=0)
 	{
 		sint32	locRetId= this->getInstance(surfId.RetrieverInstanceId).getRetrieverId();
-		const CRetrievableSurface	&surf= _RetrieverBank->getRetriever(locRetId).getSurface(surfId.SurfaceId);
+		const CLocalRetriever		&retr = _RetrieverBank->getRetriever(locRetId);
+		if (!retr.isLoaded())
+			return NULL;
+		const CRetrievableSurface	&surf= retr.getSurface(surfId.SurfaceId);
 		return &surf;
 	}
 	else
@@ -1046,6 +1078,12 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 		if(localRetrieverId<0)
 			continue;
 		const CLocalRetriever		&localRetriever= _RetrieverBank->getRetriever(localRetrieverId);
+
+		if (!localRetriever.isLoaded())
+		{
+			nlwarning("local retriever %d in %s not loaded, findCollisionChains in this retriever aborted", localRetrieverId, _RetrieverBank->getNamePrefix().c_str());
+			continue;
+		}
 
 		// get delta between startPos.instance and curInstance.
 		CVector		deltaOrigin;
@@ -1150,6 +1188,12 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 												&instk = getInstance(ck.LeftSurface.RetrieverInstanceId);
 					const CLocalRetriever		&retrj = getRetriever(instj.getRetrieverId()),
 												&retrk = getRetriever(instk.getRetrieverId());
+
+					if (!retrj.isLoaded() || !retrk.isLoaded())
+					{
+						nlwarning("using not loaded retriever %d or %d in bank '%s', aborted", instj.getRetrieverId(), instk.getRetrieverId(), _RetrieverBank->getNamePrefix().c_str());
+						continue;
+					}
 
 					nlassert(retrj.getChain(cj.ChainId).isBorderChain() && retrk.getChain(ck.ChainId).isBorderChain());
 
@@ -1358,6 +1402,13 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 			{
 				// test if it is a walkable wall.
 				sint32	locRetId= this->getInstance(currentSurface.RetrieverInstanceId).getRetrieverId();
+
+				if (!_RetrieverBank->getRetriever(locRetId).isLoaded())
+				{
+					nextCollisionSurfaceTested++;
+					continue;
+				}
+
 				const CRetrievableSurface	&surf= _RetrieverBank->getRetriever(locRetId).getSurface(currentSurface.SurfaceId);
 				isWall= !(surf.isFloor() || surf.isCeiling());
 			}
@@ -1524,6 +1575,10 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 			{
 				// test if it is a walkable wall.
 				sint32	locRetId= this->getInstance(currentSurface.RetrieverInstanceId).getRetrieverId();
+
+				if (!_RetrieverBank->getRetriever(locRetId).isLoaded())
+					continue;
+
 				const CRetrievableSurface	&surf= _RetrieverBank->getRetriever(locRetId).getSurface(currentSurface.SurfaceId);
 				isWall= !(surf.isFloor() || surf.isCeiling());
 			}
@@ -2065,7 +2120,7 @@ NLPACS::UGlobalRetriever *NLPACS::UGlobalRetriever::createGlobalRetriever (const
 		retriever->setRetrieverBank(bank);
 
 		file.serial(*retriever);
-		retriever->initAll();
+		retriever->initAll(false);	// don't init instances as we serialized them
 
 		return static_cast<UGlobalRetriever *>(retriever);
 	}
@@ -2097,6 +2152,9 @@ float			NLPACS::CGlobalRetriever::getMeanHeight(const UGlobalPosition &pos) cons
 	const CRetrieverInstance	&instance = getInstance(pos.InstanceId);
 	const CLocalRetriever		&retriever= _RetrieverBank->getRetriever(instance.getRetrieverId());
 
+	if (!retriever.isLoaded())
+		return pos.LocalPosition.Estimation.z;
+
 	// return height from local retriever
 	return retriever.getHeight(pos.LocalPosition);
 }
@@ -2111,5 +2169,148 @@ bool NLPACS::CGlobalRetriever::testRaytrace (const CVectorD &v0, const CVectorD 
 
 // ***************************************************************************
 
+void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float radius)
+{
+	// check if retriever bank is all loaded, and if yes don't refresh it
+	if (_RetrieverBank->allLoaded())
+		return;
+
+	// finished loaded a lr, stream it into rbank
+	if (!_LrLoader.Idle)
+	{
+		if (!_LrLoader.Finished)
+		{
+			nlSleep(0);
+			return;
+		}
+
+		if (!_LrLoader.Buffer.isReading())
+			_LrLoader.Buffer.invert();
+
+		_LrLoader.Buffer.resetBufPos();
+
+		const_cast<CRetrieverBank*>(_RetrieverBank)->loadRetriever(_LrLoader.LrId, _LrLoader.Buffer);
+
+		_LrLoader.Buffer.clear();
+
+		nlinfo("Lr '%s' loading task complete", _LrLoader.LoadFile.c_str());
+		_LrLoader.Idle = true;
+	}
+
+	CAABBox	box;
+	box.setCenter(position);
+	box.setHalfSize(CVector(radius, radius, 1000.0f));
+
+	selectInstances(box, _InternalCST);
+
+	set<uint>	newlr, in, out;
+	uint	i;
+	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
+		newlr.insert((uint)(_Instances[_InternalCST.CollisionInstances[i]].getRetrieverId()));
+
+	const_cast<CRetrieverBank*>(_RetrieverBank)->diff(newlr, in, out);
+
+	set<uint>::iterator	it;
+
+	// unload all possible retrievers
+	for (it=out.begin(); it!=out.end(); ++it)
+	{
+		const_cast<CRetrieverBank*>(_RetrieverBank)->unloadRetriever(*it);
+		nlinfo("Freed Lr '%s'", (_RetrieverBank->getNamePrefix() + "_" + toString(*it) + ".lr").c_str());
+	}
+
+	// if load task idle and more lr to load, setup load task
+	if (_LrLoader.Idle && !in.empty())
+	{
+		_LrLoader.Idle = false;
+		_LrLoader.Finished = false;
+
+		it = in.begin();
+
+		_LrLoader.LrId = *it;
+		_LrLoader.LoadFile = _RetrieverBank->getNamePrefix() + "_" + toString(_LrLoader.LrId) + ".lr";
+
+		CAsyncFileManager::getInstance().addLoadTask(&_LrLoader);
+
+		nlinfo("Lr '%s' added to load", _LrLoader.LoadFile.c_str());
+	}
+}
+
+void	NLPACS::CGlobalRetriever::refreshLrAroundNow(const CVector &position, float radius)
+{
+	// check if retriever bank is all loaded, and if yes don't refresh it
+	if (_RetrieverBank->allLoaded())
+		return;
+
+	while (!_LrLoader.Idle)
+	{
+		// finished loaded a lr, stream it into rbank
+		if (!_LrLoader.Idle && _LrLoader.Finished)
+		{
+			if (!_LrLoader.Buffer.isReading())
+				_LrLoader.Buffer.invert();
+
+			const_cast<CRetrieverBank*>(_RetrieverBank)->loadRetriever(_LrLoader.LrId, _LrLoader.Buffer);
+
+			_LrLoader.Buffer.clear();
+
+			_LrLoader.Idle = true;
+		}
+		else
+		{
+			nlSleep(0);
+		}
+	}
+
+	CAABBox	box;
+	box.setCenter(position);
+	box.setHalfSize(CVector(radius, radius, 1000.0f));
+
+	selectInstances(box, _InternalCST);
+
+	set<uint>	newlr, in, out;
+	uint	i;
+	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
+		newlr.insert((uint)(_Instances[_InternalCST.CollisionInstances[i]].getRetrieverId()));
+
+	const_cast<CRetrieverBank*>(_RetrieverBank)->diff(newlr, in, out);
+
+	set<uint>::iterator	it;
+
+	// unload all possible retrievers
+	for (it=out.begin(); it!=out.end(); ++it)
+		const_cast<CRetrieverBank*>(_RetrieverBank)->unloadRetriever(*it);
+
+	// unload all possible retrievers
+	for (it=in.begin(); it!=in.end(); ++it)
+	{
+		string		fname = _RetrieverBank->getNamePrefix() + "_" + toString(*it) + ".lr";
+		CIFile		f;
+		if (!f.open(CPath::lookup(fname, false)))
+		{
+			nlwarning("Couldn't find file '%s' to load, retriever loading aborted", fname.c_str());
+			continue;
+		}
+
+		const_cast<CRetrieverBank*>(_RetrieverBank)->loadRetriever(*it, f);
+	}
+}
+
+void	NLPACS::CGlobalRetriever::CLrLoader::run()
+{
+	CIFile		f;
+
+	if (!f.open(CPath::lookup(LoadFile, false)))
+	{
+		nlwarning("Couldn't find file '%s' to load, retriever loading aborted", LoadFile.c_str());
+		Finished = true;
+		return;
+	}
+
+	uint8	*buffer = Buffer.bufferToFill(f.getFileSize());
+	f.serialBuffer(buffer, f.getFileSize());
+
+	Finished = true;
+}
 
 // end of CGlobalRetriever methods implementation

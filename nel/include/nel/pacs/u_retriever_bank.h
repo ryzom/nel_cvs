@@ -1,7 +1,7 @@
 /** \file u_retriever_bank.h
  * <File description>
  *
- * $Id: u_retriever_bank.h,v 1.3 2002/12/06 12:41:25 corvazier Exp $
+ * $Id: u_retriever_bank.h,v 1.4 2002/12/18 14:56:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ public:
 	  * \param retrieverBank is the global retriver bank path file name. This method use CPath to find the retriever
 	  * \return the retriver bank interface or NULL if the bank was not found.
 	  */
-	static URetrieverBank	*createRetrieverBank (const char* retrieverBank);
+	static URetrieverBank	*createRetrieverBank (const char* retrieverBank, bool loadAll = true);
 
 	/**
 	  * Delete a retriever bank.

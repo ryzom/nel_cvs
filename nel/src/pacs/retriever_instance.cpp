@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.39 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: retriever_instance.cpp,v 1.40 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,6 +88,9 @@ void	NLPACS::CRetrieverInstance::reset()
 
 void	NLPACS::CRetrieverInstance::init(const CLocalRetriever &retriever)
 {
+	if (!retriever.isLoaded())
+		return;
+/*
 	_NodesInformation.resize(retriever.getSurfaces().size());
 	uint	i;
 
@@ -97,6 +100,7 @@ void	NLPACS::CRetrieverInstance::init(const CLocalRetriever &retriever)
 		CVector	pos = getGlobalPosition(retriever.getSurfaces()[i].getCenter());
 		_NodesInformation[i].Position = CVector2f(pos.x, pos.y);
 	}
+*/
 
 	_Type = retriever.getType();
 	_BorderChainLinks.resize(retriever.getBorderChains().size());

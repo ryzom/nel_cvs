@@ -1,7 +1,7 @@
 /** \file exterior_mesh.h
  * 
  *
- * $Id: exterior_mesh.h,v 1.2 2001/08/07 14:14:32 legros Exp $
+ * $Id: exterior_mesh.h,v 1.3 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,6 +103,12 @@ public:
 
 	// @}
 
+	void	clear()
+	{
+		NLMISC::contReset(_Edges);
+		NLMISC::contReset(_OrderedEdges);
+		NLMISC::contReset(_Links);
+	}
 
 	/// @name Selectors
 	// @{

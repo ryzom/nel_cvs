@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.5 2001/11/29 16:37:07 legros Exp $
+ * $Id: retrievable_surface.h,v 1.6 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,14 +106,14 @@ public:
 		MaterialQuantasBitMask = 0x00ff0000
 	};
 
-protected:
-	friend class CLocalRetriever;
-
 	struct TLoop : std::vector<uint16>
 	{
 		float	Length;
 		void	serial(NLMISC::IStream &f);
 	};
+
+protected:
+	friend class CLocalRetriever;
 
 	/// @name Surface features.
 	//@{
@@ -171,6 +171,10 @@ public:
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }
 	/// Gets nth link form this surface to its neighbor.
 	CSurfaceLink						getChain(uint n) const { return _Chains[n]; }
+	/// Get nth loop
+	const TLoop							&getLoop(uint n) const { return _Loops[n]; }
+	/// Get loops
+	const std::vector<TLoop>			&getLoops() const { return _Loops; }
 
 	const NLMISC::CVector				&getCenter() const { return _Center; }
 

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.51 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: local_retriever.cpp,v 1.52 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,9 +55,31 @@ const float	InsurePositionThreshold = 2.0e-2f;
 NLPACS::CLocalRetriever::CLocalRetriever()
 {
 	_Type = Landscape;
-	_FaceGrid.clear();
+	_Loaded = false;
+	LoadCheckFlag = false;
 }
 
+
+void	NLPACS::CLocalRetriever::clear()
+{
+	contReset(_OrderedChains);
+	contReset(_FullOrderedChains);
+	contReset(_Chains);
+	contReset(_Surfaces);
+	contReset(_Tips);
+	contReset(_BorderChains);
+	uint	i;
+	for (i=0; i<NumCreatureModels; ++i)
+		contReset(_Topologies[i]);
+	_ChainQuad.clear();
+	_ExteriorMesh.clear();
+	contReset(_InteriorVertices);
+	contReset(_InteriorFaces);
+	_FaceGrid.clear();
+	_Id.resize(0);
+	_Loaded = false;
+	LoadCheckFlag = false;
+}
 
 
 const CVector	&NLPACS::CLocalRetriever::getStartVector(uint32 chain) const
@@ -518,9 +540,6 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 
 	for (i=0; i<_Chains.size(); ++i)
 	{
-/*		if (i == 431)
-			nlstop;
-*/
 		uint	whichTip;
 		// for both tips (start and stop)
 		for (whichTip=0; whichTip<=1; ++whichTip)
@@ -539,10 +558,7 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 			{
 				uint	turn;
 				uint	tipId = _Tips.size();
-/*
-				if (tipId == 310)
-					nlstop;
-*/
+
 				_Tips.resize(tipId+1);
 				CTip	&tip = _Tips[tipId];
 				tip.Point = (whichTip) ? getStopVector(i) : getStartVector(i);
@@ -667,6 +683,66 @@ void	NLPACS::CLocalRetriever::buildSurfacePolygons(uint32 surface, list<CPolygon
 					{
 						for (l=0; l<ochain.getVertices().size()-1; ++l)
 							poly.Vertices.push_back(ochain[l].unpack3f());
+					}
+				}
+			}
+		}
+	}
+}
+
+//
+void	NLPACS::CLocalRetriever::build3dSurfacePolygons(uint32 surface, list<CPolygon> &polygons) const
+{
+	const CRetrievableSurface	&surf = _Surfaces[surface];
+
+	uint	i, j, k, l;
+
+	for (i=0; i<surf._Loops.size(); ++i)
+	{
+		polygons.push_back();
+		CPolygon	&poly = polygons.back();
+
+		for (j=0; j<surf._Loops[i].size(); ++j)
+		{
+			const CRetrievableSurface::TLoop	&loop = surf._Loops[i];
+			const CChain						&chain = _Chains[surf._Chains[loop[j]].Chain];
+			bool								chainforward = ((uint32)chain._Left == surface);
+
+			if (chainforward)
+			{
+				for (k=0; k<chain._SubChains.size(); ++k)
+				{
+					const COrderedChain3f	&ochain = _FullOrderedChains[chain._SubChains[k]];
+					bool					ochainforward = ochain.isForward();
+
+					if (ochainforward)
+					{
+						for (l=0; l<ochain.getVertices().size()-1; ++l)
+							poly.Vertices.push_back(ochain[l]);
+					}
+					else
+					{
+						for (l=ochain.getVertices().size()-1; l>0; --l)
+							poly.Vertices.push_back(ochain[l]);
+					}
+				}
+			}
+			else
+			{
+				for (k=chain._SubChains.size()-1; (sint)k>=0; --k)
+				{
+					const COrderedChain3f	&ochain = _FullOrderedChains[chain._SubChains[k]];
+					bool					ochainforward = ochain.isForward();
+
+					if (ochainforward)
+					{
+						for (l=ochain.getVertices().size()-1; (sint)l>0; --l)
+							poly.Vertices.push_back(ochain[l]);
+					}
+					else
+					{
+						for (l=0; l<ochain.getVertices().size()-1; ++l)
+							poly.Vertices.push_back(ochain[l]);
 					}
 				}
 			}
@@ -839,6 +915,9 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	{
 		f.serial(_Id);
 	}
+
+	_Loaded = true;
+	LoadCheckFlag = false;
 }
 
 
@@ -850,6 +929,9 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 
 bool	NLPACS::CLocalRetriever::insurePosition(NLPACS::ULocalPosition &local) const
 {
+	if (!_Loaded)
+		return false;
+
 	if (local.Surface < 0 || local.Surface >= (sint)_Surfaces.size())
 	{
 		nlwarning("PACS: can't insure position to inexistant surface %d", local.Surface);
@@ -925,6 +1007,9 @@ bool	NLPACS::CLocalRetriever::insurePosition(NLPACS::ULocalPosition &local) cons
 
 void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<uint8> &retrieveTable,*/ CCollisionSurfaceTemp &cst) const
 {
+	if (!_Loaded)
+		return;
+
 	CAABBox			box;
 	const double	BorderThreshold = 2.0e-2f;
 	box.setMinMax(CVector(estimated.x-(float)BorderThreshold, _BBox.getMin().y, 0.0f), CVector(estimated.x+(float)BorderThreshold, _BBox.getMax().y, 0.0f));
@@ -1110,6 +1195,9 @@ void	NLPACS::CLocalRetriever::initFaceGrid()
 
 void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &position, bool &snapped) const
 {
+	if (!_Loaded)
+		return;
+
 	// first preselect faces around the (x, y) position (CQuadGrid ?)
 	vector<uint32>	selection;
 	_FaceGrid.select(position.Estimation, selection);
@@ -1173,6 +1261,9 @@ void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &posit
 
 float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position) const
 {
+	if (!_Loaded)
+		return 0.0f;
+
 	if (_Type == Interior)
 	{
 		// first preselect faces around the (x, y) position (CQuadGrid ?)
@@ -1493,6 +1584,9 @@ void	NLPACS::CLocalRetriever::computeCollisionChainQuad()
 // ***************************************************************************
 void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CAABBox &bboxMove, const CVector2f &transBase) const
 {
+	if (!_Loaded)
+		return;
+
 //	H_AUTO(PACS_LR_testCollision);
 
 	sint	i;

@@ -1,7 +1,7 @@
 /** \file retriever_bank.cpp
  *
  *
- * $Id: retriever_bank.cpp,v 1.7 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: retriever_bank.cpp,v 1.8 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ using namespace NLMISC;
 
 // CRetrieverBank methods implementation
 
-NLPACS::URetrieverBank *NLPACS::URetrieverBank::createRetrieverBank (const char *retrieverBank)
+NLPACS::URetrieverBank *NLPACS::URetrieverBank::createRetrieverBank (const char *retrieverBank, bool loadAll)
 {
 	NL_ALLOC_CONTEXT( Pacs )
 
@@ -44,6 +44,10 @@ NLPACS::URetrieverBank *NLPACS::URetrieverBank::createRetrieverBank (const char 
 	if (file.open( CPath::lookup(retrieverBank) ))
 	{
 		CRetrieverBank	*bank = new CRetrieverBank();
+
+		bank->_AllLoaded = loadAll;
+		bank->_NamePrefix = CFile::getFilenameWithoutExtension(retrieverBank);
+
 		file.serial(*bank);
 
 		return static_cast<URetrieverBank *>(bank);

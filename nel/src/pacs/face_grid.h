@@ -1,7 +1,7 @@
 /** \file face_grid.h
  * 
  *
- * $Id: face_grid.h,v 1.2 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: face_grid.h,v 1.3 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,8 +122,8 @@ inline void CFaceGrid::clear()
 	_Width = 0;
 	_Log2Width = 0;
 	_ElSize = 0.0f;
-	_Grid.clear();
-	_GridData.clear();
+	NLMISC::contReset(_Grid);
+	NLMISC::contReset(_GridData);
 }
 
 inline void CFaceGrid::create(const CFaceGrid::CFaceGridBuild &fgb)

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.22 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: global_retriever.h,v 1.23 2002/12/18 14:57:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,8 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/vectord.h"
 #include "nel/misc/aabbox.h"
+#include "nel/misc/thread.h"
+#include "nel/misc/mem_stream.h"
 
 #include "pacs/local_retriever.h"
 #include "pacs/retriever_instance.h"
@@ -97,6 +99,36 @@ public:
 	};
 
 	typedef std::vector<CLocalPath>			CGlobalPath;
+
+protected:
+	friend class CLrLoader;
+
+	// Lr async loader
+	class CLrLoader : public NLMISC::IRunnable
+	{
+	public:
+		/// Idle state
+		volatile bool		Idle;
+		/// Finished task
+		volatile bool		Finished;
+		/// Lr Id
+		uint				LrId;
+		/// Lr to load
+		std::string			LoadFile;
+		/// Loading buffer
+		NLMISC::CMemStream	Buffer;
+
+		// valid states are:
+		// Idle==true && Finished==true
+		// Idle==false && Finished==false
+		// Idle==false && Finished==true
+
+		CLrLoader() : Idle(true), Finished(true) {}
+
+		void	run();
+	};
+
+	CLrLoader								_LrLoader;
 
 private:
 	///
@@ -228,6 +260,16 @@ public:
 	/// Retrieves the position of an estimated point in the global retriever (double instead.)
 	UGlobalPosition					retrievePosition(const NLMISC::CVectorD &estimated, double threshold) const;
 
+	/// Insure position inside surface
+	bool							insurePosition(UGlobalPosition &pos) const
+	{
+		if (pos.InstanceId < 0 || pos.InstanceId >= (sint)_Instances.size())
+			return false;
+
+		const CLocalRetriever		&retriever = getRetriever(_Instances[pos.InstanceId].getRetrieverId());
+		return retriever.insurePosition(pos.LocalPosition);
+	}
+
 	/// Return the retriever id from the string id
 	sint32							getIdentifier(const std::string &id) const;
 
@@ -279,7 +321,7 @@ public:
 	void							resetAllLinks();
 
 	/// Inits all the instances inside the global retriever.
-	void							initAll();
+	void							initAll(bool initInstances = true);
 	/// Links the instance referred by its id to its neighbors.
 	void							makeLinks(uint n);
 	/// Links all the instances inside the global retriever.
@@ -291,7 +333,7 @@ public:
 	///
 	float							distanceToBorder(const UGlobalPosition &pos) const;
 	///
-	void							getBorders(const UGlobalPosition &pos, std::vector<NLMISC::CLine> &edges);
+	void							getBorders(const UGlobalPosition &pos, std::vector<std::pair<NLMISC::CLine, uint8> > &edges);
 
 
 	/// Serialises the global retriever.
@@ -299,6 +341,14 @@ public:
 
 	//@}
 
+	/// \name Dynamic loading part.
+	// @{
+
+	void							refreshLrAround(const NLMISC::CVector &position, float radius);
+
+	void							refreshLrAroundNow(const NLMISC::CVector &position, float radius);
+
+	// @}
 
 	/// \name  Collisions part.
 	// @{

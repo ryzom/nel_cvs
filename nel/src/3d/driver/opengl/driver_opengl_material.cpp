@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.30 2001/06/27 17:41:12 besson Exp $
+ * $Id: driver_opengl_material.cpp,v 1.31 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -331,7 +331,7 @@ sint			CDriverGL::beginLightMapMultiPass(const CMaterial &mat)
 	// Too be sure, disable vertex coloring / lightmap.
 	glDisable(GL_LIGHTING);
 	// reset VertexColor array if necessary.
-	if (_LastVB->getVertexFormat() & IDRV_VF_COLOR)
+	if (_LastVB.VertexFormat & IDRV_VF_COLOR)
 		glDisableClientState(GL_COLOR_ARRAY);
 
 
@@ -444,7 +444,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 
 
 				// setup UV, with UV1.
-				setupUVPtr(stage, *_LastVB, 1);
+				setupUVPtr(stage, _LastVB, 1);
 			}
 		}
 		else if(stage<nstages)
@@ -466,7 +466,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 
 
 				// setup UV, with UV0.
-				setupUVPtr(stage, *_LastVB, 0);
+				setupUVPtr(stage, _LastVB, 0);
 			}
 		}
 		else
@@ -513,11 +513,11 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 	for(sint i=0; i<getNbTextureStages(); i++)
 	{
 		// normal behavior: each texture has its own UV.
-		setupUVPtr(i, *_LastVB, i);
+		setupUVPtr(i, _LastVB, i);
 	}
 
 	// pop VertexColor array if necessary.
-	if (_LastVB->getVertexFormat() & IDRV_VF_COLOR)
+	if (_LastVB.VertexFormat & IDRV_VF_COLOR)
 		glEnableClientState(GL_COLOR_ARRAY);
 
 

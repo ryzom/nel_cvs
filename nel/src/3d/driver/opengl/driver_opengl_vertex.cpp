@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.1 2001/07/03 09:12:34 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.2 2001/07/05 08:33:04 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -93,6 +93,8 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 // ***************************************************************************
 bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 {
+	// NB: must duplicate changes in activeVertexBufferHard()
+
 	uint32	flags;
 
 	if (!setupVertexBuffer(VB))
@@ -263,119 +265,15 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	// 2. Setup Arrays.
 	//===================
 
-
-	// Setup Vertex / Normal.
-	//=======================
-	// if software palette skinning: setup correct Vertex/Normal array.
-	if(paletteSkinning && !_PaletteSkinHard)
-	{
-		/// Must check vbinfo.
-		nlassert(vbInf->SoftSkinVertices.size()==VB.getNumVertices());
-
-		// Must point on computed Vertex array.
-		glEnable(GL_VERTEX_ARRAY);
-		// array is compacted.
-		glVertexPointer(3,GL_FLOAT,0,&(*vbInf->SoftSkinVertices.begin()));
-
-		// Check for normal param in vertex buffer
-		if (flags & IDRV_VF_NORMAL)
-		{
-			/// Must check vbinfo.
-			nlassert(vbInf->SoftSkinNormals.size()==VB.getNumVertices());
-			// Must point on computed Normal array.
-			glEnableClientState(GL_NORMAL_ARRAY);
-			// array is compacted.
-			glNormalPointer(GL_FLOAT,0,&(*vbInf->SoftSkinNormals.begin()));
-		}
-		else
-			glDisableClientState(GL_NORMAL_ARRAY);
-	}
-	else
-	{
-		glEnable(GL_VERTEX_ARRAY);
-		glVertexPointer(3,GL_FLOAT,VB.getVertexSize(),VB.getVertexCoordPointer());
-
-		// Check for normal param in vertex buffer
-		if (flags & IDRV_VF_NORMAL)
-		{
-			glEnableClientState(GL_NORMAL_ARRAY);
-			glNormalPointer(GL_FLOAT,VB.getVertexSize(),VB.getNormalCoordPointer());
-		}
-		else
-			glDisableClientState(GL_NORMAL_ARRAY);
-	}
-
-
-	// Setup Vertex Weight.
-	//=======================
-	// disable vertex weight
-	bool disableVertexWeight=_Extensions.EXTVertexWeighting;
-
-	// if skinning not paletted...
-	if ( skinning && !paletteSkinning)
-	{
-		// 4 weights ?
-		if (flags & IDRV_VF_W[3])
-		{
-			// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
-			// \todo yoyo: TODO_SOFTWARE_SKINNIG: we must implement the 4 matrices mode by software.
-		}
-		// 3 weights ?
-		else if (flags & IDRV_VF_W[2])
-		{
-			// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 3 matrices mode by hardware (Radeon, NV20).
-			// \todo yoyo: TODO_SOFTWARE_SKINNIG: we must implement the 3 matrices mode by software.
-		}
-		// 2 weights ?
-		else
-		{
-			// Check if vertex weighting extension is available
-			if (_Extensions.EXTVertexWeighting)
-			{
-				// Active skinning
-				glEnable (GL_VERTEX_WEIGHTING_EXT);
-
-				// Don't disable it
-				disableVertexWeight=false;
-
-				// Setup
-				glEnableClientState(GL_VERTEX_WEIGHT_ARRAY_EXT);
-				glVertexWeightPointerEXT(1,GL_FLOAT,VB.getVertexSize(),VB.getWeightPointer());
-			}
-			else
-			{
-				// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 2 matrices mode by hardware (Radeon, NV20).
-				// \todo yoyo: TODO_SOFTWARE_SKINNIG: we must implement the 2 matrices mode by software.
-			}
-		}
-	}
-
-	// Disable vertex weight
-	if (disableVertexWeight)
-		glDisable (GL_VERTEX_WEIGHTING_EXT);
-
-
-	// Setup Color / UV.
-	//==================
-	// Check for color param in vertex buffer
-	if (flags & IDRV_VF_COLOR)
-	{
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4,GL_UNSIGNED_BYTE,VB.getVertexSize(),VB.getColorPointer());
-	}
-	else
-		glDisableClientState(GL_COLOR_ARRAY);
-
-	// Active UVs.
-	for(sint i=0; i<getNbTextureStages(); i++)
-	{
-		// normal behavior: each texture has its own UV.
-		setupUVPtr(i, VB, i);
-	}
-
-
 	// For MultiPass Material.
-	_LastVB= &VB;
+	_LastVB.setupVertexBuffer(VB);
+
+	// Disalbe the current vertexArrayRange if setuped.
+	if(_CurrentVertexArrayRange)
+		_CurrentVertexArrayRange->disable();
+
+	// Setup the OpenGL arrays.
+	setupGlArrays(_LastVB, vbInf, skinning, paletteSkinning);
 
 
 	return true;
@@ -647,13 +545,13 @@ void	CDriverGL::refreshSoftwareSkinning()
 
 
 // ***************************************************************************
-void		CDriverGL::setupUVPtr(uint stage, CVertexBuffer &VB, uint uvId)
+void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 {
 	glClientActiveTextureARB(GL_TEXTURE0_ARB+stage);
-	if (VB.getVertexFormat() & IDRV_VF_UV[uvId])
+	if (VB.VertexFormat & IDRV_VF_UV[uvId])
 	{
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2,GL_FLOAT,VB.getVertexSize(),VB.getTexCoordPointer(0,uvId));
+		glTexCoordPointer(2,GL_FLOAT,VB.VertexSize,VB.TexCoordPointer[uvId]);
 	}
 	else
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -662,21 +560,525 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBuffer &VB, uint uvId)
 
 
 // ***************************************************************************
-IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint32 vertexFormat, uint32 numVertices)
+// ***************************************************************************
+// VertexBufferHard
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+bool			CDriverGL::supportVertexBufferHard() const
 {
-	return NULL;
+	return _Extensions.NVVertexArrayRange;
+}
+
+
+// ***************************************************************************
+IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType)
+{
+	if(!_Extensions.NVVertexArrayRange)
+		return NULL;
+	else
+	{
+		// check max vertex
+		if(numVertices > _Extensions.NVVertexArrayRangeMaxVertex)
+			return NULL;
+
+		// \todo yoyo: TODO_OPTIMIZE: for now, create one VertexArrayRange for any VBufferHard.
+		// This is not a good idea, dixit NVidia.
+
+
+		// Create a CVertexBufferHardGL
+		CVertexBufferHardGL		*vb;
+		vb= new CVertexBufferHardGL();
+		// if fails
+		if(!vb->init(this, vertexFormat, numVertices, vbType))
+		{
+			// destroy this object.
+			delete vb;
+			return NULL;
+		}
+		else
+			return _VertexBufferHardSet.insert(vb);
+	}
 }
 
 
 // ***************************************************************************
 void			CDriverGL::deleteVertexBufferHard(IVertexBufferHard *VB)
 {
+	// If one _CurrentVertexArrayRange enabled, first disable it.
+	if(_CurrentVertexArrayRange)
+	{
+		_CurrentVertexArrayRange->disable();
+	}
+
+	// The just delete the VBuffer hard from list.
+	_VertexBufferHardSet.erase(safe_cast<CVertexBufferHardGL*>(VB));
+}
+
+
+
+// ***************************************************************************
+CVertexBufferHardGL::CVertexBufferHardGL() 
+{
+	_VertexArrayRange= NULL;
 }
 
 
 // ***************************************************************************
-void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *VB)
+bool	CVertexBufferHardGL::init(CDriverGL *drv, uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType)
 {
+	// Init the format of the VB.
+	IVertexBufferHard::initFormat(vertexFormat, numVertices);
+
+	// compute size to allocate.
+	uint32	size= getVertexSize() * getNumVertices();
+
+	// create a VertexArrayRange.
+	_VertexArrayRange= new CVertexArrayRange(drv);
+
+	// If allocation fails.
+	if(!_VertexArrayRange->allocate(size, vbType))
+	{
+		// just destroy this object (no free()).
+		delete _VertexArrayRange;
+		_VertexArrayRange= NULL;
+		return false;
+	}
+	else
+		return true;
+}
+
+
+// ***************************************************************************
+CVertexBufferHardGL::~CVertexBufferHardGL()
+{
+	if(_VertexArrayRange)
+	{
+		_VertexArrayRange->free();
+		delete _VertexArrayRange;
+	}
+}
+
+
+// ***************************************************************************
+void		*CVertexBufferHardGL::lock()
+{
+	// sync the 3d card with the system.
+	_VertexArrayRange->flush();
+
+
+	/* \todo yoyo: TODO_OPTIMIZE: when optimizing VertexArrayRange use, should do a flush only if 
+		current VertexBufferHard is the current one setuped.
+	*/
+
+	return _VertexArrayRange->getVertexPtr();
+}
+
+
+// ***************************************************************************
+void		CVertexBufferHardGL::unlock()
+{
+	// sync the 3d card with the system.
+	_VertexArrayRange->flush();
+}
+
+
+// ***************************************************************************
+bool			CVertexArrayRange::allocate(uint32 size, IDriver::TVBHardType vbType)
+{
+	nlassert(_VertexArrayPtr==NULL);
+	_VertexArraySize= size;
+	// try to allocate AGP or VRAM data.
+	switch(vbType)
+	{
+	case IDriver::VBHardAGP: 
+		_VertexArrayPtr= wglAllocateMemoryNV(size, 0, 0, 0.5f);
+		break;
+	case IDriver::VBHardVRAM:
+		_VertexArrayPtr= wglAllocateMemoryNV(size, 0, 0, 1.0f);
+		break;
+	};
+
+	return _VertexArrayPtr!=NULL;
+}
+
+
+// ***************************************************************************
+void			CVertexArrayRange::free()
+{
+	// release the ptr.
+	if(_VertexArrayPtr)
+	{
+		wglFreeMemoryNV(_VertexArrayPtr);
+		_VertexArrayPtr= NULL;
+	}
+}
+
+
+// ***************************************************************************
+void			CVertexArrayRange::enable()
+{
+	// if not already enabled.
+	if(_Driver->_CurrentVertexArrayRange!=this)
+	{
+		glVertexArrayRangeNV(_VertexArraySize, _VertexArrayPtr);
+		glEnableClientState(GL_VERTEX_ARRAY_RANGE_NV);
+		_Driver->_CurrentVertexArrayRange= this;
+	}
+}
+
+
+// ***************************************************************************
+void			CVertexArrayRange::flush()
+{
+	// if the current VertexArrayRange is the one setuped, must flush.
+	if(_Driver->_CurrentVertexArrayRange!=this)
+	{
+		glFlushVertexArrayRangeNV();
+	}
+
+}
+
+
+// ***************************************************************************
+void			CVertexArrayRange::disable()
+{
+	// if not already disabled.
+	if(_Driver->_CurrentVertexArrayRange!=NULL)
+	{
+		glEnableClientState(GL_VERTEX_ARRAY_RANGE_NV);
+		glVertexArrayRangeNV(0, 0);
+		_Driver->_CurrentVertexArrayRange= NULL;
+	}
+}
+
+
+
+// ***************************************************************************
+void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *iVB)
+{
+	// NB: must duplicate changes in activeVertexBuffer()
+
+	nlassert(iVB);
+	CVertexBufferHardGL		*VB= safe_cast<CVertexBufferHardGL*>(iVB);
+
+
+	uint32	flags;
+
+	// Just to inform render*() that Matrix mode is OK.
+	_MatrixSetupDirty= false;
+
+	if (VB->getNumVertices()==0)
+		return;
+
+	// Get VB flags, to setup matrixes and arrays.
+	flags=VB->getVertexFormat();
+
+
+	// Skin mode.
+	// NB: this test either if palette skin is enabled, or normal skinning is enabled.
+	bool	skinning= (flags & IDRV_VF_PALETTE_SKIN)!=0;
+	skinning= skinning && (_VertexMode & NL3D_VERTEX_MODE_SKINNING)!=0;
+	// NB: this test if palette skin is enabled.
+	bool	paletteSkinning= skinning && (flags & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN;
+
+
+	// If _PaletteSkinHard is not supported, disable all skinning.
+	// No sofwarte skinning, because can't read from AGP mem.
+	if(paletteSkinning && !_PaletteSkinHard)
+	{
+		skinning= false;
+		paletteSkinning= false;
+	}
+
+
+	// 0. Setup Matrixes.
+	//===================
+
+	// Check if view matrix has been modified
+	if (_ViewMatrixSetupDirty)
+		// Recompute stuff touched by the view matrix
+		cleanViewMatrix ();
+
+	// Check view matrix is good
+	nlassert (_ViewMatrixSetupDirty==false);
+
+	// never do software skinning.
+	_CurrentSoftSkinFlags= NULL;
+
+
+	// No Skinning at all??. 
+	//==============
+	if ( !skinning )
+	{
+		if(_ModelViewMatrixDirty[0])
+		{
+			_ModelViewMatrixDirty.clear(0);
+			// By default, the first model matrix is active
+			glLoadMatrixf( _ModelViewMatrix[0].get() );
+		}
+	}
+	// Palette Skinning??
+	//==============
+	else if ( paletteSkinning )
+	{
+		if(_PaletteSkinHard)
+		{
+			// \todo yoyo: TODO_HARDWARE_SKINNIG: setup vertex program.
+			// NB: must test _ModelViewMatrixDirtyPaletteSkin...
+		}
+		// No sofwarte skinning.
+	}
+	// Non Paletted skinning.
+	//==============
+	else
+	{
+		// \todo yoyo: TODO_HARDWARE_SKINNIG: we must make the skinning by hardware (Radeon, NV20 vertexprogram).
+
+		// For now, even if weight number is better than 2, do the skinning in EXTVertexWeighting 2 matrix (if possible)
+
+		// Choose an extension to setup a second matrix
+		if (_Extensions.EXTVertexWeighting)
+		{
+			if(_ModelViewMatrixDirty[0])
+			{
+				_ModelViewMatrixDirty.clear(0);
+				// By default, the first model matrix is active
+				glLoadMatrixf( _ModelViewMatrix[0].get() );
+			}
+
+			if(_ModelViewMatrixDirty[1])
+			{
+				_ModelViewMatrixDirty.clear(1);
+				// Active the second model matrix
+				glMatrixMode(GL_MODELVIEW1_EXT);
+				// Set it
+				glLoadMatrixf( _ModelViewMatrix[1].get() );
+				// Active first model matrix
+				glMatrixMode(GL_MODELVIEW);
+			}
+		}
+		// else nothing!!!
+	}
+
+
+
+	// 1. Special Normalize.
+	//======================
+	// NB: must enable GL_NORMALIZE when skinning is enabled or when ModelView has scale.
+	enableGlNormalize( skinning || _ModelViewMatrix[0].hasScalePart() || _ForceNormalize );
+
+
+	// 2. Setup Arrays.
+	//===================
+
+	// For MultiPass Material.
+	_LastVB.setupVertexBufferHard(*VB);
+
+	// Enable the vertexArrayRange of this array.
+	VB->enable();
+
+	// Setup the OpenGL arrays.
+	setupGlArrays(_LastVB, NULL, skinning, paletteSkinning);
+
+}
+
+
+
+// ***************************************************************************
+void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool skinning, bool paletteSkinning)
+{
+	uint32	flags= vb.VertexFormat;
+
+	// Setup Vertex / Normal.
+	//=======================
+	// if software palette skinning: setup correct Vertex/Normal array.
+	if(paletteSkinning && !_PaletteSkinHard)
+	{
+		/// Must check vbinfo.
+		nlassert(vbInf->SoftSkinVertices.size()==vb.NumVertices);
+
+		// Must point on computed Vertex array.
+		glEnable(GL_VERTEX_ARRAY);
+		// array is compacted.
+		glVertexPointer(3,GL_FLOAT,0,&(*vbInf->SoftSkinVertices.begin()));
+
+		// Check for normal param in vertex buffer
+		if (flags & IDRV_VF_NORMAL)
+		{
+			/// Must check vbinfo.
+			nlassert(vbInf->SoftSkinNormals.size()==vb.NumVertices);
+
+			// Must point on computed Normal array.
+			glEnableClientState(GL_NORMAL_ARRAY);
+			// array is compacted.
+			glNormalPointer(GL_FLOAT,0,&(*vbInf->SoftSkinNormals.begin()));
+		}
+		else
+			glDisableClientState(GL_NORMAL_ARRAY);
+	}
+	else
+	{
+		glEnable(GL_VERTEX_ARRAY);
+		glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.VertexCoordPointer);
+
+		// Check for normal param in vertex buffer
+		if (flags & IDRV_VF_NORMAL)
+		{
+			glEnableClientState(GL_NORMAL_ARRAY);
+			glNormalPointer(GL_FLOAT, vb.VertexSize, vb.NormalCoordPointer);
+		}
+		else
+			glDisableClientState(GL_NORMAL_ARRAY);
+	}
+
+
+	// Setup Vertex Weight.
+	//=======================
+	// disable vertex weight
+	bool disableVertexWeight= _Extensions.EXTVertexWeighting;
+
+	// if skinning not paletted...
+	if ( skinning && !paletteSkinning)
+	{
+		// 4 weights ?
+		if (flags & IDRV_VF_W[3])
+		{
+			// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
+		}
+		// 3 weights ?
+		else if (flags & IDRV_VF_W[2])
+		{
+			// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 3 matrices mode by hardware (Radeon, NV20).
+		}
+		// 2 weights ?
+		else
+		{
+			// Check if vertex weighting extension is available
+			if (_Extensions.EXTVertexWeighting)
+			{
+				// Active skinning
+				glEnable (GL_VERTEX_WEIGHTING_EXT);
+
+				// Don't disable it
+				disableVertexWeight=false;
+
+				// Setup
+				glEnableClientState(GL_VERTEX_WEIGHT_ARRAY_EXT);
+				glVertexWeightPointerEXT(1, GL_FLOAT, vb.VertexSize, vb.WeightPointer[0]);
+			}
+			else
+			{
+				// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 2 matrices mode by hardware (Radeon, NV20).
+			}
+		}
+	}
+
+	// Disable vertex weight
+	if (disableVertexWeight)
+		glDisable (GL_VERTEX_WEIGHTING_EXT);
+
+
+	// Setup Color / UV.
+	//==================
+	// Check for color param in vertex buffer
+	if (flags & IDRV_VF_COLOR)
+	{
+		glEnableClientState(GL_COLOR_ARRAY);
+		glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ColorPointer);
+	}
+	else
+		glDisableClientState(GL_COLOR_ARRAY);
+
+	// Active UVs.
+	for(sint i=0; i<getNbTextureStages(); i++)
+	{
+		// normal behavior: each texture has its own UV.
+		setupUVPtr(i, vb, i);
+	}
+
+}
+
+
+// ***************************************************************************
+void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
+{
+	sint	i;
+	uint	flags= vb.getVertexFormat();
+	VertexFormat= flags;
+	VertexSize= vb.getVertexSize();
+	NumVertices= vb.getNumVertices();
+
+	nlassert(flags & IDRV_VF_XYZ);
+	VertexCoordPointer= vb.getVertexCoordPointer();
+
+	// Check for normal param in vertex buffer
+	if (flags & IDRV_VF_NORMAL)
+		NormalCoordPointer= vb.getNormalCoordPointer();
+
+	// Setup TexCoord.
+	for(i= 0; i<IDRV_VF_MAXSTAGES; i++)
+	{
+		if (flags & IDRV_VF_UV[i])
+			TexCoordPointer[i]= vb.getTexCoordPointer(0, i);
+	}
+
+	// Setup Colors
+	if (flags & IDRV_VF_COLOR)
+		ColorPointer= vb.getColorPointer();
+	if (flags & IDRV_VF_SPECULAR)
+		SpecularPointer= vb.getSpecularPointer();
+
+	// Setup Skinning.
+	for(i= 0; i<IDRV_VF_MAXW; i++)
+	{
+		if (flags & IDRV_VF_W[i])
+			WeightPointer[i]= vb.getWeightPointer(0, i);
+	}
+	if ( (flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
+		PaletteSkinPointer= vb.getPaletteSkinPointer();
+}
+
+
+// ***************************************************************************
+void		CVertexBufferInfo::setupVertexBufferHard(CVertexBufferHardGL &vb)
+{
+	sint	i;
+	uint	flags= vb.getVertexFormat();
+	VertexFormat= flags;
+	VertexSize= vb.getVertexSize();
+	NumVertices= vb.getNumVertices();
+
+	nlassert(flags & IDRV_VF_XYZ);
+	VertexCoordPointer= vb.getVertexCoordPointer();
+
+	// Check for normal param in vertex buffer
+	if (flags & IDRV_VF_NORMAL)
+		NormalCoordPointer= vb.getNormalCoordPointer();
+
+	// Setup TexCoord.
+	for(i= 0; i<IDRV_VF_MAXSTAGES; i++)
+	{
+		if (flags & IDRV_VF_UV[i])
+			TexCoordPointer[i]= vb.getTexCoordPointer(i);
+	}
+
+	// Setup Colors
+	if (flags & IDRV_VF_COLOR)
+		ColorPointer= vb.getColorPointer();
+	if (flags & IDRV_VF_SPECULAR)
+		SpecularPointer= vb.getSpecularPointer();
+
+	// Setup Skinning.
+	for(i= 0; i<IDRV_VF_MAXW; i++)
+	{
+		if (flags & IDRV_VF_W[i])
+			WeightPointer[i]= vb.getWeightPointer(i);
+	}
+	if ( (flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
+		PaletteSkinPointer= vb.getPaletteSkinPointer();
 }
 
 

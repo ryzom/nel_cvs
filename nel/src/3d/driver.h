@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.3 2001/07/03 09:12:34 berenguier Exp $
+ * $Id: driver.h,v 1.4 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,7 @@ struct EBadDisplay : public NLMISC::Exception
 // *** IMPORTANT ********************
 // *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
 // **********************************
-class IDriver
+class IDriver : public NLMISC::CRefCount
 {
 public:
 	/// Version of the driver interface. To increment when the interface change.
@@ -136,6 +136,13 @@ public:
 	  * \see setupModelMatrix()
 	  */
 	enum TMatrixCount { MaxModelMatrix= 16 };
+
+
+	/**
+	  * Driver VertexBufferHard type.
+	  * \see createVertexBufferHard()
+	  */
+	enum TVBHardType { VBHardAGP=0, VBHardVRAM, CountVBHard };
 
 
 protected:
@@ -223,11 +230,27 @@ public:
 
 
 
+	/** return true if driver support VertexBufferHard.
+	 */
+	virtual	bool			supportVertexBufferHard() const =0;
+
+
 	/** create a IVertexBufferHard. delete it with deleteVertexBufferHard.
 	 *	NB: user should (must) keep a CRefPtr<> on this ptr, because if driver is deleted (for any reason)
 	 *	the pointer will be no longer valid.
+	 *
+	 *	NB: return NULL if driver do not support the requested VertexBufferHard.Reason for failures are:
+	 *	- Driver do not support VertexBufferHard at all. ie supportVertexBufferHard() return false.
+	 *	- Driver do not support the vbType wanted or the vertexFormat for vertexBufferHard
+	 *	- Driver do not support the numVertices wanted.
+	 *	- Driver can't allocate any more ressource.
+	 *
+	 *	\param vertexFormat see CVertexBuffer::setVertexFormat().
+	 *	\param numVertices the number of vertices to be created.
+	 *	\param vbType kind of RAM shere the VB will be allocated.
+	 *	\return a vertexBufferHard interface. 
 	 */
-	virtual	IVertexBufferHard	*createVertexBufferHard(uint32 vertexFormat, uint32 numVertices) =0;
+	virtual	IVertexBufferHard	*createVertexBufferHard(uint32 vertexFormat, uint32 numVertices, TVBHardType vbType) =0;
 
 
 	/** delete a IVertexBufferHard. NB: VertexBufferHard are automatically deleted at IDriver::release();

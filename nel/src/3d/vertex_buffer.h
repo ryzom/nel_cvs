@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.2 2001/06/27 14:00:25 berenguier Exp $
+ * $Id: vertex_buffer.h,v 1.3 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,6 +189,15 @@ public:
 	sint					getPaletteSkinOff() const {nlassert(_Flags & IDRV_VF_PALETTE_SKIN); return _PaletteSkinOff;}
 
 
+	/** NB: the order of those methods follow the order in memory of the elements:
+	 *	- VertexCoord
+	 *	- NormalCoord
+	 *	- TexCoord
+	 *	- Color
+	 *	- Specular
+	 *	- Weight
+	 *	- PaletteSkin
+	 */
 	void*					getVertexCoordPointer(uint idx=0);
 	void*					getNormalCoordPointer(uint idx=0);
 	void*					getTexCoordPointer(uint idx=0, uint8 stage=0);

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.6 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: mesh.h,v 1.7 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/aabbox.h"
 #include "nel/misc/uv.h"
 #include "3d/vertex_buffer.h"
+#include "3d/vertex_buffer_hard.h"
 #include "3d/material.h"
 #include "3d/primitive_block.h"
 #include "3d/animated_material.h"
@@ -243,6 +244,7 @@ public:
 
 	/// Constructor
 	CMeshGeom();
+	virtual ~CMeshGeom();
 
 	/// Build a meshGeom
 	void			build(CMesh::CMeshBuild &mbuild, uint numMaxMaterial);
@@ -479,6 +481,21 @@ private:
 	NLMISC::CAABBoxExt			_BBox;
 	/// This tells if the mesh is correctly skinned.
 	bool						_Skinned;
+
+
+	/// \name VBufferHard mgt.
+	// @{
+	/// The only one VBufferHard of the mesh. NULL by default. 
+	CRefPtr<IVertexBufferHard>		_VertexBufferHard;
+	/// This tells if the VBuffer has changed since the last time or not.
+	bool							_VertexBufferHardDirty;
+	/// This is the driver used to setup the vbuffer hard. error if a mesh has not the same driver in his life.
+	CRefPtr<IDriver>				_Driver;
+
+	/// update the VertexBufferHard if NULL (ie not created or deleted by driver) or if VertexBufferDirty.
+	void							updateVertexBufferHard(IDriver *drv);
+	// @}
+
 
 private:
 	// Locals, for build.

@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.h
  * <File description>
  *
- * $Id: vertex_buffer_hard.h,v 1.1 2001/07/03 09:12:34 berenguier Exp $
+ * $Id: vertex_buffer_hard.h,v 1.2 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,16 @@ public:
 
 
 	/// \name Get component offsets.
+	/** NB: the order of those methods follow the order in memory of the elements:
+	 *	- VertexCoord
+	 *	- NormalCoord
+	 *	- TexCoord
+	 *	- Color
+	 *	- Specular
+	 *	- Weight
+	 *	- PaletteSkin
+	 *	NB: same order as in CVertexBuffer.
+	 */
 	// @{
 	// It is an error (assert) to query a vertex offset of a vertex component not setuped VertexFormat.
 	// NB: The Vertex offset is always 0.
@@ -98,9 +108,12 @@ protected:
 	uint					_UVOff[IDRV_VF_MAXSTAGES];
 	uint					_PaletteSkinOff;
 
-	/// Constructor
+	/// Constructor: build good offfsets / size.
 	IVertexBufferHard() {}
 	virtual ~IVertexBufferHard() {}
+
+
+	void					initFormat(uint32 vertexFormat, uint32 numVertices);
 
 };
 

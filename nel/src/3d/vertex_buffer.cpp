@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.22 2001/06/27 14:00:25 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.23 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,20 +103,20 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 		_Flags|=IDRV_VF_XYZ;
 		_VertexSize+=3*sizeof(float);
 	}
-	for(i=0 ; i<IDRV_VF_MAXW ; i++)
-	{
-		if (flags & IDRV_VF_W[i])
-		{
-			_Flags|=IDRV_VF_W[i];
-			_WOff[i]=_VertexSize;
-			_VertexSize+=sizeof(float);			
-		}
-	}
 	if (flags & IDRV_VF_NORMAL)
 	{
 		_Flags|=IDRV_VF_NORMAL;
 		_NormalOff=_VertexSize;
 		_VertexSize+=3*sizeof(float);
+	}
+	for(i=0 ; i<IDRV_VF_MAXSTAGES ; i++)
+	{
+		if (flags & IDRV_VF_UV[i])
+		{
+			_Flags|=IDRV_VF_UV[i];
+			_UVOff[i]=_VertexSize;
+			_VertexSize+=2*sizeof(float);
+		}
 	}
 	if (flags & IDRV_VF_COLOR)
 	{
@@ -130,13 +130,13 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 		_SpecularOff=_VertexSize;
 		_VertexSize+=3*sizeof(uint8);
 	}
-	for(i=0 ; i<IDRV_VF_MAXSTAGES ; i++)
+	for(i=0 ; i<IDRV_VF_MAXW ; i++)
 	{
-		if (flags & IDRV_VF_UV[i])
+		if (flags & IDRV_VF_W[i])
 		{
-			_Flags|=IDRV_VF_UV[i];
-			_UVOff[i]=_VertexSize;
-			_VertexSize+=2*sizeof(float);
+			_Flags|=IDRV_VF_W[i];
+			_WOff[i]=_VertexSize;
+			_VertexSize+=sizeof(float);			
 		}
 	}
 	if ( (flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)

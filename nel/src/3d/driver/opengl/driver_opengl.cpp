@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.106 2001/07/03 09:12:34 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.107 2001/07/05 08:33:04 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -176,7 +176,7 @@ CDriverGL::CDriverGL()
 
 	_VertexMode= NL3D_VERTEX_MODE_NORMAL;
 
-	_LastVB= NULL;
+	_CurrentVertexArrayRange= NULL;
 }
 
 
@@ -593,6 +593,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	}
 
 
+	// Reset VertexArrayRange.
+	_CurrentVertexArrayRange= NULL;
+
+
 
 	// Activate the default texture environnments for all stages.
 	//===========================================================
@@ -757,6 +761,17 @@ bool CDriverGL::release()
 
 	// Call IDriver::release() before, to destroy textures, shaders and VBs...
 	IDriver::release();
+
+
+	// Reset VertexArrayRange.
+	if(_CurrentVertexArrayRange)
+	{
+		_CurrentVertexArrayRange->disable();
+		_CurrentVertexArrayRange= NULL;
+	}
+	// Clear any VertexBufferHard created.
+	_VertexBufferHardSet.clear();
+
 
 #ifdef NL_OS_WINDOWS
 	// Then delete.

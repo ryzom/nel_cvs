@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.9 2001/06/27 17:41:12 besson Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.10 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,7 @@ PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	glGetCompressedTexImageARB;
 PFNGLFLUSHVERTEXARRAYRANGENVPROC	glFlushVertexArrayRangeNV;
 PFNGLVERTEXARRAYRANGENVPROC			glVertexArrayRangeNV;
 PFNWGLALLOCATEMEMORYNVPROC			wglAllocateMemoryNV;
+PFNWGLFREEMEMORYNVPROC				wglFreeMemoryNV;
 
 
 // VertexWeighting.
@@ -205,7 +206,8 @@ static bool	setupNVVertexArrayRange(const char	*glext)
 #ifdef NL_OS_WINDOWS
 	if(!(glFlushVertexArrayRangeNV=(PFNGLFLUSHVERTEXARRAYRANGENVPROC)wglGetProcAddress("glFlushVertexArrayRangeNV")))return false;
 	if(!(glVertexArrayRangeNV=(PFNGLVERTEXARRAYRANGENVPROC)wglGetProcAddress("glVertexArrayRangeNV")))return false;
-	if(!(wglAllocateMemoryNV=(PFNWGLALLOCATEMEMORYNVPROC)wglGetProcAddress("wglAllocateMemoryNV")))return false;
+	if(!(wglAllocateMemoryNV= (PFNWGLALLOCATEMEMORYNVPROC)wglGetProcAddress("wglAllocateMemoryNV")))return false;
+	if(!(wglFreeMemoryNV= (PFNWGLFREEMEMORYNVPROC)wglGetProcAddress("wglFreeMemoryNV")))return false;
 #endif
 
 	return true;
@@ -286,13 +288,29 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	nldebug("GLExt: %s", glext);
 
+
+	// Check ARBMultiTexture
 	ext.ARBMultiTexture= setupARBMultiTexture(glext);
-	glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &ntext);
-	ext.NbTextureStages= ntext;
+	if(ext.ARBMultiTexture)
+	{
+		glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &ntext);
+		ext.NbTextureStages= ntext;
+	}
+
+	// Check EXTTextureEnvCombine
 	ext.EXTTextureEnvCombine= setupEXTTextureEnvCombine(glext);
 
+	// Check ARBTextureCompression
 	ext.ARBTextureCompression= setupARBTextureCompression(glext);
+
+	// Check NVVertexArrayRange
 	ext.NVVertexArrayRange= setupNVVertexArrayRange(glext);
+	if(ext.NVVertexArrayRange)
+	{
+		GLint	nverts;
+		glGetIntegerv(GL_MAX_VERTEX_ARRAY_RANGE_ELEMENT_NV, &nverts);
+		ext.NVVertexArrayRangeMaxVertex= nverts;
+	}
 
 	// Compression S3TC OK iff ARBTextureCompression.
 	ext.EXTTextureCompressionS3TC= (ext.ARBTextureCompression && setupEXTTextureCompressionS3TC(glext)); 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.70 2001/07/03 09:12:34 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.71 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,11 +52,15 @@
 #include "3d/material.h"
 #include "3d/shader.h"
 #include "3d/vertex_buffer.h"
+#include "3d/vertex_buffer_hard.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/event_emitter.h"
 #include "nel/misc/bit_set.h"
+#include "3d/ptr_set.h"
+
+
 
 #ifdef NL_OS_WINDOWS
 #include "nel/misc/win_event_emitter.h"
@@ -69,6 +73,10 @@ namespace NL3D {
 
 using NLMISC::CMatrix;
 using NLMISC::CVector;
+
+
+class	CDriverGL;
+
 
 // --------------------------------------------------
 
@@ -124,6 +132,141 @@ public:
 
 	CShaderGL(IDriver *drv, ItShaderPtrList it) : IShader(drv, it) {}
 };
+
+
+// --------------------------------------------------
+
+
+/// Work only if ARRAY_RANGE_NV is enabled.
+class CVertexArrayRange
+{
+public:
+	CVertexArrayRange(CDriverGL *drv)
+	{
+		_Driver= drv;
+		_VertexArrayPtr= NULL;
+		_VertexArraySize= 0;
+	}
+
+	/// allocate a vertex array sapce. false if error. must free before re-allocate.
+	bool			allocate(uint32 size, IDriver::TVBHardType vbType);
+	/// free this space.
+	void			free();
+
+
+	// Those methods read/write in _Driver->_CurrentVertexArrayRange.
+	/// active this VertexArrayRange as the current vertex array range used. no-op if already setup.
+	void			enable();
+	/// If this VertexArrayRange is the one currently activated in driver, flush it, else no-op.
+	void			flush();
+	/// disable this VertexArrayRange.
+	void			disable();
+
+
+	void			*getVertexPtr() {return _VertexArrayPtr;}
+
+private:
+	CDriverGL	*_Driver;
+	void		*_VertexArrayPtr;
+	uint32		_VertexArraySize;
+
+};
+
+
+
+/// Work only if ARRAY_RANGE_NV is enabled.
+class CVertexBufferHardGL : public IVertexBufferHard
+{
+public:
+
+	CVertexBufferHardGL();
+	virtual	~CVertexBufferHardGL();
+
+	bool				init(CDriverGL *drv, uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType);
+
+	virtual	void		*lock();
+	virtual	void		unlock();
+
+
+	void			enable()
+	{
+		nlassert(_VertexArrayRange);
+		_VertexArrayRange->enable();
+	}
+	void			disable()
+	{
+		nlassert(_VertexArrayRange);
+		_VertexArrayRange->disable();
+	}
+
+
+
+public:
+	// NB: do not check if format is OK. return invalid result if format is KO.
+	void				*getVertexCoordPointer()
+	{
+		nlassert(_VertexArrayRange);
+		return _VertexArrayRange->getVertexPtr();
+	}
+	void				*getNormalCoordPointer()
+	{
+		nlassert(_VertexArrayRange);
+		return (uint8*)_VertexArrayRange->getVertexPtr() + getNormalOff();
+	}
+	void				*getTexCoordPointer(uint stageid)
+	{
+		nlassert(_VertexArrayRange);
+		return (uint8*)_VertexArrayRange->getVertexPtr() + getTexCoordOff(stageid);
+	}
+	void				*getColorPointer()
+	{
+		nlassert(_VertexArrayRange);
+		return (uint8*)_VertexArrayRange->getVertexPtr() + getColorOff();
+	}
+	void				*getSpecularPointer()
+	{
+		nlassert(_VertexArrayRange);
+		return (uint8*)_VertexArrayRange->getVertexPtr() + getSpecularOff();
+	}
+	void				*getWeightPointer(uint wid)
+	{
+		nlassert(_VertexArrayRange);
+		return (uint8*)_VertexArrayRange->getVertexPtr() + getWeightOff(wid);
+	}
+	void				*getPaletteSkinPointer()
+	{
+		nlassert(_VertexArrayRange);
+		return (uint8*)_VertexArrayRange->getVertexPtr() + getPaletteSkinOff();
+	}
+
+
+private:
+	CVertexArrayRange	*_VertexArrayRange;
+};
+
+
+
+// --------------------------------------------------
+/// Info for the last VertexBuffer setuped (iether normal or hard).
+class	CVertexBufferInfo
+{
+public:
+	uint32		VertexFormat;
+	uint32		VertexSize;
+	uint32		NumVertices;
+	// NB: ptrs are invalid if VertexFormat does not support the compoennt. must test VertexFormat, not the ptr.
+	void		*VertexCoordPointer;
+	void		*NormalCoordPointer;
+	void		*TexCoordPointer[IDRV_VF_MAXSTAGES];
+	void		*ColorPointer;
+	void		*SpecularPointer;
+	void		*WeightPointer[IDRV_VF_MAXW];
+	void		*PaletteSkinPointer;
+
+	void		setupVertexBuffer(CVertexBuffer &vb);
+	void		setupVertexBufferHard(CVertexBufferHardGL &vb);
+};
+
 
 // --------------------------------------------------
 
@@ -206,7 +349,9 @@ public:
 	}
 
 
-	virtual	IVertexBufferHard	*createVertexBufferHard(uint32 vertexFormat, uint32 numVertices);
+	virtual	bool			supportVertexBufferHard() const;
+
+	virtual	IVertexBufferHard	*createVertexBufferHard(uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType);
 
 	virtual	void			deleteVertexBufferHard(IVertexBufferHard *VB);
 
@@ -451,12 +596,12 @@ private:
 	/// end multipass for this material.
 	void			endMultiPass(const CMaterial &mat);
 	/// LastVB for UV setup.
-	CVertexBuffer	*_LastVB;
+	CVertexBufferInfo	_LastVB;
 	// @}
 
 
 	/// setup a texture stage with an UV from VB.
-	void			setupUVPtr(uint stage, CVertexBuffer &VB, uint uvId);
+	void			setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId);
 
 
 	/// \name Lightmap.
@@ -475,6 +620,10 @@ private:
 	// @}
 
 
+	/// setup GL arrays, with a vb info.
+	void			setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool skinning, bool paletteSkinning);
+
+
 	/// Test/activate normalisation of normal.
 	void			enableGlNormalize(bool normalize)
 	{
@@ -487,6 +636,15 @@ private:
 				glDisable(GL_NORMALIZE);
 		}
 	}
+
+
+
+	/// \name VertexBufferHard 
+	// @{
+	CPtrSet<CVertexBufferHardGL>	_VertexBufferHardSet;
+	friend class					CVertexArrayRange;
+	CVertexArrayRange				*_CurrentVertexArrayRange;
+	// @}
 
 };
 

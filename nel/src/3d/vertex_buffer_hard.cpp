@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: vertex_buffer_hard.cpp,v 1.1 2001/07/03 09:12:34 berenguier Exp $
+ * $Id: vertex_buffer_hard.cpp,v 1.2 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,68 @@
 namespace NL3D 
 {
 
+
+
+void	IVertexBufferHard::initFormat(uint32 flags, uint32 numVertices)
+{
+	// _NbVerts.
+	_NbVerts= numVertices;
+
+	uint	i;
+	uint	offset;
+
+	// Compute format: flags / offsets, for each component.
+	_VertexSize=0;
+	offset=0;
+	_Flags=0;
+	if (flags & IDRV_VF_XYZ)
+	{
+		_Flags|=IDRV_VF_XYZ;
+		_VertexSize+=3*sizeof(float);
+	}
+	if (flags & IDRV_VF_NORMAL)
+	{
+		_Flags|=IDRV_VF_NORMAL;
+		_NormalOff=_VertexSize;
+		_VertexSize+=3*sizeof(float);
+	}
+	for(i=0 ; i<IDRV_VF_MAXSTAGES ; i++)
+	{
+		if (flags & IDRV_VF_UV[i])
+		{
+			_Flags|=IDRV_VF_UV[i];
+			_UVOff[i]=_VertexSize;
+			_VertexSize+=2*sizeof(float);
+		}
+	}
+	if (flags & IDRV_VF_COLOR)
+	{
+		_Flags|=IDRV_VF_COLOR;
+		_RGBAOff=_VertexSize;
+		_VertexSize+=4*sizeof(uint8);
+	}
+	if (flags & IDRV_VF_SPECULAR)
+	{
+		_Flags|=IDRV_VF_SPECULAR;
+		_SpecularOff=_VertexSize;
+		_VertexSize+=3*sizeof(uint8);
+	}
+	for(i=0 ; i<IDRV_VF_MAXW ; i++)
+	{
+		if (flags & IDRV_VF_W[i])
+		{
+			_Flags|=IDRV_VF_W[i];
+			_WOff[i]=_VertexSize;
+			_VertexSize+=sizeof(float);			
+		}
+	}
+	if ( (flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
+	{
+		_Flags|=IDRV_VF_PALETTE_SKIN;
+		_PaletteSkinOff=_VertexSize;
+		_VertexSize+=sizeof(CPaletteSkin);
+	}
+}
 
 
 

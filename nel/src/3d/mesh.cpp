@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.28 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: mesh.cpp,v 1.29 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,6 +112,23 @@ bool	CMeshGeom::CCornerTmp::operator<(const CCornerTmp &c) const
 CMeshGeom::CMeshGeom()
 {
 	_Skinned= false;
+	_VertexBufferHardDirty= true;
+}
+
+
+// ***************************************************************************
+CMeshGeom::~CMeshGeom()
+{
+	// test (refptr) if the object still exist in memory.
+	if(_VertexBufferHard!=NULL)
+	{
+		// A vbufferhard should still exist only if driver still exist.
+		nlassert(_Driver!=NULL);
+
+		// delete it from driver.
+		_Driver->deleteVertexBufferHard(_VertexBufferHard);
+		_VertexBufferHard= NULL;
+	}
 }
 
 
@@ -120,6 +137,8 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 {
 	sint	i;
 
+	// Dirt the VBuffer.
+	_VertexBufferHardDirty= true;
 
 	// Empty geometry?
 	if(m.Vertices.size()==0 || m.Faces.size()==0)
@@ -272,6 +291,64 @@ bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid)
 	return true;
 }
 
+
+// ***************************************************************************
+void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
+{
+	// If the mesh is skinned and if the driver do not support hardware palette skinning, still use normal CVertexBuffer.
+	if(_VertexBufferHardDirty && _Skinned && !drv->supportPaletteSkinning())
+	{
+		// delete possible old VBHard.
+		if(_VertexBufferHard!=NULL)
+		{
+			// VertexBufferHard lifetime < Driver lifetime.
+			nlassert(_Driver!=NULL);
+			_Driver->deleteVertexBufferHard(_VertexBufferHard);
+		}
+		return;
+	}
+
+	// If the vbufferhard is not synced to the vbuffer.
+	if(_VertexBufferHardDirty || _VertexBufferHard==NULL)
+	{
+		_VertexBufferHardDirty= false;
+
+		// delete possible old VBHard.
+		if(_VertexBufferHard!=NULL)
+		{
+			// VertexBufferHard lifetime < Driver lifetime.
+			nlassert(_Driver!=NULL);
+			_Driver->deleteVertexBufferHard(_VertexBufferHard);
+		}
+
+		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
+		_Driver= drv;
+		// try to create new one, in AGP Ram
+		_VertexBufferHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getNumVertices(), IDriver::VBHardAGP);
+
+		// If KO, use normal VertexBuffer.
+		if(_VertexBufferHard==NULL)
+			return;
+		// else, Fill it with VertexBuffer.
+		else
+		{
+			void	*vertexPtr= _VertexBufferHard->lock();
+
+			nlassert(_VBuffer.getVertexFormat() == _VertexBufferHard->getVertexFormat());
+			nlassert(_VBuffer.getNumVertices() == _VertexBufferHard->getNumVertices());
+			nlassert(_VBuffer.getVertexSize() == _VertexBufferHard->getVertexSize());
+
+			// \todo yoyo: TODO_DX8 and DX8 ???
+			// Because same internal format, just copy all block.
+			memcpy(vertexPtr, _VBuffer.getVertexCoordPointer(), _VBuffer.getNumVertices() * _VBuffer.getVertexSize() );
+
+			_VertexBufferHard->unlock();
+		}
+
+	}
+}
+
+
 // ***************************************************************************
 void	CMeshGeom::render(IDriver *drv, CTransformShape *trans)
 {
@@ -292,6 +369,10 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans)
 	{
 		drv->setupVertexMode(NL3D_VERTEX_MODE_SKINNING);
 	}
+
+
+	// update the VBufferHard (create/delete), to maybe render in AGP memory.
+	updateVertexBufferHard(drv);
 
 
 	// For all _MatrixBlocks
@@ -326,8 +407,17 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans)
 		}
 
 
-		// active VB. SoftwareSkinning: reset flags for skinning.
-		drv->activeVertexBuffer(_VBuffer);
+		// if VB Hard is here, use it.
+		if(_VertexBufferHard != NULL)
+		{
+			// active VB Hard.
+			drv->activeVertexBufferHard(_VertexBufferHard);
+		}
+		else
+		{
+			// active VB. SoftwareSkinning: reset flags for skinning.
+			drv->activeVertexBuffer(_VBuffer);
+		}
 
 
 		// Render all pass.
@@ -362,6 +452,13 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialCont(_MatrixBlocks);
 	f.serial(_BBox);
 	f.serial (_Skinned);
+
+
+	// If _VertexBuffer changed, flag the VertexBufferHard.
+	if(f.isReading())
+	{
+		_VertexBufferHardDirty= true;
+	}
 
 }
 

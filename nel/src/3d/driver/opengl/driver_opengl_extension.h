@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.12 2001/06/27 17:41:12 besson Exp $
+ * $Id: driver_opengl_extension.h,v 1.13 2001/07/05 08:33:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,7 @@ struct	CGlExtensions
 	// Optionnal Extensions.
 	bool	ARBTextureCompression;
 	bool	NVVertexArrayRange;
+	uint	NVVertexArrayRangeMaxVertex;
 	bool	EXTTextureCompressionS3TC;
 	bool	EXTVertexWeighting;
 	bool	EXTSeparateSpecularColor;
@@ -88,6 +89,7 @@ public:
 		EXTTextureEnvCombine= false;
 		ARBTextureCompression= false;
 		NVVertexArrayRange= false;
+		NVVertexArrayRangeMaxVertex= 0;
 		EXTTextureCompressionS3TC= false;
 		EXTVertexWeighting= false;
 		EXTSeparateSpecularColor= false;
@@ -166,9 +168,11 @@ extern PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	glGetCompressedTexImageARB;
 // VertexArrayRangeNV.
 //====================
 typedef void *(APIENTRY * PFNWGLALLOCATEMEMORYNVPROC) (GLsizei size, GLfloat readFrequency, GLfloat writeFrequency, GLfloat priority);
+typedef void *(APIENTRY * PFNWGLFREEMEMORYNVPROC) (void *pointer);
 extern PFNGLFLUSHVERTEXARRAYRANGENVPROC		glFlushVertexArrayRangeNV;
 extern PFNGLVERTEXARRAYRANGENVPROC			glVertexArrayRangeNV;
 extern PFNWGLALLOCATEMEMORYNVPROC			wglAllocateMemoryNV;
+extern PFNWGLFREEMEMORYNVPROC				wglFreeMemoryNV;
 
 
 // VertexWeighting.

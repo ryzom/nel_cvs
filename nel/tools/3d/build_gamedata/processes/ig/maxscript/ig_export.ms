@@ -126,7 +126,7 @@ try
 						for node in geometry do
 						(
 							ig = getIg node
-							if (ig != undefined) then
+							if ( (ig != undefined) and (ig != "") ) then
 							(
 								-- Found ?
 								found = false

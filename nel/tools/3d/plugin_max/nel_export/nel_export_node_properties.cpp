@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.50 2003/07/07 10:28:14 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.51 2003/08/04 15:02:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include "../nel_patch_lib/nel_patch_mesh.h"
 
 using namespace NLMISC;
+
+#define DIFFERENT_VALUE_STRING "<different values>"
 
 // ***************************************************************************
 
@@ -181,6 +183,10 @@ public:
 	int						VisibleFromParent;
 	int						DynamicPortal;
 	int						Clusterized;
+	int						AudibleLikeVisible;
+	int						FatherAudible;
+	int						AudibleFromFather;
+
 	std::string				OcclusionModel;
 	std::string				OpenOcclusionModel;
 	std::string				SoundGroup;
@@ -366,6 +372,32 @@ void VegetableStateChanged (HWND hwndDlg)
 
 }
 
+// ***************************************************************************
+
+void AccelStateChanged (HWND hwndDlg)
+{
+	CLodDialogBoxParam *currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+	bool cluster = (currentParam->AcceleratorType&NEL3D_APPDATA_ACCEL_TYPE) == NEL3D_APPDATA_ACCEL_CLUSTER;
+	bool portal = (currentParam->AcceleratorType&NEL3D_APPDATA_ACCEL_TYPE) == NEL3D_APPDATA_ACCEL_PORTAL;
+	bool defined = currentParam->AcceleratorType != -1;
+	bool accelerator = portal || cluster;
+	bool dynamic_portal = IsDlgButtonChecked(hwndDlg, IDC_DYNAMIC_PORTAL) != BST_UNCHECKED;
+	bool audibleLikeVisible = IsDlgButtonChecked(hwndDlg, IDC_AUDIBLE_LIKE_VISIBLE) == BST_CHECKED;
+
+	EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), (accelerator && cluster) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), (accelerator && cluster) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), (accelerator && cluster) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), (accelerator && cluster) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), (accelerator && portal) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_OCC_MODEL), (accelerator && portal) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_OPEN_OCC_MODEL), (accelerator && portal && dynamic_portal) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), (!accelerator) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_AUDIBLE_LIKE_VISIBLE), (accelerator && cluster) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_AUDIBLE), (accelerator && cluster && !audibleLikeVisible) || !defined);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_AUDIBLE_FROM_FATHER), (accelerator && cluster && !audibleLikeVisible) || !defined);
+}
+
 
 // ***************************************************************************
 void InstanceStateChanged (HWND hwndDlg)
@@ -427,66 +459,9 @@ int CALLBACK AccelDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), BM_SETCHECK, currentParam->VisibleFromParent, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_SETCHECK, currentParam->DynamicPortal, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_SETCHECK, currentParam->Clusterized, 0);
-
-
-			// Enable / disable accelerator check box
-			if (currentParam->AcceleratorType != -1)
-			{
-				CheckRadioButton (hwndDlg, IDC_RADIOACCELNO, IDC_RADIOACCELCLUSTER, IDC_RADIOACCELNO+(currentParam->AcceleratorType&3));
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELNO), true);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELPORTAL), true);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELCLUSTER), true);
-				if ((currentParam->AcceleratorType&3) == 2) // Cluster ?
-				{
-					EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), true);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), true);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), true);
-				}
-				else
-				{
-					EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), false);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), false);
-				}
-				
-				if ((currentParam->AcceleratorType&3) == 1) // Portal ?
-				{
-					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), true);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_OCC_MODEL), true);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_OPEN_OCC_MODEL), IsDlgButtonChecked(hwndDlg, IDC_DYNAMIC_PORTAL) == BST_CHECKED);
-				}
-				else
-				{
-					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_OCC_MODEL), false);
-					EnableWindow (GetDlgItem (hwndDlg, IDC_OPEN_OCC_MODEL), false);
-				}
-
-				if ((currentParam->AcceleratorType&3) == 0) // Not an accelerator
-				{
-					EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), true);
-				}
-				else
-					EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), false);
-			}
-			else
-			{
-				// No check box
-				CheckRadioButton (hwndDlg, IDC_RADIOACCELNO, IDC_RADIOACCELCLUSTER, 0);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELNO), true);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELPORTAL), true);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELCLUSTER), true);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_OCC_MODEL), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_OPEN_OCC_MODEL), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), false);
-				EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), false);
-			}
+			SendMessage (GetDlgItem (hwndDlg, IDC_AUDIBLE_LIKE_VISIBLE), BM_SETCHECK, currentParam->AudibleLikeVisible, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_FATHER_AUDIBLE), BM_SETCHECK, currentParam->FatherAudible, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_AUDIBLE_FROM_FATHER), BM_SETCHECK, currentParam->AudibleFromFather, 0);
 
 			// fill the combo box
 			{
@@ -527,6 +502,10 @@ int CALLBACK AccelDialogCallback (
 //				nlassert(false);
 			}
 //			SendMessage(GetDlgItem(hwndDlg, IDC_SOUND_GROUP), WM_SETTEXT, 0, (LONG)(currentParam->SoundGroup.c_str()));
+	
+			bool accelerator = (currentParam->AcceleratorType != -1);
+			CheckRadioButton (hwndDlg, IDC_RADIOACCELNO, IDC_RADIOACCELCLUSTER, accelerator?(IDC_RADIOACCELNO+(currentParam->AcceleratorType&NEL3D_APPDATA_ACCEL_TYPE)):0);
+			AccelStateChanged (hwndDlg);
 		}
 		break;
 
@@ -543,11 +522,11 @@ int CALLBACK AccelDialogCallback (
 						{
 							// Get the acceleration type
 							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELNO) == BST_CHECKED)
-								currentParam->AcceleratorType = 0;
+								currentParam->AcceleratorType = NEL3D_APPDATA_ACCEL_NOT_ACCELERATOR;
 							else if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELPORTAL) == BST_CHECKED)
-								currentParam->AcceleratorType = 1;
+								currentParam->AcceleratorType = NEL3D_APPDATA_ACCEL_PORTAL;
 							else if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELCLUSTER) == BST_CHECKED)
-								currentParam->AcceleratorType = 2;
+								currentParam->AcceleratorType = NEL3D_APPDATA_ACCEL_CLUSTER;
 							else
 								currentParam->AcceleratorType = -1;
 
@@ -556,6 +535,9 @@ int CALLBACK AccelDialogCallback (
 							currentParam->VisibleFromParent=SendMessage (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), BM_GETCHECK, 0, 0);
 							currentParam->DynamicPortal=SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_GETCHECK, 0, 0);
 							currentParam->Clusterized=SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_GETCHECK, 0, 0);
+							currentParam->AudibleLikeVisible=SendMessage (GetDlgItem (hwndDlg, IDC_AUDIBLE_LIKE_VISIBLE), BM_GETCHECK, 0, 0);
+							currentParam->FatherAudible=SendMessage (GetDlgItem (hwndDlg, IDC_FATHER_AUDIBLE), BM_GETCHECK, 0, 0);
+							currentParam->AudibleFromFather=SendMessage (GetDlgItem (hwndDlg, IDC_AUDIBLE_FROM_FATHER), BM_GETCHECK, 0, 0);
 
 							// get the strings params
 							char tmp[256];
@@ -574,55 +556,30 @@ int CALLBACK AccelDialogCallback (
 						}
 					break;
 					case IDC_RADIOACCELNO:
-						if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELNO) == BST_CHECKED)
-						{
-							EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_OCC_MODEL), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_OPEN_OCC_MODEL), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), true);
-							EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), false);
-							EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), false);
-						}
-						break;
 					case IDC_RADIOACCELPORTAL:
-						if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELPORTAL) == BST_CHECKED)
-						{
-							EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), true);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_OCC_MODEL), true);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_OPEN_OCC_MODEL), IsDlgButtonChecked(hwndDlg, IDC_DYNAMIC_PORTAL) == BST_CHECKED);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
-							EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), false);
-							EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), false);
-						}
-						break;
 					case IDC_RADIOACCELCLUSTER:
-						if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELCLUSTER) == BST_CHECKED)
-						{
-							EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), true);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_OCC_MODEL), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_OPEN_OCC_MODEL), false);
-							EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
-							EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), true);
-							EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), true);
-						}
+						// Get the acceleration type
+						if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELNO) == BST_CHECKED)
+							currentParam->AcceleratorType = NEL3D_APPDATA_ACCEL_NOT_ACCELERATOR;
+						else if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELPORTAL) == BST_CHECKED)
+							currentParam->AcceleratorType = NEL3D_APPDATA_ACCEL_PORTAL;
+						else if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELCLUSTER) == BST_CHECKED)
+							currentParam->AcceleratorType = NEL3D_APPDATA_ACCEL_CLUSTER;
+						else
+							currentParam->AcceleratorType = -1;
+						AccelStateChanged (hwndDlg);
 						break;
 					case IDC_DYNAMIC_PORTAL:
 					case IDC_FATHER_VISIBLE:
 					case IDC_VISIBLE_FROM_FATHER:
 					case IDC_CLUSTERIZE:
+					case IDC_AUDIBLE_LIKE_VISIBLE:
+					case IDC_AUDIBLE_FROM_FATHER:
+					case IDC_FATHER_AUDIBLE:
 						{
 							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
 								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
-							if (LOWORD(wParam) == IDC_DYNAMIC_PORTAL)
-							{
-								EnableWindow(GetDlgItem(hwndDlg, IDC_OPEN_OCC_MODEL), SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_CHECKED);
-							}
+							AccelStateChanged (hwndDlg);
 						}
 						break;
 				}
@@ -2140,12 +2097,15 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			}
 		}
 
-		int accelFlag = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
-		param.AcceleratorType = accelFlag&3;
-		param.ParentVisible = (accelFlag&4) ? BST_CHECKED : BST_UNCHECKED;
-		param.VisibleFromParent = (accelFlag&8) ? BST_CHECKED : BST_UNCHECKED;
-		param.DynamicPortal = (accelFlag&16) ? BST_CHECKED : BST_UNCHECKED;
-		param.Clusterized = (accelFlag&32) ? BST_CHECKED : BST_UNCHECKED;
+		int accelFlag = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, NEL3D_APPDATA_ACCEL_DEFAULT);
+		param.AcceleratorType = accelFlag&NEL3D_APPDATA_ACCEL_TYPE;
+		param.ParentVisible = (accelFlag&NEL3D_APPDATA_ACCEL_FATHER_VISIBLE) ? BST_CHECKED : BST_UNCHECKED;
+		param.VisibleFromParent = (accelFlag&NEL3D_APPDATA_ACCEL_VISIBLE_FROM_FATHER) ? BST_CHECKED : BST_UNCHECKED;
+		param.DynamicPortal = (accelFlag&NEL3D_APPDATA_ACCEL_DYNAMIC_PORTAL) ? BST_CHECKED : BST_UNCHECKED;
+		param.Clusterized = (accelFlag&NEL3D_APPDATA_ACCEL_CLUSTERIZED) ? BST_CHECKED : BST_UNCHECKED;
+		param.AudibleLikeVisible = (accelFlag&NEL3D_APPDATA_ACCEL_AUDIBLE_NOT_LIKE_VISIBLE) ? BST_UNCHECKED : BST_CHECKED;
+		param.FatherAudible = (accelFlag&NEL3D_APPDATA_ACCEL_FATHER_AUDIBLE) ? BST_CHECKED : BST_UNCHECKED;
+		param.AudibleFromFather = (accelFlag&NEL3D_APPDATA_ACCEL_AUDIBLE_FROM_FATHER) ? BST_CHECKED : BST_UNCHECKED;
 		param.OcclusionModel = CExportNel::getScriptAppData(node, NEL3D_APPDATA_OCC_MODEL, "no occlusion");
 		param.OpenOcclusionModel = CExportNel::getScriptAppData(node, NEL3D_APPDATA_OPEN_OCC_MODEL, "no occlusion");
 		param.SoundGroup = CExportNel::getScriptAppData(node, NEL3D_APPDATA_SOUND_GROUP, "no sound");
@@ -2170,7 +2130,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.SoftShadowConeLength=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toStringMax(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT));
 		param.UseRemanence=CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_REMANENCE, BST_UNCHECKED);
 		param.RemanenceShiftingTexture=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SHIFTING_TEXTURE, BST_CHECKED);
-		param.RemanenceSliceNumber=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, 16);
+		param.RemanenceSliceNumber=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, NEL3D_APPDATA_ACCEL_DYNAMIC_PORTAL);
 		param.RemanenceSamplingPeriod=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD, 0.02f);
 		param.RemanenceRollupRatio=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_ROLLUP_RATIO, 1.f);
 
@@ -2267,49 +2227,55 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DYNAMIC_MESH, BST_UNCHECKED)!=param.DynamicMesh)
 				param.DynamicMesh=BST_INDETERMINATE;
 			if (param.DistMax!=toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT)))
-				param.DistMax="";
+				param.DistMax=DIFFERENT_VALUE_STRING;
 			if (param.BlendLength!=toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT)))
-				param.BlendLength="";
+				param.BlendLength=DIFFERENT_VALUE_STRING;
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_MRM, BST_UNCHECKED)!=param.MRM)
 				param.MRM=BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_SKIN_REDUCTION, NEL3D_APPDATA_LOD_SKIN_REDUCTION_DEFAULT)!=param.SkinReduction)
 				param.SkinReduction=-1;
 			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_NB_LOD, NEL3D_APPDATA_LOD_NB_LOD_DEFAULT))!=param.NbLod)
-				param.NbLod="";
+				param.NbLod=DIFFERENT_VALUE_STRING;
 			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DIVISOR, NEL3D_APPDATA_LOD_DIVISOR_DEFAULT))!=param.Divisor)
-				param.Divisor="";
+				param.Divisor=DIFFERENT_VALUE_STRING;
 			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_FINEST, NEL3D_APPDATA_LOD_DISTANCE_FINEST_DEFAULT))!=param.DistanceFinest)
-				param.DistanceFinest="";
+				param.DistanceFinest=DIFFERENT_VALUE_STRING;
 			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE_DEFAULT))!=param.DistanceMiddle)
-				param.DistanceMiddle="";
+				param.DistanceMiddle=DIFFERENT_VALUE_STRING;
 			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT))!=param.DistanceCoarsest)
-				param.DistanceCoarsest="";
+				param.DistanceCoarsest=DIFFERENT_VALUE_STRING;
 			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, 0.f))!=param.BoneLodDistance)
-				param.BoneLodDistance="";
+				param.BoneLodDistance=DIFFERENT_VALUE_STRING;
 
-			int accelFlag = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
-			if ( param.AcceleratorType != (accelFlag&3) )
+			int accelFlag = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, NEL3D_APPDATA_ACCEL_DEFAULT);
+			if ( param.AcceleratorType != (accelFlag&NEL3D_APPDATA_ACCEL_TYPE) )
 				param.AcceleratorType = -1;
-			if ( ((accelFlag&4) ? BST_CHECKED : BST_UNCHECKED) != param.ParentVisible)
+			if ( ((accelFlag&NEL3D_APPDATA_ACCEL_FATHER_VISIBLE) ? BST_CHECKED : BST_UNCHECKED) != param.ParentVisible)
 				param.ParentVisible = BST_INDETERMINATE;
-			if ( ((accelFlag&8) ? BST_CHECKED : BST_UNCHECKED) != param.VisibleFromParent)
+			if ( ((accelFlag&NEL3D_APPDATA_ACCEL_VISIBLE_FROM_FATHER) ? BST_CHECKED : BST_UNCHECKED) != param.VisibleFromParent)
 				param.VisibleFromParent = BST_INDETERMINATE;
-			if ( ((accelFlag&16) ? BST_CHECKED : BST_UNCHECKED) != param.DynamicPortal)
+			if ( ((accelFlag&NEL3D_APPDATA_ACCEL_DYNAMIC_PORTAL) ? BST_CHECKED : BST_UNCHECKED) != param.DynamicPortal)
 				param.DynamicPortal = BST_INDETERMINATE;
-			if ( ((accelFlag&32) ? BST_CHECKED : BST_UNCHECKED) != param.Clusterized)
+			if ( ((accelFlag&NEL3D_APPDATA_ACCEL_CLUSTERIZED) ? BST_CHECKED : BST_UNCHECKED) != param.Clusterized)
 				param.Clusterized = BST_INDETERMINATE;
+			if ( ((accelFlag&NEL3D_APPDATA_ACCEL_AUDIBLE_NOT_LIKE_VISIBLE) ? BST_UNCHECKED : BST_CHECKED) != param.AudibleLikeVisible)
+				param.AudibleLikeVisible = BST_INDETERMINATE;
+			if ( ((accelFlag&NEL3D_APPDATA_ACCEL_FATHER_AUDIBLE) ? BST_CHECKED : BST_UNCHECKED) != param.FatherAudible)
+				param.FatherAudible = BST_INDETERMINATE;
+			if ( ((accelFlag&NEL3D_APPDATA_ACCEL_AUDIBLE_FROM_FATHER) ? BST_CHECKED : BST_UNCHECKED) != param.AudibleFromFather)
+				param.AudibleFromFather = BST_INDETERMINATE;
 
 			if (CExportNel::getScriptAppData(node, NEL3D_APPDATA_OCC_MODEL, "no occlusion") != param.OcclusionModel)
 			{
-				param.OcclusionModel = "";
+				param.OcclusionModel = DIFFERENT_VALUE_STRING;
 			}
 			if ( CExportNel::getScriptAppData(node, NEL3D_APPDATA_OPEN_OCC_MODEL, "no occlusion") != param.OpenOcclusionModel)
 			{
-				param.OpenOcclusionModel = "";
+				param.OpenOcclusionModel = DIFFERENT_VALUE_STRING;
 			}
 			if (CExportNel::getScriptAppData(node, NEL3D_APPDATA_SOUND_GROUP, "no sound") != param.SoundGroup)
-				param.SoundGroup = "";
+				param.SoundGroup = DIFFERENT_VALUE_STRING;
 			if (CExportNel::getScriptAppData(node, NEL3D_APPDATA_ENV_FX, "no fx") != param.EnvironmentFX)
 			{
 				param.EnvironmentFX = "";
@@ -2319,15 +2285,15 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.LightGroup = -1;
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, "")!=param.InstanceShape)
-				param.InstanceShape = "...";
+				param.InstanceShape = DIFFERENT_VALUE_STRING;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "")!=param.InstanceName)
-				param.InstanceName = "...";
+				param.InstanceName = DIFFERENT_VALUE_STRING;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED)!=param.DontAddToScene)
 				param.DontAddToScene = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, BST_UNCHECKED)!=param.AutomaticAnimation)
 				param.AutomaticAnimation = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "")!=param.InstanceGroupName)
-				param.InstanceGroupName = "...";
+				param.InstanceGroupName = DIFFERENT_VALUE_STRING;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, "")!=param.InterfaceFileName)
 				param.InterfaceFileName = "";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_THRESHOLD, 0.1f)!=param.InterfaceThreshold)
@@ -2362,7 +2328,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
 			{
 				if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_RADIAL_NORMAL_SM+smoothGroup, "")!=param.RadialNormals[smoothGroup])
-					param.RadialNormals[smoothGroup] = "";
+					param.RadialNormals[smoothGroup] = DIFFERENT_VALUE_STRING;
 			}
 
 			// Vegetable
@@ -2379,17 +2345,17 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, BST_UNCHECKED)!=param.VegetableBendCenter)
 				param.VegetableBendCenter = -1;
 			if (toStringMax(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT))!=param.VegetableBendFactor)
-				param.VegetableBendFactor = "";
+				param.VegetableBendFactor = DIFFERENT_VALUE_STRING;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING, BST_UNCHECKED)!=param.VegetableForceBestSidedLighting)
 				param.VegetableForceBestSidedLighting = BST_INDETERMINATE;
 
 			// Lightmap
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0")!=param.LumelSizeMul)
-				param.LumelSizeMul = "";
+				param.LumelSizeMul = DIFFERENT_VALUE_STRING;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toStringMax(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT))!=param.SoftShadowRadius)
-				param.SoftShadowRadius = "";
+				param.SoftShadowRadius = DIFFERENT_VALUE_STRING;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toStringMax(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT))!=param.SoftShadowConeLength)
-				param.SoftShadowConeLength = "";
+				param.SoftShadowConeLength = DIFFERENT_VALUE_STRING;
 
 			// Get name count for this node
 			std::list<std::string> tmplist;
@@ -2416,13 +2382,13 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, BST_UNCHECKED) != param.LigoSymmetry)
 				param.LigoSymmetry = BST_INDETERMINATE;
 			if (toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0)) != param.LigoRotate)
-				param.LigoRotate = "";
+				param.LigoRotate = DIFFERENT_VALUE_STRING;
 
 			// SWT
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT, BST_UNCHECKED) != param.SWT)
 				param.SWT = BST_INDETERMINATE;
 			if (toStringMax (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, 0.f)) != param.SWTWeight)
-				param.SWTWeight = "";
+				param.SWTWeight = DIFFERENT_VALUE_STRING;
 
 			// RealTimeLight
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_CHECKED) != param.ExportRealTimeLight)
@@ -2443,7 +2409,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			// Lightmap name
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED_LIGHT, NEL3D_APPDATA_LM_ANIMATED_LIGHT_DEFAULT)!=param.ExportLightMapName)
 			{
-				param.ExportLightMapName = "";
+				param.ExportLightMapName = DIFFERENT_VALUE_STRING;
 			}
 
 			// UseLightingLocalAttenuation
@@ -2477,7 +2443,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE, BST_UNCHECKED) != param.ExportBoneScale)
 				param.ExportBoneScale= BST_INDETERMINATE;
 			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, "") != param.ExportBoneScaleNameExt)
-				param.ExportBoneScaleNameExt= "";
+				param.ExportBoneScaleNameExt= DIFFERENT_VALUE_STRING;
 
 
 			// Next sel
@@ -2503,65 +2469,80 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				if (param.DynamicMesh!=BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DYNAMIC_MESH, param.DynamicMesh);
 
-				if (param.DistMax!="")
+				if (param.DistMax!=DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DIST_MAX, param.DistMax);
-				if (param.BlendLength!="")
+				if (param.BlendLength!=DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_BLEND_LENGTH, param.BlendLength);
 
 				if (param.MRM!=BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_MRM, param.MRM);
 				if (param.SkinReduction!=-1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_SKIN_REDUCTION, param.SkinReduction);
-				if (param.NbLod!="")
+				if (param.NbLod!=DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_NB_LOD, param.NbLod);
-				if (param.Divisor!="")
+				if (param.Divisor!=DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DIVISOR, param.Divisor);
-				if (param.DistanceFinest!="")
+				if (param.DistanceFinest!=DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_FINEST, param.DistanceFinest);
-				if (param.DistanceMiddle!="")
+				if (param.DistanceMiddle!=DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, param.DistanceMiddle);
-				if (param.DistanceCoarsest!="")
+				if (param.DistanceCoarsest!=DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, param.DistanceCoarsest);
-				if (param.BoneLodDistance!="")
+				if (param.BoneLodDistance!=DIFFERENT_VALUE_STRING)
 				{
 					float	f= toFloatMax(param.BoneLodDistance.c_str());
 					f= std::max(0.f, f);
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, f);
 				}
 
-				int accelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
+				int accelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, NEL3D_APPDATA_ACCEL_DEFAULT);
 				if (param.AcceleratorType != -1)
 				{
-					accelType &= ~3;
-					accelType |= param.AcceleratorType&3;
+					accelType &= ~NEL3D_APPDATA_ACCEL_TYPE;
+					accelType |= param.AcceleratorType&NEL3D_APPDATA_ACCEL_TYPE;
 				}
 				if (param.ParentVisible != BST_INDETERMINATE)
 				{
-					accelType &= ~4;
-					accelType |= (param.ParentVisible == BST_CHECKED) ? 4 : 0;
+					accelType &= ~NEL3D_APPDATA_ACCEL_FATHER_VISIBLE;
+					accelType |= (param.ParentVisible == BST_CHECKED) ? NEL3D_APPDATA_ACCEL_FATHER_VISIBLE : 0;
 				}
 				if (param.VisibleFromParent != BST_INDETERMINATE)
 				{
-					accelType &= ~8;
-					accelType |= (param.VisibleFromParent == BST_CHECKED) ? 8 : 0;
+					accelType &= ~NEL3D_APPDATA_ACCEL_VISIBLE_FROM_FATHER;
+					accelType |= (param.VisibleFromParent == BST_CHECKED) ? NEL3D_APPDATA_ACCEL_VISIBLE_FROM_FATHER : 0;
 				}
 				if (param.DynamicPortal != BST_INDETERMINATE)
 				{
-					accelType &= ~16;
-					accelType |= (param.DynamicPortal == BST_CHECKED) ? 16 : 0;
+					accelType &= ~NEL3D_APPDATA_ACCEL_DYNAMIC_PORTAL;
+					accelType |= (param.DynamicPortal == BST_CHECKED) ? NEL3D_APPDATA_ACCEL_DYNAMIC_PORTAL : 0;
 				}
 				if (param.Clusterized != BST_INDETERMINATE)
 				{
-					accelType &= ~32;
-					accelType |= (param.Clusterized == BST_CHECKED) ? 32 : 0;
+					accelType &= ~NEL3D_APPDATA_ACCEL_CLUSTERIZED;
+					accelType |= (param.Clusterized == BST_CHECKED) ? NEL3D_APPDATA_ACCEL_CLUSTERIZED : 0;
+				}
+				if (param.AudibleLikeVisible != BST_INDETERMINATE)
+				{
+					accelType &= ~NEL3D_APPDATA_ACCEL_AUDIBLE_NOT_LIKE_VISIBLE;
+					accelType |= (param.AudibleLikeVisible == BST_CHECKED) ? 0 : NEL3D_APPDATA_ACCEL_AUDIBLE_NOT_LIKE_VISIBLE;
+				}
+				if (param.FatherAudible != BST_INDETERMINATE)
+				{
+					accelType &= ~NEL3D_APPDATA_ACCEL_FATHER_AUDIBLE;
+					accelType |= (param.FatherAudible == BST_CHECKED) ? NEL3D_APPDATA_ACCEL_FATHER_AUDIBLE : 0;
+				}
+				if (param.AudibleFromFather != BST_INDETERMINATE)
+				{
+					accelType &= ~NEL3D_APPDATA_ACCEL_AUDIBLE_FROM_FATHER;
+					accelType |= (param.AudibleFromFather == BST_CHECKED) ? NEL3D_APPDATA_ACCEL_AUDIBLE_FROM_FATHER : 0;
 				}
 				CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, accelType);
 
-				if (param.OcclusionModel != "")
+				if (param.OcclusionModel != DIFFERENT_VALUE_STRING)
 				{
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_OCC_MODEL, param.OcclusionModel);
 				}
-				if (param.OpenOcclusionModel != "")
+				if (param.OpenOcclusionModel != DIFFERENT_VALUE_STRING)
 				{
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_OPEN_OCC_MODEL, param.OpenOcclusionModel);
 				}
@@ -2572,15 +2553,15 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ENV_FX, param.EnvironmentFX);
 				}
 
-				if ( (param.InstanceShape != "...") || (listNode.size()==1))
+				if ( (param.InstanceShape != DIFFERENT_VALUE_STRING) || (listNode.size()==1))
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, param.InstanceShape);				
-				if (param.InstanceName != "...")
+				if (param.InstanceName != DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);				
 				if (param.DontAddToScene != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, param.DontAddToScene);
 				if (param.AutomaticAnimation != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, param.AutomaticAnimation);
-				if (param.InstanceGroupName != "...")
+				if (param.InstanceGroupName != DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_IGNAME, param.InstanceGroupName);				
 				if (param.InterfaceFileName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, param.InterfaceFileName);
@@ -2608,16 +2589,16 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				// Radial normals
 				for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
 				{
-					if ( (param.RadialNormals[smoothGroup] != "")  || (listNode.size()==1))
+					if ( (param.RadialNormals[smoothGroup] != DIFFERENT_VALUE_STRING)  || (listNode.size()==1))
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_RADIAL_NORMAL_SM+smoothGroup, param.RadialNormals[smoothGroup]);
 				}
 
 				
-				if (param.LumelSizeMul != "")
+				if (param.LumelSizeMul != DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, param.LumelSizeMul);
-				if (param.SoftShadowRadius != "")
+				if (param.SoftShadowRadius != DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, param.SoftShadowRadius);
-				if (param.SoftShadowConeLength != "")
+				if (param.SoftShadowConeLength != DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, param.SoftShadowConeLength);
 				if (param.FloatingObject != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, param.FloatingObject);
@@ -2635,7 +2616,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED, param.VegetableAlphaBlendOffDoubleSided);
 				if (param.VegetableBendCenter != -1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, param.VegetableBendCenter);
-				if (param.VegetableBendFactor != "")
+				if (param.VegetableBendFactor != DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, param.VegetableBendFactor);
 				if (param.VegetableForceBestSidedLighting != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING, param.VegetableForceBestSidedLighting);
@@ -2661,13 +2642,13 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				// Ligoscape
 				if (param.LigoSymmetry != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, param.LigoSymmetry);
-				if (param.LigoRotate != "")
+				if (param.LigoRotate != DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, param.LigoRotate);
 
 				// SWT
 				if (param.SWT != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT, param.SWT);
-				if (param.SWTWeight != "")
+				if (param.SWTWeight != DIFFERENT_VALUE_STRING)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, param.SWTWeight);
 
 				// RealTime Light.
@@ -2687,7 +2668,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT, param.ExportAsSunLight);
 
 				// ExportLightMapName
-				if ( (param.ExportLightMapName != "") || (listNode.size()==1))
+				if ( (param.ExportLightMapName != DIFFERENT_VALUE_STRING) || (listNode.size()==1))
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LM_ANIMATED_LIGHT, param.ExportLightMapName);
 
 				// UseLightingLocalAttenuation
@@ -2726,7 +2707,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				// Bone Scale
 				if(param.ExportBoneScale!= BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE, param.ExportBoneScale);
-				if ( (param.ExportBoneScaleNameExt != "") || (listNode.size()==1) )
+				if ( (param.ExportBoneScaleNameExt != DIFFERENT_VALUE_STRING) || (listNode.size()==1) )
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, param.ExportBoneScaleNameExt);
 
 				// Remanence

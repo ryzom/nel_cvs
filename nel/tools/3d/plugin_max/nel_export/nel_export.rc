@@ -204,13 +204,19 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     RTEXT           "Open portal occlusion model",IDC_STATIC,112,44,89,10,
                     SS_CENTERIMAGE
-    GROUPBOX        "Audio properties",IDC_STATIC,105,19,237,110
+    GROUPBOX        "Audio properties",IDC_STATIC,105,19,237,141
     RTEXT           "Sound group",IDC_STATIC,111,86,90,14
     COMBOBOX        IDC_ENV_FX,209,106,123,87,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     RTEXT           "Environment FX",IDC_STATIC,112,106,89,10,SS_CENTERIMAGE
     COMBOBOX        IDC_SOUND_GROUP,209,86,123,101,CBS_DROPDOWN | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Father audible",IDC_FATHER_AUDIBLE,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,210,135,61,10
+    CONTROL         "Audible from father",IDC_AUDIBLE_FROM_FATHER,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,210,145,81,10
+    CONTROL         "Audible like visible",IDC_AUDIBLE_LIKE_VISIBLE,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,210,125,73,10
 END
 
 IDD_LIGHTMAP DIALOG DISCARDABLE  0, 0, 360, 211

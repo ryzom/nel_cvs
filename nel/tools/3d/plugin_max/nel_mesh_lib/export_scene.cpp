@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.35 2003/07/07 10:28:24 berenguier Exp $
+ * $Id: export_scene.cpp,v 1.36 2003/08/04 15:02:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,11 +208,14 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 	{
 		INode *pNode = *it;
 
-		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32);
-		bool bFatherVisible = nAccelType&4?true:false;
-		bool bVisibleFromFather = nAccelType&8?true:false;
+		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, NEL3D_APPDATA_ACCEL_DEFAULT);
+		bool bFatherVisible = nAccelType&NEL3D_APPDATA_ACCEL_FATHER_VISIBLE?true:false;
+		bool bVisibleFromFather = nAccelType&NEL3D_APPDATA_ACCEL_VISIBLE_FROM_FATHER?true:false;
+		bool bAudibleLikeVisible = (nAccelType&NEL3D_APPDATA_ACCEL_AUDIBLE_NOT_LIKE_VISIBLE)?false:true;
+		bool bFatherAudible = bAudibleLikeVisible ? bFatherVisible : nAccelType&NEL3D_APPDATA_ACCEL_FATHER_AUDIBLE?true:false;
+		bool bAudibleFromFather = bAudibleLikeVisible ? bVisibleFromFather : nAccelType&NEL3D_APPDATA_ACCEL_AUDIBLE_FROM_FATHER?true:false;
 
-		if ((nAccelType&3) == 2) // If cluster
+		if ((nAccelType&NEL3D_APPDATA_ACCEL_TYPE) == NEL3D_APPDATA_ACCEL_CLUSTER) // If cluster
 		if (!RPO::isZone (*pNode, tvTime))
 		if (CExportNel::isMesh(*pNode, tvTime))
 		{
@@ -246,6 +249,8 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 			clusterTemp.FatherVisible = bFatherVisible;
 			clusterTemp.VisibleFromFather = bVisibleFromFather;
+			clusterTemp.FatherAudible = bFatherAudible;
+			clusterTemp.AudibleFromFather = bAudibleFromFather;
 			clusterTemp.Name = pNode->GetName();
 
 			vClusters.push_back (clusterTemp);

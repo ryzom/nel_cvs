@@ -89,8 +89,11 @@
 #define IDC_VISIBLE_FROM_FATHER         1050
 #define IDC_DYNAMIC_PORTAL              1051
 #define IDC_EDIT_INSTANCE_NAME          1052
+#define IDC_FATHER_AUDIBLE              1052
 #define IDC_DONT_ADD_TO_SCENE           1053
+#define IDC_AUDIBLE_FROM_FATHER         1053
 #define IDC_VERSION                     1054
+#define IDC_AUDIBLE_LIKE_VISIBLE        1054
 #define IDC_STATICINFO                  1055
 #define IDC_SHOWLUMEL                   1056
 #define IDC_CLUSTERIZE                  1057

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.51 2003/06/12 14:36:49 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.51.4.1 2003/08/12 16:12:43 lecroart Exp $
  *
  */
 
@@ -822,214 +822,90 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 
 	for (uint i = 0; i < varpath.Destination.size (); i++)
 	{
-		string service = varpath.Destination[i].first;
-
-		if (service == "*")
+		CVarPath vp (varpath.Destination[i].first);
+		for (uint t = 0; t < vp.Destination.size (); t++)
 		{
-			// add services that I manage
-			for (uint j = 0; j < Services.size (); j++)
+			string service = vp.Destination[t].first;
+			
+			if (service == "*")
 			{
-				if (Services[j].Connected)
+				// add services that I manage
+				for (uint j = 0; j < Services.size (); j++)
 				{
-					bool send = true;
-					
-					// check if the command is not to stop the service
-					CVarPath subvarpath(varpath.Destination[i].second);
-					for (uint k = 0; k < subvarpath.Destination.size (); k++)
+					if (Services[j].Connected)
 					{
-						if (subvarpath.Destination[k].first == "State=0")
+						bool send = true;
+						
+						// check if the command is not to stop the service
+						CVarPath subvarpath(varpath.Destination[i].second);
+						for (uint k = 0; k < subvarpath.Destination.size (); k++)
 						{
-							// If we stop the service, we don't have to reconnect the service
-							Services[j].AutoReconnect = false;
+							if (subvarpath.Destination[k].first == "State=0")
+							{
+								// If we stop the service, we don't have to reconnect the service
+								Services[j].AutoReconnect = false;
+							}
+							else if (subvarpath.Destination[k].first == "State=-1")
+							{
+								Services[j].AutoReconnect = false;
+	#ifdef NL_OS_UNIX
+								// kill the service
+								kill (Services[j].PId, SIGKILL);
+								send = false;
+	#endif // NL_OS_UNIX
+							}
+							else if (subvarpath.Destination[k].first == "State=2")
+							{
+								Services[j].AutoReconnect = false;
+								Services[j].Relaunch = true;
+							}
 						}
-						else if (subvarpath.Destination[k].first == "State=-1")
+						
+						if (send)
 						{
-							Services[j].AutoReconnect = false;
-#ifdef NL_OS_UNIX
-							// kill the service
-							kill (Services[j].PId, SIGKILL);
-							send = false;
-#endif // NL_OS_UNIX
-						}
-						else if (subvarpath.Destination[k].first == "State=2")
-						{
-							Services[j].AutoReconnect = false;
-							Services[j].Relaunch = true;
+							// now send the request to the service
+							addRequestWaitingNb (rid);
+							Services[j].WaitingRequestId.push_back (rid);
+							CMessage msgout("GET_VIEW");
+							msgout.serial(rid);
+							msgout.serial (varpath.Destination[i].second);
+							nlassert (Services[j].ServiceId);
+							CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
+							nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
 						}
 					}
-					
-					if (send)
-					{
-						// now send the request to the service
-						addRequestWaitingNb (rid);
-						Services[j].WaitingRequestId.push_back (rid);
-						CMessage msgout("GET_VIEW");
-						msgout.serial(rid);
-						msgout.serial (varpath.Destination[i].second);
-						nlassert (Services[j].ServiceId);
-						CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
-						nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
-					}
 				}
-			}
 
-			// add myself
-			addRequestWaitingNb (rid);
-			
-			vector<pair<vector<string>, vector<string> > > answer;
-			
-			serviceGetView (rid, varpath.Destination[i].second, answer);
-			
-			addRequestAnswer (rid, answer);
-			nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
-		}
-		else if (service == "#")
-		{
-			uint j;
-			// add registered services
-			for (j = 0; j < RegisteredServices.size (); j++)
-			{
-				SIT sit = findService (RegisteredServices[j]);
-				if (sit == Services.end())
-				{
-					// we fake a return value because we want all services, even if they are offline
-					addRequestWaitingNb (rid);
-
-					CVarPath subvarpath(varpath.Destination[i].second);
-
-					vector<string> vara;
-					vector<string> vala;
-					
-					// add default row
-					vara.push_back ("service");
-					vala.push_back (RegisteredServices[j]);
-					
-					for (uint k = 0; k < subvarpath.Destination.size (); k++)
-					{
-						uint pos = subvarpath.Destination[k].first.find("=");
-						if (pos != string::npos)
-							vara.push_back(subvarpath.Destination[k].first.substr(0, pos));
-						else
-							vara.push_back(subvarpath.Destination[k].first);
-
-						string val = "???";
-						// handle special case of non running service
-						if (subvarpath.Destination[k].first == "State")
-							val = "Offline";
-						else if (subvarpath.Destination[k].first == "State=1" || subvarpath.Destination[k].first == "State=2")
-						{
-							// we want to start the service
-							if (startService (RegisteredServices[j]))
-								val = "Launching";
-							else
-								val = "Failed";
-						}
-
-						vala.push_back (val);
-					}
-
-					addRequestAnswer (rid, vara, vala);
-					nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), RegisteredServices[j].c_str());
-				}
-				else
-				{
-					// send the request to the registered online service
-					addRequestWaitingNb (rid);
-
-					(*sit).WaitingRequestId.push_back (rid);
-					CMessage msgout("GET_VIEW");
-					msgout.serial(rid);
-					msgout.serial (varpath.Destination[i].second);
-					nlassert ((*sit).ServiceId);
-					CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
-					nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
-				}
-			}
-
-			// add services that are online but not registered
-			for (j = 0; j < Services.size (); j++)
-			{
-				if (Services[j].Connected && Services[j].AliasName.empty())
-				{
-					addRequestWaitingNb (rid);
-					
-					Services[j].WaitingRequestId.push_back (rid);
-					CMessage msgout("GET_VIEW");
-					msgout.serial(rid);
-					msgout.serial (varpath.Destination[i].second);
-					nlassert (Services[j].ServiceId);
-					CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
-					nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
-				}
-			}
-
-			// add myself
-			addRequestWaitingNb (rid);
-
-			vector<pair<vector<string>, vector<string> > > answer;
-			
-			serviceGetView (rid, varpath.Destination[i].second, answer);
-			addRequestAnswer (rid, answer);
-			nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), "AES");
-		}
-		else
-		{
-			if (service.find ("AES") != string::npos)
-			{
-				// it's for me, I don't send message to myself so i manage it right now
+				// add myself
 				addRequestWaitingNb (rid);
 				
 				vector<pair<vector<string>, vector<string> > > answer;
 				
 				serviceGetView (rid, varpath.Destination[i].second, answer);
+				
 				addRequestAnswer (rid, answer);
 				nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 			}
-			else
+			else if (service == "#")
 			{
-/*				// send the request to the good service
-				uint pos = service.find ("-");
-				if (pos == string::npos)
+				uint j;
+				// add registered services
+				for (j = 0; j < RegisteredServices.size (); j++)
 				{
-					bool found = false;
-					for (uint j = 0; j < Services.size (); j++)
+					SIT sit = findService (RegisteredServices[j]);
+					if (sit == Services.end())
 					{
-						if (Services[j].Connected && Services[j].ShortName == service)
-						{
-							addRequestWaitingNb (rid);
-
-							Services[j].WaitingRequestId.push_back (rid);
-							CMessage msgout("GET_VIEW");
-							msgout.serial(rid);
-							msgout.serial (varpath.Destination[i].second);
-							CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
-							nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), Services[j].ShortName.c_str(), Services[j].ServiceId);
-							found = true;
-						}
-					}
-				}
-				else
-				{
-*/	
-				SIT sit = findService (service);
-				if (sit == Services.end ())
-				{
-					if (!isRegisteredService(service))
-					{
-						nlwarning ("Service %s is not online and not found in registered service list", service.c_str ());
-					}
-					else
-					{
+						// we fake a return value because we want all services, even if they are offline
 						addRequestWaitingNb (rid);
-						
+
 						CVarPath subvarpath(varpath.Destination[i].second);
-						
+
 						vector<string> vara;
 						vector<string> vala;
 						
 						// add default row
 						vara.push_back ("service");
-						vala.push_back (service);
+						vala.push_back (RegisteredServices[j]);
 						
 						for (uint k = 0; k < subvarpath.Destination.size (); k++)
 						{
@@ -1038,7 +914,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 								vara.push_back(subvarpath.Destination[k].first.substr(0, pos));
 							else
 								vara.push_back(subvarpath.Destination[k].first);
-							
+
 							string val = "???";
 							// handle special case of non running service
 							if (subvarpath.Destination[k].first == "State")
@@ -1046,61 +922,190 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							else if (subvarpath.Destination[k].first == "State=1" || subvarpath.Destination[k].first == "State=2")
 							{
 								// we want to start the service
-								if (startService (service))
+								if (startService (RegisteredServices[j]))
 									val = "Launching";
 								else
 									val = "Failed";
 							}
-							
+
 							vala.push_back (val);
 						}
-						
+
 						addRequestAnswer (rid, vara, vala);
-						nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
+						nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), RegisteredServices[j].c_str());
 					}
-				}
-				else
-				{
-					bool send = true;
-					// check if the command is not to stop the service
-					CVarPath subvarpath(varpath.Destination[i].second);
-					for (uint k = 0; k < subvarpath.Destination.size (); k++)
+					else
 					{
-						if (subvarpath.Destination[k].first == "State=0")
-						{
-							// If we stop the service, we don't have to reconnect the service
-							(*sit).AutoReconnect = false;
-						}
-						else if (subvarpath.Destination[k].first == "State=-1")
-						{
-							(*sit).AutoReconnect = false;
-#ifdef NL_OS_UNIX
-							// kill the service
-							kill ((*sit).PId, SIGKILL);
-							send = false;
-#endif // NL_OS_UNIX
-						}
-						else if (subvarpath.Destination[k].first == "State=2")
-						{
-							(*sit).AutoReconnect = false;
-							(*sit).Relaunch = true;
-						}
-					}
-					
-					if (send)
-					{
-						// now send the request to the service
+						// send the request to the registered online service
 						addRequestWaitingNb (rid);
+
 						(*sit).WaitingRequestId.push_back (rid);
 						CMessage msgout("GET_VIEW");
 						msgout.serial(rid);
 						msgout.serial (varpath.Destination[i].second);
 						nlassert ((*sit).ServiceId);
 						CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
-						nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
+						nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
 					}
 				}
-			}			
+
+				// add services that are online but not registered
+				for (j = 0; j < Services.size (); j++)
+				{
+					if (Services[j].Connected && Services[j].AliasName.empty())
+					{
+						addRequestWaitingNb (rid);
+						
+						Services[j].WaitingRequestId.push_back (rid);
+						CMessage msgout("GET_VIEW");
+						msgout.serial(rid);
+						msgout.serial (varpath.Destination[i].second);
+						nlassert (Services[j].ServiceId);
+						CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
+						nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
+					}
+				}
+
+				// add myself
+				addRequestWaitingNb (rid);
+
+				vector<pair<vector<string>, vector<string> > > answer;
+				
+				serviceGetView (rid, varpath.Destination[i].second, answer);
+				addRequestAnswer (rid, answer);
+				nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), "AES");
+			}
+			else
+			{
+				if (service.find ("AES") != string::npos)
+				{
+					// it's for me, I don't send message to myself so i manage it right now
+					addRequestWaitingNb (rid);
+					
+					vector<pair<vector<string>, vector<string> > > answer;
+					
+					serviceGetView (rid, varpath.Destination[i].second, answer);
+					addRequestAnswer (rid, answer);
+					nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
+				}
+				else
+				{
+	/*				// send the request to the good service
+					uint pos = service.find ("-");
+					if (pos == string::npos)
+					{
+						bool found = false;
+						for (uint j = 0; j < Services.size (); j++)
+						{
+							if (Services[j].Connected && Services[j].ShortName == service)
+							{
+								addRequestWaitingNb (rid);
+
+								Services[j].WaitingRequestId.push_back (rid);
+								CMessage msgout("GET_VIEW");
+								msgout.serial(rid);
+								msgout.serial (varpath.Destination[i].second);
+								CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
+								nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), Services[j].ShortName.c_str(), Services[j].ServiceId);
+								found = true;
+							}
+						}
+					}
+					else
+					{
+	*/
+
+					SIT sit = findService (service);
+					if (sit == Services.end ())
+					{
+						if (!isRegisteredService(service))
+						{
+							nlwarning ("Service %s is not online and not found in registered service list", service.c_str ());
+						}
+						else
+						{
+							addRequestWaitingNb (rid);
+							
+							CVarPath subvarpath(varpath.Destination[i].second);
+							
+							vector<string> vara;
+							vector<string> vala;
+							
+							// add default row
+							vara.push_back ("service");
+							vala.push_back (service);
+							
+							for (uint k = 0; k < subvarpath.Destination.size (); k++)
+							{
+								uint pos = subvarpath.Destination[k].first.find("=");
+								if (pos != string::npos)
+									vara.push_back(subvarpath.Destination[k].first.substr(0, pos));
+								else
+									vara.push_back(subvarpath.Destination[k].first);
+								
+								string val = "???";
+								// handle special case of non running service
+								if (subvarpath.Destination[k].first == "State")
+									val = "Offline";
+								else if (subvarpath.Destination[k].first == "State=1" || subvarpath.Destination[k].first == "State=2")
+								{
+									// we want to start the service
+									if (startService (service))
+										val = "Launching";
+									else
+										val = "Failed";
+								}
+								
+								vala.push_back (val);
+							}
+							
+							addRequestAnswer (rid, vara, vala);
+							nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
+						}
+					}
+					else
+					{
+						bool send = true;
+						// check if the command is not to stop the service
+						CVarPath subvarpath(varpath.Destination[i].second);
+						for (uint k = 0; k < subvarpath.Destination.size (); k++)
+						{
+							if (subvarpath.Destination[k].first == "State=0")
+							{
+								// If we stop the service, we don't have to reconnect the service
+								(*sit).AutoReconnect = false;
+							}
+							else if (subvarpath.Destination[k].first == "State=-1")
+							{
+								(*sit).AutoReconnect = false;
+#ifdef NL_OS_UNIX
+								// kill the service
+								kill ((*sit).PId, SIGKILL);
+								send = false;
+#endif // NL_OS_UNIX
+							}
+							else if (subvarpath.Destination[k].first == "State=2")
+							{
+								(*sit).AutoReconnect = false;
+								(*sit).Relaunch = true;
+							}
+						}
+						
+						if (send)
+						{
+							// now send the request to the service
+							addRequestWaitingNb (rid);
+							(*sit).WaitingRequestId.push_back (rid);
+							CMessage msgout("GET_VIEW");
+							msgout.serial(rid);
+							msgout.serial (varpath.Destination[i].second);
+							nlassert ((*sit).ServiceId);
+							CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
+							nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
+						}
+					}
+				}
+			}
 		}
 	}
 

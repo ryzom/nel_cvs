@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.5 2002/09/11 13:51:26 besson Exp $
+ * $Id: font_manager.h,v 1.6 2004/10/28 17:43:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,7 @@ class CFontManager
 	uint32 _NbChar;
 
 	CMaterial		*_MatFont;
-	CTextureFont	*_TexFont;
+	CSmartPtr<CTextureFont>	_TexFont;
 
 public:
 
@@ -155,6 +155,11 @@ public:
 	{
 		_TexFont->dumpTextureFont (filename);
 	}
+
+	/**
+	* invalidate the texture when the text context has been modified
+	*/
+	void invalidate();
 
 };
 

@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.18 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.19 2003/03/25 13:28:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,11 @@
 
 // The one and only INITGUID
 #define INITGUID
+
+#ifdef DIRECTSOUND_VERSION
+	#undef DIRECTSOUND_VERSION
+#endif
+#define DIRECTSOUND_VERSION 0x0800
 
 #include "stddsound.h"
 #include "../sound_driver.h"

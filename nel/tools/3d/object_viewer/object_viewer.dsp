@@ -311,6 +311,18 @@ SOURCE=.\bmp00018.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bmp00019.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bmp00020.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bmp00021.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\icon1.ico
 # End Source File
 # Begin Source File
@@ -412,6 +424,14 @@ SOURCE=.\direction_edit.h
 # Begin Source File
 
 SOURCE=R:\code\nel\tools\3d\object_viewer\edit_attrib_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_ps_sound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_ps_sound.h
 # End Source File
 # Begin Source File
 

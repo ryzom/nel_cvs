@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.4 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: tile_bank.h,v 1.5 2000/11/21 18:03:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,7 +169,7 @@ public:
 	{
 		reset();
 	}
-	void set (int width, int height, const std::vector<NLMISC::CRGBA>& array);
+	void set (int width, int height, const std::vector<NLMISC::CBGRA>& array);
 	void doubleSize ();
 	bool operator== (const CTileBorder& border) const;
 	void operator= (const CTileBorder& border);
@@ -191,13 +191,13 @@ public:
 		return _height;
 	}
 
-	static bool compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2);
+	static bool compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante);
 
 private:
 	bool _set;
 	sint32 _width;
 	sint32 _height;
-	std::vector<NLMISC::CRGBA> _borders[borderCount];
+	std::vector<NLMISC::CBGRA> _borders[borderCount];
 	static const sint _version;
 };
 
@@ -226,6 +226,9 @@ public:
 	void removeTile128 (int indexInTileSet, CTileBank& bank);
 	void removeTile256 (int indexInTileSet, CTileBank& bank);
 
+	// clear
+	void ClearTransition (TTransition transition, CTile::TBitmap type, CTileBank& bank);
+
 	// set
 	void setName (const std::string& name);
 	void setTile128 (int indexInTileSet, const std::string& name, CTile::TBitmap type, CTileBank& bank);
@@ -235,9 +238,10 @@ public:
 	void setBorder (CTile::TBitmap type, const CTileBorder& border);
 
 	// check
-	TError checkTile128 (CTile::TBitmap type, const CTileBorder& border);
-	TError checkTile256 (CTile::TBitmap type, const CTileBorder& border);
-	TError checkTileTransition (TTransition transition, CTile::TBitmap type, const CTileBorder& border);
+	TError checkTile128 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
+	TError checkTile256 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
+	TError checkTileTransition (TTransition transition, CTile::TBitmap type, const CTileBorder& border, int& indexError,
+		int& pixel, int& composante);
 
 	// get
 	const std::string& getName () const;
@@ -277,6 +281,12 @@ public:
 	TTransition getExistingTransitionTile (TFlagBorder _top, TFlagBorder _bottom, TFlagBorder _left, 
 		TFlagBorder _right, int reject, CTile::TBitmap type);
 	static TTransition getComplementaryTransition (TTransition transition);
+	static TFlagBorder getInvertBorder (TFlagBorder border);
+	static TFlagBorder getOrientedBorder (TBorder where, TFlagBorder border);
+	static TFlagBorder getEdgeType (TTransition _what, TBorder _where)
+	{
+		return _transitionFlags[_what][_where];
+	}
 
 	// other
 	void addChild (const std::string& name);
@@ -289,6 +299,7 @@ public:
 private:
 	static TFlagBorder getComplementaryBorder (TFlagBorder border);
 
+
 private:
 	std::string	_name;
 	std::vector<sint32>	_tile128;
@@ -299,8 +310,8 @@ private:
 	CTileBorder _border256[CTile::bitmapCount];
 	CTileBorder _borderTransition[count][CTile::bitmapCount];
 	static const sint _version;
-	static const TFlagBorder _transitionFlags[count][4];
 	static const char* _errorMessage[CTileSet::errorCount];
+	static const TFlagBorder _transitionFlags[count][4];
 };
 
 /**
@@ -314,6 +325,7 @@ class CTileBank
 {
 	friend class CTileSet;
 public:
+	enum TTileType { _128x128=0, _256x256, transition, undefined };
 	// Get
 	sint getLandCount () const 
 	{ 
@@ -357,15 +369,34 @@ public:
 	void removeTileSet (sint landIndex);
 	void clear ();
 	sint getNumBitmap (CTile::TBitmap bitmap) const;
+	void computeXRef ();
+	void getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const;
 
 	void    serial(class NLMISC::IStream &f);
 private:
 	sint	createTile ();
 	void	freeTile (int tileIndex);
 private:
+	struct CTileXRef
+	{
+		CTileXRef ()
+		{
+			_xRefTileType=undefined;
+		}
+		CTileXRef (int tileSet, int number, TTileType type)
+		{
+			_xRefTileSet=tileSet;
+			_xRefTileNumber=number;
+			_xRefTileType=type;
+		}
+		int	_xRefTileSet;
+		int	_xRefTileNumber;
+		TTileType	_xRefTileType;
+	};
 	std::vector<CTileLand>	_landVector;
 	std::vector<CTileSet>	_tileSetVector;
 	std::vector<CTile>	_tileVector;
+	std::vector<CTileXRef>	_tileXRef;
 	static const sint	_version;
 };
 

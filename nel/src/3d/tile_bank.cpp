@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.7 2000/11/10 11:19:21 lecroart Exp $
+ * $Id: tile_bank.cpp,v 1.8 2000/11/21 18:03:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,6 +205,46 @@ sint CTileBank::getNumBitmap (CTile::TBitmap bitmap) const
 	}
 	return setString.size();
 }
+// ***************************************************************************
+void CTileBank::computeXRef ()
+{
+	_tileXRef.resize (_tileVector.size());
+	for (int s=0; s<(sint)_tileSetVector.size(); s++)
+	{
+		int t;
+		CTileSet *tileSet=getTileSet (s);
+		for (t=0; t<tileSet->getNumTile128(); t++)
+		{
+			int index=tileSet->getTile128 (t);
+			_tileXRef[index]._xRefTileSet=s;
+			_tileXRef[index]._xRefTileNumber=t;
+			_tileXRef[index]._xRefTileType=_128x128;
+		}
+		for (t=0; t<tileSet->getNumTile256(); t++)
+		{
+			int index=tileSet->getTile256 (t);
+			_tileXRef[index]._xRefTileSet=s;
+			_tileXRef[index]._xRefTileNumber=t;
+			_tileXRef[index]._xRefTileType=_256x256;
+		}
+		for (t=0; t<CTileSet::count; t++)
+		{
+			int index=tileSet->getTransition (t)->getTile();
+			_tileXRef[index]._xRefTileSet=s;
+			_tileXRef[index]._xRefTileNumber=t;
+			_tileXRef[index]._xRefTileType=transition;
+		}
+	}
+}
+// ***************************************************************************
+void CTileBank::getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const
+{
+	nlassert (tile>=0);
+	nlassert (tile<(sint)_tileXRef.size());
+	tileSet=_tileXRef[tile]._xRefTileSet;
+	number=_tileXRef[tile]._xRefTileNumber;
+	type=_tileXRef[tile]._xRefTileType;
+}
 
 
 // ***************************************************************************
@@ -266,7 +306,7 @@ const CTileSet::TFlagBorder CTileSet::_transitionFlags[CTileSet::count][4]=
 	{_0000,_1110,_0111,_0000},	// tile 5
 
 	{_0000,_1111,_0001,_0001},	// tile 6
-	{_0000,_0001,_0001,_0000},	// tile 7
+	{_0000,_1000,_0001,_0000},	// tile 7
 	{_1111,_1000,_1111,_1000},	// tile 8
 	{_1000,_1000,_1111,_0000},	// tile 9
 	{_1000,_0000,_1000,_0000},	// tile 10
@@ -277,7 +317,7 @@ const CTileSet::TFlagBorder CTileSet::_transitionFlags[CTileSet::count][4]=
 	{_0111,_1111,_0001,_1111},	// tile 14
 	{_1110,_1000,_1111,_0000},	// tile 15
 	{_1000,_1110,_1111,_0000},	// tile 16
-	{_0111,_1111,_0001,_1111},	// tile 17
+	{_1111,_0001,_1110,_1111},	// tile 17
 
 	{_1000,_0000,_1110,_0000},	// tile 18
 	{_0000,_0111,_0000,_0001},	// tile 19
@@ -377,14 +417,14 @@ void CTileSet::setTile128 (int indexInTileSet, const std::string& name, CTile::T
 	tile->setFileName (type, name);
 }
 // ***************************************************************************
-CTileSet::TError CTileSet::checkTile128 (CTile::TBitmap type, const CTileBorder& border)
+CTileSet::TError CTileSet::checkTile128 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante)
 {
 	// Self check
 	if ((border.getWidth()!=128)||(border.getHeight()!=128))
 		return sizeInvalide;
-	if (!CTileBorder::compare (border, border, CTileBorder::top, CTileBorder::bottom))
+	if (!CTileBorder::compare (border, border, CTileBorder::top, CTileBorder::bottom, pixel, composante))
 		return topBottomNotTheSame;
-	if (!CTileBorder::compare (border, border, CTileBorder::left, CTileBorder::right))
+	if (!CTileBorder::compare (border, border, CTileBorder::left, CTileBorder::right, pixel, composante))
 		return rightLeftNotTheSame;
 
 	// Check
@@ -392,13 +432,13 @@ CTileSet::TError CTileSet::checkTile128 (CTile::TBitmap type, const CTileBorder&
 	{
 
 		// Other check
-		if (!CTileBorder::compare (border, _border128[type], CTileBorder::top, CTileBorder::top))
+		if (!CTileBorder::compare (border, _border128[type], CTileBorder::top, CTileBorder::top, pixel, composante))
 			return topInterfaceProblem;
-		if (!CTileBorder::compare (border, _border128[type], CTileBorder::bottom, CTileBorder::bottom))
+		if (!CTileBorder::compare (border, _border128[type], CTileBorder::bottom, CTileBorder::bottom, pixel, composante))
 			return bottomInterfaceProblem;
-		if (!CTileBorder::compare (border, _border128[type], CTileBorder::left, CTileBorder::left))
+		if (!CTileBorder::compare (border, _border128[type], CTileBorder::left, CTileBorder::left, pixel, composante))
 			return leftInterfaceProblem;
-		if (!CTileBorder::compare (border, _border128[type], CTileBorder::right, CTileBorder::right))
+		if (!CTileBorder::compare (border, _border128[type], CTileBorder::right, CTileBorder::right, pixel, composante))
 			return rightInterfaceProblem;
 	}
 	else
@@ -421,27 +461,27 @@ void CTileSet::addTile256 (int& indexInTileSet, CTileBank& bank)
 	_tile256.push_back (index);
 }
 // ***************************************************************************
-CTileSet::TError CTileSet::checkTile256 (CTile::TBitmap type, const CTileBorder& border)
+CTileSet::TError CTileSet::checkTile256 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante)
 {
 	// Self check
 	if ((border.getWidth()!=256)||(border.getHeight()!=256))
 		return sizeInvalide;
-	if (!CTileBorder::compare (border, border, CTileBorder::top, CTileBorder::bottom))
+	if (!CTileBorder::compare (border, border, CTileBorder::top, CTileBorder::bottom, pixel, composante))
 		return topBottomNotTheSame;
-	if (!CTileBorder::compare (border, border, CTileBorder::left, CTileBorder::right))
+	if (!CTileBorder::compare (border, border, CTileBorder::left, CTileBorder::right, pixel, composante))
 		return rightLeftNotTheSame;
 
 	// Check
 	if (_border256[type].isSet())
 	{
 		// Other check
-		if (!CTileBorder::compare (border, _border256[type], CTileBorder::top, CTileBorder::top))
+		if (!CTileBorder::compare (border, _border256[type], CTileBorder::top, CTileBorder::top, pixel, composante))
 			return topInterfaceProblem;
-		if (!CTileBorder::compare (border, _border256[type], CTileBorder::bottom, CTileBorder::bottom))
+		if (!CTileBorder::compare (border, _border256[type], CTileBorder::bottom, CTileBorder::bottom, pixel, composante))
 			return bottomInterfaceProblem;
-		if (!CTileBorder::compare (border, _border256[type], CTileBorder::left, CTileBorder::left))
+		if (!CTileBorder::compare (border, _border256[type], CTileBorder::left, CTileBorder::left, pixel, composante))
 			return leftInterfaceProblem;
-		if (!CTileBorder::compare (border, _border256[type], CTileBorder::right, CTileBorder::right))
+		if (!CTileBorder::compare (border, _border256[type], CTileBorder::right, CTileBorder::right, pixel, composante))
 			return rightInterfaceProblem;
 	}
 	else
@@ -468,87 +508,93 @@ void CTileSet::setTileTransition (TTransition transition, const std::string& nam
 	tile->setFileName (type, name);
 }
 // ***************************************************************************
-CTileSet::TError CTileSet::checkTileTransition (TTransition transition, CTile::TBitmap type, const CTileBorder& border)
+CTileSet::TError CTileSet::checkTileTransition (TTransition transition, CTile::TBitmap type, const CTileBorder& border, int& indexError,
+		int& pixel, int& composante)
 {
 	nlassert (transition>=0);
 	nlassert (transition<count);
 
 	// Check
+	indexError=-1;
 	if (_border128[type].isSet())
 	{
 		// Top
-		int nIndex=getExistingTransitionTile ((TFlagBorder)_transitionFlags[transition][top], dontcare, dontcare, dontcare, transition, type);
-		if (nIndex!=-1)
+		indexError=getExistingTransitionTile ((TFlagBorder)_transitionFlags[transition][top], dontcare, dontcare, dontcare, transition, type);
+		if (indexError!=-1)
 		{
-			if (!CTileBorder::compare (border, _borderTransition[nIndex][type], CTileBorder::top, CTileBorder::top))
+			if (!CTileBorder::compare (border, _borderTransition[indexError][type], CTileBorder::top, CTileBorder::top, pixel, composante))
 				return topInterfaceProblem;
 		}
-		nIndex=getExistingTransitionTile (dontcare, (TFlagBorder)_transitionFlags[transition][top], dontcare, dontcare, transition, type);
-		if (nIndex!=-1)
+		indexError=getExistingTransitionTile (dontcare, (TFlagBorder)_transitionFlags[transition][top], dontcare, dontcare, transition, type);
+		if (indexError!=-1)
 		{
-			if (!CTileBorder::compare (border, _borderTransition[nIndex][type], CTileBorder::top, CTileBorder::bottom))
+			if (!CTileBorder::compare (border, _borderTransition[indexError][type], CTileBorder::top, CTileBorder::bottom, pixel, composante))
 				return topInterfaceProblem;
 		}
+		indexError=-1;
 		if (_transitionFlags[transition][top]==_1111)
 		{
-			if (!CTileBorder::compare (border, _border128[type], CTileBorder::top, CTileBorder::top))
+			if (!CTileBorder::compare (border, _border128[type], CTileBorder::top, CTileBorder::top, pixel, composante))
 				return topInterfaceProblem;
 		}
 
 		// Bottom
-		nIndex=getExistingTransitionTile (dontcare, (TFlagBorder)_transitionFlags[transition][bottom], dontcare, dontcare, transition, type);
-		if (nIndex!=-1)
+		indexError=getExistingTransitionTile (dontcare, (TFlagBorder)_transitionFlags[transition][bottom], dontcare, dontcare, transition, type);
+		if (indexError!=-1)
 		{
-			if (!CTileBorder::compare (border, _borderTransition[nIndex][type], CTileBorder::bottom, CTileBorder::bottom))
+			if (!CTileBorder::compare (border, _borderTransition[indexError][type], CTileBorder::bottom, CTileBorder::bottom, pixel, composante))
 				return bottomInterfaceProblem;
 		}
-		nIndex=getExistingTransitionTile ((TFlagBorder)_transitionFlags[transition][bottom], dontcare, dontcare, dontcare, transition, type);
-		if (nIndex!=-1)
+		indexError=getExistingTransitionTile ((TFlagBorder)_transitionFlags[transition][bottom], dontcare, dontcare, dontcare, transition, type);
+		if (indexError!=-1)
 		{
-			if (!CTileBorder::compare (border, _borderTransition[nIndex][type], CTileBorder::bottom, CTileBorder::top))
+			if (!CTileBorder::compare (border, _borderTransition[indexError][type], CTileBorder::bottom, CTileBorder::top, pixel, composante))
 				return bottomInterfaceProblem;
 		}
+		indexError=-1;
 		if (_transitionFlags[transition][bottom]==_1111)
 		{
-			if (!CTileBorder::compare (border, _border128[type], CTileBorder::bottom, CTileBorder::bottom))
+			if (!CTileBorder::compare (border, _border128[type], CTileBorder::bottom, CTileBorder::bottom, pixel, composante))
 				return bottomInterfaceProblem;
 		}
 
 		// Left
-		nIndex=getExistingTransitionTile (dontcare, dontcare, (TFlagBorder)_transitionFlags[transition][left], dontcare, transition, type);
-		if (nIndex!=-1)
+		indexError=getExistingTransitionTile (dontcare, dontcare, (TFlagBorder)_transitionFlags[transition][left], dontcare, transition, type);
+		if (indexError!=-1)
 		{
-			if (!CTileBorder::compare (border, _borderTransition[nIndex][type], CTileBorder::left, CTileBorder::left))
+			if (!CTileBorder::compare (border, _borderTransition[indexError][type], CTileBorder::left, CTileBorder::left, pixel, composante))
 				return leftInterfaceProblem;
 		}
-		nIndex=getExistingTransitionTile (dontcare, dontcare, dontcare, (TFlagBorder)_transitionFlags[transition][left], transition, type);
-		if (nIndex!=-1)
+		indexError=getExistingTransitionTile (dontcare, dontcare, dontcare, (TFlagBorder)_transitionFlags[transition][left], transition, type);
+		if (indexError!=-1)
 		{
-			if (!CTileBorder::compare (border, _borderTransition[nIndex][type], CTileBorder::left, CTileBorder::right))
+			if (!CTileBorder::compare (border, _borderTransition[indexError][type], CTileBorder::left, CTileBorder::right, pixel, composante))
 				return leftInterfaceProblem;
 		}
+		indexError=-1;
 		if (_transitionFlags[transition][left]==_1111)
 		{
-			if (!CTileBorder::compare (border, _border128[type], CTileBorder::left, CTileBorder::left))
+			if (!CTileBorder::compare (border, _border128[type], CTileBorder::left, CTileBorder::left, pixel, composante))
 				return leftInterfaceProblem;
 		}
 
 		// Right
-		nIndex=getExistingTransitionTile (dontcare, dontcare, dontcare, (TFlagBorder)_transitionFlags[transition][right], transition, type);
-		if (nIndex!=-1)
+		indexError=getExistingTransitionTile (dontcare, dontcare, dontcare, (TFlagBorder)_transitionFlags[transition][right], transition, type);
+		if (indexError!=-1)
 		{
-			if (!CTileBorder::compare (border, _borderTransition[nIndex][type], CTileBorder::right, CTileBorder::right))
+			if (!CTileBorder::compare (border, _borderTransition[indexError][type], CTileBorder::right, CTileBorder::right, pixel, composante))
 				return rightInterfaceProblem;
 		}
-		nIndex=getExistingTransitionTile (dontcare, dontcare, (TFlagBorder)_transitionFlags[transition][right], dontcare, transition, type);
-		if (nIndex!=-1)
+		indexError=getExistingTransitionTile (dontcare, dontcare, (TFlagBorder)_transitionFlags[transition][right], dontcare, transition, type);
+		if (indexError!=-1)
 		{
-			if (!CTileBorder::compare (border, _borderTransition[nIndex][type], CTileBorder::right, CTileBorder::left))
+			if (!CTileBorder::compare (border, _borderTransition[indexError][type], CTileBorder::right, CTileBorder::left, pixel, composante))
 				return rightInterfaceProblem;
 		}
+		indexError=-1;
 		if (_transitionFlags[transition][right]==_1111)
 		{
-			if (!CTileBorder::compare (border, _border128[type], CTileBorder::right, CTileBorder::right))
+			if (!CTileBorder::compare (border, _border128[type], CTileBorder::right, CTileBorder::right, pixel, composante))
 				return rightInterfaceProblem;
 		}
 		return ok;
@@ -591,20 +637,6 @@ void CTileSet::removeTile256 (int indexInTileSet, CTileBank& bank)
 	_tile256.erase (_tile256.begin()+indexInTileSet);
 	bank.freeTile (index);
 }
-// ***************************************************************************
-/*void CTileSet::removeTileTransition (int indexInTileSet, CTileBank& bank)
-{
-	// Check args
-	nlassert (indexInTileSet>=0);
-	nlassert (indexInTileSet<(sint)_tile256.size());
-
-	// Old index
-	int index=_tile256[indexInTileSet];
-
-	// Erase
-	_tile256.erase (_tile256.begin()+indexInTileSet);
-	bank.freeTile (index);
-}*/
 // ***************************************************************************
 CTileSet::TTransition CTileSet::getTransitionTile (TFlagBorder _top, TFlagBorder _bottom, TFlagBorder _left, TFlagBorder _right)
 {
@@ -681,6 +713,52 @@ CTileSet::TFlagBorder CTileSet::getComplementaryBorder (TFlagBorder border)
 	}
 	return _0000;
 }
+// ***************************************************************************
+CTileSet::TFlagBorder CTileSet::getInvertBorder (TFlagBorder border)
+{
+	switch (border)
+	{
+	case _0000:
+		return _0000;
+	case _0001:
+		return _1000;
+	case _0111:
+		return _1110;
+	case _1000:
+		return _0001;
+	case _1110:
+		return _0111;
+	case _1111:
+		return _1111;
+	default:
+		nlassert (0);	// no
+	}
+	return _0000;
+}
+// ***************************************************************************
+CTileSet::TFlagBorder CTileSet::getOrientedBorder (TBorder where, TFlagBorder border)
+{
+	switch (where)
+	{
+	case left:
+	case bottom:
+		return border;
+	case top:
+	case right:
+		return getInvertBorder (border);
+	default:
+		nlassert (0);	// no
+	}
+	return _0000;
+}
+// ***************************************************************************
+void CTileSet::ClearTransition (TTransition transition, CTile::TBitmap type, CTileBank& bank)
+{
+	int nTile=_tileTransition[transition]._tile;
+	if (nTile!=-1)
+		bank.getTile (nTile)->clearTile(type);
+	_borderTransition[transition][type].reset();
+}
 
 
 // ***************************************************************************
@@ -706,7 +784,7 @@ void CTileBorder::serial(IStream &f)
 	f.serialCont (_borders[right]);
 }
 // ***************************************************************************
-void CTileBorder::set (int width, int height, const std::vector<CRGBA>& array)
+void CTileBorder::set (int width, int height, const std::vector<CBGRA>& array)
 {
 	// Check array size
 	nlassert (width>0);
@@ -743,13 +821,32 @@ void CTileBorder::set (int width, int height, const std::vector<CRGBA>& array)
 	_set=true;
 }
 // ***************************************************************************
-bool CTileBorder::compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2)
+bool CTileBorder::compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante)
 {
 	// Check border is initialized
 	nlassert (border1.isSet());
 	nlassert (border2.isSet());
 
-	return border1._borders[where1]==border2._borders[where2];
+	if (border1._borders[where1].size()!=border2._borders[where2].size())
+		return false;
+	for (int i=0; i<(int)border1._borders[where1].size(); i++)
+	{
+		if (!(border1._borders[where1][i]==border2._borders[where2][i]))
+		{
+			pixel=i;
+			if (border1._borders[where1][i].R!=border2._borders[where2][i].R)
+				composante=0;
+			else if (border1._borders[where1][i].G!=border2._borders[where2][i].G)
+				composante=1;
+			else if (border1._borders[where1][i].B!=border2._borders[where2][i].B)
+				composante=2;
+			else
+				composante=3;
+			return false;
+		}
+	}
+
+	return true;
 }
 // ***************************************************************************
 bool CTileBorder::operator== (const CTileBorder& border) const

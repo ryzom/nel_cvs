@@ -1,7 +1,7 @@
 /** \file common.h
  * <File description>
  *
- * $Id: common.h,v 1.4 2000/10/24 14:18:28 lecroart Exp $
+ * $Id: common.h,v 1.5 2000/10/25 10:09:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 
 #include "nel/misc/types_nl.h"
+#include <algorithm>
 #include <stdlib.h>
 
 
@@ -69,17 +70,43 @@ const	double	PI= 3.1415926535897932384626433832795;
 // MIN/MAX extended functions.
 
 template<class T>	inline T minof(T a,  T b,  T c)
-	{return min(min(a,b),c);}
+	{return std::min(std::min(a,b),c);}
 template<class T>	inline T minof(T a,  T b,  T c,  T d)
-	{return min(minof(a,b,c),d);}
+	{return std::min(minof(a,b,c),d);}
 template<class T>	inline T minof(T a,  T b,  T c,  T d,  T e)
-	{return min(minof(a,b,c,d),e);}
+	{return std::min(minof(a,b,c,d),e);}
 template<class T>	inline T maxof(T a,  T b,  T c)
-	{return max(max(a,b),c);}
+	{return std::max(std::max(a,b),c);}
 template<class T>	inline T maxof(T a,  T b,  T c,  T d)
-	{return max(maxof(a,b,c),d);}
+	{return std::max(maxof(a,b,c),d);}
 template<class T>	inline T maxof(T a,  T b,  T c,  T d,  T e)
-	{return max(maxof(a,b,c,d),e);}
+	{return std::max(maxof(a,b,c,d),e);}
+
+
+// ============================================================================================
+/// Return the value maximized to the next power of 2 of v.   eg: raiseToNextPowerOf2(8)==8.  raiseToNextPowerOf2(5)==8.
+inline uint	raiseToNextPowerOf2(uint v)
+{
+	uint	res=1;
+	while(res<v)
+		res<<=1;
+	
+	return res;
+}
+
+/// Return the power of 2 of v.   eg: getPowerOf2(8)==3.  getPowerOf2(5)==3.
+inline uint	getPowerOf2(uint v)
+{
+	uint	res=1;
+	uint	ret=0;
+	while(res<v)
+	{
+		ret++;
+		res<<=1;
+	}
+	
+	return ret;
+}
 
 
 }

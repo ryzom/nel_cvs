@@ -1,7 +1,7 @@
 /** \file plane.h
  * class CPlane
  *
- * $Id: plane.h,v 1.3 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: plane.h,v 1.4 2000/10/25 10:09:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,14 @@ public:
 	 * may NOT be normalized.
 	 */
 	CVector	getNormal() const;
+	/**
+	 * Normalize the plane, such that getNormal() return a normalized vector.
+	 */
+	void	normalize();
+	/**
+	 * return the normalized version of a plane. \see normalize()
+	 */
+	CPlane	normed() const;
 	//@}
 
 

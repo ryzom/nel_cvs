@@ -1,7 +1,7 @@
 /** \file plane_inline.h
  * class CPlane
  *
- * $Id: plane_inline.h,v 1.4 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: plane_inline.h,v 1.5 2000/10/25 10:09:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,10 +37,10 @@ inline	CVector	CPlane::getNormal() const
 	return CVector(a,b,c);
 }
 //============================================================
-inline	float	CPlane::distance(const CVector &p) const
+inline	float	CPlane::distance(const CVector &v) const
 {
-	CVector	v= getNormal().normed();
-	return (float)fabs(v*p + d);
+	CPlane	p= normed();
+	return (float)fabs(p*v);
 }
 //============================================================
 inline	float	CPlane::operator*(const CVector &p) const
@@ -62,6 +62,27 @@ inline	CVector CPlane::intersect(const CVector &a,const CVector &b) const
 inline	CVector CPlane::project(const CVector &p0) const
 {
 	return intersect(p0, p0+getNormal());
+}
+
+//============================================================
+inline	void	CPlane::normalize()
+{
+	float	n= getNormal().norm();
+	if(n)
+	{
+		float	oon= 1.0f/n;
+		a*= oon;
+		b*= oon;
+		c*= oon;
+		d*= oon;
+	}
+}
+//============================================================
+inline	CPlane	CPlane::normed() const
+{
+	CPlane	ret= *this;
+	ret.normalize();
+	return ret;
 }
 
 

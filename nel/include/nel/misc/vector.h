@@ -1,7 +1,7 @@
 /** \file vector.h
  * CVector class
  *
- * $Id: vector.h,v 1.5 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: vector.h,v 1.6 2000/10/25 10:09:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,6 +120,11 @@ public:		// Methods.
 	 * \sa sphericToCartesian()
 	 */
 	void	cartesianToSpheric(float &theta,float &phi, float &r) const;
+	/// Set all vector x/y/z as minimum of a/b x/y/z  (respectively).
+	void	minof(const CVector &a, const CVector &b);
+	/// Set all vector x/y/z as maximum of a/b x/y/z  (respectively).
+	void	maxof(const CVector &a, const CVector &b);
+	/// serial.
 	void	serial(IStream &f);
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file vector_inline.h
  * CVector class inline definitions
  *
- * $Id: vector_inline.h,v 1.6 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: vector_inline.h,v 1.7 2000/10/25 10:09:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,18 @@ inline	void	CVector::sphericToCartesian(float r, float theta,float phi)
 	x= (float)(r*ct*cp);
 	y= (float)(r*st*cp);
 	z= (float)(r*sp);
+}
+inline	void	CVector::minof(const CVector &a, const CVector &b)
+{
+	x= std::min(a.x, b.x);
+	y= std::min(a.y, b.y);
+	z= std::min(a.z, b.z);
+}
+inline	void	CVector::maxof(const CVector &a, const CVector &b)
+{
+	x= std::max(a.x, b.x);
+	y= std::max(a.y, b.y);
+	z= std::max(a.z, b.z);
 }
 inline	void	CVector::serial(IStream &f)
 {

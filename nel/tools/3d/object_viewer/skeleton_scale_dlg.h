@@ -24,7 +24,7 @@ class CSkeletonScaleDlg : public CDialog
 {
 // Construction
 public:
-	CSkeletonScaleDlg(CWnd* pParent = NULL);   // standard constructor
+	CSkeletonScaleDlg(CObjectViewer *viewer, CWnd* pParent = NULL);   // standard constructor
 	~CSkeletonScaleDlg();
 
 // Dialog Data
@@ -108,6 +108,7 @@ protected:
 	afx_msg void OnSsdButtonMirror();
 	afx_msg void OnSsdButtonSaveScale();
 	afx_msg void OnSsdButtonLoadScale();
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -125,6 +126,7 @@ private:
 	};
 	
 private:
+	CObjectViewer								*_ObjViewer;
 	NLMISC::CRefPtr<NL3D::CSkeletonModel>		_SkeletonModel;
 	std::string									_SkeletonFileName;
 	TScaleId									_SliderEdited;

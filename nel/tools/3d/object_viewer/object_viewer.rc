@@ -1728,8 +1728,9 @@ BEGIN
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_SKELETON_SCALE_DLG DIALOGEX 0, 0, 302, 386
+IDD_SKELETON_SCALE_DLG DIALOGEX 0, 0, 302, 385
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Skeleton Scale Edition"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -1801,6 +1802,26 @@ BEGIN
     PUSHBUTTON      "Mirror Selected",IDC_SSD_BUTTON_MIRROR,155,15,135,15
     PUSHBUTTON      "Load .scale",IDC_SSD_BUTTON_LOAD_SCALE,155,365,60,15
     PUSHBUTTON      "Save .scale",IDC_SSD_BUTTON_SAVE_SCALE,230,365,60,15
+END
+
+IDD_TUNE_MRM_DLG DIALOGEX 0, 0, 272, 92
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Tune MRM"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Slider1",IDC_TMD_SLIDER,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,5,71,220,15
+    LTEXT           "Static",IDC_TDM_STATIC,225,71,35,15
+    LTEXT           "Choose The maximum faces in scene",IDC_STATIC,10,5,145,
+                    10
+    CONTROL         "Slider1",IDC_TMD_SLIDER_MAX,"msctls_trackbar32",
+                    TBS_AUTOTICKS | TBS_BOTH | WS_TABSTOP,5,30,220,25
+    LTEXT           "Static",IDC_TDM_STATIC_MAX,225,30,35,15
+    LTEXT           "Max (specify the max value for the bar below)",
+                    IDC_STATIC,10,20,190,10
+    LTEXT           "Current (real final max polygon value)",IDC_STATIC,10,
+                    60,190,10
 END
 
 
@@ -2409,7 +2430,15 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 295
         TOPMARGIN, 7
-        BOTTOMMARGIN, 379
+        BOTTOMMARGIN, 378
+    END
+
+    IDD_TUNE_MRM_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 265
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 85
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2748,6 +2777,7 @@ BEGIN
         MENUITEM "Background color",            ID_WINDOW_CHOOSE_BG_COLOR
         MENUITEM "Sun color",                   ID_WINDOW_CHOOSE_SUN_COLOR
         MENUITEM "Skeleton Scale",              ID_WINDOW_SKELETON_SCALE
+        MENUITEM "Tune MRM",                    ID_WINDOW_TUNE_MRM
     END
     POPUP "&Help"
     BEGIN

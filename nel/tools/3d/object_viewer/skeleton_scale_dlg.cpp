@@ -6,6 +6,7 @@
 #include "skeleton_scale_dlg.h"
 #include "3d/skeleton_shape.h"
 #include "nel/misc/algo.h"
+#include "main_frame.h"
 
 
 // ***************************************************************************
@@ -18,8 +19,8 @@
 // CSkeletonScaleDlg dialog
 
 
-CSkeletonScaleDlg::CSkeletonScaleDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CSkeletonScaleDlg::IDD, pParent)
+CSkeletonScaleDlg::CSkeletonScaleDlg(CObjectViewer *viewer, CWnd* pParent /*=NULL*/)
+	: CDialog(CSkeletonScaleDlg::IDD, pParent) ,_ObjViewer(viewer)
 {
 	//{{AFX_DATA_INIT(CSkeletonScaleDlg)
 	_StaticFileName = _T("");
@@ -134,6 +135,7 @@ BEGIN_MESSAGE_MAP(CSkeletonScaleDlg, CDialog)
 	ON_BN_CLICKED(IDC_SSD_BUTTON_MIRROR, OnSsdButtonMirror)
 	ON_BN_CLICKED(IDC_SSD_BUTTON_SAVE_SCALE, OnSsdButtonSaveScale)
 	ON_BN_CLICKED(IDC_SSD_BUTTON_LOAD_SCALE, OnSsdButtonLoadScale)
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -1344,3 +1346,8 @@ bool	CSkeletonScaleDlg::loadSkelScaleFromStream(NLMISC::IStream &f)
 	return true;
 }
 
+
+void CSkeletonScaleDlg::OnClose() 
+{
+	_ObjViewer->getMainFrame()->OnWindowSkeletonScale();
+}

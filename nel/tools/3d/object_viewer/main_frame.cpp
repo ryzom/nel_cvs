@@ -19,6 +19,7 @@
 #include "scene_rot_dlg.h"
 #include "skeleton_scale_dlg.h"
 #include "light_group_factor.h"
+#include "tune_mrm_dlg.h"
 #include <nel/misc/file.h>
 #include <3d/nelu.h>
 #include <3d/mesh.h>
@@ -106,6 +107,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	ChooseBGColorWindow=false;
 	ChooseSunColorWindow=false;
 	SkeletonScaleWindow= false;
+	TuneMRMWindow= false;
 	MouseMoveType= MoveCamera;
 	MoveMode=ObjectMode;
 	X=true;
@@ -218,6 +220,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_SHOOT_SCENE, OnShootScene)
 	ON_COMMAND(ID_WINDOW_SKELETON_SCALE, OnWindowSkeletonScale)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_SKELETON_SCALE, OnUpdateWindowSkeletonScale)
+	ON_COMMAND(ID_WINDOW_TUNE_MRM, OnWindowTuneMRM)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_TUNE_MRM, OnUpdateWindowTuneMRM)
 	//}}AFX_MSG_MAP
 	ON_COMMAND_RANGE(ID_SCENE_CAMERA_FIRST, ID_SCENE_CAMERA_LAST, OnSceneCamera)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_SCENE_CAMERA_FIRST, ID_SCENE_CAMERA_LAST, OnUpdateSceneCamera)
@@ -255,6 +259,7 @@ void CMainFrame::update ()
 	ObjView->_ChooseBGColorDlg->ShowWindow (ChooseBGColorWindow?SW_SHOW:SW_HIDE);
 	ObjView->_ChooseSunColorDlg->ShowWindow (ChooseSunColorWindow?SW_SHOW:SW_HIDE);
 	ObjView->_SkeletonScaleDlg->ShowWindow (SkeletonScaleWindow?SW_SHOW:SW_HIDE);
+	ObjView->_TuneMRMDlg->ShowWindow (TuneMRMWindow?SW_SHOW:SW_HIDE);
 }
 
 // ***************************************************************************
@@ -303,6 +308,8 @@ void CMainFrame::registerValue (bool read)
 			RegQueryValueEx (hKey, "ViewChooseSunColor", 0, &type, (LPBYTE)&ChooseSunColorWindow, &len);
 			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewSkeletonScaleWindow", 0, &type, (LPBYTE)&SkeletonScaleWindow, &len);
+			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewTuneMRMWindow", 0, &type, (LPBYTE)&TuneMRMWindow, &len);
 		}
 	}
 	else
@@ -329,6 +336,7 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&BgColor, sizeof(NLMISC::CRGBA));
 			RegSetValueEx(hKey, "GlobalWindPower", 0, REG_BINARY, (LPBYTE)&GlobalWindPower, sizeof(float));
 			RegSetValueEx(hKey, "ViewSkeletonScaleWindow", 0, REG_BINARY, (LPBYTE)&SkeletonScaleWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewTuneMRMWindow", 0, REG_BINARY, (LPBYTE)&TuneMRMWindow, sizeof(bool));
 		}
 	}
 }
@@ -1438,4 +1446,17 @@ void CMainFrame::OnWindowSkeletonScale()
 void CMainFrame::OnUpdateWindowSkeletonScale(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (SkeletonScaleWindow);
+}
+
+// ***************************************************************************
+
+void CMainFrame::OnWindowTuneMRM() 
+{
+	TuneMRMWindow^= true;
+	update ();
+}
+
+void CMainFrame::OnUpdateWindowTuneMRM(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (TuneMRMWindow);
 }

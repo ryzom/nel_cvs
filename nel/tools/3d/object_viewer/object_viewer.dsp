@@ -311,6 +311,10 @@ SOURCE=.\std_afx.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\tune_mrm_dlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\water_pool_editor.cpp
 # End Source File
 # End Group
@@ -444,6 +448,10 @@ SOURCE=.\sound_system.h
 # Begin Source File
 
 SOURCE=.\std_afx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\tune_mrm_dlg.h
 # End Source File
 # Begin Source File
 

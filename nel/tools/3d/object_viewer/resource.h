@@ -325,6 +325,7 @@
 #define IDD_SKELETON_SCALE_DLG          1146
 #define IDC_EDIT_INPUT                  1147
 #define IDC_ENABLE_SLOW_DOWN            1148
+#define IDD_TUNE_MRM_DLG                1148
 #define IDC_FORCE_LIFE_TIME_UPDATE      1149
 #define IDC_DISPLAY_BBOX                1152
 #define IDC_BB_X                        1153
@@ -404,10 +405,12 @@
 #define IDC_ANIM_SPEED                  1198
 #define IDC_LIGHT_GROUP1                1198
 #define IDC_SSD_SLIDER_BONE_SX          1198
+#define IDC_TMD_SLIDER                  1198
 #define IDC_SLIDER_ANGLE_MAX            1199
 #define IDC_SLIDER_VEGETABLE_WIND_BENDSTART 1199
 #define IDC_LIGHT_GROUP2                1199
 #define IDC_SSD_SLIDER_BONE_SY          1199
+#define IDC_TMD_SLIDER_MAX              1199
 #define IDC_LIST_VEGETABLE              1200
 #define IDC_SLIDER_VEGETABLE_WIND_FREQUENCY 1200
 #define IDC_LIGHT_GROUP3                1200
@@ -678,6 +681,8 @@
 #define IDC_SSD_BUTTON_LOAD_SCALE       1428
 #define IDC_ZALIGN                      1429
 #define IDC_SSD_BUTTON_SAVE_SCALE       1429
+#define IDC_TDM_STATIC_MAX              1430
+#define IDC_TDM_STATIC                  1431
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -938,15 +943,16 @@
 #define IDM_SAVE_PS_AS                  32982
 #define iDM_SHOW_OCCLUSION_TEST_MESHS   32983
 #define ID_WINDOW_SKELETON_SCALE        32984
+#define ID_WINDOW_TUNE_MRM              32985
 #define ID_PS_EDITOR_STATUS             36111
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1148
-#define _APS_NEXT_COMMAND_VALUE         32985
-#define _APS_NEXT_CONTROL_VALUE         1430
+#define _APS_NEXT_RESOURCE_VALUE        1149
+#define _APS_NEXT_COMMAND_VALUE         32986
+#define _APS_NEXT_CONTROL_VALUE         1432
 #define _APS_NEXT_SYMED_VALUE           1001
 #endif
 #endif

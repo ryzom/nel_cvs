@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.130 2004/10/22 15:07:52 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.131 2005/01/05 10:35:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,7 @@
 #include "choose_frame_delay.h"
 #include "skeleton_scale_dlg.h"
 #include "graph.h"
+#include "tune_mrm_dlg.h"
 
 
 using namespace std;
@@ -247,6 +248,7 @@ CObjectViewer::CObjectViewer ()
 	_VegetableDlg = NULL;
 	_GlobalWindDlg = NULL;
 	_SkeletonScaleDlg = NULL;
+	_TuneMRMDlg= NULL;
 
 
 	// no frame delay is the default
@@ -585,6 +587,7 @@ CObjectViewer::~CObjectViewer ()
 	removeWindow(_VegetableDlg);	
 	removeWindow(_GlobalWindDlg);	
 	removeWindow(_SkeletonScaleDlg);	
+	removeWindow(_TuneMRMDlg);	
 	delete _FontGenerator;	
 }
 
@@ -697,6 +700,7 @@ bool CObjectViewer::initUI (HWND parent)
 		return false;
 	}	
 	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
+	CNELU::Scene->setPolygonBalancingMode(CScene::PolygonBalancingClamp);
 
 	// load the config file
 	loadConfigFile();
@@ -792,11 +796,16 @@ bool CObjectViewer::initUI (HWND parent)
 	getRegisterWindowState (_ChooseSunColorDlg, REGKEY_CHOOSE_SUN_COLOR_DLG, false);
 
 	// Create skeleton scale dlg
-	_SkeletonScaleDlg = new CSkeletonScaleDlg(_MainFrame);
+	_SkeletonScaleDlg = new CSkeletonScaleDlg(this, _MainFrame);
 	_SkeletonScaleDlg->Create(IDD_SKELETON_SCALE_DLG, _MainFrame);
 	getRegisterWindowState (_SkeletonScaleDlg, REGKEY_SKELETON_SCALE_DLG, false);
 
-
+	// Create tune mrm dlg
+	_TuneMRMDlg = new CTuneMrmDlg(this, CNELU::Scene, _MainFrame);
+	_TuneMRMDlg->Create(IDD_TUNE_MRM_DLG, _MainFrame);
+	getRegisterWindowState (_TuneMRMDlg, REGKEY_TUNE_MRM_DLG, false);
+	
+	
 	_MainFrame->update ();
 	
 

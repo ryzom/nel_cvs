@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.15 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: main.cpp,v 1.16 2004/04/07 09:54:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -373,19 +373,13 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 				for(uint i=0; i<bones.size(); i++)
 				{
 					// get default pos.
-					const CAnimatedValueBlendable<CVector>	&posValue= 
-						static_cast<const CAnimatedValueBlendable<CVector>	&>(bones[i].DefaultPos.getValue());
-					CVector	pos= posValue.Value;
+					CVector	pos= bones[i].DefaultPos.getDefaultValue();
 
 					// get default rotquat.
-					const CAnimatedValueBlendable<CQuat>	&rotValue= 
-						static_cast<const CAnimatedValueBlendable<CQuat>	&>(bones[i].DefaultRotQuat.getValue());
-					CQuat	rotQuat= rotValue.Value;
+					CQuat	rotQuat= bones[i].DefaultRotQuat.getDefaultValue();
 
 					// get default scale.
-					const CAnimatedValueBlendable<CVector>	&scaleValue= 
-						static_cast<const CAnimatedValueBlendable<CVector>	&>(bones[i].DefaultScale.getValue());
-					CVector	scale= scaleValue.Value;
+					CVector	scale= bones[i].DefaultScale.getDefaultValue();
 
 					// print info
 					fprintf(logStream, "Bone %2d. %s.\n", i, bones[i].Name.c_str());

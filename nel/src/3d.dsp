@@ -1362,6 +1362,14 @@ SOURCE=.\3d\track_sampled_quat.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\track_sampled_quat_small_header.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\track_sampled_quat_small_header.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\track_sampled_vector.cpp
 # End Source File
 # Begin Source File

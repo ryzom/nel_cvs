@@ -1,7 +1,7 @@
 /** \file animation_set_user.cpp
  * <File description>
  *
- * $Id: animation_set_user.cpp,v 1.6 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: animation_set_user.cpp,v 1.7 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,5 +50,16 @@ const CAnimationSet* CAnimationSetUser::getAnimationSet () const
 }
 
 // ***************************************************************************
+void CAnimationSetUser::setAnimationSampleDivisor(uint sampleDivisor)
+{
+	_AnimationSet->setAnimationSampleDivisor(sampleDivisor);
+}
+
+// ***************************************************************************
+uint CAnimationSetUser::getAnimationSampleDivisor() const
+{
+	return _AnimationSet->getAnimationSampleDivisor();
+}
+
 
 } // NL3D

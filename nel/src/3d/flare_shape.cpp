@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.13 2004/03/23 10:22:56 vizerie Exp $
+ * $Id: flare_shape.cpp,v 1.14 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White),
 		_Size[k]  = 1.f;
 		_Pos[k]   = k * (1.f / MaxFlareNum);
 	}
-	_DefaultPos.setValue(CVector::Null);
+	_DefaultPos.setDefaultValue(CVector::Null);
 	setDistMax(1000);
 }
 
@@ -103,7 +103,7 @@ CTransformShape		*CFlareShape::createInstance(CScene &scene)
 	fm->Shape = this;	
 	fm->_Scene = &scene;
 	// set default pos
-	fm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
+	fm->ITransformable::setPos( _DefaultPos.getDefaultValue() );
 	return fm;
 }
 

@@ -1,7 +1,7 @@
 /** \file track_sampled_vector.h
  * <File description>
  *
- * $Id: track_sampled_vector.h,v 1.1 2002/06/06 08:47:16 berenguier Exp $
+ * $Id: track_sampled_vector.h,v 1.2 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -61,9 +61,9 @@ public:
 
 	/// From UTrack/ITrack.
 	// @{
-	virtual void					eval (const TAnimationTime& date);
-	virtual const IAnimatedValue&	getValue () const;
+	virtual const IAnimatedValue	&eval (const TAnimationTime& date, CAnimatedValueBlock &avBlock);
 	virtual void					serial(NLMISC::IStream &f);
+	virtual void					applySampleDivisor(uint sampleDivisor);
 	// @}
 
 	/** Build the track from a list of keys 
@@ -78,7 +78,6 @@ public:
 
 // **********************
 protected:
-	CAnimatedValueVector		_Value;
 
 	// Key Values
 	NLMISC::CObjectVector<CVector, false>		_Keys;

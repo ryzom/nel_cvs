@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.5 2004/03/24 16:36:58 berenguier Exp $
+ * $Id: animation_set.h,v 1.6 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,13 +57,26 @@ public:
 
 	enum { NotFound=0xffffffff };
 
-	CAnimationSet ();
+	/**
+	  * \param headerOptim if true, the animationSet cannot be serialized (nlassert), but could save
+	  *	lot of memory load: CTrackSampleQuat memory are optimized (48 bytes to 12) and map<string, id> 
+	  *	per animation is replaced with a (IdChannelInAnimSet, IdTrackInAnim) association
+	  */
+	CAnimationSet (bool headerOptim= false);
 	~CAnimationSet ();
 
 	/**
 	  * Get channel ID count. This number is the count of different track name in the animation set.
 	  */
 	uint getNumChannelId () const;
+
+	/** Get a channel Name by its Id.
+	  */
+	const std::string &getChannelName(uint channelId)
+	{
+		nlassert(channelId<_ChannelName.size());
+		return _ChannelName[channelId];
+	}
 
 	/**
 	  * Get a channel ID with its name. If no channel is found, method returns NotFound.
@@ -172,6 +185,8 @@ public:
 	  * Add an animation to the set. The pointer of the animation must be allocated with new.
 	  * It is then handled by the animation set.
 	  *
+	  *	WARNING: it assert if you call addAnimation() after build(), while the animation set is in HeadOptim mode
+	  *
 	  * \param name is the name of the animation.
 	  * \param animation is the animation pointer.
 	  * \return the id of the new animation.
@@ -197,6 +212,8 @@ public:
 	  * First, for each animation you want to add to the set, you must add the animation in the set.
 	  *
 	  * When all animations are built, call this method to finlize the set.
+	  *
+	  * NoOp if already built
 	  */
 	void build ();
 
@@ -220,14 +237,36 @@ public:
 						bool wantWarningMessage = true
 					);
 
+	/** Set the animation Set in "Low Memory" mode by skipping some keys
+	  * Each added animation will loose some keys for CTrackSampledQuat and CTrackSampledVector
+	  *	\param sampleDivisor if set to 5 for instance, the number of keys will be divided (ideally) by 5.
+	  *		if 0, set to 1. if 1 => no key skip (default to 1)
+	  */
+	void setAnimationSampleDivisor(uint sampleDivisor);
+
+	/** see setAnimationSampleDivisor
+	  */
+	uint getAnimationSampleDivisor() const;
+
+	/// see CAnimationSet ctor
+	bool	isAnimHeaderOptimized() const {return _AnimHeaderOptimisation;}
+
 private:
 	std::vector <CAnimation*>		_Animation;
 	std::vector <CSkeletonWeight*>	_SkeletonWeight;
+	std::vector <std::string>		_ChannelName;
 	std::vector <std::string>		_AnimationName;
 	std::vector <std::string>		_SkeletonWeightName;
 	std::map <std::string, uint32>	_ChannelIdByName;
 	std::map <std::string, uint32>	_AnimationIdByName;
 	std::map <std::string, uint32>	_SkeletonWeightIdByName;
+	uint							_SampleDivisor;
+	bool							_AnimHeaderOptimisation;
+	bool							_Built;
+
+
+	void	buildChannelNameFromMap();
+	
 };
 
 

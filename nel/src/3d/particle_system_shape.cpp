@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.45 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: particle_system_shape.cpp,v 1.46 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,12 +67,12 @@ CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f),
 {
 	for (uint k = 0; k < 4; ++k)
 	{
-		_UserParamDefaultTrack[k].setValue(0);
+		_UserParamDefaultTrack[k].setDefaultValue(0);
 	}
-	_DefaultPos.setValue(CVector::Null);
-	_DefaultScale.setValue( CVector(1, 1, 1) );	
-	_DefaultRotQuat.setValue(CQuat());
-	_DefaultTriggerTrack.setValue(true); // by default, system start as soon as they are instanciated
+	_DefaultPos.setDefaultValue(CVector::Null);
+	_DefaultScale.setDefaultValue( CVector(1, 1, 1) );	
+	_DefaultRotQuat.setDefaultValue(CQuat());
+	_DefaultTriggerTrack.setDefaultValue(true); // by default, system start as soon as they are instanciated
 
 }
 
@@ -270,9 +270,9 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 	// psm->_ParticleSystem = instanciatePS(scene);	
 
 	// Setup position with the default value
-	psm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
-	psm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );	
-	psm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
+	psm->ITransformable::setPos( _DefaultPos.getDefaultValue() );
+	psm->ITransformable::setRotQuat( _DefaultRotQuat.getDefaultValue() );	
+	psm->ITransformable::setScale( _DefaultScale.getDefaultValue() );
 
 	// ParticleSystems are added to the "Fx" Load Balancing Group.
 	psm->setLoadBalancingGroup("Fx");

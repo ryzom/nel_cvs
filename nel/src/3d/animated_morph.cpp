@@ -1,7 +1,7 @@
 /** \file animated_morph.cpp
  * <File description>
  *
- * $Id: animated_morph.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
+ * $Id: animated_morph.cpp,v 1.3 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NL3D
 
 CMorphBase::CMorphBase()
 {
-	DefaultFactor.setValue (0.0f);
+	DefaultFactor.setDefaultValue (0.0f);
 }
 
 // ***************************************************************************
@@ -63,7 +63,7 @@ CAnimatedMorph::CAnimatedMorph (CMorphBase*mb)
 
 	_MorphBase = mb;
 	
-	_Factor.affect (mb->DefaultFactor.getValue());
+	_Factor.Value= mb->DefaultFactor.getDefaultValue();
 }
 
 // ***************************************************************************

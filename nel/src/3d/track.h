@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.6 2003/01/08 15:38:59 boucher Exp $
+ * $Id: track.h,v 1.7 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,6 @@
 #ifndef NL_TRACK_H
 #define NL_TRACK_H
 
-#include "nel/misc/stream.h"
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 
@@ -44,6 +43,10 @@ using NLMISC::CQuat;
 using NLMISC::CVector;
 
 
+class	CTrackSampleCounter;
+class	CTrackSamplePack;
+
+
 // ***************************************************************************
 /**
  * The track store an animation of an animated value. This animation can be interpolated
@@ -55,7 +58,7 @@ using NLMISC::CVector;
  * \author Nevrax France
  * \date 2001
  */
-class ITrack : public NLMISC::IStreamable, public UTrack
+class ITrack : public UTrack
 {
 public:
 	/**
@@ -66,17 +69,10 @@ public:
 	/**
 	  * Evaluation of the value of the track for this time.
 	  *
-	  * The result is internaly stored to simplify access at the polymorphic values.
-	  * To get the value, call ITrack::getValue().
+	  * The result is stored in CAnimatedValueBlock to simplify access at the polymorphic values.
+	  * The track choose which value to assign, and return the one modified
 	  */
-	virtual void eval (const TAnimationTime& date)=0;
-
-	/**
-	  * Get the track current value.
-	  *
-	  * \return the last value evaluated by ITrack::eval().
-	  */
-	virtual const IAnimatedValue& getValue () const=0;
+	virtual const IAnimatedValue &eval (const TAnimationTime& date, CAnimatedValueBlock &avBlock)=0;
 
 	/**
 	  * get LoopMode. 2 mode only: "constant" (<=>false), and "loop" (<=> true). 
@@ -84,6 +80,16 @@ public:
 	  */
 	virtual bool getLoopMode() const=0;
 
+	/** typically used by CAnimation to lower the number of keys. not supported by default
+	  */
+	virtual void applySampleDivisor(uint sampleDivisor) {}
+
+	/** used by CAnimation to compress the header of CTrackSampledQuat
+	 *	supported only by CTrackSampledQuat
+	 */
+	virtual bool	applyTrackQuatHeaderCompressionPass0(CTrackSampleCounter &quatCounter) {return false;}
+	virtual ITrack	*applyTrackQuatHeaderCompressionPass1(uint &globalKeyOffset, CTrackSamplePack &quatPacker) {return NULL;}
+	
 	/// \name From UTrack
 	// @{
 
@@ -112,9 +118,6 @@ public:
 class ITrackDefault : public ITrack
 {
 public:
-	/// From ITrack. Does nothing, no interpolation.
-	virtual void eval (const TAnimationTime& date) 
-	{}
 	TAnimationTime getBeginTime () const
 	{
 		return 0.f;
@@ -155,22 +158,22 @@ public:
 	}
 	CTrackDefaultBlendable(const T &val)
 	{
-		_Value.Value= val;
+		_Value= val;
 	}
 
 	/// set the default value.
-	void	setValue(const T &val)
+	void	setDefaultValue(const T &val)
 	{
-		_Value.Value= val;
+		_Value= val;
 	}
 
-
-	/// From ITrack. Return a const value.
-	virtual const IAnimatedValue& getValue () const
+	/// get the default value.
+	const T &getDefaultValue() const
 	{
 		return _Value;
 	}
-
+	
+	
 	/// Serial the template
 	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 	{
@@ -178,12 +181,12 @@ public:
 		(void)f.serialVersion (0);
 
 		// Serial the value
-		f.serial (_Value.Value);
+		f.serial (_Value);
 	}
-private:
 
-	// The default value
-	CAnimatedValueBlendable<T>	_Value;
+protected:
+
+	T		_Value;
 };
 
 
@@ -206,21 +209,21 @@ public:
 	}
 	CTrackDefaultNotBlendable(const T &val)
 	{
-		_Value.Value= val;
+		_Value= val;
 	}
 
 	/// set the default value.
-	void	setValue(const T &val)
+	void	setDefaultValue(const T &val)
 	{
-		_Value.Value= val;
+		_Value= val;
 	}
 
-
-	/// From ITrack. Return a const value.
-	virtual const IAnimatedValue& getValue () const
+	/// get the default value.
+	const T &getDefaultValue() const
 	{
 		return _Value;
 	}
+	
 
 	/// Serial the template
 	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
@@ -229,12 +232,13 @@ public:
 		(void)f.serialVersion (0);
 
 		// Serial the value
-		f.serial (_Value.Value);
+		f.serial (_Value);
 	}
-private:
+
+protected:
 
 	// The default value
-	CAnimatedValueNotBlendable<T>	_Value;
+	T		_Value;
 };
 
 
@@ -242,30 +246,42 @@ private:
 	_Son() {}									\
 	_Son(const _T &v) : _Father<_T>(v) {}
 
+#define	NL3D_TRACKDEF_EVAL(_Val_)	\
+	virtual const IAnimatedValue &eval (const TAnimationTime& date, CAnimatedValueBlock &avBlock)	\
+	{																								\
+		avBlock._Val_.Value= _Value;																\
+		return avBlock._Val_;																		\
+	}
+
+
 // Predefined types
 class CTrackDefaultFloat : public CTrackDefaultBlendable<float>
 {
 public:
 	NL3D_TRACKDEF_CTOR(CTrackDefaultFloat, CTrackDefaultBlendable, float);
 	NLMISC_DECLARE_CLASS (CTrackDefaultFloat);
+	NL3D_TRACKDEF_EVAL(ValFloat)
 };
 class CTrackDefaultVector : public CTrackDefaultBlendable<CVector>
 {
 public:
 	NL3D_TRACKDEF_CTOR(CTrackDefaultVector, CTrackDefaultBlendable, CVector);
 	NLMISC_DECLARE_CLASS (CTrackDefaultVector);
+	NL3D_TRACKDEF_EVAL(ValVector)
 };
 class CTrackDefaultQuat : public CTrackDefaultBlendable<CQuat>
 {
 public:
 	NL3D_TRACKDEF_CTOR(CTrackDefaultQuat, CTrackDefaultBlendable, CQuat);
 	NLMISC_DECLARE_CLASS (CTrackDefaultQuat);
+	NL3D_TRACKDEF_EVAL(ValQuat)
 };
 class CTrackDefaultInt : public CTrackDefaultBlendable<sint32>
 {
 public:
 	NL3D_TRACKDEF_CTOR(CTrackDefaultInt, CTrackDefaultBlendable, sint32);
 	NLMISC_DECLARE_CLASS (CTrackDefaultInt);
+	NL3D_TRACKDEF_EVAL(ValInt)
 };
 
 class CTrackDefaultRGBA : public CTrackDefaultBlendable<NLMISC::CRGBA>
@@ -273,6 +289,7 @@ class CTrackDefaultRGBA : public CTrackDefaultBlendable<NLMISC::CRGBA>
 public:
 	NL3D_TRACKDEF_CTOR(CTrackDefaultRGBA, CTrackDefaultBlendable, NLMISC::CRGBA);
 	NLMISC_DECLARE_CLASS (CTrackDefaultRGBA);
+	NL3D_TRACKDEF_EVAL(ValRGBA)
 };
 
 
@@ -281,12 +298,14 @@ class CTrackDefaultString : public CTrackDefaultNotBlendable<std::string>
 public:
 	NL3D_TRACKDEF_CTOR(CTrackDefaultString, CTrackDefaultNotBlendable, std::string);
 	NLMISC_DECLARE_CLASS (CTrackDefaultString);
+	NL3D_TRACKDEF_EVAL(ValString)
 };
 class CTrackDefaultBool : public CTrackDefaultNotBlendable<bool>
 {
 public:
 	NL3D_TRACKDEF_CTOR(CTrackDefaultBool, CTrackDefaultNotBlendable, bool);
 	NLMISC_DECLARE_CLASS (CTrackDefaultBool);
+	NL3D_TRACKDEF_EVAL(ValBool)
 };
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file track_sampled_vector.cpp
  * <File description>
  *
- * $Id: track_sampled_vector.cpp,v 1.2 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: track_sampled_vector.cpp,v 1.3 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -53,12 +53,6 @@ CTrackSampledVector::~CTrackSampledVector()
 }
 
 // ***************************************************************************
-const IAnimatedValue&	CTrackSampledVector::getValue () const
-{
-	return _Value;
-}
-
-// ***************************************************************************
 void					CTrackSampledVector::serial(NLMISC::IStream &f)
 {
 	/*
@@ -72,7 +66,6 @@ void					CTrackSampledVector::serial(NLMISC::IStream &f)
 
 	// serial Keys.
 	f.serial(_Keys);
-
 }
 
 // ***************************************************************************
@@ -104,7 +97,7 @@ void	CTrackSampledVector::build(const std::vector<uint16> &timeList, const std::
 }
 
 // ***************************************************************************
-void	CTrackSampledVector::eval (const TAnimationTime& date)
+const IAnimatedValue	&CTrackSampledVector::eval (const TAnimationTime& date, CAnimatedValueBlock &avBlock)
 {
 	// Eval time, and get key interpolation info
 	uint	keyId0;
@@ -114,11 +107,11 @@ void	CTrackSampledVector::eval (const TAnimationTime& date)
 
 	// Discard? 
 	if( evalType==EvalDiscard )
-		return;
+		return avBlock.ValVector;
 	// One Key? easy, and quit.
 	else if( evalType==EvalKey0 )
 	{
-		_Value.Value= _Keys[keyId0];
+		avBlock.ValVector.Value= _Keys[keyId0];
 	}
 	// interpolate
 	else if( evalType==EvalInterpolate )
@@ -127,13 +120,41 @@ void	CTrackSampledVector::eval (const TAnimationTime& date)
 		const CVector	&valueKey1= _Keys[keyId1];
 
 		// interpolate
-		_Value.Value= valueKey0*(1-interpValue) + valueKey1*interpValue;
+		avBlock.ValVector.Value= valueKey0*(1-interpValue) + valueKey1*interpValue;
 	}
 	else
 	{
 		nlstop;
 	}
 
+	return avBlock.ValVector;
+}
+
+
+// ***************************************************************************
+void CTrackSampledVector::applySampleDivisor(uint sampleDivisor)
+{
+	if(sampleDivisor<=1)
+		return;
+	
+	// **** build the key indices to keep, and rebuild the timeBlocks
+	static	std::vector<uint32>		keepKeys;
+	applySampleDivisorCommon(sampleDivisor, keepKeys);
+	
+	// **** rebuild the keys
+	NLMISC::CObjectVector<CVector, false>		newKeys;
+	newKeys.resize(keepKeys.size());
+	for(uint i=0;i<newKeys.size();i++)
+	{
+		newKeys[i]= _Keys[keepKeys[i]];
+	}
+	// copy
+	_Keys= newKeys;
+
+	// TestYoyo
+	/*nlinfo("ANIMQUAT:\t%d\t%d\t%d\t%d", sizeof(*this), _TimeBlocks.size(), 
+		_TimeBlocks.size()?_TimeBlocks[0].Times.size():0,
+		_Keys.size() * sizeof(CVector));*/
 }
 
 

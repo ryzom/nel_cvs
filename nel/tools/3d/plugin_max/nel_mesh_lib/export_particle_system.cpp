@@ -1,6 +1,6 @@
 /** \file export_particle_system.cpp
  *
- * $Id: export_particle_system.cpp,v 1.4 2003/07/31 15:35:17 vizerie Exp $
+ * $Id: export_particle_system.cpp,v 1.5 2004/04/07 09:56:26 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -78,9 +78,9 @@ IShape* CExportNel::buildParticleSystem(INode& node, TimeValue time)
 			decompMatrix (scale, rot, pos, localTM);
 
 			// Set the default values
-			pss->getDefaultPos()->setValue(pos);					
-			pss->getDefaultScale()->setValue(scale);					
-			pss->getDefaultRotQuat()->setValue(rot);												
+			pss->getDefaultPos()->setDefaultValue(pos);					
+			pss->getDefaultScale()->setDefaultValue(scale);					
+			pss->getDefaultRotQuat()->setDefaultValue(rot);												
 			return pss;
 		}
 		else

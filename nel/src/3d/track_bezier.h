@@ -1,7 +1,7 @@
 /** \file track_bezier.h
  * ITrack Bezier implementation
  *
- * $Id: track_bezier.h,v 1.2 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: track_bezier.h,v 1.3 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,12 +50,6 @@ class CTrackKeyFramerBezier : public ITrackKeyFramer<CKeyT>
 {
 public:
 
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
 protected:
 
 	typedef typename CKeyT::TValueType		TKeyValueType;
@@ -67,8 +61,10 @@ protected:
 	/// evalKey (runtime).
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
 							TAnimationTime datePrevious, TAnimationTime dateNext,
-							TAnimationTime date )
+							TAnimationTime date, IAnimatedValue &result )
 	{
+		CAnimatedValueBlendable<T>	&resultVal= static_cast<CAnimatedValueBlendable<T>&>(result);
+		
 		if(previous && next && !previous->Step)
 		{
 			// lerp from previous to cur.
@@ -91,16 +87,16 @@ protected:
 			cp0 =	previous->Value + previous->OutTan * (dateNext-datePrevious) / 3.0f;
 			cp1 =	next->Value + next->InTan * (dateNext-datePrevious) / 3.0f;
 			
-			copyToValue(_Value.Value, previous->Value*u3 + cp0*3.0f*u2*s
+			copyToValue(resultVal.Value, previous->Value*u3 + cp0*3.0f*u2*s
 		 		+ cp1*3.0f*u*s2 + next->Value*s3);
 		}
 		else
 		{
 			if (previous)
-				copyToValue(_Value.Value, previous->Value);
+				copyToValue(resultVal.Value, previous->Value);
 			else
 				if (next)
-					copyToValue(_Value.Value, next->Value);
+					copyToValue(resultVal.Value, next->Value);
 		}
 	}
 
@@ -114,8 +110,6 @@ protected:
 
 	// @}
 
-private:
-	CAnimatedValueBlendable<T>	_Value;
 };
 
 
@@ -132,12 +126,6 @@ class CTrackKeyFramerBezier<CKeyBezierQuat, CQuat> : public ITrackKeyFramer<CKey
 {
 public:
 
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
 protected:
 
 	/// \name From ITrackKeyFramer
@@ -146,8 +134,10 @@ protected:
 	/// evalKey (runtime).
 	virtual void evalKey (	const CKeyBezierQuat* previous, const CKeyBezierQuat* next,
 							TAnimationTime datePrevious, TAnimationTime dateNext,
-							TAnimationTime date )
+							TAnimationTime date, IAnimatedValue &result )
 	{
+		CAnimatedValueQuat	&resultVal= static_cast<CAnimatedValueQuat&>(result);
+		
 		if(previous && next)
 		{
 			// lerp from previous to cur.
@@ -156,15 +146,15 @@ protected:
 			NLMISC::clamp(date, 0,1);
 
 			// quad slerp.
-			_Value.Value = CQuat::squad(previous->Value, previous->A, next->A, next->Value, date);	
+			resultVal.Value = CQuat::squad(previous->Value, previous->A, next->A, next->Value, date);	
 		}
 		else
 		{
 			if (previous)
-				copyToValue(_Value.Value, previous->Value);
+				copyToValue(resultVal.Value, previous->Value);
 			else
 				if (next)
-					copyToValue(_Value.Value, next->Value);
+					copyToValue(resultVal.Value, next->Value);
 		}
 	}
 
@@ -230,6 +220,4 @@ protected:
 
 	// @}
 
-private:
-	CAnimatedValueBlendable<CQuat>	_Value;
 };

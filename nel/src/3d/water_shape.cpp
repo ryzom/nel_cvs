@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.31 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: water_shape.cpp,v 1.32 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -220,9 +220,9 @@ static CVertexProgram *BuildWaterVP(bool diffuseMap, bool bumpMap, bool use2Bump
  */
 CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeightFactor(3), _ComputeLightmap(false)
 {
-	_DefaultPos.setValue(NLMISC::CVector::Null);
-	_DefaultScale.setValue(NLMISC::CVector(1, 1, 1));
-	_DefaultRotQuat.setValue(CQuat::Identity);
+	_DefaultPos.setDefaultValue(NLMISC::CVector::Null);
+	_DefaultScale.setDefaultValue(NLMISC::CVector(1, 1, 1));
+	_DefaultRotQuat.setDefaultValue(CQuat::Identity);
 
 	for (sint k = 0; k < 2; ++k)
 	{
@@ -334,9 +334,9 @@ CTransformShape		*CWaterShape::createInstance(CScene &scene)
 	CWaterModel *wm = NLMISC::safe_cast<CWaterModel *>(scene.createModel(WaterModelClassId) );
 	wm->Shape = this;
 	// set default pos & scale
-	wm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
-	wm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
-	wm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
+	wm->ITransformable::setPos( _DefaultPos.getDefaultValue() );
+	wm->ITransformable::setScale( _DefaultScale.getDefaultValue() );
+	wm->ITransformable::setRotQuat( _DefaultRotQuat.getDefaultValue() );
 	//
 	wm->init();		
 	if (scene.getWaterCallback())
@@ -617,9 +617,9 @@ void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly) const
 	// compute the matrix of the object in world space, by using the default tracks
 	NLMISC::CMatrix objMat;
 	objMat.identity();		
-	objMat.translate(((CAnimatedValueVector *) &_DefaultPos.getValue())->Value);
-	objMat.rotate(((CAnimatedValueQuat *) &_DefaultRotQuat.getValue())->Value);
-	objMat.scale(((CAnimatedValueVector *) &_DefaultScale.getValue())->Value);
+	objMat.translate(_DefaultPos.getDefaultValue());
+	objMat.rotate(_DefaultRotQuat.getDefaultValue());
+	objMat.scale(_DefaultScale.getDefaultValue());
 	
 	for (uint k = 0; k < _Poly.Vertices.size(); ++k)
 	{
@@ -691,7 +691,7 @@ CTransformShape		*CWaveMakerShape::createInstance(CScene &scene)
 	CWaveMakerModel *wmm = NLMISC::safe_cast<CWaveMakerModel *>(scene.createModel(WaveMakerModelClassId) );
 	wmm->Shape = this;
 	// set default pos & scale
-	wmm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );		
+	wmm->ITransformable::setPos( _DefaultPos.getDefaultValue() );		
 	return wmm;
 }
 

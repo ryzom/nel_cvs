@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.18 2002/06/10 16:00:53 berenguier Exp $
+ * $Id: track.cpp,v 1.19 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,16 +54,17 @@ CTrackDefaultBool ttoto15;
 */
 
 // ***************************************************************************
+static CAnimatedValueBlock		AnimatedValueBlock;
+
+// ***************************************************************************
 
 bool ITrack::interpolate (TAnimationTime time, float& res)
 {
 	NL3D_HAUTO_UTRACK_INTERPOLATE;
 
 	// Evaluate it 
-	eval (time);
-
-	// Get a pointer on the value
-	const CAnimatedValueFloat *value=dynamic_cast<const CAnimatedValueFloat*>(&getValue ());
+	const CAnimatedValueFloat *value;
+	value= dynamic_cast<const CAnimatedValueFloat*>(&eval (time, AnimatedValueBlock));
 
 	// Type is good ?
 	if (value)
@@ -84,10 +85,8 @@ bool ITrack::interpolate (TAnimationTime time, sint32& res)
 	NL3D_HAUTO_UTRACK_INTERPOLATE;
 
 	// Evaluate it 
-	eval (time);
-
-	// Get a pointer on the value
-	const CAnimatedValueInt *value=dynamic_cast<const CAnimatedValueInt*>(&getValue ());
+	const CAnimatedValueInt *value;
+	value= dynamic_cast<const CAnimatedValueInt*>(&eval (time, AnimatedValueBlock));
 
 	// Type is good ?
 	if (value)
@@ -108,10 +107,8 @@ bool ITrack::interpolate (TAnimationTime time, CRGBA& res)
 	NL3D_HAUTO_UTRACK_INTERPOLATE;
 
 	// Evaluate it 
-	eval (time);
-
-	// Get a pointer on the value
-	const CAnimatedValueRGBA *value=dynamic_cast<const CAnimatedValueRGBA*>(&getValue ());
+	const CAnimatedValueRGBA *value;
+	value= dynamic_cast<const CAnimatedValueRGBA*>(&eval (time, AnimatedValueBlock));
 
 	// Type is good ?
 	if (value)
@@ -132,10 +129,8 @@ bool ITrack::interpolate (TAnimationTime time, CVector& res)
 	NL3D_HAUTO_UTRACK_INTERPOLATE;
 
 	// Evaluate it 
-	eval (time);
-
-	// Get a pointer on the value
-	const CAnimatedValueVector *value=dynamic_cast<const CAnimatedValueVector*>(&getValue ());
+	const CAnimatedValueVector *value;
+	value= dynamic_cast<const CAnimatedValueVector*>(&eval (time, AnimatedValueBlock));
 
 	// Type is good ?
 	if (value)
@@ -156,10 +151,8 @@ bool ITrack::interpolate (TAnimationTime time, CQuat& res)
 	NL3D_HAUTO_UTRACK_INTERPOLATE;
 
 	// Evaluate it 
-	eval (time);
-
-	// Get a pointer on the value
-	const CAnimatedValueQuat *value=dynamic_cast<const CAnimatedValueQuat*>(&getValue ());
+	const CAnimatedValueQuat *value;
+	value= dynamic_cast<const CAnimatedValueQuat*>(&eval (time, AnimatedValueBlock));
 
 	// Type is good ?
 	if (value)
@@ -180,10 +173,8 @@ bool ITrack::interpolate (TAnimationTime time, std::string& res)
 	NL3D_HAUTO_UTRACK_INTERPOLATE;
 
 	// Evaluate it 
-	eval (time);
-
-	// Get a pointer on the value
-	const CAnimatedValueString *value=dynamic_cast<const CAnimatedValueString*>(&getValue ());
+	const CAnimatedValueString *value;
+	value= dynamic_cast<const CAnimatedValueString*>(&eval (time, AnimatedValueBlock));
 
 	// Type is good ?
 	if (value)
@@ -204,10 +195,8 @@ bool ITrack::interpolate (TAnimationTime time, bool& res)
 	NL3D_HAUTO_UTRACK_INTERPOLATE;
 
 	// Evaluate it 
-	eval (time);
-
-	// Get a pointer on the value
-	const CAnimatedValueBool *value=dynamic_cast<const CAnimatedValueBool*>(&getValue ());
+	const CAnimatedValueBool *value;
+	value= dynamic_cast<const CAnimatedValueBool*>(&eval (time, AnimatedValueBlock));
 
 	// Type is good ?
 	if (value)

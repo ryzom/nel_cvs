@@ -1,7 +1,7 @@
 /** \file track_sampled_common.h
  * <File description>
  *
- * $Id: track_sampled_common.h,v 1.1 2002/06/06 08:47:16 berenguier Exp $
+ * $Id: track_sampled_common.h,v 1.2 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -115,6 +115,8 @@ protected:
 	 */
 	void	buildCommon(const std::vector<uint16> &timeList, float beginTime, float endTime);
 
+	/// used by derivers
+	void	applySampleDivisorCommon(uint sampleDivisor, std::vector<uint32> &keepKeys);
 };
 
 

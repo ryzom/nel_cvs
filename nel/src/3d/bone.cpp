@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.12 2003/12/05 13:52:21 berenguier Exp $
+ * $Id: bone.cpp,v 1.13 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,10 +99,10 @@ CBone::CBone(CBoneBase *boneBase)
 	IAnimatable::resize(AnimValueLast);
 
 	ITransformable::setTransformMode(ITransformable::RotQuat);
-	ITransformable::setPos( ((CAnimatedValueVector&)_BoneBase->DefaultPos.getValue()).Value  );
-	ITransformable::setRotQuat( ((CAnimatedValueQuat&)_BoneBase->DefaultRotQuat.getValue()).Value  );
-	ITransformable::setScale( ((CAnimatedValueVector&)_BoneBase->DefaultScale.getValue()).Value  );
-	ITransformable::setPivot( ((CAnimatedValueVector&)_BoneBase->DefaultPivot.getValue()).Value  );
+	ITransformable::setPos( _BoneBase->DefaultPos.getDefaultValue()  );
+	ITransformable::setRotQuat( _BoneBase->DefaultRotQuat.getDefaultValue() );
+	ITransformable::setScale( _BoneBase->DefaultScale.getDefaultValue()  );
+	ITransformable::setPivot( _BoneBase->DefaultPivot.getDefaultValue()  );
 
 	// By default, the bone is not binded to a channelMixer.
 	_PosChannelId= -1;

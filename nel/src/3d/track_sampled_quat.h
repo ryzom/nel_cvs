@@ -1,7 +1,7 @@
 /** \file track_sampled_quat.h
  * <File description>
  *
- * $Id: track_sampled_quat.h,v 1.3 2002/06/06 08:47:16 berenguier Exp $
+ * $Id: track_sampled_quat.h,v 1.4 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -41,6 +41,46 @@ namespace NL3D
 
 
 // ***************************************************************************
+// For Debug only. Correct serialized version is with compression.
+#ifdef NL3D_TSQ_ALLOW_QUAT_COMPRESS
+/** A packed quaternion.
+ */
+class	CQuatPack
+{
+public:
+	sint16		x,y,z,w;
+	
+	void		pack(const CQuat &quat);
+	void		unpack(CQuat &quat);
+	
+	void		serial(NLMISC::IStream &f)
+	{
+		// NB: no version here.
+		f.serial(x,y,z,w);
+	}
+	
+	bool	operator==(const CQuatPack &oq) const
+	{
+		return x==oq.x && y==oq.y && z==oq.z && w==oq.w;
+	}
+	
+};
+#else
+// A dummy packed quaternion.
+class	CQuatPack
+{
+public:
+	CQuat	q;
+	
+	void		pack(const CQuat &quat)	{q= quat;}
+	void		unpack(CQuat &quat)		{quat= q;}
+	void		serial(NLMISC::IStream &f)	{f.serial(q);}
+	bool	operator==(const CQuatPack &oq) const {return q==oq.q;}
+};
+#endif
+	
+
+// ***************************************************************************
 /**
  * This track is supposed to be Lighter in memory than CTrackKeyFramerTCBQuat, and also is maybe faster.
  *	The track is an oversampled version of CTrackKeyFramerTCBQuat (or any quat interpolator), to 30 fps for example,
@@ -67,9 +107,9 @@ public:
 
 	/// From UTrack/ITrack.
 	// @{
-	virtual void					eval (const TAnimationTime& date);
-	virtual const IAnimatedValue&	getValue () const;
+	virtual const IAnimatedValue	&eval (const TAnimationTime& date, CAnimatedValueBlock &avBlock);
 	virtual void					serial(NLMISC::IStream &f);
+	virtual void applySampleDivisor(uint sampleDivisor);
 	// @}
 
 	/** Build the track from a list of CKey. 
@@ -83,49 +123,14 @@ public:
 	void	build(const std::vector<uint16> &timeList, const std::vector<CQuat> &keyList, 
 		float beginTime, float endTime);
 
+	/// For Quat Track Header Compression
+	// @{
+	virtual bool	applyTrackQuatHeaderCompressionPass0(CTrackSampleCounter &quatCounter);
+	virtual ITrack	*applyTrackQuatHeaderCompressionPass1(uint &globalKeyOffset, CTrackSamplePack &quatPacker);
+	// @}
+
 // **********************
 protected:
-
-// For Debug only. Correct serialized version is with compression.
-#ifdef NL3D_TSQ_ALLOW_QUAT_COMPRESS
-	// A packed quaternion.
-	class	CQuatPack
-	{
-	public:
-		sint16		x,y,z,w;
-
-		void		pack(const CQuat &quat);
-		void		unpack(CQuat &quat);
-
-		void		serial(NLMISC::IStream &f)
-		{
-			// NB: no version here.
-			f.serial(x,y,z,w);
-		}
-
-		bool	operator==(const CQuatPack &oq) const
-		{
-			return x==oq.x && y==oq.y && z==oq.z && w==oq.w;
-		}
-
-	};
-#else
-	// A dummy packed quaternion.
-	class	CQuatPack
-	{
-	public:
-		CQuat	q;
-
-		void		pack(const CQuat &quat)	{q= quat;}
-		void		unpack(CQuat &quat)		{quat= q;}
-		void		serial(NLMISC::IStream &f)	{f.serial(q);}
-		bool	operator==(const CQuatPack &oq) const {return q==oq.q;}
-	};
-#endif
-
-
-protected:
-	CAnimatedValueQuat		_Value;
 
 	// Key Values
 	NLMISC::CObjectVector<CQuatPack, false>		_Keys;

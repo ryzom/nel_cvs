@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.25 2003/12/05 13:49:51 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.26 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,9 @@ const CAnimationSet* CChannelMixer::getAnimationSet () const
 	return _AnimationSet;
 }
 
+// ***************************************************************************
+// Temp Data
+static CAnimatedValueBlock	TempAnimatedValueBlock;
 
 
 // ***************************************************************************
@@ -103,7 +106,7 @@ void CChannelMixer::evalSingleChannel(CChannel &chan, uint numActive, uint activ
 		if(blend!=0.0f)
 		{
 			// Eval the track at this time
-			((ITrack*)chan._Tracks[slot])->eval (_SlotArray[slot]._Time);
+			const IAnimatedValue	&trackResult= ((ITrack*)chan._Tracks[slot])->eval (_SlotArray[slot]._Time, TempAnimatedValueBlock);
 
 			// First track to be eval ?
 			if (bFirst)
@@ -111,12 +114,12 @@ void CChannelMixer::evalSingleChannel(CChannel &chan, uint numActive, uint activ
 				// If channel is a Quaternion animated Value, must store the first Quat.
 				if (chan._IsQuat)
 				{
-					CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&chan._Tracks[slot]->getValue();
-					firstQuat=pQuatValue->Value;
+					CAnimatedValueBlendable<NLMISC::CQuat>	&quatValue=(CAnimatedValueBlendable<NLMISC::CQuat>&)trackResult;
+					firstQuat=quatValue.Value;
 				}
 
 				// Copy the interpolated value
-				chan._Value->affect (chan._Tracks[slot]->getValue());
+				chan._Value->affect (trackResult);
 
 				// First blend factor
 				lastBlend=blend;
@@ -129,12 +132,12 @@ void CChannelMixer::evalSingleChannel(CChannel &chan, uint numActive, uint activ
 				// If channel is a Quaternion animated Value, must makeClosest the ith result of the track, from firstQuat.
 				if (chan._IsQuat)
 				{
-					CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&chan._Tracks[slot]->getValue();
-					pQuatValue->Value.makeClosest (firstQuat);
+					CAnimatedValueBlendable<NLMISC::CQuat>	&quatValue=(CAnimatedValueBlendable<NLMISC::CQuat>&)trackResult;
+					quatValue.Value.makeClosest (firstQuat);
 				}
 
 				// Blend with this value and the previous sum
-				chan._Value->blend (chan._Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
+				chan._Value->blend (trackResult, lastBlend/(lastBlend+blend));
 
 				// last blend update
 				lastBlend+=blend;
@@ -227,11 +230,8 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 			// if Current blend factor is not 0
 			if(chan._Weights[slot]!=0.0f)
 			{
-				// Eval the track at this time. HTimer: 0.7%
-				((ITrack*)chan._Tracks[slot])->eval (slotTime);
-				
-				// Copy the interpolated value. HTimer: 0.7%
-				chan._Value->affect (chan._Tracks[slot]->getValue());
+				// Eval the track and copy the interpolated value. HTimer: 1.4%
+				chan._Value->affect (((ITrack*)chan._Tracks[slot])->eval (slotTime, TempAnimatedValueBlock));
 
 				// Touch the animated value and its owner to recompute them later. HTimer: 0.6%
 				chan._Object->touch (chan._ValueId, chan._OwnerValueId);
@@ -361,7 +361,7 @@ sint CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 		dirtAll ();
 
 		// Affect the default value in the animated value
-		entry._Value->affect (entry._DefaultTracks->getValue());
+		entry._Value->affect (((ITrack*)(entry._DefaultTracks))->eval(0, TempAnimatedValueBlock));
 
 		// Touch the animated value and its owner to recompute them later.
 		entry._Object->touch (entry._ValueId, entry._OwnerValueId);
@@ -652,6 +652,7 @@ void CChannelMixer::refreshList ()
 	map<uint, CChannel>::iterator		itChannel;
 	for(itChannel= _Channels.begin(); itChannel!=_Channels.end();itChannel++)
 	{
+		uint		channelId= itChannel->first;
 		CChannel	&channel= (*itChannel).second;
 
 		// Add this channel to the list if true
@@ -660,8 +661,15 @@ void CChannelMixer::refreshList ()
 		// For each slot to add
 		for (s=0; s<numAdd; s++)
 		{
-			// Find the index of the channel track in the animation set
-			uint iDTrack=_SlotArray[addSlot[s]]._Animation->getIdTrackByName (channel._ChannelName);
+			uint iDTrack;
+
+			// If the animation set is header compressed, 
+			if(_AnimationSet->isAnimHeaderOptimized())
+				// can retrieve the animation trough the channel id (faster)
+				iDTrack= _SlotArray[addSlot[s]]._Animation->getIdTrackByChannelId(channelId);
+			else
+				// get by name
+				iDTrack= _SlotArray[addSlot[s]]._Animation->getIdTrackByName (channel._ChannelName);
 
 			// If this track exist
 			if (iDTrack!=CAnimation::NotFound)
@@ -705,7 +713,7 @@ void CChannelMixer::refreshList ()
 				if (!add)
 				{
 					// Set it's value to default and touch it's object
-					channel._Value->affect (channel._DefaultTracks->getValue());
+					channel._Value->affect (((ITrack*)(channel._DefaultTracks))->eval(0, TempAnimatedValueBlock));
 					channel._Object->touch (channel._ValueId, channel._OwnerValueId);
 				}
 			}
@@ -731,7 +739,6 @@ void CChannelMixer::refreshList ()
 				// Change last pointer
 				lastPointerGlobal=&channel._Next;
 			}
-
 		}
 		else
 		{

@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.11 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: animation_set_user.h,v 1.12 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,8 +68,8 @@ public:
 
 		nlassert((uint)UAnimationSet::NotFound == (uint)CAnimationSet::NotFound );
 
-		// create a smartptred animation set.
-		_AnimationSet= new CAnimationSet;
+		// create a smartptred animation set. Allow header compression
+		_AnimationSet= new CAnimationSet(true);
 	}
 
 	/// Constructor
@@ -79,11 +79,15 @@ public:
 
 		nlassert((uint)UAnimationSet::NotFound == (uint)CAnimationSet::NotFound );
 
-		// create a smartptred animation set.
-		_AnimationSet= new CAnimationSet;
+		// create a smartptred animation set. DO NOT Allow header compression, cause serial()
+		_AnimationSet= new CAnimationSet(false);
 
 		_AnimationSet->serial(f);
 	}
+
+	virtual void setAnimationSampleDivisor(uint sampleDivisor);
+
+	virtual uint getAnimationSampleDivisor() const;
 
 	/**
 	  *  Add an animation in the animation set. After adding all your animations, call build().

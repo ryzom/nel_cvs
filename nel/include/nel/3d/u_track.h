@@ -1,7 +1,7 @@
 /** \file u_track.h
  * User interface to access tracks fonctionnalities
  *
- * $Id: u_track.h,v 1.7 2003/02/20 11:26:00 besson Exp $
+ * $Id: u_track.h,v 1.8 2004/04/07 09:52:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_U_TRACK_H
 #define NL_U_TRACK_H
 
+#include "nel/misc/stream.h"
 #include "nel/misc/types_nl.h"
 
 namespace NLMISC
@@ -50,7 +51,7 @@ namespace NL3D
  * \author Nevrax France
  * \date 2001
  */
-class UTrack
+class UTrack : public NLMISC::IStreamable
 {
 public:
 

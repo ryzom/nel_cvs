@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.115 2004/03/23 10:18:16 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.116 2004/04/07 09:54:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1076,9 +1076,9 @@ void CObjectViewer::setupPlaylist (float time)
 					CMeshBase *meshBase = dynamic_cast<CMeshBase *> ((IShape*)_ListInstance[i]->TransformShape->Shape);
 					if (meshBase)
 					{
-						_ListInstance[i]->TransformShape->setPos (((CAnimatedValueVector&)meshBase->getDefaultPos ()->getValue ()).Value);
-						_ListInstance[i]->TransformShape->setRotQuat (((CAnimatedValueQuat&)meshBase->getDefaultRotQuat ()->getValue ()).Value);
-						_ListInstance[i]->TransformShape->setScale (((CAnimatedValueVector&)meshBase->getDefaultScale ()->getValue ()).Value);
+						_ListInstance[i]->TransformShape->setPos (meshBase->getDefaultPos ()->getDefaultValue ());
+						_ListInstance[i]->TransformShape->setRotQuat (meshBase->getDefaultRotQuat ()->getDefaultValue ());
+						_ListInstance[i]->TransformShape->setScale (meshBase->getDefaultScale ()->getDefaultValue ());
 					}
 					else
 					{
@@ -1089,8 +1089,8 @@ void CObjectViewer::setupPlaylist (float time)
 				}
 				if (_ListInstance[i]->Camera)
 				{
-					_ListInstance[i]->Camera->setPos (((CAnimatedValueVector&)_ListInstance[i]->Camera->getDefaultPos ()->getValue ()).Value);
-					_ListInstance[i]->Camera->setTargetPos (((CAnimatedValueVector&)_ListInstance[i]->Camera->getDefaultTargetPos ()->getValue ()).Value);
+					_ListInstance[i]->Camera->setPos (_ListInstance[i]->Camera->getDefaultPos ()->getDefaultValue ());
+					_ListInstance[i]->Camera->setTargetPos (_ListInstance[i]->Camera->getDefaultTargetPos ()->getDefaultValue ());
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.63 2004/01/29 10:39:33 besson Exp $
+ * $Id: export_mesh.cpp,v 1.64 2004/04/07 09:56:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1634,7 +1634,7 @@ NL3D::IShape				*CExportNel::buildWaveMakerShape(INode& node, TimeValue time)
 	Point3 pos = localTM.GetRow(3);
 	NLMISC::CVector nelPos;
 	convertVector(nelPos, pos);	
-	wms->getDefaultPos()->setValue(nelPos);
+	wms->getDefaultPos()->setDefaultValue(nelPos);
 
 	return wms;
 }
@@ -1970,9 +1970,9 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 		decompMatrix (scale, rot, pos, localTM);
 
 		// Set the default values
-		ws->getDefaultPos()->setValue(pos);					
-		ws->getDefaultScale()->setValue(scale);
-		ws->getDefaultRotQuat()->setValue(rot);
+		ws->getDefaultPos()->setDefaultValue(pos);					
+		ws->getDefaultScale()->setDefaultValue(scale);
+		ws->getDefaultRotQuat()->setDefaultValue(rot);
 
 
 

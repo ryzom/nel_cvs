@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.17 2003/11/06 09:17:03 berenguier Exp $
+ * $Id: camera.cpp,v 1.18 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -203,7 +203,7 @@ void CCamera::build (const CCameraInfo &cameraInfo)
 		// Set the rot model
 		setTransformMode (ITransformable::RotQuat);
 		setTargetPos (cameraInfo.TargetPos);
-		_DefaultTargetPos.setValue (cameraInfo.TargetPos);
+		_DefaultTargetPos.setDefaultValue (cameraInfo.TargetPos);
 		setRoll (cameraInfo.Roll);
 	}
 	if (cameraInfo.UseFov)
@@ -211,7 +211,7 @@ void CCamera::build (const CCameraInfo &cameraInfo)
 		setFov (cameraInfo.Fov);
 	}
 	setPos (cameraInfo.Pos);
-	_DefaultPos.setValue (cameraInfo.Pos);
+	_DefaultPos.setDefaultValue (cameraInfo.Pos);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.14 2003/02/19 17:37:45 besson Exp $
+ * $Id: track_keyframer.h,v 1.15 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,7 +134,7 @@ public:
 
 
 	/// From ITrack. 
-	virtual void eval (const TAnimationTime& inDate)
+	virtual const IAnimatedValue &eval (const TAnimationTime& inDate, CAnimatedValueBlock &avBlock)
 	{
 		float	date= inDate;
 		const CKeyT *previous=NULL;
@@ -145,9 +145,12 @@ public:
 		// must precalc ??
 		testAndClean();
 
+		// let son choose the animated value
+		IAnimatedValue	&result= chooseAnimatedValue(avBlock);
+		
 		// No keys?
 		if(_MapKey.empty())
-			return;
+			return result;
 
 
 		// Loop gestion.
@@ -217,7 +220,9 @@ public:
 		}
 
 		// Call evalutation fonction
-		evalKey (previous, next, datePrevious, dateNext, date);
+		evalKey (previous, next, datePrevious, dateNext, date, result);
+
+		return result;
 	}
 
 
@@ -369,17 +374,22 @@ protected:
 
 	}
 
+	/// return the correct type for this track
+	virtual IAnimatedValue &chooseAnimatedValue(CAnimatedValueBlock &avBlock) =0;
+
 	/**
 	  * Evaluate the keyframe interpolation. 
 	  *
 	  * i is the keyframe with the bigger time value that is inferior or equal than date.
+	  *
+	  * write result in correct avBlock var, and return the one modified
 	  *
 	  * \param previous is the i key in the keyframe. NULL if no key.
 	  * \param next is the i+1 key in the keyframe. NULL if no key.
 	  */
 	virtual void evalKey   (const CKeyT* previous, const CKeyT* next,
 							TAnimationTime datePrevious, TAnimationTime dateNext, 
-							TAnimationTime date ) =0;
+							TAnimationTime date, IAnimatedValue &result) =0;
 
 };
 
@@ -435,27 +445,18 @@ class CTrackKeyFramerConstNotBlendable : public ITrackKeyFramer<CKeyT>
 {
 public:
 
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
-							TAnimationTime datePrevious, TAnimationTime dateNext,
-							TAnimationTime date )
+	virtual void evalKey   (const CKeyT* previous, const CKeyT* next,
+							TAnimationTime datePrevious, TAnimationTime dateNext, 
+							TAnimationTime date, IAnimatedValue &result)
 	{
 		// Const key.
 		if (previous)
-			copyToValue(_Value.Value, previous->Value);
+			copyToValue(static_cast<CAnimatedValueNotBlendable<T>&>(result).Value, previous->Value);
 		else
 			if (next)
-				copyToValue(_Value.Value, next->Value);
+				copyToValue(static_cast<CAnimatedValueNotBlendable<T>&>(result).Value, next->Value);
 	}
-
-private:
-	CAnimatedValueNotBlendable<T>		_Value;
 };
 
 
@@ -472,27 +473,19 @@ class CTrackKeyFramerConstBlendable : public ITrackKeyFramer<CKeyT>
 {
 public:
 
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
 							TAnimationTime datePrevious, TAnimationTime dateNext,
-							TAnimationTime date )
+							TAnimationTime date, IAnimatedValue &result )
 	{
 		// Const key.
 		if (previous)
-			copyToValue(_Value.Value, previous->Value);
+			copyToValue(static_cast<CAnimatedValueBlendable<T>&>(result).Value, previous->Value);
 		else
 			if (next)
-				copyToValue(_Value.Value, next->Value);
+				copyToValue(static_cast<CAnimatedValueBlendable<T>&>(result).Value, next->Value);
 	}
 
-private:
-	CAnimatedValueBlendable<T>		_Value;
 };
 
 
@@ -516,17 +509,13 @@ class CTrackKeyFramerLinear : public ITrackKeyFramer<CKeyT>
 {
 public:
 
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
 							TAnimationTime datePrevious, TAnimationTime dateNext,
-							TAnimationTime date )
+							TAnimationTime date, IAnimatedValue &result )
 	{
+		CAnimatedValueBlendable<T>	&resultVal= static_cast<CAnimatedValueBlendable<T>&>(result);
+
 		if(previous && next)
 		{
 			// lerp from previous to cur.
@@ -535,21 +524,18 @@ public:
 			NLMISC::clamp(date, 0,1);
 			
 			// NB: in case of <CKeyInt,sint32> important that second terme is a float, so copyToValue(sint32, float) is used.
-			copyToValue(_Value.Value, previous->Value*(1.f-(float)date) + next->Value*(float)date);
+			copyToValue(resultVal.Value, previous->Value*(1.f-(float)date) + next->Value*(float)date);
 		}
 		else
 		{
 			if (previous)
-				copyToValue(_Value.Value, previous->Value);
+				copyToValue(resultVal.Value, previous->Value);
 			else
 				if (next)
-					copyToValue(_Value.Value, next->Value);
+					copyToValue(resultVal.Value, next->Value);
 		}
 
 	}
-
-private:
-	CAnimatedValueBlendable<T>	_Value;
 };
 
 
@@ -566,37 +552,30 @@ class CTrackKeyFramerLinear<CKeyQuat, CQuat> : public ITrackKeyFramer<CKeyQuat>
 {
 public:
 
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyQuat* previous, const CKeyQuat* next, 
 							TAnimationTime datePrevious, TAnimationTime dateNext,
-							TAnimationTime date )
+							TAnimationTime date, IAnimatedValue &result )
 	{
+		CAnimatedValueBlendable<T>	&resultVal= static_cast<CAnimatedValueBlendable<T>&>(result);
+		
 		if(previous && next)
 		{
 			// slerp from previous to cur.
 			date-= datePrevious;
 			date*= previous->OODeltaTime;
 			NLMISC::clamp(date, 0,1);
-			_Value.Value= CQuat::slerp(previous->Value, next->Value, date);
+			resultVal.Value= CQuat::slerp(previous->Value, next->Value, date);
 		}
 		else
 		{
 			if (previous)
-				_Value.Value=previous->Value;
+				resultVal.Value=previous->Value;
 			else
 				if (next)
-					_Value.Value=next->Value;
+					resultVal.Value=next->Value;
 		}
 	}
-
-private:
-	CAnimatedValueBlendable<CQuat>	_Value;
 };
 
 
@@ -612,17 +591,13 @@ class CTrackKeyFramerLinear<CKeyRGBA, NLMISC::CRGBA>: public ITrackKeyFramer<CKe
 {
 public:
 
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyRGBA* previous, const CKeyRGBA* next,
 							TAnimationTime datePrevious, TAnimationTime dateNext,
-							TAnimationTime date )
+							TAnimationTime date, IAnimatedValue &result )
 	{
+		CAnimatedValueBlendable<T>	&resultVal= static_cast<CAnimatedValueBlendable<T>&>(result);
+		
 		if(previous && next)
 		{
 			// lerp from previous to cur.
@@ -631,20 +606,17 @@ public:
 			NLMISC::clamp(date, 0,1);
 			
 			// blend.
-			_Value.Value.blendFromui(previous->Value, next->Value, (uint)(date*256));
+			resultVal.Value.blendFromui(previous->Value, next->Value, (uint)(date*256));
 		}
 		else
 		{
 			if (previous)
-				_Value.Value= previous->Value;
+				resultVal.Value= previous->Value;
 			else
 				if (next)
-					_Value.Value= next->Value;
+					resultVal.Value= next->Value;
 		}
 	}
-
-private:
-	CAnimatedValueBlendable<NLMISC::CRGBA>	_Value;
 };
 
 
@@ -668,43 +640,56 @@ private:
 // ***************************************************************************
 // ***************************************************************************
 
+#define	NL3D_TRACKKEYF_CHOOSE(_Val_)	\
+virtual IAnimatedValue &chooseAnimatedValue(CAnimatedValueBlock &avBlock)	\
+{																			\
+	return avBlock._Val_;													\
+}
+
 
 // Const tracks.
 class CTrackKeyFramerConstFloat : public CTrackKeyFramerConstBlendable<CKeyFloat,float>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstFloat);
+	NL3D_TRACKKEYF_CHOOSE(ValFloat)
 };
 class CTrackKeyFramerConstVector : public CTrackKeyFramerConstBlendable<CKeyVector, CVector>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstVector);
+	NL3D_TRACKKEYF_CHOOSE(ValVector)
 };
 class CTrackKeyFramerConstQuat : public CTrackKeyFramerConstBlendable<CKeyQuat, CQuat>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstQuat);
+	NL3D_TRACKKEYF_CHOOSE(ValQuat)
 };
 class CTrackKeyFramerConstInt : public CTrackKeyFramerConstBlendable<CKeyInt, sint32>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstInt);
+	NL3D_TRACKKEYF_CHOOSE(ValInt)
 };
 class CTrackKeyFramerConstRGBA : public CTrackKeyFramerConstBlendable<CKeyRGBA, NLMISC::CRGBA>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstRGBA);
+	NL3D_TRACKKEYF_CHOOSE(ValRGBA)
 };
 
 class CTrackKeyFramerConstString : public CTrackKeyFramerConstNotBlendable<CKeyString, std::string>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstString);
+	NL3D_TRACKKEYF_CHOOSE(ValString)
 };
 class CTrackKeyFramerConstBool : public CTrackKeyFramerConstNotBlendable<CKeyBool, bool>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstBool);
+	NL3D_TRACKKEYF_CHOOSE(ValBool)
 };
 
 
@@ -713,7 +698,8 @@ class CTrackKeyFramerLinearFloat : public CTrackKeyFramerLinear<CKeyFloat, float
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearFloat);
-
+	NL3D_TRACKKEYF_CHOOSE(ValFloat)
+		
 	virtual	bool	addLinearFloatKey(const UKeyLinearFloat &key)
 	{
 		CKeyFloat	k;
@@ -726,21 +712,25 @@ class CTrackKeyFramerLinearVector : public CTrackKeyFramerLinear<CKeyVector, CVe
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearVector);
+	NL3D_TRACKKEYF_CHOOSE(ValVector)
 };
 class CTrackKeyFramerLinearQuat : public CTrackKeyFramerLinear<CKeyQuat, CQuat>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearQuat);
+	NL3D_TRACKKEYF_CHOOSE(ValQuat)
 };
 class CTrackKeyFramerLinearInt : public CTrackKeyFramerLinear<CKeyInt, sint32>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearInt);
+	NL3D_TRACKKEYF_CHOOSE(ValInt)
 };
 class CTrackKeyFramerLinearRGBA : public CTrackKeyFramerLinear<CKeyRGBA, NLMISC::CRGBA>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearRGBA);
+	NL3D_TRACKKEYF_CHOOSE(ValRGBA)
 };
 
 
@@ -749,7 +739,8 @@ class CTrackKeyFramerTCBFloat : public CTrackKeyFramerTCB<CKeyTCBFloat, float>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBFloat);
-
+	NL3D_TRACKKEYF_CHOOSE(ValFloat)
+		
 	virtual	bool	addTCBFloatKey(const UKeyTCBFloat &key)
 	{
 		CKeyTCBFloat	k;
@@ -768,21 +759,25 @@ class CTrackKeyFramerTCBVector : public CTrackKeyFramerTCB<CKeyTCBVector, CVecto
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBVector);
+	NL3D_TRACKKEYF_CHOOSE(ValVector)
 };
 class CTrackKeyFramerTCBQuat : public CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CAngleAxis>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBQuat);
+	NL3D_TRACKKEYF_CHOOSE(ValQuat)
 };
 class CTrackKeyFramerTCBInt : public CTrackKeyFramerTCB<CKeyTCBFloat, sint32>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBInt);
+	NL3D_TRACKKEYF_CHOOSE(ValInt)
 };
 class CTrackKeyFramerTCBRGBA : public CTrackKeyFramerTCB<CKeyTCBVector, NLMISC::CRGBA>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBRGBA);
+	NL3D_TRACKKEYF_CHOOSE(ValRGBA)
 };
 
 
@@ -791,7 +786,8 @@ class CTrackKeyFramerBezierFloat : public CTrackKeyFramerBezier<CKeyBezierFloat,
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierFloat);
-
+	NL3D_TRACKKEYF_CHOOSE(ValFloat)
+		
 	virtual	bool	addBezierFloatKey(const UKeyBezierFloat &key)
 	{
 		CKeyBezierFloat	k;
@@ -807,21 +803,25 @@ class CTrackKeyFramerBezierVector : public CTrackKeyFramerBezier<CKeyBezierVecto
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierVector);
+	NL3D_TRACKKEYF_CHOOSE(ValVector)
 };
 class CTrackKeyFramerBezierQuat : public CTrackKeyFramerBezier<CKeyBezierQuat, CQuat>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierQuat);
+	NL3D_TRACKKEYF_CHOOSE(ValQuat)
 };
 class CTrackKeyFramerBezierInt : public CTrackKeyFramerBezier<CKeyBezierFloat, sint32>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierInt);
+	NL3D_TRACKKEYF_CHOOSE(ValInt)
 };
 class CTrackKeyFramerBezierRGBA : public CTrackKeyFramerBezier<CKeyBezierVector, NLMISC::CRGBA>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierRGBA);
+	NL3D_TRACKKEYF_CHOOSE(ValRGBA)
 };
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.29 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.30 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,12 +46,12 @@ CMeshBase::CMeshBase()
 	_UseLightingLocalAttenuation= false;
 
 	// To have same functionnality than previous version, init to identity.
-	_DefaultPos.setValue(CVector(0,0,0));
-	_DefaultPivot.setValue(CVector(0,0,0));
-	_DefaultRotEuler.setValue(CVector(0,0,0));
-	_DefaultRotQuat.setValue(CQuat::Identity);
-	_DefaultScale.setValue(CVector(1,1,1));
-	_DefaultLMFactor.setValue(CRGBA(255,255,255,255));
+	_DefaultPos.setDefaultValue(CVector(0,0,0));
+	_DefaultPivot.setDefaultValue(CVector(0,0,0));
+	_DefaultRotEuler.setDefaultValue(CVector(0,0,0));
+	_DefaultRotQuat.setDefaultValue(CQuat::Identity);
+	_DefaultScale.setDefaultValue(CVector(1,1,1));
+	_DefaultLMFactor.setDefaultValue(CRGBA(255,255,255,255));
 
 	_AutoAnim = false;
 
@@ -244,16 +244,16 @@ void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
 	_AnimatedMaterials.clear();
 
 	/// Copy default position values
-	_DefaultPos.setValue (m.DefaultPos);
-	_DefaultPivot.setValue (m.DefaultPivot);
-	_DefaultRotEuler.setValue (m.DefaultRotEuler);
-	_DefaultRotQuat.setValue (m.DefaultRotQuat);
-	_DefaultScale.setValue (m.DefaultScale);
+	_DefaultPos.setDefaultValue (m.DefaultPos);
+	_DefaultPivot.setDefaultValue (m.DefaultPivot);
+	_DefaultRotEuler.setDefaultValue (m.DefaultRotEuler);
+	_DefaultRotQuat.setDefaultValue (m.DefaultRotQuat);
+	_DefaultScale.setDefaultValue (m.DefaultScale);
 
 	_AnimatedMorph	.resize(m.DefaultBSFactors.size());
 	for (uint32 i = 0; i < m.DefaultBSFactors.size(); ++i)
 	{
-		_AnimatedMorph[i].DefaultFactor.setValue (m.DefaultBSFactors[i]);
+		_AnimatedMorph[i].DefaultFactor.setDefaultValue (m.DefaultBSFactors[i]);
 		_AnimatedMorph[i].Name = m.BSNames[i];
 	}
 
@@ -315,10 +315,10 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene)
 	//==========================
 	
 	// Setup position with the default value
-	mi->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
-	mi->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
-	mi->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
-	mi->ITransformable::setPivot( ((CAnimatedValueVector&)_DefaultPivot.getValue()).Value  );
+	mi->ITransformable::setPos( _DefaultPos.getDefaultValue() );
+	mi->ITransformable::setRotQuat( _DefaultRotQuat.getDefaultValue() );
+	mi->ITransformable::setScale( _DefaultScale.getDefaultValue() );
+	mi->ITransformable::setPivot( _DefaultPivot.getDefaultValue() );
 
 	// Check materials for transparency
 	mi->setTransparency( false );

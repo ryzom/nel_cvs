@@ -1,7 +1,7 @@
 /** \file u_animation_set.h
  * <File description>
  *
- * $Id: u_animation_set.h,v 1.5 2001/08/01 09:38:25 berenguier Exp $
+ * $Id: u_animation_set.h,v 1.6 2004/04/07 09:52:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,10 @@ class UAnimation;
 // ***************************************************************************
 /**
  * An animation Set is a set of animation, loaded from file. It contains a set of Skeleton TempalteWeight too.
+ *
+ *	NB: If the animation set is created with addAnimation() method (not with createAnimationSet(animsetFile))
+ *	header optimisation is allowed => less memory load.
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -59,9 +63,21 @@ public:
 
 	/// \name Set build.
 	// @{
+	/** Set the animation Set in "Low Memory" mode by skipping some keys
+	  * Each added animation will loose some keys for CTrackSampledQuat and CTrackSampledVector
+	  *	\param sampleDivisor if set to 5 for instance, the number of keys will be divided (ideally) by 5.
+	  *		if 0, set to 1. if 1 => no key skip (default to 1)
+	  */
+	virtual void setAnimationSampleDivisor(uint sampleDivisor) =0;
+
+	/** see setAnimationSampleDivisor
+	  */
+	virtual uint getAnimationSampleDivisor() const =0;
+	
 	/**
 	  *  Add an animation in the animation set. After adding all your animations, call build().
 	  *  This method use CPath to search the animation file.
+	  *	 WARNING: it assert if you call addAnimation() after build()
 	  *
 	  * \param fileName is the animation filename
 	  * \param animName is the name of the animation in the animation set.
@@ -71,6 +87,7 @@ public:
 
 	/**
 	  *  Build the animation set. Call build after adding all your animations.
+	  *	 NoOp if already built
 	  */
 	virtual	void build () =0;
 

@@ -1,6 +1,6 @@
 /** \file export_remanence.cpp
  *
- * $Id: export_remanence.cpp,v 1.5 2003/06/04 15:09:44 vizerie Exp $
+ * $Id: export_remanence.cpp,v 1.6 2004/04/07 09:56:26 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -136,9 +136,9 @@ NL3D::IShape *CExportNel::buildRemanence(INode& node, TimeValue time)
 	decompMatrix (scale, rot, pos, localTM);
 
 	// Set the default values
-	srs->getDefaultPos()->setValue(pos);					
-	srs->getDefaultScale()->setValue(scale);					
-	srs->getDefaultRotQuat()->setValue(rot);
+	srs->getDefaultPos()->setDefaultValue(pos);					
+	srs->getDefaultScale()->setDefaultValue(scale);					
+	srs->getDefaultRotQuat()->setDefaultValue(rot);
 
 
 	return srs.release();

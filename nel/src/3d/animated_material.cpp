@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.14 2003/05/26 14:16:43 vizerie Exp $
+ * $Id: animated_material.cpp,v 1.15 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,13 +62,13 @@ void	CMaterialBase::CAnimatedTexture::serial(NLMISC::IStream &f)
 // ***************************************************************************
 CMaterialBase::CMaterialBase()
 {
-	DefaultAmbient.setValue(CRGBA(64,64,64));
-	DefaultDiffuse.setValue(CRGBA(128,128,128));
-	DefaultSpecular.setValue(CRGBA(0,0,0));
-	DefaultShininess.setValue(10);
-	DefaultEmissive.setValue(CRGBA(128,128,128));
-	DefaultOpacity.setValue(1);
-	DefaultTexture.setValue(0x7FFFFFFF);
+	DefaultAmbient.setDefaultValue(CRGBA(64,64,64));
+	DefaultDiffuse.setDefaultValue(CRGBA(128,128,128));
+	DefaultSpecular.setDefaultValue(CRGBA(0,0,0));
+	DefaultShininess.setDefaultValue(10);
+	DefaultEmissive.setDefaultValue(CRGBA(128,128,128));
+	DefaultOpacity.setDefaultValue(1);
+	DefaultTexture.setDefaultValue(0x7FFFFFFF);
 	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 	{
 		DefaultTexAnimTracks[k].setDefaultValue();
@@ -98,12 +98,12 @@ void	CMaterialBase::serial(NLMISC::IStream &f)
 // ***************************************************************************
 void	CMaterialBase::copyFromMaterial(CMaterial *pMat)
 {
-	DefaultAmbient.setValue(pMat->getAmbient());
-	DefaultDiffuse.setValue(pMat->getDiffuse());
-	DefaultSpecular.setValue(pMat->getSpecular());
-	DefaultShininess.setValue(pMat->getShininess());
-	DefaultEmissive.setValue(pMat->getEmissive());
-	DefaultOpacity.setValue(pMat->getDiffuse().A/255.f);
+	DefaultAmbient.setDefaultValue(pMat->getAmbient());
+	DefaultDiffuse.setDefaultValue(pMat->getDiffuse());
+	DefaultSpecular.setDefaultValue(pMat->getSpecular());
+	DefaultShininess.setDefaultValue(pMat->getShininess());
+	DefaultEmissive.setDefaultValue(pMat->getEmissive());
+	DefaultOpacity.setDefaultValue(pMat->getDiffuse().A/255.f);
 
 	/// get uv value from material
 	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
@@ -112,11 +112,11 @@ void	CMaterialBase::copyFromMaterial(CMaterial *pMat)
 		{
 			float uTrans, vTrans, uScale, vScale, wRot;
 			pMat->decompUserTexMat(k, uTrans, vTrans, wRot, uScale, vScale);			
-			DefaultTexAnimTracks[k].DefaultUTrans.setValue(uTrans);
-			DefaultTexAnimTracks[k].DefaultVTrans.setValue(vTrans);
-			DefaultTexAnimTracks[k].DefaultUScale.setValue(uScale);
-			DefaultTexAnimTracks[k].DefaultVScale.setValue(vScale);
-			DefaultTexAnimTracks[k].DefaultWRot.setValue(wRot);
+			DefaultTexAnimTracks[k].DefaultUTrans.setDefaultValue(uTrans);
+			DefaultTexAnimTracks[k].DefaultVTrans.setDefaultValue(vTrans);
+			DefaultTexAnimTracks[k].DefaultUScale.setDefaultValue(uScale);
+			DefaultTexAnimTracks[k].DefaultVScale.setDefaultValue(vScale);
+			DefaultTexAnimTracks[k].DefaultWRot.setDefaultValue(wRot);
 		}      
 	}
 }
@@ -164,12 +164,12 @@ CAnimatedMaterial::CAnimatedMaterial(CMaterialBase *baseMat)
 	// IAnimatable.
 	IAnimatable::resize(AnimValueLast);
 
-	_Ambient.affect(_MaterialBase->DefaultAmbient.getValue());
-	_Diffuse.affect(_MaterialBase->DefaultDiffuse.getValue());
-	_Specular.affect(_MaterialBase->DefaultSpecular.getValue());
-	_Shininess.affect(_MaterialBase->DefaultShininess.getValue());
-	_Emissive.affect(_MaterialBase->DefaultEmissive.getValue());
-	_Opacity.affect(_MaterialBase->DefaultOpacity.getValue());
+	_Ambient.Value= _MaterialBase->DefaultAmbient.getDefaultValue();
+	_Diffuse.Value= _MaterialBase->DefaultDiffuse.getDefaultValue();
+	_Specular.Value= _MaterialBase->DefaultSpecular.getDefaultValue();
+	_Shininess.Value= _MaterialBase->DefaultShininess.getDefaultValue();
+	_Emissive.Value= _MaterialBase->DefaultEmissive.getDefaultValue();
+	_Opacity.Value= _MaterialBase->DefaultOpacity.getDefaultValue();
 
 	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 	{

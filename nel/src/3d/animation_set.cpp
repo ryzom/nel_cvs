@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.17 2004/03/24 16:36:58 berenguier Exp $
+ * $Id: animation_set.cpp,v 1.18 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,14 +33,18 @@
 
 #include <memory>
 
-
+using namespace std;
+using namespace NLMISC;
 
 namespace NL3D 
 {
 
 // ***************************************************************************
-CAnimationSet::CAnimationSet ()
+CAnimationSet::CAnimationSet (bool headerOptim)
 {
+	_SampleDivisor= 1;
+	_AnimHeaderOptimisation= headerOptim;
+	_Built= false;
 }
 	
 // ***************************************************************************
@@ -62,6 +66,17 @@ uint CAnimationSet::getNumChannelId () const
 // ***************************************************************************
 uint CAnimationSet::addAnimation (const char* name, CAnimation* animation)
 {
+	// error to add an animation after a build() if the animation set is in HeaderCompress mode
+	nlassert(! (_Built && _AnimHeaderOptimisation) );
+
+	// if sampleDivisor, apply to the animation
+	if(_SampleDivisor>1)
+		animation->applySampleDivisor(_SampleDivisor);
+
+	// compress CTrackSampledQuat header
+	if(_AnimHeaderOptimisation)
+		animation->applyTrackQuatHeaderCompression();
+
 	// Add an animation
 	_Animation.push_back (animation);
 	_AnimationName.push_back (name);
@@ -92,6 +107,7 @@ void CAnimationSet::reset ()
 {
 	_Animation.clear();
 	_SkeletonWeight.clear();
+	_ChannelName.clear();
 	_AnimationName.clear();
 	_SkeletonWeightName.clear();
 	_ChannelIdByName.clear();
@@ -102,7 +118,14 @@ void CAnimationSet::reset ()
 // ***************************************************************************
 void CAnimationSet::build ()
 {
+	// error to rebuild in if already done while _AnimHeaderOptimisation, 
+	// cause applyAnimHeaderCompression() won't work
+	if(_Built && _AnimHeaderOptimisation)
+		return;
+	_Built= true;
+
 	// Clear the channel map
+	_ChannelName.clear();
 	_ChannelIdByName.clear ();
 
 	// Set of names
@@ -126,18 +149,41 @@ void CAnimationSet::build ()
 		// Next entry
 		ite++;
 	}
+
+	// build ChannelName From Map
+	buildChannelNameFromMap();
+
+	// If the animation set is in HeaderOptim mode, reduce memory load by removing map<string, trackId>
+	if(_AnimHeaderOptimisation)
+	{
+		for (uint a=0; a<_Animation.size(); a++)
+		{
+			_Animation[a]->applyAnimHeaderCompression (this, _ChannelIdByName);
+		}
+	}
+
+	// TestYoyo
+	/*nlinfo("ANIMYOYO: %d channels", _ChannelIdByName.size());
+	std::map <std::string, uint32>::iterator	it;
+	for(it= _ChannelIdByName.begin();it!=_ChannelIdByName.end();it++)
+	{
+		nlinfo("ANIMYOYO: %3d: %s", it->second, it->first.c_str());
+	}*/
 }
 
 // ***************************************************************************
 void CAnimationSet::serial (NLMISC::IStream& f)
 {
+	// serial not possible if header optimisation enabled
+	nlassert(!_AnimHeaderOptimisation);
+
 	// Serial an header
 	f.serialCheck ((uint32)'_LEN');
 	f.serialCheck ((uint32)'MINA');
 	f.serialCheck ((uint32)'TES_');
 
 	// Serial a version
-	(void)f.serialVersion (0);
+	uint	ver= f.serialVersion (1);
 
 	// Serial the class
 	f.serialContPtr (_Animation);
@@ -147,6 +193,10 @@ void CAnimationSet::serial (NLMISC::IStream& f)
 	f.serialCont(_ChannelIdByName);
 	f.serialCont(_AnimationIdByName);
 	f.serialCont(_SkeletonWeightIdByName);
+	if(ver>=1)
+		f.serialCont(_ChannelName);
+	else
+		buildChannelNameFromMap();
 }
 
 // ***************************************************************************
@@ -182,6 +232,33 @@ bool CAnimationSet::loadFromFiles(const std::string &path, bool recurse /* = tru
 	}
 	build();
 	return everythingOk;
+}
+
+// ***************************************************************************
+void CAnimationSet::setAnimationSampleDivisor(uint sampleDivisor)
+{
+	_SampleDivisor= sampleDivisor;
+	// 0 is invalid
+	if(_SampleDivisor==0)
+		_SampleDivisor= 1;
+}
+
+// ***************************************************************************
+uint CAnimationSet::getAnimationSampleDivisor() const
+{
+	return _SampleDivisor;
+}
+
+// ***************************************************************************
+void	CAnimationSet::buildChannelNameFromMap()
+{
+	contReset(_ChannelName);
+	_ChannelName.resize(_ChannelIdByName.size());
+	std::map <std::string, uint32>::iterator	it;
+	for(it= _ChannelIdByName.begin();it!=_ChannelIdByName.end();it++)
+	{
+		_ChannelName[it->second]= it->first;
+	}
 }
 
 

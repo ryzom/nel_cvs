@@ -1,7 +1,7 @@
 /** \file animated_lightmap.cpp
  * <File description>
  *
- * $Id: animated_lightmap.cpp,v 1.4 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: animated_lightmap.cpp,v 1.5 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,8 +47,8 @@ CAnimatedLightmap::CAnimatedLightmap (uint lightmapGroup)
 	// IAnimatable.
 	IAnimatable::resize( AnimValueLast );
 
-	_DefaultFactor.setValue( CRGBA(255,0,255,255) );
-	_Factor.affect( _DefaultFactor.getValue() );
+	_DefaultFactor.setDefaultValue( CRGBA(255,0,255,255) );
+	_Factor.Value= _DefaultFactor.getDefaultValue();
 	_GroupColor.resize (lightmapGroup, CRGBA::White);
 }
 

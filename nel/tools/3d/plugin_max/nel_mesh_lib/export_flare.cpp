@@ -1,6 +1,6 @@
 /** \file export_flare.cpp
  *
- * $Id: export_flare.cpp,v 1.2 2002/11/13 14:30:19 vizerie Exp $
+ * $Id: export_flare.cpp,v 1.3 2004/04/07 09:56:25 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -118,6 +118,6 @@ IShape* CExportNel::buildFlare(INode& node, TimeValue time)
 	getLocalMatrix (localTM, node, time);			
 	Point3  fp = localTM.GetTrans();
 	// export default transformation
-	fshape->getDefaultPos()->setValue( CVector(fp.x, fp.y, fp.z) );						
+	fshape->getDefaultPos()->setDefaultValue( CVector(fp.x, fp.y, fp.z) );						
 	return fshape;
 }

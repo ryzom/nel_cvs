@@ -1,7 +1,7 @@
 /** \file animation_optimizer.cpp
  * <File description>
  *
- * $Id: animation_optimizer.cpp,v 1.4 2002/07/23 17:09:59 corvazier Exp $
+ * $Id: animation_optimizer.cpp,v 1.5 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -189,7 +189,10 @@ ITrack		*CAnimationOptimizer::optimizeTrack(const ITrack	*trackIn)
 
 	// Optimize Quaternion track??
 	//================
-	if( dynamic_cast<const CAnimatedValueQuat *>(&trackIn->getValue()) )
+	// eval the track only to get its value type!!
+	CAnimatedValueBlock		avBlock;
+	const IAnimatedValue	&valueType= ((ITrack*)trackIn)->eval(0, avBlock);
+	if( dynamic_cast<const CAnimatedValueQuat *>(&valueType) )
 	{
 		// sample the animation. Store result in _TimeList/_QuatKeyList
 		sampleQuatTrack(trackIn, beginTime, endTime, numSamples);
@@ -200,7 +203,7 @@ ITrack		*CAnimationOptimizer::optimizeTrack(const ITrack	*trackIn)
 			// create a default Track Quat.
 			CTrackDefaultQuat	*trackDefault= new CTrackDefaultQuat;
 			// setup the uniform value.
-			trackDefault->setValue(_QuatKeyList[0]);
+			trackDefault->setDefaultValue(_QuatKeyList[0]);
 
 			// return the result.
 			return trackDefault;
@@ -226,7 +229,7 @@ ITrack		*CAnimationOptimizer::optimizeTrack(const ITrack	*trackIn)
 	}
 	// Optimize Position track??
 	//================
-	else if( dynamic_cast<const CAnimatedValueVector *>(&trackIn->getValue()) )
+	else if( dynamic_cast<const CAnimatedValueVector *>(&valueType) )
 	{
 		// sample the animation. Store result in _TimeList/_VectorKeyList
 		sampleVectorTrack(trackIn, beginTime, endTime, numSamples);
@@ -237,7 +240,7 @@ ITrack		*CAnimationOptimizer::optimizeTrack(const ITrack	*trackIn)
 			// create a default Track Vector.
 			CTrackDefaultVector	*trackDefault= new CTrackDefaultVector;
 			// setup the uniform value.
-			trackDefault->setValue(_VectorKeyList[0]);
+			trackDefault->setDefaultValue(_VectorKeyList[0]);
 
 			// return the result.
 			return trackDefault;

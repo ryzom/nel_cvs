@@ -1,7 +1,7 @@
 /** \file track_sampled_common.cpp
  * <File description>
  *
- * $Id: track_sampled_common.cpp,v 1.2 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: track_sampled_common.cpp,v 1.3 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -210,6 +210,9 @@ void	CTrackSampledCommon::setLoopMode(bool mode)
 // ***************************************************************************
 CTrackSampledCommon::TEvalType	CTrackSampledCommon::evalTime (const TAnimationTime& date, uint numKeys, uint &keyId0, uint &keyId1, float &interpValue)
 {
+	/* IF YOU CHANGE THIS CODE, CHANGE too CTrackSampledQuatSmallHeader
+	 */
+
 	// Empty? quit
 	if(numKeys==0)
 		return EvalDiscard;
@@ -321,6 +324,76 @@ CTrackSampledCommon::TEvalType	CTrackSampledCommon::evalTime (const TAnimationTi
 	}
 	// else (last key of anim), just eval this key.
 	return EvalKey0;
+}
+
+
+// ***************************************************************************
+void	CTrackSampledCommon::applySampleDivisorCommon(uint sampleDivisor, std::vector<uint32> &keepKeys)
+{
+	nlassert(sampleDivisor>=2);
+	uint	i,j;
+	
+	/*
+		NB: to be faster, if we have multiple timeblock (rare, cause implies the anim>8.5 sec), the
+		number of time block is kept after this process, either if it could be lowered.
+		NB: for same reason, the first and last key of each timeBlock is kept to be simpler, and to avoid bug
+		in searchLowerBound() (we must keep first key of each timeBlock)
+	*/
+
+	// clear
+	keepKeys.clear();
+	
+	// **** build the key indices to keep
+	static std::vector<uint32>		blockKeepStart;
+	static std::vector<uint32>		blockKeepEnd;
+	blockKeepStart.resize(_TimeBlocks.size());
+	blockKeepEnd.resize(_TimeBlocks.size());
+	// must Keep the first and last key. 
+	uint	lastKeyTime= 0;
+	for(i=0;i<_TimeBlocks.size();i++)
+	{
+		CTimeBlock	&timeBlock= _TimeBlocks[i];
+
+		// keep track of the start new key for this block
+		blockKeepStart[i]= keepKeys.size();
+
+		for(j=0;j<timeBlock.Times.size();j++)
+		{
+			// get the time of this key
+			uint	keyTime= timeBlock.Times[j] + timeBlock.TimeOffset;
+			// if the diff time with last inserted key is >= than the sampleDivisor, add it!
+			if( (keyTime - lastKeyTime >= sampleDivisor) ||
+				// add it also if it is the first or last key of the block
+				(j==0 || j==timeBlock.Times.size()-1) )
+			{
+				lastKeyTime= keyTime;
+				keepKeys.push_back(j+timeBlock.KeyOffset);
+			}
+		}
+
+		// keep track of the end (not included) new key for this block
+		blockKeepEnd[i]= keepKeys.size();
+	}
+	
+	// **** rebuild the TimeBlocks
+	for(i=0;i<_TimeBlocks.size();i++)
+	{
+		CTimeBlock	&timeBlock= _TimeBlocks[i];
+		uint	keepStart= blockKeepStart[i];
+		uint	keepEnd= blockKeepEnd[i];
+
+		NLMISC::CObjectVector<uint8, false>		newKeys;
+		newKeys.resize(keepEnd-keepStart);
+		for(uint j=0;j<newKeys.size();j++)
+		{
+			newKeys[j]= timeBlock.Times[keepKeys[keepStart+j]-timeBlock.KeyOffset];
+		}
+		// copy
+		timeBlock.Times= newKeys;
+		// change the key offset!
+		timeBlock.KeyOffset= keepStart;
+	}
+		
 }
 
 

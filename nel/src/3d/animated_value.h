@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.4 2003/12/05 13:47:59 berenguier Exp $
+ * $Id: animated_value.h,v 1.5 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -278,6 +278,23 @@ typedef CAnimatedValueBlendable<NLMISC::CVector>	CAnimatedValueVector;
 typedef CAnimatedValueNotBlendable<std::string>		CAnimatedValueString;
 typedef CAnimatedValueBlendable<NLMISC::CQuat>		CAnimatedValueQuat;
 typedef CAnimatedValueBlendable<NLMISC::CRGBA>		CAnimatedValueRGBA;
+
+
+// ***************************************************************************
+/** This class must contains all the possible AnimatedValue, so the system can work
+  *	It is used at ITrack evaluation to fill one of this value
+  */
+class CAnimatedValueBlock
+{
+public:
+	CAnimatedValueBool		ValBool;
+	CAnimatedValueInt		ValInt;
+	CAnimatedValueFloat		ValFloat;
+	CAnimatedValueVector	ValVector;
+	CAnimatedValueString	ValString;
+	CAnimatedValueQuat		ValQuat;
+	CAnimatedValueRGBA		ValRGBA;
+};
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.10 2003/12/05 13:47:59 berenguier Exp $
+ * $Id: animation.h,v 1.11 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ namespace NL3D
 {
 
 class ITrack;
+class CAnimationSet;
 
 /**
  * This class describes animations for several tracks. Each track works
@@ -71,23 +72,12 @@ public:
 
 	/** Get track with its name.
 	  *
+	  *	WARNING: slower if applyAnimHeaderCompression() has been called. try use getIdTrackByChannelId() instead
+	  *
 	  * \param name is the name of the desired track.
 	  * \return CAnimation::NotFound if the track doesn't exist else the the id of the track.
 	  */
-	uint getIdTrackByName (const std::string& name) const
-	{
-		NL3D_MEM_ANIMATION
-		// Find an entry in the name/id map
-		TMapStringUInt::const_iterator ite=_IdByName.find (name);
-
-		// Not found ?
-		if (ite==_IdByName.end ())
-			// yes, error
-			return NotFound;
-		else
-			// no, return track ID
-			return (uint)ite->second;
-	}
+	uint getIdTrackByName (const std::string& name) const;
 
 	/** 
 	  * Fill the set of string with the name of the channels.
@@ -96,6 +86,12 @@ public:
 	  */
 	void getTrackNames (std::set<std::string>& setString) const;
 
+	/** see applyAnimHeaderCompression()
+	  * \return CAnimation::NotFound if the track doesn't exist (or anim header not compressed) 
+	  *		else return the the id of the track.
+	  */
+	uint getIdTrackByChannelId (uint16 channelId) const;
+		
 	/** Get a const track pointer
 	  *
 	  * \param channelId is the id of the desired channel.
@@ -144,6 +140,27 @@ public:
 	// @}
 
 
+	/// \name CAnimationSet private
+	// @{
+	/** For each track that support it (CTrackSampled for instance), divide its number of sampled keys, 
+	  * to lower the memory lod. Used typically by CAnimationSet
+	  */
+	void	applySampleDivisor(uint sampleDivisor);
+
+	/** For CTrackSampledQuat only, compress header. Used typically by CAnimationSet
+	  * NB: Animation cannot be serialized after this operation (unserialisable tracks)
+	  */
+	void	applyTrackQuatHeaderCompression();
+
+	/** Used by CAnimationSet to lower the memory Size. After This, you can 
+	  *	(and should for better performance) use getIdTrackByChannelId()
+	  *	Does not support more than 65536 channels (nlassert)
+	  */
+	void	applyAnimHeaderCompression(CAnimationSet *animationSetOwner, const std::map <std::string, uint32> &channelMap);
+	
+	// @}
+
+	
 private:
 	/// \name Members
 	typedef std::map<std::string, uint32> TMapStringUInt;
@@ -152,7 +169,7 @@ private:
 	// Animation name
 	std::string			_Name;
 
-	// Map to get a channel id with a name.
+	// Map to get a channel id with a name. EMPTY if applyAnimHeaderCompression() called
 	TMapStringUInt		_IdByName;
 
 	// Vector of channel pointer.
@@ -170,6 +187,14 @@ private:
 		mutable bool				_EndTimeTouched;
 		mutable bool				_AnimLoopTouched;
 	// @}
+
+	/// CTrackSampledQuat header compression
+	class CTrackSamplePack			*_TrackSamplePack;
+
+	// Sorted array of ChannelId. Same size as _TrackVector. EMPTY if applyAnimHeaderCompression() NOT called
+	std::vector<uint16>	_IdByChannelId;
+	// The AnimationSet. NULL if applyAnimHeaderCompression() NOT called
+	class CAnimationSet	*_AnimationSetOwner;
 };
 
 

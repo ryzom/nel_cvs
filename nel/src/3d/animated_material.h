@@ -1,7 +1,7 @@
 /** \file animated_material.h
  * <File description>
  *
- * $Id: animated_material.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: animated_material.h,v 1.4 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,10 +94,10 @@ public:
 
 		void setDefaultValue() 
 		{ 
-			DefaultUTrans.setValue(0);
-			DefaultVTrans.setValue(0);
-			DefaultUScale.setValue(1);
-			DefaultVScale.setValue(1);
+			DefaultUTrans.setDefaultValue(0);
+			DefaultVTrans.setDefaultValue(0);
+			DefaultUScale.setDefaultValue(1);
+			DefaultVScale.setDefaultValue(1);
 		}
 
 		void			serial(NLMISC::IStream &f)
@@ -270,12 +270,11 @@ private:
 
 		void affect(CMaterialBase::CTexAnimTracks &at)
 		{
-			_UTrans.affect(at.DefaultUTrans.getValue());
-			_VTrans.affect(at.DefaultVTrans.getValue());
-			_UScale.affect(at.DefaultUScale.getValue());
-			_VScale.affect(at.DefaultVScale.getValue());
-			_WRot.affect(at.DefaultWRot.getValue());
-
+			_UTrans.Value= at.DefaultUTrans.getDefaultValue();
+			_VTrans.Value= at.DefaultVTrans.getDefaultValue();
+			_UScale.Value= at.DefaultUScale.getDefaultValue();
+			_VScale.Value= at.DefaultVScale.getDefaultValue();
+			_WRot.Value= at.DefaultWRot.getDefaultValue();
 		}
 	};
 	CTexAnimatedMatValues		_TexAnimatedMatValues[IDRV_MAT_MAXTEXTURES];

@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.4 2004/01/15 17:33:49 lecroart Exp $
+ * $Id: track_tcb.h,v 1.5 2004/04/07 09:51:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,12 +203,6 @@ class CTrackKeyFramerTCB : public ITrackKeyFramer<CKeyT>, private CTCBTools<CKey
 {
 public:
 
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
 protected:
 
 
@@ -222,8 +216,10 @@ protected:
 	/// evalKey (runtime).
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
 							TAnimationTime datePrevious, TAnimationTime dateNext,
-							TAnimationTime date )
+							TAnimationTime date, IAnimatedValue &result )
 	{
+		CAnimatedValueBlendable<T>	&resultVal= static_cast<CAnimatedValueBlendable<T>&>(result);
+		
 		if(previous && next)
 		{
 			// lerp from previous to cur.
@@ -235,17 +231,17 @@ protected:
 
 			float hb[4];
 			computeHermiteBasis(date, hb);
-			copyToValue(_Value.Value, 
+			copyToValue(resultVal.Value, 
 				previous->Value*hb[0] + next->Value*hb[1] + 
 				previous->TanFrom*hb[2] + next->TanTo*hb[3]);
 		}
 		else
 		{
 			if (previous)
-				copyToValue(_Value.Value, previous->Value);
+				copyToValue(resultVal.Value, previous->Value);
 			else
 				if (next)
-					copyToValue(_Value.Value, next->Value);
+					copyToValue(resultVal.Value, next->Value);
 		}
 	}
 
@@ -319,8 +315,6 @@ protected:
 
 // *****************
 private:
-	CAnimatedValueBlendable<T>	_Value;
-
 
 
 	void computeTCBKey(CKeyT &keyBefore, CKeyT &key, CKeyT &keyAfter, float timeBefore, float time, float timeAfter, 
@@ -388,20 +382,16 @@ class CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CAngleAxis> : public ITrackKeyFram
 {
 public:
 
-	/// From ITrack
-	virtual const IAnimatedValue& getValue () const
-	{
-		return _Value;
-	}
-	
 	/// \name From ITrackKeyFramer
 	// @{
 
 	/// evalKey (runtime).
 	virtual void evalKey (	const CKeyTCBQuat* previous, const CKeyTCBQuat* next, 
 							TAnimationTime datePrevious, TAnimationTime dateNext,
-							TAnimationTime date )
+							TAnimationTime date, IAnimatedValue &result )
 	{
+		CAnimatedValueQuat	&resultVal= static_cast<CAnimatedValueQuat&>(result);
+		
 		if(previous && next)
 		{
 			// lerp from previous to cur.
@@ -413,15 +403,15 @@ public:
 			date = ease(previous, date);
 
 			// quad slerp.
-			_Value.Value= CQuat::squadrev(next->LocalAngleAxis, previous->Quat, previous->A, next->B, next->Quat, date);
+			resultVal.Value= CQuat::squadrev(next->LocalAngleAxis, previous->Quat, previous->A, next->B, next->Quat, date);
 		}
 		else
 		{
 			if (previous)
-				_Value.Value= previous->Quat;
+				resultVal.Value= previous->Quat;
 			else
 				if (next)
-					_Value.Value= next->Quat;
+					resultVal.Value= next->Quat;
 		}
 
 	}
@@ -514,8 +504,6 @@ public:
 
 // *****************
 private:
-	CAnimatedValueBlendable<CQuat>	_Value;
-
 
 	void computeTCBKey(CKeyTCBQuat &keyBefore, CKeyTCBQuat &key, CKeyTCBQuat &keyAfter, float timeBefore, float time, float timeAfter, 
 		float rangeDelta, bool firstKey, bool endKey, bool isLoop) 

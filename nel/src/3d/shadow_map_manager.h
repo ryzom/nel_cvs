@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.h
  * <File description>
  *
- * $Id: shadow_map_manager.h,v 1.9 2004/09/20 11:55:25 berenguier Exp $
+ * $Id: shadow_map_manager.h,v 1.10 2004/10/05 17:01:01 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -131,7 +131,7 @@ private:
 
 	void			setBlackQuad(uint index, sint x, sint y, sint w, sint h);
 
-	void			updateBlurTexture(uint w, uint h);
+	void			updateBlurTexture(IDriver &drv, uint w, uint h);
 	void			copyScreenToBlurTexture(IDriver *drv, uint numPassText, uint numTextW, uint numTextH, uint baseTextureSize);
 	void			applyFakeGaussianBlur(IDriver *drv, uint numPassText, uint numTextW, uint numTextH, uint baseTextureSize, uint blurSource);
 	void			setBlurQuadFakeGaussian(uint index, sint x, sint y, sint w, sint h);

@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.15 2004/09/20 11:55:25 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.16 2004/10/05 17:01:01 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -172,7 +172,7 @@ CShadowMapManager::CShadowMapManager()
 	// init material
 	_ReceiveShadowMaterial.initUnlit();
 	_ReceiveShadowMaterial.setBlend(true);
-	_ReceiveShadowMaterial.setBlendFunc(CMaterial::zero, CMaterial::srccolor);
+	_ReceiveShadowMaterial.setBlendFunc(CMaterial::zero, CMaterial::invsrccolor);
 	_ReceiveShadowMaterial.setZWrite(false);
 	// FillRate Optim
 	_ReceiveShadowMaterial.setAlphaTest(true);
@@ -184,10 +184,11 @@ CShadowMapManager::CShadowMapManager()
 	_ReceiveShadowMaterial.setTexCoordGen(0, true);
 	_ReceiveShadowMaterial.setTexCoordGenMode(0, CMaterial::TexCoordGenObjectSpace);
 	// Setup the stage so we interpolate ShadowColor and White (according to shadowmap alpha)
-	_ReceiveShadowMaterial.texEnvOpRGB(0, CMaterial::InterpolateTexture);
-	_ReceiveShadowMaterial.texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
-	_ReceiveShadowMaterial.texEnvArg1RGB(0, CMaterial::Constant, CMaterial::SrcColor);
-	_ReceiveShadowMaterial.texConstantColor(0, CRGBA::White);
+	// nico : with D3D driver, limitation of the number of per stage constant (Only 1 if diffuse is used), so do a blend between inv diffuse & black (instead of diffuse & white), which resolve to a modulate between
+	// source alpha & inverse diffuse.  then invert result at subsequent stage	
+	_ReceiveShadowMaterial.texEnvOpRGB(0, CMaterial::Modulate);
+	_ReceiveShadowMaterial.texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::InvSrcColor);
+	_ReceiveShadowMaterial.texEnvArg1RGB(0, CMaterial::Texture, CMaterial::SrcAlpha);	
 	// Take Alpha for AlphaTest only.
 	_ReceiveShadowMaterial.texEnvOpAlpha(0, CMaterial::Replace);
 	_ReceiveShadowMaterial.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
@@ -199,11 +200,9 @@ CShadowMapManager::CShadowMapManager()
 	_ReceiveShadowMaterial.setTexCoordGenMode(1, CMaterial::TexCoordGenObjectSpace);
 	_ReceiveShadowMaterial.setTexture(1, _ClampTexture);
 	// Setup the stage so we interpolate Shadow and White (according to clamp alpha)
-	_ReceiveShadowMaterial.texEnvOpRGB(1, CMaterial::InterpolateTexture);
-	//_ReceiveShadowMaterial.texEnvArg0RGB(1, CMaterial::Previous, CMaterial::SrcColor);
-	_ReceiveShadowMaterial.texEnvArg0RGB(1, CMaterial::Previous, CMaterial::SrcColor);
-	_ReceiveShadowMaterial.texEnvArg1RGB(1, CMaterial::Constant, CMaterial::SrcColor);
-	_ReceiveShadowMaterial.texConstantColor(1, CRGBA::White);
+	_ReceiveShadowMaterial.texEnvOpRGB(1, CMaterial::Modulate);	
+	_ReceiveShadowMaterial.texEnvArg0RGB(1, CMaterial::Previous, CMaterial::SrcColor); // Color is inverted before the blend
+	_ReceiveShadowMaterial.texEnvArg1RGB(1, CMaterial::Texture, CMaterial::SrcAlpha);	
 	// Take Alpha for AlphaTest only. (take 1st texture alpha...)
 	_ReceiveShadowMaterial.texEnvOpAlpha(0, CMaterial::Replace);
 	_ReceiveShadowMaterial.texEnvArg0Alpha(0, CMaterial::Previous, CMaterial::SrcAlpha);
@@ -302,7 +301,7 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 
 
 	// Create / Update the Blur Texture 
-	updateBlurTexture(numTextW * baseTextureSize, numTextH * baseTextureSize);
+	updateBlurTexture(*driverForShadowGeneration, numTextW * baseTextureSize, numTextH * baseTextureSize);
 
 
 	// Do NPass if a screen is not sufficient to render all shadow maps...
@@ -906,7 +905,7 @@ void			CShadowMapManager::setBlackQuad(uint index, sint x, sint y, sint w, sint 
 }
 
 // ***************************************************************************
-void			CShadowMapManager::updateBlurTexture(uint w, uint h)
+void			CShadowMapManager::updateBlurTexture(IDriver &drv, uint w, uint h)
 {
 	w= max(w, 2U);
 	h= max(h, 2U);
@@ -915,7 +914,7 @@ void			CShadowMapManager::updateBlurTexture(uint w, uint h)
 		return;
 
 	// release old SmartPtr
-	uint i;
+	uint i, j;
 	for (i=0; i<2; i++)
 	{
 		_BlurMaterial[i].setTexture(0, NULL);
@@ -942,13 +941,17 @@ void			CShadowMapManager::updateBlurTexture(uint w, uint h)
 		_BlurTexture[i]->setTextureCategory(_TextureCategory);
 	}
 
+	uint maxNumCstLighted;
+	uint maxNumCstUnlighted;
+	drv.getNumPerStageConstant(maxNumCstLighted, maxNumCstUnlighted);
+
 	// set to the material
 	for (i=0; i<2; i++)
 	{
-		_BlurMaterial[i].setTexture(0, _BlurTexture[i]);
-		_BlurMaterial[i].setTexture(1, _BlurTexture[i]);
-		_BlurMaterial[i].setTexture(2, _BlurTexture[i]);
-		_BlurMaterial[i].setTexture(3, _BlurTexture[i]);
+		for (j=0; j<maxNumCstUnlighted; j++)
+		{
+			_BlurMaterial[i].setTexture(j, _BlurTexture[i]);
+		}		
 	}
 
 	// compute values for texturing

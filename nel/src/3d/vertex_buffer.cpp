@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.32 2002/02/28 12:59:52 besson Exp $
+ * $Id: vertex_buffer.cpp,v 1.33 2002/03/14 18:19:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -249,6 +249,13 @@ void CVertexBuffer::addValueEx (TValue valueId, TType type)
 
 	// Set the type
 	_Type[valueId]=(uint8)type;
+}
+
+// --------------------------------------------------
+
+bool CVertexBuffer::hasValueEx(TValue valueId) const
+{
+	return (_Flags & (1 << valueId)) != 0;
 }
 
 // --------------------------------------------------
@@ -856,6 +863,17 @@ void		CVertexBuffer::serialHeader(NLMISC::IStream &f)
 		setNumVertices(nbVerts);
 	}
 	// All other infos (but _Verts) are computed by initEx() and setNumVertices().
+}
+
+
+// --------------------------------------------------
+uint	CVertexBuffer::	getNumTexCoordUsed() const
+{	
+	for (sint k = (MaxStage - 1); k >= 0; --k)
+	{
+		if (_Flags & (TexCoord0Flag << k))  return (uint) (k + 1);
+	}
+	return 0;
 }
 
 // --------------------------------------------------

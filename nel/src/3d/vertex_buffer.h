@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.7 2001/10/02 08:42:42 berenguier Exp $
+ * $Id: vertex_buffer.h,v 1.8 2002/03/14 18:19:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,6 +130,15 @@ public:
 		NumValue		=16
 	};
 
+	/** 
+	  * Misc infos
+	  */
+	enum
+	{
+		FirstTexCoordValue = TexCoord0,
+		LastTexCoordValue  = TexCoord7,		
+	};
+
 	/**
 	  * Value flags
 	  */
@@ -152,6 +161,8 @@ public:
 		FogFlag				=	1<<Fog, 
 		EmptyFlag			=	1<<Empty,
 	};
+
+	
 
 	/**
 	  * Value type, there is 13 kind of value type as in DirectX8 and gl_vertex_program used in exteneded mode
@@ -298,6 +309,10 @@ public:
 		  */
 		uint16					getVertexFormat (void) const  { return(_Flags); };
 
+
+		/// Returns the number of texture coordinate stages used by this vertex buffer
+		uint					getNumTexCoordUsed() const;
+
 		// It is an error (assert) to set a vertex component if not setuped in setVertexFormat().
 		inline void				setVertexCoord(uint idx, float x, float y, float z);
 		inline void				setVertexCoord(uint idx, const CVector &v);
@@ -364,7 +379,7 @@ public:
 		  * Clear all value in the vertex buffer. After this call, call addValue for each value you want in your vertex
 		  * buffer then call initEx() to init the vertex buffer.
 		  */
-		void				clearValueEx ();
+		void				clearValueEx ();		
 
 		/**
 		  * Add a value in the vertex buffer. After this call, call initEx() to init the vertex buffer.
@@ -373,6 +388,9 @@ public:
 		  * \param type is the type used for this value.
 		  */
 		void				addValueEx (TValue valueId, TType type);
+
+		/// Test if the given value is present in the vertex buffer
+		bool				hasValueEx(TValue valueId) const;		
 
 		/**
 		  * Init the vertex buffer in extended mode.

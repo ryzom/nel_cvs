@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.14 2001/08/08 11:54:47 besson Exp $
+ * $Id: calc_lm.cpp,v 1.15 2001/08/08 13:22:37 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3533,6 +3533,16 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 }
 
 // -----------------------------------------------------------------------------------------------
+void unbuildWorldRT (SWorldRT& wrt)
+{
+	for (uint32 i = 0; i < wrt.vMB.size(); ++i)
+	{
+		delete wrt.vMB[i];
+		delete wrt.vMBB[i];
+	}
+}
+
+// -----------------------------------------------------------------------------------------------
 // Is the box b1 can cast shadow on the box b2 with the light l ?
 bool isBoxCanCastShadowOnBoxWithLight( CAABBox &b1, CAABBox &b2, SLightBuild &l )
 {
@@ -3740,7 +3750,10 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		// Bubble sort pointer to the faces (Material sorting)
 		ClearFaceWithNoLM( pMB, pMBB, AllFaces );
 		if( AllFaces.size() == 0 )
+		{
+			unbuildWorldRT( WorldRT );
 			return false;
+		}
 
 		if (gOptions.FeedBack != NULL)
 		{
@@ -3756,6 +3769,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			thetext += ZeNode.GetName();
 			thetext = "have not all this faces mapped";
 			MessageBox( NULL, thetext.c_str(), "LightMap Warning", MB_OK|MB_ICONERROR );
+			unbuildWorldRT( WorldRT );
 			return false;
 		}
 
@@ -3947,25 +3961,19 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		// Next mesh
 	}
 
+	unbuildWorldRT (WorldRT);
+
 	// End of the lighting process for this node we have to export the data
 	CMesh::CMeshBuild *pMB = pZeMeshBuild;
 	CMeshBase::CMeshBaseBuild *pMBB = pZeMeshBaseBuild;
 	pMB->VertexFlags |= IDRV_VF_UV[1];
 	// Build the mesh with the build interface
-
 	for( i = 0; i < pMBB->Materials.size(); ++i )
 	if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 	{
 		pMBB->Materials[i].setLighting( false );
 		pMBB->Materials[i].setColor( CRGBA(255,255,255,255) );
 	}
-
-	for( i = 0; i < WorldRT.vMB.size(); ++i )
-	{
-		delete WorldRT.vMB[i];
-		delete WorldRT.vMBB[i];
-	}
-
 
 	// Temp Mat.
 /*

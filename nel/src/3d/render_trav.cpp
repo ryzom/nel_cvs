@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.17 2002/02/28 12:59:51 besson Exp $
+ * $Id: render_trav.cpp,v 1.18 2002/03/05 11:56:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -478,7 +478,7 @@ void		CRenderTrav::beginVPLightSetup(uint ctStart, bool supportSpecular, const C
 	//================
 	CVector		lightDir;
 	// in objectSpace.
-	lightDir= invObjectWM * _DriverLight[0].getDirection();
+	lightDir= invObjectWM.mulVector(_DriverLight[0].getDirection());
 	lightDir.normalize();
 	lightDir= -lightDir; 
 	if(supportSpecular)

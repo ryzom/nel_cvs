@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.5 2000/12/06 14:32:24 berenguier Exp $
+ * $Id: mot.h,v 1.6 2001/03/16 16:48:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -234,6 +234,12 @@ public:
 	 * Once a model is deleted, all pointer to him should have been deleted.
 	 */
 	void	deleteModel(IModel *model);
+
+	/** Validate all models and observers. All dirty models are cleaned, and so their observers.
+	 * This should be called, before any ITrav traversal.
+	 */
+	void	validateModels();
+
 	//@}
 
 
@@ -398,15 +404,17 @@ protected:
  * A model is the base structure for any node. The user directly manipulates Models implemented by the deriver.
  *
  * The deriver must implement a notification system so observers can know if they must update themselves. This is done with
- * a NLMISC::CBitSet Touch. Deriver may add Additional flags, or additional info which may serves just as hint, to not 
- * compute everything. When an observer function is called, it may check if the model has been modified via this BitSet.
- * If this is the case, then all observers will be "touched", via a IObs::foul() virtual function, and then the model is 
- * clean() -ed. Then, a dirty observer may update himself with help of the model.
+ * a NLMISC::CBitSet TouchObs. Deriver may add Additional flags, or additional info which may serves just as hint, to not 
+ * compute everything (eg: vertex interval...). In CMOT::validateModels(), for each model, do:
+ *		- update() the model.
+ *		- if the model is dirty:
+ *			- update() the observers
+ *			- cleanTouch() the model.
  *
  *
  * \b DERIVERS \b RULES:
- * - Possibly Add his own TDirty state (see TDirty and Touch), and resize Touch (see IModel()).
- * - Implement the notification system (see clean()), as descripted above.
+ * - Possibly Add his own TDirty state (see TDirty and TouchObs), and resize TouchObs (see IModel()).
+ * - Implement the notification system (see update()/cleanTouch()), as descripted above.
  *
  * The deriver may choose how to  foul() himself: either automatic (on any mutator function), or by user (which may call a
  * foul function).
@@ -423,7 +431,7 @@ protected:
 	 * The user must create a Model only with CMOT::createModel().
 	 * This is required since, CMOT::createModel() create observers for his traversals and link them to this created model.
 	 *
-	 * The deriver \b should do a \c Touch.resize(Last), to ensure he resize the BitSet correctly.
+	 * The deriver \b should do a \c TouchObs.resize(Last), to ensure he resize the BitSet correctly.
 	 * The dervier \b should keep/declare ctor and dtor protected, to avoid user error (new and delete).
 	 */
 	IModel();
@@ -442,28 +450,21 @@ public:
 	//@{
 	/** 
 	 * The Dirty states. Derived models may add flags with similar enum. The first enum element must begin at 
-	 * CBase::Last (where CBase is the base class), so falg compatibility is maintained.
+	 * CBaseClass::Last (where CBaseClass is the base class), so falg compatibility is maintained.
 	 */
 	enum	TDirty
 	{
 		Dirty=0,		// First bit, to say that the Model is dirty.
 		Last
 	};
-	NLMISC::CBitSet	Touch;
-	/// Is the model dirty?
-	bool	isDirty() const { return Touch[Dirty];}
-	/// The derived model must set "Dirty" flag to force the dirty state.
-	void	foul() { Touch.set(Dirty);}
+	/// TouchObs say what part of the model has changed, so Observers can deal with this in Obs::update().
+	NLMISC::CBitSet		TouchObs;
+	/// The derived model should call foul() in update() or other mutator functions.
+	void	foul(uint flag) { TouchObs.set(Dirty); TouchObs.set(flag); }
 
-	/** This function must clean the model (called by model's observers). 
-	 * Must call Base::clean, reset Touch bits, update info, and reset all other special information of the model.
-	 *
-	 * The default behavior is just to set Touch[Dirty] to 0.
-	 */
-	virtual	void	clean()
-	{
-		Touch.clear(Dirty);
-	}
+	/// check if the model is modified, and if yes, update him and his observers.
+	void	validate();
+
 	//@}
 
 
@@ -480,6 +481,47 @@ protected:
 	mutable	IObs				*LastObs;
 	/// Get an observer according to his Traversal Id. NULL, if not found.
 	IObs	*getObs(const NLMISC::CClassId &idTrav) const;
+
+
+protected:
+
+
+	/// \name Notification system specification.
+	//@{
+	/** This function must update the model (called by CMOT::validateModels()), and foul() necessary flags.
+	 * Must :
+	 *	- call BaseClass::update() (eg: IModel::update()).
+	 *	- test if something is different (eg: animation modification). update Model information (eg compute new Matrix).
+	 *	- foul() good bits. (eg: foul(TransformDirty)).
+	 *	- maybe set other Touch information (vertex intervals...).
+	 *
+	 * The default behavior is to do nothing.
+	 *
+	 * NB: Touch information is reseted after observers validation in CMOT::validateModels(), using Model::cleanTouch()
+	 *
+	 */
+	virtual	void	update()
+	{
+	}
+
+	/** This function must clean the Touch information of the model (called by CMOT::validateModels())
+	 * It is called AFTER his observers are validated according to him.
+	 *
+	 * This function Must :
+	 *	- call BaseClass::cleanTouch() (eg: IModel::cleanTouch()).
+	 *	- maybe clean other Touch information (vertex intervals...).
+	 *
+	 * NB: Touch bits are leared in validateModels().
+	 *
+	 * The default behavior is just to clear flags of TouchObs, which may be sufficient, except if you have special 
+	 * touch information (eg: a vertex interval).
+	 */
+	virtual	void	cleanTouch()
+	{
+		TouchObs.clearAll();
+	}
+	//@}
+
 };
 
 
@@ -495,7 +537,7 @@ protected:
  * - an interface for traversal to traverse() this observer. 
  *
  * \b DERIVERS \b RULES:
- * - Implement the notification system: Just extend clean(), but may extend foul() and add others dirty info.
+ * - Implement the notification system: Just extend update().
  * - Implement the traverse() method
  * - Possibly Extend/Modify the graph methods (see isTreeNode(), addParent() ...).
  * - Possibly Extend/Modify the init() method.
@@ -513,7 +555,6 @@ public:
 	ITrav	*Trav;		// The traversal for this observer.
 
 public:
-	/// The deriver may do not need to \c Touch.resize(Last), since foul() copy the touch from the model (hence resize automatically).
 	IObs();
 	/// ~IObs() must destroy correclty the father/son links  (with call to virtual delChild() delParent()).
 	virtual			~IObs();
@@ -578,7 +619,6 @@ public:
 	/**
 	 * Traverse this observer.
 	 * This function "justdoit" must do all the traversal thing:
-	 *	- should call update() method, to ensure the observer is updated according to his model.
 	 *	- Get info from caller, and DoIt the observer (completly observer depedent).
 	 *	- should traverse() his sons (or simply call traverseSons()).
 	 * \param caller the father of the observer which have called traverse(). WARNING: this is NULL, for the ROOT.
@@ -589,41 +629,16 @@ public:
 
 	/// \name Notification system.
 	//@{
-	/** 
-	 * The Dirty states, mirror of the model.
-	 */
-	NLMISC::CBitSet	Touch;
-	/// Is the model dirty?
-	bool	isDirty() const { return Touch[IModel::Dirty];}
 
 	/**
-	 * This function must foul the observer, according to the state of the model. The observer must keep any usefull
-	 * dirty information from the model, since the model will be cleaned soon. 
+	 * This function must update the observer, according to his model's Touch information and the Model data.
+	 * NB: do not modify here Touch information of the model (because they may be used by other Observers).
 	 *
-	 * The default behavior is just to copy the Touch information from the model, which may be sufficient, except for 
-	 * additional model infos (like vertex intervals, etc...).
+	 * The default behavior is to do nothing.
 	 */
-	virtual	void	foul()
+	virtual	void	update()
 	{
-		Touch= Model->Touch;
 	}
-	/**
-	 * This function must clean the observer, using his Touch/Dirty information and the Model data. She can't use the dirty 
-	 * state of the model too see what to clean, since the model has been cleaned (see IObs::update()).
-	 *
-	 * The default behavior is just to clear the IModel::Dirty touch state.
-	 */
-	virtual	void	clean()
-	{
-		Touch.clear(IModel::Dirty);
-	}
-	/**
-	 * This function should be called on any function which want to use a valid observer, particularly the traverse() function.
-	 * This function first test if the model is dirty. If this is the case, she do o->foul() for any observer o of model Model,
-	 * then Model->clean().
-	 * Then this function test if the observer himself is dirty, and call clean() if this is the case.
-	 */
-	void	update();
 	//@}
 
 

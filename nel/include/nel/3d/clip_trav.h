@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.5 2000/10/27 14:29:42 berenguier Exp $
+ * $Id: clip_trav.h,v 1.6 2001/03/16 16:48:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,7 +161,6 @@ public:
 
 	/** The base doit method.
 	 * The default behavior is to:
-	 *	- update().
 	 *	- test if HrcObs->WorldVis is visible.
 	 *	- test if the observer is clipped with clip()
 	 *	- if visible and not clipped, set \c Visible=true (else false).

@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.8 2000/12/06 14:32:39 berenguier Exp $
+ * $Id: mot.cpp,v 1.9 2001/03/16 16:50:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -201,6 +201,25 @@ void	CMOT::deleteModel(IModel *model)
 	}
 }
 
+
+// ***************************************************************************
+void	CMOT::validateModels()
+{
+	// check all the models.
+	set<IModel*>::iterator	itmodel;
+	itmodel= Models.begin();
+	while( itmodel!=Models.end())
+	{
+		IModel*		model= (*itmodel);
+
+		// chek / validate the model.
+		model->validate();
+
+		itmodel++;
+	}
+}
+
+
 // ***************************************************************************
 IObs	*CMOT::createObs(const ITrav *trav, const CClassId &idModel) const
 {
@@ -394,7 +413,7 @@ IModel	*ITrav::getNextParent(IModel *m) const
 // ***************************************************************************
 IModel::IModel()
 {
-	Touch.resize(Last);
+	TouchObs.resize(Last);
 	LastClassId= 0;
 	LastObs= NULL;
 }
@@ -427,6 +446,27 @@ IObs	*IModel::getObs(const CClassId &idTrav) const
 }
 
 
+// ***************************************************************************
+void	IModel::validate()
+{
+	update();
+
+	// If the model is newer than observers.
+	if(TouchObs[IModel::Dirty])
+	{
+		// update all model's observers.
+		IModel::CObsMap::iterator	it;
+		for(it= Observers.begin(); it!= Observers.end(); it++)
+		{
+			IObs	*o= (*it).second;
+			o->update();
+		}
+
+		// Must clear all dirty falgs.
+		cleanTouch();
+	}
+}
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -439,8 +479,6 @@ IObs	*IModel::getObs(const CClassId &idTrav) const
 // ***************************************************************************
 IObs::IObs()
 {
-	Touch.resize(IModel::Last);
-
 	Model= NULL;
 	Trav= NULL;
 	SonIt=Sons.end();
@@ -471,31 +509,6 @@ IObs	*IObs::getObs(const CClassId &idTrav) const
 {
 	return Model->getObs(idTrav);
 }
-// ***************************************************************************
-void	IObs::update()
-{
-	// If the model is dirty. 
-	if(Model->isDirty())
-	{
-		// Foul all model's observers.
-		IModel::CObsMap::iterator	it;
-		for(it= Model->Observers.begin(); it!= Model->Observers.end(); it++)
-		{
-			IObs	*o= (*it).second;
-			o->foul();
-		}
-		// Clean the model.
-		Model->clean();
-	}
-
-	// If I am dirty(), clean me.
-	if(isDirty())
-	{
-		clean();
-	}
-}
-
-
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.7 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.8 2001/03/16 16:48:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,7 +114,7 @@ public:
  * - define his traverse() method.
  *
  * \b DERIVER \b RULES:
- * - implement the notification system (see IObs for details). The clean() method should call
+ * - implement the notification system (see IObs for details). The update() method should call
  * updateLocal() so the node know it is updated.
  * - possibly modify/extend the traverse() method.
  *
@@ -193,7 +193,7 @@ public:
 			}
 		}
 	}
-	/// clean() should call updateLocal() to notify the local modification of the matrix.
+	/// update() should call updateLocal() to notify the local modification of the matrix.
 	void	updateLocal()
 	{
 		LocalDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
@@ -206,8 +206,6 @@ public:
 	/// The base behavior is to update() the observer, updateWorld() states, and traverseSons().
 	virtual	void	traverse(IObs *caller)
 	{
-		// update the observer according to the model.
-		update();
 		// Recompute the matrix, according to caller matrix mode, and local matrix.
 		nlassert(!caller || dynamic_cast<IBaseHrcObs*>(caller));
 		updateWorld(static_cast<IBaseHrcObs*>(caller));

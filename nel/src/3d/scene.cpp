@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.18 2001/02/14 17:49:05 lecroart Exp $
+ * $Id: scene.cpp,v 1.19 2001/03/16 16:50:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,6 +161,9 @@ void	CScene::addTrav(ITrav *v)
 void	CScene::render(bool	doHrcPass)
 {
 	nlassert(CurrentCamera);
+
+	// validate models.
+	CMOT::validateModels();
 
 	// Use the camera to setup Clip / Render pass.
 	float left, right, bottom, top, znear, zfar;

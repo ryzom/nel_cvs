@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.8 2001/02/28 16:24:23 berenguier Exp $
+ * $Id: render_trav.h,v 1.9 2001/03/16 16:48:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,7 +161,6 @@ public:
 
 
 	/** The base render method.
-	 * The observers should update().
 	 * The observers should not traverseSons(), for speed improvement.
 	 */
 	virtual	void	traverse(IObs *caller)=0;
@@ -174,7 +173,7 @@ public:
  * The default render observer, used by unspecified models.
  * This observer:
  * - leave the notification system to DO NOTHING.
- * - define the traverse() method to DO NOTHING (but update())..
+ * - define the traverse() method to DO NOTHING..
  *
  * \sa IBaseRenderObs
  * \author Lionel Berenguier
@@ -189,7 +188,6 @@ public:
 	/// Do nothing, and don't traverseSons() too.
 	virtual	void	traverse(IObs *caller)
 	{
-		update();
 	}
 };
 

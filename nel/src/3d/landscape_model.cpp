@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.6 2001/02/20 11:05:05 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.7 2001/03/16 16:50:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,9 +65,6 @@ bool	CLandscapeClipObs::clip(IBaseClipObs *caller, bool &renderable)
 // ***************************************************************************
 void	CLandscapeRenderObs::traverse(IObs *caller)
 {
-	// Must update() the observer (do not server but well :) ).
-	update();
-
 	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
 
 	CRenderTrav		*trav= (CRenderTrav*)Trav;

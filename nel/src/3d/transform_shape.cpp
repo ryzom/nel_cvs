@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.2 2000/12/13 14:52:17 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.3 2001/03/16 16:50:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,9 +65,6 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller, bool &renderable)
 // ***************************************************************************
 void	CTransformShapeRenderObs::traverse(IObs *caller)
 {
-	// Must update() the observer.
-	update();
-
 	CRenderTrav			*trav= (CRenderTrav*)Trav;
 	CTransformShape		*m= (CTransformShape*)Model;
 	IDriver				*drv= trav->getDriver();

@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.6 2000/11/21 18:00:09 valignat Exp $
+ * $Id: clip_trav.cpp,v 1.7 2001/03/16 16:50:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,8 +116,6 @@ void		IBaseClipObs::init()
 // ***************************************************************************
 void		IBaseClipObs::traverse(IObs *caller)
 {
-	update();
-
 	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
 	bool	renderable;
 

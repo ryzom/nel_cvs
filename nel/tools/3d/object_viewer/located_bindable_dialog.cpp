@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.18 2001/12/18 18:38:00 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.19 2002/01/28 14:54:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@
 #include "particle_dlg.h"
 #include "constraint_mesh_dlg.h"
 #include "constraint_mesh_tex_dlg.h"
+#include "ribbon_dlg.h"
 
 
 using NL3D::CPSLocatedBindable; 
@@ -208,10 +209,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			s->ShowWindow(SW_SHOW);
 
 			mbc->GetClientRect(&rect);
-			yPos += rect.bottom + 3;
-
-
-			
+			yPos += rect.bottom + 3;			
 		}
 
 		// if we're dealing with a shockwave, we add dlg for the radius cut, and the number of segments
@@ -486,7 +484,17 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			((CButton *) GetDlgItem(IDC_INDE_SIZES))->SetCheck(m_IndependantSizes);
 			updateIndependantSizes();
 		}
-		
+
+		/// new ribbon base class
+		if (dynamic_cast<NL3D::CPSRibbonBase *>(_Bindable))
+		{
+			CRibbonDlg *rd = new CRibbonDlg(static_cast<NL3D::CPSRibbonBase *>(_Bindable),
+											this);
+			rd->init(this, xPos, yPos);
+			pushWnd(rd);
+			rd->GetClientRect(&rect);
+			yPos += rect.bottom + 3;
+		}		
 	}	
 }
 

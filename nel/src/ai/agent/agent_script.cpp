@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.71 2001/06/26 13:27:23 portier Exp $
+ * $Id: agent_script.cpp,v 1.72 2001/06/28 15:47:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,7 @@
 #include "nel/ai/logic/fact.h"
 #include "nel/ai/agent/msg_fact.h"
 
-#define PROFILE
+//#define PROFILE
 #ifdef PROFILE
 #include "nel/misc/time_nl.h"
 #endif

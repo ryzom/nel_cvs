@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.8 2001/05/22 16:08:15 chafik Exp $
+ * $Id: msg.cpp,v 1.9 2001/06/28 15:47:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,7 +219,8 @@ namespace NLAIAGENT
 		std::string b;
 		IListBasicManager::getDebugString(b);
 		std::string g;
-		_MsgGroup->getDebugString(g);
+		if(_MsgGroup != NULL) _MsgGroup->getDebugString(g);
+		else g = "_MsgGroup = NULL";
 		t += NLAIC::stringGetBuild("IMessageBase<%d>:\n_sender:'%s' _MsgGroup:'%s' Message:'%s' dispatch:%d",this,a.c_str(),g.c_str(),b.c_str(),_Dispatch);
 	}
 	

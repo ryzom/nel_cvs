@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.35 2001/06/18 13:57:43 chafik Exp $
+ * $Id: agents.cpp,v 1.36 2001/06/28 15:47:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ namespace NLAIAGENT
 	void IAgent::load(NLMISC::IStream &is);*/
 
 	IAgent::~IAgent()
-	{	
+	{
 		Kill();	
 	}			
 	
@@ -194,6 +194,7 @@ namespace NLAIAGENT
 	const IObjectIA::CProcessResult &IAgent::run()
 	{		
 
+
 		runChildren();		// Gestion des fils
 		getMail()->run();	// Execution de la boite aux lettres
 
@@ -229,12 +230,14 @@ namespace NLAIAGENT
 
 	IBasicAgent::IBasicAgent(const IBasicAgent &a): IConnectIA(a),_Mail((IMailBox	*)a._Mail->clone())
 	{
+		_Mail->setParent((const IWordNumRef *) *this);
 	}
 
 
 	IBasicAgent::IBasicAgent(const IWordNumRef *parent): IConnectIA(parent)
 	{
 		_Mail = new tMailBoxLettre((const IWordNumRef *) *this);
+
 	}		
 
 	IBasicAgent::IBasicAgent(const IWordNumRef *parent,IMailBox	*m): IConnectIA(parent),_Mail(m)

@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.17 2001/06/12 09:44:11 chafik Exp $
+ * $Id: codage.cpp,v 1.18 2001/06/28 15:47:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #endif
 #endif
 
-#define PROFILE
+//#define PROFILE
 #ifdef PROFILE
 #include "nel/misc/time_nl.h"
 #endif

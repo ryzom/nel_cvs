@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.14 2001/06/27 08:49:54 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.15 2001/06/28 15:47:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -254,7 +254,7 @@ namespace NLAIAGENT
 		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > >::iterator i = _Call.begin();
 		while(i != _Call.end())
 		{			
-			std::pair<IMessageBase *, sint32> p = ((*i).second);
+			std::pair<IMessageBase *, sint32> p = ((*i++).second);
 			IMessageBase * m = p.first;
 			m->release();
 		}		
@@ -691,7 +691,7 @@ namespace NLAIAGENT
 
 	void CAgentTimerHandle::getDebugString(std::string &t) const
 	{
-		_Timer->getDebugString(t);		
+		if(_Timer != NULL) _Timer->getDebugString(t);		
 	}
 
 	const NLAIC::IBasicType *CAgentTimerHandle::clone() const

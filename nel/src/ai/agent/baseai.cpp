@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.26 2001/06/12 09:44:11 chafik Exp $
+ * $Id: baseai.cpp,v 1.27 2001/06/28 15:47:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -505,6 +505,23 @@ namespace NLAIAGENT
 
 	void IConnectIA::connect(IConnectIA *b)
 	{						
+/*#ifdef NL_DEBUG
+		static sint kkkkkkkkk = 0;		
+
+		std::string s;
+		std::string connection,connected;
+		(b)->getDebugString(s);		
+		nlinfo("MEMORY: connect 0x0%4x, is  <%s> %s  kkkkkkkkk %d, this 0x0%4x\n",b, (const char *)b->getType(),s.c_str(), kkkkkkkkk ++,this);		
+
+		tListiBasicItr i = _Connection.begin();
+		while(i != _Connection.end())
+		{			
+			if( b == *i++)
+			{
+				throw;
+			}			
+		}
+#endif*/
 		b->addInConnectedList(this);
 		addInConnectionList(b);		
 	}
@@ -540,7 +557,18 @@ namespace NLAIAGENT
 	}
 
 	void IConnectIA::addInConnectedList(const IConnectIA *a)
-	{
+	{		
+
+/*#ifdef NL_DEBUG
+		tListiBasicItr i = _Connected.begin();
+		while(i != _Connected.end())
+		{			
+			if( a == *i++)
+			{
+				throw;
+			}			
+		}
+#endif*/
 		_Connected.push_front(a);
 	}
 
@@ -584,6 +612,7 @@ namespace NLAIAGENT
 			if(a != NULL)
 			{
 				a->onKill(this);
+				a->removeInConnectionList(this);
 			}
 		}
 	}

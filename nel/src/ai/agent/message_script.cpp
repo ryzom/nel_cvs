@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.16 2001/06/01 14:50:38 portier Exp $
+ * $Id: message_script.cpp,v 1.17 2001/06/28 15:47:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -355,7 +355,7 @@ namespace NLAIAGENT
 		for (sint32 i = 0; i < size(); i++ )
 		{
 			t += "     ";
-			if ( _MessageClass->getComponentName(i) )
+			if ( _MessageClass->getComponent(i) )
 			{
 				t += _MessageClass->getComponentName(i);
 			}

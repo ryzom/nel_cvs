@@ -1,7 +1,7 @@
 /** \file automata_desc.cpp
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.cpp,v 1.9 2001/04/26 17:14:01 robert Exp $
+ * $Id: automata_desc.cpp,v 1.10 2001/06/28 15:47:54 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,7 +128,7 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 
 	void CAutomataDesc::generateScript()
 	{
-		ofstream tmp_script( "c:\\ryzom\\code\\nel\\tools\\ai\\fsm_script.txt");
+		ofstream tmp_script( "fsm_script.ras");
 		
 		// Succes and failure states
 /*		tmp_script << "From Actor : Define SuccessState" << endl << "{" << endl;
@@ -242,7 +242,7 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 	{
 		int i = 0;
 		char buffer[1024];
-		while ( txt[i] != 0 )
+		while ( i != (int)txt.size() )
 		{
 			if ( txt[i] == ' ')
 				buffer[i] = '_';

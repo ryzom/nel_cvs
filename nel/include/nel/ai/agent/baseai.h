@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.17 2001/06/12 09:43:59 chafik Exp $
+ * $Id: baseai.h,v 1.18 2001/06/28 15:47:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -408,7 +408,7 @@ namespace NLAIAGENT
 		typedef std::list<const IConnectIA *>::iterator tListiBasicItr;
 		typedef std::list<const IConnectIA *>::const_iterator tListiBasicCstItr;
 
-	private:
+	protected:
 		tListiBasic _Connection;
 		tListiBasic _Connected;		
 

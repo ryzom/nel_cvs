@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.19 2001/06/14 10:23:31 chafik Exp $
+ * $Id: abstract_interface.h,v 1.20 2001/06/28 15:47:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,6 +114,11 @@ namespace NLAIC //Gen pour general.
 			return _Ref;
 		}
 
+		virtual void getDebugString(std::string &t) const
+		{
+			t += "None";
+		}
+
 		virtual ~IPointerGestion()
 		{						
 		}
@@ -190,6 +195,9 @@ namespace NLAIC //Gen pour general.
 		///Get class type name.
 		operator const char * () const
 		{
+#ifdef NL_DEBUG
+			if(this == NULL) return "<Inknown>";
+#endif
 			return _Ident;
 		}
 						

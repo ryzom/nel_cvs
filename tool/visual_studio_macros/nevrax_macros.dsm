@@ -8,7 +8,7 @@
 '
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
-' $Id: nevrax_macros.dsm,v 1.9 2000/10/24 14:55:43 cado Exp $
+' $Id: nevrax_macros.dsm,v 1.10 2000/11/08 18:02:27 lecroart Exp $
 '------------------------------------------------------------------------------
 
 
@@ -24,7 +24,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros.dsm,v 1.9 2000/10/24 14:55:43 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros.dsm,v 1.10 2000/11/08 18:02:27 lecroart Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/* Copyright, 2000 Nevrax Ltd." + vbLf + _
@@ -192,14 +192,14 @@ Sub NevraxNewClass()
 	end if
 
 	' ** Programmer's name
-	ConfigFileName = "R:\code\tool\VisualStudioMacros\nevrax_new_class.cfg"
+	ConfigFileName = "R:\code\tool\visual_studio_macros\nevrax_new_class.cfg"
 	if CurrentProgrammerName = "" then
 		if fso.FileExists( ConfigFileName ) then
 			set f = fso.OpenTextFile( ConfigFileName, 1 ) ' 1 = ForReading
 			CurrentProgrammerName = f.ReadLine
 			f.Close
 		else
-			CurrentProgrammerName = "Fox Mulder"
+			CurrentProgrammerName = "Richard Stallman"
 		end if
 	end if
 	CurrentProgrammerName = InputBox( "Votre prénom et votre nom (qui restera mémorisé dans un fichier) :", "Nouvelle classe (6)", CurrentProgrammerName )

@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.1 2003/01/08 15:52:59 boucher Exp $
+ * $Id: string_mapper.cpp,v 1.2 2003/03/03 13:04:16 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,37 +33,104 @@
 namespace NLMISC
 {
 
-std::hash_map<std::string, uint>	CStringMapper::_StringMap;
+//CStringMapper::TStringRefHashMap		CStringMapper::_StringMap;
+//std::vector<CStringMapper::CStringRef>	CStringMapper::_StringTable;
+CStringMapper	CStringMapper::_GlobalMapper;
 
-uint CStringMapper::map(const std::string &str)
+
+CStringMapper::CStringMapper()
 {
-	std::hash_map<std::string, uint>::iterator it(_StringMap.find(str));
+	_EmptyId = localMap("");
+}
+
+CStringMapper *CStringMapper::createLocalMapper()
+{
+	return new CStringMapper;
+}
+
+TStringId	CStringMapper::map(const std::string &str)
+{
+	return _GlobalMapper.localMap(str);
+}
+const std::string	&CStringMapper::unmap(const TStringId &stringId)
+{
+	return _GlobalMapper.localUnmap(stringId);
+
+}
+TStringId	CStringMapper::emptyId()
+{
+	return _GlobalMapper._EmptyId;
+}
+
+
+NLMISC::TStringId CStringMapper::localMap(const std::string &str)
+{
+	CStringRef	ref(&str);
+	TStringRefHashMap::iterator it(_StringMap.find(ref));
 
 	if (it == _StringMap.end())
 	{
 		// create a new id
-		uint id = _StringMap.size();
-		_StringMap.insert(std::make_pair(str, id));
+		uint id = _StringTable.size();
+		_StringTable.push_back(CStringRef(new std::string(str)));
+		_StringMap.insert(std::make_pair(_StringTable.back(), id));
+#if defined(_DEBUG)
+		return TStringId(id, this);
+#else
 		return id;
+#endif
 	}
 	else
-		return it->second;
+	{
+#if defined(_DEBUG)
+		return TStringId(it->second, *(it->first.String));
+#else
+		return it->second;		
+#endif
+	}
 		
 }
 
-const std::string	&CStringMapper::unmap(uint id)
+const std::string	&CStringMapper::localUnmap(const NLMISC::TStringId &stringId)
+{
+	const static std::string notFound("** Invalid stringId unmapped ! **");
+	
+	if (uint(stringId) < _StringTable.size())
+	{
+		// ok, we have an unmap
+		return *(_StringTable[uint(stringId)].String);
+	}
+	else
+	{
+		nlassertex(false, ("There are no string mapped to id %u", uint(stringId)));
+		// not found ! return an empty string
+		return notFound;
+	}
+}
+
+#if defined(_DEBUG)
+const std::string &CStringMapper::unmap(uint stringId)
+{
+	return _GlobalMapper.localUnmap(stringId);
+}
+
+const std::string &CStringMapper::localUnmap(uint stringId)
 {
 	const static std::string notFound;
-	std::hash_map<std::string, uint>::iterator first(_StringMap.begin()), last(_StringMap.end());
-	for (; first != last; ++first)
+	
+	if (stringId < _StringTable.size())
 	{
-		if (first->second == id)
-			return first->first;
+		// ok, we have an unmap
+		return *(_StringTable[stringId].String);
 	}
-
-	nlassertex(false, ("There are no string mapped to id %u", id));
-	// not found ! return an empty string
-	return notFound;
+	else
+	{
+		nlassertex(false, ("There are no string mapped to id %u", uint(stringId)));
+		// not found ! return an empty string
+		return notFound;
+	}
 }
+
+#endif
 
 } // namespace NLMISC

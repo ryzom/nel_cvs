@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.60 2003/02/07 16:08:26 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.61 2003/03/03 13:05:51 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1837,12 +1837,15 @@ NLMISC_COMMAND(msgin, "Simulate an input message from another service (ex: msgin
 	}
 
 	CMessage msg (messageName);
-	msg.clear ();
+//	msg.clear ();
 
 	if (!createMessage (msg, args, log))
 		return false;
 
+
 	msg.invert ();
+
+
 
 	TUnifiedMsgCallback cb = CUnifiedNetwork::getInstance()->findCallback (messageName);
 	

@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.27 2001/11/21 15:56:16 vizerie Exp $
+ * $Id: material.cpp,v 1.28 2001/11/22 08:48:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ CMaterial::CMaterial()
 void			CMaterial::initUnlit()
 {
 	setShader(Normal);
-	setLighting(false);
+	setLighting(false, false);
 	setColor(CRGBA(255,255,255,255));
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 		setTexture(i ,NULL);
@@ -69,7 +69,7 @@ void			CMaterial::initUnlit()
 void			CMaterial::initLighted()
 {
 	initUnlit();
-	setLighting(true);
+	setLighting(true, false);
 }
 
 

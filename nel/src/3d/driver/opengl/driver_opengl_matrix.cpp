@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.10 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.11 2001/11/22 08:48:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,10 @@ void CDriverGL::setFrustum(float left, float right, float bottom, float top, flo
 	{
 		glOrtho(left,right,bottom,top,znear,zfar);
 	}
+
+	// Backup znear and zfar for zbias setup
+	_OODeltaZ = 1 / (zfar - znear);
+
 	glMatrixMode(GL_MODELVIEW);
 }
 

@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.3 2001/11/14 15:15:04 corvazier Exp $
+ * $Id: driver_material_inline.h,v 1.4 2001/11/22 08:48:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,6 +286,21 @@ inline CRGBA				CMaterial::getTexConstantColor(uint stage)
 	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	return _TexEnvs[stage].ConstantColor;
+}
+// ***************************************************************************
+inline bool					CMaterial::getTexCoordGen(uint stage) const
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	return (_Flags&(IDRV_MAT_GEN_TEX_0<<stage))!=0;
+}
+// ***************************************************************************
+inline void					CMaterial::setTexCoordGen(uint stage, bool generate)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	if (generate)
+		_Flags|=(IDRV_MAT_GEN_TEX_0<<stage);
+	else
+		_Flags&=~(IDRV_MAT_GEN_TEX_0<<stage);
 }
 
 

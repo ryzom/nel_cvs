@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.46 2001/11/21 16:09:55 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.47 2001/11/22 08:48:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,6 +163,24 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				// NB: Thoses calls use caching.
 				activateTexEnvMode(stage, env);
 				activateTexEnvColor(stage, env);
+
+				// Activate texture generation mapping
+				_DriverGLStates.activeTextureARB(stage);
+				if (mat.getTexCoordGen (stage))
+				{
+					// Enable it
+					_DriverGLStates.enableTexGen (stage, true);
+
+					// Cubic or normal ?
+					if (text->isTextureCube ())
+						_DriverGLStates.setTexGenMode (stage, GL_REFLECTION_MAP_ARB);
+					else
+						_DriverGLStates.setTexGenMode (stage, GL_SPHERE_MAP);
+				}
+				else
+				{
+					_DriverGLStates.enableTexGen (stage, false);
+				}
 			}
 		}				
 	}
@@ -264,6 +282,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		//===================
 		_DriverGLStates.enableZWrite(mat.getFlags()&IDRV_MAT_ZWRITE);
 		_DriverGLStates.depthFunc(pShader->ZComp);
+		_DriverGLStates.setDepthRange (mat.getZBias () * _OODeltaZ);
 
 
 		// Color-Lighting Part.
@@ -304,7 +323,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		}
 		
 
-			// Texture addressing modes (support only via NVTextureShader for now)
+		// Texture addressing modes (support only via NVTextureShader for now)
 		//===================================================================				
 		if (_Extensions.NVTextureShader)
 		{
@@ -468,6 +487,10 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 		env.Env.OpArg0RGB= CMaterial::SrcColor;
 		activateTexEnvMode(0, env);
 
+		// Setup gen tex off
+		_DriverGLStates.activeTextureARB(0);
+		_DriverGLStates.enableTexGen (0, false);
+
 		// And disable other stages.
 		for(sint stage=1 ; stage<getNbTextureStages() ; stage++)
 		{
@@ -518,6 +541,10 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 
 					// Leave stage as default env (Modulate with previous)
 					activateTexEnvMode(stage, env);
+
+					// Setup gen tex off
+					_DriverGLStates.activeTextureARB(stage);
+					_DriverGLStates.enableTexGen (stage, false);
 				}
 				else
 				{
@@ -580,6 +607,9 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 				CMaterial::CTexEnv	env;
 				activateTexEnvMode(stage, env);
 
+				// Setup gen tex off
+				_DriverGLStates.activeTextureARB(stage);
+				_DriverGLStates.enableTexGen (stage, false);
 
 				// setup UV, with UV0.
 				setupUVPtr(stage, _LastVB, 0);
@@ -738,12 +768,8 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 		// Setup TexCoord gen for stage1.
 		_DriverGLStates.activeTextureARB(1);
 		_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
-		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
-		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
-		glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
-		glEnable( GL_TEXTURE_GEN_S );
-		glEnable( GL_TEXTURE_GEN_T );
-		glEnable( GL_TEXTURE_GEN_R );
+		_DriverGLStates.setTexGenMode (1, GL_REFLECTION_MAP_ARB);
+		_DriverGLStates.enableTexGen (1, true);
 	}
 	else
 	{ // We have to do it in 2 passes
@@ -792,12 +818,8 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 			// Set Stage 1
 			_DriverGLStates.activeTextureARB(1);
 			_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
-			glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
-			glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
-			glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
-			glEnable( GL_TEXTURE_GEN_S );
-			glEnable( GL_TEXTURE_GEN_T );
-			glEnable( GL_TEXTURE_GEN_R );
+			_DriverGLStates.setTexGenMode (1, GL_REFLECTION_MAP_ARB);
+			_DriverGLStates.enableTexGen (1, true);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.9 2001/11/21 16:10:30 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.10 2001/11/22 08:48:11 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,6 +97,11 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	_CurDiffuse= packedOne;
 	_CurSpecular= packedZero;
 	_CurShininess= 1;
+
+	// Lighted vertex color
+	_VertexColorLighted=false;
+	glDisable(GL_COLOR_MATERIAL);
+
 	// setup GLStates.
 	static const GLfloat		one[4]= {1,1,1,1};
 	static const GLfloat		zero[4]= {0,0,0,1};
@@ -108,7 +113,8 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	
 
 	// TexModes
-	for(uint stage=0;stage<nbStages; stage++)
+	uint stage;
+	for(stage=0;stage<nbStages; stage++)
 	{
 		// disable texturing.
 		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
@@ -116,6 +122,16 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 		if(_TextureCubeMapSupported)
 			glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 		_TextureMode[stage]= TextureDisabled;
+
+		// Tex gen init
+		_TexGen[stage] = false;
+		_TexGenMode[stage] = GL_SPHERE_MAP;
+		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+		glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+		glDisable( GL_TEXTURE_GEN_S );
+		glDisable( GL_TEXTURE_GEN_T );
+		glDisable( GL_TEXTURE_GEN_R );
 	}
 
 	// ActiveTexture current texture to 0.
@@ -124,7 +140,9 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	_CurrentClientActiveTextureARB= 0;
 
-
+	// Depth range
+	_CurZRangeDelta = 0;
+	glDepthRange (0, 1);
 }
 
 
@@ -178,6 +196,7 @@ void			CDriverGLStates::enableAlphaTest(uint enable)
 	{
 		// new state.
 		_CurAlphaTest= enabled;
+
 		// Setup GLState.
 		if(_CurAlphaTest)
 		{
@@ -347,6 +366,59 @@ void			CDriverGLStates::setVertexColorLighted(bool enable)
 	}
 }
 
+// ***************************************************************************
+void		CDriverGLStates::setDepthRange (float zDelta)
+{
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if (zDelta != _CurZRangeDelta)
+#endif
+	{		
+		_CurZRangeDelta = zDelta;
+
+		// Setup the range
+		glDepthRange (zDelta, 1+zDelta);
+	}
+}
+
+// ***************************************************************************
+void		CDriverGLStates::enableTexGen (uint stage, bool enable)
+{
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if (enable != _TexGen[stage])
+#endif
+	{		
+		_TexGen[stage] = enable;
+
+		// Enable the tex gen
+		if (_TexGen[stage])
+		{
+			glEnable( GL_TEXTURE_GEN_S );
+			glEnable( GL_TEXTURE_GEN_T );
+			glEnable( GL_TEXTURE_GEN_R );
+		}
+		else
+		{
+			glDisable( GL_TEXTURE_GEN_S );
+			glDisable( GL_TEXTURE_GEN_T );
+			glDisable( GL_TEXTURE_GEN_R );
+		}
+	}
+}
+
+// ***************************************************************************
+void		CDriverGLStates::setTexGenMode (uint stage, GLint mode)
+{
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if (mode != _TexGenMode[stage])
+#endif
+	{		
+		_TexGenMode[stage] = mode;
+
+		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, mode);
+		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, mode);
+		glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, mode);
+	}
+}
 
 
 

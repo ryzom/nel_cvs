@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.102 2001/11/21 18:10:55 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.103 2001/11/22 08:48:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -622,6 +622,8 @@ private:
 	// same flag, but for palette Skinning (because they don't share same setup).
 	NLMISC::CBitSet			_ModelViewMatrixDirtyPaletteSkin;
 
+	// Backup znear and zfar
+	float					_OODeltaZ;
 
 	// Current (OpenGL basis) View matrix.
 	CMatrix					_ViewMtx;

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.8 2001/11/21 16:11:12 vizerie Exp $
+ * $Id: driver_opengl_states.h,v 1.9 2001/11/22 08:48:11 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,8 @@ namespace NL3D
 			- GL_ALPHA_TEST
 			- GL_LIGHTING
 			- GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP_ARB.
+			- GL_TEXTURE_GEN_S, GL_TEXTURE_GEN_T, GL_TEXTURE_GEN_R
+			- GL_COLOR_MATERIAL
 		- glActiveTextureARB()
 		- glClientActiveTextureARB()
 		- glEnableClientState() glDisableClientState() with:
@@ -66,6 +68,9 @@ namespace NL3D
 			- GL_DIFFUSE
 			- GL_SPECULAR
 			- GL_SHININESS
+		- glDepthRange()
+		- glColorMaterial()
+		- glTexGeni()
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -106,6 +111,9 @@ public:
 	void			setSpecular(uint32 packedColor, const GLfloat color[4]);
 	void			setShininess(float shin);
 	void			setVertexColorLighted(bool enable);
+	void			setDepthRange (float zDelta);
+	void			enableTexGen (uint stage, bool enable);
+	void			setTexGenMode (uint stage, GLint mode);
 	// @}
 	
 	
@@ -173,6 +181,11 @@ private:
 	uint			_CurrentClientActiveTextureARB;
 	bool			_TexCoordArrayEnabled[IDRV_MAT_MAXTEXTURES];
 	bool			_VertexAttribArrayEnabled[CVertexBuffer::NumValue];	
+
+	bool			_TexGen[IDRV_MAT_MAXTEXTURES];
+	GLint			_TexGenMode[IDRV_MAT_MAXTEXTURES];
+
+	float			_CurZRangeDelta;
 };
 
 

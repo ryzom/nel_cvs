@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.7 2001/11/14 15:15:04 corvazier Exp $
+ * $Id: material.h,v 1.8 2001/11/22 08:48:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,14 @@ const uint32 IDRV_MAT_DOUBLE_SIDED	=	0x00000100;
 const uint32 IDRV_MAT_ALPHA_TEST	= 	0x00000200;
 const uint32 IDRV_MAT_TEX_ADDR	    = 	0x00000400;
 const uint32 IDRV_MAT_LIGHTED_VERTEX_COLOR	= 	0x00000800;
+const uint32 IDRV_MAT_GEN_TEX_0		= 	0x00001000;
+const uint32 IDRV_MAT_GEN_TEX_1		= 	0x00002000;
+const uint32 IDRV_MAT_GEN_TEX_2		= 	0x00004000;
+const uint32 IDRV_MAT_GEN_TEX_3		= 	0x00008000;
+const uint32 IDRV_MAT_GEN_TEX_4		= 	0x00010000;
+const uint32 IDRV_MAT_GEN_TEX_5		= 	0x00020000;
+const uint32 IDRV_MAT_GEN_TEX_6		= 	0x00040000;
+const uint32 IDRV_MAT_GEN_TEX_7		= 	0x00080000;
 
 // ***************************************************************************
 /**
@@ -253,6 +261,9 @@ public:
 	// @{
 	void					setZFunc(ZFunc val);
 	void					setZWrite(bool active);
+
+	/// The z bias is a z dispacement of the object to solve z precision problem. The bias is gived in world coordinate units.
+	/// Positive bias give a lower z priority, negative bias give a higher bias priority.
 	void					setZBias(float val);
 
 	ZFunc					getZFunc(void)  const { return(_ZFunction); }		
@@ -332,6 +343,9 @@ public:
 	/// For push/pop only, set the packed version of the environnment mode.
 	void					setTexEnvMode(uint stage, uint32 packed);
 	CRGBA					getTexConstantColor(uint stage);
+
+	void					setTexCoordGen(uint stage, bool generate);
+	bool					getTexCoordGen(uint stage) const;
 	// @}
 
 

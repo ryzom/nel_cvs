@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.4 2001/07/09 17:17:05 corvazier Exp $
+ * $Id: u_scene.h,v 1.5 2001/07/10 14:25:11 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,11 +192,11 @@ public:
 
 	/** Set the static coarse meshes's common texture.
 	*/
-	virtual void setStaticCoarseMeshManagerTexture (const char *sPath);
+	virtual void setStaticCoarseMeshManagerTexture (const char *sPath) =0;
 
 	/** Set the dynamic coarse meshes's common texture.
 	*/
-	virtual void setDynamicCoarseMeshManagerTexture (const char *sPath);
+	virtual void setDynamicCoarseMeshManagerTexture (const char *sPath) =0;
 
 	//@}
 };

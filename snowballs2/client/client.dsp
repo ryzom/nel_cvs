@@ -114,6 +114,14 @@ LINK32=link.exe
 # Name "client - Win32 ReleaseDebug"
 # Begin Source File
 
+SOURCE=.\src\animation.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\animation.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\camera.cpp
 # End Source File
 # Begin Source File

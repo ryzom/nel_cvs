@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.12 2001/07/16 13:01:02 legros Exp $
+ * $Id: entities.cpp,v 1.13 2001/07/16 13:17:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,18 +44,21 @@
 #include <nel/3d/u_3d_mouse_listener.h>
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
+#include <nel/3d/u_skeleton.h>
+
+#include <nel/3d/u_visual_collision_manager.h>
+#include <nel/3d/u_visual_collision_entity.h>
 
 #include <nel/pacs/u_move_container.h>
 #include <nel/pacs/u_move_primitive.h>
 #include <nel/pacs/u_global_retriever.h>
 #include <nel/pacs/u_global_position.h>
 
-#include <nel/3d/u_visual_collision_manager.h>
-#include <nel/3d/u_visual_collision_entity.h>
 
 #include "client.h"
 #include "entities.h"
 #include "pacs.h"
+#include "animation.h"
 #include "camera.h"
 
 using namespace std;
@@ -78,7 +81,8 @@ float			WorldWidth = 20*160;
 float			WorldHeight = 6*160;
 
 uint32			NextEID = 0;
-float			EntitySpeed = 3.0f;	// 6 km/h
+float			PlayerSpeed = 3.0f;	// 6 km/h
+float			SnowballSpeed = 10.0f;	// 6 km/h
 
 // these variables are set with the config file
 
@@ -87,10 +91,17 @@ CRGBA RadarBackColor, RadarFrontColor, RadarBorderColor, RadarSelfColor;
 float RadarEntitySize;
 float RadarZoom;
 
-float EntityNameSize;
-CRGBA EntityNameColor;
+float		EntityNameSize;
+CRGBA		EntityNameColor;
 
 CEntity		*Self = NULL;
+
+void CEntity::setState (TState state)
+{
+	State = state;
+	StateStartTime = CTime::getLocalTime ();
+}
+
 
 
 EIT findEntity (uint32 eid, bool needAssert = true)
@@ -150,14 +161,16 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
 
 		entity.Instance = Scene->createInstance("barman.shape");
+		entity.Skeleton = Scene->createSkeleton ("fy_hom.skel");
+		entity.Skeleton->bindSkin (entity.Instance);
 		entity.Instance->hide ();
-		entity.Instance->setPos (startPosition);
-		entity.Speed = EntitySpeed;
+		entity.Speed = PlayerSpeed;
 
 		entity.Particule = Scene->createInstance("appear.ps");
-		entity.Particule->setPos (startPosition);
-		entity.State = CEntity::Appear;
-		entity.StateStartTime = CTime::getLocalTime ();
+
+		entity.setState (CEntity::Appear);
+
+		playAnimation (entity, IdleAnimId);
 
 		break;
 	case CEntity::Other:
@@ -174,14 +187,16 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
 
 		entity.Instance = Scene->createInstance("barman.shape");
+		entity.Skeleton = Scene->createSkeleton ("fy_hom.skel");
+		entity.Skeleton->bindSkin (entity.Instance);
 		entity.Instance->hide ();
-		entity.Instance->setPos (startPosition);
-		entity.Speed = EntitySpeed;
+		entity.Speed = PlayerSpeed;
 
 		entity.Particule = Scene->createInstance("appear.ps");
-		entity.Particule->setPos (startPosition);
-		entity.State = CEntity::Appear;
-		entity.StateStartTime = CTime::getLocalTime ();
+
+		entity.setState (CEntity::Appear);
+
+		playAnimation (entity, IdleAnimId);
 
 		break;
 	case CEntity::Snowball:
@@ -205,13 +220,21 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.VisualCollisionEntity->setCeilMode(true);
 
 		entity.Instance = Scene->createInstance("box.shape");
-		entity.Instance->setPos (startPosition);
-		entity.Speed = 10.0f;
+//		entity.Instance = Scene->createInstance("snowball.ps");
+		entity.Speed = SnowballSpeed;
 
-		entity.State = CEntity::Normal;
-		entity.StateStartTime = CTime::getLocalTime ();
+		entity.setState (CEntity::Normal);
 		break;
 	}
+
+	if (entity.Skeleton != NULL)
+		entity.Skeleton->setPos (startPosition);
+	else
+		entity.Instance->setPos (startPosition);
+
+	if (entity.Particule != NULL)
+		entity.Particule->setPos (startPosition);
+
 }
 
 void removeEntity (uint32 eid)
@@ -221,11 +244,20 @@ void removeEntity (uint32 eid)
 	EIT eit = findEntity (eid);
 	CEntity	&entity = (*eit).second;
 
-	entity.Particule = Scene->createInstance("disappear.ps");
-	entity.Particule->setPos (entity.Position);
+	if (entity.Particule != NULL)
+	{
+		Scene->deleteInstance (entity.Particule);
+		entity.Particule = NULL;
+	}
 
-	entity.State = CEntity::Disappear;
-	entity.StateStartTime = CTime::getLocalTime ();
+	if (entity.Type == CEntity::Other)
+	{
+
+		entity.Particule = Scene->createInstance("disappear.ps");
+		entity.Particule->setPos (entity.Position);
+	}
+
+	entity.setState (CEntity::Disappear);
 }
 
 void stateAppear (CEntity &entity)
@@ -238,11 +270,13 @@ void stateAppear (CEntity &entity)
 
 	if (CTime::getLocalTime () > entity.StateStartTime + 5000)
 	{
-		Scene->deleteInstance (entity.Particule);
-		entity.Particule = NULL;
+		if (entity.Particule != NULL)
+		{
+			Scene->deleteInstance (entity.Particule);
+			entity.Particule = NULL;
+		}
 
-		entity.State = CEntity::Normal;
-		entity.StateStartTime = CTime::getLocalTime ();
+		entity.setState (CEntity::Normal);
 	}
 
 	if (entity.MovePrimitive != NULL)
@@ -270,18 +304,38 @@ void stateDisappear (CEntity &entity)
 	// after 5 seconds, remove the particule system and the entity entry
 	if (CTime::getLocalTime () > entity.StateStartTime + 5000)
 	{
-		Scene->deleteInstance (entity.Particule);
-		entity.Particule = NULL;
+		if (entity.Particule != NULL)
+		{
+			Scene->deleteInstance (entity.Particule);
+			entity.Particule = NULL;
+		}
 
-		Scene->deleteInstance (entity.Instance);
-		entity.Instance = NULL;
+		deleteAnimation (entity);
 
-		VisualCollisionManager->deleteEntity (entity.VisualCollisionEntity);
-		entity.VisualCollisionEntity = NULL;
+		if (entity.Skeleton != NULL)
+		{
+			entity.Skeleton->detachSkeletonSon (entity.Instance);
+			Scene->deleteSkeleton (entity.Skeleton);
+			entity.Skeleton = NULL;
+		}
+
+		if (entity.Instance != NULL)
+		{
+			Scene->deleteInstance (entity.Instance);
+			entity.Instance = NULL;
+		}
+
+		if (entity.VisualCollisionEntity != NULL)
+		{
+			VisualCollisionManager->deleteEntity (entity.VisualCollisionEntity);
+			entity.VisualCollisionEntity = NULL;
+		}
 
 		if (entity.MovePrimitive != NULL)
+		{
 			MoveContainer->removePrimitive(entity.MovePrimitive);
-		entity.MovePrimitive = NULL;
+			entity.MovePrimitive = NULL;
+		}
 
 		nlinfo ("Remove the entity %u from the Entities list", entity.Id);
 		EIT eit = findEntity (entity.Id);
@@ -403,6 +457,16 @@ void updateEntities ()
 		eit = nexteit;
 	}
 
+	if (Driver->AsyncListener.isKeyDown (KeyUP))
+	{
+		playAnimation (*Self, WalkAnimId);
+	}
+	else
+	{
+		playAnimation (*Self, IdleAnimId);
+	}
+	
+	
 	// evaluate collisions
 	MoveContainer->evalCollision(dt, 0);
 
@@ -448,9 +512,17 @@ void updateEntities ()
 		} else
 		if (entity.Instance != NULL)
 		{
-			entity.Instance->setPos(entity.Position);
+			if (entity.Skeleton != NULL)
+				entity.Skeleton->setPos(entity.Position);
+			else
+				entity.Instance->setPos(entity.Position);
+
 			CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
-			entity.Instance->setRotQuat(jdir);
+			
+			if (entity.Skeleton != NULL)
+				entity.Skeleton->setRotQuat(jdir);
+			else
+				entity.Instance->setRotQuat(jdir);
 		}
 
 		if (entity.Particule != NULL)
@@ -541,6 +613,49 @@ void initRadar ()
 	cbUpdateRadar (ConfigFile.getVar ("RadarZoom"));
 }
 
+
+
+
+
+
+void displayRadarPoint (const CVector &Position, const CVector &Center, float Size, const CRGBA &Color)
+{
+	float userPosX, userPosY;
+
+	// convert from world coords to radar coords (0.0 -> 1.0)
+
+	userPosX = (Position.x - Center.x) / (2.0f*WorldWidth);
+	userPosY = (Position.y - Center.y) / (2.0f*WorldHeight);
+
+	// userpos is between -0.5 -> +0.5
+
+	userPosX *= RadarZoom;
+	userPosY *= RadarZoom;
+
+	/// \todo virer kan ca marchera
+	string str = toString(userPosX) + " / " + toString(userPosY) + " ** ";
+	str += toString(Center.x) + " / " + toString(Center.y) + " *** ";
+	str += toString(Position.x) + " / " + toString(Position.y);
+	TextContext->printfAt (0.1f, 0.5f, str.c_str());
+
+	if (userPosX > 0.5f || userPosX < -0.5f || userPosY > 0.5f || userPosY < -0.5f)
+		return;
+
+	userPosX += 0.5f;
+	userPosY += 0.5f;
+
+	// userpos is between 0.0 -> 1.0
+
+	userPosX *= RadarWidth;
+	userPosY *= RadarHeight;
+
+	userPosX += RadarPosX;
+	userPosY += RadarPosY;
+
+	Driver->drawQuad (userPosX, userPosY, Size, Color);
+}
+
+
 void updateRadar ()
 {
 	// Display the back of the radar
@@ -548,52 +663,25 @@ void updateRadar ()
 	Driver->drawQuad (RadarPosX-RadarBorder, RadarPosY-RadarBorder, RadarPosX+RadarWidth+RadarBorder, RadarPosY+RadarHeight+RadarBorder, RadarBackColor);
 	Driver->drawWiredQuad (RadarPosX, RadarPosY, RadarPosX+RadarWidth, RadarPosY+RadarHeight, RadarBorderColor);
 
-	float CenterX = WorldWidth/2.0f;
-	float CenterY = -WorldHeight/2.0f;
-/* /// \todo remettre kan on aura des entities
+	CVector Center;
+	Center.x = WorldWidth/2.0f;
+	Center.y = -WorldHeight/2.0f;
+
+	// the center of the radar is the player
 	if (Self != NULL)
 	{
-		CenterX = Self->Position.x;
-		CenterY = Self->Position.y;
+		Center.x = Self->Position.x;
+		Center.y = Self->Position.y;
 	}
-*/	
+
 	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
 	{
-		float userPosX, userPosY;
-
-		// convert from world coords to radar coords (0.0 -> 1.0)
-
-		userPosX = ((*eit).second.Position.x - CenterX) / (2.0f*WorldWidth);
-		userPosY = ((*eit).second.Position.y - CenterY) / (2.0f*WorldHeight);
-
-		// userpos is between -0.5 -> +0.5
-
-		userPosX *= RadarZoom;
-		userPosY *= RadarZoom;
-
-		/// \todo virer kan ca marchera
-		string str = toString(userPosX) + " / " + toString(userPosY) + " ** ";
-		str += toString(CenterX) + " / " + toString(CenterY);
-		TextContext->printfAt (0.5f, 0.5f, str.c_str());
-
-		if (userPosX > 0.5f || userPosX < -0.5f || userPosY > 0.5f || userPosY < -0.5f)
-			continue;
-
-		userPosX += 0.5f;
-		userPosY += 0.5f;
-
-		// userpos is between 0.0 -> 1.0
-
-		userPosX *= RadarWidth;
-		userPosY *= RadarHeight;
-
-		userPosX += RadarPosX;
-		userPosY += RadarPosY;
-
 		float entitySize = RadarEntitySize * ((RadarZoom <= 1.0f) ? 1.0f : RadarZoom);
 		CRGBA entityColor = ((*eit).second.Type == CEntity::Self) ? RadarSelfColor : RadarFrontColor;
 
-		Driver->drawQuad (userPosX, userPosY, entitySize, entityColor);
+		displayRadarPoint ((*eit).second.Position, Center, entitySize, entityColor);
+
+		displayRadarPoint ((*eit).second.ServerPosition, Center, entitySize, CRGBA (255,255,255,255));
 	}
 }
 

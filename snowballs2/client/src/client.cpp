@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.26 2001/07/16 13:01:02 legros Exp $
+ * $Id: client.cpp,v 1.27 2001/07/16 13:17:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,7 @@
 #include "entities.h"
 #include "camera.h"
 #include "pacs.h"
+#include "animation.h"
 #include "network.h"
 
 using namespace std;
@@ -144,7 +145,7 @@ int main(int argc, char **argv)
 	MouseListener->setFrustrum (Camera->getFrustum());
 	MouseListener->setMatrix (Camera->getMatrix());
 	MouseListener->setMouseMode (U3dMouseListener::firstPerson);
-	MouseListener->setSpeed(EntitySpeed);
+	MouseListener->setSpeed(PlayerSpeed);
 
 	// Init the command control
 	initCommands ();
@@ -160,6 +161,9 @@ int main(int argc, char **argv)
 
 	// Init the pacs
 	initPACS();
+
+	// Init animation
+	initAnimation ();
 
 	// Creates a self entity
 	addEntity(0xFFFFFFFF, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
@@ -180,11 +184,14 @@ int main(int argc, char **argv)
 	while ((!NeedExit) && Driver->isActive())
 	{
 		// Clear
-		Driver->clearBuffers (CRGBA (64,64,64,0));
+		Driver->clearBuffers (CRGBA (192,192,200,0));
 
 		// Update the time counters
 		LastTime = NewTime;
 		NewTime = CTime::getLocalTime();
+
+		// Update animation
+		updateAnimation ();
 
 		// Update all entities positions
 		updateEntities();
@@ -234,13 +241,24 @@ int main(int argc, char **argv)
 		{
 			ShowRadar = !ShowRadar;
 		}
+/// \todo virer a la fin
 		else if (Driver->AsyncListener.isKeyPushed (KeyF7))
 		{
 			SnapSnowballs = !SnapSnowballs;
 		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyF12))
+/// \todo fin virer a la fin
+		else if (Driver->AsyncListener.isKeyPushed (KeyF8))
 		{
 			clearCommands ();
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF12))
+		{
+			CBitmap btm;
+			Driver->getBuffer (btm);
+			string filename = CFile::findNewFile ("screenshot.tga");
+			COFile fs (filename);
+			btm.writeTGA (fs,24,true);
+			nlinfo("Screenshot '%s' saved", filename.c_str());
 		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyCONTROL))
 		{
@@ -261,6 +279,7 @@ int main(int argc, char **argv)
 	releaseNetwork ();
 	releasePACS();
 	releaseLandscape();
+	releaseAnimation ();
 
 	delete Driver;
 

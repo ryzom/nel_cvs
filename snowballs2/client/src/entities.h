@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.9 2001/07/16 13:01:02 legros Exp $
+ * $Id: entities.h,v 1.10 2001/07/16 13:17:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,13 +40,15 @@ namespace NL3D
 {
 	class UInstance;
 	class UVisualCollisionEntity;
+	class UPlayList;
+	class USkeleton;
 };
 
 class CEntity
 {
 public:
 	
-	CEntity () : Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Particule(NULL) { }
+	CEntity () : Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Skeleton(NULL), Particule(NULL), PlayList(NULL), CurrentAnimId(0xffffffff) { }
 
 	uint32							Id;
 
@@ -60,27 +62,34 @@ public:
 	float							Speed, 
 									Angle;
 
-	enum TType { Self, Other, Snowball };
-	
-	TType							Type;
+	enum TState	{ Appear, Normal, Disappear };
 
-	enum TState { Appear, Normal, Disappear };
-	
 	TState							State;
-
 	NLMISC::TTime					StateStartTime;
+
+	enum TType	{ Self, Other, Snowball };
+
+	TType							Type;
 
 	bool							AutoMove;
 
 	NLPACS::UMovePrimitive			*MovePrimitive;
 	NL3D::UVisualCollisionEntity	*VisualCollisionEntity;
 	NL3D::UInstance					*Instance;
+	NL3D::USkeleton					*Skeleton;
 	NL3D::UInstance					*Particule;
+
+	NL3D::UPlayList					*PlayList;
+
+	uint							 CurrentAnimId;
+
+	void	setState (TState state);
+
 };
 
 extern CEntity	*Self;
 
-extern float	EntitySpeed;
+extern float	 PlayerSpeed;
 
 void	addEntity (uint32 eid, CEntity::TType type, const NLMISC::CVector &startPosition, const NLMISC::CVector &serverPosition);
 void	removeEntity (uint32 eid);

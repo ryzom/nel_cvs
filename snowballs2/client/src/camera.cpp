@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.6 2001/07/16 13:01:02 legros Exp $
+ * $Id: camera.cpp,v 1.7 2001/07/16 13:17:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include <nel/3d/u_scene.h>
 #include <nel/3d/u_3d_mouse_listener.h>
 #include <nel/3d/u_instance.h>
+#include <nel/3d/u_skeleton.h>
 
 #include "client.h"
 #include "entities.h"
@@ -65,7 +66,10 @@ void	updateCamera()
 	// update the mouse listener position
 	if (Self != NULL)
 	{
-		MouseListener->setMatrix(Self->Instance->getMatrix());
+		if (Self->Skeleton != NULL)
+			MouseListener->setMatrix(Self->Skeleton->getMatrix());
+		else
+			MouseListener->setMatrix(Self->Instance->getMatrix());
 	}
 
 	CMatrix	mat = MouseListener->getViewMatrix();

@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.16 2001/03/21 15:32:25 chafik Exp $
+ * $Id: ident.h,v 1.17 2001/03/26 14:49:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -484,7 +484,7 @@ namespace NLAIAGENT
 
 	public:
 		///The class factory ident of the class.
-		static const NLAIC::CIdentType IdLocWordNumRef;
+		static const NLAIC::CIdentType *IdLocWordNumRef;
 
 	public:
 		///Construct object for an IRefrence agents objects.

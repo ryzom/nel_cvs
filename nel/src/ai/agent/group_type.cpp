@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.14 2001/03/21 15:00:03 chafik Exp $
+ * $Id: group_type.cpp,v 1.15 2001/03/26 14:50:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,7 +101,7 @@ namespace NLAIAGENT
 						return a;
 					default:
 						{
-							CObjectType *c = new CObjectType(new NLAIC::CIdentType(IAgent::IdAgent));
+							CObjectType *c = new CObjectType(new NLAIC::CIdentType(*IAgent::IdAgent));
 							a.push(CIdMethod(IBaseGroupType::_Method[i].Index + IObjetOp::getMethodIndexSize(),0.0,NULL,c));
 						}
 						return a;

@@ -1,6 +1,6 @@
 /** \file agent_local_mailer.cpp
  *
- * $Id: agent_local_mailer.cpp,v 1.3 2001/02/08 17:27:53 chafik Exp $
+ * $Id: agent_local_mailer.cpp,v 1.4 2001/03/26 14:50:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ namespace NLAIAGENT
 		}
 		else
 		{
-			const NLAIAGENT::IObjectIA *cl = (const NLAIAGENT::IObjectIA *)(IAgent::IdAgent.getFactory())->getClass();
+			const NLAIAGENT::IObjectIA *cl = (const NLAIAGENT::IObjectIA *)(IAgent::IdAgent->getFactory())->getClass();
 			return cl->isMember(h,m,p);
 		}
 	}

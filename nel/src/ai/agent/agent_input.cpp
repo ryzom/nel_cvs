@@ -1,7 +1,7 @@
 /** \file agent_input.cpp
  * <File description>
  *
- * $Id: agent_input.cpp,v 1.1 2001/03/06 14:10:47 robert Exp $
+ * $Id: agent_input.cpp,v 1.2 2001/03/26 14:50:01 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,16 +24,13 @@
  */
 
 #include "nel/ai/agent/agent_input.h"
-#include "nel/ai/agent/msg_on_change.h"
 
 
 namespace NLAIAGENT
 {
 
-IAgentInput::IAgentInput()
-{
-	_ActiveInput = false;
-	_LocalValue = NULL;
+IAgentInput::IAgentInput():_ActiveInput(false),_LocalValue(NULL)
+{	 
 }
 
 IAgentInput::~IAgentInput()
@@ -62,12 +59,17 @@ void IAgentInput::onKill(IConnectIA* c)
 	releaseInputConnexion(c);
 }
 
+const IObjectIA::CProcessResult IAgentInput::runMsg(COnChangeMsg &msg)
+{
+	return IAgentInput::_ConnexionList.sendMessage(&msg);
+}
+
 const IObjectIA::CProcessResult&  IAgentInput::run ()
 {
 	if (IAgentInput::_ActiveInput)
 	{
 		const IObjectIA* value = IAgentInput::getValue();
-		if (*value == *_LocalValue)
+		if (!(*value == *_LocalValue))
 		{
 			// If the component value as changed, we send a message to the list of interested IConnectIA.
 			_LocalValue = value;

@@ -1,4 +1,5 @@
 #include "nel/ai/nl_ai.h"
+#include "nel/ai/static_init.h"
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/agent/agent_digital.h"
@@ -8,12 +9,14 @@
 #include "nel/ai/agent/main_agent_script.h"
 #include "nel/ai/agent/agent_proxy_mailer.h"
 
+using namespace NLAIAGENT;
 
 namespace NLAILINK 
 {
 	//using namespace NLAIAGENT;
 	void initIALib()
 	{
+		registerLibClass();
 		NLAIC::initRegistry();
 		NLAISCRIPT::initExternalLib();		
 		NLAIAGENT::CAgentScript::initAgentScript();
@@ -42,5 +45,5 @@ namespace NLAILINK
 	{
 		NLAIAGENT::CProxyAgentMail::MainAgent = manager;
 		//NLAIAGENT::CProxyAgentMail::MainAgent->incRef();
-	}
+	}	
 }

@@ -1,7 +1,7 @@
 /** \file agent_input.h
  * An interface giving a direct value from an agent component or telling when the value changed.
  *
- * $Id: agent_input.h,v 1.2 2001/03/15 18:35:23 robert Exp $
+ * $Id: agent_input.h,v 1.3 2001/03/26 14:49:56 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/ai/c/abstract_interface.h"
 #include "nel/ai/agent/baseai.h"
 #include "nel/ai/agent/list_manager.h"
+#include "nel/ai/agent/msg_on_change.h"
 
 namespace NLAIAGENT
 {
@@ -41,9 +42,9 @@ namespace NLAIAGENT
 class IAgentInput : public IConnectIA
 {
 protected :
-	CListGroupManager	_ConnexionList;	// A list of IConnectIA interested by the change of the value.
 	bool				_ActiveInput;	// True if _ConnexionList not empty.
 	const IObjectIA*	_LocalValue;	// Last value of the component for know if his value as changed.
+	CListGroupManager	_ConnexionList;	// A list of IConnectIA interested by the change of the value.	
 
 public:
 
@@ -60,11 +61,13 @@ public:
 	void releaseInputConnexion(IConnectIA* obj);
 
 	/// Return the value managed by this IAgentInput. Must be Reimplemented.
-	virtual const IObjectIA* getValue() {return NULL;}
+	virtual const IObjectIA* getValue() {return _LocalValue;}
+
+	virtual	const CProcessResult runMsg(COnChangeMsg &msg);	
 
 	/// \name IObjectIA member method. 
 	//@{
-	virtual	const CProcessResult&  run ();
+	virtual	const CProcessResult&run ();
 	//@}
 	
 	/// \name IConnectIA member method. 

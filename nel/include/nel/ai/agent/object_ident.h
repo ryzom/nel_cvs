@@ -1,7 +1,7 @@
 /** \file object_ident.h
  * class for identification an objects fonctionality.
  *
- * $Id: object_ident.h,v 1.2 2001/03/05 13:48:59 portier Exp $
+ * $Id: object_ident.h,v 1.3 2001/03/26 14:49:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLAIAGENT
 	class CObjectIdent : public IObjectIA
 	{
 	public:
-		static const NLAIC::CIdentType IdObjectIdent;
+		static const NLAIC::CIdentType *IdObjectIdent;
 	private:
 		CNumericIndex _Id;
 	public:
@@ -87,7 +87,7 @@ namespace NLAIAGENT
 		
 		const NLAIC::CIdentType &getType() const
 		{
-			return IdObjectIdent;
+			return *IdObjectIdent;
 		}
 
 		void save(NLMISC::IStream &os)

@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.9 2001/02/13 10:43:30 chafik Exp $
+ * $Id: ident.cpp,v 1.10 2001/03/26 14:50:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,7 +169,7 @@ namespace NLAIAGENT
 
 	const NLAIC::CIdentType &CLocWordNumRef::getType() const
 	{		
-		return IdLocWordNumRef;
+		return *IdLocWordNumRef;
 	}
 
 	IRefrence *CLocWordNumRef::getRef(const CNumericIndex &id)

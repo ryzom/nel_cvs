@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.14 2001/03/23 09:58:05 chafik Exp $
+ * $Id: agent.h,v 1.15 2001/03/26 14:49:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -308,7 +308,7 @@ namespace NLAIAGENT
 	class IAgent:public IAgentComposite
 	{	
 	public:	
-		static const NLAIC::CIdentType IdAgent;
+		static const NLAIC::CIdentType *IdAgent;
 		
 	protected:		
 		IAgent(const IAgent &a);

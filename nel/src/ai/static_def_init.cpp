@@ -45,19 +45,19 @@
 	std::list<CIndexedVarName::CNameStruc *> *CIndexedVarName::_Empty = new std::list<CIndexedVarName::CNameStruc *>;
 
 
-	const NLAIC::CIdentType CObjectIdent::IdObjectIdent("ObjectIdent",NLAIC::CSelfClassFactory(CObjectIdent("0:0:0")),
+	const NLAIC::CIdentType *CObjectIdent::IdObjectIdent = NULL;/*("ObjectIdent",NLAIC::CSelfClassFactory(CObjectIdent("0:0:0")),
 																		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
-																		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+																		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/
 
 	static CNumericIndex staticId;
 	static const IAgent staticAgent(NULL);
-	const NLAIC::CIdentType CLocWordNumRef::IdLocWordNumRef("LocWordNumRef",NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)staticAgent),
+	const NLAIC::CIdentType *CLocWordNumRef::IdLocWordNumRef = NULL;/*("LocWordNumRef",NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)staticAgent),
 																		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
-																		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+																		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/
 
-	const NLAIC::CIdentType IAgent::IdAgent("GenericAgent", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)staticAgent), 
+	const NLAIC::CIdentType *IAgent::IdAgent = NULL;/*("GenericAgent", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)staticAgent), 
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
-															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/
 
 	const NLAIC::CIdentType CSimpleLocalMailBox::IdSimpleLocalMailBox("SimpleLocalMailBox",
 														NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CSimpleLocalMailBox(NULL)),

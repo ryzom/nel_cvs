@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.5 2001/03/01 13:39:57 chafik Exp $
+ * $Id: msg.cpp,v 1.6 2001/03/26 14:50:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,7 +238,7 @@ namespace NLAIAGENT
 			{
 				if( *methodName == IMessageBase::_Method[i].MethodName )
 				{					
-					CObjectType *c = new CObjectType(new NLAIC::CIdentType(IAgent::IdAgent));
+					CObjectType *c = new CObjectType(new NLAIC::CIdentType(*IAgent::IdAgent));
 					a.push( CIdMethod( IMessageBase::_Method[i].Index + IBaseGroupType::getMethodIndexSize(), 0.0, NULL, c) );					
 					break;
 				}

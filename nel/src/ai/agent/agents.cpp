@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.24 2001/03/23 09:57:48 chafik Exp $
+ * $Id: agents.cpp,v 1.25 2001/03/26 14:50:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,7 +173,7 @@ namespace NLAIAGENT
 
 	const NLAIC::CIdentType &IAgent::getType() const
 	{		
-		return IdAgent;
+		return *IdAgent;
 	}
 
 

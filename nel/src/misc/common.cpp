@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.11 2001/06/27 08:31:19 lecroart Exp $
+ * $Id: common.cpp,v 1.12 2001/06/28 12:21:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -404,8 +404,5 @@ const char	*Exception::what() const throw()
 }
 
 
-
-
-
-
 } // NLMISC
+

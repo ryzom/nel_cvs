@@ -1256,7 +1256,7 @@ group "Projects management"
 					collapseStack $
 
 					-- Set the tile step
-					SetRykolTileSteps $ -4
+					SetRykolTileSteps $ -2
 
 					-- Save the max file
 					saveMaxFile projectName
@@ -1593,6 +1593,7 @@ group "Projects management"
 
 								-- Freeze it
 								freeze ref
+								SetRykolTileSteps ref -2
 
 								-- Get an identity matrix
 								mt = matrix3 1
@@ -1758,7 +1759,7 @@ group "Projects management"
 						collapseStack $
 
 						-- Set the tile step
-						SetRykolTileSteps $ -4
+						SetRykolTileSteps $ -2
 					)
 
 					-- Save the max file
@@ -2081,6 +2082,7 @@ group "Projects management"
 
 								-- Freeze it
 								freeze importedRef
+								SetRykolTileSteps importedRef -2
 							)
 						)
 					)
@@ -2487,6 +2489,9 @@ group "Projects management"
 
 								-- Freeze it
 								freeze ref
+
+								-- Set the tile set
+								SetRykolTileSteps ref -2
 
 								-- Get an identity matrix
 								mt = matrix3 1

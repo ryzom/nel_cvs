@@ -144,7 +144,7 @@
 					$res = $res.$row["Online"]."|";
 					$res = $res.$row["ShardId"]."|";
 					$res = $res.$row["Name"]."|";
-					$res = $res.$row["NbPlayers"]."|";
+					$res = $res."999999|";
 					$res = $res.$row["WsAddr"]."|";
 					$res = $res.$row["PatchURL"];
 					$res = $res."\n";

@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.1 2004/05/11 17:33:25 boucher Exp $
+ * $Id: primitive_utils.h,v 1.2 2004/05/14 12:45:59 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -182,8 +182,10 @@ public:
 	CPrimitiveEnumerator(IPrimitive *startPrim, Pred &predicate)
 		: _StartPrim(startPrim), 
 		_Predicate(predicate), 
-		_CurrentPrim(NULL)
+		_CurrentPrim(startPrim)
 	{
+		// mark the root node as non checked
+		_IndexStack.push_back(~0);
 	}
 
 	/** Each call the this method will return a primitive pointer that match
@@ -192,50 +194,35 @@ public:
 	 */
 	IPrimitive *getNextMatch()
 	{
-		IPrimitive *ret = NULL;
-		if (_CurrentPrim == NULL)
+		while (!_IndexStack.empty())
 		{
-			// this is the first call, init the stack an current prim
-			_CurrentPrim = _StartPrim;
-			_IndexStack.push_back(0);
-		}
-
-		// normal tree traversal behavior
-		while (_CurrentPrim != NULL)
-		{
-			while (_CurrentPrim->getNumChildren() > _IndexStack.back())
+			if (_IndexStack.back() == ~0)
 			{
-				// there are still some valid childs
-				bool ret = _CurrentPrim->getChild(_CurrentPrim, _IndexStack.back()++);
-				nlassert(ret);
-				_IndexStack.push_back(0);
+				_IndexStack.back() = 0;
+				// we need to check the current node.
+				if (_Predicate(_CurrentPrim))
+				{
+					// this one match !
+					return _CurrentPrim;
+				}
 			}
-
-			// no more child, test the current node
-			if (_Predicate(_CurrentPrim))
+			if (_IndexStack.back() < _CurrentPrim->getNumChildren())
 			{
-				// we got one !
-				ret = _CurrentPrim;
-			}
-			_IndexStack.pop_back();
-
-
-			if (_CurrentPrim == _StartPrim)
-			{
-				// we are on the start prim, no more prim to parse
-				_CurrentPrim = NULL;
+				IPrimitive *child;
+				if (_CurrentPrim->getChild(child, _IndexStack.back()++))
+				{
+					// descent into this node
+					_IndexStack.push_back(~0);
+					_CurrentPrim = child;
+				}
 			}
 			else
 			{
-				// back to parent
+				// no more child to test, pop one level
+				_IndexStack.pop_back();
 				_CurrentPrim = _CurrentPrim->getParent();
 			}
-
-			// we have a node to return
-			if (ret)
-				return ret;
 		}
-
 		// no more match
 		return NULL;
 	}
@@ -297,7 +284,7 @@ public:
  *	This function deal with file IO and XML parsing call.
  *	Return false if the loading fail for some reason, true otherwise.
  */
-bool loadXmlPrimitiveFile(CPrimitives &primDoc, const std::string &fileName, CLigoConfig &ligoConfig)
+inline bool loadXmlPrimitiveFile(CPrimitives &primDoc, const std::string &fileName, CLigoConfig &ligoConfig)
 {
 	try
 	{
@@ -307,7 +294,6 @@ bool loadXmlPrimitiveFile(CPrimitives &primDoc, const std::string &fileName, CLi
 
 		// Read it
 		return primDoc.read (xmlIn.getRootNode (), fileName.c_str(), ligoConfig);
-		return true;
 	}
 	catch(NLMISC::Exception e)
 	{
@@ -330,6 +316,25 @@ IPrimitive *getPrimitiveChild(IPrimitive *parent, Pred &predicate)
 		IPrimitive *child;
 		if (parent->getChild(child, i) && predicate(child))
 			return child;
+	}
+
+	return NULL;
+}
+
+/** Utility function to look for the first parent of a primitive node that
+ *	match the predicate.
+ *	Return NULL if none of the parent match the predicate.
+ */
+template <class Pred>
+IPrimitive *getPrimitiveParent(IPrimitive *prim, Pred &predicate)
+{
+	IPrimitive *parent = prim->getParent();
+	while (parent)
+	{
+		if (predicate(parent))
+			return parent;
+
+		parent = parent->getParent();
 	}
 
 	return NULL;

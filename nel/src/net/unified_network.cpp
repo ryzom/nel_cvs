@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.7 2001/11/13 14:36:18 legros Exp $
+ * $Id: unified_network.cpp,v 1.8 2001/11/14 09:45:05 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -343,19 +343,27 @@ void	CUnifiedNetwork::update(sint32 timeout)
 		if ((enableRetry = (newTime-_LastRetry > 5000)))
 			_LastRetry = newTime;
 
-		// update all connections
-		_CbServer.update(timeout);
-
-		uint	i;
-		for (i=0; i<connections.size(); ++i)
+		while (true)
 		{
-			const CUnifiedConnection	&cnx = connections[i];
-			if (cnx.EntryUsed && !cnx.IsServerConnection)
+			// update all connections
+			_CbServer.update(0);
+
+			uint	i;
+			for (i=0; i<connections.size(); ++i)
 			{
-				cnx.Connection.CbClient->update(timeout);
-				if (enableRetry && !cnx.IsConnected && cnx.AutoRetry)
-					_ConnectionRetriesStack.push_back(i);
+				const CUnifiedConnection	&cnx = connections[i];
+				if (cnx.EntryUsed && !cnx.IsServerConnection)
+				{
+					cnx.Connection.CbClient->update(0);
+					if (enableRetry && !cnx.IsConnected && cnx.AutoRetry)
+						_ConnectionRetriesStack.push_back(i);
+				}
 			}
+
+			if (CTime::getLocalTime() - newTime > timeout)
+				break;
+
+			nlSleep(1);
 		}
 	}
 

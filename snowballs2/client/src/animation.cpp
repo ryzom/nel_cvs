@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.17 2002/08/20 12:40:49 lecroart Exp $
+ * $Id: animation.cpp,v 1.18 2003/09/15 11:21:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,7 +148,7 @@ void	computeAnimation (CEntity &entity, EAnim anim)
 	entity.PlayList->setEndWeight	(newSlot, 1.0f, OldEndTime);
 
 	// Keep in mind what is the last animation id we set
-	entity.StartAnimationTime = currentTime;
+	entity.StartAnimationTime = (float)currentTime;
 }
 
 

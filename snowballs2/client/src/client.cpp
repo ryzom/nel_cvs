@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs main file
  *
- * $Id: client.cpp,v 1.58 2002/11/05 09:47:36 lecroart Exp $
+ * $Id: client.cpp,v 1.59 2003/09/15 11:21:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,14 +37,10 @@
 
 #include <nel/misc/types_nl.h>
 
-#if defined(NL_OS_WINDOWS) && defined (NL_RELEASE)
-#  include <windows.h>
-#  ifdef min
-#    undef min
-#  endif
-#  ifdef max
-#    undef max
-#  endif
+#ifdef NL_OS_WINDOWS
+#	include <windows.h>
+#	undef min
+#	undef max
 #endif
 
 #include <time.h>
@@ -144,7 +140,7 @@ void displayLoadingState (char *state);
 // Main
 //
 
-#if defined(NL_OS_WINDOWS) && defined (NL_RELEASE)
+#ifdef NL_OS_WINDOWS
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdline, int nCmdShow)
 #else
 int main(int argc, char **argv)
@@ -156,7 +152,7 @@ int main(int argc, char **argv)
 	
 	string cookie, fsaddr;
 
-#if defined(NL_OS_WINDOWS) && defined (NL_RELEASE)
+#ifdef NL_OS_WINDOWS
 
 	// extract the 2 first param (argv[1] and argv[2]) it must be cookie and addr
 

@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.20 2002/10/10 17:52:05 lecroart Exp $
+ * $Id: network.cpp,v 1.21 2003/09/15 11:21:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -329,7 +329,7 @@ void	initNetwork(const std::string &lc, const std::string &addr)
 		loginCookie.setFromString (lc);
 	}
 
-	string res = CLoginClient::connectToShard (loginCookie, fsaddr, *Connection);
+	string res;// TODO = CLoginClient::connectToShard (loginCookie, fsaddr, *Connection);
 	if (!res.empty ())
 	{
 		string err = string ("Connection to shard failed: ") + res;

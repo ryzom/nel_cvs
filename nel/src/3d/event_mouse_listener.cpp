@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.9 2001/06/18 16:34:59 vizerie Exp $
+ * $Id: event_mouse_listener.cpp,v 1.10 2001/06/19 15:59:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/misc/event_server.h"
 #include "3d/camera.h"
 #include "nel/misc/time_nl.h"
+#include "nel/misc/quat.h"
 
 using namespace NLMISC;
 
@@ -87,8 +88,8 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 
 		if (bRotate)
 		{
-			if (!_EnableModelMatrixEdition) // view rotation
-			{
+			if (!_EnableModelMatrixEdition)
+			{							
 				// First in the hotSpot
 				CMatrix comeFromHotSpot=_Matrix;
 				comeFromHotSpot.setPos (axis);
@@ -96,12 +97,12 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 				// Then turn along the Z axis with X mouse
 				CMatrix turnZ;
 				turnZ.identity();
-				turnZ.rotateZ ((float)Pi*2.f*(_X-mouseEvent->X));
+				turnZ.rotateZ ((float) Pi*2.f*(_X-mouseEvent->X));
 
 				// Then turn along the X axis with Y mouse
 				CMatrix turnX;
 				turnX.identity();
-				turnX.rotateX ((float)Pi*2.f*(mouseEvent->Y-_Y));
+				turnX.rotateX ((float) Pi*2.f*(mouseEvent->Y-_Y));
 
 				// Then come back from hotspot
 				CMatrix goToHotSpot=comeFromHotSpot;
@@ -124,23 +125,22 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 
 				
 				Pivot*=_Matrix;
-				_Matrix=Pivot;
-							
+				_Matrix=Pivot;						
 				// Normalize, too much transformation could give an ugly matrix..
-				_Matrix.normalize (CMatrix::XYZ);
+				_Matrix.normalize (CMatrix::XYZ);			
+			
 			}
-			else // model rotation. 
+			else
 			{
+				CVector pos = _ModelMatrix.getPos() ;
+				NLMISC::CQuat r(CAngleAxis(_ModelMatrix.getK(), (float) Pi*2.f*(_X-mouseEvent->X))) ;
+			//	NLMISC::CQuat rJ(CAngleAxis(_ModelMatrix.getJ(), (float) Pi*2.f*(_Y-mouseEvent->Y))) ;
 
+				_ModelMatrix.setPos(CVector::Null) ;
+				_ModelMatrix.rotate(r) ;				
 
-
-
-
-
-
-
-
-
+				_ModelMatrix.setPos(pos) ;
+				_ModelMatrix.normalize (CMatrix::XYZ);
 			}
 		}
 

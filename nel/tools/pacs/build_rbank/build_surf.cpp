@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.26 2004/06/29 17:16:00 legros Exp $
+ * $Id: build_surf.cpp,v 1.27 2004/07/23 15:59:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1033,7 +1033,11 @@ void	NLPACS::CZoneTessellation::build()
 		}
 	}
 
-	nlassert(normals.size() == leaves.size());
+	if (normals.size() != leaves.size())
+	{
+		nlwarning ("ERROR : The heightmaped landscape has not the same number of polygon than the nonheightmaped landscape.");
+		exit (0);
+	}
 
 	// generate a vector of vertices and of surf element
 	hash_map<const CVector *, uint32, CHashPtr<const CVector> >				vremap;

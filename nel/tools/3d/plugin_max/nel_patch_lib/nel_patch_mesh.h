@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.9 2002/03/07 10:33:12 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.10 2002/04/04 11:49:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -685,7 +685,7 @@ public:
 	void InvalidateChannels(ChannelMask channels);
 
 	// Update topo change BIND SAFE
-	void ResolveTopoChanges(PatchMesh *patch);
+	void ResolveTopoChanges(PatchMesh *patch, bool aux1);
 
 	// Change sel level BIND SAFE
 	void SetSelLevel (int sellevel)

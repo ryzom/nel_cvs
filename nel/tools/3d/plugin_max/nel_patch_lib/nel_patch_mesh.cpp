@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.7 2002/04/03 07:57:17 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.8 2002/04/04 11:49:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1553,7 +1553,7 @@ void RPatchMesh::FindPatch (PatchMesh *patch, int nEdge, int &WhichEdge, int &nP
 }
 
 // Resolve topologie changes -> Bind safe
-void RPatchMesh::ResolveTopoChanges(PatchMesh *patch)
+void RPatchMesh::ResolveTopoChanges(PatchMesh *patch, bool aux1)
 {
 	// Nombre de patches
 	if (patch->numPatches>(int)getUIPatchSize())
@@ -1595,7 +1595,11 @@ void RPatchMesh::ResolveTopoChanges(PatchMesh *patch)
 	// Build remap vertex info
 	for (int i = 0; i < patch->numVerts; ++i)
 	{
-		int nTag=patch->verts[i].aux1;
+		int nTag;
+		if (aux1)
+			nTag=patch->verts[i].aux1;
+		else
+			nTag=patch->verts[i].aux2;
 		if (nTag>=0)
 		{
 			pnRemapVertex[nTag]=i;
@@ -1605,7 +1609,11 @@ void RPatchMesh::ResolveTopoChanges(PatchMesh *patch)
 	// Build remap poly info
 	for (i = 0; i < patch->numPatches; ++i)
 	{
-		int nTag=patch->patches[i].aux1;
+		int nTag;
+		if (aux1)
+			nTag=patch->patches[i].aux1;
+		else
+			nTag=patch->patches[i].aux2;
 		if (nTag>=0)
 		{
 			pnRemapPatch[nTag]=i;
@@ -1633,7 +1641,11 @@ void RPatchMesh::ResolveTopoChanges(PatchMesh *patch)
 	// Remap poly info
 	for (i = 0; i < patch->numPatches; ++i)
 	{
-		int nTag=patch->patches[i].aux1;
+		int nTag;
+		if (aux1)
+			nTag=patch->patches[i].aux1;
+		else
+			nTag=patch->patches[i].aux2;
 		if (nTag>=0)
 		{
 			if (nTag!=i)
@@ -1644,15 +1656,20 @@ void RPatchMesh::ResolveTopoChanges(PatchMesh *patch)
 	// Remap vertex info
 	for (i = 0; i < patch->numVerts; ++i)
 	{
-		int nTag=patch->verts[i].aux1;
+		int nTag;
+		if (aux1)
+			nTag=patch->verts[i].aux1;
+		else
+			nTag=patch->verts[i].aux2;
 		if ((nTag>=0)&&(nTag!=i))
 		{
 			getUIVertex (i)=cUIVertex[nTag];
 		}
 		if (getUIVertex (i).Binding.bBinded)
 		{
-			int nPatchTag=pnRemapPatch[getUIVertex (i).Binding.nPatch];
-			int nVertexTag=pnRemapVertex[getUIVertex (i).Binding.nPrimVert];
+			int nPatchTag;
+			nPatchTag=pnRemapPatch[cUIVertex[nTag].Binding.nPatch];
+			int nVertexTag=pnRemapVertex[cUIVertex[nTag].Binding.nPrimVert];
 			if ((nPatchTag==-1)||(nVertexTag==-1))
 				UnBindingVertex (i);
 			else
@@ -1674,7 +1691,7 @@ void RPatchMesh::ResolveTopoChanges(PatchMesh *patch)
 // Weld -> Bind safe
 void RPatchMesh::Weld (PatchMesh *patch)
 {
-	ResolveTopoChanges(patch);
+	ResolveTopoChanges(patch, false);
 }
 
 int GetEdgeNumberInPatch (int nPatch, int nEdge, PatchMesh *patch)

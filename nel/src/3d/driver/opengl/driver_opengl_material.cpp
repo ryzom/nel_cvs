@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.61 2002/04/22 08:46:00 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.62 2002/04/24 13:46:47 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -585,9 +585,16 @@ void CDriverGL::computeLightMapInfos (const CMaterial &mat)
 		// If the lightmap's factor is not null.
 		if (mat._LightMaps[i].Factor.getPacked() & RGBMaskPacked)
 		{
-			_LightMapLUT[_NLightMaps]= i;
+			_LightMapLUT[_NLightMaps] = i;
 			++_NLightMaps;
 		}
+	}
+
+	// At least one lightmap if all are blacks
+	if ((mat._LightMaps.size() > 0) && (_NLightMaps == 0))
+	{
+		_LightMapLUT[_NLightMaps] = 0;
+		++_NLightMaps;
 	}
 
 	// Compute how many pass, according to driver caps.

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.43 2002/02/18 12:58:52 lecroart Exp $
+ * $Id: entities.cpp,v 1.44 2003/04/04 17:04:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,9 @@
 #include "pacs.h"
 #include "animation.h"
 #include "camera.h"
+#ifdef NL_OS_WINDOWS
 #include "sound.h"
+#endif
 #include "mouse_listener.h"
 #include "landscape.h"
 
@@ -235,8 +237,9 @@ void addEntity (uint32 eid, std::string name, CEntity::TType type, const CVector
 		entity.Skeleton = NULL;
 		entity.Speed = SnowballSpeed;
 
+#ifdef NL_OS_WINDOWS
 		playSound (entity, SoundId);
-
+#endif
 		entity.setState (CEntity::Normal);
 		break;
 	}
@@ -291,7 +294,9 @@ void deleteEntity (CEntity &entity)
 		entity.MovePrimitive = NULL;
 	}
 
+#ifdef NL_OS_WINDOWS
 	deleteSound (entity);
+#endif
 
 //	nlinfo ("Remove the entity %u from the Entities list", entity.Id);
 	EIT eit = findEntity (entity.Id);

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2001/07/27 17:25:40 valignat Exp $
+# $Id: Makefile.am,v 1.4 2001/08/09 16:18:01 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -21,6 +21,8 @@ libnelpacs_la_SOURCES = chain.cpp                          \
                         collision_surface_temp.h           \
                         edge_collide.cpp                   \
                         edge_collide.h                     \
+                        edge_quad.cpp                      \
+                        edge_quad.h                        \
                         exterior_mesh.cpp                  \
                         exterior_mesh.h                    \
                         global_retriever.cpp               \

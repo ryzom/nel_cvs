@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.25 2002/07/03 13:36:25 miller Exp $
+ * $Id: bitmap.cpp,v 1.26 2002/08/07 07:45:35 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2526,7 +2526,7 @@ void	CBitmap::flipH()
 	sint32 nHeight = getHeight(0);
 	sint32 i, j;
 	NLMISC::CRGBA *pBitmap = (NLMISC::CRGBA*)&_Data[0][0];
-	bool needRebuild;
+	bool needRebuild = false;
 	CRGBA temp;
 
 	if(_MipMapCount>1)
@@ -2558,7 +2558,7 @@ void	CBitmap::flipV()
 	sint32 nHeight = getHeight(0);
 	sint32 i, j;
 	NLMISC::CRGBA *pBitmap = (NLMISC::CRGBA*)&_Data[0][0];
-	bool needRebuild;
+	bool needRebuild = false;
 	CRGBA temp;
 
 	if(_MipMapCount>1)
@@ -2589,7 +2589,7 @@ void	CBitmap::rot90CW()
 	sint32 nHeight = getHeight(0);
 	sint32 i, j;
 	NLMISC::CRGBA *pSrcRgba = (NLMISC::CRGBA*)&_Data[0][0];
-	bool needRebuild;
+	bool needRebuild = false;
 
 	if(_MipMapCount>1)
 		needRebuild = true;
@@ -2624,7 +2624,7 @@ void	CBitmap::rot90CCW()
 	sint32 nHeight = getHeight(0);
 	sint32 i, j;
 	NLMISC::CRGBA *pSrcRgba = (NLMISC::CRGBA*)&_Data[0][0];
-	bool needRebuild;
+	bool needRebuild = false;
 
 	if(_MipMapCount>1)
 		needRebuild = true;

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.2 2002/04/24 16:26:02 besson Exp $
+ * $Id: primitive.cpp,v 1.3 2002/07/16 13:15:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,37 +64,37 @@ void CPrimPath::serial (IStream &f)
 }
 
 // ***************************************************************************
-bool CPrimZone::contains (NLMISC::CVector &v)
+bool CPrimZone::contains (const NLMISC::CVector &v, const std::vector<NLMISC::CVector> &points)
 {
 	uint32 i;
 	CVector vMin, vMax;
 
-	if (VPoints.size() == 0)
+	if (points.size() == 0)
 		return false;
 	
 	// Get the bounding rectangle of the zone
-	vMax = vMin = VPoints[0];
-	for (i = 0; i < VPoints.size(); ++i)
+	vMax = vMin = points[0];
+	for (i = 0; i < points.size(); ++i)
 	{
-		if (vMin.x > VPoints[i].x)
-			vMin.x = VPoints[i].x;
-		if (vMin.y > VPoints[i].y)
-			vMin.y = VPoints[i].y;
+		if (vMin.x > points[i].x)
+			vMin.x = points[i].x;
+		if (vMin.y > points[i].y)
+			vMin.y = points[i].y;
 
-		if (vMax.x < VPoints[i].x)
-			vMax.x = VPoints[i].x;
-		if (vMax.y < VPoints[i].y)
-			vMax.y = VPoints[i].y;
+		if (vMax.x < points[i].x)
+			vMax.x = points[i].x;
+		if (vMax.y < points[i].y)
+			vMax.y = points[i].y;
 	}
 
 	if ((v.x < vMin.x) || (v.y < vMin.y) || (v.x > vMax.x) || (v.y > vMax.y))
 		return false;
 
 	uint32 nNbIntersection = 0;
-	for (i = 0; i < VPoints.size(); ++i)
+	for (i = 0; i < points.size(); ++i)
 	{
-		CVector &p1 = VPoints[i];
-		CVector &p2 = VPoints[(i+1)%VPoints.size()];
+		const CVector &p1 = points[i];
+		const CVector &p2 = points[(i+1)%points.size()];
 
 		if (((p1.y-v.y) < 0.0)&&((p2.y-v.y) < 0.0))
 			continue;

@@ -1180,6 +1180,8 @@ group "Projects management"
 		(
 			-- Open the new file
 			project_cur_file = substring MaterialProject.items[id] 5 100
+			material_zone_rollout.MaterialDDL.selected = project_cur_file
+			material_zone_rollout.refresh_zone_list project_cur_file
 			project_cur_file = ligo_root_path + ligo_material_prefix + project_cur_file + ".max"
 			loadMaxFile (project_cur_file)
 			refresh_list ()
@@ -1605,6 +1607,8 @@ group "Projects management"
 		(
 			-- Open the max project
 			project_cur_file = substring TransitionProject.items[id] 5 100
+			transition_zone_rollout.TransitionDDL.selected = project_cur_file
+			transition_zone_rollout.refresh_list project_cur_file
 			project_cur_file = ligo_root_path + ligo_transition_prefix + project_cur_file + ".max"
 			loadMaxFile project_cur_file
 		)

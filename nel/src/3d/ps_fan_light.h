@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * FanLight particles
  *
- * $Id: ps_fan_light.h,v 1.2 2002/02/20 11:11:36 vizerie Exp $
+ * $Id: ps_fan_light.h,v 1.3 2002/02/28 09:52:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,9 @@
 
 #include "3d/ps_particle_basic.h"
 #include "3d/vertex_buffer.h"
+
+#include <vector>
+#include <hash_map>
 
 
 namespace NL3D 
@@ -114,7 +117,7 @@ public:
 	void setTexture(CSmartPtr<ITexture> tex)
 	{
 		_Tex = tex;		
-		updateMatAndVbForColor();
+		touch();
 	}
 	
 	/// get the texture used
@@ -127,35 +130,44 @@ public:
 		return _Tex; 
 	}
 protected:
-
-	friend class CPSFanLightHelper;
-	
-	/// initialisations
-	virtual void init(void);
-
-	uint32						_NbFans;
-	uint32						_PhaseSmoothness;
-	CVertexBuffer				_Vb;
-	float						_MoveIntensity;	
-	uint32						*_IndexBuffer;
-	NLMISC::CSmartPtr<ITexture> _Tex;
-	static uint8				_RandomPhaseTab[32][128];		
-	float						_PhaseSpeed;
-
-	//#ifdef NL_DEBUG		
-		static bool _RandomPhaseTabInitialized;
-	//#endif
-	
-	virtual void		draw(bool opaque);
 	void				newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 	void				deleteElement(uint32);
-
-	/// Set the max number of fanlights		
 	virtual void resize(uint32 size); 
-
 	virtual CPSLocated *getColorOwner(void) { return _Owner; }
 	virtual CPSLocated *getSizeOwner(void) { return _Owner; }
-	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
+	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }	
+private:
+	friend class CPSFanLightHelper;
+	typedef std::hash_map<uint, CVertexBuffer>  TVBMap;
+	typedef std::vector<uint32> TIndexBuffer;
+	typedef std::hash_map<uint, TIndexBuffer >  TIBMap;
+private:
+	uint32						_NbFans;
+	uint32						_PhaseSmoothness;	
+	float						_MoveIntensity;		
+	NLMISC::CSmartPtr<ITexture> _Tex;
+	float						_PhaseSpeed;
+	bool						_Touched : 1;
+	bool						_UseGlobalColor : 1;
+	//
+	static uint8				_RandomPhaseTab[32][128];
+
+	static TVBMap				_VBMap; // fanlight, no texture
+	static TVBMap				_TexVBMap; // fanlight, textured
+	static TVBMap				_ColoredVBMap; // fanlight, no texture, varying color
+	static TVBMap				_ColoredTexVBMap; // fanlight, textured, varying color
+	static TIBMap				_IBMap;
+
+	static bool _RandomPhaseTabInitialized;
+private:
+	/// initialisations
+	virtual void init(void);		
+	virtual void draw(bool opaque);	
+	// setup and get the needed vb for display
+	void getVBnIB(CVertexBuffer *&vb, TIndexBuffer *&ib);
+	uint getNumFanlightsInVB() const;
+	void setupMaterial();
+	void touch() { _Touched = true; }
 };
 
 

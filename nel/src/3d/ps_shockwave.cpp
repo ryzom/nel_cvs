@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.2 2002/02/28 09:53:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,8 +39,18 @@ namespace NL3D
 // constant definition   //
 ///////////////////////////
 
-static const uint shockWaveBufSize = 64; // number of shockwave to be processed at once
+// max number of shockwave to be processed at once
+static const uint ShockWaveBufSize = 128; 
 
+// the number of vertices we want in a vertex buffer
+static const uint NumVertsInBuffer = 8 * ShockWaveBufSize;
+
+
+CPSShockWave::TPBMap CPSShockWave::_PBMap; // the primitive blocks
+CPSShockWave::TVBMap CPSShockWave::_VBMap; // vb ith unanimated texture
+CPSShockWave::TVBMap CPSShockWave::_AnimTexVBMap; // vb ith unanimated texture
+CPSShockWave::TVBMap CPSShockWave::_ColoredVBMap; // vb ith unanimated texture
+CPSShockWave::TVBMap CPSShockWave::_ColoredAnimTexVBMap; // vb ith unanimated texture
 /////////////////////////////////
 // CPSShockWave implementation //
 /////////////////////////////////
@@ -60,20 +70,24 @@ public:
 		PARTICLES_CHECK_MEM;
 		nlassert(s._Owner);
 
-		const uint32 vSize = s._Vb.getVertexSize();
+		// get / build the vertex buffer and the primitive block
+		CVertexBuffer *vb;
+		CPrimitiveBlock *pb;
+		s.getVBnPB(vb, pb);
+
+		const uint32 vSize = vb->getVertexSize();
 		IDriver *driver = s.getDriver();
-
 		s._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
-
 		s.setupDriverModelMatrix();
-		driver->activeVertexBuffer(s._Vb);	
+		const uint numShockWaveToDealWith = std::min(ShockWaveBufSize, s.getNumShockWavesInVB());
+		driver->activeVertexBuffer(*vb);	
 
-		static CPlaneBasis planeBasis[shockWaveBufSize];
-		float       sizes[shockWaveBufSize];
-		float       angles[shockWaveBufSize];
+		static CPlaneBasis planeBasis[ShockWaveBufSize];
+		float       sizes[ShockWaveBufSize];
+		float       angles[ShockWaveBufSize];
 		
 		uint leftToDo  = size, toProcess;
-		T endIt ;
+		T endIt;
 		uint8 *currVertex;
 		uint k ;
 
@@ -90,13 +104,12 @@ public:
 		uint32 ptCurrAngleIncrement = s._Angle2DScheme ? 1 : 0;
 
 		CVector radVect, innerVect;
-
 		float radiusRatio;
 
 		do
 		{
-			currVertex = (uint8 *) s._Vb.getVertexCoordPointer();
-			toProcess = leftToDo > shockWaveBufSize ? shockWaveBufSize : leftToDo;
+			currVertex = (uint8 *) vb->getVertexCoordPointer();
+			toProcess = leftToDo > numShockWaveToDealWith ? numShockWaveToDealWith : leftToDo;
 			endIt = posIt + toProcess;
 			if (s._SizeScheme)
 			{
@@ -126,14 +139,7 @@ public:
 			}
 			
 
-			s.updateVbColNUVForRender(size - leftToDo, toProcess, srcStep);
-			/*
-			if (_ColorScheme)
-			{
-				_ColorScheme->makeN(_Owner, size - leftToDo, (uint8 *) s._Vb.getVertexCoordPointer() + s._Vb.getColorOff(), vSize, toProcess, (_NbSeg + 1) << 1, srcStep );
-			}
-			*/
-			
+			s.updateVbColNUVForRender(size - leftToDo, toProcess, srcStep, *vb);
 			do
 			{			
 				currAngle = *ptCurrAngle;
@@ -150,10 +156,10 @@ public:
 				{
 					radVect = *ptCurrSize * (CPSUtil::getCos((sint32) currAngle) * ptCurrBasis->X + CPSUtil::getSin((sint32) currAngle) * ptCurrBasis->Y);
 					innerVect = radiusRatio * radVect;
-					CHECK_VERTEX_BUFFER(s._Vb, currVertex);
+					CHECK_VERTEX_BUFFER(vb, currVertex);
 					* (CVector *) currVertex = *posIt + radVect;
 					currVertex += vSize;
-					CHECK_VERTEX_BUFFER(s._Vb, currVertex);
+					CHECK_VERTEX_BUFFER(vb, currVertex);
 					* (CVector *) currVertex = *posIt + innerVect;
 					currVertex += vSize;
 					currAngle += angleStep;				
@@ -166,8 +172,8 @@ public:
 			}
 			while (posIt != endIt);			
 
-			s._Pb.setNumQuad(toProcess * s._NbSeg);
-			driver->render(s._Pb, s._Mat);
+			pb->setNumQuad(toProcess * s._NbSeg);
+			driver->render(*pb, s._Mat);
 			leftToDo -= toProcess;		
 		}
 		while (leftToDo);
@@ -257,6 +263,25 @@ void CPSShockWave::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 ///=================================================================================
+inline void CPSShockWave::setupUFactor()
+{	
+	if (_UFactor != 1.f)
+	{
+		_Mat.enableUserTexMat(0);
+		CMatrix texMat;
+		texMat.setRot(_UFactor  * NLMISC::CVector::I,
+					  NLMISC::CVector::J,
+					  NLMISC::CVector::K
+					 );
+		_Mat.setUserTexMat(0, texMat);
+	}
+	else
+	{
+		_Mat.enableUserTexMat(0, false);
+	}	
+}
+
+///=================================================================================
 void CPSShockWave::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM;	
@@ -292,6 +317,7 @@ void CPSShockWave::draw(bool opaque)
 	}
 	//////
 
+	setupUFactor();
 	
 	if (step == (1 << 16))
 	{
@@ -331,21 +357,21 @@ void CPSShockWave::init(void)
 }
 
 ///=================================================================================
-void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size, uint32 srcStep)
+void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size, uint32 srcStep, CVertexBuffer &vb)
 {
 	nlassert(_Owner);
 	if (!size) return;
 	if (_ColorScheme)
 	{
 		// compute the colors, each color is replicated n times...
-		_ColorScheme->makeN(_Owner, startIndex, _Vb.getColorPointer(), _Vb.getVertexSize(), size, (_NbSeg + 1) << 1, srcStep);
+		_ColorScheme->makeN(_Owner, startIndex, vb.getColorPointer(), vb.getVertexSize(), size, (_NbSeg + 1) << 1, srcStep);
 	}
 
 	if (_TexGroup) // if it has a constant texture we are sure it has been setupped before...
 	{	
-		sint32 textureIndex[shockWaveBufSize];
-		const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1;
-		uint8 *currUV = (uint8 *) _Vb.getTexCoordPointer();				
+		sint32 textureIndex[ShockWaveBufSize];
+		const uint32 stride = vb.getVertexSize(), stride2 = stride << 1;
+		uint8 *currUV = (uint8 *) vb.getTexCoordPointer();				
 		uint k;		
 
 		uint32 currIndexIncr;
@@ -362,7 +388,7 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size, uint3
 			currIndexIncr = 0;
 		}
 		
-		while (--size)
+		while (size--)
 		{
 			// for now, we don't make texture index wrapping
 			const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex);
@@ -386,17 +412,7 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size, uint3
 
 ///=================================================================================
 void CPSShockWave::updateMatAndVbForColor(void)
-{
-	if (!_ColorScheme)
-	{
-		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);		
-		/// _Mat.setColor(_Color);
-	}
-	else
-	{
-		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
-		/// _Mat.setColor(CRGBA::White);
-	}
+{	
 
 	if (_Owner)
 	{
@@ -435,29 +451,59 @@ void CPSShockWave::resize(uint32 aSize)
 	resizeColor(aSize);
 	resizeTextureIndex(aSize);
 	resizeSize(aSize);
-	resizeAngle2D(aSize);
+	resizeAngle2D(aSize);	
+}
 
-	const uint32 size = aSize > shockWaveBufSize ? shockWaveBufSize : aSize;
+///=================================================================================
+void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CPrimitiveBlock *&retPb)
+{
+	TVBMap &vbMap = _ColorScheme == NULL  ? (_TexGroup == NULL ?  _VBMap : _AnimTexVBMap)
+										  : (_TexGroup == NULL ?  _ColoredVBMap : _ColoredAnimTexVBMap);
 
-	_Vb.setNumVertices((size * (_NbSeg + 1)) << 1 );		
 
-	_Pb.reserveQuad(size * _NbSeg);
-	for (uint32 k = 0; k < size; ++k)
+	TVBMap::iterator vbIt = vbMap.find(_NbSeg);
+	if (vbIt != vbMap.end())
 	{
-		for (uint32 l = 0; l < _NbSeg; ++l)
-		{	
-			const uint32 index = ((k * (_NbSeg + 1)) + l) << 1;						
-			_Pb.setQuad(l + (k * _NbSeg) , index , index + 2, index + 3, index + 1);			
-			_Vb.setTexCoord(index, 0, CUV(l * _UFactor, 0));
-			_Vb.setTexCoord(index + 1, 0, CUV(l * _UFactor, 1));			
-		}
-
-		const uint32 index = ((k * (_NbSeg + 1)) + _NbSeg) << 1;
-
-		_Vb.setTexCoord(index, 0, CUV(_NbSeg * _UFactor, 0));
-		_Vb.setTexCoord(index + 1, 0, CUV(_NbSeg * _UFactor, 1));			
-
+		retVb = &(vbIt->second);
+		TPBMap::iterator pbIt = _PBMap.find(_NbSeg);
+		nlassert(pbIt != _PBMap.end());
+		retPb = &(pbIt->second);
 	}
+	else // we need to create the vb
+	{		
+		// create an entry (we setup the primitive block at the same time, this could be avoided, but doesn't make much difference)		
+		CVertexBuffer &vb = vbMap[_NbSeg]; // create a vb
+		CPrimitiveBlock &pb = _PBMap[_NbSeg]; // eventually create a pb
+		const uint32 size = getNumShockWavesInVB();
+		vb.setVertexFormat(CVertexBuffer::PositionFlag |
+						   CVertexBuffer::TexCoord0Flag |
+						   (_ColorScheme != NULL ?  CVertexBuffer::PrimaryColorFlag : 0) 
+						  );	
+		vb.setNumVertices((size * (_NbSeg + 1)) << 1 );		
+		pb.reserveQuad(size * _NbSeg);
+		for (uint32 k = 0; k < size; ++k)
+		{
+			for (uint32 l = 0; l < _NbSeg; ++l)
+			{	
+				const uint32 index = ((k * (_NbSeg + 1)) + l) << 1;						
+				pb.setQuad(l + (k * _NbSeg) , index , index + 2, index + 3, index + 1);			
+				vb.setTexCoord(index, 0, CUV((float) l, 0));
+				vb.setTexCoord(index + 1, 0, CUV((float) l, 1));			
+			}
+			const uint32 index = ((k * (_NbSeg + 1)) + _NbSeg) << 1;
+			vb.setTexCoord(index, 0, CUV((float) _NbSeg, 0));
+			vb.setTexCoord(index + 1, 0, CUV((float) _NbSeg, 1));			
+		}
+		retVb = &vb;
+		retPb = &pb;
+	}
+}
+
+///=================================================================================
+uint CPSShockWave::getNumShockWavesInVB() const
+{
+	const uint numRib = NumVertsInBuffer / ((_NbSeg + 1) << 1);
+	return std::max(1u, numRib);
 }
 
 } // NL3D

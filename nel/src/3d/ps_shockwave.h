@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.2 2002/02/28 09:53:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/ps_particle_basic.h"
 #include "3d/vertex_buffer.h"
 #include "3d/primitive_block.h"
+#include <hash_map>
 
 namespace NL3D 
 {
@@ -87,17 +88,10 @@ public:
 
 protected:
 
-	friend class CPSShockWaveHelper;
-
-	virtual void draw(bool opaque);
-
-	/// initialisations
-	virtual void	init(void);	
-
 	/** calculate current color and texture coordinate before any rendering
 	 *  size can't be higher that shockWaveBufSize ...
 	 */
-	void			updateVbColNUVForRender(uint32 startIndex, uint32 size, uint32 srcStep)	;	
+	void			updateVbColNUVForRender(uint32 startIndex, uint32 size, uint32 srcStep, CVertexBuffer &vb)	;	
 
 	/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
 	virtual void	updateMatAndVbForColor(void);
@@ -118,28 +112,41 @@ protected:
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
-	virtual void	resize(uint32 size) ;	
-
-	// the number of seg in the shockwave
-	uint32 _NbSeg; 
-
-	// ratio to get the inner circle radius from the outter circle radius
-	float _RadiusCut;
-
-	// a vertex buffer
-	CVertexBuffer _Vb;
-
-	// an index buffer
-	CPrimitiveBlock _Pb;
-
-	// texture factor
-	float		 _UFactor;
+	virtual void	resize(uint32 size);
 
 	virtual CPSLocated *getColorOwner(void) { return _Owner; }
 	virtual CPSLocated *getSizeOwner(void) { return _Owner; }
 	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
 	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
 	virtual CPSLocated *getTextureIndexOwner(void) { return _Owner; }
+
+private:
+	typedef std::hash_map<uint, CVertexBuffer> TVBMap;
+	typedef std::hash_map<uint, CPrimitiveBlock> TPBMap;
+private:
+	static TPBMap _PBMap; // the primitive blocks
+	static TVBMap _VBMap; // vb ith unanimated texture
+	static TVBMap _AnimTexVBMap; // vb ith unanimated texture
+	static TVBMap _ColoredVBMap; // vb ith unanimated texture
+	static TVBMap _ColoredAnimTexVBMap; // vb ith unanimated texture
+	// the number of seg in the shockwave
+	uint32 _NbSeg; 
+	// ratio to get the inner circle radius from the outter circle radius
+	float _RadiusCut;
+	// texture factor
+	float		 _UFactor;
+private:		
+	friend class CPSShockWaveHelper;
+	// setup and get the needed vb for display
+	void getVBnPB(CVertexBuffer *&vb, CPrimitiveBlock *&pb);
+	// get the number of shockwave that can be stored in the current vb
+	uint getNumShockWavesInVB() const;
+	//	
+	void setupUFactor();	
+	virtual void draw(bool opaque);
+	/// initialisations
+	virtual void	init(void);	
+
 };
 
 } // NL3D

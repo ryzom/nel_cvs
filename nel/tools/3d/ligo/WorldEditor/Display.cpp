@@ -28,6 +28,7 @@ BEGIN_MESSAGE_MAP(CDisplay, CView)
 	ON_WM_RBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_WM_CHAR()
+	ON_WM_KEYUP()
 	ON_WM_TIMER()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
@@ -441,6 +442,20 @@ void CDisplay::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
 			_MainFrame->onMenuModeUndo ();
 		if (GetAsyncKeyState(0x59)) // Y
 			_MainFrame->onMenuModeRedo ();
+	}
+
+	if (nChar == 32)
+	{
+		_MouseMidDown = true;
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CDisplay::OnKeyUp (UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == 32)
+	{
+		_MouseMidDown = false;
 	}
 }
 

@@ -15,6 +15,7 @@
 #define IDD_TYPE                        137
 #define IDD_TYPESEL                     138
 #define IDR_MAINFRAME_LIGHT             139
+#define IDD_EXPORTCB                    143
 #define IDC_EDIT_NAME                   1000
 #define IDC_EDIT_LAYERNAME              1001
 #define IDC_CATTYPE1                    1002
@@ -44,9 +45,13 @@
 #define IDC_FLIPCYCLE                   1029
 #define IDC_LISTZONE                    1030
 #define IDC_BUTTON1                     1031
+#define IDC_BUTTON_REFZONEDIR           1031
 #define IDC_EDITMINX                    1032
+#define IDC_BUTTON_OUTZONEDIR           1032
 #define IDC_EDITMINY                    1033
+#define IDC_BUTTON_TILEBANKFILE         1033
 #define IDC_EDITMAXX                    1034
+#define IDC_BUTTON_HEIGHTMAPFILE        1034
 #define IDC_EDITMAXY                    1035
 #define IDC_COMBOMATERIAL               1036
 #define IDC_EDITZONEBASEX               1037
@@ -54,16 +59,24 @@
 #define IDC_EDITYOFFSET                 1039
 #define IDC_EDITZONEBASEY               1040
 #define IDC_EDIT1                       1041
+#define IDC_EDIT_REFZONEDIR             1041
+#define IDC_EDIT_INFO                   1041
 #define IDC_RADIOLIGHTINGON             1042
 #define IDC_RADIOLIGHTINGOFF            1043
 #define IDC_LISTTYPE                    1044
+#define IDC_EDIT_OUTZONEDIR             1044
 #define IDC_REMOVETYPE                  1045
+#define IDC_EDIT_TILEBANKFILE           1045
 #define IDC_ADDTYPE                     1046
+#define IDC_EDIT_HEIGHTMAPFILE          1046
 #define IDC_EDITTYPE                    1047
 #define IDC_BUTTONCOLOR                 1048
 #define IDC_EDITNAME                    1049
 #define IDC_COMBOTYPE                   1050
 #define IDC_LIST                        1052
+#define IDC_PROGRESS                    1053
+#define IDC_PASSTEXT                    1054
+#define IDC_EDIT_ZFACTOR                1055
 #define ID_VIEW_GRID                    32771
 #define ID_FILE_EXIT                    32772
 #define ID_MODE_LOGIC                   32773
@@ -91,9 +104,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        143
+#define _APS_NEXT_RESOURCE_VALUE        144
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1053
+#define _APS_NEXT_CONTROL_VALUE         1056
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

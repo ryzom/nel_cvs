@@ -13,10 +13,13 @@
 
 #include "3d/driver.h"
 #include "nel/misc/vector.h"
+
 #include "../lib/ligo_config.h"
+#include "../lib/export.h"
 
 #include "BuilderLogic.h"
 #include "BuilderZone.h"
+
 
 // ---------------------------------------------------------------------------
 
@@ -24,12 +27,23 @@ class IMasterCB;
 
 // ---------------------------------------------------------------------------
 
-class CType 
+struct SType 
 {
-public:
 	std::string		Name;
 	NLMISC::CRGBA	Color;
+	// -----------------------------
+	void serial (NLMISC::IStream&f);
+};
 
+// ---------------------------------------------------------------------------
+
+struct SEnvironnement
+{
+	std::vector<SType>	Types;
+	NLMISC::CRGBA		BackgroundColor;
+	SExportOptions		ExportOptions;
+	// -----------------------------
+	SEnvironnement();
 	void serial (NLMISC::IStream&f);
 };
 
@@ -60,7 +74,8 @@ public:
 	std::string			_RootDir;
 	IMasterCB			*_MasterCB;
 
-	std::vector<CType>	_Types;
+	//std::vector<CType>	_Types;
+	SEnvironnement		_Environnement;
 
 // Operations
 public:
@@ -117,7 +132,7 @@ protected:
 	afx_msg void OnMenuFileOpenLandscape ();
 	afx_msg void OnMenuFileSaveLandscape ();
 	afx_msg void OnMenuFileGenerate ();
-	afx_msg void OnMenuFileExportToClient ();
+	afx_msg void OnMenuFileExportToLevelD ();
 	afx_msg void OnMenuModeZone ();
 	afx_msg void OnMenuModeLogic ();
 	afx_msg void OnMenuModeType ();
@@ -132,7 +147,6 @@ public:
 
 	afx_msg void onMenuModeUndo ();
 	afx_msg void onMenuModeRedo ();
-	//afx_msg void OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags);
 
 		// NOTE - the ClassWizard will add and remove member functions here.
 		//    DO NOT EDIT what you see in these blocks of generated code!

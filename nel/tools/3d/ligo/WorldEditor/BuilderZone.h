@@ -191,6 +191,7 @@ public:
 
 	uint32				getNbZoneRegion ();
 	const std::string&	getZoneRegionName (uint32 i);
+	CBuilderZoneRegion*	getPtrCurZoneRegion ();
 	uint32				getCurZoneRegion ();
 	void				setCurZoneRegion (uint32 i);
 	bool				getZoneMask (sint32 x, sint32 y);

@@ -14,7 +14,7 @@
 class CTypeManagerDlg : public CDialog
 {
 
-	std::vector<CType>	LocalTypes;
+	std::vector<SType>	LocalTypes;
 
 // Construction
 public:
@@ -26,8 +26,8 @@ public:
 	CListBox	ListType;
 	//}}AFX_DATA
 
-	void set (const std::vector<CType> &types);
-	const std::vector<CType> get ();
+	void set (const std::vector<SType> &types);
+	const std::vector<SType> get ();
 
 // Overrides
 	// ClassWizard generated virtual function overrides

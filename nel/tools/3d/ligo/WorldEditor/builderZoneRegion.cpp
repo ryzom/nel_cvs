@@ -236,9 +236,9 @@ void CBuilderZoneRegion::add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIG
 	}
 	sPosX.w = sPosY.w = sMask.w = sizeX;
 	sPosX.h = sPosY.h = sMask.h = sizeY;
-	rotFlip (sMask, nRot, nFlip);
-	rotFlip (sPosX, nRot, nFlip);
-	rotFlip (sPosY, nRot, nFlip);
+	sMask.rotFlip (nRot, nFlip);
+	sPosX.rotFlip (nRot, nFlip);
+	sPosY.rotFlip (nRot, nFlip);
 
 	// Test if the pieces can be put (due to mask)
 	for (j = 0; j < sMask.h; ++j)
@@ -1124,7 +1124,7 @@ void CBuilderZoneRegion::del (sint32 x, sint32 y, bool transition, void *pIntern
 			sMask.Tab[i] = pZBE->getMask()[i];
 		sMask.w = sizeX;
 		sMask.h = sizeY;
-		rotFlip (sMask, rot, flip);
+		sMask.rotFlip (rot, flip);
 
 		for (j = 0; j < sMask.h; ++j)
 		for (i = 0; i < sMask.w; ++i)
@@ -1392,103 +1392,3 @@ void CBuilderZoneRegion::setStart (sint32 x, sint32 y)
 	_MinY = _MaxY = y;
 }
 
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// PRIVATE
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-void CBuilderZoneRegion::resize (sint32 newMinX, sint32 newMaxX, sint32 newMinY, sint32 newMaxY)
-{
-	sint32 i, j;
-	vector<SZoneUnit> newZones;
-	SZoneUnit zuTmp;
-
-	newZones.resize ((1+newMaxX-newMinX)*(1+newMaxY-newMinY));
-	sint32 newStride = 1+newMaxX-newMinX;
-	sint32 Stride = 1+_MaxX-_MinX;
-	for (j = newMinY; j <= newMaxY; ++j)
-	for (i = newMinX; i <= newMaxX; ++i)
-	{
-		if ((i >= _MinX)&&(i <= _MaxX)&&(j >= _MinY)&&(j <= _MaxY))
-		{
-			newZones[(i-newMinX)+(j-newMinY)*newStride] = _Zones[(i-_MinX)+(j-_MinY)*Stride];
-		}
-		else
-		{
-			zuTmp.ZoneName = STRING_UNUSED;
-			zuTmp.PosX = 0;
-			zuTmp.PosY = 0;
-			newZones[(i-newMinX)+(j-newMinY)*newStride] = zuTmp;
-		}
-	}
-	_MinX = newMinX; _MaxX = newMaxX;
-	_MinY = newMinY; _MaxY = newMaxY;
-	_Zones = newZones;
-}
-
-// ---------------------------------------------------------------------------
-void CBuilderZoneRegion::rotFlip (SPiece &piece, uint8 rot, uint8 flip)
-{
-	uint8 nTmp;
-	sint32 i, j;
-
-	if (flip == 1)
-	{
-		for (j = 0; j < piece.h; ++j)
-		for (i = 0; i < (piece.w/2); ++i)
-		{
-			nTmp = piece.Tab[i+j*piece.w];
-			piece.Tab[i+j*piece.w] = piece.Tab[(piece.w-1-i)+j*piece.w];
-			piece.Tab[(piece.w-1-i)+j*piece.w] = nTmp;
-		}
-	}
-
-	if (rot == 1)
-	{
-		vector<uint8> TabDest;
-		TabDest.resize (piece.Tab.size());
-		for (j = 0; j < piece.h; ++j)
-		for (i = 0; i < piece.w;  ++i)
-			TabDest[j+i*piece.h] = piece.Tab[i+(piece.h-1-j)*piece.w];
-		piece.Tab = TabDest;
-		i = piece.w;
-		piece.w = piece.h;
-		piece.h = i;
-	}
-
-	if (rot == 2)
-	{
-		for (j = 0; j < (piece.h/2); ++j)
-		for (i = 0; i < piece.w; ++i)
-		{
-			nTmp = piece.Tab[i+j*piece.w];
-			piece.Tab[i+j*piece.w] = piece.Tab[(piece.w-1-i)+(piece.h-1-j)*piece.w];
-			piece.Tab[(piece.w-1-i)+(piece.h-1-j)*piece.w] = nTmp;
-		}
-		if ((piece.h/2)*2 != piece.h)
-		{
-			j = (piece.h/2);
-			for (i = 0; i < (piece.w/2); ++i)
-			{
-				nTmp = piece.Tab[i+j*piece.w];
-				piece.Tab[i+j*piece.w] = piece.Tab[(piece.w-1-i)+j*piece.w];
-				piece.Tab[(piece.w-1-i)+j*piece.w] = nTmp;
-			}
-		}
-	}
-
-	if (rot == 3)
-	{
-		vector<uint8> TabDest;
-		TabDest.resize (piece.Tab.size());
-		for (j = 0; j < piece.h; ++j)
-		for (i = 0; i < piece.w;  ++i)
-			TabDest[j+i*piece.h] = piece.Tab[piece.w-1-i+j*piece.w];
-		piece.Tab = TabDest;
-		i = piece.w;
-		piece.w = piece.h;
-		piece.h = i;
-	}
-}

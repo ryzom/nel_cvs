@@ -22,7 +22,7 @@ public:
 
 // Dialog Data
 
-	std::vector<CType> *_TypesInit;
+	std::vector<SType> *_TypesInit;
 	std::string _TypeSelected;
 
 	//{{AFX_DATA(CTypeSelDlg)

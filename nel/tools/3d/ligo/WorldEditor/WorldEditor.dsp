@@ -167,6 +167,10 @@ SOURCE=.\Display.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ExportCBDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ExportDlg.cpp
 # End Source File
 # Begin Source File
@@ -237,6 +241,10 @@ SOURCE=.\Display.h
 # Begin Source File
 
 SOURCE=.\edit_stack.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ExportCBDlg.h
 # End Source File
 # Begin Source File
 

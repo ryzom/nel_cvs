@@ -37,13 +37,13 @@ void CTypeManagerDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 // ---------------------------------------------------------------------------
-void CTypeManagerDlg::set (const vector<CType> &types)
+void CTypeManagerDlg::set (const vector<SType> &types)
 {
 	LocalTypes = types;
 }
 
 // ---------------------------------------------------------------------------
-const vector<CType> CTypeManagerDlg::get ()
+const vector<SType> CTypeManagerDlg::get ()
 {
 	return LocalTypes;
 }
@@ -66,7 +66,7 @@ void CTypeManagerDlg::OnAddtype()
 	CTypeDlg typeDlg(this);
 	if (typeDlg.DoModal() == IDOK)
 	{
-		CType typeTmp;
+		SType typeTmp;
 		typeTmp.Name = (LPCSTR)typeDlg.EditName;
 		typeTmp.Color = typeDlg.ButtonColorValue;
 		// Check if the name of the new type is the same as an existing one
@@ -100,7 +100,7 @@ void CTypeManagerDlg::OnEdittype()
 
 	if (typeDlg.DoModal() == IDOK)
 	{
-		CType typeTmp;
+		SType typeTmp;
 		typeTmp.Name = (LPCSTR)typeDlg.EditName;
 		typeTmp.Color = typeDlg.ButtonColorValue;
 		LocalTypes[cursel] = typeTmp;

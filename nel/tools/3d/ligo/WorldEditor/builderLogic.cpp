@@ -1043,7 +1043,7 @@ string CBuilderLogic::getZonesNameAt (CVector &v)
 // ---------------------------------------------------------------------------
 CRGBA CBuilderLogic::findColor(const string &LayerName)
 {
-	vector<CType> &rTypes = _Display->_MainFrame->_Types;
+	vector<SType> &rTypes = _Display->_MainFrame->_Environnement.Types;
 	for (uint32 i = 0; i < rTypes.size(); ++i)
 		if (LayerName == rTypes[i].Name)
 			return rTypes[i].Color;

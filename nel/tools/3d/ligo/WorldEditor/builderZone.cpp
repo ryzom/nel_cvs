@@ -380,7 +380,7 @@ bool CBuilderZone::init (const string &sPathName, bool makeAZone)
 	string sZoneBankPath = sPathName;
 	sZoneBankPath += "ZoneLigos\\";
 	// Init the ZoneBank
-	_ZoneBank.debugInit("C:\\Ryzom\\code\\nel\\tools\\leveldesign\\syk");
+//	_ZoneBank.debugInit("C:\\Ryzom\\code\\nel\\tools\\leveldesign\\syk");
 	_ZoneBank.reset ();
 	initZoneBank (sZoneBankPath);
 	
@@ -924,13 +924,13 @@ void CBuilderZone::displayGrid (const NLMISC::CVector &viewMin, const NLMISC::CV
 				}
 			}
 
-			static CBuilderZoneRegion::SPiece sMask;
+			static SPiece sMask;
 			sMask.Tab.resize (sizeX*sizeY);
 			for(i = 0; i < sizeX*sizeY; ++i)
 				sMask.Tab[i] = pZBE->getMask()[i];
 			sMask.w = sizeX;
 			sMask.h = sizeY;
-			_ZoneRegions[zoneSelected]->rotFlip (sMask, rot, flip);
+			sMask.rotFlip (rot, flip);
 
 			for (j = 0; j < sMask.h; ++j)
 			for (i = 0; i < sMask.w; ++i)
@@ -1147,6 +1147,14 @@ uint32 CBuilderZone::getNbZoneRegion ()
 const string& CBuilderZone::getZoneRegionName (uint32 i)
 {
 	return _ZoneRegionNames[i];
+}
+
+// ---------------------------------------------------------------------------
+CBuilderZoneRegion*	CBuilderZone::getPtrCurZoneRegion ()
+{
+	if (_ZoneRegions.size() == 0)
+		return NULL;
+	return _ZoneRegions[_ZoneRegionSelected];
 }
 
 // ---------------------------------------------------------------------------

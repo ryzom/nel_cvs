@@ -1,7 +1,7 @@
 /** \file zone_region.cpp
  * <File description>
  *
- * $Id: zone_region.cpp,v 1.1 2001/12/28 14:58:40 besson Exp $
+ * $Id: zone_region.cpp,v 1.2 2002/01/16 15:22:33 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,5 +169,120 @@ uint8 CZoneRegion::getFlip (sint32 x, sint32 y)
 		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].Flip;
 	}
 }
+
+// ---------------------------------------------------------------------------
+void CZoneRegion::resize (sint32 newMinX, sint32 newMaxX, sint32 newMinY, sint32 newMaxY)
+{
+	sint32 i, j;
+	vector<SZoneUnit> newZones;
+	SZoneUnit zuTmp;
+
+	newZones.resize ((1+newMaxX-newMinX)*(1+newMaxY-newMinY));
+	sint32 newStride = 1+newMaxX-newMinX;
+	sint32 Stride = 1+_MaxX-_MinX;
+	for (j = newMinY; j <= newMaxY; ++j)
+	for (i = newMinX; i <= newMaxX; ++i)
+	{
+		if ((i >= _MinX)&&(i <= _MaxX)&&(j >= _MinY)&&(j <= _MaxY))
+		{
+			newZones[(i-newMinX)+(j-newMinY)*newStride] = _Zones[(i-_MinX)+(j-_MinY)*Stride];
+		}
+		else
+		{
+			zuTmp.ZoneName = STRING_UNUSED;
+			zuTmp.PosX = 0;
+			zuTmp.PosY = 0;
+			newZones[(i-newMinX)+(j-newMinY)*newStride] = zuTmp;
+		}
+	}
+	_MinX = newMinX; _MaxX = newMaxX;
+	_MinY = newMinY; _MaxY = newMaxY;
+	_Zones = newZones;
+}
+
+// ---------------------------------------------------------------------------
+void CZoneRegion::basicSet (sint32 x, sint32 y, sint32 PosX, sint32 PosY,  const std::string &ZoneName)
+{
+	// Do we need to resize ?
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		sint32 newMinX = (x<_MinX?x:_MinX), newMinY = (y<_MinY?y:_MinY);
+		sint32 newMaxX = (x>_MaxX?x:_MaxX), newMaxY = (y>_MaxY?y:_MaxY);
+
+		resize (newMinX, newMaxX, newMinY, newMaxY);
+	}
+	sint32 stride = (1+_MaxX-_MinX); // Nb to go to next line
+
+	_Zones[(x-_MinX)+(y-_MinY)*stride].ZoneName = ZoneName;
+	_Zones[(x-_MinX)+(y-_MinY)*stride].PosX = (uint8)PosX;
+	_Zones[(x-_MinX)+(y-_MinY)*stride].PosY = (uint8)PosY;
+}
+
+// ---------------------------------------------------------------------------
+void SPiece::rotFlip (uint8 rot, uint8 flip)
+{
+	uint8 nTmp;
+	sint32 i, j;
+
+	if (flip == 1)
+	{
+		for (j = 0; j < h; ++j)
+		for (i = 0; i < (w/2); ++i)
+		{
+			nTmp = Tab[i+j*w];
+			Tab[i+j*w] = Tab[(w-1-i)+j*w];
+			Tab[(w-1-i)+j*w] = nTmp;
+		}
+	}
+
+	if (rot == 1)
+	{
+		vector<uint8> TabDest;
+		TabDest.resize (Tab.size());
+		for (j = 0; j < h; ++j)
+		for (i = 0; i < w;  ++i)
+			TabDest[j+i*h] = Tab[i+(h-1-j)*w];
+		Tab = TabDest;
+		i = w;
+		w = h;
+		h = i;
+	}
+
+	if (rot == 2)
+	{
+		for (j = 0; j < (h/2); ++j)
+		for (i = 0; i < w; ++i)
+		{
+			nTmp = Tab[i+j*w];
+			Tab[i+j*w] = Tab[(w-1-i)+(h-1-j)*w];
+			Tab[(w-1-i)+(h-1-j)*w] = nTmp;
+		}
+		if ((h/2)*2 != h)
+		{
+			j = (h/2);
+			for (i = 0; i < (w/2); ++i)
+			{
+				nTmp = Tab[i+j*w];
+				Tab[i+j*w] = Tab[(w-1-i)+j*w];
+				Tab[(w-1-i)+j*w] = nTmp;
+			}
+		}
+	}
+
+	if (rot == 3)
+	{
+		vector<uint8> TabDest;
+		TabDest.resize (Tab.size());
+		for (j = 0; j < h; ++j)
+		for (i = 0; i < w;  ++i)
+			TabDest[j+i*h] = Tab[w-1-i+j*w];
+		Tab = TabDest;
+		i = w;
+		w = h;
+		h = i;
+	}
+}
+
 
 } // namespace NLLIGO

@@ -73,7 +73,7 @@ public:
 	char			Name[128], 
 					LayerName[128];
 
-	std::vector<CType>	*TypesForInit;
+	std::vector<SType>	*TypesForInit;
 
 	std::string RegionPost;
 	CMainFrame	*MainFrame;

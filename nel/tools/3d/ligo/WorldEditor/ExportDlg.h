@@ -19,7 +19,11 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CExportDlg)
 	enum { IDD = IDD_EXPORT };
-		// NOTE: the ClassWizard will add data members here
+	CString	OutZoneDir;
+	CString	RefZoneDir;
+	CString	TileBankFile;
+	CString	HeightMapFile;
+	CString	ZFactor;
 	//}}AFX_DATA
 
 
@@ -35,7 +39,11 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CExportDlg)
-		// NOTE: the ClassWizard will add member functions here
+	virtual void OnOK();
+	afx_msg void OnButtonRefzonedir();
+	afx_msg void OnButtonOutzonedir();
+	afx_msg void OnButtonTilebankfile();
+	afx_msg void OnButtonHeightmapfile();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

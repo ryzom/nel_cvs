@@ -1,7 +1,7 @@
 /** \file zone_bank.cpp
  * Zone Bank
  *
- * $Id: zone_bank.cpp,v 1.8 2001/12/17 13:55:54 besson Exp $
+ * $Id: zone_bank.cpp,v 1.9 2002/01/16 15:22:32 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include "nel/misc/file.h"
 #include "nel/misc/i_xml.h"
 #include "nel/misc/o_xml.h"
+
+#include <windows.h>
 
 using namespace std;
 using namespace NLMISC;
@@ -100,7 +102,7 @@ void CZoneBankElement::convertSize()
 }
 
 // ---------------------------------------------------------------------------
-void CZoneBankElement::serial (IStream &f)
+void CZoneBankElement::serial (NLMISC::IStream &f)
 {
 	f.xmlPush ("LIGOZONE");
 	
@@ -494,6 +496,29 @@ void CZoneBank::reset ()
 {
 	_ElementsMap.clear ();
 	_Selection.clear ();
+}
+
+// ---------------------------------------------------------------------------
+void CZoneBank::initFromPath(const string &sPathName)
+{
+	char sDirBackup[512];
+	GetCurrentDirectory (512, sDirBackup);
+	SetCurrentDirectory (sPathName.c_str());
+	WIN32_FIND_DATA findData;
+	HANDLE hFind;
+	hFind = FindFirstFile ("*.ligozone", &findData);
+	
+	while (hFind != INVALID_HANDLE_VALUE)
+	{
+		// If the name of the file is not . or .. then its a valid entry in the DataBase
+		if (!((strcmp (findData.cFileName, ".") == 0) || (strcmp (findData.cFileName, "..") == 0)))
+		{
+			addElement (findData.cFileName);
+		}
+		if (FindNextFile (hFind, &findData) == 0)
+			break;
+	}
+	SetCurrentDirectory (sDirBackup);
 }
 
 // ---------------------------------------------------------------------------

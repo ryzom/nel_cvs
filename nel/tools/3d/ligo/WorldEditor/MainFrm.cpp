@@ -18,7 +18,10 @@
 #include "generateDlg.h"
 #include "TypeManagerDlg.h"
 #include "moveDlg.h"
+
 #include "exportDlg.h"
+#include "exportCBDlg.h"
+//#include "export.h"
 
 #include <string>
 
@@ -35,12 +38,30 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CType
 
-void CType::serial (NLMISC::IStream&f)
+// ---------------------------------------------------------------------------
+void SType::serial (NLMISC::IStream&f)
 {
+	int version = f.serialVersion(0);
 	f.serial (Name);
 	f.serial (Color);
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// CType
+
+// ---------------------------------------------------------------------------
+SEnvironnement::SEnvironnement()
+{
+}
+
+// ---------------------------------------------------------------------------
+void SEnvironnement::serial (NLMISC::IStream&f)
+{
+	int version = f.serialVersion(0);
+	f.serialCont (Types);
+	f.serial (BackgroundColor);
+	f.serial (ExportOptions);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -63,7 +84,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_OPENLANDSCAPE, OnMenuFileOpenLandscape)
 	ON_COMMAND(ID_FILE_SAVELANDSCAPE, OnMenuFileSaveLandscape)
 	ON_COMMAND(ID_FILE_GENERATE, OnMenuFileGenerate)
-	ON_COMMAND(ID_FILE_EXPORT, OnMenuFileExportToClient)
+	ON_COMMAND(ID_FILE_EXPORT, OnMenuFileExportToLevelD)
 	ON_COMMAND(ID_FILE_EXIT, OnMenuFileExit)
 	ON_COMMAND(ID_MODE_ZONE, OnMenuModeZone)
 	ON_COMMAND(ID_MODE_LOGIC, OnMenuModeLogic)
@@ -75,7 +96,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_GRID, OnMenuViewGrid)
 	ON_COMMAND(ID_VIEW_BACKGROUND, OnMenuViewBackground)
 
-	//ON_WM_KEYDOWN()
 	ON_WM_CLOSE()
 	ON_WM_SIZE()
 	//}}AFX_MSG_MAP
@@ -360,11 +380,10 @@ bool CMainFrame::init (bool bMakeAZone)
 		string sWorldEdCfg = _RootDir;
 		sWorldEdCfg += "WorldEditor.cfg";
 		fileIn.open (sWorldEdCfg.c_str());
-		fileIn.serialCont (_Types);
+		fileIn.serial (_Environnement);
+		// Update all from environnement
 		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
-		CRGBA rgbaTemp;
-		fileIn.serial (rgbaTemp);
-		dispWnd->setBackgroundColor (rgbaTemp);
+		dispWnd->setBackgroundColor (_Environnement.BackgroundColor);
 	}
 	catch (Exception& e)
 	{
@@ -383,9 +402,7 @@ void CMainFrame::uninit ()
 		string sWorldEdCfg = _RootDir;
 		sWorldEdCfg += "WorldEditor.cfg";
 		fileOut.open (sWorldEdCfg.c_str());
-		fileOut.serialCont (_Types);
-		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
-		fileOut.serial (dispWnd->getBackgroundColor());
+		fileOut.serial(_Environnement);
 	}
 	catch (Exception& e)
 	{
@@ -395,7 +412,6 @@ void CMainFrame::uninit ()
 	// Check to save all files
 	_ZoneBuilder.uninit ();
 	_PRegionBuilder.uninit ();
-
 }
 
 // ******************
@@ -504,11 +520,47 @@ void CMainFrame::OnMenuFileGenerate ()
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnMenuFileExportToClient ()
+void CMainFrame::OnMenuFileExportToLevelD ()
 {
 	CExportDlg dialog;
+	dialog.OutZoneDir = _Environnement.ExportOptions.OutZoneDir.c_str();
+	dialog.RefZoneDir = _Environnement.ExportOptions.RefZoneDir.c_str();
+	dialog.TileBankFile = _Environnement.ExportOptions.TileBankFile.c_str();
+	dialog.HeightMapFile = _Environnement.ExportOptions.HeightMapFile.c_str();
+	dialog.ZFactor = toString(_Environnement.ExportOptions.ZFactor).c_str();
+
 	if (dialog.DoModal() == IDOK)
 	{
+		_Environnement.ExportOptions.OutZoneDir = (LPCSTR)dialog.OutZoneDir;
+		_Environnement.ExportOptions.RefZoneDir = (LPCSTR)dialog.RefZoneDir;
+		_Environnement.ExportOptions.TileBankFile = (LPCSTR)dialog.TileBankFile;
+		_Environnement.ExportOptions.HeightMapFile = (LPCSTR)dialog.HeightMapFile;
+		_Environnement.ExportOptions.ZFactor = (float)atof ((LPCSTR)dialog.ZFactor);
+
+		CExportCBDlg *pDlg = new CExportCBDlg();
+		//Check if new succeeded and we got a valid pointer to a dialog object
+		CExport Export;
+		if (pDlg != NULL)
+		{
+			BOOL ret = pDlg->Create (IDD_EXPORTCB, this);
+			if (!ret)   //Create failed.
+			{
+				delete pDlg;
+				pDlg = NULL;
+			}
+			pDlg->ShowWindow (SW_SHOW);
+		}
+
+		_Environnement.ExportOptions.ZoneRegion = (NLLIGO::CZoneRegion*)_ZoneBuilder.getPtrCurZoneRegion();
+		_Environnement.ExportOptions.LigoBankDir = _RootDir + "ZoneLigos";
+		Export.export (_Environnement.ExportOptions, pDlg->getExportCB());
+
+		pDlg->setFinishedButton ();
+		while (pDlg->getFinished () == false)
+		{
+			pDlg->pump ();
+		}
+		pDlg->DestroyWindow ();
 	}
 }
 
@@ -551,10 +603,10 @@ void CMainFrame::OnMenuModeType ()
 {
 	CTypeManagerDlg tmDial(this);
 
-	tmDial.set (_Types);
+	tmDial.set (_Environnement.Types);
 	if (tmDial.DoModal () == IDOK)
 	{
-		_Types = tmDial.get ();
+		_Environnement.Types = tmDial.get ();
 	}
 }
 
@@ -631,9 +683,9 @@ void CMainFrame::OnMenuViewBackground ()
 		int r = GetRValue(colDial.GetColor());
 		int g = GetGValue(colDial.GetColor());
 		int b = GetBValue(colDial.GetColor());
-
+		_Environnement.BackgroundColor = CRGBA(r,g,b,255);
 		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
-		dispWnd->setBackgroundColor (CRGBA(r,g,b,255));
+		dispWnd->setBackgroundColor (_Environnement.BackgroundColor);
 		dispWnd->OnDraw	(NULL);
 	}
 }
@@ -670,8 +722,6 @@ void CMainFrame::adjustSplitter ()
 		m_wndSplitter.RecalcLayout ();
 	}
 }
-
-
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------

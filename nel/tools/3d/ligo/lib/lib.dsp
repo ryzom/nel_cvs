@@ -207,6 +207,14 @@ SOURCE=..\ligoscape.cfg
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\export.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\export.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\primitive.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file zone_region.h
  * <File description>
  *
- * $Id: zone_region.h,v 1.1 2001/12/28 14:58:40 besson Exp $
+ * $Id: zone_region.h,v 1.2 2002/01/16 15:22:33 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,16 @@ namespace NLLIGO
 
 // ***************************************************************************
 
+struct SPiece
+{
+	sint32				w, h;			// Max 255x255
+	std::vector<uint8>	Tab;
+	
+	void			rotFlip (uint8 rot, uint8 flip);
+};
+
+// ***************************************************************************
+
 class CZoneRegion
 {
 
@@ -50,6 +60,9 @@ public:
 	CZoneRegion ();
 	
 	void				serial (NLMISC::IStream &f);
+	void				resize (sint32 newMinX, sint32 newMaxX, sint32 newMinY, sint32 newMaxY);
+	void				basicSet (sint32 x, sint32 y, sint32 PosX, sint32 PosY,  const std::string &ZoneName);
+
 
 	// Accessors
 	const std::string	&getName (sint32 x, sint32 y);

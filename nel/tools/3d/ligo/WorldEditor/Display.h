@@ -84,7 +84,7 @@ private:
 	afx_msg void OnRButtonUp	(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove	(UINT nFlags, CPoint point);
 	afx_msg void OnChar (UINT nChar, UINT nRepCnt, UINT nFlags);
-
+	afx_msg void OnKeyUp (UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnTimer (UINT nIDEvent);
 
 	DECLARE_MESSAGE_MAP()

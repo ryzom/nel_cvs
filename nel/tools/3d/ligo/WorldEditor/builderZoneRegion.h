@@ -14,6 +14,7 @@ namespace NLLIGO
 {
 	class CZoneBank;
 	class CZoneBankElement;
+	struct SPiece;
 }
 
 namespace NLMISC
@@ -31,18 +32,10 @@ class CBuilderZoneRegion : public NLLIGO::CZoneRegion
 
 public:
 
-	struct SPiece
-	{
-		sint32				w, h;			// Max 255x255
-		std::vector<uint8>	Tab;
-	};
-
 public:
 
 	CBuilderZoneRegion ();
 
-	// Tools
-	void				rotFlip (SPiece &sMask, uint8 rot, uint8 flip);
 
 	// New interface
 	void				init (NLLIGO::CZoneBank *pBank, CBuilderZone *pBuilder);
@@ -77,11 +70,9 @@ private:
 
 private:
 
-	void				resize (sint32 newMinX, sint32 newMaxX, sint32 newMinY, sint32 newMaxY);
-
 	void				addToUpdateAndCreate (CBuilderZoneRegion* pBZRfrom, sint32 sharePos, sint32 x, sint32 y, const std::string &sNewMat, void *pInt1, void *pInt2);
 
-	void				putTransitions (sint32 x, sint32 y, const SPiece &rMask, const std::string &MatName, void *pInternal);
+	void				putTransitions (sint32 x, sint32 y, const NLLIGO::SPiece &rMask, const std::string &MatName, void *pInternal);
 	void				putTransition (sint32 x, sint32 y, const std::string &MatName);
 	void				updateTrans (sint32 x, sint32 y);
 

@@ -1,6 +1,6 @@
 /** \file WorldEditor_interface.h
  *
- * $Id: WorldEditor_interface.h,v 1.3 2001/12/28 14:57:11 besson Exp $
+ * $Id: WorldEditor_interface.h,v 1.4 2002/01/16 15:22:32 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,9 @@
 // IMasterCB
 // ***************************************************************************
 // This class is the master callbacks. This is a group of events when the 
-// worldeditor makes special actions.
+// worldeditor makes special actions. The application that use the world editor interface
+// can have a class overrided from the IMasterCB to receive some notifications of the WorldEditor.
+// -- for the moment its used by the Master tool to link Worldeditor and Georges --
 class IMasterCB
 {
 public:

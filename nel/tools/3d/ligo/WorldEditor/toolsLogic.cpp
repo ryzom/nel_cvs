@@ -194,7 +194,7 @@ void CToolsLogic::OnMenuCreate()
 	HTREEITEM parent = GetTreeCtrl().GetParentItem (item);
 	uint32 i;
 	CCreateDialog dialog (this);
-	dialog.TypesForInit = &_MainFrame->_Types;
+	dialog.TypesForInit = &_MainFrame->_Environnement.Types;
 
 	for (i = 0; i < _RegionsInfo.size(); ++i)
 	if (_RegionsInfo[i].RegionItem == parent)
@@ -255,7 +255,7 @@ void CToolsLogic::OnMenuProperties()
 	HTREEITEM parentparent = GetTreeCtrl().GetParentItem(parent);
 	strcpy (dialog.Name, _MainFrame->_PRegionBuilder.getName(item));
 	strcpy (dialog.LayerName, _MainFrame->_PRegionBuilder.getLayerName(item));
-	dialog.TypesForInit = &_MainFrame->_Types;
+	dialog.TypesForInit = &_MainFrame->_Environnement.Types;
 	dialog.MainFrame = _MainFrame;
 	dialog.PropName = _MainFrame->_PRegionBuilder.getName(item);
 	dialog.PropType = _MainFrame->_PRegionBuilder.getLayerName(item);
@@ -353,7 +353,7 @@ void CToolsLogic::OnMenuRegionHideType ()
 	if (_RegionsInfo[i].RegionItem == item)
 	{
 		CTypeSelDlg dial(this);
-		dial._TypesInit = &(_MainFrame->_Types);
+		dial._TypesInit = &(_MainFrame->_Environnement.Types);
 		if (dial.DoModal() == IDOK)
 		{
 			_MainFrame->_PRegionBuilder.regionHideType (i, dial._TypeSelected, true);
@@ -370,7 +370,7 @@ void CToolsLogic::OnMenuRegionUnhideType ()
 	if (_RegionsInfo[i].RegionItem == item)
 	{
 		CTypeSelDlg dial(this);
-		dial._TypesInit = &(_MainFrame->_Types);
+		dial._TypesInit = &(_MainFrame->_Environnement.Types);
 		if (dial.DoModal() == IDOK)
 		{
 			_MainFrame->_PRegionBuilder.regionHideType (i, dial._TypeSelected, false);

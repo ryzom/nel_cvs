@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.29 2000/12/08 13:45:36 lecroart Exp $
+ * $Id: service.cpp,v 1.30 2000/12/08 14:54:05 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -227,6 +227,10 @@ sint IService::main (int argc, char **argv)
 		_Port = IService::_DefaultPort;
 		_Timeout = IService::_DefaultTimeout;
 		getCustomParams();
+
+		// Get the universal time (useful for debugging)
+
+		CUniTime::syncUniTimeFromService ();
 
 		// Register the name to the NS (except for the NS itself)
 		if ( strcmp( IService::_Name, "NS" ) != 0 )

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.30 2003/08/20 09:56:10 besson Exp $
+ * $Id: driver_user.h,v 1.31 2003/10/13 09:40:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -467,6 +467,9 @@ public:
 		NL3D_MEM_DRIVER
 		setupMatrixContext();
 	}
+	// same as restoreMatrixContext(), but don't reset Viewport/Scissor
+	void		restoreMatrixContextMatrixOnly();
+	
 	// @}
 
 };

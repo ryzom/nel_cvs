@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.37 2003/09/25 12:13:12 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.38 2003/10/13 09:40:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -344,6 +344,18 @@ void			*CDriverUser::getDisplay ()
 // ***************************************************************************
 // ***************************************************************************
 
+
+// ***************************************************************************
+void			CDriverUser::restoreMatrixContextMatrixOnly()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+	
+	CFrustum	&f= _CurrentMatrixContext.Frustum;
+	_Driver->setFrustum(f.Left, f.Right, f.Bottom, f.Top, f.Near, f.Far, f.Perspective);
+	_Driver->setupViewMatrix(_CurrentMatrixContext.ViewMatrix);
+	_Driver->setupModelMatrix(_CurrentMatrixContext.ModelMatrix);
+}
 
 // ***************************************************************************
 void			CDriverUser::setupMatrixContext()
@@ -749,22 +761,30 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads,
 	CVertexBuffer		&vb = _VBQuadsColUv;
 
 	vb.setNumVertices (4*nbQuads);
-
+	uint8	*dstPtr= (uint8*)vb.getVertexCoordPointer();
+	uint32	colorOfs= vb.getColorOff();
+	uint32	uvOfs= vb.getTexCoordOff();
+	uint32	vSize= vb.getVertexSize();
+	
 	for (uint32 i = 0; i < nbQuads; ++i)
 	{
 		const NLMISC::CQuadColorUV &qcuv = quads[i];
-		vb.setVertexCoord (i*4+0, qcuv.V0);
-		vb.setVertexCoord (i*4+1, qcuv.V1);
-		vb.setVertexCoord (i*4+2, qcuv.V2);
-		vb.setVertexCoord (i*4+3, qcuv.V3);
-		vb.setColor(i*4+0, qcuv.Color0);
-		vb.setColor(i*4+1, qcuv.Color1);
-		vb.setColor(i*4+2, qcuv.Color2);
-		vb.setColor(i*4+3, qcuv.Color3);
-		vb.setTexCoord (i*4+0, 0, qcuv.Uv0);
-		vb.setTexCoord (i*4+1, 0, qcuv.Uv1);
-		vb.setTexCoord (i*4+2, 0, qcuv.Uv2);
-		vb.setTexCoord (i*4+3, 0, qcuv.Uv3);
+		*(CVector*)(dstPtr+0)= qcuv.V0;
+		*(CUV*)(dstPtr+uvOfs)= qcuv.Uv0;
+		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color0;
+		dstPtr+= vSize;
+		*(CVector*)(dstPtr+0)= qcuv.V1;
+		*(CUV*)(dstPtr+uvOfs)= qcuv.Uv1;
+		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color1;
+		dstPtr+= vSize;
+		*(CVector*)(dstPtr+0)= qcuv.V2;
+		*(CUV*)(dstPtr+uvOfs)= qcuv.Uv2;
+		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color2;
+		dstPtr+= vSize;
+		*(CVector*)(dstPtr+0)= qcuv.V3;
+		*(CUV*)(dstPtr+uvOfs)= qcuv.Uv3;
+		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color3;
+		dstPtr+= vSize;
 	}
 	
 	_Driver->activeVertexBuffer(vb);
@@ -781,26 +801,35 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads
 	CVertexBuffer		&vb = _VBQuadsColUv2;
 
 	vb.setNumVertices (4*nbQuads);
-
+	uint8	*dstPtr= (uint8*)vb.getVertexCoordPointer();
+	uint32	colorOfs= vb.getColorOff();
+	uint32	uvOfs0= vb.getTexCoordOff(0);
+	uint32	uvOfs1= vb.getTexCoordOff(1);
+	uint32	vSize= vb.getVertexSize();
+	
 	for (uint32 i = 0; i < nbQuads; ++i)
 	{
 		const NLMISC::CQuadColorUV2 &qcuv = quads[i];
-		vb.setVertexCoord (i*4+0, qcuv.V0);
-		vb.setVertexCoord (i*4+1, qcuv.V1);
-		vb.setVertexCoord (i*4+2, qcuv.V2);
-		vb.setVertexCoord (i*4+3, qcuv.V3);
-		vb.setColor(i*4+0, qcuv.Color0);
-		vb.setColor(i*4+1, qcuv.Color1);
-		vb.setColor(i*4+2, qcuv.Color2);
-		vb.setColor(i*4+3, qcuv.Color3);
-		vb.setTexCoord (i*4+0, 0, qcuv.Uv0);
-		vb.setTexCoord (i*4+1, 0, qcuv.Uv1);
-		vb.setTexCoord (i*4+2, 0, qcuv.Uv2);
-		vb.setTexCoord (i*4+3, 0, qcuv.Uv3);
-		vb.setTexCoord (i*4+0, 1, qcuv.Uv02);
-		vb.setTexCoord (i*4+1, 1, qcuv.Uv12);
-		vb.setTexCoord (i*4+2, 1, qcuv.Uv22);
-		vb.setTexCoord (i*4+3, 1, qcuv.Uv32);
+		*(CVector*)(dstPtr+0)= qcuv.V0;
+		*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv0;
+		*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv02;
+		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color0;
+		dstPtr+= vSize;
+		*(CVector*)(dstPtr+0)= qcuv.V1;
+		*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv1;
+		*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv12;
+		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color1;
+		dstPtr+= vSize;
+		*(CVector*)(dstPtr+0)= qcuv.V2;
+		*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv2;
+		*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv22;
+		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color2;
+		dstPtr+= vSize;
+		*(CVector*)(dstPtr+0)= qcuv.V3;
+		*(CUV*)(dstPtr+uvOfs0)= qcuv.Uv3;
+		*(CUV*)(dstPtr+uvOfs1)= qcuv.Uv32;
+		*(CRGBA*)(dstPtr+colorOfs)= qcuv.Color3;
+		dstPtr+= vSize;
 	}
 	
 	_Driver->activeVertexBuffer(vb);

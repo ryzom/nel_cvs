@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.18 2003/09/15 12:01:16 corvazier Exp $
+ * $Id: text_context_user.cpp,v 1.19 2003/10/13 09:40:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -404,8 +404,8 @@ void					CTextContextUser::flushRenderBuffer(URenderStringBuffer *buffer)
 	{
 		rdrBuffer->flush(*_Driver, _TextContext.getFontManager()->getFontMaterial());
 		
-		// must restore the Matrix context if some display done.
-		_DriverUser->restoreMatrixContext();
+		// must restore the Matrix context if some display done. Need just for Frustum/Matrixes
+		_DriverUser->restoreMatrixContextMatrixOnly();
 	}
 }
 void					CTextContextUser::flushRenderBufferUnProjected(URenderStringBuffer *buffer, bool zwrite)

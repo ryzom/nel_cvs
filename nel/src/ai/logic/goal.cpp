@@ -79,7 +79,7 @@ namespace NLAILOGIC
 		}
 	}
 
-	void CGoal::operatorSuccess(NLAIAGENT::IBasicAgent *)
+	void CGoal::operatorSuccess(NLAIAGENT::IBasicAgent *op)
 	{
 		switch ( _Mode )
 		{
@@ -90,9 +90,19 @@ namespace NLAILOGIC
 			case achieveForever:
 				break;
 		}
+		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
+		while ( it_s != _Successors.end() )
+		{
+			if ( (**it_s) == *op )
+			{
+				_Successors.erase( it_s );
+				return;
+			}
+			it_s++;
+		}
 	}
 
-	void CGoal::operatorFailure(NLAIAGENT::IBasicAgent *)
+	void CGoal::operatorFailure(NLAIAGENT::IBasicAgent *op)
 	{
 		switch ( _Mode )
 		{
@@ -102,6 +112,16 @@ namespace NLAILOGIC
 
 			case achieveForever:
 				break;
+		}
+		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
+		while ( it_s != _Successors.end() )
+		{
+			if ( (**it_s) == *op )
+			{
+				_Successors.erase( it_s );
+				return;
+			}
+			it_s++;
 		}
 	}
 

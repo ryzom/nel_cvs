@@ -20,17 +20,20 @@ date
 
 # For each texture
 for i in maps_tga/*.tga ; do
-	dest=`echo $i | sed -e 's/maps_tga/maps_final/g' | sed -e 's/.tga/.dds/g'`
-	if ( ! test -e $dest ) || ( test $i -nt $dest )
+	if ( test -e $i )
 	then
-		$exec_timeout $timeout $tga_2_dds $i -o $dest -a 5 -m
-		if ( test -e $dest )
+		dest=`echo $i | sed -e 's/maps_tga/maps_final/g' | sed -e 's/.tga/.dds/g'`
+		if ( ! test -e $dest ) || ( test $i -nt $dest )
 		then
-			echo OK $dest >> log.log
+			$exec_timeout $timeout $tga_2_dds $i -o $dest -a 5 -m
+			if ( test -e $dest )
+			then
+				echo OK $dest >> log.log
+			else
+				echo ERROR building $dest >> log.log
+			fi
 		else
-			echo ERROR building $dest >> log.log
+			echo SKIPPED $dest >> log.log
 		fi
-	else
-		echo SKIPPED $dest >> log.log
 	fi
 done

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.22 2001/02/06 12:37:59 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.23 2001/02/15 14:17:45 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,7 @@ const sint16 RGI_CBINDEX = 7;
 const sint16 UNI_CBINDEX = 8;
 
 const sint16 LKA_CBINDEX = 9;
+const sint16 LKS_CBINDEX = 10;
 //@}
 
 
@@ -262,7 +263,12 @@ uint16 CNamingClient::queryServicePort( const std::string& name, const CInetAddr
  */
 TServiceId CNamingClient::registerService( const std::string& name, const CInetAddress& addr )
 {
-	CNamingClient::openT();
+	//CNamingClient::openT();
+	if ( CNamingClient::_TransactionMode )
+	{
+		nlerror( "Cannot (un)register a service in transaction mode. See CNamingClient doc" );
+	}
+
 	CMessage msgout( "" ); //"RG" );
 	msgout.setType( RG_CBINDEX );
 	msgout.serial( const_cast<std::string&>(name) );
@@ -276,7 +282,7 @@ TServiceId CNamingClient::registerService( const std::string& name, const CInetA
 
 	_RegisteredServices.insert( std::make_pair(sid,name) );
 
-	CNamingClient::closeT();
+	//CNamingClient::closeT();
 	nldebug( "Registered service %s-%hu at %s", name.c_str(), (uint16)sid, addr.asString().c_str() );
 
 	return sid;
@@ -288,7 +294,12 @@ TServiceId CNamingClient::registerService( const std::string& name, const CInetA
  */
 bool CNamingClient::registerServiceWithSId( const std::string& name, const CInetAddress& addr, TServiceId sid )
 {
-	CNamingClient::openT();
+	//CNamingClient::openT();
+	if ( CNamingClient::_TransactionMode )
+	{
+		nlerror( "Cannot (un)register a service in transaction mode. See CNamingClient doc" );
+	}
+
 	CMessage msgout( "" ); //"RGI" );
 	msgout.setType( RGI_CBINDEX );
 	msgout.serial( const_cast<std::string&>(name) );
@@ -301,7 +312,7 @@ bool CNamingClient::registerServiceWithSId( const std::string& name, const CInet
 	bool ok;
 	msgin.serial( ok );
 
-	CNamingClient::closeT();
+	//CNamingClient::closeT();
 
 	if ( ok )
 	{
@@ -322,7 +333,12 @@ bool CNamingClient::registerServiceWithSId( const std::string& name, const CInet
  */
 /*void CNamingClient::unregisterService( const std::string& name, const CInetAddress& addr )
 {
-	CNamingClient::openT();
+	//CNamingClient::openT();
+	if ( CNamingClient::_TransactionMode )
+	{
+		nlerror( "CNamingClient: Do not (un)register a service in transaction mode, use open() instead and close() at the end of the program (see IService::main())" );
+	}
+
 	CMessage msgout( "" ); //"UN" );
 	msgout.setType( UN_CBINDEX );
 	msgout.serial( const_cast<std::string&>(name) );
@@ -331,7 +347,7 @@ bool CNamingClient::registerServiceWithSId( const std::string& name, const CInet
 
 	_RegisteredServices.erase( name );
 
-	CNamingClient::closeT();
+	//CNamingClient::closeT();
 	nldebug( "Unregistered service %s", name.c_str() );
 }*/
 
@@ -341,7 +357,12 @@ bool CNamingClient::registerServiceWithSId( const std::string& name, const CInet
  */
 void CNamingClient::unregisterService( TServiceId sid )
 {
-	CNamingClient::openT();
+	//CNamingClient::openT();
+	if ( CNamingClient::_TransactionMode )
+	{
+		nlerror( "Cannot (un)register a service in transaction mode. See CNamingClient doc" );
+	}
+
 	CMessage msgout( "" ); //"UNI" );
 	msgout.setType( UNI_CBINDEX );
 	msgout.serial( sid );
@@ -350,7 +371,7 @@ void CNamingClient::unregisterService( TServiceId sid )
 	nldebug( "Unregistering service %s-%hu", _RegisteredServices[sid].c_str(), sid );
 	_RegisteredServices.erase( sid );
 
-	CNamingClient::closeT();
+	//CNamingClient::closeT();
 }
 
 
@@ -462,7 +483,7 @@ void CNamingClient::lookupAll( const std::string& name, std::vector<CInetAddress
 	CNamingClient::openT();
 
 	// Send request
-	nldebug( "Looking-up all services %s", name.c_str() );
+	nldebug( "Looking-up all services %s (addresses only)", name.c_str() );
 	CMessage msgout( "" ); // "LKA"
 	msgout.setType( LKA_CBINDEX );
 	msgout.serial( const_cast<string&>(name) );
@@ -471,6 +492,27 @@ void CNamingClient::lookupAll( const std::string& name, std::vector<CInetAddress
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
 	msgin.serialCont( addresses );
+}
+
+
+/*
+ * Returns all services corresponding to the specified name with service id as key
+ * Ex: lookupAll( "AS", addressmap );
+ */
+void CNamingClient::lookupAllServices( const std::string& name, std::map<TServiceId,CInetAddress>& addressmap )
+{
+	CNamingClient::openT();
+
+	// Send request
+	nldebug( "Looking-up all services %s", name.c_str() );
+	CMessage msgout( "" ); // "LKS"
+	msgout.setType( LKS_CBINDEX );
+	msgout.serial( const_cast<string&>(name) );
+	CNamingClient::_ClientSock->send( msgout );
+
+	CMessage msgin( "", true );
+	CNamingClient::_ClientSock->receive( msgin );
+	msgin.serialMap( addressmap );
 }
 
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.46 2001/02/07 13:45:22 lecroart Exp $
+ * $Id: service.cpp,v 1.47 2001/02/15 14:17:45 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -337,7 +337,9 @@ sint IService::main (int argc, char **argv)
 				{
 					try
 					{
+						// Connect to the NS and keep connection (to detect unexpected service closure)
 						CNamingClient::open();
+
 						if ( _Port == 0 )
 						{
 							// Auto-assign port
@@ -476,7 +478,7 @@ sint IService::main (int argc, char **argv)
 		if ( (strcmp( IService::_Name, "NS" ) != 0) && (strcmp( IService::_Name, "LS" ) != 0)  )
 		{
 			CNamingClient::finalize();
-			CNamingClient::close();
+			CNamingClient::close(); // close connection to the NS
 		}
 
 		//

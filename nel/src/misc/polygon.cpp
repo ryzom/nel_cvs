@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.23 2004/04/28 18:22:13 berenguier Exp $
+ * $Id: polygon.cpp,v 1.24 2004/06/17 10:11:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1941,33 +1941,27 @@ bool        CPolygon2D::intersect(const CPolygon2D &other) const
 
 // *******************************************************************************
 bool		CPolygon2D::contains(const CVector2f &p) const
-{
-	nlassert(Vertices.size() > 0);
-	uint nonNullSegIndex;
-	/// get the orientation of this poly
-	if (getNonNullSeg(nonNullSegIndex))
-	{
-		float a0, b0, c0; /// contains the seg 2d equation
-		getLineEquation(nonNullSegIndex, a0, b0, c0);
-
-		for (uint k = 0; k < Vertices.size(); ++k)
+{	
+	uint numVerts = Vertices.size();
+	nlassert(numVerts >= 0.f);
+	for (uint k = 0; k < numVerts; ++k)
+	{		
+		if (getSegRef0(k) != getSegRef1(k))
 		{
-			/// don't check against a null segment
-		    if ( (getSegRef0(k) - getSegRef1(k)).sqrnorm() == 0.f) continue;
-
-			/// get the line equation of the current segment
 			float a, b, c; /// contains the seg 2d equation
 			getLineEquation(k, a, b, c);
-
-			if (a * p.x + b * p.y + c < 0) return false;
-			
+			float orient = a * p.x + b * p.y + c;
+			for(uint l = k + 1; l < numVerts; ++l)
+			{
+				getLineEquation(l, a, b, c);
+				float newOrient = a * p.x + b * p.y + c;
+				if (newOrient * orient < 0.f) return false;
+			}
+			return true;
 		}
-		return true;
 	}
-	else // this poly is just a point
-	{
-		return p == Vertices[0];
-	}		
+	// the poly reduces to a point
+	return p == Vertices[0];
 }
 
 

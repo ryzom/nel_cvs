@@ -114,6 +114,14 @@ SOURCE=..\include\nel\net\msg_socket.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\naming_client.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\naming_client.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\net_displayer.cpp
 # End Source File
 # Begin Source File

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.11 2000/10/09 08:46:29 cado Exp $
+ * $Id: inet_address.cpp,v 1.12 2000/10/10 15:28:15 cado Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -97,6 +97,16 @@ CInetAddress& CInetAddress::operator=( const CInetAddress& other )
 	memcpy( _SockAddr, other._SockAddr, sizeof( *_SockAddr ) );
 	_Valid = other._Valid;
 	return *this;
+}
+
+
+/*
+ * Comparison operator
+ */
+bool operator==( const CInetAddress& a1, const CInetAddress& a2 )
+{
+	// Compares the sockaddr structure except the last 8 bytes equal to zero.
+	return ( memcmp( a1._SockAddr, a2._SockAddr, sizeof(sockaddr_in)-8 ) == 0 );
 }
 
 

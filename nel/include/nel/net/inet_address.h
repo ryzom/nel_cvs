@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.h,v 1.10 2000/10/09 14:09:03 cado Exp $
+ * $Id: inet_address.h,v 1.11 2000/10/10 15:28:15 cado Exp $
  *
  * Interface for CInetAddress
  */
@@ -71,11 +71,14 @@ public:
 	/// Assignment operator
 	CInetAddress& operator=( const CInetAddress& other );
 
+	/// Comparison operator
+	friend bool operator==( const CInetAddress& a1, const CInetAddress& a2 );
+
 	/// Destructor
 	~CInetAddress();
 
 	/// Resolves a name
-	CInetAddress&		setByName( const std::string& hostname ) throw(ESocket);
+	CInetAddress&		setByName( const std::string& hostname ); //throw(ESocket);
 
 	/// Sets port
 	void				setPort( uint16 port );
@@ -83,7 +86,7 @@ public:
 	/** Sets internal socket address directly (contents is copied).
 	 * It also retrieves the host name if CInetAddress::RetrieveNames is true.
 	 */
-	void				setSockAddr( const sockaddr_in* saddr ) throw (ESocket);
+	void				setSockAddr( const sockaddr_in* saddr ); //throw (ESocket);
 
 	/// Returns if object (address and port) is valid
 	bool				isValid() const;
@@ -110,7 +113,7 @@ public:
 	void serial( NLMISC::IStream& s );
 
 	/// Creates a CInetAddress object with local host address, port=0
-	static CInetAddress	localHost() throw(ESocket);
+	static CInetAddress	localHost(); // throw(ESocket);
 
 	/// If true, setSockAddr() always tries to retrieve the host name from the address
 	static bool RetrieveNames;

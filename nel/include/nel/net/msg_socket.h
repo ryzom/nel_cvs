@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.12 2000/10/09 14:09:03 cado Exp $
+ * $Id: msg_socket.h,v 1.13 2000/10/10 15:28:15 cado Exp $
  *
  * Interface for CMsgSocket
  */
@@ -57,7 +57,8 @@ typedef std::set<CPtCallbackItem> CSearchSet;
  * Call CMsgSocket::receive() every frame.
  * Several methods and members are static, so that only one "select" is done for all message sockets.
  *
- * \todo cado Replace (TSenderId from) by something faster;
+ * \todo cado Replace (TSenderId from) by something faster
+ * \todo cado Add a way to prevent for sending binding messages
  * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
@@ -114,6 +115,9 @@ public:
 
 	/// Sets timeout for receive() in milliseconds
 	static void		setTimeout( uint32 ms );
+
+	/// Returns the internet address of the listening socket (server mode only)
+	static const CInetAddress	*listenAddress();
 
 protected:
 

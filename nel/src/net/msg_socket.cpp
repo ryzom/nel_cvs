@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.13 2000/10/09 14:09:03 cado Exp $
+ * $Id: msg_socket.cpp,v 1.14 2000/10/10 15:28:15 cado Exp $
  *
  * Implementation of CMsgSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
@@ -151,19 +151,22 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 		throw ESocket("Invalid address for listening");
 	}
 
-	// Create a socket
+	// We use the listensock, pointing to an already constructed socket
+	/* // Create a socket
 	listensock->_Sock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ); // IPPROTO_TCP or IPPROTO_IP (=0) ?
 	if ( listensock->_Sock == INVALID_SOCKET )
 	{
 		throw ESocket("Server socket creation failed");
 	}
 	nldebug( "Socket %d open as a server socket", listensock->_Sock );
+	*/
 
 	// Bind socket to port	
 	if ( ::bind( listensock->_Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )
 	{
 		throw ESocket("Unable to bind server socket to port");
 	}
+	listensock->_LocalAddr = addr;
 	_Binded = true;
 
 	// Retrieve socket error code (is this really necessary ?)
@@ -222,10 +225,10 @@ void CMsgSocket::update()
 	if ( getDataAvailableStatus() )
 	{
 		// Iterate on the sockets where data are available
-		bool erased = false;
 		CConnections::iterator ilps;
 		for ( ilps=_Connections.begin(); ilps!=_Connections.end(); ) // we don't check the newly added connections because their flag _DataAvailable is false
 		{
+			bool erased = false;
 			if ( (*ilps)->_DataAvailable )
 			{
 				if ( (*ilps)->_IsListening )
@@ -461,4 +464,23 @@ CSocket *CMsgSocket::socketFromId( TSenderId id )
 }
 
 
+/*
+ * Returns the internet address of the listening socket (server mode only)
+ */
+const CInetAddress *CMsgSocket::listenAddress()
+{
+	CConnections::iterator ips = _Connections.begin();
+	if ( (*ips)->_IsListening )
+	{
+		CSocket *sock = *ips;
+		return &((*ips)->localAddr());
+	}
+	else
+	{
+		return NULL;
+	}
 }
+
+
+
+} // NLNET

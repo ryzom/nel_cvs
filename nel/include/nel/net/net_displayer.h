@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.h,v 1.6 2000/10/04 15:27:53 cado Exp $
+ * $Id: net_displayer.h,v 1.7 2000/10/10 15:28:15 cado Exp $
  *
  * Interface for CNetDisplayer
  */
@@ -45,7 +45,13 @@ class CNetDisplayer : public NLMISC::IDisplayer
 public:
 
 	/// Constructor
+	CNetDisplayer();
+
+	/// Alt. constructor
 	CNetDisplayer( const CInetAddress& logServerAddr );
+
+	/// Sets logging server address
+	void setLogServer( const CInetAddress& logServerAddr );
 
 	/// Destructor
 	virtual ~CNetDisplayer();

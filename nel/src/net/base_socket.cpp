@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.9 2000/10/06 15:27:27 cado Exp $
+ * $Id: base_socket.cpp,v 1.10 2000/10/10 15:28:15 cado Exp $
  *
  * Implementation of CBaseSocket
  */
@@ -31,6 +31,7 @@
 
 #include <winsock2.h>
 #define ERROR_NUM WSAGetLastError()
+#define socklen_t int
 
 #elif defined NL_OS_LINUX
 
@@ -38,10 +39,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp/h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
-#include <fcntl.h>
+//#include <fcntl.h>
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
 #define ERROR_NUM errno
@@ -151,7 +153,7 @@ void CBaseSocket::close()
 		shutdown( _Sock, SD_BOTH );
 		closesocket( _Sock );
 #elif defined NL_OS_LINUX
-		shutdown( _Sock, SHUT_RDWR ):
+		shutdown( _Sock, SHUT_RDWR );
 		::close( _Sock );
 #endif
 		if ( _Logging )
@@ -208,13 +210,13 @@ void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	}
 	if ( _Logging )
 	{
-		nldebug( "Socket %d connected to %s", _Sock, addr.asIPString() );
+		nldebug( "Socket %d connected to %s", _Sock, addr.asIPString().c_str() );
 	}
 
 	// Get local socket name
 	sockaddr saddr;
 	int saddrlen = sizeof(saddr);
-	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
+	if ( getsockname( _Sock, &saddr, (socklen_t*)(&saddrlen) ) != 0 )
 	{
 		if ( _Logging ) {
 			nldebug( "Network error: getsockname() failed " );

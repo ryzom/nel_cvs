@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.21 2000/11/22 15:56:47 cado Exp $
+ * $Id: service.cpp,v 1.22 2000/11/23 14:11:39 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -223,6 +223,7 @@ sint IService::main (int argc, char **argv)
 		{
 			try
 			{
+				CNamingClient::open();
 				if ( _Port == 0 )
 				{
 					// Auto-assign port
@@ -235,6 +236,7 @@ sint IService::main (int argc, char **argv)
 				// Register service
 				nlassert( _Server->listenAddress() != NULL );
 				CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
+				CNamingClient::close();
 			}
 			catch ( ESocketConnectionFailed& )
 			{
@@ -243,6 +245,7 @@ sint IService::main (int argc, char **argv)
 			catch ( ESocket& )
 			{
 				nlwarning( "Could not register service into the Naming Service." );
+				CNamingClient::close();
 			}
 		}
 		else
@@ -264,7 +267,7 @@ sint IService::main (int argc, char **argv)
 			CMsgSocket::update();
 		}
 	}
-	catch (EFatalError &e)
+	catch (EFatalError &)
 	{
 		setStatus (EXIT_FAILURE);
 

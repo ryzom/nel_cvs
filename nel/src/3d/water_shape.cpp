@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.22 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: water_shape.cpp,v 1.23 2002/09/24 15:04:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -42,142 +42,125 @@ namespace NL3D {
 
 
 // globals
-static std::auto_ptr<CVertexProgram> WaterVP(NULL);
-const char *WaterVpCode = "!!VP1.0\n\
-					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
-					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-					  MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
-					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
-					  RCP R3, R2.x;																\n\
-					  MUL R3, c[6], R3;															\n\
-					  ADD R3, c[15], -R3;														\n\
-					  MAX R3, c[5],	R3;															\n\
-					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
-					  MUL R4.z,   R3, v[0];			#attenuate height with distance				\n\
-					  MOV R4.xyw, v[0];															\n\
-					  MOV R0.z,  c[4].x;			#set normal z to 1							\n\
-					  DP3 R3.x, R0, R0;															\n\
-					  RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
-					  MUL R0,  R0, R3.x;														\n\
-					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space				\n\
-					  DP4 o[HPOS].y, c[1], R4;												\n\
-					  DP4 o[HPOS].z, c[2], R4;												\n\
-					  DP4 o[HPOS].w, c[3], R4;												\n\
-					  MUL R3, v[0], c[10];			#compute bump 0 uv's						\n\
-					  ADD o[TEX0].xy, R3, c[9];													\n\
-					  MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\
-					  ADD o[TEX1].xy, R3, c[11];												\n\
-					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-					  DP3 R2.x, R1, R0;															\n\
-					  MUL R0, R0, R2.x;															\n\
-					  ADD R2, R0, R0;															\n\
-					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MAD o[TEX2].xy, R0, c[8], c[8];											\n\
-					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
-					  END\
-					  ";
-
-
-const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
-					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
-					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-					  MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
-					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
-					  RCP R3, R2.x;																\n\
-					  MUL R3, c[6], R3;															\n\
-					  ADD R3, c[15], -R3;														\n\
-					  MAX R3, c[5],	R3;															\n\
-					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
-					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
-					  MOV R4.xyw, v[0];															\n\
-					  MOV R0.z,  c[4].x;			#set normal z to 1							\n\
-					  DP3 R3.x, R0, R0;															\n\
-					  RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
-					  MUL R0,  R0, R3.x;														\n\
-					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space					\n\
-					  DP4 o[HPOS].y, c[1], R4;													\n\
-					  DP4 o[HPOS].z, c[2], R4;													\n\
-					  DP4 o[HPOS].w, c[3], R4;													\n\
-					  MUL R3, v[0], c[10];			#compute bump 0 uv's						\n\
-					  ADD o[TEX0].xy, R3, c[9];													\n\
-					  MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\
-					  ADD o[TEX1].xy, R3, c[11];												\n\
-					  DP4 o[TEX3].x, R4, c[13]; #compute uv for diffuse texture					\n\
-					  DP4 o[TEX3].y, R4, c[14];													\n\
-					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-					  DP3 R2.x, R1, R0;															\n\
-					  MUL R0, R0, R2.x;															\n\
-					  ADD R2, R0, R0;															\n\
-					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MAD o[TEX2].xy, R0, c[8], c[8];											\n\
-					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
-					  END\
-					  ";
 
 
 
-// temporary code for gfx card that have less than 4 stage. We keep the envmap only
-const char *WaterVpCode2Stages = "!!VP1.0\n\
-					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
-					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-					  MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
-					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
-					  RCP R3, R2.x;																\n\
-					  MUL R3, c[6], R3;															\n\
-					  ADD R3, c[15], -R3;														\n\
-					  MAX R3, c[5],	R3;															\n\
-					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
-					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
-					  MOV R4.xyw, v[0];															\n\
-					  MOV R0.z,  c[4].x;			#set normal z to 1							\n\
-					  DP3 R3.x, R0, R0;															\n\
-					  RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
-					  MUL R0,  R0, R3.x;														\n\
-					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space					\n\
-					  DP4 o[HPOS].y, c[1], R4;													\n\
-					  DP4 o[HPOS].z, c[2], R4;													\n\
-					  DP4 o[HPOS].w, c[3], R4;													\n\
-					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-					  DP3 R2.x, R1, R0;															\n\
-					  MUL R0, R0, R2.x;															\n\
-					  ADD R2, R0, R0;															\n\
-					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MAD o[TEX0].xy, R0, c[8], c[8];											\n\
-					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
-					  END\
-					  ";
+// common start for Water vertex programs
+/** The first part of the program does the following :
+  * - Compute linear distance to eye
+  * - Attenuate height with distance
+  * - Attenuate normal with distance (e.g at max distance, the normal is (0, 0, 1)
+  * - Transform vertex pos into view space
+  * - compute fog coordinate
+  * At the end of the program we got :
+  * R1 = (eye - vertex).normed()
+  * R0 = Attenuated normal at vertex
+  * R4 = position of point with attenuated height
+  */
 
-const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
-					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
-					  DP3 R2, R1, R1;				#r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-					  MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
-					  RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
-					  RCP R3, R2.x;																\n\
-					  MUL R3, c[6], R3;															\n\
-					  ADD R3, c[15], -R3;														\n\
-					  MAX R3, c[5],	R3;															\n\
-					  MUL R0,   R3, v[8];			#attenuate normal with distance             \n\
-					  MUL R4.z,   R3, v[0];			#attenuate normal with distance				\n\
-					  MOV R4.xyw, v[0];															\n\
-					  MOV R0.z,  c[4].x;			#set normal z to 1							\n\
-					  DP3 R3.x, R0, R0;															\n\
-					  RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
-					  MUL R0,  R0, R3.x;														\n\
-					  DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space					\n\
-					  DP4 o[HPOS].y, c[1], R4;													\n\
-					  DP4 o[HPOS].z, c[2], R4;													\n\
-					  DP4 o[HPOS].w, c[3], R4;													\n\
-					  DP4 o[TEX1].x, v[0], c[13];												\n\
-					  DP4 o[TEX1].y, v[0], c[14];												\n\
-					  MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
-					  DP3 R2.x, R1, R0;															\n\
-					  MUL R0, R0, R2.x;															\n\
-					  ADD R2, R0, R0;															\n\
-					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MAD o[TEX0].xy, R0, c[8], c[8];											\n\
-					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
-					  END\
-					  ";
+const char *WaterVPStartCode =
+"!!VP1.0\n\
+	ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
+	DP3 R2, R1, R1;				    #r1 = eye - vertex, r2 = (eye - vertex)²	\n\
+	MAX R2, R2, c[16];              # avoid imprecision around 0				\n\
+	RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
+	RCP R3, R2.x;																\n\
+	MAD R3, c[6].xxxx, -R3, c[6].yyyy;											\n\
+	MAX R3, c[5],	R3;															\n\
+	MUL R0, R3, v[8];			#attenuate normal with distance					\n\
+	MUL R4.z,   R3, v[0];			#attenuate height with distance				\n\
+	MOV R4.xyw, v[0];															\n\
+	MOV R0.z,  c[4].x;			#set normal z to 1								\n\
+	DP3 R3.x, R0, R0;															\n\
+	RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
+	MUL R0,  R0, R3.x;															\n\
+	DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space				    \n\
+	DP4 o[HPOS].y, c[1], R4;												    \n\
+	DP4 o[HPOS].z, c[2], R4;												    \n\
+	DP4 o[HPOS].w, c[3], R4;												    \n\
+	MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
+	DP4 o[FOGC].x, c[2], R4;	    #setup fog								    \n\
+";
+
+/*
+const char *WaterVPStartCode =
+"!!VP1.0\n\
+	ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
+	DP3 R2, R1, R1;				    #r1 = eye - vertex, r2 = (eye - vertex)²	\n\
+	MAX R2, R2, c[16];              # avoid imprecision around 0				\n\
+	RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
+	RCP R3, R2.x;																\n\
+	MUL R3, c[6], R3;                                                           \n\
+	ADD R3, c[15], -R3;                                                         \n\
+	MAX R3, c[5],	R3;															\n\
+	MUL R0, R3, v[8];			#attenuate normal with distance					\n\
+	MUL R4.z,   R3, v[0];			#attenuate height with distance				\n\
+	MOV R4.xyw, v[0];															\n\
+	MOV R0.z,  c[4].x;			#set normal z to 1								\n\
+	DP3 R3.x, R0, R0;															\n\
+	RSQ R3.x,  R3.x;				#normalize normal in R3						\n\
+	MUL R0,  R0, R3.x;															\n\
+	DP4 o[HPOS].x, c[0], R4;	#transform vertex in view space				    \n\
+	DP4 o[HPOS].y, c[1], R4;												    \n\
+	DP4 o[HPOS].z, c[2], R4;												    \n\
+	DP4 o[HPOS].w, c[3], R4;												    \n\
+	MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
+	DP4 o[FOGC].x, c[2], -R4;	    #setup fog								    \n\
+";
+*/
+
+/** This part of vertex program compute 2 layers of bump (for use with texture shaders)
+  */
+const char *WaterVpBump2LayersCode = "MUL R3, v[0], c[10];			#compute bump 0 uv's			\n\
+						   ADD o[TEX0].xy, R3, c[9];												\n\
+						   MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\
+						   ADD o[TEX1].xy, R3, c[11];												\n\
+						   DP3 R2.x, R1, R0;														\n\
+						   MUL R0, R0, R2.x;														\n\
+						   ADD R2, R0, R0;															\n\
+						   ADD R0, R2, -R1;				#compute reflection vector					\n\
+						   MAD o[TEX2].xy, R0, c[8], c[8];											\n\
+						   ";
+
+/** Version with one bump map only (Texture shaders support chaining of offset textures, EMBM does not)
+  */
+const char *WaterVpBump1LayersCode = "MUL R3, v[0], c[12];			#compute bump 1 uv's				\n\
+									  ADD o[TEX0].xy, R3, c[11];										\n\
+									  DP3 R2.x, R1, R0;													\n\
+									  MUL R0, R0, R2.x;													\n\
+									  ADD R2, R0, R0;													\n\
+									  ADD R0, R2, -R1;				#compute reflection vector			\n\
+									  MAD o[TEX1].xy, R0, c[8], c[8];									\n\
+									  ";
+
+/** Optionnal diffuse texture in stage 3
+  */
+const char *WaterVpDiffuseMapStage3Code = "DP4 o[TEX3].x, R4, c[13]; #compute uv for diffuse texture					\n\
+									       DP4 o[TEX3].y, R4, c[14];													\n\
+								          ";
+
+/** Optionnal diffuse texture in stage 2
+  */
+const char *WaterVpDiffuseMapStage2Code = "DP4 o[TEX2].x, R4, c[13]; #compute uv for diffuse texture					\n\
+									       DP4 o[TEX2].y, R4, c[14];													\n\
+								          ";
+
+/** Optionnal diffuse texture in stage 1
+  */
+const char *WaterVpDiffuseMapStage1Code = "DP4 o[TEX1].x, R4, c[13]; #compute uv for diffuse texture					\n\
+									       DP4 o[TEX1].y, R4, c[14];													\n\
+								          ";
+
+
+
+// Envmap is setup in texture 0, no bump is used
+const char *WaterVpNoBumpCode = "  DP3 R2.x, R1, R0;				#project view vector on normal for symetry	\n\
+										  MUL R0, R0, R2.x;															\n\
+										  ADD R2, R0, R0;															\n\
+										  ADD R0, R2, -R1;				#compute reflection vector					\n\
+										  MAD o[TEX0].xy, R0, c[8], c[8];											\n\
+										  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
+										  ";
 
 
 // static members
@@ -192,10 +175,40 @@ std::vector<uint32>						CWaterShape::_IBUpDown;
 std::vector<uint32>						CWaterShape::_IBDownUp;
 //NLMISC::CSmartPtr<IDriver>				CWaterShape::_Driver;
 bool									CWaterShape::_GridSizeTouched = true;
-std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram;
-std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramAlpha;
-std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram2Stages;
-std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram2StagesAlpha;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramBump1;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramBump2;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramBump1Diffuse;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramBump2Diffuse;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramNoBump;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramNoBumpDiffuse;
+
+
+/** Build a vertex program for water depending on requirements
+  */ 
+static CVertexProgram *BuildWaterVP(bool diffuseMap, bool bumpMap, bool use2BumpMap)
+{
+	std::string vp = WaterVPStartCode;
+	if (bumpMap && use2BumpMap)
+	{ 
+		vp += WaterVpBump2LayersCode;
+		if (diffuseMap) vp += WaterVpDiffuseMapStage3Code;
+	}
+	else
+	if (bumpMap)
+	{
+		vp += WaterVpBump2LayersCode;
+		if (diffuseMap) vp += WaterVpDiffuseMapStage2Code;
+	}
+	else
+	{
+		vp += WaterVpNoBumpCode;
+		if (diffuseMap) vp += WaterVpDiffuseMapStage1Code;
+	}
+
+	vp += "\nEND";
+	return new CVertexProgram(vp.c_str());
+}
+
 
 
 //============================================
@@ -239,10 +252,15 @@ void CWaterShape::initVertexProgram()
 	static bool created = false;
 	if (!created)
 	{
-		_VertexProgram		= std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode));	
-		_VertexProgramAlpha = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterPlusAlphaVpCode));	
-		_VertexProgram2Stages = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode2Stages));
-		_VertexProgram2StagesAlpha = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode2StagesAlpha));
+
+		_VertexProgramBump1 = std::auto_ptr<CVertexProgram>(BuildWaterVP(false, true, false));
+		_VertexProgramBump2 = std::auto_ptr<CVertexProgram>(BuildWaterVP(false, true, true));
+
+		_VertexProgramBump1Diffuse = std::auto_ptr<CVertexProgram>(BuildWaterVP(true, true, false));
+		_VertexProgramBump2Diffuse = std::auto_ptr<CVertexProgram>(BuildWaterVP(true, true, true));
+
+		_VertexProgramNoBump = std::auto_ptr<CVertexProgram>(BuildWaterVP(false, false, false));
+		_VertexProgramNoBumpDiffuse = std::auto_ptr<CVertexProgram>(BuildWaterVP(true, false, false));
 		created = true;
 	}
 }

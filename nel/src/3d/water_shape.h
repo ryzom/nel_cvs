@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.9 2002/02/15 17:14:14 vizerie Exp $
+ * $Id: water_shape.h,v 1.10 2002/09/24 15:04:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -235,10 +235,15 @@ private:
 	static std::vector<uint32>				_IBUpDown;
 	static std::vector<uint32>				_IBDownUp;	
 	static bool								_GridSizeTouched;
-	static std::auto_ptr<CVertexProgram>	_VertexProgram;
-	static std::auto_ptr<CVertexProgram>	_VertexProgramAlpha;
-	static std::auto_ptr<CVertexProgram>	_VertexProgram2Stages;
-	static std::auto_ptr<CVertexProgram>	_VertexProgram2StagesAlpha;
+	//
+	static std::auto_ptr<CVertexProgram>	_VertexProgramBump1;
+	static std::auto_ptr<CVertexProgram>	_VertexProgramBump2;
+	//
+	static std::auto_ptr<CVertexProgram>	_VertexProgramBump1Diffuse;
+	static std::auto_ptr<CVertexProgram>	_VertexProgramBump2Diffuse;
+	//
+	static std::auto_ptr<CVertexProgram>	_VertexProgramNoBump;
+	static std::auto_ptr<CVertexProgram>	_VertexProgramNoBumpDiffuse;
 };
 
 

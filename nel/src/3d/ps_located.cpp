@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.68 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.69 2004/05/18 16:08:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1892,8 +1892,9 @@ void CPSLocated::updateLife()
 			{
 				nlassert(_Owner);
 				float timeInc = CParticleSystem::RealEllapsedTime / _InitialLife;
-				if (_Owner->getSystemDate() >= (_InitialLife - CParticleSystem::RealEllapsedTime))
+				if (_Owner->getSystemDate() + 0.1f + 2.f * timeInc >= (_InitialLife - CParticleSystem::RealEllapsedTime))
 				{
+					// NB : 0.1f + 2.f * timeInc added to avoid case were time of particle is slighty greater than 1.f after life update because that test failed
 					TPSAttribTime::iterator itTime = _Time.begin();
 					for (uint32 k = 0; k < _Size; ++k)
 					{

@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.7 2000/12/15 16:59:28 cado Exp $
+ * $Id: dru.h,v 1.8 2000/12/18 14:07:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,13 +30,18 @@
 #include "nel/3d/driver.h"
 #include "nel/3d/viewport.h"
 
-
+#ifdef NL_OS_WINDOWS
 #ifdef NL_DEBUG
 #define NL3D_DLL_NAME "nel_drv_opengl_win_debug.dll"
 #elif defined (NL_RELEASE)
 #define NL3D_DLL_NAME "nel_drv_opengl_win.dll"
 #else
 #error "Unknown dll name"
+#endif
+#elif defined (NL_OS_UNIX)
+#define NL3D_DLL_NAME "libnel_drv_opengl.so"
+#else
+#error "Unknown system"
 #endif
 
 namespace NL3D 

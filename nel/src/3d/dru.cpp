@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.15 2000/12/18 11:29:24 lecroart Exp $
+ * $Id: dru.cpp,v 1.16 2000/12/18 14:07:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,7 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 
 #elif defined (NL_OS_UNIX)
 
-	void *handle = dlopen("libnel_drv_opengl.so", RTLD_NOW);
+	void *handle = dlopen(NL3D_DLL_NAME, RTLD_NOW);
 
 	if (handle == NULL)
 	{

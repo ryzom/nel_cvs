@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.29 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: u_audio_mixer.h,v 1.30 2003/08/21 09:25:06 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -254,11 +254,15 @@ public:
 	/// Return the number of mixing tracks (voices)
 	virtual uint		getPolyphony() const = 0;
 	/// Return the number of sources
-	virtual uint		getSourcesNumber() const = 0;
+	virtual uint		getSourcesInstanceCount() const = 0;
 	/// Return the number of playing sources
-	virtual uint		getPlayingSourcesNumber() const = 0;
+	virtual uint		getPlayingSourcesCount() const = 0;
 	/// Return the number of available tracks
-	virtual uint		getNumberAvailableTracks() const = 0;
+	virtual uint		getAvailableTracksCount() const = 0;
+	/// Return the number of used tracks
+	virtual uint		getUsedTracksCount() const = 0;
+	/// Return the number muted playing source
+	virtual uint		getMutedPlayingSourcesCount() const = 0;
 	/// Return a string showing the playing sources
 	virtual std::string	getSourcesStats() const = 0;
 	virtual void		getPlayingSoundsPos(bool virtualPos, std::vector<std::pair<bool, NLMISC::CVector> > &pos) =0;

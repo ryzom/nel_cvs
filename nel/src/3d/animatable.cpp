@@ -1,7 +1,7 @@
 /** \file animatable.cpp
  * Class IAnimatable
  *
- * $Id: animatable.cpp,v 1.4 2001/03/19 14:07:32 berenguier Exp $
+ * $Id: animatable.cpp,v 1.5 2001/03/28 10:33:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,10 +31,10 @@ namespace NL3D
 {
 
 // ***************************************************************************
-void	IAnimatable::addValue(CChannelMixer *chanMixer, uint valueId, const std::string &prefix, bool detail)
+void	IAnimatable::addValue(CChannelMixer *chanMixer, uint valueId, uint ownerValueId, const std::string &prefix, bool detail)
 {
 	nlassert(chanMixer);
-	chanMixer->addChannel(prefix+getValueName(valueId), this, getValue(valueId), getDefaultTrack(valueId), valueId, detail);
+	chanMixer->addChannel(prefix+getValueName(valueId), this, getValue(valueId), getDefaultTrack(valueId), valueId, ownerValueId, detail);
 }
 
 

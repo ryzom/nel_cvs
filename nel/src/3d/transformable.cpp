@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.5 2001/03/27 17:36:19 corvazier Exp $
+ * $Id: transformable.cpp,v 1.6 2001/03/28 10:33:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,7 @@ const char 	*ITransformable::getValueName (uint valueId) const
 
 	return "";
 }
+
 // ***************************************************************************
 const char	*ITransformable::getPosValueName ()
 {
@@ -117,23 +118,6 @@ const char	*ITransformable::getPivotValueName()
 {
 	return "pivot";
 }
-// ***************************************************************************
-bool	ITransformable::testTransformFlags() const
-{
-	if(!isTouched())
-		return false;
-
-	if(	isTouched(PosValue) || 
-		isTouched(RotEulerValue) || 
-		isTouched(RotQuatValue) || 
-		isTouched(ScaleValue) || 
-		isTouched(PivotValue) )
-	{
-		return true;
-	}
-
-	return false;
-}
 
 
 // ***************************************************************************
@@ -147,6 +131,9 @@ void	ITransformable::clearTransformFlags() const
 	self->clearFlag(RotQuatValue); 
 	self->clearFlag(ScaleValue);
 	self->clearFlag(PivotValue);
+
+	// We are OK!
+	self->clearFlag(OwnerBit);
 }
 
 // ***************************************************************************
@@ -155,9 +142,9 @@ bool	ITransformable::needCompute() const
 	bool	fatherOk;
 	bool	fatherScaleTest;
 	fatherOk= _Father && _Father->_Mode!=DirectMatrix;
-	fatherScaleTest= fatherOk && (_Father->isTouched() || _Father->_LocalScaleDate>_FatherScaleDate) ;
+	fatherScaleTest= fatherOk && (_Father->isTouched(OwnerBit) || _Father->_LocalScaleDate>_FatherScaleDate) ;
 	// should we update?
-	return  testTransformFlags() || fatherScaleTest;
+	return  isTouched(OwnerBit) || fatherScaleTest;
 }
 
 

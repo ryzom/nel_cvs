@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.1 2001/03/27 09:55:55 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.2 2001/03/28 10:31:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,14 @@ public:
 
 	/// \name IAnimatable Interface (registering only IAnimatable sons).
 	// @{
+	enum	TAnimValues
+	{
+		OwnerBit= CTransformShape::AnimValueLast, 
+
+		AnimValueLast,
+	};
+
+
 	virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix);
 
 	// @}
@@ -76,7 +84,10 @@ public:
 
 protected:
 	/// Constructor
-	CMeshInstance() {}
+	CMeshInstance()
+	{
+		IAnimatable::resize(AnimValueLast);
+	}
 	/// Destructor
 	virtual ~CMeshInstance() {}
 
@@ -89,7 +100,7 @@ protected:
 		CTransformShape::update();
 
 		// test if animated materials must be updated.
-		if(IAnimatable::isTouched())
+		if(IAnimatable::isTouched(OwnerBit))
 		{
 			// must test / update all AnimatedMaterials.
 			for(uint i=0;i<_AnimatedMaterials.size();i++)
@@ -97,6 +108,8 @@ protected:
 				// This test and update the pointed material.
 				_AnimatedMaterials[i].update();
 			}
+
+			IAnimatable::clearFlag(OwnerBit);
 		}
 	}
 	// @}

@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.9 2001/03/27 15:33:56 berenguier Exp $
+ * $Id: camera.cpp,v 1.10 2001/03/28 10:33:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,9 +148,9 @@ ITrack* CCamera::getDefaultTrack (uint valueId)
 void	CCamera::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
 {
 	// For CCamera, channels are not detailled.
-	addValue(chanMixer, FovValue, prefix, false);
-	addValue(chanMixer, TargetValue, prefix, false);
-	addValue(chanMixer, RollValue, prefix, false);
+	addValue(chanMixer, FovValue, OwnerBit, prefix, false);
+	addValue(chanMixer, TargetValue, OwnerBit, prefix, false);
+	addValue(chanMixer, RollValue, OwnerBit, prefix, false);
 
 	CTransform::registerToChannelMixer(chanMixer, prefix);
 }
@@ -163,7 +163,7 @@ void	CCamera::update()
 	CTransform::update();
 	
 	// test animations
-	if(IAnimatable::isTouched())
+	if(IAnimatable::isTouched(OwnerBit))
 	{
 		// FOV.
 		if( _FovAnimationEnabled && IAnimatable::isTouched(FovValue))
@@ -196,6 +196,9 @@ void	CCamera::update()
 		IAnimatable::clearFlag(FovValue);
 		IAnimatable::clearFlag(TargetValue);
 		IAnimatable::clearFlag(RollValue);
+
+		// We are OK!
+		IAnimatable::clearFlag(OwnerBit);
 	}
 }
 

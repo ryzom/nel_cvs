@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.6 2001/03/27 17:34:24 corvazier Exp $
+ * $Id: animatable.h,v 1.7 2001/03/28 10:31:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ class CChannelMixer;
  * When a class derives from IAnimatable, it must implement all the 
  * interface's methods:
  *
- *	extend TAnimValues enum, beginning to BaseClass::AnimValueLast
+ *	extend TAnimValues enum, beginning to BaseClass::AnimValueLast, and add a bit OwnerBit.
  *	ctor(): just type "IAnimatable::resize (AnimValueLast);"
  *	virtual IAnimatedValue* getValue (uint valueId);
  *	virtual const char *getValueName (uint valueId) const;
@@ -82,14 +82,15 @@ public:
 	  */
 	IAnimatable ()
 	{
-		bitSet.resize (1);
 		_Father= NULL;
 	}
 
 	/// \name Interface
 	// @{
 	/**
-	  * The enum of animated values. (same system in CMOT). Deriver should extend this enum, beginning to BaseClass::AnimValueLast.
+	  * The enum of animated values. (same system in CMOT). Deriver should extend this enum, beginning with OwnerBit= BaseClass::AnimValueLast.
+	  * "OwnerBit" system: each deriver of IAnimatable should had an entry "OwnerBit" in this TAnimValues. This bit will be set when
+	  * an IAnimatedValue of this deriver part is touched, or if one of his IAnimatable sons is touched (see setFather()).
 	  */
 	enum	TAnimValues
 	{
@@ -143,53 +144,39 @@ public:
 	  * Say which (if any) IAnimatable owns this one. This is important for Touch propagation.
 	  * By this system, Fathers and ancestors know if they must check their sons (isTouched() return true).
 	  *
-	  * \param valueId is the animated value ID in the object we want to touch. IGNORING IANIMATABLE SONS (eg: bones, materials...).
+	  * \param father the father we must inform of our update.
+	  * \param fatherOwnerBit What bit of father we must set when we are updated
 	  */
-	void	setFather(IAnimatable *father) {_Father= father;}
+	void	setFather(IAnimatable *father, uint fatherOwnerBit) {_Father= father; _FatherOwnerBit= fatherOwnerBit;}
 
 
 	/**
 	  * Touch a value because it has been modified.
 	  *
-	  * \param valueId is the animated value ID in the object we want to touch. IGNORING IANIMATABLE SONS (eg: bones, materials...).
+	  * \param valueId is the animated value ID in the object we want to touch.
+	  * \param ownerValueId is the bit of the IAnimatable part which owns this animated value.
 	  */
-	void touch (uint valueId)
+	void touch (uint valueId, uint ownerValueId)
 	{
 		// Set the bit
-		bitSet.set (valueId+1);
+		bitSet.set (valueId);
+		// Set the owner bit
+		bitSet.set (ownerValueId);
 
-		// propagate the touch to the bit 0, and the fathers.
+		// propagate the touch to the fathers.
 		propagateTouch();
-	}
-
-	/**
-	  * Return true if at least one value of this object as been touched, or if at least one son has been touched.
-	  * Else return false.
-	  */
-	bool isTouched () const
-	{
-		// The first bit is the "something is touched" flag
-		return bitSet[0];
 	}
 
 	/**
 	  * Return true if the value as been touched else false.
 	  *
-	  * \param valueId is the animated value ID in the object we want to test the touch flag.
+	  * \param valueId is the animated value ID in the object we want to test the touch flag. or it may be an OwnerBit.
 	  */
 	bool isTouched (uint valueId) const
 	{
-		return bitSet[valueId+1];
+		return bitSet[valueId];
 	}
 
-	/**
-	  * Clear the touch flags.
-	  */
-	void clearFlags ()
-	{
-		// Clear all flags
-		bitSet.clearAll ();
-	}
 
 	/**
 	  * Change value count
@@ -198,9 +185,8 @@ public:
 	  */
 	void resize (uint count)
 	{
-		// The first bit is the "something is touched" flag
 		// Bit are reseted after resize (doc), nothing invalidate
-		bitSet.resize (count+1);
+		bitSet.resize (count);
 	}
 	// @}
 
@@ -211,15 +197,17 @@ private:
 	NLMISC::CBitSet bitSet;
 	// The owner of this IAnimatable.
 	IAnimatable		*_Father;
+	// What bit of father which must set when we are updated.
+	uint			_FatherOwnerBit;
 
 	void	propagateTouch()
 	{
 		IAnimatable		*pCur= this;
 		// Stop when no father, or when father is already touched (and so the grandfather...!!!).
-		while(pCur && !pCur->isTouched())
+		while(pCur->_Father && !pCur->_Father->isTouched(_FatherOwnerBit))
 		{
-			// The first bit is the "something is touched" flag. touch it.
-			pCur->bitSet.set (0);
+			// The Owner bit is the "something is touched" flag. touch it.
+			pCur->_Father->bitSet.set (pCur->_FatherOwnerBit);
 			pCur= pCur->_Father;
 		}
 	}
@@ -227,12 +215,12 @@ private:
 
 protected:
 	/// This is a tool function which add a given value to a channel.
-	void	addValue(CChannelMixer *chanMixer, uint valueId, const std::string &prefix, bool detail);
+	void	addValue(CChannelMixer *chanMixer, uint valueId, uint ownerValueId, const std::string &prefix, bool detail);
 
 	/// This method clear a bit in the bitset.
 	void	clearFlag(uint valueId)
 	{
-		bitSet.clear(valueId+1);
+		bitSet.clear(valueId);
 	}
 
 };

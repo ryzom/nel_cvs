@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.5 2001/03/27 17:36:19 corvazier Exp $
+ * $Id: transformable.h,v 1.6 2001/03/28 10:31:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,21 +86,21 @@ public:
 		_Mode= mode;
 		_RotOrder= ro;
 		// just for information.
-		touch(PosValue);
+		touch(PosValue, OwnerBit);
 	}
 	/// Herit the scale of father (default).
 	void	heritScale()
 	{
 		_Father= NULL;
 		// just for information.
-		touch(PosValue);
+		touch(PosValue, OwnerBit);
 	}
 	/// Do not Herit the scale of father (default). => use scale part of father (if not DirectMatrix mode)
 	void	unheritScale(ITransformable *father)
 	{
 		_Father= father;
 		// just for information.
-		touch(PosValue);
+		touch(PosValue, OwnerBit);
 	}
 	//@}
 
@@ -113,35 +113,35 @@ public:
 	{
 		nlassert(_Mode==RotEuler || _Mode==RotQuat);
 		_Pos.Value= pos;
-		touch(PosValue);
+		touch(PosValue, OwnerBit);
 	}
 	/// Work only in RotEuler mode(nlassert).
 	void	setRotEuler(const CVector &rot)
 	{
 		nlassert(_Mode==RotEuler);
 		_RotEuler.Value= rot;
-		touch(RotEulerValue);
+		touch(RotEulerValue, OwnerBit);
 	}
 	/// Work only in RotQuat mode (nlassert).
 	void	setRotQuat(const CQuat &quat)
 	{
 		nlassert(_Mode==RotQuat);
 		_RotQuat.Value= quat;
-		touch(RotQuatValue);
+		touch(RotQuatValue, OwnerBit);
 	}
 	/// Work only in Rot* mode (nlassert).
 	void	setScale(const CVector &scale)
 	{
 		nlassert(_Mode==RotEuler || _Mode==RotQuat);
 		_Scale.Value= scale;
-		touch(ScaleValue);
+		touch(ScaleValue, OwnerBit);
 	}
 	/// Work only in Rot* mode (nlassert).
 	void	setPivot(const CVector &pivot)
 	{
 		nlassert(_Mode==RotEuler || _Mode==RotQuat);
 		_Pivot.Value= pivot;
-		touch(PivotValue);
+		touch(PivotValue, OwnerBit);
 	}
 	/// Work only in DirecTMatrix mode (nlassert).
 	void	setMatrix(const CMatrix &mat)
@@ -149,7 +149,7 @@ public:
 		nlassert(_Mode==DirectMatrix);
 		_LocalMatrix= mat;
 		// just for information.
-		touch(PosValue);
+		touch(PosValue, OwnerBit);
 	}
 
 	//@}
@@ -252,7 +252,8 @@ public:
 	/// Added values.
 	enum	TAnimValues
 	{
-		PosValue= IAnimatable::AnimValueLast,
+		OwnerBit= IAnimatable::AnimValueLast,
+		PosValue,
 		RotEulerValue,
 		RotQuatValue,
 		ScaleValue,
@@ -298,9 +299,6 @@ private:
 	CAnimatedValueQuat		_RotQuat;
 	CAnimatedValueVector	_Scale;
 	CAnimatedValueVector	_Pivot;
-
-	// just test transfrom fglas.
-	bool	testTransformFlags() const;
 
 	// clear transfrom fglas.
 	void	clearTransformFlags() const;

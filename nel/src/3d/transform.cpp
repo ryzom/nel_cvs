@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.13 2001/03/19 14:07:32 berenguier Exp $
+ * $Id: transform.cpp,v 1.14 2001/03/28 10:33:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,11 +117,11 @@ void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::str
 	_ChannelMixer= chanMixer;
 
 	// For CTransfom, channels are not detailled.
-	addValue(chanMixer, PosValue, prefix, false);
-	addValue(chanMixer, RotEulerValue, prefix, false);
-	addValue(chanMixer, RotQuatValue, prefix, false);
-	addValue(chanMixer, ScaleValue, prefix, false);
-	addValue(chanMixer, PivotValue, prefix, false);
+	addValue(chanMixer, PosValue, OwnerBit, prefix, false);
+	addValue(chanMixer, RotEulerValue, OwnerBit, prefix, false);
+	addValue(chanMixer, RotQuatValue, OwnerBit, prefix, false);
+	addValue(chanMixer, ScaleValue, OwnerBit, prefix, false);
+	addValue(chanMixer, PivotValue, OwnerBit, prefix, false);
 
 	// Deriver note: if necessary, call	BaseClass::registerToChannelMixer(chanMixer, prefix);
 }

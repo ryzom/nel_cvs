@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.8 2001/03/27 17:35:03 corvazier Exp $
+ * $Id: channel_mixer.h,v 1.9 2001/03/28 10:31:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,6 +164,9 @@ private:
 		/// The id of the animated value in the IAnimatable object.
 		uint32				_ValueId;
 
+		/// The id of the OwnerBit to touch the IAnimatable object. Usefull for IAnimatable derivation.
+		uint32				_OwnerValueId;
+
 		/// the detail mode.
 		bool				_Detail;
 
@@ -241,9 +244,10 @@ public:
       * \param defaultValue is a track used by default if a track is not presents in the animation for this channel. 
 	  * It will be kept by the CChannelMixer until it is removed from the channel.
 	  * \param valueId is the value ID in the IAnimatable object.
+	  * \param ownerId is the owner Bit of the animated vlaue, in the IAnimatable object. touched when the animatedvalue is touched.
 	  * \param detail true if this channel must be evaluated in detail mode (see eval()).
 	  */
-	void addChannel (const std::string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId, bool detail);
+	void addChannel (const std::string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId, uint32 ownerValueId, bool detail);
 
 	/// Reset the channel list if the mixer. All channels are removed from the mixer.
 	void resetChannels ();

@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.8 2001/03/27 17:36:58 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.9 2001/03/28 10:33:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,7 +156,7 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 				}
 
 				// Touch the animated value and its owner to recompute them later.
-				pChannel->_Object->touch (pChannel->_ValueId);
+				pChannel->_Object->touch (pChannel->_ValueId, pChannel->_OwnerValueId);
 			}
 		}
 
@@ -167,7 +167,7 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 
 // ***************************************************************************
 
-void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultTrack, uint32 valueId, bool detail)
+void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultTrack, uint32 valueId, uint32 ownerValueId, bool detail)
 {
 	// Check the animationSet has been set
 	nlassert (_AnimationSet);
@@ -200,6 +200,9 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 
 		// Set the value ID in the object
 		entry._ValueId=valueId;
+
+		// Set the First value ID in the object
+		entry._OwnerValueId=ownerValueId;
 
 		// in what mode is the channel?
 		entry._Detail= detail;

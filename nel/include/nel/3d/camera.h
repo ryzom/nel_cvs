@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.13 2001/03/26 14:56:07 berenguier Exp $
+ * $Id: camera.h,v 1.14 2001/03/28 10:31:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,7 +122,8 @@ public:
 	// @{
 	enum	TAnimValues
 	{
-		FovValue= CTransform::AnimValueLast,
+		OwnerBit= CTransform::AnimValueLast,
+		FovValue ,
 		TargetValue,
 		RollValue,			// Roll is the roll angle in radians.
 

@@ -1,7 +1,7 @@
 /** \file animated_material.h
  * <File description>
  *
- * $Id: animated_material.h,v 1.3 2001/03/27 09:51:50 berenguier Exp $
+ * $Id: animated_material.h,v 1.4 2001/03/28 10:31:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,7 +180,8 @@ public:
 	/// Added values.
 	enum	TAnimValues
 	{
-		AmbientValue= IAnimatable::AnimValueLast,
+		OwnerBit= IAnimatable::AnimValueLast,
+		AmbientValue, 
 		DiffuseValue,
 		SpecularValue,
 		ShininessValue,

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.12 2001/03/19 14:07:57 berenguier Exp $
+ * $Id: transform.h,v 1.13 2001/03/28 10:31:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  * A basic node which provide an animatable matrix (ITransformable).
  * May be derived for each node who want to support such a scheme (CCamera, CLight, CInstance ... )
  *
- * CTransform ALWAYS herit scale from fathers! (joints skeleton may not...) (nbyoyo: this breaks the touch system with observers).
+ * CTransform ALWAYS herit scale from fathers! (joints skeleton may not...) (nbyoyo: else, this breaks the touch system with observers).
  *
  * CTransform Default tracks are identity (derived class may change this).
  *

@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.4 2001/03/27 15:33:56 berenguier Exp $
+ * $Id: animated_material.cpp,v 1.5 2001/03/28 10:33:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,7 +173,7 @@ std::string		CAnimatedMaterial::getMaterialName() const
 // ***************************************************************************
 void	CAnimatedMaterial::update()
 {
-	if(isTouched() && _Material!=NULL && _Material->isLighted())
+	if(isTouched(OwnerBit) && _Material!=NULL && _Material->isLighted())
 	{
 		// well, just update all...  :)
 
@@ -213,6 +213,10 @@ void	CAnimatedMaterial::update()
 			}
 			clearFlag(TextureValue);
 		}
+
+
+		// We are OK!
+		IAnimatable::clearFlag(OwnerBit);
 	}
 }
 
@@ -277,13 +281,13 @@ ITrack*	CAnimatedMaterial::getDefaultTrack (uint valueId)
 void	CAnimatedMaterial::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
 {
 	// For CAnimatedMaterial, channels are detailled (material rendered after clip)!
-	addValue(chanMixer, AmbientValue, prefix, true);
-	addValue(chanMixer, DiffuseValue, prefix, true);
-	addValue(chanMixer, SpecularValue, prefix, true);
-	addValue(chanMixer, ShininessValue, prefix, true);
-	addValue(chanMixer, EmissiveValue, prefix, true);
-	addValue(chanMixer, OpacityValue, prefix, true);
-	addValue(chanMixer, TextureValue, prefix, true);
+	addValue(chanMixer, AmbientValue, OwnerBit, prefix, true);
+	addValue(chanMixer, DiffuseValue, OwnerBit, prefix, true);
+	addValue(chanMixer, SpecularValue, OwnerBit, prefix, true);
+	addValue(chanMixer, ShininessValue, OwnerBit, prefix, true);
+	addValue(chanMixer, EmissiveValue, OwnerBit, prefix, true);
+	addValue(chanMixer, OpacityValue, OwnerBit, prefix, true);
+	addValue(chanMixer, TextureValue, OwnerBit, prefix, true);
 
 }
 

@@ -3873,6 +3873,9 @@
 				RelativePath="..\include\nel\misc\class_id.h">
 			</File>
 			<File
+				RelativePath="..\include\nel\misc\historic.h">
+			</File>
+			<File
 				RelativePath="..\include\nel\misc\singelton.h">
 			</File>
 			<File
@@ -3913,6 +3916,9 @@
 			</File>
 			<File
 				RelativePath="..\include\nel\misc\smart_ptr_inline.h">
+			</File>
+			<File
+				RelativePath="..\include\nel\misc\twin_map.h">
 			</File>
 		</Filter>
 		<Filter

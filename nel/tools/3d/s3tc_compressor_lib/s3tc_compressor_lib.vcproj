@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="s3tc_compressor_lib"
+	ProjectGUID="{9AB5046C-AF35-43BD-A75D-51ED00C26206}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

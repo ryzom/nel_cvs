@@ -9,18 +9,26 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client", "client\client.vcp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "frontend", "server\frontend\frontend.vcproj", "{B15398CD-B3F8-4E85-A8BD-6F64CE59F069}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "login_service", "..\nelns\login_service\login_service.vcproj", "{002C429C-2959-40DB-902E-BB2F807C99AA}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nel_launcher", "..\nelns\login_system\nel_launcher_windows\nel_launcher.vcproj", "{51D51C92-8233-4161-A979-BC4152C4E214}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "position", "server\position\position.vcproj", "{96545AA0-6EDE-4514-A30B-3F24CCB1FCC9}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "chat", "server\chat\chat.vcproj", "{FF941B4E-16F2-4B24-BF8A-5589275FE7D4}"

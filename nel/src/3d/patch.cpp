@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.33 2001/01/12 13:21:16 corvazier Exp $
+ * $Id: patch.cpp,v 1.34 2001/01/12 13:26:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -762,14 +762,6 @@ void			CPatch::computeTileVertex(CTessVertex *vert, ITileUv *uv, sint idUv)
 	*(CUV*)(CurVBPtr+CurUV0Off)= uvpass.PUv0;
 	*(CUV*)(CurVBPtr+CurUV1Off)= uvpass.PUv1;
 
-	// TempYoyo.
-	/*nlassert( ((CUV*)(CurVBPtr+CurUV1Off))->U!=1);
-	nlassert( ((CUV*)(CurVBPtr+CurUV1Off))->V!=1);
-	CUV		pipo;
-	pipo.U= 0.1;
-	pipo.V= 0.1;
-	*(CUV*)(CurVBPtr+CurUV1Off)= pipo;*/
-
 	// Compute color.
 	static CRGBA	col(255,255,255,255);
 	// TODO_CLOUD/TODO_ADDITIVE: use cloud color information for RGB. And use alpha global for global apparition of 
@@ -1226,6 +1218,17 @@ uint		CPatch::getTileLightMap(sint ts, sint tt, ITexture *&lightmap)
 		col.set565 (tcol.Color565);
 		col.modulateFromColor (col, pStaticLight[tcol.Shade]);
 		col.A=255;
+void		CPatch::computeTileLightmapPixelAroundCorner(const CVector2f &stIn, CRGBA *dest, bool lookAround)
+		// TempYoyo.
+		/*CBezierPatch	*pa= unpackIntoCache();
+		float	t= (float)(tt+(i>>1))/OrderT;
+		float	s= (float)(ts+(i&1))/OrderS;
+		CVector	norm, light(0, -1, 0);
+		norm= pa->evalNormal(s,t);
+		light.normalize();
+		col.R= 0;
+		col.G= (norm*light+1)*127;
+		col.B= 0;*/
 	sint	u, v;
 		lightText[lut[i]]= col;
 		// try to know if we must go on a neighbor patch (maybe false with bind X/1).

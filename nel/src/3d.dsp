@@ -264,6 +264,14 @@ SOURCE=.\3d\zone.cpp
 
 SOURCE=..\include\nel\3d\zone.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\zone_smoother.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\zone_smoother.h
+# End Source File
 # End Group
 # Begin Group "Driver"
 

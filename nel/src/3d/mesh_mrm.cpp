@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.36 2002/05/15 16:55:55 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.37 2002/05/21 16:42:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "3d/skeleton_model.h"
 #include "nel/misc/bsphere.h"
 #include "3d/stripifier.h"
-#include "nel/misc/cpu_info.h"
+#include "nel/misc/system_info.h"
 
 
 using namespace NLMISC;
@@ -951,7 +951,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		else
 		{
 			// Use SSE when possible
-			if( CCpuInfo::hasSSE() )
+			if( CSystemInfo::hasSSE() )
 			{
 				// apply skin for this Lod only.
 				if (!useTangentSpace)

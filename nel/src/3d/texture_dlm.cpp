@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
  * <File description>
  *
- * $Id: texture_dlm.cpp,v 1.8 2002/05/14 10:13:07 berenguier Exp $
+ * $Id: texture_dlm.cpp,v 1.9 2002/05/21 16:42:23 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -277,8 +277,8 @@ void			CTextureDLM::modulateAndfillRect565(uint x, uint y, uint w, uint h, CRGBA
 	dst+= y*getWidth()+x;
 
 	// precahce Data in memory (best CPU support)
-	CFastMem::precacheBest(textMap, w*h*sizeof(CRGBA));
-	CFastMem::precacheBest(modColor, w*h*sizeof(uint16));
+	CFastMem::precache(textMap, w*h*sizeof(CRGBA));
+	CFastMem::precache(modColor, w*h*sizeof(uint16));
 
 	// For all lines
 	for(sint n= h;n>0;n--, dst+= (getWidth()-w) )
@@ -309,8 +309,8 @@ void			CTextureDLM::modulateAndfillRect8888(uint x, uint y, uint w, uint h, CRGB
 	dst+= y*getWidth()+x;
 
 	// precahce Data in memory (best CPU support)
-	CFastMem::precacheBest(textMap, w*h*sizeof(CRGBA));
-	CFastMem::precacheBest(modColor, w*h*sizeof(CRGBA));
+	CFastMem::precache(textMap, w*h*sizeof(CRGBA));
+	CFastMem::precache(modColor, w*h*sizeof(CRGBA));
 
 	// For all lines
 	for(sint n= h;n>0;n--, dst+= (getWidth()-w) )
@@ -339,7 +339,7 @@ void			CTextureDLM::modulateConstantAndfillRect(uint x, uint y, uint w, uint h, 
 	dst+= y*getWidth()+x;
 
 	// precahce Data in memory (best CPU support)
-	CFastMem::precacheBest(textMap, w*h*sizeof(CRGBA));
+	CFastMem::precache(textMap, w*h*sizeof(CRGBA));
 
 	// For all lines
 	for(sint n= h;n>0;n--, dst+= (getWidth()-w) )

@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.11 2002/05/14 10:13:07 berenguier Exp $
+ * $Id: patchdlm_context.cpp,v 1.12 2002/05/21 16:42:23 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "3d/fast_floor.h"
 #include "3d/tile_far_bank.h"
 #include "3d/landscape.h"
-#include "nel/misc/cpu_info.h"
+#include "nel/misc/system_info.h"
 #include "nel/misc/fast_mem.h"
 
 

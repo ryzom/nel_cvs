@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.47 2002/04/25 08:27:45 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.48 2002/05/21 16:42:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@
 #include "3d/ps_misc.h"
 
 #include "nel/misc/line.h"
-#include "nel/misc/cpu_info.h"
+#include "nel/misc/system_info.h"
 #include "nel/misc/common.h"
 
 namespace NL3D {

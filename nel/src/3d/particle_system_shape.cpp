@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.29 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: particle_system_shape.cpp,v 1.30 2002/05/21 16:42:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,8 +75,9 @@ void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	sint ver = f.serialVersion(6);
 	/// version 6 : added sharing flag
-	NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector();
-	f.serialCont(buf);
+	//NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector();
+	//f.serialCont(buf);
+	f.serialBufferWithSize ((uint8*)_ParticleSystemProto.buffer(), _ParticleSystemProto.length());
 	if (ver > 1)
 	{
 		// serial default tracks

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.2 2002/04/09 11:44:14 berenguier Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.3 2002/05/21 16:42:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -531,7 +531,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint no
 		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin1));
 	#else
 		// slower precache but still usefull
-		if( CCpuInfo::hasMMX() )
+		if( CSystemInfo::hasMMX() )
 			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin1));
 	#endif
 
@@ -573,7 +573,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint no
 		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin2));
 	#else
 		// slower precache but still usefull
-		if( CCpuInfo::hasMMX() )
+		if( CSystemInfo::hasMMX() )
 			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin2));
 	#endif
 
@@ -616,7 +616,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint no
 		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin4));
 	#else
 		// slower precache but still usefull
-		if( CCpuInfo::hasMMX() )
+		if( CSystemInfo::hasMMX() )
 			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin4));
 	#endif
 
@@ -660,7 +660,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint no
 		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin4));
 	#else
 		// slower precache but still usefull
-		if( CCpuInfo::hasMMX() )
+		if( CSystemInfo::hasMMX() )
 			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin4));
 	#endif
 
@@ -775,7 +775,7 @@ void		CMeshMRMGeom::applyArrayRawSkinTgSpace1(CRawVertexTgSpaceSkin1 *src, uint 
 		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin1));
 	#else
 		// slower precache but still usefull
-		if( CCpuInfo::hasMMX() )
+		if( CSystemInfo::hasMMX() )
 			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin1));
 	#endif
 
@@ -820,7 +820,7 @@ void		CMeshMRMGeom::applyArrayRawSkinTgSpace2(CRawVertexTgSpaceSkin2 *src, uint 
 		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin2));
 	#else
 		// slower precache but still usefull
-		if( CCpuInfo::hasMMX() )
+		if( CSystemInfo::hasMMX() )
 			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin2));
 	#endif
 
@@ -867,7 +867,7 @@ void		CMeshMRMGeom::applyArrayRawSkinTgSpace3(CRawVertexTgSpaceSkin4 *src, uint 
 		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin4));
 	#else
 		// slower precache but still usefull
-		if( CCpuInfo::hasMMX() )
+		if( CSystemInfo::hasMMX() )
 			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin4));
 	#endif
 
@@ -916,7 +916,7 @@ void		CMeshMRMGeom::applyArrayRawSkinTgSpace4(CRawVertexTgSpaceSkin4 *src, uint 
 		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin4));
 	#else
 		// slower precache but still usefull
-		if( CCpuInfo::hasMMX() )
+		if( CSystemInfo::hasMMX() )
 			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin4));
 	#endif
 

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.41 2001/08/14 12:31:36 lecroart Exp $
+ * $Id: entities.cpp,v 1.42 2002/02/14 13:03:53 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -719,7 +719,8 @@ void updateEntities ()
 			}
 */
 			// snap to the ground
-			entity.VisualCollisionEntity->snapToGround(entity.Position);
+			if (!GlobalRetriever->isInterior(gPos)
+				entity.VisualCollisionEntity->snapToGround(entity.Position);
 
 			if (entity.Type == CEntity::Other &&
 				(entity.ServerPosition-entity.Position)*entity.ImmediateSpeed < 0.0f)
@@ -727,7 +728,8 @@ void updateEntities ()
 //				nlinfo("detected over entity %d", entity.Id);
 				entity.ServerPosition.z = entity.Position.z;
 				entity.Position = entity.ServerPosition;
-				entity.VisualCollisionEntity->snapToGround(entity.Position);
+				if (!GlobalRetriever->isInterior(gPos)
+					entity.VisualCollisionEntity->snapToGround(entity.Position);
 				entity.MovePrimitive->setGlobalPosition(CVectorD(entity.Position.x, entity.Position.y, entity.Position.z), 0);
 			}
 
@@ -839,7 +841,7 @@ void	resetEntityPosition(uint32 eid)
 	entity.Position.z = GlobalRetriever->getMeanHeight(gPos);
 
 	// snap to the ground
-	if (entity.VisualCollisionEntity != NULL)
+	if (entity.VisualCollisionEntity != NULL && !GlobalRetriever->isInterior(gPos))
 		entity.VisualCollisionEntity->snapToGround(entity.Position);
 
 	if (entity.MovePrimitive != NULL)
@@ -966,7 +968,8 @@ NLMISC_COMMAND(goto, "go to a given position", "<x> <y>")
 		gPos.LocalPosition.Estimation.z = 0.0f;
 		entity.Position.z = GlobalRetriever->getMeanHeight(gPos);
 		// snap to the ground
-		entity.VisualCollisionEntity->snapToGround(entity.Position);
+		if (!GlobalRetriever->isInterior(gPos))
+		   entity.VisualCollisionEntity->snapToGround( entity.Position );
 
 		if (entity.Type == CEntity::Self)
 		{

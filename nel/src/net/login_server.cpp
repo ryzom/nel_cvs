@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.23 2003/01/07 17:46:20 miller Exp $
+ * $Id: login_server.cpp,v 1.24 2003/01/13 14:06:25 lecroart Exp $
  *
  */
 
@@ -41,8 +41,9 @@ namespace NLNET {
 
 struct CPendingUser
 {
-	CPendingUser (const CLoginCookie &cookie) : Cookie (cookie) { }
+	CPendingUser (const CLoginCookie &cookie) : Cookie (cookie) { Time = CTime::getSecondsSince1970(); }
 	CLoginCookie Cookie;
+	uint32 Time;	// when the cookie is inserted in pending list
 };
 
 static list<CPendingUser> PendingUsers;
@@ -53,6 +54,9 @@ static string ListenAddr;
 static bool AcceptInvalidCookie = false;
 
 static TDisconnectClientCallback DisconnectClientCallback = NULL;
+
+// default value is 2 minutes
+static uint TimeBeforeEraseCookie = 120;
 
 /// contains the correspondance between userid and the sockid
 map<uint32, TSockId> UserIdSockAssociations;
@@ -65,12 +69,35 @@ TNewClientCallback NewClientCallback = NULL;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+void refreshPendingList ()
+{
+	// delete too old cookie
+
+	list<CPendingUser>::iterator it = PendingUsers.begin();
+	uint32 Time = CTime::getSecondsSince1970();
+	while (it != PendingUsers.end ())
+	{
+		if ((*it).Time < Time - TimeBeforeEraseCookie)
+		{
+			nlinfo("Removing cookie '%s' because too old", (*it).Cookie.toString().c_str());
+			it = PendingUsers.erase (it);
+		}
+		else
+		{
+			it++;
+		}
+	}
+}
+
+
 void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the WS call me that a new client want to come in my shard
 	string reason;
 	CLoginCookie cookie;
-	
+
+	refreshPendingList ();
+
 	//
 	// S08: receive "CS" message from WS and send "SCS" message to WS
 	//
@@ -222,39 +249,57 @@ void cfcbAcceptInvalidCookie(CConfigFile::CVar &var)
 	nlinfo("This service %saccept invalid cookie", AcceptInvalidCookie?"":"doesn't ");
 }
 
+void cfcbTimeBeforeEraseCookie(CConfigFile::CVar &var)
+{
+	// set the new ListenAddr
+	TimeBeforeEraseCookie = var.asInt();
+	
+	nlinfo("This service will remove cookie after %d seconds", TimeBeforeEraseCookie);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////// CONNECTION TO THE WELCOME SERVICE //////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
+void CLoginServer::init (string &listenAddress)
 {
 	// connect to the welcome service
 	connectToWS ();
-
-	// add callback to the server
-	server.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
-	server.setConnectionCallback (ClientConnection, NULL);
-
+	
 	try {
 		cfcbListenAddress (IService::getInstance()->ConfigFile.getVar("ListenAddress"));
 		IService::getInstance()->ConfigFile.setCallback("ListenAddress", cfcbListenAddress);
-
+		
 	} catch(Exception &) { }
 	
 	try {
 		cfcbAcceptInvalidCookie (IService::getInstance()->ConfigFile.getVar("AcceptInvalidCookie"));
 		IService::getInstance()->ConfigFile.setCallback("AcceptInvalidCookie", cfcbAcceptInvalidCookie);
 	} catch(Exception &) { }
-
+	
+	try {
+		cfcbTimeBeforeEraseCookie (IService::getInstance()->ConfigFile.getVar("TimeBeforeEraseCookie"));
+		IService::getInstance()->ConfigFile.setCallback("TimeBeforeEraseCookie", cfcbTimeBeforeEraseCookie);
+	} catch(Exception &) { }
+	
 	// if the listen addr is not in the config file, try to find it dynamically
 	if (ListenAddr.empty())
 	{
-		ListenAddr = server.listenAddress ().asIPString();
+		ListenAddr = listenAddress;
 	}
 
 	nlinfo("Listen Address trapped '%s'", ListenAddr.c_str());
+}
+
+void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
+{
+	init (server.listenAddress ().asIPString());
+	
+	// add callback to the server
+	server.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
+	server.setConnectionCallback (ClientConnection, NULL);
 
 	NewClientCallback = ncl;
 	Server = &server;
@@ -262,26 +307,7 @@ void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
 
 void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 {
-	// connect to the welcome service
-	connectToWS ();
-
-	try {
-		cfcbListenAddress (IService::getInstance()->ConfigFile.getVar("ListenAddress"));
-		IService::getInstance()->ConfigFile.setCallback("ListenAddress", cfcbListenAddress);
-	} catch(Exception &) { }
-
-	try {
-		cfcbAcceptInvalidCookie (IService::getInstance()->ConfigFile.getVar("AcceptInvalidCookie"));
-		IService::getInstance()->ConfigFile.setCallback("AcceptInvalidCookie", cfcbAcceptInvalidCookie);
-	} catch(Exception &) { }
-	
-	// if the listen addr is not in the config file, try to find it dynamically
-	if (ListenAddr.empty())
-	{
-		ListenAddr = server.localAddr ().asIPString();
-	}
-
-	nlinfo("Listen Address trapped '%s'", ListenAddr.c_str());
+	init (server.localAddr ().asIPString());
 
 	DisconnectClientCallback = dc;
 }
@@ -352,7 +378,7 @@ NLMISC_COMMAND (lsUsers, "displays the list of all connected users", "")
 	{
 		log.displayNL ("> %u %s", (*it).first, (*it).second->asString().c_str());
 	}
-	log.displayNL ("End ot the list");
+	log.displayNL ("End of the list");
 
 	return true;
 }
@@ -366,7 +392,7 @@ NLMISC_COMMAND (lsPending, "displays the list of all pending users", "")
 	{
 		log.displayNL ("> %s", (*it).Cookie.toString().c_str());
 	}
-	log.displayNL ("End ot the list");
+	log.displayNL ("End of the list");
 
 	return true;
 }

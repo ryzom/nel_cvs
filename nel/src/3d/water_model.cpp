@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.25 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: water_model.cpp,v 1.26 2002/09/24 15:04:08 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -355,8 +355,8 @@ static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CMatrix &m
 		ib[ k * 3      ] = 0;
 		ib[ k * 3  + 1 ] = k + 1;
 		ib[ k * 3  + 2 ] = k + 2;
-	}
-	drv->renderSimpleTriangles(&ib[0], p.Vertices.size() - 2);
+	}	
+	drv->renderSimpleTriangles(&ib[0], p.Vertices.size() - 2);	
 }
 
 //***************************************************************************************************************
@@ -468,12 +468,14 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		plvect[k] = plvect[k] * pyramidMat; // put the plane in object space
 	}
 
-	clippedPoly.clip(plvect, 6);	// get the tesselated part of the poly (with alpah transition)
+	clippedPoly.clip(plvect, 6);	// get the tesselated part of the poly 
 
-	// modify the pyramid to get the transition part of the poly (no tesselated, alpha transition)	
+	// modify the pyramid to get the transition part of the poly (no tesselated)
 	plvect[0].d   += (transitionDist - nearDist);
-	plvect[1].d   -= (farDist - transitionDist);
-	endClippedPoly.clip(plvect, 6);
+	// plvect[1].d   -= (farDist - transitionDist);
+	// dont clip by far plane (done by driver)
+	endClippedPoly.clip(plvect, 1);
+	endClippedPoly.clip(plvect + 2, 4);
 
 
 
@@ -727,7 +729,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 					{						
 						sint count = oldEndX - oldStartX;
 						if (count > 0)
-						{						
+						{												
 							drv->renderSimpleTriangles(&((*currIB)[(oldStartX + rotBorderSize) * 6]),
 												 2 * count );				
 						}		
@@ -740,7 +742,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 					std::swap(currIB, otherIB);
 					if (l < (wqHeight - 1))
 					{
-						++it;
+ 						++it;
 					}
 					else
 					{
@@ -781,7 +783,11 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	if (endClippedPoly.Vertices.size() != 0)
 	{	
 		CMatrix mtx; /*= HrcObs->WorldMatrix;*/
-		mtx.setPos(NLMISC::CVector(-obsPos.x, -obsPos.y, obsPos.z));
+		// mtx.setPos(NLMISC::CVector(-obsPos.x, -obsPos.y, obsPos.z));
+
+		mtx.setPos(HrcObs->WorldMatrix.getPos() + NLMISC::CVector(-obsPos.x, -obsPos.y, 0));
+		// set right obsever position
+		drv->setConstant(7, 0, 0, obsPos.z /* - zHeight*/ , 0.f);
 		//setAttenuationFactor(drv, true, obsPos, camMat.getJ(), farDist);				
 		DrawPoly2D(shape->_VB, drv, mtx, endClippedPoly);
 	}
@@ -808,8 +814,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 //***********************
 
 void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight)
-{
-
+{	
 	CMaterial WaterMat;
 	WaterMat.setLighting(false);
 	WaterMat.setDoubleSided(true);	
@@ -819,20 +824,40 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 	WaterMat.setSrcBlend(CMaterial::srcalpha);
 	WaterMat.setDstBlend(CMaterial::invsrcalpha);
 	WaterMat.setZWrite(true);
-	if (drv->isVertexProgramSupported())
+
+	if (drv->isVertexProgramSupported())	
 	{
 		const uint cstOffset = 4; // 4 places for the matrix
-		NLMISC::CVectorH cst[12];
-
-		nlassert(sizeof(NLMISC::CVectorH) == 4 * sizeof(float)); // if this fails, should be replaced with a tab of float
+		NLMISC::CVectorH cst[13];
+		
 		
 		//=========================//
 		//	setup Water material   //
 		//=========================//
 	
 		uint alphaMapStage, envMapStage;	
-		WaterMat.setColor(NLMISC::CRGBA::White);				
-		if (drv->getNbTextureStages() < 4)
+		WaterMat.setColor(NLMISC::CRGBA::White);
+
+		bool useBumpedVersion = false;
+		bool useEMBM = false;
+		if (drv->getNbTextureStages() >= 4 && (drv->supportTextureShaders() || drv->supportEMBM()))
+		{
+			if (drv->supportTextureShaders())
+			{
+				useBumpedVersion = true;
+			}
+			else // must support EMBM on stages 0 and 1
+			{
+				if (drv->isEMBMSupportedAtStage(0) && drv->isEMBMSupportedAtStage(1))
+				{
+					useBumpedVersion = true;
+					useEMBM = true;
+				}
+			}
+		}		
+
+		
+		if (!useBumpedVersion)
 		{						
 			WaterMat.texEnvOpRGB(0, CMaterial::Modulate);
 			alphaMapStage = 1;
@@ -841,30 +866,45 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 		else
 		{
 			shape->updateHeightMapNormalizationFactors();
+
 			// setup bump proj matrix			
 			const float idMat[] = {0.25f * shape->_HeightMapNormalizationFactor[0], 0, 0, 0.25f * shape->_HeightMapNormalizationFactor[0]};	
 			const float idMat2[] = {shape->_HeightMapNormalizationFactor[1], 0, 0, shape->_HeightMapNormalizationFactor[1]};	
 
-			drv->setMatrix2DForTextureOffsetAddrMode(1, idMat);
-			drv->setMatrix2DForTextureOffsetAddrMode(2, idMat2);
-
 			WaterMat.setTexture(0, shape->_BumpMap[0]);
 			WaterMat.setTexture(1, shape->_BumpMap[1]);				
 			WaterMat.texEnvOpRGB(2, CMaterial::Replace);
-
-
-			//if (shape->_BumpMap[0]->supportSharing()) nlinfo(shape->_BumpMap[0]->getShareName().c_str());
-			//if (shape->_BumpMap[1]->supportSharing()) nlinfo(shape->_BumpMap[1]->getShareName().c_str());
-
-			/*WaterMat.texEnvOpRGB(1, CMaterial::Replace);
-			WaterMat.texEnvOpRGB(1, CMaterial::Replace);*/
-			WaterMat.enableTexAddrMode();
-			WaterMat.setTexAddressingMode(0, CMaterial::FetchTexture);		
-			WaterMat.setTexAddressingMode(1, CMaterial::OffsetTexture);
-			WaterMat.setTexAddressingMode(2, CMaterial::OffsetTexture);
-			WaterMat.setTexAddressingMode(3, shape->_ColorMap ? CMaterial::FetchTexture : CMaterial::TextureOff);
 			alphaMapStage = 3;
 			envMapStage   = 2;
+
+			// Version with texture shaders
+			if (!useEMBM)
+			{						
+				drv->setMatrix2DForTextureOffsetAddrMode(1, idMat);
+				drv->setMatrix2DForTextureOffsetAddrMode(2, idMat2);				
+
+
+				//if (shape->_BumpMap[0]->supportSharing()) nlinfo(shape->_BumpMap[0]->getShareName().c_str());
+				//if (shape->_BumpMap[1]->supportSharing()) nlinfo(shape->_BumpMap[1]->getShareName().c_str());
+
+				/*WaterMat.texEnvOpRGB(1, CMaterial::Replace);
+				WaterMat.texEnvOpRGB(1, CMaterial::Replace);*/
+				WaterMat.enableTexAddrMode();
+				WaterMat.setTexAddressingMode(0, CMaterial::FetchTexture);		
+				WaterMat.setTexAddressingMode(1, CMaterial::OffsetTexture);
+				WaterMat.setTexAddressingMode(2, CMaterial::OffsetTexture);
+				WaterMat.setTexAddressingMode(3, shape->_ColorMap ? CMaterial::FetchTexture : CMaterial::TextureOff);				
+			}
+			else // version with EMBM
+			{
+				drv->setEMBMMatrix(0, idMat2);		
+				drv->setEMBMMatrix(1, idMat2);
+				WaterMat.texEnvOpRGB(0, CMaterial::EMBM);
+				//WaterMat.texEnvOpRGB(0, CMaterial::Replace);
+				//WaterMat.texEnvOpRGB(0, CMaterial::EMBM);
+				WaterMat.texEnvOpRGB(1, CMaterial::EMBM);
+				WaterMat.setTexture(0, NULL);			
+			}
 		}
 		
 
@@ -899,6 +939,7 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 		}
 
 		cst[16 - cstOffset].set(0.1f, 0.1f, 0.1f, 0.1f); // used to avoid imprecision when performing a RSQ to get distance from the origin
+		// cst[16 - cstOffset].set(0.0f, 0.0f, 0.0f, 0.0f); // used to avoid imprecision when performing a RSQ to get distance from the origin
 
 					
 
@@ -907,8 +948,12 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 
 		// slope of attenuation of normal / height with distance		
 		const float invMaxDist = shape->_WaveHeightFactor / maxDist;
-		cst[6  - cstOffset].set(invMaxDist, invMaxDist, invMaxDist, invMaxDist); // upcoming light vector
+		cst[6  - cstOffset].set(invMaxDist, shape->_WaveHeightFactor, 0, 0);		
+
+		/*cst[6  - cstOffset].set(invMaxDist, invMaxDist, invMaxDist, invMaxDist); // upcoming light vectorshape->_WaveHeightFactor		
 		cst[15  - cstOffset].set(shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor);
+		*/
+
 
 				
 
@@ -936,26 +981,48 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 		
 
 		/// set all our constants in one call
-		drv->setConstant(4, sizeof(cst) / (4 * sizeof(float)), (float *) &cst[0]);
+		drv->setConstant(4, sizeof(cst) / sizeof(cst[0]), (float *) &cst[0]);
 
 		shape->initVertexProgram();		
 		bool result;
-		if (drv->getNbTextureStages() >= 4)
+		if (useBumpedVersion)
 		{
-			result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramAlpha).get())
-											: drv->activeVertexProgram((shape->_VertexProgram).get());
+			if (!useEMBM)
+			{			
+				result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramBump2Diffuse).get())
+												: drv->activeVertexProgram((shape->_VertexProgramBump2).get());
+			}
+			else
+			{
+				result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramBump1Diffuse).get())
+												: drv->activeVertexProgram((shape->_VertexProgramBump1).get());
+			}
 		}
 		else
 		{
-			result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgram2StagesAlpha).get())
-										: drv->activeVertexProgram((shape->_VertexProgram2Stages).get());
+			result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramNoBumpDiffuse).get())
+										: drv->activeVertexProgram((shape->_VertexProgramNoBump).get());
 		}
-		if (!result) nlwarning("no vertex program setupped");
+		if (!result) nlwarning("no vertex program setupped");				
 	}
 	else
 	{		
 		WaterMat.setColor(NLMISC::CRGBA(0, 32, 190, 128));	
 	}
+
+
+	// temp for test
+/*	WaterMat = CMaterial();
+	WaterMat.initUnlit();
+	WaterMat.setDoubleSided(true);
+	WaterMat.setColor(CRGBA::Red);
+
+
+	 WaterMat.texEnvOpRGB(0, CMaterial::Replace);
+	WaterMat.texEnvOpAlpha(0, CMaterial::Replace);
+	WaterMat.texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
+	WaterMat.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
+	*/
 
 	drv->setupMaterial(WaterMat);
 }

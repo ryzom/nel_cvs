@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.9 2001/01/18 17:53:52 chafik Exp $
+ * $Id: yacc.cpp,v 1.10 2001/01/19 09:06:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -313,10 +313,10 @@ namespace NLAISCRIPT
 			_ExpressionType = NULL;
 			
 		}
-		catch(CExceptionHaveNoType a)
+		catch(NLAIE::IException &)
 		{
 			char text[4096];
-			sprintf(text,"Referance à un composant non défini ou constituer d'une hiararchie non completement définie");
+			sprintf(text,"Bad reference or class reference undefined");
 			yyerror(text);
 			return 0;
 		}

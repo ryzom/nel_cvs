@@ -7,6 +7,8 @@
 // light_group_factor.h : header file
 //
 
+#include "color_button.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CLightGroupFactor dialog
 
@@ -21,6 +23,12 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CLightGroupFactor)
 	enum { IDD = IDD_LIGHT_GROUP_FACTOR };
+	CColorButton	ColorStart0;
+	CColorButton	ColorStart1;
+	CColorButton	ColorStart2;
+	CColorButton	ColorEnd0;
+	CColorButton	ColorEnd1;
+	CColorButton	ColorEnd2;
 	CSliderCtrl	LightGroup3Ctrl;
 	CSliderCtrl	LightGroup2Ctrl;
 	CSliderCtrl	LightGroup1Ctrl;
@@ -44,8 +52,16 @@ protected:
 	//{{AFX_MSG(CLightGroupFactor)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnButtonColorEnd0();
+	afx_msg void OnButtonColorEnd1();
+	afx_msg void OnButtonColorEnd2();
+	afx_msg void OnButtonColorStart0();
+	afx_msg void OnButtonColorStart1();
+	afx_msg void OnButtonColorStart2();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+	void	chooseColor(CColorButton &colbut);
 };
 
 //{{AFX_INSERT_LOCATION}}

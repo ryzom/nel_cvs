@@ -625,6 +625,12 @@
 #define IDC_ZTEST                       1393
 #define IDC_ZBIAS_TEXT                  1394
 #define IDC_ZBIAS                       1395
+#define IDC_BUTTON_COLOR_END0           1396
+#define IDC_BUTTON_COLOR_END1           1397
+#define IDC_BUTTON_COLOR_END2           1398
+#define IDC_BUTTON_COLOR_START0         1402
+#define IDC_BUTTON_COLOR_START1         1403
+#define IDC_BUTTON_COLOR_START2         1404
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -835,7 +841,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1134
 #define _APS_NEXT_COMMAND_VALUE         32968
-#define _APS_NEXT_CONTROL_VALUE         1396
+#define _APS_NEXT_CONTROL_VALUE         1397
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.14 2003/09/16 15:08:30 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.15 2003/09/16 15:53:44 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -125,7 +125,12 @@ void CEntityIdTranslator::getByUser (const string &userName, vector<CEntityId> &
 
 ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
 {
-	reit it = RegisteredEntities.find (eid);
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	reit it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
 		return ucstring("");
@@ -222,61 +227,76 @@ bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
 
 void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const string &userName)
 {
-	if (RegisteredEntities.find (eid) != RegisteredEntities.end ())
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	if (RegisteredEntities.find (reid) != RegisteredEntities.end ())
 	{
-		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EId is already in the map", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EId is already in the map", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		return;
 	}
 
 	if (entityNameExists(entityName))
 	{
-		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EntityName is already in the map", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EntityName is already in the map", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		return;
 	}
 	
-	nlinfo ("Register EId %s EntityName %s UId %d UserName %s", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
-	RegisteredEntities.insert (make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot)));
+	nlinfo ("Register EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+	RegisteredEntities.insert (make_pair(reid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot)));
 
 	save ();
 }
 
 void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 {
-	reit it = RegisteredEntities.find (eid);
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	reit it = RegisteredEntities.find (reid);
 	
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("Can't unregister EId %s because EId is not in the map", eid.toString().c_str());
+		nlwarning ("Can't unregister EId %s because EId is not in the map", reid.toString().c_str());
 		return;
 	}
 	
-	nlinfo ("Unregister EId %s EntityName %s UId %d UserName %s", eid.toString().c_str(), (*it).second.EntityName.toString().c_str(), (*it).second.UId, (*it).second.UserName.c_str());
-	RegisteredEntities.erase (eid);
+	nlinfo ("Unregister EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), (*it).second.EntityName.toString().c_str(), (*it).second.UId, (*it).second.UserName.c_str());
+	RegisteredEntities.erase (reid);
 	
 	save ();
 }
 
 void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
 {
-	map<CEntityId, CEntityIdTranslator::CEntity>::iterator it = RegisteredEntities.find (eid);
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	map<CEntityId, CEntityIdTranslator::CEntity>::iterator it = RegisteredEntities.find (reid);
 	bool needSave = false;
 	
-	nlinfo ("Checking EId %s EntityName '%s' UId %d UserName '%s'", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+	nlinfo ("Checking EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 	
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("Check failed because EId is not in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+		nlwarning ("Check failed because EId is not in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		
 		if (entityNameExists(entityName))
 		{
-			nlwarning ("Check failed because entity name already exist (%s) for EId %s EntityName '%s' UId %d UserName '%s'", getByEntity(entityName).toString().c_str(), eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("Check failed because entity name already exist (%s) for EId %s EntityName '%s' UId %d UserName '%s'", getByEntity(entityName).toString().c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		}
 	}
 	else
 	{
 		if ((*it).second.EntityName != entityName)
 		{
-			nlwarning ("Check failed because entity name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.EntityName.toString().c_str(), eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("Check failed because entity name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.EntityName.toString().c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 			if(!entityName.empty())
 			{
 				(*it).second.EntityName = entityName;
@@ -285,7 +305,7 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 		}
 		if ((*it).second.UId != uid)
 		{
-			nlwarning ("Check failed because uid not identical (%d) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UId, eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("Check failed because uid not identical (%d) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UId, reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 			if (uid != 0)
 			{
 				(*it).second.UId = uid;
@@ -294,7 +314,7 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 		}
 		if ((*it).second.UserName != userName)
 		{
-			nlwarning ("Check failed because user name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UserName.c_str(), eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("Check failed because user name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UserName.c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 			if(!userName.empty())
 			{
 				(*it).second.UserName = userName;
@@ -430,10 +450,15 @@ string CEntityIdTranslator::getUserName (uint32 uid)
 
 void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, string &userName, bool &online)
 {
-	reit it = RegisteredEntities.find (eid);
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	reit it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("%s is not registered in CEntityIdTranslator", eid.toString().c_str());
+		nlwarning ("%s is not registered in CEntityIdTranslator", reid.toString().c_str());
 		entityName = "";
 		entitySlot = -1;
 		uid = ~0;
@@ -452,10 +477,15 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 
 void CEntityIdTranslator::setEntityOnline (const CEntityId &eid, bool online)
 {
-	reit it = RegisteredEntities.find (eid);
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	reit it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("%s is not registered in CEntityIdTranslator", eid.toString().c_str());
+		nlwarning ("%s is not registered in CEntityIdTranslator", reid.toString().c_str());
 	}
 	else
 	{
@@ -465,10 +495,15 @@ void CEntityIdTranslator::setEntityOnline (const CEntityId &eid, bool online)
 
 bool CEntityIdTranslator::isEntityOnline (const CEntityId &eid)
 {
-	reit it = RegisteredEntities.find (eid);
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	reit it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
-		nlwarning ("%s is not registered in CEntityIdTranslator", eid.toString().c_str());
+		nlwarning ("%s is not registered in CEntityIdTranslator", reid.toString().c_str());
 		return false;
 	}
 	else
@@ -583,6 +618,10 @@ NLMISC_COMMAND(playerInfo,"Get informations about a player or all players in CEn
 
 		if (eid != CEntityId::Unknown)
 		{
+			// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+			eid.setCreatorId(0);
+			eid.setDynamicId(0);
+			
 			res.push_back(eid);
 		}
 		else if (uid != 0)

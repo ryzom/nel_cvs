@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.56 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.57 2001/12/20 10:12:39 berenguier Exp $
  *
  */
 
@@ -3019,6 +3019,14 @@ void			CTessFace::computeTesselatedPos(const CUV &uv, CVector &ret)
 	CVector		Gx;
 	CVector		Gy;
 	CVector		Gz;
+	// If VertexProgram activated
+	if( CLandscapeGlobals::VertexProgramEnabled )
+	{
+		// then Must update geomorphed position because not done !!
+		VBase->computeGeomPos();
+		VLeft->computeGeomPos();
+		VRight->computeGeomPos();
+	}
 	// NB: take geomorphed position.
 	uvTri.computeGradient(VBase->Pos.x, VLeft->Pos.x, VRight->Pos.x, Gx);
 	uvTri.computeGradient(VBase->Pos.y, VLeft->Pos.y, VRight->Pos.y, Gy);

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.98 2001/12/12 10:05:46 berenguier Exp $
+ * $Id: landscape.cpp,v 1.99 2001/12/20 10:12:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,6 +211,8 @@ CLandscape::CLandscape() :
 	_OldRefineCenterSetuped= false;
 	_SplitPriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD);
 	_MergePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD);
+	// just for getTesselatedPos to work properly.
+	_OldRefineCenter= CVector::Null;
 
 	// create / Init the vegetable manager.
 	_VegetableManager= new CVegetableManager(NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_UNLIT, NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_LIGHTED);
@@ -2063,6 +2065,38 @@ void			CLandscape::buildCollideFaces(sint zoneId, sint patch, std::vector<CTrian
 // ***************************************************************************
 CVector			CLandscape::getTesselatedPos(const CPatchIdent &patchId, const CUV &uv) const
 {
+	// First, must update globals, for CTessFace::computeTesselatedPos() to work properly.
+
+	// VertexProgrma mode???
+	CLandscapeGlobals::VertexProgramEnabled= _VertexShaderOk;
+
+	// If VertexProgram enabled
+	if( CLandscapeGlobals::VertexProgramEnabled )
+	{
+		/* because VertexProgram enabled, CTessVertex::Pos (geomorphed Pos) are not computed each frame
+		   Hence, CTessFace::computeTesselatedPos() will call CTessVertex::computeGeomPos() to have correct 
+		   CTessVertex::Pos. ThereFore we must setup globals so CTessVertex::computeGeomPos() works properly.
+		*/
+		
+		// see copy in updateGlobalsAndLockBuffers(). NB: Just copy what needed here!!!!
+
+		// Tile subdivsion part.
+		CLandscapeGlobals::TileDistNear = _TileDistNear;
+		CLandscapeGlobals::TileDistFar = CLandscapeGlobals::TileDistNear+20;
+		CLandscapeGlobals::TileDistNearSqr = sqr(CLandscapeGlobals::TileDistNear);
+		CLandscapeGlobals::TileDistFarSqr = sqr(CLandscapeGlobals::TileDistFar);
+		CLandscapeGlobals::OOTileDistDeltaSqr = 1.0f / (CLandscapeGlobals::TileDistFarSqr - CLandscapeGlobals::TileDistNearSqr);
+
+		// RefineThreshold.
+		CLandscapeGlobals::RefineThreshold= _Threshold;
+		CLandscapeGlobals::OORefineThreshold= 1.0f / CLandscapeGlobals::RefineThreshold;
+
+		// Refine Center*.
+		// NB: setup the last setuped refineCenter.
+		CLandscapeGlobals::RefineCenter= _OldRefineCenter;
+	}
+
+
 	// \todo yoyo: TODO_ZONEID: change ZoneId in 32 bits...
 	std::map<uint16, CZone*>::const_iterator	it= Zones.find((uint16)patchId.ZoneId);
 	if(it!=Zones.end())

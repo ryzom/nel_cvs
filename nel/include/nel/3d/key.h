@@ -1,7 +1,7 @@
 /** \file key.h
  * class CKey
  *
- * $Id: key.h,v 1.2 2001/03/07 16:54:25 berenguier Exp $
+ * $Id: key.h,v 1.3 2001/03/08 11:02:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/quat.h"
+#include "nel/misc/stream.h"
 
 // NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
 
@@ -44,9 +45,21 @@ namespace NL3D
  * \date 2001
  */
 template<class T>
-class CKey
+class CKey : public NLMISC::IStreamable
 {
 public:
+
+	/// Serial
+	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+	{
+		// Version number
+		sint version=f.serialVersion (0);
+
+		// Serial the value
+		f.serial (Value);
+	};
+
+	/// The key value
 	T					Value;
 };
 
@@ -62,6 +75,22 @@ template<class T>
 class CKeyTCB : public CKey<T>
 {
 public:
+
+	/// Serial
+	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+	{
+		// Version number
+		sint version=f.serialVersion (0);
+
+		// Serial the value
+		f.serial (Value);
+		f.serial (Tension);
+		f.serial (Continuity);
+		f.serial (Bias);
+		f.serial (EaseTo);
+		f.serial (EaseFrom);
+	};
+
 	float	Tension;
 	float	Continuity;
 	float	Bias;
@@ -81,27 +110,96 @@ template<class T>
 class CKeyBezier : public CKey<T>
 {
 public:
+
+	/// Serial
+	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+	{
+		// Version number
+		sint version=f.serialVersion (0);
+
+		// Serial the value
+		f.serial (Value);
+		f.serial (InTan);
+		f.serial (OutTan);
+	};
+
 	T		InTan;
 	T		OutTan;
 };
 
 // Predefined types
-typedef CKey<std::string>			CKeyString;
-typedef CKey<bool>					CKeyBool;
-typedef CKey<float>					CKeyFloat;
-typedef CKey<NLMISC::CVector>		CKeyVector;
-typedef CKey<NLMISC::CQuat>			CKeyQuat;
-typedef CKey<int>					CKeyInt;
+class CKeyString : public CKey<std::string>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyString);
+};
+class CKeyBool : public CKey<bool>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyBool);
+};
+class CKeyFloat : public CKey<float>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyFloat);
+};
+class CKeyVector : public CKey<NLMISC::CVector>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyVector);
+};
+class CKeyQuat : public CKey<NLMISC::CQuat>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyQuat);
+};
+class CKeyInt : public CKey<sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyInt);
+};
 
-typedef CKeyTCB<float>				CKeyTCBFloat;
-typedef CKeyTCB<NLMISC::CVector>	CKeyTCBVector;
-typedef CKeyTCB<NLMISC::CQuat>		CKeyTCBQuat;
-typedef CKeyTCB<int>				CKeyTCBInt;
+class CKeyTCBFloat : public CKeyTCB<float>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyTCBFloat);
+};
+class CKeyTCBVector : public CKeyTCB<NLMISC::CVector>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyTCBVector);
+};
+class CKeyTCBQuat : public CKeyTCB<NLMISC::CQuat>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyTCBQuat);
+};
+class CKeyTCBInt : public CKeyTCB<sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyTCBInt);
+};
 
-typedef CKeyBezier<float>			CKeyBezierFloat;
-typedef CKeyBezier<NLMISC::CVector>	CKeyBezierVector;
-typedef CKeyBezier<NLMISC::CQuat>	CKeyBezierQuat;
-typedef CKeyBezier<int>				CKeyBezierInt;
+class CKeyBezierFloat : public CKeyBezier<float>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyBezierFloat);
+};
+class CKeyBezierVector : public CKeyBezier<NLMISC::CVector>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyBezierVector);
+};
+class CKeyBezierQuat : public CKeyBezier<NLMISC::CQuat>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyBezierQuat);
+};
+class CKeyBezierInt : public CKeyBezier<sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyBezierInt);
+};
 
 
 

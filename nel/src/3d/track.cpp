@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.5 2001/03/07 17:08:06 berenguier Exp $
+ * $Id: track.cpp,v 1.6 2001/03/08 11:02:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,8 +62,6 @@ CTrackDefaultQuat ttoto12;
 CTrackDefaultInt ttoto13;
 CTrackDefaultString ttoto14;
 CTrackDefaultBool ttoto15;
-
-
 
 
 // ***************************************************************************

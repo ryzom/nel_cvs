@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.5 2001/03/07 16:51:20 berenguier Exp $
+ * $Id: animated_value.h,v 1.6 2001/03/08 11:02:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,7 +209,7 @@ public:
 
 
 typedef CAnimatedValueNotBlendable<bool>			CAnimatedValueBool;
-typedef CAnimatedValueBlendable<int>				CAnimatedValueInt;
+typedef CAnimatedValueBlendable<sint32>				CAnimatedValueInt;
 typedef CAnimatedValueBlendable<float>				CAnimatedValueFloat;
 typedef CAnimatedValueBlendable<NLMISC::CVector>	CAnimatedValueVector;
 typedef CAnimatedValueNotBlendable<std::string>		CAnimatedValueString;

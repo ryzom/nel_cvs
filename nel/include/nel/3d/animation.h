@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.3 2001/03/07 17:11:46 corvazier Exp $
+ * $Id: animation.h,v 1.4 2001/03/08 11:02:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,11 @@
 #include <map>
 #include <vector>
 
+namespace NLMISC
+{
+class IStream;
+struct EStream;
+}
 
 namespace NL3D 
 {
@@ -48,10 +53,9 @@ class ITrack;
 class CAnimation
 {
 public:
-	// Typedef to avoid stupid VC++ warning
 
-	class iS : public std::string {};
-	class mI : public std::map<iS, uint> {};
+	/// Destructor
+	~CAnimation ();
 
 	/// \name Public interface.
 
@@ -68,28 +72,29 @@ public:
 	  *
 	  * \param channelId is the id of the desired channel.
 	  */
-	const ITrack* getTrack (uint trackId) const
-	{
-		return _TrackVector[trackId].get();
-	}
+	const ITrack* getTrack (uint trackId) const;
 
-	// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
 	/** Add a track at the end of the track list.
 	  * 
 	  * This method is used to insert tracks in the animation.
-	  * Tracks must be allocated with new. The pointer is then maintained
+	  * Tracks must be allocated with new. The pointer is then handeled
 	  * by the CAnimation.
 	  */
 	void addTrack (const std::string& name, ITrack* pChannel);
 
+	/// Serial the template
+	void serial (NLMISC::IStream& f) throw (NLMISC::EStream);
+
 private:
 	/// \name Members
+	typedef std::map<std::string, uint32> TMapStringUInt;
+	typedef std::vector<ITrack* > TVectAPtrTrack;
 
 	// Map to get a channel id with a name.
-	mI									_IdByName;
+	TMapStringUInt		_IdByName;
 
 	// Vector of channel pointer.
-	std::vector<std::auto_ptr<ITrack> >	_TrackVector;
+	TVectAPtrTrack		_TrackVector;
 };
 
 

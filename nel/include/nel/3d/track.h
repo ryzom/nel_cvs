@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.4 2001/03/07 17:07:58 berenguier Exp $
+ * $Id: track.h,v 1.5 2001/03/08 11:02:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_TRACK_H
 #define NL_TRACK_H
 
+#include "nel/misc/stream.h"
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 #include "nel/3d/animation_time.h"
@@ -50,9 +51,16 @@ namespace NL3D
  * \author Nevrax France
  * \date 2001
  */
-class ITrack
+class ITrack : public NLMISC::IStreamable
 {
 public:
+	/**
+	  * Virtual destructor.
+	  *
+	  * \return the last value evaluated by ITrack::eval().
+	  */
+	virtual ~ITrack() {};
+
 	/**
 	  * Evaluation of the value of the track for this time.
 	  *
@@ -92,7 +100,10 @@ template<class CKeyT>
 class ITrackKeyFramer : public ITrack
 {
 public:
-	// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
+	// Some types
+	typedef std::auto_ptr<CKeyT >					TAPtrCKey;
+	typedef std::map <CAnimationTime, TAPtrCKey>	TMapTimeAPtrCKey;
+
 	/// From ITrack. 
 	virtual void eval (const CAnimationTime& date)
 	{
@@ -140,8 +151,61 @@ public:
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
 							CAnimationTime datePrevious, CAnimationTime dateNext, 
 							CAnimationTime date ) =0;
+
+	/// Serial the template
+	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+	{
+		// Serial version
+		sint version=f.serialVersion (0);
+
+		// Is stream reading ?
+		if (f.isReading())
+		{
+			// Read the size
+			uint32 size;
+			f.serial (size);
+
+			// Reset the map
+			_MapKey.clear();
+
+			// Read element and insert in the map
+			for (uint e=0; e<(uint)size; e++)
+			{
+				CAnimationTime time;
+				CKeyT* keyPointer;
+
+				// Serial element of the map
+				f.serial (time);
+				f.serialPolyPtr (keyPointer);
+
+				// Insert in the map
+				_MapKey.insert (TMapTimeAPtrCKey::value_type ( time, TAPtrCKey (keyPointer)));
+			}
+		}
+		// Writing...
+		else
+		{
+			// Size of the map
+			uint32 size=(uint32)_MapKey.size();
+			f.serial (size);
+
+			// Write each element
+			TMapTimeAPtrCKey::iterator ite=_MapKey.begin();
+			while (ite!=_MapKey.end())
+			{
+				// Write the element
+				CAnimationTime time=ite->first;
+				CKeyT *keyPointer=ite->second.get();
+				f.serial (time);
+				f.serialPolyPtr (keyPointer);
+
+				// Next element
+				ite++;
+			}
+		}
+	}
 private:
-	std::map <CAnimationTime, std::auto_ptr<CKeyT > >		_MapKey;
+	TMapTimeAPtrCKey		_MapKey;
 };
 
 
@@ -338,7 +402,6 @@ public:
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
 							CAnimationTime datePrevious, CAnimationTime dateNext,
 							CAnimationTime date );
-
 private:
 	CAnimatedValueBlendable<T>	_Value;
 };
@@ -390,33 +453,105 @@ private:
 
 
 // Const tracks.
-typedef CTrackKeyFramerConstBlendable<CKeyFloat,float>				CTrackKeyFramerConstFloat;
-typedef CTrackKeyFramerConstBlendable<CKeyVector, NLMISC::CVector>	CTrackKeyFramerConstVector;
-typedef CTrackKeyFramerConstBlendable<CKeyQuat, NLMISC::CQuat>		CTrackKeyFramerConstQuat;
-typedef CTrackKeyFramerConstBlendable<CKeyInt, int>					CTrackKeyFramerConstInt;
-typedef CTrackKeyFramerConstNotBlendable<CKeyString, std::string>	CTrackKeyFramerConstString;
-typedef CTrackKeyFramerConstNotBlendable<CKeyBool, bool>			CTrackKeyFramerConstBool;
+class CTrackKeyFramerConstFloat : public CTrackKeyFramerConstBlendable<CKeyFloat,float>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstFloat);
+};
+class CTrackKeyFramerConstVector : public CTrackKeyFramerConstBlendable<CKeyVector, NLMISC::CVector>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstVector);
+};
+class CTrackKeyFramerConstQuat : public CTrackKeyFramerConstBlendable<CKeyQuat, NLMISC::CQuat>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstQuat);
+};
+class CTrackKeyFramerConstInt : public CTrackKeyFramerConstBlendable<CKeyInt, sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstInt);
+};
+class CTrackKeyFramerConstString : public CTrackKeyFramerConstNotBlendable<CKeyString, std::string>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstString);
+};
+class CTrackKeyFramerConstBool : public CTrackKeyFramerConstNotBlendable<CKeyBool, bool>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerConstBool);
+};
 
 
 // Linear tracks.
-typedef CTrackKeyFramerLinear<CKeyFloat, float>						CTrackKeyFramerLinearFloat;
-typedef CTrackKeyFramerLinear<CKeyVector, NLMISC::CVector>			CTrackKeyFramerLinearVector;
-typedef CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>				CTrackKeyFramerLinearQuat;
-typedef CTrackKeyFramerLinear<CKeyInt, int>							CTrackKeyFramerLinearInt;
+class CTrackKeyFramerLinearFloat : public CTrackKeyFramerLinear<CKeyFloat, float>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearFloat);
+};
+class CTrackKeyFramerLinearVector : public CTrackKeyFramerLinear<CKeyVector, NLMISC::CVector>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearVector);
+};
+class CTrackKeyFramerLinearQuat : public CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearQuat);
+};
+class CTrackKeyFramerLinearInt : public CTrackKeyFramerLinear<CKeyInt, sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearInt);
+};
 
 
 // TCB tracks.
-typedef CTrackKeyFramerTCB<CKeyTCBFloat, float>						CTrackKeyFramerTCBFloat;
-typedef CTrackKeyFramerTCB<CKeyTCBVector, NLMISC::CVector>			CTrackKeyFramerTCBVector;
-typedef CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CQuat>				CTrackKeyFramerTCBQuat;
-typedef CTrackKeyFramerTCB<CKeyTCBInt, int>							CTrackKeyFramerTCBInt;
+class CTrackKeyFramerTCBFloat : public CTrackKeyFramerTCB<CKeyTCBFloat, float>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBFloat);
+};
+class CTrackKeyFramerTCBVector : public CTrackKeyFramerTCB<CKeyTCBVector, NLMISC::CVector>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBVector);
+};
+class CTrackKeyFramerTCBQuat : public CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CQuat>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBQuat);
+};
+class CTrackKeyFramerTCBInt : public CTrackKeyFramerTCB<CKeyTCBInt, sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBInt);
+};
 
 
 // Bezier tracks.
-typedef CTrackKeyFramerBezier<CKeyBezierFloat, float>				CTrackKeyFramerBezierFloat;
-typedef CTrackKeyFramerBezier<CKeyBezierVector, NLMISC::CVector>	CTrackKeyFramerBezierVector;
-typedef CTrackKeyFramerBezier<CKeyBezierQuat, NLMISC::CQuat>		CTrackKeyFramerBezierQuat;
-typedef CTrackKeyFramerBezier<CKeyBezierInt, int>					CTrackKeyFramerBezierInt;
+class CTrackKeyFramerBezierFloat : public CTrackKeyFramerBezier<CKeyBezierFloat, float>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierFloat);
+};
+class CTrackKeyFramerBezierVector : public CTrackKeyFramerBezier<CKeyBezierVector, NLMISC::CVector>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierVector);
+};
+class CTrackKeyFramerBezierQuat : public CTrackKeyFramerBezier<CKeyBezierQuat, NLMISC::CQuat>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierQuat);
+};
+class CTrackKeyFramerBezierInt : public CTrackKeyFramerBezier<CKeyBezierInt, sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierInt);
+};
 
 
 
@@ -447,6 +582,15 @@ public:
 		return _Value;
 	}
 
+	/// Serial the template
+	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+	{
+		// Serial version
+		sint version=f.serialVersion (0);
+
+		// Serial the value
+		f.serial (_Value.Value);
+	}
 private:
 
 	// The default value
@@ -473,6 +617,15 @@ public:
 		return _Value;
 	}
 
+	/// Serial the template
+	virtual void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+	{
+		// Serial version
+		sint version=f.serialVersion (0);
+
+		// Serial the value
+		f.serial (_Value.Value);
+	}
 private:
 
 	// The default value
@@ -480,12 +633,36 @@ private:
 };
 
 // Predefined types
-typedef CTrackDefaultBlendable<float>				CTrackDefaultFloat;
-typedef CTrackDefaultBlendable<NLMISC::CVector>		CTrackDefaultVector;
-typedef CTrackDefaultBlendable<NLMISC::CQuat>		CTrackDefaultQuat;
-typedef CTrackDefaultBlendable<int>					CTrackDefaultInt;
-typedef CTrackDefaultNotBlendable<std::string>		CTrackDefaultString;
-typedef CTrackDefaultNotBlendable<bool>				CTrackDefaultBool;
+class CTrackDefaultFloat : public CTrackDefaultBlendable<float>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackDefaultFloat);
+};
+class CTrackDefaultVector : public CTrackDefaultBlendable<NLMISC::CVector>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackDefaultVector);
+};
+class CTrackDefaultQuat : public CTrackDefaultBlendable<NLMISC::CQuat>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackDefaultQuat);
+};
+class CTrackDefaultInt : public CTrackDefaultBlendable<sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackDefaultInt);
+};
+class CTrackDefaultString : public CTrackDefaultNotBlendable<std::string>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackDefaultString);
+};
+class CTrackDefaultBool : public CTrackDefaultNotBlendable<bool>
+{
+public:
+	NLMISC_DECLARE_CLASS (CTrackDefaultBool);
+};
 
 } // NL3D
 

@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.7 2002/06/20 08:38:53 hanappe Exp $
+ * $Id: source_dsound.cpp,v 1.8 2002/06/20 09:24:16 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,6 @@
 #include "source_dsound.h"
 #include "sound_driver_dsound.h"
 #include "buffer_dsound.h"
-#include "sound_exception.h"
 #include "listener_dsound.h"
 
 

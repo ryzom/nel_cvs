@@ -741,7 +741,7 @@ fn export_and_check_and_debug_zone checkOnly debug displayMB =
 
 				-- Don't check flag ?
 				ligo_use_boundingbox_data = getAppData $ ligo_use_boundingbox
-				if (ligo_use_boundingbox_data != undefined) and (ligo_use_boundingbox_data == "0") then
+				if (ligo_use_boundingbox_data != undefined) and (ligo_use_boundingbox_data == "1") then
 					dontCheck = true
 				else
 					dontCheck = false

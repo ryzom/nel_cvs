@@ -84,6 +84,8 @@ public:
 
 	virtual bool			setupTexture(CTexture& tex);
 
+	virtual bool			activateTexture(uint stage, CTexture& tex);
+
 	virtual bool			setupMaterial(CMaterial& mat);
 
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective = true);

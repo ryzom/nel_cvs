@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.5 2000/11/08 09:45:06 viau Exp $
+ * $Id: material.cpp,v 1.6 2000/11/08 09:52:47 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,14 +76,8 @@ bool CTexture::fillData(const vector<CRGBA>& data)
 	return(true);
 }
 
-// --------------------------------------------------
-// --------------------------------------------------
-// --------------------------------------------------
-// --------------------------------------------------
-// --------------------------------------------------
-
-
 // ***************************************************************************
+
 void	CMaterial::initUnlit()
 {
 	 setShader(normal);
@@ -97,7 +91,9 @@ void	CMaterial::initUnlit()
 	 setZFunction(lessequal);
 	 setBlend(false);
 }
+
 // ***************************************************************************
+
 void	CMaterial::initLighted()
 {
 	 setShader(normal);

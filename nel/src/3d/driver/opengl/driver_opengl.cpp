@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.5 2000/11/07 15:34:14 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.6 2000/11/08 09:55:10 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,7 +157,6 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 #ifdef WIN32
 	int						pf;
 
-//	OutputDebugString("----- SETDISPLAY");
 	if (wnd)
 	{
 		_hWnd=(HWND)wnd;
@@ -189,7 +188,7 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 		ShowWindow(_hWnd,SW_SHOW);
 	}
 	_hDC=GetDC(_hWnd);
-	Depth=24;//GetDeviceCaps(_hDC,BITSPIXEL);
+	Depth=GetDeviceCaps(_hDC,BITSPIXEL);
 	// ---
 	memset(&_pfd,0,sizeof(_pfd));
 	_pfd.nSize        = sizeof(_pfd);
@@ -199,20 +198,16 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 	_pfd.cColorBits   = (char)Depth;
 	_pfd.cDepthBits   = 16;
 	_pfd.iLayerType	  = PFD_MAIN_PLANE;
-//	OutputDebugString("----- Chosse pixel format");
 	pf=ChoosePixelFormat(_hDC,&_pfd);
 	if (!pf) 
 	{
 		return(false);
 	} 
-//	OutputDebugString("----- set pixel format");
 	if ( !SetPixelFormat(_hDC,pf,&_pfd) ) 
 	{
 		return(false);
 	} 
-//	OutputDebugString("----- create context");
     _hRC=wglCreateContext(_hDC);
-//	OutputDebugString("----- make current");
     wglMakeCurrent(_hDC,_hRC);
 #endif
 	glViewport(0,0,mode.Width,mode.Height);
@@ -270,7 +265,9 @@ bool CDriverGL::clearZBuffer(float zval)
 
 bool CDriverGL::setupTexture(CTexture& tex)
 {
-	if (tex.DrvInfos==NULL)
+	CTextureDrvInfosGL* infos;
+
+	if ( !tex.DrvInfos )
 	{
 // C++ Hardcore style :
 //		tex.DrvInfos=new CTextureDrvInfosGL;
@@ -278,23 +275,41 @@ bool CDriverGL::setupTexture(CTexture& tex)
 //		CTextureDrvInfosGL* infos=static_cast<CTextureDrvInfosGL*>(iinfos);
 
 // C++ standard/intelligent style :
-		CTextureDrvInfosGL* infos = new CTextureDrvInfosGL;
+		infos = new CTextureDrvInfosGL;
 		tex.DrvInfos=infos;
-
 // C style :
 //		tex.DrvInfos= static_cast<CTextureDrvInfosGL*>(tex.DrvInfos);
 //		tex.DrvInfos=new CTextureDrvInfosGL;
 //		CTextureDrvInfosGL* infos=(CTextureDrvInfosGL*)((ITextureDrvInfos*)(tex.DrvInfos));
 		glGenTextures(1,&infos->ID);
-		glBindTexture(GL_TEXTURE_2D,infos->ID);
+		_pTexDrvInfos.push_back(infos);
+	}
+	if ( tex.touched() )
+	{
+		glBindTexture(GL_TEXTURE_2D,((CTextureDrvInfosGL*)(ITextureDrvInfos*)tex.DrvInfos)->ID);
+
 		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 		glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+
 		glTexImage2D(GL_TEXTURE_2D,0,4,tex.getWidth(),tex.getHeight(),0,GL_RGBA,GL_UNSIGNED_BYTE,tex.getDataPointer());
+		tex.clearTouched();
 	}
+	return(true);
+}
+
+// --------------------------------------------------
+
+bool CDriverGL::activateTexture(uint stage, CTexture& tex)
+{
+	if (this->_CurrentTexture[stage]!=&tex)
+	{
+		glBindTexture(GL_TEXTURE_2D,((CTextureDrvInfosGL*)(ITextureDrvInfos*)tex.DrvInfos)->ID);
+	}
+	this->_CurrentTexture[stage]=&tex;
 	return(true);
 }
 
@@ -353,20 +368,17 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 {
-	// Temp Antoine.
-	/*ITextureDrvInfos*	iinfos;
-	CTextureDrvInfosGL*	infosgl;
-
-	iinfos=(Mat.getTexture(0)).DrvInfos;
-	infosgl=static_cast<CTextureDrvInfosGL*>(iinfos);
-	glBindTexture(GL_TEXTURE_2D,infosgl->ID);
-	*/
-
-	// Temp YOYO.
+	if ( !setupMaterial(Mat) )
+	{
+		return(false);
+	}
+	if ( ! activateTexture(0,Mat.getTexture(0)) )
+	{
+		return(false);
+	}
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glDisable(GL_TEXTURE_2D);
-
 	glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
 	return(true);
 }

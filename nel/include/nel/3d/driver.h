@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.9 2000/11/07 15:35:11 berenguier Exp $
+ * $Id: driver.h,v 1.10 2000/11/08 09:50:47 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,7 @@ private:
 	uint16					_Width;
 	uint16					_Height;
 	std::vector<CRGBA>		_Data;
+	bool					_Touched;
 
 public:
 	CRefPtr<ITextureDrvInfos> DrvInfos;
@@ -77,12 +78,11 @@ public:
 public:
 							CTexture(void);
 							CTexture(uint16 width, uint16 height);
-
 	void					resize(uint16 width, uint16 height);
-
+	bool					touched(void) { return(_Touched); }
+	void					clearTouched(void) { _Touched=0; }
 	uint16					getWidth() const { return(_Width); }
 	uint16					getHeight() const { return(_Height); }
-
 	bool					fillData(const void* data);
 	bool					fillData(const std::vector<CRGBA>& data);
 	void*					getDataPointer() {return( &(*_Data.begin()) );}
@@ -114,14 +114,13 @@ const uint32	IDRV_MAT_SPECULAR	= 0x00000020;
 const uint32	IDRV_MAT_DEFMAT		= 0x00000040;
 const uint32	IDRV_MAT_BLEND		= 0x00000080;
 
-
 class CMaterial : public CRefCount
 {
 public:
-	enum ZFunc		{ always,never,equal,notequal,less,lessequal,greater,greaterequal };
-	enum TBlend		{ one, zero, srcalpha, invsrcalpha };
-	enum TShader	{ normal, user_color, envmap, bump};
 
+	enum ZFunc				{ always,never,equal,notequal,less,lessequal,greater,greaterequal };
+	enum TBlend				{ one, zero, srcalpha, invsrcalpha };
+	enum TShader			{ normal, user_color, envmap, bump};
 
 private:
 
@@ -148,7 +147,7 @@ public:
 
 	uint32					getTouched(void) { return(_Touched); }
 
-	void					clearTouched(void) { _Touched=0; }
+	void					clearTouched(uint32 flag) { _Touched&=~flag; }
 
 	bool					texturePresent(uint8 n)
 	{
@@ -393,8 +392,15 @@ typedef std::vector<GfxMode> ModeList;
 class IDriver
 {
 friend class ITextureDrvInfos;
+
 private:
+	static IDriver*							_Current;
+
+protected:
 	std::list< CRefPtr<ITextureDrvInfos> >	_pTexDrvInfos;
+	CTexture*								_CurrentTexture[4];
+	CMaterial*								_Material;
+
 public:
 							IDriver(void) { };
 	virtual					~IDriver(void) 
@@ -426,7 +432,11 @@ public:
 
 	virtual bool			setupTexture(CTexture& tex)=0;
 
+	virtual bool			activateTexture(uint stage, CTexture& tex)=0;
+
 	virtual bool			setupMaterial(CMaterial& mat)=0;
+
+//	virtual bool			activateMaterial(CMaterial& mat)=0;
 
 	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true)=0;
@@ -435,7 +445,7 @@ public:
 
 	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0)=0;
 
-	virtual CMatrix			getViewMatrix(void) const=0;
+	virtual CMatrix			getViewMatrix(void)const=0;
 
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
 

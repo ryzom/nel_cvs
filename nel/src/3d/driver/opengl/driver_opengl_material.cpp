@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.3 2000/11/07 15:33:55 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.4 2000/11/08 09:53:24 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 
 namespace NL3D
 {
+
 // --------------------------------------------------
 
 static bool convBlend(CMaterial::TBlend blend, GLenum& glenum)
@@ -100,32 +101,44 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	GLenum		glenum;
 	uint		i;
 
-	if (!mat.pShader)
+	if (_Material!=&mat)
 	{
-		mat.pShader=new CShaderGL;
-	}
-	pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
+		uint32 touched=mat.getTouched();
 
-	convBlend( mat.getSrcBlend(),glenum );
-	pShader->SrcBlend=glenum;
-	convBlend( mat.getDstBlend(),glenum );
-	pShader->DstBlend=glenum;
-
-	for(i=0 ; i<4 ; i++)
-	{
-		if ( mat.texturePresent(i) )
+		if (!mat.pShader)
 		{
-			if ( mat.getTouched() & (IDRV_TOUCHED_TEX0<<i) )
+			mat.pShader=new CShaderGL;
+		}
+		pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
+
+		if (touched & IDRV_TOUCHED_SRCBLEND)
+		{
+			convBlend( mat.getSrcBlend(),glenum );
+			pShader->SrcBlend=glenum;
+			mat.clearTouched(IDRV_TOUCHED_SRCBLEND);
+		}
+		if (touched & IDRV_TOUCHED_DSTBLEND)
+		{
+			convBlend( mat.getDstBlend(),glenum );
+			pShader->DstBlend=glenum;
+			mat.clearTouched(IDRV_TOUCHED_DSTBLEND);
+		}
+		for(i=0 ; i<4 ; i++)
+		{
+			if ( mat.texturePresent(i) )
 			{
-				if ( !setupTexture(mat.getTexture(i)) )
+				if ( touched & (IDRV_TOUCHED_TEX0<<i) )
 				{
-					return(false);
+					if ( !setupTexture(mat.getTexture(i)) )
+					{
+						return(false);
+					}
+					mat.clearTouched(IDRV_TOUCHED_TEX0<<i);
 				}
-				mat.clearTouched();
 			}
 		}
+		this->_Material=&mat;
 	}
-	mat.clearTouched();
 	return(true);
 }
 

@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.11 2001/10/24 16:37:04 chafik Exp $
+ * $Id: registry.cpp,v 1.12 2001/10/25 12:54:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,8 @@ namespace NLAIC
 		{
 			std::string text;
 			text = NLAIC::stringGetBuild("can't find '%s' in the registry",(char *)((const char *)ident));
-			throw NLAIE::CExceptionUnRegisterClassError(text.c_str());
+			NLAIE::CExceptionUnRegisterClassError e(text.c_str());
+			throw e;
 		}
 		return t->Index;			
 	}
@@ -118,7 +119,8 @@ namespace NLAIC
 
 		std::string text;
 		text = NLAIC::stringGetBuild("can't find '%s' in the registry",(char *)class_name);
-		throw NLAIE::CExceptionUnRegisterClassError(text.c_str());
+		NLAIE::CExceptionUnRegisterClassError e(text.c_str());
+		throw e;
 		return -1;
 	}
 
@@ -138,7 +140,8 @@ namespace NLAIC
 		}
 		std::string text;
 		text = NLAIC::stringGetBuild("can't find '%s' in the registry",(char *)class_name);
-		throw NLAIE::CExceptionUnRegisterClassError(text.c_str());
+		NLAIE::CExceptionUnRegisterClassError e(text.c_str());
+		throw e;
 	}
 
 	// Creates a new instance from a class using its identifier
@@ -171,7 +174,8 @@ namespace NLAIC
 		{			
 			std::string text;
 			text = NLAIC::stringGetBuild("can't find '%s' in the registry",(char *)((const char *)ident));
-			throw NLAIE::CExceptionUnRegisterClassError(text.c_str());
+			NLAIE::CExceptionUnRegisterClassError e(text.c_str());
+			throw e;
 		}
 		return t->FactoryClass;
 	}

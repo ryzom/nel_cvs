@@ -320,6 +320,14 @@ SOURCE=.\3d\frustum.cpp
 
 SOURCE=..\include\nel\3d\frustum.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\uv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\uv.h
+# End Source File
 # End Group
 # Begin Group "Font"
 
@@ -372,6 +380,14 @@ SOURCE=..\include\nel\3d\tile_bank.h
 # Begin Group "Shapes"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\mesh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\mesh.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\3d\shape.cpp

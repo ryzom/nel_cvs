@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.12 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_grouped.cpp,v 1.13 2004/02/19 09:46:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,48 +143,31 @@ bool CTextureGrouped::areValid(CSmartPtr<ITexture> *textureTab, uint nbTex)
 }
 
 ///=====================================================================================================
-void CTextureGrouped::setTextures(CSmartPtr<ITexture> *textureTab, uint nbTex)
+void CTextureGrouped::setTextures(CSmartPtr<ITexture> *textureTab, uint nbTex, bool checkValid)
 {
 	nlassert(nbTex > 0);	
 	
 	
-	if (!areValid(textureTab, nbTex))
-	{
-		displayIncompatibleTextureWarning(textureTab, nbTex);		
-		makeDummies(textureTab, nbTex);
-	}
-	
-	
-	// Generate the first texture to get the size	
-	uint width, height;
-	GetTextureSize(textureTab[0], width, height);
-
-	const uint totalHeight = height * nbTex;
-	const uint realHeight  = totalHeight ? NLMISC::raiseToNextPowerOf2(totalHeight) : 0;	
-	
-	_TexUVs.clear();
-	_Textures.clear();	
-	
-	const float deltaV = realHeight ? (float(totalHeight) / float(realHeight)) * (1.0f / nbTex)
-									: 0.f;
-	_DeltaUV = CUV(1,  deltaV);
-	CUV currentUV(0, 0);
-	
-	_Textures.reserve(nbTex);
-	_TexUVs.reserve(nbTex);
-
-	for(uint k = 0; k < nbTex; ++k)
+	if (checkValid)
 	{	
-		TFourUV uvs;
-		_Textures.push_back(textureTab[k]);
-
-		uvs.uv0 = currentUV;
-		uvs.uv1 = currentUV + CUV(1, 0);
-		uvs.uv2 = currentUV + _DeltaUV;
-		uvs.uv3 = currentUV + CUV(0, deltaV);
-		currentUV.V += deltaV;
-		_TexUVs.push_back(uvs);
-	}	
+		if (!areValid(textureTab, nbTex))
+		{
+			displayIncompatibleTextureWarning(textureTab, nbTex);		
+			makeDummies(textureTab, nbTex);
+		}
+	}					
+	_Textures.resize(nbTex);
+	std::copy(textureTab, textureTab + nbTex, _Textures.begin());
+	_TexUVs.resize(nbTex);	
+	for(uint k = 0; k < nbTex; ++k)
+	{
+		// real uvs are generated during doGenerate
+		_TexUVs[k].uv0.set(0.f, 0.f);
+		_TexUVs[k].uv1.set(0.f, 0.f);
+		_TexUVs[k].uv2.set(0.f, 0.f);
+		_TexUVs[k].uv3.set(0.f, 0.f);
+	}
+	_DeltaUV.set(0.f, 0.f);
 	_NbTex = nbTex;
 	touch(); // the texture need regeneration
 
@@ -208,6 +191,11 @@ void CTextureGrouped::doGenerate(bool async)
 		const uint realHeight  = NLMISC::raiseToNextPowerOf2(totalHeight);	
 
 		resize(width, realHeight, _Textures[0]->getPixelFormat());
+
+		const float deltaV = realHeight ? (float(totalHeight) / float(realHeight)) * (1.0f / _Textures.size())
+			                            : 0.f;
+		_DeltaUV = CUV(1,  deltaV);
+		CUV currentUV(0, 0);
 		
 		uint k;
 		sint32 currY =  0;
@@ -223,6 +211,14 @@ void CTextureGrouped::doGenerate(bool async)
 			}						
 			this->blit(_Textures[k], 0, currY);
 			currY += height;			
+
+			TFourUV uvs;						
+			uvs.uv0 = currentUV;
+			uvs.uv1 = currentUV + CUV(1, 0);
+			uvs.uv2 = currentUV + _DeltaUV;
+			uvs.uv3 = currentUV + CUV(0, deltaV);
+			currentUV.V += deltaV;
+			_TexUVs.push_back(uvs);
 		}
 
 		for(k = 0; k < _NbTex; ++k)
@@ -294,7 +290,7 @@ void CTextureGrouped::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}		
 		
 		// setup the textures
-		setTextures(&texList[0], nbTex);
+		setTextures(&texList[0], nbTex, false);
 		touch();
 	}
 	else

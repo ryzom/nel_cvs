@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.8 2003/09/01 12:06:07 lecroart Exp $
+ * $Id: ucstring.h,v 1.9 2003/10/08 08:20:58 boucher Exp $
  *
  */
 
@@ -160,7 +160,7 @@ public:
 				res += c | 0xC0;
 				nbLoop = 1;
 			}
-			else if (*first < 0x10000)
+			else /*if (*first < 0x10000)*/
 			{
 				ucchar c = *first;
 				c = c >> 12;

@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.11 2001/01/12 13:21:52 corvazier Exp $
+ * $Id: rgba.h,v 1.12 2001/02/23 09:08:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ public:
 	 * \param c1 Color 1.
 	 * \param coef Blend factor. 0~255. 0 return c0 and 255 return c1.
 	 */
-	void	blendFromui (CRGBA &c0, CRGBA &c1, uint coef); 
+	void	blendFromui (const CRGBA &c0, const CRGBA &c1, uint coef); 
 
 	/** 
 	 * Modulate colors with a constant.

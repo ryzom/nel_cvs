@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.7 2001/09/05 15:44:05 vizerie Exp $
+ * $Id: sound_system.cpp,v 1.8 2001/09/12 13:36:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ void CSoundSystem::initSoundSystem(void)
 		_AudioMixer = NULL;
 		return;
 	}
-	initPSSoundSystem(_AudioMixer);
+	setPSSoundSystem(_AudioMixer);
 
 	if (_SoundBanksFileName.size())
 	{
@@ -101,6 +101,7 @@ void CSoundSystem::poll()
 
 void CSoundSystem::releaseSoundSystem(void)
 {
+	setPSSoundSystem(NULL);
 	delete _AudioMixer;
 	_AudioMixer = NULL;
 }

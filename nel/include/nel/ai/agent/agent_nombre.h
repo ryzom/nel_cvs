@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.11 2001/06/18 07:56:52 chafik Exp $
+ * $Id: agent_nombre.h,v 1.12 2001/12/19 14:37:05 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,10 +123,7 @@ namespace NLAIAGENT
 		{
 		}
 
-		virtual double getNumber() const
-		{
-			return (double)_Value;
-		}
+		virtual double getNumber() const = 0;		
 
 		///\name Some IObjectIA method definition.
 		//@{		
@@ -332,21 +329,52 @@ namespace NLAIAGENT
 	};
 
 	template <class tNombre> 
-	class  IBornNombre: public INombre<tNombre>
+	class IDigital : public INombre<tNombre>
+	{
+
+	public :
+		IDigital(tNombre value):INombre<tNombre>(value)
+		{
+		}
+
+		IDigital(const IDigital &value):INombre<tNombre>(value)
+		{
+		}
+		
+		IDigital()
+		{			
+		}
+		
+		IDigital(NLMISC::IStream &is):INombre<tNombre>(is)
+		{
+		}
+		
+		virtual ~IDigital()
+		{
+		}
+
+		virtual double getNumber() const
+		{
+			return (double)_Value;
+		}
+	};
+
+	template <class tNombre> 
+	class  IBornNombre: public IDigital<tNombre>
 	{
 	private:
 		tNombre _inf,_sup;
 	public:
-		IBornNombre(tNombre value,tNombre inf,tNombre sup):INombre<tNombre>(value),_inf((tNombre)inf),_sup((tNombre)sup)
+		IBornNombre(tNombre value,tNombre inf,tNombre sup):IDigital<tNombre>(value),_inf((tNombre)inf),_sup((tNombre)sup)
 		{
 		}
-		IBornNombre(const IBornNombre &value):INombre<tNombre>(value),_inf((tNombre)value._inf),_sup((tNombre)value._sup)
+		IBornNombre(const IBornNombre &value):IDigital<tNombre>(value),_inf((tNombre)value._inf),_sup((tNombre)value._sup)
 		{
 		}
 		IBornNombre(tNombre inf,tNombre sup):_inf((tNombre)inf),_sup((tNombre)sup)
 		{			
 		}
-		IBornNombre(NLMISC::IStream &is):INombre<tNombre>(is)
+		IBornNombre(NLMISC::IStream &is):IDigital<tNombre>(is)
 		{			
 		}
 		virtual ~IBornNombre()
@@ -355,7 +383,7 @@ namespace NLAIAGENT
 
 		virtual void save(NLMISC::IStream &)
 		{
-/*			INombre<tNombre>::save(os);
+/*			IDigital<tNombre>::save(os);
 			os.serial( _sup );
 			os.serial(_inf );*/
 		}
@@ -363,7 +391,7 @@ namespace NLAIAGENT
 		virtual void load(NLMISC::IStream &)
 		{
 			// TODO
-/*			INombre<tNombre>::load(is);
+/*			IDigital<tNombre>::load(is);
 			is.serial( _sup );
 			is.serial( _inf );*/
 		}

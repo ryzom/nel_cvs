@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.15 2001/07/06 08:25:37 chafik Exp $
+ * $Id: agent_digital.h,v 1.16 2001/12/19 14:37:05 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 
 namespace NLAIAGENT
 {	
+	
 	/**
 	
 	This class store a float in an IObjectIA. 
@@ -41,7 +42,7 @@ namespace NLAIAGENT
 	* \author Nevrax France 
 	* \date 2000	
 	*/
-	class DigitalType : public INombre<float>
+	class DigitalType : public IDigital<float>
 	{
 
 	public:
@@ -51,21 +52,21 @@ namespace NLAIAGENT
 
 	public:
 		///Construct with an initial value.
-		DigitalType(float value):INombre<float>(value)
+		DigitalType(float value):IDigital<float>(value)
 		{			
 		}
 
 		///Construct with an uninitialize value.
-		DigitalType():INombre<float>()
+		DigitalType():IDigital<float>()
 		{			
 		}
 		
-		DigitalType(const DigitalType &a):INombre<float>(a)
+		DigitalType(const DigitalType &a):IDigital<float>(a)
 		{			
 		}
 
 		///Construct from a NEL stream.
-		DigitalType(NLMISC::IStream &is):INombre<float>(is)
+		DigitalType(NLMISC::IStream &is):IDigital<float>(is)
 		{
 		}
 
@@ -182,7 +183,7 @@ namespace NLAIAGENT
 	* \author Nevrax France
 	* \date 2001
 	*/
-	class DDigitalType : public INombre<double>
+	class DDigitalType : public IDigital<double>
 	{
 
 	public:
@@ -190,21 +191,21 @@ namespace NLAIAGENT
 
 	public:
 		///Construct with an initial value.
-		DDigitalType(double value):INombre<double>(value)
+		DDigitalType(double value):IDigital<double>(value)
 		{			
 		}
 
 		///Construct with an uninitialize value.
-		DDigitalType():INombre<double>()
+		DDigitalType():IDigital<double>()
 		{			
 		}
 		
-		DDigitalType(const DDigitalType &a):INombre<double>(a)
+		DDigitalType(const DDigitalType &a):IDigital<double>(a)
 		{			
 		}
 
 		///Construct from a NEL stream.
-		DDigitalType(NLMISC::IStream &is):INombre<double>(is)
+		DDigitalType(NLMISC::IStream &is):IDigital<double>(is)
 		{
 		}
 
@@ -323,26 +324,26 @@ namespace NLAIAGENT
 	* \author Nevrax France
 	* \date 2001
 	*/
-	class IntegerType: public INombre<sint32>
+	class IntegerType: public IDigital<sint32>
 	{
 	public:
 
 		static const NLAIC::CIdentType IdIntegerType;
 
 	public:
-		IntegerType(sint32 value):INombre<sint32>(value)
+		IntegerType(sint32 value):IDigital<sint32>(value)
 		{			
 		}
 
-		IntegerType():INombre<sint32>()
+		IntegerType():IDigital<sint32>()
 		{			
 		}
 
-		IntegerType(const IntegerType &a):INombre<sint32>(a)
+		IntegerType(const IntegerType &a):IDigital<sint32>(a)
 		{			
 		}
 
-		IntegerType(NLMISC::IStream &is):INombre<sint32>(is)
+		IntegerType(NLMISC::IStream &is):IDigital<sint32>(is)
 		{
 		}
 
@@ -386,26 +387,26 @@ namespace NLAIAGENT
 	* \author Nevrax France
 	* \date 2001
 	*/
-	class ShortIntegerType: public INombre<sint16>
+	class ShortIntegerType: public IDigital<sint16>
 	{
 	public:
 
 		static const NLAIC::CIdentType IdShortIntegerType;
 
 	public:
-		ShortIntegerType(sint16 value):INombre<sint16>(value)
+		ShortIntegerType(sint16 value):IDigital<sint16>(value)
 		{			
 		}
 
-		ShortIntegerType():INombre<sint16>()
+		ShortIntegerType():IDigital<sint16>()
 		{			
 		}
 
-		ShortIntegerType(const ShortIntegerType &a):INombre<sint16>(a)
+		ShortIntegerType(const ShortIntegerType &a):IDigital<sint16>(a)
 		{			
 		}
 
-		ShortIntegerType(NLMISC::IStream &is):INombre<sint16>(is)
+		ShortIntegerType(NLMISC::IStream &is):IDigital<sint16>(is)
 		{
 		}
 
@@ -448,26 +449,26 @@ namespace NLAIAGENT
 	* \author Nevrax France
 	* \date 2001
 	*/
-	class CharType: public INombre<sint8>
+	class CharType: public IDigital<sint8>
 	{
 	public:
 
 		static const NLAIC::CIdentType IdCharType;
 
 	public:
-		CharType(sint8 value):INombre<sint8>(value)
+		CharType(sint8 value):IDigital<sint8>(value)
 		{			
 		}
 
-		CharType():INombre<sint8>()
+		CharType():IDigital<sint8>()
 		{			
 		}
 
-		CharType(const CharType &a):INombre<sint8>(a)
+		CharType(const CharType &a):IDigital<sint8>(a)
 		{			
 		}
 
-		CharType(NLMISC::IStream &is):INombre<sint8>(is)
+		CharType(NLMISC::IStream &is):IDigital<sint8>(is)
 		{
 		}
 
@@ -500,26 +501,26 @@ namespace NLAIAGENT
 		virtual const CProcessResult &run();
 	};
 
-	class UInt8Type: public INombre<uint8>
+	class UInt8Type: public IDigital<uint8>
 	{
 	public:
 
 		static const NLAIC::CIdentType IdUInt8Type;
 
 	public:
-		UInt8Type(sint8 value):INombre<uint8>(value)
+		UInt8Type(sint8 value):IDigital<uint8>(value)
 		{			
 		}
 
-		UInt8Type():INombre<uint8>()
+		UInt8Type():IDigital<uint8>()
 		{			
 		}
 
-		UInt8Type(const UInt8Type &a):INombre<uint8>(a)
+		UInt8Type(const UInt8Type &a):IDigital<uint8>(a)
 		{			
 		}
 
-		UInt8Type(NLMISC::IStream &is):INombre<uint8>(is)
+		UInt8Type(NLMISC::IStream &is):IDigital<uint8>(is)
 		{
 		}
 
@@ -552,26 +553,26 @@ namespace NLAIAGENT
 		}
 	};
 
-	class UInt16Type: public INombre<uint16>
+	class UInt16Type: public IDigital<uint16>
 	{
 	public:
 
 		static const NLAIC::CIdentType IdUInt16Type;
 
 	public:
-		UInt16Type(uint16 value):INombre<uint16>(value)
+		UInt16Type(uint16 value):IDigital<uint16>(value)
 		{			
 		}
 
-		UInt16Type():INombre<uint16>()
+		UInt16Type():IDigital<uint16>()
 		{			
 		}
 
-		UInt16Type(const UInt16Type &a):INombre<uint16>(a)
+		UInt16Type(const UInt16Type &a):IDigital<uint16>(a)
 		{			
 		}
 
-		UInt16Type(NLMISC::IStream &is):INombre<uint16>(is)
+		UInt16Type(NLMISC::IStream &is):IDigital<uint16>(is)
 		{
 		}
 		
@@ -604,26 +605,26 @@ namespace NLAIAGENT
 
 	};
 
-	class UInt32Type: public INombre<uint32>
+	class UInt32Type: public IDigital<uint32>
 	{
 	public:
 
 		static const NLAIC::CIdentType IdUInt32Type;
 
 	public:
-		UInt32Type(uint32 value):INombre<uint32>(value)
+		UInt32Type(uint32 value):IDigital<uint32>(value)
 		{			
 		}
 
-		UInt32Type():INombre<uint32>()
+		UInt32Type():IDigital<uint32>()
 		{			
 		}
 
-		UInt32Type(const UInt32Type &a):INombre<uint32>(a)
+		UInt32Type(const UInt32Type &a):IDigital<uint32>(a)
 		{			
 		}
 
-		UInt32Type(NLMISC::IStream &is):INombre<uint32>(is)
+		UInt32Type(NLMISC::IStream &is):IDigital<uint32>(is)
 		{
 		}
 		
@@ -655,5 +656,60 @@ namespace NLAIAGENT
 		}
 
 	};
+
+	class UInt64Type: public INombre<uint64>
+	{
+	public:
+
+		static const NLAIC::CIdentType IdUInt64Type;
+
+	public:
+		UInt64Type(uint64 value):INombre<uint64>(value)
+		{			
+		}
+
+		UInt64Type():INombre<uint64>()
+		{			
+		}
+
+		UInt64Type(const UInt64Type &a):INombre<uint64>(a)
+		{			
+		}
+
+		UInt64Type(NLMISC::IStream &is):INombre<uint64>(is)
+		{
+		}
+		
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new UInt64Type(*this);
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;		
+		
+
+		virtual void getDebugString(std::string &text) const
+		{
+			text += NLAIC::stringGetBuild("%d",getValue());
+		}		
+
+		virtual const CProcessResult &run();
+
+		virtual double getNumber() const;		
+
+		virtual IObjetOp &neg()
+		{
+			chekBorn();
+			return *this;
+		}
+
+	};
+
 }
 #endif

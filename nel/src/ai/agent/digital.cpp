@@ -1,6 +1,6 @@
 /** \file digital.cpp
  *
- * $Id: digital.cpp,v 1.9 2001/06/15 10:01:36 portier Exp $
+ * $Id: digital.cpp,v 1.10 2001/12/19 14:35:45 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ namespace NLAIAGENT
 		return IdUInt32Type;
 	}	
 
-		// UInt8Type
+	// UInt8Type
 	const IObjectIA::CProcessResult &UInt8Type::run()
 	{
 		return IObjectIA::ProcessRun;
@@ -127,7 +127,7 @@ namespace NLAIAGENT
 		return IdUInt8Type;
 	}	
 
-		// UInt16Type
+	// UInt16Type
 	const IObjectIA::CProcessResult &UInt16Type::run()
 	{
 		return IObjectIA::ProcessRun;
@@ -138,4 +138,20 @@ namespace NLAIAGENT
 		return IdUInt16Type;
 	}	
 
+	// UInt64Type
+	const IObjectIA::CProcessResult &UInt64Type::run()
+	{
+		return IObjectIA::ProcessRun;
+	}
+
+	const NLAIC::CIdentType &UInt64Type::getType() const
+	{		
+		return IdUInt64Type;
+	}	
+
+	double UInt64Type::getNumber() const
+	{
+		throw NLAIE::CExceptionNotImplemented("No getNumber on a uint64.");
+		return 0.0;
+	}
 }

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.97 2001/12/17 13:06:57 chafik Exp $
+ * $Id: agent_script.cpp,v 1.98 2001/12/19 14:37:05 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1734,6 +1734,10 @@ namespace NLAIAGENT
 
 		int index = count;
 		int i;
+#ifdef NL_DEBUG
+		std::string kaka;
+		methodName->getDebugString(kaka);
+#endif
 		for(i = 0; i < count; i ++)
 		{
 			if(StaticMethod[i]->MethodName == *methodName)

@@ -237,7 +237,21 @@
 															NLAIC::CTypeOfOperator::opNot |
 															NLAIC::CTypeOfOperator::opDiff));
 
-			const NLAIC::CIdentType UInt32Type::IdUInt32Type("uint32",	NLAIC::CSelfClassFactory(UInt32Type(0)),
+		const NLAIC::CIdentType UInt32Type::IdUInt32Type("uint32",	NLAIC::CSelfClassFactory(UInt32Type(0)),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+															NLAIC::CTypeOfOperator::opSub | 
+															NLAIC::CTypeOfOperator::opMul | 
+															NLAIC::CTypeOfOperator::opDiv | 
+															NLAIC::CTypeOfOperator::opEq | 
+															NLAIC::CTypeOfOperator::opInf | 
+															NLAIC::CTypeOfOperator::opSup | 
+															NLAIC::CTypeOfOperator::opInfEq | 
+															NLAIC::CTypeOfOperator::opSupEq |
+															NLAIC::CTypeOfOperator::opNot |
+															NLAIC::CTypeOfOperator::opDiff));
+
+		const NLAIC::CIdentType UInt64Type::IdUInt64Type("uint64",	NLAIC::CSelfClassFactory(UInt64Type(0)),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 															NLAIC::CTypeOfOperator::opSub | 

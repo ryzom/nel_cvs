@@ -138,7 +138,7 @@ then
 		if test -e ig_merge_tmp/$filename ; then
 			../../bin/ig_add ig_land/$filename ig_land_ligo_elev/$filename ig_merge_tmp/$filename ;
 		else
-			cp ig_land_lkigo_elev/$filename ig_land/$filename ;
+			cp ig_land_ligo_elev/$filename ig_land/$filename ;
 		fi
 	done
 

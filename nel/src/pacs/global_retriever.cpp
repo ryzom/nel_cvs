@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.63 2002/06/07 12:34:37 legros Exp $
+ * $Id: global_retriever.cpp,v 1.64 2002/07/19 13:30:13 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,8 +209,8 @@ void	NLPACS::CGlobalRetriever::check() const
 							_Instances[lnk.Instance].getRetrieverId()<0 ||
 							_Instances[lnk.Instance].getRetrieverId()>(sint)_RetrieverBank->getRetrievers().size() ||
 							lnk.SurfaceId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getSurfaces().size() ||
-							lnk.ChainId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getChains().size() ||
-							lnk.BorderChainId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getBorderChains().size())
+							((lnk.ChainId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getChains().size() ||
+							lnk.BorderChainId >= getRetriever(_Instances[lnk.Instance].getRetrieverId()).getBorderChains().size()) && instance.getType() != CLocalRetriever::Interior ))
 						{
 							nlwarning("retriever %d, instance %d, link %d: reference on instance may be not valid [Inst=%d, Surf=%d, Chain=%d, BorderChain=%d]", instance.getRetrieverId(), instance.getInstanceId(), link, lnk.Instance, lnk.SurfaceId, lnk.ChainId, lnk.BorderChainId);
 						}

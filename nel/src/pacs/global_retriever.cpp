@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.87 2003/11/03 17:22:42 legros Exp $
+ * $Id: global_retriever.cpp,v 1.88 2004/01/06 17:33:21 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -269,6 +269,13 @@ void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vecto
 	sbox.setCenter(gpos);
 	sbox.setHalfSize(CVector(50.0f, 50.0f, 100.0f));
 
+	getBorders(sbox, edges);
+}
+
+void	NLPACS::CGlobalRetriever::getBorders(const CAABBox &sbox, std::vector<std::pair<NLMISC::CLine, uint8> > &edges)
+{
+	edges.clear();
+
 	selectInstances(sbox, _InternalCST);
 
 	uint	inst;
@@ -283,12 +290,12 @@ void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vecto
 
 		CAABBox				box;
 		CVector				origin = instance.getOrigin();
-		box.setCenter(gpos-origin);
-		box.setHalfSize(CVector(50.0f, 50.0f, 100.0f));
+		box.setCenter(sbox.getCenter()-origin);
+		box.setHalfSize(sbox.getHalfSize());
 		chainquad.selectEdges(box, _InternalCST);
 
 		uint		ece;
-		float		zp = (float)gpos.z;
+		float		zp = (float)sbox.getCenter().z;
 		for (ece=0; ece<_InternalCST.EdgeChainEntries.size(); ++ece)
 		{
 			CEdgeChainEntry		&entry = _InternalCST.EdgeChainEntries[ece];

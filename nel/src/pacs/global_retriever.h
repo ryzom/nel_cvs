@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.33 2003/11/03 17:22:42 legros Exp $
+ * $Id: global_retriever.h,v 1.34 2004/01/06 17:33:21 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -379,7 +379,8 @@ public:
 	float							distanceToBorder(const UGlobalPosition &pos) const;
 	///
 	void							getBorders(const UGlobalPosition &pos, std::vector<std::pair<NLMISC::CLine, uint8> > &edges);
-
+	///
+	void							getBorders(const NLMISC::CAABBox &sbox, std::vector<std::pair<NLMISC::CLine, uint8> > &edges);
 
 	/// Serialises the global retriever.
 	void							serial(NLMISC::IStream &f);

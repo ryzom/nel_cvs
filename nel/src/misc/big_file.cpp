@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.8 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: big_file.cpp,v 1.9 2003/11/20 14:03:00 besson Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -111,6 +111,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	fseek (handle.File, nOffsetFromBegining, SEEK_SET);
 	uint32 nNbFile;
 	fread (&nNbFile, sizeof(uint32), 1, handle.File);
+	map<string,BNPFile> tempMap;
 	for (uint32 i = 0; i < nNbFile; ++i)
 	{
 		char FileName[256];
@@ -125,9 +126,42 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 		BNPFile bnpfTmp;
 		bnpfTmp.Pos = nFilePos;
 		bnpfTmp.Size = nFileSize;
-		bnpTmp.Files.insert (make_pair(strlwr(string(FileName)), bnpfTmp));
+		tempMap.insert (make_pair(strlwr(string(FileName)), bnpfTmp));
 	}
 	fseek (handle.File, 0, SEEK_SET);
+
+	// Convert temp map
+	{
+		uint nSize = 0, nNb = 0;
+		map<string,BNPFile>::iterator it = tempMap.begin();
+		while (it != tempMap.end())
+		{
+			nSize += it->first.size() + 1;
+			nNb++;
+			it++;
+		}
+
+		bnpTmp.FileNames = new char[nSize];
+		memset(bnpTmp.FileNames, 0, nSize);
+		bnpTmp.Files.resize(nNb);
+
+		it = tempMap.begin();
+		nSize = 0;
+		nNb = 0;
+		while (it != tempMap.end())
+		{
+			strcpy(bnpTmp.FileNames+nSize, it->first.c_str());
+			
+			bnpTmp.Files[nNb].Name = bnpTmp.FileNames+nSize;
+			bnpTmp.Files[nNb].Size = it->second.Size;
+			bnpTmp.Files[nNb].Pos = it->second.Pos;
+
+			nSize += it->first.size() + 1;
+			nNb++;
+			it++;
+		}
+	}
+	// End of temp map conversion
 
 	if (nOptions&BF_CACHE_FILE_ON_OPEN)
 		bnpTmp.CacheFileOnOpen = true;
@@ -170,6 +204,9 @@ void CBigFile::remove (const std::string &sBigFileName)
 			fclose (handle.File);
 			handle.File= NULL;
 		}
+		/* \todo trap : can make the CPath crash. CPath must be informed that the files in bigfiles have been removed
+			this is because CPath use memory of CBigFile if it runs in memoryCompressed mode */
+		delete [] rbnp.FileNames;
 		_BNPs.erase (it);
 	}
 }
@@ -190,10 +227,10 @@ void CBigFile::list (const std::string &sBigFileName, std::vector<std::string> &
 		return;
 	vAllFiles.clear ();
 	BNP &rbnp = _BNPs.find (lwrFileName)->second;
-	map<string,BNPFile>::iterator it = rbnp.Files.begin();
+	vector<BNPFile>::iterator it = rbnp.Files.begin();
 	while (it != rbnp.Files.end())
 	{
-		vAllFiles.push_back (it->first); // Add the name of the file to the return vector
+		vAllFiles.push_back (string(it->Name)); // Add the name of the file to the return vector
 		++it;
 	}
 }
@@ -232,13 +269,23 @@ FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize,
 	}
 
 	BNP &rbnp = _BNPs.find (zeBigFileName)->second;
-	if (rbnp.Files.find (zeFileName) == rbnp.Files.end())
+	vector<BNPFile>::iterator itNBPFile;
+	itNBPFile = lower_bound(rbnp.Files.begin(), rbnp.Files.end(), zeFileName.c_str(), CBNPFileComp());
+	if (itNBPFile != rbnp.Files.end())
+	{
+		if (strcmp(itNBPFile->Name, zeFileName.c_str()) != 0)
+		{
+			nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
+			return NULL;
+		}
+	}
+	else
 	{
 		nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
 		return NULL;
 	}
 
-	BNPFile &rbnpfile = rbnp.Files.find (zeFileName)->second;
+	BNPFile &rbnpfile = *itNBPFile;
 
 	// Get a ThreadSafe handle on the file
 	CHandleFile		&handle= _ThreadFileArray.get(rbnp.ThreadFileId);
@@ -258,5 +305,28 @@ FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize,
 	rFileSize = rbnpfile.Size;
 	return handle.File;
 }
+
+// ***************************************************************************
+char *CBigFile::getFileNamePtr(const std::string &sFileName, const std::string &sBigFileName)
+{
+	string bigfilenamealone = CFile::getFilename (sBigFileName);
+	if (_BNPs.find(bigfilenamealone) != _BNPs.end())
+	{
+		BNP &rbnp = _BNPs.find (bigfilenamealone)->second;
+		vector<BNPFile>::iterator itNBPFile;
+		string lwrFileName = strlwr (sFileName);
+		itNBPFile = lower_bound(rbnp.Files.begin(), rbnp.Files.end(), lwrFileName.c_str(), CBNPFileComp());
+		if (itNBPFile != rbnp.Files.end())
+		{
+			if (strcmp(itNBPFile->Name, lwrFileName.c_str()) == 0)
+			{
+				return itNBPFile->Name;
+			}
+		}
+	}
+
+	return NULL;
+}
+
 
 } // namespace NLMISC

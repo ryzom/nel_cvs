@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.3 2002/11/18 10:03:19 berenguier Exp $
+ * $Id: big_file.h,v 1.4 2003/11/20 14:03:12 besson Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -70,6 +70,9 @@ public:
 	FILE* getFile (const std::string &sFileName, uint32 &rFileSize, uint32 &rBigFileOffset, 
 					bool &rCacheFileOnOpen, bool &rAlwaysOpened);
 
+	// Used for CPath only for the moment !
+	char *getFileNamePtr(const std::string &sFileName, const std::string &sBigFileName);
+	
 // ***************
 private:
 	class	CThreadFileArray;
@@ -106,8 +109,18 @@ private:
 	// A BNPFile header
 	struct BNPFile
 	{
+		char		*Name;
 		uint32		Size;
 		uint32		Pos;
+	};
+
+	class CBNPFileComp
+	{
+	public:
+		bool operator()(const BNPFile &f, const char *s)
+		{
+			return strcmp(f.Name,s) < 0;
+		}
 	};
 
 	// A BNP structure
@@ -116,11 +129,17 @@ private:
 		// FileName of the BNP. important to open it in getFile() (for other threads or if not always opened).
 		std::string						BigFileName;
 		// map of files in the BNP.
-		std::map<std::string, BNPFile>	Files;
+		char							*FileNames;
+		std::vector<BNPFile>			Files;
 		// Since many seek may be done on a FILE*, each thread should have its own FILE opened.
 		uint32							ThreadFileId;
 		bool							CacheFileOnOpen;
 		bool							AlwaysOpened;
+
+		BNP()
+		{
+			FileNames = NULL;
+		}
 	};
 private:
 

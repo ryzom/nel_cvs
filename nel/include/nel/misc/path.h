@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.39 2003/11/07 08:45:57 besson Exp $
+ * $Id: path.h,v 1.40 2003/11/20 14:03:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -193,6 +193,8 @@ public:
 	 */
 	static void addIgnoredDoubleFile(const std::string &ignoredFile);
 
+	/** For the moment after memoryCompress you cant addsearchpath anymore 
+	*/
 	static void memoryCompress();
 
 private:
@@ -201,40 +203,86 @@ private:
 
 	static CPath *_Instance;
 
+	CPath()
+	{
+		_MemoryCompressed = false;
+	}
+
 	// All path in this vector must have a terminated '/'
 	std::vector<std::string> _AlternativePaths;
 
 	std::vector<std::string> IgnoredFiles;
 
+	// ----------------------------------------------
+	// MEMORY WISE
+	// ----------------------------------------------
+
+	bool _MemoryCompressed;
 	CStaticStringMapper	SSMext;
 	CStaticStringMapper	SSMpath;
 
+	// If NOT memory compressed use this
+	// ---------------------------------
+
 	struct CFileEntry
 	{
+		std::string	Name;		// Normal case
+		uint32	idPath	 : 16;
+		uint32	idExt	 : 15;
+		uint32	Remapped : 1;
+	};
+
+	std::map<std::string, CFileEntry> _Files; // first is the filename in lowercase (can be with a remapped extension)
+
+	// If memory compressed use this
+	// -----------------------------
+
+	struct CMCFileEntry
+	{
+		char *Name;				// Normal case (the search is done by using nlstricmp)
 		uint32	idPath	 : 16;	// Path (not with file at the end) - look in the SSMpath (65536 different path allowed)
 		uint32	idExt	 : 15;	// real extention of the file if remapped - look in the SSMext (32768 different extension allowed)
 		uint32	Remapped : 1;	// true if the file is remapped
 	};
 
-	class CNoCaseComp
+	char *_AllFileNames;
+
+	// first is the filename that can be with a remapped extension
+	std::vector<CMCFileEntry> _MCFiles;
+
+	// Compare a MCFileEntry with a lowered string (usefull for MCfind)
+	class CMCFileComp
 	{
 	public:
-		bool operator()(const std::string &x, const std::string &y) const
+		// rhs MUST BE LOWERED
+		sint specialCompare(const CMCFileEntry &fe, const char *rhs)
 		{
-			return nlstricmp(x.c_str(), y.c_str()) < 0;
+			char *lhs = fe.Name;
+			uint8 lchar, rchar;
+			while (*lhs != '\0' && *rhs != '\0')
+			{
+				// lower case compare because name is in normal case
+				lchar = ::tolower(*lhs);
+				rchar = *rhs;
+				if (lchar != rchar) return ((sint)lchar) - ((sint)rchar);
+				++lhs;
+				++rhs;
+			}
+			if (*lhs != 0) return 1;
+			if (*rhs != 0) return -1;
+			return 0;
+		}
+
+		bool operator()(const CMCFileEntry &fe, const char *rhs)
+		{
+			return specialCompare(fe, rhs) < 0;
 		}
 	};
-
-	/** 
-	 * first is the filename that can be with a remapped extension
-	 * first is the filename, second the full path for the filename.
-	 * Due to the remapping, first and second.path could have different extention.
-	 */
-	std::map<std::string, CFileEntry, CNoCaseComp> _Files;
 
 	/// first ext1, second ext2 (ext1 could remplace ext2)
 	std::vector<std::pair<std::string, std::string> > _Extensions;
 
+	static CMCFileEntry *MCfind (const std::string &filename);
 	sint				findExtension (const std::string &ext1, const std::string &ext2);
 	static void			insertFileInMap (const std::string &filename, const std::string &filepath, bool remap, const std::string &extension);
 };

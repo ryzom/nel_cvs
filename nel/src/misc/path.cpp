@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.86 2003/11/07 08:56:54 corvazier Exp $
+ * $Id: path.cpp,v 1.87 2003/11/20 14:03:00 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -62,13 +62,13 @@ namespace NLMISC {
 //#define	NL_DEBUG_PATH
 
 #ifdef	NL_DEBUG_PATH
-#define	NL_DISPLAY_PATH	nlinfo
+	#define	NL_DISPLAY_PATH	nlinfo
 #else 
-#ifdef __GNUC__
-#define	NL_DISPLAY_PATH(format, args...)
-#else // __GNUC__
-#define	NL_DISPLAY_PATH if(false)
-#endif // __GNUC__
+	#ifdef __GNUC__
+		#define	NL_DISPLAY_PATH(format, args...)
+	#else // __GNUC__
+		#define	NL_DISPLAY_PATH if(false)
+	#endif // __GNUC__
 #endif
 
 
@@ -85,13 +85,15 @@ CPath *CPath::_Instance = NULL;
 
 void CPath::getFileList(const std::string &extension, std::vector<std::string> &filenames)
 {
-	std::map<std::string, CFileEntry, CNoCaseComp>::iterator first(getInstance()->_Files.begin()), last(getInstance()->_Files.end());
+	CPath *inst = getInstance();
+	nlassert(!inst->_MemoryCompressed);
+	std::map<std::string, CFileEntry>::iterator first(inst->_Files.begin()), last(inst->_Files.end());
 
 	if( !extension.empty() )
 	{
 		for (; first != last; ++ first)
 		{
-			string ext = CPath::getInstance()->SSMext.get(first->second.idExt);
+			string ext = inst->SSMext.get(first->second.idExt);
 			if (ext == extension)
 			{
 				filenames.push_back(first->first);
@@ -122,8 +124,24 @@ CPath *CPath::getInstance ()
 void CPath::clearMap ()
 {
 	CPath *inst = CPath::getInstance();
+	nlassert(!inst->_MemoryCompressed);
 	inst->_Files.clear ();
 	NL_DISPLAY_PATH("PATH: CPath::clearMap(): map directory cleared");
+}
+
+CPath::CMCFileEntry *CPath::MCfind (const std::string &filename)
+{
+	CPath *inst = CPath::getInstance();
+	nlassert(inst->_MemoryCompressed);
+	vector<CMCFileEntry>::iterator it;
+	it = lower_bound(inst->_MCFiles.begin(), inst->_MCFiles.end(), filename.c_str(), CMCFileComp());
+	if (it != inst->_MCFiles.end())
+	{
+		CMCFileComp FileComp;
+		if (FileComp.specialCompare(*it, filename.c_str()) == 0)
+			return &(*it);
+	}
+	return NULL;
 }
 
 sint CPath::findExtension (const string &ext1, const string &ext2)
@@ -141,7 +159,9 @@ sint CPath::findExtension (const string &ext1, const string &ext2)
 
 void CPath::remapExtension (const string &ext1, const string &ext2, bool substitute)
 {
+	NL_ALLOC_CONTEXT (MiPath);
 	CPath *inst = CPath::getInstance();
+	nlassert(!inst->_MemoryCompressed);
 
 	string ext1lwr = strlwr (ext1);
 	string ext2lwr = strlwr (ext2);
@@ -164,8 +184,8 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 		inst->_Extensions.erase (inst->_Extensions.begin() + n);
 
 		// remove mapping in the map
-		map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.begin();
-		map<string, CFileEntry, CNoCaseComp>::iterator nit = it;
+		map<string, CFileEntry>::iterator it = inst->_Files.begin();
+		map<string, CFileEntry>::iterator nit = it;
 		while (it != inst->_Files.end ())
 		{
 			nit++;
@@ -192,7 +212,7 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 
 		// adding mapping into the map
 		vector<string> newFiles;
-		map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.begin();
+		map<string, CFileEntry>::iterator it = inst->_Files.begin();
 		while (it != inst->_Files.end ())
 		{
 			string ext = inst->SSMext.get((*it).second.idExt);
@@ -234,7 +254,7 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 
 	// Try to find in the map directories
 	CPath *inst = CPath::getInstance();
-	string str = strlwr (filename);
+	string str = strlwr(filename);
 
 	// Remove end spaces
 	while ((!str.empty()) && (str[str.size()-1] == ' '))
@@ -242,22 +262,36 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 		str.resize (str.size()-1);
 	}
 
-	map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.find (str);
-	// If found in the map, returns it
-	if (it != inst->_Files.end())
+	if (inst->_MemoryCompressed)
 	{
-		if (it->second.Remapped)
+		CMCFileEntry *pMCFE = MCfind(str);
+		// If found in the map, returns it
+		if (pMCFE != NULL)
 		{
-			string path = inst->SSMpath.get((*it).second.idPath);
-			string fname = CFile::getFilenameWithoutExtension(filename) + "." + inst->SSMext.get((*it).second.idExt);
+			string fname, path = inst->SSMpath.get(pMCFE->idPath);
+			if (pMCFE->Remapped)
+				fname = CFile::getFilenameWithoutExtension(pMCFE->Name) + "." + inst->SSMext.get(pMCFE->idExt);
+			else
+				fname = pMCFE->Name;
+
 			NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the map directory: '%s'", fname.c_str(), path.c_str());
 			return path + fname;
 		}
-		else
+	}
+	else // NOT memory compressed
+	{
+		map<string, CFileEntry>::iterator it = inst->_Files.find (str);
+		// If found in the map, returns it
+		if (it != inst->_Files.end())
 		{
-			string path = inst->SSMpath.get((*it).second.idPath);
-			NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the map directory: '%s'", filename.c_str(), path.c_str());
-			return path+(*it).first;
+			string fname, path = inst->SSMpath.get((*it).second.idPath);
+			if (it->second.Remapped)
+				fname = CFile::getFilenameWithoutExtension((*it).second.Name) + "." + inst->SSMext.get((*it).second.idExt);
+			else
+				fname = (*it).second.Name;
+
+			NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the map directory: '%s'", fname.c_str(), path.c_str());
+			return path + fname;
 		}
 	}
 	
@@ -304,7 +338,7 @@ bool CPath::exists (const std::string &filename)
 {
 	// Try to find in the map directories
 	CPath *inst = CPath::getInstance();
-	string str = strlwr (filename);
+	string str = strlwr(filename);
 
 	// Remove end spaces
 	while ((!str.empty()) && (str[str.size()-1] == ' '))
@@ -312,11 +346,20 @@ bool CPath::exists (const std::string &filename)
 		str.resize (str.size()-1);
 	}
 
-	map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.find (str);
-	// If found in the map, returns it
-	if (it != inst->_Files.end())
+
+	if (inst->_MemoryCompressed)
 	{
-		return true;
+		CMCFileEntry *pMCFE = MCfind(str);
+		// If found in the vector, returns it
+		if (pMCFE != NULL)
+			return true;
+	}
+	else
+	{
+		map<string, CFileEntry>::iterator it = inst->_Files.find (str);
+		// If found in the map, returns it
+		if (it != inst->_Files.end())
+			return true;
 	}
 
 	return false;
@@ -325,17 +368,16 @@ bool CPath::exists (const std::string &filename)
 string CPath::standardizePath (const string &path, bool addFinalSlash)
 {
 	string newPath;
-
 	// check empty path
 	if (path.empty()) return "";
 
 	// don't transform the first \\ for windows network path
-/*	if (path.size() >= 2 && path[0] == '\\' && path[1] == '\\')
-	{
-		newPath += "\\\\";
-		i = 2;
-	}
-*/	
+//	if (path.size() >= 2 && path[0] == '\\' && path[1] == '\\')
+//	{
+//		newPath += "\\\\";
+//		i = 2;
+//	}
+	
 	for (uint i = 0; i < path.size(); i++)
 	{
 		// don't transform the first \\ for windows network path
@@ -680,9 +722,11 @@ void CPath::removeAllAlternativeSearchPath ()
 
 void CPath::addSearchPath (const string &path, bool recurse, bool alternative, class IProgressCallback *progressCallBack)
 {
+	NL_ALLOC_CONTEXT (MiPath);
 	H_AUTO_INST(addSearchPath);
 
 	CPath *inst = CPath::getInstance();
+	nlassert(!inst->_MemoryCompressed);
 
 	// check empty directory
 	if (path.empty())
@@ -800,7 +844,10 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative, c
 
 void CPath::addSearchFile (const string &file, bool remap, const string &virtual_ext, NLMISC::IProgressCallback *progressCallBack)
 {
+	NL_ALLOC_CONTEXT (MiPath);
 	CPath *inst = CPath::getInstance();
+	nlassert(!inst->_MemoryCompressed);
+
 	string newFile = standardizePath(file, false);
 
 	// check empty file
@@ -864,6 +911,7 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 
 void CPath::addSearchListFile (const string &filename, bool recurse, bool alternative)
 {
+	NL_ALLOC_CONTEXT (MiPath);
 	// check empty file
 	if (filename.empty())
 	{
@@ -916,6 +964,7 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 	}
 	// Open and read the big file header
 	CPath *inst = CPath::getInstance();
+	nlassert(!inst->_MemoryCompressed);
 
 	FILE *Handle = fopen (sBigFilename.c_str(), "rb");
 	if (Handle == NULL)
@@ -993,15 +1042,17 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 
 void CPath::addIgnoredDoubleFile(const std::string &ignoredFile)
 {
+	NL_ALLOC_CONTEXT (MiPath);
 	CPath::getInstance ()->IgnoredFiles.push_back(ignoredFile);
 }
 
 void CPath::insertFileInMap (const string &filename, const string &filepath, bool remap, const string &extension)
 {
+	NL_ALLOC_CONTEXT (MiPath);
 	CPath *inst = CPath::getInstance();
-
+	nlassert(!inst->_MemoryCompressed);
 	// find if the file already exist
-	map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.find (strlwr(filename));
+	map<string, CFileEntry>::iterator it = inst->_Files.find (strlwr(filename));
 	if (it != inst->_Files.end ())
 	{
 		string path = inst->SSMpath.get((*it).second.idPath);
@@ -1013,7 +1064,8 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 			string sTmp = filepath.substr(0,filepath.rfind('/')+1);
 			(*it).second.idPath = inst->SSMpath.add(sTmp);
 			(*it).second.Remapped = remap;
-			(*it).second.idExt = inst->SSMext.add(strlwr(extension));
+			(*it).second.idExt = inst->SSMext.add(extension);
+			(*it).second.Name = filename;
 		}
 		else
 		{
@@ -1034,17 +1086,18 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 	else
 	{
 		CFileEntry fe;
-		fe.idExt = inst->SSMext.add(strlwr(extension));
+		fe.idExt = inst->SSMext.add(extension);
 		fe.Remapped = remap;
 		string sTmp;
 		if (filepath.find("@") == string::npos)
 			sTmp = filepath.substr(0,filepath.rfind('/')+1);
 		else
 			sTmp = filepath.substr(0,filepath.rfind('@')+1);
-			
-		fe.idPath = inst->SSMpath.add(sTmp);
 
-		inst->_Files.insert (make_pair(filename, fe));
+		fe.idPath = inst->SSMpath.add(sTmp);
+		fe.Name = filename;
+
+		inst->_Files.insert (make_pair(strlwr(filename), fe));
 		NL_DISPLAY_PATH("PATH: CPath::insertFileInMap(%s, %s, %d, %s): added", strlwr(filename).c_str(), filepath.c_str(), remap, strlwr(extension).c_str());
 	}
 }
@@ -1055,11 +1108,24 @@ void CPath::display ()
 	nlinfo ("PATH: Contents of the map:");
 	nlinfo ("PATH: %-25s %-5s %-5s %s", "filename", "ext", "remap", "full path");
 	nlinfo ("PATH: ----------------------------------------------------");
-	for (map<string, CFileEntry, CNoCaseComp>::iterator it = inst->_Files.begin(); it != inst->_Files.end (); it++)
+	if (inst->_MemoryCompressed)
 	{
-		string ext = inst->SSMext.get((*it).second.idExt);
-		string path = inst->SSMpath.get((*it).second.idPath);
-		nlinfo ("PATH: %-25s %-5s %-5d %s", (*it).first.c_str(), ext.c_str(), (*it).second.Remapped, path.c_str());
+		for (uint i = 0; i < inst->_MCFiles.size(); ++i)
+		{
+			const CMCFileEntry &fe = inst->_MCFiles[i];
+			string ext = inst->SSMext.get(fe.idExt);
+			string path = inst->SSMpath.get(fe.idPath);
+			nlinfo ("PATH: %-25s %-5s %-5d %s", fe.Name, ext.c_str(), fe.Remapped, path.c_str());
+		}
+	}
+	else
+	{
+		for (map<string, CFileEntry>::iterator it = inst->_Files.begin(); it != inst->_Files.end (); it++)
+		{
+			string ext = inst->SSMext.get((*it).second.idExt);
+			string path = inst->SSMpath.get((*it).second.idPath);
+			nlinfo ("PATH: %-25s %-5s %-5d %s", (*it).first.c_str(), ext.c_str(), (*it).second.Remapped, path.c_str());
+		}
 	}
 	nlinfo ("PATH: ");
 	nlinfo ("PATH: Contents of the alternative directory:");
@@ -1078,15 +1144,71 @@ void CPath::display ()
 
 void CPath::memoryCompress()
 { 
-	CPath *inst = CPath::getInstance ();
-	inst->SSMext.memoryCompress(); 
-	inst->SSMpath.memoryCompress(); 
+	NL_ALLOC_CONTEXT (MiPath);
+	CPath *inst = CPath::getInstance();
+
+	inst->SSMext.memoryCompress();
+	inst->SSMpath.memoryCompress();
 	uint nDbg = inst->_Files.size();
 	nlinfo ("PATH: Number of file : %d", nDbg);
 	nDbg = inst->SSMext.getCount();
 	nlinfo ("PATH: Number of different extension : %d", nDbg);
 	nDbg = inst->SSMpath.getCount();
 	nlinfo ("PATH: Number of different path : %d", nDbg);
+
+	// Convert from _Files to _MCFiles
+	uint nSize = 0, nNb = 0;
+	map<string,CFileEntry>::iterator it = inst->_Files.begin();
+	while (it != inst->_Files.end())
+	{
+		string sTmp = inst->SSMpath.get(it->second.idPath);
+		if ((sTmp.find('@') != string::npos) && !it->second.Remapped)
+		{
+			// This is a file included in a bigfile (so the name is in the bigfile manager)
+		}
+		else
+		{
+			nSize += it->second.Name.size() + 1;
+		}
+		nNb++;
+		it++;
+	}
+
+	inst->_AllFileNames = new char[nSize];
+	memset(inst->_AllFileNames, 0, nSize);
+	inst->_MCFiles.resize(nNb);
+
+	it = inst->_Files.begin();
+	nSize = 0;
+	nNb = 0;
+	while (it != inst->_Files.end())
+	{
+		CFileEntry &rFE = it->second;
+		string sTmp = inst->SSMpath.get(rFE.idPath);
+		if ((sTmp.find('@') != string::npos) && !rFE.Remapped)
+		{
+			// This is a file included in a bigfile (so the name is in the bigfile manager)
+			sTmp = sTmp.substr(0, sTmp.size()-1);
+			inst->_MCFiles[nNb].Name = CBigFile::getInstance().getFileNamePtr(rFE.Name, sTmp);
+			nlassert(inst->_MCFiles[nNb].Name != NULL);
+		}
+		else
+		{
+			strcpy(inst->_AllFileNames+nSize, rFE.Name.c_str());
+			inst->_MCFiles[nNb].Name = inst->_AllFileNames+nSize;
+			nSize += rFE.Name.size() + 1;
+		}
+		
+		inst->_MCFiles[nNb].idExt = rFE.idExt;
+		inst->_MCFiles[nNb].idPath = rFE.idPath;
+		inst->_MCFiles[nNb].Remapped = rFE.Remapped;
+
+		nNb++;
+		it++;
+	}
+
+	contReset(inst->_Files);
+	inst->_MemoryCompressed = true;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////

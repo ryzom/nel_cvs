@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.73 2001/02/12 15:56:40 coutelas Exp $
+ * $Id: driver_opengl.cpp,v 1.74 2001/02/13 14:18:30 coutelas Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -160,7 +160,7 @@ bool CDriverGL::init()
 	if (!_Registered)
 	{
 		memset(&wc,0,sizeof(wc));
-		wc.style			= CS_HREDRAW | CS_VREDRAW;
+		wc.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 		wc.lpfnWndProc		= (WNDPROC)WndProc;
 		wc.cbClsExtra		= 0;
 		wc.cbWndExtra		= 0;
@@ -853,12 +853,13 @@ void CDriverGL::setCapture (bool b)
 	else
 		ClipCursor (NULL);
 
-
-/*	if (b)
+	/*
+	if (b)
 		SetCapture (_hWnd);
 	else
 		ReleaseCapture ();
-*/
+	*/
+
 #elif defined (NL_OS_UNIX)
 
 #endif // NL_OS_UNIX

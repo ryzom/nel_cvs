@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.34 2002/02/28 12:59:49 besson Exp $
+ * $Id: material.cpp,v 1.35 2002/07/31 09:33:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -368,12 +368,14 @@ ITexture				*CMaterial::getLightMap(uint lmapId) const
 // ***************************************************************************
 void					CMaterial::setLightMapFactor(uint lmapId, CRGBA factor)
 {
-	nlassert(_ShaderType==CMaterial::LightMap);
-	if(lmapId>=_LightMaps.size())
-		_LightMaps.resize(lmapId+1);
-	_LightMaps[lmapId].Factor= factor;
+	if (_ShaderType==CMaterial::LightMap)
+	{
+		if(lmapId>=_LightMaps.size())
+			_LightMaps.resize(lmapId+1);
+		_LightMaps[lmapId].Factor= factor;
 
-	_Touched|=IDRV_TOUCHED_LIGHTMAP;
+		_Touched|=IDRV_TOUCHED_LIGHTMAP;
+	}
 }
 
 

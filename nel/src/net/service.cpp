@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.82 2001/09/12 16:55:23 lecroart Exp $
+ * $Id: service.cpp,v 1.83 2001/09/13 09:07:35 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -962,6 +962,49 @@ NLMISC_COMMAND (mutex, "display mutex values", "")
 }
 #endif // MUTEX_DEBUG
 
+
+NLMISC_COMMAND(nofilter, "Disable all filters on Nel loggers", "")
+{
+	if(args.size() != 0) return false;
+
+	DebugLog->resetFilters();
+	InfoLog->resetFilters();
+	WarningLog->resetFilters();
+	ErrorLog->resetFilters();
+	AssertLog->resetFilters();
+
+	return true;
+}
+
+
+NLMISC_COMMAND(addposfilter_debug, "Add a positive filter on DebugLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	
+	DebugLog->addPositiveFilter( args[0].c_str() );
+
+	return true;
+}
+
+
+NLMISC_COMMAND(addnegfilter_debug, "Add a negative filter on DebugLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	
+	DebugLog->addNegativeFilter( args[0].c_str() );
+
+	return true;
+}
+
+
+NLMISC_COMMAND(removefilter_debug, "Remove a filter on DebugLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	
+	DebugLog->removeFilter( args[0].c_str() );
+
+	return true;
+}
 
 
 } //NLNET

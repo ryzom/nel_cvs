@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.22 2001/03/16 16:51:54 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.23 2001/03/27 13:58:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,7 +154,8 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 	float FontRatio = 1.0;
 
 	// keep the 800*600 ratio
-	fontSize = fontSize*width/800;
+	fontSize = (uint32)floor(fontSize*height/600.f);
+	fontSize = max(fontSize, (uint32)2);
 	
 	// Setting vertices format
 	output.Vertices.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]);

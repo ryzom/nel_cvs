@@ -1,7 +1,7 @@
 /** \file tile_far_bank.cpp
  * <File description>
  *
- * $Id: tile_far_bank.cpp,v 1.4 2001/03/05 09:13:38 corvazier Exp $
+ * $Id: tile_far_bank.cpp,v 1.5 2001/03/07 17:36:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,11 +55,12 @@ void CTileFarBank::CTileFar::serial(IStream &f) throw(NLMISC::EStream)
 // ***************************************************************************
 void CTileFarBank::CTileFar::setPixels (TFarType type, TFarOrder order, NLMISC::CRGBA* pixels, uint size)
 {
-	_Pixels[type][order].resize (size);
-
 	// Mode alpha ?
 	if (type==alpha)
 	{
+		_Pixels[diffuse][order].resize (size);
+		_Pixels[additive][order].resize (size);
+
 		// Copy only the alpha channel
 		for (uint p=0; p<size; p++)
 		{
@@ -68,8 +69,13 @@ void CTileFarBank::CTileFar::setPixels (TFarType type, TFarOrder order, NLMISC::
 		}
 	}
 	else
+	{
+		// Resize this array
+		_Pixels[type][order].resize (size);
+
 		// Copy all the channels
 		memcpy (&_Pixels[type][order][0], pixels, size*sizeof(NLMISC::CRGBA));
+	}
 }
 
 

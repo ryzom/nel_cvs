@@ -48,7 +48,7 @@ bool isFileExist (const char* sName)
 }
 
 // Fill tile far pixel with this bitmap
-bool fillTileFar (uint tile, const char* sName, CTileFarBank::TFarType type, CTileFarBank& farBank)
+bool fillTileFar (uint tile, const char* sName, CTileFarBank::TFarType type, CTileFarBank& farBank, bool _256)
 {
 	// Progress message
 	printf ("Computing %s...\n", sName);
@@ -71,26 +71,31 @@ bool fillTileFar (uint tile, const char* sName, CTileFarBank::TFarType type, CTi
 			uint height=bitmap.getHeight();
 
 			// Check size..
-			if ((width!=128 && width!=256) || (height!=128 && height!=256))
+			if (!((_256&&(width==256)&&(height==256))||((!_256)&&(width==128)&&(height==128))))
 			{
-				fprintf (stderr, "Error: invalid size. Only 128 or 256\n");
+				// New size
+				width = height = _256?256:128;
+
+				// Output a warning message
+				fprintf (stderr, "Warning: resize %s to %d x %d\n", sName, width, height);
+
+				// Resample the picture
+				bitmap.resample ( width, height);
 			}
-			else
-			{
-				// Build mipmaps
-				bitmap.buildMipMaps ();
 
-				// Get the tile
-				CTileFarBank::CTileFar* pFarTile=farBank.getTile (tile);
+			// Build mipmaps
+			bitmap.buildMipMaps ();
 
-				// Copy arrays
-				pFarTile->setPixels (type, CTileFarBank::order0, (CRGBA*)&bitmap.getPixels (5)[0], (width>>5)*(height>>5));
-				pFarTile->setPixels (type, CTileFarBank::order1, (CRGBA*)&bitmap.getPixels (6)[0], (width>>6)*(height>>6));
-				pFarTile->setPixels (type, CTileFarBank::order2, (CRGBA*)&bitmap.getPixels (7)[0], (width>>7)*(height>>7));
+			// Get the tile
+			CTileFarBank::CTileFar* pFarTile=farBank.getTile (tile);
 
-				// Ok.
-				return true;
-			}
+			// Copy arrays
+			pFarTile->setPixels (type, CTileFarBank::order0, (CRGBA*)&bitmap.getPixels (5)[0], (width>>5)*(height>>5));
+			pFarTile->setPixels (type, CTileFarBank::order1, (CRGBA*)&bitmap.getPixels (6)[0], (width>>6)*(height>>6));
+			pFarTile->setPixels (type, CTileFarBank::order2, (CRGBA*)&bitmap.getPixels (7)[0], (width>>7)*(height>>7));
+
+			// Ok.
+			return true;
 		}
 		catch (Exception& except)
 		{
@@ -218,6 +223,15 @@ int main (int argc, char **argv)
 					// Tile not free ?
 					if (!pTile->isFree())
 					{
+						// Get infos about the tile
+						sint tileSet;
+						sint number;
+						CTileBank::TTileType type;
+						bank.getTileXRef (tile, tileSet, number, type);
+
+						// Is a 256 ?
+						bool _256=(type==CTileBank::_256x256);
+
 						// Diffuse bitmap filled ?
 						if (pTile->getRelativeFileName (CTile::diffuse)!="")
 						{
@@ -228,7 +242,7 @@ int main (int argc, char **argv)
 								if (recompute ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str(), argv[2])||forceRecomputation)
 								{
 									// Fill infos
-									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str(), CTileFarBank::diffuse, farBank))
+									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str(), CTileFarBank::diffuse, farBank, _256))
 									{
 										// One more tile
 										tileCount++;
@@ -258,7 +272,7 @@ int main (int argc, char **argv)
 								if (recompute ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::additive)).c_str(), argv[2])||forceRecomputation)
 								{
 									// Fill infos
-									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::additive)).c_str(), CTileFarBank::additive, farBank))
+									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::additive)).c_str(), CTileFarBank::additive, farBank, _256))
 									{
 										// One more tile
 										tileCount++;
@@ -288,7 +302,7 @@ int main (int argc, char **argv)
 								if (recompute ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::alpha)).c_str(), argv[2])||forceRecomputation)
 								{
 									// Fill infos
-									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::alpha)).c_str(), CTileFarBank::alpha, farBank))
+									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::alpha)).c_str(), CTileFarBank::alpha, farBank, _256))
 									{
 										// One more tile
 										tileCount++;

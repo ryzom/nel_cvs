@@ -1139,7 +1139,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1, 0, 0, 23
+ FILEVERSION 1,0,0,30 
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -1158,7 +1158,11 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
+<<<<<<< object_viewer.rc
+            VALUE "FileVersion", "1, 0, 0, 30\0"
+=======
             VALUE "FileVersion", "1, 0, 0, 23\0"
+>>>>>>> 1.32
             VALUE "InternalName", "object_viewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"
@@ -1286,12 +1290,14 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "Open...",                     ID_FILE_OPEN
+        MENUITEM "Remove all instances from the scene", 
+                                                IDM_REMOVE_ALL_INSTANCES_FROM_SCENE
+
         MENUITEM SEPARATOR
         MENUITEM "Load config...",              ID_FILE_LOADCONFIG
         MENUITEM "Save config...",              ID_FILE_SAVECONFIG
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
-        MENUITEM "Bind scene animation",        ID_FILE_BINDSCENEANIMATION
     END
     POPUP "&View"
     BEGIN
@@ -1311,7 +1317,7 @@ BEGIN
         MENUITEM "&Animation",                  ID_WINDOW_ANIMATION
         MENUITEM "Animation &set",              ID_WINDOW_ANIMATIONSET
         MENUITEM "&Mixer slots",                ID_WINDOW_MIXERSSLOTS
-        MENUITEM "&Particles",                  ID_WINDOW_PATICLES
+        MENUITEM "&Particles",                  ID_WINDOW_PARTICLES
     END
     POPUP "&Help"
     BEGIN

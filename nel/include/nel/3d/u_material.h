@@ -1,7 +1,7 @@
 /** \file u_material.h
  * <File description>
  *
- * $Id: u_material.h,v 1.4 2003/01/22 11:13:52 corvazier Exp $
+ * $Id: u_material.h,v 1.5 2004/03/23 10:10:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ using NLMISC::CRGBA;
 
 
 class	UTexture;
+class   UDriver;
 
 
 // ***************************************************************************
@@ -48,8 +49,7 @@ class	UTexture;
  */
 class UMaterial
 {
-protected:
-
+protected:		
 	/// \name Object
 	// @{
 	UMaterial() {}
@@ -70,11 +70,12 @@ public:
 	 * Interpolate*:	out= arg0*As + arg1*(1-As),  where As is taken from the SrcAlpha of 
 	 *		Texture/Previous/Diffuse/Constant, respectively if operator is
 	 *		InterpolateTexture/InterpolatePrevious/InterpolateDiffuse/InterpolateConstant.
+	 * Multiply-Add (Mad) out= arg0 * arg1 + arg2. Must be supported by driver	 
 	 * EMBM : apply to both color and alpha : the current texture, whose format is DSDT, is used to offset the texture in the next stage.
 	 *  NB : for EMBM and InterpolateConstant, this must be supported by driver.
 	 */
 	enum TTexOperator		{ Replace=0, Modulate, Add, AddSigned, 
-							  InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant, EMBM };
+							  InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant, EMBM, Mad };
 
 	/** Source argument.
 	 * Texture:		the arg is taken from the current texture of the stage.
@@ -94,8 +95,7 @@ public:
 	enum TTexOperand		{ SrcColor=0, InvSrcColor, SrcAlpha, InvSrcAlpha };
 	// @}
 
-public:
-
+public:	
 	/// \name Texture.
 	// @{
 	// Set a texture in a stage
@@ -129,9 +129,11 @@ public:
 	virtual void			texEnvOpRGB(uint stage, TTexOperator ope) =0;
 	virtual void			texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper) =0;
 	virtual void			texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper) =0;
+	virtual void			texEnvArg2RGB(uint stage, TTexSource src, TTexOperand oper) =0;
 	virtual void			texEnvOpAlpha(uint stage, TTexOperator ope) =0;
 	virtual void			texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper) =0;
 	virtual void			texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper) =0;
+	virtual void			texEnvArg2Alpha(uint stage, TTexSource src, TTexOperand oper) =0;
 	// @}
 
 	/// \name ZBuffer.
@@ -170,6 +172,9 @@ public:
 	 * All other states are undefined (such as blend function, since blend is disabled).
 	 */
 	virtual void			initUnlit() =0;
+
+	// test if the given driver will support rendering of that material
+	virtual	bool			isSupportedByDriver(UDriver &drv) = 0;
 	// @}
 
 

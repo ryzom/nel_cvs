@@ -8,6 +8,7 @@
 //
 
 #include "3d/scene.h"
+#include "ps_wrapper.h"
 
 class CColorEdit;
 

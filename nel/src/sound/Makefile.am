@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.5 2002/03/19 17:42:48 valignat Exp $
+# $Id: Makefile.am,v 1.6 2002/08/20 12:47:31 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -12,6 +12,8 @@ libnelsnd_la_SOURCES = ambiant_source.cpp                  \
                        ambiant_source.h                    \
                        audio_mixer_user.cpp                \
                        audio_mixer_user.h                  \
+                       background_sound_manager.cpp        \
+                       background_sound_manager.h          \
                        bounding_box.cpp                    \
                        bounding_box.h                      \
                        bounding_shape.h                    \
@@ -26,8 +28,12 @@ libnelsnd_la_SOURCES = ambiant_source.cpp                  \
                        mixing_track.cpp                    \
                        mixing_track.h                      \
                        playable.h                          \
+                       sample_bank.cpp                     \
+                       sample_bank.h                       \
                        sound.cpp                           \
                        sound.h                             \
+                       sound_bank.cpp                      \
+                       sound_bank.h                        \
                        source_user.cpp                     \
                        source_user.h
 

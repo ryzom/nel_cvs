@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.85 2002/08/09 09:35:51 coutelas Exp $
+# $Id: Makefile.am,v 1.86 2002/08/20 12:47:31 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -210,6 +210,7 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        mrm_internal.cpp \
                        mrm_internal.h \
                        mrm_level_detail.cpp \
+                       mrm_level_detail.h \
                        mrm_mesh.cpp \
                        mrm_mesh.h \
                        mrm_parameters.cpp \
@@ -375,6 +376,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        shape_bank_user.h \
                        shape.cpp \
                        shape.h \
+                       shifted_triangle_cache.cpp \
+                       shifted_triangle_cache.h \
                        skeleton_model.cpp \
                        skeleton_model.h \
                        skeleton_shape.cpp \

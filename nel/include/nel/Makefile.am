@@ -1,10 +1,12 @@
 #
-# $Id: Makefile.am,v 1.3 2002/03/19 17:42:48 valignat Exp $
+# $Id: Makefile.am,v 1.4 2002/08/20 12:47:02 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS              = 3d ai misc net pacs sound
+DIST_SUBDIRS      = net 3d pacs sound ai misc georges ligo
+
+SUBDIRS              = ligo @NEL_SUBDIRS@
 
 includedir           = ${prefix}/include/nel
 

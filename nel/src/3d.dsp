@@ -185,6 +185,10 @@ SOURCE=.\3d\render_trav.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\trav_scene.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\trav_scene.h
 # End Source File
 # End Group

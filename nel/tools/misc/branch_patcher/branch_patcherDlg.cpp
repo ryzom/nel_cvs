@@ -270,7 +270,7 @@ void CBranch_patcherDlg::OnButtonPatch()
 	UpdateData( true );
 
 	CString diffCmdLine;
-	diffCmdLine.Format( "cvs.exe diff > %s", TEMP_DIFF_FILE ); // needs a valid cvs login before! and cvs.exe in the path
+	diffCmdLine.Format( "cvs.exe diff -c > %s", TEMP_DIFF_FILE ); // needs a valid cvs login before! and cvs.exe in the path
 	CString text;
 	text.Format( "Get diff from directory %s?\n\nCommand:\n%s", m_SrcDir, diffCmdLine );
 	if ( ::MessageBox( m_hWnd, text, "Confirmation", MB_OKCANCEL | MB_ICONQUESTION ) == IDOK )
@@ -352,6 +352,11 @@ void CBranch_patcherDlg::colorizeDiff()
 	red.cbSize = sizeof(red);
 	red.dwMask = CFM_COLOR;
 	red.crTextColor = RGB(0xFF,0,0);
+	CHARFORMAT green;
+	ZeroMemory( &green, sizeof(green) );
+	green.cbSize = sizeof(green);
+	green.dwMask = CFM_COLOR;
+	green.crTextColor = RGB(0,0x7F,0);
 	for ( int i=0; i!=m_Display->GetLineCount(); ++i )
 	{
 		int c = m_Display->LineIndex( i );
@@ -360,13 +365,17 @@ void CBranch_patcherDlg::colorizeDiff()
 		CString s = m_Display->GetSelText();
 		if ( ! s.IsEmpty() )
 		{
-			if ( s[0] == '>' )
+			if ( s.Left(2) == "+ " )
 			{
 				m_Display->SetSelectionCharFormat( blue );
 			}
-			else if ( s[0] == '<' )
+			else if ( s.Left(2) == "- " )
 			{
 				m_Display->SetSelectionCharFormat( red );
+			}
+			else if ( s.Left(2) == "! " )
+			{
+				m_Display->SetSelectionCharFormat( green );
 			}
 		}
 	}
@@ -385,7 +394,7 @@ void CBranch_patcherDlg::OnDoPatch()
 
 	// Apply the patch
 	CString patchCmdLine;
-	patchCmdLine.Format( "patch.exe -p0 < %s > %s", TEMP_DIFF_FILE, PATCH_RESULT ); // needs patch.exe in the path
+	patchCmdLine.Format( "patch.exe -c -p0 < %s > %s", TEMP_DIFF_FILE, PATCH_RESULT ); // needs patch.exe in the path
 	CString text;
 	text.Format( "Patch diff to directory %s?\n\nCommand:\n%s", m_DestDir, patchCmdLine );
 	if ( ::MessageBox( m_hWnd, text, "Confirmation", MB_OKCANCEL | MB_ICONQUESTION ) == IDOK )

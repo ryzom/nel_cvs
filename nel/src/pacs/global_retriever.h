@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.34 2004/01/06 17:33:21 corvazier Exp $
+ * $Id: global_retriever.h,v 1.35 2004/02/09 10:38:22 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -229,7 +229,7 @@ public:
 		const CRetrieverInstance	&instance = _Instances[pos.InstanceId];
 		const CLocalRetriever		&retriever = getRetriever(instance.getRetrieverId());
 
-		if (pos.LocalPosition.Surface < 0 || pos.LocalPosition.Surface >= (sint)retriever.getSurfaces().size())
+		if (!retriever.isLoaded() || pos.LocalPosition.Surface < 0 || pos.LocalPosition.Surface >= (sint)retriever.getSurfaces().size())
 			return 0xFFFFFFFF;
 
 		return retriever.getSurface(pos.LocalPosition.Surface).getMaterial();
@@ -252,6 +252,10 @@ public:
 
 		const CRetrieverInstance	&instance = _Instances[pos.InstanceId];
 		const CLocalRetriever		&retriever = getRetriever(instance.getRetrieverId());
+
+		if (!retriever.isLoaded())
+			return false;
+
 		const CRetrievableSurface	&surface = retriever.getSurface(pos.LocalPosition.Surface);
 
 		waterHeight = surface.getWaterHeight();

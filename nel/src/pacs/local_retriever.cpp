@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.67 2004/01/14 09:40:42 legros Exp $
+ * $Id: local_retriever.cpp,v 1.68 2004/02/09 10:38:22 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -290,6 +290,9 @@ void	NLPACS::CLocalRetriever::dumpSurface(uint surf, const CVector &vect) const
 
 float	NLPACS::CLocalRetriever::distanceToBorder(const ULocalPosition &pos) const
 {
+	if (!isLoaded())
+		return 0.0f;
+
 	const CRetrievableSurface	&surf = _Surfaces[pos.Surface];
 	uint						i, j;
 	float						minDist = 1.0e10f, dist;

@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.1 2001/06/26 15:28:10 cado Exp $
+ * $Id: sound_driver.h,v 1.2 2001/07/04 13:08:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 
-
+/// This namespace contains the sound classes
 namespace NLSOUND {
 
 
@@ -42,14 +42,14 @@ class ISource;
 #ifdef NL_DEBUG
 #define NLSOUND_DLL_NAME "nel_drv_openal_win_debug.dll"
 #elif defined (NL_RELEASE_DEBUG)
-#define NL3D_DLL_NAME "nel_drv_openal_win_rd.dll"
+#define NLSOUND_DLL_NAME "nel_drv_openal_win_rd.dll"
 #elif defined (NL_RELEASE)
-#define NL3D_DLL_NAME "nel_drv_openal_win.dll"
+#define NLSOUND_DLL_NAME "nel_drv_openal_win.dll"
 #else
 #error "Unknown dll name"
 #endif
 #elif defined (NL_OS_UNIX)
-#define NL3D_DLL_NAME "libnel_drv_openal.so"
+#define NLSOUND_DLL_NAME "libnel_drv_openal.so"
 #else
 #error "Unknown system"
 #endif
@@ -61,6 +61,9 @@ class ISource;
  *
  * The caller of the create methods is responsible for the deletion of the created objects.
  * These objects must be deleted before deleting the ISoundDriver instance.
+ *
+ * The driver is a singleton. To access, only the pointer returned by createDriver()
+ * is provided.
  *
  * \author Olivier Cado
  * \author Nevrax France
@@ -76,9 +79,6 @@ public:
 	/// The static method which builds the sound driver instance
 	static	ISoundDriver	*createDriver();
 
-	/// Return the sound driver object
-	static	ISoundDriver	*instance() { return _Instance; }
-
 	/// Create a sound buffer
 	virtual	IBuffer			*createBuffer() = 0;
 
@@ -88,24 +88,24 @@ public:
 	/// Create a source
 	virtual	ISource			*createSource() = 0;
 
+	/// Temp
+	virtual void			loadWavFile( IBuffer *destbuffer, char *filename ) = 0;
+
 	// Does not create a sound loader
 
 	/// Destructor
-	virtual	~ISoundDriver() { _Instance = NULL; }
+	virtual	~ISoundDriver() {}
 
 protected:
 
 	/// Constructor
-	ISoundDriver();
+	ISoundDriver() {}
 
 	/// Remove a buffer (should be called by the friend destructor of the buffer class)
 	virtual void			removeBuffer( IBuffer *buffer ) = 0;
 
 	/// Remove a source (should be called by the friend destructor of the source class)
 	virtual void			removeSource( ISource *source ) = 0;
-
-	// The sound driver instance
-	static ISoundDriver		*_Instance;
 };
 
 

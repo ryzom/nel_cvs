@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * <File description>
  *
- * $Id: sound_driver.cpp,v 1.1 2001/06/26 15:28:10 cado Exp $
+ * $Id: sound_driver.cpp,v 1.2 2001/07/04 13:08:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,10 +40,6 @@
 
 namespace NLSOUND
 {
-
-
-// The sound driver instance
-ISoundDriver	*ISoundDriver::_Instance = NULL;
 
 
 // Interface version
@@ -96,11 +92,11 @@ ISoundDriver	*ISoundDriver::createDriver()
 #elif defined (NL_OS_UNIX)
 
 	// Unix code
-	void *handle = dlopen(NL3D_DLL_NAME, RTLD_NOW);
+	void *handle = dlopen(NLSOUND_DLL_NAME, RTLD_NOW);
 
 	if (handle == NULL)
 	{
-		nlwarning ("when loading dynamic library '%s': %s", NL3D_DLL_NAME, dlerror());
+		nlwarning ("when loading dynamic library '%s': %s", NLSOUND_DLL_NAME, dlerror());
 		throw ESoundDriverNotFound();
 	}
 
@@ -108,7 +104,7 @@ ISoundDriver	*ISoundDriver::createDriver()
 	createSoundDriver = (ISDRV_CREATE_PROC) dlsym (handle, IDRV_CREATE_PROC_NAME);
 	if (createSoundDriver == NULL)
 	{
-		nlwarning ("when getting function in dynamic library '%s': %s", NL3D_DLL_NAME, dlerror());
+		nlwarning ("when getting function in dynamic library '%s': %s", NLSOUND_DLL_NAME, dlerror());
 		throw ESoundDriverCorrupted();
 	}
 
@@ -131,22 +127,6 @@ ISoundDriver	*ISoundDriver::createDriver()
 		throw ESoundDriverCantCreateDriver();
 	}
 	return ret;
-}
-
-
-/*
- * Constructor
- */
-ISoundDriver::ISoundDriver()
-{
-	if ( _Instance == NULL )
-	{
-		_Instance = this;
-	}
-	else
-	{
-		nlerror( "Sound driver singleton instanciated twice" );
-	}
 }
 
 

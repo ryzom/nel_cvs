@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.24 2003/10/14 09:31:16 ledorze Exp $
+ * $Id: file.h,v 1.25 2003/12/04 16:59:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,11 @@ struct EReadError : public EFile
 struct EWriteError : public EFile
 {
 	EWriteError( const std::string& filename ) : EFile( "Write Error in file '" +filename+"'", true ) {}
+};
+
+struct ERenameError : public EFile
+{
+	ERenameError( const std::string& dest, const std::string& src ) : EFile( "Rename Error from the file '" +src+"' to the file '" +dest+"'", true ) {}
 };
 
 
@@ -184,11 +189,14 @@ class COFile : public IStream
 public:		// Basic Usage.
 	/// Object. NB: destructor close() the stream.
 	COFile();
-	COFile(const std::string &path, bool append=false, bool text=false);
+	COFile(const std::string &path, bool append=false, bool text=false, bool useTempFile=false);
 	~COFile();
 
-	/// Open a file for writing. false if failed. close() if a file was opened.
-	bool	open(const std::string &path, bool append=false, bool text=false);
+	/** Open a file for writing. false if failed. close() if a file was opened.
+	*	If you open the file with the flag useTempFile, you MUST close explicitlty the file
+	*	with close() if the writing as been successed.
+	*/
+	bool	open(const std::string &path, bool append=false, bool text=false, bool useTempFile=false);
 
 	bool	isOpen	()	const
 	{
@@ -212,11 +220,14 @@ public:		// Advanced Usage.
 	virtual void		serialBuffer(uint8 *buf, uint len) throw(EWriteError);
 
 protected:
+	/// Internal close.
+	void	internalClose(bool success);
 	virtual void		serialBit(bool &bit) throw(EWriteError);
 
 private:
 	FILE	*_F;
 	std::string _FileName;
+	std::string _TempFileName;
 };
 
 

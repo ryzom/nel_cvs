@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.42 2003/11/25 14:44:59 besson Exp $
+ * $Id: path.h,v 1.43 2003/12/04 16:59:42 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -442,6 +442,11 @@ struct CFile
 	* \return true if the delete occurs.
 	*/
 	static bool deleteFile(const std::string &filename);
+
+	/** Get temporary output filename.
+	*	Call this method to get a temporary output filename. If you have successfuly saved your data, delete the old filename and move the new one.
+	*/
+	static void getTemporaryOutputFilename (const std::string &originalFilename, std::string &tempFilename);
 };
 
 

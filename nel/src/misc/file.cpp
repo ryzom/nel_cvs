@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.35 2003/11/20 14:05:58 corvazier Exp $
+ * $Id: file.cpp,v 1.36 2003/12/04 16:59:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -485,19 +485,19 @@ COFile::COFile() : IStream(false)
 }
 
 // ======================================================================================================
-COFile::COFile(const std::string &path, bool append, bool text) : IStream(false)
+COFile::COFile(const std::string &path, bool append, bool text, bool useTempFile) : IStream(false)
 {
 	_F=NULL;
-	open(path, append, text);
+	open(path, append, text, useTempFile);
 }
 
 // ======================================================================================================
 COFile::~COFile()
 {
-	close();
+	internalClose(false);
 }
 // ======================================================================================================
-bool	COFile::open(const std::string &path, bool append, bool text)
+bool	COFile::open(const std::string &path, bool append, bool text, bool useTempFile)
 {
 	close();
 
@@ -505,22 +505,51 @@ bool	COFile::open(const std::string &path, bool append, bool text)
 	if(path.empty ())
 		return false;
 
+	_FileName = path;
+	_TempFileName.clear();
+
 	char mode[3];
 	mode[0] = (append)?'a':'w';
 	mode[1] = (text)?'\0':'b';
 	mode[2] = '\0';
 
-	_F=fopen(path.c_str(), mode);
-	_FileName = path;
+	string fileToOpen = path;
+	if (useTempFile)
+	{
+		CFile::getTemporaryOutputFilename (path, _TempFileName);
+		fileToOpen = _TempFileName;
+	}
+
+	_F=fopen(fileToOpen.c_str(), mode);
 
 	return _F!=NULL;
 }
 // ======================================================================================================
 void	COFile::close()
 {
+	internalClose(true);
+}
+// ======================================================================================================
+void	COFile::internalClose(bool success)
+{
 	if(_F)
 	{
 		fclose(_F);
+
+		// Temporary filename ?
+		if (!_TempFileName.empty())
+		{
+			// Delete old
+			if (success)
+			{
+				CFile::deleteFile (_FileName);
+				if (!CFile::moveFile (_FileName.c_str(), _TempFileName.c_str()))
+					throw ERenameError (_TempFileName, _FileName);
+			}
+			else
+				CFile::deleteFile (_TempFileName);
+		}
+
 		_F=NULL;
 	}
 	resetPtrTable();

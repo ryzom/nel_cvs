@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.94 2003/11/25 16:10:46 besson Exp $
+ * $Id: path.cpp,v 1.95 2003/12/04 17:00:34 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1749,6 +1749,14 @@ bool CFile::deleteFile(const std::string &filename)
 		return false;
 	}
 	return true;
+}
+
+void CFile::getTemporaryOutputFilename (const std::string &originalFilename, std::string &tempFilename)
+{
+	uint i = 0;
+	do
+		tempFilename = originalFilename+".tmp"+toString (i++);
+	while (CFile::isExists(tempFilename));
 }
 
 } // NLMISC

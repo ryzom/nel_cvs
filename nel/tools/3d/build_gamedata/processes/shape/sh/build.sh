@@ -17,9 +17,36 @@ echo -------
 date >> log.log
 date
 
-#backup lightmap to lightmap_not_optimized and shape to shape_not_optimized
-./sh/backup_lm_s.bat
+# backup lightmap to lightmap_not_optimized and shape to shape_not_optimized
+# only if more recent
+
+for filename in lightmap/*.tga ; do
+	dest=`echo $filename | sed -e 's&lightmap/&lightmap_not_optimized/&g'`
+	if ( ! test -e $dest ) || ( test $filename -nt $dest )
+	then
+		what=`cp -v -u -p $filename $dest`
+		echo "$what"
+		echo "$what" >> log.log
+	fi
+done
+for filename in shape/*.shape ; do
+	dest=`echo $filename | sed -e 's&shape/&shape_not_optimized/&g'`
+	if ( ! test -e $dest ) || ( test $filename -nt $dest )
+	then
+		what=`cp -v -u -p $filename $dest`
+		echo "$what"
+		echo "$what" >> log.log
+	fi
+done
+
 $lightmap_optimizer ./lightmap ./shape
+
+for filename in lightmap_not_optimized/*.tga ; do
+	touch $filename
+done
+for filename in shape_not_optimized/*.shape ; do
+	touch $filename
+done
 
 
 echo ------- >> log.log

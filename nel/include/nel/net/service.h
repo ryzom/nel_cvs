@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.19 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: service.h,v 1.20 2001/05/03 16:29:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,7 @@ protected:
 
 	static NLMISC::CConfigFile	_ConfigFile;
 
+	friend void AESConnection (const std::string &serviceName, TSockId from, void *arg);
 
 private:
 

@@ -48,7 +48,7 @@ bool isFileExist (const char* sName)
 }
 
 // Fill tile far pixel with this bitmap
-bool fillTileFar (uint tile, const char* sName, CTileFarBank::TFarType type, CTileFarBank& farBank, bool _256)
+bool fillTileFar (uint tile, const char* sName, CTileFarBank::TFarType type, CTileFarBank& farBank, bool _256, uint8 rotate)
 {
 	// Progress message
 	printf ("Computing %s...\n", sName);
@@ -66,9 +66,18 @@ bool fillTileFar (uint tile, const char* sName, CTileFarBank::TFarType type, CTi
 			// Convert to RGBA
 			bitmap.convertToType (CBitmap::RGBA);
 
+			// Rotate
+			uint8 rot=rotate;
+			while (rot!=0)
+			{
+				bitmap.rotateCCW ();
+				rot--;
+			}
+
 			// Get bitmap size
 			uint width=bitmap.getWidth();
 			uint height=bitmap.getHeight();
+			
 
 			// Check size..
 			if (!((_256&&(width==256)&&(height==256))||((!_256)&&(width==128)&&(height==128))))
@@ -242,7 +251,7 @@ int main (int argc, char **argv)
 								if (recompute ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str(), argv[2])||forceRecomputation)
 								{
 									// Fill infos
-									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str(), CTileFarBank::diffuse, farBank, _256))
+									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str(), CTileFarBank::diffuse, farBank, _256, 0))
 									{
 										// One more tile
 										tileCount++;
@@ -272,7 +281,7 @@ int main (int argc, char **argv)
 								if (recompute ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::additive)).c_str(), argv[2])||forceRecomputation)
 								{
 									// Fill infos
-									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::additive)).c_str(), CTileFarBank::additive, farBank, _256))
+									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::additive)).c_str(), CTileFarBank::additive, farBank, _256, 0))
 									{
 										// One more tile
 										tileCount++;
@@ -302,7 +311,7 @@ int main (int argc, char **argv)
 								if (recompute ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::alpha)).c_str(), argv[2])||forceRecomputation)
 								{
 									// Fill infos
-									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::alpha)).c_str(), CTileFarBank::alpha, farBank, _256))
+									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::alpha)).c_str(), CTileFarBank::alpha, farBank, _256, pTile->getRotAlpha()))
 									{
 										// One more tile
 										tileCount++;

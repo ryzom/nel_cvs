@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.182 2004/09/21 09:13:41 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.183 2004/10/05 17:05:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -380,6 +380,7 @@ public:
 		return _ForceNormalize;
 	}
 
+	virtual void			getNumPerStageConstant(uint &lightedMaterial, uint &unlightedMaterial) const;
 
 	virtual	bool			supportVertexBufferHard() const;
 

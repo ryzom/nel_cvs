@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.22 2004/05/14 15:38:53 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.23 2004/05/28 16:49:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,6 +131,13 @@ public:
 
 	// Test if the system is shared
 	bool			isShared() const { return _Sharing; }		
+
+	// Get the number of cached textures
+	uint			getNumCachedTextures() const { return _CachedTex.size(); }
+	
+	// Get a cached texture
+	ITexture		*getCachedTexture(uint index) const { return _CachedTex[index]; }	
+
 protected:
 
 	friend class CParticleSystemModel; 

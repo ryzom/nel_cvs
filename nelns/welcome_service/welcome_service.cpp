@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.1 2001/05/02 12:36:39 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.2 2001/05/04 09:54:49 coutelas Exp $
  *
  */
 
@@ -85,10 +85,10 @@ CFES *findBestFES ()
 
 void displayFES ()
 {
-	nlinfo ("There's %d FES in the list:");
+	nlinfo ("There's %d FES in the list:", FESList.size());
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
-		nlinfo(" > %s NbUser:%d NbEstUser", (*it).SockId->asString().c_str(), (*it).NbUser, (*it).NbEstimatedUser);
+		nlinfo(" > %s NbUser:%d NbEstUser:%d", (*it).SockId->asString().c_str(), (*it).NbUser, (*it).NbEstimatedUser);
 	}
 	nlinfo ("End of the list");
 }

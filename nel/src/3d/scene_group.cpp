@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.43 2003/01/08 15:47:43 boucher Exp $
+ * $Id: scene_group.cpp,v 1.44 2003/03/13 08:58:58 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -664,6 +664,8 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 	{
 		sint32 nClusterNb;
 		nClusterNb = (_Portals[i]._Clusters[j] - &_ClusterInfos[0]);
+		// if not assert it means that a portal is not linked to 2 clusters
+		nlassert ((nClusterNb >= 0) && (nClusterNb < _ClusterInfos.size()));
 		_Portals[i]._Clusters[j] = _ClusterInstances[nClusterNb];
 	}
 

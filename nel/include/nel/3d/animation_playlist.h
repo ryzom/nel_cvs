@@ -1,7 +1,7 @@
 /** \file animation_playlist.h
  * <File description>
  *
- * $Id: animation_playlist.h,v 1.1 2001/03/16 16:31:55 corvazier Exp $
+ * $Id: animation_playlist.h,v 1.2 2001/03/19 14:03:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NL3D
  * \author Nevrax France
  * \date 2001
  */
-class CAnimationPlaylist
+class CAnimationPlaylist : public NLMISC::CRefCount
 {
 public:
 	enum { empty=0xffffffff };

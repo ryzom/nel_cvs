@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.14 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.15 2004/01/14 10:41:42 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,12 +35,13 @@
 #include "3d/material.h"
 #include "3d/primitive_block.h"
 #include "3d/shape.h"
-
+#include "3d/mesh.h"
 
 
 #include <string>
 #include <vector>
 #include <queue>
+
 
 namespace NLMISC
 {
@@ -55,7 +56,6 @@ namespace NL3D {
 class CPSLocated;
 class CTransformShape;
 class CShapeBank;
-class CMesh;
 
 
 
@@ -342,7 +342,7 @@ public:
 			CGlobalTexAnim();
 			void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 			/// Build a texture matrix from a date and this obj.
-			void    buildMatrix(TAnimationTime &date, NLMISC::CMatrix &dest);
+			void    buildMatrix(TAnimationTime date, NLMISC::CMatrix &dest);
 		};
 
 		/// Set the properties of texture animation for a texture stage. Global animation should have been activated.
@@ -422,8 +422,8 @@ protected:
 	/// make a vb for the prerotated mesh from a source vb
 	CVertexBuffer	    &makePrerotatedVb(const CVertexBuffer &inVB, TAnimationTime ellapsedTime);
 	
-	/** A rendering pass. The pb block contains several duplication of the primitives of the original mesh, in order
-      * to draw sevral of them at once
+	/** A rendering pass. The primitive block contains several duplication of the primitives of the original mesh, in order
+      * to draw several of them at once
 	  */
 	struct CRdrPass
 	{
@@ -444,20 +444,20 @@ protected:
 	
 	void restoreMaterials();
 
-	/// Setup a set of rendering passes.
-	void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bool opaque);
+	/// Setup a set of rendering passes (set good textures matrix / material colors)
+	void	setupRenderPasses(float date, TRdrPassSet &rdrPasses, bool opaque);
 
 	/// Perform a set of rendering passes. The VB must have been activated in the driver before to call this
-	void				doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet &rdrPasses, bool opaque);	
+	void	doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet &rdrPasses, bool opaque);	
 
 	
-	typedef NLMISC::CSmartPtr<IShape>		  PShape;
-	typedef std::vector<std::string>		  TShapeNameVect;
-	typedef std::vector<PShape>				  TShapeVect;	
+	typedef NLMISC::CSmartPtr<CMesh>		  PMesh;
+	typedef std::vector<std::string>		  TMeshNameVect;
+	typedef std::vector<PMesh>				  TMeshVect;	
 
-	// name of the shapes
-	TShapeNameVect _MeshShapeFileName;
-	TShapeVect	   _Shapes;
+	// name of the shapes being used by this particle mesh.
+	TMeshNameVect _MeshShapeFileName;
+	TMeshVect	  _Meshes;
 
 	// caches the number of faces (for load balacing)
 	uint _NumFaces;
@@ -472,37 +472,26 @@ protected:
 	class CMeshDisplayShare
 	{
 		public:
-			/// ctor giving the max number of CDipslayMesh structures to be kept simulaneously.
-			CMeshDisplayShare(uint maxNumMD) : _MaxNumMD(maxNumMD) {}
+			/// ctor giving the max number of CDipslayMesh structures to be kept simultaneously.
+			CMeshDisplayShare(uint maxNumMD) : _MaxNumMD(maxNumMD), _NumMD(0) {}
 
-			/// dtor
-			~CMeshDisplayShare();
-
-			/** Retrieve a display share from the given vertex format and shape			  
-			  * \param format The format used with the vb. It must be the same than the input mesh, but it can also add a color component (for color fading)
-			  */
-			CMeshDisplay &getMeshDisplay(IShape *shape, uint32 format);
+			// Retrieve a mesh display associated with the given mesh
+			CMeshDisplay &getMeshDisplay(CMesh *mesh, uint32 format);
 			
-		protected:
-			uint     _MaxNumMD;
-			typedef  NLMISC::CSmartPtr<IShape> PShape;
-			struct CKey
+		private:									
+			struct   CMDEntry
 			{
-				~CKey();
-				PShape Shape;
-				uint32 Format;
-				bool operator == (const CKey &key) const { return Shape == key.Shape && Format == key.Format; }
-				bool operator != (const CKey &key) const { return ! (*this == key); }
-				bool operator <  (const CKey &key) const { return Shape < key.Shape || (Shape == key.Shape && Format < key.Format); }
-			};				
-			typedef std::map<CKey, CMeshDisplay *> TMDMap; // vb  sorted by their formats
-			typedef std::queue<CKey> TMDQueue; // vb sorted by creation date
-			TMDQueue MDQueue;
-			TMDMap   MDMap;
+				CMesh              *Mesh;
+				uint32			   Format;
+				CMeshDisplay       MD;				
+			};						
+			uint     _MaxNumMD;
+			uint	 _NumMD;
+			std::list<CMDEntry> _Cache;
 			/// build a set of render pass from a mesh
-			static void buildRdrPassSet(TRdrPassSet &dest, const IShape *src);
+			static void buildRdrPassSet(TRdrPassSet &dest, const CMesh &mesh);
 			/// Build a vb from a shape. The format can add an additionnal color
-			static void buildVB(uint32 destFormat, CVertexBuffer &dest, const IShape *src); 
+			static void buildVB(CVertexBuffer &dest, const CMesh &mesh, uint32 format); 
 	};
 
 	friend class CMeshDisplayShare;

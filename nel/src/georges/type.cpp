@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.19 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: type.cpp,v 1.20 2003/02/27 16:22:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,6 +384,14 @@ public:
 
 				// try to get a Form value
 
+				// Is an exist request ?
+				bool requestExist = false;
+				if (*value == '#')
+				{
+					value++;
+					requestExist = true;
+				}
+
 				// The parent Dfn
 				const CFormDfn *parentDfn;
 				const CFormDfn *nodeDfn;
@@ -407,10 +415,25 @@ public:
 						string res;
 						if (nodeType->getValue (res, Form, atom, *parentDfn, parentIndex, UFormElm::Eval, NULL, round, value))
 						{
-							if (((const CFormElm&)Form->getRootNode ()).convertValue (result, res.c_str ()))
+							// Request exist ?
+							if (requestExist)
+							{
+								// Doesn't exist
+								result = res.empty ()?0:1;
+								return CEvalNumExpr::NoError;
+							}
+							else if (((const CFormElm&)Form->getRootNode ()).convertValue (result, res.c_str ()))
 							{
 								return CEvalNumExpr::NoError;
 							}
+						}
+
+						// Request exist ?
+						if (requestExist)
+						{
+							// Doesn't exist
+							result = 0;
+							return CEvalNumExpr::NoError;
 						}
 					}
 				}

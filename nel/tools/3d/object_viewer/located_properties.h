@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.h,v 1.11 2003/11/18 13:59:52 vizerie Exp $
+ * $Id: located_properties.h,v 1.12 2004/05/14 16:18:53 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,20 +152,7 @@ protected:
 		   void set(const float &v) { Located->setInitialLife(v); SSPS->resetAutoCount(); }
 		   virtual scheme_type *getScheme(void) const { return Located->getLifeScheme(); }
 		   virtual void setScheme(scheme_type *s) { Located->setLifeScheme(s); SSPS->resetAutoCount();; }
-		} _LifeWrapper;
-
-						
-				
-		////////////////////////////////
-		// wrapper for frame skipping //
-		////////////////////////////////
-		struct CSkipFrameWrapper : public IPSWrapperUInt
-		{
-			NL3D::CPSLocated *Located;
-			uint32 get(void) const { return Located->getFrameRate(); }
-			void set(const uint32 &value) { Located->setFrameRate(value); }
-		} _SkipFrameRateWrapper;
-
+		} _LifeWrapper;											
 
 
 	// the located this dialog is editing

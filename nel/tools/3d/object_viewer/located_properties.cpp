@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.19 2003/11/18 13:59:52 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.20 2004/05/14 16:18:53 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,8 +67,7 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 
 	_MaxNbParticles = new CEditableRangeUInt("MAX_NB_PARTICLES", 1, 501);
 	_MaxNbParticles->enableUpperBound(30000, false);
-
-	_SkipFramesDlg = new CEditableRangeUInt("LOCATED SKIP FRAME RATE", 0, 4);	
+	
 }
 
 //****************************************************************************************************************
@@ -79,13 +78,11 @@ CLocatedProperties::~CLocatedProperties()
 	
 	_MassDialog->DestroyWindow();
 	_LifeDialog->DestroyWindow();
-	_MaxNbParticles->DestroyWindow();
-	_SkipFramesDlg->DestroyWindow();
+	_MaxNbParticles->DestroyWindow();	
 
 	delete _LifeDialog;
 	delete _MassDialog;
-	delete _MaxNbParticles;
-	delete _SkipFramesDlg;
+	delete _MaxNbParticles;	
 	
 }
 
@@ -202,11 +199,7 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	m_LimitedLifeTime			= _Located->getLastForever() ? FALSE : TRUE;
 	m_TriggerOnDeath			= _Located->isTriggerOnDeathEnabled();
 	updateTriggerOnDeath();
-
-
-	_SkipFrameRateWrapper.Located = _Located;
-	_SkipFramesDlg->setWrapper(&_SkipFrameRateWrapper);
-	_SkipFramesDlg->init(99, 339, this);
+	
 
 	m_DisgradeWithLOD = _Located->hasLODDegradation();
 	updateIntegrable();

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.29 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.30 2003/04/22 16:27:18 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -887,7 +887,7 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 
 
 			// Light Ig.
-			CIgLighterLib::lightIg(maxInstanceLighter, *ig, *igOut, lightDesc, slInfo);
+			CIgLighterLib::lightIg(maxInstanceLighter, *ig, *igOut, lightDesc, slInfo, "");
 
 			// Close the lighter.
 			maxInstanceLighter.closeMaxLighter();

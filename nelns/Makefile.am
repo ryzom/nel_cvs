@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.7 2002/04/10 07:33:07 lecroart Exp $
+# $Id: Makefile.am,v 1.8 2002/05/03 08:11:14 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in configure config.guess missing \
@@ -28,11 +28,14 @@ install-data-hook:
 	do \
 		test -f ${DESTDIR}${pkgsysconfdir}/$${service}_service.cfg || cp ${srcdir}/$${service}_service/$${service}_service.cfg ${DESTDIR}${pkgsysconfdir} ; \
 	done
+	test -f ${DESTDIR}${pkgsysconfdir}/common.cfg || cp ${srcdir}/admin_service/common.cfg ${DESTDIR}${pkgsysconfdir}
+ 
 
 uninstall-local:
 	for service in admin admin_executor login naming welcome ; \
 	do \
 		rm -f ${DESTDIR}${pkgsysconfdir}/$${service}_service.cfg ; \
 	done
+	rm -f ${DESTDIR}${pkgsysconfdir}/common.cfg
 
 # End of Makefile.am

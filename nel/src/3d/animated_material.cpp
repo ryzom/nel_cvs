@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.9 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: animated_material.cpp,v 1.10 2001/12/12 10:24:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,19 +67,29 @@ CMaterialBase::CMaterialBase()
 	DefaultEmissive.setValue(CRGBA(128,128,128));
 	DefaultOpacity.setValue(1);
 	DefaultTexture.setValue(0x7FFFFFFF);
+	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+	{
+		DefaultTexAnimTracks[k].setDefaultValue();
+	}
 }
 
 
 // ***************************************************************************
 void	CMaterialBase::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	sint	ver= f.serialVersion(1);
 
 	f.serial(Name);
 	f.serial(DefaultAmbient, DefaultDiffuse, DefaultSpecular);
 	f.serial(DefaultShininess, DefaultEmissive, DefaultOpacity, DefaultTexture);
-
 	f.serialCont(_AnimatedTextures);
+	if (ver > 0)
+	{
+		for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+		{
+			f.serial(DefaultTexAnimTracks[k]);
+		}
+	}
 }
 
 
@@ -92,6 +102,21 @@ void	CMaterialBase::copyFromMaterial(CMaterial *pMat)
 	DefaultShininess.setValue(pMat->getShininess());
 	DefaultEmissive.setValue(pMat->getEmissive());
 	DefaultOpacity.setValue(pMat->getDiffuse().A/255.f);
+
+	/// get uv value from material
+	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+	{
+		if (pMat->isUserTexMatEnabled(k))
+		{
+			float uTrans, vTrans, uScale, vScale, wRot;
+			pMat->decompUserTexMat(k, uTrans, vTrans, wRot, uScale, vScale);			
+			DefaultTexAnimTracks[k].DefaultUTrans.setValue(uTrans);
+			DefaultTexAnimTracks[k].DefaultVTrans.setValue(vTrans);
+			DefaultTexAnimTracks[k].DefaultUScale.setValue(uScale);
+			DefaultTexAnimTracks[k].DefaultVScale.setValue(vScale);
+			DefaultTexAnimTracks[k].DefaultWRot.setValue(wRot);
+		}      
+	}
 }
 
 
@@ -143,6 +168,11 @@ CAnimatedMaterial::CAnimatedMaterial(CMaterialBase *baseMat)
 	_Shininess.affect(_MaterialBase->DefaultShininess.getValue());
 	_Emissive.affect(_MaterialBase->DefaultEmissive.getValue());
 	_Opacity.affect(_MaterialBase->DefaultOpacity.getValue());
+
+	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+	{
+		_TexAnimatedMatValues[k].affect(baseMat->DefaultTexAnimTracks[k]);
+	}
 }
 
 
@@ -164,8 +194,9 @@ std::string		CAnimatedMaterial::getMaterialName() const
 // ***************************************************************************
 void	CAnimatedMaterial::update()
 {
-	if(isTouched(OwnerBit) && _Material!=NULL && _Material->isLighted())
+	if(isTouched(OwnerBit) && _Material!=NULL /*&& _Material->isLighted()*/)
 	{
+		
 		// well, just update all...  :)
 
 		// diffuse part.
@@ -199,6 +230,38 @@ void	CAnimatedMaterial::update()
 			clearFlag(TextureValue);
 		}
 
+		// Get texture matrix from animated value to setup the material
+		uint flagIndex = TextureMatValues;
+		for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+		{
+			if (_Material->isUserTexMatEnabled(k))
+			{
+				const CTexAnimatedMatValues &texMatAV = _TexAnimatedMatValues[k];
+				CMatrix texMat;	
+				float fCos, fSin;
+				if (texMatAV._WRot.Value != 0.f)
+				{
+					fCos = ::cosf(- texMatAV._WRot.Value);
+					fSin = ::sinf(- texMatAV._WRot.Value);
+				}
+				else
+				{
+					fCos = 1.f;
+					fSin = 0.f;
+				}
+				NLMISC::CVector I(fCos, fSin, 0);
+				NLMISC::CVector J(-fSin, fCos, 0);				
+				texMat.setRot(texMatAV._UScale.Value * I, texMatAV._VScale.Value * J, NLMISC::CVector::K);								
+				for (uint l = 0; l < NumTexAnimatedValues; ++l)
+				{
+					clearFlag(flagIndex++);
+				}
+				NLMISC::CVector center(-0.5f, -0.5f, 0.f);
+				NLMISC::CVector t(- texMatAV._UTrans.Value, texMatAV._VTrans.Value, 0);
+				texMat.setPos(t + texMat.mulVector(center) - center);
+				_Material->setUserTexMat(k, texMat);
+			}
+		}
 
 		// We are OK!
 		IAnimatable::clearFlag(OwnerBit);
@@ -218,6 +281,22 @@ IAnimatedValue* CAnimatedMaterial::getValue (uint valueId)
 	case EmissiveValue: return &_Emissive;
 	case OpacityValue: return &_Opacity;
 	case TextureValue: return &_Texture;
+	default: // this may be a texture animated value...
+		if (valueId >= TextureMatValues && valueId < AnimValueLast)
+		{
+			const uint baseId = valueId - TextureMatValues;
+			const uint texNum =   baseId / NumTexAnimatedValues; // stage index
+			const uint argID  =   baseId % NumTexAnimatedValues; // value for this stage
+			switch(argID)
+			{
+				case 0:	return &_TexAnimatedMatValues[texNum]._UTrans;
+				case 1:	return &_TexAnimatedMatValues[texNum]._VTrans;
+				case 2:	return &_TexAnimatedMatValues[texNum]._UScale;
+				case 3:	return &_TexAnimatedMatValues[texNum]._VScale;				
+				case 4:	return &_TexAnimatedMatValues[texNum]._WRot;				
+			}
+		}		
+	break;
 	};
 
 	// shoudl not be here!!
@@ -236,6 +315,22 @@ const char *CAnimatedMaterial::getValueName (uint valueId) const
 	case EmissiveValue: return getEmissiveValueName();
 	case OpacityValue: return getOpacityValueName();
 	case TextureValue: return getTextureValueName();
+	default: // this may be a texture animated value...
+		if (valueId >= TextureMatValues && valueId < AnimValueLast)
+		{
+			const uint baseId = valueId - TextureMatValues;
+			const uint texNum =   baseId / NumTexAnimatedValues;
+			const uint argID  =   baseId % NumTexAnimatedValues;
+			switch(argID)
+			{
+				case 0:	return getTexMatUTransName      (texNum);
+				case 1:	return getTexMatVTransName(texNum);
+				case 2:	return getTexMatUScaleName(texNum);
+				case 3:	return getTexMatVScaleName(texNum);
+				case 4:	return getTexMatWRotName(texNum);
+			}
+		}		
+	break;
 	};
 
 	// shoudl not be here!!
@@ -256,6 +351,22 @@ ITrack*	CAnimatedMaterial::getDefaultTrack (uint valueId)
 	case EmissiveValue: return	&_MaterialBase->DefaultEmissive;
 	case OpacityValue: return	&_MaterialBase->DefaultOpacity;
 	case TextureValue: return	&_MaterialBase->DefaultTexture;
+	default: // this may be a texture animated value...
+		if (valueId >= TextureMatValues && valueId < AnimValueLast)
+		{
+			const uint baseId = valueId - TextureMatValues;
+			const uint texNum =   baseId / NumTexAnimatedValues;
+			const uint argID  =   baseId % NumTexAnimatedValues;
+			switch(argID)
+			{
+				case 0:	return 	&_MaterialBase->DefaultTexAnimTracks[texNum].DefaultUTrans;
+				case 1:	return 	&_MaterialBase->DefaultTexAnimTracks[texNum].DefaultVTrans;
+				case 2:	return 	&_MaterialBase->DefaultTexAnimTracks[texNum].DefaultUTrans;
+				case 3:	return 	&_MaterialBase->DefaultTexAnimTracks[texNum].DefaultVTrans;
+				case 4:	return 	&_MaterialBase->DefaultTexAnimTracks[texNum].DefaultWRot;
+			}
+		}		
+	break;
 	};
 
 	// shoudl not be here!!
@@ -273,8 +384,105 @@ void	CAnimatedMaterial::registerToChannelMixer(CChannelMixer *chanMixer, const s
 	addValue(chanMixer, EmissiveValue, OwnerBit, prefix, true);
 	addValue(chanMixer, OpacityValue, OwnerBit, prefix, true);
 	addValue(chanMixer, TextureValue, OwnerBit, prefix, true);
-
+	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+	{
+		for (uint l = 0; l < NumTexAnimatedValues; ++l)
+		{
+			addValue(chanMixer, TextureMatValues + l + k * NumTexAnimatedValues, OwnerBit, prefix, true);
+		}
+	}
 }
+
+// ***************************************************************************
+const char *CAnimatedMaterial::getTexMatUTransName(uint stage)
+{
+	static char names[IDRV_MAT_MAXTEXTURES][16];
+	static bool init = false;
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	if (!init) // where name initialized ?
+	{
+		for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+		{
+			sprintf(&names[k][0], "UTrans%d", k);
+		}
+		init = true;
+	}
+	return names[stage];
+}
+
+// ***************************************************************************
+const char *CAnimatedMaterial::getTexMatVTransName(uint stage)
+{
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	static char names[IDRV_MAT_MAXTEXTURES][16];
+	static bool init = false;
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	if (!init) // where name initialized ?
+	{
+		for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+		{
+			sprintf(&names[k][0], "VTrans%d", k);
+		}
+		init = true;
+	}
+	return names[stage];
+}
+
+
+// ***************************************************************************
+const char *CAnimatedMaterial::getTexMatUScaleName(uint stage)
+{
+	static char names[IDRV_MAT_MAXTEXTURES][16];
+	static bool init = false;
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	if (!init) // where name initialized ?
+	{
+		for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+		{
+			sprintf(&names[k][0], "UScale%d", k);
+		}
+		init = true;
+	}
+	return names[stage];
+}
+
+// ***************************************************************************
+const char *CAnimatedMaterial::getTexMatVScaleName(uint stage)
+{
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	static char names[IDRV_MAT_MAXTEXTURES][16];
+	static bool init = false;
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	if (!init) // where name initialized ?
+	{
+		for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+		{
+			sprintf(&names[k][0], "VScale%d", k);
+		}
+		init = true;
+	}
+	return names[stage];
+}
+
+
+// ***************************************************************************
+const char *CAnimatedMaterial::getTexMatWRotName(uint stage)
+{
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	static char names[IDRV_MAT_MAXTEXTURES][16];
+	static bool init = false;
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	if (!init) // where name initialized ?
+	{
+		for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+		{
+			sprintf(&names[k][0], "WRot%d", k);
+		}
+		init = true;
+	}
+	return names[stage];
+}
+
 
 
 } // NL3D

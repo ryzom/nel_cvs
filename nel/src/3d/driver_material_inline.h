@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.6 2001/12/06 16:47:47 vizerie Exp $
+ * $Id: driver_material_inline.h,v 1.7 2001/12/12 10:24:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -338,6 +338,53 @@ inline CRGBA				CMaterial::getUserColor() const
 	return _TexEnvs[0].ConstantColor;
 }
 
+// ***************************************************************************
+inline void                 CMaterial::enableUserTexMat(uint stage, bool enabled /*= true*/)
+{
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	if (enabled)
+	{
+		if (!(_Flags & IDRV_MAT_USER_TEX_MAT_ALL)) // not usr tex mat setupped before?
+		{
+			nlassert(_TexUserMat.get() == NULL);
+			_TexUserMat.reset(new CUserTexMat);
+		}
+		_Flags |= (IDRV_MAT_USER_TEX_0_MAT << stage);
+		_TexUserMat->TexMat[stage].identity();
+	}
+	else
+	{
+		if (!(_Flags & IDRV_MAT_USER_TEX_MAT_ALL)) return; // nothing to do
+		_Flags &= ~(IDRV_MAT_USER_TEX_0_MAT << stage);     // clear the stage flag
+		if (!(_Flags & IDRV_MAT_USER_TEX_MAT_ALL))		   // no more user textures used ?
+		{
+			_TexUserMat.reset();
+		}
+	}
+}
+
+// ***************************************************************************
+inline bool               CMaterial::isUserTexMatEnabled(uint stage) const
+{
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	return (_Flags & (IDRV_MAT_USER_TEX_0_MAT << stage)) != 0;
+}
+
+// ***************************************************************************
+inline void				  CMaterial::setUserTexMat(uint stage, const NLMISC::CMatrix &m)
+{
+	nlassert(isUserTexMatEnabled(stage));
+	nlassert(_TexUserMat.get() != NULL);
+	_TexUserMat->TexMat[stage] = m;
+}
+
+// ***************************************************************************
+inline const NLMISC::CMatrix  &CMaterial::getUserTexMat(uint stage) const
+{
+	nlassert(isUserTexMatEnabled(stage));
+	nlassert(_TexUserMat.get() != NULL);
+	return _TexUserMat->TexMat[stage];
+}
 
 
 }

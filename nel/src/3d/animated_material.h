@@ -1,7 +1,7 @@
 /** \file animated_material.h
  * <File description>
  *
- * $Id: animated_material.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: animated_material.h,v 1.2 2001/12/12 10:24:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,37 @@ public:
 	CTrackDefaultRGBA		DefaultEmissive;
 	CTrackDefaultFloat		DefaultOpacity;
 	CTrackDefaultInt		DefaultTexture;
+	
+	// Texture animation
+	struct CTexAnimTracks
+	{
 
+		CTrackDefaultFloat DefaultUTrans; // u translation
+		CTrackDefaultFloat DefaultVTrans; // v translation
+		CTrackDefaultFloat DefaultUScale; // u scale
+		CTrackDefaultFloat DefaultVScale; // u scale
+		CTrackDefaultFloat DefaultWRot; // v scale
+
+
+		// number of default tracks
+		enum { NumTexAnimatedValues = 5 }; 
+		
+
+		void setDefaultValue() 
+		{ 
+			DefaultUTrans.setValue(0);
+			DefaultVTrans.setValue(0);
+			DefaultUScale.setValue(1);
+			DefaultVScale.setValue(1);
+		}
+
+		void			serial(NLMISC::IStream &f)
+		{
+			sint ver = f.serialVersion(0);
+			f.serial(DefaultUTrans, DefaultVTrans, DefaultUScale, DefaultVScale);
+		}
+	};
+	CTexAnimTracks			DefaultTexAnimTracks[IDRV_MAT_MAXTEXTURES];
 
 	/// save/load.
 	void			serial(NLMISC::IStream &f);
@@ -101,7 +131,7 @@ public:
 
 // *********************
 private:
-
+	
 	struct	CAnimatedTexture
 	{
 		CSmartPtr<ITexture>			Texture;
@@ -169,8 +199,17 @@ public:
 	static const char *getEmissiveValueName() {return "emissive";}
 	static const char *getOpacityValueName() {return "opacity";}
 	static const char *getTextureValueName() {return "texture";}
+	//
+	static const char *getTexMatUTransName(uint stage);
+	static const char *getTexMatVTransName(uint stage);
+	static const char *getTexMatUScaleName(uint stage);
+	static const char *getTexMatVScaleName(uint stage);
+	static const char *getTexMatWRotName(uint stage);
+
 	// @}
 
+	/// number of animated values for each animated texture, taken from CMaterialBase
+	enum { NumTexAnimatedValues = CMaterialBase::CTexAnimTracks::NumTexAnimatedValues   };
 
 	/// \name Herited from IAnimatable
 	// @{
@@ -185,8 +224,8 @@ public:
 		EmissiveValue,
 		OpacityValue,
 		TextureValue,
-
-		AnimValueLast
+		TextureMatValues,
+		AnimValueLast = TextureMatValues + NumTexAnimatedValues * IDRV_MAT_MAXTEXTURES /* texture matrix anim */
 	};
 
 	/// From IAnimatable
@@ -220,8 +259,26 @@ private:
 	CAnimatedValueRGBA		_Emissive;
 	CAnimatedValueFloat		_Opacity;
 	CAnimatedValueInt		_Texture;
+		
+	struct CTexAnimatedMatValues
+	{
+		CAnimatedValueFloat _UTrans;
+		CAnimatedValueFloat _VTrans;
+		CAnimatedValueFloat _UScale;
+		CAnimatedValueFloat _VScale;
+		CAnimatedValueFloat _WRot;
 
+		void affect(CMaterialBase::CTexAnimTracks &at)
+		{
+			_UTrans.affect(at.DefaultUTrans.getValue());
+			_VTrans.affect(at.DefaultVTrans.getValue());
+			_UScale.affect(at.DefaultUScale.getValue());
+			_VScale.affect(at.DefaultVScale.getValue());
+			_WRot.affect(at.DefaultWRot.getValue());
 
+		}
+	};
+	CTexAnimatedMatValues		_TexAnimatedMatValues[IDRV_MAT_MAXTEXTURES];
 };
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.11 2001/09/07 07:32:09 corvazier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.12 2001/09/14 09:39:36 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -425,6 +425,49 @@ void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 
 
 // ***************************************************************************
+void	CDriverGL::renderSimpleTriangles(uint32 *tri, uint32 ntris)
+{
+	// Check user code :)
+	nlassert(!_MatrixSetupDirty);
+	nlassert(ntris>0);
+
+	// Don't setup any material here.
+	
+	// test if VB software skinning.
+	//==============================
+	// NB: still test it...
+	if(_CurrentSoftSkinFlags)
+	{
+		uint32	*pIndex;
+		uint	nIndex;
+
+		// see render() for explanation.
+		// First, for all prims, indicate which vertex we must compute.
+		// nothing if not already computed (ie 0), because 0&1==0.
+		// Tris.
+		pIndex= tri;
+		nIndex= ntris*3;
+		for(;nIndex>0;nIndex--, pIndex++)
+			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
+
+		// Second, traverse All vertices in range, testing if we must compute those vertices.
+		refreshSoftwareSkinning();
+	}
+
+
+	// render primitives.
+	//==============================
+	// NO MULTIPASS HERE!!
+	// draw the primitives. (nb: ntrsi>0).
+	glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, tri);
+
+	// Profiling.
+	_PrimitiveProfileIn.NTriangles+= ntris;
+	_PrimitiveProfileOut.NTriangles+= ntris;
+}
+
+
+// ***************************************************************************
 void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
 {
 	// Check user code :)
@@ -747,9 +790,7 @@ CVertexBufferHardGL::~CVertexBufferHardGL()
 void		*CVertexBufferHardGL::lock()
 {
 	// sync the 3d card with the system.
-	// if same VBHard than one activated.
-	if(this==_Driver->_CurrentVertexBufferHard)
-		glFlushVertexArrayRangeNV();
+	glFlushVertexArrayRangeNV();
 
 
 	return _VertexPtr;
@@ -760,9 +801,7 @@ void		*CVertexBufferHardGL::lock()
 void		CVertexBufferHardGL::unlock()
 {
 	// sync the 3d card with the system.
-	// if same VBHard than one activated.
-	if(this==_Driver->_CurrentVertexBufferHard)
-		glFlushVertexArrayRangeNV();
+	// no op for now.
 }
 
 

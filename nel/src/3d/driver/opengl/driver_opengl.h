@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.84 2001/09/07 07:32:09 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.85 2001/09/14 09:39:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -393,6 +393,8 @@ public:
 	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat);
 
 	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris);
+
+	virtual void			renderSimpleTriangles(uint32 *tri, uint32 ntris);
 
 	virtual void			renderPoints(CMaterial& Mat, uint32 numPoints) ;
 	

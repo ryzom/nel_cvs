@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.15 2001/09/07 07:32:08 corvazier Exp $
+ * $Id: driver.h,v 1.16 2001/09/14 09:39:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -356,9 +356,22 @@ public:
 
 	/** render a list of triangles with previously setuped VertexBuffer / Matrixes.
 	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
-	 * NB: this is usefull for landscape....
+	 * NB: this "was" usefull for landscape....
 	 */
 	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)=0;
+
+
+	/** render a list of triangles with previously setuped VertexBuffer / Matrixes, AND previously setuped MATERIAL!!
+	 * This use the last material setuped. It should be a "Normal shader" material, because no multi-pass is allowed
+	 * with this method.
+	 * Actually, it is like a straight drawTriangles() in OpenGL.
+	 * NB: softwareSkinning and normal vertices operation still works.
+	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
+	 * NB: nlassert() if ntris is 0!!!! this is unlike other render() call methods. For optimisation concern.
+	 * NB: this is usefull for landscape....
+	 */
+	virtual void			renderSimpleTriangles(uint32 *tri, uint32 ntris)=0;
+
 
 	/** render points with previously setuped VertexBuffer / Matrixes.
 	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().

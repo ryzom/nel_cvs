@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.29 2002/11/14 12:52:14 berenguier Exp $
+ * $Id: u_scene.h,v 1.30 2003/02/25 08:29:47 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,7 +149,8 @@ public:
 														const NLMISC::CVector &offset
 													   ) = 0;
 	
-	/**	Stop loading and adding an ig to the scene
+	/**	If we are adding the ig : stop loading and adding it to the scene
+	  * if the ig is already added to the scene : remove it from scene
 	  */
 	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG) = 0;
 	

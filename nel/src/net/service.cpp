@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.195 2003/11/03 10:12:33 lecroart Exp $
+ * $Id: service.cpp,v 1.196 2003/11/03 18:16:21 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -891,7 +891,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Now we have the service id, we can set the entites id generator
 		//
 
-		_NextEntityId.setServiceId(_SId);
+		NLMISC::CEntityId::setServiceId(_SId);
 
 		// Set the localhost name and service name and the sid
 		CLog::setProcessName (localhost+"/"+_ShortName+"-"+toString((uint16)_SId));

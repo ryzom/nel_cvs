@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.31 2003/10/23 20:04:57 saffray Exp $
+ * $Id: entity_id.h,v 1.32 2003/11/03 18:16:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,30 +50,59 @@ private :
 	{
 		struct
 		{
-		/// Id of the service where the entity is.
+		/// Id of the service where the entity is (variable routing info).
 		uint64	DynamicId   :  8;
-		/// Id of the service who created the entity.
+		/// Id of the service who created the entity (persistent).
 		uint64	CreatorId   :  8;
-		/// Type of the entity.
+		/// Type of the entity (persistent).
 		uint64	Type :  8;
-		/// Local agent number.
+		/// Local entity number (persistent).
 		uint64	Id : 40;
 		} DetailedId;
 
 		uint64 FullId;
 	};
 
+	// ---------------------------------------------------------------------------------
+	// static data
+
+	/// Counter for generation of unique entity ids
+	static NLMISC::CEntityId	_NextEntityId;
+
+	///The local num service id of the local machin.
+	static uint8				_ServerId;
+
 public :
 
 	// ---------------------------------------------------------------------------------
 	// static data
 
-	///The local num service id of the local machin.
-	static uint8 ServerId;
-	///The maximume of number that we could generate without generat an overtaking exception.
-	static const uint64 MaxEntityId;
+	///The maximume of number that we could generate without generate an overtaking exception.
+	static const uint64			MaxEntityId;
+
 	/// Unknow CEntityId is similar as an NULL pointer.
-	static const CEntityId Unknown;
+	static const CEntityId		Unknown;
+
+
+	// ---------------------------------------------------------------------------------
+	// generation of new unique entity ids
+
+	/// Set the service id for the generator
+	static void					setServiceId( uint8 sid )
+	{
+		_NextEntityId.setDynamicId( sid );
+		_NextEntityId.setCreatorId( sid ); 
+		_ServerId = sid;
+	}
+
+	/// Generator of entity ids
+	static CEntityId			getNewEntityId( uint8 type )
+	{
+		nlassert( ! _NextEntityId.isUnknownId() );
+		NLMISC::CEntityId id = _NextEntityId++;
+		id.setType( type );
+		return id;
+	}
 
 	// ---------------------------------------------------------------------------------
 	// constructors
@@ -106,8 +135,8 @@ public :
 	{
 		DetailedId.Type = type;
 		DetailedId.Id = id;
-		DetailedId.CreatorId = ServerId;
-		DetailedId.DynamicId = ServerId;
+		DetailedId.CreatorId = _ServerId;
+		DetailedId.DynamicId = _ServerId;
 	}
 
 	explicit CEntityId (uint64 p)
@@ -162,38 +191,6 @@ public :
 	{
 		CEntityId ();
 		fromString(str);
-
-//	Old version code (doesn't work) i thought it has never been tested :(
-// 		char *ident = (char*)str;
-//		char *id;
-//		char *type;
-//		char *creator;
-//		char *dyn;
-//		id = ident;
-//		uint base = 10;
-//
-////Sameh si le nombre est en hexa alors mettre la base à 16.
-//		if(str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
-//		{
-//			base = 16;
-//			str+=2;
-//		}
-//
-//		ident = (char*)str;
-//		id = ident;
-//
-//		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
-//		type = ident;
-//		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
-//		creator = ident;
-//		while(*ident != ':') if (*ident!=0) ++ident; else {*this=Unknown; return;}		
-//		dyn = ident;	
-//
-////Sameh conversion en fonction de la base.
-//		DetailedId.DynamicId = atoiInt64(dyn, base);
-//		DetailedId.CreatorId = atoiInt64(creator, base);
-//		DetailedId.Type = atoiInt64(type, base);
-//		DetailedId.Id = atoiInt64(id, base);
 	}
 	//@}	
 	
@@ -201,6 +198,7 @@ public :
 	// ---------------------------------------------------------------------------------
 	// accessors
 
+	/// Get the full id
 	uint64 getRawId() const
 	{
 		return FullId;
@@ -209,46 +207,55 @@ public :
 		*/
 	}
 
+	/// Get the local entity number
 	uint64 getShortId() const
 	{
 		return DetailedId.Id;
 	}
 
+	/// Set the local entity number
 	void setShortId( uint64 shortId )
 	{
 		DetailedId.Id = shortId;
 	}
 
+	/// Get the variable routing info
 	uint8 getDynamicId() const
 	{
 		return DetailedId.DynamicId;
 	}
 
+	/// Set the variable routing info
 	void setDynamicId( uint8 dynId )
 	{
 		DetailedId.DynamicId = dynId;
 	}
 
+	/// Get the persistent creator id
 	uint8 getCreatorId() const
 	{
 		return DetailedId.CreatorId;
 	}
 
+	/// Set the persistent creator id
 	void setCreatorId( uint8 creatorId )
 	{
 		DetailedId.CreatorId = creatorId;
 	}
 
+	/// Get the entity type
 	uint8 getType() const
 	{
 		return (uint8)DetailedId.Type;
 	}
 
+	/// Set the entity type
 	void setType( uint8 type )
 	{
 		DetailedId.Type = type;
 	}
 
+	/// Get the persistent part of the entity id (the dynamic part in the returned id is 0)
 	uint64 getUniqueId() const
 	{
 		CEntityId id;
@@ -257,6 +264,7 @@ public :
 		return id.FullId;
 	}
 
+	/// Test if the entity id is Unknown
 	bool isUnknownId() const
 	{
 		return DetailedId.Type == 127;
@@ -274,7 +282,6 @@ public :
 
 		CEntityId testId ( FullId ^ a.FullId );
 		testId.DetailedId.DynamicId = 0;
-		testId.DetailedId.CreatorId = 0;
 		return testId.FullId == 0;
 
 		/*
@@ -393,22 +400,6 @@ public :
 		return p;
 		*/
 	}
-
-	void setServiceId (uint8 sid)
-	{
-		/*
-		
-		  Daniel says: Who wrote this?! It's horrible!!!
-		  you're mixing statics and non-statics indisciminately
-		  This needs to be fixed!!!
-		
-		*/
-
-		DetailedId.DynamicId = sid;
-		DetailedId.CreatorId = sid;
-		ServerId = sid;
-	}
-
 
 	// ---------------------------------------------------------------------------------
 	// loading, saving, serialising...
@@ -536,7 +527,6 @@ public :
 			b[19 - n] = baseTable[(x & 15)];
 			x >>= 4;
 		}
-//Sameh To be sure that the number is in hexa.
 		str += "0x" + std::string(b);
 	}
 /*

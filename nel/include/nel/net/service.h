@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.68 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: service.h,v 1.69 2003/11/03 18:16:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,12 +228,10 @@ public:
 	std::string						getArg (char argName);
 
 	/// Returns an uniq id for an entities on this service.
-	uint64							getEntityId (uint8 Type)
+	/*uint64							getEntityId (uint8 type)
 	{
-		NLMISC::CEntityId id = _NextEntityId++;
-		id.setType( Type );
-		return id.getRawId ();
-	}
+		return NLMISC::CEntityId::getNewEntityId( type ).getRawId();
+	}*/
 	
 	/// Returns the recording state (don't needed if you use layer5)
 	CCallbackNetBase::TRecordingState	getRecordingState() const { return _RecordingState; }
@@ -359,9 +357,6 @@ private:
 
 	/// true if the service initialisation is passed
 	bool								_Initialized;
-
-	/// This variable is used to generate uniq id for entities on this service.
-	NLMISC::CEntityId					_NextEntityId;
 
 	/// The directory where the configfile is
 	NLMISC::CVariable<std::string>		ConfigDirectory;

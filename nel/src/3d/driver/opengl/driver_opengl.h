@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.135 2002/10/31 09:14:50 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.136 2002/11/14 17:41:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -389,11 +389,15 @@ public:
 
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect);
 		
-	virtual void			copyFrameBufferToTexture(ITexture *tex, uint32 level
-														, uint32 offsetx, uint32 offsety
-													    , uint32 x, uint32 y
-														, uint32 width, uint32 height														
-													)  ;
+	virtual void			copyFrameBufferToTexture(ITexture *tex,
+		                                             uint32 level,
+													 uint32 offsetx,
+													 uint32 offsety,
+													 uint32 x,
+													 uint32 y,
+													 uint32 width,
+													 uint32 height														
+													);
 
 	virtual bool			fillBuffer (CBitmap &bitmap);
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.168 2002/11/12 09:54:45 coutelas Exp $
+ * $Id: driver_opengl.cpp,v 1.169 2002/11/14 17:41:20 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1904,45 +1904,32 @@ bool CDriverGL::fillBuffer (CBitmap &bitmap)
 }
 
 
-void CDriverGL::copyFrameBufferToTexture(ITexture *tex, uint32 level
-														, uint32 offsetx, uint32 offsety
-													    , uint32 x, uint32 y
-														, uint32 width, uint32 height														
-													)
+void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
+										 uint32 level,
+										 uint32 offsetx,
+										 uint32 offsety,
+										 uint32 x,
+										 uint32 y,
+										 uint32 width,
+										 uint32 height														
+										)
 {
-	nlassert(!tex->isTextureCube()) ;
-
-	bool compressed = false ;
-	(void)getGlTextureFormat(*tex, compressed);
-	nlassert(!compressed) ;
-
-	
+	nlassert(!tex->isTextureCube());
+	bool compressed = false;
+	getGlTextureFormat(*tex, compressed);
+	nlassert(!compressed);	
 	// first, mark the texture as valid, and make sure there is a corresponding texture in the device memory	
-	setupTexture(*tex) ;	
-
-	CTextureDrvInfosGL*	gltext = (CTextureDrvInfosGL*)(ITextureDrvInfos*)(tex->TextureDrvShare->DrvTexture) ;
-	
-	
-	
-	
-
-	
-
+	setupTexture(*tex);	
+	CTextureDrvInfosGL*	gltext = (CTextureDrvInfosGL*)(ITextureDrvInfos*)(tex->TextureDrvShare->DrvTexture);
 	_DriverGLStates.activeTextureARB(0);
 	// setup texture mode, after activeTextureARB()
 	_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
 	glBindTexture(GL_TEXTURE_2D, gltext->ID);	
-
-
-	glCopyTexSubImage2D(GL_TEXTURE_2D, level, offsetx, offsety, x, y, width, height);
-	
-
+	glCopyTexSubImage2D(GL_TEXTURE_2D, level, offsetx, offsety, x, y, width, height);	
 	// disable texturing.
 	_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
-	_CurrentTexture[0]= NULL;
-	_CurrentTextureInfoGL[0]= NULL;
-
-
+	_CurrentTexture[0] = NULL;
+	_CurrentTextureInfoGL[0] = NULL;
 }
 
 

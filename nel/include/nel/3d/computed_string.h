@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.11 2001/01/03 09:14:57 lecroart Exp $
+ * $Id: computed_string.h,v 1.12 2001/01/05 18:44:40 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@
 namespace NL3D {
 
 class CTextureFont;
+class CMatrix;
 struct CFontDescriptor;
 
 
@@ -93,13 +94,21 @@ public:
 		StringHeight = 0;
 	}
 
+	/**
+	 *	Get the string's origin
+	 * \param hotspot the origin of the string
+	 */
+	CVector getHotSpotVector(THotSpot hotspot);
 
 	/** 
-	 * render the unicode string in a driver.
-	 * user can provides a transformation matrix and a hot spot
+	 * Render the unicode string in a driver.
 	 * \param driver the driver where to render the primitives
+	 * \param x abscissa
+	 * \param y ordinate
 	 * \param hotspot position of string origine
-	 * \param transformation matrix
+	 * \param scaleX abscissa scale
+	 * \param scaleY ordinate scale
+	 * \param rotateY rotation angle (axe perpendicular to screen)
 	 */	
 	void render2D (IDriver& driver, 
 					float x, float z,
@@ -107,7 +116,13 @@ public:
 					float scaleX = 1, float scaleZ = 1,
 					float rotateY = 0);
 
-	
+	/** 
+	 * Render the unicode string in a driver.
+	 * \param driver the driver where to render the primitives
+	 * \param matrix transformation matrix
+	 * \param hotspot position of string origine
+	 */	
+	void render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot = MiddleMiddle);
 
 };
 

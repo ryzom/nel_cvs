@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.8 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: primitive_block.cpp,v 1.9 2001/01/05 18:44:10 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,7 +162,7 @@ void CPrimitiveBlock::setQuad(uint quadIdx, uint32 vidx0, uint32 vidx1, uint32 v
 {
 	uint32*	ptr;
 
-	ptr = (uint32*)(&_Quad[quadIdx*3]);
+	ptr = (uint32*)(&_Quad[quadIdx*4]);
 	*ptr = vidx0;
 	ptr++;
 	*ptr = vidx1;

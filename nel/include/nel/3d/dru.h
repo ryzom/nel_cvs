@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.9 2000/12/22 10:42:05 corvazier Exp $
+ * $Id: dru.h,v 1.10 2001/01/05 18:44:40 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,12 @@ public:
 	/// Draw a line in 2D. Warning: this is slow...
 	static void			drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col= CRGBA(255,255,255,255), CViewport viewport=CViewport());
 
+	/// Draw a Triangle in 2D. Warning: this is slow...
+	static void			drawTriangle (float x0, float y0, float x1, float y1, float x2, float y2, IDriver& driver, CRGBA col, CViewport viewport);
+	
+	/// Draw a Quad in 2D. Warning: this is slow...
+	static void			drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport);
+	
 	/// Portable Function which create a GL Driver (using gl dll...).
 	static IDriver		*createGlDriver() throw(EDru);
 };

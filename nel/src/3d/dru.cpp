@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.19 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: dru.cpp,v 1.20 2001/01/05 18:44:10 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,6 +182,73 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	CPrimitiveBlock pb;
 	pb.setNumLine (1);
 	pb.setLine (0, 0, 1);
+
+	driver.render(pb, mat);
+}
+
+
+void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float y2, IDriver& driver, CRGBA col, CViewport viewport)
+{
+	CMatrix mtx;
+	mtx.identity();
+	driver.setupViewport (viewport);
+	driver.setupViewMatrix (mtx);
+	driver.setupModelMatrix (mtx);
+	driver.setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+
+	static CMaterial mat;
+	mat.initUnlit();
+	mat.setSrcBlend(CMaterial::srcalpha);
+	mat.setDstBlend(CMaterial::invsrcalpha);
+	mat.setBlend(true);
+	mat.setColor(col);
+
+	static CVertexBuffer vb;
+	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setNumVertices (3);
+	vb.setVertexCoord (0, CVector (x0, 0, y0));
+	vb.setVertexCoord (1, CVector (x1, 0, y1));
+	vb.setVertexCoord (2, CVector (x2, 0, y2));
+	driver.activeVertexBuffer(vb);
+
+	CPrimitiveBlock pb;
+	pb.setNumTri (1);
+	pb.setTri (0, 0, 1, 2);
+
+	driver.render(pb, mat);
+}
+
+
+
+void	CDRU::drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport)
+{
+	CMatrix mtx;
+	mtx.identity();
+	driver.setupViewport (viewport);
+	driver.setupViewMatrix (mtx);
+	driver.setupModelMatrix (mtx);
+	driver.setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+
+	static CMaterial mat;
+	mat.initUnlit();
+	mat.setSrcBlend(CMaterial::srcalpha);
+	mat.setDstBlend(CMaterial::invsrcalpha);
+	mat.setBlend(true);
+	mat.setColor(col);
+	
+	static CVertexBuffer vb;
+	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setNumVertices (4);
+	vb.setVertexCoord (0, CVector (x0, 0, y0));
+	vb.setVertexCoord (1, CVector (x1, 0, y0));
+	vb.setVertexCoord (2, CVector (x1, 0, y1));
+	vb.setVertexCoord (3, CVector (x0, 0, y1));
+	
+	driver.activeVertexBuffer(vb);
+
+	CPrimitiveBlock pb;
+	pb.setNumQuad (1);
+	pb.setQuad (0, 0, 1, 2, 3);
 
 	driver.render(pb, mat);
 }

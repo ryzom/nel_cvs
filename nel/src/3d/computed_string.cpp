@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.9 2001/01/02 15:29:44 coutelas Exp $
+ * $Id: computed_string.cpp,v 1.10 2001/01/05 18:44:10 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,26 +35,17 @@
 
 #include "nel/misc/file.h"
 
+using namespace std;
 
 namespace NL3D {
 
 
 
 /*------------------------------------------------------------------*\
-							render2D()
+							getHotSpotVector()
 \*------------------------------------------------------------------*/
-void CComputedString::render2D (IDriver& driver,
-								float x, float z,
-								THotSpot hotspot,
-								float scaleX, float scaleZ,
-								float rotateY
-								)
+CVector CComputedString::getHotSpotVector(THotSpot hotspot)
 {
-	//x*=ResX/ResY;
-	x*=(float)4/3;
-	driver.setFrustum(0, 4.0f/3.0f, 0, 1, -1, 1, false);  // resX/resY
-
-	// Computing hotspot translation vector
 	CVector hotspotVector(0,0,0);
 
 	if(hotspot==MiddleLeft)
@@ -80,7 +71,27 @@ void CComputedString::render2D (IDriver& driver,
 	
 	if(hotspot==TopRight)
 		hotspotVector = CVector(-StringWidth,0,-StringHeight);
-	
+
+	return hotspotVector;
+}
+
+
+/*------------------------------------------------------------------*\
+							render2D()
+\*------------------------------------------------------------------*/
+void CComputedString::render2D (IDriver& driver,
+								float x, float z,
+								THotSpot hotspot,
+								float scaleX, float scaleZ,
+								float rotateY
+								)
+{
+	//x*=ResX/ResY;
+	x*=(float)4/3;
+	driver.setFrustum(0, 4.0f/3.0f, 0, 1, -1, 1, false);  // resX/resY
+
+	// Computing hotspot translation vector
+	CVector hotspotVector = getHotSpotVector(hotspot);
 	
 	// tansformation matrix initialized to identity
 	CMatrix matrix;
@@ -106,6 +117,28 @@ void CComputedString::render2D (IDriver& driver,
 	}
 }
 
+
+/*------------------------------------------------------------------*\
+							render3D()
+\*------------------------------------------------------------------*/
+void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
+{
+	// Computing hotspot translation vector
+	CVector hotspotVector = getHotSpotVector(hotspot);
+	matrix.translate(hotspotVector);
+
+	driver.setupModelMatrix(matrix);
+	driver.activeVertexBuffer(Vertices);
+
+	// Rendering each primitive blocks
+	vector<CPrimitiveBlock>::iterator itpb = Primitives.begin();
+	int i = 0;
+	for(itpb = Primitives.begin(); itpb<Primitives.end(); itpb++)
+	{
+		driver.render((*itpb), *Materials[i]);
+		i++;
+	}	
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.36 2001/07/09 09:37:46 legros Exp $
+ * $Id: global_retriever.cpp,v 1.37 2001/07/09 14:14:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -685,6 +685,12 @@ void	NLPACS::CGlobalRetriever::getInstanceBounds(sint32 &x0, sint32 &y0, sint32 
 {
 	CVector		minP= bbox.getMin() - _BBox.getMin();
 	CVector		maxP= bbox.getMax() - _BBox.getMin();
+
+	// \todo yoyo: TODO_INTERIOR: this is ugly and works only for Ben's "UnCut" modification.
+	minP.x -=160;
+	minP.y -=160;
+	maxP.x +=160;
+	maxP.y +=160;
 
 	// A zone is 160x160 meters.
 	x0= (sint32)floor(minP.x / 160);
@@ -1562,7 +1568,9 @@ NLPACS::UGlobalPosition
 		deltaOrigin= origin - getInstance(res.InstanceId).getOrigin();
 
 		// Because Origin precision is 1 meter, and end precision is 1/1024 meter, we have no precision problem.
-		// this is true because we cannot move more than 160 meters in one doMove() (one zone).
+		// this is true because we cannot move more than, say 4*160 meters in one doMove().
+		// So global position should not be bigger than 1024 * 1024/1024 meters.  => Hence 20 bits of precision is 
+		// required. We have 23 with floats.
 		res.LocalPosition.Estimation= end + deltaOrigin;
 
 
@@ -1753,7 +1761,7 @@ void NLPACS::UGlobalRetriever::deleteGlobalRetriever (UGlobalRetriever *retrieve
 
 float			NLPACS::CGlobalRetriever::getMeanHeight(const UGlobalPosition &pos)
 {
-	if ((pos.InstanceId==-1)||(pos.LocalPosition.Surface))
+	if ((pos.InstanceId==-1)||(pos.LocalPosition.Surface==-1))
 		return 0;
 	
 	// get instance/localretriever.

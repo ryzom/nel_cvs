@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.11 2002/01/16 11:19:37 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.12 2002/01/16 14:00:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "3d/scene.h"
 #include "3d/ps_located.h"
 #include "3d/particle_system.h"
+#include "3d/particle_system_shape.h"
+
 
 #include "nel/misc/stream.h"
 #include "nel/misc/path.h"
@@ -616,7 +618,7 @@ static IShape *GetDummyShapeFromBank(CShapeBank &sb)
 
 //====================================================================================
 bool CPSConstraintMesh::update(void)
-{
+{		
 	bool ok = true;
 	if (!_Touched) return ok;
 
@@ -647,7 +649,7 @@ bool CPSConstraintMesh::update(void)
 			_Shapes[k] = sb->addRef(_MeshShapeFileName[k]);
 
 			/// get  the mesh format, or check that is was the same that previous shapes ' one
-			const CMesh &m  = * NLMISC::safe_cast<CMesh *>(_Shapes[k]); // only mesh shape's can be used with this class!
+			const CMesh &m  = * NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[k]); // only mesh shape's can be used with this class!
 			if (k == 0)
 			{			
 				vFormat = m.getVertexBuffer().getVertexFormat();
@@ -701,7 +703,7 @@ bool CPSConstraintMesh::update(void)
 					{
 						_Shapes[k] = is;
 						/// get  the mesh format, or check that is was the same that previous shapes ' one
-						const CMesh &m  = * NLMISC::safe_cast<CMesh *>(_Shapes[k]); // only mesh shape's can be used with this class!
+						const CMesh &m  = * NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[k]); // only mesh shape's can be used with this class!
 						if (k == 0)
 						{			
 							vFormat = m.getVertexBuffer().getVertexFormat();
@@ -730,7 +732,7 @@ bool CPSConstraintMesh::update(void)
 	}
 
 
-	const CMesh &m  = * NLMISC::safe_cast<CMesh *>(_Shapes[0]); // only mesh shape's can be used with this class!
+	const CMesh &m  = * NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[0]); // only mesh shape's can be used with this class!
 
 	/// update the number of faces
 	_NumFaces = getMeshNumTri(m);
@@ -745,6 +747,14 @@ bool CPSConstraintMesh::update(void)
 	_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
 	_Touched = 0;
 	nlassert(_Shapes.size() > 0);
+
+	#ifdef NL_DEBUG
+		for (uint j = 0; j < _Shapes.size(); ++j)
+		{
+			nlassert(dynamic_cast<CMesh *>((IShape *) _Shapes[j]));
+		}
+	#endif
+
 	return ok;
 	
 }
@@ -1203,13 +1213,9 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 
 //====================================================================================
 void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
-{
-	/// patch (temporary)
-	if (_Shapes.size() == 0) return;
-	if (!dynamic_cast<CMesh *>(_Shapes[0])) return;	
-
+{	
 	// get the vb from the original mesh
-	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_Shapes[0]);
+	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[0]);
 
 	
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
@@ -1353,12 +1359,8 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 
 //====================================================================================
 void	CPSConstraintMesh::drawMeshs(bool opaque)
-{
-	if (_Shapes.size() == 0) return;
-	if (!dynamic_cast<CMesh *>(_Shapes[0])) return;	
-
-	// get the vb from the original mesh
-	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_Shapes[0]);
+{		
+	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[0]);
 	
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
 
@@ -1539,21 +1541,21 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 				{
 					lambda = 0.f;
 					opLambda = 1.f;
-					inVB0 = inVB1 = &NLMISC::safe_cast<CMesh *>(_Shapes[numShapes - 1])->getVertexBuffer();
+					inVB0 = inVB1 = &NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[numShapes - 1])->getVertexBuffer();
 				}
 				else if (*currMorphValue <= 0)
 				{
 					lambda = 0.f;
 					opLambda = 1.f;
-					inVB0 = inVB1 = &NLMISC::safe_cast<CMesh *>(_Shapes[0])->getVertexBuffer();
+					inVB0 = inVB1 = &NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[0])->getVertexBuffer();
 				}
 				else
 				{
 					uint iMeshIndex = (uint) *currMorphValue;
 					lambda = *currMorphValue - iMeshIndex;
 					opLambda = 1.f - lambda;
-					inVB0 = &NLMISC::safe_cast<CMesh *>(_Shapes[iMeshIndex])->getVertexBuffer();
-					inVB1 = &NLMISC::safe_cast<CMesh *>(_Shapes[iMeshIndex + 1])->getVertexBuffer();
+					inVB0 = &NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[iMeshIndex])->getVertexBuffer();
+					inVB1 = &NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[iMeshIndex + 1])->getVertexBuffer();
 				}
 
 				m0 = (uint8 *) inVB0->getVertexCoordPointer();
@@ -2031,7 +2033,7 @@ void	CPSConstraintMesh::CGlobalTexAnims::serial(NLMISC::IStream &f) throw(NLMISC
 void CPSConstraintMesh::restoreMaterials()
 {
 	update();
-	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_Shapes[0]);
+	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[0]);
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
 	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_Shapes[0], modelVb.getVertexFormat() 
 															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));

@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * <File description>
  *
- * $Id: ps_mesh.h,v 1.4 2001/12/18 18:31:32 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.5 2002/01/16 14:00:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -423,9 +423,9 @@ protected:
 	void				doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet &rdrPasses, bool opaque);	
 
 	
-	typedef IShape					  *PShape;
-	typedef std::vector<std::string>  TShapeNameVect;
-	typedef std::vector<PShape>		  TShapeVect;	
+	typedef NLMISC::CSmartPtr<IShape>		  PShape;
+	typedef std::vector<std::string>		  TShapeNameVect;
+	typedef std::vector<PShape>				  TShapeVect;	
 
 	// name of the shapes
 	TShapeNameVect _MeshShapeFileName;

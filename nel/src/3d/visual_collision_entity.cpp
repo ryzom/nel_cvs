@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.5 2001/07/13 16:08:13 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.6 2001/07/16 08:34:07 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,7 +158,7 @@ bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
 		snapToLandscapeCurrentTesselation(pos, tri);
 
 		// compute the normal.
-		normal= (tri.V1-tri.V0)-(tri.V2-tri.V0);
+		normal= (tri.V1-tri.V0)^(tri.V2-tri.V0);
 		normal.normalize();
 
 		return true;

@@ -74,13 +74,13 @@ plugin material NelMaterial
 		(
 			CheckBox cbWater "Enable Water"
 
-			Spinner   cfBumpUScale      "BumpMap U Scale :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
-			Spinner   cfBumpVScale      "BumpMap V Scale :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
-			Spinner   cfBumpUSpeed      "BumpMap U Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
-			Spinner   cfBumpVSpeed      "BumpMap V Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
+			Spinner   cfBumpUScale      "BumpMap U Scale :"  range:[-10,10,0.0001] type:#float scale:0.001 align:#left 
+			Spinner   cfBumpVScale      "BumpMap V Scale :"  range:[-10,10,0.0001] type:#float scale:0.001 align:#left 
+			Spinner   cfBumpUSpeed      "BumpMap U Speed :"  range:[-10,10,0.0001] type:#float scale:0.001 align:#left 
+			Spinner   cfBumpVSpeed      "BumpMap V Speed :"  range:[-10,10,0.0001] type:#float scale:0.001 align:#left 
 		
-			Spinner   cfDisplaceMapUScale      "DisplaceMap U Scale :"  range:[-10,10,0.005] type:#float scale:0.001 align:#left 
-			Spinner   cfDisplaceMapVScale      "DisplaceMap V Scale :"  range:[-10,10,0.005] type:#float scale:0.001 align:#left 
+			Spinner   cfDisplaceMapUScale      "DisplaceMap U Scale :"  range:[-10,10,0.0001] type:#float scale:0.001 align:#left 
+			Spinner   cfDisplaceMapVScale      "DisplaceMap V Scale :"  range:[-10,10,0.0001] type:#float scale:0.001 align:#left 
 			Spinner   cfDisplaceMapUSpeed      "DisplaceMap U Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
 			Spinner   cfDisplaceMapVSpeed      "DisplaceMap V Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
 		)

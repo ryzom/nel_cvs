@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.58 2002/08/26 13:56:11 portier Exp $
+ * $Id: agent_script.h,v 1.59 2002/09/27 09:56:55 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -150,6 +150,9 @@ namespace NLAIAGENT
 
 		static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent;
 		static NLAISCRIPT::CParam *ParamRunParentNotify;
+
+		virtual void callFunction(std::string &, NLAIAGENT::IObjectIA *p = NULL);
+
 	private:
 		///Type def for the map witch store the name of dynamic agent store in the agent.
 		typedef std::multiset<CKeyAgent> tsetDefNameAgent;

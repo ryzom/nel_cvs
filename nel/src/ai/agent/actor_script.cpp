@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.69 2002/09/18 09:44:05 portier Exp $
+ * $Id: actor_script.cpp,v 1.70 2002/09/27 09:56:46 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -505,20 +505,7 @@ namespace NLAIAGENT
 				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 				{
 					IObjectIA *child = (IObjectIA *)((NLAIAGENT::IBaseGroupType *)params)->get();
-					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
-					child->incRef();
-					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
-					{
-						if ( _TopLevel )
-							((CActorScript *)child)->setTopLevel( _TopLevel );
-						else
-							((CActorScript *)child)->setTopLevel( this );
-						
-						((CActorScript *)child)->activate();
-					}
-
-					_Launched.push_back( (NLAIAGENT::IAgent *) child );
-					child->incRef();
+					Launch("Actor", (NLAIAGENT::IBasicAgent *) child);
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
@@ -601,6 +588,7 @@ namespace NLAIAGENT
 	{
 		addDynamicAgent( CStringType( name.c_str() ) , child );
 		child->incRef();
+//		_NbAnswers++;
 		if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
 		{
 			if ( _TopLevel )
@@ -677,27 +665,14 @@ namespace NLAIAGENT
 				break;
 
 			case fid_launch:
-			
 				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 				{
 					IObjectIA *child = (IObjectIA *)((NLAIAGENT::IBaseGroupType *)params)->get();
-					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
-					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
-					{
-						if ( _TopLevel )
-							((CActorScript *)child)->setTopLevel( _TopLevel );
-						else
-							((CActorScript *)child)->setTopLevel( this );
-						
-						((CActorScript *)child)->activate();
-					}
-					_Launched.push_back( (NLAIAGENT::IAgent *) child );
-					child->incRef();
+					Launch("Actor", (NLAIAGENT::IBasicAgent *) child);
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
 				return r;
-				break;
 
 			case fid_pause:
 				pause();
@@ -935,13 +910,17 @@ namespace NLAIAGENT
 
 	void CActorScript::processSuccess(NLAIAGENT::IObjectIA *param)
 	{
-		_NbAnswers--;
-		if ( _NbAnswers == 0 )
-		{
+
+#ifdef NL_DEBUG
+		const char *dbg_type = (const char *) getType();
+#endif
+//		_NbAnswers--;
+//		if ( _NbAnswers < 1 )
+//		{
 			if ( param != NULL )
 				param->incRef();
 			success();
-		}
+//		}
 	}
 
 	void CActorScript::success()
@@ -984,12 +963,17 @@ namespace NLAIAGENT
 
 	void CActorScript::processFailure(NLAIAGENT::IObjectIA *param)
 	{
-		_NbAnswers--;
-		if ( _NbAnswers == 0 )
-		{
+
+#ifdef NL_DEBUG
+		const char *dbg_type = (const char *) getType();
+#endif
+
+//		_NbAnswers--;
+//		if ( _NbAnswers < 1 )
+//		{
 			param->incRef();
 			failure();
-		}
+//		}
 	}
 
 	IMessageBase *CActorScript::runTell(const IMessageBase &m)

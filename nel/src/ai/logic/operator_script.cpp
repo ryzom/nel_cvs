@@ -839,13 +839,14 @@ namespace NLAIAGENT
 		_NbAnswers = receivers->size();
 		while ( receivers->size() )
 		{
-			NLAIAGENT::CProxyAgentMail member( *(NLAIAGENT::CAgentNumber *)receivers->getFront() );
 			NLAIAGENT::CGoalMsg *msg = new NLAIAGENT::CGoalMsg();
 			NLAILOGIC::IGoal *goal = (NLAILOGIC::IGoal *) order->clone();
 			msg->set( 0, (NLAILOGIC::IGoal *) goal );
 			goal->setSender( this );
+			msg->setSender( this );
 			msg->setPerformatif( NLAIAGENT::IMessageBase::PAchieve );
-			member.sendMessage( msg );
+			NLAIAGENT::CProxyAgentMail *member = (NLAIAGENT::CProxyAgentMail *) receivers->getFront()->clone();
+			member->sendMessage( (NLAIAGENT::IObjectIA *) msg );
 			receivers->popFront();
 		}
 	}

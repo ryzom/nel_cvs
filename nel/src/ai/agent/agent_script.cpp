@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.133 2002/09/18 09:44:05 portier Exp $
+ * $Id: agent_script.cpp,v 1.134 2002/09/27 09:56:46 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2342,6 +2342,35 @@ namespace NLAIAGENT
 
 #ifdef NL_DEBUG
 
+		const char * ttt = (const char *) getType();
+#endif
+		if ( id_func != -1 )
+		{	
+			NLAISCRIPT::CStackPointer stack;
+			NLAISCRIPT::CStackPointer heap;
+			NLAISCRIPT::CCodeContext codeContext(stack, heap, NULL, this, NLAISCRIPT::CCallPrint::inputOutput);
+			codeContext.Self = this;
+			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *) getClass()->getBrancheCode( id_func ).getCode();			
+			codeContext.Code = o;
+			int ip;
+			if(codeContext.Code != NULL) ip = (uint32)*codeContext.Code;
+			else ip =0;
+
+			*codeContext.Code = 0;
+
+			(void)o->run(codeContext);
+
+			*codeContext.Code = ip;
+
+		}
+	}
+
+	void CAgentScript::callFunction(std::string &f_name, NLAIAGENT::IObjectIA *p)
+	{
+		NLAIAGENT::CStringVarName func_name( f_name.c_str() );
+		sint32 id_func = getClass()->findMethod( func_name, NLAISCRIPT::CParam() );
+
+#ifdef NL_DEBUG
 		const char * ttt = (const char *) getType();
 #endif
 		if ( id_func != -1 )

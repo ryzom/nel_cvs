@@ -113,7 +113,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "ReleaseDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "NL_RELEASE_DEBUG" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_CONSOLE" /D "_MBCS" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe

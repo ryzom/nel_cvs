@@ -133,7 +133,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "..\..\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /I "..\..\include" /D "_WINDOWS" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"stdafx.h" /FD /Zm200 /c
+# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /I "..\..\include" /D "_WINDOWS" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /Yu"stdafx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"

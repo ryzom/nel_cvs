@@ -103,7 +103,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MEMORY_EXPORTS" /FD /c
 # SUBTRACT BASE CPP /YX /Yc /Yu
-# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "_USRDLL" /D "MEMORY_EXPORTS" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "NL_RELEASE_DEBUG" /FD /c
+# ADD CPP /nologo /MT /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "_USRDLL" /D "MEMORY_EXPORTS" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /D "_MBCS" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32

@@ -68,7 +68,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/ReleaseDebug/sound"
 # PROP Intermediate_Dir "../obj/ReleaseDebug/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NL_RELEASE_DEBUG" /D "_LIB" /D "LIBXML_STATIC" /D "NDEBUG" /D "WIN32" /D "_MBCS" /Yu"stdsound.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NL_RELEASE_DEBUG" /D "_LIB" /D "LIBXML_STATIC" /D "WIN32" /D "NDEBUG" /D "_MBCS" /Yu"stdsound.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"

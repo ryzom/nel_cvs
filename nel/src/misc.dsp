@@ -68,7 +68,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/ReleaseDebug/misc"
 # PROP Intermediate_Dir "../obj/ReleaseDebug/misc"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NL_RELEASE_DEBUG" /D "_LIB" /D "LIBXML_STATIC" /D "NDEBUG" /D "WIN32" /D "_MBCS" /Yu"stdmisc.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NL_RELEASE_DEBUG" /D "_LIB" /D "LIBXML_STATIC" /D "WIN32" /D "NDEBUG" /D "_MBCS" /Yu"stdmisc.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -84,7 +84,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/DebugFast/misc"
 # PROP Intermediate_Dir "../obj/DebugFast/misc"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdmisc.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "NL_DEBUG_FAST" /D "LIBXML_STATIC" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "NL_RELEASE_DEBUG" /Yu"stdmisc.h" /FD /GZ /c
 # SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"

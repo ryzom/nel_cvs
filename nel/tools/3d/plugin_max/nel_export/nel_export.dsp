@@ -136,7 +136,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "D:\3DSMAX3\Maxsdk\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "__STL_DEBUG" /YX /FD /c
-# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"std_afx.h" /FD /Zm200 /c
+# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /Yu"std_afx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG"

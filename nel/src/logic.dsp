@@ -85,7 +85,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/ReleaseDebug/logic"
 # PROP Intermediate_Dir "../obj/ReleaseDebug/logic"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_LIB" /D "LIBXML_STATIC" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "NL_RELEASE_DEBUG" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_LIB" /D "LIBXML_STATIC" /D "_MBCS" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"

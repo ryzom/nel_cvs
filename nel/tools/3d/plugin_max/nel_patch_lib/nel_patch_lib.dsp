@@ -115,7 +115,7 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FD /c
 # SUBTRACT BASE CPP /YX /Yc /Yu
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"

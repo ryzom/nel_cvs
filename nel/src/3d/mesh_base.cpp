@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.7 2001/06/26 10:09:25 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.8 2001/06/26 10:17:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,7 +108,7 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 	sint	ver= f.serialVersion(1);
 
 	if(ver<1)
-		throw NLMISC::EStream("Mesh in Stream is too old (MeshBase version < 1)");
+		throw NLMISC::EStream("MeshBuild in Stream is too old (MeshBaseBuild version < 1)");
 
 	f.serial( DefaultPos );
 	f.serial( DefaultPivot );
@@ -123,7 +123,17 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 // ***************************************************************************
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- Cut in version because of badly coded ITexture* serialisation. throw an exception if 
+			find a version < 1.
+	Version 0:
+		- 1st version.
+	*/
+	sint	ver= f.serialVersion(1);
+
+	if(ver<1)
+		throw NLMISC::EStream("Mesh in Stream is too old (MeshBase version < 1)");
 
 	f.serial (_DefaultPos);
 	f.serial (_DefaultPivot);

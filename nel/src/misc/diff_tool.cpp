@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.9 2004/08/18 13:54:00 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.9.4.1 2004/09/21 06:09:42 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -200,7 +200,7 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 }
 
 
-ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffComments)
+ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffComments, bool noDiffInfo)
 {
 	ucstring diff;
 
@@ -249,8 +249,11 @@ ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffCo
 		{
 			// add hash value comment if needed
 //			if (si.Comments.find(ucstring("// HASH_VALUE ")) == ucstring::npos)
-			str += ucstring("// HASH_VALUE ") + CI18N::hashToString(si.HashValue)+ nl;
-			str += ucstring("// INDEX ") + NLMISC::toString("%u", first-strings.begin())+ nl;
+			if (!noDiffInfo)
+			{
+				str += ucstring("// HASH_VALUE ") + CI18N::hashToString(si.HashValue)+ nl;
+				str += ucstring("// INDEX ") + NLMISC::toString("%u", first-strings.begin())+ nl;
+			}
 			str += si.Identifier + '\t';
 
 			ucstring text = CI18N::makeMarkedString('[', ']', si.Text);;
@@ -815,7 +818,7 @@ ucstring prepareExcelSheet(const TWorksheet &worksheet)
 	{
 		for (uint j=0; j<worksheet.Data[i].size(); ++j)
 		{
-			if (i > 0 && hashValue[j])
+			if (i > 0 && hashValue[j] && (!worksheet.Data[i][j].empty() && worksheet.Data[i][j][0] != '_'))
 				text += "_";
 			text += worksheet.Data[i][j];
 			if (j != worksheet.Data[i].size()-1)

@@ -1,6 +1,6 @@
 /** \file diff_tool.h
  *
- * $Id: diff_tool.h,v 1.6 2004/04/01 20:36:49 boucher Exp $
+ * $Id: diff_tool.h,v 1.6.4.1 2004/09/21 06:09:10 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -505,7 +505,7 @@ namespace STRING_MANAGER
 	bool		parseHashFromComment(const ucstring &comments, uint64 &hashValue);
 
 	bool		loadStringFile(const std::string filename, std::vector<TStringInfo> &stringInfos, bool forceRehash, ucchar openMark = '[', ucchar closeMark = ']', bool specialCase = false);
-	ucstring	prepareStringFile(const std::vector<TStringInfo> &strings, bool removeDiffComments);
+	ucstring	prepareStringFile(const std::vector<TStringInfo> &strings, bool removeDiffComments, bool noDiffInfo = false);
 
 	bool		readPhraseFile(const std::string &filename, std::vector<TPhrase> &phrases, bool forceRehash);
 	ucstring	tabLines(uint nbTab, const ucstring &str);

@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.16 2001/02/05 16:30:08 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.17 2001/03/07 15:43:59 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ CNetDisplayer::~CNetDisplayer()
  *
  * Log format: "2000/01/15 12:05:30 <LogType> <ProcessName>: <Msg>"
  */
-void CNetDisplayer::display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message)
+void CNetDisplayer::doDisplay (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message)
 {
 	try {
 		if ( ! _Server.connected() )

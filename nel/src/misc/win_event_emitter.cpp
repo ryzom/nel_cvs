@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.13 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: win_event_emitter.cpp,v 1.14 2004/07/20 09:03:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,8 +264,14 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 			float fX, fY;
 			RECT client;
 			GetClientRect ((HWND)hWnd, &client);
-			fX=(float)LOWORD(lParam)/(float)(client.right-client.left);
-			fY=1.f-(float)HIWORD(lParam)/(float)(client.bottom-client.top);
+			if (client.right-client.left > 0)
+				fX=(float)LOWORD(lParam)/(float)(client.right-client.left);
+			else
+				fX=0;
+			if (client.bottom-client.top > 0)
+				fY=1.f-(float)HIWORD(lParam)/(float)(client.bottom-client.top);
+			else
+				fY=0;
 
 			// buttons
 			TMouseButton button=getButtons();

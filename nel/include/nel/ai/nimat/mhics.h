@@ -1,7 +1,7 @@
 /** \file mhics.h
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.h,v 1.6 2003/07/24 17:03:15 robert Exp $
+ * $Id: mhics.h,v 1.7 2003/07/28 13:19:50 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -204,7 +204,7 @@ public :
 //	double getMotivationIntensity(TAction virtualAction) const;
 
 	/// Retourne l'intensité d'exécution d'une action
-//	double getExecutionIntensity(TAction action) const;
+	double getExecutionIntensity(TAction action, TTargetId target) const;
 
 	/// Return the Behavior that must be active
 	const std::map<TTargetId, std::map<TAction, CMotivationEnergy> >* selectBehavior();

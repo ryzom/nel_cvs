@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.7 2003/07/24 17:03:29 robert Exp $
+ * $Id: mhics.cpp,v 1.8 2003/07/28 13:19:41 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -639,18 +639,24 @@ double	CMHiCSagent::getMotivationValue(TMotivation motivationName) const
 //}
 
 /// Retourne l'intensité d'exécution d'une action
-//double CMHiCSagent::getExecutionIntensity(TAction action) const
-//{
-//	std::map<TAction, CMotivationEnergy>::const_iterator itActionsExecutionIntensity = _ActionsExecutionIntensity.find(action);
-//	if (itActionsExecutionIntensity != _ActionsExecutionIntensity.end()) 
-//	{
-//		return (*itActionsExecutionIntensity).second.getSumValue();
-//	}
-//	else
-//	{
-//		return -1;
-//	}
-//}
+double CMHiCSagent::getExecutionIntensity(TAction action, TTargetId target) const
+{
+	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::const_iterator itActionsExecutionIntensityByTarget;
+	itActionsExecutionIntensityByTarget = _ActionsExecutionIntensityByTarget.find(target);
+	if (itActionsExecutionIntensityByTarget == _ActionsExecutionIntensityByTarget.end())
+	{
+		return -1;
+	}
+	std::map<TAction, CMotivationEnergy>::const_iterator itActionsExecutionIntensity = (*itActionsExecutionIntensityByTarget).second.find(action);
+	if (itActionsExecutionIntensity != (*itActionsExecutionIntensityByTarget).second.end()) 
+	{
+		return (*itActionsExecutionIntensity).second.getSumValue();
+	}
+	else
+	{
+		return -1;
+	}
+}
 
 
 //void CMHiCSagent::spreadMotivationReckon(TMotivation CS)

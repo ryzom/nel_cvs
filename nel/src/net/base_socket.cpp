@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.18 2000/11/14 17:11:26 stefan.nilsen_at_telia.com Exp $
+ * $Id: base_socket.cpp,v 1.19 2000/11/21 17:17:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,8 +106,16 @@ CBaseSocket::CBaseSocket( bool reliable, bool logging ) :
 	}
 	if ( _Sock == INVALID_SOCKET )
 	{
-		throw ESocket("socket creation failed");
+		throw ESocket( "Socket creation failed" );
 	}
+
+	// Set Reuse Address On
+	bool value = true;
+	if ( setsockopt( _Sock, SOL_SOCKET, SO_REUSEADDR, (char*)value, sizeof(value) ) != 0 )
+	{
+		throw ESocket( "ReuseAddr failed. ", ERROR_NUM );
+	}
+
 	if ( _Logging )
 	{
 		nldebug( "Socket %d open (%s)", _Sock, _Reliable?"TCP":"UDP" );
@@ -272,7 +280,7 @@ void CBaseSocket::setLocalAddress()
 }
 
 
-/** Binds the socket to the specified port. Call bind() if the host acts as a server and waits for
+/** Binds the socket to the specified port. Call bind() for an unreliable socket if the host acts as a server and waits for
  * messages. If the host acts as a client, call sendTo(), there is no need to bind the socket.
  */
 void CBaseSocket::bind( uint16 port ) throw (ESocket)

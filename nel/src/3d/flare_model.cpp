@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.12 2002/04/03 14:53:34 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.13 2002/04/04 12:33:08 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -62,16 +62,28 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	CFlareModel			*m    = NLMISC::safe_cast<CFlareModel *>(Model);
 	IDriver				*drv  = trav->getDriver();
 	if (trav->isCurrentPassOpaque()) return;
+	
+	
 
 	// transform the flare on screen	
 	const CVector		upt = HrcObs->WorldMatrix.getPos(); // unstransformed pos	
 	const CVector	pt = trav->ViewMatrix * upt;
-	if (pt.y <= trav->Near) return; // flare behind us
+
+
+
+	if (pt.y <= trav->Near) 
+	{		
+		return; // flare behind us
+	}
 
 	nlassert(m->Shape);
 	CFlareShape *fs = NLMISC::safe_cast<CFlareShape *>((IShape *) m->Shape);
+	
 
-    if (pt.y > fs->getMaxViewDist()) return;	// flare too far away
+    if (pt.y > fs->getMaxViewDist()) 
+	{		
+		return;	// flare too far away
+	}
 
 	float distIntensity;
 
@@ -83,7 +95,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	{	
 		// compute a color ratio for attenuation with distance
 		const float distRatio = pt.y / fs->getMaxViewDist();
-		distIntensity = distRatio > fs->getMaxViewDistRatio() ? 1.f - distRatio / fs->getMaxViewDistRatio() : 1.f;
+		distIntensity = distRatio > fs->getMaxViewDistRatio() ? 1.f - (distRatio - fs->getMaxViewDistRatio()) / (1.f - fs->getMaxViewDistRatio()) : 1.f;		
 	}	
 
 	// compute position on screen
@@ -108,14 +120,14 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		float p = fs->getPersistence();
 		if (fs == 0)
 		{
-			m->_Intensity = 0;
+			m->_Intensity = 0;			
 			return;
 		}
 		else
 		{
 			m->_Intensity -= 1.f / p * (float)m->_Scene->getEllapsedTime();	
 			if (m->_Intensity < 0.f) 
-			{
+			{				
 				m->_Intensity = 0.f;
 				return;	// nothing to draw
 			}
@@ -138,28 +150,37 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	static CMaterial material;
 	static CVertexBuffer vb; 
 
+	static bool setupDone = false;
 
-    // setup material
+    
+	if (!setupDone)
+	{
+		material.setBlend(true);
+		material.setBlendFunc(CMaterial::one, CMaterial::one);
+		material.setZWrite(false);	
+		material.setZFunc(CMaterial::always);
+		material.setLighting(false);	
+		material.setDoubleSided(true);
 
-	material.setBlend(true);
-	material.setBlendFunc(CMaterial::one, CMaterial::one);
-	material.setZWrite(false);	
-	material.setZFunc(CMaterial::always);
-	material.setLighting(false);	
-	material.setDoubleSided(true);
+		// setup vertex buffer
+		vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+		vb.setNumVertices(4);
+		vb.setTexCoord(0, 0, NLMISC::CUV(1, 0));
+		vb.setTexCoord(1, 0, NLMISC::CUV(1, 1));
+		vb.setTexCoord(2, 0, NLMISC::CUV(0, 1));
+		vb.setTexCoord(3, 0, NLMISC::CUV(0, 0));
 
-	// setup vertex buffer
-	vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
-	vb.setNumVertices(4);
-	vb.setTexCoord(0, 0, NLMISC::CUV(1, 0));
-	vb.setTexCoord(1, 0, NLMISC::CUV(1, 1));
-	vb.setTexCoord(2, 0, NLMISC::CUV(0, 1));
-	vb.setTexCoord(3, 0, NLMISC::CUV(0, 0));
+		setupDone = true;
+	}
+
+	
 
 
-	// setup driver
-	drv->setupModelMatrix(CMatrix::Identity);	
+	// setup driver	
+	drv->activeVertexProgram(NULL);
+	drv->setupModelMatrix(CMatrix::Identity);
 	drv->activeVertexBuffer(vb);
+	
 
 	// we don't change the fustrum to draw 2d shapes : it is costly, and we need to restore it after the drawing has been done
 	// we setup Z to be (near + far) / 2, and setup x and y to get the screen coordinates we want
@@ -211,9 +232,14 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	}
 	else
 	{
-		if (norm > fs->getAttenuationRange() || fs->getAttenuationRange() == 0.f) return; // nothing to draw;		
+		if (norm > fs->getAttenuationRange() || fs->getAttenuationRange() == 0.f) 
+		{			
+			return; // nothing to draw;		
+		}
 		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * m->_Intensity * (1.f - norm / fs->getAttenuationRange() )));
 	}
+
+
 	material.setColor(col);	
 
 	CVector scrPos; // vector that will map to the center of the flare on scree
@@ -242,10 +268,9 @@ void	CFlareRenderObs::traverse(IObs *caller)
 
 
 			material.setTexture(0, tex);
-			drv->renderQuads(material, 0, 1);	
-
+			drv->renderQuads(material, 0, 1);			
 			k = 1;
-		}
+		}		
 	}
 	else
 	{
@@ -260,7 +285,11 @@ void	CFlareRenderObs::traverse(IObs *caller)
 			// compute vector that map to the center of the flare
 
 			scrPos = (aX * (xPos + dX * fs->getRelativePos(k)) + bX) * I 
-				     +  zPos * J + (aY * (yPos + dY * fs->getRelativePos(k)) + bY) * K + trav->CamMatrix.getPos(); 		
+				     +  zPos * J + (aY * (yPos + dY * fs->getRelativePos(k)) + bY) * K + trav->CamMatrix.getPos(); 
+
+
+			
+
 			size = fs->getSize(k) / trav->Near;			
 			vb.setVertexCoord(0, scrPos + size * (I + K) );
 			vb.setVertexCoord(1, scrPos + size * (I - K) );
@@ -269,6 +298,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 			material.setTexture(0, tex);
 			drv->renderQuads(material, 0, 1);		
 		}
+		
 	}		
 	this->traverseSons();
 }

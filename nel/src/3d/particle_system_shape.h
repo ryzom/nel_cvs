@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.5 2001/07/13 17:04:12 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.6 2001/07/17 15:55:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,8 +46,8 @@ const NLMISC::CClassId		ParticleSystemModelId=NLMISC::CClassId(0x3a9b1dc3, 0x496
 
 
 class CParticleSystem ;
-
-
+class CParticlesystemModel ;
+class CParticleSystemDetailObs ;
 
 
 
@@ -116,8 +116,15 @@ public:
 
 protected:
 
+	friend class CParticleSystemModel ; 
+	friend class CParticleSystemDetailObs ;
+
+	/** Instanciate a particle system from this shape.
+	  * A particle system may need to call this when a system is back in the frustrum
+	  */
+	CParticleSystem *instanciatePS(CScene &scene) ;
 		
-		// A memory stream containing a particle system. Each system is instanciated from this prototype
+	// A memory stream containing a particle system. Each system is instanciated from this prototype
 	NLMISC::CMemStream  _ParticleSystemProto ; 
 
 	/// the default track for animation of user parameters

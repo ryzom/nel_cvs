@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.13 2001/07/13 17:04:12 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.14 2001/07/17 15:55:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,16 +102,14 @@ void	CParticleSystemShape::getAABBox(NLMISC::CAABBox &bbox) const
 	bbox.setHalfSize(NLMISC::CVector(1, 1, 1)) ;
 }
 
-CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
-{
-	CTransformShape		*ps = (CTransformShape		*) scene.createModel(NL3D::ParticleSystemModelId);
-	ps->Shape= this ;
 
+
+CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
+{
 	// copy the datas
 	CParticleSystem *myInstance = NULL ;
 
-	// serialize from the memory stream
-	
+	// serialize from the memory stream	
 	if (!_ParticleSystemProto.isReading()) // we must be sure that we are reading the stream
 	{
 		_ParticleSystemProto.invert() ;
@@ -121,11 +119,19 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 	_ParticleSystemProto.seek(0, IStream::begin) ;
 	_ParticleSystemProto.serialPtr(myInstance) ; // instanciate the system
 	
-	nlassert(dynamic_cast<CParticleSystemModel *>(ps)) ;
-	CParticleSystemModel *psi = (CParticleSystemModel *) ps ;
-	myInstance->setScene(&scene) ;
-	psi->setParticleSystem(myInstance) ;
-	return ps ;
+
+	myInstance->setScene(&scene) ;		
+
+	return myInstance ;
+}
+
+CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
+{
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(scene.createModel(NL3D::ParticleSystemModelId) ) ;
+	psm->Shape = this ;
+	psm->_Scene = &scene ; // the model needs the scene to recreate the particle system he holds
+	psm->setParticleSystem(instanciatePS(scene)) ;
+	return psm ;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file ligo/export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.4 2002/02/28 08:15:56 besson Exp $
+ * $Id: export.cpp,v 1.5 2002/03/06 08:37:25 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -812,7 +812,10 @@ void CExport::transformZone (CZone &zeZone, sint32 nPosX, sint32 nPosY, uint8 nR
 	
 	zeZone.build (nZoneId, PatchInfos, BorderVertices);
 }
-
+/*
+CLandscape gLand;
+bool gLandInited = false;
+*/
 // ---------------------------------------------------------------------------
 void CExport::cutZone (NL3D::CZone &bigZone, NL3D::CZone &unitZone, sint32 nPosX, sint32 nPosY,
 						vector<bool> &PatchTransfered)
@@ -822,7 +825,7 @@ void CExport::cutZone (NL3D::CZone &bigZone, NL3D::CZone &unitZone, sint32 nPosX
 	//DstZoneFileName += ('A' + ((nPosX)/26));
 	//DstZoneFileName += ('A' + ((nPosX)%26));
 
-	uint32 i, j, k;
+	uint32 i, j, k, m;
 	vector<CPatchInfo>		SrcPI;
 	vector<CPatchInfo>		DstPI;
 	vector<CBorderVertex>	BorderVertices;
@@ -872,6 +875,54 @@ void CExport::cutZone (NL3D::CZone &bigZone, NL3D::CZone &unitZone, sint32 nPosX
 		}
 	}
 
+	// Add all patch that are binded to one of those of the DstPI list 
+	uint32 nPreviousDstPISize = DstPI.size();
+	for (;;)
+	{
+		for (i = 0; i < DstPI.size(); ++i)
+		{
+			CPatchInfo &rPI = DstPI[i];
+			for (j = 0; j < 4; ++j)
+			{
+				if (rPI.BindEdges[j].NPatchs == 5)
+				{
+					uint next = rPI.BindEdges[j].Next[0];
+					if (!PatchTransfered[next])
+					{
+						CPatchInfo &rPITmp = SrcPI[next];
+						for (k = 0; k < 4; ++k)
+							rPITmp.BindEdges[k].ZoneId = nZoneId;
+						DstPI.push_back (rPITmp);
+						OldToNewPatchId.insert (pair<int,int>(next, DstPI.size()-1));
+						PatchTransfered[next] = true;
+					}
+				}
+
+				if ((rPI.BindEdges[j].NPatchs == 2) || (rPI.BindEdges[j].NPatchs == 4))
+				{
+					for (k = 0; k < rPI.BindEdges[j].NPatchs; ++k)
+					{
+						uint next = rPI.BindEdges[j].Next[k];
+						if (!PatchTransfered[next])
+						{
+							CPatchInfo &rPITmp = SrcPI[next];	
+							for (m = 0; m < 4; ++m)
+								rPITmp.BindEdges[m].ZoneId = nZoneId;
+							DstPI.push_back (rPITmp);
+							OldToNewPatchId.insert (pair<int,int>(next, DstPI.size()-1));
+							PatchTransfered[next] = true;
+						}
+					}
+				}
+			}
+		}
+
+		// Do it until no more patch added
+		if (nPreviousDstPISize == DstPI.size())
+			break;
+		nPreviousDstPISize = DstPI.size();
+	}
+
 	for (i = 0; i < DstPI.size(); ++i)
 	{
 		CPatchInfo &rPI = DstPI[i];
@@ -916,6 +967,16 @@ void CExport::cutZone (NL3D::CZone &bigZone, NL3D::CZone &unitZone, sint32 nPosX
 	}
 
 	unitZone.build (nZoneId, DstPI, BorderVertices);
+/*	{ // Debug
+		if (!gLandInited)
+		{
+			gLand.init();
+			gLandInited = true;
+		}
+		
+		gLand.addZone(unitZone);
+		gLand.checkBinds();
+	}*/
 }
 
 // ---------------------------------------------------------------------------
@@ -929,12 +990,10 @@ float CExport::getHeight (float x, float y)
 	clamp (x, _Options->CellSize*_ZoneMinX, _Options->CellSize*(_ZoneMaxX+1));
 	clamp (y, _Options->CellSize*_ZoneMinY, _Options->CellSize*(_ZoneMaxY+1));
 
-	y = -y;
-
 	if (_HeightMap != NULL)
 	{
 		color = _HeightMap->getColor (	(x-_Options->CellSize*_ZoneMinX)/(_Options->CellSize*SizeX), 
-										(y-_Options->CellSize*_ZoneMinY)/(_Options->CellSize*SizeY));
+										1.0f - ((y-_Options->CellSize*_ZoneMinY)/(_Options->CellSize*SizeY)));
 		deltaZ = color.A;
 		deltaZ = deltaZ - 127.0f; // Median intensity is 127
 		deltaZ *= _Options->ZFactor;
@@ -943,7 +1002,7 @@ float CExport::getHeight (float x, float y)
 	if (_HeightMap2 != NULL)
 	{
 		color = _HeightMap2->getColor (	(x-_Options->CellSize*_ZoneMinX)/(_Options->CellSize*SizeX), 
-										(y-_Options->CellSize*_ZoneMinY)/(_Options->CellSize*SizeY));
+										1.0f - ((y-_Options->CellSize*_ZoneMinY)/(_Options->CellSize*SizeY)));
 		deltaZ2 = color.A;
 		deltaZ2 = deltaZ2 - 127.0f; // Median intensity is 127
 		deltaZ2 *= _Options->ZFactor2;

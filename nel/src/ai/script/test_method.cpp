@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.3 2001/03/14 13:19:34 chafik Exp $
+ * $Id: test_method.cpp,v 1.4 2001/03/27 16:09:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,8 +32,9 @@
 
 namespace NLAISCRIPT
 {
+	CLibTest test;
 	const NLAIC::CIdentType CLibTest::IdLibTest = NLAIC::CIdentType("Check",
-																	NLAIC::CSelfClassFactory(CLibTest()),
+																	NLAIC::CSelfClassFactory(test),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 	const char *IsNULL = "IsNotNull";

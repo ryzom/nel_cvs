@@ -1,7 +1,9 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.71 2001/02/08 10:02:29 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.72 2001/02/12 09:16:58 lecroart Exp $
+ *
+ * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -618,6 +620,9 @@ bool CDriverGL::swapBuffers()
 
 bool CDriverGL::release()
 {
+	// release only if the driver was initialized
+	if (!_Initialized) return true;
+
 	// Call IDriver::release() before, to destroy textures, shaders and VBs...
 	IDriver::release();
 

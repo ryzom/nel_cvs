@@ -290,30 +290,10 @@ SOURCE=.\net\net_manager.cpp
 
 SOURCE=..\include\nel\net\net_manager.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\net\service.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\doc\net\service.dxt
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\service.h
-# End Source File
 # End Group
 # Begin Group "Layer5"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\net\service_5.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\service_5.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\net\unified_network.cpp
@@ -382,6 +362,29 @@ SOURCE=..\include\nel\net\net_log.h
 # Begin Source File
 
 SOURCE=..\include\nel\net\pacs_client.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\service.cpp
+
+!IF  "$(CFG)" == "net - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "net - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "net - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "net - Win32 DebugFast"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\doc\net\service.dxt
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\service.h
 # End Source File
 # Begin Source File
 

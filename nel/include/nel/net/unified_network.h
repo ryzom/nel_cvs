@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.19 2002/03/14 09:47:18 lecroart Exp $
+ * $Id: unified_network.h,v 1.20 2002/03/25 09:26:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,10 +71,10 @@ struct TUnifiedCallbackItem
  */
 class CUnifiedNetwork
 {
-	friend void	cbConnection(TSockId from, void *arg);
-	friend void	cbDisconnection(TSockId from, void *arg);
-	friend void	cbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
-	friend void	cbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
+	friend void	uncbConnection(TSockId from, void *arg);
+	friend void	uncbDisconnection(TSockId from, void *arg);
+	friend void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
+	friend void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 
 public:
 

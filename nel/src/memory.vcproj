@@ -84,8 +84,13 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="TRUE"
+				FavorSizeOrSpeed="1"
+				EnableFiberSafeOptimizations="TRUE"
+				OptimizeForWindowsApplication="TRUE"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MEMORY_EXPORTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -208,8 +213,13 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="TRUE"
+				FavorSizeOrSpeed="1"
+				EnableFiberSafeOptimizations="TRUE"
+				OptimizeForWindowsApplication="TRUE"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;MEMORY_EXPORTS;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.13 2001/04/12 13:57:41 berenguier Exp $
+ * $Id: mesh.cpp,v 1.14 2001/04/24 14:59:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,6 +316,11 @@ CTransformShape		*CMesh::createInstance(CScene &scene)
 		mi->_AnimatedMaterials.push_back(aniMat);
 	}
 	
+	// Setup position with the default value
+	mi->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
+	mi->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
+	mi->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
+	mi->ITransformable::setPivot( ((CAnimatedValueVector&)_DefaultPivot.getValue()).Value  );
 
 	return mi;
 }

@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.1 2001/04/09 14:25:20 berenguier Exp $
+ * $Id: bone.cpp,v 1.2 2001/04/24 14:59:20 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,15 +77,14 @@ CBone::CBone(CBoneBase *boneBase)
 	nlassert(boneBase);
 	_BoneBase= boneBase;
 
+	// IAnimatable.
+	IAnimatable::resize(AnimValueLast);
+
 	ITransformable::setTransformMode(ITransformable::RotQuat);
 	ITransformable::setPos( ((CAnimatedValueVector&)_BoneBase->DefaultPos.getValue()).Value  );
 	ITransformable::setRotQuat( ((CAnimatedValueQuat&)_BoneBase->DefaultRotQuat.getValue()).Value  );
 	ITransformable::setScale( ((CAnimatedValueVector&)_BoneBase->DefaultScale.getValue()).Value  );
 	ITransformable::setPivot( ((CAnimatedValueVector&)_BoneBase->DefaultPivot.getValue()).Value  );
-
-
-	// IAnimatable.
-	IAnimatable::resize(AnimValueLast);
 }
 
 // ***************************************************************************

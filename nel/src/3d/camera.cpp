@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.10 2001/03/28 10:33:00 berenguier Exp $
+ * $Id: camera.cpp,v 1.11 2001/04/24 14:59:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,9 @@ CCamera::CCamera()
 {
 	setFrustum(1.0f, 1.0f, 0.01f, 1.0f);
 
+	// IAnimatable.
+	IAnimatable::resize(AnimValueLast);
+
 	_FovAnimationEnabled= false;
 	_TargetAnimationEnabled= false;
 	_FovAnimationAspectRatio= 4.0f/3.0f;
@@ -50,9 +53,6 @@ CCamera::CCamera()
 	_Fov.Value= (float)NLMISC::Pi/2;
 	_Target.Value= CVector::Null;
 	_Roll.Value= 0;
-
-	// IAnimatable.
-	IAnimatable::resize(AnimValueLast);
 }
 // ***************************************************************************
 void		CCamera::setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective)

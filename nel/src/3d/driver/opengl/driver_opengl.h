@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.132 2002/09/24 14:40:40 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.133 2002/10/14 15:50:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -237,6 +237,7 @@ public:
 	virtual bool			clear2D(CRGBA rgba);
 
 	virtual bool			clearZBuffer(float zval=1);
+	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha);
 
 	virtual bool			setupTexture (ITexture& tex);
 
@@ -568,7 +569,9 @@ private:
 		TexEnvSpecialSpecularStage1,
 		TexEnvSpecialSpecularStage1NoText,
 		TexEnvSpecialPPLStage0,
-		TexEnvSpecialPPLStage2,		
+		TexEnvSpecialPPLStage2,
+		TexEnvSpecialCloudStage0,
+		TexEnvSpecialCloudStage1,
 	};
 
 	// NB: CRefPtr are not used for mem/spped optimisation. setupMaterial() and setupTexture() reset those states.
@@ -731,6 +734,11 @@ private:
 	void			endCausticsMultiPass(const CMaterial &mat);*/
 	// @}
 
+	/// \name Cloud Shader
+	sint			beginCloudMultiPass ();
+	void			setupCloudPass (uint pass);
+	void			endCloudMultiPass ();
+	// @}
 
 
 	/// setup GL arrays, with a vb info.

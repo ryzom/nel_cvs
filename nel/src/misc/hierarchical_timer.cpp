@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.7 2002/05/30 19:33:51 cado Exp $
+ * $Id: hierarchical_timer.cpp,v 1.8 2002/06/06 16:15:32 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -398,11 +398,11 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 				(*it)->Node->getPath(nodePath);
 				maxSize = std::max(maxSize, nodePath.size());
 			}
-			format = "FEHTIMER> %-" + NLMISC::toString(maxSize) +"s %s";
+			format = "%-" + NLMISC::toString(maxSize) +"s %s";
 		}
 		else
 		{
-			format = "FEHTIMER> %s %s";
+			format = "%s %s";
 		}
 	}
 
@@ -410,7 +410,7 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 	{
 		if (!displayInline)
 		{		
-			nlinfo("FEHTIMER> =================================");
+			nlinfo("=================================");
 			(*it)->Node->displayPath();
 			(*it)->display(displayEx, _WantStandardDeviation);
 		}
@@ -497,6 +497,60 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 }
 
 //=================================================================
+/*static*/ void CHTimer::displayHierarchicalByExecutionPath(bool displayEx /*=true*/,uint labelNumChar /*=32*/, uint indentationStep /*= 2*/)
+{
+	CSimpleClock	benchClock;
+	benchClock.start();
+	nlinfo("=========================================================================");
+	nlinfo("Hierarchical display of bench by execution path");
+	nlassert(_BenchStartedOnce); // should have done at least one bench
+	bool wasBenching = _Benching;	
+
+	//
+	std::vector< std::pair< CNode*, uint > >	examStack;
+	examStack.push_back( std::make_pair<CNode*,uint>(&_RootNode, 0) );
+	CStats		currNodeStats;
+	std::string resultName;
+	std::string resultStats;
+
+	while (!examStack.empty())
+	{
+		CNode	*node = examStack.back().first;
+		uint	child = examStack.back().second;
+
+		if (child == 0)
+		{
+			resultName.resize(labelNumChar);
+			std::fill(resultName.begin(), resultName.end(), '.');
+			uint startIndex = (examStack.size()-1) * indentationStep;
+			uint endIndex = std::min(startIndex + ::strlen(node->Owner->_Name), labelNumChar);			
+			if ((sint) (endIndex - startIndex) >= 1)
+			{
+				std::copy(node->Owner->_Name, node->Owner->_Name + (endIndex - startIndex), resultName.begin() + startIndex);
+			}
+
+			currNodeStats.buildFromNodes(&node, 1, _MsPerTick);			
+			currNodeStats.getStats(resultStats, displayEx, _WantStandardDeviation);
+			nlinfo((resultName + resultStats).c_str());
+		}
+
+		if (child >= node->Sons.size())
+		{
+			examStack.pop_back();
+			continue;
+		}
+
+		++(examStack.back().second);
+
+		examStack.push_back( std::make_pair<CNode*,uint>(node->Sons[child], 0) );
+	}
+
+	//
+	benchClock.stop();
+	_CurrNode->SonsPreambule += benchClock.getNumTicks();
+}
+
+//=================================================================
 void	CHTimer::clear()
 {
 	// should not be benching !
@@ -576,11 +630,11 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, bool wantStandard
 	{	
 		if (!statEx)
 		{	
-			NLMISC::smprintf(buf, 1024, " | total  %5.3f  | local  %5.3f | visits  %12s ", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str());
+			NLMISC::smprintf(buf, 1024, " | total  %10.3f  | local  %10.3f | visits  %12s ", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str());
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | total  %5.3f  | local  %5.3f | visits  %12s | min %5.3f | max %5.3f | mean %5.3f",
+			NLMISC::smprintf(buf, 1024, " | total  %10.3f  | local  %10.3f | visits  %12s | min %9.3f | max %9.3f | mean %9.3f",
 					  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
 					  (float) MinTime, (float) MaxTime, (float) MeanTime
 					 );
@@ -590,11 +644,11 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, bool wantStandard
 	{
 		if (!statEx)
 		{	
-			NLMISC::smprintf(buf, 1024, " | total  %5.3f  | local  %5.3f | visits  %12s | std deviation %5.3f", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), (float) TimeStandardDeviation);
+			NLMISC::smprintf(buf, 1024, " | total  %10.3f  | local  %10.3f | visits  %12s | std deviation %9.3f", (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), (float) TimeStandardDeviation);
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | total  %5.3f  | local  %5.3f | visits  %12s | min %12.3f | max %5.3f | mean %5.3f | std deviation %5.3f",
+			NLMISC::smprintf(buf, 1024, " | total  %10.3f  | local  %10.3f | visits  %12s | min %9.3f | max %9.3f | mean %9.3f | std deviation %9.3f",
 							  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
 							  (float) MinTime, (float) MaxTime, (float) MeanTime,
 							  (float) TimeStandardDeviation

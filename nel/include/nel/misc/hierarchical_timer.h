@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.11 2002/05/30 16:17:17 vizerie Exp $
+ * $Id: hierarchical_timer.h,v 1.12 2002/06/06 16:15:44 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -244,6 +244,12 @@ public:
 	  * \param labelNumChar  
 	  */
 	static void		displayHierarchical(bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
+
+	/** Hierarchical display, no sorting is done
+	  * \param displayEx	 true to display more detailed infos.
+	  * \param labelNumChar  
+	  */
+	static void		displayHierarchicalByExecutionPath(bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
 
 	/// Clears stats, and reinits all timer structure
 	static void		clear();		

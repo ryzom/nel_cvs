@@ -39,12 +39,15 @@ public:
 	CString	m_Stereo;
 	float	m_Pitch;
 	BOOL	m_Looping;
+	CString	m_SoundName;
 	//}}AFX_DATA
 
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSoundPage)
+	public:
+	virtual BOOL DestroyWindow();
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -92,6 +95,7 @@ protected:
 	HTREEITEM					_HItem;
 	UAudioMixer					*_AudioMixer;
 	USource						*_Source;
+	CFont						*_NameFont;
 
 	void						UpdateCurrentSound();
 	void						UpdateStereo();

@@ -31,6 +31,7 @@ CSource_sounds_builderDlg::CSource_sounds_builderDlg(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CSource_sounds_builderDlg)
 	//}}AFX_DATA_INIT
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	_SoundPage = NULL;
 }
 
 void CSource_sounds_builderDlg::DoDataExchange(CDataExchange* pDX)

@@ -114,6 +114,7 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	m_Stereo = _T("");
 	m_Pitch = 1.0f;
 	m_Looping = false;
+	m_SoundName = _T("");
 	//}}AFX_DATA_INIT
 
 	_CurrentSound = NULL;
@@ -155,8 +156,16 @@ BOOL CSoundPage::OnInitDialog()
 	XCenter = sliderrect.right - parentrect.left + 15 + CONE_R;
 	YCenter = sliderrect.top - parentrect.top + 10;
 	Radius = CONE_R;
-	
+
 	waitcursor.Restore();
+
+	_NameFont = new CFont();
+	LOGFONT logfont;
+	GetFont()->GetLogFont( &logfont );
+	logfont.lfWeight = FW_BOLD;
+	_NameFont->CreateFontIndirect( &logfont );
+	
+	GetDlgItem( IDC_SoundName )->SetFont( _NameFont );
 
 	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetRange( 0, 40 );
 	((CSliderCtrl*)GetDlgItem( IDC_SliderPitch ))->SetRange( 0, 40 );
@@ -194,6 +203,7 @@ void CSoundPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EditPitch, m_Pitch);
 	DDV_MinMaxFloat(pDX, m_Pitch, 1.e-011f, 1.f);
 	DDX_Check(pDX, IDC_Looping, m_Looping);
+	DDX_Text(pDX, IDC_SoundName, m_SoundName);
 	//}}AFX_DATA_MAP
 }
 
@@ -272,6 +282,7 @@ void		CSoundPage::UpdateStereo()
  */
 void		CSoundPage::getPropertiesFromSound()
 {
+	m_SoundName = _CurrentSound->getName().c_str();
 	m_Filename = _CurrentSound->getFilename().c_str();
 	m_Gain = _CurrentSound->getGain();
 	m_Pitch = _CurrentSound->getPitch();
@@ -408,10 +419,15 @@ void CSoundPage::apply()
  */
 void CSoundPage::rename( CString s )
 {
+	// Quick way to do it (should be simplified)
+	
 	getPropertiesFromSound();
 	nlassert( _Tree );
 	_Tree->SetItemText( _HItem, s );
 	UpdateCurrentSound();
+
+	m_SoundName = s;
+	UpdateData( false );
 }
 
 
@@ -837,6 +853,17 @@ void CSoundPage::OnPaint()
 			dc.Pie( XCenter-Radius, YCenter-Radius, XCenter+Radius+1, YCenter+Radius+1,	XCenter+dx, y, XCenter-dx, y );
 		}
 	}
+}
+
+
+/*
+ *
+ */
+BOOL CSoundPage::DestroyWindow() 
+{
+	delete _NameFont;
+
+	return CDialog::DestroyWindow();
 }
 
 

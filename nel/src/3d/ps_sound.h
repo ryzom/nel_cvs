@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * <File description>
  *
- * $Id: ps_sound.h,v 1.4 2001/08/29 14:25:43 vizerie Exp $
+ * $Id: ps_sound.h,v 1.5 2001/09/04 13:42:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -130,25 +130,48 @@ public:
 	}
 
 	/// get the current pitch scheme (const version)
-	const CPSAttribMaker<float> *  getPitchScheme(void) const
+	const CPSAttribMaker<float>     *getPitchScheme(void) const
 	{
 		return _PitchScheme;
 	}
 
+	/// set a percent of sound emission. If set to 1, it try to emit all sounds
+	void							setEmissionPercent(float percent) { _EmissionPercent = percent; }
+
+
+	/// get the percent of sound emission.
+	float getEmissionPercent(void) const { return _EmissionPercent; }
+
+	/// tells wether sound emissions are spawned or not
+	void							setSpawn(bool enabled = true) { _SpawnSounds = enabled; }
+
+	/// test wether sound spawning is enabled
+	bool							getSpawn(void) const		  { return _SpawnSounds; }
+
+	///set mute on/off. The default is off. WARNING : It is not saved by this object
+	void							setMute(bool enabled = true)  { _Mute = enabled; }
+
+	/// test wether mute has been activated
+	bool							getMute(void) const { return _Mute; }
+
+	
 	
 protected:
 	virtual void			newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 	virtual void			deleteElement(uint32 index);
 	virtual void			resize(uint32 size);
+	void					removeAllSources();
 
 	CPSAttrib<UPSSoundInstance *>	_Sounds;
 	std::string						_SoundName;
 	float							_Gain;
 	CPSAttribMaker<float> *			_GainScheme;
 	float							_Pitch;
-	CPSAttribMaker<float> *			_PitchScheme;
-	bool							_SoundStopped; 
-
+	CPSAttribMaker<float> *			_PitchScheme;	
+	float							_EmissionPercent;
+	bool							_SpawnSounds;
+	bool							_Mute;
+	bool							_SoundStopped;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.5 2001/08/29 14:25:43 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.6 2001/09/04 13:42:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,13 +38,26 @@ static const uint SoundBufSize = 1024;
 
 
 CPSSound::CPSSound() : _GainScheme(NULL), _PitchScheme(NULL)
-					   ,_Gain(1.f)	  , _Pitch(1.f), _SoundStopped(false)
+					   ,_Gain(1.f)	  , _Pitch(1.f), _SoundStopped(false), _EmissionPercent(1)
+					   ,_SpawnSounds(false), _Mute(false)
 {
 	_Name = std::string("sound");
 }
 
+
+void CPSSound::removeAllSources(void)
+{
+	const sint32 size = _Sounds.getSize();
+	// delete all sounds, and rebuild them all						
+	for (sint32 k = size - 1; k >= 0; --k)
+	{
+		deleteElement(k);
+	}
+}
+
 CPSSound::~CPSSound()
 {
+	removeAllSources();
 	delete _GainScheme;	
 	delete _PitchScheme;	
 }
@@ -82,17 +95,17 @@ void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	if (_SoundStopped)
 	{
 		_SoundStopped = false;
-		endIt = _Sounds.end();
-		while (it != endIt)
+		if (!_Mute)
 		{
-			if (*it)
+			sint32 k;
+			// delete all sounds, and rebuild them all						
+			removeAllSources();			
+			for (k = 0; k < (sint32) size; ++k)
 			{
-				(*it)->play();
+				newElement(NULL, 0);
 			}
-			++it;
+			
 		}
-		while (it != endIt);
-		it = _Sounds.begin();
 	}
 
 	if (!size) return;
@@ -208,7 +221,7 @@ void	CPSSound::setPitchScheme(CPSAttribMaker<float> *pitch)
 void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSLocatedBindable::serial(f);
-	sint ver = f.serialVersion(1);
+	sint ver = f.serialVersion(2);
 	f.serial(_SoundName);
 	sint32 nbSounds;
 	bool hasScheme;
@@ -270,26 +283,39 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		_SoundStopped = true;
 	}
+
+	if (ver > 1)
+	{
+		f.serial(_EmissionPercent);
+		f.serial(_SpawnSounds);
+	}
 }
 	
 
 void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
+	nlassert(_Owner);
 	if (_GainScheme && _GainScheme->hasMemory()) _PitchScheme->newElement(emitterLocated, emitterIndex);
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->newElement(emitterLocated, emitterIndex);
 	// if there's a sound server, we generate a new sound instance
-	if (CParticleSystem::getSoundServer())
+	if (!_Mute && CParticleSystem::getSoundServer())
 	{
-		uint32 index = _Sounds.insert(CParticleSystem::getSoundServer()->createSound(_SoundName));
-		/// set position and activate the sound
-	
-		if (_Sounds[index])
-		{			
-			const NLMISC::CMatrix &mat = _Owner->isInSystemBasis() ? _Owner->getOwner()->getSysMat() : NLMISC::CMatrix::Identity;
-			_Sounds[index]->setSoundParams(0, mat * _Owner->getPos()[index], _Owner->getSpeed()[index], 1);
-			_Sounds[index]->play();
+		if ((rand() % 99) * 0.01f < _EmissionPercent)
+		{
+			uint32 index = _Sounds.insert(CParticleSystem::getSoundServer()->createSound(_SoundName, _SpawnSounds));
+			/// set position and activate the sound
+		
+			if (_Sounds[index])
+			{			
+				const NLMISC::CMatrix &mat = _Owner->isInSystemBasis() ? _Owner->getOwner()->getSysMat() : NLMISC::CMatrix::Identity;
+				_Sounds[index]->setSoundParams(0, mat * _Owner->getPos()[index], _Owner->getSpeed()[index], 1);
+				_Sounds[index]->play();
+			}
 		}
-	
+		else
+		{
+			_Sounds.insert(NULL);
+		}
 	}
 	else
 	{

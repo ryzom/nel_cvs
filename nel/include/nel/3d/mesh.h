@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.18 2001/06/13 08:53:21 besson Exp $
+ * $Id: mesh.h,v 1.19 2001/06/14 13:35:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -342,7 +342,7 @@ private:
 private:
 	/**  Just for build process.
 	 * NB: we must store palette info by corner (not by vertex) because Matrix Block grouping may insert vertex
-	 * discontinuities. eg: a vertex use Matrix23. After Matrix grouping (16matrix), Matrix23 could be Matrix2 for a group
+	 * discontinuities. eg: a vertex use Matrix18. After Matrix grouping (16matrix max), Matrix18 could be Matrix2 for a group
 	 * of face, but Matrix13 for an other!!
 	 */
 	struct	CCornerTmp : public CCorner

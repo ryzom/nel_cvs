@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.31 2002/02/11 10:48:50 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.32 2002/02/11 10:59:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,10 @@
 #ifdef NL_OS_WINDOWS
 #define	nelglGetProcAddress wglGetProcAddress
 #else	// NL_OS_WINDOWS
-#define	nelglGetProcAddress glXGetProcAddressARB
+void (*nelglGetProcAddress(const char *procName))()
+{
+	return glXGetProcAddressARB((const GLubyte *)procName);
+}
 #endif	// NL_OS_WINDOWS
 
 

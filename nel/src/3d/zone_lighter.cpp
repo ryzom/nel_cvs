@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.32 2003/09/10 14:05:49 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.33 2003/09/18 08:25:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -528,7 +528,7 @@ void RenderTriangle (const CZoneLighter::CTriangle &triangle, const CZoneLighter
 
 		// For each scanlines
 		sint y = std::max (minimumY, 0);
-		sint yMax = std::min ((sint)(minimumY+borders.size ()), zbuffer.LocalZBufferWidth);
+		sint yMax = std::min ((sint)(minimumY+borders.size ()), zbuffer.LocalZBufferHeight);
 		for (; y<yMax; y++)
 		{
 			// Ref on the raster
@@ -820,7 +820,7 @@ void SaveZBuffer (CZoneLighter::CZBuffer &zbuffer, const char *filename)
 	bitmap.resize (zbuffer.LocalZBufferWidth, zbuffer.LocalZBufferHeight, CBitmap::Luminance);
 
 	// Get pixels
-	vector<uint8> &pixels = bitmap.getPixels ();
+	CObjectVector<uint8> &pixels = bitmap.getPixels ();
 
 	// Draw it
 	uint samples = zbuffer.LocalZBufferWidth*zbuffer.LocalZBufferHeight;

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.47 2001/10/10 09:36:31 vizerie Exp $
+# $Id: Makefile.am,v 1.48 2001/10/10 12:07:00 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -193,7 +193,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        ps_located.cpp                      \
                        ps_located.h                        \
                        ps_lod.h                            \
-                       ps_particle.cpp                     \   
+                       ps_particle.cpp                     \
                        ps_particle.h                       \
                        ps_particle2.cpp                    \
                        ps_particle2.h                      \
@@ -321,7 +321,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
 
 AM_CXXFLAGS          = -I$(top_srcdir)/src @FREETYPE_CFLAGS@
 
-libnel3d_la_LIBADD   = @FREETYPE_LIBS@ -lc -ldl -lpthread -lGL
+libnel3d_la_LIBADD   = @FREETYPE_LIBS@ -lc -ldl -lpthread
 
 libnel3d_la_LDFLAGS  = -version-info @LIBTOOL_VERSION@
 

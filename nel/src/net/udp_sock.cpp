@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: udp_sock.cpp,v 1.2 2001/07/06 17:30:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,6 +110,7 @@ void CUdpSock::bind( uint16 port )
  */
 void CUdpSock::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr )
 {
+	
 	//  Send
 	if ( ::sendto( _Sock, (const char*)buffer, len, 0, (sockaddr*)(addr.sockAddr()), sizeof(sockaddr) ) != (sint32)len )
 	{
@@ -128,6 +129,13 @@ void CUdpSock::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr )
 		setLocalAddress();
 		_Bound = true;
 	}
+
+	// temporary by ace to know size of SO_MAX_MSG_SIZE
+	uint MMS, SB;
+	int  size = sizeof (MMS);
+	getsockopt (_Sock, SOL_SOCKET, SO_SNDBUF, (char *)&SB, &size);
+	getsockopt (_Sock, SOL_SOCKET, SO_MAX_MSG_SIZE, (char *)&MMS, &size);
+	nlinfo ("the udp SO_MAX_MSG_SIZE=%u, SO_SNDBUF=%u", MMS, SB);
 }
 
 
@@ -154,10 +162,10 @@ bool CUdpSock::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr )
 	// Get sender's address
 	addr.setSockAddr( &saddr );
 
-	_BytesReceived += len;
+	_BytesReceived += brecvd;
 	if ( _Logging )
 	{
-		nldebug( "L0: Socket %d received %d bytes from %s", _Sock, len, addr.asString().c_str() );
+		nldebug( "L0: Socket %d received %d bytes from %s", _Sock, brecvd, addr.asString().c_str() );
 	}
 
 	return true;

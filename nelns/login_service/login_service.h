@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.1 2001/05/02 12:36:39 lecroart Exp $
+ * $Id: login_service.h,v 1.2 2001/05/18 16:51:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,8 +132,8 @@ extern vector<CShard>	Shards;
 
 // Functions
 
-void loadConfigFile ();
-void writeConfigFile ();
+void readPlayerDatabase ();
+void writePlayerDatabase ();
 void displayShards ();
 void displayUsers ();
 void disconnectClient (CUser &user, bool disconnectClient, bool disconnectShard);

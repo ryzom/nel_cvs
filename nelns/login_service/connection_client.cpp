@@ -1,25 +1,25 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_client.cpp,v 1.2 2001/05/03 13:19:13 lecroart Exp $
+ * $Id: connection_client.cpp,v 1.3 2001/05/18 16:51:01 lecroart Exp $
  *
  */
 
 /* Copyright, 2000 Nevrax Ltd.
  *
- * This file is part of NEVRAX D.T.C. SYSTEM.
- * NEVRAX D.T.C. SYSTEM is free software; you can redistribute it and/or modify
+ * This file is part of NEVRAX NeL Network Services.
+ * NEVRAX NeL Network Services is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * NEVRAX D.T.C. SYSTEM is distributed in the hope that it will be useful, but
+ * NEVRAX NeL Network Services is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with NEVRAX D.T.C. SYSTEM; see the file COPYING. If not, write to the
+ * along with NEVRAX NeL Network Services; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
@@ -119,7 +119,7 @@ void addUser (string &login, string &password)
 	if (findUser (login) == -1)
 	{
 		Users.push_back (CUser (login, cryptPassword(password)));
-		writeConfigFile ();
+		writePlayerDatabase ();
 	}
 	else
 	{

@@ -1,25 +1,25 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.3 2001/05/03 13:19:13 lecroart Exp $
+ * $Id: login_service.cpp,v 1.4 2001/05/18 16:51:01 lecroart Exp $
  *
  */
 
 /* Copyright, 2000 Nevrax Ltd.
  *
- * This file is part of NEVRAX D.T.C. SYSTEM.
- * NEVRAX D.T.C. SYSTEM is free software; you can redistribute it and/or modify
+ * This file is part of NEVRAX NeL Network Services.
+ * NEVRAX NeL Network Services is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * NEVRAX D.T.C. SYSTEM is distributed in the hope that it will be useful, but
+ * NEVRAX NeL Network Services is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with NEVRAX D.T.C. SYSTEM; see the file COPYING. If not, write to the
+ * along with NEVRAX NeL Network Services; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
@@ -64,8 +64,8 @@ vector<CUser>	Users;
 vector<CShard>	Shards;
 
 // config file name that load and save the universal time
-const char		*ConfigFileName = "login_service.cfg";
-CConfigFile		*ConfigFile;
+const char		*PlayerDatabaseName = "login_service_database.cfg";
+CConfigFile		*PlayerDatabase;
 
 // Functions
 
@@ -226,16 +226,16 @@ void displayUsers ()
 	checkClients ();
 }
 
-void loadConfigFile ()
+void readPlayerDatabase ()
 {
-	nlinfo("Loading the config file...");
+	nlinfo("Loading the player database...");
 
 	// load users
 	sint i, k;
 	for (i = 0; i < (sint)Users.size (); i++)
 		Users[i].Loaded = false;
 
-	const CConfigFile::CVar &v = ConfigFile->getVar ("Users");
+	const CConfigFile::CVar &v = PlayerDatabase->getVar ("Users");
 	for (i = 0; i < v.size(); i+=3)
 	{
 		for (k = 0; k < (sint)Users.size (); k++)
@@ -278,7 +278,7 @@ void loadConfigFile ()
 	for (i = 0; i < (sint)Shards.size (); i++)
 		Shards[i].Loaded = false;
 
-	const CConfigFile::CVar &v2 = ConfigFile->getVar ("Shards");
+	const CConfigFile::CVar &v2 = PlayerDatabase->getVar ("Shards");
 	for (i = 0; i < v2.size(); i+=2)
 	{
 		try
@@ -326,11 +326,11 @@ void loadConfigFile ()
 	displayShards ();
 }
 
-void writeConfigFile ()
+void writePlayerDatabase ()
 {
-	nlinfo("Writing the config file...");
+	nlinfo("Writing the player database...");
 
-	FILE *fp = fopen (ConfigFileName, "wt");
+	FILE *fp = fopen (PlayerDatabaseName, "wt");
 	if (fp != NULL)
 	{
 		sint i;
@@ -356,8 +356,7 @@ void writeConfigFile ()
 
 		fclose (fp);
 
-		if (ConfigFile != NULL)
-			ConfigFile->setLastModifiedNow ();
+		PlayerDatabase->setLastModifiedNow ();
 	}
 
 	displayShards ();
@@ -381,20 +380,20 @@ public:
 	/// Init the service, load the universal time.
 	void init ()
 	{
-		FILE *fp = fopen (ConfigFileName, "rt");
+		FILE *fp = fopen (PlayerDatabaseName, "rt");
 		if (fp == NULL)
 		{
 			// the file not exist, create it and init the universal time to 0
-			nlwarning("'%s' not found, create it", ConfigFileName);
-			writeConfigFile ();
+			nlwarning("'%s' not found, create it", PlayerDatabaseName);
+			writePlayerDatabase ();
 		}
 		else fclose (fp);
 
 		// load config file
-		ConfigFile = new CConfigFile;
-		ConfigFile->load (ConfigFileName);
-		ConfigFile->setCallback (loadConfigFile);
-		loadConfigFile ();
+		PlayerDatabase = new CConfigFile;
+		PlayerDatabase->load (PlayerDatabaseName);
+		PlayerDatabase->setCallback (readPlayerDatabase);
+		readPlayerDatabase ();
 
 		Output.addDisplayer (&Fd);
 
@@ -408,10 +407,10 @@ public:
 	/// release the service, save the universal time
 	void release ()
 	{
-		if (ConfigFile != NULL && Init)
+		if (PlayerDatabase != NULL && Init)
 		{
-			writeConfigFile ();
-			delete ConfigFile;
+			writePlayerDatabase ();
+			delete PlayerDatabase;
 		}
 	}
 };

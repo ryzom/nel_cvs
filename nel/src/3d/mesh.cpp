@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.19 2001/06/15 09:25:43 berenguier Exp $
+ * $Id: mesh.cpp,v 1.20 2001/06/15 14:34:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -178,13 +178,13 @@ void	CMesh::build(CMeshBuild &m)
 {
 	sint	i;
 
-	// Copy light information
-	_LightInfos = m.LightInfoMap;
 
-	// clear the animated materials.
-	_AnimatedMaterials.clear();
+	/// First, copy MeshBase info: materials ....
+	//======================
+	CMeshBase::buildMeshBase(m);
 
-	// Empty?
+
+	// Empty geometry?
 	if(m.Vertices.size()==0 || m.Faces.size()==0)
 	{
 		_VBuffer.setNumVertices(0);
@@ -272,8 +272,6 @@ void	CMesh::build(CMeshBuild &m)
 	/// 3. build the RdrPass material.
 	//================================
 	uint	mb;
-	// copy the materials.
-	_Materials= m.Materials;
 
 	// For each _MatrixBlocks, point on those materials.
 	for(mb= 0;mb<_MatrixBlocks.size();mb++)
@@ -317,14 +315,6 @@ void	CMesh::build(CMeshBuild &m)
 		}
 	}
 
-
-	/// 6. Copy default position values
-	//===================================================
-	_DefaultPos.setValue (m.DefaultPos);
-	_DefaultPivot.setValue (m.DefaultPivot);
-	_DefaultRotEuler.setValue (m.DefaultRotEuler);
-	_DefaultRotQuat.setValue (m.DefaultRotQuat);
-	_DefaultScale.setValue (m.DefaultScale);
 
 	// End!!
 }

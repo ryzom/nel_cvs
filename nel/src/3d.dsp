@@ -543,6 +543,14 @@ SOURCE=..\include\nel\3d\mesh_base.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_mrm.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\mesh_mrm.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\particle_system_shape.cpp
 # End Source File
 # Begin Source File
@@ -623,11 +631,27 @@ SOURCE=..\include\nel\3d\mrm_builder.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mrm_internal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\mrm_internal.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mrm_mesh.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\3d\mrm_mesh.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mrm_parameters.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\mrm_parameters.h
 # End Source File
 # End Group
 # Begin Group "Animation"

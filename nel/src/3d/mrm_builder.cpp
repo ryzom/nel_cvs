@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
- * <File description>
+ * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.5 2001/06/14 13:37:27 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.6 2001/06/15 14:34:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1161,6 +1161,292 @@ void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFin
 			}
 		}
 	}
+
+}
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Interface to MeshBuild Part.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+sint			CMRMBuilder::findInsertAttributeInBaseMesh(CMRMMesh &baseMesh, sint attId, const CVectorH &att)
+{
+	TAttributeMap::iterator		it= _AttributeMap[attId].find(att);
+	// if attribute not found in the map, then insert a new one.
+	if(it==_AttributeMap[attId].end())
+	{
+		sint	idx= baseMesh.Attributes[attId].size();
+		// insert into the array.
+		baseMesh.Attributes[attId].push_back(att);
+		// insert into the map.
+		_AttributeMap[attId].insert(make_pair(att, idx));
+		return idx;
+	}
+	else
+	{
+		// return the one found.
+		return it->second;
+	}
+}
+
+
+// ***************************************************************************
+sint			CMRMBuilder::findInsertNormalInBaseMesh(CMRMMesh &baseMesh, sint attId, const CVector &normal)
+{
+	CVectorH	att;
+	att= normal;
+	att.w= 0;
+	return findInsertAttributeInBaseMesh(baseMesh, attId, att);
+}
+
+
+// ***************************************************************************
+sint			CMRMBuilder::findInsertColorInBaseMesh(CMRMMesh &baseMesh, sint attId, CRGBA col)
+{
+	CVectorH	att;
+	att.x= col.R;
+	att.y= col.G;
+	att.z= col.B;
+	att.w= col.A;
+	return findInsertAttributeInBaseMesh(baseMesh, attId, att);
+}
+
+
+// ***************************************************************************
+sint			CMRMBuilder::findInsertUvInBaseMesh(CMRMMesh &baseMesh, sint attId, const CUV &uv)
+{
+	CVectorH	att;
+	att.x= uv.U;
+	att.y= uv.V;
+	att.z= 0;
+	att.w= 0;
+	return findInsertAttributeInBaseMesh(baseMesh, attId, att);
+}
+
+
+// ***************************************************************************
+CRGBA			CMRMBuilder::attToColor(const CVectorH &att) const
+{
+	CRGBA	ret;
+	float	tmp;
+	tmp= att.x; clamp(tmp, 0, 255);
+	ret.R= (uint8)(uint)tmp;
+	tmp= att.y; clamp(tmp, 0, 255);
+	ret.G= (uint8)(uint)tmp;
+	tmp= att.z; clamp(tmp, 0, 255);
+	ret.B= (uint8)(uint)tmp;
+	tmp= att.w; clamp(tmp, 0, 255);
+	ret.A= (uint8)(uint)tmp;
+
+	return ret;
+}
+
+
+// ***************************************************************************
+CUV				CMRMBuilder::attToUv(const CVectorH &att) const
+{
+	return CUV(att.x, att.y);
+}
+
+
+// ***************************************************************************
+uint32			CMRMBuilder::buildMrmBaseMesh(const CMesh::CMeshBuild &mbuild, CMRMMesh &baseMesh)
+{
+	sint		i,j,k;
+	sint		nFaces;
+	sint		attId;
+	// build the supported VertexFormat.
+	uint32		retVbFlags= IDRV_VF_XYZ;
+
+
+	// reset the baseMesh.
+	baseMesh= CMRMMesh();
+	// reset Tmp.
+	for(attId=0; attId<NL3D_MRM_MAX_ATTRIB;attId++)
+		_AttributeMap[attId].clear();
+
+
+	// Compute number of attributes used by the MeshBuild.
+	// ========================
+	// Compute too 
+	if(mbuild.VertexFlags & IDRV_VF_NORMAL)
+	{
+		baseMesh.NumAttributes++;
+		retVbFlags|= IDRV_VF_NORMAL;
+	}
+	if(mbuild.VertexFlags & IDRV_VF_COLOR)
+	{
+		baseMesh.NumAttributes++;
+		retVbFlags|= IDRV_VF_COLOR;
+	}
+	if(mbuild.VertexFlags & IDRV_VF_SPECULAR)
+	{
+		baseMesh.NumAttributes++;
+		retVbFlags|= IDRV_VF_SPECULAR;
+	}
+	for(k=0; k<IDRV_VF_MAXSTAGES;k++)
+	{
+		if(mbuild.VertexFlags & IDRV_VF_UV[k])
+		{
+			baseMesh.NumAttributes++;
+			retVbFlags|= IDRV_VF_UV[k];
+		}
+	}
+	nlassert(baseMesh.NumAttributes<=NL3D_MRM_MAX_ATTRIB);
+
+
+	// Fill basics: Vertices and Faces materials / index to vertices.
+	// ========================
+	// Just copy vertices.
+	baseMesh.Vertices= mbuild.Vertices;
+	// Resize faces.
+	nFaces= mbuild.Faces.size();
+	baseMesh.Faces.resize(nFaces);
+	for(i=0; i<nFaces; i++)
+	{
+		// copy material Id.
+		baseMesh.Faces[i].MaterialId= mbuild.Faces[i].MaterialId;
+		// Copy Vertex index.
+		for(j=0; j<3; j++)
+		{
+			baseMesh.Faces[i].Corner[j].Vertex= mbuild.Faces[i].Corner[j].Vertex;
+		}
+	}
+
+	// Resolve attributes discontinuities and Fill attributes of the baseMesh.
+	// ========================
+	// For all corners.
+	for(i=0; i<nFaces; i++)
+	{
+		for(j=0; j<3; j++)
+		{
+			const CMesh::CCorner	&srcCorner= mbuild.Faces[i].Corner[j];
+			CMRMCorner				&destCorner= baseMesh.Faces[i].Corner[j];
+			attId= 0;
+
+			// For all activated attributes in mbuild, find/insert the attribute in the baseMesh.
+			if(mbuild.VertexFlags & IDRV_VF_NORMAL)
+			{
+				destCorner.Attributes[attId]= findInsertNormalInBaseMesh(baseMesh, attId, srcCorner.Normal);
+				attId++;
+			}
+			if(mbuild.VertexFlags & IDRV_VF_COLOR)
+			{
+				destCorner.Attributes[attId]= findInsertColorInBaseMesh(baseMesh, attId, srcCorner.Color);
+				attId++;
+			}
+			if(mbuild.VertexFlags & IDRV_VF_SPECULAR)
+			{
+				destCorner.Attributes[attId]= findInsertColorInBaseMesh(baseMesh, attId, srcCorner.Specular);
+				attId++;
+			}
+			for(k=0; k<IDRV_VF_MAXSTAGES;k++)
+			{
+				if(mbuild.VertexFlags & IDRV_VF_UV[k])
+				{
+					destCorner.Attributes[attId]= findInsertUvInBaseMesh(baseMesh, attId, srcCorner.Uvs[k]);
+					attId++;
+				}
+			}
+		}
+	}
+
+
+
+	// End. clear Tmp infos.
+	// ========================
+	// reset Tmp.
+	for(attId=0; attId<NL3D_MRM_MAX_ATTRIB;attId++)
+		_AttributeMap[attId].clear();
+
+	return	retVbFlags;
+}
+
+
+
+// ***************************************************************************
+void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats)
+{
+	sint	i,j,k;
+	sint	attId;
+
+	// reset the mbuild.
+	mbuild= CMeshMRM::CMeshBuildMRM();
+	// Setup VB.
+	mbuild.VBuffer.setVertexFormat(vbFlags);
+
+
+	// Setup the VertexBuffer.
+	// ========================
+	// resize the VB.
+	mbuild.VBuffer.setNumVertices(finalMRM.Wedges.size());
+	// fill the VB.
+	for(i=0; i<(sint)finalMRM.Wedges.size(); i++)
+	{
+		const CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[i];
+
+		// setup Vertex.
+		mbuild.VBuffer.setVertexCoord(i, wedge.Vertex);
+
+		// seutp attributes.
+		attId= 0;
+
+		// For all activated attributes in mbuild, retriev the attribute from the finalMRM.
+		if(vbFlags & IDRV_VF_NORMAL)
+		{
+			mbuild.VBuffer.setNormalCoord(i, wedge.Attributes[attId] );
+			attId++;
+		}
+		if(vbFlags & IDRV_VF_COLOR)
+		{
+			mbuild.VBuffer.setColor(i, attToColor(wedge.Attributes[attId]) );
+			attId++;
+		}
+		if(vbFlags & IDRV_VF_SPECULAR)
+		{
+			mbuild.VBuffer.setSpecular(i, attToColor(wedge.Attributes[attId]) );
+			attId++;
+		}
+		for(k=0; k<IDRV_VF_MAXSTAGES;k++)
+		{
+			if(vbFlags & IDRV_VF_UV[k])
+			{
+				mbuild.VBuffer.setTexCoord(i, k, attToUv(wedge.Attributes[attId]) );
+				attId++;
+			}
+		}
+	}
+
+
+	// Build Lods.
+	// ========================
+	// resize
+	mbuild.Lods.resize(finalMRM.Lods.size());
+	// fill.
+	for(i=0; i<(sint)finalMRM.Lods.size(); i++)
+	{
+		// Copy NWedges infos.
+		mbuild.Lods[i].NWedges= finalMRM.Lods[i].NWedges;
+		// Copy Geomorphs infos.
+		mbuild.Lods[i].Geomorphs= finalMRM.Lods[i].Geomorphs;
+
+		// reorder faces by rdrpass.
+
+		// First count the number of faces used by this LOD for each material 
+		vector<sint>	matCount;
+		// resize, and reset to 0.
+		matCount.clear();
+		matCount.resize(nbMats, 0);
+
+		// TODODO.
+	}
+
 
 }
 

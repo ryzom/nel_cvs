@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
- * Internal header for CMRMBuilder.
+ * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.3 2001/06/14 13:37:27 berenguier Exp $
+ * $Id: mrm_mesh.h,v 1.4 2001/06/15 14:34:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,6 +130,7 @@ public:
 		(CMRMMesh&)(*this)= o;
 		// copy faces into CoarserFaces.
 		CoarserFaces= Faces;
+		return *this;
 	}
 
 public:
@@ -149,11 +150,17 @@ public:
 struct	CMRMWedgeGeom
 {
 	/// The start wedge index of the geomorph.
-	sint	Start;
+	uint32	Start;
 	/// The end wedge index of the geomorph.
-	sint	End;
+	uint32	End;
 	/// where to store the result in the Wedge array. (NB: always in beginning of array).
-	sint	Dest;
+	uint32	Dest;
+
+
+	void	serial(NLMISC::IStream &f)
+	{
+		f.serial(Start, End, Dest);
+	}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.1 2001/06/15 09:25:43 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.2 2001/06/15 14:34:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,7 @@ CMaterialBase	*CMeshBase::getAnimatedMaterial(uint id)
 
 // ***************************************************************************
 // ***************************************************************************
-// Serial.
+// Serial - buildBase.
 // ***************************************************************************
 // ***************************************************************************
 
@@ -110,6 +110,28 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialCont(_Materials);
 	f.serialCont(_AnimatedMaterials);
 	f.serialCont(_LightInfos);
+}
+
+
+// ***************************************************************************
+void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
+{
+	// Copy light information
+	_LightInfos = m.LightInfoMap;
+
+	// copy the materials.
+	_Materials= m.Materials;
+
+	// clear the animated materials.
+	_AnimatedMaterials.clear();
+
+	/// Copy default position values
+	_DefaultPos.setValue (m.DefaultPos);
+	_DefaultPivot.setValue (m.DefaultPivot);
+	_DefaultRotEuler.setValue (m.DefaultRotEuler);
+	_DefaultRotQuat.setValue (m.DefaultRotQuat);
+	_DefaultScale.setValue (m.DefaultScale);
+
 }
 
 

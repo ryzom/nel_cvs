@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.1 2001/06/15 09:25:43 berenguier Exp $
+ * $Id: mesh_base.h,v 1.2 2001/06/15 14:34:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,6 +162,12 @@ protected:
 	CTrackDefaultVector			_DefaultRotEuler;
 	CTrackDefaultQuat			_DefaultRotQuat;
 	CTrackDefaultVector			_DefaultScale;
+
+
+protected:
+	/// Just copy informations from a CMeshBaseBuild.
+	void	buildMeshBase(CMeshBaseBuild &m);
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.9 2004/03/26 16:12:58 boucher Exp $
+ * $Id: variable.h,v 1.10 2004/04/07 15:15:53 cado Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -284,10 +284,23 @@ public:
 //		s << " Min=" << _Min;
 //		s << " Max=" << _Max;
 		std::string str;
-		str = _CommandName + "=" + NLMISC::toString(_Value) + " Min=" + NLMISC::toString(_Min) + " Max=" + NLMISC::toString(_Max);
+		str = _CommandName + "=" + NLMISC::toString(_Value) + " Min=" + NLMISC::toString(_Min);
 		if (_Mean.getNumFrame()>0)
 		{
-			str += " Mean=" + NLMISC::toString(_Mean.getSmoothValue()) + " LastValues=";
+			const std::vector<T>& v = _Mean.getLastFrames();
+			T theMin = *std::min_element(v.begin(), v.end());
+			str += " RecentMin=" + NLMISC::toString(theMin);
+		}
+		str += " Max=" + NLMISC::toString(_Max);
+		if (_Mean.getNumFrame()>0)
+		{
+			const std::vector<T>& v = _Mean.getLastFrames();
+			T theMax = *std::max_element(v.begin(), v.end());
+			str += " RecentMax=" + NLMISC::toString(theMax);
+		}
+		if (_Mean.getNumFrame()>0)
+		{
+			str += " RecentMean=" + NLMISC::toString(_Mean.getSmoothValue()) + " RecentValues=";
 //			s << " Mean=" << _Mean.getSmoothValue();
 //			s << " LastValues=";
 			for (uint i = 0; i < _Mean.getNumFrame(); i++)

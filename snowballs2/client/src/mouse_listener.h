@@ -1,7 +1,7 @@
 /** \file mouse_listener.h
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.h,v 1.4 2001/07/18 17:30:17 lecroart Exp $
+ * $Id: mouse_listener.h,v 1.5 2001/07/19 13:47:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include <nel/3d/viewport.h>
 #include <nel/3d/frustum.h>
 #include <nel/3d/u_3d_mouse_listener.h>
+#include <nel/misc/time_nl.h>
 
 //
 // External definitions
@@ -261,6 +262,8 @@ public:
 	bool getInvertMouseMode() const { return _InvertedMouse; }
 	void setInvertMouseMode(bool invertMouse) { _InvertedMouse = invertMouse; }
 
+	float getDamage() const { return _AimingDamage; }
+
 private:
 	/// Internal use
 	virtual void operator ()(const NLMISC::CEvent& event);
@@ -293,6 +296,10 @@ private:
 	float				_ViewHeight;
 	float				_ViewTargetHeight;
 	bool				_AimingState;
+	float				_AimingDamage;
+	float				_AimingSpeed;
+	float				_AimingMax;
+	NLMISC::TTime		_AimingLastTime;
 	bool				_InvertedMouse;
 
 	/** remove composant of translations that are not permitted

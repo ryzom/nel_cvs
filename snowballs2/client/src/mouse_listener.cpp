@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.6 2001/07/18 17:30:17 lecroart Exp $
+ * $Id: mouse_listener.cpp,v 1.7 2001/07/19 13:47:40 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,10 @@ C3dMouseListener::C3dMouseListener() :  _CurrentModelRotationAxis(zAxis),
 	_ViewHeight = 2.0f;
 	_ViewTargetHeight = 2.0f;
 	_AimingState = false;
+	_AimingDamage = 0.0f;
+	_AimingSpeed = 1.0f;
+	_AimingMax = 5.0f;
+	_AimingLastTime = 0;
 
 	_X = 0.5f;
 	_Y = 0.5f;
@@ -208,11 +212,15 @@ void C3dMouseListener::operator ()(const CEvent& event)
 	{
 		// aim
 		_AimingState = true;
+		_AimingDamage = 0.0f;
+		_AimingLastTime = CTime::getLocalTime();
 	}
 	else if (event==EventMouseUpId)
 	{
 		// throw snowball
+		nlinfo("damage=%f", _AimingDamage);
 		_AimingState = false;
+		_AimingLastTime = 0;
 		CVector start = getPosition()+CVector(0.0f, 0.0f, 1.3f);
 		CVector direction = getViewDirection().normed();
 		shotSnowball(Self->Id, start, start+direction*100.0f);
@@ -288,6 +296,15 @@ void C3dMouseListener::updateKeys ()
 		find=true;
 	}
 
+	if (_AimingState)
+	{
+		find = false;
+		TTime	newTime = CTime::getLocalTime();
+		float	delta = (float)(newTime-_AimingLastTime)/1000.0f;
+		_AimingDamage = _AimingSpeed*delta;
+		_AimingDamage = std::min(_AimingDamage, _AimingMax);
+	}
+
 	// key found ?
 	if (find)
 	{
@@ -310,6 +327,7 @@ void C3dMouseListener::updateKeys ()
 
 	// Last time
 	_LastTime=CTime::getLocalTime ();
+
 }
 
 

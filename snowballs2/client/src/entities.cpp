@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.27 2001/07/19 13:45:53 lecroart Exp $
+ * $Id: entities.cpp,v 1.28 2001/07/19 13:47:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -422,6 +422,8 @@ void stateNormal (CEntity &entity)
 		// get new orientation
 		entity.Angle = MouseListener->getOrientation();
 
+		bool	isAiming = MouseListener->getAimingState();
+
 		// modify the orientation depending on the straff
 		// The straff is determined by the keys that are down simultaneously
 		if (Driver->AsyncListener.isKeyDown (KeyUP))
@@ -438,7 +440,7 @@ void stateNormal (CEntity &entity)
 			{
 				entity.AuxiliaryAngle = 0;
 			}
-			playAnimation (*Self, WalkAnimId);
+			playAnimation (*Self, isAiming ? IdleAnimId : WalkAnimId);
 		}
 		else if (Driver->AsyncListener.isKeyDown (KeyDOWN))
 		{
@@ -454,22 +456,25 @@ void stateNormal (CEntity &entity)
 			{
 				entity.AuxiliaryAngle = (float)Pi;
 			}
-			playAnimation (*Self, WalkAnimId);
+			playAnimation (*Self, isAiming ? IdleAnimId : WalkAnimId);
 		}
 		else if (Driver->AsyncListener.isKeyDown (KeyLEFT))
 		{
 			entity.AuxiliaryAngle = (float)Pi/2.0f;
-			playAnimation (*Self, WalkAnimId);
+			playAnimation (*Self, isAiming ? IdleAnimId : WalkAnimId);
 		}
 		else if (Driver->AsyncListener.isKeyDown (KeyRIGHT))
 		{
 			entity.AuxiliaryAngle = -(float)Pi/2.0f;
-			playAnimation (*Self, WalkAnimId);
+			playAnimation (*Self, isAiming ? IdleAnimId : WalkAnimId);
 		}
 		else
 		{
 			playAnimation (*Self, IdleAnimId);
 		}
+
+		if (isAiming)
+			entity.AuxiliaryAngle = 0.0f;
 
 		// Interpolate the character orientation towards the server angle
 		// for smoother movements
@@ -511,6 +516,8 @@ void stateNormal (CEntity &entity)
 				AimingInstance->lookAt(target, Camera->getMatrix().getPos());
 				AimingInstance->show();
 			}
+			float	scale = MouseListener->getDamage();
+			AimingInstance->setScale(scale, scale, scale);
 		}
 		else
 		{
@@ -777,7 +784,7 @@ void	shotSnowball(uint32 eid, const CVector &start, const CVector &target)
 	if (launcher.Type == CEntity::Self)
 	{
 		/// \todo Ben inform the server the player is shooting a snowball
-		snowball.ServerPosition = getTarget(start, direction, 100);
+		snowball.ServerPosition = getTarget(start, direction, 200);
 	}
 }
 

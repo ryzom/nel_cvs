@@ -1,7 +1,7 @@
 /** \file color_button.h
- * <File description>
+ * display a color box...
  *
- * $Id: color_button.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: color_button.h,v 1.3 2001/06/25 13:20:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

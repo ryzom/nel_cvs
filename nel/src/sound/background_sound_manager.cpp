@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.2 2002/07/19 15:07:12 miller Exp $
+ * $Id: background_sound_manager.cpp,v 1.3 2002/07/23 08:18:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,14 +193,14 @@ void CBackgroundSoundManager::unload ()
 		{
 			if(BackgroundSounds[i].SourceDay->isPlaying())
 				BackgroundSounds[i].SourceDay->stop();
-			delete BackgroundSounds[i].SourceDay;
+			_AudioMixer->removeSource(BackgroundSounds[i].SourceDay);
 			BackgroundSounds[i].SourceDay = NULL;
 		}
 		if(BackgroundSounds[i].SourceNight != NULL)
 		{
 			if(BackgroundSounds[i].SourceNight->isPlaying())
 				BackgroundSounds[i].SourceNight->stop();
-			delete BackgroundSounds[i].SourceNight;
+			_AudioMixer->removeSource(BackgroundSounds[i].SourceNight);
 			BackgroundSounds[i].SourceNight = NULL;
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.7 2000/11/13 13:38:34 corvazier Exp $
+ * $Id: events.h,v 1.8 2000/11/13 13:40:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -292,7 +292,7 @@ public:
 	bool Activate;
 
 	/**
-	  * Create a activate message. Notify the activation disactivation of a window.
+	  * Create an activate event. Notify the activation disactivation of a window.
 	  * \param activate is True if window is actived, false if it is disactived.
 	  */
 	CEventActivate (bool activate, IEventEmitter* emitter) : CEvent (emitter, EventActivateId)
@@ -314,7 +314,7 @@ public:
 	bool Get;
 
 	/**
-	  * Create a activate message. Notify the activation disactivation of a window.
+	  * Create focus event. Notify get and lost of the keyboard focus of a window.
 	  * \param activate is True if window get the focus, false if it lost it.
 	  */
 	CEventSetFocus (bool get, IEventEmitter* emitter) : CEvent (emitter, EventSetFocusId)

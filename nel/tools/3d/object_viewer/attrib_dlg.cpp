@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.26 2004/03/04 14:38:04 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.27 2004/03/11 17:25:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -831,7 +831,13 @@ END_MESSAGE_MAP()
 			}
 			break;
 			case 2:
-				scheme = new NL3D::CPSFloatCurve;
+			{				
+				NL3D::CPSFloatCurve *curve = new NL3D::CPSFloatCurve;
+				curve->_F.setNumSamples(128);
+				curve->_F.addControlPoint(NL3D::CPSFloatCurveFunctor::CCtrlPoint(0, 0.5f));
+				curve->_F.addControlPoint(NL3D::CPSFloatCurveFunctor::CCtrlPoint(1, 0.5f));				
+				scheme = curve;
+			}
 			break;
 			case 3:
 				scheme = new NL3D::CPSFloatMemory;

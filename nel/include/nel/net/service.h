@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.45 2002/03/25 10:16:57 lecroart Exp $
+ * $Id: service.h,v 1.46 2002/03/25 10:58:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,26 +131,26 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 #else
 
-#define NLNET_OLD_SERVICE_NM_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray, __ConfigDir, __LogDir) \
+#define NLNET_OLD_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray, __ConfigDir, __LogDir) \
  \
-int main(int argc, char **argv) \
+int main(int argc, const char **argv) \
 { \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (argc, argv); \
 	scn->setOldCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
-    sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir); \
+	sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir); \
 	delete scn; \
 	return retval; \
 }
 
 #define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray, __ConfigDir, __LogDir) \
  \
-int main(int argc, char **argv) \
+int main(int argc, const char **argv) \
 { \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (argc, argv); \
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
-    sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir); \
+	sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir); \
 	delete scn; \
 	return retval; \
 }

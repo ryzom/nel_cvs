@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.8 2003/01/08 15:47:43 boucher Exp $
+ * $Id: portal.cpp,v 1.8.4.1 2003/04/29 13:38:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ uint CPortal::getOpenOcclusionModelId()
 // ***************************************************************************
 bool CPortal::clipPyramid (CVector &observer, std::vector<CPlane> &pyramid)
 {
-	if (!_Opened)
+	if (!_Opened || _Poly.size()<3)
 		return false;
 	// Clip portal with pyramid
 	CPolygon p;
@@ -119,6 +119,8 @@ bool CPortal::clipPyramid (CVector &observer, std::vector<CPlane> &pyramid)
 // ***************************************************************************
 bool CPortal::isInFront (CVector &v)
 {
+	if( _Poly.size()<3 )
+		return false;
 	CVector v1 = _Poly[1] - _Poly[0];
 	CVector v2 = _Poly[2] - _Poly[0];
 	CVector n = v1^v2;

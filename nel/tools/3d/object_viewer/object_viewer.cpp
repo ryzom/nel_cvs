@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.6 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.7 2001/04/30 16:58:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include <nel/3d/nelu.h>
 #include <nel/3d/mesh.h>
 #include <nel/3d/transform_shape.h>
+#include <nel/3d/mesh_instance.h>
+#include <nel/3d/skeleton_model.h>
 #include <nel/misc/file.h>
 #include <nel/misc/path.h>
 
@@ -562,7 +564,7 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 	}
 
 	// Continue ?
-	if (shapeMesh)
+	if (skeleton&&(strcmp (skeleton, "")!=0))
 	{
 		// Skel error ?
 		bool skelError=false;
@@ -613,7 +615,10 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 
 	// Add the shape
 	if (shapeMesh)
-		addMesh (shapeMesh, shapeSkel, meshFilename, "");
+		addMesh (shapeMesh, shapeSkel, meshFilename, skeleton, "");
+
+	// Add an entry for config
+	_ListMeshes.push_back (CMeshDesc (meshFilename, skeleton));
 
 	return false;
 }
@@ -629,21 +634,20 @@ void CObjectViewer::resetCamera ()
 
 // ***************************************************************************
 
-CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* name, const char *animBaseName)
+CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* meshName, const char* skelName, const char *animBaseName)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	// *** Add the shape
 
 	// Store the shape pointer
-	CNELU::ShapeBank->add (name, CSmartPtr<IShape> (pMeshShape));
+	CNELU::ShapeBank->add (meshName, CSmartPtr<IShape> (pMeshShape));
 
 	// Store the name of the shape
-	_ListShape.push_back (name);
 	_ListShapeBaseName.push_back (animBaseName);
 
 	// Create a model and add it to the scene
-	CTransformShape	*pTrShape=CNELU::Scene.createInstance (name);
+	CTransformShape	*pTrShape=CNELU::Scene.createInstance (meshName);
 	nlassert (pTrShape);
 
 	// Set the rot model
@@ -654,6 +658,43 @@ CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, NL3D::IShape*
 
 	// Store the transform shape pointer
 	_ListTransformShape.push_back (pTrShape);
+
+	// *** Add the skeleton
+
+	// Get a mesh instance
+	CMeshInstance  *meshInstance=dynamic_cast<CMeshInstance*>(pTrShape);
+
+	if (meshInstance)
+	{
+		// Store the shape pointer
+		CNELU::ShapeBank->add (skelName, CSmartPtr<IShape> (pSkelShape));
+
+		// Create a model and add it to the scene
+		pTrShape=CNELU::Scene.createInstance (skelName);
+		nlassert (pTrShape);
+
+		// Get a skeleton model
+		CSkeletonModel *skelModel=dynamic_cast<CSkeletonModel*>(pTrShape);
+
+		// Is a skel ?
+		if (skelModel)
+		{
+			// Set the rot model
+			if (_SceneDlg->Euler)
+				pTrShape->setTransformMode (ITransformable::RotEuler);
+			else
+				pTrShape->setTransformMode (ITransformable::RotQuat);
+
+			// Store the name of the shape
+			_ListShapeBaseName.push_back (animBaseName);
+
+			// Store the transform shape pointer
+			_ListTransformShape.push_back (skelModel);
+
+			// Bind the mesh
+			skelModel->bindSkin (meshInstance);
+		}
+	}
 
 	// Return the instance
 	return pTrShape;

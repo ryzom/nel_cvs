@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * <File description>
  *
- * $Id: animation_set_dlg.h,v 1.4 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: animation_set_dlg.h,v 1.5 2001/04/30 16:58:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CAnimationSetDlg)
 	enum { IDD = IDD_ANIMATION_SET };
+	CTreeCtrl	SkelTree;
 	CTreeCtrl	Tree;
 	//}}AFX_DATA
 

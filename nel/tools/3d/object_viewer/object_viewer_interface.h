@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.4 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: object_viewer_interface.h,v 1.5 2001/04/30 16:58:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ public:
 	virtual void releaseUI ()=0;
 
 	// Add a mesh
-	virtual NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* name, const char *animBaseName)=0;
+	virtual NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* meshName, const char* skelName, const char *animBaseName)=0;
 
 	// Load a mesh
 	virtual bool loadMesh (const char* meshFilename, const char* skeleton)=0;

@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.6 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: scene_dlg.cpp,v 1.7 2001/04/30 16:58:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,12 +135,11 @@ void CSceneDlg::OnClearScene()
 	// Clear the pointer array
 	ObjView->_ListTransformShape.clear ();
 
-	// Remove all shape
-	/*for (i=0; i<ObjView->_ListShape.size(); i++)
-		CNELU::ShapeBank->release (ObjView->_ListShape[i]);*/
-
 	// Erase the channel mixer
 	ObjView->_ChannelMixer.resetChannels ();
+
+	// Erase the entry of the viewer
+	ObjView->_ListMeshes.clear ();
 }
 
 void CSceneDlg::OnLoadMesh() 
@@ -153,14 +152,33 @@ void CSceneDlg::OnLoadMesh()
 	CFileDialog fileDlg( TRUE, ".shape", "*.shape", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
 	if (fileDlg.DoModal()==IDOK)
 	{
-		// Load the shape
-		if (ObjView->loadMesh (fileDlg.GetPathName()), "")
-		{
-			// Reset the camera
-			OnResetCamera();
 
-			// Touch the channel mixer
-			ObjView->reinitChannels ();
+		// Create a dialog
+		static char BASED_CODE szFilter2[] = "NeL Skeleton Files (*.skel)|*.skel|All Files (*.*)|*.*||";
+		CFileDialog fileDlg2 ( TRUE, ".skel", "*.skel", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter2);
+		if (fileDlg2.DoModal()==IDOK)
+		{
+			// Load the shape with a skeleton
+			if (ObjView->loadMesh (fileDlg.GetPathName(), fileDlg2.GetPathName()))
+			{
+				// Reset the camera
+				OnResetCamera();
+
+				// Touch the channel mixer
+				ObjView->reinitChannels ();
+			}
+		}
+		else
+		{
+			// Load the shape without skeleton
+			if (ObjView->loadMesh (fileDlg.GetPathName(), ""))
+			{
+				// Reset the camera
+				OnResetCamera();
+
+				// Touch the channel mixer
+				ObjView->reinitChannels ();
+			}
 		}
 	}
 }

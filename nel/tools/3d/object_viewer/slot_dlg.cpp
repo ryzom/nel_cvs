@@ -1,7 +1,7 @@
 /** \file slot_dlg.cpp
  * <File description>
  *
- * $Id: slot_dlg.cpp,v 1.5 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: slot_dlg.cpp,v 1.6 2001/04/30 16:58:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -515,9 +515,9 @@ void CSlotDlg::OnSetSkeleton()
 	{
 		// Set the animation
 		if (select.Selection!=-1)
-			setSkeletonTemplateWeight (select.Selection, AnimationSet->getSkeletonWeight (select.Selection));
+			setSkeletonTemplateWeight (select.Selection, AnimationSet->getSkeletonWeight (select.Selection), vectString[select.Selection].c_str());
 		else
-			setSkeletonTemplateWeight (0, NULL);
+			setSkeletonTemplateWeight (0, NULL, "");
 
 		setWindowName ();
 		Invalidate ();
@@ -534,6 +534,14 @@ void CSlotDlg::setWindowName ()
 		strcat (tmp, "empty");
 	else
 		strcat (tmp, AnimationName.c_str());
+
+	if (SkeletonWeightTemplate)	
+	{
+		strcat (tmp, " (");
+		strcat (tmp, SkeletonName.c_str());
+		strcat (tmp, ")");
+	}
+
 	GetDlgItem (IDC_SLOT_NAME)->SetWindowText (tmp);
 }
 
@@ -782,8 +790,6 @@ void CSlotDlg::computeLength ()
 
 void CSlotDlg::OnDestroy() 
 {
-	setRegisterWindowState (this, REGKEY_OBJ_VIEW_SLOT_DLG);
-
 	// TODO: Add your message handler code here
 	CDialog::OnDestroy();
 }

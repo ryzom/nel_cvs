@@ -1,7 +1,7 @@
 /** \file main_dlg.cpp
  * <File description>
  *
- * $Id: main_dlg.cpp,v 1.3 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: main_dlg.cpp,v 1.4 2001/04/30 16:58:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,7 @@ void CMainDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CMainDlg, CDialog)
 	//{{AFX_MSG_MAP(CMainDlg)
+	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -173,7 +174,7 @@ void CMainDlg::setSlot ()
 		uint skeleton=Playlist.getSkeletonWeight (id, inverted);
 		Slots[id].SkeletonWeightInverted=inverted;
 		if (skeleton<AnimationSet->getNumSkeletonWeight())
-			Slots[id].setSkeletonTemplateWeight (skeleton, AnimationSet->getSkeletonWeight (skeleton));
+			Slots[id].setSkeletonTemplateWeight (skeleton, AnimationSet->getSkeletonWeight (skeleton), AnimationSet->getSkeletonWeightName (skeleton).c_str());
 
 		// Set others values
 		Slots[id].Offset=(int)(Playlist.getTimeOrigin (id)*Main->getFrameRate());
@@ -201,4 +202,14 @@ void CMainDlg::setSlot ()
 		Slots[id].UpdateData(FALSE);
 		Slots[id].updateScrollBar ();
 	}
+}
+
+void CMainDlg::OnDestroy() 
+{
+	setRegisterWindowState (this, REGKEY_OBJ_VIEW_SLOT_DLG);
+
+	CDialog::OnDestroy();
+	
+	// TODO: Add your message handler code here
+	
 }

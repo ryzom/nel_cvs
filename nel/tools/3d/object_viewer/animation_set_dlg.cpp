@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.4 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: animation_set_dlg.cpp,v 1.5 2001/04/30 16:58:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ void CAnimationSetDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAnimationSetDlg)
+	DDX_Control(pDX, IDC_TREE2, SkelTree);
 	DDX_Control(pDX, IDC_TREE, Tree);
 	//}}AFX_DATA_MAP
 }
@@ -111,8 +112,8 @@ void CAnimationSetDlg::OnAddAnimation ()
 void CAnimationSetDlg::OnAddSkelWt() 
 {
 	// TODO: Add your control notification handler code here
-	static char BASED_CODE szFilter[] = "NeL Skeleton Weight Template Files (*.skwt)|*.skwt|All Files (*.*)|*.*||";
-	CFileDialog fileDlg( TRUE, ".skwt", "*.skwt", OFN_ALLOWMULTISELECT|OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
+	static char BASED_CODE szFilter[] = "NeL Skeleton Weight Template Files (*.swt)|*.swt|All Files (*.*)|*.*||";
+	CFileDialog fileDlg( TRUE, ".swt", "*.swt", OFN_ALLOWMULTISELECT|OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
 	if (fileDlg.DoModal()==IDOK)
 	{
 		// Open the file
@@ -152,6 +153,9 @@ void CAnimationSetDlg::OnReset ()
 
 	// Clear the TREE
 	Tree.DeleteAllItems ();
+
+	// Clear the TREE
+	SkelTree.DeleteAllItems ();
 }
 
 // ***************************************************************************
@@ -243,7 +247,7 @@ void CAnimationSetDlg::loadSkeleton (const char* fileName)
 		_ListSkeleton.push_back (fileName);
 
 		// Insert an intem
-		HTREEITEM item=Tree.InsertItem (name);
+		HTREEITEM item=SkelTree.InsertItem (name);
 		nlassert (item!=NULL);
 
 		// Get number of node in this skeleton weight
@@ -252,8 +256,10 @@ void CAnimationSetDlg::loadSkeleton (const char* fileName)
 		// Add the nodein the tree
 		for (uint n=0; n<numNode; n++)
 		{
+			char percent[512];
+			sprintf (percent, "%s (%f%%)", skel->getNodeName (n).c_str(), skel->getNodeWeight(n));
 			// Add this string
-			Tree.InsertItem (skel->getNodeName (n).c_str(), item);
+			SkelTree.InsertItem (percent, item);
 		}
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.5 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: object_viewer.h,v 1.6 2001/04/30 16:58:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,7 +120,7 @@ public:
 	void setSingleAnimation (NL3D::CAnimation*	pAnim, const char* name);
 
 	// Add a mesh
-	NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* name, const char *animBaseName);
+	NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* meshName, const char* skelName, const char *animBaseName);
 
 	// Load a mesh
 	bool loadMesh (const char* meshFilename, const char* skeleton="");
@@ -158,7 +158,6 @@ private:
 	CAnimationSetDlg							*_AnimationSetDlg;
 	CSceneDlg									*_SceneDlg;
 	std::vector<std::string>					_ListShapeBaseName;
-	std::vector<std::string>					_ListShape;
 	std::vector<CMeshDesc>						_ListMeshes;
 	std::vector<class NL3D::CTransformShape*>	_ListTransformShape;
 	NL3D::CAnimationSet							_AnimationSet;

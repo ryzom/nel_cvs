@@ -1,7 +1,7 @@
 /** \file slot_dlg.h
  * <File description>
  *
- * $Id: slot_dlg.h,v 1.4 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: slot_dlg.h,v 1.5 2001/04/30 16:58:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,8 +49,9 @@ public:
 
 	void setAnimation (uint animationId, NL3D::CAnimation *animation, const char* name);
 
-	void setSkeletonTemplateWeight (uint skeletonWeightId, NL3D::CSkeletonWeight *skeleton)
+	void setSkeletonTemplateWeight (uint skeletonWeightId, NL3D::CSkeletonWeight *skeleton, const char* name)
 	{
+		SkeletonName=name;
 		SkeletonWeightTemplate=skeleton;
 		SkeletonWeightId=skeletonWeightId;
 	}
@@ -78,6 +79,7 @@ public:
 	NL3D::CAnimationSet*	AnimationSet;
 	NL3D::CAnimation*		Animation;
 	std::string				AnimationName;
+	std::string				SkeletonName;
 	NL3D::CSkeletonWeight*	SkeletonWeightTemplate;
 	CObjectViewer*			MainDlg;
 

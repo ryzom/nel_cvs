@@ -30,7 +30,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		if (strcmp (lpCmdLine, "")!=0)
 		{
 			// Try to load a shape
-			if (objectViewer->loadShape (lpCmdLine))
+			if (objectViewer->loadMesh (lpCmdLine, NULL))
 			{
 				// Reset the camera
 				objectViewer->resetCamera ();

@@ -1,7 +1,7 @@
 /** \file primitive.h
  * TODO: File description
  *
- * $Id: primitive.h,v 1.39 2004/11/18 17:52:53 vizerie Exp $
+ * $Id: primitive.h,v 1.40 2005/01/11 13:16:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -380,6 +380,9 @@ private:
 	virtual void onBranchLink() {}
 	/// Callback called just before an ancestor is unlinked
 	virtual void onBranchUnlink() {}
+
+	/// Callback called when the primitive is updated, giving a chance to track the primitive's modifications during the loading
+	virtual void onModifyPrimitive(CPrimitives &primitives) const {}
 
 	// internal recusive call
 	void branchLink();

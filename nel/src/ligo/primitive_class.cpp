@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.17 2004/11/10 16:44:09 legros Exp $
+ * $Id: primitive_class.cpp,v 1.18 2005/01/11 13:18:23 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -197,6 +197,7 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode,
 	LinkBrothers = false;
 	ShowArrow = true;
 	Numberize = true;
+	Visible = true;
 
 	// read parent class properties
 	string parentClass;
@@ -267,6 +268,9 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode,
 	
 	// Numberize when copy the primitive
 	ReadBool ("NUMBERIZE", Numberize, primitiveNode, filename, config);
+
+	// Visible ?
+	ReadBool ("VISIBLE", Visible, primitiveNode, filename, config);
 
 	// Read the parameters
 	for (	xmlNodePtr paramNode = CIXml::getFirstChildNode (primitiveNode, "PARAMETER");

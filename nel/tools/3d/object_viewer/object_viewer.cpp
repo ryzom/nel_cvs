@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.39 2001/09/12 13:30:22 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.40 2001/09/13 14:28:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+static char SDrive[256];
+static char SDir[256];
 
 
 
@@ -196,14 +199,12 @@ CObjectViewer::CObjectViewer ()
 #else
 		HMODULE hModule = GetModuleHandle("object_viewer.dll");
 #endif
-		nlassert (hModule);
+		nlassert (hModule);		
 		char sModulePath[256];
-		char sDrive[256];
-		char sDir[256];
 		int res=GetModuleFileName(hModule, sModulePath, 256);
 		nlassert(res);
-		_splitpath (sModulePath, sDrive, sDir, NULL, NULL);
-		_makepath (sModulePath, sDrive, sDir, "object_viewer", ".cfg");
+		_splitpath (sModulePath, SDrive, SDir, NULL, NULL);
+		_makepath (sModulePath, SDrive, SDir, "object_viewer", ".cfg");
 
 		// Load the config file
 		CConfigFile cf;
@@ -237,20 +238,7 @@ CObjectViewer::CObjectViewer ()
 			_CameraFocal = 75.f; // default value for the focal
 		}
 
-		// load the scheme bank if one is present
 		
-		CIFile iF;
-		if (iF.open("default.scb"))
-		{
-			try
-			{
-				iF.serial(SchemeManager);
-			}
-			catch (NLMISC::EStream &e)
-			{
-				::MessageBox(NULL, ("Unable to load the default scheme bank file : "  + std::string(e.what())).c_str(), "Object Viewer", MB_ICONEXCLAMATION);
-			}
-		}			
 	}
 	catch (Exception& e)
 	{
@@ -416,6 +404,37 @@ void CObjectViewer::initUI (HWND parent)
 
 	// Enable sum of vram
 	CNELU::Driver->enableUsedTextureMemorySum ();
+
+	char sModulePath[256];
+	// load the scheme bank if one is present		
+	CIFile iF;
+	::_makepath (sModulePath, SDrive, SDir, "default", ".scb");		
+	if (iF.open(sModulePath))
+	{
+		try
+		{
+			iF.serial(SchemeManager);
+		}
+		catch (NLMISC::EStream &e)
+		{
+			::MessageBox(NULL, ("Unable to load the default scheme bank file : "  + std::string(e.what())).c_str(), "Object Viewer", MB_ICONEXCLAMATION);
+		}
+	}
+	iF.close();
+	
+	// try to load a default config file for the viewer (for anitmation and particle edition setup)
+	::_makepath (sModulePath, SDrive, SDir, "default", ".ovcgf");
+	if (iF.open (sModulePath))
+	{
+		try
+		{
+			serial (iF);
+		}
+		catch (Exception& e)
+		{
+			::MessageBox (NULL, (std::string("error while loading default.ovcgf : ") + e.what()).c_str(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+		}
+	}
 
 }
 

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.18 2003/01/08 10:45:58 lecroart Exp $
+ * $Id: command.h,v 1.19 2003/01/15 15:50:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,13 @@
 
 namespace NLMISC {
 
+/** WARNING:
+ *   This is standard Unix linker behavior: object files
+ *   that are not referenced from outside are discarded. The
+ *   file in which you run your constructor is thus simply
+ *   thrown away by the linker, which explains why the constructor
+ *   is not run.
+ */
 
 /**
  * Create a function that can be call in realtime.

@@ -1,0 +1,203 @@
+/** \file build_clod_bank.cpp
+ * build a .clodbank with a config file.
+ *
+ * $Id: build_clod_bank.cpp,v 1.1 2002/05/14 13:46:55 berenguier Exp $
+ */
+
+/* Copyright, 2000-2002 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+
+#include "nel/misc/config_file.h"
+#include "nel/misc/path.h"
+#include "nel/misc/file.h"
+#include "nel/misc/debug.h"
+#include "3d/lod_character_shape_bank.h"
+#include "3d/lod_character_shape.h"
+#include "3d/lod_character_builder.h"
+#include "3d/animation.h"
+#include "3d/skeleton_shape.h"
+#include "3d/register_3d.h"
+
+
+using namespace std;
+using namespace NLMISC;
+using namespace NL3D;
+
+int	main(int argc, char *argv[])
+{
+	uint	i;
+
+	// Avoid warnings.
+	NLMISC::createDebug();
+	DebugLog->addNegativeFilter("Exception will be launched");
+	WarningLog->addNegativeFilter("Exception will be launched");
+	InfoLog->addNegativeFilter("FEHTIMER>");
+	InfoLog->addNegativeFilter("adding the path");
+
+	// Init serial
+	registerSerial3d();
+
+	if(argc<3)
+	{
+		puts("Usage:    build_clod_bank  config_file  destfile.clodbank");
+		return 0;
+	}
+
+
+	try
+	{
+		// The bank to fill
+		CLodCharacterShapeBank	lodShapeBank;
+
+
+		// parse the config file.
+		//==================
+
+		// try to load the config file.
+		CConfigFile config;
+		config.load (argv[1]);
+
+		// Get the search pathes
+		CConfigFile::CVar &search_pathes = config.getVar ("search_pathes");
+		for (i = 0; i < (uint)search_pathes.size(); i++)
+		{
+			// Add to search path
+			CPath::addSearchPath (search_pathes.asString(i));
+		}
+
+		// Read the frameRate to process bake of anims
+		float	bakeFrameRate;
+		try
+		{
+			CConfigFile::CVar &bake_frame_rate = config.getVar ("bake_frame_rate");
+			bakeFrameRate= bake_frame_rate.asFloat();
+			if(bakeFrameRate<=1)
+				throw (Exception());
+		}
+		catch(...)
+		{
+			nlwarning("bake_frame_rate var not found or bad value (must be >1), use a default of 20");
+			bakeFrameRate= 20;
+		}
+
+		// For all .clod to process
+		//==================
+		CConfigFile::CVar &clod_list = config.getVar ("clod_list");
+		uint	lodId;
+		for (lodId = 0; lodId < (uint)clod_list.size(); lodId++)
+		{
+			string	lodFileName= clod_list.asString(lodId);
+			string	lodName= CFile::getFilenameWithoutExtension(lodFileName);
+
+			// Search the variable with this name.
+			try
+			{
+				CIFile		iFile;
+
+				// get the anim list.
+				CConfigFile::CVar &clod_anim_list = config.getVar (lodName);
+
+				// Correct format?
+				if(clod_anim_list.size()<2)
+				{
+					nlwarning("%s skipped. Must have at least the skeleton name, and one animation", lodFileName.c_str());
+					// go to next.
+					continue;
+				}
+
+				// Init lod shape process
+				//===========================
+
+				// The first variable is the name of the skeleton.
+				string	skeletonName= clod_anim_list.asString(0);
+				CSmartPtr<CSkeletonShape>	skeletonShape;
+
+				// Load it.
+				iFile.open(CPath::lookup(skeletonName));
+				CShapeStream		strShape;
+				strShape.serial(iFile);
+				iFile.close();
+
+				// Get the pointer, check it's a skeleton
+				if(dynamic_cast<CSkeletonShape*>(strShape.getShapePointer()) == NULL)
+					throw Exception("%s is not a Skeleton", skeletonName.c_str());
+				skeletonShape= (CSkeletonShape*)strShape.getShapePointer();
+
+				// Load the shape.
+				CLodCharacterShapeBuild		lodShapeBuild;
+				iFile.open( CPath::lookup(lodFileName) );
+				iFile.serial(lodShapeBuild);
+				iFile.close();
+
+				// Prepare to build the lod.
+				CLodCharacterBuilder		lodBuilder;
+				lodBuilder.setShape(lodName, skeletonShape, &lodShapeBuild);
+
+
+				// Traverse all anim in the list.
+				//===========================
+				uint	animId;
+				for (animId = 1; animId < (uint)clod_anim_list.size(); animId++)
+				{
+					string	animFileName= clod_anim_list.asString(animId);
+
+					// Try to load the animation
+					CAnimation			*anim= new CAnimation;
+					// NB: fatal error if anim not found
+					iFile.open( CPath::lookup(animFileName) );
+					iFile.serial(*anim);
+					iFile.close();
+					// Add to the builder. NB: animation will be delete in this method.
+					lodBuilder.addAnim(CFile::getFilenameWithoutExtension(animFileName).c_str(), anim, bakeFrameRate);
+				}
+
+				// Add to the bank.
+				//===========================
+				uint32	shapeId= lodShapeBank.addShape();
+				*lodShapeBank.getShapeFullAcces(shapeId)= lodBuilder.getLodShape();
+			}
+			catch(EUnknownVar &evar)
+			{
+				nlwarning(evar.what());
+				// Any other exception will make the program quit.
+			}
+
+		}
+
+		// Save bank.
+		//===========================
+
+		// compile
+		lodShapeBank.compile();
+
+		// Save
+		COFile	oFile(argv[2]);
+		oFile.serial(lodShapeBank);
+		oFile.close();
+	}
+	catch (Exception& except)
+	{
+		// Error message
+		printf ("ERROR %s.\n Aborting.\n", except.what());
+	}
+
+
+	return 0;
+}

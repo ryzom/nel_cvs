@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.63 2002/09/02 09:57:21 coutelas Exp $
+ * $Id: debug.cpp,v 1.64 2002/09/02 15:09:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,7 @@ using namespace std;
 #define LOG_IN_FILE NEL_LOG_IN_FILE
 
 // If true, debug system will trap crashs even if the appli is in debugger
-static const bool TrapCrashInDebugger = false;
+static const bool TrapCrashInDebugger = true;
 
 namespace NLMISC 
 {
@@ -473,6 +473,7 @@ public:
 		{
 			str = line.FileName;
 			str += "(" + toString (line.LineNumber) + ")";
+			str += toString(": 0x%X", addr);
 		}
 		else
 		{
@@ -490,9 +491,7 @@ public:
 				HRESULT hr = GetLastError ();
 				str = "<NoModule>";
 			}
-			char tmp[32];
-			sprintf (tmp, "!0x%X", addr);
-			str += tmp;
+			str += toString("!0x%X", addr);
 		}
 
 		/*
@@ -610,7 +609,9 @@ public:
 
 //		nlinfo ("not parsed '%s'", parse.c_str());
 
-		// if there s parameter, parse them
+/// \todo ace it sometimes crash because try to access invalid address because the stack is not good (i don t know why)
+
+/*		// if there s parameter, parse them
 		if(i!=string::npos)
 		{
 			// copy the '('
@@ -713,7 +714,7 @@ public:
 				str += " bytes";
 			}
 		}
-
+*/
 //		nlinfo ("after parsing '%s'", str.c_str());
 
 		return str;

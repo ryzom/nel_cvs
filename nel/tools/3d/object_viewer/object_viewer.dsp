@@ -452,6 +452,14 @@ SOURCE=R:\code\nel\tools\3d\object_viewer\color_edit.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\curve_edit.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\curve_edit.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\dialog_stack.h
 # End Source File
 # Begin Source File

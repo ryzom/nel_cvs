@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.15 2000/10/02 16:42:23 cado Exp $
+ * $Id: stream.h,v 1.16 2000/10/05 09:34:37 corvazier Exp $
  *
  * This File handles IStream 
  */
@@ -259,7 +259,7 @@ public:
 			T::iterator		it= cont.begin();
 			for(sint i=0;i<len;i++, it++)
 			{
-				serial((*it));
+				serial(const_cast<T::value_type&>(*it));
 			}
 		}
 	}

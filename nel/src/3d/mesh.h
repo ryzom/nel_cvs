@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.2 2001/06/26 10:12:03 berenguier Exp $
+ * $Id: mesh.h,v 1.3 2001/06/27 13:58:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,6 +152,9 @@ public:
 	CMesh();
 	/// dtor
 	~CMesh();
+	CMesh(const CMesh &mesh);
+	CMesh	&operator=(const CMesh &mesh);
+
 
 	/// Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
 	void			build(CMeshBuild &mbuild);
@@ -214,10 +217,6 @@ private:
 
 	// The geometry.
 	CMeshGeom		*_MeshGeom;
-
-
-	/// serialisation of Version 5+ mesh stream.
-	void	serialV5Plus(NLMISC::IStream &f, sint ver) throw(NLMISC::EStream);
 
 };
 

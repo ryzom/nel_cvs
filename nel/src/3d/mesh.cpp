@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.24 2001/06/26 10:12:03 berenguier Exp $
+ * $Id: mesh.cpp,v 1.25 2001/06/27 13:58:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -782,6 +782,28 @@ CMesh::~CMesh()
 {
 	// delete the MeshGeom
 	delete _MeshGeom;
+}
+
+
+// ***************************************************************************
+CMesh::CMesh(const CMesh &mesh)
+{
+	// create the MeshGeom
+	_MeshGeom= new CMeshGeom(*mesh._MeshGeom);
+}
+
+
+// ***************************************************************************
+CMesh	&CMesh::operator=(const CMesh &mesh)
+{
+	// Copy CMeshBase part
+	(CMeshBase&)*this= (CMeshBase&)mesh;
+
+	// copy content of meshGeom.
+	*_MeshGeom= *mesh._MeshGeom;
+
+
+	return *this;
 }
 
 

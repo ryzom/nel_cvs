@@ -1,7 +1,7 @@
 /** \file mouline.cpp
  * 
  *
- * $Id: mouline.cpp,v 1.3 2003/04/07 15:02:05 legros Exp $
+ * $Id: mouline.cpp,v 1.4 2003/04/14 15:29:15 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -224,8 +224,10 @@ void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 			}
 		}
 
+		// mark the end of a ext mesh block
+		// this way, collisions won't be checked in the pacs engine
 		edges.push_back(edges[firstEdge]);
-		edges.back().Link = -1;
+		edges.back().Link = -2;
 	}
 
 	bool	previousWasLink = false;
@@ -291,7 +293,7 @@ void	linkExteriorToInterior(CLocalRetriever &lr)
 	uint	edge, ch;
 	for (edge=0; edge+1<edges.size(); )
 	{
-		if (edges[edge].Link == -1)
+		if (edges[edge].Link == -1 || edges[edge].Link == -2)
 		{
 			++edge;
 			continue;

@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.16 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_particle_system_instance.h,v 1.17 2004/06/01 16:21:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -127,8 +127,7 @@ public:
 
 			// Deactivate an object with the given ID
 			bool   setActive(uint32 id, bool active);			
-			/** special : Activate / Deactivate all emitters.
-			  * NB : the system do not need to be present for this to be called.
+			/** special : Activate / Deactivate all emitters.			  
 			  * If the system isn't instanciated, then emitters will be deactivated the next time it is
 			  */
 			void   activateEmitters(bool active);			
@@ -180,6 +179,17 @@ public:
 
 	// Cast methods. If the cast fails, the object is empty.
  	void	cast(UInstance object);
+
+
+	/** Shut down all sources in a particle system. Looping sources can finish their current occurence.
+	  * Sound won't be played until reactivateSound() is called.
+	  * NB : no effect if the system is not present
+	  */
+	void	stopSound();
+	/** Reactivate sound sources. \see stopSound()
+	  * NB : no effect if the system is not present
+	  */
+	void	reactivateSound();
 
 
 	/// Proxy interface

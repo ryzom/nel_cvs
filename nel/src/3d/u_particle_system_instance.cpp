@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.cpp
  * Interface for particule system.
  *
- * $Id: u_particle_system_instance.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_particle_system_instance.cpp,v 1.2 2004/06/01 16:22:03 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -378,12 +378,28 @@ void UParticleSystemInstance::cast(UInstance object)
 }
 
 // ***************************************************************************
-
 bool UParticleSystemInstance::isValid() const
 {
 	CParticleSystemModel *object = NLMISC::safe_cast<CParticleSystemModel *>(_Object);
 	return !object->isInvalid();
 }
+
+// ***************************************************************************
+void UParticleSystemInstance::stopSound()
+{
+	if (!_Object) return;
+	CParticleSystemModel *object = NLMISC::safe_cast<CParticleSystemModel *>(_Object);	
+	object->stopSound();
+}
+
+// ***************************************************************************
+void UParticleSystemInstance::reactivateSound()
+{
+	if (!_Object) return;
+	CParticleSystemModel *object = NLMISC::safe_cast<CParticleSystemModel *>(_Object);	
+	object->reactivateSound();
+}
+
 
 // ***************************************************************************
 

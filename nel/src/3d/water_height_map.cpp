@@ -10,6 +10,8 @@
 namespace NL3D
 {
 
+
+
 CWaterHeightMap::CWaterHeightMap() : _X(0), _Y(0), _Size(0),
 									 _CurrMap(0), Date(-1),
 									 _Damping(0.97f), _FilterWeight(4), _UnitSize(0.6f),

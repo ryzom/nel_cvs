@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.2 2002/02/21 17:35:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,9 +142,12 @@ private:
 	float							  _SegLength;
 	float							  _LODDegradation;
 
+protected: // should be call by derivers for backward compatibility only
 	void					initDateVect();
-	void					resetSingleRibbon(uint index, const NLMISC::CVector &pos);
 	void					resetFromOwner();	
+private:
+	void					resetSingleRibbon(uint index, const NLMISC::CVector &pos);
+
 
 	/// copy datas from one ribbon to another
 	void					dupRibbon(uint dest, uint src);	

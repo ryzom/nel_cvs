@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.2 2002/02/21 17:35:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ static inline void BuildLinearVector(const NLMISC::CVector &P0,
 }
 
 
-const uint EndRibbonStorage = 2;
+const uint EndRibbonStorage = 1;
 
 
 //=======================================================
@@ -579,7 +579,7 @@ void CPSRibbonBase::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		nlassert(_Owner);
 		resize(_Owner->getMaxSize());
 		initDateVect();		
-		resetFromOwner();		
+		resetFromOwner();
 	}
 
 	if (ver >= 1)

@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.9 2000/12/08 10:37:02 berenguier Exp $
+ * $Id: scene.h,v 1.10 2000/12/11 15:50:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,12 +31,18 @@
 #include "nel/3d/camera.h"
 #include "nel/3d/trav_scene.h"
 #include "nel/3d/viewport.h"
+#include "nel/3d/shape.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/smart_ptr.h"
+#include <map>
 
 
 namespace NL3D
 {
 
+
+using	NLMISC::CRefPtr;
+using	NLMISC::CSmartPtr;
 
 class	CHrcTrav;
 class	CClipTrav;
@@ -47,6 +53,7 @@ class	CDefaultClipObs;
 class	CDefaultLightObs;
 class	CDefaultRenderObs;
 class	CTransform;
+class	CTransformShape;
 class	IDriver;
 
 
@@ -100,24 +107,8 @@ class	IDriver;
  */
 class CScene : public CMOT
 {
-private:
-	/// The camera / Viewport.
-	NLMISC::CRefPtr<CCamera>	CurrentCamera;
-	CViewport					_Viewport;
-
-	/// \name The 4 default traversals, created / linked by CScene::initDefaultTraversals().
-	//@{
-	CHrcTrav	*HrcTrav;
-	CClipTrav	*ClipTrav;
-	CLightTrav	*LightTrav;
-	CRenderTrav	*RenderTrav;
-	//@}
-
-	// The root models (will be deleted by CScene).
-	CTransform	*Root;
-	// TODO: define the lightgroup model.
-
 public:
+
 
 	/// \name Basic registration.
 	//@{
@@ -125,11 +116,12 @@ public:
 	static void	registerBasics();
 	//@}
 
+
 	/// \name Construction / destruction.
 	//@{
 	/// Constructor.
 	CScene();
-	/// Destructor. Destroy the Basic traversals and default roots.
+	/// Destructor. release().
 	~CScene();
 	/// Create / register the 4 basic traversals:CHrcTrav, CClipTrav, CLightTrav, CRenderTravInit.
 	void	initDefaultTravs();
@@ -139,15 +131,19 @@ public:
 	void	setDriver(IDriver *drv);
 	/// Get the driver of render Traversal.
 	IDriver *getDriver() const;
-	//@}
-
 	/** Add a ITrav or a ITravScene to the scene.
 	 * If not a ITravScene (tested with help of dynamic_cast) or if trav->getRenderOrder()==0, The traversal is not added 
 	 * to the "render traversal list", else it is. Such a traversal will be traverse() -ed in the order given.
 	 * The getRenderOrder() is called only in the addTrav() method (so this is a static information).
 	 */
 	void	addTrav(ITrav *v);
+	/// Release all relative to the scene (Models, traversals...)... Destroy the Basic traversals too.
+	void	release();
+	//@}
 
+
+	/// \name Render
+	//@{
 	/** Render the scene, via the registered ITravScene, from the CurrentCamera view.
 	 * NB: no Driver clear buffers (color or ZBuffer) are done....
 	 * This call t->traverse() function to registered render traversal following their order given.
@@ -155,14 +151,15 @@ public:
 	 * you know that NONE of your models have moved (a good example is a shoot of the scene from different cameras).
 	 */
 	void	render(bool	doHrcPass=true);
-
 	/// Clear all the buffer of the RenderTrav current driver window .
 	void	clearBuffers(NLMISC::CRGBA col= NLMISC::CRGBA(0,0,0,0));
-
 	/// Swap the buffer of the RenderTrav current driver window .
 	void	swapBuffers();
+	//@}
 
 
+	/// \name Camera/Viewport.
+	//@{
 	/// Set/Get the current camera/Viewport.
 	void	setCam(CCamera *cam) {CurrentCamera= cam;}
 	CCamera *getCam() {return CurrentCamera;}
@@ -174,14 +171,50 @@ public:
 	{
 		return _Viewport;
 	}
+	//@}
 
-	/// Release all relative to the scene (Models, traversals...)...
-	void	release();
+
+	/// \name Instance Mgt.
+	//@{
+	/// Register manually a shape into the scene. If already here, remplaced.
+	void	addShape(const std::string &shapeName, CSmartPtr<IShape> shape);
+	/// delete a shape from the scene. It will be really deleted when all instances which points to it will be deleted.
+	///  no-op if not exist.
+	void	delShape(const std::string &shapeName);
+	/// Create a model, instance of the shape "shapename". If not present, try to load it via the shapeServer.
+	/// If fails, return NULL.
+	virtual	CTransformShape	*createInstance(const std::string &shapeName);
+	//@}
 
 
 private:
-	typedef		std::map<sint, ITravScene*>	TravMap;
-	TravMap		RenderTraversals;	// Sorted via their getRenderOrder().
+	typedef			std::map<sint, ITravScene*>	TTravMap;
+	TTravMap		RenderTraversals;	// Sorted via their getRenderOrder().
+
+	/// The camera / Viewport.
+	CRefPtr<CCamera>	CurrentCamera;
+	CViewport		_Viewport;
+
+	/// \name The 4 default traversals, created / linked by CScene::initDefaultTraversals().
+	//@{
+	CHrcTrav		*HrcTrav;
+	CClipTrav		*ClipTrav;
+	CLightTrav		*LightTrav;
+	CRenderTrav		*RenderTrav;
+	//@}
+
+	// The root models (will be deleted by CScene).
+	CTransform		*Root;
+	// TODO: define the lightgroup model.
+
+
+	/// \name Shape/Instances.
+	//@{
+	typedef			CSmartPtr<IShape>	PShape;
+	typedef			std::map<std::string, PShape>	TShapeMap;
+	TShapeMap		ShapeMap;
+	//@}
+
 
 };
 

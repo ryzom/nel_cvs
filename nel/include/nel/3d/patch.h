@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.17 2000/12/06 15:58:34 berenguier Exp $
+ * $Id: patch.h,v 1.18 2000/12/11 15:50:34 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -203,6 +203,11 @@ public:
 	void			renderFar0();
 	void			renderFar1();
 	void			renderTile(sint pass);
+
+
+	// For CZone changePatchTexture only.
+	void			deleteTileUvs() {Son0->deleteTileUvs(); Son1->deleteTileUvs();}
+	void			recreateTileUvs() {Son0->recreateTileUvs(); Son1->recreateTileUvs();}
 
 
 	// Serial just the un-compiled part.

@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.1 2000/12/08 10:37:02 berenguier Exp $
+ * $Id: shape.h,v 1.2 2000/12/11 15:50:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,6 +79,7 @@ public:
 
 	/** clip this shape with a pyramid.
 	 * the pyramid is given in object space so the shape do not need to know the matrix of the object.
+	 * \param pyramid the clipping polytope, planes MUST be normalized.
 	 * \return true if the object is visible, false otherwise. The default behavior is to return true (never clipped).
 	 */
 	virtual bool				clip(const std::vector<CPlane>	&pyramid) {return true;}

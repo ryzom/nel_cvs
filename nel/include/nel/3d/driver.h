@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.34 2000/12/08 10:32:31 berenguier Exp $
+ * $Id: driver.h,v 1.35 2000/12/11 15:50:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,7 +198,7 @@ const uint32	IDRV_VF_MAXSTAGES	=	8;
 const uint32	IDRV_VF_XYZ			=	0x00000001;
 const uint32	IDRV_VF_W[IDRV_VF_MAXW]			= { 0x00000002,0x00000004,0x00000008,0x00000010 };
 const uint32	IDRV_VF_NORMAL		=	0x00000020;
-const uint32	IDRV_VF_RGBA		=	0x00000040;
+const uint32	IDRV_VF_COLOR		=	0x00000040;
 const uint32	IDRV_VF_SPECULAR	=	0x00000080;
 const uint32	IDRV_VF_UV[IDRV_VF_MAXSTAGES]	= { 0x00000100,0x00000200,0x00000400,0x00000800,0x00001000,0x00002000,0x00004000,0x00008000 };
 
@@ -251,13 +251,17 @@ public:
 	void					setVertexCoord(uint idx, const CVector &v);
 	void					setNormalCoord(uint idx, const CVector &v);
 	void					setTexCoord(uint idx, uint8 stage, float u, float v);
-	void					setRGBA(uint idx, CRGBA rgba);
+	void					setColor(uint idx, CRGBA rgba);
+	void					setSpecular(uint idx, CRGBA rgba);
+	void					setWeight(uint idx, uint8 wgt, float w);
 
 
 	void*					getVertexCoordPointer(uint idx=0);
 	void*					getNormalCoordPointer(uint idx=0);
-	void*					getColorPointer(uint idx=0);
 	void*					getTexCoordPointer(uint idx=0, uint8 stage=0);
+	void*					getColorPointer(uint idx=0);
+	void*					getSpecularPointer(uint idx=0);
+	void*					getWeightPointer(uint idx=0, uint8 wgt=0);
 };
 
 // --------------------------------------------------
@@ -304,6 +308,8 @@ public:
 
 	/// Build a Lineangle.
 	void				setLine(uint lineIdx, uint32 vidx0, uint32 vidx1);
+	/// Apend a line at getNumLine() (then resize +1 the numline).
+	void				addLine(uint32 vidx0, uint32 vidx1);
 
 	uint32*				getLinePointer(void);
 
@@ -322,6 +328,8 @@ public:
 
 	/// Build a triangle.
 	void				setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2);
+	/// Apend a triangle at getNumTri() (then resize +1 the numtri).
+	void				addTri(uint32 vidx0, uint32 vidx1, uint32 vidx2);
 
 	uint32*				getTriPointer(void);
 
@@ -353,6 +361,9 @@ public:
 	 * Build a quad.
 	 */
 	void setQuad(uint quadIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2, uint32 vidx3);
+
+	/// Apend a quad at getNumQuad() (then resize +1 the numquad).
+	void				addQuad(uint32 vidx0, uint32 vidx1, uint32 vidx2, uint32 vidx3);
 
 	/**
 	 * Return the Quad buffer
@@ -389,9 +400,6 @@ class IDriver
 public:
 	/// Version of the driver interface. To increment when the interface change.
 	static const uint32						InterfaceVersion;
-
-private:
-	static IDriver*							_Current;
 
 protected:
 	// The map of shared textures.

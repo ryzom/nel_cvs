@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.15 2000/12/08 10:35:20 berenguier Exp $
+ * $Id: landscape.h,v 1.16 2000/12/11 15:50:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ public:
 	{
 		return _TileDistNear;
 	}
-	void	setRefineMode(bool enabled) {_RefineMode= true;}
+	void	setRefineMode(bool enabled) {_RefineMode= enabled;}
 	bool	getRefineMode() const {return _RefineMode;}
 	// TODO: other landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CTessFace statics.

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.11 2000/12/01 16:35:46 corvazier Exp $
+ * $Id: bitmap.h,v 1.12 2000/12/11 15:50:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -300,19 +300,19 @@ public:
 
 
 	/** 
-	 * Return the number of mipmaps.
+	 * Return the number of mipmaps. Level0 is a mipmap...
 	 * \return number of mipmaps
 	 */	
 	uint32 getMipMapCount() const
 	{
-		return _MipMapCount; 
+		return _MipMapCount+1; 
 	}
 
 
 	/** 
 	 * Build the mipmaps of the bitmap if they don't exist.
 	 */	
-	void buildMiMaps();
+	void buildMipMaps();
 
 
 	/** 

@@ -1,7 +1,7 @@
 /** \file bsphere.h
  * <File description>
  *
- * $Id: bsphere.h,v 1.2 2000/11/03 18:06:54 berenguier Exp $
+ * $Id: bsphere.h,v 1.3 2000/12/11 15:50:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,14 +57,10 @@ public:
 
 	/// \name Clip
 	// @{
-	/// Is the bbox partially in front of the plane??
+	/// Is the bbox partially in front of the plane??  p MUST be normalized.
 	bool	clipFront(const CPlane &p) const;
-	/// same as clipFront(), but assume p is normalized.
-	bool	clipFrontUnitPlane(const CPlane &p) const;
-	/// Is the bbox partially in back of the plane??
+	/// Is the bbox partially in back of the plane??  p MUST be normalized.
 	bool	clipBack(const CPlane &p) const;
-	/// same as clipBack(), but assume p is normalized.
-	bool	clipBackUnitPlane(const CPlane &p) const;
 	// @}
 
 	/// Does the sphere include this point?

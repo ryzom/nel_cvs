@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.18 2000/12/08 10:35:49 berenguier Exp $
+ * $Id: tessellation.h,v 1.19 2000/12/11 15:50:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
+#include "nel/3d/uv.h"
 
 
 namespace	NL3D
@@ -73,56 +74,6 @@ struct	CTileMaterial
 	CTileMaterial();
 };
 
-
-// ***************************************************************************
-class	CUV
-{
-public:
-	float	U,V;
-
-public:
-	CUV() {}
-	CUV(float u, float v) : U(u), V(v) {}
-	// bin operators.
-	CUV	operator+(const CUV &v) const
-		{ return CUV(U+v.U, V+v.V);}
-	CUV	operator-(const CUV &v) const
-		{ return CUV(U-v.U, V-v.V);}
-	CUV	operator*(float f) const
-		{ return CUV(U*f, V*f);}
-	// = operators.
-	CUV	&operator*=(float f)
-		{ U*=f;V*=f; return *this;}
-	CUV	&operator+=(const CUV &v)
-		{ U+=v.U;V+=v.V; return *this;}
-	CUV	&operator-=(const CUV &v)
-		{ U-=v.U;V-=v.V; return *this;}
-};
-
-
-class	CUVW
-{
-public:
-	float	U,V,W;
-
-public:
-	CUVW() {}
-	CUVW(float u, float v, float w) : U(u), V(v), W(w) {}
-	// bin operators.
-	CUVW	operator+(const CUVW &v) const
-		{ return CUVW(U+v.U, V+v.V, W+v.W);}
-	CUVW	operator-(const CUVW &v) const
-		{ return CUVW(U-v.U, V-v.V, W-v.W);}
-	CUVW	operator*(float f) const
-		{ return CUVW(U*f, V*f, W*f);}
-	// = operators.
-	CUVW	&operator*=(float f)
-		{ U*=f;V*=f; W*=f; return *this;}
-	CUVW	&operator+=(const CUVW &v)
-		{ U+=v.U;V+=v.V; W+=v.W; return *this;}
-	CUVW	&operator-=(const CUVW &v)
-		{ U-=v.U;V-=v.V; W-=v.W; return *this;}
-};
 
 
 // ***************************************************************************
@@ -371,7 +322,7 @@ public:
 	void			releaseTileMaterial();
 
 	// update the error metric (even if !NeedCompute).
-	float			updateErrorMetric();
+	void			updateErrorMetric();
 	// can split leaf only.
 	void			split(bool propagateSplit=true);
 	// can merge "short roots" only (roots which have leafs).
@@ -392,6 +343,9 @@ public:
 	void			updateBind();
 	void			updateBindAndSplit();
 
+	// Used by CZone::changePatchTexture().
+	void			deleteTileUvs();
+	void			recreateTileUvs();
 
 
 public:
@@ -448,12 +402,16 @@ private:
 	static bool	exceptPatch(CPatch *p, CPatch *except[4]);
 
 
+	// see updateErrorMetric.
+	void	computeTileErrorMetric();
+
 	// See refine() and merge().
 	bool	canMerge(bool testEm);
 
 	// see split().
 	void	splitRectangular(bool propagateSplit);
 	void	doMerge();
+	void	heritTileMaterial();
 
 	// see computeTileMaterial().
 	void	initTileUv(sint pass, CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);

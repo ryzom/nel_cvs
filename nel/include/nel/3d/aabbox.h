@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.3 2000/11/10 09:57:34 berenguier Exp $
+ * $Id: aabbox.h,v 1.4 2000/12/11 15:50:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,9 +96,9 @@ public:
 	/// \name Clip
 	// @{
 	/// Is the bbox partially in front of the plane??
-	bool	clipFront(const CPlane &p) const;
+	bool			clipFront(const CPlane &p) const;
 	/// Is the bbox partially in back of the plane??
-	bool	clipBack(const CPlane &p) const;
+	bool			clipBack(const CPlane &p) const;
 	// @}
 
 	void			serial(NLMISC::IStream &f);
@@ -128,6 +128,8 @@ protected:
 public:
 	/// Empty bbox Constructor
 	CAABBoxExt() {RadiusMin= RadiusMax=0;}
+	/// Constructor from a normal BBox.
+	CAABBoxExt(const CAABBox &o) {RadiusMin= RadiusMax=0; *this=o;}
 
 
 	/// \name Builds.
@@ -160,14 +162,10 @@ public:
 
 	/// \name Clip
 	// @{
-	/// Is the bbox partially in front of the plane??
-	bool	clipFront(const CPlane &p) const;
-	/// same as clipFront(), but assume p is normalized.
-	bool	clipFrontUnitPlane(const CPlane &p) const;
-	/// Is the bbox partially in back of the plane??
-	bool	clipBack(const CPlane &p) const;
-	/// same as clipBack(), but assume p is normalized.
-	bool	clipBackUnitPlane(const CPlane &p) const;
+	/// Is the bbox partially in front of the plane?? p MUST be normalized.
+	bool			clipFront(const CPlane &p) const;
+	/// Is the bbox partially in back of the plane?? p MUST be normalized.
+	bool			clipBack(const CPlane &p) const;
 	// @}
 
 	void			serial(NLMISC::IStream &f);

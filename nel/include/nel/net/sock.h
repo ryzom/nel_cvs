@@ -1,7 +1,7 @@
 /** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.9 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: sock.h,v 1.10 2001/09/10 13:41:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -287,7 +287,8 @@ protected:
 	bool			_NonBlocking;
 
 	/// True after calling connect()
-	NLMISC::CSynchronized<bool>	_SyncConnected;
+	//NLMISC::CSynchronized<bool>	_SyncConnected;
+	volatile bool	_Connected;
 
 	/// Number of bytes received on this socket
 	uint64			_BytesReceived;

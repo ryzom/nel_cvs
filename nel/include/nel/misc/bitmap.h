@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.10 2002/01/28 17:28:53 besson Exp $
+ * $Id: bitmap.h,v 1.11 2002/02/15 17:42:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -434,7 +434,7 @@ public:
 	 * The dimension of the original bitmap are preserved
 	 * For now, this texture and the source must have the same format
 	 * With DXTC format, the dest coordinates must be a multiple of 4
-	 * mipmap are noit rebuild when present
+	 * mipmap are not rebuild when present
 	 * \return true if the params were corrects and if the blit occures. In debug build there's an assertion
 	 */
 	bool blit(const CBitmap *src, sint32 x, sint32 y) ;

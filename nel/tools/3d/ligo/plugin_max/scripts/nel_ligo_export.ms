@@ -103,7 +103,8 @@ fn getTransitionZoneCoordinates node x y =
 	-- Valid Y coordinate ?
 	if (y[1] < 0) or (y[1] >= TransitionIds.count) then
 	(
-		messageBox ("The zone "+nodeArray[zone].name+" is not well positionned. Check the transition scheme.") title:title_msgbox beep:true
+		if (nodeArray != undefined) then
+			messageBox ("The zone "+nodeArray[zone].name+" is not well positionned. Check the transition scheme.") title:title_msgbox beep:true
 		return false
 	)
 	else
@@ -111,7 +112,8 @@ fn getTransitionZoneCoordinates node x y =
 		-- Valid X coordinate ?
 		if (x[1] < 0) or (x[1] >= TransitionIds[y[1]+1].count) then
 		(
-			messageBox ("The zone "+nodeArray[zone].name+" is not well positionned. Check the transition scheme.") title:title_msgbox beep:true
+			if (nodeArray != undefined) then
+				messageBox ("The zone "+nodeArray[zone].name+" is not well positionned. Check the transition scheme.") title:title_msgbox beep:true
 			return false
 		)
 	)
@@ -161,6 +163,7 @@ for curFileName in MaxFilesList do
 			loadMaxFile curFileName
 			DeleteDebugMarkersFn ()
 			selectAllPatch ()
+			nlerror ("EXPORT "+ (getFilenameFile curFileName))
 
 			props = #( #("zone", (tokenArray[2] + "-" + tokenArray[3])), #("material", tokenArray[2]) ) 
 
@@ -211,77 +214,97 @@ for curFileName in MaxFilesList do
 	tokenArray = filterString (getFilenameFile curFileName) "-"
 	if (tokenArray.count == 4) and (tokenArray[1] == "zonetransition") then
 	(
-		-- INCREMENTAL : do we have to export ?
-		dstFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4] + "-0.ligozone"
-		
-		-- compare the date of curFileName and dstFileName files
-		if (nelTestFileDate dstFileName curFileName) == true then
+		HaveToExport = #()
+		for zone = 1 to 9 do
 		(
-			loadMaxFile curFileName
-			DeleteDebugMarkersFn ()
-			selectAllPatch ()
-			nlerror ("EXPORT "+ (getFilenameFile curFileName))
+			filename = tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4] + "-" + ((zone-1) as string)
+			filename = ligo_export_path + "zoneLigos\\" + filename + ".ligozone"
 
-			cellSize = NeLLigoGetCellSize ()
-
-			-- Array of selection
-			nodeArray = #()
-			if $ == $selection then
+			if (nelTestFileDate filename curFileName) == true then
 			(
-				nodeArray = $selection as array
+				append HaveToExport true
 			)
 			else
 			(
-				append nodeArray $
+				append HaveToExport false
 			)
+		)
 
-			-- Ok flag
-			ok = true
-			findOne = false
+		loadMaxFile curFileName
+		DeleteDebugMarkersFn ()
+		selectAllPatch ()
+		-- nlerror ("EXPORT "+ (getFilenameFile curFileName))
 
-			-- Cell Size
-			if cellSize != undefined then
+		cellSize = NeLLigoGetCellSize ()
+
+		-- Array of selection
+		nodeArray = #()
+		if $ == $selection then
+		(
+			nodeArray = $selection as array
+		)
+		else
+		(
+			append nodeArray $
+		)
+
+		-- Ok flag
+		ok = true
+		findOne = false
+
+		-- Cell Size
+		if cellSize != undefined then
+		(
+			-- Array of transitions zones
+			transitionZone = #()
+			for zone = 1 to 9 do
+				append transitionZone undefined
+			for zone = 1 to nodeArray.count do
 			(
-				-- Array of transitions zones
-				transitionZone = #()
-				for zone = 1 to 9 do
-					append transitionZone undefined
-				for zone = 1 to nodeArray.count do
+				-- Find one
+				findOne = true;
+
+				-- Get the zone coordinates
+				x = #()
+				y = #()
+				ok = getTransitionZoneCoordinates nodeArray[zone] x y
+
+				-- No error ?
+				if ok == true then
 				(
-					-- Find one
-					findOne = true;
+					-- Transition number
+					id = TransitionIds[y[1]+1][x[1]+1]
 
-					-- Get the zone coordinates
-					x = #()
-					y = #()
-					ok = getTransitionZoneCoordinates nodeArray[zone] x y
-
-					-- No error ?
-					if ok == true then
+					-- Store it
+					if (id == undefined) then
 					(
-						-- Transition number
-						id = TransitionIds[y[1]+1][x[1]+1]
-
-						-- Store it
+						nlerror ("ERROR A zone is not at the right position in "+ (getFilenameFile curFileName))
+						ok = false
+					)
+					else
+					(
 						transitionZone[id] = nodeArray[zone]
 					)
 				)
+			)
 
-				-- Continue ?
-				if (ok == true) and (findOne == true) then
+			-- Continue ?
+			if (ok == true) and (findOne == true) then
+			(
+				-- For each zone selected
+				for zone = 1 to 9 do
 				(
-					-- For each zone selected
-					for zone = 1 to 9 do
+					-- Zone name
+					zoneBaseName = tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4] + "-" + ((zone-1) as string)
+
+					-- Get the destination filename for export
+					filename = ligo_export_path + zoneBaseName + ".ligozone"
+
+					if (HaveToExport[zone] == true) then
 					(
 						-- Defined ?
-						if transitionZone[zone] != undefined then
+						if (transitionZone[zone] != undefined) then
 						(
-							-- Zone name
-							zoneBaseName = tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4] + "-" + ((zone-1) as string)
-
-							-- Get the destination filename for export
-							filename = ligo_export_path + zoneBaseName + ".ligozone"
-
 							-- Make an array of properties
 							props = #( #("zone", zoneBaseName), #("transname", (tokenArray[2]+"-"+tokenArray[3]) ), #("transtype", TransitionType[zone] ), #("transtype", TransitionType[zone] ), #("transnum", (TransitionNumBis[zone] as string) ) ) 
 
@@ -320,25 +343,27 @@ for curFileName in MaxFilesList do
 							c.transform = mt
 
 							-- Export the zone
+
+							nlerror ("EXPORT "+ (getFilenameFile filename))
 							if (NeLLigoExportZone c filename props false false) then
 							(
-								nlerror ("OK "+ (getFilenameFile curFileName))
+								nlerror ("OK "+ (getFilenameFile filename))
 							)
 							else
 							(
-								nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile curFileName))
+								nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile filename))
 							)
 
 							-- Delete
 							delete c
 						)
 					)
+					else
+					(
+						nlerror ("SKIP "+ (getFilenameFile filename))
+					)
 				)
 			)
-		)
-		else
-		(
-			nlerror ("SKIP "+ (getFilenameFile curFileName))
 		)
 	)
 )

@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.12 2001/09/14 09:32:14 lecroart Exp $
+ * $Id: mutex.h,v 1.13 2002/08/23 15:40:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,7 @@ class CUnfairMutex
 public:
 
 	/// Constructor
+	CUnfairMutex();
 	CUnfairMutex(const std::string &name);
 
 	/// Destructor

@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.27 2002/02/18 12:57:05 lecroart Exp $
+ * $Id: mutex.cpp,v 1.28 2002/08/23 15:40:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,15 @@ namespace NLMISC {
 /*
  * Windows version
  */
+
+CUnfairMutex::CUnfairMutex()
+{
+	// Create a mutex with no initial owner.
+	Mutex = (void *) CreateMutex (NULL, FALSE, NULL);
+	nlassert (Mutex != NULL);
+}
+
+
 CUnfairMutex::CUnfairMutex(const std::string &name)
 {
 	// Create a mutex with no initial owner.

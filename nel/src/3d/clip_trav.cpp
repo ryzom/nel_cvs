@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.16 2001/09/20 13:45:43 besson Exp $
+ * $Id: clip_trav.cpp,v 1.17 2001/09/21 13:39:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,7 +218,6 @@ void CClipTrav::traverse()
 
 		bool bInWorld = true;
 		CAABBox box;
-		// ask trap pTfmShp->getShapeAABBox (box);
 		pTfmShp->getAABBox (box);
 		// Transform the box in the world
 		CVector c = box.getCenter();

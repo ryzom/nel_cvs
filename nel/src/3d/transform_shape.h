@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.7 2001/09/20 13:45:43 besson Exp $
+ * $Id: transform_shape.h,v 1.8 2001/09/21 13:39:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,10 +74,6 @@ public:
 	std::string NameForDebug; // \todo traptemp
 #endif
 
-
-	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.	 
-	 */
-	// ask trap void					getShapeAABBox(NLMISC::CAABBox &bbox) const;
 
 	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.	 
 	 */

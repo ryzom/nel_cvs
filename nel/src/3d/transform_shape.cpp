@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.16 2001/09/20 13:45:43 besson Exp $
+ * $Id: transform_shape.cpp,v 1.17 2001/09/21 13:39:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,8 +51,6 @@ float		CTransformShape::getNumTriangles (float distance)
 
 
 // ***************************************************************************
-// ask trap void		CTransformShape::getShapeAABBox(NLMISC::CAABBox &bbox) const
-
 void		CTransformShape::getAABBox(NLMISC::CAABBox &bbox) const
 {
 	if(Shape)

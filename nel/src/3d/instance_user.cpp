@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.5 2001/09/20 13:45:43 besson Exp $
+ * $Id: instance_user.cpp,v 1.6 2001/09/21 13:39:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,6 @@ CInstanceUser::CInstanceUser(CScene *scene, IModel *trans) :
 // ***************************************************************************
 void				CInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
 {
-	// ask trap _Instance->getShapeAABBox(bbox);
 	_Instance->getAABBox(bbox);
 }
 

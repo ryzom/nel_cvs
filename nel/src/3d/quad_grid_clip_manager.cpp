@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.3 2001/09/20 13:45:43 besson Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.4 2001/09/21 13:39:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -198,7 +198,6 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 {
 	// use the position to get the cluster to use.
 	CAABBox box;
-	// ask trap pTfmShp->getShapeAABBox (box);
 	pTfmShp->getAABBox (box);
 	float	distModelMax= pTfmShp->Shape->getDistMax();
 

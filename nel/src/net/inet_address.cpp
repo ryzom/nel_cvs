@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.18 2000/11/22 15:56:47 cado Exp $
+ * $Id: inet_address.cpp,v 1.19 2000/11/23 13:09:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/net/inet_address.h"
 #include "nel/net/socket.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/debug.h"
 #include <sstream>
 
 
@@ -186,7 +187,7 @@ CInetAddress& CInetAddress::setByName( const std::string& hostName )
 		if ( phostent == NULL )
 		{
 			_Valid = false;
-			// log("Network error: Hostname resolution failed (CInetAddress::getByName)");
+			nldebug( "Network error: resolution of hostname '%s' failed", hostName.c_str() );
 			// return *this;
 			throw ESocket("Hostname resolution failed");
 		}

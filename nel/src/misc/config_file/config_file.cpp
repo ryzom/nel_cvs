@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.11 2000/11/23 11:58:55 lecroart Exp $
+ * $Id: config_file.cpp,v 1.12 2000/11/23 13:09:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,9 +117,17 @@ CConfigFile::~CConfigFile ()
 void CConfigFile::load (const string &fileName)
 {
 	_FileName = fileName;
+	_Callback = NULL;
 	CConfigFile::_ConfigFiles.push_back (this);
 	reparse ();
 }
+
+
+bool CConfigFile::loaded()
+{
+	return ( CConfigFile::_FileName != "" );
+}
+
 
 void CConfigFile::reparse ()
 {
@@ -127,6 +135,7 @@ void CConfigFile::reparse ()
 	cfin = fopen (_FileName.c_str (), "r");
 	if (cfin != NULL)
 	{
+		_Vars.clear();
 		bool parsingOK = (cfparse (&(_Vars)) == 0);
 		fclose (cfin);
 		if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.7 2000/11/22 15:56:47 cado Exp $
+ * $Id: naming_client.cpp,v 1.8 2000/11/23 13:09:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,17 +28,28 @@
 #include "nel/misc/debug.h"
 
 
+using namespace NLMISC;
+
 namespace NLNET {
 
 
 CSocket *CNamingClient::_ClientSock;
 
-/// \todo Cado: How is located the naming service ? May be we can use a config file.
-CInetAddress CNamingClient::NamingServiceAddress = CInetAddress( "olivierc", 50000 );
 
-CRegServices CNamingClient::_RegisteredServices;
+/// Config file name is "ns.cfg"
+const char		*CNamingClient::NamingServiceAddrFile = "ns.cfg";
 
-bool CNamingClient::TransactionMode = true;
+/// Default NS host name is "olivier"
+const char		*CNamingClient::NamingServiceDefHost = "olivierc";
+
+/// Default NS port is 50000
+const uint16	CNamingClient::NamingServiceDefPort = 50000;
+
+
+CConfigFile		*CNamingClient::_ConfigFile = NULL;
+CInetAddress	CNamingClient::NamingServiceAddress;
+CRegServices	CNamingClient::_RegisteredServices;
+bool			CNamingClient::TransactionMode = true;
 
 
 /* These values must correspond to CallbackArray in the Naming Service.
@@ -81,6 +92,12 @@ void CNamingClient::finalize()
 		CRegServices::iterator irs = _RegisteredServices.begin();
 		std::pair<std::string,CInetAddress> p = (*irs); // we duplicate it because we don't want to pass a reference, into unregisterService, to things that it will suppress
 		unregisterService( p.first, p.second );
+	}
+
+	if ( _ConfigFile != NULL )
+	{
+		delete _ConfigFile;
+		_ConfigFile = NULL;
 	}
 }
 
@@ -136,10 +153,52 @@ void CNamingClient::closeT()
 
 
 /*
+ * Callback for dynamic config file change
+ */
+void cbNamingServiceAddrChanged()
+{
+	try
+	{
+		CNamingClient::NamingServiceAddress.setByName( CNamingClient::_ConfigFile->getVar( "Host" ).asString() );
+		CNamingClient::NamingServiceAddress.setPort( CNamingClient::_ConfigFile->getVar( "Port" ).asInt() );
+		nlinfo( "Naming Service is now at %s", CNamingClient::NamingServiceAddress.asIPString().c_str() );
+	}
+	catch ( EConfigFile& )
+	{
+		// Do not change the address if the file has a problem
+		nlinfo ( "New config file is invalid" );
+	}
+}
+
+/*
  * Performs a socket connection
  */
 void CNamingClient::doOpen()
 {
+	if ( _ConfigFile == NULL )
+	{
+		_ConfigFile = new CConfigFile();
+		try
+		{
+			CBaseSocket::init(); // for setByName to work
+			_ConfigFile->load( CNamingClient::NamingServiceAddrFile );
+			CNamingClient::NamingServiceAddress.setByName( _ConfigFile->getVar( "Host" ).asString() );
+		}
+		catch ( EConfigFile& )
+		{
+			CNamingClient::NamingServiceAddress.setByName( CNamingClient::NamingServiceDefHost );
+		}
+		try
+		{
+			CNamingClient::NamingServiceAddress.setPort( _ConfigFile->getVar( "Port" ).asInt() );
+		}
+		catch ( EConfigFile& )
+		{
+			CNamingClient::NamingServiceAddress.setPort( CNamingClient::NamingServiceDefPort );
+		}
+		_ConfigFile->setCallback( cbNamingServiceAddrChanged );
+		nlinfo( "Naming Service is at %s", CNamingClient::NamingServiceAddress.asIPString().c_str() );
+	}
 	nldebug("Trying to connect to the Naming Service");
 	CNamingClient::_ClientSock = new CSocket();
 	CNamingClient::_ClientSock->connect( CNamingClient::NamingServiceAddress );
@@ -179,8 +238,8 @@ uint16 CNamingClient::queryServicePort( const std::string& name, const CInetAddr
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
 	msgin.serial( port );
-	CNamingClient::closeT();
 
+	CNamingClient::closeT();
 	nldebug( "Service %s got port %hu", name.c_str(), port );
 	return port;
 }

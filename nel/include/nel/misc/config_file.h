@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.11 2000/11/23 12:01:26 lecroart Exp $
+ * $Id: config_file.h,v 1.12 2000/11/23 13:09:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,6 +167,9 @@ public:
 
 	/// load and parse the file
 	void load (const std::string &fileName);
+
+	/// Returns true if the file has been loaded
+	bool loaded();
 
 	/// reload and reparse the file
 	void reparse ();

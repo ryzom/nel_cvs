@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.8 2000/11/22 15:56:47 cado Exp $
+ * $Id: naming_client.h,v 1.9 2000/11/23 13:09:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_NAMING_CLIENT_H
 
 #include "nel/net/inet_address.h"
+#include "nel/misc/config_file.h"
 
 #include <string>
 #include <map> // only one address per service
@@ -49,12 +50,15 @@ typedef std::map<std::string,CInetAddress> CRegServices;
  * Thus, if an exception is raised within the scope, finalize() will be called automatically.
  *
  * By default, TransactionMode is true, i.e. you don't need to call open() and close(), they
- * are called each time you call lookup(), registerService(), and unregisterService().
+ * are called each time you call lookup(), queryServicePort(), registerService(), and unregisterService().
  * If you plan to call several times these methods in a block, set TransactionMode to false
  * and call open() at the beginning of the block and close() at the end.
  *
- * \todo Cado: May be add CNamingClient::release() or something like that (see CNamingService Todo)
- * \test Test program is /code/test/network/log_service/main.cpp
+ * The naming service (NS) address is read in a config file called ("ns.cfg" at the moment).
+ * If no such file is provided, the default values are used (see NamingServiceDefHost
+ * and NamingServiceDefPort).
+ *
+ * \todo Cado: Add config file check for NS address change
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -123,6 +127,18 @@ public:
 	/// Transaction mode
 	static bool			TransactionMode;
 
+	/// Config file name
+	static const char	*NamingServiceAddrFile;
+
+	/// Default NS host name
+	static const char	*NamingServiceDefHost;
+
+	/// Default NS port
+	static const uint16	NamingServiceDefPort;
+
+	/// Callback for dynamic config file change
+	friend void cbNamingServiceAddrChanged();
+
 protected:
 
 	/// Call doOpen() is TransactionMode is true
@@ -141,6 +157,7 @@ private:
 	
 	static CSocket		*_ClientSock;
 	static CRegServices	_RegisteredServices;
+	static NLMISC::CConfigFile	*_ConfigFile;
 
 };
 

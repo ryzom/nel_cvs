@@ -1,7 +1,7 @@
 /** \file algo.cpp
  * <File description>
  *
- * $Id: algo.cpp,v 1.6 2003/09/01 14:31:16 distrib Exp $
+ * $Id: algo.cpp,v 1.7 2003/09/16 15:08:15 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -35,6 +35,11 @@ using	namespace std;
 namespace NLMISC 
 {
 
+bool		testWildCard(const std::string &strIn, const std::string &wildCard)
+{
+	return testWildCard(strIn.c_str(), wildCard.c_str());
+}
+	
 
 // ***************************************************************************
 bool		testWildCard(const char *strIn, const char *wildCard)

@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.7 2003/02/26 16:45:13 legros Exp $
+ * $Id: algo.h,v 1.8 2003/09/16 15:08:14 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -159,6 +159,8 @@ static inline	void fastClamp8(sint &v)
  *	NB: case-sensitive
  */
 bool		testWildCard(const char *strIn, const char *wildCard);
+
+bool		testWildCard(const std::string &strIn, const std::string &wildCard);
 
 
 // ***************************************************************************

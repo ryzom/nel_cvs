@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.48 2002/04/03 13:15:44 berenguier Exp $
+ * $Id: debug.cpp,v 1.49 2002/04/17 07:22:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "nelconfig.h"
-#endif // HAVE_CONFIG_H
+#ifdef HAVE_NELCONFIG_H
+#  include "nelconfig.h"
+#endif // HAVE_NELCONFIG_H
 
 #include "stdmisc.h"
 #include "nel/misc/log.h"
@@ -34,12 +34,12 @@
 #include "nel/misc/command.h"
 
 #ifdef NL_OS_WINDOWS
-#include <windows.h>
+#  include <windows.h>
 // define getcwd()
-#include <direct.h>
-#define	getcwd(_a, _b) (_getcwd(_a,_b))
+#  include <direct.h>
+#  define getcwd(_a, _b) (_getcwd(_a,_b))
 #elif defined NL_OS_UNIX
-#include <unistd.h>
+#  include <unistd.h>
 #endif
 
 #include <stdarg.h>

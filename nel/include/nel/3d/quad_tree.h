@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.1 2000/11/21 18:03:08 corvazier Exp $
+ * $Id: quad_tree.h,v 1.2 2000/11/23 11:05:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,11 +51,6 @@ which is out this zone is inserted, then it will ALWAYS be considered selected i
 #include <vector>
 
 
-/*// Fuck Compare. TODO.
-#define	STL_CMP(_class_)	\
-	bool	operator<(const _class_ &) const {return false;}		\
-	bool	operator==(const _class_ &) const {return false;}*/
-
 namespace	NL3D
 {
 
@@ -67,7 +62,7 @@ namespace	NL3D
   * 
   * The quadtree is geometrically delimited. By default, his size is 1*1, centered on (0,0,0). If an element
   * which is out this zone is inserted, then it will ALWAYS be considered selected in select*() methods.
-  * By default, the quad tree is aligned on XY
+  * By default, the quad tree is aligned on XZ
   */
 template<class T>	class	CQuadTree
 {
@@ -82,22 +77,28 @@ public:
 
 public:
 
-	/// Default constructor, use axes XY
+	/// Default constructor, use axes XZ
 	CQuadTree();
 
-	/** Constructor with matrix, use the matrix as base of the quad tree.
+	/// Default constructor, use axes XZ
+	~CQuadTree();
+
+	/// \name Initialization
+
+	/** Change the base matrix of the quad tree. For exemple this code init the quad tree in the plane XY:
+	  * \code CQuadTree				quadTree;
+	  * \code NLMISC::CMatrix		tmp;
+	  * \code NLMISC::CVector		I(1,0,0);
+	  * \code NLMISC::CVector		J(0,0,-1);
+	  * \code NLMISC::CVector		K(0,1,0);
+	  * \code 
+	  * \code tmp.identity();
+	  * \code tmp.setRot(I,J,K, true);
+	  * \code quadTree.ChangeBase (tmp);
 	  * 
 	  * \param base Base of the quad tree
 	  */
-	CQuadTree(const NLMISC::CMatrix& base);
-
-	/// Default constructor, use axes XY
-	~CQuadTree();
-
-	/// \name Container operation
-
-	/// Clear the container
-	void		clear();
+	void ChangeBase(const NLMISC::CMatrix& base);
 
 	/** Init the container
 	  *
@@ -105,7 +106,12 @@ public:
 	  * \param center is the center of the quad tree
 	  * \param size is the width and the height of the initial quad tree.
 	  */
-	void		create(uint DepthMax, NLMISC::CVector center, float size);
+	void		create(uint DepthMax, const NLMISC::CVector& center, float size);
+
+	/// \name Container operation
+
+	/// Clear the container
+	void		clear();
 
 	/** Erase an interator from the container
 	  *
@@ -138,11 +144,19 @@ public:
 	  */
 	void		select(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax);
 
-	/** Select element with multiple planes
+	/** Select element with multiple planes. Intersect with a polytope convex made of planes. 
+	  * The normals of planes must be directed outwards the polytope.
 	  *
 	  * \param BVolume is a plane vector
 	  */
 	void		select(const std::vector<NLMISC::CPlane> &BVolume);
+
+	/** Select element with a ray
+	  *
+	  * \param source is a point in the ray
+	  * \param dir is the direction off the ray
+	  */
+	void		selectRay(const NLMISC::CVector& source, const NLMISC::CVector& dir);
 
 	/** Return the first iterator of the selected element list. begin and end are valid till the next insert.
 	  */
@@ -344,7 +358,7 @@ private:// Classes.
 			const	NLMISC::CVector	&b1=BBoxMin;
 			const	NLMISC::CVector	&b2=BBoxMax;
 
-			for(sint i=0;i<BVolume.size();i++)
+			for(sint i=0;i<(int)BVolume.size();i++)
 			{
 				const	NLMISC::CPlane	&plane=BVolume[i];
 				// If only one of the box vertex is IN the plane, then all the box is IN this plane.
@@ -379,9 +393,6 @@ private:// Classes.
 		// Insertion of a node in this quad node, or his sons...
 		void	insert(const NLMISC::CVector &boxmin, const NLMISC::CVector &boxmax, uint wantdepth, CNode *newNode)
 		{
-			boxmin=_ChangeBasis*boxmin;
-			boxmax=_ChangeBasis*boxmax;
-
 			if(Level==0)
 			{
 				// Tous les elements qui sortent du quadtree sont forcément dans le noeud root.
@@ -532,10 +543,12 @@ public:
 		const_iterator()	{_Ptr=NULL;}
 		const_iterator(CNode *p) : _Ptr(p) {}
 		const_iterator(const CIterator& x) : _Ptr(x._Ptr) {}
+
 		const T&	operator*() const
 			{return _Ptr->Value; }
-		const T*	operator->() const
-			{return (&**this); }
+		// Doesn't work...
+		/*const T*	operator->() const
+			{return (&**this); }*/
 		const_iterator& operator++()
 			{_Ptr = (CNode*)(_Ptr->Next); return (*this); }
 		const_iterator operator++(int)
@@ -562,8 +575,9 @@ public:
 		CIterator(CNode *p) : const_iterator(p) {}
 		T&	operator*() const
 			{return _Ptr->Value; }
-		T*	operator->() const
-			{return (&**this); }
+		// Doesn't work...
+		/*T*	operator->() const
+			{return (&**this); }*/
 		CIterator& operator++()
 			{_Ptr = (CNode*)(_Ptr->Next); return (*this); }
 		CIterator operator++(int)
@@ -594,27 +608,18 @@ public:
 // ============================================================================================
 template<class T>	CQuadTree<T>::CQuadTree()
 {
-	NLMISC::CMatrix		tmp;
-	tmp.identity();
-	this->CQuadTree::CQuadTree (tmp);
-}
-template<class T>	CQuadTree<T>::CQuadTree(const NLMISC::CMatrix& base)
-{
 	_Selection.Next= NULL;
 	_DepthMax= 0;
 	_QuadRoot.BBoxMin.set(-0.5, 0, -0.5);
 	_QuadRoot.BBoxMax.set( 0.5, 0,  0.5);
 	_Size=1;
 
-	NLMISC::CMatrix		ttmp;
-	NLMISC::CVector		I(1,0,0);
-	NLMISC::CVector		J(0,0,-1);
-	NLMISC::CVector		K(0,1,0);
-
-	ttmp.identity();
-	ttmp.setRot(I,J,K, true);
-
-	_ChangeBasis=ttmp*base;
+	_ChangeBasis.identity();
+}
+// ============================================================================================
+template<class T>	void CQuadTree<T>::ChangeBase(const NLMISC::CMatrix& base)
+{
+	_ChangeBasis=base;
 }
 // ============================================================================================
 template<class T>	CQuadTree<T>::~CQuadTree<T>()
@@ -628,14 +633,14 @@ template<class T>	void		CQuadTree<T>::clear()
 	_Selection.Next= NULL;
 }
 // ============================================================================================
-template<class T>	void		CQuadTree<T>::create(uint DepthMax, NLMISC::CVector center, float size)
+template<class T>	void		CQuadTree<T>::create(uint DepthMax, const NLMISC::CVector& center, float size)
 {
-	center=_ChangeBasis*center;
+	CVector mycenter=_ChangeBasis*center;
 	clear();
 	_DepthMax= DepthMax;
 	_Size= size;
-	_QuadRoot.BBoxMin= center-NLMISC::CVector(size/2, 0 , size/2);
-	_QuadRoot.BBoxMax= center+NLMISC::CVector(size/2, 0 , size/2);
+	_QuadRoot.BBoxMin= mycenter-NLMISC::CVector(size/2, 0 , size/2);
+	_QuadRoot.BBoxMax= mycenter+NLMISC::CVector(size/2, 0 , size/2);
 }
 
 
@@ -662,13 +667,18 @@ template<class T>	void		CQuadTree<T>::erase(CIterator it)
 // ============================================================================================
 template<class T>	CQuadTree<T>::CIterator	CQuadTree<T>::insert(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax, const T &val)
 {
+	NLMISC::CVector myboxmin2=_ChangeBasis*bboxmin;
+	NLMISC::CVector myboxmax2=_ChangeBasis*bboxmax;
+	NLMISC::CVector myboxmin (std::min (myboxmin2.x, myboxmax2.x), std::min (myboxmin2.y, myboxmax2.y), std::min (myboxmin2.z, myboxmax2.z));
+	NLMISC::CVector myboxmax (std::max (myboxmin2.x, myboxmax2.x), std::max (myboxmin2.y, myboxmax2.y), std::max (myboxmin2.z, myboxmax2.z));
+
 	CNode	*newNode=new CNode(val);
 
-	assert(bboxmax.x>=bboxmin.x);
-	assert(bboxmax.y>=bboxmin.y);
-	assert(bboxmax.z>=bboxmin.z);
+	nlassert(myboxmax.x>=myboxmin.x);
+	nlassert(myboxmax.y>=myboxmin.y);
+	nlassert(myboxmax.z>=myboxmin.z);
 
-	float	boxsize= max(bboxmax.x-bboxmin.x, bboxmax.z-bboxmin.z );
+	float	boxsize= max(myboxmax.x-myboxmin.x, myboxmax.z-myboxmin.z );
 	// Prevent float precision problems. Increase bbox size a little.
 	boxsize*=1.01f;
 	// We must find the level quad which is just bigger.
@@ -680,7 +690,7 @@ template<class T>	CQuadTree<T>::CIterator	CQuadTree<T>::insert(const NLMISC::CVe
 		wantdepth++;
 	}
 
-	_QuadRoot.insert(bboxmin, bboxmax, wantdepth, newNode);
+	_QuadRoot.insert(myboxmin, myboxmax, wantdepth, newNode);
 
 	return CIterator(newNode);
 }
@@ -714,25 +724,57 @@ template<class T>	void		CQuadTree<T>::selectAll()
 // ============================================================================================
 template<class T>	void		CQuadTree<T>::select(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax)
 {
-	NLMISC::CVector bboxminCopy=bboxmin;
-	NLMISC::CVector bboxmaxCopy=bboxmax;
-	bboxminCopy=_ChangeBasis*bboxmin;
-	bboxmaxCopy=_ChangeBasis*bboxmax;
+	NLMISC::CVector myboxmin2=_ChangeBasis*bboxmin;
+	NLMISC::CVector myboxmax2=_ChangeBasis*bboxmax;
+	NLMISC::CVector bboxminCopy (std::min (myboxmin2.x, myboxmax2.x), std::min (myboxmin2.y, myboxmax2.y), std::min (myboxmin2.z, myboxmax2.z));
+	NLMISC::CVector bboxmaxCopy (std::max (myboxmin2.x, myboxmax2.x), std::max (myboxmin2.y, myboxmax2.y), std::max (myboxmin2.z, myboxmax2.z));
 
 	clearSelection();
-	_QuadRoot.select(_Selection, bboxmin, bboxmax);
+	_QuadRoot.select(_Selection, bboxminCopy, bboxmaxCopy);
 }
 // ============================================================================================
 template<class T>	void		CQuadTree<T>::select(const std::vector<NLMISC::CPlane> &BVolume)
 {
-	std::vector<NLMISC::CPlane> BVolumeCopy.resize (BVolume.size());
-	for (int i=0; i<BVolumeCopy.size(); i++)
+	std::vector<NLMISC::CPlane> BVolumeCopy;
+	BVolumeCopy.resize (BVolume.size());
+	for (int i=0; i<(int)BVolumeCopy.size(); i++)
 	{
 		BVolumeCopy[i]=BVolume[i]*((_ChangeBasis).inverted());
 	}
 
 	clearSelection();
 	_QuadRoot.select(_Selection, BVolumeCopy);
+}
+// ============================================================================================
+template<class T>	void		CQuadTree<T>::selectRay(const NLMISC::CVector& source, const NLMISC::CVector& dir)
+{
+	CMatrix mat;
+	mat.identity ();
+
+	// Set a wrong matrix
+	CVector vTmp=dir^((fabs(vTmp*CVector(1,0,0))>0.f)?CVector(1,0,0):CVector(0,1,0));
+	mat.setRot (dir, vTmp, dir^vTmp);
+
+	// Normalize it Yoyo!
+	mat.normalize (NLMISC::CMatrix::XYZ);
+
+	// Get the planes..
+	std::vector<NLMISC::CPlane> BVolume;
+	BVolume.reserve (4);
+	
+	// Setup the planes
+	NLMISC::CPlane plane;
+	plane.make (mat.getJ(), source);
+	BVolume.push_back (plane);
+	plane.make (mat.getK(), source);
+	BVolume.push_back (plane);
+	plane.make (-mat.getJ(), source);
+	BVolume.push_back (plane);
+	plane.make (-mat.getK(), source);
+	BVolume.push_back (plane);
+
+	// Select the nodes
+	select (BVolume);
 }
 // ============================================================================================
 template<class T>	CQuadTree<T>::CIterator	CQuadTree<T>::begin()

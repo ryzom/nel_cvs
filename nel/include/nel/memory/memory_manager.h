@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.8 2003/03/13 15:06:54 corvazier Exp $
+ * $Id: memory_manager.h,v 1.9 2003/05/15 08:03:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 // CONFIGURATION
 
 // Define this to use the allocator in release mode (no statistics, no checks, maximum speed, minimal memory used)
-#define NL_HEAP_ALLOCATION_NDEBUG
+// #define NL_HEAP_ALLOCATION_NDEBUG
 
 #undef MEMORY_API
 #ifdef MEMORY_EXPORTS

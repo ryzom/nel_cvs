@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.32 2004/07/13 11:34:40 miller Exp $
+ * $Id: command.cpp,v 1.33 2004/09/07 16:07:16 vuarand Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -392,7 +392,7 @@ void ICommand::serialCommands (IStream &f)
 	f.serialCont (cmd);
 }
 
-bool ICommand::exists (std::string &commandName)
+bool ICommand::exists (std::string const &commandName)
 {
 	return ((*Commands).find(commandName) != (*Commands).end ());
 }

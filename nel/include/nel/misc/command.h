@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.32 2004/08/13 18:55:32 brigand Exp $
+ * $Id: command.h,v 1.33 2004/09/07 16:07:15 vuarand Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,7 +144,7 @@ public:
 	static void serialCommands (IStream &f);
 
 	/// returns true if the command exists
-	static bool exists (std::string &commandName);
+	static bool exists (std::string const &commandName);
 
 	/// if the string begin with an upper case, it s a variable, otherwise, it s a command
 	static bool isCommand (const std::string &str)

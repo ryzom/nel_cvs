@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.7 2001/07/12 17:06:58 legros Exp $
+ * $Id: entities.cpp,v 1.8 2001/07/13 07:26:19 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@
 #include "client.h"
 #include "entities.h"
 #include "pacs.h"
+#include "camera.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -211,6 +212,7 @@ void updateEntities ()
 			newPos = MouseListener->getViewMatrix().getPos();
 			// get new orientation
 			CVector	j = MouseListener->getViewMatrix().getJ();
+			ViewHeight -= j.z;
 			j.z = 0.0f;
 			j.normalize();
 			entity.Angle = (float)atan2(j.y, j.x);
@@ -242,6 +244,17 @@ void updateEntities ()
 		entity.Position.z = GlobalRetriever->getMeanHeight(gPos);
 		// snap to the ground
 		entity.VisualCollisionEntity->snapToGround(entity.Position);
+
+		// check position retrieving
+		UGlobalPosition gPosCheck;
+		gPosCheck = GlobalRetriever->retrievePosition(entity.Position);
+		if (gPos.InstanceId != gPosCheck.InstanceId ||
+			gPos.LocalPosition.Surface != gPosCheck.LocalPosition.Surface)
+		{
+			nlwarning("Checked UGlobalPosition differs from store");
+			gPos.InstanceId = gPosCheck.InstanceId;
+			gPos.LocalPosition.Surface = gPosCheck.LocalPosition.Surface;
+		}
 
 		entity.Instance->setPos(entity.Position);
 		CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);

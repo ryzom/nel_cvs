@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.17 2005/01/06 16:21:33 cado Exp $
+ * $Id: time_nl.cpp,v 1.18 2005/01/06 20:14:06 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ TTime CTime::getLocalTime ()
 		if ( (clock_gettime( CLOCK_MONOTONIC, &tv ) == 0) &&
 			 (clock_getres( CLOCK_MONOTONIC, &tv ) == 0) )
 		{
-			nldebug( "Monotonic local time supported (resolution %.6f ms)", ((float)tv.tv_sec)*1000.0f + ((float)tv_nsec)/1000000.0f );
+			nldebug( "Monotonic local time supported (resolution %.6f ms)", ((float)tv.tv_sec)*1000.0f + ((float)tv.tv_nsec)/1000000.0f );
 			isMonotonicClockSupported = true;
 		}
 		else
@@ -124,9 +124,9 @@ TTime CTime::getLocalTime ()
 #ifdef _POSIX_TIMERS
 #ifdef _POSIX_MONOTONIC_CLOCK
 
-    struct timespec tv;
 	if ( isMonotonicClockSupported )
 	{
+		struct timespec tv;
 		// This is not affected by system time changes.
 		if ( clock_gettime( CLOCK_MONOTONIC, &tv ) != 0 )
 			nlerror ("Can't get clock time again");

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.3 2001/05/03 13:19:13 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.4 2001/05/10 08:20:06 lecroart Exp $
  *
  */
 
@@ -46,41 +46,41 @@ using namespace NLNET;
 
 struct CService
 {
-	CService(TSockId s) : ServiceSockId(s), ServiceId(NextServiceId++) { }
+	CService(TSockId s) : SockId(s), Id(NextId++), Ready(false) { }
 
-	TSockId	ServiceSockId;	// socket number to communicate with
-	uint32	ServiceId;		// id to identify it
-	string	ShortName;
-	string	LongName;
+	TSockId	SockId;			/// connection to the service
+	uint32	Id;				/// uint32 to identify the service
+	string	ShortName;		/// name of the service in short format ("NS" for example)
+	string	LongName;		/// name of the service in long format ("naming_service")
+	bool	Ready;			/// true if the service is ready
 
 private:
-
-	static	uint32 NextServiceId;
+	static	uint32 NextId;
 };
 
-uint32 CService::NextServiceId = 0;
+uint32 CService::NextId = 1;
 
 list<CService> Services;
-typedef list<CService>::iterator sit;
+typedef list<CService>::iterator SIT;
 
-sit find (TSockId sid)
+SIT find (TSockId sid)
 {
-	sit it;
-	for (it = Services.begin(); it != Services.end(); it++)
+	SIT sit;
+	for (sit = Services.begin(); sit != Services.end(); sit++)
 	{
-		if ((*it).ServiceSockId == sid) break;
+		if ((*sit).SockId == sid) break;
 	}
-	return it;
+	return sit;
 }
 
-sit find (uint32 sid)
+SIT findService (uint32 sid)
 {
-	sit it;
-	for (it = Services.begin(); it != Services.end(); it++)
+	SIT sit;
+	for (sit = Services.begin(); sit != Services.end(); sit++)
 	{
-		if ((*it).ServiceId == sid) break;
+		if ((*sit).Id == sid) break;
 	}
-	return it;
+	return sit;
 }
 
 
@@ -197,53 +197,58 @@ void executeCommand (string command, TSockId from, CCallbackNetBase &netbase)
 
 static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CService *c = (CService*) from->appId();
+	CService *s = (CService*) from->appId();
 
-	msgin.serial (c->ShortName);
-	msgin.serial (c->LongName);
+	msgin.serial (s->ShortName, s->LongName);
 
-	nlinfo ("%s %s %s is identified", from->asString().c_str(), c->ShortName.c_str(), c->LongName.c_str());
+	nlinfo ("*:*:%d is identified to be '%s' '%s'", s->Id, s->ShortName.c_str(), s->LongName.c_str());
 
+	// broadcast the message to the admin service
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SID");
-	msgout.serial (c->ShortName);
-	msgout.serial (c->LongName);
+	msgout.serial (s->Id, s->ShortName, s->LongName);
 	CNetManager::send ("AESAS", msgout);
 }
 
 static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CService *c = (CService*) from->appId();
+	CService *s = (CService*) from->appId();
 
-	nlinfo ("%s %s %s is ready", from->asString().c_str(), c->ShortName.c_str(), c->LongName.c_str());
+	nlinfo ("*:*:%d is ready", s->Id);
+	s->Ready = true;
 
+	// broadcast the message to the admin service
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SR");
-	msgout.serial (c->ShortName);
-	msgout.serial (c->LongName);
+	msgout.serial (s->Id);
 	CNetManager::send ("AESAS", msgout);
 }
 
 void serviceConnection (const string &serviceName, TSockId from, void *arg)
 {
-	Services.push_back (CService(from));
-	CService *c = &(Services.back());
-	from->setAppId ((uint64)c);
+	Services.push_back (CService (from));
+	CService *s = &(Services.back());
+	from->setAppId ((uint64)s);
 
-	nlinfo ("%s is connected", from->asString().c_str());
+	nlinfo ("*:*:%d connected", s->Id);
 	
+	// broadcast the message to the admin service
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SC");
+	msgout.serial (s->Id);
 	CNetManager::send ("AESAS", msgout);
 }
 
 void serviceDisconnection (const string &serviceName, TSockId from, void *arg)
 {
-	CService *c = (CService*) from->appId();
+	CService *s = (CService*) from->appId();
 
-	nlinfo ("%s %s %s is disconnected", from->asString().c_str(), c->ShortName.c_str(), c->LongName.c_str());
+	nlinfo ("*:*:%d disconnected", s->Id);
 
+	// broadcast the message to the admin service
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SD");
-	msgout.serial (c->ShortName);
-	msgout.serial (c->LongName);
+	msgout.serial (s->Id);
 	CNetManager::send ("AESAS", msgout);
+
+	// remove the service from the list
+	Services.erase (findService(s->Id));
 }
 
 
@@ -281,6 +286,24 @@ static void cbStopService (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 
 }
 
+void cbASServiceConnection (const string &serviceName, TSockId from, void *arg)
+{
+	// new admin service, send him all out info about services
+
+	nlinfo ("AS %s is connected", from->asString().c_str());
+	
+	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SL");
+	uint32 nbs = (uint32)Services.size();
+	msgout.serial (nbs);
+	for (SIT sit = Services.begin(); sit != Services.end(); sit++)
+	{
+		msgout.serial ((*sit).Id);
+		msgout.serial ((*sit).ShortName);
+		msgout.serial ((*sit).LongName);
+		msgout.serial ((*sit).Ready);
+	}
+	CNetManager::send ("AESAS", msgout, from);
+}
 
 TCallbackItem AESASCallbackArray[] =
 {
@@ -305,6 +328,7 @@ public:
 		CNetManager::setDisconnectionCallback ("AES", serviceDisconnection, NULL);
 
 		// install the server for AS
+		CNetManager::setConnectionCallback ("AESAS", cbASServiceConnection, NULL);
 		CNetManager::addServer ("AESAS", 49996);
 		CNetManager::addCallbackArray ("AESAS", AESASCallbackArray, sizeof(AESASCallbackArray)/sizeof(AESASCallbackArray[0]));
 	}

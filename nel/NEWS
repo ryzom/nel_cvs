@@ -1,3 +1,14 @@
+May 21 2002
+===========
+
+*  NLNET: send() receive() and serial() are 3 times faster.
+
+*  NLNET: layer 2 was removed because not useful and take some CPU for nothing.
+
+* NLMISC: CFastMem::memcpy() copies a memory block as fast as possible depending of the OS and
+          of the CPU.
+
+* NLMISC: CSystemInfo class contains info on the processor type (MMX, SSE, and so on).
 
 April 30 2002
 =============

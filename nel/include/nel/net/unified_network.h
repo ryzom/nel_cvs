@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.24 2002/08/22 13:12:44 lecroart Exp $
+ * $Id: unified_network.h,v 1.25 2002/08/22 13:16:05 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -244,9 +244,9 @@ private:
 			/// If it s a server connection, it's the host id, it s InvalidId if it s a client
 			TSockId				 HostId;
 
-			TConnection() : CbNetBase(NULL), IsServerConnection(false), HostId(InvalidSockId) { }
-			TConnection(CCallbackClient *cbc) : CbNetBase(cbc), IsServerConnection(false), HostId(InvalidSockId) { }
-			TConnection(CCallbackNetBase *cbnb, TSockId hi) : CbNetBase(cbnb), IsServerConnection(true), HostId(hi) { }
+			TConnection() : IsServerConnection(false), CbNetBase(NULL), HostId(InvalidSockId) { }
+			TConnection(CCallbackClient *cbc) : IsServerConnection(false), CbNetBase(cbc), HostId(InvalidSockId) { }
+			TConnection(CCallbackNetBase *cbnb, TSockId hi) : IsServerConnection(true), CbNetBase(cbnb), HostId(hi) { }
 
 			void setAppId (uint64 appid) { CbNetBase->getSockId (HostId)->setAppId (appid); }
 			uint64 getAppId () { return CbNetBase->getSockId (HostId)->appId (); }
@@ -445,7 +445,7 @@ private:
 	std::vector<std::string>					_DefaultNetwork;
 	
 	//
-	CUnifiedNetwork() : _ExtSId(256), _LastRetry(0), _CbServer(0), _NextUpdateTime(0), _Initialised(false)
+	CUnifiedNetwork() : _CbServer(0), _ExtSId(256), _LastRetry(0), _NextUpdateTime(0), _Initialised(false)
 	{
 	}
 

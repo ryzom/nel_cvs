@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.34 2002/08/22 12:10:04 lecroart Exp $
+ * $Id: naming_client.h,v 1.35 2002/08/22 13:16:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,7 @@ class CNamingClient
 public:
 	struct CServiceEntry
 	{
-		CServiceEntry (std::string n, TServiceId s, std::vector<CInetAddress> a) : Addr(a), Name(n), SId (s) { }
+		CServiceEntry (std::string n, TServiceId s, std::vector<CInetAddress> a) : Name(n), SId (s), Addr(a) { }
 
 		// name of the service
 		std::string					Name;

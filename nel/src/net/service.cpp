@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.40 2001/01/25 14:58:51 cado Exp $
+ * $Id: service.cpp,v 1.41 2001/01/29 16:24:17 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -152,7 +152,7 @@ static void SigHandler(int Sig)
 IService::IService()
 {
 	// Singleton
-	nlassert( IService::Instance != NULL );
+	nlassert( IService::Instance == NULL );
 	IService::Instance = this;
 }
 

@@ -51,10 +51,7 @@ namespace NLAILINK
 		NLAIAGENT::CLocWordNumRef::clear();
 		NLAIAGENT::CAgentScript::releaseAgentScript();
 		NLAIAGENT::CFsmScript::releaseClass();
-		if(NLAIAGENT::CProxyAgentMail::MainAgent != NULL) 
-		{
-			NLAIAGENT::CProxyAgentMail::MainAgent->release();
-		}
+		
 		NLAIAGENT::CProxyAgentMail::releaseClass();
 		NLAISCRIPT::CLibTest::releaseClass();
 		NLAICHARACTER::CCharacterNoeud::releaseClass();
@@ -75,6 +72,14 @@ namespace NLAILINK
 	{
 		NLAIAGENT::CProxyAgentMail::MainAgent = manager;
 		//NLAIAGENT::CProxyAgentMail::MainAgent->incRef();
+	}
+
+	void releaseMainManager()
+	{
+		if(NLAIAGENT::CProxyAgentMail::MainAgent != NULL) 
+		{
+			NLAIAGENT::CProxyAgentMail::MainAgent->release();
+		}
 	}
 
 	static char LaseErrorCodeOrdreInterprete[32*1024];

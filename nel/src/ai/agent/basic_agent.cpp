@@ -1,6 +1,6 @@
 /** \file basic_agent.cpp
  *
- * $Id: basic_agent.cpp,v 1.9 2001/04/19 13:45:09 chafik Exp $
+ * $Id: basic_agent.cpp,v 1.10 2001/05/15 12:55:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,15 @@ namespace NLAIAGENT
 				_AgentList.erase(i);
 				// Supprime chez l'ancien fils la boite au lettre du père
 				p.getMail()->removeMailBox( this->getMail() );
+
+#ifdef NL_DEBUG
+
+				i = _AgentList.begin();
+				while(i != _AgentList.end())
+				{					
+					IBasicAgent *c = *i ++;
+				}
+#endif
 				return;
 			}
 			i++;
@@ -99,16 +108,26 @@ namespace NLAIAGENT
 		std::list<IBasicAgent *>::iterator i = _AgentList.begin();
 		while(i != _AgentList.end())
 		{					
-			if((*i) == p)
+			IBasicAgent *c = *i;
+			if(c == p)
 			{
+				_AgentList.erase(i);				
 				p->getMail()->removeMailBox( this->getMail() );
-				(*i)->release();
-				_AgentList.erase(i);
+				c->release();
+				
 				// Supprime chez l'ancien fils la boite au lettre du père				
-				return;
+				break;
 			}
 			i++;
 		}
+#ifdef NL_DEBUG
+		int s = _AgentList.size();
+		i = _AgentList.begin();
+		while(i != _AgentList.end())
+		{					
+			IBasicAgent *c = *i ++;
+		}
+#endif
 	}
 	void IAgentComposite::deleteListe()
 	{

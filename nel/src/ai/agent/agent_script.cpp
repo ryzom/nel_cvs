@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.62 2001/05/10 15:15:57 portier Exp $
+ * $Id: agent_script.cpp,v 1.63 2001/05/15 12:55:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -562,10 +562,13 @@ namespace NLAIAGENT
 			tsetDefNameAgent::iterator debut = p.first;
 			while(p.first != p.second)
 			{
-				removeChild(*p.first->Itr);
+				tsetDefNameAgent::iterator iTmp = p.first;
 				p.first ++;
-			}
-			_DynamicAgentName.erase(debut,p.second);			
+
+				NLAIAGENT::IBasicAgent *o = *iTmp->Itr;
+				_DynamicAgentName.erase(iTmp);				
+				removeChild(o);				
+			}			
 			r.Result = new DigitalType(1.0);
 			return r;
 		}		
@@ -695,6 +698,7 @@ namespace NLAIAGENT
 		{
 			CAgentScript *o = (CAgentScript *)*((*p++).Itr);
 			o->sendMessage(msg);
+			if(p != _DynamicAgentName.end()) msg = (IObjectIA *)msg->clone();
 		}
 
 		return IObjectIA::CProcessResult();
@@ -1091,6 +1095,23 @@ namespace NLAIAGENT
 			{				
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
+
+		case TGoal:
+			{				
+				return runGoalMsg((IBaseGroupType *)o);
+			}
+
+		case TCancelGoal:
+			{				
+				return runCancelGoalMsg((IBaseGroupType *)o);
+			}
+
+		case TFact:
+			{				
+				return runFactMsg((IBaseGroupType *)o);
+			}
+
+	////////////////////////////////////////////////////////////////////////
 
 		default:
 			return IAgent::runMethodeMember(index,o);

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.24 2001/05/10 15:15:57 portier Exp $
+ * $Id: baseai.cpp,v 1.25 2001/05/15 12:55:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -539,8 +539,9 @@ namespace NLAIAGENT
 	{
 		tListiBasicItr i = _Connected.begin();
 		while(i != _Connected.end())
-		{				
-			if(*i == a)
+		{			
+			const IConnectIA *o = *i;
+			if(o == a)
 			{					
 				_Connected.erase(i);
 				return;

@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.7 2001/05/10 15:15:57 portier Exp $
+ * $Id: agent_timer.cpp,v 1.8 2001/05/15 12:55:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -301,8 +301,8 @@ namespace NLAIAGENT
 	{
 		if(_Call == a)
 		{
-			detach();		
-			release();
+			detach();
+			//NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);			
 		}		
 		else CAgentScript::onKill(a);
 	}
@@ -328,8 +328,9 @@ namespace NLAIAGENT
 		{
 			NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
 			r = accessor.value()->removeDynamic(&g);
-		}
-		if(r.Result != NULL) r.Result->release();
+			if(r.Result != NULL) r.Result->release();
+			//release();
+		}		
 	}
 
 	void CAgentWatchTimer::attach()

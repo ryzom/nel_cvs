@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.5 2002/11/06 16:58:45 boucher Exp $
+ * $Id: cloud_scape.cpp,v 1.6 2003/03/13 17:37:26 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -475,19 +475,21 @@ void CCloudScape::anim (double dt, NL3D::CCamera *pCamera)
 		else
 		{
 			// Remove some clouds
-			float slice = (_NewCSS.TimeToChange/4) / (_OldCSS.NbCloud-_NewCSS.NbCloud);
 			sint32 diffCloud = _OldCSS.NbCloud-_NewCSS.NbCloud;
-
-			_CurrentCSS.NbCloud = _OldCSS.NbCloud;
-
-			for (i = 0; i < diffCloud; ++i)
+			if (diffCloud)
 			{
-				if (_TimeNewCSS < i*slice)
-					_CloudPower[_OldCSS.NbCloud-i-1] = 255;
-				else if (_TimeNewCSS > (i*slice+3*_NewCSS.TimeToChange/4))
-					_CloudPower[_OldCSS.NbCloud-i-1] = 0;
-				else
-					_CloudPower[_OldCSS.NbCloud-i-1] = (uint8)(255-255*(_TimeNewCSS-i*slice)/(3*_NewCSS.TimeToChange/4));
+				float slice = (_NewCSS.TimeToChange/4) / (float)diffCloud;
+				_CurrentCSS.NbCloud = _OldCSS.NbCloud;
+
+				for (i = 0; i < diffCloud; ++i)
+				{
+					if (_TimeNewCSS < i*slice)
+						_CloudPower[_OldCSS.NbCloud-i-1] = 255;
+					else if (_TimeNewCSS > (i*slice+3*_NewCSS.TimeToChange/4))
+						_CloudPower[_OldCSS.NbCloud-i-1] = 0;
+					else
+						_CloudPower[_OldCSS.NbCloud-i-1] = (uint8)(255-255*(_TimeNewCSS-i*slice)/(3*_NewCSS.TimeToChange/4));
+				}
 			}
 		}
 	}

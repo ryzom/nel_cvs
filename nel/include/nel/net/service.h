@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.48 2002/03/28 17:45:21 lecroart Exp $
+ * $Id: service.h,v 1.49 2002/04/09 12:27:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,7 @@ class CCallbackServer;
  * -L followed by the directory where we have to log
  * -N followed by the alias name (used by the admin system)
  * -P followed by the listen port
+ * -A followed by the path where to execute the service (it uses chdir())
  *
  */
 
@@ -371,6 +372,9 @@ private:
 
 	/// The directory where the logfiles are
 	std::string							_LogDir;
+
+	/// The directory where the service is running
+	std::string							_RunningPath;
 
 	/// true if the service use layer5
 	bool								_IsService5;

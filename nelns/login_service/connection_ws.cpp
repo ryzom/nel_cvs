@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.23 2004/09/08 12:47:41 legros Exp $
+ * $Id: connection_ws.cpp,v 1.24 2005/01/04 13:40:11 legros Exp $
  *
  */
 
@@ -153,7 +153,7 @@ static void cbWSDisconnection (const std::string &serviceName, uint16 sid, void 
 			nlinfo("ShardId %d with IP '%s' is offline!", Shards[i].ShardId, ia.asString ().c_str());
 			nlinfo("*** ShardId %3d NbPlayers %3d -> %3d", Shards[i].ShardId, Shards[i].NbPlayers, 0);
 			
-			string query = "update shard set Online=Online-1, NbPlayers=NbPlayers-"+toString(Shards[i].NbPlayers)+" where ShardId="+toString(Shards[i].ShardId);
+			string query = "update shard set Online=0, NbPlayers=NbPlayers-"+toString(Shards[i].NbPlayers)+" where ShardId="+toString(Shards[i].ShardId);
 			sint ret = mysql_query (DatabaseConnection, query.c_str ());
 			if (ret != 0)
 			{
@@ -353,7 +353,7 @@ static void cbWSIdentification (CMessage &msgin, const std::string &serviceName,
 		}
 		else
 		{
-			string query = "update shard set Online=Online+1 where ShardId="+toString(shardId);
+			string query = "update shard set Online=1 where ShardId="+toString(shardId);
 			sint ret = mysql_query (DatabaseConnection, query.c_str ());
 			if (ret != 0)
 			{
@@ -640,6 +640,31 @@ static void	cbWSReportNoPatch(CMessage &msgin, const std::string &serviceName, u
 	}
 }
 
+static void	cbWSSetShardOpen(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	sint	shardPos = findShardWithSId (sid);
+
+	if (shardPos == -1)
+	{
+		nlwarning ("unknown WS %d reported shard open state", sid);
+		return;
+	}
+
+	uint8	shardOpenState;
+	msgin.serial(shardOpenState);
+
+	CShard&	shard = Shards[shardPos];
+
+	string query = toString("UPDATE shard SET Online='%d' WHERE ShardId='%d'", shardOpenState+1, shard.ShardId);
+	sint ret = mysql_query (DatabaseConnection, query.c_str ());
+	if (ret != 0)
+	{
+		nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
+	}
+}
+
+
 static const TUnifiedCallbackItem WSCallbackArray[] =
 {
 	{ "CC",					cbWSClientConnected },
@@ -647,6 +672,7 @@ static const TUnifiedCallbackItem WSCallbackArray[] =
 
 	{ "REPORT_FS_STATE",	cbWSReportFSState },
 	{ "REPORT_NO_PATCH",	cbWSReportNoPatch },
+	{ "SET_SHARD_OPEN",		cbWSSetShardOpen },
 };
 
 

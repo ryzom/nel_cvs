@@ -9,9 +9,14 @@ using namespace std;
 
 // ---------------------------------------------------------------------------
 
-#define ID_MENU_CREATE		0x10010
-#define ID_MENU_DELETE		0x10011
-#define ID_MENU_PROPERTIES	0x10012
+#define ID_MENU_CREATE			0x10010
+#define ID_MENU_DELETE			0x10011
+#define ID_MENU_PROPERTIES		0x10012
+#define ID_MENU_HIDEALL			0x10013
+#define ID_MENU_UNHIDEALL		0x10014
+#define ID_MENU_HIDE			0x10015
+#define ID_MENU_REGIONUNHIDEALL	0x10016
+#define ID_MENU_REGIONHIDEALL	0x10017
 
 // ---------------------------------------------------------------------------
 
@@ -24,6 +29,11 @@ BEGIN_MESSAGE_MAP(CToolsLogic, CTreeView)
 	ON_COMMAND(ID_MENU_CREATE, OnMenuCreate)
 	ON_COMMAND(ID_MENU_DELETE, OnMenuDelete)
 	ON_COMMAND(ID_MENU_PROPERTIES, OnMenuProperties)
+	ON_COMMAND(ID_MENU_HIDEALL, OnMenuHideAll)
+	ON_COMMAND(ID_MENU_UNHIDEALL, OnMenuUnhideAll)
+	ON_COMMAND(ID_MENU_HIDE, OnMenuHide)
+	ON_COMMAND(ID_MENU_REGIONHIDEALL, OnMenuRegionHideAll)
+	ON_COMMAND(ID_MENU_REGIONUNHIDEALL,OnMenuRegionUnhideAll)
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelChanged)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -35,25 +45,76 @@ IMPLEMENT_DYNCREATE(CToolsLogic, CTreeView)
 // ---------------------------------------------------------------------------
 CToolsLogic::CToolsLogic ()
 {
+	_MainFrame = NULL;
 }
 
 // ---------------------------------------------------------------------------
-void CToolsLogic::init(CMainFrame *pMF)
+void CToolsLogic::init (CMainFrame *pMF)
 {
 	_MainFrame = pMF;
 	pMF->_PRegionBuilder.setToolsLogic (this);
-
-	_PointItem = GetTreeCtrl().InsertItem ("Points");
-	_PathItem = GetTreeCtrl().InsertItem ("Splines");
-	_ZoneItem = GetTreeCtrl().InsertItem ("Patatoids");
-
+	_RegionsInfo.resize (0);
 	pMF->_PRegionBuilder.updateToolsLogic ();
 }
 
 // ---------------------------------------------------------------------------
-void CToolsLogic::uninit()
+void CToolsLogic::reset ()
+{
+	GetTreeCtrl().DeleteAllItems();
+	_RegionsInfo.clear ();
+}
+
+// ---------------------------------------------------------------------------
+void CToolsLogic::uninit ()
 {
 	_MainFrame->_PRegionBuilder.setSelPB (NULL);
+	_MainFrame->_PRegionBuilder.setToolsLogic (NULL);
+	_MainFrame = NULL;
+}
+
+// ---------------------------------------------------------------------------
+uint32 CToolsLogic::createNewRegion (const std::string &name)
+{
+	SRegionInfo ri;
+
+	if (_MainFrame == NULL)
+		return 0;
+	
+	ri.Name = name;
+	ri.RegionItem = GetTreeCtrl().InsertItem (ri.Name.c_str());
+	ri.PointItem = GetTreeCtrl().InsertItem ("Points", ri.RegionItem);
+	ri.PathItem = GetTreeCtrl().InsertItem ("Splines", ri.RegionItem);
+	ri.ZoneItem = GetTreeCtrl().InsertItem ("Patatoids", ri.RegionItem);
+	_RegionsInfo.push_back (ri);
+	
+	return _RegionsInfo.size()-1;
+}
+
+// ---------------------------------------------------------------------------
+HTREEITEM CToolsLogic::addPoint (uint32 nPos, const std::string &name)
+{
+	return GetTreeCtrl().InsertItem (name.c_str(), _RegionsInfo[nPos].PointItem);
+}
+
+// ---------------------------------------------------------------------------
+HTREEITEM CToolsLogic::addPath (uint32 nPos, const std::string &name)
+{
+	return GetTreeCtrl().InsertItem (name.c_str(), _RegionsInfo[nPos].PathItem);
+}
+
+// ---------------------------------------------------------------------------
+HTREEITEM CToolsLogic::addZone (uint32 nPos, const std::string &name)
+{
+	return GetTreeCtrl().InsertItem (name.c_str(), _RegionsInfo[nPos].ZoneItem);
+}
+
+// ---------------------------------------------------------------------------
+void CToolsLogic::expandAll (uint32 nPos)
+{
+	GetTreeCtrl().Expand (_RegionsInfo[nPos].RegionItem, TVE_EXPAND);
+	GetTreeCtrl().Expand (_RegionsInfo[nPos].PointItem, TVE_EXPAND);
+	GetTreeCtrl().Expand (_RegionsInfo[nPos].PathItem, TVE_EXPAND);
+	GetTreeCtrl().Expand (_RegionsInfo[nPos].ZoneItem, TVE_EXPAND);
 }
 
 // ---------------------------------------------------------------------------
@@ -61,7 +122,8 @@ void CToolsLogic::OnRButtonDown (UINT nFlags, CPoint point)
 {
 	UINT uFlags;
 	HTREEITEM hItem = GetTreeCtrl().HitTest(point, &uFlags);
-
+	HTREEITEM hParent = GetTreeCtrl().GetParentItem (hItem);
+	
 	if ((hItem != NULL) && (TVHT_ONITEM & uFlags))
 	{
 		// Select the item
@@ -73,16 +135,27 @@ void CToolsLogic::OnRButtonDown (UINT nFlags, CPoint point)
 		CMenu *pMenu = new CMenu;
 		pMenu->CreatePopupMenu ();
 
-		if (GetTreeCtrl().GetParentItem(hItem) == NULL)
+		if (hParent == NULL)
 		{
-			// Display the contextual menu : create
+			// Region contextual menu
+			pMenu->AppendMenu (MF_STRING, ID_MENU_REGIONHIDEALL, "Hide All");
+			pMenu->AppendMenu (MF_STRING, ID_MENU_REGIONUNHIDEALL, "Unhide All");
+		}
+		else if (GetTreeCtrl().GetParentItem(hParent) == NULL)
+		{
+			// Display the contextual menu for point, spline, etc...
 			pMenu->AppendMenu (MF_STRING, ID_MENU_CREATE, "Create");
+			pMenu->AppendMenu (MF_STRING, ID_MENU_HIDEALL, "Hide All");
+			pMenu->AppendMenu (MF_STRING, ID_MENU_UNHIDEALL, "Unhide All");
 		}
 		else
 		{
 			// Display the contextual menu : properties
 			pMenu->AppendMenu (MF_STRING, ID_MENU_DELETE, "Delete");
 			pMenu->AppendMenu (MF_STRING, ID_MENU_PROPERTIES, "Properties");
+			pMenu->AppendMenu (MF_STRING, ID_MENU_HIDE, "Hide");
+			if (_MainFrame->_PRegionBuilder.isHidden(hItem))
+				pMenu->CheckMenuItem (ID_MENU_HIDE, MF_CHECKED|MF_BYCOMMAND);
 		}
 		pMenu->TrackPopupMenu (TPM_LEFTALIGN | TPM_LEFTBUTTON, 
 								r.left+point.x, r.top+point.y, this);
@@ -93,15 +166,16 @@ void CToolsLogic::OnRButtonDown (UINT nFlags, CPoint point)
 void CToolsLogic::OnSelChanged (LPNMHDR pnmhdr, LRESULT *pLResult)
 {
 	HTREEITEM hItem = GetTreeCtrl().GetSelectedItem();
+	HTREEITEM hParent = GetTreeCtrl().GetParentItem (hItem);
 
 	if (hItem != NULL)
 	{
 		// Select the item
 		GetTreeCtrl().Select(hItem, TVGN_CARET);
-		if ((hItem != _PointItem) && (hItem != _PathItem) && (hItem != _ZoneItem))
-			_MainFrame->_PRegionBuilder.setSelPB (hItem);
-		else
+		if ((hParent == NULL) || (GetTreeCtrl().GetParentItem(hParent) == NULL))
 			_MainFrame->_PRegionBuilder.setSelPB (NULL);
+		else
+			_MainFrame->_PRegionBuilder.setSelPB (hItem);
 	}
 }
 
@@ -112,20 +186,26 @@ void CToolsLogic::OnMenuCreate()
 	if (dialog.DoModal () == IDOK)
 	{
 		HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
+		HTREEITEM parent = GetTreeCtrl().GetParentItem (item);
 		HTREEITEM newItem = GetTreeCtrl().InsertItem (dialog.Name, item);
 		GetTreeCtrl().Expand (item, TVE_EXPAND);
 		// Create the newItem
-		if (item == _PointItem)
+		for (uint32 i = 0; i < _RegionsInfo.size(); ++i)
+		if (_RegionsInfo[i].RegionItem == parent)
 		{
-			_MainFrame->_PRegionBuilder.insertPoint (newItem, dialog.Name, dialog.LayerName);
-		}
-		else if (item == _PathItem)
-		{
-			_MainFrame->_PRegionBuilder.insertPath (newItem, dialog.Name, dialog.LayerName);
-		}
-		else if (item == _ZoneItem)
-		{
-			_MainFrame->_PRegionBuilder.insertZone (newItem, dialog.Name, dialog.LayerName);
+			if (item == _RegionsInfo[i].PointItem)
+			{
+				_MainFrame->_PRegionBuilder.insertPoint (i, newItem, dialog.Name, dialog.LayerName);
+			}
+			else if (item == _RegionsInfo[i].PathItem)
+			{
+				_MainFrame->_PRegionBuilder.insertPath (i, newItem, dialog.Name, dialog.LayerName);
+			}
+			else if (item == _RegionsInfo[i].ZoneItem)
+			{
+				_MainFrame->_PRegionBuilder.insertZone (i, newItem, dialog.Name, dialog.LayerName);
+			}
+			break;
 		}
 	}
 }
@@ -151,4 +231,74 @@ void CToolsLogic::OnMenuProperties()
 		_MainFrame->_PRegionBuilder.setName (item, dialog.Name);
 		_MainFrame->_PRegionBuilder.setLayerName (item, dialog.LayerName);
 	}	
+}
+
+// ---------------------------------------------------------------------------
+void CToolsLogic::OnMenuHideAll()
+{
+	HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
+	HTREEITEM parent = GetTreeCtrl().GetParentItem (item);
+
+	for (uint32 i = 0; i < _RegionsInfo.size(); ++i)
+	if (_RegionsInfo[i].RegionItem == parent)
+	{
+		if (item == _RegionsInfo[i].PointItem)
+			_MainFrame->_PRegionBuilder.hideAll (i, 0, true);
+		if (item == _RegionsInfo[i].PathItem)
+			_MainFrame->_PRegionBuilder.hideAll (i, 1, true);
+		if (item == _RegionsInfo[i].ZoneItem)
+			_MainFrame->_PRegionBuilder.hideAll (i, 2, true);
+		break;
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CToolsLogic::OnMenuUnhideAll()
+{
+	HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
+	HTREEITEM parent = GetTreeCtrl().GetParentItem (item);
+
+	for (uint32 i = 0; i < _RegionsInfo.size(); ++i)
+	if (_RegionsInfo[i].RegionItem == parent)
+	{
+		if (item == _RegionsInfo[i].PointItem)
+			_MainFrame->_PRegionBuilder.hideAll (i, 0, false);
+		if (item == _RegionsInfo[i].PathItem)
+			_MainFrame->_PRegionBuilder.hideAll (i, 1, false);
+		if (item == _RegionsInfo[i].ZoneItem)
+			_MainFrame->_PRegionBuilder.hideAll (i, 2, false);
+		break;
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CToolsLogic::OnMenuHide()
+{
+	HTREEITEM item = GetTreeCtrl().GetSelectedItem ();	
+	_MainFrame->_PRegionBuilder.hide (item);
+
+}
+
+// ---------------------------------------------------------------------------
+void CToolsLogic::OnMenuRegionHideAll ()
+{
+	HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
+	for (uint32 i = 0; i < _RegionsInfo.size(); ++i)
+	if (_RegionsInfo[i].RegionItem == item)
+	{
+		_MainFrame->_PRegionBuilder.regionHideAll (i, true);
+		break;
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CToolsLogic::OnMenuRegionUnhideAll ()
+{
+	HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
+	for (uint32 i = 0; i < _RegionsInfo.size(); ++i)
+	if (_RegionsInfo[i].RegionItem == item)
+	{
+		_MainFrame->_PRegionBuilder.regionHideAll (i, false);
+		break;
+	}
 }

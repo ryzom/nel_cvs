@@ -33,12 +33,22 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_CREATE()
 	ON_WM_PAINT()
 	ON_WM_MENUSELECT()
-	ON_COMMAND(ID_FILE_OPEN, OnMenuFileOpen)
-	ON_COMMAND(ID_FILE_SAVE, OnMenuFileSave)
+	ON_COMMAND(ID_FILE_NEWLOGIC, OnMenuFileNewLogic)
+	ON_COMMAND(ID_FILE_UNLOADLOGIC, OnMenuFileUnloadLogic)
+	ON_COMMAND(ID_FILE_OPENLOGIC, OnMenuFileOpenLogic)
+	ON_COMMAND(ID_FILE_SAVELOGIC, OnMenuFileSaveLogic)
+	ON_COMMAND(ID_FILE_NEW, OnMenuFileNewLandscape)
+	ON_COMMAND(ID_FILE_UNLOAD, OnMenuFileUnloadLandscape)
+	ON_COMMAND(ID_FILE_OPENLANDSCAPE, OnMenuFileOpenLandscape)
+	ON_COMMAND(ID_FILE_SAVELANDSCAPE, OnMenuFileSaveLandscape)
 	ON_COMMAND(ID_FILE_EXIT, OnMenuFileExit)
 	ON_COMMAND(ID_MODE_ZONE, OnMenuModeZone)
 	ON_COMMAND(ID_MODE_LOGIC, OnMenuModeLogic)
+	ON_COMMAND(ID_MODE_SELECT, onMenuModeSelectZone)
+	ON_COMMAND(ID_MODE_UNDO, onMenuModeUndo)
+	ON_COMMAND(ID_MODE_REDO, onMenuModeRedo)
 	ON_COMMAND(ID_VIEW_GRID, OnMenuViewGrid)
+	ON_WM_KEYDOWN()
 	ON_WM_CLOSE()
 	ON_WM_SIZE()
 	//ON_WM_SETFOCUS()
@@ -292,10 +302,32 @@ bool CMainFrame::loadConfig ()
 	return false;
 }
 
+// ******************
 // MESSAGES FROM MENU
+// ******************
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnMenuFileOpen()
+void CMainFrame::OnMenuFileNewLogic ()
+{
+	_PRegionBuilder.newZone ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuFileUnloadLogic ()
+{
+	CSelectDialog seldial(this);
+
+	seldial.setLogic (&_PRegionBuilder);
+	if (seldial.DoModal () == IDOK)
+	{
+		_PRegionBuilder.unload (seldial.getSel());
+		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+		dispWnd->OnDraw	(NULL);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuFileOpenLogic ()
 {
 	CFileDialog dialog (true, "logic");
 	if (dialog.DoModal() == IDOK)
@@ -305,23 +337,71 @@ void CMainFrame::OnMenuFileOpen()
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnMenuFileSave()
+void CMainFrame::OnMenuFileSaveLogic ()
 {
-	CFileDialog dialog (false, "logic");
+	CSelectDialog seldial(this);
+
+	seldial.setLogic (&_PRegionBuilder);
+	if (seldial.DoModal () == IDOK)
+	{
+		CFileDialog dialog (false, "logic");
+		if (dialog.DoModal() == IDOK)
+		{
+			_PRegionBuilder.save (seldial.getSel(), (LPCTSTR)dialog.GetFileName());
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuFileNewLandscape ()
+{
+	_ZoneBuilder.newZone ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuFileUnloadLandscape ()
+{
+	CSelectDialog seldial(this);
+
+	seldial.set (&_ZoneBuilder);
+	if (seldial.DoModal () == IDOK)
+	{
+		_ZoneBuilder.unload (seldial.getSel());
+		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+		dispWnd->OnDraw	(NULL);
+		_ZoneBuilder.stackReset ();
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuFileOpenLandscape ()
+{
+	CFileDialog dialog (true, "land");
 	if (dialog.DoModal() == IDOK)
 	{
-		_PRegionBuilder.save ((LPCTSTR)dialog.GetFileName());
+		_ZoneBuilder.load ((LPCTSTR)dialog.GetFileName());
+		_ZoneBuilder.stackReset ();
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuFileSaveLandscape ()
+{
+	CFileDialog dialog (false, "land");
+	if (dialog.DoModal() == IDOK)
+	{
+		_ZoneBuilder.save ((LPCTSTR)dialog.GetFileName());
 	}	
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnMenuFileExit()
+void CMainFrame::OnMenuFileExit ()
 {
 	OnClose();
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnMenuModeZone()
+void CMainFrame::OnMenuModeZone ()
 {
 	CMenu *menu = GetMenu();
 	menu->CheckMenuItem (ID_MODE_ZONE, MF_CHECKED|MF_BYCOMMAND);
@@ -335,7 +415,7 @@ void CMainFrame::OnMenuModeZone()
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnMenuModeLogic()
+void CMainFrame::OnMenuModeLogic ()
 {
 	CMenu *menu = GetMenu();
 	menu->CheckMenuItem (ID_MODE_ZONE, MF_UNCHECKED|MF_BYCOMMAND);
@@ -349,14 +429,39 @@ void CMainFrame::OnMenuModeLogic()
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnMenuViewGrid()
+void CMainFrame::onMenuModeSelectZone ()
+{
+	CSelectDialog seldial(this);
+
+	seldial.set (&_ZoneBuilder);
+	if (seldial.DoModal () == IDOK)
+	{
+		_ZoneBuilder.setCurZoneRegion (seldial.getSel());
+		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+		dispWnd->OnDraw	(NULL);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onMenuModeUndo ()
+{
+	_ZoneBuilder.undo();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onMenuModeRedo ()
+{
+	_ZoneBuilder.redo();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuViewGrid ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
 	dispWnd->setDisplayGrid (!dispWnd->getDisplayGrid());
 	CMenu *menu = GetMenu();
 	menu->CheckMenuItem (ID_VIEW_GRID, dispWnd->getDisplayGrid()?MF_CHECKED|MF_BYCOMMAND:MF_UNCHECKED|MF_BYCOMMAND);
-
 }
 
 // ---------------------------------------------------------------------------
@@ -390,4 +495,72 @@ void CMainFrame::adjustSplitter ()
 		}
 		m_wndSplitter.RecalcLayout ();
 	}
+}
+
+
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// CSelectDialog
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
+
+// ---------------------------------------------------------------------------
+CSelectDialog::CSelectDialog (CWnd*pParent): CDialog(IDD_SELECTZONE, pParent) 
+{
+	_Sel = -1;
+	_ToInit = NULL;
+	_ToInitLogic = NULL;
+}
+
+// ---------------------------------------------------------------------------
+BOOL CSelectDialog::OnInitDialog ()
+{
+	CListBox *pLB = (CListBox*)GetDlgItem (IDC_LISTZONE);
+	if (_ToInit != NULL)
+	{
+		uint32 nNbRegion = _ToInit->getNbZoneRegion ();
+		for (uint32 i = 0; i < nNbRegion; ++i)
+			pLB->InsertString (-1, _ToInit->getZoneRegionName(i).c_str());
+		
+		_Sel = _ToInit->getCurZoneRegion();
+		pLB->SetCurSel (_Sel);
+	}
+	
+	if (_ToInitLogic != NULL)
+	{
+		uint32 nNbRegion = _ToInitLogic->getNbZoneRegion ();
+		for (uint32 i = 0; i < nNbRegion; ++i)
+			pLB->InsertString (-1, _ToInitLogic->getZoneRegionName(i).c_str());
+		
+		_Sel = 0;
+		pLB->SetCurSel (_Sel);
+	}
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+void CSelectDialog::set (CBuilderZone *pBZ)
+{
+	_ToInit = pBZ;
+}
+
+// ---------------------------------------------------------------------------
+void CSelectDialog::setLogic (CBuilderLogic *pBL)
+{
+	_ToInitLogic = pBL;
+}
+
+// ---------------------------------------------------------------------------
+void CSelectDialog::OnOK ()
+{
+	_Sel = ((CListBox*)GetDlgItem(IDC_LISTZONE))->GetCurSel();
+	CDialog::OnOK();
+}
+
+// ---------------------------------------------------------------------------
+int CSelectDialog::getSel()
+{
+	return _Sel;
 }

@@ -7,9 +7,6 @@
 #include "../lib/primitive.h"
 
 #include "nel/misc/vector.h"
-
-#include "nel/misc/o_xml.h"
-#include "nel/misc/i_xml.h"
 #include "nel/misc/file.h"
 
 #include "3d/nelu.h"
@@ -29,6 +26,8 @@ using NLMISC::CVector;
 using NLMISC::CUV;
 using NLMISC::CMatrix;
 using NLMISC::CSmartPtr;
+using NLMISC::CIFile;
+using NLMISC::COFile;
 
 using NL3D::ITexture;
 using NL3D::CTextureMem;
@@ -129,7 +128,9 @@ bool CDataBase::init (const string &Path, CZoneBank &zb)
 	strcat (sDirNew, "\\");
 	strcat (sDirNew, Path.c_str());
 	SetCurrentDirectory (sDirNew);
-	sint32 i, k, l, m, n, o, p;
+	uint32 i, m, n, o, p;
+	uint8 k, l;
+
 	vector<string> ZoneNames;
 	zb.getCategoryValues ("Zone", ZoneNames);
 	for (i = 0; i < ZoneNames.size(); ++i)
@@ -253,9 +254,11 @@ ITexture* CDataBase::getTexture (const string &ZoneName, sint32 nPosX, sint32 nP
 		if ((rElt.ZonePieces[j].PosX == nPosX) && (rElt.ZonePieces[j].PosY == nPosY))
 		{
 			retUVmin = rElt.ZonePieces[j].PosUV;
+			retUVmin.U += 0.5f / ((float)_RefCacheTextureSizeX);
+			retUVmin.V += 0.5f / ((float)_RefCacheTextureSizeY);
 			retUVmax = retUVmin;
-			retUVmax.U += ((float)_RefSizeX) / ((float)_RefCacheTextureSizeX);
-			retUVmax.V += ((float)_RefSizeY) / ((float)_RefCacheTextureSizeY);
+			retUVmax.U += ((float)_RefSizeX-1) / ((float)_RefCacheTextureSizeX);
+			retUVmax.V += ((float)_RefSizeY-1) / ((float)_RefCacheTextureSizeY);
 			return rElt.ZonePieces[j].CacheTexture;
 		}
 	}
@@ -314,10 +317,138 @@ NLMISC::CBitmap *CDataBase::loadBitmap (const std::string &fileName)
 
 	return pBitmap;
 }
+// ***************************************************************************
+// CBuilderZoneStack
+// ***************************************************************************
+
+#define BUILDERZONE_STACK_SIZE	32
+
+// ---------------------------------------------------------------------------
+CBuilderZoneStack::CBuilderZoneStack()
+{
+	_Stack.resize (BUILDERZONE_STACK_SIZE); // Depth of the stack
+	reset ();
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZoneStack::reset ()
+{
+	_Head = 0;
+	_Queue = 0;
+	_UndoPos = -1;
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZoneStack::setRegion (CBuilderZoneRegion* pReg,sint32 nPos)
+{
+	if ((_UndoPos+1)%BUILDERZONE_STACK_SIZE != _Queue)
+	{
+		_Queue = (_UndoPos+1)%BUILDERZONE_STACK_SIZE;
+	}
+	//_Queue = (_UndoPos+1)%BUILDERZONE_STACK_SIZE;
+
+	// Stack the region
+	_Stack[_Queue].BZRegion = *pReg;
+	_Stack[_Queue].RegionFrom = pReg;
+	_Stack[_Queue].Pos = nPos;
+
+	_UndoPos = _Queue;
+	_Queue = (_Queue+1)%BUILDERZONE_STACK_SIZE;
+	if (_Head == _Queue)
+		_Head = (_Head+1)%BUILDERZONE_STACK_SIZE;
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZoneStack::undo ()
+{
+	if (_UndoPos < 0)
+		return;
+	// Retrieve the last stacked element
+	if (_UndoPos != _Head)
+	{
+		_UndoPos--;
+		if (_UndoPos == -1)
+			_UndoPos = BUILDERZONE_STACK_SIZE-1;
+	}	
+	CBuilderZoneRegion *pReg = _Stack[_UndoPos].RegionFrom;
+	*pReg = _Stack[_UndoPos].BZRegion;
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZoneStack::redo ()
+{
+	if (_UndoPos < 0)
+		return;
+	if ((_UndoPos+1)%BUILDERZONE_STACK_SIZE == _Queue)
+		return;
+	_UndoPos = (_UndoPos+1)%BUILDERZONE_STACK_SIZE;
+	// Retrieve the last stacked element
+	CBuilderZoneRegion *pReg = _Stack[_UndoPos].RegionFrom;
+	*pReg = _Stack[_UndoPos].BZRegion;
+}
+
+// ---------------------------------------------------------------------------
+bool CBuilderZoneStack::isEmpty ()
+{
+	if (_Head == _Queue)
+		return true;
+	return false;
+}
 
 // ***************************************************************************
 // CBuilderZone
 // ***************************************************************************
+// ---------------------------------------------------------------------------
+// PRIVATE
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::calcMask()
+{
+	sint32 i;
+	sint32 x, y;
+
+	_MinY = _MinX = 1000000;
+	_MaxY = _MaxX = -1000000;
+
+	if (_ZoneRegions.size() == 0)
+		return;
+
+	for (i = 0; i < (sint32)_ZoneRegions.size(); ++i)
+	{
+		CBuilderZoneRegion *pBZR = _ZoneRegions[i];
+		if (_MinX > pBZR->getMinX())
+			_MinX = pBZR->getMinX();
+		if (_MinY > pBZR->getMinY())
+			_MinY = pBZR->getMinY();
+		if (_MaxX < pBZR->getMaxX())
+			_MaxX = pBZR->getMaxX();
+		if (_MaxY < pBZR->getMaxY())
+			_MaxY = pBZR->getMaxY();
+	}
+	
+	_ZoneMask.resize ((1+_MaxX-_MinX)*(1+_MaxY-_MinY));
+	sint32 stride = (1+_MaxX-_MinX);
+	for (y = _MinY; y <= _MaxY; ++y)
+	for (x = _MinX; x <= _MaxX; ++x)
+	{
+		_ZoneMask[x-_MinX+(y-_MinY)*stride] = true;
+
+		for (i = 0; i < (sint32)_ZoneRegions.size(); ++i)
+		if (i != _ZoneRegionSelected)
+		{
+			const string &rSZone = _ZoneRegions[i]->getName (x, y);
+			if ((rSZone != STRING_OUT_OF_BOUND) && (rSZone != STRING_UNUSED))
+			{
+				_ZoneMask[x-_MinX+(y-_MinY)*stride] = false;
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// PUBLIC
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 CBuilderZone::CBuilderZone ()
@@ -347,6 +478,10 @@ CBuilderZone::CBuilderZone ()
 	_ApplyRotRan = false;
 	_ApplyFlip = 0;
 	_ApplyFlipRan = false;
+
+	_ZoneRegions.push_back (new CBuilderZoneRegion());
+	_ZoneRegionsName.push_back ("__New_Region__");
+	_ZoneRegionSelected = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -423,15 +558,102 @@ void CBuilderZone::updateToolsZone ()
 }
 
 // ---------------------------------------------------------------------------
-bool CBuilderZone::load(const char *fileName)
+bool CBuilderZone::load (const char *fileName)
 {
-	return false;
+	newZone ();	
+	try
+	{
+		CIFile fileIn;
+		fileIn.open (fileName);
+		_ZoneRegions[_ZoneRegionSelected]->serial (fileIn);
+		_ZoneRegionsName[_ZoneRegionSelected] = fileName;
+	}
+	catch (Exception& e)
+	{
+		MessageBox (NULL, e.what(), "Warning", MB_OK);
+		return false;
+	}
+
+	// Check if we can load this zone
+	CBuilderZoneRegion *pBZR = _ZoneRegions[_ZoneRegionSelected];
+	for (sint32 y = pBZR->getMinY(); y <= pBZR->getMaxY(); ++y)
+	for (sint32 x = pBZR->getMinX(); x <= pBZR->getMaxX(); ++x)
+	{
+		const string &refSZone = pBZR->getName (x, y);
+		if (refSZone != STRING_UNUSED)
+		{
+			for (uint32 i = 0; i < _ZoneRegions.size()-1; ++i)
+			{
+				const string &sZone = _ZoneRegions[i]->getName (x, y);
+				if ((sZone != STRING_UNUSED)&&(sZone != STRING_OUT_OF_BOUND))
+				{
+					unload (_ZoneRegionSelected);
+					MessageBox (NULL, "Cannot add this zone because it overlaps existing ones", 
+								"Error", MB_ICONERROR|MB_OK);
+					return false;
+				}
+			}
+		}
+	}
+
+	calcMask ();
+	if (_Display)
+		_Display->OnDraw (NULL);
+	return true;
 }
 
 // ---------------------------------------------------------------------------
 bool CBuilderZone::save(const char *fileName)
 {
-	return false;
+	COFile fileOut;
+	fileOut.open (fileName);
+	_ZoneRegions[_ZoneRegionSelected]->reduceMin ();
+	_ZoneRegions[_ZoneRegionSelected]->serial (fileOut);
+	_ZoneRegionsName[_ZoneRegionSelected] = fileName;
+	fileOut.close ();
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::newZone ()
+{
+	_ZoneRegions.push_back (new CBuilderZoneRegion);
+	_ZoneRegionsName.push_back ("__New_Region__");
+	_ZoneRegionSelected = _ZoneRegions.size() - 1;
+	// Select starting point for the moment 0,0
+	sint32 i;
+	sint32 x = 0, y = 0;
+	// If there are some zone already present increase x until free
+	for (i = 0; i < _ZoneRegions.size(); ++i)
+	{
+		CBuilderZoneRegion *pBZR = _ZoneRegions[i];
+		const string &rsZone = pBZR->getName (x, y);
+		if ((rsZone != STRING_OUT_OF_BOUND) && (rsZone != STRING_UNUSED))
+		{
+			++x; i = -1;
+		}
+	}
+	_ZoneRegions[_ZoneRegionSelected]->setStart (x,y);
+	calcMask ();
+	if (_Display)
+		_Display->OnDraw (NULL);
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::unload (uint32 pos)
+{
+	uint32 i = 0;
+	if (_ZoneRegions.size() == 0)
+		return;
+	delete _ZoneRegions[pos];
+	for (i = pos; i < (_ZoneRegions.size()-1); ++i)
+		_ZoneRegions[i] = _ZoneRegions[i+1];
+	_ZoneRegions.resize (_ZoneRegions.size()-1);
+	if (_ZoneRegionSelected == (sint32)_ZoneRegions.size())
+		_ZoneRegionSelected = _ZoneRegions.size()-1;
+	calcMask ();
+	if (_Display)
+		_Display->OnDraw (NULL);
 }
 
 // ---------------------------------------------------------------------------
@@ -448,15 +670,15 @@ struct SCacheRender
 		Used = false;
 		Mat.initUnlit ();
 		Mat.setBlend (false);
-		VB.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
+		VB.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag|CVertexBuffer::PrimaryColorFlag);
 	}
 };
 
 // ---------------------------------------------------------------------------
-void CBuilderZone::render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
+void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax)
 {
 	static SCacheRender CacheRender[64+2]; // 64+2 (unused and NULL)
-	sint32 i;
+	sint32 i, zoneSelected;
 
 	for (i = 0; i < (64+2); ++i)
 	{
@@ -482,14 +704,30 @@ void CBuilderZone::render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
 			x = (sint32)floor(minx / _Display->_CellSize);
 			y = (sint32)floor(miny / _Display->_CellSize);
 
-			const string &rSZone = _ZoneRegion.getName (x, y);
-			CZoneBankElement *pZBE = _ZoneBank.getElementByZoneName (rSZone);
+			i = 0;
+			string sZone = STRING_OUT_OF_BOUND;
+			zoneSelected = 0;
+			for (i = 0; i < (sint32)_ZoneRegions.size(); ++i)
+			{
+				const string &rSZone = _ZoneRegions[i]->getName (x, y);
+				if ((sZone == STRING_OUT_OF_BOUND) && (rSZone == STRING_UNUSED))
+				{
+					sZone = STRING_UNUSED;
+					zoneSelected = i;
+				}
+				if ((rSZone != STRING_OUT_OF_BOUND) && (rSZone != STRING_UNUSED))
+				{
+					sZone = rSZone;
+					zoneSelected = i;
+				}
+			}
+			CZoneBankElement *pZBE = _ZoneBank.getElementByZoneName (sZone);
 
 			if (pZBE == NULL)
-				pTexture = _DataBase.getTexture (rSZone, 0, 0, uvMin, uvMax);
+				pTexture = _DataBase.getTexture (sZone, 0, 0, uvMin, uvMax);
 			else
-				pTexture = _DataBase.getTexture (rSZone, _ZoneRegion.getPosX(x, y), 
-												_ZoneRegion.getPosY(x, y), uvMin, uvMax);
+				pTexture = _DataBase.getTexture (sZone, _ZoneRegions[zoneSelected]->getPosX(x, y), 
+												_ZoneRegions[zoneSelected]->getPosY(x, y), uvMin, uvMax);
 
 			// Look if already existing texture exists in the cache
 			for (i = 0; i < (64+2); ++i)
@@ -536,18 +774,30 @@ void CBuilderZone::render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
 			CacheRender[i].PB.setTri (nBaseTri+0, nBasePt+0, nBasePt+1, nBasePt+2);
 			CacheRender[i].PB.setTri (nBaseTri+1, nBasePt+0, nBasePt+2, nBasePt+3);
 
-			if (_ZoneRegion.getFlip (x, y) == 1)
+			if (_ZoneRegions[zoneSelected]->getFlip (x, y) == 1)
 			{
 				float rTmp = uvMin.U;
 				uvMin.U = uvMax.U;
 				uvMax.U = rTmp;
 			}
 
-			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegion.getRot (x, y)+0)%4, 0, CUV(uvMin.U, uvMin.V));
-			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegion.getRot (x, y)+1)%4, 0, CUV(uvMax.U, uvMin.V));
-			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegion.getRot (x, y)+2)%4, 0, CUV(uvMax.U, uvMax.V));
-			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegion.getRot (x, y)+3)%4, 0, CUV(uvMin.U, uvMax.V));
-		
+			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+0)%4, 0, CUV(uvMin.U, uvMin.V));
+			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+1)%4, 0, CUV(uvMax.U, uvMin.V));
+			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+2)%4, 0, CUV(uvMax.U, uvMax.V));
+			CacheRender[i].VB.setTexCoord (nBasePt+(_ZoneRegions[zoneSelected]->getRot (x, y)+3)%4, 0, CUV(uvMin.U, uvMax.V));
+
+			NLMISC::CRGBA color;
+
+			if (getZoneMask(x,y))
+				color = NLMISC::CRGBA(255, 255, 255, 255);
+			else
+				color = NLMISC::CRGBA(127, 127, 127, 255);
+
+			CacheRender[i].VB.setColor (nBasePt+0, color);
+			CacheRender[i].VB.setColor (nBasePt+1, color);
+			CacheRender[i].VB.setColor (nBasePt+2, color);
+			CacheRender[i].VB.setColor (nBasePt+3, color);
+
 			miny += _Display->_CellSize;
 		}
 		minx += _Display->_CellSize;
@@ -571,7 +821,7 @@ void CBuilderZone::render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderZone::displayGrid (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
+void CBuilderZone::displayGrid (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax)
 {
 	// Select all blocks visible
 	float rMinX = floorf (viewMin.x / _Display->_CellSize)*_Display->_CellSize;
@@ -587,22 +837,44 @@ void CBuilderZone::displayGrid (NLMISC::CVector &viewMin, NLMISC::CVector &viewM
 	static vector<uint8> vBars;
 	sint32 nBarsW = (nMaxX-nMinX)+1;
 	sint32 nBarsH = (nMaxY-nMinY)+1;
-	vBars.resize (nBarsW*nBarsH, 0);
+	vBars.resize (nBarsW*nBarsH);
+	sint32 x, y, i, j, zoneSelected;
+	for (i = 0; i < nBarsW*nBarsH; ++i)
+		vBars[i] = 0;
 
-	sint32 x, y, i, j;
 
 	for (y = nMinY; y <= nMaxY; ++y)
 	for (x = nMinX; x <= nMaxX; ++x)
 	{
-		const string &sZone = _ZoneRegion.getName (x, y);
+
+		string sZone = STRING_OUT_OF_BOUND;
+		zoneSelected = 0;
+		for (i = 0; i < (sint32)_ZoneRegions.size(); ++i)
+		{
+			const string &rSZone = _ZoneRegions[i]->getName (x, y);
+			if ((sZone == STRING_OUT_OF_BOUND) && (rSZone == STRING_UNUSED))
+			{
+				sZone = STRING_UNUSED;
+				zoneSelected = i;
+			}
+			if ((rSZone != STRING_OUT_OF_BOUND) && (rSZone != STRING_UNUSED))
+			{
+				sZone = rSZone;
+				zoneSelected = i;
+			}
+		}
+
+
+
+		//const string &sZone = _ZoneRegion.getName (x, y);
 		CZoneBankElement *pZBE = _ZoneBank.getElementByZoneName (sZone);
 		if (pZBE != NULL)
 		if ((pZBE->getSizeX() > 1) || (pZBE->getSizeY() > 1))
 		{
 			sint32 sizeX = pZBE->getSizeX(), sizeY = pZBE->getSizeY();
-			sint32 posX = _ZoneRegion.getPosX (x, y), posY = _ZoneRegion.getPosY (x, y);
-			uint8 rot = _ZoneRegion.getRot (x, y);
-			uint8 flip = _ZoneRegion.getFlip (x, y);
+			sint32 posX = _ZoneRegions[zoneSelected]->getPosX (x, y), posY = _ZoneRegions[zoneSelected]->getPosY (x, y);
+			uint8 rot = _ZoneRegions[zoneSelected]->getRot (x, y);
+			uint8 flip = _ZoneRegions[zoneSelected]->getFlip (x, y);
 			sint32 deltaX, deltaY;
 		
 			if (flip == 0)
@@ -632,7 +904,7 @@ void CBuilderZone::displayGrid (NLMISC::CVector &viewMin, NLMISC::CVector &viewM
 				sMask.Tab[i] = pZBE->getMask()[i];
 			sMask.w = sizeX;
 			sMask.h = sizeY;
-			_ZoneRegion.rotFlip (sMask, rot, flip);
+			_ZoneRegions[zoneSelected]->rotFlip (sMask, rot, flip);
 
 			for (j = 0; j < sMask.h; ++j)
 			for (i = 0; i < sMask.w; ++i)
@@ -705,11 +977,14 @@ void CBuilderZone::displayGrid (NLMISC::CVector &viewMin, NLMISC::CVector &viewM
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderZone::add (CVector &worldPos)
+void CBuilderZone::add (const CVector &worldPos)
 {
 	sint32 x = (sint32)floor (worldPos.x / _Display->_CellSize);
 	sint32 y = (sint32)floor (worldPos.y / _Display->_CellSize);
 	uint8 rot, flip;
+
+	if (_StackZone.isEmpty())
+		_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
 
 	if (_RandomSelection)
 	{
@@ -746,18 +1021,25 @@ void CBuilderZone::add (CVector &worldPos)
 	if ((_CurSelectedZone >= 0)&&(_CurSelectedZone <= ((sint32)_CurrentSelection.size()-1)))
 	{
 		CZoneBankElement *pZBE = _CurrentSelection[_CurSelectedZone];
-		_ZoneRegion.init (&_ZoneBank);
-		_ZoneRegion.add (x, y, rot, flip, pZBE);
+		_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
+		_ZoneRegions[_ZoneRegionSelected]->add (x, y, rot, flip, pZBE);
 	}
+	_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderZone::del (CVector &worldPos)
+void CBuilderZone::del (const CVector &worldPos)
 {
 	sint32 x = (sint32)floor (worldPos.x / _Display->_CellSize);
 	sint32 y = (sint32)floor (worldPos.y / _Display->_CellSize);
-	_ZoneRegion.init (&_ZoneBank);
-	_ZoneRegion.del (x, y);
+
+	if (_StackZone.isEmpty())
+		_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
+
+	_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
+	_ZoneRegions[_ZoneRegionSelected]->del (x, y);
+
+	_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
 }
 
 // ---------------------------------------------------------------------------
@@ -786,4 +1068,65 @@ bool CBuilderZone::initZoneBank (const string &pathName)
 	}
 	SetCurrentDirectory (sDirBackup);
 	return true;
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::undo ()
+{
+	_StackZone.undo();
+	if (_Display)
+		_Display->OnDraw (NULL);
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::redo ()
+{
+	_StackZone.redo();
+	if (_Display)
+		_Display->OnDraw (NULL);
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::stackReset ()
+{
+	_StackZone.reset();
+}
+
+// ---------------------------------------------------------------------------
+uint32 CBuilderZone::getNbZoneRegion ()
+{
+	return _ZoneRegions.size ();
+}
+
+// ---------------------------------------------------------------------------
+const string& CBuilderZone::getZoneRegionName (uint32 i)
+{
+	return _ZoneRegionsName[i];
+}
+
+// ---------------------------------------------------------------------------
+uint32 CBuilderZone::getCurZoneRegion ()
+{
+	return _ZoneRegionSelected;
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::setCurZoneRegion (uint32 sel)
+{
+	_ZoneRegionSelected = sel;
+	calcMask();
+}
+
+// ---------------------------------------------------------------------------
+bool CBuilderZone::getZoneMask (sint32 x, sint32 y)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return true;
+	}
+	else
+	{
+		return _ZoneMask[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)];
+	}
 }

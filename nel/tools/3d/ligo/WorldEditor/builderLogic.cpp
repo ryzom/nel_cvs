@@ -29,9 +29,11 @@ using namespace std;
 // ---------------------------------------------------------------------------
 CPrimBuild::CPrimBuild()
 {
+	PRegion = NULL;
 	Type = -1;		// 0 (Point),1 (Path), 2 (Zone),-1 (Not Valid)
 	Created = false;
 	Pos = 0;
+	hidden = false;
 }
 
 // ***************************************************************************
@@ -43,6 +45,8 @@ CBuilderLogic::CBuilderLogic()
 {
 	ItemSelected = NULL;
 	VertexSelected = -1;
+	RegionSelected = -1;
+	_ToolsLogic = NULL;
 }
 
 // ---------------------------------------------------------------------------
@@ -54,67 +58,94 @@ void CBuilderLogic::setDisplay (CDisplay *pDisp)
 // ---------------------------------------------------------------------------
 void CBuilderLogic::setToolsLogic (CToolsLogic *pTool)
 {
-	//_ToolsZone = NULL;
 	_ToolsLogic = pTool;
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::updateToolsLogic()
+void CBuilderLogic::updateToolsLogic ()
 {
-	if (_ToolsLogic == NULL)
-		return;
 	// Regenerate the toolsLogic with the data in the region
 	Primitives.clear ();
-	uint32 i;
-	for (i = 0; i < PRegion.VPoints.size(); ++i)
+	if (_ToolsLogic != NULL)
+		_ToolsLogic->reset();
+	uint32 i, j;
+	sint32 tempItem = -1;
+	for (j = 0; j < PRegions.size(); ++j)
 	{
-		HTREEITEM newItem = _ToolsLogic->GetTreeCtrl().InsertItem (PRegion.VPoints[i].Name.c_str(), _ToolsLogic->_PointItem);
-		CPrimBuild pB;
-		pB.Created = true;
-		pB.Type = 0; // Point
-		pB.Pos = i;
-		Primitives.insert (map<HTREEITEM, CPrimBuild>::value_type(newItem, pB));
-	}
+		CPrimRegion &rRegion = *PRegions[j];
+		sint32 nReg = j;
 
-	for (i = 0; i < PRegion.VPaths.size(); ++i)
-	{
-		HTREEITEM newItem = _ToolsLogic->GetTreeCtrl().InsertItem (PRegion.VPaths[i].Name.c_str(), _ToolsLogic->_PathItem);
-		CPrimBuild pB;
-		pB.Created = true;
-		pB.Type = 1; // Path
-		pB.Pos = i;
-		Primitives.insert (map<HTREEITEM, CPrimBuild>::value_type(newItem, pB));
-	}
+		
+		if (_ToolsLogic != NULL)
+			nReg = _ToolsLogic->createNewRegion (rRegion.Name);
 
-	for (i = 0; i < PRegion.VZones.size(); ++i)
-	{
-		HTREEITEM newItem = _ToolsLogic->GetTreeCtrl().InsertItem (PRegion.VZones[i].Name.c_str(), _ToolsLogic->_ZoneItem);
-		CPrimBuild pB;
-		pB.Created = true;
-		pB.Type = 2; // Path
-		pB.Pos = i;
-		Primitives.insert (map<HTREEITEM, CPrimBuild>::value_type(newItem, pB));
+		for (i = 0; i < rRegion.VPoints.size(); ++i)
+		{
+			HTREEITEM newItem = (HTREEITEM)tempItem;
+			tempItem--;
+			if (_ToolsLogic != NULL)
+				newItem = _ToolsLogic->addPoint (nReg, rRegion.VPoints[i].Name.c_str());
+			CPrimBuild pB;
+			pB.Created = true;
+			pB.Type = 0; // Point
+			pB.Pos = i;
+			pB.PRegion = PRegions[j];
+			Primitives.insert (map<HTREEITEM, CPrimBuild>::value_type(newItem, pB));
+		}
+
+		for (i = 0; i < rRegion.VPaths.size(); ++i)
+		{
+			HTREEITEM newItem = (HTREEITEM)tempItem;
+			tempItem--;
+			if (_ToolsLogic != NULL)
+				newItem = _ToolsLogic->addPath (nReg, rRegion.VPaths[i].Name.c_str());
+			CPrimBuild pB;
+			pB.Created = true;
+			pB.Type = 1; // Path
+			pB.Pos = i;
+			pB.PRegion = PRegions[j];
+			Primitives.insert (map<HTREEITEM, CPrimBuild>::value_type(newItem, pB));
+		}
+
+		for (i = 0; i < rRegion.VZones.size(); ++i)
+		{
+			HTREEITEM newItem = (HTREEITEM)tempItem;
+			tempItem--;
+			if (_ToolsLogic != NULL)
+				newItem = _ToolsLogic->addZone (nReg, rRegion.VZones[i].Name.c_str());
+			CPrimBuild pB;
+			pB.Created = true;
+			pB.Type = 2; // Path
+			pB.Pos = i;
+			pB.PRegion = PRegions[j];
+			Primitives.insert (map<HTREEITEM, CPrimBuild>::value_type(newItem, pB));
+		}
+		if (_ToolsLogic != NULL)
+			_ToolsLogic->expandAll (nReg);
 	}
-	_ToolsLogic->GetTreeCtrl().Expand (_ToolsLogic->_PointItem, TVE_EXPAND);
-	_ToolsLogic->GetTreeCtrl().Expand (_ToolsLogic->_PathItem, TVE_EXPAND);
-	_ToolsLogic->GetTreeCtrl().Expand (_ToolsLogic->_ZoneItem, TVE_EXPAND);
 }
 
 // ---------------------------------------------------------------------------
-bool CBuilderLogic::load(const char *fileName)
+bool CBuilderLogic::load (const char *fileName)
 {
+	uint32 nPos = PRegions.size ();
+	PRegions.push_back (new CPrimRegion);
+	PRegions[nPos]->Name = "__New_Region__";
+	RegionSelected = nPos;
 	try
 	{
 		CIFile fileIn;
 		fileIn.open (fileName);
 		CIXml input;
 		input.init (fileIn);
-		PRegion.serial (input);
+		PRegions[RegionSelected]->serial (input);
 	}
 	catch (Exception& e)
 	{
 		MessageBox (NULL, e.what(), "Warning", MB_OK);
 	}
+
+	updateToolsLogic ();
 
 	if (_Display)
 		_Display->OnDraw (NULL);
@@ -122,55 +153,95 @@ bool CBuilderLogic::load(const char *fileName)
 }
 
 // ---------------------------------------------------------------------------
-bool CBuilderLogic::save(const char *fileName)
+bool CBuilderLogic::save (uint32 nPos, const char *fileName)
 {
 	COFile file;
 	file.open (fileName);
 	COXml output;
 	output.init (&file, "1.0");
-	PRegion.serial (output);
+	PRegions[nPos]->Name = fileName;
+	PRegions[nPos]->serial (output);
 	output.flush ();
 	file.close ();
+	updateToolsLogic ();
 	return true;
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::insertPoint (HTREEITEM item, const char *Name, const char *LayerName)
+void CBuilderLogic::newZone ()
+{
+	uint32 nPos = PRegions.size ();
+	PRegions.push_back (new CPrimRegion);
+	PRegions[nPos]->Name = "__New_Region__";
+	RegionSelected = nPos;
+	updateToolsLogic ();
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::unload (uint32 pos)
+{
+	if (PRegions.size() == 0)
+		return;
+	delete PRegions[pos];
+	for (uint32 i = pos; i < PRegions.size()-1; ++i)
+		PRegions[i] = PRegions[i+1];
+	PRegions.resize(PRegions.size()-1);
+	updateToolsLogic ();
+}
+
+// ---------------------------------------------------------------------------
+uint32 CBuilderLogic::getNbZoneRegion ()
+{
+	return PRegions.size();
+}
+
+// ---------------------------------------------------------------------------
+const string &CBuilderLogic::getZoneRegionName (uint32 nPos)
+{
+	return PRegions[nPos]->Name;
+}
+
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::insertPoint (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName)
 {
 	CPrimPoint pp;
 	pp.LayerName = LayerName;
 	pp.Name = Name;
 	pp.Point = CVector(0.0f, 0.0f, 0.0f);
-	PRegion.VPoints.push_back(pp);
+	PRegions[pos]->VPoints.push_back(pp);
 	CPrimBuild pB;
 	pB.Type = 0; // Point
-	pB.Pos = PRegion.VPoints.size()-1;
+	pB.Pos = PRegions[pos]->VPoints.size()-1;
+	pB.PRegion = PRegions[pos];
 	Primitives.insert (map<HTREEITEM, CPrimBuild>::value_type(item, pB));
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::insertPath (HTREEITEM item, const char *Name, const char *LayerName)
+void CBuilderLogic::insertPath (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName)
 {
 	CPrimPath pp;
 	pp.LayerName = LayerName;
 	pp.Name = Name;
-	PRegion.VPaths.push_back(pp);
+	PRegions[pos]->VPaths.push_back (pp);
 	CPrimBuild pB;
 	pB.Type = 1; // Path
-	pB.Pos = PRegion.VPaths.size()-1;
+	pB.Pos = PRegions[pos]->VPaths.size()-1;
+	pB.PRegion = PRegions[pos];
 	Primitives.insert (map<HTREEITEM, CPrimBuild>::value_type(item, pB));
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::insertZone (HTREEITEM item, const char *Name, const char *LayerName)
+void CBuilderLogic::insertZone (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName)
 {
 	CPrimZone pz;
 	pz.LayerName = LayerName;
 	pz.Name = Name;
-	PRegion.VZones.push_back(pz);
+	PRegions[pos]->VZones.push_back (pz);
 	CPrimBuild pB;
 	pB.Type = 2; // Zone
-	pB.Pos = PRegion.VZones.size()-1;
+	pB.Pos = PRegions[pos]->VZones.size()-1;
+	pB.PRegion = PRegions[pos];
 	Primitives.insert (map<HTREEITEM, CPrimBuild>::value_type(item, pB));
 }
 
@@ -181,6 +252,7 @@ void CBuilderLogic::del (HTREEITEM item)
 	if (it != Primitives.end())
 	{
 		CPrimBuild &rPB = it->second;
+		CPrimRegion &PRegion = *rPB.PRegion;
 		// Delete the entry in the document
 		uint32 i;
 		switch (rPB.Type)
@@ -226,6 +298,56 @@ void CBuilderLogic::del (HTREEITEM item)
 }
 
 // ---------------------------------------------------------------------------
+void CBuilderLogic::hide (HTREEITEM item)
+{
+	map<HTREEITEM, CPrimBuild>::iterator it = Primitives.find (item);
+	if (it != Primitives.end())
+	{
+		CPrimBuild &rPB = it->second;
+		rPB.hidden = !rPB.hidden;
+	}
+	if (_Display)
+		_Display->OnDraw (NULL);
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::hideAll (uint32 nPos, sint32 nID, bool bHide)
+{
+	map<HTREEITEM, CPrimBuild>::iterator it = Primitives.begin ();
+	while (it != Primitives.end())
+	{
+		CPrimBuild &rPB = it->second;
+
+		if (rPB.PRegion == PRegions[nPos])
+		{
+			if (rPB.Type == nID)
+				rPB.hidden = bHide;
+		}
+		
+		++it;
+	}
+	if (_Display)
+		_Display->OnDraw (NULL);
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::regionHideAll (uint32 nPos, bool bHide)
+{
+	map<HTREEITEM, CPrimBuild>::iterator it = Primitives.begin ();
+	while (it != Primitives.end())
+	{
+		CPrimBuild &rPB = it->second;
+
+		if (rPB.PRegion == PRegions[nPos])
+			rPB.hidden = bHide;
+		
+		++it;
+	}
+	if (_Display)
+		_Display->OnDraw (NULL);
+}
+
+// ---------------------------------------------------------------------------
 const char* CBuilderLogic::getName (HTREEITEM item)
 {
 	map<HTREEITEM, CPrimBuild>::iterator it = Primitives.find (item);
@@ -234,6 +356,8 @@ const char* CBuilderLogic::getName (HTREEITEM item)
 	else
 	{
 		CPrimBuild &rPB = it->second;
+		CPrimRegion &PRegion = *rPB.PRegion;
+
 		switch (rPB.Type)
 		{
 			case 0:
@@ -259,6 +383,8 @@ const char* CBuilderLogic::getLayerName (HTREEITEM item)
 	else
 	{
 		CPrimBuild &rPB = it->second;
+		CPrimRegion &PRegion = *rPB.PRegion;
+
 		switch (rPB.Type)
 		{
 			case 0:
@@ -276,6 +402,21 @@ const char* CBuilderLogic::getLayerName (HTREEITEM item)
 }
 
 // ---------------------------------------------------------------------------
+bool CBuilderLogic::isHidden (HTREEITEM item)
+{
+	map<HTREEITEM, CPrimBuild>::iterator it = Primitives.find (item);
+	if (it == Primitives.end())
+	{
+		return true;
+	}
+	else
+	{
+		CPrimBuild &rPB = it->second;
+		return rPB.hidden;
+	}
+}
+
+// ---------------------------------------------------------------------------
 void CBuilderLogic::setName (HTREEITEM item, const char* pStr)
 {
 	map<HTREEITEM, CPrimBuild>::iterator it = Primitives.find (item);
@@ -284,6 +425,8 @@ void CBuilderLogic::setName (HTREEITEM item, const char* pStr)
 	else
 	{
 		CPrimBuild &rPB = it->second;
+		CPrimRegion &PRegion = *rPB.PRegion;
+
 		switch (rPB.Type)
 		{
 			case 0:
@@ -308,6 +451,8 @@ void CBuilderLogic::setLayerName (HTREEITEM item, const char* pStr)
 	else
 	{
 		CPrimBuild &rPB = it->second;
+		CPrimRegion &PRegion = *rPB.PRegion;
+
 		switch (rPB.Type)
 		{
 			case 0:
@@ -349,6 +494,7 @@ void CBuilderLogic::createVertexOnSelPB (CVector &v, uint32 pos)
 		return;
 
 	CPrimBuild &rPB = it->second;
+	CPrimRegion &PRegion = *rPB.PRegion;
 	switch (rPB.Type)
 	{
 		case 0:
@@ -386,6 +532,7 @@ bool CBuilderLogic::selectVertexOnSelPB (CVector &selMin, CVector &selMax)
 		return false;
 
 	CPrimBuild &rPB = it->second;
+	CPrimRegion &PRegion = *rPB.PRegion;
 
 	if (!rPB.Created)
 		return false;
@@ -432,6 +579,8 @@ void CBuilderLogic::setSelVertexOnSelPB (NLMISC::CVector &v)
 		return;
 
 	CPrimBuild &rPB = it->second;
+	CPrimRegion &PRegion = *rPB.PRegion;
+	
 	switch (rPB.Type)
 	{
 		case 0:
@@ -456,6 +605,8 @@ void CBuilderLogic::delSelVertexOnSelPB ()
 		return;
 
 	CPrimBuild &rPB = it->second;
+	CPrimRegion &PRegion = *rPB.PRegion;
+
 	uint32 i;
 	switch (rPB.Type)
 	{
@@ -507,11 +658,13 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 	{
 		HTREEITEM curItem = it->first;
 		CPrimBuild &curPB = it->second;
+		CPrimRegion &PRegion = *curPB.PRegion;
+
 		CRGBA col;
 		uint32 i;
 		
-		// If not created do not display
-		if (!curPB.Created)
+		// If not created do not display or hidden
+		if ((!curPB.Created)||(curPB.hidden))
 		{
 			++it;
 			continue;

@@ -30,12 +30,16 @@ class CPrimBuild
 {
 
 public:
+	
+	NLLIGO::CPrimRegion	*PRegion;
 
-	sint32		Type;		// 0 (Point),1 (Path), 2 (Zone),-1 (Not Valid)
-	bool		Created;
-	sint32		Pos;
-
+	sint32				Type;		// 0 (Point),1 (Path), 2 (Zone),-1 (Not Valid)
+	bool				Created;
+	sint32				Pos;
+	bool				hidden;
+	
 	CPrimBuild();
+
 };
 
 // ***************************************************************************
@@ -44,10 +48,12 @@ class CBuilderLogic
 {
 
 
-	NLLIGO::CPrimRegion			PRegion;
+	//NLLIGO::CPrimRegion			PRegion;
+	std::vector<NLLIGO::CPrimRegion*>	PRegions;
+	sint32								RegionSelected;
 
 	// Tools accelerator
-	std::map<HTREEITEM, CPrimBuild>	Primitives;
+	std::map<HTREEITEM, CPrimBuild>		Primitives;
 
 	// Selection
 	HTREEITEM					ItemSelected;
@@ -63,16 +69,24 @@ public:
 	void setDisplay (CDisplay *pDisp);
 	void setToolsLogic	(CToolsLogic *pTool);
 	void updateToolsLogic ();
-	bool load(const char *fileName);
-	bool save(const char *fileName);
+	bool load (const char *fileName);
+	bool save (uint32 nPos, const char *fileName);
+	void newZone ();
+	void unload (uint32 pos);
+	uint32 getNbZoneRegion();
+	const std::string &getZoneRegionName(uint32 nPos);
 
-	void insertPoint (HTREEITEM item, const char *Name, const char *LayerName);
-	void insertPath (HTREEITEM item, const char *Name, const char *LayerName);
-	void insertZone (HTREEITEM item, const char *Name, const char *LayerName);
+	void insertPoint (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName);
+	void insertPath (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName);
+	void insertZone (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName);
 	void del (HTREEITEM item);
+	void hide (HTREEITEM item);
+	void hideAll (uint32 nPos, sint32 nID, bool bHide);
+	void regionHideAll (uint32 nPos, bool bHide); // (bHide == false) -> unhide
 
 	const char* getName (HTREEITEM item);
 	const char* getLayerName (HTREEITEM item);
+	bool isHidden (HTREEITEM item);
 	void setName (HTREEITEM item, const char* pStr);
 	void setLayerName (HTREEITEM item, const char* pStr);
 

@@ -27,6 +27,8 @@ BEGIN_MESSAGE_MAP(CDisplay, CView)
 	ON_WM_LBUTTONUP()
 	ON_WM_RBUTTONUP()
 	ON_WM_MOUSEMOVE()
+	ON_WM_KEYDOWN()
+	ON_WM_KEYUP()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -45,6 +47,8 @@ CDisplay::CDisplay ()
 	_DisplayGrid = true;
 	_DisplayLogic = true;
 	_DisplayZone = true;
+	_LastX = _LastY = -10000;
+	_CtrlKeyDown = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -57,7 +61,11 @@ void CDisplay::init (CMainFrame *pMF)
 	CScene::registerBasics ();
 	init3d ();
 
-	CNELU::init (512, 512, CViewport(), 32, true, this->m_hWnd);
+	//CNELU::init (512, 512, CViewport(), 32, true, this->m_hWnd);
+	//NL3D::registerSerial3d();
+	CNELU::initDriver(512, 512, 32, true, this->m_hWnd);
+	CNELU::initScene(CViewport());
+
 
 	// setMatrixMode2D11
 	CFrustum f(0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f,false);
@@ -185,10 +193,12 @@ void CDisplay::OnMButtonUp (UINT nFlags, CPoint point)
 // ---------------------------------------------------------------------------
 void CDisplay::OnLButtonDown (UINT nFlags, CPoint point)
 {
+	_CurPos = convertToWorld (point);
 	if (_MainFrame->_Mode == 0) // Mode Zone
 	{
-		CVector p = convertToWorld (point);
-		_MainFrame->_ZoneBuilder.add (p);
+		_MainFrame->_ZoneBuilder.add (_CurPos);
+		_LastX = (sint32)floor (_CurPos.x / _CellSize);
+		_LastY = (sint32)floor (_CurPos.y / _CellSize);
 	}
 	
 	if (_MainFrame->_Mode == 1) // Mode Logic
@@ -224,12 +234,12 @@ void CDisplay::OnLButtonUp (UINT nFlags, CPoint point)
 // ---------------------------------------------------------------------------
 void CDisplay::OnRButtonDown (UINT nFlags, CPoint point)
 {
-	_MouseRightDown = true;
+	_CurPos = convertToWorld (point);
 	if (_MainFrame->_Mode == 0) // Mode Zone
 	{
-		CVector p = convertToWorld (point);
-		_MainFrame->_ZoneBuilder.del (p);
-		OnPaint();
+		_MainFrame->_ZoneBuilder.del (_CurPos);
+		_LastX = (sint32)floor (_CurPos.x / _CellSize);
+		_LastY = (sint32)floor (_CurPos.y / _CellSize);
 	}
 
 	if (_MainFrame->_Mode == 1) // Mode Logic
@@ -249,10 +259,11 @@ void CDisplay::OnRButtonDown (UINT nFlags, CPoint point)
 			if (bSelected)
 			{
 				_MainFrame->_PRegionBuilder.delSelVertexOnSelPB ();
-				OnPaint();
 			}
 		}
 	}
+	_MouseRightDown = true;
+	OnPaint();
 }
 
 // ---------------------------------------------------------------------------
@@ -271,8 +282,14 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 	{
 		if (_MainFrame->_Mode == 0) // Mode Zone
 		{
-			CVector p = convertToWorld (point);
-			_MainFrame->_ZoneBuilder.add (p);
+			sint32 x = (sint32)floor (_CurPos.x / _CellSize);
+			sint32 y = (sint32)floor (_CurPos.y / _CellSize);
+			if ((x!=_LastX)||(y!=_LastY))
+			{
+				_LastX = x;
+				_LastY = y;
+				_MainFrame->_ZoneBuilder.add (_CurPos);
+			}
 		}
 	
 		if (_MainFrame->_Mode == 1) // Mode Logic
@@ -285,8 +302,14 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 	{
 		if (_MainFrame->_Mode == 0) // Mode Zone
 		{
-			CVector p = convertToWorld (point);
-			_MainFrame->_ZoneBuilder.del (p);
+			sint32 x = (sint32)floor (_CurPos.x / _CellSize);
+			sint32 y = (sint32)floor (_CurPos.y / _CellSize);
+			if ((x!=_LastX)||(y!=_LastY))
+			{
+				_LastX = x;
+				_LastY = y;
+				_MainFrame->_ZoneBuilder.del (_CurPos);
+			}
 		}
 		OnPaint();
 	}
@@ -309,4 +332,28 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 
 	// Display the current position in the world in the status bar
 	_MainFrame->displayCoordinates (_CurPos);
+}
+// ---------------------------------------------------------------------------
+void CDisplay::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == 17)
+		_CtrlKeyDown = true;
+	if (_CtrlKeyDown)
+	{
+		if (nChar == 90)
+		{
+			_MainFrame->onMenuModeUndo ();
+		}
+		if (nChar == 89)
+		{
+			_MainFrame->onMenuModeRedo ();
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CDisplay::OnKeyUp (UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == 17)
+		_CtrlKeyDown = false;
 }

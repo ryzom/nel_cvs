@@ -64,20 +64,57 @@ protected:  // control bar embedded members
 
 // Generated message map functions
 protected:
+
 	//{{AFX_MSG(CMainFrame)
 	afx_msg int OnCreate (LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnMenuFileExit ();
-	afx_msg void OnMenuFileOpen ();
-	afx_msg void OnMenuFileSave ();
+	afx_msg void OnMenuFileNewLogic ();
+	afx_msg void OnMenuFileUnloadLogic ();
+	afx_msg void OnMenuFileOpenLogic ();
+	afx_msg void OnMenuFileSaveLogic ();
+	afx_msg void OnMenuFileNewLandscape ();
+	afx_msg void OnMenuFileUnloadLandscape ();
+	afx_msg void OnMenuFileOpenLandscape ();
+	afx_msg void OnMenuFileSaveLandscape ();
 	afx_msg void OnMenuModeZone ();
 	afx_msg void OnMenuModeLogic ();
+	afx_msg void onMenuModeSelectZone ();
 	afx_msg void OnMenuViewGrid ();
 	afx_msg void OnClose ();
 	afx_msg void OnSize (UINT nType, int cx, int cy);
+
+public:
+
+	afx_msg void onMenuModeUndo ();
+	afx_msg void onMenuModeRedo ();
+	//afx_msg void OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags);
+
 		// NOTE - the ClassWizard will add and remove member functions here.
 		//    DO NOT EDIT what you see in these blocks of generated code!
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
+class CSelectDialog : public CDialog
+{
+	int				_Sel;
+
+	CBuilderZone	*_ToInit;
+	CBuilderLogic	*_ToInitLogic;
+
+
+public:
+
+	CSelectDialog (CWnd*pParent);
+
+	void set (CBuilderZone *bzForInit);
+	void setLogic (CBuilderLogic *blForInit);
+
+	BOOL OnInitDialog ();
+	void OnOK ();
+	int getSel ();
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -94,6 +94,30 @@ public:
 };
 
 // ***************************************************************************
+// CBuilderZoneStack contains the stack of the state painting
+class CBuilderZoneStack
+{
+	struct SStackElt
+	{
+		CBuilderZoneRegion	BZRegion;
+		CBuilderZoneRegion	*RegionFrom;
+		sint32				Pos;
+	};
+
+	std::vector<SStackElt>	_Stack;
+	sint32					_Head, _Queue, _UndoPos;
+
+public:
+
+	CBuilderZoneStack ();
+	void reset ();
+	void setRegion (CBuilderZoneRegion* pReg,sint32 nPos);
+	void undo ();
+	void redo ();
+	bool isEmpty ();
+};
+
+// ***************************************************************************
 // CBuilderZone contains all the shared data between the tools and the engine
 // ZoneBank contains the macro zones that is composed of several zones plus a mask
 // DataBase contains the graphics for the zones
@@ -103,10 +127,18 @@ class CBuilderZone
 
 	CDataBase					_DataBase;
 
-	CBuilderZoneRegion			_ZoneRegion;
+	//CBuilderZoneRegion			_ZoneRegion;
+	std::vector<CBuilderZoneRegion*>	_ZoneRegions;
+	std::vector<std::string>			_ZoneRegionsName;
+	sint32								_ZoneRegionSelected;
+
+	sint32						_MinX, _MaxX, _MinY, _MaxY;
+	std::vector<bool>			_ZoneMask;
 
 	CDisplay					*_Display;
 	CToolsZone					*_ToolsZone;
+
+	CBuilderZoneStack			_StackZone;
 
 public:
 
@@ -130,6 +162,10 @@ public:
 
 	std::vector<NLLIGO::CZoneBankElement*> _CurrentSelection;
 
+private:
+
+	void				calcMask();
+
 public:
 
 	CBuilderZone();
@@ -138,17 +174,28 @@ public:
 	void				updateToolsZone ();
 	bool				load (const char *fileName);
 	bool				save (const char *fileName);
+	void				newZone ();
+	void				unload (uint32 i);
 
-	void				add (NLMISC::CVector &worldPos);
-	void				del (NLMISC::CVector &worldPos);
+	void				add (const NLMISC::CVector &worldPos);
+	void				del (const NLMISC::CVector &worldPos);
 	bool				initZoneBank (const std::string &Path);
+
+	void				undo ();
+	void				redo ();
+	void				stackReset ();
 
 	// Accessors
 	NLLIGO::CZoneBank	&getZoneBank () { return _ZoneBank; }
 
-	void				render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax);
-	void				displayGrid (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax);
+	void				render (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax);
+	void				displayGrid (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax);
 
+	uint32				getNbZoneRegion ();
+	const std::string&	getZoneRegionName (uint32 i);
+	uint32				getCurZoneRegion ();
+	void				setCurZoneRegion (uint32 i);
+	bool				getZoneMask (sint32 x, sint32 y);
 };
 
 // ***************************************************************************

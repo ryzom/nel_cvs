@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.5 2001/07/12 14:36:33 lecroart Exp $
+ * $Id: entities.h,v 1.6 2001/07/12 17:06:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NLPACS
 namespace NL3D
 {
 	class UInstance;
+	class UVisualCollisionEntity;
 };
 
 class CEntity
@@ -46,22 +47,23 @@ public:
 	
 	CEntity () : Id(0xffffffff), Name("<Unknown>"), AutoMove(false) { }
 
-	uint32						Id;
+	uint32							Id;
 
-	std::string					Name;
+	std::string						Name;
 
-	NLMISC::CVector				Position;
-	float						Speed, 
-								Angle;
+	NLMISC::CVector					Position;
+	float							Speed, 
+									Angle;
 
 	enum TType { Self, Other, Snowball };
 	
-	TType						Type;
+	TType							Type;
 
-	bool						AutoMove;
+	bool							AutoMove;
 
-	NLPACS::UMovePrimitive		*MovePrimitive;
-	NL3D::UInstance				*Instance;
+	NLPACS::UMovePrimitive			*MovePrimitive;
+	NL3D::UVisualCollisionEntity	*VisualCollisionEntity;
+	NL3D::UInstance					*Instance;
 };
 
 extern CEntity	*Self;

@@ -1,7 +1,7 @@
 /** \file pacs.cpp
  * pacs management
  *
- * $Id: pacs.cpp,v 1.2 2001/07/12 14:36:33 lecroart Exp $
+ * $Id: pacs.cpp,v 1.3 2001/07/12 17:06:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,11 @@
 #include <nel/pacs/u_global_retriever.h>
 #include <nel/pacs/u_move_container.h>
 
+#include <nel/3d/u_scene.h>
+#include <nel/3d/u_visual_collision_manager.h>
+
 #include "client.h"
+#include "landscape.h"
 #include "pacs.h"
 
 using namespace std;
@@ -37,9 +41,11 @@ using namespace NL3D;
 using namespace NLPACS;
 
 
-URetrieverBank		*RetrieverBank;
-UGlobalRetriever	*GlobalRetriever;
-UMoveContainer		*MoveContainer;
+URetrieverBank			*RetrieverBank;
+UGlobalRetriever		*GlobalRetriever;
+UMoveContainer			*MoveContainer;
+
+UVisualCollisionManager	*VisualCollisionManager;
 
 
 void	initPACS()
@@ -50,6 +56,11 @@ void	initPACS()
 
 	// create the move primitive
 	MoveContainer = UMoveContainer::createMoveContainer(GlobalRetriever, 100, 100, 2.0);
+
+	// create a visual collision manager
+	// this should not be in pacs, but this is too close to pacs to be put elsewhere
+	VisualCollisionManager = Scene->createVisualCollisionManager();
+	VisualCollisionManager->setLandscape(Landscape);
 }
 
 void	releasePACS()
@@ -58,6 +69,9 @@ void	releasePACS()
 	UGlobalRetriever::deleteGlobalRetriever(GlobalRetriever);
 	URetrieverBank::deleteRetrieverBank(RetrieverBank);
 	UMoveContainer::deleteMoveContainer(MoveContainer);
+
+	// delete the visual collision manager
+	Scene->deleteVisualCollisionManager(VisualCollisionManager);
 }
 
 

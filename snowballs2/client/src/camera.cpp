@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.4 2001/07/12 15:43:05 lecroart Exp $
+ * $Id: camera.cpp,v 1.5 2001/07/12 17:06:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include <nel/3d/u_instance.h>
 
 #include "client.h"
+#include "entities.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -56,11 +57,16 @@ void	initCamera()
 
 	Snow = Scene->createInstance("snow.ps");
 	Snow->setTransformMode (UTransformable::DirectMatrix);
-	Snow->setPivot(0.0f, 0.0f, 0.0f);
 }
 
 void	updateCamera()
 {
+	// update the mouse listener position
+	if (Self != NULL)
+	{
+		MouseListener->setMatrix(Self->Instance->getMatrix());
+	}
+
 	CMatrix	mat = MouseListener->getViewMatrix();
 	mat.translate(CVector(0.0f, -ViewLagBehind, ViewHeight));
 	float	alpha = (float)atan(ViewHeight/ViewLagBehind);

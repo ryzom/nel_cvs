@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.20 2001/07/12 16:29:19 lecroart Exp $
+ * $Id: client.cpp,v 1.21 2001/07/12 17:06:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,8 @@
 #include <nel/3d/u_3d_mouse_listener.h>
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
+
+#include <nel/pacs/u_move_primitive.h>
 
 
 #include "commands.h"
@@ -130,13 +132,6 @@ int main(int argc, char **argv)
 	// Create a scene
 	Scene = Driver->createScene();
 
-	// load a default cube shape
-	Cube = Scene->createInstance("BARMAN.shape");
-//	Cube->setTransformMode (UTransformable::DirectMatrix);
-	Cube->setScale(1.0f, 1.0f, 1.0f);
-	Cube->setPivot(0.0f, 0.0f, 0.0f);
-	Cube->show();
-
 	// Camera
 	initCamera();
 
@@ -159,6 +154,11 @@ int main(int argc, char **argv)
 	// Init the pacs
 	initPACS();
 
+	// Creates a self entity
+	addEntity(1, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
+										ConfigFile.getVar("StartPoint").asFloat(1),
+										ConfigFile.getVar("StartPoint").asFloat(2)));
+
 	// Display the firsts line
 	nlinfo ("Welcome to Snowballs 2");
 
@@ -169,20 +169,6 @@ int main(int argc, char **argv)
 		// Clear
 		Driver->clearBuffers (CRGBA (64,64,64,0));
 
-		// Update the landscape
-		updateLandscape ();
-
-		// update the box
-		CMatrix		cmat = MouseListener->getViewMatrix();
-		//Cube->setMatrix(cmat);
-		Cube->setPos(cmat.getPos());
-		CVector	j = cmat.getJ();
-		j.z = 0.0f;
-		Cube->setRotQuat(j);
-
-		// setup the camera
-		updateCamera();
-
 		// Update the time counters
 		LastTime = NewTime;
 		NewTime = CTime::getLocalTime();
@@ -190,8 +176,14 @@ int main(int argc, char **argv)
 		// Update all entities positions
 		updateEntities();
 
+		// setup the camera
+		updateCamera();
+
+		// Update the landscape
+		updateLandscape ();
+
 		// Set new animation date
-		Scene->animate (float(NewTime)/1000);
+//		Scene->animate (float(NewTime)/1000);
 
 		// Render
 		Scene->render ();

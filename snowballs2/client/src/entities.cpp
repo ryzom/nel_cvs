@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.6 2001/07/12 15:43:05 lecroart Exp $
+ * $Id: entities.cpp,v 1.7 2001/07/12 17:06:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <math.h>
 #include <map>
 
 #include <nel/misc/types_nl.h>
@@ -44,6 +45,11 @@
 
 #include <nel/pacs/u_move_container.h>
 #include <nel/pacs/u_move_primitive.h>
+#include <nel/pacs/u_global_retriever.h>
+#include <nel/pacs/u_global_position.h>
+
+#include <nel/3d/u_visual_collision_manager.h>
+#include <nel/3d/u_visual_collision_entity.h>
 
 #include "client.h"
 #include "entities.h"
@@ -111,6 +117,7 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 	entity.Name = "Entity"+toString(rand());
 	entity.Position = startPosition;
 	entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
+	entity.VisualCollisionEntity = VisualCollisionManager->createEntity();
 
 	// setup the move primitive and the mesh instance depending on the type of entity
 	switch (type)
@@ -177,20 +184,69 @@ float EntityMaxSpeed = 1.0f;
 
 void updateEntities ()
 {
-	// move auto move entity
-	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
+	// compute the delta t that has elapsed since the last update (in seconds)
+	double	dt = (double)(NewTime-LastTime) / 1000.0;
+	EIT		eit;
+
+	// move entities
+	for (eit = Entities.begin (); eit != Entities.end (); eit++)
 	{
-		if ((*eit).second.AutoMove)
+		CEntity	&entity = (*eit).second;
+		CVector	oldPos;
+		CVector	newPos;
+
+		oldPos = entity.Position;
+
+		if (entity.AutoMove)
 		{
-			(*eit).second.Position.x += frand (2*EntityMaxSpeed) - EntityMaxSpeed;
-			(*eit).second.Position.y += frand (2*EntityMaxSpeed) - EntityMaxSpeed;
-			(*eit).second.Instance->setPos ((*eit).second.Position);
+			// auto moving entities
+			newPos = entity.Position + CVector(frand (2*EntityMaxSpeed) - EntityMaxSpeed,
+											   frand (2*EntityMaxSpeed) - EntityMaxSpeed,
+											   0.0f);
 		}
+		else if (entity.Type == CEntity::Self)
+		{
+			// the self entity
+			// get new position
+			newPos = MouseListener->getViewMatrix().getPos();
+			// get new orientation
+			CVector	j = MouseListener->getViewMatrix().getJ();
+			j.z = 0.0f;
+			j.normalize();
+			entity.Angle = (float)atan2(j.y, j.x);
+		}
+		else
+		{
+			// automatic speed
+			/// \todo compute new entity position
+		}
+
+		entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
 	}
 
-	// compute the collision for the primitives inserted in the move container	
-	double	dt = (double)(NewTime-LastTime) / 1000.0;
+	// evaluate collisions
 	MoveContainer->evalCollision(dt, 0);
+
+	// snap entities to the ground
+	for (eit = Entities.begin (); eit != Entities.end (); eit++)
+	{
+		CEntity	&entity = (*eit).second;
+		UGlobalPosition	gPos;
+
+		// get the global position in pacs coordinates system
+		entity.MovePrimitive->getGlobalPosition(gPos, 0);
+		// convert it in a vector 3d
+		entity.Position = GlobalRetriever->getGlobalPosition(gPos);
+		// get the good z position
+		gPos.LocalPosition.Estimation.z = 0.0f;
+		entity.Position.z = GlobalRetriever->getMeanHeight(gPos);
+		// snap to the ground
+		entity.VisualCollisionEntity->snapToGround(entity.Position);
+
+		entity.Instance->setPos(entity.Position);
+		CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
+		entity.Instance->setRotQuat(jdir);
+	}
 }
 
 void cbUpdateRadar (CConfigFile::CVar &var)

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.29 2004/06/09 10:24:04 boucher Exp $
+ * $Id: primitive.cpp,v 1.30 2004/06/11 12:29:05 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1086,6 +1086,11 @@ void IPrimitive::operator= (const IPrimitive &node)
 
 		ite++;
 	}
+
+#ifdef NLLIGO_DEBUG
+	_DebugClassName = node._DebugClassName;
+	_DebugPrimitiveName = node._DebugPrimitiveName; 
+#endif
 }
 
 // ***************************************************************************
@@ -1677,7 +1682,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 
 #ifdef NLLIGO_DEBUG
 	// store debug data
-	getPropertyByName("class", _DebugClassName);
+ 	getPropertyByName("class", _DebugClassName);
 	getPropertyByName("name", _DebugPrimitiveName);
 #endif
 	// Done

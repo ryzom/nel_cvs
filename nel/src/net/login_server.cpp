@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.12 2002/01/02 14:53:40 lecroart Exp $
+ * $Id: login_server.cpp,v 1.13 2002/01/14 13:55:21 lecroart Exp $
  *
  */
 
@@ -51,6 +51,8 @@ static list<CPendingUser> PendingUsers;
 
 static CCallbackServer *Server;
 static string ListenAddr;
+
+static TDisconnectClientCallback DisconnectClientCallback = NULL;
 
 /// contains the correspondance between userid and the sockid
 map<uint32, TSockId> UserIdSockAssociations;
@@ -157,7 +159,13 @@ void cbWSDisconnectClient5 (CMessage &msgin, const std::string &serviceName, uin
 		nlinfo ("Disconnect the user %d", userid);
 		Server->disconnect ((*it).second);
 	}
+
+	if (DisconnectClientCallback != NULL)
+	{
+		DisconnectClientCallback (userid);
+	}
 }
+
 void cbWSDisconnectClient (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	cbWSDisconnectClient5 (msgin, "", 0);
@@ -234,6 +242,20 @@ static const TCallbackItem ClientCallbackArray[] =
 	{ "SV", cbShardValidation },
 };
 
+void cfcbListenAddress (CConfigFile::CVar &var)
+{
+	// set the new ListenAddr
+	ListenAddr = var.asString();
+	
+	// is the var is empty or not found, take it from the listenAddress()
+	if (ListenAddr.empty())
+	{
+		ListenAddr = Server->listenAddress ().asIPString();
+	}
+
+	nlinfo("New Listen Addresss is : '%s'", ListenAddr.c_str());
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,7 +263,7 @@ static const TCallbackItem ClientCallbackArray[] =
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
+void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl, CConfigFile *cfg)
 {
 	// connect to the welcome service
 	connectToWS ();
@@ -250,20 +272,38 @@ void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
 	server.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
 	server.setConnectionCallback (ClientConnection, NULL);
 
-	ListenAddr = server.listenAddress ().asIPString();
+	if (cfg != NULL)
+	{
+		try
+		{
+			cfcbListenAddress (cfg->getVar("ListenAddress"));
+			cfg->setCallback("ListenAddress", cfcbListenAddress);
+		}
+		catch(Exception &)
+		{
+		}
+	}
+	
+	if (ListenAddr.empty())
+	{
+		ListenAddr = server.listenAddress ().asIPString();
+	}
+
 	nlinfo("Listen Addresss trapped %s", ListenAddr.c_str());
 
 	NewClientCallback = ncl;
 	Server = &server;
 }
 
-void CLoginServer::init (CUdpSock &server, TNewClientCallback ncl)
+void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 {
 	// connect to the welcome service
 	connectToWS ();
 
 	ListenAddr = server.localAddr().asIPString();
 	nlinfo("Listen Addresss trapped %s", ListenAddr.c_str());
+
+	DisconnectClientCallback = dc;
 }
 
 string CLoginServer::isValidCookie (const CLoginCookie &lc)

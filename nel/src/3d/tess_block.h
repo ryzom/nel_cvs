@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * <File description>
  *
- * $Id: tess_block.h,v 1.3 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: tess_block.h,v 1.4 2001/10/04 11:40:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ public:
 	// Clip. (set Clipped to true/false). Use the CurrentPyramid static.
 	static CPlane	CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
 	void			clip();
-	// Clip Tile/Far. Use CTessFace::RefineCenter, CTessFace::TileDistNear, and CTessFace::FarTransition.
+	// Clip Tile/Far.
 	void			clipFar(const CVector &refineCenter, float tileDistNear, float farTransition);
 
 

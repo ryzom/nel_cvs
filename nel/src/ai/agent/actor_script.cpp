@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.65 2002/08/22 08:54:48 portier Exp $
+ * $Id: actor_script.cpp,v 1.66 2002/08/22 15:11:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -583,7 +583,7 @@ namespace NLAIAGENT
 		return r;
 	}
 
-	void CActorScript::Launch( std::string &name, NLAIAGENT::IBasicAgent *child)
+	void CActorScript::Launch(const std::string &name, NLAIAGENT::IBasicAgent *child)
 	{
 		addDynamicAgent( CStringType( name.c_str() ) , child );
 		child->incRef();

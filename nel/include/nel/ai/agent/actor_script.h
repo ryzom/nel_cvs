@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.30 2002/08/21 14:52:44 portier Exp $
+ * $Id: actor_script.h,v 1.31 2002/08/22 15:11:40 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,7 +188,7 @@ namespace NLAIAGENT
 			static void initClass();
 			static void releaseClass();
 
-			virtual void Launch( std::string &name, NLAIAGENT::IBasicAgent *);
+			virtual void Launch(const std::string &name, NLAIAGENT::IBasicAgent *);
 	};
 }
 #endif

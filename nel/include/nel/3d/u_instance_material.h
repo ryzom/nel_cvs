@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.6 2002/06/27 15:43:04 vizerie Exp $
+ * $Id: u_instance_material.h,v 1.7 2002/08/19 09:30:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,17 +66,17 @@ public:
 	/// \name Lighted material mgt. Has effect only if isLighted().
 	// @{
 
-	/// Set the emissive part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the emissive part ot material. Usefull only if isLighted()
 	virtual	void				setEmissive( CRGBA emissive=CRGBA(0,0,0) )=0;
-	/// Set the Ambient part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the Ambient part ot material. Usefull only if isLighted()
 	virtual	void				setAmbient( CRGBA ambient=CRGBA(0,0,0) )=0;
-	/// Set the Diffuse part ot material. Usefull only if setLighting(true, false) has been done. NB: opacity is NOT copied from diffuse.A.
+	/// Set the Diffuse part ot material. Usefull only if isLighted()
 	virtual	void				setDiffuse( CRGBA diffuse=CRGBA(0,0,0) )=0;
-	/// Set the Opacity part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the Opacity part ot material. Usefull only if isLighted()
 	virtual	void				setOpacity( uint8	opa )=0;
-	/// Set the specular part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the specular part ot material. Usefull only if isLighted()
 	virtual	void				setSpecular( CRGBA specular=CRGBA(0,0,0) )=0;
-	/// Set the shininess part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the shininess part ot material. Usefull only if isLighted()
 	virtual	void				setShininess( float shininess )=0;
 
 	virtual	CRGBA				getEmissive() const =0;

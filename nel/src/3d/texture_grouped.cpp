@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.9 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_grouped.cpp,v 1.10 2002/03/11 13:40:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,15 +44,29 @@ static inline void GetTextureSize(ITexture *tex, uint &width, uint &height)
 		uint32 srcWidth, srcHeight;
 		if (!tf->getFileName().empty())
 		{
-			CBitmap::loadSize(NLMISC::CPath::lookup(tf->getFileName()), srcWidth, srcHeight);
-			if (srcWidth == 0 || srcHeight == 0)
+			try
 			{
-				nlinfo("Unable to get size of texture : %s", tf->getFileName().c_str());
-				width = height = 0;
-				return;
+				CBitmap::loadSize(NLMISC::CPath::lookup(tf->getFileName()), srcWidth, srcHeight);
+				if (srcWidth == 0 || srcHeight == 0)
+				{
+					nlinfo("Unable to get size of texture : %s", tf->getFileName().c_str());
+					width = height = 0;
+					return;
+				}
+				width = srcWidth;
+				height = srcHeight;
 			}
-			width = srcWidth;
-			height = srcHeight;
+			catch (NLMISC::EPathNotFound &e)
+			{
+				nlinfo("%s", e.what());
+				width = height = 0;
+			}
+			catch (NLMISC::EStream &e)
+			{
+				nlinfo("unable to load size from a bitmap ! name = %s", tf->getFileName().c_str());
+				nlinfo("reason = %s", e.what());
+				width = height = 0;
+			}
 		}
 		else
 		{

@@ -26,7 +26,7 @@ CFG=object_viewer - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
@@ -52,7 +52,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
 # ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 # SUBTRACT LINK32 /pdb:none
@@ -84,7 +84,7 @@ PreLink_Cmds=buildinc version.ver object_viewer.rc	rc /l 0x40c /fo"Release/objec
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
@@ -112,7 +112,7 @@ LINK32=xilink6.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 # ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
 
@@ -179,6 +179,10 @@ SOURCE=.\slot_dlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound_system.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\std_afx.cpp
 # ADD CPP /Yc"std_afx.h"
 # End Source File
@@ -193,10 +197,6 @@ SOURCE=.\about_dialog.h
 # Begin Source File
 
 SOURCE=.\animation_dlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\animation_set_dlg.h
 # End Source File
 # Begin Source File
 
@@ -233,6 +233,10 @@ SOURCE=.\set_value_dlg.h
 # Begin Source File
 
 SOURCE=.\slot_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound_system.h
 # End Source File
 # Begin Source File
 
@@ -360,6 +364,10 @@ SOURCE=.\toolbar1.bmp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\animation_set_dlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=R:\code\nel\tools\3d\object_viewer\attrib_dlg.cpp
 # End Source File
 # Begin Source File
@@ -469,6 +477,14 @@ SOURCE=R:\code\nel\tools\3d\object_viewer\emitter_dlg.cpp
 # Begin Source File
 
 SOURCE=R:\code\nel\tools\3d\object_viewer\emitter_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\lb_extern_id_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\lb_extern_id_dlg.h
 # End Source File
 # Begin Source File
 

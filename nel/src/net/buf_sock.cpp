@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.22 2002/05/21 16:37:38 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.23 2002/05/22 14:27:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,6 +166,7 @@ bool CBufSock::flush()
 	{		
 		// Send
 		CSock::TSockResult res;
+		TBlockSize realLen = _ReadyToSendBuffer.size() - _RTSBIndex;
 		TBlockSize len = _ReadyToSendBuffer.size() - _RTSBIndex;
 
 		res = Sock->send( _ReadyToSendBuffer.getPtr()+_RTSBIndex, len, false );
@@ -184,9 +185,9 @@ bool CBufSock::flush()
 */			
 			
 			// TODO OPTIM remove the nldebug for speed
-			nldebug( "LNETL1: %s sent effectively %u/%u bytes", asString().c_str(), len, _ReadyToSendBuffer.size()/*, stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str()*/ );
+			nldebug( "LNETL1: %s sent effectively %u/%u bytes (pos %u wantedsend %u)", asString().c_str(), len, _ReadyToSendBuffer.size(), _RTSBIndex, realLen/*, stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str()*/ );
 
-			if ( len == _ReadyToSendBuffer.size() ) // for non-blocking mode (server)
+			if ( _RTSBIndex+len == _ReadyToSendBuffer.size() ) // for non-blocking mode (server)
 			{
 				// If sending is ok, clear the global buffer
 				_ReadyToSendBuffer.clear();

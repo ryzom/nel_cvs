@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * <File description>
  *
- * $Id: shadow_poly_receiver.cpp,v 1.8 2004/06/28 10:08:31 berenguier Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.9 2004/06/28 10:53:01 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -51,7 +51,8 @@ CShadowPolyReceiver::CShadowPolyReceiver(uint quadGridSize, float quadGridCellSi
 	_VB.setVertexFormat(CVertexBuffer::PositionFlag);
 	// lock volatile, to avoid cpu stall when rendering multiple shadows in the same polyReceiver
 	_VB.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
-	_RenderTriangles.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
+	// TempYoyo
+	//_RenderTriangles.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
 }
 
 

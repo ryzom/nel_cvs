@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.7 2001/01/08 18:20:02 berenguier Exp $
+ * $Id: material.h,v 1.8 2001/01/09 10:31:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -284,6 +284,24 @@ public:
 
 			ConstantColor.set(255,255,255,255);
 		}
+
+		void		serial(NLMISC::IStream &f)
+		{
+			Env.OpRGB= f.serialBitField8(Env.OpRGB);
+			Env.SrcArg0RGB= f.serialBitField8(Env.SrcArg0RGB);
+			Env.OpArg0RGB= f.serialBitField8(Env.OpArg0RGB);
+			Env.SrcArg1RGB= f.serialBitField8(Env.SrcArg1RGB);
+			Env.OpArg1RGB= f.serialBitField8(Env.OpArg1RGB);
+
+			Env.OpAlpha= f.serialBitField8(Env.OpAlpha);
+			Env.SrcArg0Alpha= f.serialBitField8(Env.SrcArg0Alpha);
+			Env.OpArg0Alpha= f.serialBitField8(Env.OpArg0Alpha);
+			Env.SrcArg1Alpha= f.serialBitField8(Env.SrcArg1Alpha);
+			Env.OpArg1Alpha= f.serialBitField8(Env.OpArg1Alpha);
+
+			f.serial(ConstantColor);
+		}
+
 
 		CTexEnv()
 		{

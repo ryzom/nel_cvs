@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.13 2001/01/08 18:20:28 berenguier Exp $
+ * $Id: material.cpp,v 1.14 2001/01/09 10:31:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,8 +151,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		// Read texture environnement, or setup them.
 		if(ver>=1)
 		{
-			f.serial(_TexEnvs[i].Env.Packed);
-			f.serial(_TexEnvs[i].ConstantColor);
+			f.serial(_TexEnvs[i]);
 		}
 		else
 		{

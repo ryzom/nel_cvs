@@ -48,7 +48,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 user32.lib advapi32.lib dsound.lib eax.lib eaxguid.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_r.dll"
+# ADD LINK32 user32.lib advapi32.lib dsound.lib eax.lib eaxguid.lib gdi32.lib advapi32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_r.dll"
 
 !ELSEIF  "$(CFG)" == "driver_dsound - Win32 Debug"
 

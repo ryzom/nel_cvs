@@ -48,7 +48,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 user32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../lib/nel_drv_openal_win_r.dll" /libpath:"C:\Netshare\openal\win\alut\release" /libpath:"C:\Netshare\openal\win\openal32\release"
+# ADD LINK32 user32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib gdi32.lib advapi32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../lib/nel_drv_openal_win_r.dll" /libpath:"C:\Netshare\openal\win\alut\release" /libpath:"C:\Netshare\openal\win\openal32\release"
 
 !ELSEIF  "$(CFG)" == "driver_openal - Win32 Debug"
 

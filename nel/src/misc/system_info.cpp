@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.15 2003/01/13 14:06:34 lecroart Exp $
+ * $Id: system_info.cpp,v 1.16 2003/02/07 16:06:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -412,7 +412,7 @@ uint32 CSystemInfo::availablePhysicalMemory ()
 
 #elif defined NL_OS_UNIX
 
-	return getSystemMemory (2);
+	return getSystemMemory (2) + getSystemMemory (4) + getSystemMemory (5);
 
 #endif
 

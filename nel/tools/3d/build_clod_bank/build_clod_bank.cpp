@@ -1,7 +1,7 @@
 /** \file build_clod_bank.cpp
  * build a .clodbank with a config file.
  *
- * $Id: build_clod_bank.cpp,v 1.2 2002/05/14 16:21:42 berenguier Exp $
+ * $Id: build_clod_bank.cpp,v 1.3 2002/05/17 09:20:04 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -175,7 +175,8 @@ int	main(int argc, char *argv[])
 					iFile.serial(*anim);
 					iFile.close();
 					// Add to the builder. NB: animation will be delete in this method.
-					lodBuilder.addAnim(CFile::getFilenameWithoutExtension(animFileName).c_str(), anim, bakeFrameRate);
+					// NB: the key name here is the entire file, with the .anim, for easier georges editing.
+					lodBuilder.addAnim(animFileName.c_str(), anim, bakeFrameRate);
 				}
 				printf("\n");
 

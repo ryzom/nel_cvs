@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.22 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: bitmap.cpp,v 1.23 2001/02/16 11:08:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,7 +115,7 @@ uint8 CBitmap::load(NLMISC::IStream &f)
 		f.serial(lengthID);
 		f.serial(cMapType);
 		f.serial(imageType);
-		if(imageType!=2 && imageType!=10) return 0;
+		if(imageType!=2 && imageType!=3 && imageType!=10 && imageType!=11) return 0;
 		f.serial(tgaOrigin);
 		f.serial(length);
 		f.serial(depth);
@@ -124,7 +124,7 @@ uint8 CBitmap::load(NLMISC::IStream &f)
 		f.serial(width);
 		f.serial(height);
 		f.serial(imageDepth);
-		if(imageDepth!=24 && imageDepth!=32) return 0;
+		if(imageDepth!=8 && imageDepth!=24 && imageDepth!=32) return 0;
 		f.serial(desc);
 
 		if(!f.seek (0, origin))
@@ -546,21 +546,8 @@ bool CBitmap::rgbaToLuminance()
 \*-------------------------------------------------------------------*/
 bool CBitmap::alphaToLuminance()
 {
-	uint32 i;
-
 	if(_Width*_Height == 0)  return false;
 		
-	for(uint8 m= 0; m<_MipMapCount; m++)
-	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size());
-
-		for(i=0; i<_Data[m].size(); i++)
-		{
-			dataTmp.push_back(_Data[m][i]);
-		}
-		_Data[m] = dataTmp;
-	}
 	PixelFormat = Luminance;
 	return true;
 }
@@ -1748,64 +1735,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 	
 	switch(imageType)
 	{
-		case 10:
-		{
-			uint8 packet;
-			uint8 pixel[4];
-			uint32 imageSize = width*height;
-			uint32 readSize = 0;
-			_Data[0].reserve(_Width*_Height*4);
-
-			while(readSize < imageSize)
-			{
-				f.serial(packet);
-				if((packet & 0x80) > 0) // packet RLE 
-				{ 
-					for(i=0; i<imageDepth/8; i++)
-					{
-						f.serial(pixel[i]);
-					}
-					for (i=0; i < (packet & 0x7F) + 1; i++)
-					{
-						for(j=0; j<imageDepth/8; j++)
-						{
-							_Data[0].push_back(pixel[j]);
-						}
-						if(imageDepth==24)
-						{
-							_Data[0].push_back(0);
-						}
-					}
-				}
-				else	// packet Raw 
-				{ 
-					for(i=0; i<((packet & 0x7F) + 1); i++)
-					{
-						for(j=0; j<imageDepth/8; j++)
-						{
-							f.serial(pixel[j]);
-						}
-						if(imageDepth==32)
-						{
-							_Data[0].push_back(pixel[2]);
-							_Data[0].push_back(pixel[1]);
-							_Data[0].push_back(pixel[0]);
-							_Data[0].push_back(pixel[3]);
-						}
-						if(imageDepth==24)
-						{
-							_Data[0].push_back(pixel[2]);
-							_Data[0].push_back(pixel[1]);
-							_Data[0].push_back(pixel[0]);
-							_Data[0].push_back(0);
-						}
-					}
-  				}
-				readSize += (packet & 0x7F) + 1;
-			}
-		};
-		break;
-
+		// Uncompressed RGB or RGBA
 		case 2:
 		{
 			_Data[0].resize(_Width*_Height*4);
@@ -1869,7 +1799,135 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 				}
 			}
 
+			PixelFormat = RGBA;
 			delete scanline;
+		};
+		break;
+		
+		// Uncompressed Grayscale bitmap
+		case 3:
+		{
+			_Data[0].resize(_Width*_Height);
+			uint8 upSideDown = ((desc & (1 << 5))==0);
+			slsize = _Width;
+
+			scanline = new uint8[slsize];
+			if(!scanline)
+			{
+				throw EAllocationFailure();
+			}
+
+			for(y=0; y<_Height ;y++)
+			{
+				// Serial buffer: more efficient way to load.
+				f.serialBuffer (scanline, slsize);
+
+				k=0;
+				for(i=0; i<width; i++) 
+				{
+					if(upSideDown)
+						_Data[0][(height-y-1)*width + i] = scanline[k++];
+					else
+						_Data[0][y*width + i] = scanline[k++];
+				}
+			}
+
+			PixelFormat = _LoadGrayscaleAsAlpha?Alpha:Luminance;
+			delete scanline;
+		};
+		break;
+
+		// Compressed RGB or RGBA
+		case 10:
+		{
+			uint8 packet;
+			uint8 pixel[4];
+			uint32 imageSize = width*height;
+			uint32 readSize = 0;
+			_Data[0].reserve(_Width*_Height*4);
+
+			while(readSize < imageSize)
+			{
+				f.serial(packet);
+				if((packet & 0x80) > 0) // packet RLE 
+				{ 
+					for(i=0; i<imageDepth/8; i++)
+					{
+						f.serial(pixel[i]);
+					}
+					for (i=0; i < (packet & 0x7F) + 1; i++)
+					{
+						for(j=0; j<imageDepth/8; j++)
+						{
+							_Data[0].push_back(pixel[j]);
+						}
+						if(imageDepth==24)
+						{
+							_Data[0].push_back(0);
+						}
+					}
+				}
+				else	// packet Raw 
+				{ 
+					for(i=0; i<((packet & 0x7F) + 1); i++)
+					{
+						for(j=0; j<imageDepth/8; j++)
+						{
+							f.serial(pixel[j]);
+						}
+						if(imageDepth==32)
+						{
+							_Data[0].push_back(pixel[2]);
+							_Data[0].push_back(pixel[1]);
+							_Data[0].push_back(pixel[0]);
+							_Data[0].push_back(pixel[3]);
+						}
+						if(imageDepth==24)
+						{
+							_Data[0].push_back(pixel[2]);
+							_Data[0].push_back(pixel[1]);
+							_Data[0].push_back(pixel[0]);
+							_Data[0].push_back(0);
+						}
+					}
+  				}
+				readSize += (packet & 0x7F) + 1;
+			}
+			PixelFormat = RGBA;
+		};
+		break;
+
+		// Compressed Grayscale bitmap (not tested)
+		case 11:
+		{
+			uint8 packet;
+			uint8 pixel[4];
+			uint32 imageSize = width*height;
+			uint32 readSize = 0;
+			_Data[0].reserve(_Width*_Height);
+
+			while(readSize < imageSize)
+			{
+				f.serial(packet);
+				if((packet & 0x80) > 0) // packet RLE 
+				{ 
+					f.serial(pixel[0]);
+					for (i=0; i < (packet & 0x7F) + 1; i++)
+					{
+						_Data[0].push_back(pixel[0]);
+					}
+				}
+				else	// packet Raw 
+				{ 
+					for(i=0; i<((packet & 0x7F) + 1); i++)
+					{
+						f.serial(pixel[0]);
+						_Data[0].push_back(pixel[0]);
+					}
+  				}
+				readSize += (packet & 0x7F) + 1;
+			}
+			PixelFormat = _LoadGrayscaleAsAlpha?Alpha:Luminance;
 		};
 		break;
 
@@ -1877,7 +1935,6 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 			return 0;
 	}
 
-	PixelFormat = RGBA;
 	_MipMapCount = 1;
 	return(imageDepth);
 

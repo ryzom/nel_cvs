@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.16 2001/01/23 09:23:52 berenguier Exp $
+ * $Id: bitmap.h,v 1.17 2001/02/16 11:08:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,9 +83,10 @@ protected :
 	std::vector<uint8> _Data[MAX_MIPMAP];
 
 	// The number of mipmaps. base image IS a mipmap. 1 means a base image with no mipmaping.
-	uint8 _MipMapCount;
-	uint32 _Width;
-	uint32 _Height;
+	uint8	_MipMapCount;
+	bool	_LoadGrayscaleAsAlpha;
+	uint32	_Width;
+	uint32	_Height;
 
 private :
 	
@@ -226,6 +227,7 @@ public:
 		_Width = 0;
 		_Height = 0;
 		PixelFormat = RGBA;
+		_LoadGrayscaleAsAlpha = true;
 	}
 
 
@@ -371,6 +373,29 @@ public:
 	 * \return true if succeed, false else
 	 */	
 	bool writeTGA(NLMISC::IStream &f, uint32 d, bool upsideDown = false);
+
+
+	/**
+	 * Tell the bitmap to load grayscale bitmap as alpha or luminance format.
+	 *
+	 * \param loadAsAlpha is true to load grayscale bitmaps as alpha. false to load grayscale bitmaps as luminance.
+	 * default value is true.
+	 */
+	void loadGrayscaleAsAlpha (bool loadAsAlpha)
+	{
+		_LoadGrayscaleAsAlpha=loadAsAlpha;
+	}
+
+
+	/**
+	 * Tell if the bitmap loads grayscale bitmap as alpha or luminance format.
+	 *
+	 * \return true is the bitmap loads grayscale bitmaps as alpha, false if it loads grayscale bitmaps as luminance.
+	 */
+	bool isGrayscaleAsAlpha () const
+	{
+		_LoadGrayscaleAsAlpha;
+	}
 
 };
 

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.40 2002/06/18 08:23:50 corvazier Exp $
+ * $Id: path.cpp,v 1.41 2002/06/24 10:23:49 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -269,6 +269,28 @@ string CPath::standardizePath (const string &path, bool addFinalSlash)
 
 	return newPath;
 }
+
+// remplace / wiht \ and put all in lower case
+std::string	CPath::standardizeDosPath (const std::string &path)
+{
+	string newPath;
+
+	for (uint i = 0; i < path.size(); i++)
+	{
+		if (path[i] == '/')
+			newPath += '\\';
+		else if (isupper(path[i]))
+			newPath += tolower(path[i]);
+		else
+			newPath += path[i];
+	}
+
+	if (CFile::isDirectory(path) && newPath[newPath.size()-1] != '\\')
+		newPath += '\\';
+
+	return newPath;
+}
+
 
 std::string CPath::getCurrentPath ()
 {

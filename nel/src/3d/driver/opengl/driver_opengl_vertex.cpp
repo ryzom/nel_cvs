@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.42 2004/04/01 19:08:38 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.43 2004/04/05 12:30:25 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -526,8 +526,8 @@ bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuad
 				do 
 				{
 					*curr++ = vertexIndex;
-					*curr++ = vertexIndex + 2;
 					*curr++ = vertexIndex + 1;
+					*curr++ = vertexIndex + 2;
 					*curr++ = vertexIndex;
 					*curr++ = vertexIndex + 2;
 					*curr++ = vertexIndex + 3;
@@ -546,8 +546,8 @@ bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuad
 				do 
 				{
 					*curr++ = vertexIndex;
-					*curr++ = vertexIndex + 2;
 					*curr++ = vertexIndex + 1;
+					*curr++ = vertexIndex + 2;
 					*curr++ = vertexIndex;
 					*curr++ = vertexIndex + 2;
 					*curr++ = vertexIndex + 3;

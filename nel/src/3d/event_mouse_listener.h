@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.4 2002/08/06 14:59:24 berenguier Exp $
+ * $Id: event_mouse_listener.h,v 1.5 2002/08/06 15:47:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,7 +175,7 @@ public:
 	  */
 	bool isModelTranslationEnabled(TAxis axis) ;
 
-	/** Each move /rot of the modelMatrix is first transformed by this matrix before applying.
+	/** Each move of the modelMatrix is first transformed by this matrix before applying. NB: rot are still done in local
 	 *	\transModelMove Trans part is removed
 	 */
 	void setModelMatrixTransformMove(const NLMISC::CMatrix& transModelMove);

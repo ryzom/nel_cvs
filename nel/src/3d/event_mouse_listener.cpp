@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.14 2002/08/06 14:59:24 berenguier Exp $
+ * $Id: event_mouse_listener.cpp,v 1.15 2002/08/06 15:47:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,9 +184,6 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 				CMatrix rm ;
 				rm.rotate(r) ;
 
-				// transform the rotation as needed.
-				rm= _ModelMatrixTransformMove * rm;
-				
 				_ModelMatrix = rm * _ModelMatrix ;
 				_ModelMatrix.setPos(pos) ;
 

@@ -308,7 +308,7 @@
 		{
 			// user selected a shard, try to add the user to the shard
 
-			if (askClientConnection($shardid, $id, $res))
+			if (askClientConnection($shardid, $id, $login, $res))
 			{
 				echo "<h1>Access validated</h1>Please wait while launching the application...<br>\n";
 				echo $res."<br>\n";

@@ -164,7 +164,7 @@
 		return true;
 	}
 
-	function askClientConnection ($shardid, $uid, &$res)
+	function askClientConnection ($shardid, $uid, $name, &$res)
 	{
 		$ok = false;
 
@@ -180,6 +180,7 @@
 		$msgout->serialuint8 ($messageType);
 		$msgout->serialuint32 ($shardid);
 		$msgout->serialuint32 ($uid);
+		$msgout->serialstring ($name);
 
 		if (!sendMessage ($fp, $msgout))
 		{

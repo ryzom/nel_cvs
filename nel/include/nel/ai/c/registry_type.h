@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.5 2001/01/10 08:58:52 chafik Exp $
+ * $Id: registry_type.h,v 1.6 2001/01/10 10:38:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,6 +316,8 @@ namespace NLAIC
 	public:
 		///define the type of an operation.
 		enum TTypeOp{
+			///None operation is define.
+			opNone = 0
 			///Can add this objects with an ather.
 			opAdd = 1,
 			///Can substract this objects with an ather.

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.38 2003/08/19 12:52:51 vizerie Exp $
+ * $Id: particle_system.h,v 1.39 2003/08/22 08:57:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -227,7 +227,7 @@ public:
 
 		/** Test wether a process is part of this system
 		  */
-		bool						isProcess(CParticleSystemProcess *process) const;
+		bool						isProcess(const CParticleSystemProcess *process) const;
 
 		/** Given its pointer, return an index to a process.
 		  * The process must be part of the system, otherwise an assertion is raised
@@ -441,7 +441,7 @@ public:
 										  uint32 maxNbIntegrations,
 										  bool canSlowDown,
 										  bool keepEllapsedTimeForLifeUpdate
-										  )
+										 )
 		{
 			_TimeThreshold = threshold;
 			_MaxNbIntegrations = maxNbIntegrations;
@@ -462,12 +462,19 @@ public:
 										  bool &keepEllapsedTimeForLifeUpdate
 										 )
 		{
-			threshold = _TimeThreshold ;
+			threshold = _TimeThreshold;
 			maxNbIntegrations = _MaxNbIntegrations;
 			canSlowDown = _CanSlowDown;
 			keepEllapsedTimeForLifeUpdate = _KeepEllapsedTimeForLifeUpdate;
 		}
 
+		// get time thrhsold / integration time
+		float getTimeTheshold() const { return _TimeThreshold; }
+		/** get max nb integrations
+		  * meaningful only if 'setBypassMaxNumIntegrationSteps' is false
+		  */
+		uint  getMaxNbIntegrations() const { return _MaxNbIntegrations; }
+           
 		/** When activated, this bypass the limit on the max number of integration steps
 		  * This should NOT be used on FXs that are looping, because it would slow endlessly
 		  * Anyway if you try to do that an assertion will ocurrs
@@ -656,9 +663,14 @@ public:
 	///\name Bounding box managment
 		// @{		
 		/** Compute the aabbox of this system, (expressed in thesystem basis)	
+		 * If the bbox is precomputed, the precomputed bbox is returned
 		 *  \param aabbox a ref to the result box
 		 */
 		void computeBBox(NLMISC::CAABBox &aabbox);
+
+		/** Force computation of current bbox, even if a precomputed bbox has been set
+          */
+		void forceComputeBBox(NLMISC::CAABBox &aabbox);
 
 		/** When this is set to false, the system will recompute his bbox each time it is querried
 		  * This may be needed for systems that move fast. 
@@ -940,6 +952,27 @@ public:
 			  * NB : calling this is costly	
 			  */
 			float evalDuration() const;
+			/** Enable/Disable auto-count mode. The default is disabled
+			  * In this mode, when a particle is spawned it is guaranteed to be created. Particle array are resized if necessary for this.
+			  * This helps to tune the size of arrays that contains particle
+			  * This is well adapted for edition, but shouldn't be use at runtime because array are reallocated
+			  * which doesn't give the best performance. It is why that state isn't serialized.
+			  * When the system is modified by the user, he should call resetAutoCount, so that array match the current number of particles.
+			  * This is useful if the user modifiy the system and that the number of particles decreases
+			  */
+			void setAutoCountFlag(bool enabled) { _AutoCount = enabled; }
+			bool getAutoCountFlag() const { return _AutoCount; }
+			/** Ensure that getMaxSize() == getSize() for each particle array.
+			  * It is usefule for edition, when the system is in auto-count mode
+			  * See setAutoCountFlag
+              */
+			void matchArraySize();
+			// get max number of individual particles in the system
+			uint getMaxNumParticles() const;
+			// get current number of particles in the system
+			uint getCurrNumParticles() const;
+			// tool fct : get the list of located that target another located
+			void getTargeters(const CPSLocated *target, std::vector<CPSTargetLocatedBindable *> &targeters);
 		// @}
 
 	
@@ -1063,6 +1096,7 @@ private:
 	bool										_BypassIntegrationStepLimit          : 1;
 	bool										_ForceGlobalColorLighting            : 1;
 	bool										_AutoComputeDelayBeforeDeathTest     : 1;
+	bool										_AutoCount							 : 1;
 
 	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
 	float										_InverseEllapsedTime;	

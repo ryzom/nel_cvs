@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.64 2003/08/19 12:52:51 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.65 2003/08/22 08:57:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "3d/ps_emitter.h"
 #include "3d/ps_sound.h"
 #include "3d/particle_system_shape.h"
+#include "3d/ps_located.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/file.h"
 #include "nel/misc/stream.h"
@@ -112,6 +113,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _BypassIntegrationStepLimit(false),
 									 _ForceGlobalColorLighting(false),
 									 _AutoComputeDelayBeforeDeathTest(true),
+									 _AutoCount(false),
 									 _InverseEllapsedTime(0.f),
 									 _CurrentDeltaPos(NLMISC::CVector::Null),
 									 _DeltaPos(NLMISC::CVector::Null)
@@ -353,7 +355,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			stepLocated(PSToolRender, ellapsedTime, ellapsedTime);
 		break;
 		case Anim:
-		{
+		{			
 			// update user param from global value if needed, unless this behaviour is bypassed has indicated by a flag in _BypassGlobalUserParam
 			if (_UserParamGlobalValue)
 			{
@@ -753,14 +755,8 @@ void CParticleSystem::remove(CParticleSystemProcess *ptr)
 }
 
 ///=======================================================================================
-void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
+void CParticleSystem::forceComputeBBox(NLMISC::CAABBox &aabbox)
 {
-	if (!_ComputeBBox || !_BBoxTouched)
-	{
-		aabbox = _PreComputedBBox;
-		return;
-	}
-
 	bool foundOne = false;
 	NLMISC::CAABBox tmpBox;
 	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
@@ -788,8 +784,18 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 	{
 		aabbox.setCenter(NLMISC::CVector::Null);
 		aabbox.setHalfSize(NLMISC::CVector::Null);
+	}	
+}
+
+///=======================================================================================
+void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
+{
+	if (!_ComputeBBox || !_BBoxTouched)
+	{
+		aabbox = _PreComputedBBox;
+		return;
 	}
-	
+	forceComputeBBox(aabbox);		
 	_BBoxTouched = false;
 	_PreComputedBBox = aabbox;
 }
@@ -1100,7 +1106,7 @@ CParticleSystemProcess *CParticleSystem::detach(uint index)
 }
 
 ///=======================================================================================
-bool CParticleSystem::isProcess(CParticleSystemProcess *process) const
+bool CParticleSystem::isProcess(const CParticleSystemProcess *process) const
 {
 	for(TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
@@ -1576,7 +1582,99 @@ bool CParticleSystem::hasEmittersTemplates() const
 	return false;
 }
 
+///=======================================================================================
+void CParticleSystem::matchArraySize()
+{
+	for(uint k = 0; k < getNbProcess(); ++k)
+	{
+		if (getProcess(k)->isLocated())
+		{
+			CPSLocated *loc = static_cast<CPSLocated *>(getProcess(k));
+			loc->resize(loc->getSize()); // match the max size with the number of instances
+		}
+	}
+}
 
+///=======================================================================================
+uint CParticleSystem::getMaxNumParticles() const
+{
+	uint numParts = 0;
+	for(uint k = 0; k < getNbProcess(); ++k)
+	{	
+		if (getProcess(k)->isLocated())
+		{
+			const CPSLocated *loc = static_cast<const CPSLocated *>(getProcess(k));
+			if (loc)
+			{
+				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+				{
+					if (loc->getBoundObject(l)->getType() == PSParticle)	
+					{
+						numParts += loc->getMaxSize();
+					}
+				}
+			}
+		}
+	}
+	return numParts;
+}
+
+///=======================================================================================
+uint CParticleSystem::getCurrNumParticles() const
+{
+	uint numParts = 0;
+	for(uint k = 0; k < getNbProcess(); ++k)
+	{	
+		if (getProcess(k)->isLocated())
+		{
+			const CPSLocated *loc = static_cast<const CPSLocated *>(getProcess(k));
+			if (loc)
+			{
+				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+				{
+					if (loc->getBoundObject(l)->getType() == PSParticle)	
+					{
+						numParts += loc->getSize();
+					}
+				}
+			}
+		}
+	}
+	return numParts;
+}
+
+///=======================================================================================
+void CParticleSystem::getTargeters(const CPSLocated *target, std::vector<CPSTargetLocatedBindable *> &targeters)
+{
+	nlassert(target);
+	nlassert(isProcess(target));
+	targeters.clear();
+	for(uint k = 0; k < getNbProcess(); ++k)
+	{	
+		if (getProcess(k)->isLocated())
+		{
+			CPSLocated *loc = static_cast<CPSLocated *>(getProcess(k));
+			if (loc)
+			{
+				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+				{
+					CPSTargetLocatedBindable *targeter = dynamic_cast<CPSTargetLocatedBindable *>(loc->getBoundObject(l));
+					if (targeter)
+					{
+						for(uint m = 0; m < targeter->getNbTargets(); ++m)
+						{
+							if (targeter->getTarget(m) == target)
+							{
+								targeters.push_back(targeter);
+								break;
+							}
+						}
+					}					
+				}
+			}
+		}
+	}
+}
 
 
 } // NL3D

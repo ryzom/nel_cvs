@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.8 2000/11/30 10:57:13 berenguier Exp $
+ * $Id: landscape.h,v 1.9 2000/12/01 10:11:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,16 @@ public:
 	bool			removeZone(uint16 zoneId);
 	/// Disconnect, and Delete all zones.
 	void			clear();
-
+	/// Set tile near distance. Default 50.f.
+	void setTileNear (float tileNear)
+	{
+		_TileDistNear=tileNear;
+	}
+	/// Get tile near distance.
+	float getTileNear () const
+	{
+		return _TileDistNear;
+	}
 
 	/** Clip the landscape according to frustum. 
 	 * Planes must be normalized.
@@ -125,6 +134,8 @@ private:
 	// Return the UvScaleBias for a tile Id. uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
 	void			getTileUvScaleBias(sint tileId, bool additiveRdrPass, CVector &uvScaleBias);
 
+	// Update globals value to CTessFace
+	void updateGlobals () const;
 
 private:
 	TZoneMap		Zones;
@@ -176,6 +187,12 @@ private:
 	// TODO_TEXTURE.
 	// For test only. The only one Far material.
 	CPatchRdrPass	FarRdrPass;
+	CPatchRdrPass	TileRdrPass;
+	CMaterial		FarMat;
+	CMaterial		TileMat;
+	CSmartPtr<ITexture>		FarText;
+	CSmartPtr<ITexture>		TileText;
+	float					_TileDistNear;
 
 
 private:

@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.1 2000/12/19 09:55:14 lecroart Exp $
+ * $Id: win_event_emitter.cpp,v 1.2 2000/12/20 15:25:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,6 +192,6 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 	}
 }
 
-#endif // NL_OS_WINDOWS
-
 } // NLMISC
+
+#endif // NL_OS_WINDOWS

@@ -87,7 +87,20 @@ fn getTransitionZoneCoordinates node x y =
 	return true
 )
 
+fn selectAllPatch =
+(
+	clearselection ()
+	for i in geometry do 
+	(
+		if (classof i) == RklPatch then 
+		(
+			selectmore i
+		)
+	)
+)
+
 -- ENTRY POINT
+-- ***********
 
 ligopath = getINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoPath" 
 if ligopath != "" then ligo_root_path = ligopath
@@ -115,7 +128,7 @@ for curFileName in MaxFilesList do
 		(
 			loadMaxFile curFileName
 			DeleteDebugMarkersFn ()
-			max select all
+			selectAllPatch ()
 			print ("Exporting "+ (getFilenameFile curFileName))
 
 			props = #( #("zone", (tokenArray[2] + "-" + tokenArray[3])), #("material", tokenArray[2]) ) 
@@ -153,7 +166,7 @@ for curFileName in MaxFilesList do
 		(
 			loadMaxFile curFileName
 			DeleteDebugMarkersFn ()
-			max select all
+			selectAllPatch ()
 			print ("Exporting "+ (getFilenameFile curFileName))
 
 			cellSize = NeLLigoGetCellSize ()

@@ -1,7 +1,7 @@
 /** \file client.cpp
- * Snowballs 2 main file
+ * Snowballs main file
  *
- * $Id: client.cpp,v 1.50 2001/11/12 14:09:43 valignat Exp $
+ * $Id: client.cpp,v 1.51 2001/11/14 17:57:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,7 +142,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdline,
 int main(int argc, char **argv)
 #endif
 {
-	nlinfo ("Starting Snowballs 2");
+	nlinfo ("Starting Snowballs !");
 
 	// Load config file
 	ConfigFile.load ("client.cfg");
@@ -272,7 +272,7 @@ int main(int argc, char **argv)
 	displayLoadingState ("Ready !!!");
 
 	// Display the first line
-	nlinfo ("Welcome to Snowballs");
+	nlinfo ("Welcome to Snowballs !");
 	nlinfo ("");
 	nlinfo ("Press SHIFT-ESC to exit the game");
 

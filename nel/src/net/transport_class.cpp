@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.9 2002/06/03 09:54:52 miller Exp $
+ * $Id: transport_class.cpp,v 1.10 2002/06/03 14:53:33 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/entity_id.h"
+#include "nel/misc/sheet_id.h"
 
 #include "nel/net/unified_network.h"
 
@@ -50,6 +51,7 @@ using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
+namespace NLNET {
 
 //
 // Variables
@@ -392,3 +394,5 @@ void CTransportClass::createLocalRegisteredClassMessage ()
 		}
 	}
 }
+
+} // NLNET

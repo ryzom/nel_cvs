@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.10 2002/06/03 09:52:01 miller Exp $
+ * $Id: transport_class.h,v 1.11 2002/06/03 14:53:28 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/entity_id.h"
+#include "nel/misc/sheet_id.h"
 
 #include "nel/net/unified_network.h"
 #include "nel/net/message.h"
@@ -41,6 +42,7 @@
 #include <vector>
 #include <string>
 
+namespace NLNET {
 
 //
 // Macros
@@ -155,6 +157,7 @@ public:
 		case PropDouble: nlassert(sizeof(T) == sizeof (double)); break;
 		case PropString: nlassert(sizeof(T) == sizeof (std::string)); break;
 		case PropEntityId: nlassert(sizeof(T) == sizeof (NLMISC::CEntityId)); break;
+		case PropSheetId: nlassert(sizeof(T) == sizeof (NLMISC::CSheetId)); break;
 		default: nlerror ("property %s have unknown type %d", name.c_str(), type);
 		}
 
@@ -512,6 +515,7 @@ inline void CTransportClass::read (const std::string &name, uint8 sid)
 	callback (name, sid);
 }
 
+} // NLNET
 
 #endif // NL_TRANSPORT_CLASS_H
 

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.16 2003/06/10 08:54:35 ledorze Exp $
+ * $Id: smart_ptr.h,v 1.17 2003/06/19 16:29:01 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
 
 #include <stdio.h>
 

@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.cpp,v 1.6 2004/09/19 01:59:16 boucher Exp $
+ * $Id: primitive_utils.cpp,v 1.7 2004/09/24 07:56:26 boucher Exp $
  */
 
 #include <nel/ligo/primitive_utils.h>
@@ -65,6 +65,13 @@ void selectPrimByPath(IPrimitive *rootNode, const std::string &path, TPrimitiveS
 
 	if (parts.empty())
 		return;
+
+	// handle a special case
+	if (parts.size() > 1 && parts[1] == "primitive")
+	{
+		parts[0] += ".primitive";
+		parts.erase(parts.begin()+1);
+	}
 
 	TPrimitiveSet	candidats, nextStep;
 	candidats.push_back(rootNode);

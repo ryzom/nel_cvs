@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_landscape.h,v 1.2 2001/06/26 15:22:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,9 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
+#include "nel/3d/height_map.h"
 #include <string>
-// TODO_COLLISION: This is temporary!!!!
-#include "3d/mini_col.h"
 
 
 namespace NL3D
@@ -59,14 +58,6 @@ protected:
 	ULandscape() {}
 	virtual	~ULandscape() {}
 	// @}
-
-
-public:
-	// TODO_COLLISION: This is temporary!!!!
-	// This is the collision Manager for this landscape. Temp!!!
-	// It is inited in ULandscapte ctor.
-	CMiniCol		CollisionManager;
-	
 
 
 public:

@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape_user.h,v 1.2 2001/06/26 15:22:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,8 +63,6 @@ public:
 		nlassert(scene);
 		_Scene= scene;
 		_Landscape= (CLandscapeModel*)_Scene->createModel(LandscapeModelId);
-		// TODO_COLLISION: This is temporary!!!!
-		CollisionManager.init(&(_Landscape->Landscape), 200);
 	}
 	virtual	~CLandscapeUser()
 	{

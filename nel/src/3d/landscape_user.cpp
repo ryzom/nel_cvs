@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.4 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.5 2001/06/26 15:22:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,8 +85,6 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius)
 		if(!_ZoneManager.ZoneAdded)
 		{
 			_Landscape->Landscape.addZone(*_ZoneManager.Zone);
-			// TODO_COLLISION: This is temporary!!
-			CollisionManager.addZone(_ZoneManager.Zone->getZoneId());
 			delete _ZoneManager.Zone;
 			_ZoneManager.ZoneAdded = true;
 		}
@@ -106,8 +104,6 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius)
 	if(!_ZoneManager.ZoneAdded)
 	{
 		_Landscape->Landscape.addZone(*_ZoneManager.Zone);
-		// TODO_COLLISION: This is temporary!!
-		CollisionManager.addZone(_ZoneManager.Zone->getZoneId());
 
 		// Yoyo: must check the binds of the new inserted zone.
 		_Landscape->Landscape.checkBinds(_ZoneManager.Zone->getZoneId());
@@ -119,8 +115,6 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius)
 	// Check if a zone must be removed from landscape
 	if(!_ZoneManager.ZoneRemoved)
 	{
-		// TODO_COLLISION: This is temporary!!
-		CollisionManager.removeZone(_ZoneManager.IdZoneToRemove);
 		_Landscape->Landscape.removeZone(_ZoneManager.IdZoneToRemove);
 		_ZoneManager.ZoneRemoved = true;
 	}

@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.7 2001/11/27 16:30:19 vizerie Exp $
+ * $Id: water_model.h,v 1.8 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -41,7 +41,6 @@ namespace NL3D {
 class CWaterPoolManager;
 class CWaterShape;
 class IDriver;
-class CScene;
 
 /**
  * A water quad
@@ -55,9 +54,9 @@ public:
 	/// ctor
 	CWaterModel();
 
-	// register this model and his observers
+	// register this model
 	static void registerBasic();
-	static IModel *creator() { return new CWaterModel; }
+	static CTransform *creator() { return new CWaterModel; }
 
 	// get default tracks
 	virtual ITrack* getDefaultTrack (uint valueId);
@@ -73,29 +72,22 @@ public:
 
 	/// inherited from UWaterInstance	
 	virtual float   getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer);
+
+	/// \name CTransform traverse specialisation
+	// @{
+	virtual void	traverseRender();
+	// @}
+
 protected:
-	friend class CWaterRenderObs;
 	friend class CWaterShape;
-	CScene	*_Scene;
 
-};
-
-//=====================================================================================================================
-
-
-class	CWaterRenderObs : public CTransformShapeRenderObs
-{
-public:
-	virtual	void	traverse(IObs *caller);	
-	static IObs	    *creator() {return new CWaterRenderObs;}
-private:
 	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight);
 	///   setup the vertex program to perform the right attenuation
 	//void setAttenuationFactor(IDriver *drv, bool reversed, const NLMISC::CVector &obsPos, const NLMISC::CVector &cameraJ, float farDist);
 	// disable attenuation with distance
 	//void disableAttenuation(IDriver *drv);
-};
 
+};
 
 //=====================================================================================================================
 
@@ -106,34 +98,27 @@ class CWaveMakerModel : public CTransformShape
 	
 	CWaveMakerModel();
 
-	// register this model and his observers
+	// register this model
 	static void		registerBasic();
 	
-	static IModel *creator() { return new CWaveMakerModel; }
+	static CTransform *creator() { return new CWaveMakerModel; }
 
 	// get default tracks
 	virtual ITrack* getDefaultTrack (uint valueId);
 	
-protected:	
-
-	friend class	CWaveMakerDetailObs;
-	friend class	CWaveMakerShape;
-	TAnimationTime  _Time;
-	CScene	*_Scene;
-};
-
-//=====================================================================================================================
-class	CWaveMakerDetailObs : public CTransformAnimDetailObs
-{
-public:
-
+	/// \name CTransform traverse specialisation
+	// @{
 	/** this do :
-	 *  - call CTransformAnimDetailObs::traverse()
+	 *  - call CTransformShape::traverseAnimDetail()
 	 *  - perform perturbation
 	 */
-	virtual	void	traverse(IObs *caller);	
-public:
-	static IObs	*creator() { return new CWaveMakerDetailObs; }
+	virtual void	traverseAnimDetail(CTransform *caller);
+	// @}
+
+protected:	
+
+	friend class	CWaveMakerShape;
+	TAnimationTime  _Time;
 };
 
 

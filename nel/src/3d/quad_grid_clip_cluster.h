@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.h
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.h,v 1.4 2003/03/20 15:00:03 berenguier Exp $
+ * $Id: quad_grid_clip_cluster.h,v 1.5 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #define NL_QUAD_GRID_CLIP_CLUSTER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mot.h"
 #include "3d/clip_trav.h"
 #include "nel/misc/aabbox.h"
 #include "3d/fast_ptr_list.h"
@@ -36,8 +35,6 @@
 namespace NL3D 
 {
 
-
-class	CTransformShapeClipObs;
 
 // ***************************************************************************
 /**
@@ -58,9 +55,9 @@ public:
 	CQuadGridClipCluster(float distMax);
 	~CQuadGridClipCluster();
 
-	void		addModel(const NLMISC::CAABBox &worldBBox, CTransformShapeClipObs *clipObs);
+	void		addModel(const NLMISC::CAABBox &worldBBox, CTransformShape *model);
 	// NB: the BBox is not recomputed.
-	void		removeModel(CTransformShapeClipObs *clipObs);
+	void		removeModel(CTransformShape *model);
 
 	void		clip(CClipTrav *clipTrav);
 
@@ -77,7 +74,7 @@ protected:
 	NLMISC::CAABBoxExt						_BBoxExt;
 	float									_DistMax;
 	float									_SqrDistMaxRadius;
-	CFastPtrList<CTransformShapeClipObs>	_Models;
+	CFastPtrList<CTransformShape>			_Models;
 	bool									_Empty;
 	bool									_TestDistMax;
 

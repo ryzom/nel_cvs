@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.21 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.22 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -273,7 +273,7 @@ private:
 	/// called at createInstance() time
 	void	instanciateCoarseMeshSpace(CMeshMultiLodInstance *mi);
 
-	friend class CMeshMultiLodBalancingObs;
+	friend class CMeshMultiLodInstance;
 };
 
 

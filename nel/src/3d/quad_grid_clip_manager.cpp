@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.10 2003/03/20 15:00:03 berenguier Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.11 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,6 @@
 #include "3d/clip_trav.h"
 #include "nel/misc/aabbox.h"
 #include "3d/cluster.h"
-#include "3d/skip_model.h"
 #include "nel/misc/hierarchical_timer.h"
 
 
@@ -97,7 +96,7 @@ void				CQuadGridClipManager::reset()
 		{
 			for(sint x=oldX0; x<oldX1; x++)
 			{
-				deleteCaseModels((CClipTrav*)_Scene->getTrav(ClipTravId), x,y);
+				deleteCaseModels(&_Scene->getClipTrav(), x,y);
 			}
 		}
 
@@ -269,7 +268,6 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 		}
 
 		// add the model and extend the bbox of this cluster.
-		CTransformShapeClipObs	*clipObs= (CTransformShapeClipObs*)pTfmShp->getClipObs();
 		CQuadGridClipCluster	*cluster= clusterCase.QuadGridClipClusters[bestCluster];
 
 		// if this cluster is empty, add it now to the list of not empty (do the test before add)
@@ -279,7 +277,7 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 		}
 
 		// add the model => no more empty
-		cluster->addModel(worldBBox, clipObs);
+		cluster->addModel(worldBBox, pTfmShp);
 
 		return true;
 	}

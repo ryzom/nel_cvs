@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.13 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.14 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/raw_skin.h"
 #include "3d/shifted_triangle_cache.h"
 #include "nel/3d/u_scene.h"
+#include "3d/scene.h"
 
 
 using namespace NLMISC;
@@ -46,7 +47,7 @@ CMeshMRMInstance::~CMeshMRMInstance()
 	if(_FatherSkeletonModel)
 	{
 		// detach me from the skeleton.
-		// Observers hierarchy is modified.
+		// hrc and clip hierarchy is modified.
 		_FatherSkeletonModel->detachSkeletonSon(this);
 		nlassert(_FatherSkeletonModel==NULL);
 		// If skinned, setApplySkin(false) should have been called through detachSkeletonSon()
@@ -59,7 +60,7 @@ CMeshMRMInstance::~CMeshMRMInstance()
 // ***************************************************************************
 void		CMeshMRMInstance::registerBasic()
 {
-	CMOT::registerModel(MeshMRMInstanceId, MeshBaseInstanceId, CMeshMRMInstance::creator);
+	CScene::registerModel(MeshMRMInstanceId, MeshBaseInstanceId, CMeshMRMInstance::creator);
 }
 
 

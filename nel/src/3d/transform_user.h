@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.18 2003/02/06 09:16:21 boucher Exp $
+ * $Id: transform_user.h,v 1.19 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ public:
 	/** Give a Scene Instance. CTransformUser owns it, and will delete it.
 	  * \param deleteIt is true if the CTransformUser must delete the transform shape in the destructor, else false.
 	  */
-	CTransformUser(CScene *scene, IModel *trans, bool deleteIt) : CTransformableUser( static_cast<ITransformable*>((CTransform*)trans) )
+	CTransformUser(CScene *scene, CTransform *trans, bool deleteIt) : CTransformableUser( static_cast<ITransformable*>((CTransform*)trans) )
 	{
 		NL3D_MEM_TRANSFORM
 		nlassert(trans);
@@ -112,12 +112,12 @@ public:
 			CTransformUser	*other= dynamic_cast<CTransformUser*>(newFather);
 			if(other->_Scene!=_Scene)
 				nlerror("Try to parent 2 object from 2 differnet scenes!!");
-			_Scene->getTrav(HrcTravId)->link(other->_Transform, _Transform);
+			other->_Transform->hrcLinkSon( _Transform );
 		}
 		else
 		{
 			// link me to Root.
-			_Scene->getTrav(HrcTravId)->link(NULL, _Transform);
+			_Scene->getRoot()->hrcLinkSon( _Transform );
 		}
 	}
 
@@ -205,7 +205,7 @@ public:
 	virtual bool	getLastClippedState() const 
 	{
 		NL3D_MEM_TRANSFORM
-		return _Transform->getLastClippedState();
+		return _Transform->isClipVisible();
 	}
 
 	virtual void	getLastParentClusters(std::vector<CCluster*> &clusters) const;

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.76 2003/03/17 17:36:28 berenguier Exp $
+ * $Id: mesh.cpp,v 1.77 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -601,9 +601,9 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 	// get the mesh instance.
 	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
 	// get a ptr on scene
-	CScene			*ownerScene= mi->getScene();
+	CScene			*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
-	CRenderTrav		*renderTrav= ownerScene->getRenderTrav();
+	CRenderTrav		*renderTrav= &ownerScene->getRenderTrav();
 
 	// update the VBufferHard (create/delete), to maybe render in AGP memory.
 	updateVertexBufferHard (drv);
@@ -790,9 +790,9 @@ void	CMeshGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	// get the mesh instance.
 	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
 	// get a ptr on scene
-	CScene			*ownerScene= mi->getScene();
+	CScene			*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
-	CRenderTrav		*renderTrav= ownerScene->getRenderTrav();
+	CRenderTrav		*renderTrav= &ownerScene->getRenderTrav();
 	// get a ptr on the driver
 	IDriver			*drv= renderTrav->getDriver();
 	nlassert(drv);

@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.2 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: camera.h,v 1.3 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ const NLMISC::CClassId		CameraId=NLMISC::CClassId(0x5752634c, 0x6abe76f5);
  * A Camera node, based on a CTransform node.
  * The camera look in his local Y direction (see CScene).
  *
- * No observer is provided, since a camera:
+ * No special traverse*()
  *	- has default behavior of a transform.
  *	- can't be clipped (well...  :) ).
  *	- is not lightable
@@ -56,7 +56,7 @@ const NLMISC::CClassId		CameraId=NLMISC::CClassId(0x5752634c, 0x6abe76f5);
 class CCamera : public CTransform
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
 
@@ -159,7 +159,7 @@ protected:
 
 
 private:
-	static IModel	*creator() {return new CCamera;}
+	static CTransform	*creator() {return new CCamera;}
 
 
 private:

@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.h
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.h,v 1.3 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: vegetable_blend_layer_model.h,v 1.4 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,6 @@ namespace	NL3D
 
 class	CVegetableManager;
 class	CVegetableSortBlock;
-class	CVegetableBlendLayerRenderObs;
 class	IDriver;
 
 
@@ -58,12 +57,8 @@ const NLMISC::CClassId		VegetableBlendLayerModelId=NLMISC::CClassId(0x77375163, 
 class CVegetableBlendLayerModel : public CTransform
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
-
-
-	/// overrides initModel(), to setup HrcObs.
-	virtual	void	initModel();
 
 public:
 
@@ -85,6 +80,15 @@ public:
 	void		setWorldPos(const CVector &pos);
 
 
+	/// \name CTransform traverse specialisation
+	// @{
+	virtual	bool	clip(CTransform *caller)
+	{
+		return true;
+	}
+	virtual void	traverseRender();
+	// @}
+
 protected:
 	/// Constructor
 	CVegetableBlendLayerModel();
@@ -92,62 +96,11 @@ protected:
 	virtual ~CVegetableBlendLayerModel() {}
 
 
-	// A pointer to the HrcObserver.
-	CTransformHrcObs	*_HrcObs;
-
-
 private:
-	static IModel	*creator() {return new CVegetableBlendLayerModel();}
-	friend class	CVegetableBlendLayerRenderObs;
+	static CTransform	*creator() {return new CVegetableBlendLayerModel();}
 
-	/// render method, called by CVegetableBlendLayerRenderObs
+	/// render method
 	void			render(IDriver *driver);
-
-};
-
-
-// ***************************************************************************
-/**
- * \sa CTransformClipObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2001
- */
-class CVegetableBlendLayerClipObs : public CTransformClipObs
-{
-public:
-
-	/** 
-	 * Setup clip so that always visible
-	 */
-	virtual	bool	clip(IBaseClipObs *caller) 
-	{
-		return true;
-	}
-	
-	static IObs	*creator() {return new CVegetableBlendLayerClipObs;}
-
-};
-
-
-// ***************************************************************************
-/**
- * \sa CTransformRenderObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2001
- */
-class CVegetableBlendLayerRenderObs : public CTransformRenderObs
-{
-public:
-
-	/** 
-	 * Setup renderState, and render the vegetable SortBlocks.
-	 * The observers should not traverseSons(), for speed improvement.
-	 */
-	virtual	void	traverse(IObs *caller);
-
-	static IObs	*creator() {return new CVegetableBlendLayerRenderObs;}
 
 };
 

@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.4 2002/07/25 16:45:48 corvazier Exp $
+ * $Id: nelu.h,v 1.5 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ using NLMISC::CSmartPtr;
  * Designed to work only with a mono-threaded / mono-scene / single-windowed app.
  *
  * If your app want to register other Models with basics CScene traversals, it could use CNELU, and register his 
- * models/observers after, or even before CNELU::init3d().
+ * models after, or even before CNELU::init3d().
  *
  * If your app want to add funky traversals, it MUST NOT use CNELU (see CScene for more information...).
  * NB: actually it may use yet initDriver() and initEventServer() but not initScene()...

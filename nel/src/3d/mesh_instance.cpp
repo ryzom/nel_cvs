@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.17 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.18 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/mesh.h"
 #include "3d/skeleton_model.h"
 #include "nel/3d/u_scene.h"
+#include "3d/scene.h"
 #include <list>
 
 using namespace std;
@@ -51,7 +52,7 @@ CMeshInstance::~CMeshInstance()
 	if(_FatherSkeletonModel)
 	{
 		// detach me from the skeleton.
-		// Observers hierarchy is modified.
+		// hrc and clip hierarchy is modified.
 		_FatherSkeletonModel->detachSkeletonSon(this);
 		nlassert(_FatherSkeletonModel==NULL);
 	}
@@ -61,7 +62,7 @@ CMeshInstance::~CMeshInstance()
 // ***************************************************************************
 void		CMeshInstance::registerBasic()
 {
-	CMOT::registerModel(MeshInstanceId, MeshBaseInstanceId, CMeshInstance::creator);
+	CScene::registerModel(MeshInstanceId, MeshBaseInstanceId, CMeshInstance::creator);
 }
 
 // ***************************************************************************

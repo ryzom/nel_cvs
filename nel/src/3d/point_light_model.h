@@ -1,7 +1,7 @@
 /** \file point_light_model.h
  * <File description>
  *
- * $Id: point_light_model.h,v 1.3 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: point_light_model.h,v 1.4 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,12 +28,13 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/transform.h"
+#include "3d/fast_ptr_list.h"
 
 
 namespace NL3D {
 
 
-class	CPointLightModelLightObs;
+class	CLightTrav;
 
 
 // ***************************************************************************
@@ -44,14 +45,14 @@ const NLMISC::CClassId		PointLightModelId=NLMISC::CClassId(0x7e842eba, 0x140b6c6
 // ***************************************************************************
 /**
  * This model is a dynamic light. It handles a PointLight, where Pos is the worldPos updated by CScene
- *	at each render(). CPointLightModel are linked to the LightModelRoot in the LightTrav.
+ *	at each render(). CPointLightModel are linked to the LightModelList in the LightTrav.
  *	It can handles SpotLight too, see PointLight.
  *
  *	Hrc: Lights herit CTransform so they can be put in hierarchy, even sticked to a skeleton. They can be hide,
  *	moved etc... (default CTransform).
  *	Clip: Lights are always in frustum, not renderable (default CTransform).
  *	Light: lightModels are not lightables (ie they can't be lighted). (default CTransform).
- *		the observer is specialised.
+ *		traverseLight() is specialised.
  * 
  *	PERFORMANCE WARNING: big lights (disabled attenuation and big attenuationEnd) slow down
  *	performances. (by experience, with a factor of 2).
@@ -63,7 +64,7 @@ const NLMISC::CClassId		PointLightModelId=NLMISC::CClassId(0x7e842eba, 0x140b6c6
 class CPointLightModel : public CTransform
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
 
@@ -93,44 +94,37 @@ public:
 	const CVector	&getDeltaPosToSkeletonWhenOutOfFrustum() const;
 
 
+	/** The traverse() method is called to update the worldPosition of the light, resetLightedModels(), and 
+	 *	re-insert the light in the lightingManager.
+	 */
+	virtual void	traverseLight(CTransform *caller);
+
+
 protected:
 	/// Constructor
 	CPointLightModel();
 	/// Destructor
 	virtual ~CPointLightModel();
 
-	/// Implement the initModel method: link to the LightModelRoot.
+	/// Implement the initModel method: link to the LightModelList.
 	virtual void	initModel();
 
 
 // *********************
 private:
-	friend class	CPointLightModelLightObs;
+	friend class	CLightTrav;
 
-	static IModel	*creator() {return new CPointLightModel;}
+	static CTransform	*creator() {return new CPointLightModel;}
 
+	// Node for LightTrav
+	CFastPtrListNode	_PointLightNode;
 
 	/** tells if the pointLightModel is not hidden by user
 	 *	actually, it is the result of hrc Visibility.
 	 */
 	bool	isHrcVisible() const
 	{
-		return _HrcObs->WorldVis;
-	}
-
-	/** tells if the pointLightModel has been clipped in the clip traversal. 
-	 *	actually, it is the result of hrc Visibility * Skeleton cliping.
-	 */
-	bool	isClipVisible() const
-	{
-		return _ClipObs->Visible;
-	}
-
-	/** get the Hrc obs.
-	 */
-	CTransformHrcObs	*getHrcObs() const
-	{
-		return _HrcObs;
+		return _WorldVis;
 	}
 
 	/// see setDeltaPosToSkeletonWhenOutOfFrustum()
@@ -141,32 +135,6 @@ private:
 	 */
 	CVector			_LastWorldSpotDirectionWhenOutOfFrustum;
 	float			_TimeFromLastClippedSpotDirection;
-};
-
-
-// ***************************************************************************
-/**
- * \sa CTransformLightObs
- *	This observer only implements traverse() method and is different from normal CTransform (ie lightedModels)
- *
- *	The traverse() method is called to update the worldPosition of the light, resetLightedModels(), and 
- *	re-insert the light in the lightingManager.
- *
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2001
- */
-class CPointLightModelLightObs : public CTransformLightObs
-{
-public:
-
-	/** update the dynamic light
-	 */
-	virtual	void	traverse(IObs *caller);
-
-
-	static IObs	*creator() {return new CPointLightModelLightObs;}
-
 };
 
 

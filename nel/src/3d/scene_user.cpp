@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.36 2003/03/20 14:55:18 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.37 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -348,7 +348,7 @@ UPointLight		*CSceneUser::createPointLight()
 	NL3D_MEM_LIGHT
 	NL3D_HAUTO_ELT_SCENE;
 
-	IModel	*model= _Scene.createModel(PointLightModelId);
+	CTransform	*model= _Scene.createModel(PointLightModelId);
 	// If not found, return NULL.
 	if(model==NULL)
 		return NULL;
@@ -665,7 +665,7 @@ UInstance		*CSceneUser::createInstance(const std::string &shapeName)
 	NL3D_MEM_INSTANCE
 	NL3D_HAUTO_CREATE_INSTANCE;
 
-	IModel	*model= _Scene.createInstance(shapeName);
+	CTransform	*model= _Scene.createInstance(shapeName);
 	// If not found, return NULL.
 	if(model==NULL)
 		return NULL;
@@ -691,7 +691,7 @@ void CSceneUser::createInstanceAsync(const std::string &shapeName, UInstance**pp
 
 	_WaitingInstances[ppInstance] = NULL;
 	_Scene.createInstanceAsync(shapeName,&_WaitingInstances[ppInstance]);
-//		IModel	*model= _Scene.createInstance(shapeName);
+//		CTransform	*model= _Scene.createInstance(shapeName);
 	// If not found, return NULL.
 //		if(model==NULL)
 //			return NULL;
@@ -764,7 +764,7 @@ UTransform *CSceneUser::createTransform()
 	NL3D_MEM_SCENE
 	NL3D_HAUTO_ELT_SCENE;
 
-	IModel	*model= _Scene.createModel(TransformId);
+	CTransform	*model= _Scene.createModel(TransformId);
 	// If not found, return NULL.
 	if(model==NULL)
 		return NULL;
@@ -788,7 +788,7 @@ USkeleton		*CSceneUser::createSkeleton(const std::string &shapeName)
 	NL3D_MEM_SKELETON
 	NL3D_HAUTO_CREATE_SKELETON;
 
-	IModel	*model= _Scene.createInstance(shapeName);
+	CTransform	*model= _Scene.createInstance(shapeName);
 	// If not found, return NULL.
 	if(model==NULL)
 		return NULL;
@@ -906,10 +906,6 @@ CSceneUser::CSceneUser(CDriverUser *drv)
 	_DriverUser= drv;
 	_CurrentCamera = NULL;
 
-	// Init Scene.
-	_Scene.initDefaultTravs();
-
-	// Don't add any user trav.
 	// init default Roots.
 	_Scene.initDefaultRoots();
 
@@ -918,9 +914,6 @@ CSceneUser::CSceneUser(CDriverUser *drv)
 
 	// Set viewport
 	_Scene.setViewport (CViewport());
-
-	// Init the world instance group
-	_Scene.initGlobalnstanceGroup();
 
 	// init QuadGridClipManager
 	_Scene.initQuadGridClipManager ();
@@ -978,7 +971,7 @@ void		CSceneUser::getProfileResults(CBenchResults &results)
 // ***************************************************************************
 void		CSceneUser::profileQuadGridClipManager()
 {
-	_Scene.getClipTrav()->getQuadGridClipManager()->profile(_Scene.getClipTrav());
+	_Scene.getClipTrav().getQuadGridClipManager()->profile(&_Scene.getClipTrav());
 }
 
 

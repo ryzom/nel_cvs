@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.9 2003/03/24 18:09:53 corvazier Exp $
+ * $Id: clustered_sound.cpp,v 1.10 2003/03/26 10:23:18 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -259,8 +259,7 @@ void CClusteredSound::init(NL3D::CScene *scene, float portalInterpolate, float m
 	_MinGain = minGain;
 	if(scene != 0)
 	{
-		CClipTrav *pClipTrav = static_cast<CClipTrav*>(_Scene->getTrav (ClipTravId));
-		_RootCluster = pClipTrav->RootCluster;
+		_RootCluster = _Scene->getClipTrav().RootCluster;
 	}
 	else
 		_RootCluster = 0;
@@ -280,24 +279,11 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 		return;
 	}
 	
-	CClipTrav *pClipTrav = static_cast<CClipTrav*>(_Scene->getTrav (ClipTravId));
-
-	if (pClipTrav == 0)
-	{
-		// hum... what to do ?
-		static bool bDisplayOnce = false;
-		if (!bDisplayOnce)
-		{
-			nlwarning("CClusteredSound::update : no clip traversal !");
-			bDisplayOnce = true;
-		}
-		return;
-	}
-	
+	CClipTrav	&clipTrav = _Scene->getClipTrav ();
 
 	// Retreive the list of cluster where the listener is
 	vector<CCluster*> vCluster;
-	pClipTrav->fullSearch (vCluster, pClipTrav->RootCluster->Group, listenerPos);
+	clipTrav.fullSearch (vCluster, clipTrav.RootCluster->Group, listenerPos);
 
 
 	// reset the audible cluster map
@@ -483,11 +469,8 @@ NL3D::CCluster	*CClusteredSound::getRootCluster()
 {
 	if (_Scene == 0)
 		return 0;
-	CClipTrav *pClipTrav = static_cast<CClipTrav*>(_Scene->getTrav (ClipTravId));
-	if (pClipTrav == 0)
-		return 0;
 
-	return pClipTrav->RootCluster;
+	return _Scene->getClipTrav().RootCluster;
 }
 
 

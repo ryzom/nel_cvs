@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.30 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.31 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -237,7 +237,7 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 	// Static or dynamic coarse mesh ?
 	CCoarseMeshManager *manager;
 	// Get the coarse mesh manager
-	manager=instance->getScene()->getCoarseMeshManager();
+	manager=instance->getOwnerScene()->getCoarseMeshManager();
 
 	// *** Render Lods
 
@@ -500,7 +500,7 @@ void CMeshMultiLod::renderCoarseMesh (uint slot, IDriver *drv, CMeshMultiLodInst
 		return;
 
 	// get the scene
-	CScene	*scene= trans->getScene();
+	CScene	*scene= trans->getOwnerScene();
 	if(!scene)
 		return;
 
@@ -558,7 +558,7 @@ void CMeshMultiLod::renderCoarseMesh (uint slot, IDriver *drv, CMeshMultiLodInst
 		}
 
 		// Lighting: test if must update lighting, according to date of HrcTrav (num of CScene::render() call).
-		sint64	currentDate= scene->getHrcTrav()->CurrentDate;
+		sint64	currentDate= scene->getHrcTrav().CurrentDate;
 		if( trans->_LastLodLightingDate < currentDate - scene->getCoarseMeshLightingUpdate() )
 		{
 			// reset the date.
@@ -739,7 +739,7 @@ void	CMeshMultiLod::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *tr
 // ***************************************************************************
 void	CMeshMultiLod::instanciateCoarseMeshSpace(CMeshMultiLodInstance *mi)
 {
-	CCoarseMeshManager	*manager= mi->getScene()->getCoarseMeshManager();
+	CCoarseMeshManager	*manager= mi->getOwnerScene()->getCoarseMeshManager();
 
 	if(manager)
 	{

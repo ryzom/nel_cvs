@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.30 2003/03/20 15:00:37 berenguier Exp $
+ * $Id: particle_system_model.h,v 1.31 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/clip_trav.h"
 #include "3d/anim_detail_trav.h"
 #include "3d/load_balancing_trav.h"
+#include "3d/scene.h"
 
 #include <vector>
 
@@ -46,8 +47,6 @@ namespace NL3D {
 /////////////////////////////////////////////////////////
 
 class CParticleSystem;
-class CParticleSystemClipObs;
-class CParticleSystemDetailObs;
 class CScene;
 class CParticleSystemShape;
 
@@ -67,7 +66,7 @@ public:
 		/// dtor
 		~CParticleSystemModel();
 
-		/// register the basic models and observers
+		/// register the basic models
 		static	void				registerBasic();
 	//@}
 
@@ -224,27 +223,37 @@ public:
 	  * This must be called when the system is instanciated, or when attributes have changed, such as the blending mode
 	  */
 	void						updateOpacityInfos(void);
-	/// get the world matrix
-	const CMatrix				&getWorldMatrix(void)
-	{
-		IBaseHrcObs *bobs= (IBaseHrcObs *) getObs(HrcTravId);
-		return bobs->WorldMatrix;
-	}		
 	virtual void				getAABBox(NLMISC::CAABBox &bbox) const;
 	/// inherited from CTransformShape. Returns the number of triangles wanted depeneding on the distance
 	virtual float				getNumTriangles (float distance);
 	/// create an instance of this class
-	static IModel				*creator() 
+	static CTransform				*creator() 
 	{
 		return new CParticleSystemModel;
 	}
+
+
+	/// \name CTransform traverse specialisation
+	// @{
+	/** Very special clip for Particle System (because of the complexity of not rendered, but still detail-animated...)
+	 */
+	virtual void	traverseClip(CTransform *caller);
+	// no-op clip() because all done in special traverse()
+	virtual	bool	clip(CTransform *caller);
+	/**
+	 *	 - call CTransformShape::traverseAnimDetail()
+	 *	 - Detail animation for a particle system. It perform motion of the particles
+	 *		(so, motion occurs only when the system has not be clipped)
+     */
+	virtual void	traverseAnimDetail(CTransform *caller);
+	virtual void	traverseRender();
+	// @}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 	friend class CParticleSystemShape;
-	friend class CParticleSystemDetailObs;
-	friend class CParticleSystemClipObs;
-	friend class CParticleSystemRenderObs;
 	friend class CParticleSystemManager;
 
 
@@ -267,6 +276,23 @@ private:
 
 	void invalidateAutoAnimatedHandle();
 	
+
+	// insert the model in the Clip/AnimDetail/LoadBalacing visible list.
+	void				insertInVisibleList()
+	{
+		// if not already not inserted
+		if (!_InsertedInVisibleList)
+		{
+			_InsertedInVisibleList = true;
+			// add to clip/anim/load Trav.
+			getOwnerScene()->getClipTrav().addVisibleModel(this);
+			// NB: no need to test isAnimDetailable()... for PS, always add them
+			getOwnerScene()->getAnimDetailTrav().addVisibleModel(this);
+			getOwnerScene()->getLoadBalancingTrav().addVisibleModel(this);
+		}
+	}
+	bool checkDestroyCondition(CParticleSystem *ps);
+
 
 private:		
 	CParticleSystemManager::TModelHandle    _ModelHandle; /** a handle to say when the resources
@@ -298,69 +324,6 @@ private:
 	uint8                                    _BypassGlobalUserParam;  // mask to bypass a global user param. This state is not serialized
 
 };
-
-
-/** Detail animation observer for a particle system. It perform motion of the particles
-  * (so, motion occurs only when the system has not be clipped)
-  */
-class	CParticleSystemDetailObs : public CTransformAnimDetailObs
-{
-public:
-
-	/** this do :
-	 *  - call CTransformAnimDetailObs::traverse()
-	 *  - update particles.
-	 */
-	virtual	void	traverse(IObs *caller);	
-
-
-public:
-	static IObs	*creator() {return new CParticleSystemDetailObs;}
-};
-
-
-/** a clip observer for a particle system
-  *
-  */
-
-class CParticleSystemClipObs : public CTransformShapeClipObs
-{
-public:
-	virtual void		traverse(IObs *caller);
-	static IObs			*creator() {return new CParticleSystemClipObs;}
-	
-	// insert the observer in the Clip/AnimDetail/LoadBalacing visible list.
-	void				insertInVisibleList()
-	{
-		CParticleSystemModel	*m= (CParticleSystemModel*)Model;	
-		CClipTrav				*trav= (CClipTrav*)Trav;
-		// if not already not inserted
-		if (!m->_InsertedInVisibleList)
-		{
-			m->_InsertedInVisibleList = true;
-			// add to clip/anim/load Trav.
-			trav->addVisibleObs(this);
-			// NB: no need to test isAnimDetailable()... for PS, always add them
-			trav->AnimDetailTrav->addVisibleObs(static_cast<CTransformAnimDetailObs*>(AnimDetailObs));
-			trav->LoadBalancingTrav->addVisibleObs(LoadBalancingObs);
-		}
-	}
-	bool checkDestroyCondition(CParticleSystem *ps, CParticleSystemModel *m);
-
-	// no-op clip() because all done in special traverse()
-	virtual	bool	clip(IBaseClipObs *caller);
-};
-
-/// a render observer for a particle system
-
-class CParticleSystemRenderObs : public CTransformShapeRenderObs
-{
-public:
-	/// render the instance and Don't traverseSons().
-	virtual	void	traverse(IObs *caller);	
-	static IObs	*creator() {return new CParticleSystemRenderObs;}
-};
-
 
 
 

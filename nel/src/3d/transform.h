@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.33 2003/03/20 14:57:05 berenguier Exp $
+ * $Id: transform.h,v 1.34 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,6 @@
 #ifndef NL_TRANSFORM_H
 #define NL_TRANSFORM_H
 
-#include "3d/mot.h"
 #include "3d/hrc_trav.h"
 #include "3d/track.h"
 #include "3d/transformable.h"
@@ -36,12 +35,8 @@
 #include "nel/misc/rgba.h"
 #include "3d/light_contribution.h"
 #include "3d/lighting_manager.h"
-
-// include base observers
-#include "3d/base_clip_obs.h"
-#include "3d/base_anim_detail_obs.h"
-#include "3d/base_light_obs.h"
-#include "3d/base_render_obs.h"
+#include "nel/misc/class_id.h"
+#include "3d/fast_ptr_list.h"
 
 
 namespace	NLMISC
@@ -61,14 +56,10 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 
-class	CTransformHrcObs;
-class	CTransformClipObs;
-class	CTransformLightObs;
 class	CSkeletonModel;
-class	CSkeletonModelAnimDetailObs;
-class	CSkeletonModelRenderObs;
 class	CInstanceGroup;
 class	ILogicInfo;
+class	CLoadBalancingGroup;
 
 // ***************************************************************************
 // ClassIds.
@@ -80,7 +71,7 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  * A basic node which provide an animatable matrix (ITransformable).
  * May be derived for each node who want to support such a scheme (CCamera, CLight, CInstance ... )
  *
- * CTransform ALWAYS herit scale from fathers! (joints skeleton may not...) (nbyoyo: else, this breaks the touch system with observers).
+ * CTransform ALWAYS herit scale from fathers! (joints skeleton may not...) (nbyoyo: else, this breaks the update() system).
  *
  * CTransform Default tracks are identity (derived class may change this).
  *
@@ -98,11 +89,73 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  * \author Nevrax France
  * \date 2000
  */
-class CTransform : public IModel, public ITransformable
+class CTransform : public NLMISC::CRefCount, public ITransformable
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
+
+	/// get the scene which has created us
+	CScene			*getOwnerScene() const {return _OwnerScene;}
+
+public:
+
+	/// \name Model updating/traversing features
+	// @{ 
+
+	/** This function update the model (called by CScene::updateModels())
+	 * Deriver Must :
+	 *	- call BaseClass::update() (eg: CTransform::update()).
+	 *	- test if something is different (eg: animation modification). Then update Model information (eg compute new Matrix).
+	 *
+	 * The default behavior is to update transform Matrix etc...
+	 */
+	virtual void	update();
+
+	/**
+	 *	Extra init for a model. this method is called by the framework at the very end of CScene::createModel()
+	 *	Warning! if the model is a CTransformShape, then when initModel() is called, Shape and other related member/setup
+	 *	of IShape::createInstance() are not yet done (because createModel() is called at the begining in createInstance()).
+	 *
+	 *	Because initModel() is called at the very end, deriver could implement anything like creating other models, 
+	 *	but not deleting this model...
+	 *
+	 *	Default behavior is to do nothing.
+	 */
+	virtual void	initModel();
+
+	/// Each method is called in its associated traversal
+	virtual void	traverseHrc(CTransform *caller);
+	/** The base traverseClip method.
+	 * The behavior is to:
+	 *	- test if _WorldVis is visible.
+	 *	- test if is clipped with clip() OR IF SKELETON MODEL, USE SKELETON MODEL clip!!
+	 *	- if visible and not clipped, set \c _Visible=true (else false). and
+	 *		- add the CTransform* to the ClipTrav list
+	 *	- if _Visible==true, and renderable, add it to the RenderTraversal: \c RenderTrav->addRenderModel(model);
+	 *	- always traverseSons(), to clip the sons.
+	 */
+	virtual void	traverseClip(CTransform *caller);
+	/// call updateWorldMatrixFromFather(), then traverseAnimDetailWithoutUpdateWorldMatrix()
+	virtual void	traverseAnimDetail(CTransform *caller);
+	/// no-op by default
+	virtual void	traverseLoadBalancing(CTransform *caller);
+	/// traverse the lightedModel per default: recompute LightContribution is isLightable()
+	virtual void	traverseLight(CTransform *caller);
+	/// no-op by default
+	virtual void	traverseRender();
+
+	/// clip method called by traverseClip(). deafult is always visible
+	virtual	bool	clip(CTransform *caller) 
+	{
+		return true;
+	}
+
+	/// Called at RenderTrav to profile current render. no-op per default
+	virtual	void	profileRender();
+
+
+	// @}
 
 public:
 
@@ -139,6 +192,37 @@ public:
 	CHrcTrav::TVisibility	getVisibility() {return Visibility;}
 	/// Get the skeleton model. Returnr NULL in normal mode.
 	CSkeletonModel*			getSkeletonModel () const {return _FatherSkeletonModel;}
+
+
+	/// \name Hierarchy linking
+	// @{
+	/// link son to this in Hierarchy traversal
+	void			hrcLinkSon(CTransform *son);
+	/// unlink this from any Father in Hrc. No-op if no parent
+	void			hrcUnlink();
+	// get the Hrc parent if any (else NULL)
+	CTransform		*hrcGetParent() const {return _HrcParent;}
+	// get Sons links. NB: indices are no more valid after an hrcUnlink()
+	uint			hrcGetNumChildren() const;
+	CTransform		*hrcGetChild(uint index) const;
+	// @}
+
+
+	/// \name Clip linking
+	// @{
+	// Add a link from me to son for Clip Graph (no-op if son==this)
+	void			clipAddChild(CTransform *son);
+	// Remove a link from me to son for Clip Graph (no-op if not found)
+	void			clipDelChild(CTransform *son);
+	// unlink from all parent clip
+	void			clipUnlinkFromAll();
+	// get Parents links. NB: indices are no more valid after a clipDelChild()
+	uint			clipGetNumParents() const;
+	CTransform		*clipGetParent(uint index) const;
+	// get Sons links. NB: indices are no more valid after a clipDelChild()
+	uint			clipGetNumChildren() const;
+	CTransform		*clipGetChild(uint index) const;
+	// @}
 
 
 	/// \name Derived from ITransformable.
@@ -197,15 +281,17 @@ public:
 	uint32			isQuadGridClipEnabled() const {return getStateFlag(QuadGridClipEnabled);}
 
 	/**
-	 * Get the worldMatrix that is stored in the hrc observer
+	 * Get the worldMatrix that is computed at last Hrc pass
 	 */
-	const CMatrix&	getWorldMatrix();
+	const CMatrix&	getWorldMatrix() const {return _WorldMatrix;}
 
-	/**
-	 * Get the Visible state that is stored in the clip observer. True if visible.
+
+	/** tells if the transform has been clipped in the clip traversal. 
 	 */
-	bool			getLastClippedState() const;
-
+	bool	isClipVisible() const
+	{
+		return _Visible;
+	}
 
 
 	void				setClusterSystem (CInstanceGroup *pIG) { _ClusterSystem = pIG; }
@@ -328,22 +414,7 @@ public:
 
 	// @}
 
-	// shortcut to the HrcObs.
-	CTransformHrcObs			*getHrcObs() const { return _HrcObs;}
-	// shortcut to the ClipObs.
-	CTransformClipObs			*getClipObs() const { return _ClipObs;}
-	// shortcut to the LightObs.
-	CTransformLightObs			*getLightObs() const { return _LightObs;}
-
 // ********
-private:
-	// Add our own dirty states.
-	enum	TDirty
-	{
-		TransformDirty= IModel::Last,	// The matrix or the visibility state is modified.
-		Last
-	};
-
 private:
 	CHrcTrav::TVisibility	Visibility;
 
@@ -353,22 +424,14 @@ private:
 	static	CTrackDefaultQuat		DefaultRotQuat;
 	static	CTrackDefaultVector		DefaultScale;
 
-	void	foulTransform()
-	{
-		IModel::foul(TransformDirty);
-	}
-
 protected:
-	/// Constructor
+	/** Constructor
+	 * The deriver \b should do a \c TouchObs.resize(Last), to ensure he resize the BitSet correctly.
+	 * The dervier \b should keep/declare ctor and dtor protected, to avoid user error (new and delete).
+	 */
 	CTransform();
 	/// Destructor
 	virtual ~CTransform();
-
-	/// Implement the update method.
-	virtual void	update();
-
-	/// Implement the initModel method.
-	virtual void	initModel();
 
 	/// special feature for CQuadGridClipManager. called at unfreezeHRC(). Used by CTransformShape.
 	virtual	void	unlinkFromQuadCluster() {}
@@ -474,21 +537,48 @@ protected:
 	/// Test if obj must be displayed when sticked to an object displayed as a LOD (example: sword in hand of a character displayed as a LOD state)
 	bool				getShowWhenLODSticked() const { return _ForceCLodSticked; }
 private:
-	static IModel	*creator() {return new CTransform;}
-	friend class	CTransformHrcObs;
-	friend class	CTransformClipObs;
-	friend class	CTransformLightObs;
-	friend class	CTransformAnimDetailObs;
+	static CTransform	*creator() {return new CTransform;}
 	friend class	CSkeletonModel;
-	friend class	CSkeletonModelAnimDetailObs;
-	friend class	CSkeletonModelRenderObs;
+	friend class	CScene;
+	friend class	CClipTrav;
+	friend class	CAnimDetailTrav;
 
-	/** For Skeleton Object Stick.
-	 *	update the wolrd matrix. no-op if skinned.
-	 *	use standard father WorldMatrix if !_FatherSkeletonModel else get the correct boneId 
-	 *	WorldMatrix from _FatherSkeletonModel
+	// The Scene which owns us
+	CScene			*_OwnerScene;
+
+	/// \name Hrc / Clip hierarchy.
+	// @{ 
+	// Hrc hierarchy. One parent and possible multiple sons
+	CFastPtrListNode			_HrcNode;
+	CFastPtrList<CTransform>	_HrcSons;
+	CTransform					*_HrcParent;
+
+	/* Clip Graph. DAG (Direct Acyclic Graph)
+	 *	NB: implementation optmized for Low number of parent. clipAddChild() and clipDelChild() is in O(numParents).
 	 */
-	void			updateWorldMatrixFromFather();
+	struct	CClipNode
+	{
+		CFastPtrListNode			ClipNode;
+		CTransform					*Parent;
+	};
+	CFastPtrList<CTransform>	_ClipSons;
+	std::vector<CClipNode*>		_ClipParents;
+	bool			clipHasParent(CTransform *parent);
+	void			clipDelFromParent(CTransform *parent);
+
+	// @}
+
+	/// \name Model updating/traversing features
+	// @{ 
+	// linked list of models to update.
+	CTransform		*_PrecModelToUpdate;
+	CTransform		*_NextModelToUpdate;
+
+	// for CScene::createModel() and for CTransform::freezeHRC() only.
+	void			linkToUpdateList();
+	void			unlinkFromUpdateList();
+
+	// @}
 
 
 	// For anim detail.
@@ -508,6 +598,8 @@ private:
 	// For stickObjectEx(). with forceCLod==true
 	bool				_ForceCLodSticked;
 
+	/// true if need to compute transform
+	bool				_TransformDirty;
 
 	/// See ILogicInfo. Used for lighting.	default is NULL.
 	ILogicInfo			*_LogicInfo;
@@ -573,192 +665,77 @@ private:
 	// @}
 
 protected:
-	// shortcut to the HrcObs.
-	CTransformHrcObs			*_HrcObs;
-	// shortcut to the ClipObs.
-	CTransformClipObs			*_ClipObs;
-	// shortcut to the LightObs.
-	CTransformLightObs			*_LightObs;
-
 
 	/** State for renderFiltering. Default is 0xFFFFFFFF (always displayed)
 	 *	Deriver work to change this value
 	 */
 	uint32						_RenderFilterType;
 
-};
 
+protected:
 
-// ***************************************************************************
-/**
- * This observer:
- * - implement the notification system (just the update() method).
- * - implement the traverse() method.
- *
- * \sa CHrcTrav IBaseHrcObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CTransformHrcObs : public IBaseHrcObs
-{
-public:
-	CTransformHrcObs()
-	{
-		Frozen = false;
-		DontUnfreezeChildren = false;
-		_AncestorSkeletonModel= NULL;
-		ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
-	}
+	/// \name Hrc Traversal
+	// @{
 
-	virtual	void	update();
-
-	/// \name Utility methods.
-	//@{
-	/// Update the world state according to the parent world state and the local states.
-	void	updateWorld(IBaseHrcObs *caller);
-	//@}
-
-
-	/// \name The base doit method.
-	//@{
-	/// The base behavior is to update() the observer, updateWorld() states, and traverseSons().
-	virtual	void	traverse(IObs *caller);
-	//@}
-	static IObs	*creator() {return new CTransformHrcObs;}
-
-
-public:
-	bool	Frozen;
-	bool	DontUnfreezeChildren; // Usefull when cluster system move to not test instance again
-
-	bool	ClipLinkedInSonsOfAncestorSkeletonModelGroup;
+	/// Hrc IN variables.
+	CMatrix		_LocalMatrix;
+	CHrcTrav::TVisibility	_LocalVis;	// The visibility state of the node.
+	sint64		_LocalDate;				// The update date of the LocalMatrix.
+	/// Hrc OUT variables.
+	CMatrix		_WorldMatrix;
+	bool		_WorldVis;			// Is the node visible? (enabled?)
+	sint64		_WorldDate;			// The update date of the WorldMatrix.
+	// Transform Specicic Hrc
+	bool		_Frozen;
+	bool		_DontUnfreezeChildren; // Usefull when cluster system move to not test instance again
+	bool		_ClipLinkedInSonsOfAncestorSkeletonModelGroup;
 	// !NULL if any skeleton is an ancestor in hierarchy. Updated at each Hrc traversal!!
 	CSkeletonModel	*_AncestorSkeletonModel;
 
-private:
+	/// Update the world state according to the parent world state and the local states.
+	void		updateWorld(CTransform *caller);
 	// according to _AncestorSkeletonModel, link clipTrav.
-	void	updateClipTravForAncestorSkeleton();
-};
+	void		updateClipTravForAncestorSkeleton();
+
+	// @}
 
 
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the clip() method to return true (not renderable)
- * - implement traverse() method.
- *
- * \sa CHrcTrav IBaseClipObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CTransformClipObs : public IBaseClipObs
-{
+	/// \name Clip Traversal
+	// @{
 
-public:
+	/// date of last traverseClip()
+	sint64		_ClipDate;
+	/// set to true is the object is visible (not clipped).
+	bool		_Visible;
+	// The index of the Observer in the _VisibleList; -1 (default) means not in
+	sint		_IndexInVisibleList;
 
-	sint64 Date;
+	// @}
 
-public:
 
-	CTransformClipObs() : Date(0) {}
+	/// \name AnimDetail Traversal
+	// @{
 
-	/// Don't clip.
-	virtual	bool	clip(IBaseClipObs *caller) 
-	{
-		return true;
-	}
-
-	/** The base doit method.
-	 * The behavior is to:
-	 *	- test if HrcObs->WorldVis is visible.
-	 *	- test if the observer is clipped with clip() OR IF SKELETON MODEL, USE SKELETON MODEL clip!!
-	 *	- if visible and not clipped, set \c Visible=true (else false). and
-	 *		- add the <CTransformClipObs*> to the ClipTrav list
-	 *	- if Visible==true, and renderable, add it to the RenderTraversal: \c RenderTrav->addRenderObs(RenderObs);
-	 *	- always traverseSons(), to clip the sons.
+	/** For Skeleton Object Stick.
+	 *	update the wolrd matrix. no-op if skinned. no-op if no AcnestorSkeletonModel.
+	 *	use standard father WorldMatrix if !_FatherSkeletonModel else get the correct boneId 
+	 *	WorldMatrix from _FatherSkeletonModel
 	 */
-	virtual	void	traverse(IObs *caller);
-
-	static IObs	*creator() {return new CTransformClipObs;}
-};
-
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the traverse method.
- *
- * \sa CHrcTrav IBaseHrcObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CTransformAnimDetailObs : public IBaseAnimDetailObs
-{
-public:
-
-	/// update the WorldMatrix if needed.
 	void			updateWorldMatrixFromFather();
+
 	/** traverse without updatin WorldMatrixFromFather:
 	 *	- animdetail if the model channelmixer is not NULL, and if model not clipped
 	 */
-	void			traverseWithoutUpdateWorldMatrix(IObs *caller);
+	void			traverseAnimDetailWithoutUpdateWorldMatrix(CTransform *caller);
 
-	/// call updateWorldMatrixFromFather(), then traverseWithoutUpdateWorldMatrix()
-	virtual	void	traverse(IObs *caller);
+	// @}
 
-	static IObs	*creator() {return new CTransformAnimDetailObs;}
-};
+	/// \name LoadBalancing Traversal
+	// @{
+	// Which group owns this model
+	CLoadBalancingGroup		*_LoadBalancingGroup;
+	// @}
 
-// ***************************************************************************
-/**
- * \sa CTransformRenderObs
- * \author Matthieu Besson
- * \author Nevrax France
- * \date 2001
- */
-class CTransformRenderObs : public IBaseRenderObs
-{
-public:
-	/** 
-	 * The base render method.
-	 * The observers should not traverseSons(), for speed improvement.
-	 */
-	virtual	void	traverse(IObs *caller)
-	{
-	}
-
-	static IObs	*creator() {return new CTransformRenderObs;}
-
-};
-
-
-// ***************************************************************************
-/**
- * \sa CTransformLightObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2001
- */
-class CTransformLightObs : public IBaseLightObs
-{
-public:
-
-	/** 
-	 * The base light method. This do all the good thing and should not be derived.
-	 * traverse() is called only on visible objects with no _AncestorSkeletonModel, 
-	 * It test if transform->isNeedUpdateLighting()
-	 *
-	 * The observers should not traverseSons(), for speed improvement.
-	 */
-	virtual	void	traverse(IObs *caller);
-
-
-	static IObs	*creator() {return new CTransformLightObs;}
 
 };
 

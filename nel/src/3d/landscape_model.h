@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.6 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: landscape_model.h,v 1.7 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ const NLMISC::CClassId		LandscapeModelId=NLMISC::CClassId(0x5a573b55, 0x6b395829
 class	CLandscapeModel : public CTransform
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
 public:
@@ -94,10 +94,12 @@ public:
 	}
 
 
-	/** Override IModel::initModel(), to create CLandscape's VegetableManager's BlendLayer models in the scene.
-	 *
+	/** Override CTransform::initModel(), to create CLandscape's VegetableManager's BlendLayer models in the scene.
 	 */
 	virtual void	initModel();
+	/// special clip() and traverseRender()
+	virtual bool	clip(CTransform *caller);
+	virtual void	traverseRender();
 
 
 protected:
@@ -105,49 +107,14 @@ protected:
 	virtual ~CLandscapeModel() {}
 
 private:
-	static IModel	*creator() {return new CLandscapeModel;}
+	static CTransform	*creator() {return new CLandscapeModel;}
 
 	bool	_ActiveAdditive;
 	float	_Additive;
 
-	friend class CLandscapeClipObs;
-	friend class CLandscapeRenderObs;
-
 	// The current small pyramid, for faster clip.
 	CPlane		CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
 };
-
-
-// Clip obs.
-//*************
-/// Landscape Clip observer.
-class	CLandscapeClipObs : public CTransformClipObs
-{
-public:
-
-	/// link this model to the RootCluster.
-	virtual	void	init();
-
-	/// clip.
-	virtual	bool	clip(IBaseClipObs *caller);
-
-	// The creator.
-	static IObs	*creator() {return new CLandscapeClipObs;}
-};
-// Render obs.
-//*************
-/// Landscape Render observer.
-class	CLandscapeRenderObs : public CTransformRenderObs
-{
-public:
-	/// Do nothing, and don't traverseSons() too.
-	virtual	void	traverse(IObs *caller);
-
-	// The creator.
-	static IObs	*creator() {return new CLandscapeRenderObs;}
-};
-
-
 
 
 } // NL3D

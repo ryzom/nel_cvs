@@ -1,7 +1,7 @@
 /** \file water_user.h
  * class that implements the user interface for water
  *
- * $Id: water_user.h,v 1.4 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: water_user.h,v 1.5 2003/03/26 10:20:56 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NL3D
 class CWaterInstanceUser : public CInstanceUser, public UWaterInstance
 {
 public:		
-	CWaterInstanceUser(CScene *scene, IModel *trans) : CInstanceUser(scene, trans, true) 
+	CWaterInstanceUser(CScene *scene, CTransform *trans) : CInstanceUser(scene, trans, true) 
 	{
 		NL3D_MEM_WATER
 	}

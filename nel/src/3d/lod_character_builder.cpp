@@ -1,7 +1,7 @@
 /** \file lod_character_builder.cpp
  * <File description>
  *
- * $Id: lod_character_builder.cpp,v 1.3 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: lod_character_builder.cpp,v 1.4 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -98,14 +98,9 @@ void			CLodCharacterBuilder::setShape(const std::string &name, CSkeletonShape *s
 		_TmpScene= new CScene;
 		// Must init Statics for scene (because use it in addAnim). NB: never mind if done twice.
 		CScene::registerBasics();
-		// init scene travs
-		_TmpScene->initDefaultTravs();
-		// Don't add any user trav.
 		// init default Roots.
 		_TmpScene->initDefaultRoots();
 		// Don't Set driver/viewport
-		// Init the world instance group
-		_TmpScene->initGlobalnstanceGroup();
 		// init QuadGridClipManager
 		_TmpScene->initQuadGridClipManager ();
 	}

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.20 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.21 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,6 @@ namespace NL3D
 class CMeshBase;
 class CMesh;
 class CMeshMRM;
-class CMeshBaseInstanceAnimDetailObs;
 class CAnimatedLightmap;
 class CAsyncTextureManager;
 
@@ -56,7 +55,6 @@ const NLMISC::CClassId		MeshBaseInstanceId=NLMISC::CClassId(0xef44331, 0x739f6bc
 /**
  * An base class for instance of CMesh and CMeshMRM  (which derive from CMeshBase).
  * NB: this class is a model but is not designed to be instanciated in CMOT.
- * NB: no observers are needed, but AnimDetailObs, since same functionality as CTransformShape.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -64,7 +62,7 @@ const NLMISC::CClassId		MeshBaseInstanceId=NLMISC::CClassId(0xef44331, 0x739f6bc
 class CMeshBaseInstance : public CTransformShape
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
 public:
@@ -135,11 +133,6 @@ public:
 	}
 	// @}
 
-
-	/// Get the scene which owns this instance.
-	CScene				*getScene() const {return _OwnerScene;}
-
-
 	/** Change MRM Distance setup. Only for mesh which support MRM. NB MeshMultiLod apply it only on Lod0.
 	 *	NB: This apply to the shape direclty!! ie All instances using same shape will be affected
 	 *	NB: no-op if distanceFinest<0, distanceMiddle<=distanceFinest or if distanceCoarsest<=distanceMiddle.
@@ -202,6 +195,15 @@ public:
 
 	// @}
 
+	/// \name CTransform traverse specialisation
+	// @{
+	/** this do :
+	 *  - call CTransformShape::traverseAnimDetail()
+	 *  - update animated materials.
+	 */
+	virtual void	traverseAnimDetail(CTransform *caller);
+	// @}
+
 
 protected:
 	/// Constructor
@@ -211,9 +213,8 @@ protected:
 
 
 private:
-	static IModel	*creator() {return new CMeshBaseInstance;}
+	static CTransform	*creator() {return new CMeshBaseInstance;}
 	friend	class CMeshBase;
-	friend	class CMeshBaseInstanceAnimDetailObs;
 
 
 	/** The list of animated materials, instanciated from the mesh.
@@ -223,9 +224,6 @@ private:
 	std::vector<CAnimatedLightmap*> _AnimatedLightmap;
 
 	std::vector<CAnimatedMorph> _AnimatedMorphFactor; 
-
-	/// The Scene where the instance is created.
-	CScene		*_OwnerScene;
 
 	/// \name Async Texture Loading
 	// @{
@@ -250,33 +248,6 @@ public:
 	/// CMeshVPWindTree instance specific part.
 	float		_VPWindTreePhase;		// Phase time of the wind animation. 0-1
 
-};
-
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - extend the traverse method.
- *
- * \sa CAnimDetailTrav IBaseAnimDetailObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CMeshBaseInstanceAnimDetailObs : public CTransformAnimDetailObs
-{
-public:
-
-	/** this do :
-	 *  - call CTransformAnimDetailObs::traverse()
-	 *  - update animated materials.
-	 */
-	virtual	void	traverse(IObs *caller);
-
-
-public:
-	static IObs	*creator() {return new CMeshBaseInstanceAnimDetailObs;}
 };
 
 

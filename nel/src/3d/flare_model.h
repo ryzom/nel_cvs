@@ -1,7 +1,7 @@
 /** \file flare_model.h
  * <File description>
  *
- * $Id: flare_model.h,v 1.4 2001/10/26 08:32:15 vizerie Exp $
+ * $Id: flare_model.h,v 1.5 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -46,27 +46,20 @@ public:
 	/// Constructor
 	CFlareModel();
 
-	// register this model and his observers
+	// register this model
 	static void registerBasic();	
-	static IModel *creator() { return new CFlareModel; }
+	static CTransform *creator() { return new CFlareModel; }
+
+	/// \name CTransform traverse specialisation
+	// @{
+	virtual void	traverseRender();
+	// @}
 
 protected:
 	friend class CFlareShape;
-	friend class CFlareRenderObs;
 	float				_Intensity;	
 	CScene				*_Scene;	
 };
-
-
-
-class	CFlareRenderObs : public CTransformShapeRenderObs
-{
-public:
-
-	virtual	void	traverse(IObs *caller);	
-	static IObs	    *creator() {return new CFlareRenderObs;}
-};
-
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file point_light_model.cpp
  * <File description>
  *
- * $Id: point_light_model.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
+ * $Id: point_light_model.cpp,v 1.4 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/light_trav.h"
 #include "3d/root_model.h"
 #include "3d/skeleton_model.h"
+#include "3d/scene.h"
 
 
 namespace NL3D {
@@ -37,8 +38,7 @@ namespace NL3D {
 // ***************************************************************************
 void	CPointLightModel::registerBasic()
 {
-	CMOT::registerModel( PointLightModelId, TransformId, CPointLightModel::creator);
-	CMOT::registerObs( LightTravId,			PointLightModelId, CPointLightModelLightObs::creator );
+	CScene::registerModel( PointLightModelId, TransformId, CPointLightModel::creator);
 }
 
 // ***************************************************************************
@@ -60,12 +60,8 @@ void	CPointLightModel::initModel()
 {
 	CTransform::initModel();
 
-	// link to the LightModelRoot in the lightTrav.
-	IObs		*obs= getObs(LightTravId);
-	CLightTrav	*lightTrav= (CLightTrav*)obs->Trav;
-	nlassert( lightTrav->LightModelRoot );
 	// link me to the root of light.
-	lightTrav->link(lightTrav->LightModelRoot, this);
+	getOwnerScene()->getLightTrav().addPointLightModel(this);
 	
 }
 
@@ -85,10 +81,9 @@ const CVector	&CPointLightModel::getDeltaPosToSkeletonWhenOutOfFrustum() const
 
 
 // ***************************************************************************
-void	CPointLightModelLightObs::traverse(IObs *caller)
+void	CPointLightModel::traverseLight(CTransform *caller)
 {
-	CPointLightModel	*plModel= (CPointLightModel*)Model;
-	CLightTrav			*lightTrav= (CLightTrav*)Trav;
+	CLightTrav			&lightTrav= getOwnerScene()->getLightTrav();
 
 	// Note: any dynamic light is supposed to always move each frame, so they are re-inserted in the 
 	// quadGrid each frame.
@@ -96,56 +91,56 @@ void	CPointLightModelLightObs::traverse(IObs *caller)
 
 	// reset all models lighted by this light.
 	// Then models are marked dirty and their light setup is reseted
-	plModel->PointLight.resetLightedModels();
+	PointLight.resetLightedModels();
 
 
 	// if the light is visible (ie not hiden)
-	if( plModel->isHrcVisible() )
+	if( isHrcVisible() )
 	{
 		// If the light is not hidden by any skeleton.
-		if( plModel->isClipVisible() )
+		if( isClipVisible() )
 		{
 			// recompute the worldPosition of the light.
-			plModel->PointLight.setPosition( plModel->getWorldMatrix().getPos() );
+			PointLight.setPosition( getWorldMatrix().getPos() );
 
 			// recompute the worldSpotDirection of the light.
-			if(plModel->PointLight.getType() == CPointLight::SpotLight)
+			if(PointLight.getType() == CPointLight::SpotLight)
 			{
 				// Interpolate over time. (hardcoded)
-				plModel->_TimeFromLastClippedSpotDirection-= 0.05f;
-				if(plModel->_TimeFromLastClippedSpotDirection <= 0)
+				_TimeFromLastClippedSpotDirection-= 0.05f;
+				if(_TimeFromLastClippedSpotDirection <= 0)
 				{
-					plModel->PointLight.setupSpotDirection(plModel->getWorldMatrix().getJ());
+					PointLight.setupSpotDirection(getWorldMatrix().getJ());
 				}
 				else
 				{
-					CVector		actualSpotDir= plModel->getWorldMatrix().getJ();
+					CVector		actualSpotDir= getWorldMatrix().getJ();
 					// Interpolate
-					float	t= plModel->_TimeFromLastClippedSpotDirection;
-					CVector		interpSpotDir= actualSpotDir*(1-t) + plModel->_LastWorldSpotDirectionWhenOutOfFrustum * t;
+					float	t= _TimeFromLastClippedSpotDirection;
+					CVector		interpSpotDir= actualSpotDir*(1-t) + _LastWorldSpotDirectionWhenOutOfFrustum * t;
 					// set the interpolated one.
-					plModel->PointLight.setupSpotDirection(interpSpotDir);
+					PointLight.setupSpotDirection(interpSpotDir);
 				}
 			}
 		}
 		else
 		{
 			// We are hidden because a skeleton has hide us (or else don't know why).
-			nlassert(plModel->getHrcObs()->_AncestorSkeletonModel);
-			const CMatrix &skMatrix= plModel->getHrcObs()->_AncestorSkeletonModel->getWorldMatrix();
+			nlassert(_AncestorSkeletonModel);
+			const CMatrix &skMatrix= _AncestorSkeletonModel->getWorldMatrix();
 
-			plModel->PointLight.setPosition( skMatrix * plModel->_DeltaPosToSkeletonWhenOutOfFrustum );
+			PointLight.setPosition( skMatrix * _DeltaPosToSkeletonWhenOutOfFrustum );
 
 			// recompute the worldSpotDirection of the light.
-			if(plModel->PointLight.getType() == CPointLight::SpotLight)
+			if(PointLight.getType() == CPointLight::SpotLight)
 			{
 				// If last frame, this pointLight was visible (Time is not 1)
-				if(plModel->_TimeFromLastClippedSpotDirection != 1)
+				if(_TimeFromLastClippedSpotDirection != 1)
 				{
 					// Take the current World spot direction
-					plModel->_LastWorldSpotDirectionWhenOutOfFrustum= plModel->PointLight.getSpotDirection();
+					_LastWorldSpotDirectionWhenOutOfFrustum= PointLight.getSpotDirection();
 					// reset time.
-					plModel->_TimeFromLastClippedSpotDirection= 1;
+					_TimeFromLastClippedSpotDirection= 1;
 				}
 
 				// Don't need to modify PointLight spot direction since already setuped (when model was visible)
@@ -154,7 +149,7 @@ void	CPointLightModelLightObs::traverse(IObs *caller)
 
 		// now, insert this light in the quadGrid. NB: in CLightTrav::traverse(), the quadGrid is cleared before here.
 		// This light will touch (resetLighting()) any model it may influence.
-		lightTrav->LightingManager.addDynamicLight(&plModel->PointLight);
+		lightTrav.LightingManager.addDynamicLight(&PointLight);
 	}
 
 }

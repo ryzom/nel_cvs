@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.11 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.12 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ const NLMISC::CClassId		MeshMRMInstanceId=NLMISC::CClassId(0xec608f3, 0x1111c33)
 // ***************************************************************************
 /**
  * An instance of CMeshMRM.
- * NB: no observers are needed, since same functionnality as CMeshBaseInstance.
+ * no special traverse, since same functionnality as CMeshBaseInstance.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -58,7 +58,7 @@ const NLMISC::CClassId		MeshMRMInstanceId=NLMISC::CClassId(0xec608f3, 0x1111c33)
 class CMeshMRMInstance : public CMeshBaseInstance
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
 protected:
@@ -110,7 +110,7 @@ protected:
 
 // *************************
 private:
-	static IModel	*creator() {return new CMeshMRMInstance;}
+	static CTransform	*creator() {return new CMeshMRMInstance;}
 	friend	class CMeshMRM;
 	friend	class CMeshMRMGeom;
 

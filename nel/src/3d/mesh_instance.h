@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.11 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.12 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ const NLMISC::CClassId		MeshInstanceId=NLMISC::CClassId(0x6bfe0a34, 0x23b26dc9);
 // ***************************************************************************
 /**
  * An instance of CMesh.
- * NB: no observers are needed, since same functionnality as CMeshBaseInstance.
+ * no special traverse, since same functionnality as CMeshBaseInstance.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -55,7 +55,7 @@ const NLMISC::CClassId		MeshInstanceId=NLMISC::CClassId(0x6bfe0a34, 0x23b26dc9);
 class CMeshInstance : public CMeshBaseInstance
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
 public:
@@ -87,7 +87,7 @@ protected:
 	void			initRenderFilterType();
 
 private:
-	static IModel	*creator() {return new CMeshInstance;}
+	static CTransform	*creator() {return new CMeshInstance;}
 	friend	class CMesh;
 
 };

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.56 2003/03/20 14:57:05 berenguier Exp $
+ * $Id: transform.cpp,v 1.57 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,6 @@
 
 #include "3d/transform.h"
 #include "3d/skeleton_model.h"
-#include "3d/skip_model.h"
 #include "3d/scene.h"
 #include "3d/root_model.h"
 #include "3d/fast_floor.h"
@@ -35,6 +34,7 @@
 
 
 using namespace NLMISC;
+using namespace std;
 
 
 namespace	NL3D
@@ -44,23 +44,23 @@ namespace	NL3D
 // ***************************************************************************
 void	CTransform::registerBasic()
 {
-	CMOT::registerModel( TransformId, 0, CTransform::creator);
-	CMOT::registerObs( HrcTravId,			TransformId, CTransformHrcObs::creator			);
-	CMOT::registerObs( ClipTravId,			TransformId, CTransformClipObs::creator			);
-	CMOT::registerObs( AnimDetailTravId,	TransformId, CTransformAnimDetailObs::creator	);
-	CMOT::registerObs( LightTravId,			TransformId, CTransformLightObs::creator		);
-	CMOT::registerObs( RenderTravId,		TransformId, CTransformRenderObs::creator		);
+	CScene::registerModel( TransformId, 0, CTransform::creator);
 }
 
 
 // ***************************************************************************
 CTransform::CTransform()
 {
-	_HrcObs= NULL;
-	_ClipObs= NULL;
-	_LightObs=NULL;
+	// important to reset for destructor to know if linked or not (CCluster !!)
+	_OwnerScene= NULL;
 
-	TouchObs.resize(Last);
+	// Hrc/Graph hierarchy
+	_HrcParent= NULL;
+
+	_PrecModelToUpdate= NULL;
+	_NextModelToUpdate= NULL;
+
+	_TransformDirty= true;
 
 	Visibility= CHrcTrav::Herit;
 
@@ -110,17 +110,29 @@ CTransform::CTransform()
 
 	// By default, always allow rendering of Transform Models.
 	_RenderFilterType= ~0;
-}
 
 
-// ***************************************************************************
-void	CTransform::initModel()
-{
-	IModel::initModel();
+	// **** HRC Init Traversal Computed Data.
+	_LocalVis= CHrcTrav::Herit; _LocalMatrix.identity(); _LocalDate=0;
+	_WorldVis= true; _WorldMatrix.identity(); 
+	// Init the _WorldDate to -1 so at first pass, _LocalDate>_WorldDate, and so
+	// the model will be processed and so it'll may be inserted in LightingManager (for example)
+	_WorldDate=-1;
+	_Frozen = false;
+	_DontUnfreezeChildren = false;
+	_AncestorSkeletonModel= NULL;
+	_ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
 
-	_HrcObs= (CTransformHrcObs*)getObs(HrcTravId);
-	_ClipObs= (CTransformClipObs*)getObs(ClipTravId);
-	_LightObs= (CTransformLightObs*)getObs(LightTravId);
+	// **** Clip Init Traversal Computed Data.
+	_ClipDate= 0;
+	_Visible=false;
+	_IndexInVisibleList= -1;
+
+	// **** AnimDetail Init Traversal Computed Data.
+	// none
+
+	// **** LoadBalancing Init Traversal Computed Data.
+	_LoadBalancingGroup= NULL;
 }
 
 
@@ -151,23 +163,64 @@ CTransform::~CTransform()
 	resetLighting();
 
 	// Must also remove me from the lightingManager.
-	// must test _LightObs because of CCluster usage out of mot (thanks to mat!! :) )
-	if(_LightObs)
+	// must test getOwnerScene() because of CCluster usage out of CScene (thanks to mat!! :) )
+	if(getOwnerScene())
 	{
-		CLightTrav	*lightTrav= (CLightTrav*)_LightObs->Trav;
-		_LightedModelIt= lightTrav->LightingManager.eraseStaticLightedModel(_LightedModelIt);
+		CLightTrav	&lightTrav= getOwnerScene()->getLightTrav();
+		_LightedModelIt= lightTrav.LightingManager.eraseStaticLightedModel(_LightedModelIt);
 	}
 
 	if (getChannelMixerOwnerShip()) delete (CChannelMixer *) _ChannelMixer;
+
+	// ensure the model is no more linked to the UpdateList.
+	unlinkFromUpdateList();
+
+	// I must remove me from _VisibleList.
+	if(_IndexInVisibleList>=0)
+	{
+		CClipTrav	&clipTrav= getOwnerScene()->getClipTrav();
+		nlassert(_IndexInVisibleList < (sint)clipTrav._VisibleList.size() );
+		// Mark NULL. NB: faster than a CRefPtr.
+		clipTrav._VisibleList[_IndexInVisibleList]= NULL;
+		_IndexInVisibleList= -1;
+	}
+
+	// remove me from parents in Hrc and Clip
+	hrcUnlink();
+	clipUnlinkFromAll();
+
+	// remove mys sons.
+	while(hrcGetNumChildren())
+	{
+		hrcGetChild(0)->hrcUnlink();
+	}
+	while(clipGetNumChildren())
+	{
+		clipDelChild(clipGetChild(0));
+	}
+
+	nlassert(_HrcSons.empty());
+	nlassert(_HrcParent==NULL);
+	nlassert(_ClipSons.empty());
+	nlassert(_ClipParents.empty());
 }
+
+
+// ***************************************************************************
+void	CTransform::initModel()
+{
+	// assign me to the default group
+	_LoadBalancingGroup= getOwnerScene()->getLoadBalancingTrav().getDefaultGroup();
+}
+
 
 // ***************************************************************************
 void		CTransform::hide()
 {
-	// Optim: do nothing if already set (=> not foulTransform() -ed).
+	// Optim: do nothing if already set
 	if(Visibility!= CHrcTrav::Hide)
 	{
-		foulTransform();
+		_TransformDirty= true;
 		Visibility= CHrcTrav::Hide;
 		// If skinned, then must inform skeleton parent that it must recompute skin render/animDetail lists
 		if(isSkinned())
@@ -180,10 +233,10 @@ void		CTransform::hide()
 // ***************************************************************************
 void		CTransform::show()
 {
-	// Optim: do nothing if already set (=> not foulTransform() -ed).
+	// Optim: do nothing if already set
 	if(Visibility!= CHrcTrav::Show)
 	{
-		foulTransform();
+		_TransformDirty= true;
 		Visibility= CHrcTrav::Show;
 		// If skinned, then must inform skeleton parent that it must recompute skin render/animDetail lists
 		if(isSkinned())
@@ -196,10 +249,10 @@ void		CTransform::show()
 // ***************************************************************************
 void		CTransform::heritVisibility()
 {
-	// Optim: do nothing if already set (=> not foulTransform() -ed).
+	// Optim: do nothing if already set
 	if(Visibility!= CHrcTrav::Herit)
 	{
-		foulTransform();
+		_TransformDirty= true;
 		Visibility= CHrcTrav::Herit;
 		// If skinned, then must inform skeleton parent that it must recompute skin render/animDetail lists
 		if(isSkinned())
@@ -273,70 +326,22 @@ void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::str
 }
 
 
-
-// ***************************************************************************
-void			CTransform::updateWorldMatrixFromFather()
-{
-	// If I am not skinned
-	if(!isSkinned())
-	{
-		// Compute the HRC WorldMatrix.
-		// if I am not sticked.
-		if(!_FatherSkeletonModel)
-		{
-			// get the normal father worldMatrix in Hrc.
-			CTransform	*fatherTransform= dynamic_cast<CTransform*>(_HrcObs->Trav->getFirstParent(this));
-			// if exist
-			if(fatherTransform)
-			{
-				const CMatrix &parentWM= fatherTransform->_HrcObs->WorldMatrix;
-				// combine worldMatrix
-				_HrcObs->WorldMatrix= parentWM * _HrcObs->LocalMatrix;
-			}
-			else
-				_HrcObs->WorldMatrix= _HrcObs->LocalMatrix;
-		}
-		else
-		{
-			// get the worldMatrix of the bone if I am sticked.
-			const CMatrix &parentWM= _FatherSkeletonModel->Bones[_FatherBoneId].getWorldMatrix();
-			// combine worldMatrix
-			_HrcObs->WorldMatrix= parentWM * _HrcObs->LocalMatrix;
-		}
-	}
-}
-
-
 // ***************************************************************************
 void			CTransform::freeze()
 {
-	// First, validate the model, and all his observers.
-	// Frozen state is disabled here (in CTransformHrcObs::update()).
-	validate();
+	// First, update the model
+	// _Frozen state is disabled here (in CTransform::update()).
+	update();
 
 	// Then flag the frozen state.
-	_HrcObs->Frozen= true;
+	_Frozen= true;
 }
 
 // ***************************************************************************
 void			CTransform::setDontUnfreezeChildren(bool val)
 {
-	_HrcObs->DontUnfreezeChildren = val;
+	_DontUnfreezeChildren = val;
 }
-
-
-// ***************************************************************************
-const CMatrix& CTransform::getWorldMatrix()
-{
-	return _HrcObs->WorldMatrix;
-}
-
-// ***************************************************************************
-bool	CTransform::getLastClippedState() const
-{
-	return _ClipObs->Visible;
-}
-
 
 
 // ***************************************************************************
@@ -350,11 +355,11 @@ void		CTransform::freezeHRC()
 
 		/* If the transform is not frozen (ie staticaly inserted in a cluster),
 			We must be sure it will be tested against QuadGridClipManager at next ClipTrav pass.
-			=> must make this object a "moving object" at next render=> dirt LocalMatrixDate.
+			=> must make this object a "moving object" at next render=> dirt _LocalMatrixDate.
 		*/
-		if(!_HrcObs->Frozen)
+		if(!_Frozen)
 		{
-			foulTransform();
+			_TransformDirty= true;
 		}
 	}
 }
@@ -369,22 +374,20 @@ void		CTransform::unfreezeHRC()
 		// if model correctly frozen.
 		if(_FreezeHRCState == CTransform::FreezeHRCStateEnabled )
 		{
-			// Trick: get the traversal via the HrcObs.
-			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(_HrcObs->Trav);
-			// if linked to SkipModelRoot, link this model to root of HRC.
-			if( hrcTrav->getFirstParent(this) == hrcTrav->Scene->getSkipModelRoot() )
-				hrcTrav->link(NULL, this);
+			// if not linked in Hrc, link this model to root of HRC.
+			if( !hrcGetParent() )
+				getOwnerScene()->getRoot()->hrcLinkSon( this );
 
 			// Link this object to the validateList.
-			linkToValidateList();
+			linkToUpdateList();
 
 			// if lightable()
 			if( isLightable() )
 			{
-				CLightTrav	*lightTrav= static_cast<CLightTrav*>(_LightObs->Trav);
+				CLightTrav	&lightTrav= getOwnerScene()->getLightTrav();
 				// Lighting: must remove the object from the quadGrid.
 				// NB: works if _LightedModelIt==NULL. result is that _LightedModelIt= NULL.
-				_LightedModelIt= lightTrav->LightingManager.eraseStaticLightedModel(_LightedModelIt);
+				_LightedModelIt= lightTrav.LightingManager.eraseStaticLightedModel(_LightedModelIt);
 			}
 
 		}
@@ -401,13 +404,11 @@ void		CTransform::unfreezeHRC()
 // ***************************************************************************
 void		CTransform::update()
 {
-	IModel::update();
-
 	// test if the matrix has been changed in ITransformable.
 	if(ITransformable::compareMatrixDate(_LastTransformableMatrixDate))
 	{
 		_LastTransformableMatrixDate= ITransformable::getMatrixDate();
-		foul(TransformDirty);
+		_TransformDirty= true;
 	}
 
 	// update the freezeHRC state.
@@ -416,37 +417,48 @@ void		CTransform::update()
 		// if the model request to be frozen in HRC
 		if(_FreezeHRCState == CTransform::FreezeHRCStateRequest )
 		{
-			// Wait for next Hrc traversal to compute good WorldMatrix for this model and his sons.
+			// Wait for next Hrc traversal to compute good _WorldMatrix for this model and his sons.
 			// Also, next Hrc traversal will insert the model in the LightingManager quadGrid (if lightable)
 			_FreezeHRCState = CTransform::FreezeHRCStateReady;
 		}
 		// if the model is ready to be frozen in HRC, then do it!!
 		else if( _FreezeHRCState == CTransform::FreezeHRCStateReady )
 		{
-			// Trick: get the traversal via the HrcObs.
-			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(_HrcObs->Trav);
-			// if linked to root of HRC, link this model to SkipModelRoot.
-			if( hrcTrav->getFirstParent(this) == hrcTrav->getRoot() )
-				hrcTrav->link(hrcTrav->Scene->getSkipModelRoot(), this);
+			// if linked to root of HRC, unlink this model.
+			if( hrcGetParent() == getOwnerScene()->getRoot() )
+				hrcUnlink();
 
 			// unLink this object from the validateList. NB: the list will still be correclty parsed.
-			unlinkFromValidateList();
+			unlinkFromUpdateList();
 
 			// if lightable, the model is inserted in a quadgrid to update his lighting only when
 			// dynamicLights touch him (since himself is static).
 			if( isLightable() )
 			{
-				CLightTrav	*lightTrav= static_cast<CLightTrav*>(_LightObs->Trav);
+				CLightTrav	&lightTrav= getOwnerScene()->getLightTrav();
 				// Lighting: must reinsert the object from the quadGrid.
 				// NB: works if _LightedModelIt==NULL. result is that _LightedModelIt= NULL.
-				_LightedModelIt= lightTrav->LightingManager.eraseStaticLightedModel(_LightedModelIt);
+				_LightedModelIt= lightTrav.LightingManager.eraseStaticLightedModel(_LightedModelIt);
 				// insert in the quadgrid.
-				_LightedModelIt= lightTrav->LightingManager.insertStaticLightedModel(this);
+				_LightedModelIt= lightTrav.LightingManager.insertStaticLightedModel(this);
 			}
 
 			// Now this model won't be tested for validation nor for worldMatrix update. End!!
 			_FreezeHRCState = CTransform::FreezeHRCStateEnabled;
 		}
+	}
+
+	// update _LocalMatrix
+	if(_TransformDirty)
+	{
+		// update the local matrix.
+		_LocalMatrix= getMatrix();
+		_LocalVis= Visibility;
+		// update the date of the local matrix.
+		_LocalDate= getOwnerScene()->getHrcTrav().CurrentDate;
+
+		// The transform has been modified. Hence, it is no more frozen.
+		_Frozen= false;
 	}
 }
 
@@ -462,27 +474,18 @@ void	CTransform::getAABBox(NLMISC::CAABBox &bbox) const
 // ***************************************************************************
 void	CTransform::setLoadBalancingGroup(const std::string &group)
 {
-	// get the LoadBalancing observer
-	IBaseLoadBalancingObs	*obs= (IBaseLoadBalancingObs*)getObs(LoadBalancingTravId);
-	nlassert(obs);
-
 	// Get the traversal.
-	CLoadBalancingTrav	*trav= (CLoadBalancingTrav*)obs->Trav;
-	nlassert(trav);
+	CLoadBalancingTrav	&trav= getOwnerScene()->getLoadBalancingTrav();
 	// get the group from trav (create if needed), and set it.
-	obs->LoadBalancingGroup= trav->getOrCreateGroup(group);
+	_LoadBalancingGroup= trav.getOrCreateGroup(group);
 }
 
 
 // ***************************************************************************
 const std::string &CTransform::getLoadBalancingGroup() const
 {
-	// get the LoadBalancing observer
-	IBaseLoadBalancingObs	*obs= (IBaseLoadBalancingObs*)getObs(LoadBalancingTravId);
-	nlassert(obs);
-
 	// get the group name
-	return obs->LoadBalancingGroup->Name;
+	return _LoadBalancingGroup->Name;
 }
 
 
@@ -565,63 +568,80 @@ void		CTransform::setIsLoadbalancable(bool val)
 
 
 // ***************************************************************************
-// ***************************************************************************
-// Observers.
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-void	CTransformHrcObs::update()
+void		CTransform::linkToUpdateList()
 {
-	IBaseHrcObs::update();
+	if(!_OwnerScene)
+		return;
 
-	if(Model->TouchObs[CTransform::TransformDirty])
+	// If the model is not already inserted.
+	if( ! (_PrecModelToUpdate!=NULL  ||  _OwnerScene->_UpdateModelList==this) )
 	{
-		// update the local matrix.
-		LocalMatrix= static_cast<CTransform*>(Model)->getMatrix();
-		IBaseHrcObs::LocalVis= static_cast<CTransform*>(Model)->Visibility;
-		// update the date of the local matrix.
-		LocalDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
-
-		// The transform has been modified. Hence, it is no more frozen.
-		Frozen= false;
+		// insert it.
+		_NextModelToUpdate= _OwnerScene->_UpdateModelList;
+		_PrecModelToUpdate= NULL;
+		if(_NextModelToUpdate)
+			_NextModelToUpdate->_PrecModelToUpdate= this;
+		_OwnerScene->_UpdateModelList= this;
 	}
+}
 
+// ***************************************************************************
+void		CTransform::unlinkFromUpdateList()
+{
+	if(!_OwnerScene)
+		return;
+
+	// If the model is inserted.
+	if( _PrecModelToUpdate!=NULL  ||  _OwnerScene->_UpdateModelList==this )
+	{
+		// update prec.
+		if(_PrecModelToUpdate)
+			_PrecModelToUpdate->_NextModelToUpdate= _NextModelToUpdate;
+		else
+			_OwnerScene->_UpdateModelList= _NextModelToUpdate;
+
+		// update next.
+		if(_NextModelToUpdate)
+			_NextModelToUpdate->_PrecModelToUpdate= _PrecModelToUpdate;
+
+		// End.
+		_PrecModelToUpdate= NULL;
+		_NextModelToUpdate= NULL;
+	}
 }
 
 
 // ***************************************************************************
-void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
+// ***************************************************************************
+// Hrc Trav
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	CTransform::updateWorld(CTransform *caller)
 {
 	const	CMatrix		*pFatherWM;
 	bool				visFather;
-	CTransform			*transModel= (CTransform*)Model;
 
 	// If not root case, link to caller.
 	if(caller)
 	{
-		pFatherWM= &(caller->WorldMatrix);
-		visFather= caller->WorldVis;
+		pFatherWM= &(caller->_WorldMatrix);
+		visFather= caller->_WorldVis;
 
-		// If father is not Frozen, so do I.
-		CTransformHrcObs	*hrcTransCaller= dynamic_cast<CTransformHrcObs*>(caller);
+		// if caller is not frozen (for any reason), disable us!
 
-		// if caller is a CTransformHrcObs
-		//  and if it is not frozen (for any reason), disable us!
+		if (caller && !caller->_Frozen && !caller->_DontUnfreezeChildren)
+			_Frozen= false;
 
-		if (hrcTransCaller && !hrcTransCaller->Frozen && !hrcTransCaller->DontUnfreezeChildren)
-			Frozen= false;
-
-		// if caller is a CTransformHrcObs, may herit his _AncestorSkeletonModel
-		// if caller is ! a CTransformHrcObs, final result undefined.
-		if (hrcTransCaller && hrcTransCaller->_AncestorSkeletonModel)
+		// herit _AncestorSkeletonModel
+		if (caller->_AncestorSkeletonModel)
 			// If my father has an _AncestorSkeletonModel, get it.
-			_AncestorSkeletonModel= hrcTransCaller->_AncestorSkeletonModel;
+			_AncestorSkeletonModel= caller->_AncestorSkeletonModel;
 		else
 			// else I have an ancestor skel model if I am sticked/binded directly to a skeleton model.
-			_AncestorSkeletonModel= transModel->_FatherSkeletonModel;
-
+			_AncestorSkeletonModel= _FatherSkeletonModel;
 	}
 	// else, default!!
 	else
@@ -636,17 +656,17 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 	}
 
 	// Combine matrix
-	if(LocalDate>WorldDate || (caller && caller->WorldDate>WorldDate) )
+	if(_LocalDate>_WorldDate || (caller && caller->_WorldDate>_WorldDate) )
 	{
 		// Must recompute the world matrix.  ONLY IF I AM NOT SKINNED/STICKED TO A SKELETON in the hierarchy!
 		if( _AncestorSkeletonModel==NULL )
 		{
-			WorldMatrix=  *pFatherWM * LocalMatrix;
-			WorldDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
+			_WorldMatrix=  *pFatherWM * _LocalMatrix;
+			_WorldDate= getOwnerScene()->getHrcTrav().CurrentDate;
 
 			// Add the model to the moving object list, only if I am a transform shape
-			if (!Frozen && transModel->isTransformShape())
-				static_cast<CHrcTrav*>(Trav)->_MovingObjects.push_back (static_cast<CTransformShape*>(Model));
+			if (!_Frozen && isTransformShape())
+				getOwnerScene()->getHrcTrav()._MovingObjects.push_back (static_cast<CTransformShape*>(this));
 		}
 	}
 
@@ -660,19 +680,19 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 		NB: not done if _AncestorSkeletonModel!=NULL. no need because  in this case, 
 		result is driven by the _LightContribution of the _AncestorSkeletonModel.
 	*/
-	if( !transModel->_LightContribution.FrozenStaticLightSetup && _AncestorSkeletonModel==NULL )
+	if( !_LightContribution.FrozenStaticLightSetup && _AncestorSkeletonModel==NULL )
 	{
 		// if the model is lightable reset lighting
-		if( transModel->isLightable() )
-			transModel->resetLighting();
+		if( isLightable() )
+			resetLighting();
 	}
 
 	// Combine visibility.
-	switch(LocalVis)
+	switch(_LocalVis)
 	{
-		case CHrcTrav::Herit: WorldVis= visFather; break;
-		case CHrcTrav::Hide: WorldVis= false; break;
-		case CHrcTrav::Show: WorldVis= true; break;
+		case CHrcTrav::Herit: _WorldVis= visFather; break;
+		case CHrcTrav::Hide: _WorldVis= false; break;
+		case CHrcTrav::Show: _WorldVis= true; break;
 		default: break;
 	}
 
@@ -684,99 +704,97 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 
 
 // ***************************************************************************
-void	CTransformHrcObs::updateClipTravForAncestorSkeleton()
+void	CTransform::updateClipTravForAncestorSkeleton()
 {
-	CTransform			*transModel= (CTransform*)Model;
-	CClipTrav			*clipTrav= (CClipTrav*)transModel->_ClipObs->Trav;
+	CClipTrav		&clipTrav= getOwnerScene()->getClipTrav();
 
 	// If I have an ancestor Skeleton Model, I must be binded in ClipTrav to the SonsOfAncestorSkeletonModelGroup
-	if(_AncestorSkeletonModel && !ClipLinkedInSonsOfAncestorSkeletonModelGroup)
+	if(_AncestorSkeletonModel && !_ClipLinkedInSonsOfAncestorSkeletonModelGroup)
 	{
-		// ClipTrav is a graph, so must unlink from ALL olds models.
-		IModel	*father= clipTrav->getFirstParent(transModel);
-		while(father)
-		{
-			clipTrav->unlink(father, transModel);
-			father= clipTrav->getFirstParent(transModel);
-		}
+		// must unlink from ALL olds models.
+		clipUnlinkFromAll();
 
 		// And link to SonsOfAncestorSkeletonModelGroup.
-		clipTrav->link(clipTrav->SonsOfAncestorSkeletonModelGroup, transModel);
+		getOwnerScene()->SonsOfAncestorSkeletonModelGroup->clipAddChild(this);
 
 		// update the flag.
-		ClipLinkedInSonsOfAncestorSkeletonModelGroup= true;
+		_ClipLinkedInSonsOfAncestorSkeletonModelGroup= true;
 	}
 
 
 	// else I must be binded to the standard Root.
-	if(!_AncestorSkeletonModel && ClipLinkedInSonsOfAncestorSkeletonModelGroup)
+	if(!_AncestorSkeletonModel && _ClipLinkedInSonsOfAncestorSkeletonModelGroup)
 	{
 		// verify first I am really still linked to the SonsOfAncestorSkeletonModelGroup.
 		// This test is important, because link may have changed for any reason (portals, clipManager....).
-		if( clipTrav->getNumParents(transModel) == 1 &&
-			clipTrav->getFirstParent(transModel)==clipTrav->SonsOfAncestorSkeletonModelGroup )
+		if( clipGetNumParents() == 1 && clipGetParent(0)==getOwnerScene()->SonsOfAncestorSkeletonModelGroup )
 		{
-			// yes, unlink from it.
-			clipTrav->unlink(clipTrav->SonsOfAncestorSkeletonModelGroup, transModel);
+			// must unlink from ALL olds models.
+			clipUnlinkFromAll();
 			// and now, link to std root.
-			clipTrav->link(clipTrav->getRoot(), transModel);
+			getOwnerScene()->getRoot()->clipAddChild(this);
 		}
 
 		// update the flag
-		ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
+		_ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
 	}
 }
 
 
 // ***************************************************************************
-void	CTransformHrcObs::traverse(IObs *caller)
+void	CTransform::traverseHrc(CTransform *caller)
 {
 	// Recompute the matrix, according to caller matrix mode, and local matrix.
-	nlassert(!caller || dynamic_cast<IBaseHrcObs*>(caller));
-	updateWorld(static_cast<IBaseHrcObs*>(caller));
-	// DoIt the sons.
-	traverseSons();
+	updateWorld(caller);
+
+	// Traverse the Hrc sons.
+	uint	num= hrcGetNumChildren();
+	for(uint i=0;i<num;i++)
+		hrcGetChild(i)->traverseHrc(this);
 }
 
 
 // ***************************************************************************
-void	CTransformClipObs::traverse(IObs *caller)
+// ***************************************************************************
+// Clip Trav
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	CTransform::traverseClip(CTransform *caller)
 {
 	H_AUTO( NL3D_TransformClip );
 
-	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
+	CScene			*scene= getOwnerScene();
+	CClipTrav		&clipTrav= scene->getClipTrav();
 
-	CClipTrav		*clipTrav= safe_cast<CClipTrav*>(Trav);
-	IBaseClipObs	*callerClipObs= static_cast<IBaseClipObs*>(caller);
-	CTransform		*transform= (CTransform*)Model;
-	CScene			*scene= safe_cast<CScene*>(transform->_OwnerMot);
-
-	if ((Date == clipTrav->CurrentDate) && Visible)
+	if ((_ClipDate == clipTrav.CurrentDate) && _Visible)
 		return;
-	Date = clipTrav->CurrentDate;
+	_ClipDate = clipTrav.CurrentDate;
 
 	// clip: update Visible flag.
-	Visible= false;
+	_Visible= false;
 	// if at least visible.
-	if(HrcObs->WorldVis)
+	if(_WorldVis)
 	{
 		// If linked to a SkeletonModel anywhere in the hierarchy, don't clip, and use skeleton model clip result.
 		// This works because we are sons of a special node which is not in the clip traversal, and
 		// which is traversed at end of the traversal.
-		if( ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel!=NULL )
+		if( _AncestorSkeletonModel!=NULL )
 		{
-			Visible= ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel->isClipVisible();
+			_Visible= _AncestorSkeletonModel->isClipVisible();
 			// Special test: if we are sticked to a skeletonModel, and if we are still visible, maybe we don't have to
-			if(Visible && transform->_FatherSkeletonModel)
+			if(_Visible && _FatherSkeletonModel)
 			{
 				// if our skeletonModel father is displayed with a Lod, maybe we are not to be displayed
-				if(transform->_FatherSkeletonModel->isDisplayedAsLodCharacter())
+				if(_FatherSkeletonModel->isDisplayedAsLodCharacter())
 				{
 					// We are visible only if we where sticked to the skeleton with forceCLod==true.
 					// This is also true if we are actually a skeletonModel
-					if(!transform->_ForceCLodSticked)
+					if(!_ForceCLodSticked)
 						// otherWise we are not visible. eg: this is the case of skins and some sticked object
-						Visible= false;
+						_Visible= false;
 				}
 			}
 		}
@@ -784,91 +802,130 @@ void	CTransformClipObs::traverse(IObs *caller)
 		else
 		{
 			// If the instance is not filtered
-			if(scene->getFilterRenderFlags() & transform->_RenderFilterType)
-				Visible= clip(callerClipObs);
+			if(scene->getFilterRenderFlags() & _RenderFilterType)
+				_Visible= clip(caller);
 		}
 	}
 
 	// if visible, add to list.
-	if(Visible)
+	if(_Visible)
 	{
-		// add this observer to the visibility list.
-		clipTrav->addVisibleObs(this);
+		// add this model to the visibility list.
+		clipTrav.addVisibleModel(this);
 
 		// Has not an ancestor skeleton model?
-		if( ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel==NULL )
+		if( _AncestorSkeletonModel==NULL )
 		{
 			// If needed, insert the model in the lighted list.
 			// don't insert if has an ancestorSkeletonModel, because in this case, result is driven by 
 			// the _LightContribution of the _AncestorSkeletonModel.
-			if( transform->isLightable() )
-				clipTrav->LightTrav->addLightedObs(transform->_LightObs);
+			if( isLightable() )
+				scene->getLightTrav().addLightedModel(this);
 
 			// If needed, insert the model in the animDetail list.
 			// don't insert if has an ancestoreSkeletonModel, because in this case, this ancestore will 
 			// animDetail through the hierarchy...
-			if( transform->isAnimDetailable() )
-				clipTrav->AnimDetailTrav->addVisibleObs(safe_cast<CTransformAnimDetailObs*>(AnimDetailObs));
+			if( isAnimDetailable() )
+				scene->getAnimDetailTrav().addVisibleModel(this);
 		}
 
 		// If needed, Add it to the loadBalancing trav
-		if( transform->isLoadBalancable() )
-			clipTrav->LoadBalancingTrav->addVisibleObs(LoadBalancingObs);
+		if( isLoadBalancable() )
+			scene->getLoadBalancingTrav().addVisibleModel(this);
 
 		// If needed, insert the model in the render list.
-		if( transform->isRenderable() )
-			clipTrav->RenderTrav->addRenderObs(RenderObs);
+		if( isRenderable() )
+			scene->getRenderTrav().addRenderModel(this);
 	}
 
-	// DoIt the sons.
-	traverseSons();
+	// Traverse the Clip sons.
+	uint	num= clipGetNumChildren();
+	for(uint i=0;i<num;i++)
+		clipGetChild(i)->traverseClip(this);
 }
 
 
 
 // ***************************************************************************
-void	CTransformAnimDetailObs::updateWorldMatrixFromFather()
-{
-	CTransform		*transModel= static_cast<CTransform*>(Model);
+// ***************************************************************************
+// AnimDetail Trav
+// ***************************************************************************
+// ***************************************************************************
 
-	// If I have an ancestore Skeleton model
-	if(transModel->_HrcObs->_AncestorSkeletonModel)
+
+// ***************************************************************************
+void			CTransform::updateWorldMatrixFromFather()
+{
+	// If I am not skinned, and If I have a skeleton ancestor
+	if(!isSkinned() && _AncestorSkeletonModel )
 	{
-		// then must first update my worldMatrix.
-		transModel->updateWorldMatrixFromFather();
+		// Compute the HRC _WorldMatrix.
+		// if I am not sticked.
+		if(!_FatherSkeletonModel)
+		{
+			// get the normal father worldMatrix in Hrc.
+			CTransform	*fatherTransform= hrcGetParent();
+			// if exist
+			if(fatherTransform)
+			{
+				const CMatrix &parentWM= fatherTransform->_WorldMatrix;
+				// combine worldMatrix
+				_WorldMatrix= parentWM * _LocalMatrix;
+			}
+			else
+				_WorldMatrix= _LocalMatrix;
+		}
+		else
+		{
+			// get the worldMatrix of the bone if I am sticked.
+			const CMatrix &parentWM= _FatherSkeletonModel->Bones[_FatherBoneId].getWorldMatrix();
+			// combine worldMatrix
+			_WorldMatrix= parentWM * _LocalMatrix;
+		}
 	}
 }
 
-// ***************************************************************************
-void	CTransformAnimDetailObs::traverseWithoutUpdateWorldMatrix(IObs *caller)
-{
-	CTransform		*transModel= static_cast<CTransform*>(Model);
 
+// ***************************************************************************
+void			CTransform::traverseAnimDetailWithoutUpdateWorldMatrix(CTransform *caller)
+{
 	// AnimDetail behavior: animate only if not clipped.
 	// NB: no need to test because of VisibilityList use.
 
 	// test if the refptr is NULL or not (RefPtr).
-	CChannelMixer	*chanmix= transModel->_ChannelMixer;
+	CChannelMixer	*chanmix= _ChannelMixer;
 	if(chanmix)
 	{
 		// eval detail!!
-		chanmix->eval(true, static_cast<CAnimDetailTrav*>(Trav)->CurrentDate);
+		chanmix->eval(true, getOwnerScene()->getAnimDetailTrav().CurrentDate);
 	}
 }
 
 // ***************************************************************************
-void	CTransformAnimDetailObs::traverse(IObs *caller)
+void			CTransform::traverseAnimDetail(CTransform *caller)
 {
-	// First, test if I must update my HrcObs worldMatrix because of the ancestorSkeleton scheme
+	// First, test if I must update my worldMatrix because of the ancestorSkeleton scheme
 	updateWorldMatrixFromFather();
 
 	// eval channelMixer.
-	traverseWithoutUpdateWorldMatrix(caller);
+	traverseAnimDetailWithoutUpdateWorldMatrix(caller);
 
-	// NB: if want to add something, do it in traverseWithoutUpdateWorldMatrix(), because
-	// CSkeletonModel doesn't call CTransformAnimDetailObs::traverse()
+	// NB: if want to add something, do it in traverseAnimDetailWithoutUpdateWorldMatrix(), because
+	// CSkeletonModel doesn't call CTransform::traverseAnimDetail()
+}
 
-	// no need to traverseSons. No graph here.
+
+// ***************************************************************************
+// ***************************************************************************
+// LoadBalancing
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CTransform::traverseLoadBalancing(CTransform *caller)
+{
+	// noop
 }
 
 
@@ -972,50 +1029,241 @@ void			CTransform::unfreezeStaticLightSetup()
 
 
 // ***************************************************************************
-void	CTransformLightObs::traverse(IObs *caller)
+void	CTransform::traverseLight(CTransform *caller)
 {
-	CTransform		*transform= (CTransform*)Model;
-
 	// if the model do not need to update his lighting, just skip.
-	if(!transform->isNeedUpdateLighting())
+	if(!isNeedUpdateLighting())
 		return;
 
 
 	// If a freezeStaticLightSetup() has been called on this model recently.
-	if(transform->isNeedUpdateFrozenStaticLightSetup())
+	if(isNeedUpdateFrozenStaticLightSetup())
 	{
 		// Now, the correct matrix is computed.
 		// get the untransformed bbox from the model.
 		CAABBox		bbox;
-		transform->getAABBox(bbox);
+		getAABBox(bbox);
 		// get transformed center pos of bbox
-		CVector	worldModelPos= transform->getWorldMatrix() * bbox.getCenter();
+		CVector	worldModelPos= getWorldMatrix() * bbox.getCenter();
 
 		// So we can compute AttFactor for each static light influencing this static object
-		uint	numPointLights= transform->_LightContribution.NumFrozenStaticLight;
+		uint	numPointLights= _LightContribution.NumFrozenStaticLight;
 		for(uint i=0;i<numPointLights;i++)
 		{
-			const CPointLight	*pl= transform->_LightContribution.PointLight[i];
+			const CPointLight	*pl= _LightContribution.PointLight[i];
 			// don't worry about the precision of floor, because of *255.
 			float	distToModel= (pl->getPosition() - worldModelPos).norm();
 			sint	attFactor= OptFastFloor( 255 * pl->computeLinearAttenuation(worldModelPos, distToModel) );
-			transform->_LightContribution.AttFactor[i]= (uint8)attFactor;
+			_LightContribution.AttFactor[i]= (uint8)attFactor;
 		}
 
 		// clean.
-		transform->setStateFlag(CTransform::IsNeedUpdateFrozenStaticLightSetup, false);
+		setStateFlag(CTransform::IsNeedUpdateFrozenStaticLightSetup, false);
 	}
 
 
-	// see CTransformClipObs::clip(), here I am Lightable(), and I have no _AncestorSkeletonModel
+	// see CTransform::clip(), here I am Lightable(), and I have no _AncestorSkeletonModel
 	// So I am sure that I really need to recompute my ModelLightContributions.
-	((CLightTrav*)Trav)->LightingManager.computeModelLightContributions(transform,
-		transform->_LightContribution, transform->_LogicInfo);
+	getOwnerScene()->getLightTrav().LightingManager.computeModelLightContributions(this,
+		_LightContribution, _LogicInfo);
 
 	// done!
-	transform->setStateFlag(CTransform::IsNeedUpdateLighting, false);
+	setStateFlag(CTransform::IsNeedUpdateLighting, false);
 }
 
+
+// ***************************************************************************
+// ***************************************************************************
+// Rendering
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	CTransform::traverseRender()
+{
+	// no-op
+}
+
+// ***************************************************************************
+void	CTransform::profileRender()
+{
+	// no-op
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Hrc Linking
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CTransform::hrcLinkSon(CTransform *son)
+{
+	if(!son)
+		return;
+
+	// no-op if already me.
+	if(son->_HrcParent==this)
+		return;
+
+	// unlink from anyone
+	son->hrcUnlink();
+
+	// link son to me
+	_HrcSons.insert(son, &son->_HrcNode);
+
+	// link me to son
+	son->_HrcParent= this;
+
+	// my son should recompute his worldMatrix!
+	son->_WorldDate= -1;
+}
+
+// ***************************************************************************
+void			CTransform::hrcUnlink()
+{
+	// no-op if already NULL
+	if(_HrcParent==NULL)
+		return;
+
+	// unlink my parent from me.
+	_HrcNode.unlink();
+
+	// unlink me from parent
+	_HrcParent= NULL;
+
+	// I should recompute my worldMatrix (well not usefull since not linked, but still do it...)
+	_WorldDate= -1;
+}
+
+// ***************************************************************************
+uint			CTransform::hrcGetNumChildren() const
+{
+	return _HrcSons.size();
+}
+
+// ***************************************************************************
+CTransform		*CTransform::hrcGetChild(uint index) const
+{
+	nlassert(index < _HrcSons.size());
+	return (const_cast<CTransform*>(this))->_HrcSons.begin()[index];
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Clip Linking
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CTransform::clipAddChild(CTransform *son)
+{
+	if(!son)
+		return;
+
+	// if already linked, no-op.
+	if(son->clipHasParent(this))
+		return;
+
+	// add a new parent entry for our son.
+	CClipNode	*clipNode= new CClipNode;
+	son->_ClipParents.push_back(clipNode);
+
+	// link the son to us
+	clipNode->Parent= this;
+
+	// link us to the son 
+	_ClipSons.insert(son, &clipNode->ClipNode);
+}
+
+// ***************************************************************************
+void			CTransform::clipDelChild(CTransform *son)
+{
+	if(!son)
+		return;
+
+	// try to remove from me from my parent
+	son->clipDelFromParent(this);
+}
+
+// ***************************************************************************
+void			CTransform::clipUnlinkFromAll()
+{
+	// unlink from all parent clip
+	while( clipGetNumParents() )
+	{
+		clipDelFromParent( clipGetParent(0) );
+	}
+}
+
+// ***************************************************************************
+uint			CTransform::clipGetNumParents() const
+{
+	return _ClipParents.size();
+}
+
+// ***************************************************************************
+CTransform		*CTransform::clipGetParent(uint index) const
+{
+	nlassert(index < _ClipParents.size());
+	return _ClipParents[index]->Parent;
+}
+
+// ***************************************************************************
+uint			CTransform::clipGetNumChildren() const
+{
+	return _ClipSons.size();
+}
+
+// ***************************************************************************
+CTransform		*CTransform::clipGetChild(uint index) const
+{
+	nlassert(index < _ClipSons.size());
+	return (const_cast<CTransform*>(this))->_ClipSons.begin()[index];
+}
+
+
+// ***************************************************************************
+bool			CTransform::clipHasParent(CTransform *parent)
+{
+	// search O(n) for all parents
+	for(uint i=0;i<_ClipParents.size();i++)
+	{
+		if(_ClipParents[i]->Parent==parent)
+			return true;
+	}
+
+	return false;
+}
+
+// ***************************************************************************
+void			CTransform::clipDelFromParent(CTransform *parent)
+{
+	// search O(n) for all Parents
+	uint	numParents= _ClipParents.size();
+	for(uint i=0;i<numParents;i++)
+	{
+		if(_ClipParents[i]->Parent==parent)
+		{
+			// found! remove me from my parent list
+			_ClipParents[i]->ClipNode.unlink();
+
+			// remove this parent entry. swap with last
+			swap(_ClipParents[i], _ClipParents[numParents-1]);
+
+			// and delete last.
+			delete _ClipParents[numParents-1];
+			_ClipParents.resize(numParents-1);
+
+			break;
+		}
+	}
+}
 
 
 }

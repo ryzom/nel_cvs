@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.41 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.42 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,16 +82,11 @@ CRenderTrav::CRenderTrav()
 	_LayersRenderingOrder= true;
 }
 // ***************************************************************************
-IObs		*CRenderTrav::createDefaultObs() const
-{
-	return new CDefaultRenderObs;
-}
-// ***************************************************************************
 void		CRenderTrav::traverse()
 {
 	H_AUTO( NL3D_TravRender );
 
-	ITravCameraScene::update();
+	CTravCameraScene::update();
 
 	// Bind to Driver.
 	getDriver()->setFrustum(Left, Right, Bottom, Top, Near, Far, Perspective);
@@ -114,11 +109,11 @@ void		CRenderTrav::traverse()
 	}
 
 
-	// Fill OT with observers, for both Opaque and transparent pass
+	// Fill OT with models, for both Opaque and transparent pass
 	// =============================
 
-	// Sort the observers by distance from camera
-	// This is done here and not in the addRenderObs because of the LoadBalancing traversal which can modify
+	// Sort the models by distance from camera
+	// This is done here and not in the addRenderModel because of the LoadBalancing traversal which can modify
 	// the transparency flag (multi lod for instance)
 
 	// clear the OTs, and prepare to allocate max element space
@@ -126,10 +121,10 @@ void		CRenderTrav::traverse()
 	OrderTransparentList.reset(RenderList.size());
 
 	// fill the OTs.
-	IBaseRenderObs		**itRdrObs= NULL;
-	uint32				nNbObs = RenderList.size();
-	if(nNbObs)	
-		itRdrObs= &RenderList[0];
+	CTransform			**itRdrModel= NULL;
+	uint32				nNbModels = RenderList.size();
+	if(nNbModels)	
+		itRdrModel= &RenderList[0];
 	float	rPseudoZ, rPseudoZ2;
 
 	// Some precalc
@@ -141,16 +136,13 @@ void		CRenderTrav::traverse()
 	uint32	otId;
 	// fast floor
 	OptFastFloorBegin();
-	// For all rdr observers
-	for( ; nNbObs>0; itRdrObs++, nNbObs-- )
+	// For all rdr models
+	for( ; nNbModels>0; itRdrModel++, nNbModels-- )
 	{
-		IBaseRenderObs		*pObs= *itRdrObs;
-		// Only rdrObserver of transform models can be inserted!! It's a requirement
-		CTransform			*pTransform = safe_cast<CTransform*>(pObs->Model);
-		CTransformHrcObs	*trHrcObs= safe_cast<CTransformHrcObs*>(pObs->HrcObs);
+		CTransform			*pTransform = *itRdrModel;
 
 		// Yoyo: skins are rendered through skeletons, so models WorldMatrix are all good here (even sticked objects)
-		rPseudoZ = (trHrcObs->WorldMatrix.getPos() - CamPos).norm();
+		rPseudoZ = (pTransform->getWorldMatrix().getPos() - CamPos).norm();
 
 		// rPseudoZ from 0.0 -> 1.0
 		rPseudoZ =  sqrtf( rPseudoZ * OOFar );
@@ -161,7 +153,7 @@ void		CRenderTrav::traverse()
 			rPseudoZ2 = rPseudoZ * opaqueOtSize;
 			otId= OptFastFloor(rPseudoZ2);
 			otId= min(otId, opaqueOtMax);
-			OrderOpaqueList.insert( otId, pObs );
+			OrderOpaqueList.insert( otId, pTransform );
 		}
 		if( pTransform->isTransparent() )
 		{
@@ -170,21 +162,12 @@ void		CRenderTrav::traverse()
 			otId= OptFastFloor(rPseudoZ2);
 			otId= min(otId, transparentOtMax);
 			// must invert id, because transparent, sort from back to front
-			OrderTransparentList.insert( pTransform->getOrderingLayer(), pObs, transparentOtMax-otId );
+			OrderTransparentList.insert( pTransform->getOrderingLayer(), pTransform, transparentOtMax-otId );
 		}
 
 	}
 	// fast floor
 	OptFastFloorEnd();
-
-
-	// Standard traverse (maybe not used)
-	// =============================
-
-	// First traverse the root.
-	if(Root)
-		Root->traverse(NULL);
-
 
 
 	// Render Opaque stuff.
@@ -202,11 +185,9 @@ void		CRenderTrav::traverse()
 	// Render the opaque materials
 	_CurrentPassOpaque = true;
 	OrderOpaqueList.begin();
-	IBaseRenderObs *pBRO;
 	while( OrderOpaqueList.get() != NULL )
 	{
-		pBRO = OrderOpaqueList.get();
-		pBRO->traverse(NULL);
+		OrderOpaqueList.get()->traverseRender();
 		OrderOpaqueList.next();
 	}
 
@@ -237,7 +218,7 @@ void		CRenderTrav::traverse()
 		OrderOpaqueList.begin();
 		while( OrderOpaqueList.get() != NULL )
 		{
-			OrderOpaqueList.get()->profile();
+			OrderOpaqueList.get()->profileRender();
 			OrderOpaqueList.next();
 		}
 	}
@@ -250,8 +231,7 @@ void		CRenderTrav::traverse()
 	OrderTransparentList.begin(_LayersRenderingOrder);	
 	while( OrderTransparentList.get() != NULL )
 	{				
-		pBRO = OrderTransparentList.get();
-		pBRO->traverse(NULL);
+		OrderTransparentList.get()->traverseRender();
 		OrderTransparentList.next();
 	}
 
@@ -261,7 +241,7 @@ void		CRenderTrav::traverse()
 		OrderTransparentList.begin();
 		while( OrderTransparentList.get() != NULL )
 		{
-			OrderTransparentList.get()->profile();
+			OrderTransparentList.get()->profileRender();
 			OrderTransparentList.next();
 		}
 	}
@@ -279,9 +259,9 @@ void		CRenderTrav::clearRenderList()
 	RenderList.clear();
 }
 // ***************************************************************************
-void		CRenderTrav::addRenderObs(IBaseRenderObs *o)
+void		CRenderTrav::addRenderModel(CTransform *m)
 {
-	RenderList.push_back(o);
+	RenderList.push_back(m);
 }
 
 

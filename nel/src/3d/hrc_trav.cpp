@@ -1,7 +1,7 @@
 /** \file hrc_trav.cpp
  * <File description>
  *
- * $Id: hrc_trav.cpp,v 1.10 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: hrc_trav.cpp,v 1.11 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,8 @@
 #include "std3d.h"
 
 #include "3d/hrc_trav.h"
-#include "3d/skip_model.h"
-#include "3d/clip_trav.h"
-#include "3d/anim_detail_trav.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/scene.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -40,13 +38,6 @@ namespace	NL3D
 
 
 // ***************************************************************************
-IObs				*CHrcTrav::createDefaultObs() const
-{
-	return new CDefaultHrcObs;
-}
-
-
-// ***************************************************************************
 void				CHrcTrav::traverse()
 {
 	H_AUTO( NL3D_TravHRC );
@@ -54,42 +45,13 @@ void				CHrcTrav::traverse()
 	_MovingObjects.clear();
 
 	// Traverse the graph.
-	if(Root)
-		Root->traverse(NULL);
+	if(Scene->getRoot())
+		Scene->getRoot()->traverseHrc(NULL);
 
 	// Inc the date.
-	// NB: Now, observers update is done before ALL traversals.
+	// NB: Now, models update is done before ALL traversals.
 	// Hence, we must inc the value before scene rendering. This is equivalent to start with 1, and inc at end of traverse().
 	CurrentDate++;
-}
-
-
-// ***************************************************************************
-void IBaseHrcObs::init()
-{
-	IObs::init();
-
-	ClipObs= safe_cast<IBaseClipObs*> (getObs(ClipTravId));
-	AnimDetailObs= safe_cast<IBaseAnimDetailObs*> (getObs(AnimDetailTravId));
-
-}
-
-
-// ***************************************************************************
-void	IBaseHrcObs::addParent(IObs *father)
-{
-	IObs	*oldFather= getFirstParent();
-
-	// Default bheavior.
-	IObs::addParent(father);
-
-	// Our parent has changed ??
-	IObs	*newFather= getFirstParent();
-	if( oldFather != newFather )
-	{
-		// Since our parent has changed, must recompute WM.
-		WorldDate=-1;
-	}
 }
 
 

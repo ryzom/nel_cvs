@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.10 2002/09/24 15:04:37 vizerie Exp $
+ * $Id: water_shape.h,v 1.11 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -101,7 +101,7 @@ public:
 	/// inherited from IShape
 	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix);
 
-	/// inherited from IShape. Does nothing. A new observer was set for that
+	/// inherited from IShape. Does nothing. A new traverseRender() was set for that
 	virtual void				render(IDriver *drv, CTransformShape *trans, bool opaquePass) {}
 
 	/// inherited from IShape
@@ -198,7 +198,6 @@ public:
 
 private:
 	friend class	CWaterModel;	
-	friend class	CWaterRenderObs;
 	void								computeBBox();
 	void								envMapUpdate();
 	void								updateHeightMapNormalizationFactors();
@@ -272,7 +271,7 @@ public:
 	/// inherited from IShape
 	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix);
 
-	/// inherited from IShape. Does nothing. A new observer was set for that
+	/// inherited from IShape. Does nothing. A new traverseRender() was set for that
 	virtual void				render(IDriver *drv, CTransformShape *trans, bool opaquePass) {}
 
 	/// inherited from IShape
@@ -307,7 +306,7 @@ public:
 
 	CTrackDefaultVector*	getDefaultPos ()		{return &_DefaultPos;}
 private:
-	friend	class	CWaveMakerDetailObs;
+	friend	class	CWaveMakerModel;
 	TAnimationTime						_Period;
 	float								_Radius;
 	uint32								_PoolID;

@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.14 2003/03/20 14:55:39 berenguier Exp $
+ * $Id: cluster.cpp,v 1.15 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "nel/misc/string_mapper.h"
 #include "3d/scene.h"
 #include "3d/transform_shape.h"
-#include "3d/mesh_instance.h"
+//#include "3d/mesh_instance.h"
 #include "3d/scene_group.h"
 
 using namespace NLMISC;
@@ -47,7 +47,6 @@ namespace NL3D
 // ***************************************************************************
 CCluster::CCluster ()
 {
-	_Obs = NULL;
 	FatherVisible = VisibleFromFather = false;
 	Father = NULL;
 
@@ -58,6 +57,9 @@ CCluster::CCluster ()
 
 	// I am a transform cluster
 	CTransform::setIsCluster(true);
+
+	// Default: not traversed
+	_Visited= false;
 }
 
 
@@ -144,9 +146,7 @@ void CCluster::unlinkFromClusterTree()
 // ***************************************************************************
 void CCluster::registerBasic ()
 {
-	CMOT::registerModel (ClusterId, 0, CCluster::creator);
-	CMOT::registerObs (ClipTravId, ClusterId, CClusterClipObs::creator);
-	CMOT::registerObs (HrcTravId, ClusterId, CClusterHrcObs::creator);
+	CScene::registerModel (ClusterId, 0, CCluster::creator);
 }
 
 // ***************************************************************************
@@ -351,122 +351,95 @@ void CCluster::setWorldMatrix (const CMatrix &WM)
 }
 
 // ***************************************************************************
-CClusterClipObs *CCluster::getClipObs()
+void CCluster::traverseHrc (CTransform *caller)
 {
-	if (_Obs == NULL)
-		_Obs = (CClusterClipObs*)getObs (ClipTravId);
-	return _Obs;
-}
+	CTransform::traverseHrc (caller);
 
-// ---------------------------------------------------------------------------
-// Observer HRC
-// ---------------------------------------------------------------------------
+	setWorldMatrix (_WorldMatrix);
 
-// ***************************************************************************
-void CClusterHrcObs::traverse (IObs *caller)
-{
-	CTransformHrcObs::traverse (caller);
-
-	CCluster *pCluster = static_cast<CCluster*>(this->Model);
-
-	pCluster->setWorldMatrix (WorldMatrix);
-
-	for (uint32 i = 0; i < pCluster->getNbPortals(); ++i)
+	for (uint32 i = 0; i < getNbPortals(); ++i)
 	{
-		CPortal *pPortal = pCluster->getPortal(i);
-		pPortal->setWorldMatrix (WorldMatrix);
+		CPortal *pPortal = getPortal(i);
+		pPortal->setWorldMatrix (_WorldMatrix);
 	}
 
 	// Re affect the cluster to the accelerator if not the root
-	if (!pCluster->isRoot())
+	if (!isRoot())
 	{
-		pCluster->Group->_ClipTrav->Accel.erase (pCluster->AccelIt);
-		pCluster->Group->_ClipTrav->registerCluster (pCluster);
+		Group->_ClipTrav->Accel.erase (AccelIt);
+		Group->_ClipTrav->registerCluster (this);
 	}
 }
 
-// ---------------------------------------------------------------------------
-// Observer CLIP
-// ---------------------------------------------------------------------------
-
 // ***************************************************************************
-CClusterClipObs::CClusterClipObs ()
-{
-	Visited = false;
-}
-
-// ***************************************************************************
-bool CClusterClipObs::clip (IBaseClipObs *caller)
+bool CCluster::clip (CTransform *caller)
 {
 	return true;
 }
 
 // ***************************************************************************
-void CClusterClipObs::traverse (IObs *caller)
+void CCluster::traverseClip (CTransform *caller)
 {
-	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
-
-	if (Visited)
+	if (_Visited)
 		return;
-	Visited = true;
+	_Visited = true;
+
 	// The cluster is visible because we are in it
 	// So clip the models attached (with MOT links) to the cluster
-	traverseSons();
+	uint	num= clipGetNumChildren();
+	uint32	i;
+	for(i=0;i<num;i++)
+		clipGetChild(i)->traverseClip(this);
 
-	CClipTrav *trav = static_cast<CClipTrav*>(caller->Trav);
-	if (trav->getClusterVisibilityTracking())
+	// Debug visible clusters
+	CClipTrav &clipTrav = getOwnerScene()->getClipTrav();
+	if (clipTrav.getClusterVisibilityTracking())
 	{
-		trav->addVisibleCluster(static_cast<CCluster*>(this->Model));
+		clipTrav.addVisibleCluster(this);
 	}
 
 	// And look through portals
-	CCluster *pCluster = static_cast<CCluster*>(this->Model);
-	uint32 i;
-	for (i = 0; i < pCluster->getNbPortals(); ++i)
+	for (i = 0; i < getNbPortals(); ++i)
 	{
-		CPortal*pPortal = pCluster->getPortal (i);
-		vector<CPlane> WorldPyrTemp = (static_cast<CClipTrav*>(Trav))->WorldPyramid;
+		CPortal*pPortal = getPortal (i);
+		vector<CPlane> WorldPyrTemp = clipTrav.WorldPyramid;
 		bool backfaceclipped = false;
 		CCluster *pOtherSideCluster;
-		if (pPortal->getCluster(0) == pCluster)
+		if (pPortal->getCluster(0) == this)
 			pOtherSideCluster = pPortal->getCluster (1);
 		else
 			pOtherSideCluster = pPortal->getCluster (0);
 
-		if (pCluster->Father != NULL)
-		if (caller == pCluster->Father->getClipObs()) // If the caller is the father
-		if (pCluster->VisibleFromFather)
+		if (Father != NULL)
+		if (caller == Father) // If the caller is the father
+		if (VisibleFromFather)
 			// Backface clipping
-			if( !pPortal->isInFront( (static_cast<CClipTrav*>(Trav))->CamPos ))
+			if( !pPortal->isInFront( clipTrav.CamPos ))
 				backfaceclipped = true;
 
 		if (!backfaceclipped)
-		if (pPortal->clipPyramid ((static_cast<CClipTrav*>(Trav))->CamPos,
-								(static_cast<CClipTrav*>(Trav))->WorldPyramid))
+		if (pPortal->clipPyramid (clipTrav.CamPos, clipTrav.WorldPyramid))
 		{
-			CClusterClipObs *pObserver = pOtherSideCluster->getClipObs();
-			pObserver->traverse (this);
+			pOtherSideCluster->traverseClip(this);
 		}
 
-		(static_cast<CClipTrav*>(Trav))->WorldPyramid = WorldPyrTemp;
+		clipTrav.WorldPyramid = WorldPyrTemp;
 	}
 
 	// Link up in hierarchy
-	if ((pCluster->FatherVisible)&&(pCluster->Father != NULL))
+	if ((FatherVisible)&&(Father != NULL))
 	{
-		CClusterClipObs *pObserver = pCluster->Father->getClipObs();
-		pObserver->traverse (this);
+		Father->traverseClip(this);
 	}
 
 	// Link down in hierarchy
-	for (i = 0; i < pCluster->Children.size(); ++i)
-	if (pCluster->Children[i]->VisibleFromFather)
+	for (i = 0; i < Children.size(); ++i)
+	if (Children[i]->VisibleFromFather)
 	{
-		CClusterClipObs *pObserver = pCluster->Children[i]->getClipObs();
-		pObserver->traverse (this);
+		Children[i]->traverseClip(this);
 	}
 
-	Visited = false;
+	_Visited = false;
 }
 
 

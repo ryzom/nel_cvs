@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.13 2002/02/28 12:59:49 besson Exp $
+ * $Id: camera.cpp,v 1.14 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/camera.h"
+#include "3d/scene.h"
 
 
 namespace	NL3D
@@ -35,7 +36,7 @@ namespace	NL3D
 // ***************************************************************************
 void	CCamera::registerBasic()
 {
-	CMOT::registerModel(CameraId, TransformId, CCamera::creator);
+	CScene::registerModel(CameraId, TransformId, CCamera::creator);
 }
 
 

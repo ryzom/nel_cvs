@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.8 2003/03/17 17:36:28 berenguier Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.9 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -300,7 +300,7 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 
 	// Get how many pointLights are setuped now.
 	nlassert(scene != NULL);
-	CRenderTrav		*renderTrav= scene->getRenderTrav();
+	CRenderTrav		*renderTrav= &scene->getRenderTrav();
 	sint	numPls= renderTrav->getNumVPLights()-1;
 	clamp(numPls, 0, CRenderTrav::MaxVPLight-1);
 
@@ -327,7 +327,7 @@ void	CMeshVPWindTree::end(IDriver *driver)
 // tool fct
 static inline void SetupForMaterial(const CMaterial &mat, CScene *scene)
 {
-	CRenderTrav		*renderTrav= scene->getRenderTrav();
+	CRenderTrav		*renderTrav= &scene->getRenderTrav();
 	renderTrav->changeVPLightSetupMaterial(mat, false /* don't exclude strongest */);
 }
 
@@ -353,7 +353,7 @@ void	CMeshVPWindTree::setupForMaterial(const CMaterial &mat,
 void	CMeshVPWindTree::setupLighting(CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat)
 {
 	nlassert(scene != NULL);
-	CRenderTrav		*renderTrav= scene->getRenderTrav();
+	CRenderTrav		*renderTrav= &scene->getRenderTrav();
 	// setup cte for lighting
 	renderTrav->beginVPLightSetup(VPLightConstantStart, SpecularLighting, invertedModelMat);
 }
@@ -401,7 +401,7 @@ void	CMeshVPWindTree::beginMBRInstance(IDriver *driver, CScene *scene, CMeshBase
 
 	// Get how many pointLights are setuped now.
 	nlassert(scene != NULL);
-	CRenderTrav		*renderTrav= scene->getRenderTrav();
+	CRenderTrav		*renderTrav= &scene->getRenderTrav();
 	sint	numPls= renderTrav->getNumVPLights()-1;
 	clamp(numPls, 0, CRenderTrav::MaxVPLight-1);
 

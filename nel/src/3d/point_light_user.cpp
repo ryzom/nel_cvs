@@ -1,7 +1,7 @@
 /** \file point_light_user.cpp
  * <File description>
  *
- * $Id: point_light_user.cpp,v 1.5 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: point_light_user.cpp,v 1.6 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 
 
 // ***************************************************************************
-CPointLightUser::CPointLightUser(CScene *scene, IModel *trans) : 
+CPointLightUser::CPointLightUser(CScene *scene, CTransform *trans) : 
   CTransformUser(scene, trans, true)
 {
 	NL3D_MEM_POINTLIGHT

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.16 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: render_trav.h,v 1.17 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,6 @@ using NLMISC::CVector;
 using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
-class	IBaseRenderObs;
 class	IDriver;
 class	CMaterial;
 
@@ -62,20 +61,15 @@ class	CMeshSkinManager;
 #define	NL3D_MESH_SKIN_MANAGER_MAXVERTICES		10000
 
 
-// ***************************************************************************
-// ClassIds.
-const NLMISC::CClassId		RenderTravId= NLMISC::CClassId(0x572456ee, 0x3db55f23);
-
 
 // ***************************************************************************
 /**
  * The Render traversal.
  * The purpose of this traversal is to render a list of models. This traversals is tightly linked to the cliptraversal.
- * The clipTraversals insert directly the observers with CRenderTrav::addRenderObs(obs). The traverse() method should 
- * render all the render observer with IDriver.
+ * The clipTraversals insert directly the models with CRenderTrav::addRenderModel(m). The traverse() method should 
+ * render all the render models with IDriver.
  *
- * This traversal is an exception since it is not designed to have a graph of observers. But this behavior is permitted,
- * and the root (if any) is traversed.
+ * This traversal has no graph of models
  *
  * \b USER \b RULES: Before using traverse() on a render traversal, you should:
  *	- setFrustum() the camera shape (focale....)
@@ -83,38 +77,32 @@ const NLMISC::CClassId		RenderTravId= NLMISC::CClassId(0x572456ee, 0x3db55f23);
  *
  * NB: see CScene for 3d conventions (orthonormal basis...)
  *
- * \sa CScene IBaseRenderObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class CRenderTrav : public ITravCameraScene
+class CRenderTrav : public CTravCameraScene
 {
 public:
 
 	/// Constructor
 	CRenderTrav();
 
-	/// \name ITrav/ITravScene Implementation.
+	/// \name ITravScene Implementation.
 	//@{
-	IObs				*createDefaultObs() const;
-	NLMISC::CClassId	getClassId() const {return RenderTravId;}
-	sint				getRenderOrder() const {return 4000;}
 	/** First traverse the root (if any), then render the render list.
 	 * NB: no Driver clear buffers (color or ZBuffer) are done....
-	 * \warning If an observer exist both in the graph and in the render list, it will be effectively traversed twice.
 	 */
 	void				traverse();
 	//@}
 
 	/// \name RenderList.
 	//@{
-	/// Clear the list of rendered observers.
+	/// Clear the list of rendered models
 	void			clearRenderList();
-	/** Add an observer to the list of rendered observers. \b DOESN'T \b CHECK if already inserted.
-	 *	NB: only CTransform renderObs can be inserted!! asserted in the render() method
+	/** Add a model to the list of rendered models. \b DOESN'T \b CHECK if already inserted.
 	 */
-	void			addRenderObs(IBaseRenderObs *o);
+	void			addRenderModel(CTransform *m);
 	//@}
 
 
@@ -172,7 +160,7 @@ public:
 // ******************
 public:
 
-	/// \name Render Lighting Setup. FOR OBSERVERS ONLY.
+	/// \name Render Lighting Setup. FOR MODEL TRAVERSING ONLY.
 	// @{
 
 	// Max VP Light setup Infos.
@@ -279,7 +267,7 @@ public:
 	// @}
 
 
-	/// \name MeshBlock Manager. FOR OBSERVERS AND MESHS ONLY.
+	/// \name MeshBlock Manager. FOR MODEL TRAVERSING AND MESHS ONLY.
 	// @{
 
 	/// The manager of meshBlock. Used to add instances.
@@ -289,11 +277,11 @@ public:
 
 private:
 	
-	// A grow only list of observers to be rendered.
-	std::vector<IBaseRenderObs*>	RenderList;
+	// A grow only list of models to be rendered.
+	std::vector<CTransform*>	RenderList;
 	// Ordering Table to sort transparent objects
-	COrderingTable<IBaseRenderObs>			OrderOpaqueList;
-	CLayeredOrderingTable<IBaseRenderObs>	OrderTransparentList;
+	COrderingTable<CTransform>			OrderOpaqueList;
+	CLayeredOrderingTable<CTransform>	OrderTransparentList;
 
 	IDriver			*Driver;
 	CViewport		_Viewport;

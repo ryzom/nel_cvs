@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.21 2003/03/20 14:59:02 berenguier Exp $
+ * $Id: transform_shape.h,v 1.22 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,9 +43,6 @@ using NLMISC::CSmartPtr;
 using NLMISC::CPlane;
 
 
-class	CTransformShapeClipObs;
-class	CTransformShapeRenderObs;
-class	CTransformShapeLoadBalancingObs;
 class	CRenderTrav;
 class	CMRMLevelDetail;
 class	CMaterial;
@@ -67,7 +64,7 @@ const NLMISC::CClassId		TransformShapeId=NLMISC::CClassId(0x1e6115e6, 0x63502517
 class CTransformShape : public CTransform
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
 public:
@@ -121,7 +118,7 @@ public:
 
 	/// \name Mesh Block Render Tools
 	// @{
-	/// setup lighting for this instance into driver. The render observer must have been called before.
+	/// setup lighting for this instance into driver. The traverseRender().
 	void				changeLightSetup(CRenderTrav *rdrTrav);
 	// @}
 
@@ -138,6 +135,20 @@ public:
 	float               getDistMax() const { return _DistMax; }	
 	// Set the model distmax.
 	void                setDistMax(float distMax) { _DistMax = distMax; }
+
+
+	/// true if the model is linked to a quadCluster
+	bool				isLinkToQuadCluster() const {return _QuadClusterListNode.isLinked();}
+
+
+	/// \name CTransform traverse specialisation
+	// @{
+	virtual	bool	clip(CTransform *caller);
+	virtual void	traverseLoadBalancing(CTransform *caller);
+	virtual void	traverseRender();
+	virtual	void	profileRender();
+	// @}
+
 protected:
 	/// Constructor
 	CTransformShape();
@@ -153,15 +164,12 @@ protected:
 	virtual	void	unlinkFromQuadCluster();
 
 private:
-	static IModel	*creator() {return new CTransformShape;}
-	friend class	CTransformShapeClipObs;
-	friend class	CTransformShapeRenderObs;
-	friend class	CTransformShapeLoadBalancingObs;
+	static CTransform	*creator() {return new CTransformShape;}
 
 	float			_NumTrianglesAfterLoadBalancing;
 
 
-	// return the contribution of lights (for redner Observer).
+	// return the contribution of lights (for traverseRender()).
 	CLightContribution	&getLightContribution() {return _LightContribution;}
 
 private:
@@ -172,106 +180,29 @@ private:
 	// true If this instance use localAttenuation.
 	bool					_CurrentUseLocalAttenuation;
 private:
+	friend	class	CQuadGridClipCluster;
+
 	// The max dist for this model.
 	float                   _DistMax;	
-};
 
 
-
-// ***************************************************************************
-// ***************************************************************************
-// Observers implementation.
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the clip() method to return Shape->clip()
- * - leave the traverse() method as CTransformClipObs.
- *
- * \sa CClipTrav CTransformClipObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CTransformShapeClipObs : public CTransformClipObs
-{
-public:
-	/// clip the shape, and set renderable.
-	virtual	bool	clip(IBaseClipObs *caller);
-
-	static IObs	*creator() {return new CTransformShapeClipObs;}
-
-public:
+	/// \name Clip Traversal
+	// @{
 	// Link to QuadGridCluster
-	CFastPtrListNode	QuadClusterListNode;
+	CFastPtrListNode		_QuadClusterListNode;
+	// @}
 
-	bool			isLinkToQuadCluster() const {return QuadClusterListNode.isLinked();}
-	void			unlinkFromQuadCluster() {QuadClusterListNode.unlink();}
-};
-
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the traverse() method.
- *
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CTransformShapeRenderObs : public CTransformRenderObs
-{
-public:
-
-	/// setup lighting if lightable, render the instance and Don't traverseSons().
-	virtual	void	traverse(IObs *caller);
-	
-	// Profile.
-	virtual	void	profile();
-
-	static IObs	*creator() {return new CTransformShapeRenderObs;}
-};
-
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the traverse method.
- *
- * \sa CHrcTrav IBaseHrcObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CTransformShapeLoadBalancingObs : public IBaseLoadBalancingObs
-{
-public:
-
-	/** this do all the good things:
-	 *	- LoadBalancing: get the position of the transform (or the skeleton), and use it as center.
-	 *	- traverseSons().
-	 */
-	virtual	void	traverse(IObs *caller);
-
-	static IObs	*creator() {return new CTransformShapeLoadBalancingObs;}
-
-
-protected:
-
+	/// \name LoadBalancing Traversal
+	// @{
 	// The number of face computed in Pass0.
-	float		_FaceCount;
+	float					_FaceCount;
 
-
-	void		traversePass0();
-	void		traversePass1();
+	void		traverseLoadBalancingPass0();
+	void		traverseLoadBalancingPass1();
+	// @}
 
 };
+
 
 
 } // NL3D

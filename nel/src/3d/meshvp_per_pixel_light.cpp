@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.cpp
  * <File description>
  *
- * $Id: meshvp_per_pixel_light.cpp,v 1.5 2002/09/24 14:46:52 vizerie Exp $
+ * $Id: meshvp_per_pixel_light.cpp,v 1.6 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -446,7 +446,7 @@ bool	CMeshVPPerPixelLight::begin(IDriver *drv,
 		return false;
 	}
 	//			
-	CRenderTrav		*renderTrav= scene->getRenderTrav();			
+	CRenderTrav		*renderTrav= &scene->getRenderTrav();			
 	/// Setup for gouraud lighting
 	renderTrav->beginVPLightSetup(VPLightConstantStart,
 								  SpecularLighting,
@@ -549,7 +549,7 @@ bool  CMeshVPPerPixelLight::setupForMaterial(const CMaterial &mat,
 	bool enabled = (mat.getShader() == CMaterial::PerPixelLighting || mat.getShader() == CMaterial::PerPixelLightingNoSpec);
 	if (enabled)
 	{
-		CRenderTrav		*renderTrav= scene->getRenderTrav();
+		CRenderTrav		*renderTrav= &scene->getRenderTrav();
 		renderTrav->changeVPLightSetupMaterial(mat, true /* exclude strongest*/);		
 
 		NLMISC::CRGBA pplDiffuse, pplSpecular;		

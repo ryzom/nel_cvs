@@ -1,6 +1,6 @@
 /** \file seg_remanence.h
  * A segment that let a remanence on the screen (for sword trace)
- * $Id: seg_remanence.h,v 1.3 2002/08/06 13:55:36 vizerie Exp $
+ * $Id: seg_remanence.h,v 1.4 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -63,10 +63,10 @@ public:
 		CSegRemanence(CSegRemanence &other);		
 		CSegRemanence &operator = (CSegRemanence &other);
 	//@}
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void			registerBasic();
 	/// to instanciate that model from a scene
-	static IModel			*creator() { return new CSegRemanence; }	
+	static CTransform			*creator() { return new CSegRemanence; }	
 	// Render this model with currently setupped material and matrix
 	void					render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb, CMaterial &mat);
 	// sample current position
@@ -110,6 +110,13 @@ public:
 		AnimValueLast,
 	};
 	
+
+	/// \name CTransform traverse specialisation
+	// @{
+	//virtual void	traverseHrc(CTransform *caller);
+	virtual void	traverseAnimDetail(CTransform *caller);
+	// @}
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 private:	
@@ -146,58 +153,18 @@ private:
 	float				_CurrDate;
 	float				_UnrollRatio;	
 	CAnimatedMaterial   *_AniMat;	
+	uint64				_LastSampleFrame;
+
 private:
 	void		updateOpacityFromShape();
 	void		copyFromOther(CSegRemanence &other);
 public:
-	// for anim detail obs
+	// for anim detail traversal
 	void clearAnimatedMatFlag()
 	{
 		IAnimatable::clearFlag(OwnerBit);
 	}
 };
-
-/** Hierarchical observer for seg remanence. It sample extremities of the segment in world space
-  *
-  * \author Nicolas Vizerie
-  * \author Nevrax France
-  * \date 2002
-  */
-/* class CSegRemanenceHrcObs : public CTransformHrcObs
-{
-public:
-	CSegRemanenceHrcObs();
-	virtual	void traverse (IObs *caller);
-	static IObs	*creator () { return new CSegRemanenceHrcObs; }	
-private:
-	uint64				_LastSampleFrame;
-}; */
-
-/** Detail ani observer (for texture animation)
-  *
-  * \author Nicolas Vizerie
-  * \author Nevrax France
-  * \date 2002
-  */
-class CSegRemanenceAnimDetailObs : public CTransformAnimDetailObs
-{
-public:
-
-	CSegRemanenceAnimDetailObs();
-	/** this do :
-	 *  - call CTransformAnimDetailObs::traverse()
-	 *  - update animated material if any
-	 */
-	virtual	void	traverse(IObs *caller);
-
-
-public:
-	static IObs	*creator() {return new CSegRemanenceAnimDetailObs;}
-private:
-	uint64				_LastSampleFrame;
-};
-
-
 
 
 }

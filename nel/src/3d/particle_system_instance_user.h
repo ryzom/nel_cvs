@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.19 2002/11/18 17:53:23 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.20 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ class CParticleSystemInstanceUser : virtual public UParticleSystemInstance,
 public:	
 	// \name Object
 	// @{		
-		CParticleSystemInstanceUser(CScene *scene, IModel *model);
+		CParticleSystemInstanceUser(CScene *scene, CTransform *model);
 		~CParticleSystemInstanceUser();
 	// @}
 

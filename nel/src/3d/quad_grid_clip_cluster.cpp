@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.cpp,v 1.5 2003/03/25 12:56:05 coutelas Exp $
+ * $Id: quad_grid_clip_cluster.cpp,v 1.6 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,10 +56,10 @@ CQuadGridClipCluster::~CQuadGridClipCluster()
 }
 
 // ***************************************************************************
-void		CQuadGridClipCluster::addModel(const NLMISC::CAABBox &worldBBox, CTransformShapeClipObs *clipObs)
+void		CQuadGridClipCluster::addModel(const NLMISC::CAABBox &worldBBox, CTransformShape *model)
 {
 	// check not already inserted
-	nlassert(!clipObs->QuadClusterListNode.isLinked());
+	nlassert(!model->_QuadClusterListNode.isLinked());
 
 	if(_Empty)
 	{
@@ -80,14 +80,14 @@ void		CQuadGridClipCluster::addModel(const NLMISC::CAABBox &worldBBox, CTransfor
 	_BBoxExt= _BBox;
 
 	// Add the model
-	_Models.insert(clipObs, &clipObs->QuadClusterListNode);
+	_Models.insert(model, &model->_QuadClusterListNode);
 }
 
 
 // ***************************************************************************
-void		CQuadGridClipCluster::removeModel(CTransformShapeClipObs *clipObs)
+void		CQuadGridClipCluster::removeModel(CTransformShape *model)
 {
-	_Models.erase(&clipObs->QuadClusterListNode);
+	_Models.erase(&model->_QuadClusterListNode);
 }
 
 
@@ -155,11 +155,11 @@ void		CQuadGridClipCluster::clip(CClipTrav *clipTrav)
 // ***************************************************************************
 void		CQuadGridClipCluster::clipSons()
 {
-	CTransformShapeClipObs	** pModel= _Models.begin();
+	CTransformShape	** pModel= _Models.begin();
 	uint	nSons= _Models.size();
 	for(;nSons>0;nSons--, pModel++)
 	{
-		(*pModel)->traverse(NULL);
+		(*pModel)->traverseClip(NULL);
 	}
 }
 
@@ -167,12 +167,12 @@ void		CQuadGridClipCluster::clipSons()
 void		CQuadGridClipCluster::resetSons(CClipTrav *clipTrav)
 {
 	// clean up model list
-	CTransformShapeClipObs	** pModel= _Models.begin();
+	CTransformShape	** pModel= _Models.begin();
 	uint	nSons= _Models.size();
 	for(;nSons>0;nSons--, pModel++)
 	{
 		// link the model to the rootCluster
-		clipTrav->link(clipTrav->RootCluster, (*pModel)->Model );
+		clipTrav->RootCluster->clipAddChild(*pModel);
 	}
 	// unlink all my sons from me
 	_Models.clear();

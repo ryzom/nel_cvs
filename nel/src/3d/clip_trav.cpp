@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.29 2003/03/20 15:02:27 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.30 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,24 +60,11 @@ CClipTrav::CClipTrav() : ViewPyramid(6), WorldPyramid(6)
 
 	ForceNoFrustumClip= false;
 	_QuadGridClipManager= NULL;
-
-
-	HrcTrav= NULL;
-	AnimDetailTrav= NULL;
-	LoadBalancingTrav= NULL;
-	LightTrav= NULL;
-	RenderTrav = NULL;
 }
 
 // ***************************************************************************
 CClipTrav::~CClipTrav()
 {
-}
-
-// ***************************************************************************
-IObs* CClipTrav::createDefaultObs() const
-{
-	return new CDefaultClipObs;
 }
 
 // ***************************************************************************
@@ -133,10 +120,13 @@ void CClipTrav::traverse()
 {
 	H_AUTO( NL3D_TravClip );
 
+	// The root must exist
+	CTransform	*sceneRoot= Scene->getRoot();
+
 	// Increment the current date of the traversal
 	++CurrentDate;
 	// Update Clip infos.
-	ITravCameraScene::update();
+	CTravCameraScene::update();
 
 	// Compute pyramid in view basis.
 	CVector		pfoc(0,0,0);
@@ -180,30 +170,29 @@ void CClipTrav::traverse()
 	H_BEFORE( NL3D_TravClip_ClearLists );
 
 	// Clear the traversals list.
-	nlassert(AnimDetailTrav && LoadBalancingTrav && LightTrav && RenderTrav);
-	AnimDetailTrav->clearVisibleList();
-	LoadBalancingTrav->clearVisibleList();
-	LightTrav->clearLightedList();
-	RenderTrav->clearRenderList();
+	Scene->getAnimDetailTrav().clearVisibleList();
+	Scene->getLoadBalancingTrav().clearVisibleList();
+	Scene->getLightTrav().clearLightedList();
+	Scene->getRenderTrav().clearRenderList();
 
 	H_AFTER( NL3D_TravClip_ClearLists );
 
 
 	H_BEFORE( NL3D_TravClip_ResetVisible );
 
-	/* For all objects marked visible in preceding render, reset Visible state here.
-		NB: must reset Visible State to false because sometimes ClipObs::traverse() are even not executed
+	/* For all objects marked visible in preceding render, reset _Visible state here.
+		NB: must reset _Visible State to false because sometimes traverseClip() are even not executed
 		(Cluster clip, QuadGridClipManager clip...).
-		And somes models read this Visible state. eg: Skins/StickedObjects test the Visible state of 
+		And somes models read this _Visible state. eg: Skins/StickedObjects test the Visible state of 
 		their _AncestorSkeletonModel.
 	*/
 	for (i=0;i<_VisibleList.size();i++)
 	{
-		// if the observer still exists (see ~IBaseClipObs())
+		// if the model still exists (see ~CTransform())
 		if( _VisibleList[i] )
 		{
 			// disable his visibility.
-			_VisibleList[i]->Visible= false;
+			_VisibleList[i]->_Visible= false;
 			// let him know that it is no more in the list.
 			_VisibleList[i]->_IndexInVisibleList= -1;
 		}
@@ -233,7 +222,7 @@ void CClipTrav::traverse()
 		if (fullSearch(vCluster, RootCluster->Group, CamPos))
 			bInWorld = false;
 		for (i = 0; i < vCluster.size(); ++i)
-			link(NULL, vCluster[i]);
+			sceneRoot->clipAddChild(vCluster[i]);
 	}
 	else
 	{
@@ -245,7 +234,7 @@ void CClipTrav::traverse()
 			if (pCluster->Group == Camera->getClusterSystem())
 			if (pCluster->isIn (CamPos))
 			{
-				link (NULL, pCluster);
+				sceneRoot->clipAddChild(pCluster);
 				vCluster.push_back (pCluster);
 				bInWorld = false;
 			}
@@ -256,7 +245,7 @@ void CClipTrav::traverse()
 	/// \todo check if necessary ... I think not 
 	if (bInWorld)
 	{
-		link (NULL, RootCluster);
+		sceneRoot->clipAddChild(RootCluster);
 		vCluster.push_back (RootCluster);
 	}
 
@@ -268,33 +257,39 @@ void CClipTrav::traverse()
 	H_BEFORE( NL3D_TravClip_MovingObjects);
 
 	// Unlink the moving objects from their clusters
-	for (i = 0; i < HrcTrav->_MovingObjects.size(); ++i)
+	CHrcTrav	&hrcTrav= Scene->getHrcTrav();
+	for (i = 0; i < hrcTrav._MovingObjects.size(); ++i)
 	{
-		CTransformShape *pTfmShp = HrcTrav->_MovingObjects[i];
+		CTransformShape *pTfmShp = hrcTrav._MovingObjects[i];
 
-		static vector<IModel*> vModels;
+		static vector<CTransform*> vModels;
 		vModels.clear();
-		IModel *pFather = getFirstParent (HrcTrav->_MovingObjects[i]);
-		while (pFather != NULL)
+		uint	numClipParents= pTfmShp->clipGetNumParents();
+		for(j=0;j<numClipParents;j++)
 		{
-			// Does the father is a cluster ??
+			CTransform *pFather = pTfmShp->clipGetParent(j);
+
+			// Does the father is a cluster ?? TODODO optimize dynamic_cast
 			if ( dynamic_cast<CCluster*>(pFather)!= NULL  )
 			{
 				vModels.push_back (pFather);
-			}			
-			pFather = getNextParent (pTfmShp);
+			}
 		}
+		// Remove me from all clusters
 		for (j = 0; j < vModels.size(); ++j)
 		{
-			unlink (vModels[j], pTfmShp);
+			vModels[j]->clipDelChild(pTfmShp);
 		}
-		unlink (NULL, pTfmShp);
+		// Remove me from Root Too
+		sceneRoot->clipDelChild(pTfmShp);
+
+		// NB: only the SonsOfAncestorSkeletonModelGroup may still be here.
 	}
 	
 	// Affect the moving objects to their clusters
-	for (i = 0; i < HrcTrav->_MovingObjects.size(); ++i)
+	for (i = 0; i < hrcTrav._MovingObjects.size(); ++i)
 	{
-		CTransformShape *pTfmShp = HrcTrav->_MovingObjects[i];
+		CTransformShape *pTfmShp = hrcTrav._MovingObjects[i];
 
 		bool bInWorld = true;
 		CAABBox box;
@@ -315,7 +310,7 @@ void CClipTrav::traverse()
 			if (pCluster->Group == pTfmShp->getClusterSystem())
 			if (pCluster->isIn (c,s))
 			{
-				link (pCluster, pTfmShp);
+				pCluster->clipAddChild(pTfmShp);
 				bInWorld = false;
 			}
 			++itAcc;
@@ -329,11 +324,11 @@ void CClipTrav::traverse()
 				// try to insert in the best cluster of the _QuadGridClipManager.
 				if(!_QuadGridClipManager->linkModel(pTfmShp, this))
 					// if fails, link to "root".
-					link (RootCluster, pTfmShp);
+					RootCluster->clipAddChild(pTfmShp);
 			}
 			else
 			{
-				link (RootCluster, pTfmShp);
+				RootCluster->clipAddChild(pTfmShp);
 			}
 		}
 	}
@@ -350,14 +345,13 @@ void CClipTrav::traverse()
 		_QuadGridClipManager->clipClusters(this);
 
 	// Traverse the graph.
-	if (Root)
-		Root->traverse (NULL);
+	sceneRoot->traverseClip(NULL);
 
 
 	// Unlink the cluster where we are
 	for (i = 0; i < vCluster.size(); ++i)
 	{
-		unlink (NULL, vCluster[i]);
+		sceneRoot->clipDelChild(vCluster[i]);
 	}
 
 	H_AFTER( NL3D_TravClip_Traverse);
@@ -377,15 +371,15 @@ void CClipTrav::traverse()
 	// At the end of the clip traverse, must update clip for Objects which have a skeleton ancestor
 	// =========================
 	// those are linked to the SonsOfAncestorSkeletonModelGroup, so traverse it now.
-	if (SonsOfAncestorSkeletonModelGroup)
-		SonsOfAncestorSkeletonModelGroup->getObs(ClipTravId)->traverse(NULL);
+	if (Scene->SonsOfAncestorSkeletonModelGroup)
+		Scene->SonsOfAncestorSkeletonModelGroup->traverseClip(NULL);
 
 	// Update Here the Skin render Lists of All visible Skeletons
 	// =========================
 	/*
 		Done here, because AnimDetail and Render need correct lists. NB: important to do it 
 		before Render Traversal, because updateSkinRenderLists() may change the transparency flag!!
-		NB: can't do it in the clipObs of the skeleton since _DisplayLodCharacterFlag must be updated for this frame.
+		NB: can't do it in the traverseClip() of the skeleton since _DisplayLodCharacterFlag must be updated for this frame.
 	*/
 	CScene::ItSkeletonModelList		itSkel;
 	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
@@ -399,36 +393,6 @@ void CClipTrav::traverse()
 	H_AFTER( NL3D_TravClip_SkeletonClip);
 }
 
-
-// ***************************************************************************
-void CClipTrav::setHrcTrav (CHrcTrav* trav)
-{
-	HrcTrav = trav;
-}
-
-// ***************************************************************************
-void CClipTrav::setAnimDetailTrav(CAnimDetailTrav *trav)
-{
-	AnimDetailTrav= trav;
-}
-
-// ***************************************************************************
-void CClipTrav::setLoadBalancingTrav(CLoadBalancingTrav *trav)
-{
-	LoadBalancingTrav= trav;
-}
-
-// ***************************************************************************
-void CClipTrav::setLightTrav (CLightTrav* trav)
-{
-	LightTrav = trav;
-}
-
-// ***************************************************************************
-void CClipTrav::setRenderTrav (CRenderTrav* trav)
-{
-	RenderTrav = trav;
-}
 
 // ***************************************************************************
 void CClipTrav::setQuadGridClipManager(CQuadGridClipManager *mgr)
@@ -461,17 +425,10 @@ void CClipTrav::unregisterCluster (CCluster* pCluster)
 
 
 // ***************************************************************************
-void CClipTrav::setSonsOfAncestorSkeletonModelGroup(CRootModel *m)
+void CClipTrav::addVisibleModel(CTransform *model)
 {
-	SonsOfAncestorSkeletonModelGroup= m;
-}
-
-
-// ***************************************************************************
-void CClipTrav::addVisibleObs(CTransformClipObs *obs)
-{
-	obs->_IndexInVisibleList= _VisibleList.size();
-	_VisibleList.push_back(obs);
+	model->_IndexInVisibleList= _VisibleList.size();
+	_VisibleList.push_back(model);
 }
 
 

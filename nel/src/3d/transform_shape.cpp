@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.36 2003/03/20 14:59:02 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.37 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/render_trav.h"
 #include "3d/load_balancing_trav.h"
 #include "3d/quad_grid_clip_cluster.h"
+#include "3d/scene.h"
 
 #define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
 
@@ -48,10 +49,7 @@ namespace NL3D
 // ***************************************************************************
 void		CTransformShape::registerBasic()
 {
-	CMOT::registerModel(TransformShapeId, TransformId, CTransformShape::creator);
-	CMOT::registerObs(ClipTravId, TransformShapeId, CTransformShapeClipObs::creator);
-	CMOT::registerObs(RenderTravId, TransformShapeId, CTransformShapeRenderObs::creator);
-	CMOT::registerObs(LoadBalancingTravId, TransformShapeId, CTransformShapeLoadBalancingObs::creator);
+	CScene::registerModel(TransformShapeId, TransformId, CTransformShape::creator);
 }
 
 
@@ -135,27 +133,26 @@ CMaterial *CTransformShape::getMaterial (uint materialId)
 void	CTransformShape::unlinkFromQuadCluster()
 {
 	// if linked to a quadGridClipCluster, unlink it
-	((CTransformShapeClipObs*)getClipObs())->unlinkFromQuadCluster();
+	_QuadClusterListNode.unlink();
 }
 
 
 // ***************************************************************************
-bool	CTransformShapeClipObs::clip(IBaseClipObs *caller) 
+bool	CTransformShape::clip(CTransform *caller) 
 {
 	H_AUTO( NL3D_TrShape_Clip );
 
-	CClipTrav			*trav= (CClipTrav*)Trav;
-	CTransformShape		*m= (CTransformShape*)Model;
+	CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();
 
-	if(m->Shape)
+	if(Shape)
 	{
 		// first test DistMax (faster).
-		float maxDist = m->getDistMax();
+		float maxDist = getDistMax();
 		// if DistMax test enabled
 		if(maxDist!=-1)
 		{
 			// Calc the distance
-			float sqrDist = (trav->CamPos - m->getMatrix().getPos()).sqrnorm ();
+			float sqrDist = (clipTrav.CamPos - getWorldMatrix().getPos()).sqrnorm ();
 			maxDist*=maxDist;
 			
 			// if dist > maxDist, skip
@@ -167,10 +164,10 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 		}
 
 		// Else finer clip with pyramid, only if needed
-		if(trav->ForceNoFrustumClip)
+		if(clipTrav.ForceNoFrustumClip)
 			return true;
 		else
-			return m->Shape->clip(trav->WorldPyramid, HrcObs->WorldMatrix);
+			return Shape->clip(clipTrav.WorldPyramid, getWorldMatrix());
 	}
 	else
 		return false;
@@ -178,12 +175,10 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 
 
 // ***************************************************************************
-void	CTransformShapeRenderObs::traverse(IObs *caller)
+void	CTransformShape::traverseRender()
 {
 	NL3D_MEM_INSTANCE
 	H_AUTO( NL3D_TrShape_Render );
-
-	CTransformShape		*m= (CTransformShape*)Model;
 
 
 	// Compute the current lighting setup for this instance
@@ -191,103 +186,95 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 
 
 	// if the transform is lightable (ie not a fully lightmaped model), setup lighting
-	if(m->isLightable())
+	if(isLightable())
 	{
 		// useLocalAttenuation for this shape ??
-		if(m->Shape)
-			m->_CurrentUseLocalAttenuation= m->Shape->useLightingLocalAttenuation ();
+		if(Shape)
+			_CurrentUseLocalAttenuation= Shape->useLightingLocalAttenuation ();
 		else
-			m->_CurrentUseLocalAttenuation= false;
-
-		// Get HrcObs.
-		CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
+			_CurrentUseLocalAttenuation= false;
 
 		// the std case is to take my model lightContribution
-		if(hrcObs->_AncestorSkeletonModel==NULL)
-			m->_CurrentLightContribution= &m->getLightContribution();
+		if(_AncestorSkeletonModel==NULL)
+			_CurrentLightContribution= &getLightContribution();
 		// but if skinned/sticked (directly or not) to a skeleton, take its.
 		else
-			m->_CurrentLightContribution= &hrcObs->_AncestorSkeletonModel->getLightContribution();
+			_CurrentLightContribution= &((CTransformShape*)_AncestorSkeletonModel)->getLightContribution();
 	}
 	// else must disable the lightSetup
 	else
 	{
 		// setting NULL will disable all lights
-		m->_CurrentLightContribution= NULL;
-		m->_CurrentUseLocalAttenuation= false;
+		_CurrentLightContribution= NULL;
+		_CurrentUseLocalAttenuation= false;
 	}
 
 
 	// render the shape.
 	//=================
-	if(m->Shape)
+	if(Shape)
 	{
-		CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
-		bool				currentPassOpaque= rdrTrav->isCurrentPassOpaque();
+		CRenderTrav			&rdrTrav= getOwnerScene()->getRenderTrav();
+		bool				currentPassOpaque= rdrTrav.isCurrentPassOpaque();
 
 		// shape must be rendered in a CMeshBlockManager ??
 		float polygonCount;
 		IMeshGeom	*meshGeom= NULL;
 		// true only if in pass opaque
 		if( currentPassOpaque )
-			meshGeom= m->Shape->supportMeshBlockRendering(m, polygonCount);
+			meshGeom= Shape->supportMeshBlockRendering(this, polygonCount);
 
 		// if ok, add the meshgeom to the block manager.
 		if(meshGeom)
 		{
-			CMeshBaseInstance	*inst= safe_cast<CMeshBaseInstance*>(m);
-			rdrTrav->MeshBlockManager.addInstance(meshGeom, inst, polygonCount);
+			CMeshBaseInstance	*inst= safe_cast<CMeshBaseInstance*>(this);
+			rdrTrav.MeshBlockManager.addInstance(meshGeom, inst, polygonCount);
 		}
 		// else render it.
 		else
 		{
 			// setup the lighting
-			m->changeLightSetup( rdrTrav );
+			changeLightSetup( &rdrTrav );
 
 			// render the shape.
-			IDriver				*drv= rdrTrav->getDriver();
-			m->Shape->render( drv, m, currentPassOpaque );
+			IDriver				*drv= rdrTrav.getDriver();
+			Shape->render( drv, this, currentPassOpaque );
 		}
 	}
 }
 
 
 // ***************************************************************************
-void	CTransformShapeRenderObs::profile()
+void	CTransformShape::profileRender()
 {
-	CTransformShape		*m= (CTransformShape*)Model;
-
 	// profile the shape.
-	if(m->Shape)
+	if(Shape)
 	{
-		CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
-		bool				currentPassOpaque= rdrTrav->isCurrentPassOpaque();
+		CRenderTrav			&rdrTrav= getOwnerScene()->getRenderTrav();
+		bool				currentPassOpaque= rdrTrav.isCurrentPassOpaque();
 
-		m->Shape->profileSceneRender( rdrTrav, m, currentPassOpaque );
+		Shape->profileSceneRender( &rdrTrav, this, currentPassOpaque );
 	}
 }
 
 
 // ***************************************************************************
-void	CTransformShapeLoadBalancingObs::traverse(IObs *caller)
+void	CTransformShape::traverseLoadBalancing(CTransform *caller)
 {
-	CLoadBalancingTrav		*loadTrav= (CLoadBalancingTrav*)Trav;
-	if(loadTrav->getLoadPass()==0)
-		traversePass0();
+	CLoadBalancingTrav		&loadTrav= getOwnerScene()->getLoadBalancingTrav();
+	if(loadTrav.getLoadPass()==0)
+		traverseLoadBalancingPass0();
 	else
-		traversePass1();
-
-	// There is no reason to do a hierarchy for LoadBalancing. => no traverseSons()
+		traverseLoadBalancingPass1();
 }
 
 
 
 // ***************************************************************************
-void	CTransformShapeLoadBalancingObs::traversePass0()
+void	CTransformShape::traverseLoadBalancingPass0()
 {
-	CLoadBalancingTrav		*loadTrav= (CLoadBalancingTrav*)Trav;
-	CTransformShape			*trans= static_cast<CTransformShape*>(Model);
-	CSkeletonModel			*skeleton= trans->getSkeletonModel();
+	CLoadBalancingTrav		&loadTrav= getOwnerScene()->getLoadBalancingTrav();
+	CSkeletonModel			*skeleton= getSkeletonModel();
 
 	// World Model position
 	const CVector		*modelPos;
@@ -303,28 +290,25 @@ void	CTransformShapeLoadBalancingObs::traversePass0()
 	else
 	{
 		// get our position from 
-		modelPos= &HrcObs->WorldMatrix.getPos();
+		modelPos= &getWorldMatrix().getPos();
 	}
 
 
 	// Then compute distance from camera.
-	float	modelDist= ( loadTrav->CamPos - *modelPos).norm();
+	float	modelDist= ( loadTrav.CamPos - *modelPos).norm();
 
 
 	// Get the number of triangles this model use now.
-	_FaceCount= trans->getNumTriangles(modelDist);	
-	LoadBalancingGroup->addNbFacesPass0(_FaceCount);
+	_FaceCount= getNumTriangles(modelDist);	
+	_LoadBalancingGroup->addNbFacesPass0(_FaceCount);
 }
 
 
 // ***************************************************************************
-void	CTransformShapeLoadBalancingObs::traversePass1()
+void	CTransformShape::traverseLoadBalancingPass1()
 {
-	CTransformShape			*trans= static_cast<CTransformShape*>(Model);
-
-
 	// Set the result into the isntance.
-	trans->_NumTrianglesAfterLoadBalancing= LoadBalancingGroup->computeModelNbFace(_FaceCount);
+	_NumTrianglesAfterLoadBalancing= _LoadBalancingGroup->computeModelNbFace(_FaceCount);
 
 }
 

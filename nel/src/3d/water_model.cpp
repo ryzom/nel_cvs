@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.29 2003/03/14 13:08:02 vizerie Exp $
+ * $Id: water_model.cpp,v 1.30 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ namespace NL3D {
 
 //=======================================================================
 
-CWaterModel::CWaterModel() : _Scene(NULL)
+CWaterModel::CWaterModel()
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -61,8 +61,7 @@ CWaterModel::CWaterModel() : _Scene(NULL)
 
 void CWaterModel::registerBasic()
 {
-	CMOT::registerModel(WaterModelClassId, TransformShapeId, CWaterModel::creator);	
-	CMOT::registerObs(RenderTravId, WaterModelClassId, CWaterRenderObs::creator);	
+	CScene::registerModel(WaterModelClassId, TransformShapeId, CWaterModel::creator);	
 }
 
 
@@ -391,15 +390,14 @@ static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CPolygon &
 
 //***************************************************************************************************************
 
-void	CWaterRenderObs::traverse(IObs *caller)
+void	CWaterModel::traverseRender()
 {			
 	H_AUTO( NL3D_Water_Render );
 
-	CRenderTrav					*trav			= NLMISC::safe_cast<CRenderTrav *>(Trav);
-	CWaterModel					*m				= NLMISC::safe_cast<CWaterModel *>(Model);
-	CWaterShape					*shape			= NLMISC::safe_cast<CWaterShape *>((IShape *) m->Shape);
-	IDriver						*drv			= trav->getDriver();
-	const std::vector<CPlane>	&worldPyramid   = ((NLMISC::safe_cast<CClipTrav *>(ClipObs->Trav))->WorldFrustumPyramid);	
+	CRenderTrav					&renderTrav		= getOwnerScene()->getRenderTrav();
+	CWaterShape					*shape			= NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
+	IDriver						*drv			= renderTrav.getDriver();
+	const std::vector<CPlane>	&worldPyramid   = getOwnerScene()->getClipTrav().WorldFrustumPyramid;	
 
 	if (shape->_GridSizeTouched)
 	{
@@ -408,16 +406,16 @@ void	CWaterRenderObs::traverse(IObs *caller)
 
 
 	// inverted object world matrix
-	//NLMISC::CMatrix invObjMat = HrcObs->WorldMatrix.inverted();
+	//NLMISC::CMatrix invObjMat = getWorldMatrix().inverted();
 
 	// viewer pos in world space
-	const NLMISC::CVector &obsPos = /*invObjMat **/ trav->CamPos;
+	const NLMISC::CVector &obsPos = /*invObjMat **/ renderTrav.CamPos;
 
 	// camera matrix in world space
-	const NLMISC::CMatrix &camMat = trav->CamMatrix;
+	const NLMISC::CMatrix &camMat = renderTrav.CamMatrix;
 
 	// view matrix (inverted cam matrix)
-	const NLMISC::CMatrix &viewMat = trav->ViewMatrix;
+	const NLMISC::CMatrix &viewMat = renderTrav.ViewMatrix;
 
 	// compute the camera matrix such as there is no rotation around the y axis
 	NLMISC::CMatrix camMatUp;
@@ -427,7 +425,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	const NLMISC::CMatrix matViewUp = camMatUp.inverted();
 
 	// plane z pos in world
-	const float zHeight =  HrcObs->WorldMatrix.getPos().z;
+	const float zHeight =  getWorldMatrix().getPos().z;
 
 	const sint numStepX = CWaterShape::getScreenXGridSize();
 	const sint numStepY = CWaterShape::getScreenYGridSize();
@@ -464,12 +462,12 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	static NLMISC::CPlane plvect[6];
 
 	const float borderFactor = 0.67f; // we must avoid numerical imprecision as well as the rotation case (must divide by sqrt(2))
-	const float fRight = trav->Right * (2.f * borderFactor * (float) CWaterShape::_XGridBorder +  (float) numStepX) / numStepX;
-	const float fTop   = trav->Top   * (2.f * borderFactor * (float) CWaterShape::_YGridBorder +  (float) numStepY) / numStepY;
+	const float fRight = renderTrav.Right * (2.f * borderFactor * (float) CWaterShape::_XGridBorder +  (float) numStepX) / numStepX;
+	const float fTop   = renderTrav.Top   * (2.f * borderFactor * (float) CWaterShape::_YGridBorder +  (float) numStepY) / numStepY;
 
 	// build pyramid corners
-	const float nearDist	    = trav->Near;
-	const float farDist			= trav->Far;	
+	const float nearDist	    = renderTrav.Near;
+	const float farDist			= renderTrav.Far;	
 	const float transitionDist	= shape->_TransitionRatio   * farDist;
 
 	const NLMISC::CVector		pfoc(0,0,0);
@@ -492,7 +490,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	plvect[5].make(pfoc, lb, rb);
 
 		
-	const NLMISC::CMatrix pyramidMat = viewMat * HrcObs->WorldMatrix;
+	const NLMISC::CMatrix pyramidMat = viewMat * getWorldMatrix();
 	for (k = 0; k < worldPyramid.size(); ++k)
 	{
 		plvect[k] = plvect[k] * pyramidMat; // put the plane in object space
@@ -551,13 +549,13 @@ void	CWaterRenderObs::traverse(IObs *caller)
 
 		static NLMISC::CPolygon2D projPoly; // projected poly
 		projPoly.Vertices.resize(clippedPoly.Vertices.size());
-		const float Near = trav->Near;
-		const float xFactor = (numStepX >> 1) * Near  / trav->Right;
+		const float Near = renderTrav.Near;
+		const float xFactor = (numStepX >> 1) * Near  / renderTrav.Right;
 		const float xOffset = (float) (numStepX >> 1) + 0.5f;
-		const float yFactor = - (numStepX >> 1) * Near  / trav->Top;
+		const float yFactor = - (numStepX >> 1) * Near  / renderTrav.Top;
 		const float yOffset = (float) (numStepY >> 1) - 0.5f * isAbove;
 		
-		const NLMISC::CMatrix projMat =  matViewUp * HrcObs->WorldMatrix;
+		const NLMISC::CMatrix projMat =  matViewUp * getWorldMatrix();
 		for (k = 0; k < clippedPoly.Vertices.size(); ++k)
 		{
 			// project points in the view
@@ -588,7 +586,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 			const uint  doubleWaterHeightMapSize = (WaterHeightMapSize << 1);
 						
 
-			sint64 idate = (NLMISC::safe_cast<CHrcTrav *>(HrcObs->Trav))->CurrentDate;
+			sint64 idate = getOwnerScene()->getHrcTrav().CurrentDate;
 
 
 			
@@ -597,8 +595,8 @@ void	CWaterRenderObs::traverse(IObs *caller)
 				whm.setUserPos((sint) (obsPos.x * invWaterRatio) - (WaterHeightMapSize >> 1),
 					   (sint) (obsPos.y * invWaterRatio) - (WaterHeightMapSize >> 1)
 					  );
-				nlassert(m->_Scene); // this object should have been created from a CWaterShape!
-				whm.animate((float) (m->_Scene->getEllapsedTime()));												
+				nlassert(getOwnerScene()); // this object should have been created from a CWaterShape!
+				whm.animate((float) (getOwnerScene()->getEllapsedTime()));												
 				whm.Date = idate;
 			}
 			
@@ -649,10 +647,10 @@ void	CWaterRenderObs::traverse(IObs *caller)
 			
 
 			// compute  camera rays in world space
-			CVector currHV = trav->Left * camMatUp.getI() + trav->Near * camMatUp.getJ() + trav->Top * camMatUp.getK(); // current border vector, incremented at each line
+			CVector currHV = renderTrav.Left * camMatUp.getI() + renderTrav.Near * camMatUp.getJ() + renderTrav.Top * camMatUp.getK(); // current border vector, incremented at each line
 			CVector currV; // current ray vector
-			CVector xStep = (trav->Right - trav->Left) * invNumStepX * camMatUp.getI();	   // xStep for the ray vector
-			CVector yStep = (trav->Bottom - trav->Top) * invNumStepY * camMatUp.getK();    // yStep for the ray vector
+			CVector xStep = (renderTrav.Right - renderTrav.Left) * invNumStepX * camMatUp.getI();	   // xStep for the ray vector
+			CVector yStep = (renderTrav.Bottom - renderTrav.Top) * invNumStepY * camMatUp.getK();    // yStep for the ray vector
 			
 
 
@@ -671,7 +669,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 
 			// current raster position
 			sint oldStartX, oldEndX, realStartX, realEndX;	
-			//float invNearWidth = numStepX / (trav->Right - trav->Left);
+			//float invNearWidth = numStepX / (renderTrav.Right - renderTrav.Left);
 
 				//nlinfo("size = %d, maxSize = ", rasters.size(), numStepY);
 
@@ -812,11 +810,11 @@ void	CWaterRenderObs::traverse(IObs *caller)
 
 	if (endClippedPoly.Vertices.size() != 0)
 	{	
-		NLMISC::CVector modelPos = HrcObs->WorldMatrix.getPos();
-		drv->setupModelMatrix(HrcObs->WorldMatrix);
+		NLMISC::CVector modelPos = getWorldMatrix().getPos();
+		drv->setupModelMatrix(getWorldMatrix());
 		drv->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
 		// observer position in object
-		NLMISC::CVector localObsPos = HrcObs->WorldMatrix.inverted() * obsPos;	
+		NLMISC::CVector localObsPos = getWorldMatrix().inverted() * obsPos;	
 		float date  = 0.001f * NLMISC::CTime::getLocalTime();
 		drv->setConstant(7, localObsPos.x, localObsPos.y, localObsPos.z, 1.f);
 		drv->setConstant(9, modelPos.x * shape->_HeightMapScale[0].x + date * shape->_HeightMapSpeed[0].x, shape->_HeightMapScale[0].y * modelPos.y + date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 0 offset		
@@ -828,7 +826,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	/*if (endTransitionClippedPoly.Vertices.size() != 0)
 	{				
 		disableAttenuation(drv);				
-		DrawPoly2D(shape->_VB, drv, HrcObs->WorldMatrix, endTransitionClippedPoly);
+		DrawPoly2D(shape->_VB, drv, getWorldMatrix(), endTransitionClippedPoly);
 	}*/
 
 
@@ -839,14 +837,13 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	}
 	
 
-	this->traverseSons();
 }
 
 //***********************
 // Water MATERIAL SETUP //
 //***********************
 
-void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight)
+void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight)
 {	
 	CMaterial WaterMat;
 	WaterMat.setLighting(false);
@@ -1065,7 +1062,7 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 //=======================================================================================
 
 
-CWaveMakerModel::CWaveMakerModel() : _Time(0), _Scene(NULL)
+CWaveMakerModel::CWaveMakerModel() : _Time(0)
 {
 	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
 	CTransform::setIsForceAnimDetail(true);
@@ -1075,8 +1072,7 @@ CWaveMakerModel::CWaveMakerModel() : _Time(0), _Scene(NULL)
 
 void CWaveMakerModel::registerBasic()
 {
-	CMOT::registerModel(WaveMakerModelClassId, TransformShapeId, CWaveMakerModel::creator);
-	CMOT::registerObs(AnimDetailTravId, WaveMakerModelClassId, CWaveMakerDetailObs::creator);	
+	CScene::registerModel(WaveMakerModelClassId, TransformShapeId, CWaveMakerModel::creator);
 }
 
 //================================================
@@ -1096,34 +1092,31 @@ ITrack* CWaveMakerModel::getDefaultTrack (uint valueId)
 
 //================================================
 
-void	CWaveMakerDetailObs::traverse(IObs *caller)
+void	CWaveMakerModel::traverseAnimDetail(CTransform *caller)
 {
-	CTransformAnimDetailObs::traverse(caller);
-	/// get the model
-	CWaveMakerModel *wmm = NLMISC::safe_cast<CWaveMakerModel *>(Model);
-	nlassert(wmm->_Scene);
+	CTransformShape::traverseAnimDetail(caller);
+	nlassert(getOwnerScene());
 	/// get the shape
-	CWaveMakerShape *wms = NLMISC::safe_cast<CWaveMakerShape *>((IShape *) wmm->Shape);
-	const NLMISC::CVector	worldPos = this->ClipObs->HrcObs->WorldMatrix.getPos();
+	CWaveMakerShape *wms = NLMISC::safe_cast<CWaveMakerShape *>((IShape *) Shape);
+	const NLMISC::CVector	worldPos = getWorldMatrix().getPos();
 	const NLMISC::CVector2f pos2d(worldPos.x, worldPos.y);
 	/// get the water height map
 	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(wms->_PoolID);
 	// get the time delta 
-	const TAnimationTime deltaT  = std::min(wmm->_Scene->getEllapsedTime(), (TAnimationTime) whm.getPropagationTime());
-	wmm->_Time += deltaT;
+	const TAnimationTime deltaT  = std::min(getOwnerScene()->getEllapsedTime(), (TAnimationTime) whm.getPropagationTime());
+	_Time += deltaT;
 	if (!wms->_ImpulsionMode)
 	{
-		whm.perturbate(pos2d, wms->_Intensity * cosf(2.f / wms->_Period * (float) NLMISC::Pi * wmm->_Time), wms->_Radius);
+		whm.perturbate(pos2d, wms->_Intensity * cosf(2.f / wms->_Period * (float) NLMISC::Pi * _Time), wms->_Radius);
 	}
 	else
 	{
-		if (wmm->_Time > wms->_Period)
+		if (_Time > wms->_Period)
 		{
-			wmm->_Time -= wms->_Period;
+			_Time -= wms->_Period;
 			whm.perturbate(pos2d, wms->_Intensity, wms->_Radius);
 		}
 	}
-	this->traverseSons();
 }
 
 

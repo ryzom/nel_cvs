@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.15 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.16 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ public:
 		Lod0Blend		=	0x1,
 	};
 
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
 	/// Last Matrix date for Lods
@@ -92,6 +92,13 @@ public:
 
 	// called at instanciation
 	void			initRenderFilterType();
+
+	/// \name CTransform traverse specialisation
+	// @{
+	/** Additionally to std loadBalancing, it compues Lod related states
+	 */
+	virtual void	traverseLoadBalancing(CTransform *caller);
+	// @}
 
 private:
 
@@ -117,9 +124,8 @@ private:
 	/// Corse mesh distance (-1 is the one for the mesh is used)
 	float   _CoarseMeshDistance;
 
-	static IModel	*creator() {return new CMeshMultiLodInstance;}
+	static CTransform	*creator() {return new CMeshMultiLodInstance;}
 	friend	class CMeshMultiLod;
-	friend	class CMeshMultiLodBalancingObs;
 
 	/// get average color for Sun lighting. Get result from _LightContribution
 	CRGBA			getCoarseMeshLighting();
@@ -128,34 +134,6 @@ private:
 	void			setUVCoarseMesh( CMeshGeom &geom, uint vtDstSize, uint dstUvOff );
 	void			setPosCoarseMesh( CMeshGeom &geom, const CMatrix &matrix, uint vtDstSize );
 	void			setColorCoarseMesh( CRGBA color, uint vtDstSize, uint dstColorOff );
-};
-
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the traverse method.
- *
- * \sa CHrcTrav IBaseHrcObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CMeshMultiLodBalancingObs : public CTransformShapeLoadBalancingObs
-{
-public:
-
-	/** this do all the good things:
-	 *	- LoadBalancing: get the position of the transform (or the skeleton), and use it as center.
-	 *	- traverseSons().
-	 */
-	virtual	void	traverse(IObs *caller);
-
-	static IObs	*creator() {return new CMeshMultiLodBalancingObs;}
-
-
-protected:
 };
 
 

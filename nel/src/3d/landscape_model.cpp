@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.29 2003/03/11 09:32:47 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.30 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,9 +45,7 @@ namespace NL3D
 // ***************************************************************************
 void	CLandscapeModel::registerBasic()
 {
-	CMOT::registerModel(LandscapeModelId, TransformId, CLandscapeModel::creator);
-	CMOT::registerObs(ClipTravId, LandscapeModelId, CLandscapeClipObs::creator);
-	CMOT::registerObs(RenderTravId, LandscapeModelId, CLandscapeRenderObs::creator);
+	CScene::registerModel(LandscapeModelId, TransformId, CLandscapeModel::creator);
 }
 
 
@@ -71,47 +69,39 @@ void	CLandscapeModel::initModel()
 {
 	CTransform::initModel();
 
+	// Enable the landscape to be clipped by the Cluster System.
+	getOwnerScene()->getRoot()->clipDelChild(this);
+	getOwnerScene()->getRootCluster()->clipAddChild(this);
+
 	// After creating the landscape (and so the VegetableManager in the ctor).
 	// we must init correclty the VegetableManager.
-	Landscape.createVegetableBlendLayersModels(safe_cast<CScene*>(_OwnerMot));
+	Landscape.createVegetableBlendLayersModels(getOwnerScene());
 }
 
 
 // ***************************************************************************
-void	CLandscapeClipObs::init()
-{
-	CTransformClipObs::init();
-
-	// Enable the landscape to be clipped by the Cluster System.
-	CClipTrav		*clipTrav= (CClipTrav*)Trav;
-	clipTrav->unlink(NULL, Model);
-	clipTrav->link(clipTrav->RootCluster, Model);
-}
-
-// ***************************************************************************
-bool	CLandscapeClipObs::clip(IBaseClipObs *caller)
+bool	CLandscapeModel::clip(CTransform *caller)
 {
 	H_AUTO( NL3D_Landscape_Clip );
 
-	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
-	CClipTrav		*clipTrav= (CClipTrav*)Trav;
+	CClipTrav		&clipTrav= getOwnerScene()->getClipTrav();
 
 	// Before Landscape clip, must setup Driver, for good VB allocation.
-	landModel->Landscape.setDriver(clipTrav->RenderTrav->getDriver());
+	Landscape.setDriver(getOwnerScene()->getRenderTrav().getDriver());
 
 	// Use the unClipped pyramid (not changed by cluster System).
-	vector<CPlane>	&pyramid= clipTrav->WorldFrustumPyramid;
+	vector<CPlane>	&pyramid= clipTrav.WorldFrustumPyramid;
 
 	// We are sure that pyramid has normalized plane normals.
-	landModel->Landscape.clip(clipTrav->CamPos, pyramid);
+	Landscape.clip(clipTrav.CamPos, pyramid);
 
 	// Yes, this is ugly, but the clip pass is finished in render(), for clipping TessBlocks.
 	// This saves an other Landscape patch traversal, so this is faster...
 	// Order them in order which clip faster (first horizontal, then vertical).
-	landModel->CurrentPyramid[0]= pyramid[NL3D_CLIP_PLANE_LEFT];
-	landModel->CurrentPyramid[1]= pyramid[NL3D_CLIP_PLANE_RIGHT];
-	landModel->CurrentPyramid[2]= pyramid[NL3D_CLIP_PLANE_TOP];
-	landModel->CurrentPyramid[3]= pyramid[NL3D_CLIP_PLANE_BOTTOM];
+	CurrentPyramid[0]= pyramid[NL3D_CLIP_PLANE_LEFT];
+	CurrentPyramid[1]= pyramid[NL3D_CLIP_PLANE_RIGHT];
+	CurrentPyramid[2]= pyramid[NL3D_CLIP_PLANE_TOP];
+	CurrentPyramid[3]= pyramid[NL3D_CLIP_PLANE_BOTTOM];
 	nlassert(NL3D_TESSBLOCK_NUM_CLIP_PLANE==4);
 
 	// Well, always visible....
@@ -119,40 +109,38 @@ bool	CLandscapeClipObs::clip(IBaseClipObs *caller)
 }
 
 // ***************************************************************************
-void	CLandscapeRenderObs::traverse(IObs *caller)
+void	CLandscapeModel::traverseRender()
 {
 	NL3D_MEM_LANDSCAPE
 
-	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
-
-	CRenderTrav		*trav= (CRenderTrav*)Trav;
+	CRenderTrav		&renderTrav= getOwnerScene()->getRenderTrav();
 
 	// Change the landscape cetner. All Geomorphed pos (in VertexBuffer only or during VertexProgram)
 	// substract this position.
-	landModel->Landscape.setPZBModelPosition(trav->CamPos);
+	Landscape.setPZBModelPosition(renderTrav.CamPos);
 
 	// setup the model matrix
 	CMatrix		m;
 	m.identity();
 	// ZBuffer Precion: set the modelMatrix to the current landscape PZBModelPosition.
-	// NB: don't use trav->CamPos directly because setPZBModelPosition() may modify the position
-	m.setPos(landModel->Landscape.getPZBModelPosition());
-	trav->getDriver()->setupModelMatrix(m);
+	// NB: don't use renderTrav.CamPos directly because setPZBModelPosition() may modify the position
+	m.setPos(Landscape.getPZBModelPosition());
+	renderTrav.getDriver()->setupModelMatrix(m);
 
 
 	// Scene Time/Lighting Mgt.
-	CScene		*scene= dynamic_cast<CScene*>(landModel->_OwnerMot);
-	if(scene)
+	CScene		*scene= getOwnerScene();
+	nlassert(scene);
 	{
 		// For vegetable, set the animation Time.
-		landModel->Landscape.setVegetableTime(scene->getCurrentTime());
+		Landscape.setVegetableTime(scene->getCurrentTime());
 
 		// For vegetable updateLighting, set the system Time.
-		landModel->Landscape.setVegetableUpdateLightingTime(scene->getCurrentSystemTime());
+		Landscape.setVegetableUpdateLightingTime(scene->getCurrentSystemTime());
 
 		// updateLighting
 		H_BEFORE( NL3D_Landscape_UpdateLighting );
-		landModel->Landscape.updateLighting(scene->getCurrentSystemTime());
+		Landscape.updateLighting(scene->getCurrentSystemTime());
 		H_AFTER( NL3D_Landscape_UpdateLighting );
 
 		// if SceneLighting enabled
@@ -161,26 +149,24 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 			H_AUTO( NL3D_Landscape_DynamicLighting );
 
 			// For vegetable, set the lighting 
-			landModel->Landscape.setupVegetableLighting(scene->getSunAmbient(), scene->getSunDiffuse(), 
+			Landscape.setupVegetableLighting(scene->getSunAmbient(), scene->getSunDiffuse(), 
 				scene->getSunDirection());
 
-			// Landscape dynamic lighting: get all pointLights from scene and light landscape with them.
-			IBaseLightObs	*lightObs= static_cast<IBaseLightObs*>(landModel->_LightObs);
 			// current visible Dynamic light list are registered in LightTrav::LightingManager
-			CLightTrav		*lightTrav= (CLightTrav*)lightObs->Trav;
+			CLightTrav		&lightTrav= scene->getLightTrav();
 			// Get all dynamic light list, and light landscape with it.
-			landModel->Landscape.computeDynamicLighting(lightTrav->LightingManager.getAllDynamicLightList());
+			Landscape.computeDynamicLighting(lightTrav.LightingManager.getAllDynamicLightList());
 		}
 	}
 
 	// First, refine.
 	H_BEFORE( NL3D_Landscape_Refine );
-	landModel->Landscape.refine(trav->CamPos);
+	Landscape.refine(renderTrav.CamPos);
 	H_AFTER( NL3D_Landscape_Refine );
 
 	// then render.
 	H_BEFORE( NL3D_Landscape_Render );
-	landModel->Landscape.render(trav->CamPos, trav->CamLook, landModel->CurrentPyramid, landModel->isAdditive ());
+	Landscape.render(renderTrav.CamPos, renderTrav.CamLook, CurrentPyramid, isAdditive ());
 	H_AFTER( NL3D_Landscape_Render );
 }
 

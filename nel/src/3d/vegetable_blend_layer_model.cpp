@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.8 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.9 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/clip_trav.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/scene.h"
 
 
 using namespace NLMISC;
@@ -42,9 +43,7 @@ namespace NL3D {
 // ***************************************************************************
 void	CVegetableBlendLayerModel::registerBasic()
 {
-	CMOT::registerModel(VegetableBlendLayerModelId, TransformId, CVegetableBlendLayerModel::creator);
-	CMOT::registerObs(RenderTravId, VegetableBlendLayerModelId, CVegetableBlendLayerRenderObs::creator);
-	CMOT::registerObs(ClipTravId, VegetableBlendLayerModelId, CVegetableBlendLayerClipObs::creator);
+	CScene::registerModel(VegetableBlendLayerModelId, TransformId, CVegetableBlendLayerModel::creator);
 }
 
 
@@ -63,22 +62,13 @@ CVegetableBlendLayerModel::CVegetableBlendLayerModel()
 
 
 // ***************************************************************************
-void	CVegetableBlendLayerModel::initModel()
-{
-	CTransform::initModel();
-
-	_HrcObs= safe_cast<CTransformHrcObs	*>(getObs(HrcTravId));
-}
-
-
-// ***************************************************************************
 void	CVegetableBlendLayerModel::setWorldPos(const CVector &pos)
 {
-	// setup directly in the hrcObs the local matrix.
-	_HrcObs->LocalMatrix.setPos(pos);
+	// setup directly the local matrix.
+	_LocalMatrix.setPos(pos);
 
-	// setup directly in the hrcObs the world matrix.
-	_HrcObs->WorldMatrix.setPos(pos);
+	// setup directly the world matrix.
+	_WorldMatrix.setPos(pos);
 	
 }
 
@@ -152,10 +142,10 @@ void	CVegetableBlendLayerModel::render(IDriver *driver)
 
 
 // ***************************************************************************
-void	CVegetableBlendLayerRenderObs::traverse(IObs *caller)
+void	CVegetableBlendLayerModel::traverseRender()
 {
-	CRenderTrav		*rTrav= safe_cast<CRenderTrav*>(Trav);
-	safe_cast<CVegetableBlendLayerModel*>(Model)->render(rTrav->getDriver());
+	CRenderTrav		&rTrav= getOwnerScene()->getRenderTrav();
+	render(rTrav.getDriver());
 }
 
 

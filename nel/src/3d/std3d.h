@@ -26,6 +26,6 @@
 #include "nel/misc/matrix.h"
 #include "nel/misc/rgba.h"
 
+
 #include "3d/transform.h"
-#include "3d/mot.h"
 #include "3d/quad_grid.h"

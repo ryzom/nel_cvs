@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.37 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: scene.h,v 1.38 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #define NL_SCENE_H
 
 
-#include "3d/mot.h"
 #include "3d/camera.h"
 #include "3d/shape.h"
 #include "3d/animated_lightmap.h"
@@ -35,6 +34,13 @@
 #include "3d/quad_grid_clip_manager.h"
 #include "3d/particle_system_manager.h"
 #include "3d/animation_set.h"
+// The traversals
+#include "3d/hrc_trav.h"
+#include "3d/clip_trav.h"
+#include "3d/anim_detail_trav.h"
+#include "3d/load_balancing_trav.h"
+#include "3d/light_trav.h"
+#include "3d/render_trav.h"
 
 
 
@@ -55,27 +61,16 @@ namespace NL3D
 using	NLMISC::CRefPtr;
 using	NLMISC::CSmartPtr;
 
-class	CHrcTrav;
-class	CClipTrav;
-class	CLightTrav;
-class	CAnimDetailTrav;
-class	CLoadBalancingTrav;
-class	CRenderTrav;
-class	CDefaultHrcObs;
-class	CDefaultClipObs;
-class	CDefaultLightObs;
-class	CAnimDetailObs;
-class	CDefaultRenderObs;
 class	CTransform;
 class	CTransformShape;
 class	IDriver;
 class	CShapeBank;
 class	CCoarseMeshManager;
 class	CInstanceGroup;
-class	CSkipModel;
 class	CLodCharacterManager;
 class	CAsyncTextureManager;
 class	CSkeletonModel;
+class	CRootModel;
 
 
 // ***************************************************************************
@@ -83,19 +78,9 @@ class	CSkeletonModel;
  * A CScene, which own a list of Render Traversals, and a render() method.
  *
  * \b USER \b RULES:
- * - Before creating any CScene, call the cool method CScene::registerBasics(), to register baisc models and observers.
+ * - Before creating any CScene, call the cool method CScene::registerBasics(), to register baisc models.
  * - Create a CScene (NB: may be static \c CScene \c scene;).
- * - call first initDefaultRoot() to create / register automatically the 5 basic traversals:
- *		- CHrcTrav
- *		- CClipTrav
- *		- CLightTrav
- *		- CAnimDetailTrav
- *		- CLoadBalancingTrav
- *		- CRenderTrav
- * - add others user-specified traversals with addTrav().
- * - initRootModels() to create/setRoot the defaults models roots for the basic traversals:
- *		- CTransform
- *		- CLightGroup
+ * - call first initDefaultRoot() to create / register automatically the roots:
  * - set your driver for this scene with setDriver().
  * - create any other model with createModel() (such as a camera).
  * - Specify a Camera (SmartPtr-ed !!)
@@ -125,15 +110,24 @@ class	CSkeletonModel;
  * \author Nevrax France
  * \date 2000
  */
-class CScene : public CMOT
+class CScene
 {
 public:
 
 
 	/// \name Basic registration.
 	//@{
-	/// Register Basic models and observers.
+	/// Register Basic models
 	static void		registerBasics();
+
+	/**
+	 * Register a model, indicating from which he derive. 
+	 * \param idModel the Unique Id of the registered model
+	 * \param idModelBase the Unique Id of the base calss of the registered model
+	 * \param creator the function which create the registered model.
+	 */
+	static	void	registerModel(const NLMISC::CClassId &idModel, const NLMISC::CClassId &idModelBase, CTransform* (*creator)());
+
 	//@}
 
 
@@ -143,36 +137,26 @@ public:
 	CScene();
 	/// Destructor. release().
 	~CScene();
-	/// Create / register the 5 basic traversals:CHrcTrav, CClipTrav, CLightTrav, CAnimDetailTrav, CLoadBalancingTrav, CRenderTravInit.
-	void			initDefaultTravs();
 	/// Create/setRoot the defaults models roots: a CTransform and a CLightGroup.
 	void			initDefaultRoots();
-	/// Create the world instance group (with only one cluster)
-	void			initGlobalnstanceGroup();
 	/// init QuadGridClipManager
 	void			initQuadGridClipManager ();
 	/// Set the driver to render Traversal.
 	void			setDriver(IDriver *drv);
 	/// Get the driver of render Traversal.
 	IDriver			*getDriver() const;
-	/** Add a ITrav or a ITravScene to the scene.
-	 * If not a ITravScene (tested with help of dynamic_cast) or if trav->getRenderOrder()==0, The traversal is not added 
-	 * to the "render traversal list", else it is. Such a traversal will be traverse() -ed in the order given.
-	 * The getRenderOrder() is called only in the addTrav() method (so this is a static information).
-	 */
-	void			addTrav(ITrav *v);
 	
 
 	/** Release all relative to the scene (Models, traversals...)... Destroy the Basic traversals too.
 	 *	The Lod Character Manager is reset() ed, but not deleted (at dtor only).
 	 */
-	virtual void			release();
+	void			release();
 	//@}
 
 
 	/// \name Render
 	//@{
-	/** Render the scene, via the registered ITravScene, from the CurrentCamera view.
+	/** Render the scene, from the CurrentCamera view.
 	 *  This also update waiting instance that are loaded asynchronously (by calling updateWaitingInstances)
 	 * NB: no Driver clear buffers (color or ZBuffer) are done....
 	 * This call t->traverse() function to registered render traversal following their order given.
@@ -204,6 +188,31 @@ public:
 	//@}
 
 
+	/// \name Model mgt.
+	//@{
+	/**
+	 * Create a model according to his type id.
+	 * Model must has been previously registered via registerModel().
+	 *
+	 * Then, This function attach this model to the Root (for HRC and for Clip)
+	 *
+	 * Model are deleted with the deleteModel() or with release() which delete all models
+	 * NB: Since CScene own the model, model MUST NOT be used with SmartPtrs (but CRefPtr always work...).
+	 * \param idModel the Unique Id of the Model
+	 * \return a valid model of the required type. NULL, if not found.
+	 * \see deleteModel()
+	 */
+	CTransform		*createModel(const NLMISC::CClassId &idModel);
+
+	/** Delete a model via his pointer.
+	 * The model is automatically unlinked from all other model
+	 *
+	 * Once a model is deleted, all pointer to him should have been deleted.
+	 */
+	void			deleteModel(CTransform *model);
+
+	//@}
+	
 	/// \name Instance Mgt.
 	//@{
 	/// Set the shape bank
@@ -218,7 +227,7 @@ public:
 	/** Create a model, instance of the shape "shapename". If not present, try to load "shapename" via the CPath.
 	 * If fails, return NULL.
 	 */
-	virtual	CTransformShape	*createInstance(const std::string &shapeName);
+	CTransformShape	*createInstance(const std::string &shapeName);
 
 	/** Create an instance, if the shape is not present, load the shape asynchronously. The instance is really
 	 * created when we process it in the rendering.
@@ -228,6 +237,7 @@ public:
 	/** Delete an instance via his pointer. An instance is an entity which reference a shape.
 	 */
 	void			deleteInstance(CTransformShape*model);
+
 	//@}
 
 	CInstanceGroup *getGlobalInstanceGroup() { return _GlobalInstanceGroup;	}
@@ -426,15 +436,17 @@ public:
 
 	/// \name Trav accessor. Use it with caution. (used for mesh rendering)
 	//@{
-	CHrcTrav			*getHrcTrav() const {return HrcTrav;}
-	CClipTrav			*getClipTrav() const {return ClipTrav;}
-	CLightTrav			*getLightTrav() const {return LightTrav;}
-	CAnimDetailTrav		*getAnimDetailTrav() const {return AnimDetailTrav;}
-	CLoadBalancingTrav	*getLoadBalancingTrav() const {return LoadBalancingTrav;}
-	CRenderTrav			*getRenderTrav() const {return RenderTrav;}
+	CHrcTrav			&getHrcTrav() {return HrcTrav;}
+	CClipTrav			&getClipTrav() {return ClipTrav;}
+	CLightTrav			&getLightTrav() {return LightTrav;}
+	CAnimDetailTrav		&getAnimDetailTrav() {return AnimDetailTrav;}
+	CLoadBalancingTrav	&getLoadBalancingTrav() {return LoadBalancingTrav;}
+	CRenderTrav			&getRenderTrav() {return RenderTrav;}
 
-	// Link models to this one to disable their use in the wanted traversal
-	CSkipModel			*getSkipModelRoot() const {return SkipModelRoot;}
+	/// Get the Root For Hrc and Basics Clip of the scene
+	CTransform			*getRoot() const {return Root;}
+	/// Get the RootCluster For Clip of the scene
+	CCluster			*getRootCluster() const {return RootCluster;}
 
 	//@}
 
@@ -496,8 +508,6 @@ public:
 	// @}
 
 private:
-	typedef			std::map<sint, ITravScene*>	TTravMap;
-	TTravMap		RenderTraversals;	// Sorted via their getRenderOrder().
 
 	/// The camera / Viewport.
 	CRefPtr<CCamera>	CurrentCamera;
@@ -521,23 +531,22 @@ private:
 	uint64  _NumRender; // the number of time render has been called
 
 
-	/// \name The 5 default traversals, created / linked by CScene::initDefaultTraversals().
+	/// \name The traversals
 	//@{
-	CHrcTrav		*HrcTrav;
-	CClipTrav		*ClipTrav;
-	CLightTrav		*LightTrav;
-	CAnimDetailTrav	*AnimDetailTrav;
-	CLoadBalancingTrav	*LoadBalancingTrav;
-	CRenderTrav		*RenderTrav;
+	CHrcTrav			HrcTrav;
+	CClipTrav			ClipTrav;
+	CLightTrav			LightTrav;
+	CAnimDetailTrav		AnimDetailTrav;
+	CLoadBalancingTrav	LoadBalancingTrav;
+	CRenderTrav			RenderTrav;
 	//@}
 
 	// The root models (will be deleted by CScene).
-	CTransform		*Root;
-	CSkipModel		*SkipModelRoot;
+	CTransform			*Root;
+	// The Root Cluster
+	CCluster			*RootCluster;
 	// This model is used to clip any model which has a Skeleton ancestor
-	CRootModel		*SonsOfAncestorSkeletonModelGroup;
-	// This model is used for LightTrav to know its dynamic pointLights
-	CRootModel		*LightModelRoot;
+	CRootModel			*SonsOfAncestorSkeletonModelGroup;
 
 
 	// The Ligths automatic movements
@@ -610,6 +619,33 @@ private:
 
 	// profile
 	bool						_NextRenderProfile;
+
+
+// ******************
+private:
+	struct	CModelEntry
+	{
+		NLMISC::CClassId	ModelId, BaseModelId;
+		CTransform* (*Creator)();
+		bool	operator<(const CModelEntry& o) const {return ModelId<o.ModelId;}
+		bool	operator==(const CModelEntry& o) const {return ModelId==o.ModelId;}
+		bool	operator!=(const CModelEntry& o) const {return !(*this==o);}
+	};
+
+
+private:
+	// must do this for _UpdateModelList access.
+	friend	class CTransform;
+	friend	class CClipTrav;
+
+	std::set<CTransform*>				_Models;
+	CTransform							*_UpdateModelList;
+
+	static std::set<CModelEntry>	_RegModels;
+
+	/// Update all models. All dirty models are cleaned
+	void	updateModels();
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.94 2003/03/20 14:55:18 berenguier Exp $
+ * $Id: scene.cpp,v 1.95 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,6 @@
 #include "3d/cluster.h"
 #include "3d/scene_group.h"
 #include "3d/flare_model.h"
-#include "3d/skip_model.h"
 #include "3d/water_model.h"
 #include "3d/vegetable_blend_layer_model.h"
 #include "3d/root_model.h"
@@ -103,7 +102,6 @@ void	CScene::registerBasics()
 	CMeshMultiLodInstance::registerBasic();
 	CCluster::registerBasic();
 	CFlareModel::registerBasic();
-	CSkipModel::registerBasic();
 	CWaterModel::registerBasic();
 	CWaveMakerModel::registerBasic();
 	CVegetableBlendLayerModel::registerBasic();
@@ -120,19 +118,18 @@ void	CScene::registerBasics()
 // ***************************************************************************
 CScene::CScene()
 {
-	HrcTrav= NULL;
-	ClipTrav= NULL;
-	LightTrav= NULL;
-	AnimDetailTrav= NULL;
-	LoadBalancingTrav= NULL;
-	RenderTrav= NULL;
+	HrcTrav.Scene= this;
+	ClipTrav.Scene= this;
+	LightTrav.Scene= this;
+	AnimDetailTrav.Scene= this;
+	LoadBalancingTrav.Scene= this;
+	RenderTrav.Scene= this;
 
 	_ShapeBank = NULL;
 
 	Root= NULL;
-	SkipModelRoot= NULL;
+	RootCluster= NULL;
 	SonsOfAncestorSkeletonModelGroup= NULL;
-	LightModelRoot= NULL;
 
 	_CurrentTime = 0 ;
 	_EllapsedTime = 0 ;
@@ -161,6 +158,9 @@ CScene::CScene()
 	// Init default _CoarseMeshManager
 	_CoarseMeshManager= new CCoarseMeshManager;
 	_CoarseMeshManager->setTextureFile (NL3D_SCENE_COARSE_MANAGER_TEXTURE);
+
+	// Update model list to NULL
+	_UpdateModelList= NULL;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -171,63 +171,22 @@ void	CScene::release()
 	// reset the _QuadGridClipManager, => unlink models, and delete clusters.
 	_QuadGridClipManager.reset();
 
-	// First, delete models and un-register traversals.
-	CMOT::release();
-
-	for (uint k = 0; k < getNumTrav(); ++k)
+	// First, delete models
+	set<CTransform*>::iterator	it;
+	it= _Models.begin();
+	while( it!=_Models.end())
 	{
-		ITravScene *ts = dynamic_cast<ITravScene *>(getTrav(k));
-		if (ts)
-		{
-			ts->Scene =	NULL; 
-		}
+		deleteModel(*it);
+		it= _Models.begin();
 	}
+	// No models at all.
+	_UpdateModelList= NULL;
 
-	// Unlink the rendertrav.
-	RenderTraversals.clear();
-
-	// Delete only the 5 default Traversals (owned by CScene).
-	if (HrcTrav != NULL)
-	{
-		delete	HrcTrav;
-		HrcTrav= NULL;
-	}
-
-	if (ClipTrav != NULL)
-	{
-		delete	ClipTrav;
-		ClipTrav= NULL;
-	}
-
-	if (LightTrav != NULL)
-	{
-		delete	LightTrav;
-		LightTrav= NULL;
-	}
-
-	if (AnimDetailTrav != NULL)
-	{
-		delete	AnimDetailTrav;
-		AnimDetailTrav= NULL;
-	}
-
-	if (LoadBalancingTrav != NULL)
-	{
-		delete LoadBalancingTrav;
-		LoadBalancingTrav= NULL;
-	}
-
-	if (RenderTrav != NULL)
-	{
-		delete	RenderTrav;
-		RenderTrav= NULL;
-	}
-
+	// reset ptrs
 	_ShapeBank = NULL;
 	Root= NULL;
-	SkipModelRoot= NULL;
+	RootCluster= NULL;
 	SonsOfAncestorSkeletonModelGroup= NULL;
-	LightModelRoot= NULL;
 	CurrentCamera= NULL;
 
 	// reset the _LodCharacterManager
@@ -247,92 +206,32 @@ CScene::~CScene()
 	release();
 }
 // ***************************************************************************
-void	CScene::initDefaultTravs()
-{
-	NL3D_MEM_MOT
-
-	// Add the 4 default traversals.
-	HrcTrav= new CHrcTrav;
-	ClipTrav= new CClipTrav;
-	LightTrav= new CLightTrav;
-	AnimDetailTrav= new CAnimDetailTrav;
-	LoadBalancingTrav= new CLoadBalancingTrav;
-	RenderTrav= new CRenderTrav;
-
-	// Register them to the scene.
-	addTrav(HrcTrav);
-	addTrav(ClipTrav);
-	addTrav(LightTrav);
-	addTrav(AnimDetailTrav);
-	addTrav(LoadBalancingTrav);
-	addTrav(RenderTrav);
-}
-// ***************************************************************************
 void	CScene::initDefaultRoots()
 {
 	// Create and set root the default models.
 	Root= static_cast<CTransform*>(createModel(TransformId));
-	HrcTrav->setRoot(Root);
-	ClipTrav->setRoot(Root);
-
-	// need no root for AnimDetailTrav, LoadBalancingTrav, LightTrav and RenderTrav
-	// because all of them use either the ClipVisibilityList or their own list.
-	// AnimDetailTrav->setRoot(Root);
-	// LoadBalancingTrav->setRoot(Root);
-	// LightTrav->setRoot(Root);
-	// RenderTrav->setRoot(Root);
-
 
 	// The root is always freezed (never move).
 	Root->freeze();
 
+	// Init the instance group that represent the world
+	_GlobalInstanceGroup = new CInstanceGroup;
+	RootCluster= (CCluster*)createModel (ClusterId);
+	// unlink from hrc.
+	RootCluster->hrcUnlink();
+	RootCluster->Name = "ClusterRoot";
+	RootCluster->Group = _GlobalInstanceGroup;
+	_GlobalInstanceGroup->addCluster (RootCluster);
 
-	// Create a SkipModelRoot, for CTransform::freezeHRC().
-	SkipModelRoot= static_cast<CSkipModel*>(createModel(SkipModelId));
-
+	// init the ClipTrav.RootCluster.
+	ClipTrav.RootCluster = RootCluster;
 
 	// Create a SonsOfAncestorSkeletonModelGroup, for models which have a skeleton ancestor
 	SonsOfAncestorSkeletonModelGroup= static_cast<CRootModel*>(createModel(RootModelId));
 	// must unlink it from all traversals, because special, only used in CClipTrav::traverse()
-	HrcTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
-	ClipTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
-	AnimDetailTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
-	LoadBalancingTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
-	LightTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
-	RenderTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
-	// inform the clipTrav of this model.
-	ClipTrav->setSonsOfAncestorSkeletonModelGroup(SonsOfAncestorSkeletonModelGroup);
-
-
-	// init root for Lighting.
-	LightModelRoot= static_cast<CRootModel*>(createModel(RootModelId));
-	// unlink it from all traversals, because special, only used in CLightTrav::traverse()
-	HrcTrav->unlink(NULL, LightModelRoot);
-	ClipTrav->unlink(NULL, LightModelRoot);
-	AnimDetailTrav->unlink(NULL, LightModelRoot);
-	LoadBalancingTrav->unlink(NULL, LightModelRoot);
-	LightTrav->unlink(NULL, LightModelRoot);
-	RenderTrav->unlink(NULL, LightModelRoot);
-	// inform the LightTrav of this model.
-	LightTrav->setLightModelRoot(LightModelRoot);
+	SonsOfAncestorSkeletonModelGroup->hrcUnlink();
+	Root->clipDelChild(SonsOfAncestorSkeletonModelGroup);
 }
-
-// ***************************************************************************
-void	CScene::initGlobalnstanceGroup ()
-{
-	// Init the instance group that represent the world
-	_GlobalInstanceGroup = new CInstanceGroup;
-	CCluster *pCluster = (CCluster*)createModel (ClusterId);
-	CClipTrav *pClipTrav = (CClipTrav*)(getTrav (ClipTravId));
-	pClipTrav->unlink (NULL, pCluster);
-	pCluster->Name = "ClusterRoot";
-	pCluster->Group = _GlobalInstanceGroup;
-	_GlobalInstanceGroup->addCluster (pCluster);
-
-	// init the ClipTrav->RootCluster.
-	pClipTrav->RootCluster = _GlobalInstanceGroup->_ClusterInstances[0];
-}
-
 
 // ***************************************************************************
 void	CScene::initQuadGridClipManager ()
@@ -349,27 +248,6 @@ void	CScene::initQuadGridClipManager ()
 
 
 // ***************************************************************************
-void	CScene::addTrav(ITrav *v)
-{
-	nlassert(v);
-	sint	order=0;
-
-	ITravScene	*sv= dynamic_cast<ITravScene*>(v);
-	if(sv)
-	{		
-		order= sv->getRenderOrder();
-	}
-
-	// If ok, add it to the render traversal list.
-	if(order)
-	{
-		RenderTraversals.insert( TTravMap::value_type(order, sv) );
-	}
-
-	// And register it normally.
-	CMOT::addTrav(v);
-}
-// ***************************************************************************
 void	CScene::render(bool	doHrcPass)
 {
 	double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
@@ -380,64 +258,54 @@ void	CScene::render(bool	doHrcPass)
 	//
 	nlassert(CurrentCamera);
 
-	// validate models.
-	CMOT::validateModels();
+	// update models.
+	updateModels();
 
 	// Use the camera to setup Clip / Render pass.
 	float left, right, bottom, top, znear, zfar;
 	CurrentCamera->getFrustum(left, right, bottom, top, znear, zfar);
 
 	// setup basic camera.
-	ClipTrav->setFrustum(left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+	ClipTrav.setFrustum(left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
 
-	RenderTrav->setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
-	RenderTrav->setViewport (_Viewport);
+	RenderTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+	RenderTrav.setViewport (_Viewport);
 
-	LoadBalancingTrav->setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+	LoadBalancingTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
 
 
-	// Set the renderTrav for cliptrav.
-	ClipTrav->setHrcTrav (HrcTrav);
-	ClipTrav->setLightTrav (LightTrav);
-	ClipTrav->setAnimDetailTrav (AnimDetailTrav);
-	ClipTrav->setLoadBalancingTrav (LoadBalancingTrav);
-	ClipTrav->setRenderTrav (RenderTrav);
-	ClipTrav->Camera = CurrentCamera;
-	ClipTrav->setQuadGridClipManager (&_QuadGridClipManager);
+	// Set Infos for cliptrav.
+	ClipTrav.Camera = CurrentCamera;
+	ClipTrav.setQuadGridClipManager (&_QuadGridClipManager);
 
-	// For all render traversals, traverse them (except the Hrc one), in ascending order.
-	TTravMap::iterator	it;
-	for(it= RenderTraversals.begin(); it!= RenderTraversals.end(); it++)
-	{
-		ITravScene	*trav= (*it).second;
-		// TestYoyo
-		/*if(AnimDetailTravId!=trav->getClassId() && 
-			LoadBalancingTravId!=trav->getClassId() && 
-			HrcTravId!=trav->getClassId() && 
-			ClipTravId!=trav->getClassId() )
-			continue;*/
-		// maybe don't traverse HRC pass.
-		if(doHrcPass || HrcTravId!=trav->getClassId())
-		{
 
-			// Go!
-			trav->traverse();
+	// **** For all render traversals, traverse them (except the Hrc one), in ascending order.
+	if( doHrcPass )
+		HrcTrav.traverse();
 
-		}
-		// if HrcTrav done, set World Camera matrix for Clip and Render.
-		if(HrcTravId==trav->getClassId())
-		{
-			CTransformHrcObs	*camObs= (CTransformHrcObs*)CMOT::getModelObs(CurrentCamera, HrcTravId);
-			ClipTrav->setCamMatrix(camObs->WorldMatrix);
-			RenderTrav->setCamMatrix (camObs->WorldMatrix);
-			LoadBalancingTrav->setCamMatrix (camObs->WorldMatrix);
-		}
-	}
+	// Set Cam World Matrix for all trav that need it
+	ClipTrav.setCamMatrix(CurrentCamera->getWorldMatrix());
+	RenderTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
+	LoadBalancingTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
+
+	// clip
+	ClipTrav.traverse();
+	// animDetail
+	AnimDetailTrav.traverse();
+	// loadBalance
+	LoadBalancingTrav.traverse();
+	// Light
+	LightTrav.traverse();
+	// render
+	RenderTrav.traverse();
+
+
+	// **** Misc.
 
 	/** Particle system handling (remove the resources of those which are too far, as their clusters may not have been parsed).
       * Not that only a few of them are tested at each call
 	  */
-	_ParticleSystemManager.refreshModels(ClipTrav->WorldFrustumPyramid, ClipTrav->CamPos);
+	_ParticleSystemManager.refreshModels(ClipTrav.WorldFrustumPyramid, ClipTrav.CamPos);
 	
 	// Wainting Instance handling
 	double deltaT = _DeltaSystemTimeBetweenRender;
@@ -487,17 +355,13 @@ void CScene::updateWaitingInstances(double systemTimeEllapsed)
 // ***************************************************************************
 void	CScene::setDriver(IDriver *drv)
 {
-	if (RenderTrav != NULL)
-		RenderTrav->setDriver(drv);
+	RenderTrav.setDriver(drv);
 }
 
 // ***************************************************************************
 IDriver	*CScene::getDriver() const
 {
-	if (RenderTrav != NULL)
-		return RenderTrav->getDriver();
-	else
-		return NULL;
+	return (const_cast<CScene*>(this))->RenderTrav.getDriver();
 }
 
 
@@ -768,29 +632,25 @@ void CScene::animate( TGlobalAnimationTime atTime )
 // ***************************************************************************
 float	CScene::getNbFaceAsked () const
 {
-	nlassert(LoadBalancingTrav);
-	return LoadBalancingTrav->getNbFaceAsked ();
+	return LoadBalancingTrav.getNbFaceAsked ();
 }
 
 
 // ***************************************************************************
 void	CScene::setGroupLoadMaxPolygon(const std::string &group, uint nFaces)
 {
-	nlassert(LoadBalancingTrav);
 	nFaces= max(nFaces, (uint)1);
-	LoadBalancingTrav->setGroupNbFaceWanted(group, nFaces);
+	LoadBalancingTrav.setGroupNbFaceWanted(group, nFaces);
 }
 // ***************************************************************************
 uint	CScene::getGroupLoadMaxPolygon(const std::string &group)
 {
-	nlassert(LoadBalancingTrav);
-	return LoadBalancingTrav->getGroupNbFaceWanted(group);
+	return LoadBalancingTrav.getGroupNbFaceWanted(group);
 }
 // ***************************************************************************
 float	CScene::getGroupNbFaceAsked (const std::string &group) const
 {
-	nlassert(LoadBalancingTrav);
-	return LoadBalancingTrav->getGroupNbFaceAsked(group);
+	return LoadBalancingTrav.getGroupNbFaceAsked(group);
 }
 
 
@@ -798,30 +658,26 @@ float	CScene::getGroupNbFaceAsked (const std::string &group) const
 // ***************************************************************************
 void	CScene::setPolygonBalancingMode(TPolygonBalancingMode polBalMode)
 {
-	nlassert(LoadBalancingTrav);
-	LoadBalancingTrav->PolygonBalancingMode= (CLoadBalancingGroup::TPolygonBalancingMode)(uint)polBalMode;
+	LoadBalancingTrav.PolygonBalancingMode= (CLoadBalancingGroup::TPolygonBalancingMode)(uint)polBalMode;
 }
 
 
 // ***************************************************************************
 CScene::TPolygonBalancingMode	CScene::getPolygonBalancingMode() const
 {
-	nlassert(LoadBalancingTrav);
-	return (CScene::TPolygonBalancingMode)(uint)LoadBalancingTrav->PolygonBalancingMode;
+	return (CScene::TPolygonBalancingMode)(uint)LoadBalancingTrav.PolygonBalancingMode;
 }
 
 // ***************************************************************************
 void  CScene::setLayersRenderingOrder(bool directOrder /*= true*/)
 {
-	nlassert(RenderTrav);
-	RenderTrav->setLayersRenderingOrder(directOrder);
+	RenderTrav.setLayersRenderingOrder(directOrder);
 }
 
 // ***************************************************************************
 bool  CScene::getLayersRenderingOrder() const
 {
-	nlassert(RenderTrav);
-	return 	RenderTrav->getLayersRenderingOrder();
+	return 	RenderTrav.getLayersRenderingOrder();
 }
 
 // ***************************************************************************
@@ -853,74 +709,74 @@ void			CScene::enableLightingSystem(bool enable)
 	_LightingSystemEnabled= enable;
 
 	// Set to RenderTrav and LightTrav
-	RenderTrav->LightingSystemEnabled= _LightingSystemEnabled;
-	LightTrav->LightingSystemEnabled= _LightingSystemEnabled;
+	RenderTrav.LightingSystemEnabled= _LightingSystemEnabled;
+	LightTrav.LightingSystemEnabled= _LightingSystemEnabled;
 }
 
 
 // ***************************************************************************
 void			CScene::setAmbientGlobal(NLMISC::CRGBA ambient)
 {
-	RenderTrav->AmbientGlobal= ambient;
+	RenderTrav.AmbientGlobal= ambient;
 }
 void			CScene::setSunAmbient(NLMISC::CRGBA ambient)
 {
-	RenderTrav->SunAmbient= ambient;
+	RenderTrav.SunAmbient= ambient;
 }
 void			CScene::setSunDiffuse(NLMISC::CRGBA diffuse)
 {
-	RenderTrav->SunDiffuse= diffuse;
+	RenderTrav.SunDiffuse= diffuse;
 }
 void			CScene::setSunSpecular(NLMISC::CRGBA specular)
 {
-	RenderTrav->SunSpecular= specular;
+	RenderTrav.SunSpecular= specular;
 }
 void			CScene::setSunDirection(const NLMISC::CVector &direction)
 {
-	RenderTrav->setSunDirection(direction);
+	RenderTrav.setSunDirection(direction);
 }
 
 
 // ***************************************************************************
 NLMISC::CRGBA	CScene::getAmbientGlobal() const
 {
-	return RenderTrav->AmbientGlobal;
+	return RenderTrav.AmbientGlobal;
 }
 NLMISC::CRGBA	CScene::getSunAmbient() const
 {
-	return RenderTrav->SunAmbient;
+	return RenderTrav.SunAmbient;
 }
 NLMISC::CRGBA	CScene::getSunDiffuse() const
 {
-	return RenderTrav->SunDiffuse;
+	return RenderTrav.SunDiffuse;
 }
 NLMISC::CRGBA	CScene::getSunSpecular() const
 {
-	return RenderTrav->SunSpecular;
+	return RenderTrav.SunSpecular;
 }
 NLMISC::CVector	CScene::getSunDirection() const
 {
-	return RenderTrav->getSunDirection();
+	return RenderTrav.getSunDirection();
 }
 
 
 // ***************************************************************************
 void		CScene::setMaxLightContribution(uint nlights)
 {
-	LightTrav->LightingManager.setMaxLightContribution(nlights);
+	LightTrav.LightingManager.setMaxLightContribution(nlights);
 }
 uint		CScene::getMaxLightContribution() const
 {
-	return LightTrav->LightingManager.getMaxLightContribution();
+	return LightTrav.LightingManager.getMaxLightContribution();
 }
 
 void		CScene::setLightTransitionThreshold(float lightTransitionThreshold)
 {
-	LightTrav->LightingManager.setLightTransitionThreshold(lightTransitionThreshold);
+	LightTrav.LightingManager.setLightTransitionThreshold(lightTransitionThreshold);
 }
 float		CScene::getLightTransitionThreshold() const
 {
-	return LightTrav->LightingManager.getLightTransitionThreshold();
+	return LightTrav.LightingManager.getLightTransitionThreshold();
 }
 
 
@@ -1002,6 +858,113 @@ void					CScene::profileNextRender()
 	// Reset All Stats.
 	BenchRes.reset();
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Old CMOT integrated methods
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+set<CScene::CModelEntry>	CScene::_RegModels;
+
+
+// ***************************************************************************
+void	CScene::registerModel(const CClassId &idModel, const CClassId &idModelBase, CTransform* (*creator)())
+{
+	nlassert(idModel!=CClassId::Null);
+	nlassert(creator);
+	// idModelBase may be Null...
+
+	CModelEntry		e;
+	e.BaseModelId= idModelBase;
+	e.ModelId= idModel;
+	e.Creator= creator;
+
+	// Insert/replace e.
+	_RegModels.erase(e);
+	_RegModels.insert(e);
+}
+
+
+// ***************************************************************************
+CTransform	*CScene::createModel(const CClassId &idModel)
+{
+	nlassert(idModel!=CClassId::Null);
+
+	CModelEntry	e;
+	e.ModelId= idModel;
+	set<CModelEntry>::iterator	itModel;
+	itModel= _RegModels.find(e);
+
+	if(itModel==_RegModels.end())
+	{
+		nlstop;			// Warning, CScene::registerBasics () has not been called !
+		return NULL;
+	}
+	else
+	{
+		CTransform	*m= (*itModel).Creator();
+		if(!m)	return NULL;
+
+		// Set the owner for the model.
+		m->_OwnerScene= this;
+
+		// link model to Root in HRC and in clip. NB: if exist!! (case for the Root and RootCluster :) )
+		if(Root)
+		{
+			Root->hrcLinkSon(m);
+			Root->clipAddChild(m);
+		}
+
+		// Insert the model into the set.
+		_Models.insert(m);
+
+		// By default the model is update() in CScene::updateModels().
+		m->linkToUpdateList();
+
+		// Once the model is correclty created, finish init him.
+		m->initModel();
+
+		return m;
+	}
+}
+// ***************************************************************************
+void	CScene::deleteModel(CTransform *model)
+{
+	if(model==NULL)
+		return;
+	set<CTransform*>::iterator	it= _Models.find(model);
+	if(it!=_Models.end())
+	{
+		delete *it;
+		_Models.erase(it);
+	}
+}
+
+
+// ***************************************************************************
+void	CScene::updateModels()
+{
+	// check all the models which must be checked.
+	CTransform	*model= _UpdateModelList;
+	CTransform	*next;
+	while( model )
+	{
+		// next to update. get next now, because model->update() may remove model from the list.
+		next= model->_NextModelToUpdate;
+
+		// update the model.
+		model->update();
+
+		// next.
+		model= next;
+	}
+}
+
+
 
 
 } // NL3D

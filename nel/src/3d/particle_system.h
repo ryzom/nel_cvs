@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.29 2002/11/14 17:31:43 vizerie Exp $
+ * $Id: particle_system.h,v 1.30 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,6 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/3d/animation_time.h"
-#include "3d/mot.h"
 #include "3d/animated_value.h"
 #include "3d/particle_system_process.h"
 #include "3d/ps_lod.h"
@@ -818,7 +817,7 @@ private:
 	typedef std::map<std::string, float> TGlobalValuesMap;
 	typedef std::map<std::string, NLMISC::CVector> TGlobalVectorValuesMap;
 private:
-	friend class CParticleSystemDetailObs;	
+	friend class CParticleSystemModel;	
 	/// process a pass on the bound located
 	void					stepLocated(TPSProcessPass pass, TAnimationTime et, TAnimationTime realEt);
 	void					updateLODRatio();

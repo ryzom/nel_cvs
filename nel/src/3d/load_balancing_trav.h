@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.7 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.8 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,21 +42,14 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 
-class IBaseLoadBalancingObs;
-class IBaseHrcObs;
-class IBaseClipObs;
 class CClipTrav;
 class CLoadBalancingTrav;
-
-
-// ***************************************************************************
-// ClassIds.
-const NLMISC::CClassId		LoadBalancingTravId=NLMISC::CClassId(0x7181548, 0x36ad3c10);
+class CTransform;
 
 
 // ***************************************************************************
 /**
- * A LoadBalancing Group. Models are owned by a group (through ILoadBalancingObs).
+ * A LoadBalancing Group. Models are owned by a group.
  *	Groups are created in CLoadBalancingTrav.
  *
  * \sa CScene CLoadBalancingTrav
@@ -83,7 +76,7 @@ public:
 	float				getNbFaceAsked () const {return _NbFacePass0;}
 
 public:
-	// ONLY FOR OBSERVERS
+	// ONLY FOR MODEL TRAVERSING.
 	void				addNbFacesPass0(float v) {_NbFacePass0+= v;}
 
 	/// Compute the number of face to be rendered for thismodel, according to the number of faces he want to draw
@@ -117,16 +110,14 @@ private:
 
 // ***************************************************************************
 /**
- * The LoadBalancing traversal. It needs a camera setup (see ITravCameraScene).
- * LoadBalancing observers MUST derive from IBaseLoadBalancingObs.
+ * The LoadBalancing traversal. It needs a camera setup (see CTravCameraScene).
  *
  * NB: see CScene for 3d conventions (orthonormal basis...)
- * \sa CScene IBaseLoadBalancingObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-class CLoadBalancingTrav : public ITravCameraScene
+class CLoadBalancingTrav : public CTravCameraScene
 {
 public:
 
@@ -136,12 +127,6 @@ public:
 
 	/// \name ITrav/ITravScene Implementation.
 	//@{
-	IObs				*createDefaultObs() const;
-	NLMISC::CClassId	getClassId() const {return LoadBalancingTravId;}
-	/** render after AnimDetailObs.
-	 * This order is important to get correct object matrix sticked to skeletons.
-	 */
-	sint				getRenderOrder() const {return 2300;}
 	void				traverse();
 	//@}
 
@@ -177,7 +162,7 @@ public:
 
 
 public:
-	// ONLY FOR OBSERVERS
+	// ONLY FOR MODEL TRAVERSING.
 	uint				getLoadPass() {return _LoadPass;}
 
 	CLoadBalancingGroup	*getDefaultGroup() {return _DefaultGroup;}
@@ -189,8 +174,8 @@ public:
 	// For clipTrav. cleared at beginning of CClipTrav::traverse
 	void				clearVisibleList();
 
-	// For ClipObservers only. NB: list is cleared at begining of traverse().
-	void				addVisibleObs(IBaseLoadBalancingObs *obs);
+	// For ClipTrav only. NB: list is cleared at begining of traverse().
+	void				addVisibleModel(CTransform *model);
 
 // **************
 private:
@@ -211,86 +196,7 @@ private:
 	TGroupMap			_GroupMap;
 
 	// traverse list of model visible and usefull to loadBalance.
-	std::vector<IBaseLoadBalancingObs*>	_VisibleList;
-
-};
-
-
-// ***************************************************************************
-/**
- * The base interface for LoadBalancing traversal.
- * LoadBalancing observers MUST derive from IBaseLoadBalancingObs.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - leave traverse() undefined
- *
- * \b DERIVER \b RULES:
- * - implement the notification system (see IObs for details).
- * - implement the traverse() method.
- *
- * \sa CLoadBalancingTrav
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class IBaseLoadBalancingObs : public IObs
-{
-public:
-	/// Shortcut to observers.
-	IBaseHrcObs		*HrcObs;
-	IBaseClipObs	*ClipObs;
-
-	// Which group owns this model
-	CLoadBalancingGroup		*LoadBalancingGroup;
-
-public:
-
-	/// Constructor.
-	IBaseLoadBalancingObs()
-	{
-		HrcObs=NULL;
-		ClipObs= NULL;
-	}
-	/// Build shortcut to Hrc and Clip.
-	virtual	void	init();
-
-
-	/// \name The base doit method.
-	//@{
-	virtual	void	traverse(IObs *caller) =0;
-	//@}
-
-
-};
-
-
-// ***************************************************************************
-/**
- * The default LoadBalancing observer, used by unspecified models.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - implement the traverse() method to DO NOTHING
- *
- * \sa IBaseLoadBalancingObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class CDefaultLoadBalancingObs : public IBaseLoadBalancingObs
-{
-public:
-
-
-	/// Constructor.
-	CDefaultLoadBalancingObs() {}
-
-	/// \name The base doit method.
-	//@{
-	virtual	void	traverse(IObs *caller)
-	{
-		// no need to traverseSons. No graph here.
-	}
-	//@}
+	std::vector<CTransform*>	_VisibleList;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.25 2002/11/13 17:02:48 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.26 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -252,10 +252,6 @@ void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
 void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene)
 {
 	uint32 i;
-
-
-	// Copy ownerScene.
-	mi->_OwnerScene= ownerScene;
 
 
 	// setup animated blendShapes

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.27 2002/11/14 12:58:41 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.28 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,6 @@ namespace NL3D
 {
 
 class CSkeletonShape;
-class CTransformClipObs;
 class CLodCharacterManager;
 
 
@@ -64,7 +63,7 @@ const NLMISC::CClassId		SkeletonModelId=NLMISC::CClassId(0x7d4703b4, 0x43ad6ab1)
 class CSkeletonModel : public CTransformShape
 {
 public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
+	/// Call at the begining of the program, to register the model
 	static	void	registerBasic();
 
 public:
@@ -96,7 +95,7 @@ public:
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
 	 * NB: when a skin is binded, the command hide(), show(), ... have no effect on it, until it is detachSkeletonSon()-ed
-	 * NB: For Skins, all Hrc/Clip/ValidateList link is done here
+	 * NB: For Skins, all Hrc/Clip/UpdateList link is done here
 	 * \return false if mi is not skinnable, true otherwise
 	 */
 	bool		bindSkin(CTransform *mi);
@@ -116,7 +115,7 @@ public:
 
 	/** unparent a CTransform from a bone of the skeleton, or unbind a skin. No-op if not a son of this skeleton
 	 * NB: mi is made son of Root in Traversals Hrc, and change are made at render() for ClipTrav.
-	 * NB: For Skins, all Hrc/Clip/ValidateList link is done here
+	 * NB: For Skins, all Hrc/Clip/UpdateList link is done here
 	 */
 	void		detachSkeletonSon(CTransform *mi);
 
@@ -278,6 +277,19 @@ public:
 
 	// @}
 
+
+	/// \name CTransform traverse specialisation
+	// @{
+	/** this do :
+	 *  - call CTransformShape::traverseAnimDetail()
+	 *  - update animated bones.
+	 */
+	virtual void	traverseAnimDetail(CTransform *caller);
+	/**	If displayed as a CLod, render it, else render the skins binded to this skeleton
+	 */
+	virtual	void	traverseRender();
+	// @}
+
 // ***********************
 protected:
 	/// Constructor
@@ -290,20 +302,11 @@ protected:
 
 
 private:
-	static IModel	*creator() {return new CSkeletonModel;}
+	static CTransform	*creator() {return new CSkeletonModel;}
 	friend	class CSkeletonShape;
-	friend	class CSkeletonModelAnimDetailObs;
-	friend	class CSkeletonModelRenderObs;
-	friend	class CTransformClipObs;
 
 
 public:
-	/// tells if the skeleton has been clipped in the clip traversal.
-	bool	isClipVisible() const
-	{
-		return _ClipObs->Visible;
-	}
-
 	// update if needed the renderList
 	void						updateSkinRenderLists();
 
@@ -426,58 +429,8 @@ private:
 	// @}
 
 
-	// The traversal of the Scene which owns this Skeleton.
-	CHrcTrav		*HrcTrav;
-	CClipTrav		*ClipTrav;
-};
-
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - extend the traverse method.
- *
- * \sa CAnimDetailTrav IBaseAnimDetailObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CSkeletonModelAnimDetailObs : public CTransformAnimDetailObs
-{
-public:
-
-	/** this do :
-	 *  - call CTransformAnimDetailObs::traverse()
-	 *  - update animated bones.
-	 */
-	virtual	void	traverse(IObs *caller);
-
-
-public:
-	static IObs	*creator() {return new CSkeletonModelAnimDetailObs;}
-};
-
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - extend the traverse method.
- *
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CSkeletonModelRenderObs : public CTransformShapeRenderObs
-{
-public:
- 
-	/** It replaces CTransformShapeRenderObs:
-	 *	If displayed as a CLod, render it, else render the skins binded to this skeleton
-	 */
-	virtual	void	traverse(IObs *caller);
-
+	/// \name Rendering
+	// @{
 	/** render the skeleton as a CLod.
 	 *  - update instance Lighting
 	 *  - render the lod.
@@ -494,10 +447,11 @@ public:
 	/** render a list of skin, no lighting setup etc..., but use where possible CMeshSkinManager
 	 */
 	void			renderSkinList(NLMISC::CObjectVector<CTransform*, false>	&skinList, float alphaMRM);
+	// @}
 
-public:
-	static IObs	*creator() {return new CSkeletonModelRenderObs;}
+
 };
+
 
 
 } // NL3D

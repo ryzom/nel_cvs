@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.9 2003/03/03 12:57:27 boucher Exp $
+ * $Id: cluster.h,v 1.10 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,6 @@ namespace NL3D {
 
 
 class CPortal;
-class CClusterClipObs;
 class CInstanceGroup;
 
 const NLMISC::CClassId	ClusterId=NLMISC::CClassId(0x13f37e46, 0x3e880780);
@@ -112,8 +111,6 @@ public:
 	uint32 getNbPortals() {return _Portals.size();}
 	CPortal* getPortal(uint32 pos) {return _Portals[pos];}
 
-	CClusterClipObs *getClipObs();
-
 	/// Serial
 
 	void serial (NLMISC::IStream& f);
@@ -145,14 +142,20 @@ public:
 	NLMISC::TStringId	getEnvironmentFxId();
 	//@}
 	
+
+	/// \name CTransform Specialisation
+	// @{
+	virtual void	traverseHrc(CTransform *caller);
+	virtual void	traverseClip(CTransform *caller);
+	virtual	bool	clip(CTransform *caller);
+	// @}
+
+
 private:
 
-	static IModel *creator () {return new CCluster;}
+	static CTransform *creator () {return new CCluster;}
 
 private:
-
-	/// Shortcut to the clip observer
-	CClusterClipObs *_Obs;
 
 	/// Portals list
 	std::vector<CPortal*>	_Portals;
@@ -187,60 +190,12 @@ private:
 	//		unlink this cluster sons
 	void	unlinkSons();
 
+	/// ***** Clip Traversal
+	bool	_Visited;
+
 
 	/// Friends classes
 	friend class CInstanceGroup;
-};
-
-/**
- * CClusterHrcObs
- *
- * \author Matthieu Besson
- * \author Nevrax France
- * \date 2001
- */
-class CClusterHrcObs : public CTransformHrcObs
-{
-
-public:
-
-	virtual	void traverse (IObs *caller);
-
-	static IObs	*creator () {return new CClusterHrcObs;}
-
-	/// Friend class
-	friend class CCluster;
-};
-
-/**
- * CClusterClipObs
- *
- * \author Matthieu Besson
- * \author Nevrax France
- * \date 2001
- */
-class CClusterClipObs : public IBaseClipObs
-{
-
-public:
-	CClusterClipObs();
-	
-	/// Don't clip.
-	virtual	bool clip (IBaseClipObs *caller);
-
-	/// just traverseSons().
-	virtual	void traverse (IObs *caller);
-
-private:
-
-	bool Visited;
-
-private:
-
-	static IObs *creator () {return new CClusterClipObs;}
-
-	/// Friend class
-	friend class CCluster;
 };
 
 

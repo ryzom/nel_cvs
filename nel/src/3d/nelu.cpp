@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.30 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: nelu.cpp,v 1.31 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,10 +86,6 @@ void			CNELU::initScene(CViewport viewport)
 	// Register basic csene.
 	CScene::registerBasics();
 
-	// Init Scene.
-	CNELU::Scene.initDefaultTravs();
-
-	// Don't add any user trav.
 	// init default Roots.
 	CNELU::Scene.initDefaultRoots();
 	
@@ -98,9 +94,6 @@ void			CNELU::initScene(CViewport viewport)
 
 	// Set viewport
 	CNELU::Scene.setViewport (viewport);
-
-	// Init the world instance group
-	CNELU::Scene.initGlobalnstanceGroup();
 
 	// init QuadGridClipManager
 	CNELU::Scene.initQuadGridClipManager ();

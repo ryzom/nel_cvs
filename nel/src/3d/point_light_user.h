@@ -1,7 +1,7 @@
 /** \file point_light_user.h
  * <File description>
  *
- * $Id: point_light_user.h,v 1.3 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: point_light_user.h,v 1.4 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	/// \name Object
 	// @{
 	/// This model should have been created with Scene::createInstance().
-	CPointLightUser(CScene *scene, IModel *trans);
+	CPointLightUser(CScene *scene, CTransform *trans);
 	virtual	~CPointLightUser()
 	{
 		NL3D_MEM_POINTLIGHT

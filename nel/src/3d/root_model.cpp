@@ -1,7 +1,7 @@
 /** \file root_model.cpp
  * <File description>
  *
- * $Id: root_model.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
+ * $Id: root_model.cpp,v 1.3 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/root_model.h"
+#include "3d/scene.h"
 
 
 namespace NL3D {
@@ -34,52 +35,50 @@ namespace NL3D {
 // ***************************************************************************
 void	CRootModel::registerBasic()
 {
-	CMOT::registerModel( RootModelId, 0, CRootModel::creator);
-	CMOT::registerObs( HrcTravId, RootModelId, CRootModelHrcObs::creator );
-	CMOT::registerObs( ClipTravId, RootModelId, CRootModelClipObs::creator );
-	CMOT::registerObs( AnimDetailTravId, RootModelId, CRootModelAnimDetailObs::creator );
-	CMOT::registerObs( LoadBalancingTravId, RootModelId, CRootModelLoadBalancingObs::creator );
-	CMOT::registerObs( LightTravId, RootModelId, CRootModelLightObs::creator );
-	CMOT::registerObs( RenderTravId, RootModelId, CRootModelRenderObs::creator );
+	CScene::registerModel( RootModelId, 0, CRootModel::creator);
 }
 
 
 // ***************************************************************************
-IObs			*CRootModel::getObs(const NLMISC::CClassId &idTrav)
+void	CRootModel::traverseHrc(CTransform *caller)
 {
-	return IModel::getObs(idTrav);
+	// Traverse the Hrc sons.
+	uint	num= hrcGetNumChildren();
+	for(uint i=0;i<num;i++)
+		hrcGetChild(i)->traverseHrc(this);
 }
 
+// ***************************************************************************
+void	CRootModel::traverseClip(CTransform *caller)
+{
+	// Traverse the Clip sons.
+	uint	num= clipGetNumChildren();
+	for(uint i=0;i<num;i++)
+		clipGetChild(i)->traverseClip(this);
+}
 
 // ***************************************************************************
-void	CRootModelHrcObs::traverse(IObs *caller)
-{
-	traverseSons();
+void	CRootModel::traverseAnimDetail(CTransform *caller)
+{	
+	// no-op
 }
+
 // ***************************************************************************
-void	CRootModelClipObs::traverse(IObs *caller)
+void	CRootModel::traverseLoadBalancing(CTransform *caller)
 {
-	traverseSons();
+	// no-op
 }
+
 // ***************************************************************************
-void	CRootModelAnimDetailObs::traverse(IObs *caller)
+void	CRootModel::traverseLight(CTransform *caller)
 {
-	traverseSons();
+	// no-op
 }
+
 // ***************************************************************************
-void	CRootModelLoadBalancingObs::traverse(IObs *caller)
+void	CRootModel::traverseRender()
 {
-	traverseSons();
-}
-// ***************************************************************************
-void	CRootModelLightObs::traverse(IObs *caller)
-{
-	traverseSons();
-}
-// ***************************************************************************
-void	CRootModelRenderObs::traverse(IObs *caller)
-{
-	traverseSons();
+	// no-op
 }
 
 

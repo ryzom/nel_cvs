@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.14 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.15 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,15 +59,14 @@ CMeshMultiLodInstance::~CMeshMultiLodInstance ()
 
 void		CMeshMultiLodInstance::registerBasic()
 {
-	CMOT::registerModel (MeshMultiLodInstanceId, MeshBaseInstanceId, CMeshMultiLodInstance::creator);
-	CMOT::registerObs (LoadBalancingTravId, MeshMultiLodInstanceId, CMeshMultiLodBalancingObs::creator);
+	CScene::registerModel (MeshMultiLodInstanceId, MeshBaseInstanceId, CMeshMultiLodInstance::creator);
 }
 
 
 // ***************************************************************************
 CRGBA		CMeshMultiLodInstance::getCoarseMeshLighting()
 {
-	CScene	*scene= getScene();
+	CScene	*scene= getOwnerScene();
 	nlassert(scene);
 
 	// compute his sun contribution result, and update
@@ -84,62 +83,59 @@ CRGBA		CMeshMultiLodInstance::getCoarseMeshLighting()
 
 // ***************************************************************************
 
-void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
+void		CMeshMultiLodInstance::traverseLoadBalancing(CTransform *caller)
 {
 	// Call previous
-	CTransformShapeLoadBalancingObs::traverse (caller);
+	CMeshBaseInstance::traverseLoadBalancing (caller);
 
 	// If this is the second pass of LoadBalancing, choose the Lods, according to getNumTrianglesAfterLoadBalancing()
-	CLoadBalancingTrav		*loadTrav= (CLoadBalancingTrav*)Trav;
-	if(loadTrav->getLoadPass()==1)
+	CLoadBalancingTrav		&loadTrav= getOwnerScene()->getLoadBalancingTrav();
+	if(loadTrav.getLoadPass()==1)
 	{
-		// Get a pointer on the model
-		CMeshMultiLodInstance *model=safe_cast<CMeshMultiLodInstance*> (Model);
-
 		// Get a pointer on the shape
-		CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)model->Shape);
+		CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)Shape);
 
 		// Reset render pass
-		model->setTransparency(false);
-		model->setOpacity(false);
+		setTransparency(false);
+		setOpacity(false);
 
 		// Get the wanted number of polygons
-		float polygonCount=model->getNumTrianglesAfterLoadBalancing ();
+		float polygonCount= getNumTrianglesAfterLoadBalancing ();
 
 		// Look for the good slot
 		uint meshCount=shape->_MeshVector.size();
-		model->Lod0=0;
+		Lod0=0;
 		if (meshCount>1)
 		{
 			// Look for good i
-			while ( polygonCount < shape->_MeshVector[model->Lod0].EndPolygonCount )
+			while ( polygonCount < shape->_MeshVector[Lod0].EndPolygonCount )
 			{
-				model->Lod0++;
-				if (model->Lod0==meshCount-1)
+				Lod0++;
+				if (Lod0==meshCount-1)
 					break;
 			}
 		}
 		
 		// The slot
-		CMeshMultiLod::CMeshSlot	&slot=shape->_MeshVector[model->Lod0];
+		CMeshMultiLod::CMeshSlot	&slot=shape->_MeshVector[Lod0];
 
 		// Get the distance with polygon count
 		float distance=(polygonCount-slot.B)/slot.A;
 
 		// Get the final polygon count
 		if (slot.MeshGeom)
-			model->PolygonCountLod0=slot.MeshGeom->getNumTriangles (distance);
+			PolygonCountLod0=slot.MeshGeom->getNumTriangles (distance);
 
 		// Second slot in use ?
-		model->Lod1=0xffffffff;
+		Lod1=0xffffffff;
 
 		// The next slot
 		CMeshMultiLod::CMeshSlot	*nextSlot=NULL;
 
 		// Next slot exist ?
-		if (model->Lod0!=meshCount-1)
+		if (Lod0!=meshCount-1)
 		{
-			nextSlot=&(shape->_MeshVector[model->Lod0+1]);
+			nextSlot=&(shape->_MeshVector[Lod0+1]);
 		}
 
 		// Max dist before blend
@@ -153,10 +149,10 @@ void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
 		if ( startBlend < distance )
 		{
 			// Alpha factor for main Lod
-			model->BlendFactor = (slot.DistMax-distance)/(slot.DistMax-startBlend);
-			if (model->BlendFactor<0)
-				model->BlendFactor=0;
-			nlassert (model->BlendFactor<=1);
+			BlendFactor = (slot.DistMax-distance)/(slot.DistMax-startBlend);
+			if (BlendFactor<0)
+				BlendFactor=0;
+			nlassert (BlendFactor<=1);
 
 			// Render this mesh
 			if (slot.MeshGeom)
@@ -164,27 +160,27 @@ void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
 				if (slot.Flags&CMeshMultiLod::CMeshSlot::BlendOut)
 				{
 					// Render the geom mesh with alpha blending with goodPolyCount
-					model->setTransparency(true);
-					model->Flags|=CMeshMultiLodInstance::Lod0Blend;
+					setTransparency(true);
+					Flags|=CMeshMultiLodInstance::Lod0Blend;
 				}
 				else
 				{
 					// Render the geom mesh without alpha blending with goodPolyCount
-					model->setTransparency (slot.isTransparent());
-					model->setOpacity (slot.isOpaque());
-					model->Flags&=~CMeshMultiLodInstance::Lod0Blend;
+					setTransparency (slot.isTransparent());
+					setOpacity (slot.isOpaque());
+					Flags&=~CMeshMultiLodInstance::Lod0Blend;
 				}
 			}
 			else
-				model->Lod0=0xffffffff;
+				Lod0=0xffffffff;
 
 			// Next mesh, BlendIn actived ?
-			if (nextSlot && shape->_MeshVector[model->Lod0+1].MeshGeom && (nextSlot->Flags&CMeshMultiLod::CMeshSlot::BlendIn))
+			if (nextSlot && shape->_MeshVector[Lod0+1].MeshGeom && (nextSlot->Flags&CMeshMultiLod::CMeshSlot::BlendIn))
 			{
 				// Render the geom mesh with alpha blending with nextSlot->BeginPolygonCount
-				model->PolygonCountLod1=nextSlot->MeshGeom->getNumTriangles (distance);
-				model->Lod1=model->Lod0+1;
-				model->setTransparency(true);
+				PolygonCountLod1=nextSlot->MeshGeom->getNumTriangles (distance);
+				Lod1=Lod0+1;
+				setTransparency(true);
 			}
 		}
 		else
@@ -192,12 +188,12 @@ void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
 			if (slot.MeshGeom)
 			{
 				// Render without blend with goodPolyCount
-				model->setTransparency (slot.isTransparent());
-				model->setOpacity (slot.isOpaque());
-				model->Flags&=~CMeshMultiLodInstance::Lod0Blend;
+				setTransparency (slot.isTransparent());
+				setOpacity (slot.isOpaque());
+				Flags&=~CMeshMultiLodInstance::Lod0Blend;
 			}
 			else
-				model->Lod0=0xffffffff;
+				Lod0=0xffffffff;
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.17 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.18 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,6 @@ namespace NL3D
 CMeshBaseInstance::CMeshBaseInstance()
 {
 	IAnimatable::resize(AnimValueLast);
-	_OwnerScene= NULL;
 	_AsyncTextureToLoadRefCount= 0;
 	_AsyncTextureMode= false;
 	_AsyncTextureReady= true;
@@ -69,8 +68,7 @@ CMeshBaseInstance::~CMeshBaseInstance()
 // ***************************************************************************
 void		CMeshBaseInstance::registerBasic()
 {
-	CMOT::registerModel(MeshBaseInstanceId, TransformShapeId, CMeshBaseInstance::creator);
-	CMOT::registerObs(AnimDetailTravId, MeshBaseInstanceId, CMeshBaseInstanceAnimDetailObs::creator);
+	CScene::registerModel(MeshBaseInstanceId, TransformShapeId, CMeshBaseInstance::creator);
 }
 
 
@@ -182,21 +180,17 @@ void CMeshBaseInstance::setBlendShapeFactor (const std::string &BlendShapeName, 
 
 
 // ***************************************************************************
-void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
+void CMeshBaseInstance::traverseAnimDetail(CTransform *caller)
 {
-	
-	CMeshBaseInstance	*mi = (CMeshBaseInstance*)Model;
-	CMeshBase			*mb = NLMISC::safe_cast<CMeshBase *>((IShape *) mi->Shape);
+	CMeshBase			*mb = NLMISC::safe_cast<CMeshBase *>((IShape *) Shape);
 
 	// if the base instance uses automatic animations, we must also setup the date of the channel mixer controlling this object
 	if (mb->getAutoAnim())
 	{
 		// setup the channel mixer date
-		CChannelMixer *chanMix = mi->getChannelMixer();
+		CChannelMixer *chanMix = getChannelMixer();
 		if (chanMix)
 		{			
-			ITravScene	*ts = NLMISC::safe_cast<ITravScene *>(Trav);
-			nlassert(ts->Scene);
 			const CAnimation *anim = chanMix->getSlotAnimation(0);
 			/** We perform wrapping ourselves.
 			  * We avoid using a playlist, to not create one more obj.
@@ -206,7 +200,7 @@ void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
 				float animLenght = anim->getEndTime() - anim->getBeginTime();
 				if (animLenght > 0)
 				{
-					float currTime = (TAnimationTime) ts->Scene->getCurrentTime();
+					float currTime = (TAnimationTime) getOwnerScene()->getCurrentTime();
 					float startTime = (uint) (currTime / animLenght) * animLenght;
 					// Set the channel mixer date using the global date of the scene
 					chanMix->setSlotTime(0, anim->getBeginTime() + currTime - startTime);
@@ -225,29 +219,29 @@ void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
 		}
 	}
 
-	CTransformAnimDetailObs::traverse(caller);
+	CTransformShape::traverseAnimDetail(caller);
 
 	
 	// update animated materials.
 	// test if animated materials must be updated.
-	if(mi->IAnimatable::isTouched(CMeshBaseInstance::OwnerBit))
+	if(IAnimatable::isTouched(CMeshBaseInstance::OwnerBit))
 	{
 		// must test / update all AnimatedMaterials.
-		for(uint i=0;i<mi->_AnimatedMaterials.size();i++)
+		for(uint i=0;i<_AnimatedMaterials.size();i++)
 		{
 			// This test and update the pointed material.
-			mi->_AnimatedMaterials[i].update();
+			_AnimatedMaterials[i].update();
 		}
 
-		mi->IAnimatable::clearFlag(CMeshBaseInstance::OwnerBit);
+		IAnimatable::clearFlag(CMeshBaseInstance::OwnerBit);
 	}
 
 	// Lightmap automatic animation
-	for( uint i = 0; i < mi->_AnimatedLightmap.size(); ++i )
+	for( uint i = 0; i < _AnimatedLightmap.size(); ++i )
 	{
-		const char *LightGroupName = strchr( mi->_AnimatedLightmap[i]->getName().c_str(), '.' )+1;
-		mi->setLightMapFactor(	LightGroupName,
-								mi->_AnimatedLightmap[i]->getFactor() );
+		const char *LightGroupName = strchr( _AnimatedLightmap[i]->getName().c_str(), '.' )+1;
+		setLightMapFactor(	LightGroupName,
+								_AnimatedLightmap[i]->getFactor() );
 	}
 }
 
@@ -414,7 +408,7 @@ void			CMeshBaseInstance::startAsyncTextureLoading()
 		return;
 
 	// If the async texutre manager is not setuped in the scene, abort.
-	CAsyncTextureManager	*asyncTextMgr= _OwnerScene->getAsyncTextureManager();
+	CAsyncTextureManager	*asyncTextMgr= getOwnerScene()->getAsyncTextureManager();
 	if(!asyncTextMgr)
 		return;
 
@@ -452,7 +446,7 @@ void			CMeshBaseInstance::startAsyncTextureLoading()
 void			CMeshBaseInstance::releaseCurrentAsyncTextures()
 {
 	// If the async texutre manager is not setuped in the scene, abort.
-	CAsyncTextureManager	*asyncTextMgr= _OwnerScene->getAsyncTextureManager();
+	CAsyncTextureManager	*asyncTextMgr= getOwnerScene()->getAsyncTextureManager();
 	if(!asyncTextMgr)
 		return;
 

@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.17 2003/03/11 09:32:47 berenguier Exp $
+ * $Id: flare_model.cpp,v 1.18 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -52,36 +52,34 @@ CFlareModel::CFlareModel() : _Intensity(0)
 
 void CFlareModel::registerBasic()
 {
-	// register the model and his observers
-	CMOT::registerModel(FlareModelClassId, TransformShapeId, CFlareModel::creator);	
-	CMOT::registerObs(RenderTravId, FlareModelClassId, CFlareRenderObs::creator);	
+	// register the model
+	CScene::registerModel(FlareModelClassId, TransformShapeId, CFlareModel::creator);	
 }
 
 
 
 
-void	CFlareRenderObs::traverse(IObs *caller)
+void	CFlareModel::traverseRender()
 {			
-	CRenderTrav			*trav = NLMISC::safe_cast<CRenderTrav *>(Trav);
-	CFlareModel			*m    = NLMISC::safe_cast<CFlareModel *>(Model);
-	IDriver				*drv  = trav->getDriver();
-	if (trav->isCurrentPassOpaque()) return;
+	CRenderTrav			&renderTrav = getOwnerScene()->getRenderTrav();
+	IDriver				*drv  = renderTrav.getDriver();
+	if (renderTrav.isCurrentPassOpaque()) return;
 	
 	
 
 	// transform the flare on screen	
-	const CVector		upt = HrcObs->WorldMatrix.getPos(); // unstransformed pos	
-	const CVector	pt = trav->ViewMatrix * upt;
+	const CVector		upt = getWorldMatrix().getPos(); // unstransformed pos	
+	const CVector	pt = renderTrav.ViewMatrix * upt;
 
 
 
-	if (pt.y <= trav->Near) 
+	if (pt.y <= renderTrav.Near) 
 	{		
 		return; // flare behind us
 	}
 
-	nlassert(m->Shape);
-	CFlareShape *fs = NLMISC::safe_cast<CFlareShape *>((IShape *) m->Shape);
+	nlassert(Shape);
+	CFlareShape *fs = NLMISC::safe_cast<CFlareShape *>((IShape *) Shape);
 	
 
     if (pt.y > fs->getMaxViewDist()) 
@@ -105,10 +103,10 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	// compute position on screen
 	uint32 width, height;
 	drv->getWindowSize(width, height);
-	const float middleX = .5f * (trav->Left + trav->Right);
-	const float middleZ = .5f * (trav->Bottom + trav->Top);
-	const sint xPos = (width>>1) + (sint) (width * (((trav->Near * pt.x) / pt.y) - middleX) / (trav->Right - trav->Left));
-	const sint yPos = (height>>1) - (sint) (height * (((trav->Near * pt.z) / pt.y) - middleZ) / (trav->Top - trav->Bottom));	
+	const float middleX = .5f * (renderTrav.Left + renderTrav.Right);
+	const float middleZ = .5f * (renderTrav.Bottom + renderTrav.Top);
+	const sint xPos = (width>>1) + (sint) (width * (((renderTrav.Near * pt.x) / pt.y) - middleX) / (renderTrav.Right - renderTrav.Left));
+	const sint yPos = (height>>1) - (sint) (height * (((renderTrav.Near * pt.z) / pt.y) - middleZ) / (renderTrav.Top - renderTrav.Bottom));	
 
 	// read z-buffer value at the pos we are
 	static std::vector<float> v(1);
@@ -116,7 +114,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	drv->getZBufferPart(v, rect);
 
 	// project in screen space
-	const float z = (float) (1.0 - (1.0 / pt.y - 1.0 / trav->Far) / (1.0 /trav->Near - 1.0 / trav->Far));
+	const float z = (float) (1.0 - (1.0 / pt.y - 1.0 / renderTrav.Far) / (1.0 /renderTrav.Near - 1.0 / renderTrav.Far));
 	
 
 	if (!v.size() || z > v[0]) // test against z-buffer
@@ -124,15 +122,15 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		float p = fs->getPersistence();
 		if (fs == 0)
 		{
-			m->_Intensity = 0;			
+			_Intensity = 0;			
 			return;
 		}
 		else
 		{
-			m->_Intensity -= 1.f / p * (float)m->_Scene->getEllapsedTime();	
-			if (m->_Intensity < 0.f) 
+			_Intensity -= 1.f / p * (float)_Scene->getEllapsedTime();	
+			if (_Intensity < 0.f) 
 			{				
-				m->_Intensity = 0.f;
+				_Intensity = 0.f;
 				return;	// nothing to draw
 			}
 		}			
@@ -142,12 +140,12 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		float p = fs->getPersistence();
 		if (fs == 0)
 		{
-			m->_Intensity = 1;
+			_Intensity = 1;
 		}
 		else
 		{
-			m->_Intensity += 1.f / p * (float)m->_Scene->getEllapsedTime();	
-			if (m->_Intensity > 1.f) m->_Intensity = 1.f;
+			_Intensity += 1.f / p * (float)_Scene->getEllapsedTime();	
+			if (_Intensity > 1.f) _Intensity = 1.f;
 		}			
 	}
 
@@ -188,19 +186,19 @@ void	CFlareRenderObs::traverse(IObs *caller)
 
 	// we don't change the fustrum to draw 2d shapes : it is costly, and we need to restore it after the drawing has been done
 	// we setup Z to be (near + far) / 2, and setup x and y to get the screen coordinates we want
-	const float zPos             = 0.5f * (trav->Near + trav->Far); 
-	const float zPosDivNear      = zPos / trav->Near;
+	const float zPos             = 0.5f * (renderTrav.Near + renderTrav.Far); 
+	const float zPosDivNear      = zPos / renderTrav.Near;
 
 	// compute the coeeff so that x = ax * px + bx; y = ax * py + by
-	const float aX = ( (trav->Right - trav->Left) / (float) width) * zPosDivNear;	
-	const float bX = zPosDivNear * (middleX - 0.5f * (trav->Right - trav->Left));
+	const float aX = ( (renderTrav.Right - renderTrav.Left) / (float) width) * zPosDivNear;	
+	const float bX = zPosDivNear * (middleX - 0.5f * (renderTrav.Right - renderTrav.Left));
 	//
-	const float aY = - ( (trav->Top - trav->Bottom) / (float) height) * zPosDivNear;	
-	const float bY = zPosDivNear * (middleZ + 0.5f * (trav->Top - trav->Bottom));
+	const float aY = - ( (renderTrav.Top - renderTrav.Bottom) / (float) height) * zPosDivNear;	
+	const float bY = zPosDivNear * (middleZ + 0.5f * (renderTrav.Top - renderTrav.Bottom));
 
-	const CVector I = trav->CamMatrix.getI();
-	const CVector J = trav->CamMatrix.getJ();
-	const CVector K = trav->CamMatrix.getK();
+	const CVector I = renderTrav.CamMatrix.getI();
+	const CVector J = renderTrav.CamMatrix.getJ();
+	const CVector K = renderTrav.CamMatrix.getK();
 	//
 	CRGBA		 col;	
 	CRGBA        flareColor = fs->getColor(); 
@@ -214,11 +212,11 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		{
 			float dazzleIntensity = 1.f - norm / fs->getDazzleAttenuationRange();
 			CRGBA dazzleColor = fs->getDazzleColor(); 
-			col.modulateFromui(dazzleColor, (uint) (255.f * m->_Intensity * dazzleIntensity));
+			col.modulateFromui(dazzleColor, (uint) (255.f * _Intensity * dazzleIntensity));
 			material.setColor(col);
 			material.setTexture(0, NULL);
 	
-			const CVector dazzleCenter = trav->CamPos + zPos * J;
+			const CVector dazzleCenter = renderTrav.CamPos + zPos * J;
 			const CVector dI = (width>>1) * aX * I;
 			const CVector dK = (height>>1) * bX * K;
 
@@ -232,7 +230,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	}	*/	
 	if (!fs->getAttenuable() )
 	{
-		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * m->_Intensity));
+		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * _Intensity));
 	}
 	else
 	{
@@ -240,7 +238,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		{			
 			return; // nothing to draw;		
 		}
-		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * m->_Intensity * (1.f - norm / fs->getAttenuationRange() )));
+		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * _Intensity * (1.f - norm / fs->getAttenuationRange() )));
 	}
 
 
@@ -289,12 +287,12 @@ void	CFlareRenderObs::traverse(IObs *caller)
 			// compute vector that map to the center of the flare
 
 			scrPos = (aX * (xPos + dX * fs->getRelativePos(k)) + bX) * I 
-				     +  zPos * J + (aY * (yPos + dY * fs->getRelativePos(k)) + bY) * K + trav->CamMatrix.getPos(); 
+				     +  zPos * J + (aY * (yPos + dY * fs->getRelativePos(k)) + bY) * K + renderTrav.CamMatrix.getPos(); 
 
 
 			
 
-			size = fs->getSize(k) / trav->Near;			
+			size = fs->getSize(k) / renderTrav.Near;			
 			vb.setVertexCoord(0, scrPos + size * (I + K) );
 			vb.setVertexCoord(1, scrPos + size * (I - K) );
 			vb.setVertexCoord(2, scrPos + size * (-I - K) );
@@ -304,7 +302,6 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		}
 		
 	}		
-	this->traverseSons();
 }
 
 

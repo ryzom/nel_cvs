@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.47 2003/03/18 10:00:21 besson Exp $
+ * $Id: scene_group.cpp,v 1.48 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -625,7 +625,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 
 	// Setup the hierarchy
 	// We just have to set the traversal HRC (Hierarchy)
-	ITrav *pHrcTrav = scene.getTrav (HrcTravId);
+	CHrcTrav	&hrcTrav = scene.getHrcTrav();
 
 	if (_Root == NULL)
 	{
@@ -637,17 +637,17 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 	{
 		CInstance &rInstanceInfo = *it;
 		if( rInstanceInfo.nParent != -1 ) // Is the instance get a parent
-			pHrcTrav->link (_Instances[rInstanceInfo.nParent], _Instances[i]);
+			_Instances[rInstanceInfo.nParent]->hrcLinkSon( _Instances[i] );
 		else
-			pHrcTrav->link (_Root, _Instances[i]);
+			_Root->hrcLinkSon( _Instances[i] );
 	}
 	// Attach the root of the instance group to the root of the hierarchy traversal
-	pHrcTrav->link (NULL, _Root);
+	scene.getRoot()->hrcLinkSon( _Root );
 
 	// Cluster / Portals
 	// -----------------
 
-	CClipTrav *pClipTrav = (CClipTrav*)(scene.getTrav (ClipTravId));
+	CClipTrav *pClipTrav = &scene.getClipTrav();
 	_ClipTrav = pClipTrav;
 
 	// Create the MOT links (create the physical clusters)
@@ -667,7 +667,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 		_ClusterInstances[i]->setSoundGroup(_ClusterInfos[i].getSoundGroup());
 		_ClusterInstances[i]->setEnvironmentFx(_ClusterInfos[i].getEnvironmentFx());
 		pClipTrav->registerCluster (_ClusterInstances[i]);
-		pClipTrav->unlink (NULL, _ClusterInstances[i]);
+		_ClusterInstances[i]->clipUnlinkFromAll();
 	}
 
 	// Relink portals with newly created clusters
@@ -685,9 +685,9 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 	{
 		if (_InstancesInfos[i].Clusters.size() > 0)
 		{
-			pClipTrav->unlink (NULL, _Instances[i]);
+			_Instances[i]->clipUnlinkFromAll();
 			for (j = 0; j < _InstancesInfos[i].Clusters.size(); ++j)
-				pClipTrav->link (_ClusterInstances[_InstancesInfos[i].Clusters[j]], _Instances[i]);
+				_ClusterInstances[_InstancesInfos[i].Clusters[j]]->clipAddChild( _Instances[i] );
 			// For the first time we have to set all the instances to NOT move (and not be rebinded)
 			_Instances[i]->freeze();
 			_Instances[i]->setClusterSystem (this);
@@ -726,7 +726,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 
 	// Attach the clusters to the root of the instance group
 	for (i = 0; i < _ClusterInstances.size(); ++i)
-		pHrcTrav->link (_Root, _ClusterInstances[i]);
+		_Root->hrcLinkSon( _ClusterInstances[i] );
 
 
 	// Default: freezeHRC all instances.
@@ -962,7 +962,7 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 	}
 
 	// Remove clusters
-	CClipTrav *pClipTrav = (CClipTrav*)(scene.getTrav (ClipTravId));
+	CClipTrav *pClipTrav = &scene.getClipTrav();
 	for (i = 0; i < _ClusterInstances.size(); ++i)
 	{
 		pClipTrav->unregisterCluster (_ClusterInstances[i]);
@@ -1133,8 +1133,7 @@ void		CInstanceGroup::linkRoot (CScene &scene, CTransform *father)
 {
 	if(_Root)
 	{
-		ITrav *pHrcTrav = scene.getTrav (HrcTravId);
-		pHrcTrav->link(father, _Root);
+		father->hrcLinkSon( _Root );
 	}
 }
 

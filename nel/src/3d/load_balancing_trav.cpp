@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.14 2003/03/06 19:45:37 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.15 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/clip_trav.h"
 #include "nel/misc/common.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/transform.h"
 
 
 using namespace std;
@@ -136,13 +137,6 @@ void			CLoadBalancingGroup::computeRatioAndSmooth(TPolygonBalancingMode polMode)
 
 
 // ***************************************************************************
-IObs				*CLoadBalancingTrav::createDefaultObs() const
-{
-	return new CDefaultLoadBalancingObs;
-}
-
-
-// ***************************************************************************
 CLoadBalancingTrav::CLoadBalancingTrav()
 {
 	PolygonBalancingMode= CLoadBalancingGroup::PolygonBalancingOff;
@@ -166,9 +160,9 @@ void				CLoadBalancingTrav::clearVisibleList()
 }
 
 // ***************************************************************************
-void				CLoadBalancingTrav::addVisibleObs(IBaseLoadBalancingObs *obs)
+void				CLoadBalancingTrav::addVisibleModel(CTransform *model)
 {
-	_VisibleList.push_back(obs);
+	_VisibleList.push_back(model);
 }
 
 
@@ -177,7 +171,7 @@ void				CLoadBalancingTrav::traverse()
 {
 	H_AUTO( NL3D_TravLoadBalancing );
 
-	ITravCameraScene::update();
+	CTravCameraScene::update();
 
 	// Reset each group.
 	//================
@@ -223,11 +217,11 @@ void				CLoadBalancingTrav::traverse()
 void				CLoadBalancingTrav::traverseVisibilityList()
 {
 	// Traverse all nodes of the visibility list.
-	uint	nObs= _VisibleList.size();
-	for(uint i=0; i<nObs; i++)
+	uint	nModels= _VisibleList.size();
+	for(uint i=0; i<nModels; i++)
 	{
-		IBaseLoadBalancingObs	*loadBalObs= _VisibleList[i];
-		loadBalObs->traverse(NULL);
+		CTransform	*model= _VisibleList[i];
+		model->traverseLoadBalancing(NULL);
 	}
 }
 
@@ -280,27 +274,6 @@ float				CLoadBalancingTrav::getGroupNbFaceAsked (const std::string &group) cons
 	else
 		return it->second.getNbFaceAsked();
 }
-
-
-// ***************************************************************************
-// ***************************************************************************
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-void	IBaseLoadBalancingObs::init()
-{
-	IObs::init();
-	nlassert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
-	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
-	nlassert( dynamic_cast<IBaseClipObs*> (getObs(ClipTravId)) );
-	ClipObs= static_cast<IBaseClipObs*> (getObs(ClipTravId));
-
-	// assign me to the default group
-	LoadBalancingGroup= ((CLoadBalancingTrav*)Trav)->getDefaultGroup();
-}
-
 
 
 

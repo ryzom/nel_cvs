@@ -1,7 +1,7 @@
 /** \file trav_scene.h
  * <File description>
  *
- * $Id: trav_scene.h,v 1.2 2002/04/12 16:25:06 vizerie Exp $
+ * $Id: trav_scene.h,v 1.3 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,45 +45,17 @@ using NLMISC::CMatrix;
 // ***************************************************************************
 /**
  * A Traversal which may be renderable in a CScene.
- * Such a traversal provide just a method to get his Render order, and a standard traverse() method, which compute
- * the traversal.
- *
- * \b DERIVERS \b RULES:
- * - Implement createDefaultObs()
- * - Implement getClassId()
- * - Implement getRenderOrder()
- * - Implement traverse()
- *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class ITravScene : public ITrav
+class CTraversal
 {	
 public:
 	CScene	*Scene; // the scene owning this traversal (if any)
 public:
 	/// ctor
-	ITravScene() : Scene(NULL) {}
-	/** Return the order of the traversal.
-	 * This is usefull for CScene::render() method. It indicate when the traversal is called.
-	 * Order for basic traversal are:
-	 * - CHrcTrav:	  1000
-	 * - CClipTrav:	  2000
-	 * - CLightTrav:  3000
-	 * - CRenderTrav: 4000
-	 */
-	virtual	sint	getRenderOrder() const =0;
-
-	/** Execute the traversal.
-	 * CScene::render() will call this method, to execute the traversal.
-	 */
-	virtual	void	traverse() =0;
-
-protected:
-	/** From ITrav : called when this trav is added in a CMOT instance
-	  */
-	virtual		void addedToMOT(CMOT *mot);	
+	CTraversal() : Scene(NULL) {}
 };
 
 
@@ -92,10 +64,10 @@ protected:
  * A ITravScene traversal, with camera setup  (common to CRenderTrav and CClipTrav).
  *
  */
-class ITravCameraScene : public ITravScene
+class CTravCameraScene : public CTraversal
 {
 public:
-	/** \name FOR OBSERVERS ONLY.  (Read only)
+	/** \name FOR MODEL TRAVERSING ONLY.  (Read only)
 	 * Those variables are valid only in traverse().
 	 */
 	//@{
@@ -134,7 +106,7 @@ public:
 
 
 	/// Constructor.
-	ITravCameraScene()
+	CTravCameraScene()
 	{
 		setFrustum(1.0f, 1.0f, 0.01f, 1.0f);
 		CamMatrix.identity();

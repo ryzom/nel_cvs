@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.58 2003/03/13 13:40:58 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.59 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -930,9 +930,9 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 	// get the meshMRM instance.
 	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
 	// get a ptr on scene
-	CScene				*ownerScene= mi->getScene();
+	CScene				*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
-	CRenderTrav			*renderTrav= ownerScene->getRenderTrav();
+	CRenderTrav			*renderTrav= &ownerScene->getRenderTrav();
 
 
 	// get the result of the Load Balancing.
@@ -1042,7 +1042,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 		CMatrix		invertedObjectMatrix;
 		invertedObjectMatrix = trans->getWorldMatrix().inverted();
 		// really ok if success to begin VP
-		useMeshVP= _MeshVertexProgram->begin(drv, mi->getScene(), mi, invertedObjectMatrix, renderTrav->CamPos);
+		useMeshVP= _MeshVertexProgram->begin(drv, mi->getOwnerScene(), mi, invertedObjectMatrix, renderTrav->CamPos);
 	}
 	
 
@@ -1148,9 +1148,9 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	// get the meshMRM instance. only CMeshMRMInstance is possible when skinned (not MultiLod)
 	CMeshMRMInstance	*mi= safe_cast<CMeshMRMInstance*>(trans);
 	// get a ptr on scene
-	CScene				*ownerScene= mi->getScene();
+	CScene				*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
-	CRenderTrav			*renderTrav= ownerScene->getRenderTrav();
+	CRenderTrav			*renderTrav= &ownerScene->getRenderTrav();
 	// get a ptr on the driver
 	IDriver				*drv= renderTrav->getDriver();
 	nlassert(drv);
@@ -1292,7 +1292,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 		CMatrix		invertedObjectMatrix;
 		invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
 		// really ok if success to begin VP
-		useMeshVP= _MeshVertexProgram->begin(drv, mi->getScene(), mi, invertedObjectMatrix, renderTrav->CamPos);
+		useMeshVP= _MeshVertexProgram->begin(drv, mi->getOwnerScene(), mi, invertedObjectMatrix, renderTrav->CamPos);
 	}
 	
 
@@ -1339,9 +1339,9 @@ bool	CMeshMRMGeom::supportSkinGrouping() const
 sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest)
 {
 	// get a ptr on scene
-	CScene				*ownerScene= mi->getScene();
+	CScene				*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
-	CRenderTrav			*renderTrav= ownerScene->getRenderTrav();
+	CRenderTrav			*renderTrav= &ownerScene->getRenderTrav();
 	// get a ptr on the driver
 	IDriver				*drv= renderTrav->getDriver();
 	nlassert(drv);
@@ -1455,9 +1455,9 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVertex)
 {
 	// get a ptr on scene
-	CScene				*ownerScene= mi->getScene();
+	CScene				*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
-	CRenderTrav			*renderTrav= ownerScene->getRenderTrav();
+	CRenderTrav			*renderTrav= &ownerScene->getRenderTrav();
 	// get a ptr on the driver
 	IDriver				*drv= renderTrav->getDriver();
 	nlassert(drv);

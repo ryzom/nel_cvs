@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * <File description>
  *
- * $Id: light_trav.cpp,v 1.9 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: light_trav.cpp,v 1.10 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/clip_trav.h"
 #include "3d/root_model.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/point_light_model.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -45,24 +46,8 @@ CLightTrav::CLightTrav()
 {
 	_LightedList.reserve(1024);
 
-	LightModelRoot= NULL;
 	LightingSystemEnabled= false;
 }
-
-// ***************************************************************************
-void	CLightTrav::setLightModelRoot(CRootModel *lightModelRoot)
-{
-	nlassert(lightModelRoot);
-	LightModelRoot= lightModelRoot;
-}
-
-
-// ***************************************************************************
-IObs		*CLightTrav::createDefaultObs() const
-{
-	return	new CDefaultLightObs;
-}
-
 
 // ***************************************************************************
 void		CLightTrav::clearLightedList()
@@ -70,9 +55,15 @@ void		CLightTrav::clearLightedList()
 	_LightedList.clear();
 }
 // ***************************************************************************
-void		CLightTrav::addLightedObs(IBaseLightObs *o)
+void		CLightTrav::addLightedModel(CTransform *m)
 {
-	_LightedList.push_back(o);
+	_LightedList.push_back(m);
+}
+
+// ***************************************************************************
+void		CLightTrav::addPointLightModel(CPointLightModel *pl)
+{
+	_DynamicLightList.insert(pl, &pl->_PointLightNode);
 }
 
 
@@ -81,25 +72,30 @@ void		CLightTrav::traverse()
 {
 	H_AUTO( NL3D_TravLight );
 
+	uint i;
+
 
 	// If lighting System disabled, skip
 	if(!LightingSystemEnabled)
 		return;
 
 
-	nlassert(LightModelRoot);
-
 	// clear the quadGrid of dynamicLights
 	LightingManager.clearDynamicLights();
 
 	// for each lightModel, process her: recompute position, resetLightedModels(), and append to the quadGrid.
-	LightModelRoot->getObs(LightTravId)->traverse(NULL);
+	CPointLightModel	**pLight= _DynamicLightList.begin();
+	uint	numPls= _DynamicLightList.size();
+	for(;numPls>0;numPls--, pLight++)
+	{
+		(*pLight)->traverseLight(NULL);
+	}
 
 	// for each visible lightable transform
-	for(uint i=0; i<_LightedList.size(); i++ )
+	for(i=0; i<_LightedList.size(); i++ )
 	{
 		// traverse(), to recompute light contribution (if needed).
-		_LightedList[i]->traverse(NULL);
+		_LightedList[i]->traverseLight(NULL);
 	}
 
 }

@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.16 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: instance_user.h,v 1.17 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ public:
 	/// \name Object
 	// @{
 	/// This model should have been created with Scene::createInstance().
-	CInstanceUser(CScene *scene, IModel *trans, bool deleteIt);
+	CInstanceUser(CScene *scene, CTransform *trans, bool deleteIt);
 	virtual	~CInstanceUser()
 	{
 		NL3D_MEM_INSTANCE

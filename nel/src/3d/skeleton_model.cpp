@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.39 2003/03/12 15:03:13 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.40 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,6 @@
 #include "3d/scene.h"
 #include "3d/lod_character_manager.h"
 #include "3d/lod_character_shape.h"
-#include "3d/skip_model.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/aabbox.h"
 #include "3d/mesh_skin_manager.h"
@@ -54,9 +53,7 @@ namespace NL3D
 // ***************************************************************************
 void		CSkeletonModel::registerBasic()
 {
-	CMOT::registerModel(SkeletonModelId, TransformShapeId, CSkeletonModel::creator);
-	CMOT::registerObs(AnimDetailTravId, SkeletonModelId, CSkeletonModelAnimDetailObs::creator);
-	CMOT::registerObs(RenderTravId, SkeletonModelId, CSkeletonModelRenderObs::creator);
+	CScene::registerModel(SkeletonModelId, TransformShapeId, CSkeletonModel::creator);
 }
 
 
@@ -78,8 +75,6 @@ void		CSkeletonModel::registerToChannelMixer(CChannelMixer *chanMixer, const std
 CSkeletonModel::CSkeletonModel()
 {
 	IAnimatable::resize(AnimValueLast);
-	HrcTrav= NULL;
-	ClipTrav= NULL;
 	_DisplayedAsLodCharacter= false;
 	_LodCharacterDistance= 0;
 	_OOLodCharacterDistance= 0;
@@ -122,10 +117,10 @@ CSkeletonModel::CSkeletonModel()
 CSkeletonModel::~CSkeletonModel()
 {
 	// if initModel() called
-	if(ClipTrav)
+	if(getOwnerScene())
 	{
 		// remove from scene
-		ClipTrav->Scene->eraseSkeletonModelToList(_ItSkeletonInScene);
+		getOwnerScene()->eraseSkeletonModelToList(_ItSkeletonInScene);
 	}
 
 
@@ -150,13 +145,8 @@ CSkeletonModel::~CSkeletonModel()
 // ***************************************************************************
 void	CSkeletonModel::initModel()
 {
-	IObs			*HrcObs= getObs(NL3D::HrcTravId);
-	HrcTrav= (CHrcTrav*)HrcObs->Trav;
-	IObs			*ClipObs= getObs(NL3D::ClipTravId);
-	ClipTrav= (CClipTrav*)ClipObs->Trav;
-
 	// Link this skeleton to the CScene.
-	_ItSkeletonInScene= ClipTrav->Scene->appendSkeletonModelToList(this);
+	_ItSkeletonInScene= getOwnerScene()->appendSkeletonModelToList(this);
 
 	// Call base class
 	CTransformShape::initModel();
@@ -413,23 +403,15 @@ bool		CSkeletonModel::bindSkin(CTransform *mi)
 
 
 	// Unlink the Skin from Hrc and clip, because SkeletonModel now does the job for him.
-	nlassert(HrcTrav && ClipTrav);
 	// First ensure that the transform is not frozen (unlink from some quadGrids etc...)
 	mi->unfreezeHRC();
 	// then never re-parse in validateList/Hrc/Clip
-	mi->unlinkFromValidateList();
-	HrcTrav->link(HrcTrav->Scene->getSkipModelRoot(), mi);
+	mi->unlinkFromUpdateList();
+	mi->hrcUnlink();
 	// ClipTrav is a graph, so must unlink from ALL olds models.
-	IModel	*father= ClipTrav->getFirstParent(mi);
-	while(father)
-	{
-		ClipTrav->unlink(father, mi);
-		father= ClipTrav->getFirstParent(mi);
-	}
+	mi->clipUnlinkFromAll();
 	// Ensure flag is correct
-	mi->_HrcObs->ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
-	// link to the SkipModelRoot One.
-	ClipTrav->link(ClipTrav->Scene->getSkipModelRoot(), mi);
+	mi->_ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
 
 
 	// must recompute lod vertex color when LodCharacter used
@@ -471,8 +453,7 @@ void		CSkeletonModel::stickObjectEx(CTransform *mi, uint boneId, bool forceCLod)
 	mi->_ForceCLodSticked= forceCLod;
 
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
-	nlassert(HrcTrav && ClipTrav);
-	HrcTrav->link(this, mi);
+	hrcLinkSon( mi );
 
 	// must recompute lod vertex color when LodCharacter used
 	dirtLodVertexColor();
@@ -509,21 +490,19 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	tr->_FatherSkeletonModel= NULL;
 	tr->_ForceCLodSticked= false;
 
-	// link correctly Hrc / Clip / ValidateList...
-	nlassert(HrcTrav && ClipTrav);
-	HrcTrav->link(NULL, tr);
+	// link correctly Hrc / Clip / UpdateList...
+	getOwnerScene()->getRoot()->hrcLinkSon( tr );
 	if( !wasSkinned )
 	{
-		//  No-op. ClipTrav graph/ValidateList updated in Hrc traversal.
+		//  No-op. ClipTrav graph/UpdateList updated in Hrc traversal.
 	}
 	else
 	{
 		// Skin case: must do the Job here.
 		// Update ClipTrav here.
-		ClipTrav->unlink(ClipTrav->Scene->getSkipModelRoot(), tr);
-		ClipTrav->link(ClipTrav->getRoot(), tr);
-		// Must re-add to the validate list.
-		tr->linkToValidateList();
+		getOwnerScene()->getRoot()->clipAddChild(tr);
+		// Must re-add to the update list.
+		tr->linkToUpdateList();
 	}
 
 
@@ -565,39 +544,38 @@ float		CSkeletonModel::getInterpolationDistance() const
 
 
 // ***************************************************************************
-void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
+void	CSkeletonModel::traverseAnimDetail(CTransform *caller)
 {
-	CSkeletonModel	*sm= (CSkeletonModel*)Model;
-	CSkeletonShape	*skeShape= ((CSkeletonShape*)(IShape*)sm->Shape);
+	CSkeletonShape	*skeShape= ((CSkeletonShape*)(IShape*)Shape);
 
 	// Update Lod, and animate.
 	//===============
 
 	/*
-		CTransformAnimDetailObs::traverse() is torn in 2 here because 
+		CTransformShape::traverseAnimDetail() is torn in 2 here because 
 		channels may be enabled/disabled by updateBoneToCompute()
 	*/
 
 	// First update Skeleton WorldMatrix (case where the skeleton is sticked).
-	CTransformAnimDetailObs::updateWorldMatrixFromFather();
+	CTransform::updateWorldMatrixFromFather();
 	// get dist from camera.
-	float	dist= (HrcObs->WorldMatrix.getPos() - ((CClipTrav*)ClipObs->Trav)->CamPos).norm();
+	float	dist= (getWorldMatrix().getPos() - getOwnerScene()->getClipTrav().CamPos).norm();
 	// Use dist to get current lod to use for this skeleton
 	uint	newLod= skeShape->getLodForDistance( dist );
-	if(newLod != sm->_CurLod)
+	if(newLod != _CurLod)
 	{
 		// set new lod to use.
-		sm->_CurLod= newLod;
+		_CurLod= newLod;
 		// dirt the skeleton.
-		sm->_BoneToComputeDirty= true;
+		_BoneToComputeDirty= true;
 	}
 
 	// If needed, let's know which bone has to be computed, and enable / disable (lod) channels in channelMixer.
-	bool forceUpdate= sm->_BoneToComputeDirty;
-	sm->updateBoneToCompute();
+	bool forceUpdate= _BoneToComputeDirty;
+	updateBoneToCompute();
 
 	// Animate skeleton.
-	CTransformAnimDetailObs::traverseWithoutUpdateWorldMatrix(caller);
+	CTransformShape::traverseAnimDetailWithoutUpdateWorldMatrix(caller);
 
 
 	// Prepare Lod Bone interpolation.
@@ -606,12 +584,12 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 	float	lodBoneInterp;
 	const CSkeletonShape::CLod	*lodNext= NULL;
 	// if a lod exist after current lod, and if lod interpolation enabled
-	if( sm->_CurLod < skeShape->getNumLods()-1 && sm->_LodInterpMultiplier>0 )
+	if( _CurLod < skeShape->getNumLods()-1 && _LodInterpMultiplier>0 )
 	{
 		// get next lod.
-		lodNext= &skeShape->getLod(sm->_CurLod+1);
+		lodNext= &skeShape->getLod(_CurLod+1);
 		// get interp value to next.
-		lodBoneInterp= (lodNext->Distance - dist) * sm->_LodInterpMultiplier;
+		lodBoneInterp= (lodNext->Distance - dist) * _LodInterpMultiplier;
 		NLMISC::clamp(lodBoneInterp, 0.f, 1.f);
 		// if still 1, keep cur matrix => disable interpolation
 		if(lodBoneInterp==1.f)
@@ -623,10 +601,10 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 		lodBoneInterp=1.f;
 	}
 	// If the interpolation value is different from last one, must update.
-	if(lodBoneInterp != sm->_CurLodInterp)
+	if(lodBoneInterp != _CurLodInterp)
 	{
 		// set new one.
-		sm->_CurLodInterp= lodBoneInterp;
+		_CurLodInterp= lodBoneInterp;
 		// must update bone compute.
 		forceUpdate= true;
 	}
@@ -637,15 +615,15 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 	//===============
 
 	// test if bones must be updated. either if animation change or if BoneUsage change.
-	if(sm->IAnimatable::isTouched(CSkeletonModel::OwnerBit) || forceUpdate)
+	if(IAnimatable::isTouched(CSkeletonModel::OwnerBit) || forceUpdate)
 	{
 		// Retrieve the WorldMatrix of the current CTransformShape.
-		CMatrix		&modelWorldMatrix= HrcObs->WorldMatrix;
+		const CMatrix		&modelWorldMatrix= getWorldMatrix();
 
 		// must test / update the hierarchy of Bones.
 		// Since they are orderd in depth-first order, we are sure that parent are computed before sons.
-		uint							numBoneToCompute= sm->_BoneToCompute.size();
-		CSkeletonModel::CBoneCompute	*pBoneCompute= numBoneToCompute? &sm->_BoneToCompute[0] : NULL;
+		uint							numBoneToCompute= _BoneToCompute.size();
+		CSkeletonModel::CBoneCompute	*pBoneCompute= numBoneToCompute? &_BoneToCompute[0] : NULL;
 		// traverse only bones which need to be computed
 		for(;numBoneToCompute>0;numBoneToCompute--, pBoneCompute++)
 		{
@@ -661,24 +639,20 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 			}
 		}
 
-		sm->IAnimatable::clearFlag(CSkeletonModel::OwnerBit);
+		IAnimatable::clearFlag(CSkeletonModel::OwnerBit);
 	}
 
 	// Sticked Objects: 
 	// they will update their WorldMatrix after, because of the AnimDetail traverse scheme:
-	// traverse visible ClipObs, and if skeleton, traverse Hrc sons.
+	// traverse visible Clip models, and if skeleton, traverse Hrc sons.
 
 
 	// Update Animated Skins.
 	//===============
-	for(uint i=0;i<sm->_AnimDetailSkins.size();i++)
+	for(uint i=0;i<_AnimDetailSkins.size();i++)
 	{
-		// get the detail Obs, via the clipObs
-		CTransformAnimDetailObs		*adObs;
-		adObs= safe_cast<CTransformAnimDetailObs*>(sm->_AnimDetailSkins[i]->_ClipObs->AnimDetailObs);
-
 		// traverse it. NB: updateWorldMatrixFromFather() is called but no-op because isSkinned()
-		adObs->traverse(NULL);
+		_AnimDetailSkins[i]->traverseAnimDetail(NULL);
 	}
 
 }
@@ -718,7 +692,7 @@ void		CSkeletonModel::setLodCharacterDistance(float dist)
 void		CSkeletonModel::setLodCharacterShape(sint shapeId)
 {
 	// get a ptr on the scene which owns us, and so on the lodManager.
-	CScene					*scene= static_cast<CScene*>(_OwnerMot);
+	CScene					*scene= getOwnerScene();
 	CLodCharacterManager	*mngr= scene->getLodCharacterManager();
 
 	// if mngr not setuped, noop (lod not possible).
@@ -751,7 +725,7 @@ void		CSkeletonModel::computeLodTexture()
 		return;
 
 	// get a ptr on the scene which owns us, and so on the lodManager.
-	CScene					*scene= static_cast<CScene*>(_OwnerMot);
+	CScene					*scene= getOwnerScene();
 	CLodCharacterManager	*mngr= scene->getLodCharacterManager();
 	// mngr must be setuped since shape Id is >-1
 	nlassert(mngr);
@@ -863,13 +837,13 @@ float		CSkeletonModel::computeDisplayLodCharacterPriority() const
 
 		// Get object position, test visibility;
 		// If has a skeleton ancestor, take his world position instead, because ours is invalid.
-		if( _HrcObs->_AncestorSkeletonModel != NULL)
+		if( _AncestorSkeletonModel != NULL)
 		{
 			// if the ancestore is clipped, quit
-			if( !_HrcObs->_AncestorSkeletonModel->isClipVisible() )
+			if( !_AncestorSkeletonModel->isClipVisible() )
 				return 0;
 			// take ancestor world position
-			globalPos= _HrcObs->_AncestorSkeletonModel->getWorldMatrix().getPos();
+			globalPos= _AncestorSkeletonModel->getWorldMatrix().getPos();
 		}
 		else
 		{
@@ -877,11 +851,11 @@ float		CSkeletonModel::computeDisplayLodCharacterPriority() const
 			if( !isClipVisible() )
 				return 0;
 			// take our world position
-			globalPos= _HrcObs->WorldMatrix.getPos();
+			globalPos= getWorldMatrix().getPos();
 		}
 
 		// compute distance from camera.
-		float	dist= (ClipTrav->CamPos - globalPos).norm();
+		float	dist= (getOwnerScene()->getClipTrav().CamPos - globalPos).norm();
 
 		// compute priority
 		return dist*_OOLodCharacterDistance;
@@ -908,14 +882,12 @@ void		CSkeletonModel::setDisplayLodCharacterFlag(bool displayCLod)
 
 
 // ***************************************************************************
-void		CSkeletonModelRenderObs::traverse(IObs *caller)
+void		CSkeletonModel::traverseRender()
 {
 	H_AUTO( NL3D_Skeleton_Render );
 
-	CSkeletonModel		*sm= (CSkeletonModel*)Model;
-
 	// render as CLod, or render Skins.
-	if(sm->isDisplayedAsLodCharacter())
+	if(isDisplayedAsLodCharacter())
 		renderCLod();
 	else
 		renderSkins();
@@ -1148,29 +1120,26 @@ void			CSkeletonModel::buildDefaultLevelDetail()
 
 
 // ***************************************************************************
-void			CSkeletonModelRenderObs::renderCLod()
+void			CSkeletonModel::renderCLod()
 {
-	CRenderTrav			*trav= (CRenderTrav*)Trav;
-	CSkeletonModel		*sm= (CSkeletonModel*)Model;
-	IDriver				*drv= trav->getDriver();
-	CScene				*scene= trav->Scene;
+	CRenderTrav			&renderTrav= getOwnerScene()->getRenderTrav();
+	IDriver				*drv= renderTrav.getDriver();
+	CScene				*scene= getOwnerScene();
 	// the lod manager. no op if not here
-	CLodCharacterManager	*mngr= trav->Scene->getLodCharacterManager();
+	CLodCharacterManager	*mngr= scene->getLodCharacterManager();
 	if(!mngr)
 		return;
 
 	// Get global lighting on the instance. Suppose SunAmbient only.
 	//=================
 	const CLightContribution	*lightContrib;
-	// Get HrcObs.
-	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
 
 	// the std case is to take my model lightContribution
-	if(hrcObs->_AncestorSkeletonModel==NULL)
-		lightContrib= &sm->getSkeletonLightContribution();
+	if(_AncestorSkeletonModel==NULL)
+		lightContrib= &getSkeletonLightContribution();
 	// but if skinned/sticked (directly or not) to a skeleton, take its.
 	else
-		lightContrib= &hrcObs->_AncestorSkeletonModel->getSkeletonLightContribution();
+		lightContrib= &_AncestorSkeletonModel->getSkeletonLightContribution();
 
 	// compute his main light contribution result. Try first with sun
 	CRGBA	mainAmbient= scene->getSunAmbient();
@@ -1197,7 +1166,7 @@ void			CSkeletonModelRenderObs::renderCLod()
 		{
 			// leave ambient, but take diffuse and pointLight fake Direction
 			mainDiffuse= plDiffuse;
-			mainLightDir= hrcObs->WorldMatrix.getPos() - mainPL->getPosition();
+			mainLightDir= getWorldMatrix().getPos() - mainPL->getPosition();
 			mainLightDir.normalize();
 		}
 	}
@@ -1208,12 +1177,12 @@ void			CSkeletonModelRenderObs::renderCLod()
 	// NB: even if texturing is sufficient, still important for AlphaTest.
 
 	// If must recompute color because of change of skin color or if skin added/deleted
-	if(sm->_CLodVertexColorDirty)
+	if(_CLodVertexColorDirty)
 	{
 		// recompute vertex colors
-		sm->computeCLodVertexColors(mngr);
-		// set sm->_CLodVertexColorDirty to false.
-		sm->_CLodVertexColorDirty= false;
+		computeCLodVertexColors(mngr);
+		// set _CLodVertexColorDirty to false.
+		_CLodVertexColorDirty= false;
 	}
 
 	// render the Lod in the LodManager.
@@ -1223,7 +1192,7 @@ void			CSkeletonModelRenderObs::renderCLod()
 
 
 	// add the instance to the manager. 
-	if(!mngr->addRenderCharacterKey(sm->_CLodInstance, hrcObs->WorldMatrix, 
+	if(!mngr->addRenderCharacterKey(_CLodInstance, getWorldMatrix(), 
 		mainAmbient, mainDiffuse, mainLightDir) )
 	{
 		// If failed to add it because no more vertex space in the manager, retry.
@@ -1231,29 +1200,27 @@ void			CSkeletonModelRenderObs::renderCLod()
 		// close vertexBlock, compile render
 		mngr->endRender();
 		// and restart.
-		mngr->beginRender(drv, trav->CamPos);
+		mngr->beginRender(drv, renderTrav.CamPos);
 
 		// retry. but no-op if refail.
-		mngr->addRenderCharacterKey(sm->_CLodInstance, hrcObs->WorldMatrix, 
+		mngr->addRenderCharacterKey(_CLodInstance, getWorldMatrix(), 
 			mainAmbient, mainDiffuse, mainLightDir);
 	}
 }
 
 
 // ***************************************************************************
-void			CSkeletonModelRenderObs::renderSkins()
+void			CSkeletonModel::renderSkins()
 {
 	// Render skins according to the pass.
-	CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
-	CSkeletonModel		*sm= (CSkeletonModel*)Model;
-	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
+	CRenderTrav			&rdrTrav= getOwnerScene()->getRenderTrav();
 	// get a ptr on the driver
-	IDriver				*drv= rdrTrav->getDriver();
+	IDriver				*drv= rdrTrav.getDriver();
 	nlassert(drv);
 
 
 	// Compute the levelOfDetail
-	float	alphaMRM= sm->_LevelDetail.getLevelDetailFromPolyCount(sm->getNumTrianglesAfterLoadBalancing());
+	float	alphaMRM= _LevelDetail.getLevelDetailFromPolyCount(getNumTrianglesAfterLoadBalancing());
 
 	// force normalisation of normals..
 	bool	bkupNorm= drv->isForceNormalize();
@@ -1261,38 +1228,38 @@ void			CSkeletonModelRenderObs::renderSkins()
 
 
 	// rdr good pass
-	if(rdrTrav->isCurrentPassOpaque())
+	if(rdrTrav.isCurrentPassOpaque())
 	{
 		// Compute in Pass Opaque only the light contribution. 
 		// Easier for skeleton: suppose lightable, no local attenuation
 
 		// the std case is to take my model lightContribution
-		if(hrcObs->_AncestorSkeletonModel==NULL)
-			sm->setupCurrentLightContribution(&sm->_LightContribution, false);
+		if(_AncestorSkeletonModel==NULL)
+			setupCurrentLightContribution(&_LightContribution, false);
 		// but if sticked (directly or not) to a skeleton, take its.
 		else
-			sm->setupCurrentLightContribution(&hrcObs->_AncestorSkeletonModel->_LightContribution, false);
+			setupCurrentLightContribution(&_AncestorSkeletonModel->_LightContribution, false);
 
 
 		// Activate Driver setup: light and modelMatrix
-		sm->changeLightSetup( rdrTrav );
-		rdrTrav->getDriver()->setupModelMatrix(hrcObs->WorldMatrix);
+		changeLightSetup( &rdrTrav );
+		rdrTrav.getDriver()->setupModelMatrix(getWorldMatrix());
 
 
 		// Render all totaly opaque skins.
-		renderSkinList(sm->_OpaqueSkins, alphaMRM);
+		renderSkinList(_OpaqueSkins, alphaMRM);
 	}
 	else
 	{
 		// NB: must have some transparent skins, since thee skeletonModel is traversed in the transparent pass.
 
 		// Activate Driver setup: light and modelMatrix
-		sm->changeLightSetup( rdrTrav );
-		rdrTrav->getDriver()->setupModelMatrix(hrcObs->WorldMatrix);
+		changeLightSetup( &rdrTrav );
+		rdrTrav.getDriver()->setupModelMatrix(getWorldMatrix());
 
 
 		// render all opaque/transparent skins
-		renderSkinList(sm->_TransparentSkins, alphaMRM);
+		renderSkinList(_TransparentSkins, alphaMRM);
 	}
 
 
@@ -1302,12 +1269,12 @@ void			CSkeletonModelRenderObs::renderSkins()
 
 
 // ***************************************************************************
-void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*, false> &skinList, float alphaMRM)
+void			CSkeletonModel::renderSkinList(NLMISC::CObjectVector<CTransform*, false> &skinList, float alphaMRM)
 {
-	CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
+	CRenderTrav			&rdrTrav= getOwnerScene()->getRenderTrav();
 
 	// if the SkinManager is not possible at all, just rendered the std way
-	if( !rdrTrav->getMeshSkinManager() || !rdrTrav->getMeshSkinManager()->enabled() )
+	if( !rdrTrav.getMeshSkinManager() || !rdrTrav.getMeshSkinManager()->enabled() )
 	{
 		for(uint i=0;i<skinList.size();i++)
 		{
@@ -1317,7 +1284,7 @@ void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*
 	else
 	{
 		// get the meshSkinManager
-		CMeshSkinManager	&meshSkinManager= *rdrTrav->getMeshSkinManager();
+		CMeshSkinManager	&meshSkinManager= *rdrTrav.getMeshSkinManager();
 
 		// array (rarely allocated) of skins with grouping support
 		static	std::vector<CTransform*>	skinsToGroup;
@@ -1454,7 +1421,7 @@ bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox)
 	bool	empty= true;
 
 	// Not visible => empty bbox
-	if(!getLastClippedState())
+	if(!isClipVisible())
 		return false;
 
 	// For all bones

@@ -115,38 +115,6 @@ SOURCE=.\3d\anim_detail_trav.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\base_anim_detail_obs.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\base_anim_detail_obs.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\base_clip_obs.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\base_clip_obs.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\base_light_obs.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\base_light_obs.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\base_render_obs.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\base_render_obs.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\clip_trav.cpp
 # End Source File
 # Begin Source File
@@ -292,14 +260,6 @@ SOURCE=.\3d\skeleton_model.cpp
 # Begin Source File
 
 SOURCE=.\3d\skeleton_model.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\skip_model.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\skip_model.h
 # End Source File
 # Begin Source File
 
@@ -2620,14 +2580,6 @@ SOURCE=.\3d\mini_col.cpp
 # Begin Source File
 
 SOURCE=.\3d\mini_col.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\mot.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\mot.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file fast_ptr_list.h
  * <File description>
  *
- * $Id: fast_ptr_list.h,v 1.1 2003/03/20 15:00:58 berenguier Exp $
+ * $Id: fast_ptr_list.h,v 1.2 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -55,7 +55,7 @@ public:
 	bool			isLinked() const {return _Owner!=NULL;}
 
 	// No-op operator=
-	CFastPtrListNode	&operator=(CFastPtrListNode &o)
+	CFastPtrListNode	&operator=(const CFastPtrListNode &o)
 	{
 		return *this;
 	}

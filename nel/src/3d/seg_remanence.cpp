@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.8 2003/03/11 09:41:30 berenguier Exp $
+ * $Id: seg_remanence.cpp,v 1.9 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -66,7 +66,8 @@ CSegRemanence::CSegRemanence() : _NumSlice(0),
 								 _Stopping(false),
 								 _Restarted(false),
 								 _UnrollRatio(0),
-								 _AniMat(NULL)
+								 _AniMat(NULL),
+								 _LastSampleFrame(0)
 {	
 	IAnimatable::resize(AnimValueLast);
 
@@ -82,7 +83,7 @@ CSegRemanence::~CSegRemanence()
 	if(_FatherSkeletonModel)
 	{
 		// detach me from the skeleton.
-		// Observers hierarchy is modified.
+		// hrc and clip hierarchy is modified.
 		_FatherSkeletonModel->detachSkeletonSon(this);
 		nlassert(_FatherSkeletonModel==NULL);
 	}
@@ -129,9 +130,7 @@ void CSegRemanence::copyFromOther(CSegRemanence &other)
 //===============================================================
 void CSegRemanence::registerBasic()
 {
-	CMOT::registerModel(SegRemanenceShapeId, TransformShapeId, CSegRemanence::creator);	
-//	CMOT::registerObs (HrcTravId, SegRemanenceShapeId, CSegRemanenceHrcObs::creator);
-	CMOT::registerObs(AnimDetailTravId, SegRemanenceShapeId, CSegRemanenceAnimDetailObs::creator);
+	CScene::registerModel(SegRemanenceShapeId, TransformShapeId, CSegRemanence::creator);	
 }
 
 
@@ -159,7 +158,7 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 	drv->activeVertexBuffer(vb);	
 	drv->render(pb, mat);
 
-	CScene *scene = NLMISC::safe_cast<ITravScene *>(_HrcObs->Trav)->Scene;
+	CScene *scene = getOwnerScene();
 	// change unroll ratio
 	if (!_Stopping)
 	{
@@ -298,12 +297,11 @@ void CSegRemanence::samplePos(float date)
 {
 	if (_Started)
 	{	
-		IBaseHrcObs *bho = (IBaseHrcObs *) getObs(HrcTravId);
 		CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);
 		uint numCorners = _Ribbons.size();
 		for(uint k = 0; k < numCorners; ++k)
 		{		
-			_Ribbons[k].samplePos(bho->WorldMatrix * srs->getCorner(k), date, srs->getSliceTime());
+			_Ribbons[k].samplePos(getWorldMatrix() * srs->getCorner(k), date, srs->getSliceTime());
 		}
 		if (_Restarted)
 		{
@@ -320,37 +318,29 @@ void CSegRemanence::samplePos(float date)
 
 //===============================================================
 /*
-void CSegRemanenceHrcObs::traverse(IObs *caller)
+void CSegRemanence::traverseHrc(CTransform *caller)
 {
-	CTransformHrcObs::traverse (caller);
-	CSegRemanence *sr = static_cast<CSegRemanence *>(this->Model);
-	if (sr->isStarted())
+	CTransformShape::traverseHrc (caller);
+	if (isStarted())
 	{	
-		CScene *scene = NLMISC::safe_cast<ITravScene *>(Trav)->Scene;
+		CScene *scene = getOwnerScene();
 		if (scene->getNumRender() != (_LastSampleFrame + 1))
 		{
-			if (!sr->isStopping())
+			if (!isStopping())
 			{			
 				// if wasn't visible at previous frame, must invalidate position
-				sr->restart();
+				restart();
 			}
 			else
 			{
 				// ribbon started unrolling when it disapperaed from screen so simply remove it
-				sr->stopNoUnroll();
+				stopNoUnroll();
 			}
 		}		
 		_LastSampleFrame = scene->getNumRender();
-		sr->setupFromShape();
-		sr->samplePos((float) scene->getCurrentTime());
+		setupFromShape();
+		samplePos((float) scene->getCurrentTime());
 	}
-}
-*/
-
-/*
-//===============================================================
-CSegRemanenceHrcObs::CSegRemanenceHrcObs() : _LastSampleFrame(0)
-{	
 }
 */
 
@@ -419,51 +409,45 @@ void CSegRemanence::registerToChannelMixer(CChannelMixer *chanMixer, const std::
 }
 
 //===============================================================
-void CSegRemanenceAnimDetailObs::traverse(IObs *caller)
+void CSegRemanence::traverseAnimDetail(CTransform *caller)
 {
-	CTransformAnimDetailObs::traverse(caller);
-	CSegRemanence *sr = NLMISC::safe_cast<CSegRemanence *>(Model);
-	if (sr->isStarted())
+	CTransformShape::traverseAnimDetail(caller);
+	if (isStarted())
 	{	
 		/////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////
 
-		CScene *scene = NLMISC::safe_cast<ITravScene *>(Trav)->Scene;
+		CScene *scene = getOwnerScene();
 		if (scene->getNumRender() != (_LastSampleFrame + 1))
 		{
-			if (!sr->isStopping())
+			if (!isStopping())
 			{			
 				// if wasn't visible at previous frame, must invalidate position
-				sr->restart();
+				restart();
 			}
 			else
 			{
 				// ribbon started unrolling when it disapperaed from screen so simply remove it
-				sr->stopNoUnroll();
+				stopNoUnroll();
 			}
 		}		
 		_LastSampleFrame = scene->getNumRender();
-		sr->setupFromShape();
-		sr->samplePos((float) scene->getCurrentTime());
+		setupFromShape();
+		samplePos((float) scene->getCurrentTime());
 
 		/////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////
 
 	
 		// test if animated material must be updated.
-		if(sr->IAnimatable::isTouched(CSegRemanence::OwnerBit))
+		if(IAnimatable::isTouched(CSegRemanence::OwnerBit))
 		{
-			if (sr->getAnimatedMaterial())
-				sr->getAnimatedMaterial()->update();			
-			sr->clearAnimatedMatFlag();
+			if (getAnimatedMaterial())
+				getAnimatedMaterial()->update();			
+			clearAnimatedMatFlag();
 		}
 	}
 }
-
-CSegRemanenceAnimDetailObs::CSegRemanenceAnimDetailObs() : _LastSampleFrame(0)
-{	
-}
-
 
 
 }

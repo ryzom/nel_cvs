@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.8 2003/03/20 14:54:35 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.9 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,29 +40,19 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 
-class	IBaseHrcObs;
-class	CSkipModel;
-class	IBaseClipObs;
-class	IBaseAnimDetailObs;
 class	CTransformShape;
-
-// ***************************************************************************
-// ClassIds.
-const NLMISC::CClassId		HrcTravId=NLMISC::CClassId(0x5ad56382, 0x2a711530);
 
 
 // ***************************************************************************
 /**
  * The hierarchy traversal.
- * Hierarchy observers MUST derive from IBaseHrcObs.
  *
  * NB: see CScene for 3d conventions (orthonormal basis...)
- * \sa CScene IBaseHrcObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class CHrcTrav : public ITravScene
+class CHrcTrav : public CTraversal
 {
 public:
 	/// The visibility flag. In the root case, Herit means Show.
@@ -80,7 +70,7 @@ public:
 	/// Constructor
 	CHrcTrav()
 	{
-		// NB: Now, observers update is done before ALL traversals.
+		// NB: Now, models update is done before ALL traversals.
 		// Hence, we must inc the value before scene rendering. This is equivalent to start with 1, and inc at end of traverse().
 		CurrentDate= 1;
 	}
@@ -88,9 +78,6 @@ public:
 
 	/// \name ITrav/ITravScene Implementation.
 	//@{
-	IObs				*createDefaultObs() const;
-	NLMISC::CClassId	getClassId() const {return HrcTravId;}
-	sint				getRenderOrder() const {return 1000;}
 	void				traverse();
 	//@}
 
@@ -100,118 +87,9 @@ public:
 	// ClusterSystem. The moving object for the current frame (only TransformShape can be inserted dynamiccaly in Clusters).
 	std::vector<CTransformShape*> _MovingObjects;
 
-	// ONLY FOR OBSERVERS.
+	// ONLY FOR MODELS.
 
 	sint64		CurrentDate;	// The current date of the traversal, usefull for matrix update.
-};
-
-
-
-// ***************************************************************************
-/**
- * The base interface for hierarchy traversal.
- * Hierarchy observers MUST derive from IBaseHrcObs.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - define his traverse() method.
- *
- * \b DERIVER \b RULES:
- * - implement the notification system (see IObs for details). The update() method should update LocalDate.
- * so the node know it is updated.
- * - implement the traverse() method.
- *
- * \sa CHrcTrav
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class IBaseHrcObs : public IObs
-{
-public:
-	/// Some Shortcut to observers.
-	IBaseClipObs		*ClipObs;
-	IBaseAnimDetailObs	*AnimDetailObs;
-
-public:
-
-
-	/// \name IN variables.
-	//@{
-	CMatrix		LocalMatrix;
-	CHrcTrav::TVisibility	LocalVis;	// The visibility state of the node.
-	sint64		LocalDate;				// The update date of the LocalMatrix.
-	//@}
-
-
-	/// \name OUT variables.
-	//@{
-	CMatrix		WorldMatrix;
-	bool		WorldVis;			// Is the node visible? (enabled?)
-	sint64		WorldDate;			// The update date of the WorldMatrix.
-	//@}
-
-
-public:
-	
-
-	/// Constructor.
-	IBaseHrcObs()
-	{
-		LocalVis= CHrcTrav::Herit; LocalMatrix.identity(); LocalDate=0;
-		WorldVis= true; WorldMatrix.identity(); 
-		// Init the WorldDate to -1 so at first pass, LocalDate>WorldDate, and so
-		// the model will be processed and so it'll may be inserted in LightingManager (for example)
-		WorldDate=-1;
-	}
-	/// Build shortcut to observers.
-	virtual	void	init();
-
-	
-	/// \name The base doit method.
-	//@{
-	/// The base behavior is to update() the observer, updateWorld() states, and traverseSons().
-	virtual	void	traverse(IObs *caller) =0;
-	//@}
-
-
-	/// \name Graph methods. USED ONLY BY ITrav*.
-	// @{
-	/// Call IObs::addParent(), and dirt WorldDate to 0, so the worldMatrix will be recomputed next time.
-	virtual	void	addParent(IObs *father);
-	// @}
-
-};
-
-
-// ***************************************************************************
-/**
- * The default hierarchy observer, used by unspecified models.
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - traverse() just traverseSons().
- *
- * \sa IBaseHrcObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class CDefaultHrcObs : public IBaseHrcObs
-{
-public:
-
-
-	/// Constructor.
-	CDefaultHrcObs() {}
-
-
-	/// The default behavior is traverseSons() only.
-	virtual	void	traverse(IObs *caller)
-	{
-		// DoIt the sons.
-		traverseSons();
-	}
-
-
 };
 
 

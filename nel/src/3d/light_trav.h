@@ -1,7 +1,7 @@
 /** \file light_trav.h
  * <File description>
  *
- * $Id: light_trav.h,v 1.4 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: light_trav.h,v 1.5 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "3d/trav_scene.h"
 #include "3d/lighting_manager.h"
+#include "3d/fast_ptr_list.h"
 
 
 namespace	NL3D
@@ -39,14 +40,9 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 	
-class	IBaseLightObs;
 class	CTransform;
-class	CRootModel;
+class	CPointLightModel;
 
-
-// ***************************************************************************
-// ClassIds.
-const NLMISC::CClassId		LightTravId= NLMISC::CClassId(0x328f500a, 0x57600db9);
 
 
 // ***************************************************************************
@@ -57,12 +53,11 @@ const NLMISC::CClassId		LightTravId= NLMISC::CClassId(0x328f500a, 0x57600db9);
  * Lightable objects can be CTransform only.
  *
  * NB: see CScene for 3d conventions (orthonormal basis...)
- * \sa CScene IBaseLightObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class CLightTrav : public ITravScene
+class CLightTrav : public CTraversal
 {
 public:
 
@@ -71,47 +66,39 @@ public:
 
 	/// ITrav/ITravScene Implementation.
 	//@{
-	IObs				*createDefaultObs() const;
-	NLMISC::CClassId	getClassId() const {return LightTravId;}
-	sint				getRenderOrder() const {return 3000;}
 	void				traverse();
 	//@}
 
-
-	// False by default. setuped by CScene
-	bool						LightingSystemEnabled;
-
-
 	/// \name LightingList. Filled during clip traversal.
 	//@{
-	/// Clear the list of lighted observers.
-	void			clearLightedList();
-	/// Add an observer to the list of lighted observers. \b DOESN'T \b CHECK if already inserted.
-	void			addLightedObs(IBaseLightObs *o);
+	/// Clear the list of lighted models.
+	void				clearLightedList();
+	/// Add a model to the list of lighted models. \b DOESN'T \b CHECK if already inserted.
+	void				addLightedModel(CTransform *m);
 	//@}
 
+	/// \name LightingList. Add a PointLightModel to the list.
+	//@{
+	void				addPointLightModel(CPointLightModel *pl);
+	//@}
+
+
+public:
+	// False by default. setuped by CScene
+	bool				LightingSystemEnabled;
 
 	/// The lightingManager, where objects/lights are inserted, and modelContributions are computed
 	CLightingManager	LightingManager;
 
 
-	/// Must init it!
-	void	setLightModelRoot(CRootModel *lightModelRoot);
-
-
 // ********************
-public:
-
-	/// \name FOR OBSERVERS ONLY.  (Read only)
-	// @{
-	// The root of light models.
-	CRootModel						*LightModelRoot;
-	// @}
-
 private:
 
-	// A grow only list of observers to be lighted.
-	std::vector<IBaseLightObs*>		_LightedList;
+	// A grow only list of models to be lighted.
+	std::vector<CTransform*>		_LightedList;
+
+	// A fast linked list of models to be lighted.
+	CFastPtrList<CPointLightModel>	_DynamicLightList;
 
 };
 

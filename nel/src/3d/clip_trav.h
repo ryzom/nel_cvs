@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.16 2003/03/20 15:02:27 berenguier Exp $
+ * $Id: clip_trav.h,v 1.17 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,6 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 
-class	IBaseClipObs;
 class	CRenderTrav;
 class	CAnimDetailTrav;
 class	CLoadBalancingTrav;
@@ -51,8 +50,8 @@ class	CCluster;
 class	CInstanceGroup;
 class	CCamera;
 class	CQuadGridClipManager;
-class	CRootModel;
-class	CTransformClipObs;
+class	CTransform;
+class	CSkeletonModel;
 
 
 // ***************************************************************************
@@ -66,29 +65,23 @@ class	CTransformClipObs;
 
 
 // ***************************************************************************
-// ClassIds.
-const NLMISC::CClassId		ClipTravId=NLMISC::CClassId(0x135208fe, 0x225334fc);
-
-// ***************************************************************************
 /**
  * The clip traversal.
- * The purpose of this traversal is to insert in the post-clip Traversal the observers which are 
- * said to be not clipped. Some observers may do something else.
+ * The purpose of this traversal is to insert in the post-clip Traversal the models which are 
+ * said to be not clipped.
  *
- * Observer should use the IBaseHrcObs->clip() method to implement their observer, or completly redefine the traverse() method.
+ * Models should use the CTransform->clip() method to implement their models, or completly redefine the traverseClip() method.
  *
  * \b USER \b RULES: Before using traverse() on a clip traversal, you should:
  *	- setFrustum() the camera shape (focale....)
  *	- setCamMatrix() for the camera transform
- *	- setHrcTrav(),setRenderTrav()...., to setup shortcuts to other traversals
  *
  * NB: see CScene for 3d conventions (orthonormal basis...)
- * \sa CScene IBaseClipObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class CClipTrav : public ITravCameraScene
+class CClipTrav : public CTravCameraScene
 {
 public:
 
@@ -96,34 +89,22 @@ public:
 	CClipTrav();
 	~CClipTrav();
 
-	/// \name ITrav/ITravScene Implementation.
-	//@{
-	IObs				*createDefaultObs () const;
-	NLMISC::CClassId	getClassId () const {return ClipTravId;}
-	sint				getRenderOrder () const {return 2000;}
+	/// traverse
 	void				traverse ();
-	//@}
 
 	void registerCluster (CCluster* pCluster);
 	void unregisterCluster (CCluster* pCluster);
 
 	/// Setup the render traversal (else traverse() won't work)
-	void setHrcTrav (CHrcTrav* trav);
-	void setAnimDetailTrav(CAnimDetailTrav *trav);
-	void setLoadBalancingTrav(CLoadBalancingTrav *trav);
-	void setLightTrav (CLightTrav* trav);
-	void setRenderTrav (CRenderTrav* trav);
 	void setQuadGridClipManager(CQuadGridClipManager *mgr);
 	const CQuadGridClipManager *getQuadGridClipManager() const {return _QuadGridClipManager;}
 
-	/// \name Visible List mgt. Those visible observers are updated each traverse(). Only support Transform Type obs.
+	/// \name Visible List mgt. Those visible modles are updated each traverse().
 	//@{
-	// For ClipObservers only. NB: list is cleared at begining of traverse().
-	void				addVisibleObs(CTransformClipObs *obs);
+	// NB: list is cleared at begining of traverse().
+	void				addVisibleModel(CTransform *model);
 	//@}
 
-
-	void				setSonsOfAncestorSkeletonModelGroup(CRootModel *m);
 
 	/// \name Cluster system related methods.
 	//@{
@@ -149,8 +130,8 @@ public:
 
 public:
 
-	/** \name FOR OBSERVERS ONLY.  (Read only)
-	 * Those variables are valid only in traverse().
+	/** \name FOR MODEL TRAVERSAL ONLY.  (Read only)
+	 * Those variables are valid only in traverse*().
 	 */
 	//@{
 	/// Vision Pyramid (6 normalized planes) in the view basis.
@@ -159,34 +140,24 @@ public:
 	std::vector<CPlane>	WorldFrustumPyramid;
 	/// Vision Pyramid in the world basis. NB: may be modified by the ClusterSystem.
 	std::vector<CPlane>	WorldPyramid;	
-	/// Shortcut to the Rdr Traversals (to add the models rdr observers).
-	CHrcTrav			*HrcTrav;
-	CAnimDetailTrav		*AnimDetailTrav;
-	CLoadBalancingTrav	*LoadBalancingTrav;
-	CLightTrav			*LightTrav;
-	CRenderTrav			*RenderTrav;
 	//@}
-	sint64 CurrentDate;
+	sint64				CurrentDate;
 
-	CCluster *RootCluster;
-	CCamera *Camera;
+	CCluster			*RootCluster;
+	CCamera				*Camera;
 	
 	CQuadGrid<CCluster*> Accel;
 
-	/** for CQuadGridClipClusterClipObs only. This flag means observers traversed do not need to clip,
+	/** for CQuadGridClipClusterClip only. This flag means models traversed do not need to clip,
 	 *	they are sure to be visible.
 	 */
 	bool				ForceNoFrustumClip;
 
 
-	// For skeleton stickObject.
-	CRootModel		*SonsOfAncestorSkeletonModelGroup;
-
 // **********************
 private:
-	friend class	IBaseClipObs;
-
-	std::vector<CTransformClipObs*>	_VisibleList;
+	friend	class	CTransform;
+	std::vector<CTransform*>	_VisibleList;
 
 	CQuadGridClipManager		*_QuadGridClipManager;
 

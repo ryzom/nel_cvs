@@ -1,7 +1,7 @@
 /** \file particle_system_manager.h
  * <File description>
  *
- * $Id: particle_system_manager.h,v 1.2 2003/03/04 18:16:30 vizerie Exp $
+ * $Id: particle_system_manager.h,v 1.3 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -71,7 +71,6 @@ public:
 
 private:
 	friend class CParticleSystemModel;
-	friend class CParticleSystemClipObs;
 	
 	typedef std::list<CParticleSystemModel *> TModelList;
 

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.34 2003/03/20 15:03:37 berenguier Exp $
+ * $Id: u_scene.h,v 1.35 2003/03/26 10:22:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/animation_time.h"
+#include <map>
 
 
 namespace NLMISC

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.16 2002/10/10 13:30:59 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.17 2003/03/26 10:20:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,7 +112,7 @@ public:
 	virtual	void	getAABBox(NLMISC::CAABBox &bbox) const;
 
 
-	/** this method is meaningless here : the load balancing observer for particle system
+	/** this method is meaningless here : the traverseLoadBalancing() for particle system
 	  * compute the number of triangles from the Model, not the shape
 	  */
 	virtual float				getNumTriangles (float distance) { return 0; }
@@ -130,8 +130,6 @@ public:
 protected:
 
 	friend class CParticleSystemModel; 
-	friend class CParticleSystemDetailObs;
-	friend class CParticleSystemClipObs;
 	friend class CParticleSystem;
 
 public:

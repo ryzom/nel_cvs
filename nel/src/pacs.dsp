@@ -115,7 +115,7 @@ SOURCE=.\pacs\chain_quad.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\chain_quad.h
+SOURCE=.\pacs\chain_quad.h
 # End Source File
 # Begin Source File
 
@@ -123,7 +123,7 @@ SOURCE=.\pacs\collision_surface_temp.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\collision_surface_temp.h
+SOURCE=.\pacs\collision_surface_temp.h
 # End Source File
 # Begin Source File
 
@@ -131,7 +131,7 @@ SOURCE=.\pacs\edge_collide.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\edge_collide.h
+SOURCE=.\pacs\edge_collide.h
 # End Source File
 # End Group
 # Begin Group "Dynamic Collisions"
@@ -139,7 +139,19 @@ SOURCE=..\include_private\nel\pacs\edge_collide.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\collision_desc.h
+SOURCE=.\pacs\collision_callback.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\collision_callback.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\collision_desc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\collision_desc.h
 # End Source File
 # Begin Source File
 
@@ -147,7 +159,7 @@ SOURCE=.\pacs\collision_ot.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\collision_ot.h
+SOURCE=.\pacs\collision_ot.h
 # End Source File
 # Begin Source File
 
@@ -155,7 +167,7 @@ SOURCE=.\pacs\move_cell.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\move_cell.h
+SOURCE=.\pacs\move_cell.h
 # End Source File
 # Begin Source File
 
@@ -163,15 +175,23 @@ SOURCE=.\pacs\move_container.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\move_container.h
+SOURCE=.\pacs\move_container.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\move_container_inline.h
+SOURCE=.\pacs\move_container_inline.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\move_element.h
+SOURCE=.\pacs\move_element.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\move_element.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\move_element_inline.h
 # End Source File
 # Begin Source File
 
@@ -179,7 +199,7 @@ SOURCE=.\pacs\move_primitive.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\move_primitive.h
+SOURCE=.\pacs\move_primitive.h
 # End Source File
 # End Group
 # Begin Group "Pathfinding"
@@ -191,7 +211,7 @@ SOURCE=.\pacs\chain.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\chain.h
+SOURCE=.\pacs\chain.h
 # End Source File
 # Begin Source File
 
@@ -199,7 +219,7 @@ SOURCE=.\pacs\global_retriever.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\global_retriever.h
+SOURCE=.\pacs\global_retriever.h
 # End Source File
 # Begin Source File
 
@@ -207,7 +227,7 @@ SOURCE=.\pacs\local_retriever.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\local_retriever.h
+SOURCE=.\pacs\local_retriever.h
 # End Source File
 # Begin Source File
 
@@ -215,7 +235,7 @@ SOURCE=.\pacs\retrievable_surface.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\retrievable_surface.h
+SOURCE=.\pacs\retrievable_surface.h
 # End Source File
 # Begin Source File
 
@@ -223,7 +243,7 @@ SOURCE=.\pacs\retriever_bank.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\retriever_bank.h
+SOURCE=.\pacs\retriever_bank.h
 # End Source File
 # Begin Source File
 
@@ -231,7 +251,7 @@ SOURCE=.\pacs\retriever_instance.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\retriever_instance.h
+SOURCE=.\pacs\retriever_instance.h
 # End Source File
 # Begin Source File
 
@@ -239,7 +259,7 @@ SOURCE=.\pacs\surface_quad.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\surface_quad.h
+SOURCE=.\pacs\surface_quad.h
 # End Source File
 # End Group
 # Begin Group "User"
@@ -272,7 +292,7 @@ SOURCE=.\pacs\vector_2s.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include_private\nel\pacs\vector_2s.h
+SOURCE=.\pacs\vector_2s.h
 # End Source File
 # End Target
 # End Project

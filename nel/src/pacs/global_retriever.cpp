@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.26 2001/06/08 15:04:04 legros Exp $
+ * $Id: global_retriever.cpp,v 1.27 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,8 +34,8 @@
 
 #include "nel/misc/debug.h"
 
-#include "nel/pacs/global_retriever.h"
-#include "nel/pacs/retriever_bank.h"
+#include "pacs/global_retriever.h"
+#include "pacs/retriever_bank.h"
 
 using namespace std;
 using namespace NLMISC;

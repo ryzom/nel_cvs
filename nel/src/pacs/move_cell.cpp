@@ -1,7 +1,7 @@
 /** \file move_cell.cpp
  * <File description>
  *
- * $Id: move_cell.cpp,v 1.2 2001/05/31 13:36:42 corvazier Exp $
+ * $Id: move_cell.cpp,v 1.3 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/pacs/move_cell.h"
-#include "nel/pacs/move_element.h"
-#include "nel/pacs/move_primitive.h"
+#include "pacs/move_cell.h"
+#include "pacs/move_element.h"
+#include "pacs/move_primitive.h"
 
 namespace NLPACS 
 {

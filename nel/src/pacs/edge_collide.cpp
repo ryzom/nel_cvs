@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.9 2001/06/01 08:15:55 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.10 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/pacs/edge_collide.h"
+#include "pacs/edge_collide.h"
 #include "nel/misc/common.h"
 #include "nel/misc/vector_2d.h"
 #include <algorithm>

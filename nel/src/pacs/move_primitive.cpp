@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.6 2001/06/06 09:34:03 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.7 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/pacs/move_primitive.h"
-#include "nel/pacs/collision_desc.h"
-#include "nel/pacs/move_element.h"
+#include "pacs/move_primitive.h"
+#include "pacs/collision_desc.h"
+#include "pacs/move_element.h"
 #include "nel/misc/common.h"
 
 using namespace NLMISC;

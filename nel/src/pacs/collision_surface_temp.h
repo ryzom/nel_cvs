@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: collision_surface_temp.h,v 1.2 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_COLLISION_SURFACE_TEMP_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/pacs/edge_collide.h"
-#include "nel/pacs/collision_desc.h"
+#include "pacs/edge_collide.h"
+#include "pacs/collision_desc.h"
 
 
 namespace NLPACS 

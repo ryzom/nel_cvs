@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.12 2001/06/08 15:04:04 legros Exp $
+ * $Id: chain.cpp,v 1.13 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 
 #include "nel/misc/debug.h"
 
-#include "nel/pacs/chain.h"
+#include "pacs/chain.h"
 
 using namespace std;
 using namespace NLMISC;

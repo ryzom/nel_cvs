@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.6 2001/06/05 10:37:59 legros Exp $
+ * $Id: chain_quad.cpp,v 1.7 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 
-#include "nel/pacs/chain_quad.h"
+#include "pacs/chain_quad.h"
 #include "nel/misc/stream.h"
 #include <list>
 #include <vector>

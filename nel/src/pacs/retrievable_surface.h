@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: retrievable_surface.h,v 1.2 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@
 
 #include "nel/misc/aabbox.h"
 
-#include "nel/pacs/surface_quad.h"
+#include "pacs/surface_quad.h"
 
 namespace NLPACS
 {

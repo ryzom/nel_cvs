@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.3 2001/05/10 12:19:02 legros Exp $
+ * $Id: surface_quad.cpp,v 1.4 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 
 #include "nel/misc/file.h"
 
-#include "nel/pacs/surface_quad.h"
+#include "pacs/surface_quad.h"
 
 using namespace NLMISC;
 

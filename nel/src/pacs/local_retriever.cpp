@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.17 2001/06/08 15:04:04 legros Exp $
+ * $Id: local_retriever.cpp,v 1.18 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,9 +30,9 @@
 
 #include "nel/misc/debug.h"
 
-#include "nel/pacs/local_retriever.h"
+#include "pacs/local_retriever.h"
 
-#include "nel/pacs/collision_desc.h"
+#include "pacs/collision_desc.h"
 
 
 using namespace std;

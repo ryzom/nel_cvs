@@ -1,7 +1,7 @@
 /** \file collision_desc.cpp
  * <File description>
  *
- * $Id: collision_desc.cpp,v 1.1 2001/05/04 14:36:36 corvazier Exp $
+ * $Id: collision_desc.cpp,v 1.2 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/pacs/collision_desc.h"
+#include "pacs/collision_desc.h"
 
 
 namespace NLPACS 

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.5 2001/06/07 12:42:55 corvazier Exp $
+ * $Id: move_container.cpp,v 1.6 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/pacs/move_primitive.h"
-#include "nel/pacs/move_element.h"
+#include "pacs/move_primitive.h"
+#include "pacs/move_element.h"
 
 using namespace NLMISC;
 

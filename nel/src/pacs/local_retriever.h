@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: local_retriever.h,v 1.2 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,11 +33,11 @@
 
 #include "nel/misc/aabbox.h"
 
-#include "nel/pacs/vector_2s.h"
-#include "nel/pacs/surface_quad.h"
-#include "nel/pacs/chain.h"
-#include "nel/pacs/retrievable_surface.h"
-#include "nel/pacs/chain_quad.h"
+#include "pacs/vector_2s.h"
+#include "pacs/surface_quad.h"
+#include "pacs/chain.h"
+#include "pacs/retrievable_surface.h"
+#include "pacs/chain_quad.h"
 
 
 

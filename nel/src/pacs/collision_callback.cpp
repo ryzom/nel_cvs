@@ -1,7 +1,7 @@
 /** \file collision_callback.cpp
  * <File description>
  *
- * $Id: collision_callback.cpp,v 1.1 2001/05/22 08:32:53 corvazier Exp $
+ * $Id: collision_callback.cpp,v 1.2 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/pacs/collision_callback.h"
+#include "pacs/collision_callback.h"
 
 
 namespace NLPACS 

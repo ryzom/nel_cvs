@@ -1,7 +1,7 @@
 /** \file collision_ot.cpp
  * <File description>
  *
- * $Id: collision_ot.cpp,v 1.2 2001/06/06 09:34:03 corvazier Exp $
+ * $Id: collision_ot.cpp,v 1.3 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/pacs/collision_ot.h"
-#include "nel/pacs/move_primitive.h"
+#include "pacs/collision_ot.h"
+#include "pacs/move_primitive.h"
 
 
 namespace NLPACS 

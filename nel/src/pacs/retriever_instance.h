@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: retriever_instance.h,v 1.2 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 
 #include "nel/misc/aabbox.h"
 
-#include "nel/pacs/local_retriever.h"
+#include "pacs/local_retriever.h"
 
 namespace NLPACS
 {

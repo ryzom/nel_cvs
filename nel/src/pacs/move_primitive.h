@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: move_primitive.h,v 1.2 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
-#include "nel/pacs/move_container.h"
+#include "pacs/move_container.h"
 #include "nel/pacs/u_move_primitive.h"
-#include "nel/pacs/global_retriever.h"
+#include "pacs/global_retriever.h"
 
 #define NELPACS_DIST_BACK 0.002
 
@@ -697,7 +697,7 @@ private:
 
 } // NLPACS
 
-#include "nel/pacs/move_container_inline.h"
+#include "pacs/move_container_inline.h"
 
 #endif // NL_MOVE_PRIMITIVE_H
 

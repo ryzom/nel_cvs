@@ -1,7 +1,7 @@
 /** \file retrievable_surface.cpp
  *
  *
- * $Id: retrievable_surface.cpp,v 1.5 2001/06/07 12:14:51 legros Exp $
+ * $Id: retrievable_surface.cpp,v 1.6 2001/06/08 15:38:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 
 #include "nel/misc/debug.h"
 
-#include "nel/pacs/retrievable_surface.h"
+#include "pacs/retrievable_surface.h"
 
 using namespace std;
 using namespace NLMISC;

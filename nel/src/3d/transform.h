@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.48 2003/11/28 16:20:25 vizerie Exp $
+ * $Id: transform.h,v 1.49 2003/12/04 10:42:02 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -535,7 +535,7 @@ public:
 	  * NB : any call to hrcUnlink will cause an assertion when the flag is set (must remain linked to the root)
       */
 	void				setForceClipRoot(bool forceClipRoot);
-	bool				getForceClipRoot() const { return getStateFlag(ForceClipRoot); }	
+	bool				getForceClipRoot() const { return getStateFlag(ForceClipRoot) != 0; }	
 
 
 // ********

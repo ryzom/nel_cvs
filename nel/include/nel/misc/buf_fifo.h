@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Interface for CBufFIFO
  *
- * $Id: buf_fifo.h,v 1.6 2001/03/01 17:33:37 lecroart Exp $
+ * $Id: buf_fifo.h,v 1.7 2001/03/29 09:34:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,6 +97,8 @@ public:
 	void	 displayStats ();
 
 private:
+
+	typedef uint16 TFifoSize;
 
 	// pointer to the big buffer
 	uint8	*_Buffer;

@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.12 2001/03/07 16:42:36 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.13 2001/03/29 09:34:14 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include <vector>
+#include <math.h>
 
 #include "nel/misc/debug.h"
 #include "nel/misc/time_nl.h"
@@ -66,13 +67,13 @@ void CBufFIFO::push(const std::vector<uint8> &buffer)
 {
 	TTicks before = CTime::getPerformanceTime();
 
-	uint32 size = buffer.size();
+	TFifoSize size = buffer.size();
 
 #if DEBUG_FIFO
 	nldebug("%p push(%d)", this, size);
 #endif
 
-	nlassert(size > 0 && size < 1000);
+	nlassert(buffer.size() > 0 && buffer.size() < pow(2, sizeof(TFifoSize)*8));
 
 	// stat code
 	if (size > _BiggestBlock) _BiggestBlock = size;
@@ -80,13 +81,13 @@ void CBufFIFO::push(const std::vector<uint8> &buffer)
 	_Pushed++;
 
 
-	while (!canFit (size + sizeof (uint32)))
+	while (!canFit (size + sizeof (TFifoSize)))
 	{
 		resize(_BufferSize * 2);
 	}
 
-	*(uint32 *)_Head = size;
-	_Head += sizeof(uint32);
+	*(TFifoSize *)_Head = size;
+	_Head += sizeof(TFifoSize);
 
 	memcpy(_Head, &(buffer[0]), size);
 
@@ -107,13 +108,13 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 {
 	TTicks before = CTime::getPerformanceTime();
 
-	uint32 size = buffer1.size() + buffer2.size ();
+	TFifoSize size = buffer1.size() + buffer2.size ();
 
 #if DEBUG_FIFO
 	nldebug("%p push2(%d)", this, size);
 #endif
 
-	nlassert(size > 0 && size < 1000);
+	nlassert((buffer1.size() + buffer2.size ()) > 0 && (buffer1.size() + buffer2.size ()) < pow(2, sizeof(TFifoSize)*8));
 
 	// stat code
 	if (size > _BiggestBlock) _BiggestBlock = size;
@@ -122,14 +123,14 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 	_Pushed++;
 
 	// resize while the buffer is enough big to accept the block
-	while (!canFit (size + sizeof (uint32)))
+	while (!canFit (size + sizeof (TFifoSize)))
 	{
 		resize(_BufferSize * 2);
 	}
 
 	// store the size of the block
-	*(uint32 *)_Head = size;
-	_Head += sizeof(uint32);
+	*(TFifoSize *)_Head = size;
+	_Head += sizeof(TFifoSize);
 
 	// store the block itself
 	memcpy(_Head, &(buffer1[0]), buffer1.size ());
@@ -166,9 +167,7 @@ void CBufFIFO::pop ()
 		_Rewinder = NULL;
 	}
 
-	uint32 size = *(uint32 *)_Tail;
-
-	nlassert(size > 0 && size < 1000);
+	TFifoSize size = *(TFifoSize *)_Tail;
 
 #if DEBUG_FIFO
 	nldebug("%p pop(%d)", this, size);
@@ -176,10 +175,10 @@ void CBufFIFO::pop ()
 
 #ifdef NL_DEBUG
 	// clear the message to be sure user doesn't use it anymore
-	memset (_Tail, '-', size + sizeof (uint32));
+	memset (_Tail, '-', size + sizeof (TFifoSize));
 #endif
 
-	_Tail += size + sizeof (uint32);
+	_Tail += size + sizeof (TFifoSize);
 
 	if (_Tail == _Head) _Empty = true;
 
@@ -214,15 +213,13 @@ void CBufFIFO::front (vector<uint8> &buffer)
 		tail = _Buffer;
 	}
 
-	uint32 size = *(uint32 *)tail;
-
-	nlassert (size > 0 && size < 1000);
+	TFifoSize size = *(TFifoSize *)tail;
 
 #if DEBUG_FIFO
 	nldebug("%p front(%d)", this, size);
 #endif
 
-	tail += sizeof (uint32);
+	tail += sizeof (TFifoSize);
 
 	buffer.resize (size);
 

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.130 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: agent_script.cpp,v 1.131 2002/08/22 08:54:48 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -552,17 +552,18 @@ namespace NLAIAGENT
 		if ( _AgentClass != NULL )
 		{
 #ifdef NL_DEBUG		
-		const char *dbg_class_name = (const char *) getType();
-		const char *dbg_base_class_name = (const char *) _AgentClass->getType();
+			const char *dbg_class_name = (const char *) getType();
+			const char *dbg_base_class_name = (const char *) _AgentClass->getType();
 
-		if ( index >= _AgentClass->getMethodIndexSize())
-		{
-			throw NLAIE::CExceptionIndexError();
-		}
+			if ( index >= _AgentClass->getMethodIndexSize())
+			{
+				throw NLAIE::CExceptionIndexError();
+			}
 #endif
-		return (NLAISCRIPT::IOpCode *)_AgentClass->getBrancheCode(index).getCode();
+			return (NLAISCRIPT::IOpCode *)_AgentClass->getBrancheCode(index).getCode();
 		}
-		else return NULL;
+		else 
+			return NULL;
 	}
 
 	void CAgentScript::save(NLMISC::IStream &os)
@@ -779,6 +780,36 @@ namespace NLAIAGENT
 
 		return r;
 	}
+
+	IObjectIA::CProcessResult CAgentScript::addDynamicAgent(CStringType &name, IBasicAgent *agent)
+	{
+#ifdef NL_DEBUG
+		std::string dbg_name;
+		const char *type;
+		name.getDebugString( dbg_name );
+		type = (const char *)agent->getType();
+		const char *tname = dbg_name.c_str();
+#endif
+		IObjectIA::CProcessResult r;
+		r.ResultState = IObjectIA::ProcessIdle;
+
+		agent->setParent( (const IWordNumRef *) *this );
+		CNotifyParentScript *m = new CNotifyParentScript(this);
+		m->setSender(this);
+		m->setPerformatif(IMessageBase::PTell);
+		((IObjectIA *) agent )->sendMessage(m);
+		uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+		const NLAIC::CTypeOfObject &t = agent->getType();
+		if((t.getValue() & b) == b)
+		{
+			((CAgentScript *) agent )->setAgentManager(this);
+		}
+		_DynamicAgentName.insert(CKeyAgent(name,addChild( agent )));
+		
+		r.Result = NULL;
+		return r;
+	}
+
 
 	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
 	{

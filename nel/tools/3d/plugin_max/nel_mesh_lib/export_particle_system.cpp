@@ -1,6 +1,6 @@
 /** \file export_particle_system.cpp
  *
- * $Id: export_particle_system.cpp,v 1.3 2002/10/10 13:00:16 vizerie Exp $
+ * $Id: export_particle_system.cpp,v 1.4 2003/07/31 15:35:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -56,8 +56,13 @@ IShape* CExportNel::buildParticleSystem(INode& node, TimeValue time)
 		if (iF.open(shapeName.c_str()))
 		{
 			iF.serial(ss);
+			if (!dynamic_cast<CParticleSystemShape *>(ss.getShapePointer()))
+			{
+				mprintf("Error : Object shape %s isn't a particle system", shapeName.c_str());
+				return NULL;
+			}
 
-			CParticleSystemShape *pss = NLMISC::safe_cast<CParticleSystemShape *>(ss.getShapePointer());
+			CParticleSystemShape *pss = static_cast<CParticleSystemShape *>(ss.getShapePointer());
 
 			// ********************************
 			// *** Export default transformation

@@ -77,7 +77,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/ReleaseDebug/driver_opengl"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdopengl.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "NL_RELEASE_DEBUG" /D "LIBXML_STATIC" /D "NDEBUG" /D "WIN32" /D "_MBCS" /Yu"stdopengl.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c

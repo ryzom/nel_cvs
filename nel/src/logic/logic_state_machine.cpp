@@ -1,7 +1,7 @@
 /** \file logic_state_machine.cpp
  * 
  *
- * $Id: logic_state_machine.cpp,v 1.4 2002/07/26 09:52:24 coutelas Exp $
+ * $Id: logic_state_machine.cpp,v 1.5 2003/03/18 14:19:00 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,7 +168,7 @@ void CLogicStateMachine::processLogic()
 {	
 	// call processLogic for the current state
 	map<string,CLogicState>::iterator itStates = _States.find( _CurrentState );
-	nlassert( itStates != _States.end() )
+	nlassert( itStates != _States.end() );
 	(*itStates).second.processLogic();
 
 	// update the counters

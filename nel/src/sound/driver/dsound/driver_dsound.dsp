@@ -77,7 +77,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/ReleaseDebug/driver_dsound"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NL_RELEASE_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "LIBXML_STATIC" /D "NDEBUG" /D "WIN32" /D "_MBCS" /FD /c
 # SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c

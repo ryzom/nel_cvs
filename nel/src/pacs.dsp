@@ -69,7 +69,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/ReleaseDebug/pacs"
 # PROP Intermediate_Dir "../obj/ReleaseDebug/pacs"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NDEBUG" /D "_LIB" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdpacs.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_LIB" /D "NL_RELEASE_DEBUG" /D "LIBXML_STATIC" /D "NDEBUG" /D "WIN32" /D "_MBCS" /Yu"stdpacs.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"

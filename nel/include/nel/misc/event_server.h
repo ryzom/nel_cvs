@@ -1,7 +1,7 @@
 /** \file event_server.h
  * <File description>
  *
- * $Id: event_server.h,v 1.2 2000/11/10 11:05:24 corvazier Exp $
+ * $Id: event_server.h,v 1.3 2000/11/10 13:28:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,13 +34,13 @@
 
 namespace NLMISC {
 
-class CEventEmitter;
-class CEventListener;
+class IEventEmitter;
+class IEventListener;
 class CEvent;
 
 /*===================================================================*/
 
-typedef std::multimap<CClassId, CEventListener*> mapListener;
+typedef std::multimap<CClassId, IEventListener*> mapListener;
 
 
 /**
@@ -52,7 +52,7 @@ typedef std::multimap<CClassId, CEventListener*> mapListener;
 class CEventServer
 {
 	mapListener _Listeners;
-	std::list<CEventEmitter*> _Emitters;
+	std::list<IEventEmitter*> _Emitters;
 	std::list<CEvent*> _Events;
 
 public:
@@ -89,7 +89,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void addListener(CClassId id, CEventListener* listener );
+	void addListener(CClassId id, IEventListener* listener );
 	
 	/** 
 	 * Remove a callback
@@ -98,7 +98,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void removeListener(CClassId id, CEventListener* listener );
+	void removeListener(CClassId id, IEventListener* listener );
 
 	/** 
 	 * Add an Emitter to the server 
@@ -106,7 +106,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void addEmitter(CEventEmitter * emitter);
+	void addEmitter(IEventEmitter * emitter);
 	
 	/** 
 	 * Remove an Emitter from the server 
@@ -114,7 +114,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void removeEmitter(CEventEmitter * emitter);
+	void removeEmitter(IEventEmitter * emitter);
 
 };
 

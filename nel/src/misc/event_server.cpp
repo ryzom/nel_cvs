@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * <File description>
  *
- * $Id: event_server.cpp,v 1.3 2000/11/10 11:22:57 berenguier Exp $
+ * $Id: event_server.cpp,v 1.4 2000/11/10 13:28:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ void CEventServer::postEvent(CEvent * event)
 \*------------------------------------------------------------------*/
 void CEventServer::pump()
 {
-	std::list<CEventEmitter*>::iterator item = _Emitters.begin();
+	std::list<IEventEmitter*>::iterator item = _Emitters.begin();
 	
 	// getting events from emitters
 	while(item!=_Emitters.end())
@@ -95,7 +95,7 @@ void CEventServer::pumpEvent(const CEvent& event)
 /*------------------------------------------------------------------*\
 							addListener()
 \*------------------------------------------------------------------*/
-void CEventServer::addListener(CClassId id, CEventListener* listener )
+void CEventServer::addListener(CClassId id, IEventListener* listener )
 {
 	_Listeners.insert( mapListener::value_type(id, listener));
 }
@@ -104,7 +104,7 @@ void CEventServer::addListener(CClassId id, CEventListener* listener )
 /*------------------------------------------------------------------*\
 							removeListener()
 \*------------------------------------------------------------------*/
-void CEventServer::removeListener(CClassId id, CEventListener* listener )
+void CEventServer::removeListener(CClassId id, IEventListener* listener )
 {
 	// looking for the first occurence of id
 	mapListener::iterator it = _Listeners.find(id);
@@ -126,7 +126,7 @@ void CEventServer::removeListener(CClassId id, CEventListener* listener )
 /*------------------------------------------------------------------*\
 							addEmitter()
 \*------------------------------------------------------------------*/
-void CEventServer::addEmitter(CEventEmitter * emitter)
+void CEventServer::addEmitter(IEventEmitter * emitter)
 {
 	_Emitters.push_back(emitter);
 }
@@ -135,7 +135,7 @@ void CEventServer::addEmitter(CEventEmitter * emitter)
 /*------------------------------------------------------------------*\
 							removeEmitter()
 \*------------------------------------------------------------------*/
-void CEventServer::removeEmitter(CEventEmitter * emitter)
+void CEventServer::removeEmitter(IEventEmitter * emitter)
 {
 	_Emitters.remove(emitter);
 }

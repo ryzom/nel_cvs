@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * <File description>
  *
- * $Id: event_listener.h,v 1.3 2000/11/10 11:28:25 berenguier Exp $
+ * $Id: event_listener.h,v 1.4 2000/11/10 13:28:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,12 +42,12 @@ class CEventServer;
  * \author Nevrax France
  * \date 2000
  */
-class CEventListener
+class IEventListener
 {
 public:
 
 	/// Constructor
-	CEventListener();
+	IEventListener();
 
 	/**
 	  * Call back of the listener.
@@ -63,7 +63,7 @@ public:
  * \author Nevrax France
  * \date 2000
  */
-class CEventListenerAsync: public CEventListener
+class CEventListenerAsync: public IEventListener
 {
 public:
 

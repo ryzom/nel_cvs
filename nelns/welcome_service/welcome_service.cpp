@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.44 2004/09/03 15:46:04 legros Exp $
+ * $Id: welcome_service.cpp,v 1.44.8.1 2005/01/04 13:40:49 legros Exp $
  *
  */
 
@@ -67,6 +67,9 @@ CVariable<sint> PlayerLimit(
 	5000,
 	0, true );
 
+// Forward declaration of callback cbShardOpen (see ShardOpen variable)
+void	cbShardOpen(IVariable &var);
+
 // Forward declaration of callback cbShardOpenStateFile (see ShardOpenStateFile variable)
 void	cbShardOpenStateFile(IVariable &var);
 
@@ -81,6 +84,8 @@ enum TShardOpenState
 	OpenForAll = 2
 };
 
+static bool	AllowDispatchMsgToLS = false;
+
 /**
  * ShardOpen
  * true if shard is open to public
@@ -88,7 +93,7 @@ enum TShardOpenState
  * 1 means open only for groups in config file (see OpenGroups variable) and :DEV:
  * 2 means open for all
  */
-CVariable<uint>		ShardOpen("ws", "ShardOpen", "Indicates if shard is open to public (0 closed for all but :DEV:, 1 open only for groups in cfg, 2 open for all)", 2, 0, true);
+CVariable<uint>		ShardOpen("ws", "ShardOpen", "Indicates if shard is open to public (0 closed for all but :DEV:, 1 open only for groups in cfg, 2 open for all)", 2, 0, true, cbShardOpen);
 
 /**
  * ShardOpenStateFile
@@ -221,7 +226,7 @@ bool OnlineStatus;
 /// Send changes of status to the LS
 void reportOnlineStatus( bool newStatus )
 {
-	if ( newStatus != OnlineStatus )
+	if ( newStatus != OnlineStatus && AllowDispatchMsgToLS )
 	{
 		CMessage msgout( "OL_ST" );
 		msgout.serial( newStatus );
@@ -296,12 +301,15 @@ struct CFES
 		if (alive && patching)
 			reportPatching = true;
 
-		CMessage	msgout("REPORT_FS_STATE");
-		msgout.serial(SId);
-		msgout.serial(alive);
-		msgout.serial(patching);
-		msgout.serial(PatchAddress);
-		CUnifiedNetwork::getInstance()->send("LS", msgout);
+		if ( AllowDispatchMsgToLS )
+		{
+			CMessage	msgout("REPORT_FS_STATE");
+			msgout.serial(SId);
+			msgout.serial(alive);
+			msgout.serial(patching);
+			msgout.serial(PatchAddress);
+			CUnifiedNetwork::getInstance()->send("LS", msgout);
+		}
 	}
 };
 
@@ -559,6 +567,25 @@ void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, uint16 sid)
 	}
 }
 
+/*
+ * Set Shard open state
+ */
+void	setShardOpenState(TShardOpenState state, bool writeInVar = true)
+{
+	if (writeInVar)
+		ShardOpen = state;
+
+	if ( AllowDispatchMsgToLS )
+	{
+		// send to LS current shard state
+		CMessage	msgout ("SET_SHARD_OPEN");
+		uint8		shardOpenState = (uint8)state;
+
+		msgout.serial (shardOpenState);
+		CUnifiedNetwork::getInstance()->send ("LS", msgout);
+	}
+}
+
 
 /*
  * Set Shard Open State
@@ -574,7 +601,7 @@ void cbSetShardOpen(CMessage &msgin, const std::string &serviceName, uint16 sid)
 		shardOpenState = OpenForAll;
 	}
 
-	ShardOpen = shardOpenState;
+	setShardOpenState((TShardOpenState)shardOpenState);
 }
 
 // forward declaration to callback
@@ -589,7 +616,7 @@ void cbRestoreShardOpen(CMessage &msgin, const std::string &serviceName, uint16 
 	CConfigFile::CVar*	var = IService::getInstance()->ConfigFile.getVarPtr("ShardOpen");
 	if (var != NULL)
 	{
-		ShardOpen = var->asInt();
+		setShardOpenState((TShardOpenState)var->asInt());
 	}
 
 	// then restore state from state file, if it exists
@@ -908,6 +935,10 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 
 	nlinfo ("Connected to %s-%hu and sent identification with shardId '%d'", serviceName.c_str(), sid, shardId);
 
+	// send state to LS
+	setShardOpenState((TShardOpenState)(ShardOpen.get()), false);
+
+	//
 	CMessage	msgrpn("REPORT_NO_PATCH");
 	CUnifiedNetwork::getInstance()->send("LS", msgrpn);
 
@@ -948,7 +979,7 @@ void	updateShardOpenFromFile(const std::string& filename)
 	{
 		char	readBuffer[256];
 		f.getline(readBuffer, 256);
-		ShardOpen = atoi(readBuffer);
+		setShardOpenState((TShardOpenState)atoi(readBuffer));
 
 		nlinfo("Updated ShardOpen state to '%u' from file '%s'", ShardOpen.get(), filename.c_str());
 	}
@@ -959,6 +990,16 @@ void	updateShardOpenFromFile(const std::string& filename)
 }
 
 std::string	ShardOpenStateFileName;
+
+/**
+ * cbShardOpen()
+ * Callback for ShardOpen
+ */
+void	cbShardOpen(IVariable &var)
+{
+	setShardOpenState((TShardOpenState)(ShardOpen.get()), false);
+}
+
 
 /**
  * cbShardOpenStateFile()
@@ -1056,6 +1097,8 @@ public:
 		// add default port if not set by the config file
 		if (LSAddr.find (":") == string::npos)
 			LSAddr += ":49999";
+
+		AllowDispatchMsgToLS = true;
 
 		CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
 		CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);

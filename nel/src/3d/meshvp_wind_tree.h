@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.h
  * <File description>
  *
- * $Id: meshvp_wind_tree.h,v 1.2 2002/03/14 18:13:26 vizerie Exp $
+ * $Id: meshvp_wind_tree.h,v 1.3 2002/06/17 12:54:46 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -111,12 +111,19 @@ private:
 	void	setupLighting(CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat);
 private:
 
-	// The 4 versions: Specular or not (0 or 2), + normalize normal or not (0 or 1).
-	static	std::auto_ptr<CVertexProgram>	_VertexProgram[4];
+	enum { NumVp = 16};	
+
+	/** The 16 versions: Specular or not (0 or 2), + normalize normal or not (0 or 1). 
+	 *	All multiplied by 4, because support from 0 to 3 pointLights activated. (0.., 4.., 8.., 12..)
+	 */
+	static	std::auto_ptr<CVertexProgram>	_VertexProgram[NumVp];
 
 	// WindTree Time for this mesh param setup. Stored in mesh because same for all instances.
 	float		_CurrentTime[HrcDepth];
 	double		_LastSceneTime;
+
+	// maximum amplitude vector for each level. Stored in mesh because same for all instances.
+	CVector		_MaxDeltaPos[HrcDepth];
 
 
 	// Compute a cosinus with an angle given in 0-1 <=> 0-2Pi. Actual values goes from 0 to 2.

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.24 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.25 2002/06/17 12:54:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -700,7 +700,7 @@ static const char*	LightingVPFragmentNormalize=
 
 // ***************************************************************************
 // NB: all CTS+x are replaced with good cte index.
-static const char*	LightingVPFragmentNoSpecular=
+static const char*	LightingVPFragmentNoSpecular_Begin=
 "																						\n\
 	# Global Ambient.																	\n\
 	MOV	R2, c[CTS+0];																	\n\
@@ -709,8 +709,12 @@ static const char*	LightingVPFragmentNoSpecular=
 	DP3	R0.x, R6, c[CTS+5];			# R0.x= normal*-lightDir							\n\
 	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
 	MAD	R2, R0.y, c[CTS+1], R2;		# R2= summed vertex color.							\n\
-																						\n\
-	# Diffuse PointLight 0.																\n\
+";
+
+// The 3 point Light code.
+static const char*	LightingVPFragmentNoSpecular_PL[]=
+{
+"	# Diffuse PointLight 0.																\n\
 	ADD	R0, c[CTS+6], -R5;			# R0= lightPos-vertex								\n\
 	DP3	R0.w, R0, R0;				# normalize R0.										\n\
 	RSQ	R0.w, R0.w;																		\n\
@@ -718,8 +722,8 @@ static const char*	LightingVPFragmentNoSpecular=
 	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
 	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
 	MAD	R2, R0.y, c[CTS+2], R2;		# R2= summed vertex color.							\n\
-																						\n\
-	# Diffuse PointLight 1.																\n\
+",
+"	# Diffuse PointLight 1.																\n\
 	ADD	R0, c[CTS+7], -R5;			# R0= lightPos-vertex								\n\
 	DP3	R0.w, R0, R0;				# normalize R0.										\n\
 	RSQ	R0.w, R0.w;																		\n\
@@ -727,8 +731,8 @@ static const char*	LightingVPFragmentNoSpecular=
 	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
 	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
 	MAD	R2, R0.y, c[CTS+3], R2;		# R2= summed vertex color.							\n\
-																						\n\
-	# Diffuse PointLight 2.																\n\
+",
+"	# Diffuse PointLight 2.																\n\
 	ADD	R0, c[CTS+8], -R5;			# R0= lightPos-vertex								\n\
 	DP3	R0.w, R0, R0;				# normalize R0.										\n\
 	RSQ	R0.w, R0.w;																		\n\
@@ -736,15 +740,19 @@ static const char*	LightingVPFragmentNoSpecular=
 	DP3	R0.x, R6, R0;				# R0.x= normal*lightDir								\n\
 	LIT	R0, R0;						# R0.y= R0.x clamped								\n\
 	MAD	R2, R0.y, c[CTS+4], R2;		# R2= summed vertex color.							\n\
-																						\n\
-	# output to o[COL0] only, replacing alpha with material alpha.						\n\
+"
+};
+
+// The End code.
+static const char*	LightingVPFragmentNoSpecular_End=
+"	# output to o[COL0] only, replacing alpha with material alpha.						\n\
 	MAD	o[COL0], R2, c[CTS+9].zzzx, c[CTS+9].xxxw;										\n\
 ";
 
 
 // ***************************************************************************
 // NB: all CTS+x are replaced with good cte index.
-static const char*	LightingVPFragmentSpecular_Part1=
+static const char*	LightingVPFragmentSpecular_Begin=
 "																						\n\
 	# Global Ambient.																	\n\
 	MOV	R2, c[CTS+0];																	\n\
@@ -770,9 +778,12 @@ static const char*	LightingVPFragmentSpecular_Part1=
 	LIT	R0.yz, R0;					# R0.y= R0.x clamped, R0.z= pow(spec, R0.w) clamp	\n\
 	MAD	R2, R0.y, c[CTS+1], R2;		# R2= summed vertex color.							\n\
 	MUL	R3, R0.z, c[CTS+5];			# R3= specular color.								\n\
-																						\n\
-																						\n\
-	# Diffuse-Specular PointLight 0.													\n\
+";
+
+// The 3 point Light code.
+static const char*	LightingVPFragmentSpecular_PL[]=
+{
+"	# Diffuse-Specular PointLight 0.													\n\
 	# Compute R0= (lightPos-vertex).normed().											\n\
 	ADD	R0.xyz, c[CTS+12], -R5;		# R0= lightPos-vertex								\n\
 	DP3	R1.w, R0, R0;				# normalize R0.										\n\
@@ -789,10 +800,7 @@ static const char*	LightingVPFragmentSpecular_Part1=
 	LIT	R0.yz, R0;					# R0.y= R0.x clamped, R0.z= pow(spec, R0.w) clamp	\n\
 	MAD	R2, R0.y, c[CTS+2], R2;		# R2= summed vertex color.							\n\
 	MAD	R3, R0.z, c[CTS+6], R3;		# R3= summed specular color.						\n\
-";
-
-// Splitted in 2 because of compile limit
-static const char*	LightingVPFragmentSpecular_Part2=
+",
 "	# Diffuse-Specular PointLight 1.													\n\
 	# Compute R0= (lightPos-vertex).normed().											\n\
 	ADD	R0.xyz, c[CTS+13], -R5;		# R0= lightPos-vertex								\n\
@@ -810,9 +818,8 @@ static const char*	LightingVPFragmentSpecular_Part2=
 	LIT	R0.yz, R0;					# R0.y= R0.x clamped, R0.z= pow(spec, R0.w) clamp	\n\
 	MAD	R2, R0.y, c[CTS+3], R2;		# R2= summed vertex color.							\n\
 	MAD	R3, R0.z, c[CTS+7], R3;		# R3= summed specular color.						\n\
-																						\n\
-																						\n\
-	# Diffuse-Specular PointLight 2.													\n\
+",
+"	# Diffuse-Specular PointLight 2.													\n\
 	# Compute R0= (lightPos-vertex).normed().											\n\
 	ADD	R0.xyz, c[CTS+14], -R5;		# R0= lightPos-vertex								\n\
 	DP3	R1.w, R0, R0;				# normalize R0.										\n\
@@ -828,8 +835,13 @@ static const char*	LightingVPFragmentSpecular_Part2=
 	DP3	R0.yz, R6, R1;				# R0.yz= normal*halfAngleVector						\n\
 	LIT	R0.yz, R0;					# R0.y= R0.x clamped, R0.z= pow(spec, R0.w) clamp	\n\
 	MAD	R2, R0.y, c[CTS+4], R2;		# R2= summed vertex color.							\n\
-																						\n\
-	# output directly to secondary color.												\n\
+"
+};
+
+
+// The End code.
+static const char*	LightingVPFragmentSpecular_End=
+"	# output directly to secondary color.												\n\
 	MAD	o[COL1], R0.z, c[CTS+8], R3;	# final summed specular color.					\n\
 																						\n\
 	# output diffuse to o[COL0], replacing alpha with material alpha.					\n\
@@ -848,9 +860,13 @@ static	void	strReplaceAll(string &strInOut, const string &tokenSrc, const string
 }
 
 // ***************************************************************************
-std::string		CRenderTrav::getLightVPFragment(uint ctStart, bool supportSpecular, bool normalize)
+std::string		CRenderTrav::getLightVPFragment(uint numActivePointLights, uint ctStart, bool supportSpecular, bool normalize)
 {
 	string	ret;
+
+	// Code frag written for 4 light max.
+	nlassert(MaxVPLight==4);
+	nlassert(numActivePointLights<=MaxVPLight-1);
 
 	// Add LightingVPFragmentNormalize fragment?
 	if(normalize)
@@ -859,12 +875,31 @@ std::string		CRenderTrav::getLightVPFragment(uint ctStart, bool supportSpecular,
 	// Which fragment to use...
 	if(supportSpecular)
 	{
-		ret+= LightingVPFragmentSpecular_Part1;
-		ret+= LightingVPFragmentSpecular_Part2;
+		// Add start of VP.
+		ret+= LightingVPFragmentSpecular_Begin;
+
+		// Add needed pointLights.
+		for(uint i=0;i<numActivePointLights;i++)
+		{
+			ret+= LightingVPFragmentSpecular_PL[i];
+		}
+
+		// Add end of VP.
+		ret+= LightingVPFragmentSpecular_End;
 	}
 	else
 	{
-		ret+= LightingVPFragmentNoSpecular;
+		// Add start of VP.
+		ret+= LightingVPFragmentNoSpecular_Begin;
+
+		// Add needed pointLights.
+		for(uint i=0;i<numActivePointLights;i++)
+		{
+			ret+= LightingVPFragmentNoSpecular_PL[i];
+		}
+
+		// Add end of VP.
+		ret+= LightingVPFragmentNoSpecular_End;
 	}
 
 	// Replace all CTS+x with good index. do it for 15 possible indices: 0 to 14 if specular.

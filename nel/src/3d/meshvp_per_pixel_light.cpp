@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.cpp
  * <File description>
  *
- * $Id: meshvp_per_pixel_light.cpp,v 1.1 2002/03/14 18:13:08 vizerie Exp $
+ * $Id: meshvp_per_pixel_light.cpp,v 1.2 2002/06/17 12:54:46 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -97,8 +97,7 @@ DP3 o[TEX2].z, R6, R2;																	\n\
 static const char*	PPLightingVPNormalizeCodeBegin =
 "!!VP1.0																				\n\
 #normalize the normal																	\n\
-MOV R6, v[2];																			\n\
-DP3 R1, R6, R6;																			\n\
+DP3 R1, v[2], v[2];																		\n\
 RSQ R1, R1.x;																			\n\
 MUL R6, R6, R1;																			\n\
 																						\n\
@@ -166,8 +165,7 @@ DP3 o[TEX0].z, R6, R2;			   # get z												\n\
 static const char*	PPLightingVPNormalizeNoSpecCodeBegin =
 "!!VP1.0																				\n\
 #normalize the normal																	\n\
-MOV R6, v[2];																			\n\
-DP3 R1, R6, R6;																			\n\
+DP3 R1, v[2], v[2];																		\n\
 RSQ R1, R1.x;																			\n\
 MUL R6, R6, R1;																			\n\
 																						\n\
@@ -238,8 +236,7 @@ DP3 o[TEX2].z, R6, R2;																	\n\
 static const char*	PPLightingDirectionnalVPNormalizeCodeBegin =
 "!!VP1.0																				\n\
 #normalize the normal																	\n\
-MOV R6, v[2];																			\n\
-DP3 R1, R6, R6;																			\n\
+DP3 R1, v[2], v[2];																		\n\
 RSQ R1, R1.x;																			\n\
 MUL R6, R6, R1;																			\n\
 																						\n\
@@ -297,8 +294,7 @@ DP3 o[TEX0].z, R6, -c[4];		   # get z												\n\
 static const char*	PPLightingDirectionnalNoSpecVPNormalizeCodeBegin =
 "!!VP1.0																				\n\
 #normalize the normal																	\n\
-MOV R6, v[2];																			\n\
-DP3 R1, R6, R6;																			\n\
+DP3 R1, v[2], v[2];																		\n\
 RSQ R1, R1.x;																			\n\
 MUL R6, R6, R1;																			\n\
 																						\n\
@@ -382,9 +378,10 @@ void	CMeshVPPerPixelLight::initInstance(CMeshBaseInstance *mbi)
 		nlassert(NumVp == numvp); // make sure that it is in sync with header..todo : compile time assert :)
 		for (uint vp = 0; vp < NumVp; ++vp)
 		{
-			// no spec, no normalize.
+			// \todo yoyo TODO_OPTIM Manage different number of pointLights
+			// NB: never call getLightVPFragment() with normalize, because already done by PerPixel fragment before.
 			std::string vpCode	= std::string(vpName[vp])
-								  + CRenderTrav::getLightVPFragment(VPLightConstantStart, (vp & 2) != 0, (vp & 4) != 0)
+								  + CRenderTrav::getLightVPFragment(CRenderTrav::MaxVPLight-1, VPLightConstantStart, (vp & 2) != 0, false)
 								  + std::string(PPLightingVPCodeEnd);
 			_VertexProgram[vp]= std::auto_ptr<CVertexProgram>(new CVertexProgram(vpCode.c_str()));
 		}

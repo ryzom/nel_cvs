@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.39 2002/06/13 08:44:50 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.40 2002/06/17 12:54:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,6 +201,7 @@ CMeshMRMGeom::CMeshMRMGeom()
 	_BoneIdComputed = false;
 	_BoneIdExtended = false;
 	_NumLodRawSkin= 0;
+	_PreciseClipping= false;
 }
 
 
@@ -451,6 +452,10 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 		}
 	}
 
+	// Misc.
+	//===================
+	// Some runtime not serialized compilation
+	compileRunTime();
 
 }
 
@@ -818,6 +823,23 @@ bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &world
 		if(d>worldSphere.Radius)
 			return false;
 	}
+
+	// test if must do a precise clip, according to mesh size.
+	if( _PreciseClipping )
+	{
+		CPlane	localPlane;
+
+		// if out of only plane, entirely out.
+		for(sint i=0;i<(sint)pyramid.size();i++)
+		{
+			// Transform the pyramid in Object space.
+			localPlane= pyramid[i]*worldMatrix;
+			// if the box is not partially inside the plane, quit
+			if( !_BBox.clipBack(localPlane) )
+				return false;
+		}
+	}
+
 	return true;
 }
 
@@ -1283,6 +1305,10 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// reset any RawSkin applied.
 	clearRawSkin();
+
+
+	// Some runtime not serialized compilation
+	compileRunTime();
 
 	// return version of the header
 	return ver;
@@ -1989,6 +2015,12 @@ void	CMeshMRMGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 	}
 }
 
+
+// ***************************************************************************
+void	CMeshMRMGeom::compileRunTime()
+{
+	_PreciseClipping= _BBox.getRadius() >= NL3D_MESH_PRECISE_CLIP_THRESHOLD;
+}
 
 
 // ***************************************************************************

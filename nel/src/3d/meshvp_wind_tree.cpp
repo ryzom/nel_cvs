@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.4 2002/03/14 18:13:26 vizerie Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.5 2002/06/17 12:54:46 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -47,7 +47,7 @@ static	const uint	VPLightConstantStart= 24;
 
 
 // ***************************************************************************
-std::auto_ptr<CVertexProgram>	CMeshVPWindTree::_VertexProgram[4];
+std::auto_ptr<CVertexProgram>	CMeshVPWindTree::_VertexProgram[CMeshVPWindTree::NumVp];
 
 static const char*	WindTreeVPCodeWave=
 "!!VP1.0																				\n\
@@ -90,7 +90,7 @@ static const char*	WindTreeVPCodeEnd=
 // ***************************************************************************
 float	CMeshVPWindTree::speedCos(float angle)
 {
-	// TODODO
+	// \todo yoyo TODO_OPTIM
 	return cosf(angle * 2*(float)Pi);
 }
 
@@ -152,29 +152,20 @@ void	CMeshVPWindTree::initInstance(CMeshBaseInstance *mbi)
 		// combine fragments.
 		string	vpCode;
 
-		// no spec, no normalize.
-		vpCode= string(WindTreeVPCodeWave) 
-				+ CRenderTrav::getLightVPFragment(VPLightConstantStart, false, false) 
-				+ WindTreeVPCodeEnd;
-		_VertexProgram[0]= std::auto_ptr<CVertexProgram>(new CVertexProgram(vpCode.c_str()));
+		// For all possible VP.
+		for(uint i=0;i<NumVp;i++)
+		{
+			// setup of the VPLight fragment
+			uint	numPls= i/4;
+			bool	normalize= (i&1)!=0;
+			bool	specular= (i&2)!=0;
 
-		// no spec, normalize.
-		vpCode= string(WindTreeVPCodeWave) 
-				+ CRenderTrav::getLightVPFragment(VPLightConstantStart, false, true) 
-				+ WindTreeVPCodeEnd;
-		_VertexProgram[1]= std::auto_ptr<CVertexProgram>(new CVertexProgram(vpCode.c_str()));
-
-		// spec, no normalize.
-		vpCode= string(WindTreeVPCodeWave) 
-				+ CRenderTrav::getLightVPFragment(VPLightConstantStart, true, false) 
-				+ WindTreeVPCodeEnd;
-		_VertexProgram[2]= std::auto_ptr<CVertexProgram>(new CVertexProgram(vpCode.c_str()));
-
-		// spec, normalize.
-		vpCode= string(WindTreeVPCodeWave) 
-				+ CRenderTrav::getLightVPFragment(VPLightConstantStart, true, true) 
-				+ WindTreeVPCodeEnd;
-		_VertexProgram[3]= std::auto_ptr<CVertexProgram>(new CVertexProgram(vpCode.c_str()));
+			// combine fragments
+			vpCode= string(WindTreeVPCodeWave) 
+					+ CRenderTrav::getLightVPFragment(numPls, VPLightConstantStart, specular, normalize) 
+					+ WindTreeVPCodeEnd;
+			_VertexProgram[i]= std::auto_ptr<CVertexProgram>(new CVertexProgram(vpCode.c_str()));
+		}
 	}
 
 	// init a random phase.
@@ -184,15 +175,15 @@ void	CMeshVPWindTree::initInstance(CMeshBaseInstance *mbi)
 bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat, const NLMISC::CVector & /*viewerPos*/)
 {
 	if (!(driver->isVertexProgramSupported() && !driver->isVertexProgramEmulated())) return false;
-	//
-	setupLighting(scene, mbi, invertedModelMat);						   	
+
+
+	// precompute mesh/instance.
+	//===============
+
+
 	// Get info from scene/instance
 	float	windPower= scene->getGlobalWindPower();
 	float	instancePhase= mbi->_VPWindTreePhase;
-
-
-	// maximum amplitude vector for each level
-	static	CVector		maxDeltaPos[HrcDepth];
 
 
 	// process current times and current power. Only one time per render() and per CMeshVPWindTree.
@@ -200,6 +191,7 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	{
 		float	dt= (float)(scene->getCurrentTime() - _LastSceneTime);
 		_LastSceneTime= scene->getCurrentTime();
+
 		// Update each boneLevel time according to frequency.
 		uint i;
 		for(i=0; i<HrcDepth; i++)
@@ -212,8 +204,8 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 		// Update each boneLevel maximum amplitude vector.
 		for(i=0; i<HrcDepth; i++)
 		{
-			maxDeltaPos[i]= scene->getGlobalWindDirection() * PowerXY[i] * windPower;
-			maxDeltaPos[i].z= PowerZ[i] * windPower;
+			_MaxDeltaPos[i]= scene->getGlobalWindDirection() * PowerXY[i] * windPower;
+			_MaxDeltaPos[i].z= PowerZ[i] * windPower;
 		}
 	}
 
@@ -226,9 +218,15 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	static	CVector		maxDeltaPosOS[HrcDepth];
 	for(uint i=0; i<HrcDepth; i++)
 	{
-		maxDeltaPosOS[i]= invWorldMatrix.mulVector(maxDeltaPos[i]);
+		maxDeltaPosOS[i]= invWorldMatrix.mulVector(_MaxDeltaPos[i]);
 	}
 
+
+	// Setup constants
+	//===============
+
+	// Setup lighting and lighting constants
+	setupLighting(scene, mbi, invertedModelMat);
 
 	// c[0..3] take the ModelViewProjection Matrix. After setupModelMatrix();
 	driver->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
@@ -286,10 +284,24 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	driver->setConstant(20+3, &(maxDeltaPosOS[2]*f));
 
 
-	// Activate the VertexProgram
+	// Activate the good VertexProgram
+	//===============
+
+	// Get how many pointLights are setuped now.
+	nlassert(scene != NULL);
+	CRenderTrav		*renderTrav= scene->getRenderTrav();
+	sint	numPls= renderTrav->getNumVPLights()-1;
+	clamp(numPls, 0, CRenderTrav::MaxVPLight-1);
+
 	// Enable normalize only if requested by user. Because lighting don't manage correct "scale lighting"
 	uint	idVP= (SpecularLighting?2:0) + (driver->isForceNormalize()?1:0) ;
+	// correct VP id for correct unmber of pls.
+	idVP= numPls*4 + idVP;
+
+	// activate VP.
 	driver->activeVertexProgram(_VertexProgram[idVP].get());
+
+
 	return true;
 }
 // ***************************************************************************
@@ -328,10 +340,10 @@ void	CMeshVPWindTree::setupForMaterial(const CMaterial &mat,
 // ***************************************************************************
 void	CMeshVPWindTree::setupLighting(CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat)
 {
-		nlassert(scene != NULL);
-		CRenderTrav		*renderTrav= scene->getRenderTrav();
-		// setup cte for lighting
-		renderTrav->beginVPLightSetup(VPLightConstantStart, SpecularLighting, invertedModelMat);
+	nlassert(scene != NULL);
+	CRenderTrav		*renderTrav= scene->getRenderTrav();
+	// setup cte for lighting
+	renderTrav->beginVPLightSetup(VPLightConstantStart, SpecularLighting, invertedModelMat);
 }
 
 } // NL3D

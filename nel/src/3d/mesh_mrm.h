@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.29 2002/05/15 16:55:55 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.30 2002/06/17 12:54:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -425,6 +425,9 @@ private:
 	CRefPtr<IDriver>			_Driver;
 	bool						_VertexBufferHardDirty;
 
+	/// NB: HERE FOR PACKING ONLY. For clipping. Estimate if we must do a Precise clipping (ie with bboxes)
+	bool						_PreciseClipping;
+
 	/* try to create a vertexBufferHard. NB: enlarge capacity of the VBHard as necessary.
 		After this call, the vertexBufferHard may be NULL.
 	*/
@@ -494,8 +497,10 @@ private:
 	void		buildBoneUsageVer2 ();
 
 	/// compile precalc for distanceSetup
-	void			compileDistanceSetup();
+	void		compileDistanceSetup();
 
+	// Some runtime not serialized compilation
+	void		compileRunTime();
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.8 2002/03/14 18:15:34 vizerie Exp $
+ * $Id: render_trav.h,v 1.9 2002/06/17 12:54:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,6 +153,9 @@ public:
 	/// \name Render Lighting Setup. FOR OBSERVERS ONLY.
 	// @{
 
+	// Max VP Light setup Infos.
+	enum	{MaxVPLight= 4};
+
 	/** reset the lighting setup in the driver (all lights are disabled).
 	 *	called at begining of traverse(). Must be called by any model (before and after rendering)
 	 *	that wish to use CDriver::setLight() instead of the standard behavior with changeLightSetup()
@@ -173,8 +176,9 @@ public:
 
 
 	/** setup the driver VP constants to get info from current LightSetup. 
-	 *	Only 3 Light + SunLights are supported. The VP do NOT support distance/Spot attenuation
+	 *	Only 0..3 Light + SunLights are supported. The VP do NOT support distance/Spot attenuation
 	 *	Also it does not handle World Matrix with non uniform scale correctly since lighting is made in ObjectSpace
+	 *	
 	 *	\param ctStart the program use ctes from ctStart to ctStart+NumCtes.
 	 *	\param supportSpecular asitsounds. PointLights and dirLight are localViewer
 	 *	\param invObjectWM the inverse of object matrix: lights are mul by this. Vp compute in object space.	 
@@ -218,12 +222,14 @@ public:
 	 *		- 12..14:	light position (3 pointLihgts) in objectSpace
 	 *		TOTAL: 15 constants used.
 	 *	 
-	 *	 
 	 *
+	 *	 NB: the number of active light does not change the number of constantes used. But the VP code returned is 
+	 *	modified accordingly.
 	 *
-	 *  \param excludeStrongest This remove the strongest light from the setup. The typical use is to have it computed by using perpixel lighting. So this fraction of the vertex program must be setup elsewhere.
+	 *  \param numActivePoinLights tells how many point light from 0 to 3 this VP must handle. NB: the Sun directionnal is not option
+	 *		NB: nlassert(numActiveLights<=MaxVPLight-1).
 	 */
-	static	std::string		getLightVPFragment(uint ctStart, bool supportSpecular, bool normalize);
+	static	std::string		getLightVPFragment(uint numActivePointLights, uint ctStart, bool supportSpecular, bool normalize);
 
 	/** This returns a reference to a driver light, by its index
 	  * \see getStrongestLightIndex
@@ -235,13 +241,18 @@ public:
 	}
 
 	/// return an index to the current strongest settuped light (or -1 if there's none)
-	sint getStrongestLightIndex() const;
+	sint		getStrongestLightIndex() const;
 
 	/** Get current color, diffuse and specular of the strongest light in the scene.
 	  * These values are modulated by the current material color, so these values are valid only after
 	  * changeVPLightSetupMaterial() has been called
 	  */
-	void	getStrongestLightColors(NLMISC::CRGBA &diffuse, NLMISC::CRGBA &specular);
+	void		getStrongestLightColors(NLMISC::CRGBA &diffuse, NLMISC::CRGBA &specular);
+
+	/** return the number of VP lights currently activated (sunlight included)
+	 *	Value correct after beginVPLightSetup() only
+	 */
+	uint		getNumVPLights() const {return _VPNumLights;}
 
 private:
 	
@@ -283,8 +294,6 @@ private:
 	mutable uint				_StrongestLightIndex;
 	mutable bool				_StrongestLightTouched;
 
-	// VP Light setup Infos.
-	enum	{MaxVPLight= 4};
 	// Current ctStart setuped with beginVPLightSetup()
 	uint						_VPCurrentCtStart;
 	// Current num of VP lights enabled.

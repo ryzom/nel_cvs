@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.57 2002/06/13 08:44:50 berenguier Exp $
+ * $Id: mesh.cpp,v 1.58 2002/06/17 12:54:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,6 +125,7 @@ CMeshGeom::CMeshGeom()
 	_MeshMorpher = new CMeshMorpher;
 	_BoneIdComputed = false;
 	_BoneIdExtended= false;
+	_PreciseClipping= false;
 }
 
 
@@ -376,6 +377,9 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	// SmartPtr Copy VertexProgram effect.
 	this->_MeshVertexProgram= m.MeshVertexProgram;
 
+	// Some runtime not serialized compilation
+	compileRunTime();
+
 	/// 7. Compact bones id and build bones name array.
 	//=================================================	
 
@@ -471,6 +475,23 @@ bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMat
 		if(d>worldSphere.Radius)
 			return false;
 	}
+
+	// test if must do a precise clip, according to mesh size.
+	if( _PreciseClipping )
+	{
+		CPlane	localPlane;
+
+		// if out of only plane, entirely out.
+		for(sint i=0;i<(sint)pyramid.size();i++)
+		{
+			// Transform the pyramid in Object space.
+			localPlane= pyramid[i]*worldMatrix;
+			// if the box is not partially inside the plane, quit
+			if( !_BBox.clipBack(localPlane) )
+				return false;
+		}
+	}
+
 	return true;
 }
 
@@ -840,6 +861,17 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if(ver < 4)
 		buildBoneUsageVer3();
 
+
+	// Some runtime not serialized compilation
+	if(f.isReading())
+		compileRunTime();
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::compileRunTime()
+{
+	_PreciseClipping= _BBox.getRadius() >= NL3D_MESH_PRECISE_CLIP_THRESHOLD;
 }
 
 

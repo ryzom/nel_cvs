@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.25 2002/06/06 14:38:35 vizerie Exp $
+ * $Id: mesh.h,v 1.26 2002/06/17 12:54:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,10 @@ class CSkeletonModel;
 
 // ***************************************************************************
 // Should be 4.
-#define		NL3D_MESH_SKINNING_MAX_MATRIX	4
+#define		NL3D_MESH_SKINNING_MAX_MATRIX		4
+
+// Above this distance, Mesh with a bigger Radius will use BBox clipping
+#define		NL3D_MESH_PRECISE_CLIP_THRESHOLD	5.0f
 
 
 // ***************************************************************************
@@ -558,6 +561,8 @@ private:
 	std::vector<CMatrixBlock>	_MatrixBlocks;
 	/// For clipping.
 	NLMISC::CAABBoxExt			_BBox;
+	/// Estimate if we must do a Precise clipping (ie with bboxes)
+	bool						_PreciseClipping;
 	/// This tells if the mesh is correctly skinned.
 	bool						_Skinned;
 
@@ -672,6 +677,10 @@ private:
 
 	// Build bone Usage information for serialized mesh <= version 3.
 	void	buildBoneUsageVer3 ();
+
+	// Some runtime not serialized compilation
+	void	compileRunTime();
+
 };
 
 

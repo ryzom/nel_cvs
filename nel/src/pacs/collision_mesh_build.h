@@ -1,7 +1,7 @@
 /** \file collision_mesh_build.h
  * 
  *
- * $Id: collision_mesh_build.h,v 1.1 2001/07/24 08:44:19 legros Exp $
+ * $Id: collision_mesh_build.h,v 1.2 2001/07/24 13:26:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,11 +39,25 @@ namespace NLPACS
 
 struct CCollisionFace
 {
+	/// The number of the vertices of the face.
 	uint32	V[3];
+
+	/// The link to the neighbor faces -- not to be filled.
+	sint32	Edge[3];
+
+	/// The visibility of each edge.
 	bool	Visibility[3];
+
+	/// True iff this face contains an exit on one of its edges.
 	bool	HasExit;
+
+	/// True iff the face contains a door on one of its edges.
 	bool	HasDoor;
 
+	/// True iff the the face belongs to the interior collision mesh.
+	bool	IsInterior;
+
+	/// Serialise the face
 	void	serial(NLMISC::IStream &f)
 	{
 		f.serial(V[0]);
@@ -56,8 +70,9 @@ struct CCollisionFace
 
 		f.serial(HasExit);
 		f.serial(HasDoor);
+		f.serial(IsInterior);
 	}
-}
+};
 
 /**
  * The collision intermediate mesh, used to build the real collision meshes.

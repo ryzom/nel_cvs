@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.18 2001/07/17 17:20:29 lecroart Exp $
+ * $Id: entities.cpp,v 1.19 2001/07/18 11:45:46 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,11 +85,6 @@ float			PlayerSpeed = 1.8f;		// 6.5 km/h
 float			SnowballSpeed = 10.0f;	// 36 km/h
 
 // these variables are set with the config file
-
-float RadarPosX, RadarPosY, RadarWidth, RadarHeight, RadarBorder;
-CRGBA RadarBackColor, RadarFrontColor, RadarBorderColor, RadarSelfColor;
-float RadarEntitySize;
-float RadarZoom;
 
 float		EntityNameSize;
 CRGBA		EntityNameColor;
@@ -681,117 +676,6 @@ void releaseEntities()
 	AimingInstance = NULL;
 }
 
-//
-void cbUpdateRadar (CConfigFile::CVar &var)
-{
-	if (var.Name == "RadarPosX") RadarPosX = var.asFloat ();
-	else if (var.Name == "RadarPosY") RadarPosY = var.asFloat ();
-	else if (var.Name == "RadarWidth") RadarWidth = var.asFloat ();
-	else if (var.Name == "RadarHeight") RadarHeight = var.asFloat ();
-	else if (var.Name == "RadarBackColor") RadarBackColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
-	else if (var.Name == "RadarFrontColor") RadarFrontColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
-	else if (var.Name == "RadarBorderColor") RadarBorderColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
-	else if (var.Name == "RadarSelfColor") RadarSelfColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
-	else if (var.Name == "RadarEntitySize") RadarEntitySize = var.asFloat ();
-	else if (var.Name == "RadarBorder") RadarBorder = var.asFloat ();
-	else if (var.Name == "RadarZoom") RadarZoom = var.asFloat ();
-	else nlwarning ("Unknown variable update %s", var.Name.c_str());
-}
-
-static void initRadar ()
-{
-	ConfigFile.setCallback ("RadarPosX", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarPosY", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarWidth", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarHeight", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarBackColor", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarFrontColor", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarBorderColor", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarSelfColor", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarEntitySize", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarBorder", cbUpdateRadar);
-	ConfigFile.setCallback ("RadarZoom", cbUpdateRadar);
-
-	cbUpdateRadar (ConfigFile.getVar ("RadarPosX"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarPosY"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarWidth"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarHeight"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarFrontColor"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarBackColor"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarBorderColor"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarSelfColor"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarEntitySize"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarBorder"));
-	cbUpdateRadar (ConfigFile.getVar ("RadarZoom"));
-}
-
-
-
-void displayRadarPoint (const CVector &Position, const CVector &Center, float Size, const CRGBA &Color)
-{
-	float userPosX, userPosY;
-
-	// convert from world coords to radar coords (0.0 -> 1.0)
-	userPosX = (Position.x - Center.x) / (2.0f*WorldWidth);
-	userPosY = (Position.y - Center.y) / (2.0f*WorldHeight);
-	// userpos is between -0.5 -> +0.5
-	userPosX *= RadarZoom;
-	userPosY *= RadarZoom;
-/*
-	/// \todo virer kan ca marchera
-	string str = toString(userPosX) + " / " + toString(userPosY) + " ** ";
-	str += toString(Center.x) + " / " + toString(Center.y) + " *** ";
-	str += toString(Position.x) + " / " + toString(Position.y);
-	TextContext->printfAt (0.1f, 0.5f, str.c_str());
-*/
-	if (userPosX > 0.5f || userPosX < -0.5f || userPosY > 0.5f || userPosY < -0.5f)
-		return;
-	userPosX += 0.5f;
-	userPosY += 0.5f;
-	// userpos is between 0.0 -> 1.0
-
-	userPosX *= RadarWidth;
-	userPosY *= RadarHeight;
-
-	userPosX += RadarPosX;
-	userPosY += RadarPosY;
-
-	Driver->drawQuad (userPosX, userPosY, Size, Color);
-}
-
-
-static void updateRadar ()
-{
-	// Display the back of the radar
-	Driver->setMatrixMode2D11 ();
-	Driver->drawQuad (RadarPosX-RadarBorder, RadarPosY-RadarBorder, RadarPosX+RadarWidth+RadarBorder, RadarPosY+RadarHeight+RadarBorder, RadarBackColor);
-	Driver->drawWiredQuad (RadarPosX, RadarPosY, RadarPosX+RadarWidth, RadarPosY+RadarHeight, RadarBorderColor);
-
-	CVector Center;
-	Center.x = WorldWidth/2.0f;
-	Center.y = -WorldHeight/2.0f;
-
-	// the center of the radar is the player
-	if (Self != NULL)
-	{
-		Center.x = Self->Position.x;
-		Center.y = Self->Position.y;
-	}
-
-	float entitySize = RadarEntitySize * ((RadarZoom <= 1.0f) ? 1.0f : RadarZoom);
-	if (entitySize > RadarBorder) entitySize = RadarBorder;
-	if (entitySize < RadarEntitySize * 16) entitySize = RadarEntitySize * 16;
-
-	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
-	{
-
-		CRGBA entityColor = ((*eit).second.Type == CEntity::Self) ? RadarSelfColor : RadarFrontColor;
-
-		displayRadarPoint ((*eit).second.Position, Center, entitySize, entityColor);
-
-		displayRadarPoint ((*eit).second.ServerPosition, Center, entitySize, CRGBA (255,255,255,255));
-	}
-}
 
 //
 void	resetEntityPosition(uint32 eid)

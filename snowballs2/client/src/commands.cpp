@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: commands.cpp,v 1.10 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: commands.cpp,v 1.11 2001/07/18 11:45:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,9 +125,6 @@ bool commandLine (const string &str)
 
 }
 
-extern float RadarZoom;
-
-
 class CCommandsListener : public IEventListener
 {
 	virtual void	operator() ( const CEvent& event )
@@ -181,8 +178,6 @@ class CCommandsListener : public IEventListener
 		case 27 : // ESCAPE
 			break;
 
-		case '+': RadarZoom *= 2.0; break;
-		case '-': RadarZoom /= 2.0; break;
 		default: 
 			if ( ! _MaxWidthReached )
 			{

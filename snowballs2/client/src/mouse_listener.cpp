@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: mouse_listener.cpp,v 1.3 2001/07/17 17:20:29 lecroart Exp $
+ * $Id: mouse_listener.cpp,v 1.4 2001/07/18 11:45:46 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,10 @@
 
 using namespace NLMISC;
 using namespace NL3D;
+
+float MouseZoomStep;
+
+float GroundCamLimit = 0.5f;
 
 C3dMouseListener::C3dMouseListener() :  _CurrentModelRotationAxis(zAxis),
 										_XModelTranslateEnabled(true),
@@ -200,7 +204,7 @@ void C3dMouseListener::operator ()(const CEvent& event)
 	else if (event==EventMouseWheelId)
 	{
 		CEventMouseWheel* mouseEvent=(CEventMouseWheel*)&event;
-		_ViewLagBehind += (mouseEvent->Direction? -0.1f : +0.1f);
+		_ViewLagBehind += (mouseEvent->Direction? -MouseZoomStep : +MouseZoomStep);
 		if (_ViewLagBehind < 0.5f)
 			_ViewLagBehind = 0.5f;
 	}
@@ -329,9 +333,9 @@ void	C3dMouseListener::updateCamera()
 	CVector	cpos = getPosition()+CVector(-(float)cos(getOrientation())*_ViewLagBehind, -(float)sin(getOrientation())*_ViewLagBehind, _ViewHeight);
 	CVector snapped = cpos,
 			normal;
-	if (CamCollisionEntity->snapToGround(snapped, normal) && (cpos.z-(snapped.z+1.0f))*normal.z < 0.0f)
+	if (CamCollisionEntity->snapToGround(snapped, normal) && (cpos.z-(snapped.z+GroundCamLimit))*normal.z < 0.0f)
 	{
-		cpos = snapped+CVector(0.0f, 0.0f, 1.0f);
+		cpos = snapped+CVector(0.0f, 0.0f, GroundCamLimit);
 		_ViewHeight = cpos.z - getPosition().z;
 	}
 	_Camera->lookAt(cpos, tpos);
@@ -339,12 +343,16 @@ void	C3dMouseListener::updateCamera()
 
 void	cbUpdateMouseListenerConfig(CConfigFile::CVar &var)
 {
-	if (var.Name == "InvertMouse") MouseListener->setInvertMouseMode(var.asInt() != 0);
+	if (var.Name == "MouseInvert") MouseListener->setInvertMouseMode(var.asInt() != 0);
+	else if (var.Name == "MouseZoomStep") MouseZoomStep = var.asFloat ();
 	else nlwarning ("Unknown variable update %s", var.Name.c_str());
 }
 
 void	initMouseListenerConfig()
 {
-	ConfigFile.setCallback ("InvertMouse", cbUpdateMouseListenerConfig);
-	cbUpdateMouseListenerConfig(ConfigFile.getVar ("InvertMouse"));
+	ConfigFile.setCallback ("MouseInvert", cbUpdateMouseListenerConfig);
+	ConfigFile.setCallback ("MouseZoomStep", cbUpdateMouseListenerConfig);
+
+	cbUpdateMouseListenerConfig(ConfigFile.getVar ("MouseInvert"));
+	cbUpdateMouseListenerConfig(ConfigFile.getVar ("MouseZoomStep"));
 }

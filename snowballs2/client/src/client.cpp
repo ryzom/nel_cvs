@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.32 2001/07/17 17:20:29 lecroart Exp $
+ * $Id: client.cpp,v 1.33 2001/07/18 11:45:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,8 +295,9 @@ int main(int argc, char **argv)
 	nlinfo ("Welcome to Snowballs 2");
 
 	NewTime = CTime::getLocalTime();
-	
-	startLoginInterface ();
+
+	if (ConfigFile.getVar("AutoLogin").asInt() == 1)
+		startLoginInterface ();
 
 	while ((!NeedExit) && Driver->isActive())
 	{

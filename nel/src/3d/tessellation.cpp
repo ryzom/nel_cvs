@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.15 2000/11/22 13:15:24 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.16 2000/11/22 15:09:47 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -1100,16 +1100,12 @@ void		CTessFace::updateBindAndSplit()
 	}
 	else
 	{
-		// TODO: this is only valid on non rectangle patch.
-
 		// Multipatch face case.!!
 		CTessFace	*fmult= FBase;
 
 		// First, trick: FBase is NULL, during the split. => no split problem.
 		FBase= NULL;
 		split(false);
-
-		// TODODODO: fo ke ca marche avec 1/4...
 
 		// Update good Face neighbors.
 		//============================
@@ -1118,6 +1114,9 @@ void		CTessFace::updateBindAndSplit()
 
 		SonRight->FLeft= fmult->SonLeft;
 		fmult->SonLeft->changeNeighbor(&CTessFace::MultipleBindFace, SonRight);
+
+		// NB: this work auto with 1/2 or 1/4. See CPatch::bind(), to understand.
+		// In 1/4 case, fmult->SonLeft and fmult->SonRight are themselves MultiPatch face. So it will recurse.
 
 		// Update good vertex pointer.
 		//============================
@@ -1134,12 +1133,15 @@ void		CTessFace::updateBindAndSplit()
 		SonRight->Center= (SonRight->VBase->EndPos + SonRight->VLeft->EndPos + SonRight->VRight->EndPos)/3;
 		SonLeft->Center= (SonLeft->VBase->EndPos + SonLeft->VLeft->EndPos + SonLeft->VRight->EndPos)/3;
 
+
 		// Bind FBase to a false face which indicate a bind 1/N.
 		// This face prevent for "this" face to be merged...
 		FBase= &CantMergeFace;
 
 		// Therefore, the vertex will be never deleted (since face not merged).
 		// The only way to do this, is to unbind the patch from all (then the vertex is cloned), then the merge will be Ok.
+
+		// TODO: All this is only valid on non rectangle patch.
 	}
 }
 

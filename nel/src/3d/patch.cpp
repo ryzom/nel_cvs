@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.13 2000/11/22 13:15:24 berenguier Exp $
+ * $Id: patch.cpp,v 1.14 2000/11/22 15:09:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -624,7 +624,7 @@ void			CPatch::changeEdgeNeighbor(sint edge, CTessFace *to)
 void			CPatch::bind(CBindInfo	Edges[4])
 {
 	// The multiple Patch Face.
-	// By default, Patch==NULL, so ok!
+	// By default, Patch==NULL, FLeft, FRight and FBase==NULL so ok!
 	static	CTessFace	bind1_2[4];
 	static	CTessFace	bind1_4[8];
 
@@ -670,18 +670,41 @@ void			CPatch::bind(CBindInfo	Edges[4])
 			this->changeEdgeNeighbor(i, bind1_2+i);
 			bind1_2[i].FBase= this->getRootFaceForEdge(i);
 			// Setup the multiple face.
-			// Follow the conventions!
+			// Follow the conventions! Make a draw for understand. Small Patchs are numbered in CCW.
 			bind1_2[i].SonRight= bind.Next[0]->getRootFaceForEdge(bind.Edge[0]);
 			bind1_2[i].SonLeft= bind.Next[1]->getRootFaceForEdge(bind.Edge[1]);
 			bind1_2[i].VBase= bind.Next[0]->getRootVertexForEdge(bind.Edge[0]);
-			// Bind Nexts on me.
+			// Set a "flag" to neighbors, so they know what edge is to be bind on me.
 			bind.Next[0]->changeEdgeNeighbor(bind.Edge[0], &CTessFace::MultipleBindFace);
 			bind.Next[1]->changeEdgeNeighbor(bind.Edge[1], &CTessFace::MultipleBindFace);
 		}
 		else if(bind.NPatchs==4)
 		{
-			// TODODODO: fo ke ca marche avec 1/4...
-			nlstop;
+			// Setup multiple bind level 0.
+			this->changeEdgeNeighbor(i, bind1_2+i);
+			bind1_2[i].FBase= this->getRootFaceForEdge(i);
+
+			// Setup multiple bind level 1.
+			// Follow the conventions! Make a draw for understand. Small Patchs are numbered in CCW.
+			bind1_2[i].SonRight= bind1_4 + 2*i+0;
+			bind1_2[i].SonLeft= bind1_4 + 2*i+1;
+			bind1_2[i].VBase= bind.Next[1]->getRootVertexForEdge(bind.Edge[1]);
+			// Make first multiple face bind level1.
+			bind1_4[2*i+0].FBase= &CTessFace::MultipleBindFace;	// to link correctly when the root face will be splitted.
+			bind1_4[2*i+0].SonRight= bind.Next[0]->getRootFaceForEdge(bind.Edge[0]);
+			bind1_4[2*i+0].SonLeft= bind.Next[1]->getRootFaceForEdge(bind.Edge[1]);
+			bind1_4[2*i+0].VBase= bind.Next[0]->getRootVertexForEdge(bind.Edge[0]);
+			// Make second multiple face bind level1.
+			bind1_4[2*i+1].FBase= &CTessFace::MultipleBindFace;	// to link correctly when the root face will be splitted.
+			bind1_4[2*i+1].SonRight= bind.Next[2]->getRootFaceForEdge(bind.Edge[2]);
+			bind1_4[2*i+1].SonLeft= bind.Next[3]->getRootFaceForEdge(bind.Edge[3]);
+			bind1_4[2*i+1].VBase= bind.Next[2]->getRootVertexForEdge(bind.Edge[2]);
+
+			// Set a "flag" to neighbors, so they know what edge is to be bind on me.
+			bind.Next[0]->changeEdgeNeighbor(bind.Edge[0], &CTessFace::MultipleBindFace);
+			bind.Next[1]->changeEdgeNeighbor(bind.Edge[1], &CTessFace::MultipleBindFace);
+			bind.Next[2]->changeEdgeNeighbor(bind.Edge[2], &CTessFace::MultipleBindFace);
+			bind.Next[3]->changeEdgeNeighbor(bind.Edge[3], &CTessFace::MultipleBindFace);
 		}
 	}
 

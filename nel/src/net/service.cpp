@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.189 2003/09/09 14:30:19 lecroart Exp $
+ * $Id: service.cpp,v 1.190 2003/09/09 14:42:39 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -399,7 +399,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 		// Init parameters
 		//
-		
+
+		// get the path where to run the service if any in the command line
+		if (haveArg('A'))
+			RunningDirectory = CPath::standardizePath(getArg('A'));
+
 		ConfigDirectory = CPath::standardizePath(configDir);
 		LogDirectory = CPath::standardizePath(logDir);
 		_ShortName = serviceShortName;
@@ -453,12 +457,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// setup variable with config file variable
 		IVariable::init (ConfigFile);
 		
-
-		//
-		// Overload config file variable with command line value
-		//
-
-		// get the path where to run the service if any in the command line
+		// we have to call this again because the config file can changed this variable but the cmd line is more prioritary
 		if (haveArg('A'))
 			RunningDirectory = CPath::standardizePath(getArg('A'));
 

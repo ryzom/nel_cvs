@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.4 2000/12/18 09:45:20 corvazier Exp $
+ * $Id: mesh.h,v 1.5 2000/12/18 15:13:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,13 @@ public:
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv);
 
+	/// get the extended axis aligned bounding box of the mesh
+	const CAABBoxExt& getBoundingBox() const
+	{
+		return _BBox;
+	}
+
+	
 	/// serial this mesh.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CMesh);

@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.25 2004/08/03 16:27:54 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.26 2004/08/13 15:35:09 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -108,7 +108,7 @@ void CFlareModel::registerBasic()
 
 //********************************************************************************************************************
 void	CFlareModel::traverseRender()
-{			
+{				
 	CRenderTrav			&renderTrav = getOwnerScene()->getRenderTrav();
 	if (renderTrav.isCurrentPassOpaque()) return;	
 	IDriver				*drv  = renderTrav.getDriver();
@@ -336,8 +336,9 @@ void	CFlareModel::traverseRender()
 
 		// setup vertex buffer
 		vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+		vb.setPreferredMemory(CVertexBuffer::RAMVolatile, true);
 		vb.setNumVertices(4);
-
+		vb.setName("CFlareModel");
 		{
 			CVertexBufferReadWrite vba;
 			vb.lock (vba);
@@ -526,7 +527,8 @@ void CFlareModel::initStatics()
 		_DrawQueryMaterial.setZFunc(CMaterial::always);
 		// setup vbs
 		_OcclusionQueryVB.setVertexFormat(CVertexBuffer::PositionFlag);
-		_OcclusionQueryVB.setPreferredMemory(CVertexBuffer::RAMPreferred, false); // use ram to avoid stall, and don't want to setup a VB per flare!
+		_OcclusionQueryVB.setName("CFlareModel::_OcclusionQueryVB");
+		_OcclusionQueryVB.setPreferredMemory(CVertexBuffer::RAMVolatile, false); // use ram to avoid stall, and don't want to setup a VB per flare!
 		_OcclusionQueryVB.setNumVertices(1);
 		_OcclusionQuerySettuped = true;
 	}

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.148 2004/08/03 16:27:10 vizerie Exp $
+ * $Id: landscape.cpp,v 1.149 2004/08/13 15:36:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,9 @@
 using namespace NLMISC;
 using namespace std;
 
+
+// copy index rather than counting them twice
+//#define NL_LANDSCAPE_COPY_INDEX
 
 namespace NL3D 
 {
@@ -264,6 +267,9 @@ CLandscape::CLandscape() :
 	// Alloc some global space for tri rendering.
 	if( CLandscapeGlobals::PassTriArray.getNumIndexes() < 1000 )
 		CLandscapeGlobals::PassTriArray.setNumIndexes( 1000 );
+
+	// set volatile index buffer to avoid stalls
+	CLandscapeGlobals::PassTriArray.setPreferredMemory(CIndexBuffer::AGPVolatile, false);
 
 	_LockCount = 0;
 
@@ -925,24 +931,49 @@ void			CLandscape::updateTessBlocksFaceVector()
 }
 
 
+#ifdef NL_LANDSCAPE_COPY_INDEX
+	static std::vector<uint32> LandscapeIndices;
+#endif
+
 // ***************************************************************************
-static inline void	initPassTriArray(CPatchRdrPass &pass)
+static inline void	initPassTriArray(CPatchRdrPass &pass, uint32 numIndex)
 {
-	uint	numIndices= pass.getMaxRenderedFaces()*3;
-	// realloc if necessary
-	if( CLandscapeGlobals::PassTriArray.getNumIndexes() < numIndices )
-		CLandscapeGlobals::PassTriArray.setNumIndexes( numIndices );
-	// reset ptr.
-	nlassert (!CLandscapeGlobals::PassTriArray.isLocked());
-	CLandscapeGlobals::PassTriArray.lock (CLandscapeGlobals::PassTriArrayIBA);
-	NL3D_LandscapeGlobals_PassTriCurPtr= CLandscapeGlobals::PassTriArrayIBA.getPtr();
+	#ifndef NL_LANDSCAPE_COPY_INDEX
+		//uint	numIndices= pass.getMaxRenderedFaces()*3;	
+		// realloc if necessary
+		// We use 	
+		/*if( CLandscapeGlobals::PassTriArray.getNumIndexes() < numIndices )
+			CLandscapeGlobals::PassTriArray.setNumIndexes( numIndices );*/
+		CLandscapeGlobals::PassTriArray.setNumIndexes(numIndex);
+		// reset ptr.
+		nlassert (!CLandscapeGlobals::PassTriArray.isLocked());
+		CLandscapeGlobals::PassTriArray.lock (CLandscapeGlobals::PassTriArrayIBA);
+		NL3D_LandscapeGlobals_PassTriCurPtr= CLandscapeGlobals::PassTriArrayIBA.getPtr();
+	#else
+		LandscapeIndices.resize(pass.getMaxRenderedFaces()*3);		
+		NL3D_LandscapeGlobals_PassTriCurPtr = &LandscapeIndices[0];
+
+	#endif
 }
 
 
 // ***************************************************************************
-static inline void	drawPassTriArray(CMaterial &mat)
+static 
+#ifndef NL_DEBUG
+	inline 
+#endif
+void	drawPassTriArray(CMaterial &mat)
 {
-	nlassert (CLandscapeGlobals::PassTriArray.isLocked());
+	#ifndef NL_LANDSCAPE_COPY_INDEX
+		nlassert (CLandscapeGlobals::PassTriArray.isLocked());
+	#else
+		if (!NL3D_LandscapeGlobals_PassNTri) return;
+		// do copy now
+		CLandscapeGlobals::PassTriArray.setNumIndexes(NL3D_LandscapeGlobals_PassNTri * 3);				
+		CLandscapeGlobals::PassTriArray.lock (CLandscapeGlobals::PassTriArrayIBA);
+		NL3D_LandscapeGlobals_PassTriCurPtr= CLandscapeGlobals::PassTriArrayIBA.getPtr();
+		memcpy(NL3D_LandscapeGlobals_PassTriCurPtr, &LandscapeIndices[0], NL3D_LandscapeGlobals_PassNTri * 3 * sizeof(uint32));		
+	#endif
 	CLandscapeGlobals::PassTriArrayIBA.unlock();
 	if(NL3D_LandscapeGlobals_PassNTri>0)
 	{
@@ -952,6 +983,49 @@ static inline void	drawPassTriArray(CMaterial &mat)
 		NL3D_LandscapeGlobals_PassNTri= 0;
 	}
 }
+
+
+// ***************************************************************************
+static inline uint32 countNumWantedIndex(CRdrTileId	*tileToRdr, uint rdrPass)
+{	
+	uint32		numIndex = 0;
+	while(tileToRdr)
+	{
+		if(tileToRdr->TileMaterial->Pass[rdrPass].PatchRdrPass)
+		{
+			// renderSimpleTriangles() with the material setuped.
+			numIndex += *(tileToRdr->TileMaterial->TileFaceVectors[rdrPass]);
+		}
+		tileToRdr= (CRdrTileId*)tileToRdr->getNext();
+	}
+	return 3 * numIndex;
+}
+
+// ***************************************************************************
+static inline uint32 countNumWantedIndexFar0(CPatch	*patch)
+{	
+	uint32		numTri = 0;
+	while(patch)
+	{		
+		// renderSimpleTriangles() with the material setuped.
+		numTri += patch->countNumTriFar0();
+		patch = patch->getNextFar0ToRdr();
+	}
+	return 3 * numTri;
+}
+
+// ***************************************************************************
+static inline uint32 countNumWantedIndexFar1(CPatch	*patch)
+{	
+	uint32		numTri = 0;
+	while(patch)
+	{	
+		numTri += patch->countNumTriFar1();		
+		patch = patch ->getNextFar1ToRdr();
+	}
+	return 3 * numTri;
+}
+
 
 
 // ***************************************************************************
@@ -1312,24 +1386,29 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				// Get a ref on the render pass. Const cast work because we only modify attribut from CPatchRdrPass 
 				// that don't affect the operator< of this class
 				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
-
 				// Enlarge PassTriArray as needed
-				initPassTriArray(pass);
-
-				// Setup Diffuse texture of the tile.
-				TileMaterial.setTexture(0, pass.TextureDiffuse);
-
-				// Add triangles to array
-				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);
-				while(tileToRdr)
+				CRdrTileId	*tileToRdr= pass.getRdrTileRoot(passOrder);								
+				#ifndef NL_LANDSCAPE_COPY_INDEX
+					uint32 numWantedIndex = countNumWantedIndex(tileToRdr, NL3D_TILE_PASS_RGB0); 
+				#else
+					uint32 numWantedIndex = 1;								
+				#endif
+				if (numWantedIndex)
 				{
-					// renderSimpleTriangles() with the material setuped.
-					tileToRdr->TileMaterial->renderTilePassRGB0();
-					tileToRdr= (CRdrTileId*)tileToRdr->getNext();
-				}
+					initPassTriArray(pass, numWantedIndex);
+					// Setup Diffuse texture of the tile.
+					TileMaterial.setTexture(0, pass.TextureDiffuse);				
+					// Add triangles to array
+					while(tileToRdr)
+					{
+						// renderSimpleTriangles() with the material setuped.
+						tileToRdr->TileMaterial->renderTilePassRGB0();
+						tileToRdr= (CRdrTileId*)tileToRdr->getNext();
+					}
 
-				// Render triangles.
-				drawPassTriArray(TileMaterial);
+					// Render triangles.
+					drawPassTriArray(TileMaterial);
+				}
 			}
 		}
 		else if(passOrder==NL3D_TILE_PASS_LIGHTMAP)
@@ -1361,22 +1440,28 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				CPatchRdrPass	&pass= *_TextureNears[lightRdrPass];
 
 				// Enlarge PassTriArray as needed
-				initPassTriArray(pass);
-
-				// Setup Lightmap into stage1. Because we share UV with pass RGB0. So we use UV1.
-				// Also, now stage0 is used for DynamicLightmap
-				TileMaterial.setTexture(1, pass.TextureDiffuse);
-
-				// Add triangles to array
-				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);
-				while(tileToRdr)
-				{
-					// renderSimpleTriangles() with the material setuped.
-					tileToRdr->TileMaterial->renderTilePassLightmap();
-					tileToRdr= (CRdrTileId*)tileToRdr->getNext();
+				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);	
+				#ifndef NL_LANDSCAPE_COPY_INDEX
+					uint32 numWantedIndex = countNumWantedIndex(tileToRdr, NL3D_TILE_PASS_RGB0);
+				#else
+					uint32 numWantedIndex = 1;
+				#endif
+				if (numWantedIndex)
+				{				
+					initPassTriArray(pass, numWantedIndex);
+					// Setup Lightmap into stage1. Because we share UV with pass RGB0. So we use UV1.
+					// Also, now stage0 is used for DynamicLightmap
+					TileMaterial.setTexture(1, pass.TextureDiffuse);
+					// Add triangles to array
+					while(tileToRdr)
+					{
+						// renderSimpleTriangles() with the material setuped.
+						tileToRdr->TileMaterial->renderTilePassLightmap();
+						tileToRdr= (CRdrTileId*)tileToRdr->getNext();
+					}
+					// Render triangles.
+					drawPassTriArray(TileMaterial);
 				}
-				// Render triangles.
-				drawPassTriArray(TileMaterial);
 			}
 
 			// if vertex shader not used.
@@ -1405,31 +1490,39 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
 
 				// Enlarge PassTriArray as needed
-				initPassTriArray(pass);
-
-				// Add triangles to array
 				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);
-				while(tileToRdr)
-				{
-					// renderSimpleTriangles() with the material setuped.
-					tileToRdr->TileMaterial->renderTile(passOrder);
-					tileToRdr= (CRdrTileId*)tileToRdr->getNext();
-				}
+				#ifndef NL_LANDSCAPE_COPY_INDEX
+					uint32 numWantedIndex = countNumWantedIndex(tileToRdr, passOrder);
+				#else
+					uint32 numWantedIndex = 1;
+				#endif
+				if (numWantedIndex)
+				{				
+					initPassTriArray(pass, numWantedIndex);
 
-				// Pass not empty ?
-				if(NL3D_LandscapeGlobals_PassNTri>0)
-				{
-					// Setup material.
-					// Setup Diffuse texture of the tile.
-					TileMaterial.setTexture(0, pass.TextureDiffuse);
-					
-					// If transition tile, must enable the alpha for this pass.
-					// NB: Additive pass may have pass.TextureAlpha==NULL
-					TileMaterial.setTexture(1, pass.TextureAlpha);
-				}
+					// Add triangles to array
+					while(tileToRdr)
+					{
+						// renderSimpleTriangles() with the material setuped.
+						tileToRdr->TileMaterial->renderTile(passOrder);
+						tileToRdr= (CRdrTileId*)tileToRdr->getNext();
+					}
 
-				// Render triangles.
-				drawPassTriArray(TileMaterial);
+					// Pass not empty ?
+					if(NL3D_LandscapeGlobals_PassNTri>0)
+					{
+						// Setup material.
+						// Setup Diffuse texture of the tile.
+						TileMaterial.setTexture(0, pass.TextureDiffuse);
+						
+						// If transition tile, must enable the alpha for this pass.
+						// NB: Additive pass may have pass.TextureAlpha==NULL
+						TileMaterial.setTexture(1, pass.TextureAlpha);
+					}
+
+					// Render triangles.
+					drawPassTriArray(TileMaterial);
+				}
 			}
 		}
 	}
@@ -1491,25 +1584,33 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		CPatchRdrPass	&pass= **itFar;
 
 		// Enlarge PassTriArray as needed
-		initPassTriArray(pass);
-
-		// Setup the material.
-		FarMaterial.setTexture(0, pass.TextureDiffuse);
-		// If the texture need to be updated, do it now.
-		if(pass.TextureDiffuse && pass.TextureDiffuse->touched())
-			driver->setupTexture(*pass.TextureDiffuse);
-
-		// Add triangles to array
 		CPatch		*patchToRdr= pass.getRdrPatchFar0();
-		while(patchToRdr)
-		{
-			// renderSimpleTriangles() with the material setuped.
-			patchToRdr->renderFar0();
-			patchToRdr= patchToRdr->getNextFar0ToRdr();
+		if (patchToRdr)
+		{				
+			#ifndef NL_LANDSCAPE_COPY_INDEX
+				uint32 numWantedIndex =  countNumWantedIndexFar0(patchToRdr); 			
+			#else
+				uint32 numWantedIndex = 1;
+			#endif
+			if (numWantedIndex)
+			{		
+				initPassTriArray(pass, numWantedIndex);
+				// Setup the material.
+				FarMaterial.setTexture(0, pass.TextureDiffuse);
+				// If the texture need to be updated, do it now.
+				if(pass.TextureDiffuse && pass.TextureDiffuse->touched())
+					driver->setupTexture(*pass.TextureDiffuse);
+				// Add triangles to array
+				while(patchToRdr)
+				{
+					// renderSimpleTriangles() with the material setuped.
+					patchToRdr->renderFar0();
+					patchToRdr= patchToRdr->getNextFar0ToRdr();
+				}
+				// Render triangles.
+				drawPassTriArray(FarMaterial);
+			}
 		}
-		// Render triangles.
-		drawPassTriArray(FarMaterial);
-
 		// Next render pass
 		itFar++;
 	}
@@ -1549,26 +1650,37 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		CPatchRdrPass	&pass= **itFar;
 
 		// Enlarge PassTriArray as needed
-		initPassTriArray(pass);
+		CPatch		*patchToRdr= pass.getRdrPatchFar1();		
+		if (patchToRdr)
+		{		
+			//uint32 numWantedIndex = countNumWantedIndexFar1(patchToRdr);
+			#ifndef NL_LANDSCAPE_COPY_INDEX
+				uint32 numWantedIndex = countNumWantedIndexFar1(patchToRdr);
+			#else
+				uint32 numWantedIndex = 0;
+			#endif
+			if (numWantedIndex)
+			{		
+				initPassTriArray(pass, numWantedIndex);
 
-		// Setup the material.
-		FarMaterial.setTexture(0, pass.TextureDiffuse);
-		// If the texture need to be updated, do it now.
-		if(pass.TextureDiffuse && pass.TextureDiffuse->touched())
-			driver->setupTexture(*pass.TextureDiffuse);
+				// Setup the material.
+				FarMaterial.setTexture(0, pass.TextureDiffuse);
+				// If the texture need to be updated, do it now.
+				if(pass.TextureDiffuse && pass.TextureDiffuse->touched())
+					driver->setupTexture(*pass.TextureDiffuse);
 
-		// Add triangles to array
-		CPatch		*patchToRdr= pass.getRdrPatchFar1();
-		while(patchToRdr)
-		{
-			// renderSimpleTriangles() with the material setuped.
-			patchToRdr->renderFar1();
-			patchToRdr= patchToRdr->getNextFar1ToRdr();
+				// Add triangles to array
+				while(patchToRdr)
+				{
+					// renderSimpleTriangles() with the material setuped.
+					patchToRdr->renderFar1();
+					patchToRdr= patchToRdr->getNextFar1ToRdr();
+				}
+
+				// Render triangles.
+				drawPassTriArray(FarMaterial);
+			}
 		}
-
-		// Render triangles.
-		drawPassTriArray(FarMaterial);
-
 		// Next render pass
 		itFar++;
 	}

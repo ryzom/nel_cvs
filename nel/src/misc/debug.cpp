@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.93 2004/05/14 09:18:55 corvazier Exp $
+ * $Id: debug.cpp,v 1.94 2004/05/14 09:21:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,8 +53,6 @@
 
 #include <stdarg.h>
 #include <iostream>
-
-#define FINAL_VERSION
 
 using namespace std;
  

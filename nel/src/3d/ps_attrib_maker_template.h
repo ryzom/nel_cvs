@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.3 2001/06/20 09:36:09 berenguier Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.4 2001/06/25 13:55:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -297,8 +297,7 @@ public:
 	}
 
 
-	/// get the number of stages between each value
-	uint32 getNumstages(void) const { return _NbStages ; }
+
 
 	uint32 getNumValues(void) const { return ((_NbValues - 1) / _NbStages) + 1 ; }
 
@@ -312,6 +311,17 @@ public:
 
 	inline void setValues(const T *ValueTab, uint32 numValues, uint32 nbStages) ;
 	
+	/// get the number of stages between each value
+	uint32 getNumStages(void) const { return _NbStages ; }
+
+	/// change the number of stages between each value
+	void setNumStages(uint32 numStages)
+	{
+		std::vector<T> v ;
+		v.resize(getNumValues()) ;
+		getValues(&v[0]) ;
+		setValues(&v[0], getNumValues(), numStages) ;
+	}
 
 	/// serialization
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.16 2001/10/03 15:53:07 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.17 2001/12/06 16:56:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #include "3d/ps_located.h"
 #include "3d/ps_particle.h"
+#include "3d/ps_mesh.h"
 #include "3d/ps_force.h"
 #include "3d/ps_emitter.h"
 #include "3d/ps_zone.h"
@@ -44,6 +45,7 @@
 #include "mesh_dlg.h"
 #include "texture_anim_dlg.h"
 #include "particle_dlg.h"
+#include "constraint_mesh_dlg.h"
 
 
 using NL3D::CPSLocatedBindable; 
@@ -365,7 +367,6 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 
 
 		// shape particle
-
 		if (dynamic_cast<NL3D::CPSShapeParticle *>(_Bindable))
 		{
 			CMeshDlg *md = new CMeshDlg(dynamic_cast<NL3D::CPSShapeParticle *>(_Bindable));
@@ -374,11 +375,23 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			yPos += rect.bottom + 3;
 		}
 
+		// constraint mesh particle
+		if (dynamic_cast<NL3D::CPSConstraintMesh *>(_Bindable))
+		{
+			CConstraintMeshDlg *cmd = new CConstraintMeshDlg(static_cast<NL3D::CPSConstraintMesh *>(_Bindable));
+			cmd->init(xPos, yPos, this);
+			cmd->GetClientRect(&rect);
+			yPos += rect.bottom + 3;
+		}
+
+
 
 		// check support for animated texture
 		if (dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable))
 		{
-			CTextureAnimDlg *td = new CTextureAnimDlg(dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable));			
+			CTextureAnimDlg *td = new CTextureAnimDlg(dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable),
+													  dynamic_cast<NL3D::CPSMultiTexturedParticle *>(_Bindable)
+													 );			
 			pushWnd(td);
 						
 			td->init(xPos, yPos, this);
@@ -391,7 +404,8 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		{
 			NL3D::CPSTexturedParticleNoAnim *tp = dynamic_cast<NL3D::CPSTexturedParticleNoAnim *>(_Bindable);
 			_TextureNoAnimWrapper.TP = tp;
-			CTextureChooser *tc = new CTextureChooser;			
+			CTextureChooser *tc = new CTextureChooser(dynamic_cast<NL3D::CPSMultiTexturedParticle *>(_Bindable));
+;			
 			tc->enableRemoveButton();
 			tc->setWrapper(&_TextureNoAnimWrapper);
 			pushWnd(tc);

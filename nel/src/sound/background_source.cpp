@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.cpp,v 1.6 2003/04/11 13:22:28 boucher Exp $
+ * $Id: background_source.cpp,v 1.7 2003/08/21 09:27:38 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,11 @@ void CBackgroundSource::setGain( float gain )
 	for (; first != last; ++first)
 	{
 		if (first->Source != 0)
+		{
+			first->Source->setGain(first->Source->getSound()->getGain() * gain);
 			first->Source->setRelativeGain(_Gain);
+		}
+//			first->Source->setRelativeGain(_Gain);
 	}
 }
 void CBackgroundSource::setRelativeGain( float gain )
@@ -187,7 +191,9 @@ void CBackgroundSource::updateFilterValues(const float *filterValues)
 			else if (gain > 0 && ss.Status != SUB_STATUS_PLAY)
 			{
 				// need to restard the sound
-				ss.Source->setRelativeGain(gain * _Gain);
+//				ss.Source->setRelativeGain(gain * _Gain);
+				ss.Source->setGain(ss.Source->getSound()->getGain() * gain);
+				ss.Source->setRelativeGain(_Gain);
 				ss.Source->setPitch(ss.Source->getSound()->getPitch() * _Pitch);
 				ss.Source->setPos(_Position);
 				ss.Source->play();
@@ -198,10 +204,11 @@ void CBackgroundSource::updateFilterValues(const float *filterValues)
 
 				needUpdate |= (ss.Status == SUB_STATUS_PLAY_FAIL);
 			}
-			else if (ss.Status == SUB_STATUS_PLAY)
+			else //if (ss.Status == SUB_STATUS_PLAY)
 			{
 				// just update the gain
-				ss.Source->setRelativeGain(gain * _Gain);
+				ss.Source->setGain(ss.Source->getSound()->getGain() * gain);
+				ss.Source->setRelativeGain(_Gain);
 			}
 		}
 	}

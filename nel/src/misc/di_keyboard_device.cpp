@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.11 2003/05/20 14:04:26 corvazier Exp $
+ * $Id: di_keyboard_device.cpp,v 1.12 2003/05/27 09:00:21 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -517,24 +517,60 @@ TKey CDIKeyboard::DIKeyToNelKey(uint diKey, bool &extKey, bool &repeatable)
 	
 ///========================================================================
 void	CDIKeyboard::sendUnicode(TKey vkey, uint dikey, CEventServer *server, bool pressed)
-{	
-	const uint maxNumKeys = 8;
-	WCHAR keyUnicodes[maxNumKeys];    				
+{		
 	uint8 oldShift = _VKKeyState[KeySHIFT];
 	/// If caps lock is off when pressing shift, we must disable shift, to get no minuscule letters when it is pressed and capslocks is on.	  
 	if (!_CapsLockToggle && _VKKeyState[KeyCAPITAL] & 0x01)
 	{		
 		_VKKeyState[KeySHIFT] = 0;
 	}
-	//
-	int res = ::ToUnicodeEx(vkey, dikey | (pressed ? 0 : (1 << 15)), (unsigned char *) _VKKeyState, keyUnicodes, maxNumKeys, 0, _KBLayout);
-	//
-	_VKKeyState[KeySHIFT] = oldShift;
-	//
-	for (sint k = 0; k < res; ++k)
+	// 'ToUnicode??' is supported since NT4.0 only
+	// Check if there's support
+
+
+	static bool init = false;
+	static bool toUnicodeSupported = false;
+	if (!init)
 	{
-		CEventChar *evc = new CEventChar((ucchar) keyUnicodes[k], buildKeyButtonsFlags(), _DIEventEmitter);
-		server->postEvent(evc);
+		init = true;
+		OSVERSIONINFO osvi;
+		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		if (::GetVersionEx (&osvi))
+		{		
+			if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT)
+			{
+				if (osvi.dwMajorVersion >= 4)
+				{
+					toUnicodeSupported = true;
+				}
+			}
+		}
+	}
+
+
+	if (toUnicodeSupported)	
+	{	
+		const uint maxNumKeys = 8;
+		WCHAR keyUnicodes[maxNumKeys];    				
+		int res = ::ToUnicodeEx(vkey, dikey | (pressed ? 0 : (1 << 15)), (unsigned char *) _VKKeyState, keyUnicodes, maxNumKeys, 0, _KBLayout);
+		//
+		_VKKeyState[KeySHIFT] = oldShift;
+		//
+		for (sint k = 0; k < res; ++k)
+		{
+			CEventChar *evc = new CEventChar((ucchar) keyUnicodes[k], buildKeyButtonsFlags(), _DIEventEmitter);
+			server->postEvent(evc);
+		}
+	}
+	else
+	{				
+		unsigned char buf[2];
+		int res = ::ToAsciiEx(vkey, dikey | (pressed ? 0 : (1 << 15)), (unsigned char *) _VKKeyState, (LPWORD) buf, 0, _KBLayout);			
+		for (sint k = 0; k < res; ++k)
+		{
+			CEventChar *evc = new CEventChar((ucchar) buf[k], buildKeyButtonsFlags(), _DIEventEmitter);
+			server->postEvent(evc);
+		}		
 	}
 }
 

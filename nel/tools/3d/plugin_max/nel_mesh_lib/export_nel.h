@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.37 2001/12/12 11:07:46 vizerie Exp $
+ * $Id: export_nel.h,v 1.38 2001/12/12 11:23:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -660,7 +660,7 @@ private:
 	static void						addMtlTracks (NL3D::CAnimation& animation, Mtl& mtl, const char* parentName, Interface *ip);
 
 	// Add tracks for the texture
-	static void						addTexTracks (NL3D::CAnimation& animation, Texmap& tex, const char* parentName);
+	static void						addTexTracks (NL3D::CAnimation& animation, Texmap& tex, Interface *ip, uint stage, const char* parentName);
 
 	// Add controller key time in the set
 	static void						addBipedKeyTime (Control& c, std::set<TimeValue>& keys, std::set<TimeValue>& keysSampled, bool subKeys, 

@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.27 2000/11/15 10:19:19 berenguier Exp $
+ * $Id: stream.h,v 1.28 2000/11/21 11:22:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -595,7 +595,7 @@ public:
 	 * \return true if seek sucessfull.
 	 * \see ESeekNotSupported SeekOrigin getPos
 	 */
-	virtual bool		seek (sint64 offset, TSeekOrigin origin) throw(EStream);
+	virtual bool		seek (sint32 offset, TSeekOrigin origin) throw(EStream);
 
 
 	/** 
@@ -609,7 +609,7 @@ public:
 	 * \return the new offset regarding from the origin.
 	 * \see ESeekNotSupported SeekOrigin seek
 	 */
-	virtual sint64		getPos () throw(EStream);
+	virtual sint32		getPos () throw(EStream);
 
 protected:
 

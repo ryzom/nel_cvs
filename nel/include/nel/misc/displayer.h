@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: displayer.h,v 1.2 2000/09/25 11:14:23 cado Exp $
+ * $Id: displayer.h,v 1.3 2000/10/04 15:21:48 cado Exp $
  *
  * Some easy displayers
  */
@@ -23,6 +23,7 @@ namespace NLMISC
 
 /**
  * Displayer interface. Used to specialize a displayer to display a string.
+ * \sa log_howto
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.2 2000/10/04 15:15:57 cado Exp $
+ * $Id: debug.cpp,v 1.3 2000/10/04 15:21:48 cado Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -26,20 +26,23 @@
 #include "nel/misc/debug.h"
 
 /**
- * \page log How to log information ?
+ * \page log_howto How to log information (into the screen, into a file or to a logging server) ?
  * This document explains how to log some information, e.g. in order to debug your code.
  *
  * \subsection init_log Initialization
  * In the initialization of your service, attach some displayers to the global CLog objects
- * \e ErrorLog, \e WarningLog, \e InfoLog, \e DebugLog
+ * \e ErrorLog, \e WarningLog, \e InfoLog, \e DebugLog.
+ * CStdDisplayer is for the screen (and VC++ debug window).
+ * CFileDisplayer is for a file.
+ * CNetDisplayer is for a logging server (see CLogService)
  *
  * Example :
  * \code
- * StdDisplayer sd;
- * NetDisplayer nd ( CInetAddress( "log_service_machine", log_port ) )
+ * CStdDisplayer sd;
+ * CNetDisplayer nd ( CInetAddress( "log_service_machine", log_port ) )
  * ErrorLog.addDisplayer( &sd );
  * DebugLog.addDisplayer( &nd );
- * \encode
+ * \endcode
  *
  * \subsection use_log Logging information
  * In your code, use the macros :  \e nlerror, \e nlwarning, \e nlinfo, \e nldebug with a variable number of arguments.

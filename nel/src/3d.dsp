@@ -1508,6 +1508,10 @@ SOURCE=.\3d\ps_attrib_maker_bin_op.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\ps_attrib_maker_bin_op_inline.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_attrib_maker_helper.h
 # End Source File
 # Begin Source File
@@ -1576,6 +1580,14 @@ SOURCE=.\3d\ps_lod.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\ps_mesh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_mesh.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_misc.h
 # End Source File
 # Begin Source File
@@ -1606,6 +1618,10 @@ SOURCE=.\3d\ps_particle2.cpp
 # Begin Source File
 
 SOURCE=.\3d\ps_particle2.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_particle_basic.cpp
 # End Source File
 # Begin Source File
 

@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.11 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: object_viewer_interface.h,v 1.12 2001/11/07 17:14:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@ namespace NL3D
 	class CLight;
 	class CTransformShape;
 	class CSkeletonModel;
+	class CWaterPoolManager;
 }
 
 namespace NLMISC
@@ -89,6 +90,11 @@ public:
 
 	// Set ambient color
 	virtual void setLight (unsigned char id, const NL3D::CLight& light)=0;
+
+	/** set the water pool manager used by the object viewer. Must be the same than tyhe one of the dll which created the models 
+	  * (because the 3d lib is duplicated : one version in the viewer, and one version in the exporter)
+	  */
+	virtual void setWaterPoolManager(NL3D::CWaterPoolManager &wpm)=0;
 
 	// Get instance
 	static OBJECT_VIEWER_EXPORT IObjectViewer* getInterface (int version=OBJECT_VIEWER_VERSION);

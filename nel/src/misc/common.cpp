@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.7 2001/05/21 16:59:58 cado Exp $
+ * $Id: common.cpp,v 1.8 2001/05/28 15:36:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,7 +91,7 @@ string stringFromVector( const vector<uint8>& v )
 	{
 		if ( ! isprint((*is)) )
 		{
-			(*is) = ' ';
+			(*is) = '?';
 		}
 	}
 

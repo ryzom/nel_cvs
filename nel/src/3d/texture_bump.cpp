@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.7 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_bump.cpp,v 1.8 2002/09/24 14:48:21 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,8 +30,6 @@
 
 namespace NL3D {
 
-#define MID_SIGN_VALUE 127
-
 
 /// create a DsDt texture from a height map (red component of a rgba bitmap)
 static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest, bool absolute)
@@ -49,7 +47,7 @@ static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest, bool a
 			if (!absolute)
 			{
 
-				dest[off] = (uint16) ((ds + MID_SIGN_VALUE) & 0xff)  | ((dt + MID_SIGN_VALUE) << 8);				
+				dest[off] = (uint16) ((ds & 0xff)  | ((dt & 0xff) << 8));		
 			}
 			else
 			{
@@ -92,8 +90,8 @@ static float NormalizeDsDt(uint16 *src, sint width, sint height, bool absolute)
 	{		
 		for (k = 0; k < size; ++k)
 		{
-			highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) ((src[k] & 255) - MID_SIGN_VALUE)));
-			highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) ((src[k] >> 8) - MID_SIGN_VALUE)));			
+			highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) (src[k] & 255)));
+			highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) (src[k] >> 8)));			
 		}
 
 		if (highestDelta == 0)
@@ -103,9 +101,13 @@ static float NormalizeDsDt(uint16 *src, sint width, sint height, bool absolute)
 		float normalizationFactor = 127.f / highestDelta;
 		for (k = 0; k < size; ++k)
 		{
-			uint8 du = (uint8) (sint8) (((sint8) (src[k] & 255) - MID_SIGN_VALUE) * normalizationFactor + MID_SIGN_VALUE);
-			uint16 dv = (uint8) (sint8) (((sint8) (src[k] >> 8) - MID_SIGN_VALUE) * normalizationFactor + MID_SIGN_VALUE);
-			src[k] = (uint16) du | (dv << 8); 
+			float fdu = (sint8) (src[k] & 255) * normalizationFactor;
+			float fdv = (sint8) (src[k] >> 8) * normalizationFactor;
+			NLMISC::clamp(fdu, -128, 127);
+			NLMISC::clamp(fdv, -128, 127);
+			uint8 du = (uint8) (sint8) fdu;
+			uint8 dv = (uint8) (sint8) fdv;
+			src[k] = (uint16) du | (((uint16) dv) << 8); 
 		}
 		return 1.f / normalizationFactor;
 	}

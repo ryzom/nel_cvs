@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.65 2003/03/31 09:20:21 coutelas Exp $
+# $Id: Makefile.am,v 1.66 2003/04/14 12:13:47 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -24,6 +24,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         cpu_info.cpp                       \
                         debug.cpp                          \
                         displayer.cpp                      \
+                        eid_translator.cpp                 \
                         event_emitter.cpp                  \
                         event_listener.cpp                 \
                         event_server.cpp                   \

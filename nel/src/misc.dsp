@@ -703,6 +703,14 @@ SOURCE=..\include\nel\misc\debug.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\eid_translator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\eid_translator.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\entity_id.cpp
 # End Source File
 # Begin Source File

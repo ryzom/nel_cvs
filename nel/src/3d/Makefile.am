@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.52 2001/10/29 13:31:22 berenguier Exp $
+# $Id: Makefile.am,v 1.53 2001/11/07 16:23:06 corvazier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -101,6 +101,10 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        landscape_profile.h                 \
                        landscape_user.cpp                  \
                        landscape_user.h                    \
+                       landscapevb_allocator.cpp           \
+                       landscapevb_allocator.h             \
+                       landscapevb_info.cpp                \
+                       landscapevb_info.h                  \
                        light.cpp                           \
                        light.h                             \
                        light_trav.cpp                      \

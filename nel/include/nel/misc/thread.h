@@ -1,7 +1,7 @@
 /** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.17 2002/02/27 15:38:48 corvazier Exp $
+ * $Id: thread.h,v 1.18 2002/05/17 06:34:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,6 +122,12 @@ public:
 	  * Not implemented under Linux.
 	  */
 	virtual uint64 getCPUMask()=0;
+
+	/**
+	  * Get the thread user name.
+	  * Notimplemented under linux, under windows return the name of the logon user.
+	  */
+	virtual std::string getUserName()=0;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.10 2002/04/17 08:46:32 besson Exp $
+ * $Id: win_thread.cpp,v 1.11 2002/05/17 06:34:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,6 +170,14 @@ uint64 CWinThread::getCPUMask()
 	return old;
 }
 
+std::string CWinThread::getUserName()
+{
+	char userName[512];
+	DWORD size = 512;
+	GetUserName (userName, &size);
+	return (const char*)userName;
+}
+
 // **** Process
 
 // The current process
@@ -200,6 +208,7 @@ uint64 CWinProcess::getCPUMask()
 	else
 		return 1;
 }
+
 
 
 } // NLMISC

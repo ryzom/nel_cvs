@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (Posix threads)
  *
- * $Id: p_thread.cpp,v 1.9 2002/03/04 10:06:52 lecroart Exp $
+ * $Id: p_thread.cpp,v 1.10 2002/05/17 06:34:38 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,6 +147,16 @@ uint64 CPThread::getCPUMask()
 {
 	/// \todo: handle processor selection under posix thread
 	return 1;
+}
+
+
+/*
+ * getUserName
+ */
+std::string getUserName()
+{
+	/// \todo: return the thread user name
+	return "Not implemented";
 }
 
 // **** Process

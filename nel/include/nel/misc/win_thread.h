@@ -1,7 +1,7 @@
 /** \file win_thread.h
  * Windows implementation of CThread class (look at thread.h)
  *
- * $Id: win_thread.h,v 1.8 2002/02/27 15:38:48 corvazier Exp $
+ * $Id: win_thread.h,v 1.9 2002/05/17 06:34:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ public:
 	virtual void wait();
 	virtual bool setCPUMask(uint64 cpuMask);
 	virtual uint64 getCPUMask();
+	virtual std::string getUserName();
 
 	virtual IRunnable *getRunnable()
 	{

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.69 2002/02/19 11:20:57 valignat Exp $
+# $Id: Makefile.am,v 1.70 2002/03/04 10:07:10 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -166,6 +166,7 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        mesh_multi_lod.h                                \
                        mesh_multi_lod_instance.cpp                     \
                        mesh_multi_lod_instance.h                       \
+                       meshvp_wind_tree.cpp                            \
                        mini_col.cpp                                    \
                        mini_col.h                                      \
                        mot.cpp                                         \

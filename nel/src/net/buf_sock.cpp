@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.39 2004/05/10 15:46:08 distrib Exp $
+ * $Id: buf_sock.cpp,v 1.40 2004/08/12 17:13:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -306,6 +306,8 @@ void CBufSock::connect( const CInetAddress& addr, bool nodelay, bool connectedst
 	{
 		Sock->setNoDelay( true );
 	}
+	_ReadyToSendBuffer.clear();
+	_RTSBIndex = 0;
 }
 
 

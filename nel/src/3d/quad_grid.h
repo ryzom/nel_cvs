@@ -1,7 +1,7 @@
 /** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.8 2004/10/20 17:00:44 berenguier Exp $
+ * $Id: quad_grid.h,v 1.9 2004/10/21 17:36:08 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/block_memory.h"
 #include "nel/misc/object_vector.h"
 #include "nel/misc/common.h"
 #include <vector>

@@ -9,7 +9,7 @@
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
 ' when Scripting.FileSystemObject cannot be instanciated
-' $Id: nevrax_macros_98.dsm,v 1.7 2000/10/24 15:26:37 cado Exp $
+' $Id: nevrax_macros_98.dsm,v 1.8 2000/11/14 13:17:34 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -25,7 +25,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros_98.dsm,v 1.7 2000/10/24 15:26:37 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros_98.dsm,v 1.8 2000/11/14 13:17:34 cado Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/* Copyright, 2000 Nevrax Ltd." + vbLf + _
@@ -174,7 +174,7 @@ Sub NevraxNewClass()
 	end if
 
 	' ** Programmer's name
-	ConfigFileName = "R:\code\tool\VisualStudioMacros\nevrax_new_class.cfg"
+	ConfigFileName = "R:\code\tool\visual_studio_macros\nevrax_new_class.cfg"
 	if CurrentProgrammerName = "" then
 		CurrentProgrammerName = "Fox Mulder"
 	end if

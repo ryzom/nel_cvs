@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
  * <File description>
  *
- * $Id: string_stream.cpp,v 1.1 2001/05/21 17:01:34 cado Exp $
+ * $Id: string_stream.cpp,v 1.2 2001/05/24 14:18:31 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ uint CStringStream::serialSeparatedBufferIn( uint8 *buf, uint len )
 /*
  * Output: writes len bytes from buf into the stream
  */
-uint CStringStream::serialSeparatedBufferOut( uint8 *buf, uint len )
+void CStringStream::serialSeparatedBufferOut( uint8 *buf, uint len )
 {
 	nlassert( ! isReading() );
 	
@@ -78,7 +78,6 @@ uint CStringStream::serialSeparatedBufferOut( uint8 *buf, uint len )
 	memcpy( &(*_BufPos), buf, len );
 	_Buffer[_Buffer.size()-1] = SEPARATOR;
 	_BufPos = _Buffer.end();
-	return len;
 }
 
 
@@ -285,7 +284,7 @@ void		CStringStream::serial(sint64 &b)
 	}
 	else
 	{
-		writenumber( b, "%"NL_I64"u", 20 );
+		writenumber( b, "%"NL_I64"d", 20 );
 	}
 }
 

@@ -120,6 +120,11 @@ namespace NLAIAGENT
 	{
 #ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
+		std::string dbg_goal;
+		if ( _CurrentGoal != NULL )
+		{
+			_CurrentGoal->getDebugString( dbg_goal );
+		}
 #endif
 
 		// Checks the goal and preconditions after a certain number of cycles (defined in the script after the UdpateEvery keyword)

@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.6 2001/06/01 13:36:41 cado Exp $
+ * $Id: buf_server.h,v 1.7 2001/06/18 09:03:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,22 @@ private:
 typedef std::vector<NLMISC::IThread*> CThreadPool;
 
 
+// Mode: Small server
+#undef PRESET_BIG_SERVER
+
+#ifdef PRESET_BIG_SERVER
+// Big server
+#define DEFAULT_STRATEGY SpreadSockets
+#define DEFAULT_MAX_THREADS 64
+#define DEFAULT_MAX_SOCKETS_PER_THREADS 64
+#else
+// Small server
+#define DEFAULT_STRATEGY FillThreads
+#define DEFAULT_MAX_THREADS 64
+#define DEFAULT_MAX_SOCKETS_PER_THREADS 16
+#endif
+
+
 /**
  * Server class for layer 1
  *
@@ -143,9 +159,10 @@ public:
 	/** Constructor
 	 * Set nodelay to true to disable the Nagle buffering algorithm (see CTcpSock documentation)
 	 */
-	CBufServer( TThreadStategy strategy=SpreadSockets,
-				uint16 max_threads=64, uint16 max_sockets_per_thread=64,
-				bool nodelay=true );
+	CBufServer( TThreadStategy strategy=DEFAULT_STRATEGY,
+				uint16 max_threads=DEFAULT_MAX_THREADS,
+				uint16 max_sockets_per_thread=DEFAULT_MAX_SOCKETS_PER_THREADS,
+				bool nodelay=true, bool replaymode=false );
 
 	/// Destructor
 	virtual ~CBufServer();
@@ -153,7 +170,11 @@ public:
 	/// Listens on the specified port
 	void	init( uint16 port );
 
-	/// Disconnect the specified host
+	/** Disconnect a connection
+	 * Set hostid to NULL to disconnect all connections.
+	 * If hostid is not null and the socket is not connected, the method does nothing.
+	 * If quick is true, any pending data will not be sent before disconnecting.
+	 */
 	void	disconnect( TSockId hostid, bool quick=false );
 
 	/// Sets callback for incoming connections (or NULL to disable callback)
@@ -305,9 +326,6 @@ private:
 	 */
 	NLMISC::CSynchronized<CThreadPool>		_ThreadPool;
 
-	/// Speed optimization, copy the list of connection to minimize mutual exclusion time
-	std::vector<TSockId>                            _ConnectionsCopy;
-
 	/// Connection callback
 	TNetCallback					_ConnectionCallback;
 
@@ -328,6 +346,9 @@ private:
 
 	/// Number of connections (debug stat)
 	uint32							_NbConnections;
+
+	/// Replay mode flag
+	bool							_ReplayMode;
 
   /*
 	/// Number of bytes pushed into the receive queue (by the receive threads) since the beginning.

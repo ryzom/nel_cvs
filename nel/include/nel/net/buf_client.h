@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.5 2001/06/01 13:36:41 cado Exp $
+ * $Id: buf_client.h,v 1.6 2001/06/18 09:03:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,7 @@ class CBufClient : public CBufNetBase
 public:
 
 	/// Constructor. Set nodelay to true to disable the Nagle buffering algorithm (see CTcpSock documentation)
-	CBufClient( bool nodelay=true );
+	CBufClient( bool nodelay=true, bool replaymode=false );
 
 	/// Destructor
 	virtual ~CBufClient();
@@ -104,6 +104,7 @@ public:
 	/** Disconnects the remote host and empties the receive queue.
 	 * Before that, flushes pending data to send unless quick is true.
 	 * The disconnection callback will *not* be called.
+	 * Do not call if the socket is not connected.
 	 */
 	void	disconnect( bool quick=false );
 
@@ -190,16 +191,8 @@ protected:
 
 	friend class CClientReceiveTask;
 
-private:
-
 	/// Send buffer and connection
 	CBufSock			*_BufSock;
-
-	/// Receive task
-	CClientReceiveTask	*_RecvTask;
-
-	/// Receive thread
-	NLMISC::IThread		*_RecvThread;
 
 	/// True when the Nagle algorithm must be disabled (TCP_NODELAY)
 	bool				_NoDelay;
@@ -217,6 +210,15 @@ private:
 	/// Previous number of bytes sent
 	uint32				_PrevBytesSent;
 	*/
+
+private:
+
+	/// Receive task
+	CClientReceiveTask	*_RecvTask;
+
+	/// Receive thread
+	NLMISC::IThread		*_RecvThread;
+
 };
 
 

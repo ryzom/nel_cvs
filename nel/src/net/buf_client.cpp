@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.9 2001/06/01 13:57:09 cado Exp $
+ * $Id: buf_client.cpp,v 1.10 2001/06/18 09:03:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/net/buf_client.h"
 #include "nel/misc/thread.h"
 #include "nel/misc/debug.h"
+#include "nel/net/dummy_tcp_sock.h"
 
 #ifdef NL_OS_WINDOWS
 #include <winsock2.h>
@@ -47,7 +48,7 @@ namespace NLNET {
 /*
  * Constructor
  */
-CBufClient::CBufClient( bool nodelay ) :
+CBufClient::CBufClient( bool nodelay, bool replaymode ) :
 	CBufNetBase(),
 	_RecvTask( NULL ),
 	_RecvThread( NULL ),
@@ -59,8 +60,15 @@ CBufClient::CBufClient( bool nodelay ) :
 {
 	nlnettrace( "CBufClient::CBufClient" ); // don't define a global object
 
-	_BufSock = new CBufSock();
-	_RecvTask = new CClientReceiveTask( this, _BufSock );
+	if ( replaymode )
+	{
+		_BufSock = new CBufSock( new CDummyTcpSock() );
+	}
+	else
+	{
+		_BufSock = new CBufSock();
+		_RecvTask = new CClientReceiveTask( this, _BufSock );
+	}
 }
 
 
@@ -83,6 +91,7 @@ void CBufClient::connect( const CInetAddress& addr )
 	{
 		delete _RecvThread;
 	}
+
 	_RecvThread = IThread::create( _RecvTask );
 	_RecvThread->start();
 }
@@ -220,7 +229,10 @@ void CBufClient::update()
 void CBufClient::disconnect( bool quick )
 {
 	nlnettrace( "CBufClient::disconnect" );
-	
+
+	// Do not allow to disconnect a socket that is not connected
+	nlassert( _BufSock->connectedState() );
+
 	// Flush sending is asked for
 	if ( ! quick )
 	{

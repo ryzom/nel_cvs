@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.7 2001/06/01 13:36:41 cado Exp $
+ * $Id: buf_sock.h,v 1.8 2001/06/18 09:03:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,6 +73,10 @@ protected:
 	friend class CBufServer;
 	friend class CClientReceiveTask;
 	friend class CServerReceiveTask;
+
+	friend class CCallbackClient;
+	friend class CCallbackServer;
+	friend class CCallbackNetBase;
 
 	/// Constructor
 	CBufSock( CTcpSock *sock=NULL );
@@ -255,11 +259,6 @@ protected:
 	bool						advertiseConnection( CBufServer *bnb )
 	{
 		return advertiseSystemEvent( (CBufNetBase*)bnb, this, _KnowConnected, false, CBufNetBase::Connection );
-	}
-
-	void setMaxBlockSizeExpected( sint32 limit )
-	{
-
 	}
 
 	/// Returns "SRV " (server)

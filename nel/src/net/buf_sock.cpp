@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.10 2001/06/12 17:01:43 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.11 2001/06/18 09:03:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,8 @@ CBufSock::~CBufSock()
 {
 	nlnettrace( "CBufSock::~CBufSock" );
 	delete Sock; // the socket disconnects automatically if needed
+	_AppId = 627;
+
 }
 
 
@@ -86,7 +88,7 @@ CBufSock::~CBufSock()
  */
 string stringFromVectorPart( const vector<uint8>& v, uint32 pos, uint32 len )
 {
-	nlassert( pos+len <= v.size() );
+	nlassertex( pos+len <= v.size(), ("pos=%u len=%u size=%u", pos, len, v.size()) );
 
 	string s;
 	if ( ! v.empty() )
@@ -171,11 +173,10 @@ bool CBufSock::flush()
 			else
 			{
 				// Or clear only the data that was actually sent
-				//_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+len ); // TODO: Test efficiency
+				nlassertex( _RTSBIndex+len < _ReadyToSendBuffer.size(), ("index=%u len=%u size=%u", _RTSBIndex, len, _ReadyToSendBuffer.size()) );
 				_RTSBIndex += len;
 				if ( _ReadyToSendBuffer.size() > 20480 ) // if big, clear data already sent
 				{
-					nlassert( len <= _ReadyToSendBuffer.size() );
 					_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+len );
 					_RTSBIndex = 0;
 				}

@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.10 2001/06/12 15:40:43 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.11 2001/06/18 09:03:17 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ namespace NLNET {
  * Constructor
  */
 CBufServer::CBufServer( TThreadStategy strategy,
-	uint16 max_threads, uint16 max_sockets_per_thread, bool nodelay ) :
+	uint16 max_threads, uint16 max_sockets_per_thread, bool nodelay, bool replaymode ) :
 	CBufNetBase(),
 	_ThreadStrategy( strategy ),
 	_NoDelay( nodelay ),
@@ -63,11 +63,17 @@ CBufServer::CBufServer( TThreadStategy strategy,
 	_BytesPushedOut( 0 ),
 	_BytesPoppedIn( 0 ),
 	_PrevBytesPoppedIn( 0 ),
-	_PrevBytesPushedOut( 0 )
+	_PrevBytesPushedOut( 0 ),
+	_ReplayMode( replaymode ),
+	_ListenTask( NULL ),
+	_ListenThread( NULL )
 {
 	nlnettrace( "CBufServer::CBufServer" );
-	_ListenTask = new CListenTask( this );
-	_ListenThread = IThread::create( _ListenTask );
+	if ( ! _ReplayMode )
+	{
+		_ListenTask = new CListenTask( this );
+		_ListenThread = IThread::create( _ListenTask );
+	}
 	/*{
 		CSynchronized<uint32>::CAccessor syncbpi ( &_BytesPushedIn );
 		syncbpi.value() = 0;
@@ -81,8 +87,15 @@ CBufServer::CBufServer( TThreadStategy strategy,
 void CBufServer::init( uint16 port )
 {
 	nlnettrace( "CBufServer::init" );
-	_ListenTask->init( port );
-	_ListenThread->start();
+	if ( ! _ReplayMode )
+	{
+		_ListenTask->init( port );
+		_ListenThread->start();
+	}
+	else
+	{
+		nldebug( "L0: Binding listen socket to any address, port %hu", port );
+	}
 }
 
 
@@ -148,82 +161,85 @@ CBufServer::~CBufServer()
 	nlnettrace( "CBufServer::~CBufServer" );
 
 	// Clean listen thread exit
-	((CListenTask*)(_ListenThread->getRunnable()))->requireExit();
-	((CListenTask*)(_ListenThread->getRunnable()))->close();
-#ifdef NL_OS_UNIX
-	_ListenTask->wakeUp();
-#endif
-	_ListenThread->wait();
-	delete _ListenThread;
-	delete _ListenTask;
-
-	// Clean receive thread exits
-	CThreadPool::iterator ipt;
+	if ( ! _ReplayMode )
 	{
-		nldebug( "L1: Waiting for end of threads..." );
-		CSynchronized<CThreadPool>::CAccessor poolsync( &_ThreadPool );
-		for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
-		{
-			// Tell the threads to exit and wake them up
-			CServerReceiveTask *task = receiveTask(ipt);
-			nlnettrace( "Requiring exit" );
-			task->requireExit();
-
-			// Wake the threads up
+		((CListenTask*)(_ListenThread->getRunnable()))->requireExit();
+		((CListenTask*)(_ListenThread->getRunnable()))->close();
 #ifdef NL_OS_UNIX
-			task->wakeUp();
-#else
-			CConnections::iterator ipb;
-			nlnettrace( "Closing sockets (Win32)" );
-			{
-				CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
-				for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
-				{
-					(*ipb)->Sock->close();
-				}
-			}
+		_ListenTask->wakeUp();
 #endif
+		_ListenThread->wait();
+		delete _ListenThread;
+		delete _ListenTask;
 
-		}
-		
-		nlnettrace( "Waiting" );
-		for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
+		// Clean receive thread exits
+		CThreadPool::iterator ipt;
 		{
-			// Wait until the threads have exited
-			(*ipt)->wait();
-		}
-
-		nldebug( "L1: Deleting sockets, tasks and threads..." );
-		for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
-		{
-			// Delete the socket objects
-			CServerReceiveTask *task = receiveTask(ipt);
-			CConnections::iterator ipb;
+			nldebug( "L1: Waiting for end of threads..." );
+			CSynchronized<CThreadPool>::CAccessor poolsync( &_ThreadPool );
+			for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
 			{
-				CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
-				for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
-				{
-					delete (*ipb);
-				}
-			}
+				// Tell the threads to exit and wake them up
+				CServerReceiveTask *task = receiveTask(ipt);
+				nlnettrace( "Requiring exit" );
+				task->requireExit();
 
-#ifdef NL_OS_UNIX
-			// Under Unix, close the sockets now
-			nlnettrace( "Closing sockets (Unix)" );
-			{
-				CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
-				for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
+				// Wake the threads up
+	#ifdef NL_OS_UNIX
+				task->wakeUp();
+	#else
+				CConnections::iterator ipb;
+				nlnettrace( "Closing sockets (Win32)" );
 				{
-					(*ipb)->Sock->close();
+					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
+					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
+					{
+						(*ipb)->Sock->close();
+					}
 				}
+	#endif
+
 			}
-#endif
 			
-			// Delete the task objects
-			delete task;
+			nlnettrace( "Waiting" );
+			for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
+			{
+				// Wait until the threads have exited
+				(*ipt)->wait();
+			}
 
-			// Delete the thread objects
-			delete (*ipt);
+			nldebug( "L1: Deleting sockets, tasks and threads..." );
+			for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
+			{
+				// Delete the socket objects
+				CServerReceiveTask *task = receiveTask(ipt);
+				CConnections::iterator ipb;
+				{
+					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
+					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
+					{
+						delete (*ipb);
+					}
+				}
+
+	#ifdef NL_OS_UNIX
+				// Under Unix, close the sockets now
+				nlnettrace( "Closing sockets (Unix)" );
+				{
+					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
+					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
+					{
+						(*ipb)->Sock->close();
+					}
+				}
+	#endif
+				
+				// Delete the task objects
+				delete task;
+
+				// Delete the thread objects
+				delete (*ipt);
+			}
 		}
 	}
 
@@ -233,17 +249,24 @@ CBufServer::~CBufServer()
 
 /*
  * Disconnect the specified host
+ * Set hostid to NULL to disconnect all connections.
+ * If hostid is not null and the socket is not connected, the method does nothing.
+ * If quick is true, any pending data will not be sent before disconnecting.
  */
 void CBufServer::disconnect( TSockId hostid, bool quick )
 {
 	nlnettrace( "CBufServer::disconnect" );
 	if ( hostid != NULL )
 	{
-		if ( ! quick )
+		// Disconnect only if physically connected
+		if ( hostid->Sock->connected() )
 		{
-			hostid->flush();
+			if ( ! quick )
+			{
+				hostid->flush();
+			}
+			hostid->Sock->disconnect(); // the connection will be removed by the next call of update()
 		}
-		hostid->Sock->disconnect(); // the connection will be removed by the next call of update()
 	}
 	else
 	{
@@ -439,7 +462,6 @@ void CBufServer::update()
 	//nlnettrace( "CBufServer::update-BEGIN" );
 
 	_NbConnections = 0;
-	_ConnectionsCopy.clear();
 
 	// For each thread
 	CThreadPool::iterator ipt;
@@ -456,34 +478,29 @@ void CBufServer::update()
 				CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
 				for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
 				{
-				  _ConnectionsCopy.push_back( (*ipb) );
+				    // For each socket of the thread, update sending
+				    if ( ! ((*ipb)->Sock->connected() && (*ipb)->update()) )
+				    {
+						// Update did not work or the socket is not connected anymore
+				        nldebug( "L1: Socket %s is disconnected", (*ipb)->asString().c_str() );
+						// Disconnection event if disconnected (known either from flush (in update) or when receiving data)
+						(*ipb)->advertiseDisconnection( this, *ipb );
+					
+						/*if ( (*ipb)->advertiseDisconnection( this, *ipb ) )
+						{
+							// Now the connection removal is in dataAvailable()
+							// POLL6
+						}*/
+				    }
+				    else
+				    {
+						_NbConnections++;
+				    }
 				}
 			}
 		}
 	}
-	//nldebug( "UPD: Released." );
-	vector<TSockId>::iterator ipb;
-	for ( ipb=_ConnectionsCopy.begin(); ipb!=_ConnectionsCopy.end(); ++ipb )
-	{
-	    // For each socket of the thread, update sending
-	    if ( ! ((*ipb)->Sock->connected() && (*ipb)->update()) )
-	    {
-			// Update did not work or the socket is not connected anymore
-	        nldebug( "L1: Socket %s is disconnected", (*ipb)->asString().c_str() );
-			// Disconnection event if disconnected (known either from flush (in update) or when receiving data)
-			(*ipb)->advertiseDisconnection( this, *ipb );
-		
-			/*if ( (*ipb)->advertiseDisconnection( this, *ipb ) )
-			{
-				// Now the connection removal is in dataAvailable()
-				// POLL6
-			}*/
-	    }
-	    else
-	    {
-			_NbConnections++;
-	    }
-	}
+
 	//nlnettrace( "CBufServer::update-END" );
 }
 
@@ -725,8 +742,8 @@ void CServerReceiveTask::run()
 	// Time-out value for select (it can be long because we do not do any thing else in this thread)
 	timeval tv;
 #ifdef NL_OS_WINDOWS
-	tv.tv_sec = 0;			// 10 seconds because the newly added connections can't be added to the select fd_set
-	tv.tv_usec = 500000;	// NEW: set to 500ms because otherwise new connections handling are too slow
+	tv.tv_sec = 0; // short time because the newly added connections can't be added to the select fd_set
+	tv.tv_usec = 500000; // NEW: set to 500ms because otherwise new connections handling are too slow
 #elif defined NL_OS_UNIX
 	// POLL7
 	tv.tv_sec = 3600;		// 1 hour (=> 1 select every 3.6 second for 1000 connections)
@@ -901,7 +918,7 @@ void CServerReceiveTask::run()
 
 
 /*
- * Delete (decRef in fact) all connections referenced in the remove list (double-mutexed)
+ * Delete all connections referenced in the remove list (double-mutexed)
  */
 
 void CServerReceiveTask::clearClosedConnections()

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.42 2001/07/24 17:29:23 lecroart Exp $
+ * $Id: client.cpp,v 1.43 2001/07/27 09:05:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -243,7 +243,8 @@ int main(int argc, char **argv)
 	// Creates the self entity
 	displayLoadingState ("Adding your entity");
 	srand (time(NULL));
-	addEntity(rand(), CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
+	uint32 id = rand();
+	addEntity(id, "Entity"+toString(id), CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
 												 ConfigFile.getVar("StartPoint").asFloat(1),
 												 ConfigFile.getVar("StartPoint").asFloat(2)),
 										 CVector(ConfigFile.getVar("StartPoint").asFloat(0),
@@ -276,7 +277,7 @@ int main(int argc, char **argv)
 
 		// Update the time counters
 		LastTime = NewTime;
-		NewTime = CTime::ticksToSecond (CTime::getPerformanceTime())*1000;//getLocalTime();
+		NewTime = /*CTime::ticksToSecond (CTime::getPerformanceTime())*1000;*/CTime::getLocalTime();
 
 		// Update animation
 //		updateAnimation ();
@@ -312,14 +313,14 @@ int main(int argc, char **argv)
 		// Update the compass
 		updateCompass ();
 
-		// Update the commands panel
-		if (ShowCommands) updateCommands ();
-
 		// Update the radar
 		updateRadar ();
 
 		// Update the radar
 		updateGraph ();
+
+		// Update the commands panel
+		if (ShowCommands) updateCommands ();
 
 		updateAnimation ();
 
@@ -442,7 +443,7 @@ int main(int argc, char **argv)
 			btm.writeTGA (fs,24,true);
 			nlinfo("Screenshot '%s' saved", filename.c_str());
 		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyH))
+/*		else if (Driver->AsyncListener.isKeyPushed (KeyH))
 		{
 			playAnimation (*Self, HitAnim, true);
 
@@ -453,7 +454,7 @@ int main(int argc, char **argv)
 			else
 				playAnimation (*Self, IdleAnim);
 		}
-
+*/
 		// Check if the config file was modified by another program
 		CConfigFile::checkConfigFiles ();
 	}
@@ -562,6 +563,7 @@ void updateLoginInterface ()
 		case 1:
 			nlinfo ("login entered");
 			login = str;
+			Self->Name = login;
 			askString ("Please enter your password:", ConfigFile.getVar("Password").asString (), 1);
 			loginState++;
 			break;
@@ -605,6 +607,9 @@ void updateLoginInterface ()
 				}
 				else
 				{
+					// we remove all offline entities
+					removeAllEntitiesExceptUs ();
+					
 					askString ("You are online!!!", "", 2, CRGBA(0,64,0,128));
 					loginState = 0;
 

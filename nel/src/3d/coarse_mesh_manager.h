@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.12 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.13 2002/08/07 07:46:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -234,7 +234,7 @@ private:
 		  */
 		static uint16 getPrimitiveblockId (uint32 id)
 		{
-			return (uint16)id;
+			return (uint16)(id & 0xFFFF);
 		}
 
 		/**

@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.2 2001/11/07 10:38:00 vizerie Exp $
+ * $Id: water_model.h,v 1.3 2001/11/09 14:41:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,10 +29,17 @@
 #include "nel/misc/types_nl.h"
 #include "3d/transform_shape.h"
 
+namespace MISC
+{
+	class CVector;
+}
+
 namespace NL3D {
 
 
 class CWaterPoolManager;
+class CWaterShape;
+class IDriver;
 
 /**
  * A water quad
@@ -52,6 +59,7 @@ public:
 
 	// get default tracks
 	virtual ITrack* getDefaultTrack (uint valueId);
+
 };
 
 
@@ -60,6 +68,8 @@ class	CWaterRenderObs : public CTransformShapeRenderObs
 public:
 	virtual	void	traverse(IObs *caller);	
 	static IObs	    *creator() {return new CWaterRenderObs;}
+private:
+	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file datas.h
  *
  *
- * $Id: datas.h,v 1.9 2002/03/01 10:21:25 lecroart Exp $
+ * $Id: datas.h,v 1.10 2002/07/25 13:40:02 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,7 +198,7 @@ typedef std::list<CAdminExecutorService>::iterator AESIT;
 
 struct CAdminService
 {
-	CAdminService () : Connected(false), SockId(NULL), Id(NextId++), RootTreeItem(NULL) { }
+	CAdminService () : Connected(false), SockId(InvalidSockId), Id(NextId++), RootTreeItem(NULL) { }
 	
 	NLNET::TSockId	SockId;			/// connection to the AS
 	uint32			Id;				/// uint32 to identify the AS

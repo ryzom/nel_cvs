@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.2 2001/06/06 09:34:03 corvazier Exp $
+ * $Id: u_move_primitive.h,v 1.3 2001/06/07 12:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,7 @@ public:
 
 	/// Type of the collision mask.
 	typedef uint32 TCollisionMask;
+	typedef uint64 TUserData;
 
 	/// Primitive mode
 	enum TType
@@ -124,7 +125,7 @@ public:
 	/**
 	  * User data.
 	  */
-	void			*UserPointer;
+	TUserData		UserData;
 
 	/// \name Setup the primitive.
 
@@ -155,6 +156,13 @@ public:
 	  * \param mask is the new collision mask.
 	  */
 	virtual void	setCollisionMask (TCollisionMask mask) =0;
+
+	/**
+	  * Set the occlusion mask for this primitive. Default mask is 0xffffffff.
+	  *
+	  * \param mask is the new occlusion mask.
+	  */
+	virtual void	setOcclusionMask (TCollisionMask mask) =0;
 
 	/**
 	  * Set the obstacle flag.

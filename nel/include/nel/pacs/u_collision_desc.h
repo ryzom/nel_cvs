@@ -1,7 +1,7 @@
 /** \file collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: u_collision_desc.h,v 1.2 2001/06/06 09:34:03 corvazier Exp $
+ * $Id: u_collision_desc.h,v 1.3 2001/06/07 12:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,15 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vectord.h"
+
+#include "nel/pacs/u_move_primitive.h"
+
 #include <vector>
+
+namespace NLMISC
+{
+	class IStream;
+}
 
 namespace NLPACS 
 {
@@ -47,6 +55,9 @@ public:
 	NLMISC::CVectorD		ContactNormal0;
 	NLMISC::CVectorD		ContactNormal1;
 	double					ContactTime;
+
+	// Serial method
+	void serial (NLMISC::IStream& stream);
 };
 
 /**
@@ -59,9 +70,12 @@ public:
 class UTriggerInfo
 {
 public:
-	void					*Object0;
-	void					*Object1;
-	UCollisionDesc			CollisionDesc;
+	UMovePrimitive::TUserData	Object0;
+	UMovePrimitive::TUserData	Object1;
+	UCollisionDesc				CollisionDesc;
+
+	// Serial method
+	void serial (NLMISC::IStream& stream);
 };
 
 } // NLPACS

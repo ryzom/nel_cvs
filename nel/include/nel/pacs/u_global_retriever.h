@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.4 2001/06/06 12:53:57 legros Exp $
+ * $Id: u_global_retriever.h,v 1.5 2001/06/07 12:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_GLOBAL_RETRIEVER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vectord.h"
 
 #include "nel/pacs/u_retriever_bank.h"
 
@@ -62,7 +63,7 @@ public:
 	  * Delete a global retriever.
 	  *
 	  */
-	static void				deleteRetriever (UGlobalRetriever *retriever);
+	static void				deleteGlobalRetriever (UGlobalRetriever *retriever);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.4 2001/06/06 09:34:03 corvazier Exp $
+ * $Id: move_container.cpp,v 1.5 2001/06/07 12:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -261,7 +261,7 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 	_PreviousCollisionNode=NULL;
 
 	// Return result
-	return result;
+	return !result;
 }
 
 // ***************************************************************************
@@ -524,14 +524,14 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 								// Test move ?
 								if (collision)
 								{
-									// TODO: make new collision when collision==false to raise triggers
-									// OK, collision
-									newCollision (primitive, otherPrimitive, desc, collision, enter, exit);
-
 									if (testMove) 
 										return true;
 									else
 									{
+										// TODO: make new collision when collision==false to raise triggers
+										// OK, collision
+										newCollision (primitive, otherPrimitive, desc, collision, enter, exit);
+
 										// Collision
 										found=true;
 									}
@@ -577,14 +577,14 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 							// Test move ?
 							if (collision)
 							{
-								// TODO: make new collision when collision==false to raise triggers
-								// OK, collision
-								newCollision (primitive, otherPrimitive, desc, collision, enter, exit);
-
 								if (testMove) 
 									return true;
 								else
 								{
+									// TODO: make new collision when collision==false to raise triggers
+									// OK, collision
+									newCollision (primitive, otherPrimitive, desc, collision, enter, exit);
+
 									// Collision
 									found=true;
 								}
@@ -729,8 +729,8 @@ void CMoveContainer::newTrigger (CMovePrimitive* first, CMovePrimitive* second, 
 	_Triggers.resize (index+1);
 
 	// Fill info
-	_Triggers[index].Object0=first->UserPointer;
-	_Triggers[index].Object1=second->UserPointer;
+	_Triggers[index].Object0=first->UserData;
+	_Triggers[index].Object1=second->UserData;
 	_Triggers[index].CollisionDesc=desc;
 }
 
@@ -991,6 +991,25 @@ UMoveContainer *UMoveContainer::createMoveContainer (UGlobalRetriever* retriever
 
 	// Create a CMoveContainer
 	return new CMoveContainer (r, widthCellCount, heightCellCount, primitiveMaxSize, maxIteration, otSize);
+}
+
+// ***************************************************************************
+
+void UCollisionDesc::serial (NLMISC::IStream& stream)
+{
+	stream.serial (ContactPosition);
+	stream.serial (ContactNormal0);
+	stream.serial (ContactNormal1);
+	stream.serial (ContactTime);
+};
+
+// ***************************************************************************
+
+void UTriggerInfo::serial (NLMISC::IStream& stream)
+{
+	stream.serial (Object0);
+	stream.serial (Object1);
+	stream.serial (CollisionDesc);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.23 2001/06/07 12:14:51 legros Exp $
+ * $Id: global_retriever.cpp,v 1.24 2001/06/07 12:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1314,7 +1314,7 @@ NLPACS::UGlobalRetriever *NLPACS::UGlobalRetriever::createGlobalRetriever (const
 
 // ***************************************************************************
 
-void NLPACS::UGlobalRetriever::deleteRetriever (UGlobalRetriever *retriever)
+void NLPACS::UGlobalRetriever::deleteGlobalRetriever (UGlobalRetriever *retriever)
 {
 	// Cast
 	nlassert (dynamic_cast<NLPACS::CGlobalRetriever*>(retriever));

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.133 2002/06/24 10:24:04 lecroart Exp $
+ * $Id: service.cpp,v 1.134 2002/07/02 15:57:15 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -967,9 +967,24 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 		}
 
+
+		//
+		// Add default pathes
+		//
+
+		if ((var = ConfigFile.getVarPtr ("Paths")) != NULL)
+		{
+			for (sint i = 0; i < var->size(); i++)
+			{
+				CPath::addSearchPath (var->asString(i));
+			}
+		}
+
+
 		_Initialized = true;
-		
+
 		nlinfo ("Service initialised");
+
 
 		//
 		// Call the user command from the config file if any
@@ -987,6 +1002,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		if (WindowDisplayer != NULL)
 			WindowDisplayer->setTitleBar (_ShortName + " " + _LongName);
+
 
 		//
 		// Call the user service update each loop and check files and network activity

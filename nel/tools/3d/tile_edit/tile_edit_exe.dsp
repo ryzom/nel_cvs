@@ -108,7 +108,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386 /out:"Release/tile_edit.exe"
-# ADD LINK32 freetype.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseDebug/tile_edit.exe"
+# ADD LINK32 freetype.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseDebug/tile_edit.exe" /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "tile_edit_exe - Win32 DebugFast"
 

@@ -109,7 +109,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib maxscrpt.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib /nologo /dll /machine:I386 /out:"C:\3dsmax3_1\nel_3dsmax_shared.dll"
-# ADD LINK32 freetype.lib paramblk2.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib maxscrpt.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib Maxscrpt.lib /nologo /dll /debug /machine:I386 /out:"C:\3dsmax3_1\nel_3dsmax_shared.dll"
+# ADD LINK32 freetype.lib paramblk2.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib maxscrpt.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib Maxscrpt.lib /nologo /dll /debug /machine:I386 /out:"C:\3dsmax3_1\nel_3dsmax_shared.dll" /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "nel_3dsmax_shared - Win32 DebugFast"
 

@@ -1,7 +1,7 @@
 /** \file remote_entity.cpp
  * Remote-controlled entities
  *
- * $Id: remote_entity.cpp,v 1.11 2000/12/20 10:08:17 cado Exp $
+ * $Id: remote_entity.cpp,v 1.12 2000/12/20 17:05:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,6 @@
 #include "nel/net/remote_entity.h"
 #include "nel/net/replica.h"
 #include "nel/misc/debug.h"
-#include "nel/net/local_area.h"
 
 using namespace NLMISC;
 
@@ -74,10 +73,6 @@ void CRemoteEntity::update( TDuration deltatime )
 	else
 	{
 		computePosAfterDuration( deltatime );
-	}
-	if ( pos() != previousPos() )
-	{
-		CLocalArea::Instance->entityMovedCallback()( this );
 	}
 }
 

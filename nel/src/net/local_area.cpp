@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.23 2000/12/20 10:08:17 cado Exp $
+ * $Id: local_area.cpp,v 1.24 2000/12/20 17:05:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,6 +279,14 @@ void CLocalArea::update()
 		// Update neighbor
 		(*ipe).second->update( deltatime );
 
+		//if ( (*ipe).second->pos() != (*ipe).second->previousPos() ) // if this line is not commented out, we don't see when the entity turns without changing its position
+		//{
+		if ( _EntityMovedCallback != NULL )
+		{
+			_EntityMovedCallback( (*ipe).second );
+		}
+		//}
+
 		// Remove neighbor if it exits from the local area
 		if ( ((*ipe).second->pos()-User.pos()).norm() > _Radius )
 		{
@@ -291,9 +299,9 @@ void CLocalArea::update()
 			CRemoteEntities::iterator ipebis = ipe;
 			ipe++;
 			_Neighbors.erase( ipebis );
-			if ( CLocalArea::Instance->_EntityRemovedCallback != NULL )
+			if ( _EntityRemovedCallback != NULL )
 			{
-				CLocalArea::Instance->_EntityRemovedCallback( id );
+				_EntityRemovedCallback( id );
 			}
 			nldebug( "Removed entity %u", id );
 

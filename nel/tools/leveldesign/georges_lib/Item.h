@@ -21,7 +21,6 @@ class CItem
 {
 protected:
 	CLoader* pl;
-	CStringEx sxlocalworkdirectory;
 	CItemEltStruct* pitemes;
 	CItemEltList* pitemelparents;
 	CItemEltAtom* pitemeacomments;
@@ -33,19 +32,20 @@ public:
 	void Clear();
 	void SetLoader( CLoader* const _pl );
 	void New( const CStringEx& _sxdfnfilename );
-	void Load( const CStringEx& _sxfullname );
-	void Load( const CStringEx& _sxfullname, const CStringEx _sxdate ); 
-	void Load( const CStringEx& _sxfullname, CStringEx& _sxlocalworkdirectory );
-	void Load( const CStringEx& _sxfullname, const CStringEx& _sxlocalworkdirectory, const CStringEx _sxdate ); 
-	void Save( const CStringEx& _sxfullname );
+	void Load( const CStringEx& _sxfilename );
+	void Load( const CStringEx& _sxfilename, const CStringEx _sxdate ); 
+	void Save( const CStringEx& _sxfilename );
 
 	void SetCurrentValue( const unsigned int _index, const CStringEx s );
 	unsigned int GetNbElt() const;
+	unsigned int GetNbElt( const unsigned int _index ) const;
 	unsigned int GetInfos( const unsigned int _index ) const;
 	CStringEx GetName( const unsigned int _index ) const;
 	CStringEx GetCurrentResult( const unsigned int _index ) const;
 	CStringEx GetCurrentValue( const unsigned int _index ) const;
 	CStringEx GetFormula( const unsigned int _index ) const;
+	bool IsEnum( const unsigned int _index ) const; 
+	void GetListPredef( const unsigned int _index, std::vector< CStringEx >& _vsx ) const;
 
 	CItemElt* GetElt( const unsigned int _index ) const;
 	CItemElt* GetElt( const CStringEx _sxname ) const;

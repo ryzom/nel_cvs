@@ -33,7 +33,7 @@ void CMoldEltType::Load( const CStringEx _sxfilename )						// TODO: Load with p
 // code:
 	sxname = CStringEx( _sxfilename );
 	CForm f;
-	pl->LoadForm( f, pl->WhereIs( pl->GetDfnTypDirectory(), _sxfilename ) );									
+	pl->LoadForm( f, pl->WhereIsDfnTyp( _sxfilename ) );									
 
 	CFormBodyElt* pfbell = f.GetElt("Lowlimit");
 	CFormBodyElt* pfbehl = f.GetElt("Highlimit");
@@ -146,5 +146,12 @@ CStringEx CMoldEltType::GetPredefDesignation( const CStringEx _sxsubstitute ) co
 	for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = vpredef.begin(); it != vpredef.end(); ++it )
 		if( it->second == _sxsubstitute )
 			return( it->first );
+	return( CStringEx() );
+}
+
+CStringEx CMoldEltType::GetPredefDesignation( const unsigned int _index ) const
+{
+	if( _index < vpredef.size() )
+		return( vpredef[_index].first );
 	return( CStringEx() );
 }

@@ -18,6 +18,7 @@ class CMoldElt
 protected:
 	CLoader*	pl;
 	bool		bliste;
+	bool		benum;																	// if true => No edit if not a predef
 	CStringEx	sxname;
 
 public:
@@ -27,6 +28,7 @@ public:
 	CStringEx	GetName();													
 	void SetList( const bool _b );
 	bool IsList() const;
+	bool IsEnum() const;
 
 	virtual	CStringEx GetFormula();												
 	virtual void Load( const CStringEx _sxfilename );

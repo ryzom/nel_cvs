@@ -3,6 +3,7 @@
 #define ITEM_ISATOM 4
 #define ITEM_ISSTRUCT 8
 #define ITEM_ISLIST 16
+#define ITEM_ISENUM 32
 
 #define RESERVEDKEYWORD_PARENTS "Parents"
 #define RESERVEDKEYWORD_COMMENTS "Comments"

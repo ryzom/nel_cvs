@@ -28,7 +28,7 @@ void CMoldEltDefine::Load( const CStringEx _sxfilename )
 {
 	CForm f;
 	sxname = CStringEx( _sxfilename );
-	pl->LoadForm( f, pl->WhereIs( pl->GetDfnTypDirectory(), _sxfilename ) );
+	pl->LoadForm( f, pl->WhereIsDfnTyp( _sxfilename ) );
 	CFormBodyElt* pbody = f.GetBody();
 
 	unsigned int i = 0;

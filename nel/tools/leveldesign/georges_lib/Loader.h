@@ -9,18 +9,18 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "nel/misc/path.h"
 #include "FormLoader.h"
 #include "MoldLoader.h"
-#include "io.h"
 
 class CLoader  
 {
 protected:
 	CFormLoader fl;
 	CMoldLoader ml;
-	CStringEx sxdfndirectory;
 	CStringEx sxworkdirectory;
 	CStringEx sxrootdirectory;
+	CStringEx WhereIs( const CStringEx _sxdirectory, const CStringEx _sxfilename );
 
 public:
 	CLoader();
@@ -34,13 +34,11 @@ public:
 	CMoldElt* LoadMold( const CStringEx _sxfilename );
 	CMoldElt* LoadMold( const CStringEx _sxfilename, const CStringEx _sxdate ); 
 
-	CStringEx WhereIs( const CStringEx _sxdirectory, const CStringEx _sxfilename );
-	CStringEx Search( const CStringEx _sxfilename);
+	CStringEx WhereIsDfnTyp( const CStringEx _sxfilename );
+	CStringEx WhereIsForm( const CStringEx _sxfilename );
 
-	void SetDfnTypDirectory( const CStringEx _sxdfndirectory );
 	void SetWorkDirectory( const CStringEx _sxworkdirectory );
 	void SetRootDirectory( const CStringEx _sxrootdirectory );
-	CStringEx GetDfnTypDirectory() const;
 	CStringEx GetWorkDirectory() const;
 	CStringEx GetRootDirectory() const;
 

@@ -6,6 +6,7 @@
 #include "Item.h"
 #include "Loader.h"
 #include "MoldEltDefine.h"
+#include "MoldEltType.h"
 #include "ItemEltAtom.h"
 #include "ItemEltStruct.h"
 #include "ItemEltList.h"
@@ -44,16 +45,10 @@ void CItem::SetLoader( CLoader* const _pl )
 {
 	nlassert( _pl );
 	pl = _pl;
-	sxlocalworkdirectory = pl->GetWorkDirectory();
 }
-
-
 
 void CItem::Load( const CStringEx& _sxfullname )
 {
-	CStringEx sxsavedir = pl->GetWorkDirectory(); 
-	pl->SetWorkDirectory( sxlocalworkdirectory );
-
 	// Load the form
 	CForm form, formcurrent, formparent;
 	pl->LoadForm( formcurrent, _sxfullname );
@@ -88,24 +83,6 @@ void CItem::Load( const CStringEx& _sxfullname )
 
 	// Fill the tree with current's form
 	pitemes->FillCurrent( formcurrent.GetBody() );
-
-	pl->SetWorkDirectory( sxsavedir );
-}
-
-void CItem::Load( const CStringEx& _sxfullname, const CStringEx _sxdate )
-{
-} 
-
-void CItem::Load( const CStringEx& _sxfullname, CStringEx& _sxlocalworkdirectory )
-{
-	sxlocalworkdirectory = _sxlocalworkdirectory;
-	Load( _sxfullname );
-}
-
-void CItem::Load( const CStringEx& _sxfullname, const CStringEx& _sxlocalworkdirectory, const CStringEx _sxdate ) 
-{
-	sxlocalworkdirectory = _sxlocalworkdirectory;
-	Load( _sxfullname, _sxdate );
 }
 
 void CItem::New( const CStringEx& _sxdfnfilename )
@@ -115,6 +92,10 @@ void CItem::New( const CStringEx& _sxdfnfilename )
 	nlassert( pmed );
 	pitemes = new CItemEltStruct( pl );
 	pitemes->BuildItem( pmed );
+}
+
+void CItem::Load( const CStringEx& _sxfilename, const CStringEx _sxdate ) 
+{
 }
 
 void CItem::Save( const CStringEx& _sxfilename )
@@ -154,6 +135,14 @@ unsigned int CItem::GetNbElt() const
 	if( pitemes )
 		return( pitemes->GetNbElt() );
 	return( 0 );
+}
+
+unsigned int CItem::GetNbElt( const unsigned int _index ) const
+{
+	CItemElt* pie = GetElt( _index );
+	if( !pie )
+		return( 0 );
+	return( pie->GetNbElt() );
 }
 
 unsigned int CItem::GetInfos( const unsigned int _index ) const
@@ -197,3 +186,30 @@ CStringEx CItem::GetFormula( const unsigned int _index ) const
 	return( pie->GetFormula() );
 }
 
+bool CItem::IsEnum( const unsigned int _index ) const
+{
+	CItemElt* pie = GetElt( _index );
+	if( !pie )
+		return( false );
+	return( ( pie->GetInfos() & ITEM_ISENUM ) != 0 );
+}
+
+void CItem::GetListPredef( const unsigned int _index, std::vector< CStringEx >& _vsx ) const
+{
+	CItemElt* pie = GetElt( _index );
+	if( !pie )
+		return;
+	CItemEltAtom* piea = dynamic_cast< CItemEltAtom* >( pie );
+	if( !piea )
+		return;
+
+	CMoldEltType* pmet = piea->GetMoldType();
+	
+	unsigned int i = 0;
+	CStringEx sx = pmet->GetPredefDesignation( i++ );
+	while( !sx.empty() )
+	{
+		_vsx.push_back( sx );
+		sx = pmet->GetPredefDesignation( i++ );
+	}
+}

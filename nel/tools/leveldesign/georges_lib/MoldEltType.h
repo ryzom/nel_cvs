@@ -18,7 +18,6 @@ class CTypeUnit;
 class CMoldEltType : public CMoldElt  
 {
 protected:
-	bool		benum;																	// if true => No edit if not a predef
 	CTypeUnit*	ptu;
 	std::vector< std::pair< CStringEx, CStringEx > > vpredef;							
 
@@ -34,6 +33,7 @@ public:
 	CStringEx	Format( const CStringEx _sxvalue ) const;													// Transform any value in the good format					
 	CStringEx	GetPredefSubstitute( const CStringEx _sxdesignation ) const;
 	CStringEx	GetPredefDesignation( const CStringEx _sxdesignation ) const;						// Give the value corresponding to the string
+	CStringEx	GetPredefDesignation( const unsigned int _index ) const;
 	virtual	CStringEx GetFormula();																// Give the formula of the type : int(0,100)
 	virtual unsigned int GetType() const;															// Give the type ( typ or dfn or nothing )	
 };

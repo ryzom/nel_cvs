@@ -32,6 +32,9 @@ void CItemEltAtom::BuildItem( CMoldElt* const _pme )
 	sxoldcurrentvalue.clear();
 	sxparentresult = pmet->GetDefaultValue();
 	sxcurrentresult = pmet->GetDefaultValue();
+	if( pmet->IsEnum() )
+		infos |= ITEM_ISENUM;
+
 }
 
 CStringEx CItemEltAtom::GetFormula() const 
@@ -92,6 +95,11 @@ CFormBodyElt* CItemEltAtom::BuildForm()
 unsigned int CItemEltAtom::GetNbElt() const
 {
 	return( 1 );
+}
+
+CMoldEltType* CItemEltAtom::GetMoldType() const
+{
+	return( pmet );
 }
 
 /*

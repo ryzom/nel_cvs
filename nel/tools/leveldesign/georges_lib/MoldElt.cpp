@@ -20,6 +20,7 @@ CMoldElt::CMoldElt( CLoader* const _pl )
 	nlassert( _pl );
 	pl = _pl;
 	bliste = false;
+	benum = false;
 }
 
 CMoldElt::~CMoldElt()
@@ -62,5 +63,10 @@ void CMoldElt::SetList( const bool _b )
 bool CMoldElt::IsList() const
 {
 	return( bliste );
+}
+
+bool CMoldElt::IsEnum() const
+{
+	return( benum );
 }
 

@@ -16,9 +16,11 @@
 CLoader::CLoader()
 {
 	ml.SetLoader( this );
-	sxdfndirectory = "U:\\dfn\\";
 	sxworkdirectory = "U:\\";
 	sxrootdirectory = "U:\\";
+	NLMISC::CPath::clearMap();
+    NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
+    NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 }
 
 CLoader::~CLoader()
@@ -37,12 +39,12 @@ void CLoader::LoadForm( CForm& _f, const CStringEx& _sxfullname, const CStringEx
 
 void CLoader::LoadSearchForm( CForm& _f, const CStringEx& _sxfilename )
 {
-	fl.LoadForm( _f, Search( _sxfilename ) );
+	fl.LoadForm( _f, WhereIsForm( _sxfilename ) );
 }
 
 void CLoader::LoadSearchForm( CForm& _f, const CStringEx& _sxfilename, const CStringEx& _sxdate ) 
 {
-	fl.LoadForm( _f, Search( _sxfilename ), _sxdate );
+	fl.LoadForm( _f, WhereIsForm( _sxfilename ), _sxdate );
 }
 
 void CLoader::SaveForm( CForm& _f, const CStringEx& _sxfullname )
@@ -60,75 +62,40 @@ CMoldElt* CLoader::LoadMold( const CStringEx _sxfilename, const CStringEx _sxdat
 	return( ml.LoadMold( _sxfilename, _sxdate ) );
 }
 
-CStringEx CLoader::WhereIs( const CStringEx _sxdirectory, const CStringEx _sxfilename )
-{
-	if( _sxfilename.empty() )
-		return( CStringEx() );
-
-	_finddata_t info;
-	CStringEx searchname = _sxdirectory +_sxfilename;
-	long lhandle = _findfirst( searchname.c_str(), &info );
-	if( lhandle != -1 )
-	{
-		_findclose( lhandle );
-		return( searchname );
-	}
-
-	searchname = CStringEx( _sxdirectory + "*.*" );
-	lhandle = _findfirst( searchname.c_str(), &info ); 
-	do
-	{
-		if( !(info.attrib & _A_SUBDIR ) )
-			continue;
-		if( ( info.name == "." )||( info.name == ".." ) )
-			continue;
-		CStringEx sxresult = WhereIs( CStringEx( _sxdirectory + info.name ), _sxfilename );
-		if( !sxresult.empty() )
-			return( sxresult );
-	}
-	while( _findnext( lhandle, &info ) != -1 );
-	
-	_findclose( lhandle );
-	return( CStringEx() );
-}
-
-CStringEx CLoader::Search( const CStringEx _sxfilename )
-{
-	CStringEx sxfullname = WhereIs( GetWorkDirectory(), _sxfilename );
-	if( sxfullname.empty() )
-		sxfullname = WhereIs( GetRootDirectory(), _sxfilename );
-	return( sxfullname );
-}
-
-void CLoader::SetDfnTypDirectory( const CStringEx _sxdfndirectory )
-{
-	sxdfndirectory = _sxdfndirectory;
-}
-
 void CLoader::SetWorkDirectory( const CStringEx _sxworkdirectory )
 {
 	sxworkdirectory = _sxworkdirectory;
+	NLMISC::CPath::clearMap();
+    NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
+    NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 }
 
 void CLoader::SetRootDirectory( const CStringEx _sxrootdirectory )
 {
 	sxrootdirectory = _sxrootdirectory;
-}
-
-CStringEx CLoader::GetDfnTypDirectory() const
-{
-	return( sxdfndirectory );
+	NLMISC::CPath::clearMap();
+    NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
+    NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 }
 
 CStringEx CLoader::GetWorkDirectory() const
 {
 	return( sxworkdirectory );
-
 }
 
 CStringEx CLoader::GetRootDirectory() const
 {
 	return( sxrootdirectory );
+}
+
+CStringEx CLoader::WhereIsDfnTyp( const CStringEx _sxfilename )
+{
+	return( NLMISC::CPath::lookup( _sxfilename, false ) );
+}
+
+CStringEx CLoader::WhereIsForm( const CStringEx _sxfilename )
+{
+	return( NLMISC::CPath::lookup( _sxfilename, false ) );
 }
 
 void CLoader::MakeDfn( const CStringEx _sxfullname, const std::list< std::pair< CStringEx, CStringEx > >* const _plistdefine )
@@ -240,4 +207,54 @@ void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, con
 	pff.SetForm( f );
 	pff.Save( _sxfullname );
 }
+
+/*
+CStringEx CLoader::WhereIs( const CStringEx _sxdirectory, const CStringEx _sxfilename )
+{
+	if( _sxfilename.empty() )
+		return( CStringEx() );
+
+	_finddata_t info;
+	CStringEx searchname = _sxdirectory +_sxfilename;
+	long lhandle = _findfirst( searchname.c_str(), &info );
+	if( lhandle != -1 )
+	{
+		_findclose( lhandle );
+		return( searchname );
+	}
+
+	searchname = CStringEx( _sxdirectory + "*.*" );
+	lhandle = _findfirst( searchname.c_str(), &info ); 
+	do
+	{
+		if( !(info.attrib & _A_SUBDIR ) )
+			continue;
+		if( ( info.name == "." )||( info.name == ".." ) )
+			continue;
+		CStringEx sxresult = WhereIs( CStringEx( _sxdirectory + info.name ), _sxfilename );
+		if( !sxresult.empty() )
+			return( sxresult );
+	}
+	while( _findnext( lhandle, &info ) != -1 );
+	
+	_findclose( lhandle );
+	return( CStringEx() );
+}
+
+CStringEx CLoader::WhereIsDfnTyp( const CStringEx _sxfilename )
+{
+	CStringEx sxfullname = WhereIs( CStringEx( sxworkdirectory +"dfn\\" ), _sxfilename );
+	if( sxfullname.empty() && ( sxrootdirectory != sxworkdirectory ) )
+		sxfullname = WhereIs( CStringEx( sxrootdirectory +"dfn\\" ), _sxfilename );
+	return( sxfullname );
+}
+
+CStringEx CLoader::WhereIsForm( const CStringEx _sxfilename )
+{
+	CStringEx sxfullname = WhereIs( sxworkdirectory, _sxfilename );
+	if( sxfullname.empty() && ( sxrootdirectory != sxworkdirectory ) )
+		sxfullname = WhereIs( sxrootdirectory, _sxfilename );
+	return( sxfullname );
+}
+*/
 

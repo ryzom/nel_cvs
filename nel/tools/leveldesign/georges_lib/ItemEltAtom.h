@@ -33,6 +33,8 @@ public:
 	virtual CItemElt* Clone();
 	virtual CFormBodyElt* BuildForm();
 	virtual unsigned int GetNbElt() const;
+	
+	CMoldEltType* GetMoldType() const;
 };
 
 #endif // !defined(AFX_ITEMELTATOM_H__429CFC50_85B1_43E5_9208_B75FEF85705B__INCLUDED_)

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.164 2003/01/17 14:13:27 lecroart Exp $
+ * $Id: service.cpp,v 1.165 2003/01/20 13:51:15 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -44,6 +44,7 @@
 
 #include <stdlib.h>
 #include <signal.h>
+#include <time.h>
 
 #include "nel/misc/config_file.h"
 #include "nel/misc/displayer.h"
@@ -117,6 +118,7 @@ static CNetDisplayer commandDisplayer(false);
 static CLog commandLog;
 
 static string CompilationDate;
+static uint32 LaunchingDate;
 
 #ifdef NL_RELEASE_DEBUG
 string CompilationMode = "NL_RELEASE_DEBUG";
@@ -673,6 +675,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		_LongName = serviceLongName;
 
 		CompilationDate = compilationDate;
+
+		LaunchingDate = CTime::getSecondsSince1970();
 
 		// Set the process name
 		CLog::setProcessName (_ShortName);
@@ -1523,10 +1527,19 @@ std::string IService::getServiceUnifiedName () const
 }
 
 
-
 //
 // Commands and Variables for controling all services
 //
+
+NLMISC_DYNVARIABLE(string, LaunchingDate, "date of the launching of the program")
+{
+	if (get) *pointer = asctime (localtime ((time_t*)&LaunchingDate));
+}
+
+NLMISC_DYNVARIABLE(string, Uptime, "time from the launching of the program")
+{
+	if (get) *pointer = secondsToHumanReadable (CTime::getSecondsSince1970() - LaunchingDate);
+}
 
 NLMISC_VARIABLE(string, CompilationDate, "date of the compilation");
 NLMISC_VARIABLE(string, CompilationMode, "mode of the compilation");
@@ -1537,8 +1550,8 @@ NLMISC_VARIABLE(sint32, UserSpeedLoop, "duration of the last user loop (in ms)")
 NLMISC_DYNVARIABLE(uint32, ListeningPort, "default listening port for this service")
 {
 	if (get) *pointer = IService::getInstance()->getPort();
-
 }
+
 NLMISC_DYNVARIABLE(string, Version, "")
 {
 	if (get) *pointer = IService::getInstance()->_Version;

@@ -1,7 +1,7 @@
 /** \file surface_light_grid.cpp
  * <File description>
  *
- * $Id: surface_light_grid.cpp,v 1.6 2003/07/30 16:06:50 vizerie Exp $
+ * $Id: surface_light_grid.cpp,v 1.7 2004/07/20 16:23:49 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -59,7 +59,7 @@ void		CSurfaceLightGrid::serial(NLMISC::IStream &f)
 
 
 // ***************************************************************************
-void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, 
+void		CSurfaceLightGrid::getStaticLightSetup(NLMISC::CRGBA sunAmbient, const CVector &localPos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, 
 	CIGSurfaceLight &igsl, NLMISC::CRGBA &localAmbient) const
 {
 	// Get local coordinate to the grid.
@@ -104,7 +104,7 @@ void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vecto
 	uint	rLocalAmbientFixed= 0;
 	uint	gLocalAmbientFixed= 0;
 	uint	bLocalAmbientFixed= 0;
-	uint	aLocalAmbientFixed= 0;
+	uint	wLocalAmbientFixed= 0;
 	for(y=0;y<2;y++)
 	{
 		for(x=0;x<2;x++)
@@ -149,13 +149,18 @@ void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vecto
 			// If FF, then take Sun Ambient => leave color and alpha To 0.
 			if(cellCorner.LocalAmbientId!=0xFF)
 			{
+				CPointLight	&pl= igPointLights[cellCorner.LocalAmbientId];
 				// take current ambient from pointLight
-				CRGBA	ambCorner= igPointLights[cellCorner.LocalAmbientId].getAmbient();
+				CRGBA	ambCorner= pl.getAmbient();
+				// Add with sun this one?
+				if(pl.getAddAmbientWithSun())
+					ambCorner.addRGBOnly(ambCorner, sunAmbient);
+				// bilinear
 				rLocalAmbientFixed+= ambCorner.R * mulBi;
 				gLocalAmbientFixed+= ambCorner.G * mulBi;
 				bLocalAmbientFixed+= ambCorner.B * mulBi;
-				// increase the influence of igPointLights in alpha
-				aLocalAmbientFixed+= 255 * mulBi;
+				// increase the weight influence of igPointLights
+				wLocalAmbientFixed+= 256 * mulBi;
 			}
 		}
 	}
@@ -165,12 +170,17 @@ void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vecto
 	// Final SunContribution
 	sunContribution= sunContribFixed>>16;
 
-	// Final SunContribution
-	localAmbient.R= rLocalAmbientFixed>>16;
-	localAmbient.G= gLocalAmbientFixed>>16;
-	localAmbient.B= bLocalAmbientFixed>>16;
-	localAmbient.A= aLocalAmbientFixed>>16;
-
+	// Final Ambient Contribution of Ambient Lights
+	CRGBA	tempAmbient;
+	tempAmbient.R= rLocalAmbientFixed>>16;
+	tempAmbient.G= gLocalAmbientFixed>>16;
+	tempAmbient.B= bLocalAmbientFixed>>16;
+	// must interpolate between SunAmbient and tempAmbient
+	uint	uAmbFactor= wLocalAmbientFixed>>16;
+	// Blend, but tempAmbient.r/g/b is already multiplied by weight.
+	localAmbient.modulateFromuiRGBOnly(sunAmbient, 256 - uAmbFactor);
+	localAmbient.addRGBOnly(localAmbient, tempAmbient);
+	
 }
 
 

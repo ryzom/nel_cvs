@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.14 2003/11/13 14:22:31 besson Exp $
+ * $Id: lighting_manager.cpp,v 1.15 2004/07/20 16:22:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -253,7 +253,7 @@ struct	CSortLight
 };
 
 // ***************************************************************************
-void		CLightingManager::computeModelLightContributions(CTransform *model, CLightContribution &lightContrib, 
+void		CLightingManager::computeModelLightContributions(NLMISC::CRGBA sunAmbient, CTransform *model, CLightContribution &lightContrib, 
 	ILogicInfo *logicInfo)
 {
 	sint	i;
@@ -284,13 +284,13 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 			// Default: suppose full SunLight and no PointLights.
 			lightContrib.SunContribution= 255;
 			// Take full SunAmbient.
-			lightContrib.LocalAmbient.set(0,0,0,0);
+			lightContrib.LocalAmbient= sunAmbient;
 			// do not append any pointLight to the setup
 		}
 		else
 		{
 			// NB: SunContribution is computed by logicInfo
-			logicInfo->getStaticLightSetup(lightList, lightContrib.SunContribution, lightContrib.LocalAmbient);
+			logicInfo->getStaticLightSetup(sunAmbient, lightList, lightContrib.SunContribution, lightContrib.LocalAmbient);
 		}
 	}
 

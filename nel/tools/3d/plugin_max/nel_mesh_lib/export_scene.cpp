@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.39 2004/05/27 13:00:40 berenguier Exp $
+ * $Id: export_scene.cpp,v 1.40 2004/07/20 16:25:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -581,9 +581,16 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 					// Which light type??
 					if(sLightBuild.bAmbientOnly || sLightBuild.Type== SLightBuild::LightAmbient)
+					{
 						plNamed.setType(CPointLight::AmbientLight);
+						// Special ambient info
+						int		nRTAmbAdd= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_REALTIME_AMBIENT_ADD_SUN, BST_UNCHECKED);
+						plNamed.setAddAmbientWithSun(nRTAmbAdd==BST_CHECKED);
+					}
 					else if(sLightBuild.Type== SLightBuild::LightPoint)
+					{
 						plNamed.setType(CPointLight::PointLight);
+					}
 					else if(sLightBuild.Type== SLightBuild::LightSpot)
 					{
 						plNamed.setType(CPointLight::SpotLight);

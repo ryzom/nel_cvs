@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.58 2004/07/01 09:37:04 berenguier Exp $
+ * $Id: object_viewer.h,v 1.59 2004/07/20 16:24:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -610,7 +610,7 @@ private:
 		NL3D::CInstanceGroup		*Ig;
 		NLPACS::CGlobalRetriever	*GlobalRetriever;
 
-		virtual void	getStaticLightSetup(std::vector<NL3D::CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &ambient);
+		virtual void	getStaticLightSetup(NLMISC::CRGBA sunAmbient, std::vector<NL3D::CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &ambient);
 	};
 	// instnace
 	COVLogicInfo								_ObjectLightTestLogicInfo;

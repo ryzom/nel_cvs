@@ -1,7 +1,7 @@
 /** \file point_light.h
  * <File description>
  *
- * $Id: point_light.h,v 1.5 2003/09/25 12:13:12 corvazier Exp $
+ * $Id: point_light.h,v 1.6 2004/07/20 16:23:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,7 +203,10 @@ public:
 	// Purge static memory
 	static void		purge ();
 
-
+	// Specific For Ambient light
+	bool			getAddAmbientWithSun() const {return _AddAmbientWithSun;}
+	void			setAddAmbientWithSun(bool state);
+	
 // ******************
 private:
 
@@ -234,6 +237,8 @@ private:
 	float			_OOCosSpotAngleDelta;
 	float			_SpotExponent;
 
+	// Ambient specific
+	bool			_AddAmbientWithSun;
 
 	// The memory for list of LightedModels
 	static	NLMISC::CBlockMemory<CTransform*, false>		_LightedModelListMemory;

@@ -1,7 +1,7 @@
 /** \file export_appdata.h
  * Define NeL appdata for 3dsmax
  *
- * $Id: export_appdata.h,v 1.8 2004/07/08 16:11:15 berenguier Exp $
+ * $Id: export_appdata.h,v 1.9 2004/07/20 16:25:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,8 +176,11 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 // CollisionMeshGeneration
 #define NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION	(1423062671)
 
+// RealTimeAmbientLightAddSun
+#define NEL3D_APPDATA_REALTIME_AMBIENT_ADD_SUN			(1423062672)
 
-// Next free appData is 1423062672
+
+// Next free appData is 1423062673
 // WARNING!!!!!!!!!  : 700+ and 800+ are already used....
 
 

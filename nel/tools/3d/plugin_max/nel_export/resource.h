@@ -267,6 +267,7 @@
 #define IDC_LMC_COPY_GET_ALL            1566
 #define IDC_LMC_COPY_ALWAYS_DIFFUSE     1567
 #define IDC_LMC_COPY_LIST               1568
+#define IDC_REALTIME_LIGHT_AMBIENT_ADD_SUN 1569
 
 // Next default values for new objects
 // 
@@ -274,7 +275,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        128
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1569
+#define _APS_NEXT_CONTROL_VALUE         1570
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

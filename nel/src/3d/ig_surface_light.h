@@ -1,7 +1,7 @@
 /** \file ig_surface_light.h
  * <File description>
  *
- * $Id: ig_surface_light.h,v 1.5 2003/05/26 09:00:40 berenguier Exp $
+ * $Id: ig_surface_light.h,v 1.6 2004/07/20 16:21:11 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -91,7 +91,7 @@ public:
 	 *	\return false if retrieverIdentifier / surfaceId is not found. In this case pointLightList is not
 	 *	modified, and sunContribution is set to 255, and localAmbient is set to 0
 	 */
-	bool			getStaticLightSetup(uint retrieverIdentifier, sint surfaceId, const CVector &localPos,
+	bool			getStaticLightSetup(NLMISC::CRGBA sunAmbient, uint retrieverIdentifier, sint surfaceId, const CVector &localPos, 
 		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient);
 
 

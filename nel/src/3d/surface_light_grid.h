@@ -1,7 +1,7 @@
 /** \file surface_light_grid.h
  * <File description>
  *
- * $Id: surface_light_grid.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: surface_light_grid.h,v 1.3 2004/07/20 16:23:49 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -107,7 +107,7 @@ public:
 	CSurfaceLightGrid();
 
 	// Get Infos from the grid
-	void		getStaticLightSetup(const CVector &localPos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, CIGSurfaceLight &igsl, NLMISC::CRGBA &localAmbient) const;
+	void		getStaticLightSetup(NLMISC::CRGBA sunAmbient, const CVector &localPos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, CIGSurfaceLight &igsl, NLMISC::CRGBA &localAmbient) const;
 
 	// serial
 	void		serial(NLMISC::IStream &f);

@@ -1,7 +1,7 @@
 /** \file lighting_manager.h
  * <File description>
  *
- * $Id: lighting_manager.h,v 1.4 2003/11/07 14:27:14 besson Exp $
+ * $Id: lighting_manager.h,v 1.5 2004/07/20 16:22:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,7 +151,7 @@ public:
 	 *	NB: model is append to the _LightedModelList of each contributed light
 	 *	NB: this list is valid until model->isNeedUpdateLighting() is true.
 	 */
-	void		computeModelLightContributions(CTransform *model, CLightContribution &lightContrib, 
+	void		computeModelLightContributions(NLMISC::CRGBA sunAmbient, CTransform *model, CLightContribution &lightContrib, 
 		ILogicInfo *logicInfo= NULL);
 
 

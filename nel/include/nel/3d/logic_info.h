@@ -1,7 +1,7 @@
 /** \file logic_info.h
  * <File description>
  *
- * $Id: logic_info.h,v 1.3 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: logic_info.h,v 1.4 2004/07/20 16:20:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ public:
 	 *	localAmbient.A tells the fraction of this color to take (255 => full contribution of the localAmbient, and 
 	 *	no contribution of the ambient of the sun)
 	 */
-	virtual	void		getStaticLightSetup(std::vector<CPointLightInfluence> &pointLightList, 
+	virtual	void		getStaticLightSetup(NLMISC::CRGBA sunAmbient, std::vector<CPointLightInfluence> &pointLightList, 
 		uint8 &sunContribution, NLMISC::CRGBA &localAmbient) =0;
 
 

@@ -1,7 +1,7 @@
 /** \file point_light.cpp
  * <File description>
  *
- * $Id: point_light.cpp,v 1.6 2003/09/25 12:13:12 corvazier Exp $
+ * $Id: point_light.cpp,v 1.7 2004/07/20 16:23:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,8 @@ CPointLight::CPointLight() : _LightedModels(&_LightedModelListMemory)
 		_OOCosSpotAngleDelta= spotCOOD;
 		_SpotExponent= spotEXP;
 	}
+
+	_AddAmbientWithSun= false;
 }
 
 
@@ -118,6 +120,8 @@ CPointLight &CPointLight::operator=(const CPointLight &o)
 	_CosSpotAngleEnd= o._CosSpotAngleEnd;
 	_OOCosSpotAngleDelta= o._OOCosSpotAngleDelta;
 	_SpotExponent= o._SpotExponent;
+
+	_AddAmbientWithSun= o._AddAmbientWithSun;
 
 	return *this;
 }
@@ -229,8 +233,13 @@ void			CPointLight::computeSpotAttenuationFactors()
 // ***************************************************************************
 void			CPointLight::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(1);
+	sint	ver= f.serialVersion(2);
 
+	if(ver>=2)
+		f.serial(_AddAmbientWithSun);
+	else
+		_AddAmbientWithSun= false;
+		
 	if(ver>=1)
 	{
 		f.serialEnum(_Type);
@@ -425,4 +434,12 @@ void			CPointLight::purge ()
 {
 	_LightedModelListMemory.purge();
 }
+
+// ***************************************************************************
+void			CPointLight::setAddAmbientWithSun(bool state)
+{
+	_AddAmbientWithSun= state;
+}
+
+
 } // NL3D

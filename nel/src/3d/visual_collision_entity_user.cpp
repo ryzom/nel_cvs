@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.cpp
  * <File description>
  *
- * $Id: visual_collision_entity_user.cpp,v 1.7 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: visual_collision_entity_user.cpp,v 1.8 2004/07/20 16:24:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,13 +106,13 @@ bool	CVisualCollisionEntityUser::getSnapToRenderedTesselation() const
 }
 
 
-bool	CVisualCollisionEntityUser::getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, 
+bool	CVisualCollisionEntityUser::getStaticLightSetup(NLMISC::CRGBA sunAmbient, const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, 
 	uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 {
 	NL3D_MEM_ENTITY_USER
 	NL3D_HAUTO_LIGHT_VCE;
 
-	return _Entity->getStaticLightSetup(pos, pointLightList, sunContribution, localAmbient);
+	return _Entity->getStaticLightSetup(sunAmbient, pos, pointLightList, sunContribution, localAmbient);
 }
 
 void	CVisualCollisionEntityUser::displayDebugGrid(UDriver &drv) const

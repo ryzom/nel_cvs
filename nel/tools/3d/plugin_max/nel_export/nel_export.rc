@@ -242,7 +242,7 @@ BEGIN
     CONTROL         "If checked, use per vertex lighting attenuation else use global lighting attenuation for the object. Doesn't work with per pixel lighting shader.",
                     IDC_USE_LIGHT_LOCAL_ATTENUATION,"Button",BS_AUTO3STATE | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,15,95,120,41
-    GROUPBOX        "Properties for lights",IDC_STATIC,160,5,185,195
+    GROUPBOX        "Properties for lights",IDC_STATIC,160,5,185,200
     CONTROL         "RealTime Light. If set, this light will light scene objects.",
                     IDC_EXPORT_REALTIME_LIGHT,"Button",BS_AUTO3STATE | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,170,15,165,20
@@ -256,14 +256,14 @@ BEGIN
                     IDC_STATIC,170,135,170,20
     EDITTEXT        IDC_EXPORT_LIGHTMAP_NAME,170,155,85,15,ES_AUTOHSCROLL
     CONTROL         "Animated Dynamic Light",IDC_EXPORT_LIGHTMAP_ANIMATED,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,170,180,125,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,170,175,125,10
     CONTROL         "Always group",IDC_LIGHT_GROUP_ALWAYS,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,170,80,150,15
     CONTROL         "Sun group",IDC_LIGHT_GROUP_DAY,"Button",
                     BS_AUTORADIOBUTTON,170,95,150,15
     CONTROL         "Night group",IDC_LIGHT_GROUP_NIGHT,"Button",
                     BS_AUTORADIOBUTTON,170,110,150,15
-    GROUPBOX        "Misc",IDC_STATIC,5,145,150,55
+    GROUPBOX        "Misc",IDC_STATIC,5,145,150,60
     CONTROL         "Don't cast shadow for Interior. Known as Trick of the ""Matis serre""",
                     IDC_LIGHT_DONT_CAST_SHADOW_INTERIOR,"Button",
                     BS_AUTO3STATE | BS_TOP | BS_MULTILINE | WS_TABSTOP,15,
@@ -272,6 +272,9 @@ BEGIN
                     IDC_LIGHT_DONT_CAST_SHADOW_EXTERIOR,"Button",
                     BS_AUTO3STATE | BS_TOP | BS_MULTILINE | WS_TABSTOP,15,
                     175,135,20
+    CONTROL         "Add Realtime Ambient Light With sun Ambient",
+                    IDC_REALTIME_LIGHT_AMBIENT_ADD_SUN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,170,190,160,10
 END
 
 IDD_MISC DIALOG DISCARDABLE  0, 0, 360, 221

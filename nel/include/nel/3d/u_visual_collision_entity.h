@@ -1,7 +1,7 @@
 /** \file u_visual_collision_entity.h
  * <File description>
  *
- * $Id: u_visual_collision_entity.h,v 1.9 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: u_visual_collision_entity.h,v 1.10 2004/07/20 16:20:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,7 +126,7 @@ public:
 	 *	NB: because CPatch::Lumels encode the gouraud shading on the surface, return lumelValue*2 so
 	 *	the object won't be too darken.
 	 */
-	virtual bool	getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient) =0;
+	virtual bool	getStaticLightSetup(NLMISC::CRGBA sunAmbient, const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient) =0;
 	// @}
 
 

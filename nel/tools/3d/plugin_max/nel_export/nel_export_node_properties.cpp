@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.59 2004/07/08 16:12:58 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.60 2004/07/20 16:25:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -258,6 +258,7 @@ public:
 	std::string				ExportLightMapName;
 	int						LightDontCastShadowInterior;
 	int						LightDontCastShadowExterior;
+	int						RealTimeAmbientLightAddSun;
 
 	// Lighting 2
 	enum	{NumLightGroup= 3};
@@ -367,6 +368,9 @@ void LightingStateChanged (HWND hwndDlg, CLodDialogBoxParam *currentParam)
 	EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), lightmapLight);
 	EnableWindow(GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), currentParam->VertexProgramBypassed ? FALSE : TRUE);
 
+	// Enable AmbientAddSun for realTime Ambient only
+	EnableWindow(GetDlgItem (hwndDlg, IDC_REALTIME_LIGHT_AMBIENT_ADD_SUN), 
+		SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_GETCHECK, 0, 0)!=BST_UNCHECKED);
 }
 
 // ***************************************************************************
@@ -1049,7 +1053,8 @@ int CALLBACK LightmapDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_LIGHT_DONT_CAST_SHADOW_INTERIOR), BM_SETCHECK, currentParam->LightDontCastShadowInterior, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_LIGHT_DONT_CAST_SHADOW_EXTERIOR), BM_SETCHECK, currentParam->LightDontCastShadowExterior, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), currentParam->ExportLightMapName.c_str());
-
+			SendMessage (GetDlgItem (hwndDlg, IDC_REALTIME_LIGHT_AMBIENT_ADD_SUN), BM_SETCHECK, currentParam->RealTimeAmbientLightAddSun, 0);
+			
 			// Set enable disable
 			LightingStateChanged (hwndDlg, currentParam);
 
@@ -1090,7 +1095,8 @@ int CALLBACK LightmapDialogCallback (
 							currentParam->ExportLightMapAnimated = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_ANIMATED), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), tmp, 512);
 							currentParam->ExportLightMapName = tmp;
-
+							currentParam->RealTimeAmbientLightAddSun= SendMessage (GetDlgItem (hwndDlg, IDC_REALTIME_LIGHT_AMBIENT_ADD_SUN), BM_GETCHECK, 0, 0);
+								
 							// Get the acceleration type
 							if (IsDlgButtonChecked (hwndDlg, IDC_LIGHT_GROUP_ALWAYS) == BST_CHECKED)
 								currentParam->LightGroup = 0;
@@ -1102,6 +1108,7 @@ int CALLBACK LightmapDialogCallback (
 								currentParam->LightGroup = -1;
 						}
 					break;
+					case IDC_REALTIME_LIGHT_AMBIENT_ADD_SUN:
 					case IDC_EXPORT_REALTIME_LIGHT:
 					case IDC_USE_LIGHT_LOCAL_ATTENUATION:
 					case IDC_EXPORT_LIGHTMAP_LIGHT:
@@ -2775,6 +2782,9 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		// CollisionMeshGeneration
 		param.CollisionMeshGeneration=CExportNel::getScriptAppData (node, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, 0);
 		
+		// RealTimeAmbientLightAddSun
+		param.RealTimeAmbientLightAddSun= CExportNel::getScriptAppData (node, NEL3D_APPDATA_REALTIME_AMBIENT_ADD_SUN, BST_UNCHECKED);
+		
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
 		ite++;
@@ -3029,6 +3039,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			// CollisionMeshGeneration
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, 0)!=param.CollisionMeshGeneration)
 				param.CollisionMeshGeneration = -1;
+			
+			// RealTimeAmbientLightAddSun
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_REALTIME_AMBIENT_ADD_SUN, BST_UNCHECKED) != param.RealTimeAmbientLightAddSun)
+				param.RealTimeAmbientLightAddSun= BST_INDETERMINATE;
 			
 			// Next sel
 			ite++;
@@ -3334,6 +3348,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				// CollisionMeshGeneration
 				if (param.CollisionMeshGeneration != -1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, param.CollisionMeshGeneration);
+				
+				// RealTimeAmbientLightAddSun.
+				if (param.RealTimeAmbientLightAddSun != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_REALTIME_AMBIENT_ADD_SUN, param.RealTimeAmbientLightAddSun);
 				
 				// Next node
 				ite++;

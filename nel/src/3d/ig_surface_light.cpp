@@ -1,7 +1,7 @@
 /** \file ig_surface_light.cpp
  * <File description>
  *
- * $Id: ig_surface_light.cpp,v 1.5 2003/05/26 09:00:40 berenguier Exp $
+ * $Id: ig_surface_light.cpp,v 1.6 2004/07/20 16:21:11 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -118,14 +118,14 @@ void			CIGSurfaceLight::serial(NLMISC::IStream &f)
 }
 
 // ***************************************************************************
-bool			CIGSurfaceLight::getStaticLightSetup(uint retrieverIdentifier, sint surfaceId, const CVector &localPos, 
+bool			CIGSurfaceLight::getStaticLightSetup(NLMISC::CRGBA sunAmbient, uint retrieverIdentifier, sint surfaceId, const CVector &localPos, 
 	std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 {
 	nlassert(_Owner);
 
 	// default
 	sunContribution= 255;
-	localAmbient.set(0,0,0,0);
+	localAmbient= sunAmbient;
 
 	ItRetrieverGridMap	it;
 	it= _RetrieverGridMap.find(retrieverIdentifier);
@@ -138,7 +138,7 @@ bool			CIGSurfaceLight::getStaticLightSetup(uint retrieverIdentifier, sint surfa
 		return false;
 
 	// Else, ok, get it.
-	rlg.Grids[surfaceId].getStaticLightSetup(localPos, pointLightList, sunContribution, *this, localAmbient);
+	rlg.Grids[surfaceId].getStaticLightSetup(sunAmbient, localPos, pointLightList, sunContribution, *this, localAmbient);
 	return true;
 }
 

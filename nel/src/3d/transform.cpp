@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.76 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: transform.cpp,v 1.77 2004/07/20 16:24:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1166,7 +1166,8 @@ void	CTransform::traverseLight()
 
 	// see CTransform::clip(), here I am Lightable(), and I have no _AncestorSkeletonModel
 	// So I am sure that I really need to recompute my ModelLightContributions.
-	getOwnerScene()->getLightTrav().LightingManager.computeModelLightContributions(this,
+	CScene	*scene= getOwnerScene();
+	scene->getLightTrav().LightingManager.computeModelLightContributions(scene->getSunAmbient(), this,
 		_LightContribution, _LogicInfo);
 
 	// done!

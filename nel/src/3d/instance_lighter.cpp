@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.16 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: instance_lighter.cpp,v 1.17 2004/07/20 16:22:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -688,7 +688,7 @@ void	CInstanceLighter::computeSunContribution(const CLightDesc &lightDesc, std::
 				dummyPointLightFromLandscape.clear();
 				// If find faces under me
 				NLMISC::CRGBA	dummyAmbient;
-				if(VCE->getStaticLightSetup(pos, dummyPointLightFromLandscape, landSunContribution, dummyAmbient) )
+				if(VCE->getStaticLightSetup(NLMISC::CRGBA::Black, pos, dummyPointLightFromLandscape, landSunContribution, dummyAmbient) )
 				{
 					_Instances[i].SunContribution= landSunContribution;
 				}
@@ -771,7 +771,7 @@ void	CInstanceLighter::computeSunContribution(const CLightDesc &lightDesc, std::
 				dummyPointLightFromLandscape.clear();
 				// If find faces under me
 				NLMISC::CRGBA	dummyAmbient;
-				if(VCE->getStaticLightSetup(pos, dummyPointLightFromLandscape, landSunContribution, dummyAmbient) )
+				if(VCE->getStaticLightSetup(NLMISC::CRGBA::Black, pos, dummyPointLightFromLandscape, landSunContribution, dummyAmbient) )
 				{
 					_Instances[i].SunContribution= landSunContribution;
 					landUsed= true;

@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.29 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: scene_group.h,v 1.30 2004/07/20 16:23:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -351,10 +351,10 @@ public:
 	void			setPointLightFactor(const CScene &scene);
 
 	/// See CIGSurfaceLight::getStaticLightSetup()
-	bool			getStaticLightSetup(uint retrieverIdentifier, sint surfaceId, const CVector &localPos,
+	bool			getStaticLightSetup(NLMISC::CRGBA sunAmbient, uint retrieverIdentifier, sint surfaceId, const CVector &localPos, 
 		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 	{
-		return _IGSurfaceLight.getStaticLightSetup(retrieverIdentifier, surfaceId, localPos,
+		return _IGSurfaceLight.getStaticLightSetup(sunAmbient, retrieverIdentifier, surfaceId, localPos, 
 			pointLightList, sunContribution, localAmbient);
 	}
 

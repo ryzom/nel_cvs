@@ -1,8 +1,9 @@
 
+
 /** \file log/main.cpp
  * example of the CLog class
  *
- * $Id: main.cpp,v 1.2 2004/12/28 14:15:52 lecroart Exp $
+ * $Id: main.cpp,v 1.3 2004/12/28 14:25:35 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -172,6 +172,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
 	ON_COMMAND(IDM_SET_LAG, OnSetLag)
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
+	ON_COMMAND(IDM_SHUFFLE_TEXTURE_SET, OnShuffleTextureSet)	
 	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
 	ON_COMMAND(ID_WINDOW_VEGETABLE, OnWindowVegetable)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_VEGETABLE, OnUpdateWindowVegetable)
@@ -1002,6 +1003,12 @@ void CMainFrame::OnActivateTextureSet(UINT nID)
 	};
 
 	ObjView->activateTextureSet(convIndex[nID - IDM_ACTIVATE_TEXTURE_SET_1]);	
+}
+
+
+void CMainFrame::OnShuffleTextureSet()
+{
+	ObjView->shuffleTextureSet();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.68 2002/06/20 08:43:33 hanappe Exp $
+ * $Id: object_viewer.cpp,v 1.69 2002/06/24 17:20:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,8 +384,7 @@ CObjectViewer::CObjectViewer ()
 		}
 		catch (EUnknownVar &)
 		{
-		}
-
+		}		
 
 		// Load vegetable Landscape cfg.
 		loadVegetableLandscapeCfg(cf);
@@ -1984,6 +1983,23 @@ void CObjectViewer::activateTextureSet(uint index)
 		}		
 	}	
 }
+
+// ***************************************************************************
+void CObjectViewer::shuffleTextureSet()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	std::vector<CInstanceInfo*>::iterator it;
+	for (it = _ListInstance.begin(); it != _ListInstance.end(); ++it)
+	{
+		NL3D::CTransformShape	*trShape= (*it)->TransformShape;
+		if (dynamic_cast<NL3D::CMeshBaseInstance *>(trShape))
+		{
+			static_cast<NL3D::CMeshBaseInstance *>(trShape)->selectTextureSet(rand() % 8);
+		}		
+	}	
+}
+
 
 // ***************************************************************************
 

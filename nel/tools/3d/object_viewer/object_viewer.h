@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.37 2002/06/20 08:42:27 hanappe Exp $
+ * $Id: object_viewer.h,v 1.38 2002/06/24 17:20:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -225,7 +225,7 @@ public:
 	// Add a mesh
 	uint addMesh (NL3D::IShape* pMeshShape, const char* meshName, uint skelIndex, const char* bindSkelName = NULL, bool createInstance = true);
 
-	// Add a skel
+	// Add a skel  
 	uint addSkel (NL3D::IShape* pSkelShape, const char* skelName);
 
 	// remove all instances from the scene
@@ -233,6 +233,9 @@ public:
 
 	/// Force all the instances of the scene to use the given texture set (if available)
 	void activateTextureSet(uint index);
+
+	/// Select random textures sets
+	void shuffleTextureSet();
 
 	// Load a mesh
 	bool loadMesh (std::vector<std::string> &meshFilename, const char* skeleton="");

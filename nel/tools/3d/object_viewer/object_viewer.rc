@@ -1986,7 +1986,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,100
+ FILEVERSION 1,0,0,101
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -2005,7 +2005,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
-            VALUE "FileVersion", "1, 0, 0, 100\0"
+            VALUE "FileVersion", "1, 0, 0, 101\0"
             VALUE "InternalName", "object_viewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"
@@ -2217,6 +2217,8 @@ BEGIN
         MENUITEM "Activate texture set &6",     IDM_ACTIVATE_TEXTURE_SET_6
         MENUITEM "Activate texture set &7",     IDM_ACTIVATE_TEXTURE_SET_7
         MENUITEM "Activate texture set &8",     IDM_ACTIVATE_TEXTURE_SET_8
+        MENUITEM SEPARATOR
+        MENUITEM "Shuffle texture set",         IDM_SHUFFLE_TEXTURE_SET
     END
     POPUP "&Scene"
     BEGIN

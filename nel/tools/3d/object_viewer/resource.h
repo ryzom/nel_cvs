@@ -692,13 +692,14 @@
 #define ID_MENU_SHOWALL                 32900
 #define ID_WINDOW_SOUND                 32901
 #define ID_WINDOW_ANIMSOUND             32902
+#define IDM_SHUFFLE_TEXTURE_SET         32903
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1122
-#define _APS_NEXT_COMMAND_VALUE         32903
+#define _APS_NEXT_COMMAND_VALUE         32904
 #define _APS_NEXT_CONTROL_VALUE         1358
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

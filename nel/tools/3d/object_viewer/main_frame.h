@@ -131,6 +131,7 @@ public:
 	afx_msg void OnSetLag();
 	afx_msg void OnRemoveAllInstancesFromScene();
 	afx_msg void OnActivateTextureSet(UINT nID);
+	afx_msg void OnShuffleTextureSet();
 	afx_msg void OnWindowVegetable();
 	afx_msg void OnUpdateWindowVegetable(CCmdUI* pCmdUI);
 	afx_msg void OnWindowGlobalwind();

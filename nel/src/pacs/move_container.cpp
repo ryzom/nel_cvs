@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.10 2001/08/07 14:14:32 legros Exp $
+ * $Id: move_container.cpp,v 1.11 2001/08/07 16:36:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -891,7 +891,11 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 	nlassert (_Retriever);
 
 	// Get the world image
-	CPrimitiveWorldImage *wI=first->getWorldImage (worldImage);
+	CPrimitiveWorldImage *wI;
+	if (first->isNonCollisionable())
+		wI=first->getWorldImage (0);
+	else
+		wI=first->getWorldImage (worldImage);
 
 	// Time
 	double time=desc.ContactTime;

@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.6 2002/06/03 08:50:17 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.7 2002/10/10 13:35:07 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -82,16 +82,14 @@ public:
 	/// \name System parameters
 	//@{
 
-		/** Set a user param of the system. Each user param must be >= 0 and < 1
-		  * The system must be present otherwise => nlassert	  
+		/** Set a user param of the system. Each user param must be >= 0 and < 1		  
 		  * \param index the index of the user param to modify. For now it ranges from 0 to 3
 		  * \value the new value of the parameter
 		  * \see isSystemPresent()
 		  */
 		virtual void		setUserParam		(uint index, float value) = 0;
 
-		/** Get the value of a user param
-		  * The system must be present, otherwise => nlassert
+		/** Get the value of a user param		  
 		  * \param index the index of the user param to get. For now it ranges from 0 to 3
 		  * \return the value of the user param (>= 0 and < 1)
 		  * \see isSystemPresent()
@@ -160,8 +158,24 @@ public:
 			  * \warning As IDs are not stored in a vector, it is faster than several calls to getID
 			  *
 			  */
-			virtual bool   getIDs(std::vector<uint32> &dest) const = 0;						  
+			virtual bool   getIDs(std::vector<uint32> &dest) const = 0;
+
+			// Deactivate an object with the given ID
+			virtual bool   setActive(uint32 id, bool active) = 0;			
+			// special : Activate / Deactivate all emitters.
+			virtual bool   activateEmitters(bool active) = 0;			
 	 //@}
+
+	 //@{
+			// Test if there are particles left. Always return false if the system is not present.
+			virtual bool   hasParticles() const = 0;
+			// Test if there are emitters left. Always return false if the system is not present.
+			virtual bool   hasEmmiters() const = 0;
+	 //@}
+
+	 // Test if the system is shared
+			virtual bool   isShared() const = 0;
+
 };
 
 

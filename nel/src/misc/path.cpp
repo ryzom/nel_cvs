@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.104 2004/04/30 13:57:29 lecroart Exp $
+ * $Id: path.cpp,v 1.105 2004/06/04 11:53:22 cardouat Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -843,7 +843,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 			progressCallBack->pushCropedValues ((float)i/(float)recursPath.size (), (float)(i+1)/(float)recursPath.size ());
 		}
 
-		getPathContent (recursPath[i], recurse, wantDir, wantFile, result, progressCallBack);
+		getPathContent (recursPath[i], recurse, wantDir, wantFile, result, progressCallBack, showEverything);
 
 		// Progress bar
 		if (progressCallBack)

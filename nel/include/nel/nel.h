@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: nel.h,v 1.1 2000/09/12 08:29:35 lecroart Exp $
+ * $Id: nel.h,v 1.2 2000/09/14 08:48:30 lecroart Exp $
  *
  * Main NeL header that include all nel files (very slow compilation)
  */
@@ -18,7 +18,7 @@
 
 #include "3d.h"
 #include "database.h"
-#include "ia.h"
+#include "ai.h"
 #include "misc.h"
 #include "network.h"
 #include "python.h"

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.37 2003/04/08 23:12:26 corvazier Exp $
+ * $Id: move_container.cpp,v 1.38 2003/04/15 10:18:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -872,7 +872,7 @@ bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimit
 		bool enter = (beginTime<=firstTime) && (firstTime<_DeltaTime);
 		bool exit = (beginTime<=lastTime) && (lastTime<_DeltaTime);
 		bool overlap = (firstTime<=beginTime) && (lastTime>_DeltaTime);
-		bool collision = ( beginTime<=((firstTime+lastTime)/2) ) && (firstTime<=_DeltaTime);
+		bool collision = ( beginTime<((firstTime+lastTime)/2) ) && (firstTime<=_DeltaTime);
 
 		// Return collision time
 

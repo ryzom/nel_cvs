@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.74 2003/12/30 14:18:45 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.75 2004/03/15 15:17:23 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1088,7 +1088,7 @@ uint8 CUnifiedNetwork::findConnectionId (uint16 sid, uint8 nid)
 //
 //
 
-bool	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout, uint8 nid)
+bool	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout, bool warnIfNotFound, uint8 nid)
 {
 	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::send(const string&, const CMessage&) whereas it is not initialised yet"));
 
@@ -1127,7 +1127,7 @@ bool	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout, ui
 		}
 	}
 
-	if (!found)
+	if (!found && warnIfNotFound)
 		nlwarning ("HNETL5: can't find service %s to send message %s", serviceName.c_str(), msgout.getName().c_str());
 
 	return found;

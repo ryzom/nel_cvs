@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.18 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: buf_sock.h,v 1.19 2004/03/15 15:17:23 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,7 +184,7 @@ protected:
 		if (buffer.length() > biggerBufferSize)
 		{
 			biggerBufferSize = buffer.length();
-			nlwarning ("LNETL1: new record! bigger network message pushed (sent) is %u bytes", biggerBufferSize);
+			nldebug ("LNETL1: new record! bigger network message pushed (sent) is %u bytes", biggerBufferSize);
 		}
 
 		if ( Sock->connected() )

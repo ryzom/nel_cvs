@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.204 2004/03/15 12:57:48 legros Exp $
+ * $Id: service.cpp,v 1.205 2004/03/15 15:17:23 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -898,7 +898,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				}
 				catch (ESocketConnectionFailed &)
 				{
-					nlwarning ("SERVICE: Could not connect to the Naming Service (%s). Retrying in a few seconds...", loc.asString().c_str());
+					nlinfo ("SERVICE: Could not connect to the Naming Service (%s). Retrying in a few seconds...", loc.asString().c_str());
 					nlSleep (5000);
 				}
 			}

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.41 2003/11/03 10:10:40 lecroart Exp $
+ * $Id: unified_network.h,v 1.42 2004/03/15 15:17:23 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -120,7 +120,7 @@ public:
 	 * \param nid Network Id specify to which network the message must pass throw (0xFF mean the default network)
 	 * \return true if the service was found (one or more instances) (may return true even if the sending failed)
 	 */
-	bool	send (const std::string &serviceName, const CMessage &msg, uint8 nid=0xFF);
+	bool	send (const std::string &serviceName, const CMessage &msg, bool warnIfNotFound=true, uint8 nid=0xFF);
 
 	/** Sends a message to a specific serviceId.
 	 * \param serviceId Id of the service you want to send the message.

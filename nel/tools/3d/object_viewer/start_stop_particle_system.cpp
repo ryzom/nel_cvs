@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.26 2004/06/18 08:31:14 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.27 2004/06/18 09:51:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -594,11 +594,9 @@ void CStartStopParticleSystem::restartAllFX()
 	{
 		for(uint k = 0; k < _PlayingNodes.size(); ++k)
 		{
-			if (_PlayingNodes[k] && isRunning(_PlayingNodes[k]))
-			{									
-				_PlayingNodes[k]->restoreState();				
-				_PlayingNodes[k]->getPSPointer()->setSystemDate(0.f);
-				_PlayingNodes[k]->getPSModel()->activateEmitters(false);
+			if (_PlayingNodes[k])
+			{					
+				stop(*_PlayingNodes[k]);
 			}
 		}
 	}
@@ -606,13 +604,10 @@ void CStartStopParticleSystem::restartAllFX()
 	{	
 		for(uint k = 0; k < _PlayingNodes.size(); ++k)
 		{
-			if (_PlayingNodes[k] && isRunning(_PlayingNodes[k]))
+			if (_PlayingNodes[k])
 			{					
-				nlassert(_PlayingNodes[k]->isLoaded());
-				_PlayingNodes[k]->restoreState();
-				_PlayingNodes[k]->memorizeState();				
-				_PlayingNodes[k]->getPSPointer()->setSystemDate(0.f);
-				_PlayingNodes[k]->getPSPointer()->reactivateSound();
+				stop(*_PlayingNodes[k]);
+				play(*_PlayingNodes[k]);
 			}
 		}
 	}
@@ -701,7 +696,7 @@ void CStartStopParticleSystem::goPreRender()
 					// see if chosen anim is currently running
 					if (_PlayingNodes[k]->getTriggerAnim().empty() || currAnims.count(_PlayingNodes[k]->getTriggerAnim()))
 					{
-						// if the fx was shutting down, stop the restart it
+						// if the fx was shutting down, stop then restart it
 						if (!_PlayingNodes[k]->getPSModel()->hasActiveEmitters())
 						{
 							nlassert(isRunning(_PlayingNodes[k]));

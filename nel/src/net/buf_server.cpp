@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.14 2001/06/29 08:48:07 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.15 2001/07/04 08:33:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -595,11 +595,9 @@ void CListenTask::run()
 			FD_ZERO( &readers );
 			FD_SET( _ListenSock.descriptor(), &readers );
 			FD_SET( _WakeUpPipeHandle[PipeRead], &readers );
-			nlinfo("entering listen select");
 			tv.tv_sec = 60; /// \todo ace: we perhaps could put NULL to never wake up the select (look at the select man page)
 			tv.tv_usec = 0;
 			int res = ::select( descmax+1, &readers, NULL, NULL, &tv );
-			nlinfo("leaving listen select");
 
 			switch ( res )
 			{

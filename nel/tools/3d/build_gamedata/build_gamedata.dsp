@@ -80,6 +80,10 @@ SOURCE=.\cfg\directories.cfg
 # End Source File
 # Begin Source File
 
+SOURCE=.\cfg\panoply.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\cfg\properties.cfg
 # End Source File
 # End Group

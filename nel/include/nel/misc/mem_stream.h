@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.5 2000/12/07 15:18:42 cado Exp $
+ * $Id: mem_stream.h,v 1.6 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@ namespace NLMISC
 {
 
 /// Exception class for CMemStream
-class EMemStream : public NLMISC::EStream
+struct EMemStream : public NLMISC::EStream
 {};
 
 /*class EMemStreamTypeNbr : public EMemStream
@@ -49,7 +49,7 @@ class EMemStreamTypeStr : public EMemStream
 };*/
 
 /// This exception is raised when someone tries to serialize in more than there is.
-class EStreamOverflow : public EMemStream
+struct EStreamOverflow : public EMemStream
 {
 	/// Returns the exception name
 	virtual const char	*what() const throw() {return "Stream Overflow Error";}

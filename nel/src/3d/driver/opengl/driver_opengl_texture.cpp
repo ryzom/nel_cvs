@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.21 2001/01/25 10:17:03 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.22 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,7 +215,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			std::string	name= tex.getShareName();
 			// append format Id of the texture.
 			static char	fmt[256];
-			sprintf(fmt, "@Fmt:%d", (uint32)tex.getUploadFormat());
+			smprintf(fmt, 256, "@Fmt:%d", (uint32)tex.getUploadFormat());
 			name+= fmt;
 			// append mipmap info
 			if(tex.mipMapOn())

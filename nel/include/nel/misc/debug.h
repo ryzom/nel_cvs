@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.21 2001/01/23 10:39:06 berenguier Exp $
+ * $Id: debug.h,v 1.22 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,15 +28,13 @@
 
 #include <stdio.h>
 
+#include "nel/misc/common.h"
 #include "nel/misc/log.h"
 
 namespace NLMISC
 {
 
-
-#define	NLMISC_DBG_MAXSTRING	4096
-
-/* Enternals */
+// Externals
 
 extern CLog ErrorLog;
 extern CLog WarningLog;
@@ -44,7 +42,8 @@ extern CLog InfoLog;
 extern CLog DebugLog;
 extern CLog AssertLog;
 
-/* Functions */
+
+// Functions
 
 /// never use this function (internal use only)
 void nlFatalError (const char *format, ...);
@@ -54,7 +53,7 @@ void nlError (const char *format, ...);
 
 void InitDebug ();
 
-/* Macros */
+// Macros
 
 
 /**
@@ -72,7 +71,7 @@ void InitDebug ();
  */
 //#ifdef NL_DEBUG
 #define nldebug \
-NLMISC::DebugLog.setParam( __LINE__, __FILE__ ); NLMISC::DebugLog.displayNL
+NLMISC::DebugLog.setParam( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
 //#else
 //#define nldebug //
 //#endif
@@ -82,7 +81,7 @@ NLMISC::DebugLog.setParam( __LINE__, __FILE__ ); NLMISC::DebugLog.displayNL
  * Same as nldebug but it will be display in debug and in release mode.
  */
 #define nlinfo \
-/*NLMISC::InfoLog.setParam( __LINE__, __FILE__ );*/ NLMISC::InfoLog.displayNL
+/*NLMISC::InfoLog.setParam( __LINE__, __FILE__ ),*/ NLMISC::InfoLog.displayNL
 
 /**
  * \def nlwarning(exp)
@@ -102,15 +101,12 @@ NLMISC::DebugLog.setParam( __LINE__, __FILE__ ); NLMISC::DebugLog.displayNL
  *\endcode
  */
 #define nlwarning \
-NLMISC::WarningLog.setParam( __LINE__, __FILE__ ); NLMISC::WarningLog.displayNL
+NLMISC::WarningLog.setParam( __LINE__, __FILE__ ), NLMISC::WarningLog.displayNL
 
 /**
  * \def nlerror(exp)
  * Same as nlinfo but you have to call it when you have a fatal error, this macro display the text and \b exit the application
- * automatically.
- *
- * \bug this macro have 2 instructions, it causes a problem if you call nlerror in a if() without braces.
- *      don't do \c if(var) \c nlerror("err"); but do \c if(var) \c {nlerror("err");}
+ * automatically. nlerror must be in a try/catch because it generates an EFatalError exception to exit the application.
  *
  *\code
 	void function(char *filename)
@@ -124,7 +120,7 @@ NLMISC::WarningLog.setParam( __LINE__, __FILE__ ); NLMISC::WarningLog.displayNL
  *\endcode
  */
 #define nlerror \
-NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::nlFatalError
+NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 
 
 /**
@@ -349,11 +345,11 @@ NULL
 
 struct EFatalError : public Exception
 {
-	virtual const char	*what () const throw () { static char str[1]; str[0] = '\0'; return str; }
+	virtual const char	*what () const throw () { return "nlerror() called"; }
 };
 
 
-// undef default assertto force people to use nlassert
+// undef default assert to force people to use \c nlassert
 #ifdef assert
 #undef assert
 #endif

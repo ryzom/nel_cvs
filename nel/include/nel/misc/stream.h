@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.33 2001/01/09 10:31:50 berenguier Exp $
+ * $Id: stream.h,v 1.34 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_STREAM_H
 
 #include	"nel/misc/types_nl.h"
+#include	"nel/misc/ucstring.h"
 #include	"nel/misc/class_registry.h"
 #include	<utility>
 #include	<string>
@@ -62,23 +63,23 @@ namespace	NLMISC
  */
 struct EStream : public Exception
 {
-	virtual const char	*what() const throw() {return "Stream Error";}
+	EStream() { _Reason = "Stream Error"; }
 };
 struct EOlderStream : public EStream
 {
-	virtual const char	*what() const throw() {return "The version in stream is older than the class";}
+	EOlderStream() { _Reason = "The version in stream is older than the class"; }
 };
 struct ENewerStream : public EStream
 {
-	virtual const char	*what() const throw() {return "The version in stream is newer than the class";}
+	ENewerStream() { _Reason = "The version in stream is newer than the class"; }
 };
 struct EInvalidDataStream : public EStream
 {
-	virtual const char	*what() const throw() {return "Invalid data format";}
+	EInvalidDataStream() { _Reason = "Invalid data format"; }
 };
 struct ESeekNotSupported : public EStream
 {
-	virtual const char	*what() const throw() {return "Seek fonctionnality not supported.";}
+	ESeekNotSupported() { _Reason = "Seek fonctionnality is not supported"; }
 };
 
 

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.25 2001/01/23 10:39:06 berenguier Exp $
+ * $Id: debug.cpp,v 1.26 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,15 +50,10 @@ CStdDisplayer sd;
 
 void nlFatalError (const char *format, ...)
 {
-	// Build the string
-	char cstring [NLMISC_DBG_MAXSTRING];
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format);
 
-	va_list args;
-	va_start( args, format );
-	vsprintf( cstring, format, args );
-	va_end( args );
-
-	NLMISC::ErrorLog.displayNL (cstring);
+	NLMISC::ErrorLog.displayNL (str);
 
 #if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
 	_asm int 3;
@@ -69,15 +64,10 @@ void nlFatalError (const char *format, ...)
 
 void nlError (const char *format, ...)
 {
-	// Build the string
-	char cstring [NLMISC_DBG_MAXSTRING];
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format);
 
-	va_list args;
-	va_start( args, format );
-	vsprintf( cstring, format, args );
-	va_end( args );
-
-	NLMISC::ErrorLog.displayNL (cstring);
+	NLMISC::ErrorLog.displayNL (str);
 
 #if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
 	_asm int 3;

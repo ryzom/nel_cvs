@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.h,v 1.9 2000/12/21 14:49:13 lecroart Exp $
+ * $Id: file.h,v 1.10 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,16 +43,8 @@ namespace NLMISC
 struct EFile : public EStream
 {
 public:
-	EFile() { }
-	EFile( const std::string& filename )
-	{
-		_Reason = "Unknown file error in "+filename;
-	}
-
-	virtual const char	*what() const throw() { return _Reason.c_str(); }
-
-protected:
-	std::string	_Reason;
+	EFile () { _Reason = "Unknown file error"; }
+	EFile (const std::string& filename) { _Reason = "Unknown file error in '"+filename+"'"; }
 };
 
 struct EFileNotOpened : public EFile
@@ -67,7 +59,7 @@ struct EReadError : public EFile
 {
 	EReadError( const std::string& filename )
 	{
-		_Reason = "Read error (End of file??) in file '" +filename+"'";
+		_Reason = "Read error in file '" +filename+"' (End of file??)";
 	}
 };
 

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.16 2000/12/14 11:01:20 valignat Exp $
+ * $Id: common.h,v 1.17 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,13 +26,11 @@
 #ifndef	NL_COMMON_H
 #define	NL_COMMON_H
 
-
 #include "nel/misc/types_nl.h"
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdarg.h>
-
 #include <stdlib.h>
 #include <algorithm>
 #include <string>
@@ -40,13 +38,66 @@
 namespace	NLMISC
 {
 
-
+// Windows posix function remapping
 #ifdef NL_OS_WINDOWS
-	#define vsnprintf _vsnprintf
-#endif
+#define vsnprintf _vsnprintf
+#endif // NL_OS_WINDOWS
 
 
-// Smart snprintf =============================================================================
+
+/**
+ * \def MaxCStringSize
+ *
+ * The maximum size allowed for C string (zero terminated string) buffer.
+ * This value is used when we have to create a standard C string buffer and we don't know exactly the final size of the string.
+ */
+const int MaxCStringSize = 4096;
+
+
+/** Pi constant in double format.
+ */
+const double Pi = 3.1415926535897932384626433832795;
+
+
+/**
+ * \def NLMISC_CONVERT_VARGS(dest,format)
+ *
+ * This macro converts variable arguments into C string (zero terminated string).
+ * This function takes care to avoid buffer overflow.
+ *
+ * Example:
+ *\code
+	void MyFunction(const char *format, ...)
+	{
+		string str;
+		NLMISC_CONVERT_VARGS (str, format);
+		// str contains the result of the conversion
+	}
+ *\endcode
+ *
+ * param dest \c string or \c char* that contains the result of the convertion
+ * param format of the string, it must be the last argument before the \c '...'
+ */
+#define NLMISC_CONVERT_VARGS(_dest,_format) \
+char _cstring[NLMISC::MaxCStringSize]; \
+va_list _args; \
+va_start (_args, _format); \
+if (vsnprintf (_cstring, NLMISC::MaxCStringSize, _format, _args) == -1) \
+{ \
+	_cstring[NLMISC::MaxCStringSize-1] = '\0'; \
+} \
+va_end (_args); \
+_dest = _cstring
+
+
+
+/** sMart sprintf function. This function do a sprintf and add a zero at the end of the buffer
+ * if there no enough room in the buffer.
+ *
+ * \param buffer a C string
+ * \param count Size of the buffer
+ * \param format of the string, it must be the last argument before the \c '...'
+ */
 inline sint smprintf( char *buffer, size_t count, const char *format, ... )
 {
 	sint ret;
@@ -64,37 +115,35 @@ inline sint smprintf( char *buffer, size_t count, const char *format, ... )
 }
 
 
-// ============================================================================================
-inline float	frand(float mod)
+/** Return a float random inside the interval [0,mod]
+ */
+inline float frand(float mod)
 {
-	double	r=rand();
-
-	r/= RAND_MAX;
-
-	return (float)(r*mod);
+	double	r = (double) rand();
+	r/= (double) RAND_MAX;
+	return (float)(r * mod);
 }
 
-// ============================================================================================
+
+/** Return the square of a number
+ */
 template<class T>	inline T sqr(const T &v)
 {
-	return v*v;
+	return v * v;
 }
 
 
-// ============================================================================================
-const	double	Pi= 3.1415926535897932384626433832795;
-
-// ============================================================================================
-// Force v to be inside the interval [min,max]
+/** Force v to be inside the interval [min,max]
+ */
 template<class T, class U, class V>	inline void clamp(T &v, const U &min, const V &max)
 {
 	v = (v < min) ? min : v;
 	v = (v > max) ? max : v;
 }
 
-// ============================================================================================
-// MIN/MAX extended functions.
 
+/** MIN/MAX extended functions.
+ */
 template<class T>	inline T minof(const T& a,  const T& b,  const T& c)
 	{return std::min(std::min(a,b),c);}
 template<class T>	inline T minof(const T& a,  const T& b,  const T& c,  const T& d)
@@ -108,20 +157,22 @@ template<class T>	inline T maxof(const T& a,  const T& b,  const T& c,  const T&
 template<class T>	inline T maxof(const T& a,  const T& b,  const T& c,  const T& d,  const T& e)
 	{return std::max(maxof(a,b,c,d),e);}
 
-// ============================================================================================
-/** 
-  * contReset take a container like std::vector or std::deque and put his size to 0 like clear but free all buffers.
-  * This function is usefull because resize, clear, erase or reserve methods never realloc when the array size come down.
-  * \param a is the container to reset.
-  */
+
+/** \c contReset take a container like std::vector or std::deque and put his size to 0 like \c clear() but free all buffers.
+ * This function is useful because \c resize(), \c clear(), \c erase() or \c reserve() methods never realloc when the array size come down.
+ * \param a is the container to reset.
+ */
 template<class T>	inline void contReset (T& a)
 {
 	a.~T();
 	new (&a) T;
 }
 
-// ============================================================================================
-/// Return the value maximized to the next power of 2 of v.   eg: raiseToNextPowerOf2(8)==8.  raiseToNextPowerOf2(5)==8.
+/** Return the value maximized to the next power of 2 of v.
+ * Example:
+ *   raiseToNextPowerOf2(8) is 8
+ *   raiseToNextPowerOf2(5) is 8
+ */
 inline uint	raiseToNextPowerOf2(uint v)
 {
 	uint	res=1;
@@ -131,7 +182,11 @@ inline uint	raiseToNextPowerOf2(uint v)
 	return res;
 }
 
-/// Return the power of 2 of v.   eg: getPowerOf2(8)==3.  getPowerOf2(5)==3.
+/** Return the power of 2 of v.
+ * Example:
+ *   getPowerOf2(8) is 3
+ *   getPowerOf2(5) is 3
+ */
 inline uint	getPowerOf2(uint v)
 {
 	uint	res=1;
@@ -146,7 +201,8 @@ inline uint	getPowerOf2(uint v)
 }
 
 
-/// return true if the value is a power of 2, false else
+/** Return \c true if the value is a power of 2.
+ */
 inline bool isPowerOf2(sint32 v)
 {
 	while(v)
@@ -165,9 +221,7 @@ inline bool isPowerOf2(sint32 v)
 }
 
 
-// ===========================================================================
-/** 
- * strlwr
+/** Convert a string in lower case.
  * \param a string to transform to lower case
  */
 inline std::string &strlwr ( std::string &str )
@@ -180,8 +234,7 @@ inline std::string &strlwr ( std::string &str )
 	return (str);
 }
 
-/** 
- * strlwr
+/** Convert a string in lower case.
  * \param a pointer to char to transform to lower case
  */
 inline char *strlwr ( char *str )
@@ -198,8 +251,7 @@ inline char *strlwr ( char *str )
 	return (str);
 }
 
-/** 
- * strupr
+/** Convert a string in upper case.
  * \param a string to transform to upper case
  */
 inline std::string &strupr ( std::string &str )
@@ -212,8 +264,7 @@ inline std::string &strupr ( std::string &str )
 	return (str);
 }
 
-/** 
- * strupr
+/** Convert a string in upper case.
  * \param a pointer to char to transform to upper case
  */
 inline char *strupr ( char *str )
@@ -229,6 +280,22 @@ inline char *strupr ( char *str )
 
 	return (str);
 }
+
+
+/**
+ * Base class for all NeL exception.
+ * It enables to construct simple string at the ctor.
+ */
+class Exception : public std::exception
+{
+protected:
+	std::string	_Reason;
+public:
+	Exception() : _Reason("Unknown Exception") { }
+	Exception(const std::string &reason) : _Reason(reason) { }
+	Exception(const char *format, ...) { NLMISC_CONVERT_VARGS (_Reason, format); }
+	virtual const char	*what() const throw() { return _Reason.c_str(); }
+};
 
 
 }	// NLMISC

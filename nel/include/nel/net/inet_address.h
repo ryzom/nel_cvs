@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.h,v 1.17 2001/01/15 14:44:34 cado Exp $
+ * $Id: inet_address.h,v 1.18 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NLMISC
 namespace NLNET
 {
 
-class ESocket;
+struct ESocket;
 
 
 /**

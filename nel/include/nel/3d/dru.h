@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.13 2001/01/18 16:12:42 berenguier Exp $
+ * $Id: dru.h,v 1.14 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_DRU_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 #include "nel/3d/driver.h"
 #include "nel/3d/viewport.h"
 #include "nel/3d/triangle_ext.h"
@@ -53,33 +54,33 @@ namespace NL3D
 {
 
 /// Exception thrown by CDru::createGlDriver.
-class EDru : public Exception
+struct EDru : public NLMISC::Exception
 {
 };
 
-class EDruOpenglDriverNotFound : public EDru
+struct EDruOpenglDriverNotFound : public EDru
 {
-	virtual const char	*what() const throw() {return NL3D_DLL_NAME " is not found.";}
+	virtual const char	*what() const throw() { return NL3D_DLL_NAME " is not found"; }
 };
 
-class EDruOpenglDriverCorrupted : public EDru
+struct EDruOpenglDriverCorrupted : public EDru
 {
-	virtual const char	*what() const throw() {return "(Bad dll?) Can't get NL3D_createIDriverInstance from " NL3D_DLL_NAME;}
+	virtual const char	*what() const throw() { return "Can't get NL3D_createIDriverInstance from " NL3D_DLL_NAME " (Bad dll?)"; }
 };
 
-class EDruOpenglDriverOldVersion : public EDru
+struct EDruOpenglDriverOldVersion : public EDru
 {
-	virtual const char	*what() const throw() {return NL3D_DLL_NAME " is a too old version. Ask for a more recent file.";}
+	virtual const char	*what() const throw() { return NL3D_DLL_NAME " is a too old version. Ask for a more recent file"; }
 };
 
-class EDruOpenglDriverUnknownVersion : public EDru
+struct EDruOpenglDriverUnknownVersion : public EDru
 {
-	virtual const char	*what() const throw() {return NL3D_DLL_NAME " is more recent than the application.";}
+	virtual const char	*what() const throw() { return NL3D_DLL_NAME " is more recent than the application"; }
 };
 
-class EDruOpenglDriverCantCreateDriver : public EDru
+struct EDruOpenglDriverCantCreateDriver : public EDru
 {
-	virtual const char	*what() const throw() {return NL3D_DLL_NAME " can't create driver.";}
+	virtual const char	*what() const throw() { return NL3D_DLL_NAME " can't create driver"; }
 };
 
 /// The driver Utilities class of static.

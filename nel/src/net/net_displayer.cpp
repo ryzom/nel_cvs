@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.13 2000/12/11 11:46:58 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.14 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/net/message.h"
 #include "nel/net/naming_client.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/common.h"
 
 #include <string>
 
@@ -107,7 +108,7 @@ void CNetDisplayer::display( const std::string& str )
 		msg.serial( const_cast<std::string&>(str) );
 		_Server.send( msg );
 	}
-	catch( Exception& )
+	catch( NLMISC::Exception& )
 	{
 		// Silence
 	}

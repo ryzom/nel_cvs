@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.35 2001/01/26 13:33:37 cado Exp $
+ * $Id: msg_socket.h,v 1.36 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,12 +54,10 @@ typedef std::set<CPtCallbackItem> CSearchSet;
 
 
 // Exception EDuplicateMsgName
-class EDuplicateMsgName : public ESocket
+struct EDuplicateMsgName : public ESocket
 {
-public:
 	EDuplicateMsgName( char *msgname ) :
-	  ESocket( (std::string("Duplicate message name in callback array: ")+std::string(msgname)).c_str(), false )
-	{}
+	  ESocket( (std::string("Duplicate message name in callback array: ")+std::string(msgname)).c_str(), false ) {}
 };
 
 

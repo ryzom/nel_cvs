@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.5 2001/01/18 14:14:52 berenguier Exp $
+ * $Id: path.cpp,v 1.6 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,7 +132,7 @@ string CPath::findNewFile (const string &path)
 	do
 	{
 		npath = start;
-		sprintf(numchar,"%03d",num++);
+		smprintf(numchar,4,"%03d",num++);
 		npath += numchar;
 		npath += end;
 		if (!fileExists(npath)) return npath;

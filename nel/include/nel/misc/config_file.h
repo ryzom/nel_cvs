@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.15 2001/01/19 09:17:43 lecroart Exp $
+ * $Id: config_file.h,v 1.16 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLMISC
 /**
  * CConfigFile class. Useful when you want to have a configuration file with variables.
  * It manages integers, real (double), and string basic types. A variable can be an array of
- * basic type. In this case, all elements of the array must be the same type.
+ * basic type. In this case, all elements of the array must have the same type.
  *
  * Example:
  *\code
@@ -231,47 +231,57 @@ private:
 
 struct EConfigFile : public Exception
 {
-	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Unknown Config File Exception"); return str; }
+	EConfigFile() { _Reason = "Unknown Config File Exception"; }
 };
 
 struct EBadType : public EConfigFile
 {
-	int VarType;
-	int WantedType;
-	std::string VarName;
-	EBadType (const std::string &varName, int varType, int wantedType) : VarName(varName), VarType (varType), WantedType (wantedType) {}
-	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Bad variable type, variable \"%s\" is a %s and not a %s", VarName.c_str (), CConfigFile::CVar::TypeName[VarType], CConfigFile::CVar::TypeName[WantedType]); return str; }
+	EBadType (const std::string &varName, int varType, int wantedType)
+	{
+		static char str[NLMISC::MaxCStringSize];
+		smprintf (str, NLMISC::MaxCStringSize, "Bad variable type, variable \"%s\" is a %s and not a %s", varName.c_str (), CConfigFile::CVar::TypeName[varType], CConfigFile::CVar::TypeName[wantedType]);
+		_Reason = str;
+	}
 };
 
 struct EBadSize : public EConfigFile
 {
-	int VarSize;
-	int VarIndex;
-	std::string VarName;
-	EBadSize (const std::string &varName, int varSize, int varIndex) : VarName(varName), VarSize (varSize), VarIndex (varIndex) {}
-	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Trying to access to the index %d but the variable \"%s\" size is %d", VarIndex, VarName.c_str (), VarSize); return str; }
+	EBadSize (const std::string &varName, int varSize, int varIndex)
+	{
+		static char str[NLMISC::MaxCStringSize];
+		smprintf (str, NLMISC::MaxCStringSize, "Trying to access to the index %d but the variable \"%s\" size is %d", varIndex, varName.c_str (), varSize);
+		_Reason = str;
+	}
 };
 
 struct EUnknownVar : public EConfigFile
 {
-	std::string VarName;
-	EUnknownVar (const std::string &varName) : VarName(varName) {}
-	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Unknown variable \"%s\"", VarName.c_str ()); return str; }
+	EUnknownVar (const std::string &varName)
+	{
+		static char str[NLMISC::MaxCStringSize];
+		smprintf (str, NLMISC::MaxCStringSize, "Unknown variable \"%s\"", varName.c_str ());
+		_Reason = str;
+	}
 };
 
 struct EParseError : public EConfigFile
 {
-	std::string FileName;
-	int CurrentLine;
-	EParseError (const std::string &fileName, int currentLine) : FileName(fileName), CurrentLine (currentLine) {}
-	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "Parse error on the \"%s\" file, line %d", FileName.c_str (), CurrentLine); return str; }
+	EParseError (const std::string &fileName, int currentLine)
+	{
+		static char str[NLMISC::MaxCStringSize];
+		smprintf (str, NLMISC::MaxCStringSize, "Parse error on the \"%s\" file, line %d", fileName.c_str (), currentLine);
+		_Reason = str;
+	}
 };
 
 struct EFileNotFound : public EConfigFile
 {
-	std::string FileName;
-	EFileNotFound (const std::string &fileName, int currentLine) : FileName(fileName) {}
-	virtual const char	*what () const throw () { static char str[1024]; smprintf (str, 1024, "File \"%s\" not found", FileName.c_str ()); return str; }
+	EFileNotFound (const std::string &fileName, int currentLine)
+	{
+		static char str[NLMISC::MaxCStringSize];
+		smprintf (str, NLMISC::MaxCStringSize, "File \"%s\" not found", fileName.c_str ());
+		_Reason = str;
+	}
 };
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.3 2001/01/08 17:24:41 berenguier Exp $
+ * $Id: system_info.cpp,v 1.4 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,7 +230,7 @@ string CSystemInfo::getMem ()
 	}
 
 	char mem[1024];
-	smprintf (mem, 1024, "physical memory: total: %d %s free: %d %s", ms.dwTotalPhys, ext2str[extt], ms.dwAvailPhys, ext2str[extf]);
+	smprintf (mem, 1024, "physical memory: total: %d %s free: %d %s", ms.dwTotalPhys+1, ext2str[extt], ms.dwAvailPhys+1, ext2str[extf]);
 	MemString = mem;
 
 #elif defined NL_OS_UNIX

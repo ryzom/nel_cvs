@@ -1,14 +1,14 @@
 /** \file types_nl.h
- * basic types, define and class
+ * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.24 2001/01/30 10:23:18 valignat Exp $
+ * $Id: types_nl.h,v 1.25 2001/01/30 13:44:16 lecroart Exp $
  *
  * Available constantes:
- * - NL_OS_WINDOWS		: windows operating system (32bits)
- * - NL_OS_UNIX			: linux operating system
+ * - NL_OS_WINDOWS		: windows operating system (32bits only)
+ * - NL_OS_UNIX			: unix operating system (GNU/Linux and other)
  *
- * - NL_BIG_ENDIAN		: other processor
  * - NL_LITTLE_ENDIAN	: x86 processor
+ * - NL_BIG_ENDIAN		: other processor
  *
  * - NL_DEBUG			: no optimization, full debug information, all log for the client
  * - NL_RELEASE			: full optimization, no debug information, no log for the client
@@ -36,8 +36,9 @@
 #ifndef NL_TYPES_H
 #define NL_TYPES_H
 
-#include	<string>
-#include	<exception>
+#include <string>
+#include <exception>
+
 
 // Operating systems definition
 
@@ -56,6 +57,7 @@
 #  define NL_LITTLE_ENDIAN
 #include <sys/types.h>
 #endif
+
 
 // Stupid Visual C++ warning
 
@@ -83,11 +85,12 @@
 #  endif // NL_CPU_INTEL
 #endif // NL_NO_ASM
 
+
 // Standard types
 
 /*
  * correct numeric types:	sint8, uint8, sint16, uint16, sint32, uint32, sint64, uint64, sint, uint
- * correct char types:		char, string, wchar, wstring
+ * correct char types:		char, string, ucchar, ucstring
  * correct misc types:		void, bool, float, double
  *
  */
@@ -150,16 +153,6 @@
  \endcode
  */
 
-/**
- * \typedef ucchar
- * An unicode character (16 bits)
- */
-
-/**
- * \typedef ucstring
- * An unicode string (16 bits per character)
- */
-
 #ifdef NL_OS_WINDOWS
 
 typedef	signed		__int8		sint8;
@@ -194,173 +187,13 @@ typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 #define	NL_I64	\
 		"ll"
 
-#endif
+#endif // NL_OS_UNIX
 
+
+/**
+ * \typedef ucchar
+ * An unicode character (16 bits)
+ */
 typedef	uint16	ucchar;
-
-/*
- * ucstring class, there's more converstion between char and ucchar
- */
-typedef std::basic_string<ucchar> ucstringbase;
-
-class ucstring : public ucstringbase
-{
-public:
-
-	ucstring () {}
-
-	ucstring (const ucstringbase &str) : ucstringbase (str) {}
-
-	ucstring (const std::string &str) : ucstringbase ()
-	{
-		*this=str;
-	}
-
-	ucstring &operator= (ucchar c)
-	{
-		resize (1);
-		operator[](0) = c;
-		return *this;
-	}
-
-	ucstring &operator= (const char *str)
-	{
-		resize (strlen (str));
-		for (sint i = 0; i < (sint) strlen (str); i++)
-		{
-			operator[](i) = str[i];
-		}
-		return *this;
-	}
-
-	ucstring &operator= (const std::string &str)
-	{
-		resize (str.size ());
-		for (sint i = 0; i < (sint) str.size (); i++)
-		{
-			operator[](i) = str[i];
-		}
-		return *this;
-	}
-
-	ucstring &operator= (const ucstringbase &str)
-	{
-		ucstringbase::operator =(str);
-		return *this;
-	}
-
-	ucstring &operator+= (ucchar c)
-	{
-		resize (size() + 1);
-		operator[](size()-1) = c;
-		return *this;
-	}
-
-	ucstring &operator+= (const char *str)
-	{
-		sint s = size();
-		resize (s + strlen(str));
-		for (sint i = 0; i < (sint) strlen(str); i++)
-		{
-			operator[](s+i) = str[i];
-		}
-		return *this;
-	}
-
-	ucstring &operator+= (const std::string &str)
-	{
-		sint s = size();
-		resize (s + str.size());
-		for (sint i = 0; i < (sint) str.size(); i++)
-		{
-			operator[](s+i) = str[i];
-		}
-		return *this;
-	}
-
-	ucstring &operator+= (const ucstringbase &str)
-	{
-		ucstringbase::operator +=(str);
-		return *this;
-	}
-
-
-	/// Converts the controlled ucstring to a string str
-	void toString (std::string &str) const
-	{
-		str.resize (size ());
-		for (sint i = 0; i < (sint) str.size (); i++)
-		{
-			str[i] = (char) operator[](i);
-		}
-	}
-
-	/// Converts the controlled ucstring and returns the resulting string
-	std::string toString () const
-	{
-		std::string str;
-		toString(str);
-		return str;
-	}
-
-};
-
-inline ucstring operator+(const ucstringbase &ucstr, ucchar c)
-{
-	ucstring	ret;
-	ret= ucstr;
-	ret+= c;
-	return ret;
-}
-
-inline ucstring operator+(const ucstringbase &ucstr, const char *c)
-{
-	ucstring	ret;
-	ret= ucstr;
-	ret+= c;
-	return ret;
-}
-
-inline ucstring operator+(const ucstringbase &ucstr, const std::string &c)
-{
-	ucstring	ret;
-	ret= ucstr;
-	ret+= c;
-	return ret;
-}
-
-inline ucstring operator+(ucchar c, const ucstringbase &ucstr)
-{
-	ucstring	ret;
-	ret= c;
-	ret += ucstr;
-	return ret;
-}
-
-inline ucstring operator+(const char *c, const ucstringbase &ucstr)
-{
-	ucstring	ret;
-	ret= c;
-	ret += ucstr;
-	return ret;
-}
-
-inline ucstring operator+(const std::string &c, const ucstringbase &ucstr)
-{
-	ucstring	ret;
-	ret= c;
-	ret += ucstr;
-	return ret;
-}
-
-
-/*
- * base class for all exceptions
- * possibility to add new functionnalities and behaviors.
- */
-class Exception : public std::exception
-{
-};
-
 
 #endif // NL_TYPES_H

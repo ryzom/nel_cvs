@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.42 2001/01/29 17:47:55 cado Exp $
+ * $Id: service.cpp,v 1.43 2001/01/30 13:44:16 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -184,20 +184,25 @@ void IService::getCustomParams()
 }
 
 
-/*
- * main
- */
+// The main function of the service
 sint IService::main (int argc, char **argv)
 {
 	try
 	{
 		_Server = NULL;
 
+		//
 		// Initialize debug stuffs, create displayers for nl* functions
+		//
+
 		InitDebug();
 		ErrorLog.addDisplayer (&sd);
 		WarningLog.addDisplayer (&sd);
 		InfoLog.addDisplayer (&sd);
+
+		//
+		// Parse argc argv into easy to use format
+		//
 
 		for (sint i = 0; i < argc; i++)
 		{
@@ -205,6 +210,10 @@ sint IService::main (int argc, char **argv)
 		}
 
 		setStatus (EXIT_SUCCESS);
+
+		//
+		// Initialize the network system
+		//
 
 		string localhost;
 		try
@@ -222,6 +231,10 @@ sint IService::main (int argc, char **argv)
 
 		// Set the localhost name and service name to the logger
 		CLog::setLocalHostAndService ( localhost, _Name );
+
+		//
+		// Redirect signal if needed (in release mode only)
+		//
 
 #ifdef NL_OS_WINDOWS
 #ifdef NL_RELEASE
@@ -241,6 +254,10 @@ sint IService::main (int argc, char **argv)
 #else // NL_OS_UNIX
 		InitSignal();
 #endif
+
+		//
+		// Ignore SIGPIPE (broken pipe) on unix system
+		//
 
 #ifdef NL_OS_UNIX
 		// Ignore the SIGPIPE signal
@@ -265,13 +282,19 @@ sint IService::main (int argc, char **argv)
 		}
 		nldebug ("SIGPIPE %s", IgnoredPipe?"Ignored":"Not Ignored");
 #endif // NL_OS_UNIX
-		
+
+		//
 		// Initialize server parameters
+		//
+
 		_Port = IService::_DefaultPort;
 		_Timeout = IService::_DefaultTimeout;
 		getCustomParams();
 
+		//
 		// Register the name to the NS (except for the NS itself)
+		//
+
 		if ( strcmp( IService::_Name, "NS" ) != 0 )
 		{
 			// Setup Net Displayer
@@ -358,12 +381,18 @@ sint IService::main (int argc, char **argv)
 			CMsgSocket::setTimeout( _Timeout );
 		}
 
-		// User service init
+		//
+		// Call the user service init
+		//
+
 		init ();
 
 		nlinfo( "Service ready" );
 
-		// user service update call each loop
+		//
+		// Call the user service update each loop and check files and network activity
+		//
+
 		while ( update() && !ExitSignalAsked)
 		{
 			CConfigFile::checkConfigFiles ();
@@ -372,40 +401,60 @@ sint IService::main (int argc, char **argv)
 	}
 	catch (EFatalError &)
 	{
-		setStatus (EXIT_FAILURE);
-
-		// somebody call nlerror, so we have to quit now, the message already display
+		// Somebody call nlerror, so we have to quit now, the message already display
 		// so we don't have to to anything
+		setStatus (EXIT_FAILURE);
 	}
 	catch (Exception &e)
 	{
+		// Catch NeL exception to release the system cleanly
 		setStatus (EXIT_FAILURE);
 
-		// we don't use nlerror macro because we don't want to generate an exit exception
-		nlError ("Error running the service \"%s\": %s", _Name, e.what());
+		try
+		{
+			nlerror ("NeL Exception: Error running the service \"%s\": %s", _Name, e.what());
+		}
+		catch (EFatalError &)
+		{
+			// Ignore the fatalerror
+		}
 	}
-#ifdef NL_RELEASE
 	catch (...)
 	{
-		// in release mode, we catch anything we can to release the system cleanly
+		// Catch anything we can to release the system cleanly
 		setStatus (EXIT_FAILURE);
 
-		// we don't use nlerror macro because we don't want to generate an exit exception
-		nlError ("Unknown external exception");
+		try
+		{
+			nlerror ("Unknown external exception");
+		}
+		catch (EFatalError &)
+		{
+			// Ignore the fatalerror
+		}
 	}
-#endif
+
 	try
 	{
+		//
+		// Call the user service release
+		//
+
 		release ();
 
-		if ( (strcmp( IService::_Name, "NS" ) != 0)
-		  && (strcmp( IService::_Name, "LS" ) != 0)  )
+		//
+		// Unregister the service if needed
+		//
+
+		if ( (strcmp( IService::_Name, "NS" ) != 0) && (strcmp( IService::_Name, "LS" ) != 0)  )
 		{
-			// Unregister service
 			CNamingClient::finalize();
 		}
 
-		// Close server
+		//
+		// Close server network
+		//
+
 		if (_Server != NULL )
 		{
 			delete _Server;
@@ -413,10 +462,37 @@ sint IService::main (int argc, char **argv)
 		}
 		nlinfo ("Service stopped");
 	}
+	catch (EFatalError &)
+	{
+		// Somebody call nlerror, so we have to quit now, the message already display
+		// so we don't have to to anything
+		setStatus (EXIT_FAILURE);
+	}
 	catch (Exception &e)
 	{
-		nlerror ("Error releasing service : %s", e.what());
 		setStatus (EXIT_FAILURE);
+		try
+		{
+			nlerror ("NeL Exception: Error releasing the service \"%s\": %s", _Name, e.what());
+		}
+		catch (EFatalError &)
+		{
+			// Ignore the fatalerror
+		}
+	}
+	catch (...)
+	{
+		// Catch anything we can to release the system cleanly
+		setStatus (EXIT_FAILURE);
+
+		try
+		{
+			nlerror ("Unknown external exception");
+		}
+		catch (EFatalError &)
+		{
+			// Ignore the fatalerror
+		}
 	}
 
 	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();

@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * <File description>
  *
- * $Id: mrm_builder.h,v 1.2 2000/12/21 16:05:24 berenguier Exp $
+ * $Id: mrm_builder.h,v 1.3 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,7 +204,7 @@ public:
 		if(eId==0) return CMRMEdge(Corner[0].Vertex, Corner[1].Vertex);
 		if(eId==1) return CMRMEdge(Corner[1].Vertex, Corner[2].Vertex);
 		if(eId==2) return CMRMEdge(Corner[2].Vertex, Corner[0].Vertex);
-		nlassert(false);
+		nlstop;
 		return CMRMEdge(-1,-1);
 	}
 	void	invalidAllIts()
@@ -216,14 +216,14 @@ public:
 		if(e== getEdge(0)) ValidIt0= false;
 		else if(e== getEdge(1)) ValidIt1= false;
 		else if(e== getEdge(2)) ValidIt2= false;
-		else nlassert(false);
+		else nlstop;
 	}
 	bool	validEdgeIt(const CMRMEdge &e)
 	{
 		if(e== getEdge(0)) return ValidIt0;
 		if(e== getEdge(1)) return ValidIt1;
 		if(e== getEdge(2)) return ValidIt2;
-		nlassert(false);
+		nlstop;
 		return false;
 	}
 

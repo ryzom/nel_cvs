@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.15 2001/01/29 15:35:59 coutelas Exp $
+ * $Id: text_context.h,v 1.16 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,15 +243,12 @@ public:
 	 * \param a string
 	 * \return the index where string has been inserted
 	 */
-	uint32 textPush(const char * format, ...) 
+	uint32 textPush(const char *format, ...) 
 	{ 
 		nlassert(_FontGen);
 
-		char str[1024];
-		va_list args;
-		va_start(args, format);
-		vsprintf(str, format, args);
-		va_end(args);
+		char *str;
+		NLMISC_CONVERT_VARGS (str, format);
 
 		NL3D::CComputedString cptdstr;
 		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
@@ -331,11 +328,8 @@ public:
 	{
 		nlassert(_FontGen);
 
-		char str[1024];
-		va_list args;
-		va_start(args, format);
-		vsprintf(str, format, args);
-		va_end(args);
+		char *str;
+		NLMISC_CONVERT_VARGS (str, format);
 
 		if(_Shaded)
 		{

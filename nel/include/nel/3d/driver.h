@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.51 2001/01/23 09:23:52 berenguier Exp $
+ * $Id: driver.h,v 1.52 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #define NL_DRV_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/matrix.h"
@@ -90,13 +91,9 @@ typedef std::vector<GfxMode> ModeList;
 
 //****************************************************************************
 // Exceptions.
-struct EBadDisplay : public Exception
+struct EBadDisplay : public NLMISC::Exception
 {
-	EBadDisplay(const std::string &reason) {_What= "EBadDisplay: " + reason;}
-	virtual const char	*what() const throw() {return _What.c_str();}
-
-private:
-	std::string	_What;
+	EBadDisplay(const std::string &reason) : Exception(reason) { }
 };
 
 

@@ -1,7 +1,7 @@
 /** \file thread.h
  * thread interface
  *
- * $Id: thread.h,v 1.8 2001/01/23 13:42:51 chafik Exp $
+ * $Id: thread.h,v 1.9 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_THREAD_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 
 
 namespace NLMISC {
@@ -101,9 +102,9 @@ public:
 };
 
 
-class EThread : public Exception
+struct EThread : public Exception
 {
-	virtual const char	*what() const throw() {return "Can't create new thread";}
+	virtual const char	*what() const throw() { return "Can't create new thread"; }
 };
 
 

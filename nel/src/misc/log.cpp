@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.21 2001/01/23 17:35:36 cado Exp $
+ * $Id: log.cpp,v 1.22 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,16 +144,12 @@ char *getFilename( char *lfilename )
  */
 void CLog::displayNL( const char *format, ... )
 {
-	// Build the string
-	char cstring [NLMISC_DBG_MAXSTRING]; // WARNING: buffer overflow hazard !
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format);
 
-	va_list args;
-	va_start( args, format );
-	vsprintf( cstring, format, args );
-	va_end( args );
-	strcat( cstring, "\n" );
+	strcat (str, "\n");
 
-	display (cstring);
+	display (str);
 }
 
 /*
@@ -161,13 +157,8 @@ void CLog::displayNL( const char *format, ... )
  */
 void CLog::display( const char *format, ... )
 {
-	// Build the string
-	char cstring [NLMISC_DBG_MAXSTRING]; // WARNING: buffer overflow hazard !
-
-	va_list args;
-	va_start( args, format );
-	vsprintf( cstring, format, args );
-	va_end( args );
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format);
 
 	time_t t;
 	time( &t );
@@ -189,7 +180,7 @@ void CLog::display( const char *format, ... )
 	{
 		ss << " " << getFilename(_File) << " " << _Line;
 	}
-	ss << ": " << cstring ;//<< endl;
+	ss << ": " << str ;//<< endl;
 
 	// Send to the attached displayers
 
@@ -209,19 +200,15 @@ void CLog::display( const char *format, ... )
  */
 void CLog::displayRawNL( const char *format, ... )
 {
-	// Build the string
-	char cstring [NLMISC_DBG_MAXSTRING]; // WARNING: buffer overflow hazard !
-	va_list args;
-	va_start( args, format );
-	vsprintf( cstring, format, args );
-	va_end( args );
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format);
 
-	strcat ( cstring, "\n" );
+	strcat (str, "\n");
 
 	// Send to the attached displayers
 	for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
 	{
-		(*idi)->display( cstring );
+		(*idi)->display( str );
 	}
 }
 
@@ -230,17 +217,13 @@ void CLog::displayRawNL( const char *format, ... )
  */
 void CLog::displayRaw( const char *format, ... )
 {
-	// Build the string
-	char cstring [NLMISC_DBG_MAXSTRING]; // WARNING: buffer overflow hazard !
-	va_list args;
-	va_start( args, format );
-	vsprintf( cstring, format, args );
-	va_end( args );
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format);
 
 	// Send to the attached displayers
 	for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
 	{
-		(*idi)->display( cstring );
+		(*idi)->display( str );
 	}
 }
 

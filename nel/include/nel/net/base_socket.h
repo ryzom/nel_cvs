@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.25 2001/01/29 17:47:55 cado Exp $
+ * $Id: base_socket.h,v 1.26 2001/01/30 13:44:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_BASE_SOCKET_H
 
 #include "nel/net/inet_address.h"
+#include "nel/misc/common.h"
 #include <sstream>
 
 
@@ -39,62 +40,37 @@ namespace NLNET {
  * \author Nevrax France
  * \date 2000
  */
-class ESocket : public Exception
+struct ESocket : public NLMISC::Exception
 {
-public:
-
-	/// Constructor
 	ESocket( const char *reason="", bool systemerror=true );
-
-	/// Returns the reason of the exception	
-	virtual const char	*what() const
-	{
-	  return _Reason.c_str();
-	}
-
-protected:
-
-	std::string	_Reason;
 };
 
 
 /// Exception raised when connect() fails
-class ESocketConnectionFailed : public ESocket
+struct ESocketConnectionFailed : public ESocket
 {
-public:
-	/// Constructor
-	ESocketConnectionFailed() : ESocket( "Connection failed" )
-	{}
+	ESocketConnectionFailed() : ESocket( "Connection failed" ) {}
 };
 
 
 /// Exception raised when a connection is gracefully closed by peer
-class ESocketConnectionClosed : public ESocket
+struct ESocketConnectionClosed : public ESocket
 {
-public:
-	/// Constructor
-	ESocketConnectionClosed() : ESocket( "Connection closed" )
-	{}
+	ESocketConnectionClosed() : ESocket( "Connection closed" ) {}
 };
 
 
 /// Exception raised when an unauthorized access has been done
-class EAccessDenied : public ESocket
+struct EAccessDenied : public ESocket
 {
-public:
-	/// Constructor
-	EAccessDenied( std::string s ): ESocket( (std::string("Access denied: ")+s).c_str(), false )
-	{}
+	EAccessDenied( std::string s ): ESocket( (std::string("Access denied: ")+s).c_str(), false ) {}
 };
 
 
 /// Exception raised when a the NS does not find the service looked-up
-class EServiceNotFound : public ESocket
+struct EServiceNotFound : public ESocket
 {
-public:
-	/// Constructor
-	EServiceNotFound( std::string s ): ESocket( (std::string("Service not found: ")+s).c_str(), false )
-	{}
+	EServiceNotFound( std::string s ): ESocket( (std::string("Service not found: ")+s).c_str(), false ) {}
 };
 
 

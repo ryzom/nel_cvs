@@ -515,6 +515,14 @@ SOURCE=.\color_edit.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\constraint_mesh_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\constraint_mesh_dlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\curve_edit.cpp
 # End Source File
 # Begin Source File
@@ -624,6 +632,14 @@ SOURCE=.\mesh_dlg.cpp
 # Begin Source File
 
 SOURCE=.\mesh_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\multi_tex_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\multi_tex_dlg.h
 # End Source File
 # Begin Source File
 

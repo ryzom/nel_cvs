@@ -86,9 +86,6 @@ for i in panoply/*.tga ; do
 	dest=`echo $i | sed -e 's%panoply/%dds/%g' | sed -e 's/tga/dds/g'`
 	dds=`echo $i | sed -e 's/.tga/.dds/g'`
 
-	echo dest=$dest
-	echo dds=$dds
-
 	# Convert the lightmap in 16 bits mode
 	if ( ! test -e $dest ) || ( test $i -nt $dest )
 	then

@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.10 2004/06/23 09:13:14 besson Exp $
+ * $Id: texture_mem.h,v 1.11 2004/06/29 13:34:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,29 +130,7 @@ public:
 	/** 
 	 * Get length of the memory file containing the texture
 	 */	
-	uint32 getLength() const { return _Length; }
-
-	/** 
-	 * Get width of the texture
-	 */	
-	uint32 getWidth(uint32 nNumMipmap=0) const 
-	{ 
-		if (_IsFile)
-			return CBitmap::getWidth(nNumMipmap);
-		else
-			return _TexWidth;
-	}
-
-	/** 
-	 * Get height of the texture
-	 */	
-	uint32 getHeight(uint32 nNumMipmap=0) const 
-	{ 
-		if (_IsFile)
-			return CBitmap::getHeight(nNumMipmap);
-		else
-			return _TexHeight;
-	}
+	uint32 getLength() const { return _Length; }	
 
 
 	/** 
@@ -199,6 +177,10 @@ public:
 	 */
 	static ITexture *Create1x1WhiteTex();	
 
+	// get width of RAM image
+	uint32 getImageWidth() const;
+	// get height of RAM image
+	uint32 getImageHeight() const;
 };
 
 

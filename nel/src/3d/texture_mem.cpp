@@ -1,7 +1,7 @@
 /** \file texture_mem.cpp
  * <File description>
  *
- * $Id: texture_mem.cpp,v 1.10 2004/02/19 09:45:58 vizerie Exp $
+ * $Id: texture_mem.cpp,v 1.11 2004/06/29 13:35:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,18 @@ ITexture *CTextureMem::Create1x1WhiteTex()
 void	CTextureMem::setAllowDegradation(bool allow)
 {
 	_AllowDegradation= allow;
+}
+
+///===========================================================================
+uint32 CTextureMem::getImageWidth() const
+{
+	return _TexWidth;
+}
+
+///===========================================================================
+uint32 CTextureMem::getImageHeight() const
+{
+	return _TexHeight;
 }
 
 

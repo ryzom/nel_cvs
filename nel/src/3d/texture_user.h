@@ -1,7 +1,7 @@
 /** \file texture_user.h
  * <File description>
  *
- * $Id: texture_user.h,v 1.8 2004/06/23 09:13:14 besson Exp $
+ * $Id: texture_user.h,v 1.9 2004/06/29 13:34:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -261,14 +261,14 @@ public:
 		((CTextureMem*)(ITexture*)_Texture)->touchRect(rect);
 	}
 
-	uint32 getWidth() const
+	uint32 getImageWidth() const
 	{
-		return ((CTextureMem*)(ITexture*)_Texture)->getWidth();
+		return ((CTextureMem*)(ITexture*)_Texture)->getImageWidth();
 	}
 
-	uint32 getHeight() const
+	uint32 getImageHeight() const
 	{
-		return ((CTextureMem*)(ITexture*)_Texture)->getHeight();
+		return ((CTextureMem*)(ITexture*)_Texture)->getImageHeight();
 	}
 
 };

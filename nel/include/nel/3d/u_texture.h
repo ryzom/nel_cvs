@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * <File description>
  *
- * $Id: u_texture.h,v 1.8 2004/06/23 09:13:26 besson Exp $
+ * $Id: u_texture.h,v 1.9 2004/06/29 13:32:28 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -215,9 +215,8 @@ public:
 	virtual uint8* getPointer() const = 0;
 	virtual void touch() = 0;
 	virtual void touchRect(const NLMISC::CRect& rect) = 0;
-	virtual uint32 getWidth() const = 0;
-	virtual uint32 getHeight() const = 0;
-
+	virtual uint32 getImageWidth() const = 0;
+	virtual uint32 getImageHeight() const = 0;
 };
 
 

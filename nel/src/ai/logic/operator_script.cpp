@@ -668,8 +668,8 @@ namespace NLAIAGENT
 
 		tQueue result; 
 
-		static NLAIAGENT::CStringVarName modeachieve_name("setModeAchieve");
-		static NLAIAGENT::CStringVarName modemaintain_name("setModeMaintain");
+		static NLAIAGENT::CStringVarName modeachieve_name("SetModeAchieve");
+		static NLAIAGENT::CStringVarName modemaintain_name("SetModeMaintain");
 		static NLAIAGENT::CStringVarName ispaused_name("IsPaused");
 		static NLAIAGENT::CStringVarName isactivable_name("IsActivable");
 		static NLAIAGENT::CStringVarName priority_name("GetPriority");

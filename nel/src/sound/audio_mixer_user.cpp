@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.16 2001/09/05 14:09:27 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.17 2001/09/05 14:45:50 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,34 +82,10 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL), _NbTracks(0), _CurEnvEf
 CAudioMixerUser::~CAudioMixerUser()
 {
 	nldebug( "AM: Releasing..." );
+
+	reset();
+
 	_Leaving = true;
-
-	// Stop tracks
-	uint i;
-	for ( i=0; i!=_NbTracks; i++ )
-	{
-		if ( ! _Tracks[i]->isAvailable() )
-		{
-			_Tracks[i]->getUserSource()->stop();
-		}
-		_Tracks[i]->DrvSource->setStaticBuffer( NULL );
-	}
-
-	// Env. sounds tree
-	if ( _EnvSounds != NULL )
-	{
-		//_EnvSounds->stop( true );
-		delete _EnvSounds;
-	}
-
-	// Remaining sources
-	set<CSourceUser*>::iterator ipsrc, ipOld;
-	for ( ipsrc=_Sources.begin(); ipsrc!=_Sources.end(); )
-	{
-		ipOld = ipsrc;
-		++ipsrc;
-		removeSource( ipOld, true ); // 3D sources, the envsounds were removed above
-	}
 
 	// EnvEffects
 	vector<CEnvEffect*>::iterator ipee;
@@ -133,6 +109,7 @@ CAudioMixerUser::~CAudioMixerUser()
 	}
 
 	// Tracks
+	uint i;
 	for ( i=0; i!=_NbTracks; i++ )
 	{
 		delete _Tracks[i];
@@ -147,6 +124,45 @@ CAudioMixerUser::~CAudioMixerUser()
 	_Instance = NULL;
 
 	nldebug( "AM: Released" );
+}
+
+
+/*
+ * Resets the audio system (deletes all the sources, include envsounds)
+ */
+void				CAudioMixerUser::reset()
+{
+	_Leaving = true;
+
+	// Stop tracks
+	uint i;
+	for ( i=0; i!=_NbTracks; i++ )
+	{
+		if ( ! _Tracks[i]->isAvailable() )
+		{
+			_Tracks[i]->getUserSource()->stop();
+		}
+		_Tracks[i]->DrvSource->setStaticBuffer( NULL );
+	}
+
+	// Env. sounds tree
+	if ( _EnvSounds != NULL )
+	{
+		//_EnvSounds->stop( true );
+		delete _EnvSounds;
+		_EnvSounds = NULL;
+	}
+
+	// Sources
+	set<CSourceUser*>::iterator ipsrc, ipOld;
+	for ( ipsrc=_Sources.begin(); ipsrc!=_Sources.end(); )
+	{
+		ipOld = ipsrc;
+		++ipsrc;
+		removeSource( ipOld, true ); // 3D sources, the envsounds were removed above
+	}
+
+	_Leaving = false;
 }
 
 

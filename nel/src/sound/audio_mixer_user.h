@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.15 2001/09/04 16:53:29 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.16 2001/09/05 14:45:50 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,8 @@ public:
 	 * (set 0 for "never auto-balance")
 	 */
 	virtual void				init( uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD );
+	/// Resets the audio system (deletes sources, envsounds and enveffects, but not sound buffers)
+	virtual void				reset();
 	/// Load environmental effects
 	virtual void				loadEnvEffects( const char *filename );
 	/** Load buffers. Returns the number of buffers successfully loaded.

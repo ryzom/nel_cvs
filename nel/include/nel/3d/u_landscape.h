@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.25 2004/02/05 09:49:15 besson Exp $
+ * $Id: u_landscape.h,v 1.26 2004/02/05 18:32:24 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,6 +117,8 @@ public:
 	virtual	void	getAllZoneLoaded(std::vector<std::string>	&zoneLoaded) const =0;
 	// invalidate all tiles (this forces the tile callback to be called again)
 	virtual void    invalidateAllTiles() = 0;
+	// Remove all zones forcing at next pass a massive load
+	virtual void	removeAllZones() = 0;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.27 2001/08/23 14:15:03 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.28 2001/08/24 16:57:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,7 +209,7 @@ CObjectViewer::CObjectViewer ()
 		}
 		catch (EUnknownVar &)
 		{
-			::MessageBox(NULL, "warning : 'sound_file' variable not defined", "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
+			//::MessageBox(NULL, "warning : 'sound_file' variable not defined", "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
 		}
 
 	}
@@ -406,7 +406,7 @@ void CObjectViewer::go ()
 		_SlotDlg->Playlist.setupMixer (_ChannelMixer, _AnimationDlg->getTime());
 
 		// Animate the automatic animation in the scene
-		CNELU::Scene.animate( (float)NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
+		CNELU::Scene.animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
 
 		// Eval channel mixer for transform
 		_ChannelMixer.eval (false);

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.9 2001/08/02 12:19:40 besson Exp $
+ * $Id: scene_group.cpp,v 1.10 2001/08/02 16:37:55 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -379,9 +379,9 @@ bool CInstanceGroup::addToScene (CScene& scene)
 	{
 		_ClusterInstances[i]->setWorldMatrix (_Root->getMatrix());
 
-		for (uint32 i = 0; i < _ClusterInstances[i]->getNbPortals(); ++i)
+		for (j = 0; j < _ClusterInstances[i]->getNbPortals(); ++j)
 		{
-			CPortal *pPortal = _ClusterInstances[i]->getPortal(i);
+			CPortal *pPortal = _ClusterInstances[i]->getPortal(j);
 			pPortal->setWorldMatrix (_Root->getMatrix());
 		}
 

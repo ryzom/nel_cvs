@@ -200,6 +200,10 @@ SOURCE=.\choose_sun_color_dlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\color_static.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\create_file_dlg.cpp
 # End Source File
 # Begin Source File
@@ -356,6 +360,10 @@ SOURCE=.\choose_pool_id.h
 # Begin Source File
 
 SOURCE=.\choose_sun_color_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\color_static.h
 # End Source File
 # Begin Source File
 

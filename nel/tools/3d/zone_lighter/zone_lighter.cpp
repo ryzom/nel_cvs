@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.29 2003/07/07 10:28:50 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.30 2004/02/13 10:10:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -682,84 +682,86 @@ int main(int argc, char* argv[])
 						{
 							// Get the instance shape name
 							string name=group->getShapeName (instance);
-
-							// Skip it?? use the DontCastShadowForExterior flag. See doc of this flag
-							if(group->getInstance(instance).DontCastShadow || group->getInstance(instance).DontCastShadowForExterior)
-								continue;
-
-							// PS ?
-							if (strlwr (CFile::getExtension (name)) == "ps")
-								continue;
-							
-							// Add a .shape at the end ?
-							if (name.find('.') == std::string::npos)
-								name += ".shape";
-
-							// Add path
-							string nameLookup = CPath::lookup (name, false, false);
-							if (!nameLookup.empty())
-								name = nameLookup;
-
-							// Find the shape in the bank
-							std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);
-							if (iteMap==shapeMap.end())
+							if (!name.empty())
 							{
-								// Input file
-								CIFile inputFile;
+								// Skip it?? use the DontCastShadowForExterior flag. See doc of this flag
+								if(group->getInstance(instance).DontCastShadow || group->getInstance(instance).DontCastShadowForExterior)
+									continue;
 
-								if (inputFile.open (name))
+								// PS ?
+								if (strlwr (CFile::getExtension (name)) == "ps")
+									continue;
+								
+								// Add a .shape at the end ?
+								if (name.find('.') == std::string::npos)
+									name += ".shape";
+
+								// Add path
+								string nameLookup = CPath::lookup (name, false, false);
+								if (!nameLookup.empty())
+									name = nameLookup;
+
+								// Find the shape in the bank
+								std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);
+								if (iteMap==shapeMap.end())
 								{
-									// Load it
-									CShapeStream stream;
-									stream.serial (inputFile);
+									// Input file
+									CIFile inputFile;
 
-									// Get the pointer
-									iteMap=shapeMap.insert (std::map<string, IShape*>::value_type (name, stream.getShapePointer ())).first;
+									if (inputFile.open (name))
+									{
+										// Load it
+										CShapeStream stream;
+										stream.serial (inputFile);
+
+										// Get the pointer
+										iteMap=shapeMap.insert (std::map<string, IShape*>::value_type (name, stream.getShapePointer ())).first;
+									}
+									else
+									{
+										// Error
+										nlwarning ("WARNING can't load shape %s\n", name.c_str());
+									}
 								}
-								else
+								
+								// Loaded ?
+								if (iteMap!=shapeMap.end())
 								{
-									// Error
-									nlwarning ("WARNING can't load shape %s\n", name.c_str());
-								}
-							}
-							
-							// Loaded ?
-							if (iteMap!=shapeMap.end())
-							{
-								// Build the matrix
-								CMatrix scale;
-								scale.identity ();
-								scale.scale (group->getInstanceScale (instance));
-								CMatrix rot;
-								rot.identity ();
-								rot.setRot (group->getInstanceRot (instance));
-								CMatrix pos;
-								pos.identity ();
-								pos.setPos (group->getInstancePos (instance));
-								CMatrix mt=pos*rot*scale;
+									// Build the matrix
+									CMatrix scale;
+									scale.identity ();
+									scale.scale (group->getInstanceScale (instance));
+									CMatrix rot;
+									rot.identity ();
+									rot.setRot (group->getInstanceRot (instance));
+									CMatrix pos;
+									pos.identity ();
+									pos.setPos (group->getInstancePos (instance));
+									CMatrix mt=pos*rot*scale;
 
-								// Add triangles
-								lighter.addTriangles (*iteMap->second, mt, vectorTriangle);
+									// Add triangles
+									lighter.addTriangles (*iteMap->second, mt, vectorTriangle);
 
-								/** If it is a lightable shape and we are dealing with the ig of the main zone,
-								  * add it to the lightable shape list
-								  */
-								IShape *shape = iteMap->second;
-								if (ite == instanceGroup.begin()  /* are we dealing with main zone */ 
-									&& zoneIgLoaded               /* ig of the main zone loaded successfully (so its indeed the ig of the first zone) ? */								
-									&& CZoneLighter::isLightableShape(*shape)
-								   )
-								{
-									lighter.addLightableShape(shape, mt);
-								}
+									/** If it is a lightable shape and we are dealing with the ig of the main zone,
+									  * add it to the lightable shape list
+									  */
+									IShape *shape = iteMap->second;
+									if (ite == instanceGroup.begin()  /* are we dealing with main zone */ 
+										&& zoneIgLoaded               /* ig of the main zone loaded successfully (so its indeed the ig of the first zone) ? */								
+										&& CZoneLighter::isLightableShape(*shape)
+									   )
+									{
+										lighter.addLightableShape(shape, mt);
+									}
 
-								/** If it is a water shape, add it to the lighter, so that it can check
-								  * which tiles are above / below water for this zone. The result is saved in the flags of tiles.
-								  * A tile that have their flags set to VegetableDisabled won't get setupped
-								  */
-								if (dynamic_cast<NL3D::CWaterShape *>(shape))
-								{
-									lighter.addWaterShape(static_cast<NL3D::CWaterShape *>(shape), mt);
+									/** If it is a water shape, add it to the lighter, so that it can check
+									  * which tiles are above / below water for this zone. The result is saved in the flags of tiles.
+									  * A tile that have their flags set to VegetableDisabled won't get setupped
+									  */
+									if (dynamic_cast<NL3D::CWaterShape *>(shape))
+									{
+										lighter.addWaterShape(static_cast<NL3D::CWaterShape *>(shape), mt);
+									}
 								}
 							}
 						}

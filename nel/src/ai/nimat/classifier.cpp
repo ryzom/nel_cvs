@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.13 2003/03/10 14:17:39 robert Exp $
+ * $Id: classifier.cpp,v 1.14 2003/03/14 14:29:47 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -605,6 +605,20 @@ void CMotivationEnergy::setMotivationPP(TMotivation motivationName, double PP)
 	nlassert(_SumValue >= 0);
 }
 
+/// Retourne la Puissance Propre d'une Motivation
+double CMotivationEnergy::getMotivationPP(TMotivation motivationName) const
+{
+	TEnergyByMotivation::const_iterator itEnergyByMotivation = _EnergyByMotivation.find(motivationName);
+	if (itEnergyByMotivation != _EnergyByMotivation.end()) 
+	{
+		return (*itEnergyByMotivation).second.PP;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
 /// Fixe la valeur d'une motivation
 void CMotivationEnergy::setMotivationValue(TMotivation motivationName, double value)
 {
@@ -613,6 +627,20 @@ void CMotivationEnergy::setMotivationValue(TMotivation motivationName, double va
 	_EnergyByMotivation[motivationName].Value = value;
 	_MotivationProviders[motivationName][motivationName].Value = value;
 	nlassert(_SumValue >= 0);
+}
+
+/// Retourne la valeur d'une motiation
+double	CMotivationEnergy::getMotivationValue(TMotivation motivationName) const
+{
+	TEnergyByMotivation::const_iterator itEnergyByMotivation = _EnergyByMotivation.find(motivationName);
+	if (itEnergyByMotivation != _EnergyByMotivation.end()) 
+	{
+		return (*itEnergyByMotivation).second.Value;
+	}
+	else
+	{
+		return -1;
+	}
 }
 
 /// Chaine de debug
@@ -729,12 +757,40 @@ void CMHiCSagent::setMotivationPP(TMotivation motivationName, double PP)
 	spreadMotivationReckon(motivationName);
 }
 
+/// Retourne la Puissance Propre d'une Motivation
+double CMHiCSagent::getMotivationPP(TMotivation motivationName) const
+{
+	std::map<TMotivation, CMotivateCS>::const_iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(motivationName);
+	if (itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end()) 
+	{
+		return (*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getMotivationPP(motivationName);
+	}
+	else
+	{
+		return -1;
+	}
+}
+
 /// Fixe la valeur d'une motivation
 void CMHiCSagent::setMotivationValue(TMotivation motivationName, double value)
 {
 	_ClassifiersAndMotivationIntensity[motivationName].MotivationIntensity.setMotivationValue(motivationName, value);
 	spreadMotivationReckon(motivationName);
 }
+
+double	CMHiCSagent::getMotivationValue(TMotivation motivationName) const
+{
+	std::map<TMotivation, CMotivateCS>::const_iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(motivationName);
+	if (itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end()) 
+	{
+		return (*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getMotivationValue(motivationName);
+	}
+	else
+	{
+		return -1;
+	}
+}
+
 
 void CMHiCSagent::spreadMotivationReckon(TMotivation CS)
 {
@@ -746,9 +802,16 @@ void CMHiCSagent::spreadMotivationReckon(TMotivation CS)
 		TAction lastActionName = _pMHiCSbase->getActionPart(CS, lastClassifierNumber);
 		if (_pMHiCSbase->isAnAction(lastActionName))
 		{
-			_ActionsExecutionIntensity[lastActionName].updateProvider(CS, (*itClassifiersAndMotivationIntensity).second.MotivationIntensity);
+			std::map<TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity =
+															_ActionsExecutionIntensity.find(lastActionName);
+			// Test if the action selected hasn't been removed.
+			if (itActionsExecutionIntensity == _ActionsExecutionIntensity.end()) return;
+
+			// Update the motivation provider for the action execution intensity.
+			(*itActionsExecutionIntensity).second.updateProvider(CS,
+																 (*itClassifiersAndMotivationIntensity).second.MotivationIntensity);
 			// If the action doesn't receive motivation any more, we remove it.
-			double energy = _ActionsExecutionIntensity[lastActionName].getSumValue();
+			double energy = (*itActionsExecutionIntensity).second.getSumValue();
 			if (energy <= 0)
 			{
 				_ActionsExecutionIntensity.erase(lastActionName);
@@ -756,10 +819,17 @@ void CMHiCSagent::spreadMotivationReckon(TMotivation CS)
 		}
 		else
 		{
-			_ClassifiersAndVirtualActionIntensity[lastActionName].MotivationIntensity.updateProvider(CS, (*itClassifiersAndMotivationIntensity).second.MotivationIntensity);
+			std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity = 
+														_ClassifiersAndVirtualActionIntensity.find(lastActionName);
+			// Test if the virtual action selected hasn't been removed.
+			if (itClassifiersAndVirtualActionIntensity == _ClassifiersAndVirtualActionIntensity.end()) return;
+			
+			// Update the motivation provider for the virtual action execution intensity.
+			(*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.updateProvider(CS,
+																(*itClassifiersAndMotivationIntensity).second.MotivationIntensity);
 			spreadMotivationReckon(lastActionName);
 			// If the CS doesn't receive motivation any more, we remove it.
-			double energy = _ClassifiersAndVirtualActionIntensity[lastActionName].MotivationIntensity.getSumValue();
+			double energy = (*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getSumValue();
 			if (energy <= 0)
 			{
 				_ClassifiersAndVirtualActionIntensity.erase(lastActionName);
@@ -770,17 +840,25 @@ void CMHiCSagent::spreadMotivationReckon(TMotivation CS)
 
 void CMHiCSagent::spreadMotivationReckon(TAction CS)
 {
-	std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity = _ClassifiersAndVirtualActionIntensity.find(CS);
-	nlassert(itClassifiersAndVirtualActionIntensity != _ClassifiersAndVirtualActionIntensity.end());
-	sint16 lastClassifierNumber = (*itClassifiersAndVirtualActionIntensity).second.ClassifierNumber;
+	std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensityORIGIN = 
+																	_ClassifiersAndVirtualActionIntensity.find(CS);
+	nlassert(itClassifiersAndVirtualActionIntensityORIGIN != _ClassifiersAndVirtualActionIntensity.end());
+	sint16 lastClassifierNumber = (*itClassifiersAndVirtualActionIntensityORIGIN).second.ClassifierNumber;
 	if (lastClassifierNumber >=0 )
 	{
 		TAction lastActionName = _pMHiCSbase->getActionPart(CS, lastClassifierNumber);
 		if (_pMHiCSbase->isAnAction(lastActionName))
 		{
-			_ActionsExecutionIntensity[lastActionName].updateProvider(CS, (*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity);
+			std::map<TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity =
+				_ActionsExecutionIntensity.find(lastActionName);
+			// Test if the action selected hasn't been removed.
+			if (itActionsExecutionIntensity == _ActionsExecutionIntensity.end()) return;
+			
+			// Update the motivation provider for the action execution intensity.
+			(*itActionsExecutionIntensity).second.updateProvider(CS,
+				(*itClassifiersAndVirtualActionIntensityORIGIN).second.MotivationIntensity);
 			// If the action doesn't receive motivation any more, we remove it.
-			double energy = _ActionsExecutionIntensity[lastActionName].getSumValue();
+			double energy = (*itActionsExecutionIntensity).second.getSumValue();
 			if (energy <= 0)
 			{
 				_ActionsExecutionIntensity.erase(lastActionName);
@@ -788,10 +866,17 @@ void CMHiCSagent::spreadMotivationReckon(TAction CS)
 		}
 		else
 		{
-			_ClassifiersAndVirtualActionIntensity[lastActionName].MotivationIntensity.updateProvider(CS, (*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity);
+			std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity = 
+				_ClassifiersAndVirtualActionIntensity.find(lastActionName);
+			// Test if the virtual action selected hasn't been removed.
+			if (itClassifiersAndVirtualActionIntensity == _ClassifiersAndVirtualActionIntensity.end()) return;
+			
+			// Update the motivation provider for the virtual action execution intensity.
+			(*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.updateProvider(CS,
+														(*itClassifiersAndVirtualActionIntensityORIGIN).second.MotivationIntensity);
 			spreadMotivationReckon(lastActionName);
 			// If the CS doesn't receive motivation any more, we remove it.
-			double energy = _ClassifiersAndVirtualActionIntensity[lastActionName].MotivationIntensity.getSumValue();
+			double energy = (*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getSumValue();
 			if (energy <= 0)
 			{
 				_ClassifiersAndVirtualActionIntensity.erase(lastActionName);
@@ -799,7 +884,6 @@ void CMHiCSagent::spreadMotivationReckon(TAction CS)
 		}
 	}
 }
-
 
 void CMHiCSagent::motivationCompute()
 {
@@ -1047,7 +1131,7 @@ void CMHiCSagent::behaviorTerminate(TBehaviorTerminate how_does_it_terminate)
 		{
 			TAction theAction = (*itIdByActions).first;
 			// Removing from action
-			_IdByActions.erase(itIdByActions);
+			_IdByActions.erase(theAction);
 
 			// Removing the virtual_classifier that may be associate
 			_ClassifiersAndVirtualActionIntensity.erase(theAction);

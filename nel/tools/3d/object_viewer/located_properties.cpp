@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.8 2001/07/04 12:18:42 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.9 2001/07/24 09:06:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 	//{{AFX_DATA_INIT(CLocatedProperties)
 	m_LimitedLifeTime = FALSE;
 	m_SystemBasis = FALSE;
+	m_DisgradeWithLOD = FALSE;
 	//}}AFX_DATA_INIT
 
 
@@ -91,6 +92,7 @@ void CLocatedProperties::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PARTICLE_NUMBER_POS, m_MaxNbParticles);
 	DDX_Check(pDX, IDC_LIMITED_LIFE_TIME, m_LimitedLifeTime);
 	DDX_Check(pDX, IDC_SYSTEM_BASIS, m_SystemBasis);
+	DDX_Check(pDX, IDC_DISGRADE_WITH_LOD, m_DisgradeWithLOD);
 	//}}AFX_DATA_MAP
 }
 
@@ -99,6 +101,7 @@ BEGIN_MESSAGE_MAP(CLocatedProperties, CDialog)
 	//{{AFX_MSG_MAP(CLocatedProperties)
 	ON_BN_CLICKED(IDC_LIMITED_LIFE_TIME, OnLimitedLifeTime)
 	ON_BN_CLICKED(IDC_SYSTEM_BASIS, OnSystemBasis)
+	ON_BN_CLICKED(IDC_DISGRADE_WITH_LOD, OnDisgradeWithLod)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -113,21 +116,6 @@ BOOL CLocatedProperties::OnInitDialog()
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ///////////////////////////////////////////
 
@@ -191,7 +179,7 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 
 	UpdateData(FALSE) ;
 
-	
+	m_DisgradeWithLOD = _Located->hasLODDegradation() ;
 
 	ShowWindow(SW_SHOW) ;
 }
@@ -218,4 +206,11 @@ void CLocatedProperties::OnSystemBasis()
 {
 	UpdateData() ;
 	_Located->setSystemBasis(m_SystemBasis ? true : false) ;
+}
+
+void CLocatedProperties::OnDisgradeWithLod() 
+{
+	UpdateData() ;
+	_Located->forceLODDegradation(m_DisgradeWithLOD ? true : false /* to avoid warning from MSVC */) ;
+	
 }

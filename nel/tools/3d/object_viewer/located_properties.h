@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.h,v 1.6 2001/07/04 12:18:42 vizerie Exp $
+ * $Id: located_properties.h,v 1.7 2001/07/24 09:06:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,7 @@ public:
 	CStatic	m_MaxNbParticles;
 	BOOL	m_LimitedLifeTime;
 	BOOL	m_SystemBasis;
+	BOOL	m_DisgradeWithLOD;
 	//}}AFX_DATA
 
 
@@ -164,6 +165,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnLimitedLifeTime();
 	afx_msg void OnSystemBasis();
+	afx_msg void OnDisgradeWithLod();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

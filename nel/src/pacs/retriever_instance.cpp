@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.5 2001/05/16 15:58:14 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.6 2001/05/17 09:05:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -262,12 +262,12 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 		{
 			lastSurf = surf;
 			_RetrieveTable[surf] = 0;
-			const CQuadLeaf	*leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(estimated);
+			const CQuadLeaf	*leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(localEstimated);
 			if (leaf == NULL)
 				continue;
 
 			float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
-			float	distance = (float)fabs(estimated.z-meanHeight);
+			float	distance = (float)fabs(localEstimated.z-meanHeight);
 			if (distance < bestDistance)
 			{
 				bestDistance = distance;
@@ -280,12 +280,12 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	if (bestSurf != -1)
 	{
 		retrieved.Surface = bestSurf;
-		retrieved.Estimation = CVector(estimated.x, estimated.y, bestMeanHeight);
+		retrieved.Estimation = CVector(localEstimated.x, localEstimated.y, bestMeanHeight);
 	}
 	else
 	{
 		retrieved.Surface = lastSurf;
-		retrieved.Estimation = estimated;
+		retrieved.Estimation = localEstimated;
 	}
 
 	return retrieved;

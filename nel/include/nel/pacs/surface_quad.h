@@ -1,7 +1,7 @@
 /** \file surface_quad.h
  * 
  *
- * $Id: surface_quad.h,v 1.4 2001/05/16 15:57:40 legros Exp $
+ * $Id: surface_quad.h,v 1.5 2001/05/17 09:05:00 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -181,6 +181,7 @@ public:
 
 	void						translate(const NLMISC::CVector &translation)
 	{
+		_BBox.setCenter(_BBox.getCenter()+translation);
 		if (_Root != NULL)
 			_Root->translate(translation);
 	}

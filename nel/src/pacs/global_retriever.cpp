@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.5 2001/05/16 16:26:24 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.6 2001/05/17 09:05:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,7 +135,8 @@ CVector		NLPACS::CGlobalRetriever::getInstanceCenter(uint x, uint y) const
 {
 	const float	zdim = 160.0f;
 	CVector	bmin = _BBox.getMin();
-	return CVector(bmin.x+zdim*((float)x+0.5f), bmin.y+zdim*((float)y+0.5f), 0.0f);
+	CVector	bmax = _BBox.getMax();
+	return CVector(bmin.x+zdim*((float)x+0.5f), bmax.y-zdim*((float)y+0.5f), 0.0f);
 }
 
 

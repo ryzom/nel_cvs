@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.11 2000/11/23 14:11:51 cado Exp $
+ * $Id: local_entity.cpp,v 1.12 2000/11/28 13:38:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,7 +180,7 @@ void CLocalEntity::computeVector()
 void CLocalEntity::propagateState()
 {
 	// Send
-	if ( ClientSocket->connected()	)
+	if ( ClientSocket->connected() && (id() != 0) )
 	{
 		CMessage msgout;
 		if ( groundMode() )

@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.h
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.h,v 1.3 2000/11/23 16:53:29 cado Exp $
+ * $Id: cubic_entity_interpolator.h,v 1.4 2000/11/28 13:38:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,6 @@ public:
 private:
 
 	NLMISC::CMatrix			_CubicMatrix;
-	NLMISC::CVector			_SrcHeading, _DestHeading;
 	IMovingEntity			_Dest;
 
 	static NLMISC::CMatrix	_BezierMatrix;

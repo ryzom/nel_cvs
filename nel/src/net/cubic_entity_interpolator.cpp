@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.cpp
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.cpp,v 1.4 2000/11/27 16:26:45 cado Exp $
+ * $Id: cubic_entity_interpolator.cpp,v 1.5 2000/11/28 13:38:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,9 +86,6 @@ void CCubicEntityInterpolator::begin( const IMovingEntity& src, const IMovingEnt
 	_Elapsed = 0;
 	_Active = true;
 
-	_SrcHeading = src.bodyHeading();
-	_DestHeading = dest.bodyHeading();
-
 	// Amplitude for interpolation
 	TPosUnit halfdist;
 	if ( src.trajVector().norm() == 0.0f ) // Warning: float
@@ -126,6 +123,7 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 	//es.setPos( _Dest.pos() );
 	//_Active = false;
 	CVector prevpos = es.pos();
+	prevpos.z = 0.0f; // assuming ground mode for now
 	_Elapsed += deltatime;
 	float ratio = _Elapsed / _Duration;
 	if ( ratio < 0.9 ) // not interpolating until 100%
@@ -135,13 +133,14 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 		v = _CubicMatrix * v;
 		es.setPos( v );
 		
-		// Continuity for body heading and trajectory vector
-		es.setBodyHeading( es.pos()-prevpos );
-		es.setTrajVector( es.bodyHeading() / deltatime );
+		// Continuity for trajectory vector
+		CVector p = es.pos();
+		p.z = 0.0f; // assuming ground mode for now
+		es.setTrajVector( (p-prevpos).normed() / deltatime );
 	}
 	else
 	{
-		es = _Dest;
+		es = _Dest; // setting the right pos
 		_Active = false;
 	}
 

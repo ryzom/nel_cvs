@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.71 2004/03/23 10:13:19 vizerie Exp $
+ * $Id: transform.cpp,v 1.72 2004/04/09 14:23:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/skeleton_model.h"
 #include "3d/scene.h"
 #include "3d/root_model.h"
+#include "3d/instance_user.h"
 #include "nel/misc/fast_floor.h"
 #include "nel/misc/hierarchical_timer.h"
 
@@ -452,7 +453,7 @@ void		CTransform::unfreezeHRC()
 void		CTransform::update()
 {
 	// test if the matrix has been changed in ITransformable.
-	if(ITransformable::compareMatrixDate(_LastTransformableMatrixDate))
+ 	if(ITransformable::compareMatrixDate(_LastTransformableMatrixDate))
 	{
 		_LastTransformableMatrixDate= ITransformable::getMatrixDate();
 		_TransformDirty= true;
@@ -991,6 +992,7 @@ void		CTransform::resetLighting()
 {
 	// if the model is already isNeedUpdateLighting, his light setup is reseted.
 	// so no need to reset again
+
 	if(isNeedUpdateLighting())
 		return;
 
@@ -1395,5 +1397,10 @@ void CTransform::setForceClipRoot(bool forceClipRoot)
 	setStateFlag(ForceClipRoot, forceClipRoot);
 }
 
+// ***************************************************************************
+CInstanceUser *CTransform::buildMatchingUserInterfaceObject(bool deleteIt)
+{
+	return new CInstanceUser(getOwnerScene(), this, deleteIt);
+}
 
 }

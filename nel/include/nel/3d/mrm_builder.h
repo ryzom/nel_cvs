@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * <File description>
  *
- * $Id: mrm_builder.h,v 1.1 2000/12/21 09:42:35 berenguier Exp $
+ * $Id: mrm_builder.h,v 1.2 2000/12/21 16:05:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,11 @@ public:
 		Deleted=false;
 		ValidIt0= ValidIt1= ValidIt2= false;
 	}
+	CMRMFaceBuild &operator=(const CMRMFace &f)
+	{
+		(CMRMFace &)(*this)=f;
+		return *this;
+	}
 
 	// Edges.
 	//=======
@@ -311,12 +316,11 @@ private:
 
 	/// \name Mesh Level methods.
 	// @{
-	/*void	init(const LMesh &baseMesh);
+	void	init(const CMRMMesh &baseMesh);
 	void	collapseEdges(sint nWantedFaces);
-	void	makeLODMesh(LSingleLODMesh &lodMesh);
-	void	saveCoarserMesh(LMesh &coarserMesh);
-	void	makeFromMesh(const LMesh &baseMesh, LSingleLODMesh &lodMesh, LMesh &coarserMesh, sint nWantedFaces);
-	*/
+	//void	makeLODMesh(LSingleLODMesh &lodMesh);
+	void	saveCoarserMesh(CMRMMesh &coarserMesh);
+	//void	makeFromMesh(const CMRMMesh &baseMesh, LSingleLODMesh &lodMesh, CMRMMesh &coarserMesh, sint nWantedFaces);
 	// @}
 
 

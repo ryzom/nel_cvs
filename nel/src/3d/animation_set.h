@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.3 2001/07/19 15:41:06 corvazier Exp $
+ * $Id: animation_set.h,v 1.4 2002/04/12 16:17:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NL3D {
  * \author Nevrax France
  * \date 2001
  */
-	class CAnimationSet : public NLMISC::CRefCount
+class CAnimationSet : public NLMISC::CRefCount
 {
 public:
 
@@ -201,6 +201,23 @@ public:
 
 	/// Serial the template
 	void serial (NLMISC::IStream& f);
+
+	/**
+	  * Helper method.	  
+	  * Load an animation set from animation files in a directory, then call build().
+	  * \param path Path to look at for animations
+	  * \param recurse wether to recurse to load animation in sub folders
+	  * \param ext the extension for animation files
+	  * \param wantWarningMessage displays warning if some of the files could not be loaded
+	  * \return true if everything loaded ok
+	  */
+	bool			loadFromFiles
+					(
+						const std::string &path, 
+						bool recurse = true,
+						const char *ext = "anim",
+						bool wantWarningMessage = true
+					);
 
 private:
 	std::vector <CAnimation*>		_Animation;

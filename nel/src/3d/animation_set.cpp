@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.14 2002/02/28 12:59:49 besson Exp $
+ * $Id: animation_set.cpp,v 1.15 2002/04/12 16:17:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,12 @@
 
 #include "3d/animation_set.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/path.h"
+#include "nel/misc/file.h"
+
+
+#include <memory>
+
 
 
 namespace NL3D 
@@ -146,6 +152,39 @@ void CAnimationSet::serial (NLMISC::IStream& f)
 }
 
 // ***************************************************************************
+bool CAnimationSet::loadFromFiles(const std::string &path, bool recurse /* = true*/, const char *ext /*= "anim"*/, bool wantWarningMessage /*= true*/)
+{
+	bool everythingOk = true;
+	std::vector<std::string> anims;
+	NLMISC::CPath::getPathContent(path, recurse, false, true, anims);
+	for (uint k = 0; k < anims.size(); ++k)
+	{
+		std::string fileExt = NLMISC::CFile::getExtension(anims[k]);
+		if (fileExt == ext) // an animation file ?
+		{
+			try
+			{
+				NLMISC::CIFile	iFile;
+				iFile.open(anims[k]);
+				std::auto_ptr<CAnimation> anim(new CAnimation);
+				anim->serial(iFile);
+				addAnimation(NLMISC::CFile::getFilenameWithoutExtension(anims[k]).c_str(), anim.release());
+				iFile.close();
+
+			}
+			catch (NLMISC::EStream &e)
+			{
+				if (wantWarningMessage)
+				{
+					nlinfo("Unable to load an automatic animation : %s", e.what());
+				}
+				everythingOk = false;
+			}
+		}
+	}
+	build();
+	return everythingOk;
+}
 
 
 } // NL3D

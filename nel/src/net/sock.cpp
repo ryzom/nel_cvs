@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.13 2001/10/25 15:58:47 lecroart Exp $
+ * $Id: sock.cpp,v 1.14 2001/11/27 15:01:06 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -412,9 +412,13 @@ void CSock::setLocalAddress()
  */
 CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exception )
 {
+	uint32 realLen = len;
 	TTicks before = CTime::getPerformanceTime();
 	len = ::send( _Sock, (const char*)buffer, len, 0 );
 	_MaxSendTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxSendTime );
+
+	nldebug ("L0: CSock::send(): Sent %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+	
 	if ( len == SOCKET_ERROR )
 	{
 		if ( ERROR_NUM == ERROR_WOULDBLOCK )
@@ -447,8 +451,14 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 	if ( _NonBlocking )
 	{
 		// Receive incoming message (only the received part)
+
+		uint32 realLen = len;
+
 		TTicks before = CTime::getPerformanceTime();
 		len = ::recv( _Sock, (char*)buffer, len, 0 );
+
+		nldebug ("L0: CSock::receive(): NBM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+
 		_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
 		switch ( len )
 		{
@@ -493,11 +503,18 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 		// Receive incoming message, waiting until a complete message has arrived
 		uint total = 0;
 		uint brecvd;
+		
+		uint32 realLen = len;
+		
 		while ( total < len )
 		{
 			TTicks before = CTime::getPerformanceTime();
 			brecvd = ::recv( _Sock, (char*)(buffer+total), len-total, 0 );
+
+			nldebug ("L0: CSock::receive(): BM Received %d bytes to %d res: %d (%d)", realLen, _Sock, len, ERROR_NUM);
+
 			_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
+			
 			switch ( brecvd )
 			{
 				// Graceful disconnection

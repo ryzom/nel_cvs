@@ -1,7 +1,7 @@
 /** \file path_content.cpp
  *	list the path content with details on each files
  *
- * $Id: path_content_diff.cpp,v 1.3 2003/01/06 15:33:25 coutelas Exp $
+ * $Id: path_content_diff.cpp,v 1.4 2003/01/14 12:12:12 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -31,113 +31,129 @@ using namespace std;
 using namespace NLMISC;
 
 
-
 //-----------------------------------------------
 //	main
 //
 //-----------------------------------------------
-sint main( sint argc, char ** argv )
+int main( int argc, char ** argv )
 {
-	if( argc < 3 )
+	if( argc < 3 || argc > 4 )
 	{
-		printf("\n");
-		printf("Build a listing of the diff of two path contents\n\n");
-		printf("PATH_CONTENT <ref path> <new path>\n");
-		return 1;
+		printf("Build a listing of the diff of two path contents and copy new files in <dest_path>\n");
+		printf("usage: path_content <ref_path> <new_path> [<dest_path>]\n");
+		return EXIT_FAILURE;
 	}
 	
+	string DestPath;
+	if( argc == 4 )
+	{
+		DestPath = CPath::standardizeDosPath(argv[3]);
+		if(CFile::isExists(DestPath))
+		{
+			if(!CFile::isDirectory(DestPath))
+			{
+				printf("'%s' is not a directory\n", DestPath.c_str());
+				return EXIT_FAILURE;
+			}
+		}
+		else
+		{
+			if (!CFile::createDirectory(DestPath))
+			{
+				printf("Can't create directory: '%s'\n", DestPath.c_str());
+				return EXIT_FAILURE;
+			}
+		}
+	}
+
 	// add ref path in search paths
 	string refPath(argv[1]);
 	CPath::addSearchPath(refPath, true, false);
 
-	// content of ref path
-	vector<string> refPathContent;
-	CPath::getPathContent(refPath, true, true, true, refPathContent);
-
 	// content of new path
 	string newPath(argv[2]);
 	vector<string> newPathContent;
-	CPath::getPathContent(newPath, true, true, true, newPathContent);
+	CPath::getPathContent(newPath, true, false, true, newPathContent);
 	
-	// open output file
-	/*
-	sint lastSeparator = CFile::getLastSeparator(newPath);
-	if( lastSeparator != -1 )
-	{
-		newPath = newPath.substr(lastSeparator+1);
-	}
-	string outputFileName = newPath + ".txt";
-	*/
-	string outputFileName = "path_diff.txt";
-	COFile output;
-	if( !output.open(outputFileName,false,true) )
+	string outputFileName = CFile::findNewFile("path_content_diff.txt");
+	FILE *output = fopen (outputFileName.c_str(), "wt");
+	if( output == NULL )
 	{
 		nlwarning("Can't open output file %s",outputFileName.c_str());
-		return 1;
+		return EXIT_FAILURE;
 	}
+
+	uint32 LastDisplay = 0, curFile = 0;
 
 	// get the list of new or modified files
 	vector<string> differentFiles;
-	vector<string>::const_iterator itFile;
-	for( itFile = newPathContent.begin(); itFile != newPathContent.end(); ++itFile )
+	for( vector<string>::const_iterator itFile = newPathContent.begin(); itFile != newPathContent.end(); ++itFile )
 	{
 		string newFileName = *itFile;
 		string newFileNameShort = CFile::getFilename(newFileName);
 
+		curFile++;
+
+		if (CTime::getSecondsSince1970() > LastDisplay + 5)
+		{
+			printf("%d on %d files, %d left\n", curFile, newPathContent.size(), newPathContent.size() - curFile);
+			LastDisplay = CTime::getSecondsSince1970();
+		}
+
 		if( CFile::getExtension(newFileNameShort) == "bnp" )
 		{
-			nlwarning("%s is a big file, content of big files is not managed", newFileName.c_str());
+			nlwarning ("BNP PROBLEM: %s is a big file, content of big files is not managed", newFileName.c_str());
+			nlwarning ("The <new_path> must *not* contains .bnp files");
 		}
-		
+
 		bool keepIt = false;
-		
-		// check if file is new
-		string refFileName = CPath::lookup(newFileNameShort, false, false, true);
-		if( refFileName == "" )
-		{
-			keepIt = true;
-		}
 
-		uint32 refSize = CFile::getFileSize( refFileName );
-		uint32 newSize = CFile::getFileSize( newFileName );
-		if( refSize != newSize )
+		string refFileName = CPath::lookup(newFileNameShort, false, false, false);
+		if( refFileName.empty() )
 		{
 			keepIt = true;
+			nlinfo ("NEW FILE    : %s", newFileName.c_str());
 		}
-		
-		uint32 refModificationDate = CFile::getFileModificationDate( refFileName );
-		uint32 newModificationDate = CFile::getFileModificationDate( newFileName );		
-		if( newModificationDate != refModificationDate )
+		else
 		{
-			keepIt = true;
-		}
+			uint32 refModificationDate = CFile::getFileModificationDate( refFileName );
+			uint32 newModificationDate = CFile::getFileModificationDate( newFileName );		
 
-		uint32 newCreationDate = CFile::getFileCreationDate( newFileName );
+			if( newModificationDate > refModificationDate )
+			{
+				keepIt = true;
+				nlinfo ("DATE CHANGED: %s", newFileName.c_str());
+			}
+			else
+			{
+				// same date, must be same size
+				uint32 refSize = CFile::getFileSize( refFileName );
+				uint32 newSize = CFile::getFileSize( newFileName );
+				if( refSize != newSize )
+				{
+					nlwarning ("DATE PROBLEM: file '%s' have the same date but not the same size than '%s'", newFileName.c_str(), refFileName.c_str());
+				}
+			}
+		}
 
 		if( keepIt )
 		{
 			differentFiles.push_back( newFileName );
 
+			//uint32 newCreationDate = CFile::getFileCreationDate( newFileName );
 			//string outputLine = newFileName + "\t\t"+toString(newSize) + "\t" + toString(newModificationDate) + "\t" + toString(newCreationDate) + "\n";
 			string outputLine = newFileName + "\n";
-			output.serialBuffer((uint8*)(const_cast<char*>(outputLine.data())),outputLine.size());
+			fprintf (output, outputLine.c_str());
 			
-			if( argc > 3 )
+			if( !DestPath.empty() )
 			{
-				string systemStr = "copy /Y " + newFileName + " " + string(argv[3]);
-				uint i;
-				for (i = 6; i < systemStr.size(); ++i )
-				{
-					if( systemStr[i] == '/' ) systemStr[i] = '\\';
-				}
-				nlinfo("%s",systemStr.c_str());
+				string systemStr = "copy /Y " + CPath::standardizeDosPath(newFileName) + " " + DestPath;
+				//nlinfo("System call '%s'",systemStr.c_str());
 				system( systemStr.c_str() );
 			}
 		}
-
-
 	}
 
-	return 0;	
+	return EXIT_SUCCESS;
 }
 

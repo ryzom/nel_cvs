@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.68 2003/11/25 14:40:32 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.69 2003/11/27 16:51:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,9 @@ CParticleSystem::TGlobalVectorValuesMap		CParticleSystem::_GlobalVectorValuesMap
 #ifdef NL_DEBUG
 uint	CParticleSystem::_NumInstances = 0;
 #endif
+
+
+static const float PS_MIN_TIMEOUT = 1.f; // the test that check if there are no particles left 
 
 ///////////////////////////////////
 // CPaticleSystem implementation //
@@ -309,7 +312,7 @@ void CParticleSystem::stepLocated(TPSProcessPass pass, TAnimationTime et, TAnima
 
 
 ///=======================================================================================
-inline void CParticleSystem::updateLODRatio()
+void CParticleSystem::updateLODRatio()
 {
 	// temp
 	CVector sysPos = getSysMat().getPos();
@@ -1470,7 +1473,7 @@ TAnimationTime CParticleSystem::getDelayBeforeDeathConditionTest() const
 	{
 		_DelayBeforeDieTest = evalDuration();
 	}
-	return _DelayBeforeDieTest;
+	return std::max(PS_MIN_TIMEOUT, _DelayBeforeDieTest);
 }
 
 ///=======================================================================================

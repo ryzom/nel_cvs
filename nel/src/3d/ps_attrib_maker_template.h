@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.2 2001/06/19 16:02:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,7 +133,7 @@ protected:
   *  So it may be slow, but it is exact.
   *  It work with most type, but some of them may need special  blending between value : 
   *  if so you must specialize the template function PSValueBlend defined in this file
-  *  defined above to do the job...
+  *  to do the job...
   *  To use this, just derive a class, create a ctor, and declare it to the class registry 
   *  
   *  in the ctor, you should call _F.setValue to init the functor object.

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_particle.h,v 1.2 2001/06/19 16:02:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -409,6 +409,41 @@ class CPSRotated3DPlaneParticle
 		CPlaneBasis _PlaneBasis ; // constant basis..
 } ;
 
+
+/** This add a hint to rotated particle : only a few one are rotated, and the other are duplcated
+ * 
+ */
+
+struct CPSHintParticleRotateTheSame
+{
+	/** Tells that all particles are turning in the same manner, and only have a rotationnal bias
+	 *  This is faster then other method. Any previous set scheme for 3d rotation is kept.
+	 *	\param: the number of rotation configuration we have. The more high it is, the slower it'll be
+	 *          If this is too low, a lot of particles will have the same orientation	           	 
+	 *          If it is 0, then the hint is disabled
+ 	 *  \param  minAngularVelocity : the maximum angular velocity for particle rotation	 
+	 *  \param  maxAngularVelocity : the maximum angular velocity for particle rotation	 
+	 *  \see    CPSRotated3dPlaneParticle
+	 */
+	virtual void hintRotateTheSame(uint32 nbConfiguration
+							, float minAngularVelocity = NLMISC::Pi
+							, float maxAngularVelocity = NLMISC::Pi
+						  ) = 0 ;
+
+	/** disable the hint 'hintRotateTheSame'
+	 *  The previous set scheme for roation is used
+	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
+	 */
+	virtual void disableHintRotateTheSame(void) = 0 ;
+	
+
+	/** check wether a call to hintRotateTheSame was performed
+	 *  \return 0 if the hint is disabled, the number of configurations else
+	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
+	 */
+
+	virtual uint32 checkHintRotateTheSame(float &minAngularVelocity, float &maxAngularVelocity) const = 0 ;
+} ;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1046,6 +1081,7 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle, public CPSColored
 
 class CPSFace       : public CPSQuad					
 					, public CPSRotated3DPlaneParticle
+					, public CPSHintParticleRotateTheSame
 {
 
 public:
@@ -1090,8 +1126,10 @@ public:
 	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
 	 */
 
-	uint32 checkHintRotateTheSame(void) const
+	uint32 checkHintRotateTheSame(float &min, float &max) const
 	{
+		min = _MinAngularVelocity ;
+		max = _MaxAngularVelocity ;
 		return _PrecompBasis.size() ; 
 	}
 
@@ -1309,7 +1347,8 @@ protected:
  */
 
 class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle
-				, public CPSRotated3DPlaneParticle
+						, public CPSRotated3DPlaneParticle
+						, public CPSHintParticleRotateTheSame
 {
 public:	
 	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL), _Touched(false)
@@ -1351,8 +1390,10 @@ public:
 	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
 	 */
 
-	uint32 checkHintRotateTheSame(void) const
+	uint32 checkHintRotateTheSame(float &min, float &max) const
 	{
+		min = _MinAngularVelocity ;
+		max = _MaxAngularVelocity ;
 		return _PrecompBasis.size() ; 
 	}
 

@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.2 2001/06/19 16:02:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,8 @@
 #define NL_PLANE_BASIS_MAKER_H
 
 #include "nel/misc/types_nl.h"
-#include "ps_attrib_maker_template.h"
+#include "3d/ps_attrib_maker_template.h"
+#include "3d/ps_plane_basis.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.21 2002/08/23 16:32:52 berenguier Exp $
+ * $Id: texture_far.cpp,v 1.22 2002/08/27 14:29:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1538,6 +1538,9 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 // ***************************************************************************
 
 
+#ifdef NL_OS_WINDOWS
+
+
 // ***************************************************************************
 inline	void	NL3D_asmModulateLineColors(CRGBA *dst, const CRGBA *src0, const CRGBA *src1, 
 	uint len, uint	src0DeltaX, uint dstDeltaX)
@@ -1653,6 +1656,20 @@ inline	void	NL3D_asmModulateAndBlendLineColors(CRGBA *dst, const CRGBA *src0, co
 	}
 }
 
+
+#else // NL_OS_WINDOWS
+
+// Dummy for non-windows platforms
+inline	void	NL3D_asmModulateLineColors(CRGBA *dst, const CRGBA *src0, const CRGBA *src1, 
+	uint len, uint	src0DeltaX, uint dstDeltaX)
+{
+}
+inline	void	NL3D_asmModulateAndBlendLineColors(CRGBA *dst, const CRGBA *src0, const CRGBA *src1, 
+	uint len, uint	src0DeltaX, uint dstDeltaX)
+{
+}
+
+#endif
 
 // ***************************************************************************
 void NL3D_drawFarTileInFarTexture (const NL3D_CComputeTileFar* pTileFar)

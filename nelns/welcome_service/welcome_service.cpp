@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.14 2002/03/26 09:45:15 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.15 2002/09/16 14:52:58 lecroart Exp $
  *
  */
 
@@ -310,26 +310,26 @@ void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint
 void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 {
 	CMessage msgout ("WS_IDENT");
-	string shardName;
+	sint32 shardId;
 	
 	try
 	{
-		shardName = IService::getInstance()->ConfigFile.getVar ("ShardName").asString();
+		shardId = IService::getInstance()->ConfigFile.getVar ("ShardId").asInt();
 	}
 	catch(Exception &)
 	{
-		shardName = "::";
+		shardId = -1;
 	}
 
-	if (shardName.empty())
+	if (shardId == -1)
 	{
-		nlerror ("ShardName variable in the config file must not be empty, set it to \"::\" for the default behavior");
+		nlerror ("ShardId variable in the config file must be valid (>0)");
 	}
 
-	msgout.serial (shardName);
+	msgout.serial (shardId);
 	CUnifiedNetwork::getInstance()->send (serviceName, msgout);
 
-	nlinfo ("Connected to LS and sent the shardName '%s'", shardName.c_str());
+	nlinfo ("Connected to LS and sent the shardId '%d'", shardId);
 }
 
 

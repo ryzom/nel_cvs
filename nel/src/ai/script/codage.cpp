@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.21 2002/01/03 15:06:38 chafik Exp $
+ * $Id: codage.cpp,v 1.22 2002/01/17 12:16:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,22 +131,26 @@ namespace NLAISCRIPT
 
 #ifdef NL_DEBUG 
 	bool NL_AI_DEBUG_SERVER = 0;
+	std::string Marker;
+	sint kMarker = 0;
 #endif
 
-
-#ifdef PROFILE
-	NLMISC::TTicks TimeCompile = 0;
-	NLMISC::TTicks NbCompile = 0;
-
-#endif
 
 
 	const NLAIAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run(CCodeContext &p)
 	{		
 		NLAIAGENT::TProcessStatement i = NLAIAGENT::processIdle;
-
-#ifdef PROFILE
-		NLMISC::TTime time = NLMISC::CTime::getPerformanceTime();
+#ifdef NL_DEBUG
+		if(NL_AI_DEBUG_SERVER)
+		{
+			Marker += "\t";
+			kMarker ++;
+#ifdef NL_OS_WINDOWS
+			std::string chaine = std::string("\n\n") + Marker;
+			chaine += NLAIC::stringGetBuild("Begin with sp = %d \n\n", p.Stack.CIndexStackPointer::operator int());
+			OutputDebugString(chaine.c_str());
+#endif
+		}
 #endif
 		
 		while(i != NLAIAGENT::processEnd)
@@ -154,12 +158,23 @@ namespace NLAISCRIPT
 			i = runOpCode(p);
 		}
 
-#ifdef PROFILE
-		time = NLMISC::CTime::getPerformanceTime() - time;
-		//if(time)
+
+#ifdef NL_DEBUG
+		if(NL_AI_DEBUG_SERVER)
 		{
-			TimeCompile += time;
-			NbCompile ++;			
+			std::string chaine = std::string("\n\n") + Marker;
+#ifdef NL_OS_WINDOWS			
+			chaine += NLAIC::stringGetBuild("End with sp = %d \n\n", p.Stack.CIndexStackPointer::operator int());
+			OutputDebugString(chaine.c_str());
+#endif
+			kMarker --;			
+			sint i;
+			chaine = "";
+			for(i = 0; i < (sint)kMarker; i ++)
+			{
+				chaine += Marker [i];				
+			}
+			Marker = chaine;
 		}
 #endif
 		_Ip = 0;
@@ -174,9 +189,12 @@ namespace NLAISCRIPT
 #ifdef NL_DEBUG
 		if(NL_AI_DEBUG_SERVER)
 		{
-			std::string chaine;
-			op.getDebugResult(chaine,p);
+			std::string chaine,chainedebug;
+			op.getDebugResult(chainedebug,p);
+			if(kMarker) chaine = Marker + chainedebug;
+			else  chaine = chainedebug;
 			chaine += "\n";
+
 #ifdef NL_OS_WINDOWS
 			OutputDebugString(chaine.c_str());
 #endif

@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.9 2001/08/01 13:15:57 portier Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.10 2002/01/17 12:16:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,12 @@
 
 namespace NLAISCRIPT
 {
+	void CLibMemberMethod::getDebugResult(std::string &str,CCodeContext &context) const
+	{		
+		const NLAIAGENT::IObjectIA *obj = (context.Self);
+		str = NLAIC::stringGetBuild("methode %s",obj->getMethodeMemberDebugString(0,_Id));	
+	}
+
 	NLAIAGENT::TProcessStatement CLibMemberMethod::runOpCode(CCodeContext &context)
 	{
 		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
@@ -50,6 +56,12 @@ namespace NLAISCRIPT
 		return r.ResultState;
 	}
 
+	void CLibMemberInheritedMethod::getDebugResult(std::string &str,CCodeContext &context) const
+	{		
+		const NLAIAGENT::IObjectIA *obj = (context.Self);
+		str = NLAIC::stringGetBuild("methode %s",obj->getMethodeMemberDebugString(_Inheritance,_Id));
+	}
+
 	NLAIAGENT::TProcessStatement CLibMemberInheritedMethod::runOpCode(CCodeContext &context)
 	{
 		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
@@ -70,6 +82,18 @@ namespace NLAISCRIPT
 		context.Param.back()->release();
 		context.Param.pop_back();	
 		return r.ResultState;
+	}
+
+	void CLibMemberMethodi::getDebugResult(std::string &str,CCodeContext &context) const
+	{		
+		const NLAIAGENT::IObjectIA *obj = (context.Self);
+		std::list<sint32>::const_iterator it = _I.begin();
+		while(it != _I.end())
+		{
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
+		}		
+
+		str = NLAIC::stringGetBuild("methode %s",obj->getMethodeMemberDebugString(_Inheritance,_Id));
 	}
 
 	NLAIAGENT::TProcessStatement CLibMemberMethodi::runOpCode(CCodeContext &context)
@@ -105,6 +129,11 @@ namespace NLAISCRIPT
 		return r.ResultState;
 	}
 
+	void CLibCallMethod::getDebugResult(std::string &str,CCodeContext &context) const
+	{				
+		str = NLAIC::stringGetBuild("methode %s",_Lib->getMethodeMemberDebugString(0,_Id));
+	}
+
 	NLAIAGENT::TProcessStatement CLibCallMethod::runOpCode(CCodeContext &context)
 	{
 		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
@@ -127,6 +156,11 @@ namespace NLAISCRIPT
 		return r.ResultState;
 	}
 
+	void CLibCallInheritedMethod::getDebugResult(std::string &str,CCodeContext &context) const
+	{				
+		str = NLAIC::stringGetBuild("methode %s",_Lib->getMethodeMemberDebugString(_Inheritance,_Id));
+	}
+
 	NLAIAGENT::TProcessStatement CLibCallInheritedMethod::runOpCode(CCodeContext &context)
 	{
 		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
@@ -147,6 +181,18 @@ namespace NLAISCRIPT
 		context.Param.back()->release();
 		context.Param.pop_back();
 		return r.ResultState;
+	}
+
+	void CLibCallMethodi::getDebugResult(std::string &str,CCodeContext &context) const
+	{		
+		std::list<sint32>::const_iterator it = _I.begin();
+		const NLAIAGENT::IObjectIA *obj = _Lib;
+		while(it != _I.end())
+		{
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
+		}		
+
+		str = NLAIC::stringGetBuild("methode %s",obj->getMethodeMemberDebugString(_Inheritance,_Id));
 	}
 
 	NLAIAGENT::TProcessStatement CLibCallMethodi::runOpCode(CCodeContext &context)
@@ -179,6 +225,18 @@ namespace NLAISCRIPT
 		context.Param.back()->release();
 		context.Param.pop_back();
 		return r.ResultState;
+	}
+
+	void CLibStackMemberMethod::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::list<sint32>::const_iterator it = _I.begin();
+		const NLAIAGENT::IObjectIA *obj = context.Stack[(int)context.Stack - 1];
+		while(it != _I.end())
+		{
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
+		}		
+
+		str = NLAIC::stringGetBuild("methode %s",obj->getMethodeMemberDebugString(_H,_Id));
 	}
 
 	NLAIAGENT::TProcessStatement CLibStackMemberMethod::runOpCode(CCodeContext &context)
@@ -215,6 +273,18 @@ namespace NLAISCRIPT
 		return r.ResultState;
 	}
 
+	void CLibStackNewMemberMethod::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::list<sint32>::const_iterator it = _I.begin();
+		const NLAIAGENT::IObjectIA *obj = context.Stack[(int)context.Stack];
+		while(it != _I.end())
+		{
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
+		}		
+
+		str = NLAIC::stringGetBuild("methode %s",obj->getMethodeMemberDebugString(_H,_Id));
+	}
+
 	NLAIAGENT::TProcessStatement CLibStackNewMemberMethod::runOpCode(CCodeContext &context)
 	{
 		NLAIAGENT::IObjectIA *obj = context.Stack[(int)context.Stack];
@@ -246,6 +316,18 @@ namespace NLAISCRIPT
 		context.Param.pop_back();
 		
 		return r.ResultState;
+	}
+
+	void CLibHeapMemberMethod::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		std::list<sint32>::const_iterator it = _I.begin();
+		const NLAIAGENT::IObjectIA *obj = context.Heap[(int)_Index];
+		while(it != _I.end())
+		{
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
+		}		
+
+		str = NLAIC::stringGetBuild("methode %s",obj->getMethodeMemberDebugString(_H,_Id));
 	}
 
 	NLAIAGENT::TProcessStatement CLibHeapMemberMethod::runOpCode(CCodeContext &context)

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.33 2002/01/03 15:06:14 chafik Exp $
+ * $Id: baseai.cpp,v 1.34 2002/01/17 12:16:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -306,6 +306,29 @@ namespace NLAIAGENT
 			}
 		}
 		return CProcessResult();
+	}
+
+	std::string IObjectIA::getMethodeMemberDebugString(sint32 h, sint32 id) const
+	{
+		switch(id)
+		{
+		case 0:
+			{
+				return std::string("IObjectIA::sendMessage(IMessage)");
+			}			
+			break;
+		case 1:			
+			break;
+		case 2:			
+			return std::string("IObjectIA::run()");
+			break;
+
+		case 3:
+			{				
+				return std::string("IObjectIA::getStaticMember(Integer)");				
+			}
+		}
+		return std::string("Mathod_?????(Param_?????)");
 	}
 
 	IObjectIA::CProcessResult IObjectIA::sendMessage(const IVarName &name,IObjectIA *)

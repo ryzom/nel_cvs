@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.22 2001/12/11 09:26:49 chafik Exp $
+ * $Id: baseai.h,v 1.23 2002/01/17 12:15:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,6 +305,12 @@ namespace NLAIAGENT
 		param: is the parametre for the method.
 		*/
 		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
+
+		/**
+		The methode getMethodeMemberDebugString(sint32 heritance, sint32 index)
+		return a string that define the name and the argument of the method
+		*/
+		virtual	std::string getMethodeMemberDebugString(sint32, sint32) const;
 
 		/**
 		The methode runMethodeMember(sint32 index,IObjectIA *param) allow us to run a own member method.

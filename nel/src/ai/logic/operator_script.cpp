@@ -221,8 +221,22 @@ namespace NLAIAGENT
 			if ( getAgentManager() != NULL )
 			{
 				NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+#ifdef NL_DEBUG
+				sint sp = context->Stack.CIndexStackPointer::operator int ();
+#endif
 				context->Self = this;
-				runMethodeMember( _OnActivateIndex , context);
+				IObjectIA::CProcessResult r = runMethodeMember( _OnActivateIndex , context);
+				if(r.Result != NULL)
+				{
+					throw;
+				}
+
+#ifdef NL_DEBUG
+				if(sp != context->Stack.CIndexStackPointer::operator int ())
+				{
+					throw;
+				}
+#endif
 				_OnActivateIndex = -1;
 			}
 		}

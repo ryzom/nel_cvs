@@ -1,6 +1,6 @@
 /** \file opcode_call_method.cpp
  *
- * $Id: opcode_call_method.cpp,v 1.6 2001/04/05 15:29:02 chafik Exp $
+ * $Id: opcode_call_method.cpp,v 1.7 2002/01/17 12:16:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,8 @@
 
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/agent/agent_script.h"
+#include "nel/ai/script/interpret_object_agent.h"
+#include "nel/ai/script/interpret_object_message.h"
 
 namespace NLAISCRIPT
 {
@@ -103,21 +105,43 @@ namespace NLAISCRIPT
 		context.ContextDebug.HeapDebug.restoreShift();
 		NLAIAGENT::IObjectIA *obj = context.Param.back();
 		obj->release();
-		context.Param.pop_back();
-		/*obj = context.ContextDebug.Param.back();
-		obj->release();
-		context.ContextDebug.Param.pop_back();*/
+		context.Param.pop_back();		
 	}
 
 	//*************************************
 	// CCallMethod
 	//*************************************
+
+	void CCallMethod::getDebugResult(std::string &str,CCodeContext &context) const
+	{		
+		const NLAIAGENT::IObjectIA *r = (context.Self);
+		std::string name = "????";
+		if(((const NLAIC::CTypeOfObject &)r->getType()) & NLAIC::CTypeOfObject::tInterpret)
+		{
+			if(((const NLAIC::CTypeOfObject &)r->getType()) & NLAIC::CTypeOfObject::tAgent)
+			{
+				name = r->getMethodeMemberDebugString(_Inheritance,_I);
+			}
+			else
+			if(((const NLAIC::CTypeOfObject &)r->getType()) & NLAIC::CTypeOfObject::tMessage)
+			{		
+				if(((NLAIAGENT::CMessageScript *)r)->getCreatorClass() != NULL)
+				{
+					((NLAIAGENT::CMessageScript *)r)->getCreatorClass()->getBrancheCode(_Inheritance,_I).getName().getDebugString(name);
+					((NLAIAGENT::CMessageScript *)r)->getCreatorClass()->getBrancheCode(_Inheritance,_I).getParam().getDebugString(name);
+				}
+			}
+		}
+		str = NLAIC::stringGetBuild("Method: '%s.%s'", (const char *)(context.Self)->getType(),name.c_str());
+	}
+
 	NLAIAGENT::TProcessStatement CCallMethod::runOpCode(CCodeContext &context)
 	{				
 		int sp = CVarPStackParam::_Shift;
 		saveConstext(context);
 
 		NLAIAGENT::IObjectIA::CProcessResult i;
+
 		if(_Inheritance) i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_Inheritance,_I,&context);
 		else i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_I,&context);
 		
@@ -125,6 +149,40 @@ namespace NLAISCRIPT
 		CVarPStackParam::_Shift = sp;
 		return NLAIAGENT::processIdle;
 	}	
+
+	void CCallMethodi::getDebugResult(std::string &str,CCodeContext &context) const
+	{
+		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
+		std::list<sint32>::const_iterator it = _N.begin();
+		std::string name = "????";
+
+		while(it != _N.end())
+		{
+			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
+		}
+
+		//str = NLAIC::stringGetBuild("CallMethodi %d de la class '%s'",_I, (const char *)obj->getType());
+		if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tInterpret)
+		{
+			if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tAgent)
+			{
+				/*sint i = _I - ((NLAIAGENT::CAgentScript *)obj)->getBaseMethodCount();
+				if(i >= 0)
+				{
+					((NLAIAGENT::CAgentScript *)obj)->getClass()->getBrancheCode(_Inheritance, i).getName().getDebugString(name);
+					((NLAIAGENT::CAgentScript *)obj)->getClass()->getBrancheCode(_Inheritance,i).getParam().getDebugString(name);
+				}*/
+				name = obj->getMethodeMemberDebugString(_Inheritance,_I);
+			}
+			else
+			if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tMessage)
+			{				
+				((NLAIAGENT::CMessageScript *)obj)->getCreatorClass()->getBrancheCode(_Inheritance,_I).getName().getDebugString(name);
+				((NLAIAGENT::CMessageScript *)obj)->getCreatorClass()->getBrancheCode(_Inheritance,_I).getParam().getDebugString(name);
+			}
+		}
+		str = NLAIC::stringGetBuild("Method: '%s.%s'", (const char *)(context.Self)->getType(),name.c_str());
+	}
 
 	NLAIAGENT::TProcessStatement CCallMethodi::runOpCode(CCodeContext &context)
 	{				
@@ -183,6 +241,37 @@ namespace NLAISCRIPT
 		return NLAIAGENT::processIdle;
 	}
 
+	void CCallStackMethodi::getDebugResult(std::string &str,CCodeContext &context) const
+	{		
+		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Stack[(int)context.Stack - 1];
+		std::list<sint32>::const_iterator it = _N.begin();
+		std::string name = "????";
+
+		while(it != _N.end())
+		{
+			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
+		}		
+		if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tInterpret)
+		{
+			if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tAgent)
+			{
+				/*sint i = _I - ((NLAIAGENT::CAgentScript *)obj)->getBaseMethodCount();
+				if(i >= 0)
+				{
+					((NLAIAGENT::CAgentScript *)obj)->getClass()->getBrancheCode(_Inheritance, i).getName().getDebugString(name);
+					((NLAIAGENT::CAgentScript *)obj)->getClass()->getBrancheCode(_Inheritance,i).getParam().getDebugString(name);
+				}*/
+				name = obj->getMethodeMemberDebugString(_Inheritance,_I);
+			}
+			else
+			if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tMessage)
+			{				
+				((NLAIAGENT::CMessageScript *)obj)->getCreatorClass()->getBrancheCode(_Inheritance,_I).getName().getDebugString(name);
+				((NLAIAGENT::CMessageScript *)obj)->getCreatorClass()->getBrancheCode(_Inheritance,_I).getParam().getDebugString(name);
+			}
+		}
+		str = NLAIC::stringGetBuild("Method: '%s.%s'", (const char *)(context.Self)->getType(),name.c_str());
+	}
 
 	NLAIAGENT::TProcessStatement CCallStackMethodi::runOpCode(CCodeContext &context)
 	{				
@@ -218,6 +307,40 @@ namespace NLAISCRIPT
 		o->release();
 		return NLAIAGENT::processIdle;
 	}			
+
+
+	void CCallHeapMethodi::getDebugResult(std::string &str,CCodeContext &context) const
+	{		
+		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Heap[(int)_HeapPos];
+		std::list<sint32>::const_iterator it = _N.begin();
+		std::string name = "????";
+
+		while(it != _N.end())
+		{
+			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
+		}
+		if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tInterpret)
+		{
+			if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tAgent)
+			{
+				/*sint i = _I - ((NLAIAGENT::CAgentScript *)obj)->getBaseMethodCount();
+				if(i >= 0)
+				{
+					((NLAIAGENT::CAgentScript *)obj)->getClass()->getBrancheCode(_Inheritance, i).getName().getDebugString(name);
+					((NLAIAGENT::CAgentScript *)obj)->getClass()->getBrancheCode(_Inheritance,i).getParam().getDebugString(name);
+				}*/
+				name = obj->getMethodeMemberDebugString(_Inheritance,_I);
+			}
+			else
+			if(((const NLAIC::CTypeOfObject &)obj->getType()) & NLAIC::CTypeOfObject::tMessage)
+			{				
+				((NLAIAGENT::CMessageScript *)obj)->getCreatorClass()->getBrancheCode(_Inheritance,_I).getName().getDebugString(name);
+				((NLAIAGENT::CMessageScript *)obj)->getCreatorClass()->getBrancheCode(_Inheritance,_I).getParam().getDebugString(name);
+			}
+		}
+		str = NLAIC::stringGetBuild("Method: '%s.%s'", (const char *)(context.Self)->getType(),name.c_str());
+	}
+
 
 	NLAIAGENT::TProcessStatement CCallHeapMethodi::runOpCode(CCodeContext &context)
 	{				

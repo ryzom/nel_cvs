@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.43 2002/01/03 15:06:38 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.44 2002/01/17 12:16:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -564,6 +564,9 @@ namespace NLAISCRIPT
 
 	CMethodeName &CAgentClass::getBrancheCode(sint32 i) const
 	{
+#ifdef NL_DEBUG
+		sint kkk = _Methode.size();
+#endif
 		CMethodeName *a = _Methode[i].Method;
 		return 	*a;
 	}
@@ -575,6 +578,10 @@ namespace NLAISCRIPT
 
 	CMethodeName &CAgentClass::getBrancheCode(sint32 no_base_class, sint32 no_methode) const
 	{
+#ifdef NL_DEBUG
+		const NLAIAGENT::IObjectIA *o = _VTable[ no_base_class ];
+#endif
+		
 		return _VTable[ no_base_class ]->getBrancheCode( no_methode );
 	}
 

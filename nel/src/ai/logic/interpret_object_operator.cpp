@@ -225,8 +225,7 @@ namespace NLAISCRIPT
 		while ( res->size() )
 		{
 #ifdef NL_DEBUG
-			std::string buffer;
-			res->front()->getDebugString( buffer );
+						
 #endif
 			res->front()->release();
 			res->pop_front();
@@ -341,8 +340,7 @@ namespace NLAISCRIPT
 			NLAILOGIC::CFact *tmp = buildFromVars( _Conds[i], _PosVarsCond[i], unified );
 			result->push_back( tmp );
 #ifdef NL_DEBUG
-			std::string buffer;
-			tmp->getDebugString(buffer);
+						
 #endif
 		}
 		unified->release();
@@ -353,8 +351,7 @@ namespace NLAISCRIPT
 	{
 		NLAILOGIC::CValueSet *unified = unifyForward( facts );
 #ifdef NL_DEBUG
-		std::string buf;
-		unified->getDebugString( buf );
+		
 #endif
 		std::list<NLAILOGIC::CFact *> *result = new std::list<NLAILOGIC::CFact *>;
 		for (sint32 i = 0; i < (sint32) _Concs.size(); i++ )
@@ -362,8 +359,7 @@ namespace NLAISCRIPT
 			NLAILOGIC::CFact *tmp = buildFromVars( _Concs[i], _PosVarsConc[i], unified );
 			result->push_back( tmp );
 #ifdef NL_DEBUG
-			std::string buffer;
-			tmp->getDebugString(buffer);
+			
 #endif
 		}
 		unified->release();
@@ -766,7 +762,9 @@ namespace NLAISCRIPT
 				context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
 				*context.Code = 0;
 
-
+#ifdef NL_DEBUG
+				sint sp = context.Stack.CIndexStackPointer::operator int ();
+#endif
 				r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
 
 				*context.Code = ip;
@@ -776,12 +774,20 @@ namespace NLAISCRIPT
 				result->incRef();
 				context.Stack--;
 
+#ifdef NL_DEBUG
+				sint u = context.Stack.CIndexStackPointer::operator int ();
+				if(sp != u)
+				{
+					
+					throw;
+				}
+#endif
+
 				if ( result != NULL)
 				{
 #ifdef NL_DEBUG
 					const char *dbg_return_type = (const char *) result->getType();
-					std::string dbg_str;
-					result->getDebugString( dbg_str );
+					
 #endif
 					bool br = !result->isTrue();
 					result->release();
@@ -935,9 +941,7 @@ namespace NLAISCRIPT
 			if ( msg->getPerformatif() == _TrigMsgPerf[n] )
 			{
 #ifdef NL_DEBUG
-				const char *msg_dbg = (const char *) msg->getType();
-				std::string buf;
-				msg->getDebugString(buf);
+				const char *msg_dbg = (const char *) msg->getType();				
 #endif
 				if ( msg->getType() == _TrigMsgClass[n] )
 					return _TrigMsgPos[n];

@@ -1,7 +1,7 @@
 /** \file opcode_call_method.h
  * Sevral call op-code fonctionality.
  *
- * $Id: opcode_call_method.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
+ * $Id: opcode_call_method.h,v 1.7 2002/01/17 12:15:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,10 +108,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{		
-			str = NLAIC::stringGetBuild("CallMethod %d de la class '%s'",_I, (const char *)(context.Self)->getType());
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -174,18 +171,8 @@ namespace NLAISCRIPT
 		}
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
-		
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{		
-			NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Heap[(int)_HeapPos];
-			std::list<sint32>::const_iterator it = _N.begin();			
-			while(it != _N.end())
-			{
-				obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
-			}
-			str = NLAIC::stringGetBuild("CallMethod %d de la class '%s' dans le Heap",_I, (const char *)obj->getType());			
-		}
-
+		void getDebugResult(std::string &str,CCodeContext &context) const;
+				
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CCallHeapMethodi(*this);
@@ -251,16 +238,7 @@ namespace NLAISCRIPT
 
 		virtual  NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{		
-			NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Stack[(int)context.Stack - 1];
-			std::list<sint32>::const_iterator it = _N.begin();			
-			while(it != _N.end())
-			{
-				obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
-			}
-			str = NLAIC::stringGetBuild("CallMethod %d de la class '%s' dans le stack",_I, (const char *)obj->getType());
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 
 		virtual const NLAIC::IBasicType *clone() const
 		{
@@ -372,18 +350,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
-		void getDebugResult(std::string &str,CCodeContext &context) const
-		{		
-			NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
-			std::list<sint32>::const_iterator it = _N.begin();
-
-			while(it != _N.end())
-			{
-				obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
-			}
-
-			str = NLAIC::stringGetBuild("CallMethodi %d de la class '%s'",_I, (const char *)obj->getType());
-		}
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 
 		const NLAIC::IBasicType *clone() const
 		{

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.45 2002/01/04 15:06:33 chafik Exp $
+ * $Id: agent_script.h,v 1.46 2002/01/17 12:15:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -278,7 +278,9 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult sendMethod(IObjectIA *);
 		IObjectIA::CProcessResult sendMethodCompoment(IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
-		virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);		
+		virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);	
+		
+		virtual	std::string getMethodeMemberDebugString(sint32, sint32) const;
 
 		virtual sint32 getStaticMemberSize() const;
 		virtual sint32 getStaticMemberIndex(const IVarName &) const;
@@ -361,7 +363,7 @@ namespace NLAIAGENT
 		}
 
 	////////////////////////////////////////////////////////////////////////
-		const NLAISCRIPT::CAgentClass *getClass()
+		const NLAISCRIPT::CAgentClass *getClass() const
 		{
 			return _AgentClass;
 		}
@@ -375,6 +377,7 @@ namespace NLAIAGENT
 		{
 			return NULL;
 		}
+
 
 	};
 

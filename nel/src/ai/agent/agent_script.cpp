@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.101 2002/01/04 15:06:18 chafik Exp $
+ * $Id: agent_script.cpp,v 1.102 2002/01/17 12:16:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1498,6 +1498,89 @@ namespace NLAIAGENT
 		}
 	}
 
+	std::string CAgentScript::getMethodeMemberDebugString(sint32 h, sint32 id) const
+	{
+		int i = id - getBaseMethodCount();
+		if(i >= 0)
+		{
+			std::string name;
+			if(h)
+			{
+				_AgentClass->getBrancheCode(h,i).getName().getDebugString(name);
+				_AgentClass->getBrancheCode(h,i).getParam().getDebugString(name);
+			}
+			else
+			{
+				_AgentClass->getBrancheCode(i).getName().getDebugString(name);
+				_AgentClass->getBrancheCode(i).getParam().getDebugString(name);
+			}
+			return name;
+		}
+
+		switch(id - IAgent::getMethodIndexSize())
+		{
+		case TSend:
+			{
+				return std::string("CAgentScript::sendMessage(IMessage)");
+			}
+
+		case TSendComponent:
+			{
+				return std::string("CAgentScript::sendMessage(String,IMessage)");				
+			}
+
+		case TGetChildTag:
+			{
+				return std::string("CAgentScript::getDynamicAgent(String)");
+			}
+
+		case TAddChildTag:
+			{
+				return std::string("CAgentScript::addDynamicAgent(String,IAgent)");				
+			}
+		case TFather:
+			{
+				return std::string("CAgentScript::Father()");				
+			}
+
+		case TSelf:
+			{
+				return std::string("CAgentScript::Self()");
+			}
+		case TGetName:
+			{				
+				return std::string("CAgentScript::GetAgentName()");
+			}
+
+		case TRunAskParentNotify:
+			{	
+				return std::string("CAgentScript::runAskParentNotify(CNotifyParent)");
+			}
+
+		case TRunTellParentNotify:
+			{				
+				return std::string("CAgentScript::runTellarentNotify(CNotifyParent)");
+			}
+
+		case TRunAskCompoment:
+		case TRunTellCompoment:
+			{				
+				return std::string("CAgentScript::runTellCompoment(MsgTellCompoment)");
+			}
+		case TSetStatic:
+			{								
+				return std::string("CAgentScript::updateStaticMember(String, IObjectIA *)");				
+			}
+
+		case TGetValue:
+			{				
+				return std::string("CAgentScript::runAskGetValue(MsgGetValue)");
+			}
+		default:
+			return IAgentManager::getMethodeMemberDebugString(h,id);		
+		}		
+	}
+
 	int CAgentScript::getBaseMethodCount() const
 	{
 		return IAgentManager::getBaseMethodCount() + CAgentScript::TLastM;
@@ -1540,6 +1623,11 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult r;
 		if(opPtr != NULL)
 		{
+#ifdef NL_DEBUG
+		std::string nameDbg;
+		_AgentClass->getBrancheCode(inheritance,i).getName().getDebugString(nameDbg);
+		_AgentClass->getBrancheCode(inheritance,i).getParam().getDebugString(nameDbg);
+#endif
 			NLAISCRIPT::IOpCode &op = *opPtr;
 			NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
 			int ip = (uint32)*context.Code;

@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.18 2001/12/05 10:00:35 portier Exp $
+ * $Id: codage.h,v 1.19 2002/01/17 12:15:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,6 +180,12 @@ namespace NLAISCRIPT
 		///Get the pointer in the position i.
 		NLAIAGENT::IObjectIA *&operator [] (int i)
 		{
+#ifdef NL_DEBUG
+			if ( (_Sp + _Bp + _Sh) >= _Count )
+			{
+				throw NLAIE::CExceptionIndexError();
+			}
+#endif			
 			return _Stack[i + _Bp + _Sh];
 		}
 

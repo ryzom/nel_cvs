@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.43 2003/07/02 17:26:31 distrib Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.44 2003/07/03 15:39:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -961,6 +961,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		{
 			if (MessageBox("Delete the system ?", "Particle editor", MB_YESNO) == IDYES)
 			{
+				/*
 				NL3D::CParticleSystem *ps = nt->PS;			
 				while (ps->getNbProcess())
 				{					
@@ -971,6 +972,19 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				_ParticleDlg->StartStopDlg->reset();
 				buildTreeFromPS(nt->PS, nt->PSModel);
 				_ParticleDlg->MainFrame->OnResetCamera();
+				*/
+				
+				_ParticleDlg->StartStopDlg->stop();																						
+				NL3D::IShape *sh = nt->PSModel->Shape;																			
+				NL3D::CNELU::Scene.deleteInstance(nt->PSModel);
+				NL3D::CNELU::Scene.getShapeBank()->reset();										
+				DeleteItem(TVI_ROOT);				
+								
+				// create a blank system
+				_ParticleDlg->resetSystem();
+				_ParticleDlg->setRightPane(NULL);
+				buildTreeFromPS(_ParticleDlg->getCurrPS(), _ParticleDlg->getCurrPSModel());																	
+				_LastClickedPS = NULL;
 			}
 		}
 		break;

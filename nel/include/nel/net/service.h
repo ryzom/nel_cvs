@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.17 2001/01/29 17:47:55 cado Exp $
+ * $Id: service.h,v 1.18 2001/03/29 09:31:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,8 @@ public:
 
 	/// Constructor
 	IService();
+
+	virtual ~IService() {}
 
 	/// Initializes the service (must be called before the first call to update())
 	virtual void		init () {}

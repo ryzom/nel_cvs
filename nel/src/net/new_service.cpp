@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: new_service.cpp,v 1.7 2001/03/15 15:09:18 coutelas Exp $
+ * $Id: new_service.cpp,v 1.8 2001/03/29 09:31:34 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -453,6 +453,8 @@ sint INewService::main (int argc, char **argv)
 		// so we don't have to to anything
 		setStatus (EXIT_FAILURE);
 	}
+#ifdef NL_RELEASE
+	// in release mode, we catch everything to handle clean release.
 	catch (Exception &e)
 	{
 		// Catch NeL exception to release the system cleanly
@@ -481,6 +483,7 @@ sint INewService::main (int argc, char **argv)
 			// Ignore the fatalerror
 		}
 	}
+#endif
 
 	try
 	{
@@ -517,6 +520,8 @@ sint INewService::main (int argc, char **argv)
 		// so we don't have to to anything
 		setStatus (EXIT_FAILURE);
 	}
+#ifdef NL_RELEASE
+	// in release mode, we catch everything to handle clean release.
 	catch (Exception &e)
 	{
 		setStatus (EXIT_FAILURE);
@@ -543,6 +548,7 @@ sint INewService::main (int argc, char **argv)
 			// Ignore the fatalerror
 		}
 	}
+#endif
 
 	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
 }

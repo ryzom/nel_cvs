@@ -1,7 +1,7 @@
 /** \file new_service.h
  * Base class for all network services
  *
- * $Id: new_service.h,v 1.2 2001/02/23 13:09:27 lecroart Exp $
+ * $Id: new_service.h,v 1.3 2001/03/29 09:31:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,8 @@ public:
 
 	/// Constructor
 	INewService();
+
+	virtual ~INewService() {}
 
 	/// Initializes the service (must be called before the first call to update())
 	virtual void		init () {}

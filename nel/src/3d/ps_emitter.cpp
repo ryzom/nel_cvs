@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.10 2001/06/18 16:32:38 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.11 2001/06/25 13:49:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "3d/ps_emitter.h"
 #include "3d/material.h"
 #include "nel/misc/line.h"
-
+#include "3d/dru.h"
 
 namespace NL3D {
 
@@ -46,6 +46,37 @@ CPSEmitter::CPSEmitter() : _EmissionType(regular), _Period(0), _EmittedType(NULL
 {
 }
 
+
+
+CPSEmitter::~CPSEmitter()
+{
+	// if a located is emitted, unregister us as an observer
+	if (_EmittedType)
+	{
+		_EmittedType->unregisterDtorObserver(this) ;
+	}
+}
+
+void CPSEmitter::setEmittedType(CPSLocated *et) 
+{
+	if (_EmittedType)
+	{
+		_EmittedType->unregisterDtorObserver(this) ;
+	}
+	if (et)
+	{
+		et->registerDtorObserver(this) ;
+	}	
+
+	_EmittedType = et ;
+}
+
+
+void CPSEmitter::notifyTargetRemoved(CPSLocated *ptr)
+{
+	nlassert(ptr == _EmittedType) ;
+	_EmittedType = NULL ;
+}
 
 void CPSEmitter::setPeriod(float period)
 {
@@ -151,6 +182,24 @@ if (ellapsedTime == 0.f) return ; // do nothing when paused
 // our behaviour depend of the frequency
 switch (_EmissionType)
 {
+	case CPSEmitter::once :
+	{
+		TPSAttribTime::iterator timeIt = _Phase.begin()
+									  , timeEndIt = _Phase.end() ;
+
+		while (timeIt != timeEndIt)
+		{
+			if (*timeIt == 0.f)
+			{
+				const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, timeIt - _Phase.begin()) : _GenNb ;		
+				processEmit(timeIt - _Phase.begin(), nbToGenerate) ;		
+				*timeIt = 1.f ;
+			}
+			++timeIt ;
+		}
+		
+	}
+	break ;
 	case (CPSEmitter::regular):
 	{
 		uint leftToDo = size , toProcess ;
@@ -218,11 +267,7 @@ void CPSEmitter::newElement(void)
 
 	_Phase.insert(0.f) ;
 
-	if (_EmissionType == CPSEmitter::once)
-	{
-		const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, _Owner->getNewElementIndex()) : _GenNb ;		
-		processEmit(_Owner->getNewElementIndex(), nbToGenerate) ;		
-	}		
+
 }
 
 void CPSEmitter::deleteElement(uint32 index)

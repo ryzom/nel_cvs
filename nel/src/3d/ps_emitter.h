@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.2 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.3 2001/06/25 13:49:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,9 @@ public:
 	CPSEmitter();
 
 
+	// dtor
+	virtual ~CPSEmitter() ;
+
 	/// return this bindable type
 	uint32 getType(void) const { return PSEmitter ; }
 
@@ -97,7 +100,12 @@ public:
 	void showTool(void)  ;
 
 	/// set thetype of located to be emitted. THIS MUST BE CALLED
-	void setEmittedType(CPSLocated *et) { _EmittedType = et ; }
+	void setEmittedType(CPSLocated *et) ;
+
+	/** Inherited from CPSLocatedBindable
+	 * we register to the emitted type, so, this, this will be called when it is detroyed
+	 */
+	virtual void notifyTargetRemoved(CPSLocated *ptr)  ;
 
 	/// get emitted type
 	CPSLocated *getEmittedType(void) { return _EmittedType ; }
@@ -373,9 +381,18 @@ class CPSModulatedEmitter
 } ; 
 
 
+/// this classgives an interface to tune the direction of emission
+class CPSEmitterDirection
+{
+public :	
+	virtual void setDir(const CVector &v) = 0 ;
+	virtual CVector getDir(void) const = 0 ;
+} ;
+
 
 /// emit in one direction. This can be the 0, 0, 0 vector
 class CPSEmitterDirectionnal : public CPSEmitter, public CPSModulatedEmitter
+							   ,public CPSEmitterDirection
 {
 	
 public:
@@ -430,6 +447,7 @@ public:
 /// emit directionnally in a rectangle (useful to produce snow, drop of water ...)
 
 class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, public IPSMover
+							, public CPSEmitterDirection
 {
 	public:
 
@@ -503,7 +521,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 /// se same as a directionnel emitter, but you can also specify the radius for emission
 
-class CPSEmitterConic : public CPSEmitterDirectionnal
+class CPSEmitterConic : public CPSEmitterDirectionnal					
 {	
 public:
 

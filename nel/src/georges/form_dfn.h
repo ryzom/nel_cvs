@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.2 2002/05/22 12:09:45 cado Exp $
+ * $Id: form_dfn.h,v 1.3 2002/05/22 12:22:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,7 +208,7 @@ private:
 
 private:
 	// Read method called by the form loader
-	void							read (xmlNodePtr doc, CFormLoader &loader);
+	void							read (xmlNodePtr doc, CFormLoader &loader, bool forceLoad = false);
 
 };
 

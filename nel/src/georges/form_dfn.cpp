@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.2 2002/05/22 12:09:44 cado Exp $
+ * $Id: form_dfn.cpp,v 1.3 2002/05/22 12:22:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,7 +100,7 @@ void CFormDfn::write (xmlDocPtr doc) const
 
 // ***************************************************************************
 
-void CFormDfn::read (xmlNodePtr root, CFormLoader &loader)
+void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 {
 	// Check node name
 	if ( ((const char*)root->name == NULL) || (strcmp ((const char*)root->name, "DFN") != 0) )
@@ -205,7 +205,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader)
 					if (!Entries[childNumber].Filename.empty ())
 					{
 						Entries[childNumber].Type = loader.loadType (Entries[childNumber].Filename.c_str ());
-						if (Entries[childNumber].Type == NULL)
+						if ((Entries[childNumber].Type == NULL) && !forceLoad)
 						{
 							// Make an error message
 							char tmp[512];
@@ -245,7 +245,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader)
 					{
 						// Load the filename
 						Entries[childNumber].Dfn = loader.loadFormDfn (Entries[childNumber].Filename.c_str ());
-						if (Entries[childNumber].Dfn == NULL)
+						if ((Entries[childNumber].Dfn == NULL) && !forceLoad)
 						{
 							// Make an error message
 							char tmp[512];

@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.4 2002/05/22 12:09:45 cado Exp $
+ * $Id: form_loader.cpp,v 1.5 2002/05/22 12:22:08 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -132,7 +132,7 @@ CType *CFormLoader::loadType (const char *filename)
 
 // ***************************************************************************
 
-CFormDfn *CFormLoader::loadFormDfn (const char *filename)
+CFormDfn *CFormLoader::loadFormDfn (const char *filename, bool forceLoad)
 {
 	// Lower string filename
 	string lowerStr = strlwr ((string)filename);
@@ -168,7 +168,7 @@ CFormDfn *CFormLoader::loadFormDfn (const char *filename)
 				read.init (file);
 
 				// Read the type
-				formDfn->read (read.getRootNode (), *this);
+				formDfn->read (read.getRootNode (), *this, forceLoad);
 			}
 			else
 			{

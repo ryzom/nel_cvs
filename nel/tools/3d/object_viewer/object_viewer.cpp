@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.30 2001/08/29 08:42:59 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.31 2001/08/29 12:41:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -925,7 +925,7 @@ CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* m
 	// *** Bind to the skeleton
 
 	// Get a mesh instance
-	CMeshInstance  *meshInstance=dynamic_cast<CMeshInstance*>(pTrShape);
+	CMeshBaseInstance  *meshInstance=dynamic_cast<CMeshBaseInstance*>(pTrShape);
 
 	// Bind the mesh
 	if (pSkel)

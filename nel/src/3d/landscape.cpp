@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.111 2002/04/18 15:32:14 berenguier Exp $
+ * $Id: landscape.cpp,v 1.112 2002/04/18 16:05:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1054,8 +1054,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	CPatchDLMContext	*dlmCtxPtr= _PatchDLMContextList->begin();
 	while(dlmCtxPtr!=NULL)
 	{
-		// do it only if the patch has some Near stuff to render.
-		if(dlmCtxPtr->getPatch()->getFar0() == 0)
+		// do it only if the patch has some Near stuff to render, and if it is visible
+		if(dlmCtxPtr->getPatch()->getFar0() == 0
+			 && !dlmCtxPtr->getPatch()->isRenderClipped() )
 		{
 			// upload lightmap into textureDLM, modulating before with patch TileColor.
 			// NB: no-op if both src and dst are already full black.
@@ -1315,8 +1316,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	dlmCtxPtr= _PatchDLMContextList->begin();
 	while(dlmCtxPtr!=NULL)
 	{
-		// do it only if the patch has some Far stuff to render.
-		if(dlmCtxPtr->getPatch()->getFar0()>0 || dlmCtxPtr->getPatch()->getFar1()>0)
+		// do it only if the patch has some Far stuff to render, and if it is visible
+		if( (dlmCtxPtr->getPatch()->getFar0()>0 || dlmCtxPtr->getPatch()->getFar1()>0)
+			 && !dlmCtxPtr->getPatch()->isRenderClipped() )
 		{
 			// upload lightmap into textureDLM, modulating before with patch TextureFar.
 			// NB: no-op if both src and dst are already full black.

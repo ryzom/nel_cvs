@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.24 2004/06/17 08:01:20 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.25 2004/06/17 16:58:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "start_stop_particle_system.h"
 #include "located_properties.h"
 #include "choose_animation.h"
+#include "select_string.h"
 //
 #include "3d/particle_system.h"
 #include "3d/ps_located.h"
@@ -127,6 +128,7 @@ BEGIN_MESSAGE_MAP(CStartStopParticleSystem, CDialog)
 	ON_BN_CLICKED(IDC_START_MULTIPLE_PICTURE, OnStartMultipleSystem)
 	ON_BN_CLICKED(IDC_BROWSE_ANIM, OnBrowseAnim)
 	ON_BN_CLICKED(IDC_CLEAR_ANIM, OnClearAnim)
+	ON_BN_CLICKED(IDC_RESTICK_ALL, OnRestickAll)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -220,7 +222,9 @@ void CStartStopParticleSystem::updateUIFromState()
 		break;
 	}
 	if (!getCurrPS())
-	{		
+	{	
+		GetDlgItem(IDC_ACTIVE_PS)->SetWindowText(getStrRsc(IDS_NO_ACTIVE_PS));
+		GetDlgItem(IDC_STICK_BONE)->SetWindowText("");
 		GetDlgItem(IDC_ENABLE_AUTO_COUNT)->EnableWindow(FALSE);
 		GetDlgItem(IDC_RESET_COUNT)->EnableWindow(FALSE);
 		((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(0);
@@ -238,7 +242,16 @@ void CStartStopParticleSystem::updateUIFromState()
 		m_TriggerAnim = "";
 	}
 	else
-	{		
+	{	
+		if (!_ActiveNode->getParentSkelName().empty())
+		{
+			GetDlgItem(IDC_STICK_BONE)->SetWindowText((_ActiveNode->getParentBoneName() + "." + _ActiveNode->getParentBoneName()).c_str());
+		}
+		else
+		{
+			GetDlgItem(IDC_STICK_BONE)->SetWindowText("");
+		}		
+		GetDlgItem(IDC_ACTIVE_PS)->SetWindowText(_ActiveNode->getFilename().c_str());
 		GetDlgItem(IDC_ENABLE_AUTO_COUNT)->EnableWindow(TRUE);
 		((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(getCurrPS()->getAutoCountFlag() ? 1 : 0);
 		GetDlgItem(IDC_RESET_COUNT)->EnableWindow((_ActiveNode->getPSPointer()->getAutoCountFlag() && !_ActiveNode->getResetAutoCountFlag()) ? TRUE : FALSE);
@@ -578,15 +591,29 @@ void CStartStopParticleSystem::enableAutoCount(bool enable)
 //******************************************************************************************************
 void CStartStopParticleSystem::restartAllFX()
 {
-	for(uint k = 0; k < _PlayingNodes.size(); ++k)
+	if (_State == RunningMultiple || _State == PausedMultiple)
 	{
-		if (_PlayingNodes[k] && isRunning(_PlayingNodes[k]))
-		{					
-			nlassert(_PlayingNodes[k]->isLoaded());
-			_PlayingNodes[k]->restoreState();
-			_PlayingNodes[k]->memorizeState();				
-			_PlayingNodes[k]->getPSPointer()->setSystemDate(0.f);
-			_PlayingNodes[k]->getPSPointer()->reactivateSound();
+		for(uint k = 0; k < _PlayingNodes.size(); ++k)
+		{
+			if (_PlayingNodes[k] && isRunning(_PlayingNodes[k]))
+			{									
+				_PlayingNodes[k]->restoreState();				
+				_PlayingNodes[k]->getPSPointer()->setSystemDate(0.f);				
+			}
+		}
+	}
+	else
+	{	
+		for(uint k = 0; k < _PlayingNodes.size(); ++k)
+		{
+			if (_PlayingNodes[k] && isRunning(_PlayingNodes[k]))
+			{					
+				nlassert(_PlayingNodes[k]->isLoaded());
+				_PlayingNodes[k]->restoreState();
+				_PlayingNodes[k]->memorizeState();				
+				_PlayingNodes[k]->getPSPointer()->setSystemDate(0.f);
+				_PlayingNodes[k]->getPSPointer()->reactivateSound();
+			}
 		}
 	}
 }
@@ -647,7 +674,7 @@ void CStartStopParticleSystem::goPreRender()
 			}
 		}
 	}
-	if (_State == RunningMultiple)
+	if (_State == RunningMultiple || _State == PausedMultiple)
 	{
 		std::set<std::string> currAnims;
 		CObjectViewer *ov = _ParticleDlg->getObjectViewer();
@@ -756,7 +783,7 @@ void CStartStopParticleSystem::goPreRender()
 						pws->getNode(k)->getPSModel()->enableDisplayTools(false);
 					}
 					// hide / show the node
-					if (_State == RunningMultiple)
+					if (_State == RunningMultiple || _State == PausedMultiple)
 					{
 						if (isRunning(pws->getNode(k)))
 						{
@@ -833,10 +860,13 @@ void CStartStopParticleSystem::OnLinkToSkeleton()
 	chooseBoneForPS.LoadString(IDS_CHOOSE_BONE_FOR_PS);
 	NL3D::CSkeletonModel *skel;
 	uint boneIndex;
-	if (ov->chooseBone((LPCTSTR) chooseBoneForPS, skel, boneIndex))
+	std::string parentSkelName;
+	std::string parentBoneName;
+	if (ov->chooseBone((LPCTSTR) chooseBoneForPS, skel, boneIndex, &parentSkelName, &parentBoneName))
 	{
-		_ParticleDlg->stickPSToSkeleton(_ActiveNode, skel, boneIndex);
+		_ParticleDlg->stickPSToSkeleton(_ActiveNode, skel, boneIndex, parentSkelName, parentBoneName);
 	}
+	updateUIFromState();
 }
 
 //******************************************************************************************************
@@ -852,6 +882,7 @@ void CStartStopParticleSystem::OnUnlinkFromSkeleton()
 		return;
 	}
 	_ParticleDlg->unstickPSFromSkeleton(_ActiveNode);
+	updateUIFromState();
 }
 
 //******************************************************************************************************
@@ -968,6 +999,7 @@ bool CStartStopParticleSystem::isRunning(CParticleWorkspace::CNode *node)
 //******************************************************************************************************
 void CStartStopParticleSystem::OnBrowseAnim() 
 {
+	/*
 	nlassert(_ActiveNode);
 	CChooseAnimation ca;
 	std::set<std::string> animSet;
@@ -990,6 +1022,28 @@ void CStartStopParticleSystem::OnBrowseAnim()
 	}	
 	_ParticleDlg->ParticleTreeCtrl->updateCaption(*_ActiveNode);
 	UpdateData(FALSE);
+	*/
+	nlassert(_ActiveNode);	
+	std::set<std::string> animSet;
+	CObjectViewer *ov = _ParticleDlg->getObjectViewer();
+	for(uint k = 0; k < ov->getNumInstance(); ++k)
+	{
+		CInstanceInfo *ii = ov->getInstance(k);
+		for(uint l = 0; l < ii->AnimationSet.getNumAnimation(); ++l)
+		{
+			animSet.insert(ii->AnimationSet.getAnimationName(l));
+		}
+	}
+	std::vector<std::string> animList(animSet.begin(), animSet.end());
+	CSelectString st(animList, (LPCTSTR) getStrRsc(IDS_SELECT_ANIMATION), this, false);
+	if (st.DoModal() == IDOK && st.Selection != -1)
+	{
+		m_TriggerAnim = animList[st.Selection].c_str();
+		_ActiveNode->setTriggerAnim((LPCTSTR) m_TriggerAnim);
+		GetDlgItem(IDC_CLEAR_ANIM)->EnableWindow(!_ActiveNode->getTriggerAnim().empty());
+	}	
+	_ParticleDlg->ParticleTreeCtrl->updateCaption(*_ActiveNode);
+	UpdateData(FALSE);
 }
 
 
@@ -1001,4 +1055,13 @@ void CStartStopParticleSystem::OnClearAnim()
 	_ActiveNode->setTriggerAnim("");	
 	_ParticleDlg->ParticleTreeCtrl->updateCaption(*_ActiveNode);
 	UpdateData(FALSE);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnRestickAll() 
+{
+	if (_ParticleDlg->getParticleWorkspace())
+	{
+		_ParticleDlg->getParticleWorkspace()->restickAllObjects(_ParticleDlg->getObjectViewer());
+	}
 }

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.14 2004/06/17 08:01:20 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.15 2004/06/17 16:58:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,6 +132,7 @@ private:
 	afx_msg void OnStartMultipleSystem();
 	afx_msg void OnBrowseAnim();
 	afx_msg void OnClearAnim();
+	afx_msg void OnRestickAll();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

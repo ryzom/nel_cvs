@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.10 2001/03/13 17:11:31 corvazier Exp $
+ * $Id: transform.h,v 1.11 2001/03/16 16:54:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/3d/hrc_trav.h"
 #include "nel/3d/clip_trav.h"
 #include "nel/3d/track.h"
-#include "nel/3d/animatable.h"
+#include "nel/3d/transformable.h"
 #include "nel/3d/animated_value.h"
 #include "nel/misc/matrix.h"
 
@@ -55,28 +55,25 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
 
 // ***************************************************************************
 /**
- * A basic node which provide a matrix.
+ * A basic node which provide an animatable matrix (ITransformable).
  * May be derived for each node who want to support such a scheme (CCamera, CLight, CInstance ... )
+ *
+ * CTransform ALWAYS herit scale from fathers! (joints skeleton may not...) (nbyoyo: this breaks the touch system with observers).
+ *
+ * CTransform Default tracks are identity (derived class may change this).
  *
  * No observer is provided for LightTrav and RenderTrav (not lightable, nor renderable => use default).
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class CTransform : public IModel, IAnimatable
+class CTransform : public IModel, public ITransformable
 {
 public:
 	/// Call at the begining of the program, to register the model, and the basic observers.
 	static	void	registerBasic();
 
 public:
-
-
-	/// \name Direct Matrix operations.
-	//@{
-	void			setMatrix(const CMatrix &mat);
-	const CMatrix	&getMatrix() const	{return LocalMatrix;}
-	//@}
 
 
 	/// Hide the object and his sons.
@@ -89,40 +86,13 @@ public:
 	CHrcTrav::TVisibility	getVisibility() {return Visibility;}
 
 
-	/// \name Misc
+	/// \name Derived from ITransformable.
 	// @{
-	/** 
-	  * Setup Matrix by the lookAt method.
-	  * 
-	  * \param eye is the coordinate of the object.
-	  * \param target is the point the object look at.
-	  * \param roll is the roll angle in radian along the object's Y axis.
-	  */
-	void		lookAt (const CVector& eye, const CVector& target, float roll=0.f);
+	/// Default Track Values are identity (pos,pivot= 0, scale= 1, rots=0).
+	virtual ITrack* getDefaultTrack (uint valueId);
 	// @}
 
 
-public:
-	/// \name Herited from IAnimatable
-
-	/// From IAnimatable
-	virtual uint getValueCount () const;
-
-	/// From IAnimatable
-	virtual IAnimatedValue* getValue (uint valueId);
-
-	/// From IAnimatable
-	virtual const std::string& getValueName (uint valueId) const;
-
-	/// From IAnimatable
-	virtual ITrack* getDefaultTrack (uint valueId);
-
-	/// \name Get some track name
-
-	/// Return the name of the pos track
-	static const char *getScaleValueName() {return "scale";}
-	static const char *getRotValueName() {return "rot";}
-	static const char *getPosValueName() {return "pos";}
 
 // ********
 private:
@@ -135,13 +105,16 @@ private:
 
 private:
 	CHrcTrav::TVisibility	Visibility;
-	CMatrix					LocalMatrix;
 
+	static	CTrackDefaultVector		DefaultPos;
+	static	CTrackDefaultVector		DefaultPivot;
+	static	CTrackDefaultVector		DefaultRotEuler;
+	static	CTrackDefaultQuat			DefaultRotQuat;
+	static	CTrackDefaultVector		DefaultScale;
 
-	void	foul()
+	void	foulTransform()
 	{
-		IModel::foul();
-		Touch.set(TransformDirty);
+		IModel::foul(TransformDirty);
 	}
 
 protected:
@@ -150,41 +123,29 @@ protected:
 	/// Destructor
 	virtual ~CTransform() {}
 
-	/// Implement the clean method.
-	virtual void	clean()
+	/// Implement the update method.
+	virtual void	update()
 	{
-		IModel::clean();
-		// Clean up the model.
-		Touch.clear(TransformDirty);
+		IModel::update();
+		// test if the matrix has been changed in ITransformable.
+		if(ITransformable::needCompute())
+		{
+			foul(TransformDirty);
+		}
 	}
 
 private:
 	static IModel	*creator() {return new CTransform;}
-	static const std::string CTransform::valueNames [];
 	friend class	CTransformHrcObs;
 	friend class	CTransformClipObs;
 
-	// For animation, Pos, rot scale pivot animated values
-	CAnimatedValueVector	_Pos;
-	CAnimatedValueVector	_RotEuler;
-	CAnimatedValueQuat		_RotQuat;
-	CAnimatedValueVector	_Scale;
-	CAnimatedValueVector	_Pivot;
-
-protected:
-	// For animation, default tracks pointers, must be set by the derived model.
-	CTrackDefaultVector		*_PosDefault;
-	CTrackDefaultVector		*_RotEulerDefault;
-	CTrackDefaultQuat		*_RotQuatDefault;
-	CTrackDefaultVector		*_ScaleDefault;
-	CTrackDefaultVector		*_PivotDefault;
 };
 
 
 // ***************************************************************************
 /**
  * This observer:
- * - implement the notification system (just the clean() method).
+ * - implement the notification system (just the update() method).
  *
  * \sa CHrcTrav IBaseHrcObs
  * \author Lionel Berenguier
@@ -196,15 +157,14 @@ class	CTransformHrcObs : public IBaseHrcObs
 public:
 
 
-	virtual	void	clean()
+	virtual	void	update()
 	{
-		IBaseHrcObs::clean();
+		IBaseHrcObs::update();
 
-		if(Touch[CTransform::TransformDirty])
+		if(Model->TouchObs[CTransform::TransformDirty])
 		{
-			Touch.clear(CTransform::TransformDirty);
 			// update the local matrix.
-			LocalMatrix= static_cast<CTransform*>(Model)->LocalMatrix;
+			LocalMatrix= static_cast<CTransform*>(Model)->getMatrix();
 			IBaseHrcObs::LocalVis= static_cast<CTransform*>(Model)->Visibility;
 			// update the date of the local matrix.
 			updateLocal();

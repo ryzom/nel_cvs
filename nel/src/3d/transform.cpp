@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.10 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: transform.cpp,v 1.11 2001/03/16 16:54:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,6 @@
 namespace	NL3D
 {
 
-#define NL3D_CTRANSFORM_VALUE_COUNT 5
 
 // ***************************************************************************
 static	IObs	*creatorHrcObs() {return new CTransformHrcObs;}
@@ -46,175 +45,71 @@ void	CTransform::registerBasic()
 // ***************************************************************************
 CTransform::CTransform()
 {
-	Touch.resize(Last);
+	TouchObs.resize(Last);
 
-	LocalMatrix.identity();
 	Visibility= CHrcTrav::Herit;
-
-	// Set number of animated values
-	IAnimatable::resize (NL3D_CTRANSFORM_VALUE_COUNT);
-
-	// Set default animation tracks to NULL
-	_PosDefault=NULL;
-	_RotEulerDefault=NULL;
-	_RotQuatDefault=NULL;
-	_ScaleDefault=NULL;
-	_PivotDefault=NULL;
-}
-// ***************************************************************************
-void		CTransform::setMatrix(const CMatrix &mat)
-{
-	LocalMatrix= mat;
-	foul();
 }
 // ***************************************************************************
 void		CTransform::hide()
 {
-	// Optim: do nothing if already set (=> not foul() -ed).
+	// Optim: do nothing if already set (=> not foulTransform() -ed).
 	if(Visibility!= CHrcTrav::Hide)
 	{
-		foul();
+		foulTransform();
 		Visibility= CHrcTrav::Hide;
 	}
 }
 // ***************************************************************************
 void		CTransform::show()
 {
-	// Optim: do nothing if already set (=> not foul() -ed).
+	// Optim: do nothing if already set (=> not foulTransform() -ed).
 	if(Visibility!= CHrcTrav::Show)
 	{
-		foul();
+		foulTransform();
 		Visibility= CHrcTrav::Show;
 	}
 }
 // ***************************************************************************
 void		CTransform::heritVisibility()
 {
-	// Optim: do nothing if already set (=> not foul() -ed).
+	// Optim: do nothing if already set (=> not foulTransform() -ed).
 	if(Visibility!= CHrcTrav::Herit)
 	{
-		foul();
+		foulTransform();
 		Visibility= CHrcTrav::Herit;
 	}
 }
 
 
 // ***************************************************************************
-void		CTransform::lookAt (const CVector& eye, const CVector& target, float roll)
+CTrackDefaultVector		CTransform::DefaultPos( CVector::Null );
+CTrackDefaultVector		CTransform::DefaultRotEuler( CVector::Null );
+CTrackDefaultQuat		CTransform::DefaultRotQuat( NLMISC::CQuat::Identity );
+CTrackDefaultVector		CTransform::DefaultScale( CVector(1,1,1) );
+CTrackDefaultVector		CTransform::DefaultPivot( CVector::Null );
+
+ITrack* CTransform::getDefaultTrack (uint valueId)
 {
-	// Roll matrix
-	CMatrix rollMT;
-	rollMT.identity();
-	if (roll!=0.f)
-		rollMT.rotateY (roll);
-
-	// Make the target base
-	CVector j=target;
-	j-=eye;
-	j.normalize();
-	CVector i=j^CVector (0,0,1.f);
-	CVector k=i^j;
-	k.normalize();
-	i=j^k;
-	i.normalize();
-
-	// Make the target matrix
-	CMatrix targetMT;
-	targetMT.identity();
-	targetMT.setRot (i, j, k);
-	targetMT.setPos (eye);
-
-	// Compose matrix
-	targetMT*=rollMT;
-
-	// Set the matrix
-	setMatrix (targetMT);
-}
-
-
-// ***************************************************************************
-uint		CTransform::getValueCount () const
-{
-	/* 
-	 * 4 values,
-	 0: translation
-	 1: rotation euler
-	 2: rotation quaternion
-	 3: scale
-	 4: pivot
-	 */
-	return NL3D_CTRANSFORM_VALUE_COUNT;
-}
-// ***************************************************************************
-IAnimatedValue*		CTransform::getValue (uint valueId)
-{
-	// Only value of the transform
-	nlassert (valueId<NL3D_CTRANSFORM_VALUE_COUNT);
+	// Cyril: prefer do it here in CTransform, because of CCamera, CLight etc... (which may not need a default value too!!)
 
 	// what value ?
 	switch (valueId)
 	{
-	case 0:
-		return &_Pos;
-	case 1:
-		return &_RotEuler;
-	case 2:
-		return &_RotQuat;
-	case 3:
-		return &_Scale;
-	case 4:
-		return &_Pivot;
+	case PosValue:			return &DefaultPos;
+	case RotEulerValue:		return &DefaultRotEuler;
+	case RotQuatValue:		return &DefaultRotQuat;
+	case ScaleValue:		return &DefaultScale;
+	case PivotValue:		return &DefaultPivot;
 	}
 
-	// No, only NL3D_CTRANSFORM_VALUE_COUNT values!
-	nlassert (0);
+	// No, only ITrnasformable values!
+	nlstop();
+	// Deriver note: else call BaseClass::getDefaultTrack(valueId);
 
 	return NULL;
+
 }
-// ***************************************************************************
-const std::string CTransform::valueNames [NL3D_CTRANSFORM_VALUE_COUNT]=
-{
-	std::string ("POS"),
-	std::string ("ROTEULER"),
-	std::string ("ROTQUAT"),
-	std::string ("SCALE"),
-	std::string ("PIVOT")
-};
-// ***************************************************************************
-const std::string&	CTransform::getValueName (uint valueId) const
-{
-	// Only value of the transform
-	nlassert (valueId<NL3D_CTRANSFORM_VALUE_COUNT);
 
-	// Return the value
-	return valueNames[valueId];
-}
-// ***************************************************************************
-ITrack*		CTransform::getDefaultTrack (uint valueId)
-{
-	// Only value of the transform
-	nlassert (valueId<NL3D_CTRANSFORM_VALUE_COUNT);
-
-	// what value ?
-	switch (valueId)
-	{
-	case 0:
-		return _PosDefault;
-	case 1:
-		return _RotEulerDefault;
-	case 2:
-		return _RotQuatDefault;
-	case 3:
-		return _ScaleDefault;
-	case 4:
-		return _PivotDefault;
-	}
-
-	// No, only NL3D_CTRANSFORM_VALUE_COUNT values!
-	nlassert (0);
-
-	return NULL;
-}
 
 
 }

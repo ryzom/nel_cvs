@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.14 2001/01/23 14:31:41 corvazier Exp $
+# $Id: Makefile.am,v 1.15 2001/01/24 14:09:53 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -24,10 +24,14 @@ libnel3d_la_SOURCES  = aabbox.cpp bezier_patch.cpp bitmap.cpp bsphere.cpp \
                        vertex_buffer.cpp viewport.cpp zone.cpp \
                        texture_far.cpp shader.cpp mrm_builder.cpp \
                        mrm_mesh.cpp tile_lumel.cpp texture_near.cpp \
-					   zone_smoother.cpp zone_tgt_smoother.cpp
+                       zone_smoother.cpp zone_tgt_smoother.cpp
 
-libnel3d_la_LIBADD    = @FREETYPE_LIBS@ -ldl -lGL
+AM_CXXFLAGS          = @FREETYPE_CFLAGS@
 
-AM_CXXFLAGS           = @FREETYPE_CFLAGS@
+libnel3d_la_LIBADD   = @FREETYPE_LIBS@ -ldl -lGL
+
+libnel3d_la_LDFLAGS  = -version-info @LIBTOOL_VERSION@
+
 
 # End of Makefile.am
+

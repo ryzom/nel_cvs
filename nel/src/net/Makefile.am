@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.5 2000/12/07 15:38:10 valignat Exp $
+# $Id: Makefile.am,v 1.6 2001/01/24 14:09:53 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -15,6 +15,8 @@ libnelnet_la_SOURCES = base_socket.cpp cubic_entity_interpolator.cpp \
                        unitime.cpp
 
 libnelnet_la_LIBADD  = -lc
+
+libnelnet_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 
 
 # End of Makefile.am

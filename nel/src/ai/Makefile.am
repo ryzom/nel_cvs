@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2001/01/12 09:41:38 valignat Exp $
+# $Id: Makefile.am,v 1.4 2001/01/24 14:09:53 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -8,7 +8,7 @@ lib_LTLIBRARIES      = libnelai.la
 
 SUBDIRS              = agent c fuzzy logic pyserver script .
 
-libnelai_la_SOURCES  = ia.cpp static_def_init.cpp
+libnelai_la_SOURCES  = ai.cpp static_def_init.cpp
 
 libnelai_la_LIBADD   = agent/libagent.la \
                        c/libcommon.la \
@@ -16,6 +16,9 @@ libnelai_la_LIBADD   = agent/libagent.la \
                        logic/liblogic.la \
                        pyserver/libpyserver.la \
                        script/libscript.la
+
+libnelai_la_LDFLAGS  = -version-info @LIBTOOL_VERSION@
+
 
 # End of Makefile.am
 

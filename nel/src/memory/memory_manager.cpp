@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.5 2003/10/22 08:17:54 corvazier Exp $
+ * $Id: memory_manager.cpp,v 1.6 2003/11/17 10:12:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -189,6 +189,13 @@ MEMORY_API bool			IsAlwaysCheckMemory()
 	return GlobalHeapAllocator->debugIsAlwaysCheckMemory ();
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 	return false;
+}
+
+// *********************************************************
+
+MEMORY_API void			SetOutOfMemoryHook (void (*outOfMemoryCallback)())
+{
+	GlobalHeapAllocator->setOutOfMemoryHook (outOfMemoryCallback);
 }
 
 // *********************************************************

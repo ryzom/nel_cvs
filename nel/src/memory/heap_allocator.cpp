@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.8 2003/10/22 08:17:55 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.9 2003/11/17 10:12:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,6 +108,9 @@ CHeapAllocator::CHeapAllocator (uint mainBlockSize, uint blockCount, TBlockAlloc
 
 	// No small block
 	_SmallBlockPool = NULL;
+
+	// No out of memory callback
+	_OutOfMemoryCallback = NULL;
 
 	leaveCriticalSection ();
 }
@@ -814,7 +817,155 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 			// *******************
 
 			// Check size
-			if ( (size & ~CNodeBegin::SizeMask) != 0)
+			if ( (size & ~CNodeBegin::SizeMask) == 0)
+			{
+				enterCriticalSectionLB ();
+
+				// Find a free node
+				CHeapAllocator::CFreeNode *freeNode = CHeapAllocator::find (size);
+
+				// The node
+				CNodeBegin *node;
+
+				// Node not found ?
+				if (freeNode == NULL)
+				{
+					// Block allocation mode
+					if ((_BlockAllocationMode == DontGrow) && (_MainBlockList != NULL))
+					{
+						leaveCriticalSectionLB ();
+						outOfMemory();
+						return NULL;
+					}
+
+					// The node
+					uint8 *buffer;
+
+					// Alloc size
+					uint allocSize;
+
+					// Aligned size
+					uint allignedSize = (size&~(Align-1)) + (( (size&(Align-1))==0 ) ? 0 : Align);
+					if (allignedSize < BlockDataSizeMin)
+						allignedSize = BlockDataSizeMin;
+
+					// Does the node bigger than mainNodeSize ?
+					if (allignedSize > (_MainBlockSize-sizeof (CNodeBegin)-NL_HEAP_NODE_END_SIZE))
+						// Allocate a specific block
+						allocSize = allignedSize + sizeof (CNodeBegin) + NL_HEAP_NODE_END_SIZE;
+					else
+						// Allocate a new block
+						allocSize = _MainBlockSize;
+
+					// Allocate the buffer
+					buffer = internalAllocateBlock (allocSize+Align);
+
+					// Out of memory ?
+					if (!buffer)
+					{
+						leaveCriticalSectionLB ();
+						outOfMemory();
+						return NULL;
+					}
+
+					// Add the buffer
+					CMainBlock *mainBlock = (CMainBlock*)internalAllocateBlock (sizeof(CMainBlock)); 
+
+					// Out of memory ?
+					if (!mainBlock)
+					{
+						leaveCriticalSectionLB ();
+						outOfMemory();
+						return NULL;
+					}
+
+					mainBlock->Size = allocSize+Align;
+					mainBlock->Ptr = buffer;
+					mainBlock->Next = _MainBlockList;
+					_MainBlockList = mainBlock;
+
+					// Init the new block
+					initEmptyBlock (*mainBlock);
+
+					// Get the first node
+					node = getFirstNode (mainBlock);
+				}
+				else
+				{
+					// Get the node
+					node = getNode (freeNode);
+
+					// Remove the node from free blocks and get the removed block
+					erase (freeNode);
+				}
+
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+				// Check the node CRC
+				checkNode (node, evalMagicNumber (node));
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+
+				// Split the node
+				CNodeBegin *rest = splitNode (node, size);
+
+				// Fill informations for the first part of the node
+
+				// Clear free flag
+				setNodeUsed (node);
+
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+				// Fill category
+				strncpy (node->Category, category, CategoryStringLength-1);
+
+				// Source filename
+				node->File = sourceFile;
+
+				// Source line
+				node->Line = line;
+
+				// Allocate count
+				node->AllocateNumber = _AllocateCount++;
+				internalAssert (node->AllocateNumber != 245);
+				
+				// Crc node
+				NL_UPDATE_MAGIC_NUMBER (node);
+
+				// Uninitialised memory
+				memset ((uint8*)node + sizeof(CNodeBegin), UninitializedMemory, (uint32)(node->EndMagicNumber) - ( (uint32)node + sizeof(CNodeBegin) ) );
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+
+				// Node has been splited ?
+				if (rest)
+				{
+					// Fill informations for the second part of the node
+
+					// Get the freeNode
+					freeNode = getFreeNode (rest);
+
+					// Insert the free node
+					insert (freeNode);
+
+					// Crc node
+					NL_UPDATE_MAGIC_NUMBER (rest);
+				}
+
+				// Check the node size
+				internalAssert ( size <= getNodeSize (node) );
+				internalAssert ( std::max ((uint)BlockDataSizeMin, size + (uint)Align) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + BlockDataSizeMin >= getNodeSize (node) );
+
+				// Check pointer alignment
+				internalAssert (((uint32)node&(Align-1)) == 0);
+				internalAssert (((uint32)((char*)node + sizeof(CNodeBegin))&(Align-1)) == 0);
+
+				// Check size
+				internalAssert ((uint32)node->EndMagicNumber <= (uint32)((uint8*)node+sizeof(CNodeBegin)+getNodeSize (node) ));
+				internalAssert ((uint32)node->EndMagicNumber > (uint32)(((uint8*)node+sizeof(CNodeBegin)+getNodeSize (node) ) - BlockDataSizeMin - BlockDataSizeMin - sizeof(CNodeBegin) - sizeof(CNodeEnd)));
+
+				leaveCriticalSectionLB ();
+
+				// Return the user pointer
+				return (void*)((uint)node + sizeof (CNodeBegin));
+			}
+			else
 			{
 				// ********
 				// * STOP *
@@ -823,143 +974,9 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 				// ********
 				NL_ALLOC_STOP
 
-				// Select outofmemory mode
-				if (_OutOfMemoryMode == ReturnNull)
-					return NULL;
-				else
-					throw 0;
+				outOfMemory();
+				return NULL;
 			}
-
-			enterCriticalSectionLB ();
-
-			// Find a free node
-			CHeapAllocator::CFreeNode *freeNode = CHeapAllocator::find (size);
-
-			// The node
-			CNodeBegin *node;
-
-			// Node not found ?
-			if (freeNode == NULL)
-			{
-				// Block allocation mode
-				if ((_BlockAllocationMode == DontGrow) && (_MainBlockList != NULL))
-				{
-					// Select outofmemory mode
-					if (_OutOfMemoryMode == ReturnNull)
-						return NULL;
-					else
-						throw 0;
-				}
-
-				// The node
-				uint8 *buffer;
-
-				// Alloc size
-				uint allocSize;
-
-				// Aligned size
-				uint allignedSize = (size&~(Align-1)) + (( (size&(Align-1))==0 ) ? 0 : Align);
-				if (allignedSize < BlockDataSizeMin)
-					allignedSize = BlockDataSizeMin;
-
-				// Does the node bigger than mainNodeSize ?
-				if (allignedSize > (_MainBlockSize-sizeof (CNodeBegin)-NL_HEAP_NODE_END_SIZE))
-					// Allocate a specific block
-					allocSize = allignedSize + sizeof (CNodeBegin) + NL_HEAP_NODE_END_SIZE;
-				else
-					// Allocate a new block
-					allocSize = _MainBlockSize;
-
-				// Allocate the buffer
-				buffer = allocateBlock (allocSize+Align);
-
-				// Add the buffer
-				CMainBlock *mainBlock = (CMainBlock*)allocateBlock (sizeof(CMainBlock)); 
-				mainBlock->Size = allocSize+Align;
-				mainBlock->Ptr = buffer;
-				mainBlock->Next = _MainBlockList;
-				_MainBlockList = mainBlock;
-
-				// Init the new block
-				initEmptyBlock (*mainBlock);
-
-				// Get the first node
-				node = getFirstNode (mainBlock);
-			}
-			else
-			{
-				// Get the node
-				node = getNode (freeNode);
-
-				// Remove the node from free blocks and get the removed block
-				erase (freeNode);
-			}
-
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
-			// Check the node CRC
-			checkNode (node, evalMagicNumber (node));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
-
-			// Split the node
-			CNodeBegin *rest = splitNode (node, size);
-
-			// Fill informations for the first part of the node
-
-			// Clear free flag
-			setNodeUsed (node);
-
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
-			// Fill category
-			strncpy (node->Category, category, CategoryStringLength-1);
-
-			// Source filename
-			node->File = sourceFile;
-
-			// Source line
-			node->Line = line;
-
-			// Allocate count
-			node->AllocateNumber = _AllocateCount++;
-			internalAssert (node->AllocateNumber != 245);
-			
-			// Crc node
-			NL_UPDATE_MAGIC_NUMBER (node);
-
-			// Uninitialised memory
-			memset ((uint8*)node + sizeof(CNodeBegin), UninitializedMemory, (uint32)(node->EndMagicNumber) - ( (uint32)node + sizeof(CNodeBegin) ) );
-#endif // NL_HEAP_ALLOCATION_NDEBUG
-
-			// Node has been splited ?
-			if (rest)
-			{
-				// Fill informations for the second part of the node
-
-				// Get the freeNode
-				freeNode = getFreeNode (rest);
-
-				// Insert the free node
-				insert (freeNode);
-
-				// Crc node
-				NL_UPDATE_MAGIC_NUMBER (rest);
-			}
-
-			// Check the node size
-			internalAssert ( size <= getNodeSize (node) );
-			internalAssert ( std::max ((uint)BlockDataSizeMin, size + (uint)Align) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + BlockDataSizeMin >= getNodeSize (node) );
-
-			// Check pointer alignment
-			internalAssert (((uint32)node&(Align-1)) == 0);
-			internalAssert (((uint32)((char*)node + sizeof(CNodeBegin))&(Align-1)) == 0);
-
-			// Check size
-			internalAssert ((uint32)node->EndMagicNumber <= (uint32)((uint8*)node+sizeof(CNodeBegin)+getNodeSize (node) ));
-			internalAssert ((uint32)node->EndMagicNumber > (uint32)(((uint8*)node+sizeof(CNodeBegin)+getNodeSize (node) ) - BlockDataSizeMin - BlockDataSizeMin - sizeof(CNodeBegin) - sizeof(CNodeEnd)));
-
-			leaveCriticalSectionLB ();
-
-			// Return the user pointer
-			return (void*)((uint)node + sizeof (CNodeBegin));
 		}
 	}
 	else
@@ -2405,6 +2422,35 @@ uint CHeapAllocator::getAllocatedSystemMemoryByAllocator ()
 #endif // NL_OS_WINDOWS
 
 	return nelSystemMemory;
+}
+
+// *********************************************************
+
+uint8 *CHeapAllocator::internalAllocateBlock (uint size)
+{
+	uint8 *ptr = allocateBlock (size);
+	
+	return ptr;
+}
+
+// *********************************************************
+
+void CHeapAllocator::outOfMemory()
+{
+	// Out of memory callback
+	if (_OutOfMemoryCallback)
+		_OutOfMemoryCallback();
+	
+	// Select outofmemory mode
+	if (_OutOfMemoryMode == ThrowException)
+		throw 0;
+}
+
+// *********************************************************
+
+void CHeapAllocator::setOutOfMemoryHook (void (*outOfMemoryCallback)())
+{
+	_OutOfMemoryCallback = outOfMemoryCallback;
 }
 
 // *********************************************************

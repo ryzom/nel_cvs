@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.17 2003/10/22 08:17:54 corvazier Exp $
+ * $Id: memory_manager.h,v 1.18 2003/11/17 10:12:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,9 @@
 	// Works with standard memory allocator in _DEBUG and with nel memory allocator with debug features activated
 	bool		IsAlwaysCheckMemory();
 
+	// Set a out of memory callback
+	// Works only with nel memory allocator
+	void		SetOutOfMemoryHook(void (*outOfMemoryCallback)());
 */
 
 // Memory debug for windows
@@ -256,6 +259,7 @@ inline bool			IsAlwaysCheckMemory()
 #endif // WIN32
 }
 inline bool			StatisticsReport (const char *filename, bool memoryDump) { return true; }
+inline void			SetOutOfMemoryHook (void (*outOfMemoryCallback)()) { }
 
 }
 
@@ -285,6 +289,7 @@ MEMORY_API bool			StatisticsReport (const char *filename, bool memoryDump);
 MEMORY_API void			ReportMemoryLeak ();
 MEMORY_API void			AlwaysCheckMemory(bool alwaysCheck);
 MEMORY_API bool			IsAlwaysCheckMemory();
+MEMORY_API void			SetOutOfMemoryHook (void (*outOfMemoryCallback)());
 
  /* Allocation context
  */

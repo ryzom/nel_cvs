@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.h,v 1.2 2003/07/01 15:33:14 corvazier Exp $
+ * $Id: heap_allocator.h,v 1.3 2003/11/17 10:12:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,6 +156,9 @@ public:
 	uint					getAllocatedSystemMemoryByAllocator ();
 
 	float					getFragmentationRatio () const;
+
+	// Set out of memory hook. Use NULL to remove the current hook.
+	void					setOutOfMemoryHook (void (*outOfMemoryCallback)());
 	
 	void					setName (const char* name);
 	
@@ -471,6 +474,12 @@ private:
 
 	// Some internal methods
 
+	/** Method used to allocate system memory. Calls allocateBlock. */
+	uint8			*internalAllocateBlock (uint size);
+
+	/** Method used when no memory is available */
+	void			outOfMemory ();
+
 	/* Integrity check of a single node. Called at each allocation / deallocation when NL_HEAP_ALLOCATION_NDEBUG is not defined.
 	   Call it inside a critical section. */
 	bool		checkNodeSB (const CSmallBlockPool *mainBlock, const CNodeBegin *previous, const CNodeBegin *current, 
@@ -519,6 +528,9 @@ private:
 
 	/* Thread dependant storage of category stack */
 	CMemoryTDS	_CategoryStack;
+
+	// Out of memory callback
+	void			(*_OutOfMemoryCallback)();
 };
 
 } // NLMEMORY 

@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.9 2002/06/12 10:14:55 lecroart Exp $
+ * $Id: landscapeig_manager.cpp,v 1.10 2002/06/25 15:35:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,10 +111,17 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 				{
 					// create the instanceGroup.
 					UInstanceGroup	*ig = UInstanceGroup::createInstanceGroup(token);
-					// add it to the map.
-					string	tokId= token;
-					strupr(tokId);
-					_ZoneInstanceGroupMap[tokId]= CInstanceGroupElement(ig, token);
+					if (ig)
+					{
+						// add it to the map.
+						string	tokId= token;
+						strupr(tokId);
+						_ZoneInstanceGroupMap[tokId]= CInstanceGroupElement(ig, token);
+					}
+					else
+					{
+						nlwarning ("CLandscapeIGManager::initIG() Can't load instance group '%s' in '%s'", token, igFile.c_str());
+					}
 				}
 			}
 		}

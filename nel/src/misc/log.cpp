@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.17 2000/12/13 11:05:48 berenguier Exp $
+ * $Id: log.cpp,v 1.18 2001/01/04 18:16:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,8 +65,11 @@ void CLog::setLocalHostAndService( const std::string& hostname, const std::strin
 #endif
 	if (_LocalHostAndService == NULL)
 		_LocalHostAndService = new string;
-		
-	*_LocalHostAndService = ss.str();
+
+	if (hostname.size()==0 && servicename.size() == 0)
+		*_LocalHostAndService = "";
+	else
+		*_LocalHostAndService = ss.str();
 }
 
 
@@ -169,7 +172,7 @@ void CLog::display( const char *format, ... )
 		ss << cstime << " ";
 	}
 	ss << priorityStr().c_str();
-	if ( _Long )
+	if ( _Long && _LocalHostAndService != NULL && _LocalHostAndService->size() != 0)
 	{
 		ss << " " << _LocalHostAndService->c_str();
 	}
@@ -237,13 +240,14 @@ string CLog::priorityStr() const
 {
 	switch ( _Priority )
 	{
-		case LOG_DEBUG : return "DBG";
-		case LOG_WARNING : return "WRN";
-		case LOG_INFO : return "INF";
-		case LOG_ERROR : return "ERR";
-		case LOG_STAT : return "STT";
-		case LOG_ASSERT : return "AST";
-		default: nlstop; return "<Unknown>";
+	case LOG_NO : return "";
+	case LOG_DEBUG : return "DBG";
+	case LOG_WARNING : return "WRN";
+	case LOG_INFO : return "INF";
+	case LOG_ERROR : return "ERR";
+	case LOG_STAT : return "STT";
+	case LOG_ASSERT : return "AST";
+	default: nlstop; return "<Unknown>";
 	}
 }
 

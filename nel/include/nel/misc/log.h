@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.12 2000/12/13 11:05:55 berenguier Exp $
+ * $Id: log.h,v 1.13 2001/01/04 18:16:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLMISC
 class IDisplayer;
 
 
-typedef enum { LOG_ERROR, LOG_WARNING, LOG_INFO, LOG_DEBUG, LOG_STAT, LOG_ASSERT } TLogPriority;
+typedef enum { LOG_NO, LOG_ERROR, LOG_WARNING, LOG_INFO, LOG_DEBUG, LOG_STAT, LOG_ASSERT } TLogPriority;
 
 typedef std::vector<IDisplayer *> CDisplayers;
 
@@ -58,7 +58,7 @@ class CLog
 public:
 
 	/// Constructor
-	CLog( TLogPriority priority=LOG_DEBUG, bool longinfo=false );
+	CLog( TLogPriority priority=LOG_NO, bool longinfo=false );
 
 	/// Add a new displayer in the log. You have to create the displayer, remove it and delete it when you have finnish with it.
 	/// For example, in a 3dDisplayer, you can add the displayer when you want, and the displayer displayer the string if the 3d

@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.15 2001/11/07 17:18:13 vizerie Exp $
+ * $Id: export_material.cpp,v 1.16 2001/11/14 15:13:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,9 @@ bool CExportNel::hasWaterMaterial(INode& node, TimeValue time)
 // maxBaseBuild.RemapChannel[mat].size() is the final count of NeL vertexMap channels used for the material n° mat.
 // For each NeL channel of a material, copy the 3ds channel maxBaseBuild.RemapChannel[nelChannel]._IndexInMaxMaterial using the transformation matrix
 // maxBaseBuild.RemapChannel[nelChannel]._UVMatrix.
+// maxBaseBuild.NeedVertexColor will be true if at least one material need vertex color. Forced to true if lightmaps are used.
+// maxBaseBuild.AlphaVertex[mat] will be true if the material use per vertex alpha.
+// maxBaseBuild.AlphaVertexChannel[mat] will be the channel to use to get the alpha if the material use per vertex alpha.
 // This method append the node material to the vector passed.
 void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
 								TimeValue time, bool absolutePath)
@@ -94,7 +97,7 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 			materials.resize (materials.size()+nMaterialCount);
 
 			// Resize the vertMap remap table
-			maxBaseBuild.RemapChannel.resize (nMaterialCount);
+			maxBaseBuild.MaterialInfo.resize (nMaterialCount);
 
 			// Export all the sub materials
 			for (int nSub=0; nSub<nMaterialCount; nSub++)
@@ -106,7 +109,10 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 				nlassert (pSub);
 
 				// Export it
-				maxBaseBuild.MaterialNames.push_back (buildAMaterial (materials[maxBaseBuild.FirstMaterial+nSub], maxBaseBuild.RemapChannel[nSub], *pSub, time, absolutePath));
+				buildAMaterial (materials[maxBaseBuild.FirstMaterial+nSub], maxBaseBuild.MaterialInfo[nSub], *pSub, time, absolutePath);
+
+				// Need vertex color ?
+				maxBaseBuild.NeedVertexColor |= maxBaseBuild.MaterialInfo[nSub].AlphaVertex | maxBaseBuild.MaterialInfo[nSub].ColorVertex;
 			}
 		}
 		// Else export only this material, so, count is 1
@@ -119,10 +125,13 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 			materials.resize (materials.size()+1);
 
 			// Resize the vertMap remap table
-			maxBaseBuild.RemapChannel.resize (1);
+			maxBaseBuild.MaterialInfo.resize (1);
 
 			// Export the main material
-			maxBaseBuild.MaterialNames.push_back (buildAMaterial (materials[maxBaseBuild.FirstMaterial], maxBaseBuild.RemapChannel[0], *pNodeMat, time, absolutePath));
+			buildAMaterial (materials[maxBaseBuild.FirstMaterial], maxBaseBuild.MaterialInfo[0], *pNodeMat, time, absolutePath);
+
+			// Need vertex color ?
+			maxBaseBuild.NeedVertexColor |= maxBaseBuild.MaterialInfo[0].AlphaVertex | maxBaseBuild.MaterialInfo[0].ColorVertex;
 		}
 	}
 
@@ -134,13 +143,13 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 		nMaterialCount=1;
 
 		// Resize the vertMap remap table
-		maxBaseBuild.RemapChannel.resize (1);
+		maxBaseBuild.MaterialInfo.resize (1);
 
 		// Init the first material
 		materials[maxBaseBuild.FirstMaterial].initLighted();
 
 		// Export the main material
-		maxBaseBuild.MaterialNames.push_back ("Default");
+		maxBaseBuild.MaterialInfo[0].MaterialName = "Default";
 	}
 
 	// Return the count of material
@@ -148,7 +157,7 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 }
 
 // Build a NeL material corresponding with a max material.
-std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMaterialDesc>& remap3dsTexChannel, Mtl& mtl, TimeValue tvTime, bool absolutePath)
+void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& materialInfo, Mtl& mtl, TimeValue time, bool absolutePath)
 {
 	// Init the material lighted
 	material.initLighted ();
@@ -161,7 +170,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 
 	// Look for a diffuse texmap
 	vector<bool> mapEnables;
-	CExportNel::getValueByNameUsingParamBlock2 (mtl, "mapEnables", (ParamType2)TYPE_BOOL_TAB, &mapEnables, tvTime);
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "mapEnables", (ParamType2)TYPE_BOOL_TAB, &mapEnables, time);
 
 	Texmap *pDifTexmap = NULL;
 	Texmap *pOpaTexmap = NULL;
@@ -180,10 +189,10 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	int bForceZWrite = 0; // false
 	int bForceNoZWrite = 0; // false
 
-	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceZWrite", (ParamType2)TYPE_BOOL, &bForceZWrite, tvTime);
-	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceNoZWrite", (ParamType2)TYPE_BOOL, &bForceNoZWrite, tvTime);
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceZWrite", (ParamType2)TYPE_BOOL, &bForceZWrite, time);
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceNoZWrite", (ParamType2)TYPE_BOOL, &bForceNoZWrite, time);
 
-	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaTest", (ParamType2)TYPE_BOOL, &bAlphaTest, tvTime);
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaTest", (ParamType2)TYPE_BOOL, &bAlphaTest, time);
 
 	if( pSpeTexmap != NULL )
 	{
@@ -191,7 +200,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	}
 	else
 	{
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, tvTime);		
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, time);		
 		if (bLightMap)
 		{
 			material.setShader (CMaterial::LightMap);
@@ -203,7 +212,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	}
 
 	int bStainedGlassWindow = 0;
-	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bStainedGlassWindow", (ParamType2)TYPE_BOOL, &bStainedGlassWindow, tvTime);
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bStainedGlassWindow", (ParamType2)TYPE_BOOL, &bStainedGlassWindow, time);
 	material.setStainedGlassWindow( bStainedGlassWindow!=0 );
 
 	material.setAlphaTest(false);
@@ -224,23 +233,23 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 			std::vector<CMaterialDesc> _3dsTexChannel;
 			
 			// Ok export the texture in NeL format
-			pTexture=buildATexture (*pDifTexmap, _3dsTexChannel, tvTime, absolutePath);
+			pTexture=buildATexture (*pDifTexmap, _3dsTexChannel, time, absolutePath);
 
 			// Check vertMap size
 			nlassert (_3dsTexChannel.size()==1);
 
 			// For this shader, only need a texture channel.
-			remap3dsTexChannel.resize (1);
+			materialInfo.RemapChannel.resize (1);
 
 			// Need an explicit channel, not generated
 			if ((_3dsTexChannel[0]._IndexInMaxMaterial==UVGEN_OBJXYZ)||(_3dsTexChannel[0]._IndexInMaxMaterial==UVGEN_WORLDXYZ))
 			{
-				remap3dsTexChannel[0]._IndexInMaxMaterial=UVGEN_MISSING;
-				remap3dsTexChannel[0]._UVMatrix.IdentityMatrix();
+				materialInfo.RemapChannel[0]._IndexInMaxMaterial=UVGEN_MISSING;
+				materialInfo.RemapChannel[0]._UVMatrix.IdentityMatrix();
 			}
 			// Else copy it
 			else 
-				remap3dsTexChannel[0]=_3dsTexChannel[0];
+				materialInfo.RemapChannel[0]=_3dsTexChannel[0];
 
 			// Add the texture if it exist
 			material.setTexture(0, pTexture);
@@ -270,11 +279,11 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 			// Export mapping channel 2 if lightmap asked.
 			if( bLightMap ) // lightmap enabled ?
 			{
-				remap3dsTexChannel.resize( 2 );
+				materialInfo.RemapChannel.resize( 2 );
 				// Copy information from channel 0
-				remap3dsTexChannel[1] = remap3dsTexChannel[0];
-				remap3dsTexChannel[1]._IndexInMaxMaterial = 2;
-				remap3dsTexChannel[1]._IndexInMaxMaterialAlternative = remap3dsTexChannel[0]._IndexInMaxMaterial;
+				materialInfo.RemapChannel[1] = materialInfo.RemapChannel[0];
+				materialInfo.RemapChannel[1]._IndexInMaxMaterial = 2;
+				materialInfo.RemapChannel[1]._IndexInMaxMaterialAlternative = materialInfo.RemapChannel[0]._IndexInMaxMaterial;
 			}
 		}
 	}
@@ -296,7 +305,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 													CTextureCube::negative_x, CTextureCube::positive_x,
 													CTextureCube::negative_y, CTextureCube::positive_y	};
 			vector<string> names;
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "bitmapName", (ParamType2)TYPE_STRING_TAB, &names, tvTime);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "bitmapName", (ParamType2)TYPE_STRING_TAB, &names, time);
 			for( int i = 0; i< (int)names.size(); ++i )
 			{
 				CTextureFile *pT = new CTextureFile;
@@ -334,7 +343,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 				if (isClassIdCompatible(*pSubMap, Class_ID (BMTEX_CLASS_ID,0)))
 				{					
 					std::vector<CMaterialDesc> _3dsTexChannel;
-					pTexture = buildATexture (*pSubMap, _3dsTexChannel, tvTime, absolutePath);
+					pTexture = buildATexture (*pSubMap, _3dsTexChannel, time, absolutePath);
 					pTextureCube->setTexture((CTextureCube::TFace)i, pTexture);
 				}
 			}
@@ -347,7 +356,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 			std::vector<CMaterialDesc> _3dsTexChannel;
 			
 			// Ok export the texture in NeL format
-			pTexture = buildATexture (*pSpeTexmap, _3dsTexChannel, tvTime, absolutePath);
+			pTexture = buildATexture (*pSpeTexmap, _3dsTexChannel, time, absolutePath);
 			pTextureCube->setTexture(CTextureCube::positive_x, pTexture);
 		}
 		// Add the texture if it exist
@@ -356,7 +365,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 
 	// Blend mode
 	int opacityType = 0; // 0-filter 1-substractive 2-additive
-	CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacityType", (ParamType2)TYPE_INT, &opacityType, tvTime);
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacityType", (ParamType2)TYPE_INT, &opacityType, time);
 	if( opacityType == 0 ) // Filter
 		material.setBlendFunc (CMaterial::srcalpha, CMaterial::invsrcalpha);
 	else
@@ -385,17 +394,17 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 		// *****************************************
 
 		// Get the diffuse color of the max material
-		//Color color=stdmat->GetDiffuse (tvTime);
+		//Color color=stdmat->GetDiffuse (time);
 		Point3 maxDiffuse;
 		CRGBA  nelDiffuse;
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "diffuse", (ParamType2)TYPE_RGBA, &maxDiffuse, tvTime);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "diffuse", (ParamType2)TYPE_RGBA, &maxDiffuse, time);
 
 		// Convert to NeL color
 		convertColor (nelDiffuse, maxDiffuse);
 		// Get the opacity value from the material
-		// float fOp=stdmat->GetOpacity (tvTime);
+		// float fOp=stdmat->GetOpacity (time);
 		float fOp = 0.0f;
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacity", (ParamType2)TYPE_PCNT_FRAC, &fOp, tvTime);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacity", (ParamType2)TYPE_PCNT_FRAC, &fOp, time);
 
 		// Add alpha to the value
 		float fA=(fOp*255.f+0.5f);
@@ -430,42 +439,42 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 		CRGBA nelAmbient;
 		CRGBA nelSpecular;
 		//if (stdmat->GetSelfIllumColorOn())
-		//	convertColor (emissiveColor, stdmat->GetSelfIllumColor (tvTime));
+		//	convertColor (emissiveColor, stdmat->GetSelfIllumColor (time));
 		//else
-		//	convertColor (emissiveColor, stdmat->GetDiffuse (tvTime)*stdmat->GetSelfIllum (tvTime));
+		//	convertColor (emissiveColor, stdmat->GetDiffuse (time)*stdmat->GetSelfIllum (time));
 		int bSelfIllumColorOn;
 		Point3 maxSelfIllum;
 		float fTemp;
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "useSelfIllumColor", (ParamType2)TYPE_BOOL, &bSelfIllumColorOn, tvTime);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "useSelfIllumColor", (ParamType2)TYPE_BOOL, &bSelfIllumColorOn, time);
 		if( bSelfIllumColorOn )
 		{
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumColor", (ParamType2)TYPE_RGBA, &maxSelfIllum, tvTime);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumColor", (ParamType2)TYPE_RGBA, &maxSelfIllum, time);
 		}
 		else
 		{
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumAmount", (ParamType2)TYPE_PCNT_FRAC, &fTemp, tvTime);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumAmount", (ParamType2)TYPE_PCNT_FRAC, &fTemp, time);
 			maxSelfIllum = maxDiffuse * fTemp;
 		}
 		convertColor( nelEmissive, maxSelfIllum );
 
 		Point3 maxAmbient;
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "ambient", (ParamType2)TYPE_RGBA, &maxAmbient, tvTime);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "ambient", (ParamType2)TYPE_RGBA, &maxAmbient, time);
 		convertColor (nelAmbient, maxAmbient);
 
 		Point3 maxSpecular;
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "specular", (ParamType2)TYPE_RGBA, &maxSpecular, tvTime);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "specular", (ParamType2)TYPE_RGBA, &maxSpecular, time);
 		convertColor (nelSpecular, maxSpecular);
 
 		// Specular level
-		float shininess; //=stdmat->GetShinStr(tvTime);
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "specularLevel", (ParamType2)TYPE_PCNT_FRAC, &shininess, tvTime);
+		float shininess; //=stdmat->GetShinStr(time);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "specularLevel", (ParamType2)TYPE_PCNT_FRAC, &shininess, time);
 		CRGBAF fColor = nelSpecular;
 		fColor *= shininess;
 		nelSpecular = fColor;
 
 		// Shininess
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "glossiness", (ParamType2)TYPE_PCNT_FRAC, &shininess, tvTime);
-		//shininess=stdmat->GetShader()->GetGlossiness(tvTime);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "glossiness", (ParamType2)TYPE_PCNT_FRAC, &shininess, time);
+		//shininess=stdmat->GetShader()->GetGlossiness(time);
 		shininess=(float)pow(2.0, shininess * 10.0) * 4.f;
 
 		// Light parameters
@@ -473,7 +482,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 
 		// Double sided
 		int bDoubleSided;
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "twoSided", (ParamType2)TYPE_BOOL, &bDoubleSided, tvTime);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "twoSided", (ParamType2)TYPE_BOOL, &bDoubleSided, time);
 
 		//material.setDoubleSided (stdmat->GetTwoSided()!=FALSE);
 		material.setDoubleSided ( bDoubleSided!=0 );
@@ -489,9 +498,61 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 		}
 	}
 
-	// Get material name
+	// Use alpha vertex ?
+	int bAlphaVertex = 0; // false
+
+	// Get the scripted value
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaVertex", (ParamType2)TYPE_BOOL, &bAlphaVertex, time);
+
+	// Find ?
+	if ( bAlphaVertex )
+	{
+		// Ok, alpha vertex
+		materialInfo.AlphaVertex = true;
+
+		if( bAlphaTest )
+		{ 
+			// If Alpha Test enabled no blend required just check if we are forced to NOT write in the ZBuffer
+			material.setAlphaTest(true);
+			if( bForceNoZWrite )
+				material.setZWrite( false );
+			else
+				material.setZWrite( true );
+		}
+		else
+		{ // No Alpha Test so we have to blend and check if we are forced to write in the ZBuffer
+			material.setBlend( true );
+			if( bForceZWrite )
+				material.setZWrite( true );
+			else
+				material.setZWrite( false );
+		}
+
+		// Get the channel for alpha vertex
+		materialInfo.AlphaVertexChannel = 0;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "iAlphaVertexChannel", (ParamType2)TYPE_INT, &materialInfo.AlphaVertexChannel, time);
+	}
+
+	// Use color vertex ?
+	int bColorVertex = 0; // false
+
+	// Get the scripted value
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bColorVertex", (ParamType2)TYPE_BOOL, &bColorVertex, time);
+
+	// Find ?
+	if ( bColorVertex )
+	{
+		// Ok, color vertex
+		materialInfo.ColorVertex = true;
+
+		// Active vertex color in lighted mode
+		material.setLightedVertexColor (material.isLighted());
+	}
+
+	// Set material name
+	
 	TSTR name=mtl.GetName();
-	return (const char*)name;
+	materialInfo.MaterialName = (const char*)name;
 }
 
 // Get 3ds channels uv used by a texmap and make a good index channel

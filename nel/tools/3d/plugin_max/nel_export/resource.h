@@ -91,12 +91,12 @@
 #define IDC_SHOWLUMEL                   1056
 #define IDC_CLUSTERIZE                  1057
 #define IDC_EXPORT_BG_COLOR             1057
-#define IDC_SHOWLUMEL2                  1057
 #define IDC_EXPORT_NOTE_TRACK           1058
 #define IDC_DONT_EXPORT                 1059
 #define IDC_EDIT_LUMELSIZEMUL           1060
 #define IDC_EDIT_SOFTSHADOW_RADIUS      1061
 #define IDC_EDIT_SOFTSHADOW_CONELENGTH  1062
+#define IDC_EDIT_UV_CHANNEL_FOR_ALPHA   1064
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -105,7 +105,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        115
+#define _APS_NEXT_RESOURCE_VALUE        116
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1063
 #define _APS_NEXT_SYMED_VALUE           101

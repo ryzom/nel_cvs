@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.29 2001/11/12 18:12:51 corvazier Exp $
+ * $Id: export_nel.h,v 1.30 2001/11/14 15:13:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -464,21 +464,54 @@ private:
 		float		_CropH;
 	};
 
+	// Max material info
+	class CMaxMaterialInfo
+	{
+	public:
+		// Default constructor
+		CMaxMaterialInfo ()
+		{
+			AlphaVertex = false;
+			ColorVertex = false;
+			AlphaVertexChannel = 0;
+		};
+
+		// Remap UV channel
+		std::vector<CMaterialDesc>					RemapChannel;
+
+		// Material names
+		std::string									MaterialName;
+
+		// Alpha vertex in this material
+		bool										AlphaVertex;
+
+		// Color vertex in this material
+		bool										ColorVertex;
+
+		// Alpha vertex channel for this material
+		uint										AlphaVertexChannel;
+	};
+
 	// Max base build structure
 	class CMaxMeshBaseBuild
 	{
 	public:
+		CMaxMeshBaseBuild ()
+		{
+			NeedVertexColor = false;
+		}
+
 		// First material in the array
 		uint										FirstMaterial;
 
 		// Num of materials
 		uint										NumMaterials;
+
+		// Need vertex color
+		bool										NeedVertexColor;
 		
 		// Remap UV channel
-		std::vector<std::vector<CMaterialDesc> >	RemapChannel;
-
-		// Material names
-		std::vector<std::string>					MaterialNames;
+		std::vector<CMaxMaterialInfo>				MaterialInfo;
 	};
 
 	// *********************
@@ -505,9 +538,10 @@ private:
 	  *
 	  * if skeletonShape is NULL, no skinning is exported.
 	  */
-	static void						buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild,
-														INode& node, TimeValue time, const TInodePtrInt* nodeMap, bool absolutePath, 
-														const NLMISC::CMatrix& newBasis=NLMISC::CMatrix::Identity, const NLMISC::CMatrix& finalSpace=NLMISC::CMatrix::Identity);
+	static void						buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const NL3D::CMeshBase::CMeshBaseBuild& buildBaseMesh, 
+														const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, const TInodePtrInt* nodeMap, 
+														bool absolutePath, const NLMISC::CMatrix& newBasis=NLMISC::CMatrix::Identity, 
+														const NLMISC::CMatrix& finalSpace=NLMISC::CMatrix::Identity);
 
 
 	/**
@@ -550,8 +584,8 @@ private:
 													TimeValue time, bool absolutePath);
 
 	// Build a NeL material corresponding with a max material.
-	static std::string				buildAMaterial (NL3D::CMaterial& material, std::vector<CMaterialDesc>& remap3dsTexChannel, 
-													Mtl& mtl, TimeValue time, bool absolutePath);
+	static void						buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& materialInfo, Mtl& mtl, TimeValue time, bool absolutePath);
+
 	// Build a NeL texture corresponding with a max Texmap.
 	static NL3D::ITexture*			buildATexture (Texmap& texmap, std::vector<CMaterialDesc>& remap3dsTexChannel, TimeValue time, bool absolutePath);
 

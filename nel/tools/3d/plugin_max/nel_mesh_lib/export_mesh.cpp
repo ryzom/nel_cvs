@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.23 2001/11/07 17:18:33 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.24 2001/11/14 15:13:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,7 +103,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 			baseBuild->Materials.clear();
 
 			buildBaseMeshInterface (*baseBuild, maxBaseBuild, node, tvTime, bAbsPath);
-			buildMeshInterface (*tri, *pMeshBuild, maxBaseBuild, node, tvTime, NULL, bAbsPath, CMatrix::Identity, masterNodeMat);
+			buildMeshInterface (*tri, *pMeshBuild, *baseBuild, maxBaseBuild, node, tvTime, NULL, bAbsPath, CMatrix::Identity, masterNodeMat);
 
 			// Delete the triObject if we should...
 			if (deleteIt)
@@ -436,7 +436,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 					buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, absolutePath);
 
 					CMesh::CMeshBuild buildMesh;
-					buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, nodeMap, absolutePath);
+					buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, nodeMap, absolutePath);
 
 					if( hasLightMap( node, time ) && opt.bExportLighting )
 						calculateLM(&buildMesh, &buildBaseMesh, node, ip, time, absolutePath, opt);
@@ -482,7 +482,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 					/// todo hulud: check if material are animated before
 					for (uint i=0; i<maxBaseBuild.NumMaterials; i++)
 					{
-						meshBase->setAnimatedMaterial (i, maxBaseBuild.MaterialNames[i]);
+						meshBase->setAnimatedMaterial (i, maxBaseBuild.MaterialInfo[i].MaterialName);
 					}				
 				}
 
@@ -573,7 +573,7 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 	buildMaterials (buildMesh.Materials, maxBaseBuild, node, time, absolutePath);
 
 	// Some check. should have one rempa vertMap channel table by material
-	nlassert (maxBaseBuild.RemapChannel.size()==maxBaseBuild.NumMaterials);
+	nlassert (maxBaseBuild.MaterialInfo.size()==maxBaseBuild.NumMaterials);
 
 	// *** *****************************
 	// *** Export default transformation
@@ -615,8 +615,8 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 // ***************************************************************************
 
 // Build a mesh interface
-void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild, 
-									 INode& node, TimeValue time, const TInodePtrInt* nodeMap, bool absolutePath, 
+void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, const NL3D::CMeshBase::CMeshBaseBuild& buildBaseMesh, 
+									 const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, const TInodePtrInt* nodeMap, bool absolutePath, 
 									 const CMatrix& newBasis, const CMatrix& finalSpace)
 {
 	// Get a pointer on the 3dsmax mesh
@@ -703,7 +703,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	// *** *********************
 
 	// Does the mesh have RGB vertices ? 0 is the color vertex channel.
-	if (pMesh->mapSupport (0))
+	if (pMesh->mapSupport (0) && maxBaseBuild.NeedVertexColor)
 	{
 		// Add flag for color vertices
 		buildMesh.VertexFlags|=CVertexBuffer::PrimaryColorFlag;
@@ -716,12 +716,12 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 
 	// Get the max number of UVs channel used in the materials
 	int nMapsChannelUsed=0;
-	for (int nMat=0; nMat<(sint)maxBaseBuild.RemapChannel.size(); nMat++)
+	for (int nMat=0; nMat<(sint)maxBaseBuild.MaterialInfo.size(); nMat++)
 	{
 		// Greater than previous ?
-		if ((sint)maxBaseBuild.RemapChannel[nMat].size()>nMapsChannelUsed)
+		if ((sint)maxBaseBuild.MaterialInfo[nMat].RemapChannel.size()>nMapsChannelUsed)
 		{
-			nMapsChannelUsed=maxBaseBuild.RemapChannel[nMat].size();
+			nMapsChannelUsed=maxBaseBuild.MaterialInfo[nMat].RemapChannel.size();
 		}
 	}
 
@@ -791,6 +791,14 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		// Get the material ID
 		buildMesh.Faces[face].MaterialId=nMaterialID;
 
+		// Ref on the material
+		const CMaterial &material = buildBaseMesh.Materials[nMaterialID];
+
+		// Info about the material
+		CRGBA diffuse = material.getColor ();
+		uint8 opacity = material.getOpacity ();
+		bool isLighted = material.isLighted ();
+
 		// Check the matId is valid
 		nlassert (buildMesh.Faces[face].MaterialId>=0);
 		nlassert (buildMesh.Faces[face].MaterialId<(sint)(maxBaseBuild.FirstMaterial+maxBaseBuild.NumMaterials));
@@ -839,27 +847,27 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			// *** **********
 
 			// Num of channels used in this material
-			int nNumChannelUsed=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial].size();
+			int nNumChannelUsed=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel.size();
 
 			// For each mapping channels used by this material
 			for (int uv=0; uv<nNumChannelUsed; uv++)
 			{
 				// Corresponding max channel
-				int nMaxChan=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._IndexInMaxMaterial;
+				int nMaxChan=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._IndexInMaxMaterial;
 
 				if( ! pMesh->mapSupport(nMaxChan) )
 				{
-					nMaxChan = maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._IndexInMaxMaterialAlternative;
+					nMaxChan = maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._IndexInMaxMaterialAlternative;
 				}
 
 				// UVs matrix
-				const Matrix3 &uvMatrix=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._UVMatrix;
+				const Matrix3 &uvMatrix=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._UVMatrix;
 
 				// Crop values
-				float fCropU=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._CropU;
-				float fCropV=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._CropV;
-				float fCropW=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._CropW;
-				float fCropH=maxBaseBuild.RemapChannel[nMaterialID-maxBaseBuild.FirstMaterial][uv]._CropH;
+				float fCropU=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropU;
+				float fCropV=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropV;
+				float fCropW=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropW;
+				float fCropH=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._CropH;
 
 				// Check kind of channel and if channel is supported
 				if ((nMaxChan>=0)&&(nMaxChan<MAX_MESHMAPS)&&pMesh->mapSupport(nMaxChan))
@@ -935,6 +943,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 				pCorner->Color.R=(uint8)fR;
 				pCorner->Color.G=(uint8)fG;
 				pCorner->Color.B=(uint8)fB;
+				pCorner->Color.A=255;
 			}
 			else
 			{
@@ -942,9 +951,58 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 				pCorner->Color.R=255;
 				pCorner->Color.G=255;
 				pCorner->Color.B=255;
+				pCorner->Color.A=255;
 			}
 
-			
+			// The material is lighted ?
+			if (isLighted)
+			{
+				// Modulate the color
+				pCorner->Color.modulateFromColor (pCorner->Color, diffuse);
+			}
+
+			// *** ************
+			// *** Export Alpha
+			// *** ************
+
+			// Export alpha vertex ?
+			if (maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].AlphaVertex)
+			{
+				// Must have vertex color in the vertex buffer
+				nlassert (buildMesh.VertexFlags&CVertexBuffer::PrimaryColorFlag);
+
+				// Get the channel
+				uint channel = maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].AlphaVertexChannel;
+
+				// Channel supported ?
+				if (pMesh->mapSupport (channel))
+				{
+					// Get a pointer on Mappingvertex for this channel. Channel 0 is the color channel.
+				 	TVFace *pMapVert=pMesh->mapFaces (channel);
+
+					// Get the index of the mapping vertex
+					DWORD nMapVert=pMapVert[face].getTVert (corner);
+
+					// Pointer on the alpha vertex. channel is the color channel to use.
+					UVVert *pColorVert=&pMesh->mapVerts(channel)[nMapVert];
+
+					// Set the alpha
+					float fR=(pColorVert->x*255.f+0.5f);
+					float fG=(pColorVert->y*255.f+0.5f);
+					float fB=(pColorVert->z*255.f+0.5f);
+					float fA=(fR+fG+fB)/3;
+					clamp (fA, 0.f, 255.f);
+					pCorner->Color.A=(uint8)fA;
+				}
+
+				// The material is lighted ?
+				if (isLighted)
+				{
+					// Modulate the alpha
+					pCorner->Color.A = (uint8) ((pCorner->Color.A*opacity) >> 8);
+				}
+			}
+
 			/// TODO : export Specular ? I'm not sure it's realy useful.
 			// *** ***************
 			// *** Export Specular
@@ -1111,12 +1169,12 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 
 			// Fill the build interface of CMesh
 			CMesh::CMeshBuild buildMesh;
-			buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, nodeMap, absolutePath, nodeToParentMatrix);
+			buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, nodeMap, absolutePath, nodeToParentMatrix);
 
 			// Append material names
 			isTransparent=false;
 			isOpaque=false;
-			for (uint i=0; i<maxBaseBuild.MaterialNames.size(); i++)
+			for (uint i=0; i<maxBaseBuild.MaterialInfo.size(); i++)
 			{
 				// Is opaque, transparent ?
 				if( buildBaseMesh.Materials[i+maxBaseBuild.FirstMaterial].getBlend() )
@@ -1125,7 +1183,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 					isOpaque=true;
 
 				// Push the name
-				listMaterialName.push_back (maxBaseBuild.MaterialNames[i]);
+				listMaterialName.push_back (maxBaseBuild.MaterialInfo[i].MaterialName);
 			}
 
 			if( hasLightMap( node, time ) && opt.bExportLighting )

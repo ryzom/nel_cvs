@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.9 2001/10/10 15:39:11 besson Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.10 2001/11/14 15:13:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,7 @@ public:
 	std::string				LumelSizeMul;
 	std::string				SoftShadowRadius;
 	std::string				SoftShadowConeLength;
+
 };
 
 // ***************************************************************************
@@ -371,6 +372,7 @@ int CALLBACK LodDialogCallback (
 							currentParam->SoftShadowRadius = tmp;
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_SOFTSHADOW_CONELENGTH), tmp, 512);
 							currentParam->SoftShadowConeLength = tmp;
+
 							// Quit
 							EndDialog(hwndDlg, IDOK);
 						}
@@ -613,7 +615,6 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.SoftShadowRadius=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
 		param.SoftShadowConeLength=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toString(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT));
 		
-
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
 		ite++;

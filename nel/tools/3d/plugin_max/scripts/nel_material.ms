@@ -1,10 +1,25 @@
+-- ********************
+-- * Developper notes *
+-- ********************
+-- * 
+-- * - Increment major version when changing the parameters structure, comment your new attributes 
+-- *     to tell they have been added since version x. Backup the old script file to keep old file format.
+-- * - Increment minor version when changing the code or UI
+-- * - Manage new field initialisation when changing the parameters structure in the update method
+-- * - In your changes, keep in mind the discreet note:
+-- *     Parameter blocks that were per-instance cannot be made per-class and vice versa. 
+-- *     Parameters cannot change type across redefinitions. 
+-- *     Parameters cannot not move from one parameter block to another across redefinitions 
+-- *
+-- ********************
+
 -- Nel Material properties
 plugin material NelMaterial
     name:"NeL Material"
     classID:#(0x64c75fec, 0x222b9eb9)
     extends:standard 
 	replaceUI:false 
-	version:2.1
+	version:3.0
 (
     parameters main rollout:NelParams
     (
@@ -12,75 +27,88 @@ plugin material NelMaterial
 		bLightMap type:#boolean default:false ui:cbLightMap
 		bUnlighted type:#boolean default:false ui:cbUnlighted
 		bStainedGlassWindow type:#boolean default:false ui:cbStainedGlassWindow
+
 		bAlphaTest type:#boolean default:true ui:cbAlphaTest
 		bForceZWrite type:#boolean default:false ui:cbForceZWrite
 		bForceNoZWrite type:#boolean default:false ui:cbForceNoZWrite
 		bWater         type:#boolean default:false ui:cbWater
-		
+
 		fBumpUScale     type:#float default: 0.01 ui:cfBumpUScale
 		fBumpVScale     type:#float default: 0.01 ui:cfBumpVScale	
 		fBumpUSpeed     type:#float default: 0.01 ui:cfBumpUSpeed
 		fBumpVSpeed     type:#float default: 0.01 ui:cfBumpVSpeed
-		
+
 		fDisplaceMapUScale     type:#float default: 0.005 ui:cfDisplaceMapUScale
 		fDisplaceMapVScale     type:#float default: 0.005 ui:cfDisplaceMapVScale	
 		fDisplaceMapUSpeed     type:#float default: 0.005 ui:cfDisplaceMapUSpeed
 		fDisplaceMapVSpeed     type:#float default: 0.005 ui:cfDisplaceMapVSpeed
-
-
-
+	
+		-- New in version 3
+		bColorVertex	type:#boolean default:false ui:cbColorVertex
+		bAlphaVertex	type:#boolean default:false ui:cbAlphaVertex
+		iAlphaVertexChannel		type:#integer default:0 ui:ciAlphaVertexChannel
 	)
 
     rollout NelParams "Nel Material"
     (
-		group "3d"
+		group "Light"
 		(
-			CheckBox cbLightMap "LightMap"
 			CheckBox cbUnlighted "Unlighted"
-			CheckBox cbStainedGlassWindow "Stained glass window"
-			CheckBox cbWater "Water"
+			CheckBox cbLightMap "LightMap"
+			CheckBox cbStainedGlassWindow "Lightmap stained glass window"
+			CheckBox cbColorVertex "Color Vertex"
+		)
+		group "Alpha"
+		(
 			CheckBox cbAlphaTest "Alpha Test"
+			CheckBox cbAlphaVertex "Alpha Vertex"
+			Label lAlphaVertexChanelLabel "Alpha Vertex Channel" align:#left 
+			Spinner   ciAlphaVertexChannel ""  range:[0,99,0] type:#integer scale:1 align:#left width:50
+		)
+		group "Z buffer"
+		(
 			CheckBox cbForceZWrite "Force ZWrite"
 			CheckBox cbForceNoZWrite "Force No ZWrite"
-			
-			Spinner   cfBumpUScale      "BumpMap U Scale :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
-			Spinner   cfBumpVScale      "BumpMap V Scale :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
-			Spinner   cfBumpUSpeed     "BumpMap U Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
-			Spinner   cfBumpVSpeed      "BumpMap V Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
+		)
+		group "Water"
+		(
+			CheckBox cbWater "Enable Water"
 
-
+			Spinner   cfBumpUScale      "BumpMap U Scale :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
+			Spinner   cfBumpVScale      "BumpMap V Scale :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
+			Spinner   cfBumpUSpeed      "BumpMap U Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
+			Spinner   cfBumpVSpeed      "BumpMap V Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
 		
-			Spinner   cfDisplaceMapUScale      "DisplaceMap U Scale :"  range:[-10,10,0.005] type:#float scale:0.001 align:#left
-			Spinner   cfDisplaceMapVScale      "DisplaceMap V Scale :"  range:[-10,10,0.005] type:#float scale:0.001 align:#left
-			Spinner   cfDisplaceMapUSpeed      "DisplaceMap U Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
-			Spinner   cfDisplaceMapVSpeed      "DisplaceMap V Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
-
-
-
-
+			Spinner   cfDisplaceMapUScale      "DisplaceMap U Scale :"  range:[-10,10,0.005] type:#float scale:0.001 align:#left 
+			Spinner   cfDisplaceMapVScale      "DisplaceMap V Scale :"  range:[-10,10,0.005] type:#float scale:0.001 align:#left 
+			Spinner   cfDisplaceMapUSpeed      "DisplaceMap U Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
+			Spinner   cfDisplaceMapVSpeed      "DisplaceMap V Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left 
 		)
 		
-		Fn updateUI bNewState =
+		Fn updateUI =
 		(
-			cbLightMap.enabled = not bNewState
-			cbUnlighted.enabled = not bNewState 
-			cbStainedGlassWindow.enabled = not bNewState 
-			cbAlphaTest.enabled = not bNewState
-			cbForceZWrite.enabled = not bNewState 
-			cbForceNoZWrite.enabled = not bNewState 
-
+			cbUnlighted.enabled = not bWater
+			cbLightMap.enabled = (not bWater) and (not bUnlighted)
+			cbStainedGlassWindow.enabled = (not bWater) and (not bUnlighted) and bLightMap
+			cbAlphaTest.enabled = not bWater 
+			cbForceZWrite.enabled = not bWater 
+			cbForceNoZWrite.enabled = not bWater 
+			cbAlphaVertex.enabled = not bWater 
+			ciAlphaVertexChannel.enabled = (not bWater) and bAlphaVertex
+			cbColorVertex.enabled = not bWater
+			cbWater.enabled = (not bLightMap)
 			
-			cfBumpUScale.enabled = bNewState 
-			cfBumpVScale.enabled = bNewState 
-			cfBumpUSpeed.enabled = bNewState 
-			cfBumpVSpeed.enabled = bNewState 
-			
-			cfDisplaceMapUScale.enabled = bNewState 
-			cfDisplaceMapVScale.enabled = bNewState 
-			cfDisplaceMapUSpeed.enabled = bNewState 
-			cfDisplaceMapVSpeed.enabled = bNewState 
+			cfBumpUScale.enabled = bWater and (not bLightMap)
+			cfBumpVScale.enabled = bWater and (not bLightMap)
+			cfBumpUSpeed.enabled = bWater and (not bLightMap)
+			cfBumpVSpeed.enabled = bWater and (not bLightMap)
+		
+			cfDisplaceMapUScale.enabled = bWater and (not bLightMap)
+			cfDisplaceMapVScale.enabled = bWater and (not bLightMap)
+			cfDisplaceMapUSpeed.enabled = bWater and (not bLightMap)
+			cfDisplaceMapVSpeed.enabled = bWater and (not bLightMap)
 
-			if (bNewState == true) then
+			if (bWater == true) then
 			(
 				cbLightMap.checked = false 
 				cbUnlighted.checked = false 
@@ -89,28 +117,54 @@ plugin material NelMaterial
 				cbForceZWrite.checked = false
 				cbForceNoZWrite.checked = false
 			)			
-		)
 
-		on cbLightMap changed bNewState do
-			if bNewState then cbUnlighted.enabled = false
-			else cbUnlighted.enabled = true			
+		)
 
 		on NelParams reload do (print "reload")
 
 		on NelParams open do 
 		(
-			print "open"
-			if cbLightMap.checked then cbUnlighted.enabled = false
-			else cbUnlighted.enabled = true			
-			updateUI bWater;
+			updateUI ()
+		)
+
+		-- Update ui
+
+		on cbLightMap changed bNewState do
+		(
+			updateUI ()
+		)
+		on cbUnlighted changed bNewState do
+		(
+			updateUI ()
 		)
 		on cbWater changed bNewState do
         (
-			updateUI bNewState					
+			updateUI ()
+        )
+		on cbAlphaVertex changed bNewState do
+        (
+			updateUI ()
         )
 	)
-    on create do (print "create")
-	on update do (print "update")
+	
+	on update do 
+	( 
+		-- Initialise V3 fields.
+		if (version < 3) and (version >= 2) then
+		(
+			-- No color vertex
+			bColorVertex = false
+
+			if bLightMap == true then
+				bColorVertex = true
+			if bUnlighted == true then
+				bColorVertex = true
+			
+			-- No alpha vertex
+			bAlphaVertex = false
+			iAlphaVertexChannel	= 0
+		)
+	) 
 )
 
 

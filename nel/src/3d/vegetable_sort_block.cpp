@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.cpp
  * <File description>
  *
- * $Id: vegetable_sort_block.cpp,v 1.5 2002/02/28 12:59:52 besson Exp $
+ * $Id: vegetable_sort_block.cpp,v 1.6 2003/06/02 15:00:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/vegetable_sort_block.h"
 #include "3d/radix_sort.h"
 #include "3d/fast_floor.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace std;
@@ -61,7 +62,7 @@ struct	CSortTri
 
 	// QSort only.
 	// distance.
-	float	Dist;
+	sint16	Dist;
 	bool	operator<(const CSortTri &o) const
 	{
 		return Dist>o.Dist;
@@ -72,6 +73,8 @@ struct	CSortTri
 // ***************************************************************************
 void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 {
+	H_AUTO( NL3D_Vegetable_Update_SortBlock );
+
 	// if nothing to update (ie instance added/deleted do not impact me).
 	if(!_Dirty)
 	{
@@ -83,7 +86,6 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 		// Ok clean me now.
 		_Dirty= false;
 	}
-
 
 	// compute number of triangles.
 	_NTriangles= 0;
@@ -114,23 +116,49 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 		_SortedTriangleArray.resize(_NIndices * NL3D_VEGETABLE_NUM_QUADRANT);
 	}
 
-
 	// resize an array for sorting.
 	nlassert(_NTriangles < 65536);
 	static	std::vector<CSortTri>	triSort;
 	static	std::vector<uint32>		triIndices;
-	triSort.clear();
-	triSort.resize(_NTriangles);
-	triIndices.resize(_NIndices);
+	// don't use resize because fill with default values. size() is the capacity here.
+	if(triSort.size()<_NTriangles)
+	{
+		triSort.resize(_NTriangles);
+		triIndices.resize(_NIndices);
+	}
 
+	// fill indices with all ig info.
+	//-------------
+	{
+		uint32		*triIdxPtr= &triIndices[0];
+		// for all igs in the sortBlock.
+		ptrIg= _InstanceGroupList.begin();
+		while(ptrIg)
+		{
+			CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ptrIg->_RdrPass[NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT];
+			uint32		*triSrcPtr= vegetRdrPass.TriangleIndices.getPtr();
 
-	// for all quadrants
+			// add only zsort rdrPass triangles.
+			for(uint i=0; i<vegetRdrPass.NTriangles; i++)
+			{
+				// fill the triangle indices.
+				*(triIdxPtr++)= *(triSrcPtr++);
+				*(triIdxPtr++)= *(triSrcPtr++);
+				*(triIdxPtr++)= *(triSrcPtr++);
+			}
+
+			// next Ig in the SortBlock
+			ptrIg= (CVegetableInstanceGroup*)(ptrIg->Next);
+		}
+	}
+
+	// Sort for all quadrants
+	//-------------
 	for(uint quadrant=0; quadrant<NL3D_VEGETABLE_NUM_QUADRANT; quadrant++)
 	{
-		// fill triSort with all ig info.
+		// ReFill SortTris with Start Data
 		//-------------
 		CSortTri	*triPtr= &triSort[0];
-		uint32		*triIdxPtr= &triIndices[0];
 		uint		triId= 0;
 		// for all igs in the sortBlock.
 		ptrIg= _InstanceGroupList.begin();
@@ -146,11 +174,6 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 
 				// copy tri info
 				triPtr->TriIndex= triId;
-					
-				// fill the triangle indices.
-				*(triIdxPtr++)= vegetRdrPass.TriangleIndices[i*3 + 0];
-				*(triIdxPtr++)= vegetRdrPass.TriangleIndices[i*3 + 1];
-				*(triIdxPtr++)= vegetRdrPass.TriangleIndices[i*3 + 2];
 			}
 
 			// next Ig in the SortBlock
@@ -160,7 +183,7 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 		// sort the array according to distance
 		//-------------
 		// QSort.
-		sort(triSort.begin(), triSort.end());
+		sort(triSort.begin(), triSort.begin()+_NTriangles);
 
 
 		// Fill result.

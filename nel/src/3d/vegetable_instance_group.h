@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.9 2002/04/23 14:38:13 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.10 2003/06/02 15:00:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,9 +139,9 @@ private:
 
 	// list of triangles order, for quadrant ZSorting. only for NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT rdrpass.
 	// this is why this don't appear in CVegetableRdrPass
-	NLMISC::CObjectVector<float, false>			_TriangleQuadrantOrderArray;
+	NLMISC::CObjectVector<sint16, false>			_TriangleQuadrantOrderArray;
 	uint						_TriangleQuadrantOrderNumTriangles;
-	float						*_TriangleQuadrantOrders[NL3D_VEGETABLE_NUM_QUADRANT];
+	sint16						*_TriangleQuadrantOrders[NL3D_VEGETABLE_NUM_QUADRANT];
 	// If the Igs contains some instance in NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT rdrpass, this flag is true.
 	bool						_HasZSortPassInstances;
 

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.32 2003/04/02 15:07:44 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.33 2003/06/02 15:00:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -990,7 +990,7 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 	// And init ptrs.
 	if(numZSortTris>0)
 	{
-		float	*start= ig->_TriangleQuadrantOrderArray.getPtr();
+		sint16	*start= ig->_TriangleQuadrantOrderArray.getPtr();
 		// init ptr to each qaudrant
 		for(uint i=0; i<NL3D_VEGETABLE_NUM_QUADRANT; i++)
 		{
@@ -1502,7 +1502,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 			// compute center
 			triangleCenters[i]= (vert0 + vert1 + vert2) / 3;
-			// relative to center of the sortBlock (for more precision, especially for radixSort)
+			// relative to center of the sortBlock (for sint16 compression)
 			triangleCenters[i]-= ig->_SortOwner->_Center;
 		}
 
@@ -1514,7 +1514,9 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		nlassert(ig->_TriangleQuadrantOrderNumTriangles * NL3D_VEGETABLE_NUM_QUADRANT <= ig->_TriangleQuadrantOrderArray.size());
 
 
-		// compute distance for each quadrant.
+		// compute distance for each quadrant. Since we are not sure of the sortBlockSize, mul with a (big: 16) security.
+		// NB: for landscape practical usage, this left us with more than 1mm precision.
+		float	distFactor=32768/(16*ig->_SortOwner->_Radius);
 		for(uint quadId=0; quadId<NL3D_VEGETABLE_NUM_QUADRANT; quadId++)
 		{
 			const CVector		&quadDir= CVegetableQuadrant::Dirs[quadId];
@@ -1523,7 +1525,9 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			for(uint i=0; i<numNewTris; i++)
 			{
 				// compute the distance with orientation of the quadrant. (DotProduct)
-				ig->_TriangleQuadrantOrders[quadId][offTri + i]= triangleCenters[i] * quadDir;
+				float	dist= triangleCenters[i] * quadDir;
+				// compress to sint16. 
+				ig->_TriangleQuadrantOrders[quadId][offTri + i]= (sint16)OptFastFloor(dist*distFactor);
 			}
 		}
 	}

@@ -328,7 +328,7 @@ plugin material NelMaterial
     classID:#(0x64c75fec, 0x222b9eb9)
     extends:standard 
 	replaceUI:false 
-	version:8.0
+	version:9.0
 (
 	local loadShader
 	local globalUpdateUI
@@ -974,20 +974,20 @@ plugin material NelMaterial
 			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
 			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
 			dropdownlist dlRgbArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlRgbArg1Operand	"Oper1 Operand" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlRgbArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Alpha"
 		(
 			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant", "Texture" ) across:6
 			dropdownlist dlAlphaArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlAlphaArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlAlphaArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Extended"
@@ -1168,11 +1168,11 @@ plugin material NelMaterial
 		(
 			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant", "Texture" ) across:6
 			dropdownlist dlRgbArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlRgbArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlRgbArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Alpha"
@@ -1181,9 +1181,9 @@ plugin material NelMaterial
 			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
 			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
 			dropdownlist dlAlphaArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlAlphaArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlAlphaArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Extended"
@@ -1366,20 +1366,20 @@ plugin material NelMaterial
 			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
 			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
 			dropdownlist dlRgbArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlRgbArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlRgbArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Alpha"
 		(
 			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant", "Texture" ) across:6
 			dropdownlist dlAlphaArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlAlphaArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlAlphaArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Extended"
@@ -1560,22 +1560,22 @@ plugin material NelMaterial
 		(
 			dropdownlist dlRgbOperation		"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlRgbBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlRgbArg0			"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant", "Texture" ) across:6
 			dropdownlist dlRgbArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg1			"Arg1" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlRgbArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlRgbArg2			"Arg2" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlRgbArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Alpha"
 		(
 			dropdownlist dlAlphaOperation	"Operation" items:#( "Arg0", "Arg0*Arg1", "Arg0+Arg1", "Arg0+Arg1-0.5", "Alpha Blend", "Arg0*Arg1+Arg2" ) across:2
 			dropdownlist dlAlphaBlendSource	"Blend Source" items:#( "Texture", "Previous", "Diffuse", "Constant" )
-			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant" ) across:6
+			dropdownlist dlAlphaArg0		"Arg0" items:#( "Texture", "Previous", "Diffuse", "Constant", "Texture" ) across:6
 			dropdownlist dlAlphaArg0Operand	"Oper0" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg1		"Arg1" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlAlphaArg1Operand	"Oper1" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
-			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant" )
+			dropdownlist dlAlphaArg2		"Arg2" items:#( "Previous", "Diffuse", "Constant", "Texture" )
 			dropdownlist dlAlphaArg2Operand	"Oper2" items:#( "RGB", "Inv RGB", "Alpha", "Inv Alpha" )
 		)
 		group "Extended"

@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.13 2001/06/29 08:33:15 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.14 2001/06/29 08:48:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -605,13 +605,13 @@ void CListenTask::run()
 			{
 			case  0 : continue; // time-out expired, no results
 			case -1 :
-			  // we'll ignore message (Interrupted system call) caused by a CTRL-C
-			  if (CSock::getLastError() == 4)
-			    {
-			      nldebug ("L1: Select failed (in listen thread): %s (code %u) but IGNORED", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError());
-			      continue;
-			    }
-			  nlerror( "L1: Select failed (in listen thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+				// we'll ignore message (Interrupted system call) caused by a CTRL-C
+				if (CSock::getLastError() == 4)
+				{
+					nldebug ("L1: Select failed (in listen thread): %s (code %u) but IGNORED", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError());
+					continue;
+				}
+				nlerror( "L1: Select failed (in listen thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
 			}
 
 			if ( FD_ISSET( _WakeUpPipeHandle[PipeRead], &readers ) )
@@ -877,7 +877,14 @@ void CServerReceiveTask::run()
 			case  0 : continue; // time-out expired, no results
 
 			/// \todo cado: the error code is not properly retrieved
-			case -1 : nlerror( "L1: Select failed: %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+			case -1 :
+				// we'll ignore message (Interrupted system call) caused by a CTRL-C
+				if (CSock::getLastError() == 4)
+				{
+					nldebug ("L1: Select failed (in receive thread): %s (code %u) but IGNORED", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError());
+					continue;
+				}
+				nlerror( "L1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
 		}
 
 		// 4. Get results

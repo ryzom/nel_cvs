@@ -57,10 +57,11 @@ protected:
 	afx_msg void OnLoad();
 	afx_msg void OnMoveUp();
 	afx_msg void OnMoveDown();
-	afx_msg void OnClose();
 	afx_msg void OnImport();
 	afx_msg void OnBeginlabeleditTree1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnEndlabeleditTree1(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnOK();
+	afx_msg void OnCancel();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -43,10 +43,18 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	_CurrentSound = NULL;
 	_Tree = NULL;
 	_Source = NULL;
+}
 
-	CWaitCursor waitcursor;
 
+/*
+ *
+ */
+BOOL CSoundPage::OnInitDialog() 
+{
+	CDialog::OnInitDialog();
+	
 	// Load driver
+	CWaitCursor waitcursor;
 	_AudioMixer = UAudioMixer::createAudioMixer();
 	try
 	{
@@ -54,13 +62,15 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	}
 	catch( Exception& e )
 	{
-		waitcursor.Restore();
-
 		CString s;
-		s.Format( "No sound driver: %s", e.what() );
+		s.Format( "No sound driver: %s\n\nSound playback will be unavailable" , e.what() );
 		AfxMessageBox( s );
 		_AudioMixer = NULL;
 	}
+	waitcursor.Restore();
+	
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 
@@ -96,8 +106,8 @@ BEGIN_MESSAGE_MAP(CSoundPage, CDialog)
 	ON_BN_CLICKED(IDC_Remove, OnRemove)
 	ON_BN_CLICKED(IDC_PlaySound, OnPlaySound)
 	ON_WM_CLOSE()
-	ON_BN_CLICKED(IDC_Cancel, OnCancel)
 	ON_BN_CLICKED(IDC_Looped, OnLooped)
+	ON_BN_CLICKED(IDC_Cancel, OnCancel)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -160,8 +170,8 @@ void		CSoundPage::getPropertiesFromSound()
 	{
 		m_MinDist = _CurrentSound->getMinDistance();
 		m_MaxDist = _CurrentSound->getMaxDistance();
-		m_InnerAngleDeg = radToDeg( _CurrentSound->getConeInnerAngle() );
-		m_OuterAngleDeg = radToDeg( _CurrentSound->getConeOuterAngle() );
+		m_InnerAngleDeg = (uint)radToDeg( _CurrentSound->getConeInnerAngle() );
+		m_OuterAngleDeg = (uint)radToDeg( _CurrentSound->getConeOuterAngle() );
 		m_OuterGain = _CurrentSound->getConeOuterGain();
 	}
 	UpdateData( false );
@@ -215,14 +225,19 @@ void CSoundPage::OnApply()
 	}
 
 	UpdateData( true );
+
 	UpdateCurrentSound();
 
 	(static_cast<CSource_sounds_builderDlg*>(GetOwner()))->setModified();
 
 	nlassert( _Tree && _CurrentSound );
 
-	CString s = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem ) + " (" + m_Filename + ")";
-	_Tree->SetItemText( _HItem, s );
+	if ( m_Filename != "" )
+	{
+		CString s = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem ) + " (" + m_Filename + ")";
+		_Tree->SetItemText( _HItem, s );
+	}
+
 	_Tree->SelectItem( NULL );
 
 	GetOwner()->SetFocus();
@@ -274,14 +289,19 @@ void CSoundPage::OnChooseFile()
 /*
  *
  */
-void CSoundPage::LoadSound()
+bool CSoundPage::LoadSound()
 {
 	UpdateCurrentSound();
 	nlassert( _CurrentSound );
-	if ( _CurrentSound->getBuffer() == NULL )
+	if ( (m_Filename != "") && (_AudioMixer != NULL) )
 	{
 		_CurrentSound->loadBuffer( string(m_Filename) );
 		UpdateStereo();
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
@@ -307,21 +327,23 @@ void CSoundPage::OnPlaySound()
 	try 
 	{
 		UpdateData( true );
-		LoadSound();
-		UpdateData( false );
-		
-		// Play source
-		if ( _Source == NULL )
+		if ( LoadSound() )
 		{
-			_Source = _AudioMixer->createSource( _CurrentSound );
+			UpdateData( false );
+			
+			// Play source
+			if ( _Source == NULL )
+			{
+				_Source = _AudioMixer->createSource( _CurrentSound );
+			}
+			else
+			{
+				_Source->stop();
+				_Source->setSound( _CurrentSound );
+			}
+			_Source->setLooping( (bool)m_Looped );
+			_Source->play();
 		}
-		else
-		{
-			_Source->stop();
-			_Source->setSound( _CurrentSound );
-		}
-		_Source->setLooping( m_Looped );
-		_Source->play();
 
 		waitcursor.Restore();
 	}
@@ -364,12 +386,12 @@ void CSoundPage::UpdateCurrentSound()
 	CString name = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem );
 	if ( ! m_Pos3D )
 	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pos3D );
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, (bool)m_Pos3D );
 	}
 	else
 	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pos3D,
-			m_MinDist, m_MaxDist, degToRad(m_InnerAngleDeg), degToRad(m_OuterAngleDeg), m_OuterGain );
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, (bool)m_Pos3D,
+			m_MinDist, m_MaxDist, degToRad((float)m_InnerAngleDeg), degToRad((float)m_OuterAngleDeg), m_OuterGain );
 	}
 }
 

@@ -47,7 +47,6 @@ BEGIN_MESSAGE_MAP(CSource_sounds_builderDlg, CDialog)
 	ON_BN_CLICKED(IDC_Load, OnLoad)
 	ON_BN_CLICKED(IDC_MoveUp, OnMoveUp)
 	ON_BN_CLICKED(IDC_MoveDown, OnMoveDown)
-	ON_WM_CLOSE()
 	ON_BN_CLICKED(IDC_Import, OnImport)
 	ON_NOTIFY(TVN_BEGINLABELEDIT, IDC_TREE1, OnBeginlabeleditTree1)
 	ON_NOTIFY(TVN_ENDLABELEDIT, IDC_TREE1, OnEndlabeleditTree1)
@@ -73,8 +72,8 @@ BOOL CSource_sounds_builderDlg::OnInitDialog()
 	ResetTree();
 
 	_SoundPage = new CSoundPage( this );
-	_SoundPage->Create( IDD_SoundPage );
 	_SoundPage->setTree( &m_Tree );
+	_SoundPage->Create( IDD_SoundPage );
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -408,29 +407,6 @@ void CSource_sounds_builderDlg::OnLoad()
 /*
  *
  */
-void CSource_sounds_builderDlg::OnClose() 
-{
-	if ( ! _Modified )
-	{
-		CDialog::OnClose();
-	}
-	else
-	{
-		switch ( AfxMessageBox( "Save before exiting ?", MB_YESNOCANCEL | MB_ICONQUESTION ) )
-		{
-		// no break;
-		case IDYES:
-			OnSave();
-		case IDNO:
-			CDialog::OnClose();
-		}
-	}
-}
-
-
-/*
- *
- */
 HTREEITEM CSource_sounds_builderDlg::FindInTree( char *name )
 {
 	HTREEITEM hitem = m_Tree.GetChildItem( m_Tree.GetRootItem() );
@@ -478,3 +454,36 @@ void CSource_sounds_builderDlg::OnImport()
 	}
 }
 
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnOK()
+{
+	// Nothing: disable closure by Enter
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnCancel()
+{
+	// Called when exiting (Esc, Alt+F4, etc.)
+	
+	if ( ! _Modified )
+	{
+		CDialog::OnCancel();
+	}
+	else
+	{
+		switch ( AfxMessageBox( "Save before exiting ?", MB_YESNOCANCEL | MB_ICONQUESTION ) )
+		{
+		// no break;
+		case IDYES:
+			OnSave();
+		case IDNO:
+			CDialog::OnCancel();
+		}
+	}
+}

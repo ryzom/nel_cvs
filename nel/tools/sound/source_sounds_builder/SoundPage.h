@@ -65,6 +65,7 @@ protected:
 	afx_msg void OnPlaySound();
 	afx_msg void OnClose();
 	afx_msg void OnLooped();
+	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -76,7 +77,7 @@ protected:
 
 	void						UpdateCurrentSound();
 	void						UpdateStereo();
-	void						LoadSound();
+	bool						LoadSound();
 };
 
 //{{AFX_INSERT_LOCATION}}

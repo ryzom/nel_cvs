@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.15 2000/11/21 18:28:56 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.16 2000/11/23 11:04:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,9 @@
 #include <gl/gl.h>
 #include "driver_opengl.h"
 
+#ifndef NL_OS_WINDOWS
+#include <stdio.h>
+#endif // NL_OS_WINDOWS
 // --------------------------------------------------
 
 namespace NL3D
@@ -340,4 +343,103 @@ bool CDriverGL::release(void)
 
 // --------------------------------------------------
 
+IDriver::TMessageBoxId	CDriverGL::systemMessageBox (const char* message, const char* title, IDriver::TMessageBoxType type, TMessageBoxIcon icon)
+{
+#ifdef NL_OS_WINDOWS
+	switch (::MessageBox (NULL, message, title, ((type==retryCancelType)?MB_RETRYCANCEL:
+										(type==yesNoCancelType)?MB_YESNOCANCEL:
+										(type==okCancelType)?MB_OKCANCEL:
+										(type==abortRetryIgnoreType)?MB_ABORTRETRYIGNORE:
+										(type==yesNoType)?MB_YESNO|MB_ICONQUESTION:MB_OK)|
+										
+										((icon==handIcon)?MB_ICONHAND:
+										(icon==questionIcon)?MB_ICONQUESTION:
+										(icon==exclamationIcon)?MB_ICONEXCLAMATION:
+										(icon==asteriskIcon)?MB_ICONASTERISK:
+										(icon==warningIcon)?MB_ICONWARNING:
+										(icon==errorIcon)?MB_ICONERROR:
+										(icon==informationIcon)?MB_ICONINFORMATION:
+										(icon==stopIcon)?MB_ICONSTOP:0)))
+										{
+	case IDOK:
+		return okId;
+	case IDCANCEL:
+		return cancelId;
+	case IDABORT:
+		return abortId;
+	case IDRETRY:
+		return retryId;
+	case IDIGNORE:
+		return ignoreId;
+	case IDYES:
+		return yesId;
+	case IDNO:
+		return noId;
+										}
+	nlassert (0);		// no!
+#else
+	static const char* icons[iconCount]=
+	{
+		"",
+		"WAIT:\n",
+		"QUESTION:\n",
+		"HEY!\n",
+		"",
+		"WARNING!\n",
+		"ERROR!\n",
+		"INFORMATION:\n",
+		"STOP:\n"
+	};
+	static const char* messages[typeCount]=
+	{
+		"Press any key...",
+		"(O)k or (C)ancel ?",
+		"(Y)es or (N)o ?",
+		"(A)bort (R)etry (I)gnore ?",
+		"(Y)es (N)o (C)ancel ?",
+		"(R)etry (C)ancel ?"
+	};
+	printf ("%s%s\n%s", icons[icon], title, message);
+	while (1)
+	{
+		printf ("\n%s", messages[type]);
+		int c=getchar();
+		switch (c)
+		{
+		case 'O':
+		case 'o':
+			if ((type==okType)||(type==okCancelType))
+				return okId;
+		case 'C':
+		case 'c':
+			if ((type==yesNoCancelType)||(type==okCancelType)||(type==retryCancelType))
+				return cancelId;
+		case 'Y':
+		case 'y':
+			if ((type==yesNoCancelType)||(type==yesNoType))
+				return yesId;
+		case 'N':
+		case 'n':
+			if ((type==yesNoCancelType)||(type==yesNoType))
+				return noId;
+		case 'A':
+		case 'a':
+			if (type==abortRetryIgnoreType)
+				return abortId;
+		case 'R':
+		case 'r':
+			if (type==abortRetryIgnoreType)
+				return retryId;
+		case 'I':
+		case 'i':
+			if (type==abortRetryIgnoreType)
+				return ignoreId;
+		}
+	}
+
+#endif
+	return okId;
+}
+
+// --------------------------------------------------
 }

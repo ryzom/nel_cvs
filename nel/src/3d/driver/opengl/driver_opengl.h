@@ -113,6 +113,8 @@ public:
 	virtual bool			swapBuffers(void);
 
 	virtual bool			release(void);
+
+	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
 };
 
 // --------------------------------------------------

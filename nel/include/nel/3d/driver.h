@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.21 2000/11/21 18:15:24 valignat Exp $
+ * $Id: driver.h,v 1.22 2000/11/23 11:03:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -346,6 +346,10 @@ protected:
 	CMaterial*								_Material;
 
 public:
+	enum TMessageBoxId { okId=0, yesId, noId, abortId, retryId, cancelId, ignoreId };
+	enum TMessageBoxType { okType=0, okCancelType, yesNoType, abortRetryIgnoreType, yesNoCancelType, retryCancelType, typeCount };
+	enum TMessageBoxIcon { noIcon=0, handIcon, questionIcon, exclamationIcon, asteriskIcon, warningIcon, errorIcon, informationIcon, stopIcon, iconCount };
+
 							IDriver(void);
 	virtual					~IDriver(void);
 
@@ -386,6 +390,8 @@ public:
 	virtual bool			swapBuffers(void)=0;
 
 	virtual bool			release(void)=0;
+
+	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon)=0;
 };
 
 // --------------------------------------------------

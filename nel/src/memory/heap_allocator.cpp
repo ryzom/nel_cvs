@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.12 2004/01/15 17:36:15 lecroart Exp $
+ * $Id: heap_allocator.cpp,v 1.13 2004/03/24 16:37:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1649,7 +1649,7 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 
 		// Write the small block statistics
 		fprintf (file, "\n\n\nSMALL BLOCK STATISTICS\n");
-		fprintf (file, "SIZE, BLOCK COUNT, BLOCK FREE, BLOCK USED, TOTAL MEMORY USED\n");
+		fprintf (file, "SIZE, BLOCK COUNT, BLOCK FREE, BLOCK USED, TOTAL MEMORY USED, NEL MEMORY (NO DB), FREE MEMORY (NO DB)\n");
 
 		// Number of small blocks
 		uint count[NL_SMALLBLOCK_COUNT];
@@ -1698,8 +1698,12 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 		for (smallBlock=0; smallBlock<NL_SMALLBLOCK_COUNT; smallBlock++)
 		{
 			uint size = (smallBlock+1)*SmallBlockGranularity;
-			fprintf (file,"%d, %d, %d, %d, %d\n",size, count[smallBlock], free[smallBlock], 
-				count[smallBlock]-free[smallBlock], count[smallBlock]*(sizeof (CNodeBegin) + size + NL_HEAP_NODE_END_SIZE));
+			// The actual memory taken with no DB is size+ReleaseHeaderSize
+			fprintf (file,"%d, %d, %d, %d, %d, %d, %d\n",size, count[smallBlock], free[smallBlock], 
+				count[smallBlock]-free[smallBlock], 
+				count[smallBlock]*(sizeof (CNodeBegin) + size + NL_HEAP_NODE_END_SIZE),
+				(count[smallBlock]-free[smallBlock])*(size+ReleaseHeaderSize),
+				free[smallBlock]*(size+ReleaseHeaderSize));
 		}
 		
 		// **************************

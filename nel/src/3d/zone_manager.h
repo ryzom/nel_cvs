@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.13 2004/03/22 17:40:39 berenguier Exp $
+ * $Id: zone_manager.h,v 1.14 2004/05/26 16:07:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,6 +164,7 @@ class CZoneLoadingTask : public NLMISC::IRunnablePos
 public:
 	/// Constructor
 	CZoneLoadingTask (const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &pos, bool monochrome, float factor);
+	~CZoneLoadingTask();
 
 	/// Runnable Task
 	void run (void);

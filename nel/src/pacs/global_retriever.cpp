@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.92 2004/03/15 11:14:55 legros Exp $
+ * $Id: global_retriever.cpp,v 1.93 2004/05/26 16:08:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,6 +65,12 @@ H_AUTO_DECL ( NLPACS_Retrieve_Position )
 #define	NLPACS_HAUTO_RETRIEVE_POSITION	H_AUTO_USE ( NLPACS_Retrieve_Position )
 
 // CGlobalRetriever methods implementation
+
+NLPACS::CGlobalRetriever::~CGlobalRetriever()
+{
+	// must be sure all current async loading is ended
+	waitEndOfAsyncLoading();
+}
 
 //
 void	NLPACS::CGlobalRetriever::init()
@@ -2551,13 +2557,10 @@ void	NLPACS::CGlobalRetriever::refreshLrAround(const CVector &position, float ra
 	}
 }
 
-void	NLPACS::CGlobalRetriever::refreshLrAroundNow(const CVector &position, float radius)
+// ***************************************************************************
+void	NLPACS::CGlobalRetriever::waitEndOfAsyncLoading()
 {
-	// check if retriever bank is all loaded, and if yes don't refresh it
-	if (_RetrieverBank->allLoaded())
-		return;
-
-	while (_LrLoaderList.size ())
+	while (!_LrLoaderList.empty ())
 	{
 		std::list<CLrLoader>::iterator ite = _LrLoaderList.begin();
 		while (ite != _LrLoaderList.end())
@@ -2574,18 +2577,31 @@ void	NLPACS::CGlobalRetriever::refreshLrAroundNow(const CVector &position, float
 				
 				// Remove this from the list
 				_LrLoaderList.erase(ite);
-
+				
 				break;
 			}
-
+			
 			// 
 			ite++;
 		}
-
-		if (_LrLoaderList.size ())
+		
+		if (!_LrLoaderList.empty())
 			nlSleep(0);
 	}
+	
+}
 
+// ***************************************************************************
+void	NLPACS::CGlobalRetriever::refreshLrAroundNow(const CVector &position, float radius)
+{
+	// check if retriever bank is all loaded, and if yes don't refresh it
+	if (_RetrieverBank->allLoaded())
+		return;
+
+	// must wait all current have finished loading
+	waitEndOfAsyncLoading();
+
+	// Select new to load
 	CAABBox	box;
 	box.setCenter(position);
 	box.setHalfSize(CVector(radius, radius, 1000.0f));

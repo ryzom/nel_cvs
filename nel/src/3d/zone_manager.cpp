@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.18 2004/03/22 17:40:39 berenguier Exp $
+ * $Id: zone_manager.cpp,v 1.19 2004/05/26 16:07:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 	_LastY = y;
 	_LastArea = area;
 
-	// Look if we have zone loaded that is not needed anymore
+	// **** Look if we have zone loaded that is not needed anymore
 	uint32 i, j;
 	for (i = 0; i < _LoadedZones.size(); ++i)
 	{
@@ -115,10 +115,10 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 		}
 	}
 
-	// Look if we have zone not already loaded
+	// **** Look if we have zone not already loaded
 	for (i = 0; i < _ZoneList.size(); ++i)
 	{
-		// If the zone requested do not appear in the zone loaded list so we have to load it
+		// If the zone requested appear in the zone loaded, we don't have to load it
 		bool bFound = false;
 		uint16 nZone = _ZoneList[i];
 		for (j = 0; j < _LoadedZones.size(); ++j)
@@ -130,6 +130,7 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 			}
 		}
 
+		// if the zone is not already loaded
 		if (!bFound)
 		{
 			// Already loading ?
@@ -153,13 +154,12 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 				newZone.ZoneToAddId = nZone;
 				newZone.Zone = NULL;
 				
-				// We have to load this zone ! and return because only one load at a time
+				// We have to load this zone. add a load task
 				CAsyncFileManager &rAFM = CAsyncFileManager::getInstance();
 
 				// Make a position
 				uint x, y;
 				getZonePos (newZone.ZoneToAddId, x, y);
-//				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, CVector ((float)x, -(float)y, 0)));
 				CVector v = CVector ((float)x, -(float)y, 0);
 				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, v, _ZoneTileColorMono, _ZoneTileColorFactor));
 			}
@@ -266,6 +266,7 @@ void CZoneLoadingTask::run(void)
 		delete ZoneTmp;
 		*_Zone = (CZone*)-1; // Return error
 	}
+
 	delete this;
 }
 
@@ -275,6 +276,12 @@ void CZoneLoadingTask::getName (std::string &result) const
 {
 	result = "LoadZone(" + _ZoneName + ")";
 }
+
+// ***************************************************************************
+CZoneLoadingTask::~CZoneLoadingTask()
+{
+}
+
 
 } // NL3D
 

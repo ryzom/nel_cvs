@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.35 2004/02/09 10:38:22 legros Exp $
+ * $Id: global_retriever.h,v 1.36 2004/05/26 16:08:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,7 +178,7 @@ public:
 	CGlobalRetriever(const CRetrieverBank *bank=NULL) 
 		: _RetrieverBank(bank)
 	{ }
-	virtual ~CGlobalRetriever() {}
+	virtual ~CGlobalRetriever();
 	
 
 	/// Setup an empty global retriever
@@ -398,6 +398,9 @@ public:
 
 	void							refreshLrAroundNow(const NLMISC::CVector &position, float radius);
 
+	// ensure all load tasks end. called at dtor
+	void							waitEndOfAsyncLoading();
+		
 	// @}
 
 	/// \name  Collisions part.

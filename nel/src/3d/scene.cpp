@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.120 2004/05/03 16:42:28 corvazier Exp $
+ * $Id: scene.cpp,v 1.121 2004/05/26 16:05:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,9 +194,6 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 // ***************************************************************************
 void	CScene::release()
 {
-	// terminate async loading
-	CAsyncFileManager::terminate();
-
 	// reset the _QuadGridClipManager, => unlink models, and delete clusters.
 	if( _QuadGridClipManager )
 		_QuadGridClipManager->reset();

@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.13 2003/09/01 16:23:25 lecroart Exp $
+ * $Id: admin.cpp,v 1.14 2003/09/19 08:56:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ struct CRequest
 {
 	CRequest (uint32 id, uint16 sid) : Id(id), NbWaiting(0), NbReceived(0), SId(sid)
 	{
-		nldebug ("++ NbWaiting %d NbReceived %d", NbWaiting, NbReceived);
+		nldebug ("ADMIN: ++ NbWaiting %d NbReceived %d", NbWaiting, NbReceived);
 		Time = CTime::getSecondsSince1970 ();
 	}
 	
@@ -95,7 +95,7 @@ uint32 RequestTimeout = 4;	// in second
 
 static void cbInfo (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-	nlinfo ("Updating informations");
+	nlinfo ("ADMIN: Updating admin informations");
 
 	vector<string> alarms;
 	msgin.serialCont (alarms);
@@ -142,14 +142,14 @@ static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint
 	string command;
 	msgin.serial (command);
 	
-	nlinfo ("Executing command from network : '%s'", command.c_str());
+	nlinfo ("ADMIN: Executing command from network : '%s'", command.c_str());
 	ICommand::execute (command, IService::getInstance()->CommandLog);
 }
 
 
 static void cbStopService (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-	nlinfo ("Receive a stop from service %s-%d, need to quit", serviceName.c_str(), sid);
+	nlinfo ("ADMIN: Receive a stop from service %s-%d, need to quit", serviceName.c_str(), sid);
 	IService::getInstance()->exit (0xFFFF);
 }
 
@@ -210,13 +210,13 @@ static void addRequestWaitingNb (uint32 rid)
 		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting++;
-			nldebug ("++ i %d rid %d NbWaiting+ %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("ADMIN: ++ i %d rid %d NbWaiting+ %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			// if we add a waiting, reset the timer
 			Requests[i].Time = CTime::getSecondsSince1970 ();
 			return;
 		}
 	}
-	nlwarning ("addRequestWaitingNb: can't find the rid %d", rid);
+	nlwarning ("ADMIN: addRequestWaitingNb: can't find the rid %d", rid);
 }
 
 static void subRequestWaitingNb (uint32 rid)
@@ -226,11 +226,11 @@ static void subRequestWaitingNb (uint32 rid)
 		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting--;
-			nldebug ("++ i %d rid %d NbWaiting- %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("ADMIN: ++ i %d rid %d NbWaiting- %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			return;
 		}
 	}
-	nlwarning ("subRequestWaitingNb: can't find the rid %d", rid);
+	nlwarning ("ADMIN: subRequestWaitingNb: can't find the rid %d", rid);
 }
 /*
 void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<string> > >&answer)
@@ -248,12 +248,12 @@ void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<str
 				Requests[i].Answers.push_back (make_pair(answer[t].first, answer[t].second));
 			}
 			Requests[i].NbReceived++;
-			nldebug ("++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("ADMIN: ++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			return;
 		}
 	}
 	// we received an unknown request, forget it
-	nlwarning ("Receive an answer for unknown request %d", rid);
+	nlwarning ("ADMIN: Receive an answer for unknown request %d", rid);
 }
 */
 
@@ -271,13 +271,13 @@ void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector
 			Requests[i].Answers.push_back (make_pair(variables, values));
 
 			Requests[i].NbReceived++;
-			nldebug ("++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("ADMIN: ++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			
 			return;
 		}
 	}
 	// we received an unknown request, forget it
-	nlwarning ("Receive an answer for unknown request %d", rid);
+	nlwarning ("ADMIN: Receive an answer for unknown request %d", rid);
 }
 
 static bool emptyRequest (uint32 rid)
@@ -301,7 +301,7 @@ static void cleanRequest ()
 		// timeout
 		if (currentTime >= Requests[i].Time+RequestTimeout)
 		{
-			nlwarning ("**** i %d rid %d -> Requests[i].NbWaiting (%d) != Requests[i].NbReceived (%d)", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nlwarning ("ADMIN: **** i %d rid %d -> Requests[i].NbWaiting (%d) != Requests[i].NbReceived (%d)", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			Requests[i].NbWaiting = Requests[i].NbReceived;
 		}
 
@@ -320,7 +320,7 @@ static void cleanRequest ()
 
 			if (Requests[i].SId == 0)
 			{
-				nlinfo ("Receive an answer for the fake request %d with %d answers", Requests[i].Id, Requests[i].Answers.size ());
+				nlinfo ("ADMIN: Receive an answer for the fake request %d with %d answers", Requests[i].Id, Requests[i].Answers.size ());
 				for (uint j = 0; j < Requests[i].Answers.size (); j++)
 				{
 					uint k;
@@ -345,7 +345,7 @@ static void cleanRequest ()
 
 			// set to 0 to erase it
 			Requests[i].NbWaiting = 0;
-			nldebug ("++ i %d rid %d NbWaiting0 %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			nldebug ("ADMIN: ++ i %d rid %d NbWaiting0 %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 		}
 
 		if (Requests[i].NbWaiting == 0)

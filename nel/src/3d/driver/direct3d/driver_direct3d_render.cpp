@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.6 2004/08/13 15:27:52 vizerie Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.7 2004/09/02 16:57:47 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -364,8 +364,8 @@ bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQua
 		{
 			// Active the pass
 			activePass (pass);			
-			_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset + startIndex, 0, numQuadsNeeded,
-				0, numQuads*2);			
+			_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset + startIndex, 0, numQuads * 4,
+				0, numQuads*2);
 		}
 		endMultiPass ();
 	}

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.98 2003/04/07 14:06:51 lecroart Exp $
+# $Id: Makefile.am,v 1.99 2003/04/14 09:24:17 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -287,6 +287,7 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        ps_attrib_maker_bin_op.h \
                        ps_attrib_maker_bin_op_inline.h \
                        ps_attrib_maker.h \
+                       ps_attrib_maker_helper.cpp \
                        ps_attrib_maker_helper.h \
                        ps_attrib_maker_iterators.h \
                        ps_attrib_maker_template.h \

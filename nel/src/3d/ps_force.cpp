@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.20 2001/10/02 16:37:40 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.21 2001/10/03 10:16:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,7 +231,10 @@ void CPSForceIntensityHelper::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialVersion(1);
 	CPSForce::serial(f);
 	serialForceIntensity(f);
-	registerToTargets();
+	if (f.isReading())
+	{
+		registerToTargets();
+	}
 }
 
 
@@ -300,8 +303,8 @@ void CPSDirectionnalForce::show(CAnimationTime ellapsedTime)
 
 void CPSDirectionnalForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);	
-	CPSForceIntensityHelper::serial(f);
+	f.serialVersion(1);		
+	CPSForceIntensityHelper::serial(f);	
 	f.serial(_Dir);
 }
 
@@ -426,9 +429,8 @@ void CPSGravity::show(CAnimationTime ellapsedTime)
 
 void CPSGravity::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);
-	CPSForceIntensityHelper::serial(f);
-	
+	f.serialVersion(1);	
+	CPSForceIntensityHelper::serial(f);	
 }
 
 
@@ -692,8 +694,8 @@ void CPSCentralGravity::show(CAnimationTime ellapsedTime)
 
 void CPSCentralGravity::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);
-	CPSForceIntensityHelper::serial(f);
+	f.serialVersion(1);	
+	CPSForceIntensityHelper::serial(f);	
 }
 
 
@@ -738,8 +740,8 @@ void CPSSpring::performDynamic(CAnimationTime ellapsedTime)
 
 void CPSSpring::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);
-	CPSForceIntensityHelper::serial(f);
+	f.serialVersion(1);	
+	CPSForceIntensityHelper::serial(f);	
 }
 
 
@@ -888,8 +890,8 @@ CMatrix CPSCylindricVortex::getMatrix(uint32 index) const
 
 void CPSCylindricVortex::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);
-	CPSForceIntensityHelper::serial(f);
+	f.serialVersion(1);	
+	CPSForceIntensityHelper::serial(f);	
 	f.serial(_Normal);
 	f.serial(_Radius);
 	f.serial(_RadialViscosity);

@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.8 2001/10/02 16:37:40 vizerie Exp $
+ * $Id: ps_force.h,v 1.9 2001/10/03 10:16:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -551,7 +551,10 @@ public:
 		f.serialVersion(1);
 		CIsotropicForceT<CPSFluidFrictionFunctor>::serial(f);
 		serialForceIntensity(f);
-		registerToTargets();
+		if (f.isReading())
+		{
+			registerToTargets();
+		}
 	}
 	
 
@@ -623,7 +626,10 @@ public:
 		f.serialVersion(1);
 		CIsotropicForceT<CPSBrownianFunctor>::serial(f);
 		serialForceIntensity(f);
-		registerToTargets();
+		if (f.isReading())
+		{
+			registerToTargets();
+		}
 	}
 
 protected:
@@ -702,7 +708,10 @@ public:
 		f.serialVersion(1);
 		CIsotropicForceT<CPSTurbulForceFunc>::serial(f);
 		serialForceIntensity(f);
-		registerToTargets();
+		if (f.isReading())
+		{
+			registerToTargets();
+		}
 	}
 
 	// inherited from CIsotropicForceT

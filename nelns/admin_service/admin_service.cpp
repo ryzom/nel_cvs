@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.11 2001/07/10 16:49:53 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.12 2002/02/15 17:07:43 lecroart Exp $
  *
  */
 
@@ -661,7 +661,54 @@ void clientConnection (const string &serviceName, TSockId from, void *arg)
 {
 	// new client, send him all out info about services
 
-	nlinfo ("client %s is connected", from->asString().c_str());
+	nlinfo ("admin %s is connected", from->asString().c_str());
+
+	CNetManager::getNetBase(serviceName)->authorizeOnly ("AUTH", from);
+}
+
+static void cbAuthenticateClient (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	//
+	// Check the validity of the admin
+	//
+	
+	string login, password;
+	bool ok = false;
+	try
+	{
+		msgin.serial (login, password);
+
+		CConfigFile::CVar &users = IService::ConfigFile.getVar("Users");
+		for (sint i = 0 ; i < users.size (); i+=2)
+		{
+			if (login == users.asString(i))
+			{
+				if (password == users.asString(i + 1))
+				{
+					// good authentification
+					ok = true;
+				}
+				break;
+			}
+		}
+	}
+	catch (Exception &)
+	{
+		// problem, eject him
+	}
+
+	if (ok)
+	{
+		netbase.authorizeOnly (NULL, from);
+		nlinfo ("Admin authentification success login: '%s'", login.c_str());
+	}
+	else
+	{
+		// bad auth => disconnect
+		netbase.disconnect (from);
+		nlwarning ("Bad admin authentification try login: '%s' password: '%s'", login.c_str(), password.c_str());
+		return;
+	}
 
 	//
 	// send the list of all the aes
@@ -851,6 +898,7 @@ static void cbStopAllServices (CMessage& msgin, TSockId from, CCallbackNetBase &
 
 TCallbackItem ClientCallbackArray[] =
 {
+	{ "AUTH", cbAuthenticateClient },
 	{ "SYS", cbExecuteSystemCommand },
 	{ "STARTS", cbStartService },
 	{ "STOPS", cbStopService },

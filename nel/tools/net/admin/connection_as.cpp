@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.9 2001/10/05 15:06:45 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.10 2002/02/15 17:07:59 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -549,6 +549,12 @@ void connectionASInit (CAdminService *as)
 		CNetManager::setDisconnectionCallback (as->ASAddr, cbASDisconnection, NULL);
 		CNetManager::addClient (as->ASAddr, as->ASAddr+":49995", false);
 		CNetManager::addCallbackArray (as->ASAddr, ASCallbackArray, sizeof(ASCallbackArray)/sizeof(ASCallbackArray[0]));
+
+		CMessage msgout ("AUTH");
+		string login = ConfigFile.getVar ("Login").asString ();
+		string password = ConfigFile.getVar ("Password").asString ();
+		msgout.serial (login, password);
+		CNetManager::send (as->ASAddr, msgout);
 	}
 	catch (ESocket &e)
 	{

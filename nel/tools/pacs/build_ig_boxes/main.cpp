@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.2 2002/02/19 11:08:37 legros Exp $
+ * $Id: main.cpp,v 1.3 2002/02/19 15:57:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,28 +143,40 @@ int main(int argc, char **argv)
 			for (j=0; j<ig._InstancesInfos.size(); ++j)
 			{
 				// c'est degueulasse, mais c'est les coders a la 3D, y savent pas coder
-				CIFile			f(CPath::lookup(ig._InstancesInfos[j].Name+".shape"));
-				CShapeStream	shape;
-				shape.serial(f);
+				string	shapeName = ig._InstancesInfos[j].Name+".shape";
+				string	shapeNameLookup = CPath::lookup(shapeName, false, false);
+				if (!shapeNameLookup.empty())
+					shapeName = shapeNameLookup;
 
-				CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
-				if (wshape == NULL)
-					continue;
-
-				CPolygon			wpoly;
-				wshape->getShapeInWorldSpace(wpoly);
-
-				for (k=0; k<wpoly.Vertices.size(); ++k)
+				CIFile			f;
+				if (f.open (shapeName))
 				{
-					if (boxSet)
+					CShapeStream	shape;
+					shape.serial(f);
+
+					CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
+					if (wshape == NULL)
+						continue;
+
+					CPolygon			wpoly;
+					wshape->getShapeInWorldSpace(wpoly);
+
+					for (k=0; k<wpoly.Vertices.size(); ++k)
 					{
-						igBBox.extend(wpoly.Vertices[k]);
+						if (boxSet)
+						{
+							igBBox.extend(wpoly.Vertices[k]);
+						}
+						else
+						{
+							igBBox.setCenter(wpoly.Vertices[k]);
+							boxSet = true;
+						}
 					}
-					else
-					{
-						igBBox.setCenter(wpoly.Vertices[k]);
-						boxSet = true;
-					}
+				}
+				else
+				{
+					nlwarning ("Can't load shape %s", shapeName.c_str());
 				}
 			}
 

@@ -625,6 +625,14 @@ SOURCE=..\include\nel\misc\entity_id.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\hierarchical_timer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\hierarchical_timer.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\i18n.cpp
 # End Source File
 # Begin Source File

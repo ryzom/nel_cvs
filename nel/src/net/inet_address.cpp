@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.17 2000/11/21 17:30:55 valignat Exp $
+ * $Id: inet_address.cpp,v 1.18 2000/11/22 15:56:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,12 +105,39 @@ CInetAddress& CInetAddress::operator=( const CInetAddress& other )
 
 
 /*
- * Comparison operator
+ * Comparison == operator
  */
 bool operator==( const CInetAddress& a1, const CInetAddress& a2 )
 {
 	// Compares the sockaddr structure except the last 8 bytes equal to zero.
 	return ( memcmp( a1._SockAddr, a2._SockAddr, sizeof(sockaddr_in)-8 ) == 0 );
+}
+
+
+/*
+ * Comparison < operator
+ */
+bool operator<( const CInetAddress& a1, const CInetAddress& a2 )
+{
+#ifdef NL_OS_WINDOWS
+	if ( a1._SockAddr->sin_addr.S_un.S_addr == a2._SockAddr->sin_addr.S_un.S_addr )
+	{
+		return ( a1.port() < a2.port() );
+	}
+	else
+	{
+		return ( a1._SockAddr->sin_addr.S_un.S_addr < a2._SockAddr->sin_addr.S_un.S_addr );
+	}
+#elif defined NL_OS_UNIX
+	if ( a1._SockAddr->sin_addr.s_addr == a2._SockAddr->sin_addr.s_addr )
+	{
+		return ( a1.port() < a2.port() );
+	}
+	else
+	{
+		return ( a1._SockAddr->sin_addr.s_addr < a2._SockAddr->sin_addr.s_addr );
+	}
+#endif	
 }
 
 

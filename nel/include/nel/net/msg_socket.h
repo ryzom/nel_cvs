@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.21 2000/11/20 15:51:49 cado Exp $
+ * $Id: msg_socket.h,v 1.22 2000/11/22 15:56:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,8 @@ public:
 	/** Constructs a server object, listening on specified port.
 	 * \param callbackarray Define this array statically.
 	 * \param arraysize Use sizeof(callbackarray)-sizeof(callbackarray[0])
-	 * \param port Port on which the server must listen and accept connections
+	 * \param port Port on which the server must listen and accept connections. If you
+	 * don't want to choose a port, you can call CNamingClient::queryServicePort() before)
 	 */
 	CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port );
 

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.14 2000/11/08 15:09:53 lecroart Exp $
+ * $Id: service.h,v 1.15 2000/11/22 15:56:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ class CMsgSocket;
 
 
 /**
- * The goal of this macro is to simplify the creation of a service, it create the main body function.
+ * The goal of this macro is to simplify the creation of a service, it creates the main body function.
  *
  * Example:
  *\code
@@ -56,6 +56,8 @@ class CMsgSocket;
 	// ("FS" is the short service name)
 	NLNET_SERVICE_MAIN(CFooService, "FS", 41200);
  *\endcode
+ *
+ * If you want the port to be auto-assigned by the naming service, set the port to 0. 
  */
 #define NLNET_SERVICE_MAIN(ServiceClassName, ServiceName, ServicePort) \
 const char IService::_Name[] = ServiceName; \

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.6 2000/11/08 14:57:45 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.7 2000/11/22 15:56:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,7 @@ const sint16 LK_CBINDEX = 0;
 const sint16 LA_CBINDEX = 1;
 const sint16 RG_CBINDEX = 2;
 const sint16 UN_CBINDEX = 3;
+const sint16 QP_CBINDEX = 4;
 
 
 /*
@@ -156,6 +157,34 @@ void CNamingClient::doClose()
 	}
 }
 	
+
+/* Requests the naming service to choose a port for the service
+ * \param name [in] Name of the service
+ * \param addr [in] Address of the service (the port can be 0)
+ * \return The allocated port number
+ */
+uint16 CNamingClient::queryServicePort( const std::string& name, const CInetAddress& addr )
+{
+	CNamingClient::openT();
+
+	// Send request
+	CMessage msgout( "" ); //"QP"
+	msgout.setType( QP_CBINDEX );
+	msgout.serial( const_cast<std::string&>(name) );
+	msgout.serial( const_cast<CInetAddress&>(addr) );
+	CNamingClient::_ClientSock->send( msgout );
+
+	// Wait for answer
+	uint16 port;
+	CMessage msgin( "", true );
+	CNamingClient::_ClientSock->receive( msgin );
+	msgin.serial( port );
+	CNamingClient::closeT();
+
+	nldebug( "Service %s got port %hu", name.c_str(), port );
+	return port;
+}
+
 
 /*
  * Register a service within the naming service

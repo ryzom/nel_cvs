@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.20 2000/11/09 17:59:47 lecroart Exp $
+ * $Id: service.cpp,v 1.21 2000/11/22 15:56:47 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -218,15 +218,22 @@ sint IService::main (int argc, char **argv)
 		_Timeout = IService::_DefaultTimeout;
 		getCustomParams();
 
-		// Server start-up
-		_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
-		CMsgSocket::setTimeout( _Timeout );
-
 		// Register the name to the NS (except for the NS itself)
 		if ( strcmp( IService::_Name, "NS" ) != 0 )
 		{
 			try
 			{
+				if ( _Port == 0 )
+				{
+					// Auto-assign port
+					_Port = CNamingClient::queryServicePort( IService::_Name, CInetAddress::localHost() );
+				}
+				// Server start-up
+				_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
+				CMsgSocket::setTimeout( _Timeout );
+		
+				// Register service
+				nlassert( _Server->listenAddress() != NULL );
 				CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
 			}
 			catch ( ESocketConnectionFailed& )
@@ -237,6 +244,12 @@ sint IService::main (int argc, char **argv)
 			{
 				nlwarning( "Could not register service into the Naming Service." );
 			}
+		}
+		else
+		{
+			// Server start-up
+			_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
+			CMsgSocket::setTimeout( _Timeout );
 		}
 
 		// User service init

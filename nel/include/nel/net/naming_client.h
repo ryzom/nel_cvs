@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.7 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: naming_client.h,v 1.8 2000/11/22 15:56:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,13 @@ public:
 	 * \brief If TransactionMode is true, these method perform open() and close() themselves.
 	 */
 	//@{
+
+	/** Requests the naming service to choose a port for the service
+	 * \param name [in] Name of the service
+	 * \param addr [in] Address of the service (the port can be 0 as returned by CInetAddress::localHost())
+	 * \return The allocated port number
+	 */
+	static uint16		queryServicePort( const std::string& name, const CInetAddress& addr );
 
 	/// Register a service within the naming service
 	static void			registerService( const std::string& name, const CInetAddress& addr );

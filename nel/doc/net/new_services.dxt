@@ -44,9 +44,10 @@ incoming messages by calling the callbacks.
 -# Add in your source file the following line, where
 \e CNewService is the name of your class, where
 \e NAME is the name of your service and where
-\e 41200 is the chosen port number :
+\e 41200 is the chosen port number (set it to 0
+for "auto-assigned by the name service") :
 \code
-NLNET_SERVICE_MAIN( CNewService, "NAME", 41200 );
+NLNET_SERVICE_MAIN( CNewService, "NAME", 0);
 \endcode
 
 Note: if your service does nothing else calling your callbacks,

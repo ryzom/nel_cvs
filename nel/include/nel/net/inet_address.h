@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.h,v 1.14 2000/11/22 11:17:12 lecroart Exp $
+ * $Id: inet_address.h,v 1.15 2000/11/22 15:56:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,8 +77,11 @@ public:
 	/// Assignment operator
 	CInetAddress& operator=( const CInetAddress& other );
 
-	/// Comparison operator
+	/// Comparison == operator
 	friend bool operator==( const CInetAddress& a1, const CInetAddress& a2 );
+
+	/// Comparison < operator
+	friend bool operator<( const CInetAddress& a1, const CInetAddress& a2 );
 
 	/// Destructor
 	~CInetAddress();

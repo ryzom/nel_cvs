@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.42 2003/07/01 10:13:52 cado Exp $
+ * $Id: common.cpp,v 1.43 2003/09/26 14:24:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -530,11 +530,11 @@ NLMISC_COMMAND(stohr, "Convert a second number into an human readable time", "<i
 	return true;
 }
 
-std::string strlwr ( const std::string &str )
+std::string strlwr (const std::string &str)
 {
 	string res;
 	res.reserve (str.size());
-	for (uint i=0; i<str.size(); i++)
+	for (uint i = 0; i < str.size(); i++)
 	{
 		if ( (str[i] >= 'A') && (str[i] <= 'Z') )
 			res += str[i] - 'A' + 'a';
@@ -545,9 +545,9 @@ std::string strlwr ( const std::string &str )
 	return res;
 }
 
-std::string &strlwr ( std::string &str )
+std::string &strlwr (std::string &str)
 {
-	for (int i=str.size()-1; i>=0; i--)
+	for (uint i = 0; i < str.size(); i++)
 	{
 		if ( (str[i] >= 'A') && (str[i] <= 'Z') )
 		{
@@ -555,13 +555,13 @@ std::string &strlwr ( std::string &str )
 		}
 	}
 
-	return (str);
+	return str;
 }
 
-char *strlwr ( char *str )
+char *strlwr (char *str)
 {
 	if (str == NULL)
-		return (NULL);
+		return NULL;
 
 	while (*str != '\0')
 	{
@@ -572,12 +572,12 @@ char *strlwr ( char *str )
 		str++;
 	}
 
-	return (str);
+	return str;
 }
 
-std::string &strupr ( std::string &str )
+std::string &strupr (std::string &str)
 {
-	for (int i=str.size()-1; i>=0; i--)
+	for (uint i = 0; i < str.size(); i++)
 	{
 		if ( (str[i] >= 'a') && (str[i] <= 'z') )
 		{
@@ -585,13 +585,29 @@ std::string &strupr ( std::string &str )
 		}
 	}
 
-	return (str);
+	return str;
 }
 
-char *strupr ( char *str )
+std::string strupr ( const std::string &str )
+{
+	string res;
+	res.reserve (str.size());
+	for (uint i = 0; i < str.size(); i++)
+	{
+		if ( (str[i] >= 'a') && (str[i] <= 'z') )
+			res += str[i] - 'a' + 'A';
+		else
+			res += str[i];
+	}
+	
+	return res;
+}
+
+
+char *strupr (char *str)
 {
 	if (str == NULL)
-		return (NULL);
+		return NULL;
 
 	while (*str != '\0')
 	{
@@ -602,7 +618,7 @@ char *strupr ( char *str )
 		str++;
 	}
 
-	return (str);
+	return str;
 }
 
 sint nlstricmp(const char *lhs,const char *rhs)

@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.59 2003/07/01 10:11:23 cado Exp $
+ * $Id: common.h,v 1.60 2003/09/26 14:24:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,6 +263,7 @@ char			*strlwr ( char *str );
  * \param a string to transform to upper case
  */
 std::string		&strupr ( std::string &str );
+std::string		strupr ( const std::string &str );
 
 /** Convert a string in upper case.
  * \param a pointer to char to transform to upper case

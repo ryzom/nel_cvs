@@ -1,7 +1,7 @@
 /** \file connection_ws.h
  * <File description>
  *
- * $Id: connection_ws.h,v 1.3 2002/09/16 14:50:07 lecroart Exp $
+ * $Id: connection_ws.h,v 1.4 2002/10/21 12:00:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,12 @@
 #define NL_CONNECTION_WS_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/net/callback_server.h"
 
-void connectionWSInit (uint16 port);
+//extern NLNET::CCallbackServer *WSServer;
+
+void connectionWSInit ();
+void connectionWSUpdate ();
 void connectionWSRelease ();
 
 #endif // NL_CONNECTION_WS_H

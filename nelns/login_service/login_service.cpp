@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.24 2002/09/30 14:37:20 lecroart Exp $
+ * $Id: login_service.cpp,v 1.25 2002/10/21 12:00:52 lecroart Exp $
  *
  * \todo check must say who are the master LS to know who set the shard online/offline etc... (USE an int instead of bool for Online)
  *
@@ -297,7 +297,7 @@ void cbDatabaseVar (CConfigFile::CVar &var)
 	DatabaseConnection = mysql_real_connect(db, DatabaseHost.c_str(), DatabaseLogin.c_str(), DatabasePassword.c_str(), DatabaseName.c_str(),0,NULL,0);
 	if (DatabaseConnection == NULL || DatabaseConnection != db)
 	{
-		nlwarning ("mysql_real_connect() failed: %s", mysql_error(DatabaseConnection));
+		nlerror ("mysql_real_connect() failed to '%s' with login '%s' and database name '%s'", DatabaseHost.c_str(), DatabaseLogin.c_str(), DatabaseName.c_str());
 		return;
 	}
 }
@@ -321,11 +321,7 @@ public:
 		if (WindowDisplayer != NULL)
 			Output.addDisplayer (WindowDisplayer);
 
-		// init connection to the welcome service
-
-		connectionWSInit (ConfigFile.getVar("WSPort").asInt());
-
-		// init connection to the web server
+		connectionWSInit ();
 
 		connectionWebInit ();
 
@@ -341,6 +337,7 @@ public:
 
 	bool update ()
 	{
+		connectionWSUpdate ();
 		connectionWebUpdate ();
 
 		return true;
@@ -355,13 +352,14 @@ public:
 		}
 
 		connectionWSRelease ();
+		connectionWebRelease ();
 		
 		Output.displayNL ("Login Service released");
 	}
 };
 
 // Service instanciation
-NLNET_OLD_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, OldEmptyCallbackArray, NELNS_CONFIG, NELNS_LOGS);
+NLNET_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, EmptyCallbackArray, NELNS_CONFIG, NELNS_LOGS);
 
 
 //

@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.2 2002/10/07 08:02:47 lecroart Exp $
+ * $Id: connection_web.cpp,v 1.3 2002/10/21 12:00:52 lecroart Exp $
  *
  */
 
@@ -40,24 +40,35 @@
 
 #include "nel/net/buf_server.h"
 #include "nel/net/login_cookie.h"
+
 #include "login_service.h"
+#include "connection_ws.h"
 
-#define CRYPT_PASSWORD 1
 
-#if defined(NL_OS_UNIX) && CRYPT_PASSWORD
-extern "C" char *crypt (const char *__key, const char *__salt);
-#endif
+//
+// Namespaces
+//
 
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
+
+
+//
+// Variables
+//
 
 CBufServer *WebServer = NULL;
 
 // uint32 is the hostid to the web connection
 map<uint32, CLoginCookie> TempCookies;
 
-static void cbWSShardChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+
+//
+// Callbacks
+//
+
+static void cbWSShardChooseShard/* (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)*/ (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	nlassert(WebServer != NULL);
 
@@ -99,38 +110,14 @@ static void cbWSShardChooseShard (CMessage &msgin, TSockId from, CCallbackNetBas
 	WebServer->send (msgout, (TSockId)cookie.getUserAddr ());
 }
 
-static const TCallbackItem WSCallbackArray[] =
+static const TUnifiedCallbackItem WSCallbackArray[] =
 {
 	{ "SCS", cbWSShardChooseShard },
 };
 
-/*void cb( TSockId from, void *arg )
-{
-	nlinfo ("cool");
-}
-*/
-void connectionWebInit ()
-{
-	nlassert(WebServer == NULL);
-
-	WebServer = new CBufServer ();
-	nlassert(WebServer != NULL);
-
-	WebServer->init (49990);
-	//WebServer->setConnectionCallback (cb, NULL);
-
-	CNetManager::addCallbackArray ("WSLS", WSCallbackArray, sizeof(WSCallbackArray)/sizeof(WSCallbackArray[0]));
-
-	nlinfo ("Set the server connection for web to port %hu", 49990);
-}
-
-
-
-
-
 void cbAskClientConnection (CMemStream &msgin, TSockId host)
 {
-	sint32 shardId;
+	uint32 shardId;
 	uint32 userId;
 	msgin.serial (shardId);
 	msgin.serial (userId);
@@ -146,9 +133,10 @@ void cbAskClientConnection (CMemStream &msgin, TSockId host)
 			CLoginCookie Cookie ((uint32)host, userId);
 
 			// send message to the welcome service to see if it s ok and know the front end ip
-			CMessage msgout (CNetManager::getNetBase("WSLS")->getSIDA (), "CS");
+			CMessage msgout ("CS");
 			msgout.serial (Cookie);
-			CNetManager::send("WSLS", msgout, Shards[i].SockId);
+			//WSServer->send (msgout, Shards[i].SockId);
+			CUnifiedNetwork::getInstance ()->send (Shards[i].SId, msgout);
 			beep (1000, 1, 100, 100);
 
 			// add the connection in temp cookie
@@ -182,9 +170,10 @@ void cbDisconnectClient (CMemStream &msgin, TSockId host)
 		if (Shards[i].ShardId == shardId)
 		{
 			// ask the WS to disconnect the player from the shard
-			CMessage msgout (CNetManager::getNetBase("WSLS")->getSIDA (), "DC");
+			CMessage msgout ("DC");
 			msgout.serial (userId);
-			CNetManager::send("WSLS", msgout, Shards[i].SockId);
+			//WSServer->send (msgout, Shards[i].SockId);
+			CUnifiedNetwork::getInstance ()->send (Shards[i].SId, msgout);
 
 			// send answer to the web
 			CMemStream msgout2;
@@ -213,6 +202,26 @@ WebCallback WebCallbackArray[] = {
 	cbAskClientConnection,
 	cbDisconnectClient
 };
+
+//
+// Functions
+//
+
+void connectionWebInit ()
+{
+	nlassert(WebServer == NULL);
+
+	WebServer = new CBufServer ();
+	nlassert(WebServer != NULL);
+
+	uint16 port = (uint16) IService::getInstance ()->ConfigFile.getVar ("WebPort").asInt();
+	WebServer->init (port);
+
+	// catch the messages from Welcome Service to know if the user can connect or not
+	CUnifiedNetwork::getInstance ()->addCallbackArray (WSCallbackArray, sizeof(WSCallbackArray)/sizeof(WSCallbackArray[0]));
+
+	nlinfo ("Set the server connection for web to port %hu", port);
+}
 
 void connectionWebUpdate ()
 {
@@ -256,4 +265,12 @@ void connectionWebUpdate ()
 	{
 		nlwarning ("Error during update: '%s'", e.what ());
 	}
+}
+
+void connectionWebRelease ()
+{
+	nlassert(WebServer != NULL);
+
+	delete WebServer;
+	WebServer = 0;
 }

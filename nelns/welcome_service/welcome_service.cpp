@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.18 2002/10/07 08:03:07 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.19 2002/10/21 12:00:34 lecroart Exp $
  *
  */
 
@@ -367,11 +367,11 @@ public:
 			
 			// add default port if not set by the config file
 			if (LSAddr.find (":") == string::npos)
-				LSAddr += ":49998";
+				LSAddr += ":49999";
 
 			CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
 			CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
-			CUnifiedNetwork::getInstance()->addService("LS", LSAddr, false);
+			CUnifiedNetwork::getInstance()->addService("LS", LSAddr);
 		}
 	}
 };

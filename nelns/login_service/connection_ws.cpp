@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.14 2002/09/30 16:31:30 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.15 2002/10/21 12:00:52 lecroart Exp $
  *
  */
 
@@ -39,21 +39,35 @@
 #include "nel/misc/log.h"
 
 #include "nel/net/service.h"
-#include "nel/net/net_manager.h"
 #include "nel/net/login_cookie.h"
 #include "login_service.h"
+
+
+//
+// Namespaces
+//
 
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
 
+//
+// Variables
+//
 
-sint findShard (TSockId senderId)
+//CCallbackServer *WSServer = 0;
+
+
+//
+// Functions
+//
+
+sint findShardWithSId (uint16 sid)
 {
 	for (sint i = 0; i < (sint) Shards.size (); i++)
 	{
-		if (Shards[i].SockId == senderId)
+		if (Shards[i].SId == sid)
 		{
 			return i;
 		}
@@ -62,7 +76,7 @@ sint findShard (TSockId senderId)
 	return -1;
 }
 
-sint32 findShard (sint32 shardId)
+sint32 findShard (uint32 shardId)
 {
 	for (sint i = 0; i < (sint) Shards.size (); i++)
 	{
@@ -75,16 +89,12 @@ sint32 findShard (sint32 shardId)
 	return -1;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////// CONNECTION TO THE WELCOME SERVICES /////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
+static void cbWSConnection/* ( TSockId from, void *arg )*/ (const std::string &serviceName, uint16 sid, void *arg)
 {
-	const CInetAddress &ia = CNetManager::getNetBase("WSLS")->hostAddress (from);
+//	const CInetAddress &ia = WSServer->hostAddress (from);
+	TSockId from;
+	CCallbackNetBase *cnb = CUnifiedNetwork::getInstance ()->getNetBase (sid, from);
+	const CInetAddress &ia = cnb->hostAddress (from);
 
 	nldebug("new potential shard: %s", ia.asString ().c_str ());
 
@@ -101,7 +111,7 @@ static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 	}
 
 	MYSQL_RES *res = mysql_store_result(DatabaseConnection);
-	if (res == NULL)
+	if (res == 0)
 	{
 		nlwarning ("mysql_store_result () failed from query '%s': %s", query.c_str (),  mysql_error(DatabaseConnection));
 		return;
@@ -113,20 +123,23 @@ static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 		// we can't accept unknown shard
 
 		nlwarning("The shard is not in the database (WSAddr %s is not in the base), disconnecting it", ia.ipAddress ().c_str ());
-		CNetManager::getNetBase("WSLS")->disconnect(from);
+		//WSServer->disconnect(from);
+		cnb->disconnect (from);
 	}
 }
 
-static void cbWSDisconnection (const string &serviceName, TSockId from, void *arg)
+static void cbWSDisconnection/* ( TSockId from, void *arg )*/(const std::string &serviceName, uint16 sid, void *arg)
 {
-	CCallbackNetBase *cnb = CNetManager::getNetBase("WSLS");
+//	const CInetAddress &ia = WSServer->hostAddress (from);
+	TSockId from;
+	CCallbackNetBase *cnb = CUnifiedNetwork::getInstance ()->getNetBase (sid, from);
 	const CInetAddress &ia = cnb->hostAddress (from);
 
 	nldebug("shard disconnection: %s", ia.asString ().c_str ());
 
 	for (uint32 i = 0; i < Shards.size (); i++)
 	{
-		if (Shards[i].SockId == from)
+		if (Shards[i].SId == sid)
 		{
 			// shard disconnected
 			nlinfo("ShardId %d with ip '%s' is offline!", Shards[i].ShardId, ia.asString ().c_str());
@@ -140,8 +153,6 @@ static void cbWSDisconnection (const string &serviceName, TSockId from, void *ar
 
 			// put users connected on this shard offline
 			
-			/// \todo ace: remove all users from this shard from the database
-
 			Shards.erase (Shards.begin () + i);
 
 			return;
@@ -240,9 +251,12 @@ void cbShardComesIn (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 */
 
 // 
-static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+static void cbWSIdentification/* (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)*/(CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-	const CInetAddress &ia = CNetManager::getNetBase("WSLS")->hostAddress (from);
+//	const CInetAddress &ia = WSServer->hostAddress (from);
+	TSockId from;
+	CCallbackNetBase *cnb = CUnifiedNetwork::getInstance ()->getNetBase (sid, from);
+	const CInetAddress &ia = cnb->hostAddress (from);
 
 	sint32 shardId;
 	msgin.serial(shardId);
@@ -257,7 +271,7 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 	}
 
 	MYSQL_RES *res = mysql_store_result(DatabaseConnection);
-	if (res == NULL)
+	if (res == 0)
 	{
 		nlwarning ("mysql_store_result () failed from query '%s': %s", query.c_str (),  mysql_error(DatabaseConnection));
 		return;
@@ -278,7 +292,7 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 			else
 			{
 				nlinfo("The ShardId %d with ip '%s' was inserted in the database and is online!", shardId, ia.ipAddress ().c_str ());
-				Shards.push_back (CShard (shardId, from));
+				Shards.push_back (CShard (shardId, sid));
 			}
 
 			return;
@@ -287,25 +301,27 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 		{
 			// can't accept new shard
 			nlwarning ("Bad shard identification, Can't accept new shard, disconnecting it");
-			CNetManager::getNetBase("WSLS")->disconnect(from);
+			//WSServer->disconnect(from);
+			cnb->disconnect (from);
 			return;
 		}
 	}
 	else if (nbrow == 1)
 	{
 		MYSQL_ROW row = mysql_fetch_row(res);
-		if (row == NULL)
+		if (row == 0)
 		{
 			nlwarning ("mysql_fetch_row (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
 			return;
 		}
 
 		// check that the ip is ok
-		if (row[1] != ia.ipAddress ())
+		if (ia.ipAddress () != row[1])
 		{
 			// good shard id but from a bad computer address
 			nlwarning ("Bad shard identification, ShardId %d should come from '%s' and come from '%s'", shardId, row[1], ia.ipAddress ().c_str ());
-			CNetManager::getNetBase("WSLS")->disconnect(from);
+			//WSServer->disconnect(from);
+			cnb->disconnect (from);
 			return;
 		}
 
@@ -314,7 +330,8 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 		{
 			// the shard should be already online, bad!
 			nlwarning ("Bad shard identification, ShardId %d is already online", shardId);
-			CNetManager::getNetBase("WSLS")->disconnect(from);
+			//WSServer->disconnect(from);
+			cnb->disconnect (from);
 			return;
 		}
 
@@ -326,7 +343,7 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 			return;
 		}
 
-		Shards.push_back (CShard (shardId, from));
+		Shards.push_back (CShard (shardId, sid));
 
 		// ok, the shard is identified correctly
 		nlinfo("ShardId %d with ip '%s' is online!", shardId, ia.ipAddress ().c_str ());
@@ -339,10 +356,11 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 
 	// bad shardId
 	nlwarning ("Bad shard identification, ShardId %d is not in the database", shardId);
-	CNetManager::getNetBase("WSLS")->disconnect(from);
+	//WSServer->disconnect(from);
+	cnb->disconnect (from);
 }
 
-static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+static void cbWSClientConnected/* (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)*/ (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	//
 	// S16: Receive "CC" message from WS
@@ -365,14 +383,14 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 		return;
 	}
 	MYSQL_RES *res = mysql_store_result(DatabaseConnection);
-	if (res == NULL)
+	if (res == 0)
 	{
 		nlwarning ("mysql_store_result () failed from query '%s': %s", query.c_str (),  mysql_error(DatabaseConnection));
 		return;
 	}
 	int nbrow = mysql_num_rows(res);
 	MYSQL_ROW row = mysql_fetch_row(res);
-	if (row == NULL)
+	if (row == 0)
 	{
 		nlwarning ("mysql_fetch_row (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
 		return;
@@ -407,7 +425,7 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 	static uint recordNbPlayer = 0;
 	static uint nbPlayer = 0;
 
-	sint ShardPos = findShard(from);
+	sint ShardPos = findShardWithSId (sid);
 
 	if (con == 1)
 	{
@@ -484,33 +502,72 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 }
 
 
-static const TCallbackItem WSCallbackArray[] =
+static const TUnifiedCallbackItem WSCallbackArray[] =
 {
 	{ "CC", cbWSClientConnected },
-
 	{ "WS_IDENT", cbWSIdentification },
 };
 
-void connectionWSInit (uint16 port)
+
+//
+// Functions
+//
+
+void connectionWSInit ()
 {
-	CNetManager::addServer ("WSLS", port);
-	CNetManager::addCallbackArray ("WSLS", WSCallbackArray, sizeof(WSCallbackArray)/sizeof(WSCallbackArray[0]));
-	CNetManager::setConnectionCallback ("WSLS", cbWSConnection, NULL);
-	CNetManager::setDisconnectionCallback ("WSLS", cbWSDisconnection, NULL);
+	CUnifiedNetwork::getInstance ()->addCallbackArray (WSCallbackArray, sizeof(WSCallbackArray)/sizeof(WSCallbackArray[0]));
+	
+	CUnifiedNetwork::getInstance ()->setServiceUpCallback ("WS", cbWSConnection);
+	CUnifiedNetwork::getInstance ()->setServiceDownCallback ("WS", cbWSDisconnection);
+	
+	/*	nlassert(WSServer == 0);
+
+	WSServer = new CCallbackServer ();
+	nlassert(WSServer != 0);
+
+	WSServer->addCallbackArray (WSCallbackArray, sizeof(WSCallbackArray)/sizeof(WSCallbackArray[0]));
+	WSServer->setConnectionCallback (cbWSConnection, 0);
+	WSServer->setDisconnectionCallback (cbWSDisconnection, 0);
+
+	uint16 port = (uint16) IService::getInstance ()->ConfigFile.getVar ("WSPort").asInt();
+	WSServer->init (port);
 
 	nlinfo ("Set the server connection for welcome service to port %hu", port);
+*/}
+
+void connectionWSUpdate ()
+{
+/*	nlassert(WSServer != 0);
+
+	WSServer->update ();*/
 }
 
 void connectionWSRelease ()
 {
-	// remove all online and player because this LS going down
-	for (sint i = 0; i < (sint) Shards.size (); i++)
+/*	nlassert(WSServer != 0);
+
+	delete WSServer;
+	WSServer = 0;*/
+
+	// we remove all shards online from my list
+	for (uint32 i = 0; i < Shards.size (); i++)
 	{
+		TSockId from;
+		CCallbackNetBase *cnb = CUnifiedNetwork::getInstance ()->getNetBase (Shards[i].SId, from);
+		const CInetAddress &ia = cnb->hostAddress (from);
+
+		// shard disconnected
+		nlinfo("ShardId %d with ip '%s' is offline!", Shards[i].ShardId, ia.asString ().c_str());
+
 		string query = "update shard set Online=Online-1, NbPlayers=NbPlayers-"+toString(Shards[i].NbPlayer)+" where ShardId="+toString(Shards[i].ShardId);
 		int ret = mysql_query (DatabaseConnection, query.c_str ());
 		if (ret != 0)
 		{
 			nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
 		}
+
+		// put users connected on this shard offline
 	}
+	Shards.clear ();
+
 }

@@ -10,8 +10,11 @@ using namespace NLMISC;
 
 std::string				MainDirectory;
 std::string				MirrorDirectory;
+std::string				LogDirectory;
+std::string				IgnoreDirectory;
 std::string				CurrentDir;
 std::set<string>		IgnoreFiles;
+bool					BinaryCompare = false;
 
 /////////////////////////////////////////////////////////////////////////////
 // CData_mirrorApp
@@ -87,8 +90,23 @@ BOOL CData_mirrorApp::InitInstance()
 		cf.load (path);
 		MainDirectory = cf.getVar ("MainDirectory").asString ();
 		MainDirectory = strlwr (CPath::standardizePath (MainDirectory));
+		
 		MirrorDirectory = cf.getVar ("MirrorDirectory").asString ();
 		MirrorDirectory = strlwr (CPath::standardizePath (MirrorDirectory));
+		
+		LogDirectory = cf.getVar ("LogDirectory").asString ();
+		LogDirectory = strlwr (CPath::standardizePath (LogDirectory));
+		
+		IgnoreDirectory = cf.getVar ("IgnoreDirectory").asString ();
+		IgnoreDirectory = strlwr (CPath::standardizePath (IgnoreDirectory));
+		if (IgnoreDirectory.empty())
+			IgnoreDirectory = MainDirectory;
+
+		string sBinaryCompare = cf.getVar ("BinaryCompare").asString ();
+		sBinaryCompare = strlwr (sBinaryCompare);
+		BinaryCompare = false;
+		if ((sBinaryCompare == "true") || (sBinaryCompare=="1"))
+			BinaryCompare = true;
 
 		CurrentDir = m_lpCmdLine;
 		// Remove 
@@ -122,15 +140,35 @@ BOOL CData_mirrorApp::InitInstance()
 		}
 
 		// Get relative dir
+		if (CurrentDir.substr (0, MainDirectory.size ()) == MainDirectory)
+		{
+			CurrentDir = CurrentDir.substr (MainDirectory.size (), CurrentDir.size () - MainDirectory.size ());
+		}
+		else
+		{
+			if (CurrentDir.substr (0, MirrorDirectory.size ()) == MirrorDirectory)
+			{
+				CurrentDir = CurrentDir.substr (MirrorDirectory.size (), CurrentDir.size () - MirrorDirectory.size ());
+			}
+			else
+			{
+				MessageBox (NULL, (CurrentDir+" is not a sub directory of "+MainDirectory+" or "+MirrorDirectory).c_str (), 
+							"NeL Data Mirror", MB_OK|MB_ICONEXCLAMATION);
+				return FALSE;
+			}
+		}
+
+		/*
 		if (CurrentDir.substr (0, MainDirectory.size ()) != MainDirectory)
 		{
 			MessageBox (NULL, (CurrentDir+" is not a sub directory of "+MainDirectory).c_str (), "NeL Data Mirror", MB_OK|MB_ICONEXCLAMATION);
 			return FALSE;
 		}
 		CurrentDir = CurrentDir.substr (MainDirectory.size (), CurrentDir.size () - MainDirectory.size ());
+		*/
 
 		// Load ignore list
-		FILE *file = fopen ((MainDirectory+"ignore_list.txt").c_str (), "r");
+		FILE *file = fopen ((IgnoreDirectory+"ignore_list.txt").c_str (), "r");
 		if (file)
 		{
 			char line[512];

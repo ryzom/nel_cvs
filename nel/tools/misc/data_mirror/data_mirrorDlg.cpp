@@ -6,6 +6,7 @@
 #include "data_mirrorDlg.h"
 #include "progress_dialog.h"
 #include <sys/timeb.h>
+#include "nel/misc/file.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -449,6 +450,16 @@ void CData_mirrorDlg::OnOK()
 				MB_OK|MB_ICONEXCLAMATION);
 			success = false;
 		}
+		else
+		{
+			if (!LogDirectory.empty())
+			{
+				string sTmp = LogDirectory + "data_mirror.log";
+				FILE *f = fopen(sTmp.c_str(),"at");
+				fprintf(f,"Modified file : %s\n", dest.c_str());
+				fclose(f);
+			}
+		}
 
 		// Touch 
 		setFileTime (dest.c_str(), fileTime);
@@ -474,6 +485,16 @@ void CData_mirrorDlg::OnOK()
 				MB_OK|MB_ICONEXCLAMATION);
 			success = false;
 		}
+		else
+		{
+			if (!LogDirectory.empty())
+			{
+				string sTmp = LogDirectory + "data_mirror.log";
+				FILE *f = fopen(sTmp.c_str(),"at");
+				fprintf(f,"Added file : %s\n", dest.c_str());
+				fclose(f);
+			}
+		}
 
 		// Touch 
 		setFileTime (dest.c_str(), fileTime);
@@ -496,9 +517,19 @@ void CData_mirrorDlg::OnOK()
 				MB_OK|MB_ICONEXCLAMATION);
 			success = false;
 		}
+		else
+		{
+			if (!LogDirectory.empty())
+			{
+				string sTmp = LogDirectory + "data_mirror.log";
+				FILE *f = fopen(sTmp.c_str(),"at");
+				fprintf(f,"Removed file : %s\n", dest.c_str());
+				fclose(f);
+			}
+		}
 	}
 
-	FILE *file = fopen ((MainDirectory+"ignore_list.txt").c_str (), "w");
+	FILE *file = fopen ((IgnoreDirectory+"ignore_list.txt").c_str (), "w");
 	if (file)
 	{
 		// Save ignore list
@@ -590,7 +621,54 @@ void CData_mirrorDlg::buildSourceFiles ()
 				
 				if (deltaInSec > 2.0)
 				{
-					addEntry (Modified, str.c_str (), time1, time0);
+					if (BinaryCompare)
+					{
+						bool bDiff = false;
+						
+						// Check Files sizes
+						if (NLMISC::CFile::getFileSize(mainFile) != NLMISC::CFile::getFileSize(mirrorFile))
+							bDiff = true;
+						
+						// Check Files (Binary check)
+						if (!bDiff)
+						{
+							uint32 nLength = NLMISC::CFile::getFileSize(mainFile);
+							CIFile inMain, inMirror;
+							if (inMain.open(mainFile) && inMirror.open(mirrorFile))
+							{
+								uint8 bufferMain[1024];
+								uint8 bufferMirror[1024];
+								while (nLength > 0)
+								{
+									uint32 r = min(nLength, (uint32)1024);
+									inMain.serialBuffer(&bufferMain[0], r);
+									inMirror.serialBuffer(&bufferMirror[0], r);
+									if (memcmp(bufferMirror,bufferMain,r) != 0)
+									{
+										bDiff = true;
+										break;
+									}
+									nLength -= r;
+								}
+							}
+							else
+								bDiff = true;
+						}
+
+						if (bDiff)
+						{
+							addEntry (Modified, str.c_str (), time1, time0);
+						}
+						else
+						{
+							// Update time stamp
+							FILETIME fileTime;
+							getFileTime (mainFile.c_str (), fileTime);
+							setFileTime (mirrorFile.c_str(), fileTime);
+						}
+					}
+					else
+						addEntry (Modified, str.c_str (), time1, time0);
 				}
 			}
 			else

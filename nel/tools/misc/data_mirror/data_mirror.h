@@ -43,8 +43,11 @@ public:
 // From the config file
 extern std::string				MainDirectory;
 extern std::string				MirrorDirectory;
+extern std::string				LogDirectory;
+extern std::string				IgnoreDirectory;
 extern std::string				CurrentDir;
-extern std::set<std::string>			IgnoreFiles;
+extern std::set<std::string>	IgnoreFiles;
+extern bool						BinaryCompare;
 
 bool RegisterDirectoryAppCommand (const char *appName, const char *command, const char *app);
 

@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.26 2003/11/07 14:29:32 besson Exp $
+ * $Id: script.cpp,v 1.27 2004/06/17 13:49:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1793,7 +1793,6 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 
 			// Snapshot
 			CNELU::Driver->getBuffer (snapshot);
-			snapshot.flipV ();
 
 			// Release the driver
 			CNELU::Driver->release ();

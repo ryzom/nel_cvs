@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.4 2001/05/15 08:03:09 legros Exp $
+ * $Id: chain.h,v 1.5 2001/05/16 15:17:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,7 +131,7 @@ public:
 
 	uint16								getStopTip() const { return _StopTip; }
 
-	uint8								getEdge() const { return _Edge; }
+	sint8								getEdge() const { return _Edge; }
 
 	void								serial(NLMISC::IStream &f);
 };

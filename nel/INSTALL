@@ -106,10 +106,13 @@ Compilation
 
       Setup Visual C++ to find the NeL include and library files :
 
-         - Add the NEL include directory to the "Library Files" category.
+         - Add the NEL include directory to the "Include Files" category.
            ex: D:/test/code/nel/include
 
-         - Add the STLPort library directory to the "Library Files" category.
+         - Add the NEL source directory to the "Include Files" category.
+           ex: D:/test/code/nel/src
+
+         - Add the NeL library directory to the "Library Files" category.
            ex: D:/test/code/nel/lib
 
 

@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.11 2003/08/21 15:41:43 robert Exp $
+ * $Id: mhics.cpp,v 1.12 2003/08/29 13:36:41 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -122,6 +122,10 @@ void CMotivationEnergy::computeMotivationValue()
 			double motiveValue = _MHiCSagent->getMotivationValue(motivationName);
 			double motivePP = _MHiCSagent->getMotivationPP(motivationName);
 			double priorityTimer = _MHiCSagent->getMHiCSbase()->getPriorityPart(motivationName, classierNumber).getPriorityTimer();
+
+//			uint32 randomeNumber = rand()%3;
+//			classifierTimer += randomeNumber;
+
 			double combinedValue = (motiveValue * 1000000) - priorityTimer - classifierTimer;
 			if (combinedValue > lastMaxMotiveValue)
 			{
@@ -473,7 +477,7 @@ bool CMHiCSbase::loadClassifierFromFile(std::string fileName)
 
 		// on récupère la force du classeur
 		CClassifierPriority laforce;
-		laforce.setPriorityTimer( atof(leMot.c_str()) );
+		laforce.SetClassifierTimer( atof(leMot.c_str()) );
 
 		// on rajoute la règle dans les actions.
 		std::map<TAction, CActionClassifiers >::iterator itActionsMap = actionsMap.find(actionName);
@@ -583,11 +587,27 @@ void CMHiCSbase::dbgPrintClassifierPriorityInFile(std::string fileName) const
 
 void CMHiCSbase::learningUpdatePriorityValueTimeToSuccess(TMotivation motivationName, TClassifierNumber classifierNumber, uint32 timeToSuccess)
 {
-	// Le but est de faire une moyenne sur les valeurs de fitness. Pour ça on fait une moyenne sur les 10 pas de temps précédents.
+	// Le but est de faire une moyenne sur les valeurs de fitness. Pour ça on fait une moyenne sur les 4 pas de temps précédents.
 	std::map<TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
 	nlassert(itMotivationClassifierSystems != _MotivationClassifierSystems.end());
 	uint32 oldTime2Success = (*itMotivationClassifierSystems).second.getPriorityPart(classifierNumber).getPriorityTimer();
-	uint32 newTime2Success = (timeToSuccess + oldTime2Success)/2;
+	uint32 newTime2Success;
+	if (oldTime2Success == 0)
+	{
+		newTime2Success = timeToSuccess;
+	}
+	else
+	{
+		if (oldTime2Success > timeToSuccess)
+		{
+			newTime2Success = (timeToSuccess*3 + oldTime2Success)/4;
+		}
+		else
+		{
+			newTime2Success = (timeToSuccess + oldTime2Success*7)/8;
+		}
+	}
+//	nlassert (newTime2Success != 0);
 	CClassifierPriority newPrio;
 	newPrio.setPriorityTimer(newTime2Success);
 	newPrio.SetClassifierTimer((*itMotivationClassifierSystems).second.getPriorityPart(classifierNumber).getClassifierTimer());
@@ -599,7 +619,22 @@ void CMHiCSbase::learningUpdatePriorityValueClassifierTime(TMotivation motivatio
 	std::map<TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
 	nlassert(itMotivationClassifierSystems != _MotivationClassifierSystems.end());
 	uint32 oldTime = (*itMotivationClassifierSystems).second.getPriorityPart(classifierNumber).getClassifierTimer();
-	uint32 newTime = (time+oldTime)/2;
+	uint32 newTime;
+	if (oldTime == 0)
+	{
+		newTime = time;
+	}
+	else
+	{
+		if (oldTime > time)
+		{
+			newTime = (time + oldTime*3)/4;
+		}
+		else
+		{
+			newTime = (time*7 + oldTime)/8;
+		}
+	}
 	CClassifierPriority newPrio;
 	newPrio.setPriorityTimer((*itMotivationClassifierSystems).second.getPriorityPart(classifierNumber).getPriorityTimer());
 	newPrio.SetClassifierTimer(newTime);
@@ -1476,7 +1511,7 @@ const std::map<TTargetId, std::map<TAction, CMotivationEnergy> >* CMHiCSagent::s
 			target = (*itActionsExecutionIntensityByTarget).first;
 
 			// on rajoute du bruit sur les priorité afin d'avoir une diversité si des priorités sont proches
-//			double randomeNumber = (rand()%3);
+//			double randomeNumber = ((rand()%5)*priority)/100;
 //			priority += randomeNumber;
 			
 			actionsToRemove.insert(std::make_pair(priority, std::make_pair(target,action)));

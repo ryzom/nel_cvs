@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.21 2001/11/05 09:30:15 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.22 2001/11/12 15:56:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -495,7 +495,7 @@ void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const ch
 
 		// Get keys position for biped tracks
 		std::set<TimeValue> keysSampled=previousKeys;
-		std::set<TimeValue> keys;
+		std::set<TimeValue> keys=previousKeys;
 
 		// Body biped ?
 		bool bodyBiped = (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID);

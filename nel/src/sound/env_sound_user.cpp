@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.12 2001/09/03 14:19:43 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.13 2001/09/03 16:00:05 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,6 +163,15 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 
 	// Tags
 	s.serialCont( _Tags );
+#ifdef NL_DEBUG
+	DebugLog->display( "Envsound tags:");
+	vector<string>::iterator ist;
+	for ( ist=_Tags.begin(); ist!=_Tags.end(); ++ist )
+	{
+		DebugLog->displayRaw( (" " + (*ist)).c_str() );
+	}
+	DebugLog->displayRawNL("");
+#endif
 
 	// Children envsounds
 	s.serialPtr( _Parent );
@@ -184,10 +193,10 @@ void			CEnvSoundUser::selectEnv( const char *tag, bool children_too )
 			_Source = _SrcBank[i];
 			nldebug( "AM: EnvSound: Environment changed to %s", tag );
 			CAudioMixerUser::instance()->getEnvSounds()->recompute();
-			return;
+			break;
 		}
 	}
-	nldebug( "AM: EnvSound: Environment %s not found", tag );
+	//nldebug( "AM: EnvSound: Environment %s not found", tag );
 	// Don't change _Source if not found
 
 	// Apply to descendants

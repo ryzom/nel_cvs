@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.11 2001/09/03 14:19:19 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.12 2001/09/03 16:00:05 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,8 @@ public:
 	/// Load environmental effects
 	virtual void				loadEnvEffects( const char *filename );
 	/** Load buffers. Returns the number of buffers successfully loaded.
-	 *  If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
+	 * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
+	 * You can call this method several times, to load several sound banks.
 	 */
 	virtual uint32				loadSoundBuffers( const char *filename, std::vector<std::string> *notfoundfiles=NULL );
 	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds

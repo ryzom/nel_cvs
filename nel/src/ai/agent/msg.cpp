@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.2 2001/02/05 10:35:48 chafik Exp $
+ * $Id: msg.cpp,v 1.3 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,7 @@
  */
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/agent/agent_local_mailer.h"
+#include "nel/ai/agent/agent_proxy_mailer.h"
 #include "nel/ai/logic/boolval.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/agent/agent_method_def.h"
@@ -53,7 +54,12 @@ namespace NLAIAGENT
 	IObjectIA &IMessageBase::operator = (const IObjectIA &a)
 	{
 		IMessageBase &b = (IMessageBase &)a;
-		_Sender = (IBasicAgent *)(&((const IBasicAgent &)b));
+		_Sender = b._Sender;
+		if(_Sender) _Sender->incRef();
+		_Receiver = b._Receiver;
+		if(_Receiver) _Receiver->incRef();
+		_Continuation = b._Continuation;
+		if(_Continuation) _Continuation->incRef();
 		setGroup((IBasicMessageGroup &)b.getGroup());
 		*_Message = *b._Message;
 		return *this;
@@ -68,21 +74,46 @@ namespace NLAIAGENT
 	void IMessageBase::save(NLMISC::IStream &os)
 	{	
 		
-		if(_Sender != NULL)		
+		if(_Sender != NULL)
 		{
 			bool t = true;
 			os.serial(t);
-			IWordNumRef &r = (IWordNumRef&)((const IWordNumRef&)*_Sender);
-			char *type = (char *) (const char *) r.getType();
-			std::string x = std::string(type);
-			os.serial(x);
-			r.save(os);
+			IWordNumRef &r = (IWordNumRef&)((const IWordNumRef&)*((IRefrence *)_Sender));
+			((CNumericIndex &)r.getNumIdent()).save(os);			
 		}
 		else
 		{
 			bool t = false;
 			os.serial(t);
-		}				
+		}
+
+		if(_Receiver != NULL)
+		{
+			bool t = true;
+			os.serial(t);
+			IWordNumRef &r = (IWordNumRef&)((const IWordNumRef&)*((IRefrence *)_Receiver));
+			((CNumericIndex &)r.getNumIdent()).save(os);			
+		}
+		else
+		{
+			bool t = false;
+			os.serial(t);
+		}
+
+		if(_Continuation != NULL)
+		{
+			bool t = true;
+			os.serial(t);
+			IWordNumRef &r = (IWordNumRef&)((const IWordNumRef&)*((IRefrence *)_Continuation));
+			((CNumericIndex &)r.getNumIdent()).save(os);			
+		}
+		else
+		{
+			bool t = false;
+			os.serial(t);
+		}
+
+
 		os.serial( (NLAIC::CIdentType &) _MsgGroup->getType() );
 		os.serial( *_MsgGroup );
 		os.serial( (NLAIC::CIdentType &) _Message->getType() );
@@ -96,20 +127,78 @@ namespace NLAIAGENT
 	void IMessageBase::load(NLMISC::IStream &is)
 	{			
 		bool t;
-		is.serial(t);
-		NLAIC::CIdentTypeAlloc id;
+		is.serial(t);		
 		if(t)
-		{			
-			is.serial( id );
-			IWordNumRef *num = (IWordNumRef *)id.allocClass();
-			num->load(is);
-			_Sender = (IBasicAgent *)((const IRefrence *)*num);
-			delete num;			
+		{
+			CNumericIndex r(is);
+			IRefrence *ref = CLocWordNumRef::getRef(r);
+			if(ref != NULL)
+			{
+				if(_Sender) _Sender->release();
+				_Sender = ref;
+				_Sender->incRef();
+			}
+			else
+			{
+				if(_Sender) _Sender->release();
+				_Sender = new CProxyAgentMail(r.getId());
+			}
+			
 		}
 		else
 		{
+			if(_Sender) _Sender->release();
 			_Sender = NULL;
 		}
+		
+		is.serial(t);		
+		if(t)
+		{
+			CNumericIndex r(is);
+			IRefrence *ref = CLocWordNumRef::getRef(r);
+			if(ref != NULL)
+			{
+				if(_Receiver) _Receiver->release();
+				_Receiver = ref;
+				_Receiver->incRef();
+			}
+			else
+			{
+				if(_Receiver) _Receiver->release();
+				_Receiver = new CProxyAgentMail(r.getId());
+			}
+			
+		}
+		else
+		{
+			if(_Receiver) _Receiver->release();
+			_Receiver = NULL;
+		}
+		is.serial(t);		
+		if(t)
+		{
+			CNumericIndex r(is);
+			IRefrence *ref = CLocWordNumRef::getRef(r);
+			if(ref != NULL)
+			{
+				if(_Continuation) _Continuation->release();
+				_Continuation = ref;
+				_Continuation->incRef();
+			}
+			else
+			{				
+				if(_Continuation) _Continuation->release();
+				_Continuation = new CProxyAgentMail(r.getId());
+			}
+			
+		}
+		else
+		{
+			if(_Continuation) _Continuation->release();
+			_Continuation = NULL;
+		}
+
+		NLAIC::CIdentTypeAlloc id;
 		is.serial( id );
 		if(_MsgGroup) delete _MsgGroup;
 		_MsgGroup = (IBasicMessageGroup *)id.allocClass();

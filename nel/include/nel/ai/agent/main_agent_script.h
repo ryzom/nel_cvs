@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.7 2001/02/08 17:27:45 chafik Exp $
+ * $Id: main_agent_script.h,v 1.8 2001/02/13 10:43:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ namespace NLAIAGENT
 		IMainAgent():CAgentScript(NULL){}
 
 
-		virtual	IObjectIA::CProcessResult sendMessage(const CAgentNumber &) = 0;
+		virtual	IObjectIA::CProcessResult sendMessage(const CAgentNumber &,IObjectIA *) = 0;
 		
 
 	};
@@ -101,7 +101,7 @@ namespace NLAIAGENT
 
 		virtual	void CMainAgentScript::processMessages();
 		virtual	IObjectIA::CProcessResult sendMessage(IObjectIA *);
-		virtual	IObjectIA::CProcessResult sendMessage(const CAgentNumber &)
+		virtual	IObjectIA::CProcessResult sendMessage(const CAgentNumber &,IObjectIA *)
 		{			
 			char text[2048*8];			
 			sprintf(text,"virtual IObjectIA::CProcessResult sendMessage(const CAgentNumber &) note implementaited for the '%s' class",(const char *)getType());

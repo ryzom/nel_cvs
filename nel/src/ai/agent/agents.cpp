@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.21 2001/02/12 09:54:52 robert Exp $
+ * $Id: agents.cpp,v 1.22 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,7 @@ namespace NLAIAGENT
 				IObjectIA *o = IBasicAgent::run( msg );
 				getMail()->popMessage();
 			}
-			catch(NLAIE::IException &e)
+			catch(NLAIE::IException &)
 			{
 				// We send an Error message because the incoming message isn't processed.
 				IMessageBase *o = (IMessageBase *)msg.clone();

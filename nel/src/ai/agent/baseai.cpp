@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.12 2001/02/08 17:27:53 chafik Exp $
+ * $Id: baseai.cpp,v 1.13 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,15 +248,18 @@ namespace NLAIAGENT
 				{
 					IObjectIA *o = (INombreDefine *)((IBaseGroupType *)a)->pop();
 					msg = (IMessageBase *)((IBaseGroupType *)a)->pop();
+					this->incRef();
 					msg->setReceiver(this);
 					IPerformative *p = (IPerformative *)((IBaseGroupType *)a)->pop();
 					msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
-					p->release();					
+					p->release();
+					o->incRef();
 					msg->setContinuation(o);									
 				}
 				else
 				{
 					msg = (IMessageBase *)((IBaseGroupType *)a)->pop();
+					this->incRef();
 					msg->setReceiver(this);
 					IPerformative *p = (IPerformative *)((IBaseGroupType *)a)->pop();
 					msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());

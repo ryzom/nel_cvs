@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.5 2001/02/08 17:27:53 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.6 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,12 +21,19 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-
+#include "nel/ai/agent/agent.h"
+#include "nel/ai/script/codage.h"
+#include "nel/ai/agent/agent_local_mailer.h"
+#include "nel/ai/script/interpret_object_agent.h"
+#include "nel/ai/script/interpret_object_message.h"
+#include "nel/ai/agent/main_agent_script.h"
+#include "nel/ai/e/ai_exception.h"
 #include "nel/ai/agent/agent_proxy_mailer.h"
 #include "nel/ai/agent/agent_method_def.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
 #include "nel/ai/agent/agent_object.h"
+#include "nel/ai/agent/agent_digital.h"
 
 namespace NLAIAGENT
 {
@@ -92,9 +99,24 @@ namespace NLAIAGENT
 	{
 	}
 
-	IObjectIA::CProcessResult CProxyAgentMail::sendMessage(IObjectIA *msg)
-	{
-		return IObjectIA::CProcessResult();
+	IObjectIA::CProcessResult CProxyAgentMail::sendMessage(IObjectIA *m)
+	{			
+		IMessageBase *msg = (IMessageBase *)m;
+
+		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == msg->getType() )
+		{			
+			const INombreDefine *n = (const INombreDefine *)msg->getFront();
+			if(n->getNumber() != 0.0)
+			{
+				const CLocalAgentMail *parent = (const CLocalAgentMail *)msg->get();
+				setParent((const IWordNumRef *)*parent->getHost());
+			}
+			return IObjectIA::CProcessResult();
+		}
+		else
+		{
+			return MainAgent->sendMessage(*_AgentRef,msg);
+		}
 	}
 
 	tQueue CProxyAgentMail::isMember(const IVarName *h,const IVarName *m,const IObjectIA &param) const
@@ -159,7 +181,7 @@ namespace NLAIAGENT
 			}
 		}
 
-		return tQueue();
+		return IBasicAgent::isMember(h,m,param);
 	}
 
 	IObjectIA::CProcessResult CProxyAgentMail::runMethodeMember(sint32 h, sint32 m, IObjectIA *p)
@@ -168,7 +190,7 @@ namespace NLAIAGENT
 	}
 	IObjectIA::CProcessResult CProxyAgentMail::runMethodeMember(sint32 m,IObjectIA *p)
 	{
-		switch(m)
+		switch(m - getMethodIndexSize())
 		{
 		case CProxyAgentMail::TConstructor:
 			{
@@ -178,10 +200,10 @@ namespace NLAIAGENT
 			}
 			break;
 		}
-		return IObjectIA::CProcessResult();
+		return IBasicAgent::runMethodeMember(m,p);
 	}
 	sint32 CProxyAgentMail::getMethodIndexSize() const
 	{
-		return 0;
+		return IBasicAgent::getMethodIndexSize() + 1;
 	}
 }

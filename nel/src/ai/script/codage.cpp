@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.8 2001/01/17 10:32:10 chafik Exp $
+ * $Id: codage.cpp,v 1.9 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,9 @@
  */
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/script/constraint.h"
-
+#ifdef NL_DEBUG
+#include "windows.h"
+#endif
 
 namespace NLAISCRIPT
 {	
@@ -116,6 +118,10 @@ namespace NLAISCRIPT
 		return _RunState;
 	}
 
+#ifdef NL_DEBUG
+	bool DEBUG_SERVER = 0;
+#endif
+
 	const NLAIAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run(CCodeContext &p)
 	{		
 		NLAIAGENT::TProcessStatement i = NLAIAGENT::processIdle;		
@@ -132,13 +138,17 @@ namespace NLAISCRIPT
 	NLAIAGENT::TProcessStatement CCodeBrancheRun::runOpCode(CCodeContext &p)
 	{		
 		IOpCode &op = nextCode();
-/*		
+
 #ifdef NL_DEBUG
-		char chaine[1024*8];
-		op.getDebugResult(chaine,p);
-		InputOutput->Echo("Operation %s\n",chaine);		
+		if(DEBUG_SERVER)
+		{
+			char chaine[1024*8];
+			op.getDebugResult(chaine,p);
+			strcat(chaine,"\n");
+			OutputDebugString(chaine);
+		}
 #endif
-*/
+
 		return op.runOpCode(p);
 	}
 

@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.7 2001/01/23 09:15:49 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.8 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,7 +117,7 @@ namespace NLAISCRIPT
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 		char txt[1024*8];
-		a->getStaticMember(*i)->getDebugString(txt);
+		a->getDebugString(txt);
 		sprintf(str,"ldb %s le composant membre sur le heap de la class '%s'",txt,(const char *)a->getType());		
 	}
 

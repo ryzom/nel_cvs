@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.10 2001/01/26 13:36:35 chafik Exp $
+ * $Id: opcode.cpp,v 1.11 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -400,6 +400,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::CIteratorContener i = a->getIterator();
 		i++;
 		NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)i ++;
+		((NLAIAGENT::IObjectIA *)context.Self)->incRef();
 		msg->setSender((NLAIAGENT::IObjectIA *)context.Self);
 
 		

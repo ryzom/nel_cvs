@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.3 2001/02/12 09:54:05 robert Exp $
+ * $Id: msg.h,v 1.4 2001/02/13 10:43:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,13 +140,17 @@ namespace NLAIAGENT
 		IMessageBase(const IMessageBase &m)
 		{
 			_Sender = m._Sender;
+			if(_Sender) _Sender->incRef();
+			_Receiver = m._Receiver;
+			if(_Receiver) _Receiver->incRef();
+			_Continuation = m._Continuation;
+			if(_Continuation) _Continuation->incRef();
+
 			if(m._MsgGroup) _MsgGroup = (IBasicMessageGroup *)m._MsgGroup->clone();
 			else _MsgGroup = NULL;
 			_Message = (IBaseGroupType *)m._Message->clone();			
 			_ReservedMethodIndexVar = m._ReservedMethodIndexVar;
-			_ReservedHeritanceIndexVar = m._ReservedHeritanceIndexVar;
-			_Receiver = m._Receiver;
-			_Continuation = m._Continuation;			
+			_ReservedHeritanceIndexVar = m._ReservedHeritanceIndexVar;			
 			_Performatif = m._Performatif;
 			_comeFromC_PLUS = m._comeFromC_PLUS;
 		}
@@ -155,6 +159,9 @@ namespace NLAIAGENT
 		{
 			if(_MsgGroup != NULL) _MsgGroup->release();
 			if(_Message != NULL) _Message->release();
+			if(_Sender != NULL) _Sender->release();
+			if(_Receiver != NULL) _Receiver->release();
+			if(_Continuation != NULL) _Continuation->release();
 		}		
 		
 		///Get the IBasicMessageGroup whiche define the group of the message. 
@@ -184,16 +191,19 @@ namespace NLAIAGENT
 		//@{
 		void setSender(IObjectIA *s)
 		{			
+			if(_Sender) _Sender->release();
 			_Sender = s;
 		}
 
 		void setReceiver(IObjectIA *r)
-		{			
+		{	
+			if(_Receiver) _Receiver->release();
 			_Receiver = r;
 		}
 
 		void setContinuation(IObjectIA *r)
 		{			
+			if(_Continuation) _Continuation->release();
 			_Continuation = r;
 		}
 

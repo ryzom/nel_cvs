@@ -1,6 +1,6 @@
 /** \file agent_string.cpp
  *
- * $Id: agent_string.cpp,v 1.1 2001/02/01 17:16:44 chafik Exp $
+ * $Id: agent_string.cpp,v 1.2 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

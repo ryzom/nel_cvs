@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.12 2001/02/08 17:27:45 chafik Exp $
+ * $Id: ident.h,v 1.13 2001/02/13 10:43:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -496,11 +496,7 @@ namespace NLAIAGENT
 		///copy constructor.
 		CNumericIndex(const CAgentNumber &i):_Id (i)
 		{			
-		}
-
-		CNumericIndex(CAgentNumber id): _Id(id)
-		{
-		}
+		}		
 
 
 		///construct from a stream.
@@ -564,6 +560,11 @@ namespace NLAIAGENT
 		}
 		//@}
 
+		
+		const CAgentNumber &getId() const
+		{
+			return _Id;
+		}
 	};
 
 	/**
@@ -778,7 +779,7 @@ namespace NLAIAGENT
 		*/
 		static bool loadMapping(NLMISC::IStream &);
 
-		static IRefrence *getRef(CAgentNumber &);		
+		static IRefrence *getRef(const CNumericIndex &);		
 		//@}
 	};
 	

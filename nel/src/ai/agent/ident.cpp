@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.8 2001/02/08 17:27:53 chafik Exp $
+ * $Id: ident.cpp,v 1.9 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,8 +172,14 @@ namespace NLAIAGENT
 		return IdLocWordNumRef;
 	}
 
-	IRefrence *CLocWordNumRef::getRef(CAgentNumber &)
+	IRefrence *CLocWordNumRef::getRef(const CNumericIndex &id)
 	{
+		tMapRef::iterator Itr = CLocWordNumRef::_LocRefence->find(id);
+		if(Itr != CLocWordNumRef::_LocRefence->end())
+		{				
+			return (*Itr).second;
+		}
+		//else throw NLAIE::CExceptionIndexHandeledError();
 		return NULL;
 	}
 

@@ -1,7 +1,7 @@
 /** \file agent_server_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.8 2001/02/08 17:27:45 chafik Exp $
+ * $Id: agent_proxy_mailer.h,v 1.9 2001/02/13 10:43:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NLAIAGENT
 		static const NLAIC::CIdentType IdProxyAgentMail;
 	public:
 		static IMainAgent *MainAgent;
+	public:
 
 		enum  TMethodNumDef {
 			TConstructor,

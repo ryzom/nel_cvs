@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.11 2001/01/30 16:38:26 robert Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.12 2001/02/13 10:43:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,10 @@
 
 #include "nel/ai/script/code_branche_run_debug.h"
 #include "nel/ai/script/varstack.h"
+
+#ifdef NL_DEBUG
+#include "windows.h"
+#endif
 
 namespace NLAISCRIPT
 {
@@ -150,6 +154,7 @@ namespace NLAISCRIPT
 		_RunState.ResultState = NLAIAGENT::processIdle;
 		return _RunState;
 	}
+	extern bool DEBUG_SERVER;
 	NLAIAGENT::TProcessStatement CCodeBrancheRunDebug::runOpCode(CCodeContext &p)
 	{
 		char* buf;
@@ -157,13 +162,16 @@ namespace NLAISCRIPT
 
 		IOpCode &op = nextCode();
 
-/*
-#ifdef NL_DEBUG		
-		char chaine[1024*8];
-		op.getDebugResult(chaine,p);
-		InputOutput->Echo("Operation %s\n", chaine);
-#endif			
-*/
+#ifdef NL_DEBUG
+		if(DEBUG_SERVER)
+		{
+			char chaine[1024*8];
+			op.getDebugResult(chaine,p);
+			OutputDebugString(chaine);
+			//TRACE("Operation %s\n",chaine);
+			//InputOutput->Echo("Operation %s\n",chaine);
+		}
+#endif
 		if (_LineInSourceCodeArray[_Ip-1] != 0)
 		{
 			fixContextDebugMode(p);

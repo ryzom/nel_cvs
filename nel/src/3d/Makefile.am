@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.77 2002/04/12 16:18:56 vizerie Exp $
+# $Id: Makefile.am,v 1.78 2002/04/15 12:02:43 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -210,6 +210,8 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        particle_system_sound_user.cpp                  \
                        patch.cpp                                       \
                        patch.h                                         \
+                       patchdlm_context.cpp                            \
+                       patchdlm_context.h                              \
                        patchuv_locator.cpp                             \
                        patchuv_locator.h                               \
                        patch_lightmap.cpp                              \
@@ -379,6 +381,8 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        texture_bump.h                                  \
                        texture_cube.cpp                                \
                        texture_cube.h                                  \
+                       texture_dlm.cpp                                 \
+                       texture_dlm.h                                   \
                        texture_far.cpp                                 \
                        texture_far.h                                   \
                        texture_file.cpp                                \

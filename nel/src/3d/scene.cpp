@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.9 2000/12/05 17:26:37 berenguier Exp $
+ * $Id: scene.cpp,v 1.10 2000/12/06 12:51:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,16 +70,19 @@ CScene::CScene()
 // ***************************************************************************
 void	CScene::release()
 {
+	delete Root;
+	// TODO: delete the ligthgroup root.
+
 	RenderTraversals.clear();
+
+	// Remove all the traversals of CMOT.
+	CMOT::deleteAllTraversals();
 
 	// Delete only the 4 default Traversals (owned by CScene), and the 4 default Root.
 	delete	HrcTrav;
 	delete	ClipTrav;
 	delete	LightTrav;
 	delete	RenderTrav;
-
-	delete Root;
-	// TODO: delete the ligthgroup root.
 
 	HrcTrav= NULL;
 	ClipTrav= NULL;

@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.35 2001/03/08 11:18:44 corvazier Exp $
+ * $Id: stream.h,v 1.36 2001/04/26 15:08:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -508,11 +508,12 @@ public:
 					if(ptr==NULL)
 						throw EStream();
 
-					// Read the object!
-					serial(*ptr);
-
 					// Insert the node.
 					_IdMap.insert( ValueIdMap(node, ptr) );
+
+					// Read the object!
+					serial(*ptr);
+					
 				}
 				else
 					ptr= static_cast<T*>(it->second);

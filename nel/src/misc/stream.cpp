@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.14 2001/01/09 10:31:42 berenguier Exp $
+ * $Id: stream.cpp,v 1.15 2001/04/26 15:07:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,11 +93,11 @@ void			IStream::serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream)
 
 				nlassert(CClassRegistry::checkObject(ptr));
 
-				// Read the object!
-				ptr->serial(*this);
-
 				// Insert the node.
 				_IdMap.insert( ValueIdMap(node, ptr) );
+
+				// Read the object!
+				ptr->serial(*this);
 			}
 			else
 				ptr= static_cast<IStreamable*>(it->second);

@@ -2,7 +2,7 @@ dnl ==========================================================================
 dnl Configuration script for Snowballs
 dnl ==========================================================================
 dnl
-dnl $Id: configure.in,v 1.4 2001/08/07 14:19:53 valignat Exp $
+dnl $Id: configure.in,v 1.5 2001/08/08 10:23:32 valignat Exp $
 dnl 
 
 
@@ -109,14 +109,14 @@ dnl STLPort
 
 dnl Ask user for path to the STLport files location
 AC_ARG_WITH( stlport,
-    [  --with-stlport=<path>   path to the STLPort install files directory.
+    [  --with-stlport=<path>   path to the STLPort install directory.
                           e.g. /usr/local/stlport] 
 )                         
 
 AC_ARG_WITH( stlport-include,
     [  --with-stlport-include=<path>
                           path to the STLPort header files directory.
-                          e.g. /usr/local/stlport/include] 
+                          e.g. /usr/local/stlport/stlport] 
 )                         
 
 AC_ARG_WITH( stlport-lib,
@@ -137,8 +137,8 @@ This tells configure where to find the STLPort files.])
     then
         AC_MSG_RESULT(using STLPort files located in $with_stlport)
 
-        STLPORT_CFLAGS="$with_stlport/include"
-        STLPORT_LIB="$with_stlport/lib"
+        STLPORT_CFLAGS="-I$with_stlport/stlport"
+        STLPORT_LIB="-L$with_stlport/lib"
     fi
 else
     no_stlport="no"
@@ -148,13 +148,13 @@ fi
 if test -z "$no_stlport" -a "$with_stlport_include"
 then
     AC_MSG_RESULT(using STLPort header files located in $with_stlport_include)
-    STLPORT_CFLAGS="$with_stlport_include"
+    STLPORT_CFLAGS="-I$with_stlport_include"
 fi
 
 if test -z "$no_stlport" -a  "$with_stlport_lib"
 then
     AC_MSG_RESULT(using STLPort library files located in $with_stlport_lib)
-    STLPORT_LIB="$with_stlport_lib"
+    STLPORT_LIB="-L$with_stlport_lib"
 fi
 
 
@@ -284,12 +284,12 @@ then
 
     if test X"$STLPORT_CFLAGS" != X
     then
-        CXXFLAGS="-I$STLPORT_CFLAGS $CXXFLAGS"
+        CXXFLAGS="$STLPORT_CFLAGS $CXXFLAGS"
     fi
 
     if test X"$STLPORT_LIB" != X
     then
-        LIBS="-L$STLPORT_LIB $LIBS -lstlport_gcc"
+        LIBS="$STLPORT_LIB $LIBS -lstlport_gcc"
     fi
 
     _CPPFLAGS="$CPPFLAGS"

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.39 2002/01/11 14:31:39 legros Exp $
+ * $Id: local_retriever.cpp,v 1.40 2002/01/11 14:35:44 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "pacs/local_retriever.h"
 #include "pacs/collision_desc.h"
+#include "pacs/retriever_instance.h"
 
 
 using namespace std;
@@ -844,7 +845,7 @@ bool	NLPACS::CLocalRetriever::insurePosition(NLPACS::ULocalPosition &local) cons
 		}
 	}
 
-	snapVector(M);
+	NLPACS::CRetrieverInstance::snapVector(M);
 
 	local.Estimation.x = M.x;
 	local.Estimation.y = M.y;

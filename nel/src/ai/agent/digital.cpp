@@ -1,6 +1,6 @@
 /** \file digital.cpp
  *
- * $Id: digital.cpp,v 1.8 2001/01/18 15:15:43 puzin Exp $
+ * $Id: digital.cpp,v 1.9 2001/06/15 10:01:36 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,4 +104,38 @@ namespace NLAIAGENT
 	{		
 		return IdCharType;
 	}	
+
+	// UInt32Type
+	const IObjectIA::CProcessResult &UInt32Type::run()
+	{
+		return IObjectIA::ProcessRun;
+	}
+
+	const NLAIC::CIdentType &UInt32Type::getType() const
+	{		
+		return IdUInt32Type;
+	}	
+
+		// UInt8Type
+	const IObjectIA::CProcessResult &UInt8Type::run()
+	{
+		return IObjectIA::ProcessRun;
+	}
+
+	const NLAIC::CIdentType &UInt8Type::getType() const
+	{		
+		return IdUInt8Type;
+	}	
+
+		// UInt16Type
+	const IObjectIA::CProcessResult &UInt16Type::run()
+	{
+		return IObjectIA::ProcessRun;
+	}
+
+	const NLAIC::CIdentType &UInt16Type::getType() const
+	{		
+		return IdUInt16Type;
+	}	
+
 }

@@ -165,7 +165,7 @@
 																					NLAIC::CTypeOfOperator::opDiff));
 
 
-	const NLAIC::CIdentType IntegerType::IdIntegerType("Integer",	NLAIC::CSelfClassFactory(IntegerType(0)),
+	const NLAIC::CIdentType IntegerType::IdIntegerType("sint32",	NLAIC::CSelfClassFactory(IntegerType(0)),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																	NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																	NLAIC::CTypeOfOperator::opSub | 
@@ -179,7 +179,7 @@
 																	NLAIC::CTypeOfOperator::opNot |
 																	NLAIC::CTypeOfOperator::opDiff));
 
-	const NLAIC::CIdentType ShortIntegerType::IdShortIntegerType("Short",	NLAIC::CSelfClassFactory(ShortIntegerType(0)),
+	const NLAIC::CIdentType ShortIntegerType::IdShortIntegerType("sint16",	NLAIC::CSelfClassFactory(ShortIntegerType(0)),
 																			NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																			NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																			NLAIC::CTypeOfOperator::opSub | 
@@ -193,7 +193,49 @@
 																			NLAIC::CTypeOfOperator::opNot |
 																			NLAIC::CTypeOfOperator::opDiff));
 
-	const NLAIC::CIdentType CharType::IdCharType("Char",	NLAIC::CSelfClassFactory(CharType(0)),
+	const NLAIC::CIdentType CharType::IdCharType("sint8",	NLAIC::CSelfClassFactory(CharType(0)),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+															NLAIC::CTypeOfOperator::opSub | 
+															NLAIC::CTypeOfOperator::opMul | 
+															NLAIC::CTypeOfOperator::opDiv | 
+															NLAIC::CTypeOfOperator::opEq | 
+															NLAIC::CTypeOfOperator::opInf | 
+															NLAIC::CTypeOfOperator::opSup | 
+															NLAIC::CTypeOfOperator::opInfEq | 
+															NLAIC::CTypeOfOperator::opSupEq |
+															NLAIC::CTypeOfOperator::opNot |
+															NLAIC::CTypeOfOperator::opDiff));
+
+	const NLAIC::CIdentType UInt8Type::IdUInt8Type("uint8",	NLAIC::CSelfClassFactory(UInt8Type(0)),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+															NLAIC::CTypeOfOperator::opSub | 
+															NLAIC::CTypeOfOperator::opMul | 
+															NLAIC::CTypeOfOperator::opDiv | 
+															NLAIC::CTypeOfOperator::opEq | 
+															NLAIC::CTypeOfOperator::opInf | 
+															NLAIC::CTypeOfOperator::opSup | 
+															NLAIC::CTypeOfOperator::opInfEq | 
+															NLAIC::CTypeOfOperator::opSupEq |
+															NLAIC::CTypeOfOperator::opNot |
+															NLAIC::CTypeOfOperator::opDiff));
+
+		const NLAIC::CIdentType UInt16Type::IdUInt16Type("uint16",	NLAIC::CSelfClassFactory(UInt8Type(0)),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+															NLAIC::CTypeOfOperator::opSub | 
+															NLAIC::CTypeOfOperator::opMul | 
+															NLAIC::CTypeOfOperator::opDiv | 
+															NLAIC::CTypeOfOperator::opEq | 
+															NLAIC::CTypeOfOperator::opInf | 
+															NLAIC::CTypeOfOperator::opSup | 
+															NLAIC::CTypeOfOperator::opInfEq | 
+															NLAIC::CTypeOfOperator::opSupEq |
+															NLAIC::CTypeOfOperator::opNot |
+															NLAIC::CTypeOfOperator::opDiff));
+
+			const NLAIC::CIdentType UInt32Type::IdUInt32Type("uint32",	NLAIC::CSelfClassFactory(UInt32Type(0)),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 															NLAIC::CTypeOfOperator::opSub | 
@@ -583,13 +625,6 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType CAgentClass::IdAgentClass("Agent", CClassInterpretFactory((const IClassInterpret &)agentClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
-
-/*	static CGDAgentClass GDagentClass(NLAIAGENT::CStringVarName("XXX_GDAgent"));
-	const NLAIC::CIdentType CGDAgentClass::IdGDAgentClass("GDAgent",CClassInterpretFactory((const IClassInterpret &)GDagentClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
-													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
-
-*/
 
 	static CActorClass actorClass(NLAIAGENT::CStringVarName("XXX_Actor"));
 	const NLAIC::CIdentType CActorClass::IdActorClass("Actor", CClassInterpretFactory((const IClassInterpret &)actorClass),

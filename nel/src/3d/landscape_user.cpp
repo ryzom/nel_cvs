@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.27 2002/10/14 15:52:06 besson Exp $
+ * $Id: landscape_user.cpp,v 1.28 2002/10/16 16:58:21 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,9 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::v
 				_Landscape->Landscape.addZone (*Work.Zone);
 
 				delete Work.Zone;
-				zonesAdded.push_back(Work.NameZoneAdded);
+				std::string zoneadd = Work.NameZoneAdded;
+				zoneadd = zoneadd.substr(0, zoneadd.find('.'));
+				zonesAdded.push_back(zoneadd);
 			}
 		}
 		else
@@ -218,15 +220,17 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius, std::s
 				}
 
 				delete Work.Zone;
-				zoneAdded= Work.NameZoneAdded;
+				zoneAdded = Work.NameZoneAdded;
+				zoneAdded = zoneAdded.substr(0, zoneAdded.find('.'));
 			}
 		}
 
 		// Check if a zone must be removed from landscape
 		if (Work.ZoneRemoved)
 		{
-			_Landscape->Landscape.removeZone(Work.IdZoneToRemove);
+			_Landscape->Landscape.removeZone (Work.IdZoneToRemove);
 			zoneRemoved = Work.NameZoneRemoved;
+			zoneRemoved = zoneRemoved.substr(0, zoneRemoved.find('.'));
 		}
 	}
 

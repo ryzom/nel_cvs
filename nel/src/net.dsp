@@ -38,7 +38,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "../obj/Release/net"
 # PROP Target_Dir ""
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdnet.h" /FD /c
-# SUBTRACT CPP /Z<none> /Fr
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -226,18 +226,6 @@ SOURCE=.\net\message_recorder.cpp
 SOURCE=..\include\nel\net\message_recorder.h
 # End Source File
 # End Group
-# Begin Group "Layer4"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\net\net_manager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\net_manager.h
-# End Source File
-# End Group
 # Begin Group "Layer5"
 
 # PROP Default_Filter ""
@@ -354,6 +342,14 @@ SOURCE=.\net\unitime.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\net\unitime.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\varpath.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\varpath.h
 # End Source File
 # End Target
 # End Project

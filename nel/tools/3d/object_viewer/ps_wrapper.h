@@ -3,7 +3,7 @@
  *	 a dialog.
  *
  *
- * $Id: ps_wrapper.h,v 1.5 2001/08/09 11:43:14 corvazier Exp $
+ * $Id: ps_wrapper.h,v 1.6 2001/12/18 18:40:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,6 @@ typedef IPSSchemeWrapper<uint32> IPSSchemeWrapperUInt ;
 
 
 // texture
-
 struct IPSWrapperTexture
 {
 	virtual NL3D::ITexture *get(void) = 0 ;

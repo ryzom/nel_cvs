@@ -107,3 +107,5 @@ allows to step into the code, using a debugger.
 When recording, no user input is recorded. Therefore, if you
 exit the program by Ctrl-C, the replayed sequence will remain
 running.
+
+*/

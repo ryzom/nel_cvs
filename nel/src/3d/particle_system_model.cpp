@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.30 2002/02/28 12:59:50 besson Exp $
+ * $Id: particle_system_model.cpp,v 1.31 2002/04/25 10:33:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,8 @@ namespace NL3D {
 /// ctor
 CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL),_EllapsedTime(0.01f), _ToolDisplayEnabled(false)
 						, _AutoGetEllapsedTime(true), _TransparencyStateTouched(true), _Scene(NULL), _EditionMode(false)
-						, _Invalidated(false), _InsertedInVisibleList(false), _InClusterAndVisible(false)
+						, _Invalidated(false), _InsertedInVisibleList(false), _InClusterAndVisible(false),
+						_EllapsedTimeRatio(1.f)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -455,7 +456,7 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 			{
 				if (psm->isAutoGetEllapsedTimeEnabled())
 				{
-					psm->setEllapsedTime(ps->getScene()->getEllapsedTime());
+					psm->setEllapsedTime(ps->getScene()->getEllapsedTime() * psm->getEllapsedTimeRatio());
 				}
 				TAnimationTime delay = psm->getEllapsedTime();
 				// animate particles				

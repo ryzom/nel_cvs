@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.21 2002/02/15 16:59:51 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.22 2002/04/25 10:33:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,6 +141,18 @@ class CParticleSystemModel : public CTransformShape
 			{ 
 				_AutoGetEllapsedTime = enable; 
 			}
+
+			/** This apply a ratio on the ellapsed time. This can be used to slow down a system
+			  * This must be in the >= 0.
+			  * 1 means the system run at normal speed
+			  */
+			void						setEllapsedTimeRatio(float value)
+			{
+				nlassert(value >= 0);
+				_EllapsedTimeRatio = value;
+			}
+			//
+			float						getEllapsedTimeRatio() const { return _EllapsedTimeRatio; }			
 
 			/// tells wether the model will querry himself for the ellapsed time
 			bool						isAutoGetEllapsedTimeEnabled(void) const 
@@ -289,6 +301,7 @@ class CParticleSystemModel : public CTransformShape
 		NLMISC::CSmartPtr<CParticleSystem>		_ParticleSystem;
 		CScene							  	   *_Scene;
 		TAnimationTime						    _EllapsedTime;
+		float									_EllapsedTimeRatio;
 
 		///\todo nico : may optimize this with a bitfield...
 		bool									_ToolDisplayEnabled;		

@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.2 2002/02/28 12:59:50 besson Exp $
+ * $Id: particle_system_manager.cpp,v 1.3 2002/04/25 10:33:37 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -145,7 +145,7 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 		{
 			if (psm.isAutoGetEllapsedTimeEnabled())
 			{
-				psm.setEllapsedTime(ps->getScene()->getEllapsedTime());
+				psm.setEllapsedTime(ps->getScene()->getEllapsedTime() * psm.getEllapsedTimeRatio());
 			}
 			TAnimationTime delay = psm.getEllapsedTime();
 			// animate particles

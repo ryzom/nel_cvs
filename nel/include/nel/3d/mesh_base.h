@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.2 2001/06/15 14:34:56 berenguier Exp $
+ * $Id: mesh_base.h,v 1.3 2001/06/15 15:54:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,8 @@ public:
 		// Map of light information
 		TLightInfoMap			LightInfoMap;
 
+
+		CMeshBaseBuild();
 
 		// Serialization
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);

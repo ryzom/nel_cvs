@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.6 2001/06/15 14:34:56 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.7 2001/06/15 15:54:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/mrm_builder.h"
+#include "nel/3d/mrm_parameters.h"
 using namespace NLMISC;
 using namespace std;
 
@@ -1431,25 +1432,99 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::C
 	// fill.
 	for(i=0; i<(sint)finalMRM.Lods.size(); i++)
 	{
-		// Copy NWedges infos.
-		mbuild.Lods[i].NWedges= finalMRM.Lods[i].NWedges;
-		// Copy Geomorphs infos.
-		mbuild.Lods[i].Geomorphs= finalMRM.Lods[i].Geomorphs;
+		const CMRMMeshFinal::CLod	&srcLod= finalMRM.Lods[i];
+		CMeshMRM::CLod				&destLod= mbuild.Lods[i];
 
-		// reorder faces by rdrpass.
+		// Basic.
+		//---------
+
+		// Copy NWedges infos.
+		destLod.NWedges= srcLod.NWedges;
+		// Copy Geomorphs infos.
+		destLod.Geomorphs= srcLod.Geomorphs;
+
+
+		// Reorder faces by rdrpass.
+		//---------
 
 		// First count the number of faces used by this LOD for each material 
 		vector<sint>	matCount;
 		// resize, and reset to 0.
 		matCount.clear();
 		matCount.resize(nbMats, 0);
+		// For each face of this Lods, incr the mat face counter.
+		for(j= 0; j<(sint)srcLod.Faces.size(); j++)
+		{
+			sint	matId= srcLod.Faces[j].MaterialId;
+			nlassert(matId>=0);
+			nlassert(matId<(sint)nbMats);
+			// increment the refcount of this material by this LOD.
+			matCount[matId]++;
+		}
 
-		// TODODO.
+		// Then for each material not empty, create a rdrPass, and ref it for this material.
+		vector<sint>	rdrPassIndex;	// material to rdrPass map.
+		rdrPassIndex.resize(nbMats);
+		for(j=0; j<(sint)nbMats; j++)
+		{
+			if(matCount[j]==0)
+				rdrPassIndex[j]= -1;
+			else
+			{
+				// map material to rdrPass.
+				sint	idRdrPass= destLod.RdrPass.size();
+				rdrPassIndex[j]= idRdrPass;
+				// create a rdrPass.
+				destLod.RdrPass.push_back();
+				// assign the good materialId to this rdrPass.
+				destLod.RdrPass[idRdrPass].MaterialId= j;
+				// reserve the array of faces of this rdrPass.
+				destLod.RdrPass[idRdrPass].PBlock.reserveTri(matCount[j]);
+			}
+		}
+
+		// Then for each face, add it to the good rdrPass of this Lod.
+		for(j= 0; j<(sint)srcLod.Faces.size(); j++)
+		{
+			sint	matId= srcLod.Faces[j].MaterialId;
+			sint	idRdrPass= rdrPassIndex[matId];
+			// add this face to the good rdrPass.
+			sint	w0= srcLod.Faces[j].WedgeId[0];
+			sint	w1= srcLod.Faces[j].WedgeId[1];
+			sint	w2= srcLod.Faces[j].WedgeId[2];
+			destLod.RdrPass[idRdrPass].PBlock.addTri(w0, w1, w2);
+		}
+
 	}
 
 
 }
 
+
+// ***************************************************************************
+void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParameters &params, CMeshMRM::CMeshBuildMRM &mrmMesh)
+{
+	uint32	nbMats= mbuild.Materials.size();
+	// Temp data.
+	CMRMMesh					baseMesh;
+	std::vector<CMRMMeshGeom>	lodMeshs;
+	CMRMMeshFinal				finalMRM;
+	uint32	vbFlags;
+
+
+	// from mbuild, build an internal MRM mesh representation.
+	// vbFlags returned is the VBuffer format supported by CMRMBuilder.
+	vbFlags= buildMrmBaseMesh(mbuild, baseMesh);
+
+	// from this baseMesh, builds all LODs of the MRM, with geomorph info. NB: vertices/wedges are duplicated.
+	buildAllLods(baseMesh, lodMeshs, params.NLods, params.Divisor);
+
+	// From this array of LOD, build a finalMRM, by regrouping identical vertices/wedges, and compute index geomorphs.
+	buildFinalMRM(lodMeshs, finalMRM);
+
+	// From this finalMRM, build output: a CMeshBuildMRM.
+	buildMeshBuildMrm(finalMRM, mrmMesh, vbFlags, nbMats);
+}
 
 
 } // NL3D

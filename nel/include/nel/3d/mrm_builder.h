@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.5 2001/06/15 14:34:56 berenguier Exp $
+ * $Id: mrm_builder.h,v 1.6 2001/06/15 15:54:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 
 
 
-	/** Compile the MRM mesh info.
+	/** Compile a MRM mesh info.
 	 *	\param mbuild the input mesh
 	 *	\param params the parameters of MRM process.
 	 *	\param mrmMesh the result MRM mesh.

@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.2 2001/06/15 14:34:56 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.3 2001/06/15 15:54:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,18 @@ CMaterialBase	*CMeshBase::getAnimatedMaterial(uint id)
 // ***************************************************************************
 // ***************************************************************************
 
+
+// ***************************************************************************
+CMeshBase::CMeshBaseBuild::CMeshBaseBuild()
+{
+	DefaultPos.set(0,0,0);
+	DefaultPivot.set(0,0,0);
+	DefaultRotEuler.set(0,0,0);
+	DefaultScale.set(1,1,1);
+
+	bCastShadows= false;
+	bRcvShadows= false;
+}
 
 // ***************************************************************************
 void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)

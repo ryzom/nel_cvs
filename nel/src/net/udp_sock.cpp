@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.2 2001/07/06 17:30:24 lecroart Exp $
+ * $Id: udp_sock.cpp,v 1.3 2001/07/09 10:12:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,12 +130,19 @@ void CUdpSock::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr )
 		_Bound = true;
 	}
 
+#ifdef NL_OS_WINDOWS
 	// temporary by ace to know size of SO_MAX_MSG_SIZE
-	uint MMS, SB;
-	int  size = sizeof (MMS);
-	getsockopt (_Sock, SOL_SOCKET, SO_SNDBUF, (char *)&SB, &size);
-	getsockopt (_Sock, SOL_SOCKET, SO_MAX_MSG_SIZE, (char *)&MMS, &size);
-	nlinfo ("the udp SO_MAX_MSG_SIZE=%u, SO_SNDBUF=%u", MMS, SB);
+	static bool first = true;
+	if (first)
+	{
+		uint MMS, SB;
+		int  size = sizeof (MMS);
+		getsockopt (_Sock, SOL_SOCKET, SO_SNDBUF, (char *)&SB, &size);
+		getsockopt (_Sock, SOL_SOCKET, SO_MAX_MSG_SIZE, (char *)&MMS, &size);
+		nlinfo ("the udp SO_MAX_MSG_SIZE=%u, SO_SNDBUF=%u", MMS, SB);
+		first = false;
+	}
+#endif
 }
 
 

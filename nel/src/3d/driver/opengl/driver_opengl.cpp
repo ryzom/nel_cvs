@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.209 2004/04/01 19:10:53 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.210 2004/04/06 13:42:35 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2897,10 +2897,10 @@ MAD    bmValue, bmValue, bump1ScaleBias.xxxx, bump1ScaleBias.yyzz;					\n\
 ADD	   bmValue, bmValue, envMapTexCoord;											\n\
 TEX    envMap, bmValue, texture[2], 2D;												\n\
 TEX    diffuse, diffuseTexCoord, texture[3], 2D;									\n\
-MAD_SAT tmpFog, fogValue, fogFactor.x, fogFactor.y;									\n\
+MAD_SAT tmpFog, fogValue.x, fogFactor.x, fogFactor.y;								\n\
 #modulate diffuse and envmap to get result											\n\
 MUL    diffuse, diffuse, envMap;													\n\
-LRP    oCol, tmpFog, diffuse, fogColor;												\n\
+LRP    oCol, tmpFog.x, diffuse, fogColor;											\n\
 END ";
 
 
@@ -2963,7 +2963,7 @@ static void fetchPerturbedEnvMapR200()
 
 // ***************************************************************************
 void CDriverGL::initFragmentShaders()
-{
+{		
 	///////////////////
 	// WATER SHADERS //
 	///////////////////

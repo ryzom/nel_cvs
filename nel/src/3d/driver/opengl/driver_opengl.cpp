@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.111 2001/07/11 11:35:38 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.112 2001/07/18 13:42:59 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -101,16 +101,21 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 	return IDriver::InterfaceVersion;
 }
 
+static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// Process the message by the emitter
+	driver->_EventEmitter.setHWnd((uint32)hWnd);
+	driver->_EventEmitter.processMessage ((uint32)hWnd, message, wParam, lParam);
+}
+
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	// Get the driver pointer..
 	CDriverGL *pDriver=(CDriverGL*)GetWindowLong (hWnd, GWL_USERDATA);
 	if (pDriver != NULL)
 	{
-		// Process the message by the emitter
-		pDriver->_EventEmitter.processMessage ((uint32)hWnd, message, wParam, lParam);
+		GlWndProc (pDriver, hWnd, message, wParam, lParam);
 	}
-
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
@@ -252,16 +257,20 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	uint8					Depth;
 	int						pf;
 
+	_FullScreen= false;
 	if (wnd)
 	{
 		_hWnd=(HWND)wnd;
+		_DestroyWindow=false;
 	}
 	else
 	{
 		ULONG	WndFlags;
 		RECT	WndRect;
 
-		_FullScreen= false;
+		// Must destroy this window
+		_DestroyWindow=true;
+
 		if(mode.Windowed)
 			WndFlags=WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS;
 		else
@@ -301,6 +310,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		{
 			return false;
 		}
+
 		SetWindowLong (_hWnd, GWL_USERDATA, (LONG)this);
 
 		// resize the window
@@ -311,7 +321,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 		ShowWindow(_hWnd,SW_SHOW);
 	}
-	_EventEmitter.setHWnd((uint32)_hWnd);
+
 	_hDC=GetDC(_hWnd);
     wglMakeCurrent(_hDC,NULL);
 	Depth=GetDeviceCaps(_hDC,BITSPIXEL);
@@ -653,6 +663,17 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 // --------------------------------------------------
 
+emptyProc CDriverGL::getWindowProc()
+{
+#ifdef NL_OS_WINDOWS
+	return (emptyProc)GlWndProc;
+#else // NL_OS_WINDOWS
+	return NULL;
+#endif // NL_OS_WINDOWS
+}
+
+// --------------------------------------------------
+
 bool CDriverGL::activate()
 {
 #ifdef NL_OS_WINDOWS
@@ -816,7 +837,8 @@ bool CDriverGL::release()
 	if (_hWnd&&_hDC)
 	{
 		ReleaseDC(_hWnd,_hDC);
-		DestroyWindow (_hWnd);
+		if (_DestroyWindow)
+			DestroyWindow (_hWnd);
 	}
 
 	if(_FullScreen)

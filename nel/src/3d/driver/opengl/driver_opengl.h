@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.75 2001/07/11 11:35:38 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.76 2001/07/18 13:42:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,6 +318,8 @@ public:
 #endif // NL_OS_WINDOWS
 	}
 
+	virtual emptyProc		getWindowProc();
+
 	virtual bool			activate();
 
 	virtual	sint			getNbTextureStages() const {return _Extensions.NbTextureStages;}
@@ -489,7 +491,7 @@ private:
 
 #ifdef NL_OS_WINDOWS
 
-	friend static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	friend static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	
 	HWND						_hWnd;
 	HDC							_hDC;
@@ -498,6 +500,7 @@ private:
 	static uint					_Registered;
 	DEVMODE						_OldScreenMode;
 	NLMISC::CWinEventEmitter	_EventEmitter;
+	bool						_DestroyWindow;
 
 #elif defined (NL_OS_UNIX)
 

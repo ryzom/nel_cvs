@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.7 2001/07/11 11:35:38 berenguier Exp $
+ * $Id: driver.h,v 1.8 2001/07/18 13:42:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,7 @@ struct EBadDisplay : public NLMISC::Exception
 #define	NL3D_VERTEX_MODE_SKINNING		1
 // NL3D_VERTEX_MODE_???  2, 4, 8 etc....
 
+typedef void (*emptyProc)(void);
 
 //****************************************************************************
 // *** IMPORTANT ********************
@@ -170,7 +171,11 @@ public:
 
 	// Return is the associated window information. (Implementation dependant)
 	// Must be a HWND for Windows (WIN32).
-	virtual void*			getDisplay() =0;
+	virtual void			*getDisplay() =0;
+
+	// Return is the associated default window proc for the driver. (Implementation dependant)
+	// Must be a void GlWndProc(IDriver *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) for Windows (WIN32).
+	virtual emptyProc		getWindowProc() =0;
 
 	/// Before rendering via a driver in a thread, must activate() (per thread).
 	virtual bool			activate(void)=0;

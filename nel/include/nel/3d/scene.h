@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: scene.h,v 1.1 2000/10/06 16:44:27 berenguier Exp $
+ * $Id: scene.h,v 1.2 2000/10/10 16:12:04 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -42,6 +42,8 @@ class	CCamera;
  * A CScene, which own a list of Render Traversals, and a render() method.
  *
  * \b USER \b RULES:
+ * - Before creating any CScene, call the cool method CScene::registerBasics(), to register baisc models and observers.
+ * - Create a CScene (NB: may be static \c CScene \c scene;).
  * - call first initDefaultRoot() to create / register automatically the 4 basic traversals:
  *		- CHrcTrav
  *		- CClipTrav
@@ -51,7 +53,7 @@ class	CCamera;
  * - initRootModels() to create/setRoot the defaults models roots for the basic traversals:
  *		- CTransform
  *		- CLightGroup
- * - add any other model (such as a camera).
+ * - create any other model with createModel() (such as a camera).
  * - Specify a Camera (SmartPtr-ed !!)
  * - render().
  *
@@ -91,6 +93,11 @@ public:
 
 public:
 
+	/// \name Basic registration.
+	//@{
+	/// Register Basic models and observers.
+	static void	registerBasics();
+	//@}
 
 	/// \name Construction / destruction.
 	//@{
@@ -118,6 +125,9 @@ public:
 	 */
 	void	render(bool	doHrcPass=true);
 
+
+	/// Set the current camera (smartptr-ed!!).
+	void	setCam(const NLMISC::CSmartPtr<CCamera>	&cam);
 
 private:
 	typedef		std::map<sint, ITravScene*>	TravMap;

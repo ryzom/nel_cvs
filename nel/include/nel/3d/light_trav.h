@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: light_trav.h,v 1.1 2000/10/06 16:44:27 berenguier Exp $
+ * $Id: light_trav.h,v 1.2 2000/10/10 16:12:04 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -42,7 +42,8 @@ const NLMISC::CClassId		LightTravId= NLMISC::CClassId(0x328f500a, 0x57600db9);
  *
  * TODO.
  *
- * \sa IBaseLightObs
+ * NB: see CScene for 3d conventions (orthonormal basis...)
+ * \sa CScene IBaseLightObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000

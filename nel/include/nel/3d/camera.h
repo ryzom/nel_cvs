@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: camera.h,v 1.1 2000/10/06 16:44:27 berenguier Exp $
+ * $Id: camera.h,v 1.2 2000/10/10 16:12:05 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -23,17 +23,15 @@ namespace	NL3D
 {
 
 
-using namespace NLMISC;
-
-
 // ***************************************************************************
 // ClassIds.
-const NLMISC::CClassId		CameraModelId=NLMISC::CClassId(0x5752634c, 0x6abe76f5);
+const NLMISC::CClassId		CameraId=NLMISC::CClassId(0x5752634c, 0x6abe76f5);
 
 
 // ***************************************************************************
 /**
  * A Camera node, based on a CTransform node.
+ * The camera look in his local Y direction (see CScene).
  *
  * No observer is provided, since a camera:
  *	- has default behavior of a transform.
@@ -56,9 +54,9 @@ public:
 	/// Constructor
 	CCamera();
 
-	/// Setup the camera mode as a perspective/ortho camera.
+	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	void		setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true);
-	/// Setup the camera mode as a perspective/ortho camera.
+	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	void		setFrustum(float width, float height, float znear, float zfar, bool perspective= true);
 	/// Get the camera frustum.
 	void		getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar);
@@ -67,17 +65,12 @@ public:
 	/// Is a perspective camera?
 	bool		isPerspective();
 
-private:
+protected:
+	// NB: znear and zfar are be >0 (if perspective).
 	float			Left, Right, Bottom, Top, Near, Far;
 	bool			Perspective;
 };
 
-
-// For Visual 6.0 namespace bug.
-namespace MSC_FAKE
-{
-using namespace	NLMISC;
-}
 
 
 }

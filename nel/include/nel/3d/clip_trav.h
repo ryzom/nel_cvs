@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: clip_trav.h,v 1.1 2000/10/06 16:44:27 berenguier Exp $
+ * $Id: clip_trav.h,v 1.2 2000/10/10 16:12:04 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -50,7 +50,8 @@ const NLMISC::CClassId		ClipTravId=NLMISC::CClassId(0x135208fe, 0x225334fc);
  *	- setCamMatrix() for the camera transform
  *	- setRenderTrav(), to setup the rendertraversal where observers will be cleared / inserted.
  *
- * \sa IBaseClipObs
+ * NB: see CScene for 3d conventions (orthonormal basis...)
+ * \sa CScene IBaseClipObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -80,9 +81,12 @@ public:
 	 * Those variables are valid only in traverse().
 	 */
 	//@{
-	std::vector<CPlane>	ViewPyramid;	// Vision Pyramid (6 planes) in the view basis.
-	std::vector<CPlane>	WorldPyramid;	// Vision Pyramid (6 planes) in the world basis.
-	CRenderTrav		*RenderTrav;	// Shortcut to the Rdr Traversals (to add the models rdr observers).
+	/// Vision Pyramid (6 normalized planes) in the view basis.
+	std::vector<CPlane>	ViewPyramid;
+	/// Vision Pyramid (6 normalized planes) in the world basis.
+	std::vector<CPlane>	WorldPyramid;	
+	/// Shortcut to the Rdr Traversals (to add the models rdr observers).
+	CRenderTrav		*RenderTrav;
 	//@}
 
 };

@@ -18,13 +18,14 @@
  */
 
 /*
- * $Id: tile_bank.cpp,v 1.2 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: tile_bank.cpp,v 1.3 2000/10/10 16:13:53 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
 
 #include "nel/3d/tile_bank.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/debug.h"
 
 using namespace NLMISC;
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: clip_trav.cpp,v 1.2 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: clip_trav.cpp,v 1.3 2000/10/10 16:12:56 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -46,14 +46,14 @@ void				CClipTrav::traverse()
 
 	// Compute pyramid in view basis.
 	CVector		pfoc(0,0,0);
-	CVector		lb(Left,  Bottom, Near);
-	CVector		lt(Left,  Top,    Near);
-	CVector		rb(Right, Bottom, Near);
-	CVector		rt(Right, Top,    Near);
+	CVector		lb(Left,  Near, Bottom );
+	CVector		lt(Left,  Near, Top    );
+	CVector		rb(Right, Near, Bottom );
+	CVector		rt(Right, Near, Top    );
 
-	CVector		lbFar(Left,  Bottom, Far);
-	CVector		ltFar(Left,  Top,    Far);
-	CVector		rtFar(Right, Top,    Far);
+	CVector		lbFar(Left,  Far, Bottom);
+	CVector		ltFar(Left,  Far, Top   );
+	CVector		rtFar(Right, Far, Top   );
 	ViewPyramid[0].make(lt, lb, rt);
 	ViewPyramid[1].make(pfoc, lt, lb);
 	ViewPyramid[2].make(pfoc, rt, lt);

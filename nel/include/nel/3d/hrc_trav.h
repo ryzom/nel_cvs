@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: hrc_trav.h,v 1.2 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: hrc_trav.h,v 1.3 2000/10/10 16:12:04 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -18,6 +18,7 @@
 
 #include "nel/3d/trav_scene.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/debug.h"
 
 
 namespace	NL3D
@@ -39,7 +40,9 @@ const NLMISC::CClassId		HrcTravId=CClassId(0x5ad56382, 0x2a711530);
 /**
  * The hierarchy traversal.
  * Hierarchy observers MUST derive from IBaseHrcObs.
- * \sa IBaseHrcObs
+ *
+ * NB: see CScene for 3d conventions (orthonormal basis...)
+ * \sa CScene IBaseHrcObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000

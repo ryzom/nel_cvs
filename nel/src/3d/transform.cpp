@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: transform.cpp,v 1.1 2000/10/06 16:43:58 berenguier Exp $
+ * $Id: transform.cpp,v 1.2 2000/10/10 16:12:56 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -26,9 +26,9 @@ static	IObs	*creatorClipObs() {return new CTransformClipObs;}
 
 void	CTransform::registerBasic()
 {
-	CMOT::registerModel(TransformModelId, 0, creatorTransform);
-	CMOT::registerObs(HrcTravId, TransformModelId, creatorHrcObs);
-	CMOT::registerObs(ClipTravId, TransformModelId, creatorClipObs);
+	CMOT::registerModel(TransformId, 0, creatorTransform);
+	CMOT::registerObs(HrcTravId, TransformId, creatorHrcObs);
+	CMOT::registerObs(ClipTravId, TransformId, creatorClipObs);
 }
 
 
@@ -39,7 +39,8 @@ CTransform::CTransform()
 
 	Visibility= CHrcTrav::Herit;
 
-	Pos= Rot= Scale= CVector::Null;
+	Pos= Rot= CVector::Null;
+	Scale.set(1,1,1);
 	RotOrder= CMatrix::XYZ;
 	PosRotScaleMode= true;
 
@@ -68,20 +69,32 @@ void		CTransform::getMatrix(CMatrix &mat) const
 // ***************************************************************************
 void		CTransform::hide()
 {
-	foul();
-	Visibility= CHrcTrav::Hide;
+	// Optim: do nothing if already set (=> not foul() -ed).
+	if(Visibility!= CHrcTrav::Hide)
+	{
+		foul();
+		Visibility= CHrcTrav::Hide;
+	}
 }
 // ***************************************************************************
 void		CTransform::show()
 {
-	foul();
-	Visibility= CHrcTrav::Show;
+	// Optim: do nothing if already set (=> not foul() -ed).
+	if(Visibility!= CHrcTrav::Show)
+	{
+		foul();
+		Visibility= CHrcTrav::Show;
+	}
 }
 // ***************************************************************************
 void		CTransform::heritVisibility()
 {
-	foul();
-	Visibility= CHrcTrav::Herit;
+	// Optim: do nothing if already set (=> not foul() -ed).
+	if(Visibility!= CHrcTrav::Herit)
+	{
+		foul();
+		Visibility= CHrcTrav::Herit;
+	}
 }
 
 

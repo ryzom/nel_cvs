@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: trav_scene.h,v 1.1 2000/10/06 16:44:27 berenguier Exp $
+ * $Id: trav_scene.h,v 1.2 2000/10/10 16:12:04 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -76,6 +76,7 @@ public:
 	 * Those variables are valid only in traverse().
 	 */
 	//@{
+	// NB: znear and zfar are >0 (if perspective).
 	float				Left, Right, Bottom, Top, Near, Far;
 	bool				Perspective;
 	NLMISC::CMatrix		CamMatrix;		// The camera matrix.
@@ -86,7 +87,7 @@ public:
 
 
 public:
-	/// Setup the camera mode as a perspective/ortho camera.
+	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	void		setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true)
 	{
 		Left= left;
@@ -97,7 +98,7 @@ public:
 		Far= zfar;
 		Perspective= perspective;
 	}
-	/// Setup the camera mode as a perspective/ortho camera.
+	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	void		setFrustum(float width, float height, float znear, float zfar, bool perspective= true)
 	{
 		setFrustum(-width/2, width/2, -height/2, height/2, znear, zfar, perspective);

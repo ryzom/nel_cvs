@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: camera.cpp,v 1.1 2000/10/06 16:43:58 berenguier Exp $
+ * $Id: camera.cpp,v 1.2 2000/10/10 16:12:56 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -24,7 +24,7 @@ namespace	NL3D
 static	IModel	*creatorCamera() {return new CCamera;}
 void	CCamera::registerBasic()
 {
-	CMOT::registerModel(CameraModelId, TransformModelId, creatorCamera);
+	CMOT::registerModel(CameraId, TransformId, creatorCamera);
 }
 
 

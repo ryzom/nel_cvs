@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: render_trav.cpp,v 1.2 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: render_trav.cpp,v 1.3 2000/10/10 16:12:56 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -50,7 +50,7 @@ void		CRenderTrav::traverse()
 		Root->traverse(NULL);
 
 	// Then traverse the render list.
-	for(sint i=0;i<RenderList.size();i++)
+	for(sint i=0;i<(sint)RenderList.size();i++)
 	{
 		RenderList[i]->traverse(NULL);
 	}

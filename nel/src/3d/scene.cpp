@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: scene.cpp,v 1.2 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: scene.cpp,v 1.3 2000/10/10 16:12:56 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -28,6 +28,21 @@ using namespace NLMISC;
 namespace NL3D
 {
 
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+	
+void	CScene::registerBasics()
+{
+	CTransform::registerBasic();
+	CCamera::registerBasic();
+}
+
+	
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
 
 // ***************************************************************************
 CScene::CScene()
@@ -73,7 +88,7 @@ void	CScene::initDefaultTravs()
 void	CScene::initDefaultRoots()
 {
 	// Create and set root the default models.
-	Root= static_cast<CTransform*>(createModel(TransformModelId));
+	Root= static_cast<CTransform*>(createModel(TransformId));
 	HrcTrav->setRoot(Root);
 	ClipTrav->setRoot(Root);
 
@@ -129,6 +144,11 @@ void	CScene::render(bool	doHrcPass)
 	}
 }
 
+// ***************************************************************************
+void	CScene::setCam(const CSmartPtr<CCamera>	&cam)
+{
+	CurrentCamera= cam;
+}
 
 }
 

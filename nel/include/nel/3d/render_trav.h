@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: render_trav.h,v 1.1 2000/10/06 16:44:27 berenguier Exp $
+ * $Id: render_trav.h,v 1.2 2000/10/10 16:12:04 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -50,7 +50,9 @@ const NLMISC::CClassId		RenderTravId= NLMISC::CClassId(0x572456ee, 0x3db55f23);
  *	- setFrustum() the camera shape (focale....)
  *	- setCamMatrix() for the camera transform
  *
- * \sa IBaseRenderObs
+ * NB: see CScene for 3d conventions (orthonormal basis...)
+ *
+ * \sa CScene IBaseRenderObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000

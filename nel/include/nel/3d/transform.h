@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: transform.h,v 1.1 2000/10/06 16:44:27 berenguier Exp $
+ * $Id: transform.h,v 1.2 2000/10/10 16:12:04 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -25,6 +25,7 @@
 namespace	NL3D
 {
 
+
 using namespace NLMISC;
 using namespace NLMISC;
 
@@ -35,7 +36,7 @@ class	CTransformClipObs;
 
 // ***************************************************************************
 // ClassIds.
-const NLMISC::CClassId		TransformModelId=NLMISC::CClassId(0x174750cb, 0xf952024);
+const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
 
 
 // ***************************************************************************
@@ -112,9 +113,11 @@ public:
 	 */
 	//@{
 	/// Just reset the indirect mode to default.
-	void		reset() { indirect(); LocalMatrix.identity(); Pos= Rot= Scale= CVector::Null; RotOrder= CMatrix::XYZ;}
+	void		reset() { indirect(); LocalMatrix.identity(); Pos= Rot= CVector::Null; Scale.set(1,1,1); RotOrder= CMatrix::XYZ;}
 	void		setPos(const CVector &pos) { indirect(); Pos= pos;}
 	void		setRot(const CVector &rot) { indirect(); Rot= rot;}
+	void		addPos(const CVector &pos) { indirect(); Pos+= pos;}
+	void		addRot(const CVector &rot) { indirect(); Rot+= rot;}
 	void		setScale(const CVector &scale) { indirect(); Scale= scale;}
 	void		setRotOrder(CMatrix::TRotOrder order) { indirect(); RotOrder= order;}
 	void		getPos(CVector &pos) const {pos= Pos;}
@@ -149,6 +152,8 @@ public:
 	void		show();
 	/// herit the visibility from his father. (default behavior).
 	void		heritVisibility();
+	/// Get the local visibility state.
+	CHrcTrav::TVisibility	getVisibility() {return Visibility;}
 
 
 protected:
@@ -228,12 +233,6 @@ public:
 
 };
 
-
-// For Visual 6.0 namespace bug.
-namespace MSC_FAKE
-{
-using namespace	NLMISC;
-}
 
 
 }

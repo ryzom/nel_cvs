@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.5 2001/08/23 14:31:20 lecroart Exp $
+ * $Id: udp_sock.cpp,v 1.6 2001/09/28 12:39:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,18 @@ CUdpSock::CUdpSock( bool logging ) :
  */
 void CUdpSock::bind( uint16 port )
 {
+	CInetAddress addr; // any IP address
+	addr.setPort( port );
+	bind( addr );
+	setLocalAddress(); // will not set the address if the host is multihomed, use bind(CInetAddress) instead
+}
+
+
+/*
+ * Same as bind(uint16) but binds on a specified address/port (useful when the host has several addresses)
+ */
+void CUdpSock::bind( const CInetAddress& addr )
+{
 #ifndef NL_OS_WINDOWS
 	// Set Reuse Address On (does not work on Win98 and is useless on Win2000)
 	int value = true;
@@ -82,15 +94,7 @@ void CUdpSock::bind( uint16 port )
 	}
 #endif
 
-	// Get local socket name
-	/*const uint MAXLENGTH = 80;
-	char localhost [MAXLENGTH];
-	if ( gethostname( localhost, MAXLENGTH ) != 0 )
-	{
-		throw ESocket( "Unabled to get local hostname" );
-	}
-	_LocalAddr.setByName( localhost );*/
-	_LocalAddr.setPort( port );
+	_LocalAddr = addr;
 
 	// Bind the socket
 	if ( ::bind( _Sock, (sockaddr*)(_LocalAddr.sockAddr()), sizeof(sockaddr) ) == SOCKET_ERROR )

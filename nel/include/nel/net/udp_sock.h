@@ -1,7 +1,7 @@
 /** \file udp_sock.h
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.h,v 1.3 2001/08/23 14:31:15 lecroart Exp $
+ * $Id: udp_sock.h,v 1.4 2001/09/28 12:39:15 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,9 @@ public:
 	 * messages. If the host acts as a client, call directly sendTo(), in this case you need not bind the socket.
 	 */
 	void				bind( uint16 port );
+
+	/// Same as bind(uint16) but binds on a specified address/port (useful when the host has several addresses)
+	void				bind( const CInetAddress& addr );
 
 
 	/// @name Receiving data

@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.33 2001/06/27 08:31:19 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.34 2001/09/28 12:39:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,16 @@ CInetAddress::CInetAddress() :
 	memset( &_SockAddr->sin_addr, 0, sizeof(in_addr) ); // same as htonl(INADDR_ANY)
 }
 
+
+/*
+ * Constructor with ip address, port=0
+ */
+CInetAddress::CInetAddress( const in_addr *ip )
+{
+	init();
+	_SockAddr->sin_port = 0;
+	memcpy( &_SockAddr->sin_addr, ip, sizeof(in_addr) );
+}
 
 
 /*
@@ -403,4 +413,34 @@ CInetAddress CInetAddress::localHost()
 	return localaddr;
 }
 
+
+/* Returns the list of the local host addresses (with port=0)
+ * (especially useful if the host is multihomed)
+ */
+std::vector<CInetAddress> CInetAddress::localAddresses()
+{
+	// 1. Get local host name
+	const uint maxlength = 80;
+	char localhost [maxlength];
+	if ( gethostname( localhost, maxlength ) == SOCKET_ERROR )
+	{
+		throw ESocket( "Unable to get local hostname" );
+	}
+
+	// 2. Get address list
+    hostent *phostent = gethostbyname( localhost );
+    if ( phostent == NULL )
+	{
+		throw ESocket( (string("Hostname resolution failed for ")+string(localhost)).c_str() );
+	}
+	uint i;
+	vector<CInetAddress> vect;
+    for ( i=0; phostent->h_addr_list[i]!=0; ++i )
+	{
+		vect.push_back( CInetAddress( (const in_addr*)(phostent->h_addr_list[i]) ) );
+    } 
+	return vect;
 }
+
+
+} // NLNET

@@ -1,7 +1,7 @@
 /** \file inet_address.h
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.h,v 1.22 2001/06/27 08:30:54 lecroart Exp $
+ * $Id: inet_address.h,v 1.23 2001/09/28 12:39:15 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,12 @@
 
 #include <nel/misc/types_nl.h>
 #include <string>
+#include <vector>
 
 
 struct sockaddr_in;
+struct in_addr;
+
 
 #ifdef NL_OS_WINDOWS
 // automatically add the win socket library if you use nel network part
@@ -134,8 +137,18 @@ public:
 	/// Creates a CInetAddress object with local host address, port=0
 	static CInetAddress	localHost();
 
+	/** Returns the list of the local host addresses (with port=0)
+	 * (especially useful if the host is multihomed)
+	 */
+	static std::vector<CInetAddress> localAddresses();
+
 	/// If true, setSockAddr() always tries to retrieve the host name from the address
 	static bool RetrieveNames;
+
+protected:
+
+	/// Constructor with ip address, port=0
+	CInetAddress( const in_addr *ip );
 
 private:
 

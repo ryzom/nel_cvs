@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.13 2001/07/04 12:26:48 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.14 2001/07/12 15:38:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/material.h"
 #include "3d/ps_util.h"
 #include "3d/dru.h"
+#include "3d/particle_system.h"
 #include "nel/misc/plane.h"
 
 #include <math.h>

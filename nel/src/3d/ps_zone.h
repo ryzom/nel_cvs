@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.5 2001/07/04 12:26:48 vizerie Exp $
+ * $Id: ps_zone.h,v 1.6 2001/07/12 15:38:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,7 +145,7 @@ protected:
 	 * \ellapsedTime the time ellapsed
 	 */
 
-//	void bounce(uint32 locatedIndex, const CVector &bouncePoint, const CVector &surfNormal, float elasticity, float ellapsedTime) ;
+//	void bounce(uint32 locatedIndex, const NLMISC::CVector &bouncePoint, const NLMISC::CVector &surfNormal, float elasticity, float ellapsedTime) ;
 
 
 
@@ -168,17 +168,17 @@ class CPSZonePlane : public CPSZone, public IPSMover
 
 
 		
-		virtual void setMatrix(uint32 index, const CMatrix &m) ;		
-		virtual CMatrix getMatrix(uint32 index) const ;			
+		virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m) ;		
+		virtual NLMISC::CMatrix getMatrix(uint32 index) const ;			
 		virtual bool onlyStoreNormal(void) const { return true ; }	
-		virtual CVector getNormal(uint32 index) ;	
-		virtual void setNormal(uint32 index, CVector n) ;
+		virtual NLMISC::CVector getNormal(uint32 index) ;	
+		virtual void setNormal(uint32 index, NLMISC::CVector n) ;
 
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	protected:
 		TPSAttribVector _Normal ;
-		CMatrix buildBasis(uint32 index) const ;
+		NLMISC::CMatrix buildBasis(uint32 index) const ;
 
 		virtual void resize(uint32 size) ;
 
@@ -229,10 +229,10 @@ class CPSZoneSphere : public CPSZone, public IPSMover
 
 		// inherited from IPSMover
 		virtual bool supportUniformScaling(void) const { return true ; }
-		virtual void setMatrix(uint32 index, const CMatrix &m) ;	
-		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m) ;	
+		virtual NLMISC::CMatrix getMatrix(uint32 index) const ;
 		virtual void setScale(uint32 k, float scale) ;
-		virtual CVector getScale(uint32 k) const ;
+		virtual NLMISC::CVector getScale(uint32 k) const ;
 
 
 	protected:		
@@ -241,7 +241,7 @@ class CPSZoneSphere : public CPSZone, public IPSMover
 	
 		TPSAttribRadiusPair _Radius ;	
 
-		CMatrix buildBasis(uint32 index) const ;
+		NLMISC::CMatrix buildBasis(uint32 index) const ;
 
 		virtual void resize(uint32 size) ;
 
@@ -268,13 +268,13 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 
 		// inherited from IPSMover
 		virtual bool supportUniformScaling(void) const { return true ; }
-		virtual void setMatrix(uint32 index, const CMatrix &m) ;		
-		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m) ;		
+		virtual NLMISC::CMatrix getMatrix(uint32 index) const ;
 		virtual void setScale(uint32 k, float scale) ;
-		virtual CVector getScale(uint32 k) const ;
+		virtual NLMISC::CVector getScale(uint32 k) const ;
 		virtual bool onlyStoreNormal(void) const { return true ; }	
-		virtual CVector getNormal(uint32 index) ;	
-		virtual void setNormal(uint32 index, CVector n) ;
+		virtual NLMISC::CVector getNormal(uint32 index) ;	
+		virtual void setNormal(uint32 index, NLMISC::CVector n) ;
 
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
@@ -284,7 +284,7 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 		TPSAttribVector _Normal ;
 		TPSAttribRadiusPair _Radius ;
 
-		CMatrix buildBasis(uint32 index) const ;
+		NLMISC::CMatrix buildBasis(uint32 index) const ;
 
 		virtual void resize(uint32 size) ;
 
@@ -315,11 +315,11 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 		// inherited from IPSMover
 		virtual bool supportUniformScaling(void) const { return true ; }
 		virtual bool supportNonUniformScaling(void) const { return true ; }	
-		virtual void setMatrix(uint32 index, const CMatrix &m) ;	
-		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m) ;	
+		virtual NLMISC::CMatrix getMatrix(uint32 index) const ;
 		virtual void setScale(uint32 k, float scale) ;
-		virtual void setScale(uint32 k, const CVector &s) ;
-		virtual CVector getScale(uint32 k) const ;
+		virtual void setScale(uint32 k, const NLMISC::CVector &s) ;
+		virtual NLMISC::CVector getScale(uint32 k) const ;
 
 		// serialization
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
@@ -336,7 +336,7 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 		// dimension of cylinder in each direction, encoded in a vector
 		TPSAttribVector _Dim ;
 
-		CMatrix buildBasis(uint32 index) const ;
+		NLMISC::CMatrix buildBasis(uint32 index) const ;
 
 		virtual void resize(uint32 size) ;
 
@@ -374,11 +374,11 @@ class CPSZoneRectangle : public CPSZone, public IPSMover
 		// inherited from IPSMover
 		virtual bool supportUniformScaling(void) const { return true ; }		
 		virtual bool supportNonUniformScaling(void) const { return true ; }
-		virtual void setMatrix(uint32 index, const CMatrix &m) ;	
-		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m) ;	
+		virtual NLMISC::CMatrix getMatrix(uint32 index) const ;
 		virtual void setScale(uint32 index, float scale) ;	
-		virtual void setScale(uint32 index, const CVector &s) ;		
-		virtual CVector getScale(uint32 index) const ;
+		virtual void setScale(uint32 index, const NLMISC::CVector &s) ;		
+		virtual NLMISC::CVector getScale(uint32 index) const ;
 
 	protected:
 
@@ -392,7 +392,7 @@ class CPSZoneRectangle : public CPSZone, public IPSMover
 		TPSAttribFloat _Height ;
 
 
-		CMatrix buildBasis(uint32 index) const ;
+		NLMISC::CMatrix buildBasis(uint32 index) const ;
 
 		virtual void resize(uint32 size) ;
 

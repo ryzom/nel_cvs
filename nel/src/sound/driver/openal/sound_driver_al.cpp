@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.1 2001/06/26 15:28:56 cado Exp $
+ * $Id: sound_driver_al.cpp,v 1.2 2001/07/04 13:10:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,25 @@ EAXSet					EAXSetProp = NULL;
 
 // EAXGet global function
 EAXGet					EAXGetProp = NULL;
+
+
+#ifdef NL_DEBUG
+// Test error in debug mode
+void TestALError()
+{
+	ALuint errcode = alGetError();
+	switch( errcode )
+	{
+	case AL_NO_ERROR : break;
+	case AL_INVALID_NAME : nlerror( "OpenAL: Invalid name" );
+	case AL_INVALID_ENUM  : nlerror( "OpenAL: Invalid enum" );
+	case AL_INVALID_VALUE  : nlerror( "OpenAL: Invalid value" );
+	case AL_INVALID_OPERATION  : nlerror( "OpenAL: Invalid operation" );
+	case AL_OUT_OF_MEMORY  : nlerror( "OpenAL: Out of memory" );
+	// alGetString( errcode ) does not work !
+	}
+}
+#endif
 
 
 #define INITIAL_BUFFERS 8
@@ -88,12 +107,24 @@ uint32 NLSOUND_interfaceVersion ()
 #endif // NL_OS_UNIX
 
 
+// The instance of the singleton
+CSoundDriverAL	*CSoundDriverAL::_Instance = NULL;
+
+
 /*
  * Constructor
  */
 CSoundDriverAL::CSoundDriverAL() :
 	ISoundDriver(), _NbExpBuffers( 0 ), _NbExpSources( 0 ), _RolloffFactor( 1.0f )
 {
+	if ( _Instance == NULL )
+	{
+		_Instance = this;
+	}
+	else
+	{
+		nlerror( "Sound driver singleton instanciated twice" );
+	}
 }
 
 
@@ -108,6 +139,8 @@ CSoundDriverAL::~CSoundDriverAL()
 
 	// OpenAL exit
 	alutExit();
+
+	_Instance = NULL;
 }
 
 
@@ -125,7 +158,7 @@ bool		CSoundDriverAL::init()
 	alrenderer = alGetString( AL_RENDERER );
 	alvendor = alGetString( AL_VENDOR );
 	alext = alGetString( AL_EXTENSIONS );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 	nlinfo( "Loading OpenAL lib: %s, %s, %s", alversion, alrenderer, alvendor );
 	nlinfo( "Listing extensions: %s", alext );
 
@@ -152,7 +185,7 @@ bool		CSoundDriverAL::init()
 
 	// Choose the I3DL2 model (same as DirectSound3D)
 	alDistanceModel( AL_INVERSE_DISTANCE_CLAMPED );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 
 	// Initial buffers and sources allocation
 	allocateNewItems( alGenBuffers, alIsBuffer, _Buffers, _NbExpBuffers, INITIAL_BUFFERS );
@@ -329,7 +362,7 @@ bool			CSoundDriverAL::deleteItem( ALuint name, TGenFunctionAL aldeletefunc, vec
 	}
 	aldeletefunc( 1, &*ibn );
 	*ibn = AL_NONE;
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 	return true;
 }
 
@@ -339,7 +372,7 @@ bool			CSoundDriverAL::deleteItem( ALuint name, TGenFunctionAL aldeletefunc, vec
  */
 IListener		*CSoundDriverAL::createListener()
 {
-	nlassert( IListener::instance() == NULL );
+	nlassert( CListenerAL::instance() == NULL );
 	return new CListenerAL();
 }
 
@@ -355,7 +388,34 @@ void			CSoundDriverAL::applyRolloffFactor( float f )
 	{
 		alSourcef( *ibn, AL_ROLLOFF_FACTOR, _RolloffFactor );
 	}
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
+}
+
+
+/*
+ * Temp
+ */
+TSampleFormat ALtoNLSoundFormat( ALenum alformat )
+{
+	switch ( alformat )
+	{
+	case AL_FORMAT_MONO8 : return Mono8;
+	case AL_FORMAT_MONO16 : return Mono16;
+	case AL_FORMAT_STEREO8 : return Stereo8;
+	case AL_FORMAT_STEREO16 : return Stereo16;
+	default : nlstop; return Mono8;
+	}
+}
+void			CSoundDriverAL::loadWavFile( IBuffer *destbuffer, char *filename )
+{
+	ALsizei size,freq;
+	ALenum format;
+	ALvoid *data;
+	ALboolean loop;
+	alutLoadWAVFile( filename, &format, &data, &size, &freq, &loop ); // last arg in some al.h
+	destbuffer->setFormat( ALtoNLSoundFormat(format), freq );
+	destbuffer->fillBuffer( data, size );
+	alutUnloadWAV(format,data,size,freq);
 }
 
 

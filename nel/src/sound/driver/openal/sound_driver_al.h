@@ -1,7 +1,7 @@
 /** \file sound_driver_al.h
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.h,v 1.1 2001/06/26 15:28:56 cado Exp $
+ * $Id: sound_driver_al.h,v 1.2 2001/07/04 13:10:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@
 #ifdef NL_OS_WINDOWS
 #include <objbase.h> // needed before eax.h
 #endif
-#include "al/eax.h" // needs eax.h to be with the OpenAL headers !
+#include <eax.h>
 #include <vector>
 
 
@@ -57,6 +57,14 @@ extern EAXSet	EAXSetProp;
 extern EAXGet	EAXGetProp;
 
 
+#ifdef NL_DEBUG
+void TestALError();
+#else
+#define TestALError() NULL
+#endif
+
+
+
 /**
  * OpenAL sound driver
  *
@@ -76,6 +84,9 @@ public:
 	/// Constructor
 	CSoundDriverAL();
 
+	/// Return the instance of the singleton
+	static CSoundDriverAL	*instance() { return _Instance; }
+
 	/// Initialization
 	virtual bool			init();
 
@@ -90,6 +101,9 @@ public:
 
 	/// Change the rolloff factor and apply to all sources
 	void					applyRolloffFactor( float f );
+
+	/// Temp
+	virtual void			loadWavFile( IBuffer *destbuffer, char *filename );
 
 	// Does not create a sound loader
 
@@ -129,6 +143,9 @@ protected:
 	bool					deleteItem( ALuint name, TGenFunctionAL aldeletefunc, std::vector<ALuint>& names );
 	
 private:
+
+	// The instance of the singleton
+	static CSoundDriverAL	*_Instance;
 
 	// Allocated buffers
 	std::vector<ALuint>		_Buffers;

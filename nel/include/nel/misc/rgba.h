@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.14 2001/05/09 12:35:43 vizerie Exp $
+ * $Id: rgba.h,v 1.15 2001/05/17 16:55:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,7 +134,7 @@ public:
 	 * \param b Blue componant.
 	 * \param a Alpha componant.
 	 */
-	void	set (uint8 r, uint8 g, uint8 b, uint8 a);
+	void	set (uint8 r, uint8 g, uint8 b, uint8 a=255);
 
 	/**
 	 * Get a 16 bits 565 pixel.

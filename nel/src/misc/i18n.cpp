@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.6 2000/11/23 16:41:33 lecroart Exp $
+ * $Id: i18n.cpp,v 1.7 2000/11/23 17:01:58 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -160,7 +160,7 @@ void CI18N::createLanguageFile (uint32 lid)
 	nlassert (lid >= 0 && lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
 	
 	string fn = _LanguageFiles[lid];
-	fn += ".txt";
+	fn += ".uxt";
 
 	// write the new string in the file
 	COFile cof;
@@ -194,7 +194,7 @@ void CI18N::createLanguageEntry (const string &lval, const string &rval)
 	{
 		COFile cof;
 		string fn = _LanguageFiles[i];
-		fn += ".txt";
+		fn += ".uxt";
 
 		nlverify (cof.open (fn, true, true));
 
@@ -224,7 +224,7 @@ void CI18N::load (uint32 lid)
 	nlassert (lid >= 0 && lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
 
 	_FileName = _LanguageFiles[lid];
-	_FileName += ".txt";
+	_FileName += ".uxt";
 
 	if (_StrMapLoaded)	_StrMap.clear ();
 	else				_StrMapLoaded = true;
@@ -390,7 +390,7 @@ const vector<ucstring> &CI18N::getLanguageNames()
 		for (int i = 0; i < sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0]); i++)
 		{
 			string fn = _LanguageFiles[i];
-			fn += ".txt";
+			fn += ".uxt";
 
 			ucstring lg;
 

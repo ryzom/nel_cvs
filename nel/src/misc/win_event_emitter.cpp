@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.8 2002/03/28 10:31:25 vizerie Exp $
+ * $Id: win_event_emitter.cpp,v 1.9 2002/03/28 14:11:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,8 +200,7 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 				switch (msg)
 				{
 				case WM_MOUSEMOVE:
-					server->postEvent (new CEventMouseMove (fX, fY, button, this));
-					nlinfo("mouse move");
+					server->postEvent (new CEventMouseMove (fX, fY, button, this));					
 					break;
 
 				case WM_RBUTTONDOWN:

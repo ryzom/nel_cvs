@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.137 2002/03/04 10:29:54 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.138 2002/03/14 18:28:20 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -868,6 +868,11 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	for (uint i=0; i<MaxLight; i++)
 		_LightEnable[i]=false;
 
+
+	_PPLExponent = 1.f;
+	_PPLightDiffuseColor = NLMISC::CRGBA::White;
+	_PPLightSpecularColor = NLMISC::CRGBA::White;
+
 	// Backward compatibility: default lighting is Light0 default openGL
 	// meaning that light direction is always (0,1,0) in eye-space
 	// use enableLighting(0....), to get normal behaviour
@@ -885,6 +890,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	_PrimitiveProfileOut.reset();
 	_NbSetupMaterialCall= 0;
 	_NbSetupModelMatrixCall= 0;
+
+	// check wether per pixel lighting shader is supported
+	checkForPerPixelLightingSupport();
+
 
 	return true;
 }
@@ -1820,32 +1829,37 @@ void      CDriverGL::enableNVTextureShader(bool enabled)
 	}	
 }
 
-/// A cube map functor to build a caustic cube map
-/*struct CCausticCubeMapFunctor : ICubeMapFunctor
+// ***************************************************************************
+void CDriverGL::checkForPerPixelLightingSupport()
 {
-	virtual NLMISC::CRGBA operator()(const NLMISC::CVector &v)
-	{
-		uint8 intensity = v.z > 0 ? (uint8) (255.f * v.z) : 0;
-		return NLMISC::CRGBA(intensity, intensity, intensity);
-	}
-};
+	// we need at least 3 texture stages and cube map support + EnvCombine4 or 3 support	
+	// TODO : support for EnvCombine3
+	// TODO : support for less than 3 stages
 
-/** Build a face of a caustic cube map ( as rgba for now )
-  */
-/*static uint8 *buildCausticCubeMapTex(const NLMISC::CVector &start,
-									 const NLMISC::CVector &uDir,
-									 const NLMISC::CVector &vDir,
-									 uint size)
+	_SupportPerPixelShaderNoSpec = _Extensions.NVTextureEnvCombine4 
+								   && _Extensions.ARBTextureCubeMap
+								   && _Extensions.NbTextureStages >= 3
+								   && _Extensions.NVVertexProgram;
+	
+	_SupportPerPixelShader = _Extensions.NVTextureEnvCombine4 
+							 && _Extensions.ARBTextureCubeMap
+							 && _Extensions.NbTextureStages >= 2
+							 && _Extensions.NVVertexProgram;	
+}
+
+// ***************************************************************************
+bool CDriverGL::supportPerPixelLighting(bool specular) const
 {
-	const uint mapSize = 64;
-	CCausticCubeMapFunctor f;
-	_CauticCubeMap = BuildCubeMap(mapSize, f);
-}*/
+	return specular ? _SupportPerPixelShader : _SupportPerPixelShaderNoSpec;	
+}
 
-									
-
-// ****************************************************************************
-
+// ***************************************************************************
+void	CDriverGL::setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float shininess)
+{
+	_PPLExponent = shininess;
+	_PPLightDiffuseColor = diffuse;
+	_PPLightSpecularColor = specular;
+}
 
 
 } // NL3D

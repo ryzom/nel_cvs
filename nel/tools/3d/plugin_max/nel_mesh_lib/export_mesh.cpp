@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.35 2002/03/04 10:31:44 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.36 2002/03/14 18:23:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -592,7 +592,17 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 	buildMesh.bCastShadows = (node.CastShadows() != 0);
 	buildMesh.bRcvShadows  = (node.RcvShadows() != 0);
 	// Export RealTime lighting info.
-	buildMesh.UseLightingLocalAttenuation= CExportNel::getScriptAppData (&node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED) == BST_CHECKED;
+	NL3D::CMaterial::TShader shader;
+	bool needVp = hasMaterialWithShaderForVP(node, time, shader);
+	if (!needVp)
+	{
+		buildMesh.UseLightingLocalAttenuation= CExportNel::getScriptAppData (&node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED) == BST_CHECKED;
+	}
+	else
+	{
+		// For now, all v.p that depends on material shader fon't handle local attenuation
+		buildMesh.UseLightingLocalAttenuation = false;
+	}
 
 
 	// *** ****************
@@ -880,8 +890,9 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			for (uv=0; uv<nNumChannelUsed; uv++)
 			{
 				// No explicit channel or unsupported mapping channel, fill with garbage
-				pCorner->Uvs[uv].U=0.f;
-				pCorner->Uvs[uv].V=0.f;
+				pCorner->Uvws[uv].U=0.f;
+				pCorner->Uvws[uv].V=0.f;
+				pCorner->Uvws[uv].W=0.f;
 
 				// Corresponding max channel
 				int nMaxChan=maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].RemapChannel[uv]._IndexInMaxMaterial;
@@ -939,8 +950,9 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 						uvTransformed.y=(1.f-uvTransformed.y)*fCropH+fCropV;
 
 						// Store value
-						pCorner->Uvs[uv].U=uvTransformed.x;
-						pCorner->Uvs[uv].V=uvTransformed.y;
+						pCorner->Uvws[uv].U=uvTransformed.x;
+						pCorner->Uvws[uv].V=uvTransformed.y;
+						pCorner->Uvws[uv].W=0;
 					}
 				}
 			}
@@ -948,8 +960,9 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			// For other channels, fill with garbage..
 			for (; uv<nNumChannelUsed; uv++)
 			{
-				pCorner->Uvs[uv].U=0.f;
-				pCorner->Uvs[uv].V=0.f;
+				pCorner->Uvws[uv].U=0.f;
+				pCorner->Uvws[uv].V=0.f;
+				pCorner->Uvws[uv].W=0.f;
 			}
 
 
@@ -1075,51 +1088,62 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	// *** Export VertexProgram.
 	// *** ***************************
 
-	// What Vertexprogram is used??
-	int	vpId= CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VERTEXPROGRAM_ID, 0);
-	// Setup vertexProgram
-	switch(vpId)
+
+	NL3D::CMaterial::TShader shader;
+	// If there is one material that need a specific vp ?
+	// If there is, this override any vertex program setupped there
+	if (CExportNel::hasMaterialWithShaderForVP(node, time, shader))
 	{
-		case 0: 
-			buildMesh.MeshVertexProgram= NULL;
-			break;
-		case 1: 
-		{
-			// smartPtr set it.
-			buildMesh.MeshVertexProgram= new CMeshVPWindTree;
-			CMeshVPWindTree		&vpwt= *(CMeshVPWindTree*)(IMeshVertexProgram*)buildMesh.MeshVertexProgram;
-
-			// Read the AppData
-			CVPWindTreeAppData	apd;
-			getScriptAppDataVPWT (&node, apd);
-
-			// transform it to the vpwt.
-			nlassert(CVPWindTreeAppData::HrcDepth == CMeshVPWindTree::HrcDepth);
-			vpwt.SpecularLighting= apd.SpecularLighting == BST_CHECKED;
-			// read all levels.
-			float	nticks= CVPWindTreeAppData::NumTicks;
-			for(uint i=0; i<CVPWindTreeAppData::HrcDepth;i++)
-			{
-				float	scale;
-				// read frequency
-				scale= apd.FreqScale;
-				vpwt.Frequency[i]= float(apd.Frequency[i])/nticks * scale;
-				vpwt.FrequencyWindFactor[i]= float(apd.FrequencyWindFactor[i])/nticks * scale;
-				// read Distance
-				scale= apd.DistScale;
-				vpwt.PowerXY[i]= float(apd.DistXY[i])/nticks * scale;
-				vpwt.PowerZ[i]= float(apd.DistZ[i])/nticks * scale;
-				// read Bias. expand to -2,2
-				vpwt.Bias[i]= float(apd.Bias[i])/nticks*4 -2;
-			}
-
-			break;
-		}
-		default:
-			nlstop;
+		NL3D::IMeshVertexProgram *vp = buildMeshMaterialShaderVP(shader, &buildMesh);
+		// build the appropriate vp
+		buildMesh.MeshVertexProgram = vp;
 	}
+	else  // standard case
+	{
+		// What Vertexprogram is used??
+		int	vpId= CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VERTEXPROGRAM_ID, 0);
+		// Setup vertexProgram
+		switch(vpId)
+		{
+			case 0: 
+				buildMesh.MeshVertexProgram= NULL;
+				break;
+			case 1: 
+			{
+				// smartPtr set it.
+				buildMesh.MeshVertexProgram= new CMeshVPWindTree;
+				CMeshVPWindTree		&vpwt= *(CMeshVPWindTree*)(IMeshVertexProgram*)buildMesh.MeshVertexProgram;
 
+				// Read the AppData
+				CVPWindTreeAppData	apd;
+				getScriptAppDataVPWT (&node, apd);
 
+				// transform it to the vpwt.
+				nlassert(CVPWindTreeAppData::HrcDepth == CMeshVPWindTree::HrcDepth);
+				vpwt.SpecularLighting= apd.SpecularLighting == BST_CHECKED;
+				// read all levels.
+				float	nticks= CVPWindTreeAppData::NumTicks;
+				for(uint i=0; i<CVPWindTreeAppData::HrcDepth;i++)
+				{
+					float	scale;
+					// read frequency
+					scale= apd.FreqScale;
+					vpwt.Frequency[i]= float(apd.Frequency[i])/nticks * scale;
+					vpwt.FrequencyWindFactor[i]= float(apd.FrequencyWindFactor[i])/nticks * scale;
+					// read Distance
+					scale= apd.DistScale;
+					vpwt.PowerXY[i]= float(apd.DistXY[i])/nticks * scale;
+					vpwt.PowerZ[i]= float(apd.DistZ[i])/nticks * scale;
+					// read Bias. expand to -2,2
+					vpwt.Bias[i]= float(apd.Bias[i])/nticks*4 -2;
+				}
+
+				break;
+			}
+			default:
+				nlstop;
+		}
+	}
 	// Ok, done.
 }
 
@@ -1342,6 +1366,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 // ***************************************************************************
 void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time, bool skined, bool errorInDialog, Interface& ip)
 {
+	
 	Modifier *pMorphMod = getModifier (&node, MAX_MORPHER_CLASS_ID);
 
 	if (pMorphMod == NULL)
@@ -1350,6 +1375,20 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 	uint32 i, j;
 
 	uint32 nNbVertVB = 0;
+
+	bool wantTangentSpace = buildMesh.MeshVertexProgram == NULL ? false
+																: buildMesh.MeshVertexProgram->needTangentSpace();
+
+	uint tangentSpaceTexCoord = 0;
+	if (wantTangentSpace)
+	{
+		for (uint k = 0; k < CVertexBuffer::MaxStage; ++k)
+		{
+			if (buildMesh.VertexFlags & (CVertexBuffer::TexCoord0Flag << k)) tangentSpaceTexCoord = k;
+		}
+		nlassert(tangentSpaceTexCoord != 0);
+		nlassert(buildMesh.NumCoords[tangentSpaceTexCoord] == 3);
+	}
 
 	for (i = 0; i < buildMesh.VertLink.size(); ++i)
 		if (buildMesh.VertLink[i].VertVB > nNbVertVB)
@@ -1394,13 +1433,18 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 		bs.Name = pNode->GetName();
 
 		bool bIsDeltaPos = false;
-		bs.deltaPos.resize (nNbVertVB, CVector(0.0f,0.0f,0.0f));
+		bs.deltaPos.resize (nNbVertVB, CVector::Null);
 		bool bIsDeltaNorm = false;
-		bs.deltaNorm.resize (nNbVertVB, CVector(0.0f,0.0f,0.0f));
+		bs.deltaNorm.resize (nNbVertVB, CVector::Null);
 		bool bIsDeltaUV = false;
 		bs.deltaUV.resize (nNbVertVB, CUV(0.0f,0.0f));
 		bool bIsDeltaCol = false;
 		bs.deltaCol.resize (nNbVertVB, CRGBAF(0.0f,0.0f,0.0f,0.0f));
+		bool bIsDeltaTgSpace = false;
+		if (wantTangentSpace)
+		{
+			bs.deltaTgSpace.resize (nNbVertVB, CVector::Null);
+		}
 
 		bs.VertRefs.resize (nNbVertVB, 0xffffffff);
 
@@ -1430,8 +1474,22 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 				bIsDeltaNorm = true;
 			}
 
-			CUV UVRef = buildMesh.Faces[nFace].Corner[nCorner].Uvs[0];
-			CUV UVTar = pMB->Faces[nFace].Corner[nCorner].Uvs[0];
+			if (wantTangentSpace)
+			{
+				CUVW TgSpaceRef = buildMesh.Faces[nFace].Corner[nCorner].Uvws[tangentSpaceTexCoord];
+				CUVW TgSpaceTar = pMB->Faces[nFace].Corner[nCorner].Uvws[tangentSpaceTexCoord];
+				CUVW deltaTS = TgSpaceTar - TgSpaceRef;
+				float normDeltaTS = ::sqrtf(deltaTS.U * deltaTS.U + deltaTS.V * deltaTS.V + deltaTS.W * deltaTS.W);
+				if (normDeltaTS > 0.001f)
+				{
+					bs.deltaTgSpace[iVB].set(deltaTS.U, deltaTS.V, deltaTS.W);
+					bs.VertRefs[iVB] = iVB;
+					bIsDeltaTgSpace = true;
+				}	
+			}
+
+			CUV UVRef = (CUV) buildMesh.Faces[nFace].Corner[nCorner].Uvws[0];
+			CUV UVTar = (CUV) pMB->Faces[nFace].Corner[nCorner].Uvws[0];
 			CUV deltaUV = UVTar - UVRef;
 			if ((deltaUV.U*deltaUV.U + deltaUV.V*deltaUV.V) > 0.0001f)
 			{
@@ -1470,6 +1528,7 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 					bs.deltaNorm[nDstPos]	= bs.deltaNorm[j];
 					bs.deltaUV[nDstPos]		= bs.deltaUV[j];
 					bs.deltaCol[nDstPos]	= bs.deltaCol[j];
+					bs.deltaTgSpace[nDstPos] = bs.deltaTgSpace[j];
 				}
 				++nDstPos;
 			}
@@ -1494,6 +1553,11 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 			bs.deltaCol.resize (nNbVertUsed);
 		else
 			bs.deltaCol.resize (0);
+
+		if (bIsDeltaTgSpace)
+			bs.deltaTgSpace.resize (nNbVertUsed);
+		else
+			bs.deltaTgSpace.resize (0);
 
 		bs.VertRefs.resize (nNbVertUsed);
 
@@ -1888,4 +1952,3 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 		return NULL;
 	}
 }
-

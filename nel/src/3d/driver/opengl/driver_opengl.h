@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.111 2002/02/18 09:37:27 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.112 2002/03/14 18:28:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -386,6 +386,9 @@ public:
 	/// setup the texture matrix for a given number of stages (starting from 0)
 	void      setupUserTextureMatrix(uint numStages, CMaterial& mat);
 
+	/// disable all texture matrix 
+	void      disableUserTextureMatrix();
+
 	/// For objects with caustics, setup the first texture (which actually is the one from the material)
 	/*static inline void		setupCausticsFirstTex(const CMaterial &mat);
 
@@ -524,6 +527,8 @@ public:
 
 	virtual void			enableLight (uint8 num, bool enable=true);
 
+	virtual void			setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float shininess);
+
 	virtual void			setAmbientColor (CRGBA color);
 
 	/// \name Fog support.
@@ -542,6 +547,9 @@ public:
 
 	virtual void setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4]);
 	// @}
+
+	virtual bool supportPerPixelLighting(bool specular) const;
+
 
 
 private:
@@ -685,6 +693,18 @@ private:
 	CVector						_WorldLightPos[MaxLight];			// World position of the lights.
 	CVector						_WorldLightDirection[MaxLight];		// World direction of the lights.
 
+	//\name description of the per pixel light
+	// @{
+		void checkForPerPixelLightingSupport();
+		bool						_SupportPerPixelShader;
+		bool						_SupportPerPixelShaderNoSpec;
+		float						_PPLExponent;
+		NLMISC::CRGBA				_PPLightDiffuseColor;
+		NLMISC::CRGBA				_PPLightSpecularColor;
+	// @}
+
+	
+
 	/// \name Prec settings, for optimisation.
 	// @{
 
@@ -695,6 +715,8 @@ private:
 		TexEnvSpecialSpecularStage0NV4,
 		TexEnvSpecialSpecularStage1NV4,
 		TexEnvSpecialSpecularStage1NoTextNV4,
+		TexEnvSpecialPPLStage0,
+		TexEnvSpecialPPLStage2,
 	};
 
 	// NB: CRefPtr are not used for mem/spped optimisation. setupMaterial() and setupTexture() reset those states.
@@ -729,6 +751,8 @@ private:
 	void					activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
 	// Force Activate Texture Environnement. no caching here. TexEnvSpecial is disabled.
 	void					forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
+	void					activateTexEnvColor(uint stage, NLMISC::CRGBA col);
+	void					forceActivateTexEnvColor(uint stage, NLMISC::CRGBA col);
 	void					forceActivateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
 
 	/// nv texture shaders. Should be used only if this caps is present!
@@ -792,6 +816,34 @@ private:
 	sint			beginSpecularMultiPass(const CMaterial &mat);
 	void			setupSpecularPass(const CMaterial &mat, uint pass);
 	void			endSpecularMultiPass(const CMaterial &mat);
+	// @}
+
+
+	/// \name Per pixel lighting
+	// @{
+	// per pixel lighting with specular
+	sint			beginPPLMultiPass(const CMaterial &mat);
+	void			setupPPLPass(const CMaterial &mat, uint pass);
+	void			endPPLMultiPass(const CMaterial &mat);
+
+	// per pixel lighting, no specular
+	sint			beginPPLNoSpecMultiPass(const CMaterial &mat);
+	void			setupPPLNoSpecPass(const CMaterial &mat, uint pass);
+	void			endPPLNoSpecMultiPass(const CMaterial &mat);
+
+	typedef NLMISC::CSmartPtr<CTextureCube> TSPTextureCube;	
+	typedef std::vector<TSPTextureCube> TTexCubeVect;	
+	TTexCubeVect   _SpecularTextureCubes; // the cube maps used to compute the specular lighting.
+		
+
+	/// get (and if necessary, build) a cube map used for specular lighting. The range for exponent is limited, and only the best fit is used
+	CTextureCube   *getSpecularCubeMap(uint exp);
+
+	// get (and if necessary, build) the cube map used for diffuse lighting
+	CTextureCube   *getDiffuseCubeMap() { return getSpecularCubeMap(1); }
+
+
+
 	// @}
 
 	/// \name Caustics
@@ -872,6 +924,13 @@ private:
 	void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);	
 	void			enableVertexProgramDoubleSidedColor(bool doubleSided);
 	
+	// @}
+
+
+	/// \fallback for material shaders
+	// @{
+		/// test wether the given shader is supported, and gives back a supported shader
+		CMaterial::TShader	getSupportedShader(CMaterial::TShader shader);
 	// @}
 
 	bool			isVertexProgramEnabled () const

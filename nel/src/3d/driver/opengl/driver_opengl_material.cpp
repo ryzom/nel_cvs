@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.58 2002/03/04 10:29:37 lecroart Exp $
+ * $Id: driver_opengl_material.cpp,v 1.59 2002/03/14 18:28:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "stdopengl.h"
+#include "3d/cube_map_builder.h"
+#include "3d/texture_mem.h"
 
 
 namespace NL3D {
@@ -175,6 +177,40 @@ void CDriverGL::setupUserTextureMatrix(uint numStages, CMaterial& mat)
 	}
 }
 
+inline void CDriverGL::disableUserTextureMatrix()
+{ 
+	if (_UserTexMatEnabled != 0)		
+	{
+		glMatrixMode(GL_TEXTURE);		
+		uint k = 0;
+		do
+		{
+			if (_UserTexMatEnabled & (1 << k)) // user matrix for this stage
+			{						
+				_DriverGLStates.activeTextureARB(k);
+				glLoadIdentity();
+				_UserTexMatEnabled &= ~ (1 << k);
+								
+			}			
+			++k;
+		}
+		while (_UserTexMatEnabled != 0);
+		glMatrixMode(GL_MODELVIEW);
+	}
+}
+
+
+// --------------------------------------------------
+CMaterial::TShader	CDriverGL::getSupportedShader(CMaterial::TShader shader)
+{
+	switch (shader)
+	{
+	case CMaterial::PerPixelLighting: return _SupportPerPixelShader ? CMaterial::PerPixelLighting : CMaterial::Normal;
+	case CMaterial::PerPixelLightingNoSpec: return _SupportPerPixelShaderNoSpec ? CMaterial::PerPixelLightingNoSpec : CMaterial::Normal;
+		default: return shader;		
+	}
+}
+
 
 // --------------------------------------------------
 
@@ -191,6 +227,11 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	_NbSetupMaterialCall++;
 
 
+	// Get shader. Fallback to other shader if not supported.
+	CMaterial::TShader matShader = getSupportedShader(mat.getShader());
+
+
+
 	// 0. Setup / Bind Textures.
 	//==========================
 	// Must setup textures each frame. (need to test if touched).
@@ -203,7 +244,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			return(false);
 	}
 	// Here, for Lightmap materials, setup the lightmaps.
-	if(mat.getShader()==CMaterial::LightMap)
+	if(matShader == CMaterial::LightMap)
 	{
 		for(stage=0 ; stage<(sint)mat._LightMaps.size() ; stage++)
 		{
@@ -214,17 +255,18 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	}
 
 	// Here, for caustic shader, setup the lightmaps
-	/*if (mat.getShader() == CMaterial::Caustics)
+	/*if (matShader == CMaterial::Caustics)
 	{
 		if (mat.getTexture(stage))
 	}*/
 	
 
 	// Activate the textures.
-	// Do not do it for Lightmap, because done in multipass in a very special fashion.
+	// Do not do it for Lightmap and per pixel lighting , because done in multipass in a very special fashion.
 	// This avoid the useless multiple change of texture states per lightmapped object.
-	if(mat.getShader() != CMaterial::LightMap
-		/* && mat.getShader() != CMaterial::Caustics	*/
+	if(matShader != CMaterial::LightMap
+		&& matShader != CMaterial::PerPixelLighting
+		/* && matShader != CMaterial::Caustics	*/
 	   )
 	{
 		for(stage=0 ; stage<getNbTextureStages() ; stage++)
@@ -384,14 +426,15 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		}
 		
 		
-		if (mat.getShader() == CMaterial::Normal)
+		if (_Extensions.NVTextureShader)
 		{
-			// Texture addressing modes (support only via NVTextureShader for now)
-			//===================================================================				
-			if (_Extensions.NVTextureShader)
+			if (matShader == CMaterial::Normal)
 			{
+				// Texture addressing modes (support only via NVTextureShader for now)
+				//===================================================================				
+				
 				if ( // supported only with normal shader
-					mat.getShader() == CMaterial::Normal 
+					matShader == CMaterial::Normal 
 					&& (mat.getFlags() & IDRV_MAT_TEX_ADDR)
 				   )
 				{		
@@ -416,7 +459,11 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				else
 				{
 					enableNVTextureShader(false);
-				}
+				}				
+			}
+			else 
+			{
+				enableNVTextureShader(false);
 			}
 		}
 
@@ -424,11 +471,15 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	}
 
 
-	if (mat.getShader() == CMaterial::Normal)
+	if (matShader == CMaterial::Normal)
 	{
 		// Textures user matrix
 		//=====================================
 		setupUserTextureMatrix((uint) getNbTextureStages(), mat);		
+	}
+	else // deactivate texture matrix
+	{
+		disableUserTextureMatrix();
 	}
 
 	return true;
@@ -438,13 +489,20 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 // ***************************************************************************
 sint			CDriverGL::beginMultiPass(const CMaterial &mat)
 {
+	// Get shader. Fallback to other shader if not supported.
+	CMaterial::TShader matShader = getSupportedShader(mat.getShader());
+
 	// Depending on material type and hardware, return number of pass required to draw this material.
-	switch(mat.getShader())
+	switch(matShader)
 	{
 	case CMaterial::LightMap: 
 		return  beginLightMapMultiPass(mat);
 	case CMaterial::Specular: 
 		return  beginSpecularMultiPass(mat);
+	case CMaterial::PerPixelLighting:
+		return  beginPPLMultiPass(mat);
+	case CMaterial::PerPixelLightingNoSpec:
+		return  beginPPLNoSpecMultiPass(mat);
 	/* case CMaterial::Caustics:
 		return  beginCausticsMultiPass(mat); */
 
@@ -455,13 +513,22 @@ sint			CDriverGL::beginMultiPass(const CMaterial &mat)
 // ***************************************************************************
 void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
 {
-	switch(mat.getShader())
+	// Get shader. Fallback to other shader if not supported.
+	CMaterial::TShader matShader = getSupportedShader(mat.getShader());
+
+	switch(matShader)
 	{
 	case CMaterial::LightMap: 
 		setupLightMapPass(mat, pass);
 		break;
 	case CMaterial::Specular: 
 		setupSpecularPass(mat, pass);
+		break;
+	case CMaterial::PerPixelLighting:
+		setupPPLPass(mat, pass);
+		break;
+	case CMaterial::PerPixelLightingNoSpec:
+		setupPPLNoSpecPass(mat, pass);
 		break;
 	/* case CMaterial::Caustics:
 		case CMaterial::Caustics:
@@ -476,13 +543,22 @@ void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
 // ***************************************************************************
 void			CDriverGL::endMultiPass(const CMaterial &mat)
 {
-	switch(mat.getShader())
+	// Get shader. Fallback to other shader if not supported.
+	CMaterial::TShader matShader = getSupportedShader(mat.getShader());
+
+	switch(matShader)
 	{
 	case CMaterial::LightMap: 
 		endLightMapMultiPass(mat);
 		break;
 	case CMaterial::Specular: 
 		endSpecularMultiPass(mat);
+		break;
+	case CMaterial::PerPixelLighting:
+		endPPLMultiPass(mat);
+		break;
+	case CMaterial::PerPixelLightingNoSpec:
+		endPPLNoSpecMultiPass(mat);
 		break;
 	/* case CMaterial::Caustics:
 		endCausticsMultiPass(mat);
@@ -967,6 +1043,326 @@ void			CDriverGL::endSpecularMultiPass(const CMaterial &mat)
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
 }
+
+
+// a functor that can is used to generate a cube map used for specular / diffuse lighting
+struct CSpecCubeMapFunctor : ICubeMapFunctor
+{
+	CSpecCubeMapFunctor(float exp) : Exp(exp) {}
+	virtual NLMISC::CRGBA operator()(const NLMISC::CVector &v)
+	{
+		uint8 intensity = (uint8) (255.f * ::powf(std::max(v.normed().z, 0.f), Exp));
+		return NLMISC::CRGBA(intensity, intensity, intensity, intensity);
+	}
+	float Exp;
+};
+
+
+/* /// parameters for specular cube map generation
+const uint MaxSpecularExp = 64;
+const uint SpecularExpStep = 8;
+const uint SpecularMapSize = 32; */
+
+
+// ***************************************************************************
+inline CTextureCube   *CDriverGL::getSpecularCubeMap(uint exp)
+{
+	const uint SpecularMapSize = 32;
+	const uint SpecularMapSizeHighExponent = 64;
+	const float HighExponent = 128.f;
+	const uint MaxExponent = 512;
+	// this gives the cube map to use given an exponent (from 0 to 128)
+	static uint16 expToCubeMap[MaxExponent];	
+	// this gives the exponent used by a given cube map (not necessarily ordered)
+	static float cubeMapExp[] = 
+	{
+		1.f, 4.f, 8.f, 24.f, 48.f, 128.f, 256.f, 511.f
+	};
+	const uint numCubeMap = sizeof(expToCubeMap) / sizeof(float);
+	static bool tableBuilt = false;
+
+	if (!tableBuilt)
+	{
+		for (uint k = 0; k < MaxExponent; ++k)
+		{			
+			uint nearest = 0;
+			float diff = (float) MaxExponent;
+			// look for the nearest exponent
+			for (uint l = 0; l < numCubeMap; ++l)
+			{
+				float newDiff = ::fabsf(k - cubeMapExp[l]);
+				if (newDiff < diff)
+				{
+					diff = newDiff;
+					nearest = l;
+				}
+			}
+			expToCubeMap[k] = nearest;
+		}
+		tableBuilt = true;		
+	}
+
+	if (_SpecularTextureCubes.empty())
+	{
+		_SpecularTextureCubes.resize(MaxExponent);
+	}
+
+		
+	NLMISC::clamp(exp, 1u, (MaxExponent - 1));
+
+
+	uint cubeMapIndex = expToCubeMap[(uint) exp];
+	nlassert(cubeMapIndex < numCubeMap);	
+	
+	
+	if (_SpecularTextureCubes[cubeMapIndex] != NULL) // has the cube map already been cted ?
+	{ 
+		return _SpecularTextureCubes[cubeMapIndex]; 
+	}
+	else // build the cube map
+	{		
+		float exponent	  = cubeMapExp[cubeMapIndex];
+		CSpecCubeMapFunctor scmf(exponent);
+		const uint bufSize = 128;
+		char name[bufSize];
+		NLMISC::smprintf(name, bufSize, "#SM%d", cubeMapIndex);
+		CTextureCube *tc = BuildCubeMap(exponent >= HighExponent ? SpecularMapSizeHighExponent
+																: SpecularMapSize,
+										scmf,
+										false,
+										name);
+
+		static const CTextureCube::TFace numToFace[] =
+		{ CTextureCube::positive_x,
+		  CTextureCube::negative_x, 
+		  CTextureCube::positive_y, 
+		  CTextureCube::negative_y, 
+		  CTextureCube::positive_z, 
+		  CTextureCube::negative_z 
+		};
+
+		if (exponent != 1.f)
+		{
+			// force 16 bit for specular part, 32 bit if exponent is 1 (diffuse part)
+			for (uint k = 0; k < 6; ++k)
+			{
+				nlassert(tc->getTexture(numToFace[k]));
+				tc->getTexture(numToFace[k])->setUploadFormat(ITexture::RGB565);
+			}
+		}
+
+		_SpecularTextureCubes[cubeMapIndex] = tc;
+		return tc;
+	}
+}
+
+// ***************************************************************************
+sint			CDriverGL::beginPPLMultiPass(const CMaterial &mat)
+{
+	#ifdef NL_DEBUG
+		nlassert(supportPerPixelLighting(true)); // make sure the hardware can do that
+	#endif
+	return 1;
+}
+
+// ***************************************************************************
+void			CDriverGL::setupPPLPass(const CMaterial &mat, uint pass)
+{
+	nlassert(pass == 0);
+
+/*	ITexture *tex0 = getSpecularCubeMap(1);
+	if (tex0) setupTexture(*tex0);
+	activateTexture(0, tex0);
+	
+
+	static CMaterial::CTexEnv	env;
+	env.Env.SrcArg0Alpha = CMaterial::Diffuse;		
+	env.Env.SrcArg1Alpha = CMaterial::Constant;		
+	env.Env.SrcArg0RGB = CMaterial::Diffuse;	
+	env.Env.SrcArg1RGB = CMaterial::Constant;
+	env.Env.OpRGB = CMaterial::Replace;
+	env.Env.OpAlpha = CMaterial::Replace;
+	activateTexEnvMode(0, env);
+
+	return;*/
+
+	ITexture *tex0 = getSpecularCubeMap(1);	
+	if (tex0) setupTexture(*tex0);
+	ITexture *tex2 = getSpecularCubeMap((uint) mat.getShininess());
+	if (tex2) setupTexture(*tex2);
+	if (mat.getTexture(0)) setupTexture(*mat.getTexture(0));
+
+	// tex coord 0 = texture coordinates
+	// tex coord 1 = normal in tangent space
+	// tex coord 2 = half angle vector in tangent space
+
+	activateTexture(0, tex0);
+	activateTexture(1, mat.getTexture(0));
+	activateTexture(2, tex2);
+
+	for (uint k = 3; k < (uint) getNbTextureStages(); ++k)
+	{
+		activateTexture(k, NULL);
+	}
+
+	// setup the tex envs
+
+
+	// Stage 0 is rgb = DiffuseCubeMap * LightColor + DiffuseGouraud * 1 (TODO : EnvCombine3)
+	if(_CurrentTexEnvSpecial[0] != TexEnvSpecialPPLStage0)
+	{
+		// TexEnv is special.
+		_CurrentTexEnvSpecial[0] = TexEnvSpecialPPLStage0;
+		_DriverGLStates.activeTextureARB(0);
+
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+		
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);			
+		// Arg0 = Diffuse read in cube map
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+		// Arg1 = Light color
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+		// Arg2 = Primary color (other light diffuse and 
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PRIMARY_COLOR_EXT);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+		// Arg3 = White (= ~ Black)
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);		
+	}
+	activateTexEnvColor(0, _PPLightDiffuseColor);
+
+	// Stage 1	
+	static CMaterial::CTexEnv	env;
+	env.Env.SrcArg1Alpha = CMaterial::Diffuse;		
+	activateTexEnvMode(1, env);
+
+
+
+	// Stage 2 is rgb = SpecularCubeMap * SpecularLightColor + Prec * 1
+	// alpha = prec alpha
+	
+	if(_CurrentTexEnvSpecial[2] != TexEnvSpecialPPLStage2)
+	{
+		// TexEnv is special.
+		_CurrentTexEnvSpecial[2] = TexEnvSpecialPPLStage2;
+		_DriverGLStates.activeTextureARB(2);
+
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+		
+		//== colors ==
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);			
+		// Arg0 = Specular read in cube map
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+		// Arg1 = Light color
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+		// Arg2 = Primary color (other light diffuse and 
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+		// Arg3 = White (= ~ Black)
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+
+		//== alpha ==
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD);			
+		// Arg0 = PREVIOUS ALPHA
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PREVIOUS_EXT);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_COLOR);
+		// Arg1 = 1
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_ONE_MINUS_SRC_COLOR);
+		// Arg2 = 0
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_COLOR);		
+	}
+	activateTexEnvColor(2, _PPLightSpecularColor);	
+
+}
+
+// ***************************************************************************
+void			CDriverGL::endPPLMultiPass(const CMaterial &mat)
+{	
+	// nothing to do there ...
+}
+
+
+// ******PER PIXEL LIGHTING, NO SPECULAR**************************************
+sint			CDriverGL::beginPPLNoSpecMultiPass(const CMaterial &mat)
+{
+	#ifdef NL_DEBUG
+		nlassert(supportPerPixelLighting(false)); // make sure the hardware can do that
+	#endif
+	return 1;
+}
+
+// ******PER PIXEL LIGHTING, NO SPECULAR**************************************
+void			CDriverGL::setupPPLNoSpecPass(const CMaterial &mat, uint pass)
+{
+	nlassert(pass == 0);
+
+	ITexture *tex0 = getSpecularCubeMap(1);
+	if (tex0) setupTexture(*tex0);
+	
+	if (mat.getTexture(0)) setupTexture(*mat.getTexture(0));
+
+	// tex coord 0 = texture coordinates
+	// tex coord 1 = normal in tangent space	
+
+	activateTexture(0, tex0);
+	activateTexture(1, mat.getTexture(0));
+
+
+	for (uint k = 2; k < (uint) getNbTextureStages(); ++k)
+	{
+		activateTexture(k, NULL);
+	}
+
+	// setup the tex envs
+
+
+	// Stage 0 is rgb = DiffuseCubeMap * LightColor + DiffuseGouraud * 1 (TODO : EnvCombine3)
+	if(_CurrentTexEnvSpecial[0] != TexEnvSpecialPPLStage0)
+	{
+		// TexEnv is special.
+		_CurrentTexEnvSpecial[0] = TexEnvSpecialPPLStage0;
+		_DriverGLStates.activeTextureARB(0);
+
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+		
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD);			
+		// Arg0 = Diffuse read in cube map alpha
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+		// Arg1 = Light color
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+		// Arg2 = Primary color (other light diffuse and 
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PRIMARY_COLOR_EXT);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+		// Arg3 = White (= ~ Black)
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);		
+	}
+	activateTexEnvColor(0, _PPLightDiffuseColor);
+
+	// Stage 1	
+	static CMaterial::CTexEnv	env;
+	env.Env.SrcArg1Alpha = CMaterial::Diffuse;		
+	activateTexEnvMode(1, env);
+
+}
+
+// ******PER PIXEL LIGHTING, NO SPECULAR**************************************
+void			CDriverGL::endPPLNoSpecMultiPass(const CMaterial &mat)
+{	
+	// nothing to do there ...
+}
+
+
+
 
 // ***************************************************************************
 /* sint		CDriverGL::beginCausticsMultiPass(const CMaterial &mat)

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.47 2002/03/13 16:59:59 berenguier Exp $
+ * $Id: export_nel.h,v 1.48 2002/03/14 18:23:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/mesh.h"
+#include "3d/material.h"
+#include "3d/mesh_vertex_program.h"
 #include <3d/key.h>
 #include <3d/track_keyframer.h>
 #include <3d/bone.h>
@@ -286,7 +288,7 @@ public:
 												INode& ZeNode, 
 												Interface& ip, TimeValue tvTime, bool absolutePath,
 												CExportNelOptions& structExport);
-
+	
 
 	// *********************
 	// *** Export animation
@@ -723,6 +725,25 @@ private:
 
 	// Build a NeL texture corresponding with a max Texmap.
 	static NL3D::ITexture*			buildATexture (Texmap& texmap, CMaterialDesc& remap3dsTexChannel, TimeValue time, bool absolutePath, bool forceCubic=false);
+
+public:
+	 /** Return true if a mesh has a material whose shader requires a specific vertex shader to work (for example, per-pixel lighting).
+	   * This also stores the result in shader
+	   */
+	 static bool					hasMaterialWithShaderForVP(INode &node, TimeValue time, NL3D::CMaterial::TShader &shader);
+
+	/// Test wether the given material need a specific vertex program to work correctly
+	 static	bool                      needVP(Mtl &mat, TimeValue time, NL3D::CMaterial::TShader &shader);
+private:
+
+	/** Build a mesh vertex program associated with the given shader
+	  * For now there can be only one vertex program per mesh, so you must specify the shader this v.p must be built for.
+	  * The meshBuild may be modfied by this operation (to add tangent space infos for example)
+	  * \return The vertex program or NULL if the op failed, or if there's no need for a v.p.
+	  */
+	 static NL3D::IMeshVertexProgram           *buildMeshMaterialShaderVP(NL3D::CMaterial::TShader shader, NL3D::CMesh::CMeshBuild *mb);
+
+	/// Test wether a material need a vertex program
 
 	// *********************
 	// *** Export Animation

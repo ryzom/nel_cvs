@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.29 2002/02/27 10:45:07 corvazier Exp $
+ * $Id: export_material.cpp,v 1.30 2002/03/14 18:23:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include <3d/texture_file.h>
 #include <3d/texture_multi_file.h>
 #include <3d/texture_cube.h>
+#include <3d/tangent_space_build.h>
+#include <3d/meshvp_per_pixel_light.h>
 
 #include <vector>
 #include <string>
@@ -52,6 +54,9 @@ using namespace std;
 #define SHADER_LIGHTMAP 4
 #define SHADER_SPECULAR 5
 #define SHADER_WATER 6
+#define SHADER_PER_PIXEL_LIGHTING 7
+#define SHADER_PER_PIXEL_LIGHTING_NO_SPEC 8
+
 
 
 #define NEL_BITMAP_TEXTURE_CLASS_ID_A 0x5a8003f9
@@ -73,6 +78,85 @@ bool CExportNel::hasWaterMaterial(INode& node, TimeValue time)
 	return bWater != 0;
 }
 
+
+
+///===================================================================================================
+bool				CExportNel::hasMaterialWithShaderForVP(INode &node, TimeValue time, NL3D::CMaterial::TShader &shader)
+{
+	// Get primary material pointer of the node
+	Mtl* pNodeMat = node.GetMtl();
+	// If NULL, no material at all at this node
+	if (pNodeMat == NULL) return false;
+	return CExportNel::needVP(*pNodeMat, time, shader);
+}
+
+///===================================================================================================
+bool                CExportNel::needVP(Mtl &mat, TimeValue time, NL3D::CMaterial::TShader &shader)
+{
+	if (mat.NumSubMtls() != 0) // look at sub materials
+	{
+		for (uint k = 0; k < (uint) mat.NumSubMtls(); ++k)
+		{
+			if (CExportNel::needVP(*(mat.GetSubMtl(k)), time, shader)) return true;
+		}
+		return false;
+	}
+
+	int shaderType = 0; // false
+	CExportNel::getValueByNameUsingParamBlock2 (mat, "iShaderType", (ParamType2)TYPE_INT, &shaderType, time);
+	switch (shaderType)
+	{
+		case 7:	// per pixel lighting (shader 7) need a specific VP					
+			shader = CMaterial::PerPixelLighting;
+			return true;
+		break;
+		case 8:	// per pixel lighting, no specular
+			shader = CMaterial::PerPixelLightingNoSpec;
+			return true;
+		break;
+		default:
+			return false;
+		break;
+	}
+}
+
+///===================================================================================================
+/// Build a per-pixel vertex program
+static NL3D::CMeshVPPerPixelLight *BuildPerPixelLightingVP(NL3D::CMesh::CMeshBuild *mb, bool wantSpecular)
+{
+	// We need at least one texture set to be able to build the tangent space information.
+	// In this version, we support only one texture coordinate for the input. If there are more the result is undefined.
+	NL3D::CMesh::CMeshBuild otherMb;
+	if (NL3D::BuildTangentSpace(otherMb, *mb)) // build succesful ?
+	{
+		*mb = otherMb;
+		CMeshVPPerPixelLight *vp = new CMeshVPPerPixelLight;
+		vp->SpecularLighting = wantSpecular;
+		return vp;
+	}
+	else
+	{
+		return NULL;
+	}
+
+	return NULL;
+}
+
+///===================================================================================================
+IMeshVertexProgram           *CExportNel::buildMeshMaterialShaderVP(NL3D::CMaterial::TShader shader, NL3D::CMesh::CMeshBuild *mb)
+{
+	nlassert(shader < CMaterial::shaderCount);
+	switch (shader)
+	{
+		case CMaterial::PerPixelLighting:
+			return BuildPerPixelLightingVP(mb, true /* with specular */);
+		break;
+		case CMaterial::PerPixelLightingNoSpec:
+			return BuildPerPixelLightingVP(mb, false /* no spec */);
+		break;
+		default: return NULL; // no need for a vp
+	}	
+}
 
 // Build an array of NeL material corresponding with max material at this node. Return the number of material exported.
 // Fill an array to remap the 3ds vertexMap channels for each materials. maxBaseBuild.RemapChannel.size() must be == to materials.size(). 
@@ -204,10 +288,15 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		case SHADER_USER_COLOR:
 		case SHADER_LIGHTMAP:
 		case SHADER_SPECULAR:
+		case SHADER_PER_PIXEL_LIGHTING:
+		case SHADER_PER_PIXEL_LIGHTING_NO_SPEC:
 			material.setShader ((CMaterial::TShader)(iShaderType-1));
-			break;
+			break;		
 		case SHADER_WATER:
 			material.setShader (CMaterial::Normal);
+			break;
+		default:
+			nlassert(0);
 			break;
 		}
 
@@ -350,6 +439,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		// Get specular level
 		float shininess;
 		CExportNel::getValueByNameUsingParamBlock2 (mtl, "specularLevel", (ParamType2)TYPE_PCNT_FRAC, &shininess, time);
+		clamp(shininess, 0.f, 1.f);
 		CRGBAF fColor = nelSpecular;
 		fColor *= shininess;
 		nelSpecular = fColor;

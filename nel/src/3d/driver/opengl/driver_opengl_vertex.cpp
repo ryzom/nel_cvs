@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.22 2002/02/20 18:07:42 lecroart Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.23 2002/03/14 18:28:20 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -676,11 +676,16 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 	_DriverGLStates.clientActiveTextureARB(stage);
 	if (VB.VertexFormat & (CVertexBuffer::TexCoord0Flag<<uvId))
 	{
-		// Check type
-		nlassert (VB.Type[CVertexBuffer::TexCoord0+uvId]==CVertexBuffer::Float2);
-
-		_DriverGLStates.enableTexCoordArray(true);
-		glTexCoordPointer(2,GL_FLOAT,VB.VertexSize,VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
+		// Check type, if not supported, just ignore
+		if (VB.Type[CVertexBuffer::TexCoord0+uvId]==CVertexBuffer::Float2)
+		{
+			_DriverGLStates.enableTexCoordArray(true);
+			glTexCoordPointer(2,GL_FLOAT,VB.VertexSize,VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
+		}
+		else
+		{
+			_DriverGLStates.enableTexCoordArray(false);
+		}
 	}
 	else
 		_DriverGLStates.enableTexCoordArray(false);

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.32 2002/02/11 10:59:45 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.33 2002/03/14 18:28:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -423,7 +423,7 @@ static bool	setupARBTextureCubeMap(const char	*glext)
 
 // *********************************
 static bool	setupNVVertexProgram(const char	*glext)
-{
+{	
 	if(strstr(glext, "GL_NV_vertex_program")==NULL)
 		return false;
 

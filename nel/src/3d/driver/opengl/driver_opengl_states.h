@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.5 2001/11/07 10:51:18 vizerie Exp $
+ * $Id: driver_opengl_states.h,v 1.6 2001/11/14 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,6 +104,7 @@ public:
 	void			setDiffuse(uint32 packedColor, const GLfloat color[4]);
 	void			setSpecular(uint32 packedColor, const GLfloat color[4]);
 	void			setShininess(float shin);
+	void			setVertexColorLighted(bool enable);
 	// @}
 
 	/// nv texture shaders. Should be used only if this caps is present!
@@ -157,6 +158,7 @@ private:
 	uint32			_CurDiffuse;
 	uint32			_CurSpecular;
 	float			_CurShininess;
+	bool			_VertexColorLighted;
 
 	bool			_TextureCubeMapSupported;
 	uint			_CurrentActiveTextureARB;

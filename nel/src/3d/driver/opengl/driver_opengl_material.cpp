@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.43 2001/11/07 10:50:53 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.44 2001/11/14 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,6 +286,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				_DriverGLStates.setAmbient(packedOne, one);
 				_DriverGLStates.setDiffuse(packedOne, one);
 				_DriverGLStates.setSpecular(packedZero, zero);
+				_DriverGLStates.setVertexColorLighted(false);
 			}
 			else
 			{
@@ -294,6 +295,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				_DriverGLStates.setDiffuse(pShader->PackedDiffuse, pShader->Diffuse);
 				_DriverGLStates.setSpecular(pShader->PackedSpecular, pShader->Specular);
 				_DriverGLStates.setShininess(mat.getShininess());
+				_DriverGLStates.setVertexColorLighted(mat.isLightedVertexColor ());
 			}
 		}
 		else
@@ -301,6 +303,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			// Color unlit part.
 			CRGBA	col= mat.getColor();
 			glColor4ub(col.R, col.G, col.B, col.A);
+			_DriverGLStates.setVertexColorLighted(false);
 		}
 
 			// Texture addressing modes (support only via NVTextureShader for now)

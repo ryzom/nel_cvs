@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.6 2001/10/26 09:59:54 vizerie Exp $
+ * $Id: material.h,v 1.7 2001/11/14 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,7 @@ const uint32 IDRV_MAT_BLEND			=	0x00000080;
 const uint32 IDRV_MAT_DOUBLE_SIDED	=	0x00000100;
 const uint32 IDRV_MAT_ALPHA_TEST	= 	0x00000200;
 const uint32 IDRV_MAT_TEX_ADDR	    = 	0x00000400;
+const uint32 IDRV_MAT_LIGHTED_VERTEX_COLOR	= 	0x00000800;
 
 // ***************************************************************************
 /**
@@ -285,9 +286,14 @@ public:
 	void					setSpecular( CRGBA specular=CRGBA(0,0,0) );
 	/// Set the shininess part ot material. Usefull only if setLighting(true, false) has been done.
 	void					setShininess( float shininess );
+	/// Set the color material flag. Used when the material is lighted. True to use the diffuse color of the material when lighted, false to use the color vertex.
+	void					setLightedVertexColor (bool useLightedVertexColor);
 
 
 	bool					isLighted() const {return (_Flags&IDRV_MAT_LIGHTING)!=0;}
+
+	/// Return true if this material uses color material as diffuse when lighted, else return false if it uses color vertex.
+	bool					isLightedVertexColor () const { return (_Flags&IDRV_MAT_LIGHTED_VERTEX_COLOR)!=0;}
 
 	CRGBA					getColor(void) const { return(_Color); }
 	CRGBA					getEmissive() const { return _Emissive;}

@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.2 2001/07/11 08:24:59 besson Exp $
+ * $Id: driver_material_inline.h,v 1.3 2001/11/14 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,6 +184,15 @@ inline void	CMaterial::setSpecular( CRGBA specular)
 inline void	CMaterial::setShininess( float shininess )
 {
 	_Shininess= shininess;
+	_Touched|=IDRV_TOUCHED_LIGHTING;
+}
+// ***************************************************************************
+inline void	CMaterial::setLightedVertexColor( bool useLightedVertexColor )
+{
+	if (useLightedVertexColor)
+		_Flags |= IDRV_MAT_LIGHTED_VERTEX_COLOR;
+	else
+		_Flags &= ~IDRV_MAT_LIGHTED_VERTEX_COLOR;
 	_Touched|=IDRV_TOUCHED_LIGHTING;
 }
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.6 2001/11/07 17:36:45 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.7 2001/11/14 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -328,6 +328,27 @@ void			CDriverGLStates::setShininess(float shin)
 	{
 		_CurShininess= shin;
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shin);
+	}
+}
+
+// ***************************************************************************
+void			CDriverGLStates::setVertexColorLighted(bool enable)
+{
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if( enable != _VertexColorLighted)
+#endif
+	{
+		_VertexColorLighted= enable;
+
+		if (_VertexColorLighted)
+		{
+			glEnable (GL_COLOR_MATERIAL);
+			glColorMaterial (GL_FRONT_AND_BACK, GL_DIFFUSE);
+		}
+		else
+		{
+			glDisable (GL_COLOR_MATERIAL);
+		}
 	}
 }
 

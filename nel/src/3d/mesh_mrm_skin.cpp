@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.1 2002/03/28 13:18:57 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.2 2002/03/29 17:04:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -189,7 +189,7 @@ public:
 			movss	[edi]vout.x, xmm0
 			shufps	xmm0, xmm0, 33
 			movss	[edi]vout.y, xmm0
-			movlps	xmm0, xmm0
+			movhlps	xmm0, xmm0
 			movss	[edi]vout.z, xmm0
 		}
 	#elif !defined (NL_DebugSSENoSkin)
@@ -231,7 +231,7 @@ public:
 			movss	[edi]vout.x, xmm0
 			shufps	xmm0, xmm0, 33
 			movss	[edi]vout.y, xmm0
-			movlps	xmm0, xmm0
+			movhlps	xmm0, xmm0
 			movss	[edi]vout.z, xmm0
 		}
 	#elif !defined (NL_DebugSSENoSkin)
@@ -377,7 +377,7 @@ public:
 			movss	[edi]vout.x, xmm0
 			shufps	xmm0, xmm0, 33
 			movss	[edi]vout.y, xmm0
-			movlps	xmm0, xmm0
+			movhlps	xmm0, xmm0
 			movss	[edi]vout.z, xmm0
 		}
 	#elif !defined (NL_DebugSSENoSkin)
@@ -427,7 +427,7 @@ public:
 			movss	[edi]vout.x, xmm0
 			shufps	xmm0, xmm0, 33
 			movss	[edi]vout.y, xmm0
-			movlps	xmm0, xmm0
+			movhlps	xmm0, xmm0
 			movss	[edi]vout.z, xmm0
 		}
 	#elif !defined (NL_DebugSSENoSkin)

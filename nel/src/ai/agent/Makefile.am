@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.27 2002/10/07 10:14:40 coutelas Exp $
+# $Id: Makefile.am,v 1.28 2004/01/15 17:34:09 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -30,9 +30,6 @@ libagent_la_SOURCES     = 	actor_script.cpp \
 							message_script.cpp \
 							msg.cpp \
 							msg_action.cpp \
-							msg_connect.cpp \
-							msg_container.cpp \
-							msg_debug.cpp \
 							msg_fact.cpp \
 							msg_getvalue.cpp \
 							msg_goal.cpp \

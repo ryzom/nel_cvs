@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.15 2002/10/07 10:14:40 coutelas Exp $
+# $Id: Makefile.am,v 1.16 2004/01/15 17:34:09 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -16,13 +16,11 @@ libscript_la_SOURCES    =	codage.cpp \
 							constraint_type.cpp \
 							context_debug.cpp \
 							factor_type.cpp \
-							goal_path_class.cpp \
 							hierarchy.cpp \
 							init.cpp \
 							interpret_actor.cpp \
 							interpret_fsm.cpp \
 							interpret_message_action.cpp \
-							interpret_message_connect.cpp \
 							interpret_message_getvalue.cpp \
 							interpret_message_setvalue.cpp \
 							interpret_methodes.cpp \
@@ -39,7 +37,6 @@ libscript_la_SOURCES    =	codage.cpp \
 							opcode_call_lib_method.cpp \
 							opcode_call_method.cpp \
 							opcode_ldb.cpp \
-							opcode_lpt.cpp \
 							opcode_register.cpp \
 							param_container.cpp \
 							script_debug_source.cpp \
@@ -48,6 +45,6 @@ libscript_la_SOURCES    =	codage.cpp \
 							var_control.cpp \
 							yacc.cpp \
 							ytable.cpp
-							
+
 # End of Makefile.am
 

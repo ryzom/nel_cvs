@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.7 2001/06/26 11:59:37 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.8 2001/06/27 16:47:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,10 @@ using namespace NL3D ;
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CParticleDlg dialog
 
@@ -102,13 +106,15 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 
 
 	//////
+	const std::string emptySystemName("private_empty_particle_system.ps") ;
+	CParticleSystem emptyPS ;
+	
+	CParticleSystemShape *pss = new NL3D::CParticleSystemShape ;
+	pss->buildFromPS(emptyPS) ;
+	CNELU::Scene.getShapeBank()->add(emptySystemName, pss) ;
+	
+	_CurrSystemModel = (NL3D::CParticleSystemModel *) CNELU::Scene.createInstance(emptySystemName) ;
 
-	NL3D::IModel *model = CNELU::Scene.createModel(NL3D::ParticleSystemModelId) ;
-
-	nlassert(dynamic_cast<CParticleSystemModel *>(model)) ;
-	_CurrSystemModel = (CParticleSystemModel *) model ;
-	_CurrSystemModel->setParticleSystem(new NL3D::CParticleSystem) ;
-	ParticleTreeCtrl = new CParticleTreeCtrl(this) ;
 
 	_CurrSystemModel->enableDisplayTools() ;
 	_CurrSystemModel->setEllapsedTime(0.f) ;
@@ -117,12 +123,14 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 	_CurrPS->setFontManager(FontManager) ;
 	_CurrPS->setFontGenerator(FontGenerator) ;
 
+	ParticleTreeCtrl = new CParticleTreeCtrl(this) ;
 	StartStopDlg = new CStartStopParticleSystem(this) ;
-	
-	#ifdef NL_DEBUG
 
-//	_CrtSetDbgFlag (_CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF) ;
-	#endif
+
+
+
+
+	
 
 }
 
@@ -143,6 +151,7 @@ CParticleDlg::~CParticleDlg()
 {
 	//NL3D::CNELU::Scene.deleteInstance(_CurrSystemModel) ;
 
+	
 	delete ParticleTreeCtrl ;
 	delete CurrentRightPane ;
 

@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.4 2001/06/25 13:31:32 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.5 2001/06/27 16:47:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@
 namespace NL3D
 {
 	class CParticleSystem ;
-	class CParticleSystemModel ;
+	class CParticleSystemModel ;	
 	class CFontManager ;
 	class CFontGenerator ;
 } ;
@@ -142,7 +142,7 @@ protected:
 	// the current model that holds our system
 	NL3D::CParticleSystemModel *_CurrSystemModel ;
 
-
+	
 
 
 

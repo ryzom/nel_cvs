@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.19 2001/07/13 17:01:14 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.20 2001/07/16 15:34:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <stdlib.h>
 #include "3d/ps_emitter.h"
 #include "3d/material.h"
 #include "nel/misc/line.h"
@@ -630,7 +631,9 @@ void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 	// then we force the direction vect to have the unit size
 
 	static double divRand = (2.f / RAND_MAX) ;
-	CVector dir(float(rand() * divRand - 1), float(rand() * divRand - 1) , float(rand() * divRand - 1) ) ;
+	CVector dir((float) (rand() * divRand - 1)
+				, (float) (rand() * divRand - 1)
+				, (float) (rand() * divRand - 1) ) ;
 	const float n =dir.norm() ;
 
 	dir *= _Radius / n ;
@@ -654,7 +657,7 @@ void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 void CPSSphericalEmitter::emit(uint32 index, CVector &pos, CVector &speed)
 {
 	static double divRand = (2.f / RAND_MAX) ;
-	CVector dir(float(rand() * divRand - 1), float(rand() * divRand - 1) , float(rand() * divRand - 1) ) ;
+	CVector dir((float) (rand() * divRand - 1), (float) (rand() * divRand - 1) , (float) (rand() * divRand - 1) ) ;
 	dir.normalize() ;
 	pos = _Radius[index] * dir ;
 	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed)  * dir ;	

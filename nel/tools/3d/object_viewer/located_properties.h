@@ -1,7 +1,11 @@
 /** \file located_properties.h
- * <File description>
+ * a dialog that allow to tune a located properties. In a aprticle system, a located is an object that has :
+ *  - a position
+ *  - a mass
+ *  - a speed vector
+ *  - a lifetime
  *
- * $Id: located_properties.h,v 1.3 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: located_properties.h,v 1.4 2001/06/25 13:25:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

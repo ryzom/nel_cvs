@@ -1,7 +1,11 @@
 /** \file located_properties.cpp
- * <File description>
+ * a dialog that allow to tune a located properties. In a aprticle system, a located is an object that has :
+ *  - a position
+ *  - a mass
+ *  - a speed vector
+ *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.5 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.6 2001/06/25 13:25:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +73,12 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 
 CLocatedProperties::~CLocatedProperties()
 {
+	_MinLife->DestroyWindow() ;
+	_MaxLife->DestroyWindow() ;
+	_MinMass->DestroyWindow() ;
+	_MaxMass->DestroyWindow() ;
+	_MaxNbParticles->DestroyWindow() ;
+
 	delete _MinLife ;
 	delete _MaxLife ;
 	delete _MinMass ;

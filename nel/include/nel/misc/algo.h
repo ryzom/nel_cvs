@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.9 2003/10/02 17:54:23 berenguier Exp $
+ * $Id: algo.h,v 1.10 2003/10/16 13:08:21 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -172,22 +172,24 @@ void		splitString(const std::string &str, const std::string &separator, std::vec
 
 
 // ***************************************************************************
-/// In a string or ucstring, find a substr and replace it with an other
+/// In a string or ucstring, find a substr and replace it with an other. return true if replaced
 template<class T, class U>
-void		strFindReplace(T &str, const T &strFind, const U &strReplace)
+bool		strFindReplace(T &str, const T &strFind, const U &strReplace)
 {
 	uint	pos= str.find(strFind);
 	if(pos != T::npos)
 	{
 		str.replace(pos, strFind.size(), T(strReplace) );
+		return true;
 	}
+	else return false;
 }
 
 template<class T, class U>
-void		strFindReplace(T &str, const char *strFind, const U &strReplace)
+bool		strFindReplace(T &str, const char *strFind, const U &strReplace)
 {
 	T	tempStr= strFind;
-	strFindReplace(str, tempStr, strReplace);
+	return strFindReplace(str, tempStr, strReplace);
 }
 
 

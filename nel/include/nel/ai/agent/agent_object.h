@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.12 2001/05/22 16:08:01 chafik Exp $
+ * $Id: agent_object.h,v 1.13 2001/05/29 15:18:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,24 +137,26 @@ namespace NLAIAGENT
 
 		
 
-	/*
+	
 	class CPaireType: public IObjetOp
 	{
 	private:		
-		CStringType	_ValueName;
-		IObjectIA *_Value;		
+		IObjectIA *_First;
+		IObjectIA *_Second;
 
 	public:
 		static const NLAIC::CIdentType IdPaireType;
 		
 	public:
-		CPaireType(const CStringType &valueName,const IObjectIA &value): 
-		  _ValueName(valueName),_Value((IObjectIA *)value.clone())
+		CPaireType(IObjectIA *first,IObjectIA *second): 
+		  _First(first),_Second(second)
 		{			
 		}
 
-		CPaireType(const CPaireType &a): _ValueName(a._ValueName),_Value((IObjectIA *)a._Value->clone())
+		CPaireType(const CPaireType &a): _First(a._First),_Second(a._Second)
 		{
+			_First->incRef();
+			_Second->incRef();
 		}				
 
 		virtual const NLAIC::IBasicType *clone() const
@@ -168,59 +170,58 @@ namespace NLAIAGENT
 			return clone();
 		}
 		
-		virtual const NLAIC::CIdentType &getType() const;
+		virtual const NLAIC::CIdentType &getType() const
+		{
+			return IdPaireType;
+		}
 		
 
 		virtual void save(NLMISC::IStream &os)
-		{						
-			_ValueName.save(os);
-			os.serial( (NLAIC::CIdentType &) (_Value->getType()) );
-			_Value->save(os);			
+		{												
 		}
 
 		virtual void load(NLMISC::IStream &is)
-		{						
-			_ValueName.load(is);
-			_Value->release();
-			NLAIC::CIdentTypeAlloc id;
-			is.serial(id);
-			_Value = (IObjectIA *)id.allocClass();
-			_Value->load(is);			
+		{									
 		}
 
-		virtual const CProcessResult &run();
+		virtual const CProcessResult &run()
+		{
+			return IObjectIA::ProcessRun;
+		}
 
-		virtual void getDebugString(char *text) const;		
+		virtual void getDebugString(std::string &text) const
+		{
+			
+		}
 
 		virtual bool isTrue() const
 		{
 			return IObjetOp::isTrue();
 		}
 		
-
-		operator const IObjectIA *() const
+		IObjectIA *first()
 		{
-			return _Value;
+			return _First;
 		}
 
-		operator const CStringType& ()
+		IObjectIA *second()
 		{
-			return _ValueName;
-
+			return _Second;
 		}
+		
 		virtual ~CPaireType()
 		{			
-			_Value->release();
+			_First->release();
+			_Second->release();
 		}	
 
 		virtual bool isEqual(const IBasicObjectIA &a) const
 		{
 			const CPaireType &t = (const CPaireType &)a;
-			if(((IObjectIA &)t._ValueName) == ((IObjectIA &)_ValueName)) return t._Value == _Value;
+			if(((IObjectIA &)t._First) == ((IObjectIA &)_First)) return t._Second == _Second;
 			return false;
 		}
-	};
-	*/
+	};	
 
 	/**	
 	  This class is an iterator for list access.
@@ -232,15 +233,23 @@ namespace NLAIAGENT
 	  * \date 2000
 	*/
 
-	class IBasicIterator
+	class IConstBasicIterator
 	{
 	public:
-		IBasicIterator() {}
+		IConstBasicIterator() {}
 		virtual const IObjetOp* operator ++ (int) = 0;
 		virtual const IObjetOp* operator -- (int) = 0;
 		virtual operator const IObjetOp*() const = 0;		
 		virtual bool isInEnd() const = 0;
 		virtual bool isInBegin() const = 0;
+		virtual ~IConstBasicIterator() {}
+	};
+
+	class IBasicIterator: public IConstBasicIterator
+	{
+	public:
+		IBasicIterator() {}		
+		virtual void erase() = 0;		
 		virtual ~IBasicIterator() {}
 	};
 
@@ -255,11 +264,11 @@ namespace NLAIAGENT
 	class CTemplateIterator: public IBasicIterator
 	{
 	private:
-		typename typeClass::const_iterator _I;
-		const typeClass	&_ListType;
+		typename typeClass::iterator _I;
+		typeClass	&_ListType;
 		
 	public:
-		CTemplateIterator(const typeClass &l):_I(l.begin()),_ListType(l)
+		CTemplateIterator(typeClass &l):_I(l.begin()),_ListType(l)
 		{
 		}
 		virtual ~CTemplateIterator()
@@ -278,19 +287,66 @@ namespace NLAIAGENT
 		virtual operator const IObjetOp *() const
 		{
 			return (const IObjetOp *)*_I;
-		}		
+		}
+		
+		virtual void erase()
+		{
+			typename typeClass::iterator temp = _I;
+			_I++;
+			_ListType.erase(temp);
+		}
 
 		virtual bool isInEnd() const
-		{
-			
-			return _I == _ListType.end();
-		
+		{			
+			return _I == _ListType.end();		
 		}
+
 		virtual bool isInBegin() const
 		{
 			return _I == _ListType.begin();
 		}
 	};
+
+	template<class typeClass>
+	class CConstTemplateIterator: public IConstBasicIterator
+	{
+	private:
+		typename typeClass::const_iterator _I;
+		const typeClass	&_ListType;
+		
+	public:
+		CConstTemplateIterator(const typeClass &l):_I(l.begin()),_ListType(l)
+		{
+		}
+		virtual ~CConstTemplateIterator()
+		{
+		}
+
+		virtual const IObjetOp* operator ++ (int) 
+		{
+			return (const IObjetOp*)*_I++;
+		}
+		virtual const IObjetOp* operator -- (int)
+		{
+			return (const IObjetOp*)*_I--;
+		}
+
+		virtual operator const IObjetOp *() const
+		{
+			return (const IObjetOp *)*_I;
+		}
+				
+		virtual bool isInEnd() const
+		{			
+			return _I == _ListType.end();		
+		}
+
+		virtual bool isInBegin() const
+		{
+			return _I == _ListType.begin();
+		}
+	};
+
 
 	/**
 	  std::list version of IBasicIterator implementation.
@@ -303,12 +359,24 @@ namespace NLAIAGENT
 	class CListIterator: public CTemplateIterator<std::list<const IObjectIA *> >
 	{
 	public:
-		CListIterator(const std::list<const IObjectIA *> &l):
-		  CTemplateIterator<std::list<const IObjectIA *> >(l)
+		CListIterator(std::list<const IObjectIA *> &l): CTemplateIterator<std::list<const IObjectIA *> >(l)
 		  {
 		  }
 
 		virtual ~CListIterator()
+		{
+		}
+
+	};
+
+	class CConstListIterator: public CConstTemplateIterator<std::list<const IObjectIA *> >
+	{
+	public:
+		CConstListIterator(const std::list<const IObjectIA *> &l): CConstTemplateIterator<std::list<const IObjectIA *> >(l)
+		{
+		}
+
+		virtual ~CConstListIterator()
 		{
 		}
 
@@ -324,12 +392,24 @@ namespace NLAIAGENT
 	class CVectorIterator: public CTemplateIterator<std::vector<const IObjectIA *> >
 	{
 	public:
-		CVectorIterator(const std::vector<const IObjectIA *>&l):
-		  CTemplateIterator<std::vector<const IObjectIA *> >(l)
+		CVectorIterator(std::vector<const IObjectIA *>&l): CTemplateIterator<std::vector<const IObjectIA *> >(l)
 		  {
 		  }
 
 		virtual ~CVectorIterator()
+		{
+		}
+
+	};
+
+	class CConstVectorIterator: public CConstTemplateIterator<std::vector<const IObjectIA *> >
+	{
+	public:
+		CConstVectorIterator(const std::vector<const IObjectIA *>&l): CConstTemplateIterator<std::vector<const IObjectIA *> >(l)
+		{
+		}
+
+		virtual ~CConstVectorIterator()
 		{
 		}
 
@@ -343,20 +423,20 @@ namespace NLAIAGENT
 	  * \author Nevrax France
 	  * \date 2000
 	*/
-	class CIteratorContener: public IBasicIterator
+	class CConstIteratorContener: public IConstBasicIterator
 	{
 	protected:
 		IBasicIterator *_I;
 	public:
-		CIteratorContener(const CIteratorContener &i):_I(i._I)
+		CConstIteratorContener(const CConstIteratorContener &i):_I(i._I)
 		{
 		}
 
-		CIteratorContener(IBasicIterator *i):_I(i)
+		CConstIteratorContener(IBasicIterator *i):_I(i)
 		{
 		}
 
-		virtual ~CIteratorContener()
+		virtual ~CConstIteratorContener()
 		{
 			delete _I;
 		}
@@ -370,8 +450,7 @@ namespace NLAIAGENT
 		{
 			const IObjetOp *a = (*_I) --;			
 			return a;
-		}
-
+		}		
 		virtual operator const IObjetOp*() const
 		{
 			return (const IObjetOp *)*_I;
@@ -385,6 +464,28 @@ namespace NLAIAGENT
 		{
 			return _I->isInBegin();
 		}
+	};
+
+	class CIteratorContener: public CConstIteratorContener
+	{	
+	public:
+		CIteratorContener(const CIteratorContener &i):CConstIteratorContener(i._I)
+		{
+		}
+
+		CIteratorContener(IBasicIterator *i):CConstIteratorContener(i)
+		{
+		}
+
+		virtual ~CIteratorContener()
+		{		
+		}
+
+		virtual void erase()
+		{
+			_I->erase();
+		}
+
 	};
 	
 	/**	
@@ -460,7 +561,8 @@ namespace NLAIAGENT
 		///Push an IObjectIA back using the clone method.
 		virtual void cpy(const IObjectIA &o) = 0;
 		///Get an iterator to parse the list.
-		virtual CIteratorContener getIterator() const = 0;
+		virtual CIteratorContener getIterator() = 0;
+		virtual CConstIteratorContener getIterator() const = 0;
 
 		///Pop the back IObjectIA and return it.
 		virtual const IObjectIA *pop() = 0;
@@ -530,9 +632,14 @@ namespace NLAIAGENT
 
 		virtual void set(int,IObjectIA *);
 
-		virtual CIteratorContener getIterator() const
+		virtual CIteratorContener getIterator()
 		{
 			return CIteratorContener(new CListIterator(_List));
+		}
+
+		virtual CConstIteratorContener getIterator() const
+		{
+			return CConstIteratorContener((IBasicIterator *)(new CConstListIterator(_List)));
 		}
 
 //		virtual bool isTrue() const;
@@ -615,9 +722,14 @@ namespace NLAIAGENT
 		IObjetOp *CVectorGroupType::operator ! () const;
 		void push(const IObjectIA *o);
 		void pushFront(const IObjectIA *o);
-		virtual CIteratorContener getIterator() const
+		virtual CIteratorContener getIterator()
 		{
 			return CIteratorContener(new CVectorIterator(_Vector));
+		}
+
+		virtual CConstIteratorContener getIterator() const
+		{
+			return CConstIteratorContener((IBasicIterator *)(new CConstVectorIterator(_Vector)));
 		}
 
 		void setObject(sint32 i,IObjectIA *a)

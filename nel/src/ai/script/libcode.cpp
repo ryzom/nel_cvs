@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.14 2001/05/22 16:08:16 chafik Exp $
+ * $Id: libcode.cpp,v 1.15 2001/05/29 15:18:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,7 +106,7 @@ namespace NLAISCRIPT
 	NLAIAGENT::IObjectIA::CProcessResult CCallPrint::format(const NLAIAGENT::IBaseGroupType *g)
 	{
 		NLAIAGENT::CStringVarName str("");
-		NLAIAGENT::CIteratorContener i = g->getIterator();
+		NLAIAGENT::CConstIteratorContener i = g->getIterator();
 		while(!i.isInEnd())
 		{
 			std::string temp;
@@ -125,7 +125,7 @@ namespace NLAISCRIPT
 	NLAIAGENT::IObjectIA::CProcessResult CCallPrint::printList(const NLAIAGENT::IBaseGroupType *g)
 	{
 		std::string str;		
-		NLAIAGENT::CIteratorContener i = g->getIterator();
+		NLAIAGENT::CConstIteratorContener i = g->getIterator();
 		
 		while(!i.isInEnd())
 		{

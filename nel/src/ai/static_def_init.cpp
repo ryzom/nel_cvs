@@ -80,6 +80,10 @@
 														NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CLocalMailBox(NULL)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
+	
+	const NLAIC::CIdentType CPaireType::IdPaireType("Pair",	NLAIC::CSelfClassFactory(CPaireType(NULL,NULL)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
+																NLAIC::CTypeOfOperator::opEq );
 	const NLAIC::CIdentType CStringType::IdStringType("String",	NLAIC::CSelfClassFactory(CStringType(CStringVarName("XX"))),
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 

@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: agent_timer.h,v 1.6 2001/05/29 15:18:29 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -44,6 +44,7 @@ namespace NLAIAGENT
 
 	public:
 	
+		static bool IsRunning;
 		static NLMISC::CSynchronized<CAgentScript *> *TimerManager;
 		static NLMISC::IThread *TimerManagerRun;
 		static CRunTimer *RunTimer;
@@ -154,6 +155,7 @@ namespace NLAIAGENT
 		TAttach,
 		TSetClock,
 		TGetClock,
+		TAddAttrib,
 		TLastM
 		};
 		
@@ -165,8 +167,9 @@ namespace NLAIAGENT
 	protected:
 
 		int _Clock;
-		IConnectIA *_Call;
-		IMessageBase *_MSG;		
+		std::list<std::pair< IConnectIA *, IMessageBase *> > _Call;
+		/*_Call;
+		_MSG;*/
 		
 	public:
 		CAgentWatchTimer();
@@ -191,9 +194,10 @@ namespace NLAIAGENT
 			_Clock = c;
 		}
 
-		void setAttrib(IConnectIA *,IMessageBase *);
+		void addAttrib(IConnectIA *,IMessageBase *);
 		void attach();
 		void detach();
+		bool detach(IConnectIA *,bool deleteFromConnection = true);
 		void tellBroker();
 
 		virtual IObjectIA::CProcessResult runActivity();
@@ -282,6 +286,12 @@ namespace NLAIAGENT
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;}
 		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 		virtual IObjectIA::CProcessResult sendMessage(IObjectIA *m);
+
+		virtual sint32 getMethodIndexSize() const;		
+		virtual tQueue isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const;
+		virtual	CProcessResult runMethodeMember(sint32 h, sint32 m, IObjectIA *p);
+		virtual	CProcessResult runMethodeMember(sint32 m,IObjectIA *p);		
+
 	public:
 		static void initClass();
 		static void releaseClass();

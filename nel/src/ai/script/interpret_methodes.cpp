@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.16 2001/05/22 16:08:16 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.17 2001/05/29 15:18:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,7 +153,7 @@ namespace NLAISCRIPT
 
 	void CParam::push(const NLAIAGENT::IBaseGroupType &g)
 	{
-		NLAIAGENT::CIteratorContener  i = g.getIterator();
+		NLAIAGENT::CConstIteratorContener  i = g.getIterator();
 
 		while( !i.isInEnd() )
 		{

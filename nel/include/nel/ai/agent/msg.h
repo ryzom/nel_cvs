@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.11 2001/05/22 16:08:01 chafik Exp $
+ * $Id: msg.h,v 1.12 2001/05/29 15:18:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -285,7 +285,7 @@ namespace NLAIAGENT
 		virtual IObjetOp *operator ! () const;
 		virtual void push(const IObjectIA *o);
 		virtual void pushFront(const IObjectIA *o);
-		virtual CIteratorContener getIterator() const
+		virtual CIteratorContener getIterator()
 		{
 			return _Message->getIterator();
 		}

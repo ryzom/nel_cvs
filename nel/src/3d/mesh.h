@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.17 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: mesh.h,v 1.18 2002/03/04 14:55:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -339,6 +339,11 @@ public:
 
 	// @}
 
+	/// Return true if the mesh is skinned, else return false.
+	bool isSkinned () const
+	{
+		return _Skinned;
+	}
 
 // ************************
 private:

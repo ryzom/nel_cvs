@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.13 2003/01/08 15:48:11 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.14 2003/02/06 09:19:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,55 +87,110 @@ const UAudioMixer::TBackgroundFilterFades &CBackgroundSoundManager::getBackgroun
 }
 
 
-void CBackgroundSoundManager::addSound(const std::string &soundName, const std::vector<NLLIGO::CPrimVector> &points, bool isPath)
+void CBackgroundSoundManager::addSound(const std::string &soundName, uint layerId, const std::vector<NLLIGO::CPrimVector> &points, bool isPath)
 {
 	CAudioMixerUser *mixer = CAudioMixerUser::instance();
+	TSoundData	sd;
+
+	sd.SoundName = soundName;
+	sd.Sound = mixer->getSoundId(sd.SoundName);
+	sd.Source = 0;
+
+	// Copy the points
+	sd.Points.resize (points.size ());
+	for (uint i=0; i<points.size (); i++)
+		sd.Points[i] = points[i];
+
+	sd.Selected = false;
+	sd.IsPath = isPath;
+
+	if (sd.Sound != 0)
+	{
+		// the sound is available !
+		// compute bouding box/
+		CVector	vmin(FLT_MAX, FLT_MAX, 0), vmax(-FLT_MAX, -FLT_MAX, 0);
+
+		vector<CVector>::iterator first(sd.Points.begin()), last(sd.Points.end());
+		for (; first != last; ++first)
+		{
+			vmin.x = min(first->x, vmin.x);
+			vmin.y = min(first->y, vmin.y);
+			vmax.x = max(first->x, vmax.x);
+			vmax.y = max(first->y, vmax.y);
+		}
+		sd.MaxBox = vmax;
+		sd.MinBox = vmin;
+
+		// compute the surface without the sound distance
+		sd.Surface = (vmax.x - vmin.x) * (vmax.y - vmin.y);
+
+		// add the eard distance of the sound.
+		float	dist = sd.Sound->getMaxDistance();
+		sd.MaxBox.x += dist;
+		sd.MaxBox.y += dist;
+		sd.MinBox.x -= dist;
+		sd.MinBox.y -= dist;
+
+		sd.MaxDist = dist;
+
+		// store the sound. 
+		// TODO : handle the three layer.
+		_Layers[layerId].push_back(sd);
+	}
+	else
+	{
+		nlwarning ("The sound '%s' can't be loaded", sd.SoundName.c_str());
+	}
+}
+
+void CBackgroundSoundManager::addSound(const std::string &rawSoundName, const std::vector<NLLIGO::CPrimVector> &points, bool isPath)
+{
 	uint layerId = 0;
 	uint n = 0;
 	string name;
 	// count the number of '-' in the string.
-	n = std::count(soundName.begin(), soundName.end(), '-');
+	n = std::count(rawSoundName.begin(), rawSoundName.end(), '-');
 
 	if (n == 2)
 	{
 		// no layer spec, default to layer A
-		uint32 pos1 = soundName.find ("-");
+		uint32 pos1 = rawSoundName.find ("-");
 		if(pos1 == string::npos)
 		{
-			nlwarning ("zone have the malformated name '%s' missing -name-", soundName.c_str());
+			nlwarning ("zone have the malformated name '%s' missing -name-", rawSoundName.c_str());
 			return;
 		}
 		pos1++;
 
-		uint32 pos2 = soundName.find ("-", pos1);
+		uint32 pos2 = rawSoundName.find ("-", pos1);
 		if(pos2 == string::npos)
 		{
-			nlwarning ("zone have the malformated name '%s' missing -name-", soundName.c_str());
+			nlwarning ("zone have the malformated name '%s' missing -name-", rawSoundName.c_str());
 			return;
 		}
 
-		name = soundName.substr(pos1, pos2-pos1);
+		name = rawSoundName.substr(pos1, pos2-pos1);
 	}
 	else if (n == 3)
 	{
 		// layer spec !
-		uint32 pos1 = soundName.find ("-");
-		uint32 pos2 = soundName.find ("-", pos1+1);
+		uint32 pos1 = rawSoundName.find ("-");
+		uint32 pos2 = rawSoundName.find ("-", pos1+1);
 		if(pos1 == string::npos || pos2 == string::npos)
 		{
-			nlwarning ("zone have the malformated name '%s' missing -layerId- or -name-", soundName.c_str());
+			nlwarning ("zone have the malformated name '%s' missing -layerId- or -name-", rawSoundName.c_str());
 			return;
 		}
 		pos1++;
 
-		uint32 pos3 = soundName.find ("-", pos2+1);
+		uint32 pos3 = rawSoundName.find ("-", pos2+1);
 		if(pos3 == string::npos)
 		{
-			nlwarning ("zone have the malformated name '%s' missing -name-", soundName.c_str());
+			nlwarning ("zone have the malformated name '%s' missing -name-", rawSoundName.c_str());
 			return;
 		}
 
-		char id = soundName[pos1];
+		char id = rawSoundName[pos1];
 
 		// check caps
 		if (id < 'a')
@@ -146,15 +201,16 @@ void CBackgroundSoundManager::addSound(const std::string &soundName, const std::
 		NLMISC::clamp(layerId, 0u, BACKGROUND_LAYER-1);
 		pos2++;
 
-		name = soundName.substr(pos2, pos3-pos2);
+		name = rawSoundName.substr(pos2, pos3-pos2);
 	}
 	else
 	{
-		nlwarning ("zone have the malformated name '%s",  soundName.c_str());
+		nlwarning ("zone have the malformated name '%s",  rawSoundName.c_str());
 		return;
 	}
 		
-
+	addSound(name, layerId, points, isPath);
+/*
 	TSoundData	sd;
 
 	sd.SoundName = name;
@@ -206,6 +262,213 @@ void CBackgroundSoundManager::addSound(const std::string &soundName, const std::
 	{
 		nlwarning ("The sound '%s' can't be loaded", sd.SoundName.c_str());
 	}
+*/
+}
+
+
+void CBackgroundSoundManager::loadAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot)
+{
+	std::string className;
+	if(audioRoot.getPropertyByName("class", className))
+	{
+		if (className == "audio")
+		{
+			// ok, it a root of the audio primitives
+			
+			// remember playing state
+			bool oldState = _Playing;
+			unload();
+
+			for (uint i=0; i<audioRoot.getNumChildren(); ++i)
+			{
+				const NLLIGO::IPrimitive *child;
+
+				audioRoot.getChild(child, i);
+
+				if (child->getPropertyByName("class", className))
+				{
+					if (className == "sounds")
+					{
+						loadSoundsFromPrimitives(*child);
+					}
+					else if (className == "sample_banks")
+					{
+						loadSamplesFromPrimitives(*child);
+					}
+					else if (className == "env_fx")
+					{
+						loadEffectsFromPrimitives(*child);
+					}
+				}
+			}
+
+			if (oldState)
+				play();
+		}
+	}
+	else
+	{
+		// try to look in the first child level
+		for (uint i=0; i<audioRoot.getNumChildren(); ++i)
+		{
+			const NLLIGO::IPrimitive *child;
+			audioRoot.getChild(child, i);
+
+			if (child->getPropertyByName("class", className))
+			{
+				if (className == "audio")
+				{
+					// recurse in this node
+					loadAudioFromPrimitives(*child);
+					// don't look any other primitives
+					break;
+				}
+			}
+		}
+	}
+}
+
+void CBackgroundSoundManager::loadSoundsFromPrimitives(const NLLIGO::IPrimitive &soundRoot)
+{
+	std::string className;
+	if (soundRoot.getPropertyByName("class", className))
+	{
+		if (className == "sounds" || className == "sound_folder")
+		{
+			// ok, it sounds or a sounds foilder
+			for (uint i=0; i<soundRoot.getNumChildren(); ++i)
+			{
+				const NLLIGO::IPrimitive *child;
+				std::string primName;
+				soundRoot.getChild(child, i);
+
+
+				if (child->getPropertyByName("class", className))
+				{
+					uint layerId = 0;
+					std::string layerString;
+					if (child->getPropertyByName("layer", layerString))
+					{
+						// extract layer number.
+						if (!layerString.empty())
+						{
+							// TODO : handle special case for weather layer
+							layerId = layerString[layerString.size()-1] - '0';
+						}
+						clamp(layerId, 0u, BACKGROUND_LAYER-1);
+					}
+
+					child->getPropertyByName("name", primName);
+					if (className == "sound_zone")
+					{
+						if(child->getNumVector()>2)
+						{
+							addSound(primName, layerId, static_cast<const CPrimZone*>(child)->VPoints, false);
+						}
+						else
+						{
+							nlwarning ("A background sound patatoid have less than 3 points '%s'", primName.c_str());
+						}
+					}
+					else if (className == "sound_path")
+					{
+						if(child->getNumVector() > 1)
+						{
+							addSound(primName, layerId, static_cast<const CPrimPath*>(child)->VPoints, true);
+						}
+						else
+						{
+							nlwarning ("A background sound path have less than 2 points '%s'", primName.c_str());
+						}
+					}
+					else if (className == "sound_point")
+					{
+						std::vector<NLLIGO::CPrimVector>	points;
+						points.push_back(static_cast<const CPrimPoint*>(child)->Point);
+
+						addSound(primName, layerId, points, false);
+					}
+					else if (className == "sound_folder")
+					{
+						loadSoundsFromPrimitives(*child);
+					}
+				}
+			}
+		}
+	}
+}
+
+void CBackgroundSoundManager::loadSamplesFromPrimitives(const NLLIGO::IPrimitive &sampleRoot)
+{
+	std::string className;
+	if (sampleRoot.getPropertyByName("class", className))
+	{
+		if (className == "sample_banks")
+		{
+			for (uint i=0; i<sampleRoot.getNumChildren(); ++i)
+			{
+				const NLLIGO::IPrimitive *child;
+				std::string primName;
+				sampleRoot.getChild(child, i);
+
+				if (child->getPropertyByName("class", className))
+				{
+					child->getPropertyByName("name", primName);
+					if (className == "sample_bank_zone")
+					{
+						const std::vector<std::string> *names;
+						if (child->getPropertyByName("bank_names", names))
+						{
+							addSampleBank(*names, static_cast<const CPrimZone*>(child)->VPoints);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void CBackgroundSoundManager::loadEffectsFromPrimitives(const NLLIGO::IPrimitive &fxRoot)
+{
+	std::string className;
+	if (fxRoot.getPropertyByName("class", className))
+	{
+		if (className == "env_fx")
+		{
+			// TODO : load the env zone
+		}
+	}
+}
+
+
+void CBackgroundSoundManager::addSampleBank(const std::vector<std::string> &bankNames, const std::vector<CPrimVector> &points)
+{
+	TBanksData	bd;
+//	uint pointCount = points.size ();
+	bd.Points.resize (points.size());
+	for (uint j=0; j<points.size(); j++)
+	{
+		bd.Points[j] = points[j];
+	}
+
+	// compute bouding box.
+	CVector	vmin(FLT_MAX, FLT_MAX, 0), vmax(-FLT_MAX, -FLT_MAX, 0);
+
+	vector<CVector>::iterator first(bd.Points.begin()), last(bd.Points.end());
+	for (; first != last; ++first)
+	{
+		vmin.x = min(first->x, vmin.x);
+		vmin.y = min(first->y, vmin.y);
+		vmax.x = max(first->x, vmax.x);
+		vmax.y = max(first->y, vmax.y);
+	}
+	bd.MaxBox = vmax;
+	bd.MinBox = vmin;
+
+	bd.Banks = bankNames;
+
+	// ok, store it in the container.
+	_Banks.push_back(bd);
 }
 
 
@@ -217,40 +480,18 @@ void CBackgroundSoundManager::loadSamplesFromRegion(const NLLIGO::CPrimRegion &r
 	{
 		if (region.VZones[i].VPoints.size() > 2)
 		{
-			TBanksData	bd;
-			uint pointCount = region.VZones[i].VPoints.size ();
-			bd.Points.resize (pointCount);
-			for (uint j=0; j<pointCount; j++)
-			{
-				bd.Points[j] = region.VZones[i].VPoints[j];
-			}
-
-			// compute bouding box.
-			CVector	vmin(FLT_MAX, FLT_MAX, 0), vmax(-FLT_MAX, -FLT_MAX, 0);
-
-			vector<CVector>::iterator first(bd.Points.begin()), last(bd.Points.end());
-			for (; first != last; ++first)
-			{
-				vmin.x = min(first->x, vmin.x);
-				vmin.y = min(first->y, vmin.y);
-				vmax.x = max(first->x, vmax.x);
-				vmax.y = max(first->y, vmax.y);
-			}
-			bd.MaxBox = vmax;
-			bd.MinBox = vmin;
-
 			// parse the zone name to find the samples name.
 			std::vector<std::string>	splitted = split(region.VZones[i].Name, '-');
+			std::vector<std::string>	bankNames;
 
 			if (splitted.size() > 2)
 			{
 				for (uint j=1; j<splitted.size()-1; ++j)
 				{
-					bd.Banks.push_back(splitted[j]);
+					bankNames.push_back(splitted[j]);
 				}
 
-				// ok, store it in the container.
-				_Banks.push_back(bd);
+				addSampleBank(bankNames, region.VZones[i].VPoints);
 			}
 			else
 			{
@@ -314,6 +555,38 @@ void CBackgroundSoundManager::loadSoundsFromRegion(const CPrimRegion &region)
 
 void CBackgroundSoundManager::load (const string &continent)
 {
+	// First, try to load from a .primitive file (contain everythink)
+	{
+		CIFile file;
+//		CPrimRegion region;
+		CPrimitives primitives;
+		string fn = continent+"_audio.primitive";
+
+		nlinfo ("loading '%s'", fn.c_str());
+
+		string path = CPath::lookup(fn, false);
+
+		if(!path.empty() && file.open (path))
+		{
+			CIXml xml;
+			xml.init (file);
+
+			primitives.read(xml.getRootNode(), fn.c_str());
+//			region.serial(xml);
+			file.close ();
+
+			loadAudioFromPrimitives(*primitives.RootNode);
+
+			////////////////////////////////////////////////
+			// Jobs done !
+			return;
+		}
+
+	}
+
+	// We reach this only if the new .primitive file format is not found
+	// then, we try to load separate .prim file for sound, samples and fx
+
 	// load the sound.
 	{
 		CIFile file;
@@ -448,6 +721,11 @@ void CBackgroundSoundManager::unload ()
 		// and free the layer.
 		_Layers[i].clear();
 	}
+
+	// erase the sample banks zone
+	_Banks.clear();
+
+	// TODO : erase the fx zones
 }
 
 void CBackgroundSoundManager::setListenerPosition (const CVector &listenerPosition)

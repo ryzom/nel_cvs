@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.5 2003/01/08 15:48:11 boucher Exp $
+ * $Id: background_sound_manager.h,v 1.6 2003/02/06 09:19:02 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -47,7 +47,7 @@ class IBoundingShape;
 class CSourceCommon;
 
 /// Number of background layer. Layer are identified in .prim by a letter starting from 'a' (for layer 0)
-const uint32	BACKGROUND_LAYER = 3;	// 3 layer
+const uint32	BACKGROUND_LAYER = 5;	// 3 layer
 
 
 /**
@@ -79,19 +79,27 @@ class CBackgroundSoundManager : CAudioMixerUser::IMixerUpdate
 {
 public:
 	/** Load the background sounds from a CPrimRegion class.
+	 *	deprecated
 	 */
 	void		loadSoundsFromRegion(const NLLIGO::CPrimRegion &region);
 	/** Load the effects from a CPrimRegion class.
+	 *	deprecated
 	 */
 	void		loadEffecsFromRegion(const NLLIGO::CPrimRegion &region);
 	/** Load the samples banks from a CPrimRegion class.
+	 *	deprecated
 	 */
 	void		loadSamplesFromRegion(const NLLIGO::CPrimRegion &region);
+	/** Load the sounds, effects and sample banks from a region class.
+	*/
+	void		loadAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot);
 
 	/** Load background sound for a continent. It'll automatically unload the old continent before loading the new one.
 	 * This method load the 'audio' regions (specifying the sounds), the 'effect' regions and the 'sample' regions.
 	 * Continent is for example "matis" or "fyros". It'll add .prim to the continent name and lookup() to find zones.
 	 * So, don't forget to add sound .prim in the CPath system for the lookup
+	 * With the new primitive file, this method will try to load the .primitive file before
+	 * attempting to load any .prim file. If the .primitive is found, then no .prim are loaded.
 	 */
 	void		load (const std::string &continent);
 
@@ -142,8 +150,18 @@ private:
 	/// Destructor
 	virtual					~CBackgroundSoundManager();
 
-	/// Internal use only for loading.
-	void addSound(const std::string &soundName, const std::vector<NLLIGO::CPrimVector> &points, bool isPath);
+	/** Load the sounds from primitive */
+	void		loadSoundsFromPrimitives(const NLLIGO::IPrimitive &soundRoot);
+	/** Load the sample banks from primitive */
+	void		loadSamplesFromPrimitives(const NLLIGO::IPrimitive &sampleRoot);
+	/** Load the sounds from primitive */
+	void		loadEffectsFromPrimitives(const NLLIGO::IPrimitive &fxRoot);
+	// add a sound in a layer
+	void addSound(const std::string &soundName, uint layerId, const std::vector<NLLIGO::CPrimVector> &points, bool isPath);
+	/// deprecated, Internal use only for loading.
+	void addSound(const std::string &rawSoundName, const std::vector<NLLIGO::CPrimVector> &points, bool isPath);
+	/// add a sample bank zone
+	void addSampleBank(const std::vector<std::string> &bankNames, const std::vector<NLLIGO::CPrimVector> &points);
 
 	/// TODO : Utility... should be in NLMISC ?
 	template <class CharType>

@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.21 2004/06/09 14:54:35 boucher Exp $
+ * $Id: clustered_sound.cpp,v 1.21.4.1 2004/09/10 14:15:58 puzin Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -368,7 +368,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 					NLMISC::TStringId soundName = it2->second;
 					CClusterSound cs;
 
-					nldebug("Found the sound [%s] for sound group [%s]", CStringMapper::unmap(soundName).c_str(), CStringMapper::unmap(soundGroup).c_str());
+//					nldebug("Found the sound [%s] for sound group [%s]", CStringMapper::unmap(soundName).c_str(), CStringMapper::unmap(soundGroup).c_str());
 					
 					cs.Distance = css.Dist;
 					cs.Source = CAudioMixerUser::instance()->createSource(soundName, false, NULL, NULL, cluster);

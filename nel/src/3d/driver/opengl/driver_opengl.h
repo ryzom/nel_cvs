@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.65 2001/05/30 16:40:53 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.66 2001/05/31 10:05:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,7 +164,7 @@ public:
 
 	virtual bool			activate();
 
-	virtual	sint			getNbTextureStages() {return _Extensions.NbTextureStages;}
+	virtual	sint			getNbTextureStages() const {return _Extensions.NbTextureStages;}
 
 	virtual bool			isTextureExist(const ITexture&tex);
 
@@ -430,8 +430,16 @@ private:
 
 
 	/// setup a texture stage with an UV from VB.
-	void		setupUVPtr(uint stage, CVertexBuffer &VB, uint uvId);
+	void			setupUVPtr(uint stage, CVertexBuffer &VB, uint uvId);
 
+
+	/// \name Lightmap.
+	// @{
+	void			computeLightMapInfos(const CMaterial &mat, uint &nLMaps, uint &nLMapPerPass, uint &nPass) const;
+	sint			beginLightMapMultiPass(const CMaterial &mat);
+	void			setupLightMapPass(const CMaterial &mat, uint pass);
+	void			endLightMapMultiPass(const CMaterial &mat);
+	// @}
 };
 
 } // NL3D

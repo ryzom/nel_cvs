@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.26 2001/05/30 16:40:53 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.27 2001/05/31 10:05:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,113 +264,194 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 sint			CDriverGL::beginMultiPass(const CMaterial &mat)
 {
 	// Depending on material type and hardware, return number of pass required to draw this material.
-	if(mat.getShader()==CMaterial::LightMap)
+	switch(mat.getShader())
 	{
-		uint	nLMaps= mat._LightMaps.size();
-		// One texture stage hardware not supported.
-		if(getNbTextureStages()<2)
-			return 1;
-		uint	nLMapPerPass= getNbTextureStages()-1;
-		uint	nPass= (nLMaps+nLMapPerPass-1)/(nLMapPerPass);
+	case CMaterial::LightMap: 
+		return  beginLightMapMultiPass(mat);
 
-		// Manage too if no lightmaps.
-		nPass= std::max(nPass, (uint)1);
-		return	nPass;
+	// All others materials require just 1 pass.
+	default: return 1;
 	}
-	else
-		// All others materials require just 1 pass.
-		return 1;
 }
 // ***************************************************************************
 void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
 {
-	if(mat.getShader()==CMaterial::LightMap)
+	switch(mat.getShader())
 	{
-		// compute Lightmaps infos.
-		//=========================
-		uint	nLMaps= mat._LightMaps.size();
-		// One texture stage hardware not supported.
-		if(getNbTextureStages()<2)
-			return;
-		uint	nLMapPerPass= getNbTextureStages()-1;
-		uint	nPass= (nLMaps+nLMapPerPass-1)/(nLMapPerPass);
+	case CMaterial::LightMap: 
+		setupLightMapPass(mat, pass);
 
-		// No lightmap??, just setup "replace texture" for stage 0.
-		if(nPass==0)
+	// All others materials do not require multi pass.
+	default: return;
+	}
+}
+
+
+// ***************************************************************************
+void			CDriverGL::endMultiPass(const CMaterial &mat)
+{
+	switch(mat.getShader())
+	{
+	case CMaterial::LightMap: 
+		endLightMapMultiPass(mat);
+
+	// All others materials do not require multi pass.
+	default: return;
+	}
+
+}
+
+
+// ***************************************************************************
+void			CDriverGL::computeLightMapInfos(const CMaterial &mat, uint &nLMaps, uint &nLMapPerPass, uint &nPass) const
+{
+	nLMaps= mat._LightMaps.size();
+	nLMapPerPass= getNbTextureStages()-1;
+	if(!_Extensions.NVTextureEnvCombine4)
+		nLMapPerPass= 1;
+	nPass= (nLMaps+nLMapPerPass-1)/(nLMapPerPass);
+}
+
+
+// ***************************************************************************
+sint			CDriverGL::beginLightMapMultiPass(const CMaterial &mat)
+{
+	// One texture stage hardware not supported.
+	if(getNbTextureStages()<2)
+		return 1;
+	uint	nLMaps, nLMapPerPass, nPass;
+	computeLightMapInfos(mat, nLMaps, nLMapPerPass, nPass);
+
+	// Too be sure, disable vertex coloring / lightmap.
+	glDisable(GL_LIGHTING);
+	// reset VertexColor array if necessary.
+	if (_LastVB->getVertexFormat() & IDRV_VF_COLOR)
+		glDisableClientState(GL_COLOR_ARRAY);
+
+
+	// Manage too if no lightmaps.
+	nPass= std::max(nPass, (uint)1);
+	return	nPass;
+}
+// ***************************************************************************
+void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
+{
+	// One texture stage hardware not supported.
+	if(getNbTextureStages()<2)
+		return;
+	// compute Lightmaps infos.
+	//=========================
+	uint	nLMaps, nLMapPerPass, nPass;
+	computeLightMapInfos(mat, nLMaps, nLMapPerPass, nPass);
+
+	// No lightmap??, just setup "replace texture" for stage 0.
+	if(nPass==0)
+	{
+		ITexture	*text= mat.getTexture(0);
+		activateTexture(0,text);
+
+		CMaterial::CTexEnv	env;
+		env.Env.OpRGB= CMaterial::Replace;
+		env.Env.SrcArg0RGB= CMaterial::Texture;
+		env.Env.OpArg0RGB= CMaterial::SrcColor;
+		if(_CurrentTexEnv[0].EnvPacked!= env.EnvPacked)
+			activateTexEnvMode(0, env);
+
+		return;
+	}
+
+	nlassert(pass<nPass);
+
+
+	// setup Texture Pass.
+	//=========================
+	uint	lmapId;
+	uint	nstages;
+	lmapId= pass*nLMapPerPass;
+	// N lightmaps for this pass, plus the texture.
+	nstages= std::min(nLMapPerPass, nLMaps-lmapId) + 1;
+	// setup all stages.
+	for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++, lmapId++)
+	{
+		if(stage<nstages-1)
 		{
-			ITexture	*text= mat.getTexture(0);
-			activateTexture(0,text);
+			// setup lightMap.
+			ITexture	*text= mat._LightMaps[lmapId].Texture;
+			activateTexture(stage,text);
 
-			CMaterial::CTexEnv	env;
-			env.Env.OpRGB= CMaterial::Replace;
-			env.Env.SrcArg0RGB= CMaterial::Texture;
-			env.Env.OpArg0RGB= CMaterial::SrcColor;
-			if(_CurrentTexEnv[0].EnvPacked!= env.EnvPacked)
-				activateTexEnvMode(0, env);
-
-			return;
-		}
-
-		nlassert(pass<nPass);
-
-
-		// setup Texture Pass.
-		//=========================
-		uint	lmapId;
-		uint	nstages;
-		lmapId= pass*nLMapPerPass;
-		// N lightmaps for this pass, plus the texture.
-		nstages= std::min(nLMapPerPass, nLMaps-lmapId) + 1;
-		// setup all stages.
-		for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++, lmapId++)
-		{
-			if(stage<nstages-1)
+			// If texture not NULL, Change texture env fonction.
+			//==================================================
+			if(text)
 			{
-				// setup lightMap.
-				ITexture	*text= mat._LightMaps[lmapId].Texture;
-				activateTexture(stage,text);
+				CMaterial::CTexEnv	env;
+				uint8	lmapFactor= mat._LightMaps[lmapId].Factor;
 
-				// If texture not NULL, Change texture env fonction.
-				//==================================================
-				if(text)
+				// NB, !_Extensions.NVTextureEnvCombine4, nstages==2, so here always stage==0.
+				if(stage==0)
 				{
-					CMaterial::CTexEnv	env;
+					// do not use consant color to blend lightmap, but incoming diffuse color, for stage0 only.
+					// (NB: lighting and vertexcolorArray are disabled here)
+					glColor4ub(lmapFactor,lmapFactor,lmapFactor, 255);
 
-					env.Env.OpRGB= stage==0? CMaterial::Replace : CMaterial::Add;
-					env.Env.SrcArg0RGB= CMaterial::Texture;
-					env.Env.OpArg0RGB= CMaterial::SrcColor;
-					env.Env.SrcArg1RGB= CMaterial::Previous;
-					env.Env.OpArg1RGB= CMaterial::SrcColor;
-					env.ConstantColor.A= mat._LightMaps[lmapId].Factor;
-
+					// Leave stage as default env (Modulate with previous)
 					if(_CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
 						activateTexEnvMode(stage, env);
+					// NB: no need to disable modulate2x here, because always setuped at the last stage
+					// (but for the last pass).
+				}
+				else
+				{
+					// Here, we are sure that texEnvCombine4 is OK.
+					nlassert(_Extensions.NVTextureEnvCombine4);
+
+					// setup constant color with Lightmap factor.
+					env.ConstantColor.set(lmapFactor, lmapFactor, lmapFactor, 255);
 					if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
 						activateTexEnvColor(stage, env);
+
+					// setup TexEnvCombine4 (ignore alpha part).
+					// What we want to setup is  Texture*Constant + Previous*1.
+					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+
+					// Operator.
+					glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
+					glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
+					// Arg0.
+					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+					// Arg1.
+					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_CONSTANT_EXT );
+					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+					// Arg2.
+					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
+					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR);
+					// Arg3.
+					glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO);
+					glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+
+
 					// NB: no need to disable modulate2x here, because always setuped at the last stage
-					// but for the last pass.
-
-					// TODO_LIGHTMAP_FACTOR. (with texEnvCombine4)
-
-
-					// setup UV, with UV1.
-					setupUVPtr(stage, *_LastVB, 1);
+					// (but for the last pass).
 				}
+
+
+				// setup UV, with UV1.
+				setupUVPtr(stage, *_LastVB, 1);
 			}
-			else if(stage<nstages)
+		}
+		else if(stage<nstages)
+		{
+			// optim: do this only for first pass, and last pass (last pass only if stage!=nLMapPerPass)
+			if(pass==0 || (pass==nPass-1 && stage!=nLMapPerPass))
 			{
 				// setup texture in final stage.
-				// here, stage==nLMapPerPass==getNbTextureStages()-1
 				ITexture	*text= mat.getTexture(0);
 				activateTexture(stage,text);
 
 				// activate the texture at last stage, with modulate2x.
-				// setup default env (modulate).
+				// force setup default env (modulate). (to disable possible COMBINE4_NV setup).
 				CMaterial::CTexEnv	env;
-				if(_CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
-					activateTexEnvMode(stage, env);
-				if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
-					activateTexEnvColor(stage, env);
+				activateTexEnvMode(stage, env);
 				// special modulate2x.
 				glActiveTextureARB(GL_TEXTURE0_ARB+stage);
 				glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 2);
@@ -379,61 +460,60 @@ void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
 				// setup UV, with UV0.
 				setupUVPtr(stage, *_LastVB, 0);
 			}
-			else
-			{
-				// else all other stages are disabled.
-				activateTexture(stage,NULL);
-			}
 		}
-
-
-		// setup blend.
-		//=========================
-		if(pass==0)
+		else
 		{
-			// no transparency for first pass.
-			glDisable(GL_BLEND);
+			// else all other stages are disabled.
+			activateTexture(stage,NULL);
 		}
-		else if(pass==1)
-		{
-			// setup an Additive transparency (only for pass 1, will be kept for successives pass).
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ONE, GL_ONE);
-		}
-
 	}
-	else
-		// All others materials do not require multi pass.
-		return;
-}
 
 
-// ***************************************************************************
-void			CDriverGL::endMultiPass(const CMaterial &mat)
-{
-	if(mat.getShader()==CMaterial::LightMap)
+	// setup blend / lighting.
+	//=========================
+	if(pass==0)
 	{
-		// special for all stage, clean up envstages + blend mode.
-		for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++)
-		{
-			// special: disable  modulate2x.
-			glActiveTextureARB(GL_TEXTURE0_ARB+stage);
-			glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1);
-		}
-
-		// special for all stage, normal UV behavior.
-		for(sint i=0; i<getNbTextureStages(); i++)
-		{
-			// normal behavior: each texture has its own UV.
-			setupUVPtr(i, *_LastVB, i);
-		}
-
-		// NB: for now, nothing to do with blending, since always setuped in activeMaterial().
+		// no transparency for first pass.
+		glDisable(GL_BLEND);
 	}
-	else
-		// All others materials do not require multi pass.
-		return;
+	else if(pass==1)
+	{
+		// setup an Additive transparency (only for pass 1, will be kept for successives pass).
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE, GL_ONE);
+	}
 
+}
+// ***************************************************************************
+void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
+{
+	// special for all stage, clean up envstages + blend mode.
+	for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++)
+	{
+		// if multiFactor is OK, force reset a normal modulate env.
+		if(_Extensions.NVTextureEnvCombine4)
+		{
+			CMaterial::CTexEnv	env;
+			activateTexEnvMode(stage, env);
+		}
+		// special: disable  modulate2x.
+		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1);
+	}
+
+	// special for all stage, normal UV behavior.
+	for(sint i=0; i<getNbTextureStages(); i++)
+	{
+		// normal behavior: each texture has its own UV.
+		setupUVPtr(i, *_LastVB, i);
+	}
+
+	// pop VertexColor array if necessary.
+	if (_LastVB->getVertexFormat() & IDRV_VF_COLOR)
+		glEnableClientState(GL_COLOR_ARRAY);
+
+
+	// NB: for now, nothing to do with blending/lighting, since always setuped in activeMaterial().
 }
 
 

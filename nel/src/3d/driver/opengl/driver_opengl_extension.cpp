@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.7 2001/04/23 17:12:39 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.8 2001/05/31 10:05:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,6 +248,16 @@ static bool	setupEXTSeparateSpecularColor(const char	*glext)
 }
 
 
+// *********************************
+static bool	setupNVTextureEnvCombine4(const char	*glext)
+{
+	if(strstr(glext, "GL_NV_texture_env_combine4")==NULL)
+		return false;
+
+	return true;
+}
+
+
 // ***************************************************************************
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
@@ -282,6 +292,10 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	// Check EXTSeparateSpecularColor.
 	ext.EXTSeparateSpecularColor= setupEXTSeparateSpecularColor(glext);
+
+	// Check NVTextureEnvCombine4.
+	ext.NVTextureEnvCombine4= setupNVTextureEnvCombine4(glext);
+
 }
 
 

@@ -19,8 +19,10 @@ date
 
 #*** Build panoply files (.tga / .dds), and copy the result in the tga directory
 
-rmdir panoply
 mkdir panoply
+
+# Copy panoply containt into cache if the process as been stopped before the end of build.
+cp -u -p -R panoply/. cache 2>> log.log
 
 # Bin
 panoply_maker='panoply_maker.exe'

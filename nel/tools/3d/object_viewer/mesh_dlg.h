@@ -1,6 +1,6 @@
 /** \file mesh_dlg.h
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.h,v 1.1 2001/06/25 13:27:25 vizerie Exp $
+ * $Id: mesh_dlg.h,v 1.2 2001/12/18 18:38:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,21 +29,29 @@
 #pragma once
 #endif 
 
+#include "popup_notify.h"
+#include "particle_dlg.h"
+
 namespace NL3D
 {
-	struct CPSShapeParticle ;
+	struct CPSShapeParticle;
 }
+
+class CEditMorphMeshDlg;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMeshDlg dialog
 
-class CMeshDlg : public CDialog
+class CMeshDlg : public CDialog, IPopupNotify
 {
 // Construction
 public:
-	CMeshDlg(NL3D::CPSShapeParticle *sp);   // standard constructor
+	CMeshDlg(NL3D::CPSShapeParticle *sp, CParticleDlg  *particleDlg);   // standard constructor
+	~CMeshDlg();
 
-	void init(CWnd *pParent, sint x, sint y) ;
+	void init(CWnd *pParent, sint x, sint y);
+
+	BOOL EnableWindow( BOOL bEnable);
 
 // Dialog Data
 	//{{AFX_DATA(CMeshDlg)
@@ -61,13 +69,17 @@ public:
 
 // Implementation
 protected:
-
-	NL3D::CPSShapeParticle *_ShapeParticle ;
-
-
+	CParticleDlg           *_ParticleDlg;
+	NL3D::CPSShapeParticle *_ShapeParticle;
+	CEditMorphMeshDlg	   *_EMMD;
+	void updateForMorph();
+	virtual void childPopupClosed(CWnd *child);
 	// Generated message map functions
 	//{{AFX_MSG(CMeshDlg)
 	afx_msg void OnBrowseShape();
+	virtual BOOL OnInitDialog();
+	afx_msg void OnEnableMorphing();
+	afx_msg void OnEditMorph();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

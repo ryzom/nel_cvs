@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.4 2001/12/06 16:57:04 vizerie Exp $
+ * $Id: mesh_dlg.cpp,v 1.5 2001/12/18 18:38:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #include "mesh_dlg.h"
 #include "3d/ps_particle.h"
 #include "3d/ps_mesh.h"
+#include "edit_morph_mesh_dlg.h"
+#include "3d/particle_system_model.h"
 
 
 
@@ -38,18 +40,25 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CMeshDlg dialog
-
-
-CMeshDlg::CMeshDlg(NL3D::CPSShapeParticle *sp)
-	: _ShapeParticle(sp)
+///==================================================================
+CMeshDlg::CMeshDlg(NL3D::CPSShapeParticle *sp, CParticleDlg  *particleDlg)
+	: _ShapeParticle(sp), _EMMD(NULL), _ParticleDlg(particleDlg)
 {
 	//{{AFX_DATA_INIT(CMeshDlg)
-	m_ShapeName = sp->getShape().c_str();
 	//}}AFX_DATA_INIT
 }
 
+CMeshDlg::~CMeshDlg()
+{
+	if (_EMMD)
+	{
+		_EMMD->DestroyWindow();
+		delete _EMMD;
+		_EMMD = NULL;
+	}
+}
+
+///==================================================================
 void CMeshDlg::init(CWnd *pParent, sint x, sint y)
 {
 	Create(IDD_CHOOSE_MESH, pParent);
@@ -62,6 +71,8 @@ void CMeshDlg::init(CWnd *pParent, sint x, sint y)
 	ShowWindow(SW_SHOW);
 }
 
+
+///==================================================================
 void CMeshDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -74,12 +85,12 @@ void CMeshDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CMeshDlg, CDialog)
 	//{{AFX_MSG_MAP(CMeshDlg)
 	ON_BN_CLICKED(IDC_BROWSE_SHAPE, OnBrowseShape)
+	ON_BN_CLICKED(IDC_ENABLE_MORPHING, OnEnableMorphing)
+	ON_BN_CLICKED(IDC_EDIT_MORPH, OnEditMorph)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-/////////////////////////////////////////////////////////////////////////////
-// CMeshDlg message handlers
-
+///==================================================================
 void CMeshDlg::OnBrowseShape() 
 {
 	
@@ -90,24 +101,20 @@ void CMeshDlg::OnBrowseShape()
 		char drive[256];
 		char dir[256];
 		char path[256];
+		char fname[256];
+		char ext[256];
+
 
 		// Add search path for the texture
-		_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
+		_splitpath (fd.GetPathName(), drive, dir, fname, ext);
 		_makepath (path, drive, dir, NULL, NULL);
 		NLMISC::CPath::addSearchPath (path);
 
 		try
 		{		
-			_ShapeParticle->setShape(std::string(fd.GetFileName()));		
-			m_ShapeName = fd.GetFileName();;
-			/*if (_ShapeParticle->setShape(std::string(fd.GetFileName())))
-			{
-				m_ShapeName = fd.GetFileName();
-			}
-			else
-			{
-				MessageBox("Unable to set shape (invalid or not found)", "Error", MB_OK | MB_ICONEXCLAMATION);
-			}*/
+			_ShapeParticle->setShape(std::string(fname) + ext);		
+			m_ShapeName = (std::string(fname) + ext).c_str();
+			_ParticleDlg->getCurrPSModel()->touchTransparencyState();			
 		}
 		catch (NLMISC::Exception &e)
 		{
@@ -116,3 +123,111 @@ void CMeshDlg::OnBrowseShape()
 	}
 	UpdateData(false);
 }
+
+
+///==================================================================
+BOOL CMeshDlg::OnInitDialog() 
+{
+	CDialog::OnInitDialog();	
+	if (!dynamic_cast<NL3D::CPSConstraintMesh *>(_ShapeParticle))
+	{
+		// hide the unused fields
+		GetDlgItem(IDC_ENABLE_MORPHING)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_EDIT_MORPH)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_MORPH_FRAME)->ShowWindow(SW_HIDE);
+		m_ShapeName = _ShapeParticle->getShape().c_str();		
+	}
+	else
+	{		
+		NL3D::CPSConstraintMesh *cm = NLMISC::safe_cast<NL3D::CPSConstraintMesh *>(_ShapeParticle);
+		if (cm->getNumShapes() > 1)
+		{
+			((CButton *) GetDlgItem(IDC_ENABLE_MORPHING))->SetCheck(TRUE);
+		}
+		updateForMorph();
+	}
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+///==================================================================
+void CMeshDlg::updateForMorph()
+{
+	NL3D::CPSConstraintMesh *cm = NLMISC::safe_cast<NL3D::CPSConstraintMesh *>(_ShapeParticle);
+	if (cm)
+	{
+		BOOL enable = cm->getNumShapes() > 1;						
+		GetDlgItem(IDC_EDIT_MORPH)->EnableWindow(enable);
+		GetDlgItem(IDC_BROWSE_SHAPE)->EnableWindow(!enable);
+		GetDlgItem(IDC_SHAPE_NAME)->EnableWindow(!enable);
+		if (!enable)
+		{
+			m_ShapeName = _ShapeParticle->getShape().c_str();
+		}
+		else
+		{
+			m_ShapeName = "";
+		}
+	}
+	UpdateData(FALSE);
+}
+
+///==================================================================
+void CMeshDlg::OnEnableMorphing() 
+{
+	NL3D::CPSConstraintMesh *cm = NLMISC::safe_cast<NL3D::CPSConstraintMesh *>(_ShapeParticle);
+	if (((CButton *) GetDlgItem(IDC_ENABLE_MORPHING))->GetCheck())
+	{
+		// morphing enabled..		
+		std::string currName[2] = { cm->getShape(), cm->getShape()};
+		cm->setShapes(currName, 2);		
+	}
+	else
+	{
+		// morphing disabled
+		std::string currName = cm->getShape(0);
+		cm->setShape(currName);
+	}
+	updateForMorph();
+}
+
+///==================================================================
+void CMeshDlg::OnEditMorph() 
+{
+	nlassert(_EMMD == NULL);
+	NL3D::CPSConstraintMesh *cm = NLMISC::safe_cast<NL3D::CPSConstraintMesh *>(_ShapeParticle);
+	EnableWindow(FALSE);
+	_EMMD = new CEditMorphMeshDlg(cm, this, _ParticleDlg, this);
+	_EMMD->init(this);
+}
+
+///==================================================================
+void CMeshDlg::childPopupClosed(CWnd *child)
+{
+	nlassert(_EMMD == child);
+	_EMMD->DestroyWindow();
+	delete _EMMD;
+	_EMMD = NULL;
+	EnableWindow(TRUE);
+}
+
+
+///==================================================================
+BOOL CMeshDlg::EnableWindow( BOOL bEnable)
+{
+	if (!bEnable)
+	{
+		GetDlgItem(IDC_EDIT_MORPH)->EnableWindow(FALSE);
+		GetDlgItem(IDC_BROWSE_SHAPE)->EnableWindow(FALSE);
+		GetDlgItem(IDC_ENABLE_MORPHING)->EnableWindow(FALSE);
+		GetDlgItem(IDC_SHAPE_NAME)->EnableWindow(FALSE);	
+	}
+	else
+	{
+		GetDlgItem(IDC_ENABLE_MORPHING)->EnableWindow(TRUE);
+		updateForMorph();
+	}
+	return CDialog::EnableWindow(bEnable);
+}
+

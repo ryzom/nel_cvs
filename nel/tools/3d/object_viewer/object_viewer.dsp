@@ -198,6 +198,10 @@ SOURCE=.\dialog_progress.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\edit_ex.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main_dlg.cpp
 # ADD CPP /Yu"std_afx.h"
 # End Source File
@@ -280,6 +284,10 @@ SOURCE=.\day_night_dlg.h
 # Begin Source File
 
 SOURCE=.\dialog_progress.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_ex.h
 # End Source File
 # Begin Source File
 
@@ -431,6 +439,10 @@ SOURCE=.\bmp00023.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bmp00024.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\icon1.ico
 # End Source File
 # Begin Source File
@@ -523,6 +535,22 @@ SOURCE=.\constraint_mesh_dlg.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\constraint_mesh_global_tex_anim_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\constraint_mesh_global_tex_anim_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\constraint_mesh_tex_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\constraint_mesh_tex_dlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\curve_edit.cpp
 # End Source File
 # Begin Source File
@@ -552,6 +580,25 @@ SOURCE=.\direction_edit.h
 # Begin Source File
 
 SOURCE=.\edit_attrib_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_morph_mesh_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_morph_mesh_dlg.h
 # End Source File
 # Begin Source File
 
